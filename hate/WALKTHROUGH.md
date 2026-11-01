@@ -314,7 +314,7 @@ The pods and the convoy came out of the code alone: `$EDFE` writes type 11 into 
 turns it into a follower, `$D151` / `$D1DE` turn the followers into the next round's lives. None of it ran in the
 recording. It is the first thing a second capture has to reach (doc 10).
 
-### 6.12 A second recording, played by a bot that reads the game's own records (in progress)
+### 6.12 A second recording, played by a bot that reads the game's own records
 
 **Asked:** what the code says about pods, the convoy, a round's end, the next round and the fall back after the last
 life (docs 04 and 07). The first recording never left round 1, and random play does not get further.
@@ -367,3 +367,30 @@ The fall back of doc 04 4.4 needs a round
 whose start lives minus one is 1-4 before the round where the lives run out, so the recording plays rounds 1-3,
 then spends the lives in round 4 (`--give-up 4`: steer into threats) to fall back to round 3, then ends in GAME
 OVER.
+
+**The recording** (`work/p2`, 14 020 frames from the menu to the menu):
+
+```bash
+python3 tools/autopilot.py --unreal $W --binary $W/cmake-build-agent-release/bin/unreal-qt.app/Contents/MacOS/unreal-qt \
+    --start work/c2/start.szx --work work/p2 --wait 0 --frames 60000 --give-up 4 --save-rounds --record
+```
+
+| Frames | What happened |
+| --- | --- |
+| 210-3 468 | round 1 (aircraft), 4 lives: 4 pods, one hit taken by a follower; cleared with 3 followers |
+| 3 480-7 659 | round 2 (ground vehicle), 3 lives: two lives lost to side missiles, cleared on the last with 3 followers |
+| 7 671-10 623 | round 3 (aircraft), 3 lives: 1 pod, cleared with 1 follower |
+| 10 635-10 896 | round 4, 1 life, the bot gives up |
+| 10 983 | fall back: round 3 again with 3 − 1 = 2 lives, SCORE 812 |
+| 11 388, 11 871 | both lives lost; round 2's entry holds 1 (it was retried down to 1): GAME OVER |
+| 13 971-14 019 | the demo starts; the bot sees round 0 and stops |
+
+The table shows the lives at each round start, and they are the followers brought out of the round before:
+`$ECE4` counts the convoy in play and is the lives of the next round (3, 3, 1 above). A hit with followers in
+the convoy costs a follower, not a life.
+
+At the end `--record` built L1 over the whole run (83 routines, 903 blocks, 145 loops, 123 million instructions) into
+`work/p2/l1.json` and dumped the time-travel session (`work/p2/session.ttd`, 26.6 MB). The instance stays up, so
+the round table could be read at any frame by seeking (`time_travel` `seek`, then a memory read;
+`tools/roundtable.py`): it showed that a retry overwrites its round's entry, and that the look-back of a game over
+leaves an earlier round's SCORE on the panel ([4.4](docs/04-game-loop.md)).

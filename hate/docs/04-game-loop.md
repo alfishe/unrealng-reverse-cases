@@ -135,8 +135,22 @@ games, SCORE goes back to 0.
 
 So running out of lives in round 5 sends the player back to round 4 with the lives they had when it started, less
 one. If they started round 4 with a single life, the game tries round 3, and so on.
-This is read from the code. The recording never got past round 1, so this branch did not run in it. A recording
-that reaches round 3 would show it ([10](10-gameplay-logic.md)).
+The second recording (`work/p2`, played by the bot of [10](10-gameplay-logic.md)) ran this branch twice. The round
+table at the moments, read by seeking the recording (entry k holds round k + 1):
+
+| Frame | Event | Round 1 | Round 2 | Round 3 | Round 4 |
+| --- | --- | --- | --- | --- | --- |
+| 10 630 | round 4 starts with 1 life | 4, blank | 1, `422` | 3, `812` | 1, `1108` |
+| 10 990 | the life is lost: back to round 3 with 3 − 1 = 2 lives, SCORE 812 | 4 | 1 | **2**, `812` | 1 |
+| 11 880 | round 3 retried with 1 life | 4 | 1 | **1** | 1 |
+| 11 950 | that life is lost: round 2 holds 1, 1 − 1 = 0 does not qualify: GAME OVER | | | | |
+
+A retry runs `$D151` again, so it overwrites its round's entry with the fewer lives: the table keeps the lives of a
+round's last attempt, not of its first. Round 2 had been retried down to 1 life, so it could not be fallen back to.
+The look-back (`$D017`) stores each round it tries into `$C2F7` and copies that round's SCORE into `$EF49`
+*before* it tests the lives (`$D032`-`$D03E`). So a round that does not qualify still leaves its traces: after the
+last loss at frame 11 880 the round number reads 1 and SCORE reads `422`, round 2's starting score, instead of the
+`812` the player had. MAX was updated before the look-back (`$D00D`), so the high score keeps the real value.
 
 ## 4.5 Time
 
