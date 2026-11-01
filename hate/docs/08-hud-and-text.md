@@ -77,7 +77,7 @@ text.
 | `$F12C` | "ABORT!" (2,6) | U+G, `$D099` (not pressed in the recording: read from the code only) |
 | `$F136` | six spaces (2,6) | clears the window |
 | `$F0F5` | the GAME OVER box (10-22, 9-11) | game over and abort, `$D0A5` |
-| `$C333` | five green cells at (3,6), then a white `/` at (2,6); before printing, `$CFD6` fills the five cells with a `/` for every one of the five records at `$C010` (16 bytes apart) whose bit 7 is set | the gauge, `$CFE9` |
+| `$C333` | five green cells at (3,6), then a white `/` at (2,6); before printing, `$CFD6` fills the five cells with a `/` for every free one of the five shot slots at `$C010` (16 bytes apart, bit 7 = free; `$E82F` fires into one): the shots available | the gauge, `$CFE9` |
 | `$C2FA` | two characters (21,18) | the round number, `$D1BF` |
 | `$9F2F` | "PRESS ANY KEY WHEN READY" (4,23) | `$9F0C` and `$860C`, neither of which ran in the recording: code outside the paths of this version |
 

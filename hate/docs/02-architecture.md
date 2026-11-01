@@ -160,8 +160,9 @@ $8356  DI                ; a key was pressed:
        RET               ;   return from CALL $803A to the swap-back in $8000
 ```
 
-The handler also decrements C, H and L of the code it interrupted, which is always the player. This deliberate
-side effect on the player's loop counters is examined in [9. Sound and music](09-sound.md). Measured with `re_session.py interrupts` (2.4), the handler costs 123 T
+The handler also decrements C, H and L of the code it interrupted, which is always the player's voice loop. They are
+the engine's timers: C the note length, H and L the envelopes of the two voices. `($8244)` is the drum step
+([9. Sound and music](09-sound.md)). Measured with `re_session.py interrupts` (2.4), the handler costs 123 T
 an entry, 0.1 % of the CPU.
 
 The key exit unwinds the player at any depth. It throws the stack away and restores SP to the value saved at entry.

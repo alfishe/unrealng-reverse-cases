@@ -216,3 +216,14 @@ are described from the code alone.
 the reads at `$EE68`, through `byte_counts` and dataflow. A font claim could shrink to the glyphs actually read and
 leave the rest to the text claim. Queued for unreal-ng after the heatmap build (section 5).
 
+### 6.7 Sound
+
+[docs/09-sound.md](docs/09-sound.md). The title engine was read from the code with the IM 2 handler as the key. The
+handler decrements C, H and L of whatever it interrupts. Those three `DEC`s only make sense if the voice loop keeps
+its timers in exactly those registers, and it does: C is the note length, H and L are the voice envelopes. The
+drum step is the handler's fourth decrement, `($8244)`, an operand inside the player.
+
+For the effects in play, L1's execution counts at each `SET n,($F2BF)` site tell which sound requests happened in
+the recording: shots 26, AUTO ticks 560, bit 1 13 times. Bits 0 and 2 never did, so the recording needs input
+that reaches those events (the explorer, or a second capture with an input script) before doc 10 can name them.
+
