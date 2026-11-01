@@ -504,3 +504,9 @@ describes all 137 routines (`StartGame` `$9F1C`, entered by the title player's r
 falling through `PairScanNext` (a gone or dying record, the "nothing" handler of the hit table), not by a jump from
 each handler.
 
+**Self-modifying code, sorted.** Doc 2.7 groups the 123 bytes L1 marks as written after they ran in the bot's game
+by the routines whose writes cover them: 12 are real patches (the hit box of the moving record, written by
+`MoveRecord` into the six compares of the pair scan), 3 are the IM 2 jump at `$FDFD` (start-up, the title player's
+hook and its exit), and 108 are the playfield buffer laid over the title player and the end of the start-up, code that
+ran once. The mark alone cannot tell a patch from an overlay; the writers can.
+

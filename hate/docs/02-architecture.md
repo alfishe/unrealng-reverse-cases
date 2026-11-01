@@ -355,7 +355,24 @@ module that owns the page). Below, the screen writes of every module that draws,
 
 The routines of each module, with their callers, callees and memory: [12. Routine reference](12-routine-reference.md).
 
-## 2.7 Design notes
+## 2.7 Self-modifying code
+
+L1 marks a byte self-modified when it is written after it ran. Over the bot's game (`work/p2/l1.json`, `byte_use`
+flag `kSmc`) 123 bytes carry the mark; the routines whose writes cover them tell the three kinds apart:
+
+| Bytes | Written by | What it is | Docs |
+| --- | --- | --- | --- |
+| 12: the operands of the six compares in the pair scan (`$E5DC`-`$E5DD`, `$E5E8`-`$E5E9`, `$E60E`-`$E60F`, `$E61A`-`$E61B`, `$E640`-`$E641`, `$E64C`-`$E64D`) | `MoveRecord` (`$E555`), once per moving record | the hit box of the record being moved, patched into the compares that test it against every other record | [7.4](07-objects.md) |
+| 3: `$FDFD`-`$FDFF` | the start-up (`JP $9F68`), the title player's hook (`JP $8340`), its exit (`$8357` puts the saved bytes back) | the IM 2 jump every vector of the table leads to | [2.3](#23-the-stages-from-tape-to-play) |
+| 108: the title player (`$8025`-`$8341`) and the start-up's last bytes (`StartGame` `$9F1C`-`$9F29`) | the playfield buffer's writers (`FreshStrip`, `ScrollStep`, `DrawSprites`, `DrawShadows`, `RestoreStrips`, `StampStatics`) | not self-modification: the buffer `$8000-$BFFF` is laid over code that ran once, at the title | [6](06-rendering.md) |
+
+The title player's own operand patches (the `LD SP,nn` at `$8363`, the voices' periods and widths written by the
+pattern commands, [9.3](09-sound.md)) lie inside the same range: in a build that spans the title and play, the buffer's
+writes cover them, so L1's mark cannot tell a patch from the overlay there (the first recording's game window,
+`work/game`, marks 950 bytes). Doc 9.3 lists the patches from the code; L3's `code-overwritten` finding reports the
+overlay once, as one overwritten run.
+
+## 2.8 Design notes
 
 What a 2026 developer would note about this architecture:
 
