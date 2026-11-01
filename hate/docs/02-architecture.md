@@ -75,6 +75,34 @@ are merged:
 About 8 000 bytes of the 41 036 the depacker wrote were executed. The rest is data, or code this run did not reach.
 It has to be told apart before the source can be rebuilt.
 
+**The memory in use, as heatmaps.** L1 counts every byte's executions, reads and writes over the window (frames
+2613-45260, the title music, two games and the demo). Each picture is the 48 K of RAM as 192 rows of 256 bytes,
+`$4000` at the top. Intensity is log2 of the count; the composite puts writes in red, reads in green and execution in
+blue.
+
+![Executed, read and written bytes over the game window](img/heat-game.png)
+
+Read from the top:
+
+- **The screen** (`$4000-$57FF`): each row of the picture is 256 bytes, eight pixel lines of 32 bytes side by side.
+  In each 32-byte segment the left part is written every pass, the play area that the blit `$D35E` redraws; the right
+  part stays dark, the panel, which keeps the copy made when play started.
+- **`$6000-$64FF`** is read, rarely written: the scroll buffer `$6000-$62FF`, cleared at every round start, and the
+  font, only read.
+- **`$8000-$BFFF`** glows in both read and write: the playfield buffer. After the title the music player's bytes are
+  overwritten by it, which is the "code, then a buffer" reuse L1 reports (2.2). The thin execute line at `$8000-$85FF`
+  is the title tune, the only code that ran there.
+- **`$C000-$C3FF`** is the hottest data: the object records and the game's variables.
+- **`$C400-$F2FF`** is blue: code. The few bright spots in it are operands the code writes into itself.
+- **`$F300-$F7FF`** is read only: the course blocks (4.2).
+- **The last rows** are the stack under `$FFFF`, read and written by every call.
+
+The same build by the frame each byte was last read or written: bright is late in the window, dark early. Most of
+the code range is dark, as code is executed and not read as data; the bright lines in it are the operands and tables
+the game still reads or writes in the demo. The buffers, the variables and the stack stay bright to the end.
+
+![The frame each byte was last touched](img/heat-game-last.png)
+
 ## 2.3 The stages from tape to play
 
 ```mermaid

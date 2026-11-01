@@ -241,3 +241,19 @@ during play. That told where the course buffer is filled before the routine was 
 The fall-back to an earlier round when the lives run out did not run: the recording never left round 1. It is
 described from the code and needs a recording that gets further (planned for doc 10).
 
+
+### 6.9 Memory heatmaps of the game window
+
+[docs/02-architecture.md](docs/02-architecture.md#22-the-memory-map). The game window's build (`work/game2/l1.json`)
+carries `byte_counts`, so `tools/heatmap.py` draws the 48 K as 192 rows of 256 bytes, once by count and once by the
+frame each byte was last touched, with the module ranges of `tools/regions-game.txt` as labels:
+
+```bash
+python3 tools/heatmap.py work/game2/l1.json docs/img/heat-game.png --cell 2 --regions tools/regions-game.txt
+python3 tools/heatmap.py work/game2/l1.json docs/img/heat-game-last.png --cell 2 --regions tools/regions-game.txt --frames
+```
+
+What only a per-byte counter of a whole replay gives: the screen picture shows, without reading any code, which
+columns the game redraws every pass and which are the static panel; the `$8000-$BFFF` block shows a buffer that
+replaced the music player; the bright operand spots inside the code range are the self-modified instructions. A
+debugger's memory view shows the bytes at one moment, not how often and how late each was used.

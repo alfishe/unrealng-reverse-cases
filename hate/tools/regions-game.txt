@@ -1,0 +1,10 @@
+4000 57FF screen
+5800 5AFF attributes
+6000 62FF scroll buffer
+6300 64FF font
+8000 85FF title music
+8600 BFFF playfield buffer
+C000 C3FF objects, state
+C400 F2FF game code + data
+F300 F7FF course blocks
+FD00 FFFF IM2 table
