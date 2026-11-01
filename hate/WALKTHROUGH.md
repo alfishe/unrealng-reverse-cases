@@ -538,7 +538,8 @@ and what was laid over it are no longer raised: the overlay is the bug finding. 
 (from 241), 12 bug findings, 32 unknown areas, 13 of them in the game image.
 
 **The unknown areas left in the game image** are all named in the source (`src/game/game.ann`): the sprite graphics
-below the buffer (`$6542-$7FFF`), the launch templates and texts at `$C2BE-$C37F`, the unused block `UnusedC3FE`, the
-blit's address list `BlitAddresses` (`$D5B2-$D9D3`, read by `Blit` as data it pops), the hit handlers that did not
-run (`HitBlockOnShot`, `HitBlockOnPlayer`), the score area at `$EF48`, the round object blocks from `$F301`, the
-sprite save buffer and the UDG leftover at `$FF66`. No detector has a kind for them; the source describes each.
+below the buffer (`$6542-$7FFF`), the launch templates and texts at `$C2BE-$C37F`, rows of `HitHandlers` (`$C3D0`),
+the unused block `UnusedC3FE`, the blit's address list `BlitAddresses` (`$D5B2-$D9D3`, read by `Blit` through POP,
+so as the stack, not as data), the handlers that did not run (`HitBlockOnShot`, `HitBlockOnPlayer`), the SCORE text
+(`$EF48`), the round object blocks from `$F300` running into `SpriteSaveBuffer` (`$F800`), and the UDG leftover
+(`$FF58`). No detector has a kind for them; the source describes each.

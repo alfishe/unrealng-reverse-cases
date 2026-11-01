@@ -48,6 +48,11 @@ The screen shows 32 strips, one a column. For the scroll state `$C32E` (0-63) an
 So the 32 columns use every other page, and the scroll state picks which set of 32 and which half. Each set is the
 same course moved by 2 pixels (6.4).
 
+The analyzer finds the buffer on its own: a 16 K run that the routine writing the screen (`Blit`) reads and the code
+rewrites again and again (23 writes a byte at least over the bot's game, 842 reads a byte in the median) is one back
+buffer claim, `$8000-$BFFF`. `Blit` copies it with plain loads, no block copy, so the detector had to learn this case
+(WALKTHROUGH section 5).
+
 ## 6.3 The blit `$D35E` and the address list `$D5B2`
 
 ```text
