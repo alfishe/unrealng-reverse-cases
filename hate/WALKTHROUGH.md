@@ -346,8 +346,24 @@ dry run before it.
 - The first missiles that killed the bot came from the side: launched missiles with behaviour bit 4 turn toward the
   player's position across every 4 passes, so a prediction along a straight line needs a margin.
 
+- In round 3 the bot died again and again near the course's end with nothing near it. The profile under it read
+  `$38`: bit 5 set, bits 6-7 clear. `$E4C3`-`$E4F2` make bit 5 a barrier across the whole track: the player is lost
+  there when `$ECE4` (followers) is 0; with a follower, `$E68B` = `$FF` hands the vehicle to the AUTO countdown and
+  the round ends. So a round is left only with a pod picked up. Code first, then the bot: with one follower it went
+  through and round 4 began.
+- The planner's first boxes were twice too wide and ignored height. `$E531` sets the window's start at the
+  position less half its width: along and across the window is centred (±11 between the player and a dome), in
+  height it is ±7 for every pair. With the real boxes the bot climbs over missiles, and aiming at a dome needs the
+  height of the dome + 2 (shots fly 2 below the vehicle); before that, shots passed under the domes and only one
+  pod a round was collected. Doc 07 7.4 was corrected ("within 23" was the width, not the distance).
+- Launch pads fire their missiles at their own place, beside the player: the planner keeps 19 clear of a pad.
+
+The rounds are saved as they are reached (`--save-rounds`, `work/p1/round-N.szx`), so a change to the bot is tried
+on the round that failed; the recording itself is one run from the menu.
+
 **Dry runs so far:** round 1 cleared with pods collected (`$ECE4` 1, 2) and one hit absorbed by a follower; round
-2 (the aircraft) cleared with 4 followers; round 3 entered with 4 lives. The fall back of doc 04 4.4 needs a round
+2 (the aircraft) cleared with 4 followers; round 3 entered with 4 lives; round 3 cleared (2 pods, one lost to a missile, the barrier passed with the other).
+The fall back of doc 04 4.4 needs a round
 whose start lives minus one is 1-4 before the round where the lives run out, so the recording plays rounds 1-3,
 then spends the lives in round 4 (`--give-up 4`: steer into threats) to fall back to round 3, then ends in GAME
 OVER.

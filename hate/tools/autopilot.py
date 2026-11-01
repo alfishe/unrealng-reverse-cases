@@ -9,7 +9,10 @@ for the next pass. The emulator is exact and the decisions depend only on memory
 same game as the run without it.
 
     python3 autopilot.py --unreal <unreal-ng checkout> --binary <unreal-qt> --start work/c2/start.szx
-                         --work work/p1 [--frames 20000] [--record] [--port-base 9780]
+                         --work work/p1 [--frames 20000] [--give-up N] [--record] [--port-base 9780]
+
+The second recording of docs/10: --give-up 4 --record (rounds 1-3 played, round 4's lives spent: the fall back to
+round 3, then GAME OVER).
 """
 import argparse
 import json
@@ -21,7 +24,7 @@ TYPES = {0: 'player', 1: 'player', 2: 'dome', 3: 'dome', 4: 'missile', 5: 'missi
          8: 'jet', 9: 'jet', 10: 'cube', 11: 'pod', 12: 'shot', 14: 'pad', 15: 'dish'}
 
 
-THREATS = {4, 5, 6, 7, 8, 9, 10, 15}
+THREATS = {2, 3, 4, 5, 6, 7, 8, 9, 10, 14, 15}  # every class the player x class handler kills on (7.6)
 
 
 def limit_of(profile_byte):
@@ -36,6 +39,8 @@ ACROSS = [0, -1, -2, -1, 0, 1, 2, 1]
 
 def size_of(kind):
     """A record's half of the hit box ($E555): 8 for types 0-3, 4 for 4-10, 0 for 11-13; 14-15 taken as 8"""
+    if kind == 14:
+        return 16  # a pad launches its missiles at its own place: keep clear of it
     return 8 if kind < 4 or kind > 13 else 4 if kind <= 10 else 0
 
 
@@ -44,7 +49,8 @@ def danger(me, a, h, threats, passes=14):
     height @p h; below 0 means a hit is predicted"""
     worst = 99
     for r in threats:
-        box = 7 + 8 + size_of(r['type']) + 3
+        # $E555: the window along and across is 7 + both sizes wide, centred; in height 15 wide (|dh| <= 7)
+        box = (7 + 8 + size_of(r['type'])) // 2 + 4
         for k in range(1, passes + 1):
             d = r['dist'] + k * (ALONG[r['dir']] * r['speed'] - 2) + 2 * k - me['dist']
             x = r['across'] + k * ACROSS[r['dir']] * r['speed']
@@ -52,7 +58,7 @@ def danger(me, a, h, threats, passes=14):
             mx = me['across'] + (step if a > me['across'] else -step)
             hstep = min(3 * k, abs(h - me['height']))
             mh = me['height'] + (hstep if h > me['height'] else -hstep)
-            clear = max(abs(d) - box, abs(x - mx) - box, abs(r['height'] - mh) - box)
+            clear = max(abs(d) - box, abs(x - mx) - box, abs(r['height'] - mh) - 10)
             worst = min(worst, clear)
     return worst
 
@@ -80,7 +86,7 @@ def decide(st, profile, give_up=False):
     if pods:
         goal, goal_h, why = pods[0]['across'], pods[0]['height'], 'pod'
     elif domes:
-        goal, goal_h, why = domes[0]['across'], 2, 'dome'
+        goal, goal_h, why = domes[0]['across'], min(26, domes[0]['height'] + 2), 'dome'  # shots fly 2 below
     threats = [r for r in others if (r['type'] in THREATS or (r['type'] == 12 and r['dir'] != 0))
                and -40 < r['dist'] - me['dist'] < 140]
     heights = [goal_h] + ([2, 8, 14, 20, 26] if me['type'] == 0 else [])
@@ -127,6 +133,16 @@ class Game:
         self.s = s
         self.m = corpus.Machine(s, args.port_base)
         self.m.post('/snapshot/load', {'path': os.path.abspath(args.start)})
+        self.port_base = args.port_base
+        if args.record:
+            # The same files as re_session.py capture: re_session.py build / stages / stop work on this instance
+            self.m.post('/snapshot/save', {'path': os.path.abspath(os.path.join(args.work, 'start.szx')), 'force': True})
+            with open(os.path.join(args.work, 'start.bin'), 'wb') as f:
+                f.write(self.m.read(0, 0x10000))
+            with open(os.path.join(args.work, 'session.json'), 'w') as f:
+                json.dump({'pid': self.process.pid, 'port_base': args.port_base, 'model': '48K',
+                           'ranges': '5B00-FFFF'}, f)
+            s.call('analysis', {'action': 'start', 'record': True})
         self.held = set()
         self.frame = 0
 
@@ -177,6 +193,9 @@ def main():
     p.add_argument('--work', required=True)
     p.add_argument('--frames', type=int, default=20000)
     p.add_argument('--give-up', type=int, default=0, help='from this round on, spend the lives (0: never)')
+    p.add_argument('--record', action='store_true', help='record the run (TTD + analysis), build L1, keep the instance')
+    p.add_argument('--in-game', action='store_true', help='--start is a state in play (a saved round start)')
+    p.add_argument('--save-rounds', action='store_true', help='save W/round-N.szx when a round is first reached')
     p.add_argument('--port-base', type=int, default=9780)
     p.add_argument("--wait", type=int, default=200)
     p.add_argument('--probe', action='store_true', help='which stick direction moves the player which way')
@@ -184,9 +203,10 @@ def main():
     os.makedirs(args.work, exist_ok=True)
     g = Game(args)
     try:
-        g.key('space', hold=10, gap=100)  # the title before the menu ($8000-$83FF) leaves on any key
-        g.key('3', hold=10, gap=50)  # the Kempston reader
-        g.key('6')  # start
+        if not args.in_game:
+            g.key('space', hold=10, gap=100)  # the title before the menu ($8000-$83FF) leaves on any key
+            g.key('3', hold=10, gap=50)  # the Kempston reader
+            g.key('6')  # start
         g.run(args.wait)
         if not args.probe:
             seen = {}
@@ -197,6 +217,9 @@ def main():
                 profile = g.m.read(0x5FF7 + pos // 2, 48)
                 if st['round'] > seen.get('top', 0):
                     seen['top'] = st['round']
+                    if args.save_rounds:
+                        g.m.post('/snapshot/save', {'path': os.path.abspath(os.path.join(
+                            args.work, f"round-{st['round']}.szx")), 'force': True})
                 stick, why = decide(st, profile, args.give_up and seen.get('top', 0) >= args.give_up)
                 if seen.get('top', 0) > 0 and st['round'] == 0 and g.frame > seen.get('game_over', 1 << 30):
                     print(g.frame, 'back in the menu: done')
@@ -231,8 +254,21 @@ def main():
                       after['scrolled'])
             g.stick([])
             print(json.dumps(g.state(), indent=None)[:3000])
+        if args.record:
+            g.stick([])
+            work = os.path.abspath(args.work)
+            g.s.call('analysis', {'action': 'build', 'path': os.path.join(work, 'l1.json'), 'wait': 30000})
+            state = g.s.call('analysis', {'action': 'status'}).text
+            while ': running' in state:
+                time.sleep(5)
+                state = g.s.call('analysis', {'action': 'status'}).text
+            print(state)
+            dumped = g.s.call('time_travel', {'action': 'dump', 'path': os.path.join(work, 'session.ttd')}, ok=False)
+            print((dumped.text or '').splitlines()[:1])
+            print(f'instance kept: pid {g.process.pid}, MCP http://127.0.0.1:{args.port_base + 200}/mcp')
     finally:
-        g.close()
+        if not args.record:
+            g.close()
 
 
 if __name__ == '__main__':

@@ -108,13 +108,17 @@ For each live record:
    to 24 and down: a missile's flight) or the 16-step wave of `$C272` (bit 1).
 6. **The ground.** The 768 bytes at `$6000` are the course's profile under the scroll: for every 2 units along, the
    height of the ground (bits 0-4) and the walls (bits 5-7). A record cannot sink below the ground under it, and
-   the odd types below 10 sit on it. The walls limit how far across a record can go.
+   the odd types below 10 sit on it. Bits 7 and 6 are walls: they limit the position across to `$17` and `$27`
+   (otherwise `$47`). Bit 5 alone is a barrier across the whole track: the player's shots die on it (sound request
+   bit 2), and the player passes it only with a convoy (7.5).
 7. **Hits** (7.6).
 
 The test boxes are self-modified. Before testing a record against the others, `$E555` writes its size into the
-operands of six `CP n` instructions (`$E5DD`-`$E64D`), one pair for each class of the other record. A box is 7 plus a
-size for each of the two records: 8 for types 0-3, 4 for 4-10, 0 for 11-13. Two domes meet within 23, two shots
-within 7.
+operands of six `CP n` instructions (`$E5DD`-`$E64D`), one pair for each class of the other record, and the
+window's start, its own position less half the width, into `$C2EC`-`$C2F5` (`$E531`). The window is 7 plus a size
+for each of the two records wide: 8 for types 0-3, 4 for 4-10, 0 for 11-13. It is centred, along and across alike:
+two domes meet within 11 either way (a window 23 wide), two shots within 3. In height the window is 15 for every
+pair: within 7 either way (`$E43C` puts the height less 7 in IYL). A missile 8 above or below the player passes.
 
 ## 7.5 Pods and the convoy
 
@@ -129,10 +133,16 @@ The followers are worth two things:
   player flies on.
 - **The next round.** When a round starts, its lives are the followers of the round before ([10](10-gameplay-logic.md)).
 
+- **The way out.** The profile marks a barrier near the end of each course (bit 5, 7.4). The player who reaches it
+  with no follower is lost (`$E4E7`); with one or more, the game takes over: `$E68B` = `$FF` starts the AUTO
+  countdown of [5.4](05-controls.md), which drives the vehicle to the middle and on, and the round ends. A round
+  can only be left with at least one pod picked up ([10](10-gameplay-logic.md)).
+
 A crash into a wall loses the player and every follower at once (`$E979`).
 
-In the recording no pod was picked up: `$ECE4` stays 0 through both games (sampled every 250 frames). No dome was
-shot by the player either: `$EDCA` ran once, for an enemy shot that vanished on a dome.
+In the first recording no pod was picked up: `$ECE4` stays 0 through both games (sampled every 250 frames). No dome was
+shot by the player either: `$EDCA` ran once, for an enemy shot that vanished on a dome. The second recording, played
+by `tools/autopilot.py` ([10](10-gameplay-logic.md)), picks pods up in every round it clears.
 
 ## 7.6 Hits: the handler table `$C380`
 
