@@ -227,3 +227,17 @@ For the effects in play, L1's execution counts at each `SET n,($F2BF)` site tell
 the recording: shots 26, AUTO ticks 560, bit 1 13 times. Bits 0 and 2 never did, so the recording needs input
 that reaches those events (the explorer, or a second capture with an input script) before doc 10 can name them.
 
+### 6.8 The game loop and the recording's story
+
+[docs/04-game-loop.md](docs/04-game-loop.md). The state machine was read from `$CF32-$D0EC`. Then the game's
+variables were sampled with `memory_at` every 250 frames: lives `$C2F9`, round `$C2F7`, demo `$F0DB`, SCORE and
+HIGH. The samples tell the recording's story without watching it: two games, each losing four lives in round 1, a
+HIGH of 280, then the demo. They also confirm the retry path. The round stays 1, the lives fall 4, 3, 2, 1, and
+SCORE returns to the round's starting value.
+
+L1's counts tie the code to the run. `$D3F9` ran 1 280 times, ten round starts of 128 pre-roll steps, and never
+during play. That told where the course buffer is filled before the routine was read.
+
+The fall-back to an earlier round when the lives run out did not run: the recording never left round 1. It is
+described from the code and needs a recording that gets further (planned for doc 10).
+
