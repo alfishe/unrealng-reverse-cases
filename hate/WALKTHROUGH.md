@@ -226,7 +226,7 @@ are described from the code alone.
 font claim spanned every code from the first glyph drawn to the last. It now leaves out a slot whose bytes some code
 read but no drawing code ever put on the screen, and splits the claim around it (section 5). On the bot's game the
 font became codes 45-58 (`$6368-$63D7`) and 64-89 (`$6400-$64CF`): exactly the five credit slots `;<=>?`
-(`$63D8-$63FF`) fell out. The digits, drawn five rows at a time by the score routine `$EEA4` rather than by the print
+(`$63D8-$63FF`) fell out. The digits, drawn as rows 2-6 by `DrawDigits` (`$EEA4`, [8.2](docs/08-hud-and-text.md)) rather than by the print
 loop, stay glyphs because their bytes reached the screen. The three font and text conflicts are gone (241 to 238).
 
 ### 6.7 Sound
