@@ -89,6 +89,12 @@ the game.
 the ROM are lost, so those lines go nowhere. The loop is the same 128 lines for every column, unrolled, without a
 compare.
 
+The bot's game shows where the lost lines land. `DEC H` walks up from `$0800` and L stays `$00`, so a clipped
+cell writes the 8 ROM bytes `$0800`, `$0700` ... `$0100` and nothing else. L1 counts 112 746 writes at each of
+`$0500-$0800` and 86 526 at each of `$0100-$0400`: the 4-line cells (the first and last POP of an even column)
+stop at `$0500`. No code reads those bytes. The analyzer claims them as ROM bytes only written, the writes lost
+(WALKTHROUGH section 5).
+
 A pass copies 32 × 128 = 4 096 lines as `LD A,(DE); LD (HL),A; INC E; DEC H`, with a POP for every cell and no
 address arithmetic.
 
