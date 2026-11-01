@@ -136,12 +136,13 @@ games, SCORE goes back to 0.
 So running out of lives in round 5 sends the player back to round 4 with the lives they had when it started, less
 one. If they started round 4 with a single life, the game tries round 3, and so on.
 The second recording (`work/p2`, played by the bot of [10](10-gameplay-logic.md)) ran this branch twice. The round
-table at the moments, read by seeking the recording (entry k holds round k + 1):
+table at the moments, read by seeking the recording (entry k holds round k + 1; the 5 characters are SCORE without
+its fixed last `0`, so `812` is 8 120 points):
 
 | Frame | Event | Round 1 | Round 2 | Round 3 | Round 4 |
 | --- | --- | --- | --- | --- | --- |
 | 10 630 | round 4 starts with 1 life | 4, blank | 1, `422` | 3, `812` | 1, `1108` |
-| 10 990 | the life is lost: back to round 3 with 3 − 1 = 2 lives, SCORE 812 | 4 | 1 | **2**, `812` | 1 |
+| 10 990 | the life is lost: back to round 3 with 3 − 1 = 2 lives, SCORE 8 120 | 4 | 1 | **2**, `812` | 1 |
 | 11 880 | round 3 retried with 1 life | 4 | 1 | **1** | 1 |
 | 11 950 | that life is lost: round 2 holds 1, 1 − 1 = 0 does not qualify: GAME OVER | | | | |
 
@@ -149,8 +150,10 @@ A retry runs `$D151` again, so it overwrites its round's entry with the fewer li
 round's last attempt, not of its first. Round 2 had been retried down to 1 life, so it could not be fallen back to.
 The look-back (`$D017`) stores each round it tries into `$C2F7` and copies that round's SCORE into `$EF49`
 *before* it tests the lives (`$D032`-`$D03E`). So a round that does not qualify still leaves its traces: after the
-last loss at frame 11 880 the round number reads 1 and SCORE reads `422`, round 2's starting score, instead of the
-`812` the player had. MAX was updated before the look-back (`$D00D`), so the high score keeps the real value.
+last loss at frame 11 880 the round number reads 1 and SCORE reads 4 220, round 2's starting score, instead of the
+8 120 the player had. MAX was updated before the look-back (`$D00D`): it holds 11 080, the best SCORE of the game,
+reached at the start of round 4 and lost in the fall back. By frame 12 500, after the GAME OVER box, HIGH reads 11 080
+and MAX is cleared.
 
 ## 4.5 Time
 
@@ -158,6 +161,15 @@ No pass waits for the frame: there is no `HALT`, and interrupts are off from `$C
 A pass takes as long as its work. Over the window, the 2 319 passes in frames 30520-45010 take 6.2 frames each on
 average, about 8 passes a second. Sound effects stop the game while they sound ([9.6](09-sound.md)), so a pass with
 an effect is longer.
+
+Where the t-states go over the bot's whole game (L1's own t-states per routine, `tools/heatviews.py routines`):
+
+![Own t-states per routine](img/routines-time.png)
+
+The blit is over a quarter of all the time. `$F1AA` is the menu waiting for a key (two visits). Then come the
+pair scan of the hit test (`$E56F`, entered 656 852 times: every pair of live records, every pass), the beeper
+effects that stop the game while they sound (`$F2A3`, `$F288`, [9.6](09-sound.md)), and the sprite passes
+(`$EAE3`, `$DD47`, `$DDC9`: the strips under each sprite saved and restored, [6.6](06-rendering.md)).
 
 ## 4.6 Design notes
 

@@ -64,6 +64,19 @@ The round start (`$D1DE`-`$D294`) fills the list:
 The slot counts are the limits: at most 5 shots of the player in the air, 6 launched objects, 4 pods. A launch
 with no free slot does not happen.
 
+**The list as it was used.** L1's per-byte counts over the bot's whole game (10.1), one row a record and one
+column a field (`tools/heatviews.py records`):
+
+![Reads and writes of every field of every record](img/heat-records.png)
+
+- `+0` is read in every slot, every pass: the mover and the hit scan test it first (gone, end, hit).
+- The positions `+1`-`+4` are the hottest fields after `+0`: every pair the hit scan compares reads them.
+- `+C`-`+E` (the motion table steps) are written only for the records that follow a path: the player's shots,
+  the launched missiles and jets, a few course objects. The player and the pods never use them.
+- `+F` is written for the shots (their 12-pass life) and the launched objects (the fire timer).
+- Enemy shot slots 4 and 5 kept only what the round start writes: no more than 3 enemy shots were ever in the
+  air at once.
+
 ## 7.3 The kinds
 
 The type pairs (0-1, 2-3 ...) are the classes of the hit table (7.6). Odd and even of a pair are variants: an odd

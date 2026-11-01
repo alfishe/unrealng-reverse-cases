@@ -101,8 +101,15 @@ stateDiagram-v2
     D --> A
 ```
 
-The scroll in the recording, frames 35500-35740 (game 2, the AUTO start), one picture every 3 frames: on the left
-the 32 strips as stored, moving sideways; on the right the same strips through the address list.
+The scroll in the recording, frames 35500-35740 (game 2, the AUTO start), one picture every 3 frames, three projections
+of the same moment:
+
+1. the 32 strips as stored, unskewed (byte 0 of each strip at the bottom): the course map's diagonals side by side,
+   moving sideways as the phases of 6.4 shift them;
+2. the same bytes placed where the blit `$D35E` puts them, through the address list `$D5B2`
+   (`tools/playfield.py`): this is the screen's isometric projection;
+3. the real screen. Its play area matches 2; what differs is the sprites, drawn after the blit (6.6), and the
+   panel at the lower right.
 
 ![The scroll, stored and on the screen](img/anim-scroll.gif)
 
@@ -164,8 +171,10 @@ strips in four, `$C4C0` for the fourth (222 of the 903 runs).
 
 **The round starts 32 strips in.** When `$C3FA` reaches 32, `$D4BF` calls `$D151` and jumps into the play loop at
 `$D0EF`. The pre-roll of the round start is 128 scroll steps, 32 strips: its last step is the one that starts the
-round ([4.2](04-game-loop.md)). A course that follows another without a break counts as a new round the same way. That is read from the code: in
-the recording only the demo reached the end of a course.
+round ([4.2](04-game-loop.md)). A course that follows another without a break counts as a new round the same way. In the first recording only the
+demo reached the end of a course; the bot's recording ([10](10-gameplay-logic.md)) shows the seamless hand-over:
+`$D151` ran 9 times (rounds 1-4, three retries, a fall back, the demo) but the round start `$CF68` only 6, so rounds
+2, 3 and 4 began straight out of the scroll of the round before, with no pre-roll.
 
 ## 6.6 Objects on the playfield
 
@@ -187,6 +196,23 @@ bytes were written 1 to 24 times, by the copy from `$A000`, by `$D338` ([8.5](08
 the menu. The other 6 were written 2 363 times: the message window at (2, 6), printed every pass of the demo
 ([8.3](08-hud-and-text.md)). The playfield is drawn in ink only, one colour per cell,
 so the scroll never has attribute clash to manage: a cell's colour is the course's, wherever the course moves.
+
+Over the bot's whole game (14 020 frames, [10.1](10-gameplay-logic.md)) the writes land like this, each bitmap byte
+drawn where it shows (8 × 1 pixels) and each attribute as its cell (`tools/heatviews.py screen`):
+
+![Where the screen was written](img/heat-screen.png)
+
+The bitmap has three kinds of bytes:
+
+| Bytes | Writes each | What |
+| --- | --- | --- |
+| 3 792 | 2 623-2 626 | the play area, the blit's diagonal band: once a pass (2 622 blits), plus a few writes from outside the play loop |
+| 48 | 2 631 | the status window at row 7 ("AUTO", "DEMO", the shot gauge), printed every pass it shows |
+| 106 | 3-79 | the panel's numbers: SCORE, MAX, HIGH, the round, the lives |
+| 2 198 | 1 | the rest: the copy of the screen image from `$A000` and nothing after it |
+
+Of the attributes, 6 cells (the status window) were written 2 631 times; 491 cells of the play area 9-19
+times, the course colour of each round setup and retry (`$D338`, 8.5) and the menu; 271 cells only once.
 
 ## 6.8 Design notes
 

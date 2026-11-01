@@ -9,6 +9,9 @@ counts over their bytes), data reads, data writes, and a composite (red write, g
     python3 heatmap.py l1.json out.png --frames           # when each byte was last touched instead of how often
 
 regions.txt: lines "START END NAME" (hex), drawn as labelled brackets to the right of the composite.
+
+When the range holds the screen page ($4000-$5AFF), each panel gets an inset below it: the same counts in the
+screen's geometry, the bitmap bytes where they show and the attributes as their cells.
 """
 import argparse
 import json
@@ -73,6 +76,31 @@ def panel(lo, hi, cell, colour):
     return image
 
 
+def screen_view(colour, scale):
+    """The screen page in the screen's own geometry: each bitmap byte of $4000-$57FF as 8 x 1 pixels where it shows,
+    and beside it each attribute of $5800-$5AFF as its 8 x 8 cell (at half size), coloured by colour(address)"""
+    bitmap = Image.new('RGB', (256 * scale, 192 * scale), (12, 12, 16))
+    d = ImageDraw.Draw(bitmap)
+    for a in range(0x4000, 0x5800):
+        y = ((a >> 8) & 7) | ((a >> 2) & 0x38) | ((a >> 5) & 0xC0)
+        x = (a & 31) * 8
+        d.rectangle((x * scale, y * scale, (x + 8) * scale - 1, (y + 1) * scale - 1), fill=colour(a))
+    cell = 4 * scale
+    attrs = Image.new('RGB', (32 * cell, 24 * cell), (12, 12, 16))
+    d = ImageDraw.Draw(attrs)
+    for a in range(0x5800, 0x5B00):
+        x, y = (a - 0x5800) & 31, (a - 0x5800) >> 5
+        d.rectangle((x * cell, y * cell, (x + 1) * cell - 2, (y + 1) * cell - 2), fill=colour(a))
+    out = Image.new('RGB', (bitmap.width + 10 + attrs.width + 4, bitmap.height + 4), (24, 24, 30))
+    d = ImageDraw.Draw(out)
+    d.rectangle((0, 0, bitmap.width + 3, bitmap.height + 3), outline=(110, 110, 140))
+    d.rectangle((bitmap.width + 8, 0, bitmap.width + 11 + attrs.width, attrs.height + 3), outline=(110, 110, 140))
+    out.paste(bitmap, (2, 2))
+    out.paste(attrs, (bitmap.width + 10, 2))
+    d.text((bitmap.width + 10, attrs.height + 8), 'attributes', fill=(150, 150, 170), font=ImageFont.load_default())
+    return out
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('l1')
@@ -101,19 +129,37 @@ def main():
                   ('read', panel(lo, hi, args.cell, lambda a: heat(fr(a))), f'max {tr}'),
                   ('written', panel(lo, hi, args.cell, lambda a: heat(fw(a))), f'max {tw}'),
                   ('red write, green read, blue execute', composite, 'log2 scale')]
+    # The screen page in view: each panel gets an inset below it with the same colours in the screen's geometry
+    insets = []
+    if lo <= 0x4000 and hi >= 0x5AFF:
+        if args.frames:
+            colours = [lambda a: heat(last[a] / frames) if (reads[a] or writes[a] or executes[a]) else (12, 12, 16)]
+        else:
+            colours = [lambda a: heat(fx(a)), lambda a: heat(fr(a)), lambda a: heat(fw(a)),
+                       lambda a: (int(255 * fw(a)), int(255 * fr(a)), int(255 * fx(a)))]
+        insets = [screen_view(c, max(1, args.cell // 2)) for c in colours]
     margin, gap, label_w = 52, 18, 190 if args.regions else 0
-    w = margin + sum(im.width for _, im, _ in panels) + gap * (len(panels) - 1) + label_w + 12
-    h = 46 + panels[0][1].height + 26
+    w = margin + sum(max(im.width, insets[i].width if insets else 0) for i, (_, im, _) in enumerate(panels)) + \
+        gap * (len(panels) - 1) + label_w + 12
+    inset_h = insets[0].height + 34 if insets else 0
+    h = 46 + panels[0][1].height + 26 + inset_h
     out = Image.new('RGB', (w, h), (24, 24, 30))
     d = ImageDraw.Draw(out)
     d.text((margin, 6), args.title or f'Memory ${lo:04X}-${hi:04X}, {replay["frames"]} frames, '
            f'{replay["instructions"]} instructions', fill=(235, 235, 235), font=font)
     x = margin
-    for name, im, note in panels:
+    for i, (name, im, note) in enumerate(panels):
         out.paste(im, (x, 30))
         d.text((x, 18), name, fill=(200, 200, 210), font=font)
         d.text((x, 32 + im.height + 4), note, fill=(150, 150, 160), font=font)
-        x += im.width + gap
+        if insets:
+            iy = 30 + im.height + 26
+            # a leader from the screen rows of the grid down to the inset
+            sy = 30 + ((0x4000 - lo) >> 8) * args.cell
+            d.line([(x - 4, sy), (x - 8, sy), (x - 8, iy + 14), (x - 2, iy + 14)], fill=(140, 140, 170))
+            d.text((x, iy), '$4000-$57FF as the screen, $5800-$5AFF as its cells', fill=(170, 170, 200), font=font)
+            out.paste(insets[i], (x, iy + 14))
+        x += max(im.width, insets[i].width if insets else 0) + gap
     for a in range(lo, hi + 1, 0x1000):
         y = 30 + ((a - lo) >> 8) * args.cell
         d.text((6, y - 4), f'${a:04X}', fill=(170, 170, 180), font=font)

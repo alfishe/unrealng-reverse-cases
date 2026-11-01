@@ -15,9 +15,9 @@ the emulator saw the game do (a recording, a counter, an experiment); the eviden
 | [7. Objects](07-objects.md) | the object records, the slots, the kinds, the mover, hits by a table of handlers, the convoy, the player | written |
 | [8. HUD and text](08-hud-and-text.md) | the panel, gauges, score, the font, windows and their texts | written: the print routine and its format, the font (strings in unused glyphs), every string, the panel, ASCII score, MAX/HIGH |
 | [9. Sound and music](09-sound.md) | the beeper engine, the title music, the effects: formats, players, timing | written: the title engine (song, pattern, voices, drums, the interrupt as clock), the effects and their requests |
-| [10. Gameplay logic](10-gameplay-logic.md) | the player's vehicle, physics, collisions, enemies and their behaviour, the course, scoring and the high score | not started |
+| [10. Gameplay logic](10-gameplay-logic.md) | the player's vehicle, physics, collisions, enemies and their behaviour, the course, scoring and the high score | written: the bot's recording, rounds and vehicles, the hand-over, driving, pods / convoy / barrier / AUTO, falling back, the demo, scoring, sound events |
 | [11. Data reference](11-data-reference.md) | every table, buffer and variable: address, format, who reads and writes it | not started |
 | [12. Routine reference](12-routine-reference.md) | every routine: purpose, inputs, outputs, registers, memory, timing, callers, callees | not started |
 
 Figures are in `img/`: memory access maps, routine timelines, stage maps, graphics sheets, rendered from the
-recordings.
+recordings. A memory map that holds the screen page also shows it as the screen, below each panel.

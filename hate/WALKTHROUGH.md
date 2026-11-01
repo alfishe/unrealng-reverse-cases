@@ -287,7 +287,10 @@ instruction count at `$D3F9` is 3 599: the blit falls through into it every pass
 first instruction's count is the one to read when a routine can be entered by falling into it.
 
 The scroll animation (`docs/img/anim-scroll.gif`) is `tools/playfield_anim.py`: 81 memory images from TTD
-`memory_at`, each drawn as the stored strips and as the screen. The recording is read at any frame without running
+`memory_at`, each drawn three ways: the stored strips, the same strips placed by the
+Python re-run of the blit, and the real screen. The first version drew only the stored strips beside the screen,
+two different projections that could not be compared by eye; the middle panel is the check that the blit was read
+right. The recording is read at any frame without running
 the game again; the instance only seeks.
 
 ### 6.11 Objects: types named from the screens, handlers counted by L1
@@ -381,7 +384,7 @@ python3 tools/autopilot.py --unreal $W --binary $W/cmake-build-agent-release/bin
 | 3 480-7 659 | round 2 (ground vehicle), 3 lives: two lives lost to side missiles, cleared on the last with 3 followers |
 | 7 671-10 623 | round 3 (aircraft), 3 lives: 1 pod, cleared with 1 follower |
 | 10 635-10 896 | round 4, 1 life, the bot gives up |
-| 10 983 | fall back: round 3 again with 3 − 1 = 2 lives, SCORE 812 |
+| 10 983 | fall back: round 3 again with 3 − 1 = 2 lives, SCORE back to 8 120 (MAX keeps 11 080) |
 | 11 388, 11 871 | both lives lost; round 2's entry holds 1 (it was retried down to 1): GAME OVER |
 | 13 971-14 019 | the demo starts; the bot sees round 0 and stops |
 
@@ -394,3 +397,34 @@ At the end `--record` built L1 over the whole run (83 routines, 903 blocks, 145 
 the round table could be read at any frame by seeking (`time_travel` `seek`, then a memory read;
 `tools/roundtable.py`): it showed that a retry overwrites its round's entry, and that the look-back of a game over
 leaves an earlier round's SCORE on the panel ([4.4](docs/04-game-loop.md)).
+
+**Pictures from the bot's recording.** Everything below reads the kept instance or `work/p2/l1.json`; nothing
+replays the game:
+
+| Picture | Tool | Where |
+| --- | --- | --- |
+| `game-p2-timeline.png`: round, lives, followers, hits | `tools/gamechart.py work/p2/run.log` | doc 10.1 |
+| `anim-round-handover.gif`: the convoy lands beside the parked vehicle, round 2 begins | `tools/screen_anim.py --work work/p2 --from 3280 --to 3540 --step 4` | doc 10.2 |
+| `heat-p2.png`, `heat-p2-last.png`: the whole game's memory | `tools/heatmap.py` | doc 10.1 |
+| `heat-coverage.png`: code run in p2 against m1 | `tools/heatviews.py coverage --other work/m1/l1.json --from C000` | doc 10.1 |
+| `heat-records.png`: reads and writes per field of every object record | `tools/heatviews.py records` | doc 7.2 |
+| `heat-screen.png`: screen writes in the screen's geometry | `tools/heatviews.py screen` | doc 6.7 |
+| `routines-time.png`: own t-states per routine | `tools/heatviews.py routines` | doc 4.5 |
+
+`tools/heatmap.py` now draws the screen page ($4000-$5AFF) a second time below each panel, in the screen's own
+geometry (bitmap bytes where they show, attributes as cells): in the 256-byte rows of the memory grid the screen's
+third-interleaved lines cannot be read as a picture. The first heatmaps (doc 2) were redrawn with it.
+
+The routine chart showed hot routines no document named (`$E56F` 656 852 entries, `$EAE3`, `$DD47`, `$DDC9`,
+`$EFDC`, `$F089`): they are the insides of passes the docs describe (the hit test's pair scan, the sprite passes
+saving and restoring the strips under each sprite). Doc 12 gives each one its entry.
+
+**The scroll animation, redone.** The first `anim-scroll.gif` put the stored strips beside the screen: two different
+projections, so nothing could be compared. It now has three panels: the stored strips, the same bytes placed by
+the Python re-run of the blit (`tools/playfield.py`), and the screen; the middle one and the screen agree but for
+the sprites and the panel.
+
+**Doc claims checked against the code while writing doc 10:** the round colour is set at every round setup by
+`$D151` falling into `$D338` (`$D320`-`$D337`), not only by the menu; the demo skips the loss check, so it ends
+only at the end of its course.
+
