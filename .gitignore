@@ -1,0 +1,22 @@
+# Emulator recordings, analysis builds and dumps: reproducible from each case's WALKTHROUGH, too big for the
+# repository (a TTD session is tens of MB)
+*/work/
+
+# Build output (tools/build.sh writes build/: assembled blocks, packed data, the TAP)
+*/build/
+*.pk
+*.lst
+*.sym
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~

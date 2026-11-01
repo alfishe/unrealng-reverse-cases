@@ -1,0 +1,167 @@
+# 3. Build and load
+
+How the game gets from tape into memory, and how the source tree makes the same tape again. The tape has two
+layers: Vortex's game with its own loading screen and depacker, and the BASIC loader with a banner added by INXS
+Soft for their 1989 disk version, from which this tape was made back.
+
+## 3.1 The tape
+
+| Block | Kind | Name | Bytes | Loads at | Plays for (ROM speed) |
+| --- | --- | --- | --- | --- | --- |
+| 0 | header | `H_A_T_E` | 19 | | 5.1 s |
+| 1 | BASIC, LINE 10 | | 413 (+2) | PROG ($5CCB) | 4.3 s |
+| 2 | header | `H_A_T_E.1` | 19 | | 5.1 s |
+| 3 | CODE | screen unpacker + loading screen | 6 432 (+2) | $9C40 | 38.8 s |
+| 4 | header | `H_A_T_E.2` | 19 | | 5.1 s |
+| 5 | CODE | depacker + packed game | 35 495 (+2) | $5FB4 | 204.4 s |
+
+All blocks use the ROM's standard encoding (flag byte, data, XOR checksum; pilot 2 168 T, 8 063 pulses for a header
+and 3 223 for data, bits of 2 x 855 T and 2 x 1 710 T). The play times are computed from the bit counts of each block,
+pauses not included: 263 s, 13 159 frames of tape signal in all. There is no custom loader: every block goes through
+the ROM's LD-BYTES ($0556).
+
+The headers: the BASIC one is as the ROM's `SAVE "H_A_T_E" LINE 10` writes it (length and program length 413,
+line 10). The two CODE headers hold $2020, two spaces, as their second parameter where the ROM's `SAVE ... CODE`
+writes 32 768: the tape was written by a copier from INXS's disk version, not saved from BASIC.
+
+## 3.2 The load, step by step
+
+```text
+LOAD ""               ROM        BASIC "H_A_T_E" into PROG, autostart LINE 10
+LINE 10               BASIC      PAPER 0: BORDER 0: POKE 23624,0: INK 0      black screen, BORDCR = 0
+                                 CLEAR 24499                                 RAMTOP = $5FB3, the stack below it
+                                 RANDOMIZE USR 23788                         INXS banner (3.3)
+                                 LOAD "H_A_T_E.1" CODE                       6 432 bytes at $9C40
+                                 CLS
+                                 RANDOMIZE USR 40000                         loading screen unpacked (3.4)
+                                 POKE 23739,111                              S channel output -> $096F (RET)
+                                 LOAD "H_A_T_E.2" CODE                       35 495 bytes at $5FB4, no message
+                                 RANDOMIZE USR 24500                         depack into $5FB4-$FFFF (3.5)
+LINE 20               BASIC      REM NO POKE
+LINE 30               BASIC      RANDOMIZE USR 25000                         the game ($61A8)
+```
+
+The game's entry is reached by BASIC falling through from line 10 to line 30.
+
+`POKE 23739,111` changes the low byte of the S channel's output address in the channel table (CHANS + 5) from $F4
+($09F4, PRINT-OUT) to $6F: $096F is a lone `RET` in the ROM. Everything printed to the screen channel is dropped
+from then on, so the ROM's "Bytes: H_A_T_E.2" line does not appear over the loading screen.
+
+`CLEAR 24499` puts RAMTOP right below the load address of the last block, $5FB4, so the BASIC stack and the GO SUB
+stack stay out of the way of the 41 036 bytes the depacker writes from $5FB4 up to $FFFF.
+
+## 3.3 INXS's banner (line 0, $5CEC)
+
+Line 0 is a REM: the text `Disked by INXS SOFT'89` (at $5CD0, padded with spaces) followed by the code at $5CEC,
+reached by `USR 23788`. Line 1 is a REM with the title `H.A.T.E.` ($5D9E). The banner is not part of the game; it is
+documented because the tape carries it and the build reproduces it.
+
+| Address | Routine | What it does |
+| --- | --- | --- |
+| $5CEC | `Banner` | calls the five routines below in order and returns to BASIC |
+| $5CFC | `MeasureTitle` | length of line 1's text up to CR (at most 30) into $5D19; centre column (32 - length) / 2 into $5D1A |
+| $5D6F | `BoldFont` | makes a bold copy of the ROM font: each byte of $3D00-$3FFF ORed with itself shifted right once, into $C350; CHARS = $C250 |
+| $5D1B | `FadeInTitle` | opens channel 2; eight times: `AT 10, col`, `INK 0` to `INK 7`, prints the title, waits 3 frames ($5D47): the title fades in from black to white |
+| $5D8A | `RomFont` | CHARS back to $3C00 |
+| $5D4F | `WipeCredit` | row 12, from column 31 down to 4: prints the last (32 - column) characters of the credit text at the column, so the line slides in from the right |
+
+Its data lives in its own REM: $5D19 (title length) and $5D1A (column) are the two bytes after `MeasureTitle`'s
+`RET`. The bold font at $C350 is overwritten later by the depacker.
+
+![The banner](img/load-1-inxs-banner.png)
+
+*Frame 2 380 of the recording: the banner done, the tape about to play `H_A_T_E.1`.*
+
+## 3.4 The loading screen (`H_A_T_E.1`, $9C40)
+
+The block is Vortex's screen unpacker followed by one packed picture. It is position independent: it may be loaded
+anywhere.
+
+```text
+$9C40  JR $9C46            skip the four parameter bytes
+$9C42  DB 1, $FF, $FF, $0C picture number, first third, thirds, flags (IY+0..3)
+$9C46  CALL $007C          a lone RET in the ROM: the return address ($9C49) stays below SP
+       DEC SP x2, EX (SP),HL, INC SP x2
+       HL - 7 -> IY        IY = the parameter bytes, wherever the block is
+```
+
+**Pictures.** From IY + $12A ($9D6C) the block holds pictures, each `DW length`, `DB first third`, `DB thirds`,
+`DB flags`, then the packed bytes. The first third and the thirds are taken from the picture only where the
+parameter bytes hold $FF. This picture's length counts two bytes after its packed data that are never read. The unpacker skips
+`number - 1` pictures by their lengths. This tape holds one picture: thirds 0 to 2 (the whole screen), flags $01.
+
+**Order.** Flag bit 0 set: the bitmap is filled by pixel lines across, third by third, character row by row, each
+pixel line 32 bytes; clear: by columns down (one byte, the next pixel line). The attributes of the same thirds
+follow in address order. Flag bit 2 is the unpacker's run state, bit 3 marks the attribute phase.
+
+**Packing.** RLE with the escape 0: any byte other than 0 is itself; `00 N V` is N copies of V (N = 0 means 256).
+A run carries across the bitmap/attribute boundary. The run counter and value are kept in the alternate registers
+B' and C' between calls.
+
+**Exit.** The first-third and thirds parameters are set back to $FF and the unpacker returns to BASIC.
+
+The picture packs 6 912 bytes into 5 965. After the picture the block holds 160 more bytes ($B4C0-$B55F) that
+nothing reads: RLE fragments left in the packer's buffer. Between the code and the pictures, 25 bytes ($9D53-$9D6B)
+are not read either. The build keeps both as they are.
+
+![The loading screen](img/load-2-loading-screen.png)
+
+*Frame 2 531: the screen complete. At frame 2 530 the unpacker is still writing attribute row 21.*
+
+## 3.5 The depacker (`H_A_T_E.2`, $5FB4)
+
+The block loads at $5FB4: $64 bytes of depacker and padding, then 35 395 packed bytes that unpack into the 41 036
+bytes $5FB4-$FFFF, the depacker's own bytes included.
+
+```text
+$5FB4  LD HL,$5FCC : LD DE,$5B8C : LD BC,$37 : PUSH DE : LDIR     the depacker into the printer buffer
+       LD HL,$6018 : LD DE,$5FB4 : LD BC,$9FE8 : JP $33C3         the packed data down $64 bytes;
+                                                                   ROM $33C3 is LDIR; RET: returns to $5B8C
+$5B8C  LD HL,$E9F6 : LD DE,$FFFF                                  the last packed byte, the last byte of RAM
+loop:  HL = $5FB3 ? RET (to BASIC, line 30 next)
+       (HL) <> $97 ?  LDD                                         a literal
+       else  N = (HL - 1)
+             N bit 7 set:   count = N & $7F; value = 0 if count = 0 or count >= 3, else $97
+             N bit 7 clear: count = N, value = (HL - 2)
+             count (0 = 256) bytes of value, downwards; HL past the token
+```
+
+Unpacking runs backwards so that the output, growing down from $FFFF, never overtakes the input it still has to
+read: both are in the same memory and the output is longer.
+
+**Packing.** The packer walks the image forwards. A run of three or more equal bytes becomes a token: zeros take 256
+at a time while 256 remain (`$80 $97`), then up to 127 (`$80 | n, $97`); other values up to 127 (`v, n, $97`). A
+remainder shorter than three stays literal. A literal $97 is written as `$81 $97`.
+
+**Proof.** `tools/depack.py` on the tape block gives the memory $5FB4-$FFFF of frame 2 613 of the recording, all
+41 036 bytes. `tools/pack.py` packs that image into the tape's 35 395 bytes, all identical.
+
+## 3.6 Memory after the load
+
+| Range | Contents |
+| --- | --- |
+| $4000-$5AFF | the loading screen |
+| $5B00-$5BFF | printer buffer; $5B8C-$5BC2 the depacker (dead after the load) |
+| $5C00-$5CCA | system variables, the channel table (CHANS $5CB6) |
+| $5CCB-$5E68 | the BASIC loader (lines 0, 1, 10, 20, 30) and its variables |
+| $5E69-$5FB3 | BASIC workspace and stacks, below RAMTOP $5FB3 |
+| $5FB4-$FFFF | the game (41 036 bytes) |
+
+The game's own memory map is in [2. Architecture](02-architecture.md).
+
+## 3.7 The source build
+
+```bash
+tools/build.sh [path/to/sjasmplus]        # build/HATE.TAP, compared with orig/HATE.TAP byte for byte
+```
+
+| Block | Source | Made by | State |
+| --- | --- | --- | --- |
+| 0, 1 BASIC | `src/loader.asm`: the lines as tokens, the banner as code | sjasmplus | **identical** (413 bytes) |
+| 2, 3 loading screen | `src/screen.asm` (the unpacker), `src/gfx/loading.scr` (the picture), `src/gfx/screen-tail.inc` | `tools/screen_pack.py`, sjasmplus | **identical** (6 432 bytes) |
+| 4, 5 game | `src/depacker.asm` (the $64-byte head), the game image | `tools/pack.py`, sjasmplus | **identical** (35 495 bytes), the image not yet from source |
+| headers, TAP | `tools/tap.py` | | **identical** |
+
+The game image comes from `src/game/game.asm` once it exists. Until then `build.sh` takes it from the original block
+(`tools/tapblocks.py`, `tools/depack.py`): the build then proves the depacker, the packer and the tape writer, not
+the game's source. The image is the same 41 036 bytes the emulator's recording holds at frame 2 613.
