@@ -200,3 +200,19 @@ The print routine `$EE17` has a simple record format (attribute + `$80`, column,
 `LD HL,nn; CALL $EE17` lists every string in the game, the credits among them: written by Costa Panayi, music by
 Ben Daglish, ©1989 Vortex.
 
+### 6.6 Text and the panel
+
+[docs/08-hud-and-text.md](docs/08-hud-and-text.md). Two findings:
+
+- **A review conflict resolved by reading.** L1's conflicts "font and text cannot both hold" at `$63DB-$63FE`
+  are both true. The credits are stored in the glyph slots of `;<=>?` and `[\]^_`, which no string prints.
+- **The GAME OVER box.** It was found by rendering the string `$F0F5` through the game's own font (codes `$22`-`$2C`
+  are its big letters).
+
+Which print calls ran comes from L1's executed instructions. ABORT and "PRESS ANY KEY WHEN READY" did not, so they
+are described from the code alone.
+
+**Open tool gap.** The conflict should not reach the review queue. L1 knows which bytes the glyph copy read:
+the reads at `$EE68`, through `byte_counts` and dataflow. A font claim could shrink to the glyphs actually read and
+leave the rest to the text claim. Queued for unreal-ng after the heatmap build (section 5).
+
