@@ -15,6 +15,9 @@ Evidence:
 
 ![The menu](img/game-1-menu.png)
 
+Before the first menu, a title loop runs in the playfield buffer (`$8000`-`$83FF`) until any key is pressed; only then
+does the menu read its keys (the autopilot of [10](10-gameplay-logic.md) presses a key first, else its 3 is lost).
+
 `$F1AA` draws the menu (string `$F140`) and the credits (`$63D8`, `$64D8`). It waits for all keys to be released and
 beeps. Then it loops:
 
@@ -42,7 +45,9 @@ The main loop goes back to the menu after the game ends, after ABORT and after t
 | 3 | up |
 | 4 | fire |
 
-This is the Kempston interface's layout with bits 0 and 1 swapped. The bits are active high: 1 means pressed.
+This is the Kempston interface's layout with bits 0 and 1 swapped. The bits are active high: 1 means pressed. In play,
+left raises the position across (`$C003`) and right lowers it; on the ground vehicle, down climbs and up descends
+(the Q / A swap below keeps that meaning per vehicle).
 
 ## 5.3 The four readers
 
