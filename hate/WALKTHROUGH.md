@@ -132,6 +132,7 @@ Later gaps, found while writing the game's source (section 6.13):
 | The skool draft wrote an instruction whole when its entry ended inside it (code later overwritten by a buffer that starts at the instruction's last byte) | the rebuild gate failed at `$8082` (`JP` at `$8081` into the buffer entry at `$8083`, one byte written twice), the assemble gate shifted | the instruction's own bytes as `DEFB`, the instruction in the comment (`SkoolDraftInstructionCutByTheEntryEnd`); the bot's recording rebuilt again with it: both gates pass, 42 240 of 42 240 bytes |
 | L1's self-modified mark (`kSmc`, written after it ran) could not tell an operand patch from a buffer laid over code that ran once | doc 2.7 had to sort the bot game's 123 marked bytes by their writers by hand; the code map called the title player under the playfield buffer self-modifying; L3's `code-overwritten` missed the overlay written by plain `LD (HL),r` | a byte written after it ran and never run after any such write is `overlaid` (the last field of a `byte_use` row; a byte that ran once after a write stays a patch); the code map counts only patches, L3 reports overlaid code whatever wrote it (`PatchIsNotOverlay`, `BufferOverCodeIsAnOverlayPatchIsNot`, fixture `patch-overlay.asm`); on p2: 12 patches, 111 overlaid, eight overlay findings |
 | The font claim covered every code from the first glyph drawn to the last, including unused slots holding other data | three "font and text cannot both hold" conflicts at the credits (`$63DB-$63FE`), resolved by hand in 6.6 | a slot read by some code whose bytes no drawing code ever put on the screen is no glyph: the claim splits around it; a slot another routine drew stays (the score digits) (`AnalysisDetectorFonts_StringInAnUnusedSlot`, fixture `font-slot-text.asm`); on p2 the font is codes 45-58 and 64-89, conflicts 241 to 238 |
+| L3's `index-past-table` counted every reader of a table, so a byte-after-byte walk through a larger structure (a list, a block copy, a mask) "read past" a table L2 found inside it | ten bug findings on the bot's game, six of them walks (`$C99E`, `$CF02`, `$FBC7`, `$FE00`, `$FF00`) | only accesses that read through an index (L1 `indexes`) count (`IndexPastTableNeedsAnIndex`, fixture `index-past-table.asm`: a real index past a table followed by code, and a walk around a second table); on p2 four remain, each a table L2 measured too short (doc 2.7) |
 
 New fixture `testdata/analysis/fixtures/stages.asm` (a loader, a depacker with two writers, an overlay); tests
 `CodeArrivalsOnePerWriter`, `WindowFromAnArrival`, `OverlayIsOneFinding`; the recipe
@@ -519,4 +520,13 @@ row. On p2 it splits the 123 bytes exactly as the writers did: the 12 compare op
 (IM 2 jump restored for a play without interrupts, the buffer over the title player and the start-up) are overlaid.
 The code map no longer calls overlays self-modified, and L3's `code-overwritten` sees a buffer laid over code even when
 plain `LD (HL),r` writes it, not only a block copy.
+
+### 6.14 The review queue's bug findings, all explained
+
+L3 raised 18 bug findings over the bot's game. Eight are overlays (doc 2.7: the playfield buffer over the title player
+and the start-up's end, and the IM 2 jump restored for a play without interrupts). The other ten were
+`index-past-table`; six were walks, not indexes, and went away with the fix in section 5. The four left read the
+shadow shapes at `$5B00`-`$5B53` (blocks of 32 bytes; L2's init tables start 8 bytes into them) and the scratch page
+`$6500` (the draw list, then the mask): tables L2 measured too short, not bugs of the game (doc 2.7). No bug finding
+is left unexplained.
 

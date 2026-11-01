@@ -376,6 +376,19 @@ bytes apart or closer are one), eight in all: six over the title player (`$8025-
 `$8243-$8248`, `$8279-$827C`, `$82C1-$82DE`, `$8323-$8366`, the code it ran with gaps of unrun code between),
 `$9F1C-$9F2E` and `$FDFD-$FDFF`. None falls on the pair scan's patched compares.
 
+The rest of L3's bug findings on the bot's game are four `index-past-table`: an access that reads through an index
+also read up to 16 bytes past a table L2 measured. None is a bug of the game; each marks a table L2 measured too
+short:
+
+| Reader | Read | L2's table | What the bytes are |
+| --- | --- | --- | --- |
+| `$E04B`, `$E03C` (`DrawShadows`, types 11-13) | `$5B00-$5B53` | init tables `$5B08-$5B23`, `$5B28-$5B43`, `$5B48-$5EEF` | the three flat shadow shapes at `$5B00`, `$5B20`, `$5B40`, 4 bytes a strip ([6.6](06-rendering.md)): blocks of 32 bytes, so L2's tables start 8 bytes late |
+| `$DEFC` (`DrawShadows`, the mask for types 0-10) | `$6500-$6543` | pointer table `$6502-$653F` | `SpriteScratch`: the draw list of 4-byte entries (whose record addresses L2 read as pointers) and, later in the pass, the mask filled with `$FF` ([11](11-data-reference.md)) |
+
+Six more such findings (the pad list `$C99E`, the course `$CF02`, the saved strips `$FBC7`, the sprite list
+`$FE00`/`$FF00`) came from loops that walk a list or copy a block byte after byte through a larger structure; the
+analyzer now counts only indexed readers, and they are gone.
+
 ## 2.8 Design notes
 
 What a 2026 developer would note about this architecture:
