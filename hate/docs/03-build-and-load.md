@@ -168,6 +168,12 @@ remainder shorter than three stays literal. A literal $97 is written as `$81 $97
 **Proof.** `tools/depack.py` on the tape block gives the memory $5FB4-$FFFF of frame 2 613 of the recording, all
 41 036 bytes. `tools/pack.py` packs that image into the tape's 35 395 bytes, all identical.
 
+The depacker at work, one picture a frame from frame 2531 to its return at frame 2613, t 53257 (`tools/memanim.py`):
+the write front starts at $FFFF and climbs to $5FB4 while the packed data it reads, just below the front, is
+consumed. Reading backwards is what lets the packed and the unpacked data share memory without a buffer.
+
+![The depacker unpacking the game into $5FB4-$FFFF](img/anim-depacker.gif)
+
 ## 3.6 Memory after the load
 
 ```mermaid

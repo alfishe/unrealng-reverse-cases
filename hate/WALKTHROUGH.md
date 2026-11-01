@@ -167,7 +167,8 @@ entry points: [docs/02-architecture.md](docs/02-architecture.md). Findings:
 
 - `tools/memanim.py`: a GIF of memory over a stretch of the recording. It samples TTD `memory_at` (exact at any
   T-state) every N T-states and flashes the bytes written since the previous sample. First result:
-  [the loading screen unpacking](docs/img/anim-loading-screen.gif), 77 pictures.
+  [the loading screen unpacking](docs/img/anim-loading-screen.gif), 77 pictures, and
+  [the game depacking backwards from $FFFF](docs/img/anim-depacker.gif), 84 pictures.
 - `tools/heatmap.py`: per-byte read, write and execute heatmaps from L1's new `byte_counts` (5 in the gap table).
   Waiting for the build with the fix.
 - `tools/check_docs.py`: every mermaid diagram in the docs is rendered with `mmdc`, and every link is checked. A
