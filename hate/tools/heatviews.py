@@ -8,11 +8,15 @@
     coverage  the code executed in one build against another: bytes run in both, only in the first, only in the
               second (docs/10-gameplay-logic.md)
     routines  the routines by their own t-states (L1 profile), the top N as bars (docs/04-game-loop.md)
+    modules   which module's code reads and writes which memory: one row a module of src/game, one column a
+              256-byte page, the shade the bytes its routines touch there (L1 profile ranges); below, the screen
+              writes of every module that draws, in the screen's geometry (docs/02-architecture.md)
 
     python3 heatviews.py records work/p2/l1.json docs/img/heat-records.png
     python3 heatviews.py screen work/p2/l1.json docs/img/heat-screen.png
     python3 heatviews.py coverage work/p2/l1.json docs/img/heat-coverage.png --other work/m1/l1.json
     python3 heatviews.py routines work/p2/l1.json docs/img/routines-time.png [--top 24]
+    python3 heatviews.py modules work/p2/l1.json docs/img/heat-modules.png
 """
 import argparse
 import os
@@ -175,9 +179,103 @@ def routines(l1, out, top):
     img.save(out)
 
 
+def module_ranges():
+    """[(start, name)] of the @module lines of src/game/game.ann, in address order"""
+    import mkgame
+    ann = mkgame.Annotations(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                          'src', 'game', 'game.ann'))
+    return sorted(ann.modules)
+
+
+def modules(l1, out):
+    import bisect
+    import json
+    doc = json.load(open(l1))
+    mods = module_ranges()
+    starts = [m[0] for m in mods]
+
+    def module_of(a):
+        i = bisect.bisect_right(starts, a) - 1
+        return mods[i][1] if i >= 0 else None
+
+    touched = {}  # module -> {'reads': set(addr), 'writes': set(addr)}
+    for r in doc['routines']:
+        if r['page'] not in (0, 2, 5):
+            continue
+        m = module_of(int(r['entry'][1:], 16))
+        if m is None:
+            continue
+        t = touched.setdefault(m, {'reads': set(), 'writes': set()})
+        for kind in ('reads', 'writes'):
+            for x in r['profile'][kind]:
+                if x['page'] in (0, 2, 5):
+                    t[kind].update(range(int(x['from'][1:], 16), int(x['to'][1:], 16) + 1))
+    rows = [m for _, m in mods if m in touched]
+    cw, ch, label_w, top = 4, 18, 96, 58
+    f, small = font(12), font(10)
+    panel_w = 192 * cw
+    width = label_w + 2 * panel_w + 30
+    drawing = [m for m in rows if any(0x4000 <= a < 0x5B00 for a in touched[m]['writes'])]
+    inset_scale = 1
+    sample = heatmap.screen_view(lambda a: (0, 0, 0), inset_scale)
+    per_row = max(1, (width - 6) // (sample.width + 14))
+    inset_rows = (len(drawing) + per_row - 1) // per_row
+    height = top + len(rows) * ch + 52 + inset_rows * (sample.height + 20)
+    img = Image.new('RGB', (width, height), (24, 24, 30))
+    draw = ImageDraw.Draw(img)
+    palette = [(90, 120, 200), (200, 120, 80), (110, 180, 110), (190, 170, 80), (170, 100, 180), (90, 170, 180)]
+    for n, kind in enumerate(('reads', 'writes')):
+        x0 = label_w + n * (panel_w + 20)
+        draw.text((x0, 4), f'{kind}: bytes touched per 256-byte page (log)', fill=(230, 230, 210), font=f)
+        # the module that owns each page, as a coloured band, and the address ticks
+        for page in range(0x40, 0x100):
+            a = page << 8
+            owner = module_of(a) if a >= 0x5FB4 else None
+            colour = (60, 60, 70) if owner is None else palette[[m for _, m in mods].index(owner) % len(palette)]
+            if 0x40 <= page < 0x5B:
+                colour = (120, 120, 120)
+            x = x0 + (page - 0x40) * cw
+            draw.rectangle((x, 40, x + cw - 1, 50), fill=colour)
+        for page in range(0x40, 0x101, 0x20):
+            x = x0 + (page - 0x40) * cw
+            draw.line((x, 36, x, 52), fill=(160, 160, 150))
+            draw.text((x + 2, 22), f'${page << 8:04X}' if page < 0x100 else '', fill=(170, 170, 160), font=small)
+        peak = max(len([a for a in touched[m][kind] if a >> 8 == p]) for m in rows for p in range(0x40, 0x100)) or 1
+        for row, m in enumerate(rows):
+            counts = [0] * 256
+            for a in touched[m][kind]:
+                counts[a >> 8] += 1
+            y = top + row * ch
+            for page in range(0x40, 0x100):
+                if counts[page]:
+                    import math
+                    v = math.log1p(counts[page]) / math.log1p(256)
+                    x = x0 + (page - 0x40) * cw
+                    draw.rectangle((x, y, x + cw - 1, y + ch - 2), fill=heatmap.heat(v))
+            draw.line((x0, y + ch - 1, x0 + panel_w, y + ch - 1), fill=(40, 40, 50))
+    for row, m in enumerate(rows):
+        draw.text((6, top + row * ch + 3), m, fill=(220, 220, 200), font=small)
+    y = top + len(rows) * ch + 8
+    draw.text((6, y), f'frames {doc["replay"]["first_frame"]}-{doc["replay"]["last_frame"]}; band: the module that '
+              'owns the page (grey: the screen, dark: below the image); a full cell = all 256 bytes',
+              fill=(170, 170, 160), font=small)
+    # Picture in picture: each drawing module's screen writes where they land on the screen
+    y += 22
+    draw.text((6, y), 'screen writes per module, in the screen\'s geometry (bitmap, then attributes)',
+              fill=(230, 230, 210), font=f)
+    for k, m in enumerate(drawing):
+        w = touched[m]['writes']
+        view = heatmap.screen_view(lambda a: (240, 190, 70) if a in w else (30, 30, 38), inset_scale)
+        x = 6 + (k % per_row) * (view.width + 14)
+        yy = y + 18 + (k // per_row) * (view.height + 20)
+        img.paste(view, (x, yy))
+        draw.text((x, yy + view.height + 2), m, fill=(220, 220, 200), font=small)
+    img.save(out)
+
+
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('view', choices=['records', 'screen', 'coverage', 'routines'])
+    p.add_argument('view', choices=['records', 'screen', 'coverage', 'routines', 'modules'])
     p.add_argument('l1')
     p.add_argument('png')
     p.add_argument('--other', help='coverage: the build to compare with')
@@ -191,6 +289,8 @@ def main():
         screen(args.l1, args.png)
     elif args.view == 'coverage':
         coverage(args.l1, args.other, args.png, int(args.lo, 16), int(args.hi, 16))
+    elif args.view == 'modules':
+        modules(args.l1, args.png)
     else:
         routines(args.l1, args.png, args.top)
 

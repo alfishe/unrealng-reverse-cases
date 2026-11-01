@@ -420,6 +420,7 @@ replays the game:
 | `heat-records.png`: reads and writes per field of every object record | `tools/heatviews.py records` | doc 7.2 |
 | `heat-screen.png`: screen writes in the screen's geometry | `tools/heatviews.py screen` | doc 6.7 |
 | `routines-time.png`: own t-states per routine | `tools/heatviews.py routines` | doc 4.5 |
+| `heat-modules.png`: memory per module, screen writes per module | `tools/heatviews.py modules` | doc 2.6 |
 
 `tools/heatmap.py` now draws the screen page (`$4000-$5AFF`) a second time below each panel, in the screen's own
 geometry (bitmap bytes where they show, attributes as cells): in the 256-byte rows of the memory grid the screen's
@@ -475,4 +476,13 @@ with the routines that read and write them) and [12. Routine reference](docs/12-
 runs, own time, callers, callees, memory read and written, ports). `tools/heatviews.py` takes its routine names
 from `game.ann`, so the pictures and the source use the same names (`routines-time.png` redrawn: `$DDE7` is
 `DrawShadows`, not an after-blit pass).
+
+**Doc 1 and a module view.** [1. Game design](docs/01-game-design.md) describes the game as a player meets it,
+written only from docs 2-12 and the source. Writing it found three more slips: the demo's course is always bright
+green (the demo subtracts one less from ink 6 and leaves the round number at 0, so ink 4; the docs said "one less"),
+the scoring table missed the 20 awards of `$EC3F` (a missile or jet moving into a shot: the bot's 70 awards are
+10 domes + 59 missiles and jets + 1 cube, by L1's calls of `$EBCE` per caller), and the object gallery labelled the
+player with a type number it could not know; all fixed. Doc 2.6, the module map, is now drawn from the source's
+modules and L1's calls between them, with `heat-modules.png` (`tools/heatviews.py modules`): which module reads and
+writes which page, and below it every drawing module's screen writes in the screen's geometry.
 

@@ -292,31 +292,68 @@ Of all T-states in the window, the title player's code (`$8000-$83E1`) took 64.8
 
 ## 2.6 Module map
 
+The source (`src/game`, [3.7](03-build-and-load.md)) splits the image into 18 modules by address. The arrows are the
+calls and jumps between their routines that the recordings saw (L1 `calls`, the bot's game and the first recording
+together), with their counts:
+
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph Once["Runs once"]
-        E61A8["$61A8 entry"] --> E9F12["$9F12 start-up"]
-        E9F12 --> E9F4B["$9F4B IM 2"]
+        buffers["buffers<br/>entry $61A8"] --> startup["startup<br/>$9F12"]
+        startup --> gamedata["gamedata"]
     end
-    subgraph TitleM["Title, $8000-$843D+"]
-        P8000["$8000 relocator"] --> P803A["$803A set-up"] --> P8118["$8084-$8170 sequencer"]
-        P8118 --> P8367["$8367 beeper loop"]
-        H8340["$8340 IM 2 handler"]
+    subgraph Title["The title"]
+        titleplayer["titleplayer<br/>$8000"]
+        coursedata["coursedata<br/>IM 2 vector $FDFD"]
+        coursedata <-->|"27 646 interrupts"| titleplayer
     end
-    subgraph GameM["Game, $C2B1-$F2E1"]
-        G1["$CF32-$D5B1 control"]
-        G2["$D9D6-$E007"]
-        G3["$E05C-$EC6B"]
-        G4["$EDCA-$F2E1 text, input, sound"]
+    startup --> titleplayer
+    gamedata --> mainloop
+    subgraph Pass["One pass of the game"]
+        mainloop["mainloop<br/>$CF32"]
+        mainloop -->|7 005| scroller
+        mainloop -->|4 942| mover
+        mainloop -->|3 924| player
+        mainloop -->|4 941| objview
+        mainloop -->|3 874| hud
+        mainloop -->|4 941| sprites
+        mainloop -->|4 941| shadows
+        scroller -->|4 941| sprites
+        sprites -->|4 941| statics
+        shadows -->|4 941| statics
+        mover <-->|"17 146 pair hits"| hits
+        mover -->|1 138| player
+        player -->|1 128| hud
+        hits -->|75| hud
     end
-    E9F12 --> P8000
-    E9F12 --> G1
-    G1 --> G2
-    G1 --> G3
-    G1 --> G4
+    mainloop -->|4 996| menu
+    menu -->|28| hud
+    scroller -->|"38 course ends"| roundsetup
+    roundsetup -->|48| hud
+    roundsetup <-->|19 / 6| menu
 ```
 
-The module boundaries above are address ranges of executed code. Their names will follow from documents 4-10.
+- `coursedata` and `titleplayer`: the title's interrupts enter at the vector `$FDFD` (a `JP` in the IM 2 table,
+  module `coursedata`) and go on to the player's handler `$8340`; both directions are jumps.
+- `mover` and `hits`: the pair scan of `mover` jumps into a hit handler of `hits` (the table `$C380`) and the handler
+  jumps back into the scan ([7.6](07-objects.md)).
+- `scroller` to `roundsetup`: the course check calls the round setup when the last strip of a course is drawn
+  ([4.2](04-game-loop.md)).
+
+Which module's code touches which memory, over the bot's game (`tools/heatviews.py modules`; the band on top is the
+module that owns the page). Below, the screen writes of every module that draws, in the screen's own geometry:
+
+![Memory read and written by each module, and each module's screen writes](img/heat-modules.png)
+
+- `scroller` writes the screen's playfield rows and reads the whole buffer `$8000-$BFFF`; `sprites`, `shadows` and
+  `statics` write that buffer, not the screen ([6](06-rendering.md)).
+- `hud` (the print routine `PrintString` `$EE17`) writes nearly every bitmap row over a whole game: the menu, the
+  panel, the status window and the big GAME OVER ([8](08-hud-and-text.md)).
+- `roundsetup` paints the playfield's attributes (the course colour, `$D338`); `menu` the attribute bars of its
+  messages; `startup` copies the whole screen once.
+- `mover`, `player` and `hits` touch the object records `$C000-$C26F`, the profile `$6000` and their own variables: neither the screen nor the buffer.
+
+The routines of each module, with their callers, callees and memory: [12. Routine reference](12-routine-reference.md).
 
 ## 2.7 Design notes
 
