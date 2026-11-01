@@ -289,3 +289,27 @@ first instruction's count is the one to read when a routine can be entered by fa
 The scroll animation (`docs/img/anim-scroll.gif`) is `tools/playfield_anim.py`: 81 memory images from TTD
 `memory_at`, each drawn as the stored strips and as the screen. The recording is read at any frame without running
 the game again; the instance only seeks.
+
+### 6.11 Objects: types named from the screens, handlers counted by L1
+
+[docs/07-objects.md](docs/07-objects.md). The mover `$E15C` and the hit table `$C380` were read from the code; the
+names of the types were not guessed from it. `tools/objects_shot.py` reads the object list at a frame with TTD
+`memory_at` and labels each live record on that frame's screen, with the isometric projection worked out for the
+blit. Domes, jets, launch pads, cubes and dishes were named by looking at what sat under each label in the demo
+(rounds 8 and 10) and in game 2; the gallery in doc 07 is cropped from those screens.
+
+Then L1's per-instruction counts decided which branches of the 8 × 8 hit table the recording exercised:
+
+| Handler | Runs | What it proved |
+| --- | --- | --- |
+| `$EC59` → `$EBCE` | 5 | every point award was a player shot on a jet or missile: 5 × 140 = 280 + 280 + 140 |
+| `$EBD1` | 13 | both-hit pairs |
+| `$EDCA` | 1, through `$EDDB` | the only dome contact was an enemy shot, not the player |
+| `$E271` | 0 | no follower was ever lost; with `$ECE4` sampled at 0 throughout, no pod was collected |
+
+Two first readings did not survive this: "the one dome shot was of type 2" (it was not the player's shot) and the
+size table of the hit boxes (the six self-modified operands hold the sum of two sizes, not one size each).
+
+The pods and the convoy came out of the code alone: `$EDFE` writes type 11 into a free slot at a shot dome, `$ECF3`
+turns it into a follower, `$D151` / `$D1DE` turn the followers into the next round's lives. None of it ran in the
+recording. It is the first thing a second capture has to reach (doc 10).
