@@ -257,3 +257,31 @@ What only a per-byte counter of a whole replay gives: the screen picture shows, 
 columns the game redraws every pass and which are the static panel; the `$8000-$BFFF` block shows a buffer that
 replaced the music player; the bright operand spots inside the code range are the self-modified instructions. A
 debugger's memory view shows the bytes at one moment, not how often and how late each was used.
+
+### 6.10 Rendering: the blit re-run in Python
+
+[docs/06-rendering.md](docs/06-rendering.md). The blit `$D35E` reads its screen addresses with `POP` from a list
+(`$D5B2`). Reading the list as data, rather than the loop as code, gave the whole geometry: 528 cell addresses, 43
+of them `$0800` in the ROM (clipped lines), and a column-to-column step of 4 lines, the isometric slope.
+
+The reading was then tested instead of trusted. `tools/playfield.py` re-runs the blit in Python on a memory image
+from TTD `memory_at` and compares the result with that moment's screen:
+
+| Frame | Scroll state used | Play-area bytes equal |
+| --- | --- | --- |
+| 30700 | as in memory | 2 606 of 3 792 |
+| 30700 | one step back | 3 504 |
+| 35500 | one step back | 3 607 |
+| 36000 | one step back | 3 633 |
+| 38000 | one step back | 3 744 |
+
+The first try failed: memory is sampled after the scroller `$D3F9` has stepped the state for the next pass.
+Undoing that step, as the code does it, gives 92-99 %; the rest is the sprites drawn afterwards. The model is now
+proven on four moments of the recording, and the picture in doc 06 shows the strips as stored next to the screen.
+
+L1's counts per path made the scroll's four-pass cycle visible before the code was read: `$D51D` 903, `$D413` 900,
+`$D45B` 899, `$D49C` 897 runs. One fresh strip, two shifted phases and one pass without drawing, in turn.
+
+A correction came out of it. Doc 04 said `$D3F9` did not run during play, because L1 lists 1 280 *calls*. The
+instruction count at `$D3F9` is 3 599: the blit falls through into it every pass. Routine entries count calls; the
+first instruction's count is the one to read when a routine can be entered by falling into it.

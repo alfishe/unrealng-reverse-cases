@@ -58,10 +58,11 @@ when a game or the demo starts. GAME OVER and ABORT both end in `JP $CF33`.
    `$FF` (`$CF82`).
 3. It resets the scroll state `$C32E`, `$C32F`, `$C3FA` and `$D14D`.
 4. It expands the course into the strip list `$CA43` (`$D4D9`, [6](06-rendering.md)).
-5. It runs the course scroller `$D3F9` 128 times to fill the playfield buffer before the first picture. L1 counted
-   1 280 calls of `$D3F9`: ten round starts in the window, none during play.
-6. During this pre-roll, `$D3F9` calls `$D151` once and then goes on into `$D0EF`. Both happen 10 times in the
-   window, once a round start. `$D151`:
+5. It runs the course scroller `$D3F9` 128 times, 32 strips, to fill the playfield buffer before the first
+   picture. L1 counted 1 280 calls of `$D3F9`: ten round starts in the window. In play the scroller runs too, once a
+   pass, but entered by falling through from the blit `$D35E` (3 599 entries in all, [6.1](06-rendering.md)).
+6. The last pre-roll step is the 32nd strip of the course: there `$D3F9` calls `$D151` and jumps into the play
+   loop at `$D0EF` ([6.5](06-rendering.md)). Both happen 10 times in the window, once a round start. `$D151`:
    - saves the carried lives into the round table (`$EF4F` + 6 × round);
    - increments `$C2F7`;
    - prints the round number;
@@ -92,10 +93,10 @@ One pass of the loop, `$CFAC`-`$D0B7`, in order:
 | 3 | `$CFEF` | | `$C000` bit 7 set: the vehicle is lost (4.4) |
 | 4 | `$D070` → `$E68C` | not in the demo | read the device, or run the AUTO start ([5](05-controls.md)) |
 | 5 | `$D073` → `$E15C` | 2 319 | objects ([7](07-objects.md)) |
-| 6 | `$D076` → `$EFA5` | 2 319 | ([6](06-rendering.md)) |
-| 7 | `$D079` → `$D9D6` | 2 319 | ([6](06-rendering.md)) |
+| 6 | `$D076` → `$EFA5` | 2 319 | objects to screen positions ([6.6](06-rendering.md)) |
+| 7 | `$D079` → `$D9D6` | 2 319 | sprites ([6.6](06-rendering.md)) |
 | 8 | `$D07C` → `$DDE7` | 2 319 | ([7](07-objects.md)) |
-| 9 | `$D07F` → `$D35E` | 2 319 | the playfield to the screen ([6](06-rendering.md)) |
+| 9 | `$D07F` → `$D35E` | 2 319 | the playfield to the screen, then one scroll step `$D3F9` ([6](06-rendering.md)) |
 | 10 | `$D082` → `$F2C0` | 2 318 | the requested sound effect ([9.6](09-sound.md)) |
 | 11 | `$D085` | | clear the sound requests |
 | 12 | `$D089`-`$D0EC` | | U+G abort, P pause ([5.5](05-controls.md)) |
