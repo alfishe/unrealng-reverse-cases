@@ -44,21 +44,30 @@ def size_of(kind):
     return 8 if kind < 4 or kind > 13 else 4 if kind <= 10 else 0
 
 
-def danger(me, a, h, threats, passes=14):
+def danger(me, a, h, threats, speed=1, passes=14):
     """The smallest clearance over the next passes to any threat, the player steering toward across @p a and
-    height @p h; below 0 means a hit is predicted"""
+    height @p h at @p speed (the scroll moves 2 a pass: speed 1 keeps the player's distance); below 0 means a hit
+    is predicted. A threat with behaviour bit 4 turns toward the player every 4 passes: it is taken to close in
+    across at its full speed"""
     worst = 99
     for r in threats:
         # $E555: the window along and across is 7 + both sizes wide, centred; in height 15 wide (|dh| <= 7)
         box = (7 + 8 + size_of(r['type'])) // 2 + 4
+        x = r['across']
         for k in range(1, passes + 1):
-            d = r['dist'] + k * (ALONG[r['dir']] * r['speed'] - 2) + 2 * k - me['dist']
-            x = r['across'] + k * ACROSS[r['dir']] * r['speed']
+            d = r['dist'] + k * (ALONG[r['dir']] * r['speed'] - 2) - (me['dist'] + 2 * k * (speed - 1))
             step = min(4 * k, abs(a - me['across']))
             mx = me['across'] + (step if a > me['across'] else -step)
+            if r['behaviour'] & 0x10 and r['speed']:
+                x += max(-2 * r['speed'], min(2 * r['speed'], mx - x))
+            else:
+                x += ACROSS[r['dir']] * r['speed']
+            # Bits 6 and 7 turn it every 4 passes (the weave of $C3F0, a random turn): anywhere in a widening band
+            spread = 2 * r['speed'] * k if r['behaviour'] & 0xC0 else 0
+            off = max(0, abs(x - mx) - spread)
             hstep = min(3 * k, abs(h - me['height']))
             mh = me['height'] + (hstep if h > me['height'] else -hstep)
-            clear = max(abs(d) - box, abs(x - mx) - box, abs(r['height'] - mh) - 10)
+            clear = max(abs(d) - box, off - box, abs(r['height'] - mh) - 10)
             worst = min(worst, clear)
     return worst
 
@@ -89,15 +98,20 @@ def decide(st, profile, give_up=False):
         goal, goal_h, why = domes[0]['across'], min(26, domes[0]['height'] + 2), 'dome'  # shots fly 2 below
     threats = [r for r in others if (r['type'] in THREATS or (r['type'] == 12 and r['dir'] != 0))
                and -40 < r['dist'] - me['dist'] < 140]
+    if me['type'] != 0:
+        goal_h = me['height']  # the ground vehicle's up / down set its speed, not its height (7.7)
     heights = [goal_h] + ([2, 8, 14, 20, 26] if me['type'] == 0 else [])
+    # The ground vehicle's up / down set its speed (7.7): slowing down spends $E7B8, so it is the last resort
+    speeds = [1] if me['type'] == 0 else [1, 2] + ([0] if st['reserve'] else [])
     best = None
-    for a in range(3, max(4, room), 2):
-        for h in heights:
-            clear = danger(me, a, h, threats)
-            score = (min(clear, args_margin), -abs(a - goal) - abs(h - goal_h))
-            if best is None or score > best[0]:
-                best = (score, a, h)
-    _, target, height = best
+    for spd in speeds:
+        for a in range(3, max(4, room), 2):
+            for h in heights:
+                clear = danger(me, a, h, threats, spd)
+                score = (min(clear, args_margin), -abs(a - goal) - abs(h - goal_h) - 6 * abs(spd - 1))
+                if best is None or score > best[0]:
+                    best = (score, a, h, spd)
+    _, target, height, spd = best
     if best[0][0] < 0 or target != goal:
         why += ' dodge'
     stick = ['fire']
@@ -110,6 +124,9 @@ def decide(st, profile, give_up=False):
             stick.append('down')
         elif me['height'] > height + 1:
             stick.append('up')
+    elif spd != 1:
+        stick.append('up' if spd == 2 else 'down')
+        why += f' speed {spd}'
     return stick, why
 
 
@@ -176,10 +193,11 @@ class Game:
             if not r[0] & 0x80:
                 records.append({'slot': 0xC000 + a, 'type': r[0] & 15, 'hit': bool(r[0] & 0x20),
                                 'dist': (r[1] | r[2] << 8) - scrolled, 'across': r[3], 'height': r[4],
-                                'dir': r[5], 'speed': r[6]})
+                                'dir': r[5], 'speed': r[6], 'behaviour': r[7]})
         return {'scrolled': scrolled, 'records': records, 'control': mem[0x290], 'lives': mem[0x2F9],
                 'round': mem[0x2F7], 'lap': mem[0x2F8], 'device': mem[0x28F], 'followers': self.m.read(0xECE4, 1)[0],
-                'demo': self.m.read(0xF0DB, 1)[0], 'auto': self.m.read(0xE68B, 1)[0]}
+                'demo': self.m.read(0xF0DB, 1)[0], 'auto': self.m.read(0xE68B, 1)[0],
+                'reserve': self.m.read(0xE7B8, 1)[0]}
 
     def close(self):
         self.process.terminate()

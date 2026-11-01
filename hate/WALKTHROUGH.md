@@ -338,10 +338,10 @@ dry run before it.
 
 - The start image of the first recording (`work/c2/start.szx`, frame 30200) is not yet in the menu: a title loop
   runs at `$8000`-`$83FF` until a key is pressed; only then does `$F1AA` read keys 1-4 and 6.
-- The stick directions: left increases the position across, right decreases it; on the ground vehicle "down"
+- The stick directions: left increases the position across, right decreases it; on the aircraft "down"
   climbs and "up" descends.
-- The course records alternate the vehicle: the first course byte is 0 (ground vehicle) in rounds 1, 3, 5, 7, 9
-  and 1 (aircraft) in 2, 4, 6, 8, 10. The per-round object mix (from the blocks at `$F300`): cubes only in rounds 3,
+- The course records alternate the vehicle: the first course byte is 0 (aircraft) in rounds 1, 3, 5, 7, 9
+  and 1 (ground vehicle) in 2, 4, 6, 8, 10. The per-round object mix (from the blocks at `$F300`): cubes only in rounds 3,
   6 and 10, dishes in 4, 5, 6 and 10, plain domes (type 2) only from round 5.
 - The first missiles that killed the bot came from the side: launched missiles with behaviour bit 4 turn toward the
   player's position across every 4 passes, so a prediction along a straight line needs a margin.
@@ -362,7 +362,7 @@ The rounds are saved as they are reached (`--save-rounds`, `work/p1/round-N.szx`
 on the round that failed; the recording itself is one run from the menu.
 
 **Dry runs so far:** round 1 cleared with pods collected (`$ECE4` 1, 2) and one hit absorbed by a follower; round
-2 (the aircraft) cleared with 4 followers; round 3 entered with 4 lives; round 3 cleared (2 pods, one lost to a missile, the barrier passed with the other).
+2 (the ground vehicle) cleared with 4 followers; round 3 entered with 4 lives; round 3 cleared (2 pods, one lost to a missile, the barrier passed with the other).
 The fall back of doc 04 4.4 needs a round
 whose start lives minus one is 1-4 before the round where the lives run out, so the recording plays rounds 1-3,
 then spends the lives in round 4 (`--give-up 4`: steer into threats) to fall back to round 3, then ends in GAME

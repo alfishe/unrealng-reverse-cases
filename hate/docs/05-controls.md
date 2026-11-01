@@ -46,7 +46,7 @@ The main loop goes back to the menu after the game ends, after ABORT and after t
 | 4 | fire |
 
 This is the Kempston interface's layout with bits 0 and 1 swapped. The bits are active high: 1 means pressed. In play,
-left raises the position across (`$C003`) and right lowers it; on the ground vehicle, down climbs and up descends
+left raises the position across (`$C003`) and right lowers it; on the aircraft, down climbs and up descends
 (the Q / A swap below keeps that meaning per vehicle).
 
 ## 5.3 The four readers

@@ -71,7 +71,7 @@ type below 10 rides on the ground.
 
 | Type | Seen as | Count in the 10 blocks | Behaviour |
 | --- | --- | --- | --- |
-| 0, 1 | the player: 0 the ground vehicle, 1 the aircraft | | 7.7 |
+| 0, 1 | the player: 0 the aircraft, 1 the ground vehicle (on the ground by the rule above, `$E429`) | | 7.7 |
 | 2, 3 | domes | 12 + 40 | shot by the player: 210 points (2) or 320 points and a pod (3) |
 | 4-7 | missiles | 4 + 3 + 8 | launched by pads; 140 points when shot |
 | 8, 9 | jets, flying in lines | 13 | 140 points |
@@ -184,11 +184,12 @@ the 280 of each game and the demo's 140.
 Read from the control byte `$C290` ([5.2](05-controls.md)):
 
 - **Fire** (bit 4) held: a shot every other pass, from template `$C360` at the player's position + 4, 2 below its
-  height. It lives 12 passes (`$E7F4`). The aircraft, holding up as well, drops a bomb instead (`$C370`, its height
-  from the arc `$C282`).
-- **The ground vehicle** (type 0): down and up change the height, with a counter for each that accelerates the
+  height. It lives 12 passes (`$E7F4`). The ground vehicle (bit 0 of `$C000` set), holding up as well, lobs a shell
+  instead (`$C370`, its height from the arc `$C282`), on every fourth pass.
+- **The aircraft** (type 0): down and up change the height, with a counter for each that accelerates the
   climb or the drop up to 6 (`$E687`, `$E688`); the height stays within 2-26.
-- **The aircraft** (type 1): down and up change the speed (`+6`): 0 while down is held, 2 while up is held, 1
+- **The ground vehicle** (type 1): its height follows the ground (`$E429`: an odd type below 10 takes the ground
+  height + 2). Down and up change the speed (`+6`): 0 while down is held, 2 while up is held, 1
   otherwise. Slowing down spends `$E7B8`, speeding up earns it back, up to 32; it is 10 at each round start.
 - **Across**: left and right move the player across the track (`$E9C4`-`$EA15`; the AUTO start steers instead,
   [5.4](05-controls.md)).
