@@ -10,7 +10,8 @@ Evidence:
 - L1's execution counts of every path in the game window;
 - memory images of the recording from TTD `memory_at`. `tools/playfield.py` re-runs the blit in Python on such an
   image. Its output matches 92 to 99 % of the play area of the real screen at frames 30700, 35500, 36000 and 38000;
-  the rest is the sprites, drawn after the blit (6.6).
+  the rest is the shadows and sprites, which the pass draws into the buffer before the blit and takes out again
+  after it (6.6).
 
 ![The strips as stored, placed by the blit, and the screen (frame 38000)](img/render-playfield.png)
 
@@ -18,12 +19,16 @@ Evidence:
 
 ```mermaid
 flowchart LR
-    E["$EFA5<br/>objects to screen positions"] --> S["$D9D6<br/>sprites"]
-    S --> O["$DDE7<br/>objects"]
+    M["$E15C<br/>move the objects"] --> E["$EFA5<br/>objects to screen positions"]
+    E --> S["$D9D6<br/>shadow and sprite lists,<br/>strips under them saved"]
+    S --> O["$DDE7<br/>shadows into the buffer,<br/>then $EAE3 the sprites"]
     O --> B["$D35E<br/>blit 32 strips to the screen"]
-    B --> R["$DD6C<br/>sprite lists"]
+    B --> R["$DD6C<br/>the saved strips put back"]
     R --> C["$D3F9<br/>scroll one step:<br/>one phase of a strip"]
 ```
+
+The objects are drawn into the playfield buffer, not onto the screen: the blit copies them out with the course,
+and `$DD6C` then takes them out of the buffer again (6.6).
 
 `$D35E`, `$DD6C` and `$D3F9` are one piece of code: the blit calls `$DD6C` and runs on into the scroller. L1 counts
 3 599 entries at `$D3F9`: 2 319 by falling through from the blit, one a pass, and 1 280 calls from the round
@@ -108,8 +113,8 @@ of the same moment:
    moving sideways as the phases of 6.4 shift them;
 2. the same bytes placed where the blit `$D35E` puts them, through the address list `$D5B2`
    (`tools/playfield.py`): this is the screen's isometric projection;
-3. the real screen. Its play area matches 2; what differs is the sprites, drawn after the blit (6.6), and the
-   panel at the lower right.
+3. the real screen. Its play area matches 2; what differs is the shadows and sprites, in the buffer only while
+   the blit copies it (6.6), and the panel at the lower right.
 
 ![The scroll, stored and on the screen](img/anim-scroll.gif)
 
@@ -133,11 +138,13 @@ The fourth pass draws nothing. It checks the course (6.5) and counts the strips 
 
 **Expanding a course `$D4D9`.** A course record ([4.2](04-game-loop.md)) points to the course data, one byte a
 segment, ended by `$FF`. Each byte b selects a word list at `$C8EA` + 2b, ended by a zero word (the lists overlap:
-a byte can start inside another's list). The words are copied, in order, into the **row list** at `$CA43`. Round 1
-expands to 191 rows. `$C3F8` points to the next row, `$C3FA` counts the strips drawn.
+a byte can start inside another's list). The words are copied, in order, into the **row list** at `$CA43`. Every
+course expands to 178 rows (`$CA43-$CBA6`). Static rows follow them in the image (from `$CBA3`, `$C643` and
+`$C655` alternating); the expansion overwrites the first two of them, so 13 are left before the end mark `$FFFF`
+at `$CBC1`: 191 rows in all. `$C3F8` points to the next row, `$C3FA` counts the strips drawn.
 
 **A row** is the address of a run of tile numbers, one per tile across the track, from the bottom of the strip up.
-Round 1's 191 rows use 32 different addresses, between `$C641` and `$C8BD`. Many of them are one byte apart, as
+Round 1's 178 rows use 32 different addresses, between `$C641` and `$C8DB`. Many of them are one byte apart, as
 `$C641`, `$C642`, `$C643`: the same run of tiles, starting one tile further across. That is how the track moves
 sideways in a bend without a new row of graphics.
 
@@ -169,25 +176,69 @@ strips in four, `$C4C0` for the fourth (222 of the 903 runs).
 - otherwise, the next course record (`$CF2E` + 4, wrapping at `$FFFF` to `$CF04`) is expanded and the scroll goes
   on into it.
 
-**The round starts 32 strips in.** When `$C3FA` reaches 32, `$D4BF` calls `$D151` and jumps into the play loop at
-`$D0EF`. The pre-roll of the round start is 128 scroll steps, 32 strips: its last step is the one that starts the
+**The round starts 32 strips in.** When `$C3FA` reaches 32, `$D4BF` calls `$D151` (`RoundSetup`) and `$D4C2` jumps
+to `$D0EF` (`BuildGroundProfile`). The jump is a tail call: `$D0EF` ends in `RET`, back to the caller of `$D3F9`,
+the pre-roll loop (`$CFA6`) or the pass (`CALL $D35E` at `$D07F`). The pre-roll of the round start is 128 scroll steps, 32 strips: its last step is the one that starts the
 round ([4.2](04-game-loop.md)). A course that follows another without a break counts as a new round the same way. In the first recording only the
 demo reached the end of a course; the bot's recording ([10](10-gameplay-logic.md)) shows the seamless hand-over:
 `$D151` ran 9 times (rounds 1-4, three retries, a fall back, the demo) but the round start `$CF68` only 6, so rounds
 2, 3 and 4 began straight out of the scroll of the round before, with no pre-roll.
 
+**The ground profile `$D0EF`.** It clears `$6000-$62FF` and builds the profile of the course that the mover reads
+([7.4](07-objects.md)): one byte for every 2 units along, the ground height in bits 0-4 and the walls in bits 5-7.
+Each course byte b (after the player's type) selects a list at `$C9FE` + b / 2, ended by `$FF`. Each byte of the
+list is an **anchor**, written every 8 bytes from `$6008` on. Its wall bits 5-7 are also ORed into the anchor
+before it, and the 7 bytes between the two anchors step the height linearly from the earlier one toward it
+(the difference / 8, subtracted 7 times; the wall bits of the earlier anchor carried along). It stops at the end
+of the course or of the buffer (`$6300`).
+
 ## 6.6 Objects on the playfield
 
-After the blit, the objects are drawn over the screen. The code is in [7. Objects](07-objects.md); here are the
-parts of the pass that touch the picture:
+The objects are drawn into the playfield buffer `$8000-$BFFF`, before the blit, and taken out again after it. The
+blit copies them to the screen with the course; the scroller then finds the buffer clean. The code that moves them
+is in [7. Objects](07-objects.md); here are the parts of the pass that touch the picture, in order:
 
 | Routine | Per pass | What it does with the picture |
 | --- | --- | --- |
-| `$EFA5` | 2 319 | for every object record at `$C000` (16 bytes each), the screen column and line from its course position (`+1`, `+2`) less the distance scrolled (`$D14D`, + 2 a pass); keeps the visible ones in lists sorted by depth (`+4`) |
-| `$D9D6` | 2 319 | draws the visible objects from those lists; it starts the lists at `$FE64` and `$FF00` and the pointer `$F800` |
-| `$DD6C` | 2 319 | after the blit, walks the same two lists |
+| `$EFA5` `PlaceObjects` | 2 319 | for every object record at `$C000` (16 bytes each), the strip column `+B`, the phase `+9` and the line `+A` from its course position (`+1`, `+2`) less the distance scrolled (`$D14D`, + 2 a pass); types 14-15 go to the list `$C99E`, the others are sorted by height and depth (`$FF00`, then `$F089`) into the draw list `$6500` |
+| `$D9D6` `BuildSpriteLists` | 2 319 | stamps the pads and dishes (`$EA38`, below); then walks the draw list twice: the shadow list `$FE64` (8 bytes an object) and the sprite list `$FF00` (6 bytes); for each entry it first saves the strips the object will cover to `$F800` (`SaveStrips` `$DD47`) |
+| `$DDE7` `DrawShadows` | 2 319 | ANDs each shadow of `$FE64` into the buffer, then jumps to `DrawSprites` `$EAE3`, which masks the sprites of `$FF00` in over them (AND mask, OR pixels; writes `$8011-$BFF1`) |
+| `$D35E` `Blit` | 2 319 | copies the buffer, objects included, to the screen (6.3) |
+| `$DD6C` `RestoreUnderSprites` | 2 319 | called by the blit: walks both lists in the order they were saved and copies the strips back from `$F800` (`RestoreStrips` `$DDC9`) |
 
-The 1 to 8 % of the play area where `tools/playfield.py` differs from the screen is these sprites.
+A sprite comes from the pointer table `$C300` + `+8` ([7.1](07-objects.md)), in 4 pre-shifted frames picked by the
+phase: 4 strips of 21 lines for types 0-3, 3 of 17 for 4-10, 2 of 13 for 11-13, a mask byte and a pixel byte a
+line. At the edges of the window the strips that fall outside are dropped. A dying record is drawn as a type 3, its
+graphic the explosion frame its counter `+8` points to (`$7C10-$7FFF`), one line lower at height 25 and two lines
+lower above 25 (`$DBC3`-`$DBD4`).
+
+**Pads and dishes are stamped, not drawn.** `$EA38` (`StampStatics`) draws the records of types 14 and 15 (list
+`$C99E`) straight into the buffer, and only while their column `+B` is `$20-$23`: the last strips of the window,
+at the far edge of the buffer. They are not saved or restored: they become part of the course picture and scroll with
+it, like the tiles.
+
+The 1 to 8 % of the play area where `tools/playfield.py` differs from the screen is these shadows and sprites.
+
+### Shadows
+
+Every object of types 0-13 casts a shadow on the ground under it. The first walk of `$D9D6` makes the shadow
+list `$FE64`, one 8-byte entry an object: type, phase, the profile address under it, the strips, the mask offset
+of a clipped left edge, and the buffer address. The line is `+A` plus the **ground height**, bits 0-4 of the profile
+`$6000` (6.5), not the object's own height. A dying record fails the type compares at `$DA0B` and casts no shadow;
+types 14 and up are not in the list.
+
+`$DDE7` draws the list:
+
+- types 0-3 and 4-10: a mask is built in `$6500` (4 strips of 17 bytes, or 3 of 11, set to `$FF`), ANDed together
+  from runs of the shape tables at `$5CE0`, `$5DE8`, `$5EF0` (types 0-3) or `$5B60`, `$5BE0`, `$5C60` (4-10), at an
+  offset by the phase. Each step of 2 units along moves to the next profile byte and shifts the run by the change in
+  ground height, so the shadow follows the slope. The mask is then ANDed into the buffer;
+- types 11-13: 4 bytes a strip from `$5B00`, `$5B20` or `$5B40` (flat, rising by 1, or more over the next profile
+  byte), ANDed straight in.
+
+The shape tables lie below the game image: the copy at `$9F1C` puts them there from `$BB00-$BFFF` with the game
+screen ([2.2](02-architecture.md)). A shadow only clears pixels (AND); the sprites are then drawn over the
+shadows.
 
 ## 6.7 Colour
 
@@ -207,7 +258,7 @@ The bitmap has three kinds of bytes:
 | Bytes | Writes each | What |
 | --- | --- | --- |
 | 3 792 | 2 623-2 626 | the play area, the blit's diagonal band: once a pass (2 622 blits), plus a few writes from outside the play loop |
-| 48 | 2 631 | the status window at row 7 ("AUTO", "DEMO", the shot gauge), printed every pass it shows |
+| 48 | 2 631 | the status window at (2, 6) ("AUTO", "DEMO", the shot gauge), printed every pass it shows |
 | 106 | 3-79 | the panel's numbers: SCORE, MAX, HIGH, the round, the lives |
 | 2 198 | 1 | the rest: the copy of the screen image from `$A000` and nothing after it |
 

@@ -91,7 +91,7 @@ The game only writes the changing parts into it:
 
 | Item | Variable | Drawn by | Where on screen |
 | --- | --- | --- | --- |
-| round number | `$C2F7` (1-10) and `$C2F8` (laps of the 10 rounds) as two digits at `$C2FC`-`$C2FD` | `$D19E`-`$D1BF` through `$EE17` | column 21, row 18 |
+| round number | `$C2F7` (1-10) and `$C2F8` (laps of the 10 rounds) as two digits at `$C2FD`-`$C2FE` (`LD HL,$C2FD` at `$D17A`, written at `$D1B6`, `$D1BB`), in the print record `$C2FA`: `$87`, `$15`, `$12`, digit, digit, `$FF` | `$D19E`-`$D1BF` through `$EE17` | column 21, row 18 |
 | dots | `$ECE4`, up to 4 | `$D1C8`: 4 attribute cells at `$5A58` set to `$12` (red on red: hidden), then `$ECE4` of them to `$15` (cyan) | row 18, columns 24-27 |
 | SCORE | `$EF49-$EF4E`, six ASCII characters, the last always `0` | `$EE9E` | `$529D` |
 | MAX | `$EF99-$EF9E` | `$EF17` | `$51BD` |
@@ -127,7 +127,8 @@ the thin lines of the panel.
 
 **MAX and HIGH.** `$EF17` compares SCORE with MAX digit by digit, as strings of the same length, and copies the
 higher one into MAX. `$EEE3` does the same with MAX into HIGH. `$EEC4` clears SCORE, MAX and the per-round table
-`$EF55` at the start of a game (`$F1B8`), but not HIGH. HIGH therefore lasts until the machine is reset. What MAX
+`$EF55`, but not HIGH. HIGH therefore lasts until the machine is reset. The menu calls both when it is entered,
+before it waits for a key (`$F1B5`, `$F1B8`), and skips them when it follows the demo (`$F1AF`: `$F0DB` not 0). What MAX
 means for a round is for [10. Gameplay logic](10-gameplay-logic.md).
 
 ## 8.5 Painting attribute areas `$D338`

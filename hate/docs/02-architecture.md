@@ -37,11 +37,12 @@ At the moment the game starts. The depacker has just put the whole program in pl
 | Range | Size | What | Lifetime |
 | --- | --- | --- | --- |
 | `$4000-$5AFF` | 6 912 | screen: the loading picture, later the game screen | always |
-| `$5B00-$5BFF` | 256 | printer buffer; the depacker ran at `$5B8C-$5BC2` | dead after the load |
-| `$5C00-$5FB3` | 948 | system variables, BASIC, the INXS banner code | not used by the game; overwritten when play starts |
-| `$5FB4-$61A7` | 500 | the head of block 5: the mover that started the depacker | dead after the load |
-| `$61A8-$61AE` | 7 | the entry: `LD SP,$FFFF; DI; JP $9F12` | runs once, then a data buffer |
-| `$61AF-$7FFF` | 7 761 | no code ran here: data (L1 sees a font and texts at `$63DB-$63FE`; [11. Data reference](11-data-reference.md)) | always |
+| `$5B00-$5BFF` | 256 | printer buffer; the depacker ran at `$5B8C-$5BC2` | dead after the load; in play, game data copied from `$BB00` (below) |
+| `$5C00-$5FB3` | 948 | system variables, BASIC, the INXS banner code | dead after the load; in play, game data copied from `$BC00` (below) |
+| `$5FB4-$5FFF` | 76 | the image's first bytes: mask and pixel pairs left from the build, no code | overwritten from `$BFB4` when play starts; the left margin of the profile below |
+| `$6000-$62FF` | 768 | the ground profile buffer ([6.5](06-rendering.md)); in the image, leftovers of the build and the entry | cleared at every round start, built by `$D0EF` |
+| `$61A8-$61AE` | 7 | the entry, inside the profile buffer: `LD SP,$FFFF; DI; JP $9F12` | runs once, then profile |
+| `$6300-$7FFF` | 7 424 | no code ran here: data (L1 sees a font and texts at `$63DB-$63FE`; [11. Data reference](11-data-reference.md)) | always |
 | `$8000-$83E1` | 994 | the title music player and its handler | title only, then a buffer |
 | `$83FC-$8421` | 38 | the player's command table (handler addresses) | title only |
 | `$8422-$843C` | 27 | the player's patch list (9 entries of address and byte) | title only |
@@ -50,8 +51,25 @@ At the moment the game starts. The depacker has just put the whole program in pl
 | `$A000-$BFFF` | 8 192 | the game screen image, copied to `$4000` when play starts | until play starts |
 | `$C2B1-$F2E1` | | the game code (2.6) | always |
 | `$FDFD-$FDFF` | 3 | the IM 2 jump: `JP $9F68`, during the title `JP $8340` | title only |
-| `$FE00-$FF00` | 257 | the IM 2 vector table, every byte `$FD` | title only |
-| ...-`$FFFF` | | the stack, from `$FFFF` down | always |
+| `$FE00-$FF00` | 257 | the IM 2 vector table, every byte `$FD` | title only; in play the shadow list from `$FE64` ([6.6](06-rendering.md)) |
+| `$FF00`-... | | in play, the depth list and the sprite list ([6.6](06-rendering.md)) | play |
+| `$FF58-$FFFF` | 168 | in the image: the UDG letters A-U, as BASIC left them | the stack, from `$FFFF` down |
+
+**Below the image.** The copy that shows the game screen (`$9F1C`: `$A000` → `$4000`, `$2000` bytes, 2.3) runs on
+past the attributes: it fills `$5B00-$5FFF` from `$BB00-$BFFF`. Those 1 280 bytes are game data in play. The
+shadow drawer reads its shape tables there: `$5B00`, `$5B20`, `$5B40` (`$E011`-`$E01E`), `$5B60`, `$5C60`, `$5BE0`
+(`$DF23`-`$DF31`), `$5DE8`, `$5EF0`, `$5CE0` (`$DE1C`-`$DE29`) ([6.6](06-rendering.md)). The profile readers index
+from `$5FF6` on, just below the profile.
+
+**Copies in the image.** Three blocks of the image are copies left from the build. No code in them runs once the
+game is in memory:
+
+- `$8700-$9EFF` is `$6E00-$85FF` moved up by `$1900`: the end of the sprite graphics, then the title player. The
+  player's copy at `$9900` differs only in the operands and the stack the player writes into itself
+  (`$8085-$8365`, `$83E2-$83FB`), which are zero in the copy, but for two bytes;
+- `$8600-$8669` is a copy of `$9F00-$9F69`;
+- `$9F00-$9F11`, just before the start-up, is a head of it that never runs: `DI`, `$7C00` →
+  `$6300` (`$2400` bytes), then "PRESS ANY KEY" printed through `$EE17`.
 
 L1 confirms the reuse: its review queue flags `$61A8-$61AE`, `$8000-$83E1`, `$9F12-$9F67` and `$FDFD-$FDFF` as "code that
 ran, then a block copy or the stack wrote over its opcodes". Each of these is code that ran once and was then
@@ -87,8 +105,8 @@ Read from the top:
 - **The screen** (`$4000-$57FF`): each row of the picture is 256 bytes, eight pixel lines of 32 bytes side by side.
   In each 32-byte segment the left part is written every pass, the play area that the blit `$D35E` redraws; the right
   part stays dark, the panel, which keeps the copy made when play started.
-- **`$6000-$64FF`** is read, rarely written: the scroll buffer `$6000-$62FF`, cleared at every round start, and the
-  font, only read.
+- **`$6000-$64FF`** is read, rarely written: the ground profile `$6000-$62FF`, cleared and built again at every
+  round setup (`$CF68`, `$D0EF`, [6.5](06-rendering.md)), and the font, only read.
 - **`$8000-$BFFF`** glows in both read and write: the playfield buffer. After the title the music player's bytes are
   overwritten by it, which is the "code, then a buffer" reuse L1 reports (2.2). The thin execute line at `$8000-$85FF`
   is the title tune, the only code that ran there.

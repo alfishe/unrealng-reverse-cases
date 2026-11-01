@@ -213,9 +213,63 @@ tools/build.sh [path/to/sjasmplus]        # build/HATE.TAP, compared with orig/H
 | --- | --- | --- | --- |
 | 0, 1 BASIC | `src/loader.asm`: the lines as tokens, the banner as code | sjasmplus | **identical** (413 bytes) |
 | 2, 3 loading screen | `src/screen.asm` (the unpacker), `src/gfx/loading.scr` (the picture), `src/gfx/screen-tail.inc` | `tools/screen_pack.py`, sjasmplus | **identical** (6 432 bytes) |
-| 4, 5 game | `src/depacker.asm` (the `$64`-byte head), the game image | `tools/pack.py`, sjasmplus | **identical** (35 495 bytes), the image not yet from source |
+| 4, 5 game | `src/depacker.asm` (the `$64`-byte head), `src/game/*.asm` (the image) | sjasmplus, `tools/pack.py` | **identical** (35 495 bytes) |
 | headers, TAP | `tools/tap.py` | | **identical** |
 
-The game image comes from `src/game/game.asm` once it exists. Until then `build.sh` takes it from the original block
-(`tools/tapblocks.py`, `tools/depack.py`): the build then proves the depacker, the packer and the tape writer, not
-the game's source. The image is the same 41 036 bytes the emulator's recording holds at frame 2 613.
+### The game's source, `src/game`
+
+`src/game/game.asm` includes 18 modules in address order and saves `game.bin`, the image `$5FB4`-`$FFFF` (41 036
+bytes) as the depacker leaves it at frame 2 613; `tools/pack.py` packs it into block 5 again.
+
+| Module | Range | Contents | Docs |
+| --- | --- | --- | --- |
+| `buffers` | `$5FB4`-`$7FFF` | the ground profile `$6000`, the entry `$61A8`, the font with its strings, the sprite scratch page `$6500`, the sprite graphics | 6, 8 |
+| `titleplayer` | `$8000`-`$85FF` | the title music player, its IM 2 handler, the song, patterns and drums | 2.3, 9 |
+| `startup` | `$8600`-`$BFFF` | stale copies left from the build, the start-up `$9F12`, the screen image `$A000` | 2, 3.6 |
+| `gamedata` | `$C000`-`$C3FF` | the object records, the variables, the templates, the sprite table `$C300`, the hit table `$C380` | 7 |
+| `course` | `$C400`-`$CF31` | the tiles, the runs and rows, the ten courses, the course table `$CF04` | 6.5 |
+| `mainloop` | `$CF32`-`$D0EE` | the state machine: menu, game, round, pass, losing, GAME OVER | 4 |
+| `roundsetup` | `$D0EF`-`$D35D` | the ground profile, the round set-up, the attribute paint | 4, 10.2 |
+| `scroller` | `$D35E`-`$D9D5` | the blit, the scroll step and strip phases, the course expansion, the blit address list | 6 |
+| `sprites`, `shadows` | `$D9D6`-`$E15B` | the sprite and shadow lists, the saved strips, the shadow masks | 6 |
+| `mover` | `$E15C`-`$E68B` | moving the records: height, walls, the barrier, the pair scan | 7, 10 |
+| `player` | `$E68C`-`$EA37` | the controls, AUTO, the player's vehicle, firing, the random numbers | 5, 10.3 |
+| `statics` | `$EA38`-`$EBA9` | pads and dishes stamped into the buffer, the sprite list `$FF00` | 6.6 |
+| `hits` | `$EBAA`-`$EE12` | the hit handlers, pods, the convoy | 7.6, 10.4 |
+| `hud`, `objview` | `$EE13`-`$F0DA` | the print routine, the score, MAX and HIGH, objects to screen places | 8 |
+| `menu` | `$F0DB`-`$F2FF` | the messages, the menu, the sound effects | 5, 8, 9 |
+| `coursedata` | `$F300`-`$FFFF` | the objects of every round, the saved strips `$F800`, the IM 2 table `$FD00` | 6, 7 |
+
+The `.asm` files are written, not typed: `tools/mkgame.py` builds them from what the reverse knows and from what the
+recordings saw, and refuses to install them unless sjasmplus gives the original bytes.
+
+```mermaid
+flowchart LR
+    ann["src/game/game.ann<br/>names, shapes, comments"] --> mk["tools/mkgame.py"]
+    l1["work/*/l1.json<br/>instructions run"] --> mk
+    tap["orig/HATE.TAP<br/>block 5, unpacked"] --> mk
+    mk --> ctl["control file"] --> sna["sna2skool.py"] --> skool["skool"] --> s2a["skool2asm.py"] --> asm["src/game/*.asm"]
+    asm --> sj["sjasmplus"] --> cmp{"= original<br/>image?"}
+    cmp -- yes --> asm
+```
+
+- **Code** is every instruction start the recordings ran (`work/*/l1.json`) whose opcode is the image's byte (an
+  operand may be self-modified later), widened by a walk along the branches no recording took, which stops at bytes
+  the game reads as data. The walk reads data reads only from the recordings that start after the depacker (its
+  back-references read the output). Seven hit handlers that no recording ran (`$EBFC`, `$EC01`, `$EC04`, `$EC35`,
+  `$EC73`, `$ED3B`, `$ED81`) are code by `game.ann`: they are reached through the table `$C380` only. 8 677 bytes,
+  4 883 instructions are code; 4 568 of those instructions ran.
+- **Data** is everything else, shaped by `game.ann` (bytes or words per line, text, the entry boundaries at tables,
+  records and sprite sets).
+- **Names and comments** come from `src/game/game.ann`: 355 entries, 137 of them code, every one named. An address
+  operand inside an entry is written as `Label+offset` (125 of them), so a reader sees which field a load touches.
+- **The check**: the assembled `game.bin` must equal the image unpacked from the original tape; then `build.sh`
+  packs it and the TAP is compared with `orig/HATE.TAP`.
+
+```bash
+python3 tools/mkgame.py --venv SKOOLKIT_VENV --sjasmplus SJASMPLUS --install   # rewrite src/game from game.ann
+python3 tools/refdocs.py                                                       # docs 11 and 12 from the same
+```
+
+[11. Data reference](11-data-reference.md) and [12. Routine reference](12-routine-reference.md) are written from the
+same entries, with what the recordings saw each one do.

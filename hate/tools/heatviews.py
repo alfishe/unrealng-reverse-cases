@@ -32,18 +32,21 @@ SLOTS = [(0xC000, 'player'), (0xC010, 'shot 1'), (0xC020, 'shot 2'), (0xC030, 's
         [(0xC1B0 + 16 * i, f'launched {i + 1}') for i in range(6)] + \
         [(0xC210 + 16 * i, f'enemy shot {i + 1}') for i in range(5)] + [(0xC260, 'vehicle before')]
 
-# Names of the routines from docs 4-10 (the rest show their address)
-NAMES = {'$CF32': 'main loop', '$E15C': 'objects: move + hit', '$EFA5': 'objects to screen', '$D9D6': 'sprites',
-         '$DDE7': 'after-blit pass', '$D35E': 'blit', '$D3F9': 'scroller', '$F2C0': 'sound request',
-         '$F288': 'beep', '$F2A3': 'sweep', '$E68C': 'input / AUTO', '$E7E9': 'player', '$EBAA': 'hit table',
-         '$D51D': 'fresh strip', '$D413': 'strip phase 4 px', '$D45B': 'strip phase 2 px', '$EE17': 'print',
-         '$EEA4': 'small digits', '$D151': 'round setup', '$D4D9': 'course expand', '$8000': 'title player',
-         '$DD6C': 'list walk', '$E7B9': 'convoy copy', '$EE87': 'add points', '$D338': 'attribute paint',
-         '$D354': 'pause', '$EA19': 'random', '$E3D8': 'terrain height', '$F1AA': 'menu (waits for a key)',
-         '$E56F': 'hit test: pair scan', '$E57E': 'pair scan: next', '$E57F': 'pair scan: step', '$E16E': 'mover: a record',
-         '$E674': 'mover: next record', '$EAE3': 'sprite list $FF00', '$DD47': 'save strips under a sprite',
-         '$DDC9': 'restore strips under a sprite', '$EFDC': 'record to screen place', '$F089': 'sprite overlap ($6500)',
-         '$E14D': 'mask 3 bytes (AND)'}
+
+
+def routine_names():
+    """The code entries of src/game/game.ann: {'$ADDR': Name}"""
+    import re
+    names = {}
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src', 'game', 'game.ann')
+    for line in open(path):
+        m = re.match(r'\$([0-9A-F]{4})\s+c\s+(\w+)', line)
+        if m:
+            names['$' + m.group(1)] = m.group(2)
+    return names
+
+
+NAMES = routine_names()
 
 
 def font(size):

@@ -71,7 +71,8 @@ Commands, by handler:
 | Command | Handler | Effect |
 | --- | --- | --- |
 | 0 | `$8175` | hold: the current notes sound for one more note length |
-| 1-4 | `$8098`-`$80B9` | one byte argument written into a voice's parameters (`$81DE`/`$8205`, `$81BB`/`$8231`, `$827E`, `$82E0`) |
+| 1, 2 | `$8098`, `$80A4` | the start pulse width (the loudness) of voice A (`$81DE`/`$8205`) or voice B (`$81BB`/`$8231`): the operand of the `LD B,n` in the note set-up, from which the note's pre-delay and width are computed |
+| 3, 4 | `$80B0`, `$80B9` | the envelope frame counter a note of voice A (`$827E`, the reload of H) or voice B (`$82E0`, of L) starts with |
 | 5-8 | `$80C2`-`$80D4` | the envelope mode of voice A (B = 1 or 0) or voice B (C = 1 or 0) |
 | 9 | `$8109` | end of pattern: count down the repeats (`$810E`), restart the pattern (`$810B`) or go back to the song (`$8116`) |
 | 10 | `$819B` | a note on both voices: two period bytes |
@@ -157,6 +158,10 @@ lowest set bit, then clears the byte (`$D086`). One effect a pass, by priority:
 | 4 | sweep 2, 4, `$42`, `$0A` | `$E8AA`, a shot fired | 26 times |
 
 The game events behind bits 0-2 are named in [10. Gameplay logic](10-gameplay-logic.md).
+
+**The round sound.** One effect is not in the request table: the round setup plays the record `$F2FB` (record 5 of
+`$F2E2`, one past the five the request bits reach) through `$F2D9`, at `$D31A`: sweep 8, 4, 3, `$64`. It sounds at
+every round setup, 10 times in the first recording.
 
 **Direct beeps.** Some sounds call `$F288` directly:
 

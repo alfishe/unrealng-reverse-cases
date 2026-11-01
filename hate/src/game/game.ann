@@ -1,0 +1,1477 @@
+# H.A.T.E.: what the reverse knows about the game image $5FB4-$FFFF, one line an address.
+# tools/mkgame.py turns it with the recordings (work/*/l1.json) into src/game/*.asm; the format is in its
+# Annotations class. Code entries must be code the recordings ran or code reached only through a table.
+
+@module buffers
+$5FB4 b ProfileMargin 16 ; Bytes below the ground profile
+> 76 bytes just below the ground profile $6000. In the image they hold mask/pixel byte pairs left from the build; the screen copy at $9F1C overwrites them from $BFB4-$BFFF (the image of $5B00-$5FFF) before play. The profile readers index from $5FF6-$5FF8 ($DA1E, $DAA1, $DB1B, $E3E5, $E94F), so the top of this block is the profile's left margin.
+$6000 b ProfileBuffer 16 ; Ground profile buffer (768 bytes)
+> The course's profile under the scroll, one byte for every 2 units along the course: the ground height (bits 0-4) and the walls (bits 5-7); docs/07-objects.md 7.4. Cleared at every round start ($CF68, $D0EF). In the image it holds leftovers of the build, and the entry $61A8 sits inside it: code that runs once and then becomes buffer space (docs/02-architecture.md 2.2).
+$61A8 c Entry ; Game entry (RANDOMIZE USR 25000)
+> The address BASIC line 30 calls. It sets the stack to the top of memory, disables interrupts and jumps to the start-up $9F12. Overwritten when the first round clears the profile buffer.
+$61A8 ; the stack grows down from the top of RAM
+$61AB ; the game proper runs with interrupts off
+$61AC ; the start-up
+$61AF b GroundProfileTail 16 ; Ground profile buffer, after the entry
+> The rest of the profile buffer, to $62FF. The first 42 bytes are leftover loader code that never runs, the rest is zero.
+$6300 b Font 8 ; Font, codes $20-$3A
+> 64 glyphs of 8 bytes for codes $20-$5F at $6300-$64FF, glyph = $6300 + (code - $20) * 8; printed by $EE17 and, lines 2-6 only, by $EEA4 (docs/08-hud-and-text.md 8.2). Codes $22-$2C are the big GAME OVER, $2E a red block, $2F a gauge segment. The glyph slots of ";" to "?" and "[" to "_" hold strings instead (next entries).
+$63D8 t CreditsText1 ; Credits, first part (in the font's ";" to "?" slots)
+> A print string for $EE17 (records: attribute + $80, column, row, characters; $FF ends): "WRITTEN BY", "COSTA PANAYI", "MUSIC BY" at column 1, rows 17-19, attribute $30. Printed by the menu $F1AA; docs/08-hud-and-text.md 8.3.
+$6400 b FontHigh 8 ; Font, codes $40-$5A
+> The second half of the font: the (c) sign at code $40 ("@" in the strings) and the capitals.
+$64D8 t CreditsText2 ; Credits, second part (in the font's "[" to "_" slots)
+> "BEN DAGLISH", "(c)1989 VORTEX" at column 1, rows 20-21. Printed by the menu $F1AA.
+$64F6 t AutoText ; " AUTO " in the top window
+> Printed at (2,6) by the AUTO start in $E68C (docs/05-controls.md 5.4).
+$6500 s SpriteScratch ; Visible-record list and sprite scratch page
+> Work space of the sprite code. $EFA5 builds the list of visible records here each pass (pointer kept at $EF9F, $40 ends the list) and $F089 scans it; $DE08 fills $6500-$6543 with $FF as scratch. Zero in the image.
+$6580 b SpriteGfx00 8 ; Sprite graphics, table slot $00
+> The sprite graphics run from here to $7FFF. Each block is reached through the pointer table $C300 by a record's byte +8 (the low byte of the address into $C300): the player gets 2 x type ($D246 writes $C008), the templates $C2B4-$C2E1 and $C360/$C370 carry their own. The block boundaries below are the table's pointers.
+$67F6 b SpriteGfx02 8 ; Sprite graphics, table slot $02
+$6A6C b SpriteGfx04 8 ; Sprite graphics, table slot $04
+$6CE2 b SpriteGfx06 8 ; Sprite graphics, table slot $06
+$6F58 b SpriteGfx1C 8 ; Sprite graphics, table slot $1C
+$70FC b SpriteGfx1E 8 ; Sprite graphics, table slot $1E
+$72A0 b SpriteGfx14 8 ; Sprite graphics, table slot $14
+$7416 b SpriteGfx08 8 ; Sprite graphics, table slot $08 (the type 4 missile template)
+$758C b SpriteGfx0A 8 ; Sprite graphics, table slots $0A and $0C (the type 6 missile template)
+$7702 b SpriteGfx0E 8 ; Sprite graphics, table slot $0E (the type 7 missile template)
+$7878 b SpriteGfx10 8 ; Sprite graphics, table slots $10 and $12 (the jet templates)
+$79EE b SpriteGfx16 8 ; Sprite graphics, table slot $16
+$7AA4 b SpriteGfx18 8 ; Sprite graphics, table slot $18 (shots: templates $C360, $C2E1)
+$7B5A b SpriteGfx1A 8 ; Sprite graphics, table slot $1A (the shell: template $C370)
+$7C10 b ExplosionGfx22 8 ; Explosion frame, table slot $22
+> The explosion: a hit record's byte +8 is set to $20 ($EBD1, $E262) and counts up by 2 a pass to $2C ($E235), so the frames are the slots $20-$2C; slot $20 and $24 share one picture.
+$7CB8 b ExplosionGfx20 8 ; Explosion frame, table slots $20 and $24
+$7D60 b ExplosionGfx26 8 ; Explosion frame, table slot $26
+$7E08 b ExplosionGfx28 8 ; Explosion frame, table slot $28
+$7EB0 b ExplosionGfx2A 8 ; Explosion frame, table slot $2A
+$7F58 b ExplosionGfx2C 8 ; Explosion frame, table slot $2C (the last before the record is gone)
+@module titleplayer
+$8000 c TitlePlayer ; Title music player: relocating entry
+> Entry of the title music player (Ben Daglish's beeper engine); docs/02-architecture.md 2.3, docs/09-sound.md. C = the tune number (the operand $8002, set to 0 by the start-up). It reads its own call address from the CALL operand below the return address, swaps $58C bytes from that address + $3A with $803A, calls the set-up $803A and swaps them back, so the player can be linked anywhere. Called as CALL $8000 the swap changes nothing. The same 64 pages are the playfield buffer $8000-$BFFF in play (docs/06-rendering.md 6.2).
+$8001 ; the tune number: an operand written by the start-up ($9F16)
+$8004 ; the return address: points after our CALL
+$8006 ; DE = the CALL's operand, the address this copy was called at
+$800A ; the player's body follows $3A bytes after the entry
+$800F ; length of the body
+$8015 SwapInLoop ; exchange (DE) and (HL), byte by byte
+$8022 ; play; returns here on the tune's end or a key
+$8025 c TitlePlayerSwapBack ; Title music player: swap the body back
+> Undoes the swap of $8000 and returns to the start-up.
+$802C SwapBackLoop ; exchange the bytes again
+$803A c TitleSetup ; Title player set-up: hook IM 2, reset the voices, start the tune
+> Saves SP into the operand at $8364 (for the exits at $8356), points SP at its own small stack below $83F7, reads the IM 2 vector address from I (the vector table byte at I*256, doubled: $FDFD) and saves the 3 bytes there to $83F9, then writes JP $8340 in their place. Applies the 9 (address, byte) patches of $8422 to reset its own operands, enables interrupts, and starts tune C from the table $843D; docs/02-architecture.md 2.3.
+$803A ; saved for the exits: the operand of LD SP,nn at $8363
+$803E ; the player's own stack, $83E2-$83F6
+$8041 ; I = the high byte of the vector table
+$8046 ; D = E = the table byte: the vector address is $FDFD
+$8049 ; the vector address, used again by the exit $8356
+$8052 ; keep the 3 bytes found at the vector
+$8054 ; JP $8340, written backwards over the vector
+$805E ; nine patches
+$8063 PatchLoop ; (DE) = the patch byte
+$806D ; wait for the first interrupt: start on a frame
+$806F ; HL = the song of tune C
+$807C ; C = 0: no note sounding yet
+$807F c NoteTimeCheck ; Title player: is the current note over?
+> Entered from the voice loop after each period of voice B. C counts the note's frames down (the IM 2 handler decrements it); while it is not 0 the voices go on, at 0 the next pattern command is read.
+$807F ; C: frames left of the note
+$8084 c PatternStep ; Title player: next note, reload the note length
+> Reloads C with the note length (the operand $8085, set by command 17), then reads the next command of the pattern.
+$8084 ; the note length, an operand written by command 17 ($80F8)
+$8087 ; HL = the pattern position, kept in DE' between notes
+$8088 c PatternCommand ; Title player: dispatch one pattern command
+> Reads the command byte at HL and jumps through the handler table $83FC (2 bytes a command) with the position after the byte on the stack; docs/09-sound.md 9.3.
+$808E ; the handler pops the position
+$808F ; the command table
+$8097 ; to the command's handler
+$8098 c CmdWidthA ; Title command 1: voice A's starting pulse width
+> Writes the argument byte into the operands at $81DE and $8205, the LD B,n of voice A's note set-up in commands 10 and 11: the pulse width a note starts with, its loudness.
+$809B ; voice A, command 10's set-up
+$809E ; voice A, command 11's set-up
+$80A4 c CmdWidthB ; Title command 2: voice B's starting pulse width
+> Writes the argument byte into the operands at $81BB and $8231, the LD B,n of voice B's note set-up in commands 10 and 12.
+$80A7 ; voice B, command 10's set-up
+$80AA ; voice B, command 12's set-up
+$80B0 c CmdEnvelopeA ; Title command 3: envelope step time of voice A
+> Writes the argument into the operand at $827E, the reload of H (voice A's envelope frame counter) when a note starts.
+$80B3 ; read by $81E7 and $8213 into H
+$80B9 c CmdEnvelopeB ; Title command 4: envelope step time of voice B
+> Writes the argument into the operand at $82E0, the reload of L (voice B's envelope frame counter) when a note starts.
+$80BC ; read by $81CC and $823F into L
+$80C2 b CmdModeA ; Title commands 5 and 6: envelope mode of voice A (not run)
+> Two handlers that did not run in the recording: POP HL; LD B,1; JP $8088 (command 5, mode 1: hold) and POP HL; LD B,0; JP $8088 (command 6, mode 0: decay). B of the pattern's register set is voice A's envelope mode; docs/09-sound.md 9.4.
+$80CE c CmdModeBHold ; Title command 7: voice B envelope mode 1 (hold)
+> C of the pattern's register set is voice B's envelope mode.
+$80D4 c CmdModeBDecay ; Title command 8: voice B envelope mode 0 (decay)
+$80DA b CmdSilence ; Title commands 13-15: silence the voices (not run)
+> Three handlers that did not run in the recording. Each zeroes an OUT value operand: command 13 at $80DA both ($82D0 and $8332), command 14 at $80E5 voice A ($82D0), command 15 at $80ED voice B ($8332); then JP $8088.
+$80F5 c CmdNoteLength ; Title command 17: set the note length
+> The argument goes into the operand of LD C,n at $8085 and into C' at once.
+$80F8 ; the reload at $8084
+$8101 c CmdDrums ; Title command 16: change the drum pattern from a pattern
+> Starts the drum pattern whose address follows the command byte ($815E), then reads the next command.
+$8109 c CmdPatternEnd ; Title command 9: end of pattern
+> Counts the repeats down (the operand $810E). While some remain, it restarts the pattern from its start (the operand $810B); otherwise it goes back to the song at the position saved in $8116; docs/09-sound.md 9.3.
+$810A ; the pattern's start, an operand written by $8152
+$810D ; repeats left, an operand written by $8110 and $8146
+$8113 ; again: restart the pattern
+$8115 ; the song position, an operand written by $814E
+$8118 c SongStep ; Title player: interpret the song
+> Reads one song byte at HL: $FF return from a sub-song, $FE call a sub-song, $FD jump, $FC end of the tune, $FB start a drum pattern, n < $FB play the pattern at the following address n times; docs/09-sound.md 9.2.
+$811A ; not $FF
+$811C b SongReturn ; Title song byte $FF: return (not run)
+> LD HL,nn; JP $8118: back to the position saved by $FE (the operand $811D). The tune of this game uses no sub-song.
+$8122 c SongCallCheck ; Title player: song byte $FE?
+$8123 ; not $FE
+$8125 b SongCall ; Title song byte $FE: call a sub-song (not run)
+> INC HL; LD E,(HL); INC HL; LD D,(HL); INC HL; LD ($811D),HL; EX DE,HL; JP $8118: saves the position after the address into SongReturn's operand and continues at the address.
+$8131 c SongJump ; Title player: song bytes $FD, $FC, $FB and patterns
+> $FD jumps to the address that follows (tune 0 loops this way); $FC leaves through $8356, the same exit as a key; $FB starts a drum pattern; any other byte n plays the pattern at the following address n times: n goes into $810E, the pattern's start into $810B and the song position after it into $8116.
+$813C SongEndOrDrums ; $FC, $FB or a pattern
+$813D ; $FC: the end of the tune
+$8141 ; $FB: drums
+$8144 ; n - 1 more repeats after this one
+$8146 ; repeats, the operand of LD A,n at $810D
+$814E ; the song position, the operand at $8115
+$8152 ; the pattern's start, the operand at $810A
+$8156 c PatternEnter ; Title player: enter a pattern
+> Back to the pattern register set, where DE holds the pattern position, then $8084.
+$815A c SongDrums ; Title song byte $FB: start a drum pattern
+> Calls DrumStart with the return set to $8118, the next song byte.
+$815E c DrumStart ; Title player: start the drum pattern at the address after HL
+> Clears the drum timer (operand $8244), stores the pattern's first byte, its speed in frames, into the operand $824B, and its step address into $8250 (the position) and $8258 (the loop point); docs/09-sound.md 9.5.
+$815F ; drum timer = 0: the first step at once
+$8168 ; the speed: frames a step
+$816C ; the loop point, used by drum byte 1
+$8170 ; the position
+$8175 c CmdHold ; Title command 0: hold the notes one more note length
+$817A c CmdLongNote ; Title command 18: hold the notes n note lengths
+> The counter is its own operand at $817B: 0 means the command starts, it loads n from the argument; otherwise it counts down, staying on this command until 0, then steps over the argument.
+$817A ; the counter, an operand: 0 = not counting
+$8183 ; one note length done
+$8187 ; more to go: keep the notes
+$8191 LongNoteStart ; the argument n: the counter
+$8193 ; start counting
+$819B c CmdNoteAB ; Title command 10: a note on both voices
+> Two period bytes: voice A's goes into D of the voice loop and the reload operand $82CA, voice B's into E and $832C. Each voice's pulse width ($82D4, $8336) starts at the width of command 1 or 2, its pre-delay ($82CC, $832E) is period / 8 + $18 less that width, and its OUT value ($82D0, $8332) is $18 (beeper on); H and L get the envelope times of commands 3 and 4. When an envelope mode is not 0, the note starts mode 3; docs/09-sound.md 9.3-9.4.
+$819D ; voice A in mode 0: leave it
+$819F b NoteABModeA ; Title command 10: voice A mode 3 (not run)
+> LD B,3: voice A starts in mode 3 when its mode is not 0. Voice A was in mode 0 through the recording.
+$81A1 c CmdNoteABVoiceB ; Title command 10: voice B mode and the periods
+$81A5 ; voice B starts in mode 3
+$81A7 NoteABPeriods ; the two periods
+$81AF ; voice B's period reload
+$81BA ; voice B's starting width, an operand written by command 2
+$81BD ; voice B's pre-delay: period / 8 + $18 - width
+$81C1 ; voice B's pulse width
+$81C6 ; voice B on
+$81C9 ; voice A on
+$81CC ; L = voice B's envelope time
+$81D2 ; voice A's period reload
+$81DD ; voice A's starting width, an operand written by command 1
+$81E0 ; voice A's pre-delay
+$81E4 ; voice A's pulse width
+$81E7 ; H = voice A's envelope time
+$81EE c CmdNoteA ; Title command 11: a note on voice A only
+> One period byte for voice A, set up as in command 10.
+$81F0 ; mode 0: leave it
+$81F2 b NoteAModeA ; Title command 11: voice A mode 3 (not run)
+> LD B,3, as in command 10.
+$81F4 c CmdNoteAPeriod ; Title command 11: voice A's period
+$81F9 ; voice A's period reload
+$8204 ; voice A's starting width, an operand written by command 1
+$8207 ; voice A's pre-delay
+$820B ; voice A's pulse width
+$8210 ; voice A on
+$821A c CmdNoteB ; Title command 12: a note on voice B only
+> One period byte for voice B, set up as in command 10.
+$821E ; voice B starts in mode 3
+$8220 NoteBPeriod ; the period
+$8225 ; voice B's period reload
+$8230 ; voice B's starting width, an operand written by command 2
+$8233 ; voice B's pre-delay
+$8237 ; voice B's pulse width
+$823C ; voice B on
+$8243 c DrumTick ; Title player: drum timer, then the voices
+> The operand $8244 is the drum timer, decremented once a frame by the IM 2 handler. At 0 it is reloaded from the speed (operand $824B) and the next drum byte is played: 0 rest, 1 loop to the pattern's start, 2-6 the sounds $8367, $837F, $839A, $83C6, $83B0; docs/09-sound.md 9.5.
+$8243 ; the drum timer, an operand the IM 2 handler decrements
+$824A ; the speed, an operand written by $8168
+$824F ; the drum position, an operand written by $8170 and $8261
+$8252 DrumByte ; the next drum byte
+$8254 ; not 1: a sound or a rest
+$8257 ; the loop point, an operand written by $816C
+$8260 DrumSound ; play byte 2-6; 0 falls through to the voices
+$8279 c VoiceAEnvelope ; Title player: voice A's envelope tick
+> H counts voice A's envelope frames (the IM 2 handler decrements it). At 0 it is reloaded with 3 and voice A's envelope mode B' is applied: 0 decays the note ($82A3), 1-3 are handled by the bytes $8284 (not run in the recording).
+$827B ; not yet: play the voices
+$827D ; an operand written by command 3
+$8282 ; mode 0: decay
+$8284 b VoiceAModes ; Title player: voice A envelope modes 1-3 (not run)
+> DEC A; JR Z,$82BD (mode 1: hold); DEC A; JR Z,$8296 (mode 2: B = 3, voice on, the period reloaded, then a decay step); mode 3: B = 2, voice off ($82D0 = 0), H = 1, JP $82C1. Modes 2 and 3 alternate: a stutter. Voice B's copy of this code ran ($82E2).
+$82A3 c VoiceADecay ; Title player: voice A's decay step
+> Narrows voice A's pulse ($82D4) and lengthens its pre-delay ($82CC) by one: the same pitch, quieter. When the width runs out the bytes at $82B1 silence the voice.
+$82A3 ; voice A's pulse width
+$82A9 ; voice A's pre-delay
+$82B1 b VoiceAOff ; Title player: voice A's pulse width ran out (not run)
+> INC (HL) (the width back to 1); XOR A; LD ($82D0),A (voice A off); LD A,B; AND A; JP Z,$82BD; LD B,1 (a mode other than 0 becomes hold); $82BD: EXX; JP $82C5.
+$82C1 c VoicesPlay ; Title player: the two voices
+> One period step of each voice. D counts voice A's period down; at 0 it is reloaded (the operand $82CA) and one pulse is sent: pre-delay ($82CC), beeper on ($82D0, $18), pulse width ($82D4), beeper off. Then voice B's envelope tick (L, mode C') and the same for voice B with E at $8327; docs/09-sound.md 9.4.
+$82C1 ; balance the time of the envelope branch
+$82C5 VoiceAStep ; voice A's period counter
+$82C9 ; voice A's period, an operand written by the note commands
+$82CB ; voice A's pre-delay, an operand
+$82CF ; voice A's OUT value: $18 on, 0 silenced
+$82D1 ; beeper on, border black
+$82D3 ; voice A's pulse width, an operand
+$82D9 ; beeper off
+$82DB VoiceBEnvelope ; L: voice B's envelope frames
+$82DF ; an operand written by command 4
+$82E2 ; C: voice B's envelope mode
+$82E4 ; mode 0: decay
+$82E7 ; mode 1: hold
+$82EA ; mode 2
+$82EC ; mode 3: the voice off for one tick, then mode 2
+$82F8 VoiceBModeOn ; mode 2: the voice on, the period restarted, then mode 3
+$8305 VoiceBDecay ; voice B's pulse width
+$830B ; voice B's pre-delay
+$8313 b VoiceBOff ; Title player: voice B's pulse width ran out (not run)
+> INC (HL); XOR A; LD ($8332),A (voice B off); LD A,C; AND A; JP Z,$831F; LD C,1; $831F: EXX; JP $8327. The JR Z,$831F at $82E7 (mode 1) enters at its tail.
+$8323 c VoiceBDelay ; Title player: balance the envelope branch
+$8325 c VoiceBDelayLoop ; Title player: delay loop
+$8327 c VoiceBStep ; Title player: voice B's period step
+> E counts voice B's period down; at 0 one pulse is sent like voice A's. Then back to $807F.
+$832B ; voice B's period, an operand written by the note commands
+$832D ; voice B's pre-delay, an operand
+$8331 ; voice B's OUT value: $18 on, 0 silenced
+$8333 ; beeper on
+$8335 ; voice B's pulse width, an operand
+$833B ; beeper off
+$8340 c TitleInterrupt ; Title player: the IM 2 handler, once a frame
+> Reached through JP $8340 at $FDFD. A key on any row ends the music ($8356). Otherwise it ticks the engine's clocks: the drum timer ($8244) and the registers of the interrupted voice loop, C (the note length), H and L (the envelopes); 123 T an entry. docs/02-architecture.md 2.3.
+$8343 ; A = 0: all keyboard rows
+$8348 ; a key: leave the music
+$834B ; the drum timer
+$8350 ; the note length
+$8351 ; voice A's envelope
+$8352 ; voice B's envelope
+$8356 TitleExit ; the tune ends ($FC) or a key: unhook and unwind
+$8357 ; the vector address saved at $8049
+$835B ; put back the 3 bytes the set-up replaced
+$8363 ; SP as $803A saved it: the operand $8364
+$8366 ; back into $8025, at any depth of the player
+$8367 c DrumClick ; Title drum 2: a click
+> The beeper held on for 300 loop steps, then a pause; docs/09-sound.md 9.5.
+$836A ; beeper on
+$8375 ; A = 0 here: beeper off
+$837F c DrumNoise ; Title drum 3: noise from the ROM
+> 150 pulses whose levels and lengths are the bytes of the ROM from $0064: code read as random numbers.
+$8382 ; the ROM as a noise table
+$8389 ; a level from one byte
+$838B ; a length from the next
+$839A c DrumRise ; Title drum 4: a rising tone, half-period 50 down to 1
+$83A6 ; toggle the beeper
+$83B0 c DrumFall ; Title drum 6: a falling tone, period 180 up in steps of 4
+$83B9 ; toggle the beeper
+$83C6 c DrumSweep ; Title drum 5: a rising tone, period 200 down to 124
+$83D1 ; toggle the beeper
+$83E2 b TitleStack ; Title player's stack
+> SP points at $83F7 from $803E on: the interrupts and the command dispatch push here. Stale bytes in the image.
+$83F7 w TitleVectorAddr 1 ; The IM 2 vector address
+> Written at $8049 ($FDFD when I = $FE), read by the exit $8357. The image holds a stale value.
+$83F9 b TitleVectorSave 3 ; The 3 bytes the title replaced at the vector
+> Saved at $8052, put back at $8361.
+$83FC w TitleCommands 4 ; Pattern command handlers 0-18
+> Read by $8088, 2 bytes a command: 0 $8175 hold, 1-4 $8098-$80B9 voice parameters, 5-8 $80C2-$80D4 envelope modes, 9 $8109 end of pattern, 10-12 $819B, $81EE, $821A notes, 13-15 $80DA-$80ED silence, 16 $8101 drums, 17 $80F5 note length, 18 $817A long note; docs/09-sound.md 9.3.
+$8422 b TitlePatches 3 ; Patch list: 9 x (address, byte)
+> Applied by $803A at every start: periods $64 ($82CA, $832C), both voices silenced ($82D0, $8332), pulse widths $17 ($82D4, $8336), pre-delays 1 ($82CC, $832E), the long-note counter 0 ($817B).
+$843D w TuneTable 1 ; Tune table
+> One song address a tune, picked by C at $806F. Tune 0 is $843F.
+$843F b TuneSong 3 ; Tune 0: the song
+> Song entries ($8118): n and a pattern address, $FB and a drum pattern address, $FD and an address (jump). It plays $8467 once, then $8473 x5, $84A8, $84C6 x2, $853B, $84C6 x2, $853B with drums $85A2 and $85B4, and jumps back to the start at $8460: the tune loops until a key. The last 4 bytes (pattern $83E8, $FC) are never reached.
+$8467 b PatternInit 4 ; Tune 0: set-up pattern
+> Command 8 (voice B mode 0), 17 (note length 5), 1-4 (the voices' parameters), 9 (end). Pattern commands are listed at $83FC.
+$8473 b PatternA 4 ; Tune 0: pattern A
+> Notes: command 10 with two periods, 11 or 12 with one; 0 holds, 18 n holds n note lengths, 9 ends the pattern.
+$84A8 b PatternB 4 ; Tune 0: pattern B
+$84C6 b PatternC 4 ; Tune 0: pattern C
+$853B b PatternD 4 ; Tune 0: pattern D
+> Uses command 16 at $8583 to switch to the drums $85B4.
+$85A2 b DrumPatternA 18 ; Drum pattern: clicks and noise
+> The speed (5 frames a step), then the steps: 2 click, 3 noise, 0 rest, 1 loop; docs/09-sound.md 9.5.
+$85B4 b DrumPatternB 18 ; Drum pattern: the three tones
+> Speed 5, then the drums 4 (rising), 5 (sweep) and 6 (falling) and 1 loop.
+$85C6 s TitleTail ; Unused, zero
+@module startup
+$8600 b StartupCopy 8 ; A stale copy of $9F00-$9F69
+> Never run. The bytes equal the start-up block $9F00-$9F69 (with its PRESS ANY KEY string at $862F): a copy left $1900 bytes below its place. The whole of $8700-$9FFF repeats $6E00-$86FF this way (next entries).
+$866A s StartupCopyTail ; Unused, zero
+$8700 b SpriteGfxCopy 8 ; A stale copy of the sprite graphics $6E00-$7FFF
+> Byte for byte the same as $6E00-$7FFF. The start-up head at $9F00 (not run in this version) moves $7C00-$9FFF down to $6300, which would put this copy in place; here the data is already there. Overwritten by the playfield in play.
+$9900 b TitlePlayerCopy 8 ; A stale copy of the title player $8000-$85FF
+> The same bytes as $8000-$85FF except the player's self-modified operands, which are 0 here ($9985 for $8085, $9C64 for $8364 and others): the player as assembled, before a run. The copy at $8000 carries the values of a run.
+$9F00 b StartupHead 9 ; Start-up head (not run)
+> DI; LD HL,$7C00; LD DE,$6300; LD BC,$2400; LDIR (move the font and graphics down to their place) then LD HL,$9F2F; CALL $EE17 (print PRESS ANY KEY). The game enters at $9F12, after these bytes; docs/08-hud-and-text.md 8.3.
+$9F12 c Startup ; Start-up: IM 2, the title music, then the game
+> Called once from the entry $61A8. Sets IM 2 ($9F4B), plays tune 0 of the title player until it ends or a key is pressed, then copies the game screen image $A000-$BFFF to $4000-$5FFF, clears the lap $C2F8 and enters the game through $C2B1; docs/02-architecture.md 2.3.
+$9F15 ; tune 0
+$9F16 ; into the operand of LD C,n at $8001
+$9F19 ; the title music
+$9F1C StartGame ; the music is over
+$9F1D ; the game screen image: pixels, attributes and $5B00-$5FFF
+$9F29 ; lap 0
+$9F2C ; the main loop, interrupts off from here on
+$9F2F t PressKeyText ; "PRESS ANY KEY WHEN READY"
+> A print string for $EE17 at (4,23), attribute 7. Only the start-up head $9F00 and its copy print it; neither ran.
+$9F4B c SetupIM2 ; Set up IM 2 with a safe vector
+> Writes JP $9F68 at $FDFD, fills the 257 bytes $FE00-$FF00 with $FD and sets I = $FE, IM 2: whatever the bus holds, the vector is $FDFD; docs/02-architecture.md 2.3.
+$9F4B ; JP opcode
+$9F50 ; the default handler: EI; RET
+$9F59 ; B = 0: 256 bytes, C = the fill byte $FD
+$9F60 ; the 257th byte
+$9F61 ; the vector table's page
+$9F68 b DefaultInterrupt ; Default IM 2 handler: EI; RET
+> The target of JP $FDFD until the title player hooks it. Data in the recording: it never ran.
+$9F6A s StartupPad ; Unused, zero
+$A000 b GameScreenImage 16 ; Game screen image: pixels
+> The play screen with its panel, copied to $4000 by $9F1C when play starts ($A000-$B7FF the pixels). Part of the playfield buffer afterwards.
+$B800 b GameScreenAttrs 16 ; Game screen image: attributes
+> Copied to $5800-$5AFF.
+$BB00 b RendererTablesImage 8 ; Image of $5B00-$5FFF: the renderer's tables
+> The last 1 280 bytes of the copy land at $5B00-$5FFF. The renderer reads them there: $5B00, $5B20, $5B40 ($E011-$E01E), $5B60, $5C60, $5BE0 ($DF23-$DF31) and $5DE8, $5EF0, $5CE0 ($DE1C-$DE29). $BFB4-$BFFF become ProfileMargin.
+@module gamedata
+$C000 b PlayerRecord 16 ; Object record: the player
+> Every moving or hittable thing is a 16-byte record in the list $C000-$C26F, ended by $FF at $C270; docs/07-objects.md 7.1-7.2. +0 flags and type (bit 7 gone, 6 end, 5 hit, 0-3 type), +1/+2 position along, +3 across, +4 height, +5 direction, +6 speed, +7 behaviour, +8 the sprite slot in $C300 (also the explosion frame), +9-+B screen place, +C/+E motion steps, +F fire timer. Zero in the image: the round start fills the list. Bit 7 of $C000 set is a lost life ($CFEF).
+$C010 b PlayerShotRecords 16 ; Object records: the player's shots (5)
+> $E82F fires into a free one; $CFD6 counts the free ones for the gauge.
+$C060 b PodRecords 16 ; Object records: pods (4)
+> Released by shot domes ($EDFE); docs/07-objects.md 7.5.
+$C0A0 b ParkedVehicleRecord 16 ; Object record: the vehicle of the other kind
+> Parked at position $600, from VehicleTemplate ($D1FB); the vehicle of the next round.
+$C0B0 b CourseObjectRecords 16 ; Object records: the course's objects (16)
+> The round's block of the course data, 8 bytes each, the rest zeroed ($D250).
+$C1B0 b LaunchedRecords 16 ; Object records: launched missiles and jets (6)
+> Filled from the templates $C2B4 by a firing object ($E1DD).
+$C210 b EnemyShotRecords 16 ; Object records: the enemy's shots (5)
+> Filled from EnemyShotTemplate ($E1E1).
+$C260 b PreviousVehicleRecord 16 ; Object record: the vehicle of the round before
+> At position $6C ($D27A).
+$C270 b ObjectListEnd ; End of the object list ($FF)
+$C271 b PassCounter ; Pass counter of the mover
+> Incremented once a pass by $E15C; steering acts when its low 2 bits are 0 (every 4 passes).
+$C272 b HeightWave 16 ; Height wave: 16 steps
+> Followed by records with behaviour bit 1 ($E3BF), index +E mod 16.
+$C282 b MissileArc 13 ; Height arc of a missile or shell
+> 9 up to 24 and down to 2, then $FF: a height of 25 or more ends the flight ($E38F). The shell's start is found in it from the player's height ($E878).
+$C28F b InputDevice ; Input device: 0 keyboard, 1 Sinclair, 2 Kempston, 3 Protek-AGF
+> Set by the menu ($F26D), read by the device reader ($E6FF); docs/05-controls.md 5.1.
+$C290 b ControlByte ; Control byte: bit 0 left, 1 right, 2 down, 3 up, 4 fire
+> Written once a pass by the device reader $E68C; docs/05-controls.md 5.2. The byte after it ($C291) is not referenced by address.
+$C292 b PlayerTemplate 7 ; Player start: +1 to +7 of $C000
+> Position along $0080, across $2C, height 2, direction 0, speed 1, behaviour 0; copied by $D1FB at each round start.
+$C299 s UnusedC299 ; Not referenced by address
+$C2A1 b VehicleTemplate 16 ; The parked and the previous vehicle records
+> $C2A1 is set to the type of the round's vehicle ($D1FB) and becomes +0 of $C260 in the next round ($D27A). $C2A2-$C2B0 are copied to $C0A1 (position along $0600, across $2C, height 2); $C2A4-$C2B0 to $C263.
+$C2B1 c GameStart ; Game start: JP to the main loop
+> Entered once from the start-up $9F2C.
+$C2B4 b LaunchTemplates 9 ; Templates of launched objects (5 x 9 bytes)
+> +0 to +8 of a record (the position is then copied from the firer, the rest cleared): type 8 jet, type 7 missile (written at $D1FB: course vehicle type + 6), type 8 jet, type 4 missile, type 6 missile. A pad picks one by the highest set bit of its behaviour bits 7-4 ($E1D7); the dome of type 2 throws out the third ($E259); docs/07-objects.md 7.4.
+$C2E1 b EnemyShotTemplate 9 ; Template of an enemy shot
+> Type 12, direction 4, speed 4, sprite slot $18; used by firing objects below type 14 ($E1BD).
+$C2EA w MoverAlong 1 ; New position along of the record being moved
+> Written by $E2D7 (position + direction step x speed), read by the hit window set-up $E531.
+$C2EC w HitWindowAlong 1 ; Hit test window starts, along (3 words)
+> The moving record's new position along less half the box, for the three size classes of the other record; set at $E531, compared in $E586-$E62D; docs/07-objects.md 7.4.
+$C2F2 b MoverAcross ; New position across of the record being moved
+$C2F3 b HitWindowAcross ; Hit test window starts, across (3 bytes)
+$C2F6 b MoverHeight ; New height of the record being moved
+> docs/10-gameplay-logic.md; the terrain check $E400-$E43B corrects it.
+$C2F7 b RoundNumber ; Round number, 1-10
+> docs/04-game-loop.md 4.2.
+$C2F8 b LapNumber ; Lap: passes through the 10 rounds
+> 0 at the start ($9F29); from 1 on the course is armed harder ($D296, docs/07-objects.md 7.8).
+$C2F9 b Lives ; Lives of the round
+$C2FA t RoundText ; Round number string: two digits at (21,18)
+> Printed by $D1BF; the digits are written into $C2FD-$C2FE (the record: $87, $15, $12, digit, digit, $FF).
+$C300 w SpriteTable 4 ; Sprite graphics pointers
+> 23 addresses into $6580-$7FFF, read as $C300 + record byte +8 ($DBEC, $DC67, $DCD6, $EA8F). Slots $20-$2C are the explosion frames.
+$C32E b ScrollPage ; Scroll state: page step 0-63
+> docs/06-rendering.md 6.2-6.4.
+$C32F b ScrollHalf ; Scroll state: strip half, 0 or $80
+$C330 b UnusedC330 ; Not referenced by address
+$C331 w SavedStack 1 ; SP saved by the blit and the strip builder
+> $D35E and $D536 use SP to walk address lists.
+$C333 t ShotGaugeText ; Shot gauge string
+> Five cells at (3,6), filled with "/" for each free shot slot by $CFD6, then a "/" at (2,6); printed at $CFE9; docs/08-hud-and-text.md 8.3.
+$C340 w Directions 2 ; Direction steps: along, across (8 x 4 bytes)
+> Read by $E2B3: the word +0 is the step along, the byte +2 the step across; docs/07-objects.md 7.1.
+$C360 b ShotTemplate 16 ; Template of the player's shot
+> Type 12, direction 0, speed 6, sprite slot $18; copied by $E889.
+$C370 b ShellTemplate 16 ; Template of the ground vehicle's shell
+> Type 12, speed 6, behaviour bit 2 (the arc $C282), sprite slot $1A; copied by $E841.
+$C380 w HitHandlers 8 ; Hit handlers: 7 rows of 8
+> $EBAA jumps to the word at $C380 + 16 x (moving type / 2) + 2 x (other type / 2). Rows for the moving types 0-1 to 12-13; types 14-15 never move first. $EBD1 both hit, $EC0B nothing, $EC0F both turn, $EC27 player meets a shot, $E57E nothing (next pair), the rest score or collect; docs/07-objects.md 7.6.
+$C3F0 b WeavePattern 8 ; Weave: direction sequence 4 5 6 5 4 3 2 3
+> Behaviour bit 6 ($E327), index +C mod 8.
+$C3F8 w CourseRowPtr 1 ; Next row of the expanded course
+> docs/06-rendering.md 6.5; $D49C, $D536.
+$C3FA w StripCount 1 ; Strips drawn in the round
+> At 32 the round starts ($D4BF).
+$C3FC w FreshStripPage 1 ; Page of the last fresh strip
+> Written by $D57F; docs/06-rendering.md 6.4.
+$C3FE s UnusedC3FE ; Not referenced by address
+
+@module course
+$C400 b Tiles 8 ; Course tiles 0-22, 8 x 8 bytes
+> The tile set of the course: 72 tiles of 8 bytes at $C400 + 8 x tile, one byte (8 pixels) a line, the first byte at the bottom of the strip. FreshStrip ($D51D) copies 15 of them into each fresh strip (docs/06-rendering.md 6.5). The tiles are split here only to name the two edge tiles 23 and 24.
+$C4B8 b EdgeTiles 8 ; Edge tiles 23 and 24
+> The first 8 lines of every fresh strip: tile 23 ($C4B8) for three strips in four, tile 24 ($C4C0) for the fourth (FreshStrip, $D534). No tile run uses them.
+$C4C8 b TilesHigh 8 ; Course tiles 25-71
+> The rest of the tile set (see Tiles).
+$C640 b TileRuns 16 ; Runs of tile numbers, one per tile across the track
+> A row of the course is the address of a run in here: tile numbers from the bottom of the strip up, read as row i at offset i by FreshStrip. Runs overlap: rows one byte apart are the same run shifted by one tile, which is how bends are drawn (docs/06-rendering.md 6.5). The rows of all ten courses point between $C640 and $C8DB.
+$C8EA w SegmentRows 2 ; Row lists of the course segments
+> A course byte b selects the list at $C8EA + 2 x b: row addresses (into TileRuns), ended by a word with a zero high byte. Lists overlap, so a byte can start inside another byte's list. CourseExpand ($D4D9) copies them into RowList (docs/06-rendering.md 6.5). One line here is the slot of one even course byte.
+$C9FE b GroundAnchors 8 ; Ground profile anchors of the course segments
+> A course byte b selects the list at $C9FE + b / 2, ended by $FF: one ground anchor byte for every 8 bytes of the profile at $6000 (height in bits 0-4, walls in bits 5-7, docs/07-objects.md 7.4). GroundProfile ($D0EF) interpolates between them.
+$CA43 s RowList ; The row list of the current course (filled by CourseExpand)
+> 176 words, zero in the image, where CourseExpand writes the course's rows (178 for every course, so the last two land on the first two words of RowListTail). $C3F8 points to the next row a fresh strip starts from.
+$CBA3 w RowListTail 7 ; Run-out rows after a course, and the end mark $FFFF
+> The rows that follow every course: $C643 and $C655 alternating, then $FFFF at $CBC1. With 178 course rows the list holds 191 rows before the mark. The course check ($D49C) looks at the high byte of the row 15 ahead and ends the course at $FF.
+$CBC3 b Course7 16 ; Course data of round 7
+> A course: the player's type (0 aircraft, 1 ground vehicle), then one segment byte per course piece (indexes into SegmentRows and GroundAnchors), ended by $FF (docs/04-game-loop.md 4.2, docs/06-rendering.md 6.5). The ten courses are stored in the order of rounds 7, 8, 9, 10, 3, 2, 1, 6, 5, 4.
+$CC17 b Course8 16 ; Course data of round 8
+$CC6C b Course9 16 ; Course data of round 9
+$CCC0 b Course10 16 ; Course data of round 10
+$CD0F b Course3 16 ; Course data of round 3
+$CD5D b Course2 16 ; Course data of round 2
+$CDB6 b Course1 16 ; Course data of round 1
+$CE0A b Course6 16 ; Course data of round 6
+$CE5D b Course5 16 ; Course data of round 5
+$CEAB b Course4 16 ; Course data of round 4
+$CF04 w CourseTable 2 ; Course records of rounds 1-10, ended by $FFFF
+> Ten records of two words: the course data, and the round's 128-byte object block at $F300 + 128 x (round - 1) (docs/04-game-loop.md 4.2, docs/07-objects.md 7.2). $FFFF ends the table: CourseExpand wraps to $CF04 there.
+$CF2E w CourseRecord 1 ; The current course record
+> The record of the course being played or scrolled into. NextCourse ($D4CF) steps it by 4.
+$CF30 w RestartRecord 1 ; The course record a round start uses
+> RoundStart ($CF68) copies it into CourseRecord. Set by the game start, by RoundSetup ($D1E1) and by the look-back ($D027).
+@module mainloop
+$CF32 c GameEntry ; The game's entry: interrupts off
+> Entered from $C2B1 after loading. Interrupts stay off from here on: no pass waits for a frame (docs/04-game-loop.md 4.5). Runs on into MainLoop.
+$CF32 ; interrupts off for good
+$CF33 c MainLoop ; Menu, game start, round start and the pass loop
+> The whole game state machine; it never returns (docs/04-game-loop.md 4.1-4.4). $CF33 calls the menu, then starts a game or the demo; RoundStart ($CF68) starts a round or a retry, pre-rolls 32 strips and enters the pass loop PassLoop ($CFAC). A lost vehicle (CheckLost, $CFEF) retries the round, falls back to an earlier one (LookBack, $D017) or ends in GameOver ($D0A5). The pass also reads the abort (U+G) and pause (P) keys (docs/05-controls.md 5.5). GAME OVER and ABORT return to $CF33.
+$CF33 ; the menu; returns when a game or the demo starts
+$CF36 ; SCORE ($EF49) = round 0's saved SCORE
+$CF41 ; round number $C2F7 = 0
+$CF45 ; no sound requests
+$CF48 ; carried lives $ECE4 = 4
+$CF4D ; a game starts with the record of round 1
+$CF50 ; the demo?
+$CF56 ; random number in HL
+$CF5A ; the demo: one of records 3-10, (L AND $1C) + 8 bytes in
+$CF65 ; the record a round start uses
+$CF68 RoundStart ; a round start or a retry
+$CF6E ; clear the ground profile $6000-$62FF
+$CF7A ; strips drawn $C3FA = 0
+$CF7E ; scroll distance = 0
+$CF82 ; 11 records from $C000: free ($8B), then the end of the list
+$CF91 ; $C2F6, the new height worked on by the mover, = 2
+$CF97 ; scroll state: page offset 0, half 0
+$CFA0 ; the course into RowList
+$CFA3 ; pre-roll: 128 scroll steps, 32 strips; the last one calls RoundSetup
+$CFAC PassLoop ; one pass of the game
+$CFB2 ; " DEMO " in the status window
+$CFB9 ; the demo: player's speed 0
+$CFBF ShotGauge ; the shot gauge, not during the AUTO start
+$CFC5 ; count the free ones of the 5 shot slots (bit 7)
+$CFD6 ; the gauge text at $C333: five spaces, then a "/" per free slot
+$CFEF CheckLost ; the player's record gone: the vehicle is lost
+$CFF6 ; the loss beep
+$CFFC ; lives less one, carried to the next round start
+$D003 ; lives left: the same round again
+$D005 ; no lives: hide the last dot
+$D00A ; a short pause
+$D00D ; MAX from SCORE
+$D010 ; round 1: GAME OVER
+$D017 LookBack ; try the round before, down to round 2
+$D01B ; the round number one less; RoundSetup counts it up again
+$D023 ; its course record
+$D032 ; its round table entry: lives at its start, then SCORE
+$D038 ; SCORE back to that round's start
+$D040 ; its lives less one
+$D046 ; 1-4 lives: restart that round
+$D050 RetryRound ; MAX from SCORE
+$D061 ; SCORE back to the round's start
+$D070 ReadInput ; the device, or the AUTO start
+$D073 PassWork ; objects moved and hit tested
+$D076 ; objects to screen positions
+$D079 ; save the strips under the objects, shadow and sprite lists
+$D07C ; shadows and sprites into the playfield buffer (docs/06-rendering.md)
+$D07F ; the playfield to the screen, then one scroll step
+$D082 ; the requested sound effect
+$D085 ; clear the sound requests
+$D089 ; U ...
+$D091 ; ... and G: abort
+$D099 ; "ABORT!"
+$D09F ; the demo: no GAME OVER box
+$D0A5 GameOver ; the GAME OVER box and two beeps
+$D0B1 BackToMenu ; one beep, back to the menu
+$D0BA PauseKeys ; P held, ENTER not: pause
+$D0CC ; pause beep
+$D0D2 ; "PAUSE!"
+$D0D8 PauseWait ; wait for ENTER
+$D0E6 ; clear the status window
+@module roundsetup
+$D0EF c BuildGroundProfile ; Build the ground profile $6000 from the course
+> Clears $6000-$62FF and fills it with the ground profile of the course (CourseRecord): one byte for every 2 units along, height in bits 0-4 and walls in bits 5-7 (docs/07-objects.md 7.4). Each course byte b after the type gives the anchors at $C9FE + b / 2 (GroundAnchors), ended by $FF; an anchor goes every 8 bytes from $6008, and the 7 bytes after the previous anchor step from it toward the new one by (old height - new height) / 8 a byte. The previous anchor also takes the new anchor's wall bits. Stops when the buffer is full ($6300) or the course ends. Entered by JP from the course check ($D4C2) right after RoundSetup, so it returns to the caller of ScrollStep.
+$D0EF ; clear the 768-byte profile
+$D0FB ; BC = the course data
+$D101 ; skip the player's type
+$D102 ; the first anchor; $6000 is the anchor before it
+$D105 ProfileSegment ; the next course byte; $FF ends the course
+$D10A ; its anchors at $C9FE + b / 2
+$D113 ProfileAnchor ; the buffer full at $6300: done
+$D118 ; drop the saved course pointer
+$D11A ; the next anchor; $FF ends the segment
+$D11F ; the new anchor
+$D122 ; back to the previous anchor
+$D12B ; the previous anchor takes the new walls
+$D12F ; (old height - new height) / 8: the step
+$D13B ; the 7 bytes in between
+$D142 ; on to the new anchor
+$D149 ; the next course byte
+$D14D w ScrollDistance 1 ; The distance scrolled into the round
+> + 2 a pass (ScrollStep). The positions of the object records along the course are in the same unit (docs/07-objects.md 7.1). Cleared at a round start and by RoundSetup.
+$D14F w ConvoyShift 1 ; The player's old position less $6C
+> Set by RoundSetup ($D209): subtracted from the positions of the records $C060-$C090 (the followers), so they keep their place behind the player when the positions start again.
+$D151 c RoundSetup ; Set up a round: round table, round number, lives, objects, colour
+> Called by the course check ($D4BF) when the 32nd strip of a course is drawn: at the end of a round start's pre-roll, and when the next course scrolls in without a break (docs/04-game-loop.md 4.2, docs/10-gameplay-logic.md 10.2). Outside the demo: MAX from SCORE, the round table entry of the round just ended (or retried) gets the carried lives and SCORE, the round number counts up (after 10 back to 1, with the lap $C2F8 counted and round 10's entry copied to round 0's), the round number and the lives are shown. Then, demo or not ($D1DE): the round's objects from the course record (docs/07-objects.md 7.2, 7.8), the round sound, and the course colour painted by falling into PaintAttributes with B = ink 6 - ((round - 1) AND 3), bright below 5; in the demo the subtracted value is one less (the round number stays 0 there, so ink 4, bright green).
+$D151 ; the demo skips the score and the panel
+$D158 ; MAX from SCORE
+$D15B ; round table entry $EF4F + 6 x round
+$D169 ; the carried lives
+$D16E ; then SCORE, 5 characters
+$D177 ; print SCORE
+$D17A ; the round's two digits go to $C2FD-$C2FE
+$D17D ; the next round
+$D181 ; after round 10:
+$D185 ; the next lap
+$D18C ; round 10's entry into round 0's
+$D19E ; tens digit: the lap, plus 1 from round 10
+$D1B0 ; a leading 0 becomes a space
+$D1BC ; print the round number
+$D1C2 ; lives = the carried lives
+$D1C8 ; hide the 4 dots
+$D1D2 ; a short pause; A still holds the lives
+$D1D9 ; a cyan dot per life
+$D1DE ObjectSetup ; the round's objects
+$D1E1 ; a retry restarts this course
+$D1E4 ; the speed reserve $E7B8 = 10
+$D1E9 ; no followers
+$D1F3 ; the follower list $ECE9 (pointer $ECF1): empty
+$D200 ; how far the player has come, less $6C
+$D20C ; the player's start fields +1-+7 from $C292
+$D217 ; the scroll distance starts again (BC = 0 after LDIR)
+$D21B ; the type of the round before: kept for the record $C260
+$D223 ; the parked vehicle $C0A1-$C0AF from $C2A2
+$D22B ; the course data
+$D232 ; the player's type, the course's first byte
+$D236 ; $C2BD = type + 6
+$D23B ; the parked vehicle is of the other type
+$D242 ; $C008 = 2 x type
+$D249 ; AUTO countdown: 70 passes, or 14 for a nonzero type
+$D254 ; the object block of the round
+$D25B ; 16 course objects at $C0B0: 8 bytes from the block, 8 zero
+$D26E ; the 11 slots $C1B0-$C250 free
+$D27F ; $C260: the vehicle of the round before, at $006C
+$D28A ; its fields +3 on from $C2A4
+$D294 ; the end of the list ($C270)
+$D296 ; the lap: 0 skips the arming
+$D29F ; from lap 2, own operands: CP $05 becomes CP $02, types 2-9 fire
+$D2A4 ; every launch pad's behaviour becomes $88
+$D2AC LapArming ; arm the 16 course objects
+$D2B1 ; the type
+$D2B8 ; C = the behaviour
+$D2BD ; operand changed at $D2A1
+$D2C1 ; types 5-9 (2-9 from lap 2): fire
+$D2C6 ; type $0E, a launch pad: rotate what it launches
+$D2D3 ; others: $88
+$D2D7 ; $18 becomes $48 (operand changed at $D2A6)
+$D2DB ; $48 becomes $08 (operand changed at $D2A9)
+$D2E3 SetField8 ; every record from $C060 to the end: +8 = 2 x type
+$D2F6 ; the 4 records $C060-$C090 (the followers)
+$D2FC ; position along less ConvoyShift
+$D30F ; speed 0
+$D31A ; the round sound: entry 5 of the effect table $F2E2
+$D320 ; the course colour from the round
+$D327 ; the demo subtracts one less
+$D32E ; ink 6 - that
+$D331 ; bright below 5
+$D338 c PaintAttributes ; Colour the cells of the blit address list with B
+> Walks the address list at $D5B2 (BlitAddresses), screen addresses of the bottom lines of character cells ended by a high byte $FF, and sets the attribute of each cell to B. A high byte below $47 (the $0800 clip entries) is skipped; $47 gives row block $58xx, $48-$4F $59xx, $50 and up $5Axx (docs/08-hud-and-text.md 8.5). Reached by falling through from RoundSetup with the course colour, and called by the menu with B = 6.
+$D33B PaintCell ; the next screen address
+$D340 ; attribute row block $58
+$D342 ; $FF ends the list
+$D345 ; below $47: a clipped entry
+$D349 ; $47: block $58
+$D34B ; $48-$4F: block $59; $50 and up: $5A
+$D351 ; the cell's colour
+$D354 c ShortPause ; A busy wait of 65 536 DJNZ steps
+> About 0.85 million T-states, a quarter of a second. Keeps A. Used after hiding the dots (RoundSetup $D1D2, and on the last life lost at $D00A).
+@module scroller
+$D35E c Blit ; Copy the 32 strips of the playfield to the screen
+> SP walks the address list BlitAddresses ($D5B2): every POP is the screen address of a cell's bottom line, and up to 8 lines are written upward from it (LD A,(DE); LD (HL),A; INC E; DEC H). DE starts at page $80 + $C32E, byte $C32F (the half), and moves 2 pages a column, wrapping in $80-$BF. Even columns take 17 POPs, the first and last writing 4 lines; odd columns 16 POPs of 8 lines. Clip entries point at $0800 in the ROM. Then the sprite lists ($DD6C), and falls into ScrollStep (docs/06-rendering.md 6.3).
+$D35E ; SP kept in $C331
+$D362 ; SP walks the address list
+$D365 ; DE = page $80 + $C32E, byte $C32F
+$D376 ; 16 column pairs
+$D378 BlitEvenColumn ; an even column: the first cell, 4 lines
+$D388 ; 15 full cells
+$D3AC ; the last cell, 4 lines
+$D3BB ; 2 pages on, wrapping in $80-$BF
+$D3BF ; the same half
+$D3C3 ; an odd column: 16 full cells
+$D3C5 BlitOddColumn ; one cell, 8 lines up
+$D3E7 ; 2 pages on, wrapping in $80-$BF
+$D3EF ; the next column pair
+$D3F2 ; SP back
+$D3F6 ; the sprite lists; then on into the scroll step
+$D3F9 c ScrollStep ; One scroll step: toggle the half, make one strip
+> Called 128 times by the round start's pre-roll and entered once a pass from Blit. The scroll distance $D14D grows by 2, the half $C32F toggles and the page offset $C32E (0-63) counts up when the half goes back to 0. Each of the four states makes one strip (docs/06-rendering.md 6.4): half 0, offset even: FreshStrip ($D51D); half $80, even: StripPhase4 ($D413); half 0, odd: StripPhase2 ($D45B); half $80, odd: the course check ($D49C).
+$D3F9 ; the scroll distance + 2
+$D401 ; half $80:
+$D407 ; back to half 0
+$D40E ; odd offset: the course check
+$D44E ; half 0: to half $80
+$D456 ; even offset: a fresh strip
+$D413 c StripPhase4 ; Make the 4-pixel phase in page H - 1, half 0
+> H is the page of the last fresh strip ($C3FC). Steps the page offset $C32E. Copies H's half 0 two lines up into page H - 1, half 0 (the two lines below cleared), then shifts it 4 pixels right with RRD, taking the nibble entering from H - 2's half 0 at line 2. The last byte is 0 (docs/06-rendering.md 6.4).
+$D413 ; the page offset + 1, mod 64
+$D41C ; H = the page of the last fresh strip
+$D41F ; DE = page H - 1, half 0, wrapping in $80-$BF
+$D429 ; lines 0 and 1 clear
+$D42E ; H's half 0, two lines up
+$D433 ; HL = page H - 1, half 0
+$D434 ; DE = page H - 2, line 2
+$D440 ; 4 pixels right, the nibble from H - 2 coming in
+$D447 ; the last two lines: nothing comes in
+$D45B c StripPhase2 ; Make the 2-pixel phase in page H - 1, half $80
+> Copies H's half 0 one line up into page H - 1, half $80 (line 0 cleared), then shifts it 2 pixels right, the 2 bits entering from H - 2's half 0 at line 3. The last bytes shift with nothing coming in (docs/06-rendering.md 6.4).
+$D45B ; H = the page of the last fresh strip
+$D45E ; DE = page H - 1, half $80
+$D469 ; line 0 clear
+$D46C ; H's half 0, one line up
+$D471 ; HL = page H - 1, half $80
+$D472 ; DE = page H - 2, line 3
+$D47E ; 2 pixels right, 2 bits from H - 2 coming in
+$D48B ; the last lines: nothing comes in
+$D49C CourseCheck ; the page offset + 1, mod 64
+$D4A5 ; the high byte of the row 15 ahead
+$D4AD ; $FF: the course has run out
+$D4B1 ; strips drawn this course + 1
+$D4BB ; the 32nd strip:
+$D4BF ; set up the round
+$D4C2 ; build the ground profile; returns to ScrollStep's caller
+$D4C5 CourseEnd ; the end of a course: the demo?
+$D4CB ; the demo: drop the return address, back to the menu
+$D4CF NextCourse ; otherwise the next course record, expanded
+$D4D9 c CourseExpand ; Expand a course record into RowList
+> HL = a course record (CourseRecords). At $FFFF wraps to $CF04 and sets CourseRecord. Each course byte b after the type selects the row list $C8EA + 2 x b (SegmentRows), copied word by word into RowList $CA43 until a word with a zero high byte. Then the next row $C3F8 = $CA43 and the strip count $C3FA = 0 (docs/06-rendering.md 6.5).
+$D4D9 ; DE = the course data
+$D4DC ; $FFFF ends the table:
+$D4E0 ; back to the record of round 1
+$D4EA ; skip the player's type
+$D4EB ; BC = RowList
+$D4EE CourseSegment ; the next course byte; $FF ends the course
+$D4F4 ; its rows at $C8EA + 2 x b
+$D4FC CopyRow ; the next row
+$D500 ; a zero high byte ends the list
+$D504 ; the row into RowList
+$D510 ; the next row to draw: the first
+$D516 ; no strips drawn yet
+$D51D c FreshStrip ; Make a fresh strip from tiles, and the phase 2 pixels left of it
+> Half 0, even offset. The new strip is page $80 + $C32E, half 0: 8 lines of the edge tile (EdgeTiles), then 15 tiles, tile i read from row i at offset i, rows popped from $C3F8 on; $C3F8 moves one row on. The page is kept in $C3FC. The tail makes page H - 2, half $80: H - 2's half 0 at line 1 shifted 2 pixels left, the 2 bits entering from H copied in at line 3 (docs/06-rendering.md 6.4, 6.5).
+$D51D ; the new strip: page $80 + $C32E, half 0
+$D527 ; the edge tile 23
+$D52A ; ...or 24 for one strip in four
+$D536 ; 8 lines of edge
+$D546 ; SP kept in $C331
+$D54A ; SP walks the rows from $C3F8
+$D54E ; the next strip starts one row on
+$D553 ; tile i = 0
+$D554 FreshTile ; row i at offset i
+$D55A ; the tile number
+$D55B ; HL = $C400 + 8 x tile
+$D564 ; 8 lines of the tile
+$D574 ; the next tile, 15 in all
+$D57A ; SP back
+$D57E ; the page of the fresh strip
+$D582 ; DE = page H - 2, half $80
+$D58E ; lines 0-2 clear
+$D595 ; H's half 0, three lines up
+$D59A ; HL = page H - 2, half $80
+$D59B ; DE = page H - 2, line 1
+$D5A2 ; 2 pixels left, 2 bits from H coming in
+$D5AF ; the last line clear
+$D5B2 w BlitAddresses 9 ; Blit addresses, column 0 (17 cells)
+> 528 screen addresses, the bottom line of a character cell each, popped by Blit: 17 for each even column, 16 for each odd one, from the bottom of the screen up. Even columns sit 4 lines off the odd ones; the list carries the 2:1 isometric skew and the clipping, 43 entries $0800 pointing into the ROM (docs/06-rendering.md 6.3). PaintAttributes uses the same list to colour the playfield's cells. Split here by column.
+$D5D4 w BlitColumn01 8 ; Blit addresses, column 1 (16 cells)
+$D5F4 w BlitColumn02 9 ; Blit addresses, column 2 (17 cells)
+$D616 w BlitColumn03 8 ; Blit addresses, column 3 (16 cells)
+$D636 w BlitColumn04 9 ; Blit addresses, column 4 (17 cells)
+$D658 w BlitColumn05 8 ; Blit addresses, column 5 (16 cells)
+$D678 w BlitColumn06 9 ; Blit addresses, column 6 (17 cells)
+$D69A w BlitColumn07 8 ; Blit addresses, column 7 (16 cells)
+$D6BA w BlitColumn08 9 ; Blit addresses, column 8 (17 cells)
+$D6DC w BlitColumn09 8 ; Blit addresses, column 9 (16 cells)
+$D6FC w BlitColumn10 9 ; Blit addresses, column 10 (17 cells)
+$D71E w BlitColumn11 8 ; Blit addresses, column 11 (16 cells)
+$D73E w BlitColumn12 9 ; Blit addresses, column 12 (17 cells)
+$D760 w BlitColumn13 8 ; Blit addresses, column 13 (16 cells)
+$D780 w BlitColumn14 9 ; Blit addresses, column 14 (17 cells)
+$D7A2 w BlitColumn15 8 ; Blit addresses, column 15 (16 cells)
+$D7C2 w BlitColumn16 9 ; Blit addresses, column 16 (17 cells)
+$D7E4 w BlitColumn17 8 ; Blit addresses, column 17 (16 cells)
+$D804 w BlitColumn18 9 ; Blit addresses, column 18 (17 cells)
+$D826 w BlitColumn19 8 ; Blit addresses, column 19 (16 cells)
+$D846 w BlitColumn20 9 ; Blit addresses, column 20 (17 cells)
+$D868 w BlitColumn21 8 ; Blit addresses, column 21 (16 cells)
+$D888 w BlitColumn22 9 ; Blit addresses, column 22 (17 cells)
+$D8AA w BlitColumn23 8 ; Blit addresses, column 23 (16 cells)
+$D8CA w BlitColumn24 9 ; Blit addresses, column 24 (17 cells)
+$D8EC w BlitColumn25 8 ; Blit addresses, column 25 (16 cells)
+$D90C w BlitColumn26 9 ; Blit addresses, column 26 (17 cells)
+$D92E w BlitColumn27 8 ; Blit addresses, column 27 (16 cells)
+$D94E w BlitColumn28 9 ; Blit addresses, column 28 (17 cells)
+$D970 w BlitColumn29 8 ; Blit addresses, column 29 (16 cells)
+$D990 w BlitColumn30 9 ; Blit addresses, column 30 (17 cells)
+$D9B2 w BlitColumn31 8 ; Blit addresses, column 31 (16 cells)
+$D9D2 w BlitListEnd 2 ; The end mark of BlitAddresses ($FFFF), and a spare zero word
+
+@module sprites
+$D9D6 c BuildSpriteLists ; Shadow and sprite lists of the visible objects, the strips under them saved
+> Step 7 of the pass (docs/04-game-loop.md 4.3), after $EFA5 has put the visible records in the list at $6500 (4-byte entries: depth, column, record address; bit 6 of the first byte ends it). Pads and dishes (types 14-15) are not in it; $EA38 draws them first from their own list at $C99E.
+> The list is walked twice. The first walk (ShadowListLoop) makes the shadow list at $FE64, each object placed at the height of the ground under it; the second (SpriteListBuild) makes the sprite list at $FF00, each object at its own height (+4). For every entry the playfield strips it will cover are first copied to the save area at $F800, so that $DD6C can put the course back after the blit. The objects are drawn into the playfield buffer $8000-$BFFF, not onto the screen: shadows and sprites by $DDE7 (step 8), before the blit $D35E copies the buffer to the screen (docs/06-rendering.md 6.3, 6.6).
+$D9D6 ; pads and dishes (list $C99E)
+$D9D9 ; the save area starts again at $F800
+$D9DF ; the sprite list $FF00, empty
+$D9E7 ; the shadow list $FE64, empty
+$D9EF ; the visible records, from $EFA5
+$D9F3 c ShadowListLoop ; Shadow list: the next visible record
+> One entry of $6500 a time: IX = the record. The column (+B) decides how many strips show: an object 4 columns or more inside the window has all its strips (4 for types 0-3, 3 for 4-10, 2 for 11-13); at either edge the strips that fall outside are dropped, and on the left the start moves on by whole strips (DE + $FC a strip: the next column, 4 lines lower in the buffer) while C counts the skipped mask bytes. Phase (+9) 0 or 2 drops one more strip. The line in the strip is +A plus the ground height from the profile at $6000 (bits 0-4). The entry is finished at ShadowListAdd.
+$D9F4 ; bit 6: the end of the list
+$D9FB ; end the shadow list, go on with the sprites
+$DA00 ; IX = the record
+$DA0B ; type; a dying record (bit 5 set) fails every compare and gets no shadow
+$DA1C ; types 14 and up: not here
+$DA1E ShadowBig ; types 0-3: 4 strips of 17 lines
+$DA29 ; the profile under the record: $5FF6 + position / 2
+$DA34 ; entry +2, +3: the profile address
+$DA38 ; +A: the line in the strip, +B: the column
+$DA3F ; the ground height
+$DA48 ; column - 4 = the screen column
+$DA4A ; 0-28: every strip shows
+$DA63 ; columns -3 to -1: the first strips are off the left edge
+$DA6D ; C = the mask bytes skipped (17 a strip)
+$DA92 ; phase 0: one strip fewer
+$DA9C ; 17 lines a strip
+$DAA1 ShadowMid ; types 4-10: 3 strips of 11 lines
+$DAAC ; the profile one byte further on
+$DAC8 ; phase 2 and 3: one column on, 4 lines lower
+$DB0B ; phase 2: one strip fewer
+$DB16 ; 11 lines a strip
+$DB1B ShadowSmall ; types 11-13: 2 strips of 4 lines
+$DB26 ; the profile two bytes further on
+$DB40 ; one column on
+$DB60 ; phase 0: one strip fewer
+$DB6A ; 4 lines a strip
+$DB6C c ShadowListAdd ; Finish a shadow entry, save the strips under it
+> In: A = lines a strip, A' = type, B = strips, C = the mask bytes skipped, D = column, E = line. The column becomes the playfield page through the scroll state $C32E, as the blit maps columns (docs/06-rendering.md 6.2): page $80 + ($C32E + 2 x (column - 4)) mod 64. The 8-byte entry at ShadowListPtr: +0 type, +1 phase, +2/+3 the profile address, +4 strips, +5 mask offset, +6/+7 the buffer address. Then SaveStrips copies what the shadow will cover.
+$DB6D ; the scroll state: page of column 0
+$DB75 ; wrap into $80-$BF
+$DB7E ; +0 type
+$DB80 ; +1 phase
+$DB87 ; +4 strips
+$DB89 ; +5 mask offset
+$DB8B ; +6, +7 the address in the playfield buffer
+$DB8F ; the next free entry
+$DB94 ; save the strips under the shadow
+$DB9A c SpriteListBuild ; Sprite list: the visible records at their own heights
+> The second walk of $6500. The line is +A plus the height +4. A dying record (bit 5) is drawn as a type 3 explosion, a line lower at height 25 and two lines lower above. The graphic is the word at $C300 + (+8): +8 is twice the type normally (set at $E2A4) and the explosion counter while dying. The phase (+9) picks one of 4 pre-shifted frames: $A8 bytes for types 0-3 (4 strips of 21 lines, a mask and a pixel byte a line), $66 for 4-10 (3 strips of 17), $34 for 11-13 (2 strips of 13). Clipping is as in ShadowListLoop; a dropped strip on the left moves the graphic on by one strip. The 6-byte entry at SpriteListPtr: +0 type, +1 strips, +2/+3 the buffer address, +4/+5 the graphic; then SaveSpriteStrips. $EAE3 draws the list after the shadows.
+$DB9E SpriteListLoop
+$DBA6 ; end the sprite list
+$DBB4 ; +A: the line in the strip, +B: the column
+$DBBA ; + the height
+$DBC3 ; dying?
+$DBCA ; at 25 a line lower, above that two
+$DBD4 ; dying: drawn as a type 3, the explosion
+$DBE6 ; types 14 and up: not here
+$DBE8 SpriteBig ; types 0-3: 4 strips of 21 lines
+$DBE9 ; the graphic: the word at $C300 + (+8)
+$DBF2 ; one frame: 4 strips x 21 lines x 2 bytes
+$DBF5 ; frame (phase - 1) AND 3
+$DC23 ; 3 strips off the left: the graphic 3 strips on
+$DC5E ; 21 lines a strip
+$DC63 SpriteMid ; types 4-10: 3 strips of 17 lines
+$DC6D ; one frame: 3 strips x 17 lines x 2 bytes
+$DC72 ; phase 2 and 3: one column on, 4 lines lower
+$DC7E ; frame (phase + 1) AND 3
+$DCCD ; 17 lines a strip
+$DCD1 SpriteSmall ; types 11-13: 2 strips of 13 lines
+$DCDC ; one frame: 2 strips x 13 lines x 2 bytes
+$DD14 ; 13 lines a strip
+$DD16 SpriteListAdd ; the page from the column, as at ShadowListAdd
+$DD29 ; +0 type
+$DD2B ; +1 strips
+$DD2D ; +2, +3 the address in the playfield buffer
+$DD36 ; +4, +5 the graphic
+$DD3E ; save the strips under the sprite
+$DD44 c SaveSpriteStrips ; Save the strips under the sprite just listed
+> HL = the buffer address kept at $D9D4 (HL held the graphic), then SaveStrips.
+$DD47 c SaveStrips ; Copy the strips an object will cover into the save area
+> In: HL = the playfield address of the first strip's lowest line, B = strips, A = lines a strip. Each strip's lines are copied with LDIR to SaveAreaPtr ($F800 on); the next strip is the next column of the buffer: 4 bytes lower (the 4-line skew of docs/06-rendering.md 6.3), two pages on, wrapping from $C0 to $80. RestoreStrips undoes it after the blit.
+$DD47 ; DE = the free save area
+$DD4E ; BC = lines
+$DD55 ; the next strip: 4 lines lower ...
+$DD59 ; ... two pages on, $80-$BF
+$DD61 ; the save area's new end
+$DD66 w ShadowListPtr ; The shadow list's next free entry ($FE64 on); DrawShadows reuses it to walk the list
+$DD68 w SpriteListPtr ; The next free entry of the sprite list ($FF00 on)
+$DD6A w SaveAreaPtr ; The free end of the strip save area ($F800 on)
+$DD6C c RestoreUnderSprites ; After the blit: the strips under every shadow and sprite put back
+> Called by the blit $D35E once the buffer is on the screen (docs/06-rendering.md 6.1). Walks the shadow list $FE64 (17, 11 or 4 lines a strip by type) and then the sprite list $FF00 (21, 17 or 13), in the order BuildSpriteLists saved them, and copies the saved bytes back from $F800 with RestoreStrips. The playfield is clean again for the scroller.
+$DD6C ; the saved strips, in the order they were saved
+$DD72 ; the shadow list
+$DD80 ; +4 strips
+$DD83 ; +6, +7 the buffer address
+$DD98 ; types 0-3: 17 lines
+$DD9F ; the sprite list
+$DDA9 ; +1 strips
+$DDAB ; +2, +3 the buffer address
+$DDC2 ; types 0-3: 21 lines
+$DDC9 c RestoreStrips ; Copy saved strips back into the playfield buffer
+> In: DE = the playfield address of the first strip's lowest line, B = strips, A = lines a strip; the bytes come from SaveAreaPtr on. The reverse of SaveStrips.
+$DDC9 ; HL = the next saved bytes
+$DDD6 ; the next strip: 4 lines lower, two pages on
+@module shadows
+$DDE6 b ShadowGround ; The ground height under the shadow being drawn
+$DDE7 c DrawShadows ; Shadows into the playfield buffer, then the sprites
+> Step 8 of the pass (docs/04-game-loop.md 4.3), before the blit. For every entry of the shadow list $FE64 it ANDs a shadow into the strips at the ground under the object, then jumps to $EAE3, which draws the sprite list $FF00 over it.
+> Types 0-3 and 4-10: the shadow is first built as a mask in $6500 (68 bytes, 4 strips of 17, or 33 bytes, 3 strips of 11; set to $FF = clear), from the shape tables below the image ($5CE0, $5DE8, $5EF0 for types 0-3; $5B60, $5BE0, $5C60 for 4-10), at an offset by the phase (+1). The Mask* helpers AND runs of shape bytes into it, strip by strip; each MaskStep* helper moves one profile byte (2 units along) further and shifts its run by the change of the ground height from ShadowGround, so the shadow follows the slope. The mask is then ANDed into the buffer from the entry's mask offset (+5), +4 strips, at the address +6/+7.
+> Types 11-13 (ShadowTiny): 4 bytes a strip from $5B00, $5B20 or $5B40 (the ground level, rising by 1, or more over the next profile byte), 8 bytes a phase, ANDed straight into the buffer.
+$DDED ShadowsLoop
+$DDF3 ; the shadow list is done: the sprites
+$DDF7 ; E = +1 phase
+$DDF9 ; BC = +2, +3 the profile under the object
+$DE08 ShadowBigMask ; types 0-3
+$DE09 ; the ground height where the shadow starts
+$DE0F ; the mask: 4 strips of 17 bytes, clear
+$DE1C ; the shape: $5DE8 type 0, $5EF0 type 2, $5CE0 types 1 and 3
+$DE2C ; one sequence of runs a phase
+$DE3C ; phase 0
+$DE5E ; phase 1
+$DE83 ; phase 2
+$DEA8 ; phase 3
+$DECB ShadowBigApply
+$DED0 ; C = +4 strips
+$DED2 ; A = +5 the first mask byte
+$DED4 ; DE = +6, +7 the buffer address
+$DEE6 ; 17 lines: buffer AND mask
+$DF04 ; the next strip: 4 lines lower, two pages on
+$DF0F ShadowMidMask ; types 4-10
+$DF11 ; the ground height where the shadow starts
+$DF16 ; the mask: 3 strips of 11 bytes, clear
+$DF22 ; the shape: $5B60 type 10, $5C60 types 8-9, $5BE0 types 4-7
+$DFAA ShadowMidApply
+$DFC2 ; 11 lines: buffer AND mask
+$E008 ShadowTiny ; types 11-13
+$E00C ; the ground rise to the next profile byte
+$E011 ; flat: $5B00
+$E017 ; a rise of 1: $5B20
+$E01E ; more: $5B40
+$E021 ; + 8 x phase
+$E02B ; + the skipped bytes (+5)
+$E03B ; 4 lines a strip: buffer AND shape
+$E05C c MaskStepRuns5x3 ; Next profile byte, then MaskRuns5x3
+> The MaskStep* entries share one head: BC moves to the next profile byte; E = $6500 + D + (its ground height - ShadowGround), the mask position of the run in this strip, raised by the slope. They fall into the matching MaskRuns* entry.
+$E05C ; the ground height where the shadow starts
+$E060 ; the next profile byte
+$E064 ; its ground, relative
+$E065 ; + the run's place in the mask
+$E06B c MaskRuns5x3 ; AND 5 shape bytes into the mask at DE, then 3 more 7 on
+> In: HL = the shape, DE = the mask in $6500. The MaskRuns* entries AND short runs of shape bytes into the mask: a run, a gap, a run (the gap is the step to the next strip of the mask), HL running on. This one: 5, a gap of 7, 3.
+$E075 c MaskStepRuns4x4 ; Next profile byte, then MaskRuns4x4
+$E084 c MaskRuns4x4 ; AND 4 shape bytes, then 4 more 7 on
+$E08E c MaskStepRuns3x5 ; Next profile byte, then MaskRuns3x5
+$E09D c MaskRuns3x5 ; AND 3 shape bytes, then 5 more 7 on
+$E0A7 c MaskStepRuns2x6 ; Next profile byte, then MaskRuns2x6
+$E0B6 c MaskRuns2x6 ; AND 2 shape bytes, then 6 more 7 on
+$E0C6 c MaskStepRuns5x5 ; Next profile byte, then MaskRuns5x5
+$E0D5 c MaskRuns5x5 ; AND 5 shape bytes, then 5 more 11 on
+$E0DF c MaskStepRuns4x6 ; Next profile byte, then MaskRuns4x6
+$E0EE c MaskRuns4x6 ; AND 4 shape bytes, then 6 more 11 on
+$E0F8 c MaskStepRuns3x7x3 ; Next profile byte, then MaskRuns3x7x3
+$E107 c MaskRuns3x7x3 ; AND 3 shape bytes, 7 more 11 on, 3 more 11 on
+$E118 c MaskStepRuns1x6x4 ; Next profile byte, then MaskRuns1x6x4
+$E127 c MaskRuns1x6x4 ; AND 1 shape byte, 6 more 12 on, 4 more 11 on
+$E139 c MaskAnd7 ; AND 7 shape bytes into the mask
+> In: HL = the shape, DE = the mask. One chain of entries: MaskAnd7, MaskAnd6, MaskAnd5, MaskAnd4 and MaskAnd3 AND that many bytes (HL and E move on; E stays on the last byte).
+$E13E c MaskAnd6 ; AND 6 shape bytes into the mask
+$E143 c MaskAnd5 ; AND 5 shape bytes into the mask
+$E148 c MaskAnd4 ; AND 4 shape bytes into the mask
+$E14D c MaskAnd3 ; AND 3 shape bytes into the mask
+@module mover
+$E15C c MoveObjects ; Objects: move, steer, height, walls and hits, once a pass
+> Step 5 of the pass (docs/04-game-loop.md 4.3, docs/07-objects.md 7.4). Counts the passes in $C271, then moves every live record of $C000 with MoveRecord. The new position along goes to $C2EA, across to $C2F2, the height to $C2F6 (for the player, $C2F6 already holds the height $E7E9 or AUTO chose); StoreMove writes them back unless the record stopped.
+$E15C ; the pass counter: steering every 4 passes, height every 2
+$E167 ; the player gone: start with the next record
+$E16E c MoveRecord ; Move one record
+> IX = the record. In order: the distance ahead of the scroll ($D14D): below 0 the record is gone, 352 or more it waits. A dying record (bit 5) counts its explosion. With behaviour bit 3, at 190 or more ahead, every 8th pass (+F) and on a random bit, it fires: pads and dishes (types 14-15) launch the template $C2B4 + 9k (k from the highest of behaviour bits 7-4) into a free slot of $C1B0-$C200; the others fire the template $C2E1 into the first free of the 6 slots from $C210 (which takes in $C260). A record with no speed and no height behaviour stops here, except the player.
+> Then the step (direction table $C340 times the speed +6), steering by behaviour bits 4-7, the height by bits 0-2, the terrain (TerrainHeight), walls and the barrier from the profile, and the hit boxes for PairScan (docs/07-objects.md 7.4, docs/10-gameplay-logic.md 10.3, 10.4).
+$E174 ; minus the distance scrolled
+$E17C ; behind the scroll: gone
+$E187 ; $160 (352) or more ahead: not yet
+$E194 ; dying?
+$E19B ; behaviour bit 3: fires
+$E1A1 ; less than 190 ahead: no
+$E1AB ; the fire timer: every 8th pass
+$E1B6 ; and on a random bit
+$E1BD ; an enemy shot: template $C2E1, slots from $C210
+$E1C8 ; pads and dishes launch instead
+$E1CC ; the highest of behaviour bits 7-4 picks the template
+$E1DE ; launched objects: $C1B0-$C200
+$E1E1 LaunchObject ; DE = template, HL = the first slot: 6 slots
+$E1E6 ; bit 7: a free slot
+$E1EE ; all taken: no launch
+$E1F0 ; 9 bytes of template, 7 zero
+$E1FE ; the position of the firer
+$E213 MoveStep
+$E213 ; the speed
+$E21A ; no speed, no height behaviour ...
+$E221 ; ... and not the player: nothing more
+$E22E ; no step along or across
+$E235 RecordDying ; the explosion counter + 2
+$E23A ; 45: gone
+$E248 ; at 34 and 40 a dome of type 2 throws out a jet
+$E259 ; template $C2C6
+$E262 FollowerShield ; the player hit with followers: the last one lost instead
+$E26B ; the followers
+$E275 ; the end of the follower list
+$E287 ; that follower is hit ...
+$E28D ; ... its explosion starts at 32
+$E299 ; the player is not hit after all
+$E2A1 ; +8 = 2 x type again: its own sprite
+$E2A7 ; dying records go on moving at their speed
+$E2B3 RecordStep ; the direction table $C340, 4 bytes a direction
+$E2BD ; DE = the step along
+$E2C1 ; A = the step across
+$E2C3 ; times the speed
+$E2D7 ; the new position along
+$E2DD ; the new position across
+$E2E0 ; behaviour bits 4-7: steering
+$E2E8 ; bit 5: turn round at the edge
+$E2F0 ; across 0 or $47 and up
+$E300 ; bit 4: toward the player across, every 4 passes
+$E30B ; the player's position across
+$E315 ; within 2: direction 4, straight at the player
+$E31B ; direction 5, across + 1
+$E320 ; direction 3, across - 1
+$E327 ; bit 6: the weave $C3F0, every 4 passes
+$E348 ; bit 7: a random turn, every 4 passes
+$E365 ; behaviour bits 0-2: the height
+$E36C ; bit 0: follow the player's height, a step every other pass
+$E387 ; at most 24
+$E38F ; bit 2: the arc $C282
+$E3A2 ; the arc's end (25 or more) ...
+$E3A7 ; ... a dying record stays at 2
+$E3B8 ; ... otherwise it is gone
+$E3BF ; bit 1: the wave $C272, 16 steps
+$E3D6 ; no height behaviour: the player keeps $C2F6, the others their height
+$E3E2 ; the new height
+$E3E5 TerrainHeight ; the profile under the record
+$E3E8 ; types 0-3: 6 profile bytes
+$E3F3 ; types 4-10: 4
+$E3F9 ; types 11-15: 2, one further on
+$E407 ; ground bits 0-4
+$E40D ; A' = the profile bytes ORed: the walls
+$E40E ; D = the highest ground
+$E41A ; + 2: the floor
+$E41F ; not dying, a type below 10 ...
+$E429 ; ... and odd: on the ground
+$E432 ; flying: raised to the floor, never lowered
+$E43C ; IYL = height - 7: the low edge of the height box
+$E440 ; across limit $47 with no wall
+$E447 ; pods and dying records: no walls
+$E453 ; profile bit 7: a wall, limit $17
+$E459 WallLimit
+$E45E ; shots
+$E466 ; inside the limit
+$E46F ; behaviour bit 5: turn to direction 2
+$E479 ; within 6 of the wall: put just inside
+$E47F ; further: no step along, 6 back across
+$E494 ShotOnWall
+$E49B ; direction 0: a shot of the player
+$E4A1 ShotStopped ; hit, stopped, explosion at 32
+$E4AD ; sound request bit 2 (docs/09-sound.md 9.6)
+$E4B5 ; other shots just vanish
+$E4BC ; profile bit 6: a wall, limit $27
+$E4C3 Barrier ; profile bit 5 alone: the barrier (docs/10-gameplay-logic.md 10.4)
+$E4CF ; types 2-10: not moved this pass, no hit test
+$E4D4 ; types 12-15: direction 0 (the player's shots) stops on it; others pass
+$E4DC BarrierPlayer ; the player: the AUTO countdown starts, with or without followers
+$E4E1 ; followers: it passes
+$E4E7 ; none: the player is hit
+$E4EF ; sound request bit 1
+$E4F4 AcrossClamp ; across within 2 .. limit - 1
+$E509 ; keep bit 0 of the step's across
+$E50F ; the new position across
+$E517 ; dying: no hit test
+$E51A ; half the box: 7 for types 0-3
+$E525 ; 5 for types 4-10
+$E52D ; 3 for types 11 and up
+$E531 HitBoxes ; the box starts, one for each class of the other record
+$E537 ; along: position - half (others 11-13)
+$E53C ; - 2 more (others 4-10)
+$E541 ; - 4 more (others 0-3)
+$E548 ; across - half: written, not read by the scan
+$E54D ; across - half - 2 (others 4-13)
+$E552 ; across - half - 4 (others 0-3)
+$E555 ; the box widths into the CP operands below
+$E556 ; others 11-13: 2 x half + 1
+$E55E ; others 4-10: + 4
+$E566 ; others 0-3: + 8
+$E56C ; every record, from $C000
+$E56F c PairScan ; Hit test: the moving record against every record
+> IX = the moving record, HL = the other. Records that are gone or dying are passed over. The other's class picks the box: its position along less the box start (BC) must be below the width, as must its position across less the start, and its height less IYL below 15. The width operands are self-modified by MoveRecord ($E555): the box is centred along for every class, and across for others of types 0-10; against types 11-13 the across box starts at $C2F4 and runs 2 lower than centred ($C2F3, the centred start, is written and not read). Pads (14) are never hit; dishes (15) only by the player, without a height test. A pair goes to the handler table at $EBAA, which skips the record itself (docs/07-objects.md 7.4, 7.6). The list's end goes to StoreMove.
+$E570 ; the end of the list: done
+$E576 ; gone
+$E57A ; dying
+$E586 PairByClass
+$E594 ; 11-13
+$E597 ; 14: pads are never hit
+$E599 ; 15: dishes, only the player
+$E5A2 ; along, a box 23 wide
+$E5BA ; across, 23 wide; no height test
+$E5C6 ; a hit: the handler table
+$E5C9 PairWithBig ; the other is of types 0-3
+$E5DC ; the width: self-modified, 2 x half + 9
+$E5E1 ; across
+$E5E8 ; self-modified like $E5DC
+$E5EE ; the other's height
+$E5F1 ; within 7 either way
+$E5FB PairWithMid ; the other is of types 4-10
+$E60E ; the width: self-modified, 2 x half + 5
+$E61A ; self-modified like $E60E
+$E62D PairWithSmall ; the other is of types 11-13
+$E640 ; the width: self-modified, 2 x half + 1
+$E645 ; across from $C2F4, not $C2F3
+$E64C ; self-modified like $E640
+$E57E c PairScanNext ; Drop the other record's address and go on
+> Also the "nothing" handler of the hit table (docs/07-objects.md 7.6).
+$E57F c PairScanStep ; The next record of the scan
+$E65F c StoreMove ; Write the new position and height into the record
+> From $C2F6 (height), $C2EA (along) and $C2F2 (across), into +4, +1/+2 and +3.
+$E674 c NextMover ; The next live record to move
+> Gone records (bit 7) are passed over; bit 6 ends the list.
+$E687 b DownHeldCount ; Passes down has been held, up to 6: the aircraft's climb step
+> $E687-$E68A: one counter for each stick direction, read by the player routine $E7E9; the step is (count + 1) / 2 (docs/10-gameplay-logic.md 10.3).
+$E688 b UpHeldCount ; Passes up has been held, up to 6
+$E689 b LeftHeldCount ; Passes left has been held, up to 6
+$E68A b RightHeldCount ; Passes right has been held, up to 6
+$E68B b AutoCountdown ; The AUTO countdown: passes left, 0 when off
+> Set at the round start ($D251) and to $FF when the player reaches the barrier ($E4DE); counted down by $E68C (docs/05-controls.md 5.4).
+
+# Range $E68C-$FFFF: input, player, sprites, hits, text, menu, sound, course blocks, IM 2 table
+
+@module player
+$E68C c ReadControls ; Input: the AUTO countdown, or the chosen device into the control byte
+> Called once a pass by the play loop outside the demo (docs/04-game-loop.md 4.3, step 4). While the countdown $E68B runs it does not read the device: it prints " AUTO " ($64F6), or six spaces ($F136) on the pass that ends the count, requests sound bit 3, moves the convoy, steers the player 2 across toward $2C, sets the new height $C2F6 to the height - 1 (not below 2) plus (6 - count) / 2 over the last 6 passes, and sets the speed $C006 to 0 while the reserve $E7B8 lasts, else 1; the followers ($C066 + 16 * k) get the same speed. docs/05-controls.md 5.4, docs/10-gameplay-logic.md 10.4.
+> With the countdown at 0 it reads the device chosen in the menu ($C28F: 0 keyboard, 1 Sinclair, 2 Kempston, 3 Protek-AGF) into the control byte $C290 (bit 0 left, 1 right, 2 down, 3 up, 4 fire, active high) and jumps to the player routine $E7E9. docs/05-controls.md 5.2-5.3.
+$E68C ; AUTO countdown, set by the round setup ($D251) and at the barrier
+$E696 ; the count reached 0: clear the message window
+$E69B ; still counting: " AUTO " (the string stored in the font's spare slots)
+$E6A1 ; the count, kept in A' for the height ease below
+$E6A5 ; sound request bit 3: the AUTO beep
+$E6AA ; the followers copy the leader
+$E6AD ; position across: 2 a pass toward the middle of the track, $2C
+$E6BF ; height - 1, but not below 2
+$E6CB ; last 6 passes: + (6 - count) / 2
+$E6DD ; speed 0 while the reserve lasts, then 1
+$E6EC ; no followers: done
+$E6F2 ; +6 (speed) of the four pod slots $C060-$C090
+$E6FF ReadDevice ; $C28F: the device chosen in the menu
+$E70E ReadKeyboard ; device 0: Q, A, K, L, fire on the bottom two rows
+$E713 ; Q
+$E71A ; bit 0 of $C000 (the vehicle type) decides whether Q is up or down
+$E724 ; A, the opposite of Q
+$E735 ; L (bit 1) right, K (bit 2) left
+$E744 ; $7EFE selects the rows $7FFE and $FEFE together: any key there fires
+$E750 ; the control byte
+$E756 ReadSinclair ; device 1: both Interface 2 rows at once
+$E756 ; 1-5: left, right, down, up, fire as they are
+$E75E ; 0, 9, 8, 7, 6 from bit 0: reversed below to line up with 1-5
+$E767 ; five bits of C reversed into A
+$E76C ; the two sticks ORed together
+$E773 ReadKempston ; device 2: port $1F
+$E776 ; down, up, fire as they are
+$E778 ; Kempston right (bit 0) is the game's bit 1
+$E77E ; Kempston left (bit 1) is the game's bit 0
+$E789 ReadProtek ; device 3: the cursor keys 5, 6, 7, 8 and 0
+$E78F ; 5: left
+$E799 ; 6: down
+$E79F ; 7: up
+$E7A5 ; 8: right
+$E7AB ; 0: fire
+$E7B7 b FireCount ; Passes with fire held
+> Counts the passes fire is held, 0 when released ($E7E9). A shot leaves on odd counts (every other pass), a shell of the ground vehicle only when bit 1 is clear as well (every fourth pass). docs/07-objects.md 7.7.
+$E7B8 b SpeedReserve ; The ground vehicle's speed reserve
+> Spent by slowing down (down held, or the AUTO start), earned back by speeding up (up held), at most 32; 10 at each round start. docs/10-gameplay-logic.md 10.3.
+$E7B9 c ConvoyFollow ; The followers copy the one in front
+> With followers ($ECE4 not 0) it walks the convoy links $ECE7-$ECF0 from the last to the first: each follower's position across (+3) takes the value of the record in front of it (the first follower takes the player's $C003), and while the player moves ($C006 not 0) the height (+4) too. Going from the back to the front makes each follower take its leader's value of the pass before: the convoy trails the player's moves. Called by $E68C (AUTO) and $E7E9. docs/07-objects.md 7.5, docs/10-gameplay-logic.md 10.4.
+$E7B9 ; followers
+$E7BE ; the last link: DE = its follower's +3
+$E7CE ; BC = the link in front ($FF high byte: none)
+$E7D6 ; across from the one in front
+$E7D8 ; standing: the height is not copied
+$E7E9 c MovePlayer ; The player: shot life, firing
+> Entered by a jump from the device readers. It moves the convoy, ages the player's five shots ($C010-$C050, +F counts passes; at 12 a shot not exploding is removed) and fires while bit 4 of $C290 is held: a shot every other pass into a free slot from template $C360, at the player's position + 4 along, its position across and 2 below its height; the ground vehicle (bit 0 of $C000) holding up as well lobs a shell instead, from template $C370 every fourth pass, its arc step +E set from the player's height against the arc table $C282. Sound request bit 4 per shot. Falls into $E8AF. docs/07-objects.md 7.7, docs/10-gameplay-logic.md 10.3.
+$E7EC ; the five shot slots, +F (16 - 1 bytes on)
+$E7FA ; the shot's age, one more a pass
+$E7FD ; 12 passes: its life is over
+$E804 ; exploding shots run their explosion out
+$E808 ; gone
+$E80E ; fire held?
+$E815 ; released: the count starts again
+$E824 ; every other pass
+$E82C ; a player being hit does not fire
+$E837 ; the first free shot slot (bit 7)
+$E844 ; the ground vehicle ...
+$E84B ; ... with up held ...
+$E84F ; ... lobs a shell every fourth pass
+$E855 ; the shell template
+$E85F ; along: the player's position + 4
+$E86B ; across and (D) height
+$E873 ; the step of the arc table $C282 at the player's height
+$E886 ; +E: the arc step
+$E88A ; the shot template
+$E8A7 ; 2 below the player's height
+$E8AA ; sound request bit 4: a shot
+$E8AF c PlayerSteer ; The player: height or speed, walls, across
+> The aircraft (type 0) changes height: down held adds (counter + 1) / 2 with the counter $E687 growing to 6, up held subtracts with $E688; the new height $C2F6 stays within 2-26. The ground vehicle (type 1) changes speed instead: 0 with down held while the reserve $E7B8 lasts, 2 with up held while the reserve is below 32, 1 otherwise, and the followers get the same speed. docs/10-gameplay-logic.md 10.3.
+> Walls: six bytes of the course profile under the player ($5FF7 + position / 2) are ORed; a bit 7 wall limits the position across to below $17, a bit 6 wall to below $27, else $47. A player already past the limit when a wall begins is crashed ($E979): it is hit, stops, moves back 2, and every follower is hit too, sound bit 1. Then left and right move it across, accelerating with the counters $E689 and $E68A up to a step of 6, within 2 and the limit. docs/07-objects.md 7.4, 7.7.
+$E8B3 ; type 0 the aircraft, type 1 the ground vehicle
+$E8BA ; the aircraft: height into $C2F6
+$E8C2 ; down held: the down counter grows to 6
+$E8D1 ; + (counter + 1) / 2
+$E8D5 ; at most 26
+$E8E0 ; up held: the up counter grows to 6
+$E8F3 ; - (counter + 1) / 2
+$E8FD ; below 3 or wrapped: 2
+$E904 GroundVehicle ; the ground vehicle: speed, not height
+$E907 ; being hit: no steering
+$E90D ; fire and up together: speed 1 (the shell is lobbed)
+$E915 ; down: slower, spending the reserve
+$E926 ; up: faster, earning the reserve back to 32
+$E937 ; the speed
+$E93A ; the followers' +6 get the same speed
+$E94F WallCheck ; the profile under the player: $6000 - 9 + position / 2
+$E95E ; C = 0 if the first byte is a bit 7 wall, 1 if bit 6, 2 if neither
+$E969 ; six bytes ORed
+$E96E ; no wall: the track's full width
+$E973 ; bit 7 wall: limit $17
+$E976 ; already beside that wall: only limited
+$E979 WallCrash ; past the limit: the player crashes into the wall
+$E982 ; hit
+$E988 ; the explosion counter
+$E98D ; back 2 along
+$E997 ; sound request bit 1
+$E99C ; the convoy is lost
+$E9A0 ; every follower in the links is hit
+$E9C4 ; bit 6 wall: limit $27
+$E9CE SteerAcross ; left and right
+$E9D3 ; left: the counter $E689 grows to 6
+$E9E2 ; step 2 * ((counter + 1) / 2)
+$E9E7 ; left raises the position across, below the limit E
+$E9F4 ; right: the counter $E68A
+$EA08 ; right lowers it, not below 2
+$EA19 c Random ; The random number generator
+> Returns a new 16-bit value in HL and keeps it in the seed $EA36: about 254 * (seed + 1) mod 65537, done with three subtractions instead of a multiply (checked by simulating the code over all seeds: 126 of 65 536 differ). The menu bumps the seed every pass of its loop ($F20B), so the player's time in the menu picks the sequence. Called by the game start (the demo's course, $CF56) and the mover ($E16E). docs/05-controls.md 5.1.
+$EA36 w RandomSeed ; The random seed
+> The state of $EA19, incremented by every pass of the menu loop.
+
+@module statics
+$EA38 c StampStatics ; Static objects into the playfield buffer
+> Called first by the sprite pass $D9D6. Walks the list at $C99E (record addresses, $FF ends it) that $EFDC builds of the visible records of types 14 and 15, the launch pads and the dishes. A record is drawn only while its column +B is $20-$23, the strips at the far edge of the buffer: 4, 3, 2 or 1 strips of a masked sprite (14 mask and data byte pairs a strip; at column $20 with phase 0, 3 strips). The target is in the playfield buffer $8000-$BFFF (high byte from the scroll offset $C32E + 2 * column + $78), the sprite from the pointer table at $C300 + (+8), stepped $70 bytes per phase (+9). So these objects are stamped into the course picture as it scrolls in, not drawn per pass. docs/06-rendering.md 6.6.
+$EA38 ; the list of types 14-15, made by $EFDC
+$EA43 ; $FF: the end
+$EA49 ; +A plus the height: the line in the strip
+$EA56 ; only columns $20-$23, the edge being drawn
+$EA74 ; column $20: 4 strips, 3 with phase 0
+$EA7E ; the buffer row of the column
+$EA8C ; the sprite: pointer table at $C300 + (+8)
+$EA95 ; + $70 per phase
+$EAA6 ; one strip: 14 bytes masked in (AND mask, OR data)
+$EAD9 ; the next strip: 2 rows of the buffer on, wrapping in $8000-$BFFF
+$EAE3 c DrawSprites ; The moving objects into the playfield buffer
+> Reached by a jump from $DDE7 after the strips under the sprites were saved. Walks the sprite list at $FF00 that $D9D6 rebuilds each pass: 6-byte entries of kind, strip count, buffer address and sprite address, $FF ends it (the pointer is kept at $DD68). Each strip is masked in (AND mask, OR data): 21 bytes for kinds 0-3, 17 for kinds 4-10, 13 for 11 and up, then 2 rows on in the buffer, wrapping inside $8000-$BFFF. docs/06-rendering.md 6.6.
+$EAE3 ; the sprite list
+$EAEC ; kind; $FF ends the list
+$EAF1 ; strip count, buffer address, sprite address
+$EB06 ; the kind picks the height of a strip
+$EB0F DrawSpriteTall ; kinds 0-3: 21 bytes a strip
+$EB45 DrawSpriteMid ; kinds 4-10: 17 bytes a strip
+$EB7B DrawSpriteShort ; kinds 11 and up: 13 bytes a strip
+
+@module hits
+$EBAA c HitDispatch ; A pair hit: jump through the handler table $C380
+> Reached from the pair scan $E56F when the other record (HL, on the stack) is within the moving record's box. The same record is skipped ($E57F). Otherwise the moving record's type pair (IX+0 AND $0E) picks the row and the other's the column of the 8 x 8 word table at $C380, and the handler is entered with the other record's address on the stack. Handlers leave by $E57E (pop it and test the next record), $E57F (next, already popped), $E674 (the moving record is done: its new position is not stored, $E65F is skipped) or $E65F via $EBD1. docs/07-objects.md 7.6.
+$EBAA ; the other record
+$EBB0 ; the record against itself: skip it
+$EBB7 ; column: the other's type pair * 2
+$EBBC ; row: the moving record's type pair * 16
+$EBC4 ; $C380 + row + column
+$EBCD ; the handler, the other record still on the stack
+$EBCE c HitScore ; Points, then both hit
+> B tens of points ($EE87), then $EBD1. Entered with B = 21 (dome type 2), 32 (dome type 3, after it released a pod), 14 (a missile or a jet) or 18 (a cube on its 4th hit). docs/10-gameplay-logic.md 10.7.
+$EBD1 c HitBoth ; Both records are hit
+> Both records get bit 5 (hit) and the explosion counter +8 = $20; a moving one is slowed to speed 1. Sound request bit 1. Ends by storing the moving record's new position ($E65F). The table's cells for the player against the others (row 0, columns 0-4) and the others against the player (column 0) lead here. docs/07-objects.md 7.6.
+$EBD1 ; the other record
+$EBD8 ; a moving one slows to speed 1 while it explodes
+$EBDE ; +8: the explosion counter
+$EBE2 ; the same for the moving record (entered here by $EBFC and $EC01)
+$EBF4 ; sound request bit 1: an explosion
+$EBFC c HitShotOnShot ; Handler: a shot against a shot (not run in the recordings)
+> Reached through the table only (row 6, column 6). POP HL; SET 7,(HL); JR $EBE2. The other shot is removed and the moving one explodes as in $EBD1, sound bit 1.
+$EC01 c HitPlayerOnStatic ; Handler: the player against a pad or a dish (not run)
+> Row 0, column 7: POP HL; JR $EBE2. Only the player is hit (and explodes, sound bit 1); the pad or dish stays.
+$EC04 c HitBlockOnOther ; Handler: a cube or pod against types 2-11 (not run)
+> Row 5, columns 1-5: BIT 0,(IX+$00); JP NZ,$E57E; then falls into $EC0B. A pod goes on with the scan, a cube ends it. Nothing is hit.
+$EC0B c HitNone ; Handler: nothing happens
+> POP HL; JP $E674: the pair has no effect and the moving record's scan ends for this pass. The most common handler (609 runs in the first recording). docs/07-objects.md 7.6.
+$EC0F c HitTurnRound ; Handler: two missiles of types 4-5 turn round
+> Both directions + 4 (mod 8). docs/07-objects.md 7.6.
+$EC27 c HitPlayerOnShot ; Handler: the player against a shot
+> The player's own shots fly in direction 0 and are ignored ($E57E); any other shot hits both ($EBD1). docs/07-objects.md 7.6.
+$EC2D ; the shot's direction: 0 is the player's own
+$EC35 c HitShotOnPlayer ; Handler: a shot against the player (not run)
+> Row 6, column 0, the mirror of $EC27: LD A,(IX+$05); AND A; JP Z,$E57E; JP $EBD1.
+$EC3F c HitTargetOnShot ; Handler: a missile or a jet (types 4-9) against a shot
+> A shot of the player (direction 0): 140 points and both hit. An enemy shot: ignored while the missile moves, else the shot is removed. docs/10-gameplay-logic.md 10.7.
+$EC47 ; 14 tens: 140 points
+$EC4C ; an enemy shot on a moving missile: no effect
+$EC54 ; on a standing one: the shot is removed
+$EC59 c HitShotOnTarget ; Handler: a shot against a missile or a jet
+> The mirror of $EC3F with the shot moving: a shot of the player scores 140 and both are hit; an enemy shot goes on past a moving target and is removed by a standing one. All five point awards of the first recording came this way. docs/07-objects.md 7.6.
+$EC5D ; 14 tens: 140 points
+$EC6C ; an enemy shot on a standing target: removed
+$EC73 c HitBlockOnShot ; Handler: a cube or a pod against a shot (not run)
+> Row 5, column 6, the mirror of $ECAC with the cube moving: an enemy shot or a pod ends at $ECA6 (POP HL; SET 7,(HL): the shot is removed); a shot of the player counts a hit in the cube's +F, at the 4th it scores 180 ($EBCE, B = 18), otherwise the shot explodes (+6 = 0, +8 = $20) and sound request bit 2 ($EC9E).
+$ECAC c HitShotOnBlock ; Handler: a shot against a cube or a pod
+> An enemy shot, or any shot on a pod, is removed ($ECDC). A shot of the player counts a hit in the cube's +F: the 4th scores 180 points and both are hit; hits 1-3 only explode the shot, with sound request bit 2. docs/07-objects.md 7.6, docs/10-gameplay-logic.md 10.7.
+$ECB5 ; the other is a pod: the shot just goes
+$ECB9 ; +F: the cube's hits
+$ECC2 ; 4th hit: 18 tens, 180 points
+$ECC7 ; hits 1-3: the shot explodes, the cube stays
+$ECD4 ; sound request bit 2
+$ECDC ; the shot is removed
+$ECE4 b Followers ; The number of followers (the lives carried into the next round)
+> The convoy behind the player, up to 4. A hit on the player costs the last one instead of the vehicle ($E262); the next round's lives are these ($D151 copies them into $C2F9); the game start sets 4 ($CF36-$CF65); the round setup clears it after taking the lives ($D1DE). docs/07-objects.md 7.5, docs/10-gameplay-logic.md 10.4.
+$ECE5 w FollowerOffset ; Where the next follower goes, along, from the player
+> Added to a new follower's position: -10 at each round setup ($D1DE), then 6 less for each follower ($ED25); a lost follower gives 6 back ($E262).
+$ECE7 w ConvoyLinks 5 ; The convoy: the leader's and the followers' +3 addresses
+> Five words: $C003 (the player's position across), then the +3 address of each follower in the order they joined; $FF in the high byte marks an empty link (the round setup $D1DE fills the four with $FF, the image holds 0). $ECF3 appends, $E7B9 copies along them, $E979 hits every follower in them.
+$ECF1 w ConvoyLinkEnd ; The next free convoy link
+$ECF3 c HitPlayerOnPod ; Handler: the player against a cube or a pod
+> A cube hits both ($EBD1). A pod (type 11) joins the convoy: it takes the player's +1-+7 (position, across, height, direction, speed, behaviour), is put FollowerOffset behind, its +3 address is appended to the links, the offset grows by 6, $ECE4 counts it, and sound request bit 0 plays. The scan goes on. docs/07-objects.md 7.5.
+$ECF5 ; bit 0 clear: a cube (10), both are hit
+$ED04 ; the player's +1..+7 into the pod
+$ED0A ; along: behind the player by the offset
+$ED19 ; its +3 into the next convoy link
+$ED25 ; the next one 6 further back
+$ED2C ; one more follower
+$ED33 ; sound request bit 0: a pod joins
+$ED3B c HitBlockOnPlayer ; Handler: a cube or a pod against the player (not run)
+> Row 5, column 0, the mirror of $ECF3 with the pod moving: BIT 0,(IX+$00); JP Z,$EBD1, then the same join with IX and HL swapped, ending in sound request bit 0 ($ED79) and JP $E674.
+$ED81 c HitDomeOnShot ; Handler: a dome against a shot (not run)
+> Row 1, column 6, the mirror of $EDCA with the dome moving: an enemy shot passes a moving dome and is removed by a standing one; a shot of the player on a type 2 dome scores 210, on a type 3 dome it releases a pod into a free slot of $C060-$C090 ($EDB3) and scores 320.
+$EDCA c HitShotOnDome ; Handler: a shot against a dome
+> An enemy shot passes a moving dome and is removed by a standing one ($EDDC). A shot of the player on a dome of type 2: 210 points and both hit. On type 3: a pod (type 11) is written into the first free slot of $C060-$C090 at the dome's place (+1-+6), its +8 = $16, and 320 points; with no free slot, both are just hit. docs/07-objects.md 7.5.
+$EDCE ; direction 0: the player's shot
+$EDDC ; an enemy shot on a standing dome: removed
+$EDE3 ShotHitsDome ; the player's shot
+$EDE5 ; type 2: 21 tens, 210 points
+$EDEC ; type 3: a free pod slot
+$EDFE ReleasePod ; type 11 at the dome's place
+$EE0E ; 32 tens: 320 points
+
+@module hud
+$EE13 w PrintScreenPos ; The print routine's screen address
+> The bitmap address of the next character cell, kept in memory because the glyph copy needs B and DE. docs/08-hud-and-text.md 8.1.
+$EE15 w PrintAttrPos ; The print routine's attribute address
+$EE17 c PrintString ; Print a string of records
+> HL = the string: records of attribute + $80, column, row, characters $20-$5F; the next byte with bit 7 set starts a new record, $FF ends the string. Glyphs from the font at $6300, 8 lines each. docs/08-hud-and-text.md 8.1.
+$EE1B ; the attribute, kept in A'
+$EE1E ; the screen third by the row: $40, $48 or $50
+$EE36 ; (row AND 7) * 32 + column
+$EE41 ; attribute address: $5800 + row * 32 + column
+$EE50 ; a character, or bit 7: the next record
+$EE56 ; glyph: $6300 + (code - $20) * 8
+$EE68 ; 8 lines down the cell
+$EE72 ; the attribute
+$EE7A ; the next cell
+$EE87 c AddPoints ; Add B tens of points to SCORE
+> SCORE is ASCII ($EF49-$EF4E, the last digit a fixed '0'): one ten at a time, a space counting as '0', with carry to the left. Falls into $EE9E. docs/08-hud-and-text.md 8.4.
+$EE87 ; the tens digit
+$EE8B ; a leading space counts as 0
+$EE96 ; carry into the next digit to the left
+$EE9C ; B times
+$EE9E c ShowScore ; Draw SCORE in the panel
+> SCORE's digits at $529D in small digits ($EEA4). Called by the round setup $D151 too.
+$EEA4 c DrawDigits ; Draw a number in small digits, right to left
+> DE = the screen address of the units digit, BC = its character. Draws to the left until a '.' byte before the field, each digit from lines 2-6 of its glyph ($6302 + (code - $20) * 8). docs/08-hud-and-text.md 8.4.
+$EEA5 ; '.': the field starts here
+$EEB1 ; lines 2-6 of the glyph
+$EEC4 c ClearScores ; Clear SCORE, MAX and the round table
+> Spaces into the round table entries of rounds 1-10 ($EF55, 60 bytes), SCORE and MAX; HIGH is kept. Called by the menu $F1AA when it is entered, not after the demo. docs/08-hud-and-text.md 8.4.
+$EEE3 c UpdateHigh ; MAX into HIGH if higher, and draw HIGH
+> First updates MAX from SCORE ($EF17). Then compares MAX with HIGH digit by digit as strings (a space sorts below the digits) and copies MAX into HIGH when it is higher. HIGH is drawn at $51FD. Called by the menu $F1AA when it is entered, not after the demo. docs/08-hud-and-text.md 8.4, docs/10-gameplay-logic.md 10.7.
+$EEEE ; the first digit that differs decides
+$EF02 ; MAX is higher
+$EF0E ; HIGH in the panel
+$EF17 c UpdateMax ; SCORE into MAX if higher, and draw MAX
+> The same string compare, SCORE against MAX; MAX is drawn at $51BD. Called by the round setup $D151, at every loss ($CF33) and by $EEE3. docs/10-gameplay-logic.md 10.7.
+$EF33 ; SCORE is higher
+$EF3F ; MAX in the panel
+$EF48 b ScoreStop ; '.': the left end of SCORE for $EEA4
+$EF49 t Score ; SCORE: five characters and a fixed '0'
+> Six ASCII characters; leading spaces stay spaces until a carry reaches them. docs/08-hud-and-text.md 8.4.
+$EF4F b RoundTable 6 ; The round table: 6 bytes a round, rounds 0-10
+> Each entry: the lives at the round's start, then SCORE's five characters at that moment. $D151 writes a round's entry at every setup; a lost life or a fall back restores SCORE from it. docs/04-game-loop.md 4.2, 4.4.
+$EF91 b HighStop ; '.': the left end of HIGH
+$EF92 t HighScore ; HIGH: kept until the machine is reset
+$EF98 b MaxStop ; '.': the left end of MAX
+$EF99 t MaxScore ; MAX: the best SCORE of this game
+$EF9F w DrawListEnd ; The end of the draw list at $6500
+> Written by $EFA5 and $F089.
+$EFA1 w DepthListEnd ; The end of the depth list at $FF00
+$EFA3 w StaticListEnd ; The end of the static-object list at $C99E
+
+@module objview
+$EFA5 c PlaceObjects ; Objects to screen places and depth lists
+> Once a pass (docs/04-game-loop.md 4.3, step 6). Starts three lists: $C99E (record addresses of visible types 14-15, $FF ends it), $FF00 (4-byte entries sorted by height, a $40 entry ends it) and $6500 (the same, ended by $40). Calls $EFDC for every live record of $C000 and at the end of the list jumps to $F089. docs/06-rendering.md 6.6.
+$EFA9 ; the static-object list, empty
+$EFB2 ; the depth list, only the $40 end entry
+$EFBD ; the draw list, only the $40 end entry
+$EFCB ; bit 6: the end of the records
+$EFD0 ; bit 7: gone, not shown
+$EFDC c PlaceObject ; One record: its screen place, into a list
+> The distance ahead of the scroll (+1,+2 less $D14D) less the position across must be 1-$11F, else the record is not shown. It sets +B = (distance - across + 1) / 8, the column of strips; +9 = ((distance - across) / 2) AND 3, the phase within the strip, 1 while exploding; +A = $C32F + across + $10 + phase. Types 14 and 15 go to the list at $C99E (stamped into the buffer by $EA38); the others are inserted into the $FF00 list by height (+4), as height, (distance + across) / 2 + 1, record address. 41 391 calls in the first recording. docs/06-rendering.md 6.6, docs/07-objects.md 7.1.
+$EFE2 ; less the distance scrolled
+$EFF1 ; less the position across
+$EFF5 ; behind the view: not shown
+$EFFE ; $120 or more ahead: not shown
+$F010 ; +B: the strip column
+$F014 ; +9: the phase, 0-3
+$F01A ; exploding: phase 1
+$F026 ; +A: the line in the strip
+$F035 ; types 14-15: the static list
+$F04B ; (distance + across) / 2 + 1
+$F057 ; the first entry higher than this record
+$F064 ; open a 4-byte gap: the tail moves up
+$F07D ; height, depth, record address
+$F089 c SortDrawList ; The depth list into the draw list at $6500
+> Each entry of $FF00 (height, depth, record) is inserted into the list at $6500 before the first entry more than 9 above it, or within 9 in height and with a smaller depth byte. So among objects that overlap in height, the farther one comes first. The draw list is read by the sprite pass $D9D6. docs/06-rendering.md 6.6.
+$F08C ; bit 6: the $40 end entry
+$F099 ; heights within 9 of each other?
+$F0A2 ; more than 9 higher: insert here
+$F0AD ; overlapping: by the depth byte
+$F0B9 ; open a 4-byte gap and copy the entry in
+
+@module menu
+$F0DB b DemoFlag ; The demo: $FF while the demo plays
+> Set by the menu (key 5, or when idle too long), cleared when the menu is entered. docs/05-controls.md 5.1, docs/10-gameplay-logic.md 10.6.
+$F0DC b MenuIdleLow ; The menu's idle count, low byte
+$F0DD w MenuIdleHigh ; The menu's idle count in 256 passes; 2 000 starts the demo
+$F0DF w MenuBarAttr ; The attribute address of the device highlight bar
+$F0E1 t DemoMessage ; " DEMO " at (2,6)
+> Printed every pass of the demo. Strings are records for $EE17: attribute + $80, column, row, characters; $FF ends. docs/08-hud-and-text.md 8.3.
+$F0EB t PauseMessage ; "PAUSE!" at (2,6)
+$F0F5 t GameOverBox ; The GAME OVER box
+> A red frame of $2E blocks around the eleven big-letter glyphs $22-$2C, rows 9-11, columns 10-22. Printed at GAME OVER and ABORT ($D0A5). docs/08-hud-and-text.md 8.2-8.3.
+$F12C t AbortMessage ; "ABORT!" at (2,6)
+$F136 t BlankMessage ; Six spaces at (2,6): clears the message window
+$F140 t MenuText ; The menu: SELECT and the six choices
+> Seven records: SELECT at (2,6); the four devices at (10,8-11) in white; 5 DEMO and 6 START GAME at (10,13-14) in green. docs/05-controls.md 5.1.
+$F1AA c Menu ; The menu: device, demo or start
+> Paints the cells of the list $D5B2 with attribute 6 ($D338, docs/08-hud-and-text.md 8.5). Unless it is entered after the demo, it updates HIGH ($EEE3) and clears SCORE, MAX and the round table ($EEC4). Prints the menu and the credits, waits for all keys to be released, beeps. Then it loops: keys 1-4 choose the device ($C28F) and move the 13-cell highlight bar; 5 starts the demo; 6 starts the game; 256 * 2 000 passes with no key start the demo. Every pass increments the random seed $EA36. docs/05-controls.md 5.1.
+$F1AC ; attribute 6 over the cells of the list $D5B2
+$F1AF ; returning from the demo: the scores are left alone
+$F1B5 ; MAX into HIGH
+$F1B8 ; a new game's SCORE, MAX and round table
+$F1BF ; the menu, then the credits stored in the font
+$F1D1 ; wait until no key is pressed
+$F1D9 ; the menu beep
+$F1DF MenuShowDevice ; the idle count starts again
+$F1EC ; the bar: attribute row 8 + device, column 10
+$F1FE ; 13 cells highlighted
+$F203 ; wait until no key is pressed
+$F20B MenuLoop ; the random seed, once a pass
+$F212 ; the idle count
+$F222 ; 2 000 * 256 passes: the demo
+$F22A ; key 6: start the game (bar on row 14)
+$F235 ; key 5: the demo
+$F23D ; the demo (bar on row 13)
+$F24C ; the start beep
+$F253 MenuDevice ; keys 1-4: the device
+$F26E ; the chosen device
+$F271 ; the device beep
+$F277 ; the old bar back to white
+$F284 c BeepAt ; Beep with the length and pitch at HL
+> HL points to a word: the length (high byte) and the pitch (low byte) for $F288. Used by the effect table ($F2D9).
+$F288 c Beep ; A two-tone beep
+> H = length in 256-step units, L = pitch. Two square waves with half-periods of 256 - L and 257 - L steps (D and E count up to the wrap) toggle the beeper and MIC bits; their beating gives the warble. Border black. docs/09-sound.md 9.6.
+$F28E ; the beeper, border 0
+$F290 ; wave 1: 256 - L steps
+$F296 ; wave 2: 257 - L steps
+$F2A3 c Sweep ; A rising sweep
+> HL points to four bytes: the step, the cycles of each tone, the start half-period and the number of tones. Each tone is the step shorter than the one before, so the pitch rises. docs/09-sound.md 9.6.
+$F2AE ; one half-period
+$F2B8 ; the next tone, shorter by the step
+$F2BF b SoundRequests ; The sound requests: one bit an effect
+> Set by the game (bit 0 a pod joins, 1 an explosion, 2 a hit that does not destroy, 3 AUTO, 4 a shot), played by $F2C0, cleared by the play loop ($D085). docs/09-sound.md 9.6, docs/10-gameplay-logic.md 10.8.
+$F2C0 c PlayEffect ; Play the requested effect of the highest priority
+> The lowest set bit of $F2BF (bits 0-4) picks the 5-byte entry $F2E2 + 5 * bit; nothing requested, nothing played. docs/09-sound.md 9.6.
+$F2C5 ; the lowest set bit
+$F2CB ; entry = 5 * bit
+$F2D9 c PlaySound ; Play one effect entry
+> HL = a 5-byte entry: 0 and a beep word for $F288, or not 0 and four sweep bytes for $F2A3. The round setup plays the entry $F2FB through here.
+$F2E2 b EffectTable 5 ; The five request effects
+> Entry per request bit 0-4: kind (0 beep, 1 sweep), then the beep's pitch and length or the sweep's step, cycles, start half-period and tones. Bit 0 sweep 2,4,$50,$1E; bit 1 sweep $0A,3,$14,6; bit 2 sweep $32,5,$1E,3; bit 3 beep $0414; bit 4 sweep 2,4,$42,$0A. docs/09-sound.md 9.6.
+$F2FB b RoundStartSound 5 ; The sweep of the round setup
+> Sweep 8, 4, 3, $64, played by $D151 through $F2D9 when a round is set up.
+
+@module coursedata
+$F300 b RoundObjects1 8 ; The objects of round 1
+> 16 records of 8 bytes, copied into the object slots $C0B0-$C1A0 at the round setup: +0 type, +1,+2 position along, +3 across, +4 height, +5 direction, +6 speed, +7 behaviour bits (docs/07-objects.md 7.1-7.4). The course record of a round ($CF04, 4 bytes) points here: round 1 at $F300, then 128 bytes a round. docs/04-game-loop.md 4.2, docs/10-gameplay-logic.md 10.2.
+$F380 b RoundObjects2 8 ; The objects of round 2
+$F400 b RoundObjects3 8 ; The objects of round 3
+$F480 b RoundObjects4 8 ; The objects of round 4
+$F500 b RoundObjects5 8 ; The objects of round 5
+$F580 b RoundObjects6 8 ; The objects of round 6
+$F600 b RoundObjects7 8 ; The objects of round 7
+$F680 b RoundObjects8 8 ; The objects of round 8
+$F700 b RoundObjects9 8 ; The objects of round 9
+$F780 b RoundObjects10 8 ; The objects of round 10
+$F800 b SpriteSaveBuffer 16 ; The strips under the sprites, saved
+> $D9D6 starts the pointer $DD6A at $F800 each pass and $DD47 copies the buffer strips under each sprite here before the sprites are drawn; $DDC9 puts them back. Nothing in the image here is read before it is written: a fill pattern ($FA,$FC) and, toward the end, bytes that look like Z80 code that never ran. docs/06-rendering.md 6.6.
+$FDFD c Im2Jump ; The IM 2 jump
+> Every interrupt vector of the table $FE00-$FF00 is $FDFD. The start-up $9F4B writes JP $9F68 here (EI; RET) and the title player $803A writes JP $8340, its handler; the image holds the latter. The game proper runs with interrupts off. docs/02-architecture.md 2.3-2.4.
+$FE00 b Im2Table 16 ; The IM 2 vector table, then the shadow list
+> During the title, $9F4B fills $FE00-$FF00 with $FD and sets I = $FE, so any bus value gives the vector $FDFD. In play the table is no longer needed and $D9D6 builds the shadow list at $FE64 in it (8 bytes an object), drawn by $DDE7 before the blit. docs/02-architecture.md 2.3, docs/06-rendering.md 6.6.
+$FF00 b SpriteListArea 16 ; The depth list and the sprite list, then the stack
+> $FF00 holds the depth list of $EFA5 (4 bytes an entry) and then, rebuilt by $D9D6 each pass, the sprite list drawn by $EAE3 (6 bytes an entry); its first byte is also the last vector byte of the IM 2 table. The stack grows down from $FFFF (SP = $FFFF at the entry, $61A8). The bytes in the image up to $FF57 are leftovers. docs/02-architecture.md 2.2.
+$FF58 b UdgLeftover 8 ; The 48K BASIC's user-defined graphics, left in the image
+> $FF58-$FFFF is where the Spectrum ROM keeps the UDGs, set up as copies of the letters A-U; the bytes are those copies, left from BASIC. The game never reads them; the top of the stack overwrites the last ones.

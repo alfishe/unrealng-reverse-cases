@@ -69,7 +69,7 @@ tried (`$E756-$E772`, `$E789-$E7B6`) and an enemy shot vanishing on a dome (`$ED
 A game is 10 courses, played in order and then again as harder laps ([7.8](07-objects.md)). The first byte of
 each course is the player's type, and it alternates: **type 0, the aircraft**, in rounds 1, 3, 5, 7, 9; **type 1,
 the ground vehicle**, in rounds 2, 4, 6, 8, 10. The mix of buildings and enemies grows with the round (the object
-blocks at `$F300` + 128 × round): cubes appear in rounds 3, 6 and 10, dishes in 4, 5, 6 and 10, plain domes (type 2)
+blocks at `$F300` + 128 × (round − 1)): cubes appear in rounds 3, 6 and 10, dishes in 4, 5, 6 and 10, plain domes (type 2)
 from round 5.
 
 **The hand-over.** The vehicle of the next round waits at the end of the course: the record `$C0A0`, of the other
@@ -77,7 +77,7 @@ type, parked at position `$600` in the middle of the track ([7.2](07-objects.md)
 AUTO countdown (10.4), and the course scrolls on into the next one with no break ([6.5](06-rendering.md)): 32 strips
 into the new course, `$D151` makes it the next round. It takes the lives from the followers, swaps the player's
 type, sets up the new objects and falls into the attribute painter `$D338` ([8.5](08-hud-and-text.md)) with the
-course colour `$D320`-`$D337`: ink 6 − ((round − 1) AND 3), one less in the demo, bright below 5. The rounds cycle
+course colour `$D320`-`$D337`: ink 6 − ((round − 1) AND 3), bright below 5; in the demo the subtracted value is one smaller, and RoundSetup leaves the round number at 0 there, so the demo is always bright green (ink 4). The rounds cycle
 yellow, cyan, green, magenta.
 
 ![The hand-over from round 1 to round 2](img/anim-round-handover.gif)
@@ -122,8 +122,10 @@ is lower; a ground record (an odd type below 10) is set to it whatever it was. `
 `+4`. So the aircraft cannot fly into a hill: it climbs over it, and comes back down only when the stick says so.
 
 **The ground vehicle** (type 1) is one of the ground records: its height is the terrain's. Down and up change its
-speed (`$C006`): 0 while down is held, 2 while up is held, 1 otherwise. Slowing down spends the reserve `$E7B8`,
-which speeding up earns back, up to 32; it is 10 at each round start ([7.7](07-objects.md)). Holding fire and up
+speed (`$C006`) through the reserve `$E7B8` (10 at each round start, [7.7](07-objects.md)): down gives speed 0
+and spends one of the reserve, up gives speed 2 and earns one back, up to 32. With the reserve at 0 down does
+nothing, at 32 up does nothing: the speed stays 1, as with neither held. Fire held with up keeps the speed at 1
+(`$E90D`). Holding fire and up
 together, it lobs a shell (`$C370`, on an arc from `$C282`) instead of a shot, every fourth pass. In the bot's
 game it lobbed one (`$E855`, once).
 
@@ -156,8 +158,10 @@ flowchart TD
 - **A shield.** A hit on the player with followers costs the last follower, not the vehicle. In round 1 one
   missile did that at frame 2 754: the followers went 4 → 3, the lives stayed 4.
 - **The barrier.** Near the end of each course the wall profile has bit 5 set (`$E4C3`-`$E4F2`,
-  [7.4](07-objects.md)). A player who reaches it with no follower is lost (`$E4E7`, sound bit 1). With one or more,
-  `$E68B` = `$FF` starts the AUTO countdown, which flies the convoy home. Player shots die on it as they do on a wall
+  [7.4](07-objects.md)). A player who reaches it gets `$E68B` = `$FF` first (`$E4DC`), followers or not, which
+  starts the AUTO countdown. Then, with no follower, it is hit (`$E4E7`, sound bit 1) and lost; with one or more
+  it passes, and AUTO flies the convoy home. Types 2-10 on the barrier are neither moved nor hit tested in that
+  pass (`$E4CF` → `$E674`). Player shots die on it as they do on a wall
   (sound bit 2, `$E4AD`: 68 times in the bot's game, barrier and walls together). There is no other way out of a
   round: **a round can only be left with at least one pod**.
 - **AUTO** (`$E68C`) also runs for 70 or 14 passes at a round start ([5.4](05-controls.md)). While it counts down,
@@ -198,13 +202,15 @@ loss test is skipped, so the demo runs on to the end of its course, where `$D4C9
 | --- | --- | --- | --- |
 | a dome of type 2 shot | 210 | `$EBCE`, B = 21 | |
 | a dome of type 3 shot (it leaves a pod) | 320 | `$EBCE`, B = 32 | 10 pods released |
-| a missile or a jet shot | 140 | `$EC59` → `$EBCE`, B = 14 | 39 |
+| a missile or a jet shot | 140 | `$EC59` (the shot moving into it) or `$EC3F` (it moving into the shot) → `$EBCE`, B = 14 | 59: 39 by `$EC59`, 20 by `$EC3F` |
 | a cube destroyed (the 4th hit; hits 1-3 sound bit 2) | 180 | `$ECC4` → `$EBCE`, B = 18 | 1 cube, 3 hits before it |
-| all point awards | | `$EBCE` | 70 |
+| all point awards | | `$EBCE` | 70 = 10 + 59 + 1 (L1 calls of `$EBCE` by caller) |
 
 SCORE is six ASCII digits with a fixed last `0` ([8.4](08-hud-and-text.md)): the 5 stored characters count tens.
 MAX is updated from SCORE (`$EF17`) at every round setup outside the demo and at every loss, so a fall back cannot
-lower it; HIGH takes MAX when the menu starts a game (`$EEE3` from `$F1B5`) and lasts until the machine is reset.
+lower it; HIGH takes MAX when the menu is entered, before it waits for a key (`$EEE3` from `$F1B5`; then `$EEC4`
+clears SCORE, MAX and the round table, `$F1B8`; both are skipped when the menu follows the demo, `$F1AF`), and lasts
+until the machine is reset.
 In the bot's game MAX reached 11 080 at the start of round 4; after GAME OVER HIGH read 11 080 though the panel's
 SCORE had gone back to 4 220 ([4.4](04-game-loop.md)).
 

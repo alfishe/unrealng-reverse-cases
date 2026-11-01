@@ -53,7 +53,7 @@ when a game or the demo starts. GAME OVER and ABORT both end in `JP $CF33`.
 
 **Round start** (`$CF68`-`$CFAA`), the same for a new round and for a retry:
 
-1. It clears the 768-byte buffer `$6000-$62FF` (`$CF6E`).
+1. It clears the 768-byte ground profile `$6000-$62FF` (`$CF6E`); `$D0EF` builds it in step 6.
 2. It sets the first byte of the 11 object records from `$C000` (16 bytes apart) to `$8B`, and ends the list with
    `$FF` (`$CF82`).
 3. It resets the scroll state `$C32E`, `$C32F`, `$C3FA` and `$D14D`.
@@ -61,8 +61,9 @@ when a game or the demo starts. GAME OVER and ABORT both end in `JP $CF33`.
 5. It runs the course scroller `$D3F9` 128 times, 32 strips, to fill the playfield buffer before the first
    picture. L1 counted 1 280 calls of `$D3F9`: ten round starts in the window. In play the scroller runs too, once a
    pass, but entered by falling through from the blit `$D35E` (3 599 entries in all, [6.1](06-rendering.md)).
-6. The last pre-roll step is the 32nd strip of the course: there `$D3F9` calls `$D151` and jumps into the play
-   loop at `$D0EF` ([6.5](06-rendering.md)). Both happen 10 times in the window, once a round start. `$D151`:
+6. The last pre-roll step is the 32nd strip of the course: there `$D3F9` calls `$D151` and jumps to `$D0EF`, which
+   builds the ground profile ([6.5](06-rendering.md)) and returns to the pre-roll loop: the jump is a tail call, so
+   the loop ends and the pass loop `$CFAC` follows. Both happen 10 times in the window, once a round start. `$D151`:
    - saves the carried lives into the round table (`$EF4F` + 6 × round);
    - increments `$C2F7`;
    - prints the round number;
@@ -71,10 +72,12 @@ when a game or the demo starts. GAME OVER and ABORT both end in `JP $CF33`.
    - sets up the round's objects from the course record (`$D1DE`-`$D294`, [7](07-objects.md)).
 
 **The round table** `$EF4F`: 6 bytes a round, for rounds 0-10. Each holds the lives at the round's start and SCORE
-at that moment (5 characters). `$EEC4` clears the records of rounds 1-10 when a game starts.
+at that moment (5 characters). `$EEC4` clears the records of rounds 1-10 when the menu is entered (`$F1B8`), but not when the menu follows the
+demo ([8.4](08-hud-and-text.md)).
 
-**The course records** `$CF04`: ten records of 4 bytes, the course data and a 128-byte block at `$F300`-`$F780`.
-They end with `$FFFF`. After the tenth round, `$D17D` wraps the round number to 1 and increments the lap `$C2F8`. It
+**The course records** `$CF04`: ten records of 4 bytes, the course data and a 128-byte block, `$F300` + 128 ×
+(round − 1). They end with `$FFFF`. The course data are stored in the order of rounds 7, 8, 9, 10, 3, 2, 1, 6, 5,
+4; the table puts them in play order. After the tenth round, `$D17D` wraps the round number to 1 and increments the lap `$C2F8`. It
 also copies round 10's record (`$EF8B`) into round 0's:
 
 | Round | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
@@ -94,9 +97,9 @@ One pass of the loop, `$CFAC`-`$D0B7`, in order:
 | 4 | `$D070` → `$E68C` | not in the demo | read the device, or run the AUTO start ([5](05-controls.md)) |
 | 5 | `$D073` → `$E15C` | 2 319 | objects ([7](07-objects.md)) |
 | 6 | `$D076` → `$EFA5` | 2 319 | objects to screen positions ([6.6](06-rendering.md)) |
-| 7 | `$D079` → `$D9D6` | 2 319 | sprites ([6.6](06-rendering.md)) |
-| 8 | `$D07C` → `$DDE7` | 2 319 | ([7](07-objects.md)) |
-| 9 | `$D07F` → `$D35E` | 2 319 | the playfield to the screen, then one scroll step `$D3F9` ([6](06-rendering.md)) |
+| 7 | `$D079` → `$D9D6` | 2 319 | the shadow and sprite lists; the strips under them saved ([6.6](06-rendering.md)) |
+| 8 | `$D07C` → `$DDE7` | 2 319 | the shadows, then the sprites (`$EAE3`), into the playfield buffer ([6.6](06-rendering.md)) |
+| 9 | `$D07F` → `$D35E` | 2 319 | the playfield to the screen, the strips under the objects put back (`$DD6C`), then one scroll step `$D3F9` ([6](06-rendering.md)) |
 | 10 | `$D082` → `$F2C0` | 2 318 | the requested sound effect ([9.6](09-sound.md)) |
 | 11 | `$D085` | | clear the sound requests |
 | 12 | `$D089`-`$D0EC` | | U+G abort, P pause ([5.5](05-controls.md)) |

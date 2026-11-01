@@ -123,6 +123,14 @@ fixtures and tests, branch `analysis-stages`) before going on:
 | A host trap that runs as one instruction lost its writes: L1 kept 64 bus cycles per instruction, the fast tape load writes a whole block at the ROM loader's entry | the second build listed 31 arrivals: the loaded bytes had no load as their writer (the ROM's RAM test was the last one), so every return from the ROM into the banner was a new arrival, each "written `$4000-$FFFF`" | the events past 64 go to a buffer that grows once (up to 128 K); an arrival's run is the bytes its own writer wrote; one arrival per writer and run (`TrapWritesPastTheEventBuffer`, the fixture's stage 2 now calls back into the loader) |
 | The L1 JSON held per-byte kinds only, no counts | no memory heatmap could be drawn from a build | `byte_counts`: reads, writes, first and last frame per byte, dense per page; `tools/heatmap.py` renders them |
 
+Later gaps, found while writing the game's source (section 6.13):
+
+| Gap | Seen as | Fix |
+| --- | --- | --- |
+| A tool edit in the recording (the fast tape load, a script's poke) writes memory past the bus: the replay applied it, L1 did not see it | the loaded block had no writer, its bytes no uses | the replay reports every byte an edit changes, in each bank it maps, as a write of the instruction pending at the edit (`ToolEditWritesAreUses`) |
+| A seek shows its position's picture by replaying the frame, then puts the machine back; the engine's event cursor stayed where that replay left it | an edit right after the first keyframe (the fast tape load 55 T-states into a recording) was applied inside the seek and skipped by the replay that followed: no writes for the loaded block | in progress: the live-state snapshot now keeps the engine's event cursor and frame state too; the replay then sees the loaded bytes, but not yet as writes of the trapped `LD-BYTES` (`FastTapeLoadWritesAreUses`, fixture `stages.asm`, still failing) |
+| The skool draft wrote an instruction whole when its entry ended inside it (code later overwritten by a buffer that starts at the instruction's last byte) | the rebuild gate failed at `$8082` (`JP` at `$8081` into the buffer entry at `$8083`, one byte written twice), the assemble gate shifted | the instruction's own bytes as `DEFB`, the instruction in the comment (`SkoolDraftInstructionCutByTheEntryEnd`) |
+
 New fixture `testdata/analysis/fixtures/stages.asm` (a loader, a depacker with two writers, an overlay); tests
 `CodeArrivalsOnePerWriter`, `WindowFromAnArrival`, `OverlayIsOneFinding`; the recipe
 `.recipe/analysis/reverse-engineering.md` got "Programs that arrive in stages". All 158 analysis tests pass
@@ -276,7 +284,8 @@ from TTD `memory_at` and compares the result with that moment's screen:
 | 38000 | one step back | 3 744 |
 
 The first try failed: memory is sampled after the scroller `$D3F9` has stepped the state for the next pass.
-Undoing that step, as the code does it, gives 92-99 %; the rest is the sprites drawn afterwards. The model is now
+Undoing that step, as the code does it, gives 92-99 %; the rest is the shadows and sprites, which the pass draws
+into the buffer before the blit and takes out after it (doc 06 6.6, corrected from the annotated source). The model is now
 proven on four moments of the recording, and the picture in doc 06 shows the strips as stored next to the screen.
 
 L1's counts per path made the scroll's four-pass cycle visible before the code was read: `$D51D` 903, `$D413` 900,
@@ -356,7 +365,8 @@ dry run before it.
   through and round 4 began.
 - The planner's first boxes were twice too wide and ignored height. `$E531` sets the window's start at the
   position less half its width: along and across the window is centred (±11 between the player and a dome), in
-  height it is ±7 for every pair. With the real boxes the bot climbs over missiles, and aiming at a dome needs the
+  height it is ±7 for every pair. (The annotated source later showed two exceptions: against types 11-13 the across
+  window starts 2 below centre, and the dishes' box has no height test; doc 07 7.4.) With the real boxes the bot climbs over missiles, and aiming at a dome needs the
   height of the dome + 2 (shots fly 2 below the vehicle); before that, shots passed under the domes and only one
   pod a round was collected. Doc 07 7.4 was corrected ("within 23" was the width, not the distance).
 - Launch pads fire their missiles at their own place, beside the player: the planner keeps 19 clear of a pad.
@@ -411,7 +421,7 @@ replays the game:
 | `heat-screen.png`: screen writes in the screen's geometry | `tools/heatviews.py screen` | doc 6.7 |
 | `routines-time.png`: own t-states per routine | `tools/heatviews.py routines` | doc 4.5 |
 
-`tools/heatmap.py` now draws the screen page ($4000-$5AFF) a second time below each panel, in the screen's own
+`tools/heatmap.py` now draws the screen page (`$4000-$5AFF`) a second time below each panel, in the screen's own
 geometry (bitmap bytes where they show, attributes as cells): in the 256-byte rows of the memory grid the screen's
 third-interleaved lines cannot be read as a picture. The first heatmaps (doc 2) were redrawn with it.
 
@@ -427,4 +437,42 @@ the sprites and the panel.
 **Doc claims checked against the code while writing doc 10:** the round colour is set at every round setup by
 `$D151` falling into `$D338` (`$D320`-`$D337`), not only by the menu; the demo skips the loss check, so it ends
 only at the end of its course.
+
+### 6.13 The game's source
+
+The game image now has a source: `src/game/*.asm`, 18 modules, assembled by sjasmplus into the 41 036 bytes the
+depacker leaves at frame 2 613, so `tools/build.sh` builds the whole tape from source and it is identical to
+`orig/HATE.TAP` (doc 3.7).
+
+The source is not typed by hand. `tools/mkgame.py` writes it from three inputs:
+
+1. the image, unpacked from the original tape's block 5;
+2. the instructions the recordings ran (`work/*/l1.json`, 4 568 instruction starts), widened by a walk along the
+   branches no recording took (315 more instructions; the walk stops at bytes the game reads as data, counted only
+   in the recordings that start after the depacker, whose back-references read its own output);
+3. `src/game/game.ann`: what the reverse knows, one line an address (module, entry kind and name, the entry's
+   description, comments and labels on instructions, data shapes).
+
+It turns them into a SkoolKit control file, runs `sna2skool.py` and `skool2asm.py`, writes address operands that
+point inside an entry as `Label+offset` (125), splits the listing into the modules, and installs it only when
+sjasmplus gives the original bytes.
+
+`game.ann` was written in four address ranges at once, each from the docs and from reading the listing, every
+fragment checked by the generator alone before the merge. Reading the code for the comments contradicted the docs
+in about twenty places, among them the drawing order (the sprites and the shadows go into the playfield buffer before
+the blit, not onto the screen after it; the shadows were not described at all), `$D0EF` (the ground profile builder,
+not the play loop), the round digits (`$C2FD`, not `$C2FC`), the object block of round r (`$F300` + 128 × (r − 1)),
+the hit handlers that never ran (shot against shot removes only the other shot), and `$5B00`-`$5FFF` (tables for the
+renderer, put there by the start-up's screen copy, not dead space). Each was checked against the code and the docs
+corrected.
+
+Seven hit handlers no recording reached (`$EBFC`, `$EC01`, `$EC04`, `$EC35`, `$EC73`, `$ED3B`, `$ED81`) are code by
+`game.ann`, because the table `$C380` is their only way in: the generator takes a code entry of `game.ann` as a seed
+for its walk.
+
+From the same entries `tools/refdocs.py` writes [11. Data reference](docs/11-data-reference.md) (218 data entries
+with the routines that read and write them) and [12. Routine reference](docs/12-routine-reference.md) (137 routines:
+runs, own time, callers, callees, memory read and written, ports). `tools/heatviews.py` takes its routine names
+from `game.ann`, so the pictures and the source use the same names (`routines-time.png` redrawn: `$DDE7` is
+`DrawShadows`, not an after-blit pass).
 

@@ -3,8 +3,8 @@
 #
 #   tools/build.sh [SJASMPLUS]
 #
-# The game image comes from src/game when its source is complete; until then it is unpacked from the original
-# tape (docs/03-build-and-load.md, 3.7).
+# The game image is assembled from src/game (written by tools/mkgame.py from src/game/game.ann and the recordings;
+# docs/03-build-and-load.md, 3.7). Without src/game it is unpacked from the original tape.
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
 asm=${1:-${SJASMPLUS:-sjasmplus}}

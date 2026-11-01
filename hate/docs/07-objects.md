@@ -25,7 +25,7 @@ Evidence:
 | +5 | the direction, 0-7 |
 | +6 | the speed: steps of the direction per pass |
 | +7 | behaviour bits (7.4) |
-| +8 | the explosion counter |
+| +8 | the sprite: an offset into the pointer table `$C300` (read with `LD H,$C3` at `$DBEC`, `$DC67`, `$DCD6`, `$EA8F`). The player gets 2 × type (`$D246`), the templates carry their own value. The same byte is the explosion counter: `$20` to `$2C`, the explosion frames `$7C10-$7FFF` |
 | +9-+B | the sprite's place in the strips, from `$EFA5` ([6.6](06-rendering.md)) |
 | +C, +E | steps through the motion tables |
 | +F | the fire timer; on cubes, the hits taken |
@@ -55,14 +55,15 @@ The round start (`$D1DE`-`$D294`) fills the list:
 | `$C010`-`$C050` | 5 | the player's shots (`$E82F`) |
 | `$C060`-`$C090` | 4 | pods released by shot domes (7.5) |
 | `$C0A0` | 1 | a vehicle of the other kind, parked at position `$600` |
-| `$C0B0`-`$C1A0` | 16 | the course's objects: the round's block (`$F300` + 128 × round), 8 bytes each, the rest zero |
+| `$C0B0`-`$C1A0` | 16 | the course's objects: the round's block (`$F300` + 128 × (round − 1), round 1 at `$F300`), 8 bytes each, the rest zero |
 | `$C1B0`-`$C200` | 6 | missiles and aircraft launched by the course |
 | `$C210`-`$C250` | 5 | the enemy's shots |
 | `$C260` | 1 | the vehicle of the round before, at position `$6C` |
 | `$C270` | | `$FF`: the end of the list |
 
 The slot counts are the limits: at most 5 shots of the player in the air, 6 launched objects, 4 pods. A launch
-with no free slot does not happen.
+with no free slot does not happen. The enemy's shots are the exception: the firing code searches 6 slots from
+`$C210` (7.4), so once the vehicle of the round before is gone, `$C260` takes a sixth shot.
 
 **The list as it was used.** L1's per-byte counts over the bot's whole game (10.1), one row a record and one
 column a field (`tools/heatviews.py records`):
@@ -97,16 +98,21 @@ type below 10 rides on the ground.
 The names are what the sprites look like in the recording's screens, labelled by `tools/objects_shot.py`. The
 recording shows types 0, 1, 3, 4, 6, 7, 8, 10, 12, 14 and 15; the demo played rounds 8 and 10.
 
-![Objects labelled by their records, in the demo (frames 41750 and 45000)](img/objects-demo.png)
+![Objects labelled by their records, in the demo (frames 41750, paused there, and 45000)](img/objects-demo.png)
 
 ## 7.4 Moving: `$E15C`, once a pass
 
 For each live record:
 
 1. **Gone or not yet.** A distance below 0 marks it gone; 352 and more skips it.
-2. **Firing.** With behaviour bit 3, at a distance of 190 or more, once in 8 passes and on a random bit: a free
-   slot of `$C1B0`-`$C200` gets a template (`$C2B4` + 9k, k from the highest of behaviour bits 7-4) and the
-   firer's position. L1 counts 64 launches in the window.
+2. **Firing.** With behaviour bit 3, at a distance of 190 or more, once in 8 passes and on a random bit. Pads and
+   dishes (types 14-15) launch: a free slot of `$C1B0`-`$C200` gets a template (`$C2B4` + 9k, k from the highest
+   of behaviour bits 7-4) and the firer's position. The other types fire a shot: the template `$C2E1` goes into the
+   first free of 6 slots from `$C210` (`$E1BD`, `$E1E1`), a search that takes in `$C260` (7.2). L1 counts 64
+   launches in the window.
+
+   A record with speed 0 and no height behaviour (bits 0-2), other than the player, stops here: it skips the
+   step, the terrain, the walls and the hit test (`$E213`-`$E22B`).
 3. **The step.** The direction's two steps times the speed give the new position.
 4. **Steering**, by behaviour bits 4-7:
 
@@ -123,22 +129,30 @@ For each live record:
    height of the ground (bits 0-4) and the walls (bits 5-7). A record cannot sink below the ground under it, and
    the odd types below 10 sit on it. Bits 7 and 6 are walls: they limit the position across to `$17` and `$27`
    (otherwise `$47`). Bit 5 alone is a barrier across the whole track: the player's shots die on it (sound request
-   bit 2), and the player passes it only with a convoy (7.5).
+   bit 2), types 2-10 on it are neither moved nor hit tested in that pass (`$E4CF` → `$E674`), and the player
+   passes it only with a convoy (7.5).
 7. **Hits** (7.6).
 
 The test boxes are self-modified. Before testing a record against the others, `$E555` writes its size into the
 operands of six `CP n` instructions (`$E5DD`-`$E64D`), one pair for each class of the other record, and the
 window's start, its own position less half the width, into `$C2EC`-`$C2F5` (`$E531`). The window is 7 plus a size
-for each of the two records wide: 8 for types 0-3, 4 for 4-10, 0 for 11-13. It is centred, along and across alike:
-two domes meet within 11 either way (a window 23 wide), two shots within 3. In height the window is 15 for every
-pair: within 7 either way (`$E43C` puts the height less 7 in IYL). A missile 8 above or below the player passes.
+for each of the two records wide: 8 for types 0-3, 4 for 4-10, 0 for 11-13. It is centred along for every pair,
+and across when the other record is of types 0-10: two domes meet within 11 either way (a window 23 wide). Against
+types 11-13 the across window starts at `$C2F4` (`$E645`), 2 below the centred start: it runs from
+across − half − 2 to across + half − 2, so two shots meet within 3 along but from 5 below to 1 above across.
+`$C2F3`, the centred start, is written (`$E548`) and never read. In height the window is 15: within 7 either way
+(`$E43C` puts the height less 7 in IYL). A missile 8 above or below the player passes. Dishes (type 15) are tested
+only against the player, in a fixed box, 23 along and 23 across, with no height test at all (`$E599`-`$E5C6`).
 
 ## 7.5 Pods and the convoy
 
 A shot dome of type 3 releases a pod (`$EDFE`): type 11, written into a free slot of `$C060`-`$C090` at the dome's
 place, and 320 points. When the player flies into a pod (`$ECF3`), the pod becomes a **follower**: it is copied
 behind the player, `$ECE4` counts it, and sound request bit 0 plays ([9.6](09-sound.md)). Up to 4 followers trail the
-player (the list at `$ECE9`); `$E7B9` copies the leader's state into them every pass, and they move at the player's speed.
+player; `$E7B9` copies the leader's state into them every pass, and they move at the player's speed. The convoy
+is a list of links at `$ECE7-$ECF0`: `$C003` (the player's position across), then the `+3` address of each follower
+in the order they joined, the next free link in `$ECF1`. An empty link has the high byte `$FF`. The image holds 0
+in the follower links; the round setup `$D1DE` writes the `$FF` values (`$D1F3`-`$D1FE`).
 
 The followers are worth two things:
 
@@ -146,9 +160,10 @@ The followers are worth two things:
   player flies on.
 - **The next round.** When a round starts, its lives are the followers of the round before ([10](10-gameplay-logic.md)).
 
-- **The way out.** The profile marks a barrier near the end of each course (bit 5, 7.4). The player who reaches it
-  with no follower is lost (`$E4E7`); with one or more, the game takes over: `$E68B` = `$FF` starts the AUTO
-  countdown of [5.4](05-controls.md), which drives the vehicle to the middle and on, and the round ends. A round
+- **The way out.** The profile marks a barrier near the end of each course (bit 5, 7.4). When the player reaches
+  it, `$E4DC` writes `$FF` to `$E68B` before it tests `$ECE4`, so the AUTO countdown of [5.4](05-controls.md)
+  starts with or without followers. With no follower the player is then hit (`$E4E7`) and lost; with one or more,
+  the countdown drives the vehicle to the middle and on, and the round ends. A round
   can only be left with at least one pod picked up ([10](10-gameplay-logic.md)).
 
 A crash into a wall loses the player and every follower at once (`$E979`).
@@ -165,17 +180,17 @@ pair, the column by the other's:
 
 | Moving \ other | 0-1 player | 2-3 domes | 4-5 | 6-7 | 8-9 | 10-11 | 12-13 shots | 14-15 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **0-1 player** | both lost | both lost | both lost | both lost | both lost | cube: both lost; pod: collect | an enemy shot: lost | lost |
+| **0-1 player** | both lost | both lost | both lost | both lost | both lost | cube: both lost; pod: collect | an enemy shot: lost | the player lost; the pad or dish stays |
 | **2-3 domes** | both lost | | | | | | shot: points | |
 | **4-5** | both lost | | both turn | | | | shot: points | |
 | **6-7** | both lost | | | | | | shot: points | |
 | **8-9 jets** | both lost | | | | | | shot: points | |
 | **10-11** | cube: both lost; pod: collect | | | | | | cube: a hit counted | |
-| **12-13 shots** | an enemy shot: lost | points | points | points | points | cube: a hit counted | both gone | |
+| **12-13 shots** | an enemy shot: lost | points | points | points | points | cube: a hit counted | the other removed, the moving one explodes | |
 
-An empty cell is "nothing happens". "Points" are for the player's shots only (direction 0); an enemy shot hitting
-a building just vanishes. The table is symmetric in effect: whichever record of a pair is moved first, the pair
-gets the same result.
+An empty cell is "no effect" (`$EC0B` or `$E57E`, below). "Points" are for the player's shots only (direction 0); an
+enemy shot hitting a building just vanishes. The table is symmetric in effect: whichever record of a pair is moved
+first, the pair gets the same result.
 
 | Handler | Effect | Runs |
 | --- | --- | --- |
@@ -183,7 +198,14 @@ gets the same result.
 | `$EBCE` | add B × 10 points ([8.4](08-hud-and-text.md)), then `$EBD1` | 5 |
 | `$EC0F` | both turn round | 93 |
 | `$EC27` | the player meets a shot: its own (direction 0) is ignored | 26 |
-| `$EC0B`, `$E57E` | nothing | 609 |
+| `$EBFC` | a shot against a shot: the other shot removed (bit 7), the moving one explodes as in `$EBE2` (sound request bit 1) | 0 |
+| `$EC01` | the player against a pad or a dish: only the player is hit (`$EBE2`); the pad or dish stays | 0 |
+| `$E57E` | nothing: the scan goes on with the next record | (the scan's own path) |
+| `$EC0B` | no effect on either record, but it leaves through `$E674` and skips `$E65F`: the moving record's pair scan ends for this pass and its new position is not written | 609 |
+
+The runs are L1's counts in the first recording. What `$EC0B` does to the moving record is read from the code.
+`$EBFC`, `$EC01`, `$EC04`, `$EC35`, `$EC73`, `$ED3B` and `$ED81` never ran in any of the recordings, the bot's game
+included.
 
 All 5 point awards in the window came through `$EC59`, a shot of the player on a missile or a jet: 5 × 140 = 700,
 the 280 of each game and the demo's 140.
@@ -202,8 +224,9 @@ Read from the control byte `$C290` ([5.2](05-controls.md)):
 - **The aircraft** (type 0): down and up change the height, with a counter for each that accelerates the
   climb or the drop up to 6 (`$E687`, `$E688`); the height stays within 2-26.
 - **The ground vehicle** (type 1): its height follows the ground (`$E429`: an odd type below 10 takes the ground
-  height + 2). Down and up change the speed (`+6`): 0 while down is held, 2 while up is held, 1
-  otherwise. Slowing down spends `$E7B8`, speeding up earns it back, up to 32; it is 10 at each round start.
+  height + 2). Down and up change the speed (`+6`) through the reserve `$E7B8`, 10 at each round start: down
+  gives 0 and spends one, up gives 2 and earns one back, up to 32. With the reserve at 0 (down) or 32 (up) the
+  speed stays 1, as with neither held; fire held with up keeps it at 1 too (`$E90D`).
 - **Across**: left and right move the player across the track (`$E9C4`-`$EA15`; the AUTO start steers instead,
   [5.4](05-controls.md)).
 - **Walls.** The walls in the profile under the player (`$5FF7` + position / 2) limit its position across. Running
