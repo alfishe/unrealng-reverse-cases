@@ -7,13 +7,13 @@
 ; strips of a masked sprite (14 mask and data byte pairs a strip; at column $20
 ; with phase 0, 3 strips). The target is in the playfield buffer $8000-$BFFF
 ; (high byte from the scroll offset $C32E + 2 * column + $78), the sprite from
-; the pointer table at $C300 + (+8), stepped $70 bytes per phase (+9). So these
-; objects are stamped into the course picture as it scrolls in, not drawn per
-; pass. docs/06-rendering.md 6.6.
+; the pointer table at $C300 + (+8), stepped $70 bytes times ((phase +9) - 1)
+; AND 3. So these objects are stamped into the course picture as it scrolls in,
+; not drawn per pass. docs/06-rendering.md 6.6.
 StampStatics:
   LD HL,SegmentRows+$00B4 ; the list of types 14-15, made by $EFDC
   PUSH HL
-l_EA3C:
+NextStaticRecord:
   POP HL
   LD A,(HL)
   LD IXL,A
@@ -32,29 +32,29 @@ l_EA3C:
   LD B,$04
   LD A,D                  ; only columns $20-$23, the edge being drawn
   CP $20
-  JR C,l_EA3C
-  JR Z,l_EA74
+  JR C,NextStaticRecord
+  JR Z,FirstEdgeColumn
   CP $21
-  JR NZ,l_EA64
+  JR NZ,NotColumn21
   DEC B
-  JR l_EA7E
-l_EA64:
+  JR StaticTarget
+NotColumn21:
   CP $22
-  JR NZ,l_EA6C
+  JR NZ,NotColumn22
   LD B,$02
-  JR l_EA7E
-l_EA6C:
+  JR StaticTarget
+NotColumn22:
   CP $23
-  JR NZ,l_EA3C
+  JR NZ,NextStaticRecord
   LD B,$01
-  JR l_EA7E
-l_EA74:
+  JR StaticTarget
+FirstEdgeColumn:
   LD A,(IX+$09)           ; column $20: 4 strips, 3 with phase 0
   AND A
-  JR NZ,l_EA7E
+  JR NZ,StaticTarget
   DEC B
-  JP Z,l_EA3C
-l_EA7E:
+  JP Z,NextStaticRecord
+StaticTarget:
   LD A,(ScrollPage)       ; the buffer row of the column
   ADD A,D
   ADD A,D
@@ -70,22 +70,23 @@ l_EA7E:
   INC L
   LD H,(HL)
   LD L,A
-  LD A,(IX+$09)           ; + $70 per phase
+  LD A,(IX+$09)           ; + $70 times ((phase - 1) AND 3): phase 1 first,
+                          ; phase 0 last
   DEC A
   AND $03
-  JR Z,l_EAA4
+  JR Z,StaticFrameReady
   LD BC,$0070
-l_EAA0:
+PhaseStepLoop:
   ADD HL,BC
   DEC A
-  JR NZ,l_EAA0
-l_EAA4:
+  JR NZ,PhaseStepLoop
+StaticFrameReady:
   EX AF,AF'
   LD C,A
-l_EAA6:
+StaticStripLoop:
   PUSH DE                 ; one strip: 14 bytes masked in (AND mask, OR data)
   LD B,$03
-l_EAA9:
+StaticByteLoop:
   LD A,(DE)
   AND (HL)
   INC HL
@@ -114,7 +115,7 @@ l_EAA9:
   LD (DE),A
   INC HL
   INC E
-  DJNZ l_EAA9
+  DJNZ StaticByteLoop
   LD A,(DE)
   AND (HL)
   INC HL
@@ -138,8 +139,8 @@ l_EAA9:
   INC D
   RES 6,D
   DEC C
-  JR NZ,l_EAA6
-  JP l_EA3C
+  JR NZ,StaticStripLoop
+  JP NextStaticRecord
 
 ; The moving objects into the playfield buffer
 ;
@@ -152,7 +153,7 @@ l_EAA9:
 DrawSprites:
   LD HL,SpriteListArea    ; the sprite list
   LD (SpriteListPtr),HL
-l_EAE9:
+NextSpriteEntry:
   LD HL,(SpriteListPtr)
   LD A,(HL)               ; kind; $FF ends the list
   CP $FF
@@ -182,7 +183,7 @@ l_EAE9:
 DrawSpriteTall:
   PUSH DE                 ; kinds 0-3: 21 bytes a strip
   LD B,$05
-l_EB12:
+TallByteLoop:
   LD A,(DE)
   AND (HL)
   INC HL
@@ -211,7 +212,7 @@ l_EB12:
   LD (DE),A
   INC HL
   INC E
-  DJNZ l_EB12
+  DJNZ TallByteLoop
   LD A,(DE)
   AND (HL)
   INC HL
@@ -228,11 +229,11 @@ l_EB12:
   RES 6,D
   DEC C
   JR NZ,DrawSpriteTall
-  JP l_EAE9
+  JP NextSpriteEntry
 DrawSpriteMid:
   PUSH DE                 ; kinds 4-10: 17 bytes a strip
   LD B,$04
-l_EB48:
+MidByteLoop:
   LD A,(DE)
   AND (HL)
   INC HL
@@ -261,7 +262,7 @@ l_EB48:
   LD (DE),A
   INC HL
   INC E
-  DJNZ l_EB48
+  DJNZ MidByteLoop
   LD A,(DE)
   AND (HL)
   INC HL
@@ -278,11 +279,11 @@ l_EB48:
   RES 6,D
   DEC C
   JR NZ,DrawSpriteMid
-  JP l_EAE9
+  JP NextSpriteEntry
 DrawSpriteShort:
   PUSH DE                 ; kinds 11 and up: 13 bytes a strip
   LD B,$04
-l_EB7E:
+ShortByteLoop:
   LD A,(DE)
   AND (HL)
   INC HL
@@ -304,7 +305,7 @@ l_EB7E:
   LD (DE),A
   INC HL
   INC E
-  DJNZ l_EB7E
+  DJNZ ShortByteLoop
   LD A,(DE)
   AND (HL)
   INC HL
@@ -321,4 +322,4 @@ l_EB7E:
   RES 6,D
   DEC C
   JR NZ,DrawSpriteShort
-  JP l_EAE9
+  JP NextSpriteEntry

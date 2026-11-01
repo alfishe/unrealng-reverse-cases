@@ -34,13 +34,13 @@ ProfileSegment:
 ProfileAnchor:
   LD A,D                  ; the buffer full at $6300: done
   CP $63
-  JR C,l_D11A
+  JR C,NextAnchor
   POP AF                  ; drop the saved course pointer
   RET
-l_D11A:
+NextAnchor:
   LD A,(HL)               ; the next anchor; $FF ends the segment
   CP $FF
-  JR Z,l_D149
+  JR Z,SegmentDone
   LD (DE),A               ; the new anchor
   INC HL
   EX DE,HL
@@ -62,16 +62,16 @@ l_D11A:
   LD A,(HL)
   INC HL
   LD B,$07                ; the 7 bytes in between
-l_D13D:
+InBetweenLoop:
   SUB C
   LD (HL),A
   INC HL
-  DJNZ l_D13D
+  DJNZ InBetweenLoop
   LD BC,$0008             ; on to the new anchor
   ADD HL,BC
   EX DE,HL
   JR ProfileAnchor
-l_D149:
+SegmentDone:
   POP BC                  ; the next course byte
   INC BC
   JR ProfileSegment
@@ -132,7 +132,7 @@ RoundSetup:
   LD A,(RoundNumber)      ; the next round
   INC A
   CP $0B                  ; after round 10:
-  JR C,l_D19B
+  JR C,StoreRoundNumber
   LD A,(LapNumber)        ; the next lap
   INC A
   LD (LapNumber),A
@@ -143,23 +143,23 @@ RoundSetup:
   LDIR
   POP HL
   LD A,$01
-l_D19B:
+StoreRoundNumber:
   LD (RoundNumber),A
   LD A,(LapNumber)        ; tens digit: the lap, plus 1 from round 10
   ADD A,$30
   LD B,A
   LD A,(RoundNumber)
   CP $0A
-  JR C,l_D1AE
+  JR C,RoundUnits
   INC B
   SUB $0A
-l_D1AE:
+RoundUnits:
   LD C,A
   LD A,B
   CP $31                  ; a leading 0 becomes a space
-  JR NC,l_D1B6
+  JR NC,StoreTensDigit
   LD A,$20
-l_D1B6:
+StoreTensDigit:
   LD (HL),A
   LD A,C
   ADD A,$30
@@ -171,17 +171,17 @@ l_D1B6:
   LD (Lives),A
   LD HL,$5A58             ; hide the 4 dots
   LD B,$04
-l_D1CD:
+HideDotsLoop:
   LD (HL),$12
   INC L
-  DJNZ l_D1CD
+  DJNZ HideDotsLoop
   CALL ShortPause         ; a short pause; A still holds the lives
   LD HL,$5A58
   LD B,A
-l_D1D9:
+LifeDotsLoop:
   LD (HL),$15             ; a cyan dot per life
   INC L
-  DJNZ l_D1D9
+  DJNZ LifeDotsLoop
 ObjectSetup:
   LD HL,(CourseRecord)    ; the round's objects
   LD (RestartRecord),HL   ; a retry restarts this course
@@ -194,10 +194,10 @@ ObjectSetup:
   LD HL,ConvoyLinks+$0002 ; the follower list $ECE9 (pointer $ECF1): empty
   LD (ConvoyLinkEnd),HL
   LD B,$08
-l_D1FB:
+ClearLinksLoop:
   LD (HL),$FF
   INC HL
-  DJNZ l_D1FB
+  DJNZ ClearLinksLoop
   LD HL,(PlayerRecord+$0001) ; how far the player has come, less $6C
   LD BC,$006C
   AND A
@@ -236,9 +236,9 @@ l_D1FB:
   LD (PlayerRecord+$0008),A
   LD B,$46                ; AUTO countdown: 70 passes, or 14 for a nonzero type
   AND A
-  JR Z,l_D250
+  JR Z,SetAutoCountdown
   LD B,$0E
-l_D250:
+SetAutoCountdown:
   LD A,B
   LD (AutoCountdown),A
   LD E,(HL)               ; the object block of the round
@@ -248,30 +248,30 @@ l_D250:
   EX DE,HL
   LD B,$10                ; 16 course objects at $C0B0: 8 bytes from the block,
                           ; 8 zero
-l_D25D:
+CourseObjectLoop:
   PUSH BC
   LD BC,$0008
   LDIR
   XOR A
   LD B,$08
-l_D266:
+ZeroTailLoop:
   LD (DE),A
   INC DE
-  DJNZ l_D266
+  DJNZ ZeroTailLoop
   POP BC
-  DJNZ l_D25D
+  DJNZ CourseObjectLoop
   EX DE,HL
   LD DE,$0010             ; the 11 slots $C1B0-$C250 free
   LD B,$06
-l_D273:
+FreeSixSlotsLoop:
   LD (HL),$80
   ADD HL,DE
-  DJNZ l_D273
+  DJNZ FreeSixSlotsLoop
   LD B,$05
-l_D27A:
+FreeFiveSlotsLoop:
   LD (HL),$80
   ADD HL,DE
-  DJNZ l_D27A
+  DJNZ FreeFiveSlotsLoop
   LD A,(VehicleTemplate)  ; $C260: the vehicle of the round before, at $006C
   LD (HL),A
   INC L
@@ -291,62 +291,62 @@ l_D27A:
   JR Z,LapArming
   LD A,$02                ; from lap 2, own operands: CP $05 becomes CP $02,
                           ; types 2-9 fire
-  LD (l_D2B1+$000D),A
+  LD (ArmObjectLoop+$000D),A
   LD A,$88                ; every launch pad's behaviour becomes $88
-  LD (l_D2D7+$0001),A
-  LD (l_D2DB+$0001),A
+  LD (Pad18To48+$0001),A
+  LD (Pad48To08+$0001),A
 LapArming:
   LD HL,CourseObjectRecords ; arm the 16 course objects
   LD B,$10
-l_D2B1:
+ArmObjectLoop:
   LD A,(HL)               ; the type
   AND $0F
   LD DE,$0007
   ADD HL,DE
   LD C,(HL)               ; C = the behaviour
   CP $0A
-  JR NC,l_D2C6
+  JR NC,NotFiringType
   CP $05                  ; operand changed at $D2A1
-  JR C,l_D2C6
+  JR C,NotFiringType
   SET 3,C                 ; types 5-9 (2-9 from lap 2): fire
   LD (HL),C
-  JR l_D2DD
-l_D2C6:
+  JR NextArmedObject
+NotFiringType:
   CP $0E                  ; type $0E, a launch pad: rotate what it launches
-  JR NZ,l_D2DD
+  JR NZ,NextArmedObject
   LD A,C
   CP $18
-  JR Z,l_D2D7
+  JR Z,Pad18To48
   CP $48
-  JR Z,l_D2DB
+  JR Z,Pad48To08
   LD (HL),$88             ; others: $88
-  JR l_D2DD
-l_D2D7:
+  JR NextArmedObject
+Pad18To48:
   LD (HL),$48             ; $18 becomes $48 (operand changed at $D2A6)
-  JR l_D2DD
-l_D2DB:
+  JR NextArmedObject
+Pad48To08:
   LD (HL),$08             ; $48 becomes $08 (operand changed at $D2A9)
-l_D2DD:
+NextArmedObject:
   LD DE,$0009
   ADD HL,DE
-  DJNZ l_D2B1
+  DJNZ ArmObjectLoop
 SetField8:
   LD HL,PodRecords        ; every record from $C060 to the end: +8 = 2 x type
   LD DE,$0008
-l_D2E9:
+Field8Loop:
   LD A,(HL)
   CP $FF
-  JR Z,l_D2F6
+  JR Z,ShiftFollowers
   AND $0F
   ADD A,A
   ADD HL,DE
   LD (HL),A
   ADD HL,DE
-  JR l_D2E9
-l_D2F6:
+  JR Field8Loop
+ShiftFollowers:
   LD IX,PodRecords        ; the 4 records $C060-$C090 (the followers)
   LD B,$04
-l_D2FC:
+ShiftFollowerLoop:
   LD L,(IX+$01)           ; position along less ConvoyShift
   LD H,(IX+$02)
   LD DE,(ConvoyShift)
@@ -357,7 +357,7 @@ l_D2FC:
   LD (IX+$06),$00         ; speed 0
   LD DE,$0010
   ADD IX,DE
-  DJNZ l_D2FC
+  DJNZ ShiftFollowerLoop
   LD HL,RoundStartSound   ; the round sound: entry 5 of the effect table $F2E2
   CALL PlaySound
   LD A,(RoundNumber)      ; the course colour from the round
@@ -366,15 +366,15 @@ l_D2FC:
   LD B,A
   LD A,(DemoFlag)         ; the demo subtracts one less
   AND A
-  JR Z,l_D32E
+  JR Z,CourseInk
   DEC B
-l_D32E:
+CourseInk:
   LD A,$06                ; ink 6 - that
   SUB B
   CP $05                  ; bright below 5
-  JR NC,l_D337
+  JR NC,CourseColourReady
   SET 6,A
-l_D337:
+CourseColourReady:
   LD B,A
 
 ; Colour the cells of the blit address list with B
@@ -398,13 +398,13 @@ PaintCell:
   RET Z
   CP $47                  ; below $47: a clipped entry
   JR C,PaintCell
-  JR Z,l_D351             ; $47: block $58
+  JR Z,PaintThisCell      ; $47: block $58
   CP $50                  ; $48-$4F: block $59; $50 and up: $5A
-  JR C,l_D350
+  JR C,AttrBlock59
   INC H
-l_D350:
+AttrBlock59:
   INC H
-l_D351:
+PaintThisCell:
   LD (HL),B               ; the cell's colour
   JR PaintCell
 
@@ -414,10 +414,10 @@ l_D351:
 ; hiding the dots (RoundSetup $D1D2, and on the last life lost at $D00A).
 ShortPause:
   LD C,$00
-l_D356:
+PauseOuterLoop:
   LD B,$00
-l_D358:
-  DJNZ l_D358
+PauseInnerLoop:
+  DJNZ PauseInnerLoop
   DEC C
-  JR NZ,l_D356
+  JR NZ,PauseOuterLoop
   RET

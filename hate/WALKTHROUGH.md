@@ -486,3 +486,15 @@ player with a type number it could not know; all fixed. Doc 2.6, the module map,
 modules and L1's calls between them, with `heat-modules.png` (`tools/heatviews.py modules`): which module reads and
 writes which page, and below it every drawing module's screen writes in the screen's geometry.
 
+**Every label named.** The 303 generated `l_XXXX` jump targets inside the routines are named now (`tools/ann_names.py`
+writes them into `game.ann`; the source still assembles to the original image): loops as `...Loop`, branches by
+what happens there (`SkipThatRound`, `PodFromDome`, `DrawAsExplosion`), and a self-modified operand reads as the
+instruction it patches (`VoiceAPreDelay+$0003` is the OUT byte of the title player's voice A, `ArmObjectLoop+$000D`
+the second lap's patch). Reading every branch for its name corrected five comments of `game.ann`: the static
+objects' frame is `$70` × ((phase − 1) AND 3), so phase 0 is the last frame, not the first (`$EA95`); a chasing
+object goes straight for the player from 3 below to 2 above it, not within 2 (`$E315`); any change of the ground
+height, a fall too, picks the shadow shape `$5B40` (`$E01E`); a player being hit skips its steering and the walls
+for the pass (`$E82C`); and a window of the pair scan steps 2 bytes, not 4 (`$E541`). Two names had been lost
+because a later comment line for the same address replaced them; `mkgame.py` now merges such lines and refuses two
+names for one address.
+

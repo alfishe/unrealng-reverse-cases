@@ -37,34 +37,34 @@ MoveRecord:
   SBC HL,BC
   LD A,H
   BIT 7,A                 ; behind the scroll: gone
-  JR Z,l_E187
+  JR Z,AheadOfScroll
   SET 7,(IX+$00)
   JP NextMover
-l_E187:
+AheadOfScroll:
   CP $01                  ; $160 (352) or more ahead: not yet
-  JR C,l_E194
+  JR C,WithinRange
   JP NZ,NextMover
   LD A,L
   CP $60
   JP NC,NextMover
-l_E194:
+WithinRange:
   BIT 5,(IX+$00)          ; dying?
   JP NZ,RecordDying
   BIT 3,(IX+$07)          ; behaviour bit 3: fires
-  JR Z,l_E213
+  JR Z,CheckSpeed
   LD BC,$00BE             ; less than 190 ahead: no
   AND A
   SBC HL,BC
   BIT 7,H
-  JR NZ,l_E213
+  JR NZ,CheckSpeed
   LD A,(IX+$0F)           ; the fire timer: every 8th pass
   INC A
   AND $07
   LD (IX+$0F),A
-  JR NZ,l_E213
+  JR NZ,CheckSpeed
   CALL Random             ; and on a random bit
   BIT 0,L
-  JR NZ,l_E213
+  JR NZ,CheckSpeed
   LD DE,EnemyShotTemplate ; an enemy shot: template $C2E1, slots from $C210
   LD HL,EnemyShotRecords
   LD A,(IX+$00)
@@ -76,35 +76,35 @@ l_E194:
   LD HL,LaunchTemplates
   LD DE,$0009
   LD B,$04
-l_E1D7:
+HighestBitLoop:
   RLA
-  JR C,l_E1DD
+  JR C,TemplateChosen
   ADD HL,DE
-  DJNZ l_E1D7
-l_E1DD:
+  DJNZ HighestBitLoop
+TemplateChosen:
   EX DE,HL
   LD HL,LaunchedRecords   ; launched objects: $C1B0-$C200
 LaunchObject:
   LD A,$06                ; DE = template, HL = the first slot: 6 slots
   LD BC,$0010
-l_E1E6:
+FreeSlotLoop:
   BIT 7,(HL)              ; bit 7: a free slot
-  JR NZ,l_E1F0
+  JR NZ,FillSlot
   ADD HL,BC
   DEC A
-  JR NZ,l_E1E6
-  JR l_E213               ; all taken: no launch
-l_E1F0:
+  JR NZ,FreeSlotLoop
+  JR CheckSpeed           ; all taken: no launch
+FillSlot:
   LD BC,$0009             ; 9 bytes of template, 7 zero
   EX DE,HL
   PUSH DE
   LDIR
   LD B,$07
   XOR A
-l_E1FA:
+ZeroRecordTail:
   LD (DE),A
   INC E
-  DJNZ l_E1FA
+  DJNZ ZeroRecordTail
   LD E,(IX+$01)           ; the position of the firer
   LD D,(IX+$02)
   POP HL
@@ -118,37 +118,37 @@ l_E1FA:
   LD A,(IX+$04)
   INC L
   LD (HL),A
-l_E213:
+CheckSpeed:
   LD A,(IX+$06)           ; the speed
   AND A
   JP NZ,RecordStep
   LD A,(IX+$07)           ; no speed, no height behaviour ...
   AND $07
-  JR NZ,l_E22E
+  JR NZ,StandStill
   LD A,IXL                ; ... and not the player: nothing more
   AND A
   JP NZ,NextMover
   LD A,IXH
   CP $C0
   JP NZ,NextMover
-l_E22E:
+StandStill:
   LD HL,$0000             ; no step along or across
   XOR A
-  JP l_E2D0
+  JP NewPosition
 RecordDying:
   LD A,(IX+$08)           ; the explosion counter + 2
   ADD A,$02
   CP $2D                  ; 45: gone
-  JR C,l_E245
+  JR C,StoreExplosion
   SET 7,(IX+$00)
   JP NextMover
-l_E245:
+StoreExplosion:
   LD (IX+$08),A
   CP $22                  ; at 34 and 40 a dome of type 2 throws out a jet
-  JR Z,l_E250
+  JR Z,DomeJet
   CP $28
   JR NZ,FollowerShield
-l_E250:
+DomeJet:
   LD A,(IX+$00)
   AND $0F
   CP $02
@@ -161,10 +161,10 @@ FollowerShield:
                           ; instead
   AND $0F
   CP $02
-  JR NC,l_E2A7
+  JR NC,DyingSpeed
   LD A,(Followers)        ; the followers
   AND A
-  JR Z,l_E2A7
+  JR Z,DyingSpeed
   DEC A
   LD (Followers),A
   LD HL,(ConvoyLinkEnd)   ; the end of the follower list
@@ -194,13 +194,13 @@ FollowerShield:
   AND $0F                 ; +8 = 2 x type again: its own sprite
   ADD A,A
   LD (IX+$08),A
-l_E2A7:
+DyingSpeed:
   LD A,(IX+$06)           ; dying records go on moving at their speed
   AND A
   JR NZ,RecordStep
   LD HL,$0000
   XOR A
-  JR l_E2D0
+  JR NewPosition
 RecordStep:
   LD HL,Directions        ; the direction table $C340, 4 bytes a direction
   LD A,(IX+$05)
@@ -216,15 +216,15 @@ RecordStep:
   EX DE,HL
   LD B,(IX+$06)           ; times the speed
   DEC B
-  JR Z,l_E2D0
+  JR Z,NewPosition
   LD E,L
   LD D,H
   LD C,A
-l_E2CC:
+SpeedLoop:
   ADD HL,DE
   ADD A,C
-  DJNZ l_E2CC
-l_E2D0:
+  DJNZ SpeedLoop
+NewPosition:
   LD C,(IX+$01)
   LD B,(IX+$02)
   ADD HL,BC
@@ -233,45 +233,46 @@ l_E2D0:
   LD (MoverAcross),A      ; the new position across
   LD A,(IX+$07)           ; behaviour bits 4-7: steering
   AND $F0
-  JP Z,l_E365
+  JP Z,HeightBehaviour
   BIT 5,A                 ; bit 5: turn round at the edge
-  JR Z,l_E300
+  JR Z,NotTurnAtEdge
   LD A,(MoverAcross)
   DEC A
   CP $46                  ; across 0 or $47 and up
-  JR C,l_E365
+  JR C,HeightBehaviour
   LD A,(IX+$05)
   ADD A,$04
   AND $07
   LD (IX+$05),A
-  JR l_E365
-l_E300:
+  JR HeightBehaviour
+NotTurnAtEdge:
   BIT 4,A                 ; bit 4: toward the player across, every 4 passes
-  JR Z,l_E327
+  JR Z,NotChase
   LD A,(PassCounter)
   AND $03
-  JR NZ,l_E365
+  JR NZ,HeightBehaviour
   LD A,($C003)            ; the player's position across
   LD B,A
   LD A,(MoverAcross)
   SUB B
   ADD A,$03
-  LD C,$04                ; within 2: direction 4, straight at the player
+  LD C,$04                ; from 3 below to 2 above the player: direction 4,
+                          ; straight
   CP $06
-  JR C,l_E322
+  JR C,SetChaseDirection
   INC C                   ; direction 5, across + 1
   BIT 7,A
-  JR NZ,l_E322
+  JR NZ,SetChaseDirection
   LD C,$03                ; direction 3, across - 1
-l_E322:
+SetChaseDirection:
   LD (IX+$05),C
-  JR l_E365
-l_E327:
+  JR HeightBehaviour
+NotChase:
   BIT 6,A                 ; bit 6: the weave $C3F0, every 4 passes
-  JR Z,l_E348
+  JR Z,NotWeave
   LD A,(PassCounter)
   AND $03
-  JR NZ,l_E365
+  JR NZ,HeightBehaviour
   LD A,(IX+$0C)
   INC A
   AND $07
@@ -282,51 +283,51 @@ l_E327:
   ADD HL,BC
   LD A,(HL)
   LD (IX+$05),A
-  JR l_E365
-l_E348:
+  JR HeightBehaviour
+NotWeave:
   BIT 7,A                 ; bit 7: a random turn, every 4 passes
-  JR Z,l_E365
+  JR Z,HeightBehaviour
   LD A,(PassCounter)
   AND $03
-  JR NZ,l_E365
+  JR NZ,HeightBehaviour
   CALL Random
   LD A,(IX+$05)
   INC A
   BIT 0,L
-  JR Z,l_E360
+  JR Z,StoreRandomTurn
   DEC A
   DEC A
-l_E360:
+StoreRandomTurn:
   AND $07
   LD (IX+$05),A
-l_E365:
+HeightBehaviour:
   LD A,(IX+$07)           ; behaviour bits 0-2: the height
   AND $07
-  JR Z,l_E3D6
+  JR Z,NoHeightBehaviour
   BIT 0,A                 ; bit 0: follow the player's height, a step every
                           ; other pass
-  JR Z,l_E38F
+  JR Z,NotFollowHeight
   LD A,(PassCounter)
   BIT 0,A
-  JR NZ,l_E3D6
+  JR NZ,NoHeightBehaviour
   LD A,($C004)
   LD B,A
   LD A,(IX+$04)
   CP B
-  JR Z,l_E387
-  JR C,l_E386
+  JR Z,ClampHeight
+  JR C,RiseOne
   DEC A
-  JR l_E387
-l_E386:
+  JR ClampHeight
+RiseOne:
   INC A
-l_E387:
+ClampHeight:
   CP $19                  ; at most 24
-  JR C,l_E3E2
+  JR C,StoreHeight
   LD A,$18
-  JR l_E3E2
-l_E38F:
+  JR StoreHeight
+NotFollowHeight:
   BIT 2,A                 ; bit 2: the arc $C282
-  JR Z,l_E3BF
+  JR Z,NotArc
   LD A,(IX+$0E)
   INC A
   LD (IX+$0E),A
@@ -336,20 +337,20 @@ l_E38F:
   ADD HL,BC
   LD A,(HL)
   CP $19                  ; the arc's end (25 or more) ...
-  JP C,l_E3E2
+  JP C,StoreHeight
   BIT 5,(IX+$00)          ; ... a dying record stays at 2
-  JR Z,l_E3B8
+  JR Z,ArcEndGone
   LD A,(IX+$0E)
   DEC A
   LD (IX+$0E),A
   LD A,$02
-  JR l_E3E2
-l_E3B8:
+  JR StoreHeight
+ArcEndGone:
   SET 7,(IX+$00)          ; ... otherwise it is gone
   JP NextMover
-l_E3BF:
+NotArc:
   BIT 1,A                 ; bit 1: the wave $C272, 16 steps
-  JR Z,l_E3DF
+  JR Z,KeepHeight
   LD A,(IX+$0E)
   INC A
   AND $0F
@@ -359,16 +360,16 @@ l_E3BF:
   LD HL,HeightWave
   ADD HL,BC
   LD A,(HL)
-  JR l_E3E2
-l_E3D6:
+  JR StoreHeight
+NoHeightBehaviour:
   LD A,(IX+$00)           ; no height behaviour: the player keeps $C2F6, the
                           ; others their height
   AND $0F
   CP $02
   JR C,TerrainHeight
-l_E3DF:
+KeepHeight:
   LD A,(IX+$04)
-l_E3E2:
+StoreHeight:
   LD (MoverHeight),A      ; the new height
 TerrainHeight:
   LD DE,ProfileMargin+$0042 ; the profile under the record
@@ -376,13 +377,13 @@ TerrainHeight:
   LD A,(IX+$00)
   AND $0F
   CP $04
-  JR C,l_E3FC
+  JR C,ProfileUnder
   LD B,$03                ; types 4-10: 4
   CP $0B
-  JR C,l_E3FC
+  JR C,ProfileUnder
   INC DE                  ; types 11-15: 2, one further on
   LD B,$01
-l_E3FC:
+ProfileUnder:
   LD L,(IX+$01)
   LD H,(IX+$02)
   SRL H
@@ -394,7 +395,7 @@ l_E3FC:
   LD D,A
   LD A,(HL)
   EX AF,AF'               ; A' = the profile bytes ORed: the walls
-l_E40E:
+HighestGroundLoop:
   EX AF,AF'               ; D = the highest ground
   INC HL
   OR (HL)
@@ -402,30 +403,30 @@ l_E40E:
   LD A,(HL)
   AND C
   CP D
-  JR C,l_E418
+  JR C,NotHigher
   LD D,A
-l_E418:
-  DJNZ l_E40E
+NotHigher:
+  DJNZ HighestGroundLoop
   INC D                   ; + 2: the floor
   INC D
   LD A,(IX+$00)
   BIT 5,A                 ; not dying, a type below 10 ...
-  JR NZ,l_E432
+  JR NZ,FlyingFloor
   AND $0F
   CP $0A
-  JR NC,l_E432
+  JR NC,FlyingFloor
   BIT 0,A                 ; ... and odd: on the ground
-  JR Z,l_E432
+  JR Z,FlyingFloor
   LD (IX+$04),D
-  JR l_E438
-l_E432:
+  JR SetFloorHeight
+FlyingFloor:
   LD A,(MoverHeight)      ; flying: raised to the floor, never lowered
   CP D
-  JR NC,l_E43C
-l_E438:
+  JR NC,HeightBox
+SetFloorHeight:
   LD A,D
   LD (MoverHeight),A
-l_E43C:
+HeightBox:
   SUB $07                 ; IYL = height - 7: the low edge of the height box
   LD IYL,A
   LD E,$47                ; across limit $47 with no wall
@@ -437,7 +438,7 @@ l_E43C:
   JP NZ,AcrossClamp
   EX AF,AF'               ; profile bit 7: a wall, limit $17
   RLA
-  JR NC,l_E4BC
+  JR NC,CheckWallBit6
   LD E,$17
 WallLimit:
   LD A,(IX+$00)
@@ -447,34 +448,34 @@ WallLimit:
   LD A,(MoverAcross)
   LD C,A
   CP E                    ; inside the limit
-  JP C,l_E503
+  JP C,CheckLowEdge
   BIT 7,A
-  JP NZ,l_E507
+  JP NZ,ClampAcrossLow
   BIT 5,(IX+$07)          ; behaviour bit 5: turn to direction 2
-  JR Z,l_E479
+  JR Z,WallOvershoot
   LD (IX+$05),$02
-l_E479:
+WallOvershoot:
   SUB $06                 ; within 6 of the wall: put just inside
   CP E
-  JP C,l_E4FF
+  JP C,JustInsideLimit
   LD L,(IX+$01)           ; further: no step along, 6 back across
   LD H,(IX+$02)
   LD (MoverAlong),HL
   BIT 0,L
-  JR Z,l_E490
+  JR Z,ClearAcrossBit0
   SET 0,A
-  JR l_E50F
-l_E490:
+  JR StoreAcross
+ClearAcrossBit0:
   RES 0,A
-  JR l_E50F
+  JR StoreAcross
 ShotOnWall:
   LD A,(MoverAcross)
   LD C,A
   CP E
-  JR C,l_E503
+  JR C,CheckLowEdge
   LD A,(IX+$05)           ; direction 0: a shot of the player
   AND A
-  JR NZ,l_E4B5
+  JR NZ,ShotVanishes
 ShotStopped:
   SET 5,(IX+$00)          ; hit, stopped, explosion at 32
   LD (IX+$06),$00
@@ -482,10 +483,10 @@ ShotStopped:
   LD HL,SoundRequests     ; sound request bit 2 (docs/09-sound.md 9.6)
   SET 2,(HL)
   JP NextMover
-l_E4B5:
+ShotVanishes:
   SET 7,(IX+$00)          ; other shots just vanish
   JP NextMover
-l_E4BC:
+CheckWallBit6:
   RLA                     ; profile bit 6: a wall, limit $27
   JR NC,Barrier
   LD E,$27
@@ -520,23 +521,23 @@ AcrossClamp:
   LD A,(MoverAcross)      ; across within 2 .. limit - 1
   LD C,A
   CP E
-  JR C,l_E503
+  JR C,CheckLowEdge
   BIT 7,A
-  JR NZ,l_E507
-l_E4FF:
+  JR NZ,ClampAcrossLow
+JustInsideLimit:
   LD A,E
   DEC A
-  JR l_E509
-l_E503:
+  JR KeepStepBit0
+CheckLowEdge:
   CP $02
-  JR NC,l_E509
-l_E507:
+  JR NC,KeepStepBit0
+ClampAcrossLow:
   LD A,$02
-l_E509:
+KeepStepBit0:
   BIT 0,C                 ; keep bit 0 of the step's across
-  JR Z,l_E50F
+  JR Z,StoreAcross
   SET 0,A
-l_E50F:
+StoreAcross:
   LD (MoverAcross),A      ; the new position across
   LD A,(IX+$00)
   BIT 5,A
@@ -563,7 +564,7 @@ HitBoxes:
   LD (HitWindowAlong+$0002),HL ; - 2 more (others 4-10)
   DEC HL
   DEC HL
-  LD (HitWindowAlong+$0004),HL ; - 4 more (others 0-3)
+  LD (HitWindowAlong+$0004),HL ; - 2 more, 4 in all (others 0-3)
   LD A,(MoverAcross)
   SUB C
   LD (HitWindowAcross),A  ; across - half: written, not read by the scan

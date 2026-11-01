@@ -176,7 +176,11 @@ class Annotations:
                 if self.modules and self.modules[-1][0] is None:
                     self.modules[-1][0] = a
             else:
-                self.inline[a] = (name, comment)
+                # Two lines for one address (a name on one, a comment on the other) are merged, not the last kept
+                was_name, was_comment = self.inline.get(a, (None, None))
+                if name and was_name and name != was_name:
+                    sys.exit(f'{path}:{number}: ${a:04X} named twice: {was_name}, {name}')
+                self.inline[a] = (name or was_name, comment or was_comment)
         for start, name in self.modules:
             if start is None:
                 sys.exit(f'{path}: module {name} holds no entry')

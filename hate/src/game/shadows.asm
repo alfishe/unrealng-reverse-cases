@@ -49,28 +49,28 @@ ShadowBigMask:
   LD HL,SpriteScratch     ; the mask: 4 strips of 17 bytes, clear
   LD A,$FF
   LD D,$44
-l_DE16:
+ClearBigMaskLoop:
   LD (HL),A
   INC L
   DEC D
-  JR NZ,l_DE16
+  JR NZ,ClearBigMaskLoop
   EX AF,AF'
   LD HL,$5DE8             ; the shape: $5DE8 type 0, $5EF0 type 2, $5CE0 types
                           ; 1 and 3
   AND A
-  JR Z,l_DE2C
+  JR Z,BigShapeChosen
   LD HL,$5EF0
   CP $02
-  JR Z,l_DE2C
+  JR Z,BigShapeChosen
   LD HL,$5CE0
-l_DE2C:
+BigShapeChosen:
   LD A,E                  ; one sequence of runs a phase
   CP $03
-  JP Z,l_DEA8
+  JP Z,BigMaskPhase3
   CP $02
-  JP Z,l_DE83
+  JP Z,BigMaskPhase2
   CP $01
-  JP Z,l_DE5E
+  JP Z,BigMaskPhase1
   LD DE,SpriteScratch+$0002 ; phase 0
   CALL MaskRuns5x5
   LD D,$04
@@ -84,7 +84,7 @@ l_DE2C:
   LD D,$19
   CALL MaskStepRuns4x6
   JP ShadowBigApply
-l_DE5E:
+BigMaskPhase1:
   LD DE,$0040             ; phase 1
   ADD HL,DE
   LD DE,SpriteScratch+$0003
@@ -100,7 +100,7 @@ l_DE5E:
   LD D,$1A
   CALL MaskStepRuns3x7x3
   JR ShadowBigApply
-l_DE83:
+BigMaskPhase2:
   LD DE,$0083             ; phase 2
   ADD HL,DE
   LD DE,SpriteScratch+$0004
@@ -116,7 +116,7 @@ l_DE83:
   LD D,$1B
   CALL MaskStepRuns1x6x4
   JR ShadowBigApply
-l_DEA8:
+BigMaskPhase3:
   LD DE,$00C7             ; phase 3
   ADD HL,DE
   LD DE,SpriteScratch+$0005
@@ -150,10 +150,10 @@ ShadowBigApply:
   ADD A,L
   LD L,A
   EX DE,HL
-l_DEE3:
+BigApplyStripLoop:
   PUSH HL
   LD B,$04
-l_DEE6:
+BigApplyLineLoop:
   LD A,(DE)               ; 17 lines: buffer AND mask
   AND (HL)
   LD (HL),A
@@ -174,7 +174,7 @@ l_DEE6:
   LD (HL),A
   INC L
   INC E
-  DJNZ l_DEE6
+  DJNZ BigApplyLineLoop
   LD A,(DE)
   AND (HL)
   LD (HL),A
@@ -188,7 +188,7 @@ l_DEE6:
   INC H
   RES 6,H
   DEC C
-  JR NZ,l_DEE3
+  JR NZ,BigApplyStripLoop
   JP ShadowsLoop
 ShadowMidMask:
   EX AF,AF'               ; types 4-10
@@ -198,28 +198,28 @@ ShadowMidMask:
   LD HL,SpriteScratch     ; the mask: 3 strips of 11 bytes, clear
   LD A,$FF
   LD D,$21
-l_DF1D:
+ClearMidMaskLoop:
   LD (HL),A
   INC L
   DEC D
-  JR NZ,l_DF1D
+  JR NZ,ClearMidMaskLoop
   EX AF,AF'               ; the shape: $5B60 type 10, $5C60 types 8-9, $5BE0
                           ; types 4-7
   LD HL,$5B60
   CP $0A
-  JR Z,l_DF34
+  JR Z,MidShapeChosen
   LD HL,$5C60
   CP $08
-  JR NC,l_DF34
+  JR NC,MidShapeChosen
   LD HL,$5BE0
-l_DF34:
+MidShapeChosen:
   LD A,E
   CP $03
-  JP Z,l_DF91
+  JP Z,MidMaskPhase3
   CP $02
-  JP Z,l_DF7A
+  JP Z,MidMaskPhase2
   CP $01
-  JP Z,l_DF5F
+  JP Z,MidMaskPhase1
   LD DE,$0040
   ADD HL,DE
   LD DE,SpriteScratch+$0002
@@ -231,7 +231,7 @@ l_DF34:
   LD D,$0F
   CALL MaskStepRuns4x4
   JR ShadowMidApply
-l_DF5F:
+MidMaskPhase1:
   LD DE,$0060
   ADD HL,DE
   LD DE,SpriteScratch+$0003
@@ -243,7 +243,7 @@ l_DF5F:
   LD D,$10
   CALL MaskStepRuns3x5
   JR ShadowMidApply
-l_DF7A:
+MidMaskPhase2:
   LD DE,SpriteScratch
   CALL MaskRuns5x3
   LD D,$02
@@ -253,7 +253,7 @@ l_DF7A:
   LD D,$06
   CALL MaskStepRuns2x6
   JR ShadowMidApply
-l_DF91:
+MidMaskPhase3:
   LD DE,$0020
   ADD HL,DE
   LD DE,SpriteScratch+$0001
@@ -283,7 +283,7 @@ ShadowMidApply:
   ADD A,L
   LD L,A
   EX DE,HL
-l_DFC2:
+MidApplyStripLoop:
   PUSH HL                 ; 11 lines: buffer AND mask
   LD A,(DE)
   AND (HL)
@@ -348,7 +348,7 @@ l_DFC2:
   INC H
   RES 6,H
   DEC C
-  JR NZ,l_DFC2
+  JR NZ,MidApplyStripLoop
   JP ShadowsLoop
 ShadowTiny:
   LD A,(BC)               ; types 11-13
@@ -360,12 +360,12 @@ ShadowTiny:
   SUB D
   LD BC,$5B00             ; flat: $5B00
   AND A
-  JR Z,l_E021
+  JR Z,TinyShapeChosen
   LD BC,$5B20             ; a rise of 1: $5B20
   CP $01
-  JR Z,l_E021
-  LD BC,$5B40             ; more: $5B40
-l_E021:
+  JR Z,TinyShapeChosen
+  LD BC,$5B40             ; any other change, a fall too: $5B40
+TinyShapeChosen:
   LD A,E                  ; + 8 x phase
   ADD A,A
   ADD A,A
@@ -389,7 +389,7 @@ l_E021:
   LD H,B
   EX AF,AF'
   LD B,A
-l_E03A:
+TinyStripLoop:
   PUSH DE
   LD A,(DE)               ; 4 lines a strip: buffer AND shape
   AND (HL)
@@ -418,7 +418,7 @@ l_E03A:
   INC D
   INC D
   RES 6,D
-  DJNZ l_E03A
+  DJNZ TinyStripLoop
   JP ShadowsLoop
 
 ; Next profile byte, then MaskRuns5x3

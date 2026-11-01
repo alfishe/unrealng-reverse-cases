@@ -16,7 +16,7 @@ PrintAttrPos:
 ; from the font at $6300, 8 lines each. docs/08-hud-and-text.md 8.1.
 PrintString:
   LD A,(HL)
-l_EE18:
+PrintRecord:
   CP $FF
   RET Z
   RES 7,A                 ; the attribute, kept in A'
@@ -29,14 +29,14 @@ l_EE18:
   LD A,(HL)
   LD B,A
   CP $08
-  JR C,l_EE36
+  JR C,RowInThird
   SUB $08
   LD D,$48
   CP $08
-  JR C,l_EE36
+  JR C,RowInThird
   SUB $08
   LD D,$50
-l_EE36:
+RowInThird:
   RRCA                    ; (row AND 7) * 32 + column
   RRCA
   RRCA
@@ -56,10 +56,10 @@ l_EE36:
   ADD HL,BC
   LD (PrintAttrPos),HL
   EX DE,HL
-l_EE50:
+PrintCharLoop:
   LD A,(HL)               ; a character, or bit 7: the next record
   BIT 7,A
-  JR NZ,l_EE18
+  JR NZ,PrintRecord
   PUSH HL
   SUB $20                 ; glyph: $6300 + (code - $20) * 8
   LD L,A
@@ -71,12 +71,12 @@ l_EE50:
   ADD HL,BC
   LD B,$08
   LD DE,(PrintScreenPos)
-l_EE68:
+GlyphLineLoop:
   LD A,(HL)               ; 8 lines down the cell
   LD (DE),A
   INC D
   INC HL
-  DJNZ l_EE68
+  DJNZ GlyphLineLoop
   LD DE,(PrintAttrPos)
   EX AF,AF'               ; the attribute
   LD (DE),A
@@ -88,7 +88,7 @@ l_EE68:
   LD (PrintScreenPos),DE
   POP HL
   INC HL
-  JR l_EE50
+  JR PrintCharLoop
 
 ; Add B tens of points to SCORE
 ;
@@ -97,19 +97,19 @@ l_EE68:
 ; docs/08-hud-and-text.md 8.4.
 AddPoints:
   LD HL,Score+$0004       ; the tens digit
-l_EE8A:
+AddTenToDigit:
   LD A,(HL)
   CP $20                  ; a leading space counts as 0
-  JR NZ,l_EE91
+  JR NZ,DigitUp
   LD A,$30
-l_EE91:
+DigitUp:
   INC A
   CP $3A
-  JR C,l_EE9B
+  JR C,StoreDigit
   LD (HL),$30             ; carry into the next digit to the left
   DEC HL
-  JR l_EE8A
-l_EE9B:
+  JR AddTenToDigit
+StoreDigit:
   LD (HL),A
   DJNZ AddPoints          ; B times
 
@@ -141,12 +141,12 @@ DrawDigits:
   ADD HL,BC
   LD C,D
   LD B,$05
-l_EEB8:
+SmallDigitLineLoop:
   LD A,(HL)
   LD (DE),A
   INC D
   INC HL
-  DJNZ l_EEB8
+  DJNZ SmallDigitLineLoop
   LD D,C
   DEC E
   POP BC
@@ -161,22 +161,22 @@ l_EEB8:
 ClearScores:
   LD HL,RoundTable+$0006
   LD B,$3C
-l_EEC9:
+ClearRoundTableLoop:
   LD (HL),$20
   INC HL
-  DJNZ l_EEC9
+  DJNZ ClearRoundTableLoop
   LD HL,Score
   LD B,$05
-l_EED3:
+ClearScoreLoop:
   LD (HL),$20
   INC HL
-  DJNZ l_EED3
+  DJNZ ClearScoreLoop
   LD HL,MaxScore
   LD B,$05
-l_EEDD:
+ClearMaxLoop:
   LD (HL),$20
   INC HL
-  DJNZ l_EEDD
+  DJNZ ClearMaxLoop
   RET
 
 ; MAX into HIGH if higher, and draw HIGH
@@ -191,7 +191,7 @@ UpdateHigh:
   LD HL,MaxScore
   LD DE,HighScore
   LD B,$05
-l_EEEE:
+HighCompareLoop:
   PUSH BC                 ; the first digit that differs decides
   LD A,(DE)
   LD B,A
@@ -199,22 +199,22 @@ l_EEEE:
   LD A,(HL)
   INC HL
   CP B
-  JR NZ,l_EEFC
+  JR NZ,HighDigitDiffers
   POP BC
-  DJNZ l_EEEE
-  JR l_EF0E
-l_EEFC:
+  DJNZ HighCompareLoop
+  JR DrawHigh
+HighDigitDiffers:
   CP B
-  JR NC,l_EF02
+  JR NC,MaxIntoHigh
   POP BC
-  JR l_EF0E
-l_EF02:
+  JR DrawHigh
+MaxIntoHigh:
   POP BC                  ; MAX is higher
   LD HL,MaxScore
   LD DE,HighScore
   LD BC,$0005
   LDIR
-l_EF0E:
+DrawHigh:
   LD DE,$51FD             ; HIGH in the panel
   LD BC,$EF97
   JP DrawDigits
@@ -228,7 +228,7 @@ UpdateMax:
   LD HL,Score
   LD DE,MaxScore
   LD B,$05
-l_EF1F:
+MaxCompareLoop:
   PUSH BC
   LD A,(DE)
   LD B,A
@@ -236,22 +236,22 @@ l_EF1F:
   LD A,(HL)
   INC HL
   CP B
-  JR NZ,l_EF2D
+  JR NZ,MaxDigitDiffers
   POP BC
-  DJNZ l_EF1F
-  JR l_EF3F
-l_EF2D:
+  DJNZ MaxCompareLoop
+  JR DrawMax
+MaxDigitDiffers:
   CP B
-  JR NC,l_EF33
+  JR NC,ScoreIntoMax
   POP BC
-  JR l_EF3F
-l_EF33:
+  JR DrawMax
+ScoreIntoMax:
   POP BC                  ; SCORE is higher
   LD HL,Score
   LD DE,MaxScore
   LD BC,$0005
   LDIR
-l_EF3F:
+DrawMax:
   LD DE,$51BD             ; MAX in the panel
   LD BC,$EF9E
   JP DrawDigits

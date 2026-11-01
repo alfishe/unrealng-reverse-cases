@@ -67,10 +67,10 @@ Menu:
   CALL PaintAttributes    ; attribute 6 over the cells of the list $D5B2
   LD A,(DemoFlag)         ; returning from the demo: the scores are left alone
   AND A
-  JR NZ,l_F1BB
+  JR NZ,MenuKeepScores
   CALL UpdateHigh         ; MAX into HIGH
   CALL ClearScores        ; a new game's SCORE, MAX and round table
-l_F1BB:
+MenuKeepScores:
   XOR A
   LD (DemoFlag),A
   LD HL,MenuText          ; the menu, then the credits stored in the font
@@ -79,12 +79,12 @@ l_F1BB:
   CALL PrintString
   LD HL,CreditsText2
   CALL PrintString
-l_F1D1:
+MenuReleaseWait:
   XOR A                   ; wait until no key is pressed
   IN A,($FE)
   CPL
   AND $1F
-  JR NZ,l_F1D1
+  JR NZ,MenuReleaseWait
   LD HL,$465A             ; the menu beep
   CALL Beep
 MenuShowDevice:
@@ -95,25 +95,25 @@ MenuShowDevice:
   LD A,(InputDevice)
   LD HL,$590A             ; the bar: attribute row 8 + device, column 10
   AND A
-  JR Z,l_F1F9
+  JR Z,BarRowFound
   LD BC,$0020
-l_F1F5:
+BarRowLoop:
   ADD HL,BC
   DEC A
-  JR NZ,l_F1F5
-l_F1F9:
+  JR NZ,BarRowLoop
+BarRowFound:
   LD (MenuBarAttr),HL
   LD B,$0D
-l_F1FE:
+BarHighlightLoop:
   LD (HL),$17             ; 13 cells highlighted
   INC L
-  DJNZ l_F1FE
-l_F203:
+  DJNZ BarHighlightLoop
+DeviceReleaseWait:
   XOR A                   ; wait until no key is pressed
   IN A,($FE)
   CPL
   AND $1F
-  JR NZ,l_F203
+  JR NZ,DeviceReleaseWait
 MenuLoop:
   LD HL,(RandomSeed)      ; the random seed, once a pass
   INC HL
@@ -121,34 +121,34 @@ MenuLoop:
   LD A,(MenuIdleLow)      ; the idle count
   INC A
   LD (MenuIdleLow),A
-  JR NZ,l_F22A
+  JR NZ,MenuReadKeys
   LD HL,(MenuIdleHigh)
   INC HL
   LD (MenuIdleHigh),HL
   LD BC,$07D0             ; 2 000 * 256 passes: the demo
   AND A
   SBC HL,BC
-  JR Z,l_F23D
-l_F22A:
+  JR Z,StartDemo
+MenuReadKeys:
   LD HL,$59CA             ; key 6: start the game (bar on row 14)
   LD A,$EF
   IN A,($FE)
   BIT 4,A
-  JR Z,l_F245
+  JR Z,HighlightChoice
   LD A,$F7                ; key 5: the demo
   IN A,($FE)
   BIT 4,A
   JR NZ,MenuDevice
-l_F23D:
+StartDemo:
   LD HL,$59AA             ; the demo (bar on row 13)
   LD A,$FF
   LD (DemoFlag),A
-l_F245:
+HighlightChoice:
   LD B,$0D
-l_F247:
+ChoiceBarLoop:
   LD (HL),$17
   INC L
-  DJNZ l_F247
+  DJNZ ChoiceBarLoop
   LD HL,$1E9C             ; the start beep
   CALL Beep
   RET
@@ -157,27 +157,27 @@ MenuDevice:
   IN A,($FE)
   LD B,$00
   BIT 0,A
-  JR Z,l_F26D
+  JR Z,DeviceChosen
   INC B
   BIT 1,A
-  JR Z,l_F26D
+  JR Z,DeviceChosen
   INC B
   BIT 2,A
-  JR Z,l_F26D
+  JR Z,DeviceChosen
   INC B
   BIT 3,A
   JP NZ,MenuLoop
-l_F26D:
+DeviceChosen:
   LD A,B
   LD (InputDevice),A      ; the chosen device
   LD HL,$04B4             ; the device beep
   CALL Beep
   LD HL,(MenuBarAttr)     ; the old bar back to white
   LD B,$0D
-l_F27C:
+BarWhiteLoop:
   LD (HL),$07
   INC L
-  DJNZ l_F27C
+  DJNZ BarWhiteLoop
   JP MenuShowDevice
 
 ; Beep with the length and pitch at HL
@@ -203,22 +203,22 @@ Beep:
   LD D,L
   LD E,D
   DEC E
-l_F28E:
+BeepStepLoop:
   OUT ($FE),A             ; the beeper, border 0
   INC D                   ; wave 1: 256 - L steps
-  JR NZ,l_F296
+  JR NZ,BeepWaveTwo
   LD D,L
   XOR $18
-l_F296:
+BeepWaveTwo:
   INC E                   ; wave 2: 257 - L steps
-  JR NZ,l_F29D
+  JR NZ,BeepNextStep
   LD E,L
   DEC E
   XOR $18
-l_F29D:
-  DJNZ l_F28E
+BeepNextStep:
+  DJNZ BeepStepLoop
   DEC C
-  JR NZ,l_F28E
+  JR NZ,BeepStepLoop
   RET
 
 ; A rising sweep
@@ -236,22 +236,22 @@ Sweep:
   LD E,(HL)
   LD H,B
   LD L,C
-l_F2AC:
+SweepToneLoop:
   XOR A
   LD C,L
-l_F2AE:
+SweepHalfPeriod:
   XOR $18                 ; one half-period
   LD B,D
-l_F2B1:
+SweepWaitLoop:
   OUT ($FE),A
-  DJNZ l_F2B1
+  DJNZ SweepWaitLoop
   DEC C
-  JR NZ,l_F2AE
+  JR NZ,SweepHalfPeriod
   LD A,D                  ; the next tone, shorter by the step
   SUB H
   LD D,A
   DEC E
-  JR NZ,l_F2AC
+  JR NZ,SweepToneLoop
   RET
 
 ; The sound requests: one bit an effect
@@ -269,12 +269,12 @@ SoundRequests:
 PlayEffect:
   LD A,(SoundRequests)
   LD B,$05
-l_F2C5:
+LowestBitLoop:
   RRA                     ; the lowest set bit
-  JR C,l_F2CB
-  DJNZ l_F2C5
+  JR C,EffectFound
+  DJNZ LowestBitLoop
   RET
-l_F2CB:
+EffectFound:
   LD A,$05                ; entry = 5 * bit
   SUB B
   LD B,A

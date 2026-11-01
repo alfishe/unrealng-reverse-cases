@@ -21,10 +21,10 @@ ReadControls:
   DEC A
   LD (AutoCountdown),A
   LD HL,BlankMessage      ; the count reached 0: clear the message window
-  JR Z,l_E69E
+  JR Z,PrintAutoText
   LD HL,AutoText          ; still counting: " AUTO " (the string stored in the
                           ; font's spare slots)
-l_E69E:
+PrintAutoText:
   CALL PrintString
   LD A,(AutoCountdown)    ; the count, kept in A' for the height ease below
   EX AF,AF'
@@ -34,25 +34,25 @@ l_E69E:
   LD A,($C003)            ; position across: 2 a pass toward the middle of the
                           ; track, $2C
   CP $2C
-  JR Z,l_E6BC
-  JR C,l_E6BA
+  JR Z,AutoStoreAcross
+  JR C,AutoAcrossUp
   DEC A
   DEC A
-  JR l_E6BC
-l_E6BA:
+  JR AutoStoreAcross
+AutoAcrossUp:
   INC A
   INC A
-l_E6BC:
+AutoStoreAcross:
   LD (PlayerRecord+$0003),A
   LD A,($C004)            ; height - 1, but not below 2
   CP $03
-  JR C,l_E6C7
+  JR C,AutoStoreHeight
   DEC A
-l_E6C7:
+AutoStoreHeight:
   LD (MoverHeight),A
   EX AF,AF'
   CP $06                  ; last 6 passes: + (6 - count) / 2
-  JR NC,l_E6DB
+  JR NC,AutoSpeed
   LD B,A
   LD A,$06
   SUB B
@@ -61,15 +61,15 @@ l_E6C7:
   EX AF,AF'
   ADD A,B
   LD (MoverHeight),A
-l_E6DB:
+AutoSpeed:
   LD B,$01
   LD A,(SpeedReserve)     ; speed 0 while the reserve lasts, then 1
   AND A
-  JR Z,l_E6E8
+  JR Z,AutoStoreSpeed
   DEC A
   LD (SpeedReserve),A
   DEC B
-l_E6E8:
+AutoStoreSpeed:
   LD A,B
   LD (PlayerRecord+$0006),A
   LD A,(Followers)        ; no followers: done
@@ -79,15 +79,15 @@ l_E6E8:
   LD HL,PodRecords+$0006  ; +6 (speed) of the four pod slots $C060-$C090
   LD DE,$0010
   LD B,$04
-l_E6FA:
+AutoPodSpeedLoop:
   LD (HL),A
   ADD HL,DE
-  DJNZ l_E6FA
+  DJNZ AutoPodSpeedLoop
   RET
 ReadDevice:
   LD A,(InputDevice)      ; $C28F: the device chosen in the menu
   CP $01
-  JR Z,l_E756
+  JR Z,ReadSinclair
   CP $02
   JR Z,ReadKempston
   CP $03
@@ -98,50 +98,51 @@ ReadKeyboard:
   LD A,$FB                ; Q
   IN A,($FE)
   RRA
-  JR C,l_E724
+  JR C,ReadKeyA
   BIT 0,(HL)              ; bit 0 of $C000 (the vehicle type) decides whether Q
                           ; is up or down
-  JR Z,l_E722
+  JR Z,QIsDown
   SET 3,B
-  JR l_E724
-l_E722:
+  JR ReadKeyA
+QIsDown:
   SET 2,B
-l_E724:
+ReadKeyA:
   LD A,$FD                ; A, the opposite of Q
   IN A,($FE)
   RRA
-  JR C,l_E735
+  JR C,ReadKeysKL
   BIT 0,(HL)
-  JR Z,l_E733
+  JR Z,AIsUp
   SET 2,B
-  JR l_E735
-l_E733:
+  JR ReadKeysKL
+AIsUp:
   SET 3,B
-l_E735:
+ReadKeysKL:
   LD A,$BF                ; L (bit 1) right, K (bit 2) left
   IN A,($FE)
   RRA
   RRA
-  JR C,l_E73F
+  JR C,ReadKeyK
   SET 1,B
-l_E73F:
+ReadKeyK:
   RRA
-  JR C,l_E744
+  JR C,ReadFireRows
   SET 0,B
-l_E744:
+ReadFireRows:
   LD A,$7E                ; $7EFE selects the rows $7FFE and $FEFE together:
                           ; any key there fires
   IN A,($FE)
   CPL
   AND $1F
-  JR Z,l_E74F
+  JR Z,StoreKeyboard
   SET 4,B
-l_E74F:
+StoreKeyboard:
   LD A,B
   LD (ControlByte),A      ; the control byte
   JP MovePlayer
-l_E756:
-  LD A,$F7                ; 1-5: left, right, down, up, fire as they are
+ReadSinclair:
+  LD A,$F7                ; device 1, both Interface 2 rows: 1-5 left, right,
+                          ; down, up, fire as they are
   IN A,($FE)
   CPL
   AND $1F
@@ -153,10 +154,10 @@ l_E756:
   LD C,A
   XOR A
   LD B,$05
-l_E767:
+ReverseBitsLoop:
   RR C                    ; five bits of C reversed into A
   RLA
-  DJNZ l_E767
+  DJNZ ReverseBitsLoop
   OR E                    ; the two sticks ORed together
   LD (ControlByte),A
   JP MovePlayer
@@ -165,13 +166,13 @@ ReadKempston:
   LD B,A
   AND $1C                 ; down, up, fire as they are
   BIT 0,B                 ; Kempston right (bit 0) is the game's bit 1
-  JR Z,l_E77E
+  JR Z,KempstonLeft
   SET 1,A
-l_E77E:
+KempstonLeft:
   BIT 1,B                 ; Kempston left (bit 1) is the game's bit 0
-  JR Z,l_E784
+  JR Z,StoreKempston
   SET 0,A
-l_E784:
+StoreKempston:
   LD (ControlByte),A
   JR MovePlayer
 ReadProtek:
@@ -179,27 +180,27 @@ ReadProtek:
   LD A,$F7
   IN A,($FE)
   BIT 4,A                 ; 5: left
-  JR NZ,l_E795
+  JR NZ,ProtekDown
   SET 0,E
-l_E795:
+ProtekDown:
   LD A,$EF
   IN A,($FE)
   BIT 4,A                 ; 6: down
-  JR NZ,l_E79F
+  JR NZ,ProtekUp
   SET 2,E
-l_E79F:
+ProtekUp:
   BIT 3,A                 ; 7: up
-  JR NZ,l_E7A5
+  JR NZ,ProtekRight
   SET 3,E
-l_E7A5:
+ProtekRight:
   BIT 2,A                 ; 8: right
-  JR NZ,l_E7AB
+  JR NZ,ProtekFire
   SET 1,E
-l_E7AB:
+ProtekFire:
   BIT 0,A                 ; 0: fire
-  JR NZ,l_E7B1
+  JR NZ,StoreProtek
   SET 4,E
-l_E7B1:
+StoreProtek:
   LD A,E
   LD (ControlByte),A
   JR MovePlayer
@@ -235,19 +236,19 @@ ConvoyFollow:
   RET Z
   LD HL,ConvoyLinks+$0009 ; the last link: DE = its follower's +3
   LD B,$04
-l_E7C3:
+ConvoyLinkLoop:
   PUSH BC
   PUSH HL
   LD A,(HL)
   CP $FF
-  JR Z,l_E7E2
+  JR Z,NextConvoyLink
   LD D,A
   DEC HL
   LD E,(HL)
   DEC HL
   LD A,(HL)               ; BC = the link in front ($FF high byte: none)
   CP $FF
-  JR Z,l_E7E2
+  JR Z,NextConvoyLink
   LD B,A
   DEC HL
   LD C,(HL)
@@ -255,17 +256,17 @@ l_E7C3:
   LD (DE),A
   LD A,($C006)            ; standing: the height is not copied
   AND A
-  JR Z,l_E7E2
+  JR Z,NextConvoyLink
   INC E
   INC C
   LD A,(BC)
   LD (DE),A
-l_E7E2:
+NextConvoyLink:
   POP HL
   DEC HL
   DEC HL
   POP BC
-  DJNZ l_E7C3
+  DJNZ ConvoyLinkLoop
   RET
 
 ; The player: shot life, firing
@@ -284,33 +285,33 @@ MovePlayer:
   LD HL,PlayerShotRecords ; the five shot slots, +F (16 - 1 bytes on)
   LD DE,$000F
   LD B,$05
-l_E7F4:
+AgeShotLoop:
   LD A,(HL)
   ADD HL,DE
   BIT 7,A
-  JR NZ,l_E80B
+  JR NZ,NextShotAge
   LD A,(HL)               ; the shot's age, one more a pass
   INC A
   LD (HL),A
   CP $0C                  ; 12 passes: its life is over
-  JR C,l_E80B
+  JR C,NextShotAge
   AND A
   SBC HL,DE
   BIT 5,(HL)              ; exploding shots run their explosion out
-  JR NZ,l_E80A
+  JR NZ,ShotExploding
   SET 7,(HL)              ; gone
-l_E80A:
+ShotExploding:
   ADD HL,DE
-l_E80B:
+NextShotAge:
   INC HL
-  DJNZ l_E7F4
+  DJNZ AgeShotLoop
   LD A,(ControlByte)      ; fire held?
   BIT 4,A
-  JR NZ,l_E81C
+  JR NZ,FireHeld
   XOR A                   ; released: the count starts again
   LD (FireCount),A
   JP PlayerSteer
-l_E81C:
+FireHeld:
   LD A,(FireCount)
   INC A
   LD (FireCount),A
@@ -318,24 +319,25 @@ l_E81C:
   BIT 0,A                 ; every other pass
   JP Z,PlayerSteer
   LD A,(PlayerRecord)
-  BIT 5,A                 ; a player being hit does not fire
+  BIT 5,A                 ; a player being hit does not fire, and RET skips its
+                          ; steering and walls this pass
   RET NZ
   LD B,$05
   LD DE,$0010
   LD HL,PlayerShotRecords
-l_E837:
+FreeShotLoop:
   BIT 7,(HL)              ; the first free shot slot (bit 7)
-  JR NZ,l_E841
+  JR NZ,ShotSlotFound
   ADD HL,DE
-  DJNZ l_E837
+  DJNZ FreeShotLoop
   JP PlayerSteer
-l_E841:
+ShotSlotFound:
   LD A,(PlayerRecord)
   BIT 0,A                 ; the ground vehicle ...
-  JR Z,l_E889
+  JR Z,FireShot
   LD A,(ControlByte)
   BIT 3,A                 ; ... with up held ...
-  JR Z,l_E889
+  JR Z,FireShot
   BIT 1,C                 ; ... lobs a shell every fourth pass
   JP NZ,PlayerSteer
   PUSH HL
@@ -360,21 +362,21 @@ l_E841:
   LD HL,MissileArc        ; the step of the arc table $C282 at the player's
                           ; height
   LD E,$00
-l_E878:
+ArcStepLoop:
   CP (HL)
-  JR C,l_E87F
+  JR C,StoreArcStep
   INC E
   INC HL
-  JR l_E878
-l_E87F:
+  JR ArcStepLoop
+StoreArcStep:
   POP HL
   INC L
   LD (HL),A
   LD BC,$000A
   ADD HL,BC
   LD (HL),E               ; +E: the arc step
-  JR l_E8AA
-l_E889:
+  JR ShotSound
+FireShot:
   PUSH HL
   LD DE,ShotTemplate      ; the shot template
   LD BC,$0010
@@ -396,7 +398,7 @@ l_E889:
   DEC D                   ; 2 below the player's height
   DEC D
   LD (HL),D
-l_E8AA:
+ShotSound:
   LD HL,SoundRequests     ; sound request bit 4: a shot
   SET 4,(HL)
 
@@ -427,30 +429,30 @@ PlayerSteer:
   LD L,A
   XOR A
   BIT 2,B                 ; down held: the down counter grows to 6
-  JR Z,l_E8CE
+  JR Z,StoreDownCount
   LD A,(DownHeldCount)
   CP $06
-  JR NC,l_E8CE
+  JR NC,StoreDownCount
   INC A
-l_E8CE:
+StoreDownCount:
   LD (DownHeldCount),A
   INC A                   ; + (counter + 1) / 2
   SRL A
   ADD A,L
   CP $1B                  ; at most 26
-  JR C,l_E8DB
+  JR C,HeightAfterDown
   LD A,$1A
-l_E8DB:
+HeightAfterDown:
   LD (MoverHeight),A
   LD L,A
   XOR A
   BIT 3,B                 ; up held: the up counter grows to 6
-  JR Z,l_E8EC
+  JR Z,StoreUpCount
   LD A,(UpHeldCount)
   CP $06
-  JR NC,l_E8EC
+  JR NC,StoreUpCount
   INC A
-l_E8EC:
+StoreUpCount:
   LD (UpHeldCount),A
   INC A
   SRL A
@@ -458,12 +460,12 @@ l_E8EC:
   LD A,L                  ; - (counter + 1) / 2
   SUB C
   CP $03
-  JR C,l_E8FD
+  JR C,HeightFloor
   CP $1B
-  JR C,l_E8FF
-l_E8FD:
+  JR C,HeightAfterUp
+HeightFloor:
   LD A,$02                ; below 3 or wrapped: 2
-l_E8FF:
+HeightAfterUp:
   LD (MoverHeight),A
   JR WallCheck
 GroundVehicle:
@@ -472,38 +474,38 @@ GroundVehicle:
   JR NZ,WallCheck
   LD C,$01
   BIT 4,B                 ; fire and up together: speed 1 (the shell is lobbed)
-  JR Z,l_E915
+  JR Z,CheckSlowDown
   BIT 3,B
-  JR NZ,l_E936
-l_E915:
+  JR NZ,StoreVehicleSpeed
+CheckSlowDown:
   BIT 2,B                 ; down: slower, spending the reserve
-  JR Z,l_E926
+  JR Z,CheckSpeedUp
   LD A,(SpeedReserve)
   AND A
-  JR Z,l_E936
+  JR Z,StoreVehicleSpeed
   DEC A
   LD (SpeedReserve),A
   DEC C
-  JR l_E936
-l_E926:
+  JR StoreVehicleSpeed
+CheckSpeedUp:
   BIT 3,B                 ; up: faster, earning the reserve back to 32
-  JR Z,l_E936
+  JR Z,StoreVehicleSpeed
   LD A,(SpeedReserve)
   CP $20
-  JR NC,l_E936
+  JR NC,StoreVehicleSpeed
   INC A
   LD (SpeedReserve),A
   INC C
-l_E936:
+StoreVehicleSpeed:
   LD A,C
   LD (PlayerRecord+$0006),A ; the speed
   LD HL,ConvoyLinks+$0009 ; the followers' +6 get the same speed
   LD B,$04
-l_E93F:
+FollowerSpeedLoop:
   LD A,(HL)
   DEC HL
   CP $FF
-  JR Z,l_E94C
+  JR Z,NextFollowerSpeed
   LD D,A
   LD E,(HL)
   INC E
@@ -511,9 +513,9 @@ l_E93F:
   INC E
   LD A,C
   LD (DE),A
-l_E94C:
+NextFollowerSpeed:
   DEC HL
-  DJNZ l_E93F
+  DJNZ FollowerSpeedLoop
 WallCheck:
   LD DE,ProfileMargin+$0043 ; the profile under the player: $6000 - 9 +
                             ; position / 2
@@ -526,20 +528,20 @@ WallCheck:
   LD A,(HL)               ; C = 0 if the first byte is a bit 7 wall, 1 if bit
                           ; 6, 2 if neither
   BIT 7,A
-  JR NZ,l_E969
+  JR NZ,OrProfileBytes
   INC C
   BIT 6,A
-  JR NZ,l_E969
+  JR NZ,OrProfileBytes
   INC C
-l_E969:
+OrProfileBytes:
   LD A,(HL)               ; six bytes ORed
-l_E96A:
+OrProfileLoop:
   INC HL
   OR (HL)
-  DJNZ l_E96A
+  DJNZ OrProfileLoop
   LD E,$47                ; no wall: the track's full width
   RLA
-  JR NC,l_E9C4
+  JR NC,CheckWall27
   LD E,$17                ; bit 7 wall: limit $17
   LD A,C
   AND A                   ; already beside that wall: only limited
@@ -564,11 +566,11 @@ WallCrash:
   LD (Followers),A
   LD DE,ConvoyLinks+$0009 ; every follower in the links is hit
   LD B,$04
-l_E9A5:
+FollowerCrashLoop:
   LD A,(DE)
   DEC DE
   CP $FF
-  JR Z,l_E9BD
+  JR Z,NextFollowerCrash
   LD H,A
   LD A,(DE)
   LD L,A
@@ -583,12 +585,12 @@ l_E9A5:
   INC L
   INC L
   LD (HL),$22
-l_E9BD:
+NextFollowerCrash:
   DEC DE
-  DJNZ l_E9A5
+  DJNZ FollowerCrashLoop
   LD E,$47
   JR SteerAcross
-l_E9C4:
+CheckWall27:
   RLA                     ; bit 6 wall: limit $27
   JR NC,SteerAcross
   LD E,$27
@@ -600,12 +602,12 @@ SteerAcross:
   LD B,A
   XOR A
   BIT 0,B                 ; left: the counter $E689 grows to 6
-  JR Z,l_E9DF
+  JR Z,StoreLeftCount
   LD A,(LeftHeldCount)
   CP $06
-  JR NC,l_E9DF
+  JR NC,StoreLeftCount
   INC A
-l_E9DF:
+StoreLeftCount:
   LD (LeftHeldCount),A
   INC A                   ; step 2 * ((counter + 1) / 2)
   SRL A
@@ -614,19 +616,19 @@ l_E9DF:
   LD A,($C003)            ; left raises the position across, below the limit E
   ADD A,C
   CP E
-  JR C,l_E9F0
+  JR C,StoreLeftAcross
   LD A,E
   DEC A
-l_E9F0:
+StoreLeftAcross:
   LD (PlayerRecord+$0003),A
   XOR A
   BIT 1,B                 ; right: the counter $E68A
-  JR Z,l_EA00
+  JR Z,StoreRightCount
   LD A,(RightHeldCount)
   CP $06
-  JR NC,l_EA00
+  JR NC,StoreRightCount
   INC A
-l_EA00:
+StoreRightCount:
   LD (RightHeldCount),A
   INC A
   SRL A
@@ -635,12 +637,12 @@ l_EA00:
   LD A,($C003)            ; right lowers it, not below 2
   SUB C
   CP $02
-  JR C,l_EA13
+  JR C,AcrossFloor
   CP E
-  JR C,l_EA15
-l_EA13:
+  JR C,StoreRightAcross
+AcrossFloor:
   LD A,$02
-l_EA15:
+StoreRightAcross:
   LD (PlayerRecord+$0003),A
   RET
 
@@ -665,9 +667,9 @@ Random:
   LD E,A
   LD D,$00
   SBC HL,DE
-  JR NC,l_EA32
+  JR NC,StoreSeed
   INC HL
-l_EA32:
+StoreSeed:
   LD (RandomSeed),HL
   RET
 

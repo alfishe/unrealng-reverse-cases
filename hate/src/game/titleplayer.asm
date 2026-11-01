@@ -456,10 +456,10 @@ NoteABPeriods:
   SUB B
   LD (VoiceBStep+$0007),A ; voice B's pre-delay: period / 8 + $18 - width
   LD A,B
-  LD (l_832F+$0007),A     ; voice B's pulse width
+  LD (VoiceBPreDelay+$0007),A ; voice B's pulse width
   LD A,$18
-  LD (l_832F+$0003),A     ; voice B on
-  LD (l_82CD+$0003),A     ; voice A on
+  LD (VoiceBPreDelay+$0003),A ; voice B on
+  LD (VoiceAPreDelay+$0003),A ; voice A on
   LD A,($82E0)            ; L = voice B's envelope time
   LD L,A
   EX AF,AF'
@@ -474,7 +474,7 @@ NoteABPeriods:
   SUB B
   LD (VoiceAStep+$0007),A ; voice A's pre-delay
   LD A,B
-  LD (l_82CD+$0007),A     ; voice A's pulse width
+  LD (VoiceAPreDelay+$0007),A ; voice A's pulse width
   LD A,($827E)            ; H = voice A's envelope time
   LD H,A
   JP DrumTick
@@ -512,9 +512,9 @@ CmdNoteAPeriod:
   SUB B
   LD (VoiceAStep+$0007),A ; voice A's pre-delay
   LD A,B
-  LD (l_82CD+$0007),A     ; voice A's pulse width
+  LD (VoiceAPreDelay+$0007),A ; voice A's pulse width
   LD A,$18
-  LD (l_82CD+$0003),A     ; voice A on
+  LD (VoiceAPreDelay+$0003),A ; voice A on
   LD A,($827E)
   LD H,A
   JP DrumTick
@@ -543,9 +543,9 @@ NoteBPeriod:
   SUB B
   LD (VoiceBStep+$0007),A ; voice B's pre-delay
   LD A,B
-  LD (l_832F+$0007),A     ; voice B's pulse width
+  LD (VoiceBPreDelay+$0007),A ; voice B's pulse width
   LD A,$18
-  LD (l_832F+$0003),A     ; voice B on
+  LD (VoiceBPreDelay+$0003),A ; voice B on
   LD A,($82E0)
   LD L,A
 
@@ -620,7 +620,7 @@ VoiceAModes:
 ; the same pitch, quieter. When the width runs out the bytes at $82B1 silence
 ; the voice.
 VoiceADecay:
-  LD HL,l_82CD+$0007      ; voice A's pulse width
+  LD HL,VoiceAPreDelay+$0007 ; voice A's pulse width
   DEC (HL)
   JR Z,VoiceAOff
   LD HL,VoiceAStep+$0007  ; voice A's pre-delay
@@ -646,8 +646,8 @@ VoiceAOff:
 ; 9.4.
 VoicesPlay:
   LD B,$04                ; balance the time of the envelope branch
-l_82C3:
-  DJNZ l_82C3
+BalanceDelayLoop:
+  DJNZ BalanceDelayLoop
 ; This entry point is used by the routine at VoiceADecay.
 VoiceAStep:
   DEC D                   ; voice A's period counter
@@ -655,13 +655,13 @@ VoiceAStep:
   LD D,$A6                ; voice A's period, an operand written by the note
                           ; commands
   LD B,$15                ; voice A's pre-delay, an operand
-l_82CD:
-  DJNZ l_82CD
+VoiceAPreDelay:
+  DJNZ VoiceAPreDelay
   LD A,$18                ; voice A's OUT value: $18 on, 0 silenced
   OUT ($FE),A             ; beeper on, border black
   LD B,$17                ; voice A's pulse width, an operand
-l_82D5:
-  DJNZ l_82D5
+VoiceAPulse:
+  DJNZ VoiceAPulse
   LD A,$00
   OUT ($FE),A             ; beeper off
 VoiceBEnvelope:
@@ -679,7 +679,7 @@ VoiceBEnvelope:
   JR Z,VoiceBModeOn       ; mode 2
   LD C,$02                ; mode 3: the voice off for one tick, then mode 2
   XOR A
-  LD (l_832F+$0003),A
+  LD (VoiceBPreDelay+$0003),A
   EXX
   LD L,$01
   JP VoiceBDelay
@@ -687,13 +687,13 @@ VoiceBModeOn:
   LD C,$03                ; mode 2: the voice on, the period restarted, then
                           ; mode 3
   LD A,$18
-  LD (l_832F+$0003),A
+  LD (VoiceBPreDelay+$0003),A
   LD A,($832C)
   EXX
   LD E,A
   EXX
 VoiceBDecay:
-  LD HL,l_832F+$0007      ; voice B's pulse width
+  LD HL,VoiceBPreDelay+$0007 ; voice B's pulse width
   DEC (HL)
   JR Z,VoiceBOff
   LD HL,VoiceBStep+$0007  ; voice B's pre-delay
@@ -730,13 +730,13 @@ VoiceBStep:
   LD E,$A4                ; voice B's period, an operand written by the note
                           ; commands
   LD B,$15                ; voice B's pre-delay, an operand
-l_832F:
-  DJNZ l_832F
+VoiceBPreDelay:
+  DJNZ VoiceBPreDelay
   LD A,$18                ; voice B's OUT value: $18 on, 0 silenced
   OUT ($FE),A             ; beeper on
   LD B,$17                ; voice B's pulse width, an operand
-l_8337:
-  DJNZ l_8337
+VoiceBPulse:
+  DJNZ VoiceBPulse
   LD A,$00
   OUT ($FE),A             ; beeper off
   JP NoteTimeCheck
@@ -783,15 +783,15 @@ DrumClick:
   LD A,$18
   OUT ($FE),A             ; beeper on
   LD DE,$012C
-l_836F:
+ClickHoldLoop:
   DEC DE
   LD A,D
   OR E
-  JP NZ,l_836F
+  JP NZ,ClickHoldLoop
   OUT ($FE),A             ; A = 0 here: beeper off
   LD B,$64
-l_8379:
-  DJNZ l_8379
+ClickPauseLoop:
+  DJNZ ClickPauseLoop
   POP DE
   JP VoiceAEnvelope
 
@@ -803,7 +803,7 @@ DrumNoise:
   PUSH DE
   LD B,$96
   LD DE,$0064             ; the ROM as a noise table
-l_8385:
+NoisePulseLoop:
   LD A,(DE)
   INC DE
   AND $18
@@ -812,10 +812,10 @@ l_8385:
   AND $18
   INC A
   INC DE
-l_8390:
+NoiseLengthLoop:
   DEC A
-  JP NZ,l_8390
-  DJNZ l_8385
+  JP NZ,NoiseLengthLoop
+  DJNZ NoisePulseLoop
   POP DE
   JP VoiceAEnvelope
 
@@ -826,17 +826,17 @@ DrumRise:
   PUSH DE
   XOR A
   LD D,$32
-l_839E:
+RiseStepLoop:
   LD B,D
-l_839F:
-  DJNZ l_839F
+RiseFirstWait:
+  DJNZ RiseFirstWait
   LD B,D
-l_83A2:
-  DJNZ l_83A2
+RiseSecondWait:
+  DJNZ RiseSecondWait
   XOR $18
   OUT ($FE),A             ; toggle the beeper
   DEC D
-  JP NZ,l_839E
+  JP NZ,RiseStepLoop
   POP DE
   JP VoiceAEnvelope
 
@@ -847,17 +847,17 @@ DrumFall:
   PUSH DE
   XOR A
   LD D,$B4
-l_83B4:
+FallStepLoop:
   LD B,D
-l_83B5:
-  DJNZ l_83B5
+FallWait:
+  DJNZ FallWait
   XOR $18
   OUT ($FE),A             ; toggle the beeper
   INC D
   INC D
   INC D
   INC D
-  JP NZ,l_83B4
+  JP NZ,FallStepLoop
   POP DE
   JP VoiceAEnvelope
 
@@ -868,11 +868,11 @@ DrumSweep:
   PUSH DE
   LD E,$00
   LD D,$C8
-l_83CB:
+SweepStepLoop:
   LD A,E
   LD B,D
-l_83CD:
-  DJNZ l_83CD
+SweepWait:
+  DJNZ SweepWait
   XOR $18
   OUT ($FE),A             ; toggle the beeper
   DEC D
@@ -882,7 +882,7 @@ l_83CD:
   LD E,A
   LD A,D
   CP $7C
-  JP NC,l_83CB
+  JP NC,SweepStepLoop
   POP DE
   JP VoiceAEnvelope
 

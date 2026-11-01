@@ -857,10 +857,10 @@ SetupIM2:
   LD (Im2Jump+$0001),HL
   LD HL,Im2Table
   LD BC,$00FD             ; B = 0: 256 bytes, C = the fill byte $FD
-l_9F5C:
+FillVectorTable:
   LD (HL),C
   INC HL
-  DJNZ l_9F5C
+  DJNZ FillVectorTable
   LD (HL),C               ; the 257th byte
   LD A,$FE                ; the vector table's page
   LD I,A

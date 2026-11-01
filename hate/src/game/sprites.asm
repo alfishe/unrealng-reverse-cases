@@ -39,11 +39,11 @@ BuildSpriteLists:
 ShadowListLoop:
   POP HL
   BIT 6,(HL)              ; bit 6: the end of the list
-  JR Z,l_DA00
+  JR Z,ShadowEntryRecord
   LD HL,(ShadowListPtr)
   LD (HL),$FF             ; end the shadow list, go on with the sprites
   JP SpriteListBuild
-l_DA00:
+ShadowEntryRecord:
   INC L                   ; IX = the record
   INC L
   LD A,(HL)
@@ -89,42 +89,42 @@ ShadowBig:
   LD A,D
   SUB $04                 ; column - 4 = the screen column
   CP $1D                  ; 0-28: every strip shows
-  JR C,l_DA92
-  JR NZ,l_DA53
+  JR C,BigShadowPhase
+  JR NZ,BigShadowCol30
   DEC B
-  JR l_DA9C
-l_DA53:
+  JR BigShadowLines
+BigShadowCol30:
   CP $1E
-  JR NZ,l_DA5B
+  JR NZ,BigShadowCol31
   LD B,$02
-  JR l_DA9C
-l_DA5B:
+  JR BigShadowLines
+BigShadowCol31:
   CP $1F
-  JR NZ,l_DA63
+  JR NZ,BigShadowLeft3
   LD B,$01
-  JR l_DA9C
-l_DA63:
+  JR BigShadowLines
+BigShadowLeft3:
   CP $FD                  ; columns -3 to -1: the first strips are off the left
                           ; edge
-  JR NZ,l_DA73
+  JR NZ,BigShadowLeft2
   EX DE,HL
   LD BC,$02F4
   ADD HL,BC
   EX DE,HL
   LD C,$33                ; C = the mask bytes skipped (17 a strip)
   LD B,$01
-  JR l_DA92
-l_DA73:
+  JR BigShadowPhase
+BigShadowLeft2:
   CP $FE
-  JR NZ,l_DA83
+  JR NZ,BigShadowLeft1
   EX DE,HL
   LD BC,$01F8
   ADD HL,BC
   EX DE,HL
   LD C,$22
   LD B,$02
-  JR l_DA92
-l_DA83:
+  JR BigShadowPhase
+BigShadowLeft1:
   CP $FF
   JP NZ,ShadowListLoop
   EX DE,HL
@@ -133,13 +133,13 @@ l_DA83:
   EX DE,HL
   LD C,$11
   LD B,$03
-l_DA92:
+BigShadowPhase:
   LD A,(IX+$09)           ; phase 0: one strip fewer
   AND A
-  JR NZ,l_DA9C
+  JR NZ,BigShadowLines
   DEC B
   JP Z,ShadowListLoop
-l_DA9C:
+BigShadowLines:
   LD A,$11                ; 17 lines a strip
   JP ShadowListAdd
 ShadowMid:
@@ -168,38 +168,38 @@ ShadowMid:
   INC E
   LD A,(IX+$09)           ; phase 2 and 3: one column on, 4 lines lower
   CP $02
-  JR C,l_DAD4
+  JR C,MidShadowColumn
   INC D
   DEC E
   DEC E
   DEC E
   DEC E
-l_DAD4:
+MidShadowColumn:
   LD C,$00
   LD B,$03
   LD A,D
   SUB $04
   CP $1E
-  JR C,l_DB0B
-  JR NZ,l_DAE4
+  JR C,MidShadowPhase
+  JR NZ,MidShadowCol31
   DEC B
-  JR l_DB16
-l_DAE4:
+  JR MidShadowLines
+MidShadowCol31:
   CP $1F
-  JR NZ,l_DAEC
+  JR NZ,MidShadowLeft2
   LD B,$01
-  JR l_DB16
-l_DAEC:
+  JR MidShadowLines
+MidShadowLeft2:
   CP $FE
-  JR NZ,l_DAFC
+  JR NZ,MidShadowLeft1
   EX DE,HL
   LD BC,$01F8
   ADD HL,BC
   EX DE,HL
   LD C,$16
   LD B,$01
-  JR l_DB0B
-l_DAFC:
+  JR MidShadowPhase
+MidShadowLeft1:
   CP $FF
   JP NZ,ShadowListLoop
   EX DE,HL
@@ -208,13 +208,13 @@ l_DAFC:
   EX DE,HL
   LD C,$0B
   LD B,$02
-l_DB0B:
+MidShadowPhase:
   LD A,(IX+$09)           ; phase 2: one strip fewer
   CP $02
-  JR NZ,l_DB16
+  JR NZ,MidShadowLines
   DEC B
   JP Z,ShadowListLoop
-l_DB16:
+MidShadowLines:
   LD A,$0B                ; 11 lines a strip
   JP ShadowListAdd
 ShadowSmall:
@@ -245,11 +245,11 @@ ShadowSmall:
   LD A,D
   SUB $04
   CP $1F
-  JR C,l_DB60
-  JR NZ,l_DB51
+  JR C,SmallShadowPhase
+  JR NZ,SmallShadowLeft1
   DEC B
-  JR l_DB6A
-l_DB51:
+  JR SmallShadowLines
+SmallShadowLeft1:
   CP $FF
   JP NZ,ShadowListLoop
   EX DE,HL
@@ -258,13 +258,13 @@ l_DB51:
   EX DE,HL
   LD C,$04
   LD B,$01
-l_DB60:
+SmallShadowPhase:
   LD A,(IX+$09)           ; phase 0: one strip fewer
   AND A
-  JR NZ,l_DB6A
+  JR NZ,SmallShadowLines
   DEC B
   JP Z,ShadowListLoop
-l_DB6A:
+SmallShadowLines:
   LD A,$04                ; 4 lines a strip
 
 ; Finish a shadow entry, save the strips under it
@@ -326,11 +326,11 @@ SpriteListBuild:
 SpriteListLoop:
   POP HL
   BIT 6,(HL)
-  JR Z,l_DBA9
+  JR Z,SpriteEntryRecord
   LD HL,(SpriteListPtr)
   LD (HL),$FF             ; end the sprite list
   RET
-l_DBA9:
+SpriteEntryRecord:
   INC L
   INC L
   LD A,(HL)
@@ -348,17 +348,17 @@ l_DBA9:
   EX DE,HL
   LD A,(IX+$00)
   BIT 5,A                 ; dying?
-  JR Z,l_DBD6
+  JR Z,SpriteByType
   LD A,(IX+$04)
   CP $19                  ; at 25 a line lower, above that two
-  JR C,l_DBD4
+  JR C,DrawAsExplosion
   DEC DE
   CP $1A
-  JR C,l_DBD4
+  JR C,DrawAsExplosion
   DEC DE
-l_DBD4:
+DrawAsExplosion:
   LD A,$03                ; dying: drawn as a type 3, the explosion
-l_DBD6:
+SpriteByType:
   AND $0F
   CP $04
   JR C,SpriteBig
@@ -379,33 +379,33 @@ SpriteBig:
   LD A,(IX+$09)           ; frame (phase - 1) AND 3
   DEC A
   AND $03
-  JR Z,l_DC01
-l_DBFD:
+  JR Z,BigSpriteColumn
+BigFrameLoop:
   ADD HL,BC
   DEC A
-  JR NZ,l_DBFD
-l_DC01:
+  JR NZ,BigFrameLoop
+BigSpriteColumn:
   LD B,$04
   LD A,D
   SUB $04
   CP $1D
-  JR C,l_DC54
-  JR NZ,l_DC0F
+  JR C,BigSpritePhase
+  JR NZ,BigSpriteCol30
   DEC B
-  JR l_DC5E
-l_DC0F:
+  JR BigSpriteLines
+BigSpriteCol30:
   CP $1E
-  JR NZ,l_DC17
+  JR NZ,BigSpriteCol31
   LD B,$02
-  JR l_DC5E
-l_DC17:
+  JR BigSpriteLines
+BigSpriteCol31:
   CP $1F
-  JR NZ,l_DC1F
+  JR NZ,BigSpriteLeft3
   LD B,$01
-  JR l_DC5E
-l_DC1F:
+  JR BigSpriteLines
+BigSpriteLeft3:
   CP $FD
-  JR NZ,l_DC31
+  JR NZ,BigSpriteLeft2
   LD BC,$007E             ; 3 strips off the left: the graphic 3 strips on
   ADD HL,BC
   EX DE,HL
@@ -413,10 +413,10 @@ l_DC1F:
   ADD HL,BC
   EX DE,HL
   LD B,$01
-  JR l_DC54
-l_DC31:
+  JR BigSpritePhase
+BigSpriteLeft2:
   CP $FE
-  JR NZ,l_DC43
+  JR NZ,BigSpriteLeft1
   LD BC,$0054
   ADD HL,BC
   EX DE,HL
@@ -424,8 +424,8 @@ l_DC31:
   ADD HL,BC
   EX DE,HL
   LD B,$02
-  JR l_DC54
-l_DC43:
+  JR BigSpritePhase
+BigSpriteLeft1:
   CP $FF
   JP NZ,SpriteListLoop
   LD BC,$002A
@@ -435,13 +435,13 @@ l_DC43:
   ADD HL,BC
   EX DE,HL
   LD B,$03
-l_DC54:
+BigSpritePhase:
   LD A,(IX+$09)
   AND A
-  JR NZ,l_DC5E
+  JR NZ,BigSpriteLines
   DEC B
   JP Z,SpriteListLoop
-l_DC5E:
+BigSpriteLines:
   LD A,$15                ; 21 lines a strip
   JP SpriteListAdd
 SpriteMid:
@@ -457,38 +457,38 @@ SpriteMid:
   INC E
   LD A,(IX+$09)           ; phase 2 and 3: one column on, 4 lines lower
   CP $02
-  JR C,l_DC7E
+  JR C,MidFrameIndex
   INC D
   DEC E
   DEC E
   DEC E
   DEC E
-l_DC7E:
+MidFrameIndex:
   INC A                   ; frame (phase + 1) AND 3
   AND $03
-  JR Z,l_DC89
-l_DC83:
+  JR Z,MidSpriteColumn
+MidFrameLoop:
   ADD HL,BC
   DEC A
-  JR NZ,l_DC83
-  JR l_DC89
-l_DC89:
+  JR NZ,MidFrameLoop
+  JR MidSpriteColumn
+MidSpriteColumn:
   LD B,$03
   LD A,D
   SUB $04
   CP $1E
-  JR C,l_DCC2
-  JR NZ,l_DC97
+  JR C,MidSpritePhase
+  JR NZ,MidSpriteCol31
   DEC B
-  JR l_DCCD
-l_DC97:
+  JR MidSpriteLines
+MidSpriteCol31:
   CP $1F
-  JR NZ,l_DC9F
+  JR NZ,MidSpriteLeft2
   LD B,$01
-  JR l_DCCD
-l_DC9F:
+  JR MidSpriteLines
+MidSpriteLeft2:
   CP $FE
-  JR NZ,l_DCB1
+  JR NZ,MidSpriteLeft1
   LD BC,$0044
   ADD HL,BC
   EX DE,HL
@@ -496,8 +496,8 @@ l_DC9F:
   ADD HL,BC
   EX DE,HL
   LD B,$01
-  JR l_DCC2
-l_DCB1:
+  JR MidSpritePhase
+MidSpriteLeft1:
   CP $FF
   JP NZ,SpriteListLoop
   LD BC,$0022
@@ -507,13 +507,13 @@ l_DCB1:
   ADD HL,BC
   EX DE,HL
   LD B,$02
-l_DCC2:
+MidSpritePhase:
   LD A,(IX+$09)
   CP $02
-  JR NZ,l_DCCD
+  JR NZ,MidSpriteLines
   DEC B
   JP Z,SpriteListLoop
-l_DCCD:
+MidSpriteLines:
   LD A,$11                ; 17 lines a strip
   JR SpriteListAdd
 SpriteSmall:
@@ -529,21 +529,21 @@ SpriteSmall:
   LD A,(IX+$09)
   DEC A
   AND $03
-  JR Z,l_DCEB
-l_DCE7:
+  JR Z,SmallSpriteColumn
+SmallFrameLoop:
   ADD HL,BC
   DEC A
-  JR NZ,l_DCE7
-l_DCEB:
+  JR NZ,SmallFrameLoop
+SmallSpriteColumn:
   LD B,$02
   LD A,D
   SUB $04
   CP $1F
-  JR C,l_DD0A
-  JR NZ,l_DCF9
+  JR C,SmallSpritePhase
+  JR NZ,SmallSpriteLeft1
   DEC B
-  JR l_DD14
-l_DCF9:
+  JR SmallSpriteLines
+SmallSpriteLeft1:
   CP $FF
   JP NZ,SpriteListLoop
   LD BC,$001A
@@ -553,13 +553,13 @@ l_DCF9:
   ADD HL,BC
   EX DE,HL
   LD B,$01
-l_DD0A:
+SmallSpritePhase:
   LD A,(IX+$09)
   AND A
-  JR NZ,l_DD14
+  JR NZ,SmallSpriteLines
   DEC B
   JP Z,SpriteListLoop
-l_DD14:
+SmallSpriteLines:
   LD A,$0D                ; 13 lines a strip
 SpriteListAdd:
   PUSH AF                 ; the page from the column, as at ShadowListAdd
@@ -610,7 +610,7 @@ SaveStrips:
   LD DE,(SaveAreaPtr)     ; DE = the free save area
   EX AF,AF'
   LD A,B
-l_DD4D:
+SaveStripLoop:
   EX AF,AF'
   LD B,$00                ; BC = lines
   LD C,A
@@ -626,7 +626,7 @@ l_DD4D:
   RES 6,H
   EX AF,AF'
   DEC A
-  JR NZ,l_DD4D
+  JR NZ,SaveStripLoop
   LD (SaveAreaPtr),DE     ; the save area's new end
   RET
 
@@ -655,11 +655,11 @@ RestoreUnderSprites:
   LD (SaveAreaPtr),HL
   LD HL,Im2Table+$0064    ; the shadow list
   PUSH HL
-l_DD76:
+RestoreShadowLoop:
   POP HL
   LD A,(HL)
   CP $FF
-  JR Z,l_DD9F
+  JR Z,RestoreSprites
   INC L
   INC L
   INC L
@@ -673,23 +673,23 @@ l_DD76:
   INC L
   PUSH HL
   CP $04
-  JR C,l_DD98
+  JR C,RestoreBigShadow
   CP $0B
-  JR C,l_DD94
+  JR C,RestoreMidShadow
   LD A,$04
-  JR l_DD9A
-l_DD94:
+  JR RestoreShadowStrips
+RestoreMidShadow:
   LD A,$0B
-  JR l_DD9A
-l_DD98:
+  JR RestoreShadowStrips
+RestoreBigShadow:
   LD A,$11                ; types 0-3: 17 lines
-l_DD9A:
+RestoreShadowStrips:
   CALL RestoreStrips
-  JR l_DD76
-l_DD9F:
+  JR RestoreShadowLoop
+RestoreSprites:
   LD HL,SpriteListArea    ; the sprite list
   PUSH HL
-l_DDA3:
+RestoreSpriteLoop:
   POP HL
   LD A,(HL)
   CP $FF
@@ -705,19 +705,19 @@ l_DDA3:
   INC L
   PUSH HL
   CP $04
-  JR C,l_DDC2
+  JR C,RestoreBigSprite
   CP $0B
-  JR C,l_DDBE
+  JR C,RestoreMidSprite
   LD A,$0D
-  JR l_DDC4
-l_DDBE:
+  JR RestoreSpriteStrips
+RestoreMidSprite:
   LD A,$11
-  JR l_DDC4
-l_DDC2:
+  JR RestoreSpriteStrips
+RestoreBigSprite:
   LD A,$15                ; types 0-3: 21 lines
-l_DDC4:
+RestoreSpriteStrips:
   CALL RestoreStrips
-  JR l_DDA3
+  JR RestoreSpriteLoop
 
 ; Copy saved strips back into the playfield buffer
 ;
@@ -728,7 +728,7 @@ RestoreStrips:
   LD HL,(SaveAreaPtr)     ; HL = the next saved bytes
   EX AF,AF'
   LD A,B
-l_DDCE:
+RestoreStripLoop:
   EX AF,AF'
   LD B,$00
   LD C,A
@@ -744,6 +744,6 @@ l_DDCE:
   RES 6,D
   EX AF,AF'
   DEC A
-  JR NZ,l_DDCE
+  JR NZ,RestoreStripLoop
   LD (SaveAreaPtr),HL
   RET

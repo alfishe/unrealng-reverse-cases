@@ -21,7 +21,7 @@ PlaceObjects:
   LD (HL),$00
   DEC L
   LD (HL),$40
-l_EFC8:
+PlaceRecordsLoop:
   LD A,(IX+$00)
   BIT 6,A                 ; bit 6: the end of the records
   JP NZ,SortDrawList
@@ -29,7 +29,7 @@ l_EFC8:
   CALL Z,PlaceObject
   LD DE,$0010
   ADD IX,DE
-  JR l_EFC8
+  JR PlaceRecordsLoop
 
 ; One record: its screen place, into a list
 ;
@@ -58,13 +58,13 @@ PlaceObject:
   BIT 7,A                 ; behind the view: not shown
   RET NZ
   AND A
-  JR Z,l_F002
+  JR Z,InViewAhead
   CP $01
   RET NZ
   LD A,L                  ; $120 or more ahead: not shown
   CP $1F
   RET NC
-l_F002:
+InViewAhead:
   INC HL
   INC HL
   SRL H
@@ -80,9 +80,9 @@ l_F002:
   SRL A
   AND $03
   BIT 5,(IX+$00)          ; exploding: phase 1
-  JR Z,l_F022
+  JR Z,StorePhase
   LD A,$01
-l_F022:
+StorePhase:
   LD (IX+$09),A
   LD E,A
   LD A,(ScrollHalf)       ; +A: the line in the strip
@@ -93,7 +93,7 @@ l_F022:
   LD A,(IX+$00)
   AND $0F
   CP $0E                  ; types 14-15: the static list
-  JR C,l_F04B
+  JR C,DepthListInsert
   LD HL,(StaticListEnd)
   LD E,IXL
   LD D,IXH
@@ -105,7 +105,7 @@ l_F022:
   INC L
   LD (HL),$FF
   RET
-l_F04B:
+DepthListInsert:
   ADD HL,BC               ; (distance + across) / 2 + 1
   SRL H
   RR L
@@ -115,15 +115,15 @@ l_F04B:
   LD A,(IX+$04)
   LD B,A
   LD HL,SpriteListArea    ; the first entry higher than this record
-l_F05A:
+FindHeightSlot:
   CP (HL)
-  JR C,l_F064
+  JR C,OpenDepthGap
   INC L
   INC L
   INC L
   INC L
-  JP l_F05A
-l_F064:
+  JP FindHeightSlot
+OpenDepthGap:
   LD DE,(DepthListEnd)    ; open a 4-byte gap: the tail moves up
   PUSH HL
   PUSH BC
@@ -161,7 +161,7 @@ l_F064:
 ; docs/06-rendering.md 6.6.
 SortDrawList:
   LD DE,SpriteListArea
-l_F08C:
+SortEntryLoop:
   LD A,(DE)               ; bit 6: the $40 end entry
   BIT 6,A
   RET NZ
@@ -172,31 +172,31 @@ l_F08C:
   LD C,A
   DEC E
   LD HL,SpriteScratch
-l_F099:
+FindDrawSlot:
   LD A,B                  ; heights within 9 of each other?
   ADD A,$09
   SUB (HL)
   CP $13
-  JP C,l_F0AD
+  JP C,CompareDepth
   BIT 7,A                 ; more than 9 higher: insert here
-  JR NZ,l_F0B9
+  JR NZ,InsertDrawEntry
   INC L
   INC L
   INC L
   INC L
-  JP l_F099
-l_F0AD:
+  JP FindDrawSlot
+CompareDepth:
   LD A,C                  ; overlapping: by the depth byte
   INC L
   CP (HL)
-  JR NC,l_F0B8
+  JR NC,BackToEntryStart
   INC L
   INC L
   INC L
-  JP l_F099
-l_F0B8:
+  JP FindDrawSlot
+BackToEntryStart:
   DEC L
-l_F0B9:
+InsertDrawEntry:
   PUSH DE                 ; open a 4-byte gap and copy the entry in
   PUSH HL
   LD DE,(DrawListEnd)
@@ -217,4 +217,4 @@ l_F0B9:
   LD BC,$0004
   LDIR
   EX DE,HL
-  JP l_F08C
+  JP SortEntryLoop
