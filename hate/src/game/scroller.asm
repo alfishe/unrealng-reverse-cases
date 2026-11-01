@@ -39,7 +39,7 @@ BlitEvenColumn:
   LD (HL),A
   INC E
   LD B,$0F                ; 15 full cells
-l_D38A:
+BlitCellLoop:
   POP HL
   LD A,(DE)
   LD (HL),A
@@ -72,7 +72,7 @@ l_D38A:
   LD A,(DE)
   LD (HL),A
   INC E
-  DJNZ l_D38A
+  DJNZ BlitCellLoop
   POP HL                  ; the last cell, 4 lines
   LD A,(DE)
   LD (HL),A
@@ -153,7 +153,7 @@ ScrollStep:
   LD (ScrollDistance),HL
   LD A,(ScrollHalf)       ; half $80:
   AND A
-  JR Z,l_D44E
+  JR Z,EnterHalf80
   XOR A                   ; back to half 0
   LD (ScrollHalf),A
   LD A,(ScrollPage)
@@ -194,19 +194,19 @@ StripPhase4:
   LD E,$02
   LD L,$00
   LD B,$7E
-l_D440:
+ShiftRight4Loop:
   LD A,(DE)               ; 4 pixels right, the nibble from H - 2 coming in
   RRD
   INC E
   INC L
-  DJNZ l_D440
+  DJNZ ShiftRight4Loop
   XOR A                   ; the last two lines: nothing comes in
   RRD
   INC L
   LD (HL),$00
   RET
 ; This entry point is used by the routine at ScrollStep.
-l_D44E:
+EnterHalf80:
   LD A,$80                ; half 0: to half $80
   LD (ScrollHalf),A
   LD A,(ScrollPage)
@@ -241,7 +241,7 @@ StripPhase2:
   LD E,$03
   LD L,$80
   LD B,$7D
-l_D47E:
+ShiftRight2Loop:
   LD A,(DE)               ; 2 pixels right, 2 bits from H - 2 coming in
   LD C,(HL)
   RRA
@@ -251,7 +251,7 @@ l_D47E:
   LD (HL),C
   INC E
   INC L
-  DJNZ l_D47E
+  DJNZ ShiftRight2Loop
   LD A,(HL)               ; the last lines: nothing comes in
   SRL A
   SRL A
@@ -312,20 +312,20 @@ CourseExpand:
   INC HL
   LD A,(HL)
   CP $FF                  ; $FFFF ends the table:
-  JR NZ,l_D4E9
+  JR NZ,CourseDataFound
   LD HL,CourseTable       ; back to the record of round 1
   LD (CourseRecord),HL
   LD E,(HL)
   INC HL
   LD A,(HL)
-l_D4E9:
+CourseDataFound:
   LD D,A
   INC DE                  ; skip the player's type
   LD BC,RowList           ; BC = RowList
 CourseSegment:
   LD A,(DE)               ; the next course byte; $FF ends the course
   CP $FF
-  JR Z,l_D510
+  JR Z,CourseExpanded
   PUSH DE
   LD L,A                  ; its rows at $C8EA + 2 x b
   LD H,$00
@@ -338,7 +338,7 @@ CopyRow:
   INC HL
   LD A,(HL)
   AND A                   ; a zero high byte ends the list
-  JR Z,l_D50C
+  JR Z,NextCourseByte
   EX AF,AF'
   LD (BC),A               ; the row into RowList
   EX AF,AF'
@@ -347,11 +347,11 @@ CopyRow:
   INC HL
   INC BC
   JR CopyRow
-l_D50C:
+NextCourseByte:
   POP DE
   INC DE
   JR CourseSegment
-l_D510:
+CourseExpanded:
   LD HL,RowList           ; the next row to draw: the first
   LD (CourseRowPtr),HL
   LD HL,$0000             ; no strips drawn yet
@@ -378,9 +378,9 @@ FreshStrip:
   SRL A
   INC A
   AND $03
-  JR NZ,l_D536
+  JR NZ,EdgeLines
   LD L,$C0
-l_D536:
+EdgeLines:
   LDI                     ; 8 lines of edge
   LDI
   LDI
@@ -447,7 +447,7 @@ FreshTile:
   LD E,$01
   LD L,$80
   LD B,$7F
-l_D5A2:
+ShiftLeft2Loop:
   LD A,(DE)               ; 2 pixels left, 2 bits from H coming in
   LD C,(HL)
   RL C
@@ -457,7 +457,7 @@ l_D5A2:
   LD (HL),A
   INC E
   INC L
-  DJNZ l_D5A2
+  DJNZ ShiftLeft2Loop
   LD (HL),$00             ; the last line clear
   RET
 

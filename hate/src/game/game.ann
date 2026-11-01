@@ -472,22 +472,29 @@ $CF4D ; a game starts with the record of round 1
 $CF50 ; the demo?
 $CF56 ; random number in HL
 $CF5A ; the demo: one of records 3-10, (L AND $1C) + 8 bytes in
-$CF65 ; the record a round start uses
+$CF65 KeepRestartRecord ; the record a round start uses
 $CF68 RoundStart ; a round start or a retry
 $CF6E ; clear the ground profile $6000-$62FF
 $CF7A ; strips drawn $C3FA = 0
 $CF7E ; scroll distance = 0
 $CF82 ; 11 records from $C000: free ($8B), then the end of the list
+$CF8A FreeRecordsLoop
 $CF91 ; $C2F6, the new height worked on by the mover, = 2
 $CF97 ; scroll state: page offset 0, half 0
 $CFA0 ; the course into RowList
 $CFA3 ; pre-roll: 128 scroll steps, 32 strips; the last one calls RoundSetup
+$CFA5 PreRollLoop
 $CFAC PassLoop ; one pass of the game
 $CFB2 ; " DEMO " in the status window
 $CFB9 ; the demo: player's speed 0
 $CFBF ShotGauge ; the shot gauge, not during the AUTO start
 $CFC5 ; count the free ones of the 5 shot slots (bit 7)
+$CFCE CountFreeShots
+$CFD3 NextShotSlot
 $CFD6 ; the gauge text at $C333: five spaces, then a "/" per free slot
+$CFDB BlankGauge
+$CFE4 GaugeSlashes
+$CFE9 PrintGauge
 $CFEF CheckLost ; the player's record gone: the vehicle is lost
 $CFF6 ; the loss beep
 $CFFC ; lives less one, carried to the next round start
@@ -503,6 +510,7 @@ $D032 ; its round table entry: lives at its start, then SCORE
 $D038 ; SCORE back to that round's start
 $D040 ; its lives less one
 $D046 ; 1-4 lives: restart that round
+$D04B SkipThatRound
 $D050 RetryRound ; MAX from SCORE
 $D061 ; SCORE back to the round's start
 $D070 ReadInput ; the device, or the AUTO start
@@ -630,6 +638,7 @@ $D365 ; DE = page $80 + $C32E, byte $C32F
 $D376 ; 16 column pairs
 $D378 BlitEvenColumn ; an even column: the first cell, 4 lines
 $D388 ; 15 full cells
+$D38A BlitCellLoop
 $D3AC ; the last cell, 4 lines
 $D3BB ; 2 pages on, wrapping in $80-$BF
 $D3BF ; the same half
@@ -645,7 +654,7 @@ $D3F9 ; the scroll distance + 2
 $D401 ; half $80:
 $D407 ; back to half 0
 $D40E ; odd offset: the course check
-$D44E ; half 0: to half $80
+$D44E EnterHalf80 ; half 0: to half $80
 $D456 ; even offset: a fresh strip
 $D413 c StripPhase4 ; Make the 4-pixel phase in page H - 1, half 0
 > H is the page of the last fresh strip ($C3FC). Steps the page offset $C32E. Copies H's half 0 two lines up into page H - 1, half 0 (the two lines below cleared), then shifts it 4 pixels right with RRD, taking the nibble entering from H - 2's half 0 at line 2. The last byte is 0 (docs/06-rendering.md 6.4).
@@ -656,7 +665,7 @@ $D429 ; lines 0 and 1 clear
 $D42E ; H's half 0, two lines up
 $D433 ; HL = page H - 1, half 0
 $D434 ; DE = page H - 2, line 2
-$D440 ; 4 pixels right, the nibble from H - 2 coming in
+$D440 ShiftRight4Loop ; 4 pixels right, the nibble from H - 2 coming in
 $D447 ; the last two lines: nothing comes in
 $D45B c StripPhase2 ; Make the 2-pixel phase in page H - 1, half $80
 > Copies H's half 0 one line up into page H - 1, half $80 (line 0 cleared), then shifts it 2 pixels right, the 2 bits entering from H - 2's half 0 at line 3. The last bytes shift with nothing coming in (docs/06-rendering.md 6.4).
@@ -666,7 +675,7 @@ $D469 ; line 0 clear
 $D46C ; H's half 0, one line up
 $D471 ; HL = page H - 1, half $80
 $D472 ; DE = page H - 2, line 3
-$D47E ; 2 pixels right, 2 bits from H - 2 coming in
+$D47E ShiftRight2Loop ; 2 pixels right, 2 bits from H - 2 coming in
 $D48B ; the last lines: nothing comes in
 $D49C CourseCheck ; the page offset + 1, mod 64
 $D4A5 ; the high byte of the row 15 ahead
@@ -683,6 +692,7 @@ $D4D9 c CourseExpand ; Expand a course record into RowList
 $D4D9 ; DE = the course data
 $D4DC ; $FFFF ends the table:
 $D4E0 ; back to the record of round 1
+$D4E9 CourseDataFound
 $D4EA ; skip the player's type
 $D4EB ; BC = RowList
 $D4EE CourseSegment ; the next course byte; $FF ends the course
@@ -690,14 +700,15 @@ $D4F4 ; its rows at $C8EA + 2 x b
 $D4FC CopyRow ; the next row
 $D500 ; a zero high byte ends the list
 $D504 ; the row into RowList
-$D510 ; the next row to draw: the first
+$D50C NextCourseByte
+$D510 CourseExpanded ; the next row to draw: the first
 $D516 ; no strips drawn yet
 $D51D c FreshStrip ; Make a fresh strip from tiles, and the phase 2 pixels left of it
 > Half 0, even offset. The new strip is page $80 + $C32E, half 0: 8 lines of the edge tile (EdgeTiles), then 15 tiles, tile i read from row i at offset i, rows popped from $C3F8 on; $C3F8 moves one row on. The page is kept in $C3FC. The tail makes page H - 2, half $80: H - 2's half 0 at line 1 shifted 2 pixels left, the 2 bits entering from H copied in at line 3 (docs/06-rendering.md 6.4, 6.5).
 $D51D ; the new strip: page $80 + $C32E, half 0
 $D527 ; the edge tile 23
 $D52A ; ...or 24 for one strip in four
-$D536 ; 8 lines of edge
+$D536 EdgeLines ; 8 lines of edge
 $D546 ; SP kept in $C331
 $D54A ; SP walks the rows from $C3F8
 $D54E ; the next strip starts one row on
@@ -714,7 +725,7 @@ $D58E ; lines 0-2 clear
 $D595 ; H's half 0, three lines up
 $D59A ; HL = page H - 2, half $80
 $D59B ; DE = page H - 2, line 1
-$D5A2 ; 2 pixels left, 2 bits from H coming in
+$D5A2 ShiftLeft2Loop ; 2 pixels left, 2 bits from H coming in
 $D5AF ; the last line clear
 $D5B2 w BlitAddresses 9 ; Blit addresses, column 0 (17 cells)
 > 528 screen addresses, the bottom line of a character cell each, popped by Blit: 17 for each even column, 16 for each odd one, from the bottom of the screen up. Even columns sit 4 lines off the odd ones; the list carries the 2:1 isometric skew and the clipping, 43 entries $0800 pointing into the ROM (docs/06-rendering.md 6.3). PaintAttributes uses the same list to colour the playfield's cells. Split here by column.
@@ -1230,6 +1241,7 @@ $EBAA c HitDispatch ; A pair hit: jump through the handler table $C380
 > Reached from the pair scan $E56F when the other record (HL, on the stack) is within the moving record's box. The same record is skipped ($E57F). Otherwise the moving record's type pair (IX+0 AND $0E) picks the row and the other's the column of the 8 x 8 word table at $C380, and the handler is entered with the other record's address on the stack. Handlers leave by $E57E (pop it and test the next record), $E57F (next, already popped), $E674 (the moving record is done: its new position is not stored, $E65F is skipped) or $E65F via $EBD1. docs/07-objects.md 7.6.
 $EBAA ; the other record
 $EBB0 ; the record against itself: skip it
+$EBB6 NotItself
 $EBB7 ; column: the other's type pair * 2
 $EBBC ; row: the moving record's type pair * 16
 $EBC4 ; $C380 + row + column
@@ -1240,8 +1252,9 @@ $EBD1 c HitBoth ; Both records are hit
 > Both records get bit 5 (hit) and the explosion counter +8 = $20; a moving one is slowed to speed 1. Sound request bit 1. Ends by storing the moving record's new position ($E65F). The table's cells for the player against the others (row 0, columns 0-4) and the others against the player (column 0) lead here. docs/07-objects.md 7.6.
 $EBD1 ; the other record
 $EBD8 ; a moving one slows to speed 1 while it explodes
-$EBDE ; +8: the explosion counter
-$EBE2 ; the same for the moving record (entered here by $EBFC and $EC01)
+$EBDE OtherExplodes ; +8: the explosion counter
+$EBE2 MovingHit ; the same for the moving record (entered here by $EBFC and $EC01)
+$EBF0 MovingExplodes
 $EBF4 ; sound request bit 1: an explosion
 $EBFC c HitShotOnShot ; Handler: a shot against a shot (not run in the recordings)
 > Reached through the table only (row 6, column 6). POP HL; SET 7,(HL); JR $EBE2. The other shot is removed and the moving one explodes as in $EBD1, sound bit 1.
@@ -1268,6 +1281,7 @@ $EC59 c HitShotOnTarget ; Handler: a shot against a missile or a jet
 $EC5D ; 14 tens: 140 points
 $EC6C ; an enemy shot on a standing target: removed
 $EC73 c HitBlockOnShot ; Handler: a cube or a pod against a shot (not run)
+$ECA6 RemoveOtherRecord
 > Row 5, column 6, the mirror of $ECAC with the cube moving: an enemy shot or a pod ends at $ECA6 (POP HL; SET 7,(HL): the shot is removed); a shot of the player counts a hit in the cube's +F, at the 4th it scores 180 ($EBCE, B = 18), otherwise the shot explodes (+6 = 0, +8 = $20) and sound request bit 2 ($EC9E).
 $ECAC c HitShotOnBlock ; Handler: a shot against a cube or a pod
 > An enemy shot, or any shot on a pod, is removed ($ECDC). A shot of the player counts a hit in the cube's +F: the 4th scores 180 points and both are hit; hits 1-3 only explode the shot, with sound request bit 2. docs/07-objects.md 7.6, docs/10-gameplay-logic.md 10.7.
@@ -1276,7 +1290,7 @@ $ECB9 ; +F: the cube's hits
 $ECC2 ; 4th hit: 18 tens, 180 points
 $ECC7 ; hits 1-3: the shot explodes, the cube stays
 $ECD4 ; sound request bit 2
-$ECDC ; the shot is removed
+$ECDC RemoveShot ; the shot is removed
 $ECE4 b Followers ; The number of followers (the lives carried into the next round)
 > The convoy behind the player, up to 4. A hit on the player costs the last one instead of the vehicle ($E262); the next round's lives are these ($D151 copies them into $C2F9); the game start sets 4 ($CF36-$CF65); the round setup clears it after taking the lives ($D1DE). docs/07-objects.md 7.5, docs/10-gameplay-logic.md 10.4.
 $ECE5 w FollowerOffset ; Where the next follower goes, along, from the player
@@ -1296,6 +1310,9 @@ $ED33 ; sound request bit 0: a pod joins
 $ED3B c HitBlockOnPlayer ; Handler: a cube or a pod against the player (not run)
 > Row 5, column 0, the mirror of $ECF3 with the pod moving: BIT 0,(IX+$00); JP Z,$EBD1, then the same join with IX and HL swapped, ending in sound request bit 0 ($ED79) and JP $E674.
 $ED81 c HitDomeOnShot ; Handler: a dome against a shot (not run)
+$ED98 DomeHitByPlayer
+$EDA9 PodSlotLoop
+$EDB3 PodFromDome
 > Row 1, column 6, the mirror of $EDCA with the dome moving: an enemy shot passes a moving dome and is removed by a standing one; a shot of the player on a type 2 dome scores 210, on a type 3 dome it releases a pod into a free slot of $C060-$C090 ($EDB3) and scores 320.
 $EDCA c HitShotOnDome ; Handler: a shot against a dome
 > An enemy shot passes a moving dome and is removed by a standing one ($EDDC). A shot of the player on a dome of type 2: 210 points and both hit. On type 3: a pod (type 11) is written into the first free slot of $C060-$C090 at the dome's place (+1-+6), its +8 = $16, and 320 points; with no free slot, both are just hit. docs/07-objects.md 7.5.
@@ -1304,6 +1321,7 @@ $EDDC ; an enemy shot on a standing dome: removed
 $EDE3 ShotHitsDome ; the player's shot
 $EDE5 ; type 2: 21 tens, 210 points
 $EDEC ; type 3: a free pod slot
+$EDF4 PodSlotLoop2
 $EDFE ReleasePod ; type 11 at the dome's place
 $EE0E ; 32 tens: 320 points
 

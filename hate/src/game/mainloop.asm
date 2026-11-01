@@ -28,7 +28,7 @@ MainLoop:
   LD HL,CourseTable       ; a game starts with the record of round 1
   LD A,(DemoFlag)         ; the demo?
   AND A
-  JR Z,l_CF65
+  JR Z,KeepRestartRecord
   CALL Random             ; random number in HL
   LD A,L
   AND $1C                 ; the demo: one of records 3-10, (L AND $1C) + 8
@@ -38,7 +38,7 @@ MainLoop:
   LD B,$00
   LD HL,CourseTable
   ADD HL,BC
-l_CF65:
+KeepRestartRecord:
   LD (RestartRecord),HL   ; the record a round start uses
 RoundStart:
   LD HL,(RestartRecord)   ; a round start or a retry
@@ -54,10 +54,10 @@ RoundStart:
                           ; the list
   LD B,$0B
   LD DE,$0010
-l_CF8A:
+FreeRecordsLoop:
   LD (HL),$8B
   ADD HL,DE
-  DJNZ l_CF8A
+  DJNZ FreeRecordsLoop
   LD (HL),$FF
   LD A,$02                ; $C2F6, the new height worked on by the mover, = 2
   LD (MoverHeight),A
@@ -68,11 +68,11 @@ l_CF8A:
   CALL CourseExpand       ; the course into RowList
   LD B,$80                ; pre-roll: 128 scroll steps, 32 strips; the last one
                           ; calls RoundSetup
-l_CFA5:
+PreRollLoop:
   PUSH BC
   CALL ScrollStep
   POP BC
-  DJNZ l_CFA5
+  DJNZ PreRollLoop
 PassLoop:
   LD A,(DemoFlag)         ; one pass of the game
   AND A
@@ -90,28 +90,28 @@ ShotGauge:
   LD DE,$0010
   LD B,$05
   XOR A
-l_CFCE:
+CountFreeShots:
   BIT 7,(HL)
-  JR Z,l_CFD3
+  JR Z,NextShotSlot
   INC A
-l_CFD3:
+NextShotSlot:
   ADD HL,DE
-  DJNZ l_CFCE
+  DJNZ CountFreeShots
   LD HL,ShotGaugeText+$0007 ; the gauge text at $C333: five spaces, then a "/"
                             ; per free slot
   LD B,$05
-l_CFDB:
+BlankGauge:
   LD (HL),$20
   DEC HL
-  DJNZ l_CFDB
+  DJNZ BlankGauge
   AND A
-  JR Z,l_CFE9
+  JR Z,PrintGauge
   LD B,A
-l_CFE4:
+GaugeSlashes:
   INC HL
   LD (HL),$2F
-  DJNZ l_CFE4
-l_CFE9:
+  DJNZ GaugeSlashes
+PrintGauge:
   LD HL,ShotGaugeText
   CALL PrintString
 CheckLost:
@@ -159,10 +159,10 @@ LookBack:
   LDIR
   DEC A                   ; its lives less one
   LD (Followers),A
-  JR Z,l_D04B
+  JR Z,SkipThatRound
   CP $05                  ; 1-4 lives: restart that round
   JP C,RoundStart
-l_D04B:
+SkipThatRound:
   LD A,(RoundNumber)
   JR LookBack
 RetryRound:

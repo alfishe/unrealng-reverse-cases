@@ -12,11 +12,11 @@ HitDispatch:
   POP HL                  ; the other record
   LD A,IXL
   CP L
-  JR NZ,l_EBB6
+  JR NZ,NotItself
   LD A,IXH                ; the record against itself: skip it
   CP H
   JP Z,PairScanStep
-l_EBB6:
+NotItself:
   PUSH HL
   LD A,(HL)               ; column: the other's type pair * 2
   AND $0E
@@ -59,22 +59,22 @@ HitBoth:
   LD L,A
   LD A,(HL)               ; a moving one slows to speed 1 while it explodes
   AND A
-  JR Z,l_EBDE
+  JR Z,OtherExplodes
   LD (HL),$01
-l_EBDE:
+OtherExplodes:
   INC L                   ; +8: the explosion counter
   INC L
   LD (HL),$20
 ; This entry point is used by the routines at HitShotOnShot and
 ; HitPlayerOnStatic.
-l_EBE2:
+MovingHit:
   SET 5,(IX+$00)          ; the same for the moving record (entered here by
                           ; $EBFC and $EC01)
   LD A,(IX+$06)
   AND A
-  JR Z,l_EBF0
+  JR Z,MovingExplodes
   LD (IX+$06),$01
-l_EBF0:
+MovingExplodes:
   LD (IX+$08),$20
   LD HL,SoundRequests     ; sound request bit 1: an explosion
   SET 1,(HL)
@@ -88,7 +88,7 @@ l_EBF0:
 HitShotOnShot:
   POP HL
   SET 7,(HL)
-  JR l_EBE2
+  JR MovingHit
 
 ; Handler: the player against a pad or a dish (not run)
 ;
@@ -96,7 +96,7 @@ HitShotOnShot:
 ; sound bit 1); the pad or dish stays.
 HitPlayerOnStatic:
   POP HL
-  JR l_EBE2
+  JR MovingHit
 
 ; Handler: a cube or pod against types 2-11 (not run)
 ;
@@ -216,9 +216,9 @@ HitBlockOnShot:
   LD L,A
   LD A,(HL)
   AND A
-  JR NZ,l_ECA6
+  JR NZ,RemoveOtherRecord
   BIT 0,(IX+$00)
-  JR NZ,l_ECA6
+  JR NZ,RemoveOtherRecord
   LD A,(IX+$0F)
   INC A
   LD (IX+$0F),A
@@ -237,7 +237,7 @@ HitBlockOnShot:
   LD HL,SoundRequests
   SET 2,(HL)
   JP NextMover
-l_ECA6:
+RemoveOtherRecord:
   POP HL
   SET 7,(HL)
   JP NextMover
@@ -251,11 +251,11 @@ l_ECA6:
 HitShotOnBlock:
   LD A,(IX+$05)
   AND A
-  JP NZ,l_ECDC
+  JP NZ,RemoveShot
   POP HL
   PUSH HL
   BIT 0,(HL)              ; the other is a pod: the shot just goes
-  JR NZ,l_ECDC
+  JR NZ,RemoveShot
   LD A,$0F                ; +F: the cube's hits
   ADD A,L
   LD L,A
@@ -272,7 +272,7 @@ HitShotOnBlock:
   LD HL,SoundRequests     ; sound request bit 2
   SET 2,(HL)
   JP NextMover
-l_ECDC:
+RemoveShot:
   SET 7,(IX+$00)          ; the shot is removed
   POP HL
   JP NextMover
@@ -419,27 +419,27 @@ HitDomeOnShot:
   LD L,A
   LD A,(HL)
   AND A
-  JR Z,l_ED98
+  JR Z,DomeHitByPlayer
   LD A,(IX+$06)
   AND A
   JP NZ,PairScanNext
   POP HL
   SET 7,(HL)
   JP NextMover
-l_ED98:
+DomeHitByPlayer:
   BIT 0,(IX+$00)
   LD B,$15
   JP Z,HitScore
   LD HL,PodRecords
   LD DE,$0010
   LD B,$04
-l_EDA9:
+PodSlotLoop:
   BIT 7,(HL)
-  JR NZ,l_EDB3
+  JR NZ,PodFromDome
   ADD HL,DE
-  DJNZ l_EDA9
+  DJNZ PodSlotLoop
   JP HitBoth
-l_EDB3:
+PodFromDome:
   LD (HL),$0B
   LD E,IXL
   LD D,IXH
@@ -485,11 +485,11 @@ ShotHitsDome:
   LD HL,PodRecords        ; type 3: a free pod slot
   LD DE,$0010
   LD B,$04
-l_EDF4:
+PodSlotLoop2:
   BIT 7,(HL)
   JR NZ,ReleasePod
   ADD HL,DE
-  DJNZ l_EDF4
+  DJNZ PodSlotLoop2
   JP HitBoth
 ReleasePod:
   LD (HL),$0B             ; type 11 at the dome's place
