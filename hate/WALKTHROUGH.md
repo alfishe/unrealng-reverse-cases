@@ -131,6 +131,7 @@ Later gaps, found while writing the game's source (section 6.13):
 | A seek shows its position's picture by replaying the frame, then puts the machine back; the engine's event cursor stayed where that replay left it | an edit right after the first keyframe (the fast tape load 55 T-states into a recording) was applied inside the seek and skipped by the replay that followed: no writes for the loaded block | two causes, both fixed: (1) the live-state snapshot now keeps the engine's event cursor and frame state too, so the replay sees the edit; (2) the edit's bytes were folded as bus cycles of the pending instruction, a `CALL` into the loader, so they counted as pushes: they are now plain data writes of that `CALL` (the trap runs the whole loader at its entry's fetch and returns, so the entry itself never starts as an instruction) (`FastTapeLoadWritesAreUses`) |
 | The skool draft wrote an instruction whole when its entry ended inside it (code later overwritten by a buffer that starts at the instruction's last byte) | the rebuild gate failed at `$8082` (`JP` at `$8081` into the buffer entry at `$8083`, one byte written twice), the assemble gate shifted | the instruction's own bytes as `DEFB`, the instruction in the comment (`SkoolDraftInstructionCutByTheEntryEnd`); the bot's recording rebuilt again with it: both gates pass, 42 240 of 42 240 bytes |
 | L1's self-modified mark (`kSmc`, written after it ran) could not tell an operand patch from a buffer laid over code that ran once | doc 2.7 had to sort the bot game's 123 marked bytes by their writers by hand; the code map called the title player under the playfield buffer self-modifying; L3's `code-overwritten` missed the overlay written by plain `LD (HL),r` | a byte written after it ran and never run after any such write is `overlaid` (the last field of a `byte_use` row; a byte that ran once after a write stays a patch); the code map counts only patches, L3 reports overlaid code whatever wrote it (`PatchIsNotOverlay`, `BufferOverCodeIsAnOverlayPatchIsNot`, fixture `patch-overlay.asm`); on p2: 12 patches, 111 overlaid, eight overlay findings |
+| The font claim covered every code from the first glyph drawn to the last, including unused slots holding other data | three "font and text cannot both hold" conflicts at the credits (`$63DB-$63FE`), resolved by hand in 6.6 | a slot read by some code whose bytes no drawing code ever put on the screen is no glyph: the claim splits around it; a slot another routine drew stays (the score digits) (`AnalysisDetectorFonts_StringInAnUnusedSlot`, fixture `font-slot-text.asm`); on p2 the font is codes 45-58 and 64-89, conflicts 241 to 238 |
 
 New fixture `testdata/analysis/fixtures/stages.asm` (a loader, a depacker with two writers, an overlay); tests
 `CodeArrivalsOnePerWriter`, `WindowFromAnArrival`, `OverlayIsOneFinding`; the recipe
@@ -221,9 +222,12 @@ Ben Daglish, ©1989 Vortex.
 Which print calls ran comes from L1's executed instructions. ABORT and "PRESS ANY KEY WHEN READY" did not, so they
 are described from the code alone.
 
-**Open tool gap.** The conflict should not reach the review queue. L1 knows which bytes the glyph copy read:
-the reads at `$EE68`, through `byte_counts` and dataflow. A font claim could shrink to the glyphs actually read and
-leave the rest to the text claim. Queued for unreal-ng after the heatmap build (section 5).
+**Tool gap, fixed.** The conflict should not reach the review queue, and no longer does. The graphics detector's
+font claim spanned every code from the first glyph drawn to the last. It now leaves out a slot whose bytes some code
+read but no drawing code ever put on the screen, and splits the claim around it (section 5). On the bot's game the
+font became codes 45-58 (`$6368-$63D7`) and 64-89 (`$6400-$64CF`): exactly the five credit slots `;<=>?`
+(`$63D8-$63FF`) fell out. The digits, drawn five rows at a time by the score routine `$EEA4` rather than by the print
+loop, stay glyphs because their bytes reached the screen. The three font and text conflicts are gone (241 to 238).
 
 ### 6.7 Sound
 

@@ -60,9 +60,10 @@ Some codes are not letters:
 
 **Strings stored inside the font.** The glyphs of `;` `<` `=` `>` `?` (`$63D8-$63FF`) and `[` `\` `]` `^` `_`
 (`$64D8-$64FF`) are never printed: no string uses those codes. Their 80 bytes hold three strings instead: the
-credits at `$63D8` and `$64D8` and " AUTO " at `$64F6`. L1's review queue reports the overlap as a conflict ("claimed
-font and text: they cannot both hold"). Here both claims are right: the block is a font, and its unused slots are
-text.
+credits at `$63D8` and `$64D8` and " AUTO " at `$64F6`. The block is a font, and its unused slots are text. The
+analyzer first claimed the whole run of codes as font and reported the overlap as a conflict ("claimed font and text:
+they cannot both hold"). It now leaves out a slot that code read but no drawing code put on the screen, so the font
+claim is codes 45-58 and 64-89, and the credits are text only.
 
 ## 8.3 Every string
 
