@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Check the documentation: every mermaid diagram renders (mmdc), every relative link and image exists.
+"""Check the documentation: every mermaid diagram renders (mmdc), every relative link and image exists, and no $
+is left in prose (GitHub reads a pair of them as LaTeX math; code_addresses.py fixes addresses).
 
     python3 check_docs.py [docs/*.md WALKTHROUGH.md ...]      # default: WALKTHROUGH.md, README.md, docs/*.md
 """
@@ -9,6 +10,8 @@ import re
 import subprocess
 import sys
 import tempfile
+
+import code_addresses
 
 here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -34,6 +37,9 @@ def main():
                 if not os.path.exists(os.path.join(os.path.dirname(path), target)):
                     bad += 1
                     print(f'{os.path.relpath(path, here)}: missing {target}')
+            for n in code_addresses.bare_dollars(text):
+                bad += 1
+                print(f'{os.path.relpath(path, here)}:{n}: $ in prose renders as math on GitHub (code_addresses.py)')
     print('docs: ok' if not bad else f'docs: {bad} problem(s)')
     sys.exit(1 if bad else 0)
 

@@ -55,16 +55,16 @@ Findings, each checked later on the recording (step 3):
   LOAD "H_A_T_E.1" CODE: CLS: RANDOMIZE USR 40000: POKE 23739,111: LOAD "H_A_T_E.2" CODE: RANDOMIZE USR 24500`.
   Line 20 is `REM NO POKE`; line 30, `RANDOMIZE USR 25000`, starts the game: BASIC falls through to it when the
   depacker returns.
-- USR 23788 is INXS's banner in line 0's REM: a bold font made from the ROM's ($3D00, `b | b >> 1`, at $C350),
+- USR 23788 is INXS's banner in line 0's REM: a bold font made from the ROM's (`$3D00`, `b | b >> 1`, at `$C350`),
   "H.A.T.E." (line 1's REM) printed eight times at row 10 with INK 0 to 7, three frames apart (a fade in), then
   "Disked by INXS SOFT'89" sliding in from the right on row 12.
-- `POKE 23739,111` points the S channel's output at $096F: a lone `RET` in the ROM (checked). The ROM's
+- `POKE 23739,111` points the S channel's output at `$096F`: a lone `RET` in the ROM (checked). The ROM's
   "Bytes: H_A_T_E.2" message is printed nowhere and the loading screen stays clean.
 - `H_A_T_E.1` (USR 40000) is position independent: `CALL $007C` (a lone `RET` in the ROM) leaves its own address
   below SP. It unpacks a screen: RLE `00 N V`, the bitmap by pixel lines, then the attributes.
-- `H_A_T_E.2` (USR 24500) moves its 55-byte depacker into the printer buffer ($5B8C), moves the packed data
-  down $64 bytes with the ROM's `LDIR; RET` at $33C3 (checked) and unpacks backwards into $5FB4-$FFFF: RLE with
-  the marker $97.
+- `H_A_T_E.2` (USR 24500) moves its 55-byte depacker into the printer buffer (`$5B8C`), moves the packed data
+  down `$64` bytes with the ROM's `LDIR; RET` at `$33C3` (checked) and unpacks backwards into `$5FB4-$FFFF`: RLE with
+  the marker `$97`.
 
 **Produced:** `work/tape/NOTES.md`, `work/tape/*.bin` (the blocks).
 
@@ -75,12 +75,12 @@ Findings, each checked later on the recording (step 3):
 **Used:** TTD `memory_at` (the 64 K view at any frame and T-state of the recording, without running the machine)
 and a binary search over frames.
 
-- `tools/depack.py` (the depacker in Python) gives the memory $5FB4-$FFFF of frame 2613 exactly: 0 of 41 036 bytes
+- `tools/depack.py` (the depacker in Python) gives the memory `$5FB4-$FFFF` of frame 2613 exactly: 0 of 41 036 bytes
   differ. The search found 2613 as the first frame after the depacker's last write; at 2614 the game already
   writes its stack and variables.
 - `tools/pack.py` packs that image back into the 35 395 bytes of the tape, identical. The rules came from the
   tokens of the tape's stream: runs from three bytes on; zeros 256 at a time while 256 remain, then up to 127;
-  other bytes up to 127; a lone $97 escaped.
+  other bytes up to 127; a lone `$97` escaped.
 - `tools/screen_depack.py` gives the screen of frame 2531 exactly (0 of 6 912 bytes differ); at frame 2530 the
   unpacker is still on attribute row 21. `tools/screen_pack.py` packs it back into the tape's 5 965 bytes, identical
   (runs from four bytes on, zeros always a run).
@@ -104,7 +104,7 @@ and 2531 rendered by `tools/zxscreen.py`).
   run is on; the picture's length counts two bytes past its data). `tools/screen_depack.py` was corrected with it.
   Identical since.
 - `src/depacker.asm`: identical at once.
-- `tools/tap.py`: the CODE headers hold $2020 as their second parameter, not the ROM's 32 768: the tape was made
+- `tools/tap.py`: the CODE headers hold `$2020` as their second parameter, not the ROM's 32 768: the tape was made
   by a copier.
 
 **Produced:** `tools/build.sh`: `build/HATE.TAP` identical to `orig/HATE.TAP`, all 42 415 bytes. The game image in
@@ -120,7 +120,7 @@ fixtures and tests, branch `analysis-stages`) before going on:
 | One build over a program that arrives in stages mixes the stages: the depacker's buffer and the game's code at the same address | the loader's bytes classified with the game's | **code arrivals**: the first run of bytes written during the recording, one per writer routine (where, when, who wrote it); **window builds** from any frame / T-state to any frame, with their own start image (`build --stage N`) |
 | Every loaded byte that ran was marked self-modifying code | thousands of SMC marks on the game | SMC now means written after it ran |
 | An overlay (code overwritten by a later stage) gave one finding per opcode | 174 near-duplicate findings | one finding per overwritten run (gap 32) |
-| A host trap that runs as one instruction lost its writes: L1 kept 64 bus cycles per instruction, the fast tape load writes a whole block at the ROM loader's entry | the second build listed 31 arrivals: the loaded bytes had no load as their writer (the ROM's RAM test was the last one), so every return from the ROM into the banner was a new arrival, each "written $4000-$FFFF" | the events past 64 go to a buffer that grows once (up to 128 K); an arrival's run is the bytes its own writer wrote; one arrival per writer and run (`TrapWritesPastTheEventBuffer`, the fixture's stage 2 now calls back into the loader) |
+| A host trap that runs as one instruction lost its writes: L1 kept 64 bus cycles per instruction, the fast tape load writes a whole block at the ROM loader's entry | the second build listed 31 arrivals: the loaded bytes had no load as their writer (the ROM's RAM test was the last one), so every return from the ROM into the banner was a new arrival, each "written `$4000-$FFFF`" | the events past 64 go to a buffer that grows once (up to 128 K); an arrival's run is the bytes its own writer wrote; one arrival per writer and run (`TrapWritesPastTheEventBuffer`, the fixture's stage 2 now calls back into the loader) |
 | The L1 JSON held per-byte kinds only, no counts | no memory heatmap could be drawn from a build | `byte_counts`: reads, writes, first and last frame per byte, dense per page; `tools/heatmap.py` renders them |
 
 New fixture `testdata/analysis/fixtures/stages.asm` (a loader, a depacker with two writers, an overlay); tests
@@ -160,7 +160,7 @@ entry points: [docs/02-architecture.md](docs/02-architecture.md). Findings:
 - the title music player is relocatable;
 - its IM 2 handler doubles as the key exit and unwinds the stack to SP as saved at entry;
 - the game loop has no frame lock;
-- 2 319 passes of $CF33 averaged 6.2 frames each.
+- 2 319 passes of `$CF33` averaged 6.2 frames each.
 - Every role the document gives a routine is marked with the document that will confirm it.
 
 ### 6.4 Pictures from the recording
@@ -168,11 +168,14 @@ entry points: [docs/02-architecture.md](docs/02-architecture.md). Findings:
 - `tools/memanim.py`: a GIF of memory over a stretch of the recording. It samples TTD `memory_at` (exact at any
   T-state) every N T-states and flashes the bytes written since the previous sample. First result:
   [the loading screen unpacking](docs/img/anim-loading-screen.gif), 77 pictures, and
-  [the game depacking backwards from $FFFF](docs/img/anim-depacker.gif), 84 pictures.
+  [the game depacking backwards from `$FFFF`](docs/img/anim-depacker.gif), 84 pictures.
 - `tools/heatmap.py`: per-byte read, write and execute heatmaps from L1's new `byte_counts` (5 in the gap table).
   Waiting for the build with the fix.
 - `tools/check_docs.py`: every mermaid diagram in the docs is rendered with `mmdc`, and every link is checked. A
   diagram that GitHub's mermaid rejects fails here first.
+- `tools/code_addresses.py`: on GitHub, a pair of `$` in text is LaTeX math, so `$C2B1-$F2E1` written bare rendered
+  as an italic formula. Every address in prose is now a code span, and `check_docs.py` fails on any `$` left outside
+  code.
 
 The recording is open in an instance built from that branch; the whole-recording build lists the arrivals, then
 each stage is built from its own arrival.
