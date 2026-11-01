@@ -26,6 +26,32 @@ writes 32 768: the tape was written by a copier from INXS's disk version, not sa
 
 ## 3.2 The load, step by step
 
+```mermaid
+sequenceDiagram
+    autonumber
+    participant T as Tape
+    participant R as ROM
+    participant B as BASIC line 10
+    participant I as INXS banner $5CEC
+    participant S as Screen unpacker $9C40
+    participant D as Depacker $5B8C
+    participant G as Game $61A8
+    T->>R: header + BASIC "H_A_T_E" (413)
+    R->>B: autostart LINE 10
+    B->>B: PAPER 0, BORDER 0, INK 0, CLEAR 24499
+    B->>I: RANDOMIZE USR 23788
+    I-->>B: title faded in, credit slid in
+    T->>R: header + CODE "H_A_T_E.1" (6 432 at $9C40)
+    B->>S: CLS, RANDOMIZE USR 40000
+    S-->>B: loading screen drawn
+    B->>B: POKE 23739,111 (screen channel muted)
+    T->>R: header + CODE "H_A_T_E.2" (35 495 at $5FB4)
+    B->>D: RANDOMIZE USR 24500 (via $5FB4 and the ROM's LDIR, RET)
+    D-->>B: $5FB4-$FFFF unpacked
+    B->>G: line 30: RANDOMIZE USR 25000
+```
+
+
 ```text
 LOAD ""               ROM        BASIC "H_A_T_E" into PROG, autostart LINE 10
 LINE 10               BASIC      PAPER 0: BORDER 0: POKE 23624,0: INK 0      black screen, BORDCR = 0
@@ -106,6 +132,12 @@ are not read either. The build keeps both as they are.
 
 ![The loading screen](img/load-2-loading-screen.png)
 
+The unpacker at work, one picture every 2 frames of the recording (made by `tools/memanim.py` from TTD `memory_at`):
+the memory grid from $5B00 on the left, the screen as the Spectrum shows it on the right. Bytes written since the
+last picture flash yellow and fade to red.
+
+![The screen unpacker writing the loading picture](img/anim-loading-screen.gif)
+
 *Frame 2 531: the screen complete. At frame 2 530 the unpacker is still writing attribute row 21.*
 
 ## 3.5 The depacker (`H_A_T_E.2`, $5FB4)
@@ -137,6 +169,22 @@ remainder shorter than three stays literal. A literal $97 is written as `$81 $97
 41 036 bytes. `tools/pack.py` packs that image into the tape's 35 395 bytes, all identical.
 
 ## 3.6 Memory after the load
+
+```mermaid
+flowchart LR
+    subgraph before["while block 5 loads"]
+        direction TB
+        a1["$4000-$5AFF loading screen"] --- a2["$5B00 printer buffer"] --- a3["$5C00 sysvars, BASIC"]
+        a3 --- a4["$5FB4-$5FFF depacker head"] --- a5["$6018-$EA5A packed game"] --- a6["$EA5B-$FFFF free"]
+    end
+    subgraph after["after the depacker"]
+        direction TB
+        b1["$4000-$5AFF loading screen"] --- b2["$5B8C depacker (dead)"] --- b3["$5C00 sysvars, BASIC"]
+        b3 --- b4["$5FB4-$FFFF the game, 41 036 bytes"]
+    end
+    before -- "move down $64, unpack backwards from $FFFF" --> after
+```
+
 
 | Range | Contents |
 | --- | --- |

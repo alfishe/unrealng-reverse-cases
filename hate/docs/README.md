@@ -7,8 +7,8 @@ the emulator saw the game do (a recording, a counter, an experiment); the eviden
 | Document | Contents | State |
 | --- | --- | --- |
 | [1. Game design](01-game-design.md) | the game as a player meets it: premise, controls, vehicles, the course, enemies, scoring, lives, modes (demo, pause, abort), difficulty | not started |
-| [2. Architecture](02-architecture.md) | the machine budget, the memory map, the stages from tape to play, the frame, the main loop and its state machine, module map | not started |
-| [3. Build and load](03-build-and-load.md) | the tape, the BASIC loader, the loader in the REM, the packed block and its format, the depacker, the source build | written: the tape, the loaders, the packers, the source build |
+| [2. Architecture](02-architecture.md) | the machine budget, the memory map, the stages from tape to play, the frame, the main loop and its state machine, module map | written: budget, map, stages, the title player and its IM 2 handler, timing, the main loop's call graph; module names follow docs 4-10 |
+| [3. Build and load](03-build-and-load.md) | the tape, the BASIC loader, the loader in the REM, the packed block and its format, the depacker, the source build | written: the tape, the loaders, the packers, the source build, the unpacker animation |
 | [4. Game loop](04-game-loop.md) | the frame schedule, the interrupt, the state machine, the order of work inside a frame, timing | not started |
 | [5. Controls](05-controls.md) | the input devices the game reads: ports, decoding, the menu, any hidden keys | not started |
 | [6. Rendering](06-rendering.md) | the playfield and how it is drawn: buffers, the blitters, attributes, scrolling | not started |

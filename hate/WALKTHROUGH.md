@@ -121,12 +121,57 @@ fixtures and tests, branch `analysis-stages`) before going on:
 | Every loaded byte that ran was marked self-modifying code | thousands of SMC marks on the game | SMC now means written after it ran |
 | An overlay (code overwritten by a later stage) gave one finding per opcode | 174 near-duplicate findings | one finding per overwritten run (gap 32) |
 | A host trap that runs as one instruction lost its writes: L1 kept 64 bus cycles per instruction, the fast tape load writes a whole block at the ROM loader's entry | the second build listed 31 arrivals: the loaded bytes had no load as their writer (the ROM's RAM test was the last one), so every return from the ROM into the banner was a new arrival, each "written $4000-$FFFF" | the events past 64 go to a buffer that grows once (up to 128 K); an arrival's run is the bytes its own writer wrote; one arrival per writer and run (`TrapWritesPastTheEventBuffer`, the fixture's stage 2 now calls back into the loader) |
+| The L1 JSON held per-byte kinds only, no counts | no memory heatmap could be drawn from a build | `byte_counts`: reads, writes, first and last frame per byte, dense per page; `tools/heatmap.py` renders them |
 
 New fixture `testdata/analysis/fixtures/stages.asm` (a loader, a depacker with two writers, an overlay); tests
 `CodeArrivalsOnePerWriter`, `WindowFromAnArrival`, `OverlayIsOneFinding`; the recipe
 `.recipe/analysis/reverse-engineering.md` got "Programs that arrive in stages".
 
 ## 6. The game stage (in progress)
+
+### 6.1 The game window build
+
+`re_session.py build --from-frame 2613 --from-tinframe 53257 --into work/game` builds L1 over the game alone, from
+the moment the depacker returns: 42 647 frames, 357 575 330 instructions, replayed against 1 706 checkpoints with no
+divergence. Its start image (`start.bin`) equals `tools/depack.py`'s output byte for byte. The build took 186 s.
+
+**Why unreal-ng:** a window build is a replay of the TTD recording from any T-state. The analysis sees exactly the
+game, with the loader's bytes out of the way. A trace-based tool would need the run again, and a static disassembler
+has no run at all.
+
+### 6.2 The interrupt handler, found automatically
+
+`re_session.py interrupts --work work/game` lists the routines L1 saw entered by an interrupt, follows the jump
+chain and costs it:
+
+```text
+interrupt $FDFD -> $8340: 27645 entries in 42647 frames (0.65 a frame), 123 T an entry, 0.1 % of the CPU
+```
+
+No address had to be known. The command was added to unreal-ng for this case (the recipe "Interrupt handlers" in
+`.recipe/analysis/reverse-engineering.md`). It also shows what the address alone would not: all entries fall in
+frames 2616-30260, the title, so the game itself runs with interrupts off.
+
+### 6.3 The architecture
+
+From the call graph (`calls`, `routines.profile`), the executed byte ranges (`instructions`) and the code around the
+entry points: [docs/02-architecture.md](docs/02-architecture.md). Findings:
+
+- the title music player is relocatable;
+- its IM 2 handler doubles as the key exit and unwinds the stack to SP as saved at entry;
+- the game loop has no frame lock;
+- 2 319 passes of $CF33 averaged 6.2 frames each.
+- Every role the document gives a routine is marked with the document that will confirm it.
+
+### 6.4 Pictures from the recording
+
+- `tools/memanim.py`: a GIF of memory over a stretch of the recording. It samples TTD `memory_at` (exact at any
+  T-state) every N T-states and flashes the bytes written since the previous sample. First result:
+  [the loading screen unpacking](docs/img/anim-loading-screen.gif), 77 pictures.
+- `tools/heatmap.py`: per-byte read, write and execute heatmaps from L1's new `byte_counts` (5 in the gap table).
+  Waiting for the build with the fix.
+- `tools/check_docs.py`: every mermaid diagram in the docs is rendered with `mmdc`, and every link is checked. A
+  diagram that GitHub's mermaid rejects fails here first.
 
 The recording is open in an instance built from that branch; the whole-recording build lists the arrivals, then
 each stage is built from its own arrival.
