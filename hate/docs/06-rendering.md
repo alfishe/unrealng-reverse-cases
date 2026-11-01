@@ -101,6 +101,11 @@ stateDiagram-v2
     D --> A
 ```
 
+The scroll in the recording, frames 35500-35740 (game 2, the AUTO start), one picture every 3 frames: on the left
+the 32 strips as stored, moving sideways; on the right the same strips through the address list.
+
+![The scroll, stored and on the screen](img/anim-scroll.gif)
+
 With H the page of the last fresh strip (`$C3FC`), the four strips between two fresh ones are made like this:
 
 | Pass | Writes | From | Shift | Lines |

@@ -285,3 +285,7 @@ L1's counts per path made the scroll's four-pass cycle visible before the code w
 A correction came out of it. Doc 04 said `$D3F9` did not run during play, because L1 lists 1 280 *calls*. The
 instruction count at `$D3F9` is 3 599: the blit falls through into it every pass. Routine entries count calls; the
 first instruction's count is the one to read when a routine can be entered by falling into it.
+
+The scroll animation (`docs/img/anim-scroll.gif`) is `tools/playfield_anim.py`: 81 memory images from TTD
+`memory_at`, each drawn as the stored strips and as the screen. The recording is read at any frame without running
+the game again; the instance only seeks.
