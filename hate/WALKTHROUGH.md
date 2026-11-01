@@ -313,3 +313,41 @@ size table of the hit boxes (the six self-modified operands hold the sum of two 
 The pods and the convoy came out of the code alone: `$EDFE` writes type 11 into a free slot at a shot dome, `$ECF3`
 turns it into a follower, `$D151` / `$D1DE` turn the followers into the next round's lives. None of it ran in the
 recording. It is the first thing a second capture has to reach (doc 10).
+
+### 6.12 A second recording, played by a bot that reads the game's own records (in progress)
+
+**Asked:** what the code says about pods, the convoy, a round's end, the next round and the fall back after the last
+life (docs 04 and 07). The first recording never left round 1, and random play does not get further.
+
+**Used:** `tools/autopilot.py`, a player that drives the emulator through the WebAPI / MCP and decides the
+Kempston stick once a pass (3 frames) from memory alone:
+
+- the object list at `$C000` (doc 07's record layout: type, position along, across, height, direction, speed),
+  the scroll distance `$D14D`, round `$C2F7`, lives `$C2F9`, followers `$ECE4`;
+- the course profile under and ahead of the player (`$5FF7` + position / 2), read with the wall rule of `$E94F`:
+  bit 7 limits the position across to `$17`, bit 6 to `$27`, otherwise `$47`; entering a narrower part beyond the
+  limit is the crash of `$E979`;
+- a planner that moves every threat along its direction table (`$C340`) for 14 passes and picks the position
+  across and the height, closest to the goal (a pod, else a dome of type 3, else the middle of the track), whose
+  predicted clearance against the hit boxes of `$E555` (7 + both sizes) is largest.
+
+The bot depends only on memory and the emulator is exact, so a run under a TTD recording plays the same game as the
+dry run before it.
+
+**Found on the way:**
+
+- The start image of the first recording (`work/c2/start.szx`, frame 30200) is not yet in the menu: a title loop
+  runs at `$8000`-`$83FF` until a key is pressed; only then does `$F1AA` read keys 1-4 and 6.
+- The stick directions: left increases the position across, right decreases it; on the ground vehicle "down"
+  climbs and "up" descends.
+- The course records alternate the vehicle: the first course byte is 0 (ground vehicle) in rounds 1, 3, 5, 7, 9
+  and 1 (aircraft) in 2, 4, 6, 8, 10. The per-round object mix (from the blocks at `$F300`): cubes only in rounds 3,
+  6 and 10, dishes in 4, 5, 6 and 10, plain domes (type 2) only from round 5.
+- The first missiles that killed the bot came from the side: launched missiles with behaviour bit 4 turn toward the
+  player's position across every 4 passes, so a prediction along a straight line needs a margin.
+
+**Dry runs so far:** round 1 cleared with pods collected (`$ECE4` 1, 2) and one hit absorbed by a follower; round
+2 (the aircraft) cleared with 4 followers; round 3 entered with 4 lives. The fall back of doc 04 4.4 needs a round
+whose start lives minus one is 1-4 before the round where the lives run out, so the recording plays rounds 1-3,
+then spends the lives in round 4 (`--give-up 4`: steer into threats) to fall back to round 3, then ends in GAME
+OVER.
