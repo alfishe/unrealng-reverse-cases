@@ -133,6 +133,8 @@ Later gaps, found while writing the game's source (section 6.13):
 | L1's self-modified mark (`kSmc`, written after it ran) could not tell an operand patch from a buffer laid over code that ran once | doc 2.7 had to sort the bot game's 123 marked bytes by their writers by hand; the code map called the title player under the playfield buffer self-modifying; L3's `code-overwritten` missed the overlay written by plain `LD (HL),r` | a byte written after it ran and never run after any such write is `overlaid` (the last field of a `byte_use` row; a byte that ran once after a write stays a patch); the code map counts only patches, L3 reports overlaid code whatever wrote it (`PatchIsNotOverlay`, `BufferOverCodeIsAnOverlayPatchIsNot`, fixture `patch-overlay.asm`); on p2: 12 patches, 111 overlaid, eight overlay findings |
 | The font claim covered every code from the first glyph drawn to the last, including unused slots holding other data | three "font and text cannot both hold" conflicts at the credits (`$63DB-$63FE`), resolved by hand in 6.6 | a slot read by some code whose bytes no drawing code ever put on the screen is no glyph: the claim splits around it; a slot another routine drew stays (the score digits) (`AnalysisDetectorFonts_StringInAnUnusedSlot`, fixture `font-slot-text.asm`); on p2 the font is codes 45-58 and 64-89, conflicts 241 to 238 |
 | L3's `index-past-table` counted every reader of a table, so a byte-after-byte walk through a larger structure (a list, a block copy, a mask) "read past" a table L2 found inside it | ten bug findings on the bot's game, six of them walks (`$C99E`, `$CF02`, `$FBC7`, `$FE00`, `$FF00`) | only accesses that read through an index (L1 `indexes`) count (`IndexPastTableNeedsAnIndex`, fixture `index-past-table.asm`: a real index past a table followed by code, and a walk around a second table); on p2 four remain, each a table L2 measured too short (doc 2.7) |
+| The screens detector knew back buffers only as block copies; the playfield buffer goes to the screen through `Blit`'s unrolled loads, so no detector saw it whole | `$8000-$BFFF` as 7 626 small "buffer" claims of the records detector, two false sprites, and 23 unknown areas of 17-31 bytes at page starts | a run of 2 K or more read by routines that write the screen's pixels and rewritten again and again (4 writes or more, one for every 64 reads at least: a sprite's or font's source is written never or once) is a back buffer, layout `drawn` (`AnalysisDetectorScreens_DrawnBackBuffer`, fixture `drawn-back-buffer.asm`); on p2: one claim `$8000-$BFFF`, read by `Blit` `$D35E`, unknown areas in the game image 36 to 13 |
+| Code and the buffer laid over it later were a conflict ("cannot both hold"), though both held, one after the other, and the overlay was already the `code-overwritten` bug | 10 new conflicts with the back buffer claim, and most of the old 238 between the title player and the records detector's small buffers | no conflict when every byte of the overlap that ran is `overlaid` (`OverlayIsNoConflict`); on p2 conflicts 248 to 65, export gates still pass (42 240 of 42 240 bytes; skool2asm warnings 784 to 573) |
 
 New fixture `testdata/analysis/fixtures/stages.asm` (a loader, a depacker with two writers, an overlay); tests
 `CodeArrivalsOnePerWriter`, `WindowFromAnArrival`, `OverlayIsOneFinding`; the recipe
@@ -521,12 +523,22 @@ row. On p2 it splits the 123 bytes exactly as the writers did: the 12 compare op
 The code map no longer calls overlays self-modified, and L3's `code-overwritten` sees a buffer laid over code even when
 plain `LD (HL),r` writes it, not only a block copy.
 
-### 6.14 The review queue's bug findings, all explained
+### 6.14 The review queue, worked down
 
-L3 raised 18 bug findings over the bot's game. Eight are overlays (doc 2.7: the playfield buffer over the title player
-and the start-up's end, and the IM 2 jump restored for a play without interrupts). The other ten were
-`index-past-table`; six were walks, not indexes, and went away with the fix in section 5. The four left read the
-shadow shapes at `$5B00`-`$5B53` (blocks of 32 bytes; L2's init tables start 8 bytes into them) and the scratch page
-`$6500` (the draw list, then the mask): tables L2 measured too short, not bugs of the game (doc 2.7). No bug finding
-is left unexplained.
+**Bug findings, all explained.** L3 raised 18 bug findings over the bot's game. Eight are overlays (doc 2.7: the
+playfield buffer over the title player and the start-up's end, and the IM 2 jump restored for a play without
+interrupts). The other ten were `index-past-table`; six were walks, not indexes, and went away with the fix in
+section 5. The four left read the shadow shapes at `$5B00`-`$5B53` (blocks of 32 bytes; L2's init tables start 8
+bytes into them) and the scratch page `$6500` (the draw list, then the mask): tables L2 measured too short, not bugs
+of the game (doc 2.7).
 
+**The playfield buffer, one claim.** The analyzer now claims `$8000-$BFFF` as one back buffer read by `Blit` (`$D35E`),
+where it had 7 626 small buffer claims and 23 unknown areas (section 5). The conflicts between the title player's code
+and what was laid over it are no longer raised: the overlay is the bug finding. Queue after both fixes: 65 conflicts
+(from 241), 12 bug findings, 32 unknown areas, 13 of them in the game image.
+
+**The unknown areas left in the game image** are all named in the source (`src/game/game.ann`): the sprite graphics
+below the buffer (`$6542-$7FFF`), the launch templates and texts at `$C2BE-$C37F`, the unused block `UnusedC3FE`, the
+blit's address list `BlitAddresses` (`$D5B2-$D9D3`, read by `Blit` as data it pops), the hit handlers that did not
+run (`HitBlockOnShot`, `HitBlockOnPlayer`), the score area at `$EF48`, the round object blocks from `$F301`, the
+sprite save buffer and the UDG leftover at `$FF66`. No detector has a kind for them; the source describes each.
