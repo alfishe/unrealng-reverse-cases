@@ -222,6 +222,9 @@ CmdModeBHold:
   JP PatternCommand
 
 ; Title command 8: voice B envelope mode 0 (decay)
+;
+; Sets voice B's envelope mode C = 0 and goes back to the pattern reader
+; (PatternCommand); docs/09-sound.md 9.3.
 CmdModeBDecay:
   POP HL
   LD C,$00
@@ -294,7 +297,8 @@ SongReturn:
 
 ; Title player: song byte $FE?
 ;
-; Used by the routine at SongStep.
+; Song bytes from $FE down: $FE calls a sub-song (SongCall, not run), anything
+; else is a jump in the song (SongJump).
 SongCallCheck:
   INC A
   JR NZ,SongJump          ; not $FE
@@ -376,6 +380,9 @@ DrumStart:
   RET
 
 ; Title command 0: hold the notes one more note length
+;
+; Command 0: nothing changes this note length; the player goes on to the drum
+; tick (DrumTick) with the notes as they are.
 CmdHold:
   POP DE
   EXX
@@ -431,7 +438,9 @@ NoteABModeA:
 
 ; Title command 10: voice B mode and the periods
 ;
-; Used by the routine at CmdNoteAB.
+; Command 10: voice B starts in envelope mode 3 when C is not 0; then both
+; periods from the pattern (NoteABPeriods), voice B's written into its period
+; reload VoiceBStep+$0005.
 CmdNoteABVoiceB:
   LD A,C
   AND A
@@ -495,7 +504,9 @@ NoteAModeA:
 
 ; Title command 11: voice A's period
 ;
-; Used by the routine at CmdNoteA.
+; Command 11: voice A's period from the pattern into its reload
+; VoiceAStep+$0005, and its pre-delay VoiceAStep+$0007 = period / 8 + $18 - the
+; starting width (an operand command 1 writes); docs/09-sound.md 9.3.
 CmdNoteAPeriod:
   POP DE
   LD A,(DE)
@@ -712,11 +723,14 @@ VoiceBOff:
 
 ; Title player: balance the envelope branch
 ;
-; Used by the routine at VoicesPlay.
+; A 4-step delay loop that makes the envelope branch take as long as the other
+; one, so voice B's period step comes at the same time either way.
 VoiceBDelay:
   LD B,$04
 
 ; Title player: delay loop
+;
+; The delay loop of VoiceBDelay (B = 4), then voice B's period step.
 VoiceBDelayLoop:
   DJNZ VoiceBDelayLoop
 
@@ -821,7 +835,8 @@ NoiseLengthLoop:
 
 ; Title drum 4: a rising tone, half-period 50 down to 1
 ;
-; Used by the routine at DrumTick.
+; The beeper toggled 50 times with two waits of D each, D from 50 down to 1: a
+; tone rising in pitch. Then back to voice A's envelope.
 DrumRise:
   PUSH DE
   XOR A
@@ -842,7 +857,8 @@ RiseSecondWait:
 
 ; Title drum 6: a falling tone, period 180 up in steps of 4
 ;
-; Used by the routine at DrumTick.
+; The beeper toggled with one wait of D, D from 180 up in steps of 4 until it
+; wraps past 255 (19 steps): a tone falling in pitch.
 DrumFall:
   PUSH DE
   XOR A
@@ -863,7 +879,9 @@ FallWait:
 
 ; Title drum 5: a rising tone, period 200 down to 124
 ;
-; Used by the routine at DrumTick.
+; The beeper toggled with one wait of D, D from 200 down in steps of 4 while it
+; is at least 124 (20 steps): a short rising tone, then back to voice A's
+; envelope.
 DrumSweep:
   PUSH DE
   LD E,$00

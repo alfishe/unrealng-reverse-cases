@@ -106,6 +106,7 @@ $80C2 b CmdModeA ; Title commands 5 and 6: envelope mode of voice A (not run)
 $80CE c CmdModeBHold ; Title command 7: voice B envelope mode 1 (hold)
 > C of the pattern's register set is voice B's envelope mode.
 $80D4 c CmdModeBDecay ; Title command 8: voice B envelope mode 0 (decay)
+> Sets voice B's envelope mode C = 0 and goes back to the pattern reader (PatternCommand); docs/09-sound.md 9.3.
 $80DA b CmdSilence ; Title commands 13-15: silence the voices (not run)
 > Three handlers that did not run in the recording. Each zeroes an OUT value operand: command 13 at $80DA both ($82D0 and $8332), command 14 at $80E5 voice A ($82D0), command 15 at $80ED voice B ($8332); then JP $8088.
 $80F5 c CmdNoteLength ; Title command 17: set the note length
@@ -125,6 +126,7 @@ $811A ; not $FF
 $811C b SongReturn ; Title song byte $FF: return (not run)
 > LD HL,nn; JP $8118: back to the position saved by $FE (the operand $811D). The tune of this game uses no sub-song.
 $8122 c SongCallCheck ; Title player: song byte $FE?
+> Song bytes from $FE down: $FE calls a sub-song (SongCall, not run), anything else is a jump in the song (SongJump).
 $8123 ; not $FE
 $8125 b SongCall ; Title song byte $FE: call a sub-song (not run)
 > INC HL; LD E,(HL); INC HL; LD D,(HL); INC HL; LD ($811D),HL; EX DE,HL; JP $8118: saves the position after the address into SongReturn's operand and continues at the address.
@@ -148,6 +150,7 @@ $8168 ; the speed: frames a step
 $816C ; the loop point, used by drum byte 1
 $8170 ; the position
 $8175 c CmdHold ; Title command 0: hold the notes one more note length
+> Command 0: nothing changes this note length; the player goes on to the drum tick (DrumTick) with the notes as they are.
 $817A c CmdLongNote ; Title command 18: hold the notes n note lengths
 > The counter is its own operand at $817B: 0 means the command starts, it loads n from the argument; otherwise it counts down, staying on this command until 0, then steps over the argument.
 $817A ; the counter, an operand: 0 = not counting
@@ -161,6 +164,7 @@ $819D ; voice A in mode 0: leave it
 $819F b NoteABModeA ; Title command 10: voice A mode 3 (not run)
 > LD B,3: voice A starts in mode 3 when its mode is not 0. Voice A was in mode 0 through the recording.
 $81A1 c CmdNoteABVoiceB ; Title command 10: voice B mode and the periods
+> Command 10: voice B starts in envelope mode 3 when C is not 0; then both periods from the pattern (NoteABPeriods), voice B's written into its period reload VoiceBStep+$0005.
 $81A5 ; voice B starts in mode 3
 $81A7 NoteABPeriods ; the two periods
 $81AF ; voice B's period reload
@@ -181,6 +185,7 @@ $81F0 ; mode 0: leave it
 $81F2 b NoteAModeA ; Title command 11: voice A mode 3 (not run)
 > LD B,3, as in command 10.
 $81F4 c CmdNoteAPeriod ; Title command 11: voice A's period
+> Command 11: voice A's period from the pattern into its reload VoiceAStep+$0005, and its pre-delay VoiceAStep+$0007 = period / 8 + $18 - the starting width (an operand command 1 writes); docs/09-sound.md 9.3.
 $81F9 ; voice A's period reload
 $8204 ; voice A's starting width, an operand written by command 1
 $8207 ; voice A's pre-delay
@@ -243,7 +248,9 @@ $830B ; voice B's pre-delay
 $8313 b VoiceBOff ; Title player: voice B's pulse width ran out (not run)
 > INC (HL); XOR A; LD ($8332),A (voice B off); LD A,C; AND A; JP Z,$831F; LD C,1; $831F: EXX; JP $8327. The JR Z,$831F at $82E7 (mode 1) enters at its tail.
 $8323 c VoiceBDelay ; Title player: balance the envelope branch
+> A 4-step delay loop that makes the envelope branch take as long as the other one, so voice B's period step comes at the same time either way.
 $8325 c VoiceBDelayLoop ; Title player: delay loop
+> The delay loop of VoiceBDelay (B = 4), then voice B's period step.
 $8327 c VoiceBStep ; Title player: voice B's period step
 > E counts voice B's period down; at 0 one pulse is sent like voice A's. Then back to $807F.
 $832B ; voice B's period, an operand written by the note commands
@@ -281,15 +288,18 @@ $8389 ; a level from one byte
 $838B ; a length from the next
 $8390 NoiseLengthLoop
 $839A c DrumRise ; Title drum 4: a rising tone, half-period 50 down to 1
+> The beeper toggled 50 times with two waits of D each, D from 50 down to 1: a tone rising in pitch. Then back to voice A's envelope.
 $839E RiseStepLoop
 $839F RiseFirstWait
 $83A2 RiseSecondWait
 $83A6 ; toggle the beeper
 $83B0 c DrumFall ; Title drum 6: a falling tone, period 180 up in steps of 4
+> The beeper toggled with one wait of D, D from 180 up in steps of 4 until it wraps past 255 (19 steps): a tone falling in pitch.
 $83B4 FallStepLoop
 $83B5 FallWait
 $83B9 ; toggle the beeper
 $83C6 c DrumSweep ; Title drum 5: a rising tone, period 200 down to 124
+> The beeper toggled with one wait of D, D from 200 down in steps of 4 while it is at least 124 (20 steps): a short rising tone, then back to voice A's envelope.
 $83CB SweepStepLoop
 $83CD SweepWait
 $83D1 ; toggle the beeper
@@ -994,25 +1004,43 @@ $E065 ; + the run's place in the mask
 $E06B c MaskRuns5x3 ; AND 5 shape bytes into the mask at DE, then 3 more 7 on
 > In: HL = the shape, DE = the mask in $6500. The MaskRuns* entries AND short runs of shape bytes into the mask: a run, a gap, a run (the gap is the step to the next strip of the mask), HL running on. This one: 5, a gap of 7, 3.
 $E075 c MaskStepRuns4x4 ; Next profile byte, then MaskRuns4x4
+> DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the next profile byte (the ground under the next column), DE = SpriteScratch + (that byte AND $1F) - ShadowGround + D, so the next runs of the shape are ANDed into the mask where the ground there puts them; then it falls into the runs entry below.
 $E084 c MaskRuns4x4 ; AND 4 shape bytes, then 4 more 7 on
+> The mask shapes are runs of shape bytes ANDed into the mask at $6500 (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 4 bytes, then E + 7 (the mask is strips of 17 bytes), then 4 more. Used by DrawShadows; docs/06-rendering.md 6.6.
 $E08E c MaskStepRuns3x5 ; Next profile byte, then MaskRuns3x5
+> DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the next profile byte (the ground under the next column), DE = SpriteScratch + (that byte AND $1F) - ShadowGround + D, so the next runs of the shape are ANDed into the mask where the ground there puts them; then it falls into the runs entry below.
 $E09D c MaskRuns3x5 ; AND 3 shape bytes, then 5 more 7 on
+> The mask shapes are runs of shape bytes ANDed into the mask at $6500 (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 3 bytes, then E + 7 (the mask is strips of 17 bytes), then 5 more. Used by DrawShadows; docs/06-rendering.md 6.6.
 $E0A7 c MaskStepRuns2x6 ; Next profile byte, then MaskRuns2x6
+> DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the next profile byte (the ground under the next column), DE = SpriteScratch + (that byte AND $1F) - ShadowGround + D, so the next runs of the shape are ANDed into the mask where the ground there puts them; then it falls into the runs entry below.
 $E0B6 c MaskRuns2x6 ; AND 2 shape bytes, then 6 more 7 on
+> The mask shapes are runs of shape bytes ANDed into the mask at $6500 (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 2 bytes, then E + 7 (the mask is strips of 17 bytes), then 6 more. Used by DrawShadows; docs/06-rendering.md 6.6.
 $E0C6 c MaskStepRuns5x5 ; Next profile byte, then MaskRuns5x5
+> DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the next profile byte (the ground under the next column), DE = SpriteScratch + (that byte AND $1F) - ShadowGround + D, so the next runs of the shape are ANDed into the mask where the ground there puts them; then it falls into the runs entry below.
 $E0D5 c MaskRuns5x5 ; AND 5 shape bytes, then 5 more 11 on
+> The mask shapes are runs of shape bytes ANDed into the mask at $6500 (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 5 bytes, then E + 7 (the mask is strips of 17 bytes), then 5 more. Used by DrawShadows; docs/06-rendering.md 6.6.
 $E0DF c MaskStepRuns4x6 ; Next profile byte, then MaskRuns4x6
+> DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the next profile byte (the ground under the next column), DE = SpriteScratch + (that byte AND $1F) - ShadowGround + D, so the next runs of the shape are ANDed into the mask where the ground there puts them; then it falls into the runs entry below.
 $E0EE c MaskRuns4x6 ; AND 4 shape bytes, then 6 more 11 on
+> The mask shapes are runs of shape bytes ANDed into the mask at $6500 (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 4 bytes, then E + 7 (the mask is strips of 17 bytes), then 6 more. Used by DrawShadows; docs/06-rendering.md 6.6.
 $E0F8 c MaskStepRuns3x7x3 ; Next profile byte, then MaskRuns3x7x3
+> DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the next profile byte (the ground under the next column), DE = SpriteScratch + (that byte AND $1F) - ShadowGround + D, so the next runs of the shape are ANDed into the mask where the ground there puts them; then it falls into the runs entry below.
 $E107 c MaskRuns3x7x3 ; AND 3 shape bytes, 7 more 11 on, 3 more 11 on
+> The mask shapes are runs of shape bytes ANDed into the mask at $6500 (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 3 bytes, then E + 7 (the mask is strips of 17 bytes), then 7, then 3. Used by DrawShadows; docs/06-rendering.md 6.6.
 $E118 c MaskStepRuns1x6x4 ; Next profile byte, then MaskRuns1x6x4
+> DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the next profile byte (the ground under the next column), DE = SpriteScratch + (that byte AND $1F) - ShadowGround + D, so the next runs of the shape are ANDed into the mask where the ground there puts them; then it falls into the runs entry below.
 $E127 c MaskRuns1x6x4 ; AND 1 shape byte, 6 more 12 on, 4 more 11 on
+> The mask shapes are runs of shape bytes ANDed into the mask at $6500 (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 1 bytes, then E + 7 (the mask is strips of 17 bytes), then 6, then 4. Used by DrawShadows; docs/06-rendering.md 6.6.
 $E139 c MaskAnd7 ; AND 7 shape bytes into the mask
 > In: HL = the shape, DE = the mask. One chain of entries: MaskAnd7, MaskAnd6, MaskAnd5, MaskAnd4 and MaskAnd3 AND that many bytes (HL and E move on; E stays on the last byte).
 $E13E c MaskAnd6 ; AND 6 shape bytes into the mask
+> Entry points of one chain: MaskAnd6, MaskAnd5, MaskAnd4, MaskAnd3 AND 6, 5, 4 or 3 shape bytes (HL) into the shadow mask (DE), each falling into the next; see MaskAnd7.
 $E143 c MaskAnd5 ; AND 5 shape bytes into the mask
+> An entry into the AND chain (MaskAnd6 above): AND the remaining shape bytes into the shadow mask.
 $E148 c MaskAnd4 ; AND 4 shape bytes into the mask
+> An entry into the AND chain (MaskAnd6 above): AND the remaining shape bytes into the shadow mask.
 $E14D c MaskAnd3 ; AND 3 shape bytes into the mask
+> An entry into the AND chain (MaskAnd6 above): AND the remaining shape bytes into the shadow mask.
 @module mover
 $E15C c MoveObjects ; Objects: move, steer, height, walls and hits, once a pass
 > Step 5 of the pass (docs/04-game-loop.md 4.3, docs/07-objects.md 7.4). Counts the passes in $C271, then moves every live record of $C000 with MoveRecord. The new position along goes to $C2EA, across to $C2F2, the height to $C2F6 (for the player, $C2F6 already holds the height $E7E9 or AUTO chose); StoreMove writes them back unless the record stopped.
@@ -1179,6 +1207,7 @@ $E64C ; self-modified like $E640
 $E57E c PairScanNext ; Drop the other record's address and go on
 > Also the "nothing" handler of the hit table (docs/07-objects.md 7.6).
 $E57F c PairScanStep ; The next record of the scan
+> The pair scan moves on to the next record (HL + 16) and tests it against the moving record IX again (PairScan). Most pairs come by falling through PairScanNext (the other record gone or dying, or the "nothing" handler of the table); it is jumped to directly when the other record is the moving one itself and from HitShotOnTarget when an enemy shot passes a moving target; entered 640 205 times in the bot game (PairScan 656 852) (docs/04-game-loop.md 4.5, docs/07-objects.md 7.6).
 $E65F c StoreMove ; Write the new position and height into the record
 > From $C2F6 (height), $C2EA (along) and $C2F2 (across), into +4, +1/+2 and +3.
 $E674 c NextMover ; The next live record to move

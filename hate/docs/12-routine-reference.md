@@ -197,6 +197,8 @@ C of the pattern's register set is voice B's envelope mode.
 
 **Title command 8: voice B envelope mode 0 (decay)**
 
+Sets voice B's envelope mode C = 0 and goes back to the pattern reader (PatternCommand); docs/09-sound.md 9.3.
+
 | | |
 | --- | --- |
 | Runs (the first recording) | run into, not called, 270 t-states own (0.00 %) |
@@ -260,6 +262,8 @@ Reads one song byte at HL: `$FF` return from a sub-song, `$FE` call a sub-song, 
 
 **Title player: song byte `$FE`?**
 
+Song bytes from `$FE` down: `$FE` calls a sub-song (SongCall, not run), anything else is a jump in the song (SongJump).
+
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
@@ -316,6 +320,8 @@ Clears the drum timer (operand `$8244`), stores the pattern's first byte, its sp
 
 **Title command 0: hold the notes one more note length**
 
+Command 0: nothing changes this note length; the player goes on to the drum tick (DrumTick) with the notes as they are.
+
 | | |
 | --- | --- |
 | Runs (the first recording) | run into, not called, 23,736 t-states own (0.00 %) |
@@ -354,6 +360,8 @@ Two period bytes: voice A's goes into D of the voice loop and the reload operand
 
 **Title command 10: voice B mode and the periods**
 
+Command 10: voice B starts in envelope mode 3 when C is not 0; then both periods from the pattern (NoteABPeriods), voice B's written into its period reload VoiceBStep+`$0005`.
+
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
@@ -375,6 +383,8 @@ One period byte for voice A, set up as in command 10.
 ### `CmdNoteAPeriod` (`$81F4`)
 
 **Title command 11: voice A's period**
+
+Command 11: voice A's period from the pattern into its reload VoiceAStep+`$0005`, and its pre-delay VoiceAStep+`$0007` = period / 8 + `$18` - the starting width (an operand command 1 writes); docs/09-sound.md 9.3.
 
 | | |
 | --- | --- |
@@ -448,6 +458,8 @@ One period step of each voice. D counts voice A's period down; at 0 it is reload
 
 **Title player: balance the envelope branch**
 
+A 4-step delay loop that makes the envelope branch take as long as the other one, so voice B's period step comes at the same time either way.
+
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
@@ -455,6 +467,8 @@ One period step of each voice. D counts voice A's period down; at 0 it is reload
 ### `VoiceBDelayLoop` (`$8325`)
 
 **Title player: delay loop**
+
+The delay loop of VoiceBDelay (B = 4), then voice B's period step.
 
 | | |
 | --- | --- |
@@ -517,6 +531,8 @@ The beeper held on for 300 loop steps, then a pause; docs/09-sound.md 9.5.
 
 **Title drum 4: a rising tone, half-period 50 down to 1**
 
+The beeper toggled 50 times with two waits of D each, D from 50 down to 1: a tone rising in pitch. Then back to voice A's envelope.
+
 | | |
 | --- | --- |
 | Runs (the first recording) | 145 calls, 5,040,936 t-states own (0.17 %) |
@@ -528,6 +544,8 @@ The beeper held on for 300 loop steps, then a pause; docs/09-sound.md 9.5.
 
 **Title drum 6: a falling tone, period 180 up in steps of 4**
 
+The beeper toggled with one wait of D, D from 180 up in steps of 4 until it wraps past 255 (19 steps): a tone falling in pitch.
+
 | | |
 | --- | --- |
 | Runs (the first recording) | 116 calls, 6,291,472 t-states own (0.21 %) |
@@ -538,6 +556,8 @@ The beeper held on for 300 loop steps, then a pause; docs/09-sound.md 9.5.
 ### `DrumSweep` (`$83C6`)
 
 **Title drum 5: a rising tone, period 200 down to 124**
+
+The beeper toggled with one wait of D, D from 200 down in steps of 4 while it is at least 124 (20 steps): a short rising tone, then back to voice A's envelope.
 
 | | |
 | --- | --- |
@@ -954,6 +974,8 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 
 **Next profile byte, then MaskRuns4x4**
 
+DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the next profile byte (the ground under the next column), DE = SpriteScratch + (that byte AND `$1F`) - ShadowGround + D, so the next runs of the shape are ANDed into the mask where the ground there puts them; then it falls into the runs entry below.
+
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,012 calls, 129,208 t-states own (0.01 %) |
@@ -966,6 +988,8 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 
 **AND 4 shape bytes, then 4 more 7 on**
 
+The mask shapes are runs of shape bytes ANDed into the mask at `$6500` (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 4 bytes, then E + 7 (the mask is strips of 17 bytes), then 4 more. Used by DrawShadows; docs/06-rendering.md 6.6.
+
 | | |
 | --- | --- |
 | Runs (the bot game) | 3,167 calls, 133,014 t-states own (0.01 %) |
@@ -976,6 +1000,8 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 ### `MaskStepRuns3x5` (`$E08E`)
 
 **Next profile byte, then MaskRuns3x5**
+
+DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the next profile byte (the ground under the next column), DE = SpriteScratch + (that byte AND `$1F`) - ShadowGround + D, so the next runs of the shape are ANDed into the mask where the ground there puts them; then it falls into the runs entry below.
 
 | | |
 | --- | --- |
@@ -989,6 +1015,8 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 
 **AND 3 shape bytes, then 5 more 7 on**
 
+The mask shapes are runs of shape bytes ANDed into the mask at `$6500` (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 3 bytes, then E + 7 (the mask is strips of 17 bytes), then 5 more. Used by DrawShadows; docs/06-rendering.md 6.6.
+
 | | |
 | --- | --- |
 | Runs (the bot game) | 3,167 calls, 133,014 t-states own (0.01 %) |
@@ -999,6 +1027,8 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 ### `MaskStepRuns2x6` (`$E0A7`)
 
 **Next profile byte, then MaskRuns2x6**
+
+DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the next profile byte (the ground under the next column), DE = SpriteScratch + (that byte AND `$1F`) - ShadowGround + D, so the next runs of the shape are ANDed into the mask where the ground there puts them; then it falls into the runs entry below.
 
 | | |
 | --- | --- |
@@ -1011,6 +1041,8 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 ### `MaskRuns2x6` (`$E0B6`)
 
 **AND 2 shape bytes, then 6 more 7 on**
+
+The mask shapes are runs of shape bytes ANDed into the mask at `$6500` (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 2 bytes, then E + 7 (the mask is strips of 17 bytes), then 6 more. Used by DrawShadows; docs/06-rendering.md 6.6.
 
 | | |
 | --- | --- |
@@ -1025,6 +1057,8 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 
 **Next profile byte, then MaskRuns5x5**
 
+DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the next profile byte (the ground under the next column), DE = SpriteScratch + (that byte AND `$1F`) - ShadowGround + D, so the next runs of the shape are ANDed into the mask where the ground there puts them; then it falls into the runs entry below.
+
 | | |
 | --- | --- |
 | Runs (the bot game) | 4,879 calls, 312,859 t-states own (0.03 %) |
@@ -1037,6 +1071,8 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 
 **AND 5 shape bytes, then 5 more 11 on**
 
+The mask shapes are runs of shape bytes ANDed into the mask at `$6500` (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 5 bytes, then E + 7 (the mask is strips of 17 bytes), then 5 more. Used by DrawShadows; docs/06-rendering.md 6.6.
+
 | | |
 | --- | --- |
 | Runs (the bot game) | 5,604 calls, 235,368 t-states own (0.02 %) |
@@ -1047,6 +1083,8 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 ### `MaskStepRuns4x6` (`$E0DF`)
 
 **Next profile byte, then MaskRuns4x6**
+
+DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the next profile byte (the ground under the next column), DE = SpriteScratch + (that byte AND `$1F`) - ShadowGround + D, so the next runs of the shape are ANDed into the mask where the ground there puts them; then it falls into the runs entry below.
 
 | | |
 | --- | --- |
@@ -1060,6 +1098,8 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 
 **AND 4 shape bytes, then 6 more 11 on**
 
+The mask shapes are runs of shape bytes ANDed into the mask at `$6500` (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 4 bytes, then E + 7 (the mask is strips of 17 bytes), then 6 more. Used by DrawShadows; docs/06-rendering.md 6.6.
+
 | | |
 | --- | --- |
 | Runs (the bot game) | 6,468 calls, 271,656 t-states own (0.03 %) |
@@ -1070,6 +1110,8 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 ### `MaskStepRuns3x7x3` (`$E0F8`)
 
 **Next profile byte, then MaskRuns3x7x3**
+
+DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the next profile byte (the ground under the next column), DE = SpriteScratch + (that byte AND `$1F`) - ShadowGround + D, so the next runs of the shape are ANDed into the mask where the ground there puts them; then it falls into the runs entry below.
 
 | | |
 | --- | --- |
@@ -1083,6 +1125,8 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 
 **AND 3 shape bytes, 7 more 11 on, 3 more 11 on**
 
+The mask shapes are runs of shape bytes ANDed into the mask at `$6500` (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 3 bytes, then E + 7 (the mask is strips of 17 bytes), then 7, then 3. Used by DrawShadows; docs/06-rendering.md 6.6.
+
 | | |
 | --- | --- |
 | Runs (the bot game) | 6,870 calls, 508,380 t-states own (0.05 %) |
@@ -1093,6 +1137,8 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 ### `MaskStepRuns1x6x4` (`$E118`)
 
 **Next profile byte, then MaskRuns1x6x4**
+
+DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the next profile byte (the ground under the next column), DE = SpriteScratch + (that byte AND `$1F`) - ShadowGround + D, so the next runs of the shape are ANDed into the mask where the ground there puts them; then it falls into the runs entry below.
 
 | | |
 | --- | --- |
@@ -1105,6 +1151,8 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 ### `MaskRuns1x6x4` (`$E127`)
 
 **AND 1 shape byte, 6 more 12 on, 4 more 11 on**
+
+The mask shapes are runs of shape bytes ANDed into the mask at `$6500` (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 1 bytes, then E + 7 (the mask is strips of 17 bytes), then 6, then 4. Used by DrawShadows; docs/06-rendering.md 6.6.
 
 | | |
 | --- | --- |
@@ -1134,6 +1182,8 @@ In: HL = the shape, DE = the mask. One chain of entries: MaskAnd7, MaskAnd6, Mas
 
 **AND 6 shape bytes into the mask**
 
+Entry points of one chain: MaskAnd6, MaskAnd5, MaskAnd4, MaskAnd3 AND 6, 5, 4 or 3 shape bytes (HL) into the shadow mask (DE), each falling into the next; see MaskAnd7.
+
 | | |
 | --- | --- |
 | Runs (the bot game) | 22,511 calls, 720,965 t-states own (0.07 %) |
@@ -1146,6 +1196,8 @@ In: HL = the shape, DE = the mask. One chain of entries: MaskAnd7, MaskAnd6, Mas
 ### `MaskAnd5` (`$E143`)
 
 **AND 5 shape bytes into the mask**
+
+An entry into the AND chain (MaskAnd6 above): AND the remaining shape bytes into the shadow mask.
 
 | | |
 | --- | --- |
@@ -1160,6 +1212,8 @@ In: HL = the shape, DE = the mask. One chain of entries: MaskAnd7, MaskAnd6, Mas
 
 **AND 4 shape bytes into the mask**
 
+An entry into the AND chain (MaskAnd6 above): AND the remaining shape bytes into the shadow mask.
+
 | | |
 | --- | --- |
 | Runs (the bot game) | 58,861 calls, 1,874,956 t-states own (0.19 %) |
@@ -1172,6 +1226,8 @@ In: HL = the shape, DE = the mask. One chain of entries: MaskAnd7, MaskAnd6, Mas
 ### `MaskAnd3` (`$E14D`)
 
 **AND 3 shape bytes into the mask**
+
+An entry into the AND chain (MaskAnd6 above): AND the remaining shape bytes into the shadow mask.
 
 | | |
 | --- | --- |
@@ -1247,6 +1303,8 @@ Also the "nothing" handler of the hit table (docs/07-objects.md 7.6).
 ### `PairScanStep` (`$E57F`)
 
 **The next record of the scan**
+
+The pair scan moves on to the next record (HL + 16) and tests it against the moving record IX again (PairScan). Most pairs come by falling through PairScanNext (the other record gone or dying, or the "nothing" handler of the table); it is jumped to directly when the other record is the moving one itself and from HitShotOnTarget when an enemy shot passes a moving target; entered 640 205 times in the bot game (PairScan 656 852) (docs/04-game-loop.md 4.5, docs/07-objects.md 7.6).
 
 | | |
 | --- | --- |

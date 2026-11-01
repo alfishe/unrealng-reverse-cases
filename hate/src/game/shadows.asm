@@ -453,7 +453,11 @@ MaskRuns5x3:
 
 ; Next profile byte, then MaskRuns4x4
 ;
-; Used by the routine at DrawShadows.
+; DrawShadows calls it between two runs of a big or mid shadow shape: BC on to
+; the next profile byte (the ground under the next column), DE = SpriteScratch
+; + (that byte AND $1F) - ShadowGround + D, so the next runs of the shape are
+; ANDed into the mask where the ground there puts them; then it falls into the
+; runs entry below.
 MaskStepRuns4x4:
   LD A,(ShadowGround)
   LD E,A
@@ -468,7 +472,10 @@ MaskStepRuns4x4:
 
 ; AND 4 shape bytes, then 4 more 7 on
 ;
-; Used by the routine at DrawShadows.
+; The mask shapes are runs of shape bytes ANDed into the mask at $6500
+; (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 4 bytes, then E + 7 (the
+; mask is strips of 17 bytes), then 4 more. Used by DrawShadows;
+; docs/06-rendering.md 6.6.
 MaskRuns4x4:
   CALL MaskAnd4
   LD A,$07
@@ -478,7 +485,11 @@ MaskRuns4x4:
 
 ; Next profile byte, then MaskRuns3x5
 ;
-; Used by the routine at DrawShadows.
+; DrawShadows calls it between two runs of a big or mid shadow shape: BC on to
+; the next profile byte (the ground under the next column), DE = SpriteScratch
+; + (that byte AND $1F) - ShadowGround + D, so the next runs of the shape are
+; ANDed into the mask where the ground there puts them; then it falls into the
+; runs entry below.
 MaskStepRuns3x5:
   LD A,(ShadowGround)
   LD E,A
@@ -493,7 +504,10 @@ MaskStepRuns3x5:
 
 ; AND 3 shape bytes, then 5 more 7 on
 ;
-; Used by the routine at DrawShadows.
+; The mask shapes are runs of shape bytes ANDed into the mask at $6500
+; (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 3 bytes, then E + 7 (the
+; mask is strips of 17 bytes), then 5 more. Used by DrawShadows;
+; docs/06-rendering.md 6.6.
 MaskRuns3x5:
   CALL MaskAnd3
   LD A,$07
@@ -503,7 +517,11 @@ MaskRuns3x5:
 
 ; Next profile byte, then MaskRuns2x6
 ;
-; Used by the routine at DrawShadows.
+; DrawShadows calls it between two runs of a big or mid shadow shape: BC on to
+; the next profile byte (the ground under the next column), DE = SpriteScratch
+; + (that byte AND $1F) - ShadowGround + D, so the next runs of the shape are
+; ANDed into the mask where the ground there puts them; then it falls into the
+; runs entry below.
 MaskStepRuns2x6:
   LD A,(ShadowGround)
   LD E,A
@@ -518,7 +536,10 @@ MaskStepRuns2x6:
 
 ; AND 2 shape bytes, then 6 more 7 on
 ;
-; Used by the routine at DrawShadows.
+; The mask shapes are runs of shape bytes ANDed into the mask at $6500
+; (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 2 bytes, then E + 7 (the
+; mask is strips of 17 bytes), then 6 more. Used by DrawShadows;
+; docs/06-rendering.md 6.6.
 MaskRuns2x6:
   LD A,(DE)
   AND (HL)
@@ -536,7 +557,11 @@ MaskRuns2x6:
 
 ; Next profile byte, then MaskRuns5x5
 ;
-; Used by the routine at DrawShadows.
+; DrawShadows calls it between two runs of a big or mid shadow shape: BC on to
+; the next profile byte (the ground under the next column), DE = SpriteScratch
+; + (that byte AND $1F) - ShadowGround + D, so the next runs of the shape are
+; ANDed into the mask where the ground there puts them; then it falls into the
+; runs entry below.
 MaskStepRuns5x5:
   LD A,(ShadowGround)
   LD E,A
@@ -551,7 +576,10 @@ MaskStepRuns5x5:
 
 ; AND 5 shape bytes, then 5 more 11 on
 ;
-; Used by the routine at DrawShadows.
+; The mask shapes are runs of shape bytes ANDed into the mask at $6500
+; (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 5 bytes, then E + 7 (the
+; mask is strips of 17 bytes), then 5 more. Used by DrawShadows;
+; docs/06-rendering.md 6.6.
 MaskRuns5x5:
   CALL MaskAnd5
   LD A,$0B
@@ -561,7 +589,11 @@ MaskRuns5x5:
 
 ; Next profile byte, then MaskRuns4x6
 ;
-; Used by the routine at DrawShadows.
+; DrawShadows calls it between two runs of a big or mid shadow shape: BC on to
+; the next profile byte (the ground under the next column), DE = SpriteScratch
+; + (that byte AND $1F) - ShadowGround + D, so the next runs of the shape are
+; ANDed into the mask where the ground there puts them; then it falls into the
+; runs entry below.
 MaskStepRuns4x6:
   LD A,(ShadowGround)
   LD E,A
@@ -576,7 +608,10 @@ MaskStepRuns4x6:
 
 ; AND 4 shape bytes, then 6 more 11 on
 ;
-; Used by the routine at DrawShadows.
+; The mask shapes are runs of shape bytes ANDed into the mask at $6500
+; (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 4 bytes, then E + 7 (the
+; mask is strips of 17 bytes), then 6 more. Used by DrawShadows;
+; docs/06-rendering.md 6.6.
 MaskRuns4x6:
   CALL MaskAnd4
   LD A,$0B
@@ -586,7 +621,11 @@ MaskRuns4x6:
 
 ; Next profile byte, then MaskRuns3x7x3
 ;
-; Used by the routine at DrawShadows.
+; DrawShadows calls it between two runs of a big or mid shadow shape: BC on to
+; the next profile byte (the ground under the next column), DE = SpriteScratch
+; + (that byte AND $1F) - ShadowGround + D, so the next runs of the shape are
+; ANDed into the mask where the ground there puts them; then it falls into the
+; runs entry below.
 MaskStepRuns3x7x3:
   LD A,(ShadowGround)
   LD E,A
@@ -601,7 +640,10 @@ MaskStepRuns3x7x3:
 
 ; AND 3 shape bytes, 7 more 11 on, 3 more 11 on
 ;
-; Used by the routine at DrawShadows.
+; The mask shapes are runs of shape bytes ANDed into the mask at $6500
+; (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 3 bytes, then E + 7 (the
+; mask is strips of 17 bytes), then 7, then 3. Used by DrawShadows;
+; docs/06-rendering.md 6.6.
 MaskRuns3x7x3:
   CALL MaskAnd3
   LD A,$0B
@@ -615,7 +657,11 @@ MaskRuns3x7x3:
 
 ; Next profile byte, then MaskRuns1x6x4
 ;
-; Used by the routine at DrawShadows.
+; DrawShadows calls it between two runs of a big or mid shadow shape: BC on to
+; the next profile byte (the ground under the next column), DE = SpriteScratch
+; + (that byte AND $1F) - ShadowGround + D, so the next runs of the shape are
+; ANDed into the mask where the ground there puts them; then it falls into the
+; runs entry below.
 MaskStepRuns1x6x4:
   LD A,(ShadowGround)
   LD E,A
@@ -630,7 +676,10 @@ MaskStepRuns1x6x4:
 
 ; AND 1 shape byte, 6 more 12 on, 4 more 11 on
 ;
-; Used by the routine at DrawShadows.
+; The mask shapes are runs of shape bytes ANDed into the mask at $6500
+; (SpriteScratch) through the chain MaskAnd7-MaskAnd3: 1 bytes, then E + 7 (the
+; mask is strips of 17 bytes), then 6, then 4. Used by DrawShadows;
+; docs/06-rendering.md 6.6.
 MaskRuns1x6x4:
   LD A,(DE)
   AND (HL)
@@ -660,7 +709,9 @@ MaskAnd7:
 
 ; AND 6 shape bytes into the mask
 ;
-; Used by the routines at MaskRuns2x6, MaskRuns4x6 and MaskRuns1x6x4.
+; Entry points of one chain: MaskAnd6, MaskAnd5, MaskAnd4, MaskAnd3 AND 6, 5, 4
+; or 3 shape bytes (HL) into the shadow mask (DE), each falling into the next;
+; see MaskAnd7.
 MaskAnd6:
   LD A,(DE)
   AND (HL)
@@ -670,7 +721,8 @@ MaskAnd6:
 
 ; AND 5 shape bytes into the mask
 ;
-; Used by the routines at MaskRuns5x3, MaskRuns3x5 and MaskRuns5x5.
+; An entry into the AND chain (MaskAnd6 above): AND the remaining shape bytes
+; into the shadow mask.
 MaskAnd5:
   LD A,(DE)
   AND (HL)
@@ -680,7 +732,8 @@ MaskAnd5:
 
 ; AND 4 shape bytes into the mask
 ;
-; Used by the routines at MaskRuns4x4, MaskRuns4x6 and MaskRuns1x6x4.
+; An entry into the AND chain (MaskAnd6 above): AND the remaining shape bytes
+; into the shadow mask.
 MaskAnd4:
   LD A,(DE)
   AND (HL)
@@ -690,7 +743,8 @@ MaskAnd4:
 
 ; AND 3 shape bytes into the mask
 ;
-; Used by the routines at MaskRuns5x3, MaskRuns3x5 and MaskRuns3x7x3.
+; An entry into the AND chain (MaskAnd6 above): AND the remaining shape bytes
+; into the shadow mask.
 MaskAnd3:
   LD A,(DE)
   AND (HL)

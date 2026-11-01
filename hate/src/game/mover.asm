@@ -614,7 +614,13 @@ PairScanNext:
 
 ; The next record of the scan
 ;
-; Used by the routines at HitDispatch and HitShotOnTarget.
+; The pair scan moves on to the next record (HL + 16) and tests it against the
+; moving record IX again (PairScan). Most pairs come by falling through
+; PairScanNext (the other record gone or dying, or the "nothing" handler of the
+; table); it is jumped to directly when the other record is the moving one
+; itself and from HitShotOnTarget when an enemy shot passes a moving target;
+; entered 640 205 times in the bot game (PairScan 656 852)
+; (docs/04-game-loop.md 4.5, docs/07-objects.md 7.6).
 PairScanStep:
   LD DE,$0010
   ADD HL,DE

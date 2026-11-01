@@ -498,3 +498,9 @@ for the pass (`$E82C`); and a window of the pair scan steps 2 bytes, not 4 (`$E5
 because a later comment line for the same address replaced them; `mkgame.py` now merges such lines and refuses two
 names for one address.
 
+**Every routine described.** The last 29 code entries without a description got one, each read from the code (the
+title player's commands and drums with their loop counts, the shadow mask's run entries, `PairScanStep`): doc 12 now
+describes all 136 routines. `PairScanStep` (`$E57F`, entered 640 205 times in the bot's game) is reached mostly by
+falling through `PairScanNext` (a gone or dying record, the "nothing" handler of the hit table), not by a jump from
+each handler.
+
