@@ -508,5 +508,10 @@ each handler.
 by the routines whose writes cover them: 12 are real patches (the hit box of the moving record, written by
 `MoveRecord` into the six compares of the pair scan), 3 are the IM 2 jump at `$FDFD` (start-up, the title player's
 hook and its exit), and 108 are the playfield buffer laid over the title player and the end of the start-up, code that
-ran once. The mark alone cannot tell a patch from an overlay; the writers can.
+ran once. The mark alone could not tell a patch from an overlay, so L1 gained a generic flag (unreal-ng, analysis
+layers): a byte written after it ran and never run after any such write is `overlaid`, the last field of a `byte_use`
+row. On p2 it splits the 123 bytes exactly as the writers did: the 12 compare operands are patches, the other 111
+(IM 2 jump restored for a play without interrupts, the buffer over the title player and the start-up) are overlaid.
+The code map no longer calls overlays self-modified, and L3's `code-overwritten` sees a buffer laid over code even when
+plain `LD (HL),r` writes it, not only a block copy.
 

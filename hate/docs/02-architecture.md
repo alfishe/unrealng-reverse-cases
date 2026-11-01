@@ -357,20 +357,24 @@ The routines of each module, with their callers, callees and memory: [12. Routin
 
 ## 2.7 Self-modifying code
 
-L1 marks a byte self-modified when it is written after it ran. Over the bot's game (`work/p2/l1.json`, `byte_use`
-flag `kSmc`) 123 bytes carry the mark; the routines whose writes cover them tell the three kinds apart:
+L1 marks a byte self-modified (`kSmc`) when it is written after it ran, and **overlaid** when it never ran again after
+such a write (the last field of a `byte_use` row). Over the bot's game (`work/p2/l1.json`) 123 bytes carry the mark;
+the overlaid flag and the routines whose writes cover them tell the three kinds apart:
 
-| Bytes | Written by | What it is | Docs |
-| --- | --- | --- | --- |
-| 12: the operands of the six compares in the pair scan (`$E5DC`-`$E5DD`, `$E5E8`-`$E5E9`, `$E60E`-`$E60F`, `$E61A`-`$E61B`, `$E640`-`$E641`, `$E64C`-`$E64D`) | `MoveRecord` (`$E555`), once per moving record | the hit box of the record being moved, patched into the compares that test it against every other record | [7.4](07-objects.md) |
-| 3: `$FDFD`-`$FDFF` | the start-up (`JP $9F68`), the title player's hook (`JP $8340`), its exit (`$8357` puts the saved bytes back) | the IM 2 jump every vector of the table leads to | [2.3](#23-the-stages-from-tape-to-play) |
-| 108: the title player (`$8025`-`$8341`) and the start-up's last bytes (`StartGame` `$9F1C`-`$9F29`) | the playfield buffer's writers (`FreshStrip`, `ScrollStep`, `DrawSprites`, `DrawShadows`, `RestoreStrips`, `StampStatics`) | not self-modification: the buffer `$8000-$BFFF` is laid over code that ran once, at the title | [6](06-rendering.md) |
+| Bytes | Written by | L1 | What it is | Docs |
+| --- | --- | --- | --- | --- |
+| 12: the operands of the six compares in the pair scan (`$E5DC`-`$E5DD`, `$E5E8`-`$E5E9`, `$E60E`-`$E60F`, `$E61A`-`$E61B`, `$E640`-`$E641`, `$E64C`-`$E64D`) | `MoveRecord` (`$E555`), once per moving record | patched: they run again | the hit box of the record being moved, patched into the compares that test it against every other record | [7.4](07-objects.md) |
+| 3: `$FDFD`-`$FDFF` | the start-up (`JP $9F68`), the title player's hook (`JP $8340`), its exit (`$8357` puts the saved bytes back) | overlaid | the IM 2 jump every vector of the table leads to; play runs with interrupts off, so the restored jump never runs again | [2.3](#23-the-stages-from-tape-to-play) |
+| 108: the title player (89 bytes in `$8025`-`$8366`) and the start-up's last bytes (19 in `$9F1C`-`$9F2E`, from `StartGame` on) | the playfield buffer's writers (`FreshStrip`, `ScrollStep`, `DrawSprites`, `DrawShadows`, `RestoreStrips`, `StampStatics`) | overlaid | not self-modification: the buffer `$8000-$BFFF` is laid over code that ran once, at the title | [6](06-rendering.md) |
 
-The title player's own operand patches (the `LD SP,nn` at `$8363`, the voices' periods and widths written by the
-pattern commands, [9.3](09-sound.md)) lie inside the same range: in a build that spans the title and play, the buffer's
-writes cover them, so L1's mark cannot tell a patch from the overlay there (the first recording's game window,
-`work/game`, marks 950 bytes). Doc 9.3 lists the patches from the code; L3's `code-overwritten` finding reports the
-overlay once, as one overwritten run.
+The title player's own operands (the voices' widths, envelope reloads and note length the pattern commands write,
+[9.3](09-sound.md)) carry no mark in this recording: none of them ran. Their bytes have L1's write flags (the start-up's
+swap and the buffer) but neither the opcode nor the operand flag, so the pattern level `$8084` never ran in the bot's
+game. Of the player's patched operands only the `LD SP,nn` at `$8363` ran, and the buffer is its last writer, so it
+counts with the overlay. L3's `code-overwritten` findings follow the overlaid bytes: one per run of them (runs 32
+bytes apart or closer are one), eight in all: six over the title player (`$8025-$8039`, `$807F-$8083`,
+`$8243-$8248`, `$8279-$827C`, `$82C1-$82DE`, `$8323-$8366`, the code it ran with gaps of unrun code between),
+`$9F1C-$9F2E` and `$FDFD-$FDFF`. None falls on the pair scan's patched compares.
 
 ## 2.8 Design notes
 
