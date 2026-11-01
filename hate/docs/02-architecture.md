@@ -22,7 +22,7 @@ The recording idles 9 minutes on the title (frames 2616 to 30260) and then plays
 | Memory | 48K: all of `$5FB4-$FFFF` | no 128K paging, no AY |
 | Screen | the Spectrum's one screen at `$4000` | no second screen buffer |
 | Sound | the beeper (port `$FE` bit 4) | title music and effects |
-| Input | keyboard ports `$EFFE`, `$F7FE` and all rows (`$00FE`) | `$EFFE` and `$F7FE` are the rows a Sinclair joystick maps to ([5. Controls](05-controls.md)) |
+| Input | keyboard, Sinclair, Kempston (port `$1F`) or Protek-AGF, chosen in the menu | all four fill one control byte, `$C290` ([5. Controls](05-controls.md)) |
 | Interrupts | IM 2 during the title only | the game proper runs with interrupts off (2.4) |
 | ROM | not called after the load | no ROM routine runs in the game window |
 
@@ -218,9 +218,9 @@ flowchart TD
     MAIN -->|1280| D3F9["$D3F9 → $D151 / $D0EF / $D51D"]
     MAIN -->|2319| EFA5["$EFA5 → $EFDC ×41391, $F089"]
     MAIN -->|1800| EE17["$EE17"]
-    MAIN -->|1306| E68C["$E68C → $E7E9 → $E8AF<br/>IN $EFFE / $F7FE"]
+    MAIN -->|1306| E68C["$E68C device reader → $E7E9 → $E8AF<br/>IN $EFFE / $F7FE"]
     MAIN -->|43| F288["$F288 beeper / border<br/>OUT $FE, self 2.4 %"]
-    MAIN -->|4| F1AA["$F1AA input and screens<br/>IN $00FE / $EFFE / $F7FE"]
+    MAIN -->|4| F1AA["$F1AA menu<br/>IN $00FE / $EFFE / $F7FE"]
 ```
 
 The roles below come from the measured evidence: ports, call counts and where the time goes. Each one is the subject
@@ -233,12 +233,12 @@ of a later document, which will confirm or correct it from the code.
 | `$DDE7` | 2 319 | 14 small helpers in `$E05C-$E14D`, 660-4 300 calls each | ([7](07-objects.md)) |
 | `$E15C`/`$E16E` | 2 319 | 403-instruction routine, loops back through `$E674` 40 057 times | ([7](07-objects.md), [10](10-gameplay-logic.md)) |
 | `$EFA5`/`$EFDC` | 2 319 | `$EFDC` called 41 391 times, about 18 a pass | ([6](06-rendering.md)) |
-| `$E68C` | 1 306 | reads `$EFFE` and `$F7FE` | the player's input in play ([5](05-controls.md)) |
-| `$F1AA` | 4 | reads `$00FE`, `$EFFE`, `$F7FE`; calls `$F288` and the text routines `$EE17`, `$EEE3` | screens between games: menu, start, game over ([5](05-controls.md), [8](08-hud-and-text.md)) |
-| `$F288` | 52 | writes `$00FE` and `$18FE`; 2.4 % self in 52 calls | beeper effects and border ([9](09-sound.md)) |
-| `$F2C0` | 2 318 | reaches `$F2A3`, 4 ‰ self | ([9](09-sound.md)) |
+| `$E68C` | 1 306 | reads `$EFFE` and `$F7FE` | **confirmed:** the device reader, fills the control byte `$C290`; also the AUTO start ([5](05-controls.md)) |
+| `$F1AA` | 4 | reads `$00FE`, `$EFFE`, `$F7FE`; calls `$F288`, `$EE17`, `$EEE3` | **confirmed:** the menu: device, demo, start; seeds the RNG `$EA36` ([5](05-controls.md)) |
+| `$F288` | 52 | `OUT ($FE)` with B as the port's high byte, so L1 lists several ports; 2.4 % self in 52 calls | **confirmed:** a two-tone beep, H = length, L = period, the second voice one step shorter ([9](09-sound.md)) |
+| `$F2C0` | 2 318 | reaches `$F2A3`, 4 ‰ self | **confirmed:** the effect dispatcher: the lowest set bit of `$F2BF` picks a 5-byte entry of `$F2E2`, a beep (`$F284`) or a sweep (`$F2A3`) ([9](09-sound.md)) |
 | `$D3F9` | 1 280 | its branches reach `$D151` (10 times) and back to `$CF33` | game state changes: life lost, restart ([10](10-gameplay-logic.md)) |
-| `$EE17` | 1 800+ | called from `$CF33`, `$F1AA`, `$D151`, `$E68C` | text or number printing ([8](08-hud-and-text.md)) |
+| `$EE17` | 1 800+ | called from `$CF33`, `$F1AA`, `$D151`, `$E68C` | **confirmed:** print strings: records of attribute + `$80`, column, row, characters; `$FF` ends; font at `$6300` ([8](08-hud-and-text.md)) |
 
 Of all T-states in the window, the title player's code (`$8000-$83E1`) took 64.8 % and the game code (`$C2B1-$F2E1`)
 35.2 %. That matches the frames: the title is 64.8 % of the window.

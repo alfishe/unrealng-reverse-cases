@@ -125,7 +125,8 @@ fixtures and tests, branch `analysis-stages`) before going on:
 
 New fixture `testdata/analysis/fixtures/stages.asm` (a loader, a depacker with two writers, an overlay); tests
 `CodeArrivalsOnePerWriter`, `WindowFromAnArrival`, `OverlayIsOneFinding`; the recipe
-`.recipe/analysis/reverse-engineering.md` got "Programs that arrive in stages".
+`.recipe/analysis/reverse-engineering.md` got "Programs that arrive in stages". All 158 analysis tests pass
+(`test.sh --gtest_filter='*Analysis*'`) with the fixes, zero warnings.
 
 ## 6. The game stage (in progress)
 
@@ -179,3 +180,23 @@ entry points: [docs/02-architecture.md](docs/02-architecture.md). Findings:
 
 The recording is open in an instance built from that branch; the whole-recording build lists the arrivals, then
 each stage is built from its own arrival.
+
+### 6.5 Controls, from the code and the recording
+
+Reading the code around the routines L1 ranked ([docs/05-controls.md](docs/05-controls.md)):
+
+- **The menu** `$F1AA`: keys 1-4 pick the device, 5 starts the demo, 6 the game. After 512 000 idle passes the demo
+  starts by itself. Each pass bumps the RNG seed `$EA36`.
+- **Four readers** (`$E70E`, `$E756`, `$E773`, `$E789`) fill one control byte `$C290`.
+- **The keyboard's Q and A swap** with bit 0 of the round's byte `$C000`.
+- **AUTO:** the vehicle flies itself for 70 or 14 passes at the start of a round.
+- **Keys in the play loop:** U+G aborts, P pauses, ENTER resumes.
+
+**Why unreal-ng:** `memory_at` reads any byte at any moment of the recording without replaying by hand. It showed
+the recording played with device 3, Protek-AGF (`$C28F` = 3 at frames 35 000 and 44 000), which matches the ports
+L1 saw. The same call rendered the screens at chosen frames: `docs/img/game-*.png`, the menu, AUTO, play and PAUSE.
+
+The print routine `$EE17` has a simple record format (attribute + `$80`, column, row, characters, `$FF`). A scan for
+`LD HL,nn; CALL $EE17` lists every string in the game, the credits among them: written by Costa Panayi, music by
+Ben Daglish, ©1989 Vortex.
+
