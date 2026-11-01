@@ -42,6 +42,13 @@ screen below each panel):
 
 ![Memory over the bot's game](img/heat-p2.png)
 
+The frame each byte was last read or written in the same game (bright: late). The playfield buffer `$8000-$BFFF`
+(over the title player's old place), the profile `$6000`, the object records and the screen's diagonal playfield stay
+bright to the last frame; the screen's corners outside the isometric playfield were last written early (the menu and
+the round's first paint), and most code and data bytes below `$F000` are never read or written as data:
+
+![The frame each byte was last touched in the bot's game](img/heat-p2-last.png)
+
 and the code it ran against the first recording, byte by byte over `$C000-$FFFF` (`tools/heatviews.py coverage`):
 
 ![Code run in the bot's game and in the first recording](img/heat-coverage.png)

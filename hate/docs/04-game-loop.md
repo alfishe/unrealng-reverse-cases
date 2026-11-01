@@ -169,10 +169,12 @@ Where the t-states go over the bot's whole game (L1's own t-states per routine, 
 
 ![Own t-states per routine](img/routines-time.png)
 
-The blit is over a quarter of all the time. `$F1AA` is the menu waiting for a key (two visits). Then come the
-pair scan of the hit test (`$E56F`, entered 656 852 times: every pair of live records, every pass), the beeper
-effects that stop the game while they sound (`$F2A3`, `$F288`, [9.6](09-sound.md)), and the sprite passes
-(`$EAE3`, `$DD47`, `$DDC9`: the strips under each sprite saved and restored, [6.6](06-rendering.md)).
+The blit (`Blit`, `$D35E`) is over a quarter of all the time. `$F1AA` (`Menu`) is the menu waiting for a key (two visits). Then come the
+pair scan of the hit test (`PairScan` `$E56F`, entered 656 852 times: every pair of live records, every pass), the beeper
+effects that stop the game while they sound (`Sweep` `$F2A3`, `Beep` `$F288`, [9.6](09-sound.md)), and the object passes
+around the blit: `DrawSprites` (`$EAE3`) puts the moving objects into the playfield buffer, `SaveStrips` (`$DD47`)
+first keeps the strips each object will cover, and after the blit `RestoreStrips` (`$DDC9`) puts them back
+([6.6](06-rendering.md)). The names are the source's ([12. Routine reference](12-routine-reference.md)).
 
 ## 4.6 Design notes
 
