@@ -500,7 +500,7 @@ names for one address.
 
 **Every routine described.** The last 29 code entries without a description got one, each read from the code (the
 title player's commands and drums with their loop counts, the shadow mask's run entries, `PairScanStep`): doc 12 now
-describes all 136 routines. `PairScanStep` (`$E57F`, entered 640 205 times in the bot's game) is reached mostly by
+describes all 137 routines (`StartGame` `$9F1C`, entered by the title player's return, is an entry of its own). `PairScanStep` (`$E57F`, entered 640 205 times in the bot's game) is reached mostly by
 falling through `PairScanNext` (a gone or dying record, the "nothing" handler of the hit table), not by a jump from
 each handler.
 

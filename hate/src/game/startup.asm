@@ -826,7 +826,13 @@ Startup:
   LD (TitlePlayer+$0002),A ; into the operand of LD C,n at $8001
   CALL TitlePlayer        ; the title music
 
-; StartGame
+; Start-up, after the title music: the play screen, then the game
+;
+; Reached when the title player returns (the tune ended or a key was pressed),
+; not called: DI, the game screen image $A000-$BFFF copied to $4000-$5FFF (the
+; play screen, its attributes and the renderer's tables at $5B00-$5FFF), the
+; lap $C2F8 = 0, then JP $C2B1 into the main loop with interrupts off for good;
+; docs/02-architecture.md 2.3.
 StartGame:
   DI                      ; the music is over
   LD HL,GameScreenImage   ; the game screen image: pixels, attributes and

@@ -586,7 +586,9 @@ Called once from the entry `$61A8`. Sets IM 2 (`$9F4B`), plays tune 0 of the tit
 
 ### `StartGame` (`$9F1C`)
 
-**StartGame**
+**Start-up, after the title music: the play screen, then the game**
+
+Reached when the title player returns (the tune ended or a key was pressed), not called: DI, the game screen image `$A000-$BFFF` copied to `$4000-$5FFF` (the play screen, its attributes and the renderer's tables at `$5B00-$5FFF`), the lap `$C2F8` = 0, then JP `$C2B1` into the main loop with interrupts off for good; docs/02-architecture.md 2.3.
 
 | | |
 | --- | --- |
