@@ -624,8 +624,12 @@ character codes are no pixels.
 42 240 bytes), conflicts 3 to 0, bugs 12 to 9, unknowns 34 to 32 (skool2asm warnings 632 to 653, all "No label for
 address"). `$F301-$FBC6`, `$FBD4-$FDFC` and `$6542-$657F` are no longer unknown; `$EF48-$EF9E` shrinks to
 `$EF5B-$EF9E`. The shadow tables are one table `$5B00-$5EEF` and their three index-past-table bugs are gone. One
-unknown is new, `$64C8-$64DA`: the false sprite there is gone, and the 19 bytes before the first string (doc 11) are
-unexplained. The pointer-block rule did not fire: `$6A6C-$6CE1` and `$70FC-$729F` stay unknown. Its trigger, a
+unknown is new, `$64C8-$64DA`: the false sprite there is gone, and nothing else claims the bytes. They are two
+things (doc 11): `$64C8-$64D7` are the glyphs of "Y" and "Z", the last two of `FontHigh`, which no string the
+recording printed uses (the font claim ends at code `$58`, the last printed); `$64D8-$64DA` are the attribute, column
+and row that open `CreditsText2`, whose text claim starts at the characters (`$64DB`). Two tool gaps: a font claim
+stops at the last code printed even when the font's lattice runs on to the next claim, and a print string's header
+bytes stay outside its text. The pointer-block rule did not fire: `$6A6C-$6CE1` and `$70FC-$729F` stay unknown. Its trigger, a
 pointer table of four or more entries, is missing: L2 found only `$C31C-$C31F` in `SpriteTable`. `DrawSprites` loads
 the word at `$C300 + (+8)` into HL, adds the frame offset and hands it to `SpriteListAdd`, which stores it in the
 draw list `$6500`; the drawing loop reads it back from there. L1 follows a pointer's provenance through registers
