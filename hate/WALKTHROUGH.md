@@ -656,3 +656,22 @@ With the font rule on top (p2-fnt, the same day): unknowns 29 to 28, no conflict
 
 With the index rule (p2-ipt, 2026-11-02): 8 bug findings, every one an overlay (doc 2.7); no conflicts, 28 unknowns,
 gates pass (42 240 of 42 240), skool2asm warnings 658.
+
+The 9 unknowns left outside the ROM, against the reverse and the replay's byte use (p2-ipt `l1.json`). Three are
+code and data the replay never touched; six were read, and no detector named them: analyzer gaps, not unknowns of
+the game.
+
+| Unknown | Touched in the replay | What it is |
+| --- | --- | --- |
+| `$7FD6-$7FFF` | all 42 bytes | the tail of `ExplosionGfx2C`, the last explosion frame ([11](docs/11-data-reference.md)) |
+| `$C2BE-$C2E9` | all 44 | `LaunchTemplates` entries and `EnemyShotTemplate`, copied into records |
+| `$C333-$C37F` | 69 of 77 | `ShotGaugeText`, the tail of `Directions`, `ShotTemplate`, `ShellTemplate` |
+| `$C3D0-$C3E1` | none | `HitHandlers` rows of type pairs that never met |
+| `$C3FE-$C8E9` | 1 160 of 1 260 (`$C400` on) | `UnusedC3FE`, then the course tiles and tile runs that `FreshStrip` draws into the playfield buffer |
+| `$EC73-$ECAB` | none | `HitBlockOnShot`, a mirror hit handler that never ran ([12](docs/12-routine-reference.md)) |
+| `$ED3B-$EDC9` | none | `HitBlockOnPlayer` and `HitDomeOnShot`, mirror hit handlers that never ran |
+| `$EF5B-$EF9E` | all 68 | `RoundTable` rows, `HighScore`, `MaxScore` and their stops |
+| `$FF66-$FFFF` | 10 of 154 (`$FFF5-$FFFE`, the stack's top) | `UdgLeftover`, the 48K BASIC's UDGs left in the image |
+
+The largest gap is the tile set: 1 160 bytes read every strip, drawn into a back buffer and not named. It is the next
+analyzer item.
