@@ -593,5 +593,11 @@ character codes are no pixels.
 3. The save area under the sprites is written by `$DD52` through the moving pointer `$DD6A` and copied back by `$DDD3`
    with the same lengths. In the recording it filled 980 bytes at most, `$F800-$FBD3`. Its last 13 bytes were read as
    a table built by one routine (`$FBC7`), and that table gave the index-past-table bug finding on `$DDD3`.
+   Generic fix (unreal-ng, save areas): one instruction copies X to Y, another later copies Y back to X with the same
+   length, at least twice; the slots of one saver/restorer pair merge into a Buffer claim, run before the init tables
+   (`AnalysisDetectorSaveAreas_SavedAndRestoredStrips`, fixture `save-area.asm`, fails with the rule off). On the
+   recording `$F800-$FBD3` becomes "Save area of `$801D-$BFF1`, 980 bytes: copied here by `$DD52` and back by
+   `$DDD3`", the false table at `$FBC7` is gone and the unknown shrinks to `$F301-$F7FF`. The index-past-table bug on
+   `$DDD3` stays: it needs its own look.
 4. `$FBD4-$FDFC` was never touched: zeros at the start of the recording, then bytes that disassemble as Z80 code that
    never ran (from `$FC55`). Nothing marks an untouched area as unused unless it is a BASIC line.
