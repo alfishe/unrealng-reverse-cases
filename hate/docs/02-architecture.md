@@ -389,6 +389,12 @@ Six more such findings (the pad list `$C99E`, the course `$CF02`, the saved stri
 `$FE00`/`$FF00`) came from loops that walk a list or copy a block byte after byte through a larger structure; the
 analyzer now counts only indexed readers, and they are gone.
 
+The four in the table are gone too. The padded shadow shapes are one init table `$5B00-$5EEF` now (L2 bridges
+the unread padding between entries). The mask at `$6500` is read through one index, the shadow entry's mask
+offset (+5 at `$FE69`, `$FE71`, ...), from `$6500` to `$6543`, on both sides of L2's pointer table: an index that
+addresses a larger structure, which L3 no longer counts. The eight `code-overwritten` findings are the only bug
+findings left.
+
 ## 2.8 Design notes
 
 What a 2026 developer would note about this architecture:
