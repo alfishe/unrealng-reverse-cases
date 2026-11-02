@@ -553,3 +553,11 @@ below the buffer (`$6542-$7FFF`), the launch templates and texts at `$C2BE-$C37F
 the unused block `UnusedC3FE`, the handlers that did not run (`HitBlockOnShot`, `HitBlockOnPlayer`), the SCORE text
 (`$EF48`), the round object blocks from `$F300` running into `SpriteSaveBuffer` (`$F800`), and the UDG leftover
 (`$FF58`). No detector has a kind for them; the source describes each.
+
+**Why the sprites are no claim yet.** L1 does see them drawn: 2 869 bytes of `$6542-$7FFF` reach the screen, in 2 177
+drawn frames, the commonest 2 × 21 and 2 × 17 with a line step of -2 and strips 42 bytes apart (doc 6.6: a strip is a
+buffer column, shown bottom line first). Two tool gaps keep them out of the graphics claims. The frame's lines go up
+through memory, which the graphics detector drops as a known limit. And the mask is lost: `DrawSprites` ANDs it into
+a buffer byte, not into the screen, so the copy to the screen carried only the pixel byte. The second gap now has a
+generic fix in unreal-ng: a buffer byte keeps the mask ANDed into it, and its copy draws with it. The first gap is
+in progress.

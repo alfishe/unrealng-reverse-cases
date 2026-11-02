@@ -223,6 +223,11 @@ line. At the edges of the window the strips that fall outside are dropped. A dyi
 graphic the explosion frame its counter `+8` points to (`$7C10-$7FFF`), one line lower at height 25 and two lines
 lower above 25 (`$DBC3`-`$DBD4`).
 
+On the screen a sprite comes out upside down in memory. `DrawSprites` walks a strip down the buffer column
+(`INC E`, mask then pixel byte), and the blit shows that column bottom line first (6.3). So the line under a sprite
+line comes from the pair 2 bytes lower. The analyzer's drawn frames show exactly that: a line step of -2 and strips
+42 (21 lines) or 34 (17 lines) bytes apart. This is the layout an extractor has to follow, see WALKTHROUGH 6.14.
+
 **Pads and dishes are stamped, not drawn.** `$EA38` (`StampStatics`) draws the records of types 14 and 15 (list
 `$C99E`) straight into the buffer, and only while their column `+B` is `$20-$23`: the last strips of the window,
 at the far edge of the buffer. They are not saved or restored: they become part of the course picture and scroll with
