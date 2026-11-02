@@ -597,7 +597,9 @@ character codes are no pixels.
    length, at least twice; the slots of one saver/restorer pair merge into a Buffer claim, run before the init tables
    (`AnalysisDetectorSaveAreas_SavedAndRestoredStrips`, fixture `save-area.asm`, fails with the rule off). On the
    recording `$F800-$FBD3` becomes "Save area of `$801D-$BFF1`, 980 bytes: copied here by `$DD52` and back by
-   `$DDD3`", the false table at `$FBC7` is gone and the unknown shrinks to `$F301-$F7FF`. The index-past-table bug on
-   `$DDD3` stays: it needs its own look.
+   `$DDD3`", the false table at `$FBC7` is gone and the unknown shrinks to `$F301-$F7FF`. (The
+   index-past-table bug on `$DDD3` was already gone on p2-spr; its 12 bugs are the eight
+   `code-overwritten` overlays and four index-past-table findings, three on the tables at `$5B08-$5EEF` read by
+   `$E03C` / `$E04B` and one on the pointer table `$6502` read by `$DEFC`.)
 4. `$FBD4-$FDFC` was never touched: zeros at the start of the recording, then bytes that disassemble as Z80 code that
    never ran (from `$FC55`). Nothing marks an untouched area as unused unless it is a BASIC line.
