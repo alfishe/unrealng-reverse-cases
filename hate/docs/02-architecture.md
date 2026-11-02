@@ -382,7 +382,7 @@ short:
 
 | Reader | Read | L2's table | What the bytes are |
 | --- | --- | --- | --- |
-| `$E04B`, `$E03C` (`DrawShadows`, types 11-13) | `$5B00-$5B53` | init tables `$5B08-$5B23`, `$5B28-$5B43`, `$5B48-$5EEF` | the three flat shadow shapes at `$5B00`, `$5B20`, `$5B40`, 4 bytes a strip ([6.6](06-rendering.md)): blocks of 32 bytes, so L2's tables start 8 bytes late |
+| `$E04B`, `$E03C` (`DrawShadows`, types 11-13) | `$5B00-$5B53` | init tables `$5B08-$5B23`, `$5B28-$5B43`, `$5B48-$5EEF` | the three flat shadow shapes at `$5B00`, `$5B20`, `$5B40`, 4 bytes a strip in 8-byte slots ([6.6](06-rendering.md)). Only the copy at `$9F1C` wrote them, but `$5B04-$5B07`, `$5B24-$5B27` and `$5B44-$5B47` were never read: L2's run of written-and-read bytes broke there, and the 4 bytes before each break were too short for a table, so the tables start 8 bytes late |
 | `$DEFC` (`DrawShadows`, the mask for types 0-10) | `$6500-$6543` | pointer table `$6502-$653F` | `SpriteScratch`: the draw list of 4-byte entries (whose record addresses L2 read as pointers) and, later in the pass, the mask filled with `$FF` ([11](11-data-reference.md)) |
 
 Six more such findings (the pad list `$C99E`, the course `$CF02`, the saved strips `$FBC7`, the sprite list
