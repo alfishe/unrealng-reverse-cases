@@ -138,6 +138,7 @@ Later gaps, found while writing the game's source (section 6.13):
 | L1 took an HL walk's step as the most common gap between its bases; `PairScan` (`$E56F`) restarts its walk at +2 of each 16-byte record (`ADD HL` to the box fields), so its bases sit at 16k and 16k + 2, gaps 2 and 14 equally often | "313 records of 2 bytes, used by `$E56F`" over the object table `$C000-$C271`, 18 records/records conflicts with every 16-byte view of the same table | L1's step is the bases' period (the distance most bases repeat at); the records detector folds a plain walk's restarts onto the record starts (at most 4 restart places, each at two records or more, filling at most half of their lattice's slots, records back to back), else the most common gap as before: `SegmentRows` (`$C8EA`, word lists with holes, a period of 8) stays 2-byte records (`AnalysisDetectorRecords_WalkRestartsInsideRecords`, `AnalysisDetectorRecords_WordListsAreNoRestarts`, fixtures `records-hl-restart.asm`, `records-word-lists.asm`); on p2 `$E56F`'s walk is 40 records of 16 bytes |
 | "Not accessed in the replay" conflicted with code, and a text claim with the data claim around it | 28 conflicts between the ROM's signatures (reset, RST, BEEP, PRINT...) and the code map's untouched fallback; 18 between the menu and HUD strings and the blocks `$EE17` reads them from (`$F0E4-$F1A8`, `$63DB-$64FE`) | untouched says nothing of the bytes, text is data: neither conflicts with a claim from the bytes' content; code over data or text still does (`UntouchedAndDataHoldContentClaims`) |
 | ROM bytes only written were plain data | "Data, 1 bytes, used by `$D35E`" at `$0100`-`$0800`, the one at `$0400` a conflict with the ROM's BEEP | a ROM byte written and never read is a sink, "written only, in ROM (the writes are lost)", in conflict with nothing: the blit's clip writes (doc 6.3) (`AnalysisDetectorCodeMap_RomWriteSink`, fixture `rom-write-sink.asm`); on p2 conflicts 65 to 0, export gates still pass (42 240 of 42 240 bytes; skool2asm warnings 572) |
+| A POP took its word's provenance only from the PUSH that wrote the slot; a table SP walks was never pushed, so its words were no pointers, and SP did not count as an index | `BlitAddresses` (`$D5B2-$D9D3`, 528 screen addresses `Blit` pops) an unknown area, "1058 bytes accessed as plain data" | a slot no PUSH, CALL or interrupt wrote holds memory: the POP reads the word there, and a pointer table may be read through SP; a word whose bytes the stack wrote in the replay (popped before the first push: the stack the recording began with) is no pointer at all (`AnalysisDetectorPointerTables_ListPoppedBySp`, fixture `pop-list.asm`, its start pops two words of the stack before any push); on p2 `$D5B2-$D9D1` is a table of 528 pointers, the end mark `$D9D2` data; unknown areas in the game image 13 to 12; gates pass (42 240 of 42 240, skool2asm warnings 580) |
 
 New fixture `testdata/analysis/fixtures/stages.asm` (a loader, a depacker with two writers, an overlay); tests
 `CodeArrivalsOnePerWriter`, `WindowFromAnArrival`, `OverlayIsOneFinding`; the recipe
@@ -544,11 +545,11 @@ and what was laid over it are no longer raised: the overlay is the bug finding. 
 over the object table, 28 the ROM's signatures against "not accessed", 18 strings inside the blocks the menu prints
 them from, and one the blit's clip writes into the ROM (doc 6.3) against BEEP. Each got a generic fix with a test in
 unreal-ng (section 5). Queue now: 0 conflicts, 12 bug findings (doc 2.7), 32 unknown areas, the same 13 in the game
-image; `SegmentRows` stays word lists.
+image; `SegmentRows` stays word lists. Then the blit's address list became a pointer table (section 5): 31 unknown
+areas, 12 in the game image.
 
-**The unknown areas left in the game image** are all named in the source (`src/game/game.ann`): the sprite graphics
+**The 12 unknown areas left in the game image** are all named in the source (`src/game/game.ann`): the sprite graphics
 below the buffer (`$6542-$7FFF`), the launch templates and texts at `$C2BE-$C37F`, rows of `HitHandlers` (`$C3D0`),
-the unused block `UnusedC3FE`, the blit's address list `BlitAddresses` (`$D5B2-$D9D3`, read by `Blit` through POP,
-so as the stack, not as data), the handlers that did not run (`HitBlockOnShot`, `HitBlockOnPlayer`), the SCORE text
+the unused block `UnusedC3FE`, the handlers that did not run (`HitBlockOnShot`, `HitBlockOnPlayer`), the SCORE text
 (`$EF48`), the round object blocks from `$F300` running into `SpriteSaveBuffer` (`$F800`), and the UDG leftover
 (`$FF58`). No detector has a kind for them; the source describes each.
