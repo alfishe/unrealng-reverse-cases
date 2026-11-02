@@ -631,8 +631,8 @@ things (doc 11): `$64C8-$64D7` are the glyphs of "Y" and "Z", the last two of `F
 recording printed uses (the font claim ends at code `$58`, the last printed); `$64D8-$64DA` are the attribute, column
 and row that open `CreditsText2`, whose text claim starts at the characters (`$64DB`). Two tool gaps: a font claim
 stops at the last code printed even when the font's lattice runs on to the next claim, and a print string's header
-bytes stay outside its text. The strings show a third: `CreditsText2` is `$B0,$01,$14,"BEN DAGLISH",$B0,$01,$15,"@1989
-VORTEX",$FF`, and the text detector took the second record's attribute `$B0` for a last character with bit 7
+bytes stay outside its text. The strings show a third. `CreditsText2` is two records,
+`$B0,$01,$14,"BEN DAGLISH"` and `$B0,$01,$15,"@1989 VORTEX",$FF`, and the text detector took the second record's attribute `$B0` for a last character with bit 7
 ("BEN DAGLISH" claimed as 12 characters, `$64DB-$64E6`). The print path is a font read, not a glyph index, so L1 cannot
 tell a printed byte from a control byte here; a rule on the record shape alone (a byte with bit 7, two bytes below
 `$20`, text) would be tuned to this game, so it stays a known limit until another game shows the same format. The pointer-block rule did not fire: `$6A6C-$6CE1` and `$70FC-$729F` stay unknown. Its trigger, a
