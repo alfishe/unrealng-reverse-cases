@@ -142,8 +142,8 @@ Later gaps, found while writing the game's source (section 6.13):
 | L1 took a sprite's mask only from an AND with the screen; a sprite masked into a back buffer reached the screen through a copy without it | `DrawSprites` ANDs each mask byte into the playfield buffer, so the sprites came out as unmasked single-byte columns | a buffer byte keeps the mask merged into it (an AND's operand, or the next source when the value merged the byte it overwrites), and the copy to the screen draws with it (`AnalysisDetectorSprites_MaskCarriedThroughBackBuffer`, fixture `sprite-drawn-buffer.asm`) |
 | Graphics dropped every frame whose lines go up through memory, as a known limit | the sprites `$6580-$7FFF`: the blit shows the buffer columns bottom line first, line step -2 | such a frame is read from its lowest address and its claim is marked `bottom_up` (gallery and skool pictures flipped) (`AnalysisDetectorSprites_StoredBottomUp`, fixture `sprite-bottom-up.asm`); on p2-spr `$6580-$7FD5` masked sprites, 21, 17, 13 and 14 lines; gates pass (42 240 of 42 240) |
 | A picture could be claimed over the bytes of a string | the blit once copied a buffer column filled from the strings in the font's spare slots: a sprite at `$64C8-$64FF`, 3 sprite/text conflicts | bytes the text detector found (read as character codes) are no pixels: a picture mostly over text is none (`AnalysisDetectorGraphics_TextIsNoPicture`, fixture `text-as-pixels.asm`) |
-| An init table broke at the first byte nothing read, so a table of short entries in wider slots started late or was no table | the shadow shapes `$5B00-$5B5F`: 4 bytes a strip in 8-byte slots, the last 4 of a slot never read; L2 claimed `$5B08`, `$5B28`, `$5B48` and L3 gave three index-past-table bugs | a run goes on over up to 7 bytes the same routine wrote but nothing read when a read byte of that writer follows and the entry before the gap is 4 bytes or more and no shorter than the gap; the first version, without that condition, swallowed single variables read here and there in a copied area (`AnalysisDetectorVariables_GroupsAndStrides` failed) (`AnalysisDetectorInitTables_PaddedEntries`, fixture `init-padded.asm`, fails with the rule off; 177 analysis tests pass); recording run pending |
-| A sprite block the recording never drew stayed unknown, though the pointer table gives its bounds and a sibling block of the same size shows its layout | `SpriteTable` `$C300` points at 20 blocks of five sizes; the recording drew none of `$6A6C` (630 bytes) and `$70FC` (420 bytes) | a fully untouched block between two targets of a pointer table copies the sprite claims of a drawn block of the same size, shifted, as inferred (`AnalysisDetectorSprites_PointerTableBlockNeverDrawn`, fixture `sprite-pointer-blocks.asm`; the test fails with the rule off); 176 analysis tests pass; effect on the recording pending the combined run |
+| An init table broke at the first byte nothing read, so a table of short entries in wider slots started late or was no table | the shadow shapes `$5B00-$5B5F`: 4 bytes a strip in 8-byte slots, the last 4 of a slot never read; L2 claimed `$5B08`, `$5B28`, `$5B48` and L3 gave three index-past-table bugs | a run goes on over up to 7 bytes the same routine wrote but nothing read when a read byte of that writer follows and the entry before the gap is 4 bytes or more and no shorter than the gap; the first version, without that condition, swallowed single variables read here and there in a copied area (`AnalysisDetectorVariables_GroupsAndStrides` failed) (`AnalysisDetectorInitTables_PaddedEntries`, fixture `init-padded.asm`, fails with the rule off; 177 analysis tests pass); on p2-all one table `$5B00-$5EEF`, the three bugs gone |
+| A sprite block the recording never drew stayed unknown, though the pointer table gives its bounds and a sibling block of the same size shows its layout | `SpriteTable` `$C300` points at 20 blocks of five sizes; the recording drew none of `$6A6C` (630 bytes) and `$70FC` (420 bytes) | a fully untouched block between two targets of a pointer table copies the sprite claims of a drawn block of the same size, shifted, as inferred (`AnalysisDetectorSprites_PointerTableBlockNeverDrawn`, fixture `sprite-pointer-blocks.asm`; the test fails with the rule off); 176 analysis tests pass; on p2-all it did not fire: L2 found no pointer table of four entries at `$C300` (the words reach their use through the draw list in memory, see 6.14) |
 
 New fixture `testdata/analysis/fixtures/stages.asm` (a loader, a depacker with two writers, an overlay); tests
 `CodeArrivalsOnePerWriter`, `WindowFromAnArrival`, `OverlayIsOneFinding`; the recipe
@@ -575,7 +575,8 @@ the strips of one frame are not always seen side by side, and a claim may cut a 
 true layout is in doc 06 6.6: four frames a block, the last one a strip narrower. Second, the two blocks the
 recording never drew, `$6A6C` and `$70FC`, and the last explosion strip `$7FD6-$7FFF`, stay unknown on p2-spr.
 A generic rule now covers the two blocks: the table `$C300` bounds them, and each copies the claims of a drawn block
-of the same size (`$6580` for `$6A6C`, `$6F58` for `$70FC`), marked inferred. Third, one new
+of the same size (`$6580` for `$6A6C`, `$6F58` for `$70FC`), marked inferred, once L2 sees `$C300` as a pointer
+table; on p2-all it does not yet (see the combined run below). Third, one new
 false sprite showed up: the blit once copied a buffer column whose bytes came from the strings in the font's spare
 slots (`$64C8-$64FF`). That gave 3 sprite/text conflicts. A generic rule removes it: bytes a print loop reads as
 character codes are no pixels.
@@ -588,7 +589,8 @@ character codes are no pixels.
    unknown starts at `$F301`, not `$F300`.
    Generic fix (unreal-ng, records): two read patterns of one stride whose starts lie less than a stride apart are
    one array, the second reader's fields merged in at their offset (`AnalysisDetectorRecords_ShiftedReadersAreOneArray`,
-   fixture `records-shifted-readers.asm`, fails with the rule off). Effect on the recording pending the combined run.
+   fixture `records-shifted-readers.asm`, fails with the rule off). On p2-all `$F2E2-$F2FF` is one claim, 6 records of
+   5 used by `$F2A3` and `$F2D9`, and nothing runs into `$F300`.
 2. `RoundSetup` takes a block apart with 16 LDIRs of 8 bytes at `$D261`: sources back to back, destinations the 16-byte
    slots `$C0B0-$C1A0`, which are already claimed as records. The records detector ignores copies shorter than 16
    bytes, so it never sees the 8-byte records in the source. The recording set up rounds 1-4 and 9 (the pointers at
@@ -597,7 +599,8 @@ character codes are no pixels.
    Generic fix (unreal-ng, records): one routine copying blocks of one length into at least four slots of a records
    array makes the sources records with the slots' fields, observed where copied; blocks a pointer table on the same
    lattice names but the run never copied are inferred (`AnalysisDetectorRecords_GatheredByShortCopies`, fixture
-   `records-gathered-blocks.asm`, fails with the rule off). Effect on the recording pending the combined run.
+   `records-gathered-blocks.asm`, fails with the rule off). On p2-all `$F300-$F7FF` is ten claims of 16 records of 8:
+   `$F300-$F3FF` observed (copied by `$D151`), `$F400-$F7FF` inferred from the pointer lattice.
 3. The save area under the sprites is written by `$DD52` through the moving pointer `$DD6A` and copied back by `$DDD3`
    with the same lengths. In the recording it filled 980 bytes at most, `$F800-$FBD3`. Its last 13 bytes were read as
    a table built by one routine (`$FBC7`), and that table gave the index-past-table bug finding on `$DDD3`.
@@ -610,4 +613,21 @@ character codes are no pixels.
    `code-overwritten` overlays and four index-past-table findings, three on the tables at `$5B08-$5EEF` read by
    `$E03C` / `$E04B` and one on the pointer table `$6502` read by `$DEFC`.)
 4. `$FBD4-$FDFC` was never touched: zeros at the start of the recording, then bytes that disassemble as Z80 code that
-   never ran (from `$FC55`). Nothing marks an untouched area as unused unless it is a BASIC line.
+   never ran (from `$FC55`). Nothing marked an untouched area as unused unless it was a BASIC line.
+   Generic fix (unreal-ng, code map, `FinishUnused`, last of all detectors): untouched bytes no claim explains are
+   Unused when they are a fill of one value or code that never ran, whose calls and jumps land on its own
+   instructions or in the ROM (`AnalysisDetectorCodeMap_FillAndLeftoverCodeAreUnused`, fixture `unused-areas.asm`,
+   fails with the rule off). On p2-all `$FBD4-$FC54` is "Fill, 129 bytes of `$00`" and `$FC55-$FDFC` "Code that
+   never ran, 424 bytes".
+
+**The combined run (p2-all, 2026-11-02).** All the fixes above in one build, the same recording: gates pass (42 240 of
+42 240 bytes), conflicts 3 to 0, bugs 12 to 9, unknowns 34 to 32 (skool2asm warnings 632 to 653, all "No label for
+address"). `$F301-$FBC6`, `$FBD4-$FDFC` and `$6542-$657F` are no longer unknown; `$EF48-$EF9E` shrinks to
+`$EF5B-$EF9E`. The shadow tables are one table `$5B00-$5EEF` and their three index-past-table bugs are gone. One
+unknown is new, `$64C8-$64DA`: the false sprite there is gone, and the 19 bytes before the first string (doc 11) are
+unexplained. The pointer-block rule did not fire: `$6A6C-$6CE1` and `$70FC-$729F` stay unknown. Its trigger, a
+pointer table of four or more entries, is missing: L2 found only `$C31C-$C31F` in `SpriteTable`. `DrawSprites` loads
+the word at `$C300 + (+8)` into HL, adds the frame offset and hands it to `SpriteListAdd`, which stores it in the
+draw list `$6500`; the drawing loop reads it back from there. L1 follows a pointer's provenance through registers
+and the stack, not through memory, so the word's use is credited to the draw list, not to the table. Only the
+statics (`$EA38`), which use the word straight away, made `$C31C` a pointer.
