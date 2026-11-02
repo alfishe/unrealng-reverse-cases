@@ -561,3 +561,20 @@ through memory, which the graphics detector drops as a known limit. And the mask
 a buffer byte, not into the screen, so the copy to the screen carried only the pixel byte. The second gap now has a
 generic fix in unreal-ng: a buffer byte keeps the mask ANDed into it, and its copy draws with it. The first gap is
 in progress.
+
+**Why `$F301-$FBC6` and `$FBD4-$FDFC` are no claim.** The bytes are known (doc 11): the ten round object blocks
+`$F300-$F7FF`, then `SpriteSaveBuffer`. Four tool gaps keep them unknown, each to be fixed generically:
+
+1. The effect table `$F2E2-$F2FF` (6 records of 5) is read by two loops, `$F2D9` from +0 and `$F2A3` from +1. They
+   give two record claims one byte apart, and the second one runs a byte into `RoundObjects1`. That is why the
+   unknown starts at `$F301`, not `$F300`.
+2. `RoundSetup` takes a block apart with 16 LDIRs of 8 bytes at `$D261`: sources back to back, destinations the 16-byte
+   slots `$C0B0-$C1A0`, which are already claimed as records. The records detector ignores copies shorter than 16
+   bytes, so it never sees the 8-byte records in the source. The recording set up rounds 1-4 and 9 (the pointers at
+   `$CF06`, `$CF0A`, `$CF0E`, `$CF12`, `$CF26`). The other five blocks were never read. Their place on the 128-byte
+   lattice is known only from `CourseTable`.
+3. The save area under the sprites is written by `$DD52` through the moving pointer `$DD6A` and copied back by `$DDD3`
+   with the same lengths. In the recording it filled 980 bytes at most, `$F800-$FBD3`. Its last 13 bytes were read as
+   a table built by one routine (`$FBC7`), and that table gave the index-past-table bug finding on `$DDD3`.
+4. `$FBD4-$FDFC` was never touched: zeros at the start of the recording, then bytes that disassemble as Z80 code that
+   never ran (from `$FC55`). Nothing marks an untouched area as unused unless it is a BASIC line.
