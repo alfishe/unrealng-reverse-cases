@@ -55,7 +55,7 @@ ProfileBuffer:
 ; disables interrupts and jumps to the start-up $9F12. Overwritten when the
 ; first round clears the profile buffer.
 Entry:
-  LD SP,UdgLeftover+$00A7 ; the stack grows down from the top of RAM
+  LD SP,$FFFF             ; the stack grows down from the top of RAM
   DI                      ; the game proper runs with interrupts off
   JP Startup              ; the start-up
 

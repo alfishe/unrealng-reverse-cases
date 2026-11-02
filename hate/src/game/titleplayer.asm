@@ -786,7 +786,7 @@ TitleExit:
   LD HL,TitleVectorSave   ; put back the 3 bytes the set-up replaced
   LD BC,$0003
   LDIR
-  LD SP,UdgLeftover+$00A1 ; SP as $803A saved it: the operand $8364
+  LD SP,$FFF9             ; SP as $803A saved it: the operand $8364
   RET                     ; back into $8025, at any depth of the player
 
 ; Title drum 2: a click

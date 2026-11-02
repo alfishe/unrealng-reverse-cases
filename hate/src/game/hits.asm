@@ -349,7 +349,7 @@ HitPlayerOnPod:
   LD (HL),D
   INC HL
   LD (ConvoyLinkEnd),HL
-  LD HL,UdgLeftover+$00A2 ; the next one 6 further back
+  LD HL,-6                ; the next one 6 further back
   ADD HL,BC
   LD (FollowerOffset),HL
   LD A,(Followers)        ; one more follower
@@ -395,7 +395,7 @@ HitBlockOnPlayer:
   LD (HL),D
   INC HL
   LD (ConvoyLinkEnd),HL
-  LD HL,UdgLeftover+$00A2
+  LD HL,-6                ; 6 further back
   ADD HL,BC
   LD (FollowerOffset),HL
   LD A,(Followers)

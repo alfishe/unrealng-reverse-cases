@@ -189,7 +189,7 @@ ObjectSetup:
   LD (SpeedReserve),A
   XOR A                   ; no followers
   LD (Followers),A
-  LD HL,UdgLeftover+$009E
+  LD HL,-10               ; the first follower 10 bytes back
   LD (FollowerOffset),HL
   LD HL,ConvoyLinks+$0002 ; the follower list $ECE9 (pointer $ECF1): empty
   LD (ConvoyLinkEnd),HL
