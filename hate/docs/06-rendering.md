@@ -228,6 +228,20 @@ On the screen a sprite comes out upside down in memory. `DrawSprites` walks a st
 line comes from the pair 2 bytes lower. The analyzer's drawn frames show exactly that: a line step of -2 and strips
 42 (21 lines) or 34 (17 lines) bytes apart. This is the layout an extractor has to follow, see WALKTHROUGH 6.14.
 
+**A block holds four frames, the last one a strip narrower.** The frame is (phase - 1) AND 3, and the frames follow
+each other at a fixed size: `$A8` bytes for types 0-3, `$66` for 4-10, `$34` for 11-13 (`SpriteBig`, `SpriteMid`,
+`SpriteSmall` in `src/game/sprites.asm`). Phase 0 picks frame 3 and draws one strip fewer, so frame 3 is stored one
+strip short. The block sizes in the pointer table `$C300` show it:
+
+| Types | Strip | Frames 0-2 | Frame 3 | Block |
+| --- | --- | --- | --- | --- |
+| 0-3 | 21 lines, 42 bytes | 4 strips, 168 bytes | 3 strips, 126 | 630 (`$6580`, `$67F6`, `$6A6C`, `$6CE2`) |
+| 4-10 | 17 lines, 34 bytes | 3 strips, 102 | 2 strips, 68 | 374 (`$72A0`-`$7878`) |
+| 11-13 | 13 lines, 26 bytes | 2 strips, 52 | 1 strip, 26 | 182 (`$79EE`, `$7AA4`, `$7B5A`) |
+| pads, dishes (`$EA38`) | 14 lines, 28 bytes | 4 strips, 112 | 3 strips, 84 | 420 (`$6F58`, `$70FC`) |
+
+The explosion frames `$7C10-$7FFF` are six blocks of 168 bytes, picked by the counter `$20`-`$2C` (`$20` and `$24` both point at `$7CB8`).
+
 **Pads and dishes are stamped, not drawn.** `$EA38` (`StampStatics`) draws the records of types 14 and 15 (list
 `$C99E`) straight into the buffer, and only while their column `+B` is `$20-$23`: the last strips of the window,
 at the far edge of the buffer. They are not saved or restored: they become part of the course picture and scroll with

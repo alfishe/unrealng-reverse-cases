@@ -559,8 +559,19 @@ drawn frames, the commonest 2 × 21 and 2 × 17 with a line step of -2 and strip
 buffer column, shown bottom line first). Two tool gaps keep them out of the graphics claims. The frame's lines go up
 through memory, which the graphics detector drops as a known limit. And the mask is lost: `DrawSprites` ANDs it into
 a buffer byte, not into the screen, so the copy to the screen carried only the pixel byte. The second gap now has a
-generic fix in unreal-ng: a buffer byte keeps the mask ANDed into it, and its copy draws with it. The first gap is
-in progress.
+generic fix in unreal-ng: a buffer byte keeps the mask ANDed into it, and its copy draws with it. The first has one too:
+a frame whose lines go up through memory is read from its lowest address and its claim is marked bottom up
+(`bottom_up` in the geometry, flipped in the gallery and in the skool pictures). On the recording (`work/p2-spr`)
+`$6580-$7FD5` is now masked bottom-up sprites, 21, 17, 13 and 14 lines high, drawn by `DrawSprites` `$EAE3` and
+`StampStatics` `$EA38`. Gates still pass: 42 240 of 42 240.
+
+Three limits remain. First, the frame boundaries are approximate. The playfield blit shows the buffer skewed, so
+the strips of one frame are not always seen side by side, and a claim may cut a frame or run into the next one. The
+true layout is in doc 06 6.6: four frames a block, the last one a strip narrower. Second, the two blocks the
+recording never drew, `$6A6C` and `$70FC`, and the last explosion strip `$7FD6-$7FFF`, stay unknown. Third, one new
+false sprite showed up: the blit once copied a buffer column whose bytes came from the strings in the font's spare
+slots (`$64C8-$64FF`). That gave 3 sprite/text conflicts. A generic rule removes it: bytes a print loop reads as
+character codes are no pixels.
 
 **Why `$F301-$FBC6` and `$FBD4-$FDFC` are no claim.** The bytes are known (doc 11): the ten round object blocks
 `$F300-$F7FF`, then `SpriteSaveBuffer`. Four tool gaps keep them unknown, each to be fixed generically:
