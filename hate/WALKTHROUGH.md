@@ -142,6 +142,7 @@ Later gaps, found while writing the game's source (section 6.13):
 | L1 took a sprite's mask only from an AND with the screen; a sprite masked into a back buffer reached the screen through a copy without it | `DrawSprites` ANDs each mask byte into the playfield buffer, so the sprites came out as unmasked single-byte columns | a buffer byte keeps the mask merged into it (an AND's operand, or the next source when the value merged the byte it overwrites), and the copy to the screen draws with it (`AnalysisDetectorSprites_MaskCarriedThroughBackBuffer`, fixture `sprite-drawn-buffer.asm`) |
 | Graphics dropped every frame whose lines go up through memory, as a known limit | the sprites `$6580-$7FFF`: the blit shows the buffer columns bottom line first, line step -2 | such a frame is read from its lowest address and its claim is marked `bottom_up` (gallery and skool pictures flipped) (`AnalysisDetectorSprites_StoredBottomUp`, fixture `sprite-bottom-up.asm`); on p2-spr `$6580-$7FD5` masked sprites, 21, 17, 13 and 14 lines; gates pass (42 240 of 42 240) |
 | A picture could be claimed over the bytes of a string | the blit once copied a buffer column filled from the strings in the font's spare slots: a sprite at `$64C8-$64FF`, 3 sprite/text conflicts | bytes the text detector found (read as character codes) are no pixels: a picture mostly over text is none (`AnalysisDetectorGraphics_TextIsNoPicture`, fixture `text-as-pixels.asm`) |
+| A sprite block the recording never drew stayed unknown, though the pointer table gives its bounds and a sibling block of the same size shows its layout | `SpriteTable` `$C300` points at 20 blocks of five sizes; the recording drew none of `$6A6C` (630 bytes) and `$70FC` (420 bytes) | a fully untouched block between two targets of a pointer table copies the sprite claims of a drawn block of the same size, shifted, as inferred (`AnalysisDetectorSprites_PointerTableBlockNeverDrawn`, fixture `sprite-pointer-blocks.asm`); 176 analysis tests pass; effect on the recording pending the combined run |
 
 New fixture `testdata/analysis/fixtures/stages.asm` (a loader, a depacker with two writers, an overlay); tests
 `CodeArrivalsOnePerWriter`, `WindowFromAnArrival`, `OverlayIsOneFinding`; the recipe
@@ -571,7 +572,9 @@ a frame whose lines go up through memory is read from its lowest address and its
 Three limits remain. First, the frame boundaries are approximate. The playfield blit shows the buffer skewed, so
 the strips of one frame are not always seen side by side, and a claim may cut a frame or run into the next one. The
 true layout is in doc 06 6.6: four frames a block, the last one a strip narrower. Second, the two blocks the
-recording never drew, `$6A6C` and `$70FC`, and the last explosion strip `$7FD6-$7FFF`, stay unknown. Third, one new
+recording never drew, `$6A6C` and `$70FC`, and the last explosion strip `$7FD6-$7FFF`, stay unknown on p2-spr.
+A generic rule now covers the two blocks: the table `$C300` bounds them, and each copies the claims of a drawn block
+of the same size (`$6580` for `$6A6C`, `$6F58` for `$70FC`), marked inferred. Third, one new
 false sprite showed up: the blit once copied a buffer column whose bytes came from the strings in the font's spare
 slots (`$64C8-$64FF`). That gave 3 sprite/text conflicts. A generic rule removes it: bytes a print loop reads as
 character codes are no pixels.
