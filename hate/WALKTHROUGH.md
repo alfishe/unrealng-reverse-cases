@@ -142,7 +142,7 @@ Later gaps, found while writing the game's source (section 6.13):
 | L1 took a sprite's mask only from an AND with the screen; a sprite masked into a back buffer reached the screen through a copy without it | `DrawSprites` ANDs each mask byte into the playfield buffer, so the sprites came out as unmasked single-byte columns | a buffer byte keeps the mask merged into it (an AND's operand, or the next source when the value merged the byte it overwrites), and the copy to the screen draws with it (`AnalysisDetectorSprites_MaskCarriedThroughBackBuffer`, fixture `sprite-drawn-buffer.asm`) |
 | Graphics dropped every frame whose lines go up through memory, as a known limit | the sprites `$6580-$7FFF`: the blit shows the buffer columns bottom line first, line step -2 | such a frame is read from its lowest address and its claim is marked `bottom_up` (gallery and skool pictures flipped) (`AnalysisDetectorSprites_StoredBottomUp`, fixture `sprite-bottom-up.asm`); on p2-spr `$6580-$7FD5` masked sprites, 21, 17, 13 and 14 lines; gates pass (42 240 of 42 240) |
 | A picture could be claimed over the bytes of a string | the blit once copied a buffer column filled from the strings in the font's spare slots: a sprite at `$64C8-$64FF`, 3 sprite/text conflicts | bytes the text detector found (read as character codes) are no pixels: a picture mostly over text is none (`AnalysisDetectorGraphics_TextIsNoPicture`, fixture `text-as-pixels.asm`) |
-| An init table broke at the first byte nothing read, so a table of short entries in wider slots started late or was no table | the shadow shapes `$5B00-$5B5F`: 4 bytes a strip in 8-byte slots, the last 4 of a slot never read; L2 claimed `$5B08`, `$5B28`, `$5B48` and L3 gave three index-past-table bugs | a run goes on over up to 7 bytes the same routine wrote but nothing read when a read byte of that writer follows (`AnalysisDetectorInitTables_PaddedEntries`, fixture `init-padded.asm`); test and recording run pending |
+| An init table broke at the first byte nothing read, so a table of short entries in wider slots started late or was no table | the shadow shapes `$5B00-$5B5F`: 4 bytes a strip in 8-byte slots, the last 4 of a slot never read; L2 claimed `$5B08`, `$5B28`, `$5B48` and L3 gave three index-past-table bugs | a run goes on over up to 7 bytes the same routine wrote but nothing read when a read byte of that writer follows (`AnalysisDetectorInitTables_PaddedEntries`, fixture `init-padded.asm`, passes); recording run pending |
 | A sprite block the recording never drew stayed unknown, though the pointer table gives its bounds and a sibling block of the same size shows its layout | `SpriteTable` `$C300` points at 20 blocks of five sizes; the recording drew none of `$6A6C` (630 bytes) and `$70FC` (420 bytes) | a fully untouched block between two targets of a pointer table copies the sprite claims of a drawn block of the same size, shifted, as inferred (`AnalysisDetectorSprites_PointerTableBlockNeverDrawn`, fixture `sprite-pointer-blocks.asm`; the test fails with the rule off); 176 analysis tests pass; effect on the recording pending the combined run |
 
 New fixture `testdata/analysis/fixtures/stages.asm` (a loader, a depacker with two writers, an overlay); tests
@@ -586,11 +586,18 @@ character codes are no pixels.
 1. The effect table `$F2E2-$F2FF` (6 records of 5) is read by two loops, `$F2D9` from +0 and `$F2A3` from +1. They
    give two record claims one byte apart, and the second one runs a byte into `RoundObjects1`. That is why the
    unknown starts at `$F301`, not `$F300`.
+   Generic fix (unreal-ng, records): two read patterns of one stride whose starts lie less than a stride apart are
+   one array, the second reader's fields merged in at their offset (`AnalysisDetectorRecords_ShiftedReadersAreOneArray`,
+   fixture `records-shifted-readers.asm`, fails with the rule off). Effect on the recording pending the combined run.
 2. `RoundSetup` takes a block apart with 16 LDIRs of 8 bytes at `$D261`: sources back to back, destinations the 16-byte
    slots `$C0B0-$C1A0`, which are already claimed as records. The records detector ignores copies shorter than 16
    bytes, so it never sees the 8-byte records in the source. The recording set up rounds 1-4 and 9 (the pointers at
    `$CF06`, `$CF0A`, `$CF0E`, `$CF12`, `$CF26`). The other five blocks were never read. Their place on the 128-byte
    lattice is known only from `CourseTable`.
+   Generic fix (unreal-ng, records): one routine copying blocks of one length into at least four slots of a records
+   array makes the sources records with the slots' fields, observed where copied; blocks a pointer table on the same
+   lattice names but the run never copied are inferred (`AnalysisDetectorRecords_GatheredByShortCopies`, fixture
+   `records-gathered-blocks.asm`, fails with the rule off). Effect on the recording pending the combined run.
 3. The save area under the sprites is written by `$DD52` through the moving pointer `$DD6A` and copied back by `$DDD3`
    with the same lengths. In the recording it filled 980 bytes at most, `$F800-$FBD3`. Its last 13 bytes were read as
    a table built by one routine (`$FBC7`), and that table gave the index-past-table bug finding on `$DDD3`.
