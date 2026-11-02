@@ -678,3 +678,10 @@ the game.
 The largest gap was the tile set: 576 of those bytes read every strip, drawn into a back buffer and not named. The
 copied-tiles rule (section 5) claims it on p2-til; the tile runs `$C640-$C8E9` followed on p2-map (a level map of
 tile numbers, section 5). 8 unknowns remain outside the ROM.
+
+`$7FD6-$7FFF` is a known limit of the sprite detector. The explosion frames are 168 bytes each from `$7C10`
+(doc 11): 4 strips of 21 lines, a mask and a pixel byte a line, 42 bytes a strip. The detector joins the strips it
+saw drawn side by side, and clipping at the window's edges showed them in varying groups. So its claims (`$7DDE-$7E31`
+8 x 21 x 2, `$7E32-$7E85` 16 x 21, ...) are runs of whole strips that do not start on the frames' 168-byte lattice.
+The last strip of the last frame was never joined to a claim. The frame boundaries come from the sprite table at
+`$C300` (doc 6.6); no rule ties drawn strips to a pointer table's blocks yet.
