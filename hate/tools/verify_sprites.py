@@ -109,7 +109,7 @@ def main():
             now = word(T, LIST_PTR)
             if now < last:  # set back to $FF00 (held for some 250 T only, so seen as the pointer going down)
                 at = edge(T - step, T, lambda x, old=last: word(x, LIST_PTR) != old)
-                if word(at + 100, SHADOW_PTR) != SHADOWS:  # a second walk of both lists sets $FE64 36 T after
+                if word(at + 100, SHADOW_PTR) != SHADOWS:  # BuildSpriteLists ($D9E2, $D9EA) sets $FE64 36 T after
                     pre = at
                     break
             last = now

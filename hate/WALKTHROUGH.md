@@ -808,8 +808,8 @@ The sprites and the title tune were checked last:
   compares the result with the buffer when the list is done, in five passes of the bot's game: 8 to 15 sprites, eight
   explosion frames, the whole buffer equal. Every sprite address is a block plus whole frames and strips, and the 20
   files equal memory at the addresses of the table `$C300`. Finding the moments needed care: the list pointer holds
-  `$FF00` for only some 250 T, and a second walk of both lists sets it as well (with `$DD66` = `$FE64` 36 T
-  later).
+  `$FF00` for only some 250 T, and `BuildSpriteLists` `$D9D6` sets it as well when it rebuilds the lists (`$D9E2`,
+  then `$DD66` = `$FE64` at `$D9EA`, 36 T later).
 - **Title tune.** `tools/verify_tune.py` compares the piano roll's model with the player's operands frame by frame
   in the first recording, from frame 2617, over two passes of the song. Both voices' periods agree in all 2 800
   frames. The note starts agree, 205 and 234, repeated pitches included. So do the 266 drum steps with their sounds,
