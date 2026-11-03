@@ -716,3 +716,37 @@ The same reading corrected doc 11 (`UdgLeftover` is not unread: the unbounded sp
 `EnemyShotTemplate` is copied by `$E1F5`) and the source: `LD SP,$FFFF`, `LD SP,$FFF9` (the operand the title player
 patches), `LD HL,-6` and `LD HL,-10` (follower spacings) were written as `UdgLeftover` + offsets; the TAP still
 rebuilds identical.
+
+### 6.15 Resources out of the source
+
+The source held the game's data as 3 250 lines of `DEFB`: the bytes were right, but a sprite, a course or the
+title tune was not a thing one could pick up. Now an entry of `game.ann` followed by `@res FILE` is a resource:
+`tools/mkgame.py` writes its bytes to `src/res/FILE` and its data lines become `INCBIN "res/FILE",offset,length`
+under the entry's label and description (entries naming one file share it: the font's two halves, the game
+screen's pixels and attributes, the three tile sets). 66 entries, 62 files, 28 067 bytes: the font, 14 sprite
+blocks and 6 explosion frames by table slot, the tiles, the game screen as a `.scr`, the tile runs, the ground
+anchors, the ten courses and the ten rounds' objects, the title song with its patterns and drums, the renderer's
+tables, and the leftovers (the stale copies, the profile buffer's image, the save area, the UDGs). The loading
+screen moved to `src/res/screens/loading.scr` and the tail of block 3 to `src/res/leftovers/screen-tail.bin`.
+Every file is listed in [src/res/README.md](src/res/README.md) with its address, size, labels and format;
+`tools/res_preview.py` draws the graphic ones to `docs/img/res/` (the sprite previews follow doc 6.6: four
+frames, strips of mask and pixel pairs, bottom line first, and show the vehicles, the pads and the explosion as
+the game draws them). The files are the original bytes, not converted at build time: editable formats are the next
+level; `tools/build.sh` still writes a tape identical to `orig/HATE.TAP` (SHA-1 `bbe36140...`), checked from a
+clean copy of the tree.
+
+Regenerating the source from `game.ann` showed that two outputs had been corrected by hand after the generator
+ran (6.14): five instructions in `src/game` (`LD SP,$FFFF`, `LD SP,$FFF9`, `LD HL,-6` twice, `LD HL,-10`, which the
+generator writes as `UdgLeftover` + offsets) and five rows of doc 11 (`ExplosionGfx2C`, `EnemyShotTemplate`,
+`SpriteSaveBuffer`, `SpriteListArea`, `UdgLeftover`). Both now come from `game.ann`: a new line
+`@isub $ADDR INSTRUCTION` writes an instruction as the source means it (a constant the image's bytes cannot tell from an address;
+skool2asm prints the negative ones in hex, `LD HL,-$0006`), and the five descriptions moved into the entries, so
+`tools/refdocs.py` writes doc 11 identical to the corrected one. The rule stays: edit `game.ann`, never the output.
+
+The analyzer review in unreal-ng (records, graphics, code map, L3 bugs) was checked against the same session
+(p2-rev3): 19 unknowns (all in the ROM) and 42 240 of 42 240 bytes rebuilt, as before; a ninth bug,
+`index-past-table` on the draw list `$6500`, came back with the review's per-reader rule. Reading the code again
+corrected doc 2.7: `DrawShadows` ANDs a 17-byte mask row in, the loop `$DEE6`-`$DEFA` (four instructions, four
+passes) the first 16 bytes, `$DEFC` the 17th; no instruction alone reads on both sides of L2's pointer table
+`$6502-$653F`, the routine's connected reads `$6500-$6543` do. The rule now joins a reader's index reads with its
+routine's connected ones (fixture `index-around-table-fields.asm`).

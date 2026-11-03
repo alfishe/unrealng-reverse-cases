@@ -212,8 +212,8 @@ tools/build.sh [path/to/sjasmplus]        # build/HATE.TAP, compared with orig/H
 | Block | Source | Made by | State |
 | --- | --- | --- | --- |
 | 0, 1 BASIC | `src/loader.asm`: the lines as tokens, the banner as code | sjasmplus | **identical** (413 bytes) |
-| 2, 3 loading screen | `src/screen.asm` (the unpacker), `src/gfx/loading.scr` (the picture), `src/gfx/screen-tail.inc` | `tools/screen_pack.py`, sjasmplus | **identical** (6 432 bytes) |
-| 4, 5 game | `src/depacker.asm` (the `$64`-byte head), `src/game/*.asm` (the image) | sjasmplus, `tools/pack.py` | **identical** (35 495 bytes) |
+| 2, 3 loading screen | `src/screen.asm` (the unpacker), `src/res/screens/loading.scr` (the picture), `src/res/leftovers/screen-tail.bin` | `tools/screen_pack.py`, sjasmplus | **identical** (6 432 bytes) |
+| 4, 5 game | `src/depacker.asm` (the `$64`-byte head), `src/game/*.asm` (the image), `src/res/` (its resources) | sjasmplus, `tools/pack.py` | **identical** (35 495 bytes) |
 | headers, TAP | `tools/tap.py` | | **identical** |
 
 ### The game's source, `src/game`
@@ -262,7 +262,14 @@ flowchart LR
 - **Data** is everything else, shaped by `game.ann` (bytes or words per line, text, the entry boundaries at tables,
   records and sprite sets).
 - **Names and comments** come from `src/game/game.ann`: 355 entries, 137 of them code, every one named. An address
-  operand inside an entry is written as `Label+offset` (125 of them), so a reader sees which field a load touches.
+  operand inside an entry is written as `Label+offset` (120 of them), so a reader sees which field a load touches;
+  where the bytes are a constant that only looks like an address (`LD HL,-6`, `LD SP,$FFFF`), `@isub` in `game.ann`
+  writes the instruction as the source means it (5 of them).
+- **Resources**: 66 entries of `game.ann` carry `@res FILE` (graphics, the game screen, tiles, courses, round
+  objects, the title tune, the renderer's tables, leftovers): their bytes are written to `src/res/` as raw files and
+  assembled with `INCBIN` under the entry's label, 28 067 bytes in 62 files. [src/res/README.md](../src/res/README.md)
+  lists every file with its address, size and format; `tools/res_preview.py` draws the graphic ones to
+  `docs/img/res/`.
 - **The check**: the assembled `game.bin` must equal the image unpacked from the original tape; then `build.sh`
   packs it and the TAP is compared with `orig/HATE.TAP`.
 

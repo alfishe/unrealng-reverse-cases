@@ -969,137 +969,48 @@ TuneTable:
 ; back to the start at $8460: the tune loops until a key. The last 4 bytes
 ; (pattern $83E8, $FC) are never reached.
 TuneSong:
-  DEFB $01,$67,$84
-  DEFB $FB,$A2,$85
-  DEFB $05,$73,$84
-  DEFB $FB,$B4,$85
-  DEFB $01,$A8,$84
-  DEFB $FB,$A2,$85
-  DEFB $02,$C6,$84
-  DEFB $01,$3B,$85
-  DEFB $FB,$A2,$85
-  DEFB $02,$C6,$84
-  DEFB $01,$3B,$85
-  DEFB $FD,$3F,$84
-  DEFB $01,$E8,$83
-  DEFB $FC
+  INCBIN "res/music/title/song.bin",$0000,40
 
 ; Tune 0: set-up pattern
 ;
 ; Command 8 (voice B mode 0), 17 (note length 5), 1-4 (the voices' parameters),
 ; 9 (end). Pattern commands are listed at $83FC.
 PatternInit:
-  DEFB $08,$11,$05,$01
-  DEFB $17,$02,$17,$03
-  DEFB $03,$04,$03,$09
+  INCBIN "res/music/title/pattern-init.bin",$0000,12
 
 ; Tune 0: pattern A
 ;
 ; Notes: command 10 with two periods, 11 or 12 with one; 0 holds, 18 n holds n
 ; note lengths, 9 ends the pattern.
 PatternA:
-  DEFB $0A,$A6,$A4,$00
-  DEFB $0A,$A6,$A4,$12
-  DEFB $03,$0A,$A6,$A4
-  DEFB $00,$0A,$8A,$8B
-  DEFB $12,$02,$0A,$CE
-  DEFB $CF,$12,$04,$0A
-  DEFB $B8,$B9,$00,$0A
-  DEFB $B8,$B9,$12,$03
-  DEFB $0A,$B8,$B9,$00
-  DEFB $0A,$F8,$F6,$12
-  DEFB $02,$0A,$C4,$C3
-  DEFB $00,$0A,$BA,$B9
-  DEFB $00,$0A,$AF,$B0
-  DEFB $09
+  INCBIN "res/music/title/pattern-a.bin",$0000,53
 
 ; Tune 0: pattern B
 PatternB:
-  DEFB $0A,$F9,$5D,$00
-  DEFB $0A,$F9,$5D,$00
-  DEFB $0B,$F9,$00,$0A
-  DEFB $F9,$62,$00,$0B
-  DEFB $F9,$00,$0A,$F9
-  DEFB $5D,$00,$0B,$F9
-  DEFB $00,$0A,$DA,$57
-  DEFB $00,$09
+  INCBIN "res/music/title/pattern-b.bin",$0000,30
 
 ; Tune 0: pattern C
 PatternC:
-  DEFB $0A,$A3,$36,$00
-  DEFB $0B,$A3,$12,$03
-  DEFB $0B,$A3,$00,$0B
-  DEFB $89,$00,$0C,$3D
-  DEFB $0A,$CC,$45,$0C
-  DEFB $3D,$0C,$45,$0C
-  DEFB $3D,$0C,$36,$0A
-  DEFB $B8,$3D,$00,$0B
-  DEFB $B8,$12,$03,$0B
-  DEFB $B8,$00,$0A,$F8
-  DEFB $36,$0C,$3D,$0C
-  DEFB $45,$0A,$C2,$3D
-  DEFB $0C,$45,$0A,$BA
-  DEFB $49,$0C,$53,$0A
-  DEFB $AF,$49,$0A,$A3
-  DEFB $52,$00,$0B,$A3
-  DEFB $12,$03,$0B,$A3
-  DEFB $00,$0B,$89,$00
-  DEFB $0C,$5D,$0A,$CC
-  DEFB $7B,$0C,$66,$0C
-  DEFB $5C,$0C,$51,$0C
-  DEFB $45,$0A,$B8,$48
-  DEFB $00,$0B,$B8,$12
-  DEFB $03,$0B,$B8,$00
-  DEFB $0A,$F8,$45,$0C
-  DEFB $48,$0C,$51,$0A
-  DEFB $C2,$5B,$0C,$5F
-  DEFB $0A,$BA,$5B,$0C
-  DEFB $51,$0A,$AF,$45
-  DEFB $09
+  INCBIN "res/music/title/pattern-c.bin",$0000,117
 
 ; Tune 0: pattern D
 ;
 ; Uses command 16 at $8583 to switch to the drums $85B4.
 PatternD:
-  DEFB $0A,$CB,$51,$00
-  DEFB $0A,$CB,$51,$12
-  DEFB $03,$0A,$89,$5B
-  DEFB $12,$03,$0A,$89
-  DEFB $5B,$12,$03,$0A
-  DEFB $F3,$60,$12,$03
-  DEFB $0A,$F9,$60,$12
-  DEFB $03,$0A,$F9,$60
-  DEFB $00,$0A,$B9,$5B
-  DEFB $12,$03,$0A,$B9
-  DEFB $5B,$12,$03,$0A
-  DEFB $9A,$67,$00,$0A
-  DEFB $9A,$5B,$00,$0A
-  DEFB $9A,$51,$00,$0A
-  DEFB $89,$5B,$12,$03
-  DEFB $0A,$89,$67,$00
-  DEFB $0A,$89,$6B,$00
-  DEFB $0A,$F4,$7A,$00
-  DEFB $10,$B4,$85,$12
-  DEFB $02,$0A,$F4,$6D
-  DEFB $00,$0A,$F4,$63
-  DEFB $00,$0A,$D8,$56
-  DEFB $12,$03,$0A,$D8
-  DEFB $51,$00,$0A,$D8
-  DEFB $49,$12,$03,$07
-  DEFB $09,$09,$09
+  INCBIN "res/music/title/pattern-d.bin",$0000,103
 
 ; Drum pattern: clicks and noise
 ;
 ; The speed (5 frames a step), then the steps: 2 click, 3 noise, 0 rest, 1
 ; loop; docs/09-sound.md 9.5.
 DrumPatternA:
-  DEFB $05,$02,$00,$00,$02,$03,$00,$02,$00,$00,$00,$02,$00,$03,$02,$00,$00,$01
+  INCBIN "res/music/title/drums-a.bin",$0000,18
 
 ; Drum pattern: the three tones
 ;
 ; Speed 5, then the drums 4 (rising), 5 (sweep) and 6 (falling) and 1 loop.
 DrumPatternB:
-  DEFB $05,$04,$04,$04,$04,$04,$00,$05,$05,$05,$05,$05,$00,$06,$06,$06,$06,$01
+  INCBIN "res/music/title/drums-b.bin",$0000,18
 
 ; Unused, zero
 TitleTail:

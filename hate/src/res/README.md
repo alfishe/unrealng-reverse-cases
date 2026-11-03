@@ -1,0 +1,93 @@
+# H.A.T.E. resources
+
+The game's data that is not code, as raw files: the bytes exactly as they stand in the original image, assembled
+with `INCBIN`. Nothing here is converted at build time: `tools/build.sh` assembles `src/game/game.asm`,
+`src/screen.asm` and `src/depacker.asm` (sjasmplus, `src` on the include path) and the tape it writes is
+`orig/HATE.TAP` byte for byte.
+
+- **Where they come from.** `tools/mkgame.py` writes every file of the game image (all but the two marked
+  *by hand* below) from the pristine image: an entry of `src/game/game.ann` followed by `@res FILE` is a resource,
+  its bytes go to `src/res/FILE` and its data lines in `src/game/*.asm` become `INCBIN "res/FILE",offset,length`
+  under the entry's label and description. Entries that name one file share it (the file holds the bytes from the
+  first entry to the end of the last). Edit `game.ann`, not the `.asm` files, and rerun
+  `tools/mkgame.py --venv VENV --install`; it installs only when the assembled image is the original's.
+- **What stays in the source.** Tables of addresses (`dw Label`: the sprite table `$C300`, the course table
+  `$CF04`, the row lists `$C8EA`, the blit list `$D5B2`, the handler tables), records and variables, strings
+  (`DEFM`, readable in place) and small tables the code reads field by field: they are part of the program's
+  structure, and labels inside them are referenced from code.
+- **Previews.** `python3 tools/res_preview.py` draws the graphic resources to `docs/img/res/` (the PNGs are for
+  looking only; the `.bin` / `.scr` files are the source). Formats below; the full descriptions are in
+  [docs/11-data-reference.md](../../docs/11-data-reference.md).
+- **Not yet.** Editable formats (PNG sprites converted at build, the tune as text) are the next level of the
+  reverse; for now the files are the original bytes, so the byte-exact build cannot drift.
+
+## Formats
+
+| Format | Layout |
+| --- | --- |
+| **ZX screen** (`.scr`) | 6 912 bytes: 6 144 bytes of pixels in the Spectrum's display order (`$4000` layout: thirds, character rows, pixel lines), then 768 attributes, 32 a character row. Opens in any ZX screen viewer. |
+| **Font** | 8 bytes a glyph, one byte a pixel line from the top, bit 7 the leftmost pixel; glyph = file + (code - `$20`) × 8, codes `$20`-`$5A`. |
+| **Course tile** | 8 bytes a tile, one byte a line of the strip (as stored: `FreshStrip` copies the 8 bytes with `LDI` down the buffer column, the blit shows a column bottom line first). |
+| **Sprite block** | Four pre-shifted frames, picked by (phase - 1) AND 3. A frame is a row of strips 8 pixels wide; a strip is a mask byte and a pixel byte a line (`AND` mask, `OR` pixels), the first pair the bottom line. Frame 3 is one strip narrower. By block size: 630 = 21 lines, strips 4+4+4+3 (types 0-3); 420 = 14 lines, 4+4+4+3 (pads, dishes); 374 = 17 lines, 3+3+3+2 (types 4-10); 182 = 13 lines, 2+2+2+1 (types 11-13). [docs/06-rendering.md 6.6](../../docs/06-rendering.md) |
+| **Explosion frame** | 168 bytes: one frame of 4 strips of 21 lines, mask and pixel byte a line as a sprite, drawn as a type 3. |
+| **Tile runs** | Tile numbers from the bottom of a strip up; a course row is the address of a run in here, read as row i at offset i. Runs overlap (rows one byte apart are the same run shifted by one tile). [6.5](../../docs/06-rendering.md) |
+| **Ground anchors** | Lists ended by `$FF`, picked by a course byte b at file + b / 2: one anchor byte for every 8 bytes of the ground profile, height in bits 0-4, walls in bits 5-7. [7.4](../../docs/07-objects.md) |
+| **Course** | The player's type (0 aircraft, 1 ground vehicle), then one segment byte a course piece (an index into the row lists `$C8EA` and the ground anchors), ended by `$FF`. [4.2](../../docs/04-game-loop.md) |
+| **Round objects** | 16 records of 8 bytes, copied into the object slots `$C0B0-$C1A0` at the round setup: +0 type, +1,+2 position along, +3 across, +4 height, +5 direction, +6 speed, +7 behaviour bits. [7.1-7.4](../../docs/07-objects.md) |
+| **Title song** | Song entries: n and a pattern address (the pattern played n times), `$FB` and a drum pattern address, `$FD` and an address (jump). The addresses are absolute (`$8467`...): the file only works at its place. [9](../../docs/09-sound.md) |
+| **Title pattern** | Pattern commands (the handlers at `$83FC`): 10 with two periods, 11 or 12 with one, 0 holds, 18 n holds n note lengths, 1-4 voice parameters, 8 voice B mode, 17 note length, 9 ends. |
+| **Drum pattern** | The speed (frames a step), then the steps: 2 click, 3 noise (or the tones), 0 rest, 1 loop. [9.5](../../docs/09-sound.md) |
+| **Raw** | Bytes with no format of their own: tables in RAM, or leftovers the game never reads as such, kept because the image holds them. |
+
+## Files
+
+All addresses are where the bytes sit in the game image (`$5FB4-$FFFF`, as the depacker leaves it).
+
+| File | Address | Bytes | Labels in `src/game` | Format | What it is | Preview |
+| --- | --- | ---: | --- | --- | --- | --- |
+| `screens/loading.scr` | tape block 3 | 6 912 | - (*by hand*: `src/screen.asm`) | ZX screen | The loading screen; `tools/screen_pack.py` packs it at build time into the RLE stream `src/screen.asm` unpacks | [png](../../docs/img/res/screen-loading.png) |
+| `leftovers/screen-tail.bin` | tape block 3 | 160 | - (*by hand*: `src/screen.asm`) | Raw | The last 160 bytes of block 3, after the packed screen: RLE fragments left in the packer's buffer, not read by the unpacker | - |
+| `leftovers/profile-margin.bin` | `$5FB4-$5FFF` | 76 | `ProfileMargin` | Raw | Mask/pixel pairs left from the build below the ground profile; overwritten before play | - |
+| `leftovers/profile-buffer.bin` | `$6000-$61A7` | 424 | `ProfileBuffer` | Raw | The ground profile buffer's image contents (leftovers; cleared at every round start), up to the entry `$61A8` | - |
+| `leftovers/profile-buffer-tail.bin` | `$61AF-$62FF` | 337 | `GroundProfileTail` | Raw | The rest of the profile buffer: 42 bytes of loader code that never runs, then zeros | - |
+| `gfx/font.bin` | `$6300-$64D7` | 472 | `Font`, `FontHigh` | Font | The font, codes `$20`-`$5A` (big GAME OVER at `$22`-`$2C`). The glyph slots `$63D8-$63FF` hold the credits string `CreditsText1`: in the file, but assembled from its `DEFM` | [png](../../docs/img/res/font.png) |
+| `gfx/sprites/slot-00.bin` | `$6580-$67F5` | 630 | `SpriteGfx00` | Sprite block | Table slot `$00` | [png](../../docs/img/res/sprites/slot-00.png) |
+| `gfx/sprites/slot-02.bin` | `$67F6-$6A6B` | 630 | `SpriteGfx02` | Sprite block | Table slot `$02` | [png](../../docs/img/res/sprites/slot-02.png) |
+| `gfx/sprites/slot-04.bin` | `$6A6C-$6CE1` | 630 | `SpriteGfx04` | Sprite block | Table slot `$04` | [png](../../docs/img/res/sprites/slot-04.png) |
+| `gfx/sprites/slot-06.bin` | `$6CE2-$6F57` | 630 | `SpriteGfx06` | Sprite block | Table slot `$06` | [png](../../docs/img/res/sprites/slot-06.png) |
+| `gfx/sprites/slot-1c.bin` | `$6F58-$70FB` | 420 | `SpriteGfx1C` | Sprite block | Table slot `$1C`: a pad or dish, stamped by `StampStatics` | [png](../../docs/img/res/sprites/slot-1c.png) |
+| `gfx/sprites/slot-1e.bin` | `$70FC-$729F` | 420 | `SpriteGfx1E` | Sprite block | Table slot `$1E`: a pad or dish | [png](../../docs/img/res/sprites/slot-1e.png) |
+| `gfx/sprites/slot-14.bin` | `$72A0-$7415` | 374 | `SpriteGfx14` | Sprite block | Table slot `$14` | [png](../../docs/img/res/sprites/slot-14.png) |
+| `gfx/sprites/slot-08.bin` | `$7416-$758B` | 374 | `SpriteGfx08` | Sprite block | Table slot `$08`: the type 4 missile | [png](../../docs/img/res/sprites/slot-08.png) |
+| `gfx/sprites/slot-0a.bin` | `$758C-$7701` | 374 | `SpriteGfx0A` | Sprite block | Table slots `$0A` and `$0C`: the type 6 missile | [png](../../docs/img/res/sprites/slot-0a.png) |
+| `gfx/sprites/slot-0e.bin` | `$7702-$7877` | 374 | `SpriteGfx0E` | Sprite block | Table slot `$0E`: the type 7 missile | [png](../../docs/img/res/sprites/slot-0e.png) |
+| `gfx/sprites/slot-10.bin` | `$7878-$79ED` | 374 | `SpriteGfx10` | Sprite block | Table slots `$10` and `$12`: the jets | [png](../../docs/img/res/sprites/slot-10.png) |
+| `gfx/sprites/slot-16.bin` | `$79EE-$7AA3` | 182 | `SpriteGfx16` | Sprite block | Table slot `$16` | [png](../../docs/img/res/sprites/slot-16.png) |
+| `gfx/sprites/slot-18.bin` | `$7AA4-$7B59` | 182 | `SpriteGfx18` | Sprite block | Table slot `$18`: the shots (templates `$C360`, `$C2E1`) | [png](../../docs/img/res/sprites/slot-18.png) |
+| `gfx/sprites/slot-1a.bin` | `$7B5A-$7C0F` | 182 | `SpriteGfx1A` | Sprite block | Table slot `$1A`: the shell (template `$C370`) | [png](../../docs/img/res/sprites/slot-1a.png) |
+| `gfx/explosions/slot-22.bin` | `$7C10-$7CB7` | 168 | `ExplosionGfx22` | Explosion frame | Counter `$22` | [png](../../docs/img/res/explosions/slot-22.png) |
+| `gfx/explosions/slot-20.bin` | `$7CB8-$7D5F` | 168 | `ExplosionGfx20` | Explosion frame | Counters `$20` and `$24` | [png](../../docs/img/res/explosions/slot-20.png) |
+| `gfx/explosions/slot-26.bin` | `$7D60-$7E07` | 168 | `ExplosionGfx26` | Explosion frame | Counter `$26` | [png](../../docs/img/res/explosions/slot-26.png) |
+| `gfx/explosions/slot-28.bin` | `$7E08-$7EAF` | 168 | `ExplosionGfx28` | Explosion frame | Counter `$28` | [png](../../docs/img/res/explosions/slot-28.png) |
+| `gfx/explosions/slot-2a.bin` | `$7EB0-$7F57` | 168 | `ExplosionGfx2A` | Explosion frame | Counter `$2A` | [png](../../docs/img/res/explosions/slot-2a.png) |
+| `gfx/explosions/slot-2c.bin` | `$7F58-$7FFF` | 168 | `ExplosionGfx2C` | Explosion frame | Counter `$2C`, the last before the record is gone | [png](../../docs/img/res/explosions/slot-2c.png) |
+| `music/title/song.bin` | `$843F-$8466` | 40 | `TuneSong` | Title song | The title tune's song (it loops until a key; the last 4 bytes are never reached) | - |
+| `music/title/pattern-init.bin` | `$8467-$8472` | 12 | `PatternInit` | Title pattern | The set-up pattern | - |
+| `music/title/pattern-a.bin` | `$8473-$84A7` | 53 | `PatternA` | Title pattern | Pattern A | - |
+| `music/title/pattern-b.bin` | `$84A8-$84C5` | 30 | `PatternB` | Title pattern | Pattern B | - |
+| `music/title/pattern-c.bin` | `$84C6-$853A` | 117 | `PatternC` | Title pattern | Pattern C | - |
+| `music/title/pattern-d.bin` | `$853B-$85A1` | 103 | `PatternD` | Title pattern | Pattern D | - |
+| `music/title/drums-a.bin` | `$85A2-$85B3` | 18 | `DrumPatternA` | Drum pattern | Clicks and noise | - |
+| `music/title/drums-b.bin` | `$85B4-$85C5` | 18 | `DrumPatternB` | Drum pattern | The three tones | - |
+| `leftovers/startup-copy.bin` | `$8600-$8669` | 106 | `StartupCopy` | Raw | A stale copy of the start-up block `$9F00-$9F69`, never run | - |
+| `leftovers/sprite-gfx-copy.bin` | `$8700-$98FF` | 4 608 | `SpriteGfxCopy` | Raw | A stale copy of the sprite graphics `$6E00-$7FFF` | - |
+| `leftovers/title-player-copy.bin` | `$9900-$9EFF` | 1 536 | `TitlePlayerCopy` | Raw | A stale copy of the title player `$8000-$85FF` | - |
+| `screens/game.scr` | `$A000-$BAFF` | 6 912 | `GameScreenImage`, `GameScreenAttrs` | ZX screen | The play screen with its panel, copied to `$4000` by `$9F1C` when play starts; the playfield buffer afterwards | [png](../../docs/img/res/screen-game.png) |
+| `tables/renderer-5b00.bin` | `$BB00-$BFFF` | 1 280 | `RendererTablesImage` | Raw | The renderer's tables, copied to `$5B00-$5FFF` with the screen (shadow shapes and masks read at `$5B00`-`$5EF0`) | - |
+| `gfx/tiles.bin` | `$C400-$C63F` | 576 | `Tiles`, `EdgeTiles`, `TilesHigh` | Course tile | Tiles 0-71 (23 and 24, `$C4B8`, are the edge tiles of a strip's first 8 lines) | [png](../../docs/img/res/tiles.png) |
+| `course/tile-runs.bin` | `$C640-$C8E9` | 682 | `TileRuns` | Tile runs | The tile runs of all courses' rows | - |
+| `course/ground-anchors.bin` | `$C9FE-$CA42` | 69 | `GroundAnchors` | Ground anchors | The anchors of the course segments | - |
+| `course/round-01.bin` ... `round-10.bin` | `$CBC3-$CF03` | 78-89 each | `Course1` ... `Course10` | Course | One course a round, stored in the order 7, 8, 9, 10, 3, 2, 1, 6, 5, 4: round 1 `$CDB6`, 2 `$CD5D`, 3 `$CD0F`, 4 `$CEAB`, 5 `$CE5D`, 6 `$CE0A`, 7 `$CBC3`, 8 `$CC17`, 9 `$CC6C`, 10 `$CCC0` | - |
+| `course/objects-round-01.bin` ... `objects-round-10.bin` | `$F300-$F7FF` | 128 each | `RoundObjects1` ... `RoundObjects10` | Round objects | The objects of each round, round n at `$F300` + 128 × (n - 1) | - |
+| `leftovers/sprite-save-buffer.bin` | `$F800-$FDFC` | 1 533 | `SpriteSaveBuffer` | Raw | The save area for the strips under the sprites: its image contents (a fill pattern, code-like bytes that never ran) are never read before written | - |
+| `leftovers/udg.bin` | `$FF58-$FFFF` | 168 | `UdgLeftover` | Raw | The 48K BASIC's user-defined graphics (copies of the ROM letters A-U) left in the image; the sprite list and the stack run over them | - |

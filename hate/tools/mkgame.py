@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Write the first cut of the game's source (src/game) from the pristine image and the recordings.
 
-    python3 tools/mkgame.py --venv VENV [--sjasmplus BIN] [--out work/mkgame]
+    python3 tools/mkgame.py --venv VENV [--sjasmplus BIN] [--out work/mkgame] [--install]
 
 The image is block 5 of orig/HATE.TAP unpacked ($5FB4-$FFFF as the depacker leaves it, frame 2613). The code is what the recordings
 ran (work/*/l1.json: every instruction start whose bytes are the image's), widened by a static walk over the branches
-the recordings did not take. Everything else is data. Names and comments come from src/game/names.txt
-(`$ADDR name  ; comment`, docs 4-12). The result goes through SkoolKit (sna2skool.py with a control file, skool2asm.py)
-and sjasmplus; the assembled bytes must be the image's.
+the recordings did not take. Everything else is data. Entries, names, comments and descriptions come from
+src/game/game.ann (the format is in the Annotations class, docs 4-12). The result goes through SkoolKit (sna2skool.py
+with a control file, skool2asm.py) and sjasmplus; the assembled bytes must be the image's. The entries game.ann marks
+as resources (@res) are written as files under res/ (src/res with --install) and assembled with INCBIN; src/res/README.md
+lists them. --install writes src/game/*.asm and the resources only when the bytes are the image's.
 """
 import argparse
 import glob
@@ -142,11 +144,17 @@ class Annotations:
         @module NAME              the entries from the next address on go to NAME.asm
         $ADDR c|b|w|t|s NAME [N]  an entry: code, bytes (N a line), words (N a line), text, space; ; its title
         > text                    the entry's description, one paragraph a line
+        @res FILE                 the entry's bytes are a resource: src/res/FILE, assembled with INCBIN (entries
+                                  naming one file share it: it holds the bytes from the first to the end of the last)
         $ADDR [NAME] ; comment    an instruction inside an entry: its label, its comment
+        @isub $ADDR INSTRUCTION   the instruction at ADDR written so (a constant the image's bytes cannot tell from an
+                                  address: LD HL,-6, not a label + offset)
     """
 
     def __init__(self, path):
         self.entries, self.inline, self.modules, self.descriptions = {}, {}, [], {}
+        self.resources = {}  # entry address: the resource file under src/res
+        self.isub = {}  # instruction address: the instruction as the source writes it
         last = None
         if not os.path.exists(path):
             return
@@ -157,6 +165,17 @@ class Annotations:
                 continue
             if text.startswith('@module'):
                 self.modules.append([None, text.split()[1]])
+                continue
+            if text.startswith('@isub'):
+                parts = text.split(None, 2)
+                if len(parts) != 3 or not re.match(r'^\$[0-9A-Fa-f]{4}$', parts[1]):
+                    sys.exit(f'{path}:{number}: cannot read: {line}')
+                self.isub[int(parts[1][1:], 16)] = parts[2]
+                continue
+            if text.startswith('@res'):
+                if last is None or self.entries[last][0] == 'c':
+                    sys.exit(f'{path}:{number}: @res after no data entry')
+                self.resources[last] = text.split(None, 1)[1].strip()
                 continue
             if text.startswith('>'):
                 if last is None:
@@ -198,6 +217,7 @@ DATA = {'b': 'B', 'w': 'W', 't': 'T', 's': 'S'}
 
 def write_ctl(mem, code, targets, calls, entries, ann, path):
     lines = ['@ $%04X start' % LO, '@ $%04X org' % LO]
+    extents = {}  # data entry address: its length
     starts_entry = set(entries) | set(calls)
     a = LO
     kind = None
@@ -238,6 +258,7 @@ def write_ctl(mem, code, targets, calls, entries, ann, path):
             ends = a >= HI or a in code or a in ann.entries
             if ends:
                 length = a - data_at
+                extents[data_at] = length
                 spec = DATA[data_kind]
                 if data_kind == 's':
                     item = '%s $%04X,%d' % (spec, data_at, length)
@@ -249,6 +270,50 @@ def write_ctl(mem, code, targets, calls, entries, ann, path):
                 lines[lines.index(None)] = item
     lines.append('i $10000')
     open(path, 'w').write('\n'.join(lines) + '\n')
+    return extents
+
+
+DATA_LINE = re.compile(r'^  DEF[BWMS] ')
+LABEL_LINE = re.compile(r'^([A-Za-z_]\w*):$')
+
+
+def write_resources(text, mem, extents, ann, out):
+    """The resource entries of game.ann as files under out/res and INCBIN lines in the listing: (text, {file: (lo,
+    hi)}). An entry's data lines (and the labels inside it) become INCBIN slices of its file, its label and comments
+    stay"""
+    files = {}
+    for a, name in ann.resources.items():
+        if a not in extents:
+            sys.exit('game.ann: @res %s on $%04X, which is no data entry' % (name, a))
+        lo, hi = files.get(name, (a, a + extents[a]))
+        files[name] = (min(lo, a), max(hi, a + extents[a]))
+    for name, (lo, hi) in files.items():
+        path = os.path.join(out, 'res', name)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        open(path, 'wb').write(mem[lo:hi])
+    inner = {n: a for a, (n, _) in ann.inline.items() if n}
+    lines = text.splitlines()
+    for a, name in sorted(ann.resources.items()):
+        label = ann.name(a)
+        at = lines.index(label + ':')
+        end = at + 1
+        cuts = []  # (address, label) of the labels inside the entry
+        while end < len(lines) and (DATA_LINE.match(lines[end]) or LABEL_LINE.match(lines[end])):
+            m = LABEL_LINE.match(lines[end])
+            if m:
+                if m.group(1) not in inner or not a < inner[m.group(1)] < a + extents[a]:
+                    sys.exit('game.ann: %s inside the resource %s has no address in it' % (m.group(1), name))
+                cuts.append((inner[m.group(1)], m.group(1)))
+            end += 1
+        body, start = [], a
+        for cut, cut_label in cuts + [(a + extents[a], None)]:
+            if cut > start:
+                body.append('  INCBIN "res/%s",$%04X,%d' % (name, start - files[name][0], cut - start))
+            if cut_label:
+                body.append(cut_label + ':')
+            start = cut
+        lines[at + 1:end] = body
+    return '\n'.join(lines) + '\n', files
 
 
 def split_modules(text, ann):
@@ -276,7 +341,7 @@ def split_modules(text, ann):
 ADDRESS_OPERAND = re.compile(r'^(LD (?:\((?=\$)|(?:HL|DE|IX|IY|SP),\(?))\$([0-9A-F]{4})(\)?.*)$')
 
 
-def label_inner_addresses(skool):
+def label_inner_addresses(skool, written=None):
     """An address operand inside an entry (a field of a record, a byte of a table) as Label+offset: @isub lines for
     skool2asm, which only replaces the addresses that have a label of their own"""
     lines = skool.splitlines()
@@ -311,7 +376,9 @@ def label_inner_addresses(skool):
     out, count = [], 0
     for line in lines:
         m = re.match(r'^([ c*])\$([0-9A-F]{4}) (\S.*?)(\s*;.*)?$', line)
-        if m:
+        if m and written and int(m.group(2), 16) in written:
+            out.append('@isub=' + written.pop(int(m.group(2), 16)))
+        elif m:
             op = ADDRESS_OPERAND.match(m.group(3))
             if op:
                 target = int(op.group(2), 16)
@@ -355,18 +422,22 @@ def main():
     code, targets, calls = walk(mem, starts, reads, [a for a, e in ann.entries.items() if e[0] == 'c'])
     os.makedirs(args.out, exist_ok=True)
     ctl = os.path.join(args.out, 'game.ctl')
-    write_ctl(mem, code, targets, calls, entries, ann, ctl)
+    extents = write_ctl(mem, code, targets, calls, entries, ann, ctl)
     image = os.path.join(args.out, 'image.bin')
     open(image, 'wb').write(mem[LO:])
     py = os.path.join(args.venv, 'bin', 'python')
     skool = os.path.join(args.out, 'game.skool')
     out = run([py, os.path.join(args.venv, 'bin', 'sna2skool.py'), '-H', '-c', ctl, '-o', str(LO), image]).stdout
-    out, inner = label_inner_addresses(out)
+    written = dict(ann.isub)
+    out, inner = label_inner_addresses(out, written)
+    if written:
+        sys.exit('game.ann: @isub on no instruction: ' + ', '.join('$%04X' % a for a in sorted(written)))
     open(skool, 'w').write(out)
     asm = run([py, os.path.join(args.venv, 'bin', 'skool2asm.py'), '-H', skool])
     text = asm.stdout
     for half in ('IXl', 'IXh', 'IYl', 'IYh'):
         text = text.replace(half, half.upper())
+    text, resources = write_resources(text, mem, extents, ann, args.out)
     modules, head = split_modules(text, ann)
     for name, body in modules:
         open(os.path.join(args.out, name + '.asm'), 'w').write(body)
@@ -376,6 +447,7 @@ def main():
     run([args.sjasmplus, '--nologo', '--msg=war', 'game.asm'], cwd=args.out)
     built = open(os.path.join(args.out, 'game.bin'), 'rb').read()
     diff = next((LO + i for i in range(HI - LO) if built[i] != mem[LO + i]), None)
+    print(f'resources {len(resources)} files, {sum(hi - lo for lo, hi in resources.values())} bytes')
     print(f'code bytes {sum(code.values())} ({len(code)} instructions, {len(starts)} ran), '
           f'entries {sum(1 for l in open(ctl) if l[:2] in ("c ", "b "))}, modules {len(modules)}, '
           f'addresses inside entries as Label+offset {inner}')
@@ -387,13 +459,18 @@ def main():
             os.remove(old)
         for name in [n for n, _ in modules] + ['game']:
             open(os.path.join(dest, name + '.asm'), 'w').write(open(os.path.join(args.out, name + '.asm')).read())
-        print(f'installed {len(modules) + 1} files in src/game')
+        for name in resources:
+            path = os.path.join(ROOT, 'src', 'res', name)
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            open(path, 'wb').write(open(os.path.join(args.out, 'res', name), 'rb').read())
+        print(f'installed {len(modules) + 1} files in src/game, {len(resources)} resources in src/res')
     return 0 if diff is None else 1
 
 
 HEADER = """; H.A.T.E. (Hostile All Terrain Encounter), Vortex Software 1989: the game image $5FB4-$FFFF as the depacker
 ; leaves it. Written by tools/mkgame.py from src/game/game.ann and the recordings; edit game.ann, not the .asm.
-; sjasmplus game.asm gives game.bin, byte for byte the original (tools/build.sh packs it into the tape).
+; sjasmplus -I<src> game.asm gives game.bin, byte for byte the original (tools/build.sh packs it into the tape).
+; The resources (INCBIN "res/...") are the files of src/res, listed in src/res/README.md.
 
   DEVICE ZXSPECTRUM48
 """

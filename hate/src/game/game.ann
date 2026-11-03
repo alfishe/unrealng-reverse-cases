@@ -4,21 +4,27 @@
 
 @module buffers
 $5FB4 b ProfileMargin 16 ; Bytes below the ground profile
+@res leftovers/profile-margin.bin
 > 76 bytes just below the ground profile $6000. In the image they hold mask/pixel byte pairs left from the build; the screen copy at $9F1C overwrites them from $BFB4-$BFFF (the image of $5B00-$5FFF) before play. The profile readers index from $5FF6-$5FF8 ($DA1E, $DAA1, $DB1B, $E3E5, $E94F), so the top of this block is the profile's left margin.
 $6000 b ProfileBuffer 16 ; Ground profile buffer (768 bytes)
+@res leftovers/profile-buffer.bin
 > The course's profile under the scroll, one byte for every 2 units along the course: the ground height (bits 0-4) and the walls (bits 5-7); docs/07-objects.md 7.4. Cleared at every round start ($CF68, $D0EF). In the image it holds leftovers of the build, and the entry $61A8 sits inside it: code that runs once and then becomes buffer space (docs/02-architecture.md 2.2).
 $61A8 c Entry ; Game entry (RANDOMIZE USR 25000)
 > The address BASIC line 30 calls. It sets the stack to the top of memory, disables interrupts and jumps to the start-up $9F12. Overwritten when the first round clears the profile buffer.
 $61A8 ; the stack grows down from the top of RAM
+@isub $61A8 LD SP,$FFFF
 $61AB ; the game proper runs with interrupts off
 $61AC ; the start-up
 $61AF b GroundProfileTail 16 ; Ground profile buffer, after the entry
+@res leftovers/profile-buffer-tail.bin
 > The rest of the profile buffer, to $62FF. The first 42 bytes are leftover loader code that never runs, the rest is zero.
 $6300 b Font 8 ; Font, codes $20-$3A
+@res gfx/font.bin
 > 64 glyphs of 8 bytes for codes $20-$5F at $6300-$64FF, glyph = $6300 + (code - $20) * 8; printed by $EE17 and, lines 2-6 only, by $EEA4 (docs/08-hud-and-text.md 8.2). Codes $22-$2C are the big GAME OVER, $2E a red block, $2F a gauge segment. The glyph slots of ";" to "?" and "[" to "_" hold strings instead (next entries).
 $63D8 t CreditsText1 ; Credits, first part (in the font's ";" to "?" slots)
 > A print string for $EE17 (records: attribute + $80, column, row, characters; $FF ends): "WRITTEN BY", "COSTA PANAYI", "MUSIC BY" at column 1, rows 17-19, attribute $30. Printed by the menu $F1AA; docs/08-hud-and-text.md 8.3.
 $6400 b FontHigh 8 ; Font, codes $40-$5A
+@res gfx/font.bin
 > The second half of the font: the (c) sign at code $40 ("@" in the strings) and the capitals.
 $64D8 t CreditsText2 ; Credits, second part (in the font's "[" to "_" slots)
 > "BEN DAGLISH", "(c)1989 VORTEX" at column 1, rows 20-21. Printed by the menu $F1AA.
@@ -27,27 +33,48 @@ $64F6 t AutoText ; " AUTO " in the top window
 $6500 s SpriteScratch ; Visible-record list and sprite scratch page
 > Work space of the sprite code. $EFA5 builds the list of visible records here each pass (pointer kept at $EF9F, $40 ends the list) and $F089 scans it; $DE08 fills $6500-$6543 with $FF as scratch. Zero in the image.
 $6580 b SpriteGfx00 8 ; Sprite graphics, table slot $00
+@res gfx/sprites/slot-00.bin
 > The sprite graphics run from here to $7FFF. Each block is reached through the pointer table $C300 by a record's byte +8 (the low byte of the address into $C300): the player gets 2 x type ($D246 writes $C008), the templates $C2B4-$C2E1 and $C360/$C370 carry their own. The block boundaries below are the table's pointers.
 $67F6 b SpriteGfx02 8 ; Sprite graphics, table slot $02
+@res gfx/sprites/slot-02.bin
 $6A6C b SpriteGfx04 8 ; Sprite graphics, table slot $04
+@res gfx/sprites/slot-04.bin
 $6CE2 b SpriteGfx06 8 ; Sprite graphics, table slot $06
+@res gfx/sprites/slot-06.bin
 $6F58 b SpriteGfx1C 8 ; Sprite graphics, table slot $1C
+@res gfx/sprites/slot-1c.bin
 $70FC b SpriteGfx1E 8 ; Sprite graphics, table slot $1E
+@res gfx/sprites/slot-1e.bin
 $72A0 b SpriteGfx14 8 ; Sprite graphics, table slot $14
+@res gfx/sprites/slot-14.bin
 $7416 b SpriteGfx08 8 ; Sprite graphics, table slot $08 (the type 4 missile template)
+@res gfx/sprites/slot-08.bin
 $758C b SpriteGfx0A 8 ; Sprite graphics, table slots $0A and $0C (the type 6 missile template)
+@res gfx/sprites/slot-0a.bin
 $7702 b SpriteGfx0E 8 ; Sprite graphics, table slot $0E (the type 7 missile template)
+@res gfx/sprites/slot-0e.bin
 $7878 b SpriteGfx10 8 ; Sprite graphics, table slots $10 and $12 (the jet templates)
+@res gfx/sprites/slot-10.bin
 $79EE b SpriteGfx16 8 ; Sprite graphics, table slot $16
+@res gfx/sprites/slot-16.bin
 $7AA4 b SpriteGfx18 8 ; Sprite graphics, table slot $18 (shots: templates $C360, $C2E1)
+@res gfx/sprites/slot-18.bin
 $7B5A b SpriteGfx1A 8 ; Sprite graphics, table slot $1A (the shell: template $C370)
+@res gfx/sprites/slot-1a.bin
 $7C10 b ExplosionGfx22 8 ; Explosion frame, table slot $22
+@res gfx/explosions/slot-22.bin
 > The explosion: a hit record's byte +8 is set to $20 ($EBD1, $E262) and counts up by 2 a pass to $2C ($E235), so the frames are the slots $20-$2C; slot $20 and $24 share one picture.
 $7CB8 b ExplosionGfx20 8 ; Explosion frame, table slots $20 and $24
+@res gfx/explosions/slot-20.bin
 $7D60 b ExplosionGfx26 8 ; Explosion frame, table slot $26
+@res gfx/explosions/slot-26.bin
 $7E08 b ExplosionGfx28 8 ; Explosion frame, table slot $28
+@res gfx/explosions/slot-28.bin
 $7EB0 b ExplosionGfx2A 8 ; Explosion frame, table slot $2A
+@res gfx/explosions/slot-2a.bin
 $7F58 b ExplosionGfx2C 8 ; Explosion frame, table slot $2C (the last before the record is gone)
+@res gfx/explosions/slot-2c.bin
+> Its first and last strips ($7F58-$7F81, $7FD6-$7FFF) are blank (`FF 00`: mask $FF, no ink), the only blank strips of the explosion frames: the burst has thinned to its middle
 @module titleplayer
 $8000 c TitlePlayer ; Title music player: relocating entry
 > Entry of the title music player (Ben Daglish's beeper engine); docs/02-architecture.md 2.3, docs/09-sound.md. C = the tune number (the operand $8002, set to 0 by the start-up). It reads its own call address from the CALL operand below the return address, swaps $58C bytes from that address + $3A with $803A, calls the set-up $803A and swaps them back, so the player can be linked anywhere. Called as CALL $8000 the swap changes nothing. The same 64 pages are the playfield buffer $8000-$BFFF in play (docs/06-rendering.md 6.2).
@@ -273,6 +300,7 @@ $8356 TitleExit ; the tune ends ($FC) or a key: unhook and unwind
 $8357 ; the vector address saved at $8049
 $835B ; put back the 3 bytes the set-up replaced
 $8363 ; SP as $803A saved it: the operand $8364
+@isub $8363 LD SP,$FFF9
 $8366 ; back into $8025, at any depth of the player
 $8367 c DrumClick ; Title drum 2: a click
 > The beeper held on for 300 loop steps, then a pause; docs/09-sound.md 9.5.
@@ -316,27 +344,38 @@ $8422 b TitlePatches 3 ; Patch list: 9 x (address, byte)
 $843D w TuneTable 1 ; Tune table
 > One song address a tune, picked by C at $806F. Tune 0 is $843F.
 $843F b TuneSong 3 ; Tune 0: the song
+@res music/title/song.bin
 > Song entries ($8118): n and a pattern address, $FB and a drum pattern address, $FD and an address (jump). It plays $8467 once, then $8473 x5, $84A8, $84C6 x2, $853B, $84C6 x2, $853B with drums $85A2 and $85B4, and jumps back to the start at $8460: the tune loops until a key. The last 4 bytes (pattern $83E8, $FC) are never reached.
 $8467 b PatternInit 4 ; Tune 0: set-up pattern
+@res music/title/pattern-init.bin
 > Command 8 (voice B mode 0), 17 (note length 5), 1-4 (the voices' parameters), 9 (end). Pattern commands are listed at $83FC.
 $8473 b PatternA 4 ; Tune 0: pattern A
+@res music/title/pattern-a.bin
 > Notes: command 10 with two periods, 11 or 12 with one; 0 holds, 18 n holds n note lengths, 9 ends the pattern.
 $84A8 b PatternB 4 ; Tune 0: pattern B
+@res music/title/pattern-b.bin
 $84C6 b PatternC 4 ; Tune 0: pattern C
+@res music/title/pattern-c.bin
 $853B b PatternD 4 ; Tune 0: pattern D
+@res music/title/pattern-d.bin
 > Uses command 16 at $8583 to switch to the drums $85B4.
 $85A2 b DrumPatternA 18 ; Drum pattern: clicks and noise
+@res music/title/drums-a.bin
 > The speed (5 frames a step), then the steps: 2 click, 3 noise, 0 rest, 1 loop; docs/09-sound.md 9.5.
 $85B4 b DrumPatternB 18 ; Drum pattern: the three tones
+@res music/title/drums-b.bin
 > Speed 5, then the drums 4 (rising), 5 (sweep) and 6 (falling) and 1 loop.
 $85C6 s TitleTail ; Unused, zero
 @module startup
 $8600 b StartupCopy 8 ; A stale copy of $9F00-$9F69
+@res leftovers/startup-copy.bin
 > Never run. The bytes equal the start-up block $9F00-$9F69 (with its PRESS ANY KEY string at $862F): a copy left $1900 bytes below its place. The whole of $8700-$9FFF repeats $6E00-$86FF this way (next entries).
 $866A s StartupCopyTail ; Unused, zero
 $8700 b SpriteGfxCopy 8 ; A stale copy of the sprite graphics $6E00-$7FFF
+@res leftovers/sprite-gfx-copy.bin
 > Byte for byte the same as $6E00-$7FFF. The start-up head at $9F00 (not run in this version) moves $7C00-$9FFF down to $6300, which would put this copy in place; here the data is already there. Overwritten by the playfield in play.
 $9900 b TitlePlayerCopy 8 ; A stale copy of the title player $8000-$85FF
+@res leftovers/title-player-copy.bin
 > The same bytes as $8000-$85FF except the player's self-modified operands, which are 0 here ($9985 for $8085, $9C64 for $8364 and others): the player as assembled, before a run. The copy at $8000 carries the values of a run.
 $9F00 b StartupHead 9 ; Start-up head (not run)
 > DI; LD HL,$7C00; LD DE,$6300; LD BC,$2400; LDIR (move the font and graphics down to their place) then LD HL,$9F2F; CALL $EE17 (print PRESS ANY KEY). The game enters at $9F12, after these bytes; docs/08-hud-and-text.md 8.3.
@@ -365,10 +404,13 @@ $9F68 b DefaultInterrupt ; Default IM 2 handler: EI; RET
 > The target of JP $FDFD until the title player hooks it. Data in the recording: it never ran.
 $9F6A s StartupPad ; Unused, zero
 $A000 b GameScreenImage 16 ; Game screen image: pixels
+@res screens/game.scr
 > The play screen with its panel, copied to $4000 by $9F1C when play starts ($A000-$B7FF the pixels). Part of the playfield buffer afterwards.
 $B800 b GameScreenAttrs 16 ; Game screen image: attributes
+@res screens/game.scr
 > Copied to $5800-$5AFF.
 $BB00 b RendererTablesImage 8 ; Image of $5B00-$5FFF: the renderer's tables
+@res tables/renderer-5b00.bin
 > The last 1 280 bytes of the copy land at $5B00-$5FFF. The renderer reads them there: $5B00, $5B20, $5B40 ($E011-$E01E), $5B60, $5C60, $5BE0 ($DF23-$DF31) and $5DE8, $5EF0, $5CE0 ($DE1C-$DE29). $BFB4-$BFFF become ProfileMargin.
 @module gamedata
 $C000 b PlayerRecord 16 ; Object record: the player
@@ -408,7 +450,7 @@ $C2B1 c GameStart ; Game start: JP to the main loop
 $C2B4 b LaunchTemplates 9 ; Templates of launched objects (5 x 9 bytes)
 > +0 to +8 of a record (the position is then copied from the firer, the rest cleared): type 8 jet, type 7 missile (written at $D1FB: course vehicle type + 6), type 8 jet, type 4 missile, type 6 missile. A pad picks one by the highest set bit of its behaviour bits 7-4 ($E1D7); the dome of type 2 throws out the third ($E259); docs/07-objects.md 7.4.
 $C2E1 b EnemyShotTemplate 9 ; Template of an enemy shot
-> Type 12, direction 4, speed 4, sprite slot $18; used by firing objects below type 14 ($E1BD).
+> Bytes `1C 00 00 00 00 04 04 00 18`: type 12 (the low nibble; bit 4 set), direction 4, speed 4, sprite slot $18; used by firing objects below type 14: $E1BD points DE at it and the same `LDIR` at $E1F5 that copies `LaunchTemplates` copies it.
 $C2EA w MoverAlong 1 ; New position along of the record being moved
 > Written by $E2D7 (position + direction step x speed), read by the hit window set-up $E531.
 $C2EC w HitWindowAlong 1 ; Hit test window starts, along (3 words)
@@ -454,32 +496,47 @@ $C3FE s UnusedC3FE ; Not referenced by address
 
 @module course
 $C400 b Tiles 8 ; Course tiles 0-22, 8 x 8 bytes
+@res gfx/tiles.bin
 > The tile set of the course: 72 tiles of 8 bytes at $C400 + 8 x tile, one byte (8 pixels) a line, the first byte at the bottom of the strip. FreshStrip ($D51D) copies 15 of them into each fresh strip (docs/06-rendering.md 6.5). The tiles are split here only to name the two edge tiles 23 and 24.
 $C4B8 b EdgeTiles 8 ; Edge tiles 23 and 24
+@res gfx/tiles.bin
 > The first 8 lines of every fresh strip: tile 23 ($C4B8) for three strips in four, tile 24 ($C4C0) for the fourth (FreshStrip, $D534). No tile run uses them.
 $C4C8 b TilesHigh 8 ; Course tiles 25-71
+@res gfx/tiles.bin
 > The rest of the tile set (see Tiles).
 $C640 b TileRuns 16 ; Runs of tile numbers, one per tile across the track
+@res course/tile-runs.bin
 > A row of the course is the address of a run in here: tile numbers from the bottom of the strip up, read as row i at offset i by FreshStrip. Runs overlap: rows one byte apart are the same run shifted by one tile, which is how bends are drawn (docs/06-rendering.md 6.5). The rows of all ten courses point between $C640 and $C8DB.
 $C8EA w SegmentRows 2 ; Row lists of the course segments
 > A course byte b selects the list at $C8EA + 2 x b: row addresses (into TileRuns), ended by a word with a zero high byte. Lists overlap, so a byte can start inside another byte's list. CourseExpand ($D4D9) copies them into RowList (docs/06-rendering.md 6.5). One line here is the slot of one even course byte.
 $C9FE b GroundAnchors 8 ; Ground profile anchors of the course segments
+@res course/ground-anchors.bin
 > A course byte b selects the list at $C9FE + b / 2, ended by $FF: one ground anchor byte for every 8 bytes of the profile at $6000 (height in bits 0-4, walls in bits 5-7, docs/07-objects.md 7.4). GroundProfile ($D0EF) interpolates between them.
 $CA43 s RowList ; The row list of the current course (filled by CourseExpand)
 > 176 words, zero in the image, where CourseExpand writes the course's rows (178 for every course, so the last two land on the first two words of RowListTail). $C3F8 points to the next row a fresh strip starts from.
 $CBA3 w RowListTail 7 ; Run-out rows after a course, and the end mark $FFFF
 > The rows that follow every course: $C643 and $C655 alternating, then $FFFF at $CBC1. With 178 course rows the list holds 191 rows before the mark. The course check ($D49C) looks at the high byte of the row 15 ahead and ends the course at $FF.
 $CBC3 b Course7 16 ; Course data of round 7
+@res course/round-07.bin
 > A course: the player's type (0 aircraft, 1 ground vehicle), then one segment byte per course piece (indexes into SegmentRows and GroundAnchors), ended by $FF (docs/04-game-loop.md 4.2, docs/06-rendering.md 6.5). The ten courses are stored in the order of rounds 7, 8, 9, 10, 3, 2, 1, 6, 5, 4.
 $CC17 b Course8 16 ; Course data of round 8
+@res course/round-08.bin
 $CC6C b Course9 16 ; Course data of round 9
+@res course/round-09.bin
 $CCC0 b Course10 16 ; Course data of round 10
+@res course/round-10.bin
 $CD0F b Course3 16 ; Course data of round 3
+@res course/round-03.bin
 $CD5D b Course2 16 ; Course data of round 2
+@res course/round-02.bin
 $CDB6 b Course1 16 ; Course data of round 1
+@res course/round-01.bin
 $CE0A b Course6 16 ; Course data of round 6
+@res course/round-06.bin
 $CE5D b Course5 16 ; Course data of round 5
+@res course/round-05.bin
 $CEAB b Course4 16 ; Course data of round 4
+@res course/round-04.bin
 $CF04 w CourseTable 2 ; Course records of rounds 1-10, ended by $FFFF
 > Ten records of two words: the course data, and the round's 128-byte object block at $F300 + 128 x (round - 1) (docs/04-game-loop.md 4.2, docs/07-objects.md 7.2). $FFFF ends the table: CourseExpand wraps to $CF04 there.
 $CF2E w CourseRecord 1 ; The current course record
@@ -613,6 +670,8 @@ $D1DE ObjectSetup ; the round's objects
 $D1E1 ; a retry restarts this course
 $D1E4 ; the speed reserve $E7B8 = 10
 $D1E9 ; no followers
+$D1ED ; the first follower 10 bytes back
+@isub $D1ED LD HL,-10
 $D1F3 ; the follower list $ECE9 (pointer $ECF1): empty
 $D1FB ClearLinksLoop
 $D200 ; how far the player has come, less $6C
@@ -1481,10 +1540,13 @@ $ED04 ; the player's +1..+7 into the pod
 $ED0A ; along: behind the player by the offset
 $ED19 ; its +3 into the next convoy link
 $ED25 ; the next one 6 further back
+@isub $ED25 LD HL,-6
 $ED2C ; one more follower
 $ED33 ; sound request bit 0: a pod joins
 $ED3B c HitBlockOnPlayer ; Handler: a cube or a pod against the player (not run)
 > Row 5, column 0, the mirror of $ECF3 with the pod moving: BIT 0,(IX+$00); JP Z,$EBD1, then the same join with IX and HL swapped, ending in sound request bit 0 ($ED79) and JP $E674.
+$ED6B ; 6 further back
+@isub $ED6B LD HL,-6
 $ED81 c HitDomeOnShot ; Handler: a dome against a shot (not run)
 $ED98 DomeHitByPlayer
 $EDA9 PodSlotLoop
@@ -1675,23 +1737,35 @@ $F2FB b RoundStartSound 5 ; The sweep of the round setup
 
 @module coursedata
 $F300 b RoundObjects1 8 ; The objects of round 1
+@res course/objects-round-01.bin
 > 16 records of 8 bytes, copied into the object slots $C0B0-$C1A0 at the round setup: +0 type, +1,+2 position along, +3 across, +4 height, +5 direction, +6 speed, +7 behaviour bits (docs/07-objects.md 7.1-7.4). The course record of a round ($CF04, 4 bytes) points here: round 1 at $F300, then 128 bytes a round. docs/04-game-loop.md 4.2, docs/10-gameplay-logic.md 10.2.
 $F380 b RoundObjects2 8 ; The objects of round 2
+@res course/objects-round-02.bin
 $F400 b RoundObjects3 8 ; The objects of round 3
+@res course/objects-round-03.bin
 $F480 b RoundObjects4 8 ; The objects of round 4
+@res course/objects-round-04.bin
 $F500 b RoundObjects5 8 ; The objects of round 5
+@res course/objects-round-05.bin
 $F580 b RoundObjects6 8 ; The objects of round 6
+@res course/objects-round-06.bin
 $F600 b RoundObjects7 8 ; The objects of round 7
+@res course/objects-round-07.bin
 $F680 b RoundObjects8 8 ; The objects of round 8
+@res course/objects-round-08.bin
 $F700 b RoundObjects9 8 ; The objects of round 9
+@res course/objects-round-09.bin
 $F780 b RoundObjects10 8 ; The objects of round 10
+@res course/objects-round-10.bin
 $F800 b SpriteSaveBuffer 16 ; The strips under the sprites, saved
-> $D9D6 starts the pointer $DD6A at $F800 each pass and $DD47 copies the buffer strips under each sprite here before the sprites are drawn; $DDC9 puts them back. Nothing in the image here is read before it is written: a fill pattern ($FA,$FC) and, toward the end, bytes that look like Z80 code that never ran. docs/06-rendering.md 6.6.
+@res leftovers/sprite-save-buffer.bin
+> $D9D6 starts the pointer $DD6A at $F800 each pass and $DD47 copies the buffer strips under each sprite here before the sprites are drawn; $DDC9 puts them back. Nothing in the image here is read before it is written: a fill pattern ($FA,$FC) and, toward the end, bytes that look like Z80 code that never ran. In the recording the strips took 980 bytes at most ($F800-$FBD3): $FBD4-$FDFC was never read or written. docs/06-rendering.md 6.6.
 $FDFD c Im2Jump ; The IM 2 jump
 > Every interrupt vector of the table $FE00-$FF00 is $FDFD. The start-up $9F4B writes JP $9F68 here (EI; RET) and the title player $803A writes JP $8340, its handler; the image holds the latter. The game proper runs with interrupts off. docs/02-architecture.md 2.3-2.4.
 $FE00 b Im2Table 16 ; The IM 2 vector table, then the shadow list
 > During the title, $9F4B fills $FE00-$FF00 with $FD and sets I = $FE, so any bus value gives the vector $FDFD. In play the table is no longer needed and $D9D6 builds the shadow list at $FE64 in it (8 bytes an object), drawn by $DDE7 before the blit. docs/02-architecture.md 2.3, docs/06-rendering.md 6.6.
 $FF00 b SpriteListArea 16 ; The depth list and the sprite list, then the stack
-> $FF00 holds the depth list of $EFA5 (4 bytes an entry) and then, rebuilt by $D9D6 each pass, the sprite list drawn by $EAE3 (6 bytes an entry); its first byte is also the last vector byte of the IM 2 table. The stack grows down from $FFFF (SP = $FFFF at the entry, $61A8). The bytes in the image up to $FF57 are leftovers. docs/02-architecture.md 2.2.
+> $FF00 holds the depth list of $EFA5 (4 bytes an entry) and then, rebuilt by $D9D6 each pass, the sprite list drawn by $EAE3 (6 bytes an entry); its first byte is also the last vector byte of the IM 2 table. The stack grows down from $FFFF (SP = $FFFF at the entry, $61A8). The bytes in the image up to $FF57 are leftovers. The sprite list has no bound: with 16 entries drawn its end mark lands at $FF60, so it runs on into `UdgLeftover` ($FF58-$FF60 are written and read in the replay). docs/02-architecture.md 2.2.
 $FF58 b UdgLeftover 8 ; The 48K BASIC's user-defined graphics, left in the image
-> $FF58-$FFFF is where the Spectrum ROM keeps the UDGs, set up as copies of the letters A-U; the bytes are those copies, left from BASIC. The game never reads them; the top of the stack overwrites the last ones.
+@res leftovers/udg.bin
+> $FF58-$FFFF is where the Spectrum ROM keeps the UDGs, set up as copies of the letters A-U; the bytes are those copies, left from BASIC. The game never reads them as graphics: the sprite list runs over the first bytes ($FF58-$FF60 in the replay) and the stack over the last ones ($FFF5-$FFFE, SP from $FFFF); $FF61-$FFF4 is the free space between the two.

@@ -1,6 +1,7 @@
 ; H.A.T.E. (Hostile All Terrain Encounter), Vortex Software 1989: the game image $5FB4-$FFFF as the depacker
 ; leaves it. Written by tools/mkgame.py from src/game/game.ann and the recordings; edit game.ann, not the .asm.
-; sjasmplus game.asm gives game.bin, byte for byte the original (tools/build.sh packs it into the tape).
+; sjasmplus -I<src> game.asm gives game.bin, byte for byte the original (tools/build.sh packs it into the tape).
+; The resources (INCBIN "res/...") are the files of src/res, listed in src/res/README.md.
 
   DEVICE ZXSPECTRUM48
   ORG $5FB4

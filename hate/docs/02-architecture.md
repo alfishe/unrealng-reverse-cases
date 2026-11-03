@@ -390,9 +390,12 @@ Six more such findings (the pad list `$C99E`, the course `$CF02`, the saved stri
 analyzer now counts only indexed readers, and they are gone.
 
 The four in the table are gone too. The padded shadow shapes are one init table `$5B00-$5EEF` now (L2 bridges
-the unread padding between entries). The mask at `$6500` is read through one index, the shadow entry's mask
-offset (+5 at `$FE69`, `$FE71`, ...), from `$6500` to `$6543`, on both sides of L2's pointer table: an index that
-addresses a larger structure, which L3 no longer counts. The eight `code-overwritten` findings are the only bug
+the unread padding between entries). The mask at `$6500` is read through the shadow entry's mask offset (+5 at
+`$FE69`, `$FE71`, ...) by five instructions of `DrawShadows` that AND a 17-byte mask row into it: the loop
+`$DEE6`-`$DEFA` (four `LD A,(DE)` / `AND (HL)` / `LD (HL),A`, four passes) the first 16 bytes, `$DEE6` reading
+`$6500`-`$653F` and `$DEEB`, `$DEF0`, `$DEF5` one byte further each, then `$DEFC` the 17th, `$6510`-`$6543`. No instruction alone reads on
+both sides of L2's pointer table `$6502`-`$653F`; the routine's connected index reads, `$6500`-`$6543`, do: an index
+that addresses a larger structure, which L3 does not count. The eight `code-overwritten` findings are the only bug
 findings left.
 
 ## 2.8 Design notes

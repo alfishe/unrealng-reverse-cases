@@ -203,10 +203,12 @@ Pictures:
         dw LoadingScreen_end - Pictures
         db 0, 3, 1 << F_ACROSS
 LoadingScreen:
-        incbin "loading.pk"                     ; tools/screen_pack.py src/gfx/loading.scr
+        incbin "loading.pk"                     ; tools/screen_pack.py src/res/screens/loading.scr
         db $00, $01                             ; counted in the length, not read
 LoadingScreen_end:
-        include "gfx/screen-tail.inc"
+        ; The last 160 bytes of block 3, after the packed screen: not read by the unpacker (RLE fragments left in
+        ; the packer's buffer), kept for the byte-exact tape
+        incbin "res/leftovers/screen-tail.bin"
 ScreenBlock_end:
 
         savebin "screen.bin", ScreenUnpacker, ScreenBlock_end - ScreenUnpacker

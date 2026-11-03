@@ -163,8 +163,10 @@ LaunchTemplates:
 
 ; Template of an enemy shot
 ;
-; Type 12, direction 4, speed 4, sprite slot $18; used by firing objects below
-; type 14 ($E1BD).
+; Bytes `1C 00 00 00 00 04 04 00 18`: type 12 (the low nibble; bit 4 set),
+; direction 4, speed 4, sprite slot $18; used by firing objects below type 14:
+; $E1BD points DE at it and the same `LDIR` at $E1F5 that copies
+; `LaunchTemplates` copies it.
 EnemyShotTemplate:
   DEFB $1C,$00,$00,$00,$00,$04,$04,$00,$18
 
