@@ -159,7 +159,10 @@ Play has no music. There are two effect routines and one request byte.
 256 − L and 257 − L steps (counters D and E count up to the wrap), are XORed into one output. Their slow beating gives the beep a warble.
 
 **`$F2A3`, a sweep.** Four bytes: step, cycles per tone, start half-period, number of tones. Each tone is shorter
-than the last by the step, so the pitch rises.
+than the last by the step, so the pitch rises; the half-period is 8 bits and wraps (0 waits 256), so a sweep that
+passes 0 drops to its lowest pitch and rises again. The effects of bits 1 and 2 wrap once (bit 1: 20, 10, 0, 246,
+236, 226; bit 2: 30, 236, 186); the round start's (`$F2FB`: step 8 from 3, 100 tones) wraps three times, a
+sawtooth of rises.
 
 **Requests: `$F2BF`.** Game code sets a bit; once a pass the main loop calls `$F2C0`, which plays the effect of the
 lowest set bit, then clears the byte (`$D086`). One effect a pass, by priority:

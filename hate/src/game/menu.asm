@@ -225,7 +225,9 @@ BeepNextStep:
 ;
 ; HL points to four bytes: the step, the cycles of each tone, the start
 ; half-period and the number of tones. Each tone is the step shorter than the
-; one before, so the pitch rises. docs/09-sound.md 9.6.
+; one before, so the pitch rises; the half-period D is 8 bits and wraps (0
+; waits 256), so a sweep that passes 0 drops to its lowest pitch and rises
+; again (the round start's wraps three times). docs/09-sound.md 9.6.
 Sweep:
   LD B,(HL)
   INC HL

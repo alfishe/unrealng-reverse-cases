@@ -25,7 +25,7 @@ Evidence:
 | +5 | the direction, 0-7 |
 | +6 | the speed: steps of the direction per pass |
 | +7 | behaviour bits (7.4) |
-| +8 | the sprite: an offset into the pointer table `$C300` (read with `LD H,$C3` at `$DBEC`, `$DC67`, `$DCD6`, `$EA8F`). 2 × type: the player's at `$D246`, every record from `$C060` on (the followers and the round's objects) at each round setup (`$D2E3`), the player's again when a follower takes its hit (`$E2A4`); the templates carry their own value. The same byte is the explosion counter: `$20` to `$2C`, the explosion frames `$7C10-$7FFF` |
+| +8 | the sprite: an offset into the pointer table `$C300` (read with `LD H,$C3` at `$DBEC`, `$DC67`, `$DCD6`, `$EA8F`). 2 × type: the player's at `$D246`, every record from `$C060` on (the followers and the round's objects) at each round setup (`$D2E3`), the player's again when a follower takes its hit (`$E2A4`); the templates carry their own value. The same byte is the explosion counter: from `$20` (a wall crash starts the player at `$1E`, `$E988`, and its followers at `$22`, `$E9BB`) up by 2 a pass to `$2C`, the explosion frames `$7C10-$7FFF` |
 | +9-+B | the sprite's place in the strips, from `$EFA5` ([6.6](06-rendering.md)) |
 | +C, +E | steps through the motion tables |
 | +F | the fire timer; on cubes, the hits taken |
@@ -80,8 +80,8 @@ column a field (`tools/heatviews.py records`):
 - `+C`-`+E` (the motion table steps) are written only for the records that follow a path: the player's shots,
   the launched missiles and jets, a few course objects. The player and the pods never use them.
 - `+F` is written for the shots (their 12-pass life) and the launched objects (the fire timer).
-- The last two of the six enemy shot slots (`$C250`, `$C260`) kept only what the round start writes: no more than 3 enemy shots were ever in the
-  air at once.
+- The last two of the six enemy shot slots (`$C250`, `$C260`) kept only what the round start writes: the search
+  takes the first free slot, so no more than 4 enemy shots were ever in the air at once.
 
 ## 7.3 The kinds
 
@@ -110,8 +110,9 @@ recording shows types 0, 1, 3, 4, 6, 7, 8, 10, 12, 14 and 15; the demo played ro
 For each live record:
 
 1. **Gone or not yet.** A distance below 0 marks it gone; 352 and more skips it.
-2. **Firing.** With behaviour bit 3, at a distance of 190 or more, once in 8 passes and on a random bit. Pads and
-   dishes (types 14-15) launch: a free slot of `$C1B0`-`$C200` gets a template (`$C2B4` + 9k, k from the highest
+2. **Firing.** With behaviour bit 3, at a distance of 190 or more, on every 8th pass of the timer `+F` and then
+   only when bit 0 of `Random` (`$EA19`) is 0: about once in 16 passes. Pads (type 14) launch (the code would launch
+   from a dish, type 15, too, but no dish of any course has bit 3, and the lap arming leaves them alone): a free slot of `$C1B0`-`$C200` gets a template (`$C2B4` + 9k, k from the highest
    of behaviour bits 7-4) and the firer's position. The other types fire a shot: the template `$C2E1` goes into the
    first free of 6 slots from `$C210` (`$E1BD`, `$E1E1`), a search that takes in `$C260` (7.2). L1 counts 64
    launches in the window.
@@ -161,8 +162,10 @@ in the follower links; the round setup `$D1DE` writes the `$FF` values (`$D1F3`-
 
 The followers are worth three things:
 
-- **A shield.** When the player is hit and `$ECE4` is not 0, the last follower is lost instead (`$E262`) and the
-  player flies on.
+- **A shield.** When the player is hit and `$ECE4` is not 0, the last follower is lost instead and the player
+  flies on. The hit handler marks the player dying as for any hit; on the next pass the mover's dying branch
+  (`$E262`) gives the explosion (`$20`) to the last follower, clears the player's hit bit and gives back its sprite
+  (`$E2A4`). A wall crash empties `$ECE4` first, so it costs the vehicle (7.7).
 - **The next round.** When a round starts, its lives are the followers of the round before ([10](10-gameplay-logic.md)).
 - **The way out.** The profile marks a barrier near the end of each course (bit 5, 7.4). When the player reaches
   it, `$E4DC` writes `$FF` to `$E68B` before it tests `$ECE4`, so the AUTO countdown of [5.4](05-controls.md)
@@ -225,11 +228,11 @@ Read from the control byte `$C290` ([5.2](05-controls.md)):
 - **Fire** (bit 4) held: a shot every other pass, from template `$C360` at the player's position + 4, 2 below its
   height. It lives 12 passes (`$E7F4`). The ground vehicle (bit 0 of `$C000` set), holding up as well, lobs a shell
   instead (`$C370`, its height from the arc `$C282`), on every fourth pass.
-- **The aircraft** (type 0): down and up change the height, with a counter for each that accelerates the
-  climb or the drop up to 6 (`$E687`, `$E688`); the height stays within 2-26.
+- **The aircraft** (type 0): down and up change the height, with a counter for each (up to 6, `$E687`,
+  `$E688`); the step a pass is (count + 1) / 2, 1 to 3; the height stays within 2-26.
 - **The ground vehicle** (type 1): its height follows the ground (`$E429`: an odd type below 10 takes the ground
-  height + 2). Down and up change the speed (`+6`) through the reserve `$E7B8`, 10 at each round start: down
-  gives 0 and spends one, up gives 2 and earns one back, up to 32. With the reserve at 0 (down) or 32 (up) the
+  height + 2). Down and up change the speed (`+6`) through the reserve `$E7B8`, 10 at each round start but
+  spent by the AUTO start (speed 0 while it lasts, `$E6DD`), so the player takes over with 0: down gives 0 and spends one, up gives 2 and earns one back, up to 32. With the reserve at 0 (down) or 32 (up) the
   speed stays 1, as with neither held; fire held with up keeps it at 1 too (`$E90D`).
 - **Across**: left and right move the player across the track (`$E9C4`-`$EA15`; the AUTO start steers instead,
   [5.4](05-controls.md)).
@@ -240,7 +243,8 @@ Read from the control byte `$C290` ([5.2](05-controls.md)):
 ## 7.8 Harder laps
 
 After round 10 the lap `$C2F8` counts up ([4.2](04-game-loop.md)), and the round start (`$D296`) arms more of the
-course:
+course. The lap is never reset by GAME OVER or the menu, only by the load (`$9F29`), so the next game starts on it
+too, and the lap-2 operand patches (`$D2A1`-`$D2A9`) stay:
 
 - from lap 1, the missiles and jets of types 5-9 get behaviour bit 3: they fire;
 - the launch pads' behaviour is rotated (`$18` → `$48`, `$48` → `$08`, others → `$88`), so they launch other things;

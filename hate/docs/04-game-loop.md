@@ -73,7 +73,10 @@ when a game or the demo starts. GAME OVER and ABORT both end in `JP $CF33`.
 
 **The round table** `$EF4F`: 6 bytes a round, for rounds 0-10. Each holds the lives at the round's start and SCORE
 at that moment (5 characters). `$EEC4` clears the records of rounds 1-10 when the menu is entered (`$F1B8`), but not when the menu follows the
-demo ([8.4](08-hud-and-text.md)).
+demo ([8.4](08-hud-and-text.md)). Round 0's record is never cleared: after round 10 `$D18C`-`$D196` copies round
+10's record into it, and every game start takes its SCORE (`$CF36`). With the lap `$C2F8`, which only the load sets
+to 0 (`$9F29`), it carries into the next game: once a game has passed round 10, the next one starts on the same lap
+with round 11's starting SCORE.
 
 **The course records** `$CF04`: ten records of 4 bytes, the course data and a 128-byte block, `$F300` + 128 ×
 (round − 1). They end with `$FFFF`. The course data are stored in the order of rounds 7, 8, 9, 10, 3, 2, 1, 6, 5,
@@ -129,7 +132,7 @@ games, SCORE goes back to 0.
 **No lives left** (`$D005`):
 
 1. The last dot is hidden (`$5A58` = `$12`), followed by a pause (`$D354`), and MAX is updated.
-2. In round 1 or 2 the game is over: `$D0A5` prints the GAME OVER box, beeps twice and goes back to the menu.
+2. In round 1 or 2 of the lap (`$C2F7` counts within a lap: shown 1, 2, 11, 12, ...) the game is over: `$D0A5` prints the GAME OVER box, beeps twice and goes back to the menu.
 3. From round 3 on, the game looks back through the round table (`$D017`-`$D04E`). It takes the round before, then
    the one before that, down to round 2, reading the lives the player had when each one started.
 4. At the first round whose lives minus one is between 1 and 4, the game restarts that round. It uses that round's

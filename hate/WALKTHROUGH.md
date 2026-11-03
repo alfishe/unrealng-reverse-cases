@@ -862,3 +862,30 @@ The review's points that needed the code or a recording first, each checked befo
 - Smaller fixes: the module map's 17 nodes (`course` has no code), 2.7 shortened to the facts (the analyzer's
   history stays here), the fast tape loading of the first recording (doc 3), the font codes in hex (doc 8), the
   term "pass" at its first use (docs 1, 2), doc 5's wording, `statics` holding `DrawSprites`.
+
+### 6.17 Final review, third round (2026-11-03)
+
+A reviewer who had not seen the case read the documents against `build/game.lst`. Each point was checked in the code
+(and the course files) before the documents changed; all 17 held, two with a different reading:
+
+- **The lap outlives the game.** `$C2F8` is set to 0 only by the load (`$9F29`), and round 0's entry of the round
+  table, which every game start copies into SCORE (`$CF36`), is never cleared (`$EEC4` clears rounds 1-10); after
+  round 10 `$D18C` copies round 10's entry into it. So once a game has passed round 10, every later game starts on
+  that lap with round 11's starting SCORE, the lap-2 operand patches in place. The docs had said the menu clears the
+  round table.
+- **HIGH after an abort** takes the SCORE of that moment: `$EEE3` first updates MAX from SCORE (`$EF17`).
+- **Enemy fire** is every 8th pass of `+F` *and* bit 0 of `Random`: about once in 16 passes, not 8.
+- **Dishes never fire.** The five dishes (rounds 4, 5, 6, 10) have behaviour `$00` and the lap arming touches only
+  types 5-9 and the pads; the code path for a dish launch exists but never runs.
+- **The speed reserve** is spent by the AUTO start (speed 0 while it lasts, `$E6DD`; AUTO lasts 14 or 70 passes),
+  so the player always takes over with 0. AUTO's length is set by the vehicle (70 for the aircraft), not the course.
+- **`$2C` is not the middle.** The track runs 2 to `$46` across (`$EA0C`, `$E96E`); `$2C` is the start position,
+  8 left of the middle.
+- **The round-start sweep wraps** (the half-period is 8 bits): three rises, a sawtooth; the bit 1 and 2 effects
+  wrap once.
+- **The static-object list `$C99E`** lives in a 16-byte gap of `SegmentRows`, the slots of course bytes `$5A`-`$61`,
+  which no course uses (checked over the ten course files).
+- Smaller: at most 4 enemy shots at once (the first-free search reached the fourth slot), the climb step
+  (count + 1) / 2, plain domes in rounds 5, 7 and 9 only, round 1 or 2 *of any lap* ends the game, the shield acting
+  on the mover's next pass (`$E262`), the wall crash's explosion values (`$1E`, followers `$22`), and 2.5's "one
+  pass a frame" (a mistake of the second round: a pass is about 6 frames).

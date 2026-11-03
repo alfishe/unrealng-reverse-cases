@@ -118,7 +118,8 @@ is lower; a ground record (an odd type below 10) is set to it whatever it was. `
 `+4`. So the aircraft cannot fly into a hill: it climbs over it, and comes back down only when the stick says so.
 
 **The ground vehicle** (type 1) is one of the ground records: its height is the terrain's. Down and up change its
-speed (`$C006`) through the reserve `$E7B8` (10 at each round start, [7.7](07-objects.md)): down gives speed 0
+speed (`$C006`) through the reserve `$E7B8` (10 at each round start, all spent by the AUTO start, which holds speed 0 while it
+lasts, [7.7](07-objects.md)): down gives speed 0
 and spends one of the reserve, up gives speed 2 and earns one back, up to 32. With the reserve at 0 down does
 nothing, at 32 up does nothing: the speed stays 1, as with neither held. Fire held with up keeps the speed at 1
 (`$E90D`). Holding fire and up
@@ -143,7 +144,7 @@ flowchart TD
     S -->|followers| L1["the last follower is lost<br/>$E262"]
     S -->|none| X["the vehicle is lost (4.4)"]
     F --> B{"the barrier<br/>profile bit 5"}
-    B -->|followers| A["AUTO: $E68B = $FF<br/>to the middle, down, slow"]
+    B -->|followers| A["AUTO: $E68B = $FF<br/>to $2C across, down, slow"]
     B -->|none| X
     A --> N["the next course<br/>lives = followers"]
 ```
@@ -161,7 +162,7 @@ flowchart TD
   (sound bit 2, `$E4AD`: 68 times in the bot's game, barrier and walls together). There is no other way out of a
   round: **a round can only be left with at least one pod**.
 - **AUTO** (`$E68C`) also runs for 70 or 14 passes at a round start ([5.4](05-controls.md)). While it counts down,
-  the device is not read. Each pass it moves the player 2 across toward `$2C`, the middle, and sets the new height
+  the device is not read. Each pass it moves the player 2 across toward `$2C`, the start position (the track runs 2 to `$46` across, `$EA0C` and `$E96E`), and sets the new height
   `$C2F6` to the height − 1 (down to 2), easing back up by (6 − count) / 2 over the last 6 passes. The speed is 0
   while the reserve `$E7B8` lasts, then 1, and the followers (`$C066` + 16 × k) get the same speed.
 - **Lives.** The followers are the lives of the next round: `$D151` copies `$ECE4` into the lives `$C2F9`. The bot's
@@ -187,7 +188,7 @@ chance to be returned to. MAX keeps the best SCORE either way (10.7).
 The demo plays a random course of rounds 3-10 ([4.2](04-game-loop.md)) with no input at all: the pass jumps from
 `$CFAC` straight to the objects (step 5 of [4.3](04-game-loop.md)), past the shot gauge, the loss check and the
 device; it clears the speed `$C006` every pass and prints " DEMO ". The control byte stays 0. At the end of
-the bot's recording the demo's vehicle sat in the middle of the track (`$2C`) at height 2 and the scroll went on
+the bot's recording the demo's vehicle sat at its start position across (`$2C`) at height 2 and the scroll went on
 (`$D14D` + 4 every 6 frames): it drives straight ahead and fires nothing. A hit can destroy it, but nothing checks: the
 loss test is skipped, so the demo runs on to the end of its course, where `$D4C9` returns to the menu
 ([6.5](06-rendering.md)).
@@ -204,8 +205,9 @@ loss test is skipped, so the demo runs on to the end of its course, where `$D4C9
 
 SCORE is six ASCII digits with a fixed last `0` ([8.4](08-hud-and-text.md)): the five to its left count tens.
 MAX is updated from SCORE (`$EF17`) at every round setup outside the demo and at every loss, so a fall back cannot
-lower it; HIGH takes MAX when the menu is entered, before it waits for a key (`$EEE3` from `$F1B5`; then `$EEC4`
-clears SCORE, MAX and the round table, `$F1B8`; both are skipped when the menu follows the demo, `$F1AF`), and lasts
+lower it; HIGH takes MAX when the menu is entered, before it waits for a key (`$EEE3` from `$F1B5`, which first updates MAX
+from SCORE, so an aborted game's last points count; then `$EEC4` clears SCORE, MAX and rounds 1-10 of the round
+table, `$F1B8`, not round 0's entry nor the lap, [4.2](04-game-loop.md); both are skipped when the menu follows the demo, `$F1AF`), and lasts
 until the machine is reset.
 In the bot's game MAX reached 11 080 at the start of round 4; after GAME OVER HIGH read 11 080 though the panel's
 SCORE had gone back to 4 220 ([4.4](04-game-loop.md)).

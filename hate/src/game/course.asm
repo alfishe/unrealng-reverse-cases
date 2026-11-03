@@ -37,7 +37,9 @@ TileRuns:
 ; TileRuns), ended by a word with a zero high byte. Lists overlap, so a byte
 ; can start inside another byte's list. CourseExpand ($D4D9) copies them into
 ; RowList (docs/06-rendering.md 6.5). One line here is the slot of one even
-; course byte.
+; course byte. The 16 zero bytes $C99E-$C9AD, the slots of course bytes
+; $5A-$61, which no course uses, are the static-object list of StampStatics
+; ($EA38) in play.
 SegmentRows:
   DEFW $C643,$C655
   DEFW $0000,$0000

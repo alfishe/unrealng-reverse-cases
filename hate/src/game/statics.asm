@@ -1,15 +1,16 @@
 ; Static objects into the playfield buffer
 ;
 ; Called first by the sprite pass $D9D6. Walks the list at $C99E (record
-; addresses, $FF ends it) that $EFDC builds of the visible records of types 14
-; and 15, the launch pads and the dishes. A record is drawn only while its
-; column +B is $20-$23, the strips at the far edge of the buffer: 4, 3, 2 or 1
-; strips of a masked sprite (14 mask and data byte pairs a strip; at column $20
-; with phase 0, 3 strips). The target is in the playfield buffer $8000-$BFFF
-; (high byte from the scroll offset $C32E + 2 * column + $78), the sprite from
-; the pointer table at $C300 + (+8), stepped $70 bytes times ((phase +9) - 1)
-; AND 3. So these objects are stamped into the course picture as it scrolls in,
-; not drawn per pass. docs/06-rendering.md 6.6.
+; addresses, $FF ends it; 16 bytes in a gap of SegmentRows, the slots of course
+; bytes $5A-$61, which no course uses) that $EFDC builds of the visible records
+; of types 14 and 15, the launch pads and the dishes. A record is drawn only
+; while its column +B is $20-$23, the strips at the far edge of the buffer: 4,
+; 3, 2 or 1 strips of a masked sprite (14 mask and data byte pairs a strip; at
+; column $20 with phase 0, 3 strips). The target is in the playfield buffer
+; $8000-$BFFF (high byte from the scroll offset $C32E + 2 * column + $78), the
+; sprite from the pointer table at $C300 + (+8), stepped $70 bytes times
+; ((phase +9) - 1) AND 3. So these objects are stamped into the course picture
+; as it scrolls in, not drawn per pass. docs/06-rendering.md 6.6.
 StampStatics:
   LD HL,SegmentRows+$00B4 ; the list of types 14-15, made by $EFDC
   PUSH HL

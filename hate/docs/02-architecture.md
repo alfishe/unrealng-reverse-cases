@@ -276,7 +276,7 @@ documents confirmed or corrected each one from the code; the last column gives t
 
 | Routine | Called | Evidence | Role, from the code (the doc named) |
 | --- | --- | --- | --- |
-| `$CF33` | 1 | the loop itself, 12.4 % of all T in its own code | **confirmed:** the menu, the game and round starts and the pass loop: one pass a frame ([4](04-game-loop.md)) |
+| `$CF33` | 1 | the loop itself, 12.4 % of all T in its own code | **confirmed:** the menu, the game and round starts and the pass loop: one pass a turn, not locked to the frame (about 6 frames a pass, [4.5](04-game-loop.md)) |
 | `$D35E` | 2 319 | 8.0 % self, calls `$DD6C`, which calls `$DDC9` ×16 840 | **confirmed:** the blit, the 32 strips of the playfield buffer to the screen; `$DD6C` / `$DDC9` then put back the strips saved under the shadows and sprites ([6.3](06-rendering.md), [6.6](06-rendering.md)) |
 | `$DDE7` | 2 319 | 14 small helpers in `$E05C-$E14D`, 660-4 300 calls each | **confirmed:** the shadows into the buffer (the helpers AND runs of a shadow shape into the mask), then the sprites `$EAE3` ([6.6](06-rendering.md)) |
 | `$E15C`/`$E16E` | 2 319 | 403-instruction routine, loops back through `$E674` 40 057 times | **confirmed:** the objects: move, steer, height, walls and hits for every live record, `$E674` stepping to the next ([7](07-objects.md), [10](10-gameplay-logic.md)) |

@@ -17,4 +17,4 @@ byte.
 | `orig/` | the original distribution, unchanged |
 | `work/` | the emulator's recordings and analysis builds (not part of the deliverable) |
 
-State: final review done, two rounds (2026-11-03, WALKTHROUGH 6.16).
+State: final review done, three rounds (2026-11-03, WALKTHROUGH 6.16-6.17).

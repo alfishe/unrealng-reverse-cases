@@ -1432,7 +1432,7 @@ Returns a new 16-bit value in HL and keeps it in the seed `$EA36`: about 254 * (
 
 **Static objects into the playfield buffer**
 
-Called first by the sprite pass `$D9D6`. Walks the list at `$C99E` (record addresses, `$FF` ends it) that `$EFDC` builds of the visible records of types 14 and 15, the launch pads and the dishes. A record is drawn only while its column +B is `$20-$23`, the strips at the far edge of the buffer: 4, 3, 2 or 1 strips of a masked sprite (14 mask and data byte pairs a strip; at column `$20` with phase 0, 3 strips). The target is in the playfield buffer `$8000-$BFFF` (high byte from the scroll offset `$C32E` + 2 * column + `$78`), the sprite from the pointer table at `$C300` + (+8), stepped `$70` bytes times ((phase +9) - 1) AND 3. So these objects are stamped into the course picture as it scrolls in, not drawn per pass. docs/06-rendering.md 6.6.
+Called first by the sprite pass `$D9D6`. Walks the list at `$C99E` (record addresses, `$FF` ends it; 16 bytes in a gap of SegmentRows, the slots of course bytes `$5A-$61`, which no course uses) that `$EFDC` builds of the visible records of types 14 and 15, the launch pads and the dishes. A record is drawn only while its column +B is `$20-$23`, the strips at the far edge of the buffer: 4, 3, 2 or 1 strips of a masked sprite (14 mask and data byte pairs a strip; at column `$20` with phase 0, 3 strips). The target is in the playfield buffer `$8000-$BFFF` (high byte from the scroll offset `$C32E` + 2 * column + `$78`), the sprite from the pointer table at `$C300` + (+8), stepped `$70` bytes times ((phase +9) - 1) AND 3. So these objects are stamped into the course picture as it scrolls in, not drawn per pass. docs/06-rendering.md 6.6.
 
 | | |
 | --- | --- |
@@ -1886,7 +1886,7 @@ H = length in 256-step units, L = pitch. Two square waves with half-periods of 2
 
 **A rising sweep**
 
-HL points to four bytes: the step, the cycles of each tone, the start half-period and the number of tones. Each tone is the step shorter than the one before, so the pitch rises. docs/09-sound.md 9.6.
+HL points to four bytes: the step, the cycles of each tone, the start half-period and the number of tones. Each tone is the step shorter than the one before, so the pitch rises; the half-period D is 8 bits and wraps (0 waits 256), so a sweep that passes 0 drops to its lowest pitch and rises again (the round start's wraps three times). docs/09-sound.md 9.6.
 
 | | |
 | --- | --- |

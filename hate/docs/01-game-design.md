@@ -83,7 +83,7 @@ U and G sit on different rows, under different hands, so an abort cannot happen 
 
 The first byte of every course says which vehicle the round is played in, and it alternates: the **aircraft** in
 rounds 1, 3, 5, 7, 9, the **ground vehicle** in rounds 2, 4, 6, 8, 10
-([10.2](10-gameplay-logic.md#102-rounds-and-vehicles)). Both start each round in the middle of the track and move along
+([10.2](10-gameplay-logic.md#102-rounds-and-vehicles)). Both start each round at `$2C` across (the track runs from 2 to `$46`, so a little left of its middle) and move along
 the course with the scroll; the player steers across and sets the height (aircraft) or the speed (ground vehicle).
 
 **The aircraft** ([10.3](10-gameplay-logic.md#103-driving-the-two-vehicles),
@@ -99,9 +99,10 @@ the course with the scroll; the player steers across and sets the height (aircra
 
 - It rides the terrain: its height is always the ground's, plus 2.
 - Down and up change its speed along the track: down stops it (speed 0), up doubles it (speed 2), neither gives the
-  normal speed 1. The change draws on a **speed reserve**: 10 at each round start, one spent for every pass of
-  braking, one earned back for every pass of speeding up, at most 32. With the reserve at 0 down does nothing, at 32
-  up does nothing.
+  normal speed 1. The change draws on a **speed reserve**: set to 10 at each round start but spent by the AUTO
+  start (below), which holds the vehicle at speed 0 for its first 10 passes, so the player takes over with 0. One is
+  spent for every pass of braking, one earned back for every pass of speeding up, at most 32. With the reserve at 0
+  down does nothing (until speeding up has earned some back), at 32 up does nothing.
 - Fire with up held lobs a **shell** on an arc instead of a straight shot, every fourth pass, and the speed stays 1
   meanwhile.
 
@@ -114,8 +115,8 @@ has to fly at the dome's height plus 2 ([WALKTHROUGH 6.12](../WALKTHROUGH.md)).
 with it ([7.7](07-objects.md#77-the-player-e7e9), [7.5](07-objects.md#75-pods-and-the-convoy)).
 
 **AUTO.** At the start of every round, and from the barrier to the end of the round, the game drives: AUTO shows in
-the status window, a ticking beep sounds, the stick is not read, and the vehicle is steered to the middle of the
-track and down. At a round start AUTO lasts 70 or 14 passes, set by the course
+the status window, a ticking beep sounds, the stick is not read, and the vehicle is steered to its start position
+across (`$2C`) and down. At a round start AUTO lasts 70 passes for the aircraft and 14 for the ground vehicle
 ([5.4](05-controls.md#54-the-automatic-start), [10.4](10-gameplay-logic.md#104-pods-the-convoy-and-the-way-out)).
 
 ![AUTO at a round start](img/game-2-auto.png)
@@ -164,13 +165,13 @@ Each round places up to 16 objects of its own on the course, and they launch and
 | **Pod** | 11 | collected by flying into it (1.7) | |
 | **Shot** | 12 | the player's fly straight ahead; the enemy's kill the player | |
 | **Launch pad** | 14 | launches missiles or jets from its own place, beside the track the player is on | indestructible |
-| **Dish** | 15 | launches like a pad; only the player collides with it, and is lost | indestructible |
+| **Dish** | 15 | never fires: no dish of any course has the fire flag (`$00` behaviour in rounds 4, 5, 6 and 10, in every lap); only the player collides with it, and is lost | indestructible |
 
 **How enemies behave.** Every object carries behaviour flags rather than code of its own
 ([7.4](07-objects.md#74-moving-e15c-once-a-pass)):
 
-- **Fire**: a firing object shoots once it is 190 or more ahead, at random about once in 8 passes. Pads and dishes
-  launch a missile or a jet; the others fire a shot back down the course toward the player. No more than 6 launched
+- **Fire**: a firing object shoots once it is 190 or more ahead, at most once in 8 passes and then only on a random
+  bit: about once in 16 passes on average. Pads launch a missile or a jet; the others fire a shot back down the course toward the player. No more than 6 launched
   objects and 5 or 6 enemy shots can be in the air at once; when the slots are full, nothing is fired.
 - **Steering**, every 4 passes: head toward the player's position across (the missiles that come in from the side),
   weave left and right, or turn at random; some turn round at the edge of the track.
@@ -208,7 +209,7 @@ flowchart TD
 - **A shield.** A hit on the vehicle costs the last follower, not the vehicle. A crash into a wall is the exception:
   it costs the vehicle and every follower at once.
 - **The barrier.** Near the end of every course a barrier crosses the whole track. Reaching it with no follower is
-  death; with one or more, AUTO takes over and drives the convoy to the middle of the track and down. **A round can
+  death; with one or more, AUTO takes over and drives the convoy to the start position across (`$2C`) and down. **A round can
   only be left with at least one pod**: a player who shoots everything and collects nothing never sees round 2
   ([10.9](10-gameplay-logic.md#109-design-notes)).
 - **The hand-over.** The vehicle of the next round, the other kind, waits parked in the middle of the track at the
@@ -234,7 +235,7 @@ When the vehicle is lost it explodes, a low beep sounds, and then ([4.4](04-game
 flowchart TD
     Lost["the vehicle is lost"] --> Q{"lives left<br/>after this one?"}
     Q -->|yes| R["retry the same round<br/>one life fewer<br/>SCORE as at the round's start"]
-    Q -->|no| E{"round 1 or 2?"}
+    Q -->|no| E{"round 1 or 2<br/>of the lap?"}
     E -->|yes| G["GAME OVER"]
     E -->|no| K["look at the round before"]
     K --> Z{"its starting lives<br/>less one: 1-4?"}
@@ -248,7 +249,8 @@ flowchart TD
   it started. The lives are one fewer, and the convoy is gone.
 - **Falling back.** Running out of lives from round 3 on does not end the game at once. The game looks back at the
   rounds before, down to round 2, and replays the first whose starting lives less one are 1 to 4, with those lives
-  and the SCORE it started with. Round 1 is never returned to.
+  and the SCORE it started with. Round 1 is never returned to. The round numbers count within a lap: in round 1
+  or 2 of any lap (shown 1, 2, 11, 12, ...) the game is over, and a fall back never crosses into the lap before.
 - **A retry closes a round.** The lives a round "started with" are those of its last attempt: every retry
   overwrites them. A round retried down to its last life can no longer be fallen back to.
 - **GAME OVER.** When no round qualifies, the GAME OVER box is shown, two beeps sound and the game returns to the
@@ -280,8 +282,10 @@ for a target the player's shots destroy; an enemy shot that hits a building give
 - **SCORE** is set back to the round's starting value by a retry or a fall back (1.8).
 - **MAX** takes SCORE when SCORE is higher, at every round setup and at every loss, so it holds the best SCORE of the game even after a
   fall back has lowered SCORE.
-- **HIGH** takes MAX, if higher, when the menu is entered after a game; then SCORE, MAX and the round table are cleared. A demo
-  leaves all three alone. HIGH lasts until the machine is reset; it is never saved
+- **HIGH** takes MAX, if higher, when the menu is entered after a game (MAX first takes the SCORE of that moment,
+  if higher); then SCORE, MAX and rounds 1-10 of the round table are cleared. Round 0's entry and the lap are not:
+  once a game has passed round 10, the next game starts on the same lap with round 11's starting SCORE (the lap is
+  cleared only at load, 1.11). A demo leaves all three alone. HIGH lasts until the machine is reset; it is never saved
   ([8.4](08-hud-and-text.md#84-the-panel)).
 
 ## 1.10 Modes
@@ -325,7 +329,7 @@ Left alone long enough, the menu starts the demo by itself. The time spent in th
 numbers of the game, so no two games need play alike ([5.1](05-controls.md#51-the-menu)).
 
 **Demo** ([10.6](10-gameplay-logic.md#106-the-demo)). One of courses 3-10, picked at random, is played with DEMO in
-the status window. The vehicle drives straight ahead down the middle and never fires. A hit can destroy it, but the
+the status window. The vehicle drives straight ahead at its start position across and never fires. A hit can destroy it, but the
 demo never checks for a loss: it runs on to the end of its course and returns to the menu. U and G end it early with
 ABORT! and one beep, no box ([5.5](05-controls.md#55-keys-read-by-the-main-loop)).
 
@@ -337,7 +341,8 @@ ABORT! and one beep, no box ([5.5](05-controls.md#55-keys-read-by-the-main-loop)
 ![PAUSE](img/game-4-pause.png)
 
 **Abort.** U and G together end the game at once, through the GAME OVER box: an aborted game is a lost game. HIGH
-still takes MAX, as it stood at the last round setup or loss, when the menu is entered.
+takes the higher of MAX and the SCORE at the moment of the abort: the menu first updates MAX from SCORE (`$EEE3`
+calls `$EF17`).
 
 ## 1.11 Rounds and difficulty
 
@@ -350,10 +355,11 @@ The ten courses differ in their tracks and in the mix of objects ([10.2](10-game
 | cubes | | | yes | | | yes | | | | yes |
 | dishes | | | | yes | yes | yes | | | | yes |
 
-Plain domes (type 2, no pod) appear from round 5 on.
+Plain domes (type 2, no pod) appear in rounds 5, 7 and 9.
 
 **Laps.** After round 10 the courses start again from round 1, the round number reading 11, 12 and on, and the
-objects are armed harder ([7.8](07-objects.md#78-harder-laps)):
+objects are armed harder ([7.8](07-objects.md#78-harder-laps)). The lap outlives GAME OVER and the menu: only loading
+the game sets it back to 0, so every game after one that passed round 10 starts on that lap (1.9):
 
 - from the second lap, the missiles and jets of types 5-9 fire as well, and the launch pads launch other kinds than before;
 - from the third, every dome, missile and jet fires, and every pad launches the same kind.
@@ -373,7 +379,7 @@ All sound is the beeper ([9](09-sound.md)).
   that does not destroy (a shot on a wall or the barrier, a cube struck but not broken), the AUTO tick, a shot fired
   ([9.6](09-sound.md#96-effects-in-play), [10.8](10-gameplay-logic.md#108-sound-events)). A sound that loses its
   pass is dropped.
-- **Fixed cues**: a rising sweep at every round setup, a low warble when the vehicle is lost, beeps for the menu,
+- **Fixed cues**: a rising sweep at every round setup (it wraps three times, a sawtooth of rises, 9.6), a low warble when the vehicle is lost, beeps for the menu,
   the device choice, the start, pause on and off, and two for GAME OVER and ABORT
   ([9.6](09-sound.md#96-effects-in-play)).
 

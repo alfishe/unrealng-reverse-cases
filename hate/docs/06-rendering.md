@@ -302,7 +302,7 @@ strip short. The block sizes in the pointer table `$C300` show it:
 The explosion frames `$7C10-$7FFF` are six blocks of 168 bytes, picked by the counter `$20`-`$2C` (`$20` and `$24` both point at `$7CB8`).
 
 **Pads and dishes are stamped, not drawn.** `$EA38` (`StampStatics`) draws the records of types 14 and 15 (list
-`$C99E`) straight into the buffer, and only while their column `+B` is `$20-$23`: the last strips of the window,
+`$C99E`, 16 bytes in a gap of `SegmentRows`: the slots of course bytes `$5A`-`$61`, which no course uses) straight into the buffer, and only while their column `+B` is `$20-$23`: the last strips of the window,
 at the far edge of the buffer. They are not saved or restored: they become part of the course picture and scroll with
 it, like the tiles.
 

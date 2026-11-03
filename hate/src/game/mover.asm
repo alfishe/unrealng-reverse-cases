@@ -69,7 +69,8 @@ WithinRange:
   LD HL,EnemyShotRecords
   LD A,(IX+$00)
   AND $0F
-  CP $0E                  ; pads and dishes launch instead
+  CP $0E                  ; pads and dishes launch instead (no dish has
+                          ; behaviour bit 3)
   JR C,LaunchObject
   LD A,(IX+$07)           ; the highest of behaviour bits 7-4 picks the
                           ; template

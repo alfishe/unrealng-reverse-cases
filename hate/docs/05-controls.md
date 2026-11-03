@@ -98,8 +98,8 @@ and speeds up the ground vehicle ([10.3](10-gameplay-logic.md#103-driving-the-tw
 
 ![AUTO](img/game-2-auto.png)
 
-At the start of a round, the countdown `$E68B` is set (`$D251`): 70 passes for a round whose `$C000` low nibble is
-zero, 14 otherwise. While it runs, `$E68C` does not read the device. It prints " AUTO " (`$64F6`) in the status
+At the start of a round, the countdown `$E68B` is set (`$D251`): 70 passes for the aircraft (type 0: `$C008` = 2 ×
+type is 0), 14 for the ground vehicle. While it runs, `$E68C` does not read the device. It prints " AUTO " (`$64F6`) in the status
 window and sets sound flag 3 (`$F2BF`, see [9](09-sound.md)). It also steers the vehicle by itself: the
 position `$C003` moves 2 a pass toward `$2C`, and `$C2F6` is set from `$C004` and the countdown (the meaning of
 both is in [10](10-gameplay-logic.md)). The pass that ends the countdown clears the window (`$F136`).

@@ -31,8 +31,8 @@ PrintAutoText:
   LD HL,SoundRequests     ; sound request bit 3: the AUTO beep
   SET 3,(HL)
   CALL ConvoyFollow       ; the followers copy the leader
-  LD A,($C003)            ; position across: 2 a pass toward the middle of the
-                          ; track, $2C
+  LD A,($C003)            ; position across: 2 a pass toward the start
+                          ; position, $2C
   CP $2C
   JR Z,AutoStoreAcross
   JR C,AutoAcrossUp
@@ -216,8 +216,8 @@ FireCount:
 ; The ground vehicle's speed reserve
 ;
 ; Spent by slowing down (down held, or the AUTO start), earned back by speeding
-; up (up held), at most 32; 10 at each round start. docs/10-gameplay-logic.md
-; 10.3.
+; up (up held), at most 32; 10 at each round start, all spent by the AUTO start
+; (speed 0 while it lasts). docs/10-gameplay-logic.md 10.3.
 SpeedReserve:
   DEFB $00
 
