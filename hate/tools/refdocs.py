@@ -21,6 +21,28 @@ import mkgame  # noqa: E402
 
 BUILDS = [('p2', 'the bot game'), ('game', "the L1 build of the first recording's game window")]
 LO, HI = mkgame.LO, mkgame.HI
+# The playfield buffer is laid over the title player and the start-up once play starts (docs/06-rendering.md 6.2):
+# the accesses there of code outside it are the buffer's, not the entries of the code it covers.
+BUFFER_LO, BUFFER_HI = 0x8000, 0xBFFF
+
+
+def in_buffer(a):
+    return BUFFER_LO <= a <= BUFFER_HI
+
+
+def outside_buffer(rs):
+    """Ranges with the buffer cut out, and the buffer's part as one range (or None)"""
+    rest, inside = [], []
+    for lo, hi, n in rs:
+        if hi < BUFFER_LO or lo > BUFFER_HI:
+            rest.append((lo, hi, n))
+            continue
+        if lo < BUFFER_LO:
+            rest.append((lo, BUFFER_LO - 1, n))
+        if hi > BUFFER_HI:
+            rest.append((BUFFER_HI + 1, hi, n))
+        inside.append((max(lo, BUFFER_LO), min(hi, BUFFER_HI)))
+    return rest, ((min(x[0] for x in inside), max(x[1] for x in inside)) if inside else None)
 
 
 def entries_of(ctl):
@@ -138,7 +160,8 @@ def main():
     for a, s in seen.items():
         name = owner(a)[2]
         for kind in ('reads', 'writes'):
-            for lo, hi, _ in s[kind]:
+            rs = s[kind] if in_buffer(a) else outside_buffer(s[kind])[0]
+            for lo, hi, _ in rs:
                 x = max(lo, LO)
                 while x <= hi and x < HI:
                     e = owner(x)
@@ -165,7 +188,8 @@ def main():
            'the description are the source\'s (`src/game/game.ann`); the rest is what the recordings saw: '
            + ', '.join(f'`work/{k}` ({t})' for k, t in BUILDS) + '.',
            'Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share',
-           'of the recording. Memory ranges name the entries they cover. An entry no recording reached says so.',
+           'of the recording. Memory ranges name the entries they cover; in `$8000-$BFFF` the accesses of code outside it are',
+           'the playfield buffer\'s, laid over the title player and the start-up. An entry no recording reached says so.',
            'Written by `tools/refdocs.py`; edit `src/game/game.ann`, then run `tools/mkgame.py --venv VENV --install` and',
            '`tools/refdocs.py`.', '']
     out.append('| Module | Entries | Code entries |')
@@ -205,9 +229,13 @@ def main():
                 rows.append(('Calls', ', '.join(f'`{owner(c)[2]}`' + (' (tail)' if k == 'tail' else '')
                                                 for c, k in sorted(s['callees'].items()))))
             for kind in ('reads', 'writes'):
-                spans = merged(s[kind])
+                rs, buffer = (s[kind], None) if in_buffer(a) else outside_buffer(s[kind])
+                spans = merged(rs)
+                if buffer:
+                    spans = sorted(spans + [list(buffer)])
                 if spans:
-                    shown = [span(lo, hi) for lo, hi in spans[:6]]
+                    shown = [('`$%04X`-`$%04X` (the playfield buffer)' % tuple(x)) if buffer and tuple(x) == buffer
+                             else span(*x) for x in spans[:6]]
                     more = f'; {len(spans) - 6} more ranges' if len(spans) > 6 else ''
                     rows.append(('Reads' if kind == 'reads' else 'Writes', '; '.join(shown) + more))
             if s['ports_in']:
@@ -222,7 +250,8 @@ def main():
            'Every data entry of the game image `$5FB4`-`$FFFF`, in address order by module (`src/game/<module>.asm`):',
            'tables, buffers, records, variables, graphics, text. The name, the title and the description are the',
            'source\'s (`src/game/game.ann`); the readers and writers are the routines the recordings saw touch it',
-           '(' + ', '.join(f'`work/{k}`' for k, _ in BUILDS) + '). The object records are laid out in',
+           '(' + ', '.join(f'`work/{k}`' for k, _ in BUILDS) + '; the playfield buffer\'s accesses over the title player and',
+           'the start-up are not counted as theirs). The object records are laid out in',
            '[7. Objects](07-objects.md), the course data in [6. Rendering](06-rendering.md).',
            'Written by `tools/refdocs.py`.', '']
     current = None

@@ -104,7 +104,7 @@ blue.
 Read from the top:
 
 - **The screen** (`$4000-$57FF`): each row of the picture is 256 bytes, eight pixel lines of 32 bytes side by side.
-  In each 32-byte segment the left part is written every pass, the play area that the blit `$D35E` redraws; the right
+  In each 32-byte segment the left part is written every pass (one turn of the game loop, [2.5](#25-the-main-loop)), the play area that the blit `$D35E` redraws; the right
   part stays dark, the panel, which keeps the copy made when play started.
 - **`$6000-$64FF`** is read, rarely written: the ground profile `$6000-$62FF`, cleared and built again at every
   round setup (`$CF68`, `$D0EF`, [6.5](06-rendering.md)), and the font, only read.
@@ -271,21 +271,21 @@ flowchart TD
     MAIN -->|4| F1AA["$F1AA menu<br/>IN $00FE / $EFFE / $F7FE"]
 ```
 
-The roles below come from the measured evidence: ports, call counts and where the time goes. Each one is the subject
-of a later document, which will confirm or correct it from the code.
+The roles below were first read from the measured evidence: ports, call counts and where the time goes. The later
+documents confirmed or corrected each one from the code; the last column gives the result.
 
-| Routine | Called | Evidence | Role (to be confirmed in the doc named) |
+| Routine | Called | Evidence | Role, from the code (the doc named) |
 | --- | --- | --- | --- |
-| `$CF33` | 1 | the loop itself, 12.4 % of all T in its own code | the per-pass schedule ([4](04-game-loop.md)) |
-| `$D35E` | 2 319 | 8.0 % self, calls `$DD6C`, which calls `$DDC9` ×16 840 | the heaviest worker per pass ([6](06-rendering.md)) |
-| `$DDE7` | 2 319 | 14 small helpers in `$E05C-$E14D`, 660-4 300 calls each | ([7](07-objects.md)) |
-| `$E15C`/`$E16E` | 2 319 | 403-instruction routine, loops back through `$E674` 40 057 times | ([7](07-objects.md), [10](10-gameplay-logic.md)) |
-| `$EFA5`/`$EFDC` | 2 319 | `$EFDC` called 41 391 times, about 18 a pass | ([6](06-rendering.md)) |
+| `$CF33` | 1 | the loop itself, 12.4 % of all T in its own code | **confirmed:** the menu, the game and round starts and the pass loop: one pass a frame ([4](04-game-loop.md)) |
+| `$D35E` | 2 319 | 8.0 % self, calls `$DD6C`, which calls `$DDC9` ×16 840 | **confirmed:** the blit, the 32 strips of the playfield buffer to the screen; `$DD6C` / `$DDC9` then put back the strips saved under the shadows and sprites ([6.3](06-rendering.md), [6.6](06-rendering.md)) |
+| `$DDE7` | 2 319 | 14 small helpers in `$E05C-$E14D`, 660-4 300 calls each | **confirmed:** the shadows into the buffer (the helpers AND runs of a shadow shape into the mask), then the sprites `$EAE3` ([6.6](06-rendering.md)) |
+| `$E15C`/`$E16E` | 2 319 | 403-instruction routine, loops back through `$E674` 40 057 times | **confirmed:** the objects: move, steer, height, walls and hits for every live record, `$E674` stepping to the next ([7](07-objects.md), [10](10-gameplay-logic.md)) |
+| `$EFA5`/`$EFDC` | 2 319 | `$EFDC` called 41 391 times, about 18 a pass | **confirmed:** every record to its screen place and into a depth list ([6.6](06-rendering.md)) |
 | `$E68C` | 1 306 | reads `$EFFE` and `$F7FE` | **confirmed:** the device reader, fills the control byte `$C290`; also the AUTO start ([5](05-controls.md)) |
 | `$F1AA` | 4 | reads `$00FE`, `$EFFE`, `$F7FE`; calls `$F288`, `$EE17`, `$EEE3` | **confirmed:** the menu: device, demo, start; seeds the RNG `$EA36` ([5](05-controls.md)) |
 | `$F288` | 612 | 52 direct calls, the rest through `$F2C0` → `$F284`; `OUT ($FE)` with B as the port's high byte, so L1 lists several ports; 2.4 % self | **confirmed:** a two-tone beep, H = length, L = period, the second voice one step shorter ([9](09-sound.md)) |
 | `$F2C0` | 2 318 | reaches `$F2A3`, 4 ‰ self | **confirmed:** the effect dispatcher: the lowest set bit of `$F2BF` picks a 5-byte entry of `$F2E2`, a beep (`$F284`) or a sweep (`$F2A3`) ([9](09-sound.md)) |
-| `$D3F9` | 1 280 | its branches reach `$D151` (10 times) and back to `$CF33` | game state changes: life lost, restart ([10](10-gameplay-logic.md)) |
+| `$D3F9` | 1 280 | its branches reach `$D151` (10 times) and back to `$CF33` | **confirmed:** the scroll step, one phase a pass; after a course's 32nd strip the round setup `$D151` and the ground profile `$D0EF`; at a course's end the next course (`$D51D` makes the fresh strips) or, in the demo, back to the menu ([6.4](06-rendering.md)) |
 | `$EE17` | 1 800+ | called from `$CF33`, `$F1AA`, `$D151`, `$E68C` | **confirmed:** print strings: records of attribute + `$80`, column, row, characters; `$FF` ends; font at `$6300` ([8](08-hud-and-text.md)) |
 
 Of all T-states in the window, the title player's code (`$8000-$83E1`) took 64.8 % and the game code (`$C2B1-$F2E1`)
@@ -329,7 +329,7 @@ flowchart TB
     end
     mainloop -->|4 996| menu
     menu -->|28| hud
-    scroller -->|"38 course ends"| roundsetup
+    scroller -->|"38 round setups"| roundsetup
     roundsetup -->|48| hud
     roundsetup <-->|19 / 6| menu
 ```
@@ -338,8 +338,9 @@ flowchart TB
   module `coursedata`) and go on to the player's handler `$8340`; both directions are jumps.
 - `mover` and `hits`: the pair scan of `mover` jumps into a hit handler of `hits` (the table `$C380`) and the handler
   jumps back into the scan ([7.6](07-objects.md)).
-- `scroller` to `roundsetup`: the course check calls the round setup when the last strip of a course is drawn
-  ([4.2](04-game-loop.md)).
+- `scroller` to `roundsetup`: the scroll step calls the round setup when the 32nd strip of a course is drawn, the
+  end of the round's pre-roll ([4.2](04-game-loop.md)).
+- `course` is not in the diagram: it holds the tiles, the tile runs and the ten courses, no code, so 17 of the 18 modules are.
 
 Which module's code touches which memory, over the bot's game (`tools/heatviews.py modules`; the band on top is the
 module that owns the page). Below, the screen writes of every module that draws, in the screen's own geometry:
@@ -377,27 +378,10 @@ bytes apart or closer are one), eight in all: six over the title player (`$8025-
 `$8243-$8248`, `$8279-$827C`, `$82C1-$82DE`, `$8323-$8366`, the code it ran with gaps of unrun code between),
 `$9F1C-$9F2E` and `$FDFD-$FDFF`. None falls on the pair scan's patched compares.
 
-The rest of L3's bug findings on the bot's game are four `index-past-table`: an access that reads through an index
-also read up to 16 bytes past a table L2 measured. None is a bug of the game; each marks a table L2 measured too
-short:
-
-| Reader | Read | L2's table | What the bytes are |
-| --- | --- | --- | --- |
-| `$E04B`, `$E03C` (`DrawShadows`, types 11-13) | `$5B00-$5B53` | init tables `$5B08-$5B23`, `$5B28-$5B43`, `$5B48-$5EEF` | the three flat shadow shapes at `$5B00`, `$5B20`, `$5B40`, 4 bytes a strip in 8-byte slots ([6.6](06-rendering.md)). Only the copy at `$9F1C` wrote them, but `$5B04-$5B07`, `$5B24-$5B27` and `$5B44-$5B47` were never read: L2's run of written-and-read bytes broke there, and the 4 bytes before each break were too short for a table, so the tables start 8 bytes late |
-| `$DEFC` (`DrawShadows`, the mask for types 0-10) | `$6500-$6543` | pointer table `$6502-$653F` | `SpriteScratch`: the draw list of 4-byte entries (whose record addresses L2 read as pointers) and, later in the pass, the mask filled with `$FF` ([11](11-data-reference.md)) |
-
-Six more such findings (the pad list `$C99E`, the course `$CF02`, the saved strips `$FBC7`, the sprite list
-`$FE00`/`$FF00`) came from loops that walk a list or copy a block byte after byte through a larger structure; the
-analyzer now counts only indexed readers, and they are gone.
-
-The four in the table are gone too. The padded shadow shapes are one init table `$5B00-$5EEF` now (L2 bridges
-the unread padding between entries). The mask at `$6500` is read through the shadow entry's mask offset (+5 at
-`$FE69`, `$FE71`, ...) by five instructions of `DrawShadows` that AND a 17-byte mask row into it: the loop
-`$DEE6`-`$DEFA` (four `LD A,(DE)` / `AND (HL)` / `LD (HL),A`, four passes) the first 16 bytes, `$DEE6` reading
-`$6500`-`$653F` and `$DEEB`, `$DEF0`, `$DEF5` one byte further each, then `$DEFC` the 17th, `$6510`-`$6543`. No instruction alone reads on
-both sides of L2's pointer table `$6502`-`$653F`; the routine's connected index reads, `$6500`-`$6543`, do: an index
-that addresses a larger structure, which L3 does not count. The eight `code-overwritten` findings are the only bug
-findings left.
+These eight are L3's only bug findings on the bot's game. The `index-past-table` findings of the earlier builds
+marked tables L2 had measured too short or lists walked byte by byte, none a bug of the game; how the analyzer
+learnt to tell them apart is in [WALKTHROUGH 6.14](../WALKTHROUGH.md#614-the-review-queue-worked-down) and its
+section 5. The shapes involved are in [6.6](06-rendering.md) (the shadow shapes `$5B00`, the mask at `$6500`).
 
 ## 2.8 Design notes
 

@@ -327,8 +327,8 @@ first instruction's count is the one to read when a routine can be entered by fa
 The scroll animation (`docs/img/anim-scroll.gif`) is `tools/playfield_anim.py`: 81 memory images from TTD
 `memory_at`, each drawn three ways: the stored strips, the same strips placed by the
 Python re-run of the blit, and the real screen. The first version drew only the stored strips beside the screen,
-two different projections that could not be compared by eye; the middle panel is the check that the blit was read
-right. The recording is read at any frame without running
+two different projections that could not be compared by eye; the middle panel (`tools/playfield.py`) is the check
+that the blit was read right: it agrees with the screen but for the sprites and the panel. The recording is read at any frame without running
 the game again; the instance only seeks.
 
 ### 6.11 Objects: types named from the screens, handlers counted by L1
@@ -423,8 +423,8 @@ python3 tools/autopilot.py --unreal $W --binary $W/cmake-build-agent-release/bin
 | 3 480-7 659 | round 2 (ground vehicle), 3 lives: two lives lost to side missiles, cleared on the last with 3 followers |
 | 7 671-10 623 | round 3 (aircraft), 3 lives: 1 pod, cleared with 1 follower |
 | 10 635-10 896 | round 4, 1 life, the bot gives up |
-| 10 983 | fall back: round 3 again with 3 − 1 = 2 lives, SCORE back to 8 120 (MAX keeps 11 080) |
-| 11 388, 11 871 | both lives lost; round 2's entry holds 1 (it was retried down to 1): GAME OVER |
+| 10 980 | fall back: round 3 again with 3 − 1 = 2 lives, SCORE back to 8 120 (MAX keeps 11 080) |
+| 11 389, 11 871 | both lives lost; round 2's entry holds 1 (it was retried down to 1): GAME OVER |
 | 13 971-14 019 | the demo starts; the bot sees round 0 and stops |
 
 The table shows the lives at each round start, and they are the followers brought out of the round before:
@@ -457,7 +457,7 @@ same maps for the game window, so they were removed. What doc 10 keeps is the co
 bot's game reached. The rendering gained what heatmaps can show there: `tools/pass_anim.py` samples one pass every
 1 750 t-states and lights each changed byte where it shows, in the whole strip buffer and on the screen. The
 pictures show the steps of 6.1 in time: the sprites go into the set the blit will show, the blit runs 1.5 frames
-from the left column to the right, `$DD6C` puts the strips back, and this pass took about 4.2 frames (6.2 on average, 6.1). Over four
+from the left column to the right, `$DD6C` puts the strips back, and this pass took 5.2 frames (6.2 on average, 6.1). The first table gave 4.2 frames and had `$DD6C` start before the blit's end; timed again at a 1 000 t-state step from one scroll step (`$D14D` + 2) to the next, the restore starts 1 000 t-states after the last screen write, as the code says (the call at `$D3F6`), and the pass is 998:17000 to 1003:29560. Over four
 passes the scroller's rewritten strips appear, one phase a pass.
 
 `tools/heatmap.py` now draws the screen page (`$4000-$5AFF`) a second time below each panel, in the screen's own
@@ -467,11 +467,6 @@ third-interleaved lines cannot be read as a picture. The first heatmaps (doc 2) 
 The routine chart showed hot routines no document named (`$E56F` 656 852 entries, `$EAE3`, `$DD47`, `$DDC9`,
 `$EFDC`, `$F089`): they are the insides of passes the docs describe (the hit test's pair scan, the sprite passes
 saving and restoring the strips under each sprite). Doc 12 gives each one its entry.
-
-**The scroll animation, redone.** The first `anim-scroll.gif` put the stored strips beside the screen: two different
-projections, so nothing could be compared. It now has three panels: the stored strips, the same bytes placed by
-the Python re-run of the blit (`tools/playfield.py`), and the screen; the middle one and the screen agree but for
-the sprites and the panel.
 
 **Doc claims checked against the code while writing doc 10:** the round colour is set at every round setup by
 `$D151` falling into `$D338` (`$D320`-`$D337`), not only by the menu; the demo skips the loss check, so it ends
@@ -659,7 +654,7 @@ bytes stay outside its text. The strings show a third. `CreditsText2` is two rec
 `$B0,$01,$14,"BEN DAGLISH"` and `$B0,$01,$15,"@1989 VORTEX",$FF`, and the text detector took the second record's attribute `$B0` for a last character with bit 7
 ("BEN DAGLISH" claimed as 12 characters, `$64DB-$64E6`). The print path is a font read, not a glyph index, so L1 cannot
 tell a printed byte from a control byte here; a rule on the record shape alone (a byte with bit 7, two bytes below
-`$20`, text) would be tuned to this game, so it stays a known limit until another game shows the same format. The pointer-block rule did not fire: `$6A6C-$6CE1` and `$70FC-$729F` stay unknown. Its trigger, a
+`$20`, text) would be tuned to this game, so it stays a known limit until another game shows the same format (still so on p2-rev4, the last run: `$64DB` `"BEN DAGLISH",$B0`). The pointer-block rule did not fire: `$6A6C-$6CE1` and `$70FC-$729F` stay unknown. Its trigger, a
 pointer table of four or more entries, is missing: L2 found only `$C31C-$C31F` in `SpriteTable`. `DrawSprites` loads
 the word at `$C300 + (+8)` into HL, adds the frame offset and hands it to `SpriteListAdd`, which stores it in the
 draw list `$6500`; the drawing loop reads it back from there. L1 follows a pointer's provenance through registers
@@ -838,3 +833,30 @@ them back into `build/res` and assembles from there. The tape still comes out id
 changed pixel, or one changed `long`, makes it differ. `res_formats.py check` and an install-and-build of all 64
 files from git give the same bytes, the previews are unchanged, and `verify_res.py` and `verify_sprites.py` give
 the same results through the new loader.
+
+### 6.16 Final review, second round (2026-11-03)
+
+The review's points that needed the code or a recording first, each checked before the docs were changed:
+
+- **The roles of 2.5** are read from the source now: `$D3F9` is the scroll step, not the game state changes the
+  first call graph suggested; it calls the round setup after a course's 32nd strip.
+- **Byte +8** (doc 7) has three writers, not one: the player's at `$D246`, every record from `$C060` at each round
+  setup (`SetField8` `$D2E3`), and the player's again when a follower takes its hit (`$E2A4`).
+- **The pass** (4.3) runs `$CFAC`-`$D0EC`; the pause comes after the GAME OVER exit, not before. The panel's dots are
+  the round's lives `$C2F9` (`$D1C2`-`$D1DC`); SCORE is 6 bytes, the last a fixed `0`.
+- **The fall back** (4.4), read from the bot's recording at every frame: the vehicle hit at 10 895, gone at 10 919,
+  round 3 set up again at 10 980; a life lost at 11 389-11 413, round 3 retried at 11 462; the last life lost at
+  11 871-11 895, GAME OVER from 11 939 (the round number 1, SCORE 4 220). Doc 4's old rows were sample frames,
+  doc 10's and this walkthrough's a few frames off; all now give these frames.
+- **The pass timing** (6.1), timed again at a 1 000 t-state step: the blit writes the screen until 1003:9560 and
+  `$DD6C` starts at 1003:10560, after it, as its call at `$D3F6` says (the first table had them overlap); one scroll
+  step to the next is 5.2 frames, not 4.2.
+- **The skew** (6.3) is one formula for all columns: byte k of column j on line 191 − k − 4 (j − 9).
+- **`tools/refdocs.py`** named the game's accesses to the playfield buffer after the title player and start-up
+  entries the buffer covers (`TitleSetup`, `StartupHead` ...), split at the gaps, and listed `Blit` or `DrawSprites`
+  as readers of the title's tune commands. Code outside `$8000-$BFFF` now has one range there, "the playfield
+  buffer", and is no user of the entries under it (docs 11 and 12 regenerated).
+- **`CreditsText2`** is still taken as 12 characters on p2-rev4 (the known limit of 6.12).
+- Smaller fixes: the module map's 17 nodes (`course` has no code), 2.7 shortened to the facts (the analyzer's
+  history stays here), the fast tape loading of the first recording (doc 3), the font codes in hex (doc 8), the
+  term "pass" at its first use (docs 1, 2), doc 5's wording, `statics` holding `DrawSprites`.

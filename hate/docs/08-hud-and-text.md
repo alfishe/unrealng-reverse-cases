@@ -63,7 +63,7 @@ Some codes are not letters:
 credits at `$63D8` and `$64D8` and " AUTO " at `$64F6`. The block is a font, and its unused slots are text. The
 analyzer first claimed the whole run of codes as font and reported the overlap as a conflict ("claimed font and text:
 they cannot both hold"). It now leaves out a slot that code read but no drawing code put on the screen, so the font
-claim is codes 45-58 and 64-89, and the credits are text only.
+claim is codes `$2D`-`$3A` and `$40`-`$59`, and the credits are text only.
 
 ## 8.3 Every string
 
@@ -93,7 +93,7 @@ The game only writes the changing parts into it:
 | Item | Variable | Drawn by | Where on screen |
 | --- | --- | --- | --- |
 | round number | `$C2F7` (1-10) and `$C2F8` (laps of the 10 rounds) as two digits at `$C2FD`-`$C2FE` (`LD HL,$C2FD` at `$D17A`, written at `$D1B6`, `$D1BB`), in the print record `$C2FA`: `$87`, `$15`, `$12`, digit, digit, `$FF` | `$D19E`-`$D1BF` through `$EE17` | column 21, row 18 |
-| dots | `$ECE4`, up to 4 | `$D1C8`: 4 attribute cells at `$5A58` set to `$12` (red on red: hidden), then `$ECE4` of them to `$15` (cyan) | row 18, columns 24-27 |
+| dots: the lives | the round's lives `$C2F9`, set from the carried lives `$ECE4` (up to 4) at `$D1C2` | `$D1C8`: 4 attribute cells at `$5A58` set to `$12` (red on red: hidden), then one per life to `$15` (cyan) after a short pause; a retry draws them again, the last life lost hides the last dot (`$D005`) | row 18, columns 24-27 |
 | SCORE | `$EF49-$EF4E`, six ASCII characters, the last always `0` | `$EE9E` | `$529D` |
 | MAX | `$EF99-$EF9E` | `$EF17` | `$51BD` |
 | HIGH | `$EF92-$EF97` | `$EEE3` | `$51FD` |
@@ -152,6 +152,6 @@ the screen layout the artist drew, and still colour the attributes.
 - **One print routine, one record format.** A whole screen of text is one data string. The menu, the credits and
   the messages need no code of their own.
 - **ASCII score.** Counting in ASCII digits avoids binary-to-decimal conversion on a CPU without a divide. The cost
-  is 5 bytes a number and a loop per 10 points.
+  is 6 bytes a number (and a `.` before it to stop the drawing) and a loop per 10 points.
 - **The font's unused slots carry strings.** 80 bytes saved on a full 48K. It also confuses every tool that assumes
   one kind of data per byte.

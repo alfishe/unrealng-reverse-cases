@@ -34,7 +34,7 @@ $6500 s SpriteScratch ; Visible-record list and sprite scratch page
 > Work space of the sprite code. $EFA5 builds the list of visible records here each pass (pointer kept at $EF9F, $40 ends the list) and $F089 scans it; $DE08 fills $6500-$6543 with $FF as scratch. Zero in the image.
 $6580 b SpriteGfx00 8 ; Sprite graphics, table slot $00
 @res gfx/sprites/slot-00.bin
-> The sprite graphics run from here to $7FFF. Each block is reached through the pointer table $C300 by a record's byte +8 (the low byte of the address into $C300): the player gets 2 x type ($D246 writes $C008), the templates $C2B4-$C2E1 and $C360/$C370 carry their own. The block boundaries below are the table's pointers.
+> The sprite graphics run from here to $7FFF. Each block is reached through the pointer table $C300 by a record's byte +8 (the low byte of the address into $C300): 2 x type, for the player at $D246 ($C008) and for every record from $C060 at each round setup ($D2E3); the templates $C2B4-$C2E1 and $C360/$C370 carry their own. The block boundaries below are the table's pointers.
 $67F6 b SpriteGfx02 8 ; Sprite graphics, table slot $02
 @res gfx/sprites/slot-02.bin
 $6A6C b SpriteGfx04 8 ; Sprite graphics, table slot $04
@@ -925,7 +925,7 @@ $DB8B ; +6, +7 the address in the playfield buffer
 $DB8F ; the next free entry
 $DB94 ; save the strips under the shadow
 $DB9A c SpriteListBuild ; Sprite list: the visible records at their own heights
-> The second walk of $6500. The line is +A plus the height +4. A dying record (bit 5) is drawn as a type 3 explosion, a line lower at height 25 and two lines lower above. The graphic is the word at $C300 + (+8): +8 is twice the type normally (set at $E2A4) and the explosion counter while dying. The phase (+9) picks one of 4 pre-shifted frames: $A8 bytes for types 0-3 (4 strips of 21 lines, a mask and a pixel byte a line), $66 for 4-10 (3 strips of 17), $34 for 11-13 (2 strips of 13). Clipping is as in ShadowListLoop; a dropped strip on the left moves the graphic on by one strip. The 6-byte entry at SpriteListPtr: +0 type, +1 strips, +2/+3 the buffer address, +4/+5 the graphic; then SaveSpriteStrips. $EAE3 draws the list after the shadows.
+> The second walk of $6500. The line is +A plus the height +4. A dying record (bit 5) is drawn as a type 3 explosion, a line lower at height 25 and two lines lower above. The graphic is the word at $C300 + (+8): +8 is twice the type normally (set at $D246, $D2E3 and $E2A4) and the explosion counter while dying. The phase (+9) picks one of 4 pre-shifted frames: $A8 bytes for types 0-3 (4 strips of 21 lines, a mask and a pixel byte a line), $66 for 4-10 (3 strips of 17), $34 for 11-13 (2 strips of 13). Clipping is as in ShadowListLoop; a dropped strip on the left moves the graphic on by one strip. The 6-byte entry at SpriteListPtr: +0 type, +1 strips, +2/+3 the buffer address, +4/+5 the graphic; then SaveSpriteStrips. $EAE3 draws the list after the shadows.
 $DB9E SpriteListLoop
 $DBA6 ; end the sprite list
 $DBA9 SpriteEntryRecord

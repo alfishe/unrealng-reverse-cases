@@ -15,8 +15,9 @@ Evidence:
 
 ![The menu](img/game-1-menu.png)
 
-Before the first menu, a title loop runs in the playfield buffer (`$8000`-`$83FF`) until any key is pressed; only then
-does the menu read its keys (the autopilot of [10](10-gameplay-logic.md) presses a key first, else its 3 is lost).
+Before the first menu, the title music player (`$8000`, [2.3](02-architecture.md)) runs until any key is pressed; only
+then does the menu read its keys (the autopilot of [10](10-gameplay-logic.md) presses a key first, otherwise the title
+would swallow its first menu key, the 3).
 
 `$F1AA` draws the menu (string `$F140`) and the credits (`$63D8`, `$64D8`). It waits for all keys to be released and
 beeps. Then it loops:
@@ -47,7 +48,7 @@ The main loop goes back to the menu after the game ends, after ABORT and after t
 
 This is the Kempston interface's layout with bits 0 and 1 swapped. The bits are active high: 1 means pressed. In play,
 left raises the position across (`$C003`) and right lowers it; on the aircraft, down climbs and up descends
-(the Q / A swap below keeps that meaning per vehicle).
+(the keyboard swaps Q and A with the vehicle so that Q always climbs or speeds up, below).
 
 ## 5.3 The four readers
 
@@ -98,8 +99,8 @@ and speeds up the ground vehicle ([10.3](10-gameplay-logic.md#103-driving-the-tw
 ![AUTO](img/game-2-auto.png)
 
 At the start of a round, the countdown `$E68B` is set (`$D251`): 70 passes for a round whose `$C000` low nibble is
-zero, 14 otherwise. While it runs, `$E68C` does not read the device. It prints " AUTO " in the status window
-(`$64F6`) and sets sound flag 3 (`$F2BF`, see [9](09-sound.md)). It also steers the vehicle by itself: the
+zero, 14 otherwise. While it runs, `$E68C` does not read the device. It prints " AUTO " (`$64F6`) in the status
+window and sets sound flag 3 (`$F2BF`, see [9](09-sound.md)). It also steers the vehicle by itself: the
 position `$C003` moves 2 a pass toward `$2C`, and `$C2F6` is set from `$C004` and the countdown (the meaning of
 both is in [10](10-gameplay-logic.md)). The pass that ends the countdown clears the window (`$F136`).
 

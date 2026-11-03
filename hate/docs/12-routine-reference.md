@@ -3,7 +3,8 @@
 Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
 the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/p2` (the bot game), `work/game` (the L1 build of the first recording's game window).
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
-of the recording. Memory ranges name the entries they cover. An entry no recording reached says so.
+of the recording. Memory ranges name the entries they cover; in `$8000-$BFFF` the accesses of code outside it are
+the playfield buffer's, laid over the title player and the start-up. An entry no recording reached says so.
 Written by `tools/refdocs.py`; edit `src/game/game.ann`, then run `tools/mkgame.py --venv VENV --install` and
 `tools/refdocs.py`.
 
@@ -736,7 +737,7 @@ SP walks the address list BlitAddresses (`$D5B2`): every POP is the screen addre
 | Runs (the L1 build of the first recording's game window) | 2,319 calls, 239,372,463 t-states own (8.03 %) |
 | Called from | `GameEntry`, `MainLoop` |
 | Calls | `RestoreUnderSprites` |
-| Reads | `$8000`-`$BFFF` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 75 more); `$C32E`-`$C332` (`ScrollPage`, `ScrollHalf`, `UnusedC330`, `SavedStack`) |
+| Reads | `$8000`-`$BFFF` (the playfield buffer); `$C32E`-`$C332` (`ScrollPage`, `ScrollHalf`, `UnusedC330`, `SavedStack`) |
 | Writes | `$4019`-`$401F` (screen); `$4037`-`$403F` (screen); `$4055`-`$405F` (screen); `$4073`-`$407F` (screen); `$4091`-`$40FF` (screen); `$4119`-`$411F` (screen); 26 more ranges |
 
 ### `ScrollStep` (`$D3F9`)
@@ -751,8 +752,8 @@ Called 128 times by the round start's pre-roll and entered once a pass from Blit
 | Runs (the L1 build of the first recording's game window) | 1,280 calls, 18,398,842 t-states own (0.62 %) |
 | Called from | `GameEntry`, `MainLoop` |
 | Calls | `MainLoop` (tail), `BuildGroundProfile` (tail), `RoundSetup`, `CourseExpand`, `FreshStrip` (tail) |
-| Reads | `$8000`-`$B27F` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 73 more); `$B300`-`$B47F` (`GameScreenImage`); `$B500`-`$B67F` (`GameScreenImage`); `$B700`-`$B87F` (`GameScreenImage`, `GameScreenAttrs`); `$B900`-`$BA7F` (`GameScreenAttrs`); `$BB00`-`$BC7F` (`RendererTablesImage`); 8 more ranges |
-| Writes | `$8100`-`$B1FF` (`CmdNoteLength`, `CmdDrums`, `CmdPatternEnd`, `SongStep` and 59 more); `$B300`-`$B3FF` (`GameScreenImage`); `$B500`-`$B5FF` (`GameScreenImage`); `$B700`-`$B7FF` (`GameScreenImage`); `$B900`-`$B9FF` (`GameScreenAttrs`); `$BB00`-`$BBFF` (`RendererTablesImage`); 6 more ranges |
+| Reads | `$8000`-`$BFFE` (the playfield buffer); `$C32E`-`$C32F` (`ScrollPage`, `ScrollHalf`); `$C3F8`-`$C3FD` (`CourseRowPtr`, `StripCount`, `FreshStripPage`); `$CA64`-`$CBC2` (`RowList`, `RowListTail`); `$CF2E`-`$CF2F` (`CourseRecord`); `$D14D`-`$D14E` (`ScrollDistance`); 1 more ranges |
+| Writes | `$8100`-`$BFFF` (the playfield buffer); `$C32E`-`$C32F` (`ScrollPage`, `ScrollHalf`); `$C3FA`-`$C3FB` (`StripCount`); `$CF2E`-`$CF2F` (`CourseRecord`); `$D14D`-`$D14E` (`ScrollDistance`) |
 
 ### `StripPhase4` (`$D413`)
 
@@ -799,8 +800,8 @@ Half 0, even offset. The new strip is page `$80` + `$C32E`, half 0: 8 lines of t
 | Runs (the bot game) | 849 calls, 12,981,628 t-states own (1.32 %) |
 | Runs (the L1 build of the first recording's game window) | 903 calls, 13,807,314 t-states own (0.46 %) |
 | Called from | `ScrollStep` (tail) |
-| Reads | `$8000`-`$B0FE` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 73 more); `$B200`-`$B2FE` (`GameScreenImage`); `$B400`-`$B4FE` (`GameScreenImage`); `$B600`-`$B6FE` (`GameScreenImage`); `$B800`-`$B8FE` (`GameScreenAttrs`); `$BA00`-`$BAFE` (`GameScreenAttrs`); 4 more ranges |
-| Writes | `$8000`-`$B0FF` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 73 more); `$B200`-`$B2FF` (`GameScreenImage`); `$B400`-`$B4FF` (`GameScreenImage`); `$B600`-`$B6FF` (`GameScreenImage`); `$B800`-`$B8FF` (`GameScreenAttrs`); `$BA00`-`$BAFF` (`GameScreenAttrs`); 4 more ranges |
+| Reads | `$8000`-`$BEFE` (the playfield buffer); `$C32E`-`$C332` (`ScrollPage`, `ScrollHalf`, `UnusedC330`, `SavedStack`); `$C3F8`-`$C8E9` (`CourseRowPtr`, `StripCount`, `FreshStripPage`, `UnusedC3FE` and 4 more) |
+| Writes | `$8000`-`$BEFF` (the playfield buffer); `$C331`-`$C332` (`SavedStack`); `$C3F8`-`$C3FD` (`CourseRowPtr`, `StripCount`, `FreshStripPage`) |
 
 ## sprites
 
@@ -855,7 +856,7 @@ In: A = lines a strip, A' = type, B = strips, C = the mask bytes skipped, D = co
 
 **Sprite list: the visible records at their own heights**
 
-The second walk of `$6500`. The line is +A plus the height +4. A dying record (bit 5) is drawn as a type 3 explosion, a line lower at height 25 and two lines lower above. The graphic is the word at `$C300` + (+8): +8 is twice the type normally (set at `$E2A4`) and the explosion counter while dying. The phase (+9) picks one of 4 pre-shifted frames: `$A8` bytes for types 0-3 (4 strips of 21 lines, a mask and a pixel byte a line), `$66` for 4-10 (3 strips of 17), `$34` for 11-13 (2 strips of 13). Clipping is as in ShadowListLoop; a dropped strip on the left moves the graphic on by one strip. The 6-byte entry at SpriteListPtr: +0 type, +1 strips, +2/+3 the buffer address, +4/+5 the graphic; then SaveSpriteStrips. `$EAE3` draws the list after the shadows.
+The second walk of `$6500`. The line is +A plus the height +4. A dying record (bit 5) is drawn as a type 3 explosion, a line lower at height 25 and two lines lower above. The graphic is the word at `$C300` + (+8): +8 is twice the type normally (set at `$D246`, `$D2E3` and `$E2A4`) and the explosion counter while dying. The phase (+9) picks one of 4 pre-shifted frames: `$A8` bytes for types 0-3 (4 strips of 21 lines, a mask and a pixel byte a line), `$66` for 4-10 (3 strips of 17), `$34` for 11-13 (2 strips of 13). Clipping is as in ShadowListLoop; a dropped strip on the left moves the graphic on by one strip. The 6-byte entry at SpriteListPtr: +0 type, +1 strips, +2/+3 the buffer address, +4/+5 the graphic; then SaveSpriteStrips. `$EAE3` draws the list after the shadows.
 
 | | |
 | --- | --- |
@@ -890,7 +891,7 @@ In: HL = the playfield address of the first strip's lowest line, B = strips, A =
 | Runs (the bot game) | 30,480 calls, 33,844,684 t-states own (3.45 %) |
 | Runs (the L1 build of the first recording's game window) | 16,840 calls, 21,709,568 t-states own (0.73 %) |
 | Called from | `BuildSpriteLists`, `ShadowListAdd`, `SaveSpriteStrips` |
-| Reads | `$8008`-`$887F` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 64 more); `$8890`-`$89FF` (`SpriteGfxCopy`); `$8A10`-`$BFF1` (`SpriteGfxCopy`, `TitlePlayerCopy`, `StartupHead`, `Startup` and 8 more); `$DD6A`-`$DD6B` (`SaveAreaPtr`) |
+| Reads | `$8008`-`$BFF1` (the playfield buffer); `$DD6A`-`$DD6B` (`SaveAreaPtr`) |
 | Writes | `$DD6A`-`$DD6B` (`SaveAreaPtr`); `$F800`-`$FBD3` (`SpriteSaveBuffer`) |
 
 ### `RestoreUnderSprites` (`$DD6C`)
@@ -920,7 +921,7 @@ In: DE = the playfield address of the first strip's lowest line, B = strips, A =
 | Runs (the L1 build of the first recording's game window) | 16,840 calls, 21,574,848 t-states own (0.72 %) |
 | Called from | `RestoreUnderSprites` |
 | Reads | `$DD6A`-`$DD6B` (`SaveAreaPtr`); `$F800`-`$FBD3` (`SpriteSaveBuffer`) |
-| Writes | `$8008`-`$887F` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 64 more); `$8890`-`$89FF` (`SpriteGfxCopy`); `$8A10`-`$BFF1` (`SpriteGfxCopy`, `TitlePlayerCopy`, `StartupHead`, `Startup` and 8 more); `$DD6A`-`$DD6B` (`SaveAreaPtr`) |
+| Writes | `$8008`-`$BFF1` (the playfield buffer); `$DD6A`-`$DD6B` (`SaveAreaPtr`) |
 
 ## shadows
 
@@ -942,8 +943,8 @@ Types 11-13 (ShadowTiny): 4 bytes a strip from `$5B00`, `$5B20` or `$5B40` (the 
 | Runs (the L1 build of the first recording's game window) | 2,319 calls, 26,307,928 t-states own (0.88 %) |
 | Called from | `GameEntry`, `MainLoop` |
 | Calls | `MaskStepRuns5x3`, `MaskRuns5x3`, `MaskStepRuns4x4`, `MaskRuns4x4`, `MaskStepRuns3x5`, `MaskRuns3x5`, `MaskStepRuns2x6`, `MaskRuns2x6`, `MaskStepRuns5x5`, `MaskRuns5x5`, `MaskStepRuns4x6`, `MaskRuns4x6`, `MaskStepRuns3x7x3`, `MaskRuns3x7x3`, `MaskStepRuns1x6x4`, `MaskRuns1x6x4`, `DrawSprites` (tail) |
-| Reads | `$5B00`-`$5B5F` (system); `$6023`-`$62F6` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$6500`-`$6543` (`SpriteScratch`); `$8008`-`$BFE3` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 75 more); `$DD66`-`$DD67` (`ShadowListPtr`); `$FE64`-`$FEBC` (`Im2Table`) |
-| Writes | `$6500`-`$6543` (`SpriteScratch`); `$8008`-`$BFE3` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 75 more); `$DD66`-`$DD67` (`ShadowListPtr`); `$DDE6` (`ShadowGround`) |
+| Reads | `$5B00`-`$5B5F` (system); `$6023`-`$62F6` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$6500`-`$6543` (`SpriteScratch`); `$8008`-`$BFE3` (the playfield buffer); `$DD66`-`$DD67` (`ShadowListPtr`); `$FE64`-`$FEBC` (`Im2Table`) |
+| Writes | `$6500`-`$6543` (`SpriteScratch`); `$8008`-`$BFE3` (the playfield buffer); `$DD66`-`$DD67` (`ShadowListPtr`); `$DDE6` (`ShadowGround`) |
 
 ### `MaskStepRuns5x3` (`$E05C`)
 
@@ -1438,8 +1439,8 @@ Called first by the sprite pass `$D9D6`. Walks the list at `$C99E` (record addre
 | Runs (the bot game) | 2,622 calls, 1,044,573 t-states own (0.11 %) |
 | Runs (the L1 build of the first recording's game window) | 2,319 calls, 1,081,464 t-states own (0.04 %) |
 | Called from | `BuildSpriteLists` |
-| Reads | `$6F58`-`$729F` (`SpriteGfx1C`, `SpriteGfx1E`); `$8046`-`$92B2` (`TitleSetup`, `NoteTimeCheck`, `PatternStep`, `PatternCommand` and 62 more); `$945F`-`$BEDA` (`SpriteGfxCopy`, `TitlePlayerCopy`, `StartupHead`, `Startup` and 8 more); `$BF48`-`$BF59` (`RendererTablesImage`); `$BFC7`-`$BFD8` (`RendererTablesImage`); `$C0B4`-`$C10B` (`CourseObjectRecords`); 3 more ranges |
-| Writes | `$8046`-`$92B2` (`TitleSetup`, `NoteTimeCheck`, `PatternStep`, `PatternCommand` and 62 more); `$945F`-`$BEDA` (`SpriteGfxCopy`, `TitlePlayerCopy`, `StartupHead`, `Startup` and 8 more); `$BF48`-`$BF59` (`RendererTablesImage`); `$BFC7`-`$BFD8` (`RendererTablesImage`) |
+| Reads | `$6F58`-`$729F` (`SpriteGfx1C`, `SpriteGfx1E`); `$8046`-`$BFD8` (the playfield buffer); `$C0B4`-`$C10B` (`CourseObjectRecords`); `$C124`-`$C1AB` (`CourseObjectRecords`); `$C31C`-`$C32E` (`SpriteTable`, `ScrollPage`); `$C99E`-`$C9AB` (`SegmentRows`) |
+| Writes | `$8046`-`$BFD8` (the playfield buffer) |
 
 ### `DrawSprites` (`$EAE3`)
 
@@ -1452,8 +1453,8 @@ Reached by a jump from `$DDE7` after the strips under the sprites were saved. Wa
 | Runs (the bot game) | 2,622 calls, 48,293,641 t-states own (4.93 %) |
 | Runs (the L1 build of the first recording's game window) | 2,319 calls, 26,374,274 t-states own (0.88 %) |
 | Called from | `DrawShadows` (tail) |
-| Reads | `$6580`-`$6A6B` (`SpriteGfx00`, `SpriteGfx02`); `$6CE2`-`$6F57` (`SpriteGfx06`); `$72A0`-`$BFF1` (`SpriteGfx14`, `SpriteGfx08`, `SpriteGfx0A`, `SpriteGfx0E` and 89 more); `$DD68`-`$DD69` (`SpriteListPtr`); `$FF00`-`$FF60` (`SpriteListArea`, `UdgLeftover`) |
-| Writes | `$800E`-`$BFF1` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 75 more); `$DD68`-`$DD69` (`SpriteListPtr`) |
+| Reads | `$6580`-`$6A6B` (`SpriteGfx00`, `SpriteGfx02`); `$6CE2`-`$6F57` (`SpriteGfx06`); `$72A0`-`$7FFF` (`SpriteGfx14`, `SpriteGfx08`, `SpriteGfx0A`, `SpriteGfx0E` and 10 more); `$800E`-`$BFF1` (the playfield buffer); `$DD68`-`$DD69` (`SpriteListPtr`); `$FF00`-`$FF60` (`SpriteListArea`, `UdgLeftover`) |
+| Writes | `$800E`-`$BFF1` (the playfield buffer); `$DD68`-`$DD69` (`SpriteListPtr`) |
 
 ## hits
 

@@ -18,7 +18,9 @@ Soft for their 1989 disk version, from which this tape was made back.
 All blocks use the ROM's standard encoding (flag byte, data, XOR checksum; pilot 2 168 T, 8 063 pulses for a header
 and 3 223 for data, bits of 2 x 855 T and 2 x 1 710 T). The play times are computed from the bit counts of each block,
 pauses not included: 263 s, 13 159 frames of tape signal in all. There is no custom loader: every block goes through
-the ROM's LD-BYTES (`$0556`).
+the ROM's LD-BYTES (`$0556`). The first recording loaded the tape with the emulator's fast loading (the LD-BYTES trap): each
+block took a few frames, the whole load 2 540 frames, so the recording's frame numbers (the banner at 2 380, play at
+2 613) do not follow these times.
 
 The headers: the BASIC one is as the ROM's `SAVE "H_A_T_E" LINE 10` writes it (length and program length 413,
 line 10). The two CODE headers hold `$2020`, two spaces, as their second parameter where the ROM's `SAVE ... CODE`
@@ -234,7 +236,7 @@ bytes) as the depacker leaves it at frame 2 613; `tools/pack.py` packs it into b
 | `sprites`, `shadows` | `$D9D6`-`$E15B` | the sprite and shadow lists, the saved strips, the shadow masks | 6 |
 | `mover` | `$E15C`-`$E68B` | moving the records: height, walls, the barrier, the pair scan | 7, 10 |
 | `player` | `$E68C`-`$EA37` | the controls, AUTO, the player's vehicle, firing, the random numbers | 5, 10.3 |
-| `statics` | `$EA38`-`$EBA9` | pads and dishes stamped into the buffer, the sprite list `$FF00` | 6.6 |
+| `statics` | `$EA38`-`$EBA9` | pads and dishes stamped into the buffer (`StampStatics`), the sprites drawn from the list `$FF00` (`DrawSprites` `$EAE3`) | 6.6 |
 | `hits` | `$EBAA`-`$EE12` | the hit handlers, pods, the convoy | 7.6, 10.4 |
 | `hud`, `objview` | `$EE13`-`$F0DA` | the print routine, the score, MAX and HIGH, objects to screen places | 8 |
 | `menu` | `$F0DB`-`$F2FF` | the messages, the menu, the sound effects | 5, 8, 9 |

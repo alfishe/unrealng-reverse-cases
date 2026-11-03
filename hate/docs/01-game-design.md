@@ -89,7 +89,7 @@ the course with the scroll; the player steers across and sets the height (aircra
 **The aircraft** ([10.3](10-gameplay-logic.md#103-driving-the-two-vehicles),
 [7.7](07-objects.md#77-the-player-e7e9)):
 
-- Down and up change the height, within 2 to 26. Holding the stick accelerates: the step grows from 1 to 3 a pass.
+- Down and up change the height, within 2 to 26. Holding the stick accelerates: the step grows from 1 to 3 a pass (one turn of the game loop, about 1/8 s, [1.11](#111-rounds-and-difficulty)).
 - The ground is a floor 2 above the terrain: the aircraft is lifted over a hill by itself, and comes down again only
   when the stick says so.
 - A thing 8 or more above or below it passes harmlessly: hits are tested within 7 in height

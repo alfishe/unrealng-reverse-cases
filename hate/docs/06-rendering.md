@@ -43,16 +43,21 @@ outlined. The bar underneath counts the changed bytes of the buffer, the screen 
 
 ![One pass: the buffer and the screen as the pass writes them](img/anim-pass.gif)
 
+Timed again at a 1 000 t-state step (the screen, the buffer, the records `$C000-$C1FF`, the lists `$FE64` and
+`$FF00`, the scroll distance `$D14D`), the pass runs from one scroll step to the next:
+
 | Frames:t-state | Changed | What it is |
 | --- | --- | --- |
-| 1000:0-1000:35000 | about 40 bytes of object records | the objects move (`$E15C`, `$EFA5`) |
-| 1001:3600-1001:45600 | 350 bytes of the buffer, all in the outlined set (odd pages, half `$80`) | the shadows and sprites drawn into the strips (`$DDE7`, `$EAE3`) |
-| 1001:47400-1003:10800 | 2 134 screen bytes, column by column from the left | the blit `$D35E`: about 103 000 t-states, 1.5 frames |
-| 1003:7300-1003:28300 | 285 bytes of the buffer, at the same places | `$DD6C` puts the saved strips back |
-| 1005:18000 | the buffer again | the next pass: this one took about 4.2 frames (the average over the game window is 6.2, sound effects included, [4.5](04-game-loop.md)) |
+| 998:17000 | `$D14D` + 2 | the previous pass's scroll step; its strip is written into the buffer until 998:27000 |
+| 998:28000-1001:5336 | the object records and the lists | the objects move (`$E15C`), get their screen places (`$EFA5`) and go into the shadow and sprite lists (`$D9D6`); the GIF's records bar (frames 1000-1001) shows the end of it |
+| 1001:5336-1001:45336 | 350 bytes of the buffer, all in the outlined set (odd pages, half `$80`) | the shadows and sprites drawn into the strips (`$DDE7`, `$EAE3`) |
+| 1001:48336-1003:9560 | 2 134 screen bytes, column by column from the left | the blit `$D35E`: about 101 000 t-states, 1.45 frames |
+| 1003:10560-1003:28560 | 285 bytes of the buffer, at the same places | `$DD6C` puts the saved strips back, after the blit (it is called at its end, `$D3F6`) |
+| 1003:29560 | `$D14D` + 2 | this pass's scroll step: 5.2 frames after the last one (the average over the game window is 6.2, sound effects included, [4.5](04-game-loop.md)) |
+| 1005:18784 | the buffer again | the next pass's sprites |
 
 The pass draws no new strip: its scroll state was `$C32E` = `$25`, `$C32F` = `$80`, the phase that only checks the
-course (6.4). The numbers are as exact as the sampling allows, 1 750 t-states. A byte written with the value it
+course (6.4). The times are as exact as the 1 000 t-state step allows; the byte counts come from the GIF's 1 750-t-state pictures. A byte written with the value it
 already held does not show, so the blit counts the bytes the scroll changed (2 134 of the play area's 3 792), not
 its writes.
 
@@ -82,8 +87,7 @@ same course moved by 2 pixels (6.4).
 
 The analyzer finds the buffer on its own: a 16 K run that the routine writing the screen (`Blit`) reads and the code
 rewrites again and again (23 writes a byte at least over the bot's game, 842 reads a byte in the median) is one back
-buffer claim, `$8000-$BFFF`. `Blit` copies it with plain loads, no block copy, so the detector had to learn this case
-(WALKTHROUGH section 5).
+buffer claim, `$8000-$BFFF`, though `Blit` copies it with plain loads, not a block copy (WALKTHROUGH section 5).
 
 ## 6.3 The blit `$D35E` and the address list `$D5B2`
 
@@ -103,15 +107,15 @@ The list holds 528 addresses: 17 for each even column, 16 for each odd one. Each
 character cell, and the blit writes up to 8 lines up from it. The first and last POPs of an even column write 4 lines
 only, so the even columns sit half a cell (4 lines) off the odd ones.
 
-**The skew.** Strip byte k of column j lands on line (191 − k) for the first columns. From column 9 on, each column
-starts 4 lines higher than the one to its left:
+**The skew.** Strip byte k of column j lands on line 191 − k − 4 (j − 9): each column sits 4 lines higher than the
+one to its left. The screen and the panel cut the ends:
 
 | Columns | Bytes shown | Lines | Cut by |
 | --- | --- | --- | --- |
-| 0-8 | 36-4 up to 127 | from the bottom line 191 | the screen's bottom |
+| 0-8 | 36 − 4j to 127 | from the bottom line 191 | the screen's bottom |
 | 9-18 | 0-127 | from 191 − 4 (j − 9) | |
-| 19-24 | 16-0 up to 127 | from line 135 | the panel |
-| 25-31 | 0 up to 127-103 | up to line 0 | the screen's top |
+| 19-24 | 16 − 4 (j − 19) (0 at least) to 127 | from line 135 | the panel |
+| 25-31 | 0 to 127 − 4 (j − 25) | up to line 0 | the screen's top |
 
 A slope of 4 lines per 8 pixels is the 2:1 isometric diagonal. A strip moved 2 pixels to the left in the buffer
 moves 2 pixels left and 1 line up on the screen. A sideways scroll in the buffer is therefore the diagonal scroll of

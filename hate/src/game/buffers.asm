@@ -86,9 +86,9 @@ SpriteScratch:
 ;
 ; The sprite graphics run from here to $7FFF. Each block is reached through the
 ; pointer table $C300 by a record's byte +8 (the low byte of the address into
-; $C300): the player gets 2 x type ($D246 writes $C008), the templates
-; $C2B4-$C2E1 and $C360/$C370 carry their own. The block boundaries below are
-; the table's pointers.
+; $C300): 2 x type, for the player at $D246 ($C008) and for every record from
+; $C060 at each round setup ($D2E3); the templates $C2B4-$C2E1 and $C360/$C370
+; carry their own. The block boundaries below are the table's pointers.
 SpriteGfx00:
   INCBIN "res/gfx/sprites/slot-00.bin",$0000,630
 

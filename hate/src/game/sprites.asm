@@ -313,13 +313,14 @@ ShadowListAdd:
 ; The second walk of $6500. The line is +A plus the height +4. A dying record
 ; (bit 5) is drawn as a type 3 explosion, a line lower at height 25 and two
 ; lines lower above. The graphic is the word at $C300 + (+8): +8 is twice the
-; type normally (set at $E2A4) and the explosion counter while dying. The phase
-; (+9) picks one of 4 pre-shifted frames: $A8 bytes for types 0-3 (4 strips of
-; 21 lines, a mask and a pixel byte a line), $66 for 4-10 (3 strips of 17), $34
-; for 11-13 (2 strips of 13). Clipping is as in ShadowListLoop; a dropped strip
-; on the left moves the graphic on by one strip. The 6-byte entry at
-; SpriteListPtr: +0 type, +1 strips, +2/+3 the buffer address, +4/+5 the
-; graphic; then SaveSpriteStrips. $EAE3 draws the list after the shadows.
+; type normally (set at $D246, $D2E3 and $E2A4) and the explosion counter while
+; dying. The phase (+9) picks one of 4 pre-shifted frames: $A8 bytes for types
+; 0-3 (4 strips of 21 lines, a mask and a pixel byte a line), $66 for 4-10 (3
+; strips of 17), $34 for 11-13 (2 strips of 13). Clipping is as in
+; ShadowListLoop; a dropped strip on the left moves the graphic on by one
+; strip. The 6-byte entry at SpriteListPtr: +0 type, +1 strips, +2/+3 the
+; buffer address, +4/+5 the graphic; then SaveSpriteStrips. $EAE3 draws the
+; list after the shadows.
 SpriteListBuild:
   LD HL,SpriteScratch
   PUSH HL

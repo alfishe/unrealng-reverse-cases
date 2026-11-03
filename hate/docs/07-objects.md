@@ -25,7 +25,7 @@ Evidence:
 | +5 | the direction, 0-7 |
 | +6 | the speed: steps of the direction per pass |
 | +7 | behaviour bits (7.4) |
-| +8 | the sprite: an offset into the pointer table `$C300` (read with `LD H,$C3` at `$DBEC`, `$DC67`, `$DCD6`, `$EA8F`). The player gets 2 × type (`$D246`), the templates carry their own value. The same byte is the explosion counter: `$20` to `$2C`, the explosion frames `$7C10-$7FFF` |
+| +8 | the sprite: an offset into the pointer table `$C300` (read with `LD H,$C3` at `$DBEC`, `$DC67`, `$DCD6`, `$EA8F`). 2 × type: the player's at `$D246`, every record from `$C060` on (the followers and the round's objects) at each round setup (`$D2E3`), the player's again when a follower takes its hit (`$E2A4`); the templates carry their own value. The same byte is the explosion counter: `$20` to `$2C`, the explosion frames `$7C10-$7FFF` |
 | +9-+B | the sprite's place in the strips, from `$EFA5` ([6.6](06-rendering.md)) |
 | +C, +E | steps through the motion tables |
 | +F | the fire timer; on cubes, the hits taken |

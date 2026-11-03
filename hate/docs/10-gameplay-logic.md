@@ -30,8 +30,8 @@ the same inputs replay the same game; the decisions depend only on memory. From 
 | 3 480-7 659 | 2, ground vehicle | 3 lives; two lives lost to missiles from the side; cleared on the last life with 3 followers |
 | 7 671-10 623 | 3, aircraft | 3 lives; 1 pod, kept to the barrier |
 | 10 635-10 896 | 4, ground vehicle | 1 life, given up |
-| 10 983 | 3 | fall back: 3 − 1 = 2 lives, SCORE back to 8 120 |
-| 11 388, 11 871 | 3 | both lives lost; no round left to fall back to: GAME OVER |
+| 10 980 | 3 | fall back: 3 − 1 = 2 lives, SCORE back to 8 120 |
+| 11 389, 11 871 | 3 | both lives lost; no round left to fall back to: GAME OVER |
 
 L1 over the 14 020 frames confirms the story by counts: 9 round setups (`$D151`), of which only 6 through the round
 start `$CF68` (the game, the demo, 3 retries, 1 fall back); 5 losses (`$CFF6`), 2 of them with no lives left
@@ -202,7 +202,7 @@ loss test is skipped, so the demo runs on to the end of its course, where `$D4C9
 | a cube destroyed (the 4th hit; hits 1-3 sound bit 2) | 180 | `$ECC4` → `$EBCE`, B = 18 | 1 cube, 3 hits before it |
 | all point awards | | `$EBCE` | 70 = 10 + 59 + 1 (L1 calls of `$EBCE` by caller) |
 
-SCORE is six ASCII digits with a fixed last `0` ([8.4](08-hud-and-text.md)): the 5 stored characters count tens.
+SCORE is six ASCII digits with a fixed last `0` ([8.4](08-hud-and-text.md)): the five to its left count tens.
 MAX is updated from SCORE (`$EF17`) at every round setup outside the demo and at every loss, so a fall back cannot
 lower it; HIGH takes MAX when the menu is entered, before it waits for a key (`$EEE3` from `$F1B5`; then `$EEC4`
 clears SCORE, MAX and the round table, `$F1B8`; both are skipped when the menu follows the demo, `$F1AF`), and lasts
