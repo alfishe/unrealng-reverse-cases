@@ -22,6 +22,14 @@ with `INCBIN`. Nothing here is converted at build time: `tools/build.sh` assembl
   leftovers appear as 1-bit pixels, 32 bytes a row. The PNGs are for looking only; the `.bin` / `.scr` files are
   the source. Formats below, the [gallery](#courses) at the end; the full descriptions are in
   [docs/11-data-reference.md](../../docs/11-data-reference.md).
+- **Checked against the recordings.** `tools/verify_res.py` finds each `INCBIN` piece in the assembled image and
+  compares it with memory in a recording. In the title of the first recording (`work/c2`, frames 2700-30200), 65 of
+  the 66 pieces equal their files at every frame sampled. The exception is `udg.bin`, where the title's stack holds
+  `$FFF9-$FFFE`. In the bot's game (`work/p2`, frames 210-11000), 48 pieces never change: the font, tiles, sprites,
+  explosions, courses, tile runs, anchors and round objects. The others hold work areas in play: everything in
+  `$8000-$BFFF` (the playfield buffer over the title player, the game screen copy and the renderer tables), the
+  ground profile `$6000`, the sprite save buffer `$F800` and the sprite list and stack over the UDGs. The sprite,
+  buffer, profile, object and tune scripts of [docs/03](../../docs/03-build-and-load.md) 3.7 check the rules on top.
 - **Not yet.** Editable formats (PNG sprites converted at build, the tune as text) are the next level of the
   reverse; for now the files are the original bytes, so the byte-exact build cannot drift.
 

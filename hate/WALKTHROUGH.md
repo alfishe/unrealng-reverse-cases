@@ -814,3 +814,8 @@ The sprites and the title tune were checked last:
   in the first recording, from frame 2617, over two passes of the song. Both voices' periods agree in all 2 800
   frames. The note starts agree, 205 and 234, repeated pitches included. So do the 266 drum steps with their sounds,
   and the song repeats after 2 800 frames. An earlier version of the list above said 58.5 s; the song is 56 s (doc 9.5).
+- **Every resource file.** `tools/verify_res.py` finds each `INCBIN` piece in the assembled image and compares it
+  with the recordings' memory. During the title (`work/c2`) 65 of 66 pieces are equal; in `udg.bin` the title's
+  stack holds 6 bytes. In the bot's game (`work/p2`) the 48 pieces of graphics and course data never change. The
+  rest are work areas in play, foremost the playfield buffer `$8000-$BFFF` over the title's code and data
+  (src/res/README.md).
