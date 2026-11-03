@@ -443,12 +443,21 @@ replays the game:
 | --- | --- | --- |
 | `game-p2-timeline.png`: round, lives, followers, hits | `tools/gamechart.py work/p2/run.log` | doc 10.1 |
 | `anim-round-handover.gif`: the convoy lands beside the parked vehicle, round 2 begins | `tools/screen_anim.py --work work/p2 --from 3280 --to 3540 --step 4` | doc 10.2 |
-| `heat-p2.png`, `heat-p2-last.png`: the whole game's memory | `tools/heatmap.py` | doc 10.1 |
 | `heat-coverage.png`: code run in p2 against m1 | `tools/heatviews.py coverage --other work/m1/l1.json --from C000` | doc 10.1 |
 | `heat-records.png`: reads and writes per field of every object record | `tools/heatviews.py records` | doc 7.2 |
 | `heat-screen.png`: screen writes in the screen's geometry | `tools/heatviews.py screen` | doc 6.7 |
+| `anim-pass.gif`, `heat-pass.png`: one pass as it writes the buffer and the screen | `tools/pass_anim.py --work work/p2 --from 1000 --to 1005 --step 1750 --still` | doc 6.1 |
+| `heat-pass4.png`: four passes, by when each byte first changed | `tools/pass_anim.py --from 1000 --to 1018 --step 3500 --still` | doc 6.1 |
 | `routines-time.png`: own t-states per routine | `tools/heatviews.py routines` | doc 4.5 |
 | `heat-modules.png`: memory per module, screen writes per module | `tools/heatviews.py modules` | doc 2.6 |
+
+The whole-game memory maps first stood in doc 10.1. They showed memory, not gameplay, and doc 2 already has the
+same maps for the game window, so they were removed. What doc 10 keeps is the code coverage, which names what the
+bot's game reached. The rendering gained what heatmaps can show there: `tools/pass_anim.py` samples one pass every
+1 750 t-states and lights each changed byte where it shows, in the whole strip buffer and on the screen. The
+pictures show the steps of 6.1 in time: the sprites go into the set the blit will show, the blit runs 1.5 frames
+from the left column to the right, `$DD6C` puts the strips back, and a pass takes about 4.2 frames. Over four
+passes the scroller's rewritten strips appear, one phase a pass.
 
 `tools/heatmap.py` now draws the screen page (`$4000-$5AFF`) a second time below each panel, in the screen's own
 geometry (bitmap bytes where they show, attributes as cells): in the 256-byte rows of the memory grid the screen's

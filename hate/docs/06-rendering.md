@@ -34,6 +34,38 @@ and `$DD6C` then takes them out of the buffer again (6.6).
 3 599 entries at `$D3F9`: 2 319 by falling through from the blit, one a pass, and 1 280 calls from the round
 start's pre-roll ([4.2](04-game-loop.md)).
 
+**One pass, as it draws.** The GIF below samples one pass of the bot's game in round 1 (frames 1000-1005,
+[10.1](10-gameplay-logic.md)) every 1 750 t-states with TTD `memory_at`, the way `tools/pass_anim.py` does it.
+Each byte that changed since the last picture lights up where it shows: in the strip buffer, drawn whole as
+stored, and on the screen. The buffer is drawn as its four sets of 32 strips (6.2), with the set the blit shows
+outlined. The bar underneath counts the changed bytes of the buffer, the screen and the object records
+`$C000-$C1FF`, picture by picture:
+
+![One pass: the buffer and the screen as the pass writes them](img/anim-pass.gif)
+
+| Frames:t-state | Changed | What it is |
+| --- | --- | --- |
+| 1000:0-1000:35000 | about 40 bytes of object records | the objects move (`$E15C`, `$EFA5`) |
+| 1001:3600-1001:45600 | 350 bytes of the buffer, all in the outlined set (odd pages, half `$80`) | the shadows and sprites drawn into the strips (`$DDE7`, `$EAE3`) |
+| 1001:47400-1003:10800 | 2 134 screen bytes, column by column from the left | the blit `$D35E`: about 103 000 t-states, 1.5 frames |
+| 1003:7300-1003:28300 | 285 bytes of the buffer, at the same places | `$DD6C` puts the saved strips back |
+| 1005:18000 | the buffer again | the next pass: a pass takes about 4.2 frames here |
+
+The pass draws no new strip: its scroll state was `$C32E` = `$25`, `$C32F` = `$80`, the phase that only checks the
+course (6.4). The numbers are as exact as the sampling allows, 1 750 t-states. A byte written with the value it
+already held does not show, so the blit counts the bytes the scroll changed (2 134 of the play area's 3 792), not
+its writes.
+
+Every byte the pass changed, coloured by the moment it first changed (blue early, red late). The screen's colours
+run from the left edge to the right, the order the blit goes through the strips:
+
+![The bytes one pass changed, by when](img/heat-pass.png)
+
+Over four passes (frames 1000-1018) the sprites land in a different set each pass, the one the next blit shows. The
+upright bars are the strips the scroller rewrites, one phase a pass (6.4):
+
+![The bytes four passes changed, by when](img/heat-pass4.png)
+
 ## 6.2 The playfield buffer `$8000-$BFFF`
 
 64 pages of 256 bytes. Each page holds two **strips**, at bytes `$00-$7F` and `$80-$FF`. A strip is one byte wide

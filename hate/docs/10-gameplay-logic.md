@@ -37,19 +37,8 @@ L1 over the 14 020 frames confirms the story by counts: 9 round setups (`$D151`)
 start `$CF68` (the game, the demo, 3 retries, 1 fall back); 5 losses (`$CFF6`), 2 of them with no lives left
 (`$D005`) and 1 GAME OVER (`$D0A5`).
 
-**What the bot's game reached.** The whole game's memory (`tools/heatmap.py`, the screen page also drawn as the
-screen below each panel):
-
-![Memory over the bot's game](img/heat-p2.png)
-
-The frame each byte was last read or written in the same game (bright: late). The playfield buffer `$8000-$BFFF`
-(over the title player's old place), the profile `$6000`, the object records and the screen's diagonal playfield stay
-bright to the last frame; the screen's corners outside the isometric playfield were last written early (the menu and
-the round's first paint), and most code and data bytes below `$F000` are never read or written as data:
-
-![The frame each byte was last touched in the bot's game](img/heat-p2-last.png)
-
-and the code it ran against the first recording, byte by byte over `$C000-$FFFF` (`tools/heatviews.py coverage`):
+**What the bot's game reached.** The code it ran against the first recording, byte by byte over `$C000-$FFFF`
+(`tools/heatviews.py coverage`):
 
 ![Code run in the bot's game and in the first recording](img/heat-coverage.png)
 
