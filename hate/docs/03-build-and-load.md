@@ -268,14 +268,20 @@ flowchart LR
 - **Resources**: 66 entries of `game.ann` carry `@res FILE` (graphics, the game screen, tiles, courses, round
   objects, the title tune, the renderer's tables, leftovers): their bytes are written to `src/res/` as raw files and
   assembled with `INCBIN` under the entry's label, 28 067 bytes in 62 files. [src/res/README.md](../src/res/README.md)
-  lists every file with its address, size and format; `tools/res_preview.py` draws the graphic ones to
-  `docs/img/res/`.
+  lists every file with its address, size and format.
+- **Previews**: `tools/res_preview.py` draws every resource to `docs/img/res/` (81 images; the gallery at the end of
+  [src/res/README.md](../src/res/README.md)). It applies the game's own rules to the files: the course strips as
+  `FreshStrip` builds them, the ground profiles as `$D0EF` reads the anchors, the round objects by position, the
+  title tune run as the player runs it (a piano roll), the sprites and the explosion as GIFs, the tables and
+  leftovers as 1-bit pixels. It reads the row lists from `build/game.bin`, so it runs after `tools/build.sh`. The
+  images are only for looking; the source is the `.bin` / `.scr` files.
 - **The check**: the assembled `game.bin` must equal the image unpacked from the original tape; then `build.sh`
   packs it and the TAP is compared with `orig/HATE.TAP`.
 
 ```bash
 python3 tools/mkgame.py --venv SKOOLKIT_VENV --sjasmplus SJASMPLUS --install   # rewrite src/game from game.ann
 python3 tools/refdocs.py                                                       # docs 11 and 12 from the same
+python3 tools/res_preview.py                                                   # docs/img/res, after build.sh
 ```
 
 [11. Data reference](11-data-reference.md) and [12. Routine reference](12-routine-reference.md) are written from the
