@@ -758,7 +758,8 @@ The analyzer review in unreal-ng (records, graphics, code map, L3 bugs) was chec
 corrected doc 2.7: `DrawShadows` ANDs a 17-byte mask row in, the loop `$DEE6`-`$DEFA` (four instructions, four
 passes) the first 16 bytes, `$DEFC` the 17th; no instruction alone reads on both sides of L2's pointer table
 `$6502-$653F`, the routine's connected reads `$6500-$6543` do. The rule now joins a reader's index reads with its
-routine's connected ones (fixture `index-around-table-fields.asm`).
+routine's connected ones (fixture `index-around-table-fields.asm`). Built again with it (p2-rev4), the session
+gives 8 bugs again, none on `$6500`, with 19 unknowns and 42 240 of 42 240 bytes rebuilt.
 
 Every resource now has a picture in `docs/img/res/`, and the gallery at the end of
 [src/res/README.md](src/res/README.md) shows them. `tools/res_preview.py` draws them by running the game's own rules on the
