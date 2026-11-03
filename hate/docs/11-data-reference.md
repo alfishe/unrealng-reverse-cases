@@ -3,7 +3,7 @@
 Every data entry of the game image `$5FB4`-`$FFFF`, in address order by module (`src/game/<module>.asm`):
 tables, buffers, records, variables, graphics, text. The name, the title and the description are the
 source's (`src/game/game.ann`); the readers and writers are the routines the recordings saw touch it
-(`work/p2`, `work/game`; the playfield buffer's accesses over the title player and
+(`work/p2`, `work/game`, local and not in the repository; the playfield buffer's accesses over the title player and
 the start-up are not counted as theirs). The object records are laid out in
 [7. Objects](07-objects.md), the course data in [6. Rendering](06-rendering.md).
 Written by `tools/refdocs.py`.

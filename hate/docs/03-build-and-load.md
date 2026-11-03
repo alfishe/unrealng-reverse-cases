@@ -8,19 +8,19 @@ Soft for their 1989 disk version, from which this tape was made back.
 
 | Block | Kind | Name | Bytes | Loads at | Plays for (ROM speed) |
 | --- | --- | --- | --- | --- | --- |
-| 0 | header | `H_A_T_E` | 19 | | 5.1 s |
-| 1 | BASIC, LINE 10 | | 413 (+2) | PROG (`$5CCB`) | 4.3 s |
-| 2 | header | `H_A_T_E.1` | 19 | | 5.1 s |
+| 0 | header | `H_A_T_E` | 17 (+2) | | 5.1 s |
+| 1 | BASIC, LINE 10 | | 413 (+2) | PROG (`$5CCB`) | 4.2 s |
+| 2 | header | `H_A_T_E.1` | 17 (+2) | | 5.1 s |
 | 3 | CODE | screen unpacker + loading screen | 6 432 (+2) | `$9C40` | 38.8 s |
-| 4 | header | `H_A_T_E.2` | 19 | | 5.1 s |
+| 4 | header | `H_A_T_E.2` | 17 (+2) | | 5.1 s |
 | 5 | CODE | depacker + packed game | 35 495 (+2) | `$5FB4` | 204.4 s |
 
 All blocks use the ROM's standard encoding (flag byte, data, XOR checksum; pilot 2 168 T, 8 063 pulses for a header
 and 3 223 for data, bits of 2 x 855 T and 2 x 1 710 T). The play times are computed from the bit counts of each block,
 pauses not included: 263 s, 13 159 frames of tape signal in all. There is no custom loader: every block goes through
 the ROM's LD-BYTES (`$0556`). The first recording loaded the tape with the emulator's fast loading (the LD-BYTES trap): each
-block took a few frames, the whole load 2 540 frames, so the recording's frame numbers (the banner at 2 380, play at
-2 613) do not follow these times.
+block took a few frames, the whole load 2 540 frames, so the recording's frame numbers (the banner at 2 380, the game's
+entry at 2 613) do not follow these times.
 
 The headers: the BASIC one is as the ROM's `SAVE "H_A_T_E" LINE 10` writes it (length and program length 413,
 line 10). The two CODE headers hold `$2020`, two spaces, as their second parameter where the ROM's `SAVE ... CODE`
@@ -91,7 +91,7 @@ documented because the tape carries it and the build reproduces it.
 | `$5D6F` | `BoldFont` | makes a bold copy of the ROM font: each byte of `$3D00-$3FFF` ORed with itself shifted right once, into `$C350`; CHARS = `$C250` |
 | `$5D1B` | `FadeInTitle` | opens channel 2; eight times: `AT 10, col`, `INK 0` to `INK 7`, prints the title, waits 3 frames (`$5D47`): the title fades in from black to white |
 | `$5D8A` | `RomFont` | CHARS back to `$3C00` |
-| `$5D4F` | `WipeCredit` | row 12, from column 31 down to 4: prints the last (32 - column) characters of the credit text at the column, so the line slides in from the right |
+| `$5D4F` | `WipeCredit` | row 12, from column 31 down to 5: prints the first (32 - column) characters of the credit text at the column, so the line slides in from the right; at column 5 the whole 27-character credit shows |
 
 Its data lives in its own REM: `$5D19` (title length) and `$5D1A` (column) are the two bytes after `MeasureTitle`'s
 `RET`. The bold font at `$C350` is overwritten later by the depacker.
@@ -186,7 +186,7 @@ flowchart LR
     subgraph before["while block 5 loads"]
         direction TB
         a1["$4000-$5AFF loading screen"] --- a2["$5B00 printer buffer"] --- a3["$5C00 sysvars, BASIC"]
-        a3 --- a4["$5FB4-$5FFF depacker head"] --- a5["$6018-$EA5A packed game"] --- a6["$EA5B-$FFFF free"]
+        a3 --- a4["$5FB4-$6017 depacker head"] --- a5["$6018-$EA5A packed game"] --- a6["$EA5B-$FFFF free"]
     end
     subgraph after["after the depacker"]
         direction TB
@@ -230,7 +230,7 @@ bytes) as the depacker leaves it at frame 2 613; `tools/pack.py` packs it into b
 | --- | --- | --- | --- |
 | `buffers` | `$5FB4`-`$7FFF` | the ground profile `$6000`, the entry `$61A8`, the font with its strings, the sprite scratch page `$6500`, the sprite graphics | 6, 8 |
 | `titleplayer` | `$8000`-`$85FF` | the title music player, its IM 2 handler, the song, patterns and drums | 2.3, 9 |
-| `startup` | `$8600`-`$BFFF` | stale copies left from the build, the start-up `$9F12`, the screen image `$A000` | 2, 3.6 |
+| `startup` | `$8600`-`$BFFF` | stale copies left from the build, the start-up `$9F12`, the screen image `$A000` | 2.3 |
 | `gamedata` | `$C000`-`$C3FF` | the object records, the variables, the templates, the sprite table `$C300`, the hit table `$C380` | 7 |
 | `course` | `$C400`-`$CF31` | the tiles, the runs and rows, the ten courses, the course table `$CF04` | 6.5 |
 | `mainloop` | `$CF32`-`$D0EE` | the state machine: menu, game, round, pass, losing, GAME OVER | 4 |
@@ -260,8 +260,8 @@ flowchart LR
 
 - **Code** is every instruction start the recordings ran (`work/*/l1.json`) whose opcode is the image's byte (an
   operand may be self-modified later), widened by a walk along the branches no recording took, which stops at bytes
-  the game reads as data. The walk takes the game's data reads only from the recordings that start after the depacker (its
-  back-references read the output). Seven hit handlers that no recording ran (`$EBFC`, `$EC01`, `$EC04`, `$EC35`,
+  the game reads as data. The walk takes the game's data reads only from the recordings that start after the depacker (in the
+  load the depacker reads its packed input at addresses that later hold the game's code). Seven hit handlers that no recording ran (`$EBFC`, `$EC01`, `$EC04`, `$EC35`,
   `$EC73`, `$ED3B`, `$ED81`) are code by `game.ann`: they are reached through the table `$C380` only. 8 677 bytes,
   4 883 instructions are code; 4 568 of those instructions ran.
 - **Data** is everything else, shaped by `game.ann` (bytes or words per line, text, the entry boundaries at tables,

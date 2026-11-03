@@ -26,6 +26,10 @@ layers.
 **Asked:** what runs, from the first instruction of the BASIC loader to play, in what order.
 
 `work/` (recordings, analysis builds) is local and not in the repository: the commands of each section rebuild it.
+The terms L1, L2, L3 (the analysis levels) and `re_session.py` (unreal-ng's `tools/verification/analysis/`) are
+explained in [the docs index](docs/README.md); `$W` in the commands is the unreal-ng checkout, and `data/rom/...`
+paths are its ROMs. The gates ("42 240 of 42 240 bytes", `$5B00-$FFFF`) are the rebuild and assemble checks of an
+analysis build; "arrivals" are the stages a recording's code arrives in (section 5).
 
 **Used:** TTD recording with the load included (`re_session.py capture --record-load`). The machine starts from a
 power-on state with zeroed RAM (saved as `power-on.szx`); the recording starts before `LOAD ""` is typed, so the
@@ -41,7 +45,7 @@ every question about timing would need a new play session that never repeats the
 checkpoints diverged).
 
 Note: the emulator's fast tape loading (the ROM's LD-BYTES trap, on by default) loaded the blocks in a few frames
-each; the load takes 2 540 frames instead of about 12 000. The game does not depend on it (all three blocks go
+each; the load takes 2 540 frames instead of about 13 200 (263 s of tape signal, doc 3.1, plus the pauses between blocks). The game does not depend on it (all three blocks go
 through the ROM's LD-BYTES); the real-speed tape is documented from the block lengths and the ROM timing.
 
 ## 2. Static pass over the tape
@@ -78,8 +82,9 @@ Findings, each checked later on the recording (step 3):
 and a binary search over frames.
 
 - `tools/depack.py` (the depacker in Python) gives the memory `$5FB4-$FFFF` of frame 2613 exactly: 0 of 41 036 bytes
-  differ. The search found 2613 as the first frame after the depacker's last write; at 2614 the game already
-  writes its stack and variables.
+  differ. The search found 2613 as the first frame after the depacker's last write: the memory equals the image from
+  the start of frame 2613 (the depacker's last writes put back bytes already there) until it returns at t 53 257;
+  then the game writes its stack and variables.
 - `tools/pack.py` packs that image back into the 35 395 bytes of the tape, identical. The rules came from the
   tokens of the tape's stream: runs from three bytes on; zeros 256 at a time while 256 remain, then up to 127;
   other bytes up to 127; a lone `$97` escaped.
@@ -110,11 +115,11 @@ and 2531 rendered by `tools/zxscreen.py`).
   by a copier.
 
 **Produced:** `tools/build.sh`: `build/HATE.TAP` identical to `orig/HATE.TAP`, all 42 415 bytes. The game image in
-it is still unpacked from the original; replacing it with `src/game` is the rest of the work.
+it was at first unpacked from the original; `src/game` replaced it in 6.13.
 
 ## 5. Tool gaps found and fixed in unreal-ng
 
-The first L1 build over the whole recording showed three faults in the analysis. They were fixed in unreal-ng (with
+The first L1 builds over the whole recording showed five gaps in the analysis. They were fixed in unreal-ng (with
 fixtures and tests, branch `analysis-stages`) before going on:
 
 | Gap | Seen as | Fix |
@@ -125,15 +130,17 @@ fixtures and tests, branch `analysis-stages`) before going on:
 | A host trap that runs as one instruction lost its writes: L1 kept 64 bus cycles per instruction, the fast tape load writes a whole block at the ROM loader's entry | the second build listed 31 arrivals: the loaded bytes had no load as their writer (the ROM's RAM test was the last one), so every return from the ROM into the banner was a new arrival, each "written `$4000-$FFFF`" | the events past 64 go to a buffer that grows once (up to 128 K); an arrival's run is the bytes its own writer wrote; one arrival per writer and run (`TrapWritesPastTheEventBuffer`, the fixture's stage 2 now calls back into the loader) |
 | The L1 JSON held per-byte kinds only, no counts | no memory heatmap could be drawn from a build | `byte_counts`: reads, writes, first and last frame per byte, dense per page; `tools/heatmap.py` renders them |
 
+Since then the whole-recording build lists the arrivals, and each stage is built from its own arrival.
+
 Later gaps, found while writing the game's source and working down the review queue (sections 6.13-6.15):
 
 | Gap | Seen as | Fix |
 | --- | --- | --- |
 | A tool edit in the recording (the fast tape load, a script's poke) writes memory past the bus: the replay applied it, L1 did not see it | the loaded block had no writer, its bytes no uses | the replay reports every byte an edit changes, in each bank it maps, as a write of the instruction pending at the edit (`ToolEditWritesAreUses`) |
-| A seek shows its position's picture by replaying the frame, then puts the machine back; the engine's event cursor stayed where that replay left it | an edit right after the first keyframe (the fast tape load 55 T-states into a recording) was applied inside the seek and skipped by the replay that followed: no writes for the loaded block | two causes, both fixed: (1) the live-state snapshot now keeps the engine's event cursor and frame state too, so the replay sees the edit; (2) the edit's bytes were folded as bus cycles of the pending instruction, a `CALL` into the loader, so they counted as pushes: they are now plain data writes of that `CALL` (the trap runs the whole loader at its entry's fetch and returns, so the entry itself never starts as an instruction) (`FastTapeLoadWritesAreUses`) |
+| A seek shows its position's picture by replaying the frame, then puts the machine back; the engine's event cursor stayed where that replay left it | an edit right after the first keyframe (in a recording that starts at the tape load, the fast load comes 55 T-states in) was applied inside the seek and skipped by the replay that followed: no writes for the loaded block | two causes, both fixed: (1) the live-state snapshot now keeps the engine's event cursor and frame state too, so the replay sees the edit; (2) the edit's bytes were folded as bus cycles of the pending instruction, a `CALL` into the loader, so they counted as pushes: they are now plain data writes of that `CALL` (the trap runs the whole loader at its entry's fetch and returns, so the entry itself never starts as an instruction) (`FastTapeLoadWritesAreUses`) |
 | The skool draft wrote an instruction whole when its entry ended inside it (code later overwritten by a buffer that starts at the instruction's last byte) | the rebuild gate failed at `$8082` (`JP` at `$8081` into the buffer entry at `$8083`, one byte written twice), the assemble gate shifted | the instruction's own bytes as `DEFB`, the instruction in the comment (`SkoolDraftInstructionCutByTheEntryEnd`); the bot's recording rebuilt again with it: both gates pass, 42 240 of 42 240 bytes |
 | L1's self-modified mark (`kSmc`, written after it ran) could not tell an operand patch from a buffer laid over code that ran once | doc 2.7 had to sort the bot game's 123 marked bytes by their writers by hand; the code map called the title player under the playfield buffer self-modifying; L3's `code-overwritten` missed the overlay written by plain `LD (HL),r` | a byte written after it ran and never run after any such write is `overlaid` (the last field of a `byte_use` row; a byte that ran once after a write stays a patch); the code map counts only patches, L3 reports overlaid code whatever wrote it (`PatchIsNotOverlay`, `BufferOverCodeIsAnOverlayPatchIsNot`, fixture `patch-overlay.asm`); on p2: 12 patches, 111 overlaid, eight overlay findings |
-| The font claim covered every code from the first glyph drawn to the last, including unused slots holding other data | three "font and text cannot both hold" conflicts at the credits (`$63DB-$63FE`), resolved by hand in 6.6 | a slot read by some code whose bytes no drawing code ever put on the screen is no glyph: the claim splits around it; a slot another routine drew stays (the score digits) (`AnalysisDetectorFonts_StringInAnUnusedSlot`, fixture `font-slot-text.asm`); on p2 the font is codes 45-58 and 64-89, conflicts 241 to 238 |
+| The font claim covered every code from the first glyph drawn to the last, including unused slots holding other data | three "font and text cannot both hold" conflicts at the credits (`$63DB-$63FE`), resolved by hand in 6.6 | a slot read by some code whose bytes no drawing code ever put on the screen is no glyph: the claim splits around it; a slot another routine drew stays (the score digits) (`AnalysisDetectorFonts_StringInAnUnusedSlot`, fixture `font-slot-text.asm`); on p2 the font is codes 45-58 and 64-88, conflicts 241 to 238 |
 | L3's `index-past-table` counted every reader of a table, so a byte-after-byte walk through a larger structure (a list, a block copy, a mask) "read past" a table L2 found inside it | ten bug findings on the bot's game, six of them walks (`$C99E`, `$CF02`, `$FBC7`, `$FE00`, `$FF00`) | only accesses that read through an index (L1 `indexes`) count (`IndexPastTableNeedsAnIndex`, fixture `index-past-table.asm`: a real index past a table followed by code, and a walk around a second table); on p2 four remain, each a table L2 measured too short (doc 2.7) |
 | The screens detector knew back buffers only as block copies; the playfield buffer goes to the screen through `Blit`'s unrolled loads, so no detector saw it whole | `$8000-$BFFF` as 7 626 small "buffer" claims of the records detector, two false sprites, and 23 unknown areas of 17-31 bytes at page starts | a run of 2 K or more read by routines that write the screen's pixels and rewritten again and again (4 writes or more, one for every 64 reads at least: a sprite's or font's source is written never or once) is a back buffer, layout `drawn` (`AnalysisDetectorScreens_DrawnBackBuffer`, fixture `drawn-back-buffer.asm`); on p2: one claim `$8000-$BFFF`, read by `Blit` `$D35E`, unknown areas in the game image 36 to 13 |
 | Code and the buffer laid over it later were a conflict ("cannot both hold"), though both held, one after the other, and the overlay was already the `code-overwritten` bug | 10 new conflicts with the back buffer claim, and most of the old 238 between the title player and the records detector's small buffers | no conflict when every byte of the overlap that ran is `overlaid` (`OverlayIsNoConflict`); on p2 conflicts 248 to 65, export gates still pass (42 240 of 42 240 bytes; skool2asm warnings 784 to 573) |
@@ -144,8 +151,8 @@ Later gaps, found while writing the game's source and working down the review qu
 | L1 took a sprite's mask only from an AND with the screen; a sprite masked into a back buffer reached the screen through a copy without it | `DrawSprites` ANDs each mask byte into the playfield buffer, so the sprites came out as unmasked single-byte columns | a buffer byte keeps the mask merged into it (an AND's operand, or the next source when the value merged the byte it overwrites), and the copy to the screen draws with it (`AnalysisDetectorSprites_MaskCarriedThroughBackBuffer`, fixture `sprite-drawn-buffer.asm`) |
 | Graphics dropped every frame whose lines go up through memory, as a known limit | the sprites `$6580-$7FFF`: the blit shows the buffer columns bottom line first, line step -2 | such a frame is read from its lowest address and its claim is marked `bottom_up` (gallery and skool pictures flipped) (`AnalysisDetectorSprites_StoredBottomUp`, fixture `sprite-bottom-up.asm`); on p2-spr `$6580-$7FD5` masked sprites, 21, 17, 13 and 14 lines; gates pass (42 240 of 42 240) |
 | A picture could be claimed over the bytes of a string | the blit once copied a buffer column filled from the strings in the font's spare slots: a sprite at `$64C8-$64FF`, 3 sprite/text conflicts | bytes the text detector found (read as character codes) are no pixels: a picture mostly over text is none (`AnalysisDetectorGraphics_TextIsNoPicture`, fixture `text-as-pixels.asm`) |
-| An init table broke at the first byte nothing read, so a table of short entries in wider slots started late or was no table | the shadow shapes `$5B00-$5B5F`: 4 bytes a strip in 8-byte slots, the last 4 of a slot never read; L2 claimed `$5B08`, `$5B28`, `$5B48` and L3 gave three index-past-table bugs | a run goes on over up to 7 bytes the same routine wrote but nothing read when a read byte of that writer follows and the entry before the gap is 4 bytes or more and no shorter than the gap; the first version, without that condition, swallowed single variables read here and there in a copied area (`AnalysisDetectorVariables_GroupsAndStrides` failed) (`AnalysisDetectorInitTables_PaddedEntries`, fixture `init-padded.asm`, fails with the rule off; 177 analysis tests pass); on p2-all one table `$5B00-$5EEF`, the three bugs gone |
 | A sprite block the recording never drew stayed unknown, though the pointer table gives its bounds and a sibling block of the same size shows its layout | `SpriteTable` `$C300` points at 20 blocks of five sizes; the recording drew none of `$6A6C` (630 bytes) and `$70FC` (420 bytes) | a fully untouched block between two targets of a pointer table copies the sprite claims of a drawn block of the same size, shifted, as inferred (`AnalysisDetectorSprites_PointerTableBlockNeverDrawn`, fixture `sprite-pointer-blocks.asm`; the test fails with the rule off); 176 analysis tests pass; on p2-all it did not fire: L2 found no pointer table of four entries at `$C300` (the words reach their use through the draw list in memory, see 6.14) |
+| An init table broke at the first byte nothing read, so a table of short entries in wider slots started late or was no table | the shadow shapes `$5B00-$5B5F`: 4 bytes a strip in 8-byte slots, the last 4 of a slot never read; L2 claimed `$5B08`, `$5B28`, `$5B48` and L3 gave three index-past-table bugs | a run goes on over up to 7 bytes the same routine wrote but nothing read when a read byte of that writer follows and the entry before the gap is 4 bytes or more and no shorter than the gap; the first version, without that condition, swallowed single variables read here and there in a copied area (`AnalysisDetectorVariables_GroupsAndStrides` failed) (`AnalysisDetectorInitTables_PaddedEntries`, fixture `init-padded.asm`, fails with the rule off; 177 analysis tests pass); on p2-all one table `$5B00-$5EEF`, the three bugs gone |
 | L1 followed a pointer's provenance through registers and the stack, not through memory: a word stored into a list and used from there was credited to the list only | `DrawSprites` copies the word at `$C300 + (+8)` into the draw list `$6500`, the drawing loop uses it from there; L2 saw only `$C31C-$C31F` in `SpriteTable`, so the pointer-block rule had no table | a byte stored from a register remembers the memory byte the register was loaded from (any other write forgets it); a word used as an address whose two bytes came that way from a word elsewhere makes that word a pointer too, the list's word stays one (`AnalysisDataFlow_PointerThroughAList`, fixture `pointer-through-list.asm`, fails with the rule off); on p2-via `$C300-$C32D` is a pointer table of 23 pointers, and the pointer-block rule fills `$6A6C-$6CE1` and `$70FC-$729F` with inferred masked sprites |
 | A font claim ended at the last code a text printed | `FontHigh` `$6400-$64D7`: "Y" and "Z" (`$64C8-$64D7`) never printed, left unknown | the font goes on over up to 8 glyph slots on each side that nothing read or drew and no other claim holds, within codes 32-127 (`AnalysisDetectorFonts_StringInAnUnusedSlot` extended, fails with the rule off). On p2-via the font still ended at `$64C7`. The glyph loop at `$EE68` read `$6490-$64CF`, and L1 saw "Y" drawn 8 times, but too seldom to join the font's object; the first version only took slots nothing drew, and the first refinement (a slot read only by the glyph readers) still kept that condition, so p2-fnt changed nothing. Final rule: a slot whose bytes only the glyph readers read and no other claim holds is a glyph, drawn or not. On p2-fnt `FontHigh` is claimed to `$64D7` (codes 64-90, "Z" included), the lower half from `$6328` (code 37), and the unknown `$64C8-$64DA` is gone |
 | `index-past-table` flagged the draw list `$6500` once the other walks were gone: `DrawShadows` reads the mask at `$6500` + the shadow entry's mask offset (+5, `$FE69`, `$FE71`, ...), so one index read `$6500-$6543`, around L2's pointer table `$6502-$653F` on both sides | the last index-past-table bug on p2-fnt | a reader whose every index (all accesses through one selector byte) reads on both sides of the table addresses a larger structure the table lies in, no index past it; an index running off one end still counts (`IndexAroundTableIsALargerStructure`, fixture `index-around-table.asm`, fails with the rule off; `IndexPastTableNeedsAnIndex` still passes, 183 analysis tests). On p2-ipt bugs 9 to 8, all eight the overlays of doc 2.7. L2 still calls the record-address words at +2 of the 4-byte draw-list entries a "Table of 31 pointers" with stride 2, though only every second word was used as a pointer: a known L2 limit, left as is |
@@ -153,7 +160,7 @@ Later gaps, found while writing the game's source and working down the review qu
 | The tile runs `$C640-$C8E9` had no claim: `FreshStrip` reads a tile number (`$D55A` `LD A,(HL)`), makes it `$C400` + 8 x tile and copies the tile with `LDI`, but L1 recorded an index only for reads through a pair, not for a block copy's read through HL, so the run bytes were no index of anything | the largest RAM unknown on p2-til | L1 records the index of a block read too (`AnalysisDataFlow_IndexOfABlockRead`, fixture `tiles-copied-map.asm`, fails without it); the level map detector claims the bytes whose values picked tiles of a copied tile set, runs joined over untouched gaps holding tile numbers, as wide as the copying loop's trips when the run is a multiple of them, else one row (a pool of runs read from varying starts, as here); the same test fails with that rule off (185 analysis tests pass). On p2-map `$C641-$C8E9` is a level map of 681 cells, one row (584 cells read, 97 untouched ones between them holding tile numbers): `TileRuns` of doc 11 (`$C640`, 682 bytes) less its first byte, which nothing read. Unknowns 28 to 27, still 8 bugs (the new block-read indexes raise no index-past-table), no conflicts, gates pass, skool2asm warnings 662 |
 | The object templates had no claim: `$E1F5` copies 9 bytes from `LaunchTemplates` (`$C2B4` + 9 x kind) into a launched record, `$E891` 16 bytes from `ShotTemplate` `$C360` into a shot record; the records detector claimed the records, not the blocks they were filled from | `$C2BE-$C2E9` and part of `$C333-$C37F` unknown | record templates: one copier filling records of an array from fewer blocks than records it filled, L bytes each at one offset, the blocks on a lattice of L outside the array, are a record array of L-byte templates with the target's fields (`AnalysisDetectorRecords_Templates`, fixture `record-templates.asm`, fails with the rule off; 186 analysis tests pass). On p2-tpl `$C2BD-$C2D7` is 3 templates of 9 bytes (the kinds launched in the replay, on doc 11's lattice from `$C2B4`) and `$C360-$C36F` the shot template; the unknowns shrink to `$C2D8-$C2E9` (the fifth launch template and `EnemyShotTemplate`, copied by the same `$E1F5`: `$E1BD` points DE at `$C2E1`, `EX DE,HL` at `$E1F3`; their copies are missing from L1 because the copy list was full, see the copy cap row below) and `$C333-$C35F`; 8 bugs, no conflicts, gates pass, skool2asm warnings 663 |
 | `Directions` `$C340-$C35F` (8 x 4 bytes) had no claim: `$E2B3` reads the step along (a word) and across (a byte) at `$C340` + 4 x the record's direction (+5), the fourth byte never; the records detector's `(HL)` pattern for that routine mixes these bases with the routine's other `HL` walks (the ground profile, the records), so it found no lattice | part of `$C333-$C35F` unknown | records read through an index: bytes read through an index (L1 `indexes`) whose single reader repeats every S bytes, two readers or more a record, untouched bytes between them, 4 records or more (`AnalysisDetectorRecords_ReadThroughAnIndex`, fixture `records-indexed.asm`, where a second `HL` walk in the same routine spoils the pattern; fails with the rule off). p2-idx: `$C340-$C35F` a record array of 8 x 4, fields +0, +1, +2 read, +3 unread (evidence `indexed $E2BD`); unknowns 27 to 26, still 8 bugs, no conflicts, gates pass 42240/42240, skool2asm warnings 664 |
-| L1 kept at most 65 536 distinct block-copy runs in all; the back-buffer copiers `$DD52` and `$DDD3` filled the list (31 268 and 31 226 runs), so the template, SCORE and round-table copies first seen after about frame 6 800 were dropped. `HitHandlers` `$C380` was cut into 3 tables at the entries pointing at handlers that never ran, and those handlers were left untouched bytes. `ShotGaugeText` and `RoundText` are strings with control codes and fields the code fills, passed to `PrintString` `$EE17` | `$C2D8-$C2E9`, `$C333-$C33F`, `$C3D0-$C3E1`, `$EC73-$ECAB`, `$ED3B-$EDC9`, `$EF5B-$EF60` unknown or bare data | three generic fixes, each with a test that fails without it: a copy cap per copier (32 768 runs each, 131 072 in all, room for every copier's first 1 024; `AnalysisDetectorRecords_Templates` on `record-templates-busy.asm`, a blitter making 71 680 runs before the template copier); handler tables grow over words inside the hull of the targets jumped to through their dispatch and bridge the gaps between used entries of one dispatch, and an untouched stretch a handler table points at that decodes as code is inferred code with an entry (`AnalysisDetectorPointerTables_UnrunHandlers`, `unrun-handlers.asm`); a printer's argument: an immediate address passed to a routine that prints claimed text is a string up to that printer's terminator, the bytes code writes are fields (`AnalysisDetectorText_PrinterArgument`, `print-argument.asm`). IndexedRecords now skips bytes that reached the screen (a sprite drawn by unrolled code from base + S x frame). p2-rul: `$C2B4-$C2E9` 6 templates of 9 (doc 11's 5 launch templates and `EnemyShotTemplate`), `$C380-$C3EF` one handler table of 56 words, `$EC73`, `$ED3B`, `$ED81` inferred routines, `$C333` and `$C2FA` text with their filled fields, `$EF5B-$EF60` a round-table row; unknowns outside the ROM 7 to 3 (`$7FD6-$7FFF`, `$EF61-$EF9E`, `$FF66-$FFFF`), still 8 bugs, no conflicts, gates pass 42240/42240, skool2asm warnings 655 |
+| L1 kept at most 65 536 distinct block-copy runs in all; the back-buffer copiers `$DD52` and `$DDD3` filled the list (31 268 and 31 226 runs), so the template, SCORE and round-table copies first seen after about frame 6 800 were dropped. `HitHandlers` `$C380` was cut into 3 tables at the entries pointing at handlers that never ran, and those handlers were left untouched bytes. `ShotGaugeText` and `RoundText` are strings with control codes and fields the code fills, passed to `PrintString` `$EE17` | `$C2D8-$C2E9`, `$C333-$C33F`, `$C3D0-$C3E1`, `$EC73-$ECAB`, `$ED3B-$EDC9`, `$EF5B-$EF60` unknown or bare data | three generic fixes, each with a test that fails without it: a copy cap per copier (32 768 runs each, 131 072 in all, room for every copier's first 1 024; `AnalysisDetectorRecords_Templates` on `record-templates-busy.asm`, a blitter making 71 680 runs before the template copier); handler tables grow over words inside the hull of the targets jumped to through their dispatch and bridge the gaps between used entries of one dispatch, and an untouched stretch a handler table points at that decodes as code is inferred code with an entry (`AnalysisDetectorPointerTables_UnrunHandlers`, `unrun-handlers.asm`); a printer's argument: an immediate address passed to a routine that prints claimed text is a string up to that printer's terminator, the bytes code writes are fields (`AnalysisDetectorText_PrinterArgument`, `print-argument.asm`). IndexedRecords now skips bytes that reached the screen (a sprite drawn by unrolled code from base + S x frame). p2-rul: `$C2B4-$C2E9` 6 templates of 9 (doc 11's 5 launch templates and `EnemyShotTemplate`), `$C380-$C3EF` one handler table of 56 words, `$EC73`, `$ED3B`, `$ED81` inferred routines, `$C333` and `$C2FA` text with their filled fields, `$EF5B-$EF60` a round-table row; unknowns outside the ROM 8 to 3 (`$7FD6-$7FFF`, `$EF61-$EF9E`, `$FF66-$FFFF`), still 8 bugs, no conflicts, gates pass 42240/42240, skool2asm warnings 655 |
 | The last three unknowns outside the ROM: the stack and BASIC's UDGs at the top of RAM, the round table past the rows the replay read, the blank last strip of the last explosion frame | `$FF66-$FFFF`, `$EF61-$EF9E`, `$7FD6-$7FFF` | three generic rules, each with a test that fails without it: bytes only the stack touched are the stack, and an untouched run of 32 bytes or more (4 values or more, no fill) equal to a ROM range is a ROM copy, both Unused; an unknown accessed only by the stack says so (`AnalysisDetectorCodeMap_StackAndRomCopyAreUnused`, `stack-rom-copy.asm`); an array whose step an index gives is completed by one constant fill on its lattice, a whole number of steps long, over rows only the fill and the array's users touched, and one routine's immediate bases walked to the same sentinel compare are one record each (`AnalysisDetectorRecords_FillCompletesIndexedArray`, `records-fill-completes.asm`); a blank object of one shape drawn by the same blit right next to a claimed neighbour of that shape joins it (`AnalysisDetectorSprites_BlankStripJoinsItsNeighbour`, `sprite-blank-strip.asm`). p2-fin: `$FFF5-$FFFE` the stack, `$FF66-$FFF4` a copy of the ROM's letters (`$3E16-$3EA4`), `$EF4F-$EF90` the round table 11 x 6 (inferred, evidence `fill`), `$EF48`, `$EF91`, `$EF98` the SCORE, HIGH and MAX digit fields (7 bytes, the `.` stop); 1 unknown left outside the ROM, `$7FD6-$7FFF`: its neighbour claim `$7F82` is 16 x 21 (two strips), the blank strip one strip of 8 x 21, so the shapes differ and the blank rule does not join it; the cause is the strip runs off the frames' 168-byte lattice (section 6.14). Still 8 bugs, no conflicts, gates pass 42240/42240, skool2asm warnings 662 (the new claims' labels). The save-area claims at `$EF49`, `$EF50`, `$EF56`, `$EF5C` stay under the round table: the save-areas detector runs first |
 | The explosion frames were claimed as runs of strips off their 168-byte lattice (clipping at the window drew them in varying column groups), so the blank last strip `$7FD6-$7FFF` of the last frame had no neighbour of its shape | the last unknown outside the ROM after p2-fin | frames from a pointer table's lattice: when a graphics pointer table's targets run on a constant stride F and the drawn column objects of one height tile those blocks (3/4 of the bytes or more, a pass drawing F / C columns side by side), each block is one frame F / C columns wide, the last block F long, the absorbed objects not claimed (`AnalysisDetectorSprites_PointerTableFrameLattice`, `sprite-frame-lattice.asm`, columns clipped differently per frame; fails with the rule off). p2-lat: `$7C10-$7FFF` one sprite 32 x 21, 6 frames, masked, bottom-up (evidence `frame-lattice $C300`), as doc 11 has it; no unknown left outside the ROM (review queue 0 unknown), 8 bugs (the overlays of doc 2.7), no conflicts, gates pass 42240/42240, skool2asm warnings 655. The full core-tests suite passes (20 shards) |
 | The save-areas detector claimed both sides of a copy that goes both ways: SCORE `$EF49` as a save area of a round-table row (`$D175` copies SCORE into the row, `$D03E` back), and 30 pieces of the playfield buffer `$8419-$BE1E` as save areas of `SpriteSaveBuffer` `$F800` (`$DD47`/`$DD52` save the strips under the sprites there, `$DDC9`/`$DDD3` put them back) | 35 save-area claims on p2-lat, 31 of them the data saved, not the save | a saved byte is read only to put it back: an area another instruction reads (the score drawn and compared at `$EF23`, the playfield drawn by `$D35E`) is the data saved (`AnalysisDetectorSaveAreas_LiveDataIsNoSave`, `save-live-score.asm`; fails with the rule off). p2-sav: 4 save areas, `$F800` (`SpriteSaveBuffer`, doc 11) and the round-table rows `$EF50`, `$EF56`, `$EF5C` (SCORE kept per round, inside the round-table claim); no unknown outside the ROM, 8 bugs, no conflicts, gates pass 42240/42240, skool2asm warnings 645 |
@@ -196,7 +203,7 @@ entry points: [docs/02-architecture.md](docs/02-architecture.md). Findings:
 - the title music player is relocatable;
 - its IM 2 handler doubles as the key exit and unwinds the stack to SP as saved at entry;
 - the game loop has no frame lock;
-- 2 319 passes of `$CF33` averaged 6.2 frames each.
+- 2 319 passes of the pass loop (`$CFAC`) averaged 6.2 frames each.
 
 Every role the document gives a routine is marked with the document that will confirm it.
 
@@ -214,8 +221,6 @@ Every role the document gives a routine is marked with the document that will co
 - `tools/code_addresses.py`: on GitHub, a pair of `$` in text is LaTeX math, so `$C2B1-$F2E1` written bare rendered
   as an italic formula. Every address in prose is now a code span, and `check_docs.py` fails on any `$` left outside
   code.
-
-The whole-recording build lists the arrivals, then each stage is built from its own arrival.
 
 ### 6.5 Controls, from the code and the recording
 
@@ -279,7 +284,6 @@ also runs every pass, entered by falling through: 6.10). That told where the cou
 
 The fall-back to an earlier round when the lives run out did not run: the recording never left round 1. It is
 described from the code and needed a recording that gets further: the bot's recording (6.12) reached it.
-
 
 ### 6.9 Memory heatmaps of the game window
 
@@ -355,7 +359,7 @@ size table of the hit boxes (the six self-modified operands hold the sum of two 
 
 The pods and the convoy came out of the code alone: `$EDFE` writes type 11 into a free slot at a shot dome, `$ECF3`
 turns it into a follower, `$D151` / `$D1DE` turn the followers into the next round's lives. None of it ran in the
-recording. It is the first thing a second capture has to reach (doc 10).
+recording. It is the first thing a second capture has to reach (doc 10; reached in 6.12).
 
 ### 6.12 A second recording, played by a bot that reads the game's own records
 
@@ -424,9 +428,11 @@ python3 tools/autopilot.py --unreal $W --binary $W/cmake-build-agent-release/bin
 | 210-3 468 | round 1 (aircraft), 4 lives: 4 pods, one hit taken by a follower; cleared with 3 followers |
 | 3 480-7 659 | round 2 (ground vehicle), 3 lives: two lives lost to side missiles, cleared on the last with 3 followers |
 | 7 671-10 623 | round 3 (aircraft), 3 lives: 1 pod, cleared with 1 follower |
-| 10 635-10 896 | round 4, 1 life, the bot gives up |
-| 10 980 | fall back: round 3 again with 3 − 1 = 2 lives, SCORE back to 8 120 (MAX keeps 11 080) |
-| 11 389, 11 871 | both lives lost; round 2's entry holds 1 (it was retried down to 1): GAME OVER |
+| 10 635-10 919 | round 4, 1 life, the bot gives up: lost at 10 895-10 919 |
+| 10 980 | fall back (play from 10 992): round 3 again with 3 − 1 = 2 lives, SCORE back to 8 120 (MAX keeps 11 080) |
+| 11 389-11 413 | a life lost |
+| 11 462 | round 3 retried with 1 life |
+| 11 871-11 895 | the last life lost; round 2's entry holds 1 (it was retried down to 1): GAME OVER from 11 939 |
 | 13 971-14 019 | the demo starts; the bot sees round 0 and stops |
 
 The table shows the lives at each round start, and they are the followers brought out of the round before:
@@ -485,12 +491,12 @@ The source is not typed by hand. `tools/mkgame.py` writes it from three inputs:
 1. the image, unpacked from the original tape's block 5;
 2. the instructions the recordings ran (`work/*/l1.json`, 4 568 instruction starts), widened by a walk along the
    branches no recording took (315 more instructions; the walk stops at bytes the game reads as data, counted only
-   in the recordings that start after the depacker, whose back-references read its own output);
+   in the recordings that start after the depacker, since in the load the depacker reads its packed input at addresses that later hold the game's code);
 3. `src/game/game.ann`: what the reverse knows, one line an address (module, entry kind and name, the entry's
    description, comments and labels on instructions, data shapes).
 
 It turns them into a SkoolKit control file, runs `sna2skool.py` and `skool2asm.py`, writes address operands that
-point inside an entry as `Label+offset` (125), splits the listing into the modules, and installs it only when
+point inside an entry as `Label+offset` (120; 125 before the five `@isub` constants, 6.15), splits the listing into the modules, and installs it only when
 sjasmplus gives the original bytes.
 
 `game.ann` was written in four address ranges at once, each from the docs and from reading the listing, every
@@ -577,7 +583,7 @@ areas, 12 in the game image.
 **The 12 unknown areas left in the game image** are all named in the source (`src/game/game.ann`): the sprite graphics
 below the buffer (`$6542-$7FFF`), the launch templates and texts at `$C2BE-$C37F`, rows of `HitHandlers` (`$C3D0`),
 the unused block `UnusedC3FE`, the handlers that did not run (`HitBlockOnShot`, `HitBlockOnPlayer`), the SCORE text
-(`$EF48`), the round object blocks from `$F300` running into `SpriteSaveBuffer` (`$F800`), and the UDG leftover
+(`$EF48-$EF4E`, the stop and the digits), the round object blocks from `$F300` running into `SpriteSaveBuffer` (`$F800`), and the UDG leftover
 (`$FF58`). No detector had a kind for them then; the source describes each. All of them were claimed later (section 5,
 p2-til to p2-lat).
 
@@ -622,7 +628,8 @@ character codes are no pixels.
    array makes the sources records with the slots' fields, observed where copied; blocks a pointer table on the same
    lattice names but the run never copied are inferred (`AnalysisDetectorRecords_GatheredByShortCopies`, fixture
    `records-gathered-blocks.asm`, fails with the rule off). On p2-all `$F300-$F7FF` is ten claims of 16 records of 8:
-   `$F300-$F3FF` observed (copied by `$D151`), `$F400-$F7FF` inferred from the pointer lattice.
+   `$F300-$F3FF` observed (copied by `$D151`), `$F400-$F7FF` inferred from the pointer lattice (rounds 3, 4 and 9 were
+   set up after the copy list filled, about frame 6 800, so their copies are missing; section 5, the copy cap row).
 3. The save area under the sprites is written by `$DD52` through the moving pointer `$DD6A` and copied back by `$DDD3`
    with the same lengths. In the recording it filled 980 bytes at most, `$F800-$FBD3`. Its last 13 bytes were read as
    a table built by one routine (`$FBC7`), and that table gave the index-past-table bug finding on `$DDD3`.
@@ -670,7 +677,7 @@ two blocks the recording never drew are inferred sprites with the layout of thei
 masked frames like `$6580`, `$70FC` as 8 x 14 frames like `$6F58`.
 
 With the font rule on top (p2-fnt, the same day): unknowns 29 to 28, no conflicts, 9 bugs, gates pass (42 240 of
-42 240), skool2asm warnings 658. Of the 34 unknowns of p2-spr, the 9 left outside the ROM are
+42 240), skool2asm warnings 658. On p2-fnt, 9 of the unknowns lie outside the ROM:
 `$7FD6-$7FFF`, `$C2BE-$C2E9`, `$C333-$C37F`, `$C3D0-$C3E1`, `$C3FE-$C8E9`,
 `$EC73-$ECAB`, `$ED3B-$EDC9`, `$EF5B-$EF9E` and `$FF66-$FFFF`.
 
@@ -697,7 +704,7 @@ The largest gap was the tile set: 576 of those bytes read every strip, drawn int
 copied-tiles rule (section 5) claims it on p2-til; the tile runs `$C640-$C8E9` followed on p2-map (a level map of
 tile numbers, section 5). 8 unknowns remain outside the ROM.
 
-(As of p2-ipt; p2-fin and p2-lat closed it, section 5.) `$7FD6-$7FFF` was a known limit of the sprite detector. The explosion frames are 168 bytes each from `$7C10`
+(As of p2-ipt; p2-lat closed it, section 5.) `$7FD6-$7FFF` was a known limit of the sprite detector. The explosion frames are 168 bytes each from `$7C10`
 (doc 11): 4 strips of 21 lines, a mask and a pixel byte a line, 42 bytes a strip. The detector joins the strips it
 saw drawn side by side, and clipping at the window's edges showed them in varying groups. So its claims (`$7DDE-$7E31`
 8 x 21 x 2, `$7E32-$7E85` 16 x 21, ...) are runs of whole strips that do not start on the frames' 168-byte lattice.
@@ -711,8 +718,8 @@ previous frame's last strip. Two generic rules would claim it: a blank frame dra
 shape as a claimed neighbour is part of that object, and a pointer table's targets on a constant stride (168 from
 `$7C10`) give the last target the same block length.
 
-After p2-lat (frames from the sprite table's lattice, section 5) none remains: every byte outside the ROM has a claim. After p2-fin (stack, ROM copy, fill-completed arrays, section 5) only `$7FD6-$7FFF` remains. After p2-rul (the copy cap, handler tables and printer arguments, section 5) 3 of them remain: `$7FD6-$7FFF`, `$EF61-$EF9E` (round-table rows 3-10, never read, and the HIGH / MAX digits) and `$FF66-$FFFF`. The 7 unknowns left outside the ROM after p2-idx, read against the replay by two parallel agents (2026-11-02),
-each with its cause in the analyzer and the generic rule that closes it:
+The 8 unknowns left outside the ROM after p2-idx (seven rows), read against the replay by two parallel agents (2026-11-02),
+each with its cause in the analyzer and the generic rule that closes it (the outcomes follow the table):
 
 | Unknown | What it is | Why no detector named it | Generic rule |
 | --- | --- | --- | --- |
@@ -723,6 +730,8 @@ each with its cause in the analyzer and the generic rule that closes it:
 | `$EC73-$ECAB`, `$ED3B-$EDC9` | `HitBlockOnShot`, `HitBlockOnPlayer`, `HitDomeOnShot`: mirror handlers that never ran | `FinishUnused` sees a table entry pointing at the stretch and leaves it ("not leftovers"), and nothing claims it | a table-entry stretch that decodes cleanly is inferred code with a routine entry at the target |
 | `$EF5B-$EF9E` | `RoundTable` rows 2-10 (6 bytes: lives, SCORE), `HighScore`, `MaxScore` and their `.` stops | only rows 0-2 were read (the read-through-index rule wants 4); the `$D03E`/`$D175` copies were dropped by the copy cap; `$EF49`, `$EF50`, `$EF56` were claimed as save areas | the copy cap; an indexed array grown by one bounded fill on its lattice (rows 1-10, 60 = 10 x 6 from `$EF55`; row 0 at `$EF4F` was claimed already); one routine's immediate arguments (`$EF4E`, `$EF97`, `$EF9E` to `DrawDigits`) with one walk and one sentinel as instances of one record |
 | `$FF66-$FFFF` | `UdgLeftover`; the sprite list runs into `$FF58-$FF60`, the stack uses `$FFF5-$FFFE`, `$FF61-$FFF4` is free | `FinishUnused` claims fills and code only, not the stack's bytes or a ROM copy | stack-only bytes from the lowest SP to the first SP are the stack; an untouched run equal to a ROM range (the UDG letters A-U at sysvar UDG) is a ROM copy |
+
+After p2-rul (the copy cap, handler tables and printer arguments, section 5) 3 of them remain: `$7FD6-$7FFF`, `$EF61-$EF9E` (round-table rows 3-10, never read, and the HIGH / MAX digits) and `$FF66-$FFFF`. After p2-fin (stack, ROM copy, fill-completed arrays, section 5) only `$7FD6-$7FFF` remains. After p2-lat (frames from the sprite table's lattice, section 5) none remains: every byte outside the ROM has a claim.
 
 The same reading corrected doc 11 (`UdgLeftover` is not unread: the unbounded sprite list runs into it;
 `EnemyShotTemplate` is copied by `$E1F5`) and the source: `LD SP,$FFFF`, `LD SP,$FFF9` (the operand the title player
@@ -743,8 +752,8 @@ screen moved to `src/res/screens/loading.scr` and the tail of block 3 to `src/re
 Every file is listed in [src/res/README.md](src/res/README.md) with its address, size, labels and format;
 `tools/res_preview.py` draws the graphic ones to `docs/img/res/` (the sprite previews follow doc 6.6: four
 frames, strips of mask and pixel pairs, bottom line first, and show the vehicles, the pads and the explosion as
-the game draws them). The files are the original bytes, not converted at build time: editable formats are the next
-level; `tools/build.sh` still writes a tape identical to `orig/HATE.TAP` (SHA-1 `bbe36140...`), checked from a
+the game draws them). The files are the original bytes, not converted at build time: editable formats were the next
+step (PNG and text sources, below); `tools/build.sh` still writes a tape identical to `orig/HATE.TAP` (SHA-1 `bbe36140...`), checked from a
 clean copy of the tree.
 
 Regenerating the source from `game.ann` showed that two outputs had been corrected by hand after the generator
@@ -833,7 +842,7 @@ bytes. `tools/res_formats.py export` wrote the font, the tiles, the 14 sprite bl
 and labels instead of addresses: the sections are laid out from `$843F`, so a pattern can grow. `build.sh` builds
 them back into `build/res` and assembles from there. The tape still comes out identical to `orig/HATE.TAP`. One
 changed pixel, or one changed `long`, makes it differ. `res_formats.py check` and an install-and-build of all 64
-files from git give the same bytes, the previews are unchanged, and `verify_res.py` and `verify_sprites.py` give
+files (the 62 game files, `loading.scr` and `screen-tail.bin`) from git give the same bytes, the previews are unchanged, and `verify_res.py` and `verify_sprites.py` give
 the same results through the new loader.
 
 ### 6.16 Final review, second round (2026-11-03)
@@ -889,3 +898,29 @@ A reviewer who had not seen the case read the documents against `build/game.lst`
   (count + 1) / 2, plain domes in rounds 5, 7 and 9 only, round 1 or 2 *of any lap* ends the game, the shield acting
   on the mover's next pass (`$E262`), the wall crash's explosion values (`$1E`, followers `$22`), and 2.5's "one
   pass a frame" (a mistake of the second round: a pass is about 6 frames).
+
+### 6.18 Final review, fourth round (2026-11-03)
+
+**Asked:** do doc 3, this walkthrough and the intros of docs 11 and 12 hold against the tape, the listing and the
+recording? The reviewer had not seen the earlier rounds; each finding was checked again before it was fixed.
+
+- The tape (doc 3.1): a header is 17 bytes (+2 for flag and checksum), block 1 plays for 4.2 s; 2 613 is the game's
+  entry, not play; the load at ROM speed is about 13 200 frames, not 12 000.
+- The banner: `WipeCredit` prints at columns 31 down to 5 (the loop ends on `CP 4`), each time the first 32 - column
+  characters; at column 5 the whole 27-character credit shows (`src/loader.asm` comment too). The depacker head is
+  `$5FB4-$6017`.
+- The depacker has no back-references: plain RLE, a token's value is in the stream. The real reason the builds over
+  the load give no data reads is that it reads its packed input where the game's code later lies (doc 3.7,
+  `tools/mkgame.py`, 6.13 here).
+- Frame 2613, checked again on the first recording: the memory equals `tools/depack.py`'s image from the start of
+  the frame to t 53 000 (the last writes put back bytes already there, input and output pointers meet), then the
+  game writes 2, 4 and at the next frame 6 bytes.
+- Counts and frames in this walkthrough: 120 `Label+offset` operands (125 before the `@isub` lines), the p2 font
+  codes 64-88, 8 unknowns outside the ROM after p2-idx (seven rows), the 2 319 passes of the pass loop `$CFAC` (not
+  `$CF33`), the bot game's last rounds in 6.12 and doc 10 now with doc 4's frames (lost at 10 895-10 919, retry at
+  11 462, game over from 11 939), and the round blocks of rounds 3, 4 and 9 missing from L1 because the copy list
+  had filled.
+- Stale or unclear text: section 4's "rest of the work" (done in 6.13), section 5's five gaps, the editable formats
+  (done in 6.15), the terms (L1-L3, gates, arrivals, `$W`) explained in the intro, a paragraph put back in time
+  order, the docs 11 and 12 intros naming `work/` as local and the full `mkgame.py` command, the `tools/build.sh`
+  fallback comment.

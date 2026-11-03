@@ -20,12 +20,12 @@ if [ -f "$here/src/game/game.asm" ]; then
     "$asm" --nologo --msg=war -I"$here/build" -I"$here/src/game" --lst=game.lst "$here/src/game/game.asm"
     image=game.bin
 else
-    # Until the game's source is complete: the image unpacked from the original block (the recording holds the same
-    # bytes after the depacker ran, frame 2613). This proves the packer, not the game's source.
+    # Fallback for a tree without src/game (as before the source was written): the image unpacked from the original
+    # block (the recording holds the same bytes after the depacker ran, frame 2613). This proves the packer only.
     python3 "$here/tools/tapblocks.py" "$here/orig/HATE.TAP" 5 orig-block5.bin
     python3 "$here/tools/depack.py" orig-block5.bin game.bin
     image=game.bin
-    echo "build: no src/game yet, the game image is unpacked from orig/HATE.TAP" >&2
+    echo "build: no src/game, the game image is unpacked from orig/HATE.TAP" >&2
 fi
 python3 "$here/tools/pack.py" "$image" game.pk
 "$asm" --nologo --msg=war -I"$here/src" "$here/src/depacker.asm"

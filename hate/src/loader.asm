@@ -115,7 +115,7 @@ Wait3:
         pop bc
         ret
 
-; The credit on row 12, printed at columns 31 down to 4, each time its first 32 - column characters: it slides in
+; The credit on row 12, printed at columns 31 down to 5, each time its first 32 - column characters: it slides in
 ; from the right edge
 WipeCredit:
         ld b,31

@@ -94,7 +94,7 @@ def load_l1(paths, mem):
             a = int(r['entry'][1:], 16)
             if a >= LO and r['page'] in bases:
                 entries.add(a)
-        # The builds over the tape load count the depacker's reads of its own output: their reads say nothing
+        # In the builds over the tape load the depacker reads its packed input where the game's code later lies: their reads say nothing
         if os.path.basename(os.path.dirname(path)) not in READ_BUILDS:
             continue
         for page in doc.get('byte_counts', []):

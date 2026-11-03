@@ -1,12 +1,12 @@
 # 12. Routine reference
 
 Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
-the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/p2` (the bot game), `work/game` (the L1 build of the first recording's game window).
+the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/p2` (the bot game), `work/game` (the L1 build of the first recording's game window). Both are local, not in the repository; the WALKTHROUGH's commands rebuild them.
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
 of the recording. Memory ranges name the entries they cover; in `$8000-$BFFF` the accesses of code outside it are
 the playfield buffer's, laid over the title player and the start-up. An entry no recording reached says so.
-Written by `tools/refdocs.py`; edit `src/game/game.ann`, then run `tools/mkgame.py --venv VENV --install` and
-`tools/refdocs.py`.
+Written by `tools/refdocs.py`; edit `src/game/game.ann`, then run `tools/mkgame.py --venv SKOOLKIT_VENV --sjasmplus SJASMPLUS --install`
+(see [3. Build and load](03-build-and-load.md)) and `tools/refdocs.py`.
 
 | Module | Entries | Code entries |
 | --- | --- | --- |

@@ -29,9 +29,11 @@ the same inputs replay the same game; the decisions depend only on memory. From 
 | 210-3 468 | 1, aircraft | 4 lives; 4 pods picked up, one follower lost to a hit; the barrier passed with 3 |
 | 3 480-7 659 | 2, ground vehicle | 3 lives; two lives lost to missiles from the side; cleared on the last life with 3 followers |
 | 7 671-10 623 | 3, aircraft | 3 lives; 1 pod, kept to the barrier |
-| 10 635-10 896 | 4, ground vehicle | 1 life, given up |
-| 10 980 | 3 | fall back: 3 − 1 = 2 lives, SCORE back to 8 120 |
-| 11 389, 11 871 | 3 | both lives lost; no round left to fall back to: GAME OVER |
+| 10 635-10 919 | 4, ground vehicle | 1 life, given up: lost at 10 895-10 919 |
+| 10 980 | 3 | fall back (play from 10 992): 3 − 1 = 2 lives, SCORE back to 8 120 |
+| 11 389-11 413 | 3 | a life lost |
+| 11 462 | 3 | retried with 1 life |
+| 11 871-11 895 | 3 | the last life lost; no round left to fall back to: GAME OVER from 11 939 |
 
 L1 over the 14 020 frames confirms the story by counts: 9 round setups (`$D151`), of which only 6 through the round
 start `$CF68` (the game, the demo, 3 retries, 1 fall back); 5 losses (`$CFF6`), 2 of them with no lives left
