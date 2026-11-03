@@ -177,6 +177,23 @@ fresh strips at 2, 4 and 6 pixels. The line offsets keep them on the diagonal of
 
 The fourth pass draws nothing. It checks the course (6.5) and counts the strips of the round in `$C3FA`.
 
+**Checked against the recording.** `tools/verify_buffer.py` rebuilds all four sets of the buffer from the course data
+alone: the fresh strips of 6.5, from `src/res` and the row lists, and the three phases by the rules above. A phase
+strip of a fresh strip s and the next one, s + 1, is, line by line (y counted from the bottom):
+
+| Set | Line y of the phase strip |
+| --- | --- |
+| even pages, half `$80` (2 pixels) | (s[y + 1] << 2) OR (s + 1[y − 3] >> 6) |
+| odd pages, half 0 (4 pixels) | (s[y + 2] << 4) OR (s + 1[y − 2] >> 4) |
+| odd pages, half `$80` (6 pixels) | (s[y + 3] << 6) OR (s + 1[y − 1] >> 2) |
+
+The tool compares the result with the buffer of the bot's game ([10.1](10-gameplay-logic.md)) at frames 1004, 3000,
+5000, 7000, 9000, 10000 and 10800 (rounds 1 to 4, and the hand-over from course 1 to course 2 around frame 3000). Every
+strip of the three sets the blit does not show is one of two things. Either it equals its rebuilt strip byte for
+byte over lines 4-123 (the first and last lines take bits from outside the strip), or it holds a pad stamped over
+the course (6.6). In the set the blit shows, the strips that differ are the pass's shadows and sprites. Only the edge
+tile is not checked: which of the two it is follows the strip count, not the course, so the tool tries both.
+
 ## 6.5 The course
 
 **Expanding a course `$D4D9`.** A course record ([4.2](04-game-loop.md)) points to the course data, one byte a
@@ -278,6 +295,13 @@ The explosion frames `$7C10-$7FFF` are six blocks of 168 bytes, picked by the co
 `$C99E`) straight into the buffer, and only while their column `+B` is `$20-$23`: the last strips of the window,
 at the far edge of the buffer. They are not saved or restored: they become part of the course picture and scroll with
 it, like the tiles.
+
+The buffer shows this exactly. `tools/verify_buffer.py` (6.4) explains each strip that differs from the course as a
+block of `SpriteGfx1C` (the 420-byte block, 14 lines a strip) laid over the course: `AND` mask, `OR` pixels, each
+strip of the block 4 lines below the one before (the slope of 6.3). The frame differs from set to set, one step
+back for each 2 pixels of phase: at frame 1004 frames 0, 3, 2 and 1 in the sets of 0, 2, 4 and 6 pixels, at frame
+5000 frames 3, 2, 1 and 0. So the four pre-shifted frames of a block are one picture moved by 2 pixels each, and
+each set gets the frame that matches its own phase. The moments checked hold only pads (slot `$1C`).
 
 The 1 to 8 % of the play area where `tools/playfield.py` differs from the screen is these shadows and sprites.
 

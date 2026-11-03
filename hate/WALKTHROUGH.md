@@ -778,5 +778,19 @@ files, so each picture also checks a reading of the format:
 - **Sprites and the explosion.** Each sprite has a GIF of its four frames, and the explosion has one of its seven
   steps.
 
-The pictures are not compared pixel by pixel with the emulator's screen: they show the format readings make sense,
-not that they are exact.
+The course pictures were then checked against the recording, byte by byte. `tools/verify_buffer.py` rebuilds all
+four sets of the playfield buffer from the course data alone: the fresh strips the way `res_preview.py` draws them,
+and the 2-, 4- and 6-pixel phases by doc 6.4. It compares them with the bot's game at seven moments in rounds 1 to 4,
+including the hand-over from course 1 to course 2. Every strip outside the set the blit shows is explained exactly:
+either it equals its rebuilt strip, or it holds a pad stamped over the course. The pad is `SpriteGfx1C` laid on
+with mask and pixels, each strip 4 lines below the one before, in the frame that matches the set's phase (docs 6.4
+and 6.6). The only strips left unexplained are in the set the blit shows, where the pass's sprites sit. Two things
+became exact along the way:
+
+- **The phase strips.** Doc 6.4's "a copy moved down by a line or two" is, as a rule over a strip and its
+  neighbour: s[y + 1] and s + 1[y − 3] for 2 pixels, s[y + 2] and s + 1[y − 2] for 4, s[y + 3] and s + 1[y − 1]
+  for 6.
+- **The pre-shifted frames.** A sprite block's four frames are one picture moved by 2 pixels each.
+
+The other pictures (sprites, profiles, objects, the tune) are still only drawn by the documented rules, not compared
+with memory.
