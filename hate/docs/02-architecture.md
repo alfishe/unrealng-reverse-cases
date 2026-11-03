@@ -42,7 +42,7 @@ At the moment the game starts. The depacker has just put the whole program in pl
 | `$5FB4-$5FFF` | 76 | the image's first bytes: mask and pixel pairs left from the build, no code | overwritten from `$BFB4` when play starts; the left margin of the profile below |
 | `$6000-$62FF` | 768 | the ground profile buffer ([6.5](06-rendering.md)); in the image, leftovers of the build and the entry | cleared at every round start, built by `$D0EF` |
 | `$61A8-$61AE` | 7 | the entry, inside the profile buffer: `LD SP,$FFFF; DI; JP $9F12` | runs once, then profile |
-| `$6300-$7FFF` | 7 424 | no code ran here: data (L1 sees a font and texts at `$63DB-$63FE`; [11. Data reference](11-data-reference.md)) | always |
+| `$6300-$7FFF` | 7 424 | no code ran here: data: the font and the credits `$6300-$64FF`, the sprite scratch `$6500`, the sprite graphics `$6580-$7FFF` ([11. Data reference](11-data-reference.md)) | always |
 | `$8000-$83E1` | 994 | the title music player and its handler | title only, then a buffer |
 | `$83FC-$8421` | 38 | the player's command table (handler addresses) | title only |
 | `$8422-$843C` | 27 | the player's patch list (9 entries of address and byte) | title only |
@@ -91,7 +91,8 @@ are merged:
 | `$FDFD-$FDFF` | 3 | the IM 2 jump |
 
 About 8 000 bytes of the 41 036 the depacker wrote were executed. The rest is data, or code this run did not reach.
-It has to be told apart before the source can be rebuilt.
+[3.7](03-build-and-load.md#37-the-source-build) tells them apart: 8 677 bytes are code, 4 568 of their 4 883
+instructions ran.
 
 **The memory in use, as heatmaps.** L1 counts every byte's executions, reads and writes over the window (frames
 2613-45260, the title music, two games and the demo). Each picture is the 48 K of RAM as 192 rows of 256 bytes,
@@ -109,7 +110,7 @@ Read from the top:
   round setup (`$CF68`, `$D0EF`, [6.5](06-rendering.md)), and the font, only read.
 - **`$8000-$BFFF`** glows in both read and write: the playfield buffer. After the title the music player's bytes are
   overwritten by it, which is the "code, then a buffer" reuse L1 reports (2.2). The thin execute line at `$8000-$85FF`
-  is the title tune, the only code that ran there.
+  is the title music player, the only code that ran there.
 - **`$C000-$C3FF`** is the hottest data: the object records and the game's variables.
 - **`$C400-$F2FF`** is blue: code. The few bright spots in it are operands the code writes into itself.
 - **`$F300-$F7FF`** is read only: the course blocks (4.2).
@@ -189,7 +190,7 @@ $8340  DI
        JR NZ,$8356       ; a key: leave the music
        PUSH HL
        LD HL,$8244
-       DEC (HL)          ; the note-length counter, an operand inside the player
+       DEC (HL)          ; the drum timer, the operand of LD A,n at $8243
        POP HL
        DEC C             ; and three registers of the interrupted code
        DEC H
@@ -363,7 +364,7 @@ the overlaid flag and the routines whose writes cover them tell the three kinds 
 
 | Bytes | Written by | L1 | What it is | Docs |
 | --- | --- | --- | --- | --- |
-| 12: the operands of the six compares in the pair scan (`$E5DC`-`$E5DD`, `$E5E8`-`$E5E9`, `$E60E`-`$E60F`, `$E61A`-`$E61B`, `$E640`-`$E641`, `$E64C`-`$E64D`) | `MoveRecord` (`$E555`), once per moving record | patched: they run again | the hit box of the record being moved, patched into the compares that test it against every other record | [7.4](07-objects.md) |
+| 12: the operands of the six compares in the pair scan (`$E5DC`-`$E5DD`, `$E5E8`-`$E5E9`, `$E60E`-`$E60F`, `$E61A`-`$E61B`, `$E640`-`$E641`, `$E64C`-`$E64D`) | `MoveRecord` (`$E16E`; the patch at `$E555`), once per moving record | patched: they run again | the hit box of the record being moved, patched into the compares that test it against every other record | [7.4](07-objects.md) |
 | 3: `$FDFD`-`$FDFF` | the start-up (`JP $9F68`), the title player's hook (`JP $8340`), its exit (`$8357` puts the saved bytes back) | overlaid | the IM 2 jump every vector of the table leads to; play runs with interrupts off, so the restored jump never runs again | [2.3](#23-the-stages-from-tape-to-play) |
 | 108: the title player (89 bytes in `$8025`-`$8366`) and the start-up's last bytes (19 in `$9F1C`-`$9F2E`, from `StartGame` on) | the playfield buffer's writers (`FreshStrip`, `ScrollStep`, `DrawSprites`, `DrawShadows`, `RestoreStrips`, `StampStatics`) | overlaid | not self-modification: the buffer `$8000-$BFFF` is laid over code that ran once, at the title | [6](06-rendering.md) |
 

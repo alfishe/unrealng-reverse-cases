@@ -7,7 +7,7 @@ mechanisms are in docs 4-9; this document puts them together as a game and shows
 Evidence:
 
 - the code from the start image;
-- the first recording (`work/m1`, the demo and two short games, [4](04-game-loop.md)), which never left round 1;
+- the first recording (`work/c2`; its L1 builds `work/game`, the game window, and `work/m1`, all of it; the demo and two short games, [4](04-game-loop.md)), which never left round 1;
 - a **second recording** (`work/p2`), a whole game played by a bot that reaches round 4, falls back and ends in
   GAME OVER (10.1), with its L1 counts (`work/p2/l1.json`);
 - memory read back from that recording at chosen frames by seeking (`tools/roundtable.py`, `tools/objects_shot.py`,
@@ -18,7 +18,7 @@ Evidence:
 Random play and the demo never pick up a pod, so they never leave round 1. `tools/autopilot.py` plays instead:
 every 3 frames it reads the object list at `$C000` ([7](07-objects.md)), the wall profile under the player and the
 scroll, predicts where every threat will be over the next 14 passes from its direction, speed and behaviour bits,
-and steers the Kempston stick toward a pod or a dome to shoot, away from what would hit. The emulator is exact, so
+and steers the Kempston stick toward a pod or a dome to shoot, away from what would hit. The emulator is deterministic, so
 the same inputs replay the same game; the decisions depend only on memory. From round 4 it is told to give up
 (`--give-up 4`), to spend the lives where the fall back of [4.4](04-game-loop.md) can be seen.
 
@@ -66,7 +66,7 @@ A game is 10 courses, played in order and then again as harder laps ([7.8](07-ob
 each course is the player's type, and it alternates: **type 0, the aircraft**, in rounds 1, 3, 5, 7, 9; **type 1,
 the ground vehicle**, in rounds 2, 4, 6, 8, 10. The mix of buildings and enemies grows with the round (the object
 blocks at `$F300` + 128 × (round − 1)): cubes appear in rounds 3, 6 and 10, dishes in 4, 5, 6 and 10, plain domes (type 2)
-from round 5.
+in 5, 7 and 9.
 
 **The hand-over.** The vehicle of the next round waits at the end of the course: the record `$C0A0`, of the other
 type, parked at position `$600` in the middle of the track ([7.2](07-objects.md)). The convoy is driven to it by the

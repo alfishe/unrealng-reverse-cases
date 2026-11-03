@@ -238,9 +238,9 @@ bytes) as the depacker leaves it at frame 2 613; `tools/pack.py` packs it into b
 | `hits` | `$EBAA`-`$EE12` | the hit handlers, pods, the convoy | 7.6, 10.4 |
 | `hud`, `objview` | `$EE13`-`$F0DA` | the print routine, the score, MAX and HIGH, objects to screen places | 8 |
 | `menu` | `$F0DB`-`$F2FF` | the messages, the menu, the sound effects | 5, 8, 9 |
-| `coursedata` | `$F300`-`$FFFF` | the objects of every round, the saved strips `$F800`, the IM 2 table `$FD00` | 6, 7 |
+| `coursedata` | `$F300`-`$FFFF` | the objects of every round, the saved strips `$F800`, the IM 2 jump `$FDFD` and table `$FE00` | 6, 7 |
 
-The `.asm` files are written, not typed: `tools/mkgame.py` builds them from what the reverse knows and from what the
+The `.asm` files are generated, not edited by hand: `tools/mkgame.py` builds them from what the reverse knows and from what the
 recordings saw, and refuses to install them unless sjasmplus gives the original bytes.
 
 ```mermaid
@@ -255,7 +255,7 @@ flowchart LR
 
 - **Code** is every instruction start the recordings ran (`work/*/l1.json`) whose opcode is the image's byte (an
   operand may be self-modified later), widened by a walk along the branches no recording took, which stops at bytes
-  the game reads as data. The walk reads data reads only from the recordings that start after the depacker (its
+  the game reads as data. The walk takes the game's data reads only from the recordings that start after the depacker (its
   back-references read the output). Seven hit handlers that no recording ran (`$EBFC`, `$EC01`, `$EC04`, `$EC35`,
   `$EC73`, `$ED3B`, `$ED81`) are code by `game.ann`: they are reached through the table `$C380` only. 8 677 bytes,
   4 883 instructions are code; 4 568 of those instructions ran.
@@ -266,8 +266,8 @@ flowchart LR
   where the bytes are a constant that only looks like an address (`LD HL,-6`, `LD SP,$FFFF`), `@isub` in `game.ann`
   writes the instruction as the source means it (5 of them).
 - **Resources**: 66 entries of `game.ann` carry `@res FILE` (graphics, the game screen, tiles, courses, round
-  objects, the title tune, the renderer's tables, leftovers): their bytes are written to `src/res/` as raw files and
-  assembled with `INCBIN` under the entry's label, 28 067 bytes in 62 files. [src/res/README.md](../src/res/README.md)
+  objects, the title tune, the renderer's tables, leftovers): their bytes go to `src/res/` (the graphics and the title tune as editable
+  sources, below; the rest as raw `.bin` / `.scr`), each assembled with `INCBIN` under the entry's label, 28 067 bytes in 62 files. [src/res/README.md](../src/res/README.md)
   lists every file with its address, size and format. The graphics and the title tune are kept as editable sources:
   22 PNG files and one tune text (`music/title/tune.txt`) stand for 30 of the files. `tools/res_formats.py build`,
   run by `build.sh`, turns them back into the original bytes under `build/res`. sjasmplus reads the resources from
@@ -279,7 +279,8 @@ flowchart LR
   `FreshStrip` builds them, the ground profiles as `$D0EF` reads the anchors, the round objects by position, the
   title tune run as the player runs it (a piano roll), the sprites and the explosion as GIFs, the tables and
   leftovers as 1-bit pixels. It reads the row lists from `build/game.bin`, so it runs after `tools/build.sh`. The
-  images are only for looking; the source is the `.bin` / `.scr` files.
+  images are only for looking; the source is the files of `src/res`: the PNG and text sources and the remaining
+  `.bin` / `.scr` files.
 - **Checks against the recordings**: six scripts compare the files and the rules the previews use with memory in
   the recordings, through an unreal-ng instance with the recording open (`re_session.py open`):
   `tools/verify_buffer.py` (the course strips and pads in all four buffer sets, [6.4](06-rendering.md)),

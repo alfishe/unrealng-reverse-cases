@@ -153,7 +153,7 @@ A retry runs `$D151` again, so it overwrites its round's entry with the fewer li
 round's last attempt, not of its first. Round 2 had been retried down to 1 life, so it could not be fallen back to.
 The look-back (`$D017`) stores each round it tries into `$C2F7` and copies that round's SCORE into `$EF49`
 *before* it tests the lives (`$D032`-`$D03E`). So a round that does not qualify still leaves its traces: after the
-last loss at frame 11 880 the round number reads 1 and SCORE reads 4 220, round 2's starting score, instead of the
+last loss at frame 11 950 the round number reads 1 and SCORE reads 4 220, round 2's starting score, instead of the
 8 120 the player had. MAX was updated before the look-back (`$D00D`): it holds 11 080, the best SCORE of the game,
 reached at the start of round 4 and lost in the fall back. By frame 12 500, after the GAME OVER box, HIGH reads 11 080
 and MAX is cleared.

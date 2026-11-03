@@ -25,6 +25,8 @@ layers.
 
 **Asked:** what runs, from the first instruction of the BASIC loader to play, in what order.
 
+`work/` (recordings, analysis builds) is local and not in the repository: the commands of each section rebuild it.
+
 **Used:** TTD recording with the load included (`re_session.py capture --record-load`). The machine starts from a
 power-on state with zeroed RAM (saved as `power-on.szx`); the recording starts before `LOAD ""` is typed, so the
 loader, the banner, the screen unpacker, the depacker and the game are all in it. The session is saved once
@@ -119,11 +121,11 @@ fixtures and tests, branch `analysis-stages`) before going on:
 | --- | --- | --- |
 | One build over a program that arrives in stages mixes the stages: the depacker's buffer and the game's code at the same address | the loader's bytes classified with the game's | **code arrivals**: the first run of bytes written during the recording, one per writer routine (where, when, who wrote it); **window builds** from any frame / T-state to any frame, with their own start image (`build --stage N`) |
 | Every loaded byte that ran was marked self-modifying code | thousands of SMC marks on the game | SMC now means written after it ran |
-| An overlay (code overwritten by a later stage) gave one finding per opcode | 174 near-duplicate findings | one finding per overwritten run (gap 32) |
+| An overlay (code overwritten by a later stage) gave one finding per opcode | 174 near-duplicate findings | one finding per overwritten run |
 | A host trap that runs as one instruction lost its writes: L1 kept 64 bus cycles per instruction, the fast tape load writes a whole block at the ROM loader's entry | the second build listed 31 arrivals: the loaded bytes had no load as their writer (the ROM's RAM test was the last one), so every return from the ROM into the banner was a new arrival, each "written `$4000-$FFFF`" | the events past 64 go to a buffer that grows once (up to 128 K); an arrival's run is the bytes its own writer wrote; one arrival per writer and run (`TrapWritesPastTheEventBuffer`, the fixture's stage 2 now calls back into the loader) |
 | The L1 JSON held per-byte kinds only, no counts | no memory heatmap could be drawn from a build | `byte_counts`: reads, writes, first and last frame per byte, dense per page; `tools/heatmap.py` renders them |
 
-Later gaps, found while writing the game's source (section 6.13):
+Later gaps, found while writing the game's source and working down the review queue (sections 6.13-6.15):
 
 | Gap | Seen as | Fix |
 | --- | --- | --- |
@@ -148,11 +150,11 @@ Later gaps, found while writing the game's source (section 6.13):
 | A font claim ended at the last code a text printed | `FontHigh` `$6400-$64D7`: "Y" and "Z" (`$64C8-$64D7`) never printed, left unknown | the font goes on over up to 8 glyph slots on each side that nothing read or drew and no other claim holds, within codes 32-127 (`AnalysisDetectorFonts_StringInAnUnusedSlot` extended, fails with the rule off). On p2-via the font still ended at `$64C7`. The glyph loop at `$EE68` read `$6490-$64CF`, and L1 saw "Y" drawn 8 times, but too seldom to join the font's object; the first version only took slots nothing drew, and the first refinement (a slot read only by the glyph readers) still kept that condition, so p2-fnt changed nothing. Final rule: a slot whose bytes only the glyph readers read and no other claim holds is a glyph, drawn or not. On p2-fnt `FontHigh` is claimed to `$64D7` (codes 64-90, "Z" included), the lower half from `$6328` (code 37), and the unknown `$64C8-$64DA` is gone |
 | `index-past-table` flagged the draw list `$6500` once the other walks were gone: `DrawShadows` reads the mask at `$6500` + the shadow entry's mask offset (+5, `$FE69`, `$FE71`, ...), so one index read `$6500-$6543`, around L2's pointer table `$6502-$653F` on both sides | the last index-past-table bug on p2-fnt | a reader whose every index (all accesses through one selector byte) reads on both sides of the table addresses a larger structure the table lies in, no index past it; an index running off one end still counts (`IndexAroundTableIsALargerStructure`, fixture `index-around-table.asm`, fails with the rule off; `IndexPastTableNeedsAnIndex` still passes, 183 analysis tests). On p2-ipt bugs 9 to 8, all eight the overlays of doc 2.7. L2 still calls the record-address words at +2 of the 4-byte draw-list entries a "Table of 31 pointers" with stride 2, though only every second word was used as a pointer: a known L2 limit, left as is |
 | The tile set was no graphics claim: `FreshStrip` copies each tile with a chain of 8 `LDI` (`$D564`, the edge tiles `$D536`) from `$C400` + 8 x tile into a column of the playfield buffer, and the screen shows the buffer, not the tiles (the scroll rewrites the buffer's bytes, so the value flow ends there) | `$C400-$C63F` only CodeMap data, the largest RAM unknown after p2-ipt | tiles block-copied into a drawn back buffer: one copier, sources on one lattice base + L x tile (L 4..32), 4 tiles or more, never rewritten, the copied bytes shown one under another (in the buffer or in the tiles): one byte wide, L lines, from the first tile copied to the last; frames inside the set are its tiles, no sprites (`AnalysisDetectorTiles_CopiedToADrawnBuffer`, fixtures `tiles-copied.asm` (the value flow follows the copy) and `tiles-copied-shifted.asm` (a scroll ends it, as here), fails with the rule off; 184 analysis tests pass). On p2-til `$C400-$C63F` is one tile claim, 72 tiles 8 x 8 stored bottom up, as doc 11 has them (58 copied, 14 between them never copied; the edge tiles inside the set); the unknown `$C3FE-$C8E9` shrinks to the tile runs `$C640-$C8E9`; no conflicts, 8 bugs, gates pass, skool2asm warnings 660 |
-| The tile runs `$C640-$C8E9` had no claim: `FreshStrip` reads a tile number (`$D55A` `LD A,(HL)`), makes it `$C400` + 8 x tile and copies the tile with `LDI`, but L1 recorded an index only for reads through a pair, not for a block copy's read through HL, so the run bytes were no index of anything | the largest RAM unknown on p2-til | L1 records the index of a block read too (`AnalysisDataFlow_IndexOfABlockRead`, fixture `tiles-copied-map.asm`, fails without it); the level map detector claims the bytes whose values picked tiles of a copied tile set, runs joined over untouched gaps holding tile numbers, as wide as the copying loop's trips when the run is a multiple of them, else one row (a pool of runs read from varying starts, as here); the same test fails with that rule off; 185 analysis tests pass). On p2-map `$C641-$C8E9` is a level map of 681 cells, one row (584 cells read, 97 untouched ones between them holding tile numbers): `TileRuns` of doc 11 (`$C640`, 682 bytes) less its first byte, which nothing read. Unknowns 28 to 27, still 8 bugs (the new block-read indexes raise no index-past-table), no conflicts, gates pass, skool2asm warnings 662 |
+| The tile runs `$C640-$C8E9` had no claim: `FreshStrip` reads a tile number (`$D55A` `LD A,(HL)`), makes it `$C400` + 8 x tile and copies the tile with `LDI`, but L1 recorded an index only for reads through a pair, not for a block copy's read through HL, so the run bytes were no index of anything | the largest RAM unknown on p2-til | L1 records the index of a block read too (`AnalysisDataFlow_IndexOfABlockRead`, fixture `tiles-copied-map.asm`, fails without it); the level map detector claims the bytes whose values picked tiles of a copied tile set, runs joined over untouched gaps holding tile numbers, as wide as the copying loop's trips when the run is a multiple of them, else one row (a pool of runs read from varying starts, as here); the same test fails with that rule off (185 analysis tests pass). On p2-map `$C641-$C8E9` is a level map of 681 cells, one row (584 cells read, 97 untouched ones between them holding tile numbers): `TileRuns` of doc 11 (`$C640`, 682 bytes) less its first byte, which nothing read. Unknowns 28 to 27, still 8 bugs (the new block-read indexes raise no index-past-table), no conflicts, gates pass, skool2asm warnings 662 |
 | The object templates had no claim: `$E1F5` copies 9 bytes from `LaunchTemplates` (`$C2B4` + 9 x kind) into a launched record, `$E891` 16 bytes from `ShotTemplate` `$C360` into a shot record; the records detector claimed the records, not the blocks they were filled from | `$C2BE-$C2E9` and part of `$C333-$C37F` unknown | record templates: one copier filling records of an array from fewer blocks than records it filled, L bytes each at one offset, the blocks on a lattice of L outside the array, are a record array of L-byte templates with the target's fields (`AnalysisDetectorRecords_Templates`, fixture `record-templates.asm`, fails with the rule off; 186 analysis tests pass). On p2-tpl `$C2BD-$C2D7` is 3 templates of 9 bytes (the kinds launched in the replay, on doc 11's lattice from `$C2B4`) and `$C360-$C36F` the shot template; the unknowns shrink to `$C2D8-$C2E9` (the fifth launch template and `EnemyShotTemplate`, copied by the same `$E1F5`: `$E1BD` points DE at `$C2E1`, `EX DE,HL` at `$E1F3`; their copies are missing from L1 because the copy list was full, see the copy cap row below) and `$C333-$C35F`; 8 bugs, no conflicts, gates pass, skool2asm warnings 663 |
 | `Directions` `$C340-$C35F` (8 x 4 bytes) had no claim: `$E2B3` reads the step along (a word) and across (a byte) at `$C340` + 4 x the record's direction (+5), the fourth byte never; the records detector's `(HL)` pattern for that routine mixes these bases with the routine's other `HL` walks (the ground profile, the records), so it found no lattice | part of `$C333-$C35F` unknown | records read through an index: bytes read through an index (L1 `indexes`) whose single reader repeats every S bytes, two readers or more a record, untouched bytes between them, 4 records or more (`AnalysisDetectorRecords_ReadThroughAnIndex`, fixture `records-indexed.asm`, where a second `HL` walk in the same routine spoils the pattern; fails with the rule off). p2-idx: `$C340-$C35F` a record array of 8 x 4, fields +0, +1, +2 read, +3 unread (evidence `indexed $E2BD`); unknowns 27 to 26, still 8 bugs, no conflicts, gates pass 42240/42240, skool2asm warnings 664 |
 | L1 kept at most 65 536 distinct block-copy runs in all; the back-buffer copiers `$DD52` and `$DDD3` filled the list (31 268 and 31 226 runs), so the template, SCORE and round-table copies first seen after about frame 6 800 were dropped. `HitHandlers` `$C380` was cut into 3 tables at the entries pointing at handlers that never ran, and those handlers were left untouched bytes. `ShotGaugeText` and `RoundText` are strings with control codes and fields the code fills, passed to `PrintString` `$EE17` | `$C2D8-$C2E9`, `$C333-$C33F`, `$C3D0-$C3E1`, `$EC73-$ECAB`, `$ED3B-$EDC9`, `$EF5B-$EF60` unknown or bare data | three generic fixes, each with a test that fails without it: a copy cap per copier (32 768 runs each, 131 072 in all, room for every copier's first 1 024; `AnalysisDetectorRecords_Templates` on `record-templates-busy.asm`, a blitter making 71 680 runs before the template copier); handler tables grow over words inside the hull of the targets jumped to through their dispatch and bridge the gaps between used entries of one dispatch, and an untouched stretch a handler table points at that decodes as code is inferred code with an entry (`AnalysisDetectorPointerTables_UnrunHandlers`, `unrun-handlers.asm`); a printer's argument: an immediate address passed to a routine that prints claimed text is a string up to that printer's terminator, the bytes code writes are fields (`AnalysisDetectorText_PrinterArgument`, `print-argument.asm`). IndexedRecords now skips bytes that reached the screen (a sprite drawn by unrolled code from base + S x frame). p2-rul: `$C2B4-$C2E9` 6 templates of 9 (doc 11's 5 launch templates and `EnemyShotTemplate`), `$C380-$C3EF` one handler table of 56 words, `$EC73`, `$ED3B`, `$ED81` inferred routines, `$C333` and `$C2FA` text with their filled fields, `$EF5B-$EF60` a round-table row; unknowns outside the ROM 7 to 3 (`$7FD6-$7FFF`, `$EF61-$EF9E`, `$FF66-$FFFF`), still 8 bugs, no conflicts, gates pass 42240/42240, skool2asm warnings 655 |
-| The last three unknowns outside the ROM: the stack and BASIC's UDGs at the top of RAM, the round table past the rows the replay read, the blank last strip of the last explosion frame | `$FF66-$FFFF`, `$EF61-$EF9E`, `$7FD6-$7FFF` | three generic rules, each with a test that fails without it: bytes only the stack touched are the stack, and an untouched run of 32 bytes or more (4 values or more, no fill) equal to a ROM range is a ROM copy, both Unused; an unknown accessed only by the stack says so (`AnalysisDetectorCodeMap_StackAndRomCopyAreUnused`, `stack-rom-copy.asm`); an array whose step an index gives is completed by one constant fill on its lattice, a whole number of steps long, over rows only the fill and the array's users touched, and one routine's immediate bases walked to the same sentinel compare are one record each (`AnalysisDetectorRecords_FillCompletesIndexedArray`, `records-fill-completes.asm`); a blank object of one shape drawn by the same blit right next to a claimed neighbour of that shape joins it (`AnalysisDetectorSprites_BlankStripJoinsItsNeighbour`, `sprite-blank-strip.asm`). p2-fin: `$FFF5-$FFFE` the stack, `$FF66-$FFF4` a copy of the ROM's letters (`$3E16-$3EA4`), `$EF4F-$EF90` the round table 11 x 6 (inferred, evidence `fill`), `$EF48`, `$EF91`, `$EF98` the SCORE, HIGH and MAX digit fields (7 bytes, the `.` stop); 1 unknown left outside the ROM, `$7FD6-$7FFF`: its neighbour claim `$7F82` is 16 x 21 (two strips), the blank strip one strip of 8 x 21, so the shapes differ and the blank rule does not join it; the cause is the strip runs off the frames' 168-byte lattice (section 6). Still 8 bugs, no conflicts, gates pass 42240/42240, skool2asm warnings 662 (the new claims' labels). The save-area claims at `$EF49`, `$EF50`, `$EF56`, `$EF5C` stay under the round table: the save-areas detector runs first |
+| The last three unknowns outside the ROM: the stack and BASIC's UDGs at the top of RAM, the round table past the rows the replay read, the blank last strip of the last explosion frame | `$FF66-$FFFF`, `$EF61-$EF9E`, `$7FD6-$7FFF` | three generic rules, each with a test that fails without it: bytes only the stack touched are the stack, and an untouched run of 32 bytes or more (4 values or more, no fill) equal to a ROM range is a ROM copy, both Unused; an unknown accessed only by the stack says so (`AnalysisDetectorCodeMap_StackAndRomCopyAreUnused`, `stack-rom-copy.asm`); an array whose step an index gives is completed by one constant fill on its lattice, a whole number of steps long, over rows only the fill and the array's users touched, and one routine's immediate bases walked to the same sentinel compare are one record each (`AnalysisDetectorRecords_FillCompletesIndexedArray`, `records-fill-completes.asm`); a blank object of one shape drawn by the same blit right next to a claimed neighbour of that shape joins it (`AnalysisDetectorSprites_BlankStripJoinsItsNeighbour`, `sprite-blank-strip.asm`). p2-fin: `$FFF5-$FFFE` the stack, `$FF66-$FFF4` a copy of the ROM's letters (`$3E16-$3EA4`), `$EF4F-$EF90` the round table 11 x 6 (inferred, evidence `fill`), `$EF48`, `$EF91`, `$EF98` the SCORE, HIGH and MAX digit fields (7 bytes, the `.` stop); 1 unknown left outside the ROM, `$7FD6-$7FFF`: its neighbour claim `$7F82` is 16 x 21 (two strips), the blank strip one strip of 8 x 21, so the shapes differ and the blank rule does not join it; the cause is the strip runs off the frames' 168-byte lattice (section 6.14). Still 8 bugs, no conflicts, gates pass 42240/42240, skool2asm warnings 662 (the new claims' labels). The save-area claims at `$EF49`, `$EF50`, `$EF56`, `$EF5C` stay under the round table: the save-areas detector runs first |
 | The explosion frames were claimed as runs of strips off their 168-byte lattice (clipping at the window drew them in varying column groups), so the blank last strip `$7FD6-$7FFF` of the last frame had no neighbour of its shape | the last unknown outside the ROM after p2-fin | frames from a pointer table's lattice: when a graphics pointer table's targets run on a constant stride F and the drawn column objects of one height tile those blocks (3/4 of the bytes or more, a pass drawing F / C columns side by side), each block is one frame F / C columns wide, the last block F long, the absorbed objects not claimed (`AnalysisDetectorSprites_PointerTableFrameLattice`, `sprite-frame-lattice.asm`, columns clipped differently per frame; fails with the rule off). p2-lat: `$7C10-$7FFF` one sprite 32 x 21, 6 frames, masked, bottom-up (evidence `frame-lattice $C300`), as doc 11 has it; no unknown left outside the ROM (review queue 0 unknown), 8 bugs (the overlays of doc 2.7), no conflicts, gates pass 42240/42240, skool2asm warnings 655. The full core-tests suite passes (20 shards) |
 | The save-areas detector claimed both sides of a copy that goes both ways: SCORE `$EF49` as a save area of a round-table row (`$D175` copies SCORE into the row, `$D03E` back), and 30 pieces of the playfield buffer `$8419-$BE1E` as save areas of `SpriteSaveBuffer` `$F800` (`$DD47`/`$DD52` save the strips under the sprites there, `$DDC9`/`$DDD3` put them back) | 35 save-area claims on p2-lat, 31 of them the data saved, not the save | a saved byte is read only to put it back: an area another instruction reads (the score drawn and compared at `$EF23`, the playfield drawn by `$D35E`) is the data saved (`AnalysisDetectorSaveAreas_LiveDataIsNoSave`, `save-live-score.asm`; fails with the rule off). p2-sav: 4 save areas, `$F800` (`SpriteSaveBuffer`, doc 11) and the round-table rows `$EF50`, `$EF56`, `$EF5C` (SCORE kept per round, inside the round-table claim); no unknown outside the ROM, 8 bugs, no conflicts, gates pass 42240/42240, skool2asm warnings 645 |
 
@@ -161,7 +163,7 @@ New fixture `testdata/analysis/fixtures/stages.asm` (a loader, a depacker with t
 `.recipe/analysis/reverse-engineering.md` got "Programs that arrive in stages". All 158 analysis tests pass
 (`test.sh --gtest_filter='*Analysis*'`) with the fixes, zero warnings.
 
-## 6. The game stage (in progress)
+## 6. The game stage
 
 ### 6.1 The game window build
 
@@ -195,7 +197,8 @@ entry points: [docs/02-architecture.md](docs/02-architecture.md). Findings:
 - its IM 2 handler doubles as the key exit and unwinds the stack to SP as saved at entry;
 - the game loop has no frame lock;
 - 2 319 passes of `$CF33` averaged 6.2 frames each.
-- Every role the document gives a routine is marked with the document that will confirm it.
+
+Every role the document gives a routine is marked with the document that will confirm it.
 
 ### 6.4 Pictures from the recording
 
@@ -203,16 +206,14 @@ entry points: [docs/02-architecture.md](docs/02-architecture.md). Findings:
   T-state) every N T-states and flashes the bytes written since the previous sample. First result:
   [the loading screen unpacking](docs/img/anim-loading-screen.gif), 77 pictures, and
   [the game depacking backwards from `$FFFF`](docs/img/anim-depacker.gif), 84 pictures.
-- `tools/heatmap.py`: per-byte read, write and execute heatmaps from L1's new `byte_counts` (5 in the gap table).
-  Waiting for the build with the fix.
+- `tools/heatmap.py`: per-byte read, write and execute heatmaps from L1's new `byte_counts` (the last row of the first gap table, section 5).
 - `tools/check_docs.py`: every mermaid diagram in the docs is rendered with `mmdc`, and every link is checked. A
   diagram that GitHub's mermaid rejects fails here first.
 - `tools/code_addresses.py`: on GitHub, a pair of `$` in text is LaTeX math, so `$C2B1-$F2E1` written bare rendered
   as an italic formula. Every address in prose is now a code span, and `check_docs.py` fails on any `$` left outside
   code.
 
-The recording is open in an instance built from that branch; the whole-recording build lists the arrivals, then
-each stage is built from its own arrival.
+The whole-recording build lists the arrivals, then each stage is built from its own arrival.
 
 ### 6.5 Controls, from the code and the recording
 
@@ -248,7 +249,7 @@ are described from the code alone.
 **Tool gap, fixed.** The conflict should not reach the review queue, and no longer does. The graphics detector's
 font claim spanned every code from the first glyph drawn to the last. It now leaves out a slot whose bytes some code
 read but no drawing code ever put on the screen, and splits the claim around it (section 5). On the bot's game the
-font became codes 45-58 (`$6368-$63D7`) and 64-89 (`$6400-$64CF`): exactly the five credit slots `;<=>?`
+font became codes 45-58 (`$6368-$63D7`) and 64-88 (`$6400-$64C7`; 64-90 after the later font rule, section 5): exactly the five credit slots `;<=>?`
 (`$63D8-$63FF`) fell out. The digits, drawn as rows 2-6 by `DrawDigits` (`$EEA4`, [8.2](docs/08-hud-and-text.md)) rather than by the print
 loop, stay glyphs because their bytes reached the screen. The three font and text conflicts are gone (241 to 238).
 
@@ -261,7 +262,7 @@ drum step is the handler's fourth decrement, `($8244)`, an operand inside the pl
 
 For the effects in play, L1's execution counts at each `SET n,($F2BF)` site tell which sound requests happened in
 the recording: shots 26, AUTO ticks 560, bit 1 13 times. Bits 0 and 2 never did, so the recording needs input
-that reaches those events (the explorer, or a second capture with an input script) before doc 10 can name them.
+that reaches those events (the explorer, or a second capture with an input script) before doc 10 can name them (the bot's recording reached both: doc 10.4, 10.8).
 
 ### 6.8 The game loop and the recording's story
 
@@ -271,16 +272,16 @@ HIGH. The samples tell the recording's story without watching it: two games, eac
 HIGH of 280, then the demo. They also confirm the retry path. The round stays 1, the lives fall 4, 3, 2, 1, and
 SCORE returns to the round's starting value.
 
-L1's counts tie the code to the run. `$D3F9` ran 1 280 times, ten round starts of 128 pre-roll steps, and never
-during play. That told where the course buffer is filled before the routine was read.
+L1's counts tie the code to the run. `$D3F9` was called 1 280 times, ten round starts of 128 pre-roll steps (it
+also runs every pass, entered by falling through: 6.10). That told where the course buffer is filled before the routine was read.
 
 The fall-back to an earlier round when the lives run out did not run: the recording never left round 1. It is
-described from the code and needs a recording that gets further (planned for doc 10).
+described from the code and needed a recording that gets further: the bot's recording (6.12) reached it.
 
 
 ### 6.9 Memory heatmaps of the game window
 
-[docs/02-architecture.md](docs/02-architecture.md#22-the-memory-map). The game window's build (`work/game2/l1.json`)
+[docs/02-architecture.md](docs/02-architecture.md#22-the-memory-map). The game window's build (`work/game2/l1.json`, the window of 6.1 built again with `byte_counts`)
 carries `byte_counts`, so `tools/heatmap.py` draws the 48 K as 192 rows of 256 bytes, once by count and once by the
 frame each byte was last touched, with the module ranges of `tools/regions-game.txt` as labels:
 
@@ -313,7 +314,7 @@ from TTD `memory_at` and compares the result with that moment's screen:
 
 The first try failed: memory is sampled after the scroller `$D3F9` has stepped the state for the next pass.
 Undoing that step, as the code does it, gives 92-99 %; the rest is the shadows and sprites, which the pass draws
-into the buffer before the blit and takes out after it (doc 06 6.6, corrected from the annotated source). The model is now
+into the buffer before the blit and takes out after it (doc 6.6, corrected from the annotated source). The model is now
 proven on four moments of the recording, and the picture in doc 06 shows the strips as stored next to the screen.
 
 L1's counts per path made the scroll's four-pass cycle visible before the code was read: `$D51D` 903, `$D413` 900,
@@ -338,7 +339,7 @@ names of the types were not guessed from it. `tools/objects_shot.py` reads the o
 blit. Domes, jets, launch pads, cubes and dishes were named by looking at what sat under each label in the demo
 (rounds 8 and 10) and in game 2; the gallery in doc 07 is cropped from those screens.
 
-Then L1's per-instruction counts decided which branches of the 8 × 8 hit table the recording exercised:
+Then L1's per-instruction counts decided which branches of the 7 × 8 hit table the recording exercised:
 
 | Handler | Runs | What it proved |
 | --- | --- | --- |
@@ -360,7 +361,7 @@ recording. It is the first thing a second capture has to reach (doc 10).
 life (docs 04 and 07). The first recording never left round 1, and random play does not get further.
 
 **Used:** `tools/autopilot.py`, a player that drives the emulator through the WebAPI / MCP and decides the
-Kempston stick once a pass (3 frames) from memory alone:
+Kempston stick every 3 frames from memory alone:
 
 - the object list at `$C000` (doc 07's record layout: type, position along, across, height, direction, speed),
   the scroll distance `$D14D`, round `$C2F7`, lives `$C2F9`, followers `$ECE4`;
@@ -382,7 +383,7 @@ dry run before it.
   climbs and "up" descends.
 - The course records alternate the vehicle: the first course byte is 0 (aircraft) in rounds 1, 3, 5, 7, 9
   and 1 (ground vehicle) in 2, 4, 6, 8, 10. The per-round object mix (from the blocks at `$F300`): cubes only in rounds 3,
-  6 and 10, dishes in 4, 5, 6 and 10, plain domes (type 2) only from round 5.
+  6 and 10, dishes in 4, 5, 6 and 10, plain domes (type 2) in rounds 5, 7 and 9.
 - The first missiles that killed the bot came from the side: launched missiles with behaviour bit 4 turn toward the
   player's position across every 4 passes, so a prediction along a straight line needs a margin.
 
@@ -402,8 +403,8 @@ dry run before it.
 The rounds are saved as they are reached (`--save-rounds`, `work/p1/round-N.szx`), so a change to the bot is tried
 on the round that failed; the recording itself is one run from the menu.
 
-**Dry runs so far:** round 1 cleared with pods collected (`$ECE4` 1, 2) and one hit absorbed by a follower; round
-2 (the ground vehicle) cleared with 4 followers; round 3 entered with 4 lives; round 3 cleared (2 pods, one lost to a missile, the barrier passed with the other).
+**Dry runs:** round 1 cleared with pods collected (`$ECE4` 1, 2) and one hit absorbed by a follower; round
+2 (the ground vehicle) cleared with 4 followers; round 3 cleared with 4 lives (2 pods, one lost to a missile, the barrier passed with the other).
 The fall back of doc 04 4.4 needs a round
 whose start lives minus one is 1-4 before the round where the lives run out, so the recording plays rounds 1-3,
 then spends the lives in round 4 (`--give-up 4`: steer into threats) to fall back to round 3, then ends in GAME
@@ -443,7 +444,7 @@ replays the game:
 | --- | --- | --- |
 | `game-p2-timeline.png`: round, lives, followers, hits | `tools/gamechart.py work/p2/run.log` | doc 10.1 |
 | `anim-round-handover.gif`: the convoy lands beside the parked vehicle, round 2 begins | `tools/screen_anim.py --work work/p2 --from 3280 --to 3540 --step 4` | doc 10.2 |
-| `heat-coverage.png`: code run in p2 against m1 | `tools/heatviews.py coverage --other work/m1/l1.json --from C000` | doc 10.1 |
+| `heat-coverage.png`: code run in p2 against m1 | `tools/heatviews.py coverage --other work/m1/l1.json --from C000` (`work/m1`: L1 over the whole first recording from frame 0) | doc 10.1 |
 | `heat-records.png`: reads and writes per field of every object record | `tools/heatviews.py records` | doc 7.2 |
 | `heat-screen.png`: screen writes in the screen's geometry | `tools/heatviews.py screen` | doc 6.7 |
 | `anim-pass.gif`, `heat-pass.png`: one pass as it writes the buffer and the screen | `tools/pass_anim.py --work work/p2 --from 1000 --to 1005 --step 1750 --still` | doc 6.1 |
@@ -456,7 +457,7 @@ same maps for the game window, so they were removed. What doc 10 keeps is the co
 bot's game reached. The rendering gained what heatmaps can show there: `tools/pass_anim.py` samples one pass every
 1 750 t-states and lights each changed byte where it shows, in the whole strip buffer and on the screen. The
 pictures show the steps of 6.1 in time: the sprites go into the set the blit will show, the blit runs 1.5 frames
-from the left column to the right, `$DD6C` puts the strips back, and a pass takes about 4.2 frames. Over four
+from the left column to the right, `$DD6C` puts the strips back, and this pass took about 4.2 frames (6.2 on average, 6.1). Over four
 passes the scroller's rewritten strips appear, one phase a pass.
 
 `tools/heatmap.py` now draws the screen page (`$4000-$5AFF`) a second time below each panel, in the screen's own
@@ -554,6 +555,9 @@ plain `LD (HL),r` writes it, not only a block copy.
 
 ### 6.14 The review queue, worked down
 
+Each `p2-xxx` below is the bot's recording `work/p2` built again with one more analyzer change (`xxx` names it);
+only the latest builds are kept.
+
 **Bug findings, all explained.** L3 raised 18 bug findings over the bot's game. Eight are overlays (doc 2.7: the
 playfield buffer over the title player and the start-up's end, and the IM 2 jump restored for a play without
 interrupts). The other ten were `index-past-table`; six were walks, not indexes, and went away with the fix in
@@ -577,9 +581,10 @@ areas, 12 in the game image.
 below the buffer (`$6542-$7FFF`), the launch templates and texts at `$C2BE-$C37F`, rows of `HitHandlers` (`$C3D0`),
 the unused block `UnusedC3FE`, the handlers that did not run (`HitBlockOnShot`, `HitBlockOnPlayer`), the SCORE text
 (`$EF48`), the round object blocks from `$F300` running into `SpriteSaveBuffer` (`$F800`), and the UDG leftover
-(`$FF58`). No detector has a kind for them; the source describes each.
+(`$FF58`). No detector had a kind for them then; the source describes each. All of them were claimed later (section 5,
+p2-til to p2-lat).
 
-**Why the sprites are no claim yet.** L1 does see them drawn: 2 869 bytes of `$6542-$7FFF` reach the screen, in 2 177
+**How the sprites became a claim.** L1 does see them drawn: 2 869 bytes of `$6542-$7FFF` reach the screen, in 2 177
 drawn frames, the commonest 2 × 21 and 2 × 17 with a line step of -2 and strips 42 bytes apart (doc 6.6: a strip is a
 buffer column, shown bottom line first). Two tool gaps keep them out of the graphics claims. The frame's lines go up
 through memory, which the graphics detector drops as a known limit. And the mask is lost: `DrawSprites` ANDs it into
@@ -592,7 +597,7 @@ a frame whose lines go up through memory is read from its lowest address and its
 
 Three limits remain. First, the frame boundaries are approximate. The playfield blit shows the buffer skewed, so
 the strips of one frame are not always seen side by side, and a claim may cut a frame or run into the next one. The
-true layout is in doc 06 6.6: four frames a block, the last one a strip narrower. Second, the two blocks the
+true layout is in doc 6.6: four frames a block, the last one a strip narrower. Second, the two blocks the
 recording never drew, `$6A6C` and `$70FC`, and the last explosion strip `$7FD6-$7FFF`, stay unknown on p2-spr.
 A generic rule now covers the two blocks: the table `$C300` bounds them, and each copies the claims of a drawn block
 of the same size (`$6580` for `$6A6C`, `$6F58` for `$70FC`), marked inferred, once L2 sees `$C300` as a pointer
@@ -602,7 +607,7 @@ slots (`$64C8-$64FF`). That gave 3 sprite/text conflicts. A generic rule removes
 character codes are no pixels.
 
 **Why `$F301-$FBC6` and `$FBD4-$FDFC` are no claim.** The bytes are known (doc 11): the ten round object blocks
-`$F300-$F7FF`, then `SpriteSaveBuffer`. Four tool gaps keep them unknown, each to be fixed generically:
+`$F300-$F7FF`, then `SpriteSaveBuffer`. Four tool gaps kept them unknown; each got a generic fix:
 
 1. The effect table `$F2E2-$F2FF` (6 records of 5) is read by two loops, `$F2D9` from +0 and `$F2A3` from +1. They
    give two record claims one byte apart, and the second one runs a byte into `RoundObjects1`. That is why the
@@ -636,8 +641,9 @@ character codes are no pixels.
    never ran (from `$FC55`). Nothing marked an untouched area as unused unless it was a BASIC line.
    Generic fix (unreal-ng, code map, `FinishUnused`, last of all detectors): untouched bytes no claim explains are
    Unused when they are a fill of one value or code that never ran, whose calls and jumps land on its own
-   instructions or in the ROM (`AnalysisDetectorCodeMap_FillAndLeftoverCodeAreUnused`, fixture `unused-areas.asm`,
-   fails with the rule off). On p2-all `$FBD4-$FC54` is "Fill, 129 bytes of `$00`" and `$FC55-$FDFC` "Code that
+   instructions or in the ROM (fixture `unused-areas.asm`, fails with the rule off). The rule was later split:
+   leftover code that never ran is inferred Code now, only a fill is Unused
+   (`AnalysisDetectorCodeMap_FillIsUnusedLeftoverIsCode`). On p2-all `$FBD4-$FC54` is "Fill, 129 bytes of `$00`" and `$FC55-$FDFC` "Code that
    never ran, 424 bytes".
 
 **The combined run (p2-all, 2026-11-02).** All the fixes above in one build, the same recording: gates pass (42 240 of
@@ -645,8 +651,8 @@ character codes are no pixels.
 address"). `$F301-$FBC6`, `$FBD4-$FDFC` and `$6542-$657F` are no longer unknown; `$EF48-$EF9E` shrinks to
 `$EF5B-$EF9E`. The shadow tables are one table `$5B00-$5EEF` and their three index-past-table bugs are gone. One
 unknown is new, `$64C8-$64DA`: the false sprite there is gone, and nothing else claims the bytes. They are two
-things (doc 11): `$64C8-$64D7` are the glyphs of "Y" and "Z", the last two of `FontHigh`, which no string the
-recording printed uses (the font claim ends at code `$58`, the last printed); `$64D8-$64DA` are the attribute, column
+things (doc 11): `$64C8-$64D7` are the glyphs of "Y" and "Z", the last two of `FontHigh`: "Z" is never printed,
+and "Y" (in COSTA PANAYI) too seldom to join the font's object (the font claim ends at code `$58`); `$64D8-$64DA` are the attribute, column
 and row that open `CreditsText2`, whose text claim starts at the characters (`$64DB`). Two tool gaps: a font claim
 stops at the last code printed even when the font's lattice runs on to the next claim, and a print string's header
 bytes stay outside its text. The strings show a third. `CreditsText2` is two records,
@@ -694,7 +700,7 @@ The largest gap was the tile set: 576 of those bytes read every strip, drawn int
 copied-tiles rule (section 5) claims it on p2-til; the tile runs `$C640-$C8E9` followed on p2-map (a level map of
 tile numbers, section 5). 8 unknowns remain outside the ROM.
 
-`$7FD6-$7FFF` is a known limit of the sprite detector. The explosion frames are 168 bytes each from `$7C10`
+(As of p2-ipt; p2-fin and p2-lat closed it, section 5.) `$7FD6-$7FFF` was a known limit of the sprite detector. The explosion frames are 168 bytes each from `$7C10`
 (doc 11): 4 strips of 21 lines, a mask and a pixel byte a line, 42 bytes a strip. The detector joins the strips it
 saw drawn side by side, and clipping at the window's edges showed them in varying groups. So its claims (`$7DDE-$7E31`
 8 x 21 x 2, `$7E32-$7E85` 16 x 21, ...) are runs of whole strips that do not start on the frames' 168-byte lattice.
@@ -718,7 +724,7 @@ each with its cause in the analyzer and the generic rule that closes it:
 | `$C333-$C33F` (13 bytes, below the 16-byte bar, data) | `ShotGaugeText`, printed by `$CFE9` `LD HL,$C333` / `CALL $EE17`; `$C336-$C33A` refilled with spaces and `/` before each print | the text detector drops bytes written by code; control codes `$84 03 06`, `$87 02 06` leave one printable `/` | a printer's argument: an immediate address passed to a routine that prints claimed text is a string up to that printer's terminator, parsed with its control codes; covers `RoundText` `$C2FA` too |
 | `$C3D0-$C3E1` | `HitHandlers` row 5 and row 6 entry 0, type pairs that never met | the pointer-table detector grows a handler table only over words pointing at known code; the never-run handlers stop it (also `$C38E-$C39D`, `$C3EC-$C3EF`) | accept neighbour words inside the hull of the jumped-to targets, merge groups of one dispatch (`$EBCD`), mark the targets as inferred entries |
 | `$EC73-$ECAB`, `$ED3B-$EDC9` | `HitBlockOnShot`, `HitBlockOnPlayer`, `HitDomeOnShot`: mirror handlers that never ran | `FinishUnused` sees a table entry pointing at the stretch and leaves it ("not leftovers"), and nothing claims it | a table-entry stretch that decodes cleanly is inferred code with a routine entry at the target |
-| `$EF5B-$EF9E` | `RoundTable` rows 2-10 (6 bytes: lives, SCORE), `HighScore`, `MaxScore` and their `.` stops | only rows 0-2 were read (the read-through-index rule wants 4); the `$D03E`/`$D175` copies were dropped by the copy cap; `$EF49`, `$EF50`, `$EF56` were claimed as save areas | the copy cap; an indexed array grown by one bounded fill on its lattice (60 = 10 x 6 from `$EF55`); one routine's immediate arguments (`$EF4E`, `$EF97`, `$EF9E` to `DrawDigits`) with one walk and one sentinel as instances of one record |
+| `$EF5B-$EF9E` | `RoundTable` rows 2-10 (6 bytes: lives, SCORE), `HighScore`, `MaxScore` and their `.` stops | only rows 0-2 were read (the read-through-index rule wants 4); the `$D03E`/`$D175` copies were dropped by the copy cap; `$EF49`, `$EF50`, `$EF56` were claimed as save areas | the copy cap; an indexed array grown by one bounded fill on its lattice (rows 1-10, 60 = 10 x 6 from `$EF55`; row 0 at `$EF4F` was claimed already); one routine's immediate arguments (`$EF4E`, `$EF97`, `$EF9E` to `DrawDigits`) with one walk and one sentinel as instances of one record |
 | `$FF66-$FFFF` | `UdgLeftover`; the sprite list runs into `$FF58-$FF60`, the stack uses `$FFF5-$FFFE`, `$FF61-$FFF4` is free | `FinishUnused` claims fills and code only, not the stack's bytes or a ROM copy | stack-only bytes from the lowest SP to the first SP are the stack; an untouched run equal to a ROM range (the UDG letters A-U at sysvar UDG) is a ROM copy |
 
 The same reading corrected doc 11 (`UdgLeftover` is not unread: the unbounded sprite list runs into it;
@@ -773,7 +779,7 @@ files, so each picture also checks a reading of the format:
 - **Ground profiles.** These come from the anchors of `$C9FE`, the way `$D0EF` reads them. Their peaks fall where
   the panoramas rise.
 - **Round objects.** The objects are placed by their position along and across, and named by type.
-- **Title tune.** The song and its patterns are run with the command lengths the handlers `$83FC` consume. They
+- **Title tune.** The song and its patterns are run with the command lengths that the handlers of the table `$83FC` consume. They
   give 56 s (2 800 frames) of two voices and drums before the song jumps back, with no command left over.
 - **Sprites and the explosion.** Each sprite has a GIF of its four frames, and the explosion has one of its seven
   steps.
@@ -812,13 +818,15 @@ The sprites and the title tune were checked last:
   then `$DD66` = `$FE64` at `$D9EA`, 36 T later).
 - **Title tune.** `tools/verify_tune.py` compares the piano roll's model with the player's operands frame by frame
   in the first recording, from frame 2617, over two passes of the song. Both voices' periods agree in all 2 800
-  frames. The note starts agree, 205 and 234, repeated pitches included. So do the 266 drum steps with their sounds,
+  frames. The note starts agree (205 in voice A, 234 in voice B), repeated pitches included. So do the 266 drum steps with their sounds,
   and the song repeats after 2 800 frames. An earlier version of the list above said 58.5 s; the song is 56 s (doc 9.5).
 - **Every resource file.** `tools/verify_res.py` finds each `INCBIN` piece in the assembled image and compares it
   with the recordings' memory. During the title (`work/c2`) 65 of 66 pieces are equal; in `udg.bin` the title's
-  stack holds 6 bytes. In the bot's game (`work/p2`) the 48 pieces of graphics and course data never change. The
+  stack holds 6 bytes. In the bot's game (`work/p2`) the 47 pieces of graphics and course data never change. The
   rest are work areas in play, foremost the playfield buffer `$8000-$BFFF` over the title's code and data
-  (src/res/README.md).
+  (src/res/README.md). The first version found each piece by its bytes, so the stale sprite copy at `$8700`
+  was taken for the sprites at `$6E00` and counted as unchanged (48); the addresses now come from the
+  assembler's listing (`build/game.lst`).
 
 **Editable sources (owner's go, 2026-11-03).** The graphics and the title tune are no longer kept as the original
 bytes. `tools/res_formats.py export` wrote the font, the tiles, the 14 sprite blocks and the 6 explosion frames as

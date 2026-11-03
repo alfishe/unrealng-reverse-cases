@@ -87,7 +87,7 @@ Every argument goes into the operand of some later instruction. The player has h
 
 ## 9.4 The voices `$8279-$833D`
 
-Two voices, D and E, each a down-counter of the note's period:
+Two voices, A and B, each a down-counter of the note's period (D for A, E for B):
 
 ```text
 $82C5  DEC D
@@ -103,7 +103,7 @@ $82D5  DJNZ $82D5
        OUT ($FE),A       ; off
 ```
 
-Voice E is the same at `$8327-$833D`. Each voice is a train of short pulses. The pulse width sets the loudness and
+Voice B (counter E) is the same at `$8327-$833D`. Each voice is a train of short pulses. The pulse width sets the loudness and
 the period sets the pitch.
 
 **Envelopes.** H and L count frames for voice A and B (the interrupt decrements them). When one reaches 0, the
@@ -136,9 +136,9 @@ stop: a drum is a loop of its own, a few milliseconds long.
 **Noise from the ROM.** `$837F` reads 300 bytes of ROM code from `$0064` as random numbers. ROM code is
 irregular enough to sound like noise and costs no table.
 
-**Checked against the recording.** `tools/verify_tune.py` runs tune 0 from `src/res` the way `res_preview.py` draws
+**Checked against the recording.** `tools/verify_tune.py` runs tune 0 from the assembled image the way `res_preview.py` draws
 its piano roll (9.2-9.5) and reads the player's operands at the start of every frame of the first recording, from
-the first note at frame 2617. Over two passes of the song everything agrees frame for frame:
+the first note at frame 2617. Over one pass of the song everything agrees frame for frame, and the next pass repeats it:
 
 | What | Recording | Model |
 | --- | --- | --- |
@@ -199,7 +199,7 @@ Every effect stops the game for its length: the beeper needs the CPU, and play r
 - **Volume by pulse width.** A 1-bit output can be made quieter by narrowing its pulses. The envelope is a width
   that shrinks frame by frame.
 - **Everything in operands.** Periods, widths, the note length, counters and addresses are all written into
-  instructions. Reading a register-free, variable-free engine like this needs the recording: L1's SMC map shows which
+  instructions. Reading an engine with almost no variables like this needs the recording: L1's SMC map shows which
   operands are written, and how often.
 - **Effects by priority, one a pass.** A request byte lets any part of the game ask for a sound without knowing
   what else is sounding. A sound that loses its slot is simply dropped.

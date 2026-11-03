@@ -17,7 +17,7 @@ python3 "$here/tools/screen_pack.py" "$here/src/res/screens/loading.scr" loading
 "$asm" --nologo --msg=war -I"$here/src" "$here/src/screen.asm"
 if [ -f "$here/src/game/game.asm" ]; then
     python3 "$here/tools/res_formats.py" build --out "$here/build/res"
-    "$asm" --nologo --msg=war -I"$here/build" -I"$here/src/game" "$here/src/game/game.asm"
+    "$asm" --nologo --msg=war -I"$here/build" -I"$here/src/game" --lst=game.lst "$here/src/game/game.asm"
     image=game.bin
 else
     # Until the game's source is complete: the image unpacked from the original block (the recording holds the same

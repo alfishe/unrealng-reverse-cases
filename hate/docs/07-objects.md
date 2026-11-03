@@ -80,7 +80,7 @@ column a field (`tools/heatviews.py records`):
 - `+C`-`+E` (the motion table steps) are written only for the records that follow a path: the player's shots,
   the launched missiles and jets, a few course objects. The player and the pods never use them.
 - `+F` is written for the shots (their 12-pass life) and the launched objects (the fire timer).
-- Enemy shot slots 4 and 5 kept only what the round start writes: no more than 3 enemy shots were ever in the
+- The last two of the six enemy shot slots (`$C250`, `$C260`) kept only what the round start writes: no more than 3 enemy shots were ever in the
   air at once.
 
 ## 7.3 The kinds
@@ -92,7 +92,7 @@ type below 10 rides on the ground.
 | --- | --- | --- | --- |
 | 0, 1 | the player: 0 the aircraft, 1 the ground vehicle (on the ground by the rule above, `$E429`) | | 7.7 |
 | 2, 3 | domes | 12 + 40 | shot by the player: 210 points (2) or 320 points and a pod (3) |
-| 4-7 | missiles | 4 + 3 + 8 | launched by pads; 140 points when shot |
+| 4-7 | missiles | 4 + 3 + 8 (types 4, 6, 7) | placed on the course or launched by pads; 140 points when shot |
 | 8, 9 | jets, flying in lines | 13 | 140 points |
 | 10 | cubes | 14 | take 4 shots (`+F`), then 180 points; kill the player on contact |
 | 11 | a pod | (released by a dome) | the player flies into it: it joins the convoy (7.5) |
@@ -103,7 +103,7 @@ type below 10 rides on the ground.
 The names are what the sprites look like in the recording's screens, labelled by `tools/objects_shot.py`. The
 recording shows types 0, 1, 3, 4, 6, 7, 8, 10, 12, 14 and 15; the demo played rounds 8 and 10.
 
-![Objects labelled by their records, in the demo (frames 41750, paused there, and 45000)](img/objects-demo.png)
+![Objects labelled by their records, in the demo (frames 41 750, paused there, and 45 000)](img/objects-demo.png)
 
 ## 7.4 Moving: `$E15C`, once a pass
 
@@ -159,12 +159,11 @@ is a list of links at `$ECE7-$ECF0`: `$C003` (the player's position across), the
 in the order they joined, the next free link in `$ECF1`. An empty link has the high byte `$FF`. The image holds 0
 in the follower links; the round setup `$D1DE` writes the `$FF` values (`$D1F3`-`$D1FE`).
 
-The followers are worth two things:
+The followers are worth three things:
 
 - **A shield.** When the player is hit and `$ECE4` is not 0, the last follower is lost instead (`$E262`) and the
   player flies on.
 - **The next round.** When a round starts, its lives are the followers of the round before ([10](10-gameplay-logic.md)).
-
 - **The way out.** The profile marks a barrier near the end of each course (bit 5, 7.4). When the player reaches
   it, `$E4DC` writes `$FF` to `$E68B` before it tests `$ECE4`, so the AUTO countdown of [5.4](05-controls.md)
   starts with or without followers. With no follower the player is then hit (`$E4E7`) and lost; with one or more,
@@ -180,7 +179,7 @@ by `tools/autopilot.py` ([10](10-gameplay-logic.md)), picks pods up in every rou
 ## 7.6 Hits: the handler table `$C380`
 
 Two records hit when both are live and not already hit, and their positions along, across and in height are
-within the box of 7.4. `$EBAA` then jumps through a table of 8 × 8 handlers, the row by the moving record's type
+within the box of 7.4. `$EBAA` then jumps through a table of 7 × 8 handlers (no row for types 14-15: they never move first), the row by the moving record's type
 pair, the column by the other's:
 
 | Moving \ other | 0-1 player | 2-3 domes | 4-5 | 6-7 | 8-9 | 10-11 | 12-13 shots | 14-15 |
@@ -235,7 +234,7 @@ Read from the control byte `$C290` ([5.2](05-controls.md)):
 - **Across**: left and right move the player across the track (`$E9C4`-`$EA15`; the AUTO start steers instead,
   [5.4](05-controls.md)).
 - **Walls.** The walls in the profile under the player (`$5FF7` + position / 2) limit its position across. Running
-  into one is a crash (`$E979`): the player is hit, moves back 2, and the convoy is lost. It did not happen in the
+  into one is a crash (`$E979`): the player is hit, moves back 2, and the convoy is lost. It happened in neither
   recording.
 
 ## 7.8 Harder laps
@@ -248,13 +247,13 @@ course:
 - from lap 2, the code changes its own comparisons (`$D2BE`, `$D2D8`, `$D2DC`): types 2-9 fire, and every pad
   launches the same kind.
 
-This is read from the code; the recording never left round 1.
+This is read from the code; no recording got past round 4.
 
 ## 7.9 Design notes
 
 - **One list, one loop.** Shots, missiles, buildings and pods are the same record and the same mover, with
   behaviour bits instead of code per kind. A new enemy is a template, not a routine.
-- **A table of reactions.** The collision outcome is data: 8 × 8 handlers by type pair. The kinds that do not
+- **A table of reactions.** The collision outcome is data: 7 × 8 handlers by type pair. The kinds that do not
   interact cost one jump to "nothing".
 - **Pods make the lives.** The player earns the next round's lives in the current one, and the same followers
   protect them on the way: one mechanic for score, shield and progress.

@@ -1,13 +1,14 @@
 # H.A.T.E. resources
 
-The game's data that is not code, as raw files: the bytes exactly as they stand in the original image, assembled
-with `INCBIN`. Nothing here is converted at build time: `tools/build.sh` assembles `src/game/game.asm`,
-`src/screen.asm` and `src/depacker.asm` (sjasmplus, `src` on the include path) and the tape it writes is
-`orig/HATE.TAP` byte for byte.
+The game's data that is not code. Raw files hold the bytes exactly as they stand in the original image. The
+graphics (PNG) and the title tune (text) are editable sources, converted back to those bytes by
+`tools/res_formats.py` into `build/res`. `tools/build.sh` assembles `src/game/game.asm` with `INCBIN` from there
+(sjasmplus, `build` and `src/game` on the include path); the tape it writes is `orig/HATE.TAP` byte for byte.
 
 - **Where they come from.** `tools/mkgame.py` writes every file of the game image (all but the two marked
   *by hand* below) from the pristine image: an entry of `src/game/game.ann` followed by `@res FILE` is a resource,
-  its bytes go to `src/res/FILE` and its data lines in `src/game/*.asm` become `INCBIN "res/FILE",offset,length`
+  its bytes go to `src/res/FILE` (for the graphics and the tune, the PNG or text source of FILE: see Editable
+  sources) and its data lines in `src/game/*.asm` become `INCBIN "res/FILE",offset,length`
   under the entry's label and description. Entries that name one file share it (the file holds the bytes from the
   first entry to the end of the last). Edit `game.ann`, not the `.asm` files, and rerun
   `tools/mkgame.py --venv VENV --install`; it installs only when the assembled image is the original's.
@@ -25,8 +26,8 @@ with `INCBIN`. Nothing here is converted at build time: `tools/build.sh` assembl
 - **Checked against the recordings.** `tools/verify_res.py` finds each `INCBIN` piece in the assembled image and
   compares it with memory in a recording. In the title of the first recording (`work/c2`, frames 2700-30200), 65 of
   the 66 pieces equal their files at every frame sampled. The exception is `udg.bin`, where the title's stack holds
-  `$FFF9-$FFFE`. In the bot's game (`work/p2`, frames 210-11000), 48 pieces never change: the font, tiles, sprites,
-  explosions, courses, tile runs, anchors, round objects and the leftover `sprite-gfx-copy.bin`. The others hold work areas in play: everything in
+  `$FFF9-$FFFE`. In the bot's game (`work/p2`, frames 210-11000), 47 pieces never change: the font, tiles, sprites,
+  explosions, courses, tile runs, anchors and round objects. The others hold work areas in play: everything in
   `$8000-$BFFF` (the playfield buffer over the title player, the game screen copy and the renderer tables), the
   ground profile `$6000`, the sprite save buffer `$F800` and the sprite list and stack over the UDGs. The sprite,
   buffer, profile, object and tune scripts of [docs/03](../../docs/03-build-and-load.md) 3.7 check the rules on top.
@@ -52,12 +53,12 @@ with `INCBIN`. Nothing here is converted at build time: `tools/build.sh` assembl
 | **Ground anchors** | Lists ended by `$FF`, picked by a course byte b at file + b / 2: one anchor byte for every 8 bytes of the ground profile, height in bits 0-4, walls in bits 5-7. [7.4](../../docs/07-objects.md) |
 | **Course** | The player's type (0 aircraft, 1 ground vehicle), then one segment byte a course piece (an index into the row lists `$C8EA` and the ground anchors), ended by `$FF`. [4.2](../../docs/04-game-loop.md) |
 | **Round objects** | 16 records of 8 bytes, copied into the object slots `$C0B0-$C1A0` at the round setup: +0 type, +1,+2 position along, +3 across, +4 height, +5 direction, +6 speed, +7 behaviour bits. [7.1-7.4](../../docs/07-objects.md) |
-| **Title song** | Song entries: n and a pattern address (the pattern played n times), `$FB` and a drum pattern address, `$FD` and an address (jump). The addresses are absolute (`$8467`...): the file only works at its place. [9](../../docs/09-sound.md) |
-| **Title pattern** | Pattern commands (the handlers at `$83FC`): 10 with two periods, 11 or 12 with one, 0 holds, 18 n holds n note lengths, 1-4 voice parameters, 8 voice B mode, 17 note length, 9 ends. |
+| **Title song** | Song entries: n and a pattern address (the pattern played n times), `$FB` and a drum pattern address, `$FD` and an address (jump), `$FC` stop. The addresses in the `.bin` are absolute (`$8467`...), so the file only works at its place; `tune.txt` writes labels instead. The song's last 4 bytes are never reached (`play 1 $83E8`, `stop` in `tune.txt`). [9](../../docs/09-sound.md) |
+| **Title pattern** | Pattern commands (the handlers at `$83FC`): 10 with two periods, 11 or 12 with one, 0 holds, 18 n holds n note lengths, 1-4 voice parameters, 5-8 voice envelope modes, 13-15 voices off, 16 drum pattern, 17 note length, 9 ends. |
 | **Drum pattern** | The speed (frames a step), then the steps: 2 click, 3 noise (or the tones), 0 rest, 1 loop. [9.5](../../docs/09-sound.md) |
 | **Glyph PNG** (`gfx/font.png`, `gfx/tiles.png`) | 8 x 8 cells, 16 a row, in file order: a font glyph from code `$20`, a tile from tile 0. Palette: index 0 paper, 1 ink, 2 no glyph (the cells after the last). Tiles are drawn upright; the file keeps each one bottom line first. |
 | **Sprite PNG** (`gfx/sprites/*.png`, `gfx/explosions/*.png`) | The four frames side by side, each as wide as frames 0-2, upright (21, 17, 13 or 14 lines, by block). Palette: 0 see-through (mask 1, pixel 0), 1 black (mask 0, pixel 0), 2 ink (mask 0, pixel 1), 3 ink over the background (mask 1, pixel 1; never used), 4 no strip, which must fill exactly the last strip of frame 3. An explosion is one frame of 4 strips. RGB in exactly these colours is read too. |
-| **Tune text** (`music/title/tune.txt`) | The sections `song TuneSong`, `pattern PatternInit` ... `PatternD`, `drums DrumPatternA`, `drums DrumPatternB`, in this order, laid one after the other from `$843F`, so a section may grow or shrink. Song: `play N Label`, `drums Label`, `jump Label`, `call Label`, `return`, `stop`. Pattern: `note AB pa pb`, `note A p`, `note B p`, `hold`, `long n`, `length n`, `width A n`, `envelope A n`, `sustain A`, `decay A`, `off AB` (A, B and AB as the command allows), `drums Label`, `end`. Drums: `speed n`, then `steps` of `rest loop click noise rise sweep fall`. An address is `Label` or `Label+offset`; `db $xx,...` writes bytes as they are (the song's 4 unreached bytes decode as `play 1 $83E8` and `stop`). |
+| **Tune text** (`music/title/tune.txt`) | The sections `song TuneSong`, `pattern PatternInit` ... `PatternD`, `drums DrumPatternA`, `drums DrumPatternB`, in this order, laid one after the other from `$843F`, so a section may grow or shrink. Song: `play N Label`, `drums Label`, `jump Label`, `call Label`, `return`, `stop`. Pattern: `note AB pa pb`, `note A p`, `note B p`, `hold`, `long n`, `length n`, `width A n`, `envelope A n`, `sustain A`, `decay A`, `off AB` (A, B and AB as the command allows), `drums Label`, `end`. Drums: `speed n`, then `steps` of `rest loop click noise rise sweep fall`. An address is `Label`, `Label+offset` or a number; `db $xx,...` writes bytes as they are. |
 | **Raw** | Bytes with no format of their own: tables in RAM, or leftovers the game never reads as such, kept because the image holds them. |
 
 ## Files

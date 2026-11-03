@@ -3,7 +3,7 @@
 ; Reached from the pair scan $E56F when the other record (HL, on the stack) is
 ; within the moving record's box. The same record is skipped ($E57F). Otherwise
 ; the moving record's type pair (IX+0 AND $0E) picks the row and the other's
-; the column of the 8 x 8 word table at $C380, and the handler is entered with
+; the column of the 7 x 8 word table at $C380, and the handler is entered with
 ; the other record's address on the stack. Handlers leave by $E57E (pop it and
 ; test the next record), $E57F (next, already popped), $E674 (the moving record
 ; is done: its new position is not stored, $E65F is skipped) or $E65F via

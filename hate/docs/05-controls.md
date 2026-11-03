@@ -28,7 +28,7 @@ beeps. Then it loops:
 | 6 | `$EFFE`, bit 4 | start the game |
 | none | | after 256 × 2 000 passes of the loop (`$F0DC`, `$F0DD`), the demo starts by itself |
 
-Every pass of the menu loop also increments `$EA36`, the seed of the random number generator (`$EA19`, 10.4). The
+Every pass of the menu loop also increments `$EA36`, the seed of the random number generator (`Random` `$EA19`, [12](12-routine-reference.md)). The
 time a player spends in the menu therefore decides the random sequence of the game.
 
 The main loop goes back to the menu after the game ends, after ABORT and after the demo ([4. Game loop](04-game-loop.md)).
@@ -90,8 +90,8 @@ $E722  SET 2,B           ; bit 0 clear: Q = down
 ```
 
 A does the opposite. `$C000` is loaded from the course data at the start of each round (`$D233`), so the meaning of
-Q and A changes with the round. The same byte gives `$C0A0` = `(byte + 1) AND 1` (`$D23B`). Which rounds swap and
-why is examined in [10. Gameplay logic](10-gameplay-logic.md). The joystick readers do not swap.
+Q and A changes with the round. The same byte gives `$C0A0` = `(byte + 1) AND 1` (`$D23B`). So Q always climbs the aircraft
+and speeds up the ground vehicle ([10.3](10-gameplay-logic.md#103-driving-the-two-vehicles)). The joystick readers do not swap.
 
 ## 5.4 The automatic start
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Every resource file of src/res against the bot's recording (work/p2): for each `INCBIN` of src/game its place in
-the assembled image (`build/game.bin`, found by its bytes), then the recording's memory there at the given frames.
+"""Every resource file of src/res against the bot's recording (work/p2): for each `INCBIN` of src/game its address
+in the assembler's listing (`build/game.lst`, written by tools/build.sh), then the recording's memory there at the
+given frames. (Found by its bytes instead, a stale copy such as `sprite-gfx-copy.bin` would land on its original.)
 A piece the game never writes equals the file at every frame; one it rewrites in play (the game screen under the
 playfield, the buffers) is reported with the bytes that differ at each frame.
 
@@ -9,7 +10,6 @@ playfield, the buffers) is reported with the bytes that differ at each frame.
 Needs build/game.bin and an unreal-ng instance with the work folder's recording open (re_session.py open).
 """
 import argparse
-import glob
 import os
 import re
 import sys
@@ -20,7 +20,8 @@ import res_formats  # noqa: E402
 import res_preview  # noqa: E402
 
 FRAME_T = 69888
-INCBIN = re.compile(r'^\s*INCBIN\s+"([^"]+)"(?:\s*,\s*(\$?[0-9A-Fa-f]+))?(?:\s*,\s*(\$?[0-9A-Fa-f]+))?')
+INCBIN = re.compile(r'^\s*\d+\+?\s+([0-9A-F]{4})\s+INCBIN\s+"([^"]+)"(?:\s*,\s*(\$?[0-9A-Fa-f]+))?'
+                    r'(?:\s*,\s*(\$?[0-9A-Fa-f]+))?')
 
 
 def number(text):
@@ -46,24 +47,20 @@ def main():
             data += bytes.fromhex(r.structured['hex'])
         memory[f] = bytes(data)
     pieces = []
-    for source in sorted(glob.glob(os.path.join(ROOT, 'src', 'game', '*.asm'))):
-        for line in open(source):
-            m = INCBIN.match(line)
-            if not m:
-                continue
-            data = res_formats.load(m.group(1)[len('res/'):])
-            start = number(m.group(2)) if m.group(2) else 0
-            length = number(m.group(3)) if m.group(3) else len(data) - start
-            pieces.append((m.group(1), start, data[start:start + length]))
+    for line in open(os.path.join(ROOT, 'build', 'game.lst')):
+        m = INCBIN.match(line)
+        if not m:
+            continue
+        data = res_formats.load(m.group(2)[len('res/'):])
+        start = number(m.group(3)) if m.group(3) else 0
+        length = number(m.group(4)) if m.group(4) else len(data) - start
+        pieces.append((m.group(2), start, data[start:start + length], int(m.group(1), 16)))
     failures, static, total = 0, 0, 0
-    for name, start, data in pieces:
-        where = [a for a in range(len(image) - len(data) + 1) if image[a:a + len(data)] == data] \
-            if len(data) < 64 else [image.find(data)]
-        if not where or where[0] < 0:
-            print(f'{name}+{start}: {len(data)} bytes NOT in the assembled image')
+    for name, start, data, a in pieces:
+        if image[a:a + len(data)] != data:
+            print(f'{name}+{start}: {len(data)} bytes, the assembled image differs at ${a:04X}')
             failures += 1
             continue
-        a = where[0]
         diffs = [sum(memory[f][a + i] != data[i] for i in range(len(data))) for f in args.frames]
         total += 1
         if not any(diffs):

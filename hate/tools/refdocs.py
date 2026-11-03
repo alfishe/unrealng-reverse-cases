@@ -19,7 +19,7 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 import mkgame  # noqa: E402
 
-BUILDS = [('p2', 'the bot game'), ('game', 'the first recording')]
+BUILDS = [('p2', 'the bot game'), ('game', "the L1 build of the first recording's game window")]
 LO, HI = mkgame.LO, mkgame.HI
 
 
@@ -89,7 +89,7 @@ def main():
         """A memory range as the entries it covers"""
         if hi < LO:
             area = 'screen' if 0x4000 <= lo < 0x5B00 else 'system'
-            return '`$%04X`-`$%04X` (%s)' % (lo, hi, area)
+            return ('`$%04X`' % lo if lo == hi else '`$%04X`-`$%04X`' % (lo, hi)) + ' (%s)' % area
         names = []
         a = max(lo, LO)
         while a <= hi:
@@ -97,7 +97,7 @@ def main():
             names.append(e[2])
             a = ends[e[0]] + 1
         shown = ', '.join('`%s`' % n for n in names[:4]) + (' and %d more' % (len(names) - 4) if len(names) > 4 else '')
-        return '`$%04X`-`$%04X` (%s)' % (lo, hi, shown)
+        return ('`$%04X`' % lo if lo == hi else '`$%04X`-`$%04X`' % (lo, hi)) + ' (%s)' % shown
 
     builds = {key: Build(key) for key, _ in BUILDS}
     # Per routine entry of the game: what each build saw
@@ -166,7 +166,7 @@ def main():
            + ', '.join(f'`work/{k}` ({t})' for k, t in BUILDS) + '.',
            'Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share',
            'of the recording. Memory ranges name the entries they cover. An entry no recording reached says so.',
-           'Written by `tools/refdocs.py`; edit `src/game/game.ann`, then run `tools/mkgame.py --install` and',
+           'Written by `tools/refdocs.py`; edit `src/game/game.ann`, then run `tools/mkgame.py --venv VENV --install` and',
            '`tools/refdocs.py`.', '']
     out.append('| Module | Entries | Code entries |')
     out.append('| --- | --- | --- |')
@@ -196,7 +196,7 @@ def main():
                 if key in s['runs']:
                     calls, t = s['runs'][key]
                     share = 100 * t / builds[key].total
-                    called = f'{calls:,} calls' if calls else 'run into, not called'
+                    called = f'{calls:,} call{"" if calls == 1 else "s"}' if calls else 'run into, not called'
                     rows.append((f'Runs ({text})', f'{called}, {t:,} t-states own ({share:.2f} %)'))
             if s['callers']:
                 rows.append(('Called from', ', '.join(f'`{owner(c)[2]}`' + (' (tail)' if k == 'tail' else '')

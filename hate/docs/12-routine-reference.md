@@ -1,10 +1,10 @@
 # 12. Routine reference
 
 Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
-the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/p2` (the bot game), `work/game` (the first recording).
+the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/p2` (the bot game), `work/game` (the L1 build of the first recording's game window).
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
 of the recording. Memory ranges name the entries they cover. An entry no recording reached says so.
-Written by `tools/refdocs.py`; edit `src/game/game.ann`, then run `tools/mkgame.py --install` and
+Written by `tools/refdocs.py`; edit `src/game/game.ann`, then run `tools/mkgame.py --venv VENV --install` and
 `tools/refdocs.py`.
 
 | Module | Entries | Code entries |
@@ -40,7 +40,7 @@ The address BASIC line 30 calls. It sets the stack to the top of memory, disable
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 24 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 24 t-states own (0.00 %) |
 | Calls | `Startup` (tail) |
 
 ## titleplayer
@@ -55,7 +55,7 @@ Entry of the title music player (Ben Daglish's beeper engine); docs/02-architect
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 1 calls, 210,321 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 1 call, 210,321 t-states own (0.01 %) |
 | Called from | `Startup` |
 | Calls | `TitleSetup` |
 | Reads | `$803A`-`$85C5` (`TitleSetup`, `NoteTimeCheck`, `PatternStep`, `PatternCommand` and 58 more); `$9F1A`-`$9F1B` (`Startup`) |
@@ -81,11 +81,11 @@ Saves SP into the operand at `$8364` (for the exits at `$8356`), points SP at it
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 1 calls, 46,279 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 1 call, 46,279 t-states own (0.00 %) |
 | Called from | `TitlePlayer` |
 | Calls | `SongStep` (tail), `Im2Jump` |
-| Reads | `$806E`-`$806E` (`TitleSetup`); `$8422`-`$843E` (`TitlePatches`, `TuneTable`); `$FDFD`-`$FE00` (`Im2Jump`, `Im2Table`) |
-| Writes | `$817B`-`$817B` (`CmdLongNote`); `$82CA`-`$82D4` (`VoicesPlay`); `$832C`-`$8336` (`VoiceBStep`); `$8364`-`$8365` (`TitleInterrupt`); `$83F7`-`$83FB` (`TitleVectorAddr`, `TitleVectorSave`); `$FDFD`-`$FDFF` (`Im2Jump`) |
+| Reads | `$806E` (`TitleSetup`); `$8422`-`$843E` (`TitlePatches`, `TuneTable`); `$FDFD`-`$FE00` (`Im2Jump`, `Im2Table`) |
+| Writes | `$817B` (`CmdLongNote`); `$82CA`-`$82D4` (`VoicesPlay`); `$832C`-`$8336` (`VoiceBStep`); `$8364`-`$8365` (`TitleInterrupt`); `$83F7`-`$83FB` (`TitleVectorAddr`, `TitleVectorSave`); `$FDFD`-`$FDFF` (`Im2Jump`) |
 
 ### `NoteTimeCheck` (`$807F`)
 
@@ -96,7 +96,7 @@ Entered from the voice loop after each period of voice B. C counts the note's fr
 | | |
 | --- | --- |
 | Runs (the bot game) | 3 calls, 54 t-states own (0.00 %) |
-| Runs (the first recording) | 8,362,124 calls, 150,556,536 t-states own (5.05 %) |
+| Runs (the L1 build of the first recording's game window) | 8,362,124 calls, 150,556,536 t-states own (5.05 %) |
 | Called from | `VoiceAEnvelope` (tail), `VoiceBDelayLoop` (tail) |
 | Calls | `PatternStep`, `DrumTick` (tail), `Im2Jump` |
 
@@ -108,7 +108,7 @@ Reloads C with the note length (the operand `$8085`, set by command 17), then re
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 5,657 calls, 84,855 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 5,657 calls, 84,855 t-states own (0.00 %) |
 | Called from | `NoteTimeCheck`, `PatternEnter` (tail) |
 | Calls | `PatternCommand` |
 
@@ -120,7 +120,7 @@ Reads the command byte at HL and jumps through the handler table `$83FC` (2 byte
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 6,374 calls, 560,912 t-states own (0.02 %) |
+| Runs (the L1 build of the first recording's game window) | 6,374 calls, 560,912 t-states own (0.02 %) |
 | Called from | `PatternStep`, `CmdWidthA` (tail), `CmdWidthB` (tail), `CmdEnvelopeA` (tail), `CmdEnvelopeB` (tail), `CmdModeBHold` (tail), `CmdModeBDecay` (tail), `CmdNoteLength` (tail), `CmdDrums` (tail), `CmdLongNote` (tail) |
 | Calls | `CmdWidthA`, `CmdWidthB`, `CmdEnvelopeA`, `CmdEnvelopeB`, `CmdModeBHold`, `CmdModeBDecay`, `CmdNoteLength`, `CmdDrums`, `CmdPatternEnd`, `CmdHold`, `CmdLongNote`, `CmdNoteAB`, `CmdNoteA`, `CmdNoteB` |
 | Reads | `$83FC`-`$8421` (`TitleCommands`); `$8467`-`$859F` (`PatternInit`, `PatternA`, `PatternB`, `PatternC` and 1 more) |
@@ -133,11 +133,11 @@ Writes the argument byte into the operands at `$81DE` and `$8205`, the LD B,n of
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 590 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 590 t-states own (0.00 %) |
 | Called from | `PatternCommand` |
 | Calls | `PatternCommand` (tail) |
-| Reads | `$846B`-`$846B` (`PatternInit`) |
-| Writes | `$81DE`-`$81DE` (`CmdNoteABVoiceB`); `$8205`-`$8205` (`CmdNoteAPeriod`) |
+| Reads | `$846B` (`PatternInit`) |
+| Writes | `$81DE` (`CmdNoteABVoiceB`); `$8205` (`CmdNoteAPeriod`) |
 
 ### `CmdWidthB` (`$80A4`)
 
@@ -147,11 +147,11 @@ Writes the argument byte into the operands at `$81BB` and `$8231`, the LD B,n of
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 590 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 590 t-states own (0.00 %) |
 | Called from | `PatternCommand` |
 | Calls | `PatternCommand` (tail) |
-| Reads | `$846D`-`$846D` (`PatternInit`) |
-| Writes | `$81BB`-`$81BB` (`CmdNoteABVoiceB`); `$8231`-`$8231` (`CmdNoteB`) |
+| Reads | `$846D` (`PatternInit`) |
+| Writes | `$81BB` (`CmdNoteABVoiceB`); `$8231` (`CmdNoteB`) |
 
 ### `CmdEnvelopeA` (`$80B0`)
 
@@ -161,11 +161,11 @@ Writes the argument into the operand at `$827E`, the reload of H (voice A's enve
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 460 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 460 t-states own (0.00 %) |
 | Called from | `PatternCommand` |
 | Calls | `PatternCommand` (tail) |
-| Reads | `$846F`-`$846F` (`PatternInit`) |
-| Writes | `$827E`-`$827E` (`VoiceAEnvelope`) |
+| Reads | `$846F` (`PatternInit`) |
+| Writes | `$827E` (`VoiceAEnvelope`) |
 
 ### `CmdEnvelopeB` (`$80B9`)
 
@@ -175,11 +175,11 @@ Writes the argument into the operand at `$82E0`, the reload of L (voice B's enve
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 460 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 460 t-states own (0.00 %) |
 | Called from | `PatternCommand` |
 | Calls | `PatternCommand` (tail) |
-| Reads | `$8471`-`$8471` (`PatternInit`) |
-| Writes | `$82E0`-`$82E0` (`VoicesPlay`) |
+| Reads | `$8471` (`PatternInit`) |
+| Writes | `$82E0` (`VoicesPlay`) |
 
 ### `CmdModeBHold` (`$80CE`)
 
@@ -189,7 +189,7 @@ C of the pattern's register set is voice B's envelope mode.
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 513 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 513 t-states own (0.00 %) |
 | Called from | `PatternCommand` |
 | Calls | `PatternCommand` (tail) |
 
@@ -201,7 +201,7 @@ Sets voice B's envelope mode C = 0 and goes back to the pattern reader (PatternC
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 270 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 270 t-states own (0.00 %) |
 | Called from | `PatternCommand` |
 | Calls | `PatternCommand` (tail) |
 
@@ -213,11 +213,11 @@ The argument goes into the operand of LD C,n at `$8085` and into C' at once.
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 580 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 580 t-states own (0.00 %) |
 | Called from | `PatternCommand` |
 | Calls | `PatternCommand` (tail) |
-| Reads | `$8469`-`$8469` (`PatternInit`) |
-| Writes | `$8085`-`$8085` (`PatternStep`) |
+| Reads | `$8469` (`PatternInit`) |
+| Writes | `$8085` (`PatternStep`) |
 
 ### `CmdDrums` (`$8101`)
 
@@ -227,7 +227,7 @@ Starts the drum pattern whose address follows the command byte (`$815E`), then r
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 817 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 817 t-states own (0.00 %) |
 | Called from | `PatternCommand` |
 | Calls | `PatternCommand` (tail), `DrumStart` |
 
@@ -239,10 +239,10 @@ Counts the repeats down (the operand `$810E`). While some remain, it restarts th
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 7,508 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 7,508 t-states own (0.00 %) |
 | Called from | `PatternCommand` |
 | Calls | `SongStep`, `PatternEnter` (tail) |
-| Writes | `$810E`-`$810E` (`CmdPatternEnd`) |
+| Writes | `$810E` (`CmdPatternEnd`) |
 
 ### `SongStep` (`$8118`)
 
@@ -252,7 +252,7 @@ Reads one song byte at HL: `$FF` return from a sub-song, `$FE` call a sub-song, 
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 109 calls, 16,205 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 109 calls, 16,205 t-states own (0.00 %) |
 | Called from | `TitleSetup` (tail), `CmdPatternEnd`, `DrumStart` |
 | Calls | `PatternEnter`, `SongDrums` (tail) |
 | Reads | `$843F`-`$8462` (`TuneSong`) |
@@ -286,7 +286,7 @@ Back to the pattern register set, where DE holds the pattern position, then `$80
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 129 calls, 1,806 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 129 calls, 1,806 t-states own (0.00 %) |
 | Called from | `CmdPatternEnd` (tail), `SongStep` |
 | Calls | `PatternStep` (tail) |
 
@@ -298,7 +298,7 @@ Calls DrumStart with the return set to `$8118`, the next song byte.
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 40 calls, 840 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 40 calls, 840 t-states own (0.00 %) |
 | Called from | `SongStep` (tail) |
 | Calls | `DrumStart` |
 
@@ -310,10 +310,10 @@ Clears the drum timer (operand `$8244`), stores the pattern's first byte, its sp
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 59 calls, 7,375 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 59 calls, 7,375 t-states own (0.00 %) |
 | Called from | `CmdDrums`, `SongDrums` |
 | Calls | `SongStep` |
-| Reads | `$8443`-`$8459` (`TuneSong`); `$8584`-`$8585` (`PatternD`); `$85A2`-`$85A2` (`DrumPatternA`); `$85B4`-`$85B4` (`DrumPatternB`) |
+| Reads | `$8443`-`$8459` (`TuneSong`); `$8584`-`$8585` (`PatternD`); `$85A2` (`DrumPatternA`); `$85B4` (`DrumPatternB`) |
 | Writes | `$8244`-`$8259` (`DrumTick`) |
 
 ### `CmdHold` (`$8175`)
@@ -324,7 +324,7 @@ Command 0: nothing changes this note length; the player goes on to the drum tick
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 23,736 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 23,736 t-states own (0.00 %) |
 | Called from | `PatternCommand` |
 | Calls | `DrumTick` (tail) |
 
@@ -336,11 +336,11 @@ The counter is its own operand at `$817B`: 0 means the command starts, it loads 
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 191,255 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 191,255 t-states own (0.01 %) |
 | Called from | `PatternCommand` |
 | Calls | `PatternCommand` (tail), `DrumTick` (tail) |
-| Reads | `$817B`-`$817B` (`CmdLongNote`); `$847B`-`$849B` (`PatternA`); `$84CD`-`$84CD` (`PatternC`); `$84E8`-`$84E8` (`PatternC`); `$8507`-`$8507` (`PatternC`); `$8522`-`$8522` (`PatternC`); 3 more ranges |
-| Writes | `$817B`-`$817B` (`CmdLongNote`) |
+| Reads | `$817B` (`CmdLongNote`); `$847B`-`$849B` (`PatternA`); `$84CD` (`PatternC`); `$84E8` (`PatternC`); `$8507` (`PatternC`); `$8522` (`PatternC`); 3 more ranges |
+| Writes | `$817B` (`CmdLongNote`) |
 
 ### `CmdNoteAB` (`$819B`)
 
@@ -350,10 +350,10 @@ Two period bytes: voice A's goes into D of the voice loop and the reload operand
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 551,790 t-states own (0.02 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 551,790 t-states own (0.02 %) |
 | Called from | `PatternCommand` |
 | Calls | `DrumTick` (tail) |
-| Reads | `$827E`-`$827E` (`VoiceAEnvelope`); `$82E0`-`$82E0` (`VoicesPlay`); `$8474`-`$859B` (`PatternA`, `PatternB`, `PatternC`, `PatternD`) |
+| Reads | `$827E` (`VoiceAEnvelope`); `$82E0` (`VoicesPlay`); `$8474`-`$859B` (`PatternA`, `PatternB`, `PatternC`, `PatternD`) |
 | Writes | `$82CA`-`$82D4` (`VoicesPlay`); `$832C`-`$8336` (`VoiceBStep`) |
 
 ### `CmdNoteABVoiceB` (`$81A1`)
@@ -374,10 +374,10 @@ One period byte for voice A, set up as in command 10.
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 78,690 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 78,690 t-states own (0.00 %) |
 | Called from | `PatternCommand` |
 | Calls | `DrumTick` (tail) |
-| Reads | `$827E`-`$827E` (`VoiceAEnvelope`); `$84B1`-`$84D2` (`PatternB`, `PatternC`); `$84E6`-`$84EA` (`PatternC`); `$8505`-`$850C` (`PatternC`); `$8520`-`$8524` (`PatternC`) |
+| Reads | `$827E` (`VoiceAEnvelope`); `$84B1`-`$84D2` (`PatternB`, `PatternC`); `$84E6`-`$84EA` (`PatternC`); `$8505`-`$850C` (`PatternC`); `$8520`-`$8524` (`PatternC`) |
 | Writes | `$82CA`-`$82D4` (`VoicesPlay`) |
 
 ### `CmdNoteAPeriod` (`$81F4`)
@@ -398,10 +398,10 @@ One period byte for voice B, set up as in command 10.
 
 | | |
 | --- | --- |
-| Runs (the first recording) | run into, not called, 124,580 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 124,580 t-states own (0.00 %) |
 | Called from | `PatternCommand` |
 | Calls | `DrumTick` |
-| Reads | `$82E0`-`$82E0` (`VoicesPlay`); `$84D5`-`$84FC` (`PatternC`); `$850F`-`$8536` (`PatternC`) |
+| Reads | `$82E0` (`VoicesPlay`); `$84D5`-`$84FC` (`PatternC`); `$850F`-`$8536` (`PatternC`) |
 | Writes | `$832C`-`$8336` (`VoiceBStep`) |
 
 ### `DrumTick` (`$8243`)
@@ -413,7 +413,7 @@ The operand `$8244` is the drum timer, decremented once a frame by the IM 2 hand
 | | |
 | --- | --- |
 | Runs (the bot game) | 3 calls, 804 t-states own (0.00 %) |
-| Runs (the first recording) | 8,362,125 calls, 176,386,884 t-states own (5.92 %) |
+| Runs (the L1 build of the first recording's game window) | 8,362,125 calls, 176,386,884 t-states own (5.92 %) |
 | Called from | `NoteTimeCheck` (tail), `CmdHold` (tail), `CmdLongNote` (tail), `CmdNoteAB` (tail), `CmdNoteA` (tail), `CmdNoteB` |
 | Calls | `VoiceAEnvelope`, `VoiceBDelayLoop`, `DrumClick` (tail), `DrumNoise` (tail), `DrumRise` (tail), `DrumFall` (tail), `DrumSweep` (tail), `Im2Jump` |
 | Reads | `$85A3`-`$85C4` (`DrumPatternA`, `DrumPatternB`) |
@@ -427,7 +427,7 @@ H counts voice A's envelope frames (the IM 2 handler decrements it). At 0 it is 
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 8,362,125 calls, 1,548,407,840 t-states own (51.95 %) |
+| Runs (the L1 build of the first recording's game window) | 8,362,125 calls, 1,548,407,840 t-states own (51.95 %) |
 | Called from | `DrumTick`, `DrumClick` (tail), `DrumNoise` (tail), `DrumRise` (tail), `DrumFall` (tail), `DrumSweep` (tail) |
 | Calls | `NoteTimeCheck` (tail), `Im2Jump` |
 | Reads | `$82CC`-`$82D4` (`VoicesPlay`); `$832C`-`$8336` (`VoiceBStep`) |
@@ -494,11 +494,11 @@ Reached through JP `$8340` at `$FDFD`. A key on any row ends the music (`$8356`)
 
 | | |
 | --- | --- |
-| Runs (the bot game) | 1 calls, 168 t-states own (0.00 %) |
-| Runs (the first recording) | 27,645 calls, 3,123,940 t-states own (0.10 %) |
+| Runs (the bot game) | 1 call, 168 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 27,645 calls, 3,123,940 t-states own (0.10 %) |
 | Called from | `Im2Jump` (tail) |
-| Reads | `$8244`-`$8244` (`DrumTick`); `$83F7`-`$83FB` (`TitleVectorAddr`, `TitleVectorSave`) |
-| Writes | `$8244`-`$8244` (`DrumTick`); `$FDFD`-`$FDFF` (`Im2Jump`) |
+| Reads | `$8244` (`DrumTick`); `$83F7`-`$83FB` (`TitleVectorAddr`, `TitleVectorSave`) |
+| Writes | `$8244` (`DrumTick`); `$FDFD`-`$FDFF` (`Im2Jump`) |
 | Ports in | `$00FE` |
 
 ### `DrumClick` (`$8367`)
@@ -509,7 +509,7 @@ The beeper held on for 300 loop steps, then a pause; docs/09-sound.md 9.5.
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 1,593 calls, 13,655,196 t-states own (0.46 %) |
+| Runs (the L1 build of the first recording's game window) | 1,593 calls, 13,655,196 t-states own (0.46 %) |
 | Called from | `DrumTick` (tail) |
 | Calls | `VoiceAEnvelope` (tail) |
 | Ports out | `$00FE`, `$18FE` |
@@ -522,7 +522,7 @@ The beeper held on for 300 loop steps, then a pause; docs/09-sound.md 9.5.
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 633 calls, 20,294,003 t-states own (0.68 %) |
+| Runs (the L1 build of the first recording's game window) | 633 calls, 20,294,003 t-states own (0.68 %) |
 | Called from | `DrumTick` (tail) |
 | Calls | `VoiceAEnvelope` (tail) |
 | Ports out | `$00FE`, `$08FE`, `$10FE`, `$18FE` |
@@ -535,7 +535,7 @@ The beeper toggled 50 times with two waits of D each, D from 50 down to 1: a ton
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 145 calls, 5,040,936 t-states own (0.17 %) |
+| Runs (the L1 build of the first recording's game window) | 145 calls, 5,040,936 t-states own (0.17 %) |
 | Called from | `DrumTick` (tail) |
 | Calls | `VoiceAEnvelope` (tail) |
 | Ports out | `$00FE`, `$18FE` |
@@ -548,7 +548,7 @@ The beeper toggled with one wait of D, D from 180 up in steps of 4 until it wrap
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 116 calls, 6,291,472 t-states own (0.21 %) |
+| Runs (the L1 build of the first recording's game window) | 116 calls, 6,291,472 t-states own (0.21 %) |
 | Called from | `DrumTick` (tail) |
 | Calls | `VoiceAEnvelope` (tail) |
 | Ports out | `$00FE`, `$18FE` |
@@ -561,7 +561,7 @@ The beeper toggled with one wait of D, D from 200 down in steps of 4 while it is
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 145 calls, 6,296,884 t-states own (0.21 %) |
+| Runs (the L1 build of the first recording's game window) | 145 calls, 6,296,884 t-states own (0.21 %) |
 | Called from | `DrumTick` (tail) |
 | Calls | `VoiceAEnvelope` (tail) |
 | Ports out | `$00FE`, `$18FE` |
@@ -578,11 +578,11 @@ Called once from the entry `$61A8`. Sets IM 2 (`$9F4B`), plays tune 0 of the tit
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 1 calls, 219,973 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 1 call, 219,973 t-states own (0.01 %) |
 | Called from | `Entry` (tail) |
 | Calls | `TitlePlayer`, `SetupIM2`, `GameStart` (tail) |
 | Reads | `$A000`-`$BFFF` (`GameScreenImage`, `GameScreenAttrs`, `RendererTablesImage`) |
-| Writes | `$4000`-`$5FFF` (`ProfileMargin`); `$8002`-`$8002` (`TitlePlayer`); `$C2F8`-`$C2F8` (`LapNumber`) |
+| Writes | `$4000`-`$5FFF` (`ProfileMargin`); `$8002` (`TitlePlayer`); `$C2F8` (`LapNumber`) |
 
 ### `StartGame` (`$9F1C`)
 
@@ -595,7 +595,7 @@ Reached when the title player returns (the tune ended or a key was pressed), not
 | Runs (the bot game) | run into, not called, 219,922 t-states own (0.02 %) |
 | Calls | `GameStart` (tail) |
 | Reads | `$A000`-`$BFFF` (`GameScreenImage`, `GameScreenAttrs`, `RendererTablesImage`) |
-| Writes | `$4000`-`$5FFF` (`ProfileMargin`); `$C2F8`-`$C2F8` (`LapNumber`) |
+| Writes | `$4000`-`$5FFF` (`ProfileMargin`); `$C2F8` (`LapNumber`) |
 
 ### `SetupIM2` (`$9F4B`)
 
@@ -605,7 +605,7 @@ Writes JP `$9F68` at `$FDFD`, fills the 257 bytes `$FE00-$FF00` with `$FD` and s
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 1 calls, 6,758 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 1 call, 6,758 t-states own (0.00 %) |
 | Called from | `Startup` |
 | Writes | `$FDFD`-`$FF00` (`Im2Jump`, `Im2Table`, `SpriteListArea`) |
 
@@ -621,8 +621,8 @@ Entered once from the start-up `$9F2C`.
 
 | | |
 | --- | --- |
-| Runs (the bot game) | 1 calls, 10 t-states own (0.00 %) |
-| Runs (the first recording) | 1 calls, 10 t-states own (0.00 %) |
+| Runs (the bot game) | 1 call, 10 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 1 call, 10 t-states own (0.00 %) |
 | Called from | `Startup` (tail), `StartGame` (tail) |
 | Calls | `GameEntry` (tail) |
 
@@ -638,12 +638,12 @@ Entered from `$C2B1` after loading. Interrupts stay off from here on: no pass wa
 
 | | |
 | --- | --- |
-| Runs (the bot game) | 1 calls, 1,949,876 t-states own (0.20 %) |
-| Runs (the first recording) | 1 calls, 4 t-states own (0.00 %) |
+| Runs (the bot game) | 1 call, 1,949,876 t-states own (0.20 %) |
+| Runs (the L1 build of the first recording's game window) | 1 call, 4 t-states own (0.00 %) |
 | Called from | `GameStart` (tail) |
 | Calls | `MainLoop`, `ShortPause`, `Blit`, `ScrollStep`, `CourseExpand`, `BuildSpriteLists`, `DrawShadows`, `MoveObjects`, `ReadControls`, `Random`, `PrintString`, `UpdateMax`, `PlaceObjects`, `Menu`, `Beep`, `PlayEffect` |
-| Reads | `$6000`-`$62FE` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$C000`-`$C050` (`PlayerRecord`, `PlayerShotRecords`); `$C2F7`-`$C2F9` (`RoundNumber`, `LapNumber`, `Lives`); `$CF2E`-`$CF31` (`CourseRecord`, `RestartRecord`); `$E68B`-`$E68B` (`AutoCountdown`); `$EF50`-`$EF60` (`RoundTable`); 1 more ranges |
-| Writes | `$5A58`-`$5A58` (screen); `$6000`-`$62FF` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$C000`-`$C0B0` (`PlayerRecord`, `PlayerShotRecords`, `PodRecords`, `ParkedVehicleRecord` and 1 more); `$C2F6`-`$C2F7` (`MoverHeight`, `RoundNumber`); `$C32E`-`$C33A` (`ScrollPage`, `ScrollHalf`, `UnusedC330`, `SavedStack` and 1 more); `$C3FA`-`$C3FB` (`StripCount`); 5 more ranges |
+| Reads | `$6000`-`$62FE` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$C000`-`$C050` (`PlayerRecord`, `PlayerShotRecords`); `$C2F7`-`$C2F9` (`RoundNumber`, `LapNumber`, `Lives`); `$CF2E`-`$CF31` (`CourseRecord`, `RestartRecord`); `$E68B` (`AutoCountdown`); `$EF50`-`$EF60` (`RoundTable`); 1 more ranges |
+| Writes | `$5A58` (screen); `$6000`-`$62FF` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$C000`-`$C0B0` (`PlayerRecord`, `PlayerShotRecords`, `PodRecords`, `ParkedVehicleRecord` and 1 more); `$C2F6`-`$C2F7` (`MoverHeight`, `RoundNumber`); `$C32E`-`$C33A` (`ScrollPage`, `ScrollHalf`, `UnusedC330`, `SavedStack` and 1 more); `$C3FA`-`$C3FB` (`StripCount`); 5 more ranges |
 | Ports in | `$DFFE` |
 
 ### `MainLoop` (`$CF33`)
@@ -654,11 +654,11 @@ The whole game state machine; it never returns (docs/04-game-loop.md 4.1-4.4). `
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 2 calls, 372,248,024 t-states own (12.49 %) |
+| Runs (the L1 build of the first recording's game window) | 2 calls, 372,248,024 t-states own (12.49 %) |
 | Called from | `GameEntry`, `ScrollStep` (tail) |
 | Calls | `ShortPause`, `Blit`, `ScrollStep`, `CourseExpand`, `BuildSpriteLists`, `DrawShadows`, `MoveObjects`, `ReadControls`, `Random`, `PrintString`, `UpdateMax`, `PlaceObjects`, `Menu`, `Beep`, `PlayEffect` |
-| Reads | `$6000`-`$62FE` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$C000`-`$C050` (`PlayerRecord`, `PlayerShotRecords`); `$C2F7`-`$C2F9` (`RoundNumber`, `LapNumber`, `Lives`); `$CF2E`-`$CF31` (`CourseRecord`, `RestartRecord`); `$E68B`-`$E68B` (`AutoCountdown`); `$EF50`-`$EF54` (`RoundTable`); 1 more ranges |
-| Writes | `$5A58`-`$5A58` (screen); `$6000`-`$62FF` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$C000`-`$C0B0` (`PlayerRecord`, `PlayerShotRecords`, `PodRecords`, `ParkedVehicleRecord` and 1 more); `$C2F6`-`$C2F7` (`MoverHeight`, `RoundNumber`); `$C32E`-`$C33A` (`ScrollPage`, `ScrollHalf`, `UnusedC330`, `SavedStack` and 1 more); `$C3FA`-`$C3FB` (`StripCount`); 5 more ranges |
+| Reads | `$6000`-`$62FE` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$C000`-`$C050` (`PlayerRecord`, `PlayerShotRecords`); `$C2F7`-`$C2F9` (`RoundNumber`, `LapNumber`, `Lives`); `$CF2E`-`$CF31` (`CourseRecord`, `RestartRecord`); `$E68B` (`AutoCountdown`); `$EF50`-`$EF54` (`RoundTable`); 1 more ranges |
+| Writes | `$5A58` (screen); `$6000`-`$62FF` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$C000`-`$C0B0` (`PlayerRecord`, `PlayerShotRecords`, `PodRecords`, `ParkedVehicleRecord` and 1 more); `$C2F6`-`$C2F7` (`MoverHeight`, `RoundNumber`); `$C32E`-`$C33A` (`ScrollPage`, `ScrollHalf`, `UnusedC330`, `SavedStack` and 1 more); `$C3FA`-`$C3FB` (`StripCount`); 5 more ranges |
 | Ports in | `$BFFE`, `$DFFE` |
 
 ## roundsetup
@@ -674,7 +674,7 @@ Clears `$6000-$62FF` and fills it with the ground profile of the course (CourseR
 | | |
 | --- | --- |
 | Runs (the bot game) | 9 calls, 635,546 t-states own (0.06 %) |
-| Runs (the first recording) | 10 calls, 706,925 t-states own (0.02 %) |
+| Runs (the L1 build of the first recording's game window) | 10 calls, 706,925 t-states own (0.02 %) |
 | Called from | `ScrollStep` (tail) |
 | Reads | `$6000`-`$62FE` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$C9FE`-`$CA42` (`GroundAnchors`); `$CC18`-`$CE09` (`Course8`, `Course9`, `Course10`, `Course3` and 2 more); `$CEAC`-`$CF2F` (`Course4`, `CourseTable`, `CourseRecord`) |
 | Writes | `$6000`-`$62FF` (`ProfileBuffer`, `Entry`, `GroundProfileTail`) |
@@ -688,11 +688,11 @@ Called by the course check (`$D4BF`) when the 32nd strip of a course is drawn: a
 | | |
 | --- | --- |
 | Runs (the bot game) | 9 calls, 113,658 t-states own (0.01 %) |
-| Runs (the first recording) | 10 calls, 125,728 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 10 calls, 125,728 t-states own (0.00 %) |
 | Called from | `ScrollStep` |
 | Calls | `PaintAttributes`, `ShortPause`, `PrintString`, `ShowScore`, `UpdateMax`, `PlaySound` |
-| Reads | `$C000`-`$C002` (`PlayerRecord`); `$C060`-`$C270` (`PodRecords`, `ParkedVehicleRecord`, `CourseObjectRecords`, `LaunchedRecords` and 3 more); `$C292`-`$C2B0` (`PlayerTemplate`, `UnusedC299`, `VehicleTemplate`); `$C2F7`-`$C2F8` (`RoundNumber`, `LapNumber`); `$CC17`-`$CC17` (`Course8`); `$CC6C`-`$CC6C` (`Course9`); 12 more ranges |
-| Writes | `$5A58`-`$5A5B` (screen); `$C000`-`$C008` (`PlayerRecord`); `$C061`-`$C270` (`PodRecords`, `ParkedVehicleRecord`, `CourseObjectRecords`, `LaunchedRecords` and 3 more); `$C2A1`-`$C2A1` (`VehicleTemplate`); `$C2BD`-`$C2BD` (`LaunchTemplates`); `$C2F7`-`$C2FE` (`RoundNumber`, `LapNumber`, `Lives`, `RoundText`); 6 more ranges |
+| Reads | `$C000`-`$C002` (`PlayerRecord`); `$C060`-`$C270` (`PodRecords`, `ParkedVehicleRecord`, `CourseObjectRecords`, `LaunchedRecords` and 3 more); `$C292`-`$C2B0` (`PlayerTemplate`, `UnusedC299`, `VehicleTemplate`); `$C2F7`-`$C2F8` (`RoundNumber`, `LapNumber`); `$CC17` (`Course8`); `$CC6C` (`Course9`); 12 more ranges |
+| Writes | `$5A58`-`$5A5B` (screen); `$C000`-`$C008` (`PlayerRecord`); `$C061`-`$C270` (`PodRecords`, `ParkedVehicleRecord`, `CourseObjectRecords`, `LaunchedRecords` and 3 more); `$C2A1` (`VehicleTemplate`); `$C2BD` (`LaunchTemplates`); `$C2F7`-`$C2FE` (`RoundNumber`, `LapNumber`, `Lives`, `RoundText`); 6 more ranges |
 
 ### `PaintAttributes` (`$D338`)
 
@@ -703,7 +703,7 @@ Walks the address list at `$D5B2` (BlitAddresses), screen addresses of the botto
 | | |
 | --- | --- |
 | Runs (the bot game) | 11 calls, 608,166 t-states own (0.06 %) |
-| Runs (the first recording) | 14 calls, 773,536 t-states own (0.03 %) |
+| Runs (the L1 build of the first recording's game window) | 14 calls, 773,536 t-states own (0.03 %) |
 | Called from | `RoundSetup`, `Menu` |
 | Reads | `$D5B2`-`$D9D3` (`BlitAddresses`, `BlitColumn01`, `BlitColumn02`, `BlitColumn03` and 29 more) |
 | Writes | `$5818`-`$581F` (screen); `$5836`-`$583F` (screen); `$5854`-`$585F` (screen); `$5872`-`$587F` (screen); `$5890`-`$5ACC` (screen); `$5AE0`-`$5AEA` (screen) |
@@ -717,7 +717,7 @@ About 0.85 million T-states, a quarter of a second. Keeps A. Used after hiding t
 | | |
 | --- | --- |
 | Runs (the bot game) | 10 calls, 8,565,880 t-states own (0.87 %) |
-| Runs (the first recording) | 10 calls, 8,565,880 t-states own (0.29 %) |
+| Runs (the L1 build of the first recording's game window) | 10 calls, 8,565,880 t-states own (0.29 %) |
 | Called from | `GameEntry`, `MainLoop`, `RoundSetup` |
 
 ## scroller
@@ -733,7 +733,7 @@ SP walks the address list BlitAddresses (`$D5B2`): every POP is the screen addre
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,622 calls, 270,660,483 t-states own (27.62 %) |
-| Runs (the first recording) | 2,319 calls, 239,372,463 t-states own (8.03 %) |
+| Runs (the L1 build of the first recording's game window) | 2,319 calls, 239,372,463 t-states own (8.03 %) |
 | Called from | `GameEntry`, `MainLoop` |
 | Calls | `RestoreUnderSprites` |
 | Reads | `$8000`-`$BFFF` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 75 more); `$C32E`-`$C332` (`ScrollPage`, `ScrollHalf`, `UnusedC330`, `SavedStack`) |
@@ -748,7 +748,7 @@ Called 128 times by the round start's pre-roll and entered once a pass from Blit
 | | |
 | --- | --- |
 | Runs (the bot game) | 768 calls, 17,343,711 t-states own (1.77 %) |
-| Runs (the first recording) | 1,280 calls, 18,398,842 t-states own (0.62 %) |
+| Runs (the L1 build of the first recording's game window) | 1,280 calls, 18,398,842 t-states own (0.62 %) |
 | Called from | `GameEntry`, `MainLoop` |
 | Calls | `MainLoop` (tail), `BuildGroundProfile` (tail), `RoundSetup`, `CourseExpand`, `FreshStrip` (tail) |
 | Reads | `$8000`-`$B27F` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 73 more); `$B300`-`$B47F` (`GameScreenImage`); `$B500`-`$B67F` (`GameScreenImage`); `$B700`-`$B87F` (`GameScreenImage`, `GameScreenAttrs`); `$B900`-`$BA7F` (`GameScreenAttrs`); `$BB00`-`$BC7F` (`RendererTablesImage`); 8 more ranges |
@@ -783,7 +783,7 @@ HL = a course record (CourseRecords). At `$FFFF` wraps to `$CF04` and sets Cours
 | | |
 | --- | --- |
 | Runs (the bot game) | 9 calls, 246,517 t-states own (0.03 %) |
-| Runs (the first recording) | 10 calls, 273,018 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 10 calls, 273,018 t-states own (0.01 %) |
 | Called from | `GameEntry`, `MainLoop`, `ScrollStep` |
 | Reads | `$C8EA`-`$C99B` (`SegmentRows`); `$C9AE`-`$C9FB` (`SegmentRows`); `$CC18`-`$CE09` (`Course8`, `Course9`, `Course10`, `Course3` and 2 more); `$CEAC`-`$CF29` (`Course4`, `CourseTable`) |
 | Writes | `$C3F8`-`$C3FB` (`CourseRowPtr`, `StripCount`); `$CA43`-`$CBA6` (`RowList`, `RowListTail`) |
@@ -797,7 +797,7 @@ Half 0, even offset. The new strip is page `$80` + `$C32E`, half 0: 8 lines of t
 | | |
 | --- | --- |
 | Runs (the bot game) | 849 calls, 12,981,628 t-states own (1.32 %) |
-| Runs (the first recording) | 903 calls, 13,807,314 t-states own (0.46 %) |
+| Runs (the L1 build of the first recording's game window) | 903 calls, 13,807,314 t-states own (0.46 %) |
 | Called from | `ScrollStep` (tail) |
 | Reads | `$8000`-`$B0FE` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 73 more); `$B200`-`$B2FE` (`GameScreenImage`); `$B400`-`$B4FE` (`GameScreenImage`); `$B600`-`$B6FE` (`GameScreenImage`); `$B800`-`$B8FE` (`GameScreenAttrs`); `$BA00`-`$BAFE` (`GameScreenAttrs`); 4 more ranges |
 | Writes | `$8000`-`$B0FF` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 73 more); `$B200`-`$B2FF` (`GameScreenImage`); `$B400`-`$B4FF` (`GameScreenImage`); `$B600`-`$B6FF` (`GameScreenImage`); `$B800`-`$B8FF` (`GameScreenAttrs`); `$BA00`-`$BAFF` (`GameScreenAttrs`); 4 more ranges |
@@ -817,7 +817,7 @@ The list is walked twice. The first walk (ShadowListLoop) makes the shadow list 
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,622 calls, 24,205,266 t-states own (2.47 %) |
-| Runs (the first recording) | 2,319 calls, 315,384 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 2,319 calls, 315,384 t-states own (0.01 %) |
 | Called from | `GameEntry`, `MainLoop` |
 | Calls | `ShadowListLoop`, `SaveSpriteStrips`, `SaveStrips`, `StampStatics` |
 | Reads | `$6023`-`$62F6` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$6500`-`$6540` (`SpriteScratch`); `$C000`-`$C19B` (`PlayerRecord`, `PlayerShotRecords`, `PodRecords`, `ParkedVehicleRecord` and 1 more); `$C1B0`-`$C23B` (`LaunchedRecords`, `EnemyShotRecords`); `$C260`-`$C26B` (`PreviousVehicleRecord`); `$C300`-`$C32E` (`SpriteTable`, `ScrollPage`); 1 more ranges |
@@ -831,7 +831,7 @@ One entry of `$6500` a time: IX = the record. The column (+B) decides how many s
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 10,384 calls, 4,232,277 t-states own (0.14 %) |
+| Runs (the L1 build of the first recording's game window) | 10,384 calls, 4,232,277 t-states own (0.14 %) |
 | Called from | `BuildSpriteLists`, `ShadowListAdd` (tail) |
 | Calls | `ShadowListAdd` (tail), `SpriteListBuild` (tail) |
 | Reads | `$6036`-`$629C` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$6500`-`$6538` (`SpriteScratch`); `$C000`-`$C050` (`PlayerRecord`, `PlayerShotRecords`); `$C0B0`-`$C17B` (`CourseObjectRecords`); `$C1A0`-`$C260` (`CourseObjectRecords`, `LaunchedRecords`, `EnemyShotRecords`, `PreviousVehicleRecord`); `$DD66`-`$DD67` (`ShadowListPtr`) |
@@ -845,10 +845,10 @@ In: A = lines a strip, A' = type, B = strips, C = the mask bytes skipped, D = co
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 8,065 calls, 1,879,145 t-states own (0.06 %) |
+| Runs (the L1 build of the first recording's game window) | 8,065 calls, 1,879,145 t-states own (0.06 %) |
 | Called from | `ShadowListLoop` (tail) |
 | Calls | `ShadowListLoop` (tail), `SaveStrips` |
-| Reads | `$C009`-`$C009` (`PlayerRecord`); `$C0B9`-`$C179` (`CourseObjectRecords`); `$C1A9`-`$C209` (`CourseObjectRecords`, `LaunchedRecords`); `$C32E`-`$C32E` (`ScrollPage`); `$DD66`-`$DD67` (`ShadowListPtr`) |
+| Reads | `$C009` (`PlayerRecord`); `$C0B9`-`$C179` (`CourseObjectRecords`); `$C1A9`-`$C209` (`CourseObjectRecords`, `LaunchedRecords`); `$C32E` (`ScrollPage`); `$DD66`-`$DD67` (`ShadowListPtr`) |
 | Writes | `$DD66`-`$DD67` (`ShadowListPtr`); `$FE64`-`$FEAB` (`Im2Table`) |
 
 ### `SpriteListBuild` (`$DB9A`)
@@ -859,7 +859,7 @@ The second walk of `$6500`. The line is +A plus the height +4. A dying record (b
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 2,319 calls, 6,851,939 t-states own (0.23 %) |
+| Runs (the L1 build of the first recording's game window) | 2,319 calls, 6,851,939 t-states own (0.23 %) |
 | Called from | `ShadowListLoop` (tail) |
 | Calls | `SaveSpriteStrips` |
 | Reads | `$6500`-`$6538` (`SpriteScratch`); `$C000`-`$C05B` (`PlayerRecord`, `PlayerShotRecords`); `$C0B0`-`$C17B` (`CourseObjectRecords`); `$C1A0`-`$C26B` (`CourseObjectRecords`, `LaunchedRecords`, `EnemyShotRecords`, `PreviousVehicleRecord`); `$C300`-`$C32E` (`SpriteTable`, `ScrollPage`); `$DD68`-`$DD69` (`SpriteListPtr`) |
@@ -874,7 +874,7 @@ HL = the buffer address kept at `$D9D4` (HL held the graphic), then SaveStrips.
 | | |
 | --- | --- |
 | Runs (the bot game) | 19,915 calls, 318,640 t-states own (0.03 %) |
-| Runs (the first recording) | 8,775 calls, 140,400 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 8,775 calls, 140,400 t-states own (0.00 %) |
 | Called from | `BuildSpriteLists`, `SpriteListBuild` |
 | Calls | `SaveStrips` |
 | Reads | `$D9D4`-`$D9D5` (`BlitListEnd`) |
@@ -888,7 +888,7 @@ In: HL = the playfield address of the first strip's lowest line, B = strips, A =
 | | |
 | --- | --- |
 | Runs (the bot game) | 30,480 calls, 33,844,684 t-states own (3.45 %) |
-| Runs (the first recording) | 16,840 calls, 21,709,568 t-states own (0.73 %) |
+| Runs (the L1 build of the first recording's game window) | 16,840 calls, 21,709,568 t-states own (0.73 %) |
 | Called from | `BuildSpriteLists`, `ShadowListAdd`, `SaveSpriteStrips` |
 | Reads | `$8008`-`$887F` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 64 more); `$8890`-`$89FF` (`SpriteGfxCopy`); `$8A10`-`$BFF1` (`SpriteGfxCopy`, `TitlePlayerCopy`, `StartupHead`, `Startup` and 8 more); `$DD6A`-`$DD6B` (`SaveAreaPtr`) |
 | Writes | `$DD6A`-`$DD6B` (`SaveAreaPtr`); `$F800`-`$FBD3` (`SpriteSaveBuffer`) |
@@ -902,7 +902,7 @@ Called by the blit `$D35E` once the buffer is on the screen (docs/06-rendering.m
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,622 calls, 5,202,796 t-states own (0.53 %) |
-| Runs (the first recording) | 2,319 calls, 3,049,403 t-states own (0.10 %) |
+| Runs (the L1 build of the first recording's game window) | 2,319 calls, 3,049,403 t-states own (0.10 %) |
 | Called from | `Blit` |
 | Calls | `RestoreStrips` |
 | Reads | `$FE64`-`$FEBC` (`Im2Table`); `$FF00`-`$FF60` (`SpriteListArea`, `UdgLeftover`) |
@@ -917,7 +917,7 @@ In: DE = the playfield address of the first strip's lowest line, B = strips, A =
 | | |
 | --- | --- |
 | Runs (the bot game) | 30,480 calls, 33,600,844 t-states own (3.43 %) |
-| Runs (the first recording) | 16,840 calls, 21,574,848 t-states own (0.72 %) |
+| Runs (the L1 build of the first recording's game window) | 16,840 calls, 21,574,848 t-states own (0.72 %) |
 | Called from | `RestoreUnderSprites` |
 | Reads | `$DD6A`-`$DD6B` (`SaveAreaPtr`); `$F800`-`$FBD3` (`SpriteSaveBuffer`) |
 | Writes | `$8008`-`$887F` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 64 more); `$8890`-`$89FF` (`SpriteGfxCopy`); `$8A10`-`$BFF1` (`SpriteGfxCopy`, `TitlePlayerCopy`, `StartupHead`, `Startup` and 8 more); `$DD6A`-`$DD6B` (`SaveAreaPtr`) |
@@ -939,11 +939,11 @@ Types 11-13 (ShadowTiny): 4 bytes a strip from `$5B00`, `$5B20` or `$5B40` (the 
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,622 calls, 30,038,040 t-states own (3.07 %) |
-| Runs (the first recording) | 2,319 calls, 26,307,928 t-states own (0.88 %) |
+| Runs (the L1 build of the first recording's game window) | 2,319 calls, 26,307,928 t-states own (0.88 %) |
 | Called from | `GameEntry`, `MainLoop` |
 | Calls | `MaskStepRuns5x3`, `MaskRuns5x3`, `MaskStepRuns4x4`, `MaskRuns4x4`, `MaskStepRuns3x5`, `MaskRuns3x5`, `MaskStepRuns2x6`, `MaskRuns2x6`, `MaskStepRuns5x5`, `MaskRuns5x5`, `MaskStepRuns4x6`, `MaskRuns4x6`, `MaskStepRuns3x7x3`, `MaskRuns3x7x3`, `MaskStepRuns1x6x4`, `MaskRuns1x6x4`, `DrawSprites` (tail) |
 | Reads | `$5B00`-`$5B5F` (system); `$6023`-`$62F6` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$6500`-`$6543` (`SpriteScratch`); `$8008`-`$BFE3` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 75 more); `$DD66`-`$DD67` (`ShadowListPtr`); `$FE64`-`$FEBC` (`Im2Table`) |
-| Writes | `$6500`-`$6543` (`SpriteScratch`); `$8008`-`$BFE3` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 75 more); `$DD66`-`$DD67` (`ShadowListPtr`); `$DDE6`-`$DDE6` (`ShadowGround`) |
+| Writes | `$6500`-`$6543` (`SpriteScratch`); `$8008`-`$BFE3` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 75 more); `$DD66`-`$DD67` (`ShadowListPtr`); `$DDE6` (`ShadowGround`) |
 
 ### `MaskStepRuns5x3` (`$E05C`)
 
@@ -954,10 +954,10 @@ The MaskStep* entries share one head: BC moves to the next profile byte; E = `$6
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,540 calls, 163,026 t-states own (0.02 %) |
-| Runs (the first recording) | 3,760 calls, 241,279 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 3,760 calls, 241,279 t-states own (0.01 %) |
 | Called from | `DrawShadows` |
 | Calls | `MaskRuns5x3` |
-| Reads | `$605C`-`$629F` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6`-`$DDE6` (`ShadowGround`) |
+| Reads | `$605C`-`$629F` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6` (`ShadowGround`) |
 
 ### `MaskRuns5x3` (`$E06B`)
 
@@ -968,7 +968,7 @@ In: HL = the shape, DE = the mask in `$6500`. The MaskRuns* entries AND short ru
 | | |
 | --- | --- |
 | Runs (the bot game) | 3,167 calls, 133,014 t-states own (0.01 %) |
-| Runs (the first recording) | 5,336 calls, 224,112 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 5,336 calls, 224,112 t-states own (0.01 %) |
 | Called from | `DrawShadows`, `MaskStepRuns5x3` |
 | Calls | `MaskAnd5`, `MaskAnd3` (tail) |
 
@@ -981,10 +981,10 @@ DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,012 calls, 129,208 t-states own (0.01 %) |
-| Runs (the first recording) | 4,321 calls, 277,511 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 4,321 calls, 277,511 t-states own (0.01 %) |
 | Called from | `DrawShadows` |
 | Calls | `MaskRuns4x4` |
-| Reads | `$605D`-`$6298` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6`-`$DDE6` (`ShadowGround`) |
+| Reads | `$605D`-`$6298` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6` (`ShadowGround`) |
 
 ### `MaskRuns4x4` (`$E084`)
 
@@ -995,7 +995,7 @@ The mask shapes are runs of shape bytes ANDed into the mask at `$6500` (SpriteSc
 | | |
 | --- | --- |
 | Runs (the bot game) | 3,167 calls, 133,014 t-states own (0.01 %) |
-| Runs (the first recording) | 5,336 calls, 224,112 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 5,336 calls, 224,112 t-states own (0.01 %) |
 | Called from | `DrawShadows`, `MaskStepRuns4x4` |
 | Calls | `MaskAnd4` (tail) |
 
@@ -1008,10 +1008,10 @@ DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,526 calls, 161,897 t-states own (0.02 %) |
-| Runs (the first recording) | 3,695 calls, 236,848 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 3,695 calls, 236,848 t-states own (0.01 %) |
 | Called from | `DrawShadows` |
 | Calls | `MaskRuns3x5` |
-| Reads | `$6060`-`$629D` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6`-`$DDE6` (`ShadowGround`) |
+| Reads | `$6060`-`$629D` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6` (`ShadowGround`) |
 
 ### `MaskRuns3x5` (`$E09D`)
 
@@ -1022,7 +1022,7 @@ The mask shapes are runs of shape bytes ANDed into the mask at `$6500` (SpriteSc
 | | |
 | --- | --- |
 | Runs (the bot game) | 3,167 calls, 133,014 t-states own (0.01 %) |
-| Runs (the first recording) | 5,336 calls, 224,112 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 5,336 calls, 224,112 t-states own (0.01 %) |
 | Called from | `DrawShadows`, `MaskStepRuns3x5` |
 | Calls | `MaskAnd5` (tail), `MaskAnd3` |
 
@@ -1035,10 +1035,10 @@ DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,423 calls, 155,332 t-states own (0.02 %) |
-| Runs (the first recording) | 4,232 calls, 271,464 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 4,232 calls, 271,464 t-states own (0.01 %) |
 | Called from | `DrawShadows` |
 | Calls | `MaskRuns2x6` |
-| Reads | `$605B`-`$629E` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6`-`$DDE6` (`ShadowGround`) |
+| Reads | `$605B`-`$629E` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6` (`ShadowGround`) |
 
 ### `MaskRuns2x6` (`$E0B6`)
 
@@ -1049,7 +1049,7 @@ The mask shapes are runs of shape bytes ANDed into the mask at `$6500` (SpriteSc
 | | |
 | --- | --- |
 | Runs (the bot game) | 3,167 calls, 269,211 t-states own (0.03 %) |
-| Runs (the first recording) | 5,336 calls, 453,316 t-states own (0.02 %) |
+| Runs (the L1 build of the first recording's game window) | 5,336 calls, 453,316 t-states own (0.02 %) |
 | Called from | `DrawShadows`, `MaskStepRuns2x6` |
 | Calls | `MaskAnd6` (tail) |
 | Reads | `$5B78`-`$5BC1` (system); `$5BF8`-`$5C11` (system); `$5C28`-`$5C29` (system); `$5C40`-`$5C41` (system); `$5C78`-`$5C79` (system); `$5C90`-`$5C91` (system); 3 more ranges |
@@ -1064,10 +1064,10 @@ DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the
 | | |
 | --- | --- |
 | Runs (the bot game) | 4,879 calls, 312,859 t-states own (0.03 %) |
-| Runs (the first recording) | 3,167 calls, 203,022 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 3,167 calls, 203,022 t-states own (0.01 %) |
 | Called from | `DrawShadows` |
 | Calls | `MaskRuns5x5` |
-| Reads | `$602D`-`$62FB` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6`-`$DDE6` (`ShadowGround`) |
+| Reads | `$602D`-`$62FB` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6` (`ShadowGround`) |
 
 ### `MaskRuns5x5` (`$E0D5`)
 
@@ -1078,7 +1078,7 @@ The mask shapes are runs of shape bytes ANDed into the mask at `$6500` (SpriteSc
 | | |
 | --- | --- |
 | Runs (the bot game) | 5,604 calls, 235,368 t-states own (0.02 %) |
-| Runs (the first recording) | 3,583 calls, 150,486 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 3,583 calls, 150,486 t-states own (0.01 %) |
 | Called from | `DrawShadows`, `MaskStepRuns5x5` |
 | Calls | `MaskAnd5` (tail) |
 
@@ -1091,10 +1091,10 @@ DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the
 | | |
 | --- | --- |
 | Runs (the bot game) | 4,883 calls, 313,203 t-states own (0.03 %) |
-| Runs (the first recording) | 3,145 calls, 201,599 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 3,145 calls, 201,599 t-states own (0.01 %) |
 | Called from | `DrawShadows` |
 | Calls | `MaskRuns4x6` |
-| Reads | `$602D`-`$62FB` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6`-`$DDE6` (`ShadowGround`) |
+| Reads | `$602D`-`$62FB` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6` (`ShadowGround`) |
 
 ### `MaskRuns4x6` (`$E0EE`)
 
@@ -1105,7 +1105,7 @@ The mask shapes are runs of shape bytes ANDed into the mask at `$6500` (SpriteSc
 | | |
 | --- | --- |
 | Runs (the bot game) | 6,468 calls, 271,656 t-states own (0.03 %) |
-| Runs (the first recording) | 4,359 calls, 183,078 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 4,359 calls, 183,078 t-states own (0.01 %) |
 | Called from | `DrawShadows`, `MaskStepRuns4x6` |
 | Calls | `MaskAnd6` (tail), `MaskAnd4` |
 
@@ -1118,10 +1118,10 @@ DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the
 | | |
 | --- | --- |
 | Runs (the bot game) | 5,743 calls, 368,392 t-states own (0.04 %) |
-| Runs (the first recording) | 3,943 calls, 252,790 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 3,943 calls, 252,790 t-states own (0.01 %) |
 | Called from | `DrawShadows` |
 | Calls | `MaskRuns3x7x3` |
-| Reads | `$602D`-`$62FB` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6`-`$DDE6` (`ShadowGround`) |
+| Reads | `$602D`-`$62FB` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6` (`ShadowGround`) |
 
 ### `MaskRuns3x7x3` (`$E107`)
 
@@ -1132,7 +1132,7 @@ The mask shapes are runs of shape bytes ANDed into the mask at `$6500` (SpriteSc
 | | |
 | --- | --- |
 | Runs (the bot game) | 6,870 calls, 508,380 t-states own (0.05 %) |
-| Runs (the first recording) | 4,604 calls, 340,696 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 4,604 calls, 340,696 t-states own (0.01 %) |
 | Called from | `DrawShadows`, `MaskStepRuns3x7x3` |
 | Calls | `MaskAnd7`, `MaskAnd3` (tail) |
 
@@ -1145,10 +1145,10 @@ DrawShadows calls it between two runs of a big or mid shadow shape: BC on to the
 | | |
 | --- | --- |
 | Runs (the bot game) | 5,285 calls, 339,203 t-states own (0.03 %) |
-| Runs (the first recording) | 3,390 calls, 217,819 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 3,390 calls, 217,819 t-states own (0.01 %) |
 | Called from | `DrawShadows` |
 | Calls | `MaskRuns1x6x4` |
-| Reads | `$602D`-`$62FB` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6`-`$DDE6` (`ShadowGround`) |
+| Reads | `$602D`-`$62FB` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$DDE6` (`ShadowGround`) |
 
 ### `MaskRuns1x6x4` (`$E127`)
 
@@ -1159,10 +1159,10 @@ The mask shapes are runs of shape bytes ANDed into the mask at `$6500` (SpriteSc
 | | |
 | --- | --- |
 | Runs (the bot game) | 6,006 calls, 547,203 t-states own (0.06 %) |
-| Runs (the first recording) | 3,828 calls, 348,733 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 3,828 calls, 348,733 t-states own (0.01 %) |
 | Called from | `DrawShadows`, `MaskStepRuns1x6x4` |
 | Calls | `MaskAnd6`, `MaskAnd4` (tail) |
-| Reads | `$5D01`-`$5D01` (system); `$5D37`-`$5D37` (system); `$5D70`-`$5DD3` (system); `$5E09`-`$5E09` (system); `$5E3F`-`$5E3F` (system); `$5E78`-`$5E78` (system); 3 more ranges |
+| Reads | `$5D01` (system); `$5D37` (system); `$5D70`-`$5DD3` (system); `$5E09` (system); `$5E3F` (system); `$5E78` (system); 3 more ranges |
 | Writes | `$6505`-`$6520` (`SpriteScratch`) |
 
 ### `MaskAnd7` (`$E139`)
@@ -1174,10 +1174,10 @@ In: HL = the shape, DE = the mask. One chain of entries: MaskAnd7, MaskAnd6, Mas
 | | |
 | --- | --- |
 | Runs (the bot game) | 6,870 calls, 223,372 t-states own (0.02 %) |
-| Runs (the first recording) | 4,604 calls, 149,581 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 4,604 calls, 149,581 t-states own (0.01 %) |
 | Called from | `MaskRuns3x7x3` |
 | Calls | `MaskAnd6` |
-| Reads | `$5CF7`-`$5CF7` (system); `$5D2D`-`$5D92` (system); `$5DC9`-`$5DC9` (system); `$5DFF`-`$5DFF` (system); `$5E35`-`$5E35` (system); `$5E61`-`$5E6E` (system); 3 more ranges |
+| Reads | `$5CF7` (system); `$5D2D`-`$5D92` (system); `$5DC9` (system); `$5DFF` (system); `$5E35` (system); `$5E61`-`$5E6E` (system); 3 more ranges |
 | Writes | `$6511`-`$652C` (`SpriteScratch`) |
 
 ### `MaskAnd6` (`$E13E`)
@@ -1189,7 +1189,7 @@ Entry points of one chain: MaskAnd6, MaskAnd5, MaskAnd4, MaskAnd3 AND 6, 5, 4 or
 | | |
 | --- | --- |
 | Runs (the bot game) | 22,511 calls, 720,965 t-states own (0.07 %) |
-| Runs (the first recording) | 18,127 calls, 582,147 t-states own (0.02 %) |
+| Runs (the L1 build of the first recording's game window) | 18,127 calls, 582,147 t-states own (0.02 %) |
 | Called from | `MaskRuns2x6` (tail), `MaskRuns4x6` (tail), `MaskRuns1x6x4`, `MaskAnd7` |
 | Calls | `MaskAnd5` |
 | Reads | `$5B7A`-`$5BC2` (system); `$5BFA`-`$5C42` (system); `$5C7A`-`$5CC2` (system); `$5CEE`-`$5DD4` (system); `$5DF6`-`$5EB0` (system); `$5EC8`-`$5EDC` (system); 1 more ranges |
@@ -1204,7 +1204,7 @@ An entry into the AND chain (MaskAnd6 above): AND the remaining shape bytes into
 | | |
 | --- | --- |
 | Runs (the bot game) | 40,053 calls, 1,275,693 t-states own (0.13 %) |
-| Runs (the first recording) | 35,965 calls, 1,146,039 t-states own (0.04 %) |
+| Runs (the L1 build of the first recording's game window) | 35,965 calls, 1,146,039 t-states own (0.04 %) |
 | Called from | `MaskRuns5x3`, `MaskRuns3x5` (tail), `MaskRuns5x5` (tail), `MaskAnd6` |
 | Calls | `MaskAnd4` |
 | Reads | `$5B60`-`$5BE0` (system); `$5BF3`-`$5C30` (system); `$5C43`-`$5C48` (system); `$5C5B`-`$5C60` (system); `$5C73`-`$5CB0` (system); `$5CC3`-`$5CC8` (system); 2 more ranges |
@@ -1219,7 +1219,7 @@ An entry into the AND chain (MaskAnd6 above): AND the remaining shape bytes into
 | | |
 | --- | --- |
 | Runs (the bot game) | 58,861 calls, 1,874,956 t-states own (0.19 %) |
-| Runs (the first recording) | 54,824 calls, 1,745,515 t-states own (0.06 %) |
+| Runs (the L1 build of the first recording's game window) | 54,824 calls, 1,745,515 t-states own (0.06 %) |
 | Called from | `MaskRuns4x4` (tail), `MaskRuns4x6`, `MaskRuns1x6x4` (tail), `MaskAnd5` |
 | Calls | `MaskAnd3` |
 | Reads | `$5B61`-`$5EEC` (system); `$6501`-`$653E` (`SpriteScratch`) |
@@ -1234,7 +1234,7 @@ An entry into the AND chain (MaskAnd6 above): AND the remaining shape bytes into
 | | |
 | --- | --- |
 | Runs (the bot game) | 78,935 calls, 7,967,490 t-states own (0.81 %) |
-| Runs (the first recording) | 74,704 calls, 7,542,450 t-states own (0.25 %) |
+| Runs (the L1 build of the first recording's game window) | 74,704 calls, 7,542,450 t-states own (0.25 %) |
 | Called from | `MaskRuns5x3` (tail), `MaskRuns3x5`, `MaskRuns3x7x3` (tail), `MaskAnd4` |
 | Reads | `$5B62`-`$5EEF` (system); `$6502`-`$6541` (`SpriteScratch`) |
 | Writes | `$6502`-`$6541` (`SpriteScratch`) |
@@ -1252,11 +1252,11 @@ Step 5 of the pass (docs/04-game-loop.md 4.3, docs/07-objects.md 7.4). Counts th
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,623 calls, 194,102 t-states own (0.02 %) |
-| Runs (the first recording) | 2,319 calls, 171,606 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 2,319 calls, 171,606 t-states own (0.01 %) |
 | Called from | `GameEntry`, `MainLoop` |
 | Calls | `MoveRecord`, `NextMover` (tail) |
-| Reads | `$C000`-`$C000` (`PlayerRecord`); `$C271`-`$C271` (`PassCounter`) |
-| Writes | `$C271`-`$C271` (`PassCounter`) |
+| Reads | `$C000` (`PlayerRecord`); `$C271` (`PassCounter`) |
+| Writes | `$C271` (`PassCounter`) |
 
 ### `MoveRecord` (`$E16E`)
 
@@ -1269,7 +1269,7 @@ Then the step (direction table `$C340` times the speed +6), steering by behaviou
 | | |
 | --- | --- |
 | Runs (the bot game) | 45,568 calls, 34,930,026 t-states own (3.56 %) |
-| Runs (the first recording) | 41,495 calls, 20,352,490 t-states own (0.68 %) |
+| Runs (the L1 build of the first recording's game window) | 41,495 calls, 20,352,490 t-states own (0.68 %) |
 | Called from | `MoveObjects`, `NextMover` (tail) |
 | Calls | `PairScan`, `StoreMove` (tail), `NextMover` (tail), `Random` |
 | Reads | `$6036`-`$62F0` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$C000`-`$C28E` (`PlayerRecord`, `PlayerShotRecords`, `PodRecords`, `ParkedVehicleRecord` and 8 more); `$C2B4`-`$C2F6` (`LaunchTemplates`, `EnemyShotTemplate`, `MoverAlong`, `HitWindowAlong` and 3 more); `$C340`-`$C35E` (`Directions`); `$C3F0`-`$C3F7` (`WeavePattern`); `$D14D`-`$D14E` (`ScrollDistance`); 2 more ranges |
@@ -1284,7 +1284,7 @@ IX = the moving record, HL = the other. Records that are gone or dying are passe
 | | |
 | --- | --- |
 | Runs (the bot game) | 656,852 calls, 77,865,101 t-states own (7.95 %) |
-| Runs (the first recording) | 311,496 calls, 36,548,402 t-states own (1.23 %) |
+| Runs (the L1 build of the first recording's game window) | 311,496 calls, 36,548,402 t-states own (1.23 %) |
 | Called from | `MoveRecord`, `PairScanStep` (tail) |
 | Calls | `PairScanNext`, `StoreMove` (tail), `HitDispatch` (tail) |
 | Reads | `$C000`-`$C306` (`PlayerRecord`, `PlayerShotRecords`, `PodRecords`, `ParkedVehicleRecord` and 26 more) |
@@ -1298,7 +1298,7 @@ Also the "nothing" handler of the hit table (docs/07-objects.md 7.6).
 | | |
 | --- | --- |
 | Runs (the bot game) | 631,970 calls, 6,319,700 t-states own (0.64 %) |
-| Runs (the first recording) | 296,601 calls, 2,966,010 t-states own (0.10 %) |
+| Runs (the L1 build of the first recording's game window) | 296,601 calls, 2,966,010 t-states own (0.10 %) |
 | Called from | `PairScan`, `HitPlayerOnShot` (tail), `HitTargetOnShot` (tail), `HitPlayerOnPod` (tail) |
 | Calls | `PairScanStep` |
 
@@ -1311,7 +1311,7 @@ The pair scan moves on to the next record (HL + 16) and tests it against the mov
 | | |
 | --- | --- |
 | Runs (the bot game) | 640,205 calls, 19,846,355 t-states own (2.03 %) |
-| Runs (the first recording) | 303,507 calls, 9,408,717 t-states own (0.32 %) |
+| Runs (the L1 build of the first recording's game window) | 303,507 calls, 9,408,717 t-states own (0.32 %) |
 | Called from | `PairScanNext`, `HitDispatch` (tail), `HitShotOnTarget` (tail) |
 | Calls | `PairScan` (tail) |
 
@@ -1324,7 +1324,7 @@ From `$C2F6` (height), `$C2EA` (along) and `$C2F2` (across), into +4, +1/+2 and 
 | | |
 | --- | --- |
 | Runs (the bot game) | 17,557 calls, 2,071,726 t-states own (0.21 %) |
-| Runs (the first recording) | 7,442 calls, 878,156 t-states own (0.03 %) |
+| Runs (the L1 build of the first recording's game window) | 7,442 calls, 878,156 t-states own (0.03 %) |
 | Called from | `MoveRecord` (tail), `PairScan` (tail), `HitBoth` (tail) |
 | Calls | `NextMover` |
 | Reads | `$C2EA`-`$C2F6` (`MoverAlong`, `HitWindowAlong`, `MoverAcross`, `HitWindowAcross` and 1 more) |
@@ -1339,7 +1339,7 @@ Gone records (bit 7) are passed over; bit 6 ends the list.
 | | |
 | --- | --- |
 | Runs (the bot game) | 45,568 calls, 7,434,900 t-states own (0.76 %) |
-| Runs (the first recording) | 42,376 calls, 6,537,444 t-states own (0.22 %) |
+| Runs (the L1 build of the first recording's game window) | 42,376 calls, 6,537,444 t-states own (0.22 %) |
 | Called from | `MoveObjects` (tail), `MoveRecord` (tail), `StoreMove`, `HitNone` (tail), `HitTurnRound` (tail), `HitShotOnBlock` (tail), `HitShotOnDome` (tail) |
 | Calls | `MoveRecord` (tail) |
 | Reads | `$C010`-`$C270` (`PlayerShotRecords`, `PodRecords`, `ParkedVehicleRecord`, `CourseObjectRecords` and 4 more) |
@@ -1359,11 +1359,11 @@ With the countdown at 0 it reads the device chosen in the menu (`$C28F`: 0 keybo
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,615 calls, 4,118,005 t-states own (0.42 %) |
-| Runs (the first recording) | 1,306 calls, 393,180 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 1,306 calls, 393,180 t-states own (0.01 %) |
 | Called from | `GameEntry`, `MainLoop` |
 | Calls | `ConvoyFollow`, `MovePlayer` (tail), `PrintString` |
 | Reads | `$603B`-`$62A9` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$C000`-`$C05F` (`PlayerRecord`, `PlayerShotRecords`); `$C282`-`$C290` (`MissileArc`, `InputDevice`, `ControlByte`); `$C360`-`$C37F` (`ShotTemplate`, `ShellTemplate`); `$E687`-`$E68B` (`DownHeldCount`, `UpHeldCount`, `LeftHeldCount`, `RightHeldCount` and 1 more); `$E7B7`-`$E7B8` (`FireCount`, `SpeedReserve`); 2 more ranges |
-| Writes | `$C003`-`$C096` (`PlayerRecord`, `PlayerShotRecords`, `PodRecords`); `$C290`-`$C290` (`ControlByte`); `$C2F6`-`$C2F6` (`MoverHeight`); `$E687`-`$E68B` (`DownHeldCount`, `UpHeldCount`, `LeftHeldCount`, `RightHeldCount` and 1 more); `$E7B7`-`$E7B8` (`FireCount`, `SpeedReserve`); `$F2BF`-`$F2BF` (`SoundRequests`) |
+| Writes | `$C003`-`$C096` (`PlayerRecord`, `PlayerShotRecords`, `PodRecords`); `$C290` (`ControlByte`); `$C2F6` (`MoverHeight`); `$E687`-`$E68B` (`DownHeldCount`, `UpHeldCount`, `LeftHeldCount`, `RightHeldCount` and 1 more); `$E7B7`-`$E7B8` (`FireCount`, `SpeedReserve`); `$F2BF` (`SoundRequests`) |
 | Ports in | `$021F`, `$EFFE`, `$F7FE` |
 
 ### `ConvoyFollow` (`$E7B9`)
@@ -1375,7 +1375,7 @@ With followers (`$ECE4` not 0) it walks the convoy links `$ECE7-$ECF0` from the 
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,615 calls, 810,004 t-states own (0.08 %) |
-| Runs (the first recording) | 1,306 calls, 36,568 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 1,306 calls, 36,568 t-states own (0.00 %) |
 | Called from | `ReadControls`, `MovePlayer` |
 | Reads | `$C003`-`$C006` (`PlayerRecord`); `$C063`-`$C084` (`PodRecords`); `$ECE4`-`$ECF0` (`Followers`, `FollowerOffset`, `ConvoyLinks`) |
 | Writes | `$C063`-`$C094` (`PodRecords`) |
@@ -1388,11 +1388,11 @@ Entered by a jump from the device readers. It moves the convoy, ages the player'
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 746 calls, 314,495 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 746 calls, 314,495 t-states own (0.01 %) |
 | Called from | `ReadControls` (tail) |
 | Calls | `ConvoyFollow`, `PlayerSteer` |
-| Reads | `$C000`-`$C05F` (`PlayerRecord`, `PlayerShotRecords`); `$C290`-`$C290` (`ControlByte`); `$C360`-`$C36F` (`ShotTemplate`); `$E7B7`-`$E7B7` (`FireCount`); `$F2BF`-`$F2BF` (`SoundRequests`) |
-| Writes | `$C010`-`$C05F` (`PlayerShotRecords`); `$E7B7`-`$E7B7` (`FireCount`); `$F2BF`-`$F2BF` (`SoundRequests`) |
+| Reads | `$C000`-`$C05F` (`PlayerRecord`, `PlayerShotRecords`); `$C290` (`ControlByte`); `$C360`-`$C36F` (`ShotTemplate`); `$E7B7` (`FireCount`); `$F2BF` (`SoundRequests`) |
+| Writes | `$C010`-`$C05F` (`PlayerShotRecords`); `$E7B7` (`FireCount`); `$F2BF` (`SoundRequests`) |
 
 ### `PlayerSteer` (`$E8AF`)
 
@@ -1404,10 +1404,10 @@ Walls: six bytes of the course profile under the player (`$5FF7` + position / 2)
 
 | | |
 | --- | --- |
-| Runs (the first recording) | 746 calls, 617,717 t-states own (0.02 %) |
+| Runs (the L1 build of the first recording's game window) | 746 calls, 617,717 t-states own (0.02 %) |
 | Called from | `MovePlayer` |
-| Reads | `$6073`-`$61C4` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$C000`-`$C004` (`PlayerRecord`); `$C290`-`$C290` (`ControlByte`); `$E687`-`$E68A` (`DownHeldCount`, `UpHeldCount`, `LeftHeldCount`, `RightHeldCount`) |
-| Writes | `$C003`-`$C003` (`PlayerRecord`); `$C2F6`-`$C2F6` (`MoverHeight`); `$E687`-`$E68A` (`DownHeldCount`, `UpHeldCount`, `LeftHeldCount`, `RightHeldCount`) |
+| Reads | `$6073`-`$61C4` (`ProfileBuffer`, `Entry`, `GroundProfileTail`); `$C000`-`$C004` (`PlayerRecord`); `$C290` (`ControlByte`); `$E687`-`$E68A` (`DownHeldCount`, `UpHeldCount`, `LeftHeldCount`, `RightHeldCount`) |
+| Writes | `$C003` (`PlayerRecord`); `$C2F6` (`MoverHeight`); `$E687`-`$E68A` (`DownHeldCount`, `UpHeldCount`, `LeftHeldCount`, `RightHeldCount`) |
 
 ### `Random` (`$EA19`)
 
@@ -1418,7 +1418,7 @@ Returns a new 16-bit value in HL and keeps it in the seed `$EA36`: about 254 * (
 | | |
 | --- | --- |
 | Runs (the bot game) | 187 calls, 27,489 t-states own (0.00 %) |
-| Runs (the first recording) | 954 calls, 140,239 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 954 calls, 140,239 t-states own (0.00 %) |
 | Called from | `GameEntry`, `MainLoop`, `MoveRecord` |
 | Reads | `$EA36`-`$EA37` (`RandomSeed`) |
 | Writes | `$EA36`-`$EA37` (`RandomSeed`) |
@@ -1436,7 +1436,7 @@ Called first by the sprite pass `$D9D6`. Walks the list at `$C99E` (record addre
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,622 calls, 1,044,573 t-states own (0.11 %) |
-| Runs (the first recording) | 2,319 calls, 1,081,464 t-states own (0.04 %) |
+| Runs (the L1 build of the first recording's game window) | 2,319 calls, 1,081,464 t-states own (0.04 %) |
 | Called from | `BuildSpriteLists` |
 | Reads | `$6F58`-`$729F` (`SpriteGfx1C`, `SpriteGfx1E`); `$8046`-`$92B2` (`TitleSetup`, `NoteTimeCheck`, `PatternStep`, `PatternCommand` and 62 more); `$945F`-`$BEDA` (`SpriteGfxCopy`, `TitlePlayerCopy`, `StartupHead`, `Startup` and 8 more); `$BF48`-`$BF59` (`RendererTablesImage`); `$BFC7`-`$BFD8` (`RendererTablesImage`); `$C0B4`-`$C10B` (`CourseObjectRecords`); 3 more ranges |
 | Writes | `$8046`-`$92B2` (`TitleSetup`, `NoteTimeCheck`, `PatternStep`, `PatternCommand` and 62 more); `$945F`-`$BEDA` (`SpriteGfxCopy`, `TitlePlayerCopy`, `StartupHead`, `Startup` and 8 more); `$BF48`-`$BF59` (`RendererTablesImage`); `$BFC7`-`$BFD8` (`RendererTablesImage`) |
@@ -1450,7 +1450,7 @@ Reached by a jump from `$DDE7` after the strips under the sprites were saved. Wa
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,622 calls, 48,293,641 t-states own (4.93 %) |
-| Runs (the first recording) | 2,319 calls, 26,374,274 t-states own (0.88 %) |
+| Runs (the L1 build of the first recording's game window) | 2,319 calls, 26,374,274 t-states own (0.88 %) |
 | Called from | `DrawShadows` (tail) |
 | Reads | `$6580`-`$6A6B` (`SpriteGfx00`, `SpriteGfx02`); `$6CE2`-`$6F57` (`SpriteGfx06`); `$72A0`-`$BFF1` (`SpriteGfx14`, `SpriteGfx08`, `SpriteGfx0A`, `SpriteGfx0E` and 89 more); `$DD68`-`$DD69` (`SpriteListPtr`); `$FF00`-`$FF60` (`SpriteListArea`, `UdgLeftover`) |
 | Writes | `$800E`-`$BFF1` (`TitlePlayer`, `TitlePlayerSwapBack`, `TitleSetup`, `NoteTimeCheck` and 75 more); `$DD68`-`$DD69` (`SpriteListPtr`) |
@@ -1463,12 +1463,12 @@ Reached by a jump from `$DDE7` after the strips under the sprites were saved. Wa
 
 **A pair hit: jump through the handler table `$C380`**
 
-Reached from the pair scan `$E56F` when the other record (HL, on the stack) is within the moving record's box. The same record is skipped (`$E57F`). Otherwise the moving record's type pair (IX+0 AND `$0E`) picks the row and the other's the column of the 8 x 8 word table at `$C380`, and the handler is entered with the other record's address on the stack. Handlers leave by `$E57E` (pop it and test the next record), `$E57F` (next, already popped), `$E674` (the moving record is done: its new position is not stored, `$E65F` is skipped) or `$E65F` via `$EBD1`. docs/07-objects.md 7.6.
+Reached from the pair scan `$E56F` when the other record (HL, on the stack) is within the moving record's box. The same record is skipped (`$E57F`). Otherwise the moving record's type pair (IX+0 AND `$0E`) picks the row and the other's the column of the 7 x 8 word table at `$C380`, and the handler is entered with the other record's address on the stack. Handlers leave by `$E57E` (pop it and test the next record), `$E57F` (next, already popped), `$E674` (the moving record is done: its new position is not stored, `$E65F` is skipped) or `$E65F` via `$EBD1`. docs/07-objects.md 7.6.
 
 | | |
 | --- | --- |
 | Runs (the bot game) | 9,475 calls, 606,087 t-states own (0.06 %) |
-| Runs (the first recording) | 7,671 calls, 468,736 t-states own (0.02 %) |
+| Runs (the L1 build of the first recording's game window) | 7,671 calls, 468,736 t-states own (0.02 %) |
 | Called from | `PairScan` (tail) |
 | Calls | `PairScanStep` (tail), `HitBoth`, `HitNone`, `HitTurnRound`, `HitPlayerOnShot`, `HitTargetOnShot`, `HitShotOnTarget`, `HitShotOnBlock`, `HitPlayerOnPod`, `HitShotOnDome` |
 | Reads | `$C000`-`$C090` (`PlayerRecord`, `PlayerShotRecords`, `PodRecords`); `$C0B0`-`$C260` (`CourseObjectRecords`, `LaunchedRecords`, `EnemyShotRecords`, `PreviousVehicleRecord`); `$C382`-`$C38D` (`HitHandlers`); `$C3A4`-`$C3CD` (`HitHandlers`); `$C3E2`-`$C3EB` (`HitHandlers`) |
@@ -1482,7 +1482,7 @@ B tens of points (`$EE87`), then `$EBD1`. Entered with B = 21 (dome type 2), 32 
 | | |
 | --- | --- |
 | Runs (the bot game) | 70 calls, 1,190 t-states own (0.00 %) |
-| Runs (the first recording) | 5 calls, 85 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 5 calls, 85 t-states own (0.00 %) |
 | Called from | `HitTargetOnShot` (tail), `HitShotOnTarget` (tail), `HitShotOnBlock` (tail), `HitShotOnDome` (tail) |
 | Calls | `AddPoints` |
 
@@ -1495,11 +1495,11 @@ Both records get bit 5 (hit) and the explosion counter +8 = `$20`; a moving one 
 | | |
 | --- | --- |
 | Runs (the bot game) | run into, not called, 16,047 t-states own (0.00 %) |
-| Runs (the first recording) | run into, not called, 2,756 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 2,756 t-states own (0.00 %) |
 | Called from | `HitDispatch` |
 | Calls | `StoreMove` (tail) |
-| Reads | `$C000`-`$C056` (`PlayerRecord`, `PlayerShotRecords`); `$C0B0`-`$C196` (`CourseObjectRecords`); `$C1B0`-`$C206` (`LaunchedRecords`); `$F2BF`-`$F2BF` (`SoundRequests`) |
-| Writes | `$C000`-`$C058` (`PlayerRecord`, `PlayerShotRecords`); `$C0B0`-`$C198` (`CourseObjectRecords`); `$C1B0`-`$C208` (`LaunchedRecords`); `$F2BF`-`$F2BF` (`SoundRequests`) |
+| Reads | `$C000`-`$C056` (`PlayerRecord`, `PlayerShotRecords`); `$C0B0`-`$C196` (`CourseObjectRecords`); `$C1B0`-`$C206` (`LaunchedRecords`); `$F2BF` (`SoundRequests`) |
+| Writes | `$C000`-`$C058` (`PlayerRecord`, `PlayerShotRecords`); `$C0B0`-`$C198` (`CourseObjectRecords`); `$C1B0`-`$C208` (`LaunchedRecords`); `$F2BF` (`SoundRequests`) |
 
 ### `HitShotOnShot` (`$EBFC`)
 
@@ -1540,7 +1540,7 @@ POP HL; JP `$E674`: the pair has no effect and the moving record's scan ends for
 | | |
 | --- | --- |
 | Runs (the bot game) | run into, not called, 3,760 t-states own (0.00 %) |
-| Runs (the first recording) | run into, not called, 12,180 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 12,180 t-states own (0.00 %) |
 | Called from | `HitDispatch` |
 | Calls | `NextMover` (tail) |
 
@@ -1553,7 +1553,7 @@ Both directions + 4 (mod 8). docs/07-objects.md 7.6.
 | | |
 | --- | --- |
 | Runs (the bot game) | run into, not called, 23,115 t-states own (0.00 %) |
-| Runs (the first recording) | run into, not called, 10,695 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 10,695 t-states own (0.00 %) |
 | Called from | `HitDispatch` |
 | Calls | `NextMover` (tail) |
 | Reads | `$C1B5`-`$C1F5` (`LaunchedRecords`) |
@@ -1568,7 +1568,7 @@ The player's own shots fly in direction 0 and are ignored (`$E57E`); any other s
 | | |
 | --- | --- |
 | Runs (the bot game) | run into, not called, 41,382 t-states own (0.00 %) |
-| Runs (the first recording) | run into, not called, 1,482 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 1,482 t-states own (0.00 %) |
 | Called from | `HitDispatch` |
 | Calls | `PairScanNext` (tail) |
 | Reads | `$C015`-`$C055` (`PlayerShotRecords`) |
@@ -1592,10 +1592,10 @@ A shot of the player (direction 0): 140 points and both hit. An enemy shot: igno
 | | |
 | --- | --- |
 | Runs (the bot game) | run into, not called, 1,571 t-states own (0.00 %) |
-| Runs (the first recording) | run into, not called, 2,231 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 2,231 t-states own (0.00 %) |
 | Called from | `HitDispatch` |
 | Calls | `PairScanNext` (tail), `HitScore` (tail) |
-| Reads | `$C015`-`$C055` (`PlayerShotRecords`); `$C1B6`-`$C245` (`LaunchedRecords`, `EnemyShotRecords`); `$C265`-`$C265` (`PreviousVehicleRecord`) |
+| Reads | `$C015`-`$C055` (`PlayerShotRecords`); `$C1B6`-`$C245` (`LaunchedRecords`, `EnemyShotRecords`); `$C265` (`PreviousVehicleRecord`) |
 
 ### `HitShotOnTarget` (`$EC59`)
 
@@ -1606,7 +1606,7 @@ The mirror of `$EC3F` with the shot moving: a shot of the player scores 140 and 
 | | |
 | --- | --- |
 | Runs (the bot game) | run into, not called, 1,560 t-states own (0.00 %) |
-| Runs (the first recording) | run into, not called, 1,318 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 1,318 t-states own (0.00 %) |
 | Called from | `HitDispatch` |
 | Calls | `PairScanStep` (tail), `HitScore` (tail) |
 | Reads | `$C015`-`$C055` (`PlayerShotRecords`); `$C1C6`-`$C255` (`LaunchedRecords`, `EnemyShotRecords`) |
@@ -1632,8 +1632,8 @@ An enemy shot, or any shot on a pod, is removed (`$ECDC`). A shot of the player 
 | Runs (the bot game) | run into, not called, 5,073 t-states own (0.00 %) |
 | Called from | `HitDispatch` |
 | Calls | `NextMover` (tail), `HitScore` (tail) |
-| Reads | `$C010`-`$C090` (`PlayerShotRecords`, `PodRecords`); `$C100`-`$C10F` (`CourseObjectRecords`); `$F2BF`-`$F2BF` (`SoundRequests`) |
-| Writes | `$C010`-`$C058` (`PlayerShotRecords`); `$C10F`-`$C10F` (`CourseObjectRecords`); `$F2BF`-`$F2BF` (`SoundRequests`) |
+| Reads | `$C010`-`$C090` (`PlayerShotRecords`, `PodRecords`); `$C100`-`$C10F` (`CourseObjectRecords`); `$F2BF` (`SoundRequests`) |
+| Writes | `$C010`-`$C058` (`PlayerShotRecords`); `$C10F` (`CourseObjectRecords`); `$F2BF` (`SoundRequests`) |
 
 ### `HitPlayerOnPod` (`$ECF3`)
 
@@ -1646,8 +1646,8 @@ A cube hits both (`$EBD1`). A pod (type 11) joins the convoy: it takes the playe
 | Runs (the bot game) | run into, not called, 4,128 t-states own (0.00 %) |
 | Called from | `HitDispatch` |
 | Calls | `PairScanNext` (tail) |
-| Reads | `$C001`-`$C007` (`PlayerRecord`); `$C060`-`$C092` (`PodRecords`); `$ECE4`-`$ECF2` (`Followers`, `FollowerOffset`, `ConvoyLinks`, `ConvoyLinkEnd`); `$F2BF`-`$F2BF` (`SoundRequests`) |
-| Writes | `$C061`-`$C097` (`PodRecords`); `$ECE4`-`$ECF2` (`Followers`, `FollowerOffset`, `ConvoyLinks`, `ConvoyLinkEnd`); `$F2BF`-`$F2BF` (`SoundRequests`) |
+| Reads | `$C001`-`$C007` (`PlayerRecord`); `$C060`-`$C092` (`PodRecords`); `$ECE4`-`$ECF2` (`Followers`, `FollowerOffset`, `ConvoyLinks`, `ConvoyLinkEnd`); `$F2BF` (`SoundRequests`) |
+| Writes | `$C061`-`$C097` (`PodRecords`); `$ECE4`-`$ECF2` (`Followers`, `FollowerOffset`, `ConvoyLinks`, `ConvoyLinkEnd`); `$F2BF` (`SoundRequests`) |
 
 ### `HitBlockOnPlayer` (`$ED3B`)
 
@@ -1678,11 +1678,11 @@ An enemy shot passes a moving dome and is removed by a standing one (`$EDDC`). A
 | | |
 | --- | --- |
 | Runs (the bot game) | run into, not called, 3,837 t-states own (0.00 %) |
-| Runs (the first recording) | run into, not called, 130 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | run into, not called, 130 t-states own (0.00 %) |
 | Called from | `HitDispatch` |
 | Calls | `NextMover` (tail), `HitScore` (tail) |
 | Reads | `$C015`-`$C090` (`PlayerShotRecords`, `PodRecords`); `$C0C0`-`$C0C6` (`CourseObjectRecords`); `$C0E6`-`$C126` (`CourseObjectRecords`); `$C140`-`$C156` (`CourseObjectRecords`); `$C180`-`$C196` (`CourseObjectRecords`); `$C220`-`$C225` (`EnemyShotRecords`) |
-| Writes | `$C060`-`$C098` (`PodRecords`); `$C220`-`$C220` (`EnemyShotRecords`) |
+| Writes | `$C060`-`$C098` (`PodRecords`); `$C220` (`EnemyShotRecords`) |
 
 ## hud
 
@@ -1697,7 +1697,7 @@ HL = the string: records of attribute + `$80`, column, row, characters `$20-$5F`
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,643 calls, 10,377,792 t-states own (1.06 %) |
-| Runs (the first recording) | 2,380 calls, 9,231,718 t-states own (0.31 %) |
+| Runs (the L1 build of the first recording's game window) | 2,380 calls, 9,231,718 t-states own (0.31 %) |
 | Called from | `GameEntry`, `MainLoop`, `RoundSetup`, `ReadControls`, `Menu` |
 | Reads | `$6300`-`$64FF` (`Font`, `CreditsText1`, `FontHigh`, `CreditsText2` and 1 more); `$C2FA`-`$C2FF` (`RoundText`); `$C333`-`$C33F` (`ShotGaugeText`); `$EE13`-`$EE16` (`PrintScreenPos`, `PrintAttrPos`); `$F0E1`-`$F1A9` (`DemoMessage`, `PauseMessage`, `GameOverBox`, `AbortMessage` and 2 more) |
 | Writes | `$40C2`-`$50AC` (screen); `$5121`-`$51AC` (screen); `$5221`-`$52AC` (screen); `$5321`-`$53AC` (screen); `$5421`-`$54AC` (screen); `$5521`-`$55AC` (screen); 10 more ranges |
@@ -1711,7 +1711,7 @@ SCORE is ASCII (`$EF49-$EF4E`, the last digit a fixed '0'): one ten at a time, a
 | | |
 | --- | --- |
 | Runs (the bot game) | 70 calls, 100,830 t-states own (0.01 %) |
-| Runs (the first recording) | 5 calls, 5,877 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 5 calls, 5,877 t-states own (0.00 %) |
 | Called from | `HitScore` |
 | Calls | `ShowScore` |
 | Reads | `$EF4A`-`$EF4D` (`Score`) |
@@ -1726,7 +1726,7 @@ SCORE's digits at `$529D` in small digits (`$EEA4`). Called by the round setup `
 | | |
 | --- | --- |
 | Runs (the bot game) | 78 calls, 1,560 t-states own (0.00 %) |
-| Runs (the first recording) | 13 calls, 260 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 13 calls, 260 t-states own (0.00 %) |
 | Called from | `RoundSetup`, `AddPoints` |
 | Calls | `DrawDigits` |
 
@@ -1739,7 +1739,7 @@ DE = the screen address of the units digit, BC = its character. Draws to the lef
 | | |
 | --- | --- |
 | Runs (the bot game) | 95 calls, 193,442 t-states own (0.02 %) |
-| Runs (the first recording) | 35 calls, 71,347 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 35 calls, 71,347 t-states own (0.00 %) |
 | Called from | `ShowScore`, `UpdateHigh` (tail), `UpdateMax` (tail) |
 | Reads | `$6302`-`$6306` (`Font`); `$6382`-`$63CE` (`Font`); `$EF48`-`$EF4E` (`ScoreStop`, `Score`); `$EF91`-`$EF9E` (`HighStop`, `HighScore`, `MaxStop`, `MaxScore`) |
 | Writes | `$51B8`-`$51FD` (screen); `$5298`-`$52FD` (screen); `$5398`-`$53FD` (screen); `$5498`-`$54BD` (screen); `$54F8`-`$54FD` (screen); `$5598`-`$55BD` (screen); 2 more ranges |
@@ -1753,7 +1753,7 @@ Spaces into the round table entries of rounds 1-10 (`$EF55`, 60 bytes), SCORE an
 | | |
 | --- | --- |
 | Runs (the bot game) | 2 calls, 4,152 t-states own (0.00 %) |
-| Runs (the first recording) | 3 calls, 6,228 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 3 calls, 6,228 t-states own (0.00 %) |
 | Called from | `Menu` |
 | Writes | `$EF49`-`$EF9D` (`Score`, `RoundTable`, `HighStop`, `HighScore` and 2 more) |
 
@@ -1766,7 +1766,7 @@ First updates MAX from SCORE (`$EF17`). Then compares MAX with HIGH digit by dig
 | | |
 | --- | --- |
 | Runs (the bot game) | 2 calls, 818 t-states own (0.00 %) |
-| Runs (the first recording) | 3 calls, 1,424 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 3 calls, 1,424 t-states own (0.00 %) |
 | Called from | `Menu` |
 | Calls | `DrawDigits` (tail), `UpdateMax` |
 | Reads | `$EF92`-`$EF9D` (`HighScore`, `MaxStop`, `MaxScore`) |
@@ -1781,7 +1781,7 @@ The same string compare, SCORE against MAX; MAX is drawn at `$51BD`. Called by t
 | | |
 | --- | --- |
 | Runs (the bot game) | 15 calls, 5,290 t-states own (0.00 %) |
-| Runs (the first recording) | 19 calls, 7,649 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 19 calls, 7,649 t-states own (0.00 %) |
 | Called from | `GameEntry`, `MainLoop`, `RoundSetup`, `UpdateHigh` |
 | Calls | `DrawDigits` (tail) |
 | Reads | `$EF49`-`$EF4D` (`Score`); `$EF99`-`$EF9D` (`MaxScore`) |
@@ -1800,11 +1800,11 @@ Once a pass (docs/04-game-loop.md 4.3, step 6). Starts three lists: `$C99E` (rec
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,622 calls, 10,234,973 t-states own (1.04 %) |
-| Runs (the first recording) | 2,319 calls, 9,061,703 t-states own (0.30 %) |
+| Runs (the L1 build of the first recording's game window) | 2,319 calls, 9,061,703 t-states own (0.30 %) |
 | Called from | `GameEntry`, `MainLoop` |
 | Calls | `PlaceObject`, `SortDrawList` (tail) |
 | Reads | `$C000`-`$C270` (`PlayerRecord`, `PlayerShotRecords`, `PodRecords`, `ParkedVehicleRecord` and 5 more) |
-| Writes | `$6500`-`$6501` (`SpriteScratch`); `$C99F`-`$C99F` (`SegmentRows`); `$EF9F`-`$EFA4` (`DrawListEnd`, `DepthListEnd`, `StaticListEnd`); `$FF00`-`$FF01` (`SpriteListArea`) |
+| Writes | `$6500`-`$6501` (`SpriteScratch`); `$C99F` (`SegmentRows`); `$EF9F`-`$EFA4` (`DrawListEnd`, `DepthListEnd`, `StaticListEnd`); `$FF00`-`$FF01` (`SpriteListArea`) |
 
 ### `PlaceObject` (`$EFDC`)
 
@@ -1815,9 +1815,9 @@ The distance ahead of the scroll (+1,+2 less `$D14D`) less the position across m
 | | |
 | --- | --- |
 | Runs (the bot game) | 45,256 calls, 24,924,260 t-states own (2.54 %) |
-| Runs (the first recording) | 41,391 calls, 14,379,619 t-states own (0.48 %) |
+| Runs (the L1 build of the first recording's game window) | 41,391 calls, 14,379,619 t-states own (0.48 %) |
 | Called from | `PlaceObjects` |
-| Reads | `$C000`-`$C264` (`PlayerRecord`, `PlayerShotRecords`, `PodRecords`, `ParkedVehicleRecord` and 4 more); `$C32F`-`$C32F` (`ScrollHalf`); `$D14D`-`$D14E` (`ScrollDistance`); `$EFA1`-`$EFA4` (`DepthListEnd`, `StaticListEnd`); `$FF00`-`$FF3D` (`SpriteListArea`) |
+| Reads | `$C000`-`$C264` (`PlayerRecord`, `PlayerShotRecords`, `PodRecords`, `ParkedVehicleRecord` and 4 more); `$C32F` (`ScrollHalf`); `$D14D`-`$D14E` (`ScrollDistance`); `$EFA1`-`$EFA4` (`DepthListEnd`, `StaticListEnd`); `$FF00`-`$FF3D` (`SpriteListArea`) |
 | Writes | `$C009`-`$C26B` (`PlayerRecord`, `PlayerShotRecords`, `PodRecords`, `ParkedVehicleRecord` and 4 more); `$C99E`-`$C9AB` (`SegmentRows`); `$EFA1`-`$EFA4` (`DepthListEnd`, `StaticListEnd`); `$FF00`-`$FF41` (`SpriteListArea`) |
 
 ### `SortDrawList` (`$F089`)
@@ -1829,7 +1829,7 @@ Each entry of `$FF00` (height, depth, record) is inserted into the list at `$650
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,622 calls, 16,127,746 t-states own (1.65 %) |
-| Runs (the first recording) | 2,319 calls, 5,738,184 t-states own (0.19 %) |
+| Runs (the L1 build of the first recording's game window) | 2,319 calls, 5,738,184 t-states own (0.19 %) |
 | Called from | `PlaceObjects` (tail) |
 | Reads | `$6500`-`$653D` (`SpriteScratch`); `$EF9F`-`$EFA0` (`DrawListEnd`); `$FF00`-`$FF40` (`SpriteListArea`) |
 | Writes | `$6500`-`$6541` (`SpriteScratch`); `$EF9F`-`$EFA0` (`DrawListEnd`) |
@@ -1847,11 +1847,11 @@ Paints the cells of the list `$D5B2` with attribute 6 (`$D338`, docs/08-hud-and-
 | | |
 | --- | --- |
 | Runs (the bot game) | 2 calls, 144,748,638 t-states own (14.77 %) |
-| Runs (the first recording) | 4 calls, 60,067,405 t-states own (2.02 %) |
+| Runs (the L1 build of the first recording's game window) | 4 calls, 60,067,405 t-states own (2.02 %) |
 | Called from | `GameEntry`, `MainLoop` |
 | Calls | `PaintAttributes`, `PrintString`, `ClearScores`, `UpdateHigh`, `Beep` |
-| Reads | `$C28F`-`$C28F` (`InputDevice`); `$EA36`-`$EA37` (`RandomSeed`); `$F0DB`-`$F0E0` (`DemoFlag`, `MenuIdleLow`, `MenuIdleHigh`, `MenuBarAttr`) |
-| Writes | `$592A`-`$5936` (screen); `$594A`-`$5956` (screen); `$596A`-`$5976` (screen); `$59AA`-`$59B6` (screen); `$59CA`-`$59D6` (screen); `$C28F`-`$C28F` (`InputDevice`); 2 more ranges |
+| Reads | `$C28F` (`InputDevice`); `$EA36`-`$EA37` (`RandomSeed`); `$F0DB`-`$F0E0` (`DemoFlag`, `MenuIdleLow`, `MenuIdleHigh`, `MenuBarAttr`) |
+| Writes | `$592A`-`$5936` (screen); `$594A`-`$5956` (screen); `$596A`-`$5976` (screen); `$59AA`-`$59B6` (screen); `$59CA`-`$59D6` (screen); `$C28F` (`InputDevice`); 2 more ranges |
 | Ports in | `$00FE`, `$EFFE`, `$F7FE` |
 
 ### `BeepAt` (`$F284`)
@@ -1863,7 +1863,7 @@ HL points to a word: the length (high byte) and the pitch (low byte) for `$F288`
 | | |
 | --- | --- |
 | Runs (the bot game) | 568 calls, 13,632 t-states own (0.00 %) |
-| Runs (the first recording) | 560 calls, 13,440 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 560 calls, 13,440 t-states own (0.00 %) |
 | Called from | `PlaySound` (tail) |
 | Calls | `Beep` |
 | Reads | `$F2F2`-`$F2F3` (`EffectTable`) |
@@ -1877,7 +1877,7 @@ H = length in 256-step units, L = pitch. Two square waves with half-periods of 2
 | | |
 | --- | --- |
 | Runs (the bot game) | 580 calls, 51,410,651 t-states own (5.25 %) |
-| Runs (the first recording) | 612 calls, 72,299,824 t-states own (2.43 %) |
+| Runs (the L1 build of the first recording's game window) | 612 calls, 72,299,824 t-states own (2.43 %) |
 | Called from | `GameEntry`, `MainLoop`, `Menu`, `BeepAt` |
 | Ports out | `$00FE`, `$18FE` |
 
@@ -1890,7 +1890,7 @@ HL points to four bytes: the step, the cycles of each tone, the start half-perio
 | | |
 | --- | --- |
 | Runs (the bot game) | 857 calls, 60,674,104 t-states own (6.19 %) |
-| Runs (the first recording) | 48 calls, 14,872,421 t-states own (0.50 %) |
+| Runs (the L1 build of the first recording's game window) | 48 calls, 14,872,421 t-states own (0.50 %) |
 | Called from | `PlaySound` (tail) |
 | Reads | `$F2E3`-`$F2FF` (`EffectTable`, `RoundStartSound`) |
 | Ports out | `$00FE`, `$18FE` |
@@ -1904,10 +1904,10 @@ The lowest set bit of `$F2BF` (bits 0-4) picks the 5-byte entry `$F2E2` + 5 * bi
 | | |
 | --- | --- |
 | Runs (the bot game) | 2,622 calls, 422,214 t-states own (0.04 %) |
-| Runs (the first recording) | 2,318 calls, 349,242 t-states own (0.01 %) |
+| Runs (the L1 build of the first recording's game window) | 2,318 calls, 349,242 t-states own (0.01 %) |
 | Called from | `GameEntry`, `MainLoop` |
 | Calls | `PlaySound` |
-| Reads | `$F2BF`-`$F2BF` (`SoundRequests`) |
+| Reads | `$F2BF` (`SoundRequests`) |
 
 ### `PlaySound` (`$F2D9`)
 
@@ -1918,7 +1918,7 @@ HL = a 5-byte entry: 0 and a beep word for `$F288`, or not 0 and four sweep byte
 | | |
 | --- | --- |
 | Runs (the bot game) | 1,425 calls, 47,045 t-states own (0.00 %) |
-| Runs (the first recording) | 608 calls, 16,896 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 608 calls, 16,896 t-states own (0.00 %) |
 | Called from | `RoundSetup`, `PlayEffect` |
 | Calls | `BeepAt` (tail), `Sweep` (tail) |
 | Reads | `$F2E2`-`$F2FB` (`EffectTable`, `RoundStartSound`) |
@@ -1935,7 +1935,7 @@ Every interrupt vector of the table `$FE00-$FF00` is `$FDFD`. The start-up `$9F4
 
 | | |
 | --- | --- |
-| Runs (the bot game) | 1 calls, 10 t-states own (0.00 %) |
-| Runs (the first recording) | 27,645 calls, 276,450 t-states own (0.01 %) |
+| Runs (the bot game) | 1 call, 10 t-states own (0.00 %) |
+| Runs (the L1 build of the first recording's game window) | 27,645 calls, 276,450 t-states own (0.01 %) |
 | Called from | `TitleSetup`, `NoteTimeCheck`, `DrumTick`, `VoiceAEnvelope` |
 | Calls | `TitleInterrupt` (tail) |

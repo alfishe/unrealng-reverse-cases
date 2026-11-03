@@ -84,7 +84,7 @@ U and G sit on different rows, under different hands, so an abort cannot happen 
 The first byte of every course says which vehicle the round is played in, and it alternates: the **aircraft** in
 rounds 1, 3, 5, 7, 9, the **ground vehicle** in rounds 2, 4, 6, 8, 10
 ([10.2](10-gameplay-logic.md#102-rounds-and-vehicles)). Both start each round in the middle of the track and move along
-the course with the scroll; the player steers across, and either the height or the speed.
+the course with the scroll; the player steers across and sets the height (aircraft) or the speed (ground vehicle).
 
 **The aircraft** ([10.3](10-gameplay-logic.md#103-driving-the-two-vehicles),
 [7.7](07-objects.md#77-the-player-e7e9)):
@@ -278,9 +278,9 @@ for a target the player's shots destroy; an enemy shot that hits a building give
 ([7.6](07-objects.md#76-hits-the-handler-table-c380)).
 
 - **SCORE** is set back to the round's starting value by a retry or a fall back (1.8).
-- **MAX** takes SCORE at every round setup and at every loss, so it holds the best SCORE of the game even after a
+- **MAX** takes SCORE when SCORE is higher, at every round setup and at every loss, so it holds the best SCORE of the game even after a
   fall back has lowered SCORE.
-- **HIGH** takes MAX when the menu is entered after a game; then SCORE, MAX and the round table are cleared. A demo
+- **HIGH** takes MAX, if higher, when the menu is entered after a game; then SCORE, MAX and the round table are cleared. A demo
   leaves all three alone. HIGH lasts until the machine is reset; it is never saved
   ([8.4](08-hud-and-text.md#84-the-panel)).
 
@@ -367,7 +367,7 @@ effect stops the game while it plays. Busy screens play slower ([4.5](04-game-lo
 
 All sound is the beeper ([9](09-sound.md)).
 
-- **Title**: a two-voice tune with drums by Ben Daglish, with envelopes and noise drums
+- **Title**: a two-voice tune by Ben Daglish, with envelopes and noise drums
   ([9.1](09-sound.md#91-the-title-engine-at-a-glance)).
 - **Play** has no music, only short effects, one a pass, by priority: a pod joining the convoy, an explosion, a hit
   that does not destroy (a shot on a wall or the barrier, a cube struck but not broken), the AUTO tick, a shot fired

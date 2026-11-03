@@ -192,7 +192,7 @@ The tool compares the result with the buffer of the bot's game ([10.1](10-gamepl
 strip of the three sets the blit does not show is one of two things. Either it equals its rebuilt strip byte for
 byte over lines 4-123 (the first and last lines take bits from outside the strip), or it holds a pad stamped over
 the course (6.6). In the set the blit shows, the strips that differ are the pass's shadows and sprites. Only the edge
-tile is not checked: which of the two it is follows the strip count, not the course, so the tool tries both.
+tile is not predicted: which of the two it is follows the strip count, not the course, so the tool accepts either.
 
 ## 6.5 The course
 
