@@ -252,6 +252,12 @@ before it, and the 7 bytes between the two anchors step the height linearly from
 (the difference / 8, subtracted 7 times; the wall bits of the earlier anchor carried along). It stops at the end
 of the course or of the buffer (`$6300`).
 
+The 7 in-between bytes are 8-bit arithmetic on the whole byte. The step is (earlier height − new height) shifted
+right 3 times with `SRA`, so it keeps its sign. It is subtracted from the earlier anchor, walls and all.
+`tools/verify_profile.py` builds the profile this way from `src/res/course/ground-anchors.bin` and a course file. The
+result equals `$6000-$62FF` of the bot's game, all 768 bytes, at frames 1004, 3000, 5000, 7000, 9000 and 10800
+(rounds 1 to 4). The profile pictures of [src/res/README.md](../src/res/README.md) draw these 768 bytes.
+
 ## 6.6 Objects on the playfield
 
 The objects are drawn into the playfield buffer `$8000-$BFFF`, before the blit, and taken out again after it. The

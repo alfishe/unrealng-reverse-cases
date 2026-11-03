@@ -792,5 +792,13 @@ became exact along the way:
   for 6.
 - **The pre-shifted frames.** A sprite block's four frames are one picture moved by 2 pixels each.
 
-The other pictures (sprites, profiles, objects, the tune) are still only drawn by the documented rules, not compared
-with memory.
+The ground profiles and the round objects were checked the same way:
+
+- **Ground profiles.** `tools/verify_profile.py` builds the profile in the 8-bit arithmetic of `$D0EF`: the step is
+  shifted with `SRA` and subtracted from the whole byte, walls included. The result equals `$6000-$62FF` of the
+  recording at six moments in rounds 1 to 4, all 768 bytes. The profile pictures now draw these bytes, not only the
+  anchors.
+- **Round objects.** In `tools/verify_objects.py`, the 16 records at `$C0B0` hold their round's file byte for byte
+  in the frame of each round's setup (doc 7.1).
+
+The sprite and tune pictures are still drawn only by the documented rules, not compared with memory.

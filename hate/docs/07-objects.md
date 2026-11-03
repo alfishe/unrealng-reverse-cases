@@ -61,6 +61,11 @@ The round start (`$D1DE`-`$D294`) fills the list:
 | `$C260` | 1 | the vehicle of the round before, at position `$6C` |
 | `$C270` | | `$FF`: the end of the list |
 
+In the bot's game the 16 records hold their round's block byte for byte at the frame of each round's setup:
+frames 206, 3478, 7669 and 10634 for rounds 1 to 4, fields +0 to +7 (`tools/verify_objects.py`). The zeros of
++8 to +F are already gone by the end of that frame: `PlaceObjects` writes its screen fields there
+([6.6](06-rendering.md)).
+
 The slot counts are the limits: at most 5 shots of the player in the air, 6 launched objects, 4 pods. A launch
 with no free slot does not happen. The enemy's shots are the exception: the firing code searches 6 slots from
 `$C210` (7.4), so once the vehicle of the round before is gone, `$C260` takes a sixth shot.

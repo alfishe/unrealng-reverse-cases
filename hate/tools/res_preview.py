@@ -12,7 +12,8 @@ for looking only: the source of the game is the .bin / .scr files, assembled wit
   background); a GIF of the frames in turn, and the explosion's seven frames in the order its counter steps;
 - each course (6.5): the course expanded into rows through the row lists `$C8EA`, and the strips `FreshStrip` builds
   from them (tile i from row s + i at offset i, the edge tile below), side by side as the buffer stores them
-  (unskewed); its ground profile (7.4): the anchors of `$C9FE` every 16 units along, with the walls marked;
+  (unskewed); its ground profile (7.4): the 768 bytes `$D0EF` builds from the anchors of `$C9FE` (tools/verify_profile.py,
+  equal to the recording's), height and walls;
 - each round's objects (7.1-7.3): the 16 records placed by their position along and across, labelled by type;
 - the title tune (9.2-9.5): the song and patterns run as the player runs them, a piano roll of the two voices
   (pitch by period, higher notes up; a note drawn until the next one of its voice: envelopes not modelled) and
@@ -30,6 +31,7 @@ import sys
 from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import verify_profile  # noqa: E402
 import zxscreen  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -177,17 +179,10 @@ def course_strips(mem, rows):
 
 
 def course_profile(course, title):
-    """The anchors GroundProfile ($D0EF) writes every 8 profile bytes (16 units along) from $6008, and the walls"""
-    anchors = []
-    for b in course[1:]:
-        if b == 0xFF:
-            break
-        a = ANCHORS + b // 2
-        while read_anchor(a) != 0xFF:
-            anchors.append(read_anchor(a))
-            a += 1
-    anchors = anchors[:(0x6300 - 0x6008) // 8]
-    w, h, top = 8 + 3 * len(anchors), 120, 18
+    """The 768 profile bytes `BuildGroundProfile` ($D0EF) writes at $6000 (verify_profile.build, checked against the
+    recording): one byte for every 2 units along, height in bits 0-4, walls in bits 5-7"""
+    profile = verify_profile.build(course, ANCHOR_BYTES)
+    w, h, top = 2 * len(profile), 120, 18
     image = Image.new('RGB', (w + 40, h + top + 16), PAPER)
     draw = ImageDraw.Draw(image)
     draw.text((4, 2), title, fill=TEXT, font=FONT)
@@ -196,24 +191,17 @@ def course_profile(course, title):
     def y(height):
         return base - height * (h - 8) / 31
 
-    points = [(20, y(0))] + [(20 + 3 * (i + 1), y(v & 31)) for i, v in enumerate(anchors)]
-    draw.line(points, fill=(140, 200, 140), width=1)
-    for i, v in enumerate(anchors):
-        x = 20 + 3 * (i + 1)
+    draw.line([(20 + 2 * i, y(v & 31)) for i, v in enumerate(profile)], fill=(140, 200, 140), width=1)
+    for i, v in enumerate(profile):
         if v & 0xE0:
-            draw.line([(x, top), (x, top + 5)], fill=(240, 110, 90))
-        draw.point((x, y(v & 31)), fill=INK)
+            draw.line([(20 + 2 * i, top), (20 + 2 * i, top + 5)], fill=(240, 110, 90))
     draw.line([(18, base), (w + 30, base)], fill=FRAME)
-    draw.text((4, base + 2), '0 .. %d units along; height 0-31 up; red: wall bits' % (16 * len(anchors)),
+    draw.text((4, base + 2), '0 .. %d units along; height 0-31 up; red: wall bits' % (2 * len(profile)),
               fill=(150, 150, 140), font=FONT)
     return image
 
 
 ANCHOR_BYTES = None
-
-
-def read_anchor(a):
-    return ANCHOR_BYTES[a - ANCHORS]
 
 
 def round_objects(data, title):
