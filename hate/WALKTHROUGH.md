@@ -750,3 +750,21 @@ corrected doc 2.7: `DrawShadows` ANDs a 17-byte mask row in, the loop `$DEE6`-`$
 passes) the first 16 bytes, `$DEFC` the 17th; no instruction alone reads on both sides of L2's pointer table
 `$6502-$653F`, the routine's connected reads `$6500-$6543` do. The rule now joins a reader's index reads with its
 routine's connected ones (fixture `index-around-table-fields.asm`).
+
+Every resource now has a picture in `docs/img/res/`, and the gallery at the end of
+[src/res/README.md](src/res/README.md) shows them. `tools/res_preview.py` draws them by running the game's own rules on the
+files, so each picture also checks a reading of the format:
+
+- **Courses.** A course expands through the row lists `$C8EA`. `FreshStrip` builds each strip from the edge tile
+  plus tile i of row s + i at offset i, with tiles drawn first byte at the bottom. The ten strip panoramas come
+  out as continuous landscapes: runways, ridges and trenches, with no breaks between strips.
+- **Ground profiles.** These come from the anchors of `$C9FE`, the way `$D0EF` reads them. Their peaks fall where
+  the panoramas rise.
+- **Round objects.** The objects are placed by their position along and across, and named by type.
+- **Title tune.** The song and its patterns are run with the command lengths the handlers `$83FC` consume. They
+  give 58.5 s of two voices and drums before the song jumps back, with no command left over.
+- **Sprites and the explosion.** Each sprite has a GIF of its four frames, and the explosion has one of its seven
+  steps.
+
+The pictures are not compared pixel by pixel with the emulator's screen: they show the format readings make sense,
+not that they are exact.
