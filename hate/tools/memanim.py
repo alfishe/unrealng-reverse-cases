@@ -5,10 +5,12 @@ Every sample is the machine's memory at that moment of the recording (TTD memory
 has the recording loaded: re_session.py open). The grid is the heatmap's: one row per 256 bytes. A byte's grey is
 its value; a byte written since the last sample flashes yellow, then fades through red over the next samples, so
 the picture shows where a routine is writing and in what order. Optionally the screen ($4000-$5AFF) is drawn as the
-Spectrum shows it, beside the grid.
+Spectrum shows it, beside the grid. With --screen-geometry the grid is the screen page itself ($4000-$5AFF) drawn in
+the screen's own geometry at the screen's size: each bitmap byte as its 8 pixels where they show (set bits light), a
+written attribute as a frame round its 8 x 8 cell, so a byte flashes at the same place as on the screen beside it.
 
     python3 memanim.py --work W --from F[:T] --to F[:T] --step TSTATES out.gif [--from-address 5B00] [--screen]
-           [--label "text"] [--delay 80] [--cell 2] [--unreal UNREAL_NG_CHECKOUT]
+           [--screen-geometry] [--label "text"] [--delay 80] [--cell 2] [--unreal UNREAL_NG_CHECKOUT]
 """
 import argparse
 import os
@@ -40,6 +42,38 @@ def memory_at(session, frame, t):
     return bytes(data)
 
 
+SCALE = 2  # the screen's pixels at 2 x 2
+
+
+def screen_line(a):
+    """The pixel line of bitmap byte a ($4000-$57FF)"""
+    return ((a >> 8) & 7) | ((a >> 2) & 0x38) | ((a >> 5) & 0xC0)
+
+
+def screen_heat(mem, age):
+    """The screen page in its own geometry, 512 x 384: grey pixels, written bytes in their fade colour"""
+    image = Image.new('RGB', (256 * SCALE, 192 * SCALE), (16, 16, 22))
+    px = image.load()
+    for a in range(0x4000, 0x5800):
+        y, x0, v = screen_line(a) * SCALE, (a & 31) * 8 * SCALE, mem[a]
+        hot = FADE[min(age[a], len(FADE) - 1)] if a in age else None
+        for bit in range(8):
+            on = v & (0x80 >> bit)
+            if hot:
+                colour = hot if on else tuple(c // 3 for c in hot)
+            else:
+                colour = (150, 150, 158) if on else (34, 34, 42)
+            for dy in range(SCALE):
+                for dx in range(SCALE):
+                    px[x0 + bit * SCALE + dx, y + dy] = colour
+    d = ImageDraw.Draw(image)
+    for a in range(0x5800, 0x5B00):
+        if a in age:
+            x, y = ((a - 0x5800) & 31) * 8 * SCALE, ((a - 0x5800) >> 5) * 8 * SCALE
+            d.rectangle((x, y, x + 8 * SCALE - 1, y + 8 * SCALE - 1), outline=FADE[min(age[a], len(FADE) - 1)])
+    return image
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--work', required=True, help='the work folder of re_session.py open (session.json)')
@@ -49,6 +83,8 @@ def main():
     p.add_argument('--from-address', default='5B00')
     p.add_argument('--to-address', default='FFFF')
     p.add_argument('--screen', action='store_true', help='draw the screen beside the grid')
+    p.add_argument('--screen-geometry', action='store_true',
+                   help='the grid is the screen page in its own geometry, the size of the screen beside it')
     p.add_argument('--label', default='')
     p.add_argument('--delay', type=int, default=80, help='ms per picture')
     p.add_argument('--hold', type=int, default=1500, help='ms on the last picture')
@@ -61,9 +97,11 @@ def main():
     import re_session  # noqa: E402
     session, _ = re_session.session_of(args.work)
     lo, hi = int(args.from_address, 16) & 0xFF00, int(args.to_address, 16) | 0xFF
+    if args.screen_geometry:
+        lo, hi = 0x4000, 0x5AFF
     rows, cell = (hi - lo + 1) // 256, args.cell
     font = ImageFont.load_default()
-    grid_w, grid_h = 256 * cell, rows * cell
+    grid_w, grid_h = (256 * SCALE, 192 * SCALE) if args.screen_geometry else (256 * cell, rows * cell)
     screen_w = 256 * 2 if args.screen else 0
     width = 52 + grid_w + (16 + screen_w if args.screen else 0) + 10
     height = 34 + max(grid_h, 384 if args.screen else 0) + 22
@@ -81,9 +119,9 @@ def main():
                     age[a] = 0
                     written += 1
         image = Image.new('RGB', (width, height), (20, 20, 26))
-        grid = Image.new('RGB', (grid_w, grid_h))
+        grid = screen_heat(mem, age) if args.screen_geometry else Image.new('RGB', (grid_w, grid_h))
         px = grid.load()
-        for a in range(lo, hi + 1):
+        for a in ([] if args.screen_geometry else range(lo, hi + 1)):
             v = mem[a]
             g = 28 + v * 100 // 255
             colour = (g, g, g + 6)
@@ -97,13 +135,18 @@ def main():
         d = ImageDraw.Draw(image)
         d.text((52, 6), f'{args.label}  frame {frame} t {t}   {written} bytes changed', fill=(235, 235, 235),
                font=font)
-        d.text((52, 18), 'yellow: written since the last picture, fading red: earlier', fill=(160, 160, 170),
+        d.text((52, 18), 'yellow: written since the last picture, fading red: earlier'
+               + (' (attributes: a frame round the cell)' if args.screen_geometry else ''), fill=(160, 160, 170),
                font=font)
-        for a in range(lo, hi + 1, 0x1000):
-            y = 30 + ((a - lo) >> 8) * cell
-            d.text((4, y - 4), f'${a:04X}', fill=(170, 170, 180), font=font)
+        if args.screen_geometry:  # the thirds of the bitmap
+            for a in (0x4000, 0x4800, 0x5000):
+                d.text((4, 30 + screen_line(a) * SCALE), f'${a:04X}', fill=(170, 170, 180), font=font)
+        else:
+            for a in range(lo, hi + 1, 0x1000):
+                y = 30 + ((a - lo) >> 8) * cell
+                d.text((4, y - 4), f'${a:04X}', fill=(170, 170, 180), font=font)
         if args.screen:
-            image.paste(zxscreen.render(mem[0x4000:0x5B00], 2), (52 + grid_w + 16, 30))
+            image.paste(zxscreen.render(mem[0x4000:0x5B00], SCALE), (52 + grid_w + 16, 30))
         pictures.append(image)
         for a in list(age):
             age[a] += 1

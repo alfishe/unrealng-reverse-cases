@@ -204,7 +204,9 @@ Every role the document gives a routine is marked with the document that will co
 
 - `tools/memanim.py`: a GIF of memory over a stretch of the recording. It samples TTD `memory_at` (exact at any
   T-state) every N T-states and flashes the bytes written since the previous sample. First result:
-  [the loading screen unpacking](docs/img/anim-loading-screen.gif), 77 pictures, and
+  [the loading screen unpacking](docs/img/anim-loading-screen.gif), 77 pictures (redrawn 2026-11-03 with
+  `--screen-geometry`: the screen page as memory at the screen's size, beside the screen, instead of a 768-pixel strip
+  of 256-byte rows), and
   [the game depacking backwards from `$FFFF`](docs/img/anim-depacker.gif), 84 pictures.
 - `tools/heatmap.py`: per-byte read, write and execute heatmaps from L1's new `byte_counts` (the last row of the first gap table, section 5).
 - `tools/check_docs.py`: every mermaid diagram in the docs is rendered with `mmdc`, and every link is checked. A

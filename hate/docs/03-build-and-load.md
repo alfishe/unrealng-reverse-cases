@@ -135,8 +135,11 @@ are not read either. The build keeps both as they are.
 ![The loading screen](img/load-2-loading-screen.png)
 
 The unpacker at work, one picture every 2 frames of the recording (made by `tools/memanim.py` from TTD `memory_at`):
-the memory grid from `$5B00` on the left, the screen as the Spectrum shows it on the right. Bytes written since the
-last picture flash yellow and fade to red.
+on the left the screen page `$4000-$5AFF` as memory, in the screen's own geometry and at its size (`--screen-geometry`:
+each bitmap byte as its 8 pixels, set bits light; a written attribute as a frame round its cell), on the right the
+screen as the Spectrum shows it. A byte written since the last picture flashes yellow at the place it shows and fades
+to red. The bitmap comes first, row by row; the attributes follow, so the picture stays black (black ink on black
+paper) until they arrive.
 
 ![The screen unpacker writing the loading picture](img/anim-loading-screen.gif)
 
