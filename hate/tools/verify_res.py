@@ -16,6 +16,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
+import res_formats  # noqa: E402
 import res_preview  # noqa: E402
 
 FRAME_T = 69888
@@ -50,7 +51,7 @@ def main():
             m = INCBIN.match(line)
             if not m:
                 continue
-            data = open(os.path.join(ROOT, 'src', m.group(1)), 'rb').read()
+            data = res_formats.load(m.group(1)[len('res/'):])
             start = number(m.group(2)) if m.group(2) else 0
             length = number(m.group(3)) if m.group(3) else len(data) - start
             pieces.append((m.group(1), start, data[start:start + length]))

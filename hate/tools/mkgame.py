@@ -19,6 +19,9 @@ import re
 import subprocess
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import res_formats  # noqa: E402
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 LO, HI = 0x5FB4, 0x10000
@@ -459,10 +462,8 @@ def main():
             os.remove(old)
         for name in [n for n, _ in modules] + ['game']:
             open(os.path.join(dest, name + '.asm'), 'w').write(open(os.path.join(args.out, name + '.asm')).read())
-        for name in resources:
-            path = os.path.join(ROOT, 'src', 'res', name)
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            open(path, 'wb').write(open(os.path.join(args.out, 'res', name), 'rb').read())
+        # the graphics and the tune go in as their editable sources (PNG, text), the rest as bytes
+        res_formats.install({name: open(os.path.join(args.out, 'res', name), 'rb').read() for name in resources})
         print(f'installed {len(modules) + 1} files in src/game, {len(resources)} resources in src/res')
     return 0 if diff is None else 1
 
@@ -470,7 +471,8 @@ def main():
 HEADER = """; H.A.T.E. (Hostile All Terrain Encounter), Vortex Software 1989: the game image $5FB4-$FFFF as the depacker
 ; leaves it. Written by tools/mkgame.py from src/game/game.ann and the recordings; edit game.ann, not the .asm.
 ; sjasmplus -I<src> game.asm gives game.bin, byte for byte the original (tools/build.sh packs it into the tape).
-; The resources (INCBIN "res/...") are the files of src/res, listed in src/res/README.md.
+; The resources (INCBIN "res/...") are the files of src/res, listed in src/res/README.md; tools/res_formats.py
+; builds the graphics and the tune from their PNG and text sources into build/res (sjasmplus -I<build>).
 
   DEVICE ZXSPECTRUM48
 """

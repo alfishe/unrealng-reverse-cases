@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The sprite and explosion graphics of src/res against the bot's recording (work/p2; docs/06-rendering.md 6.6).
 
-1. The graphics: each `src/res/gfx/{sprites,explosions}/slot-NN.bin` equals the recording's memory at the address the
+1. The graphics: each `src/res/gfx/{sprites,explosions}/slot-NN.png` (built to `.bin` by res_formats.py) equals the recording's memory at the address the
    pointer table `$C300` + NN holds.
 2. The drawing: for each pass picked, the moment `DrawSprites` (`$EAE3`) sets its list pointer `$DD68` to `$FF00`
    (after the shadows) is found to the T-state, and the end: the pointer on the `$FF` ending the list, the buffer
@@ -23,6 +23,8 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = os.path.join(ROOT, 'src', 'res', 'gfx')
+sys.path.insert(0, os.path.join(ROOT, 'tools'))
+import res_formats  # noqa: E402
 FRAME_T = 69888
 LIST, LIST_PTR, SHADOW_PTR, SHADOWS = 0xFF00, 0xDD68, 0xDD66, 0xFE64
 EXPLOSIONS = range(0x7C10, 0x8000)
@@ -65,9 +67,9 @@ def main():
     table = read(args.frames[0] * FRAME_T, 0xC300, 0x30)
     blocks = {}  # address -> (file, bytes)
     for kind in ('sprites', 'explosions'):
-        for name in sorted(os.listdir(os.path.join(RES, kind))):
+        for name in sorted(n[:-4] + '.bin' for n in os.listdir(os.path.join(RES, kind)) if n.endswith(('.bin', '.png'))):
             slot = int(name[5:7], 16)
-            data = open(os.path.join(RES, kind, name), 'rb').read()
+            data = res_formats.load(f'gfx/{kind}/{name}')
             address = table[slot] | table[slot + 1] << 8
             same = read(args.frames[0] * FRAME_T, address, len(data)) == data
             failures += not same

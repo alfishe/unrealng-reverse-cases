@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Pictures of every resource of the game (src/res, listed in src/res/README.md), written to docs/img/res. They are
-for looking only: the source of the game is the .bin / .scr files, assembled with INCBIN.
+for looking only: the source of the game is the files of src/res (PNG and text sources built by res_formats.py,
+.bin / .scr as they are), assembled with INCBIN.
 
     python3 tools/res_preview.py [--out docs/img/res] [--image build/game.bin]
 
@@ -31,6 +32,7 @@ import sys
 from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import res_formats  # noqa: E402
 import verify_profile  # noqa: E402
 import zxscreen  # noqa: E402
 
@@ -63,7 +65,7 @@ FONT = ImageFont.load_default()
 
 
 def read(name):
-    return open(os.path.join(RES, name), 'rb').read()
+    return res_formats.load(name)
 
 
 def save(image, path, scale=1):
@@ -379,7 +381,7 @@ def main():
     save(glyphs(read('gfx/tiles.bin'), 18, upward=True), os.path.join(out, 'tiles.png'), args.scale)
     for kind in ('sprites', 'explosions'):
         folder = os.path.join(RES, 'gfx', kind)
-        for name in sorted(n for n in os.listdir(folder) if n.endswith('.bin')):
+        for name in sorted(n[:-4] + '.bin' for n in os.listdir(folder) if n.endswith(('.bin', '.png'))):
             frames = sprite_frames(read(f'gfx/{kind}/{name}'))
             save(row_of(frames), os.path.join(out, kind, name[:-4] + '.png'), args.scale)
             if len(frames) > 1:

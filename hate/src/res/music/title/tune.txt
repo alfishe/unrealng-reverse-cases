@@ -1,0 +1,198 @@
+; The title tune (docs/09-sound.md 9.2-9.5), assembled by tools/res_formats.py into the files of
+; src/res/music/title. Sections follow each other from $843F; an address is Label or Label+offset.
+; song:    play N Label (N < 251) | drums Label | jump Label | call Label | return | stop
+; pattern: note AB pa pb | note A p | note B p | hold | long n | length n | width A|B n |
+;          envelope A|B n | sustain A|B | decay A|B | off AB|A|B | drums Label | end
+; drums:   speed n, then steps: rest loop click noise rise sweep fall
+; db $xx,... any bytes as they are
+
+song TuneSong
+  play 1 PatternInit
+  drums DrumPatternA
+  play 5 PatternA
+  drums DrumPatternB
+  play 1 PatternB
+  drums DrumPatternA
+  play 2 PatternC
+  play 1 PatternD
+  drums DrumPatternA
+  play 2 PatternC
+  play 1 PatternD
+  jump TuneSong
+  play 1 $83E8
+  stop
+
+pattern PatternInit
+  decay B
+  length 5
+  width A $17
+  width B $17
+  envelope A 3
+  envelope B 3
+  end
+
+pattern PatternA
+  note AB $A6 $A4
+  hold
+  note AB $A6 $A4
+  long 3
+  note AB $A6 $A4
+  hold
+  note AB $8A $8B
+  long 2
+  note AB $CE $CF
+  long 4
+  note AB $B8 $B9
+  hold
+  note AB $B8 $B9
+  long 3
+  note AB $B8 $B9
+  hold
+  note AB $F8 $F6
+  long 2
+  note AB $C4 $C3
+  hold
+  note AB $BA $B9
+  hold
+  note AB $AF $B0
+  end
+
+pattern PatternB
+  note AB $F9 $5D
+  hold
+  note AB $F9 $5D
+  hold
+  note A $F9
+  hold
+  note AB $F9 $62
+  hold
+  note A $F9
+  hold
+  note AB $F9 $5D
+  hold
+  note A $F9
+  hold
+  note AB $DA $57
+  hold
+  end
+
+pattern PatternC
+  note AB $A3 $36
+  hold
+  note A $A3
+  long 3
+  note A $A3
+  hold
+  note A $89
+  hold
+  note B $3D
+  note AB $CC $45
+  note B $3D
+  note B $45
+  note B $3D
+  note B $36
+  note AB $B8 $3D
+  hold
+  note A $B8
+  long 3
+  note A $B8
+  hold
+  note AB $F8 $36
+  note B $3D
+  note B $45
+  note AB $C2 $3D
+  note B $45
+  note AB $BA $49
+  note B $53
+  note AB $AF $49
+  note AB $A3 $52
+  hold
+  note A $A3
+  long 3
+  note A $A3
+  hold
+  note A $89
+  hold
+  note B $5D
+  note AB $CC $7B
+  note B $66
+  note B $5C
+  note B $51
+  note B $45
+  note AB $B8 $48
+  hold
+  note A $B8
+  long 3
+  note A $B8
+  hold
+  note AB $F8 $45
+  note B $48
+  note B $51
+  note AB $C2 $5B
+  note B $5F
+  note AB $BA $5B
+  note B $51
+  note AB $AF $45
+  end
+
+pattern PatternD
+  note AB $CB $51
+  hold
+  note AB $CB $51
+  long 3
+  note AB $89 $5B
+  long 3
+  note AB $89 $5B
+  long 3
+  note AB $F3 $60
+  long 3
+  note AB $F9 $60
+  long 3
+  note AB $F9 $60
+  hold
+  note AB $B9 $5B
+  long 3
+  note AB $B9 $5B
+  long 3
+  note AB $9A $67
+  hold
+  note AB $9A $5B
+  hold
+  note AB $9A $51
+  hold
+  note AB $89 $5B
+  long 3
+  note AB $89 $67
+  hold
+  note AB $89 $6B
+  hold
+  note AB $F4 $7A
+  hold
+  drums DrumPatternB
+  long 2
+  note AB $F4 $6D
+  hold
+  note AB $F4 $63
+  hold
+  note AB $D8 $56
+  long 3
+  note AB $D8 $51
+  hold
+  note AB $D8 $49
+  long 3
+  sustain B
+  end
+  end
+  end
+
+drums DrumPatternA
+  speed 5
+  steps click rest rest click noise rest click rest
+  steps rest rest click rest noise click rest rest
+  steps loop
+
+drums DrumPatternB
+  speed 5
+  steps rise rise rise rise rise rest sweep sweep
+  steps sweep sweep sweep rest fall fall fall fall
+  steps loop

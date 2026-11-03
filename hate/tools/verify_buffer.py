@@ -21,7 +21,7 @@ if '--unreal' in sys.argv:
     UNREAL = sys.argv[i + 1]
     del sys.argv[i:i + 2]
 sys.path.insert(0, os.path.join(UNREAL, 'tools', 'verification', 'analysis'))
-import re_session, res_preview, memanim
+import re_session, res_preview, memanim, res_formats
 s, _ = re_session.session_of('work/p2')
 mem0 = bytes(res_preview.LO) + open('build/game.bin', 'rb').read()
 
@@ -45,7 +45,7 @@ def comb(a, b, k, da, db):
             for y in range(128)]
 
 SETS = {(0, 0x00): None, (0, 0x80): (2, 1, -3), (1, 0x00): (4, 2, -2), (1, 0x80): (6, 3, -1)}
-STATICS = [open(f'src/res/gfx/sprites/{n}.bin', 'rb').read() for n in ('slot-1c', 'slot-1e')]
+STATICS = [res_formats.load(f'gfx/sprites/{n}.bin') for n in ('slot-1c', 'slot-1e')]
 WIDTHS = (4, 4, 4, 3)  # strips of the four frames of a 420-byte block, 14 lines each
 
 

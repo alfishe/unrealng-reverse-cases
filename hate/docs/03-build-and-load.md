@@ -268,7 +268,12 @@ flowchart LR
 - **Resources**: 66 entries of `game.ann` carry `@res FILE` (graphics, the game screen, tiles, courses, round
   objects, the title tune, the renderer's tables, leftovers): their bytes are written to `src/res/` as raw files and
   assembled with `INCBIN` under the entry's label, 28 067 bytes in 62 files. [src/res/README.md](../src/res/README.md)
-  lists every file with its address, size and format.
+  lists every file with its address, size and format. The graphics and the title tune are kept as editable sources:
+  22 PNG files and one tune text (`music/title/tune.txt`) stand for 30 of the files. `tools/res_formats.py build`,
+  run by `build.sh`, turns them back into the original bytes under `build/res`. sjasmplus reads the resources from
+  there (`-I build`), so an edited picture or note goes straight into the build, and the TAP compare shows it. A
+  changed pixel of `slot-00.png` or one `long` of the tune makes the TAP differ; the sources as exported give it
+  byte for byte. `mkgame.py --install` writes these sources through `res_formats.py`, not the `.bin` files.
 - **Previews**: `tools/res_preview.py` draws every resource to `docs/img/res/` (81 images; the gallery at the end of
   [src/res/README.md](../src/res/README.md)). It applies the game's own rules to the files: the course strips as
   `FreshStrip` builds them, the ground profiles as `$D0EF` reads the anchors, the round objects by position, the
@@ -288,6 +293,7 @@ flowchart LR
 ```bash
 python3 tools/mkgame.py --venv SKOOLKIT_VENV --sjasmplus SJASMPLUS --install   # rewrite src/game from game.ann
 python3 tools/refdocs.py                                                       # docs 11 and 12 from the same
+python3 tools/res_formats.py check                                             # the PNG / text sources round trip
 python3 tools/res_preview.py                                                   # docs/img/res, after build.sh
 python3 tools/verify_sprites.py --scan 200 12000 --unreal UNREAL_NG            # work/p2 open in unreal-ng
 python3 tools/verify_tune.py --unreal UNREAL_NG                                # work/c2 open in unreal-ng

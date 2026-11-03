@@ -819,3 +819,14 @@ The sprites and the title tune were checked last:
   stack holds 6 bytes. In the bot's game (`work/p2`) the 48 pieces of graphics and course data never change. The
   rest are work areas in play, foremost the playfield buffer `$8000-$BFFF` over the title's code and data
   (src/res/README.md).
+
+**Editable sources (owner's go, 2026-11-03).** The graphics and the title tune are no longer kept as the original
+bytes. `tools/res_formats.py export` wrote the font, the tiles, the 14 sprite blocks and the 6 explosion frames as
+22 indexed PNGs. The sprites show the four frames side by side, upright, with mask and pixels as 4 colours plus a
+"no strip" colour for frame 3's missing strip. The song, its 5 patterns and 2 drum patterns became one text,
+`music/title/tune.txt`, with commands (`play 5 PatternA`, `note AB $A6 $A4`, `long 3`, `steps click rest ...`)
+and labels instead of addresses: the sections are laid out from `$843F`, so a pattern can grow. `build.sh` builds
+them back into `build/res` and assembles from there. The tape still comes out identical to `orig/HATE.TAP`. One
+changed pixel, or one changed `long`, makes it differ. `res_formats.py check` and an install-and-build of all 64
+files from git give the same bytes, the previews are unchanged, and `verify_res.py` and `verify_sprites.py` give
+the same results through the new loader.

@@ -4,8 +4,9 @@
 #   tools/build.sh [SJASMPLUS]
 #
 # The game image is assembled from src/game (written by tools/mkgame.py from src/game/game.ann and the recordings;
-# docs/03-build-and-load.md, 3.7), its resources from src/res (src/res/README.md). Without src/game it is unpacked from
-# the original tape.
+# docs/03-build-and-load.md, 3.7), its resources from src/res (src/res/README.md): tools/res_formats.py builds them
+# into build/res, the PNG graphics and the tune text converted to the original bytes. Without src/game the image is
+# unpacked from the original tape.
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
 asm=${1:-${SJASMPLUS:-sjasmplus}}
@@ -15,7 +16,8 @@ cd "$here/build"
 python3 "$here/tools/screen_pack.py" "$here/src/res/screens/loading.scr" loading.pk
 "$asm" --nologo --msg=war -I"$here/src" "$here/src/screen.asm"
 if [ -f "$here/src/game/game.asm" ]; then
-    "$asm" --nologo --msg=war -I"$here/src/game" -I"$here/src" "$here/src/game/game.asm"
+    python3 "$here/tools/res_formats.py" build --out "$here/build/res"
+    "$asm" --nologo --msg=war -I"$here/build" -I"$here/src/game" "$here/src/game/game.asm"
     image=game.bin
 else
     # Until the game's source is complete: the image unpacked from the original block (the recording holds the same
