@@ -309,6 +309,16 @@ back for each 2 pixels of phase: at frame 1004 frames 0, 3, 2 and 1 in the sets 
 5000 frames 3, 2, 1 and 0. So the four pre-shifted frames of a block are one picture moved by 2 pixels each, and
 each set gets the frame that matches its own phase. The moments checked hold only pads (slot `$1C`).
 
+The sprites themselves check out the same way. `tools/verify_sprites.py` finds the moment `DrawSprites` sets its
+pointer `$DD68` to `$FF00`, after the shadows, to the T-state, and the moment it reaches the `$FF` that ends the
+list. Between them it draws the list `$FF00` from the files in `src/res/gfx`, as the routine does (AND mask, OR
+pixels, 21, 17 or 13 lines a strip, the next strip 2 rows on and 4 lines down). The whole buffer `$8000-$BFFF`
+then equals the recording, in five passes of the bot's game with 8 to 15 sprites each, 151 to 295 bytes changed,
+eight explosion frames among them. Every sprite address is a block of the table `$C300` plus whole frames plus
+whole strips, and the strips drawn fit the frame (frame 3 one short). The 20 graphic files equal memory at the
+addresses the table names. Sixteen of them were drawn in these passes: all but slot `$04`, slot `$1A` and the two
+pad blocks, which are stamped, not drawn (above).
+
 The 1 to 8 % of the play area where `tools/playfield.py` differs from the screen is these shadows and sprites.
 
 ### Shadows

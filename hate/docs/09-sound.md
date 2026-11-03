@@ -136,6 +136,21 @@ stop: a drum is a loop of its own, a few milliseconds long.
 **Noise from the ROM.** `$837F` reads 300 bytes of ROM code from `$0064` as random numbers. ROM code is
 irregular enough to sound like noise and costs no table.
 
+**Checked against the recording.** `tools/verify_tune.py` runs tune 0 from `src/res` the way `res_preview.py` draws
+its piano roll (9.2-9.5) and reads the player's operands at the start of every frame of the first recording, from
+the first note at frame 2617. Over two passes of the song everything agrees frame for frame:
+
+| What | Recording | Model |
+| --- | --- | --- |
+| period of voice A (`$82CA`) and B (`$832C`) | 2 800 / 2 800 frames equal | |
+| note starts, repeated pitches included (the period changes or the pulse width `$82D4` / `$8336` is set back up) | 205 and 234 | 205 and 234 |
+| drum steps with a sound (the timer `$8244` reloaded; the byte before the position `$8250`) | 266 | 266 |
+| the song's length | the periods repeat after 2 800 frames | the jump back at 2 800 frames, 56 s |
+
+A note of the model at frame t is in the operands at the start of frame 2617 + t: the player writes it during the
+frame before. The first drum step leaves the operands as assembled (position `$85A4`, timer 5), so steps are told
+by the timer, not by the position moving.
+
 ## 9.6 Effects in play
 
 Play has no music. There are two effect routines and one request byte.

@@ -275,6 +275,12 @@ flowchart LR
   title tune run as the player runs it (a piano roll), the sprites and the explosion as GIFs, the tables and
   leftovers as 1-bit pixels. It reads the row lists from `build/game.bin`, so it runs after `tools/build.sh`. The
   images are only for looking; the source is the `.bin` / `.scr` files.
+- **Checks against the recordings**: five scripts compare the files and the rules the previews use with memory in
+  the recordings, through an unreal-ng instance with the recording open (`re_session.py open`):
+  `tools/verify_buffer.py` (the course strips and pads in all four buffer sets, [6.4](06-rendering.md)),
+  `verify_profile.py` (the ground profiles, 6.5), `verify_objects.py` (the round objects, [7.1](07-objects.md)) and
+  `verify_sprites.py` (the sprite and explosion graphics and their drawing, 6.6) on `work/p2`; `verify_tune.py` (the
+  title tune, [9.5](09-sound.md)) on `work/c2`. Each prints what it compared and exits 1 on a difference.
 - **The check**: the assembled `game.bin` must equal the image unpacked from the original tape; then `build.sh`
   packs it and the TAP is compared with `orig/HATE.TAP`.
 
@@ -282,6 +288,8 @@ flowchart LR
 python3 tools/mkgame.py --venv SKOOLKIT_VENV --sjasmplus SJASMPLUS --install   # rewrite src/game from game.ann
 python3 tools/refdocs.py                                                       # docs 11 and 12 from the same
 python3 tools/res_preview.py                                                   # docs/img/res, after build.sh
+python3 tools/verify_sprites.py --scan 200 12000 --unreal UNREAL_NG            # work/p2 open in unreal-ng
+python3 tools/verify_tune.py --unreal UNREAL_NG                                # work/c2 open in unreal-ng
 ```
 
 [11. Data reference](11-data-reference.md) and [12. Routine reference](12-routine-reference.md) are written from the

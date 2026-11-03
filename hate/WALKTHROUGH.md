@@ -774,7 +774,7 @@ files, so each picture also checks a reading of the format:
   the panoramas rise.
 - **Round objects.** The objects are placed by their position along and across, and named by type.
 - **Title tune.** The song and its patterns are run with the command lengths the handlers `$83FC` consume. They
-  give 58.5 s of two voices and drums before the song jumps back, with no command left over.
+  give 56 s (2 800 frames) of two voices and drums before the song jumps back, with no command left over.
 - **Sprites and the explosion.** Each sprite has a GIF of its four frames, and the explosion has one of its seven
   steps.
 
@@ -801,4 +801,16 @@ The ground profiles and the round objects were checked the same way:
 - **Round objects.** In `tools/verify_objects.py`, the 16 records at `$C0B0` hold their round's file byte for byte
   in the frame of each round's setup (doc 7.1).
 
-The sprite and tune pictures are still drawn only by the documented rules, not compared with memory.
+The sprites and the title tune were checked last:
+
+- **Sprites and explosions.** `tools/verify_sprites.py` takes the buffer at the moment `DrawSprites` starts, after
+  the shadows, and draws the list `$FF00` into it from the files of `src/res/gfx` by the rules of doc 6.6. It
+  compares the result with the buffer when the list is done, in five passes of the bot's game: 8 to 15 sprites, eight
+  explosion frames, the whole buffer equal. Every sprite address is a block plus whole frames and strips, and the 20
+  files equal memory at the addresses of the table `$C300`. Finding the moments needed care: the list pointer holds
+  `$FF00` for only some 250 T, and a second walk of both lists sets it as well (with `$DD66` = `$FE64` 36 T
+  later).
+- **Title tune.** `tools/verify_tune.py` compares the piano roll's model with the player's operands frame by frame
+  in the first recording, from frame 2617, over two passes of the song. Both voices' periods agree in all 2 800
+  frames. The note starts agree, 205 and 234, repeated pitches included. So do the 266 drum steps with their sounds,
+  and the song repeats after 2 800 frames. An earlier version of the list above said 58.5 s; the song is 56 s (doc 9.5).
