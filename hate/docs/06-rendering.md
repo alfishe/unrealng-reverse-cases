@@ -49,7 +49,7 @@ outlined. The bar underneath counts the changed bytes of the buffer, the screen 
 | 1001:3600-1001:45600 | 350 bytes of the buffer, all in the outlined set (odd pages, half `$80`) | the shadows and sprites drawn into the strips (`$DDE7`, `$EAE3`) |
 | 1001:47400-1003:10800 | 2 134 screen bytes, column by column from the left | the blit `$D35E`: about 103 000 t-states, 1.5 frames |
 | 1003:7300-1003:28300 | 285 bytes of the buffer, at the same places | `$DD6C` puts the saved strips back |
-| 1005:18000 | the buffer again | the next pass: a pass takes about 4.2 frames here |
+| 1005:18000 | the buffer again | the next pass: this one took about 4.2 frames (the average over the game window is 6.2, sound effects included, [4.5](04-game-loop.md)) |
 
 The pass draws no new strip: its scroll state was `$C32E` = `$25`, `$C32F` = `$80`, the phase that only checks the
 course (6.4). The numbers are as exact as the sampling allows, 1 750 t-states. A byte written with the value it
