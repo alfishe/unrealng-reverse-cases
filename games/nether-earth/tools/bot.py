@@ -22,7 +22,7 @@ import sys
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-KIT = os.path.join(HERE, '..', '..', 'kit')
+KIT = os.path.join(HERE, '..', '..', '..', 'kit')
 sys.path.insert(0, KIT)
 import kitlib as K  # noqa: E402
 

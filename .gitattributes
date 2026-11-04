@@ -1,5 +1,5 @@
 # The original distributions are kept byte for byte
-*/orig/** -text
+**/orig/** -text
 *.tap binary
 *.scr binary
 *.bin binary

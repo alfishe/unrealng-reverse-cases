@@ -1,7 +1,7 @@
 # Nether Earth: walkthrough
 
 How the reverse was done, step by step, and which unreal-ng call answered each question. Terms:
-[docs/README.md](docs/README.md). Recipes: `../recipes/`.
+[docs/README.md](docs/README.md). Recipes: `../../recipes/`.
 
 Every recording is named with its load (ROM speed or the fast LD-BYTES trap) beside every frame number.
 

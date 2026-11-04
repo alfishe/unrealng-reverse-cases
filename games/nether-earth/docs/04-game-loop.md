@@ -13,7 +13,7 @@ The recordings it rests on ([Terms](README.md#terms)):
   - the first robot menu is open from 850 to about 1010;
   - L1 counts 3 332 passes of `PlayLoop` and 3 414 game turns;
 - an access trace of `deep`, frames 20000-20026 (`work/docA/deep`, `analysis trace` on its own instance): the two
-  turns of 4.5, read with `tools/turn_profile.py` and `../kit/beam_timeline.py`;
+  turns of 4.5, read with `tools/turn_profile.py` and `../../kit/beam_timeline.py`;
 - `play` for the start-up and the menu (frames 12660 on).
 
 ## 4.1 The state machine
@@ -189,7 +189,7 @@ puts the turn's screen writes against the beam:
 
 ![One game turn against the beam: deep recording, frames 20004-20014](img/beam-turn.png)
 
-It is drawn by `python3 ../kit/beam_timeline.py` on the window 20004:0-20015:0 of the trace, with `--frames 11`. The
+It is drawn by `python3 ../../kit/beam_timeline.py` on the window 20004:0-20015:0 of the trace, with `--frames 11`. The
 writers to the screen, by loop:
 
 | Loop | Writes | Before the beam | After the beam | What |

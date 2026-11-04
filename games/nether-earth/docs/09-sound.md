@@ -60,7 +60,7 @@ the alternate set (B', C', HL', DE') with one `EXX`.
 
 ![MenuInterrupt and the tone loop: work/docC/rec frame 2:50000-3:40000](img/routines/MenuInterrupt.gif)
 
-`python3 ../kit/routine_anim.py --work work/docC/rec --window 2:50000-3:40000 --listing build/game.lst --view screen
+`python3 ../../kit/routine_anim.py --work work/docC/rec --window 2:50000-3:40000 --listing build/game.lst --view screen
 --pc C4A7-C848 --out docs/img/routines/MenuInterrupt.gif`: 90 pictures of 666 T each.
 
 - The tone loop's few bytes stay green for most of the frame.

@@ -4,7 +4,7 @@ What a finished case in this repository is, and how to get there with unreal-ng.
 [recipes/](recipes/README.md); the shared scripts are in [kit/](kit/README.md); how to drive the emulator over MCP
 without wasting time or tokens is unreal-ng's
 [game-reverse-case recipe](https://github.com/alfishe/unreal-ng/blob/master/.recipe/articles/game-reverse-case.md).
-[H.A.T.E.](hate/README.md) is the first case and the worked example; what it lacked is said below, and a new case
+[H.A.T.E.](games/hate/README.md) is the first case and the worked example; what it lacked is said below, and a new case
 does better there.
 
 ## 1. The deliverable

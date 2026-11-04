@@ -77,7 +77,7 @@ of 512 bytes and more:
 
 ![Executed, read and written bytes over the deep recording](img/heat-deep.png)
 
-It is drawn by `python3 ../kit/heatmap.py` on `work/deep/l1.json` with `--from 4000 --regions
+It is drawn by `python3 ../../kit/heatmap.py` on `work/deep/l1.json` with `--from 4000 --regions
 tools/regions-play.txt`; `tools/memmap.py --regions-out` writes that regions file from `tools/memmap.txt`. And the
 same for the first flight, `game`:
 

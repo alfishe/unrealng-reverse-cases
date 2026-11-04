@@ -18,7 +18,7 @@ import sys
 from PIL import Image, ImageDraw
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, '..', '..', 'kit'))
+sys.path.insert(0, os.path.join(HERE, '..', '..', '..', 'kit'))
 import kitlib as K  # noqa: E402
 
 MAP, ROBOTS, BUILDINGS, POINTS, VARS = 0xDD00, 0xDA00, 0xFF01, 0xFD70, 0xFD00

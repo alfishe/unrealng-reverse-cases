@@ -126,7 +126,7 @@ flowchart TD
 
 ![WorldTurn in the frame of the first shot: work/docC/fight frame 18679:13500-18679:57000](img/routines/RobotStep.gif)
 
-`python3 ../kit/routine_anim.py --work work/docC/fight --window 18679:13500-18679:57000 --listing build/game.lst
+`python3 ../../kit/routine_anim.py --work work/docC/fight --window 18679:13500-18679:57000 --listing build/game.lst
 --view buffer:D7D3:9x5 --pc B0CA-B7F3 --range D700-FFFF --pictures 80 --out docs/img/routines/RobotStep.gif`.
 
 - The memory panel shows the robots' records at `$DA00`-`$DCFF` read one by one, and the map reads of

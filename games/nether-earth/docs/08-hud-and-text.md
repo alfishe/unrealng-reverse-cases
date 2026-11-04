@@ -154,7 +154,7 @@ Two kinds of text are not PrintInline strings:
 
 ![The play screen drawn: who wrote each byte, work/docC/rec frames 436-470](img/hud-panel-writers.png)
 
-`python3 ../kit/writers_map.py --work work/docC/rec --window 436:0-470:0 --listing build/game.lst --view screen
+`python3 ../../kit/writers_map.py --work work/docC/rec --window 436:0-470:0 --listing build/game.lst --view screen
 --out docs/img/hud-panel-writers.png`.
 
 The window holds the whole first drawing of the play screen, and all 6912 bytes are written in it. The writers:

@@ -17,7 +17,7 @@
    found by a binary search over frames with `memory_at` (recipe 03).
 3. **Reach the game.** Random play and the demo reach the first screens. Read the game's own records (the
    player's position, the objects, the level) from memory each frame and steer from them: a bot
-   (`hate/tools/autopilot.py` is the pattern). Record each run with the write journal on; keep the bot's log
+   (`games/hate/tools/autopilot.py` is the pattern). Record each run with the write journal on; keep the bot's log
    (frame, level, lives, score) and chart it (a chart script in the case's `tools/`, H.A.T.E.'s `tools/gamechart.py` the example).
 4. **List what the recordings reached**: levels, modes, endings, high-score entry, every menu option. What none
    reached is written in the WALKTHROUGH as known only from the code, and reached later if possible (more bot runs,

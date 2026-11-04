@@ -207,7 +207,7 @@ def events():
 def verify(args):
     """Read the operands the player writes ($C4D0 lead period, $C4D2 lead on, $C4ED bass period, $C4EF bass on) at
     the start of every frame and find the model's frame that agrees for the whole stretch"""
-    sys.path.insert(0, os.path.join(HERE, '..', '..', 'kit'))
+    sys.path.insert(0, os.path.join(HERE, '..', '..', '..', 'kit'))
     import kitlib as K
     sys.path.insert(0, os.path.join(K.unreal_root(args.unreal), 'tools', 'verification', 'mcp'))
     import mcplib

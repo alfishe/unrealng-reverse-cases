@@ -14,7 +14,7 @@ import sys
 from PIL import Image, ImageDraw
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, '..', '..', 'kit'))
+sys.path.insert(0, os.path.join(HERE, '..', '..', '..', 'kit'))
 import kitlib as K  # noqa: E402
 
 KINDS = {'screen': (70, 130, 200), 'code': (60, 170, 90), 'data': (200, 170, 60), 'graphics': (200, 110, 200),

@@ -22,5 +22,5 @@ fi
 # black while it loads); the start-up clears them before anything reads them (WALKTHROUGH 2)
 python3 -c "g = open('game.bin', 'rb').read(); c = 0xC350 - 0x5B00
 open('block.bin', 'wb').write(g[c:c + 0x1B00] + g)"
-python3 "$here/../kit/tap.py" NETHER.TAP basic:N.EARTH:0:basic.bin code:N1:63800:loader.bin data:-:-:block.bin
+python3 "$here/../../kit/tap.py" NETHER.TAP basic:N.EARTH:0:basic.bin code:N1:63800:loader.bin data:-:-:block.bin
 cmp NETHER.TAP "$here/orig/NETHER.TAP" && echo "build: identical to orig/NETHER.TAP"

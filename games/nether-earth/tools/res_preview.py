@@ -19,7 +19,7 @@ from PIL import Image, ImageDraw
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(ROOT, '..', 'kit'))
+sys.path.insert(0, os.path.join(ROOT, '..', '..', 'kit'))
 import kitlib  # noqa: E402
 import res_formats  # noqa: E402
 

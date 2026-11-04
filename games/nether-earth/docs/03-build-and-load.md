@@ -20,7 +20,7 @@ standard blocks byte for byte: that is the master, `orig/NETHER.TZX` and `orig/N
 "(Argus Press Software)" is a crack, with "CRACKED BY BILL GILBERT'87" in its BASIC and the game as one 42 240-byte
 block. The others are Russian rereleases and ports.
 
-`python3 ../kit/tapblocks.py list orig/NETHER.TAP`:
+`python3 ../../kit/tapblocks.py list orig/NETHER.TAP`:
 
 | Block | Kind | Name | Bytes | Loads at | Plays for (ROM speed) |
 | --- | --- | --- | ---: | --- | ---: |
@@ -96,7 +96,7 @@ The interrupts agree: the ROM's IM 1 handler `$0038` ran 171 times, all before f
 
 ![N1 loading the game block, play recording frames 250-12700](img/anim-load-n1.gif)
 
-The animation is `python3 ../kit/memanim.py` on `play` with
+The animation is `python3 ../../kit/memanim.py` on `play` with
 `--from 250 --to 12700 --step 8736000 --from-address 4000 --screen`: 101 pictures, one every 125 frames. The block
 fills `$4000` upward:
 
@@ -208,7 +208,7 @@ tools/build.sh [path/to/sjasmplus]        # build/NETHER.TAP, compared with orig
 | 0, 1 BASIC | `src/basic.asm`: the line as tokens, the numbers in the ROM's 5-byte form, the hidden colour codes | sjasmplus | **identical** (381 bytes) |
 | 2, 3 N1 | `src/loader.asm` at `$FCDA`, the header's start 63 800 | sjasmplus | **identical** (180 bytes) |
 | 4 game | `src/game/game.asm` → `main.asm` (the image `$5B00-$FCE8`), `src/res/` (its resources); the screen part = the image's own `$C350-$DE4F` | sjasmplus, a Python one-liner in `build.sh` | **identical** (48 361 bytes) |
-| headers, TAP | `../kit/tap.py`: `basic:N.EARTH:0`, `code:N1:63800`, `data:-:-` (headerless) | | **identical** |
+| headers, TAP | `../../kit/tap.py`: `basic:N.EARTH:0`, `code:N1:63800`, `data:-:-` (headerless) | | **identical** |
 
 The last build in this tree, `build/NETHER.TAP` (2026-11-04 10:39), equals `orig/NETHER.TAP` (`cmp`, 48 976 bytes).
 sjasmplus is not installed on the host where this document was written, so the build was not run again for it.
@@ -258,7 +258,7 @@ The pieces of the game's source:
 ```bash
 tools/build.sh                                   # res_formats build, sjasmplus x3, tap.py, cmp
 python3 tools/res_formats.py check               # the editable sources round trip byte for byte
-python3 ../kit/tapblocks.py list orig/NETHER.TAP # the table of 3.1
+python3 ../../kit/tapblocks.py list orig/NETHER.TAP # the table of 3.1
 python3 tools/load_stages.py --help              # the figure of 3.1 (needs work/play open in unreal-ng)
 ```
 

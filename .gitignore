@@ -1,22 +1,65 @@
 # Emulator recordings, analysis builds and dumps: reproducible from each case's WALKTHROUGH, too big for the
 # repository (a TTD session is tens of MB)
-*/work/
+**/work/
 
 # Build output (tools/build.sh writes build/: assembled blocks, packed data, the TAP)
-*/build/
-*.pk
+**/build/
+**/cmake-build-*/
+
+# sjasmplus and other assemblers: listings, symbols, source level debug, exports
 *.lst
 *.sym
+*.sld
+*.exp
+*.labels
+*.pk
+
+# C / C++ (gcc, clang, MSVC, MinGW)
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.pdb
+*.ilk
+*.idb
+*.gch
+*.pch
+CMakeCache.txt
+CMakeFiles/
+CMakeUserPresets.json
+cmake_install.cmake
+compile_commands.json
+.cache/
+*.vcxproj.user
+.vs/
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 .venv/
 venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
 
-# Editors and OS
-.DS_Store
+# Editors and IDEs
 .idea/
 .vscode/
 *.swp
+*.swo
 *~
+
+# Operating systems
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+# Emulator settings written into the working directory
+features.ini

@@ -1,7 +1,7 @@
 """Shared pieces of the kit: the access trace reader, the sjasmplus listing, the Spectrum screen, fonts, colours.
 
 The access trace reader lives in unreal-ng (tools/verification/analysis/access_trace.py); access_trace() finds it
-through --unreal, $UNREAL_NG, or an unreal-ng checkout next to this repository.
+through --unreal, $UNREAL_NG, the unreal-ng submodule of this repository, or a checkout next to it.
 """
 import importlib.util
 import os
@@ -17,8 +17,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def unreal_root(hint=None):
-    for candidate in (hint, os.environ.get('UNREAL_NG'), os.path.join(HERE, '..', '..', '..', 'Test', 'unreal-ng'),
-                      os.path.join(HERE, '..', '..', 'unreal-ng')):
+    # the submodule first, then a checkout next to this repository
+    for candidate in (hint, os.environ.get('UNREAL_NG'), os.path.join(HERE, '..', 'unreal-ng'),
+                      os.path.join(HERE, '..', '..', '..', 'Test', 'unreal-ng'), os.path.join(HERE, '..', '..', 'unreal-ng')):
         if candidate and os.path.isfile(os.path.join(candidate, 'tools/verification/analysis/access_trace.py')):
             return os.path.abspath(candidate)
     raise SystemExit('unreal-ng checkout not found: pass --unreal or set UNREAL_NG')

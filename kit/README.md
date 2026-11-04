@@ -5,7 +5,7 @@ work that is the same in every game; what is particular to one game (its packer,
 stays in the case's own `tools/`.
 
 They need Python 3 with Pillow, and an unreal-ng checkout for the access trace reader and `re_session.py`. The
-checkout is found from `--unreal`, `$UNREAL_NG`, or one next to this repository. `mkgame.py` also needs SkoolKit (a
+checkout is found from `--unreal`, `$UNREAL_NG`, the `unreal-ng` submodule, or one next to this repository. `mkgame.py` also needs SkoolKit (a
 virtualenv: `--venv`) and sjasmplus.
 
 ## A case

@@ -17,7 +17,7 @@ from PIL import Image, ImageDraw
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CASE = os.path.join(HERE, '..')
-sys.path.insert(0, os.path.join(CASE, '..', 'kit'))
+sys.path.insert(0, os.path.join(CASE, '..', '..', 'kit'))
 import kitlib as K  # noqa: E402
 import tapblocks  # noqa: E402
 
