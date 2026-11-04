@@ -28,6 +28,7 @@ import glob
 import json
 import os
 import re
+import textwrap
 import subprocess
 import sys
 
@@ -156,7 +157,8 @@ ANNOTATION = re.compile(r'\$([0-9A-Fa-f]{4})(?:\s+([cbwts])\b)?(?:\s+([A-Za-z_]\
 class Annotations:
     """src/game/game.ann: what the reverse knows, one line an address
 
-        @module NAME              the entries from the next address on go to NAME.asm
+        @module NAME [; title]    the entries from the next address on go to NAME.asm; the title heads the file
+        @about text               a paragraph of the current module's header (what it holds, how its parts work)
         $ADDR c|b|w|t|s NAME [N]  an entry: code, bytes (N a line), words (N a line), text, space; ; its title
         > text                    the entry's description, one paragraph a line
         @res FILE                 the entry's bytes are a resource: src/res/FILE, assembled with INCBIN (entries
@@ -174,6 +176,7 @@ class Annotations:
 
     def __init__(self, path):
         self.entries, self.inline, self.modules, self.descriptions = {}, {}, [], {}
+        self.module_info = {}  # module name: [title, [paragraphs]]
         self.resources = {}  # entry address: the resource file under src/res
         self.isub = {}  # instruction address: the instruction as the source writes it
         self.equ = {}  # address outside the image: (name, size, comment)
@@ -186,8 +189,15 @@ class Annotations:
             text = line.strip()
             if not text or text.startswith('#'):
                 continue
+            if text.startswith('@about'):
+                if not self.modules:
+                    sys.exit(f'{path}:{number}: @about before any @module')
+                self.module_info[self.modules[-1][1]][1].append(text[len('@about'):].strip())
+                continue
             if text.startswith('@module'):
-                name = text.split()[1]
+                body, _, title = text.partition(';')
+                name = body.split()[1]
+                self.module_info[name] = [title.strip(), []]
                 if name == 'game':
                     # game.asm is the top file that includes the modules: a module of that name would include itself
                     raise SystemExit("game.ann: '@module game' is taken by game.asm, the file that includes the modules")
@@ -357,6 +367,19 @@ def write_resources(text, mem, extents, ann, out):
     return '\n'.join(lines) + '\n', files
 
 
+def module_header(name, ann):
+    """The comment block that opens a module's file: its title and @about paragraphs"""
+    title, paragraphs = ann.module_info.get(name, ['', []])
+    if not title and not paragraphs:
+        return ''
+    out = ['; ' + name + '.asm' + (': ' + title if title else ''), ';']
+    for k, para in enumerate(paragraphs):
+        out += ['; ' + line for line in textwrap.wrap(para, 116)]
+        out.append(';')
+    rule = '; ' + '-' * 116
+    return rule + '\n' + '\n'.join(out[:-1] if out[-1] == ';' else out) + '\n' + rule + '\n\n'
+
+
 def split_modules(text, ann):
     """The listing cut into the modules of game.ann: ([(name, text)], the head before the first)"""
     if not ann.modules:
@@ -375,7 +398,7 @@ def split_modules(text, ann):
     head = out_lines[:cuts[0][0]] if cuts else out_lines
     for k, (at, name) in enumerate(cuts):
         end = cuts[k + 1][0] if k + 1 < len(cuts) else len(out_lines)
-        parts.append((name, '\n'.join(out_lines[at:end]).rstrip() + '\n'))
+        parts.append((name, module_header(name, ann) + '\n'.join(out_lines[at:end]).rstrip() + '\n'))
     return parts, '\n'.join(head).rstrip() + '\n'
 
 
@@ -513,7 +536,9 @@ def main():
     modules, head = split_modules(text, ann)
     for name, body in modules:
         open(os.path.join(args.out, name + '.asm'), 'w').write(body)
-    main_asm = header(config) + equates(ann.equ) + head + ''.join('  INCLUDE "%s.asm"\n' % name for name, _ in modules) + \
+    main_asm = header(config) + equates(ann.equ) + head + ''.join('  INCLUDE "%s.asm"%s\n' % (name, ('  ; ' + ann.module_info[name][0])
+                                                     if ann.module_info.get(name, [''])[0] else '')
+                          for name, _ in modules) + \
         '\n  SAVEBIN "game.bin",$%04X,$%04X\n' % (LO, HI - LO)
     open(os.path.join(args.out, 'game.asm'), 'w').write(main_asm)
     run([args.sjasmplus, '--nologo', '--msg=war', 'game.asm'], cwd=args.out)
