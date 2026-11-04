@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Write a TAP file of standard ROM blocks: a header and a data block for each part.
 
-    python3 tap.py OUT.tap basic:NAME:LINE:FILE code:NAME:ADDRESS:FILE[:PARAM2] ...
+    python3 tap.py OUT.tap basic:NAME:LINE:FILE code:NAME:ADDRESS:FILE[:PARAM2] data:-:-:FILE ...
+
+`data` is a headerless block (flag $FF), for a loader that reads it with its own LD-BYTES.
 
 PARAM2 of a CODE header defaults to 32768, as the ROM's SAVE ... CODE writes it.
 """
@@ -27,6 +29,9 @@ def main():
     for part in sys.argv[2:]:
         kind, name, param, path, *rest = part.split(':')
         data = open(path, 'rb').read()
+        if kind == 'data':
+            out += block(0xFF, data)
+            continue
         if kind == 'basic':
             # param 1: the autostart line; param 2: the program length (no variables)
             out += block(0, header(0, name, len(data), int(param, 0), len(data)))

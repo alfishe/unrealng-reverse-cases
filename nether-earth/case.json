@@ -1,7 +1,7 @@
 {
   "image_cmd": ["sh", "-c", "mkdir -p work/mkgame && python3 ../kit/tapblocks.py orig/NETHER.TAP 4 work/mkgame/block.bin && python3 -c \"import sys; b=open('work/mkgame/block.bin','rb').read(); open('work/mkgame/original.bin','wb').write(bytes(0x4000)+b+bytes(0xC000-len(b)))\""],
   "image": "work/mkgame/original.bin",
-  "lo": "5B00",
+  "lo": "4000",
   "hi": "FCE9",
   "device": "ZXSPECTRUM48",
   "bases": {"5": "4000", "2": "8000", "0": "C000"},

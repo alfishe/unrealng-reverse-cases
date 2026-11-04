@@ -178,7 +178,11 @@ class Annotations:
             if not text or text.startswith('#'):
                 continue
             if text.startswith('@module'):
-                self.modules.append([None, text.split()[1]])
+                name = text.split()[1]
+                if name == 'game':
+                    # game.asm is the top file that includes the modules: a module of that name would include itself
+                    raise SystemExit("game.ann: '@module game' is taken by game.asm, the file that includes the modules")
+                self.modules.append([None, name])
                 continue
             if text.startswith('@isub'):
                 parts = text.split(None, 2)

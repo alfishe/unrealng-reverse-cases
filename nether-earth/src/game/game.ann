@@ -8,3 +8,9 @@
 #   @res graphics/NAME.bin          the entry is a resource: src/res/..., INCBIN
 #   $ADDR Name ; comment            a label and comment inside an entry
 #   @isub $ADDR LD HL,-6            the instruction written so
+
+@module main
+$A600 c Start ; the entry from N1: the IM 2 table, the start-up, the menu
+$C4FD c MenuInterrupt ; the interrupt handler of the menu
+$D566 c PlayInterrupt ; the interrupt handler of play, one a frame
+$D59C c StartInterrupt ; the interrupt handler while the start-up runs
