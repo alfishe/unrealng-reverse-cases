@@ -924,3 +924,15 @@ recording? The reviewer had not seen the earlier rounds; each finding was checke
   (done in 6.15), the terms (L1-L3, gates, arrivals, `$W`) explained in the intro, a paragraph put back in time
   order, the docs 11 and 12 intros naming `work/` as local and the full `mkgame.py` command, the `tools/build.sh`
   fallback comment.
+
+## 7. Closed (2026-11-03)
+
+The owner closed the case after the fourth review round. What stands:
+
+- `tools/build.sh` rebuilds `orig/HATE.TAP` byte for byte from `src/` (the loader, the screen stage, the 18 game
+  modules from `game.ann`, the resources from their PNG and text sources).
+- Docs 01-12 describe the whole image `$5FB4-$FFFF`; every byte outside the ROM has a claim in the last analysis
+  build (p2-lat), and four independent reviews were checked against the code, the tape and the recordings.
+- Known only from the code, not seen in a recording: rounds 5-10 and the laps after round 10, the seven hit
+  handlers no recording reached (doc 12 marks them), the dishes' behaviour in the later rounds. A second capture
+  that reaches them (doc 10) is the way to confirm them; nothing in the docs depends on a guess about them.

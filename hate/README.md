@@ -17,4 +17,4 @@ byte.
 | `orig/` | the original distribution, unchanged |
 | `work/` | the emulator's recordings and analysis builds (not part of the deliverable) |
 
-State: final review done, four rounds (2026-11-03, WALKTHROUGH 6.16-6.18).
+State: closed 2026-11-03 after four review rounds (WALKTHROUGH 6.16-6.18, section 7).
