@@ -1,0 +1,44 @@
+{
+  "image_cmd": [
+    "sh",
+    "-c",
+    "mkdir -p work/mkgame && python3 tools/tapblocks.py orig/HATE.TAP 5 work/mkgame/orig-block5.bin && python3 tools/depack.py work/mkgame/orig-block5.bin work/mkgame/original.bin"
+  ],
+  "image": "work/mkgame/original.bin",
+  "lo": "5FB4",
+  "hi": "10000",
+  "device": "ZXSPECTRUM48",
+  "bases": {
+    "5": "4000",
+    "2": "8000",
+    "0": "C000"
+  },
+  "read_builds": [
+    "game",
+    "game2",
+    "p2"
+  ],
+  "header": [
+    "; H.A.T.E. (Hostile All Terrain Encounter), Vortex Software 1989: the game image $5FB4-$FFFF as the depacker",
+    "; leaves it. sjasmplus -I<build> -I<src/game> game.asm gives game.bin, byte for byte the original (tools/build.sh",
+    "; packs it into the tape). The resources (INCBIN \"res/...\") are the files of src/res, listed in src/res/README.md;",
+    "; tools/res_formats.py builds the graphics and the tune from their PNG and text sources into build/res."
+  ],
+  "ref_builds": [
+    [
+      "p2",
+      "the bot game"
+    ],
+    [
+      "game",
+      "the L1 build of the first recording's game window"
+    ]
+  ],
+  "overlay": {
+    "lo": "8000",
+    "hi": "BFFF",
+    "name": "the playfield buffer",
+    "why": "laid over the title player and the start-up"
+  },
+  "data_note": "The object records are laid out in [7. Objects](07-objects.md), the course data in [6. Rendering](06-rendering.md)."
+}

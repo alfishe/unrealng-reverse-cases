@@ -1,0 +1,10 @@
+# The annotations of the game image: the single source of truth for src/game/*.asm (kit/mkgame.py).
+# The format is in kit/mkgame.py, class Annotations. One line an entry:
+#
+#   @module NAME
+#   $ADDR c Name ; title            a routine
+#   > a description line
+#   $ADDR b Name ; title            data (w words, t text, s space; "b Name 8" rows of 8)
+#   @res graphics/NAME.bin          the entry is a resource: src/res/..., INCBIN
+#   $ADDR Name ; comment            a label and comment inside an entry
+#   @isub $ADDR LD HL,-6            the instruction written so
