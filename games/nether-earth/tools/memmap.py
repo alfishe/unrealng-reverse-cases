@@ -22,6 +22,9 @@ KINDS = {'screen': (70, 130, 200), 'code': (60, 170, 90), 'data': (200, 170, 60)
          'stack': (170, 80, 80)}
 STAGES = [('load', 'the tape load (N1 running)'), ('image', 'the image as N1 leaves it'), ('play', 'in play')]
 LO, HI = 0x4000, 0x10000
+LEGEND = {'work': 'work space', 'dead': 'dead bytes', 'system': 'ROM system area', 'loader': 'loader'}
+TITLE = ('The tape block covers $4000-$FCE8; from $D7D3 on it is 9.3 K of zeros that become the world in play',
+         'Each bar is $4000-$FFFF at one stage, top to bottom; a label gives the region\'s first address')
 
 
 def main():
@@ -42,32 +45,42 @@ def main():
             for stage, a, b, _, name in rows:
                 if stage == 'play' and b - a >= 0x1FF:
                     f.write(f'{a:04X} {b:04X} {name}\n')
-    top, height, bar, col = 50, 1000, 70, 520
+    f, small, title_font = K.font(21), K.font(19), K.font(24)
+    probe = ImageDraw.Draw(Image.new('RGB', (1, 1)))
+    top, height, bar, gap, left = 110, 1100, 56, 24, 86
+    widths = []
+    for stage, _ in STAGES:
+        names = [f'${a:04X} {name}' for st, a, _, _, name in rows if st == stage]
+        widths.append(bar + 24 + max(probe.textlength(n, font=small) for n in names))
     scale = height / (HI - LO)
-    image = Image.new('RGB', (col * len(STAGES) + 70, top + height + 110), (24, 24, 30))
+    image = Image.new('RGB', (int(left + sum(widths) + gap * (len(STAGES) - 1) + 10), top + height + 170),
+                      (24, 24, 30))
     d = ImageDraw.Draw(image)
-    f, small = K.font(14), K.font(12)
-    for a in range(LO, HI + 1, 0x1000):
+    d.text((10, 12), TITLE[0], fill=(240, 240, 240), font=title_font)
+    d.text((10, 44), TITLE[1], fill=(200, 200, 200), font=small)
+    for a in range(LO, HI + 1, 0x2000):
         y = top + (a - LO) * scale
-        d.text((8, y - 7), f'${a:04X}' if a < HI else '', fill=(190, 190, 190), font=small)
+        d.text((8, y - 10), f'${a:04X}' if a < HI else '', fill=(190, 190, 190), font=small)
+    x0 = left
     for i, (stage, title) in enumerate(STAGES):
-        x0 = 70 + i * col
-        d.text((x0, 16), title, fill=(235, 235, 235), font=f)
+        d.text((x0, top - 34), title, fill=(235, 235, 235), font=f)
         regions = [r for r in rows if r[0] == stage]
         next_label = top
         for _, a, b, kind, name in regions:
             y0, y1 = top + (a - LO) * scale, top + (b + 1 - LO) * scale
             d.rectangle([x0, y0, x0 + bar, max(y0, y1 - 1)], fill=KINDS[kind], outline=(24, 24, 30))
             mid = (y0 + y1) / 2
-            ly = max(mid - 7, next_label)
-            next_label = ly + 15
-            d.line([x0 + bar, mid, x0 + bar + 8, mid, x0 + bar + 16, ly + 7], fill=(150, 150, 150))
+            ly = max(mid - 11, next_label)
+            next_label = ly + 23
+            d.line([x0 + bar, mid, x0 + bar + 8, mid, x0 + bar + 16, ly + 11], fill=(150, 150, 150))
             d.text((x0 + bar + 20, ly), f'${a:04X} {name}', fill=(225, 225, 225), font=small)
-    x = 70
+        x0 += widths[i] + gap
+    x, y = left, top + height + 120
     for kind, colour in KINDS.items():
-        d.rectangle([x, top + height + 75, x + 12, top + height + 87], fill=colour)
-        d.text((x + 16, top + height + 73), kind, fill=(220, 220, 220), font=small)
-        x += 110
+        label = LEGEND.get(kind, kind)
+        d.rectangle([x, y + 3, x + 16, y + 19], fill=colour)
+        d.text((x + 22, y), label, fill=(220, 220, 220), font=small)
+        x += 22 + probe.textlength(label, font=small) + 30
     image.save(args.png)
     print(args.png)
 

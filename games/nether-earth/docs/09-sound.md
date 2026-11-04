@@ -58,15 +58,6 @@ The whole tune state is in registers and in the operands of the tone loop's own 
 interrupt can drive the tune with three `DEC`s: the tone loop works in the main set (D, E), and the interrupt takes
 the alternate set (B', C', HL', DE') with one `EXX`.
 
-![MenuInterrupt and the tone loop: work/docC/rec frame 2:50000-3:40000](img/routines/MenuInterrupt.gif)
-
-`python3 ../../kit/routine_anim.py --work work/docC/rec --window 2:50000-3:40000 --listing build/game.lst --view screen
---pc C4A7-C848 --out docs/img/routines/MenuInterrupt.gif`: 90 pictures of 666 T each.
-
-- The tone loop's few bytes stay green for most of the frame.
-- At the interrupt, `MenuInterrupt` reads the next records and `TitleColourCycle` (`$C820`) repaints the title's
-  attributes; the screen panel flashes them.
-
 ## 9.2 The tone loop `$C4C3`
 
 `LeadStep` (`$C4CB`) and `BassStep` (`$C4E8`) take turns. Each one decrements its counter (D for the lead, E for
@@ -87,8 +78,8 @@ note is a 25 % duty pulse whatever its pitch.
 
 These figures come from the T-states of the code. **Measured** (beeper writes in access traces of the tour, frames
 0-700, 10 651 pulses; figure in 9.4): a voice sounding alone keeps exactly this rate, 125.7 T per period unit (the
-lead, 3141 periods while the bass rests). While the other voice sounds, the rate drops to 129.4 T per unit (the
-bass, 1717 periods) and 130.8 (the lead, 3686 periods), about half a semitone flat. The idle pads keep the
+lead, 3141 periods while the bass rests). While the other voice sounds, the rate drops to 129.5 T per unit (the
+bass, 1717 periods) and 130.9 (the lead, 3686 periods), about half a semitone flat. The idle pads keep the
 counting steps equal, but not the pulse: while one voice holds its pulse (`$C4D6` / `$C4F3` loop, 3.5 T per unit of
 its own period) the other voice's counter waits, about 2.8 % of the time. So the voices do detune each other when
 both sound. The intervals within a voice are equal-tempered within 17 cents. The names below take `$7C` as A3: the
@@ -145,14 +136,14 @@ goto.
 
 ## 9.4 The tune
 
-![The menu tune from its track data: one pass of 5120 frames and the first 768 frames](img/sound-menu-tune.png)
+![The menu tune modelled from its track data: one pass of 5120 frames, then the first 768 frames enlarged](img/sound-menu-tune.png)
 
 `python3 tools/tune_roll.py roll docs/img/sound-menu-tune.png`. The script models `MenuInterrupt` frame by frame on
-the tracks in `build/game.bin`:
+the tracks in `build/game.bin`. How to read the figure:
 
-- the bass in orange, the lead in blue, each sounding note a bar at its period's pitch;
-- the drum hits marked under the notes;
-- the y labels give the period and the note name with `$7C` = A3.
+- across: the frame (50 a second); up: the pitch, labelled with the period and the note name (`$7C` = A3);
+- each bar is one sounding note: orange the bass, blue the lead;
+- the bottom row marks the drum hits by kind.
 
 The tracks:
 
@@ -170,7 +161,7 @@ The tracks:
 
 - both voices loop after exactly 5120 frames (102.4 s); r4 saw both jump back at frame 5099 of its menu
   experiment;
-- the bass has 178 sounding notes on 8 periods, the lead 472 on 17;
+- the bass has 176 sounding notes on 8 periods, the lead 466 on 17;
 - the drums hit 304 times: 161 hisses, 72 rasps, 71 sweeps. r4's 5300-frame experiment counted 72 rasps and 72
   sweeps.
 
@@ -184,12 +175,20 @@ All 399 frames agree with the model, at the single model offset 93: the snapshot
 
 ![The menu tune measured from the beeper writes, against the model](img/ui/sound-tune-measured.png)
 
-**Measured from the beeper.** Each dot is one frame of one voice: 3.5 MHz over the median time between that voice's
-own pulse starts (the bass writes at `$C4F0`/`$C4F8`, the lead at `$C4D3`/`$C4DB`); the black lines are the model at
-125.5 T per unit, the marks at the bottom the drum hits by routine. Recording: the tour, an own instance from
-`work/play/start.szx`, frames 0-700 of the main menu, every `OUT` to an even port in access traces. The notes and
-their timing match the model frame for frame; the dots sit half a semitone under the lines wherever both voices
-sound (9.2), on the lines where the lead plays alone. The hiss marks are hits that make no sound (9.3).
+**Measured from the beeper.** How to read the figure:
+
+- each dot is one frame of one voice: 3.5 MHz over the median time between that voice's own pulse starts (the bass
+  writes at `$C4F0`/`$C4F8`, the lead at `$C4D3`/`$C4DB`);
+- the black lines are the notes of the model at 125.5 T per unit;
+- the marks at the bottom are the drum hits, by routine.
+The recording is the tour: an own instance from `work/play/start.szx`, frames 0-700 of the main menu, every `OUT`
+to an even port in access traces. What it shows:
+
+- the notes and their timing match the model frame for frame;
+- the dots sit half a semitone under the lines wherever both voices sound (9.2), on the lines where the lead plays
+  alone;
+- the hiss marks are hits that make no sound (9.3).
+
 `python3 tools/ill_ui.py sound` (traces and draws; `draw-sound` redraws from `work/ill3/sound/*.json`).
 
 ### A restart keeps a silent voice
@@ -297,10 +296,10 @@ menu's `StartInterrupt` (`EI; RET`) runs in them. These are the points under eac
 
 ![Every beeper effect: waveform and spectrogram from the beeper writes](img/ui/sound-gallery.png)
 
-One sounding of each effect, cut from access traces of the tour (and the kill from `work/docC/fight`, frames
+One sounding of each effect, one row each, cut from access traces of the tour (and the kill from `work/docC/fight`, frames
 19312-19372): left the EAR level (bit 4 of each `OUT ($FE)`) over the first 4 or 8 ms, right a spectrogram of the
 whole sound (the level sampled at 3.5 MHz / 16, 1024-point windows). The Beep rows show a pure square wave with its
-odd harmonics at the formula's tone (5.6, 1.3, 1.1 kHz and 530 Hz); the build chirp climbs in 13 steps and ends in
+odd harmonics; its lowest band lies on the dashed line, the formula's tone (5.65, 1.30, 1.09 and 0.53 kHz); the build chirp climbs in 13 steps and ends in
 the long `$C8`; the shot and the kill are one burst a frame (the vertical stripes, 20 ms apart). The drum rows come
 from the menu tune: the rasp is broadband noise, the sweep a falling tone with its harmonics, the hiss is silent
 (9.3). `python3 tools/ill_ui.py sound`.

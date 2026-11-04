@@ -4,8 +4,8 @@ recording (TTD memory_at in the unreal-ng instance that holds it, read only) or 
 
     python3 tools/doc_figures.py sprite  --image work/deep/start.bin --out docs/img/sprite-format.png
     python3 tools/doc_figures.py areas   --work work/docB/rec --frame 2000 --out docs/img/screen-areas.png
-    python3 tools/doc_figures.py robots  --work work/deep --step 250 --out docs/img/robots-over-time.png
-    python3 tools/doc_figures.py map     --work work/deep --frames 200,36000 --out docs/img/map-owners.png
+    python3 tools/doc_figures.py robots  --work work/deep --step 250 --out work/figs/robots-raw.png  # doc 07 uses tools/fig_robots_time.py
+    python3 tools/doc_figures.py map     --work work/deep --frames 200,36000 --out work/figs/map-owners.png  # not in the docs
     python3 tools/doc_figures.py records --work work/deep --frame 20000 --out docs/img/robot-records.png
 
 `--cache FILE` keeps the memory_at answers (JSON), so a figure is redrawn without the instance.

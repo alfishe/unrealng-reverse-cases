@@ -1,39 +1,39 @@
 # The memory map, three stages side by side (tools/memmap.py, docs/02-architecture.md 2.2).
 # STAGE START END KIND NAME   (hex, END inclusive; KIND: screen code data graphics work dead system loader stack)
 # Witnesses: the tape blocks (kit/tapblocks.py), src/loader.asm, src/game/game.ann (entries and @equ), WALKTHROUGH 2.
-load 4000 5AFF screen screen: the block's first 6912 bytes, black on black
+load 4000 5AFF screen block bytes, black on black
 load 5B00 5CBF system printer buffer, system variables
-load 5CC0 5E47 loader the BASIC at PROG $5CCB (381), later overwritten
-load 5E48 FCD9 work the game block, arriving from $4000 up
-load FCDA FD8D loader N1, the loader (180 bytes, LOAD "" CODE 64730)
+load 5CC0 5E47 loader the BASIC (381 bytes)
+load 5E48 FCD9 work the game block, from $4000 up
+load FCDA FD8D loader N1, the loader (180 bytes)
 load FD8E FFDF work free
-load FFE0 FFFF stack N1's stack (SP = $FFE0), the UDGs
-image 4000 5AFF dead a copy of $C350-$DE4F (dead)
-image 5B00 677F work ViewBuffer (leftovers in the image)
+load FFE0 FFFF stack N1's stack, the UDGs
+image 4000 5AFF dead a dead copy of $C350-$DE4F
+image 5B00 677F work ViewBuffer (leftovers)
 image 6780 697F graphics Font: 64 glyphs
 image 6980 A569 graphics sprites: 89 blocks
 image A56A A5FF work spare (zero)
-image A600 BDA8 code code: start-up, play loop, menus, AI, shots, bases
-image BDA9 C0FF data the level: scenery, bases, shapes
-image C100 C664 code code: main menu, tape, keys, menu music
+image A600 BDA8 code code: start-up, play loop, AI
+image BDA9 C0FF data the level: scenery, bases
+image C100 C664 code code: main menu, tape, keys
 image C665 C81F data the menu tune
-image C820 D6A7 code code: construction menu, view, print, radar
-image D6A8 D7D2 data tables: edges, SpriteTable, heights
-image D7D3 FCE8 work zero: the work space (shots, radar, robots, map)
-image FCE9 FFFF work N1 and free (not in the block)
-play 4000 5AFF screen the screen: view, panel, radar, clock
-play 5B00 677F work ViewBuffer: 160 x 160 pixels, redrawn every turn
+image C820 D6A7 code code: view, print, radar
+image D6A8 D7D2 data tables
+image D7D3 FCE8 work zeros: future work space
+image FCE9 FFFF work N1, not in the block
+play 4000 5AFF screen the screen
+play 5B00 677F work ViewBuffer, redrawn every turn
 play 6780 697F graphics Font
 play 6980 A569 graphics sprites
-play A600 D6A7 code the game code and its texts and tables
+play A600 D6A7 code the game code, texts, tables
 play D6A8 D7D2 data tables
 play D7D3 D7FF work Shots: 5 x 9
-play D800 D9FF work radar layers $D800 / $D900 (16 x 16 each)
-play DA00 DB7F work Robots: 24 x 16, the player's
-play DB80 DCFF work EnemyRobots: 24 x 16
+play D800 D9FF work radar layers
+play DA00 DB7F work Robots: our 24
+play DB80 DCFF work EnemyRobots: their 24
 play DD00 FCFF work Map: 16 rows of 512 cells
-play FD00 FDFC work variables, Warbases $FD70, Factories $FD84
-play FDFD FDFF code JP Handler (the IM 2 jump)
-play FE00 FF00 data IM 2 vector table: 257 x $FD
+play FD00 FDFC work variables, capture points
+play FDFD FDFF code JP Handler (IM 2 jump)
+play FE00 FF00 data IM 2 vector table
 play FF01 FFA8 work Buildings: 56 x 3
-play FFA9 FFFF stack the stack (SP = 0 at Start)
+play FFA9 FFFF stack the stack (SP = 0)

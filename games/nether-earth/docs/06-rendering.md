@@ -49,18 +49,16 @@ flowchart LR
 | `CopyViewToScreen` `$D071` | 74 889 | 10.2 % | 3422 |
 | `ShowRadar` `$D59E`, every frame from the interrupt | 8 134 | 11.2 % | 34 645 |
 
-The whole call, sampled in 110 pictures of 5 430 T-states: the memory map `$5B00-$FFFF` (executed green, read
-blue, written yellow fading to red), the view buffer as 20 bytes x 160 lines, and the listing:
+One call in `work/docB/rec` runs from 1995:21923 to 2003:60028: 597 209 T-states, 68 515 instructions. In order:
 
-![DrawView: one call, work/docB/rec frames 1995:21900-2003:60100](img/routines/DrawView.gif)
+- the PUSH clear sweeps the buffer from the bottom up;
+- the corner and the edge strips appear;
+- the shadow;
+- the blocks and buildings, diagonal by diagonal from the far corner to the near one;
+- the robots over them;
+- last the copy to the screen, which only reads the buffer.
 
-`kit/routine_anim.py --work work/docB/rec --window 1995:21900-2003:60100 --listing build/game.lst --view
-buffer:5B00:20x160 --pc CCBD-D0B8 --range 5B00-FFFF --pictures 110 --out docs/img/routines/DrawView.gif`. This call
-runs from 1995:21923 to 2003:60028, 597 209 T-states and 68 515 instructions. The buffer shows ink as white: on the
-screen it is black ink on yellow paper. In order: the PUSH clear sweeps the buffer from the bottom up, the corner and
-the edge strips appear, the shadow, then the blocks and buildings diagonal by diagonal from the far corner to the
-near one, the robots over them, and last the copy to the screen (which the buffer view does not show: it only
-reads the buffer).
+[12](12-routine-reference.md#drawview-ccbd) has the call as a routine animation (memory map, buffer and listing).
 
 The same call, one picture a sprite (41 pictures): the buffer after each `DrawSprite`, the sprite's box in red, and on
 the right the 32 x 16 map cells of the view projected as the sprites are, the cells walked so far lit and the current
@@ -72,19 +70,29 @@ anchor; the robots come where the walk reaches their cells.
 `tools/ill_render.py build --trace work/docB/rec/traces/1995_21900-2003_60100.uatr --out
 docs/img/render/view-build.gif`: each picture is the buffer of the trace at the moment that `DrawSprite` returned.
 
-Who wrote each byte of the buffer in that call, and from which data (`kit/writers_map.py --work work/docB/rec
---window 1995:21900-2003:60100 --listing build/game.lst --view buffer:5B00:20x160 --sources --out
-docs/img/writers-view.png`):
+Who drew each byte of the buffer in that call:
 
-![Who wrote the view buffer, by routine](img/writers-view.png)
+![One DrawView: every byte cleared first, half of them then drawn over by sprites](img/writers-view.png)
 
-All 3200 bytes were written by the clear (3200 writes); 1643 bytes were last written by `SpriteByteLoop` (3169
-writes; its sources include the low block, tall block and post sprites), 215 by the corner fill, 150 by the edge strips. The reads
-the legend gives for the clear (`$FD08`) are `SavedSP`, the stack pointer it parks. By instruction (`--by pc --zoom
-120,74,40,60`), the eight `PUSH HL` of `ClearPushLoop` leave eight interleaved stripes where nothing was drawn
-over them; the zoom is the two robots, every byte from `$CFBF` (`LD (DE),A` in `SpriteByteLoop`):
+How to read the figure:
 
-![The view buffer by instruction, the robots zoomed](img/writers-view-pc.png)
+- **Left:** the buffer as the call left it, in the screen's colours (black ink on yellow paper).
+- **Right:** the same pixels, each byte coloured by the stage that wrote it last; ink pixels are the darker shade.
+- **Grey:** the clear only. Nothing was drawn there, so it stays paper.
+- **Blue:** the corner fill, the far corner outside the map (`$FF`, all ink).
+- **Orange:** the edge strips, the staircase edge of the map.
+- **Green:** a sprite: blocks, buildings, robots, the shadow.
+
+The counts:
+
+- The clear writes all 3200 bytes, each once; 1192 stay as it left them.
+- Sprites write 3169 times and are the last writer of 1643 bytes: overlapping sprites write a byte again.
+- The corner fill is the last writer of 215 bytes (240 writes), the edge strips of 150 (208 writes).
+
+```
+python3 tools/fig_view_writers.py --trace work/docB/rec/traces/1995_21900-2003_60100.uatr \
+    --listing work/mkgame/game.lst --out docs/img/writers-view.png
+```
 
 ## 6.2 The view buffer `$5B00-$677F`
 
@@ -110,23 +118,55 @@ bytes x 72 lines to `$48E0`), the nuclear flash (the view's attributes saved at 
 
 **Tearing.** The copy writes a line every 468 T-states (20 `LDI` and the address stepping), the beam shows one every
 224: the copy runs at half the beam's speed, so the beam can only catch it from behind. A 48K frame shows the paper
-from T 14336; the view's line 0 is screen line 8. A copy that starts in the last ~23 400 T-states of a frame or the
-first ~15 600 is overtaken in the next frame: the lines the copy already wrote show the new view, the rest the old.
-A copy that starts between those is ahead of the beam to the end and the frame is clean. In `work/deep` the copy at
-25081:66907 started 3000 T-states before the frame's end:
+from T 14336; the view's line 0 is screen line 8.
 
-![A torn frame: work/deep 25081-25082](img/render/tear.png)
+- A copy that starts in the last ~23 400 T-states of a frame or the first ~15 600 is overtaken in the next frame.
+  The lines the copy already wrote show the new view, the rest the old.
+- A copy that starts between those stays ahead of the beam to the end, and the frame is whole.
 
-`tools/ill_render.py tear --trace work/ill2/deep/traces/25081_0-25083_0.uatr --out docs/img/render/tear.png` (the
-access trace of frames 25081:0-25083:0 of `work/deep`). The screen before the copy is blank: the turn before it was
-a menu's, so this tear is plain to see; in play the old and the new view differ by at most one column, and the tear
-is a small step. The beam against the writes of `CopyLineLoop`, from kit:
+In `work/deep` the copy at 25081:66907 started 2981 T-states before the frame's end. The beam overtakes it in frame
+25082 at view line 87 (screen line 95):
 
-![The copy and the beam, work/deep 25081-25082](img/render/tear-beam.png)
+![A torn frame: the new view down to view line 87, the old one below](img/render/tear.png)
 
-`kit/beam_timeline.py --work work/ill2/deep --window 25081:0-25083:0 --listing build/game.lst --out
-docs/img/render/tear-beam.png`: of the 3200 bytes, 1597 were written before the beam passed them (they show in frame
-25082) and 1603 after (frame 25082 shows the old bytes there, frame 25083 the new).
+How to read the figure:
+
+- **The three pictures** are the view area of the screen (character rows 1-20, columns 1-20), twice the size.
+- **Left:** the screen before the copy. The turn before it was a menu's, so it is blank and the tear is plain to see.
+- **Middle:** the new view in the buffer `$5B00`, what the copy writes.
+- **Right:** what the beam showed in frame 25082. For each byte, the value in memory at the moment the beam fetched
+  it (T 14336 + 224 x screen line + 4 x column), from the trace's write cycles.
+- **The red line** is the tear. In view line 87 the copy wrote 17 of the 20 bytes before the beam came. The other 3
+  are blank in both views, so the picture changes from view line 88 down.
+
+In play the old and the new view differ by at most one column, and the tear is a small step.
+
+The beam against the copy's writes, in the same two frames:
+
+![The beam overtakes the view copy at screen line 95](img/render/tear-beam.png)
+
+How to read the figure:
+
+- **Across:** T-states from the interrupt of frame 25081; the thin vertical line is the interrupt of 25082.
+- **Down:** the screen line, 0 at the top.
+- **The white diagonals** are the beam: the line the TV shows at that moment, one diagonal a frame. A byte written
+  left of a diagonal shows in that frame; one written right of it waits for the next pass.
+- **The red slope** is the copy, one dot a byte written, 20 a line. It starts at screen line 8 near the end of 25081.
+  It is slower than the beam (a flatter slope), so in 25082 the beam crosses it at screen line 95: the
+  tear of the figure above.
+- **The blue marks** at the top right are the clock, printed after the copy.
+
+Of the 3200 bytes, 1757 were written before the beam fetched them in 25082 and show there. The other 1443 show only
+in 25083. The two figures agree: screen line 95 is view line 87.
+
+```
+python3 tools/ill_render.py tear --trace work/ill2/deep/traces/25081_0-25083_0.uatr --out docs/img/render/tear.png
+python3 tools/fig_beam_turn.py --trace work/ill2/deep/traces/25081_0-25083_0.uatr --listing work/mkgame/game.lst \
+    --copy-frame 25081 --copy-only --out docs/img/render/tear-beam.png \
+    --title 'The beam overtakes the view copy at screen line 95: frame 25082 shows the new view above, the old one below'
+```
+
+The trace is the access trace of frames 25081:0-25083:0 of `work/deep`. Neither figure needs an emulator.
 
 ## 6.3 The projection
 
@@ -287,16 +327,10 @@ parts:
 | 7 electronics | `$26 $27 $28 $29` | 7 |
 
 One call, robot slot 1 (`$DA10`, bipod + cannon, parts `$09`) at frame 2000 of `work/docB/rec`, 2490 instructions in
-19 187 T-states: the bipod, then the cannon 11 lines higher.
+19 187 T-states: the bipod, then the cannon 11 lines higher (the animation is in
+[12](12-routine-reference.md#drawrobot-cee8); 6.5 shows the same two parts blitted byte by byte).
 
-![DrawRobot: one robot, work/docB/rec frame 2000:39263-2000:58460](img/routines/DrawRobot.gif)
-
-`kit/routine_anim.py --work work/docB/rec --window 2000:39263-2000:58460 --listing build/game.lst --view
-buffer:5B00:20x160 --pc CEE8-CFD6 --range 6900-DCFF --pictures 60 --out docs/img/routines/DrawRobot.gif`. The reads
-at the top of the memory map are the two sprite blocks; the record `$DA10` and the tables `$D6C8` / `$D7B4` are the
-short blue marks at the bottom.
-
-Every chassis with every weapon, facing down, as `DrawRobot` stacks them:
+Every chassis with every weapon, facing down, as `DrawRobot` stacks them, and one robot in its four facings:
 
 ![Robots: every chassis with every weapon](img/render/robot-parts.png)
 

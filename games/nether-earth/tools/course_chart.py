@@ -116,6 +116,14 @@ def chart(args):
     ax.grid(alpha=0.3)
     ax.set_xlim(0, day[-1])
     ax.set_xticks(range(0, int(day[-1]) + 1))
+    last = rows[-1]
+    fig.suptitle(f"The enemy outbuilds the bot: at day {day[-1]:.1f} it has {last['theirs']} robots to our "
+                 f"{last['ours']} and {last['their_factories']} factories to our {last['our_factories']}\n"
+                 '(its 3 warbases pay 15 general a day, our 1 pays 5)', fontsize=11)
+    axes[0].set_title('robots alive per side', fontsize=9.5, loc='left')
+    axes[1].set_title('factories owned: the neutral ones are captured one by one', fontsize=9.5, loc='left')
+    axes[2].set_title('resources: the general one drops at each robot built, refills at midnight', fontsize=9.5,
+                      loc='left')
     fig.tight_layout()
     fig.savefig(args.out)
 

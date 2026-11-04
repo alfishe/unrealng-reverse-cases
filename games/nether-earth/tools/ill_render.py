@@ -19,8 +19,8 @@ in Python, byte for byte the game's: `verify`) where a view is drawn that the ca
     python3 tools/ill_render.py bits       --work work/deep --frame 20000 --left 12 --hex-left 16 --hex-top 2 --out docs/img/render/cell-bits.png
 
 The tear trace is the access trace of frames 25081:0-25083:0 of work/deep (kitlib.load_trace, as kit/routine_anim.py
-takes it); its beam picture is kit's: kit/beam_timeline.py --work work/ill2/deep --window 25081:0-25083:0 --listing
-build/game.lst --out docs/img/render/tear-beam.png.
+takes it); its beam picture is tools/fig_beam_turn.py --trace work/ill2/deep/traces/25081_0-25083_0.uatr --listing
+work/mkgame/game.lst --copy-frame 25081 --copy-only --title ... --out docs/img/render/tear-beam.png.
 
 --work is a recording folder whose session.json names a live instance holding it (`re_session.py open --work W
 --ttd W/session.ttd --port-base P` starts one); the memory it reads is kept in --cache (default work/ill2/cache), one
@@ -1092,24 +1092,22 @@ def fig_tear(a):
     t = load_trace(a.trace, a.unreal)
     ins = t.instructions
     ft = t.frame_t
-    f0 = ins[0].frame
     copy = next(i for i, x in enumerate(ins) if x.pc == 0xD071)
     start = bytes(t.memory_at(0))
     new = bytes(t.memory_at(copy))[V.VIEW:V.FONT]
     shown_frame = ins[copy].frame + 1
-    # every screen write with its T-state counted from the start of shown_frame
+    # every screen write with the T-state of its write cycle, counted from the start of shown_frame
     writes = {}
     for x in ins[copy:]:
-        when = (x.frame - shown_frame) * ft + x.t
         for c in x.cycles:
             if c.tag == 'W' and 0x4000 <= c.address < 0x5800:
-                writes.setdefault(c.address, []).append((when, c.value))
+                frame, when = t.cycle_t(x, c)
+                writes.setdefault(c.address, []).append(((frame - shown_frame) * ft + when, c.value))
     old = [[start[K.screen_address(8 + l, 1 + b)] for b in range(20)] for l in range(160)]
     shown = [[0] * 20 for _ in range(160)]
-    newer = 0
-    tear = None
+    tear, torn = None, 0          # the view line where the beam overtakes the copy, its bytes written in time
     for l in range(160):
-        line_new = 0
+        in_time = 0
         for b in range(20):
             addr = K.screen_address(8 + l, 1 + b)
             fetch = PAPER_T + LINE_T * (8 + l) + 4 * (1 + b)
@@ -1117,39 +1115,48 @@ def fig_tear(a):
             for when, value in writes.get(addr, []):
                 if when <= fetch:
                     v = value
+                    in_time += 1
             shown[l][b] = v
-            line_new += v == new[20 * l + b] and v != old[l][b]
-        if tear is None and l > 0 and all(shown[l][b] == old[l][b] for b in range(20)) and \
-                any(new[20 * l + b] != old[l][b] for b in range(20)):
-            tear = l
+        if tear is None and in_time < 20:
+            tear, torn = l, in_time
     flat = lambda rows: bytes(v for row in rows for v in row)
     S = 2
     f, small, tiny = font(14), font(12), font(11)
-    W, H = 20 + 3 * (160 * S + 30) + 10, 60 + 160 * S + 120
+    PW = 160 * S + 30
+    W, H = 20 + 3 * PW + 150, 78 + 160 * S + 124
     out = Image.new('RGB', (W, H), K.BACKGROUND)
     d = ImageDraw.Draw(out)
     cs = ins[copy]
-    d.text((20, 10), f'A torn frame: CopyViewToScreen $D071 starts at {cs.frame}:{cs.t}, late in the frame, and the beam '
-           f'overtakes it in frame {shown_frame} (work/deep)', fill=K.TEXT, font=f)
-    d.text((20, 30), 'the view area of the screen (character rows 1-20, columns 1-20), 2x', fill=K.DIM, font=small)
-    panels = [(flat(old), f'on the screen before the copy (the last turn)'),
-              (new, 'the new view: the buffer $5B00'),
-              (flat(shown), f'what the beam showed in frame {shown_frame}')]
-    for k, (buf, label) in enumerate(panels):
-        x = 20 + k * (160 * S + 30)
-        out.paste(buffer_image(buf, S), (x, 60))
-        d.text((x, 60 + 160 * S + 6), label, fill=K.TEXT, font=small)
-    x = 20 + 2 * (160 * S + 30)
+    top = 64
     if tear is not None:
-        d.line([x - 8, 60 + tear * S, x + 160 * S + 8, 60 + tear * S], fill=(255, 40, 40), width=2)
-        d.text((x + 6, 60 + tear * S - 18), f'tear: view line {tear}', fill=(255, 40, 40), font=small,
-               stroke_width=2, stroke_fill=(0, 0, 0))
-        d.text((x, 60 + 160 * S + 24), f'lines 0-{tear - 1} new (copied before the beam came),', fill=K.DIM, font=tiny)
-        d.text((x, 60 + 160 * S + 38), f'lines {tear}-159 old (the beam came first)', fill=K.DIM, font=tiny)
-    d.text((20, 60 + 160 * S + 30), f'the copy writes a line every ~468 T-states, the beam shows one every {LINE_T}: '
-           'the beam catches up', fill=K.DIM, font=tiny)
-    d.text((20, 60 + 160 * S + 44), 'when the copy starts in the last ~23 400 T of a frame or the first ~15 600; '
-           'in the next frame everything is new', fill=K.DIM, font=tiny)
+        d.text((20, 10), f'A torn frame: the beam overtakes the view copy at view line {tear} (screen line {8 + tear}): '
+               f'frame {shown_frame} shows the new view above, the old below', fill=K.TEXT, font=f)
+    d.text((20, 32), f'the view copy (CopyViewToScreen $D071) starts at {cs.frame}:{cs.t}, {ft - cs.t} T before the '
+           f'frame ends; the beam overtakes it in frame {shown_frame} (work/deep)', fill=K.DIM, font=small)
+    panels = [(flat(old), ['on the screen before the copy', '(the turn before was a menu: blank)']),
+              (new, ['the new view: the buffer $5B00', '(what the copy writes)']),
+              (flat(shown), [f'what the beam showed in frame {shown_frame}'])]
+    for k, (buf, label) in enumerate(panels):
+        x = 20 + k * PW
+        out.paste(buffer_image(buf, S), (x, top))
+        for j, line in enumerate(label):
+            d.text((x, top + 160 * S + 6 + 15 * j), line, fill=K.TEXT if j == 0 else K.DIM, font=small)
+    x = 20 + 2 * PW
+    if tear is not None:
+        y = top + (tear + 1) * S
+        same = all(shown[tear][b] == new[20 * tear + b] for b in range(20))
+        d.line([x - 4, y, x + 160 * S + 12, y], fill=(255, 40, 40), width=2)
+        for j, line in enumerate([f'the tear: view line {tear}', f'(screen line {8 + tear}):', f'{torn} of its 20 bytes',
+                                  'written in time, the', f'other {20 - torn} ' + (
+                                      'the same in' if same else 'still old'), 'both views' if same else '']):
+            d.text((x + 160 * S + 16, y - 16 + 15 * j), line, fill=(255, 40, 40), font=small)
+        d.text((x, top + 160 * S + 22), f'lines 0-{tear}: new (copied before the beam came)', fill=K.DIM, font=tiny)
+        d.text((x, top + 160 * S + 36), f'lines {tear + 1}-159: old (the beam came first)', fill=K.DIM, font=tiny)
+    y = top + 160 * S + 64
+    d.text((20, y), f'The copy writes a view line every ~468 T-states, the beam shows a screen line every {LINE_T}: '
+           'the beam catches the copy up', fill=K.DIM, font=tiny)
+    d.text((20, y + 14), 'when the copy starts in the last ~23 400 T of a frame or the first ~15 600; started '
+           'between those, the copy stays ahead and the frame is whole.', fill=K.DIM, font=tiny)
     d.text((20, H - 22), f'tools/ill_render.py tear --trace {rel(a.trace)} --out {rel(a.out)}', fill=K.DIM,
            font=tiny)
     out.save(a.out)

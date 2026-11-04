@@ -158,11 +158,17 @@ def roll(out):
     length = bass.gotos[0] if bass.gotos else 5120
     states = states[:length]
     periods = sorted({p for s in states for p in (s[0][0], s[1][0]) if p})
-    fig, axes = plt.subplots(2, 1, figsize=(13, 8.2), dpi=100, gridspec_kw={'height_ratios': [1, 1]})
+    fig, axes = plt.subplots(2, 1, figsize=(12, 9), dpi=90, gridspec_kw={'height_ratios': [1, 1]})
     colours = {0: '#d07010', 1: '#1070d0'}
-    names = {0: 'bass ($C678)', 1: 'lead ($C702)'}
+    names = {0: 'bass voice (track $C678): a bar per note', 1: 'lead voice (track $C702): a bar per note'}
+    counts = [len(notes(states, v)) for v in (0, 1)]
+    hits = sum(1 for st in states if st[2])
+    fig.suptitle(f'The menu tune, modelled from its track data: one pass of {length} frames ({length / 50:.1f} s), '
+                 f'then it loops;\n{counts[0]} bass notes, {counts[1]} lead notes and {hits} drum hits, '
+                 'each note a bar at its pitch (period and note name, $7C = A3)', fontsize=12)
     for ax, (lo, hi), title in ((axes[0], (0, length), f'one pass of the tune: {length} frames ({length / 50:.1f} s)'),
-                                (axes[1], (0, 768), 'the first 768 frames')):
+                                (axes[1], (0, 768), 'the first 768 frames enlarged: the bass rests while the lead '
+                                 'plays its figure, the drum a hiss every 32 frames, then the beat')):
         for v in (0, 1):
             for start, n, p in notes(states, v):
                 if start + n < lo or start > hi:
@@ -177,18 +183,19 @@ def roll(out):
                         ms=6 if hi < 1000 else 4)
         ys = [12 * math.log2(hz(p) / 440) for p in periods]
         ax.set_yticks(ys + [-21.5])
-        ax.set_yticklabels([f'${p:02X} {note_name(p)[0]}' for p in periods] + ['drum'], fontsize=7)
+        ax.set_yticklabels([f'${p:02X} {note_name(p)[0]}' for p in periods] + ['drum'], fontsize=8.5)
         ax.set_xlim(lo, hi)
         ax.set_ylim(-23, max(ys) + 1)
         ax.grid(axis='x', alpha=0.25)
-        ax.set_title(title, fontsize=10)
+        ax.set_title(title, fontsize=11)
         ax.set_xlabel('frame (50 a second)')
     for v in (0, 1):
         axes[0].plot([], [], color=colours[v], lw=6, label=names[v])
     for kind, mk in (('hiss (kind 0)', '|'), ('rasp (kind 1)', 'x'), ('falling sweep (kind 2)', 'v')):
         axes[0].plot([], [], marker=mk, color='#606060', ls='', label=f'drum: {kind}')
-    fig.legend(*axes[0].get_legend_handles_labels(), loc='upper center', fontsize=8, ncol=5, frameon=False)
-    fig.tight_layout(rect=(0, 0, 1, 0.965))
+    fig.legend(*axes[0].get_legend_handles_labels(), loc='upper center', bbox_to_anchor=(0.5, 0.925), fontsize=9.5,
+               ncol=3, frameon=False)
+    fig.tight_layout(rect=(0, 0, 1, 0.88))
     fig.savefig(out)
 
 
@@ -196,7 +203,7 @@ def events():
     states, bass, lead = model(5200)
     print('bass gotos at', bass.gotos, 'lead gotos at', lead.gotos)
     for v in (0, 1):
-        ns = notes(states, v)
+        ns = notes(states[:bass.gotos[0]], v)  # one pass: up to the loop
         print(['bass', 'lead'][v], len(ns), 'sounding notes, periods', sorted({p for _, _, p in ns}))
     drums = [(f, s[2]) for f, s in enumerate(states[:bass.gotos[0]]) if s[2]]
     print('drum hits', len(drums), {k: sum(1 for _, d in drums if d[0] == k) for k in ('hiss', 'rasp', 'sweep')})

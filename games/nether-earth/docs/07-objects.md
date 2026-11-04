@@ -28,13 +28,8 @@ Evidence:
 3. The 5 shot records through `UpdateShot` `$B70D`.
 
 A robot does not act every turn: its `+$0F` counts turns down to its next step (7.3). One call at frame 2005 of
-`work/docB/rec`, 31 000 T-states, four robots stepping. The right panel is the robot records `$DA00-$DCFF` drawn as
-a bitmap, one record a line of 128 pixels (16 bytes), slot 0 at the top: the written fields light up.
-
-![WorldTurn: one turn, work/docB/rec frame 2005:14180-2005:45290](img/routines/WorldTurn.gif)
-
-`kit/routine_anim.py --work work/docB/rec --window 2005:14180-2005:45290 --listing build/game.lst --view
-buffer:DA00:16x48 --pc B0CA-B7F3 --range D700-FFFF --pictures 80 --out docs/img/routines/WorldTurn.gif`.
+`work/docB/rec` takes 31 000 T-states, with four robots stepping. [12](12-routine-reference.md#worldturn-b0ca) has it
+as a routine animation.
 
 ## 7.2 Robots
 
@@ -190,14 +185,6 @@ docs/img/render/cell-bits.png`: our warbase (door (22, 9)) and the missiles fact
 (18, 5) and (22, 5) is a tall block anchor with bit 6: building records 25 and 24 stand there; `$AF` at (24, 7) is a low block's non-anchor cell with the ship (bit 7), `ShipX` / `ShipY` = (24, 7). In these
 512 cells 138 have bit 5, 5 bit 6 and 1 bit 7; over the whole map 55 have bit 6 (robots, buildings and flying shots).
 
-![The map from memory at the start and the end of work/deep](img/map-owners.png)
-
-`tools/doc_figures.py map --work work/deep --frames 200,36000 --out docs/img/map-owners.png`, each cell coloured by
-its type class, the capture points by owner, the robots as 2 x 2 squares by side, the ship as a cross. At frame 200
-every factory is neutral, ours is the warbase at (22, 9), the enemy's at (261, 8), (369, 8), (494, 8). At frame 36000
-we hold 4 factories (missiles (39, 6), electronics (62, 10), cannon (79, 3), phasers (97, 3)), the enemy 13; its
-robots stand round the factories of the east half.
-
 ## 7.6 Buildings and capture points
 
 **Capture points**: `Warbases` `$FD70` (4) and `Factories` `$FD84` (24), 5 bytes each; the code addresses them from
@@ -221,9 +208,15 @@ bit 7 (no robot was nuclear).
 
 `tools/ill_render.py days --work work/deep --step 120 --out docs/img/render/ownership-days.png`: the map at the last
 sample of each day (`Clock` `$FD35`, the day at `$FD37`), the capture points in their owner's colour, white rings on
-those that changed hands that day, the robots as dots. Factories ours : the enemy's go from 0 : 0 on day 0 to 4 : 13
-on day 11; we take the factories near our warbase in the west, the enemy, building from three warbases, the east half
-and then the middle.
+those that changed hands that day, the robots as dots.
+
+- At the start every factory is neutral. Our warbase is at (22, 9), the enemy's three at (261, 8), (369, 8) and
+  (494, 8).
+- Factories ours : the enemy's go from 0 : 0 on day 0 to 4 : 13 on day 11.
+- We take the factories near our warbase in the west: missiles (39, 6), electronics (62, 10), cannon (79, 3),
+  phasers (97, 3).
+- The enemy, building from three warbases, takes the east half and then the middle. On day 11 its robots stand round
+  the factories of the east half.
 
 **Buildings** `$FF01`: 56 records of 3 bytes, the map cell (2 bytes, high byte 0 = free) and a type: 0 the pad of a
 warbase of ours, 1-6 a factory's roof (its product shown, [6.5](06-rendering.md#65-sprites)), 7 our flag, 8 the
@@ -235,13 +228,25 @@ frame 36000 46; the 17 more match the 17 captures (one flag each, the record by 
 
 ## 7.7 Over the whole game
 
-![Robots and factories per side in work/deep](img/robots-over-time.png)
+![The enemy outbuilds us: 16 robots against our 6 at the peaks](img/robots-over-time.png)
 
-`tools/doc_figures.py robots --work work/deep --step 250 --out docs/img/robots-over-time.png`: the live records per
-side (`+$01` not 0) and the building counts, from `memory_at` every 250 frames. We peak at 6 robots, the enemy at 16
-(24 slots each); the enemy builds faster because it has three warbases (5 general resources a day each) and the
-factories it captures. At frame 36000: 3 against 15 robots, 4 against 13 factories, the enemy's three warbases all
-standing.
+How to read the figure:
+
+- **Across:** the game, day by day (a game day is about 3100 frames, a minute; one sample every 120 frames).
+- **Thick lines:** the live robot records per side (`+$01` not 0, 24 slots a side); green ours, red the enemy's.
+- **Dashed lines:** the factories each side holds (`PlayerBuildings` `$FD3A` / `EnemyBuildings` `$FD42`).
+
+What it shows:
+
+- We peak at 6 robots (day 5), the enemy at 16 (day 9).
+- The enemy builds faster: it has three warbases (5 general resources a day each) and the factories it captures.
+- At frame 36000: 3 against 15 robots, 4 against 13 factories, the enemy's three warbases all standing.
+
+```
+python3 tools/fig_robots_time.py --cache work/ill2/cache/deep --step 120 --last 36000 --out docs/img/robots-over-time.png
+```
+
+The memory moments are the ones `ill_render.py` keeps from `memory_at` of `work/deep`; no emulator is needed.
 
 The same game as it moves: the robots of both sides on the whole map, with the day and the counts:
 

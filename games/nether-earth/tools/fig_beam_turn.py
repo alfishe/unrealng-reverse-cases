@@ -74,6 +74,8 @@ def main():
     p.add_argument('--listing', required=True)
     p.add_argument('--copy-frame', type=int, required=True)
     p.add_argument('--out', required=True)
+    p.add_argument('--copy-only', action='store_true', help='only the panel of the copy\'s two frames')
+    p.add_argument('--title', help='the copy panel\'s title')
     p.add_argument('--unreal')
     args = p.parse_args()
     trace = K.access_trace(args.unreal).load(args.trace)
@@ -96,7 +98,7 @@ def main():
 
     # bottom: screen writes in the copy's two frames
     cf = args.copy_frame
-    dots = {'copy': [], 'radar': [], 'other': []}
+    dots = {'copy': [], 'radar': [], 'other': [], 'copy_at': []}
     for x in trace.instructions:
         if x.frame not in (cf, cf + 1, cf + 2):
             continue
@@ -111,18 +113,31 @@ def main():
             kind = 'copy' if routine in ('CopyViewToScreen', 'CopyLineLoop') else \
                 'radar' if module_of(x.pc) == 'interrupts' else 'other'
             dots[kind].append(((frame - cf) * FRAME_T + t, line))
+            if kind == 'copy':
+                dots['copy_at'].append(((frame - cf) * FRAME_T + t, line, c.address & 31))
 
-    fig = plt.figure(figsize=(13, 8.2), dpi=110)
+    if args.copy_only:
+        fig = plt.figure(figsize=(13, 6.2), dpi=110)
+        ax, bx = None, fig.add_subplot(1, 1, 1)
+    else:
+        fig = plt.figure(figsize=(13, 8.2), dpi=110)
+        gs = fig.add_gridspec(2, 1, height_ratios=[1, 3.2], hspace=0.62)
+        ax, bx = fig.add_subplot(gs[0]), fig.add_subplot(gs[1])
     fig.patch.set_facecolor('#15161b')
-    gs = fig.add_gridspec(2, 1, height_ratios=[1, 3.2], hspace=0.62)
-    ax = fig.add_subplot(gs[0])
-    bx = fig.add_subplot(gs[1])
-    for a in (ax, bx):
+    for a in (ax, bx) if ax else (bx,):
         a.set_facecolor('#1c1d24')
         a.tick_params(colors='#b8bcc8', labelsize=9)
         for s in a.spines.values():
             s.set_color('#444')
 
+    if ax:
+        draw_turn(ax, runs, frames, f0, cf)
+    draw_copy(bx, dots, cf, args.title)
+    os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
+    fig.savefig(args.out, facecolor=fig.get_facecolor(), bbox_inches='tight')
+
+
+def draw_turn(ax, runs, frames, f0, cf):
     for a0, a1, ph in runs:
         ax.barh(0, max(a1 - a0, 1e-4), left=a0, height=0.8, color=COLOUR[ph], linewidth=0)
     n = len(frames)
@@ -141,7 +156,9 @@ def main():
     ax.legend(handles=[Patch(color=c, label=l) for l, c in PHASES], loc='upper center', ncol=3, fontsize=8.5,
               bbox_to_anchor=(0.5, -0.48), frameon=False, labelcolor='#d6d8e0')
 
-    # bottom panel
+
+
+def draw_copy(bx, dots, cf, title):
     total = 2 * FRAME_T
     for k in range(2):
         b0 = k * FRAME_T + PAPER_T
@@ -154,22 +171,35 @@ def main():
         if dots[kind]:
             xs, ys = zip(*dots[kind])
             bx.scatter(xs, ys, s=size, color=colour, linewidths=0)
-    # where the copy crosses the beam
+    # what frame cf+1 shows: a byte is new there when it was written before the beam fetched it in that frame
+    # (line L, column c: T 14336 + 224 L + 4 c); the tear is the first line the beam reaches before the copy does
+    def shown_new(t, line, col):
+        return t <= FRAME_T + PAPER_T + line * LINE_T + 4 * col
+    lines = {}
+    for t, line, col in dots['copy_at']:
+        lines.setdefault(line, []).append(shown_new(t, line, col))
     cross = None
-    for t, line in sorted(dots['copy']):
-        k = t // FRAME_T
-        if t - k * FRAME_T >= PAPER_T + line * LINE_T and k == 1:
-            cross = (t, line)
+    for line in sorted(lines):
+        if not all(lines[line]):
+            cross = (next(t for t, l, c in sorted(dots['copy_at']) if l == line and not shown_new(t, l, c)), line)
             break
+    ahead = sum(1 for t, line, col in dots['copy_at'] if shown_new(t, line, col))
     copy = sorted(dots['copy'])
     if copy:
         t0 = copy[0][0]
         bx.annotate('the view copy starts\n(line 8, 20 bytes a line)', xy=(t0, copy[0][1]), xytext=(t0 - 22000, 40),
                     color='#e5534b', fontsize=9, arrowprops=dict(arrowstyle='->', color='#e5534b', lw=0.8))
+    print(f'copy: {len(copy)} bytes, {ahead} shown new in frame {cf + 1}, tear {cross}')
     if cross:
+        torn = sum(lines[cross[1]])
         bx.axhline(cross[1], color='#e5534b', lw=0.6, ls='--', alpha=0.7)
-        bx.annotate(f'the tear: line {cross[1]}\nabove: the new view, below: the old one',
-                    xy=cross, xytext=(cross[0] + 9000, cross[1] - 40), color='#e8e8ee', fontsize=9.5,
+        bx.annotate(f'the tear: screen line {cross[1]} (view line {cross[1] - 8}),\n'
+                    f'{torn} of its 20 bytes new; frame {cf + 1}\n'
+                    f'shows the new view above it, the old below\n'
+                    f'({ahead} of {len(copy)} bytes show in {cf + 1},\n'
+                    f'the rest only in {cf + 2})',
+                    xy=cross, xytext=(2 * FRAME_T - 1500, cross[1] - 55), ha='right', va='top', color='#e8e8ee',
+                    fontsize=9.5,
                     arrowprops=dict(arrowstyle='->', color='#e8e8ee', lw=0.8))
     if dots['radar']:
         r = sorted(dots['radar'])
@@ -186,11 +216,8 @@ def main():
     bx.set_ylim(196, -10)
     bx.set_ylabel('screen line', color='#b8bcc8', fontsize=9)
     bx.set_xlabel(f'T-states from the interrupt of frame {cf} (69888 a frame)', color='#b8bcc8', fontsize=9)
-    bx.set_title(f'Frames {cf}-{cf + 1}: every write into the screen against the beam', color='#e8e8ee',
+    bx.set_title(title or f'Frames {cf}-{cf + 1}: every write into the screen against the beam', color='#e8e8ee',
                  fontsize=12, loc='left', pad=16)
-    os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
-    fig.savefig(args.out, facecolor=fig.get_facecolor(), bbox_inches='tight')
-    print(args.out, {k: len(v) for k, v in dots.items()}, 'tear', cross)
 
 
 if __name__ == '__main__':

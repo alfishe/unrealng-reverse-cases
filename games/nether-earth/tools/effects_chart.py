@@ -80,8 +80,8 @@ def chart(args):
 
     ax = axes[0]
     ft = fire['frame_t']
-    for name, colour, label in (('SoundEffect pulses', '#1070d0', 'measured pulse rate (SoundFx 1..$7F, PulseLoop)'),
-                                ('SoundEffect noise', '#d03010', 'measured level rate (SoundFx $FA..$FF, NoiseLoop)')):
+    for name, colour, label in (('SoundEffect pulses', '#1070d0', 'measured: the pulse rate of each frame\'s burst (the shot)'),
+                                ('SoundEffect noise', '#d03010', 'measured: noise, the rate of level changes (the hit)')):
         xs, ys = [], []
         for run in bursts(fire['outs'], name, 3000, name.endswith('pulses')):
             for (t0, _), (t1, _) in zip(run, run[1:]):
@@ -97,16 +97,16 @@ def chart(args):
             model_y += [CLOCK / (13 * b + 63)] * 2
             model_x.append(None)
             model_y.append(None)
-    ax.plot(model_x, model_y, '-', color='#000000', lw=1.2, label='formula 3.5 MHz / (13A + 63), A = SoundFx')
+    ax.plot(model_x, model_y, '-', color='#000000', lw=1.2, label='the code\'s timing: 3.5 MHz / (13A + 63 T), A = SoundFx, 1 more each frame')
     ax.set_yscale('log')
     ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f'{v:,.0f}'))
     ax.yaxis.set_minor_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f'{v:,.0f}'))
     ax.set_ylabel('rate (Hz)')
     ax.set_xlabel(f"frame of work/docC/fight (window {fire['window']}, T-states from the trace)")
-    ax.set_title('a robot shot: fired at frame 18680 (SoundFx = 1, then +1 a frame), hit at 18702 (SoundFx = $FA)',
-                 fontsize=10)
+    ax.set_title('A shot: one burst a frame from frame 18680, its pulse rate falling exactly as the code times it; '
+                 'the hit at 18702 cuts it to noise', fontsize=11)
     ax.grid(alpha=0.3, which='both')
-    ax.legend(fontsize=8, loc='upper right')
+    ax.legend(fontsize=9, loc='upper right')
 
     ax = axes[1]
     ct = chirp['frame_t']
@@ -118,7 +118,7 @@ def chart(args):
             ys.append(CLOCK / (2 * (t1 - t0)))
     t_first = xs[0] if xs else 0
     xs = [x - t_first for x in xs]
-    ax.plot(xs, ys, '.', ms=2, color='#1070d0', label='measured: 3.5 MHz / (2 x the interval between two OUTs)')
+    ax.plot(xs, ys, '.', ms=2, color='#1070d0', label='measured: the tone between two OUTs')
     mx, my = [], []
     for run in runs:
         a = run[0][1]  # B at the first OUT is the delay A
@@ -128,14 +128,14 @@ def chart(args):
         my += [f, f, None]
         ax.annotate(f'${a:02X}', ((lo + hi) / 2, f), textcoords='offset points', xytext=(0, 7), ha='center',
                     fontsize=7)
-    ax.plot(mx, my, '-', color='#000000', lw=1.2, label='formula 3.5 MHz / (2 (13A + 50)), A above each tone')
+    ax.plot(mx, my, '-', color='#000000', lw=1.2, label='the code\'s timing: 3.5 MHz / (2 (13A + 50 T)), the delay A above each tone')
     first = chirp['from_frame'] + int(runs[0][0][0] // ct) if runs else chirp['from_frame']
-    ax.set_title(f'the build chirp: {len(runs)} Beeps, BuildChirp A = $50 down to $14, then LeaveConstructionMenu '
-                 f'$C8 (from frame {first})', fontsize=10)
+    ax.set_title(f'The build chirp of frame {first}: {len(runs) - 1} Beeps rising from A = $50 to $14, then the long '
+                 f'$C8 of leaving the menu; every tone on the code\'s timing', fontsize=11)
     ax.set_xlabel(f"ms from the first OUT (work/docC/fight, window {chirp['window']})")
     ax.set_ylabel('tone (Hz)')
     ax.grid(alpha=0.3)
-    ax.legend(fontsize=8, loc='upper left')
+    ax.legend(fontsize=9, loc='upper left')
     fig.tight_layout()
     fig.savefig(args.out)
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Screens of the landscape away from the home warbase, for docs/01-game-design.md: a new game from the menu snapshot,
-the ship flown east over a neutral factory and to the first enemy warbase, a screen at each.
+the ship flown east over a neutral factory and to the first enemy warbase, a screen at each. Superseded for the docs
+by tools/fig_bases.py, which names the objects on the screens: use --out-dir work/... to keep the doc figures.
 
     python3 tools/flight_shots.py --unreal U --binary B --work work/docA/flight --out-dir docs/img [--port-base 24050]
 

@@ -1131,8 +1131,8 @@ NODES = {  # name: (column, row, title, code, handler)
     'combat': (3, 2, 'combat mode', 'CombatMenu $AC00', 'PlayInterrupt'),
 }
 EDGES = [('menu', 'redefine', 'key 4'), ('redefine', 'menu', '8th key'), ('menu', 'play', 'key 0: NewGameSetup'),
-         ('play', 'menu', 'key I: JP Start'), ('play', 'pause', 'key 1'), ('pause', 'play', 'another control'),
-         ('play', 'construction', 'land on the pad'), ('construction', 'play', 'START ROBOT / EXIT'),
+         ('play', 'menu', 'key I: abort'), ('play', 'pause', 'key 1'), ('pause', 'play', 'another control'),
+         ('play', 'construction', 'land on the pad'), ('construction', 'play', 'START / EXIT'),
          ('play', 'robot-menu', 'land on a robot'), ('robot-menu', 'play', 'LEAVE ROBOT'),
          ('robot-menu', 'direct', 'DIRECT CONTROL'), ('direct', 'robot-menu', 'fire'),
          ('robot-menu', 'orders', 'GIVE ORDERS'), ('orders', 'robot-menu', 'an order set'),
@@ -1153,8 +1153,8 @@ def cmd_states(args):
     W, H = 30 + 4 * CELL_W, 60 + 3 * CELL_H
     img = Image.new('RGB', (W, H), BG)
     d = ImageDraw.Draw(img)
-    text(d, (30, 14), 'The game\'s states, each with its screen from the tour run (tools/ill_ui.py tour; the frame '
-         'under each)', 16, FG)
+    text(d, (30, 12), 'Play is the hub: every in-game menu returns to it; abort and the game over go back to the main '
+         'menu (frame colour: the interrupt handler)', 17, FG)
     for name, (c, r, title, code, handler) in NODES.items():
         x0, y0, x1, y1 = node_box(name)
         frame, mem = states[name]
@@ -1162,9 +1162,9 @@ def cmd_states(args):
         colour = (90, 200, 120) if 'PlayInterrupt' in handler else (240, 200, 70) if 'Menu' in handler else \
             (200, 110, 230)
         d.rectangle([x0 - 2, y0 - 2, x0 + THUMB[0] + 1, y0 + THUMB[1] + 1], outline=colour, width=2)
-        text(d, (x0, y0 + THUMB[1] + 4), title, 13, colour)
-        text(d, (x0, y0 + THUMB[1] + 20), code, 11, FG)
-        text(d, (x0, y0 + THUMB[1] + 34), f'{handler}, frame {frame}', 11, DIMC)
+        text(d, (x0, y0 + THUMB[1] + 4), title, 15, colour)
+        text(d, (x0, y0 + THUMB[1] + 22), code, 13, FG)
+        text(d, (x0, y0 + THUMB[1] + 38), f'{handler}, tour frame {frame}', 13, DIMC)
     def anchor(name, other):
         x0, y0, x1, y1 = node_box(name)
         cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
@@ -1179,7 +1179,7 @@ def cmd_states(args):
         ang = math.atan2(pb[1] - pa[1], pb[0] - pa[0])
         for s_ in (-0.45, 0.45):
             d.line([pb, (pb[0] - 11 * math.cos(ang + s_), pb[1] - 11 * math.sin(ang + s_))], fill=ACCENT, width=2)
-        f = K.font(12)
+        f = K.font(13)
         tw = d.textlength(label, font=f)
         if where is None:
             i = max(range(len(points) - 1), key=lambda k: abs(points[k + 1][0] - points[k][0]) +
@@ -1222,19 +1222,19 @@ def cmd_states(args):
     gx0, gy0, gx1, gy1 = node_box('gameover')
     ym = (py0 + node_box('menu')[3]) / 2 + 12
     arrow([(px1 - 20, py0 - 6), (px1 - 20, ym), ((gx0 + gx1) / 2, ym), ((gx0 + gx1) / 2, gy1 + 4)],
-          'CheckGameEnd: no warbase left', where=(((px1 - 20) + (gx0 + gx1) / 2) / 2 + 30, ym), side='above')
+          'CheckGameEnd: no warbase', where=(((px1 - 20) + (gx0 + gx1) / 2) / 2 + 30, ym), side='above')
     mx0, my0, mx1, my1 = node_box('menu')
-    arrow([(gx0 - 4, (gy0 + gy1) / 2 - 40), (mx1 + 6, (gy0 + gy1) / 2 - 40)], 'a control: JP Start', side='above')
+    arrow([(gx0 - 4, (gy0 + gy1) / 2 - 40), (mx1 + 6, (gy0 + gy1) / 2 - 40)], 'a control', side='above')
     lx = 30 + 3 * CELL_W
     y = 60
     for label, colour in (('handler PlayInterrupt: game turns run', (90, 200, 120)),
                           ('handler StartInterrupt: the world stands', (200, 110, 230)),
                           ('MenuInterrupt: the tune plays', (240, 200, 70))):
         d.rectangle([lx, y, lx + 14, y + 14], fill=colour)
-        text(d, (lx + 22, y), label, 12, FG)
-        y += 24
+        text(d, (lx + 22, y - 1), label, 14, FG)
+        y += 26
     text(d, (lx, y + 10), 'The game over screen comes from an\nexperiment: PlayerBuildings $FD3A\npoked to 0 '
-         'in the tour.', 12, DIMC)
+         'in the tour.', 14, DIMC)
     path = os.path.join(args.out, 'state-machine.png')
     img.save(path)
     print(path)
@@ -1339,19 +1339,19 @@ def spectrogram(ax, sig, rate, t_ms0, fmax=16000, nfft=1024, hop=128, vmin=-60):
 
 
 EFFECTS = [  # name, source, routine PCs, how to pick the run, the code's formula
-    ('cursor click: Beep A = $14', 'construction', 'beep', 0x14, 'CursorMoved $CB47, ListMenuKey $AD17: '
+    ('cursor click: Beep $14', 'construction', 'beep', 0x14, 'CursorMoved $CB47, ListMenuKey $AD17: '
      '3.5 MHz / (2 (13A + 50)) = 5.6 kHz, 23 ms'),
-    ('part paid / item chosen: Beep A = $64', 'construction', 'beep', 0x64, 'PartPaid $CA91, ListMenuChosen $AD37: '
+    ('part paid, item chosen: Beep $64', 'construction', 'beep', 0x64, 'PartPaid $CA91, ListMenuChosen $AD37: '
      '1.3 kHz, 98 ms'),
-    ('refused, taken back, order set: Beep A = $78', 'construction', 'beep', 0x78, 'PartRefused $CAAE, OrderSet '
+    ('order set, refused: Beep $78', 'construction', 'beep', 0x78, 'PartRefused $CAAE, OrderSet '
      '$ABF7, LeaveRobot $A803: 1.1 kHz, 117 ms'),
-    ('START ROBOT: the build chirp, then $C8', 'construction', 'chirp', None, 'BuildChirp $CB82: A = $50 down to $14 '
+    ('START ROBOT: build chirp + $C8', 'construction', 'chirp', None, 'BuildChirp $CB82: A = $50 down to $14 '
      'by 5, LeaveConstructionMenu $C8 (660 Hz)'),
-    ('a shot fired (SoundFx 1, 2, ...) and lost ($FC)', 'combat', 'fx', None, 'SoundEffect $D5C4 once a frame: '
+    ('a shot fired, then lost', 'combat', 'fx', None, 'SoundEffect $D5C4 once a frame: '
      'pulses 13A + 63 T apart, then NoiseLoop'),
-    ('a robot destroyed: SoundFx $C8 (work/docC/fight)', 'kill', 'fx', None, '55 frames of NoiseLoop: 30 levels '
+    ('a robot destroyed ($C8)', 'kill', 'fx', None, '55 frames of NoiseLoop: 30 levels '
      'from Random a frame'),
-    ('the game\'s end: Beep A = $FA', 'gameover', 'beep', 0xFA, 'GameOverWait $AEEC: 530 Hz, 241 ms'),
+    ('the game\'s end: Beep $FA', 'gameover', 'beep', 0xFA, 'GameOverWait $AEEC: 530 Hz, 241 ms'),
     ('menu drum: "hiss" (kind 0)', 'tune', 'drum', 0xC608, 'DrumHiss $C608: LD A,(HL) with no INC HL, so one ROM '
      'byte 96 times'),
     ('menu drum: rasp (kind 1)', 'tune', 'drum', 0xC5EB, 'DrumRasp $C5EB: 80 bytes of ROM page $00 with gaps'),
@@ -1411,8 +1411,12 @@ def draw_sound(args):
     data = {name: json.load(open(os.path.join(SOUND_DIR, f'{name}.json')))
             for name in ('tune', 'construction', 'robotmenu', 'combat', 'gameover', 'kill')}
     rate = CLOCK / 16
-    fig, axes = plt.subplots(len(EFFECTS), 2, figsize=(15, 2.05 * len(EFFECTS)), dpi=90,
-                             gridspec_kw={'width_ratios': [1, 2.4]})
+    fig, axes = plt.subplots(len(EFFECTS), 2, figsize=(13, 2.5 * len(EFFECTS) + 0.8), dpi=80,
+                             gridspec_kw={'width_ratios': [1, 2.2]})
+    fig.suptitle('Every beeper sound of the game, measured from the OUTs to port $FE: left the speaker level over the '
+                 'first milliseconds,\nright its spectrum over the whole sound (bright = loud). The Beeps are pure '
+                 'square waves at the formula\'s tone (dashed),\nthe shots one burst a frame (the stripes).', fontsize=13,
+                 x=0.01, ha='left')
     for row, (title, source, kind, arg, formula) in enumerate(EFFECTS):
         d = data[source]
         run = pick_effect(kind, arg, d['outs'])
@@ -1432,25 +1436,29 @@ def draw_sound(args):
         axw.set_ylim(-0.2, 1.2)
         axw.set_yticks([0, 1])
         axw.set_xlim(0, span)
-        axw.set_title(title, fontsize=10, loc='left')
-        axw.set_xlabel('ms (EAR bit 4 of OUT ($FE))', fontsize=8)
+        axw.set_title(title, fontsize=12, loc='left', fontweight='bold')
+        axw.set_xlabel('ms (the speaker level: EAR bit 4)', fontsize=10)
         if len({o[1] for o in run}) == 1:
             # one level all along: nothing to show in a spectrogram
             hits = runs_of(d['outs'], lambda o: in_routine(o[2], 0xC608, 0xC615), 3000)
             axs.axis('off')
-            axs.text(0.0, 0.55, f'Silent. HL stays at $08xx with L = the drum position, so all 96 OUTs of a hit write the '
-                     f'same byte;\nat frame 355 that is the 48K ROM byte at $0867 = $23, AND $18 = 0: EAR and MIC low. All '
-                     f'{sum(len(h) for h in hits)} OUTs of the {len(hits)} hits in frames {d["from_frame"]}-'
-                     f'{d["to_frame"]} have EAR = 0.\nWitness: access traces (the read at $0867 gives $23 on each of '
-                     f'the 96 turns at frame 355; music.asm DrumHissLoop has no INC HL).', fontsize=9, va='center', transform=axs.transAxes)
+            axs.text(0.0, 0.5, f'Silent: no INC HL, so all 96 OUTs of a hit write the same ROM byte.\n'
+                     f'At frame 355 that is $0867 = $23; AND $18 = 0: the speaker stays low.\n'
+                     f'All {sum(len(h) for h in hits)} OUTs of the {len(hits)} hits in frames {d["from_frame"]}-'
+                     f'{d["to_frame"]} write EAR = 0.', fontsize=12, va='center', transform=axs.transAxes)
         else:
             spectrogram(axs, sig, rate, 0, fmax=16000 if kind != 'beep' else 8000)
-        axs.set_title(f'{formula}   [{source} frame {frame0:.0f}, {len(run)} OUTs, '
-                      f'{(run[-1][0] - run[0][0]) / CLOCK * 1000:.0f} ms]', fontsize=9, loc='left')
-        axs.set_xlabel('ms from the first OUT', fontsize=8)
+            if kind == 'beep':
+                tone = CLOCK / (2 * (13 * arg + 50)) / 1000
+                axs.axhline(tone, color='#40e0ff', lw=1.5, ls=(0, (6, 4)))
+                axs.text(1.005, tone, f'{tone:.2f} kHz', transform=axs.get_yaxis_transform(), fontsize=10,
+                         va='center', color='black')
+        axs.set_title(f'{formula}   [{len(run)} OUTs, {(run[-1][0] - run[0][0]) / CLOCK * 1000:.0f} ms]',
+                      fontsize=10, loc='left')
+        axs.set_xlabel('ms from the first OUT', fontsize=10)
         for a in (axw, axs):
-            a.tick_params(labelsize=8)
-    fig.tight_layout()
+            a.tick_params(labelsize=10)
+    fig.tight_layout(rect=(0, 0, 1, 0.965))
     path = os.path.join(args.out, 'sound-gallery.png')
     fig.savefig(path)
     plt.close(fig)
@@ -1488,21 +1496,24 @@ def draw_tune(args, tune):
             dt = b[0] - a[0]
             if 0 < dt < 30000:
                 per_frame.setdefault(int(tune['from_frame'] + a[0] / FRAME_T), []).append(dt)
-        xs, ys, ratios = [], [], []
+        xs, ys, ratios = [], [], {True: [], False: []}
         for f, dts in sorted(per_frame.items()):
             dts.sort()
             dt = dts[len(dts) // 2]  # the frame's median pulse distance: one note a frame
             xs.append(f + 0.5)
             ys.append(pitch(CLOCK / dt))
             period, sounding = states[f + offset][k]
+            other_period, other_on = states[f + offset][1 - k]
             if sounding and period:
-                ratios.append(dt / period)
-        ratios.sort()
-        t_per_p[voice] = ratios[len(ratios) // 2] if ratios else 0
+                ratios[bool(other_on and other_period)].append(dt / period)
+        rate = {both: sorted(r)[len(r) // 2] if r else 0 for both, r in ratios.items()}
+        t_per_p[voice] = rate[True]
         measured[voice] = (xs, ys)
-        ax.plot(xs, ys, 'o', ms=2.6, color=colours[voice], label=f'{voice}: measured, 3.5 MHz / (median T between '
-                f'its pulses in the frame), OUT at {", ".join(f"${p:04X}" for p in sites)}; T per p unit = '
-                f'{t_per_p[voice]:.1f}')
+        print(voice, 'T per period unit: alone', round(rate[False], 1), len(ratios[False]), 'frames; with the other',
+              round(rate[True], 1), len(ratios[True]), 'frames')
+        alone = f'{rate[False]:.1f} T a period unit alone, ' if ratios[False] else ''
+        ax.plot(xs, ys, 'o', ms=2.6, color=colours[voice], label=f'{voice}: the pitch it played in each frame '
+                f'(measured: {alone}{rate[True]:.1f} with the other voice)')
     for voice, k in (('bass', 0), ('lead', 1)):
         f = 0
         frames = tune['to_frame']
@@ -1521,20 +1532,21 @@ def draw_tune(args, tune):
         x = tune['from_frame'] + run[0][0] / FRAME_T
         kind = 'hiss' if 0xC608 <= run[0][2] <= 0xC615 else 'rasp' if run[0][2] < 0xC608 else 'sweep'
         ax.plot([x], [43], {'hiss': '|', 'rasp': 'x', 'sweep': 'v'}[kind], color='#555555', ms=6)
-    ax.plot([], [], color='black', lw=0.8, label='model (tools/tune_roll.py, offset 93): 3.5 MHz / (125.5 p), '
-            'the doc\'s estimate')
-    ax.plot([], [], '|', color='#555555', label='drum hits by routine: | hiss (writes one level, silent), x rasp, v sweep')
+    ax.plot([], [], color='black', lw=0.8, label='the note the track data gives (tools/tune_roll.py at 125.5 T a '
+            'period unit)')
+    ax.plot([], [], '|', color='#555555', label='drum hits: | hiss (silent), x rasp, v falling sweep')
     ticks = list(range(45, 82))
     ax.set_yticks(ticks)
-    ax.set_yticklabels([f'{tune_roll.NAMES[t % 12]}{t // 12 - 1}' for t in ticks], fontsize=7)
+    ax.set_yticklabels([f'{tune_roll.NAMES[t % 12]}{t // 12 - 1}' for t in ticks], fontsize=8)
     ax.set_ylim(41, 82)
     ax.set_xlim(tune['from_frame'], tune['to_frame'])
     ax.set_xlabel('tour frame (the menu, before key 4)')
     ax.set_ylabel('pitch (equal temperament, A4 = 440 Hz)')
     ax.grid(alpha=0.25)
-    ax.legend(loc='lower left', bbox_to_anchor=(0.005, 0.1), fontsize=8)
-    ax.set_title('The menu tune measured: every OUT ($FE) of the tone loop in access traces of the tour, frames '
-                 f'{tune["from_frame"]}-{tune["to_frame"]}', fontsize=11, loc='left')
+    ax.legend(loc='lower left', bbox_to_anchor=(0.005, 0.1), fontsize=10)
+    ax.set_title('The beeper plays every note the track data gives, frame for frame: on the line while the lead '
+                 'sounds alone,\nhalf a semitone under it while both voices sound (each holds the other back during '
+                 f'its pulse). Menu, frames {tune["from_frame"]}-{tune["to_frame"]}', fontsize=12, loc='left')
     fig.tight_layout()
     path = os.path.join(args.out, 'sound-tune-measured.png')
     fig.savefig(path)

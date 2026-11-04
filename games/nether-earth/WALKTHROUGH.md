@@ -246,7 +246,7 @@ descriptions rewritten, 22 module headers (`209d25d`). No instruction is left wi
 
 ### 6.11 Figures from experiments
 
-Three agents illustrated the documents (`863124f`, `3bda633`, `1d9637d`), 87 figures in all, every one from a
+Three agents illustrated the documents (`863124f`, `3bda633`, `1d9637d`), 87 figures at first, every one from a
 recording or an experiment on an own instance, with the command in its caption:
 
 - **Rendering** (06, 07): `tools/ill_view.py` is `DrawView` in Python, identical to the game's view buffer on a traced
@@ -282,6 +282,21 @@ shot slots, the map rows: 659 comments (`work/ann/cm-cmF.ann`). It also found fo
 bytes contradict (shot record 0 is the COMBAT MODE shot; `ViewBuffer` is not zero in the image; a menu text has
 three new lines; a key prompt has two spaces), corrected; and the map's last entry ran past the image to `$FFFF`:
 mkgame now ends the control file at the image's end.
+
+### 6.13 Every figure explains itself
+
+The owner read two kit charts (the beam timelines: unlabelled diagonals, a legend of a dozen loop names) as "a pile of
+vague lines". Three agents audited every figure of docs 01-10 against one rule (`work/ann/BRIEF-FIG.md`): the point
+in the title, every mark named on the figure, the numbers on it agreeing with the text, readable at GitHub's width,
+a "how to read" list beside it.
+
+- 25 figures redrawn: the beam and the tear (`tools/fig_beam_turn.py`), the view's writers, the panel's writers,
+  the memory map, access by region (replacing two 3380 px heat maps), the tape load, the bases, the robots over
+  time, the sound and tune charts, the shot and capture figures.
+- 7 dropped; 5 kit routine animations (still in doc 12) and the bot thumbnails (still in section 6.2) unlinked from the chapters: each said less than a neighbour.
+- Text corrected where the redraw measured better: the tear is at screen line 110 (frame 20012) and 95 (frame
+  25082), not 117 and 96, and 2051 / 1757 bytes of the copy show in the torn frame; the map is at `$DD00`, not
+  `$C000`; one pass of the menu tune is 176 bass and 466 lead notes, not 178 and 472.
 
 ## 7. Review
 
@@ -341,7 +356,7 @@ The output, 1.96 M tokens, is what was written: the 22 modules' comments and des
 (7277 lines), 21 tools (8309 lines of Python), the figures' scripts and the agents' notes.
 
 What came out: a source of 22 modules (11245 lines) that builds the tape byte for byte, every instruction and every
-entry commented; 121 resource files (219 entries) with their formats; 12 documents; 89 figures (23 MB), each from a recording or
+entry commented; 121 resource files (219 entries) with their formats; 12 documents; 83 figures (20 MB) after the audit of section 6.13, each from a recording or
 an experiment, with the command that made it; 555 MB of recordings and work files in `work/`.
 
 ### 8.2 Without unreal-ng: an estimate
@@ -375,14 +390,14 @@ Three ways to do it without:
 
 Why the figures need a machine:
 
-- About 15 of the 89 are static: the font, the sprites, the map, the memory map, record layouts, tables, the
+- About 15 of the 83 are static: the font, the sprites, the map, the memory map, record layouts, tables, the
   keyboard map. They can be drawn from the image alone.
-- About 70 come from recordings and experiments. Each fight GIF is the game's own frames, read from the deep
+- About 65 come from recordings and experiments. Each fight GIF is the game's own frames, read from the deep
   recording. The view sprite by sprite is `DrawView` redone in Python and checked against the game's buffer on 40
   views; without recordings there is nothing to check it against. The panel and robot movies need 11 game days of
   memory. The hits on the damage formula need all 20 hits of the deep game. The sound figures need the port trace
   with t-states. The recapture needs a clone to poke.
-- Without a recorder these 70 are either impossible (A), or they need a harness that is itself a small emulator and
+- Without a recorder these 65 are either impossible (A), or they need a harness that is itself a small emulator and
   has to be proved correct first (B), or they take a person days of screenshots and hand-drawn diagrams (C).
 
 The largest difference is in what is true, not in tokens. Six claims read from the code were wrong (the table in

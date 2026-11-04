@@ -48,13 +48,21 @@ stateDiagram-v2
 
 ![The states with a real screen each, from the tour](img/ui/state-machine.png)
 
-The same machine with the screen of each state as the tour saw it (the frame under each box), the code that runs
-it and the interrupt handler installed (`Handler` `$FDFE`, read at that frame): green `PlayInterrupt` `$D566` (the
-clock, the radar and the robots run), violet `StartInterrupt` `$D59C` (`EI; RET`, the world stands: the construction
-menu, the redefine screen, the game-over wait), yellow `MenuInterrupt` `$C4FD` (the tune). The robot menu and its
-submenus keep `PlayInterrupt`: the war goes on under them ([5.5](05-controls.md#55-the-robot-menu-and-its-submenus)).
-The game-over screen is an experiment: the tour poked `PlayerBuildings` `$FD3A` to 0 at frame 8015, so
-`CheckGameEnd` `$AE6B` found no warbase of ours. `python3 tools/ill_ui.py states` (after `tour`).
+The same machine with the real screens. How to read the figure:
+
+- **A box** is a state: its screen as the tour saw it, its name, the code that runs it and the tour frame.
+- **An arrow** is a transition, labelled with the key or the event that takes it.
+- **The frame colour** is the interrupt handler installed (`Handler` `$FDFE`, read at that frame):
+  - green `PlayInterrupt` `$D566`: the clock, the radar and the robots run;
+  - violet `StartInterrupt` `$D59C` (`EI; RET`): the world stands (the construction menu, the redefine screen, the
+    game-over wait);
+  - yellow `MenuInterrupt` `$C4FD`: the tune.
+- **The point**: play is the hub. The robot menu and its submenus keep `PlayInterrupt`: the war goes on under them
+  ([5.5](05-controls.md#55-the-robot-menu-and-its-submenus)).
+- **The game-over screen** is an experiment: the tour poked `PlayerBuildings` `$FD3A` to 0 at frame 8015, so
+  `CheckGameEnd` `$AE6B` found no warbase of ours.
+
+`python3 tools/ill_ui.py states` draws it from the tour's saved screens (`work/ill3/tour`).
 
 ## 4.2 The states
 
@@ -113,10 +121,9 @@ traced in `deep` (frame 20004 T 10 414 to frame 20014 T 10 412: 698 878 T, 10.00
 | 7 | `CALL ShipCell` `$A6A9` and on | the landing checks, then the keys I and 5 | 148 | 0.0 % | |
 | | `$FDFD` | the interrupts that land in the turn, 10 of them | 83 770 | 12.0 % | each frame |
 
-![The phases of two game turns, deep frames 20000-20026](img/turn-phases.png)
-
-The figure comes from `python3 tools/turn_profile.py` on the trace `20000_0-20026_0.uatr`, with `--png`. The next
-turn, frames 20014-20024, is the same within 0.1 %: the cost hardly depends on what is in view. An interrupt is
+The table comes from `python3 tools/turn_profile.py` on the trace `20000_0-20026_0.uatr`; 4.5 shows the same turn
+on a time line ([the figure](#45-time)). The next turn, frames 20014-20024, is the same within 0.1 %: the cost hardly
+depends on what is in view. An interrupt is
 counted from its `$FDFD` entry until SP rises above the interrupted frame.
 
 **The landing checks** (`$A6A9`-`$A70C`), after the turn's work:
@@ -216,7 +223,9 @@ How to read the figure:
 - **The red slope** is the copy, 20 bytes a line. It starts at line 8 late in frame 20011 and pauses for the
   interrupt. In 20012 it is slower than the beam and crosses it at line 110:
   - lines 8-109 were written before the beam passed and show the new view;
-  - lines 110-167 were written after the beam passed: for that frame they still show the old view.
+  - line 110 is split: 11 of its 20 bytes are new;
+  - lines 111-167 were written after the beam passed: for that frame they still show the old view;
+  - in all, 2051 of the 3200 bytes show in frame 20012, the other 1149 only in 20013.
   - That is the tear.
 - **The green steps** at lines 176-191 are the radar, redrawn by every interrupt at the start of the frame, long
   before the beam reaches the bottom: it never tears.
@@ -229,9 +238,11 @@ python3 tools/fig_beam_turn.py --trace work/docA/deep/traces/20004_0-20015_0.uat
     --copy-frame 20011 --out docs/img/beam-turn.png
 ```
 
-The writers to the screen in the 11 frames, by loop:
+The writers to the screen in the 11 frames, by loop. "Ahead" counts a write made before the beam reached its line
+in the same frame; a copy byte written behind the beam late in 20011 still shows in 20012, so these columns are not
+the 2051 above:
 
-| Loop | Writes | Before the beam | After the beam | What |
+| Loop | Writes | Ahead of the beam | Behind the beam | What |
 | --- | ---: | ---: | ---: | --- |
 | `CopyLineLoop` (`CopyViewToScreen` `$D071`) | 3 200 | 1 294 | 1 906 | the 160 x 160 view, 20 bytes a line |
 | `RadarLineLoop` (`ShowRadar` `$D59E`) | 2 816 | 2 816 | 0 | the radar picture, lines 176-191, at the start of every interrupt |

@@ -113,7 +113,16 @@ The ship is the player's only presence on the map. It has no weapon, and no shot
 
 ## 1.5 Bases
 
-![An enemy warbase with its flag, robots at its door (own instance, day 0 21:35)](img/game-3-enemy-warbase.png)
+![An enemy warbase with its flag and a robot at its door, each named (own instance, day 0 21:35)](img/game-3-enemy-warbase.png)
+
+The first enemy warbase, (261,8), as the ship meets it on day 0. Each dot is where `DrawSprite` anchors an object
+(its lower left), projected from the object's record ([6.3](06-rendering.md#63-the-projection)):
+
+- **the flag** is building type 8, the enemy's; ours is type 7;
+- **the door** is the capture point (`Warbases` `$FD70`): a robot standing on it 144 turns takes the base;
+- **the black cross** is the ship's shadow, drawn at height 0 under the ship's cell.
+
+`python3 tools/fig_bases.py capture` (an own instance) then `draw`.
 
 `BuildMap` `$BC6F` builds the map at every new game from the level lists ([7.5](07-objects.md#75-the-map)). The
 scenery, the walls and the 28 bases are always in the same places.
@@ -123,7 +132,13 @@ scenery, the walls and the 28 bases are always in the same places.
 | **Warbase** | 4: ours at (22,9); the enemy's at (261,8), (369,8), (494,8) | 1 HUMN, 3 INSG | 5 general resource a day; a place to build robots |
 | **Factory** | 24, four of each kind: electronics, nuclear, phasers, missiles, cannon, chassis | all neutral | 2 of its own resource a day |
 
-![A neutral factory (own instance, day 0 03:55)](img/game-2-factory.png)
+![Two neutral factories, chassis and electronics, each object named (own instance, day 0 04:15)](img/game-2-factory.png)
+
+Two of the 24 factories near our warbase, read the same way:
+
+- **the roof** shows the part the factory makes (building types 1-6);
+- **the door** is its capture point (`Factories` `$FD84`);
+- **no flag**: a factory gets its owner's flag only when captured.
 
 **Capturing.** A base is captured by a robot that stands on its door cell (the gap in its wall) for 144 game turns
 in a row, about 29 s. The robot's side takes the base whatever the robot's order was (`GameTurnEnd` `$ADAF`).

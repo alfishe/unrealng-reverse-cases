@@ -2,7 +2,7 @@
 """Where one game turn's time goes: the phases of PlayLoop ($A69A) along the T-states of an access trace, the
 interrupts apart, as a table and a bar figure (docs/04-game-loop.md).
 
-    python3 tools/turn_profile.py TRACE.uatr [--turn N] [--png docs/img/turn-phases.png]
+    python3 tools/turn_profile.py TRACE.uatr [--turn N] [--png work/figs/turn-phases.png]
 
 A turn runs from one entry of PlayLoop to the next. The phase is the PlayLoop call that is running (WaitKey,
 MoveShip, WorldTurn, DrawView split into its three calls, GameTurn up to the pacing loop TurnPace, TurnPace, then the

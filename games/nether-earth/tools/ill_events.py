@@ -645,8 +645,22 @@ def fig_strip(args):
     pw, ph = S * (box[2] - box[0]), S * (box[3] - box[1])
     gap, head, foot = 10, 24, 58
     cols = max(len(r) for r in rows)
-    canvas = Image.new('RGB', (cols * (pw + gap) + gap, len(rows) * (ph + head + foot) + 4), K.BACKGROUND)
+    legend = 30
+    canvas = Image.new('RGB', (cols * (pw + gap) + gap, len(rows) * (ph + head + foot) + 4 + legend), K.BACKGROUND)
     d = ImageDraw.Draw(canvas)
+    # the legend: what each mark is
+    ly = len(rows) * (ph + head + foot) + 4 + 8
+    lx = gap
+    for colour, text in ((THEIRS_RGB, "the enemy's shot"), (OURS_RGB, 'our shot')):
+        d.line([(lx, ly + 7), (lx + 34, ly + 7)], fill=colour, width=2)
+        for q in (lx + 6, lx + 28):
+            d.ellipse([q - 5, ly + 2, q + 5, ly + 12], outline=colour, width=2)
+        d.text((lx + 42, ly), text, fill=K.TEXT, font=small)
+        lx += 42 + int(d.textlength(text, font=small)) + 18
+    d.text((lx, ly), '(a ring each turn)', fill=K.TEXT, font=small)
+    lx += int(d.textlength('(a ring each turn)', font=small)) + 24
+    d.ellipse([lx, ly - 2, lx + 18, ly + 16], outline=(220, 0, 0), width=3)
+    d.text((lx + 26, ly), 'the robot hit', fill=K.TEXT, font=small)
     for ri, r in enumerate(rows):
         y0 = ri * (ph + head + foot) + 4
         if ri < len(titles) and titles[ri]:
@@ -656,6 +670,15 @@ def fig_strip(args):
             vx = v.view_x()
             im = screen_image(v, S).crop((S * box[0], S * box[1], S * box[2], S * box[3])).convert('RGB')
             dd = ImageDraw.Draw(im)
+            for slot in slots:  # name the robots
+                rb = v.robot(slot)
+                if rb:
+                    px, py = robot_point(rb, vx)
+                    label = f"{'our robot' if slot < 24 else 'enemy'} {slot}"
+                    lx0, ly0 = S * (px - box[0]) - 34, S * (py - box[1]) + 6
+                    tw = int(dd.textlength(label, font=small))
+                    dd.rectangle([lx0 - 3, ly0 - 2, lx0 + tw + 3, ly0 + 14], fill=K.BACKGROUND)
+                    dd.text((lx0, ly0), label, fill=OURS_RGB if slot < 24 else THEIRS_RGB, font=small)
             for k, trail in list(trails.items()) + list(ended.items()):
                 colour = OURS_RGB if k < 3 else THEIRS_RGB
                 pts = [(S * (shot_point(x, y, vx)[0] - box[0]), S * (shot_point(x, y, vx)[1] - box[1]))
@@ -719,53 +742,64 @@ def shot_events(pics, a, b):
 
 @figure('fig-shot-record')
 def fig_shot_record(args):
-    """The 45 bytes of the shot records $D7D3 at every frame, and the decoded flight.
-    opts: from=FRAME to=FRAME"""
+    """The bytes of the shot records $D7D3 at every frame, and the decoded flight.
+    opts: from=FRAME to=FRAME recs=1,3 (the records shown; the others stayed 0)"""
     plt = plt_setup()
     o = opts(args)
     pics = Pictures.load(args.cache[0])
     a = pics.frames.index(int(o.get('from', pics.frames[0])))
     b = pics.frames.index(int(o.get('to', pics.frames[-1])))
+    recs = [int(k) for k in o.get('recs', '0,1,2,3,4').split(',')]
     frames = pics.frames[a:b + 1]
-    grid = np.array([list(pics.at(i)[SHOTS:SHOTS + 45]) for i in range(a, b + 1)]).T
-    fig, (ax, ax2) = plt.subplots(2, 1, figsize=(12, 9.2), dpi=100, sharex=True,
-                                  gridspec_kw={'height_ratios': [3, 1.3]})
+    full = np.array([list(pics.at(i)[SHOTS:SHOTS + 45]) for i in range(a, b + 1)]).T
+    grid = np.concatenate([full[9 * k:9 * k + 9] for k in recs])
+    n = len(grid)
+    unused = [k for k in range(5) if k not in recs and not full[9 * k:9 * k + 9].any()]
+    fig, (ax, ax2) = plt.subplots(2, 1, figsize=(12, 3.2 + 0.24 * n + 2.6), dpi=100, sharex=True,
+                                  gridspec_kw={'height_ratios': [0.24 * n, 2.4]})
     ax.imshow(grid, aspect='auto', interpolation='nearest', cmap='magma', vmin=0, vmax=255,
-              extent=(frames[0] - 0.5, frames[-1] + 0.5, 44.5, -0.5))
-    ax.set_yticks(range(45))
-    ax.set_yticklabels([f'rec {k} +{j} {SHOT_FIELDS[j]}' for k in range(5) for j in range(9)], fontsize=6.5)
-    for k in range(1, 5):
-        ax.axhline(9 * k - 0.5, color='white', lw=1.2)
+              extent=(frames[0] - 0.5, frames[-1] + 0.5, n - 0.5, -0.5))
+    ax.set_yticks(range(n))
+    ax.set_yticklabels([f'+{j} {SHOT_FIELDS[j]}' for _ in recs for j in range(9)], fontsize=9)
+    for k in range(1, len(recs)):
+        ax.axhline(9 * k - 0.5, color='white', lw=1.5)
     # the values, written where they change
-    for row in range(45):
+    for row in range(n):
         last = None
         for c, f in enumerate(frames):
             val = grid[row, c]
             if val != last:
-                ax.text(f + 0.5, row, f'{val:02X}', fontsize=5.5, va='center', ha='left',
-                        color='white' if val < 140 else 'black')
+                held = c + 3 >= len(frames) or all(grid[row, c + j] == val for j in range(1, 4))
+                if held:  # a value held under 4 frames would overprint the next one
+                    ax.text(f + 0.6, row, f'{val:02X}', fontsize=8, va='center', ha='left',
+                            color='white' if val < 140 else 'black')
                 last = val
-    for k, side in ((0, 'player (COMBAT MODE)'), (1, 'ours'), (2, 'ours'), (3, 'enemy'), (4, 'enemy')):
-        ax.text(1.002, 1 - (9 * k + 4.5) / 45, side, transform=ax.transAxes, fontsize=8, va='center',
-                color=OURS if 0 < k < 3 else THEIRS if k >= 3 else GREY)
+    for i, k in enumerate(recs):
+        side = 'the player' if k == 0 else 'ours' if k < 3 else 'the enemy'
+        ax.text(1.008, 1 - (9 * i + 4.5) / n, f'record {k}\n({side})', transform=ax.transAxes, fontsize=10,
+                va='center', ha='left', color=OURS if 0 < k < 3 else THEIRS if k >= 3 else GREY,
+                fontweight='bold')
     ev = shot_events(pics, a, b)
     for f, text, colour in ev:
         for x in (ax, ax2):
-            x.axvline(f, color=colour, lw=0.8, ls='--', alpha=0.8)
-        ax.text(f, -0.8, text, rotation=90, fontsize=7, color=colour, va='bottom', ha='center')
-    ax.set_title(f'shot records $D7D3, 5 x 9 bytes, every frame (work/deep frames {frames[0]}-{frames[-1]}); '
-                 'a record is free when +1 = 0 and keeps its other bytes', fontsize=9, pad=72)
+            x.axvline(f, color=colour, lw=0.9, ls='--', alpha=0.8)
+        ax.text(f, -0.8, text.replace('rec ', 'record ').replace('->', ' -> '), rotation=90, fontsize=8.5,
+                color=colour, va='bottom', ha='center')
+    ax.set_title(o.get('title', 'Two shots in their records: filled at once, +6 counts the steps down, '
+                 '+1 = 0 frees the record and the other bytes stay')
+                 + (f"\n(records {', '.join(map(str, unused))} stayed 0 in these frames)" if unused else ''),
+                 fontsize=11, pad=96)
     for k, colour in ((1, OURS), (3, THEIRS)):
         live = [pics.at(i).shot(k) for i in range(a, b + 1)]
         ax2.step(frames, [s['y'] if s['live'] else np.nan for s in live], where='post', color=colour, lw=2,
-                 label=f'rec {k} row (+4)')
-        ax2.step(frames, [s['steps'] if s['live'] else np.nan for s in live], where='post', color=colour, lw=1.2,
-                 ls=':', label=f'rec {k} steps left (+6)')
-    ax2.set_ylabel('cells / steps')
-    ax2.set_xlabel('frame (work/deep)')
-    ax2.legend(fontsize=8, ncol=4, loc='upper right')
+                 label=f'record {k}: its row (+4), 2 rows a turn')
+        ax2.step(frames, [s['steps'] if s['live'] else np.nan for s in live], where='post', color=colour, lw=1.4,
+                 ls=':', label=f'record {k}: steps left (+6)')
+    ax2.set_ylabel('row / steps')
+    ax2.set_xlabel('frame of work/deep (one game turn is about 10 frames)')
+    ax2.legend(fontsize=9, ncol=2, loc='upper center')
     ax2.grid(alpha=0.3)
-    ax2.set_ylim(0, 16)
+    ax2.set_ylim(0, 21)
     fig.tight_layout()
     fig.savefig(args.out)
     print(args.out)
@@ -804,13 +838,13 @@ def fig_strength(args):
                 w = v.shot(k)['weapon'] if k is not None else 0
                 h, g = r['height'], r['ground']
                 dmg = damage(h, g, w)
-                text = f"-{dmg} = ((60 - {h + g}) / 4) x {w + 1}, {WEAPONS.get(w, '?')}"
+                text = f"{WEAPONS.get(w, '?')} -{dmg}"
                 if s < 0:
-                    text += f'\n{prev[0]} - {dmg} <= 0: $FC, dying'
+                    text += f': {prev[0]} - {dmg} <= 0, dying'
                 late = f > pics.frames[-1] - 160
                 ty = (prev[0] + max(s, 0)) / 2
-                while any(abs(f - pf) < 260 and abs(ty - py) < 7 for pf, py in placed):
-                    ty -= 8
+                while any(abs(f - pf) < 120 and abs(ty - py) < 6 for pf, py in placed):
+                    ty -= 7
                 placed.append((f, ty))
                 ax.text(f + (-6 if late else 6), ty, text, fontsize=8, color=colour,
                         ha='right' if late else 'left', va='center',
@@ -827,8 +861,8 @@ def fig_strength(args):
     ax.set_xlim(pics.frames[0], pics.frames[-1])
     ax.set_ylabel('strength (+$0C, signed)')
     ax.set_xlabel('frame (work/deep)')
-    ax.set_title('Damage per hit = ((60 - (height +$09 + ground +$0D)) / 4) x (weapon + 1); '
-                 'weapon 1 cannon, 2 missiles, 3 phasers (MoveShot $B724)', fontsize=10)
+    ax.set_title(o.get('title', 'Every hit takes exactly the formula: height 19 on flat ground gives '
+                 '(60 - 19) / 4 = 10 a point, cannon x 2 = 20, missiles x 3 = 30'), fontsize=11)
     ax.legend(loc='upper right', fontsize=9)
     ax.grid(alpha=0.3)
     fig.tight_layout()
@@ -1021,7 +1055,7 @@ def fig_death(args):
         v = pics.at(i)
         im = screen_image(v, S).crop(tuple(S * c for c in bx)).convert('RGB')
         r = v.robot(slot)
-        canvas = Image.new('RGB', (im.width + 300, max(im.height, 230) + 30), K.BACKGROUND)
+        canvas = Image.new('RGB', (im.width + 370, max(im.height, 230) + 30), K.BACKGROUND)
         canvas.paste(im, (0, 30))
         d = ImageDraw.Draw(canvas)
         day, hour, minute = v.clock()
@@ -1041,11 +1075,16 @@ def fig_death(args):
         y += 18
         for (x, yy) in cells:
             c = v.cell(x, yy)
-            mark = '  bit 6 set: drawn, hit-able' if c & 0x40 else ''
+            mark = '  bit 6 set: drawn, can be hit' if c & 0x40 else ''
             d.text((x0 + 8, y), f'({x},{yy}) ${c:02X}{mark}', fill=(255, 230, 120) if c & 0x40 else K.DIM, font=small)
             y += 16
         y += 8
         d.text((x0, y), f'SoundFx $FD53 = ${v[SOUNDFX]:02X}', fill=K.DIM, font=small)
+        y += 30
+        for line in ('While dying, +$0C counts $FC..$FF, 0', 'and bit 6 of the anchor toggles each turn:',
+                     'the robot is drawn (and can be hit)', 'only every other turn.'):
+            d.text((x0, y), line, fill=K.TEXT, font=small)
+            y += 16
         pictures.append(canvas)
     K.save_gif(args.out, pictures, [int(o.get('delay', 500))] * (len(pictures) - 1) + [2500])
     print(args.out, len(pictures), os.path.getsize(args.out))
@@ -1249,25 +1288,41 @@ def state_lines(v, spec):
     return out
 
 
+MARK_RGB = (255, 40, 200)
+
+
 @figure('fig-pair')
 def fig_pair(args):
     """Whole screens side by side with a title and state lines under each.
     opts: pics=I,J[,K] (C:I takes picture I of the C-th --cache) titles=A|B state=point:8,counts scale=2
-    crop=view"""
+    crop=view marks=ROW/COL/W/LABEL;... (boxes around screen character cells, in every pane)
+    A state line that differs from the first pane's is drawn bright."""
     o = opts(args)
     caches = [Pictures.load(c) for c in args.cache]
     idx = [tuple(int(k) for k in i.split(':')) if ':' in i else (0, int(i)) for i in o['pics'].split(',')]
     titles = o.get('titles', '').split('|')
     S = int(o.get('scale', 2))
     font, small = K.font(13), K.font(11)
-    panes = []
+    marks = [m.split('/') for m in o['marks'].split(';')] if o.get('marks') else []
+    rings = [m.split('/') for m in o['rings'].split(';')] if o.get('rings') else []
+    panes, first = [], None
     for n, (c, i) in enumerate(idx):
         pics = caches[c]
         v = pics.at(i)
         im = screen_image(v, S).convert('RGB')
+        md = ImageDraw.Draw(im)
+        for row, col, w, label in marks:
+            x0, y0 = 8 * S * int(col), 8 * S * int(row)
+            md.rectangle([x0 - 2, y0 - 2, x0 + 8 * S * int(w) + 1, y0 + 8 * S + 1], outline=MARK_RGB, width=3)
+        for cx, cy, h, label in rings:
+            px, py = cell_pixel(int(cx), int(cy), v.view_x(), int(h))
+            md.ellipse([S * px - 26, S * py - 26, S * px + 26, S * py + 26], outline=MARK_RGB, width=3)
         if o.get('crop') == 'view':
             im = view_crop(im, S)
         lines = state_lines(v, o.get('state', '')) if o.get('state') else []
+        lines += [m[3] for m in marks + rings if m[3]]
+        if first is None:
+            first = lines
         pane = Image.new('RGB', (im.width, im.height + 30 + 15 * len(lines)), K.BACKGROUND)
         d = ImageDraw.Draw(pane)
         day, hour, minute = v.clock()
@@ -1275,8 +1330,10 @@ def fig_pair(args):
                        f"{hour:02d}:{minute:02d})", fill=K.TEXT, font=font)
         pane.paste(im, (0, 26))
         y = im.height + 28
-        for line in lines:
-            d.text((4, y), line, fill=K.DIM, font=small)
+        for k, line in enumerate(lines):
+            changed = n > 0 and (k >= len(first) or first[k] != line)
+            mark = any(line == m[3] for m in marks + rings)
+            d.text((4, y), line, fill=MARK_RGB if mark else (255, 230, 120) if changed else K.DIM, font=small)
             y += 15
         panes.append(pane)
     out = Image.new('RGB', (sum(p.width for p in panes) + 12 * (len(panes) - 1), max(p.height for p in panes)),
@@ -1326,10 +1383,13 @@ def fig_capture_counts(args):
             colour = (OURS if owners[end] & 0x40 else THEIRS) if took else GREY
             ax.plot(days[max(j - 1, 0):end + 1], counts[max(j - 1, 0):end + 1], color=colour, lw=0.9)
             j = k + 1
-    for d, n, a, b in caps:
+    last_label = (-9, 0)
+    for d, n, a, b in sorted(caps):
         colour = OURS if b & 0x40 else THEIRS
         ax.plot(d, 144, marker='v', color=colour, ms=7)
-        ax.text(d, 150, str(n), fontsize=7, ha='center', color=colour)
+        ly = 158 if d - last_label[0] < 0.2 and last_label[1] == 149 else 149
+        ax.text(d, ly, str(n), fontsize=8.5, ha='center', color=colour, fontweight='bold')
+        last_label = (d, ly)
     ax.axhline(144, color='black', lw=0.8, ls='--')
     ax.text(0.05, 136, '144 ($90): the point changes hands', fontsize=8, va='top')
     ax.plot([], [], color=OURS, label='a point our robots took')
@@ -1337,11 +1397,13 @@ def fig_capture_counts(args):
     ax.plot([], [], color=GREY, label='a count that ran out (the robot left the door)')
     ax.plot([], [], marker='v', color='black', ls='', label='capture (point number above)')
     ax.set_xlim(0, days[-1])
-    ax.set_ylim(0, 162)
+    ax.set_ylim(0, 170)
     ax.set_xlabel('game day (work/deep, sampled every 10 frames)')
     ax.set_ylabel('count +4')
-    ax.set_title(f'The 28 capture points ($FD70, 5 bytes each): the count +4 rises by 1 a turn while bit 6 is on the '
-                 f'door, 0 when it is not', fontsize=10)
+    ours = sum(1 for c in caps if c[3] & 0x40)
+    ax.set_title(f'A point changes hands after 144 turns of a robot on its door: {len(caps)} captures in work/deep '
+                 f'({ours} ours, {len(caps) - ours} the enemy\'s)\neach line is the count +4 of a point ($FD70), '
+                 f'1 more each turn a robot stands on the door, 0 when it leaves', fontsize=10.5)
     ax.legend(fontsize=8, loc='center left', bbox_to_anchor=(0.0, 0.55), ncol=2)
     ax.grid(alpha=0.3)
     # the experiment, turn by turn
@@ -1361,6 +1423,8 @@ def fig_capture_counts(args):
     ax2.axhline(144, color='black', lw=0.8, ls='--')
     ax2.set_xlim(0, len(exp) - 1)
     ax2.set_ylim(0, 160)
+    ax2.set_title(f'One capture turn by turn: point {pt} counts 1 a turn from the turn the robot stands on the door',
+                  fontsize=10.5)
     ax2.set_xlabel(f'turn of the experiment (work/ill1 from work/deep frame {exp.meta.get("frame0")}, frames '
                    f'{exp.frames[0]}-{exp.frames[-1]})')
     ax2.set_ylabel('count +4')

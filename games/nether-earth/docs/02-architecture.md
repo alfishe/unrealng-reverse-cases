@@ -10,7 +10,7 @@ The recordings it rests on ([Terms](README.md#terms)):
   fast-loaded; N1 loaded block 4 at signal speed ([3.3](03-build-and-load.md#33-the-load-step-by-step)). Its L1
   build (`work/play/l1.json`) holds 153 513 858 instructions and 1 154 130 431 T;
 - `game`: the L1 build of `play` from the game's entry, frame 12661 (`work/game`). It is the base of the first
-  disassembly (WALKTHROUGH 2) and of `img/heatmap-game.png`;
+  disassembly (WALKTHROUGH 2);
 - `deep`: the bot's game from the menu snapshot of `play`, 36 046 frames, 11 game days (WALKTHROUGH 6). Its L1
   build (`work/deep/l1.json`) holds 273 755 750 instructions and 2 519 182 516 T, 190 routines. It was replayed
   with 1 442 checkpoints and no divergence. Every count and share below comes from this build unless named.
@@ -41,8 +41,16 @@ noise ([9](09-sound.md)).
 
 ![The memory map at three stages: the load, the image as N1 leaves it, play](img/memory-map.png)
 
-The figure is drawn by `python3 tools/memmap.py` from `tools/memmap.txt`. Every row names its witness: the tape
-blocks, `src/loader.asm`, the entries and `@equ` lines of `src/game/game.ann`, WALKTHROUGH 2. In play:
+How to read the figure:
+
+- **Each bar** is `$4000-$FFFF`, top to bottom, at one stage: while N1 loads, the image as N1 leaves it, in play.
+- **A colour** is the kind of bytes (legend at the bottom); **a label** is the region's first address and what it
+  holds.
+- **The point**: the image's last 9.3 K, `$D7D3-$FCE8`, are zeros on the tape. In play the same space holds the
+  shots, the radar, the robots and the map. The screen part of the image is a dead copy of code.
+
+`python3 tools/memmap.py` draws it from `tools/memmap.txt`. Every row names its witness: the tape blocks,
+`src/loader.asm`, the entries and `@equ` lines of `src/game/game.ann`, WALKTHROUGH 2. In play:
 
 | Range | Size | What | Lifetime |
 | --- | ---: | --- | --- |
@@ -72,23 +80,28 @@ work space that `Start` and `NewGameSetup` `$A62D` set up, so the image holds no
 except the seed, which `Start` writes. The saved game (`$D92B-$FDFB`, [3.6](03-build-and-load.md#36-the-saved-game))
 is exactly the world: the shots and buildings staged into the radar's tail, the robots, the map and the variables.
 
-**Where the time and the accesses go.** The heat map of the `deep` recording, `$4000-$FFFF`, with the play regions
-of 512 bytes and more:
+**Where the time and the accesses go.** The `deep` recording's executed instructions, data reads and data writes,
+summed per region of the play map:
 
-![Executed, read and written bytes over the deep recording](img/heat-deep.png)
+![The deep recording's executed instructions, reads and writes, per region of the play map](img/access-regions.png)
 
-It is drawn by `python3 ../../kit/heatmap.py` on `work/deep/l1.json` with `--from 4000 --regions
-tools/regions-play.txt`; `tools/memmap.py --regions-out` writes that regions file from `tools/memmap.txt`. And the
-same for the first flight, `game`:
+How to read the figure:
 
-![Executed, read and written bytes over the game recording](img/heatmap-game.png)
+- **One row** is a region of the play map, by its first address.
+- **The three panels** are the instructions executed, the bytes read and the bytes written over the recording.
+- **A bar** is the region's share of that panel's total; the number at its end is the share.
 
-Both show the same picture:
+What it shows:
 
-- execution only in `$A600-$D6A7`, densest in the view code `$CCBD-$D0B8`;
-- reads spread over the sprites `$6980-$A569`, every turn;
-- writes concentrated in the view buffer `$5B00-$677F`, the screen and the radar;
-- the map `$DD00-$FCFF` read cell by cell by the view walk, written only where something moves.
+- **Execution**: every instruction runs in `$A600-$D6A7` (the ROM's 359 in the main menu aside). The view code
+  `$CCBD-$D0B8` alone runs 75.5 % of them.
+- **Reads**: two thirds go to the view buffer `$5B00-$677F` (33 %) and the sprites `$6980-$A569` (32 %), then the
+  radar layers (14 %) and the variables (10 %). The map `$DD00-$FCFF` gets 4.7 %: the view walk reads it cell by cell.
+- **Writes**: 96 % go to the screen (62 %) and the view buffer (34 %). The map gets 0.1 %: it is written only where
+  something moves.
+
+`python3 tools/fig_access_regions.py` draws it from `work/deep/l1.json` (the instructions' counts and the
+`byte_counts` of every page) and prints the table.
 
 ## 2.3 The stages from tape to play
 

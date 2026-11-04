@@ -85,7 +85,7 @@ each bit doubled, each line three times). `python3 tools/ill_ui.py print`.
 
 ## 8.2 The font
 
-![The font: codes `$20-$5F` from `$6780` (build/game.bin)](img/hud-font.png)
+![The only font: 64 glyphs, codes `$20-$5F` at `$6780`, the three non-ASCII glyphs framed in orange](img/hud-font.png)
 
 `python3 tools/text_figs.py font docs/img/hud-font.png`.
 
@@ -167,19 +167,27 @@ Two kinds of text are not PrintInline strings:
 
 ## 8.4 The status panel
 
-![The play screen drawn: who wrote each byte, work/docC/rec frames 436-470](img/hud-panel-writers.png)
+![The play screen's first drawing, each byte in the colour of what wrote it last: the panel is all PrintChar text](img/hud-panel-writers.png)
 
-`python3 ../../kit/writers_map.py --work work/docC/rec --window 436:0-470:0 --listing build/game.lst --view screen
---out docs/img/hud-panel-writers.png`.
+`python3 tools/fig_hud_writers.py --trace work/docC/rec/traces/436_0-470_0.uatr --listing build/game.lst --out
+docs/img/hud-panel-writers.png` (the trace is the cache of `../../kit/writers_map.py --work work/docC/rec --window
+436:0-470:0`).
+
+How to read the figure:
+
+- left: the screen at the end of the window; right: the same pixels, each in the colour of the code that wrote its
+  byte last (set pixels bright, clear pixels dark);
+- the routines are grouped by job in the legend, with the bytes each group wrote last and its writes;
+- the white box is the panel, columns 22-31.
 
 The window holds the whole first drawing of the play screen, and all 6912 bytes are written in it. The writers:
 
-- `ClearScreen` (`ClearScreenFill`, green);
-- the view's copy (`CopyLineLoop`, red);
-- the frame;
-- the radar (`RadarLineLoop`, blue);
-- the text (`GlyphLineLoop`, gold);
-- the tall RADAR: (`TallRepeatLoop`).
+- `ClearScreen` (`ClearScreenFill`): every byte once, then overwritten almost everywhere;
+- the view's copy (`CopyLineLoop` and its attributes, `ViewAttrCell`);
+- the frame around the view;
+- the radar (`RadarLineLoop`, `FillAttrLoop`), redrawn by every interrupt;
+- the text (`GlyphLineLoop` of `PrintChar`): the whole panel;
+- the tall RADAR: (`TallRepeatLoop`, `BigAttrCellLoop` of `PrintBigChar`).
 
 The panel is the right 10 columns (22-31):
 

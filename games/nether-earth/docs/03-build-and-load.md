@@ -36,15 +36,20 @@ block. The others are Russian rereleases and ports.
 - N1's header holds 63 800 (`$F938`) as its start. The BASIC loads it with an explicit address, 64 730 (`$FCDA`), so
   the header's address is never used.
 
-![The tape blocks and the arrival of the game block over the play recording](img/load-tape.png)
+![The tape's signal time against the play recording: blocks 0-3 fast, block 4 at signal speed](img/load-tape.png)
 
-The figure is drawn by `python3 tools/load_stages.py` on the `play` recording, sampling TTD `memory_at` every 50
-frames:
+How to read the figure:
 
-- the top bar is the tape at signal speed;
-- the curve is the front of the game block in memory, the highest address where the image's bytes stand
-  (`$4000` up);
-- the marks are the moments each piece was first seen in place.
+- **Across**: frames from the start of the tape, 50 a second.
+- **The top row** is the tape as the ROM would play it: the five blocks end to end at their signal length (pilot,
+  sync and bits, pauses not included). The four small blocks take 857 frames; the game block takes 12 400.
+- **The bottom row** is what the `play` recording shows: blocks 0-3 in place and N1 entered by frame 253, then N1
+  loading the game block until frame 12660.
+- **The claim**: blocks 0-3 arrived 3.4 times faster than their signal allows, the game block in its full signal
+  time (3.3 explains why).
+
+`python3 tools/fig_load_tape.py` draws it from the tape's bit counts and the frames of 3.3. Those frames were
+measured by `python3 tools/load_stages.py`, which samples TTD `memory_at` on `play` every 50 frames.
 
 ## 3.2 The BASIC (block 1)
 
@@ -94,26 +99,25 @@ yet the BASIC was in place by frame 250, and N1 ran at 253 after another 8.2 s o
 
 The interrupts agree: the ROM's IM 1 handler `$0038` ran 171 times, all before frame 253. None ran while N1 loaded.
 
-![N1 loading the game block, play recording frames 250-12700](img/anim-load-n1.gif)
-
-The animation is `python3 ../../kit/memanim.py` on `play` with
-`--from 250 --to 12700 --step 8736000 --from-address 4000 --screen`: 101 pictures, one every 125 frames. The block
-fills `$4000` upward:
-
-- the screen part first, as noise (the code copy below) on black attributes;
-- then the font, the sprites, the code;
-- the tail last, `$D7D3-$FCE8`, mostly zeros.
+**The whole load at signal speed, measured.** An own instance was started from power-on (48K, port base 29000)
+with both of the emulator's tape traps off (`PUT /feature/fasttape` and `/feature/turbotape`, `enabled: false`).
+`LOAD ""` was typed and `NETHER.TAP` played. Every 30 frames to 1200, then every 200 (88 pictures), the screen with
+its border, PC, IX and the tape API's block and seconds were taken (`work/ill3/load/load.json`).
 
 ![The whole load at ROM speed with the traps off: the real picture, the screen bytes, the stage and the tape](img/ui/load-tape.gif)
 
-**The whole load at signal speed, measured.** An own instance from power-on (48K, port base 29000) with both of the
-emulator's tape traps off (`PUT /feature/fasttape` and `/feature/turbotape`, `enabled: false`), `LOAD ""` typed and
-`NETHER.TAP` played; every 30 frames to 1200, then every 200 (88 pictures), the screen with its border, PC, IX and
-the tape API's block and seconds were taken (`work/ill3/load/load.json`). Each picture shows, from the top: the
-real screen with the border stripes; the same screen bytes on fixed white-on-blue attributes, so the data that
-lands in the screen area can be seen before the attributes arrive; the stage (the ROM's block or N1 with IX); a bar
-of `$4000`-`$FCE8` filled to IX; and the tape at signal speed (headers blue, the BASIC green, N1 yellow, the game
-red) with the play position. `python3 tools/ill_ui.py load` (`redraw-load` redraws from the log).
+How to read each picture:
+
+- **Left**: the emulator's picture with its border; the loading stripes are the signal.
+- **Right, top**: the same screen bytes on fixed white-on-blue attributes. The game block's first 6 912 bytes land
+  in the screen on black attributes, so the real picture stays black; here they show as noise (a copy of the code,
+  3.4).
+- **Right, middle**: the stage (the ROM and its block, or N1 with IX, the next address it fills) and a bar of
+  `$4000-$FCE8` filled up to IX. N1 fills the block from `$4000` upward; the tail, `$D7D3-$FCE8`, is mostly zeros.
+- **Bottom**: the tape at signal speed (headers blue, the BASIC green, N1 yellow, the game red) and the play
+  position.
+
+`python3 tools/ill_ui.py load` makes it (`redraw-load` redraws from the log).
 
 | Block | Signal starts (frame after the tape starts) | Loaded by |
 | --- | --- | --- |
