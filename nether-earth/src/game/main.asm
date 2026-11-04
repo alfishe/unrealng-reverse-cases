@@ -361,39 +361,39 @@ ShowStrengthNumber:
 ; ended by 0. ShowOrder copies one into OrderLine. Order 0 is "  STOP  ", " AND
 ; ", " DEFEND ".
 OrderNames:
-  DEFM "  STOP  ",$03,"  AND   ",$03," DEFEND ",$00
+  INCBIN "res/text/order-names.bin",$0000,27
 
 ; Order 1: ADVANCE (the miles are printed into the blank middle line)
 OrderName1:
-  DEFM "ADVANCE ",$03,"        ",$03," MILES  ",$00
+  INCBIN "res/text/order-names.bin",$001B,27
 
 ; Order 2: RETREAT (the miles in the middle line)
 OrderName2:
-  DEFM "RETREAT ",$03,"        ",$03," MILES  ",$00
+  INCBIN "res/text/order-names.bin",$0036,27
 
 ; Order 3: DESTROY ENEMY ROBOTS
 OrderName3:
-  DEFM "DESTROY ",$03," ENEMY  ",$03," ROBOTS ",$00
+  INCBIN "res/text/order-names.bin",$0051,27
 
 ; Order 4: DESTROY ENEMY FACTORYS
 OrderName4:
-  DEFM "DESTROY ",$03," ENEMY  ",$03,"FACTORYS",$00
+  INCBIN "res/text/order-names.bin",$006C,27
 
 ; Order 5: DESTROY ENEMY WARBASES
 OrderName5:
-  DEFM "DESTROY ",$03," ENEMY  ",$03,"WARBASES",$00
+  INCBIN "res/text/order-names.bin",$0087,27
 
 ; Order 6: CAPTURE NEUTRAL FACTORYS
 OrderName6:
-  DEFM "CAPTURE ",$03,"NEUTRAL ",$03,"FACTORYS",$00
+  INCBIN "res/text/order-names.bin",$00A2,27
 
 ; Order 7: CAPTURE ENEMY FACTORYS
 OrderName7:
-  DEFM "CAPTURE ",$03," ENEMY  ",$03,"FACTORYS",$00
+  INCBIN "res/text/order-names.bin",$00BD,27
 
 ; Order 8: CAPTURE ENEMY WARBASES
 OrderName8:
-  DEFM "CAPTURE ",$03," ENEMY  ",$03,"WARBASES",$00
+  INCBIN "res/text/order-names.bin",$00D8,27
 
 ; Robot menu item 1: direct control, then the robot menu again
 ;
@@ -4154,150 +4154,13 @@ PutBlockCell:
 ; and 15: the ones a nuclear blast turns to debris). Shapes 2-10. The tile
 ; heights the ship and the robots meet are the table $D7BC.
 SceneryWest:
-  DEFB $86,$0C,$01
-  DEFB $86,$0C,$09
-  DEFB $11,$10,$0E
-  DEFB $11,$20,$03
-  DEFB $82,$22,$0A
-  DEFB $05,$20,$0C
-  DEFB $04,$2A,$0A
-  DEFB $07,$2A,$0C
-  DEFB $06,$2A,$0E
-  DEFB $03,$2C,$0A
-  DEFB $09,$2C,$0C
-  DEFB $07,$2C,$0E
-  DEFB $83,$2E,$0A
-  DEFB $03,$30,$08
-  DEFB $04,$32,$08
-  DEFB $02,$36,$0C
-  DEFB $06,$36,$0E
-  DEFB $03,$38,$0E
-  DEFB $12,$3F,$02
-  DEFB $12,$41,$02
-  DEFB $12,$46,$01
-  DEFB $11,$46,$0F
-  DEFB $11,$48,$0F
-  DEFB $87,$48,$02
-  DEFB $87,$53,$08
-  DEFB $06,$53,$02
-  DEFB $05,$53,$04
-  DEFB $83,$55,$02
-  DEFB $02,$55,$06
-  DEFB $04,$5B,$06
-  DEFB $07,$5D,$02
-  DEFB $03,$5D,$04
-  DEFB $85,$5E,$0F
-  DEFB $88,$68,$09
-  DEFB $88,$6E,$09
-  DEFB $0D,$6E,$09
-  DEFB $85,$6A,$04
-  DEFB $85,$6C,$0D
-  DEFB $84,$79,$09
-  DEFB $11,$7F,$0C
-  DEFB $11,$81,$07
-  DEFB $85,$86,$04
-  DEFB $12,$85,$0B
-  DEFB $12,$85,$0D
-  DEFB $87,$97,$06
-  DEFB $82,$A5,$02
-  DEFB $83,$A7,$06
-  DEFB $83,$AD,$08
-  DEFB $83,$B3,$0A
-  DEFB $12,$BF,$08
-  DEFB $89,$BF,$03
-  DEFB $89,$C1,$08
-  DEFB $89,$BF,$0D
-  DEFB $89,$C7,$03
-  DEFB $89,$C7,$0D
-  DEFB $89,$CF,$03
-  DEFB $89,$C9,$08
-  DEFB $89,$CF,$0D
-  DEFB $12,$D1,$08
-  DEFB $89,$D7,$0D
-  DEFB $89,$DF,$0D
-  DEFB $11,$E5,$0B
-  DEFB $84,$E9,$09
-  DEFB $12,$E9,$07
-  DEFB $82,$EB,$0A
-  DEFB $82,$F3,$0A
-  DEFB $02,$FB,$0C
-  DEFB $04,$FB,$0E
-  DEFB $03,$FD,$0E
-  DEFB $00
+  INCBIN "res/map/scenery-west.bin",$0000,208
 
 ; The scenery of columns 256-511: 68 records and the 0 that ends them
 ;
 ; Read by BuildMap through PlaceScenery with D = 1.
 SceneryEast:
-  DEFB $83,$0E,$02
-  DEFB $83,$0C,$0A
-  DEFB $83,$10,$0A
-  DEFB $08,$08,$0E
-  DEFB $09,$0A,$0C
-  DEFB $0A,$0A,$0E
-  DEFB $08,$18,$0C
-  DEFB $0B,$18,$0E
-  DEFB $12,$21,$03
-  DEFB $11,$2B,$09
-  DEFB $12,$33,$0D
-  DEFB $11,$40,$0A
-  DEFB $11,$42,$0C
-  DEFB $11,$44,$0E
-  DEFB $12,$49,$0C
-  DEFB $85,$50,$05
-  DEFB $85,$50,$09
-  DEFB $85,$58,$05
-  DEFB $85,$58,$09
-  DEFB $84,$60,$09
-  DEFB $12,$5E,$01
-  DEFB $12,$5E,$03
-  DEFB $11,$58,$01
-  DEFB $11,$52,$03
-  DEFB $11,$52,$0D
-  DEFB $11,$56,$0D
-  DEFB $11,$56,$0F
-  DEFB $11,$58,$0F
-  DEFB $11,$5A,$0F
-  DEFB $11,$5A,$0B
-  DEFB $8A,$64,$05
-  DEFB $11,$7B,$04
-  DEFB $03,$7B,$0E
-  DEFB $04,$7D,$0C
-  DEFB $02,$7D,$0E
-  DEFB $82,$7F,$0A
-  DEFB $05,$87,$0C
-  DEFB $02,$87,$0E
-  DEFB $04,$89,$0E
-  DEFB $12,$8A,$01
-  DEFB $11,$91,$0F
-  DEFB $12,$99,$01
-  DEFB $88,$96,$05
-  DEFB $88,$99,$09
-  DEFB $88,$99,$0D
-  DEFB $87,$A4,$08
-  DEFB $87,$A8,$02
-  DEFB $87,$AC,$08
-  DEFB $87,$B0,$02
-  DEFB $09,$B4,$0E
-  DEFB $83,$B6,$0A
-  DEFB $83,$BC,$0A
-  DEFB $04,$C0,$0A
-  DEFB $03,$C2,$0A
-  DEFB $02,$C2,$0C
-  DEFB $88,$C5,$03
-  DEFB $11,$D0,$0A
-  DEFB $11,$D3,$0D
-  DEFB $8A,$DE,$01
-  DEFB $8A,$DC,$03
-  DEFB $8A,$DA,$05
-  DEFB $8A,$DA,$09
-  DEFB $8A,$DC,$0B
-  DEFB $8A,$DE,$0D
-  DEFB $8A,$E0,$0F
-  DEFB $8A,$E0,$05
-  DEFB $86,$F7,$01
-  DEFB $86,$F7,$09
-  DEFB $00
+  INCBIN "res/map/scenery-east.bin",$0000,205
 
 ; The bases of columns 0-255: 13 records (type, x, y), $FF ends
 ;
@@ -4308,20 +4171,7 @@ SceneryEast:
 ; y) is the base's door: the cell a robot stands on to capture it (the capture
 ; tick $AD90) and where the enemy's new robots appear (warbases).
 BaseListWest:
-  DEFB $00,$16,$09
-  DEFB $04,$27,$06
-  DEFB $06,$35,$03
-  DEFB $01,$3E,$0A
-  DEFB $05,$4F,$03
-  DEFB $03,$61,$03
-  DEFB $02,$7D,$03
-  DEFB $06,$8C,$0B
-  DEFB $01,$A0,$05
-  DEFB $03,$B4,$03
-  DEFB $04,$D9,$03
-  DEFB $05,$E3,$09
-  DEFB $06,$F1,$03
-  DEFB $FF
+  INCBIN "res/map/bases-west.bin",$0000,40
 
 ; The bases of columns 256-511: 15 records (type, x, y), $FF ends
 ;
@@ -4329,29 +4179,14 @@ BaseListWest:
 ; by BuildMap) and twelve factories. With BaseListWest: 4 warbases and 24
 ; factories, four of each type, the order of the bases table $FD70.
 BaseListEast:
-  DEFB $00,$05,$08
-  DEFB $03,$1A,$03
-  DEFB $01,$20,$0D
-  DEFB $02,$28,$03
-  DEFB $04,$37,$07
-  DEFB $06,$42,$03
-  DEFB $00,$71,$08
-  DEFB $03,$82,$03
-  DEFB $05,$91,$07
-  DEFB $01,$A0,$03
-  DEFB $02,$B4,$05
-  DEFB $04,$BE,$03
-  DEFB $05,$C8,$0A
-  DEFB $06,$D2,$03
-  DEFB $00,$EE,$08
-  DEFB $FF
+  INCBIN "res/map/bases-east.bin",$0000,46
 
 ; The shapes' addresses, index 0-10 (DrawShape)
 ;
 ; 0 the warbase, 1 the factory (both drawn by PlaceBases), 2-10 the scenery
 ; shapes (a scenery record $82-$8A).
 ShapeTable:
-  DEFW ShapeWarbase,ShapeFactory,ShapeLowTiles,ShapeMidTiles,ShapeTallWallV,ShapeTallWallH,ShapeEdgeFence,ShapeFlatLineV,ShapeFlatLineH,ShapeLowWallH,ShapeMixedWallH
+  INCBIN "res/map/shape-table.bin",$0000,22
 
 ; Shape 0: the warbase, 15 blocks of tiles $0F (height 7) and $10 (height 15)
 ; around the door
@@ -4361,78 +4196,30 @@ ShapeTable:
 ; the door at (x, y-4), is a tile $10 block: altitude 15 over it is the landing
 ; height of ConstructionMenu.
 ShapeWarbase:
-  DEFB $00,$FC,$FC
-  DEFB $10,$00,$FE
-  DEFB $10,$02,$05
-  DEFB $0F,$00,$FE
-  DEFB $0F,$00,$FE
-  DEFB $0F,$00,$FE
-  DEFB $10,$02,$05
-  DEFB $0F,$00,$FE
-  DEFB $10,$00,$FE
-  DEFB $10,$02,$05
-  DEFB $0F,$00,$FE
-  DEFB $0F,$00,$FE
-  DEFB $0F,$00,$FE
-  DEFB $10,$02,$03
-  DEFB $10,$00,$FE
-  DEFB $10,$00,$00
+  INCBIN "res/map/shapes/warbase.bin",$0000,48
 
 ; Shape 1: the factory, tiles $0F at (x-2, y) and (x+2, y), $10 on the roof row
 ; y-2 at x-2, x, x+2
 ;
 ; The door (x, y) stays free between the two low blocks.
 ShapeFactory:
-  DEFB $00,$FE,$00
-  DEFB $0F,$00,$FE
-  DEFB $10,$02,$00
-  DEFB $10,$02,$00
-  DEFB $10,$00,$02
-  DEFB $0F,$00,$00
+  INCBIN "res/map/shapes/factory.bin",$0000,18
 
 ; Shape 2: 4 x 3 blocks of tiles $02-$05 (height 2)
 ShapeLowTiles:
-  DEFB $02,$02,$00
-  DEFB $03,$02,$00
-  DEFB $04,$02,$00
-  DEFB $05,$FA,$02
-  DEFB $04,$02,$00
-  DEFB $05,$02,$00
-  DEFB $02,$02,$00
-  DEFB $03,$FA,$02
-  DEFB $03,$02,$00
-  DEFB $02,$02,$00
-  DEFB $05,$02,$00
-  DEFB $04,$00,$00
+  INCBIN "res/map/shapes/low-tiles.bin",$0000,36
 
 ; Shape 3: 4 x 3 blocks of tiles $08-$0B (height 6)
 ShapeMidTiles:
-  DEFB $08,$02,$00
-  DEFB $09,$02,$00
-  DEFB $0A,$02,$00
-  DEFB $0B,$FA,$02
-  DEFB $0A,$02,$00
-  DEFB $0B,$02,$00
-  DEFB $08,$02,$00
-  DEFB $09,$FA,$02
-  DEFB $09,$02,$00
-  DEFB $08,$02,$00
-  DEFB $0B,$02,$00
-  DEFB $0A,$00,$00
+  INCBIN "res/map/shapes/mid-tiles.bin",$0000,36
 
 ; Shape 4: four blocks of tile $12 (height 15) in a column
 ShapeTallWallV:
-  DEFB $12,$00,$02
-  DEFB $12,$00,$02
-  DEFB $12,$00,$02
-  DEFB $12,$00,$00
+  INCBIN "res/map/shapes/tall-wall-v.bin",$0000,12
 
 ; Shape 5: four blocks of tile $12 in a row
 ShapeTallWallH:
-  DEFB $12,$02,$00
-  DEFB $12,$02,$00
-  DEFB $12,$02,$00
-  DEFB $12,$00,$00
+  INCBIN "res/map/shapes/tall-wall-h.bin",$0000,12
 
 ; Shape 6: four blocks of tile $15 (height 99, impassable) in a column: the
 ; fences at both ends of the map
@@ -4440,37 +4227,23 @@ ShapeTallWallH:
 ; Placed at (12,1), (12,9), (503,1), (503,9): the row of posts at the map's
 ; left and right edges.
 ShapeEdgeFence:
-  DEFB $15,$00,$02
-  DEFB $15,$00,$02
-  DEFB $15,$00,$02
-  DEFB $15,$00,$00
+  INCBIN "res/map/shapes/edge-fence.bin",$0000,12
 
 ; Shape 7: tiles $0C, $0D, $0D, $0E (height 0) in a column
 ShapeFlatLineV:
-  DEFB $0C,$00,$02
-  DEFB $0D,$00,$02
-  DEFB $0D,$00,$02
-  DEFB $0E,$00,$00
+  INCBIN "res/map/shapes/flat-line-v.bin",$0000,12
 
 ; Shape 8: tiles $0C, $0D, $0D, $0E in a row
 ShapeFlatLineH:
-  DEFB $0C,$02,$00
-  DEFB $0D,$02,$00
-  DEFB $0D,$02,$00
-  DEFB $0E,$00,$00
+  INCBIN "res/map/shapes/flat-line-h.bin",$0000,12
 
 ; Shape 9: four blocks of tile $11 (height 7) in a row
 ShapeLowWallH:
-  DEFB $11,$02,$00
-  DEFB $11,$02,$00
-  DEFB $11,$02,$00
-  DEFB $11,$00,$00
+  INCBIN "res/map/shapes/low-wall-h.bin",$0000,12
 
 ; Shape 10: tiles $11, $12, $11 in a row
 ShapeMixedWallH:
-  DEFB $11,$02,$00
-  DEFB $12,$02,$00
-  DEFB $11,$00,$00
+  INCBIN "res/map/shapes/mixed-wall-h.bin",$0000,9
 
 ; Unused: zero to $C0FF
 MapTablesSpare:
@@ -5640,99 +5413,41 @@ MusicDispatchJump:
 ; This one plays at the start and at the end of each pass of the tune; docs
 ; r4.md.
 DrumTrackSteady:
-  DEFB $20,$00,$01,$65,$C6
+  INCBIN "res/music/menu/drum-steady.bin",$0000,5
 
 ; a hiss record (32 0) that no goto reaches
 DrumTrackUnused:
-  DEFB $20,$00
+  INCBIN "res/music/menu/drum-unused.bin",$0000,2
 
 ; drum track: rasp 16, hiss 8, hiss 8, sweep $30 for 32 frames (64 frames),
 ; loops
 ;
 ; Started by the bass track's command 3 $C66C after the four intro riffs.
 DrumTrackBeat:
-  DEFB $10,$01,$08
-  DEFB $00,$08,$00
-  DEFB $20,$02,$30
-  DEFB $01,$6C,$C6
+  INCBIN "res/music/menu/drum-beat.bin",$0000,12
 
 ; the bass track: commands of 3 bytes (drums, pattern calls, the goto back)
 ;
 ; 3 $C665, 4 x 2 $C6BD (the riff), 3 $C66C, 2 x 2 $C6CC, 8 x 2 $C6DD, 5 x 2
 ; $C6CC, 3 $C665, 1 $C678: 5120 frames.
 BassTrack:
-  DEFB $03,$65,$C6
-  DEFB $02,$BD,$C6
-  DEFB $02,$BD,$C6
-  DEFB $02,$BD,$C6
-  DEFB $02,$BD,$C6
-  DEFB $03,$6C,$C6
-  DEFB $02,$CC,$C6
-  DEFB $02,$CC,$C6
-  DEFB $02,$DD,$C6
-  DEFB $02,$DD,$C6
-  DEFB $02,$DD,$C6
-  DEFB $02,$DD,$C6
-  DEFB $02,$DD,$C6
-  DEFB $02,$DD,$C6
-  DEFB $02,$DD,$C6
-  DEFB $02,$DD,$C6
-  DEFB $02,$CC,$C6
-  DEFB $02,$CC,$C6
-  DEFB $02,$CC,$C6
-  DEFB $02,$CC,$C6
-  DEFB $02,$CC,$C6
-  DEFB $03,$65,$C6
-  DEFB $01,$78,$C6
+  INCBIN "res/music/menu/bass-track.bin",$0000,69
 
 ; bass pattern: the 128-frame intro riff on $7C with rests, then $52
 ;
 ; Notes are (period, frames), commands 4 / 5 one byte: $7C 16, off, $7C 8, on,
 ; $7C 16, off, $7C 64, $52 24, on, return.
 BassRiff:
-  DEFB $7C,$10
-  DEFB $05,$7C
-  DEFB $08,$04
-  DEFB $7C,$10
-  DEFB $05,$7C
-  DEFB $40,$52
-  DEFB $18,$04
-  DEFB $06
+  INCBIN "res/music/menu/bass-riff.bin",$0000,15
 
 ; bass pattern: $7C $6E $68 $5D twice, 64 frames each (512 frames)
 BassWalk:
-  DEFB $7C,$40
-  DEFB $6E,$40
-  DEFB $68,$40
-  DEFB $5D,$40
-  DEFB $7C,$40
-  DEFB $6E,$40
-  DEFB $68,$40
-  DEFB $5D,$40
-  DEFB $06
+  INCBIN "res/music/menu/bass-walk.bin",$0000,17
 
 ; bass pattern: $7C in eighths with rests, then the run $8B $93 $A5 $BA $A5 $93
 ; $8B $7C $8B $93 $A5 (128 frames)
 BassRun:
-  DEFB $7C,$08
-  DEFB $05,$7C
-  DEFB $08,$04
-  DEFB $7C,$08
-  DEFB $05,$7C
-  DEFB $08,$04
-  DEFB $7C,$08
-  DEFB $8B,$08
-  DEFB $93,$08
-  DEFB $A5,$08
-  DEFB $BA,$08
-  DEFB $A5,$08
-  DEFB $93,$08
-  DEFB $8B,$08
-  DEFB $7C,$08
-  DEFB $8B,$08
-  DEFB $93,$08
-  DEFB $A5,$08
-  DEFB $06
+  INCBIN "res/music/menu/bass-run.bin",$0000,37
 
 ; the lead track: pattern calls, two long notes, the goto back
 ;
@@ -5740,146 +5455,29 @@ BassRun:
 ; $C7C5 three times in turns, $3E 32, $37 32, 2 x $C7AA, 4 x the scale $C7DF, 4
 ; x $C789, 8 x $C7C5, 4 x $C789, 1 $C702: 5120 frames.
 LeadTrack:
-  DEFB $02,$89,$C7
-  DEFB $02,$89,$C7
-  DEFB $02,$89,$C7
-  DEFB $02,$89,$C7
-  DEFB $02,$AA,$C7
-  DEFB $02,$AA,$C7
-  DEFB $02,$AA,$C7
-  DEFB $02,$AA,$C7
-  DEFB $05,$02,$AA
-  DEFB $C7,$04,$02
-  DEFB $C5,$C7,$02
-  DEFB $C5,$C7,$02
-  DEFB $C5,$C7,$02
-  DEFB $C5,$C7,$02
-  DEFB $C5,$C7,$02
-  DEFB $D2,$C7,$02
-  DEFB $C5,$C7,$02
-  DEFB $D2,$C7,$02
-  DEFB $C5,$C7,$02
-  DEFB $D2,$C7,$02
-  DEFB $C5,$C7,$3E
-  DEFB $20,$37,$20
-  DEFB $02,$AA,$C7
-  DEFB $02,$AA,$C7
-  DEFB $02,$DF,$C7
-  DEFB $02,$DF,$C7
-  DEFB $02,$DF,$C7
-  DEFB $02,$DF,$C7
-  DEFB $02,$89,$C7
-  DEFB $02,$89,$C7
-  DEFB $02,$89,$C7
-  DEFB $02,$89,$C7
-  DEFB $02,$C5,$C7
-  DEFB $02,$C5,$C7
-  DEFB $02,$C5,$C7
-  DEFB $02,$C5,$C7
-  DEFB $02,$C5,$C7
-  DEFB $02,$C5,$C7
-  DEFB $02,$C5,$C7
-  DEFB $02,$C5,$C7
-  DEFB $02,$89,$C7
-  DEFB $02,$89,$C7
-  DEFB $02,$89,$C7
-  DEFB $02,$89,$C7
-  DEFB $01,$02,$C7
+  INCBIN "res/music/menu/lead-track.bin",$0000,135
 
 ; lead pattern: $37 with rests, then trills $29 / $2E, $37, $3E (128 frames)
 LeadRiff:
-  DEFB $37,$10
-  DEFB $05,$37
-  DEFB $08,$04
-  DEFB $37,$10
-  DEFB $05,$37
-  DEFB $08,$04
-  DEFB $29,$08
-  DEFB $2E,$08
-  DEFB $29,$08
-  DEFB $2E,$08
-  DEFB $29,$08
-  DEFB $2E,$08
-  DEFB $29,$08
-  DEFB $2E,$08
-  DEFB $37,$08
-  DEFB $3E,$08
-  DEFB $06
+  INCBIN "res/music/menu/lead-riff.bin",$0000,33
 
 ; lead pattern: the tune's phrase $29 $2E $31 $37 $3E $49 $3E $45 $2E $29 $2E
 ; $34 $2E (256 frames)
 LeadPhrase:
-  DEFB $29,$10
-  DEFB $2E,$10
-  DEFB $31,$10
-  DEFB $37,$10
-  DEFB $3E,$20
-  DEFB $49,$10
-  DEFB $3E,$10
-  DEFB $45,$20
-  DEFB $2E,$20
-  DEFB $29,$10
-  DEFB $2E,$10
-  DEFB $34,$10
-  DEFB $2E,$10
-  DEFB $06
+  INCBIN "res/music/menu/lead-phrase.bin",$0000,27
 
 ; lead pattern: $3E $52 $7C twice (64 frames)
 LeadArpeggioA:
-  DEFB $3E,$10
-  DEFB $52,$08
-  DEFB $7C,$08
-  DEFB $3E,$10
-  DEFB $52,$08
-  DEFB $7C,$08
-  DEFB $06
+  INCBIN "res/music/menu/lead-arpeggio-a.bin",$0000,13
 
 ; lead pattern: $45 $5D $8B twice (64 frames)
 LeadArpeggioB:
-  DEFB $45,$10
-  DEFB $5D,$08
-  DEFB $8B,$08
-  DEFB $45,$10
-  DEFB $5D,$08
-  DEFB $8B,$08
-  DEFB $06
+  INCBIN "res/music/menu/lead-arpeggio-b.bin",$0000,13
 
 ; lead pattern: the 16-note scale $29 up to $BA (high to low) twice, 4 frames a
 ; note (128 frames)
 LeadScale:
-  DEFB $29,$04
-  DEFB $2E,$04
-  DEFB $34,$04
-  DEFB $37,$04
-  DEFB $3E,$04
-  DEFB $45,$04
-  DEFB $49,$04
-  DEFB $52,$04
-  DEFB $5D,$04
-  DEFB $68,$04
-  DEFB $6E,$04
-  DEFB $7C,$04
-  DEFB $8B,$04
-  DEFB $93,$04
-  DEFB $A5,$04
-  DEFB $BA,$04
-  DEFB $29,$04
-  DEFB $2E,$04
-  DEFB $34,$04
-  DEFB $37,$04
-  DEFB $3E,$04
-  DEFB $45,$04
-  DEFB $49,$04
-  DEFB $52,$04
-  DEFB $5D,$04
-  DEFB $68,$04
-  DEFB $6E,$04
-  DEFB $7C,$04
-  DEFB $8B,$04
-  DEFB $93,$04
-  DEFB $A5,$04
-  DEFB $BA,$04
-  DEFB $06
+  INCBIN "res/music/menu/lead-scale.bin",$0000,65
 
 ; cycle the ink of the NETHER EARTH title, one colour every 2 frames
 ;
@@ -8594,14 +8192,7 @@ RadarDotOutside:
 ; then 2 bytes left) 6 times from $5B0A, the lower edge of the black triangle
 ; above the map, and 3 times from $5FB2. Image: d1-img/D6A8-ViewEdges.png.
 ViewEdgeA:
-  DEFB $FF,$FF
-  DEFB $FF,$FC
-  DEFB $FF,$F0
-  DEFB $FF,$C0
-  DEFB $FF,$00
-  DEFB $FC,$00
-  DEFB $F0,$00
-  DEFB $C0,$00
+  INCBIN "res/gfx/view-edges.bin",$0000,16
 
 ; View edge, black on the right: 8 lines of 2 bytes
 ;
@@ -8609,14 +8200,7 @@ ViewEdgeA:
 ; the 3 copies of ViewEdgeA at $5FB2 it makes the black band along the map's
 ; front edge, bottom right of the view.
 ViewEdgeB:
-  DEFB $00,$03
-  DEFB $00,$0F
-  DEFB $00,$3F
-  DEFB $00,$FF
-  DEFB $03,$FF
-  DEFB $0F,$FF
-  DEFB $3F,$FF
-  DEFB $FF,$FF
+  INCBIN "res/gfx/view-edges.bin",$0010,16
 
 ; Robot part sprites: 8 parts x 4 directions, sprite id - $16
 ;

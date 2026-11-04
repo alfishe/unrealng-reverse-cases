@@ -164,15 +164,24 @@ $A83E ; leading zeros as spaces
 $A843 ; "%"
 
 $A848 t OrderNames ; The names of the orders, 27 bytes each (order 0: STOP AND DEFEND)
+@res text/order-names.bin
 > Nine records of 27 bytes, indexed by +$0B: three lines of 8 joined by code 3, ended by 0. ShowOrder copies one into OrderLine. Order 0 is "  STOP  ", "  AND   ", " DEFEND ".
 $A863 t OrderName1 ; Order 1: ADVANCE (the miles are printed into the blank middle line)
+@res text/order-names.bin
 $A87E t OrderName2 ; Order 2: RETREAT (the miles in the middle line)
+@res text/order-names.bin
 $A899 t OrderName3 ; Order 3: DESTROY ENEMY ROBOTS
+@res text/order-names.bin
 $A8B4 t OrderName4 ; Order 4: DESTROY ENEMY FACTORYS
+@res text/order-names.bin
 $A8CF t OrderName5 ; Order 5: DESTROY ENEMY WARBASES
+@res text/order-names.bin
 $A8EA t OrderName6 ; Order 6: CAPTURE NEUTRAL FACTORYS
+@res text/order-names.bin
 $A905 t OrderName7 ; Order 7: CAPTURE ENEMY FACTORYS
+@res text/order-names.bin
 $A920 t OrderName8 ; Order 8: CAPTURE ENEMY WARBASES
+@res text/order-names.bin
 
 $A93B c DirectControlItem ; Robot menu item 1: direct control, then the robot menu again
 > Not run in the recordings; run on the own instance.
@@ -1046,29 +1055,45 @@ $BD99 PutBlockCell ; the first cell plain, the rest with bit 5
 $BDA1 ; the row above
 
 $BDA9 b SceneryWest 3 ; The scenery of columns 0-255: 69 records (tile or shape, x, y) and the 0 that ends them
+@res map/scenery-west.bin
 > Read by BuildMap through PlaceScenery with D = 0. Bit 7 clear: a 2 x 2 block of that tile; bit 7 set: shape (byte & $7F) of ShapeTable. Tiles used: $02-$09 and $0D (low features), $11 and $12 (free-standing blocks, height 7 and 15: the ones a nuclear blast turns to debris). Shapes 2-10. The tile heights the ship and the robots meet are the table $D7BC.
 $BE79 b SceneryEast 3 ; The scenery of columns 256-511: 68 records and the 0 that ends them
+@res map/scenery-east.bin
 > Read by BuildMap through PlaceScenery with D = 1.
 $BF46 b BaseListWest 3 ; The bases of columns 0-255: 13 records (type, x, y), $FF ends
+@res map/bases-west.bin
 > Type 0 a warbase, 1-6 a factory making resource 1-6 (electronics, nuclear, phasers, missiles, cannon, chassis). Here: the player's warbase at (22,9) and the factories (39,6) type 4, (53,3) 6, (62,10) 1, (79,3) 5, (97,3) 3, (125,3) 2, (140,11) 6, (160,5) 1, (180,3) 3, (217,3) 4, (227,9) 5, (241,3) 6. The (x, y) is the base's door: the cell a robot stands on to capture it (the capture tick $AD90) and where the enemy's new robots appear (warbases).
 $BF6E b BaseListEast 3 ; The bases of columns 256-511: 15 records (type, x, y), $FF ends
+@res map/bases-east.bin
 > The enemy's three warbases at (261,8), (369,8), (494,8) (given to the enemy by BuildMap) and twelve factories. With BaseListWest: 4 warbases and 24 factories, four of each type, the order of the bases table $FD70.
 $BF9C w ShapeTable 11 ; The shapes' addresses, index 0-10 (DrawShape)
+@res map/shape-table.bin
 > 0 the warbase, 1 the factory (both drawn by PlaceBases), 2-10 the scenery shapes (a scenery record $82-$8A).
 $BFB2 b ShapeWarbase 3 ; Shape 0: the warbase, 15 blocks of tiles $0F (height 7) and $10 (height 15) around the door
+@res map/shapes/warbase.bin
 > Steps (tile, columns, rows): a first move of (-4,-4), then blocks reaching 4 columns either side and up to 8 rows above the door. The pad, the block above the door at (x, y-4), is a tile $10 block: altitude 15 over it is the landing height of ConstructionMenu.
 $BFE2 b ShapeFactory 3 ; Shape 1: the factory, tiles $0F at (x-2, y) and (x+2, y), $10 on the roof row y-2 at x-2, x, x+2
+@res map/shapes/factory.bin
 > The door (x, y) stays free between the two low blocks.
 $BFF4 b ShapeLowTiles 3 ; Shape 2: 4 x 3 blocks of tiles $02-$05 (height 2)
+@res map/shapes/low-tiles.bin
 $C018 b ShapeMidTiles 3 ; Shape 3: 4 x 3 blocks of tiles $08-$0B (height 6)
+@res map/shapes/mid-tiles.bin
 $C03C b ShapeTallWallV 3 ; Shape 4: four blocks of tile $12 (height 15) in a column
+@res map/shapes/tall-wall-v.bin
 $C048 b ShapeTallWallH 3 ; Shape 5: four blocks of tile $12 in a row
+@res map/shapes/tall-wall-h.bin
 $C054 b ShapeEdgeFence 3 ; Shape 6: four blocks of tile $15 (height 99, impassable) in a column: the fences at both ends of the map
+@res map/shapes/edge-fence.bin
 > Placed at (12,1), (12,9), (503,1), (503,9): the row of posts at the map's left and right edges.
 $C060 b ShapeFlatLineV 3 ; Shape 7: tiles $0C, $0D, $0D, $0E (height 0) in a column
+@res map/shapes/flat-line-v.bin
 $C06C b ShapeFlatLineH 3 ; Shape 8: tiles $0C, $0D, $0D, $0E in a row
+@res map/shapes/flat-line-h.bin
 $C078 b ShapeLowWallH 3 ; Shape 9: four blocks of tile $11 (height 7) in a row
+@res map/shapes/low-wall-h.bin
 $C084 b ShapeMixedWallH 3 ; Shape 10: tiles $11, $12, $11 in a row
+@res map/shapes/mixed-wall-h.bin
 $C08D s MapTablesSpare ; Unused: zero to $C0FF
 
 # --- the main menu
@@ -1393,23 +1418,36 @@ $C65E ; the table, after the CALL
 $C664 MusicDispatchJump ; to the command's JP
 
 $C665 b DrumTrackSteady 5 ; drum track: a hiss every 32 frames (32 0, then 1 $C665)
+@res music/menu/drum-steady.bin
 > The drum tracks: records of (frames, kind[, p]) and gotos 1 aa; DrumStep. This one plays at the start and at the end of each pass of the tune; docs r4.md.
 $C66A b DrumTrackUnused 2 ; a hiss record (32 0) that no goto reaches
+@res music/menu/drum-unused.bin
 $C66C b DrumTrackBeat 3 ; drum track: rasp 16, hiss 8, hiss 8, sweep $30 for 32 frames (64 frames), loops
+@res music/menu/drum-beat.bin
 > Started by the bass track's command 3 $C66C after the four intro riffs.
 $C678 b BassTrack 3 ; the bass track: commands of 3 bytes (drums, pattern calls, the goto back)
+@res music/menu/bass-track.bin
 > 3 $C665, 4 x 2 $C6BD (the riff), 3 $C66C, 2 x 2 $C6CC, 8 x 2 $C6DD, 5 x 2 $C6CC, 3 $C665, 1 $C678: 5120 frames.
 $C6BD b BassRiff 2 ; bass pattern: the 128-frame intro riff on $7C with rests, then $52
+@res music/menu/bass-riff.bin
 > Notes are (period, frames), commands 4 / 5 one byte: $7C 16, off, $7C 8, on, $7C 16, off, $7C 64, $52 24, on, return.
 $C6CC b BassWalk 2 ; bass pattern: $7C $6E $68 $5D twice, 64 frames each (512 frames)
+@res music/menu/bass-walk.bin
 $C6DD b BassRun 2 ; bass pattern: $7C in eighths with rests, then the run $8B $93 $A5 $BA $A5 $93 $8B $7C $8B $93 $A5 (128 frames)
+@res music/menu/bass-run.bin
 $C702 b LeadTrack 3 ; the lead track: pattern calls, two long notes, the goto back
+@res music/menu/lead-track.bin
 > 4 x riff $C789, 4 x phrase $C7AA, off, $C7AA, on, 5 x $C7C5, then $C7D2 / $C7C5 three times in turns, $3E 32, $37 32, 2 x $C7AA, 4 x the scale $C7DF, 4 x $C789, 8 x $C7C5, 4 x $C789, 1 $C702: 5120 frames.
 $C789 b LeadRiff 2 ; lead pattern: $37 with rests, then trills $29 / $2E, $37, $3E (128 frames)
+@res music/menu/lead-riff.bin
 $C7AA b LeadPhrase 2 ; lead pattern: the tune's phrase $29 $2E $31 $37 $3E $49 $3E $45 $2E $29 $2E $34 $2E (256 frames)
+@res music/menu/lead-phrase.bin
 $C7C5 b LeadArpeggioA 2 ; lead pattern: $3E $52 $7C twice (64 frames)
+@res music/menu/lead-arpeggio-a.bin
 $C7D2 b LeadArpeggioB 2 ; lead pattern: $45 $5D $8B twice (64 frames)
+@res music/menu/lead-arpeggio-b.bin
 $C7DF b LeadScale 2 ; lead pattern: the 16-note scale $29 up to $BA (high to low) twice, 4 frames a note (128 frames)
+@res music/menu/lead-scale.bin
 
 $C820 c TitleColourCycle ; cycle the ink of the NETHER EARTH title, one colour every 2 frames
 > Counts $FD33 0-15 each call; on even counts it paints the attributes of rows 1-7, columns 10-21 (the big title printed by $C1E3) with BRIGHT, black paper and ink count / 2, so the ink runs through all 8 colours every 16 frames. Called every frame by the main menu's HALT loops ($C193, $C1A2) and by MenuInterrupt while the tune plays (26 calls over frames 0-26 of work/deep; it writes $582A-$58F5).
@@ -1983,281 +2021,462 @@ $5B00 b ViewBuffer 20 ; The view's back buffer: 160 lines of 20 bytes (160 x 160
 > The isometric view is composed here and copied to the screen at $4021 (character columns 1-20, rows 1-20) by CopyViewToScreen, an unrolled LDI x 20 a pixel line. Line N is at $5B00 + 20 * N, top line first. ClearViewBuffer clears it (198 x 8 PUSHes from $6780 down, then $5B00-$5B1F by LDIR; SP saved in $FD08), FillViewCorner lays the black triangle above the map's back edge (runs of $FF, 10 bytes on the top 8 lines, 2 fewer each 8 lines) and DrawViewBackground the diagonal edges from ViewEdgeA / ViewEdgeB; DrawSprite blits every sprite into it (SpriteByteLoop: AND mask, OR graphic, the rows upward, 20 bytes a line). Other uses of the same bytes: ShowRobotDesign draws the robot preview of ConstructionMenu here and copies 4 bytes x 72 lines from $6168 to the screen at $48E0; NuclearFlash (the nuclear blast's flash) saves the view's 20 x 20 attributes into $5B00-$5C8F and puts them back; the tape save / load SaveGameBlocks / LoadGameBlocks keep the 2-byte checksum of the saved block at $5B00 (its first tape block).
 > In the image it is zero up to $6731; $6732-$677F hold 78 bytes of leftovers of the loading (ROM addresses, a BASIC stack copy), never read before the first clear. The font index (PrintChar, PrintBigChar: $6680 + code x 8) starts inside this buffer: codes below $20 would take their glyphs from its last 256 bytes; no text prints them.
 $6780 b Font 8 ; Font: 64 glyphs of 8 bytes, codes $20-$5F
+@res gfx/font.bin
 > Glyph = $6680 + code * 8, top line first, 1 = ink. Codes $20-$5F: space, punctuation, digits, "@" is the (c) sign, A-Z, then "[", "\", "]" and an up arrow at $5B-$5E, $5F blank. Read by PrintChar ($D4C2: 8 lines straight to the screen, one attribute from $FD13 to the cell at ($FD14)) and PrintBigChar ($D4F5: each line repeated $FD16 times; with $FD17 >= 2 ($D50C) each pixel doubled to 16 pixels wide). Every text of the game goes through them (PrintInline and the number printers). Image: d1-img/6780-Font.png.
 $6980 b SprTracksX 2 ; Sprite 22 (even column; SpriteTable 44): tracks, moving along X (directions 0-1), 27 rows x 3 bytes
+@res gfx/sprites/tracks-x.bin
 > The sprites run from here to $A569, 88 blocks, each reached through SpriteTable (sprite id x 2 + the column parity). A block: the height in pixel lines, the width in bytes, then the rows from the BOTTOM line up, each row width x (mask, graphic) byte pairs: screen = (screen AND mask) OR graphic (SpriteByteLoop into ViewBuffer, DrawMaskedUp straight to the screen). The parity is bit 0 of the half-byte column DrawSprite computes (2 x X + Y - 24): the odd entry is the same picture shifted right by 4 pixels (one byte wider where it needs to), except where noted: for map objects the column parity is the row parity, and map types 12, 13, 14, 17, 18 use the two entries for two different pictures.
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $6982 b SprTracksXRows 6 ; SprTracksX: 27 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/tracks-x.bin
 $6A24 b SprTracksXOdd 2 ; Sprite 22 (odd column; SpriteTable 45): tracks, moving along X (directions 0-1), 27 rows x 4 bytes
+@res gfx/sprites/tracks-x-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights. Also the part's icon in ConstructionMenu ($C86D, drawn straight to the screen by DrawMaskedUp).
 $6A26 b SprTracksXOddRows 8 ; SprTracksXOdd: 27 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/tracks-x-odd.bin
 $6AFE b SprTracksY 2 ; Sprite 23 (even column; SpriteTable 46): tracks, moving along Y (directions 2-3), 28 rows x 3 bytes
+@res gfx/sprites/tracks-y.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $6B00 b SprTracksYRows 6 ; SprTracksY: 28 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/tracks-y.bin
 $6BA8 b SprTracksYOdd 2 ; Sprite 23 (odd column; SpriteTable 47): tracks, moving along Y (directions 2-3), 28 rows x 4 bytes
+@res gfx/sprites/tracks-y-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $6BAA b SprTracksYOddRows 8 ; SprTracksYOdd: 28 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/tracks-y-odd.bin
 $6C8A b SprBipodX 2 ; Sprite 24 (even column; SpriteTable 48): bipod legs, along X, 30 rows x 3 bytes
+@res gfx/sprites/bipod-x.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $6C8C b SprBipodXRows 6 ; SprBipodX: 30 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/bipod-x.bin
 $6D40 b SprBipodXOdd 2 ; Sprite 24 (odd column; SpriteTable 49): bipod legs, along X, 30 rows x 4 bytes
+@res gfx/sprites/bipod-x-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights. Also the part's icon in ConstructionMenu ($C86D, drawn straight to the screen by DrawMaskedUp).
 $6D42 b SprBipodXOddRows 8 ; SprBipodXOdd: 30 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/bipod-x-odd.bin
 $6E32 b SprBipodY 2 ; Sprite 25 (even column; SpriteTable 50): bipod legs, along Y, 29 rows x 3 bytes
+@res gfx/sprites/bipod-y.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $6E34 b SprBipodYRows 6 ; SprBipodY: 29 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/bipod-y.bin
 $6EE2 b SprBipodYOdd 2 ; Sprite 25 (odd column; SpriteTable 51): bipod legs, along Y, 29 rows x 4 bytes
+@res gfx/sprites/bipod-y-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $6EE4 b SprBipodYOddRows 8 ; SprBipodYOdd: 29 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/bipod-y-odd.bin
 $6FCC b SprAntiGrav 2 ; Sprite 26 (even column; SpriteTable 52): anti-grav unit, every direction, 23 rows x 3 bytes
+@res gfx/sprites/anti-grav.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $6FCE b SprAntiGravRows 6 ; SprAntiGrav: 23 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/anti-grav.bin
 $7058 b SprAntiGravOdd 2 ; Sprite 26 (odd column; SpriteTable 53): anti-grav unit, every direction, 23 rows x 4 bytes
+@res gfx/sprites/anti-grav-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights. Also the part's icon in ConstructionMenu ($C86D, drawn straight to the screen by DrawMaskedUp).
 $705A b SprAntiGravOddRows 8 ; SprAntiGravOdd: 23 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/anti-grav-odd.bin
 $7112 b SprCannonXp 2 ; Sprite 27 (even column; SpriteTable 54): cannon facing X+ (direction 0), 28 rows x 3 bytes
+@res gfx/sprites/cannon-xp.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $7114 b SprCannonXpRows 6 ; SprCannonXp: 28 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/cannon-xp.bin
 $71BC b SprCannonXpOdd 2 ; Sprite 27 (odd column; SpriteTable 55): cannon facing X+ (direction 0), 28 rows x 4 bytes
+@res gfx/sprites/cannon-xp-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $71BE b SprCannonXpOddRows 8 ; SprCannonXpOdd: 28 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/cannon-xp-odd.bin
 $729E b SprCannonXm 2 ; Sprite 28 (even column; SpriteTable 56): cannon facing X- (direction 1), 30 rows x 3 bytes
+@res gfx/sprites/cannon-xm.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $72A0 b SprCannonXmRows 6 ; SprCannonXm: 30 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/cannon-xm.bin
 $7354 b SprCannonXmOdd 2 ; Sprite 28 (odd column; SpriteTable 57): cannon facing X- (direction 1), 30 rows x 4 bytes
+@res gfx/sprites/cannon-xm-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights. Also the part's icon in ConstructionMenu ($C86D, drawn straight to the screen by DrawMaskedUp).
 $7356 b SprCannonXmOddRows 8 ; SprCannonXmOdd: 30 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/cannon-xm-odd.bin
 $7446 b SprCannonYp 2 ; Sprite 29 (even column; SpriteTable 58): cannon facing Y+ (direction 2), 30 rows x 3 bytes
+@res gfx/sprites/cannon-yp.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $7448 b SprCannonYpRows 6 ; SprCannonYp: 30 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/cannon-yp.bin
 $74FC b SprCannonYpOdd 2 ; Sprite 29 (odd column; SpriteTable 59): cannon facing Y+ (direction 2), 30 rows x 4 bytes
+@res gfx/sprites/cannon-yp-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $74FE b SprCannonYpOddRows 8 ; SprCannonYpOdd: 30 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/cannon-yp-odd.bin
 $75EE b SprCannonYm 2 ; Sprite 30 (even column; SpriteTable 60): cannon facing Y- (direction 3), 25 rows x 3 bytes
+@res gfx/sprites/cannon-ym.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $75F0 b SprCannonYmRows 6 ; SprCannonYm: 25 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/cannon-ym.bin
 $7686 b SprCannonYmOdd 2 ; Sprite 30 (odd column; SpriteTable 61): cannon facing Y- (direction 3), 25 rows x 4 bytes
+@res gfx/sprites/cannon-ym-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $7688 b SprCannonYmOddRows 8 ; SprCannonYmOdd: 25 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/cannon-ym-odd.bin
 $7750 b SprMissilesX 2 ; Sprite 31 (even column; SpriteTable 62): missile pod along X, 27 rows x 3 bytes
+@res gfx/sprites/missiles-x.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $7752 b SprMissilesXRows 6 ; SprMissilesX: 27 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/missiles-x.bin
 $77F4 b SprMissilesXOdd 2 ; Sprite 31 (odd column; SpriteTable 63): missile pod along X, 27 rows x 4 bytes
+@res gfx/sprites/missiles-x-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights. Also the part's icon in ConstructionMenu ($C86D, drawn straight to the screen by DrawMaskedUp).
 $77F6 b SprMissilesXOddRows 8 ; SprMissilesXOdd: 27 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/missiles-x-odd.bin
 $78CE b SprMissilesY 2 ; Sprite 32 (even column; SpriteTable 64): missile pod along Y, 28 rows x 3 bytes
+@res gfx/sprites/missiles-y.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $78D0 b SprMissilesYRows 6 ; SprMissilesY: 28 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/missiles-y.bin
 $7978 b SprMissilesYOdd 2 ; Sprite 32 (odd column; SpriteTable 65): missile pod along Y, 28 rows x 4 bytes
+@res gfx/sprites/missiles-y-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $797A b SprMissilesYOddRows 8 ; SprMissilesYOdd: 28 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/missiles-y-odd.bin
 $7A5A b SprPhasersXp 2 ; Sprite 33 (even column; SpriteTable 66): phasers facing X+, 28 rows x 3 bytes
+@res gfx/sprites/phasers-xp.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $7A5C b SprPhasersXpRows 6 ; SprPhasersXp: 28 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/phasers-xp.bin
 $7B04 b SprPhasersXpOdd 2 ; Sprite 33 (odd column; SpriteTable 67): phasers facing X+, 28 rows x 4 bytes
+@res gfx/sprites/phasers-xp-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $7B06 b SprPhasersXpOddRows 8 ; SprPhasersXpOdd: 28 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/phasers-xp-odd.bin
 $7BE6 b SprPhasersXm 2 ; Sprite 34 (even column; SpriteTable 68): phasers facing X-, 29 rows x 3 bytes
+@res gfx/sprites/phasers-xm.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $7BE8 b SprPhasersXmRows 6 ; SprPhasersXm: 29 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/phasers-xm.bin
 $7C96 b SprPhasersXmOdd 2 ; Sprite 34 (odd column; SpriteTable 69): phasers facing X-, 29 rows x 4 bytes
+@res gfx/sprites/phasers-xm-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights. Also the part's icon in ConstructionMenu ($C86D, drawn straight to the screen by DrawMaskedUp).
 $7C98 b SprPhasersXmOddRows 8 ; SprPhasersXmOdd: 29 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/phasers-xm-odd.bin
 $7D80 b SprPhasersYp 2 ; Sprite 35 (even column; SpriteTable 70): phasers facing Y+, 29 rows x 3 bytes
+@res gfx/sprites/phasers-yp.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $7D82 b SprPhasersYpRows 6 ; SprPhasersYp: 29 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/phasers-yp.bin
 $7E30 b SprPhasersYpOdd 2 ; Sprite 35 (odd column; SpriteTable 71): phasers facing Y+, 29 rows x 4 bytes
+@res gfx/sprites/phasers-yp-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $7E32 b SprPhasersYpOddRows 8 ; SprPhasersYpOdd: 29 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/phasers-yp-odd.bin
 $7F1A b SprPhasersYm 2 ; Sprite 36 (even column; SpriteTable 72): phasers facing Y-, 26 rows x 3 bytes
+@res gfx/sprites/phasers-ym.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $7F1C b SprPhasersYmRows 6 ; SprPhasersYm: 26 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/phasers-ym.bin
 $7FB8 b SprPhasersYmOdd 2 ; Sprite 36 (odd column; SpriteTable 73): phasers facing Y-, 26 rows x 4 bytes
+@res gfx/sprites/phasers-ym-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $7FBA b SprPhasersYmOddRows 8 ; SprPhasersYmOdd: 26 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/phasers-ym-odd.bin
 $808A b SprNuclear 2 ; Sprite 37 (even column; SpriteTable 74): nuclear bomb (the ball with the trefoil), every direction, 29 rows x 3 bytes
+@res gfx/sprites/nuclear.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights. No recording drew it.
 $808C b SprNuclearRows 6 ; SprNuclear: 29 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/nuclear.bin
 $813A b SprNuclearOdd 2 ; Sprite 37 (odd column; SpriteTable 75): nuclear bomb (the ball with the trefoil), every direction, 29 rows x 4 bytes
+@res gfx/sprites/nuclear-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights. Also the part's icon in ConstructionMenu ($C86D, drawn straight to the screen by DrawMaskedUp).
 $813C b SprNuclearOddRows 8 ; SprNuclearOdd: 29 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/nuclear-odd.bin
 $8224 b SprElectronicsXp 2 ; Sprite 38 (even column; SpriteTable 76): electronics dome facing X+, 24 rows x 3 bytes
+@res gfx/sprites/electronics-xp.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $8226 b SprElectronicsXpRows 6 ; SprElectronicsXp: 24 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/electronics-xp.bin
 $82B6 b SprElectronicsXpOdd 2 ; Sprite 38 (odd column; SpriteTable 77): electronics dome facing X+, 24 rows x 3 bytes
+@res gfx/sprites/electronics-xp-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $82B8 b SprElectronicsXpOddRows 6 ; SprElectronicsXpOdd: 24 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/electronics-xp-odd.bin
 $8348 b SprElectronicsXm 2 ; Sprite 39 (even column; SpriteTable 78): electronics dome facing X-, 24 rows x 3 bytes
+@res gfx/sprites/electronics-xm.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $834A b SprElectronicsXmRows 6 ; SprElectronicsXm: 24 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/electronics-xm.bin
 $83DA b SprElectronicsXmOdd 2 ; Sprite 39 (odd column; SpriteTable 79): electronics dome facing X-, 24 rows x 3 bytes
+@res gfx/sprites/electronics-xm-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights. Also the part's icon in ConstructionMenu ($C86D, drawn straight to the screen by DrawMaskedUp).
 $83DC b SprElectronicsXmOddRows 6 ; SprElectronicsXmOdd: 24 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/electronics-xm-odd.bin
 $846C b SprElectronicsYp 2 ; Sprite 40 (even column; SpriteTable 80): electronics dome facing Y+, 24 rows x 3 bytes
+@res gfx/sprites/electronics-yp.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $846E b SprElectronicsYpRows 6 ; SprElectronicsYp: 24 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/electronics-yp.bin
 $84FE b SprElectronicsYpOdd 2 ; Sprite 40 (odd column; SpriteTable 81): electronics dome facing Y+, 24 rows x 3 bytes
+@res gfx/sprites/electronics-yp-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $8500 b SprElectronicsYpOddRows 6 ; SprElectronicsYpOdd: 24 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/electronics-yp-odd.bin
 $8590 b SprElectronicsYm 2 ; Sprite 41 (even column; SpriteTable 82): electronics dome facing Y-, 24 rows x 3 bytes
+@res gfx/sprites/electronics-ym.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $8592 b SprElectronicsYmRows 6 ; SprElectronicsYm: 24 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/electronics-ym.bin
 $8622 b SprElectronicsYmOdd 2 ; Sprite 41 (odd column; SpriteTable 83): electronics dome facing Y-, 24 rows x 3 bytes
+@res gfx/sprites/electronics-ym-odd.bin
 > Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = $16 + PartSpriteTable[part * 4 + direction]), stacked by PartHeights.
 $8624 b SprElectronicsYmOddRows 6 ; SprElectronicsYmOdd: 24 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/electronics-ym-odd.bin
 $86B4 b SprFlagPlayer 2 ; Sprite 42 (even column; SpriteTable 84): the player's flag, building type 7, 11 rows x 3 bytes
+@res gfx/sprites/flag-player.bin
 > Drawn by DrawCellObject on a Buildings record of this type, through the table BuildingSprites (sprite id) / BuildingSprites+9 (height). No recording drew it.
 $86B6 b SprFlagPlayerRows 6 ; SprFlagPlayer: 11 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/flag-player.bin
 $86F8 b SprFlagPlayerOdd 2 ; Sprite 42 (odd column; SpriteTable 85): the player's flag, building type 7, 11 rows x 4 bytes
+@res gfx/sprites/flag-player-odd.bin
 > Drawn by DrawCellObject on a Buildings record of this type, through the table BuildingSprites (sprite id) / BuildingSprites+9 (height).
 $86FA b SprFlagPlayerOddRows 8 ; SprFlagPlayerOdd: 11 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/flag-player-odd.bin
 $8752 b SprFlagEnemy 2 ; Sprite 43 (even column; SpriteTable 86): the enemy's flag, building type 8, 11 rows x 3 bytes
+@res gfx/sprites/flag-enemy.bin
 > Drawn by DrawCellObject on a Buildings record of this type, through the table BuildingSprites (sprite id) / BuildingSprites+9 (height). No recording drew it.
 $8754 b SprFlagEnemyRows 6 ; SprFlagEnemy: 11 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/flag-enemy.bin
 $8796 b SprFlagEnemyOdd 2 ; Sprite 43 (odd column; SpriteTable 87): the enemy's flag, building type 8, 11 rows x 4 bytes
+@res gfx/sprites/flag-enemy-odd.bin
 > Drawn by DrawCellObject on a Buildings record of this type, through the table BuildingSprites (sprite id) / BuildingSprites+9 (height). No recording drew it.
 $8798 b SprFlagEnemyOddRows 8 ; SprFlagEnemyOdd: 11 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/flag-enemy-odd.bin
 $87F0 b SprWarbaseSign 2 ; Sprite 44 (even column; SpriteTable 88): the warbase sign, building type 0, 17 rows x 3 bytes
+@res gfx/sprites/warbase-sign.bin
 > Drawn by DrawCellObject on a Buildings record of this type, through the table BuildingSprites (sprite id) / BuildingSprites+9 (height). No recording drew it.
 $87F2 b SprWarbaseSignRows 6 ; SprWarbaseSign: 17 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/warbase-sign.bin
 $8858 b SprWarbaseSignOdd 2 ; Sprite 44 (odd column; SpriteTable 89): the warbase sign, building type 0, 17 rows x 4 bytes
+@res gfx/sprites/warbase-sign-odd.bin
 > Drawn by DrawCellObject on a Buildings record of this type, through the table BuildingSprites (sprite id) / BuildingSprites+9 (height).
 $885A b SprWarbaseSignOddRows 8 ; SprWarbaseSignOdd: 17 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/warbase-sign-odd.bin
 $88E2 b SprShotCannonX 2 ; Sprite 45 (even column; SpriteTable 90): cannon shell, flying along X, 16 rows x 2 bytes
+@res gfx/sprites/shot-cannon-x.bin
 > Drawn by DrawMoverSprite for a Shots record: sprite id $2B + 2 x weapon + (direction >= 4: flying along Y). No recording drew it.
 $88E4 b SprShotCannonXRows 4 ; SprShotCannonX: 16 rows of 2 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/shot-cannon-x.bin
 $8924 b SprShotCannonXOdd 2 ; Sprite 45 (odd column; SpriteTable 91): cannon shell, flying along X, 16 rows x 2 bytes
+@res gfx/sprites/shot-cannon-x-odd.bin
 > Drawn by DrawMoverSprite for a Shots record: sprite id $2B + 2 x weapon + (direction >= 4: flying along Y). No recording drew it.
 $8926 b SprShotCannonXOddRows 4 ; SprShotCannonXOdd: 16 rows of 2 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/shot-cannon-x-odd.bin
 $8966 b SprShotCannonY 2 ; Sprite 46 (even column; SpriteTable 92): cannon shell, flying along Y, 13 rows x 3 bytes
+@res gfx/sprites/shot-cannon-y.bin
 > Drawn by DrawMoverSprite for a Shots record: sprite id $2B + 2 x weapon + (direction >= 4: flying along Y). No recording drew it.
 $8968 b SprShotCannonYRows 6 ; SprShotCannonY: 13 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/shot-cannon-y.bin
 $89B6 b SprShotCannonYOdd 2 ; Sprite 46 (odd column; SpriteTable 93): cannon shell, flying along Y, 13 rows x 3 bytes
+@res gfx/sprites/shot-cannon-y-odd.bin
 > Drawn by DrawMoverSprite for a Shots record: sprite id $2B + 2 x weapon + (direction >= 4: flying along Y). No recording drew it.
 $89B8 b SprShotCannonYOddRows 6 ; SprShotCannonYOdd: 13 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/shot-cannon-y-odd.bin
 $8A06 b SprShotMissileX 2 ; Sprite 47 (even column; SpriteTable 94): missile, flying along X, 22 rows x 3 bytes
+@res gfx/sprites/shot-missile-x.bin
 > Drawn by DrawMoverSprite for a Shots record: sprite id $2B + 2 x weapon + (direction >= 4: flying along Y). No recording drew it.
 $8A08 b SprShotMissileXRows 6 ; SprShotMissileX: 22 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/shot-missile-x.bin
 $8A8C b SprShotMissileXOdd 2 ; Sprite 47 (odd column; SpriteTable 95): missile, flying along X, 22 rows x 4 bytes
+@res gfx/sprites/shot-missile-x-odd.bin
 > Drawn by DrawMoverSprite for a Shots record: sprite id $2B + 2 x weapon + (direction >= 4: flying along Y). No recording drew it.
 $8A8E b SprShotMissileXOddRows 8 ; SprShotMissileXOdd: 22 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/shot-missile-x-odd.bin
 $8B3E b SprShotMissileY 2 ; Sprite 48 (even column; SpriteTable 96): missile, flying along Y, 22 rows x 3 bytes
+@res gfx/sprites/shot-missile-y.bin
 > Drawn by DrawMoverSprite for a Shots record: sprite id $2B + 2 x weapon + (direction >= 4: flying along Y). No recording drew it.
 $8B40 b SprShotMissileYRows 6 ; SprShotMissileY: 22 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/shot-missile-y.bin
 $8BC4 b SprShotMissileYOdd 2 ; Sprite 48 (odd column; SpriteTable 97): missile, flying along Y, 22 rows x 4 bytes
+@res gfx/sprites/shot-missile-y-odd.bin
 > Drawn by DrawMoverSprite for a Shots record: sprite id $2B + 2 x weapon + (direction >= 4: flying along Y). No recording drew it.
 $8BC6 b SprShotMissileYOddRows 8 ; SprShotMissileYOdd: 22 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/shot-missile-y-odd.bin
 $8C76 b SprShotPhaserX 2 ; Sprite 49 (even column; SpriteTable 98): phaser beam, along X, 17 rows x 3 bytes
+@res gfx/sprites/shot-phaser-x.bin
 > Drawn by DrawMoverSprite for a Shots record: sprite id $2B + 2 x weapon + (direction >= 4: flying along Y). No recording drew it.
 $8C78 b SprShotPhaserXRows 6 ; SprShotPhaserX: 17 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/shot-phaser-x.bin
 $8CDE b SprShotPhaserXOdd 2 ; Sprite 49 (odd column; SpriteTable 99): phaser beam, along X, 17 rows x 3 bytes
+@res gfx/sprites/shot-phaser-x-odd.bin
 > Drawn by DrawMoverSprite for a Shots record: sprite id $2B + 2 x weapon + (direction >= 4: flying along Y). No recording drew it.
 $8CE0 b SprShotPhaserXOddRows 6 ; SprShotPhaserXOdd: 17 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/shot-phaser-x-odd.bin
 $8D46 b SprShotPhaserY 2 ; Sprite 50 (even column; SpriteTable 100): phaser beam, along Y, 20 rows x 3 bytes
+@res gfx/sprites/shot-phaser-y.bin
 > Drawn by DrawMoverSprite for a Shots record: sprite id $2B + 2 x weapon + (direction >= 4: flying along Y). No recording drew it.
 $8D48 b SprShotPhaserYRows 6 ; SprShotPhaserY: 20 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/shot-phaser-y.bin
 $8DC0 b SprShotPhaserYOdd 2 ; Sprite 50 (odd column; SpriteTable 101): phaser beam, along Y, 20 rows x 3 bytes
+@res gfx/sprites/shot-phaser-y-odd.bin
 > Drawn by DrawMoverSprite for a Shots record: sprite id $2B + 2 x weapon + (direction >= 4: flying along Y). No recording drew it.
 $8DC2 b SprShotPhaserYOddRows 6 ; SprShotPhaserYOdd: 20 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/shot-phaser-y-odd.bin
 $8E3A b SprShip 2 ; Sprite 0 (even column; SpriteTable 0, 38, 39, 40, 41): the player's ship, 30 rows x 4 bytes
+@res gfx/sprites/ship.bin
 > Drawn by DrawCell / ShipDraw (sprite id 0) at the height Altitude over the ship's cell.
 $8E3C b SprShipRows 8 ; SprShip: 30 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/ship.bin
 $8F2C b SprShipOdd 2 ; Sprite 0 (odd column; SpriteTable 1): the player's ship, 30 rows x 4 bytes
+@res gfx/sprites/ship-odd.bin
 > Drawn by DrawCell / ShipDraw (sprite id 0) at the height Altitude over the ship's cell.
 $8F2E b SprShipOddRows 8 ; SprShipOdd: 30 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/ship-odd.bin
 $901E b SprShadow 2 ; Sprite 1 (even column; SpriteTable 2): the ship's shadow on the ground, 24 rows x 3 bytes
+@res gfx/sprites/shadow.bin
 > Drawn by DrawMapObjects (sprite id 1) at height 0 under the ship, before the map.
 $9020 b SprShadowRows 6 ; SprShadow: 24 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/shadow.bin
 $90B0 b SprShadowOdd 2 ; Sprite 1 (odd column; SpriteTable 3): the ship's shadow on the ground, 24 rows x 4 bytes
+@res gfx/sprites/shadow-odd.bin
 > Drawn by DrawMapObjects (sprite id 1) at height 0 under the ship, before the map.
 $90B2 b SprShadowOddRows 8 ; SprShadowOdd: 24 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/shadow-odd.bin
 $9172 b SprStonesA 2 ; Sprite 2 (both columns; SpriteTable 4, 5): stones, map type 2, 21 rows x 3 bytes
+@res gfx/sprites/stones-a.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $9174 b SprStonesARows 6 ; SprStonesA: 21 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/stones-a.bin
 $91F2 b SprStonesB 2 ; Sprite 3 (both columns; SpriteTable 6, 7): stones, map type 3, 22 rows x 3 bytes
+@res gfx/sprites/stones-b.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $91F4 b SprStonesBRows 6 ; SprStonesB: 22 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/stones-b.bin
 $9278 b SprStonesC 2 ; Sprite 4 (both columns; SpriteTable 8, 9): stones, map type 4, 21 rows x 3 bytes
+@res gfx/sprites/stones-c.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $927A b SprStonesCRows 6 ; SprStonesC: 21 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/stones-c.bin
 $92F8 b SprStonesD 2 ; Sprite 5 (both columns; SpriteTable 10, 11): stones, map type 5, 20 rows x 3 bytes
+@res gfx/sprites/stones-d.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $92FA b SprStonesDRows 6 ; SprStonesD: 20 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/stones-d.bin
 $9372 b SprRocksA 2 ; Sprite 8 (both columns; SpriteTable 16, 17): rocks, map type 8, 25 rows x 3 bytes
+@res gfx/sprites/rocks-a.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $9374 b SprRocksARows 6 ; SprRocksA: 25 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/rocks-a.bin
 $940A b SprRocksB 2 ; Sprite 9 (both columns; SpriteTable 18, 19): rocks, map type 9, 26 rows x 3 bytes
+@res gfx/sprites/rocks-b.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $940C b SprRocksBRows 6 ; SprRocksB: 26 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/rocks-b.bin
 $94A8 b SprRocksC 2 ; Sprite 10 (both columns; SpriteTable 20, 21): rocks, map type 10, 23 rows x 3 bytes
+@res gfx/sprites/rocks-c.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $94AA b SprRocksCRows 6 ; SprRocksC: 23 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/rocks-c.bin
 $9534 b SprRocksD 2 ; Sprite 11 (both columns; SpriteTable 22, 23): rocks, map type 11, 24 rows x 3 bytes
+@res gfx/sprites/rocks-d.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $9536 b SprRocksDRows 6 ; SprRocksD: 24 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/rocks-d.bin
 $95C6 b SprTrenchStartY 2 ; Sprite 12 (even column; SpriteTable 24): trench start along Y (map type 12 on even rows), 20 rows x 3 bytes
+@res gfx/sprites/trench-start-y.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $95C8 b SprTrenchStartYRows 6 ; SprTrenchStartY: 20 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/trench-start-y.bin
 $9640 b SprTrenchStartX 2 ; Sprite 12 (odd column; SpriteTable 25): trench start along X (map type 12 on odd rows), 21 rows x 4 bytes
+@res gfx/sprites/trench-start-x.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $9642 b SprTrenchStartXRows 8 ; SprTrenchStartX: 21 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/trench-start-x.bin
 $96EA b SprTrenchMiddleY 2 ; Sprite 13 (even column; SpriteTable 26): trench middle along Y (map type 13 on even rows), 23 rows x 3 bytes
+@res gfx/sprites/trench-middle-y.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $96EC b SprTrenchMiddleYRows 6 ; SprTrenchMiddleY: 23 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/trench-middle-y.bin
 $9776 b SprTrenchMiddleX 2 ; Sprite 13 (odd column; SpriteTable 27): trench middle along X (map type 13 on odd rows), 21 rows x 4 bytes
+@res gfx/sprites/trench-middle-x.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $9778 b SprTrenchMiddleXRows 8 ; SprTrenchMiddleX: 21 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/trench-middle-x.bin
 $9820 b SprTrenchEndY 2 ; Sprite 14 (even column; SpriteTable 28): trench end along Y (map type 14 on even rows), 23 rows x 3 bytes
+@res gfx/sprites/trench-end-y.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $9822 b SprTrenchEndYRows 6 ; SprTrenchEndY: 23 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/trench-end-y.bin
 $98AC b SprTrenchEndX 2 ; Sprite 14 (odd column; SpriteTable 29): trench end along X (map type 14 on odd rows), 17 rows x 3 bytes
+@res gfx/sprites/trench-end-x.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $98AE b SprTrenchEndXRows 6 ; SprTrenchEndX: 17 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/trench-end-x.bin
 $9914 b SprBlockLow 2 ; Sprite 15 (even column; SpriteTable 30): low block, map type 15, 32 rows x 4 bytes
+@res gfx/sprites/block-low.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height.
 $9916 b SprBlockLowRows 8 ; SprBlockLow: 32 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/block-low.bin
 $9A16 b SprBlockLowOdd 2 ; Sprite 15 (odd column; SpriteTable 31): low block, map type 15, 32 rows x 4 bytes
+@res gfx/sprites/block-low-odd.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height.
 $9A18 b SprBlockLowOddRows 8 ; SprBlockLowOdd: 32 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/block-low-odd.bin
 $9B18 b SprBlockTall 2 ; Sprite 16 (even column; SpriteTable 32): tall block with an arch, map type 16, 40 rows x 4 bytes
+@res gfx/sprites/block-tall.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height.
 $9B1A b SprBlockTallRows 8 ; SprBlockTall: 40 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/block-tall.bin
 $9C5A b SprBlockTallOdd 2 ; Sprite 16 (odd column; SpriteTable 33): tall block with an arch, map type 16, 40 rows x 4 bytes
+@res gfx/sprites/block-tall-odd.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height.
 $9C5C b SprBlockTallOddRows 8 ; SprBlockTallOdd: 40 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/block-tall-odd.bin
 $9D9C b SprBouldersA 2 ; Sprite 6 (even column; SpriteTable 12): boulders, map type 6, 25 rows x 3 bytes
+@res gfx/sprites/boulders-a.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $9D9E b SprBouldersARows 6 ; SprBouldersA: 25 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/boulders-a.bin
 $9E34 b SprBouldersAOdd 2 ; Sprite 6 (odd column; SpriteTable 13): boulders, map type 6, 24 rows x 4 bytes
+@res gfx/sprites/boulders-a-odd.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $9E36 b SprBouldersAOddRows 8 ; SprBouldersAOdd: 24 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/boulders-a-odd.bin
 $9EF6 b SprBouldersB 2 ; Sprite 7 (even column; SpriteTable 14): boulders, map type 7, 25 rows x 3 bytes
+@res gfx/sprites/boulders-b.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $9EF8 b SprBouldersBRows 6 ; SprBouldersB: 25 rows of 3 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/boulders-b.bin
 $9F8E b SprBouldersBOdd 2 ; Sprite 7 (odd column; SpriteTable 15): boulders, map type 7, 24 rows x 4 bytes
+@res gfx/sprites/boulders-b-odd.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $9F90 b SprBouldersBOddRows 8 ; SprBouldersBOdd: 24 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/boulders-b-odd.bin
 $A050 b SprPost 2 ; Sprite 21 (both columns; SpriteTable 42, 43): border post, map type 21, 36 rows x 2 bytes
+@res gfx/sprites/post.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height.
 $A052 b SprPostRows 4 ; SprPost: 36 rows of 2 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/post.bin
 $A0E2 b SprBlockDoor 2 ; Sprite 17 (even column; SpriteTable 34): low block with a door, map type 17 on even rows, 32 rows x 4 bytes
+@res gfx/sprites/block-door.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height.
 $A0E4 b SprBlockDoorRows 8 ; SprBlockDoor: 32 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/block-door.bin
 $A1E4 b SprBlockWindow 2 ; Sprite 17 (odd column; SpriteTable 35): low block with a window, map type 17 on odd rows, 32 rows x 4 bytes
+@res gfx/sprites/block-window.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height.
 $A1E6 b SprBlockWindowRows 8 ; SprBlockWindow: 32 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/block-window.bin
 $A2E6 b SprBlockGrid 2 ; Sprite 18 (even column; SpriteTable 36): tall block with a grid face and a door, map type 18 on even rows, 40 rows x 4 bytes
+@res gfx/sprites/block-grid.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $A2E8 b SprBlockGridRows 8 ; SprBlockGrid: 40 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/block-grid.bin
 $A428 b SprBlockDotted 2 ; Sprite 18 (odd column; SpriteTable 37): tall block with a dotted face, map type 18 on odd rows, 40 rows x 4 bytes
+@res gfx/sprites/block-dotted.bin
 > Drawn by DrawCell for a map cell whose bit 5 is clear: sprite id = cell AND $1F; TerrainHeights gives its height. No recording drew it.
 $A42A b SprBlockDottedRows 8 ; SprBlockDotted: 40 rows of 4 (mask, graphic) pairs, bottom line first
+@res gfx/sprites/block-dotted.bin
 $A56A b SpriteSpare 16 ; Free space after the sprites (150 zero bytes)
 > Zero, up to Start at $A600; nothing in the recordings reads or writes it.
 
 $D6A8 b ViewEdgeA 2 ; View edge, black on the left: 8 lines of 2 bytes
+@res gfx/view-edges.bin
 > $FFFF, $FFFC, $FFF0 ... $C000: a staircase 2 pixels a line. DrawViewBackground copies it with DrawEdgeStrips (2 bytes a line, 8 lines, then 2 bytes left) 6 times from $5B0A, the lower edge of the black triangle above the map, and 3 times from $5FB2. Image: d1-img/D6A8-ViewEdges.png.
 $D6B8 b ViewEdgeB 2 ; View edge, black on the right: 8 lines of 2 bytes
+@res gfx/view-edges.bin
 > $0003, $000F ... $FFFF; DrawViewBackground copies it 4 times from $6512: with the 3 copies of ViewEdgeA at $5FB2 it makes the black band along the map's front edge, bottom right of the view.
 $D6C8 b PartSpriteTable 4 ; Robot part sprites: 8 parts x 4 directions, sprite id - $16
 > Row = part (bipod, tracks, anti-grav, cannon, missiles, phasers, nuclear, electronics), column = direction (the number of the lowest set bit of robot +$08: 0 X+, 1 X-, 2 Y+, 3 Y-). Read by DirectionLoop ($CF16; sprite id = byte + $16, then DrawSprite) for robots in the view and by ConstructionMenu ($C87B; column 1, the odd-column sprite via SpriteTable+$58) for the part icons. Bipod, tracks and missiles have one picture per axis, anti-grav and nuclear one for all four.

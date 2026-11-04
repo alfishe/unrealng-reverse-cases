@@ -1,0 +1,235 @@
+; The menu tune (r4.md: MenuMusic $C4A7, MenuInterrupt $C4FD, DrumStep $C5DB), assembled by
+; tools/res_formats.py into the files of src/res/music/menu. The sections follow each other from $C665;
+; an address is Label, Label+offset or $xxxx. A frame is 1/50 s (one interrupt).
+; Periods: the tone loop counts a period down, about 3.5 MHz / (125.5 * period) Hz ($7C ~225 Hz,
+; $3E ~450 Hz).
+; drums: hiss N (kind 0) | rasp N [KIND] (kind 1, or any other kind but 0 and 2) | sweep N P (kind 2: a
+;        falling tone from P) | goto Label. N frames to the next record (0 = 256, 1 cannot be written).
+; voice: note P N (period P >= 9, N frames; 0 = 256) | on | off (the pulses silent, the notes keep their
+;        time) | call Label (a pattern, one level deep) | return | goto Label | drums Label (the drum
+;        goes on at Label: the bass track only)
+; db $xx,... and dw Label,... write bytes as they are
+
+drums DrumTrackSteady
+  hiss 32
+  goto DrumTrackSteady
+
+drums DrumTrackUnused
+  hiss 32
+
+drums DrumTrackBeat
+  rasp 16
+  hiss 8
+  hiss 8
+  sweep 32 $30
+  goto DrumTrackBeat
+
+voice BassTrack
+  drums DrumTrackSteady
+  call BassRiff
+  call BassRiff
+  call BassRiff
+  call BassRiff
+  drums DrumTrackBeat
+  call BassWalk
+  call BassWalk
+  call BassRun
+  call BassRun
+  call BassRun
+  call BassRun
+  call BassRun
+  call BassRun
+  call BassRun
+  call BassRun
+  call BassWalk
+  call BassWalk
+  call BassWalk
+  call BassWalk
+  call BassWalk
+  drums DrumTrackSteady
+  goto BassTrack
+
+voice BassRiff
+  note $7C 16
+  off
+  note $7C 8
+  on
+  note $7C 16
+  off
+  note $7C 64
+  note $52 24
+  on
+  return
+
+voice BassWalk
+  note $7C 64
+  note $6E 64
+  note $68 64
+  note $5D 64
+  note $7C 64
+  note $6E 64
+  note $68 64
+  note $5D 64
+  return
+
+voice BassRun
+  note $7C 8
+  off
+  note $7C 8
+  on
+  note $7C 8
+  off
+  note $7C 8
+  on
+  note $7C 8
+  note $8B 8
+  note $93 8
+  note $A5 8
+  note $BA 8
+  note $A5 8
+  note $93 8
+  note $8B 8
+  note $7C 8
+  note $8B 8
+  note $93 8
+  note $A5 8
+  return
+
+voice LeadTrack
+  call LeadRiff
+  call LeadRiff
+  call LeadRiff
+  call LeadRiff
+  call LeadPhrase
+  call LeadPhrase
+  call LeadPhrase
+  call LeadPhrase
+  off
+  call LeadPhrase
+  on
+  call LeadArpeggioA
+  call LeadArpeggioA
+  call LeadArpeggioA
+  call LeadArpeggioA
+  call LeadArpeggioA
+  call LeadArpeggioB
+  call LeadArpeggioA
+  call LeadArpeggioB
+  call LeadArpeggioA
+  call LeadArpeggioB
+  call LeadArpeggioA
+  note $3E 32
+  note $37 32
+  call LeadPhrase
+  call LeadPhrase
+  call LeadScale
+  call LeadScale
+  call LeadScale
+  call LeadScale
+  call LeadRiff
+  call LeadRiff
+  call LeadRiff
+  call LeadRiff
+  call LeadArpeggioA
+  call LeadArpeggioA
+  call LeadArpeggioA
+  call LeadArpeggioA
+  call LeadArpeggioA
+  call LeadArpeggioA
+  call LeadArpeggioA
+  call LeadArpeggioA
+  call LeadRiff
+  call LeadRiff
+  call LeadRiff
+  call LeadRiff
+  goto LeadTrack
+
+voice LeadRiff
+  note $37 16
+  off
+  note $37 8
+  on
+  note $37 16
+  off
+  note $37 8
+  on
+  note $29 8
+  note $2E 8
+  note $29 8
+  note $2E 8
+  note $29 8
+  note $2E 8
+  note $29 8
+  note $2E 8
+  note $37 8
+  note $3E 8
+  return
+
+voice LeadPhrase
+  note $29 16
+  note $2E 16
+  note $31 16
+  note $37 16
+  note $3E 32
+  note $49 16
+  note $3E 16
+  note $45 32
+  note $2E 32
+  note $29 16
+  note $2E 16
+  note $34 16
+  note $2E 16
+  return
+
+voice LeadArpeggioA
+  note $3E 16
+  note $52 8
+  note $7C 8
+  note $3E 16
+  note $52 8
+  note $7C 8
+  return
+
+voice LeadArpeggioB
+  note $45 16
+  note $5D 8
+  note $8B 8
+  note $45 16
+  note $5D 8
+  note $8B 8
+  return
+
+voice LeadScale
+  note $29 4
+  note $2E 4
+  note $34 4
+  note $37 4
+  note $3E 4
+  note $45 4
+  note $49 4
+  note $52 4
+  note $5D 4
+  note $68 4
+  note $6E 4
+  note $7C 4
+  note $8B 4
+  note $93 4
+  note $A5 4
+  note $BA 4
+  note $29 4
+  note $2E 4
+  note $34 4
+  note $37 4
+  note $3E 4
+  note $45 4
+  note $49 4
+  note $52 4
+  note $5D 4
+  note $68 4
+  note $6E 4
+  note $7C 4
+  note $8B 4
+  note $93 4
+  note $A5 4
+  note $BA 4
+  return
