@@ -422,7 +422,12 @@ DrawBuilding:
 ;
 ; The bytes: $2C, $28, $25, $23, $20, $1D, $17, $2A, $2B. Read by DrawBuilding.
 BuildingSprites:
-  DEFB $2C,$28,$25,$23,$20,$1D,$17,$2A,$2B
+  DEFB $2C,$28,$25,$23,$20,$1D,$17,$2A,$2B ; by building type: 0 pad 44 (the
+                                           ; warbase sign), factories 1
+                                           ; electronics 40, 2 nuclear 37, 3
+                                           ; phasers 35, 4 missiles 32, 5
+                                           ; cannon 29, 6 chassis 23, flags 7
+                                           ; ours 42, 8 the enemy's 43
 
 ; The height each building sprite is drawn at
 ;
@@ -431,7 +436,9 @@ BuildingSprites:
 ; DrawSprite's height operand. Not the heights the ship lands on: those are
 ; BuildingTops (the world module).
 BuildingHeights:
-  DEFB $13,$0F,$0F,$0F,$0F,$0F,$0F,$1A,$1A
+  DEFB $13,$0F,$0F,$0F,$0F,$0F,$0F,$1A,$1A ; type 0 the pad $13, factory signs
+                                           ; 1-6 $0F (on the roof blocks),
+                                           ; flags 7-8 $1A
 
 ; Draw robot or shot IY found at cell HL (view row D, column E), after the
 ; blocks that overlap it

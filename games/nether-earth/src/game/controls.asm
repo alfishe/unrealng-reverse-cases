@@ -108,15 +108,20 @@ InputDone:
 ; The ninth byte, $D3E4, is Controls: 1 in the image (the keyboard only);
 ; MainMenu sets 1-3 by the keys 1, 2, 3.
 KeyTable:
-  DEFB $F7,$01,$31
-  DEFB $DF,$04,$49
-  DEFB $F7,$10,$35
-  DEFB $7F,$02,$82
-  DEFB $FB,$01,$51
-  DEFB $FD,$01,$41
-  DEFB $DF,$02,$4F
-  DEFB $DF,$01,$50
+  DEFB $F7,$01,$31        ; Input bit 7 pause: key 1, port $F7FE (1-5) mask
+                          ; $01; the bytes: port high byte, mask, key code
+                          ; (redefine only)
+  DEFB $DF,$04,$49        ; Input bit 6 abort: key I, port $DFFE (P-Y) mask $04
+  DEFB $F7,$10,$35        ; Input bit 5 save: key 5, port $F7FE (1-5) mask $10
+  DEFB $7F,$02,$82        ; Input bit 4 fire: SYMBOL SHIFT, port $7FFE
+                          ; (SPACE-B) mask $02, code $82 (a redefine stores
+                          ; $0E)
+  DEFB $FB,$01,$51        ; Input bit 3 up: key Q, port $FBFE (Q-T) mask $01
+  DEFB $FD,$01,$41        ; Input bit 2 down: key A, port $FDFE (A-G) mask $01
+  DEFB $DF,$02,$4F        ; Input bit 1 left: key O, port $DFFE (P-Y) mask $02
+  DEFB $DF,$01,$50        ; Input bit 0 right: key P, port $DFFE (P-Y) mask $01
 
 ; the menu's choice: 1 keyboard, 2 Kempston, 3 Interface 2
 Controls:
-  DEFB $01
+  DEFB $01                ; 1 in the image: keyboard only (2 Kempston, 3
+                          ; Interface 2)

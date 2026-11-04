@@ -143,7 +143,7 @@ image.
 | `$C350` | REDEFINE KEYS | (2,9) in `$47`, tall; then (5,3), size 0 (`RedefineKeys` `$C34A`) | exp |
 | `$C382`-`$C3EE` | UP, DOWN, LEFT, RIGHT, FIRE, PAUSE, ABORT, SAVE | after each "PRESS KEY FOR " | exp |
 | `$C40F` | PRESS KEY FOR | two rows down in `$46`; the name in `$45` (`PrintKeyPrompt` `$C40C`) | exp |
-| `$C42B` | three spaces, `$46` | before the key chosen (`PrintKeyPromptName` `$C424`) | exp |
+| `$C42B` | two spaces, attribute `$46` | before the key chosen (`PrintKeyPromptName` `$C424`) | exp |
 | `$C472`, `$C481`, `$C48F`, `$C4A0` | SYM SH, ENTER, CAPS SH, SPACE | names of keys without a glyph (`CheckEnterKey` `$C47A` and its neighbours) | exp |
 | `$C8BE` | ROBOT / CONSTRUCTION, the part names and their costs, EXIT MENU / START ROBOT, -- RESOURCES -- / -- AVAILABLE --, GENERAL .. CHASSIS, TOTAL | the whole construction screen, one string of 297 bytes (`ConstructionMenu` `$C849`) | 0/0/7/4 |
 | `$CBFF` | (a position) | (18,12): the TOTAL value (`PrintMenuTotal` `$CC03`) | 0/0/29/14 |

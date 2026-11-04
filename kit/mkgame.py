@@ -312,7 +312,7 @@ def write_ctl(mem, code, targets, calls, entries, ann, path):
                 length = a - data_at
                 extents[data_at] = length
                 lines[lines.index(None)] = '\n'.join(data_blocks(data_at, a, data_kind, data_width, ann))
-    lines.append('i $10000')
+    lines.append('i $%04X' % HI if HI < 0x10000 else 'i $10000')  # the bytes past the image are no entry's
     open(path, 'w').write('\n'.join(lines) + '\n')
     return extents
 

@@ -60,8 +60,14 @@ RobotMenuShow:
 ; empty line between (code 3 = the next line, same column), then (17,23)
 ; attribute $46 "-ORDERS-".
 RobotMenuText:
-  DEFM $01,$04,$17,$02,"MDIRECT  ",$03," CONTROL",$03,$03,"GIVE    ",$03,"  ORDERS",$03,$03,"COMBAT  ",$03,"    MODE",$03,$03,"LEA"
-  DEFM "VE   ",$03,"   ROBOT",$01,$11,$17,$02,"F-ORDERS-",$00
+  DEFM $01,$04,$17,$02,"M" ; AT (4,23), attribute $4D (cyan on blue, the list
+                           ; menu's normal colour): the four items
+  DEFM "DIRECT  ",$03," CONTROL",$03,$03 ; item 1 DIRECT CONTROL, rows 4-5
+  DEFM "GIVE    ",$03,"  ORDERS",$03,$03 ; item 2 GIVE ORDERS, rows 7-8
+  DEFM "COMBAT  ",$03,"    MODE",$03,$03 ; item 3 COMBAT MODE, rows 10-11
+  DEFM "LEAVE   ",$03,"   ROBOT" ; item 4 LEAVE ROBOT, rows 13-14
+  DEFM $01,$11,$17,$02,"F-ORDERS-",$00 ; -ORDERS- at (17,23) in $46 (yellow):
+                                       ; the heading over the current order
 
 ; Robot menu: print the name of the robot's order
 ;
@@ -84,14 +90,16 @@ OrderNameIndex:
 
 ; The order line: (18,23), attribute $45, then the copied name
 OrderLineHead:
-  DEFM $01,$12,$17,$02,"E"
+  DEFM $01,$12,$17,$02,"E" ; AT (18,23), attribute $45 (cyan): then ShowOrder
+                           ; prints OrderLine
 
 ; The order's name, 27 bytes copied from OrderNames (zero in the image)
 ;
 ; Filled by ShowOrder before each print; the copied name brings its own end
 ; byte 0.
 OrderLine:
-  DEFS $1B
+  DEFS $1B                ; the order's three 9-character lines and the end 0,
+                          ; copied from OrderNames by ShowOrder
 
 ; Robot menu: for ADVANCE and RETREAT, the miles under the order's name
 ;
@@ -112,7 +120,8 @@ ShowOrderMiles:
 
 ; (19,25), the position of the miles
 MilesPos:
-  DEFM $01,$13,$19,$00
+  DEFM $01,$13,$19,$00    ; AT (19,25): the miles of ADVANCE / RETREAT, printed
+                          ; into the order's blank middle line
 
 ; Code the recordings never ran: LD A,(IX+$0E); SRL A; CALL $D3E5
 ;
@@ -184,7 +193,9 @@ ShowStrength:
 
 ; "STRENGTH" at (22,23) attribute $46, then (23,25) attribute $47
 StrengthText:
-  DEFM $01,$16,$17,$02,"FSTRENGTH",$01,$17,$19,$02,"G",$00
+  DEFM $01,$16,$17,$02,"FSTRENGTH" ; "STRENGTH" at (22,23) in $46 (yellow)
+  DEFM $01,$17,$19,$02,"G",$00 ; then AT (23,25) in $47 (white): where
+                               ; ShowStrength prints the value
 
 ; Print the strength +$0C as "nnn%"
 ;
@@ -301,8 +312,15 @@ OrdersMenu:
 
 ; GIVE ORDERS: SELECT ORDERS and the five items
 OrdersMenuText:
-  DEFM $01,$04,$18,$02,"GSELECT",$03,"ORDERS",$02,"M",$01,$07,$17,"STOP AND",$03,"  DEFEND",$03,$03,"ADVANCE ",$03,"?? MILES",$03,$03,"RETR"
-  DEFM "EAT ",$03,"?? MILES",$03,$03,"SEARCH &",$03," DESTROY",$03,$03,"SEARCH &",$03," CAPTURE",$00
+  DEFM $01,$04,$18,$02,"GSELECT",$03,"ORDERS" ; the heading SELECT / ORDERS at
+                                              ; (4,24) in $47 (white)
+  DEFM $02,"M",$01,$07,$17 ; the items in $4D (cyan on blue) from (7,23), two
+                           ; rows each
+  DEFM "STOP AND",$03,"  DEFEND",$03,$03 ; item 1 STOP AND DEFEND, rows 7-8
+  DEFM "ADVANCE ",$03,"?? MILES",$03,$03 ; item 2 ADVANCE ?? MILES, rows 10-11
+  DEFM "RETREAT ",$03,"?? MILES",$03,$03 ; item 3 RETREAT ?? MILES, rows 13-14
+  DEFM "SEARCH &",$03," DESTROY",$03,$03 ; item 4 SEARCH & DESTROY, rows 16-17
+  DEFM "SEARCH &",$03," CAPTURE",$00 ; item 5 SEARCH & CAPTURE, rows 19-20
 
 ; GIVE ORDERS: choose; stop at once, advance / retreat ask the miles, search
 ; asks the target
@@ -343,7 +361,8 @@ OrderMove:
 
 ; "ADVANCE " at (5,23), attribute $4F
 AdvanceTitle:
-  DEFM $01,$05,$17,$02,"OADVANCE ",$00
+  DEFM $01,$05,$17,$02,"OADVANCE ",$00 ; "ADVANCE " at (5,23) in $4F (white on
+                                       ; blue): the distance menu's title
 
 ; Code the recordings never ran: JR $AA40, past the RETREAT title
 ;
@@ -363,7 +382,8 @@ RetreatTitle:
 
 ; "RETREAT " at (5,23), attribute $4F
 RetreatTitleText:
-  DEFM $01,$05,$17,$02,"ORETREAT ",$00
+  DEFM $01,$05,$17,$02,"ORETREAT ",$00 ; "RETREAT " at (5,23) in $4F: the
+                                       ; distance menu's title
 
 ; Code the recordings never ran: CALL PrintInline, the distance menu's texts
 ;
@@ -376,7 +396,13 @@ DistanceMenu:
 
 ; The distance menu: ?? MILES, SELECT DISTANCE, 0 MILES
 DistanceText:
-  DEFM $03,"?? MILES",$01,$09,$17,$02,"E SELECT",$03,"DISTANCE",$01,$0D,$18,$02,"F0 MILES",$00
+  DEFM $03,"?? MILES"     ; "?? MILES" on the next row (6,23), under ADVANCE /
+                          ; RETREAT
+  DEFM $01,$09,$17,$02,"E SELECT",$03,"DISTANCE" ; " SELECT" / "DISTANCE" at
+                                                 ; (9,23)-(10,23) in $45 (cyan)
+  DEFM $01,$0D,$18,$02,"F0 MILES",$00 ; "0 MILES" at (13,24) in $46 (yellow):
+                                      ; the first value, then DistanceAtText
+                                      ; reprints it
 
 ; Code the recordings never ran: choose the miles, 0-50 by 5
 ;
@@ -429,7 +455,8 @@ DistanceLoop:
 
 ; PrintInline: (13,23), attribute $46, where the miles are printed
 DistanceAtText:
-  DEFM $01,$0D,$17,$02,"F",$00
+  DEFM $01,$0D,$17,$02,"F",$00 ; AT (13,23), attribute $46: where DistanceShow
+                               ; prints the miles as they change
 
 ; the miles in D printed (PrintNumber2), a click, back to the distance loop
 ;
@@ -470,8 +497,18 @@ TargetMenu:
 
 ; SEARCH & DESTROY: SELECT TARGET, ENEMY ROBOTS, FACTORYS, WARBASES
 DestroyMenuText:
-  DEFM $01,$04,$17,$02,"OSEARCH &",$03," DESTROY",$01,$08,$18,$02,"ESELECT",$03,"TARGET",$01,$0C,$17,$02,"MENEMY   ",$03,"  ROBOTS",$03,$03,"E"
-  DEFM "NEMY   ",$03,"FACTORYS",$03,$03,"ENEMY   ",$03,"WARBASES",$00
+  DEFM $01,$04,$17,$02,"OSEARCH &",$03," DESTROY" ; the title SEARCH & /
+                                                  ; DESTROY at (4,23)-(5,23) in
+                                                  ; $4F (white on blue)
+  DEFM $01,$08,$18,$02,"ESELECT",$03,"TARGET" ; SELECT / TARGET at
+                                              ; (8,24)-(9,24) in $45 (cyan)
+  DEFM $01,$0C,$17,$02,"M" ; the items in $4D from (12,23), two rows each
+  DEFM "ENEMY   ",$03,"  ROBOTS",$03,$03 ; item 1 ENEMY ROBOTS (order 3), rows
+                                         ; 12-13
+  DEFM "ENEMY   ",$03,"FACTORYS",$03,$03 ; item 2 ENEMY FACTORYS (order 4),
+                                         ; rows 15-16
+  DEFM "ENEMY   ",$03,"WARBASES",$00 ; item 3 ENEMY WARBASES (order 5), rows
+                                     ; 18-19
 
 ; SEARCH & DESTROY: choose the target, orders 3-5
 ;
@@ -498,8 +535,18 @@ CaptureMenu:
 ; SEARCH & CAPTURE: SELECT TARGET, NEUTRAL FACTORYS, ENEMY FACTORYS, ENEMY
 ; WARBASES
 CaptureMenuText:
-  DEFM $01,$04,$17,$02,"OSEARCH &",$03," CAPTURE",$01,$08,$18,$02,"ESELECT",$03,"TARGET",$01,$0C,$17,$02,"MNEUTRAL ",$03,"FACTORYS",$03,$03,"E"
-  DEFM "NEMY   ",$03,"FACTORYS",$03,$03,"ENEMY   ",$03,"WARBASES",$00
+  DEFM $01,$04,$17,$02,"OSEARCH &",$03," CAPTURE" ; the title SEARCH & /
+                                                  ; CAPTURE at (4,23)-(5,23) in
+                                                  ; $4F (white on blue)
+  DEFM $01,$08,$18,$02,"ESELECT",$03,"TARGET" ; SELECT / TARGET at
+                                              ; (8,24)-(9,24) in $45 (cyan)
+  DEFM $01,$0C,$17,$02,"M" ; the items in $4D from (12,23), two rows each
+  DEFM "NEUTRAL ",$03,"FACTORYS",$03,$03 ; item 1 NEUTRAL FACTORYS (order 6),
+                                         ; rows 12-13
+  DEFM "ENEMY   ",$03,"FACTORYS",$03,$03 ; item 2 ENEMY FACTORYS (order 7),
+                                         ; rows 15-16
+  DEFM "ENEMY   ",$03,"WARBASES",$00 ; item 3 ENEMY WARBASES (order 8), rows
+                                     ; 18-19
 
 ; SEARCH & CAPTURE: choose the target, orders 6-8
 ;
@@ -560,8 +607,19 @@ CombatMenu:
 ;
 ; Printed at (4,23), attribute $4D, an item every 3 rows like the robot menu.
 CombatMenuText:
-  DEFM $01,$04,$17,$02,"MNUCLEAR ",$03,"    BOMB",$03,$03,"FIRE    ",$03," PHASERS",$03,$03,"FIRE    ",$03,"MISSILES",$03,$03,"FIR"
-  DEFM "E    ",$03,"  CANNON",$03,$03,"MOVE    ",$03,"   ROBOT",$03,$03,"STOP    ",$03,"  COMBAT",$00
+  DEFM $01,$04,$17,$02,"M" ; AT (4,23) in $4D (cyan on blue), two rows an item
+  DEFM "NUCLEAR ",$03,"    BOMB",$03,$03 ; item 1 NUCLEAR BOMB (part bit 6 of
+                                         ; +$07), rows 4-5
+  DEFM "FIRE    ",$03," PHASERS",$03,$03 ; item 2 FIRE PHASERS (bit 5), rows
+                                         ; 7-8
+  DEFM "FIRE    ",$03,"MISSILES",$03,$03 ; item 3 FIRE MISSILES (bit 4), rows
+                                         ; 10-11
+  DEFM "FIRE    ",$03,"  CANNON",$03,$03 ; item 4 FIRE CANNON (bit 3), rows
+                                         ; 13-14
+  DEFM "MOVE    ",$03,"   ROBOT",$03,$03 ; item 5 MOVE ROBOT (DirectControl),
+                                         ; rows 16-17
+  DEFM "STOP    ",$03,"  COMBAT",$00 ; item 6 STOP COMBAT (back to the robot
+                                     ; menu), rows 19-20
 
 ; Code the recordings never ran: the combat menu
 ;

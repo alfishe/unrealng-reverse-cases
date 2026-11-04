@@ -1212,9 +1212,12 @@ SetStepDelayPart:
 ; 6 4 3 / 8 6 3 / 9 7 4. Read by SetStepDelay; a game turn is about 10 frames,
 ; so a bipod on flat ground steps every 60 frames.
 StepDelays:
-  DEFB $06,$04,$03
-  DEFB $08,$06,$03
-  DEFB $09,$07,$04
+  DEFB $06,$04,$03        ; flat ground (+$0D = 0): bipod 6, tracks 4,
+                          ; anti-grav 3 turns a step
+  DEFB $08,$06,$03        ; low ground (+$0D 1-3): bipod 8, tracks 6, anti-grav
+                          ; 3
+  DEFB $09,$07,$04        ; high ground (+$0D 4 and more): bipod 9, tracks 7,
+                          ; anti-grav 4
 
 ; E = the directions in which a live opponent robot is in sight
 ;
@@ -1330,7 +1333,8 @@ ScanLaneDone:
 ; Read by ScanLane (from LD HL,$B6AE and two INC HL a bit of D), in the Input
 ; bit order.
 LaneSteps:
-  DEFW $0001,$FFFF,$0200,$FE00
+  DEFW $0001,$FFFF,$0200,$FE00 ; Input bit 0 right +1, bit 1 left -1, bit 2
+                               ; down +$200 (next row), bit 3 up -$200
 
 ; IY = a free shot record of the shooter IX's side; Z when one is free
 ;

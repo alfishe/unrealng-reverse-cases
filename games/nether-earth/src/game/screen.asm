@@ -191,7 +191,11 @@ BlueEdgeRow2:
 ; for RADAR:. PrintInline returns past the 0 into ShowStatusPanel:
 ; DrawPlayScreen has no RET of its own.
 PlayScreenText:
-  DEFM $02,"W",$01,$00,$16,$04,$00," DAY:",$03,"TIME:",$01,$16,$00,$04,"!",$02,"ERADAR:",$00
+  DEFM $02,"W",$01,$00,$16,$04,$00," DAY:" ; AT (0,22) in $57 (white on red),
+                                           ; size 0: " DAY:"
+  DEFM $03,"TIME:"        ; "TIME:" on row 1
+  DEFM $01,$16,$00,$04,"!",$02,"ERADAR:",$00 ; "RADAR:" at (22,0), size $21
+                                             ; (tall, rows 22-23), $45 (cyan)
 
 ; Clear the right panel and print the status labels
 ;
@@ -211,9 +215,27 @@ ShowStatusPanel:
 ; (15,23) attribute $46 and from row 17 attribute $44 GENERAL, ELECTR',
 ; NUCLEAR, PHASERS, MISSILE, CANNON, CHASSIS: the order of Resources.
 StatusPanelText:
-  DEFM $01,$03,$16,$02,"F  STATUS",$03,"INSG  HUMN",$01,$06,$17,$02,"EWARBASES",$03,"ELECTR'S",$03,"NUCLEAR",$03,"PHASERS",$03,"MI"
-  DEFM "SSILES",$03," CANNON",$03,"CHASSIS",$03," ROBOTS",$01,$0F,$17,$02,"FRESOURCES",$03,$03,$02,"DGENERAL",$03,"ELECTR'",$03,"N"
-  DEFM "UCLEAR",$03,"PHASERS",$03,"MISSILE",$03,"CANNON",$03,"CHASSIS",$00
+  DEFM $01,$03,$16,$02,"F  STATUS" ; "  STATUS" at (3,22) in $46 (yellow)
+  DEFM $03,"INSG  HUMN"   ; "INSG  HUMN" (4,22): the enemy's and our columns
+  DEFM $01,$06,$17,$02,"EWARBASES" ; the labels in $45 (cyan), column 23:
+                                   ; WARBASES, row 6
+  DEFM $03,"ELECTR'S"     ; ELECTR'S, row 7
+  DEFM $03,"NUCLEAR"      ; NUCLEAR, row 8
+  DEFM $03,"PHASERS"      ; PHASERS, row 9
+  DEFM $03,"MISSILES"     ; MISSILES, row 10
+  DEFM $03," CANNON"      ; CANNON, row 11
+  DEFM $03,"CHASSIS"      ; CHASSIS, row 12
+  DEFM $03," ROBOTS"      ; ROBOTS, row 13
+  DEFM $01,$0F,$17,$02,"FRESOURCES",$03,$03 ; "RESOURCES" at (15,23) in $46
+                                            ; (yellow)
+  DEFM $02,"DGENERAL"     ; the resource labels in $44 (green), column 23:
+                          ; GENERAL, row 17
+  DEFM $03,"ELECTR'"      ; ELECTR', row 18
+  DEFM $03,"NUCLEAR"      ; NUCLEAR, row 19
+  DEFM $03,"PHASERS"      ; PHASERS, row 20
+  DEFM $03,"MISSILE"      ; MISSILE, row 21
+  DEFM $03,"CANNON"       ; CANNON, row 22
+  DEFM $03,"CHASSIS",$00  ; CHASSIS, row 23
 
 ; Print the panel's numbers: resources, then both sides' buildings and robots
 ;
@@ -241,7 +263,9 @@ UpdateStatusPanel:
 ; blue), 4 0 (normal size), 0. Row 16: PrintResourceValues starts with a
 ; newline.
 ResourceValuesPos:
-  DEFB $01,$10,$1E,$02,$4E,$04,$00,$00
+  DEFB $01,$10,$1E,$02,$4E,$04,$00,$00 ; AT (16,30), $4E (yellow on blue), size
+                                       ; 0: one newline later the first
+                                       ; resource value
 
 ; The seven resource values, each on the next line (the tail of $D293)
 ;
@@ -269,7 +293,8 @@ ResourceValueLoop:
 ;
 ; The bytes 1 6 $16 (position (6,22)), 2 $47 (bright white on black), 0.
 InsgCountsPos:
-  DEFB $01,$06,$16,$02,$47,$00
+  DEFB $01,$06,$16,$02,$47,$00 ; AT (6,22), $47 (white): the enemy's (INSG)
+                               ; base counts
 
 ; The enemy's building counts and its robots (the tail of $D293)
 ;
@@ -288,7 +313,7 @@ PrintInsgCounts:
 ;
 ; The bytes 1 6 $1F (position (6,31)), 0; the attribute stays $47.
 HumnCountsPos:
-  DEFB $01,$06,$1F,$00
+  DEFB $01,$06,$1F,$00    ; AT (6,31): our (HUMN) base counts, still in $47
 
 ; The player's building counts (the tail of $D293)
 ;
@@ -303,7 +328,7 @@ PrintHumnCounts:
 ;
 ; The bytes 1 $0D $1E (position (13,30)), 0.
 HumnRobotsPos:
-  DEFB $01,$0D,$1E,$00
+  DEFB $01,$0D,$1E,$00    ; AT (13,30): our robot count
 
 ; The player's robots $FD41, two digits (the tail of $D293)
 ;
@@ -349,7 +374,8 @@ ClearPanel:
 ;
 ; The bytes 1 2 $16 (position (2,22)), 4 0 (normal size), 2 0 (attribute 0), 0.
 ClearPanelPos:
-  DEFB $01,$02,$16,$04,$00,$02,$00,$00
+  DEFB $01,$02,$16,$04,$00,$02,$00,$00 ; AT (2,22), size 0, attribute 0 (black
+                                       ; on black): ClearPanel's start
 
 ; 22 lines (the tail of ClearPanel)
 ;
@@ -368,7 +394,8 @@ ClearPanelLine:
 ;
 ; 10 spaces (columns 22-31), 3 (the next row, the same column), 0.
 PanelBlankLine:
-  DEFM "          ",$03,$00
+  DEFM "          ",$03,$00 ; ten spaces and a newline: one panel row cleared,
+                            ; 22 times
 
 ; The next of the 22 lines
 ;

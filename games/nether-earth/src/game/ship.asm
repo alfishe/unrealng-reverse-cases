@@ -401,4 +401,7 @@ ObjectTopBuilding:
 ; and 8 $19. The pad's 15 is the altitude the ship sinks to on it, where
 ; ConstructionMenu opens.
 BuildingTops:
-  DEFB $0F,$16,$15,$15,$16,$16,$16,$19,$19
+  DEFB $0F,$16,$15,$15,$16,$16,$16,$19,$19 ; type 0 the pad 15 (where the
+                                           ; construction menu opens),
+                                           ; factories 1-6 22 21 21 22 22 22,
+                                           ; flags 7-8 25

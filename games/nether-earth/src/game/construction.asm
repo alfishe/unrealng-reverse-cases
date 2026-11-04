@@ -134,28 +134,62 @@ PreviewAttrCell:
 ; Setting $22 = double height, double width; $21 = double height; $00 = normal
 ; (PrintInline code 4: high nibble the height, low nibble the width).
 ConstructionTitleText:
-  DEFM $04,"\"",$02,"G",$01,$00,$03,"ROBOT",$01,$02,$02,$04,"!CONSTRUCTION",$04,$00
+  DEFM $04,"\"",$02,"G",$01,$00,$03,"ROBOT" ; size $22 (double size), $47
+                                            ; (white): "ROBOT" at (0,3), rows
+                                            ; 0-1
+  DEFM $01,$02,$02,$04,"!CONSTRUCTION",$04,$00 ; "CONSTRUCTION" at (2,2), size
+                                               ; $21 (tall), rows 2-3; then
+                                               ; size 0
 
 ; PrintInline text: the part names at column 21, ELECTRONICS row 1 down to
 ; BIPOD row 22, every 3 rows
 PartNamesText:
-  DEFM $02,"E",$01,$01,$15,"ELECTRONICS",$01,$04,$15,"NUCLEAR",$01,$07,$15,"PHASERS",$01,$0A,$15,"MISSILES",$01,$0D,$15,"CANNON",$01,$10,$15,"ANTI-G"
-  DEFM "RAV",$01,$13,$15,"TRACKS",$01,$16,$15,"BIPOD"
+  DEFM $02,"E",$01,$01,$15,"ELECTRONICS" ; the part names in $45 (cyan), column
+                                         ; 21: ELECTRONICS, row 1
+  DEFM $01,$04,$15,"NUCLEAR" ; NUCLEAR, row 4
+  DEFM $01,$07,$15,"PHASERS" ; PHASERS, row 7
+  DEFM $01,$0A,$15,"MISSILES" ; MISSILES, row 10
+  DEFM $01,$0D,$15,"CANNON" ; CANNON, row 13
+  DEFM $01,$10,$15,"ANTI-GRAV" ; ANTI-GRAV, row 16
+  DEFM $01,$13,$15,"TRACKS" ; TRACKS, row 19
+  DEFM $01,$16,$15,"BIPOD" ; BIPOD, row 22
 
 ; PrintInline text: "EXIT START" / "MENU ROBOT" at rows 21-22, columns 5 and 10
 ExitStartText:
-  DEFM $01,$15,$05,"EXIT START",$03,"MENU ROBOT"
+  DEFM $01,$15,$05,"EXIT START",$03,"MENU ROBOT" ; the buttons EXIT MENU
+                                                 ; (column 5) and START ROBOT
+                                                 ; (column 10), rows 21-22
 
 ; PrintInline text: the costs under the names at column 22: 3 20 4 4 2 10 5 3
 ; (the same numbers as PartCosts)
 PartCostsText:
-  DEFM $02,"C",$01,$02,$16,"3",$01,$05,$16,"20",$01,$08,$16,"4",$01,$0B,$16,"4",$01,$0E,$16,"2",$01,$11,$16,"10",$01,$14,$16,"5",$01,$17,$16,"3"
+  DEFM $02,"C",$01,$02,$16,"3" ; the costs in $43 (magenta), column 22:
+                               ; electronics 3, row 2
+  DEFM $01,$05,$16,"20"   ; nuclear 20, row 5
+  DEFM $01,$08,$16,"4"    ; phasers 4, row 8
+  DEFM $01,$0B,$16,"4"    ; missiles 4, row 11
+  DEFM $01,$0E,$16,"2"    ; cannon 2, row 14
+  DEFM $01,$11,$16,"10"   ; anti-grav 10, row 17
+  DEFM $01,$14,$16,"5"    ; tracks 5, row 20
+  DEFM $01,$17,$16,"3"    ; bipod 3, row 23
 
 ; PrintInline text: "-- RESOURCES --" / "-- AVAILABLE --", GENERAL row 9,
 ; ELECTRONICS-CHASSIS rows 11-16, TOTAL row 18
 ResourceNamesText:
-  DEFM $04,$00,$02,"F",$01,$06,$00,"-- RESOURCES --",$03,"-- AVAILABLE --",$02,"D",$01,$09,$04,"GENERAL",$01,$0B,$00,"ELECTRONICS",$01
-  DEFM $0C,$04,"NUCLEAR",$03,"PHASERS",$01,$0E,$03,"MISSILES",$01,$0F,$05,"CANNON",$01,$10,$04,"CHASSIS",$01,$12,$06,"TOTAL",$00
+  DEFM $04,$00,$02,"F",$01,$06,$00,"-- RESOURCES --" ; size 0, $46 (yellow):
+                                                     ; "-- RESOURCES --" at
+                                                     ; (6,0)
+  DEFM $03,"-- AVAILABLE --" ; "-- AVAILABLE --" at (7,0)
+  DEFM $02,"D",$01,$09,$04,"GENERAL" ; the names in $44 (green), ending at
+                                     ; column 10: GENERAL (9,4)
+  DEFM $01,$0B,$00,"ELECTRONICS" ; ELECTRONICS (11,0)
+  DEFM $01,$0C,$04,"NUCLEAR" ; NUCLEAR (12,4)
+  DEFM $03,"PHASERS"      ; PHASERS (13,4)
+  DEFM $01,$0E,$03,"MISSILES" ; MISSILES (14,3)
+  DEFM $01,$0F,$05,"CANNON" ; CANNON (15,5)
+  DEFM $01,$10,$04,"CHASSIS" ; CHASSIS (16,4)
+  DEFM $01,$12,$06,"TOTAL",$00 ; TOTAL (18,6), then the end of the 297-byte
+                               ; string
 
 ; reset the preview robot, copy the resources, cursor on BIPOD, nothing chosen
 ;
@@ -358,8 +392,13 @@ RefundPart:
 ; phasers, 2 nuclear, 1 electronics); what the own resource lacks comes from
 ; general (index 0).
 PartCosts:
-  DEFB $03,$05,$0A,$02,$04,$04,$14,$03
-  DEFB $06,$06,$06,$05,$04,$03,$02,$01
+  DEFB $03,$05,$0A,$02,$04,$04,$14,$03 ; the cost: bipod 3, tracks 5, anti-grav
+                                       ; 10, cannon 2, missiles 4, phasers 4,
+                                       ; nuclear 20, electronics 3
+  DEFB $06,$06,$06,$05,$04,$03,$02,$01 ; the Resources index paid first:
+                                       ; chassis 6 x3, cannon 5, missiles 4,
+                                       ; phasers 3, nuclear 2, electronics 1
+                                       ; (then general 0)
 
 ; right / left change the column (0-2), down / up the part row (0-7) in column
 ; 2
@@ -564,7 +603,8 @@ PrintResourceNext:
 
 ; PrintInline text: AT 18,12
 TotalPosition:
-  DEFM $01,$12,$0C,$00
+  DEFM $01,$12,$0C,$00    ; AT (18,12): where PrintMenuTotal prints the TOTAL
+                          ; value
 
 ; Construction menu: print the total of the costs (the tail of $CBE0)
 ;
@@ -592,7 +632,8 @@ PrintMenuResource:
 ;
 ; PrintInline bytes: 1 Y X with Y written by $CC0A, then 0 (end).
 MenuResourcePos:
-  DEFB $01,$00,$0D,$00
+  DEFB $01,$00,$0D,$00    ; AT (Y,13), Y patched by PrintMenuResource (0, then
+                          ; one row per resource)
 
 ; Construction menu: print A as two digits, registers kept (the tail of $CC08)
 PrintMenuResourceValue:

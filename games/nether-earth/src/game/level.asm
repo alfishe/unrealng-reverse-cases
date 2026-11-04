@@ -150,4 +150,5 @@ ShapeMixedWallH:
 ; writes them. Room for a longer level description (src/res/map/level.txt may
 ; grow into it without moving the code).
 MapTablesSpare:
-  DEFS $73
+  DEFS $73                ; 115 zero bytes up to the main menu at $C100: room
+                          ; for a longer level, never read

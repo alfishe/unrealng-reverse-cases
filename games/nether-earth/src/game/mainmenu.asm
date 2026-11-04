@@ -61,7 +61,10 @@ MainMenuOptions:
 ; PrintInline codes: attribute $46, setting $21 (double height), position row
 ; 11 column 8, the text, setting $00.
 MenuStartText:
-  DEFM $02,"F",$04,"!",$01,$0B,$08,"0..START GAME",$04,$00,$00
+  DEFM $02,"F",$04,"!",$01,$0B,$08 ; attribute $46 (yellow), size $21 (tall),
+                                   ; AT (11,8)
+  DEFM "0..START GAME"    ; "0..START GAME", rows 11-12
+  DEFM $04,$00,$00        ; size 0 again for the options after it, then the end
 
 ; Option 1, KEYBOARD, in the colour of Controls 1
 MenuKeyboardOption:
@@ -69,9 +72,11 @@ MenuKeyboardOption:
   CALL ControlsOptionAttr ; cyan if it is the current choice, else yellow
   CALL PrintInline        ; the KEYBOARD text
 
-; Two new lines and "1..KEYBOARD"
+; Three new lines and "1..KEYBOARD"
 MenuKeyboardText:
-  DEFM $03,$03,$03,"1..KEYBOARD",$00
+  DEFM $03,$03,$03,"1..KEYBOARD",$00 ; three rows down, (14,8): "1..KEYBOARD",
+                                     ; in the attribute ControlsOptionAttr just
+                                     ; set
 
 ; Option 2, KEMPSTON J/S, in the colour of Controls 2
 MenuKempstonOption:
@@ -81,7 +86,7 @@ MenuKempstonOption:
 
 ; Two new lines and "2..KEMPSTON J/S"
 MenuKempstonText:
-  DEFM $03,$03,"2..KEMPSTON J/S",$00
+  DEFM $03,$03,"2..KEMPSTON J/S",$00 ; two rows down, (16,8): "2..KEMPSTON J/S"
 
 ; Option 3, INTERFACE 2, in the colour of Controls 3; then options 4 and 5
 MenuInterface2Option:
@@ -91,7 +96,10 @@ MenuInterface2Option:
 
 ; "3..INTERFACE 2", then in yellow "4..REDEFINE KEYS", "5..LOAD SAVED GAME"
 MenuMoreText:
-  DEFM $03,$03,"3..INTERFACE 2",$03,$03,$02,"F4..REDEFINE KEYS",$03,$03,"5..LOAD SAVED GAME",$00
+  DEFM $03,$03,"3..INTERFACE 2" ; two rows down, (18,8): "3..INTERFACE 2"
+  DEFM $03,$03,$02,"F4..REDEFINE KEYS" ; (20,8) in $46 (yellow): "4..REDEFINE
+                                       ; KEYS"
+  DEFM $03,$03,"5..LOAD SAVED GAME",$00 ; (22,8): "5..LOAD SAVED GAME"
 
 ; The main menu's keys: the title music until a key, then 0-5
 ;
@@ -163,7 +171,10 @@ PrintTitle:
 ; "NETHER" at (1,10) and "EARTH" at (5,11), attribute $47, setting $32 (triple
 ; height, double width)
 TitleText:
-  DEFM $01,$01,$0A,$02,"G",$04,"2NETHER",$01,$05,$0B,"EARTH",$00
+  DEFM $01,$01,$0A,$02,"G",$04,"2NETHER" ; "NETHER" at (1,10) in $47 (white),
+                                         ; size $32: double width, three rows
+                                         ; high
+  DEFM $01,$05,$0B,"EARTH",$00 ; "EARTH" at (5,11), the same size
 
 ; PrintTitle's return; then the load option
 PrintTitleEnd:
@@ -175,7 +186,9 @@ LoadGame:
 
 ; "PRESS PLAY ON TAPE" at (22,7), cyan, double height
 PlayTapeText:
-  DEFM $01,$16,$07,$02,"E",$04,"!PRESS PLAY ON TAPE ",$00
+  DEFM $01,$16,$07,$02,"E",$04,"!" ; AT (22,7) in $45 (cyan), tall: LOAD SAVED
+                                   ; GAME (key 5)
+  DEFM "PRESS PLAY ON TAPE ",$00 ; "PRESS PLAY ON TAPE ", rows 22-23
 
 ; Load a saved game: the checksum block, the game block; NZ when it is good
 ;
@@ -239,7 +252,9 @@ LoadBad:
 
 ; "LOADING ERROR!" at (22,2), white, double size
 LoadErrorText:
-  DEFM $01,$16,$02,$02,"G",$04,"\"LOADING ERROR!",$00
+  DEFM $01,$16,$02,$02,"G",$04,"\"" ; AT (22,2) in $47 (white), size $22
+                                    ; (double size)
+  DEFM "LOADING ERROR!",$00 ; "LOADING ERROR!": the checksum failed
 
 ; After LOADING ERROR!: a beep, a key, then the start again (Start)
 ;
@@ -275,7 +290,11 @@ SaveGame:
 ; "PRESS RECORD AND PLAY ", a new line, "     THEN ANY KEY     " at (22,0),
 ; cyan
 RecordText:
-  DEFM $01,$16,$00,$02,"EPRESS RECORD AND PLAY ",$03,"     THEN ANY KEY     ",$00
+  DEFM $01,$16,$00,$02,"EPRESS RECORD AND PLAY " ; "PRESS RECORD AND PLAY " at
+                                                 ; (22,0) in $45 (cyan): the
+                                                 ; save key (Input bit 5)
+  DEFM $03,"     THEN ANY KEY     ",$00 ; the next row (23,0): " THEN ANY KEY
+                                        ; "
 
 ; After the prompt: a key, the staging, the checksum, the two blocks
 SaveGameBlocks:
@@ -373,7 +392,7 @@ ControlsOptionAttr:
 
 ; PrintInline: attribute $46
 OptionAttrPlain:
-  DEFB $02,$46,$00
+  DEFB $02,$46,$00        ; attribute $46 (yellow): a control option not chosen
 
 ; ControlsOptionAttr's return, the option not chosen
 ControlsOptionPlain:
@@ -384,7 +403,8 @@ ControlsOptionMarked:
 
 ; PrintInline: attribute $45
 OptionAttrChosen:
-  DEFB $02,$45,$00
+  DEFB $02,$45,$00        ; attribute $45 (cyan): the control option chosen
+                          ; (Controls)
 
 ; ControlsOptionAttr's return, the option chosen
 ControlsOptionChosen:
@@ -412,7 +432,10 @@ RedefineKeys:
 ; "REDEFINE KEYS" at (2,9), white, double height, then position (5,3) and
 ; normal size
 RedefineTitleText:
-  DEFM $01,$02,$09,$02,"G",$04,"!REDEFINE KEYS",$01,$05,$03,$04,$00,$00
+  DEFM $01,$02,$09,$02,"G",$04,"!REDEFINE KEYS" ; "REDEFINE KEYS" at (2,9) in
+                                                ; $47 (white), tall (size $21)
+  DEFM $01,$05,$03,$04,$00,$00 ; then AT (5,3) and size 0: the first PRESS KEY
+                               ; FOR line goes two rows below
 
 ; Wait for no key, clear KeyTable, ask for UP
 RedefineKeysBody:
@@ -429,7 +452,8 @@ RedefineKeysBody:
 
 ; "   UP"
 KeyNameUp:
-  DEFM "   UP",$00
+  DEFM "   UP",$00        ; the action's name after PRESS KEY FOR: UP (Input
+                          ; bit 3, KeyTable record 4)
 
 ; The key for UP (KeyTable record 4), then ask for DOWN
 ReadUpKey:
@@ -440,7 +464,8 @@ ReadUpKey:
 
 ; " DOWN"
 KeyNameDown:
-  DEFM " DOWN",$00
+  DEFM " DOWN",$00        ; the action's name after PRESS KEY FOR: DOWN (Input
+                          ; bit 2, KeyTable record 5)
 
 ; The key for DOWN (record 5), then ask for LEFT
 ReadDownKey:
@@ -451,7 +476,8 @@ ReadDownKey:
 
 ; " LEFT"
 KeyNameLeft:
-  DEFM " LEFT",$00
+  DEFM " LEFT",$00        ; the action's name after PRESS KEY FOR: LEFT (Input
+                          ; bit 1, KeyTable record 6)
 
 ; The key for LEFT (record 6), then ask for RIGHT
 ReadLeftKey:
@@ -461,7 +487,8 @@ ReadLeftKey:
 
 ; "RIGHT"
 KeyNameRight:
-  DEFM "RIGHT",$00
+  DEFM "RIGHT",$00        ; the action's name after PRESS KEY FOR: RIGHT (Input
+                          ; bit 0, KeyTable record 7)
 
 ; The key for RIGHT (record 7), then ask for FIRE
 ReadRightKey:
@@ -471,7 +498,8 @@ ReadRightKey:
 
 ; " FIRE"
 KeyNameFire:
-  DEFM " FIRE",$00
+  DEFM " FIRE",$00        ; the action's name after PRESS KEY FOR: FIRE (Input
+                          ; bit 4, KeyTable record 3)
 
 ; The key for FIRE (record 3), a blank line, then ask for PAUSE
 ReadFireKey:
@@ -482,7 +510,8 @@ ReadFireKey:
 
 ; "PAUSE"
 KeyNamePause:
-  DEFM "PAUSE",$00
+  DEFM "PAUSE",$00        ; the action's name after PRESS KEY FOR: PAUSE (Input
+                          ; bit 7, KeyTable record 0)
 
 ; The key for PAUSE (record 0), then ask for ABORT
 ReadPauseKey:
@@ -492,7 +521,8 @@ ReadPauseKey:
 
 ; "ABORT"
 KeyNameAbort:
-  DEFM "ABORT",$00
+  DEFM "ABORT",$00        ; the action's name after PRESS KEY FOR: ABORT (Input
+                          ; bit 6, KeyTable record 1)
 
 ; The key for ABORT (record 1), then ask for SAVE
 ReadAbortKey:
@@ -502,7 +532,8 @@ ReadAbortKey:
 
 ; " SAVE"
 KeyNameSave:
-  DEFM " SAVE",$00
+  DEFM " SAVE",$00        ; the action's name after PRESS KEY FOR: SAVE (Input
+                          ; bit 5, KeyTable record 2)
 
 ; The key for SAVE (record 2), wait for its release and a pause, back to the
 ; menu
@@ -544,7 +575,10 @@ PrintKeyPrompt:
 ; PrintInline text: new line, new line, attribute $46, "PRESS KEY FOR ",
 ; attribute $45
 PressKeyForText:
-  DEFM $03,$03,$02,"FPRESS KEY FOR ",$02,"E",$00
+  DEFM $03,$03,$02,"FPRESS KEY FOR " ; two rows down, attribute $46 (yellow):
+                                     ; "PRESS KEY FOR "
+  DEFM $02,"E",$00        ; attribute $45 (cyan) for the action's name that
+                          ; follows the CALL
 
 ; print the caller's inline key name and return past it
 ;
@@ -584,7 +618,8 @@ DefineKey:
 
 ; PrintInline text: two spaces, attribute $46
 DefineKeyBlank:
-  DEFM "  ",$02,"F",$00
+  DEFM "  ",$02,"F",$00   ; two spaces after the name, then $46 (yellow) for
+                          ; the key chosen
 
 ; wait for a key that no entry holds yet
 ;
@@ -650,7 +685,8 @@ KeyPortShift:
 
 ; PrintInline text: "SYM SH"
 KeyNameSymShift:
-  DEFM "SYM SH",$00
+  DEFM "SYM SH",$00       ; the name of key code $0E: SYMBOL SHIFT (the default
+                          ; KeyTable has $82 there)
 
 ; a RET ($C9): PrintInline returns here and the routine ends
 KeyNameSymShiftEnd:
@@ -667,7 +703,7 @@ CheckEnterKey:
 
 ; PrintInline text: "ENTER"
 KeyNameEnter:
-  DEFM "ENTER",$00
+  DEFM "ENTER",$00        ; the name of key code $0D: ENTER
 
 ; a RET ($C9) after the string
 KeyNameEnterEnd:
@@ -684,7 +720,8 @@ CheckCapsShiftKey:
 
 ; PrintInline text: "CAPS SH"
 KeyNameCapsShift:
-  DEFM "CAPS SH",$00
+  DEFM "CAPS SH",$00      ; the name of key code $E3: CAPS SHIFT (the byte past
+                          ; the ROM key table)
 
 ; a RET ($C9) after the string
 KeyNameCapsShiftEnd:
@@ -702,7 +739,7 @@ CheckSpaceKey:
 
 ; PrintInline text: "SPACE"
 KeyNameSpace:
-  DEFM "SPACE",$00
+  DEFM "SPACE",$00        ; the name of key code $20: SPACE
 
 ; RET: the end of DefineKey; also the target of the music's command 0
 ;

@@ -56,7 +56,9 @@ ClockPrint:
 
 ; The clock: (0,27), setting 0, attribute $57
 ClockPos:
-  DEFM $01,$00,$1B,$04,$00,$02,"W",$00
+  DEFM $01,$00,$1B,$04,$00,$02,"W",$00 ; AT (0,27), size 0, attribute $57
+                                       ; (white on red): where the clock's day
+                                       ; and time go
 
 ; Game turn, second half: the clock print, the game end, captures, the frame
 ; pacing
@@ -254,7 +256,10 @@ CheckGameEnd:
 
 ; "YOU HAVE NO BASES LEFT", "BETTER LUCK NEXT TIME!" at (22,0), attribute $45
 LostText:
-  DEFM $01,$16,$00,$02,"EYOU HAVE NO BASES LEFT",$03,"BETTER LUCK NEXT TIME!",$00
+  DEFM $01,$16,$00,$02,"EYOU HAVE NO BASES LEFT" ; AT (22,0) in $45 (cyan),
+                                                 ; over the radar: the lost
+                                                 ; game's first line
+  DEFM $03,"BETTER LUCK NEXT TIME!",$00 ; the next row (23,0): the second line
 
 ; Code the recordings never ran: JR $AEEA, the common end
 ;
@@ -275,7 +280,10 @@ GameWon:
 
 ; " INSIGNIANS DESTROYED ", "    YOU HAVE WON !    " at (22,0), attribute $45
 WonText:
-  DEFM $01,$16,$00,$02,"E INSIGNIANS DESTROYED ",$03,"    YOU HAVE WON !    ",$00
+  DEFM $01,$16,$00,$02,"E INSIGNIANS DESTROYED " ; AT (22,0) in $45 (cyan),
+                                                 ; over the radar: the won
+                                                 ; game's first line
+  DEFM $03,"    YOU HAVE WON !    ",$00 ; the next row (23,0): the second line
 
 ; Code the recordings never ran: the end of a won or lost game
 ;

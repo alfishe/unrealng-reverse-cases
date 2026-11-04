@@ -218,7 +218,7 @@ BassCommandTable:
 
 ; bass command 1: JP BassGoto ($C5A7), the 3-byte entry 1
 BassCmd1:
-  DEFB $C3,$A7,$C5
+  DEFB $C3,$A7,$C5        ; entry 1: JP $C5A7 (BassGoto), the bass track's goto
 
 ; bass command 2 (entry): JP BassCall
 ;
@@ -253,8 +253,8 @@ BassCmd6:
 
 ; bass commands 7 and 8: JP SetDrumTrack twice (unused, the same as command 3)
 BassCmd7:
-  DEFB $C3,$CC,$C5
-  DEFB $C3,$CC,$C5
+  DEFB $C3,$CC,$C5        ; entry 7: JP $C5CC (SetDrumTrack), unused
+  DEFB $C3,$CC,$C5        ; entry 8: JP $C5CC (SetDrumTrack), unused
 
 ; command A of the lead track: jump to entry A of the table after the CALL
 ;
@@ -268,7 +268,7 @@ LeadCommandTable:
 
 ; lead command 1: JP LeadGoto ($C5B0)
 LeadCmd1:
-  DEFB $C3,$B0,$C5
+  DEFB $C3,$B0,$C5        ; entry 1: JP $C5B0 (LeadGoto), the lead track's goto
 
 ; lead command 2 (entry): JP LeadCall
 ;
@@ -279,7 +279,8 @@ LeadCmd2:
 ; lead command 3: JP SetDrumTrack, a bass-only handler (it reads HL', the bass
 ; track): unusable from the lead track and unused
 LeadCmd3:
-  DEFB $C3,$CC,$C5
+  DEFB $C3,$CC,$C5        ; entry 3: JP $C5CC (SetDrumTrack), bass only, unused
+                          ; by the lead track
 
 ; lead command 4 (entry): JP LeadOn
 ;
@@ -301,8 +302,8 @@ LeadCmd6:
 
 ; lead commands 7 and 8: JP SetDrumTrack twice (unused)
 LeadCmd7:
-  DEFB $C3,$CC,$C5
-  DEFB $C3,$CC,$C5
+  DEFB $C3,$CC,$C5        ; entry 7: JP $C5CC (SetDrumTrack), unused
+  DEFB $C3,$CC,$C5        ; entry 8: JP $C5CC (SetDrumTrack), unused
 
 ; bass command 2 aa: play the pattern at aa, then go on after the command
 ;
