@@ -104,6 +104,30 @@ fills `$4000` upward:
 - then the font, the sprites, the code;
 - the tail last, `$D7D3-$FCE8`, mostly zeros.
 
+![The whole load at ROM speed with the traps off: the real picture, the screen bytes, the stage and the tape](img/ui/load-tape.gif)
+
+**The whole load at signal speed, measured.** An own instance from power-on (48K, port base 29000) with both of the
+emulator's tape traps off (`PUT /feature/fasttape` and `/feature/turbotape`, `enabled: false`), `LOAD ""` typed and
+`NETHER.TAP` played; every 30 frames to 1200, then every 200 (88 pictures), the screen with its border, PC, IX and
+the tape API's block and seconds were taken (`work/ill3/load/load.json`). Each picture shows, from the top: the
+real screen with the border stripes; the same screen bytes on fixed white-on-blue attributes, so the data that
+lands in the screen area can be seen before the attributes arrive; the stage (the ROM's block or N1 with IX); a bar
+of `$4000`-`$FCE8` filled to IX; and the tape at signal speed (headers blue, the BASIC green, N1 yellow, the game
+red) with the play position. `python3 tools/ill_ui.py load` (`redraw-load` redraws from the log).
+
+| Block | Signal starts (frame after the tape starts) | Loaded by |
+| --- | --- | --- |
+| 0, header of the BASIC | 0 | ROM LD-BYTES |
+| 1, the BASIC | 305 | ROM |
+| 2, header of N1 | 506 | ROM |
+| 3, N1 at `$FCDA` | 811 | ROM |
+| 4, the game | 1014 | N1, IX from `$4000` (frame 990) to `$FC9F` (frame 13400) |
+| end | the tape ends and the menu tune runs (PC `$C4E1`) by frame 13600 | |
+
+With the traps off, blocks 0-3 take 1014 frames (20 s) instead of the 253 frames of `play`. This confirms that
+`play`'s blocks 0-3 went through the fast-load trap (the inference above), while block 4 takes about 12 400 frames
+either way: no trap catches N1.
+
 ## 3.4 The game block and its screen part
 
 The block is `$4000-$FCE8` exactly as the game runs it: there is nothing to unpack, relocate or decrypt. Its parts

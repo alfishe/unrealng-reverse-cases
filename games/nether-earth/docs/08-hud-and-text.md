@@ -50,6 +50,15 @@ Three other kinds of call end in it or lean on it:
   `RET`.
 - `PrintCharKeep` (`$D427`) is `PrintChar` inside `EXX`, for the number printers (8.6).
 
+![PrintInline strings decoded over the screens they drew: tokens, runs and positions](img/ui/print-codes.png)
+
+Five real strings from `build/game.bin`, each decoded byte by byte (left: the tokens coloured by kind, as in the
+table above) and laid over a screen of the tour that shows it (right): each run of characters is boxed in its
+colour, each position code (1 Y X) is a blue dot. The main menu (`$C1E6` NETHER / EARTH at size `$32`, `$C109`
+option 0 at `$21`, `$C128` option 1 normal), the robot menu `$A738` (one position, then code 3 for each next row)
+and the play screen `$D1C5` (DAY / TIME, then RADAR: at `$21`). The positions and sizes are simulated from the bytes
+alone, and the boxes land on the printed text. `python3 tools/ill_ui.py print`.
+
 ### Normal and big characters
 
 `PrintChar` copies the 8 lines of glyph `$6680 + 8 × code` down the character cell (`GlyphLineLoop` `$D4C2`). It puts
@@ -67,6 +76,12 @@ Then `BigCharAttrs` (`$D532`) fills a block of width × height attributes and ad
 width. A width above 2 would draw the doubled glyph but advance further; no string uses one. The code `4 $00`
 turns big characters off again. Strings that may follow a big one start with it: the clock's `$AD88`, the
 construction menu's `$C8BE` after its title, and the panel's `$D29B`.
+
+![One glyph at the three sizes: the font and real crops at 8x](img/ui/print-sizes.png)
+
+The glyph E from the font at `$6780` + 8 × (code - `$20`), then real crops of the tour's screens: size 0 (TIME on the
+play screen, (1,25)), size `$21` (GAME in the main menu, (11,20): each line twice) and size `$32` (NETHER, (1,12):
+each bit doubled, each line three times). `python3 tools/ill_ui.py print`.
 
 ## 8.2 The font
 
@@ -202,6 +217,20 @@ characters after it. This never shows:
 - a side has at most 4 warbases;
 - no count went above 3 in `work/deep` (the `tools/course_chart.py` samples of `$FD3A`-`$FD48`,
   [10.11](10-gameplay-logic.md)).
+
+![The panel through a day and a half of hovering: tour frames 4720-8010](img/ui/panel-events.gif)
+
+The tour leaves the ship hovering from frame 4715 and the world runs on its own. Every 10th frame: the panel at 3x
+with the cells that changed boxed (fading), and beside it the variables read with `memory_at` at that frame,
+changes highlighted. The events it catches:
+
+- each midnight `DailyProduction` pays: GENERAL 8 to 13 at day 1 00:00 (by frame 4740, our one warbase's 5), and at
+  day 2 13 to 18 and MISSILES 0 to 2 (by frame 7720), our first robot having captured a missiles factory on day 1;
+- the enemy builds robots (INSG ROBOTS 2, 3, 4, 5) and captures a chassis factory (INSG CHASSIS 0 to 1);
+- the clock is the only part printed every turn (8.5); the rest changes only with `UpdateStatusPanel`.
+
+`python3 tools/ill_ui.py panel` (reads the variables from the tour's TTD once, then caches them in
+`work/ill3/tour/panel-vars.json`).
 
 ## 8.5 The clock
 

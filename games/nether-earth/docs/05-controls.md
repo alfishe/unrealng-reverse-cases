@@ -17,6 +17,10 @@ Evidence:
   menu-robot=1000 menu-construction=1500`;
 - the region agents' experiments on own instances (`work/ann/r1.md`, `r3.md`, `r4.md`): the redefine screen,
   DIRECT CONTROL, ADVANCE 10 MILES, COMBAT MODE, both game ends.
+- the tour: one scripted, recorded session on an own instance from `work/play/start.szx` that drives every menu
+  of this chapter (redefine, construction, orders, distance, combat, direct control), the screen sampled every 2
+  frames, events and frames in `work/ill3/tour/events.json`: `python3 tools/ill_ui.py tour --port-base 29300`, the
+  pictures `python3 tools/ill_ui.py draw-tour`. The animated figures below come from it.
 
 ## 5.1 Devices
 
@@ -95,6 +99,19 @@ up and counts BC through 65536 values (`RedefineKeysPause` `$C405`, about 0.56 s
 experiment 1, keys Q, Q, A, O, P, SPACE, ENTER, CAPS SHIFT, SYMBOL SHIFT): `KeyTable` = `BF 01 0D  FE 01 E3  7F 02 0E
 7F 01 20  FB 01 51  FD 01 41  DF 02 4F  DF 01 50`; the second Q was refused.
 
+![The redefine screen driven with the default keys, tour frames 700-1097](img/ui/menu-redefine.gif)
+
+The tour presses key 4 at frame 700 and answers the eight prompts with the default keys Q, A, O, P, SYMBOL SHIFT,
+1, I, 5, one every 40 frames; after the eighth the menu comes back (frame 1066). `KeyTable` read back afterwards
+(`memory_at`) is the image's table byte for byte except one: SYMBOL SHIFT now has the print code `$0E`, where the
+image holds `$82`. The code is only what the redefine screen prints (the port and mask are the same), so the keys
+work alike; the image's table was not made by this routine.
+
+![The default keys: KeyTable in build/game.bin](img/ui/keyboard-map.png)
+
+Each key of `KeyTable` (`$D3CC`, `build/game.bin`) coloured by the `Input` bit it sets, with the 8 records and the
+Interface 2 keys 6-0 that `ReadControls` adds when `Controls` = 3. `python3 tools/ill_ui.py keys`.
+
 ## 5.3 In play: the ship and the game keys
 
 `PlayLoop` `$A69A` calls `WaitKey` once a turn; `MoveShip` `$AF11` reads `Input`:
@@ -145,6 +162,14 @@ waits for the cursor (2, 0, 0): `ConstructionMenu` installs its handler before i
 `MenuParts`, so a part chosen earlier is lost (WALKTHROUGH 6). The sounds (`Beep` `$CCAC`): a move `$14`, accepted
 `$64`, refused or taken back `$78`. The parts, their costs and the robot they make: [7.2](07-objects.md#72-robots).
 
+![The construction menu driven: parts toggled, the robot preview growing, START ROBOT, tour frames 1321-1646](img/ui/menu-construction.gif)
+
+The tour's build, from `PartToggle` `$CA2A` as it ran (the caption under each picture is the bot's action): BIPOD
+paid 3 of the 20 general (`Resources` `$FD22` at frame 1320); TRACKS **replaces** the bipod, refunding it (a second chassis is a swap, not a
+refusal, `$CA3B`-`$CA56`); CANNON paid 2; NUCLEAR refused, 20 is more than the 13 left (beep `$78`); MISSILES paid 4,
+then taken back (refund, beep `$78`); START ROBOT at frame 1554: the build chirp, the menu closes, and at frame
+1626 the robot (tracks + cannon) stands at the warbase door. The preview on the left is redrawn at every toggle.
+
 ## 5.5 The robot menu and its submenus
 
 ![The robot menu after an order, work/docB/rec frame 1000](img/menu-robot.png)
@@ -183,8 +208,33 @@ record 0 with the robot's facing.
 reads `Input`: a direction turns or moves the robot one cell (a turn costs the step, as for the AI), and `MoveShip`
 is called so the ship rides on the robot's top. Fire ends it (`+$0A` = 1, back to the menu).
 
+![The robot menu: GIVE ORDERS, SEARCH & CAPTURE, NEUTRAL FACTORYS, LEAVE ROBOT, tour frames 2118-2512](img/ui/menu-orders.gif)
+
+The ship lands on the new robot (frame 2118) and `RobotMenu` replaces the status panel. GIVE ORDERS, SEARCH &
+CAPTURE, then NEUTRAL FACTORYS sets order 6 (`SetOrder`); LEAVE ROBOT with fire held lets the ship climb away, and
+from frame 2452 the robot sets off for the nearest neutral factory. Each list is `ListMenu`: the highlight is the
+attribute `$4E` moving, the chosen item `$4F`.
+
+![DIRECT CONTROL: one step down, three right; the ship rides on the robot, tour frames 3571-3912](img/ui/direct-control.gif)
+
+A second robot, under DIRECT CONTROL from frame 3571. Each direction first turns the robot (one step lost), then
+moves it one cell a step; the ship and the view follow. Fire at frame 3882 gives the robot menu back.
+
+![COMBAT MODE: FIRE CANNON, the shot flies east and ends, tour frames 3912-4108](img/ui/menu-combat.gif)
+
+COMBAT MODE replaces the four items by six. FIRE CANNON is chosen at frame 3949; shot record 0 (`$D7D3`) is still empty at
+3960 and filled at 3990 (`memory_at`: column `$1B`, row 15, direction 1, 5 steps, weapon 1). The shot flies along
+the robot's facing two columns a step (`$1B` to `$23` in 4 steps) and ends at frame 4038: `+$01` = 0 at 4040 and
+`SoundFx` = `$FE`, the `$FC` of `ShotGone` already incremented twice (range spent, nothing hit). STOP COMBAT returns to the robot menu.
+
+![The distance menu: ADVANCE ?? MILES, up five times, down once, fire, tour frames 4117-4409](img/ui/menu-distance.gif)
+
+`DistanceSelect` `$AA6E` takes one press a turn: up adds 5 miles, down takes 5, the number printed at character
+(13,23). Five ups and one down give 20 MILES; fire sets the order ADVANCE: robot record 1 at frame 4400 has `+$0B` = 1 and `+$0E` = `$28` = 40 (miles x 2) and the panel
+shows "ADVANCE 20 MILES" under -ORDERS-.
+
 The distance and combat menus did not run in `work/deep` (the bot gives only search orders); r1 ran them on own
-instances, and they stay `b` entries until a recording reaches them.
+instances, and the tour recording (`work/ill3/tour/session.ttd`) now has both, with the pictures above.
 
 ## 5.6 Driving the menus from a script
 

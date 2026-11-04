@@ -46,6 +46,16 @@ stateDiagram-v2
     GameOver --> Start: GameOverWait $AEEA, a control
 ```
 
+![The states with a real screen each, from the tour](img/ui/state-machine.png)
+
+The same machine with the screen of each state as the tour saw it (the frame under each box), the code that runs
+it and the interrupt handler installed (`Handler` `$FDFE`, read at that frame): green `PlayInterrupt` `$D566` (the
+clock, the radar and the robots run), violet `StartInterrupt` `$D59C` (`EI; RET`, the world stands: the construction
+menu, the redefine screen, the game-over wait), yellow `MenuInterrupt` `$C4FD` (the tune). The robot menu and its
+submenus keep `PlayInterrupt`: the war goes on under them ([5.5](05-controls.md#55-the-robot-menu-and-its-submenus)).
+The game-over screen is an experiment: the tour poked `PlayerBuildings` `$FD3A` to 0 at frame 8015, so
+`CheckGameEnd` `$AE6B` found no warbase of ours. `python3 tools/ill_ui.py states` (after `tour`).
+
 ## 4.2 The states
 
 | State | Code | Handler (2.4) | Game turns | Ends |

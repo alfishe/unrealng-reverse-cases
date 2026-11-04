@@ -13,7 +13,11 @@ The recordings this rests on ([Terms](README.md#terms)):
 - `deep`: the bot (`tools/bot.py`) playing from the menu snapshot of `play` for 36 046 frames, 11 game days. It
   built seven robots, gave orders, captured factories and fought (WALKTHROUGH 6);
 - the region agents' experiments on their own instances (`work/ann/r1.md` - `r5.md`): the distance and combat menus,
-  direct control, the nuclear blast and the two game ends. No recording reached any of these.
+  direct control, the nuclear blast and the two game ends. Neither `play` nor `deep` reached any of these;
+- `tour`: a scripted, recorded session on an own instance from the menu snapshot (`python3 tools/ill_ui.py tour
+  --port-base 29300`, `work/ill3/tour`, 8253 frames): redefine, a build, orders, direct control, combat and the
+  distance menu, then a day of hovering. It ends with a poke of `PlayerBuildings` to see the game-over screen (an
+  experiment, not play). The animated figures of docs 1, 4, 5 and 8 come from it.
 
 ![The main menu (deep, frame 10)](img/game-0-menu.png)
 
@@ -52,6 +56,15 @@ The game is won when the Insignians have no warbase left, and lost when the play
 
 The view follows the ship. It moves one column when the ship reaches view column 13 or 22 (`MoveShip` `$AF11`). The
 radar window jumps 64 columns when the ship nears its edge (`ScrollRadar` `$AFE6`).
+
+![A play screen with its objects found in memory: tour frame 1700](img/ui/play-annotated.png)
+
+Tour frame 1700, just after the first build: each dot is where `DrawSprite` anchors an object (the sprite's lower
+left), computed from its record in memory at that frame (`time_travel memory_at`) with the projection of
+[6.3](06-rendering.md#63-the-projection). The ship (`ShipX`/`ShipY`/`Altitude` `$FD0E`/`$FD0D`/`$FD10` = 22, 5, 31)
+climbs off the pad (building type 0 at (22,5) in the table `$FF01`); our flag (type 7) stands at (18,5); the door
+cell of our warbase is (22,9) (`Warbases` `$FD70`); the new robot (record 0 at `$DA00`) walks out at (22,11). On the
+right the panel areas and the variables they print. `python3 tools/ill_ui.py annotate`.
 
 ## 1.3 Controls
 
@@ -156,6 +169,17 @@ an option:
 
 At the start each side has 20 general resource and nothing else (`NewGameSetup` `$A62D`). That pays for a bipod
 with a cannon (5) four times.
+
+A second chassis is not refused: it replaces the first, which is refunded (`PartToggle` `$CA2A`, `$CA3B`-`$CA56`;
+seen in the tour, BIPOD then TRACKS).
+
+![The first robot of the tour: the flight to the pad, the build, the robot leaving, frames 1161-2692](img/ui/play-first-robot.gif)
+
+The whole first build of the tour, every 6th frame shown for 40 ms (3 times real speed): the ship climbs by itself after
+the new game, flies to the pad at (22,5) and sinks to height 15, the construction menu opens and the parts are chosen (tracks and a
+cannon), START ROBOT, and the robot stands at the door. The ship lands on it, gives it SEARCH & CAPTURE / NEUTRAL
+FACTORYS and climbs away; from frame 2452 the robot walks off east. The caption under each picture is the bot's
+action. `python3 tools/ill_ui.py draw-tour`.
 
 ## 1.7 The robot menu and orders
 

@@ -74,7 +74,7 @@ the bass):
 
 - **The counter is not 0:** the step runs a pad of the same length (`PUSH AF`, read `Input` and write it back,
   `POP AF`; `BassIdlePad` `$C4C3`, `LeadIdlePad` `$C4E0`). The time is the same whether a voice pulses or not, so
-  neither voice detunes the other.
+  the counting steps do not detune each other (the pulse itself does: see below).
 - **The counter reaches 0:**
   1. It is reloaded from the note's period (the operand at `$C4D0` lead, `$C4ED` bass).
   2. The voice's on value goes out: `$18` (EAR and MIC) when on, 0 when off (operands `$C4D2`, `$C4EF`).
@@ -85,9 +85,14 @@ A turn of both steps is about 122 T, and the pulse adds about 3.5 T per period u
 about 3.5 MHz / (125.5 × p): `$7C` gives 225 Hz, `$29` 680 Hz. The pulse width is a quarter of the period, so every
 note is a 25 % duty pulse whatever its pitch.
 
-These figures come from the T-states of the code. No beeper capture of the menu has been measured, so the absolute
-pitch is **unverified**. The intervals are what the tune is made of; they are equal-tempered within 17 cents. The
-names below take `$7C` as A3; by the T count the whole tune is about 40 cents sharp of that.
+These figures come from the T-states of the code. **Measured** (beeper writes in access traces of the tour, frames
+0-700, 10 651 pulses; figure in 9.4): a voice sounding alone keeps exactly this rate, 125.7 T per period unit (the
+lead, 3141 periods while the bass rests). While the other voice sounds, the rate drops to 129.4 T per unit (the
+bass, 1717 periods) and 130.8 (the lead, 3686 periods), about half a semitone flat. The idle pads keep the
+counting steps equal, but not the pulse: while one voice holds its pulse (`$C4D6` / `$C4F3` loop, 3.5 T per unit of
+its own period) the other voice's counter waits, about 2.8 % of the time. So the voices do detune each other when
+both sound. The intervals within a voice are equal-tempered within 17 cents. The names below take `$7C` as A3: the
+lead alone is about 35 cents sharp of that, the two voices together about 20-30 cents flat.
 
 | Period | Hz (est.) | Note | Period | Hz (est.) | Note |
 | --- | --- | --- | --- | --- | --- |
@@ -134,7 +139,7 @@ goto.
 
 | Kind | Bytes | Sound | Code |
 | --- | --- | --- | --- |
-| 0 | n 0 | hiss: 96 bytes of ROM page `$08` straight to the beeper (bits 3-4), about 1 ms | `DrumHiss` `$C608` |
+| 0 | n 0 | meant as a hiss of ROM page `$08`, but silent: `DrumHissLoop` has no `INC HL`, so all 96 writes send the same byte (`$0800` + L, L the drum position). In the tour every hit writes EAR 0 (2112 OUTs at `$C610`, 22 hits); at frame 355 the byte read is `$0867` = `$23`, AND `$18` = 0 | `DrumHiss` `$C608` |
 | 2 | n 2 p | falling sweep: 48 cycles; the low half starts at p - 1 and shortens by 1, the high half starts at p / 2 and lengthens by 4 | `DrumSweep` `$C616` |
 | other | n k | rasp: 80 bytes of ROM page `$00` with a gap of (~B & `$3F`) loops after each | `DrumRasp` `$C5EB` |
 
@@ -176,6 +181,16 @@ the four operands the player writes at every frame with TTD `memory_at`:
 - `$C4ED` the bass period, `$C4EF` the bass on/off.
 
 All 399 frames agree with the model, at the single model offset 93: the snapshot was taken 93 frames into the tune.
+
+![The menu tune measured from the beeper writes, against the model](img/ui/sound-tune-measured.png)
+
+**Measured from the beeper.** Each dot is one frame of one voice: 3.5 MHz over the median time between that voice's
+own pulse starts (the bass writes at `$C4F0`/`$C4F8`, the lead at `$C4D3`/`$C4DB`); the black lines are the model at
+125.5 T per unit, the marks at the bottom the drum hits by routine. Recording: the tour, an own instance from
+`work/play/start.szx`, frames 0-700 of the main menu, every `OUT` to an even port in access traces. The notes and
+their timing match the model frame for frame; the dots sit half a semitone under the lines wherever both voices
+sound (9.2), on the lines where the lead plays alone. The hiss marks are hits that make no sound (9.3).
+`python3 tools/ill_ui.py sound` (traces and draws; `draw-sound` redraws from `work/ill3/sound/*.json`).
 
 ### A restart keeps a silent voice
 
@@ -277,6 +292,18 @@ contention on the `OUT` to an even port while the beam draws the screen.
 Of the 3570 half-periods within a beep, 3527 are within 6 T of the formula (the rest of the spread is contention).
 The other 43 are 43 T longer, one in each frame: the interrupts stay enabled during `Beep`, and the construction
 menu's `StartInterrupt` (`EI; RET`) runs in them. These are the points under each step.
+
+### Every effect measured
+
+![Every beeper effect: waveform and spectrogram from the beeper writes](img/ui/sound-gallery.png)
+
+One sounding of each effect, cut from access traces of the tour (and the kill from `work/docC/fight`, frames
+19312-19372): left the EAR level (bit 4 of each `OUT ($FE)`) over the first 4 or 8 ms, right a spectrogram of the
+whole sound (the level sampled at 3.5 MHz / 16, 1024-point windows). The Beep rows show a pure square wave with its
+odd harmonics at the formula's tone (5.6, 1.3, 1.1 kHz and 530 Hz); the build chirp climbs in 13 steps and ends in
+the long `$C8`; the shot and the kill are one burst a frame (the vertical stripes, 20 ms apart). The drum rows come
+from the menu tune: the rasp is broadband noise, the sweep a falling tone with its harmonics, the hiss is silent
+(9.3). `python3 tools/ill_ui.py sound`.
 
 ## 9.7 Design notes
 
