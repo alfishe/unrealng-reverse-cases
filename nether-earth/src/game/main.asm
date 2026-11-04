@@ -1,6 +1,6 @@
 ; the entry from N1: the IM 2 table, the start-up, the menu
 ;
-; Used by the routines at l_A69A, sub_AE6B and l_C282.
+; Used by the routines at l_A69A and l_C282.
 Start:
   DI
   LD SP,$0000
@@ -14,7 +14,7 @@ l_A60A:
   LD A,$C3
   LD ($FDFD),A
   LD HL,StartInterrupt
-  LD ($FDFE),HL
+  LD (Handler),HL
   LD A,$FE
   LD I,A
   IM 2
@@ -37,8 +37,8 @@ l_A62D:
   LD BC,$00F8
   LD (HL),$00
   LDIR
-  LD HL,$FF01
-  LD DE,$FF02
+  LD HL,Buildings
+  LD DE,Buildings+1
   LD BC,$00C8
   LD (HL),$00
   LDIR
@@ -56,11 +56,11 @@ l_A62D:
   LD A,$0A
   LD (ShipY),A
   XOR A
-  LD ($FD10),A
+  LD (Altitude),A
   LD A,$03
   LD ($FD30),A
   LD A,$14
-  LD ($FD22),A
+  LD (Resources),A
   LD ($FD4A),A
   CALL sub_BC6F
 
@@ -71,7 +71,7 @@ l_A68E:
   CALL sub_CFD7
   CALL sub_D0CA
   LD HL,PlayInterrupt
-  LD ($FDFE),HL
+  LD (Handler),HL
 
 ; l_A69A
 l_A69A:
@@ -83,23 +83,23 @@ l_A69A:
   CALL sub_CCA0
   BIT 6,(HL)
   JR Z,l_A70D
-  CALL sub_CDD8
+  CALL FindRobot
   JR NZ,l_A6C8
   LD A,B
   CP $19
   JR C,l_A70D
-  LD A,($FD10)
+  LD A,(Altitude)
   SUB (IY+$09)
   SUB (IY+$0D)
-  CALL Z,sub_A720
+  CALL Z,RobotMenu
   JR l_A70D
 l_A6C8:
-  CALL sub_CDF5
+  CALL FindBuilding
   JR NZ,l_A70D
   LD A,(IY+$02)
   OR A
   JR NZ,l_A70D
-  LD A,($FD10)
+  LD A,(Altitude)
   CP $0F
   JR NZ,l_A70D
   LD L,(IY+$00)
@@ -117,7 +117,7 @@ l_A6C8:
   OR (HL)
   AND $40
   JR NZ,l_A70D
-  CALL sub_C849
+  CALL ConstructionMenu
   LD (IY+$05),$04
   LD (IY+$06),$05
   LD (IY+$0B),$00
@@ -134,164 +134,85 @@ l_A70D:
   CALL sub_C28D
   JP l_A68E
 
-; sub_A720
+; landing on a robot of ours: DIRECT CONTROL, GIVE ORDERS, COMBAT MODE, LEAVE
+; ROBOT; the order to +$0B
 ;
 ; Used by the routine at l_A69A.
-sub_A720:
+RobotMenu:
   PUSH IY
   POP IX
   LD (IX+$0A),$01
   LD A,$04
-  LD ($FD1F),A
+  LD (MenuCursor),A
   LD A,$01
   LD ($FD39),A
-; This entry point is used by the routines at l_A93B, sub_A941 and l_AB52.
+
+; l_A732
+;
+; Used by the routines at l_A93B, l_A9EC and l_ABC8.
 l_A732:
   CALL sub_D2F6
-  CALL sub_D42D
-  LD BC,$1704
-  LD (BC),A
-  LD C,L
-  LD B,H
-  LD C,C
-  LD D,D
-  LD B,L
-  LD B,E
-  LD D,H
-  JR NZ,l_A765
-  INC BC
-  JR NZ,l_A78B
-  LD C,A
-  LD C,(HL)
-  LD D,H
-  LD D,D
-  LD C,A
-  LD C,H
-  INC BC
-  INC BC
-  LD B,A
-  LD C,C
-  LD D,(HL)
-  LD B,L
-  JR NZ,l_A776
-  JR NZ,l_A778
-  INC BC
-  JR NZ,l_A77B
-  LD C,A
-  LD D,D
-  LD B,H
-  LD B,L
-  LD D,D
-  LD D,E
-  INC BC
-  INC BC
-  LD B,E
-  LD C,A
-l_A765:
-  LD C,L
-  LD B,D
-  LD B,C
-  LD D,H
-  JR NZ,l_A78B
-  INC BC
-  JR NZ,l_A78E
-  JR NZ,l_A790
-  LD C,L
-  LD C,A
-  LD B,H
-  LD B,L
-  INC BC
-  INC BC
-l_A776:
-  LD C,H
-  LD B,L
-l_A778:
-  LD B,C
-  LD D,(HL)
-  LD B,L
-l_A77B:
-  JR NZ,$A79D
-  JR NZ,$A782
-  JR NZ,$A7A1
-  JR NZ,l_A7D5
-  LD C,A
-  LD B,D
-  LD C,A
-  LD D,H
-  LD BC,$1711
-  LD (BC),A
-l_A78B:
-  LD B,(HL)
-  DEC L
-  LD C,A
-l_A78E:
-  LD D,D
-  LD B,H
-l_A790:
-  LD B,L
-  LD D,D
-  LD D,E
-  DEC L
-  NOP
+  CALL PrintInline
+
+; data_A738
+data_A738:
+  DEFB $01,$04,$17,$02,$4D,$44,$49,$52
+  DEFB $45,$43,$54,$20,$20,$03,$20,$43
+  DEFB $4F,$4E,$54,$52,$4F,$4C,$03,$03
+  DEFB $47,$49,$56,$45,$20,$20,$20,$20
+  DEFB $03,$20,$20,$4F,$52,$44,$45,$52
+  DEFB $53,$03,$03,$43,$4F,$4D,$42,$41
+  DEFB $54,$20,$20,$03,$20,$20,$20,$20
+  DEFB $4D,$4F,$44,$45,$03,$03,$4C,$45
+  DEFB $41,$56,$45,$20,$20,$20,$03,$20
+  DEFB $20,$20,$52,$4F,$42,$4F,$54,$01
+  DEFB $11,$17,$02,$46,$2D,$4F,$52,$44
+  DEFB $45,$52,$53,$2D,$00
+
+; l_A795
+l_A795:
   LD B,(IX+$0B)
   INC B
-  LD HL,sub_A81D+$0010
+  LD HL,data_A820+$000D
   LD DE,$001B
 l_A79F:
   ADD HL,DE
   DJNZ l_A79F
-  LD DE,l_A79F+$0013
+  LD DE,data_A7AD+$0005
   LD BC,$001B
   LDIR
-  CALL sub_D42D
-  LD BC,$1712
-  LD (BC),A
-  LD B,L
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
-  NOP
+  CALL PrintInline
+
+; data_A7AD
+data_A7AD:
+  DEFB $01,$12,$17,$02,$45,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00
+
+; l_A7CD
+l_A7CD:
   LD A,(IX+$0B)
   DEC A
   CP $02
   JR NC,l_A7E4
-l_A7D5:
-  CALL sub_D42D
-  LD BC,$1913
-  NOP
-  LD A,(IX+$0E)
-  SRL A
-  CALL sub_D3E5
+  CALL PrintInline
+
+; data_A7D8
+data_A7D8:
+  DEFB $01,$13,$19,$00,$DD,$7E,$0E,$CB
+  DEFB $3F,$CD,$E5,$D3
+
+; l_A7E4
+;
+; Used by the routine at l_A7CD.
 l_A7E4:
   CALL sub_A81D
   LD HL,$5837
   LD E,$05
-  LD A,($FD1F)
-  CALL sub_ACD7
-  LD ($FD1F),A
+  LD A,(MenuCursor)
+  CALL ListMenu
+  LD (MenuCursor),A
   DEC A
   JP Z,l_A93B
   DEC A
@@ -305,7 +226,7 @@ l_A7E4:
   LD (IX+$0A),A
   LD A,$05
   LD ($FD30),A
-; This entry point is used by the routines at sub_A941, l_AB52 and sub_ACD7.
+; This entry point is used by the routine at ListMenu.
 l_A812:
   CALL sub_D2F6
   XOR A
@@ -315,24 +236,19 @@ l_A812:
 
 ; sub_A81D
 ;
-; Used by the routines at sub_A720, sub_A941, l_AB52 and sub_ACD7.
+; Used by the routines at l_A7E4, sub_A941, l_A9EC, l_AB3D, l_ABB9 and
+; ListMenu.
 sub_A81D:
-  CALL sub_D42D
-  LD BC,$1716
-  LD (BC),A
-  LD B,(HL)
-  LD D,E
-  LD D,H
-  LD D,D
-  LD B,L
-  LD C,(HL)
-  LD B,A
-  LD D,H
-  LD C,B
-  LD BC,$1917
-  LD (BC),A
-  LD B,A
-  NOP
+  CALL PrintInline
+
+; data_A820
+data_A820:
+  DEFB $01,$16,$17,$02,$46,$53,$54,$52
+  DEFB $45,$4E,$47,$54,$48,$01,$17,$19
+  DEFB $02,$47,$00
+
+; l_A833
+l_A833:
   LD A,(IX+$0C)
   OR A
   JP P,l_A83B
@@ -381,18 +297,18 @@ data_A848:
 
 ; l_A93B
 ;
-; Used by the routine at sub_A720.
+; Used by the routine at l_A7E4.
 l_A93B:
   CALL sub_A941
   JP l_A732
 
 ; sub_A941
 ;
-; Used by the routines at l_A93B and l_AB52.
+; Used by the routine at l_A93B.
 sub_A941:
   LD (IX+$0A),$02
   LD (IX+$05),$00
-  CALL sub_AD57
+  CALL WaitRelease
 l_A94C:
   CALL sub_B0CA
   CALL sub_CCBD
@@ -409,122 +325,41 @@ l_A94C:
   LD A,$78
   CALL sub_CCAC
   RET
-; This entry point is used by the routine at sub_A720.
+
+; l_A971
+;
+; Used by the routine at l_A7E4.
 l_A971:
   CALL sub_D2F6
-  CALL sub_D42D
-  LD BC,$1804
-  LD (BC),A
-  LD B,A
-  LD D,E
-  LD B,L
-  LD C,H
-  LD B,L
-  LD B,E
-  LD D,H
-  INC BC
-  LD C,A
-  LD D,D
-  LD B,H
-  LD B,L
-  LD D,D
-  LD D,E
-  LD (BC),A
-  LD C,L
-  LD BC,$1707
-  LD D,E
-  LD D,H
-  LD C,A
-  LD D,B
-  JR NZ,l_A9D5
-  LD C,(HL)
-  LD B,H
-  INC BC
-  JR NZ,l_A9B9
-  LD B,H
-  LD B,L
-  LD B,(HL)
-  LD B,L
-  LD C,(HL)
-  LD B,H
-  INC BC
-  INC BC
-  LD B,C
-  LD B,H
-  LD D,(HL)
-  LD B,C
-  LD C,(HL)
-  LD B,E
-  LD B,L
-  JR NZ,$A9AD
-  CCF
-  CCF
-  JR NZ,$A9FB
-  LD C,C
-  LD C,H
-  LD B,L
-  LD D,E
-  INC BC
-  INC BC
-  LD D,D
-  LD B,L
-  LD D,H
-  LD D,D
-  LD B,L
-l_A9B9:
-  LD B,C
-  LD D,H
-  JR NZ,$A9C0
-  CCF
-  CCF
-  JR NZ,l_AA0E
-  LD C,C
-  LD C,H
-  LD B,L
-  LD D,E
-  INC BC
-  INC BC
-  LD D,E
-  LD B,L
-  LD B,C
-  LD D,D
-  LD B,E
-  LD C,B
-  JR NZ,$A9F5
-  INC BC
-  JR NZ,$AA16
-  LD B,L
-  LD D,E
-  LD D,H
-l_A9D5:
-  LD D,D
-  LD C,A
-  LD E,C
-  INC BC
-  INC BC
-  LD D,E
-  LD B,L
-  LD B,C
-  LD D,D
-  LD B,E
-  LD C,B
-  JR NZ,$AA08
-  INC BC
-  JR NZ,l_AA28
-  LD B,C
-  LD D,B
-  LD D,H
-  LD D,L
-  LD D,D
-  LD B,L
-  NOP
+  CALL PrintInline
+
+; data_A977
+data_A977:
+  DEFB $01,$04,$18,$02,$47,$53,$45,$4C
+  DEFB $45,$43,$54,$03,$4F,$52,$44,$45
+  DEFB $52,$53,$02,$4D,$01,$07,$17,$53
+  DEFB $54,$4F,$50,$20,$41,$4E,$44,$03
+  DEFB $20,$20,$44,$45,$46,$45,$4E,$44
+  DEFB $03,$03,$41,$44,$56,$41,$4E,$43
+  DEFB $45,$20,$03,$3F,$3F,$20,$4D,$49
+  DEFB $4C,$45,$53,$03,$03,$52,$45,$54
+  DEFB $52,$45,$41,$54,$20,$03,$3F,$3F
+  DEFB $20,$4D,$49,$4C,$45,$53,$03,$03
+  DEFB $53,$45,$41,$52,$43,$48,$20,$26
+  DEFB $03,$20,$44,$45,$53,$54,$52,$4F
+  DEFB $59,$03,$03,$53,$45,$41,$52,$43
+  DEFB $48,$20,$26,$03,$20,$43,$41,$50
+  DEFB $54,$55,$52,$45,$00
+
+; l_A9EC
+l_A9EC:
   CALL sub_A81D
   LD HL,$5897
   LD E,$06
   LD A,$01
-  CALL sub_ACD7
+  CALL ListMenu
   PUSH AF
-  CALL sub_AD57
+  CALL WaitRelease
   POP AF
   DEC A
   JR NZ,l_AA0C
@@ -534,7 +369,6 @@ l_A9D5:
   JP l_A732
 l_AA0C:
   CP $03
-l_AA0E:
   JP NC,l_AACF
   LD (IX+$0B),A
   PUSH AF
@@ -542,340 +376,111 @@ l_AA0E:
   POP AF
   DEC A
   JR NZ,l_AA2F
-  CALL sub_D42D
-  LD BC,$1705
-  LD (BC),A
-  LD C,A
-  LD B,C
-  LD B,H
-  LD D,(HL)
-  LD B,C
-l_AA28:
-  LD C,(HL)
-  LD B,E
-  LD B,L
-  JR NZ,l_AA2D
-l_AA2D:
-  JR l_AA40
+  CALL PrintInline
+
+; data_AA1F
+data_AA1F:
+  DEFB $01,$05,$17,$02,$4F,$41,$44,$56
+  DEFB $41,$4E,$43,$45,$20,$00,$18,$11
+
+; l_AA2F
+;
+; Used by the routine at l_A9EC.
 l_AA2F:
-  CALL sub_D42D
-  LD BC,$1705
-  LD (BC),A
-  LD C,A
-  LD D,D
-  LD B,L
-  LD D,H
-  LD D,D
-  LD B,L
-  LD B,C
-  LD D,H
-  JR NZ,l_AA40
-l_AA40:
-  CALL sub_D42D
-  INC BC
-  CCF
-  CCF
-  JR NZ,$AA95
-  LD C,C
-  LD C,H
-  LD B,L
-  LD D,E
-  LD BC,$1709
-  LD (BC),A
-  LD B,L
-  JR NZ,$AAA6
-  LD B,L
-  LD C,H
-  LD B,L
-  LD B,E
-  LD D,H
-  INC BC
-  LD B,H
-  LD C,C
-  LD D,E
-  LD D,H
-  LD B,C
-  LD C,(HL)
-  LD B,E
-  LD B,L
-  LD BC,$180D
-  LD (BC),A
-  LD B,(HL)
-  JR NC,l_AA88
-  LD C,L
-  LD C,C
-  LD C,H
-  LD B,L
-  LD D,E
-  NOP
-  LD D,$00
-l_AA70:
-  PUSH DE
-  CALL sub_A81D
-  CALL sub_B0CA
-  CALL sub_CCBD
-  CALL sub_B048
-  CALL sub_AD62
-  POP DE
-  LD A,(IX+$01)
-  OR A
-  JP Z,l_A812
-l_AA88:
-  CALL WaitKey
-  BIT 4,A
-  JR NZ,l_AAB8
-  LD C,D
-  RRCA
-  RRCA
-  AND $03
-  JR Z,l_AA70
-  AND $02
-  LD B,A
-  ADD A,A
-  ADD A,A
-  ADD A,B
-  SUB $05
-  ADD A,C
-  CP $33
-  JR NC,l_AA70
-  LD D,A
-  CALL sub_D42D
-  LD BC,$170D
-  LD (BC),A
-  LD B,(HL)
-  NOP
-  LD A,D
-  CALL sub_D3E5
-  LD A,$14
-  CALL sub_CCAC
-  JR l_AA70
-l_AAB8:
-  LD A,D
-  RLCA
-  LD (IX+$0E),A
-  OR A
-  JR NZ,l_AAC4
-  LD (IX+$0B),$00
-l_AAC4:
-  LD A,$78
-  CALL sub_CCAC
-  CALL sub_AD57
-  JP l_A732
+  CALL PrintInline
+
+; data_AA32
+data_AA32:
+  DEFB $01,$05,$17,$02,$4F,$52,$45,$54
+  DEFB $52,$45,$41,$54,$20,$00,$CD,$2D
+  DEFB $D4,$03,$3F,$3F,$20,$4D,$49,$4C
+  DEFB $45,$53,$01,$09,$17,$02,$45,$20
+  DEFB $53,$45,$4C,$45,$43,$54,$03,$44
+  DEFB $49,$53,$54,$41,$4E,$43,$45,$01
+  DEFB $0D,$18,$02,$46,$30,$20,$4D,$49
+  DEFB $4C,$45,$53,$00,$16,$00,$D5,$CD
+  DEFB $1D,$A8,$CD,$CA,$B0,$CD,$BD,$CC
+  DEFB $CD,$48,$B0,$CD,$62,$AD,$D1,$DD
+  DEFB $7E,$01,$B7,$CA,$12,$A8,$CD,$7C
+  DEFB $D3,$CB,$67,$20,$29,$4A,$0F,$0F
+  DEFB $E6,$03,$28,$DA,$E6,$02,$47,$87
+  DEFB $87,$80,$D6,$05,$81,$FE,$33,$30
+  DEFB $CD,$57,$CD,$2D,$D4,$01,$0D,$17
+  DEFB $02,$46,$00,$7A,$CD,$E5,$D3,$3E
+  DEFB $14,$CD,$AC,$CC,$18,$B8,$7A,$07
+  DEFB $DD,$77,$0E,$B7,$20,$04,$DD,$36
+  DEFB $0B,$00,$3E,$78,$CD,$AC,$CC,$CD
+  DEFB $57,$AD,$C3,$32,$A7
+
+; l_AACF
+;
+; Used by the routine at l_A9EC.
 l_AACF:
   JP NZ,l_AB4E
   CALL sub_D2F6
-  CALL sub_D42D
-  LD BC,$1704
-  LD (BC),A
-  LD C,A
-  LD D,E
-  LD B,L
-  LD B,C
-  LD D,D
-  LD B,E
-  LD C,B
-  JR NZ,$AB0B
-  INC BC
-  JR NZ,l_AB2C
-  LD B,L
-  LD D,E
-  LD D,H
-  LD D,D
-  LD C,A
-  LD E,C
-  LD BC,$1808
-  LD (BC),A
-  LD B,L
-  LD D,E
-  LD B,L
-  LD C,H
-  LD B,L
-  LD B,E
-  LD D,H
-  INC BC
-  LD D,H
-  LD B,C
-  LD D,D
-  LD B,A
-  LD B,L
-  LD D,H
-  LD BC,$170C
-  LD (BC),A
-  LD C,L
-  LD B,L
-  LD C,(HL)
-  LD B,L
-  LD C,L
-  LD E,C
-  JR NZ,l_AB2C
-  JR NZ,l_AB11
-  JR NZ,l_AB30
-  LD D,D
-l_AB11:
-  LD C,A
-  LD B,D
-  LD C,A
-  LD D,H
-  LD D,E
-  INC BC
-  INC BC
-  LD B,L
-  LD C,(HL)
-  LD B,L
-  LD C,L
-  LD E,C
-  JR NZ,$AB3F
-  JR NZ,l_AB24
-  LD B,(HL)
-  LD B,C
-  LD B,E
-l_AB24:
-  LD D,H
-  LD C,A
-  LD D,D
-  LD E,C
-  LD D,E
-  INC BC
-  INC BC
-  LD B,L
-l_AB2C:
-  LD C,(HL)
-  LD B,L
-  LD C,L
-  LD E,C
-l_AB30:
-  JR NZ,l_AB52
-  JR NZ,l_AB37
-  LD D,A
-  LD B,C
-  LD D,D
-l_AB37:
-  LD B,D
-  LD B,C
-  LD D,E
-  LD B,L
-  LD D,E
-  NOP
+  CALL PrintInline
+
+; data_AAD8
+data_AAD8:
+  DEFB $01,$04,$17,$02,$4F,$53,$45,$41
+  DEFB $52,$43,$48,$20,$26,$03,$20,$44
+  DEFB $45,$53,$54,$52,$4F,$59,$01,$08
+  DEFB $18,$02,$45,$53,$45,$4C,$45,$43
+  DEFB $54,$03,$54,$41,$52,$47,$45,$54
+  DEFB $01,$0C,$17,$02,$4D,$45,$4E,$45
+  DEFB $4D,$59,$20,$20,$20,$03,$20,$20
+  DEFB $52,$4F,$42,$4F,$54,$53,$03,$03
+  DEFB $45,$4E,$45,$4D,$59,$20,$20,$20
+  DEFB $03,$46,$41,$43,$54,$4F,$52,$59
+  DEFB $53,$03,$03,$45,$4E,$45,$4D,$59
+  DEFB $20,$20,$20,$03,$57,$41,$52,$42
+  DEFB $41,$53,$45,$53,$00
+
+; l_AB3D
+l_AB3D:
   CALL sub_A81D
   LD HL,$5937
   LD A,$01
   LD E,$04
-  CALL sub_ACD7
+  CALL ListMenu
   ADD A,$02
   JR l_ABC8
+
+; l_AB4E
+;
+; Used by the routine at l_AACF.
 l_AB4E:
   CALL sub_D2F6
+  CALL PrintInline
 
-; data_AB51
-data_AB51:
-  DEFB $CD
+; data_AB54
+data_AB54:
+  DEFB $01,$04,$17,$02,$4F,$53,$45,$41
+  DEFB $52,$43,$48,$20,$26,$03,$20,$43
+  DEFB $41,$50,$54,$55,$52,$45,$01,$08
+  DEFB $18,$02,$45,$53,$45,$4C,$45,$43
+  DEFB $54,$03,$54,$41,$52,$47,$45,$54
+  DEFB $01,$0C,$17,$02,$4D,$4E,$45,$55
+  DEFB $54,$52,$41,$4C,$20,$03,$46,$41
+  DEFB $43,$54,$4F,$52,$59,$53,$03,$03
+  DEFB $45,$4E,$45,$4D,$59,$20,$20,$20
+  DEFB $03,$46,$41,$43,$54,$4F,$52,$59
+  DEFB $53,$03,$03,$45,$4E,$45,$4D,$59
+  DEFB $20,$20,$20,$03,$57,$41,$52,$42
+  DEFB $41,$53,$45,$53,$00
 
-; l_AB52
-;
-; Used by the routine at sub_A941.
-l_AB52:
-  DEC L
-  CALL NC,$0401
-  RLA
-  LD (BC),A
-  LD C,A
-  LD D,E
-  LD B,L
-  LD B,C
-  LD D,D
-  LD B,E
-  LD C,B
-  JR NZ,l_AB87
-  INC BC
-  JR NZ,l_ABA7
-  LD B,C
-  LD D,B
-  LD D,H
-  LD D,L
-  LD D,D
-  LD B,L
-  LD BC,$1808
-  LD (BC),A
-  LD B,L
-  LD D,E
-  LD B,L
-  LD C,H
-  LD B,L
-  LD B,E
-  LD D,H
-  INC BC
-  LD D,H
-  LD B,C
-  LD D,D
-  LD B,A
-  LD B,L
-  LD D,H
-  LD BC,$170C
-  LD (BC),A
-  LD C,L
-  LD C,(HL)
-  LD B,L
-  LD D,L
-  LD D,H
-  LD D,D
-  LD B,C
-l_AB87:
-  LD C,H
-  JR NZ,l_AB8D
-  LD B,(HL)
-  LD B,C
-  LD B,E
-l_AB8D:
-  LD D,H
-  LD C,A
-  LD D,D
-  LD E,C
-  LD D,E
-  INC BC
-  INC BC
-  LD B,L
-  LD C,(HL)
-  LD B,L
-  LD C,L
-  LD E,C
-  JR NZ,$ABBB
-  JR NZ,l_ABA0
-  LD B,(HL)
-  LD B,C
-  LD B,E
-l_ABA0:
-  LD D,H
-  LD C,A
-  LD D,D
-  LD E,C
-  LD D,E
-  INC BC
-  INC BC
-l_ABA7:
-  LD B,L
-  LD C,(HL)
-  LD B,L
-  LD C,L
-  LD E,C
-  JR NZ,$ABCE
-  JR NZ,l_ABB3
-  LD D,A
-  LD B,C
-  LD D,D
-l_ABB3:
-  LD B,D
-  LD B,C
-  LD D,E
-  LD B,L
-  LD D,E
-  NOP
+; l_ABB9
+l_ABB9:
   CALL sub_A81D
   LD HL,$5937
   LD A,$01
   LD E,$04
-  CALL sub_ACD7
+  CALL ListMenu
   ADD A,$05
-; This entry point is used by the routine at sub_A941.
+
+; l_ABC8
+;
+; Used by the routine at l_AB3D.
 l_ABC8:
   LD (IX+$0B),A
   CP $04
@@ -900,173 +505,50 @@ l_ABF1:
 l_ABF5:
   LD A,$78
   CALL sub_CCAC
-  CALL sub_AD57
+  CALL WaitRelease
   JP l_A732
-; This entry point is used by the routine at sub_A720.
+; This entry point is used by the routine at l_A7E4.
 l_AC00:
   CALL sub_D2F6
-  CALL sub_D42D
-  LD BC,$1704
-  LD (BC),A
-  LD C,L
-  LD C,(HL)
-  LD D,L
-  LD B,E
-  LD C,H
-  LD B,L
-  LD B,C
-  LD D,D
-  JR NZ,$AC17
-  JR NZ,$AC36
-  JR NZ,$AC38
-  LD B,D
-  LD C,A
-  LD C,L
-  LD B,D
-  INC BC
-  INC BC
-  LD B,(HL)
-  LD C,C
-  LD D,D
-  LD B,L
-  JR NZ,l_AC44
-  JR NZ,l_AC46
-  INC BC
-  JR NZ,l_AC79
-  LD C,B
-  LD B,C
-  LD D,E
-  LD B,L
-  LD D,D
-  LD D,E
-  INC BC
-  INC BC
-  LD B,(HL)
-  LD C,C
-  LD D,D
-  LD B,L
-  JR NZ,l_AC57
-  JR NZ,l_AC59
-  INC BC
-  LD C,L
-  LD C,C
-  LD D,E
-  LD D,E
-  LD C,C
-  LD C,H
-  LD B,L
-  LD D,E
-  INC BC
-  INC BC
-l_AC44:
-  LD B,(HL)
-  LD C,C
-l_AC46:
-  LD D,D
-  LD B,L
-  JR NZ,l_AC6A
-  JR NZ,l_AC6C
-  INC BC
-  JR NZ,$AC6F
-  LD B,E
-  LD B,C
-  LD C,(HL)
-  LD C,(HL)
-  LD C,A
-  LD C,(HL)
-  INC BC
-  INC BC
-l_AC57:
-  LD C,L
-  LD C,A
-l_AC59:
-  LD D,(HL)
-  LD B,L
-  JR NZ,$AC7D
-  JR NZ,l_AC7F
-  INC BC
-  JR NZ,$AC82
-  JR NZ,$ACB6
-  LD C,A
-  LD B,D
-  LD C,A
-  LD D,H
-  INC BC
-  INC BC
-l_AC6A:
-  LD D,E
-  LD D,H
-l_AC6C:
-  LD C,A
-  LD D,B
-  JR NZ,$AC90
-  JR NZ,$AC92
-  INC BC
-  JR NZ,$AC95
-  LD B,E
-  LD C,A
-  LD C,L
-  LD B,D
-l_AC79:
-  LD B,C
-  LD D,H
-  NOP
-  CALL sub_A81D
-l_AC7F:
-  LD A,$06
-l_AC81:
-  LD HL,$5837
-  LD E,$07
-  CALL sub_ACD7
-  CP $06
-  JP Z,l_A732
-  PUSH AF
-  CP $05
-  JR NZ,l_AC99
-  CALL sub_A941
-  POP AF
-  JR l_AC81
-l_AC99:
-  LD C,A
-  LD B,A
-  INC B
-  LD A,(IX+$07)
-l_AC9F:
-  RLCA
-  DJNZ l_AC9F
-  JR NC,l_ACCE
-  POP AF
-  CP $01
-  JR NZ,l_ACB3
-  PUSH IX
-  POP IY
-  CALL sub_B99F
-  JP l_A812
-l_ACB3:
-  PUSH AF
-  LD IY,data_D6A8+$012B
-  LD A,(IY+$01)
-  OR A
-  JR NZ,l_ACCE
-  LD A,$05
-  SUB C
-  CALL sub_B6D6
-  CALL sub_CCBD
-  CALL sub_AD62
-  POP AF
-  JP l_AC81
-l_ACCE:
-  LD A,$FA
-  CALL sub_CCAC
-  POP AF
-  JP l_AC81
+  CALL PrintInline
 
-; sub_ACD7
+; data_AC06
+data_AC06:
+  DEFB $01,$04,$17,$02,$4D,$4E,$55,$43
+  DEFB $4C,$45,$41,$52,$20,$03,$20,$20
+  DEFB $20,$20,$42,$4F,$4D,$42,$03,$03
+  DEFB $46,$49,$52,$45,$20,$20,$20,$20
+  DEFB $03,$20,$50,$48,$41,$53,$45,$52
+  DEFB $53,$03,$03,$46,$49,$52,$45,$20
+  DEFB $20,$20,$20,$03,$4D,$49,$53,$53
+  DEFB $49,$4C,$45,$53,$03,$03,$46,$49
+  DEFB $52,$45,$20,$20,$20,$20,$03,$20
+  DEFB $20,$43,$41,$4E,$4E,$4F,$4E,$03
+  DEFB $03,$4D,$4F,$56,$45,$20,$20,$20
+  DEFB $20,$03,$20,$20,$20,$52,$4F,$42
+  DEFB $4F,$54,$03,$03,$53,$54,$4F,$50
+  DEFB $20,$20,$20,$20,$03,$20,$20,$43
+  DEFB $4F,$4D,$42,$41,$54,$00,$CD,$1D
+  DEFB $A8,$3E,$06,$21,$37,$58,$1E,$07
+  DEFB $CD,$D7,$AC,$FE,$06,$CA,$32,$A7
+  DEFB $F5,$FE,$05,$20,$06,$CD,$41,$A9
+  DEFB $F1,$18,$E8,$4F,$47,$04,$DD,$7E
+  DEFB $07,$07,$10,$FD,$30,$2A,$F1,$FE
+  DEFB $01,$20,$0A,$DD,$E5,$FD,$E1,$CD
+  DEFB $9F,$B9,$C3,$12,$A8,$F5,$FD,$21
+  DEFB $D3,$D7,$FD,$7E,$01,$B7,$20,$10
+  DEFB $3E,$05,$91,$CD,$D6,$B6,$CD,$BD
+  DEFB $CC,$CD,$62,$AD,$F1,$C3,$81,$AC
+  DEFB $3E,$FA,$CD,$AC,$CC,$F1,$C3,$81
+  DEFB $AC
+
+; a list menu: HL the attribute of item 0 (an item every 3 rows), E the items +
+; 1, A the first highlighted; down / up move, fire returns A
 ;
-; Used by the routines at sub_A720, sub_A941 and l_AB52.
-sub_ACD7:
+; Used by the routines at l_A7E4, l_A9EC, l_AB3D and l_ABB9.
+ListMenu:
   PUSH AF
-  CALL sub_AD57
+  CALL WaitRelease
   POP AF
   LD D,A
   LD C,$4E
@@ -1126,7 +608,7 @@ l_AD2F:
 
 ; sub_AD3C
 ;
-; Used by the routine at sub_ACD7.
+; Used by the routine at ListMenu.
 sub_AD3C:
   LD B,A
   PUSH DE
@@ -1145,10 +627,10 @@ l_AD42:
   POP DE
   RET
 
-; sub_AD57
+; wait until no control is held
 ;
-; Used by the routines at sub_A941, l_AB52, sub_ACD7 and sub_AE6B.
-sub_AD57:
+; Used by the routines at sub_A941, l_A9EC, l_ABC8 and ListMenu.
+WaitRelease:
   PUSH BC
   PUSH HL
 l_AD59:
@@ -1161,10 +643,10 @@ l_AD59:
 
 ; sub_AD62
 ;
-; Used by the routines at l_A69A, sub_A941, l_AB52 and sub_ACD7.
+; Used by the routines at l_A69A, sub_A941 and ListMenu.
 sub_AD62:
   CALL sub_D358
-  LD HL,$FD35
+  LD HL,Clock
   LD A,(HL)
   ADD A,$05
   LD (HL),A
@@ -1177,12 +659,12 @@ sub_AD62:
   CP $18
   JR NZ,l_AD85
   LD (HL),$00
-  LD HL,($FD37)
+  LD HL,(Clock+2)
   INC HL
-  LD ($FD37),HL
+  LD (Clock+2),HL
   CALL sub_AE38
 l_AD85:
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_AD88
 data_AD88:
@@ -1190,14 +672,14 @@ data_AD88:
 
 ; l_AD90
 l_AD90:
-  LD HL,($FD37)
+  LD HL,(Clock+2)
   CALL sub_D3F3
   CALL sub_D470
-  LD A,($FD36)
+  LD A,(Clock+1)
   CALL sub_D3EC
   LD A,$2E
   CALL sub_D427
-  LD A,($FD35)
+  LD A,(Clock)
   CALL sub_D3EC
   CALL sub_AE6B
   PUSH IY
@@ -1221,7 +703,7 @@ l_ADCD:
   LD (IY+$04),$00
   PUSH BC
   PUSH IY
-  CALL sub_CDD8
+  CALL FindRobot
   LD A,(IY+$0A)
   RLCA
   AND $01
@@ -1276,7 +758,7 @@ data_AE29:
 ;
 ; Used by the routine at sub_AD62.
 sub_AE38:
-  LD HL,$FD22
+  LD HL,Resources
   LD DE,$FD3A
   CALL sub_AE4E
   LD HL,$FD4A
@@ -1328,131 +810,48 @@ sub_AE6B:
   OR A
   RET NZ
   CALL sub_AF00
-  CALL sub_D42D
-  LD BC,$0016
-  LD (BC),A
-  LD B,L
-  LD E,C
-  LD C,A
-  LD D,L
-  JR NZ,l_AECE
-  LD B,C
-  LD D,(HL)
-  LD B,L
-  JR NZ,l_AED9
-  LD C,A
-  JR NZ,l_AED0
-  LD B,C
-  LD D,E
-  LD B,L
-  LD D,E
-  JR NZ,$AEE0
-  LD B,L
-  LD B,(HL)
-  LD D,H
-  INC BC
-  LD B,D
-  LD B,L
-  LD D,H
-  LD D,H
-  LD B,L
-  LD D,D
-  JR NZ,l_AEEC
-  LD D,L
-  LD B,E
-  LD C,E
-  JR NZ,$AEF3
-  LD B,L
-  LD E,B
-  LD D,H
-  JR NZ,$AEFE
-  LD C,C
-  LD C,L
-  LD B,L
-  LD HL,$1800
-  ADD HL,SP
+  CALL PrintInline
+
+; data_AE7C
+data_AE7C:
+  DEFB $01,$16,$00,$02,$45,$59,$4F,$55
+  DEFB $20,$48,$41,$56,$45,$20,$4E,$4F
+  DEFB $20,$42,$41,$53,$45,$53,$20,$4C
+  DEFB $45,$46,$54,$03,$42,$45,$54,$54
+  DEFB $45,$52,$20,$4C,$55,$43,$4B,$20
+  DEFB $4E,$45,$58,$54,$20,$54,$49,$4D
+  DEFB $45,$21,$00,$18,$39
+
+; l_AEB1
+;
+; Used by the routine at sub_AE6B.
 l_AEB1:
   CALL sub_AF00
-  CALL sub_D42D
-  LD BC,$0016
-  LD (BC),A
-  LD B,L
-  JR NZ,$AF07
-  LD C,(HL)
-  LD D,E
-  LD C,C
-  LD B,A
-  LD C,(HL)
-  LD C,C
-  LD B,C
-  LD C,(HL)
-  LD D,E
-  JR NZ,l_AF0D
-  LD B,L
-  LD D,E
-  LD D,H
-  LD D,D
-  LD C,A
-l_AECE:
-  LD E,C
-  LD B,L
-l_AED0:
-  LD B,H
-  JR NZ,$AED6
-  JR NZ,$AEF5
-  JR NZ,l_AEF7
-  LD E,C
-  LD C,A
-l_AED9:
-  LD D,L
-  JR NZ,$AF24
-  LD B,C
-  LD D,(HL)
-  LD B,L
-  JR NZ,l_AF38
-  LD C,A
-  LD C,(HL)
-  JR NZ,l_AF06
-  JR NZ,$AF07
-  JR NZ,l_AF09
-  NOP
-  LD A,$FA
-l_AEEC:
-  CALL sub_CCAC
-  LD B,$64
-l_AEF1:
-  HALT
-  DJNZ l_AEF1
-  CALL sub_AD57
-l_AEF7:
-  CALL WaitKey
-  OR A
-  JR Z,l_AEF7
-  JP Start
+  CALL PrintInline
+
+; data_AEB7
+data_AEB7:
+  DEFB $01,$16,$00,$02,$45,$20,$49,$4E
+  DEFB $53,$49,$47,$4E,$49,$41,$4E,$53
+  DEFB $20,$44,$45,$53,$54,$52,$4F,$59
+  DEFB $45,$44,$20,$03,$20,$20,$20,$20
+  DEFB $59,$4F,$55,$20,$48,$41,$56,$45
+  DEFB $20,$57,$4F,$4E,$20,$21,$20,$20
+  DEFB $20,$20,$00,$3E,$FA,$CD,$AC,$CC
+  DEFB $06,$64,$76,$10,$FD,$CD,$57,$AD
+  DEFB $CD,$7C,$D3,$B7,$28,$FA,$C3,$00
+  DEFB $A6
 
 ; sub_AF00
 ;
-; Used by the routine at sub_AE6B.
+; Used by the routines at sub_AE6B and l_AEB1.
 sub_AF00:
   XOR A
   LD ($FD39),A
-
-; data_AF04
-data_AF04:
-  DEFB $CD,$F6
-
-; l_AF06
-;
-; Used by the routine at sub_AE6B.
-l_AF06:
-  JP NC,$E5CD
-; This entry point is used by the routine at sub_AE6B.
-l_AF09:
-  POP DE
+  CALL sub_D2F6
+  CALL sub_D1E5
   LD HL,StartInterrupt
-; This entry point is used by the routine at sub_AE6B.
-l_AF0D:
-  LD ($FDFE),HL
+  LD (Handler),HL
   RET
 
 ; the ship's move from Input: X by right / left, Y by down / up, each refused
@@ -1480,8 +879,6 @@ l_AF25:
   JR C,l_AF42
   LD A,H
   OR A
-; This entry point is used by the routine at sub_AE6B.
-l_AF38:
   JR NZ,l_AF3F
   LD A,L
   CP $0E
@@ -1560,14 +957,14 @@ l_AFAE:
   AND $10
   JR Z,l_AFC3
 l_AFB5:
-  LD A,($FD10)
+  LD A,(Altitude)
   CP $30
   JR NC,l_AFDB
   ADD A,$02
-  LD ($FD10),A
+  LD (Altitude),A
   JR l_AFDB
 l_AFC3:
-  LD A,($FD10)
+  LD A,(Altitude)
   DEC A
   JP M,l_AFDB
   LD B,A
@@ -1577,7 +974,7 @@ l_AFC3:
   LD A,B
   CP C
   JR C,l_AFDB
-  LD ($FD10),A
+  LD (Altitude),A
 l_AFDB:
   CALL sub_AFE6
   LD HL,$FD1E
@@ -1639,7 +1036,10 @@ sub_B01D:
 sub_B024:
   CALL sub_CCA0
   SET 7,(HL)
-; This entry point is used by the routine at sub_B048.
+
+; l_B029
+;
+; Used by the routine at sub_B048.
 l_B029:
   LD A,($FD52)
   OR A
@@ -1650,7 +1050,7 @@ l_B029:
 
 ; sub_B036
 ;
-; Used by the routines at sub_B01D, sub_B024 and sub_B048.
+; Used by the routines at sub_B01D, l_B029 and sub_B048.
 sub_B036:
   LD A,($FD1E)
   AND $01
@@ -1663,7 +1063,7 @@ sub_B036:
 
 ; sub_B048
 ;
-; Used by the routines at sub_A941 and sub_ACD7.
+; Used by the routines at sub_A941 and ListMenu.
 sub_B048:
   CALL sub_B036
   LD HL,$FD1E
@@ -1702,7 +1102,7 @@ CheckShipMove:
   INC DE
   CALL sub_B099
 l_B084:
-  LD A,($FD10)
+  LD A,(Altitude)
   CP C
   POP HL
   RET
@@ -1733,7 +1133,7 @@ sub_B099:
   BIT 6,(HL)
   RET Z
   PUSH BC
-  CALL sub_CDD8
+  CALL FindRobot
   JR NZ,l_B0B0
   POP BC
   LD A,(IY+$09)
@@ -1750,7 +1150,7 @@ l_B0AF:
   RET
 ; This entry point is used by the routine at sub_B099.
 l_B0B0:
-  CALL sub_CDF5
+  CALL FindBuilding
   POP BC
   RET NZ
   LD A,(IY+$02)
@@ -1766,7 +1166,7 @@ data_B0C1:
 
 ; sub_B0CA
 ;
-; Used by the routines at l_A69A, sub_A941 and sub_ACD7.
+; Used by the routines at l_A69A, sub_A941 and ListMenu.
 sub_B0CA:
   CALL sub_B7F4
   LD B,$30
@@ -2078,7 +1478,7 @@ l_B2E8:
   CP $04
   JR C,l_B2F9
   CP $06
-  JP C,sub_B99F
+  JP C,l_B99F
 l_B2F9:
   LD A,(IY+$08)
   CP $04
@@ -2144,7 +1544,7 @@ l_B33F:
 
 ; sub_B34D
 ;
-; Used by the routines at l_AB52, sub_B222 and sub_B7F4.
+; Used by the routines at l_ABC8, sub_B222 and sub_B7F4.
 sub_B34D:
   CP $03
   JP Z,sub_B41D
@@ -2246,7 +1646,7 @@ l_B3C8:
 
 ; sub_B3CA
 ;
-; Used by the routines at sub_B222, sub_B3B3 and sub_B99F.
+; Used by the routines at sub_B222, sub_B3B3 and sub_B7F4.
 sub_B3CA:
   XOR A
   SBC HL,DE
@@ -2411,7 +1811,7 @@ l_B495:
   POP BC
   LD A,(IY+$09)
   ADD A,(IY+$0D)
-  LD ($FD10),A
+  LD (Altitude),A
   RET
 
 ; sub_B4B9
@@ -2487,7 +1887,7 @@ l_B509:
 ; Used by the routine at l_B154.
 sub_B513:
   LD C,$00
-  LD A,($FD10)
+  LD A,(Altitude)
   SUB (IY+$09)
   SUB (IY+$0D)
   AND $80
@@ -2799,7 +2199,7 @@ l_B67E:
   JR l_B6AD
 l_B68E:
   PUSH IY
-  CALL sub_CDD8
+  CALL FindRobot
   LD A,(IY+$0A)
   LD B,(IY+$0C)
   POP IY
@@ -2843,7 +2243,7 @@ l_B6C7:
 
 ; sub_B6D6
 ;
-; Used by the routines at l_AB52 and l_B154.
+; Used by the routine at l_B154.
 sub_B6D6:
   LD (IY+$07),A
   LD C,$05
@@ -2977,7 +2377,7 @@ l_B7A7:
   PUSH IY
   LD E,(IY+$07)
   LD C,$FC
-  CALL sub_CDD8
+  CALL FindRobot
   JR NZ,l_B7DE
   LD A,(IY+$0C)
   DEC A
@@ -3114,7 +2514,7 @@ l_B864:
   CP B
   RET C
   LD HL,$FD4A
-  LD DE,$FD29
+  LD DE,MenuResources
   LD BC,$0007
   LDIR
   LD C,(IY+$07)
@@ -3126,14 +2526,14 @@ l_B890:
   LD A,$08
   SUB B
   PUSH AF
-  LD HL,data_CAF0
+  LD HL,PartCosts
   CALL sub_D351
   LD E,(HL)
   POP AF
-  LD HL,data_CAF0+$0008
+  LD HL,PartCosts+$0008
   CALL sub_D351
   LD A,(HL)
-  LD HL,$FD29
+  LD HL,MenuResources
   CALL sub_D351
   LD A,(HL)
   SUB E
@@ -3146,7 +2546,7 @@ l_B8B7:
   LD (HL),A
 l_B8B8:
   DJNZ l_B890
-  LD HL,$FD29
+  LD HL,MenuResources
   LD A,(HL)
   SRL A
   CP $0B
@@ -3263,11 +2663,8 @@ l_B989:
   RET NZ
   LD (IY+$0B),$03
   RET
-
-; sub_B99F
-;
-; Used by the routines at l_AB52 and sub_B222.
-sub_B99F:
+; This entry point is used by the routine at sub_B222.
+l_B99F:
   LD HL,$FD73
   LD C,$00
   LD DE,$070A
@@ -3367,7 +2764,7 @@ l_BA33:
   LD A,(HL)
   BIT 6,A
   JR Z,l_BA44
-  CALL sub_CDD8
+  CALL FindRobot
   JR NZ,l_BA44
   LD (IY+$01),$00
   RES 6,(HL)
@@ -3409,7 +2806,7 @@ l_BA61:
 
 ; sub_BA87
 ;
-; Used by the routine at sub_B99F.
+; Used by the routine at sub_B7F4.
 sub_BA87:
   LD DE,data_5B00
   LD HL,$5821
@@ -3509,7 +2906,7 @@ l_BAF9:
 
 ; sub_BB09
 ;
-; Used by the routines at l_AD90, sub_B99F and sub_BC6F.
+; Used by the routines at l_AD90, sub_B7F4 and sub_BC6F.
 sub_BB09:
   LD HL,$FD3A
   LD B,$07
@@ -3548,7 +2945,7 @@ l_BB39:
 
 ; sub_BB40
 ;
-; Used by the routines at l_A69A, sub_B0FA, sub_B7F4 and sub_B99F.
+; Used by the routines at l_A69A, sub_B0FA and sub_B7F4.
 sub_BB40:
   LD HL,data_D6A8+$0359
   CALL sub_BB50
@@ -3676,7 +3073,7 @@ l_BBCD:
 
 ; sub_BBD8
 ;
-; Used by the routine at sub_B99F.
+; Used by the routine at sub_B7F4.
 sub_BBD8:
   LD HL,$FD87
   CALL sub_BC1C
@@ -3700,7 +3097,7 @@ sub_BBD8:
 
 ; sub_BBF9
 ;
-; Used by the routine at sub_B99F.
+; Used by the routine at sub_B7F4.
 sub_BBF9:
   LD HL,$FD73
   CALL sub_BC1C
@@ -3759,7 +3156,7 @@ l_BC35:
 ;
 ; Used by the routines at sub_BB61, sub_BB86 and sub_BCF9.
 sub_BC43:
-  LD DE,$FF02
+  LD DE,Buildings+1
   LD B,$38
 l_BC48:
   LD A,(DE)
@@ -3788,7 +3185,7 @@ l_BC52:
 sub_BC5D:
   PUSH IY
   PUSH BC
-  CALL sub_CDF5
+  CALL FindBuilding
   JR NZ,l_BC6B
   LD (IY+$01),$00
   RES 6,(HL)
@@ -3992,7 +3389,7 @@ l_BD8A:
 
 ; sub_BD91
 ;
-; Used by the routines at sub_B0FA, sub_B99F, sub_BC1C, sub_BCD6 and sub_BD61.
+; Used by the routines at sub_B0FA, sub_B7F4, sub_BC1C, sub_BCD6 and sub_BD61.
 sub_BD91:
   PUSH DE
   LD E,A
@@ -4140,7 +3537,7 @@ l_C103:
 ;
 ; Used by the routine at l_C192.
 l_C106:
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_C109
 data_C109:
@@ -4152,7 +3549,7 @@ data_C109:
 l_C120:
   LD C,$01
   CALL sub_C336
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_C128
 data_C128:
@@ -4163,7 +3560,7 @@ data_C128:
 l_C137:
   LD C,$02
   CALL sub_C336
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_C13F
 data_C13F:
@@ -4175,7 +3572,7 @@ data_C13F:
 l_C151:
   LD C,$03
   CALL sub_C336
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_C159
 data_C159:
@@ -4241,7 +3638,7 @@ l_C1DD:
 ;
 ; Used by the routines at l_C103 and l_C1FC.
 sub_C1E3:
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_C1E6
 data_C1E6:
@@ -4255,30 +3652,16 @@ l_C1FC:
 ; This entry point is used by the routine at l_C192.
 l_C1FD:
   CALL sub_C1E3
-  CALL sub_D42D
-  LD BC,$0716
-  LD (BC),A
-  LD B,L
-  INC B
-  LD HL,$5250
-  LD B,L
-  LD D,E
-  LD D,E
-  JR NZ,$C261
-  LD C,H
-  LD B,C
-  LD E,C
-  JR NZ,l_C265
-  LD C,(HL)
-  JR NZ,$C26D
-  LD B,C
-  LD D,B
-  LD B,L
-  JR NZ,l_C21E
+  CALL PrintInline
+
+; data_C203
+data_C203:
+  DEFB $01,$16,$07,$02,$45,$04,$21,$50
+  DEFB $52,$45,$53,$53,$20,$50,$4C,$41
+  DEFB $59,$20,$4F,$4E,$20,$54,$41,$50
+  DEFB $45,$20,$00
 
 ; l_C21E
-;
-; Used by the routine at l_C1FC.
 l_C21E:
   LD A,$02
   OUT ($FE),A
@@ -4313,35 +3696,20 @@ l_C21E:
   LD DE,data_D6A8+$012B
   LD BC,$002D
   LDIR
-  LD DE,$FF01
+  LD DE,Buildings
   LD BC,$00A8
   LDIR
-; This entry point is used by the routine at l_C1FC.
-l_C265:
   EI
   OR $01
   RET
 l_C269:
-  CALL sub_D42D
-  LD BC,$0216
-  LD (BC),A
-  LD B,A
-  INC B
-  LD ($4F4C),HL
-  LD B,C
-  LD B,H
-  LD C,C
-  LD C,(HL)
-  LD B,A
-  JR NZ,l_C2C1
-  LD D,D
-  LD D,D
-  LD C,A
-  LD D,D
+  CALL PrintInline
 
-; data_C280
-data_C280:
-  DEFB $21,$00
+; data_C26C
+data_C26C:
+  DEFB $01,$16,$02,$02,$47,$04,$22,$4C
+  DEFB $4F,$41,$44,$49,$4E,$47,$20,$45
+  DEFB $52,$52,$4F,$52,$21,$00
 
 ; l_C282
 l_C282:
@@ -4355,67 +3723,32 @@ l_C282:
 ; Used by the routine at l_A69A.
 sub_C28D:
   LD HL,StartInterrupt
-  LD ($FDFE),HL
-  CALL sub_D42D
-  LD BC,$0016
-  LD (BC),A
-  LD B,L
-  LD D,B
-  LD D,D
-  LD B,L
-  LD D,E
-  LD D,E
-  JR NZ,$C2F4
-  LD B,L
-  LD B,E
-  LD C,A
-  LD D,D
-  LD B,H
-  JR NZ,$C2EA
-  LD C,(HL)
-  LD B,H
-  JR NZ,$C2FD
-  LD C,H
-  LD B,C
-  LD E,C
-  JR NZ,$C2B5
-  JR NZ,l_C2D4
-  JR NZ,$C2D6
-  JR NZ,$C30C
-  LD C,B
-  LD B,L
-  LD C,(HL)
-  JR NZ,l_C2FE
-  LD C,(HL)
-  LD E,C
-  JR NZ,$C30C
-; This entry point is used by the routine at l_C21E.
-l_C2C1:
-  LD B,L
-  LD E,C
-  JR NZ,l_C2E5
-  JR NZ,$C2E7
-  JR NZ,l_C2C9
+  LD (Handler),HL
+  CALL PrintInline
+
+; data_C296
+data_C296:
+  DEFB $01,$16,$00,$02,$45,$50,$52,$45
+  DEFB $53,$53,$20,$52,$45,$43,$4F,$52
+  DEFB $44,$20,$41,$4E,$44,$20,$50,$4C
+  DEFB $41,$59,$20,$03,$20,$20,$20,$20
+  DEFB $20,$54,$48,$45,$4E,$20,$41,$4E
+  DEFB $59,$20,$4B,$45,$59,$20,$20,$20
+  DEFB $20,$20,$00
 
 ; l_C2C9
-;
-; Used by the routine at sub_C28D.
 l_C2C9:
   CALL sub_C325
   LD A,$01
   LD ($FD52),A
   LD HL,data_D6A8+$012B
-; This entry point is used by the routine at sub_C28D.
-l_C2D4:
   LD DE,data_D6A8+$0283
   LD BC,$002D
   LDIR
-  LD HL,$FF01
+  LD HL,Buildings
   LD BC,$00A8
   LDIR
   DI
-; This entry point is used by the routine at sub_C28D.
-l_C2E5:
   CALL sub_C30F
   LD (data_5B00),DE
   LD HL,$0900
@@ -4425,8 +3758,6 @@ l_C2E5:
   SCF
   CALL $04D0
   LD HL,$0900
-; This entry point is used by the routine at sub_C28D.
-l_C2FE:
   LD IX,data_D6A8+$0283
   LD DE,$24D1
   XOR A
@@ -4482,7 +3813,7 @@ sub_C336:
   LD A,($D3E4)
   CP C
   JR Z,l_C343
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_C33F
 data_C33F:
@@ -4493,7 +3824,7 @@ l_C342:
   RET
 ; This entry point is used by the routine at sub_C336.
 l_C343:
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_C346
 data_C346:
@@ -4508,26 +3839,14 @@ l_C349:
 ; Used by the routine at l_C192.
 sub_C34A:
   CALL sub_D0B9
-  CALL sub_D42D
-  LD BC,$0902
-  LD (BC),A
-  LD B,A
-  INC B
-  LD HL,$4552
-  LD B,H
-  LD B,L
-  LD B,(HL)
-  LD C,C
-  LD C,(HL)
-  LD B,L
-  JR NZ,l_C3AC
-  LD B,L
-  LD E,C
-  LD D,E
-  LD BC,$0305
-  INC B
-  NOP
-  NOP
+  CALL PrintInline
+
+; data_C350
+data_C350:
+  DEFB $01,$02,$09,$02,$47,$04,$21,$52
+  DEFB $45,$44,$45,$46,$49,$4E,$45,$20
+  DEFB $4B,$45,$59,$53,$01,$05,$03,$04
+  DEFB $00,$00
 
 ; l_C36A
 l_C36A:
@@ -4574,8 +3893,6 @@ l_C3A4:
 l_C3A6:
   LD HL,KeyTable+$0014
   CALL sub_C427
-; This entry point is used by the routine at sub_C34A.
-l_C3AC:
   CALL sub_C40C
   LD D,D
   LD C,C
@@ -4658,31 +3975,17 @@ l_C406:
 ; Used by the routines at l_C36A, l_C388, l_C397, l_C3A6, l_C3B5, l_C3C4,
 ; l_C3D6 and l_C3E5.
 sub_C40C:
-  CALL sub_D42D
-  INC BC
-  INC BC
-  LD (BC),A
-  LD B,(HL)
-  LD D,B
-  LD D,D
-  LD B,L
-  LD D,E
-  LD D,E
-  JR NZ,l_C465
-  LD B,L
-  LD E,C
-  JR NZ,l_C464
-  LD C,A
-  LD D,D
-  JR NZ,l_C424
-  LD B,L
-  NOP
+  CALL PrintInline
+
+; data_C40F
+data_C40F:
+  DEFB $03,$03,$02,$46,$50,$52,$45,$53
+  DEFB $53,$20,$4B,$45,$59,$20,$46,$4F
+  DEFB $52,$20,$02,$45,$00
 
 ; l_C424
-;
-; Used by the routine at sub_C40C.
 l_C424:
-  JP sub_D42D
+  JP PrintInline
 
 ; sub_C427
 ;
@@ -4690,11 +3993,11 @@ l_C424:
 ; l_C3E5 and l_C3F4.
 sub_C427:
   PUSH HL
-  CALL sub_D42D
-  JR NZ,l_C44D
-  LD (BC),A
-  LD B,(HL)
-  NOP
+  CALL PrintInline
+
+; data_C42B
+data_C42B:
+  DEFB $20,$20,$02,$46,$00
 
 ; l_C430
 l_C430:
@@ -4717,8 +4020,6 @@ l_C444:
   INC HL
   DJNZ l_C444
   POP HL
-; This entry point is used by the routine at sub_C427.
-l_C44D:
   LD (HL),A
   LD A,E
   AND $07
@@ -4737,10 +4038,7 @@ l_C45C:
   LD B,C
   INC B
   XOR A
-; This entry point is used by the routine at sub_C40C.
-l_C464:
   DEC A
-; This entry point is used by the routine at sub_C40C.
 l_C465:
   RRA
   DJNZ l_C465
@@ -4749,48 +4047,52 @@ l_C465:
   LD A,D
   CP $0E
   JR NZ,l_C47A
-  CALL sub_D42D
-  LD D,E
-  LD E,C
-  LD C,L
-  JR NZ,l_C4CA
-  LD C,B
-  NOP
-  RET
+  CALL PrintInline
+
+; data_C472
+data_C472:
+  DEFB $53,$59,$4D,$20,$53,$48,$00,$C9
+
+; l_C47A
+;
+; Used by the routine at l_C430.
 l_C47A:
   CP $0D
   JR NZ,l_C488
-  CALL sub_D42D
-  LD B,L
-  LD C,(HL)
-  LD D,H
-  LD B,L
-  LD D,D
-  NOP
-  RET
+  CALL PrintInline
+
+; data_C481
+data_C481:
+  DEFB $45,$4E,$54,$45,$52,$00,$C9
+
+; l_C488
+;
+; Used by the routine at l_C47A.
 l_C488:
   CP $E3
   JR NZ,l_C498
-  CALL sub_D42D
-  LD B,E
-  LD B,C
-  LD D,B
-  LD D,E
-  JR NZ,l_C4E8
-  LD C,B
-  NOP
-  RET
+  CALL PrintInline
+
+; data_C48F
+data_C48F:
+  DEFB $43,$41,$50,$53,$20,$53,$48,$00
+  DEFB $C9
+
+; l_C498
+;
+; Used by the routine at l_C488.
 l_C498:
   CP $20
   JP NZ,sub_D427
-  CALL sub_D42D
-  LD D,E
-  LD D,B
-  LD B,C
-  LD B,E
-  LD B,L
-  NOP
-; This entry point is used by the routines at sub_C53B and l_C56E.
+  CALL PrintInline
+
+; data_C4A0
+data_C4A0:
+  DEFB $53,$50,$41,$43,$45,$00
+
+; l_C4A6
+;
+; Used by the routines at sub_C53B and l_C56E.
 l_C4A6:
   RET
 
@@ -4801,7 +4103,7 @@ sub_C4A7:
   DI
   LD ($FD08),SP
   LD HL,MenuInterrupt
-  LD ($FDFE),HL
+  LD (Handler),HL
   LD HL,data_C665+$0013
   LD DE,data_C665+$009D
   LD BC,$0101
@@ -4810,13 +4112,19 @@ sub_C4A7:
   EI
   LD C,$01
   HALT
+
+; l_C4C3
+;
+; Used by the routine at l_C4E8.
 l_C4C3:
   PUSH AF
   LD A,(Input)
   LD (Input),A
-; This entry point is used by the routine at l_C430.
-l_C4CA:
   POP AF
+
+; l_C4CB
+;
+; Used by the routine at l_C4E8.
 l_C4CB:
   DEC D
   JP NZ,l_C4E0
@@ -4832,9 +4140,15 @@ l_C4D7:
 l_C4E0:
   PUSH AF
   LD A,(Input)
+
+; l_C4E4
+l_C4E4:
   LD (Input),A
   POP AF
-; This entry point is used by the routine at l_C430.
+
+; l_C4E8
+;
+; Used by the routine at l_C4CB.
 l_C4E8:
   DEC E
   JP NZ,l_C4C3
@@ -4872,7 +4186,7 @@ l_C51B:
   DI
   LD SP,($FD08)
   LD HL,StartInterrupt
-  LD ($FDFE),HL
+  LD (Handler),HL
   EI
   RET
 
@@ -5275,10 +4589,11 @@ l_C846:
   POP BC
   RET
 
-; sub_C849
+; landing on the warbase pad at altitude 15: choose the parts (MenuCursor,
+; MenuParts), START ROBOT or EXIT MENU
 ;
 ; Used by the routine at l_A69A.
-sub_C849:
+ConstructionMenu:
   LD IY,data_D6A8+$0358
   LD DE,$0010
   LD B,$18
@@ -5292,7 +4607,7 @@ l_C852:
 l_C85D:
   DI
   LD HL,StartInterrupt
-  LD ($FDFE),HL
+  LD (Handler),HL
   EI
   CALL sub_D0B9
   LD B,$08
@@ -5350,263 +4665,74 @@ l_C8AD:
   POP BC
   DEC C
   JR NZ,l_C8AC
-  CALL sub_D42D
-  INC B
-  LD ($4702),HL
-  LD BC,$0300
-  LD D,D
-  LD C,A
-  LD B,D
-  LD C,A
-  LD D,H
-  LD BC,$0202
-  INC B
-  LD HL,$4F43
-  LD C,(HL)
-  LD D,E
-  LD D,H
-  LD D,D
-  LD D,L
-  LD B,E
-  LD D,H
-  LD C,C
-  LD C,A
-  LD C,(HL)
-  INC B
-  NOP
-  LD (BC),A
-  LD B,L
-  LD BC,$1501
-  LD B,L
-  LD C,H
-  LD B,L
-  LD B,E
-  LD D,H
-  LD D,D
-  LD C,A
-  LD C,(HL)
-  LD C,C
-  LD B,E
-  LD D,E
-  LD BC,$1504
-  LD C,(HL)
-  LD D,L
-  LD B,E
-  LD C,H
-  LD B,L
-  LD B,C
-  LD D,D
-  LD BC,$1507
-  LD D,B
-  LD C,B
-  LD B,C
-  LD D,E
-  LD B,L
-  LD D,D
-  LD D,E
-  LD BC,$150A
-  LD C,L
-  LD C,C
-  LD D,E
-  LD D,E
-  LD C,C
-  LD C,H
-  LD B,L
-  LD D,E
-  LD BC,$150D
-  LD B,E
-  LD B,C
-  LD C,(HL)
-  LD C,(HL)
-  LD C,A
-  LD C,(HL)
-  LD BC,$1510
-  LD B,C
-  LD C,(HL)
-  LD D,H
-  LD C,C
-  DEC L
-  LD B,A
-  LD D,D
-  LD B,C
-  LD D,(HL)
-  LD BC,$1513
-  LD D,H
-  LD D,D
-  LD B,C
-  LD B,E
-  LD C,E
-  LD D,E
-  LD BC,$1516
-  LD B,D
-  LD C,C
-  LD D,B
-  LD C,A
-  LD B,H
-  LD BC,$0515
-  LD B,L
-  LD E,B
-  LD C,C
-  LD D,H
-  JR NZ,l_C98E
-  LD D,H
-  LD B,C
-  LD D,D
-  LD D,H
-  INC BC
-  LD C,L
-  LD B,L
-  LD C,(HL)
-  LD D,L
-  JR NZ,$C998
-  LD C,A
-  LD B,D
-  LD C,A
-  LD D,H
-  LD (BC),A
-  LD B,E
-  LD BC,$1602
-  INC SP
-  LD BC,$1605
-  LD ($0130),A
-  EX AF,AF'
-  LD D,$34
-  LD BC,$160B
-  INC (HL)
-  LD BC,$160E
-  LD ($1101),A
-  LD D,$31
-  JR NC,l_C968
-  INC D
-l_C968:
-  LD D,$35
-  LD BC,$1617
-  INC SP
-  INC B
-  NOP
-  LD (BC),A
-  LD B,(HL)
-  LD BC,$0006
-  DEC L
-  DEC L
-  JR NZ,l_C9CB
-  LD B,L
-  LD D,E
-  LD C,A
-  LD D,L
-  LD D,D
-  LD B,E
-  LD B,L
-  LD D,E
-  JR NZ,$C9B0
-  DEC L
-  INC BC
-  DEC L
-  DEC L
-  JR NZ,l_C9CA
-  LD D,(HL)
-  LD B,C
-  LD C,C
-  LD C,H
-  LD B,C
-l_C98E:
-  LD B,D
-  LD C,H
-  LD B,L
-  JR NZ,l_C9C0
-  DEC L
-  LD (BC),A
-  LD B,H
-  LD BC,$0409
-  LD B,A
-  LD B,L
-  LD C,(HL)
-  LD B,L
-  LD D,D
-  LD B,C
-  LD C,H
-  LD BC,$000B
-  LD B,L
-  LD C,H
-  LD B,L
-  LD B,E
-  LD D,H
-  LD D,D
-  LD C,A
-  LD C,(HL)
-  LD C,C
-  LD B,E
-  LD D,E
-  LD BC,$040C
-  LD C,(HL)
-  LD D,L
-  LD B,E
-  LD C,H
-  LD B,L
-  LD B,C
-  LD D,D
-  INC BC
-  LD D,B
-  LD C,B
-  LD B,C
-  LD D,E
-  LD B,L
-  LD D,D
-  LD D,E
-l_C9C0:
-  LD BC,$030E
-  LD C,L
-  LD C,C
-  LD D,E
-  LD D,E
-  LD C,C
-  LD C,H
-  LD B,L
-l_C9CA:
-  LD D,E
-l_C9CB:
-  LD BC,$050F
-  LD B,E
-  LD B,C
-  LD C,(HL)
-  LD C,(HL)
-  LD C,A
-  LD C,(HL)
-  LD BC,$0410
-  LD B,E
-  LD C,B
-  LD B,C
-  LD D,E
-  LD D,E
-  LD C,C
-  LD D,E
-  LD BC,$0612
-  LD D,H
-  LD C,A
-  LD D,H
-  LD B,C
-  LD C,H
-  NOP
+  CALL PrintInline
+
+; data_C8BE
+data_C8BE:
+  DEFB $04,$22,$02,$47,$01,$00,$03,$52
+  DEFB $4F,$42,$4F,$54,$01,$02,$02,$04
+  DEFB $21,$43,$4F,$4E,$53,$54,$52,$55
+  DEFB $43,$54,$49,$4F,$4E,$04,$00,$02
+  DEFB $45,$01,$01,$15,$45,$4C,$45,$43
+  DEFB $54,$52,$4F,$4E,$49,$43,$53,$01
+  DEFB $04,$15,$4E,$55,$43,$4C,$45,$41
+  DEFB $52,$01,$07,$15,$50,$48,$41,$53
+  DEFB $45,$52,$53,$01,$0A,$15,$4D,$49
+  DEFB $53,$53,$49,$4C,$45,$53,$01,$0D
+  DEFB $15,$43,$41,$4E,$4E,$4F,$4E,$01
+  DEFB $10,$15,$41,$4E,$54,$49,$2D,$47
+  DEFB $52,$41,$56,$01,$13,$15,$54,$52
+  DEFB $41,$43,$4B,$53,$01,$16,$15,$42
+  DEFB $49,$50,$4F,$44,$01,$15,$05,$45
+  DEFB $58,$49,$54,$20,$53,$54,$41,$52
+  DEFB $54,$03,$4D,$45,$4E,$55,$20,$52
+  DEFB $4F,$42,$4F,$54,$02,$43,$01,$02
+  DEFB $16,$33,$01,$05,$16,$32,$30,$01
+  DEFB $08,$16,$34,$01,$0B,$16,$34,$01
+  DEFB $0E,$16,$32,$01,$11,$16,$31,$30
+  DEFB $01,$14,$16,$35,$01,$17,$16,$33
+  DEFB $04,$00,$02,$46,$01,$06,$00,$2D
+  DEFB $2D,$20,$52,$45,$53,$4F,$55,$52
+  DEFB $43,$45,$53,$20,$2D,$2D,$03,$2D
+  DEFB $2D,$20,$41,$56,$41,$49,$4C,$41
+  DEFB $42,$4C,$45,$20,$2D,$2D,$02,$44
+  DEFB $01,$09,$04,$47,$45,$4E,$45,$52
+  DEFB $41,$4C,$01,$0B,$00,$45,$4C,$45
+  DEFB $43,$54,$52,$4F,$4E,$49,$43,$53
+  DEFB $01,$0C,$04,$4E,$55,$43,$4C,$45
+  DEFB $41,$52,$03,$50,$48,$41,$53,$45
+  DEFB $52,$53,$01,$0E,$03,$4D,$49,$53
+  DEFB $53,$49,$4C,$45,$53,$01,$0F,$05
+  DEFB $43,$41,$4E,$4E,$4F,$4E,$01,$10
+  DEFB $04,$43,$48,$41,$53,$53,$49,$53
+  DEFB $01,$12,$06,$54,$4F,$54,$41,$4C
+  DEFB $00
+
+; l_C9E7
+l_C9E7:
   LD (IY+$08),$04
   LD (IY+$0D),$00
-  LD HL,$FD22
-  LD DE,$FD29
+  LD HL,Resources
+  LD DE,MenuResources
   LD BC,$0007
   LDIR
   CALL sub_CBE0
   LD HL,$0002
-  LD ($FD1F),HL
+  LD (MenuCursor),HL
   XOR A
-  LD ($FD21),A
+  LD (MenuParts),A
   CALL sub_CC1F
   LD C,$46
   CALL sub_CBA9
-; This entry point is used by the routine at l_CB00.
+
+; l_CA0F
+;
+; Used by the routine at l_CB4A.
 l_CA0F:
   CALL WaitKey
   AND $1F
   JR Z,l_CA0F
-  LD HL,($FD1F)
+  LD HL,(MenuCursor)
   LD A,(Input)
   AND $10
   JP Z,l_CB00
@@ -5625,7 +4751,7 @@ l_CA30:
   RLA
   DJNZ l_CA30
   LD D,A
-  LD A,($FD21)
+  LD A,(MenuParts)
   LD C,A
   AND D
   JR NZ,l_CAA4
@@ -5645,7 +4771,7 @@ l_CA48:
   LD A,C
   AND $F8
   LD C,A
-  LD ($FD21),A
+  LD (MenuParts),A
   POP DE
 l_CA57:
   LD A,C
@@ -5653,31 +4779,31 @@ l_CA57:
   AND $78
   CP $78
   JP Z,l_CAAC
-  LD HL,data_CAF0
+  LD HL,PartCosts
   LD A,E
   CALL sub_D351
   LD B,(HL)
-  LD HL,data_CAF0+$0008
+  LD HL,PartCosts+$0008
   LD A,E
   CALL sub_D351
   LD A,(HL)
-  LD HL,$FD29
+  LD HL,MenuResources
   CALL sub_D351
   LD A,(HL)
   SUB B
   JP NC,l_CA89
   NEG
   LD B,A
-  LD A,($FD29)
+  LD A,(MenuResources)
   SUB B
   JP C,l_CAAC
-  LD ($FD29),A
+  LD (MenuResources),A
   XOR A
 l_CA89:
   LD (HL),A
   LD A,C
   OR D
-  LD ($FD21),A
+  LD (MenuParts),A
   LD A,$64
   CALL sub_CCAC
   CALL sub_CC1F
@@ -5691,7 +4817,7 @@ l_CAA4:
   CALL sub_CAC1
   LD A,C
   XOR D
-  LD ($FD21),A
+  LD (MenuParts),A
 l_CAAC:
   LD A,$78
   CALL sub_CCAC
@@ -5705,17 +4831,17 @@ l_CAB7:
 
 ; sub_CAC1
 ;
-; Used by the routine at sub_C849.
+; Used by the routine at l_CA0F.
 sub_CAC1:
-  LD HL,data_CAF0
+  LD HL,PartCosts
   LD A,E
   CALL sub_D351
   LD B,(HL)
-  LD HL,data_CAF0+$0008
+  LD HL,PartCosts+$0008
   LD A,E
   CALL sub_D351
   LD A,(HL)
-  LD HL,$FD29
+  LD HL,MenuResources
   CALL sub_D351
   LD A,(HL)
   ADD A,B
@@ -5733,19 +4859,21 @@ sub_CAC1:
   LD (HL),B
   SUB B
   LD B,A
-  LD A,($FD29)
+  LD A,(MenuResources)
   ADD A,B
-  LD ($FD29),A
+  LD (MenuResources),A
   RET
 
-; data_CAF0
-data_CAF0:
+; the parts' cost (bipod, tracks, anti-grav, cannon, missiles, phasers,
+; nuclear, electronics), then the resource each takes first (an index into
+; Resources)
+PartCosts:
   DEFB $03,$05,$0A,$02,$04,$04,$14,$03
   DEFB $06,$06,$06,$05,$04,$03,$02,$01
 
 ; l_CB00
 ;
-; Used by the routine at sub_C849.
+; Used by the routine at l_CA0F.
 l_CB00:
   LD A,(Input)
   AND $03
@@ -5789,29 +4917,35 @@ l_CB36:
   LD C,$45
   CALL sub_CBA9
   POP HL
-  LD ($FD1F),HL
+  LD (MenuCursor),HL
   LD C,$46
   CALL sub_CBA9
   LD A,$14
   CALL sub_CCAC
-; This entry point is used by the routine at sub_C849.
+
+; l_CB4A
+;
+; Used by the routines at l_CA0F, l_CB00 and l_CB52.
 l_CB4A:
   LD B,$0A
 l_CB4C:
   HALT
   DJNZ l_CB4C
   JP l_CA0F
-; This entry point is used by the routine at sub_C849.
+
+; l_CB52
+;
+; Used by the routine at l_CA0F.
 l_CB52:
-  LD A,($FD21)
+  LD A,(MenuParts)
   LD C,A
   AND $07
   JR Z,l_CB4A
   LD A,C
   AND $78
   JR Z,l_CB4A
-  LD HL,$FD29
-  LD DE,$FD22
+  LD HL,MenuResources
+  LD DE,Resources
   LD BC,$0007
   LDIR
   LD HL,(ShipX)
@@ -5820,7 +4954,7 @@ l_CB52:
   LD B,A
   LD (IY+$0A),$00
   CALL sub_CC7C
-  LD A,($FD21)
+  LD A,(MenuParts)
   LD (IY+$07),A
   LD B,$50
 l_CB82:
@@ -5831,7 +4965,7 @@ l_CB82:
   LD B,A
   CP $14
   JR NC,l_CB82
-; This entry point is used by the routine at sub_C849.
+; This entry point is used by the routine at l_CA0F.
 l_CB8E:
   LD A,$C8
   CALL sub_CCAC
@@ -5842,14 +4976,14 @@ l_CB8E:
   CALL sub_D0CA
   POP IY
   LD HL,PlayInterrupt
-  LD ($FDFE),HL
+  LD (Handler),HL
   RET
 
 ; sub_CBA9
 ;
-; Used by the routines at sub_C849 and l_CB00.
+; Used by the routines at l_C9E7 and l_CB00.
 sub_CBA9:
-  LD HL,($FD1F)
+  LD HL,(MenuCursor)
   LD A,L
   CP $02
   JR Z,l_CBC6
@@ -5894,9 +5028,9 @@ sub_CBDB:
 
 ; sub_CBE0
 ;
-; Used by the routine at sub_C849.
+; Used by the routines at l_C9E7 and l_CA0F.
 sub_CBE0:
-  LD DE,$FD29
+  LD DE,MenuResources
   LD HL,$0000
   LD C,$09
   LD B,$07
@@ -5913,9 +5047,14 @@ l_CBEA:
   INC C
 l_CBFA:
   DJNZ l_CBEA
-  CALL sub_D42D
-  LD BC,$0C12
-  NOP
+  CALL PrintInline
+
+; data_CBFF
+data_CBFF:
+  DEFB $01,$12,$0C,$00
+
+; l_CC03
+l_CC03:
   LD E,$20
   JP sub_D401
 
@@ -5925,10 +5064,15 @@ l_CBFA:
 sub_CC08:
   PUSH AF
   LD A,C
-  LD (sub_CC08+$0009),A
-  CALL sub_D42D
-  LD BC,$0D00
-  NOP
+  LD (data_CC10+$0001),A
+  CALL PrintInline
+
+; data_CC10
+data_CC10:
+  DEFB $01,$00,$0D,$00
+
+; l_CC14
+l_CC14:
   POP AF
   PUSH BC
   PUSH DE
@@ -5941,10 +5085,10 @@ sub_CC08:
 
 ; sub_CC1F
 ;
-; Used by the routine at sub_C849.
+; Used by the routines at l_C9E7 and l_CA0F.
 sub_CC1F:
   LD HL,$5810
-  LD A,($FD21)
+  LD A,(MenuParts)
   LD C,A
   LD B,$08
 l_CC28:
@@ -5969,7 +5113,7 @@ l_CC35:
   POP BC
   DJNZ l_CC28
   CALL sub_CFFE
-  LD A,($FD21)
+  LD A,(MenuParts)
   LD (IY+$07),A
   LD DE,$0A07
   CALL sub_CEE8
@@ -6002,7 +5146,7 @@ l_CC65:
 
 ; sub_CC7C
 ;
-; Used by the routines at l_B154, sub_B7F4 and l_CB00.
+; Used by the routines at l_B154, sub_B7F4 and l_CB52.
 sub_CC7C:
   LD (IY+$02),L
   LD (IY+$03),H
@@ -6023,7 +5167,7 @@ sub_CC7C:
 
 ; sub_CCA0
 ;
-; Used by the routines at l_A69A, sub_B01D, sub_B024 and sub_B99F.
+; Used by the routines at l_A69A, sub_B01D, sub_B024 and sub_B7F4.
 sub_CCA0:
   LD HL,(ShipX)
   LD A,(ShipY)
@@ -6041,8 +5185,8 @@ sub_CCA6:
 
 ; sub_CCAC
 ;
-; Used by the routines at sub_A720, sub_A941, l_AB52, sub_ACD7, sub_AE6B,
-; l_C282, sub_C849 and l_CB00.
+; Used by the routines at l_A7E4, sub_A941, l_A9EC, l_ABC8, ListMenu, l_C282,
+; l_CA0F, l_CB00 and l_CB52.
 sub_CCAC:
   PUSH BC
   LD B,A
@@ -6062,8 +5206,7 @@ l_CCB5:
 
 ; sub_CCBD
 ;
-; Used by the routines at l_A69A, sub_A941, l_AB52, sub_ACD7, sub_B99F and
-; sub_D0CA.
+; Used by the routines at l_A69A, sub_A941, ListMenu, sub_B7F4 and sub_D0CA.
 sub_CCBD:
   CALL sub_CFD7
   CALL sub_CCC6
@@ -6202,7 +5345,7 @@ l_CD81:
   PUSH HL
   PUSH DE
 l_CD83:
-  LD A,($FD10)
+  LD A,(Altitude)
   LD (sub_CF2D+$0012),A
   XOR A
   CALL sub_CF2D
@@ -6283,11 +5426,12 @@ l_CDD5:
   LD E,L
   RET
 
-; sub_CDD8
+; Z: IY the robot record standing on map cell HL, B = 48 - its slot (slots 0-23
+; the player's)
 ;
 ; Used by the routines at l_A69A, l_AD90, sub_B099, sub_B66E, sub_B724,
-; sub_B99F and sub_CE12.
-sub_CDD8:
+; sub_B7F4 and sub_CE12.
+FindRobot:
   LD IY,data_D6A8+$0358
   LD B,$30
 l_CDDE:
@@ -6306,11 +5450,11 @@ l_CDE9:
   OR $01
   RET
 
-; sub_CDF5
+; Z: IY the building record (Buildings) on map cell HL
 ;
 ; Used by the routines at l_A69A, l_B0AB, sub_BC5D and sub_CE12.
-sub_CDF5:
-  LD IY,$FF01
+FindBuilding:
+  LD IY,Buildings
   LD B,$38
 l_CDFB:
   LD A,(IY+$00)
@@ -6332,9 +5476,9 @@ l_CE06:
 ;
 ; Used by the routine at sub_CD18.
 sub_CE12:
-  CALL sub_CDD8
+  CALL FindRobot
   JR Z,l_CE68
-  CALL sub_CDF5
+  CALL FindBuilding
   JR Z,l_CE38
   LD IY,data_D6A8+$012B
   LD B,$05
@@ -6676,7 +5820,7 @@ sub_CFD7:
 
 ; sub_CFFE
 ;
-; Used by the routines at l_CB00, sub_CC1F and sub_CFD7.
+; Used by the routines at l_CB52, sub_CC1F and sub_CFD7.
 sub_CFFE:
   LD ($FD08),SP
   LD SP,data_5B00+$0C80
@@ -6810,7 +5954,7 @@ l_D0B4:
 
 ; sub_D0B9
 ;
-; Used by the routines at sub_C100, sub_C34A, sub_C849 and sub_D0CA.
+; Used by the routines at sub_C100, sub_C34A, ConstructionMenu and sub_D0CA.
 sub_D0B9:
   XOR A
   OUT ($FE),A
@@ -6826,7 +5970,7 @@ l_D0C7:
 
 ; sub_D0CA
 ;
-; Used by the routines at l_A68E and l_CB00.
+; Used by the routines at l_A68E and l_CB52.
 sub_D0CA:
   CALL sub_D0B9
   CALL sub_CCBD
@@ -6949,7 +6093,7 @@ l_D1BD:
   LD (HL),$41
   INC HL
   DJNZ l_D1BD
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_D1C5
 data_D1C5:
@@ -6960,10 +6104,10 @@ data_D1C5:
 
 ; sub_D1E5
 ;
-; Used by the routine at sub_A720.
+; Used by the routines at l_A7E4 and sub_AF00.
 sub_D1E5:
   CALL sub_D2F6
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_D1EB
 data_D1EB:
@@ -6991,13 +6135,12 @@ data_D1EB:
 
 ; sub_D293
 ;
-; Used by the routines at l_A69A, l_AD90, sub_AE38, sub_B0FA, sub_B7F4 and
-; sub_B99F.
+; Used by the routines at l_A69A, l_AD90, sub_AE38, sub_B0FA and sub_B7F4.
 sub_D293:
   LD A,($FD39)
   OR A
   RET NZ
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_D29B
 data_D29B:
@@ -7005,7 +6148,7 @@ data_D29B:
 
 ; l_D2A3
 l_D2A3:
-  LD HL,$FD22
+  LD HL,Resources
   LD B,$07
 l_D2A8:
   PUSH BC
@@ -7019,7 +6162,7 @@ l_D2A8:
   POP HL
   POP BC
   DJNZ l_D2A8
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_D2BB
 data_D2BB:
@@ -7031,7 +6174,7 @@ l_D2C1:
   CALL sub_D2E3
   LD A,(HL)
   CALL sub_D3EC
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_D2CE
 data_D2CE:
@@ -7041,7 +6184,7 @@ data_D2CE:
 l_D2D2:
   LD HL,$FD3A
   CALL sub_D2E3
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_D2DB
 data_D2DB:
@@ -7072,9 +6215,10 @@ l_D2E5:
 
 ; sub_D2F6
 ;
-; Used by the routines at sub_A720, sub_A941, l_AB52 and sub_D1E5.
+; Used by the routines at l_A732, l_A7E4, l_A971, l_A9EC, l_AACF, l_AB4E,
+; l_ABC8, sub_AF00 and sub_D1E5.
 sub_D2F6:
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_D2F9
 data_D2F9:
@@ -7088,7 +6232,7 @@ l_D301:
 ;
 ; Used by the routine at l_D312.
 l_D303:
-  CALL sub_D42D
+  CALL PrintInline
 
 ; data_D306
 data_D306:
@@ -7102,7 +6246,7 @@ l_D312:
 
 ; sub_D315
 ;
-; Used by the routine at sub_C849.
+; Used by the routine at ConstructionMenu.
 sub_D315:
   PUSH BC
   PUSH DE
@@ -7158,7 +6302,7 @@ sub_D339:
 
 ; sub_D348
 ;
-; Used by the routines at sub_BD61, sub_C849 and sub_CF2D.
+; Used by the routines at sub_BD61, ConstructionMenu and sub_CF2D.
 sub_D348:
   ADD A,A
   CALL sub_D351
@@ -7171,9 +6315,9 @@ sub_D348:
 ; sub_D351
 ;
 ; Used by the routines at sub_AD3C, sub_B08A, l_B0AB, sub_B222, sub_B5F3,
-; sub_B7F4, sub_B99F, sub_BA87, sub_BB09, sub_BBB9, sub_BC1C, sub_C820,
-; sub_C849, sub_CAC1, sub_CBE0, sub_CC1F, sub_CCC6, sub_CE12, sub_CEFD,
-; sub_CF2D, sub_D026, sub_D0CA, sub_D348 and l_D4DA.
+; sub_B7F4, sub_BA87, sub_BB09, sub_BBB9, sub_BC1C, sub_C820, ConstructionMenu,
+; l_CA0F, sub_CAC1, sub_CBE0, sub_CC1F, sub_CCC6, sub_CE12, sub_CEFD, sub_CF2D,
+; sub_D026, sub_D0CA, sub_D348 and l_D4DA.
 sub_D351:
   ADD A,L
   LD L,A
@@ -7185,7 +6329,7 @@ sub_D351:
 ; sub_D358
 ;
 ; Used by the routines at sub_AD62, sub_B0FA, l_B154, sub_B222, sub_B33E,
-; sub_B7F4, sub_B99F, sub_BA87, sub_BC1C and sub_D5C4.
+; sub_B7F4, sub_BA87, sub_BC1C and sub_D5C4.
 sub_D358:
   PUSH HL
   LD HL,$FD00
@@ -7211,10 +6355,11 @@ sub_D358:
   POP HL
   RET
 
-; wait for a key or the fire button released then pressed
+; ReadControls; while key 1 (Input bit 7) is held, the pause: wait for another
+; key
 ;
-; Used by the routines at l_A69A, sub_A941, sub_ACD7, sub_AD57, sub_AE6B,
-; sub_B41D and sub_C849.
+; Used by the routines at l_A69A, sub_A941, ListMenu, WaitRelease, sub_B41D and
+; l_CA0F.
 WaitKey:
   CALL ReadControls
   OR A
@@ -7292,7 +6437,7 @@ KeyTable:
 
 ; sub_D3E5
 ;
-; Used by the routines at sub_A720, sub_A941, sub_CC08 and l_D2A3.
+; Used by the routines at l_CC14 and l_D2A3.
 sub_D3E5:
   LD L,A
   LD H,$00
@@ -7320,9 +6465,9 @@ sub_D3F3:
 
 ; sub_D401
 ;
-; Used by the routines at sub_A81D and sub_CBE0.
+; Used by the routines at l_A833 and l_CC03.
 sub_D401:
-  LD BC,$FF9C
+  LD BC,Buildings+155
   CALL sub_D413
 
 ; l_D407
@@ -7357,7 +6502,7 @@ l_D424:
 
 ; sub_D427
 ;
-; Used by the routines at sub_A81D, l_AD90, l_C430, sub_D2E3, l_D407 and
+; Used by the routines at l_A833, l_AD90, l_C498, sub_D2E3, l_D407 and
 ; sub_D413.
 sub_D427:
   EXX
@@ -7365,14 +6510,16 @@ sub_D427:
   EXX
   RET
 
-; sub_D42D
+; print the text after the CALL: 0 ends, 1 Y X a position, 2 A an attribute, 3
+; the next line, 4 N a setting, else a character
 ;
-; Used by the routines at sub_A720, sub_A81D, sub_A941, l_AB52, sub_AD62,
-; sub_AE6B, l_C106, l_C120, l_C137, l_C151, sub_C1E3, l_C1FC, l_C21E, sub_C28D,
-; sub_C336, l_C342, sub_C34A, sub_C40C, l_C424, sub_C427, l_C430, sub_C849,
-; sub_CBE0, sub_CC08, sub_D0CA, sub_D1E5, sub_D293, l_D2A3, l_D2C1, l_D2D2,
-; sub_D2F6 and l_D303.
-sub_D42D:
+; Used by the routines at l_A732, l_A795, l_A7CD, sub_A81D, l_A971, l_A9EC,
+; l_AA2F, l_AACF, l_AB4E, l_ABC8, sub_AD62, sub_AE6B, l_AEB1, l_C106, l_C120,
+; l_C137, l_C151, sub_C1E3, l_C1FC, l_C21E, sub_C28D, sub_C336, l_C342,
+; sub_C34A, sub_C40C, l_C424, sub_C427, l_C430, l_C47A, l_C488, l_C498,
+; ConstructionMenu, sub_CBE0, sub_CC08, sub_D0CA, sub_D1E5, sub_D293, l_D2A3,
+; l_D2C1, l_D2D2, sub_D2F6 and l_D303.
+PrintInline:
   EXX
 l_D42E:
   POP HL
@@ -7389,7 +6536,7 @@ l_D43A:
 
 ; sub_D43C
 ;
-; Used by the routine at sub_D42D.
+; Used by the routine at PrintInline.
 sub_D43C:
   CP $01
   JR Z,l_D461
@@ -7720,7 +6867,7 @@ l_D5EE:
 
 ; sub_D5F8
 ;
-; Used by the routine at sub_B024.
+; Used by the routine at l_B029.
 sub_D5F8:
   LD HL,data_D6A8+$0158
   LD DE,($FD1C)

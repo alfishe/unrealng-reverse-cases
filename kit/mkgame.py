@@ -116,9 +116,10 @@ def load_l1(paths, mem):
     return starts, entries, reads
 
 
-def walk(mem, starts, reads, seeds=()):
+def walk(mem, starts, reads, seeds=(), inline=()):
     """Code: the ran instructions and what their untaken branches reach, stopping at bytes read as data; seeds are
-    entries the reverse knows as code that no recording ran (handlers reached through a table)"""
+    entries the reverse knows as code that no recording ran (handlers reached through a table); a call to a routine in
+    inline reads its data after the CALL: the walk does not go on past it (where the code resumes, a recording says)"""
     code, targets, calls = {}, set(), set()
     # The ran instructions own their bytes first: a walked one never cuts into them
     owner = {b: a for a in starts for b in range(a, a + decode(mem, a)[0])}
@@ -143,7 +144,7 @@ def walk(mem, starts, reads, seeds=()):
                     targets.add(t)
                     (calls if call else set()).add(t)
                     todo.append(t)
-            if not falls:
+            if not falls or (call and any(t in inline for t in tg)):
                 break
             a += n
     return code, targets, calls
@@ -163,6 +164,9 @@ class Annotations:
         $ADDR [NAME] ; comment    an instruction inside an entry: its label, its comment
         @isub $ADDR INSTRUCTION   the instruction at ADDR written so (a constant the image's bytes cannot tell from an
                                   address: LD HL,-6, not a label + offset)
+        @inline $ADDR             a routine that reads data placed after its CALL (a print routine with the string
+                                  inline): no walk goes past a call to it, the bytes after it are data unless a
+                                  recording ran them
         @equ $ADDR NAME [N] ; c   a variable outside the image (the work space the game keeps past its loaded bytes):
                                   NAME EQU $ADDR in game.asm, and every instruction operand $ADDR..$ADDR+N-1 written
                                   as NAME / NAME+k (N defaults to 1)
@@ -173,6 +177,7 @@ class Annotations:
         self.resources = {}  # entry address: the resource file under src/res
         self.isub = {}  # instruction address: the instruction as the source writes it
         self.equ = {}  # address outside the image: (name, size, comment)
+        self.inline_data = set()  # routines whose callers place data after the CALL
         last = None
         if not os.path.exists(path):
             return
@@ -195,6 +200,12 @@ class Annotations:
                 if LO <= address < HI:
                     raise SystemExit(f'game.ann:{number}: @equ ${address:04X} is inside the image: name it as a label')
                 self.equ[address] = (parts[2], int(parts[3]) if len(parts) > 3 else 1, comment.strip())
+                continue
+            if text.startswith('@inline'):
+                parts = text.split(';')[0].split()
+                if len(parts) != 2 or not re.match(r'^\$[0-9A-Fa-f]{4}$', parts[1]):
+                    sys.exit(f'{path}:{number}: cannot read: {line}')
+                self.inline_data.add(int(parts[1][1:], 16))
                 continue
             if text.startswith('@isub'):
                 parts = text.split(None, 2)
@@ -478,7 +489,8 @@ def main():
     mem = original_image(config)
     starts, entries, reads = load_l1(sorted(glob.glob(os.path.join(ROOT, 'work', '*', 'l1.json'))), mem)
     ann = Annotations(args.ann)
-    code, targets, calls = walk(mem, starts, reads, [a for a, e in ann.entries.items() if e[0] == 'c'])
+    code, targets, calls = walk(mem, starts, reads, [a for a, e in ann.entries.items() if e[0] == 'c'],
+                                 ann.inline_data)
     os.makedirs(args.out, exist_ok=True)
     ctl = os.path.join(args.out, 'game.ctl')
     extents = write_ctl(mem, code, targets, calls, entries, ann, ctl)

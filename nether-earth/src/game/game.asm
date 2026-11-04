@@ -9,6 +9,14 @@ ViewX          EQU $FD0A  ; the map column at the view's left edge, follows Ship
 Input          EQU $FD0C  ; the controls read this game turn: bit 0 right, 1 left, 2 down, 3 up, 4 fire (Kempston order)
 ShipY          EQU $FD0D  ; the ship's row, 1-15
 ShipX          EQU $FD0E  ; the ship's column, $000E-$01F5
+Altitude       EQU $FD10  ; the ship's height: fire raises it by 2 to $30, released it sinks by 1 to what is under it
+MenuCursor     EQU $FD1F  ; the construction menu: the column (0 EXIT MENU, 1 START ROBOT, 2 the parts), the part row (0 bipod up to 7 electronics)
+MenuParts      EQU $FD21  ; the parts chosen, bit = part row; the new robot's +$07
+Resources      EQU $FD22  ; general, electronics, nuclear, phasers, missiles, cannon, chassis
+MenuResources  EQU $FD29  ; the copy the construction menu spends; back to Resources on START ROBOT
+Clock          EQU $FD35  ; minutes (by 5), hours, days
+Handler        EQU $FDFE  ; the interrupt handler: the IM 2 vector's JP at $FDFD jumps here
+Buildings      EQU $FF01  ; 56 records of 3 bytes: the map cell address, the type (0 the pad of the player's warbase, 1-6 factories, 7 and 8 not yet checked)
   ORG $5B00
 
 ; data_5B00

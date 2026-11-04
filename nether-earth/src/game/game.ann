@@ -9,6 +9,7 @@
 #   $ADDR Name ; comment            a label and comment inside an entry
 #   @isub $ADDR LD HL,-6            the instruction written so
 #   @equ $ADDR Name [N] ; comment    a variable past the image: an EQU, its operands by name
+#   @inline $ADDR                   a routine that reads its data after the CALL
 
 @module main
 $A600 c Start ; the entry from N1: the IM 2 table, the start-up, the menu
@@ -17,10 +18,19 @@ $D566 c PlayInterrupt ; the interrupt handler of play, one a frame
 $D59C c StartInterrupt ; the interrupt handler while the start-up runs
 $AF11 c MoveShip ; the ship's move from Input: X by right / left, Y by down / up, each refused by CheckShipMove
 $B052 c CheckShipMove ; carry: the ship may not stand at HL (X), A (Y)
-$D37C c WaitKey ; wait for a key or the fire button released then pressed
+$D37C c WaitKey ; ReadControls; while key 1 (Input bit 7) is held, the pause: wait for another key
 $D38A c ReadControls ; Input from the redefinable keys (KeyTable) or the joystick the menu chose (Controls)
 $D3CC b KeyTable 3 ; the keys, eight of 3 bytes: the port high byte, the bit mask, the key code (shown by the redefine menu)
 $D3E4 Controls ; the menu's choice: 1 keyboard, 2 Kempston, 3 Interface 2
+$A720 c RobotMenu ; landing on a robot of ours: DIRECT CONTROL, GIVE ORDERS, COMBAT MODE, LEAVE ROBOT; the order to +$0B
+$ACD7 c ListMenu ; a list menu: HL the attribute of item 0 (an item every 3 rows), E the items + 1, A the first highlighted; down / up move, fire returns A
+$AD57 c WaitRelease ; wait until no control is held
+$C849 c ConstructionMenu ; landing on the warbase pad at altitude 15: choose the parts (MenuCursor, MenuParts), START ROBOT or EXIT MENU
+$CAF0 b PartCosts 8 ; the parts' cost (bipod, tracks, anti-grav, cannon, missiles, phasers, nuclear, electronics), then the resource each takes first (an index into Resources)
+$CDD8 c FindRobot ; Z: IY the robot record standing on map cell HL, B = 48 - its slot (slots 0-23 the player's)
+$CDF5 c FindBuilding ; Z: IY the building record (Buildings) on map cell HL
+$D42D c PrintInline ; print the text after the CALL: 0 ends, 1 Y X a position, 2 A an attribute, 3 the next line, 4 N a setting, else a character
+@inline $D42D
 
 # The work space past the loaded image ($FD00-$FFFF): docs/02-architecture.md
 @equ $FD06 MapView 2 ; the map byte at the view's left column: $DD00 + ViewX
@@ -28,3 +38,11 @@ $D3E4 Controls ; the menu's choice: 1 keyboard, 2 Kempston, 3 Interface 2
 @equ $FD0C Input ; the controls read this game turn: bit 0 right, 1 left, 2 down, 3 up, 4 fire (Kempston order)
 @equ $FD0D ShipY ; the ship's row, 1-15
 @equ $FD0E ShipX 2 ; the ship's column, $000E-$01F5
+@equ $FD10 Altitude ; the ship's height: fire raises it by 2 to $30, released it sinks by 1 to what is under it
+@equ $FD1F MenuCursor 2 ; the construction menu: the column (0 EXIT MENU, 1 START ROBOT, 2 the parts), the part row (0 bipod up to 7 electronics)
+@equ $FD21 MenuParts ; the parts chosen, bit = part row; the new robot's +$07
+@equ $FD22 Resources 7 ; general, electronics, nuclear, phasers, missiles, cannon, chassis
+@equ $FD29 MenuResources 7 ; the copy the construction menu spends; back to Resources on START ROBOT
+@equ $FD35 Clock 3 ; minutes (by 5), hours, days
+@equ $FDFE Handler 2 ; the interrupt handler: the IM 2 vector's JP at $FDFD jumps here
+@equ $FF01 Buildings 168 ; 56 records of 3 bytes: the map cell address, the type (0 the pad of the player's warbase, 1-6 factories, 7 and 8 not yet checked)

@@ -75,4 +75,65 @@ byte for byte.
 
 ## 6. The game
 
+**The bot.** Random play never builds a robot, so the menus, the robot AI and the fights stay out of every
+recording. `tools/bot.py` plays from the menu snapshot (`work/play/start.szx`) on a Kempston stick and decides
+only from memory, so the same run replays the same game:
+
+- **Selecting the stick and starting.** Key `2` picks Kempston, key `0` starts.
+- **Building a robot.** The ship flies to the pad of its own warbase (`Buildings` type 0, (22,5)) and sinks to
+  altitude 15. `ConstructionMenu` opens; the bot reads the open menu from `Handler` = `StartInterrupt`.
+  - It moves `MenuCursor` and sets `MenuParts` part by part. Each press is held until the byte changes: a move is
+    followed by a 10-frame pause, and a short press inside it is lost.
+  - It chooses START ROBOT (column 1) and leaves with fire held. Without the climb the ship sinks to 15 again and
+    the menu reopens.
+- **Giving an order.** The ship follows the new robot (`$DA00` record: `+$00` the map cell) and sinks onto its top
+  (`+$09` + `+$0D`). There `RobotMenu` opens; the bot reads the open menu from the record's `+$0A` = 1.
+  - `ListMenu` lists highlight an item with attribute `$4E` every 3 rows from the attribute of item 0. Down moves to
+    the next item, fire chooses.
+  - GIVE ORDERS, then SEARCH & CAPTURE or SEARCH & DESTROY, then the target. The order lands in `+$0B`: 0 stop,
+    1 advance, 2 retreat, 3-5 destroy robots / factories / warbases, 6-8 capture neutral factories / enemy
+    factories / enemy warbases.
+  - Destroying a factory or a warbase needs nuclear (`+$07` bit 6). Without a target the order falls back to 0
+    (robot 2 below).
+- **The plan.** The bot goes round `PLAN`: two cheap capturers, then fighters, then capturers of enemy factories.
+  A robot is built when `Resources` pays for it: each part takes its own resource first, the general one for the
+  rest (`PartCosts`).
+
+**The deep recording.** `bot.py play --record --frames 36000 --work work/deep`, on port base 9310. Base + 200 =
+10000 is the usual ZRCP port: an earlier run on base 9800 collided there with another instance's ZRCP server on
+127.0.0.1. The recording covers 36046 frames, 11 game days. The L1 build gives 190 routines and 274 million
+instructions; `session.ttd` is 59 MB.
+
+`work/deep/play.log`:
+
+- Seven robots were built: `$09` bipod + cannon twice, `$1A` tracks + cannon + missiles, `$89` with electronics,
+  `$19` bipod + cannon + missiles, `$B2` tracks + missiles + phasers + electronics, and `$BC` in slot 2, freed by a
+  death.
+- Each robot was given its order: capture neutral factories twice, destroy robots three times, capture enemy
+  factories twice.
+- Factories of four kinds were captured: from day 4 on, electronics, missiles, cannon and phasers grow every
+  morning.
+- Robots died in fights: our count goes 6, 5, 6, 4, 3. The enemy ends with 16 robots.
+- The general resource grows by 5 a day.
+
+ConstructionMenu installs its handler before it resets MenuCursor and MenuParts. `land_on_warbase` therefore waits
+for the reset cursor (2, 0, 0) before it chooses parts; a part chosen earlier is lost.
+
+![The bot's game, frames 130-34796](docs/img/bot-game.png)
+
+**Inline strings.** `PrintInline` (`$D42D`) prints the bytes after its CALL:
+
+| Byte | Meaning |
+| --- | --- |
+| 0 | the end |
+| 1 Y X | a position |
+| 2 A | an attribute |
+| 3 | the next line |
+| 4 N | a setting |
+| anything else | a character |
+
+The static walk read the strings that no recording printed as code (`LD BC,$1704`...). mkgame now takes
+`@inline $D42D`: no walk goes past such a call. With `work/deep` among the read builds, all 41 strings are data.
+The code is 8913 bytes (4833 instructions, 4259 of them ran), down from 9611. The tape still builds byte for byte.
+
 ## 7. Review
