@@ -163,7 +163,8 @@ class Annotations:
         > text                    the entry's description, one paragraph a line
         @res FILE                 the entry's bytes are a resource: src/res/FILE, assembled with INCBIN (entries
                                   naming one file share it: it holds the bytes from the first to the end of the last)
-        $ADDR [NAME] ; comment    an instruction inside an entry: its label, its comment
+        $ADDR [NAME] ; comment    an instruction inside an entry: its label, its comment; inside a data entry the
+                                  data line that starts at ADDR (the entry's rows are cut there)
         @isub $ADDR INSTRUCTION   the instruction at ADDR written so (a constant the image's bytes cannot tell from an
                                   address: LD HL,-6, not a label + offset)
         @inline $ADDR             a routine that reads data placed after its CALL (a print routine with the string
@@ -310,18 +311,30 @@ def write_ctl(mem, code, targets, calls, entries, ann, path):
             if ends:
                 length = a - data_at
                 extents[data_at] = length
-                spec = DATA[data_kind]
-                if data_kind == 's':
-                    item = '%s $%04X,%d' % (spec, data_at, length)
-                elif data_width:
-                    step = data_width * (2 if data_kind == 'w' else 1)
-                    item = '%s $%04X,%d,%d' % (spec, data_at, length, step)
-                else:
-                    item = '%s $%04X,%d' % (spec, data_at, length)
-                lines[lines.index(None)] = item
+                lines[lines.index(None)] = '\n'.join(data_blocks(data_at, a, data_kind, data_width, ann))
     lines.append('i $10000')
     open(path, 'w').write('\n'.join(lines) + '\n')
     return extents
+
+
+def data_blocks(lo, hi, kind, width, ann):
+    """The ctl sub-blocks of the data entry lo..hi-1: cut where game.ann has a line inside it ($ADDR [Name] ; comment),
+    so that line's comment goes on the data line it names and its name becomes a label there"""
+    spec = DATA[kind]
+    cuts = sorted({lo} | {c for c in ann.inline if lo < c < hi})
+    out = []
+    for k, start in enumerate(cuts):
+        end = cuts[k + 1] if k + 1 < len(cuts) else hi
+        name, comment = ann.inline.get(start, (None, None))
+        if name and start != lo:
+            out.append('@ $%04X label=%s' % (start, name))
+        length = end - start
+        if kind == 's' or not width:
+            item = '%s $%04X,%d' % (spec, start, length)
+        else:
+            item = '%s $%04X,%d,%d' % (spec, start, length, width * (2 if kind == 'w' else 1))
+        out.append(item + (' ' + comment if comment else ''))
+    return out
 
 
 DATA_LINE = re.compile(r'^  DEF[BWMS] ')
@@ -532,6 +545,8 @@ def main():
     for half in ('IXl', 'IXh', 'IYl', 'IYh'):
         text = text.replace(half, half.upper())
     text = name_variables(text, ann.equ)
+    # a commented data sub-block of several lines: SkoolKit leaves a bare ';' on the lines after the first
+    text = re.sub(r'^(  DEF[BWMS] .*?)\s+;$', r'\1', text, flags=re.M)
     text, resources = write_resources(text, mem, extents, ann, args.out)
     modules, head = split_modules(text, ann)
     for name, body in modules:
