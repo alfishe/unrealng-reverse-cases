@@ -344,10 +344,11 @@ StrengthText:
 ShowStrengthValue:
   LD A,(IX+$0C)
   OR A                    ; negative: a dying robot
-  JP P,l_A83B
+  JP P,ShowStrengthNumber
   XOR A
-l_A83B:
-  LD L,A                  ; HL = the strength
+ShowStrengthNumber:
+  LD L,A                  ; A = the strength (0 for a dying robot): three
+                          ; digits, leading spaces, then "%"
   LD H,$00
   LD E,$20                ; leading zeros as spaces
   CALL PrintNumber3
@@ -530,8 +531,10 @@ DistanceText:
 ; $AAB8 the end.
 DistanceSelect:
   LD D,$00
-l_AA70:
-  PUSH DE
+; This entry point is used by the routine at DistanceShow.
+DistanceLoop:
+  PUSH DE                 ; a game turn under the open menu, then WaitKey: fire
+                          ; sets, down / up step the miles
   CALL ShowStrength
   CALL WorldTurn
   CALL DrawView
@@ -543,12 +546,12 @@ l_AA70:
   JP Z,CloseRobotMenu
   CALL WaitKey
   BIT 4,A
-  JR NZ,l_AAB8
+  JR NZ,DistanceFire
   LD C,D
   RRCA
   RRCA
   AND $03
-  JR Z,l_AA70
+  JR Z,DistanceLoop
   AND $02
   LD B,A
   ADD A,A
@@ -557,28 +560,32 @@ l_AA70:
   SUB $05
   ADD A,C
   CP $33
-  JR NC,l_AA70
+  JR NC,DistanceLoop
   LD D,A
   CALL PrintInline
 
-; data_AAA7
-data_AAA7:
-  DEFB $01,$0D,$17,$02,$46,$00,$7A,$CD
-  DEFB $E5,$D3,$3E,$14,$CD,$AC,$CC,$18
-  DEFB $B8
+; PrintInline: (13,23), attribute $46, where the miles are printed
+DistanceAtText:
+  DEFM $01,$0D,$17,$02,"F",$00
 
-; l_AAB8
-;
-; Used by the routine at DistanceSelect.
-l_AAB8:
+; the miles in D printed (PrintNumber2), a click, back to the distance loop
+DistanceShow:
   LD A,D
+  CALL PrintNumber2
+  LD A,$14
+  CALL Beep
+  JR DistanceLoop
+; This entry point is used by the routine at DistanceSelect.
+DistanceFire:
+  LD A,D                  ; fire: +$0E = miles x 2; 0 miles turns the order
+                          ; back into 0 (stop)
   RLCA
   LD (IX+$0E),A
   OR A
-  JR NZ,l_AAC4
+  JR NZ,DistanceDone
   LD (IX+$0B),$00
-l_AAC4:
-  LD A,$78
+DistanceDone:
+  LD A,$78                ; the beep, WaitRelease, back to the robot menu
   CALL Beep
   CALL WaitRelease
   JP RobotMenuShow
@@ -712,52 +719,57 @@ CombatMenuText:
 CombatMenuCode:
   CALL ShowStrength
   LD A,$06
-l_AC81:
-  LD HL,$5837
+CombatMenuLoop:
+  LD HL,$5837             ; the combat list menu, A the highlighted item; 6
+                          ; EXIT, 5 direct control, else a weapon
   LD E,$07
   CALL ListMenu
   CP $06
   JP Z,RobotMenuShow
   PUSH AF
   CP $05
-  JR NZ,l_AC99
+  JR NZ,CombatWeapon
   CALL DirectControl
   POP AF
-  JR l_AC81
-l_AC99:
-  LD C,A
+  JR CombatMenuLoop
+CombatWeapon:
+  LD C,A                  ; a weapon item: shift its part bit of +$07 into
+                          ; carry
   LD B,A
   INC B
   LD A,(IX+$07)
-l_AC9F:
-  RLCA
-  DJNZ l_AC9F
-  JR NC,l_ACCE
+CombatPartBit:
+  RLCA                    ; rotate +$07 item + 1 times: carry = the robot has
+                          ; the weapon
+  DJNZ CombatPartBit
+  JR NC,CombatRefused
   POP AF
   CP $01
-  JR NZ,l_ACB3
+  JR NZ,CombatFireShot
   PUSH IX
   POP IY
   CALL NuclearBlast
   JP CloseRobotMenu
-l_ACB3:
-  PUSH AF
+CombatFireShot:
+  PUSH AF                 ; cannon / missiles / phasers: fire only when shot
+                          ; record 0 is free, then a turn
   LD IY,Shots
   LD A,(IY+$01)
   OR A
-  JR NZ,l_ACCE
+  JR NZ,CombatRefused
   LD A,$05
   SUB C
   CALL FireShot
   CALL DrawView
   CALL GameTurn
   POP AF
-  JP l_AC81
-l_ACCE:
-  LD A,$FA
+  JP CombatMenuLoop
+CombatRefused:
+  LD A,$FA                ; no such weapon or the shot still flies: the refusal
+                          ; beep, back to the menu
   CALL Beep
   POP AF
-  JP l_AC81
+  JP CombatMenuLoop
 
 ; a list menu: HL the attribute of item 0 (an item every 3 rows), E the items +
 ; 1, A the first highlighted; down / up move, fire returns A
@@ -835,9 +847,9 @@ PaintMenuItem:
   PUSH DE
   PUSH HL
   LD DE,$0060             ; 3 attribute rows an item
-l_AD42:
-  ADD HL,DE
-  DJNZ l_AD42
+PaintMenuItemRow:
+  ADD HL,DE               ; HL += 3 attribute rows, A times: item A's top row
+  DJNZ PaintMenuItemRow
   LD B,$08                ; the item's top row
   CALL FillAttributes
   LD A,$18                ; the next row, same column
@@ -850,8 +862,8 @@ l_AD42:
 
 ; wait until no control is held
 ;
-; Used by the routines at DirectControl, OrdersMenuChoose, l_AAB8, SetOrder,
-; ListMenu and GameOverWait.
+; Used by the routines at DirectControl, OrdersMenuChoose, DistanceShow,
+; SetOrder, ListMenu and GameOverWait.
 WaitRelease:
   PUSH BC
   PUSH HL
@@ -879,20 +891,20 @@ GameTurn:
   ADD A,$05
   LD (HL),A
   CP $3C
-  JR NZ,l_AD85
+  JR NZ,ClockPrint
   LD (HL),$00             ; an hour
   INC HL
   INC (HL)
   LD A,(HL)
   CP $18
-  JR NZ,l_AD85
+  JR NZ,ClockPrint
   LD (HL),$00             ; a day
   LD HL,(Clock+2)
   INC HL
   LD (Clock+2),HL
   CALL DailyProduction    ; the day's production of both sides
-l_AD85:
-  CALL PrintInline        ; position, setting 0, attribute $57
+ClockPrint:
+  CALL PrintInline        ; print the clock (also when no minute wrapped)
 
 ; The clock: (0,27), setting 0, attribute $57
 ClockPos:
@@ -957,23 +969,23 @@ CaptureCount:
   POP IY
   LD A,B                  ; no robot found
   OR A
-  JR Z,l_AE04
+  JR Z,CapturePointDone
   POP BC
   INC C                   ; one more capture
   PUSH BC
   LD A,$1C                ; A = the point's index
   SUB B
   CP $04                  ; 0-3: a warbase
-  JR NC,l_ADFE
+  JR NC,CaptureFactory
   LD B,E
   CALL GiveWarbase        ; the warbase changes side
-  JR l_AE04
-l_ADFE:
-  SUB $04                 ; 4-27: factory A - 4
+  JR CapturePointDone
+CaptureFactory:
+  SUB $04                 ; a point 4-27: factory A - 4 changes side
   LD B,E
   CALL GiveFactory
-l_AE04:
-  POP BC
+CapturePointDone:
+  POP BC                  ; restore the capture count, on to the next point
 CaptureNext:
   INC IY                  ; 5 bytes a point
   INC IY
@@ -1043,13 +1055,14 @@ ProduceSide:
   ADD A,C
   CALL AddCapped          ; into the general resource
   LD B,$06                ; six factory kinds
-l_AE58:
-  INC HL
+ProduceFactoryLoop:
+  INC HL                  ; each factory kind: 2 x its factories into its
+                          ; resource
   INC DE
   LD A,(DE)               ; 2 x the factories of the kind
   ADD A,A
   CALL AddCapped
-  DJNZ l_AE58
+  DJNZ ProduceFactoryLoop
   RET
 
 ; (HL) += A, at most 99
@@ -1058,10 +1071,10 @@ l_AE58:
 AddCapped:
   ADD A,(HL)
   CP $64
-  JR C,l_AE69
+  JR C,AddCappedStore
   LD A,$63
-l_AE69:
-  LD (HL),A               ; store
+AddCappedStore:
+  LD (HL),A               ; store the capped sum
   RET
 
 ; The end of the game: the enemy has no warbase (won) or we have none (lost)
@@ -1111,14 +1124,14 @@ GameOverWait:
   LD A,$FA
   CALL Beep
   LD B,$64
-l_AEF1:
-  HALT
-  DJNZ l_AEF1
+GameOverPause:
+  HALT                    ; 100 frames of HALT before the key is read
+  DJNZ GameOverPause
   CALL WaitRelease
-l_AEF7:
-  CALL WaitKey
+GameOverKey:
+  CALL WaitKey            ; wait for a key, then back to Start
   OR A
-  JR Z,l_AEF7
+  JR Z,GameOverKey
   JP Start
 
 ; Stop play: give the panel back to the status and switch to the idle interrupt
@@ -1158,28 +1171,28 @@ MoveShipX:
   JR Z,MoveShipY
   LD HL,(ShipX)
   RRCA                    ; carry: right
-  JR C,l_AF42
+  JR C,ShipCheckRight
   LD A,H                  ; left: not past column $0E
   OR A
-  JR NZ,l_AF3F
+  JR NZ,ShipStepLeft
   LD A,L
   CP $0E
   JR Z,MoveShipY
-l_AF3F:
+ShipStepLeft:
   DEC HL                  ; one column left
-  JR l_AF4C
-l_AF42:
-  LD A,H                  ; right: not past column $1F5
+  JR ShipCheckX
+ShipCheckRight:
+  LD A,H                  ; right: refused at column $1F5
   OR A
-  JR Z,l_AF4B
+  JR Z,ShipStepRight
   LD A,L
   CP $F5
   JR Z,MoveShipY
-l_AF4B:
+ShipStepRight:
   INC HL                  ; one column right
-l_AF4C:
-  LD A,(ShipY)            ; refused where the ship would be lower than what
-                          ; stands there
+ShipCheckX:
+  LD A,(ShipY)            ; the new column: refused when the ship would stand
+                          ; lower than what is there
   CALL CheckShipMove
   JR C,FollowView
   LD (ShipX),HL
@@ -1191,14 +1204,15 @@ FollowView:
   SBC HL,DE
   LD A,L
   CP $0D
-  JR NZ,l_AF67            ; at 13: the view one column left
+  JR NZ,ViewCheckRight    ; at 13: the view one column left
   DEC DE
-l_AF67:
-  CP $16
-  JR NZ,l_AF6C            ; at 22: one column right
+ViewCheckRight:
+  CP $16                  ; the ship at view column 22: the view one column
+                          ; right
+  JR NZ,ViewStore         ; at 22: one column right
   INC DE
-l_AF6C:
-  LD (ViewX),DE
+ViewStore:
+  LD (ViewX),DE           ; ViewX and MapView = $DD00 + ViewX
   LD HL,Map               ; MapView = $DD00 + ViewX
   ADD HL,DE
   LD (MapView),HL
@@ -1213,14 +1227,15 @@ MoveShipY:
   CP $03
   JR Z,AutoClimb
   RRCA                    ; down: Y + 1
-  JR NC,l_AF8C
+  JR NC,ShipCheckUp
   INC C
-l_AF8C:
+ShipCheckUp:
   RRCA                    ; up: Y - 1
-  JR NC,l_AF90
+  JR NC,ShipCheckY
   DEC C
-l_AF90:
-  LD A,C                  ; Y 0 (or 16) is off the map
+ShipCheckY:
+  LD A,C                  ; the new row: 0 / 16 off the map, CheckShipMove
+                          ; refuses a too low ship
   AND $0F
   JR Z,AutoClimb
   LD HL,(ShipX)
@@ -1232,12 +1247,12 @@ l_AF90:
 AutoClimb:
   LD A,(ClimbTurns)            ; $FD30 > 0: climb whatever fire says
   OR A
-  JR Z,l_AFAE
+  JR Z,ClimbByFire
   DEC A
   LD (ClimbTurns),A
   JR Climb
-l_AFAE:
-  LD A,(Input)            ; fire: climb
+ClimbByFire:
+  LD A,(Input)            ; no forced climb: fire climbs, else the ship sinks
   AND $10
   JR Z,Sink
 Climb:
@@ -1285,12 +1300,13 @@ ScrollRadar:
   SRL A
   SUB C                   ; the ship's place in the window, 0-15
   CP $02
-  JR C,l_AFFF
+  JR C,RadarScrollLeft
   CP $0E
   JR NC,RadarScrollRight
   RET
-l_AFFF:
-  LD A,C                  ; left by 8 units
+RadarScrollLeft:
+  LD A,C                  ; the ship within 2 units of the window's left edge:
+                          ; the window 8 units left
   SUB $08                 ; the window would move 8 columns left
   RET M                   ; already at the left end: stay
   JR RadarSetWindow
@@ -1409,15 +1425,15 @@ CheckShipMove:
   INC D
   LD A,D                  ; the row Y+1 only inside the map
   CP $FD
-  JR NC,l_B084
+  JR NC,ShipCompareTop
   CALL ObjectTop          ; (X-1, Y+1), (X, Y+1), (X+1, Y+1)
   INC DE
   CALL ObjectTop
   INC DE
   CALL ObjectTop
-l_B084:
-  LD A,(Altitude)            ; carry when the ship is lower than the highest top:
-                          ; C stays for MoveShip's sinking
+ShipCompareTop:
+  LD A,(Altitude)            ; carry: the ship's altitude below the highest top in
+                          ; C
   CP C
   POP HL
   RET
@@ -1468,10 +1484,10 @@ ObjectTop:
 ; The common tail of TerrainTop and ObjectTop.
 KeepHigher:
   CP C
-  JR C,l_B0AF
+  JR C,KeepHigherDone
   LD C,A
-l_B0AF:
-  RET
+KeepHigherDone:
+  RET                     ; C is the bigger height
 ; This entry point is used by the routine at ObjectTop.
 ObjectTopBuilding:
   CALL FindBuilding       ; not a robot: a building?
@@ -1760,11 +1776,12 @@ SteerByOrder:
   LD B,C
   LD A,(IY+$0B)           ; the order
   OR A
-  JR NZ,l_B22B
+  JR NZ,SteerMoveOrders
   LD C,A                  ; 0 stop: stand
   RET
-l_B22B:
-  CP $03                  ; 1-2: advance / retreat
+SteerMoveOrders:
+  CP $03                  ; orders 1-8: advance / retreat, destroy robots, the
+                          ; building orders
   JP C,RobotLeanTo
   JR NZ,SteerBuildingOrder ; 4-8: the building orders
   LD A,(IY+$0E)           ; 3 destroy robots: a target already?
@@ -1836,14 +1853,14 @@ SteerBuildingOrder:
   LD H,(IY+$03)
   CALL FindTargetBuilding
   POP BC
-  JR NZ,l_B2B8            ; found one
+  JR NZ,SteerNewBuilding  ; found one
   LD C,$00                ; none left: stand
   BIT 7,(IY+$0A)          ; ours: stand and wait
   RET Z
   LD (IY+$0B),$03         ; the enemy's: hunt robots instead
   RET
-l_B2B8:
-  LD (IY+$0E),D           ; the new target (HL is not on it: the bug above)
+SteerNewBuilding:
+  LD (IY+$0E),D           ; another target building found: +$0E = its index
 SteerAtBuilding:
   DEC HL                  ; B = our row - the building's row, DE = its column
   LD A,(IY+$04)
@@ -1873,38 +1890,40 @@ RobotAimVertical:
   LD A,B                  ; vertical: 8 up when we are below it, 4 down when
                           ; above
   OR A
-  JR Z,l_B2E8
+  JR Z,RobotAimCheck
   RRCA
   RRCA
   AND $0C
   XOR $08
   OR D
   LD D,A
-l_B2E8:
-  LD A,D                  ; D = the wanted directions
+RobotAimCheck:
+  LD A,D                  ; D = the wanted directions: 0 means on the target
   OR A
-  JR NZ,l_B306
+  JR NZ,RobotAimMove
   LD C,A                  ; on the target: stand
   LD A,(IY+$0B)
   CP $04
-  JR C,l_B2F9
+  JR C,RobotFaceDown
   CP $06                  ; destroy factories / warbases: the nuclear charge
   JP C,NuclearBlast
-l_B2F9:
-  LD A,(IY+$08)           ; already facing down: stand
+RobotFaceDown:
+  LD A,(IY+$08)           ; on the target: face down and stand (destroy orders
+                          ; blast first)
   CP $04
   RET Z
   LD C,$04                ; else turn down and stay so
   LD (IY+$06),$FF
   RET
-l_B306:
-  LD A,L                  ; L = |the column difference| (low byte)
+RobotAimMove:
+  LD A,L                  ; off the target: L = |the column difference|
   OR A
-  JP P,l_B30E
+  JP P,RobotAimColumns
   NEG
   LD L,A
-l_B30E:
-  CP $08                  ; 8 or more columns: lean horizontally
+RobotAimColumns:
+  CP $08                  ; 8 or more columns away: lean horizontally, else
+                          ; pick among the free wanted directions
   LD B,C
   LD A,D
   JR NC,RobotLeanTo
@@ -2012,22 +2031,22 @@ ConsiderBuilding:
   LD IY,Robots            ; our side's robots
   LD A,(Side)
   OR A
-  JR Z,l_B381
+  JR Z,ConsiderBuildingStart
   LD IY,EnemyRobots
-l_B381:
-  LD B,$18
+ConsiderBuildingStart:
+  LD B,$18                ; IY = the side's 24 robot records
 ConsiderBuildingLoop:
   LD A,(IY+$01)           ; a live robot ...
   OR A
-  JR Z,l_B395
+  JR Z,ConsiderBuildingNext
   LD A,(IY+$0B)           ; ... with the same order ...
   CP E
-  JR NZ,l_B395
+  JR NZ,ConsiderBuildingNext
   LD A,(IY+$0E)           ; ... after the same building?
   CP C
   JR Z,ConsiderBuildingTaken
-l_B395:
-  PUSH DE
+ConsiderBuildingNext:
+  PUSH DE                 ; the next 16-byte robot record
   LD DE,$0010
   ADD IY,DE
   POP DE
@@ -2063,19 +2082,19 @@ KeepNearest:
   CALL ColumnDistance     ; the distance
   LD A,H
   CP B
-  JR C,l_B3C3
-  JR NZ,l_B3C8
+  JR C,KeepNearestNew
+  JR NZ,KeepNearestDone
   LD A,L
   CP C
-  JR NC,l_B3C8
-l_B3C3:
-  LD B,H                  ; nearer: the new best, D = its index
+  JR NC,KeepNearestDone
+KeepNearestNew:
+  LD B,H                  ; nearer: BC = the new best distance, D = its index
   LD C,L
   EXX
   LD D,C
   RET
-l_B3C8:
-  EXX
+KeepNearestDone:
+  EXX                     ; back to the main registers
   RET
 
 ; HL = |HL - DE|
@@ -2105,21 +2124,21 @@ TargetBuildingTable:
   LD HL,Factories+3
   LD B,$18
   CP $05
-  JR Z,l_B3E2
+  JR Z,TargetWarbaseTable
   CP $08
-  JR NZ,l_B3E7
-l_B3E2:
-  LD HL,Warbases+3             ; warbases
+  JR NZ,TargetBuildingMark
+TargetWarbaseTable:
+  LD HL,Warbases+3             ; orders 5 and 8: the 4 warbase records
   LD B,$04
-l_B3E7:
-  LD E,$20                ; the opponent's mark: $20 for us ...
+TargetBuildingMark:
+  LD E,$20                ; E = the owner mark wanted: the opponent's
   PUSH AF
   LD A,(Side)
   OR A
-  JR Z,l_B3F2
+  JR Z,TargetNeutralCheck
   RLC E                   ; ... $40 for the enemy
-l_B3F2:
-  POP AF
+TargetNeutralCheck:
+  POP AF                  ; order 6 (capture neutral): mark 0
   CP $06
   RET NZ
   LD E,$00                ; capture neutral: owner bits 0
@@ -2133,10 +2152,10 @@ TargetRobotRecord:
   LD DE,Robots
   LD A,(Side)            ; the enemy's robots for us, ours for the enemy
   OR A
-  JR NZ,l_B405
+  JR NZ,TargetRobotIndex
   LD DE,EnemyRobots
-l_B405:
-  LD A,(IY+$0E)
+TargetRobotIndex:
+  LD A,(IY+$0E)           ; HL = DE + 16 x (+$0E)
   ADD A,A
   ADD A,A
   ADD A,A
@@ -2176,19 +2195,19 @@ FindNearestOpponent:
   LD IY,Robots            ; the opponent's records
   LD A,(Side)
   OR A
-  JR NZ,l_B430
+  JR NZ,FindOpponentStart
   LD IY,EnemyRobots
-l_B430:
-  LD B,$18
+FindOpponentStart:
+  LD B,$18                ; IY = the opponent's 24 records
 FindOpponentLoop:
   LD A,(IY+$01)           ; a live record: compare its column
   OR A
-  JR Z,l_B441
+  JR Z,FindOpponentNext
   LD L,(IY+$02)
   LD H,(IY+$03)
   CALL KeepNearest
-l_B441:
-  PUSH DE
+FindOpponentNext:
+  PUSH DE                 ; the next 16-byte record, C its index
   LD DE,$0010
   ADD IY,DE
   POP DE
@@ -2206,18 +2225,19 @@ RobotDirectControl:
   LD B,C                  ; B = the free directions
   CP (IY+$08)             ; pushing the way it faces: go only if free (a turn
                           ; needs no free cell)
-  JR NZ,l_B45C
+  JR NZ,DirectStepSet
   AND C
-l_B45C:
-  LD C,A
+DirectStepSet:
+  LD C,A                  ; C = the pushed direction (masked by the free ones
+                          ; when it faces it)
   CALL CountDirections    ; exactly one direction?
-  JR Z,l_B467
+  JR Z,DirectStepStore
   LD A,(IY+$05)           ; none or several: go on the way it went, if still
                           ; free
   AND B
   LD C,A
-l_B467:
-  LD (IY+$05),C
+DirectStepStore:
+  LD (IY+$05),C           ; +$05 and Input = the step, then RobotMove
   LD A,C
   LD (Input),A            ; Input = the step, so MoveShip carries the ship
                           ; along (TurnOrStep)
@@ -2246,17 +2266,17 @@ TurnOrStep:
   LD C,A                  ; C = the new facing
   OR (IY+$08)
   CP $03                  ; right <-> left: turn down / up first
-  JR NZ,l_B486
+  JR NZ,TurnCheckVertical
   RLC C
   RLC C
-  JR l_B48E
-l_B486:
+  JR TurnFace
+TurnCheckVertical:
   CP $0C                  ; down <-> up: turn right / left first
-  JR NZ,l_B48E
+  JR NZ,TurnFace
   RRC C
   RRC C
-l_B48E:
-  LD (IY+$08),C           ; face it; the turn does not count as a course step
+TurnFace:
+  LD (IY+$08),C           ; +$08 = the new facing, +$06 counts the turn
   INC (IY+$06)
   RET
 TurnOrStepStep:
@@ -2293,7 +2313,7 @@ TurnOrStepStep:
 ; and +$0E = 0.
 StepPosition:
   RRCA
-  JR NC,l_B4C7
+  JR NC,StepLeft
   INC HL
   LD A,(IY+$0B)
   DEC A
@@ -2301,9 +2321,10 @@ StepPosition:
   DEC A
   JR Z,OrderDistanceUp
   RET
-l_B4C7:
-  RRCA                    ; not right
-  JR NC,l_B4D5
+StepLeft:
+  RRCA                    ; left: column - 1, the distance order counted the
+                          ; other way
+  JR NC,StepDown
   DEC HL
   LD A,(IY+$0B)
   DEC A
@@ -2311,13 +2332,13 @@ l_B4C7:
   DEC A
   JR Z,OrderDistanceDown
   RET
-l_B4D5:
-  RRCA                    ; not left: down?
-  JR NC,l_B4DA
+StepDown:
+  RRCA                    ; down: row + 1
+  JR NC,StepUp
   INC B
   RET
-l_B4DA:
-  RRCA                    ; up?
+StepUp:
+  RRCA                    ; up: row - 1
   RET NC
   DEC B
   RET
@@ -2380,37 +2401,38 @@ FreeDirections:
   LD A,(IY+$07)
   LD D,$08                ; bipod: types below 8
   RRCA
-  JR C,l_B532
+  JR C,FreeDirRight
   LD D,$0C                ; tracks: types below $0C
   RRCA
-  JR C,l_B532
+  JR C,FreeDirRight
   LD D,$0F                ; anti-grav: types below $0F
-l_B532:
-  PUSH HL                 ; right free?
+FreeDirRight:
+  PUSH HL                 ; D = the terrain limit of the locomotion; right
+                          ; free?
   CALL CanMoveRight
   POP HL
-  JR NZ,l_B53B
+  JR NZ,FreeDirLeft
   SET 0,C
-l_B53B:
+FreeDirLeft:
   PUSH HL                 ; left free?
   CALL CanMoveLeft
   POP HL
-  JR NZ,l_B544
+  JR NZ,FreeDirDown
   SET 1,C
-l_B544:
+FreeDirDown:
   PUSH HL                 ; down free?
   CALL CanMoveDown
   POP HL
-  JR NZ,l_B54D
+  JR NZ,FreeDirUp
   SET 2,C
-l_B54D:
+FreeDirUp:
   PUSH HL                 ; up free?
   CALL CanMoveUp
   POP HL
-  JR NZ,l_B556
+  JR NZ,FreeDirDone
   SET 3,C
-l_B556:
-  RET
+FreeDirDone:
+  RET                     ; C = the free directions
 
 ; Z when the robot at HL can step right
 ;
@@ -2589,13 +2611,14 @@ SetStepDelay:
   LD A,(IY+$0D)
   LD C,$00
   OR A
-  JR Z,l_B605
+  JR Z,SetStepDelayFind
   LD C,$03                ; low ground
   CP $04
-  JR C,l_B605
+  JR C,SetStepDelayFind
   LD C,$06                ; high ground
-l_B605:
-  LD A,(IY+$07)
+SetStepDelayFind:
+  LD A,(IY+$07)           ; C = the ground class (0 flat, 3 low, 6 high); find
+                          ; the locomotion part
   LD D,$FF
 SetStepDelayPart:
   INC D                   ; D = the locomotion: the index of the first set part
@@ -2642,10 +2665,11 @@ SpotEnemiesLoop:
   JR NZ,SpotEnemiesLane
   LD B,$0A                ; ... sees 10 cells ...
   BIT 7,(IY+$07)
-  JR Z,l_B644
+  JR Z,SpotEnemiesThree
   LD B,$0C                ; ... 12 with electronics ...
-l_B644:
-  LD A,D                  ; ... in three lanes
+SpotEnemiesThree:
+  LD A,D                  ; B = the range; three lanes, columns for down / up,
+                          ; rows for right / left
   AND $03
   JR NZ,SpotEnemiesRows
   LD C,B                  ; up / down: the columns X-1, X, X+1
@@ -2746,11 +2770,12 @@ LaneSteps:
 FindFreeShot:
   LD IY,Shots+$0009
   BIT 7,(IX+$0A)
-  JR Z,l_B6C7
+  JR Z,FindFreeShotSlot
   LD DE,$0012             ; the enemy's records
   ADD IY,DE
-l_B6C7:
-  LD A,(IY+$01)
+FindFreeShotSlot:
+  LD A,(IY+$01)           ; IY = the side's first shot record; Z when free,
+                          ; else the second
   OR A
   RET Z
   LD DE,$0009             ; the second record
@@ -2774,14 +2799,15 @@ FireShot:
   LD (IY+$07),A
   LD C,$05
   CP $02                  ; missiles fly further
-  JR NZ,l_B6E1
+  JR NZ,FireShotElectronics
   LD C,$07
-l_B6E1:
-  BIT 7,(IX+$07)          ; electronics: one step more
-  JR Z,l_B6E8
+FireShotElectronics:
+  BIT 7,(IX+$07)          ; electronics: the range one step more
+  JR Z,FireShotStart
   INC C
-l_B6E8:
-  LD (IY+$06),C
+FireShotStart:
+  LD (IY+$06),C           ; +$06 the range, +$05 the robot's facing, +$08 the
+                          ; wall height, the first step
   LD A,(IX+$08)           ; the robot's facing
   LD (IY+$05),A
   LD (IY+$08),$0A         ; ground of height 10 or more stops it
@@ -2792,11 +2818,11 @@ l_B6E8:
   CALL MoveShot           ; the first step
   LD A,(IY+$01)
   OR A
-  JR Z,l_B70C
+  JR Z,FireShotDone
   LD A,$01                ; it flies: the firing sound
   LD (SoundFx),A
-l_B70C:
-  RET
+FireShotDone:
+  RET                     ; the shot ended at once: no sound
 
 ; one game turn of shot IY: off its cell, count its range, a step
 ;
@@ -2829,29 +2855,29 @@ UpdateShot:
 MoveShot:
   LD A,(IY+$05)
   RRCA                    ; right: 2 columns
-  JR NC,l_B72E
+  JR NC,MoveShotLeft
   INC HL
   INC HL
   JR MoveShotStore
-l_B72E:
-  RRCA                    ; left
-  JR NC,l_B735
+MoveShotLeft:
+  RRCA                    ; left: 2 columns
+  JR NC,MoveShotDown
   DEC HL
   DEC HL
   JR MoveShotStore
-l_B735:
+MoveShotDown:
   RRCA                    ; down: 2 rows
-  JR NC,l_B73C
+  JR NC,MoveShotUp
   INC B
   INC B
-  JR l_B741
-l_B73C:
-  RRCA                    ; up
+  JR MoveShotRows
+MoveShotUp:
+  RRCA                    ; up: 2 rows
   JR NC,MoveShotStore
   DEC B
   DEC B
-l_B741:
-  LD A,B                  ; off the map's rows: gone
+MoveShotRows:
+  LD A,B                  ; past the map's rows: the shot is gone
   CP $10
   JP NC,ShotGone
 MoveShotStore:
@@ -2936,13 +2962,14 @@ MoveShotDamage:
   LD C,$FA                ; the hit sound
   LD A,(IY+$0C)
   SUB B                   ; the strength left
-  JR Z,l_B7D7
-  JP P,l_B7DB
-l_B7D7:
-  LD A,$FC                ; destroyed: dying for 4 turns, the explosion sound
+  JR Z,MoveShotKill
+  JP P,MoveShotStrength
+MoveShotKill:
+  LD A,$FC                ; strength 0 or less: dying for 4 turns, the
+                          ; explosion sound
   LD C,$C8
-l_B7DB:
-  LD (IY+$0C),A
+MoveShotStrength:
+  LD (IY+$0C),A           ; +$0C = the strength left
 MoveShotGone:
   POP IY                  ; the shot is gone
   POP HL
@@ -3708,10 +3735,10 @@ SetBaseOwner:
   LD A,B
   OR A
   LD A,$40                ; the player's bit 6 ...
-  JR Z,l_BBC7
+  JR Z,SetBaseOwnerBits
   RRCA                    ; ... or the enemy's bit 5
-l_BBC7:
-  LD C,A                  ; keep the type, set the owner
+SetBaseOwnerBits:
+  LD C,A                  ; the owner bit into the base's type byte
   LD A,(HL)
   AND $1F
   OR C
@@ -3864,11 +3891,11 @@ RemoveBuilding:
   PUSH IY
   PUSH BC
   CALL FindBuilding
-  JR NZ,l_BC6B
+  JR NZ,RemoveBuildingDone
   LD (IY+$01),$00
   RES 6,(HL)
-l_BC6B:
-  POP BC
+RemoveBuildingDone:
+  POP BC                  ; restore BC, IY
   POP IY
   RET
 
@@ -4725,10 +4752,10 @@ ChecksumLoop:
   INC HL
   ADD A,E
   LD E,A
-  JR NC,l_C31F
+  JR NC,ChecksumNext
   INC D
-l_C31F:
-  DEC BC
+ChecksumNext:
+  DEC BC                  ; carry added into D; the next byte
   LD A,B
   OR C
   JR NZ,ChecksumLoop
@@ -6467,13 +6494,13 @@ ShowRobotDesign:
 PartRowLoop:
   LD E,$06                ; E = $06: not chosen
   RL C                    ; the next part bit into carry, highest first
-  JR NC,l_CC30
+  JR NC,PartRowPaint
   LD E,$47                ; chosen: bright white
-l_CC30:
-  PUSH BC
+PartRowPaint:
+  PUSH BC                 ; paint the part's 4 x 3 cells in attribute E
   LD BC,$0403             ; 4 cells by 3 rows
-l_CC34:
-  PUSH BC
+PartRowLine:
+  PUSH BC                 ; one attribute row of the part's 4 cells
 PartCellLoop:
   LD (HL),E
   INC HL
@@ -6482,7 +6509,7 @@ PartCellLoop:
   CALL AddAToHL
   POP BC
   DEC C
-  JR NZ,l_CC34
+  JR NZ,PartRowLine
   POP BC
   DJNZ PartRowLoop
   CALL ClearViewBuffer    ; empty view buffer
@@ -6499,12 +6526,12 @@ PartCellLoop:
 PreviewLineLoop:
   PUSH BC
   PUSH HL
-l_CC65:
-  LD A,(DE)
+PreviewByteLoop:
+  LD A,(DE)               ; copy B bytes of the buffer row to the screen line
   LD (HL),A
   INC DE
   INC HL
-  DJNZ l_CC65
+  DJNZ PreviewByteLoop
   LD A,E                  ; the next buffer row (20 bytes in all)
   ADD A,$10
   LD E,A
@@ -6643,12 +6670,12 @@ DiagonalLoop:
 DiagonalCellLoop:
   LD A,E
   OR A
-  JP M,l_CD01             ; left of the view: nothing to draw
+  JP M,DiagonalNext       ; left of the view: nothing to draw
   LD A,(HL)
   OR A
   CALL NZ,DrawCell        ; an occupied cell
-l_CD01:
-  INC H                   ; down the diagonal: row + 1, column + 1
+DiagonalNext:
+  INC H                   ; the next cell down the diagonal
   INC H
   INC HL
   INC D
@@ -6690,14 +6717,14 @@ DrawCell:
   PUSH AF
   BIT 5,A                 ; bit 5: the right half of a block, no sprite of its
                           ; own
-  JR NZ,l_CD2B
+  JR NZ,DrawCellObjects
   AND $1F                 ; the block type is the sprite number
-  JR Z,l_CD2B
+  JR Z,DrawCellObjects
   LD HL,DrawSprite+$0012  ; height 0
   LD (HL),$00
   CALL DrawSprite
-l_CD2B:
-  POP AF
+DrawCellObjects:
+  POP AF                  ; then the object (bit 6) and the ship (bit 7)
   POP DE
   POP HL
   BIT 6,A                 ; bit 6: an object stands or is deferred here
@@ -6725,14 +6752,15 @@ l_CD2B:
   INC H
   LD A,H
   CP $FD
-  JR NC,l_CD63
+  JR NC,ShipCompareLatest
   CALL CheckObjectNeighbour
   INC HL                  ; (x, y+1)
   CALL CheckObjectNeighbour
   INC HL                  ; (x+1, y+1)
   CALL CheckObjectNeighbour
-l_CD63:
-  POP HL                  ; nothing later than the ship's own cell?
+ShipCompareLatest:
+  POP HL                  ; is the latest object cell the ship's own? Then draw
+                          ; it now, else defer
   LD A,D
   CP H
   JR NZ,ShipDefer
@@ -6792,13 +6820,13 @@ FindLatestBlock:
   INC H
   LD A,H                  ; row 16 is past the map ($DD00 + $200*16 = $FD00)
   CP $FD
-  JR NC,l_CDA7
+  JR NC,FindLatestSameRow
   CALL CheckBlockNeighbour
   INC HL                  ; (x, y+1)
   CALL CheckBlockNeighbour
   DEC HL
-l_CDA7:
-  DEC H                   ; (x-1, y)
+FindLatestSameRow:
+  DEC H                   ; the cells (x-1, y) through (x+1, y+1)
   DEC H
   CALL CheckBlockNeighbour
   INC HL                  ; through (x+1, y) to (x+1, y+1), unless past row 15
@@ -6842,12 +6870,12 @@ KeepLaterCell:
   SUB B
   ADD A,C
   RET M                   ; HL drawn earlier
-  JR NZ,l_CDD5
+  JR NZ,KeepLaterTake
   LD A,C                  ; same diagonal: the bigger column is later
   OR A
   RET P
-l_CDD5:
-  LD D,H                  ; HL is later: it becomes the latest cell
+KeepLaterTake:
+  LD D,H                  ; HL is later: DE = HL
   LD E,L
   RET
 
@@ -6862,12 +6890,12 @@ FindRobot:
 FindRobotLoop:
   LD A,(IY+$00)           ; compare +$00/+$01 with HL
   CP L
-  JR NZ,l_CDE9
+  JR NZ,FindRobotNext
   LD A,(IY+$01)
   CP H
   RET Z
-l_CDE9:
-  PUSH DE                 ; the next 16-byte record
+FindRobotNext:
+  PUSH DE                 ; the next 16-byte robot record
   LD DE,$0010
   ADD IY,DE
   POP DE
@@ -6885,12 +6913,12 @@ FindBuilding:
 FindBuildingLoop:
   LD A,(IY+$00)           ; compare the cell address with HL
   CP L
-  JR NZ,l_CE06
+  JR NZ,FindBuildingNext
   LD A,(IY+$01)
   CP H
   RET Z
-l_CE06:
-  PUSH DE                 ; the next 3-byte record
+FindBuildingNext:
+  PUSH DE                 ; the next 3-byte building record
   LD DE,$0003
   ADD IY,DE
   POP DE
@@ -6918,12 +6946,12 @@ DrawCellObject:
 ShotSearchLoop:
   LD A,(IY+$00)
   CP L
-  JR NZ,l_CE2E
+  JR NZ,ShotSearchNext
   LD A,(IY+$01)
   CP H
   JR Z,DrawMover          ; a shot here
-l_CE2E:
-  PUSH DE
+ShotSearchNext:
+  PUSH DE                 ; the next 9-byte shot record
   LD DE,$0009
   ADD IY,DE
   POP DE
@@ -7011,14 +7039,15 @@ MoverDeferred:
   CALL MapCell
   LD A,D
   CP H
-  JR NZ,l_CE9C
+  JR NZ,MoverRestore
   LD A,E
   CP L
-  JR NZ,l_CE9C
+  JR NZ,MoverRestore
   POP DE                  ; this is the real cell: draw here
   JR DrawMoverSprite
-l_CE9C:
-  LD (IY+$00),L           ; back to the real cell; clear the deferred mark
+MoverRestore:
+  LD (IY+$00),L           ; deferred: the record back to its real cell, the
+                          ; mark cleared
   LD (IY+$01),H
   LD B,H
   LD C,L
@@ -7040,13 +7069,13 @@ MoverColumnLoop:
 MoverRowLoop:
   LD A,B                  ; the view row: up to the real row
   CP H
-  JR Z,l_CEBD
+  JR Z,MoverDrawReal
   DEC H
   DEC H
   DEC D
   JR MoverRowLoop
-l_CEBD:
-  CALL DrawMoverSprite    ; draw at the real position
+MoverDrawReal:
+  CALL DrawMoverSprite    ; at the real row: draw the sprite there
   POP HL
   POP DE
   RET
@@ -7198,10 +7227,10 @@ DrawSprite:
   LD C,A
 ClipBottomLoop:
   PUSH BC                 ; skip a row of the sprite
-l_CF6C:
+ClipBottomSkip:
+  INC DE                  ; skip the sprite row's bytes
   INC DE
-  INC DE
-  DJNZ l_CF6C
+  DJNZ ClipBottomSkip
   POP BC
   DEC H
   LD A,H
@@ -7274,13 +7303,13 @@ SpriteByteLoop:
   LD A,$EC                ; one buffer row up
   ADD A,E
   LD E,A
-  JP C,l_CFD2
+  JP C,SpriteRowNext
   DEC D
   LD A,D
   CP $5A                  ; above $5B00: stop
   RET Z
-l_CFD2:
-  DEC C
+SpriteRowNext:
+  DEC C                   ; the next sprite row
   JP NZ,SpriteRowLoop
   RET
 
@@ -7441,12 +7470,12 @@ CopyLineLoop:
   LD A,E                  ; the next character row
   ADD A,$20
   LD E,A
-  JR C,l_D0B4
+  JR C,CopyCharRowNext
   LD A,D
   SUB $08
   LD D,A
-l_D0B4:
-  DEC C
+CopyCharRowNext:
+  DEC C                   ; the next character row
   JP NZ,CopyCharRowLoop
   RET
 
@@ -7503,40 +7532,41 @@ DrawPlayScreen:
   LDIR
   LD HL,$4100             ; the corners of the double lines
   LD B,$06
-l_D109:
-  LD (HL),$80
+FrameCornerTopLeft:
+  LD (HL),$80             ; $80 down 6 lines at $4100: the top left corner of
+                          ; the double lines
   INC H
-  DJNZ l_D109
+  DJNZ FrameCornerTopLeft
   LD HL,$4115
   LD B,$06
-l_D113:
-  LD (HL),$01
+FrameCornerTopRight:
+  LD (HL),$01             ; $01 down 6 lines at $4115
   INC H
-  DJNZ l_D113
+  DJNZ FrameCornerTopRight
   LD HL,$50A0
   LD B,$07
-l_D11D:
-  LD (HL),$80
+FrameCornerBottomLeft:
+  LD (HL),$80             ; $80 down 7 lines at $50A0
   INC H
-  DJNZ l_D11D
+  DJNZ FrameCornerBottomLeft
   LD HL,$50B5
   LD B,$07
-l_D127:
-  LD (HL),$01
+FrameCornerBottomRight:
+  LD (HL),$01             ; $01 down 7 lines at $50B5
   INC H
-  DJNZ l_D127
+  DJNZ FrameCornerBottomRight
   LD HL,$4700             ; the left side, 162 lines
   LD B,$A2
-l_D131:
-  LD (HL),$81
+FrameSideLeft:
+  LD (HL),$81             ; $81 down 162 lines at column 0
   CALL NextScreenLine
-  DJNZ l_D131
+  DJNZ FrameSideLeft
   LD HL,$4715             ; the right side
   LD B,$A2
-l_D13D:
-  LD (HL),$81
+FrameSideRight:
+  LD (HL),$81             ; $81 down 162 lines at column 21
   CALL NextScreenLine
-  DJNZ l_D13D
+  DJNZ FrameSideRight
   LD HL,$5800             ; all attributes $07
   LD DE,$5801
   LD BC,$02FF
@@ -7554,52 +7584,52 @@ l_D13D:
   LDIR
   LD HL,$5820             ; the frame's left and right columns
   LD B,$14
-l_D170:
-  LD (HL),$78
+FrameAttrSides:
+  LD (HL),$78             ; attribute $78 at columns 0 and 21 of 20 rows
   LD A,$15
   CALL AddAToHL
   LD (HL),$78
   LD A,$0B
   CALL AddAToHL
-  DJNZ l_D170
+  DJNZ FrameAttrSides
   LD HL,$5821             ; the view: 20 x 20 cells of $70
   LD BC,$1414
-l_D186:
-  PUSH BC
-l_D187:
-  LD (HL),$70
+ViewAttrRow:
+  PUSH BC                 ; a row of 20 view cells
+ViewAttrCell:
+  LD (HL),$70             ; attribute $70
   INC HL
-  DJNZ l_D187
+  DJNZ ViewAttrCell
   POP BC
   LD A,$0C
   CALL AddAToHL
   DEC C
-  JR NZ,l_D186
+  JR NZ,ViewAttrRow
   LD B,$04                ; the bottom right corner: blue past the map's edge
   LD HL,$5A33
-l_D19A:
-  LD (HL),$71
+BlueCornerLoop:
+  LD (HL),$71             ; 2 cells of $71 a row, 4 rows from $5A33
   INC HL
   LD (HL),$71
   LD A,$1D
   CALL AddAToHL
-  DJNZ l_D19A
+  DJNZ BlueCornerLoop
   LD HL,$5A53
   LD (HL),$41
   INC HL
   LD (HL),$41
   LD HL,$5A71
   LD B,$04
-l_D1B3:
-  LD (HL),$41
+BlueEdgeRow1:
+  LD (HL),$41             ; 4 cells of $41 at $5A71
   INC HL
-  DJNZ l_D1B3
+  DJNZ BlueEdgeRow1
   LD HL,$5A8F
   LD B,$06
-l_D1BD:
-  LD (HL),$41
+BlueEdgeRow2:
+  LD (HL),$41             ; 6 cells of $41 at $5A8F
   INC HL
-  DJNZ l_D1BD
+  DJNZ BlueEdgeRow2
   CALL PrintInline        ; DAY:, TIME:, RADAR:
 
 ; Inline string: " DAY:" and "TIME:" at (0,22), the tall "RADAR:" at (22,0)
@@ -7895,10 +7925,10 @@ KeyLoop:
   AND (HL)                ; Z: pressed
   INC HL
   INC HL
-  JR NZ,l_D399
+  JR NZ,KeyShift
   CCF                     ; pressed: carry 1
-l_D399:
-  RL C                    ; the first key of the table ends in bit 7
+KeyShift:
+  RL C                    ; the key's state (carry 1 pressed) into C
   JR NC,KeyLoop
   LD A,($D3E4)            ; the joystick chosen in the menu
   CP $02
@@ -7949,8 +7979,8 @@ KeyTable:
 
 ; Print A (0-99) as two digits, a leading zero blank
 ;
-; Used by the routines at ShowMilesCode, PrintMenuResourceValue and
-; PrintResourceValues.
+; Used by the routines at ShowMilesCode, DistanceShow, PrintMenuResourceValue
+; and PrintResourceValues.
 PrintNumber2:
   LD L,A
   LD H,$00
@@ -8007,13 +8037,13 @@ DigitCountLoop:
   JR C,DigitCountLoop
   SBC HL,BC               ; one too far: undo
   DEC A
-  JR NZ,l_D424
+  JR NZ,DigitPrint
   LD A,E                  ; a leading zero
   CP $20
   JP Z,PrintCharKeep      ; blank: E = $20 is the space
   XOR A
-l_D424:
-  INC E                   ; a digit: no more leading zeros
+DigitPrint:
+  INC E                   ; a digit: no more leading zeros, print "0" + A
   ADD A,$30
 
 ; PrintChar A with BC, DE, HL kept (EXX around)
@@ -8049,10 +8079,10 @@ PrintInlineLoop:
   INC HL
   PUSH HL
   OR A
-  JR Z,l_D43A
+  JR Z,PrintInlineEnd
   CALL PrintControl       ; a control code or a character
   JR PrintInlineLoop
-l_D43A:
+PrintInlineEnd:
   EXX                     ; 0: return past the string
   RET
 
@@ -8300,25 +8330,25 @@ PlayInterrupt:
   LD A,(RadarPhase)            ; the other picture each frame
   XOR $01
   LD (RadarPhase),A
-  JR Z,l_D582
+  JR Z,InterruptRadar
   LD HL,RadarEnemy        ; the enemy's radar picture, yellow
   LD C,$4E
-l_D582:
-  CALL ShowRadar          ; show it
+InterruptRadar:
+  CALL ShowRadar          ; show this frame's radar picture
   LD A,(SoundFx)            ; a sound effect running?
   OR A
-  JR Z,l_D598
+  JR Z,InterruptExit
   INC A                   ; counts up each frame; $80 ends a rising one, 0 a
                           ; falling one
   CP $80
-  JR NZ,l_D591
+  JR NZ,InterruptSoundStore
   XOR A
-l_D591:
-  LD (SoundFx),A
+InterruptSoundStore:
+  LD (SoundFx),A            ; SoundFx = the count, the effect's next step
   OR A                    ; the flags of A: M noise, P the falling tone
   CALL NZ,SoundEffect
-l_D598:
-  POP HL
+InterruptExit:
+  POP HL                  ; restore the registers, on into EI; RET
   POP DE
   POP BC
   POP AF
@@ -8459,7 +8489,7 @@ RadarRobotLoop:
   PUSH BC
   LD A,(IY+$01)
   OR A
-  JR Z,l_D651
+  JR Z,RadarRobotNext
   LD L,(IY+$02)
   LD H,(IY+$03)
   LD C,(IY+$04)
@@ -8471,8 +8501,8 @@ RadarRobotLoop:
                           ; stands for it)
   CP $02
   CALL NZ,ToggleRadarDot
-l_D651:
-  LD DE,$0010
+RadarRobotNext:
+  LD DE,$0010             ; the next 16-byte robot record
   ADD IY,DE
   POP BC
   DJNZ RadarRobotLoop
@@ -8493,10 +8523,10 @@ ToggleRadarDot:
   XOR C
   LD (HL),A
   RRC C                   ; the next pixel, maybe in the next byte
-  JR NC,l_D667
+  JR NC,RadarDotRight
   INC HL
-l_D667:
-  LD A,(HL)
+RadarDotRight:
+  LD A,(HL)               ; the right pixel, maybe in the next byte
   XOR C
   LD (HL),A
   POP HL
@@ -8508,10 +8538,10 @@ l_D667:
   XOR C
   LD (HL),A
   RRC C
-  JR NC,l_D679
+  JR NC,RadarDotAboveRight
   INC HL
-l_D679:
-  LD A,(HL)
+RadarDotAboveRight:
+  LD A,(HL)               ; the right pixel of the line above
   XOR C
   LD (HL),A
   RET
@@ -8527,10 +8557,10 @@ RadarDotAddress:
   SBC HL,DE
   LD A,H
   OR A
-  JR NZ,l_D6A6
+  JR NZ,RadarDotOutside
   LD A,L
   CP $7F
-  JR NC,l_D6A6
+  JR NC,RadarDotOutside
   LD A,$D8                ; $D800 or $D900
   ADD A,B
   LD H,A
@@ -8549,12 +8579,12 @@ RadarDotAddress:
   LD L,A
   XOR A                   ; the mask: $80 shifted right x AND 7 times
   SCF
-l_D6A2:
-  RRA
-  DJNZ l_D6A2
+RadarMaskShift:
+  RRA                     ; $80 shifted right (x AND 7) times
+  DJNZ RadarMaskShift
   RET
-l_D6A6:
-  POP HL                  ; outside the window: return from the caller too
+RadarDotOutside:
+  POP HL                  ; outside the window: return from ToggleRadarDot too
   RET
 
 ; View edge, black on the left: 8 lines of 2 bytes
