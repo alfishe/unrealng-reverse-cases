@@ -2,6 +2,13 @@
 ; Written by kit/mkgame.py from src/game/game.ann and the recordings; edit game.ann, not the .asm.
 
   DEVICE ZXSPECTRUM48
+
+; The variables past the loaded image (game.ann @equ)
+MapView        EQU $FD06  ; the map byte at the view's left column: $DD00 + ViewX
+ViewX          EQU $FD0A  ; the map column at the view's left edge, follows ShipX
+Input          EQU $FD0C  ; the controls read this game turn: bit 0 right, 1 left, 2 down, 3 up, 4 fire (Kempston order)
+ShipY          EQU $FD0D  ; the ship's row, 1-15
+ShipX          EQU $FD0E  ; the ship's column, $000E-$01F5
   ORG $5B00
 
 ; data_5B00

@@ -48,13 +48,13 @@ l_A62D:
   LD (HL),$00
   LDIR
   LD HL,data_D6A8+$0658
-  LD ($FD06),HL
+  LD (MapView),HL
   LD HL,$0000
-  LD ($FD0A),HL
+  LD (ViewX),HL
   LD HL,$0011
-  LD ($FD0E),HL
+  LD (ShipX),HL
   LD A,$0A
-  LD ($FD0D),A
+  LD (ShipY),A
   XOR A
   LD ($FD10),A
   LD A,$03
@@ -75,8 +75,8 @@ l_A68E:
 
 ; l_A69A
 l_A69A:
-  CALL sub_D37C
-  CALL sub_AF11
+  CALL WaitKey
+  CALL MoveShip
   CALL sub_B0CA
   CALL sub_CCBD
   CALL sub_AD62
@@ -126,7 +126,7 @@ l_A6C8:
   CALL sub_BB40
   CALL sub_D293
 l_A70D:
-  LD A,($FD0C)
+  LD A,(Input)
   BIT 6,A
   JP NZ,Start
   BIT 5,A
@@ -402,7 +402,7 @@ l_A94C:
   LD A,(IX+$01)
   OR A
   RET Z
-  CALL sub_D37C
+  CALL WaitKey
   AND $10
   JR Z,l_A94C
   LD (IX+$0A),$01
@@ -621,7 +621,7 @@ l_AA70:
   OR A
   JP Z,l_A812
 l_AA88:
-  CALL sub_D37C
+  CALL WaitKey
   BIT 4,A
   JR NZ,l_AAB8
   LD C,D
@@ -1079,10 +1079,10 @@ l_ACE2:
   JP l_A812
 l_ACEC:
   PUSH HL
-  CALL sub_D37C
+  CALL WaitKey
   POP HL
   LD C,D
-  LD A,($FD0C)
+  LD A,(Input)
   BIT 4,A
   JR NZ,l_AD2F
   RRCA
@@ -1152,7 +1152,7 @@ sub_AD57:
   PUSH BC
   PUSH HL
 l_AD59:
-  CALL sub_D37C
+  CALL WaitKey
   OR A
   JR NZ,l_AD59
   POP HL
@@ -1425,7 +1425,7 @@ l_AEF1:
   DJNZ l_AEF1
   CALL sub_AD57
 l_AEF7:
-  CALL sub_D37C
+  CALL WaitKey
   OR A
   JR Z,l_AEF7
   JP Start
@@ -1455,12 +1455,13 @@ l_AF0D:
   LD ($FDFE),HL
   RET
 
-; sub_AF11
+; the ship's move from Input: X by right / left, Y by down / up, each refused
+; by CheckShipMove
 ;
 ; Used by the routines at l_A69A and sub_B471.
-sub_AF11:
+MoveShip:
   CALL sub_B01D
-  LD A,($FD0C)
+  LD A,(Input)
   AND $0C
   JR Z,l_AF25
   LD A,($FD30)
@@ -1469,12 +1470,12 @@ sub_AF11:
   DEC A
   LD ($FD30),A
 l_AF25:
-  LD A,($FD0C)
+  LD A,(Input)
   AND $03
   JR Z,l_AF77
   CP $03
   JR Z,l_AF77
-  LD HL,($FD0E)
+  LD HL,(ShipX)
   RRCA
   JR C,l_AF42
   LD A,H
@@ -1498,13 +1499,13 @@ l_AF42:
 l_AF4B:
   INC HL
 l_AF4C:
-  LD A,($FD0D)
-  CALL sub_B052
+  LD A,(ShipY)
+  CALL CheckShipMove
   JR C,l_AF57
-  LD ($FD0E),HL
+  LD (ShipX),HL
 l_AF57:
-  LD HL,($FD0E)
-  LD DE,($FD0A)
+  LD HL,(ShipX)
+  LD DE,(ViewX)
   XOR A
   SBC HL,DE
   LD A,L
@@ -1516,14 +1517,14 @@ l_AF67:
   JR NZ,l_AF6C
   INC DE
 l_AF6C:
-  LD ($FD0A),DE
+  LD (ViewX),DE
   LD HL,data_D6A8+$0658
   ADD HL,DE
-  LD ($FD06),HL
+  LD (MapView),HL
 l_AF77:
-  LD A,($FD0D)
+  LD A,(ShipY)
   LD C,A
-  LD A,($FD0C)
+  LD A,(Input)
   RRCA
   RRCA
   AND $03
@@ -1541,12 +1542,12 @@ l_AF90:
   LD A,C
   AND $0F
   JR Z,l_AFA2
-  LD HL,($FD0E)
+  LD HL,(ShipX)
   LD B,A
-  CALL sub_B052
+  CALL CheckShipMove
   JR C,l_AFA2
   LD A,B
-  LD ($FD0D),A
+  LD (ShipY),A
 l_AFA2:
   LD A,($FD30)
   OR A
@@ -1555,7 +1556,7 @@ l_AFA2:
   LD ($FD30),A
   JR l_AFB5
 l_AFAE:
-  LD A,($FD0C)
+  LD A,(Input)
   AND $10
   JR Z,l_AFC3
 l_AFB5:
@@ -1570,9 +1571,9 @@ l_AFC3:
   DEC A
   JP M,l_AFDB
   LD B,A
-  LD A,($FD0D)
-  LD HL,($FD0E)
-  CALL sub_B052
+  LD A,(ShipY)
+  LD HL,(ShipX)
+  CALL CheckShipMove
   LD A,B
   CP C
   JR C,l_AFDB
@@ -1586,9 +1587,9 @@ l_AFDB:
 
 ; sub_AFE6
 ;
-; Used by the routine at sub_AF11.
+; Used by the routine at MoveShip.
 sub_AFE6:
-  LD HL,($FD0E)
+  LD HL,(ShipX)
   LD A,($FD1B)
   LD C,A
   LD A,L
@@ -1626,7 +1627,7 @@ l_B00B:
 
 ; sub_B01D
 ;
-; Used by the routine at sub_AF11.
+; Used by the routine at MoveShip.
 sub_B01D:
   CALL sub_CCA0
   RES 7,(HL)
@@ -1634,7 +1635,7 @@ sub_B01D:
 
 ; sub_B024
 ;
-; Used by the routines at sub_AF11 and sub_BC6F.
+; Used by the routines at MoveShip and sub_BC6F.
 sub_B024:
   CALL sub_CCA0
   SET 7,(HL)
@@ -1654,8 +1655,8 @@ sub_B036:
   LD A,($FD1E)
   AND $01
   RET Z
-  LD HL,($FD0E)
-  LD A,($FD0D)
+  LD HL,(ShipX)
+  LD A,(ShipY)
   LD C,A
   LD B,$00
   JP sub_D65A
@@ -1669,10 +1670,10 @@ sub_B048:
   INC (HL)
   JP l_B029
 
-; sub_B052
+; carry: the ship may not stand at HL (X), A (Y)
 ;
-; Used by the routine at sub_AF11.
-sub_B052:
+; Used by the routine at MoveShip.
+CheckShipMove:
   PUSH HL
   CALL sub_CCA6
   EX DE,HL
@@ -1719,13 +1720,13 @@ sub_B08A:
 
 ; sub_B096
 ;
-; Used by the routine at sub_B052.
+; Used by the routine at CheckShipMove.
 sub_B096:
   CALL sub_B08A
 
 ; sub_B099
 ;
-; Used by the routine at sub_B052.
+; Used by the routine at CheckShipMove.
 sub_B099:
   LD H,D
   LD L,E
@@ -2351,7 +2352,7 @@ l_B441:
 ; This entry point is used by the routine at l_B154.
 l_B450:
   PUSH BC
-  CALL sub_D37C
+  CALL WaitKey
   POP BC
   LD B,C
   CP (IY+$08)
@@ -2367,7 +2368,7 @@ l_B45C:
 l_B467:
   LD (IY+$05),C
   LD A,C
-  LD ($FD0C),A
+  LD (Input),A
   JP l_B20D
 
 ; sub_B471
@@ -2404,7 +2405,7 @@ l_B495:
   PUSH BC
   PUSH HL
   PUSH IY
-  CALL Z,sub_AF11
+  CALL Z,MoveShip
   POP IY
   POP HL
   POP BC
@@ -4233,7 +4234,7 @@ l_C1D7:
 l_C1DB:
   LD A,$03
 l_C1DD:
-  LD (data_D3CC+$0018),A
+  LD (KeyTable+$0018),A
   JP l_C106
 
 ; sub_C1E3
@@ -4534,8 +4535,8 @@ l_C36A:
   LD A,E
   OR A
   JP P,l_C36A
-  LD HL,data_D3CC
-  LD DE,data_D3CC+$0001
+  LD HL,KeyTable
+  LD DE,KeyTable+$0001
   LD BC,$0017
   LD (HL),$00
   LDIR
@@ -4547,7 +4548,7 @@ l_C36A:
 
 ; l_C388
 l_C388:
-  LD HL,data_D3CC+$000E
+  LD HL,KeyTable+$000E
   CALL sub_C427
   CALL sub_C40C
   JR NZ,$C3D7
@@ -4558,7 +4559,7 @@ l_C388:
 
 ; l_C397
 l_C397:
-  LD HL,data_D3CC+$0011
+  LD HL,KeyTable+$0011
   CALL sub_C427
   CALL sub_C40C
   JR NZ,l_C3EE
@@ -4571,7 +4572,7 @@ l_C3A4:
 
 ; l_C3A6
 l_C3A6:
-  LD HL,data_D3CC+$0014
+  LD HL,KeyTable+$0014
   CALL sub_C427
 ; This entry point is used by the routine at sub_C34A.
 l_C3AC:
@@ -4585,7 +4586,7 @@ l_C3AC:
 
 ; l_C3B5
 l_C3B5:
-  LD HL,data_D3CC+$0017
+  LD HL,KeyTable+$0017
   CALL sub_C427
   CALL sub_C40C
   JR NZ,l_C406
@@ -4596,7 +4597,7 @@ l_C3B5:
 
 ; l_C3C4
 l_C3C4:
-  LD HL,data_D3CC+$000B
+  LD HL,KeyTable+$000B
   CALL sub_C427
   CALL sub_D470
   CALL sub_C40C
@@ -4609,7 +4610,7 @@ l_C3C4:
 
 ; l_C3D6
 l_C3D6:
-  LD HL,data_D3CC+$0002
+  LD HL,KeyTable+$0002
   CALL sub_C427
   CALL sub_C40C
   LD B,C
@@ -4621,7 +4622,7 @@ l_C3D6:
 
 ; l_C3E5
 l_C3E5:
-  LD HL,data_D3CC+$0005
+  LD HL,KeyTable+$0005
   CALL sub_C427
   CALL sub_C40C
 ; This entry point is used by the routine at l_C397.
@@ -4634,7 +4635,7 @@ l_C3EE:
 
 ; l_C3F4
 l_C3F4:
-  LD HL,data_D3CC+$0008
+  LD HL,KeyTable+$0008
   CALL sub_C427
 l_C3FA:
   CALL $028E
@@ -4706,7 +4707,7 @@ l_C430:
   LD L,A
   LD A,(HL)
   LD D,A
-  LD HL,data_D3CC+$0002
+  LD HL,KeyTable+$0002
   LD B,$08
 l_C444:
   CP (HL)
@@ -4811,8 +4812,8 @@ sub_C4A7:
   HALT
 l_C4C3:
   PUSH AF
-  LD A,($FD0C)
-  LD ($FD0C),A
+  LD A,(Input)
+  LD (Input),A
 ; This entry point is used by the routine at l_C430.
 l_C4CA:
   POP AF
@@ -4830,8 +4831,8 @@ l_C4D7:
   JP l_C4E8
 l_C4E0:
   PUSH AF
-  LD A,($FD0C)
-  LD ($FD0C),A
+  LD A,(Input)
+  LD (Input),A
   POP AF
 ; This entry point is used by the routine at l_C430.
 l_C4E8:
@@ -5602,11 +5603,11 @@ l_C9CB:
   CALL sub_CBA9
 ; This entry point is used by the routine at l_CB00.
 l_CA0F:
-  CALL sub_D37C
+  CALL WaitKey
   AND $1F
   JR Z,l_CA0F
   LD HL,($FD1F)
-  LD A,($FD0C)
+  LD A,(Input)
   AND $10
   JP Z,l_CB00
   LD A,L
@@ -5682,7 +5683,7 @@ l_CA89:
   CALL sub_CC1F
   CALL sub_CBE0
 l_CA9A:
-  CALL sub_D37C
+  CALL WaitKey
   AND $10
   JR NZ,l_CA9A
   JP l_CB4A
@@ -5697,7 +5698,7 @@ l_CAAC:
   CALL sub_CC1F
   CALL sub_CBE0
 l_CAB7:
-  CALL sub_D37C
+  CALL WaitKey
   AND $10
   JR NZ,l_CAB7
   JP l_CB4A
@@ -5746,7 +5747,7 @@ data_CAF0:
 ;
 ; Used by the routine at sub_C849.
 l_CB00:
-  LD A,($FD0C)
+  LD A,(Input)
   AND $03
   JR Z,l_CB1B
   LD C,A
@@ -5764,7 +5765,7 @@ l_CB13:
   LD L,A
   JP l_CB36
 l_CB1B:
-  LD A,($FD0C)
+  LD A,(Input)
   RRCA
   RRCA
   LD C,A
@@ -5813,8 +5814,8 @@ l_CB52:
   LD DE,$FD22
   LD BC,$0007
   LDIR
-  LD HL,($FD0E)
-  LD A,($FD0D)
+  LD HL,(ShipX)
+  LD A,(ShipY)
   ADD A,$04
   LD B,A
   LD (IY+$0A),$00
@@ -6024,12 +6025,12 @@ sub_CC7C:
 ;
 ; Used by the routines at l_A69A, sub_B01D, sub_B024 and sub_B99F.
 sub_CCA0:
-  LD HL,($FD0E)
-  LD A,($FD0D)
+  LD HL,(ShipX)
+  LD A,(ShipY)
 
 ; sub_CCA6
 ;
-; Used by the routines at l_AD90, sub_B052, sub_B5D6, sub_B724, sub_B7F4,
+; Used by the routines at l_AD90, CheckShipMove, sub_B5D6, sub_B724, sub_B7F4,
 ; sub_BBB9, sub_CC7C and l_CE68.
 sub_CCA6:
   ADD A,A
@@ -6076,19 +6077,19 @@ sub_CCC6:
   LD ($FD11),HL
   XOR A
   LD (sub_CF2D+$0012),A
-  LD HL,($FD0E)
-  LD DE,($FD06)
+  LD HL,(ShipX)
+  LD DE,(MapView)
   LD A,D
   AND $01
   LD D,A
   XOR A
   SBC HL,DE
   LD E,L
-  LD A,($FD0D)
+  LD A,(ShipY)
   LD D,A
   LD A,$01
   CALL sub_CF2D
-  LD HL,($FD06)
+  LD HL,(MapView)
   LD A,$20
   CALL sub_D351
   LD DE,$0020
@@ -7210,25 +7211,26 @@ sub_D358:
   POP HL
   RET
 
-; sub_D37C
+; wait for a key or the fire button released then pressed
 ;
 ; Used by the routines at l_A69A, sub_A941, sub_ACD7, sub_AD57, sub_AE6B,
 ; sub_B41D and sub_C849.
-sub_D37C:
-  CALL sub_D38A
+WaitKey:
+  CALL ReadControls
   OR A
   RET P
 l_D381:
-  CALL sub_D38A
+  CALL ReadControls
   OR A
   JR Z,l_D381
   JP M,l_D381
 
-; sub_D38A
+; Input from the redefinable keys (KeyTable) or the joystick the menu chose
+; (Controls)
 ;
-; Used by the routine at sub_D37C.
-sub_D38A:
-  LD HL,data_D3CC
+; Used by the routine at WaitKey.
+ReadControls:
+  LD HL,KeyTable
   LD C,$01
 l_D38F:
   LD A,(HL)
@@ -7272,14 +7274,20 @@ l_D3B2:
   OR B
 l_D3C7:
   OR C
-  LD ($FD0C),A
+  LD (Input),A
   RET
 
-; data_D3CC
-data_D3CC:
-  DEFB $F7,$01,$31,$DF,$04,$49,$F7,$10
-  DEFB $35,$7F,$02,$82,$FB,$01,$51,$FD
-  DEFB $01,$41,$DF,$02,$4F,$DF,$01,$50
+; the keys, eight of 3 bytes: the port high byte, the bit mask, the key code
+; (shown by the redefine menu)
+KeyTable:
+  DEFB $F7,$01,$31
+  DEFB $DF,$04,$49
+  DEFB $F7,$10,$35
+  DEFB $7F,$02,$82
+  DEFB $FB,$01,$51
+  DEFB $FD,$01,$41
+  DEFB $DF,$02,$4F
+  DEFB $DF,$01,$50
   DEFB $01
 
 ; sub_D3E5

@@ -18,6 +18,7 @@ virtualenv: `--venv`) and sjasmplus.
 | `tap.py` | writes a tape of standard ROM blocks (the build's last step) |
 | `mkgame.py --case C` | `src/game/*.asm` from `game.ann`, the recordings' `l1.json` and the image `case.json` names; refuses to install unless sjasmplus gives the image's bytes |
 | `ann_names.py --case C ADDR=Name ...` | names labels inside entries of `game.ann` |
+| `input_vars.py --work W --inputs S --start F` | the bytes that follow the held directions and fire over a scripted recording: a first guess at the player's coordinates (a 16-bit coordinate, or one that moves only now and then, scores low: confirm in the code that reads the controls) |
 | `refdocs.py --case C` | docs 11 and 12 from `game.ann` and the recordings; doc 12 links `docs/img/routines/<Label>.gif` |
 | `check_docs.py --case C` | mermaid renders, links resolve, no `$` in prose, every figure in `docs/img` is linked |
 | `code_addresses.py FILE.md` | puts hex addresses in prose into code spans |

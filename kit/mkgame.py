@@ -163,12 +163,16 @@ class Annotations:
         $ADDR [NAME] ; comment    an instruction inside an entry: its label, its comment
         @isub $ADDR INSTRUCTION   the instruction at ADDR written so (a constant the image's bytes cannot tell from an
                                   address: LD HL,-6, not a label + offset)
+        @equ $ADDR NAME [N] ; c   a variable outside the image (the work space the game keeps past its loaded bytes):
+                                  NAME EQU $ADDR in game.asm, and every instruction operand $ADDR..$ADDR+N-1 written
+                                  as NAME / NAME+k (N defaults to 1)
     """
 
     def __init__(self, path):
         self.entries, self.inline, self.modules, self.descriptions = {}, {}, [], {}
         self.resources = {}  # entry address: the resource file under src/res
         self.isub = {}  # instruction address: the instruction as the source writes it
+        self.equ = {}  # address outside the image: (name, size, comment)
         last = None
         if not os.path.exists(path):
             return
@@ -183,6 +187,14 @@ class Annotations:
                     # game.asm is the top file that includes the modules: a module of that name would include itself
                     raise SystemExit("game.ann: '@module game' is taken by game.asm, the file that includes the modules")
                 self.modules.append([None, name])
+                continue
+            if text.startswith('@equ'):
+                body, _, comment = text.partition(';')
+                parts = body.split()
+                address = int(parts[1].lstrip('$'), 16)
+                if LO <= address < HI:
+                    raise SystemExit(f'game.ann:{number}: @equ ${address:04X} is inside the image: name it as a label')
+                self.equ[address] = (parts[2], int(parts[3]) if len(parts) > 3 else 1, comment.strip())
                 continue
             if text.startswith('@isub'):
                 parts = text.split(None, 2)
@@ -484,11 +496,12 @@ def main():
     text = asm.stdout
     for half in ('IXl', 'IXh', 'IYl', 'IYh'):
         text = text.replace(half, half.upper())
+    text = name_variables(text, ann.equ)
     text, resources = write_resources(text, mem, extents, ann, args.out)
     modules, head = split_modules(text, ann)
     for name, body in modules:
         open(os.path.join(args.out, name + '.asm'), 'w').write(body)
-    main_asm = header(config) + head + ''.join('  INCLUDE "%s.asm"\n' % name for name, _ in modules) + \
+    main_asm = header(config) + equates(ann.equ) + head + ''.join('  INCLUDE "%s.asm"\n' % name for name, _ in modules) + \
         '\n  SAVEBIN "game.bin",$%04X,$%04X\n' % (LO, HI - LO)
     open(os.path.join(args.out, 'game.asm'), 'w').write(main_asm)
     run([args.sjasmplus, '--nologo', '--msg=war', 'game.asm'], cwd=args.out)
@@ -510,6 +523,37 @@ def main():
         install_resources({name: open(os.path.join(args.out, 'res', name), 'rb').read() for name in resources})
         print(f'installed {len(modules) + 1} files in src/game, {len(resources)} resources in src/res')
     return 0 if diff is None else 1
+
+
+def name_variables(text, equ):
+    """Every instruction operand that is a variable's address (@equ), written as the variable's name"""
+    if not equ:
+        return text
+    names = {}
+    for address, (name, size, _) in equ.items():
+        for k in range(size):
+            names[address + k] = name if k == 0 else '%s+%d' % (name, k)
+
+    def operand(m):
+        return names.get(int(m.group(1), 16), m.group(0))
+
+    out = []
+    for line in text.splitlines(True):
+        code, semi, comment = line.partition(';')
+        if re.match(r'^  [A-Z]', code) and not re.match(r'^  DEF[BWMS]', code):
+            code = re.sub(r'\$([0-9A-F]{4})\b', operand, code)
+        out.append(code + semi + comment)
+    return ''.join(out)
+
+
+def equates(equ):
+    """The variables outside the image (game.ann @equ), as EQU lines"""
+    if not equ:
+        return ''
+    lines = ['', '; The variables past the loaded image (game.ann @equ)']
+    for address, (name, size, comment) in sorted(equ.items()):
+        lines.append('%-14s EQU $%04X%s' % (name, address, ('  ; ' + comment) if comment else ''))
+    return '\n'.join(lines) + '\n'
 
 
 def header(config):

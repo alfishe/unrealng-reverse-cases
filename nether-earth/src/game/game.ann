@@ -8,9 +8,23 @@
 #   @res graphics/NAME.bin          the entry is a resource: src/res/..., INCBIN
 #   $ADDR Name ; comment            a label and comment inside an entry
 #   @isub $ADDR LD HL,-6            the instruction written so
+#   @equ $ADDR Name [N] ; comment    a variable past the image: an EQU, its operands by name
 
 @module main
 $A600 c Start ; the entry from N1: the IM 2 table, the start-up, the menu
 $C4FD c MenuInterrupt ; the interrupt handler of the menu
 $D566 c PlayInterrupt ; the interrupt handler of play, one a frame
 $D59C c StartInterrupt ; the interrupt handler while the start-up runs
+$AF11 c MoveShip ; the ship's move from Input: X by right / left, Y by down / up, each refused by CheckShipMove
+$B052 c CheckShipMove ; carry: the ship may not stand at HL (X), A (Y)
+$D37C c WaitKey ; wait for a key or the fire button released then pressed
+$D38A c ReadControls ; Input from the redefinable keys (KeyTable) or the joystick the menu chose (Controls)
+$D3CC b KeyTable 3 ; the keys, eight of 3 bytes: the port high byte, the bit mask, the key code (shown by the redefine menu)
+$D3E4 Controls ; the menu's choice: 1 keyboard, 2 Kempston, 3 Interface 2
+
+# The work space past the loaded image ($FD00-$FFFF): docs/02-architecture.md
+@equ $FD06 MapView 2 ; the map byte at the view's left column: $DD00 + ViewX
+@equ $FD0A ViewX 2 ; the map column at the view's left edge, follows ShipX
+@equ $FD0C Input ; the controls read this game turn: bit 0 right, 1 left, 2 down, 3 up, 4 fire (Kempston order)
+@equ $FD0D ShipY ; the ship's row, 1-15
+@equ $FD0E ShipX 2 ; the ship's column, $000E-$01F5

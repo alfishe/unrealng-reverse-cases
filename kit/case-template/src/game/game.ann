@@ -8,3 +8,4 @@
 #   @res graphics/NAME.bin          the entry is a resource: src/res/..., INCBIN
 #   $ADDR Name ; comment            a label and comment inside an entry
 #   @isub $ADDR LD HL,-6            the instruction written so
+#   @equ $ADDR Name [N] ; comment    a variable past the image: an EQU, its operands by name
