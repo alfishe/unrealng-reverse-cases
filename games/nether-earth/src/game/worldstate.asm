@@ -1,3 +1,19 @@
+; --------------------------------------------------------------------------------------------------------------------
+; worldstate.asm: The moving things of a game: shots, the two radar pictures, the save staging, the robot slots
+;
+; The game's live state below the map, all zero in the image and set up by the start-up and BuildMap: what the save
+; writes to tape together with the map and the variables $FD00-$FDFB. Docs: 07-objects.md 7.2 (robots), 7.4 (shots),
+; 06-rendering.md 6.7 (radar), 03-build-and-load.md 3.6 (the saved game).
+;
+; Contents in address order: Shots (5 records of 9), RadarOwn and RadarEnemy (two 256-byte radar pictures,
+; PlayInterrupt shows one each frame), SaveShots / SaveBuildings (the save's staging, laid over the tail of
+; RadarEnemy), Robots (24 player slots of 16) and EnemyRobots (24 enemy slots). Each entry's description gives the
+; record fields and who reads and writes them.
+;
+; The save block starts at SaveShots $D92B, so Shots and Buildings (which lie outside $D92B-$FDFB) are copied into the
+; staging first and back after a load; the radar is rebuilt (RadarDirty) because the staging overwrote it.
+; --------------------------------------------------------------------------------------------------------------------
+
 ; Shots in flight: 5 records of 9 bytes
 ;
 ; +0/+1 the map cell (+1 = 0: free), +2/+3 X, +4 Y, +5 the direction (bit 0

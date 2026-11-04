@@ -1,3 +1,33 @@
+; --------------------------------------------------------------------------------------------------------------------
+; music.asm: The menu tune: a two-voice beeper loop, the drum and the note readers in the interrupt, the title colours
+;
+; The tune that plays while the main menu waits for a key, and the colour cycle of the NETHER EARTH title. Docs:
+; 09-sound.md 9.1-9.4 (the loop, the interrupt, the track formats, the tune); the track format is also in
+; src/res/README.md (Menu tune text) and the tune data is src/res/music/menu.txt.
+;
+; Calling order: MainMenuKeys ($C19E) calls MenuMusic, which saves SP in SavedSP, makes MenuInterrupt the Handler,
+; sets the track positions and never returns by itself: it runs the tone loop (LeadStep / BassStep, each voice a
+; square-ish pulse train counted in loop turns by D and E). Every frame MenuInterrupt plays the next drum record
+; (DrumStep, which stops the tone loop for its length), reads the next bass and lead events when their frames run out
+; (BassNextEvent, LeadNextEvent, commands through MusicDispatch and the two JP tables), recolours the title
+; (TitleColourCycle) and, when a number key is down, loads SP from SavedSP and returns from MenuMusic itself
+; (MenuMusicExit).
+;
+; Registers own the state: the main set's D / E are the lead / bass period counters, HL the drum position, C the
+; drum's frames left; the alternate set's HL' the bass position, DE' the lead position, C' / B' the bass / lead frames
+; left. The interrupt saves only AF. The periods, the pulse widths and the on / off values are operands of the tone
+; loop's own instructions, written by the readers (self-modifying code: $C4D0, $C4D2, $C4D6, $C4ED, $C4EF, $C4F3).
+;
+; Tracks: a note is (period >= 9, frames); a byte below 9 is a command: 1 aa goto, 2 aa call a pattern (one level, the
+; return in BassReturnPos / LeadReturnPos), 3 aa start a drum track (bass only), 4 on, 5 off, 6 return; 0, 7, 8
+; unused. Drum records are (frames, kind[, p]): 0 a hiss, 2 p a falling sweep, others a rasp; 1 aa goto. The tune is
+; 5120 frames (102.4 s) and loops.
+;
+; Quirks: MenuMusic does not reset the on / off operands, so a tune restarted (after keys 1-3) while a voice was off
+; stays silent until that voice's next command 4 (docs 9.4). Command 3 in the lead table would use the bass position.
+; The exit leaves the alternate set swapped in; the menu keeps nothing in registers.
+; --------------------------------------------------------------------------------------------------------------------
+
 ; play the menu tune until a number key is pressed
 ;
 ; Called once by the main menu ($C19E) after all keys are up. Saves SP in
@@ -17,17 +47,19 @@
 MenuMusic:
   DI                      ; no interrupt while the state is set
   LD (SavedSP),SP           ; the stack for the exit from MenuInterrupt
-  LD HL,MenuInterrupt
-  LD (Handler),HL
+  LD HL,MenuInterrupt     ; Handler: the IM 2 vector at $FDFD jumps to
+                          ; MenuInterrupt now
+  LD (Handler),HL           ; Handler = MenuInterrupt
   LD HL,BassTrack         ; HL' = the bass track
   LD DE,LeadTrack         ; DE' = the lead track
   LD BC,$0101             ; B' = C' = 1: read both voices at the first
                           ; interrupt
-  EXX
+  EXX                     ; HL, DE, BC become HL', DE', BC'
   LD HL,DrumTrackSteady   ; HL = the drum track, C = 1: read it at the first
                           ; interrupt
-  EI
-  LD C,$01
+  EI                      ; the interrupt may run (the HALT below waits for it)
+  LD C,$01                ; C = 1: the drum's first record at the first
+                          ; interrupt
   HALT                    ; start on an interrupt
 
 ; tone loop: the time of a bass step without an edge
@@ -39,9 +71,9 @@ MenuMusic:
 BassIdlePad:
   PUSH AF                 ; a pad: Input is written back unchanged, only the
                           ; time counts
-  LD A,(Input)
-  LD (Input),A
-  POP AF
+  LD A,(Input)            ; 13 T: a read of Input ...
+  LD (Input),A            ; ... and the same value back, 13 T
+  POP AF                  ; A and the flags back: the pad leaves no trace
 
 ; tone loop: count the lead period down, at 0 a pulse
 ;
@@ -53,7 +85,7 @@ BassIdlePad:
 ; Hz.
 LeadStep:
   DEC D                   ; the lead counter
-  JP NZ,LeadIdlePad
+  JP NZ,LeadIdlePad       ; not run out: the pad, then the bass
   LD D,$00                ; reload: the note's period, written by LeadNextEvent
                           ; ($C540)
   LD A,$18                ; $18 voice on, 0 off: written by LeadOn / LeadOff
@@ -61,12 +93,12 @@ LeadStep:
   LD A,$00                ; the pulse width: period / 4, written by $C547
 LeadPulse:
   DEC A                   ; hold the pulse
-  JP NZ,LeadPulse
+  JP NZ,LeadPulse         ; until the width is used up
   OUT ($FE),A             ; A = 0: the trailing edge
-  JP BassStep
+  JP BassStep             ; on to the bass voice
 LeadIdlePad:
   PUSH AF                 ; no edge: the same pad as BassIdlePad
-  LD A,(Input)
+  LD A,(Input)            ; 13 T: Input read ...
 
 ; the rest of the lead pad (an entry only because work/deep starts its
 ; recording here)
@@ -75,8 +107,8 @@ LeadIdlePad:
 ; work/deep began inside the tone loop at this instruction, so its L1 lists the
 ; address as a root.
 LeadIdlePadTail:
-  LD (Input),A
-  POP AF
+  LD (Input),A            ; ... and written back unchanged
+  POP AF                  ; A and the flags back
 
 ; tone loop: count the bass period down, at 0 a pulse
 ;
@@ -85,16 +117,16 @@ LeadIdlePadTail:
 ; BassNextEvent, BassOn and BassOff.
 BassStep:
   DEC E                   ; the bass counter
-  JP NZ,BassIdlePad
+  JP NZ,BassIdlePad       ; not run out: the pad, then the lead
   LD E,$00                ; reload: the note's period, written by BassNextEvent
                           ; ($C52D)
   LD A,$18                ; $18 voice on, 0 off: written by BassOn / BassOff
-  OUT ($FE),A
+  OUT ($FE),A             ; the pulse's leading edge
   LD A,$00                ; the pulse width: period / 4, written by $C534
 BassPulse:
   DEC A                   ; hold the pulse
-  JP NZ,BassPulse
-  OUT ($FE),A
+  JP NZ,BassPulse         ; until the width is used up
+  OUT ($FE),A             ; A = 0: the trailing edge
   JP LeadStep             ; next turn: the lead voice
 
 ; the interrupt handler of the menu
@@ -103,35 +135,38 @@ BassPulse:
 ; ends MenuMusic. It returns to the tone loop of MenuMusic, or, with SP from
 ; SavedSP, to the menu.
 MenuInterrupt:
-  PUSH AF
+  PUSH AF                 ; the tone loop's A and flags
   DEC C                   ; the drum's frames run out: play the next drum
                           ; record (inside the interrupt, the tone loop waits)
-  CALL Z,DrumStep
+  CALL Z,DrumStep         ; DrumStep: one drum record, with the tone loop
+                          ; stopped
   EXX                     ; the voices' registers
   DEC C                   ; the bass note's frames run out: the next bass event
-  CALL Z,BassNextEvent
+  CALL Z,BassNextEvent    ; BassNextEvent: the next note or commands of the
+                          ; bass
   DEC B                   ; the lead note's frames run out: the next lead event
-  CALL Z,LeadNextEvent
+  CALL Z,LeadNextEvent    ; LeadNextEvent: the next note or commands of the
+                          ; lead
   CALL TitleColourCycle   ; the title's colours
   LD A,$E7                ; half-rows 1-5 and 6-0: a number key, any menu
                           ; choice
-  IN A,($FE)
-  CPL
-  AND $1F
-  JR NZ,MenuMusicExit
+  IN A,($FE)              ; IN from $E7FE: the half rows 1-5 and 6-0
+  CPL                     ; a pressed key reads 0: invert
+  AND $1F                 ; the five key bits
+  JR NZ,MenuMusicExit     ; a number key is down
   EXX                     ; none: back to the tone loop
-  POP AF
-  EI
-  RET
+  POP AF                  ; the tone loop's A and flags back
+  EI                      ; interrupts on for the next frame
+  RET                     ; into the tone loop where it was
 MenuMusicExit:
   DI                      ; a number key: drop the tone loop, return from
                           ; MenuMusic to the menu
   LD SP,(SavedSP)           ; SP as MenuMusic left it: the next RET returns to
                           ; $C1A1
-  LD HL,StartInterrupt
-  LD (Handler),HL
-  EI
-  RET
+  LD HL,StartInterrupt    ; Handler back to StartInterrupt (EI; RET)
+  LD (Handler),HL           ; nothing runs in the menu's HALTs now
+  EI                      ; interrupts on
+  RET                     ; returns from MenuMusic to the menu ($C1A1)
 
 ; read the bass voice's next event: a note, or a command
 ;
@@ -142,17 +177,17 @@ MenuMusicExit:
 ; by every command handler, so commands take no time.
 BassNextEvent:
   LD A,(HL)               ; the event byte
-  CP $09
+  CP $09                  ; a period is 9 or more
   JR C,BassCommand        ; below 9: a command
   LD (BassStep+$0005),A   ; the period into LD E,n
   RRCA                    ; the pulse width: period / 4
-  RRCA
-  AND $3F
-  LD (BassStep+$000B),A
+  RRCA                    ; A = period / 4 ...
+  AND $3F                 ; 0-63
+  LD (BassStep+$000B),A   ; into LD A,n of the bass pulse ($C4F3)
   INC HL                  ; C' = the note's frames
-  LD C,(HL)
-  INC HL
-  RET
+  LD C,(HL)               ; C' = the note's frames
+  INC HL                  ; HL' = the next event
+  RET                     ; back into MenuInterrupt
 
 ; read the lead voice's next event: a note, or a command
 ;
@@ -160,18 +195,18 @@ BassNextEvent:
 ; / $C4D6 and its frames into B'.
 LeadNextEvent:
   LD A,(DE)               ; the event byte
-  CP $09
+  CP $09                  ; a period is 9 or more
   JR C,LeadCommand        ; below 9: a command
   LD (LeadStep+$0005),A   ; the period into LD D,n
   RRCA                    ; the pulse width: period / 4
-  RRCA
-  AND $3F
-  LD (LeadStep+$000B),A
-  INC DE
+  RRCA                    ; A = period / 4 ...
+  AND $3F                 ; 0-63
+  LD (LeadStep+$000B),A   ; into LD A,n of the lead pulse ($C4D6)
+  INC DE                  ; the frames byte
   LD A,(DE)               ; B' = the note's frames
-  LD B,A
-  INC DE
-  RET
+  LD B,A                  ; B' = the frames
+  INC DE                  ; DE' = the next event
+  RET                     ; back into MenuInterrupt
 ; This entry point is used by the routine at BassNextEvent.
 BassCommand:
   PUSH HL                 ; command A of the bass track: jump to entry A of the
@@ -189,32 +224,32 @@ BassCmd1:
 ;
 ; A table entry of BassCommandTable: command 2 calls a pattern.
 BassCmd2:
-  JP BassCall
+  JP BassCall             ; entry 2: call a pattern
 
 ; bass command 3 (entry): JP SetDrumTrack
 ;
 ; A table entry: command 3 starts another drum track.
 BassCmd3:
-  JP SetDrumTrack
+  JP SetDrumTrack         ; entry 3: start a drum track
 
 ; bass command 4 (entry): JP BassOn
 ;
 ; A table entry: command 4 turns the bass voice on.
 BassCmd4:
-  JP BassOn
+  JP BassOn               ; entry 4: bass on
 
 ; bass command 5 (entry): JP BassOff
 ;
 ; A table entry: command 5 turns the bass voice off (its notes keep their time,
 ; silent).
 BassCmd5:
-  JP BassOff
+  JP BassOff              ; entry 5: bass off
 
 ; bass command 6 (entry): JP BassReturn
 ;
 ; A table entry: command 6 ends a pattern.
 BassCmd6:
-  JP BassReturn
+  JP BassReturn           ; entry 6: back from a pattern
 
 ; bass commands 7 and 8: JP SetDrumTrack twice (unused, the same as command 3)
 BassCmd7:
@@ -226,7 +261,7 @@ BassCmd7:
 ; The lead twin of BassCommand. HL' (the bass position) is pushed so the
 ; handlers can pop it back.
 LeadCommand:
-  PUSH HL
+  PUSH HL                 ; HL' (the bass position) kept for the handler to pop
   CALL MusicDispatch      ; MusicDispatch pops the table address
 LeadCommandTable:
   JP DefineKeyDone        ; entry 0: JP $C4A6 (never used)
@@ -239,7 +274,7 @@ LeadCmd1:
 ;
 ; A table entry of LeadCommandTable: command 2 calls a pattern.
 LeadCmd2:
-  JP LeadCall
+  JP LeadCall             ; entry 2: call a pattern
 
 ; lead command 3: JP SetDrumTrack, a bass-only handler (it reads HL', the bass
 ; track): unusable from the lead track and unused
@@ -250,19 +285,19 @@ LeadCmd3:
 ;
 ; A table entry: command 4 turns the lead voice on.
 LeadCmd4:
-  JP LeadOn
+  JP LeadOn               ; entry 4: lead on
 
 ; lead command 5 (entry): JP LeadOff
 ;
 ; A table entry: command 5 turns the lead voice off.
 LeadCmd5:
-  JP LeadOff
+  JP LeadOff              ; entry 5: lead off
 
 ; lead command 6 (entry): JP LeadReturn
 ;
 ; A table entry: command 6 ends a pattern.
 LeadCmd6:
-  JP LeadReturn
+  JP LeadReturn           ; entry 6: back from a pattern
 
 ; lead commands 7 and 8: JP SetDrumTrack twice (unused)
 LeadCmd7:
@@ -275,13 +310,13 @@ LeadCmd7:
 ; in $FD54; BassReturn resumes one byte past it.
 BassCall:
   POP HL                  ; HL' = the bass position again
-  INC HL
-  LD A,(HL)
-  INC HL
+  INC HL                  ; on to the address operand's low byte
+  LD A,(HL)               ; A = the pattern's low byte
+  INC HL                  ; HL' at the high byte
   LD (BassReturnPos),HL           ; the return point
   LD H,(HL)               ; HL' = the pattern
-  LD L,A
-  JP BassNextEvent
+  LD L,A                  ; HL' = the pattern
+  JP BassNextEvent        ; the pattern's first event, at once
 
 ; lead command 2 aa: play the pattern at aa, then go on after the command
 ;
@@ -289,15 +324,15 @@ BassCall:
 LeadCall:
   POP HL                  ; HL' back (the bass position); DE' is the lead
                           ; position
-  EX DE,HL
-  INC HL
-  LD A,(HL)
-  INC HL
+  EX DE,HL                ; HL = the lead position (at the command byte)
+  INC HL                  ; the address operand's low byte
+  LD A,(HL)               ; A = the pattern's low byte
+  INC HL                  ; at the high byte
   LD (LeadReturnPos),HL           ; the return point
-  LD H,(HL)
-  LD L,A
+  LD H,(HL)               ; H = the pattern's high byte
+  LD L,A                  ; L = the low byte: HL = the pattern
   EX DE,HL                ; DE' = the pattern
-  JP LeadNextEvent
+  JP LeadNextEvent        ; the pattern's first event, at once
 
 ; bass command 1 aa: continue the track at aa (code: POP HL, read the word, JP
 ; BassNextEvent)
@@ -307,13 +342,13 @@ LeadCall:
 ; POP HL; INC HL; LD A,(HL); INC HL; LD H,(HL); LD L,A; JP $C528. The bass
 ; track ends with 1 $C678.
 BassGoto:
-  POP HL
-  INC HL
-  LD A,(HL)
-  INC HL
-  LD H,(HL)
-  LD L,A
-  JP BassNextEvent
+  POP HL                  ; HL' = the bass position (at the command byte)
+  INC HL                  ; the address operand
+  LD A,(HL)               ; A = the target's low byte
+  INC HL                  ; at the high byte
+  LD H,(HL)               ; HL' = the target
+  LD L,A                  ; L = the low byte
+  JP BassNextEvent        ; its first event, at once
 
 ; lead command 1 aa: continue the track at aa (code, run only when the tune
 ; loops)
@@ -321,33 +356,35 @@ BassGoto:
 ; POP HL; EX DE,HL; INC HL; LD A,(HL); INC HL; LD H,(HL); LD L,A; EX DE,HL; JP
 ; $C53B. The lead track ends with 1 $C702.
 LeadGoto:
-  POP HL
-  EX DE,HL
-  INC HL
-  LD A,(HL)
-  INC HL
-  LD H,(HL)
-  LD L,A
-  EX DE,HL
-  JP LeadNextEvent
+  POP HL                  ; HL' back (the bass position)
+  EX DE,HL                ; HL = the lead position
+  INC HL                  ; the address operand
+  LD A,(HL)               ; A = the target's low byte
+  INC HL                  ; at the high byte
+  LD H,(HL)               ; HL = the target
+  LD L,A                  ; L = the low byte
+  EX DE,HL                ; DE' = the target, HL' the bass position again
+  JP LeadNextEvent        ; its first event, at once
 
 ; bass command 6: back from the pattern to the bass track
 ;
 ; Used by the routine at BassCmd6.
 BassReturn:
-  POP HL
+  POP HL                  ; drop the pushed position
   LD HL,(BassReturnPos)           ; one past the call's address operand
-  INC HL
-  JP BassNextEvent
+  INC HL                  ; one past the address operand: the event after the
+                          ; call
+  JP BassNextEvent        ; the next event of the track, at once
 
 ; lead command 6: back from the pattern to the lead track
 ;
 ; Used by the routine at LeadCmd6.
 LeadReturn:
-  POP HL
+  POP HL                  ; HL' back (the bass position)
   LD DE,(LeadReturnPos)           ; one past the call's address operand
-  INC DE
-  JP LeadNextEvent
+  INC DE                  ; one past the address operand: the event after the
+                          ; call
+  JP LeadNextEvent        ; the next event of the track, at once
 
 ; bass command 3 aa: the drum plays the track at aa from its next record
 ;
@@ -355,19 +392,20 @@ LeadReturn:
 ; current drum record are kept). Read through the bass voice's HL', so only the
 ; bass track may use it.
 SetDrumTrack:
-  POP HL
-  INC HL
-  LD A,(HL)
-  INC HL
+  POP HL                  ; HL' = the bass position (at the command byte)
+  INC HL                  ; the address operand's low byte
+  LD A,(HL)               ; A = the drum track's low byte
+  INC HL                  ; at the high byte
   EXX                     ; low byte into the drum's HL
-  LD L,A
-  EXX
-  LD A,(HL)
-  INC HL
+  LD L,A                  ; the drum's L = the low byte
+  EXX                     ; back to the voice set (HL' the bass position)
+  LD A,(HL)               ; the high byte
+  INC HL                  ; HL' past the command
   EXX                     ; high byte into the drum's HL
-  LD H,A
-  EXX
-  JP BassNextEvent
+  LD H,A                  ; the drum's H = the high byte: HL = the new drum
+                          ; track
+  EXX                     ; back to the voice registers
+  JP BassNextEvent        ; the next bass event, at once
 
 ; play the next drum record (a short noise or sweep inside the interrupt)
 ;
@@ -381,119 +419,120 @@ SetDrumTrack:
 ; experiment kinds 1 and 2 ran 72 times each.
 DrumStep:
   LD A,(HL)               ; the frames, or 1
-  INC HL
+  INC HL                  ; HL past the frames byte
   CP $01                  ; 1 aa: goto
-  JR Z,DrumGoto
+  JR Z,DrumGoto           ; 1: the goto record
   LD C,A                  ; C = the frames to the next record
   LD A,(HL)               ; the kind
-  INC HL
-  CP $02
-  JR Z,DrumSweep
-  AND A
-  JR Z,DrumHiss
+  INC HL                  ; HL past the kind: the next record (or p of a sweep)
+  CP $02                  ; 2: the sweep
+  JR Z,DrumSweep          ; kind 2
+  AND A                   ; 0: the hiss
+  JR Z,DrumHiss           ; kind 0
 DrumRasp:
   PUSH HL                 ; any other kind: 80 ROM bytes $00xx; the gap (~B &
                           ; $3F) grows $2F-$3F, once 256, then 1-$3E
-  LD H,$00
-  LD B,$50
+  LD H,$00                ; HL = $00xx: the ROM's first page, L = the
+                          ; position's low byte
+  LD B,$50                ; 80 beeper writes
 DrumRaspLoop:
   LD A,(HL)               ; a ROM byte's EAR / MIC bits to the beeper
-  AND $18
-  OUT ($FE),A
-  LD A,B
-  CPL
-  AND $3F
+  AND $18                 ; only bits 3-4, MIC and EAR
+  OUT ($FE),A             ; to the beeper (border black)
+  LD A,B                  ; the gap from the count: ~B AND $3F
+  CPL                     ; ~B: grows as B counts down
+  AND $3F                 ; the gap, 0-63 turns (0 waits 256)
 DrumRaspGap:
-  DEC A
-  JR NZ,DrumRaspGap
-  INC HL
-  DJNZ DrumRaspLoop
-  POP HL
-  RET
+  DEC A                   ; wait (A = 0 waits 256 turns)
+  JR NZ,DrumRaspGap       ; the gap
+  INC HL                  ; the next ROM byte
+  DJNZ DrumRaspLoop       ; 80 writes
+  POP HL                  ; HL = the drum position
+  RET                     ; back into MenuInterrupt
 DrumGoto:
   LD A,(HL)               ; the record 1 aa: continue at aa
-  INC HL
-  LD H,(HL)
-  LD L,A
-  JP DrumStep
+  INC HL                  ; at the high byte
+  LD H,(HL)               ; H = the high byte
+  LD L,A                  ; HL = the target
+  JP DrumStep             ; its record at once
 DrumHiss:
   PUSH HL                 ; kind 0: 96 ROM bytes $08xx straight to the beeper
-  LD H,$08
-  LD B,$60
+  LD H,$08                ; HL = $08xx: ROM bytes as noise
+  LD B,$60                ; 96 beeper writes
 DrumHissLoop:
-  LD A,(HL)
-  AND $18
-  OUT ($FE),A
-  DJNZ DrumHissLoop
-  POP HL
-  RET
+  LD A,(HL)               ; a ROM byte's EAR / MIC bits ...
+  AND $18                 ; bits 3-4 only
+  OUT ($FE),A             ; ... to the beeper
+  DJNZ DrumHissLoop       ; 96 writes, as fast as DJNZ runs: a burst of noise
+  POP HL                  ; HL = the drum position
+  RET                     ; back into MenuInterrupt
 DrumSweep:
   LD A,(HL)               ; kind 2 p: the falling tone
-  INC HL
-  PUSH HL
-  LD B,$30
+  INC HL                  ; past p: the next record
+  PUSH HL                 ; the drum position kept
+  LD B,$30                ; 48 cycles
   LD L,A                  ; the low half
   RRCA                    ; the high half: p / 2
-  LD H,A
+  LD H,A                  ; H = p / 2 (RRCA of p)
 DrumSweepLoop:
   XOR A                   ; the low half, one shorter each cycle
-  OUT ($FE),A
-  DEC L
-  LD A,L
+  OUT ($FE),A             ; beeper low
+  DEC L                   ; the low half one turn shorter each cycle
+  LD A,L                  ; A = the low half's length
 DrumSweepLow:
-  DEC A
-  JR NZ,DrumSweepLow
+  DEC A                   ; hold the low half
+  JR NZ,DrumSweepLow      ; the low half
   LD A,$18                ; the high half, 4 longer each cycle
-  OUT ($FE),A
-  LD A,$04
-  ADD A,H
-  LD H,A
+  OUT ($FE),A             ; beeper high
+  LD A,$04                ; the high half 4 turns longer each cycle
+  ADD A,H                 ; + the last length
+  LD H,A                  ; H = the new length
 DrumSweepHigh:
-  DEC A
-  JR NZ,DrumSweepHigh
-  DJNZ DrumSweepLoop
-  POP HL
-  RET
+  DEC A                   ; hold the high half
+  JR NZ,DrumSweepHigh     ; the high half
+  DJNZ DrumSweepLoop      ; the next cycle
+  POP HL                  ; HL = the drum position
+  RET                     ; back into MenuInterrupt
 
 ; bass command 4: the bass pulses sound again
 ;
 ; Used by the routine at BassCmd4.
 BassOn:
-  POP HL
+  POP HL                  ; HL' = the bass position (at the command)
   LD A,$18                ; EAR and MIC into the bass pulse ($C4EF)
-  LD (BassStep+$0007),A
-  INC HL
-  JP BassNextEvent
+  LD (BassStep+$0007),A   ; into LD A,n of BassStep: the bass sounds
+  INC HL                  ; past the 1-byte command
+  JP BassNextEvent        ; the next bass event, at once
 
 ; bass command 5: the bass pulses go silent (the notes still take their time)
 ;
 ; Used by the routine at BassCmd5.
 BassOff:
-  POP HL
-  XOR A
-  LD (BassStep+$0007),A
-  INC HL
-  JP BassNextEvent
+  POP HL                  ; HL' = the bass position
+  XOR A                   ; 0: no edge, the bass rests
+  LD (BassStep+$0007),A   ; into the bass pulse ($C4EF)
+  INC HL                  ; past the command
+  JP BassNextEvent        ; the next bass event, at once
 
 ; lead command 4: the lead pulses sound again
 ;
 ; Used by the routine at LeadCmd4.
 LeadOn:
-  POP HL
+  POP HL                  ; HL' back (the bass position)
   LD A,$18                ; EAR and MIC into the lead pulse ($C4D2)
-  LD (LeadStep+$0007),A
-  INC DE
-  JP LeadNextEvent
+  LD (LeadStep+$0007),A   ; into LD A,n of LeadStep: the lead sounds
+  INC DE                  ; DE' past the 1-byte command
+  JP LeadNextEvent        ; the next lead event, at once
 
 ; lead command 5: the lead pulses go silent
 ;
 ; Used by the routine at LeadCmd5.
 LeadOff:
-  POP HL
-  XOR A
-  LD (LeadStep+$0007),A
-  INC DE
-  JP LeadNextEvent
+  POP HL                  ; HL' back
+  XOR A                   ; 0: no edge, the lead rests
+  LD (LeadStep+$0007),A   ; into the lead pulse ($C4D2)
+  INC DE                  ; past the command
+  JP LeadNextEvent        ; the next lead event, at once
 
 ; jump to entry A of the 3-byte JP table that follows the caller's CALL
 ;
@@ -501,14 +540,14 @@ LeadOff:
 ; its own return address (the table) and jumps to table + 3 * A, so the handler
 ; returns to nobody: each jumps back to the voice's reader.
 MusicDispatch:
-  LD L,A
-  ADD A,A
-  ADD A,L
+  LD L,A                  ; L = the command
+  ADD A,A                 ; A = 2 x command
+  ADD A,L                 ; A = 3 x command: the entry's offset
   POP HL                  ; the table, after the CALL
-  ADD A,L
-  LD L,A
-  JR NC,MusicDispatchJump
-  INC H
+  ADD A,L                 ; + the table's low byte
+  LD L,A                  ; L = the entry's low byte
+  JR NC,MusicDispatchJump ; no carry into H
+  INC H                   ; carry into H
 MusicDispatchJump:
   JP (HL)                 ; to the command's JP
 
@@ -593,31 +632,32 @@ LeadScale:
 ; MenuInterrupt while the tune plays (26 calls over frames 0-26 of work/deep;
 ; it writes $582A-$58F5).
 TitleColourCycle:
-  PUSH BC
-  PUSH HL
+  PUSH BC                 ; kept: from MenuInterrupt BC is the voices' frame
+                          ; counts (B' lead, C' bass)
+  PUSH HL                 ; kept: from MenuInterrupt HL is the bass position
   LD HL,$582A             ; row 1, column 10
   LD A,(TitleColourPhase)            ; the phase, 0-15
-  INC A
-  AND $0F
-  LD (TitleColourPhase),A
+  INC A                   ; the next phase
+  AND $0F                 ; 0-15
+  LD (TitleColourPhase),A            ; TitleColourPhase = the new phase
   RRCA                    ; odd: nothing this frame
-  JR C,TitleColourDone
+  JR C,TitleColourDone    ; odd phase: no paint this frame
   OR $40                  ; BRIGHT, ink = phase / 2
   LD BC,$0C07             ; 12 columns, 7 rows
 TitleColourRow:
-  PUSH BC
+  PUSH BC                 ; the counts kept
 TitleColourCell:
-  LD (HL),A
-  INC HL
-  DJNZ TitleColourCell
+  LD (HL),A               ; one attribute
+  INC HL                  ; the next cell
+  DJNZ TitleColourCell    ; 12 cells across
   LD B,A                  ; to the next row: 12 + 20
-  LD A,$14
-  CALL AddAToHL
-  LD A,B
-  POP BC
-  DEC C
-  JR NZ,TitleColourRow
+  LD A,$14                ; 20: from column 22 to column 10 of the next row
+  CALL AddAToHL           ; HL += 20
+  LD A,B                  ; A = the attribute again
+  POP BC                  ; B = 12 columns again, C the rows left
+  DEC C                   ; seven rows
+  JR NZ,TitleColourRow    ; the next row
 TitleColourDone:
-  POP HL
-  POP BC
-  RET
+  POP HL                  ; the caller's HL
+  POP BC                  ; the caller's BC
+  RET                     ; back to the menu loop or MenuInterrupt

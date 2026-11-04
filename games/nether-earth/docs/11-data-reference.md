@@ -6,12 +6,22 @@ source's (`src/game/game.ann`); the readers and writers are the routines the rec
 (`work/game`, `work/deep`, local and not in the repository).
 Written by `kit/refdocs.py`.
 
-## buffers
+## viewbuffer
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$5B00` | `ViewBuffer` | 3200 | The view's back buffer: 160 lines of 20 bytes (160 x 160 pixels). The isometric view is composed here and copied to the screen at `$4021` (character columns 1-20, rows 1-20) by CopyViewToScreen, an unrolled LDI x 20 a pixel line. Line N is at `$5B00` + 20 * N, top line first. ClearViewBuffer clears it (198 x 8 PUSHes from `$6780` down, then `$5B00-$5B1F` by LDIR; SP saved in `$FD08`), FillViewCorner lays the black triangle above the map's back edge (runs of `$FF`, 10 bytes on the top 8 lines, 2 fewer each 8 lines) and DrawViewBackground the diagonal edges from ViewEdgeA / ViewEdgeB; DrawSprite blits every sprite into it (SpriteByteLoop: AND mask, OR graphic, the rows upward, 20 bytes a line). Other uses of the same bytes: ShowRobotDesign draws the robot preview of ConstructionMenu here and copies 4 bytes x 72 lines from `$6168` to the screen at `$48E0`; NuclearFlash (the nuclear blast's flash) saves the view's 20 x 20 attributes into `$5B00-$5C8F` and puts them back; the tape save / load SaveGameBlocks / LoadGameBlocks keep the 2-byte checksum of the saved block at `$5B00` (its first tape block). In the image it is zero up to `$6731`; `$6732-$677F` hold 78 bytes of leftovers of the loading (ROM addresses, a BASIC stack copy), never read before the first clear. The font index (PrintChar, PrintBigChar: `$6680` + code x 8) starts inside this buffer: codes below `$20` would take their glyphs from its last 256 bytes; no text prints them. | `ClearViewBuffer`, `CopyViewToScreen`, `DrawSprite`, `ShowRobotDesign` | `ClearViewBuffer`, `DrawEdgeStrips`, `DrawSprite`, `FillViewCorner` |
+
+## font
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
 | `$6780` | `Font` | 512 | Font: 64 glyphs of 8 bytes, codes `$20-$5F`. Glyph = `$6680` + code * 8, top line first, 1 = ink. Codes `$20-$5F`: space, punctuation, digits, "@" is the (c) sign, A-Z, then "[", "\", "]" and an up arrow at `$5B-$5E`, `$5F` blank. Read by PrintChar (`$D4C2`: 8 lines straight to the screen, one attribute from `$FD13` to the cell at (`$FD14`)) and PrintBigChar (`$D4F5`: each line repeated `$FD16` times; with `$FD17` >= 2 (`$D50C`) each pixel doubled to 16 pixels wide). Every text of the game goes through them (PrintInline and the number printers). Image: d1-img/6780-Font.png. | `PrintBigChar`, `PrintChar` | - |
+
+## sprites
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
 | `$6980` | `SprTracksX` | 2 | Sprite 22 (even column; SpriteTable 44): tracks, moving along X (directions 0-1), 27 rows x 3 bytes. The sprites run from here to `$A569`, 88 blocks, each reached through SpriteTable (sprite id x 2 + the column parity). A block: the height in pixel lines, the width in bytes, then the rows from the BOTTOM line up, each row width x (mask, graphic) byte pairs: screen = (screen AND mask) OR graphic (SpriteByteLoop into ViewBuffer, DrawMaskedUp straight to the screen). The parity is bit 0 of the half-byte column DrawSprite computes (2 x X + Y - 24): the odd entry is the same picture shifted right by 4 pixels (one byte wider where it needs to), except where noted: for map objects the column parity is the row parity, and map types 12, 13, 14, 17, 18 use the two entries for two different pictures. Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = `$16` + PartSpriteTable[part * 4 + direction]), stacked by PartHeights. | `DrawSprite` | - |
 | `$6982` | `SprTracksXRows` | 162 | SprTracksX: 27 rows of 3 (mask, graphic) pairs, bottom line first | `DrawSprite` | - |
 | `$6A24` | `SprTracksXOdd` | 2 | Sprite 22 (odd column; SpriteTable 45): tracks, moving along X (directions 0-1), 27 rows x 4 bytes. Drawn by DrawRobotPart through DrawSprite for every part of a robot in the view (sprite id = `$16` + PartSpriteTable[part * 4 + direction]), stacked by PartHeights. Also the part's icon in ConstructionMenu (`$C86D`, drawn straight to the screen by DrawMaskedUp). | `ConstructionMenu`, `DrawSprite` | - |
@@ -192,7 +202,7 @@ Written by `kit/refdocs.py`.
 | `$A42A` | `SprBlockDottedRows` | 320 | SprBlockDotted: 40 rows of 4 (mask, graphic) pairs, bottom line first | - | - |
 | `$A56A` | `SpriteSpare` | 150 | Free space after the sprites (150 zero bytes). Zero, up to Start at `$A600`; nothing in the recordings reads or writes it. | - | - |
 
-## main
+## robotmenu
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
@@ -218,29 +228,54 @@ Written by `kit/refdocs.py`.
 | `$AAD8` | `DestroyMenuText` | 101 | SEARCH & DESTROY: SELECT TARGET, ENEMY ROBOTS, FACTORYS, WARBASES | `PrintControl`, `PrintInline` | - |
 | `$AB54` | `CaptureMenuText` | 101 | SEARCH & CAPTURE: SELECT TARGET, NEUTRAL FACTORYS, ENEMY FACTORYS, ENEMY WARBASES | `PrintControl`, `PrintInline` | - |
 | `$AC06` | `CombatMenuText` | 118 | COMBAT MODE: NUCLEAR BOMB, FIRE PHASERS, FIRE MISSILES, FIRE CANNON, MOVE ROBOT, STOP COMBAT. Printed at (4,23), attribute `$4D`, an item every 3 rows like the robot menu. | - | - |
+
+## gameturn
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
 | `$AD88` | `ClockPos` | 8 | The clock: (0,27), setting 0, attribute `$57` | `PrintControl`, `PrintInline` | - |
 | `$AE7C` | `LostText` | 51 | "YOU HAVE NO BASES LEFT", "BETTER LUCK NEXT TIME!" at (22,0), attribute `$45` | - | - |
 | `$AEB7` | `WonText` | 51 | " INSIGNIANS DESTROYED ", "    YOU HAVE WON !    " at (22,0), attribute `$45` | - | - |
+
+## ship
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
 | `$B0C1` | `BuildingTops` | 9 | The heights of the building types 0-8 for the ship and the robots. Read by ObjectTop with the type byte of the Buildings record: type 0 (the warbase pad) `$0F`, the factory types 1-6 `$16`, `$15`, `$15`, `$16`, `$16`, `$16`, types 7 and 8 `$19`. The pad's 15 is the altitude the ship sinks to on it, where ConstructionMenu opens. | `ObjectTop` | - |
+
+## world
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
 | `$B61D` | `StepDelays` | 9 | Game turns a robot step takes: rows flat, low, high ground; columns bipod, tracks, anti-grav. 6 4 3 / 8 6 3 / 9 7 4. Read by SetStepDelay; a game turn is about 10 frames, so a bipod on flat ground steps every 60 frames. | `SetStepDelay` | - |
 | `$B6B0` | `LaneSteps` | 8 | The map steps of the four directions: right +1, left -1, down +`$200`, up -`$200`. Read by ScanLane (from LD HL,`$B6AE` and two INC HL a bit of D), in the Input bit order. | `ScanLane` | - |
+
+## level
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
 | `$BDA9` | `SceneryWest` | 208 | The scenery of columns 0-255: 69 records (tile or shape, x, y) and the 0 that ends them. Read by BuildMap through PlaceScenery with D = 0. Bit 7 clear: a 2 x 2 block of that tile; bit 7 set: shape (byte & `$7F`) of ShapeTable. Tiles used: `$02-$09` and `$0D` (low features), `$11` and `$12` (free-standing blocks, height 7 and 15: the ones a nuclear blast turns to debris). Shapes 2-10. The tile heights the ship and the robots meet are the table `$D7BC`. | `PlaceScenery` | - |
-| `$BE79` | `SceneryEast` | 205 | The scenery of columns 256-511: 68 records and the 0 that ends them. Read by BuildMap through PlaceScenery with D = 1. | `PlaceScenery` | - |
+| `$BE79` | `SceneryEast` | 205 | The scenery of columns 256-511: 68 records and the 0 that ends them. Read by BuildMap through PlaceScenery with D = 1 (x + 256). The same record format as SceneryWest: bit 7 clear a 2 x 2 block of that tile (PutBlock), bit 7 set shape (byte AND `$7F`) of ShapeTable. It includes the fence posts of shape 6 at the map's right edge (503,1), (503,9). | `PlaceScenery` | - |
 | `$BF46` | `BaseListWest` | 40 | The bases of columns 0-255: 13 records (type, x, y), `$FF` ends. Type 0 a warbase, 1-6 a factory making resource 1-6 (electronics, nuclear, phasers, missiles, cannon, chassis). Here: the player's warbase at (22,9) and the factories (39,6) type 4, (53,3) 6, (62,10) 1, (79,3) 5, (97,3) 3, (125,3) 2, (140,11) 6, (160,5) 1, (180,3) 3, (217,3) 4, (227,9) 5, (241,3) 6. The (x, y) is the base's door: the cell a robot stands on to capture it (the capture tick `$AD90`) and where the enemy's new robots appear (warbases). | `PlaceBases` | - |
 | `$BF6E` | `BaseListEast` | 46 | The bases of columns 256-511: 15 records (type, x, y), `$FF` ends. The enemy's three warbases at (261,8), (369,8), (494,8) (given to the enemy by BuildMap) and twelve factories. With BaseListWest: 4 warbases and 24 factories, four of each type, the order of the bases table `$FD70`. | `PlaceBases` | - |
 | `$BF9C` | `ShapeTable` | 22 | The shapes' addresses, index 0-10 (DrawShape). 0 the warbase, 1 the factory (both drawn by PlaceBases), 2-10 the scenery shapes (a scenery record `$82-$8A`). | `TableWord` | - |
 | `$BFB2` | `ShapeWarbase` | 48 | Shape 0: the warbase, 15 blocks of tiles `$0F` (height 7) and `$10` (height 15) around the door. Steps (tile, columns, rows): a first move of (-4,-4), then blocks reaching 4 columns either side and up to 8 rows above the door. The pad, the block above the door at (x, y-4), is a tile `$10` block: altitude 15 over it is the landing height of ConstructionMenu. | `DrawShape` | - |
 | `$BFE2` | `ShapeFactory` | 18 | Shape 1: the factory, tiles `$0F` at (x-2, y) and (x+2, y), `$10` on the roof row y-2 at x-2, x, x+2. The door (x, y) stays free between the two low blocks. | `DrawShape` | - |
-| `$BFF4` | `ShapeLowTiles` | 36 | Shape 2: 4 x 3 blocks of tiles `$02-$05` (height 2) | `DrawShape` | - |
-| `$C018` | `ShapeMidTiles` | 36 | Shape 3: 4 x 3 blocks of tiles `$08-$0B` (height 6) | `DrawShape` | - |
-| `$C03C` | `ShapeTallWallV` | 12 | Shape 4: four blocks of tile `$12` (height 15) in a column | `DrawShape` | - |
-| `$C048` | `ShapeTallWallH` | 12 | Shape 5: four blocks of tile `$12` in a row | `DrawShape` | - |
+| `$BFF4` | `ShapeLowTiles` | 36 | Shape 2: 4 x 3 blocks of tiles `$02-$05` (height 2). Steps (tile, dx, dy): 12 blocks in 3 rows of 4, each block 2 cells right of the last, a row 2 cells down (-6, 2); the tiles cycle through the four stone pictures. Drawn by DrawShape for scenery records `$82` (5 placed). Ground height 2: the ship and robots pass over it. | `DrawShape` | - |
+| `$C018` | `ShapeMidTiles` | 36 | Shape 3: 4 x 3 blocks of tiles `$08-$0B` (height 6). The rock version of ShapeLowTiles: the same 3 x 4 layout with tiles `$08-$0B` (height 6). Scenery `$83`, 10 placed. | `DrawShape` | - |
+| `$C03C` | `ShapeTallWallV` | 12 | Shape 4: four blocks of tile `$12` (height 15) in a column. Steps of (0, 2): a wall 2 cells thick, 8 rows long, tile `$12` (the tall block). Scenery `$84`, 3 placed. A nuclear blast can turn its blocks to debris. | `DrawShape` | - |
+| `$C048` | `ShapeTallWallH` | 12 | Shape 5: four blocks of tile `$12` in a row. Steps of (2, 0): the same wall along X, 8 columns long. Scenery `$85`, 8 placed. | `DrawShape` | - |
 | `$C054` | `ShapeEdgeFence` | 12 | Shape 6: four blocks of tile `$15` (height 99, impassable) in a column: the fences at both ends of the map. Placed at (12,1), (12,9), (503,1), (503,9): the row of posts at the map's left and right edges. | `DrawShape` | - |
-| `$C060` | `ShapeFlatLineV` | 12 | Shape 7: tiles `$0C`, `$0D`, `$0D`, `$0E` (height 0) in a column | `DrawShape` | - |
-| `$C06C` | `ShapeFlatLineH` | 12 | Shape 8: tiles `$0C`, `$0D`, `$0D`, `$0E` in a row | `DrawShape` | - |
-| `$C078` | `ShapeLowWallH` | 12 | Shape 9: four blocks of tile `$11` (height 7) in a row | `DrawShape` | - |
-| `$C084` | `ShapeMixedWallH` | 9 | Shape 10: tiles `$11`, `$12`, `$11` in a row | `DrawShape` | - |
-| `$C08D` | `MapTablesSpare` | 115 | Unused: zero to `$C0FF` | - | - |
+| `$C060` | `ShapeFlatLineV` | 12 | Shape 7: tiles `$0C`, `$0D`, `$0D`, `$0E` (height 0) in a column. Steps of (0, 2): a trench along Y: start `$0C`, middle `$0D` twice, end `$0E` (height 0, drawn sunken). Scenery `$87`, 7 placed. | `DrawShape` | - |
+| `$C06C` | `ShapeFlatLineH` | 12 | Shape 8: tiles `$0C`, `$0D`, `$0D`, `$0E` in a row. Steps of (2, 0): the same trench along X. Scenery `$88`, 6 placed. | `DrawShape` | - |
+| `$C078` | `ShapeLowWallH` | 12 | Shape 9: four blocks of tile `$11` (height 7) in a row. Steps of (2, 0): four low blocks `$11` (height 7) in a row, a wall 8 columns long. Scenery `$89`, 10 placed. | `DrawShape` | - |
+| `$C084` | `ShapeMixedWallH` | 9 | Shape 10: tiles `$11`, `$12`, `$11` in a row. Steps of (2, 0): low, tall, low (`$11`, `$12`, `$11`), 6 columns. Scenery `$8A`, 9 placed. | `DrawShape` | - |
+| `$C08D` | `MapTablesSpare` | 115 | Unused: zero to `$C0FF`. 115 zero bytes between the level and the main menu (`$C100`); nothing reads or writes them. Room for a longer level description (src/res/map/level.txt may grow into it without moving the code). | - | - |
+
+## mainmenu
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
 | `$C109` | `MenuStartText` | 23 | "0..START GAME" at (11,8) in double height, yellow. PrintInline codes: attribute `$46`, setting `$21` (double height), position row 11 column 8, the text, setting `$00`. | `PrintControl`, `PrintInline` | - |
 | `$C128` | `MenuKeyboardText` | 15 | Two new lines and "1..KEYBOARD" | `PrintControl`, `PrintInline` | - |
 | `$C13F` | `MenuKempstonText` | 18 | Two new lines and "2..KEMPSTON J/S" | `PrintControl`, `PrintInline` | - |
@@ -266,6 +301,11 @@ Written by `kit/refdocs.py`.
 | `$C481` | `KeyNameEnter` | 6 | PrintInline text: "ENTER" | - | - |
 | `$C48F` | `KeyNameCapsShift` | 8 | PrintInline text: "CAPS SH" | - | - |
 | `$C4A0` | `KeyNameSpace` | 6 | PrintInline text: "SPACE" | - | - |
+
+## music
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
 | `$C556` | `BassCmd1` | 3 | bass command 1: JP BassGoto (`$C5A7`), the 3-byte entry 1 | - | - |
 | `$C568` | `BassCmd7` | 6 | bass commands 7 and 8: JP SetDrumTrack twice (unused, the same as command 3) | - | - |
 | `$C575` | `LeadCmd1` | 3 | lead command 1: JP LeadGoto (`$C5B0`) | - | - |
@@ -284,6 +324,11 @@ Written by `kit/refdocs.py`.
 | `$C7C5` | `LeadArpeggioA` | 13 | lead pattern: `$3E` `$52` `$7C` twice (64 frames) | - | - |
 | `$C7D2` | `LeadArpeggioB` | 13 | lead pattern: `$45` `$5D` `$8B` twice (64 frames) | - | - |
 | `$C7DF` | `LeadScale` | 65 | lead pattern: the 16-note scale `$29` up to `$BA` (high to low) twice, 4 frames a note (128 frames) | - | - |
+
+## construction
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
 | `$C8BE` | `ConstructionTitleText` | 31 | PrintInline text: "ROBOT" (double size) at row 0, "CONSTRUCTION" (double height) at row 2. Setting `$22` = double height, double width; `$21` = double height; `$00` = normal (PrintInline code 4: high nibble the height, low nibble the width). | `PrintControl`, `PrintInline` | - |
 | `$C8DD` | `PartNamesText` | 85 | PrintInline text: the part names at column 21, ELECTRONICS row 1 down to BIPOD row 22, every 3 rows | `PrintControl`, `PrintInline` | - |
 | `$C932` | `ExitStartText` | 24 | PrintInline text: "EXIT START" / "MENU ROBOT" at rows 21-22, columns 5 and 10 | `PrintControl`, `PrintInline` | - |
@@ -292,23 +337,49 @@ Written by `kit/refdocs.py`.
 | `$CAF0` | `PartCosts` | 16 | the parts' cost (bipod, tracks, anti-grav, cannon, missiles, phasers, nuclear, electronics), then the resource each takes first (an index into Resources). The second row is the resource index (6 chassis x3, 5 cannon, 4 missiles, 3 phasers, 2 nuclear, 1 electronics); what the own resource lacks comes from general (index 0). | `ConstructionMenuLoop`, `EnemyCommander` | - |
 | `$CBFF` | `TotalPosition` | 4 | PrintInline text: AT 18,12 | `PrintControl`, `PrintInline` | - |
 | `$CC10` | `MenuResourcePos` | 4 | Inline string: position (row patched, column 13). PrintInline bytes: 1 Y X with Y written by `$CC0A`, then 0 (end). | `PrintControl`, `PrintInline` | `PrintMenuResource` |
-| `$CE56` | `BuildingSprites` | 9 | The sprite of each building type. Index = the Buildings type: 0 the player's warbase pad `$2C` (a crate), factories 1 electronics `$28`, 2 nuclear `$25`, 3 phasers `$23`, 4 missiles `$20`, 5 cannon `$1D`, 6 chassis `$17` (each the robot part of its product, facing down: `$16` + the parts table `$D6C8`), 7 and 8 the flags `$2A` and `$2B`. In the deep recording at frame 20000 the type 7 / 8 records stand two columns left of a factory (four of the player's warbase pad): a factory's owner flag; 7 the player's, 8 the enemy's. | `DrawCellObject` | - |
-| `$CE5F` | `BuildingHeights` | 9 | The height each building sprite is drawn at. Type 0 at `$13`, the six factory signs at `$0F` (on the factory's roof blocks), the flags at `$1A`. | `DrawCellObject` | - |
-| `$D1C5` | `PlayScreenText` | 32 | Inline string: " DAY:" and "TIME:" at (0,22), the tall "RADAR:" at (22,0). PrintInline bytes: attribute `$57`, position (0,22), size 0, " DAY:", newline, "TIME:", position (22,0), size `$21` (2 rows high, 1 byte wide), attribute `$45`, "RADAR:". | `PrintControl`, `PrintInline` | - |
+
+## view
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
+| `$CE56` | `BuildingSprites` | 9 | The sprite of each building type. Index = the Buildings type: 0 the player's warbase pad `$2C` (a crate), factories 1 electronics `$28`, 2 nuclear `$25`, 3 phasers `$23`, 4 missiles `$20`, 5 cannon `$1D`, 6 chassis `$17` (each the robot part of its product, facing down: `$16` + the parts table `$D6C8`), 7 and 8 the flags `$2A` and `$2B`. In the deep recording at frame 20000 the type 7 / 8 records stand two columns left of a factory (four of the player's warbase pad): a factory's owner flag; 7 the player's, 8 the enemy's. The bytes: `$2C`, `$28`, `$25`, `$23`, `$20`, `$1D`, `$17`, `$2A`, `$2B`. Read by DrawBuilding. | `DrawCellObject` | - |
+| `$CE5F` | `BuildingHeights` | 9 | The height each building sprite is drawn at. Type 0 at `$13`, the six factory signs at `$0F` (on the factory's roof blocks), the flags at `$1A`: the bytes `$13`, `$0F` x 6, `$1A`, `$1A`. Read by DrawBuilding into DrawSprite's height operand. Not the heights the ship lands on: those are BuildingTops (the world module). | `DrawCellObject` | - |
+
+## screen
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
+| `$D1C5` | `PlayScreenText` | 32 | Inline string: " DAY:" and "TIME:" at (0,22), the tall "RADAR:" at (22,0). PrintInline bytes: attribute `$57`, position (0,22), size 0, " DAY:", newline, "TIME:", position (22,0), size `$21` (2 rows high, 1 byte wide), attribute `$45`, "RADAR:", 0. Bright white on red for the clock labels, bright cyan on black for RADAR:. PrintInline returns past the 0 into ShowStatusPanel: DrawPlayScreen has no RET of its own. | `PrintControl`, `PrintInline` | - |
 | `$D1EB` | `StatusPanelText` | 168 | Inline string: the STATUS and RESOURCES labels of the right panel. "  STATUS" at (3,22) attribute `$46`, "INSG  HUMN" (Insignians, the enemy; Humans, the player), then from (6,23) attribute `$45` the rows WARBASES, ELECTR'S, NUCLEAR, PHASERS, MISSILES, CANNON, CHASSIS, ROBOTS; "RESOURCES" at (15,23) attribute `$46` and from row 17 attribute `$44` GENERAL, ELECTR', NUCLEAR, PHASERS, MISSILE, CANNON, CHASSIS: the order of Resources. | `PrintControl`, `PrintInline` | - |
-| `$D29B` | `ResourceValuesPos` | 8 | Inline string: position (16,30), attribute `$4E`, size 0 | `PrintControl`, `PrintInline` | - |
-| `$D2BB` | `InsgCountsPos` | 6 | Inline string: position (6,22), attribute `$47` | `PrintControl`, `PrintInline` | - |
-| `$D2CE` | `HumnCountsPos` | 4 | Inline string: position (6,31) | `PrintControl`, `PrintInline` | - |
-| `$D2DB` | `HumnRobotsPos` | 4 | Inline string: position (13,30) | `PrintControl`, `PrintInline` | - |
-| `$D2F9` | `ClearPanelPos` | 8 | Inline string: position (2,22), size 0, attribute 0 | `PrintControl`, `PrintInline` | - |
-| `$D306` | `PanelBlankLine` | 12 | Inline string: 10 spaces, newline | `PrintInline` | - |
-| `$D3CC` | `KeyTable` | 25 | the keys, eight of 3 bytes: the port high byte, the bit mask, the key code (shown by the redefine menu) | `ControlsOptionAttr`, `ReadControls` | `MainMenuKeys` |
+| `$D29B` | `ResourceValuesPos` | 8 | Inline string: position (16,30), attribute `$4E`, size 0. The bytes 1 `$10` `$1E` (position (16,30)), 2 `$4E` (attribute bright yellow on blue), 4 0 (normal size), 0. Row 16: PrintResourceValues starts with a newline. | `PrintControl`, `PrintInline` | - |
+| `$D2BB` | `InsgCountsPos` | 6 | Inline string: position (6,22), attribute `$47`. The bytes 1 6 `$16` (position (6,22)), 2 `$47` (bright white on black), 0. | `PrintControl`, `PrintInline` | - |
+| `$D2CE` | `HumnCountsPos` | 4 | Inline string: position (6,31). The bytes 1 6 `$1F` (position (6,31)), 0; the attribute stays `$47`. | `PrintControl`, `PrintInline` | - |
+| `$D2DB` | `HumnRobotsPos` | 4 | Inline string: position (13,30). The bytes 1 `$0D` `$1E` (position (13,30)), 0. | `PrintControl`, `PrintInline` | - |
+| `$D2F9` | `ClearPanelPos` | 8 | Inline string: position (2,22), size 0, attribute 0. The bytes 1 2 `$16` (position (2,22)), 4 0 (normal size), 2 0 (attribute 0), 0. | `PrintControl`, `PrintInline` | - |
+| `$D306` | `PanelBlankLine` | 12 | Inline string: 10 spaces, newline. 10 spaces (columns 22-31), 3 (the next row, the same column), 0. | `PrintInline` | - |
+
+## controls
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
+| `$D3CC` | `KeyTable` | 24 | the keys, eight of 3 bytes: the port high byte, the bit mask, the key code (shown by the redefine menu). The bytes as built: F7 01 31 (key 1, Input bit 7, pause), DF 04 49 (I, bit 6, abort), F7 10 35 (5, bit 5, save), 7F 02 82 (SYMBOL SHIFT, bit 4, fire), FB 01 51 (Q, bit 3, up), FD 01 41 (A, bit 2, down), DF 02 4F (O, bit 1, left), DF 01 50 (P, bit 0, right). A key is LD A,(port byte) / IN A,(`$FE`) / AND mask: Z when pressed. The code byte only serves the redefine screen (it prints the key and refuses one already taken). The ninth byte, `$D3E4`, is Controls: 1 in the image (the keyboard only); MainMenu sets 1-3 by the keys 1, 2, 3. | `ReadControls` | - |
+| `$D3E4` | `Controls` | 1 | the menu's choice: 1 keyboard, 2 Kempston, 3 Interface 2 | `ControlsOptionAttr`, `ReadControls` | `MainMenuKeys` |
+
+## tables
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
 | `$D6A8` | `ViewEdgeA` | 16 | View edge, black on the left: 8 lines of 2 bytes. `$FFFF`, `$FFFC`, `$FFF0` ... `$C000`: a staircase 2 pixels a line. DrawViewBackground copies it with DrawEdgeStrips (2 bytes a line, 8 lines, then 2 bytes left) 6 times from `$5B0A`, the lower edge of the black triangle above the map, and 3 times from `$5FB2`. Image: d1-img/D6A8-ViewEdges.png. | `DrawEdgeStrips` | - |
 | `$D6B8` | `ViewEdgeB` | 16 | View edge, black on the right: 8 lines of 2 bytes. `$0003`, `$000F` ... `$FFFF`; DrawViewBackground copies it 4 times from `$6512`: with the 3 copies of ViewEdgeA at `$5FB2` it makes the black band along the map's front edge, bottom right of the view. | `DrawEdgeStrips` | - |
-| `$D6C8` | `PartSpriteTable` | 32 | Robot part sprites: 8 parts x 4 directions, sprite id - `$16`. Row = part (bipod, tracks, anti-grav, cannon, missiles, phasers, nuclear, electronics), column = direction (the number of the lowest set bit of robot +`$08`: 0 X+, 1 X-, 2 Y+, 3 Y-). Read by DirectionLoop (`$CF16`; sprite id = byte + `$16`, then DrawSprite) for robots in the view and by ConstructionMenu (`$C87B`; column 1, the odd-column sprite via SpriteTable+`$58`) for the part icons. Bipod, tracks and missiles have one picture per axis, anti-grav and nuclear one for all four. | `ConstructionMenu`, `DrawRobotPart` | - |
+| `$D6C8` | `PartSpriteTable` | 32 | Robot part sprites: 8 parts x 4 directions, sprite id - `$16`. Row = part (bipod, tracks, anti-grav, cannon, missiles, phasers, nuclear, electronics), column = direction (the number of the lowest set bit of robot +`$08`: 0 X+, 1 X-, 2 Y+, 3 Y-). Read by DirectionLoop (`$CF16`; sprite id = byte + `$16`, then DrawSprite) for robots in the view and by ConstructionMenu (`$C87B`; column 1, the odd-column sprite via SpriteTable+`$58`) for the part icons. Bipod, tracks and missiles have one picture per axis, anti-grav and nuclear one for all four. The rows, as sprite ids: bipod `$18`, `$18`, `$19`, `$19`; tracks `$16`, `$16`, `$17`, `$17`; anti-grav `$1A` x 4; cannon `$1B-$1E`; missiles `$1F`, `$1F`, `$20`, `$20`; phasers `$21-$24`; nuclear `$25` x 4; electronics `$26-$29`. Note the part order of the rows (bipod first) against the sprite order (tracks first). | `ConstructionMenu`, `DrawRobotPart` | - |
 | `$D6E8` | `SpriteTable` | 204 | Sprite pointers: 51 sprite ids x (even column, odd column). Word = the sprite block for index id x 2 + parity (DrawSprite: AND `$3F`, SRA L / ADC A,A, then TableWord). Ids 0 ship, 1 shadow, 2-18 and 21 map types (2-5 stones, 6-7 boulders, 8-11 rocks, 12-14 trench, 15-18 blocks, 21 post), 19-20 unused (they point at the ship), 22-41 robot parts (PartSpriteTable), 42 the player's flag, 43 the enemy's flag, 44 the warbase sign, 45-50 shots (cannon, missile, phaser; X then Y). ConstructionMenu reads from SpriteTable+`$58` (id 22 on). Read by TableWord (`$D34C`/`$D34E`). | `TableWord` | - |
 | `$D7B4` | `PartHeights` | 8 | Height of each robot part in units (bipod `$0B`, tracks 7, anti-grav 8, cannon 6, missiles 6, phasers 7, nuclear 7, electronics 7). Indexed by the part number. DirectionLoop (`$CF28`) adds it to the draw height after each part, so the parts stack; SpawnHeightLoop (`$B911`) sums it over robot +`$07` into +`$09`, the robot's height, when a robot is made. | `DrawRobotPart`, `EnemyCommander` | - |
 | `$D7BC` | `TerrainHeights` | 23 | Height of each map cell type (0-22). Indexed by cell AND `$1F`: 0-1 0, stones 2-5 2, boulders 6-7 3, rocks 8-11 6, trench 12-14 0, blocks 15 7, 16 15, 17 7, 18 15, 19-20 0, the post 21 99 (no flight over it), 22 0. Read only by TerrainTop (`$B093`), the height under a cell for CheckShipMove (CellTop) and for shots and robots (GroundUnderFootprint). | `TerrainTop` | - |
+
+## worldstate
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
 | `$D7D3` | `Shots` | 45 | Shots in flight: 5 records of 9 bytes. +0/+1 the map cell (+1 = 0: free), +2/+3 X, +4 Y, +5 the direction (bit 0 X+2, 1 X-2, 2 Y+2, 3 Y-2), +6 steps left (5, 7 for missiles, 1 more with electronics), +7 the weapon (1 cannon, 2 missiles, 3 phasers: a random one of the robot's weapon bits 3-5), +8 the flight height (`$0A`: a cell at least that high stops it). FindFreeShot gives a robot a free slot of two: the player's at `$D7DC` / `$D7E5`, the enemy's at `$D7EE` / `$D7F7`; no code fills the first record `$D7D3`, it is only cleared, saved and walked. FireShot fires, UpdateShot (from WorldTurn, every turn) moves and hits, DrawCellObject / DrawMoverSprite draw. Cleared by the start-up (`$A661`), saved and loaded through SaveShots. | `FindFreeShot`, `FireShot`, `MoveShot`, `NewGameSetup`, `UpdateShot` +1 | `FireShot`, `MoveShot`, `NewGameSetup`, `ShotGone`, `UpdateShot` |
 | `$D800` | `RadarOwn` | 256 | Radar bitmap with the player's robots: 16 lines of 16 bytes. One pixel line per map row, one bit per map column, 128 columns from the radar's left edge (`$FD1C`, moved by 64 columns at a time). BuildRadar builds it (a bit is set where cell AND `$1F` >= `$0F`: blocks and posts), copies it to RadarEnemy, then ToggleRadarDot XORs a 2-line marker for every robot into the player's or the enemy's copy by the side bit of +`$0A` (also when a robot moves, PlaceRobot / RobotStep). PlayInterrupt shows the two copies on alternate frames (`$FD1A`) with ShowRadar at `$50C6` (16 lines, 16 bytes) and attributes `$4D` / `$4E` in rows 22-23, so each side's robots blink in their own colour. Cleared with the map by BuildMap (`$BC87`). | `BuildMap`, `BuildRadar`, `ShowRadar`, `ToggleRadarDot` | `BuildMap`, `BuildRadar`, `ToggleRadarDot` |
 | `$D900` | `RadarEnemy` | 43 | Radar bitmap with the enemy's robots: 16 lines of 16 bytes. The copy of RadarOwn the enemy's markers are XORed into; shown with attribute `$4E`. The save stages its last 213 bytes (`$D92B-$D9FF`) as SaveShots and SaveBuildings: the radar is rebuilt afterwards. | `ShowRadar` | `BuildRadar` |
@@ -316,5 +387,10 @@ Written by `kit/refdocs.py`.
 | `$D958` | `SaveBuildings` | 168 | Save / load staging: the 56 Buildings records. 168 bytes, copied from and back to Buildings (`$FF01`) by SaveGameBlocks / LoadGameBlocks. | `ShowRadar`, `ToggleRadarDot` | `BuildRadar`, `ToggleRadarDot` |
 | `$DA00` | `Robots` | 384 | The player's robots: slots 0-23, 16 bytes a record. +0/+1 the map cell (+1 = 0: a free slot), +2/+3 X, +4 Y, +5 the last move's direction (likely), +6 a counter (unverified), +7 parts (bit 0 bipod ... 7 electronics), +8 direction (bit 0 X+, 1 X-, 2 Y+, 3 Y-), +9 height (the sum of PartHeights), +`$0A` side / menu flags (1 the ship sits on it, 2 direct control, bit 7 enemy), +`$0B` order, +`$0C` strength (`$64` at birth), +`$0D` the height its parts are drawn from (0, 2, 6 seen), +`$0E` target slot / distance, +`$0F` the move timer (RobotStep DEC, acts at 0). Walked by WorldTurn (every turn: UpdateRobot), FindRobot, BuildRadar, ConstructionMenu (a free slot of 0-23), the AI (ConsiderBuilding, TargetRobotRecord, FindNearestOpponent: the other side's array). Cleared by the start-up (`$A63A`, 768 bytes with EnemyRobots). | `BuildRadar`, `ConsiderBuilding`, `ConstructionMenu`, `CountLiveRobots`, `DrawCellObject` +26 | `ConstructionMenuSetup`, `DrawCellObject`, `MoveShot`, `NewGameSetup`, `PlaceRobot` +9 |
 | `$DB80` | `EnemyRobots` | 384 | The enemy's robots: slots 24-47, the same records. +`$0A` has bit 7 set. EnemyCommander makes one (slot = an index x 16 from here); ConsiderBuilding, TargetRobotRecord and FindNearestOpponent search this array or Robots by the side in `$FD51`. | `BuildRadar`, `ConsiderBuilding`, `CountLiveRobots`, `EnemyCommander`, `FindFreeShot` +18 | `EnemyCommander`, `MoveShot`, `NewGameSetup`, `PlaceRobot`, `RobotStep` +4 |
+
+## map
+
+| Address | Name | Bytes | What | Read by | Written by |
+| --- | --- | --- | --- | --- | --- |
 | `$DD00` | `Map` | 8154 | The map: 16 rows of 512 cells, cell = `$DD00` + `$200` x Y + X. A cell: bits 0-4 the type (0 empty; 2-18 and 21 terrain and blocks, drawn through SpriteTable; TerrainHeights), bit 5 a covered cell of a 2 x 2 object (PutBlock writes the type at the anchor and type + `$20` at the other 3: DrawCell draws only the anchor), bit 6 a robot, a building or a shot stands here (FindRobot / FindBuilding look it up), bit 7 the ship is over this cell (set where the ship moves, ShipCell; DrawCell draws the ship in the depth order of this cell, `$FD11`). Zero in the image: BuildMap clears it (`$BC7A`) and builds it from the level description at SceneryWest (objects of 2 x 2 tiles through the shape table at SceneryWest+`$1F3`). The view reads 16 rows x 32 columns from MapView (DrawMapObjects; one map row is 16 lines of 32 here); BuildRadar reads 128 columns for the radar. The last row ends at `$FCFF`, 23 bytes past the image. | `AddBuilding`, `BuildMap`, `BuildRadar`, `CanMoveDown`, `CanMoveLeft` +22 | `AddBuilding`, `BuildMap`, `DrawCell`, `DrawCellObject`, `LiftShipFromMap` +7 |
 | `$FCDA` | `MapTail` | 15 | The map's last 15 image bytes: they load over the loader N1. Row 15, columns 474-488. The game block ends here, laid over the first 15 bytes of N1 (`$FCDA-$FD8D`, the relocated LD-BYTES that is loading it), code that has already run. Zero, part of the map. Columns 489-511 (`$FCE9-$FCFF`) lie past the image, over the rest of N1. | `BuildMap`, `CanMoveDown`, `CanMoveLeft`, `CanMoveRight`, `PlaceRobot` +4 | `BuildMap`, `PlaceRobot`, `PutBlock`, `UpdateRobot` |

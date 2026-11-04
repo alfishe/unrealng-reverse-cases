@@ -1,3 +1,21 @@
+; --------------------------------------------------------------------------------------------------------------------
+; level.asm: The level: the scenery and base lists, the shape table and the 11 shapes BuildMap turns into the map
+;
+; The one battlefield of the game, as a compact description that BuildMap ($BC6F) expands into Map at every new game
+; (the map itself is zero in the image). Docs: 07-objects.md 7.5 (the map), 7.6 (buildings and capture points).
+; Resource: src/res/map/level.txt, one source for all the files of this module (sections scenery, bases, table, shape;
+; format in src/res/README.md, Level text).
+;
+; Order of use: PlaceScenery ($BCD6) walks SceneryWest (D = 0, columns 0-255) and SceneryEast (D = 1, 256-511): a 2 x
+; 2 tile block (PutBlock) or a shape of ShapeTable (DrawShape $BD61); then PlaceBases ($BCF9) walks BaseListWest /
+; BaseListEast, draws shape 0 (warbase) or 1 (factory) at each and fills the capture points (Warbases, Factories) and
+; the buildings. MarkBaseDestroyed ($BC1C) walks a base's shape again to lay debris. Never written.
+;
+; Formats: scenery record (tile or $80 + shape, x low byte, y), 0 ends; base record (type 0 warbase / 1-6 factory, x
+; low byte, y), $FF ends; ShapeTable 11 words; a shape is 3-byte steps (tile, dx, dy): tile 0 only moves, a step with
+; move (0, 0) ends the shape after its block.
+; --------------------------------------------------------------------------------------------------------------------
+
 ; The scenery of columns 0-255: 69 records (tile or shape, x, y) and the 0 that
 ; ends them
 ;
@@ -11,7 +29,10 @@ SceneryWest:
 
 ; The scenery of columns 256-511: 68 records and the 0 that ends them
 ;
-; Read by BuildMap through PlaceScenery with D = 1.
+; Read by BuildMap through PlaceScenery with D = 1 (x + 256). The same record
+; format as SceneryWest: bit 7 clear a 2 x 2 block of that tile (PutBlock), bit
+; 7 set shape (byte AND $7F) of ShapeTable. It includes the fence posts of
+; shape 6 at the map's right edge (503,1), (503,9).
 SceneryEast:
   INCBIN "res/map/scenery-east.bin",$0000,205
 
@@ -59,18 +80,32 @@ ShapeFactory:
   INCBIN "res/map/shapes/factory.bin",$0000,18
 
 ; Shape 2: 4 x 3 blocks of tiles $02-$05 (height 2)
+;
+; Steps (tile, dx, dy): 12 blocks in 3 rows of 4, each block 2 cells right of
+; the last, a row 2 cells down (-6, 2); the tiles cycle through the four stone
+; pictures. Drawn by DrawShape for scenery records $82 (5 placed). Ground
+; height 2: the ship and robots pass over it.
 ShapeLowTiles:
   INCBIN "res/map/shapes/low-tiles.bin",$0000,36
 
 ; Shape 3: 4 x 3 blocks of tiles $08-$0B (height 6)
+;
+; The rock version of ShapeLowTiles: the same 3 x 4 layout with tiles $08-$0B
+; (height 6). Scenery $83, 10 placed.
 ShapeMidTiles:
   INCBIN "res/map/shapes/mid-tiles.bin",$0000,36
 
 ; Shape 4: four blocks of tile $12 (height 15) in a column
+;
+; Steps of (0, 2): a wall 2 cells thick, 8 rows long, tile $12 (the tall
+; block). Scenery $84, 3 placed. A nuclear blast can turn its blocks to debris.
 ShapeTallWallV:
   INCBIN "res/map/shapes/tall-wall-v.bin",$0000,12
 
 ; Shape 5: four blocks of tile $12 in a row
+;
+; Steps of (2, 0): the same wall along X, 8 columns long. Scenery $85, 8
+; placed.
 ShapeTallWallH:
   INCBIN "res/map/shapes/tall-wall-h.bin",$0000,12
 
@@ -83,21 +118,36 @@ ShapeEdgeFence:
   INCBIN "res/map/shapes/edge-fence.bin",$0000,12
 
 ; Shape 7: tiles $0C, $0D, $0D, $0E (height 0) in a column
+;
+; Steps of (0, 2): a trench along Y: start $0C, middle $0D twice, end $0E
+; (height 0, drawn sunken). Scenery $87, 7 placed.
 ShapeFlatLineV:
   INCBIN "res/map/shapes/flat-line-v.bin",$0000,12
 
 ; Shape 8: tiles $0C, $0D, $0D, $0E in a row
+;
+; Steps of (2, 0): the same trench along X. Scenery $88, 6 placed.
 ShapeFlatLineH:
   INCBIN "res/map/shapes/flat-line-h.bin",$0000,12
 
 ; Shape 9: four blocks of tile $11 (height 7) in a row
+;
+; Steps of (2, 0): four low blocks $11 (height 7) in a row, a wall 8 columns
+; long. Scenery $89, 10 placed.
 ShapeLowWallH:
   INCBIN "res/map/shapes/low-wall-h.bin",$0000,12
 
 ; Shape 10: tiles $11, $12, $11 in a row
+;
+; Steps of (2, 0): low, tall, low ($11, $12, $11), 6 columns. Scenery $8A, 9
+; placed.
 ShapeMixedWallH:
   INCBIN "res/map/shapes/mixed-wall-h.bin",$0000,9
 
 ; Unused: zero to $C0FF
+;
+; 115 zero bytes between the level and the main menu ($C100); nothing reads or
+; writes them. Room for a longer level description (src/res/map/level.txt may
+; grow into it without moving the code).
 MapTablesSpare:
   DEFS $73

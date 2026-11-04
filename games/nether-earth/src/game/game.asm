@@ -48,27 +48,27 @@ Factories      EQU $FD84  ; 24 capture points of 5 bytes, the same shape
 Handler        EQU $FDFE  ; the interrupt handler: the IM 2 vector's JP at $FDFD jumps here
 Buildings      EQU $FF01  ; 56 records of 3 bytes: the map cell address, the type (0 a warbase pad, 1-6 factories, 7 the player's flag, 8 the enemy's)
   ORG $5B00
-  INCLUDE "viewbuffer.asm"
-  INCLUDE "font.asm"
-  INCLUDE "sprites.asm"
-  INCLUDE "start.asm"
-  INCLUDE "robotmenu.asm"
-  INCLUDE "gameturn.asm"
-  INCLUDE "ship.asm"
-  INCLUDE "world.asm"
-  INCLUDE "enemy.asm"
-  INCLUDE "bases.asm"
-  INCLUDE "level.asm"
-  INCLUDE "mainmenu.asm"
-  INCLUDE "music.asm"
-  INCLUDE "construction.asm"
-  INCLUDE "view.asm"
-  INCLUDE "screen.asm"
-  INCLUDE "controls.asm"
-  INCLUDE "print.asm"
-  INCLUDE "interrupts.asm"
-  INCLUDE "tables.asm"
-  INCLUDE "worldstate.asm"
-  INCLUDE "map.asm"
+  INCLUDE "viewbuffer.asm"  ; The view's back buffer at $5B00-$677F (also the tape checksum and the flash's attribute store)
+  INCLUDE "font.asm"  ; The character set: 64 glyphs of 8 x 8 pixels, codes $20-$5F
+  INCLUDE "sprites.asm"  ; The 89 sprite blocks: the ship, the map objects, the robot parts, the buildings' signs, the shots
+  INCLUDE "start.asm"  ; the start-up, the new game set-up and the play loop
+  INCLUDE "robotmenu.asm"  ; the robot menu and its submenus: orders, distance, targets, combat, direct control
+  INCLUDE "gameturn.asm"  ; the game turn: the clock, daily production, capture, the game end and the turn pacing
+  INCLUDE "ship.asm"  ; the player's ship: its move, altitude, view follow, radar window and map mark
+  INCLUDE "world.asm"  ; the world turn: each robot's step (sight, fire, steering by order, movement) and each shot's flight
+  INCLUDE "enemy.asm"  ; the computer's side: the enemy commander, its robot builds and orders, and the nuclear blast
+  INCLUDE "bases.asm"  ; the bases: counts, owners, buildings, destruction and the new game's map
+  INCLUDE "level.asm"  ; The level: the scenery and base lists, the shape table and the 11 shapes BuildMap turns into the map
+  INCLUDE "mainmenu.asm"  ; The main menu, the tape save and load of a game, the redefine-keys screen
+  INCLUDE "music.asm"  ; The menu tune: a two-voice beeper loop, the drum and the note readers in the interrupt, the title colours
+  INCLUDE "construction.asm"  ; the construction menu, robot placement on the map, the beeper tone
+  INCLUDE "view.asm"  ; the isometric view: the buffer, the painter's walk over the map, the masked sprites
+  INCLUDE "screen.asm"  ; the play screen: its frame and colours, the status panel, screen-line steps, Random
+  INCLUDE "controls.asm"  ; the controls: KeyTable and the joystick into Input, the pause
+  INCLUDE "print.asm"  ; text: the inline print routine, the font characters, big characters, the numbers
+  INCLUDE "interrupts.asm"  ; the frame interrupts of play, the radar, the shot sounds
+  INCLUDE "tables.asm"  ; Lookup tables of the view and the robots: view edges, part sprites, sprite pointers, heights
+  INCLUDE "worldstate.asm"  ; The moving things of a game: shots, the two radar pictures, the save staging, the robot slots
+  INCLUDE "map.asm"  ; The map: 16 rows of 512 cells, built at each new game, the last 15 image bytes over the loader
 
   SAVEBIN "game.bin",$5B00,$A1E9

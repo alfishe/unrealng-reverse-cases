@@ -9,11 +9,32 @@ Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py -
 
 | Module | Entries | Code entries |
 | --- | --- | --- |
-| [`main`](#main) | `$A600`-`$FCE8` | 259 of 381 |
+| [`viewbuffer`](#viewbuffer) | `$5B00`-`$677F` | 0 of 1 |
+| [`font`](#font) | `$6780`-`$697F` | 0 of 1 |
+| [`sprites`](#sprites) | `$6980`-`$A5FF` | 0 of 179 |
+| [`start`](#start) | `$A600`-`$A71F` | 4 of 4 |
+| [`robotmenu`](#robotmenu) | `$A720`-`$AD61` | 26 of 48 |
+| [`gameturn`](#gameturn) | `$AD62`-`$AF10` | 11 of 14 |
+| [`ship`](#ship) | `$AF11`-`$B0C9` | 12 of 13 |
+| [`world`](#world) | `$B0CA`-`$B7F3` | 34 of 36 |
+| [`enemy`](#enemy) | `$B7F4`-`$BB08` | 4 of 4 |
+| [`bases`](#bases) | `$BB09`-`$BDA8` | 17 of 17 |
+| [`level`](#level) | `$BDA9`-`$C0FF` | 0 of 17 |
+| [`mainmenu`](#mainmenu) | `$C100`-`$C4A6` | 39 of 64 |
+| [`music`](#music) | `$C4A7`-`$C848` | 32 of 50 |
+| [`construction`](#construction) | `$C849`-`$CCBC` | 18 of 26 |
+| [`view`](#view) | `$CCBD`-`$D0B8` | 20 of 22 |
+| [`screen`](#screen) | `$D0B9`-`$D37B` | 20 of 28 |
+| [`controls`](#controls) | `$D37C`-`$D3E4` | 2 of 4 |
+| [`print`](#print) | `$D3E5`-`$D565` | 13 of 13 |
+| [`interrupts`](#interrupts) | `$D566`-`$D6A7` | 8 of 8 |
+| [`tables`](#tables) | `$D6A8`-`$D7D2` | 0 of 6 |
+| [`worldstate`](#worldstate) | `$D7D3`-`$DCFF` | 0 of 7 |
+| [`map`](#map) | `$DD00`-`$FCE8` | 0 of 2 |
 
-## main
+## start
 
-`src/game/main.asm`
+`src/game/start.asm`
 
 ### `Start` (`$A600`)
 
@@ -70,6 +91,10 @@ Last, the game keys: Input bit 6 (key I in the default KeyTable) abandons the ga
 | Calls | `GameTurn`, `MoveShip`, `WorldTurn`, `ShipCell`, `DrawView`, `WaitKey` |
 | Reads | `$DF0E`-`$E110` (`Map`); `$E30E`-`$E710` (`Map`); `$E90E`-`$E910` (`Map`); `$EB0E`-`$EB12` (`Map`); `$ED0E`-`$ED12` (`Map`); `$EF0E`-`$F31A` (`Map`); 3 more ranges |
 
+## robotmenu
+
+`src/game/robotmenu.asm`
+
 ### `RobotMenu` (`$A720`)
 
 **landing on a robot of ours: DIRECT CONTROL, GIVE ORDERS, COMBAT MODE, LEAVE ROBOT; the order to +`$0B`**
@@ -113,7 +138,9 @@ Copies the 27-byte name of order +`$0B` from OrderNames (`$A848` + 27 x order) i
 
 **Robot menu: for ADVANCE and RETREAT, the miles under the order's name**
 
-Orders 1 and 2 only: prints at (19,25) the distance +`$0E` / 2 with two digits (PrintNumber2), between "ADVANCE" and "MILES" of the order's name. The recordings never gave these orders, so the printing code after the string (`$A7DC`) is still data in game.ctl; on the own instance an ADVANCE of 10 miles showed "10" there.
+Orders 1 and 2 only: prints at (19,25) the distance +`$0E` / 2 with two digits (PrintNumber2), into the blank middle line of the order's name ("ADVANCE", "nn", "MILES"). Other orders jump straight to RobotMenuChoose. IX = the robot record.
+
+The printing tail after the inline position is ShowMilesCode (`$A7DC`). No recording gave these orders; checked on the own instance: an ADVANCE of 10 miles showed "10" there.
 
 | | |
 | --- | --- |
@@ -127,7 +154,7 @@ Orders 1 and 2 only: prints at (19,25) the distance +`$0E` / 2 with two digits (
 
 **Code the recordings never ran: LD A,(IX+`$0E`); SRL A; CALL `$D3E5`**
 
-The miles, stored doubled in +`$0E`, printed with two digits and a leading space. Runs for orders 1 and 2 (seen on the own instance), then falls into RobotMenuChoose.
+The tail of ShowOrderMiles after its inline position: A = +`$0E` / 2 (the miles, stored doubled), printed with two digits and a leading space by PrintNumber2. Falls into RobotMenuChoose. Run for orders 1 and 2 (seen on the own instance; no recording got here).
 
 | | |
 | --- | --- |
@@ -174,7 +201,7 @@ The tail of ShowStrength after its inline string: a negative strength is shown a
 
 **Robot menu item 1: direct control, then the robot menu again**
 
-Not run in the recordings; run on the own instance.
+Calls DirectControl (drive the robot until fire, or until it is destroyed) and redraws the robot menu with RobotMenuShow. MenuCursor still holds 1, so the menu reopens on DIRECT CONTROL. A robot destroyed while driven: DirectControl returns, RobotMenuShow redraws, and ListMenu then sees +`$01` = 0 and closes the menu. Not run in the recordings; run on the own instance.
 
 | | |
 | --- | --- |
@@ -220,6 +247,8 @@ ListMenu at HL = `$5897` (row 4: item 1 at row 7), E = 6, A = 1. Item 1 sets ord
 
 **Code the recordings never ran: JR `$AA40`, past the RETREAT title**
 
+The last instruction of the ADVANCE branch of OrdersMenuChoose: after the "ADVANCE " title it jumps over RetreatTitle into DistanceMenu, the part both orders share. Not run in the recordings; seen on the own instance.
+
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
@@ -228,7 +257,7 @@ ListMenu at HL = `$5897` (row 4: item 1 at row 7), E = 6, A = 1. Item 1 sets ord
 
 **GIVE ORDERS, RETREAT: the title of the distance menu**
 
-Prints "RETREAT " at (5,23), attribute `$4F`. The bytes after the string (`$AA40-$AACE`) are the distance menu, code that no recording ran and game.ctl still holds as data (next entries).
+The RETREAT branch of OrdersMenuChoose: prints "RETREAT " at (5,23), attribute `$4F`, then falls into DistanceMenu. The order (+`$0B` = 2) is already stored.
 
 | | |
 | --- | --- |
@@ -238,7 +267,7 @@ Prints "RETREAT " at (5,23), attribute `$4F`. The bytes after the string (`$AA40
 
 **Code the recordings never ran: CALL PrintInline, the distance menu's texts**
 
-The distance menu of ADVANCE and RETREAT (run on the own instance: up 3 times, down once, fire = 10 miles, +`$0E` = 20, +`$0B` = 1). The texts: "?? MILES" under the title, SELECT DISTANCE at (9,23), "0 MILES" at (13,24).
+The distance menu of ADVANCE and RETREAT, shared by both: its texts "?? MILES" (the next line under the title), SELECT DISTANCE at (9,23), "0 MILES" at (13,24); then falls into DistanceSelect. Not run in the recordings; on the own instance: up 3 times, down once, fire = 10 miles, +`$0E` = 20, +`$0B` = 1.
 
 | | |
 | --- | --- |
@@ -248,9 +277,9 @@ The distance menu of ADVANCE and RETREAT (run on the own instance: up 3 times, d
 
 **Code the recordings never ran: choose the miles, 0-50 by 5**
 
-D = the miles, from 0. A loop of game turns (ShowStrength, WorldTurn, DrawView, MenuRadarTick, GameTurn; a destroyed robot closes the menu, JP `$A812`). Up adds 5, down takes 5 (the value must stay 0-50: CP `$33`), each change reprinted at (13,23) attribute `$46` with a beep `$14`.
+D = the miles, from 0. Each pass of DistanceLoop is one game turn (ShowStrength, WorldTurn, DrawView, MenuRadarTick, GameTurn); a destroyed robot (+`$01` = 0) closes the whole menu (JP CloseRobotMenu). Then WaitKey: fire goes to DistanceFire; up adds 5, down takes 5 (up wins when both are held); a value out of 0-50 (CP `$33`, a negative one wraps above it) is refused. A change is printed at (13,23), attribute `$46`, by DistanceShow with the click `$14`. No release wait: a held key steps once a game turn.
 
-Fire (`$AAB8`): +`$0E` = miles x 2; 0 miles turns the order back into 0 (stop); a beep, WaitRelease, back to the robot menu. Layout: `$AA6E` LD D,0; `$AA70` the turn; `$AA88` WaitKey, BIT 4; `$AA8F` the step: (Input >> 2) AND 3, down 1 -> -5, up 2 -> +5; `$AAA4` PrintInline (13,23) `$46`; `$AAAD` the number (PrintNumber2); `$AAB8` the end.
+DistanceFire: +`$0E` = miles x 2; 0 miles turns the order back into 0 (stop and defend); the beep `$78`, WaitRelease, back to the robot menu. Not run in the recordings; run on the own instance.
 
 | | |
 | --- | --- |
@@ -259,6 +288,8 @@ Fire (`$AAB8`): +`$0E` = miles x 2; 0 miles turns the order back into 0 (stop); 
 ### `DistanceShow` (`$AAAD`)
 
 **the miles in D printed (PrintNumber2), a click, back to the distance loop**
+
+The tail of DistanceSelect after the inline position (13,23): prints D, the miles, with two digits (PrintNumber2), clicks (Beep `$14`) and goes back to DistanceLoop for the next game turn. DistanceFire (`$AAB8`) follows: the end of the distance menu.
 
 | | |
 | --- | --- |
@@ -332,13 +363,13 @@ CombatMenu (`$AC00`) follows in the same block: the robot menu's item 3.
 
 **Code the recordings never ran: the combat menu**
 
-No recording entered COMBAT MODE, so these 91 bytes are still data. ListMenu on the six items (HL = `$5837`, E = 7), STOP COMBAT highlighted first (`$AC7F` A = 6); the strength printed first.
+The code after CombatMenuText: the strength, then ListMenu on the six items (HL = `$5837`, E = 7), STOP COMBAT highlighted first. Each choice comes back to CombatMenuLoop with A = the item, so the menu reopens on it.
 
-6 STOP COMBAT: back to the robot menu. 5 MOVE ROBOT: DirectControl, then the menu again on that item. 1-4 need the weapon: +`$07` rotated left item + 1 times leaves in carry bit 6 (nuclear), 5 (phasers), 4 (missiles) or 3 (cannon); without it a low buzz (`$FA`) and the menu again.
+6 STOP COMBAT: back to the robot menu. 5 MOVE ROBOT: DirectControl, then the menu again. 1-4 need the weapon: +`$07` rotated left item + 1 times leaves in carry bit 6 (nuclear), 5 (phasers), 4 (missiles) or 3 (cannon); without it the low buzz (`$FA`) and the menu again.
 
-1 NUCLEAR BOMB: IY = IX, NuclearBlast (the blast), then the menu closes (JP `$A812`). 2-4: shot record 0 at `$D7D3`; if it is free (+`$01` = 0) A = 5 - item (3 phasers, 2 missiles, 1 cannon) and FireShot launches it from the robot along its facing (+`$08`), then a view redraw and a game turn; a busy shot slot buzzes.
+1 NUCLEAR BOMB: IY = IX, NuclearBlast, then the menu closes (JP CloseRobotMenu): the bomb destroys the robot carrying it. 2-4: shot record 0 at `$D7D3` (Shots); if it is free (+`$01` = 0), A = 5 - item (3 phasers, 2 missiles, 1 cannon) and FireShot launches it from the robot along its facing (+`$08`), then DrawView and GameTurn; a shot of record 0 still flying buzzes.
 
-Seen on the own instance: FIRE CANNON on a bipod + cannon robot wrote +`$05` = 4 (the robot's facing), +`$06` = 5, +`$07` = 1, +`$08` = `$0A` into `$D7D3`; FIRE MISSILES without missiles changed nothing. Layout: `$AC7C` the strength; `$AC81` the list; `$AC93` MOVE ROBOT; `$AC99` the weapon test; `$ACA9` the bomb; `$ACB4` the shot slot; `$ACCE` the buzz.
+No recording entered COMBAT MODE. Seen on the own instance: FIRE CANNON on a bipod + cannon robot wrote +`$05` = 4 (the robot's facing), +`$06` = 5, +`$07` = 1, +`$08` = `$0A` into `$D7D3`; FIRE MISSILES without missiles changed nothing.
 
 | | |
 | --- | --- |
@@ -373,13 +404,17 @@ HL = the attribute of item 0; item A starts `$60` bytes (3 rows) further per ite
 
 **wait until no control is held**
 
-Keeps BC and HL. Uses WaitKey, so key 1 still pauses.
+Calls WaitKey until Input is 0: every control up. Used by every menu before it reads a new press, so the fire that chose an item does not choose again. Keeps BC and HL; A = 0 on return. Uses WaitKey, so key 1 still pauses.
 
 | | |
 | --- | --- |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 42 calls, 3,360 t-states own (0.00 %) |
 | Called from | `OrdersMenuChoose`, `SetOrder`, `ListMenu` |
 | Calls | `WaitKey` |
+
+## gameturn
+
+`src/game/gameturn.asm`
 
 ### `GameTurn` (`$AD62`)
 
@@ -400,11 +435,11 @@ Called once a pass by PlayLoop and by every robot menu loop (3414 times in the r
 
 **Game turn, second half: the clock print, the game end, captures, the frame pacing**
 
-Prints days (PrintNumber5) and, a line down (PrintNewline), hours "." minutes (PrintNumber2Zero, two digits with zeros). CheckGameEnd.
+The second half of GameTurn, reached after the PrintInline of ClockPos (setting the print position (0,27) and attribute `$57`). Prints the days (PrintNumber5, five digits with leading spaces) and, a line down (PrintNewline), the hours "." the minutes (PrintNumber2Zero, two digits with zeros). Then CheckGameEnd: a side with no warbase ends the game here.
 
-Captures: the 28 capture points at `$FD70` (5 bytes each: X 2 bytes, Y, owner and type, count; points 0-3 the warbases, 4-27 the factories) are checked each turn. While map bit 6 is set on a point's cell (a robot stands on the building's door) its count goes up; when it reaches 144 (`$90`) FindRobot takes the robot there and its side (+`$0A` bit 7) captures the building: GiveWarbase for a warbase, GiveFactory (point - 4) for a factory. An empty door resets the count. The recording shows every capture after a count of 121-143 at the 250-frame samples. Any robot captures, whatever its order. After a capture CountBases recounts the buildings and UpdateStatusPanel reprints the status.
+Captures: the 28 capture points at `$FD70` (5 bytes each: X 2 bytes, Y, owner and type, count; points 0-3 the warbases, 4-27 the factories) are checked each turn. While map bit 6 is set on a point's door cell (an anchor stands there) its count +4 goes up; at 144 (`$90`) FindRobot takes the robot there and its side (+`$0A` bit 7) captures the building: GiveWarbase for a warbase, GiveFactory (point - 4) for a factory. A door anchor that is no robot (probably a flying shot) captures nothing; the count still starts again. An empty door resets the count. The recording shows every capture after a count of 121-143 at the 250-frame samples. Any robot captures, whatever its order. After a capture CountBases recounts the buildings and UpdateStatusPanel reprints the status.
 
-Last, the pacing: waits until PlayInterrupt has counted 10 frames in `$FD34` since the last turn, then clears it. A turn is at least 10 frames: an hour 120, a game day 2880 (about 58 s).
+Last, the pacing (TurnPace): waits until PlayInterrupt has counted 10 frames in TurnFrames (`$FD34`) since the last turn, then clears it. A turn is at least 10 frames: an hour 120, a game day 2880 (about 58 s). Keeps IY (pushed around the loop); A, BC, DE, HL lost.
 
 | | |
 | --- | --- |
@@ -456,6 +491,8 @@ DE = the side's building counts (warbases, then the factories of electronics, nu
 
 **(HL) += A, at most 99**
 
+(HL) += A, at most 99: the resource store of ProduceSide. HL is kept, so ProduceSide walks the 7 resources with INC HL. A = the new value. Used only by ProduceSide.
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 14 calls, 602 t-states own (0.00 %) |
@@ -481,6 +518,8 @@ DE = the side's building counts (warbases, then the factories of electronics, nu
 ### `LostJump` (`$AEAF`)
 
 **Code the recordings never ran: JR `$AEEA`, the common end**
+
+Code the recordings never ran: the lost path goes on here after PrintInline has printed LostText: JR GameOverWait, the end shared with GameWon.
 
 | | |
 | --- | --- |
@@ -515,6 +554,10 @@ LD A,`$FA`; CALL `$CCAC` (the buzz); LD B,100; HALT; DJNZ (2 s); CALL WaitReleas
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
+
+## ship
+
+`src/game/ship.asm`
 
 ### `MoveShip` (`$AF11`)
 
@@ -621,6 +664,10 @@ Called by the robot menu loop (DirectControl) and ListMenu each pass, so the wor
 
 **carry: the ship may not stand at HL (X), A (Y)**
 
+Tests a place for the ship: HL = the column X, A = the row Y. C = the highest top under the ship's 2 x 2 footprint (X, Y), (X+1, Y), (X, Y-1), (X+1, Y-1): the terrain height of each cell and the top of any robot (+`$09` + +`$0D`) or building (BuildingTops) anchored there (CellTop); then ObjectTop alone on (X-1, Y-1), (X-1, Y) and, inside the map, the row Y+1 (X-1 to X+1), whose anchored objects reach into the footprint.
+
+Out: carry set when Altitude < C (the ship would be inside something there), C = the top, HL = X kept; B kept (ObjectTop saves BC), DE and A lost, IY may point at the robot or building found. Called by MoveShip for the X move (MoveShipX), the Y move (ShipCheckY) and, with the ship's own place, by Sink to get the floor under the ship.
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 377 calls, 113,477 t-states own (0.04 %) |
@@ -684,6 +731,10 @@ The common tail of TerrainTop and ObjectTop.
 | Called from | `TerrainTop` (tail), `ObjectTop` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
 | Writes | `$FFEE`-`$FFEF` (`work space $FFEE+`) |
+
+## world
+
+`src/game/world.asm`
 
 ### `WorldTurn` (`$B0CA`)
 
@@ -806,7 +857,7 @@ HL = the record's owner byte (+`$03`), C its index, A' the order. Scans the 24 r
 
 **keep candidate C when the column HL is nearer to DE' than the best BC'**
 
-The comparison step of the nearest searches (InitNearestSearch sets it up): HL' = |HL - DE'|, and when it is below BC' it becomes the best and D = C. Only the column distance counts; rows are ignored.
+The comparison step of the nearest searches (InitNearestSearch sets it up): HL' = |HL - DE'|, and when it is below BC' it becomes the best and D = C. Only the column distance counts; rows are ignored. A and HL' are lost; the main BC, E, HL and IY are kept. Called by ConsiderBuilding and FindNearestOpponent.
 
 | | |
 | --- | --- |
@@ -821,7 +872,7 @@ The comparison step of the nearest searches (InitNearestSearch sets it up): HL' 
 
 **HL = |HL - DE|**
 
-A 16-bit absolute difference (the sign of the 16-bit result decides); A = 0 on the negative path.
+HL, DE two columns (0-511). A 16-bit absolute difference: SBC HL,DE and, when the result's sign is set, 0 - HL. DE is kept; A = 0 on the positive path, the high byte's negation on the other. Used by KeepNearest and by SteerByOrder's 50-column test of a robot target.
 
 | | |
 | --- | --- |
@@ -871,9 +922,7 @@ DE' = HL (our column), BC' = `$2000` (no candidate yet), C = 0 (the first index)
 
 **D = the index of the nearest live opponent robot by column; Z when none**
 
-HL = our column, IY the robot, Side set. Runs KeepNearest over the 24 opponent records (`$DB80` the enemy's for us, `$DA00` ours for the enemy) whose +`$01` is not 0 (a dying robot counts). Out D = the slot within the side (or `$FF`), A = D + 1 (Z: none). 426 calls.
-
-Reached from RobotStep for +`$0A` = 2 (not run in the deep recording; experiment below).
+HL = our column, IY the robot, Side set. Runs KeepNearest over the 24 opponent records (`$DB80` the enemy's for us, `$DA00` ours for the enemy) whose +`$01` is not 0 (a dying robot counts). Out D = the slot within the side (or `$FF`), A = D + 1 (Z: none); IY is kept, B ends 0 and C 24 (the callers keep BC), DE' / BC' / HL' are the search's. Called by SteerByOrder (order 3) and, through FindTargetBuilding with A = 3, by EnemyFindTarget and SetOrder. 426 calls.
 
 | | |
 | --- | --- |
@@ -883,6 +932,16 @@ Reached from RobotStep for +`$0A` = 2 (not run in the deep recording; experiment
 | Calls | `KeepNearest`, `InitNearestSearch` |
 | Reads | `$DA01`-`$DCF3` (`Robots`, `EnemyRobots`); `$FD51` (`work space $FD51+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 | Writes | `$FFEE`-`$FFF1` (`work space $FFEE+`) |
+
+### `RobotDirectControl` (`$B450`)
+
+**direct control: the stick steers the robot**
+
+Reached from RobotStep for +`$0A` = 2 (not run in the deep recording; experiment below).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
 
 ### `TurnOrStep` (`$B471`)
 
@@ -1036,7 +1095,7 @@ The shared exit for an unpassable terrain type or a map edge.
 
 **Z when cell HL is passable: type below D and none of the bits E**
 
-67380 calls.
+HL a map cell, D the first terrain type the locomotion cannot enter (FreeDirections), E the blocking bits (`$40` objects, plus `$80` the ship's cell when the ship hangs lower than the robot's top). NZ through CellBlocked when the type (bits 0-4) is D or more; else A = the cell AND E (Z: free). HL kept. Used by the four CanMove probes for the cells the footprint enters; the cells only checked for anchors use AND E directly. 67380 calls.
 
 | | |
 | --- | --- |
@@ -1051,7 +1110,7 @@ The shared exit for an unpassable terrain type or a map edge.
 
 **A = the highest ground under the 2x2 footprint anchored at (HL, B)**
 
-HL a column, B a row. TerrainTop over (X, Y), (X+1, Y), (X+1, Y-1), (X, Y-1); HL and BC are kept. The robots' +`$0D` (the ground they stand on, added to their height for the ship) and the shots' wall test (MoveShot).
+HL a column, B a row. TerrainTop over (X, Y), (X+1, Y), (X+1, Y-1), (X, Y-1), the highest kept in C; HL and BC are kept, DE is lost (the last cell). The robots' +`$0D` (the ground they stand on: SetStepDelay's row, the drawing height, the ship's seat under direct control) and the shots' wall test (MoveShot against +`$08` = `$0A`).
 
 | | |
 | --- | --- |
@@ -1123,7 +1182,9 @@ Each side has two shot records of 9 bytes: ours `$D7DC` and `$D7E5`, the enemy's
 
 **launch shot IY of weapon A from robot IX in its facing direction**
 
-Called by RobotStep and by COMBAT MODE in the robot menu (DirectControl, IX = IY = the robot, record 0). Shot record (9 bytes): +`$00`/+`$01` the map cell, +`$02`/+`$03` the column, +`$04` the row, +`$05` the direction, +`$06` the steps left, +`$07` the weapon (1 cannon, 2 missiles, 3 phasers), +`$08` the ground height that stops it (`$0A`). The range is 5 steps (7 for missiles), one more with electronics; each step goes 2 cells. The first step is taken at once (MoveShot); when the shot survives it, SoundFx (`$FD53`) = 1, the firing sound. Recording: an enemy missile at frame 18680, D7EE: 7B F3 7B 00 0B 08 06 02 0A (column `$7B`, row 11, up, 6 steps left after the first turn, missiles).
+Called by RobotStep and by COMBAT MODE in the robot menu (DirectControl, IX = IY = the robot, record 0). Shot record (9 bytes): +`$00`/+`$01` the map cell, +`$02`/+`$03` the column, +`$04` the row, +`$05` the direction, +`$06` the steps left, +`$07` the weapon (1 cannon, 2 missiles, 3 phasers), +`$08` the ground height that stops it (`$0A`). The range is 5 steps (7 for missiles), one more with electronics; each step goes 2 cells. The first step is taken at once (MoveShot), from the shooter's anchor: in RobotStep the shooter is already off the map (bit 6 cleared), so it cannot hit itself.
+
+When the shot survives the first step SoundFx (`$FD53`) = 1, the firing sound; when it ends at once, MoveShot's sound (`$FC`, `$FA` or `$C8`) stays. Recording: an enemy missile at frame 18680, D7EE: 7B F3 7B 00 0B 08 06 02 0A (column `$7B`, row 11, up, 6 steps left after the first turn, missiles).
 
 | | |
 | --- | --- |
@@ -1151,7 +1212,11 @@ Clears the object bit of the shot's cell, counts +`$06` down (0: the shot is gon
 
 **move shot IY 2 cells, then hit a wall, an object or fly on**
 
-HL the column, B the row. Off the rows 0-15, or ground of height +`$08` (`$0A`) or more under its 2x2 footprint (only the types `$10` / `$12`, height 15; heights up to 7 let it pass): gone. Then the 3x3 cells around the new cell are tested for an object (bit 6); none: the shot marks its own cell with bit 6 and flies on. An object that is a live robot (either side: friendly fire is possible) takes damage ((60 - its top) / 4) * (weapon + 1), the top being +`$09` + +`$0D`, so tall robots on high ground take less: strength 0 or below makes it `$FC` (dying, UpdateRobot) with SoundFx `$C8`, else SoundFx `$FA`. Any other object (a building, another shot, a dying robot) just ends the shot (SoundFx `$FC`). The recorded hits agree: a missile (2) into a 19 high robot takes 10 * 3 = 30, a cannon shell 10 * 2 = 20.
+IY the shot record, HL its column, B its row. One step: 2 cells in +`$05`. Off the rows 0-15 (only tested for down / up; the columns are not range-checked), or ground of height +`$08` (`$0A`) or more under its 2x2 footprint (only the types `$10` / `$12`, height 15; heights up to 7 let it pass): gone (ShotGone, SoundFx `$FC`). The new position and cell go into +`$00`-+`$04`.
+
+Then the 3x3 cells around the new cell are tested for an object (bit 6), row Y-1 and Y+1 only inside the map; none: the shot marks its own cell with bit 6 and flies on. An object that is a live robot (either side: friendly fire is possible) takes damage ((60 - its top) / 4) * (weapon + 1), the top being +`$09` + +`$0D`, so tall robots on high ground take less: strength 0 or below makes it `$FC` (dying, UpdateRobot) with SoundFx `$C8`, else SoundFx `$FA`. Any other object (a building, another shot, a dying robot) just ends the shot (SoundFx `$FC`). Either way the record is freed (+`$01` = 0, the other bytes stay).
+
+The recorded hits agree: a missile (2) into a 19 high robot takes 10 * 3 = 30, a cannon shell 10 * 2 = 20. Entered from UpdateShot (falling through) and FireShot.
 
 | | |
 | --- | --- |
@@ -1163,7 +1228,7 @@ HL the column, B the row. Off the rows 0-15, or ground of height +`$08` (`$0A`) 
 
 ### `ShotGone` (`$B7EA`)
 
-**ShotGone**
+**out of range or off the map: the shot is gone with the short sound**
 
 | | |
 | --- | --- |
@@ -1171,11 +1236,21 @@ HL the column, B the row. Off the rows 0-15, or ground of height +`$08` (`$0A`) 
 | Called from | `UpdateShot` (tail) |
 | Writes | `$D7EF` (`Shots`); `$FD53` (`work space $FD53+`) |
 
+## enemy
+
+`src/game/enemy.asm`
+
 ### `EnemyCommander` (`$B7F4`)
 
 **once a game turn the computer looks at one of its 24 robot slots: builds a robot in a free one or re-thinks a robot's order**
 
-Called first by WorldTurn. A random number 0-31 picks the slot; 24-31 (a quarter of the turns) do nothing. Side = 1. The slot's record is `$DB80` + 16 * n. A live robot goes to EnemyReplan (outside this range): one with order 0 at once, any other with a 1/32 chance a turn, gets a new order (a nuclear robot destroy factories or warbases, the others one of the capture orders; destroy robots when the order finds no target). A free slot tries a build at a random enemy warbase (owner `$20` in the Warbases table): random parts (exactly one locomotion, at least one and not all four of the weapon / nuclear parts, at least 1, 2 or 3 of those parts while the computer has 0-7, 8-15 or 16-23 robots, EnemyRobots `$FD49`), paid from EnemyResources (`$FD4A`, through MenuResources and PartCosts like the player's), the shortfall of the other resources taken from the general one, at most half of it (at least 11); the robot is set up facing down, order stop, strength `$64`, +`$0A` = `$80`, height +`$09` the sum of the part heights `$D7B4` (bipod 11, tracks 7, anti-grav 8, cannon 6, missiles 6, phasers 7, nuclear 7, electronics 7). 3415 calls.
+Called first by WorldTurn. A random number 0-31 picks the slot; 24-31 (a quarter of the turns) do nothing. Side = 1. The slot's record is `$DB80` + 16 * n.
+
+A live robot goes to EnemyReplan: one with order 0 at once, any other with a 1/32 chance a turn, gets a new order (EnemyChooseOrder: a nuclear robot destroy factories or warbases, the others one of the capture orders; destroy robots when the order finds no target). Orders 4-8 are kept only while the target has changed owner and the robot stands on its door: the capture under way.
+
+A free slot tries a build at a random enemy warbase (owner `$20` in the Warbases table) whose door and the three cells below it are free of bit 6: random parts (exactly one locomotion, at least one and not all four of the weapon / nuclear parts, at least 1, 2 or 3 of those parts while the computer has 0-7, 8-15 or 16-23 robots, EnemyRobotCount `$FD49`), paid from EnemyResources (`$FD4A`, through MenuResources and PartCosts like the player's), the shortfall of the other resources taken from the general one, at most half of it (at least 11). A refused design is not retried: the slot waits for another turn.
+
+The robot is set up facing down, 3 steps, order 0, strength `$64`, +`$0A` = `$80`, +`$0E` = `$FF`, +`$0F` = 1, height +`$09` the sum of the part heights `$D7B4` (bipod 11, tracks 7, anti-grav 8, cannon 6, missiles 6, phasers 7, nuclear 7, electronics 7); then CountRobots and UpdateStatusPanel. IY is left on the slot's record; A, BC, DE, HL and the alternate HL', B' lost. 3415 calls in the deep recording.
 
 | | |
 | --- | --- |
@@ -1216,13 +1291,17 @@ Plays B samples: bit 4 (the speaker) of the ROM bytes from `$0090` on, the borde
 | --- | --- |
 | Runs | not reached in the recordings |
 
+## bases
+
+`src/game/bases.asm`
+
 ### `CountBases` (`$BB09`)
 
 **Count each side's bases: warbases and the factories of each type**
 
-Clears PlayerBases (`$FD3A`, 7) and EnemyBases (`$FD42`, 7) and goes through the 28 base records (`$FD70`, 5 bytes): a base whose +3 has bit 6 counts for the player, bit 5 for the enemy, at index +3 bits 0-2 (0 warbases, 1-6 the factories of type 1-6: electronics, nuclear, phasers, missiles, cannon, chassis, the resource each makes); neutral and destroyed (bit 7) bases do not count. The status panel shows these counts (`$D2C1`); the daily production (`$AE38`) adds 5 general per warbase and 2 per factory to its resource; a side with no warbase loses (`$AE6B`).
+Clears PlayerBuildings (`$FD3A`, 7 counts) and EnemyBuildings (`$FD42`, 7) and goes through the 28 base records (`$FD70`, 5 bytes, read at +3): a base whose +3 has bit 6 counts for the player, bit 5 for the enemy, at index +3 bits 0-2 (0 warbases, 1-6 the factories of type 1-6: electronics, nuclear, phasers, missiles, cannon, chassis, the resource each makes); neutral and destroyed (bit 7) bases do not count. PlayerRobotCount (`$FD41`) between the two count blocks is skipped. The status panel shows these counts (`$D2C1`); the daily production (`$AE38`) adds 5 general per warbase and 2 per factory to its resource; a side with no warbase loses (`$AE6B`).
 
-Called after every change of owner (the capture tick `$AE17`), after the blast (`$BA81`), and by the map builder (`$BCCA`). Ran 18 times in the deep recording.
+Called after every change of owner (the capture tick `$AE17`), after the blast (`$BA81`), and by the map builder (`$BCCA`). Ran 18 times in the deep recording. A, B, DE, HL lost.
 
 | | |
 | --- | --- |
@@ -1327,6 +1406,8 @@ Marks the warbase destroyed (`$BC1C`), removes the buildings at x-4, x and x+4 o
 
 **Base A of the table HL (+3 bytes): +3 = `$80` (destroyed, no owner); HL = its door cell**
 
+A = the base's index in its table, HL = the table's +3 bytes (Warbases+3 or Factories+3). Writes `$80` to the base's +3: destroyed, no owner, type bits 0; CountBases does not count it and no order's owner bits match it, so no order targets it again. The capture tick (CaptureLoop) does not test bit 7, though: from the code, a robot standing 144 turns on the door would give it an owner again (SetBaseOwner clears bit 7) with type 0, a warbase; never seen. Goes on into BaseCell: HL = the base's door cell, A = its row. Used by DestroyFactory and DestroyWarbase.
+
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
@@ -1423,6 +1504,8 @@ A shape is a list of 3-byte steps: a tile (0 = none) drawn as a 2 x 2 block at t
 
 **HL += C columns (signed) and B rows (signed: H += 2 * B); DE kept**
 
+HL a map cell, C the columns (signed), B the rows (signed). HL += C sign-extended, then H += 2 * B (a map row is `$200` bytes). DE kept, A lost. The move of one shape step for DrawShape and DrawRuins.
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 477 calls, 41,924 t-states own (0.02 %) |
@@ -1445,6 +1528,10 @@ Writes the cells (x, y), (x+1, y), (x, y-1), (x+1, y-1): the first with the tile
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
 | Writes | `$DD0C`-`$EEDF` (`Map`); `$EEF7`-`$F0DF` (`Map`); `$F0F7`-`$F2E1` (`Map`); `$F2F7`-`$F4E1` (`Map`); `$F4F7`-`$F8F8` (`Map`); `$F90C`-`$FAF8` (`Map`); 3 more ranges |
 
+## mainmenu
+
+`src/game/mainmenu.asm`
+
 ### `MainMenu` (`$C100`)
 
 **The main menu: clear the screen, the title, the options; Z = start a new game, NZ = a game was loaded**
@@ -1460,6 +1547,8 @@ Verified on the own instance: the menu reads 0..START GAME, 1..KEYBOARD (cyan), 
 ### `MainMenuTitle` (`$C103`)
 
 **The main menu without the clearing: the title, then the options**
+
+The entry of MainMenu after ClearScreen; nothing jumps here (MainMenuKeys key 4 jumps to MainMenu itself). Falls into MainMenuOptions.
 
 | | |
 | --- | --- |
@@ -1523,11 +1612,13 @@ Waits until no key is held (each frame cycling the title's colours, `$C820`), pl
 | Called from | `PrintInline` |
 | Calls | `MainMenuOptions` (tail), `MenuMusic`, `TitleColourCycle` |
 | Reads | `$C193`-`$C1A2` (`MainMenuKeys`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$D3E4` (`KeyTable`); `$FFFC`-`$FFFD` (`work space $FFFC+`) |
+| Writes | `$D3E4` (`Controls`); `$FFFC`-`$FFFD` (`work space $FFFC+`) |
 
 ### `PrintTitle` (`$C1E3`)
 
 **"NETHER" and "EARTH" in big white letters at the top**
+
+Prints the inline TitleText: NETHER at row 1 column 10 and EARTH at row 5 column 11, white (`$47`), each glyph 3 rows high and 2 bytes wide. The attributes of rows 1-7, columns 10-21 are recoloured every 2 frames by TitleColourCycle while the menu waits. Called by MainMenuTitle and by LoadGame (which reprints it before PRESS PLAY ON TAPE).
 
 | | |
 | --- | --- |
@@ -1560,6 +1651,8 @@ Not run in any recording; read from the code and the ROM's entry points. The blo
 
 **After LOADING ERROR!: a beep, a key, then the start again (Start)**
 
+Beep with A = `$FA` (about 530 Hz for 0.24 s, the game standing still), WaitAnyKey, then JP Start: the whole start-up again (IM 2 table, seed, the menu). The tables LoadGameBlocks has half loaded are not cleaned up: NewGameSetup rebuilds everything at the next 0.
+
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
@@ -1588,6 +1681,8 @@ Not run in any recording; read from the code and the ROM's entry points. LoadGam
 
 **DE = the 16-bit sum of the `$24D1` bytes at `$D92B` (the saved game block)**
 
+Out: DE = the plain 16-bit sum of the `$24D1` (9425) bytes `$D92B-$FDFB`, HL = `$FDFC`, BC = 0, A = 0. Keeps IX. Called by SaveGameBlocks (the sum is saved first, at `$5B00`) and by LoadGameBlocks (compared with the loaded one).
+
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
@@ -1595,6 +1690,8 @@ Not run in any recording; read from the code and the ROM's entry points. LoadGam
 ### `WaitAnyKey` (`$C325`)
 
 **Wait until no key is held, then until one is (all half rows of port `$FE`)**
+
+Reads all eight half rows at once (IN with A = 0: every address line A8-A15 low), bits 0-4 inverted: a key held. First waits for all keys up, then for any key down; returns with the key still held. No joystick, no debounce. Called by SaveGameBlocks (start the tape) and LoadError.
 
 | | |
 | --- | --- |
@@ -1604,13 +1701,15 @@ Not run in any recording; read from the code and the ROM's entry points. LoadGam
 
 **The attribute for menu option C: cyan (`$45`) when it is the current Controls, else yellow (`$46`)**
 
+C = the option's Controls value (1-3). Prints an inline attribute code: `$45` (cyan, bright) when Controls (`$D3E4`) is C, else `$46` (yellow, bright); the option text printed next takes it. Called by the three option entries before their text; A and the flags are lost.
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 6 calls, 256 t-states own (0.00 %) |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 3 calls, 128 t-states own (0.00 %) |
 | Called from | `MenuKeyboardOption`, `MenuKempstonOption`, `MenuInterface2Option` |
 | Calls | `PrintInline` |
-| Reads | `$D3E4` (`KeyTable`) |
+| Reads | `$D3E4` (`Controls`) |
 
 ### `ControlsOptionPlain` (`$C342`)
 
@@ -1823,6 +1922,10 @@ The RET after the SPACE name. The two command tables of the menu music (`$C553`,
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
+
+## music
+
+`src/game/music.asm`
 
 ### `MenuMusic` (`$C4A7`)
 
@@ -2234,11 +2337,19 @@ Counts `$FD33` 0-15 each call; on even counts it paints the attributes of rows 1
 | Reads | `$FD33` (`work space $FD33+`) |
 | Writes | `$582A`-`$5835` (screen); `$584A`-`$5855` (screen); `$586A`-`$5875` (screen); `$588A`-`$5895` (screen); `$58AA`-`$58B5` (screen); `$58CA`-`$58D5` (screen); 2 more ranges |
 
+## construction
+
+`src/game/construction.asm`
+
 ### `ConstructionMenu` (`$C849`)
 
 **landing on the warbase pad at altitude 15: choose the parts (MenuCursor, MenuParts), START ROBOT or EXIT MENU**
 
-Returns at once when all 24 player slots are used; the free slot is the preview and then the new robot; the world stands still (StartInterrupt) while it is open.
+Called by PlayLoop when the ship rests on the pad of our warbase (Altitude 15) and the door below is free. First looks for a free record among our slots 0-23 (`$DA00` + 16 x n, +`$01` = 0); with none it returns at once (IY = `$DB80`, enemy slot 24: the bug of PlayLoop's writes, docs/10-gameplay-logic.md 10.12).
+
+Otherwise IY = the free slot: the preview robot, and on START ROBOT the new one. Handler = StartInterrupt, so neither the frame count nor the radar runs; the menu loop runs no game turns, so the world stands still while the menu is open. ClearScreen, then the eight part pictures in column 16 from the bottom (bipod) to the top (electronics), each the second facing of the part's sprite cut to 24 lines and drawn upwards by DrawMaskedUp; the preview's frame attributes (`$46`, 4 x 9 cells from row 15, column 0); the texts (title, part names, EXIT / START, costs, the resource labels). Falls into ConstructionMenuSetup.
+
+Returns (after LeaveConstructionMenu) with IY = the slot; PlayLoop then writes the start state. On EXIT MENU the slot stays free (+`$01` = 0, PlaceRobot not called), so those writes do no harm.
 
 | | |
 | --- | --- |
@@ -2375,7 +2486,7 @@ The seven values at column 13: GENERAL row 9, ELECTRONICS-CHASSIS rows 11-16 (Pr
 
 **Construction menu: print the total of the costs (the tail of `$CBE0`)**
 
-Runs after the inline position string at `$CBFF` ((18,12)): E = `$20` (blank leading zeros) and PrintNumber3 prints HL, the sum of the seven MenuResources that `$CBE0` added up. 29 runs in the deep recording, one per menu redraw of the resource list.
+The tail of PrintMenuResources after the inline position (18,12): E = `$20` (blank leading zeros) and PrintNumber3 prints HL, the sum of the seven MenuResources (the TOTAL line, not the costs). 29 runs in the deep recording, one per reprint of the resources.
 
 | | |
 | --- | --- |
@@ -2478,11 +2589,17 @@ B = A is the DJNZ delay of each half-period, C = 0 counts 256 speaker toggles (b
 | Writes | `$FFF4`-`$FFF9` (`work space $FFF4+`) |
 | Ports out | `$00FE`, `$10FE` |
 
+## view
+
+`src/game/view.asm`
+
 ### `DrawView` (`$CCBD`)
 
 **Draw the isometric view: background, objects, copy to the screen**
 
 DrawViewBackground clears the buffer `$5B00` and paints the corners outside the map, DrawMapObjects draws every block, building, robot, shot and the ship, CopyViewToScreen puts the 160x160 buffer on the screen. Once per game turn: 3423 times in the 36046 frames of the deep recording (the play loop waits for 10 frames a turn, `$AE1D`). About 578000 T-states a call, 8.3 frames: the reason a turn is 10 frames.
+
+Called by PlayLoop, the menu loops that keep the game going (ListMenu's turn `$AD1F`, DirectControlLoop, DistanceLoop, CombatFireShot), the nuclear blast (`$BA6D`) and DrawPlayScreen. No HALT before the copy: the screen may tear for a frame.
 
 [Animation: `DrawView` at work](img/routines/DrawView.gif)
 
@@ -2527,7 +2644,7 @@ Cell bits: 0-4 the block type, 5 the right half of a two-cell block (nothing dra
 
 **Ship: an object at HL counts, and so do the blocks around it**
 
-Used for the ship's neighbours: if HL has bit 6 it competes (KeepLaterCell) and then falls into FindLatestBlock for the blocks around that object.
+Used for the ship's neighbours: if HL has bit 6 (a robot, a building or a shot stands there, or one was deferred there) it competes (KeepLaterCell), and then the code falls into FindLatestBlock for the blocks around that object, because the ship flies above objects and their own neighbours can cover it too. In: HL the cell, DE the latest cell so far. Out: DE the latest. HL kept.
 
 | | |
 | --- | --- |
@@ -2583,6 +2700,8 @@ The drawing order of DrawMapObjects: diagonals by falling x - y, along a diagona
 
 **Z: IY the robot record standing on map cell HL, B = 48 - its slot (slots 0-23 the player's)**
 
+Walks the 48 records of Robots (16 bytes: slots 0-23 the player's, 24-47 the enemy's) comparing the draw cell +`$00`/+`$01` with HL; a free slot has +`$01` = 0 and never matches a map address. Out: Z, IY = the record, B = 48 - slot; NZ when none. DE is kept. A robot deferred by DrawMover is found at the deferred cell, as the walk needs it. Called by DrawCellObject, PlayLoop (the robot under the ship), the captures, the shot hits, the blast and ObjectTop.
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 773 calls, 3,514,210 t-states own (1.31 %) |
@@ -2594,6 +2713,8 @@ The drawing order of DrawMapObjects: diagonals by falling x - y, along a diagona
 ### `FindBuilding` (`$CDF5`)
 
 **Z: IY the building record (Buildings) on map cell HL**
+
+Walks the 56 records of Buildings (3 bytes: the map cell address, the type) comparing the cell with HL. Out: Z, IY = the record; NZ when none. DE is kept. Called by DrawCellObject, CheckWarbasePad (the construction menu's pad), ObjectTopBuilding and RemoveBuilding.
 
 | | |
 | --- | --- |
@@ -2757,11 +2878,15 @@ The diagonal edge of the map in the view. The patterns are at `$D6A8` (ink on th
 | Reads | `$5B00`-`$677F` (`ViewBuffer`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 | Writes | `$4021`-`$5194` (screen); `$5201`-`$5294` (screen); `$5301`-`$5394` (screen); `$5401`-`$5494` (screen); `$5501`-`$5594` (screen); `$5601`-`$5694` (screen); 2 more ranges |
 
+## screen
+
+`src/game/screen.asm`
+
 ### `ClearScreen` (`$D0B9`)
 
 **Clear the screen (pixels and attributes to 0) and make the border black**
 
-Called by DrawPlayScreen, ConstructionMenu and the menu screens `$C100`, `$C34A`.
+Clears the 6912 bytes of pixels and attributes from `$4000` and sets the border black (and the speaker off) with OUT (`$FE`),0. Called by DrawPlayScreen, MainMenu `$C100`, RedefineKeys `$C34A` and OpenConstructionMenu `$C865`. Changes A, BC, DE, HL.
 
 | | |
 | --- | --- |
@@ -2792,6 +2917,8 @@ An entry only because the recording work/game started inside this LDIR; no code 
 
 ClearScreen and DrawView, then the frame of the view (22 x 22 characters from (0,0): double lines at the top and bottom, `$81` lines at the sides), the attributes: `$07` everywhere, `$78` on the frame, `$70` (yellow paper) in the view, `$71` and `$41` (blue) in its bottom right corner, the area past the map's edge. Prints PlayScreenText. Called at the start of play (`$A68E`) and after the construction menu (`$CB52`).
 
+PlayScreenText ends the code: PrintInline returns into ShowStatusPanel, so the panel's labels come with every play screen; the numbers come with the next UpdateStatusPanel. The radar appears at the next frame's PlayInterrupt.
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 52,237 t-states own (0.02 %) |
@@ -2805,7 +2932,7 @@ ClearScreen and DrawView, then the frame of the view (22 x 22 characters from (0
 
 **Clear the right panel and print the status labels**
 
-ClearPanel, then StatusPanelText. Called when the robot menu ends (`$A7CD`) and by `$AF00`.
+ClearPanel, then StatusPanelText. Called when the robot menu ends (CloseRobotMenu `$A819`) and at the game's end (GameStop `$AF07`). DrawPlayScreen falls into it after its own string, so every play screen gets the labels. The numbers come from UpdateStatusPanel.
 
 | | |
 | --- | --- |
@@ -2818,7 +2945,9 @@ ClearPanel, then StatusPanelText. Called when the robot menu ends (`$A7CD`) and 
 
 **Print the panel's numbers: resources, then both sides' buildings and robots**
 
-Skipped while `$FD39` is not 0 (the robot menu owns the panel). Prints the seven Resources at (17-23, 30) as two digits, attribute `$4E`; the enemy's building counts `$FD42` (by type 0-6) at (6-12, 22) and robots `$FD49` at (13,22); the player's counts `$FD3A` at (6-12, 31) and robots `$FD41` at (13,30), attribute `$47`. Called after the counts change (`$AD90`, `$AE38`, `$B0FA`, `$B7F4`) and on entering play (`$A62D`).
+Skipped while PanelBusy (`$FD39`) is not 0 (the robot menu owns the panel). Prints the seven Resources at (17-23, 30) as two digits, attribute `$4E`; the enemy's building counts EnemyBuildings `$FD42` (by type 0-6) at (6-12, 22) and robots EnemyRobotCount `$FD49` at (13,22); the player's counts PlayerBuildings `$FD3A` at (6-12, 31) and robots PlayerRobotCount `$FD41` at (13,30), attribute `$47`. Called after the counts change (a capture `$AE1A`, the day's production `$AE4A`, a robot removed `$B150`, an enemy robot built `$B91C`, the blast `$BA84`) and from CheckWarbasePad (`$A70A`) after a robot is built.
+
+The four parts are each a CALL PrintInline with a position string and the code after it (the entries below). PrintNewline comes before each resource, so the first lands on row 17.
 
 | | |
 | --- | --- |
@@ -2831,6 +2960,8 @@ Skipped while `$FD39` is not 0 (the robot menu owns the panel). Prints the seven
 ### `PrintResourceValues` (`$D2A3`)
 
 **The seven resource values, each on the next line (the tail of `$D293`)**
+
+Seven lines from Resources (`$FD22`: general, electronics, nuclear, phasers, missiles, cannon, chassis), each PrintNewline then PrintNumber2: rows 17-23, column 30, blank leading zero. Falls into the next position string.
 
 | | |
 | --- | --- |
@@ -2845,6 +2976,8 @@ Skipped while `$FD39` is not 0 (the robot menu owns the panel). Prints the seven
 
 **The enemy's building counts and its robots (the tail of `$D293`)**
 
+The enemy's seven building counts EnemyBuildings (`$FD42`: warbases, then the six factory kinds) as single digits down column 22, rows 6-12; then its robots EnemyRobotCount (`$FD49`, the byte after them) at (13,22) with a leading zero, over the space before ROBOTS. Falls into the player's position string.
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 6 calls, 408 t-states own (0.00 %) |
@@ -2857,6 +2990,8 @@ Skipped while `$FD39` is not 0 (the robot menu owns the panel). Prints the seven
 
 **The player's building counts (the tail of `$D293`)**
 
+The player's seven building counts PlayerBuildings (`$FD3A`) down column 31, rows 6-12. HL ends at PlayerRobotCount. Falls into the next position string.
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 6 calls, 264 t-states own (0.00 %) |
@@ -2867,6 +3002,8 @@ Skipped while `$FD39` is not 0 (the robot menu owns the panel). Prints the seven
 ### `PrintHumnRobots` (`$D2DF`)
 
 **The player's robots `$FD41`, two digits (the tail of `$D293`)**
+
+PlayerRobotCount (`$FD41`, HL from PrintHumnCounts) as two digits with a leading zero; the JP returns from UpdateStatusPanel.
 
 | | |
 | --- | --- |
@@ -2880,7 +3017,7 @@ Skipped while `$FD39` is not 0 (the robot menu owns the panel). Prints the seven
 
 **Print seven bytes from HL as single digits, one under the other**
 
-HL ends past the seventh byte (the robot count that follows). Used by PrintInsgCounts and PrintHumnCounts.
+Each byte as "0" + n (a count of 10 or more would print ":" and the characters after it; never seen, a side has at most 4 warbases), then PrintNewline: the same column one row down. HL ends past the seventh byte (the robot count that follows). Used by PrintInsgCounts and PrintHumnCounts.
 
 | | |
 | --- | --- |
@@ -2894,7 +3031,7 @@ HL ends past the seventh byte (the robot count that follows). Used by PrintInsgC
 
 **Blank the right panel: 22 lines of 10 spaces from (2,22) in attribute 0**
 
-Called by ShowStatusPanel and by the robot menus (`$A732`, `$A7CD`, `$A971`, `$AACF`, `$AB4E`, `$ABC8`, `$AF00`) before they print.
+Called by ShowStatusPanel and by the robot menus (RobotMenuShow `$A732`, CloseRobotMenu `$A812`, OrdersMenu `$A971`, OrderMove `$AA15`, TargetMenu `$AAD2`, CaptureMenu `$AB4E`, CombatMenu `$AC00`) and GameStop (`$AF04`) before they print. Attribute 0 (black on black) hides the area at once; rows 22-23 of the panel (STRENGTH) are cleared too.
 
 | | |
 | --- | --- |
@@ -2907,6 +3044,8 @@ Called by ShowStatusPanel and by the robot menus (`$A732`, `$A7CD`, `$A971`, `$A
 
 **22 lines (the tail of ClearPanel)**
 
+B = 22: rows 2-23. B survives each PrintInline: it works in the alternate registers.
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 7 t-states own (0.00 %) |
@@ -2917,6 +3056,8 @@ Called by ShowStatusPanel and by the robot menus (`$A732`, `$A7CD`, `$A971`, `$A
 ### `ClearPanelLine` (`$D303`)
 
 **Print 10 spaces and a newline**
+
+One CALL PrintInline with PanelBlankLine; the code goes on at ClearPanelNext.
 
 | | |
 | --- | --- |
@@ -2929,6 +3070,8 @@ Called by ShowStatusPanel and by the robot menus (`$A732`, `$A7CD`, `$A971`, `$A
 
 **The next of the 22 lines**
 
+DJNZ back to ClearPanelLine for the 22 rows, then the return from ClearPanel.
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 22 calls, 291 t-states own (0.00 %) |
@@ -2940,7 +3083,7 @@ Called by ShowStatusPanel and by the robot menus (`$A732`, `$A7CD`, `$A971`, `$A
 
 **Draw a masked image on the screen: C lines of B (mask, pixel) pairs from HL to DE, going up**
 
-Each line ANDs the mask and ORs the pixels; DE moves one screen line up (PrevScreenLine) after each. Used by ConstructionMenu for its pictures (56 calls).
+Each line ANDs the mask and ORs the pixels; DE moves one screen line up (PrevScreenLine) after each. The sprite format of DrawSprite without its header: the caller (PartIconDraw `$C895`, the construction menu's part pictures, 56 calls) passes B = bytes a line, C = lines, HL = the first pair of the bottom line, DE = the screen address of the bottom line. Out: HL past the picture. No clipping.
 
 | | |
 | --- | --- |
@@ -2954,6 +3097,8 @@ Each line ANDs the mask and ORs the pixels; DE moves one screen line up (PrevScr
 
 **HL = the screen address one pixel line down**
 
+The Spectrum's screen order: the line inside a character row is bits 0-2 of H, the character row bits 5-7 of L, the third bits 3-4 of H. Keeps everything but A and the flags. Used by ShowRadar, the frame of DrawPlayScreen, the big characters of PrintBigChar and ShowRobotDesign's copy (`$CC74`).
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 59,852 calls, 1,777,936 t-states own (0.66 %) |
@@ -2966,6 +3111,8 @@ Each line ANDs the mask and ORs the pixels; DE moves one screen line up (PrevScr
 
 **DE = the screen address one pixel line up**
 
+The reverse of NextScreenLine on DE: used only by DrawMaskedUp, which draws from the bottom line up. Keeps everything but A and the flags.
+
 | | |
 | --- | --- |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 1,323 calls, 40,157 t-states own (0.00 %) |
@@ -2975,7 +3122,7 @@ Each line ANDs the mask and ORs the pixels; DE moves one screen line up (PrevScr
 
 **HL = the word at HL + 2*A**
 
-The sprite table lookup of DrawSprite, also ConstructionMenu and `$BD61`.
+The sprite table lookup of DrawSprite, also ConstructionMenu (PartIconLoop `$C881`) and DrawShape (`$BD67`). A is an index 0-127 (A*2 must fit a byte). Changes A.
 
 | | |
 | --- | --- |
@@ -2990,6 +3137,8 @@ The sprite table lookup of DrawSprite, also ConstructionMenu and `$BD61`.
 
 **HL += A**
 
+A changed to the new H; BC, DE kept. Used everywhere a table is indexed by a byte (about 50 call sites).
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 41,123 calls, 1,357,173 t-states own (0.50 %) |
@@ -3002,7 +3151,7 @@ The sprite table lookup of DrawSprite, also ConstructionMenu and `$BD61`.
 
 **A = a pseudo-random byte**
 
-A 32-bit shift register at `$FD00-$FD03` (big end first): shifted left once, the new bit = bit 3 XOR bit 6 of `$FD00`. Then A = one of the four bytes, picked by the low 2 bits of the byte the previous call returned (kept in the operand `$D371`). HL is kept. 43256 calls in the deep recording: the robot AI (`$B222`, `$B0FA`), the enemy spawn `$B7F4`, the noise of SoundFx.
+A 32-bit shift register at RandomSeed `$FD00-$FD03` (big end first, seeded `$39`,`$30`,`$39`,`$30` by Start): shifted left once, the new bit = bit 3 XOR bit 6 of `$FD00`. Then the byte at the index the previous call used (kept in the operand `$D371`) gives, by its low 2 bits, the new index, and A = the byte there. HL is kept; A and the flags change. 43256 calls in the deep recording: the robot AI (`$B1AB`, `$B1F5`, `$B331`), the enemy commander `$B7F4` and its spawns, the blast's scenery, GameTurn (`$AD62`) and the noise of SoundEffect.
 
 | | |
 | --- | --- |
@@ -3012,9 +3161,15 @@ A 32-bit shift register at `$FD00-$FD03` (big end first): shifted left once, the
 | Reads | `$FD00`-`$FD03` (`work space $FD00+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 | Writes | `$D371` (`Random`); `$FD00`-`$FD03` (`work space $FD00+`); `$FFF2`-`$FFF9` (`work space $FFF2+`) |
 
+## controls
+
+`src/game/controls.asm`
+
 ### `WaitKey` (`$D37C`)
 
 **ReadControls; while key 1 (Input bit 7) is held, the pause: wait for another key**
+
+In: nothing. Out: A = Input (also in Input `$FD0C`); the flags of the last OR A. When the pause key (bit 7) is held it loops in PauseLoop until some other control is pressed with the pause key up, then falls into ReadControls again: the control that ended the pause is this turn's input. Changes A, BC, HL. Called once a turn by PlayLoop, DirectControlLoop, DistanceLoop, ListMenu, WaitRelease, GameOverKey, RobotDirectControl and ConstructionMenuLoop.
 
 | | |
 | --- | --- |
@@ -3027,18 +3182,26 @@ A 32-bit shift register at `$FD00-$FD03` (big end first): shifted left once, the
 
 **Input from the redefinable keys (KeyTable) or the joystick the menu chose (Controls)**
 
+The eight keys of KeyTable are rotated into C one by one (RL C, starting from C = 1: after the eighth the 1 drops into the carry and ends the loop), entry 0 ending in bit 7. Then the joystick by Controls (`$D3E4`): 2 Kempston (port `$1F`, bits 0-4 already right, left, down, up, fire), 3 Interface 2 (port `$EFFE`, keys 6-0, inverted and reordered), else none. Out: A = Input = joystick OR keys. Changes B, C, HL. 9814 calls in the deep recording.
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 368 calls, 259,440 t-states own (0.10 %) |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 9,814 calls, 6,969,784 t-states own (0.28 %) |
 | Called from | `WaitKey` |
-| Reads | `$D3CC`-`$D3E4` (`KeyTable`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$D3CC`-`$D3E4` (`KeyTable`, `Controls`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 | Writes | `$FD0C` (`work space $FD0C+`); `$FFF0`-`$FFFB` (`work space $FFF0+`) |
 | Ports in | `$001F`, `$7FFE`, `$DFFE`, `$F7FE`, `$FBFE`, `$FDFE` |
+
+## print
+
+`src/game/print.asm`
 
 ### `PrintNumber2` (`$D3E5`)
 
 **Print A (0-99) as two digits, a leading zero blank**
+
+In: A. HL = A, E = `$20`, then PrintTensUnits: a space for a leading zero. Used for the resources (PrintResourceValues), the construction menu values and the miles of ADVANCE / RETREAT. A value of 100 or more would print a tens "digit" above 9 (":" and on); the game caps every resource at 99.
 
 | | |
 | --- | --- |
@@ -3095,6 +3258,8 @@ The operand `$FF9C` is -100 (main.asm shows it as Buildings+155: a false symbol)
 
 **Print the tens and the units of HL**
 
+HL = the value (0-99, else the tens "digit" runs past 9: 200 prints as "D0"), E = the leading-zero flag. The tens by PrintDigit, the units always printed. The tail of PrintNumber2, PrintNumber2Zero, PrintNumber3 and PrintNumber5.
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 788 calls, 55,459 t-states own (0.02 %) |
@@ -3123,6 +3288,8 @@ Counts how often BC (a negative power of 10) can be added. A zero while E = `$20
 
 **PrintChar A with BC, DE, HL kept (EXX around)**
 
+PrintChar in the alternate registers: the caller's BC, DE, HL are kept (the number printers keep HL, E and the loop counters in them). A and the flags change.
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 3,862 calls, 135,170 t-states own (0.05 %) |
@@ -3135,6 +3302,8 @@ Counts how often BC (a negative power of 10) can be added. A zero while E = `$20
 ### `PrintInline` (`$D42D`)
 
 **print the text after the CALL: 0 ends, 1 Y X a position, 2 A an attribute, 3 the next line, 4 N a setting, else a character**
+
+In: the string after the CALL. Pops the return address, takes a byte, pushes the address one byte on, until a 0: the RET then lands after the string. Each byte goes to PrintControl (codes 1-4 and characters). Works in the alternate set (EXX at both ends), so the caller's BC, DE, HL are kept; A and the flags change. Callers also end in it with JP (PrintKeyPrompt `$C40C`), so the bytes after their own CALL are the string. About 60 call sites: every screen and panel text.
 
 | | |
 | --- | --- |
@@ -3164,6 +3333,8 @@ Counts how often BC (a negative power of 10) can be added. A zero while E = `$20
 
 **The next print row, the same column**
 
+PrintRow + 1, then SetPrintPos. Reached by code 3 inside PrintInline and called directly by the number printers' callers (GameTurnEnd `$AD96`, ResourceValueLoop, PrintDigitColumn, ReadFireKey `$C3CA`). Changes A, BC, HL.
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 554 calls, 29,916 t-states own (0.01 %) |
@@ -3176,6 +3347,8 @@ Counts how often BC (a negative power of 10) can be added. A zero while E = `$20
 ### `SetPrintPos` (`$D493`)
 
 **Print position: B = row, C = column -> `$FD04` the screen address, `$FD14` the attribute address**
+
+In: B = row 0-23, C = column 0-31. PrintAddr = `$4000` + (B AND `$18`) * 256 + (B AND 7) * 32 + C, the top line of the character cell; PrintAttrAddr = `$5800` + 32 * B + C. Changes A, HL. Used by SetPosition and PrintNewline.
 
 | | |
 | --- | --- |
@@ -3214,9 +3387,15 @@ Width 1: each glyph line written `$FD16` times (2: a character two rows high, "R
 | Reads | `$6780`-`$6787` (`Font`); `$67F0`-`$6807` (`Font`); `$6850`-`$6857` (`Font`); `$6888`-`$68CF` (`Font`); `$68E8`-`$68FF` (`Font`); `$6910`-`$692F` (`Font`); 2 more ranges |
 | Writes | `$4003`-`$47F4` (screen); `$4868`-`$4F94` (screen); `$50C0`-`$57E5` (screen); `$5803`-`$580C` (screen); `$5823`-`$5875` (screen); `$58AB`-`$58B4` (screen); 7 more ranges |
 
+## interrupts
+
+`src/game/interrupts.asm`
+
 ### `PlayInterrupt` (`$D566`)
 
 **the interrupt handler of play, one a frame**
+
+Installed by EnterPlay (`$A694`) and when the construction menu ends (`$CBA2`). Keeps AF, BC, DE, HL (not IX, IY, the alternate set: the routines it calls do not use them). TurnFrames + 1 (TurnPace `$AE1D` waits for 10, then zeroes it); RadarPhase toggled, ShowRadar with RadarOwn / `$4D` on phase 0, RadarEnemy / `$4E` on phase 1; SoundFx not 0: counted on (a tone ends at `$80`, a noise when it wraps to 0) and SoundEffect plays this frame's step. Ends in StartInterrupt's EI; RET. 34645 entries in the deep recording, one a frame of play.
 
 | | |
 | --- | --- |
@@ -3229,6 +3408,8 @@ Width 1: each glyph line written `$FD16` times (2: a character two rows high, "R
 ### `StartInterrupt` (`$D59C`)
 
 **the interrupt handler while the start-up runs**
+
+Also the end of PlayInterrupt. Installed alone by Start (FillVectorTable `$A614`), GameStop (`$AF0A`), SaveGame (`$C28D`), the end of MenuMusic (`$C520`) and OpenConstructionMenu (`$C85E`): no frame counting, no radar, so the world stands while it is in place.
 
 | | |
 | --- | --- |
@@ -3255,6 +3436,8 @@ The interrupt alternates the two pictures `$D800` (terrain + the player's robots
 
 **Write C into 16 bytes from HL**
 
+In: HL, C. Out: HL past the 16 bytes, B = 0. The tail of ShowRadar (rows 22 and 23 of the radar).
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 7,344 calls, 3,143,232 t-states own (1.17 %) |
@@ -3264,9 +3447,11 @@ The interrupt alternates the two pictures `$D800` (terrain + the player's robots
 
 ### `SoundEffect` (`$D5C4`)
 
-**The interrupt's sound: A = `$FD53` (1-`$7F` a falling tone, `$FD-$FF` noise)**
+**The interrupt's sound: A = `$FD53` (1-`$7F` a falling tone, `$C8-$FF` noise)**
 
-A positive: a tone of ~500 / (A+2) pulses with a delay of A between them, the levels taken from bit 4 of the ROM bytes from `$0000` (a rough noise), so the pitch falls as A counts up each frame. `$FD53` = 1 when a shot is fired (`$B709`). A negative: 30 random speaker levels (Random): the crackle of a hit. The shot code sets `$FC` (a miss: 3 frames), `$FA` (a hit: 5 frames) or `$C8` (a robot destroyed: 55 frames). Seen in the deep recording at frames 18680-18712: 1, 2, ... `$16`, then `$FA-$FF`.
+Called by PlayInterrupt with A = SoundFx after its step, the flags of A set (never 0 here). A positive (2-`$7F`, a shot fired: SoundFx 1 counted on): C = 500 / (A+2) + 1 pulses, B = A the delay between them; each pulse's level is bit 4 of the next ROM byte from `$0000` (a rough noise), so the bursts get sparser and lower as A counts up each frame: a falling sweep over 126 frames, 3.2 ms at A = 2, about 2 ms from A = 40. A negative (`$C8-$FF`): 30 random speaker levels (Random): the crackle of a hit.
+
+The shot code sets 1 when a shot is fired (`$B709`), `$FC` a miss (3 frames), `$FA` a hit (5 frames), `$C8` a robot destroyed (55 frames, the explosion). Seen in the deep recording at frames 18680-18712: 1, 2, ... `$16`, then `$FA-$FF`. Changes A, BC, DE, HL. The border stays black (bits 0-2 of the OUT are 0).
 
 | | |
 | --- | --- |

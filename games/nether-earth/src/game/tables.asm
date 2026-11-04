@@ -1,3 +1,16 @@
+; --------------------------------------------------------------------------------------------------------------------
+; tables.asm: Lookup tables of the view and the robots: view edges, part sprites, sprite pointers, heights
+;
+; Small constant tables the view and the movement code index by type. Docs: 06-rendering.md 6.1 (edges), 6.5
+; (SpriteTable), 6.6 (PartSpriteTable, PartHeights), 07-objects.md 7.3 / 7.5 (TerrainHeights). Resource: ViewEdgeA /
+; ViewEdgeB are src/res/gfx/view-edges.png (see src/res/README.md); the others stay in the source as rows the code
+; reads field by field.
+;
+; Readers: DrawViewBackground / DrawEdgeStrips (the edges), DirectionLoop and ConstructionMenu (PartSpriteTable),
+; DrawSprite through TableWord (SpriteTable, index id x 2 + parity), DirectionLoop and SpawnHeightLoop (PartHeights),
+; TerrainTop (TerrainHeights). None is written.
+; --------------------------------------------------------------------------------------------------------------------
+
 ; View edge, black on the left: 8 lines of 2 bytes
 ;
 ; $FFFF, $FFFC, $FFF0 ... $C000: a staircase 2 pixels a line.
@@ -24,6 +37,11 @@ ViewEdgeB:
 ; ($C87B; column 1, the odd-column sprite via SpriteTable+$58) for the part
 ; icons. Bipod, tracks and missiles have one picture per axis, anti-grav and
 ; nuclear one for all four.
+;
+; The rows, as sprite ids: bipod $18, $18, $19, $19; tracks $16, $16, $17, $17;
+; anti-grav $1A x 4; cannon $1B-$1E; missiles $1F, $1F, $20, $20; phasers
+; $21-$24; nuclear $25 x 4; electronics $26-$29. Note the part order of the
+; rows (bipod first) against the sprite order (tracks first).
 PartSpriteTable:
   DEFB $02,$02,$03,$03
   DEFB $00,$00,$01,$01

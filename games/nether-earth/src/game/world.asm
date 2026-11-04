@@ -1,3 +1,41 @@
+; --------------------------------------------------------------------------------------------------------------------
+; world.asm: the world turn: each robot's step (sight, fire, steering by order, movement) and each shot's flight
+;
+; The war itself: once a game turn WorldTurn lets the enemy commander act, then moves every live robot record and
+; every flying shot. The player never fights directly; everything a robot does on its own is here. Docs: 07-objects.md
+; 7.1-7.4 (the records, the step, the shots) and 10-gameplay-logic.md 10.4-10.6 (a robot's turn, the orders, shooting
+; and damage).
+;
+; Robots, in calling order: WorldTurn -> UpdateRobot (dying blink, RobotDestroyed) -> RobotStep: the step delay,
+; FreeDirections (the probes CanMoveRight / Left / Down / Up over TestCell), then RobotDirectControl, or SpotEnemies
+; (ScanLane, LaneSteps) and fire (FindFreeShot, FireShot), or SteerByOrder (the targets: TargetRobotRecord,
+; FindNearestOpponent, TargetBuildingTable, FindTargetBuilding, ConsiderBuilding; the shared InitNearestSearch /
+; KeepNearest / ColumnDistance; the aim RobotAim, RobotLeanTo, PickOneDirection) -> RobotMove: TurnOrStep
+; (StepPosition, GroundUnderFootprint, MoveShip under direct control), SetStepDelay (StepDelays), PlaceRobot.
+;
+; Shots: WorldTurn -> UpdateShot -> MoveShot (2 cells a turn, the wall test with GroundUnderFootprint, the 3x3 hit
+; test, the damage); FireShot runs the first MoveShot at once. ShotGone / MoveShotGone free the record and set
+; SoundFx.
+;
+; Data it works on, all outside the module: the robot records Robots $DA00 (ours, slots 0-23) and EnemyRobots $DB80
+; (the computer's, 24-47), 16 bytes each (+$00/+$01 cell, +$02/+$03 X, +$04 Y, +$05 course, +$06 steps left, +$07
+; parts, +$08 facing, +$09 height, +$0A control, +$0B order, +$0C strength, +$0D ground, +$0E target, +$0F delay);
+; Shots $D7D3, 5 x 9 bytes; the capture points Warbases $FD70 / Factories $FD84 (5 bytes, read from the owner byte
+; +3); the map $DD00 (16 rows of $200 cells: bits 0-4 the terrain type, 6 an object's anchor, 7 the ship). It owns
+; only the tables StepDelays $B61D and LaneSteps $B6B0.
+;
+; Conventions: a direction is one Input bit (1 right, 2 left, 4 down, 8 up) and a set of directions is a nibble in C
+; or E. Side $FD51 (0 ours, 1 the enemy's) is set by RobotStep and decides which tables the searches read. A robot is
+; 2x2 cells but only its anchor (X, Y) carries bit 6, so the probes look for anchors one cell around the cells
+; entered. The map is the only index: a robot or a shot that meets bit 6 asks FindRobot whose anchor it is.
+;
+; Tricks: ScanLane loads HL with LaneSteps - 2 (assembled as ScanLaneDone+1) and steps it by D's bit; the nearest
+; searches keep the best distance and our column in the shadow registers (BC', DE'); a target index $FF read as a
+; building record falls into the IM 2 table ($FD bytes, owner bits $E0) and so counts as "find another";
+; FindTargetBuilding leaves HL past the table, which makes one wrong aim after a new building target (the bug at
+; SteerByOrder).
+; --------------------------------------------------------------------------------------------------------------------
+
 ; one game turn of the world: the enemy commander, every robot, every shot
 ;
 ; Called once a game turn by the play loop (PlayLoop) and by the menus
@@ -10,31 +48,34 @@
 ; 0 ($D7D3) is the one the player fires from the robot menu's COMBAT MODE
 ; (DirectControl -> FireShot); the robots use records 1-4 (FindFreeShot).
 WorldTurn:
-  CALL EnemyCommander
+  CALL EnemyCommander     ; first the computer: one of its slots built or
+                          ; re-ordered
   LD B,$30                ; the 48 robot records
-  LD IY,Robots
+  LD IY,Robots            ; IY = the first record, slot 0 (ours; 24-47 the
+                          ; enemy's follow at $DB80)
 WorldTurnRobotLoop:
   PUSH BC                 ; a live robot (+$01 = the high byte of its cell, 0 =
                           ; free)
-  LD A,(IY+$01)
-  OR A
-  CALL NZ,UpdateRobot
-  LD DE,$0010
-  ADD IY,DE
-  POP BC
-  DJNZ WorldTurnRobotLoop
+  LD A,(IY+$01)           ; +$01 = 0: a free slot
+  OR A                    ; (test it)
+  CALL NZ,UpdateRobot     ; a live robot takes its turn
+  LD DE,$0010             ; the next 16-byte record
+  ADD IY,DE               ; (IY on it)
+  POP BC                  ; the record count back
+  DJNZ WorldTurnRobotLoop ; all 48
   LD IY,Shots             ; the 5 shot records
-  LD B,$05
+  LD B,$05                ; record 0 the player's COMBAT MODE shot, 1-2 ours,
+                          ; 3-4 the enemy's
 WorldTurnShotLoop:
   PUSH BC                 ; a live shot
-  LD A,(IY+$01)
-  OR A
-  CALL NZ,UpdateShot
-  LD DE,$0009
-  ADD IY,DE
-  POP BC
-  DJNZ WorldTurnShotLoop
-  RET
+  LD A,(IY+$01)           ; +$01 = 0: no shot in this record
+  OR A                    ; (test it)
+  CALL NZ,UpdateShot      ; a flying shot takes its step
+  LD DE,$0009             ; the next 9-byte record
+  ADD IY,DE               ; (IY on it)
+  POP BC                  ; the record count back
+  DJNZ WorldTurnShotLoop  ; all 5
+  RET                     ; the turn is over
 
 ; one robot's game turn: dying, destroyed or a step of its AI
 ;
@@ -45,57 +86,58 @@ WorldTurnShotLoop:
 ; shots see it only every other turn; 0, the robot is destroyed
 ; (RobotDestroyed). 49165 calls.
 UpdateRobot:
-  LD A,(IY+$0C)
-  OR A
+  LD A,(IY+$0C)           ; A = the strength +$0C
+  OR A                    ; zero, positive or negative (dying)?
   JR Z,RobotDestroyed     ; strength 0: destroyed
   JP P,RobotStep          ; strength positive: alive
   INC (IY+$0C)            ; dying: one turn closer to 0
-  LD L,(IY+$00)
-  LD H,(IY+$01)
+  LD L,(IY+$00)           ; HL = the robot's anchor cell ...
+  LD H,(IY+$01)           ; ... (high byte)
   AND $01                 ; the old value's bit 0: the object bit flickers
-  JR NZ,RobotDyingShow
-  RES 6,(HL)
-  RET
+  JR NZ,RobotDyingShow    ; odd old value: show the robot this turn
+  RES 6,(HL)              ; even: hidden from sight and shots this turn
+  RET                     ; done: a dying robot does nothing else
 RobotDyingShow:
   SET 6,(HL)              ; odd: the object is there
-  RET
+  RET                     ; done
 RobotDestroyed:
   LD L,(IY+$00)           ; remove the robot: a wreck on bare ground, the dot,
                           ; the slot, the counts
-  LD H,(IY+$01)
+  LD H,(IY+$01)           ; (the cell's high byte)
   RES 6,(HL)              ; no object on its cell any more
   LD A,(HL)               ; OR of the four footprint cells (X, Y), (X+1, Y),
                           ; (X+1, Y-1), (X, Y-1)
-  INC HL
-  OR (HL)
-  DEC H
-  DEC H
-  OR (HL)
-  DEC HL
-  OR (HL)
-  INC H
-  INC H
+  INC HL                  ; (X+1, Y)
+  OR (HL)                 ; (OR it in)
+  DEC H                   ; one row up ...
+  DEC H                   ; ... (rows are $200 apart): (X+1, Y-1)
+  OR (HL)                 ; (OR it in)
+  DEC HL                  ; (X, Y-1)
+  OR (HL)                 ; (OR it in)
+  INC H                   ; back down to the anchor row ...
+  INC H                   ; ... HL = (X, Y) again for PutBlock
   AND $3F                 ; bits 0-5: anything but bare type-0 ground?
-  JR NZ,RobotRemove
+  JR NZ,RobotRemove       ; something there already (terrain or a block part):
+                          ; no wreck
   CALL Random             ; bare ground: a wreck, terrain type 6 or 7 at random
-  AND $01
-  ADD A,$06
+  AND $01                 ; 0 or 1 ...
+  ADD A,$06               ; ... + 6: the wreck types 6 / 7 (height 3)
   CALL PutBlock           ; PutBlock: a 2x2 terrain feature of type A at HL
                           ; (the anchor A, the other three cells A + $20)
 RobotRemove:
   LD L,(IY+$02)           ; erase its radar dot: layer B = +$0A bit 7 (0 ours,
                           ; 1 the enemy's)
-  LD H,(IY+$03)
-  LD C,(IY+$04)
-  LD A,(IY+$0A)
-  RLCA
-  AND $01
-  LD B,A
-  CALL ToggleRadarDot
+  LD H,(IY+$03)           ; HL = its column, C = its row ...
+  LD C,(IY+$04)           ; (the row)
+  LD A,(IY+$0A)           ; B = the radar layer: bit 7 of +$0A ...
+  RLCA                    ; (to bit 0)
+  AND $01                 ; (only it)
+  LD B,A                  ; (B = 0 ours $D800, 1 the enemy's $D900)
+  CALL ToggleRadarDot     ; XOR the dot away
   LD (IY+$01),$00         ; the slot is free
   CALL CountRobots        ; recount: OurRobots $FD41, EnemyRobots $FD49
   CALL UpdateStatusPanel  ; and the status panel
-  RET
+  RET                     ; the robot is gone
 
 ; a live robot: wait for its step delay, then look, fire, steer and move one
 ; step
@@ -123,108 +165,115 @@ RobotRemove:
 ; match FireShot and MoveShot (robot 2 hit twice by an enemy missile, 100 -> 70
 ; -> 40; robot 25 hit by our cannon, 100 -> 80 -> 60 -> 40).
 RobotStep:
-  LD A,(IY+$0A)
+  LD A,(IY+$0A)           ; A = the control byte +$0A: 0 AI, 1 the player on
+                          ; it, 2 direct control, $80 the enemy's
   CP $01                  ; the player sits on it: frozen while the robot menu
                           ; is open
-  RET Z
+  RET Z                   ; frozen: no delay counted, nothing moves
   RLCA                    ; Side: 0 ours, 1 the enemy's
-  AND $01
-  LD (Side),A
+  AND $01                 ; (bit 7 of +$0A now in bit 0)
+  LD (Side),A            ; Side = 0 / 1, read by the target searches
   DEC (IY+$0F)            ; the step delay
-  RET NZ
+  RET NZ                  ; not yet: wait another turn
   LD L,(IY+$00)           ; time to step: off the map
-  LD H,(IY+$01)
-  RES 6,(HL)
-  PUSH HL
+  LD H,(IY+$01)           ; (the cell's high byte)
+  RES 6,(HL)              ; the anchor's object bit off: no one sees it during
+                          ; the step (nor its own shot hits it)
+  PUSH HL                 ; keep the cell for FreeDirections
   LD L,(IY+$02)           ; erase its radar dot
-  LD H,(IY+$03)
-  LD C,(IY+$04)
-  LD A,(IY+$0A)
-  RLCA
-  AND $01
-  LD B,A
-  CALL ToggleRadarDot
-  POP HL
+  LD H,(IY+$03)           ; (HL = its column)
+  LD C,(IY+$04)           ; C = its row
+  LD A,(IY+$0A)           ; B = the radar layer, +$0A bit 7 ...
+  RLCA                    ; (to bit 0)
+  AND $01                 ; (only it)
+  LD B,A                  ; (0 ours, 1 the enemy's)
+  CALL ToggleRadarDot     ; the old dot off (PlaceRobot plots the new one)
+  POP HL                  ; HL = the anchor cell again
   CALL FreeDirections     ; C = the free directions from this cell
-  LD A,(IY+$0A)
+  LD A,(IY+$0A)           ; A = the control byte again
   CP $02                  ; under direct control?
-  JP Z,RobotDirectControl
-  PUSH BC
+  JP Z,RobotDirectControl ; yes: the player's stick steers
+  PUSH BC                 ; keep C, the free directions
   CALL SpotEnemies        ; E = the directions with an opponent in sight
-  POP BC
-  LD A,E
-  OR A
+  POP BC                  ; C back
+  LD A,E                  ; A = the directions with an opponent ...
+  OR A                    ; ... none?
   JR Z,RobotNoEnemy       ; nobody in sight
   AND (IY+$08)            ; an opponent straight ahead?
-  JR Z,RobotTurnToEnemy
+  JR Z,RobotTurnToEnemy   ; no: only to a side
   AND C                   ; move on ahead if free (else stand)
-  LD (IY+$05),A
-  PUSH IX
-  PUSH IY
+  LD (IY+$05),A           ; +$05 = the facing if free, else 0: stand
+  PUSH IX                 ; keep the caller's IX
+  PUSH IY                 ; keep the robot record (IY)
   PUSH IY                 ; IX = the shooter, IY = the free shot record
-  POP IX
-  CALL FindFreeShot
+  POP IX                  ; (IX = the robot)
+  CALL FindFreeShot       ; IY = a free shot record of the robot's side, Z when
+                          ; one is free
   JR NZ,RobotNoShot       ; both of our side's shots are flying
   CALL Random             ; each weapon (bits 3 cannon, 4 missiles, 5 phasers)
                           ; fires this turn at even odds
-  AND $38
-  AND (IX+$07)
+  AND $38                 ; (the three weapon bits of a random byte)
+  AND (IX+$07)            ; (those the robot carries)
   JR Z,RobotNoShot        ; no weapon chosen this turn
   LD C,$06                ; the highest chosen weapon: phasers 3, missiles 2,
                           ; cannon 1
 RobotWeaponPick:
   DEC C                   ; count the rotations until the weapon bit leaves
-  RLCA
-  JR NC,RobotWeaponPick
-  LD A,C
+  RLCA                    ; (the next bit into carry)
+  JR NC,RobotWeaponPick   ; until the first set bit (the highest weapon) leaves
+  LD A,C                  ; A = the weapon: 1 cannon, 2 missiles, 3 phasers
   CALL FireShot           ; launch the shot
-  POP IY
-  POP IX
+  POP IY                  ; IY = the robot again
+  POP IX                  ; the caller's IX back
   LD (IY+$05),$00         ; the shot costs the step: stand, decide again next
                           ; step
-  LD (IY+$06),$01
-  JR RobotMove
+  LD (IY+$06),$01         ; one step on this course: the next step decides
+                          ; again
+  JR RobotMove            ; (a standing robot: TurnOrStep does nothing)
 RobotNoShot:
   POP IY                  ; no shot: walk on ahead
-  POP IX
-  LD (IY+$06),$01
-  JR RobotMove
+  POP IX                  ; the caller's IX back
+  LD (IY+$06),$01         ; one step on: ahead (+$05 set above) or standing
+                          ; when blocked
+  JR RobotMove            ; walk
 RobotTurnToEnemy:
   LD C,E                  ; opponents to a side: face one of them
-  LD B,C
+  LD B,C                  ; B = the set to pick from
   CALL CountDirections    ; several: one at random
-  CALL NZ,PickOneDirection
-  LD (IY+$05),C
-  LD (IY+$06),$02
-  JP RobotMove
+  CALL NZ,PickOneDirection ; (more than one: PickOneDirection)
+  LD (IY+$05),C           ; +$05 = that side: TurnOrStep turns to face it (a
+                          ; turn needs no free cell)
+  LD (IY+$06),$02         ; two steps on that course
+  JP RobotMove            ; turn
 RobotNoEnemy:
   DEC (IY+$06)            ; nobody in sight: keep the course while it lasts and
                           ; is free
-  JP M,RobotNewCourse
-  LD A,(IY+$05)
-  AND C
-  JR NZ,RobotMove
+  JP M,RobotNewCourse     ; spent: a new course
+  LD A,(IY+$05)           ; the course ...
+  AND C                   ; ... still free?
+  JR NZ,RobotMove         ; yes: on along it
 RobotNewCourse:
   CALL Random             ; a new course for 3-6 steps
-  AND $03
-  ADD A,$03
-  LD (IY+$06),A
+  AND $03                 ; (0-3 ...)
+  ADD A,$03               ; (... + 3)
+  LD (IY+$06),A           ; +$06 = the steps of the new course (SteerByOrder
+                          ; may set its own)
   CALL CountDirections    ; at least one free direction: ask the order
-  CALL NC,SteerByOrder
+  CALL NC,SteerByOrder    ; (carry: boxed in, C = 0: stand)
   LD A,(IY+$01)           ; the robot blew itself up (a nuclear charge,
                           ; NuclearBlast)
-  OR A
-  RET Z
-  LD (IY+$05),C
-; This entry point is used by the routine at FindNearestOpponent.
+  OR A                    ; (+$01 = 0 when NuclearBlast freed the slot)
+  RET Z                   ; gone: nothing to move or place
+  LD (IY+$05),C           ; +$05 = the new course (0: stand)
+; This entry point is used by the routine at RobotDirectControl.
 RobotMove:
   LD A,(IY+$05)           ; turn or step in +$05, the new delay, back on the
                           ; map
-  LD L,(IY+$02)
-  LD H,(IY+$03)
-  LD B,(IY+$04)
-  CALL TurnOrStep
-  CALL SetStepDelay
+  LD L,(IY+$02)           ; HL = the column ...
+  LD H,(IY+$03)           ; ... (high byte)
+  LD B,(IY+$04)           ; B = the row
+  CALL TurnOrStep         ; a turn, a step or nothing
+  CALL SetStepDelay       ; +$0F = the turns to the next step
   JP PlaceRobot           ; PlaceRobot: store x / y / the cell, set bit 6, plot
                           ; the dot
 
@@ -263,190 +312,201 @@ RobotMove:
 ; (the JP at $FDFD and Handler: row $66, column $C300): one step of a wrong
 ; course, corrected on the next decision.
 SteerByOrder:
-  LD B,C
+  LD B,C                  ; B = the free directions, kept for the random picks
   LD A,(IY+$0B)           ; the order
-  OR A
-  JR NZ,SteerMoveOrders
+  OR A                    ; 0 stop?
+  JR NZ,SteerMoveOrders   ; no: an order that moves
   LD C,A                  ; 0 stop: stand
-  RET
+  RET                     ; C = 0
 SteerMoveOrders:
   CP $03                  ; orders 1-8: advance / retreat, destroy robots, the
                           ; building orders
-  JP C,RobotLeanTo
+  JP C,RobotLeanTo        ; 1-2: lean right / left (A AND 3 is the direction)
   JR NZ,SteerBuildingOrder ; 4-8: the building orders
   LD A,(IY+$0E)           ; 3 destroy robots: a target already?
-  OR A
-  JP M,SteerNewRobotTarget
+  OR A                    ; +$0E = $FF: none
+  JP M,SteerNewRobotTarget ; none: find one
   CALL TargetRobotRecord  ; HL = the target robot's record
-  INC HL
+  INC HL                  ; HL = its +$01
   LD A,(HL)               ; dead (its +$01 = 0)?
-  OR A
-  JR Z,SteerNewRobotTarget
-  INC HL
-  LD A,(HL)
-  INC HL
-  LD H,(HL)
-  LD L,A
-  LD E,(IY+$02)
-  LD D,(IY+$03)
+  OR A                    ; (+$01 = 0?)
+  JR Z,SteerNewRobotTarget ; dead (slot free): find another (a dying one is
+                           ; still a target)
+  INC HL                  ; HL = its +$02
+  LD A,(HL)               ; its column (low)
+  INC HL                  ; (+$03)
+  LD H,(HL)               ; (high)
+  LD L,A                  ; HL = its column
+  LD E,(IY+$02)           ; DE = our column ...
+  LD D,(IY+$03)           ; ... (high byte)
   CALL ColumnDistance     ; HL = |its column - ours|
-  LD A,H
-  OR A
-  JR NZ,SteerNewRobotTarget
-  LD A,L
+  LD A,H                  ; 256 columns or more ...
+  OR A                    ; (test the high byte)
+  JR NZ,SteerNewRobotTarget ; ... too far: another target
+  LD A,L                  ; A = the distance
   CP $32                  ; less than 50 columns: chase it
-  JR C,SteerAtRobot
+  JR C,SteerAtRobot       ; yes: aim at it
 SteerNewRobotTarget:
   LD L,(IY+$02)           ; find the nearest live opponent
-  LD H,(IY+$03)
-  LD (IY+$0E),$FF
-  PUSH BC
-  CALL FindNearestOpponent
-  POP BC
+  LD H,(IY+$03)           ; (HL = our column)
+  LD (IY+$0E),$FF         ; no target while the search runs
+                          ; (FindNearestOpponent does not read it)
+  PUSH BC                 ; keep B, the free set
+  CALL FindNearestOpponent ; D = the nearest opponent's slot in its side ($FF
+                           ; none), Z: none
+  POP BC                  ; B back (the flags stay)
   LD (IY+$0E),D           ; +$0E = its index, $FF none
   JP Z,PickOneDirection   ; nobody: wander
 SteerAtRobot:
   CALL TargetRobotRecord  ; DE = the target's column, B = our row - its row
-  INC HL
-  INC HL
-  LD E,(HL)
-  INC HL
-  LD D,(HL)
-  INC HL
-  LD A,(IY+$04)
-  SUB (HL)
-  LD B,A
-  LD L,(IY+$02)
-  LD H,(IY+$03)
-  XOR A
+  INC HL                  ; (+$01)
+  INC HL                  ; HL = its +$02
+  LD E,(HL)               ; E = its column (low) ...
+  INC HL                  ; (+$03)
+  LD D,(HL)               ; ... D (high)
+  INC HL                  ; HL = its +$04, the row
+  LD A,(IY+$04)           ; our row ...
+  SUB (HL)                ; ... - its row
+  LD B,A                  ; B = the row difference (positive: we are below it)
+  LD L,(IY+$02)           ; HL = our column ...
+  LD H,(IY+$03)           ; ... (high byte)
+  XOR A                   ; A = 0 and no carry for SBC
   SBC HL,DE               ; HL = our column - its column
-  LD D,A
-  JR Z,RobotAimVertical
-  JR RobotAim
+  LD D,A                  ; D = 0: no wanted direction yet (the flags stay)
+  JR Z,RobotAimVertical   ; same column: only the vertical part
+  JR RobotAim             ; else the horizontal part first
 SteerBuildingOrder:
   CALL TargetBuildingTable ; HL = the owner byte of the first record, E = the
                            ; owner the order wants
   LD A,(IY+$0E)           ; HL = the target record's owner byte (5 bytes a
                           ; record)
-  LD B,A
-  ADD A,A
-  ADD A,A
-  ADD A,B
-  CALL AddAToHL
-  LD A,(HL)
-  AND $E0
+  LD B,A                  ; B = the index
+  ADD A,A                 ; (2 x)
+  ADD A,A                 ; (4 x)
+  ADD A,B                 ; (5 x)
+  CALL AddAToHL           ; HL += 5 x index ($FF lands in the IM 2 table, $FD:
+                          ; owner bits $E0, never wanted)
+  LD A,(HL)               ; its owner byte ...
+  AND $E0                 ; ... bits 5-7: $20 the enemy's, $40 ours, $80
+                          ; destroyed, 0 neutral
   CP E                    ; still a building we want?
-  JR Z,SteerAtBuilding
+  JR Z,SteerAtBuilding    ; yes: aim at it
   LD A,(IY+$0B)           ; no: find another
-  PUSH BC
-  LD L,(IY+$02)
-  LD H,(IY+$03)
-  CALL FindTargetBuilding
-  POP BC
+  PUSH BC                 ; keep C, the free set
+  LD L,(IY+$02)           ; HL = our column ...
+  LD H,(IY+$03)           ; ... (high byte)
+  CALL FindTargetBuilding ; D = the new target, NZ: found (HL is left past the
+                          ; table)
+  POP BC                  ; C back (B is no longer the free set; the aim
+                          ; reloads it from C)
   JR NZ,SteerNewBuilding  ; found one
   LD C,$00                ; none left: stand
   BIT 7,(IY+$0A)          ; ours: stand and wait
-  RET Z
+  RET Z                   ; (our robot: the order stays)
   LD (IY+$0B),$03         ; the enemy's: hunt robots instead
-  RET
+  RET                     ; (C = 0: stands this step)
 SteerNewBuilding:
   LD (IY+$0E),D           ; another target building found: +$0E = its index
 SteerAtBuilding:
   DEC HL                  ; B = our row - the building's row, DE = its column
-  LD A,(IY+$04)
-  SUB (HL)
-  LD B,A
-  DEC HL
-  LD D,(HL)
-  DEC HL
-  LD E,(HL)
-  LD L,(IY+$02)
-  LD H,(IY+$03)
-  XOR A
+  LD A,(IY+$04)           ; our row ...
+  SUB (HL)                ; ... - the record's row (the door's)
+  LD B,A                  ; B = the row difference
+  DEC HL                  ; HL = +$01
+  LD D,(HL)               ; D = its column (high) ...
+  DEC HL                  ; (+$00)
+  LD E,(HL)               ; ... E (low)
+  LD L,(IY+$02)           ; HL = our column ...
+  LD H,(IY+$03)           ; ... (high byte)
+  XOR A                   ; A = 0 and no carry for SBC
   SBC HL,DE               ; HL = our column - its column
-  LD D,A
-  JR Z,RobotAimVertical
+  LD D,A                  ; D = 0: no wanted direction yet
+  JR Z,RobotAimVertical   ; same column: go for the door's own row
   LD A,B                  ; columns differ: aim at the row 3 below it
-  SUB $03
-  LD B,A
+  SUB $03                 ; (the row aimed at: the door's + 3)
+  LD B,A                  ; B = the new row difference
 RobotAim:
   LD A,H                  ; horizontal: 2 left when we are right of it, 1 right
                           ; when left
-  RRCA
-  AND $03
-  XOR $02
-  LD D,A
+  RRCA                    ; (H's bits 1-2 to bits 0-1: H is $FF / $FE when we
+                          ; are left of it, 0 / 1 when right)
+  AND $03                 ; (3 when we are left of it, 0 when right)
+  XOR $02                 ; (1 right, 2 left)
+  LD D,A                  ; D = the horizontal wanted direction
 RobotAimVertical:
   LD A,B                  ; vertical: 8 up when we are below it, 4 down when
                           ; above
-  OR A
-  JR Z,RobotAimCheck
-  RRCA
-  RRCA
-  AND $0C
-  XOR $08
-  OR D
-  LD D,A
+  OR A                    ; same row?
+  JR Z,RobotAimCheck      ; yes: no vertical part
+  RRCA                    ; (B's bits 4-5, its sign for B in -16..15 ...)
+  RRCA                    ; (... rotated to bits 2-3)
+  AND $0C                 ; ($0C when we are above it, 0 below)
+  XOR $08                 ; (4 down, 8 up)
+  OR D                    ; with the horizontal part ...
+  LD D,A                  ; ... D = the wanted directions
 RobotAimCheck:
   LD A,D                  ; D = the wanted directions: 0 means on the target
-  OR A
-  JR NZ,RobotAimMove
+  OR A                    ; any?
+  JR NZ,RobotAimMove      ; yes: move toward it
   LD C,A                  ; on the target: stand
-  LD A,(IY+$0B)
-  CP $04
-  JR C,RobotFaceDown
+  LD A,(IY+$0B)           ; the order ...
+  CP $04                  ; ... below 4 (only 3 gets here)?
+  JR C,RobotFaceDown      ; destroy robots: just face down
   CP $06                  ; destroy factories / warbases: the nuclear charge
-  JP C,NuclearBlast
+  JP C,NuclearBlast       ; 4-5: blow up here (the robot and what is around it)
 RobotFaceDown:
   LD A,(IY+$08)           ; on the target: face down and stand (destroy orders
                           ; blast first)
-  CP $04
-  RET Z
+  CP $04                  ; facing down already?
+  RET Z                   ; yes: stand (C = 0)
   LD C,$04                ; else turn down and stay so
-  LD (IY+$06),$FF
-  RET
+  LD (IY+$06),$FF         ; the turn's INC makes it 0: the next step decides
+                          ; again
+  RET                     ; C = 4: TurnOrStep turns it down
 RobotAimMove:
   LD A,L                  ; off the target: L = |the column difference|
-  OR A
-  JP P,RobotAimColumns
-  NEG
-  LD L,A
+  OR A                    ; (L's sign: only the low byte of the difference is
+                          ; used)
+  JP P,RobotAimColumns    ; positive: A = L
+  NEG                     ; negative: A = -L
+  LD L,A                  ; L = |the difference| (modulo 256)
 RobotAimColumns:
   CP $08                  ; 8 or more columns away: lean horizontally, else
                           ; pick among the free wanted directions
-  LD B,C
-  LD A,D
-  JR NC,RobotLeanTo
+  LD B,C                  ; B = the free directions again
+  LD A,D                  ; A = the wanted directions
+  JR NC,RobotLeanTo       ; far: lean as an advance does
   AND C                   ; the wanted directions that are free
   JR Z,PickOneDirection   ; none: any free direction
-  LD B,A
+  LD B,A                  ; B = the free wanted ones
   AND $03                 ; only vertical ones: pick one
-  JR Z,PickOneDirection
+  JR Z,PickOneDirection   ; (no horizontal part)
   LD A,L                  ; the columns agree: pick one
-  OR A
-  JR Z,PickOneDirection
+  OR A                    ; (a column difference of 0 modulo 256)
+  JR Z,PickOneDirection   ; (no horizontal course to keep)
   DEC A                   ; keep a horizontal course for |dx| - 1 steps
-  LD (IY+$06),A
-  JR PickOneDirection
+  LD (IY+$06),A           ; +$06 = the steps of that course
+  JR PickOneDirection     ; pick one of the free wanted ones
 RobotLeanTo:
   AND $03                 ; D = the horizontal part (1 right, 2 left), E = all
                           ; but the opposite one
-  LD D,A
-  XOR $FC
-  LD E,A
-  LD A,C
+  LD D,A                  ; D = right or left
+  XOR $FC                 ; (1 -> $FD, 2 -> $FE: every bit but the opposite
+                          ; one)
+  LD E,A                  ; E = the directions allowed when the lean fails
+  LD A,C                  ; the free directions ...
   AND D                   ; wanted direction blocked: any free one
-  JR Z,PickOneDirection
+  JR Z,PickOneDirection   ; (blocked)
   LD C,D                  ; C = the wanted direction
   CALL Random             ; taken with a 3/4 chance (two random bits)
-  AND D
-  RET NZ
-  CALL Random
-  AND D
-  RET NZ
+  AND D                   ; (its bit in a random byte)
+  RET NZ                  ; set: take it (1/2)
+  CALL Random             ; a second try ...
+  AND D                   ; (its bit again)
+  RET NZ                  ; set: take it (another 1/4)
   LD A,B                  ; else: among the free ones but the opposite
-  AND E
-  LD B,A
+  AND E                   ; (the free set ...)
+  LD B,A                  ; (... without the opposite: B is not 0, it holds D)
 
 ; C = one direction bit picked at random from the set in B
 ;
@@ -455,16 +515,16 @@ RobotLeanTo:
 ; of SteerByOrder's branches and used by RobotTurnToEnemy for several
 ; opponents.
 PickOneDirection:
-  LD C,B
+  LD C,B                  ; C = the whole set
 PickOneLoop:
   CALL Random             ; C AND a random byte
-  AND C
-  LD C,A
-  CALL CountDirections
+  AND C                   ; (C AND it)
+  LD C,A                  ; C = the narrowed set
+  CALL CountDirections    ; how many are left?
   RET Z                   ; exactly one: done
   JR NC,PickOneLoop       ; still several: narrow on
   LD C,B                  ; none left: from the whole set again
-  JR PickOneLoop
+  JR PickOneLoop          ; try again
 
 ; D = the nearest building the order wants and no teammate is after; Z when
 ; none
@@ -479,29 +539,29 @@ PickOneLoop:
 ; Recording: 112 calls (also from the enemy's order choice at $B989 and
 ; SetOrder).
 FindTargetBuilding:
-  CP $03
-  JP Z,FindNearestOpponent
-  PUSH AF
+  CP $03                  ; 3 destroy robots ...
+  JP Z,FindNearestOpponent ; ... is a search for a robot
+  PUSH AF                 ; (keep A and the flags ...)
   EX AF,AF'               ; A' = the order, for ConsiderBuilding
-  POP AF
+  POP AF                  ; (... A stays the order too)
   CALL InitNearestSearch  ; the search: DE' = our column, BC' = the best
                           ; distance ($2000), C = the index, D = $FF
   CALL TargetBuildingTable ; HL = the first record's owner byte, B = the
                            ; records, E = the owner wanted
 FindTargetLoop:
   LD A,(HL)               ; owner bits 5-7 the ones wanted?
-  AND $E0
-  CP E
-  CALL Z,ConsiderBuilding
+  AND $E0                 ; (bits 5-7)
+  CP E                    ; (the owner the order wants?)
+  CALL Z,ConsiderBuilding ; yes: a candidate unless a teammate has it
   LD A,L                  ; next record (L only: the tables sit inside page
                           ; $FD)
-  ADD A,$05
-  LD L,A
-  INC C
-  DJNZ FindTargetLoop
+  ADD A,$05               ; (5 bytes a record)
+  LD L,A                  ; HL = the next owner byte
+  INC C                   ; C = its index
+  DJNZ FindTargetLoop     ; all records of the table
   LD A,D                  ; A = the index + 1: Z when none was found
-  INC A
-  RET
+  INC A                   ; ($FF + 1 = 0: Z)
+  RET                     ; D = the index, Z when none
 
 ; offer building C to KeepNearest unless a teammate with the same order already
 ; targets it
@@ -512,95 +572,101 @@ FindTargetLoop:
 ; (+$00/+$01) goes to KeepNearest. The robot that asks is in the list too; its
 ; +$0E holds its old target (or $FF).
 ConsiderBuilding:
-  PUSH IY
-  PUSH BC
-  PUSH DE
-  EX AF,AF'
+  PUSH IY                 ; keep the asking robot ...
+  PUSH BC                 ; ... the loop count and index ...
+  PUSH DE                 ; ... and the search result D, the owner E
+  EX AF,AF'               ; A = the order (from A')
   LD E,A                  ; E = the order
-  EX AF,AF'
+  EX AF,AF'               ; A' = the order again
   LD IY,Robots            ; our side's robots
-  LD A,(Side)
-  OR A
-  JR Z,ConsiderBuildingStart
-  LD IY,EnemyRobots
+  LD A,(Side)            ; Side ...
+  OR A                    ; (0 ours?)
+  JR Z,ConsiderBuildingStart ; ours: $DA00
+  LD IY,EnemyRobots       ; the enemy's: $DB80
 ConsiderBuildingStart:
   LD B,$18                ; IY = the side's 24 robot records
 ConsiderBuildingLoop:
   LD A,(IY+$01)           ; a live robot ...
-  OR A
-  JR Z,ConsiderBuildingNext
+  OR A                    ; (+$01 = 0: a free slot)
+  JR Z,ConsiderBuildingNext ; free: next
   LD A,(IY+$0B)           ; ... with the same order ...
-  CP E
-  JR NZ,ConsiderBuildingNext
+  CP E                    ; (the same order?)
+  JR NZ,ConsiderBuildingNext ; no: next
   LD A,(IY+$0E)           ; ... after the same building?
-  CP C
-  JR Z,ConsiderBuildingTaken
+  CP C                    ; (the same target index?)
+  JR Z,ConsiderBuildingTaken ; yes: someone is after it already
 ConsiderBuildingNext:
   PUSH DE                 ; the next 16-byte robot record
-  LD DE,$0010
-  ADD IY,DE
-  POP DE
-  DJNZ ConsiderBuildingLoop
-  POP DE
-  POP BC
-  POP IY
+  LD DE,$0010             ; (16 bytes a record)
+  ADD IY,DE               ; IY = the next record
+  POP DE                  ; (E = the order again)
+  DJNZ ConsiderBuildingLoop ; all 24 of the side
+  POP DE                  ; D, E back (the best so far, the owner)
+  POP BC                  ; B, C back (count, index)
+  POP IY                  ; IY = the asking robot
   PUSH HL                 ; nobody: HL = the building's column
-  DEC HL
-  DEC HL
-  LD A,(HL)
-  DEC HL
-  LD L,(HL)
-  LD H,A
-  CALL KeepNearest
-  POP HL
-  RET
+  DEC HL                  ; (+$02)
+  DEC HL                  ; (+$01: X high)
+  LD A,(HL)               ; A = X high
+  DEC HL                  ; (+$00)
+  LD L,(HL)               ; L = X low
+  LD H,A                  ; HL = the door's column
+  CALL KeepNearest        ; nearer than the best: D = C
+  POP HL                  ; HL = the owner byte again for the table walk
+  RET                     ; back to FindTargetLoop
 ConsiderBuildingTaken:
   POP DE                  ; taken: skip it
-  POP BC
-  POP IY
-  RET
+  POP BC                  ; B, C back
+  POP IY                  ; IY = the asking robot
+  RET                     ; not offered
 
 ; keep candidate C when the column HL is nearer to DE' than the best BC'
 ;
 ; The comparison step of the nearest searches (InitNearestSearch sets it up):
 ; HL' = |HL - DE'|, and when it is below BC' it becomes the best and D = C.
-; Only the column distance counts; rows are ignored.
+; Only the column distance counts; rows are ignored. A and HL' are lost; the
+; main BC, E, HL and IY are kept. Called by ConsiderBuilding and
+; FindNearestOpponent.
 KeepNearest:
-  PUSH HL
-  EXX
-  POP HL
+  PUSH HL                 ; the candidate's column ...
+  EXX                     ; (the search registers: DE' our column, BC' the
+                          ; best)
+  POP HL                  ; ... into HL'
   CALL ColumnDistance     ; the distance
-  LD A,H
-  CP B
-  JR C,KeepNearestNew
-  JR NZ,KeepNearestDone
-  LD A,L
-  CP C
-  JR NC,KeepNearestDone
+  LD A,H                  ; the high bytes first:
+  CP B                    ; (below the best?)
+  JR C,KeepNearestNew     ; yes: nearer
+  JR NZ,KeepNearestDone   ; above: farther
+  LD A,L                  ; equal: the low bytes
+  CP C                    ; (below the best?)
+  JR NC,KeepNearestDone   ; not below: keep the old best
 KeepNearestNew:
   LD B,H                  ; nearer: BC = the new best distance, D = its index
-  LD C,L
-  EXX
-  LD D,C
-  RET
+  LD C,L                  ; (low byte)
+  EXX                     ; back to the main registers
+  LD D,C                  ; D = the candidate's index
+  RET                     ; done
 KeepNearestDone:
   EXX                     ; back to the main registers
-  RET
+  RET                     ; done
 
 ; HL = |HL - DE|
 ;
-; A 16-bit absolute difference (the sign of the 16-bit result decides); A = 0
-; on the negative path.
+; HL, DE two columns (0-511). A 16-bit absolute difference: SBC HL,DE and, when
+; the result's sign is set, 0 - HL. DE is kept; A = 0 on the positive path, the
+; high byte's negation on the other. Used by KeepNearest and by SteerByOrder's
+; 50-column test of a robot target.
 ColumnDistance:
-  XOR A
-  SBC HL,DE
-  RET P
+  XOR A                   ; A = 0, no borrow
+  SBC HL,DE               ; HL - DE
+  RET P                   ; not negative: done (columns are 0-511, so the sign
+                          ; is the true one)
   SUB L                   ; negative: 0 - HL
-  LD L,A
-  LD A,$00
-  SBC A,H
-  LD H,A
-  RET
+  LD L,A                  ; (low byte of the negation)
+  LD A,$00                ; (keeps the borrow)
+  SBC A,H                 ; (0 - H - the borrow)
+  LD H,A                  ; HL = DE - HL
+  RET                     ; done
 
 ; HL, B, E = the building table, its size and the owner a building order wants
 ;
@@ -611,49 +677,49 @@ ColumnDistance:
 ; (the computer's) for our robots, $40 (ours) for the enemy's (Side = 1), 0
 ; (neutral) for order 6, capture neutral factories.
 TargetBuildingTable:
-  LD HL,Factories+3
-  LD B,$18
-  CP $05
-  JR Z,TargetWarbaseTable
-  CP $08
-  JR NZ,TargetBuildingMark
+  LD HL,Factories+3             ; the factories' first owner byte ($FD87) ...
+  LD B,$18                ; ... 24 records
+  CP $05                  ; 5 destroy warbases?
+  JR Z,TargetWarbaseTable ; (yes)
+  CP $08                  ; 8 capture warbases?
+  JR NZ,TargetBuildingMark ; no: the factories
 TargetWarbaseTable:
   LD HL,Warbases+3             ; orders 5 and 8: the 4 warbase records
-  LD B,$04
+  LD B,$04                ; ... 4 records
 TargetBuildingMark:
   LD E,$20                ; E = the owner mark wanted: the opponent's
-  PUSH AF
-  LD A,(Side)
-  OR A
-  JR Z,TargetNeutralCheck
+  PUSH AF                 ; keep the order
+  LD A,(Side)            ; Side ...
+  OR A                    ; (0 ours?)
+  JR Z,TargetNeutralCheck ; ours: $20 (the computer's)
   RLC E                   ; ... $40 for the enemy
 TargetNeutralCheck:
   POP AF                  ; order 6 (capture neutral): mark 0
-  CP $06
-  RET NZ
+  CP $06                  ; 6 capture neutral factories?
+  RET NZ                  ; no: E stays the opponent's mark
   LD E,$00                ; capture neutral: owner bits 0
-  RET
+  RET                     ; done
 
 ; HL = the opponent robot record of index +$0E
 ;
 ; HL = $DB80 + 16 * (+$0E) for our robots, $DA00 + 16 * (+$0E) for the enemy's
 ; (Side). Used by SteerByOrder's destroy-robots branch.
 TargetRobotRecord:
-  LD DE,Robots
+  LD DE,Robots            ; DE = our records ...
   LD A,(Side)            ; the enemy's robots for us, ours for the enemy
-  OR A
-  JR NZ,TargetRobotIndex
-  LD DE,EnemyRobots
+  OR A                    ; (0 ours?)
+  JR NZ,TargetRobotIndex  ; the enemy's robot: our records
+  LD DE,EnemyRobots       ; our robot: the computer's records
 TargetRobotIndex:
   LD A,(IY+$0E)           ; HL = DE + 16 x (+$0E)
-  ADD A,A
-  ADD A,A
-  ADD A,A
-  LD L,A
-  LD H,$00
-  ADD HL,HL
-  ADD HL,DE
-  RET
+  ADD A,A                 ; (2 x)
+  ADD A,A                 ; (4 x)
+  ADD A,A                 ; (8 x: at most 23 x 8 = 184, still a byte)
+  LD L,A                  ; (L)
+  LD H,$00                ; HL = 8 x index
+  ADD HL,HL               ; HL = 16 x index
+  ADD HL,DE               ; HL = the record
+  RET                     ; done (DE = the table)
 
 ; start a nearest-by-column search from column HL
 ;
@@ -661,77 +727,82 @@ TargetRobotIndex:
 ; index), D = $FF (the result: none). Used by FindTargetBuilding and
 ; FindNearestOpponent with KeepNearest.
 InitNearestSearch:
-  PUSH HL
-  EXX
-  POP DE
-  LD BC,$2000
-  EXX
-  LD C,$00
-  LD D,$FF
-  RET
+  PUSH HL                 ; our column ...
+  EXX                     ; (the shadow registers)
+  POP DE                  ; ... DE' = our column
+  LD BC,$2000             ; BC' = $2000: farther than any real distance (at
+                          ; most 511)
+  EXX                     ; back
+  LD C,$00                ; C = the first index
+  LD D,$FF                ; D = $FF: none found yet
+  RET                     ; done
 
 ; D = the index of the nearest live opponent robot by column; Z when none
 ;
 ; HL = our column, IY the robot, Side set. Runs KeepNearest over the 24
 ; opponent records ($DB80 the enemy's for us, $DA00 ours for the enemy) whose
 ; +$01 is not 0 (a dying robot counts). Out D = the slot within the side (or
-; $FF), A = D + 1 (Z: none). 426 calls.
-;
-; Reached from RobotStep for +$0A = 2 (not run in the deep recording;
-; experiment below).
+; $FF), A = D + 1 (Z: none); IY is kept, B ends 0 and C 24 (the callers keep
+; BC), DE' / BC' / HL' are the search's. Called by SteerByOrder (order 3) and,
+; through FindTargetBuilding with A = 3, by EnemyFindTarget and SetOrder. 426
+; calls.
 FindNearestOpponent:
-  CALL InitNearestSearch
-  PUSH IY
+  CALL InitNearestSearch  ; DE' = our column, BC' = $2000, C = 0, D = $FF
+  PUSH IY                 ; keep the asking robot
   LD IY,Robots            ; the opponent's records
-  LD A,(Side)
-  OR A
-  JR NZ,FindOpponentStart
-  LD IY,EnemyRobots
+  LD A,(Side)            ; Side ...
+  OR A                    ; (0 ours?)
+  JR NZ,FindOpponentStart ; the enemy's robot: our records
+  LD IY,EnemyRobots       ; our robot: the computer's records
 FindOpponentStart:
   LD B,$18                ; IY = the opponent's 24 records
 FindOpponentLoop:
   LD A,(IY+$01)           ; a live record: compare its column
-  OR A
-  JR Z,FindOpponentNext
-  LD L,(IY+$02)
-  LD H,(IY+$03)
-  CALL KeepNearest
+  OR A                    ; (+$01 = 0: free)
+  JR Z,FindOpponentNext   ; free: next
+  LD L,(IY+$02)           ; HL = its column ...
+  LD H,(IY+$03)           ; ... (high byte)
+  CALL KeepNearest        ; nearer than the best: D = C
 FindOpponentNext:
   PUSH DE                 ; the next 16-byte record, C its index
-  LD DE,$0010
-  ADD IY,DE
-  POP DE
-  INC C
-  DJNZ FindOpponentLoop
-  POP IY
+  LD DE,$0010             ; (16 bytes a record)
+  ADD IY,DE               ; IY = the next record
+  POP DE                  ; (D = the best so far)
+  INC C                   ; C = its index
+  DJNZ FindOpponentLoop   ; all 24
+  POP IY                  ; IY = the asking robot
   LD A,D                  ; A = the index + 1: Z when none
-  INC A
-  RET
-; This entry point is used by the routine at RobotStep.
+  INC A                   ; ($FF + 1 = 0: Z)
+  RET                     ; D = the slot, Z when none
+
+; direct control: the stick steers the robot
+;
+; Reached from RobotStep for +$0A = 2 (not run in the deep recording;
+; experiment below).
 RobotDirectControl:
-  PUSH BC                 ; direct control: the stick steers the robot
+  PUSH BC                 ; keep C, the free directions FreeDirections found
   CALL WaitKey            ; Input, with the pause on key 1
-  POP BC
+  POP BC                  ; C = the free directions again
   LD B,C                  ; B = the free directions
   CP (IY+$08)             ; pushing the way it faces: go only if free (a turn
                           ; needs no free cell)
-  JR NZ,DirectStepSet
-  AND C
+  JR NZ,DirectStepSet     ; another direction: a turn, taken as it is
+  AND C                   ; (ahead only when free, else 0)
 DirectStepSet:
   LD C,A                  ; C = the pushed direction (masked by the free ones
                           ; when it faces it)
   CALL CountDirections    ; exactly one direction?
-  JR Z,DirectStepStore
+  JR Z,DirectStepStore    ; yes: that one
   LD A,(IY+$05)           ; none or several: go on the way it went, if still
                           ; free
-  AND B
-  LD C,A
+  AND B                   ; (only if still free)
+  LD C,A                  ; C = it, or 0: stand
 DirectStepStore:
   LD (IY+$05),C           ; +$05 and Input = the step, then RobotMove
-  LD A,C
+  LD A,C                  ; A = the step
   LD (Input),A            ; Input = the step, so MoveShip carries the ship
                           ; along (TurnOrStep)
-  JP RobotMove
+  JP RobotMove            ; turn or step, the delay, back on the map
 
 ; turn the robot toward direction A, or step one cell when it faces it
 ;
@@ -749,44 +820,45 @@ DirectStepStore:
 ; on one more step in the same direction; the ship moved with it and Altitude
 ; stayed 17 (bipod 11 + cannon 6, ground 0).
 TurnOrStep:
-  OR A
-  RET Z
+  OR A                    ; no direction?
+  RET Z                   ; then nothing: the robot stands
   CP (IY+$08)             ; already facing it: step
-  JR Z,TurnOrStepStep
+  JR Z,TurnOrStepStep     ; (yes)
   LD C,A                  ; C = the new facing
-  OR (IY+$08)
+  OR (IY+$08)             ; A = the new and the old facing together
   CP $03                  ; right <-> left: turn down / up first
-  JR NZ,TurnCheckVertical
-  RLC C
-  RLC C
-  JR TurnFace
+  JR NZ,TurnCheckVertical ; (not right + left)
+  RLC C                   ; (1 right -> 4 down, 2 left -> 8 up ...)
+  RLC C                   ; (... two rotations)
+  JR TurnFace             ; face that way this step
 TurnCheckVertical:
   CP $0C                  ; down <-> up: turn right / left first
-  JR NZ,TurnFace
-  RRC C
-  RRC C
+  JR NZ,TurnFace          ; (any other pair is a 90-degree turn already)
+  RRC C                   ; (4 down -> 1 right, 8 up -> 2 left ...)
+  RRC C                   ; (... two rotations)
 TurnFace:
   LD (IY+$08),C           ; +$08 = the new facing, +$06 counts the turn
-  INC (IY+$06)
-  RET
+  INC (IY+$06)            ; +$06 one more: the turn does not use up the course
+  RET                     ; the turn is the whole step
 TurnOrStepStep:
   CALL StepPosition       ; step: the new column / row in HL / B
   CALL GroundUnderFootprint ; the highest ground under the new footprint
-  LD (IY+$0D),A
+  LD (IY+$0D),A           ; +$0D = it: the robot is drawn on it, the ship sits
+                          ; on it
   LD A,(IY+$0A)           ; direct control?
-  CP $02
-  RET NZ
-  PUSH BC
-  PUSH HL
-  PUSH IY
+  CP $02                  ; (2?)
+  RET NZ                  ; no: done
+  PUSH BC                 ; keep the new row ...
+  PUSH HL                 ; ... the new column ...
+  PUSH IY                 ; ... and the robot (MoveShip uses them all)
   CALL Z,MoveShip         ; the ship moves by the same Input
-  POP IY
-  POP HL
-  POP BC
+  POP IY                  ; the robot back ...
+  POP HL                  ; ... the new column ...
+  POP BC                  ; ... the new row, for PlaceRobot
   LD A,(IY+$09)           ; and sits on the robot's top
-  ADD A,(IY+$0D)
-  LD (Altitude),A
-  RET
+  ADD A,(IY+$0D)          ; (+ the ground under it)
+  LD (Altitude),A            ; Altitude = the robot's top
+  RET                     ; done
 
 ; move HL (column) / B (row) one cell in direction A; advance / retreat count
 ; their distance
@@ -802,72 +874,72 @@ TurnOrStepStep:
 ; obstacle (+$0E unchanged), 6 more columns right and then stood with order 0
 ; and +$0E = 0.
 StepPosition:
-  RRCA
-  JR NC,StepLeft
-  INC HL
-  LD A,(IY+$0B)
-  DEC A
-  JR Z,OrderDistanceDown
-  DEC A
-  JR Z,OrderDistanceUp
-  RET
+  RRCA                    ; bit 0 into carry: right?
+  JR NC,StepLeft          ; no
+  INC HL                  ; right: column + 1
+  LD A,(IY+$0B)           ; the order ...
+  DEC A                   ; (1 advance?)
+  JR Z,OrderDistanceDown  ; advance: right is its way, one column less to go
+  DEC A                   ; (2 retreat?)
+  JR Z,OrderDistanceUp    ; retreat: right is against it, one more
+  RET                     ; other orders count nothing
 StepLeft:
   RRCA                    ; left: column - 1, the distance order counted the
                           ; other way
-  JR NC,StepDown
-  DEC HL
-  LD A,(IY+$0B)
-  DEC A
-  JR Z,OrderDistanceUp
-  DEC A
-  JR Z,OrderDistanceDown
-  RET
+  JR NC,StepDown          ; no
+  DEC HL                  ; left: column - 1
+  LD A,(IY+$0B)           ; the order ...
+  DEC A                   ; (1 advance?)
+  JR Z,OrderDistanceUp    ; advance: left is against it, one more
+  DEC A                   ; (2 retreat?)
+  JR Z,OrderDistanceDown  ; retreat: left is its way, one less
+  RET                     ; other orders count nothing
 StepDown:
   RRCA                    ; down: row + 1
-  JR NC,StepUp
-  INC B
-  RET
+  JR NC,StepUp            ; no
+  INC B                   ; row + 1
+  RET                     ; rows do not count for the distance
 StepUp:
   RRCA                    ; up: row - 1
-  RET NC
-  DEC B
-  RET
+  RET NC                  ; no bit: no move
+  DEC B                   ; row - 1
+  RET                     ; done
 OrderDistanceUp:
   LD A,(IY+$0A)           ; a column away from the order's aim: one more to go
                           ; (max 99)
-  CP $02
-  RET Z
-  INC (IY+$0E)
-  LD A,(IY+$0E)
-  CP $64
-  RET C
-  LD (IY+$0E),$63
-  RET
+  CP $02                  ; (direct control?)
+  RET Z                   ; the player steers: no count
+  INC (IY+$0E)            ; +$0E one more ...
+  LD A,(IY+$0E)           ; ... up to 99 ...
+  CP $64                  ; (100 or more?)
+  RET C                   ; no: done
+  LD (IY+$0E),$63         ; ... at most 99
+  RET                     ; done
 OrderDistanceDown:
   LD A,(IY+$0A)           ; a column toward it: one less; there: stop
-  CP $02
-  RET Z
-  DEC (IY+$0E)
-  RET NZ
+  CP $02                  ; (direct control?)
+  RET Z                   ; the player steers: no count
+  DEC (IY+$0E)            ; +$0E one less ...
+  RET NZ                  ; ... not there yet
   LD (IY+$0B),$00         ; arrived: the order becomes stop
-  LD (IY+$06),$00
-  RET
+  LD (IY+$06),$00         ; and its course is spent
+  RET                     ; done
 
 ; flags of (the number of set bits in C's low nibble) - 1
 ;
 ; Z: exactly one direction; carry: none; neither: two or more. Counts bits 0-3
 ; of C, keeps BC.
 CountDirections:
-  PUSH BC
-  LD B,$04
-  XOR A
+  PUSH BC                 ; keep the set
+  LD B,$04                ; the four direction bits
+  XOR A                   ; A = the count, carry clear
 CountDirectionsLoop:
   RR C                    ; add each bit
-  ADC A,$00
-  DJNZ CountDirectionsLoop
-  POP BC
-  CP $01
-  RET
+  ADC A,$00               ; (+ the bit)
+  DJNZ CountDirectionsLoop ; all four
+  POP BC                  ; C back
+  CP $01                  ; count - 1: Z one, carry none
+  RET                     ; done
 
 ; C = the directions the robot at cell HL may step to
 ;
@@ -881,46 +953,47 @@ CountDirectionsLoop:
 ; CanMoveLeft, CanMoveDown, CanMoveUp); bit 0 right, 1 left, 2 down, 3 up. 9652
 ; calls.
 FreeDirections:
-  LD C,$00
+  LD C,$00                ; C = no direction yet
   LD A,(Altitude)            ; the ship lower than our top?
-  SUB (IY+$09)
-  SUB (IY+$0D)
+  SUB (IY+$09)            ; (minus its height)
+  SUB (IY+$0D)            ; (minus the ground under it: negative = the ship
+                          ; hangs below the robot's top)
   AND $80                 ; then bit 7 (the ship's cell) blocks too
   OR $40                  ; objects always block
-  LD E,A
-  LD A,(IY+$07)
+  LD E,A                  ; E = the blocking bits: $40, or $C0 under a low ship
+  LD A,(IY+$07)           ; A = the parts: bit 0 bipod, 1 tracks, 2 anti-grav
   LD D,$08                ; bipod: types below 8
-  RRCA
-  JR C,FreeDirRight
+  RRCA                    ; (bit 0)
+  JR C,FreeDirRight       ; a bipod
   LD D,$0C                ; tracks: types below $0C
-  RRCA
-  JR C,FreeDirRight
+  RRCA                    ; (bit 1)
+  JR C,FreeDirRight       ; tracks
   LD D,$0F                ; anti-grav: types below $0F
 FreeDirRight:
   PUSH HL                 ; D = the terrain limit of the locomotion; right
                           ; free?
-  CALL CanMoveRight
-  POP HL
-  JR NZ,FreeDirLeft
-  SET 0,C
+  CALL CanMoveRight       ; Z when free
+  POP HL                  ; HL = the anchor again
+  JR NZ,FreeDirLeft       ; blocked
+  SET 0,C                 ; bit 0: right
 FreeDirLeft:
   PUSH HL                 ; left free?
-  CALL CanMoveLeft
-  POP HL
-  JR NZ,FreeDirDown
-  SET 1,C
+  CALL CanMoveLeft        ; Z when free
+  POP HL                  ; HL = the anchor again
+  JR NZ,FreeDirDown       ; blocked
+  SET 1,C                 ; bit 1: left
 FreeDirDown:
   PUSH HL                 ; down free?
-  CALL CanMoveDown
-  POP HL
-  JR NZ,FreeDirUp
-  SET 2,C
+  CALL CanMoveDown        ; Z when free
+  POP HL                  ; HL = the anchor again
+  JR NZ,FreeDirUp         ; blocked
+  SET 2,C                 ; bit 2: down
 FreeDirUp:
   PUSH HL                 ; up free?
-  CALL CanMoveUp
-  POP HL
-  JR NZ,FreeDirDone
-  SET 3,C
+  CALL CanMoveUp          ; Z when free
+  POP HL                  ; HL = the anchor again
+  JR NZ,FreeDirDone       ; blocked
+  SET 3,C                 ; bit 3: up
 FreeDirDone:
   RET                     ; C = the free directions
 
@@ -930,88 +1003,89 @@ FreeDirDone:
 ; object anchored at (X+2, Y+1) (its footprint would overlap) when that row
 ; exists.
 CanMoveRight:
-  INC HL
-  INC HL
-  DEC H
-  DEC H
-  CALL TestCell
-  RET NZ
-  INC H
-  INC H
-  CALL TestCell
-  RET NZ
-  INC H
-  INC H
+  INC HL                  ; X + 1 ...
+  INC HL                  ; ... X + 2: the column it enters
+  DEC H                   ; one row up ...
+  DEC H                   ; ... (X+2, Y-1)
+  CALL TestCell           ; terrain and objects
+  RET NZ                  ; blocked
+  INC H                   ; down a row ...
+  INC H                   ; ... (X+2, Y)
+  CALL TestCell           ; terrain and objects
+  RET NZ                  ; blocked
+  INC H                   ; down a row ...
+  INC H                   ; ... (X+2, Y+1): an anchor there would overlap
   LD A,H                  ; the row below only inside the map
-  CP $FD
-  JR NC,CellOffMapFree
-  LD A,(HL)
-  AND E
-  RET
+  CP $FD                  ; (past the last row: $FDxx or more?)
+  JR NC,CellOffMapFree    ; off the map: free
+  LD A,(HL)               ; the cell ...
+  AND E                   ; ... objects only (an anchor's footprint reaches up
+                          ; a row)
+  RET                     ; Z when free
 
 ; Z when the robot at HL can step left
 ;
 ; Terrain and objects at (X-1, Y-1) and (X-1, Y); objects anchored at (X-2,
 ; Y-1), (X-2, Y) and (X-2, Y+1).
 CanMoveLeft:
-  DEC H
-  DEC H
-  DEC HL
-  CALL TestCell
-  RET NZ
-  DEC HL
-  LD A,(HL)
-  AND E
-  RET NZ
-  INC H
-  INC H
-  LD A,(HL)
-  AND E
-  RET NZ
-  INC HL
-  CALL TestCell
-  RET NZ
-  DEC HL
-  INC H
-  INC H
+  DEC H                   ; one row up ...
+  DEC H                   ; ... (X, Y-1)
+  DEC HL                  ; (X-1, Y-1): the column it enters
+  CALL TestCell           ; terrain and objects
+  RET NZ                  ; blocked
+  DEC HL                  ; (X-2, Y-1) ...
+  LD A,(HL)               ; (the cell)
+  AND E                   ; ... objects only: an anchor there covers X-1
+  RET NZ                  ; blocked
+  INC H                   ; down a row ...
+  INC H                   ; ... (X-2, Y)
+  LD A,(HL)               ; (the cell)
+  AND E                   ; objects only
+  RET NZ                  ; blocked
+  INC HL                  ; (X-1, Y)
+  CALL TestCell           ; terrain and objects
+  RET NZ                  ; blocked
+  DEC HL                  ; (X-2, Y)
+  INC H                   ; down a row ...
+  INC H                   ; ... (X-2, Y+1)
   LD A,H                  ; the row below only inside the map
-  CP $FD
-  JR NC,CellOffMapFree
-  LD A,(HL)
-  AND E
-  RET
+  CP $FD                  ; (past the last row?)
+  JR NC,CellOffMapFree    ; off the map: free
+  LD A,(HL)               ; the cell ...
+  AND E                   ; ... objects only
+  RET                     ; Z when free
 
 ; Z when the robot at HL can step down
 ;
 ; Blocked at the bottom row; terrain and objects at (X, Y+1) and (X+1, Y+1);
 ; objects anchored at (X+1, Y+2), (X, Y+2) and (X-1, Y+2) when that row exists.
 CanMoveDown:
-  INC H
-  INC H
+  INC H                   ; down a row ...
+  INC H                   ; ... (X, Y+1): the row it enters
   LD A,H                  ; the bottom row: blocked
-  CP $FD
-  JR NC,CellBlocked
-  CALL TestCell
-  RET NZ
-  INC HL
-  CALL TestCell
-  RET NZ
-  INC H
-  INC H
+  CP $FD                  ; (past the last row?)
+  JR NC,CellBlocked       ; yes: blocked
+  CALL TestCell           ; terrain and objects
+  RET NZ                  ; blocked
+  INC HL                  ; (X+1, Y+1)
+  CALL TestCell           ; terrain and objects
+  RET NZ                  ; blocked
+  INC H                   ; down a row ...
+  INC H                   ; ... (X+1, Y+2): anchors whose footprint reaches Y+1
   LD A,H                  ; the row below only inside the map
-  CP $FD
-  JR NC,CellOffMapFree
-  LD A,(HL)
-  AND E
-  RET NZ
-  DEC HL
-  LD A,(HL)
-  AND E
-  RET NZ
-  DEC HL
-  LD A,(HL)
-  AND E
-  RET
+  CP $FD                  ; (past the last row?)
+  JR NC,CellOffMapFree    ; off the map: free
+  LD A,(HL)               ; (the cell)
+  AND E                   ; objects only
+  RET NZ                  ; blocked
+  DEC HL                  ; (X, Y+2)
+  LD A,(HL)               ; (the cell)
+  AND E                   ; objects only
+  RET NZ                  ; blocked
+  DEC HL                  ; (X-1, Y+2)
+  LD A,(HL)               ; (the cell)
+  AND E                   ; objects only
+  RET                     ; Z when free
 
 ; Z when the robot at HL can step up
 ;
@@ -1019,74 +1093,81 @@ CanMoveDown:
 ; object anchored at (X-1, Y-2), terrain and objects at (X, Y-2) and (X+1,
 ; Y-2).
 CanMoveUp:
-  DEC H
-  DEC H
-  DEC H
-  DEC H
+  DEC H                   ; up two rows ...
+  DEC H                   ; (...)
+  DEC H                   ; (...)
+  DEC H                   ; ... (X, Y-2): the row it enters
   LD A,H                  ; Y-2 off the map: blocked
-  CP $DD
-  JR C,CellBlocked
-  DEC HL
-  LD A,(HL)
-  AND E
-  RET NZ
-  INC HL
-  CALL TestCell
-  RET NZ
-  INC HL
-  CALL TestCell
-  RET
+  CP $DD                  ; (above the first row, $DDxx?)
+  JR C,CellBlocked        ; yes: blocked
+  DEC HL                  ; (X-1, Y-2) ...
+  LD A,(HL)               ; (the cell)
+  AND E                   ; ... objects only: an anchor there covers X
+  RET NZ                  ; blocked
+  INC HL                  ; (X, Y-2)
+  CALL TestCell           ; terrain and objects
+  RET NZ                  ; blocked
+  INC HL                  ; (X+1, Y-2)
+  CALL TestCell           ; terrain and objects
+  RET                     ; Z when free
 
 ; Z: a probe that runs past the bottom row finds the way free
 ;
 ; The shared exit of the probes for rows below the map.
 CellOffMapFree:
-  XOR A
-  RET
+  XOR A                   ; A = 0: Z, free
+  RET                     ; back to FreeDirections
 
 ; NZ: the way is blocked
 ;
 ; The shared exit for an unpassable terrain type or a map edge.
 CellBlocked:
-  OR $01
-  RET
+  OR $01                  ; A not 0: NZ, blocked
+  RET                     ; back to FreeDirections (or to TestCell's caller)
 
 ; Z when cell HL is passable: type below D and none of the bits E
 ;
-; 67380 calls.
+; HL a map cell, D the first terrain type the locomotion cannot enter
+; (FreeDirections), E the blocking bits ($40 objects, plus $80 the ship's cell
+; when the ship hangs lower than the robot's top). NZ through CellBlocked when
+; the type (bits 0-4) is D or more; else A = the cell AND E (Z: free). HL kept.
+; Used by the four CanMove probes for the cells the footprint enters; the cells
+; only checked for anchors use AND E directly. 67380 calls.
 TestCell:
-  LD A,(HL)
-  AND $1F
-  CP D
-  JR NC,CellBlocked
+  LD A,(HL)               ; the cell ...
+  AND $1F                 ; ... its terrain type (bits 0-4)
+  CP D                    ; at or past the locomotion's limit D?
+  JR NC,CellBlocked       ; yes: blocked
   LD A,(HL)               ; an object (or the low ship) in it?
-  AND E
-  RET
+  AND E                   ; (bit 6, and bit 7 when E has it)
+  RET                     ; Z when free
 
 ; A = the highest ground under the 2x2 footprint anchored at (HL, B)
 ;
-; HL a column, B a row. TerrainTop over (X, Y), (X+1, Y), (X+1, Y-1), (X, Y-1);
-; HL and BC are kept. The robots' +$0D (the ground they stand on, added to
-; their height for the ship) and the shots' wall test (MoveShot).
+; HL a column, B a row. TerrainTop over (X, Y), (X+1, Y), (X+1, Y-1), (X, Y-1),
+; the highest kept in C; HL and BC are kept, DE is lost (the last cell). The
+; robots' +$0D (the ground they stand on: SetStepDelay's row, the drawing
+; height, the ship's seat under direct control) and the shots' wall test
+; (MoveShot against +$08 = $0A).
 GroundUnderFootprint:
-  PUSH HL
-  PUSH BC
-  LD A,B
-  CALL MapCell
-  EX DE,HL
-  LD C,$00
-  CALL TerrainTop
-  INC DE
-  CALL TerrainTop
-  DEC D
-  DEC D
-  CALL TerrainTop
-  DEC DE
-  CALL TerrainTop
-  LD A,C
-  POP BC
-  POP HL
-  RET
+  PUSH HL                 ; keep the column ...
+  PUSH BC                 ; ... and the row
+  LD A,B                  ; A = the row
+  CALL MapCell            ; HL = the cell (X, Y)
+  EX DE,HL                ; DE = it (DE is lost)
+  LD C,$00                ; C = the highest so far: 0
+  CALL TerrainTop         ; (X, Y)
+  INC DE                  ; (X+1, Y) ...
+  CALL TerrainTop         ; (its height)
+  DEC D                   ; one row up ...
+  DEC D                   ; ... (X+1, Y-1)
+  CALL TerrainTop         ; (its height)
+  DEC DE                  ; (X, Y-1)
+  CALL TerrainTop         ; (its height)
+  LD A,C                  ; A = the highest
+  POP BC                  ; the row back
+  POP HL                  ; the column back
+  RET                     ; done
 
 ; +$0F = the turns until the robot's next step, by the ground and its
 ; locomotion
@@ -1096,34 +1177,34 @@ GroundUnderFootprint:
 ; gives the turns. The recorded records agree (robot 0, a bipod on flat ground,
 ; counts 6 down).
 SetStepDelay:
-  PUSH BC
-  PUSH HL
-  LD A,(IY+$0D)
-  LD C,$00
-  OR A
-  JR Z,SetStepDelayFind
+  PUSH BC                 ; keep the row ...
+  PUSH HL                 ; ... and the column for PlaceRobot
+  LD A,(IY+$0D)           ; A = the ground under it +$0D
+  LD C,$00                ; C = the row of StepDelays: 0 flat ...
+  OR A                    ; (flat?)
+  JR Z,SetStepDelayFind   ; yes
   LD C,$03                ; low ground
-  CP $04
-  JR C,SetStepDelayFind
+  CP $04                  ; (below 4?)
+  JR C,SetStepDelayFind   ; yes: low
   LD C,$06                ; high ground
 SetStepDelayFind:
   LD A,(IY+$07)           ; C = the ground class (0 flat, 3 low, 6 high); find
                           ; the locomotion part
-  LD D,$FF
+  LD D,$FF                ; D = -1, counted up to the part's index
 SetStepDelayPart:
   INC D                   ; D = the locomotion: the index of the first set part
                           ; bit
-  RRCA
-  JR NC,SetStepDelayPart
-  LD A,C
-  ADD A,D
-  LD HL,StepDelays
-  CALL AddAToHL
-  LD A,(HL)
-  LD (IY+$0F),A
-  POP HL
-  POP BC
-  RET
+  RRCA                    ; (the next part bit into carry)
+  JR NC,SetStepDelayPart  ; until the first set one
+  LD A,C                  ; the row ...
+  ADD A,D                 ; ... + the column
+  LD HL,StepDelays        ; the table ...
+  CALL AddAToHL           ; ... HL = the entry
+  LD A,(HL)               ; A = the turns
+  LD (IY+$0F),A           ; +$0F = the step delay
+  POP HL                  ; the column back
+  POP BC                  ; the row back
+  RET                     ; done
 
 ; Game turns a robot step takes: rows flat, low, high ground; columns bipod,
 ; tracks, anti-grav
@@ -1143,51 +1224,51 @@ StepDelays:
 ; three parallel lanes are scanned (the columns X-1, X, X+1 for up / down, the
 ; rows Y-1, Y, Y+1 for left / right). 9652 calls.
 SpotEnemies:
-  LD E,$00
+  LD E,$00                ; E = no opponent seen yet
   LD D,$08                ; D = the direction scanned: up first
 SpotEnemiesLoop:
   RLC E                   ; the next result bit
-  LD L,(IY+$00)
-  LD H,(IY+$01)
+  LD L,(IY+$00)           ; HL = the anchor cell ...
+  LD H,(IY+$01)           ; ... (high byte)
   LD B,$08                ; the range: 8 cells
-  LD A,D
+  LD A,D                  ; this direction ...
   CP (IY+$08)             ; the facing direction ...
-  JR NZ,SpotEnemiesLane
+  JR NZ,SpotEnemiesLane   ; no: one lane of 8
   LD B,$0A                ; ... sees 10 cells ...
-  BIT 7,(IY+$07)
-  JR Z,SpotEnemiesThree
+  BIT 7,(IY+$07)          ; electronics?
+  JR Z,SpotEnemiesThree   ; no: 10
   LD B,$0C                ; ... 12 with electronics ...
 SpotEnemiesThree:
   LD A,D                  ; B = the range; three lanes, columns for down / up,
                           ; rows for right / left
-  AND $03
-  JR NZ,SpotEnemiesRows
+  AND $03                 ; (right / left?)
+  JR NZ,SpotEnemiesRows   ; yes: the rows
   LD C,B                  ; up / down: the columns X-1, X, X+1
-  DEC HL
-  CALL ScanLane
-  LD B,C
-  INC HL
-  CALL ScanLane
-  LD B,C
-  INC HL
-  JR SpotEnemiesLane
+  DEC HL                  ; (X-1)
+  CALL ScanLane           ; the first lane
+  LD B,C                  ; (the range again)
+  INC HL                  ; (X)
+  CALL ScanLane           ; the second lane
+  LD B,C                  ; (the range again)
+  INC HL                  ; (X+1), the last lane below
+  JR SpotEnemiesLane      ; scan it
 SpotEnemiesRows:
   LD C,B                  ; left / right: the rows Y-1, Y, Y+1
-  DEC H
-  DEC H
-  CALL ScanLane
-  LD B,C
-  INC H
-  INC H
-  CALL ScanLane
-  LD B,C
-  INC H
-  INC H
+  DEC H                   ; one row up ...
+  DEC H                   ; ... (Y-1)
+  CALL ScanLane           ; the first lane
+  LD B,C                  ; (the range again)
+  INC H                   ; down a row ...
+  INC H                   ; ... (Y)
+  CALL ScanLane           ; the second lane
+  LD B,C                  ; (the range again)
+  INC H                   ; down a row ...
+  INC H                   ; ... (Y+1), the last lane below
 SpotEnemiesLane:
   CALL ScanLane           ; the (last) lane
   RRC D                   ; the next direction: down, left, right
-  JR NC,SpotEnemiesLoop
-  RET
+  JR NC,SpotEnemiesLoop   ; until the bit leaves (after right)
+  RET                     ; E: bit 0 right, 1 left, 2 down, 3 up
 
 ; set E bit 0 when a live opponent's anchor lies within B cells from HL in
 ; direction D
@@ -1198,50 +1279,51 @@ SpotEnemiesLane:
 ; Buildings, shots and friends block the view. HL, DE are kept apart from E's
 ; bit 0.
 ScanLane:
-  PUSH HL
-  PUSH DE
-  PUSH HL
+  PUSH HL                 ; keep the start cell
+  PUSH DE                 ; keep D (the direction) and E (the results)
+  PUSH HL                 ; the start cell again, for the walk
   LD HL,ScanLaneDone+$0001 ; LaneSteps - 2
-  LD A,D
+  LD A,D                  ; A = the direction bit
 ScanLaneStep:
   INC HL                  ; the step word for D's bit
-  INC HL
-  RRCA
-  JR NC,ScanLaneStep
-  LD E,(HL)
-  INC HL
-  LD D,(HL)
-  POP HL
+  INC HL                  ; (2 bytes a word)
+  RRCA                    ; (the next bit into carry)
+  JR NC,ScanLaneStep      ; until it
+  LD E,(HL)               ; DE = the step ...
+  INC HL                  ; (high byte)
+  LD D,(HL)               ; ... +1, -1, +$200 or -$200
+  POP HL                  ; HL = the start cell
 ScanLaneLoop:
   ADD HL,DE               ; one cell on
   LD A,H                  ; off the map's rows: stop
-  SUB $DD
-  CP $20
-  JR NC,ScanLaneDone
+  SUB $DD                 ; (row 0 is $DD)
+  CP $20                  ; (16 rows of 2 pages)
+  JR NC,ScanLaneDone      ; out of the map: nothing seen (left / right run on
+                          ; into the next row's other end)
   BIT 6,(HL)              ; the first object stops the view
-  JR NZ,ScanLaneObject
-  DJNZ ScanLaneLoop
-  JR ScanLaneDone
+  JR NZ,ScanLaneObject    ; yes: whose?
+  DJNZ ScanLaneLoop       ; B cells
+  JR ScanLaneDone         ; nothing in range
 ScanLaneObject:
   PUSH IY                 ; a robot?
-  CALL FindRobot
-  LD A,(IY+$0A)
-  LD B,(IY+$0C)
-  POP IY
-  JR NZ,ScanLaneDone
+  CALL FindRobot          ; Z: IY = the robot anchored here
+  LD A,(IY+$0A)           ; its side bit (+$0A bit 7)
+  LD B,(IY+$0C)           ; and its strength (both junk when NZ)
+  POP IY                  ; IY = the looking robot
+  JR NZ,ScanLaneDone      ; not a robot (a building, a shot): the view ends
   XOR (IY+$0A)            ; same side: no
-  JP P,ScanLaneDone
+  JP P,ScanLaneDone       ; (bit 7 0: the same side)
   DEC B                   ; dead or dying: no
-  JP M,ScanLaneDone
+  JP M,ScanLaneDone       ; (strength 0 or below: dying)
   POP DE                  ; an opponent in sight
-  LD A,E
-  OR $01
-  LD E,A
-  PUSH DE
+  LD A,E                  ; (the saved results)
+  OR $01                  ; (bit 0: this direction)
+  LD E,A                  ; (E bit 0 set)
+  PUSH DE                 ; the saved DE now carries it
 ScanLaneDone:
   POP DE                  ; back with E
-  POP HL
-  RET
+  POP HL                  ; the start cell back
+  RET                     ; done
 
 ; The map steps of the four directions: right +1, left -1, down +$200, up -$200
 ;
@@ -1258,21 +1340,21 @@ LaneSteps:
 ; player's COMBAT MODE shot, launched from the robot menu (DirectControl, not
 ; in the recording).
 FindFreeShot:
-  LD IY,Shots+$0009
-  BIT 7,(IX+$0A)
-  JR Z,FindFreeShotSlot
+  LD IY,Shots+$0009       ; IY = record 1 ($D7DC), our first
+  BIT 7,(IX+$0A)          ; the shooter the enemy's?
+  JR Z,FindFreeShotSlot   ; no: records 1-2
   LD DE,$0012             ; the enemy's records
-  ADD IY,DE
+  ADD IY,DE               ; IY = record 3 ($D7EE)
 FindFreeShotSlot:
   LD A,(IY+$01)           ; IY = the side's first shot record; Z when free,
                           ; else the second
-  OR A
-  RET Z
+  OR A                    ; (+$01 = 0: free)
+  RET Z                   ; free: take it
   LD DE,$0009             ; the second record
-  ADD IY,DE
-  LD A,(IY+$01)
-  OR A
-  RET
+  ADD IY,DE               ; IY = record 2 or 4
+  LD A,(IY+$01)           ; (+$01 ...)
+  OR A                    ; (... 0: free)
+  RET                     ; Z: free, NZ: both fly
 
 ; launch shot IY of weapon A from robot IX in its facing direction
 ;
@@ -1282,37 +1364,42 @@ FindFreeShotSlot:
 ; +$07 the weapon (1 cannon, 2 missiles, 3 phasers), +$08 the ground height
 ; that stops it ($0A). The range is 5 steps (7 for missiles), one more with
 ; electronics; each step goes 2 cells. The first step is taken at once
-; (MoveShot); when the shot survives it, SoundFx ($FD53) = 1, the firing sound.
-; Recording: an enemy missile at frame 18680, D7EE: 7B F3 7B 00 0B 08 06 02 0A
-; (column $7B, row 11, up, 6 steps left after the first turn, missiles).
+; (MoveShot), from the shooter's anchor: in RobotStep the shooter is already
+; off the map (bit 6 cleared), so it cannot hit itself.
+;
+; When the shot survives the first step SoundFx ($FD53) = 1, the firing sound;
+; when it ends at once, MoveShot's sound ($FC, $FA or $C8) stays. Recording: an
+; enemy missile at frame 18680, D7EE: 7B F3 7B 00 0B 08 06 02 0A (column $7B,
+; row 11, up, 6 steps left after the first turn, missiles).
 FireShot:
-  LD (IY+$07),A
-  LD C,$05
+  LD (IY+$07),A           ; +$07 = the weapon: 1 cannon, 2 missiles, 3 phasers
+  LD C,$05                ; C = the range: 5 steps (10 cells) ...
   CP $02                  ; missiles fly further
-  JR NZ,FireShotElectronics
-  LD C,$07
+  JR NZ,FireShotElectronics ; (no)
+  LD C,$07                ; ... missiles 7
 FireShotElectronics:
   BIT 7,(IX+$07)          ; electronics: the range one step more
-  JR Z,FireShotStart
-  INC C
+  JR Z,FireShotStart      ; (no)
+  INC C                   ; (+1)
 FireShotStart:
   LD (IY+$06),C           ; +$06 the range, +$05 the robot's facing, +$08 the
                           ; wall height, the first step
   LD A,(IX+$08)           ; the robot's facing
-  LD (IY+$05),A
+  LD (IY+$05),A           ; +$05 = the direction it flies
   LD (IY+$08),$0A         ; ground of height 10 or more stops it
                           ; (TerrainHeights 15)
-  LD L,(IX+$02)
-  LD H,(IX+$03)
-  LD B,(IX+$04)
+  LD L,(IX+$02)           ; HL = the robot's column ...
+  LD H,(IX+$03)           ; ... (high byte)
+  LD B,(IX+$04)           ; B = its row
   CALL MoveShot           ; the first step
-  LD A,(IY+$01)
-  OR A
-  JR Z,FireShotDone
+  LD A,(IY+$01)           ; still flying?
+  OR A                    ; (+$01 = 0: gone)
+  JR Z,FireShotDone       ; gone already
   LD A,$01                ; it flies: the firing sound
-  LD (SoundFx),A
+  LD (SoundFx),A            ; SoundFx = 1
 FireShotDone:
-  RET                     ; the shot ended at once: no sound
+  RET                     ; the shot ended at once: MoveShot's miss / hit sound
+                          ; stays
 
 ; one game turn of shot IY: off its cell, count its range, a step
 ;
@@ -1320,160 +1407,167 @@ FireShotDone:
 ; gone, ShotGone) and goes on into MoveShot from its column / row. 90 calls in
 ; the deep recording.
 UpdateShot:
-  LD L,(IY+$00)
-  LD H,(IY+$01)
+  LD L,(IY+$00)           ; HL = the shot's cell ...
+  LD H,(IY+$01)           ; ... (high byte)
   RES 6,(HL)              ; the shot leaves its cell
   DEC (IY+$06)            ; out of range: gone
-  JP Z,ShotGone
-  LD L,(IY+$02)
-  LD H,(IY+$03)
-  LD B,(IY+$04)
+  JP Z,ShotGone           ; (its last step was the turn before)
+  LD L,(IY+$02)           ; HL = its column ...
+  LD H,(IY+$03)           ; ... (high byte)
+  LD B,(IY+$04)           ; B = its row; on into MoveShot
 
 ; move shot IY 2 cells, then hit a wall, an object or fly on
 ;
-; HL the column, B the row. Off the rows 0-15, or ground of height +$08 ($0A)
-; or more under its 2x2 footprint (only the types $10 / $12, height 15; heights
-; up to 7 let it pass): gone. Then the 3x3 cells around the new cell are tested
-; for an object (bit 6); none: the shot marks its own cell with bit 6 and flies
-; on. An object that is a live robot (either side: friendly fire is possible)
-; takes damage ((60 - its top) / 4) * (weapon + 1), the top being +$09 + +$0D,
-; so tall robots on high ground take less: strength 0 or below makes it $FC
-; (dying, UpdateRobot) with SoundFx $C8, else SoundFx $FA. Any other object (a
-; building, another shot, a dying robot) just ends the shot (SoundFx $FC). The
-; recorded hits agree: a missile (2) into a 19 high robot takes 10 * 3 = 30, a
-; cannon shell 10 * 2 = 20.
+; IY the shot record, HL its column, B its row. One step: 2 cells in +$05. Off
+; the rows 0-15 (only tested for down / up; the columns are not range-checked),
+; or ground of height +$08 ($0A) or more under its 2x2 footprint (only the
+; types $10 / $12, height 15; heights up to 7 let it pass): gone (ShotGone,
+; SoundFx $FC). The new position and cell go into +$00-+$04.
+;
+; Then the 3x3 cells around the new cell are tested for an object (bit 6), row
+; Y-1 and Y+1 only inside the map; none: the shot marks its own cell with bit 6
+; and flies on. An object that is a live robot (either side: friendly fire is
+; possible) takes damage ((60 - its top) / 4) * (weapon + 1), the top being
+; +$09 + +$0D, so tall robots on high ground take less: strength 0 or below
+; makes it $FC (dying, UpdateRobot) with SoundFx $C8, else SoundFx $FA. Any
+; other object (a building, another shot, a dying robot) just ends the shot
+; (SoundFx $FC). Either way the record is freed (+$01 = 0, the other bytes
+; stay).
+;
+; The recorded hits agree: a missile (2) into a 19 high robot takes 10 * 3 =
+; 30, a cannon shell 10 * 2 = 20. Entered from UpdateShot (falling through) and
+; FireShot.
 MoveShot:
-  LD A,(IY+$05)
+  LD A,(IY+$05)           ; A = the direction +$05
   RRCA                    ; right: 2 columns
-  JR NC,MoveShotLeft
-  INC HL
-  INC HL
-  JR MoveShotStore
+  JR NC,MoveShotLeft      ; (no)
+  INC HL                  ; (+1)
+  INC HL                  ; (+2; the columns are not range-checked)
+  JR MoveShotStore        ; store it
 MoveShotLeft:
   RRCA                    ; left: 2 columns
-  JR NC,MoveShotDown
-  DEC HL
-  DEC HL
-  JR MoveShotStore
+  JR NC,MoveShotDown      ; (no)
+  DEC HL                  ; (-1)
+  DEC HL                  ; (-2)
+  JR MoveShotStore        ; store it
 MoveShotDown:
   RRCA                    ; down: 2 rows
-  JR NC,MoveShotUp
-  INC B
-  INC B
-  JR MoveShotRows
+  JR NC,MoveShotUp        ; (no)
+  INC B                   ; (+1)
+  INC B                   ; (+2)
+  JR MoveShotRows         ; check the row
 MoveShotUp:
   RRCA                    ; up: 2 rows
-  JR NC,MoveShotStore
-  DEC B
-  DEC B
+  JR NC,MoveShotStore     ; (no direction: it stays)
+  DEC B                   ; (-1)
+  DEC B                   ; (-2; below 0 wraps to $FE / $FF)
 MoveShotRows:
   LD A,B                  ; past the map's rows: the shot is gone
-  CP $10
-  JP NC,ShotGone
+  CP $10                  ; (0-15?)
+  JP NC,ShotGone          ; no: gone
 MoveShotStore:
   LD (IY+$02),L           ; the new position
-  LD (IY+$03),H
-  LD (IY+$04),B
+  LD (IY+$03),H           ; (column high)
+  LD (IY+$04),B           ; (row)
   CALL GroundUnderFootprint ; the ground under it
   CP (IY+$08)             ; too high: it hits the wall
-  JP NC,ShotGone
-  LD A,B
+  JP NC,ShotGone          ; yes: gone
+  LD A,B                  ; A = the row
   CALL MapCell            ; the new cell
-  LD (IY+$00),L
-  LD (IY+$01),H
+  LD (IY+$00),L           ; +$00/+$01 = the cell ...
+  LD (IY+$01),H           ; ... (high byte)
   PUSH HL                 ; the row above: Y-1, columns X-1 to X+1 (when inside
                           ; the map)
-  DEC HL
-  DEC H
-  DEC H
-  LD A,H
-  CP $DD
-  JR C,MoveShotRow
-  BIT 6,(HL)
-  JR NZ,MoveShotHit
-  INC HL
-  BIT 6,(HL)
-  JR NZ,MoveShotHit
-  INC HL
-  BIT 6,(HL)
-  JR NZ,MoveShotHit
-  DEC HL
-  DEC HL
+  DEC HL                  ; (X-1)
+  DEC H                   ; one row up ...
+  DEC H                   ; ... (X-1, Y-1)
+  LD A,H                  ; above the map?
+  CP $DD                  ; (row 0 is $DD)
+  JR C,MoveShotRow        ; yes: skip the row
+  BIT 6,(HL)              ; (X-1, Y-1)?
+  JR NZ,MoveShotHit       ; an object: hit
+  INC HL                  ; (X, Y-1)
+  BIT 6,(HL)              ; (an object there?)
+  JR NZ,MoveShotHit       ; hit
+  INC HL                  ; (X+1, Y-1)
+  BIT 6,(HL)              ; (an object there?)
+  JR NZ,MoveShotHit       ; hit
+  DEC HL                  ; back ...
+  DEC HL                  ; ... to X-1
 MoveShotRow:
   INC H                   ; the shot's row
-  INC H
-  BIT 6,(HL)
-  JR NZ,MoveShotHit
-  INC HL
-  BIT 6,(HL)
-  JR NZ,MoveShotHit
-  INC HL
-  BIT 6,(HL)
-  JR NZ,MoveShotHit
-  DEC HL
-  DEC HL
+  INC H                   ; ... (X-1, Y)
+  BIT 6,(HL)              ; (an object there?)
+  JR NZ,MoveShotHit       ; hit
+  INC HL                  ; (X, Y): its own cell, cleared by UpdateShot
+  BIT 6,(HL)              ; (an object there?)
+  JR NZ,MoveShotHit       ; hit
+  INC HL                  ; (X+1, Y)
+  BIT 6,(HL)              ; (an object there?)
+  JR NZ,MoveShotHit       ; hit
+  DEC HL                  ; back ...
+  DEC HL                  ; ... to X-1
   INC H                   ; the row below (when inside the map)
-  INC H
-  LD A,H
-  CP $FD
-  JR NC,MoveShotFlies
-  BIT 6,(HL)
-  JR NZ,MoveShotHit
-  INC HL
-  BIT 6,(HL)
-  JR NZ,MoveShotHit
-  INC HL
-  BIT 6,(HL)
-  JR NZ,MoveShotHit
+  INC H                   ; ... (X-1, Y+1)
+  LD A,H                  ; past the last row?
+  CP $FD                  ; (row 15 is $FB/$FC)
+  JR NC,MoveShotFlies     ; yes: nothing below
+  BIT 6,(HL)              ; (X-1, Y+1)?
+  JR NZ,MoveShotHit       ; hit
+  INC HL                  ; (X, Y+1)
+  BIT 6,(HL)              ; (an object there?)
+  JR NZ,MoveShotHit       ; hit
+  INC HL                  ; (X+1, Y+1)
+  BIT 6,(HL)              ; (an object there?)
+  JR NZ,MoveShotHit       ; hit
 MoveShotFlies:
   POP HL                  ; nothing near: the shot occupies its cell
-  SET 6,(HL)
-  RET
+  SET 6,(HL)              ; bit 6 on it: robots see it, other shots hit it
+  RET                     ; it flies on next turn
 MoveShotHit:
   PUSH IY                 ; hit: E = the weapon, C = the sound for a miss
-  LD E,(IY+$07)
-  LD C,$FC
+  LD E,(IY+$07)           ; E = the weapon: 1-3
+  LD C,$FC                ; C = $FC: no damage
   CALL FindRobot          ; a robot anchored at the cell hit?
-  JR NZ,MoveShotGone
+  JR NZ,MoveShotGone      ; no (a building, a shot): the shot just ends
   LD A,(IY+$0C)           ; alive?
-  DEC A
-  JP M,MoveShotGone
+  DEC A                   ; (strength 0 or below?)
+  JP M,MoveShotGone       ; dying: no damage
   LD A,$3C                ; (60 - its top) / 4 ...
-  SUB (IY+$09)
-  SUB (IY+$0D)
-  SRL A
-  SRL A
-  LD D,A
+  SUB (IY+$09)            ; (minus its height)
+  SUB (IY+$0D)            ; (minus its ground)
+  SRL A                   ; (/ 2)
+  SRL A                   ; (/ 4)
+  LD D,A                  ; D = the damage a point
   LD B,E                  ; ... times the weapon + 1
 MoveShotDamage:
   ADD A,D                 ; one more multiple
-  DJNZ MoveShotDamage
-  LD B,A
+  DJNZ MoveShotDamage     ; weapon times: A = D x (weapon + 1)
+  LD B,A                  ; B = the damage
   LD C,$FA                ; the hit sound
-  LD A,(IY+$0C)
+  LD A,(IY+$0C)           ; A = its strength ...
   SUB B                   ; the strength left
-  JR Z,MoveShotKill
-  JP P,MoveShotStrength
+  JR Z,MoveShotKill       ; exactly 0: destroyed
+  JP P,MoveShotStrength   ; still above 0: it lives
 MoveShotKill:
   LD A,$FC                ; strength 0 or less: dying for 4 turns, the
                           ; explosion sound
-  LD C,$C8
+  LD C,$C8                ; C = $C8, the explosion
 MoveShotStrength:
   LD (IY+$0C),A           ; +$0C = the strength left
 MoveShotGone:
   POP IY                  ; the shot is gone
-  POP HL
-  LD (IY+$01),$00
-  LD A,C
-  LD (SoundFx),A
-  RET
+  POP HL                  ; drop the cell pushed above
+  LD (IY+$01),$00         ; +$01 = 0: the shot record is free
+  LD A,C                  ; the sound: $FC miss, $FA hit, $C8 destroyed
+  LD (SoundFx),A            ; SoundFx = it
+  RET                     ; done
 
-; ShotGone
+; out of range or off the map: the shot is gone with the short sound
 ;
 ; Used by the routines at UpdateShot and MoveShot.
 ShotGone:
-  LD (IY+$01),$00         ; out of range or off the map: the shot is gone with
-                          ; the short sound
-  LD A,$FC
-  LD (SoundFx),A
-  RET
+  LD (IY+$01),$00         ; +$01 = 0: the shot record is free
+  LD A,$FC                ; $FC: the short sound
+  LD (SoundFx),A            ; SoundFx = it
+  RET                     ; done

@@ -1,73 +1,112 @@
+; --------------------------------------------------------------------------------------------------------------------
+; controls.asm: the controls: KeyTable and the joystick into Input, the pause
+;
+; One byte for every input. ReadControls turns the eight redefinable keys of KeyTable and the joystick the main menu
+; chose (Controls $D3E4: 1 keyboard, 2 Kempston, 3 Interface 2) into Input ($FD0C): bit 0 right, 1 left, 2 down, 3 up,
+; 4 fire, 5 save, 6 abort, 7 pause. The joystick bits are ORed over the keys, so the keys always count.
+; docs/05-controls.md 5.1.
+;
+; WaitKey is the only caller of ReadControls and the one entry every loop uses (PlayLoop, DirectControl, the menus,
+; the end screens): with the pause key held it waits for another control, and the game stands meanwhile (the interrupt
+; goes on: the radar blinks, a sound plays out).
+;
+; KeyTable: eight records of 3 bytes (the port's high byte, the bit mask, the key code shown by the redefine screen),
+; entry 0 ending in Input bit 7: 1 pause, I abort, 5 save, SYMBOL SHIFT fire, Q up, A down, O left, P right. Then the
+; byte Controls. RedefineKeys ($C34A, the main menu module) rewrites them.
+; --------------------------------------------------------------------------------------------------------------------
+
 ; ReadControls; while key 1 (Input bit 7) is held, the pause: wait for another
 ; key
 ;
-; Used by the routines at PlayLoop, DirectControl, DistanceSelect, ListMenu,
-; WaitRelease, GameOverWait, FindNearestOpponent and ConstructionMenuLoop.
+; In: nothing. Out: A = Input (also in Input $FD0C); the flags of the last OR
+; A. When the pause key (bit 7) is held it loops in PauseLoop until some other
+; control is pressed with the pause key up, then falls into ReadControls again:
+; the control that ended the pause is this turn's input. Changes A, BC, HL.
+; Called once a turn by PlayLoop, DirectControlLoop, DistanceLoop, ListMenu,
+; WaitRelease, GameOverKey, RobotDirectControl and ConstructionMenuLoop.
 WaitKey:
-  CALL ReadControls
-  OR A
-  RET P
+  CALL ReadControls       ; this turn's controls
+  OR A                    ; bit 7, the pause, into the sign
+  RET P                   ; not held: Input stands
 PauseLoop:
   CALL ReadControls       ; key 1 held: wait for another control
-  OR A
-  JR Z,PauseLoop
-  JP M,PauseLoop
+  OR A                    ; nothing held?
+  JR Z,PauseLoop          ; then wait on
+  JP M,PauseLoop          ; the pause key still held: wait on; else read once
+                          ; more, below
 
 ; Input from the redefinable keys (KeyTable) or the joystick the menu chose
 ; (Controls)
 ;
-; Used by the routine at WaitKey.
+; The eight keys of KeyTable are rotated into C one by one (RL C, starting from
+; C = 1: after the eighth the 1 drops into the carry and ends the loop), entry
+; 0 ending in bit 7. Then the joystick by Controls ($D3E4): 2 Kempston (port
+; $1F, bits 0-4 already right, left, down, up, fire), 3 Interface 2 (port
+; $EFFE, keys 6-0, inverted and reordered), else none. Out: A = Input =
+; joystick OR keys. Changes B, C, HL. 9814 calls in the deep recording.
 ReadControls:
-  LD HL,KeyTable
+  LD HL,KeyTable          ; the eight key records
   LD C,$01                ; C = 1: the end marker, shifted out after 8 keys
 KeyLoop:
-  LD A,(HL)               ; IN from the key's half row
-  INC HL
-  IN A,($FE)
+  LD A,(HL)               ; A = the port's high byte: it selects the key's half
+                          ; row
+  INC HL                  ; to the mask
+  IN A,($FE)              ; A = the half row's keys (0 = pressed)
   AND (HL)                ; Z: pressed
-  INC HL
-  INC HL
-  JR NZ,KeyShift
+  INC HL                  ; past the mask
+  INC HL                  ; past the key code: the next record
+  JR NZ,KeyShift          ; not pressed: the AND left carry 0
   CCF                     ; pressed: carry 1
 KeyShift:
   RL C                    ; the key's state (carry 1 pressed) into C
-  JR NC,KeyLoop
-  LD A,($D3E4)            ; the joystick chosen in the menu
-  CP $02
-  JR Z,Kempston
-  CP $03
-  JR Z,Interface2
+  JR NC,KeyLoop           ; no carry: the end marker is still in C, the next
+                          ; key
+  LD A,(Controls)         ; the joystick chosen in the menu
+  CP $02                  ; 2: Kempston?
+  JR Z,Kempston           ; (yes)
+  CP $03                  ; 3: Interface 2?
+  JR Z,Interface2         ; (yes)
   XOR A                   ; keyboard only
-  JR InputDone
+  JR InputDone            ; nothing to add
 Kempston:
   XOR A                   ; port $1F: fire, up, down, left, right in bits 4-0
-  IN A,($1F)
-  AND $1F
-  JR InputDone
+  IN A,($1F)              ; (port $001F)
+  AND $1F                 ; bits 5-7 off: only the five directions and fire
+  JR InputDone            ; on to the keys
 Interface2:
   LD A,$EF                ; keys 6-0 (port $EFFE) into the Kempston order
-  IN A,($FE)
-  CPL
-  AND $1F
-  LD B,A
-  XOR A
+  IN A,($FE)              ; bits 0-4 = keys 0, 9, 8, 7, 6 (0 = pressed)
+  CPL                     ; 1 = pressed
+  AND $1F                 ; the five keys
+  LD B,A                  ; B = them
+  XOR A                   ; A collects the Kempston order
   SRL B                   ; 0 (fire) to bit 4, 9 (up) to bit 3, 8 (down) to bit
                           ; 2
-  RLA
-  SRL B
-  RLA
-  SRL B
-  RLA
-  RLA
-  RLA
+  RLA                     ; fire into A
+  SRL B                   ; 9 (up)
+  RLA                     ; into A
+  SRL B                   ; 8 (down)
+  RLA                     ; into A: now fire, up, down in bits 2-0
+  RLA                     ; shifted ...
+  RLA                     ; ... to bits 4-2
   OR B                    ; 7 (right) to bit 0, 6 (left) to bit 1
 InputDone:
   OR C                    ; plus the keys
-  LD (Input),A
-  RET
+  LD (Input),A            ; Input: the byte every routine reads
+  RET                     ; A = Input
 
 ; the keys, eight of 3 bytes: the port high byte, the bit mask, the key code
 ; (shown by the redefine menu)
+;
+; The bytes as built: F7 01 31 (key 1, Input bit 7, pause), DF 04 49 (I, bit 6,
+; abort), F7 10 35 (5, bit 5, save), 7F 02 82 (SYMBOL SHIFT, bit 4, fire), FB
+; 01 51 (Q, bit 3, up), FD 01 41 (A, bit 2, down), DF 02 4F (O, bit 1, left),
+; DF 01 50 (P, bit 0, right). A key is LD A,(port byte) / IN A,($FE) / AND
+; mask: Z when pressed. The code byte only serves the redefine screen (it
+; prints the key and refuses one already taken).
+;
+; The ninth byte, $D3E4, is Controls: 1 in the image (the keyboard only);
+; MainMenu sets 1-3 by the keys 1, 2, 3.
 KeyTable:
   DEFB $F7,$01,$31
   DEFB $DF,$04,$49
@@ -77,4 +116,7 @@ KeyTable:
   DEFB $FD,$01,$41
   DEFB $DF,$02,$4F
   DEFB $DF,$01,$50
+
+; the menu's choice: 1 keyboard, 2 Kempston, 3 Interface 2
+Controls:
   DEFB $01

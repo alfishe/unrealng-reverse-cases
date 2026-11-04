@@ -1,3 +1,16 @@
+; --------------------------------------------------------------------------------------------------------------------
+; map.asm: The map: 16 rows of 512 cells, built at each new game, the last 15 image bytes over the loader
+;
+; The battlefield as one byte a cell, $DD00-$FCFF (8192 bytes, the last 23 past the loaded image): the ground type,
+; the 2 x 2 cover bit, and the marks of robots, buildings, shots and the ship. Docs: 07-objects.md 7.5 (the map),
+; 06-rendering.md 6.1 / 6.4 (how the view walks it), 06-rendering.md 6.7 (the radar).
+;
+; Written by BuildMap (clear, then the level of module level), PutBlock, the movers (bit 6 by PlaceRobot / RobotStep /
+; the shots, bit 7 by MoveShip), MarkBaseDestroyed and the nuclear blast (debris). Read by DrawMapObjects / DrawCell
+; (the view window of 32 columns from MapView), TerrainTop (heights), FindRobot / FindBuilding (bit 6) and BuildRadar
+; (128 columns). Saved and loaded whole with the game.
+; --------------------------------------------------------------------------------------------------------------------
+
 ; The map: 16 rows of 512 cells, cell = $DD00 + $200 x Y + X
 ;
 ; A cell: bits 0-4 the type (0 empty; 2-18 and 21 terrain and blocks, drawn

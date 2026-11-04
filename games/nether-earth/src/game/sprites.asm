@@ -1,3 +1,19 @@
+; --------------------------------------------------------------------------------------------------------------------
+; sprites.asm: The 89 sprite blocks: the ship, the map objects, the robot parts, the buildings' signs, the shots
+;
+; All pictures of the view, $6980-$A569, 15338 bytes, then 150 spare bytes up to Start. Docs: 06-rendering.md 6.5
+; (sprites), 6.6 (robots stacked from parts). Resources: src/res/gfx/sprites/*.png, one per block, built into .bin
+; files; the table of files, ids and sizes is in src/res/README.md (The sprites).
+;
+; Format of a block: byte 0 the height in pixel lines, byte 1 the width in bytes, then the rows from the BOTTOM line
+; up, each row width x (mask, graphic) pairs: screen = (screen AND mask) OR graphic. Each block is two entries here:
+; SprX (the 2-byte header) and SprXRows (the rows), sharing one resource file.
+;
+; Readers: DrawSprite ($CF2D, into ViewBuffer) through SpriteTable (module tables), index = sprite id x 2 + the half-
+; byte column parity (the odd entry is usually the same picture 4 pixels right); robot parts through PartSpriteTable
+; and PartHeights; the construction menu's part icons straight to the screen by DrawMaskedUp ($D315). Never written.
+; --------------------------------------------------------------------------------------------------------------------
+
 ; Sprite 22 (even column; SpriteTable 44): tracks, moving along X (directions
 ; 0-1), 27 rows x 3 bytes
 ;

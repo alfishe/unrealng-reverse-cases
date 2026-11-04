@@ -1,19 +1,63 @@
+; --------------------------------------------------------------------------------------------------------------------
+; construction.asm: the construction menu, robot placement on the map, the beeper tone
+;
+; The screen the player gets by landing the ship on the pad of our warbase (docs/05-controls.md 5.4, docs/01-game-
+; design.md 1.6, the rules in docs/10-gameplay-logic.md 10.3). PlayLoop calls ConstructionMenu; it takes a free slot
+; among our 24 robot records (IY) as the preview, builds the screen and runs its own key loop until START ROBOT or
+; EXIT MENU; then the play screen is redrawn and PlayLoop gives the new robot its start state.
+;
+; In calling order: ConstructionMenu (find the slot, the part pictures, the text) -> ConstructionMenuSetup ->
+; ConstructionMenuLoop (fire on a part: PartToggle, RefundPart; a direction: MoveMenuCursor) -> MenuPause after every
+; press -> StartRobot (PlaceRobot) or LeaveConstructionMenu. Helpers: PaintMenuCursor and FillAttributes,
+; PrintMenuResources (PrintMenuResource, PrintMenuTotal), ShowRobotDesign (the part colours and the preview robot
+; drawn by DrawRobot through the view buffer).
+;
+; The data: MenuCursor = (L the column: 0 EXIT MENU, 1 START ROBOT, 2 the parts; H the part row 0 bipod ... 7
+; electronics), MenuParts = the chosen parts, one bit a row (the new robot's +$07), MenuResources = the copy of
+; Resources the menu spends, written back only by START ROBOT. PartCosts holds the eight costs and, 8 bytes on, the
+; resource each part pays from first; the general resource pays the rest.
+;
+; The world stands still while the menu is open: the menu loop runs no game turns, and Handler is StartInterrupt (no
+; frame count, no radar drawing over the menu screen). MenuPause is 10 HALTs after every press; a press inside it is
+; lost. PrintMenuResource patches the row byte of its own inline position string ($CC11) before each print.
+;
+; The tail of the module is shared with the rest of the game: PlaceRobot puts any robot on the map (the robot step,
+; the enemy spawn, START ROBOT), ShipCell / MapCell give the map cell of a column and row ($DD00 + $200 x row +
+; column), Beep is the menus' beeper tone.
+; --------------------------------------------------------------------------------------------------------------------
+
 ; landing on the warbase pad at altitude 15: choose the parts (MenuCursor,
 ; MenuParts), START ROBOT or EXIT MENU
 ;
-; Returns at once when all 24 player slots are used; the free slot is the
-; preview and then the new robot; the world stands still (StartInterrupt) while
-; it is open.
+; Called by PlayLoop when the ship rests on the pad of our warbase (Altitude
+; 15) and the door below is free. First looks for a free record among our slots
+; 0-23 ($DA00 + 16 x n, +$01 = 0); with none it returns at once (IY = $DB80,
+; enemy slot 24: the bug of PlayLoop's writes, docs/10-gameplay-logic.md
+; 10.12).
+;
+; Otherwise IY = the free slot: the preview robot, and on START ROBOT the new
+; one. Handler = StartInterrupt, so neither the frame count nor the radar runs;
+; the menu loop runs no game turns, so the world stands still while the menu is
+; open. ClearScreen, then the eight part pictures in column 16 from the bottom
+; (bipod) to the top (electronics), each the second facing of the part's sprite
+; cut to 24 lines and drawn upwards by DrawMaskedUp; the preview's frame
+; attributes ($46, 4 x 9 cells from row 15, column 0); the texts (title, part
+; names, EXIT / START, costs, the resource labels). Falls into
+; ConstructionMenuSetup.
+;
+; Returns (after LeaveConstructionMenu) with IY = the slot; PlayLoop then
+; writes the start state. On EXIT MENU the slot stays free (+$01 = 0,
+; PlaceRobot not called), so those writes do no harm.
 ConstructionMenu:
   LD IY,Robots            ; the player's robot slots 0-23
-  LD DE,$0010
-  LD B,$18
+  LD DE,$0010             ; 16 bytes a record
+  LD B,$18                ; 24 slots
 FindFreeRobotSlot:
   LD A,(IY+$01)           ; a slot whose cell address high byte is 0 is free
-  OR A
-  JR Z,OpenConstructionMenu
-  ADD IY,DE
-  DJNZ FindFreeRobotSlot
+  OR A                    ; 0?
+  JR Z,OpenConstructionMenu ; a free slot: open the menu
+  ADD IY,DE               ; the next record
+  DJNZ FindFreeRobotSlot  ; all 24 slots
   RET                     ; all 24 slots in use: no menu at all
 OpenConstructionMenu:
   DI                      ; IY = the free slot: it becomes the preview robot
@@ -21,67 +65,67 @@ OpenConstructionMenu:
   LD HL,StartInterrupt    ; the play interrupt off (StartInterrupt only
                           ; re-enables): the world stands still while the menu
                           ; is open
-  LD (Handler),HL
-  EI
+  LD (Handler),HL           ; Handler = StartInterrupt
+  EI                      ; interrupts again
   CALL ClearScreen        ; clear the screen
   LD B,$08                ; the eight part pictures, bipod at the bottom
   LD DE,$57F0             ; the bottom pixel line of row 23, column 16
 PartIconLoop:
   PUSH BC                 ; part k = 8 - B
-  PUSH DE
+  PUSH DE                 ; the screen address
   LD A,$08                ; the part's sprite number for the second facing:
                           ; $D6C8 + 4k + 1
-  SUB B
-  ADD A,A
-  ADD A,A
-  INC A
-  LD HL,PartSpriteTable
-  CALL AddAToHL
+  SUB B                   ; A = k
+  ADD A,A                 ; 2k
+  ADD A,A                 ; 4k: four facings a part
+  INC A                   ; the second facing
+  LD HL,PartSpriteTable   ; PartSpriteTable + 4k + 1
+  CALL AddAToHL           ; HL = the entry
   LD A,(HL)               ; the second graphic of that sprite: the pointer at
                           ; $D740 + 4 * number + 2
-  ADD A,A
-  INC A
-  LD HL,SpriteTable+$0058
-  CALL TableWord
+  ADD A,A                 ; 2 x the number
+  INC A                   ; + 1: its second graphic
+  LD HL,SpriteTable+$0058 ; the part sprites' pointers (sprite id $16 on)
+  CALL TableWord          ; HL = that graphic
   LD C,(HL)               ; C = the lines, B = the bytes a line
-  INC HL
-  LD B,(HL)
-  INC HL
+  INC HL                  ; to the width byte
+  LD B,(HL)               ; B = the bytes a line
+  INC HL                  ; HL = the first line
   LD A,B                  ; skip the graphic's first line of mask / pixel pairs
-  ADD A,A
-  CALL AddAToHL
+  ADD A,A                 ; 2 bytes (mask, pixels) a byte of width
+  CALL AddAToHL           ; HL = the second line
   DEC C                   ; the lines after the first, at most 24 (3 rows)
-  LD A,C
-  CP $18
-  JR C,PartIconDraw
-  LD C,$18
+  LD A,C                  ; the lines left
+  CP $18                  ; more than 24?
+  JR C,PartIconDraw       ; fits
+  LD C,$18                ; cut to 24 lines, the part's 3 character rows
 PartIconDraw:
   CALL DrawMaskedUp       ; draw upwards from DE, masked
-  POP DE
-  POP BC
+  POP DE                  ; DE = the bottom line of this part's place
+  POP BC                  ; B = the parts left
   LD A,E                  ; three character rows up
-  SUB $60
-  LD E,A
-  JR NC,PartIconNext
-  LD A,D
-  SUB $08
-  LD D,A
+  SUB $60                 ; the low byte - 3 x 32
+  LD E,A                  ; E = it
+  JR NC,PartIconNext      ; no borrow: the same third of the screen
+  LD A,D                  ; a borrow: the third above
+  SUB $08                 ; D - 8: one screen third up
+  LD D,A                  ; D = it
 PartIconNext:
-  DJNZ PartIconLoop
+  DJNZ PartIconLoop       ; all eight parts, bottom to top
   LD BC,$0409             ; the preview's frame: 4 columns x 9 rows from row
                           ; 15, column 0
-  LD HL,$59E0
+  LD HL,$59E0             ; the attribute of row 15, column 0
 PreviewAttrRow:
-  PUSH BC
+  PUSH BC                 ; C = the rows left
 PreviewAttrCell:
   LD (HL),$46             ; bright yellow
-  INC HL
-  DJNZ PreviewAttrCell
+  INC HL                  ; the next cell
+  DJNZ PreviewAttrCell    ; four cells
   LD A,$1C                ; to the next row: 4 + 28
-  CALL AddAToHL
-  POP BC
-  DEC C
-  JR NZ,PreviewAttrRow
+  CALL AddAToHL           ; HL = the next row's column 0
+  POP BC                  ; C = the rows left
+  DEC C                   ; one row done
+  JR NZ,PreviewAttrRow    ; nine rows
   CALL PrintInline        ; the menu's text
 
 ; PrintInline text: "ROBOT" (double size) at row 0, "CONSTRUCTION" (double
@@ -122,20 +166,21 @@ ResourceNamesText:
 ; = 0; ShowRobotDesign paints the part pictures (white when chosen) and draws
 ; the preview robot; the cursor is painted.
 ConstructionMenuSetup:
-  LD (IY+$08),$04         ; the preview robot's +8
-  LD (IY+$0D),$00
+  LD (IY+$08),$04         ; +$08 = 4: the preview faces down (the robot built
+                          ; keeps it)
+  LD (IY+$0D),$00         ; +$0D = 0: the preview stands on ground 0
   LD HL,Resources             ; the menu spends a copy
-  LD DE,MenuResources
-  LD BC,$0007
-  LDIR
+  LD DE,MenuResources             ; into MenuResources
+  LD BC,$0007             ; general and the six part resources
+  LDIR                    ; copy
   CALL PrintMenuResources ; print the copy
   LD HL,$0002             ; column 2 (the parts), row 0 (bipod)
-  LD (MenuCursor),HL
+  LD (MenuCursor),HL           ; MenuCursor = (2, 0)
   XOR A                   ; nothing chosen
-  LD (MenuParts),A
+  LD (MenuParts),A            ; MenuParts = 0
   CALL ShowRobotDesign    ; the part pictures and the preview robot
   LD C,$46                ; the cursor in $46
-  CALL PaintMenuCursor
+  CALL PaintMenuCursor    ; paint the cursor
 
 ; wait for a control; fire acts on the cursor's item, a direction moves the
 ; cursor
@@ -160,107 +205,108 @@ ConstructionMenuSetup:
 ; everything: missiles, phasers, then nuclear refused (MenuParts $38).
 ConstructionMenuLoop:
   CALL WaitKey            ; a direction or fire
-  AND $1F
-  JR Z,ConstructionMenuLoop
+  AND $1F                 ; bits 0-4: right, left, down, up, fire
+  JR Z,ConstructionMenuLoop ; nothing (keys 5 and I do nothing here)
   LD HL,(MenuCursor)           ; L = the column, H = the part row
   LD A,(Input)            ; no fire: a move
-  AND $10
-  JP Z,MoveMenuCursor
+  AND $10                 ; fire?
+  JP Z,MoveMenuCursor     ; a direction: move the cursor
   LD A,L                  ; column 0: EXIT MENU
-  OR A
-  JP Z,LeaveConstructionMenu
+  OR A                    ; column 0?
+  JP Z,LeaveConstructionMenu ; EXIT MENU
   DEC A                   ; column 1: START ROBOT
-  JP Z,StartRobot
+  JP Z,StartRobot         ; START ROBOT
 PartToggle:
   LD A,H                  ; E = the part, D = its bit
-  LD E,A
-  LD B,A
-  INC B
-  XOR A
-  SCF
+  LD E,A                  ; E = the part row, 0-7
+  LD B,A                  ; B = row + 1
+  INC B                   ; B = row + 1 shifts
+  XOR A                   ; A = 0
+  SCF                     ; carry = 1: the bit to shift in
 PartBitLoop:
-  RLA
-  DJNZ PartBitLoop
-  LD D,A
+  RLA                     ; shift it up
+  DJNZ PartBitLoop        ; row + 1 times: A = 1 << row
+  LD D,A                  ; D = the part's bit in MenuParts
   LD A,(MenuParts)            ; C = the parts chosen
-  LD C,A
+  LD C,A                  ; C = MenuParts
   AND D                   ; chosen already: take it back
-  JR NZ,PartTakeBack
+  JR NZ,PartTakeBack      ; refund and clear it
   LD A,E                  ; a chassis (rows 0-2) ...
-  CP $03
-  JR NC,CheckWeaponCount
+  CP $03                  ; rows 0-2: bipod, tracks, anti-grav
+  JR NC,CheckWeaponCount  ; a weapon or electronics: no chassis rule
   LD A,C                  ; ... and a chassis already chosen: refund that one
                           ; first
-  AND $07
-  JR Z,CheckWeaponCount
+  AND $07                 ; the chassis bits 0-2
+  JR Z,CheckWeaponCount   ; no chassis yet
   PUSH DE                 ; E = the chosen chassis' row
-  LD E,$FF
+  LD E,$FF                ; E = -1, so the first INC gives 0
 FindChosenChassis:
-  INC E
-  RRCA
-  JR NC,FindChosenChassis
+  INC E                   ; the next row
+  RRCA                    ; the next bit into carry
+  JR NC,FindChosenChassis ; until the set bit
   CALL RefundPart         ; its resources back
   LD A,C                  ; no chassis now
-  AND $F8
-  LD C,A
-  LD (MenuParts),A
-  POP DE
+  AND $F8                 ; clear the chassis bits
+  LD C,A                  ; C = the parts without a chassis
+  LD (MenuParts),A            ; stored at once: the refund stays even if the new
+                          ; chassis is refused
+  POP DE                  ; E, D = the new part again
 CheckWeaponCount:
   LD A,C                  ; cannon + missiles + phasers + nuclear all four:
                           ; refused
-  OR D
-  AND $78
-  CP $78
-  JP Z,PartRefused
+  OR D                    ; with the new part
+  AND $78                 ; the weapon bits 3-6
+  CP $78                  ; all four?
+  JP Z,PartRefused        ; a fourth weapon: refused
   LD HL,PartCosts         ; B = the part's cost
-  LD A,E
-  CALL AddAToHL
-  LD B,(HL)
+  LD A,E                  ; the part
+  CALL AddAToHL           ; HL = PartCosts + part
+  LD B,(HL)               ; B = the cost
   LD HL,PartCosts+$0008   ; the resource it takes first
-  LD A,E
-  CALL AddAToHL
-  LD A,(HL)
-  LD HL,MenuResources
-  CALL AddAToHL
+  LD A,E                  ; the part
+  CALL AddAToHL           ; HL = PartCosts + 8 + part
+  LD A,(HL)               ; A = the resource index (1-6)
+  LD HL,MenuResources             ; the menu's resources
+  CALL AddAToHL           ; HL = that resource
   LD A,(HL)               ; pay from the part's own resource
-  SUB B
-  JP NC,PartPaid
+  SUB B                   ; minus the cost
+  JP NC,PartPaid          ; enough: what is left
   NEG                     ; short by the rest: the general resource pays it
-  LD B,A
-  LD A,(MenuResources)
-  SUB B
+  LD B,A                  ; B = what the general resource must pay
+  LD A,(MenuResources)            ; the general resource
+  SUB B                   ; minus the rest
   JP C,PartRefused        ; not enough: refused
-  LD (MenuResources),A
+  LD (MenuResources),A            ; the general resource pays it
   XOR A                   ; the own resource is spent to 0
 PartPaid:
   LD (HL),A               ; store what is left, choose the part
-  LD A,C
-  OR D
-  LD (MenuParts),A
+  LD A,C                  ; the parts
+  OR D                    ; with the new one
+  LD (MenuParts),A            ; MenuParts
   LD A,$64                ; the beep of a part accepted
-  CALL Beep
+  CALL Beep               ; beep
   CALL ShowRobotDesign    ; repaint the part pictures and the preview
   CALL PrintMenuResources ; reprint the resources
 AcceptFireUp:
   CALL WaitKey            ; wait for fire up
-  AND $10
-  JR NZ,AcceptFireUp
-  JP MenuPause
+  AND $10                 ; fire still held?
+  JR NZ,AcceptFireUp      ; wait
+  JP MenuPause            ; the 10-frame pause, then the loop
 PartTakeBack:
   CALL RefundPart         ; refund and clear the part
-  LD A,C
-  XOR D
-  LD (MenuParts),A
+  LD A,C                  ; the parts
+  XOR D                   ; the part's bit off
+  LD (MenuParts),A            ; MenuParts
 PartRefused:
   LD A,$78                ; refused or taken back: the low beep
-  CALL Beep
-  CALL ShowRobotDesign
-  CALL PrintMenuResources
+  CALL Beep               ; beep
+  CALL ShowRobotDesign    ; repaint the part pictures and the preview
+  CALL PrintMenuResources ; reprint the resources
 RefuseFireUp:
   CALL WaitKey            ; wait for fire up
-  AND $10
-  JR NZ,RefuseFireUp
-  JP MenuPause
+  AND $10                 ; fire still held?
+  JR NZ,RefuseFireUp      ; wait
+  JP MenuPause            ; the 10-frame pause, then the loop
 
 ; give back the cost of part E to MenuResources, the overflow to the general
 ; resource
@@ -273,35 +319,36 @@ RefuseFireUp:
 ; ConstructionMenuLoop ($CA4C, $CAA4).
 RefundPart:
   LD HL,PartCosts         ; B = the part's cost
-  LD A,E
-  CALL AddAToHL
-  LD B,(HL)
+  LD A,E                  ; the part
+  CALL AddAToHL           ; HL = PartCosts + part
+  LD B,(HL)               ; B = the cost
   LD HL,PartCosts+$0008   ; the resource it takes first
-  LD A,E
-  CALL AddAToHL
-  LD A,(HL)
-  LD HL,MenuResources
-  CALL AddAToHL
-  LD A,(HL)
+  LD A,E                  ; the part
+  CALL AddAToHL           ; HL = PartCosts + 8 + part
+  LD A,(HL)               ; A = the resource index
+  LD HL,MenuResources             ; the menu's resources
+  CALL AddAToHL           ; HL = that resource
+  LD A,(HL)               ; A = its value
   ADD A,B                 ; refund it there
-  LD (HL),A
+  LD (HL),A               ; stored
   PUSH HL                 ; B = the same resource when the menu opened
-  LD A,L
-  SUB $07
-  LD L,A
-  LD B,(HL)
-  POP HL
-  LD A,(HL)
-  CP B
+  LD A,L                  ; the same index in Resources:
+  SUB $07                 ; 7 bytes below MenuResources (no page crossing:
+                          ; $FD22-$FD2F)
+  LD L,A                  ; HL = Resources + index
+  LD B,(HL)               ; B = the value when the menu opened
+  POP HL                  ; HL = the menu's resource
+  LD A,(HL)               ; A = its value now
+  CP B                    ; the same as at the opening?
   RET Z                   ; not above it: done
-  RET C
+  RET C                   ; below it: done
   LD (HL),B               ; above: cap it, the rest goes back to general
-  SUB B
-  LD B,A
+  SUB B                   ; A = the excess: what general had paid
+  LD B,A                  ; B = it
   LD A,(MenuResources)            ; the general resource
-  ADD A,B
-  LD (MenuResources),A
-  RET
+  ADD A,B                 ; plus the excess
+  LD (MenuResources),A            ; back into the general resource
+  RET                     ; done
 
 ; the parts' cost (bipod, tracks, anti-grav, cannon, missiles, phasers,
 ; nuclear, electronics), then the resource each takes first (an index into
@@ -325,63 +372,63 @@ PartCosts:
 ; every press ends in the 10-frame pause (MenuPause).
 MoveMenuCursor:
   LD A,(Input)            ; right / left?
-  AND $03
-  JR Z,CursorUpDown
-  LD C,A
-  LD A,L
+  AND $03                 ; bits 0 right, 1 left
+  JR Z,CursorUpDown       ; neither: down / up
+  LD C,A                  ; C = the two bits
+  LD A,L                  ; A = the column
   RR C                    ; right: the next column
-  JR NC,CursorLeft
-  INC A
+  JR NC,CursorLeft        ; not right
+  INC A                   ; right: column + 1
 CursorLeft:
   RR C                    ; left: the previous one
-  JR NC,CursorColumnCheck
-  DEC A
+  JR NC,CursorColumnCheck ; not left
+  DEC A                   ; left: column - 1 (both: no change)
 CursorColumnCheck:
   CP $03                  ; 0-2 only ($FF too is refused)
-  JR NC,MenuPause
-  LD L,A
-  JP CursorMoved
+  JR NC,MenuPause         ; out of range: no move, only the pause
+  LD L,A                  ; L = the new column
+  JP CursorMoved          ; repaint and click
 CursorUpDown:
   LD A,(Input)            ; down / up, only in the parts column
-  RRCA
-  RRCA
-  LD C,A
-  LD A,L
-  CP $02
-  JR NZ,MenuPause
-  LD A,H
+  RRCA                    ; Input bits 2 down, 3 up
+  RRCA                    ; now bits 0, 1
+  LD C,A                  ; C = them
+  LD A,L                  ; A = the column
+  CP $02                  ; the parts column?
+  JR NZ,MenuPause         ; columns 0, 1 have no rows
+  LD A,H                  ; A = the part row
   RR C                    ; down: the row below (a lower part)
-  JR NC,CursorUp
-  DEC A
+  JR NC,CursorUp          ; not down
+  DEC A                   ; down: the part below
 CursorUp:
   RR C                    ; up: the row above
-  JR NC,CursorRowCheck
-  INC A
+  JR NC,CursorRowCheck    ; not up
+  INC A                   ; up: the part above (both: no change)
 CursorRowCheck:
   CP $08                  ; 0-7 only
-  JR NC,MenuPause
-  LD H,A
+  JR NC,MenuPause         ; out of range: no move
+  LD H,A                  ; H = the new row
 CursorMoved:
   PUSH HL                 ; the old item back to $45
-  LD C,$45
-  CALL PaintMenuCursor
-  POP HL
+  LD C,$45                ; attribute $45
+  CALL PaintMenuCursor    ; the old item (MenuCursor still the old one)
+  POP HL                  ; HL = the new cursor
   LD (MenuCursor),HL           ; the new cursor in $46
-  LD C,$46
-  CALL PaintMenuCursor
+  LD C,$46                ; attribute $46
+  CALL PaintMenuCursor    ; the new item
   LD A,$14                ; a click
-  CALL Beep
+  CALL Beep               ; beep
 
 ; 10 frames, then back to ConstructionMenuLoop
 ;
 ; The pause after every press (moves too); a shorter press falls into it and is
 ; lost, WALKTHROUGH 6.
 MenuPause:
-  LD B,$0A
+  LD B,$0A                ; 10 frames
 MenuPauseLoop:
-  HALT
-  DJNZ MenuPauseLoop
-  JP ConstructionMenuLoop
+  HALT                    ; one frame (StartInterrupt: EI; RET)
+  DJNZ MenuPauseLoop      ; 10 times
+  JP ConstructionMenuLoop ; the next press
 
 ; START ROBOT: needs a chassis and a weapon; spend the resources, place the
 ; robot at the warbase's door, leave
@@ -394,49 +441,49 @@ MenuPauseLoop:
 ; $50 down to $14 by 5). Then LeaveConstructionMenu. In work/deep the robot
 ; built at frame 356 sits at (22, 9): the pad at (22, 5) plus 4 rows.
 StartRobot:
-  LD A,(MenuParts)
+  LD A,(MenuParts)            ; the chosen parts
   LD C,A                  ; no chassis: refused
-  AND $07
-  JR Z,MenuPause
+  AND $07                 ; bipod, tracks or anti-grav?
+  JR Z,MenuPause          ; no chassis: no robot (no beep), the pause
   LD A,C                  ; no weapon: refused
-  AND $78
-  JR Z,MenuPause
+  AND $78                 ; cannon, missiles, phasers or nuclear?
+  JR Z,MenuPause          ; no weapon: no robot
   LD HL,MenuResources             ; the menu's spending becomes real
-  LD DE,Resources
-  LD BC,$0007
-  LDIR
+  LD DE,Resources             ; into Resources
+  LD BC,$0007             ; general and the six part resources
+  LDIR                    ; copy
   LD HL,(ShipX)           ; the robot stands 4 rows below the ship (the pad)
-  LD A,(ShipY)
-  ADD A,$04
-  LD B,A
+  LD A,(ShipY)            ; the ship's row
+  ADD A,$04               ; + 4: the door below the pad
+  LD B,A                  ; B = the row
   LD (IY+$0A),$00         ; not in the menu, not under direct control
   CALL PlaceRobot         ; place it on the map
   LD A,(MenuParts)            ; its parts
-  LD (IY+$07),A
+  LD (IY+$07),A           ; +$07 = the parts
   LD B,$50                ; the chirp: $50 down to $14, a shorter period each
                           ; beep
 BuildChirp:
-  LD A,B
-  CALL Beep
-  LD A,B
-  SUB $05
-  LD B,A
-  CP $14
-  JR NC,BuildChirp
+  LD A,B                  ; the period
+  CALL Beep               ; beep
+  LD A,B                  ; the period
+  SUB $05                 ; 5 shorter: a higher tone
+  LD B,A                  ; B = it
+  CP $14                  ; down to $14?
+  JR NC,BuildChirp        ; 13 tones in all
 ; This entry point is used by the routine at ConstructionMenuLoop.
 LeaveConstructionMenu:
   LD A,$C8                ; a long low beep
-  CALL Beep
+  CALL Beep               ; beep
   LD A,$05                ; $FD30 = 5: the ship climbs 5 game turns on its own,
                           ; so it does not sink straight back into the menu
-  LD (ClimbTurns),A
+  LD (ClimbTurns),A            ; ClimbTurns = 5
   PUSH IY                 ; the play screen redrawn
-  CALL ClearViewBuffer
-  CALL DrawPlayScreen
-  POP IY
+  CALL ClearViewBuffer    ; empty view buffer
+  CALL DrawPlayScreen     ; the whole play screen
+  POP IY                  ; IY = the slot again, for PlayLoop's writes
   LD HL,PlayInterrupt     ; the play interrupt again
-  LD (Handler),HL
-  RET
+  LD (Handler),HL           ; Handler = PlayInterrupt
+  RET                     ; back to PlayLoop
 
 ; paint the item under MenuCursor with attribute C ($46 the cursor, $45 the
 ; rest)
@@ -446,48 +493,48 @@ LeaveConstructionMenu:
 ; row 22 - 3 * row (BIPOD row 22 up to ELECTRONICS row 1). Called by
 ; ConstructionMenuSetup and MoveMenuCursor.
 PaintMenuCursor:
-  LD HL,(MenuCursor)
+  LD HL,(MenuCursor)           ; L = the column, H = the part row
   LD A,L                  ; the parts column?
-  CP $02
-  JR Z,PartNameCursor
+  CP $02                  ; column 2?
+  JR Z,PartNameCursor     ; the part's name
   ADD A,A                 ; $5AA4 + 6 * column: row 21
-  ADD A,L
-  ADD A,A
-  ADD A,$A4
-  LD L,A
-  LD H,$5A
-  LD B,$05
-  CALL FillAttributes
+  ADD A,L                 ; 3 x column
+  ADD A,A                 ; 6 x column
+  ADD A,$A4               ; + $A4: row 21, column 4
+  LD L,A                  ; L = it
+  LD H,$5A                ; HL = $5AA4 + 6 x column
+  LD B,$05                ; 5 cells
+  CALL FillAttributes     ; row 21
   LD A,L                  ; the same columns on row 22
-  ADD A,$1B
-  LD L,A
-  LD B,$05
-  JR FillAttributes
+  ADD A,$1B               ; + 27: past the 5 cells, the next row
+  LD L,A                  ; L = it (no carry: $5AC4 + 6 x column)
+  LD B,$05                ; 5 cells
+  JR FillAttributes       ; row 22, and return
 PartNameCursor:
   LD A,H                  ; row 22 - 3 * part, column 21, 11 cells
-  ADD A,A
-  ADD A,H
-  NEG
-  ADD A,$16
-  ADD A,A
-  ADD A,A
-  ADD A,A
-  LD L,A
-  LD H,$00
-  ADD HL,HL
-  ADD HL,HL
-  LD DE,$5815
-  ADD HL,DE
-  LD B,$0B
+  ADD A,A                 ; 2 x row
+  ADD A,H                 ; 3 x row
+  NEG                     ; - 3 x row
+  ADD A,$16               ; 22 - 3 x row: the screen row of the name
+  ADD A,A                 ; x2
+  ADD A,A                 ; x4
+  ADD A,A                 ; x8
+  LD L,A                  ; L = row x 8
+  LD H,$00                ; HL = row x 8
+  ADD HL,HL               ; x16
+  ADD HL,HL               ; x32: the row's attribute offset
+  LD DE,$5815             ; the attributes' column 21
+  ADD HL,DE               ; HL = the name's first attribute
+  LD B,$0B                ; 11 cells (ELECTRONICS is 11 letters)
 
 ; write C into B bytes from HL
 ;
 ; Also used by PaintMenuItem.
 FillAttributes:
-  LD (HL),C
-  INC HL
-  DJNZ FillAttributes
-  RET
+  LD (HL),C               ; the attribute
+  INC HL                  ; the next cell
+  DJNZ FillAttributes     ; B cells
+  RET                     ; done
 
 ; print MenuResources (two digits each) and their total
 ;
@@ -497,22 +544,22 @@ FillAttributes:
 ; PrintNumber3 (the tail $CC03).
 PrintMenuResources:
   LD DE,MenuResources             ; HL = the total
-  LD HL,$0000
+  LD HL,$0000             ; the sum starts at 0
   LD C,$09                ; C = the row: 9 for GENERAL
-  LD B,$07
+  LD B,$07                ; seven values
 PrintResourceLoop:
-  LD A,(DE)
-  CALL AddAToHL
+  LD A,(DE)               ; the value
+  CALL AddAToHL           ; HL += it: the total
   LD A,(DE)               ; print the value at row C
-  CALL PrintMenuResource
-  INC DE
-  INC C
+  CALL PrintMenuResource  ; at (C,13), two digits
+  INC DE                  ; the next value
+  INC C                   ; the next row
   LD A,B                  ; a blank row after GENERAL
-  CP $07
-  JR NZ,PrintResourceNext
-  INC C
+  CP $07                  ; just printed GENERAL?
+  JR NZ,PrintResourceNext ; no
+  INC C                   ; skip row 10
 PrintResourceNext:
-  DJNZ PrintResourceLoop
+  DJNZ PrintResourceLoop  ; all seven
   CALL PrintInline        ; the total at row 18, column 12
 
 ; PrintInline text: AT 18,12
@@ -521,10 +568,10 @@ TotalPosition:
 
 ; Construction menu: print the total of the costs (the tail of $CBE0)
 ;
-; Runs after the inline position string at $CBFF ((18,12)): E = $20 (blank
-; leading zeros) and PrintNumber3 prints HL, the sum of the seven MenuResources
-; that $CBE0 added up. 29 runs in the deep recording, one per menu redraw of
-; the resource list.
+; The tail of PrintMenuResources after the inline position (18,12): E = $20
+; (blank leading zeros) and PrintNumber3 prints HL, the sum of the seven
+; MenuResources (the TOTAL line, not the costs). 29 runs in the deep recording,
+; one per reprint of the resources.
 PrintMenuTotal:
   LD E,$20                ; blank the leading zeros
   JP PrintNumber3         ; three digits of HL
@@ -536,10 +583,10 @@ PrintMenuTotal:
 ; position, then PrintMenuResourceValue prints A as two digits. Preserves BC,
 ; DE, HL (203 calls in the deep recording).
 PrintMenuResource:
-  PUSH AF
+  PUSH AF                 ; the value
   LD A,C                  ; the row into the string below
-  LD (MenuResourcePos+$0001),A
-  CALL PrintInline
+  LD (MenuResourcePos+$0001),A ; Y of the string below
+  CALL PrintInline        ; the position (C,13)
 
 ; Inline string: position (row patched, column 13)
 ;
@@ -549,15 +596,15 @@ MenuResourcePos:
 
 ; Construction menu: print A as two digits, registers kept (the tail of $CC08)
 PrintMenuResourceValue:
-  POP AF
-  PUSH BC
-  PUSH DE
-  PUSH HL
+  POP AF                  ; the value back
+  PUSH BC                 ; kept
+  PUSH DE                 ; kept
+  PUSH HL                 ; kept
   CALL PrintNumber2       ; two digits, blank leading zero
-  POP HL
-  POP DE
-  POP BC
-  RET
+  POP HL                  ; HL back
+  POP DE                  ; DE back
+  POP BC                  ; BC back
+  RET                     ; done
 
 ; Construction menu: highlight the chosen parts and draw the robot preview
 ;
@@ -573,13 +620,14 @@ PrintMenuResourceValue:
 ; after each change of the parts.
 ShowRobotDesign:
   LD HL,$5810             ; the attributes of part row 0 (electronics, bit 7)
-  LD A,(MenuParts)
-  LD C,A
-  LD B,$08
+  LD A,(MenuParts)            ; the chosen parts
+  LD C,A                  ; C = them, shifted out from bit 7 (electronics, the
+                          ; top)
+  LD B,$08                ; eight parts
 PartRowLoop:
   LD E,$06                ; E = $06: not chosen
   RL C                    ; the next part bit into carry, highest first
-  JR NC,PartRowPaint
+  JR NC,PartRowPaint      ; not chosen
   LD E,$47                ; chosen: bright white
 PartRowPaint:
   PUSH BC                 ; paint the part's 4 x 3 cells in attribute E
@@ -587,21 +635,21 @@ PartRowPaint:
 PartRowLine:
   PUSH BC                 ; one attribute row of the part's 4 cells
 PartCellLoop:
-  LD (HL),E
-  INC HL
-  DJNZ PartCellLoop
+  LD (HL),E               ; the attribute
+  INC HL                  ; the next cell
+  DJNZ PartCellLoop       ; four cells
   LD A,$1C                ; to the next attribute row (32 - 4)
-  CALL AddAToHL
-  POP BC
-  DEC C
-  JR NZ,PartRowLine
-  POP BC
-  DJNZ PartRowLoop
+  CALL AddAToHL           ; HL = the next row's column 16
+  POP BC                  ; C = the rows left
+  DEC C                   ; one row done
+  JR NZ,PartRowLine       ; three rows a part
+  POP BC                  ; B = the parts left
+  DJNZ PartRowLoop        ; all eight
   CALL ClearViewBuffer    ; empty view buffer
-  LD A,(MenuParts)
+  LD A,(MenuParts)            ; the chosen parts
   LD (IY+$07),A           ; the robot's parts
   LD DE,$0A07             ; row 10, column 7 of the view
-  CALL DrawRobot
+  CALL DrawRobot          ; the parts from +$0D up, into the view buffer
   LD A,($CF3F)            ; the stack's height after the last part
   LD (IY+$09),A           ; +$09: the robot's height (the landing test adds
                           ; +$0D)
@@ -609,26 +657,26 @@ PartCellLoop:
   LD DE,ViewBuffer+$0668  ; buffer row 82, column 0
   LD HL,$48E0             ; screen: character row 15, column 0
 PreviewLineLoop:
-  PUSH BC
-  PUSH HL
+  PUSH BC                 ; C = the lines left
+  PUSH HL                 ; the line's screen address
 PreviewByteLoop:
   LD A,(DE)               ; copy B bytes of the buffer row to the screen line
-  LD (HL),A
-  INC DE
-  INC HL
-  DJNZ PreviewByteLoop
+  LD (HL),A               ; onto the screen
+  INC DE                  ; the next buffer byte
+  INC HL                  ; the next screen byte
+  DJNZ PreviewByteLoop    ; four bytes: columns 0-3
   LD A,E                  ; the next buffer row (20 bytes in all)
-  ADD A,$10
-  LD E,A
-  LD A,D
-  ADC A,$00
-  LD D,A
-  POP HL
+  ADD A,$10               ; + 16: with the 4 copied, a buffer row of 20
+  LD E,A                  ; E = it
+  LD A,D                  ; the carry
+  ADC A,$00               ; into the high byte
+  LD D,A                  ; DE = the next buffer row
+  POP HL                  ; HL = the line's start
   CALL NextScreenLine     ; the next screen line
-  POP BC
-  DEC C
-  JR NZ,PreviewLineLoop
-  RET
+  POP BC                  ; C = the lines left
+  DEC C                   ; one line done
+  JR NZ,PreviewLineLoop   ; 72 lines
+  RET                     ; done
 
 ; Put robot IY at map column HL, row B: record, map bit 6, radar dot
 ;
@@ -639,21 +687,21 @@ PreviewByteLoop:
 ; Called by the robot step $B0FA (9652 times in the deep recording), the enemy
 ; spawn $B7F4 (22) and START ROBOT in $CB52 (7).
 PlaceRobot:
-  LD (IY+$02),L
-  LD (IY+$03),H
-  LD (IY+$04),B
+  LD (IY+$02),L           ; +$02 = the column, low byte
+  LD (IY+$03),H           ; +$03 = its high byte
+  LD (IY+$04),B           ; +$04 = the row
   PUSH HL                 ; keep x for the radar
-  LD A,B
+  LD A,B                  ; A = the row
   CALL MapCell            ; HL = $DD00 + $200*y + x
-  LD (IY+$00),L
-  LD (IY+$01),H
+  LD (IY+$00),L           ; +$00 = the cell, low byte
+  LD (IY+$01),H           ; +$01 = its high byte (not 0: the slot is in use)
   SET 6,(HL)              ; bit 6: draw an object here
-  POP HL
+  POP HL                  ; HL = the column
   LD C,(IY+$04)           ; C = y
   LD A,(IY+$0A)           ; B = side: +$0A bit 7 (enemy)
-  RLCA
-  AND $01
-  LD B,A
+  RLCA                    ; bit 7 into bit 0
+  AND $01                 ; 0 ours, 1 the enemy's
+  LD B,A                  ; B = the radar picture
   JP ToggleRadarDot       ; XOR the 2x2 dot into the side's radar
 
 ; HL = the map cell under the ship (ShipX, ShipY)
@@ -661,8 +709,8 @@ PlaceRobot:
 ; Falls into MapCell. Used by $A62D, $B01D (clear the ship's bit 7) and $B024
 ; (set it).
 ShipCell:
-  LD HL,(ShipX)
-  LD A,(ShipY)
+  LD HL,(ShipX)           ; the ship's column
+  LD A,(ShipY)            ; the ship's row
 
 ; HL = the map cell of column HL, row A: $DD00 + $200*A + HL
 ;
@@ -670,11 +718,11 @@ ShipCell:
 ; recording: the main loop $AD90, CheckShipMove, the robot code, PlaceRobot,
 ; DrawMover).
 MapCell:
-  ADD A,A
-  ADD A,$DD
-  ADD A,H
-  LD H,A
-  RET
+  ADD A,A                 ; 2 x row: $200 bytes a map row
+  ADD A,$DD               ; + $DD: the map's page
+  ADD A,H                 ; + the column's high byte
+  LD H,A                  ; HL = the cell
+  RET                     ; done
 
 ; Beeper tone: 256 half-periods, A = the half-period delay (bigger is lower)
 ;
@@ -683,18 +731,18 @@ MapCell:
 ; confirmations: ListMenu (83), $CB52 (98), $CB00 (42), $CA0F (22), the robot
 ; menu $A7CD, $ABC8.
 Beep:
-  PUSH BC
-  LD B,A
+  PUSH BC                 ; kept
+  LD B,A                  ; B = the half-period delay
   XOR A                   ; C = 0: 256 toggles
-  LD C,A
+  LD C,A                  ; C = 0
 BeepLoop:
-  PUSH BC
+  PUSH BC                 ; keep the delay and the count
   XOR $10                 ; flip the speaker bit
-  OUT ($FE),A
+  OUT ($FE),A             ; the speaker (bit 4), border 0, MIC 0
 BeepDelay:
-  DJNZ BeepDelay
-  POP BC
-  DEC C
-  JR NZ,BeepLoop
-  POP BC
-  RET
+  DJNZ BeepDelay          ; the half-period
+  POP BC                  ; B = the delay, C = the count
+  DEC C                   ; one toggle done
+  JR NZ,BeepLoop          ; 256 toggles: 128 periods
+  POP BC                  ; BC back
+  RET                     ; done

@@ -1,3 +1,29 @@
+; --------------------------------------------------------------------------------------------------------------------
+; start.asm: the start-up, the new game set-up and the play loop
+;
+; The game's top level, entered from N1's RET at $A600 and again from every restart (abort key I, the end of a game, a
+; tape loading error). Start builds the IM 2 table, seeds the random generator and calls MainMenu; NewGameSetup clears
+; the game state and builds the map; EnterPlay draws the play screen and switches to PlayInterrupt; PlayLoop runs one
+; game turn a pass, forever.
+;
+; The routines in calling order: Start ($A600) -> MainMenu (mainmenu.asm) -> NewGameSetup ($A62D, skipped for a loaded
+; game) -> EnterPlay ($A68E) -> PlayLoop ($A69A). Each falls into the next; nothing here returns.
+;
+; The IM 2 trick: 257 bytes of $FD at $FE00-$FF00 with I = $FE make the vector $FDFD whatever the data bus holds; a JP
+; sits at $FDFD and its operand Handler ($FDFE) is the only thing the game changes to switch the interrupt's work
+; (StartInterrupt in the menus, PlayInterrupt in play). docs/02-architecture.md 2.3 and 2.4.
+;
+; PlayLoop is the game's state machine in one loop (docs/04-game-loop.md 4.1-4.3): WaitKey, MoveShip, WorldTurn,
+; DrawView, GameTurn; then what lies under the ship decides whether a menu opens: our robot with the ship on its top
+; opens RobotMenu (robotmenu.asm), the pad of our warbase at altitude 15 with a free door opens ConstructionMenu
+; (construction.asm), and PlayLoop writes the new robot's start state after it. Last the game keys I (abort) and 5
+; (save).
+;
+; The module owns no data; NewGameSetup zeroes the robot records ($DA00), the variables ($FD04-$FDFC), Buildings and
+; Shots. The bug of the full robot table (the new-robot writes land on enemy slot 24): docs/10-gameplay-logic.md
+; 10.12.
+; --------------------------------------------------------------------------------------------------------------------
+
 ; the entry from N1: the IM 2 table, the start-up, the menu
 ;
 ; The IM 2 table $FE00-$FF00 (257 x $FD), JP at $FDFD, Handler =
@@ -9,24 +35,28 @@ Start:
   DI                      ; no interrupts while the vector table is built
   LD SP,$0000             ; SP = 0: the stack grows down from $FFFF
   LD HL,$FE00             ; the IM 2 table: 257 bytes of $FD at $FE00-$FF00
-  LD BC,$00FD
+  LD BC,$00FD             ; B = 0: 256 bytes, C = $FD the byte stored
 FillVectorTable:
   LD (HL),C               ; 256 bytes, then the 257th below
-  INC HL
-  DJNZ FillVectorTable
-  LD (HL),C
+  INC HL                  ; the next vector byte
+  DJNZ FillVectorTable    ; 256 times
+  LD (HL),C               ; the 257th byte, $FF00: the vector $FEFF (bus byte
+                          ; $FF) reads its high byte here
   LD A,$C3                ; JP at $FDFD: every vector lands on Handler
-  LD ($FDFD),A
+  LD ($FDFD),A            ; the JP opcode at $FDFD, its operand Handler at
+                          ; $FDFE
   LD HL,StartInterrupt    ; StartInterrupt (EI; RET) while the menu runs
-  LD (Handler),HL
-  LD A,$FE
-  LD I,A
-  IM 2
-  EI
+  LD (Handler),HL           ; Handler = StartInterrupt
+  LD A,$FE                ; I = $FE: the vector table's page
+  LD I,A                  ; I points at $FE00
+  IM 2                    ; IM 2: the interrupt jumps through ($FE00 + the bus
+                          ; byte) = $FDFD
+  EI                      ; interrupts on from here
   LD HL,$3039             ; the random seed $FD00-$FD03 = $39,$30,$39,$30
                           ; (12345 twice)
-  LD (RandomSeed),HL
-  LD (RandomSeed+2),HL
+  LD (RandomSeed),HL           ; $FD00-$FD01 = $39,$30
+  LD (RandomSeed+2),HL           ; $FD02-$FD03 = $39,$30: the same seed at every
+                          ; start, so each game begins the same
   CALL MainMenu           ; the title menu: Z = START GAME, NZ = a saved game
                           ; was loaded
 
@@ -49,40 +79,42 @@ FillVectorTable:
 NewGameSetup:
   JR NZ,EnterPlay         ; NZ: a loaded game, nothing to set up
   LD HL,Robots            ; the 48 robot records
-  LD DE,Robots+$0001
-  LD BC,$02FF
-  LD (HL),$00
-  LDIR
+  LD DE,Robots+$0001      ; LDIR copy: each byte the one before it, all 0
+  LD BC,$02FF             ; $2FF more bytes: 48 x 16 = $300 in all
+  LD (HL),$00             ; the first byte 0
+  LDIR                    ; zero $DA00-$DCFF
   LD HL,PrintAddr             ; the variables past the seed
-  LD DE,PrintAddr+1
-  LD BC,$00F8
-  LD (HL),$00
-  LDIR
+  LD DE,PrintAddr+1             ; the fill target one byte up
+  LD BC,$00F8             ; $F8 more: $FD04-$FDFC in all
+  LD (HL),$00             ; the first byte 0
+  LDIR                    ; zero the variables (the seed and the JP at $FDFD
+                          ; kept)
   LD HL,Buildings             ; the 56 building records (and 33 bytes more)
-  LD DE,Buildings+1
-  LD BC,$00C8
-  LD (HL),$00
-  LDIR
+  LD DE,Buildings+1             ; the fill target one byte up
+  LD BC,$00C8             ; $C8 more: $FF01-$FFC9 in all
+  LD (HL),$00             ; the first byte 0
+  LDIR                    ; zero the building table
   LD HL,Shots             ; the 5 shot records
-  LD DE,Shots+$0001
-  LD BC,$002C
-  LD (HL),$00
-  LDIR
+  LD DE,Shots+$0001       ; the fill target one byte up
+  LD BC,$002C             ; $2C more: 45 bytes, 5 shot records x 9
+  LD (HL),$00             ; the first byte 0
+  LDIR                    ; zero the shots: all free (+$01 = 0)
   LD HL,Map               ; the view starts at the map's left edge
-  LD (MapView),HL
-  LD HL,$0000
-  LD (ViewX),HL
+  LD (MapView),HL           ; MapView = $DD00: the view's top left map cell
+  LD HL,$0000             ; column 0
+  LD (ViewX),HL           ; ViewX = 0: the view's first column
   LD HL,$0011             ; the ship over column 17, row 10, on the ground
-  LD (ShipX),HL
-  LD A,$0A
-  LD (ShipY),A
-  XOR A
-  LD (Altitude),A
+  LD (ShipX),HL           ; ShipX = 17
+  LD A,$0A                ; row 10
+  LD (ShipY),A            ; ShipY = 10
+  XOR A                   ; altitude 0: the ship on the ground
+  LD (Altitude),A            ; Altitude = 0
   LD A,$03                ; auto-climb for 3 turns
-  LD (ClimbTurns),A
+  LD (ClimbTurns),A            ; ClimbTurns = 3: the ship rises on its own at the
+                          ; start
   LD A,$14                ; 20 general resource for each side
-  LD (Resources),A
-  LD (EnemyResources),A
+  LD (Resources),A            ; Resources+0, our general resource
+  LD (EnemyResources),A            ; EnemyResources+0, the enemy's general resource
   CALL BuildMap           ; build the map
 
 ; Draw the play screen and switch to the play interrupt
@@ -93,10 +125,13 @@ NewGameSetup:
 ; PlayLoop. Entered from NewGameSetup, from a loaded game, and again after a
 ; game save (key 5, SaveGame) at $A71D.
 EnterPlay:
-  CALL DrawViewBackground
-  CALL DrawPlayScreen
+  CALL DrawViewBackground ; clear the view buffer, paint the corners outside
+                          ; the map
+  CALL DrawPlayScreen     ; the whole play screen: view, frame, radar, status
+                          ; panel
   LD HL,PlayInterrupt     ; PlayInterrupt from now on
-  LD (Handler),HL
+  LD (Handler),HL           ; Handler: the frame count $FD34 and the radar each
+                          ; frame
 
 ; The play loop: one game turn a pass (at least 10 frames)
 ;
@@ -134,46 +169,48 @@ PlayLoop:
   CALL GameTurn           ; the turn: clock, captures, game end, frame pacing
   CALL ShipCell           ; HL = the map cell under the ship
   BIT 6,(HL)              ; bit 6: a robot or a building under the ship
-  JR Z,CheckGameKeys
+  JR Z,CheckGameKeys      ; nothing there: only the game keys
   CALL FindRobot          ; one of ours? B = 48 - slot
-  JR NZ,CheckWarbasePad
-  LD A,B
+  JR NZ,CheckWarbasePad   ; not a robot: try a building
+  LD A,B                  ; B = 48 - the slot
   CP $19                  ; slots 24-47 (B < 25) are the enemy's
-  JR C,CheckGameKeys
+  JR C,CheckGameKeys      ; an enemy robot: no menu
   LD A,(Altitude)            ; the ship must rest exactly on the robot's top
-  SUB (IY+$09)
-  SUB (IY+$0D)
+  SUB (IY+$09)            ; minus the robot's height +$09 (its parts)
+  SUB (IY+$0D)            ; minus its ground +$0D: 0 when the ship sits on its
+                          ; top
   CALL Z,RobotMenu        ; landed on our robot
-  JR CheckGameKeys
+  JR CheckGameKeys        ; then the game keys
 CheckWarbasePad:
   CALL FindBuilding       ; not a robot: a building?
-  JR NZ,CheckGameKeys
+  JR NZ,CheckGameKeys     ; neither robot nor building record here: the game
+                          ; keys
   LD A,(IY+$02)           ; type 0: the pad of our warbase
-  OR A
-  JR NZ,CheckGameKeys
+  OR A                    ; building type +$02 = 0?
+  JR NZ,CheckGameKeys     ; other buildings open nothing
   LD A,(Altitude)            ; the pad's top is 15
-  CP $0F
-  JR NZ,CheckGameKeys
+  CP $0F                  ; altitude 15?
+  JR NZ,CheckGameKeys     ; the ship has not landed on the pad yet
   LD L,(IY+$00)           ; HL = the pad's cell + 4 rows: the door, where the
                           ; robot appears
-  LD A,(IY+$01)
-  ADD A,$08
-  LD H,A
-  LD A,(HL)
+  LD A,(IY+$01)           ; the cell's high byte
+  ADD A,$08               ; + 8 = 4 map rows of $200 bytes down
+  LD H,A                  ; HL = the door cell
+  LD A,(HL)               ; the door's flags
   INC H                   ; the door, the cell below it and its two neighbours
-  INC H
-  OR (HL)
-  DEC HL
-  OR (HL)
-  INC HL
-  INC HL
-  OR (HL)
+  INC H                   ; $200 on: HL = the cell under the door
+  OR (HL)                 ; its flags
+  DEC HL                  ; its left neighbour
+  OR (HL)                 ; its flags
+  INC HL                  ; back to the cell under the door
+  INC HL                  ; its right neighbour
+  OR (HL)                 ; its flags: A = the four cells' bits ORed
   AND $40                 ; any of them taken: no menu
-  JR NZ,CheckGameKeys
+  JR NZ,CheckGameKeys     ; a robot or building in the way: the menu stays shut
   CALL ConstructionMenu   ; IY = the free robot slot it filled (or $DB80 when
                           ; none was free)
   LD (IY+$05),$04         ; the new robot's start state
-  LD (IY+$06),$05
+  LD (IY+$06),$05         ; +$06 = 5 steps on that course
   LD (IY+$0B),$00         ; order 0: stop and defend
   LD (IY+$0C),$64         ; strength 100 %
   LD (IY+$0F),$01         ; +$0F = 1: its first step at once
@@ -181,9 +218,9 @@ CheckWarbasePad:
   CALL UpdateStatusPanel  ; reprint the status values
 CheckGameKeys:
   LD A,(Input)            ; Input bit 6 (key I): abandon the game
-  BIT 6,A
-  JP NZ,Start
+  BIT 6,A                 ; key I held?
+  JP NZ,Start             ; abandon: the start-up and the title menu again
   BIT 5,A                 ; Input bit 5 (key 5): save the game
-  JP Z,PlayLoop
+  JP Z,PlayLoop           ; neither key: the next turn
   CALL SaveGame           ; "PRESS RECORD AND PLAY", the tape save
   JP EnterPlay            ; redraw the play screen

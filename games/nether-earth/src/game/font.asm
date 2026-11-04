@@ -1,3 +1,15 @@
+; --------------------------------------------------------------------------------------------------------------------
+; font.asm: The character set: 64 glyphs of 8 x 8 pixels, codes $20-$5F
+;
+; The game's own font, every text on the screen (menus, panel, numbers, the big title). Docs: 08-hud-and-text.md 8.2.
+; Resource: src/res/gfx/font.png (128 x 32, 16 glyphs a row, in code order), built into gfx/font.bin; see
+; src/res/README.md.
+;
+; Format: 8 bytes a glyph, the top line first, bit 7 the leftmost pixel, 1 = ink. Readers: PrintChar ($D4B1) and
+; PrintBigChar ($D4DA) at $6680 + 8 x code (written ViewBuffer+$0B80), so the font must stay right after the 3200-byte
+; view buffer. Never written.
+; --------------------------------------------------------------------------------------------------------------------
+
 ; Font: 64 glyphs of 8 bytes, codes $20-$5F
 ;
 ; Glyph = $6680 + code * 8, top line first, 1 = ink. Codes $20-$5F: space,

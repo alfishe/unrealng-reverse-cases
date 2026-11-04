@@ -1,3 +1,19 @@
+; --------------------------------------------------------------------------------------------------------------------
+; viewbuffer.asm: The view's back buffer at $5B00-$677F (also the tape checksum and the flash's attribute store)
+;
+; 3200 bytes of work space at the bottom of the game image: the isometric view is composed here every game turn and
+; copied to the screen in one go, so the player never sees a half-drawn view. Docs: 06-rendering.md 6.1-6.2.
+;
+; Format: 160 pixel lines of 20 bytes, line N at $5B00 + 20 x N, top line first; byte 0 of a line is screen character
+; column 1. Writers: ClearViewBuffer (zero), FillViewCorner and DrawViewBackground (the black triangle and edges),
+; DrawSprite (every map object, robot part, shot, the ship and its shadow, masked). Reader: CopyViewToScreen (to
+; $4021, rows 1-20).
+;
+; Borrowed by others while no view is drawn: ShowRobotDesign (the robot preview of the construction menu),
+; NuclearFlash (the view's 400 attributes), SaveGameBlocks / LoadGameBlocks (the 2-byte checksum of a saved game at
+; $5B00). Font addresses are computed as $6680 + 8 x code, inside this buffer, because codes start at $20.
+; --------------------------------------------------------------------------------------------------------------------
+
 ; The view's back buffer: 160 lines of 20 bytes (160 x 160 pixels)
 ;
 ; The isometric view is composed here and copied to the screen at $4021
