@@ -134,7 +134,7 @@ are not read either. The build keeps both as they are.
 
 ![The loading screen](img/load-2-loading-screen.png)
 
-The unpacker at work, one picture every 2 frames of the recording (made by `tools/memanim.py` from TTD `memory_at`):
+The unpacker at work, one picture every quarter frame (17 472 T-states) from frame 2512, t 37000 to frame 2531 (made by `tools/memanim.py` from TTD `memory_at`):
 on the left the screen page `$4000-$5AFF` as memory, in the screen's own geometry and at its size (`--screen-geometry`:
 each bitmap byte as its 8 pixels, set bits light; a written attribute as a frame round its cell), on the right the
 screen as the Spectrum shows it. A byte written since the last picture flashes yellow at the place it shows and fades
@@ -142,6 +142,11 @@ to red. The bitmap comes first, row by row; the attributes follow, so the pictur
 paper) until they arrive.
 
 ![The screen unpacker writing the loading picture](img/anim-loading-screen.gif)
+
+```bash
+python3 tools/memanim.py --work work/c2 --from 2512:37000 --to 2531:37000 --step 17472 --screen --screen-geometry \
+    --label 'H_A_T_E.1 unpacks the loading screen' docs/img/anim-loading-screen.gif
+```
 
 *Frame 2 531: the screen complete. At frame 2 530 the unpacker is still writing attribute row 21.*
 
@@ -178,6 +183,14 @@ the write front starts at `$FFFF` and climbs to `$5FB4` while the packed data it
 consumed. Reading backwards is what lets the packed and the unpacked data share memory without a buffer.
 
 ![The depacker unpacking the game into `$5FB4-$FFFF`](img/anim-depacker.gif)
+
+One row of the picture is 256 bytes, `$5B00` at the top; a byte's grey is its value, yellow fading to red marks the
+bytes just written. The band climbing from the bottom is the write front.
+
+```bash
+python3 tools/memanim.py --work work/c2 --from 2531 --to 2613:53257 --step 69888 --from-address 5B00 \
+    --label 'The depacker at $5B8C unpacks the game backwards from $FFFF' docs/img/anim-depacker.gif
+```
 
 ## 3.6 Memory after the load
 

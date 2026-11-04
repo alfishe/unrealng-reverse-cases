@@ -100,11 +100,13 @@ def main():
     if args.screen_geometry:
         lo, hi = 0x4000, 0x5AFF
     rows, cell = (hi - lo + 1) // 256, args.cell
-    font = ImageFont.load_default()
+    font, small = ImageFont.load_default(size=16), ImageFont.load_default(size=14)
     grid_w, grid_h = (256 * SCALE, 192 * SCALE) if args.screen_geometry else (256 * cell, rows * cell)
     screen_w = 256 * 2 if args.screen else 0
-    width = 52 + grid_w + (16 + screen_w if args.screen else 0) + 10
-    height = 34 + max(grid_h, 384 if args.screen else 0) + 22
+    left = 60
+    width = max(left + grid_w + (16 + screen_w if args.screen else 0) + 10, 660)
+    top = 96 if args.screen else 76  # the title, the moment, the legend, and with --screen the panel names
+    height = top + max(grid_h, 384 if args.screen else 0) + 10
     age = {}
     previous = None
     pictures = []
@@ -131,22 +133,31 @@ def main():
             for dy in range(cell):
                 for dx in range(cell):
                     px[x + dx, y + dy] = colour
-        image.paste(grid, (52, 30))
+        image.paste(grid, (left, top))
         d = ImageDraw.Draw(image)
-        d.text((52, 6), f'{args.label}  frame {frame} t {t}   {written} bytes changed', fill=(235, 235, 235),
-               font=font)
-        d.text((52, 18), 'yellow: written since the last picture, fading red: earlier'
-               + (' (attributes: a frame round the cell)' if args.screen_geometry else ''), fill=(160, 160, 170),
-               font=font)
+        d.text((left, 6), args.label, fill=(240, 240, 240), font=font)
+        d.text((left, 28), f'frame {frame}, t {t}: {written} bytes changed since the last picture',
+               fill=(200, 200, 205), font=small)
+        x = left
+        for colour, text in ((FADE[0], 'written since the last picture'), (FADE[3], 'written a few pictures ago'),
+                             ((150, 150, 158), 'not lately' + (' (an attribute: a frame round its cell)'
+                                                               if args.screen_geometry else ' (grey: its value)'))):
+            d.rectangle((x, 52, x + 12, 64), fill=colour)
+            d.text((x + 18, 50), text, fill=(200, 200, 205), font=small)
+            x += 30 + int(d.textlength(text, font=small))
+        if args.screen:
+            d.text((left, 76), 'memory $4000-$5AFF' + (', each byte where it shows' if args.screen_geometry else ''),
+                   fill=(220, 220, 160), font=small)
+            d.text((left + grid_w + 16, 76), 'the screen as the TV shows it', fill=(220, 220, 160), font=small)
         if args.screen_geometry:  # the thirds of the bitmap
             for a in (0x4000, 0x4800, 0x5000):
-                d.text((4, 30 + screen_line(a) * SCALE), f'${a:04X}', fill=(170, 170, 180), font=font)
+                d.text((4, top + screen_line(a) * SCALE), f'${a:04X}', fill=(170, 170, 180), font=small)
         else:
             for a in range(lo, hi + 1, 0x1000):
-                y = 30 + ((a - lo) >> 8) * cell
-                d.text((4, y - 4), f'${a:04X}', fill=(170, 170, 180), font=font)
+                y = top + ((a - lo) >> 8) * cell
+                d.text((4, y - 7), f'${a:04X}', fill=(170, 170, 180), font=small)
         if args.screen:
-            image.paste(zxscreen.render(mem[0x4000:0x5B00], SCALE), (52 + grid_w + 16, 30))
+            image.paste(zxscreen.render(mem[0x4000:0x5B00], SCALE), (left + grid_w + 16, top))
         pictures.append(image)
         for a in list(age):
             age[a] += 1

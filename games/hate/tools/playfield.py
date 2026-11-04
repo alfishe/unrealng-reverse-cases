@@ -71,20 +71,21 @@ def main():
     mem = open(args.mem, 'rb').read()
     c32e, c32f = (mem[0xC32E], mem[0xC32F]) if args.state_now else state_before(mem)
     s = args.scale
-    font = ImageFont.load_default()
+    font, small = ImageFont.load_default(size=24), ImageFont.load_default(size=20)
     w, h = 256 * s, 192 * s
-    img = Image.new('RGB', (3 * w + 4 * 16, h + 40), (24, 24, 30))
+    img = Image.new('RGB', (3 * w + 4 * 16, h + 82), (24, 24, 30))
     draw = ImageDraw.Draw(img)
 
     # 1: the strips as stored, byte 0 at the bottom (the blit draws upward)
-    x0, y0 = 16, 28
+    x0, y0 = 16, 70
     panel = Image.new('RGB', (w, h), (12, 12, 16))
     for j, (d, e) in enumerate(strips(mem, c32e, c32f)):
         for k in range(128):
             bits(panel, j * 8 * s, (191 - k) * s, mem[(d << 8) | ((e + k) & 0xFF)], s)
     img.paste(panel, (x0, y0))
-    draw.text((x0, 8), f'stored: 32 strips of 128 lines ($C32E={c32e}, $C32F=${c32f:02X})', fill=(220, 220, 200),
-              font=font)
+    draw.text((x0, 6), '1. the 32 strips as stored in the buffer', fill=(235, 235, 220), font=font)
+    draw.text((x0, 36), f'byte 0 at the bottom; scroll $C32E={c32e}, $C32F=${c32f:02X}', fill=(180, 180, 170),
+              font=small)
 
     # 2: the blit's placement, ink only
     x1 = x0 + w + 16
@@ -93,12 +94,14 @@ def main():
         y = ((address >> 8) & 7) | ((address >> 2) & 0x38) | ((address >> 5) & 0xC0)
         bits(panel, (address & 31) * 8 * s, y * s, byte, s)
     img.paste(panel, (x1, y0))
-    draw.text((x1, 8), 'placed by the address list $D5B2', fill=(220, 220, 200), font=font)
+    draw.text((x1, 6), '2. the same bytes placed by the blit', fill=(235, 235, 220), font=font)
+    draw.text((x1, 36), 'through its address list $D5B2: the isometric view', fill=(180, 180, 170), font=small)
 
     # 3: the screen
     x2 = x1 + w + 16
     img.paste(zxscreen.render(mem[0x4000:0x5B00], s), (x2, y0))
-    draw.text((x2, 8), 'the screen', fill=(220, 220, 200), font=font)
+    draw.text((x2, 6), '3. the real screen', fill=(235, 235, 220), font=font)
+    draw.text((x2, 36), 'matches 2 but for the sprites and the panel', fill=(180, 180, 170), font=small)
     img.save(args.png)
 
 

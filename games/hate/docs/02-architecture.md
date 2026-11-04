@@ -95,19 +95,31 @@ About 8 000 bytes of the 41 036 the depacker wrote were executed. The rest is da
 instructions ran.
 
 **The memory in use, as heatmaps.** L1 counts every byte's executions, reads and writes over the window (frames
-2613-45260, the title music, two games and the demo). Each picture is the 48 K of RAM as 192 rows of 256 bytes,
-`$4000` at the top. Intensity is log2 of the count; the composite puts writes in red, reads in green and execution in
-blue.
+2613-45260, the title music, two games and the demo), and the frame each byte was last read or written.
 
-![Executed, read and written bytes over the game window](img/heat-game.png)
+![The game's memory over the window: how often each byte was used, and when last](img/heat-memory.png)
+
+How to read the figure:
+
+- **Both panels** are the 48 K of RAM as 192 rows of 256 bytes, `$4000` at the top; across is the byte within the
+  row. The brackets on the right name the regions.
+- **The left panel** is how often: writes in red, reads in green, execution in blue, each on a log2 scale. A byte
+  both read and written is yellow; a brighter colour is a higher count.
+- **The right panel** is when: the frame each byte was last read or written, dark blue early in the window, yellow
+  late, black never. Running code does not count there, only data reads and writes.
 
 Read from the top:
 
 - **The screen** (`$4000-$57FF`): each row of the picture is 256 bytes, eight pixel lines of 32 bytes side by side.
-  In each 32-byte segment the left part is written every pass (one turn of the game loop, [2.5](#25-the-main-loop)), the play area that the blit `$D35E` redraws; the right
-  part stays dark, the panel, which keeps the copy made when play started.
+  In each 32-byte segment the left part is written every pass (one turn of the game loop,
+  [2.5](#25-the-main-loop)), the play area that the blit `$D35E` redraws; the right part stays dark, the panel,
+  which keeps the copy made when play started.
+- **`$5B00-$5FFF`** is read only: the shadow shapes, copied there from `$BB00` when play starts
+  ([6.6](06-rendering.md)).
 - **`$6000-$64FF`** is read, rarely written: the ground profile `$6000-$62FF`, cleared and built again at every
   round setup (`$CF68`, `$D0EF`, [6.5](06-rendering.md)), and the font, only read.
+- **`$6500-$7FFF`** is read only, but for the scratch page `$6500`: the sprite graphics
+  ([11. Data reference](11-data-reference.md)).
 - **`$8000-$BFFF`** glows in both read and write: the playfield buffer. After the title the music player's bytes are
   overwritten by it, which is the "code, then a buffer" reuse L1 reports (2.2). The thin execute line at `$8000-$85FF`
   is the title music player, the only code that ran there.
@@ -116,11 +128,13 @@ Read from the top:
 - **`$F300-$F7FF`** is read only: the course blocks (4.2).
 - **The last rows** are the stack under `$FFFF`, read and written by every call.
 
-The same build by the frame each byte was last read or written: bright is late in the window, dark early. Most of
-the code range is dark, as code is executed and not read as data; the bright lines in it are the operands and tables
-the game still reads or writes in the demo. The buffers, the variables and the stack stay bright to the end.
+In the right panel most of the code range is dark, as code is executed and not read as data; the bright lines in it
+are the operands and tables the game still reads or writes in the demo. The buffers, the variables and the stack stay
+bright to the end.
 
-![The frame each byte was last touched](img/heat-game-last.png)
+```bash
+python3 tools/fig_l1.py memory work/game2/l1.json docs/img/heat-memory.png
+```
 
 ## 2.3 The stages from tape to play
 
@@ -342,14 +356,26 @@ flowchart TB
   end of the round's pre-roll ([4.2](04-game-loop.md)).
 - `course` is not in the diagram: it holds the tiles, the tile runs and the ten courses, no code, so 17 of the 18 modules are.
 
-Which module's code touches which memory, over the bot's game (`tools/heatviews.py modules`; the band on top is the
-module that owns the page). Below, the screen writes of every module that draws, in the screen's own geometry:
+Which module's code touches which memory, over the bot's game:
 
-![Memory read and written by each module, and each module's screen writes](img/heat-modules.png)
+![Memory read and written by each module](img/heat-modules.png)
 
-- `scroller` writes the screen's playfield rows and reads the whole buffer `$8000-$BFFF`; `sprites`, `shadows` and
+How to read the figure:
+
+- **One row** is a module of the source, **one cell** a 256-byte page, `$4000` on the left to `$FFFF` on the right;
+  the names above the panels are the regions of 2.2.
+- **The shade** is how many bytes of the page the module's routines read (top) or write (bottom), on a log scale.
+  The counts come from the address ranges of L1's profile, which merge nearby bytes into one run: a page can look
+  fuller than the bytes really touched. Where the screen bytes go, byte by byte, is
+  [6.7](06-rendering.md#67-colour).
+
+```bash
+python3 tools/fig_l1.py modules work/p2/l1.json docs/img/heat-modules.png
+```
+
+- `scroller` writes the screen's play area and reads the whole buffer `$8000-$BFFF`; `sprites`, `shadows` and
   `statics` write that buffer, not the screen ([6](06-rendering.md)).
-- `hud` (the print routine `PrintString` `$EE17`) writes nearly every bitmap row over a whole game: the menu, the
+- `hud` (the print routine `PrintString` `$EE17`) writes across the bitmap over a whole game: the menu, the
   panel, the status window and the big GAME OVER ([8](08-hud-and-text.md)).
 - `roundsetup` paints the playfield's attributes (the course colour, `$D338`); `menu` the attribute bars of its
   messages; `startup` copies the whole screen once.

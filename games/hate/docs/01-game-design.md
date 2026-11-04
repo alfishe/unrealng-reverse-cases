@@ -130,6 +130,10 @@ sideways a tile at a time ([6.5](06-rendering.md#65-the-course)).
 
 ![The scroll: the stored strips, the same placed by the game's blit, and the screen](img/anim-scroll.gif)
 
+The animation shows frames 35 500-35 740 three ways: left, the strips as the game stores them; middle, the same
+bytes where the blit puts them; right, the real screen. The course is drawn upright and only skewed when copied
+([6.4](06-rendering.md#64-scrolling-d3f9-one-phase-a-pass)).
+
 Under the picture lies a **ground profile**, one entry for every 2 units along the course
 ([6.5](06-rendering.md#65-the-course), [7.4](07-objects.md#74-moving-e15c-once-a-pass)):
 

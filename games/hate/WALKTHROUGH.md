@@ -296,6 +296,9 @@ python3 tools/heatmap.py work/game2/l1.json docs/img/heat-game.png --cell 2 --re
 python3 tools/heatmap.py work/game2/l1.json docs/img/heat-game-last.png --cell 2 --regions tools/regions-game.txt --frames
 ```
 
+(2026-11-04: the two pictures are one now, `docs/img/heat-memory.png`, by `tools/fig_l1.py memory`: the composite
+and the last-touched panel side by side, the regions named, a colour bar for the frames.)
+
 What only a per-byte counter of a whole replay gives: the screen picture shows, without reading any code, which
 columns the game redraws every pass and which are the static panel; the `$8000-$BFFF` block shows a buffer that
 replaced the music player; the bright operand spots inside the code range are the self-modified instructions. A
@@ -450,15 +453,15 @@ replays the game:
 
 | Picture | Tool | Where |
 | --- | --- | --- |
-| `game-p2-timeline.png`: round, lives, followers, hits | `tools/gamechart.py work/p2/run.log` | doc 10.1 |
+| `game-p2-timeline.png`: round, lives, followers, hits | `tools/gamechart.py work/p2/run.log` (redrawn 2026-11-04: rounds shaded, events named) | doc 10.1 |
 | `anim-round-handover.gif`: the convoy lands beside the parked vehicle, round 2 begins | `tools/screen_anim.py --work work/p2 --from 3280 --to 3540 --step 4` | doc 10.2 |
-| `heat-coverage.png`: code run in p2 against m1 | `tools/heatviews.py coverage --other work/m1/l1.json --from C000` (`work/m1`: L1 over the whole first recording from frame 0) | doc 10.1 |
-| `heat-records.png`: reads and writes per field of every object record | `tools/heatviews.py records` | doc 7.2 |
-| `heat-screen.png`: screen writes in the screen's geometry | `tools/heatviews.py screen` | doc 6.7 |
-| `anim-pass.gif`, `heat-pass.png`: one pass as it writes the buffer and the screen | `tools/pass_anim.py --work work/p2 --from 1000 --to 1005 --step 1750 --still` | doc 6.1 |
-| `heat-pass4.png`: four passes, by when each byte first changed | `tools/pass_anim.py --from 1000 --to 1018 --step 3500 --still` | doc 6.1 |
-| `routines-time.png`: own t-states per routine | `tools/heatviews.py routines` | doc 4.5 |
-| `heat-modules.png`: memory per module, screen writes per module | `tools/heatviews.py modules` | doc 2.6 |
+| `heat-coverage.png`: code run in p2 against m1 | `tools/fig_l1.py coverage work/p2/l1.json docs/img/heat-coverage.png --other work/m1/l1.json` (`work/m1`: L1 over the whole first recording from frame 0) | doc 10.1 |
+| `heat-records.png`: reads and writes per field of every object record | `tools/fig_l1.py records` | doc 7.2 |
+| `heat-screen.png`: screen writes in the screen's geometry, by kind | `tools/fig_l1.py screen` | doc 6.7 |
+| `anim-pass.gif`, `heat-pass.png`: one pass as it writes the buffer and the screen | `tools/pass_anim.py --work work/p2 --from 1000 --to 1005 --step 1750 --cache work/passanim/pass-1000-1005.npz`, then `tools/fig_pass.py ... --one` | doc 6.1 |
+| `heat-pass4.png`: four passes, by when each byte first changed | `tools/pass_anim.py --from 1000 --to 1018 --step 3500 --cache work/passanim/pass-1000-1018.npz`, then `tools/fig_pass.py` | doc 6.1 |
+| `routines-time.png`: own t-states per routine, coloured by job | `tools/fig_l1.py routines` | doc 4.5 |
+| `heat-modules.png`: memory per module (the screen insets dropped 2026-11-04: L1's merged ranges overstated them) | `tools/fig_l1.py modules` | doc 2.6 |
 
 The whole-game memory maps first stood in doc 10.1. They showed memory, not gameplay, and doc 2 already has the
 same maps for the game window, so they were removed. What doc 10 keeps is the code coverage, which names what the

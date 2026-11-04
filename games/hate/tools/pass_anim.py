@@ -61,13 +61,15 @@ def main():
     p.add_argument('--scale', type=int, default=2)
     p.add_argument('--delay', type=int, default=90)
     p.add_argument('--still', help='a PNG of every byte changed over the whole stretch, coloured by its first change')
+    p.add_argument('--cache', help='an .npz of the first change of every byte, the samples and the last memory, '
+                                   'for tools/fig_pass.py')
     p.add_argument('--unreal', default=os.environ.get('UNREAL_NG', ''))
     p.add_argument('out')
     args = p.parse_args()
     sys.path.insert(0, os.path.join(args.unreal, 'tools', 'verification', 'analysis'))
     import re_session  # noqa: E402
     session, _ = re_session.session_of(args.work)
-    s, font = args.scale, ImageFont.load_default()
+    s, font = args.scale, ImageFont.load_default(size=15)
     w, h = 256 * s, 192 * s
     first, last = args.start * FRAME_T, args.end * FRAME_T
     samples = list(range(first, last + 1, args.step))
@@ -85,7 +87,7 @@ def main():
                         when.setdefault(a, index)
                         counts[name] += 1
         history.append(counts)
-        img = Image.new('RGB', (BW + w + 48, h + 110), BG)
+        img = Image.new('RGB', (BW + w + 48, h + 124), BG)
         draw = ImageDraw.Draw(img)
         # 1: the strip buffer as stored, its four sets in a 2 x 2 grid, at scale 1
         panel = Image.new('RGB', (BW, BH), (12, 12, 16))
@@ -97,19 +99,21 @@ def main():
         cur_e, cur_f = mem[0xC32E], mem[0xC32F]  # the state the next blit reads ($D3F9 steps it after)
         sx, sy = (cur_e & 1) * 256, (cur_f >> 7) * 130
         ImageDraw.Draw(panel).rectangle([(sx, sy), (sx + 255, sy + 127)], outline=(200, 90, 200))
-        img.paste(panel, (16, 28))
+        img.paste(panel, (16, 34))
         # 2: the screen
         panel = zxscreen.render(mem[0x4000:0x5B00], s)
         for a, n in age.items():
             if 0x4000 <= a < 0x5800:
                 tint(panel, *screen_xy(a), s, FADE[min(n, len(FADE) - 1)], mem[a])
-        img.paste(panel, (BW + 32, 28))
-        draw.text((16, 8), 'the strip buffer $8000-$BFFF as stored (left even pages, right odd; top half $00, bottom $80)',
-                  fill=(220, 220, 200), font=font)
-        draw.text((16, 28 + BH + 6), 'magenta: the set the blit shows this pass', fill=(200, 90, 200), font=font)
-        draw.text((BW + 32, 8), f'the screen   frame {frame} t {t}', fill=(220, 220, 200), font=font)
+        img.paste(panel, (BW + 32, 34))
+        draw.text((16, 8), 'the strip buffer $8000-$BFFF, its 4 sets of 32 strips', fill=(220, 220, 200), font=font)
+        draw.text((16, 34 + BH + 6), 'left: even pages, right: odd; top: half $00, bottom: $80', fill=(170, 170, 160),
+                  font=font)
+        draw.text((16, 34 + BH + 26), 'magenta box: the set the blit shows this pass', fill=(210, 110, 210), font=font)
+        draw.text((16, 34 + BH + 46), 'yellow, fading red: bytes just written', fill=(240, 200, 80), font=font)
+        draw.text((BW + 32, 8), f'the screen, frame {frame} t {t}', fill=(220, 220, 200), font=font)
         # 3: the pass so far: changed bytes per sample, per region
-        top, bar_h = h + 40, 48
+        top, bar_h = h + 58, 44
         x0, span = 16, BW + w + 16
         draw.rectangle([(x0, top), (x0 + span, top + bar_h)], outline=(60, 60, 70))
         peak = 180
@@ -126,9 +130,14 @@ def main():
         for f in range(args.start, args.end + 1):
             x = x0 + (f * FRAME_T - first) / args.step * bw
             draw.text((x + 2, top + bar_h + 2), f'frame {f}', fill=(150, 150, 140), font=font)
-        legend = '   '.join(f'{name} {counts[name]}' for name, _, _, _ in REGIONS)
-        draw.text((16, top - 14), 'bytes changed since the last picture: ' + legend +
-                  '   (green buffer, yellow screen, blue object records)', fill=(200, 200, 190), font=font)
+        x = 16
+        draw.text((x, top - 19), 'bytes changed per picture:', fill=(200, 200, 190), font=font)
+        x += int(draw.textlength('bytes changed per picture:', font=font)) + 12
+        for name, _, _, colour in REGIONS:
+            text = f'{name} {counts[name]}'
+            draw.rectangle((x, top - 15, x + 10, top - 5), fill=colour)
+            draw.text((x + 14, top - 19), text, fill=(200, 200, 190), font=font)
+            x += int(draw.textlength(text, font=font)) + 32
         pictures.append(img.convert('P', palette=Image.ADAPTIVE, colors=64))
         for a in list(age):
             age[a] += 1
@@ -149,6 +158,14 @@ def main():
     durations = [args.delay] * (len(pictures) - 1) + [1500]
     pictures[0].save(args.out, save_all=True, append_images=pictures[1:], duration=durations, loop=0, optimize=True)
     print(args.out, len(pictures), 'pictures')
+    if args.cache:
+        import numpy as np
+        first = np.full(0x10000, -1, dtype=np.int32)
+        for a, i in when.items():
+            first[a] = i
+        np.savez_compressed(args.cache, first=first, samples=np.array(samples, dtype=np.int64),
+                            mem=np.frombuffer(previous, dtype=np.uint8), start=args.start, end=args.end)
+        print(args.cache)
     if args.still:
         # every changed byte, coloured by the moment of its last change (blue early, red late)
         img = Image.new('RGB', (BW + w + 48, h + 40), BG)

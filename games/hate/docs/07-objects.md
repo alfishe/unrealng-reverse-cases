@@ -70,18 +70,28 @@ The slot counts are the limits: at most 5 shots of the player in the air, 6 laun
 with no free slot does not happen. The enemy's shots are the exception: the firing code searches 6 slots from
 `$C210` (7.4), so once the vehicle of the round before is gone, `$C260` takes a sixth shot.
 
-**The list as it was used.** L1's per-byte counts over the bot's whole game (10.1), one row a record and one
-column a field (`tools/heatviews.py records`):
+**The list as it was used.** L1's per-byte counts over the bot's whole game (10.1):
 
 ![Reads and writes of every field of every record](img/heat-records.png)
+
+How to read the figure:
+
+- **One row** is a 16-byte record, `$C000` at the top; the labels on the left group the rows by slot (7.2).
+- **One column** is a field (7.1), named at the top.
+- **The shade** is the count of reads (left) or writes (right) of that byte, on a log scale; black is never.
+
+```bash
+python3 tools/fig_l1.py records work/p2/l1.json docs/img/heat-records.png
+```
 
 - `+0` is read in every slot, every pass: the mover and the hit scan test it first (gone, end, hit).
 - The positions `+1`-`+4` are the hottest fields after `+0`: every pair the hit scan compares reads them.
 - `+C`-`+E` (the motion table steps) are written only for the records that follow a path: the player's shots,
   the launched missiles and jets, a few course objects. The player and the pods never use them.
 - `+F` is written for the shots (their 12-pass life) and the launched objects (the fire timer).
-- The last two of the six enemy shot slots (`$C250`, `$C260`) kept only what the round start writes: the search
-  takes the first free slot, so no more than 4 enemy shots were ever in the air at once.
+- The last two enemy shot slots (`$C240`, `$C250`) kept only what the round start writes (`+0` and `+8`): the
+  search takes the first free slot, so in the bot's game no more than 3 enemy shots were ever in the air at once.
+  The demo fills more: at frame 41 750 all six slots `$C210-$C260` hold a shot (7.3).
 
 ## 7.3 The kinds
 
@@ -104,6 +114,14 @@ The names are what the sprites look like in the recording's screens, labelled by
 recording shows types 0, 1, 3, 4, 6, 7, 8, 10, 12, 14 and 15; the demo played rounds 8 and 10.
 
 ![Objects labelled by their records, in the demo (frames 41 750, paused there, and 45 000)](img/objects-demo.png)
+
+Each live record on the screen gets a magenta dot where its position puts it (the projection of 7.1) and its kind
+from byte `+0`; the dots sit on the sprites, which is how the kinds were matched to the types:
+
+```bash
+python3 tools/fig_objects.py work/render/mem-41750.bin work/render/mem-45000.bin docs/img/objects-demo.png \
+    --titles "frame 41 750: the demo, paused" "frame 45 000: the demo"
+```
 
 ## 7.4 Moving: `$E15C`, once a pass
 

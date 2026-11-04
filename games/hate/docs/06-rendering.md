@@ -15,6 +15,11 @@ Evidence:
 
 ![The strips as stored, placed by the blit, and the screen (frame 38000)](img/render-playfield.png)
 
+Three projections of one moment: the strips as the buffer holds them, the same bytes moved where the blit puts them,
+and the real screen (`python3 tools/playfield.py work/render/mem-38000.bin docs/img/render-playfield.png`; the memory
+image is TTD `memory_at` at frame 38000, saved by `work/render/objshot.py`). Panels 2 and 3 agree but for the
+player's sprite and the panel: the blit was read right.
+
 ## 6.1 One pass, the drawing part
 
 ```mermaid
@@ -61,15 +66,33 @@ course (6.4). The times are as exact as the 1 000 t-state step allows; the byte 
 already held does not show, so the blit counts the bytes the scroll changed (2 134 of the play area's 3 792), not
 its writes.
 
-Every byte the pass changed, coloured by the moment it first changed (blue early, red late). The screen's colours
-run from the left edge to the right, the order the blit goes through the strips:
+Every byte the pass changed, coloured by the moment it first changed:
 
 ![The bytes one pass changed, by when](img/heat-pass.png)
+
+How to read the figure:
+
+- **Left**, the buffer as the GIF draws it: four sets of 32 upright strips (6.2), unchanged bytes in grey.
+- **Right**, the screen at frame 1005, dimmed.
+- **A coloured byte** changed in the pass; its colour is the moment of its first change on the bar underneath,
+  blue at frame 1000 to red at frame 1005.
+- **What it shows**: the sprites go into one set of the buffer in frame 1001 (cyan, 285 bytes), and the screen
+  then changes from the left edge to the right (green to yellow, 2 134 bytes), the order the blit goes through the
+  strips.
 
 Over four passes (frames 1000-1018) the sprites land in a different set each pass, the one the next blit shows. The
 upright bars are the strips the scroller rewrites, one phase a pass (6.4):
 
 ![The bytes four passes changed, by when](img/heat-pass4.png)
+
+```bash
+python3 tools/pass_anim.py --work work/p2 --from 1000 --to 1005 --step 1750 \
+    --cache work/passanim/pass-1000-1005.npz docs/img/anim-pass.gif
+python3 tools/fig_pass.py work/passanim/pass-1000-1005.npz docs/img/heat-pass.png --one
+python3 tools/pass_anim.py --work work/p2 --from 1000 --to 1018 --step 3500 \
+    --cache work/passanim/pass-1000-1018.npz scratch/pass4.gif
+python3 tools/fig_pass.py work/passanim/pass-1000-1018.npz docs/img/heat-pass4.png
+```
 
 ## 6.2 The playfield buffer `$8000-$BFFF`
 
@@ -164,6 +187,10 @@ of the same moment:
    the blit copies it (6.6), and the panel at the lower right.
 
 ![The scroll, stored and on the screen](img/anim-scroll.gif)
+
+```bash
+python3 tools/playfield_anim.py --work work/m1 --from 35500 --to 35740 --step 3 docs/img/anim-scroll.gif
+```
 
 With H the page of the last fresh strip (`$C3FC`), the four strips between two fresh ones are made like this:
 
@@ -355,11 +382,16 @@ the menu. The other 6 were written 2 363 times: the message window at (2, 6), pr
 so the scroll never has attribute clash to manage: a cell's colour is the course's, wherever the course moves.
 
 Over the bot's whole game (14 020 frames, [10.1](10-gameplay-logic.md)) the writes land like this, each bitmap byte
-drawn where it shows (8 × 1 pixels) and each attribute as its cell (`tools/heatviews.py screen`):
+drawn where it shows (8 × 1 pixels) and each attribute as its cell, coloured by how often it was written (the
+legend gives the kinds and their byte counts):
 
 ![Where the screen was written](img/heat-screen.png)
 
-The bitmap has three kinds of bytes:
+```bash
+python3 tools/fig_l1.py screen work/p2/l1.json docs/img/heat-screen.png
+```
+
+The bitmap has four kinds of bytes:
 
 | Bytes | Writes each | What |
 | --- | --- | --- |
@@ -368,8 +400,9 @@ The bitmap has three kinds of bytes:
 | 106 | 3-79 | the panel's numbers: SCORE, MAX, HIGH, the round, the lives |
 | 2 198 | 1 | the rest: the copy of the screen image from `$A000` and nothing after it |
 
-Of the attributes, 6 cells (the status window) were written 2 631 times; 491 cells of the play area 9-19
-times, the course colour of each round setup and retry (`$D338`, 8.5) and the menu; 271 cells only once.
+Of the attributes, 6 cells (the status window) were written 2 631 times; 491 cells 9-19 times, the course colour
+of each round setup and retry (`$D338`, 8.5) and the menu (the play area and a few cells of the panel); 271 cells only
+once.
 
 ## 6.8 Design notes
 

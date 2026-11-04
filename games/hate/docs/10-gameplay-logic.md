@@ -22,7 +22,11 @@ and steers the Kempston stick toward a pod or a dome to shoot, away from what wo
 the same inputs replay the same game; the decisions depend only on memory. From round 4 it is told to give up
 (`--give-up 4`), to spend the lives where the fall back of [4.4](04-game-loop.md) can be seen.
 
-![The second recording](img/game-p2-timeline.png)
+![The second recording: round, lives and followers over the bot's game](img/game-p2-timeline.png)
+
+The chart is drawn from the bot's log (`python3 tools/gamechart.py work/p2/run.log docs/img/game-p2-timeline.png`):
+across, the frame; up, the round (white), the lives (blue) and the followers (orange) as the bot read them; the
+dotted red lines are the player's hits; the shaded bands are the rounds.
 
 | Frames | Round | What happened |
 | --- | --- | --- |
@@ -39,10 +43,20 @@ L1 over the 14 020 frames confirms the story by counts: 9 round setups (`$D151`)
 start `$CF68` (the game, the demo, 3 retries, 1 fall back); 5 losses (`$CFF6`), 2 of them with no lives left
 (`$D005`) and 1 GAME OVER (`$D0A5`).
 
-**What the bot's game reached.** The code it ran against the first recording, byte by byte over `$C000-$FFFF`
-(`tools/heatviews.py coverage`):
+**What the bot's game reached.** The code it ran against the first recording, byte by byte over the game code:
 
 ![Code run in the bot's game and in the first recording](img/heat-coverage.png)
+
+How to read the figure:
+
+- **One row** is 256 bytes of code, `$CF00` at the top to `$F2FF`; across is the byte within the row.
+- **Grey** ran in both recordings; **orange** only in the bot's game; **blue** only in the first recording; **black**
+  never ran (data, or code neither reached).
+- **The numbered dots** mark the runs of the table below and the next paragraph, listed on the right.
+
+```bash
+python3 tools/fig_l1.py coverage work/p2/l1.json docs/img/heat-coverage.png --other work/m1/l1.json
+```
 
 779 bytes of code ran only in the bot's game, and the runs name what it reached:
 
@@ -50,6 +64,10 @@ start `$CF68` (the game, the demo, 3 retries, 1 fall back); 5 losses (`$CFF6`), 
 | --- | --- |
 | `$D017-$D04F` | the look-back of the fall back (4.4) |
 | `$D4CF-$D4D8` | the next course expanded at a course end (6.5) |
+| `$DB1B-$DB6B`, `$E008-$E05B` | the small shadows of types 11-13 (`ShadowSmall`, `ShadowTiny`; [6.6](06-rendering.md)) |
+| `$E271-$E2A6` | a follower lost instead of the player (`FollowerShield`) |
+| `$E393-$E3AC` | the end of the height arc of behaviour bit 2 (`$C282`) |
+| `$E49B-$E4B4` | a shot of the player stopped by a wall |
 | `$E4C6-$E4E6` | the barrier (10.4) |
 | `$E6F1-$E6FE` | AUTO setting the followers' speed |
 | `$E773-$E788` | the Kempston reader (the bot's device) |

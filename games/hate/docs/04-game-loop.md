@@ -170,9 +170,20 @@ A pass takes as long as its work. Over the window, the 2 319 passes in frames 30
 average, about 8 passes a second. Sound effects stop the game while they sound ([9.6](09-sound.md)), so a pass with
 an effect is longer.
 
-Where the t-states go over the bot's whole game (L1's own t-states per routine, `tools/heatviews.py routines`):
+Where the t-states go over the bot's whole game:
 
 ![Own t-states per routine](img/routines-time.png)
+
+How to read the figure:
+
+- **One bar** is one of the 24 routines with the most own time: the t-states spent in its own instructions, not in
+  the routines it calls, as a share of all 979 828 963 t-states of the 14 020 frames.
+- **The colour** is the routine's job; the legend sums every routine of the game by job: drawing 56 %, the menu's
+  wait 15 %, moving and the hit test 15 %, sound effects 11 %, the rest 3 %.
+
+```bash
+python3 tools/fig_l1.py routines work/p2/l1.json docs/img/routines-time.png
+```
 
 The blit (`Blit`, `$D35E`) is over a quarter of all the time. `$F1AA` (`Menu`) is the menu waiting for a key (two visits). Then come the
 pair scan of the hit test (`PairScan` `$E56F`, entered 656 852 times: every pair of live records, every pass), the beeper
