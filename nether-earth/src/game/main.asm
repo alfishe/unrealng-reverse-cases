@@ -287,7 +287,7 @@ l_A7D5:
   CALL sub_D3E5
 l_A7E4:
   CALL sub_A81D
-  LD HL,data_4000+$1837
+  LD HL,$5837
   LD E,$05
   LD A,($FD1F)
   CALL sub_ACD7
@@ -519,7 +519,7 @@ l_A9D5:
   LD B,L
   NOP
   CALL sub_A81D
-  LD HL,data_4000+$1897
+  LD HL,$5897
   LD E,$06
   LD A,$01
   CALL sub_ACD7
@@ -757,7 +757,7 @@ l_AB37:
   LD D,E
   NOP
   CALL sub_A81D
-  LD HL,data_4000+$1937
+  LD HL,$5937
   LD A,$01
   LD E,$04
   CALL sub_ACD7
@@ -870,7 +870,7 @@ l_ABB3:
   LD D,E
   NOP
   CALL sub_A81D
-  LD HL,data_4000+$1937
+  LD HL,$5937
   LD A,$01
   LD E,$04
   CALL sub_ACD7
@@ -1015,7 +1015,7 @@ l_AC79:
 l_AC7F:
   LD A,$06
 l_AC81:
-  LD HL,data_4000+$1837
+  LD HL,$5837
   LD E,$07
   CALL sub_ACD7
   CP $06
@@ -3410,8 +3410,8 @@ l_BA61:
 ;
 ; Used by the routine at sub_B99F.
 sub_BA87:
-  LD DE,data_4000+$1B00
-  LD HL,data_4000+$1821
+  LD DE,data_5B00
+  LD HL,$5821
   LD BC,$1414
 l_BA90:
   PUSH BC
@@ -3428,7 +3428,7 @@ l_BA91:
 l_BAA2:
   CALL sub_BAEE
   PUSH BC
-  LD HL,data_4000+$1821
+  LD HL,$5821
   LD BC,$1414
 l_BAAC:
   CALL sub_D358
@@ -3458,8 +3458,8 @@ l_BAC4:
   JR NZ,l_BAB9
   POP BC
   DJNZ l_BAA2
-  LD HL,data_4000+$1B00
-  LD DE,data_4000+$1821
+  LD HL,data_5B00
+  LD DE,$5821
   LD BC,$1414
 l_BADC:
   PUSH BC
@@ -4259,7 +4259,7 @@ l_C1FD:
   LD (BC),A
   LD B,L
   INC B
-  LD HL,data_4000+$1250
+  LD HL,$5250
   LD B,L
   LD D,E
   LD D,E
@@ -4281,7 +4281,7 @@ l_C1FD:
 l_C21E:
   LD A,$02
   OUT ($FE),A
-  LD IX,data_4000+$1B00
+  LD IX,data_5B00
   LD DE,$0002
   XOR A
   SCF
@@ -4302,7 +4302,7 @@ l_C21E:
   XOR A
   OUT ($FE),A
   CALL sub_C30F
-  LD HL,(data_4000+$1B00)
+  LD HL,(data_5B00)
   AND A
   SBC HL,DE
   LD A,H
@@ -4326,7 +4326,7 @@ l_C269:
   LD (BC),A
   LD B,A
   INC B
-  LD (data_4000+$0F4C),HL
+  LD ($4F4C),HL
   LD B,C
   LD B,H
   LD C,C
@@ -4416,9 +4416,9 @@ l_C2D4:
 ; This entry point is used by the routine at sub_C28D.
 l_C2E5:
   CALL sub_C30F
-  LD (data_4000+$1B00),DE
+  LD (data_5B00),DE
   LD HL,$0900
-  LD IX,data_4000+$1B00
+  LD IX,data_5B00
   LD DE,$0002
   XOR A
   SCF
@@ -4512,7 +4512,7 @@ sub_C34A:
   LD (BC),A
   LD B,A
   INC B
-  LD HL,data_4000+$0552
+  LD HL,$4552
   LD B,H
   LD B,L
   LD B,(HL)
@@ -5247,7 +5247,7 @@ data_C665:
 sub_C820:
   PUSH BC
   PUSH HL
-  LD HL,data_4000+$182A
+  LD HL,$582A
   LD A,($FD33)
   INC A
   AND $0F
@@ -5295,7 +5295,7 @@ l_C85D:
   EI
   CALL sub_D0B9
   LD B,$08
-  LD DE,data_4000+$17F0
+  LD DE,$57F0
 l_C86D:
   PUSH BC
   PUSH DE
@@ -5337,7 +5337,7 @@ l_C895:
 l_C8A4:
   DJNZ l_C86D
   LD BC,$0409
-  LD HL,data_4000+$19E0
+  LD HL,$59E0
 l_C8AC:
   PUSH BC
 l_C8AD:
@@ -5351,7 +5351,7 @@ l_C8AD:
   JR NZ,l_C8AC
   CALL sub_D42D
   INC B
-  LD (data_4000+$0702),HL
+  LD ($4702),HL
   LD BC,$0300
   LD D,D
   LD C,A
@@ -5360,7 +5360,7 @@ l_C8AD:
   LD D,H
   LD BC,$0202
   INC B
-  LD HL,data_4000+$0F43
+  LD HL,$4F43
   LD C,(HL)
   LD D,E
   LD D,H
@@ -5878,7 +5878,7 @@ l_CBC6:
   LD H,$00
   ADD HL,HL
   ADD HL,HL
-  LD DE,data_4000+$1815
+  LD DE,$5815
   ADD HL,DE
   LD B,$0B
 
@@ -5942,7 +5942,7 @@ sub_CC08:
 ;
 ; Used by the routine at sub_C849.
 sub_CC1F:
-  LD HL,data_4000+$1810
+  LD HL,$5810
   LD A,($FD21)
   LD C,A
   LD B,$08
@@ -5975,8 +5975,8 @@ l_CC35:
   LD A,($CF3F)
   LD (IY+$09),A
   LD BC,$0448
-  LD DE,data_4000+$2168
-  LD HL,data_4000+$08E0
+  LD DE,data_5B00+$0668
+  LD HL,$48E0
 l_CC63:
   PUSH BC
   PUSH HL
@@ -6614,7 +6614,7 @@ l_CF95:
   ADD HL,DE
   POP AF
   CALL sub_D351
-  LD DE,data_4000+$1B00
+  LD DE,data_5B00
   ADD HL,DE
   POP DE
   EX DE,HL
@@ -6662,15 +6662,15 @@ sub_CFD7:
   CALL sub_D026
   LD HL,data_D6A8
   LD B,$06
-  LD DE,data_4000+$1B0A
+  LD DE,data_5B00+$000A
   CALL sub_D057
   LD HL,data_D6A8
   LD B,$03
-  LD DE,data_4000+$25B2
+  LD DE,data_5B00+$0AB2
   CALL sub_D057
   LD HL,data_D6A8+$0010
   LD B,$04
-  LD DE,data_4000+$2512
+  LD DE,data_5B00+$0A12
   JP sub_D057
 
 ; sub_CFFE
@@ -6678,7 +6678,7 @@ sub_CFD7:
 ; Used by the routines at l_CB00, sub_CC1F and sub_CFD7.
 sub_CFFE:
   LD ($FD08),SP
-  LD SP,data_4000+$2780
+  LD SP,data_5B00+$0C80
   LD B,$C6
   LD HL,$0000
 l_D00A:
@@ -6692,8 +6692,8 @@ l_D00A:
   PUSH HL
   DJNZ l_D00A
   LD SP,($FD08)
-  LD HL,data_4000+$1B00
-  LD DE,data_4000+$1B01
+  LD HL,data_5B00
+  LD DE,data_5B00+$0001
   LD BC,$001F
   LD (HL),$00
   LDIR
@@ -6706,7 +6706,7 @@ sub_D026:
   LD A,$0A
   LD (l_D036+$0002),A
   LD (l_D03B+$0006),A
-  LD HL,data_4000+$1B00
+  LD HL,data_5B00
   LD B,$05
 l_D033:
   PUSH BC
@@ -6763,8 +6763,8 @@ l_D05C:
 ;
 ; Used by the routine at sub_CCBD.
 l_D071:
-  LD HL,data_4000+$1B00
-  LD DE,data_4000+$0021
+  LD HL,data_5B00
+  LD DE,$4021
   LD C,$14
 l_D079:
   LD B,$08
@@ -6813,8 +6813,8 @@ l_D0B4:
 sub_D0B9:
   XOR A
   OUT ($FE),A
-  LD HL,data_4000
-  LD DE,data_4000+$0001
+  LD HL,$4000
+  LD DE,$4001
   LD BC,$1AFF
   LD (HL),$00
 
@@ -6829,78 +6829,78 @@ l_D0C7:
 sub_D0CA:
   CALL sub_D0B9
   CALL sub_CCBD
-  LD HL,data_4000
-  LD DE,data_4000+$0001
+  LD HL,$4000
+  LD DE,$4001
   LD BC,$0015
   LD (HL),$FF
   LDIR
-  LD HL,data_4000+$0701
-  LD DE,data_4000+$0702
+  LD HL,$4701
+  LD DE,$4702
   LD BC,$0013
   LD (HL),$FF
   LDIR
-  LD HL,data_4000+$10A1
-  LD DE,data_4000+$10A2
+  LD HL,$50A1
+  LD DE,$50A2
   LD BC,$0013
   LD (HL),$FF
   LDIR
-  LD HL,data_4000+$17A0
-  LD DE,data_4000+$17A1
+  LD HL,$57A0
+  LD DE,$57A1
   LD BC,$0015
   LD (HL),$FF
   LDIR
-  LD HL,data_4000+$0100
+  LD HL,$4100
   LD B,$06
 l_D109:
   LD (HL),$80
   INC H
   DJNZ l_D109
-  LD HL,data_4000+$0115
+  LD HL,$4115
   LD B,$06
 l_D113:
   LD (HL),$01
   INC H
   DJNZ l_D113
-  LD HL,data_4000+$10A0
+  LD HL,$50A0
   LD B,$07
 l_D11D:
   LD (HL),$80
   INC H
   DJNZ l_D11D
-  LD HL,data_4000+$10B5
+  LD HL,$50B5
   LD B,$07
 l_D127:
   LD (HL),$01
   INC H
   DJNZ l_D127
-  LD HL,data_4000+$0700
+  LD HL,$4700
   LD B,$A2
 l_D131:
   LD (HL),$81
   CALL sub_D32A
   DJNZ l_D131
-  LD HL,data_4000+$0715
+  LD HL,$4715
   LD B,$A2
 l_D13D:
   LD (HL),$81
   CALL sub_D32A
   DJNZ l_D13D
-  LD HL,data_4000+$1800
-  LD DE,data_4000+$1801
+  LD HL,$5800
+  LD DE,$5801
   LD BC,$02FF
   LD (HL),$07
   LDIR
-  LD HL,data_4000+$1800
-  LD DE,data_4000+$1801
+  LD HL,$5800
+  LD DE,$5801
   LD BC,$0015
   LD (HL),$78
   LDIR
-  LD HL,data_4000+$1AA0
-  LD DE,data_4000+$1AA1
+  LD HL,$5AA0
+  LD DE,$5AA1
   LD BC,$0015
   LD (HL),$78
   LDIR
-  LD HL,data_4000+$1820
+  LD HL,$5820
   LD B,$14
 l_D170:
   LD (HL),$78
@@ -6910,7 +6910,7 @@ l_D170:
   LD A,$0B
   CALL sub_D351
   DJNZ l_D170
-  LD HL,data_4000+$1821
+  LD HL,$5821
   LD BC,$1414
 l_D186:
   PUSH BC
@@ -6924,7 +6924,7 @@ l_D187:
   DEC C
   JR NZ,l_D186
   LD B,$04
-  LD HL,data_4000+$1A33
+  LD HL,$5A33
 l_D19A:
   LD (HL),$71
   INC HL
@@ -6932,17 +6932,17 @@ l_D19A:
   LD A,$1D
   CALL sub_D351
   DJNZ l_D19A
-  LD HL,data_4000+$1A53
+  LD HL,$5A53
   LD (HL),$41
   INC HL
   LD (HL),$41
-  LD HL,data_4000+$1A71
+  LD HL,$5A71
   LD B,$04
 l_D1B3:
   LD (HL),$41
   INC HL
   DJNZ l_D1B3
-  LD HL,data_4000+$1A8F
+  LD HL,$5A8F
   LD B,$06
 l_D1BD:
   LD (HL),$41
@@ -7481,7 +7481,7 @@ sub_D4B1:
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
-  LD DE,data_4000+$2680
+  LD DE,data_5B00+$0B80
   ADD HL,DE
   LD DE,($FD04)
   PUSH DE
@@ -7511,7 +7511,7 @@ l_D4DA:
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
-  LD DE,data_4000+$2680
+  LD DE,data_5B00+$0B80
   ADD HL,DE
   LD A,($FD17)
   CP $02
@@ -7641,7 +7641,7 @@ StartInterrupt:
 sub_D59E:
   PUSH BC
   LD B,$10
-  LD DE,data_4000+$10C6
+  LD DE,$50C6
 l_D5A4:
   PUSH BC
   PUSH DE
@@ -7654,7 +7654,7 @@ l_D5A4:
   POP BC
   DJNZ l_D5A4
   POP BC
-  LD HL,data_4000+$1AC6
+  LD HL,$5AC6
   CALL sub_D5BD
   LD L,$E6
 

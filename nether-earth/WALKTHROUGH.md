@@ -51,6 +51,19 @@ menu, not new code (no block arrives after the load: every write the stages name
 
 ## 2. Static pass over the medium
 
+**The block's screen part.** The game block starts at `$4000`, so its first 6912 bytes load into the screen: noise,
+with zero attributes, black on black, while the tape plays. An access trace of the start-up (`analysis trace`,
+frames 12660-12900, 1.8 M instructions) shows every one of those bytes written first, by the screen clear at
+`$D0C5` / `$D0C7`, and never read before: they are dead. They are not random either: `$4000-$5AFF` is the game's
+own `$C350-$DE4F`, byte for byte (a mastering leftover: the save started 6912 bytes early, or the screen held a copy
+of the code). The source keeps them as that copy: `tools/build.sh` prefixes the assembled `$5B00-$FCE8` with its own
+`$C350-$DE4F`, nothing is typed twice.
+
+**The first cut.** `kit/mkgame.py` on `case.json` (`lo` `$5B00`, the `work/game` build of the play recording from
+frame 12661): 10378 code bytes (5954 instructions, 3117 of them ran), 254 entries, assembled identical to the image.
+`src/basic.asm` and `src/loader.asm` are written by hand from the blocks; `tools/build.sh` gives `orig/NETHER.TAP`
+byte for byte.
+
 ## 3. The stages and the packers
 
 ## 4. The medium from source
