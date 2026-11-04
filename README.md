@@ -52,7 +52,7 @@ How to drive the emulator over MCP for a case: unreal-ng's
 ## Getting started
 
 ```bash
-git clone --recurse-submodules https://github.com/<owner>/unrealng-reverse-cases.git
+git clone --recurse-submodules https://github.com/alfishe/unrealng-reverse-cases.git
 cd unrealng-reverse-cases
 # or, in a clone made without --recurse-submodules:
 git submodule update --init
