@@ -8,13 +8,16 @@ cells, a shot hits whatever anchor it lands next to, a capture point counts whil
 
 Evidence:
 
-- the code of `src/game/main.asm`;
+- the code of `src/game/*.asm` (`world.asm`, `gameturn.asm`, `bases.asm`, `map.asm`, `enemy.asm`);
 - `work/deep` (the bot's 36046-frame game from the menu snapshot `work/play/start.szx`, Kempston; WALKTHROUGH 6):
   L1 counts, and TTD `memory_at` read-only on its live instance: the records every 250 frames over the whole game,
   and every frame from 18000 to 20000 (the field checks of 7.2);
 - `work/docB/rec` (the same bot, 3034 frames, own instance: `tools/bot.py play --record --frames 3000 --work
   work/docB/rec --port-base 24600`): the access trace of one world turn;
-- the region agents' experiments (`work/ann/r1.md` - `r3.md`): direct control, the pad bug, the nuclear blast.
+- the region agents' experiments (`work/ann/r1.md` - `r3.md`): direct control, the pad bug, the nuclear blast;
+- the figures of `tools/ill_render.py` (the commands under each), from `memory_at` of `work/deep` and, for views the
+  game's camera did not show, `tools/ill_view.py` (`DrawView` in Python, checked byte for byte against the game:
+  [6](06-rendering.md)).
 
 ## 7.1 The world turn
 
@@ -60,6 +63,15 @@ buffer:DA00:16x48 --pc B0CA-B7F3 --range D700-FFFF --pictures 80 --out docs/img/
 `tools/doc_figures.py records --work work/deep --frame 20000 --out docs/img/robot-records.png`: 6 of ours, 11 of the
 enemy's. Every record has `+$01` = `$E0`-`$FB` (rows 1-15 of the map, `$DD00` + `$200` x Y), `+$0C` = `$64` except
 slot 3 at `$0A` (10 %, after hits), `+$0B` the bot's orders 3, 6, 7 and the enemy's 0, 3, 6, 7, 8.
+
+One record against the picture it makes: slot 3 (`$DA30`) as `DrawView` read it at 7093:59180, the robot in the view
+eight times the size and the screen after the copy:
+
+![Robot record slot 3 over the screen, work/deep frame 7093](img/render/robot-record.png)
+
+`tools/ill_render.py record --work work/deep --frame 7093 --slot 3 --out docs/img/render/robot-record.png`. The cell
+`$F516` = `$DD00` + `$200` x 12 + 22 is (22, 12); `+$07` = `$89` is bipod + cannon + electronics, stacked from the
+ground `+$0D` = 0 at heights 0, 11 and 17; `+$09` = 24 = 11 + 6 + 7; `+$08` = 4 picks the "down" sprites of each part.
 
 **`+$05`, `+$06`, `+$08`, `+$0F` checked over time.** `memory_at` of `$DA00-$DCFF` at every frame from 18000 to 19999
 of `work/deep` (2000 samples, 32 887 live records). Slot 0 (bipod + cannon, ground 0, order 6) from frame 18000:
@@ -143,6 +155,20 @@ Recorded in `work/deep` (r2): an enemy missile into our slot 2 (height 19): 100,
 (`... 7F 00 7F 00 0E 04 04 01 0A`, a cannon shot that flew down; `... 7F 00 7F 00 0A 08 06 02 0A`, a missile).
 `SoundFx` `$FD53` gets 1 on firing, `$FC` a miss, `$FA` a hit, `$C8` a robot destroyed ([9](09-sound.md)).
 
+That fight, frame by frame. It happened at map column 123 while the game's camera stayed at our warbase, so the view
+is `ill_view.py` on the memory of each frame with `ViewX` / `MapView` set to 105 (the ship is not in that view, so
+nothing but the window moved):
+
+![A fight in work/deep, frames 18670-18860](img/render/fight.gif)
+
+`tools/ill_render.py fight --work work/deep --frames 18670,18860 --slots 2,25 --view-x 105 --out
+docs/img/render/fight.gif`, every second frame. Our slot 2 (tracks) near (123, 7), the enemy's slot 25 near (123,
+14), both on column 123 and facing along it. The enemy's missile (record 3, weapon 2, direction 8 up) flies from row 11 and hits
+slot 2 at 18702 and 18734 (100, 70, 40: 30 a hit); ours (record 1, cannon, direction 4 down) from row 12 hits slot 25
+at 18764, 18804 and 18846 (100, 80, 60, 40: 20 a hit). The red boxes are the shot sprites `$30` and `$2E`, the panel
+the 5 records with their fields decoded, `SoundFx`, the two strengths over the window and the cells the shots crossed
+on the map. A finished record keeps its bytes with `+$01` = 0 (the stale `7B 00 7B 00 ...` rows).
+
 ## 7.5 The map
 
 `Map` `$DD00-$FCFF`: 16 rows of 512 cells, cell (x, y) at `$DD00` + `$200` x y + x; the bytes past the image
@@ -155,6 +181,14 @@ lists `$BDA9` / `$BE79`, the base lists `$BF46` / `$BF6E` and the shapes of `Sha
 | 5 | not the anchor of its 2 x 2 block (`PutBlock` `$BD91` writes the anchor plain and the other three cells with bit 5) |
 | 6 | an object's anchor: a robot, a building, a flying shot, or (inside a draw) a deferred robot |
 | 7 | the ship's cell (`PutShipOnMap` `$B024` / `LiftShipFromMap` `$B01D`), or the ship deferred inside a draw |
+
+![The cell bits of map columns 12-43, work/deep frame 20000](img/render/cell-bits.png)
+
+`tools/ill_render.py bits --work work/deep --frame 20000 --left 12 --hex-left 16 --hex-top 2 --out
+docs/img/render/cell-bits.png`: our warbase (door (22, 9)) and the missiles factory at (39, 6), layer by layer, and the bytes of the boxed window.
+`$10` is a tall block's anchor, `$30` its other three cells (bit 5), `$0F` / `$2F` the same for a low block; `$50` at
+(18, 5) and (22, 5) is a tall block anchor with bit 6: building records 25 and 24 stand there; `$AF` at (24, 7) is a low block's non-anchor cell with the ship (bit 7), `ShipX` / `ShipY` = (24, 7). In these
+512 cells 138 have bit 5, 5 bit 6 and 1 bit 7; over the whole map 55 have bit 6 (robots, buildings and flying shots).
 
 ![The map from memory at the start and the end of work/deep](img/map-owners.png)
 
@@ -183,6 +217,14 @@ one to `+4`, an empty door resets it; at 144 (`$90`) the robot there (`FindRobot
 frames the owner bytes changed 17 times (4 to us, 13 to the enemy), the highest count seen was 143, and no `+3` had
 bit 7 (no robot was nuclear).
 
+![Who holds what, day by day, work/deep](img/render/ownership-days.png)
+
+`tools/ill_render.py days --work work/deep --step 120 --out docs/img/render/ownership-days.png`: the map at the last
+sample of each day (`Clock` `$FD35`, the day at `$FD37`), the capture points in their owner's colour, white rings on
+those that changed hands that day, the robots as dots. Factories ours : the enemy's go from 0 : 0 on day 0 to 4 : 13
+on day 11; we take the factories near our warbase in the west, the enemy, building from three warbases, the east half
+and then the middle.
+
 **Buildings** `$FF01`: 56 records of 3 bytes, the map cell (2 bytes, high byte 0 = free) and a type: 0 the pad of a
 warbase of ours, 1-6 a factory's roof (its product shown, [6.5](06-rendering.md#65-sprites)), 7 our flag, 8 the
 enemy's. They are what `DrawCellObject` draws and what `FindBuilding` finds under the ship (the pad opens the
@@ -200,6 +242,13 @@ side (`+$01` not 0) and the building counts, from `memory_at` every 250 frames. 
 (24 slots each); the enemy builds faster because it has three warbases (5 general resources a day each) and the
 factories it captures. At frame 36000: 3 against 15 robots, 4 against 13 factories, the enemy's three warbases all
 standing.
+
+The same game as it moves: the robots of both sides on the whole map, with the day and the counts:
+
+![Robots moving over the map, work/deep](img/render/robots-movie.gif)
+
+`tools/ill_render.py movie --work work/deep --step 120 --out docs/img/render/robots-movie.gif`: 300 pictures, one
+every 120 frames (12 turns) of the 36 040, the records `$DA00` from `memory_at`, the map from `$DD00`.
 
 ## 7.8 Design notes
 

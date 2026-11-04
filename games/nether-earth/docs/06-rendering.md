@@ -7,14 +7,21 @@ nothing is erased: the turn of about 10 frames is set by this redraw, which take
 
 Evidence:
 
-- the code of `src/game/main.asm`;
+- the code of `src/game/*.asm` (the view in `view.asm`, `viewbuffer.asm`, `sprites.asm`, the radar in
+  `interrupts.asm`, the tables in `tables.asm`);
 - `work/deep` (the bot's 36046-frame game from the menu snapshot `work/play/start.szx`, Kempston; WALKTHROUGH 6):
   L1 counts and T-states (`work/deep/l1.json`: 2 519 182 516 T-states, 3423 view draws);
 - `work/docB/rec` (the same bot, 3034 frames from the same snapshot, on an own instance:
   `tools/bot.py play --record --frames 3000 --work work/docB/rec --port-base 24600`): the access traces of the
   figures. The view drawn at frames 1995-2003 shows the warbase, two of our robots (slot 0 bipod + cannon, slot 1 the
   same), the ship's shadow and the edge fence;
-- `work/deep/start.bin`, the image at the start of the deep recording: the sprites and tables.
+- `work/deep/start.bin`, the image at the start of the deep recording: the sprites and tables;
+- `tools/ill_view.py`, `DrawView` in Python, and `tools/ill_render.py`, which draws the figures of this chapter and of
+  [7](07-objects.md) from the recordings (TTD `memory_at`, read only; access traces). `ill_view.py` was checked byte
+  for byte against the game: the buffer of the `work/docB/rec` call below, 40 views of `work/deep` spread over the
+  game (`ill_render.py verify --work work/deep --views 60`, 0 bytes differ) and the 18 views with a deferred robot
+  (6.4). Where a figure shows a view the game's camera never showed (a fight away from the ship, a view drawn without
+  deferral) it is `ill_view.py` on the memory of that frame, and the caption says so.
 
 ![The play screen and its areas, work/docB/rec frame 2000](img/screen-areas.png)
 
@@ -55,6 +62,16 @@ the edge strips appear, the shadow, then the blocks and buildings diagonal by di
 near one, the robots over them, and last the copy to the screen (which the buffer view does not show: it only
 reads the buffer).
 
+The same call, one picture a sprite (41 pictures): the buffer after each `DrawSprite`, the sprite's box in red, and on
+the right the 32 x 16 map cells of the view projected as the sprites are, the cells walked so far lit and the current
+one red. The walk crosses the map along diagonals from the far corner; blocks of a 2 x 2 group draw once, at the
+anchor; the robots come where the walk reaches their cells.
+
+![The view drawn sprite by sprite, work/docB/rec frames 1995-2003](img/render/view-build.gif)
+
+`tools/ill_render.py build --trace work/docB/rec/traces/1995_21900-2003_60100.uatr --out
+docs/img/render/view-build.gif`: each picture is the buffer of the trace at the moment that `DrawSprite` returned.
+
 Who wrote each byte of the buffer in that call, and from which data (`kit/writers_map.py --work work/docB/rec
 --window 1995:21900-2003:60100 --listing build/game.lst --view buffer:5B00:20x160 --sources --out
 docs/img/writers-view.png`):
@@ -85,11 +102,31 @@ where the BASIC system variables would be; the font follows at `$6780`.
 - **Copy** (`CopyViewToScreen` `$D071`): 20 unrolled LDI a line from `$4021` (character row 1, column 1), the screen
   address stepped by hand, 160 lines: 74 889 T-states, more than a frame. There is no HALT before it: it starts when
   the drawing ends (in the call above at 2002:46058, mid-frame), so the beam may show the old view above and the new
-  one below for one frame. The view moves at most one cell a turn, so the tear is small.
+  one below for one frame (below).
 
 The same bytes serve the construction menu's robot preview (`ShowRobotDesign` `$CC1F` draws at `$6168` and copies 4
 bytes x 72 lines to `$48E0`), the nuclear flash (the view's attributes saved at `$5B00-$5C8F`) and the tape save
 (the checksum word at `$5B00`, [3](03-build-and-load.md)).
+
+**Tearing.** The copy writes a line every 468 T-states (20 `LDI` and the address stepping), the beam shows one every
+224: the copy runs at half the beam's speed, so the beam can only catch it from behind. A 48K frame shows the paper
+from T 14336; the view's line 0 is screen line 8. A copy that starts in the last ~23 400 T-states of a frame or the
+first ~15 600 is overtaken in the next frame: the lines the copy already wrote show the new view, the rest the old.
+A copy that starts between those is ahead of the beam to the end and the frame is clean. In `work/deep` the copy at
+25081:66907 started 3000 T-states before the frame's end:
+
+![A torn frame: work/deep 25081-25082](img/render/tear.png)
+
+`tools/ill_render.py tear --trace work/ill2/deep/traces/25081_0-25083_0.uatr --out docs/img/render/tear.png` (the
+access trace of frames 25081:0-25083:0 of `work/deep`). The screen before the copy is blank: the turn before it was
+a menu's, so this tear is plain to see; in play the old and the new view differ by at most one column, and the tear
+is a small step. The beam against the writes of `CopyLineLoop`, from kit:
+
+![The copy and the beam, work/deep 25081-25082](img/render/tear-beam.png)
+
+`kit/beam_timeline.py --work work/ill2/deep --window 25081:0-25083:0 --listing build/game.lst --out
+docs/img/render/tear-beam.png`: of the 3200 bytes, 1597 were written before the beam passed them (they show in frame
+25082) and 1603 after (frame 25082 shows the old bytes there, frame 25083 the new).
 
 ## 6.3 The projection
 
@@ -99,9 +136,16 @@ h in its own operand `$CF3F` (`DrawSprite+$12`, written by every caller). With t
     L = 2E + D - 24                (half-byte column; pixel x = 4L = 8E + 4D - 96)
     H = 8D + 100 - 4E - h          (the buffer line of the sprite's BOTTOM line)
 
-A step along the map's x moves the picture 8 pixels right and 4 up; a step along y moves it 4 right and 8 down; a
-unit of height moves it 1 pixel up. The cell (E, D) = (12, 0) lands on pixel x 0, line 52: the far corner of the
-view is up and to the left, the map's south edge runs from the lower left to the right. Columns are half bytes, so a
+![The projection over the view of work/docB/rec frame 2003](img/render/projection.png)
+
+`tools/ill_render.py projection --trace work/docB/rec/traces/1995_21900-2003_60100.uatr --out
+docs/img/render/projection.png`: the buffer as the copy starts, with the cell edges at height 0 laid over it from the
+formulas. A step along the map's x moves the picture 8 pixels right and 4 up; a step along y 4 right and 8 down; a
+unit of height 1 pixel up. The cells are squares turned by 26.6 degrees, not the 2:1 diamonds of most isometric
+games. A ground point (u, v) of the view is at pixel (8u + 4v - 92, 8v - 4u + 92); a 2 x 2 block covers (x, y-1) to
+(x+1, y) and its sprite's lowest vertex is the anchor's (x, y+1) corner (checked on the outline of sprite 15). The
+cell (E, D) = (12, 0) lands on pixel x 0, line 52: the far corner of the view is up and to the left, the map's south
+edge runs from the lower left to the right. Columns are half bytes, so a
 sprite lands either on a byte boundary or 4 pixels into a byte: `SRA L` gives the byte and the carry picks one of
 two pictures of every sprite, the aligned one or one shifted right by 4 pixels (6.5). No sprite is shifted at run
 time.
@@ -111,6 +155,15 @@ bottom line in `$A0`-`$E1` skips the sprite's rows below the buffer (`ClipBottom
 left pairs of every row (the count in the operand `$CFAF`, `ClipLeft` `$CF77`); a sprite past column 19 starts each
 row earlier so it leaves out its last pairs (`ClipRight` `$CF85`); drawing upward stops above `$5B00`. The map's own
 far edge and the corner fills hide what sticks out to the upper left.
+
+The view is a window of 32 of the map's 512 columns ([7.5](07-objects.md#75-the-map)), `ViewX` `$FD0A` its left
+column. The whole map, as the game built it:
+
+![The map at frame 200 of work/deep](img/render/world-map.png)
+
+`tools/ill_render.py worldmap --work work/deep --frame 200 --out docs/img/render/world-map.png`: the cell types, the
+2 x 2 block footprints, the capture points and building records; our warbase at column 22 at the far left, the
+enemy's three at 261, 369 and 494.
 
 ## 6.4 The draw order
 
@@ -150,6 +203,21 @@ deferred in 2828 of the 3423 view draws, robots in 18 of 1467. A deferral is und
 `work/deep` sampled every frame from 18000 to 20000, 32 887 live robot records all had `+$00/+$01` equal to the cell
 of `+$02-$04`.
 
+![The draw order of one view of work/deep, and what the ship's deferral changes](img/render/draw-order.png)
+
+`tools/ill_render.py order --work work/deep --frames 7213,162 --out docs/img/render/draw-order.png`. Top: the view of
+`DrawView` at 7213:58793, each sprite numbered in drawing order, and the cells numbered in the order the walk reaches
+them. This draw defers both kinds of mover: robot 2 at (33, 12) to the block anchored at (32, 12), and the ship at
+(22, 13) to the object at (22, 14). Bottom: the view of 162:28828 as the game drew it, and the same memory drawn by
+`ill_view.py` with the deferral off: without it the warbase block would cover the ship's nose (20 bytes differ).
+
+How visible a deferral is, by `ill_view.py` drawn both ways (`work/ill2/scan_defer.py`, `scan_defer2.py`): the 18
+robot deferrals of `work/deep` (r5's count) are all in the views of frames 7133-7303, a robot at the right edge of
+the view (robot 2 at view column 30 in the view above): its sprites are clipped away, and none of the 18 changed a
+pixel. Of about 1140 sampled
+views with the ship deferred only 2 (frames 162 and 192, the ship low over the warbase after the start) change the
+picture; high up, the ship is above the blocks anyway.
+
 ## 6.5 Sprites
 
 ![Sprite 27, the cannon facing X+, its two pictures and its bytes](img/sprite-format.png)
@@ -160,6 +228,15 @@ of `+$02-$04`.
 (mask, graphic) pairs. A byte of the buffer becomes `(byte AND mask) OR graphic` (`SpriteByteLoop` `$CFBB`); after a
 line the destination goes 20 bytes up (`ADD A,$EC` on E). The mask keeps the ground around the outline and clears
 the inside, so a sprite hides what is behind it without a separate erase.
+
+One sprite blitted, part by part: robot 1's bipod and cannon at frame 2000 of `work/docB/rec`. The mask's clear bits
+make a hole of the robot's outline in what is there, the graphic's set bits ink into it:
+
+![DrawSprite: mask and graphic over the real buffer](img/render/blit.png)
+
+`tools/ill_render.py blit --trace work/docB/rec/traces/1995_21900-2003_60100.uatr --out docs/img/render/blit.png`;
+the buffer before each call comes from the trace, and the composed result was compared with the buffer the trace has
+after the call: equal for both parts.
 
 **`SpriteTable`** `$D6E8`: 51 sprites of two words, the aligned picture and the one for an odd half-byte column
 (index = 2 x id + parity, `TableWord` `$D348`). Where both are one picture the odd one is the even one shifted right
@@ -181,8 +258,9 @@ Buildings take their sprite and height from `BuildingSprites` `$CE56` / `Buildin
 `$2C` at `$13`; a factory shows the part it makes on its roof (types 1-6: electronics `$28`, nuclear `$25`, phasers
 `$23`, missiles `$20`, cannon `$1D`, chassis `$17`) at `$0F`; flags `$2A` / `$2B` at `$1A`. The sprite blocks
 themselves (89 blocks, `$6980-$A569`) are listed with their sizes in d1 (`work/ann/d1.md`) and extracted to `src/res/gfx/sprites/` (`src/res/README.md`). In the
-recordings no shot was drawn: no fight happened inside the view, so `DrawMoverSprite`'s shot branch is known from the
-code and the shot records only.
+recordings no shot was drawn on the screen: no fight happened inside the game's view. Drawn by `ill_view.py` with the
+view moved to a fight of `work/deep` ([7.4](07-objects.md#74-shots)), the shots are sprites `$2E` (a cannon shell
+flying along y) and `$30` (a missile along y) at height 10, as the table says.
 
 ![Every sprite block, three times the size: label, address, rows x bytes, the sprite ids that use it; transparent, paper, ink and the 3 bytes of ink outside the mask in their own colour (tools/res_preview.py)](img/sprites-all.png)
 
@@ -218,6 +296,14 @@ buffer:5B00:20x160 --pc CEE8-CFD6 --range 6900-DCFF --pictures 60 --out docs/img
 at the top of the memory map are the two sprite blocks; the record `$DA10` and the tables `$D6C8` / `$D7B4` are the
 short blue marks at the bottom.
 
+Every chassis with every weapon, facing down, as `DrawRobot` stacks them:
+
+![Robots: every chassis with every weapon](img/render/robot-parts.png)
+
+`tools/ill_render.py parts --image work/deep/start.bin --out docs/img/render/robot-parts.png`: the sprites and
+`PartSpriteTable` / `PartHeights` of the image, each part blitted (mask, then graphic) `PartHeights` higher than the
+one below.
+
 ## 6.7 The radar
 
 Two pictures of 16 lines x 16 bytes, one pixel a map cell: `RadarOwn` `$D800` and `RadarEnemy` `$D900`, for a window
@@ -237,7 +323,14 @@ of 128 map columns from `RadarColumn` `$FD1C` (= `RadarLeft` `$FD1B` x 8).
   LDIR of 16 bytes to `$50C6` (character row 22, column 6), then 32 attributes.
 
 The terrain is in both pictures and only changes colour; our robots exist only in the cyan picture and the enemy's
-only in the yellow one, so each side's dots blink at 25 Hz in its own colour. The radar costs 8 134 T-states every
+only in the yellow one, so each side's dots blink at 25 Hz in its own colour.
+
+![The radar frame by frame, work/deep from frame 18500](img/render/radar.gif)
+
+`tools/ill_render.py radar --work work/deep --frame 18500 --count 40 --out docs/img/render/radar.gif`: 40 frames, each
+the radar area of the screen, the two pictures `$D800` / `$D900` with the one on the screen this frame outlined, and
+the map under the window. The two pictures differ in 32 pixels: the robots of each side and the ship's blip. The
+radar costs 8 134 T-states every
 frame, 11.2 % of all the time in `work/deep`, more than the copy of the view.
 
 ## 6.8 The play screen and the panel
