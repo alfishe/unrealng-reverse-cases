@@ -227,7 +227,7 @@ Three authors wrote docs 01-04, 05-07 and 08-10 at once from `game.ann`, the reg
 44 figures (`6a05c0b`); `kit/refdocs.py` generated 11 and 12. They recorded two more runs on their own instances:
 `work/docB/rec` (the menus) and `work/docC/fight` (19829 frames, the deep game replayed frame for frame up to the
 first shot: the same `FireShot` at frame 18679). Found on the way: N1 does not check the flag byte, the view copy is
-not synchronised with the beam and tears (frame 20012, line 117), five places modify their own operands, and the menu
+not synchronised with the beam and tears (frame 20012, line 110), five places modify their own operands, and the menu
 tune loses its bass for 24 frames after a restart.
 
 ### 6.9 The repository for publishing
@@ -358,7 +358,7 @@ What unreal-ng gave the case, step by step:
 - **Own instances over MCP / WebAPI**: the bot (6.2) and every experiment of 6.11, on clones of a recording, in
   parallel, without a window.
 - **Port traces with t-states**: the sound effects and the tune measured, the tape loading at signal speed.
-- **The beam**: the tear at line 117 needs the screen as the beam left it, not the end of the frame.
+- **The beam**: the tear at line 110 needs the screen as the beam left it, not the end of the frame.
 
 Three ways to do it without:
 

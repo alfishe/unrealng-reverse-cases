@@ -194,13 +194,42 @@ So a turn is at least 10 frames, 200 ms: 5 turns a second, 12 turns a game hour,
   next turn, because the clear sets the count to 0.
 
 **The beam.** The turn is not synchronised with the beam. Its start drifts with the work, and only the interrupt
-gives it a phase: the wait ends just after an interrupt, so a turn starts about 10 400 T into a frame. The figure
-puts the turn's screen writes against the beam:
+gives it a phase: the wait ends just after an interrupt, so a turn starts about 10 400 T into a frame.
 
-![One game turn against the beam: deep recording, frames 20004-20014](img/beam-turn.png)
+![One game turn: its phases over 11 frames, then the copy's two frames against the beam](img/beam-turn.png)
 
-It is drawn by `python3 ../../kit/beam_timeline.py` on the window 20004:0-20015:0 of the trace, with `--frames 11`. The
-writers to the screen, by loop:
+How to read the figure:
+
+- **The top strip** is one turn of `deep`, frames 20004-20014, one colour for each phase:
+  - the interrupt at the start of every frame (green);
+  - the ship, robots, shots and clock (blue, frame 20004);
+  - drawing the view in the buffer (purple, about seven frames);
+  - copying it to the screen (red, about a frame);
+  - waiting for the tenth interrupt (yellow);
+  - from frame 20014, the next turn.
+- **The lower panel** enlarges the copy's two frames, 20011 and 20012:
+  - across: the time from the interrupt of 20011, in T-states;
+  - down: the screen line;
+  - each dot: one byte written into the screen.
+- **The white diagonals** are the beam: the line the TV shows at that moment, one diagonal a frame. A byte written
+  left of the diagonal shows in that frame; one written right of it waits for the beam's next pass.
+- **The red slope** is the copy, 20 bytes a line. It starts at line 8 late in frame 20011 and pauses for the
+  interrupt. In 20012 it is slower than the beam and crosses it at line 110:
+  - lines 8-109 were written before the beam passed and show the new view;
+  - lines 110-167 were written after the beam passed: for that frame they still show the old view.
+  - That is the tear.
+- **The green steps** at lines 176-191 are the radar, redrawn by every interrupt at the start of the frame, long
+  before the beam reaches the bottom: it never tears.
+- **The blue marks** at the top right are the clock's digits.
+
+```
+python3 ../../kit/beam_timeline.py --work work/docA/deep --window 20004:0-20015:0 --listing work/mkgame/game.lst \
+    --frames 11 --out work/figs/beam-raw.png        # traces the window once into work/docA/deep/traces
+python3 tools/fig_beam_turn.py --trace work/docA/deep/traces/20004_0-20015_0.uatr --listing work/mkgame/game.lst \
+    --copy-frame 20011 --out docs/img/beam-turn.png
+```
+
+The writers to the screen in the 11 frames, by loop:
 
 | Loop | Writes | Before the beam | After the beam | What |
 | --- | ---: | ---: | ---: | --- |
@@ -214,7 +243,7 @@ What this shows:
 - **The radar never tears.** The interrupt draws it at the top of the frame, long before the beam reaches screen
   line 176.
 - **The view copy does tear.** It takes about 1.05 frames, starting wherever the drawing ended (here frame 20011,
-  T 54 139), and it overtakes the beam: in frame 20012 the beam crosses it at about screen line 117. Above that line
+  T 54 139), and it overtakes the beam: in frame 20012 the beam crosses it at screen line 110. Above that line
   the screen shows the new view, below it the old one, for one frame.
 - **The tear is at a different place every turn.** The copy's start depends on how long the drawing took, and the
   game makes no attempt to start it at the interrupt.
