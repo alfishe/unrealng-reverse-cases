@@ -56,8 +56,30 @@ equals the Final Cut disk's unpacked image: `$8000-$BFFF` and `$C000-$F76C` in f
 | --- | --- |
 | the kit's key names `SS` / `CS` become `symbol_shift` / `caps_shift`, which `type_input` rejects | open; the input scripts use `ss` / `cs` |
 
-## 7. Review
+## 7. Stage 2: the boot followed statically, the byte-exact build
+
+- **A static machine instead of recordings.** `tools/ane_sim.py` runs the boot on SkoolKit's simulator with
+  128 K paging, the 128 and TR-DOS ROMs and a WD1793 model reading the SCL; keys are scripted. It logs each sector
+  read, each `$7FFD` write and each HRUM depack, and writes every depacked image. From `RUN "A_NETHER"` to
+  `GameEntry` takes 15 s. The first try (traps on the TR-DOS entry) failed: UltraXOR reads the disk through ROM
+  gadgets, not through `$3D13`, so the real ROM and a controller model were needed.
+- **The disk map.** Every sector of the SCL has a known reader and destination ([03](docs/03-build-and-load.md)
+  4.1). The game block is split: 16384 bytes in bank 4, its last 914 bytes in bank 3 between Dead End and the music.
+- **HRUM 3.5.** The depacker was read instruction by instruction and written in Python (`tools/hrum.py`): it gives
+  the simulator's output exactly. The packer was then guessed: greedy, longest match, nearest offset on ties. It gives
+  all 13 streams byte for byte.
+- **The game from NE's source.** NE's build gives NE's image; `tools/mkpatch.py` lists ANE's changes (90 runs);
+  `src/game/ane-patches.asm` writes them as named code with reasons and the texts with their letters. One bug found
+  on the way: `GameStop` writes `$6D6A` instead of `$696A`, harmless because nothing calls it any more.
+- **The tunes** were found in the zxart.ee collection by the name inside the module ([07](docs/07-sound.md)). This
+  also corrected stage 1: the play music's player is Phantom Family's SoundTrack player, not the PT3 one.
+- **The build.** `tools/build.sh`: NE, the patches, the font from PNG, the blocks (inner ones first), the loader,
+  the disk from `src/disk.txt`. The SCL is identical to the original.
+
+## 8. Review
 
 - **Not run:** the Dead End sequence, the disk save and load, the help program's every page in a recording (it was
-  read from a live instance).
-- **Not yet known:** banks 4 and 7, the `$7FFD` writes of every stage, the file `nether.N`.
+  read from a live instance). Stage 2 ran no emulator: the paths are from the code and the static boot.
+- **Kept as bytes:** UltraXOR (polymorphic layers), the intro, "Presents", the scroller, the boot program, bank 7,
+  the two music banks, Dead End, the disk module, Final Cut (`src/res/img/`), `nether.N`.
+- **Open:** the PT3 player against Pro Tracker 3.x sources; the code of the programs above.

@@ -1,7 +1,10 @@
 # Advanced Nether Earth (Eternity Industry, 1998)
 
-State: stage 1 (2026-11-04): the media, the load, the memory map, and the game matched against
-[Nether Earth](../nether-earth/README.md) routine by routine. Source and resources come in the next stages.
+State: stage 2 (2026-11-04): `tools/build.sh` builds the SCL from the sources, identical to the original byte for
+byte. The game is built from [Nether Earth](../nether-earth/README.md)'s source with ANE's patches over it
+(`src/game/ane-patches.asm`, every changed byte named and explained); HRUM 3.5 is reproduced exactly
+(`tools/hrum.py`); the loader is annotated source. The other programs (intro, boot menu and help, Dead End, Final
+Cut, the disk module) and UltraXOR are still kept as bytes ([3.5](docs/03-build-and-load.md#5-the-build)).
 
 | | |
 | --- | --- |
@@ -15,7 +18,7 @@ A Russian 128K edition of Nether Earth. The results so far:
 - **The game logic is Nether Earth's, byte for byte, at Nether Earth's addresses**: robots, shots, damage, capture,
   production, the enemy commander, the tables, and every known bug of NE's 10.12 except the menu tune's (the tune is
   gone) ([10](docs/10-gameplay-logic.md)).
-- **What is new is around the game**: the IM 2 table moved to `$6800` so `$C000` can be paged, AY music (Pro Tracker)
+- **What is new is around the game**: the IM 2 table moved to `$6800` so `$C000` can be paged, AY music (ProTracker 2 and 3 tunes, [7](docs/07-sound.md))
   in play, a disk save, Russian texts with a Cyrillic font, an intro, a boot menu, a help program, and two endings,
   "Dead End" on a loss and "Final Cut" on a win ([2](docs/02-architecture.md), [3](docs/03-build-and-load.md)).
 - **The authors' claims against the code**: "some bugs fixed" does not show in the game code; several numbers of

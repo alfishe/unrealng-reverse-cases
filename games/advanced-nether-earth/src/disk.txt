@@ -1,0 +1,61 @@
+# The SCL's four files and what lies in their sectors (tools/mkdisk.py; docs/03-build-and-load.md 2).
+#
+#   file NAME TYPE START LENGTH SECTORS     a catalogue entry (TR-DOS: 8-character name, type letter, the two
+#                                           words, the length in sectors); its sectors follow from here on
+#   at SECTOR+OFFSET PATH [FROM [COUNT]]    the bytes of PATH (FROM, COUNT: a part of it, decimal or $hex) at the
+#                                           file's sector SECTOR, byte OFFSET; the parts of a file are in order and
+#                                           leave no hole: every byte comes from a listed file
+#   zero SECTOR+OFFSET COUNT                COUNT zero bytes
+#   text SECTOR+OFFSET PATH                 a text file: UTF-8, lines ended CR LF, written in CP866
+#
+# Sector numbers are the file's own (0 = its first). The loader reads by the disk's logical sectors: file sector
+# k of A_NETHER.B is logical sector 16 + k; a_nether.E follows at file sector 255, nether.N at 437, NETHER+.W
+# at 476 (the numbers below count from A_NETHER.B's first sector, across the files, as the loader's reads do).
+
+file A_NETHER B 2808 2795 255
+# The boot BASIC and UltraXOR, sectors 0-10: kept as the original bytes (src/res/disk/README.md: the envelope
+# re-encrypts itself with R-register keys; docs/03-build-and-load.md 3)
+at 0+0 src/res/disk/boot-a-nether-b.bin
+# 11-54: the loader, read to $6161
+at 11+0 build/loader.bin
+# 55-71: read to bank 7 $DB00
+at 55+0 build/blk/d02.bin
+at 71+5 src/res/disk/filler-after-d02.bin
+# 72-86: read to bank 4 $C000
+at 72+0 build/blk/d03.bin
+zero 86+95 161
+# 87-99: read to $9C40, not packed
+at 87+0 src/res/img/plain-9c40.bin
+# 100-211: read to $6060
+at 100+0 build/blk/d05.bin
+at 211+254 src/res/disk/filler-after-d05.bin
+# 212-254 and a_nether.E 0-15: read to bank 3 $C000-$FAFF: Dead End, the game block's last 914 bytes, the music
+at 212+0 build/blk/deadend.bin
+at 251+158 build/blk/game.bin 16384
+at 255+48 build/blk/music.bin
+zero 270+200 56
+
+file a_nether E 0 0 182
+# 16-28 (271-283): read to bank 1 $C000
+at 271+0 build/blk/d04.bin
+at 283+222 src/res/disk/filler-after-d04.bin
+# 29-92 (284-347): read to bank 4 $C000-$FFFF: the game block's first 16384 bytes
+at 284+0 build/blk/game.bin 0 16384
+# 93-155 (348-410): read to bank 6 $C000: Final Cut, the disk module
+at 348+0 build/blk/finalcut.bin
+at 402+45 src/res/disk/filler-fc-d10.bin
+at 402+55 build/blk/diskio.bin
+at 410+232 src/res/disk/filler-after-d10.bin
+# 156-181 (411-436): read to bank 7 $C000
+at 411+0 build/blk/d06.bin
+at 436+19 src/res/disk/filler-after-d06.bin
+
+file nether N 55595 9941 39
+# A saved game (the disk save of SaveGameBlocks: CODE 55595 = $D92B, 9941 bytes), kept as the bytes
+at 437+0 src/res/disk/nether-n.bin
+at 475+213 src/res/disk/filler-after-n.bin
+
+file NETHER+ W 38912 9143 36
+# The authors' text (CP866), src/res/text/nether-plus-w.txt
+text 476+0 src/res/text/nether-plus-w.txt
+at 511+183 src/res/disk/filler-after-w.bin

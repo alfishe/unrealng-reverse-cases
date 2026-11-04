@@ -27,17 +27,18 @@ Live-instance dumps (exploration, not recordings) in `work/stage1/explore/`: `he
 | --- | --- | --- |
 | `$4000-$5AFF` | 5 | the screen |
 | `$5B00-$677F` | 5 | NE's `ViewBuffer` (3200 bytes; a live buffer, so its bytes differ) |
-| `$6780-$697F` | 5 | NE's font place, reused by ANE: the music glue `$67B1`, the IM 2 table `$6800-$6900` (`I=$68`, moved out of `$FE00` because `$C000` is now paged), the disk save `$6905`, the IM 2 `Handler` `$6969` / `$696A` |
+| `$6780-$697F` | 5 | NE's font place, reused by ANE ([04](04-game-loop.md)): `MusicInterrupt` `$6780`, `PlayMusic` `$67B1`, `GameBank` `$67D9`, `SetGameBank` `$67DA`, `MenuPicture` `$67E5`, the IM 2 table `ImTable` `$6800-$6900` (`I=$68`, moved out of `$FE00` because `$C000` is now paged), `GameSave` `$6905`, `ImJump` `$6969` and `ImHandler` `$696A` |
 | `$6980-$A56A` | 5, 2 | NE's sprites, all 178 entries at NE's addresses |
-| `$A5EF` | 2 | ANE's new start (NE's `Start` `$A600` restarts here) |
+| `$A56A-$A5FF` | 2 | NE's `SpriteSpare`, reused: `GameLoad` `$A56A`, `GameEntry` `$A5DA`, `Restart` `$A5EF` (NE's restarts come here) |
 | `$A600-$BFFF` | 2 | NE's code: start, construction, robot menu, game turn, ship, world, enemy, bases, level |
 | `$C000-$D7D2` | 0 | NE's code: main menu (patched: disk load / save, no menu music), view, screen, controls, print, interrupt, tables; the menu tune `$C4A0-$C848` replaced (ANE's font at `$C400`, Cyrillic glyphs from `$C500`) |
 | `$D7D3-$DB80` | 0 | NE's world state |
 | `$DD00-$FCDA` | 0 | NE's map and the robot / building tables (`EnemyBuildings` `$FD42`) |
-| bank 1 | | the PT3 player (`$C005`) and the play music |
+| bank 1 | | the play music: the SoundTrack player of Phantom Family (`$C005`) and X-Man's ProTracker 2 tune ([07](07-sound.md)) |
 | bank 3 | | "Dead End" (loss), entered at `$D2EF` |
 | bank 6 | | "Final Cut" (win), HRUM-packed, unpacks to `$6060-$F76C` |
-| banks 4, 7 | | further loaded blocks (to follow in stage 2) |
+| bank 4 | | the disk module (save, load), run at `$4000` ([03](03-build-and-load.md) 4.3) |
+| bank 7 | | the boot's image: its first part, copied to `$9C40`, starts the game ([03](03-build-and-load.md) 4) |
 
 ## 3. What is NE's: the match
 
@@ -68,7 +69,7 @@ The "relocated" entries are at NE's address with another operand (`Handler`, the
 not moved. `DrawSprite` and `FillViewCorner` show as changed only through their self-modified operands.
 
 Assets: sprites same (all 178); NE's font replaced; the map and world state are run-time data (`fill`); NE's menu
-tune replaced by PT3 music in bank 1. The routines and tables of the game logic: [10](10-gameplay-logic.md).
+tune replaced by AY music in bank 1 ([07](07-sound.md)). The routines and tables of the game logic: [10](10-gameplay-logic.md).
 
 Self-check: the same tool on NE's own image gives 551 same + 12 fill.
 

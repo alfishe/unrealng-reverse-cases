@@ -54,19 +54,25 @@ ANE A604 LD HL,$6800 / LD BC,$0069 ... LD ($6969),A / LD HL,$6780 / LD ($696A),H
 
 The vector table is `$6800-$6900` (257 x `$69`), the `JP` at `$6969`, `Handler` at `$696A`, `I` = `$68`. NE kept them
 at `$FDFD-$FF00`, in the bank that ANE now pages out while the music plays. `$6780-$697F` was NE's font, which moved
-to bank 0 `$C500`. Every `LD (Handler),HL` of NE follows (`EnterPlay`, `ConstructionMenu`, `StartRobot`, `GameStop`).
-The handlers themselves (`StartInterrupt` `$D59C`, `PlayInterrupt` `$D566`) are unchanged but for 2.2.
+to bank 0 `$C500`. Every `LD (Handler),HL` of NE follows (`EnterPlay`, `ConstructionMenu`, `StartRobot`, `GameStop`),
+and NE's idle handler `StartInterrupt` (`$D59C`) is replaced by ANE's `MusicInterrupt` (`$6780`, the tune only);
+`PlayInterrupt` (`$D566`) is unchanged but for 2.2. `GameStop` got `LD ($6D6A),HL` for `$696A` (a typo); `GameStop`
+is no longer called (2.4), so it never matters. Names and the full patch list: `src/game/ane-patches.asm`,
+[04](04-game-loop.md).
 
 ### 2.2 `PlayInterrupt`: AY music in play
 
 ```text
 NE  D582 CALL $D59E        ; ShowRadar
-ANE D582 JP $67B1          ; 67B1 CALL $D59E (ShowRadar), page bank 1 (OUT $7FFD,$11), CALL $C005 (the PT3 player,
-                           ;      "PT 3 Player v1.0 by Nick of GDC", bank 1), page back, JP $D585
+ANE D582 JP $67B1          ; PlayMusic: CALL $D59E (ShowRadar), page bank 1 (OUT $7FFD,$11), CALL $C005 (the
+                           ;      player, bank 1), page back (GameBank $67D9), JP $D585
 ```
 
-The radar, `TurnFrames` and the shot sounds run as in NE; a PT3 tune plays on the AY every frame (bank 1 holds the
-player and "ProTracker 3.1 compilation of 08.12.96 ... X-MAN-MUSIC"). Not gameplay.
+The radar, `TurnFrames` and the shot sounds run as in NE; a tune plays on the AY every frame. Bank 1 in play holds
+"New SoundTrack Player By PHANTOM FAMILY'1996" with X-Man's ProTracker 2 tune "TAIGA" (the dumps `scl-menu-bank1.bin`
+and `scl-play-bank1.bin` hold it; stage 1 had called it the PT3 player, which is bank 1's at the boot menu and is
+replaced by the game's blocks, [07](07-sound.md)). Not
+gameplay.
 
 ### 2.3 Save and load: disk instead of tape
 
@@ -82,8 +88,10 @@ NE  C192 HALT / CALL TitleColourCycle ... CALL MenuMusic ... CALL TitleColourCyc
 ANE C192 NOP ...           ; no title colours, no beeper tune in the menu (ANE's own menu and AY tune instead)
 ```
 
-The record saved is NE's (the same blocks); the checksum test of the load is gone. The disk code at `$6905` and the
-load path from ANE's menu item `5` ("ЗАГРУЗКА") are stage-2 work (not traced yet).
+The record saved is NE's (the same blocks); the checksum test of the load is gone. `GameSave` (`$6905`) and
+`GameLoad` (`$A56A`, menu item `5` "ЗАГРУЗКА") page bank 4 and jump into the disk module (`IX` = `$4033` save,
+`$4000` load), which copies itself to the screen memory and talks to TR-DOS; the file it writes is like `nether.N`
+on the SCL (CODE `$D92B`, 9941 bytes: from `SaveShots` on). From the code; not recorded ([04](04-game-loop.md) 4).
 
 ### 2.4 The end of the game
 
