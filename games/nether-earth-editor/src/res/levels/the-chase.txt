@@ -1,0 +1,195 @@
+; Nether Earth saved game "The Chase" (levels.py; the format: tools/levels.py, docs/10-gameplay-logic.md).
+; The 2-byte block, the sum: $BABA (rebuilt from the bytes below).
+level The Chase
+
+; the variables $FD00-$FD6F
+var RandomSeed 17 241 93 175
+var PrintAddr $50F6
+var MapView $DD1F
+var SavedSP $FFFA
+var ViewX $001F
+var Input 32
+var ShipY 8
+var ShipX $002D
+var Altitude 31
+var ShipDrawPos 0 0
+var PrintAttr 69
+var PrintAttrAddr $5AF6
+var PrintHeight 0
+var PrintWidth 0
+bytes $FD18 $00 $00
+var RadarPhase 0
+var RadarLeft 0
+var RadarColumn $0000
+var RadarBlink 28
+var MenuCursor 4 3
+var MenuParts 9
+var Resources 99 99 0 99 99 99 99
+var MenuResources 20 93 0 83 83 97 73
+var ClimbTurns 0
+var PrintColumn 0
+var PrintRow 23
+var TitleColourPhase 0
+var TurnFrames 0
+var Clock 0 0 0 0
+var PanelBusy 0
+var PlayerBuildings 1 0 0 0 0 0 0
+var PlayerRobotCount 1
+var EnemyBuildings 2 0 0 0 0 0 0
+var EnemyRobotCount 20
+var EnemyResources 99 99 0 99 99 99 99
+var Side 1
+var RadarDirty 1
+var SoundFx 0
+var BassReturnPos $0000
+var LeadReturnPos $0000
+bytes $FD58 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00
+
+; capture points $FD70: K X Y owner type count (0-3 the warbases, 4-27 the factories)
+point  0  22  8 enemy warbase 0
+point  1 487  8 enemy warbase 0
+point  2 487  8 neutral+destroyed warbase 0
+point  3 497  8 player warbase 0
+point  4  77  3 neutral+destroyed warbase 0
+point  5  77  7 neutral+destroyed warbase 0
+point  6  77 11 neutral+destroyed warbase 0
+point  7  79  3 neutral+destroyed warbase 0
+point  8  97  3 neutral+destroyed warbase 0
+point  9 125  3 neutral+destroyed warbase 0
+point 10 140 11 neutral+destroyed warbase 0
+point 11 160  5 neutral+destroyed warbase 0
+point 12 180  3 neutral+destroyed warbase 0
+point 13 217  3 neutral+destroyed warbase 0
+point 14 227  9 neutral+destroyed warbase 0
+point 15 241  3 neutral+destroyed warbase 0
+point 16 282  3 neutral+destroyed warbase 0
+point 17 288 13 neutral+destroyed warbase 0
+point 18 296  3 neutral+destroyed warbase 0
+point 19 311  7 neutral+destroyed warbase 0
+point 20 322  3 neutral+destroyed warbase 0
+point 21 386  3 neutral+destroyed warbase 0
+point 22 401  7 neutral+destroyed warbase 0
+point 23 416  3 neutral+destroyed warbase 0
+point 24 436  5 neutral+destroyed warbase 0
+point 25 446  3 neutral+destroyed warbase 0
+point 26 456 10 neutral+destroyed warbase 0
+point 27 466  3 neutral+destroyed warbase 0
+
+; buildings $FF01 (staged at $D958): K X Y type
+building  0 497  4 pad
+building  1 493  4 flag-player
+building  2 491  4 flag-enemy
+building  3  26  4 flag-enemy
+
+; robots $DA00: slots 0-23 the player's, 24-47 the enemy's
+robot  0  45  8 course=0 steps=5 parts=antigrav+missiles+phasers facing=1 height=21 control=0 order=0 strength=100 ground=0 target=0 delay=3
+robot  1 raw $38 $00 $38 $00 $0D $00 $05 $09 $04 $11 $00 $00 $00 $02 $00 $05
+robot  2 raw $38 $00 $38 $00 $0B $00 $05 $09 $04 $11 $00 $00 $00 $00 $00 $04
+robot  3 raw $38 $00 $38 $00 $09 $00 $05 $09 $04 $11 $00 $00 $00 $00 $00 $01
+robot 24 raw $00 $00 $00 $00 $00 $00 $00 $27 $00 $00 $00 $00 $00 $00 $00 $00
+robot 25  28  8 course=2 steps=6 parts=bipod+cannon+missiles+phasers+electronics facing=2 height=37 control=128 order=3 strength=100 ground=0 target=0 delay=5
+robot 26  36  5 course=8 steps=6 parts=antigrav+missiles+phasers+nuclear facing=2 height=28 control=128 order=5 strength=100 ground=0 target=1 delay=1
+robot 27  28 15 course=2 steps=3 parts=tracks+cannon+electronics facing=2 height=20 control=128 order=3 strength=100 ground=0 target=0 delay=3
+robot 28  18  9 course=2 steps=1 parts=antigrav+phasers facing=2 height=15 control=128 order=6 strength=100 ground=0 target=0 delay=3
+robot 29  33 13 course=0 steps=3 parts=tracks+cannon+missiles+electronics facing=8 height=26 control=128 order=7 strength=100 ground=2 target=1 delay=1
+robot 30  30  5 course=8 steps=1 parts=antigrav+missiles+phasers facing=8 height=21 control=128 order=3 strength=100 ground=0 target=0 delay=2
+robot 31  28 13 course=4 steps=3 parts=antigrav+cannon+missiles+phasers facing=4 height=27 control=128 order=3 strength=100 ground=0 target=0 delay=3
+robot 32  36  7 course=0 steps=1 parts=antigrav+missiles+phasers+electronics facing=1 height=28 control=128 order=8 strength=4 ground=0 target=1 delay=3
+robot 33  34  3 course=8 steps=5 parts=antigrav+cannon+phasers+electronics facing=8 height=28 control=128 order=3 strength=100 ground=0 target=0 delay=3
+robot 34  34  1 course=2 steps=5 parts=antigrav+cannon+missiles+electronics facing=2 height=27 control=128 order=3 strength=100 ground=0 target=0 delay=1
+robot 35  31 13 course=4 steps=5 parts=bipod+cannon+missiles facing=4 height=23 control=128 order=3 strength=100 ground=0 target=0 delay=1
+robot 36  28  3 course=1 steps=4 parts=bipod+missiles+phasers+nuclear facing=1 height=31 control=128 order=5 strength=100 ground=0 target=3 delay=1
+robot 37  32  6 course=4 steps=1 parts=antigrav+phasers+electronics facing=4 height=22 control=128 order=3 strength=100 ground=0 target=0 delay=1
+robot 38 raw $00 $00 $00 $00 $00 $00 $00 $70 $00 $00 $00 $00 $00 $00 $00 $00
+robot 39  30  1 course=1 steps=4 parts=antigrav+phasers+electronics facing=1 height=22 control=128 order=3 strength=100 ground=0 target=0 delay=1
+robot 40 raw $00 $00 $00 $00 $00 $00 $00 $87 $00 $00 $00 $00 $00 $00 $00 $00
+robot 41  32  1 course=4 steps=4 parts=bipod+cannon+missiles+phasers+electronics facing=4 height=37 control=128 order=3 strength=100 ground=0 target=0 delay=4
+robot 42 raw $00 $00 $00 $00 $00 $00 $00 $4F $00 $00 $00 $00 $00 $00 $00 $00
+robot 43  34  6 course=0 steps=3 parts=tracks+cannon+missiles+electronics facing=2 height=26 control=128 order=6 strength=100 ground=0 target=2 delay=1
+robot 44  36 15 course=2 steps=5 parts=bipod+phasers+electronics facing=2 height=25 control=128 order=3 strength=100 ground=2 target=0 delay=8
+robot 45  33 11 course=2 steps=6 parts=antigrav+cannon+missiles+phasers facing=8 height=27 control=128 order=8 strength=100 ground=2 target=3 delay=1
+robot 46  34  8 course=0 steps=1 parts=antigrav+missiles+phasers+electronics facing=1 height=28 control=128 order=3 strength=100 ground=0 target=0 delay=3
+robot 47  31 15 course=2 steps=1 parts=antigrav+cannon+electronics facing=2 height=21 control=128 order=3 strength=100 ground=0 target=0 delay=3
+
+; shots $D7D3 (staged at $D92B)
+shot 0 raw $38 $00 $38 $00 $0D $04 $04 $03 $0A
+shot 3 raw $24 $00 $24 $00 $08 $01 $06 $03 $0A
+
+; the map $DD00: 16 rows of 512 cells, in four strips of 128 columns
+map
+; columns 0-127
+   0         1         2         3         4         5         6         7         8         9         0         1         2       
+00 ............uu......pp..pp........................................ee.........................................................ddd
+01 ............Uu....ppPpppPppp......................................Eeeeeeeeeeee.....ffhhiijjkkgg..............................DdD
+02 ............uu....PpooPpooPp........................................EeEeEeEeEe.ii..FfHhIiJjKkGg............................ddddi
+03 ............Uu....ppOoppOopp.............................cccccc.......eeee.....Ii..eejjkkhhiicc...........rrrrrrrr.........DdDdI
+04 ............uu....PpooPpooPp.............................CcCcCc.......EeEe.........EeJjKkHhIiCcddeeee.....RrRrRrRr........ddiiii
+05 ............Uu......OoooOo.........................eeeeeehhhhhhcc....................bbhhkkdd..DdEeEe.....................DdIiIi
+06 ............uu......ooOooo.........................EeEeEeHhHhHhCc................ii..BbHhKkDd..ddiiiiee.ee................ddiidd
+07 ............Uu......OoqqOo.................rr...ccddccddeehhhhiicc...............Ii....bb......DdIiIiEe.Ee................DdIiDd
+08 ............uu........Qq...................Rr...CcDdCcDdEeHhHhIiCc..........ii.........Bbbbbb....ddiiii.llmmmmmmmmmmnn...rrdddd.
+09 ............Uu....................bbccbbeeddcchhiijjkk....iiiiiicc..........Ii........bb.BbBb....DdIiIi.LlMmMmMmMmMmNn...RrDdDd.
+10 ............uu....................BbCcBbEeDdCcHhIiJjKk....IiIiIiCc....................Bbiijjcc..iiiiiiiiee......................
+11 ............Uu....................ddeeddccggiijjkkhhiibb....cc.cc................ii.....IiJjCc..IiIiIiIiEe......................
+12 ............uu....................DdEeDdCcGgIiJjKkHhIiBb....Cc.Cc...ee...........Ii...cciiiijjccdddddddddd..rrrrrrrr............
+13 ............Uu....................ccbbddddffggiihhkkjjffcc..........Ee......ee........CcIiIiJjCcDdDdDdDdDd..RrRrRrRr............
+14 ............uu....................CcBbDdDdFfGgIiHhKkJjFfCc.........eeee..ee.Ee........ccjjjjjjrrrrrrrr..........................
+15 ............Uu.....................................................EeEe..Ee...........CcJjJjJjRrRrRrRr..........................
+; columns 128-255
+   2         3         4         5         6         7         8         9         0         1         2         3         4       
+00 diidd...........................................................................................................................
+01 dIiDd................................bbccddee...................................................................................
+02 iiidd................................BbCcDdEe......qq..........qqqqqqqqqqqqqqqqqqqqqqqq..................rr.....................
+03 iIiDd.rrrrrrrr................qq.....ddeebbcc......Qq..........QqQqQqQqQqQqQqQqQqQqQqQq..................Rr.....................
+04 dddd..RrRrRrRr................Qq.....DdEeBbCc...................................................................................
+05 DdDd...................ll............cchhiijjkk.................................................................................
+06 .......................Ll........qq..CcHhIiJjKk.................................................................................
+07 .......................mm........Qq....jjkkhhhhiijjkkiiiiiiiiiirrqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq...........................
+08 .......................Mm..............JjKkHhHhIiJjKkIiIiIiIiIiRrQqQqQqQqQqQqQqQqQqQqQqQqQqQqQqQqQqQq...........................
+09 .......eedddd..........mm..................eeeeeeeeeeeeeeeeeeee..gg..gg..gg..gg..gg..gg..gg..gg..gg........bbccddeebbccddee.....
+10 .......EeDdDd..........Mm................eeEeEeEeEeEeEeEeEeEeEeggGgggGgggGgggGgggGgggGgggGgggGgggGggg......BbCcDdEeBbCcDdEe.....
+11 ......ee..ii.dd........nn................EeeeiihhkkjjkkhhiiiieeGg..Gg..Gg..Gg..Gg..Gg..Gg..Gg..Gg..Gg......ddeebbccddeebbccbb...
+12 ......EeiiIi.Dddd......Nn..................EeIiHhKkJjKkHhIiIiEeqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq....DdEeBbCcDdEeBbCcBb...
+13 ......eeIijjjj.Dd..................................iihhkkjjiiiiQqQqQqQqQqQqQqQqQqQqQqQqQqQqQqQqQqQqQqQq....ccbbeeddccbbeeddddcc.
+14 ....eeEeiiJjJjjjdd.................................IiHhKkJjIiIi............................................CcBbEeDdCcBbEeDdDdCc.
+15 ....Ee..Ii....JjDd..............................................................................................................
+; columns 256-383
+   5         6         7         8         9         0         1         2         3         4         5         6         7       
+00 ...............................................ddii.....iidd....................................................................
+01 ..............hhiijjkk.........................DdIiii.iiIiDd....................................................................
+02 ..............HhIiJjKk...qq......rr............ddiiIi.Iidddd....................................................................
+03 ..............jjkkhhii...Qq......Rr...ee...ee..DdIiiiii.DdDd...............................................................qq...
+04 ..............JjKkHhIi................Ee...Ee....ddIiIidddd.....................rrrrrrrrrrrrrrrr....qqrrqq.................Qq...
+05 .qq...........iihhkkjj...........................DdiiiiDdDd.....................RrRrRrRrRrRrRrRr....QqRrQq......................
+06 .Qq...........IiHhKkJj...........................ddIiIidd.......................................................................
+07 .................................................DdiiddDd.......................................................................
+08 ...........................................qq......IiDd.........................rrrrrrrrrrrrrrrrrr..............................
+09 ............hhiihhiijjkk............ee.....Qq.....dddd..........................RrRrRrRrRrRrRrRrRr.............................b
+10 ............HhIiHhIiJjKk............Ee............DdDd..........dddd...........................................................B
+11 ..........iijjkkjjkkhhiihh......................................DdDd.........................................................ddd
+12 ..........IiJjKkJjKkHhIiHh.....................................ddjjdddd......................................................DdD
+13 ........hhjjiihhiihhkkjjkk.....................................DdJjDdDd....................................................ccbbc
+14 ........HhJjIiHhIiHhKkJjKk........ee..........................ddjjjjjjdd...................................................CcBbC
+15 ..................................Ee..........................DdJjJjJjDd........................................................
+; columns 384-511
+   8         9         0         1         2         3         4         5         6         7         8         9         0       
+00 ..........rr.............rr.........................................................ddii....iijjjj...pp..pp....pp..pp..uu.......
+01 ..........Rr.............Rr.............ll......ll..................................DdIiiiiiIiJjJj.ppPpppPpppppPpppPpppUu.......
+02 ........................................Ll......Ll...................llmmmmnn........dd.IiIiiijjjj.PpooPpooPpPpooPpooPpuu.......
+03 ........................................mm......mm...................LlMmMmNn........Dddd.iiIiJjJj.ppOoppOoppppOoppOoppUu.......
+04 ......................llmmmmnn..........Mm......Mm...........rr........................Dd.Iiiijjjj.PpooPpooPpPpooPpooPpuu.......
+05 ......................LlMmMmNn..........nn......nn...........Rr.........................ddddIiJjJjkk.OoooOo....OoooOo..Uu.......
+06 ........................................Nn......Nn......................................DdDdiiiijjKk.ooOooo....ooOooo..uu.......
+07 .........qq...............................................................................ddIiIiJjdd.Oo..Oo....OorrOo..Uu.......
+08 .........Qq..............llmmmmnn......................................rr.................DdddiiddDd.............Rr....uu.......
+09 bccddee..................LlMmMmNn...ll......ll........hhiijjhhiiddcc...Rr...................DdIiDd...............rr....Uu.......
+10 bCcDdEe.............................Ll......Ll........HhIiJjHhIiDdCc.........................dddd................Rr....uu.......
+11 deebbccee...........................mm......mm........jjkkhhjjkkhhbb.........................DdDd......................Uu.......
+12 dEeBbCcEe................llmmmmnn...Mm......Mm....rr..JjKkHhJjKkHhBb...............qq..................................uu.......
+13 cbbeeddbbdd..............LlMmMmNn...nn......nn....Rriiiihhkkiihhkkjj...............Qq..................................Uu.......
+14 cBbEeDdBbDd......qq.................Nn......Nn......IiIiHhKkIiHhKkJj...................................................uu.......
+15 .................Qq....................................................................................................Uu.......
+
+; map bytes the characters and the derived marks do not give
+cell  35 10 $62
+cell  35 13 $63

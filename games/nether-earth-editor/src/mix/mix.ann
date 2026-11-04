@@ -1,0 +1,123 @@
+# nee.mix: the annotation kit/mkgame.py turns into src/mix/mix.asm (tools/mkmix.sh). Edit this, not the .asm.
+# The block is 2244 bytes at $C350-$CC13 (50000-52243), loaded by "NE Editor " (LOAD "nee.mix" CODE) and called by
+# nee.bas with RANDOMIZE USR. Recording work/edB/tour (L1 builds tour, the whole run, and tour-edit, from frame 2700).
+
+@module mix ; nee.mix: tape I/O for the saved game, its checksum, the map drawer, the tiles and the font
+@about The saved game is Nether Earth's own (NE SaveGame $C28D / LoadGameBlocks $C21E): a 2-byte block holding the 16-bit sum of the game block, then the game block, 9425 ($24D1) bytes, both headerless with flag $00. The game keeps the block at $D92B-$FDFB; the editor at $9C40-$C110, so every game address is the editor's + $3CEB (15595), and the checksum word sits at $9858 (the game's: $5B00).
+@about The four tape entries are the ROM's own LD-BYTES / SA-BYTES entered with the registers set: LD-BLOCK $0802 (it reports "R Tape loading error" on a failure, which nee.bas's error trap turns into its ERROR screen) and SA-BYTES $04C2 (the standard pilot: the save is a normal ROM-speed block).
+@about DrawMap prints the map page through the ROM's PRINT: each 2x2-character tile is the four characters $20-$23 printed with CHARS pointing 256 bytes below the tile's 32 bytes, so it needs no screen addressing of its own. nee.bas does the same with the UDG pointer for the selected block.
+
+
+@equ $9858 Checksum 2 ; the checksum block's word (game $5B00); CLEAR 38999 puts RAMTOP just below it
+@equ $9C40 GameBlock ; the game block, 9425 bytes to $C110 (game $D92B, SaveShots)
+@equ $9C6D EdSaveBuildings 168 ; the block's SaveBuildings: 56 records of 3 (game $D958)
+@equ $5C36 CHARS 2 ; ROM system variable: the font address - 256
+@equ $5C8D ATTR_P ; ROM system variable: the permanent colours
+@equ $0802 LD_BLOCK ; ROM: LD-BYTES, then "R Tape loading error" if it failed
+@equ $04C2 SA_BYTES ; ROM: save a block
+@equ $0D4D TEMPS ; ROM: the permanent colours to the temporary ones
+@equ $1601 CHAN_OPEN ; ROM: open the stream in A
+@equ $1CAD COLOUR_PERM ; ROM: the temporary colours made permanent (the end of the colour statements)
+@equ $203C PR_STRING ; ROM: print BC characters from DE
+@equ $30A9 HL_MULT ; ROM: HL = HL x DE
+
+$C350 c LoadChecksum ; USR 50000: load the checksum block, 2 bytes to $9858 (flag $00)
+> nee.bas line 8 ("Searching..."). IX = $9858, DE = 2, A = flag $00, carry set (load), then the ROM's LD-BLOCK ($0802): back to BASIC on success, "R Tape loading error" (or BREAK) otherwise.
+> Ran at frame 260 of edB/tour (the editor tape's saved game) and at 17817 (LOAD FILE with the tape ended: BREAK, the error trap, line 146).
+$C35A ; ROM LD-BLOCK: LD-BYTES, an error report on failure
+
+$C35D c LoadGameBlock ; USR 50013: load the game block, 9425 bytes to $9C40-$C110 (flag $00)
+> nee.bas line 8 ("Loading file..."). LoadChecksum with IX = $9C40, DE = $24D1. Ran at frame 512 of edB/tour.
+$C367 ; ROM LD-BLOCK
+
+$C36A c SaveChecksum ; USR 50026: save the checksum block, 2 bytes from $9858 (flag $00)
+> nee.bas line 15, after SumGameBlock. ROM SA-BYTES ($04C2) with IX = $9858, DE = 2, A = $00. Ran at frame 14013 of edB/tour.
+$C374 ; ROM SA-BYTES
+
+$C377 c SaveGameBlock ; USR 50039: save the game block, 9425 bytes from $9C40 (flag $00)
+> nee.bas line 15, right after SaveChecksum. Ran at frame 14264 of edB/tour.
+$C381 ; ROM SA-BYTES
+
+$C384 c SumGameBlock ; USR 50052: the checksum: the 16-bit sum of the 9425 bytes at $9C40, into $9858
+> Each byte added to a 16-bit total, the carry out of bit 15 dropped: the sum the game's LoadGameBlocks ($C21E) compares with the checksum block. nee.bas line 15 calls it after its sort and the clock reset, before the save. Ran at frame 13866 of edB/tour.
+$C38A ; DE: the sum
+$C38D SumLoop ; add the next byte
+$C39A ; the checksum block's word
+
+$C39F b Unused ; One zero byte: DrawMap starts at 50080
+> No recording reads it.
+
+$C3A0 c DrawMap ; USR 50080: draw the map page from MapPtr into rows 0-15 of the screen
+> nee.bas line 33 sets MapPtr (POKE 50403/50404 from RANDOMIZE's SEED), then calls it; lines 71, 109, 132 call it again after a deletion or a new building. Keeps CHARS; clears rows 0-15 to black on white in columns 1-30 and to black in columns 0 and 31 (ClearBox with ATTR_P $38, then $00); makes INK 8 PAPER 8 permanent (the tiles keep the cells' attributes); then for the 15 map rows MapPtr + $200 (map row 1) to row 15, 31 cells each, prints each block piece (cells 2-18: DrawPiece) and each building door (cell $50: DrawDoor) as a 2x2-character tile whose bottom left is the cell. Ends with INK 0 PAPER 7 made permanent, ATTR_P $07 (BASIC's white on black), CHARS back, interrupts on.
+> Cells 0-1, $13-$4F and above $50 draw nothing: a block's other three cells (its number + 32) and a door's neighbours are covered by the tile drawn from the bottom-left cell.
+> Ran 7 times in edB/tour (frames 4565 to 12903). Page 1 took 18 frames (4565+24846 to the RET at 4583+35142), 13 of them ClearBox's spaces (the tiles from 4578+18862).
+$C3A0 ; no interrupts: CHARS is not the ROM's while it runs
+$C3A1 ; keep CHARS
+$C3A7 ; ClearBox: columns 1-30, rows 0-15, black on white
+$C3BA ; ATTR_P: paper 7, ink 0
+$C3C2 ; then the edge columns 0 and 31 black on black
+$C3D9 ; TEMPS: the permanent colours to the temporary ones
+$C3DC ; INK 8, PAPER 8 ...
+$C3E5 ; ... made permanent (ROM $1CAD: ATTR_T / MASK_T and P_FLAG's temporary bits to the permanent ones)
+$C3E8 ; the map row under screen row 1: MapPtr + 512
+$C3ED ; 15 rows
+$C3EF DrawRow
+$C3F0 ; 31 cells
+$C3F2 DrawCell
+$C3F6 ; 0-1: nothing
+$C3FA ; 2-18: a block piece
+$C3FE ; $13-$4F: nothing
+$C402 ; $50: a building's door
+$C406 NextCell
+$C40A ; on to the next row: 31 + 481 = 512
+$C411 ; INK 0 PAPER 7 made permanent
+$C420 ; ATTR_P $07: white ink, black paper, as BASIC had it
+$C425 ; CHARS back
+$C42D DrawPiece ; a block piece: the tile of block A, its odd-row variant for blocks 12-18
+$C42F ; HL = (A - 2) x 32: the block's tile
+$C436 ; ROM $30A9: HL = HL x DE
+$C43A ; + Tiles - 256: CHARS for characters $20-$23 = the tile's four characters
+$C43F ; blocks 2-11: one tile
+$C443 ; blocks 12-18: the row counter (the outer B) from the stack ...
+$C449 ; ... odd: the variant tile, 224 bytes on
+$C453 DrawDoor ; a door: the building's type from SaveBuildings, its tile from BuildingTiles
+$C457 ; HL was past the cell: + $3CEA = the cell's game address
+$C45C ; the first SaveBuildings record (game $D958)
+$C45F FindBuilding ; the record's address word against the cell's
+$C468 ; found: its type (0 pad, 1-6 factory, 7 / 8 flag) ...
+$C473 ; ... picks BuildingTiles + type x 32
+$C47E NextBuildingHi ; the low byte differed: skip 3
+$C47F NextBuildingLo ; the high byte differed: skip 2
+$C483 ; past the 56th record: none
+$C48D c DoorUnknown ; No SaveBuildings record names this door: nothing drawn
+> The fall-through of FindBuilding's loop; not run in edB/tour (every door there had its record).
+$C490 c PrintTile ; Set CHARS to HL, then print the tile at the cell's screen position
+> Entered by a jump from DrawPiece and DrawDoor with the row and cell counters and the map pointer stacked; goes back to NextCell.
+$C493 ; the stacked counters: H = cells left in the row, D = rows left
+$C499 ; AT 16 - D, 31 - H: the cell's own character square ...
+$C4A4 ; ... characters $22 $23 (the tile's lower half)
+$C4AA ; AT the row above: characters $20 $21 (the upper half)
+
+$C4BE c ClearBox ; Print spaces over BoxHeight rows of BoxWidth from (BoxRow, BoxColumn) on the upper screen
+> Opens stream 2 (the upper screen; CHAN-OPEN also copies the permanent colours to the temporary ones) and prints AT row, column, then BoxWidth spaces, row by row: the area takes ATTR_P's colours. Called by DrawMap only.
+$C4BE ; stream 2: the upper screen
+$C4CB ClearRow
+$C4D9 ClearSpace
+
+$C4E3 w MapPtr ; The map address at the page's left column (nee.bas's DA, 40996-41453), POKEd by nee.bas line 33
+> The tape's $A024 (40996) is page 1: the map's column 15 ($A024 - $A015, Map at $A015 = game $DD00).
+$C4E5 b BoxColumn ; ClearBox's column
+$C4E6 b BoxRow ; ClearBox's first row
+$C4E7 b BoxWidth ; ClearBox's width
+$C4E8 b BoxHeight ; ClearBox's rows
+$C4E9 w SavedChars ; CHARS while DrawMap runs
+$C4EB b ColoursClear 4 ; INK 8, PAPER 8: printed as control codes, then made permanent
+$C4EF b ColoursMap 4 ; INK 0, PAPER 7: the same at the end
+$C4F3 b Tiles 32 ; The map blocks' tiles: 32 bytes a block (characters $20-$23), blocks 2-18, then the odd-row variants of 12-18
+@res mix/tiles.bin
+> 24 tiles of 2x2 characters: blocks 2-18 at Tiles + 32 x (block - 2), the variants at + 224 (blocks 12-18 in odd map rows: nee.bas line 88 picks them when putting, DrawPiece when drawing). nee.bas's UDG pointer at 50419 + 32 x (CB - 2) shows the selected one.
+$C7F3 b BuildingTiles 32 ; The doors' tiles by SaveBuildings type: 0 the warbase pad, 1-6 the factories (electronics ... chassis), 7 the human flag, 8 the insignian flag
+@res mix/building-tiles.bin
+$C913 b Unused2 ; One zero byte before the font
+$C914 b Font 8 ; The editor's font: 96 characters from $20, 8 bytes each; nee.bas line 1 sets CHARS = 51220 (Font - 256)
+@res mix/font.bin

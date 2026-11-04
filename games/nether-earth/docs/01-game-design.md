@@ -293,6 +293,11 @@ The save key writes the whole game state to tape as two headerless blocks. LOAD 
 goes on from there ([3.6](03-build-and-load.md#36-the-saved-game)). A bad tape prints LOADING ERROR! and goes back to
 the start.
 
+Because a saved game holds the whole map, the bases, the robots and the resources, it is also a level format.
+V.O.software's Nether Earth Editor (1996) used it that way: its tape carries seven new levels as saved games, loaded
+with LOAD SAVED GAME. Some keep the original map and move the bases, others build new walls, or start with 24 enemy
+robots, or with no factories at all ([the editor case](../../nether-earth-editor/docs/01-game-design.md)).
+
 ## 1.13 Design notes
 
 - **Indirect control.** The player never fights. The whole interface is landing and three menus; the ship is a

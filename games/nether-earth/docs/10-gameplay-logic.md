@@ -586,6 +586,11 @@ the door cell `$E361` = `$40`. Then:
 The robot stayed on the door and the count started again. Robots cannot build at this "warbase": it has no
 pad. The construction menu needs the pad cells of a real warbase (10.3). This last point was not tested.
 
+The editor of [the Nether Earth Editor case](../../nether-earth-editor/docs/10-gameplay-logic.md) leans on the same
+gap without meaning to: it removes a capture point by setting it to `$80` (destroyed) and leaves its door. Its
+levels carry 20-26 such doors on open ground, and by the rule above a robot that stands 144 turns on one gets a
+warbase there. This is read from the code and the experiment above, not recorded on those levels.
+
 ![The destroyed factory (point 8) at count 142 and three turns later, taken: a second warbase and a flag on the debris](img/events/destroyed-recaptured.png)
 
 ```sh

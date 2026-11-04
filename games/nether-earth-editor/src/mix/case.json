@@ -1,0 +1,11 @@
+{
+  "image_cmd": ["python3", "tools/mix_image.py", "orig/NETHER.TZX", "work/mkmix/original.bin"],
+  "image": "work/mkmix/original.bin",
+  "lo": "C350",
+  "hi": "CC14",
+  "device": "ZXSPECTRUM48",
+  "bases": {"5": "4000", "2": "8000", "0": "C000"},
+  "read_builds": ["tour-edit"],
+  "ref_builds": [["tour-edit", "edB's editor tour: the load, resources, map edits, a factory and a warbase placed and deleted, a save, a broken load"]],
+  "header": ["; nee.mix, Nether Earth Editor (V.O.software 1996): the 2244 bytes the loader puts at $C350 (50000), called by nee.bas."]
+}

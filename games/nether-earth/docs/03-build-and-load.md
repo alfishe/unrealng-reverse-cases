@@ -181,8 +181,18 @@ writer of the whole block (WALKTHROUGH 1).
 ## 3.6 The saved game
 
 The SAVE key in play (`Input` bit 5) and option 5 of the main menu write and read one format
-(`SaveGame` `$C28D`, `LoadGameBlocks` `$C21E`). No recording ran either one; the code was read with the ROM's entry
-points.
+(`SaveGame` `$C28D`, `LoadGameBlocks` `$C21E`). No recording of this case ran either one. A recording of the
+[Nether Earth Editor case](../../nether-earth-editor/docs/03-build-and-load.md) did: it loads a level of the editor's
+tape, which is a saved game, through key 5, then saves the game again (`work/edA/load` of that case):
+
+- frame 677: the sum block is in, `$5B00` = `$FE01`;
+- frames 3024-3025: `$D92B-$FDFB` equals the tape's 9425-byte block with no difference;
+- frame 3025: the two `LDIR`s at `$C25B` and `$C263` copy the staged shots and buildings back;
+- the save: SA-BYTES returns at `$C2FB` (frame 3465, the sum) and `$C30A` (frame 5586, the game), with the
+  layout below.
+
+`LoadGameBlocks` enters LD-BYTES at `$0562`, past the address an emulator's fast-load trap watches, so a saved game
+loads at signal speed: about 2600 frames.
 
 **Saving** (`SaveGame` `$C28D`, `SaveGameBlocks` `$C2C9`):
 

@@ -305,8 +305,8 @@ What stands proved and what does not:
 - **Byte for byte.** `tools/build.sh` builds `orig/NETHER.TAP` from source after every phase of section 6; each
   commit says so.
 - **Read, not run.** 4220 of the 4922 instructions ran in some recording; the other 702 are described from the code
-  (doc 12 gives every routine its run count, or says no recording reached it). Among them: `SaveGame` and
-  `LoadGameBlocks` (no recording saved or loaded a game, doc 03) and `GameOverWait` (doc 04).
+  (doc 12 gives every routine its run count, or says no recording reached it). Among them: `GameOverWait`
+  (doc 04). `SaveGame` and `LoadGameBlocks` ran only in the Nether Earth Editor case's recording (doc 03 3.6).
 - **Reached only by POKE.** Both ends of the game (a warbase count poked to 0 on a clone of the deep instance), the
   nuclear bomb (robot 0's parts poked in a replay of `deep`), the recapture of a destroyed base (a robot poked onto
   its door). Each one ran the game's own code from there; none of them came from play.
