@@ -1,0 +1,177 @@
+0 -
++25 2
++4 -
++25 0
++4 -
++100 -
++38 KL
++24 KD KR
++10 KD
++28 KU KL
++14 KU KR
++12 KU KL
++17 KU
++21 KU KR
++35 KU KL
++38 KD KL
++13 KD KR
++34 KD KL
++18 KF
++6 -
++17 KU KL
++32 KU KR
++28 KU KR
++16 KD KR
++19 KD
++22 KD
++33 KD KL
++30 KD KL
++12 KF
++5 -
++10 KU
++20 KF
++10 -
++33 KU
++26 KR
++26 KU
++18 KD
++17 KF
++5 -
++20 KD KR
++21 KU
++16 KF
++10 -
++22 KU KR
++23 KR
++24 KD KR
++26 KU
++37 KU KR
++28 KD KL
++34 KL
++22 KU KL
++16 KD KR
++19 KD
++11 KF
++9 -
++21 KU KR
++17 KF
++5 -
++12 KU
++27 KU KL
++39 KU KL
++15 KF
++5 -
++40 KL
++15 KD KL
++40 KU
++29 KU KR
++8 KL
++11 KU KR
++16 KL
++14 KF
++7 -
++32 KU KL
++38 KU
++11 KU KL
++31 KR
++28 KD KL
++14 KR
++21 KL
++31 KD KR
++14 KF
++8 -
++40 KL
++40 KD
++28 KD KR
++21 KD KL
++18 KR
++18 KD KR
++29 KU KL
++7 KF
++6 -
++8 KR
++11 KU
++39 KL
++9 KD KL
++33 KU KR
++24 KU
++39 KD
++9 KD KR
++37 KU KR
++14 KF
++10 -
++13 KL
++31 KD KL
++30 KU KL
++26 KD KR
++27 KU KR
++15 KF
++8 -
++17 KL
++37 KL
++40 KD KL
++31 KU KL
++28 KD
++22 KD
++21 KU KR
++17 KU KR
++24 KU
++20 KU KL
++32 KU
++37 KD KL
++17 KF
++10 -
++31 KU KR
++9 KL
++18 KU KL
++25 KU KL
++38 KU
++16 KF
++5 -
++32 KU KL
++10 KF
++10 -
++39 KR
++6 KF
++7 -
++18 KD
++13 KF
++4 -
++22 KD
++12 KF
++9 -
++21 KR
++25 KU KR
++30 KU KL
++21 KD KL
++33 KL
++14 KF
++9 -
++11 KD KR
++38 KL
++19 KF
++7 -
++21 KR
++39 KD
++35 KR
++27 KR
++23 KU KR
++24 KD
++17 KU KR
++17 KF
++7 -
++32 KU KL
++39 KD KL
++12 KU KL
++33 KU KR
++15 KF
++10 -
++17 KD KL
++37 KD
++9 KF
++8 -
++26 KU
++18 KU
++7 KF
++4 -
++50 END
