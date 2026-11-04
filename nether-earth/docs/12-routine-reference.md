@@ -19,6 +19,8 @@ Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py -
 
 **the entry from N1: the IM 2 table, the start-up, the menu**
 
+The IM 2 table `$FE00-$FF00` (257 x `$FD`), JP at `$FDFD`, Handler = StartInterrupt, I = `$FE`, IM 2; the random seed `$FD00-$FD03` = `$39`,`$30`,`$39`,`$30`; then MainMenu (Z: start a new game, NZ: a saved game was loaded). Reached again at the end of a game (`$AEFD`), by key I in play (`$A712`) and after a tape loading error (`$C28A`).
+
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
@@ -71,6 +73,8 @@ Last, the game keys: Input bit 6 (key I in the default KeyTable) abandons the ga
 ### `RobotMenu` (`$A720`)
 
 **landing on a robot of ours: DIRECT CONTROL, GIVE ORDERS, COMBAT MODE, LEAVE ROBOT; the order to +`$0B`**
+
+IX = IY (the record), +`$0A` = 1 (the robot stands: UpdateRobot returns at once for +`$0A` = 1), MenuCursor = 4 (LEAVE ROBOT first), PanelBusy = 1. Falls into RobotMenuShow. Called by PlayLoop when the ship rests exactly on the top of a robot of ours.
 
 | | |
 | --- | --- |
@@ -344,6 +348,8 @@ Seen on the own instance: FIRE CANNON on a bipod + cannon robot wrote +`$05` = 4
 
 **a list menu: HL the attribute of item 0 (an item every 3 rows), E the items + 1, A the first highlighted; down / up move, fire returns A**
 
+Each pass is one game turn (WorldTurn, DrawView, MenuRadarTick, GameTurn, ShowStrength): the game goes on while a menu waits. A destroyed robot (+`$01` = 0) drops ListMenu's return address and closes the robot menu (CloseRobotMenu). Up / down move by one item (items 1 to E - 1) with a click `$14`; fire paints the item `$4F`, beeps `$64` and returns A. Attributes: `$4D` normal, `$4E` highlighted, `$4F` chosen. Needs IX = a robot record.
+
 | | |
 | --- | --- |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 28 calls, 36,032 t-states own (0.00 %) |
@@ -366,6 +372,8 @@ HL = the attribute of item 0; item A starts `$60` bytes (3 rows) further per ite
 ### `WaitRelease` (`$AD57`)
 
 **wait until no control is held**
+
+Keeps BC and HL. Uses WaitKey, so key 1 still pauses.
 
 | | |
 | --- | --- |
@@ -511,6 +519,8 @@ LD A,`$FA`; CALL `$CCAC` (the buzz); LD B,100; HALT; DJNZ (2 s); CALL WaitReleas
 ### `MoveShip` (`$AF11`)
 
 **the ship's move from Input: X by right / left, Y by down / up, each refused by CheckShipMove**
+
+Also the auto-climb (ClimbTurns), the altitude (fire +2 up to `$30`, else -1 down to what stands under the ship), the view follow (ViewX moves when the ship is at view column 13 or 22), the radar window (ScrollRadar) and the ship's mark: map bit 7 cleared on the old cell (`$B01D`) and set on the new one (`$B024`), the radar blip XORed. Called by PlayLoop, and by UpdateRobot (`$B4A8`) while a robot is under direct control.
 
 | | |
 | --- | --- |
@@ -1894,6 +1904,8 @@ The bass voice's twin of LeadStep: E is its counter, the operands `$C4ED` (perio
 
 **the interrupt handler of the menu**
 
+The drum, the bass and lead note readers, the title colours; a number key ends MenuMusic. It returns to the tone loop of MenuMusic, or, with SP from SavedSP, to the menu.
+
 [Animation: `MenuInterrupt` at work](img/routines/MenuInterrupt.gif)
 
 | | |
@@ -2225,6 +2237,8 @@ Counts `$FD33` 0-15 each call; on even counts it paints the attributes of rows 1
 ### `ConstructionMenu` (`$C849`)
 
 **landing on the warbase pad at altitude 15: choose the parts (MenuCursor, MenuParts), START ROBOT or EXIT MENU**
+
+Returns at once when all 24 player slots are used; the free slot is the preview and then the new robot; the world stands still (StartInterrupt) while it is open.
 
 | | |
 | --- | --- |

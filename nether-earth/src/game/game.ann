@@ -13,20 +13,28 @@
 
 @module main
 $A600 c Start ; the entry from N1: the IM 2 table, the start-up, the menu
+> The IM 2 table $FE00-$FF00 (257 x $FD), JP at $FDFD, Handler = StartInterrupt, I = $FE, IM 2; the random seed $FD00-$FD03 = $39,$30,$39,$30; then MainMenu (Z: start a new game, NZ: a saved game was loaded). Reached again at the end of a game ($AEFD), by key I in play ($A712) and after a tape loading error ($C28A).
 $C4FD c MenuInterrupt ; the interrupt handler of the menu
+> The drum, the bass and lead note readers, the title colours; a number key ends MenuMusic. It returns to the tone loop of MenuMusic, or, with SP from SavedSP, to the menu.
 $D566 c PlayInterrupt ; the interrupt handler of play, one a frame
 $D59C c StartInterrupt ; the interrupt handler while the start-up runs
 $AF11 c MoveShip ; the ship's move from Input: X by right / left, Y by down / up, each refused by CheckShipMove
+> Also the auto-climb (ClimbTurns), the altitude (fire +2 up to $30, else -1 down to what stands under the ship), the view follow (ViewX moves when the ship is at view column 13 or 22), the radar window (ScrollRadar) and the ship's mark: map bit 7 cleared on the old cell ($B01D) and set on the new one ($B024), the radar blip XORed. Called by PlayLoop, and by UpdateRobot ($B4A8) while a robot is under direct control.
 $B052 c CheckShipMove ; carry: the ship may not stand at HL (X), A (Y)
 $D37C c WaitKey ; ReadControls; while key 1 (Input bit 7) is held, the pause: wait for another key
 $D38A c ReadControls ; Input from the redefinable keys (KeyTable) or the joystick the menu chose (Controls)
 $D3CC b KeyTable 3 ; the keys, eight of 3 bytes: the port high byte, the bit mask, the key code (shown by the redefine menu)
 $D3E4 Controls ; the menu's choice: 1 keyboard, 2 Kempston, 3 Interface 2
 $A720 c RobotMenu ; landing on a robot of ours: DIRECT CONTROL, GIVE ORDERS, COMBAT MODE, LEAVE ROBOT; the order to +$0B
+> IX = IY (the record), +$0A = 1 (the robot stands: UpdateRobot returns at once for +$0A = 1), MenuCursor = 4 (LEAVE ROBOT first), PanelBusy = 1. Falls into RobotMenuShow. Called by PlayLoop when the ship rests exactly on the top of a robot of ours.
 $ACD7 c ListMenu ; a list menu: HL the attribute of item 0 (an item every 3 rows), E the items + 1, A the first highlighted; down / up move, fire returns A
+> Each pass is one game turn (WorldTurn, DrawView, MenuRadarTick, GameTurn, ShowStrength): the game goes on while a menu waits. A destroyed robot (+$01 = 0) drops ListMenu's return address and closes the robot menu (CloseRobotMenu). Up / down move by one item (items 1 to E - 1) with a click $14; fire paints the item $4F, beeps $64 and returns A. Attributes: $4D normal, $4E highlighted, $4F chosen. Needs IX = a robot record.
 $AD57 c WaitRelease ; wait until no control is held
+> Keeps BC and HL. Uses WaitKey, so key 1 still pauses.
 $C849 c ConstructionMenu ; landing on the warbase pad at altitude 15: choose the parts (MenuCursor, MenuParts), START ROBOT or EXIT MENU
+> Returns at once when all 24 player slots are used; the free slot is the preview and then the new robot; the world stands still (StartInterrupt) while it is open.
 $CAF0 b PartCosts 8 ; the parts' cost (bipod, tracks, anti-grav, cannon, missiles, phasers, nuclear, electronics), then the resource each takes first (an index into Resources)
+> The second row is the resource index (6 chassis x3, 5 cannon, 4 missiles, 3 phasers, 2 nuclear, 1 electronics); what the own resource lacks comes from general (index 0).
 $CDD8 c FindRobot ; Z: IY the robot record standing on map cell HL, B = 48 - its slot (slots 0-23 the player's)
 $CDF5 c FindBuilding ; Z: IY the building record (Buildings) on map cell HL
 $D42D c PrintInline ; print the text after the CALL: 0 ends, 1 Y X a position, 2 A an attribute, 3 the next line, 4 N a setting, else a character
@@ -2665,3 +2673,8 @@ $D667 RadarDotRight ; the right pixel, maybe in the next byte
 $D679 RadarDotAboveRight ; the right pixel of the line above
 $D6A2 RadarMaskShift ; $80 shifted right (x AND 7) times
 $D6A6 RadarDotOutside ; outside the window: return from ToggleRadarDot too
+
+# Constants the image cannot tell from addresses (d1)
+@isub $BA0A LD DE,-$0804
+@isub $D4B7 LD DE,Font-$100
+@isub $D4E0 LD DE,Font-$100

@@ -1,6 +1,10 @@
 ; the entry from N1: the IM 2 table, the start-up, the menu
 ;
-; Used by the routines at PlayLoop, GameOverWait and LoadError.
+; The IM 2 table $FE00-$FF00 (257 x $FD), JP at $FDFD, Handler =
+; StartInterrupt, I = $FE, IM 2; the random seed $FD00-$FD03 = $39,$30,$39,$30;
+; then MainMenu (Z: start a new game, NZ: a saved game was loaded). Reached
+; again at the end of a game ($AEFD), by key I in play ($A712) and after a tape
+; loading error ($C28A).
 Start:
   DI                      ; no interrupts while the vector table is built
   LD SP,$0000             ; SP = 0: the stack grows down from $FFFF
@@ -187,7 +191,10 @@ CheckGameKeys:
 ; landing on a robot of ours: DIRECT CONTROL, GIVE ORDERS, COMBAT MODE, LEAVE
 ; ROBOT; the order to +$0B
 ;
-; Used by the routine at PlayLoop.
+; IX = IY (the record), +$0A = 1 (the robot stands: UpdateRobot returns at once
+; for +$0A = 1), MenuCursor = 4 (LEAVE ROBOT first), PanelBusy = 1. Falls into
+; RobotMenuShow. Called by PlayLoop when the ship rests exactly on the top of a
+; robot of ours.
 RobotMenu:
   PUSH IY                 ; IX = the robot record (from FindRobot)
   POP IX
@@ -774,8 +781,12 @@ CombatRefused:
 ; a list menu: HL the attribute of item 0 (an item every 3 rows), E the items +
 ; 1, A the first highlighted; down / up move, fire returns A
 ;
-; Used by the routines at RobotMenuChoose, OrdersMenuChoose, DestroyMenuChoose,
-; CaptureMenuChoose and CombatMenuCode.
+; Each pass is one game turn (WorldTurn, DrawView, MenuRadarTick, GameTurn,
+; ShowStrength): the game goes on while a menu waits. A destroyed robot (+$01 =
+; 0) drops ListMenu's return address and closes the robot menu
+; (CloseRobotMenu). Up / down move by one item (items 1 to E - 1) with a click
+; $14; fire paints the item $4F, beeps $64 and returns A. Attributes: $4D
+; normal, $4E highlighted, $4F chosen. Needs IX = a robot record.
 ListMenu:
   PUSH AF                 ; the fire or move that opened the menu must go first
   CALL WaitRelease
@@ -862,8 +873,7 @@ PaintMenuItemRow:
 
 ; wait until no control is held
 ;
-; Used by the routines at DirectControl, OrdersMenuChoose, DistanceShow,
-; SetOrder, ListMenu and GameOverWait.
+; Keeps BC and HL. Uses WaitKey, so key 1 still pauses.
 WaitRelease:
   PUSH BC
   PUSH HL
@@ -1151,7 +1161,12 @@ GameStop:
 ; the ship's move from Input: X by right / left, Y by down / up, each refused
 ; by CheckShipMove
 ;
-; Used by the routines at PlayLoop and TurnOrStep.
+; Also the auto-climb (ClimbTurns), the altitude (fire +2 up to $30, else -1
+; down to what stands under the ship), the view follow (ViewX moves when the
+; ship is at view column 13 or 22), the radar window (ScrollRadar) and the
+; ship's mark: map bit 7 cleared on the old cell ($B01D) and set on the new one
+; ($B024), the radar blip XORed. Called by PlayLoop, and by UpdateRobot ($B4A8)
+; while a robot is under direct control.
 MoveShip:
   CALL LiftShipFromMap    ; clear the ship's mark (map bit 7) and its radar
                           ; blip
@@ -3353,7 +3368,7 @@ BlastArea:
   LD L,(IY+$00)           ; a round area of 9 x 9 cells centred on the robot
   LD H,(IY+$01)
   PUSH IY
-  LD DE,Map+$1AFC         ; HL = the robot's cell 4 rows up and 4 columns left
+  LD DE,-$0804            ; HL = the robot's cell 4 rows up and 4 columns left
   ADD HL,DE
   LD BC,$0909             ; C = 9 rows, B = 9 cells a row
 BlastRow:
@@ -4997,6 +5012,10 @@ BassPulse:
   JP LeadStep             ; next turn: the lead voice
 
 ; the interrupt handler of the menu
+;
+; The drum, the bass and lead note readers, the title colours; a number key
+; ends MenuMusic. It returns to the tone loop of MenuMusic, or, with SP from
+; SavedSP, to the menu.
 MenuInterrupt:
   PUSH AF
   DEC C                   ; the drum's frames run out: play the next drum
@@ -5520,7 +5539,9 @@ TitleColourDone:
 ; landing on the warbase pad at altitude 15: choose the parts (MenuCursor,
 ; MenuParts), START ROBOT or EXIT MENU
 ;
-; Used by the routine at PlayLoop.
+; Returns at once when all 24 player slots are used; the free slot is the
+; preview and then the new robot; the world stands still (StartInterrupt) while
+; it is open.
 ConstructionMenu:
   LD IY,Robots            ; the player's robot slots 0-23
   LD DE,$0010
@@ -5823,6 +5844,10 @@ RefundPart:
 ; the parts' cost (bipod, tracks, anti-grav, cannon, missiles, phasers,
 ; nuclear, electronics), then the resource each takes first (an index into
 ; Resources)
+;
+; The second row is the resource index (6 chassis x3, 5 cannon, 4 missiles, 3
+; phasers, 2 nuclear, 1 electronics); what the own resource lacks comes from
+; general (index 0).
 PartCosts:
   DEFB $03,$05,$0A,$02,$04,$04,$14,$03
   DEFB $06,$06,$06,$05,$04,$03,$02,$01
@@ -7796,7 +7821,7 @@ PrintChar:
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
-  LD DE,ViewBuffer+$0B80  ; the font
+  LD DE,Font-$100         ; the font
   ADD HL,DE
   LD DE,(PrintAddr)
   PUSH DE
@@ -7830,7 +7855,7 @@ PrintBigChar:
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
-  LD DE,ViewBuffer+$0B80
+  LD DE,Font-$100
   ADD HL,DE
   LD A,(PrintWidth)
   CP $02                  ; width 2: doubled pixels
