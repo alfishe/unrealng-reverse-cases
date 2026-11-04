@@ -503,8 +503,8 @@ BlastNextRow:
 ; ($BAEE, 244 samples first, 4 fewer and a longer delay each time) and a new
 ; random paper colour (2-7, never the previous one) on every attribute of the
 ; view whose paper is not black. Restores the saved attributes at the end. The
-; noise takes about 3.3 s of beeper time in total; the game stands still
-; meanwhile.
+; flash lasts 216 frames (4.3 s, measured; docs/10-gameplay-logic.md 10.9); the
+; game stands still meanwhile.
 ;
 ; Verified by an experiment (own instance, PC set to $B99F with a poked nuclear
 ; robot): the run passes here after the bases and robots are hit. $5B00 is free

@@ -410,13 +410,15 @@ SetDrumTrack:
 ; play the next drum record (a short noise or sweep inside the interrupt)
 ;
 ; HL = the drum position, called by MenuInterrupt when the drum's frames (C)
-; run out. A record is the frames until the next one and a kind: 0 a hiss (96
-; bytes of ROM from $08xx sent to the beeper, about 1 ms), 2 p a falling tone
-; (48 cycles: the low half starts at p - 1 and shortens by 1, the high half
-; starts at p / 2 and lengthens by 4), any other kind a rasp (80 ROM bytes from
-; $00xx with a gap that mostly grows). The byte 1 in place of the frames is a
-; goto: 1 aa. The tone loop stands still while a drum plays. In the 5300-frame
-; experiment kinds 1 and 2 ran 72 times each.
+; run out. A record is the frames until the next one and a kind: 0 a hiss meant
+; as 96 bytes of ROM from $08xx sent to the beeper, about 1 ms (but
+; DrumHissLoop never steps HL: one ROM byte, $08 L, 96 times; in the recordings
+; it is $23, EAR / MIC 0, so the hiss is silent: docs/09-sound.md), 2 p a
+; falling tone (48 cycles: the low half starts at p - 1 and shortens by 1, the
+; high half starts at p / 2 and lengthens by 4), any other kind a rasp (80 ROM
+; bytes from $00xx with a gap that mostly grows). The byte 1 in place of the
+; frames is a goto: 1 aa. The tone loop stands still while a drum plays. In the
+; 5300-frame experiment kinds 1 and 2 ran 72 times each.
 DrumStep:
   LD A,(HL)               ; the frames, or 1
   INC HL                  ; HL past the frames byte
@@ -456,14 +458,17 @@ DrumGoto:
   LD L,A                  ; HL = the target
   JP DrumStep             ; its record at once
 DrumHiss:
-  PUSH HL                 ; kind 0: 96 ROM bytes $08xx straight to the beeper
+  PUSH HL                 ; kind 0: meant as 96 ROM bytes $08xx to the beeper;
+                          ; one byte 96 times, in practice silence
   LD H,$08                ; HL = $08xx: ROM bytes as noise
   LD B,$60                ; 96 beeper writes
 DrumHissLoop:
-  LD A,(HL)               ; a ROM byte's EAR / MIC bits ...
+  LD A,(HL)               ; the ROM byte at HL ($08 L: HL never moves, the bug
+                          ; that silences the hiss) ...
   AND $18                 ; bits 3-4 only
   OUT ($FE),A             ; ... to the beeper
-  DJNZ DrumHissLoop       ; 96 writes, as fast as DJNZ runs: a burst of noise
+  DJNZ DrumHissLoop       ; 96 writes of the same byte, as fast as DJNZ runs:
+                          ; no edge when its bits are 0
   POP HL                  ; HL = the drum position
   RET                     ; back into MenuInterrupt
 DrumSweep:

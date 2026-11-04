@@ -11,7 +11,7 @@ fixed areas:
 
 Evidence:
 
-- the code of `src/game/main.asm` (the routines named below) and the built image `build/game.bin`, which
+- the code of `src/game/*.asm` (the routines named below) and the built image `build/game.bin`, which
   `tools/text_figs.py` reads for the font and the strings;
 - `work/docC/rec`: recorded on an own instance from the menu snapshot `work/play/start.szx`.
   - 400 frames on the main menu, then the bot of `tools/bot.py play --record --frames 9000`: 9415 frames.

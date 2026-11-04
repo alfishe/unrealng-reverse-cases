@@ -8,7 +8,7 @@ same robots, the same costs and the same capture rule. Its commander is a few li
 
 Evidence:
 
-- the code of `src/game/main.asm` (the routines named below);
+- the code of `src/game/*.asm` (the routines named below);
 - `work/deep`: the bot's 36046-frame game from the menu snapshot `work/play/start.szx`, 11.8 game days. The bot
   is `tools/bot.py play --record`.
   - L1 counts.
@@ -20,6 +20,18 @@ Evidence:
   - Its `memory_at` reads show the robot strengths.
 - the region agents' notes and experiments on own instances (`work/ann/r1.md`-`r5.md`): the game ends, the full
   slots, the nuclear blast, the construction menu with poked resources, the target bug.
+- the figures of this chapter (`docs/img/events/`), all drawn by `tools/ill_events.py` from memory pictures:
+  - `sample` reads `$4000`-`$FFFF` from the `work/deep` recording with `memory_at` (`deep10.npz`: every 10th
+    frame, 0-36040; `deep-fight.npz`: every frame, 18660-19419);
+  - `snap` cuts snapshots out of it (`work/ill1/snaps/deep-F.szx`);
+  - `turns` and `combat` replay such a snapshot on an own instance, fly or land the ship with `tools/bot.py`, poke
+    memory where a caption says so, and keep one picture a game turn (or a frame).
+
+  A turn's picture is the memory of the frame before the clock `$FD35` moves with the screen of the frame after
+  it ([10.1](#101-the-game-turn-and-the-clock)). The game logic is deterministic per turn: with the ship parked
+  above the robots' tops elsewhere, the same fight replays in turns, only shifted in frames. The caches are in
+  `work/ill1/cache/`; each caption gives the command that draws the figure from its cache, and the commands that
+  fill the caches are listed in [10.14](#1014-the-figure-experiments).
 
 ## 10.1 The game turn and the clock
 
@@ -61,6 +73,17 @@ work takes more than 10 frames.
 Each side has 7 resources: general, electronics, nuclear, phasers, missiles, cannon, chassis. Ours are at
 `Resources` (`$FD22`) and the enemy's at `$FD4A`; the building counts are at `$FD3A` and `$FD42`, in the same order
 (warbases, then the six factory kinds). It ran 11 times in `work/deep`, once a game day.
+
+![DailyProduction per side and game day in work/deep: what the buildings earned, by resource](img/events/production.png)
+
+```sh
+python3 tools/ill_events.py fig-production --cache work/ill1/cache/deep10.npz --out docs/img/events/production.png
+```
+
+Each bar is 5 × warbases + 2 × each factory kind at midnight, from `$FD3A` / `$FD42` in the last sample of the day.
+The resources at `$FD22` / `$FD4A` in the first sample of the new day equal the old ones plus these gains (capped
+at 99) at all 22 midnights of both sides. The enemy's 3 warbases earn 15 general to our 5; its factories took the
+lead from day 5 (3 factories to our 2).
 
 At the start our side has 1 warbase and the enemy 3, and both have 20 general and nothing else (`work/deep` frame
 120). So the enemy earns 15 general a day to our 5 until factories change hands.
@@ -214,6 +237,23 @@ the nearest by column that no robot of the side with the same order is already a
 - Arrived (D = 0): orders 4 and 5 detonate (`NuclearBlast`, 10.9); the others face down and stand. A robot that
   stands on a door captures it (10.7).
 
+![Robot 0 with order 6 walks to the door of factory point 4: its record's decision fields turn by turn](img/events/robot-ai.gif)
+
+```sh
+python3 tools/ill_events.py fig-ai --cache work/ill1/cache/capture.npz --out docs/img/events/robot-ai.gif --opt slot=0 from=0 to=112
+```
+
+One picture a game turn on an own instance replayed from `work/deep` frame 3000; the ship
+is parked over (40,10).
+
+- The magenta line runs from the robot to its target's door, point 4 (+`$0E` 0 indexes the factory table).
+- The blue arrow is the course `+$05`.
+- The panel shows the record at `$DA00`; a field that changed this turn is yellow.
+
+The robot comes down from (28,6), turns right (a turn costs a step), walks right with a new course of 5 steps
+(`SteerByOrder`) and `+$0F` reloaded to 6 per step on flat ground (bipod). At (39,8) it turns up, steps onto the
+door (39,6) and stands: the capture count of point 4 starts (10.7).
+
 ## 10.6 Shooting and damage
 
 `FireShot` (`$B6D6`) launches the shot from the robot's anchor in its facing direction:
@@ -236,6 +276,15 @@ for an object (bit 6):
 A tall robot on high ground takes less. For a robot of height 19 on flat ground: 10 per point, so a cannon does
 20, missiles 30 and phasers 40.
 
+![The damage per hit for each height + ground and weapon, with the hits seen in work/deep](img/events/damage-table.png)
+
+```sh
+python3 tools/ill_events.py fig-damage-table --cache work/ill1/cache/deep10.npz --out docs/img/events/damage-table.png
+```
+
+The lines are the formula; the dots are the 20 distinct pairs (height + ground,
+damage) of the hits in the `work/deep` samples, each a drop of a robot's `+$0C`. All of them sit on the formula.
+
 - Strength 0 or below: `+$0C` = `$FC`, dying, `SoundFx` `$C8`.
 - Otherwise `SoundFx` `$FA`.
 
@@ -247,13 +296,112 @@ The recordings agree:
 | `work/deep`, later | our cannon | enemy robot 25, height 19 | 100 → 80 → 60 → 40 |
 | `work/docC/fight` frame 18702 | the same missile | robot 2 (`$DA2C`: `$64` at frame 18701, `$46` at 18703) | 100 → 70 |
 
+![Our robot 2 against enemy robot 25: the view one game turn a picture, the shots' paths drawn over it](img/events/fight-duel.gif)
+
+```sh
+python3 tools/ill_events.py fig-fight --cache work/ill1/cache/duel.npz --out docs/img/events/fight-duel.gif --opt from=20 to=98
+```
+
+An own instance replays `work/deep` from frame 17400 with the ship parked over (128,7). The view is
+scaled 3 ×.
+
+- Each shot's cells are joined into a path in its side's colour (blue ours, orange the enemy's). The cell is the
+  shot record's `+$00` / `+$01`, drawn at the shot's height `+$08`.
+- The robots are labelled with their slot and strength `+$0C`.
+- The list on the right shows the shots fired, the hits and the deaths of the last turns, read from the records.
+
+Enemy robot 25 dies at the end: four turns of blinking, then its slot is freed and a wreck is left.
+
+![A shot in flight, one game turn a frame](img/events/shot-strip.png)
+
+```sh
+python3 tools/ill_events.py fig-strip --cache work/ill1/cache/duel.npz --out docs/img/events/shot-strip.png --opt "rows=23,24,25,26;30,31,32" "titles=the enemy's missile (record 3) up at our robot 2: 6 steps of range, 2 cells a turn;our cannon shot (record 1) down at enemy robot 25"
+```
+
+The shot sprite is `$2B` + 2 × weapon + axis, drawn 8
+pixels above the cell (`DrawMover`, [6.3](06-rendering.md)). The recordings never drew one in the view: the
+`work/deep` fight was out of the ship's view, so these turns are the first witness of that branch.
+
+![The shot records (9 bytes each) over 190 frames of work/deep](img/events/shot-records.png)
+
+```sh
+python3 tools/ill_events.py fig-shot-record --cache work/ill1/cache/deep-fight.npz --out docs/img/events/shot-records.png --opt from=18670 to=18860
+```
+
+Each panel is one record, each line one of its 9 bytes
+([7.1](07-objects.md)):
+
+- `FireShot` fills a record at once with its first step taken;
+- `+$06` counts the steps down while the cell moves 2 columns or rows a turn;
+- `+$01` = 0 frees the record at the hit or at the end of the range.
+
+A freed record keeps its other bytes.
+
+![The 3 × 3 hit test of MoveShot over the real map cells around the missile, work/deep](img/events/hit-test.png)
+
+```sh
+python3 tools/ill_events.py fig-hit-test --cache work/ill1/cache/deep-fight.npz --out docs/img/events/hit-test.png --opt steps=18691:3,18701:3 cols=119-127 rows=4-15
+```
+
+The map cells (`$C000` + `$200` × row + column) around
+record 3's two last steps, coloured by terrain type; bit 6 (an object anchor) is marked.
+
+- `MoveShot` tests the 9 cells in the numbered order: the row above, its own row, the row below.
+- `UpdateShot` cleared the shot's own bit 6 first.
+- At frame 18691 all 9 cells are free: the shot marks its cell and flies on.
+- At frame 18701 a cell holds robot 2's anchor: the hit.
+
+![The strength of the robots hit in the work/deep fight, frame by frame](img/events/strength.png)
+
+```sh
+python3 tools/ill_events.py fig-strength --cache work/ill1/cache/deep-fight.npz --out docs/img/events/strength.png
+```
+
+Each step is one hit, annotated with its weapon, the victim's height + ground and the formula's result.
+
 A dying robot counts `+$0C` up from `$FC` and toggles its cell's bit 6 for four turns, so shots and eyes see it
 only every other turn. At 0 `RobotDestroyed` frees the slot, erases the dot and recounts. On bare ground it lays a
 2 × 2 wreck of terrain types 6 / 7 (height 3), which every locomotion can climb.
 
+![Enemy robot 25 dying: its strength counts up to 0, the robot drawn every other turn](img/events/death-blink.gif)
+
+```sh
+python3 tools/ill_events.py fig-death --cache work/ill1/cache/duel.npz --out docs/img/events/death-blink.gif --opt slot=25 from=84 to=94 wreck=86,93 out2=docs/img/events/wreck.png
+```
+
+The command draws both figures. In the duel the strength byte went `$FC`, `$FD`, `$FE`, `$FF`, 0, one step a turn, and its cell's bit 6 toggled with it. `SoundFx` (`$FD53`) counted
+up from `$C8` meanwhile ([9.5](09-sound.md)).
+
+![The ground under enemy robot 25 before it died and after its slot was freed: the wreck](img/events/wreck.png)
+
+The wreck's four cells read `$06` (the anchor (127,14)) and `$26`: terrain type 6 in all four.
+
 COMBAT MODE in the robot menu fires shot record 0 (`$D7D3`) from the player's robot, or detonates its bomb
-(`CombatMenuCode` `$AC7C`). Without the weapon chosen it buzzes (`CombatRefused` `$ACCE`). No recording entered it;
-a region agent fired a cannon from it on an own instance (the comment at `$AC7C`).
+(`CombatMenuCode` `$AC7C`). Without the weapon chosen it buzzes (`CombatRefused` `$ACCE`). No recording entered it.
+My own instance did: it replayed `work/deep` from frame 17400 and landed the ship on our robot 2 at frame 18736.
+It then chose COMBAT MODE and the items FIRE CANNON, FIRE PHASERS, FIRE MISSILES, FIRE CANNON, driven by
+`tools/bot.py`:
+
+- the cannon hit enemy robot 25, 60 → 40;
+- phasers: refused, robot 2 has none (a low beep `$FA`, record 0 unchanged);
+- the missiles hit it, 40 → 10;
+- the second cannon shot killed it.
+
+![COMBAT MODE on our robot 2: the menu, the player's shots (record 0) and their hits](img/events/combat-mode.gif)
+
+```sh
+python3 tools/ill_events.py fig-screen --cache work/ill1/cache/combat.npz --out docs/img/events/combat-mode.gif --opt from=8 to=40 slots=2,25 "title=COMBAT MODE on our robot 2" delay=300
+```
+
+The whole screen, one picture a game turn,
+with the step the bot was taking under it.
+
+![FIRE PHASERS without phasers: refused](img/events/combat-refused.png)
+
+```sh
+python3 tools/ill_events.py fig-screen --cache work/ill1/cache/combat.npz --out docs/img/events/combat-refused.png --opt from=22 to=22 slots=2,25 "title=FIRE PHASERS refused"
+```
+
 
 ## 10.7 Capture
 
@@ -267,6 +415,33 @@ and type, a count). Points 0-3 are the warbases, 4-27 the factories. The test ce
    - a factory: `GiveFactory` (`$BB61`), point - 4.
 3. An empty door resets the count to 0.
 4. After any capture `CountBases` (`$BB09`) recounts both sides and the panel is reprinted.
+
+![The capture counts of all points over work/deep, and one capture turn by turn](img/events/capture-counts.png)
+
+```sh
+python3 tools/ill_events.py fig-capture-counts --cache work/ill1/cache/deep10.npz work/ill1/cache/capture.npz --out docs/img/events/capture-counts.png
+```
+
+
+- Top: each run of a non-zero count `+4` in `work/deep`, coloured by the side that took the point (grey: the robot
+  left first). The marks are the captures, labelled with the point.
+- Bottom: point 4 in my replay from frame 3000 (the robot of [10.5](#105-orders)'s figure). The count rises by 1 a
+  turn from the turn robot 0 stands on the door. At 144 `GiveFactory` sets the owner `$04` → `$44` and resets the
+  count.
+
+![Point 4 two turns before and after the capture: the flag on the factory and the panel](img/events/capture-flag.png)
+
+```sh
+python3 tools/ill_events.py fig-pair --cache work/ill1/cache/capture.npz --out docs/img/events/capture-flag.png --opt pics=243,245 "titles=robot 0 on the door, count 142|two turns later: point 4 is ours" state=point:4,counts,cell:37/4
+```
+
+
+The capture changes three things on the screen:
+
+- the factory's flag cell (37,4) goes from `$10` to `$50`: a flag on the roof;
+- the panel's MISSILES count for our side goes from 0 to 1;
+- nothing on the radar. Its buffers changed only by the robot's dot and the ship's blip: `$D800` in those cells,
+  `$D900` not at all. The radar does not show who owns a building.
 
 Any robot captures, whatever its order: an ADVANCE that stops on a door takes the building. A warbase the player
 captures gets a pad, a second construction site. The robot has to stay on the door for 144 turns. An opponent
@@ -298,6 +473,28 @@ picks one of the enemy's slots 24-47; the values 24-31 do nothing, so it acts in
 
 The enemy pays the same prices but can borrow up to half its general resource. Its robots grow better armed as
 its army grows.
+
+![The enemy commander in work/deep: each slot's robots and their orders over 11.8 game days](img/events/commander.png)
+
+```sh
+python3 tools/ill_events.py fig-commander --cache work/ill1/cache/deep10.npz --out docs/img/events/commander.png
+```
+
+
+- Top: the enemy's robots (`$FD49`), its general resource (`$FD4A`) and our robots. The dotted lines are the
+  weapon thresholds of step 3.
+- Bottom: one row per enemy slot. A bar is one robot's life, coloured by its order `+$0B`. A triangle marks the
+  birth, with the number of weapons in its parts; a cross marks a death seen in the samples.
+
+What it shows:
+
+- New robots appear only when the general resource can pay. The resource drops at each birth and refills at each
+  midnight.
+- The army never passed 16, so no birth needed 3 weapons.
+- Order 0 lasts a sample or two; it is replaced at once.
+- Orders 6 (capture neutral) and 3 (hunt robots) dominate, with 7 and 8 between them. No robot had the nuclear
+  part, so orders 4 and 5 never appear.
+- Long single-colour bars are kept capture orders. The changes in between are the 1/32 replans.
 
 **A live robot: maybe a new order** (`EnemyReplan` `$B920`).
 
@@ -332,12 +529,65 @@ BOMB.
    - blocks of the types `$11`-`$14` become debris (types 6 / 7).
 3. The robot itself dies.
 4. `NuclearFlash` (`$BA87`): 61 random paper colours on the view, with a fading rumble of ROM bytes
-   (`NuclearRumble` `$BAEE`). It lasts about 3.3 s, and the game stands still meanwhile.
+   (`NuclearRumble` `$BAEE`). The game stands still meanwhile. In my run the colours ran from frame 24033 to 24249
+   (216 frames, 4.3 s). The clock stood at 19:10 from frame 24018 to 24268.
 5. The radar is rebuilt, the bases and robots are recounted, and the panel is reprinted.
 
-A destroyed base is gone for both sides: no one can capture it again, since `CountBases` and the searches skip
-bit 7. r3 verified it twice on its instance with a poked nuclear robot (a warbase and a factory). No recording
-built a nuclear robot.
+No recording built a nuclear robot. My instance replayed `work/deep` from frame 23000 with robot 0's parts and
+height poked:
+
+- `$DA07` = `$49` (bipod, cannon, nuclear) and `$DA09` = 24;
+- robot 0 had order 6 and stood on the door (97,3) of neutral factory point 8 (owner `$03`, count 75);
+- the ship landed on it and chose COMBAT MODE, NUCLEAR BOMB.
+
+![NUCLEAR BOMB from robot 0: the view before, the flash, and after](img/events/nuclear-blast.gif)
+
+```sh
+python3 tools/ill_events.py fig-screen --cache work/ill1/cache/nuke.npz --out docs/img/events/nuclear-blast.gif --opt from=150 to=560 dense=266-500:4 slots=0,5 "title=NUCLEAR BOMB from robot 0 (poked: + nuclear)" delay=120 lines=3 "notes=270-486:NuclearFlash: random paper colours and the rumble; the clock stands still|487-560:after: the factory is debris, point 8 owner \$80, robot 0 gone"
+```
+
+One picture a frame; the flash is shown every 4th.
+
+![The 9 × 9 blast area on the map before and after: terrain types and object anchors](img/events/nuclear-map.png)
+
+```sh
+python3 tools/ill_events.py fig-blast-map --cache work/ill1/cache/nuke.npz --out docs/img/events/nuclear-map.png --opt before=260 after=560 x=97 y=3 point=8
+```
+
+The outline is `BlastArea`'s 5, 7, 9, 9, 9, 9, 9, 7, 5 cells
+around the robot, cut at row 1. Point 8's blocks (types `$11`-`$14`) became debris.
+
+- Robot 0 was the only robot in the area. Its slot was freed at once: no blink and no wreck. Our robot count went
+  5 → 4.
+- Point 8's owner byte became exactly `$80`: the bit 7 is set, and the type bits (3) are lost too.
+
+**A destroyed base can be captured again, and then counts as a warbase.** `CountBases` and the target searches
+skip bit 7, but the capture loop (10.7) does not test it. It counts any robot on the door. `GiveFactory` →
+`SetBaseOwner` then does `AND $1F` and ORs in the new owner, which clears bit 7 and keeps the type: 0 after the
+blast, the warbase type.
+
+My instance continued after the blast (frame 24368). It parked the ship over (101,9) and poked our free slot 10
+onto the door (97,3): `$DAA0` = `61 E3 61 00 03 00 00 09 04 11 00 00 64 00 FF 05` (order 0, strength 100), and
+the door cell `$E361` = `$40`. Then:
+
+- point 8's count rose 1 a turn: 142 at frame 25856, 143 at 25866;
+- at 144 (frame 25876) the owner went `$80` → `$40`, ours with type 0;
+- `CountBases` made our warbases (`$FD3A`) 2, and the panel printed WARBASES 2;
+- the flag cell on the debris was set;
+- at the next midnight (frame 27726) our general rose 17 → 27: 5 × 2 warbases.
+
+The robot stayed on the door and the count started again. Robots cannot build at this "warbase": it has no
+pad. The construction menu needs the pad cells of a real warbase (10.3). This last point was not tested.
+
+![The destroyed factory (point 8) before and after a robot stood 144 turns on its door](img/events/destroyed-recaptured.png)
+
+```sh
+python3 tools/ill_events.py fig-pair --cache work/ill1/cache/destroyed-capture.npz --out docs/img/events/destroyed-recaptured.png --opt pics=142,145 "titles=a robot on the destroyed door|144 turns later: ours" state=point:8,counts
+```
+
+
+r3 had reported "no one can capture it again" from two poked blasts on its instance. Its notes do not say whether
+a robot stood 144 turns on the destroyed door; the experiment above did, and the point was taken.
 
 ## 10.10 Winning and losing
 
@@ -355,6 +605,18 @@ Factories and robots do not count. Both ends then run the same code:
 
 There is no score. r1 verified both ends by poking the counts on its instance (`work/ann/r1.md`). The enemy's
 warbases can only be taken by capture (order 8 for us) or destroyed by a nuclear robot (order 5).
+
+![Both ends, by poking a warbase count to 0](img/events/game-end.png)
+
+```sh
+python3 tools/ill_events.py fig-pair --cache work/ill1/cache/end-won.npz work/ill1/cache/end-lost.npz --out docs/img/events/game-end.png --opt pics=0:30,1:30 "titles=poked \$FD42 = 0: GameWon|poked \$FD3A = 0: no bases left" state=counts scale=2
+```
+
+Two replays from `work/deep` frame 17400, each with one count poked. At the next turn
+`CheckGameEnd` printed the message over the radar, and the panel showed the poked count. The clock stopped
+there. The pictures are frame 17870, about 470 frames after the poke: past the 100 HALTs of `GameOverWait`, the
+game waits for a control, and none was pressed. Only the count is tested: in the won case the enemy's three
+warbases still stood on the map.
 
 ## 10.11 What the deep recording showed
 
@@ -413,6 +675,7 @@ What the game did:
 | `ConstructionMenuLoop` `$CA0F` | A refused chassis swap leaves the old chassis refunded: the robot has no chassis until another is chosen | r4, experiment 3 |
 | `MenuMusic` `$C4A7` | A restarted tune keeps a voice's on/off state from where it was cut | `work/docC/rec` frames 406-427 ([9.4](09-sound.md)) |
 | `PrintDigitColumn` `$D2E3` | A count of 10 or more would print `:` onwards; no count gets there | code reading |
+| `GameTurnEnd` `$AD90` capture loop, `SetBaseOwner` | The capture loop does not test bit 7 (destroyed) of a capture point. A robot that stands 144 turns on the door of a nuked base takes it. `SetBaseOwner`'s `AND $1F` clears bit 7, and the type bits the blast left are 0. So a destroyed factory or warbase comes back as a live warbase of the capturing side. It is counted in `$FD3A` / `$FD42`, pays 5 general a day, and keeps its side alive in `CheckGameEnd` | 10.9: my instance, point 8 `$80` → `$40`, our warbases 1 → 2, general +10 at midnight (`destroyed-recaptured.png`) |
 
 Never-run code: `UnusedTapeCode` (`$AE29`). Keys 6 and 7 held together jump into the ROM's SAVE code at `$04B0`
 with `Start` as the return address. It looks like a debugging leftover; nothing calls it.
@@ -429,3 +692,20 @@ with `Start` as the return address. It looks like a debugging leftover; nothing 
 - **Cheap randomness.** One `Random` per turn plus the draws of the commander and the robots decide all choices;
   the deep recording and `work/docC/fight` show that the whole game is deterministic from the snapshot and the
   inputs.
+
+## 10.14 The figure experiments
+
+The caches behind the figures, all in `work/ill1/`. The recording instance is `tools/ill_events.py`'s own
+`re_session.py open` of `work/deep` with the work dir `work/ill1/deep`. The live instance is a `tools/bot.py`
+instance in `work/ill1/live`.
+
+| Cache | Command |
+| --- | --- |
+| `deep10.npz`, `deep-fight.npz` | `python3 tools/ill_events.py sample --work work/ill1/deep --frames 0:36046:10 --out work/ill1/cache/deep10.npz` (and `18660:19420:1` for `deep-fight.npz`) |
+| snapshots | `python3 tools/ill_events.py snap --work work/ill1/deep --frame F --out work/ill1/snaps/deep-F.szx` for F = 3000, 17400, 23000 |
+| `duel.npz` | `python3 tools/ill_events.py turns --work work/ill1/live --load work/ill1/snaps/deep-17400.szx --frame0 17400 --fly 128,7 --turns 110 --out work/ill1/cache/duel.npz` |
+| `combat.npz` | `python3 tools/ill_events.py combat --work work/ill1/live --load work/ill1/snaps/deep-17400.szx --frame0 17400 --fly 124,7 --cruise 26 --land-at 18736 --slot 2 --fire 4 2 3 4 --gap 30 --tail 120 --out work/ill1/cache/combat.npz` |
+| `nuke.npz` | `python3 tools/ill_events.py combat --work work/ill1/live --load work/ill1/snaps/deep-23000.szx --frame0 23000 --poke DA07=49 DA09=18 --fly 100,5 --cruise 30 --land-at 23330 --slot 0 --fire 1 --gap 40 --tail 300 --every-frame --out work/ill1/cache/nuke.npz` |
+| `destroyed-capture.npz` | right after `nuke.npz`, on the same instance: `python3 tools/ill_events.py turns --work work/ill1/live --frame0 24368 --fly 101,9 --cruise 45 --poke DAA0=61e3610003000009041100006400ff05 E361=40 --turns 170 --out work/ill1/cache/destroyed-capture.npz`, then `turns --frame0 26126 --turns 200` for `destroyed-day.npz` |
+| `capture.npz` | `python3 tools/ill_events.py turns --work work/ill1/live --load work/ill1/snaps/deep-3000.szx --frame0 3000 --fly 40,10 --cruise 45 --turns 330 --out work/ill1/cache/capture.npz` |
+| `end-won.npz`, `end-lost.npz` | `python3 tools/ill_events.py turns --work work/ill1/live --load work/ill1/snaps/deep-17400.szx --frame0 17400 --turns 2 --poke FD42=00 --frames 60 --every 5 --out work/ill1/cache/end-won.npz` (`FD3A=00` for `end-lost.npz`) |

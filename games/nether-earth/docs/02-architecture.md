@@ -223,33 +223,37 @@ because `PlayLoop` is a fall-through label inside it, not a routine of its own. 
 
 ## 2.6 Module map
 
-`src/game/game.ann` declares one module, `main`, so the source is one file in address order (`main.asm`,
-[3.7](03-build-and-load.md#37-the-source-build)). The code still falls into areas by address; each was read by one region agent
-(`work/ann/r1.md` - `r5.md`, `d1.md`) and is taken apart in the doc named:
+`src/game/game.ann` cuts the image into 22 modules by address, one source file each under `src/game/`; `game.asm`
+includes them in address order ([3.7](03-build-and-load.md#37-the-source-build)). Each file opens with a header: what
+the module is in the game, its routines in calling order, the data it works on, the docs that explain it and its
+tricks. The areas below were first read by the region agents (`work/ann/r1.md` - `r5.md`, `d1.md`):
 
-| Range | Area | Main entries | Docs |
-| --- | --- | --- | --- |
-| `$5B00-$A5FF` | view buffer, font, sprites | `ViewBuffer`, `Font`, 89 sprite blocks | 6, 8 |
-| `$A600-$A71F` | start-up and the play loop | `Start`, `NewGameSetup` `$A62D`, `EnterPlay` `$A68E`, `PlayLoop` `$A69A` | 2.3, 4 |
-| `$A720-$AD61` | the robot menu and its submenus | `RobotMenu` `$A720`, `OrdersMenu` `$A971`, `SetOrder` `$ABC8`, `ListMenu` `$ACD7` | 5.5 |
-| `$AD62-$AF10` | the game turn | `GameTurn` `$AD62`, `GameTurnEnd` `$AD90`, `DailyProduction` `$AE38`, `CheckGameEnd` `$AE6B`, `GameStop` `$AF00` | 4, 10 |
-| `$AF11-$B0C9` | the ship and its height probes | `MoveShip` `$AF11`, `ScrollRadar` `$AFE6`, `CheckShipMove` `$B052` | 5.3 |
-| `$B0CA-$B7F3` | the world turn: robots and shots | `WorldTurn` `$B0CA`, `UpdateRobot` `$B0FA`, `SteerByOrder` `$B222`, `SpotEnemies` `$B626`, `FireShot` `$B6D6`, `MoveShot` `$B724` | 7, 10 |
-| `$B7F4-$BB08` | the enemy and the nuclear blast | `EnemyCommander` `$B7F4`, `$B99F`, `NuclearFlash` `$BA87` | 10 |
-| `$BB09-$BDA8` | bases and the map build | `CountBases` `$BB09`, `GiveFactory` `$BB61`, `GiveWarbase` `$BB86`, `BuildMap` `$BC6F` | 7.5, 7.6 |
-| `$BDA9-$C0FF` | the level | `SceneryWest` `$BDA9`, `BaseListWest` `$BF46`, `ShapeTable` `$BF9C` | 7.5 |
-| `$C100-$C4A6` | the main menu, tape, keys | `MainMenu` `$C100`, `LoadGameBlocks` `$C21E`, `SaveGame` `$C28D`, `RedefineKeys` `$C34A` | 3.6, 5.2 |
-| `$C4A7-$C848` | the menu music and the title colours | `MenuMusic` `$C4A7`, `MenuInterrupt` `$C4FD`, the tune `$C665`, `TitleColourCycle` `$C820` | 9 |
-| `$C849-$CCBC` | the construction menu | `ConstructionMenu` `$C849`, `StartRobot` `$CB52`, `PlaceRobot` `$CC7C` | 5.4 |
-| `$CCBD-$D0B8` | the view | `DrawView` `$CCBD`, `DrawMapObjects` `$CCC6`, `DrawSprite` `$CF2D`, `CopyViewToScreen` `$D071` | 6 |
-| `$D0B9-$D37B` | the play screen and the panel | `DrawPlayScreen` `$D0CA`, `UpdateStatusPanel` `$D293`, `Random` `$D358` | 6.8, 8 |
-| `$D37C-$D3E4` | the controls | `WaitKey` `$D37C`, `ReadControls` `$D38A`, `KeyTable` `$D3CC` | 5 |
-| `$D3E5-$D565` | printing | `PrintInline` `$D42D`, `PrintChar` `$D4B1`, `PrintBigChar` `$D4DA` | 8 |
-| `$D566-$D6A7` | the interrupts and the radar | `PlayInterrupt` `$D566`, `ShowRadar` `$D59E`, `SoundEffect` `$D5C4`, `BuildRadar` `$D5F8` | 2.4, 6.7, 9 |
-| `$D6A8-$D7D2` | tables | `SpriteTable` `$D6E8`, `PartHeights` `$D7B4`, `TerrainHeights` `$D7BC` | 6, 7 |
+| Range | Module | Area | Main entries | Docs |
+| --- | --- | --- | --- | --- |
+| `$5B00-$A5FF` | `viewbuffer` `font` `sprites` | view buffer, font, sprites | `ViewBuffer`, `Font`, 89 sprite blocks | 6, 8 |
+| `$A600-$A71F` | `start` | start-up and the play loop | `Start`, `NewGameSetup` `$A62D`, `EnterPlay` `$A68E`, `PlayLoop` `$A69A` | 2.3, 4 |
+| `$A720-$AD61` | `robotmenu` | the robot menu and its submenus | `RobotMenu` `$A720`, `OrdersMenu` `$A971`, `SetOrder` `$ABC8`, `ListMenu` `$ACD7` | 5.5 |
+| `$AD62-$AF10` | `gameturn` | the game turn | `GameTurn` `$AD62`, `GameTurnEnd` `$AD90`, `DailyProduction` `$AE38`, `CheckGameEnd` `$AE6B`, `GameStop` `$AF00` | 4, 10 |
+| `$AF11-$B0C9` | `ship` | the ship and its height probes | `MoveShip` `$AF11`, `ScrollRadar` `$AFE6`, `CheckShipMove` `$B052` | 5.3 |
+| `$B0CA-$B7F3` | `world` | the world turn: robots and shots | `WorldTurn` `$B0CA`, `UpdateRobot` `$B0FA`, `SteerByOrder` `$B222`, `SpotEnemies` `$B626`, `FireShot` `$B6D6`, `MoveShot` `$B724` | 7, 10 |
+| `$B7F4-$BB08` | `enemy` | the enemy and the nuclear blast | `EnemyCommander` `$B7F4`, `$B99F`, `NuclearFlash` `$BA87` | 10 |
+| `$BB09-$BDA8` | `bases` | bases and the map build | `CountBases` `$BB09`, `GiveFactory` `$BB61`, `GiveWarbase` `$BB86`, `BuildMap` `$BC6F` | 7.5, 7.6 |
+| `$BDA9-$C0FF` | `level` | the level | `SceneryWest` `$BDA9`, `BaseListWest` `$BF46`, `ShapeTable` `$BF9C` | 7.5 |
+| `$C100-$C4A6` | `mainmenu` | the main menu, tape, keys | `MainMenu` `$C100`, `LoadGameBlocks` `$C21E`, `SaveGame` `$C28D`, `RedefineKeys` `$C34A` | 3.6, 5.2 |
+| `$C4A7-$C848` | `music` | the menu music and the title colours | `MenuMusic` `$C4A7`, `MenuInterrupt` `$C4FD`, the tune `$C665`, `TitleColourCycle` `$C820` | 9 |
+| `$C849-$CCBC` | `construction` | the construction menu | `ConstructionMenu` `$C849`, `StartRobot` `$CB52`, `PlaceRobot` `$CC7C` | 5.4 |
+| `$CCBD-$D0B8` | `view` | the view | `DrawView` `$CCBD`, `DrawMapObjects` `$CCC6`, `DrawSprite` `$CF2D`, `CopyViewToScreen` `$D071` | 6 |
+| `$D0B9-$D37B` | `screen` | the play screen and the panel | `DrawPlayScreen` `$D0CA`, `UpdateStatusPanel` `$D293`, `Random` `$D358` | 6.8, 8 |
+| `$D37C-$D3E4` | `controls` | the controls | `WaitKey` `$D37C`, `ReadControls` `$D38A`, `KeyTable` `$D3CC` | 5 |
+| `$D3E5-$D565` | `print` | printing | `PrintInline` `$D42D`, `PrintChar` `$D4B1`, `PrintBigChar` `$D4DA` | 8 |
+| `$D566-$D6A7` | `interrupts` | the interrupts and the radar | `PlayInterrupt` `$D566`, `ShowRadar` `$D59E`, `SoundEffect` `$D5C4`, `BuildRadar` `$D5F8` | 2.4, 6.7, 9 |
+| `$D6A8-$D7D2` | `tables` | tables | `SpriteTable` `$D6E8`, `PartHeights` `$D7B4`, `TerrainHeights` `$D7BC` | 6, 7 |
+| `$D7D3-$DCFF` | `worldstate` | the world's records | `Shots` `$D7D3`, `RadarOwn` `$D800`, `RadarEnemy` `$D900`, `Robots` `$DA00`, `EnemyRobots` `$DB80` | 7 |
+| `$DD00-$FCE8` | `map` | the map | `Map` `$DD00`, `MapTail` `$FCDA` | 7.5 |
 
-The annotations hold 257 routines (`c`), 303 data entries (`b`, `w`, `t`, `s`) and 43 variables past the image
-(`@equ`). Of the image's bytes, 8 913 are code: 4 833 instructions, 4 259 of which ran in a recording (WALKTHROUGH 6).
+The annotations hold 260 routines (`c`), 304 data entries (`b`, `w`, `t`, `s`) and 43 variables past the image
+(`@equ`). Of the image's bytes, 9 122 are code: 4 922 instructions, 4 220 of which ran in a recording (WALKTHROUGH 6),
+and every instruction carries a comment.
 
 ## 2.7 Self-modifying code
 

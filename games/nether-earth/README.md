@@ -33,6 +33,6 @@ python3 kit/check_docs.py --case games/nether-earth
 
 | What | Size |
 | --- | --- |
-| `src/game/main.asm` | 562 entries: every routine and data block named and described, no anonymous labels |
+| `src/game/*.asm` | 22 modules, 564 entries: every routine and data block named and described, every instruction commented |
 | `docs/` | 12 documents, 44 figures from the recordings |
 | `tools/` | the bot that played the recorded games (`bot.py`), the resource formats, the figure scripts |

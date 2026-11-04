@@ -54,8 +54,8 @@ PrintNumber5:
 
 ; Print HL as three digits (E = $20: leading zeros blank, else printed)
 ;
-; The operand $FF9C is -100 (main.asm shows it as Buildings+155: a false
-; symbol). Used by PrintMenuTotal and $A833.
+; The operand $FF9C is -100 (the source writes it so with @isub; as a label it
+; would read Buildings+155, a false symbol). Used by PrintMenuTotal and $A833.
 PrintNumber3:
   LD BC,-$0064            ; -100
   CALL PrintDigit         ; the hundreds

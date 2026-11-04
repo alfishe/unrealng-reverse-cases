@@ -11,7 +11,7 @@ The game has three sound sources, all on the beeper (port `$FE`, bit 4 EAR and b
 
 Evidence:
 
-- the code of `src/game/main.asm` and the track data in `build/game.bin`, which `tools/tune_roll.py` reads;
+- the code of `src/game/*.asm` and the track data in `build/game.bin`, which `tools/tune_roll.py` reads;
 - `work/docC/rec`: recorded on an own instance (port base 25200) from the menu snapshot `work/play/start.szx`.
   It holds 400 frames of the menu with the tune playing, then the bot of
   `tools/bot.py play --record --frames 9000`. TTD `memory_at` reads of the player's operands were taken at every

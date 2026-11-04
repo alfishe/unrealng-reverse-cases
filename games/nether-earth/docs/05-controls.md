@@ -7,7 +7,7 @@ run a game turn between presses, so the war goes on while the player chooses.
 
 Evidence:
 
-- the code of `src/game/main.asm` (the routines named below);
+- the code of `src/game/*.asm` (the routines named below);
 - `work/deep`: the bot's 36046-frame game from the menu snapshot `work/play/start.szx` (no tape load in it; the
   snapshot was taken after the ROM-speed load of `work/play`), Kempston stick (WALKTHROUGH 6). L1 counts and TTD
   `memory_at`;

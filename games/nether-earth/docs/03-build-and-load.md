@@ -231,11 +231,11 @@ tools/build.sh [path/to/sjasmplus]        # build/NETHER.TAP, compared with orig
 | --- | --- | --- | --- |
 | 0, 1 BASIC | `src/basic.asm`: the line as tokens, the numbers in the ROM's 5-byte form, the hidden colour codes | sjasmplus | **identical** (381 bytes) |
 | 2, 3 N1 | `src/loader.asm` at `$FCDA`, the header's start 63 800 | sjasmplus | **identical** (180 bytes) |
-| 4 game | `src/game/game.asm` → `main.asm` (the image `$5B00-$FCE8`), `src/res/` (its resources); the screen part = the image's own `$C350-$DE4F` | sjasmplus, a Python one-liner in `build.sh` | **identical** (48 361 bytes) |
+| 4 game | `src/game/game.asm` → 22 module files (the image `$5B00-$FCE8`), `src/res/` (its resources); the screen part = the image's own `$C350-$DE4F` | sjasmplus, a Python one-liner in `build.sh` | **identical** (48 361 bytes) |
 | headers, TAP | `../../kit/tap.py`: `basic:N.EARTH:0`, `code:N1:63800`, `data:-:-` (headerless) | | **identical** |
 
-The last build in this tree, `build/NETHER.TAP` (2026-11-04 10:39), equals `orig/NETHER.TAP` (`cmp`, 48 976 bytes).
-sjasmplus is not installed on the host where this document was written, so the build was not run again for it.
+`tools/build.sh` was run from a clean `build/` with sjasmplus 1.23.1 on 2026-11-04: `build/NETHER.TAP` equals
+`orig/NETHER.TAP` (`cmp`, 48 976 bytes).
 
 ```mermaid
 flowchart LR
@@ -245,7 +245,7 @@ flowchart LR
     rec["work/*/l1.json<br/>instructions run"] --> mk["kit/mkgame.py"]
     ann["src/game/game.ann<br/>names, shapes, comments"] --> mk
     blocks --> mk
-    mk --> asm["src/game/main.asm"]
+    mk --> asm["src/game/*.asm<br/>22 modules"]
     mk --> res["src/res/<br/>PNG, level, tune, names"]
     res --> rf["tools/res_formats.py build"] --> bres["build/res/*.bin"]
     asm --> sj["sjasmplus"]
@@ -261,11 +261,14 @@ flowchart LR
 The pieces of the game's source:
 
 - **The game, `src/game`.**
-  - `game.asm` holds the `@equ` variables past the image as `EQU`s and includes `main.asm`, which saves `game.bin`.
-  - `main.asm` is generated, not edited: `kit/mkgame.py` writes it from `src/game/game.ann` and the recordings.
+  - `game.asm` holds the `@equ` variables past the image as `EQU`s, includes the 22 modules in address order and saves
+    `game.bin`.
+  - The modules (`start.asm` ... `map.asm`, [2.6](02-architecture.md#26-module-map)) are generated, not edited:
+    `kit/mkgame.py` writes them from `src/game/game.ann` (names, descriptions, the comment of every instruction,
+    `@module` headers) and the recordings.
   - Code is every instruction start the recordings ran, widened by a walk along the branches no recording took.
     `@inline $D42D` stops the walk at the strings after `CALL PrintInline` (WALKTHROUGH 6).
-  - 8 913 bytes are code: 4 833 instructions, 4 259 of which ran. Data is everything else, shaped by `game.ann`.
+  - 9 122 bytes are code: 4 922 instructions, 4 220 of which ran. Data is everything else, shaped by `game.ann`.
   - `game.ann` holds 257 routines, 303 data entries and 43 `@equ` variables, every one named and described.
 - **Resources, `src/res`.**
   - 219 entries of `game.ann` carry `@res`: the font, the 89 sprite blocks, the view's edge patterns, the level, the

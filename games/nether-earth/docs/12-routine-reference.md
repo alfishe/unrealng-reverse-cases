@@ -1273,7 +1273,7 @@ The robot is set up facing down, 3 steps, order 0, strength `$64`, +`$0A` = `$80
 
 **The nuclear blast's flash: the view's paper flickers through random colours with a fading rumble**
 
-Called only by the blast (`$BA76`). Saves the 20 x 20 attributes of the view (from `$5821`, row 1 column 1) to `$5B00-$5C8F`, then 61 times: a burst of noise (`$BAEE`, 244 samples first, 4 fewer and a longer delay each time) and a new random paper colour (2-7, never the previous one) on every attribute of the view whose paper is not black. Restores the saved attributes at the end. The noise takes about 3.3 s of beeper time in total; the game stands still meanwhile.
+Called only by the blast (`$BA76`). Saves the 20 x 20 attributes of the view (from `$5821`, row 1 column 1) to `$5B00-$5C8F`, then 61 times: a burst of noise (`$BAEE`, 244 samples first, 4 fewer and a longer delay each time) and a new random paper colour (2-7, never the previous one) on every attribute of the view whose paper is not black. Restores the saved attributes at the end. The flash lasts 216 frames (4.3 s, measured; docs/10-gameplay-logic.md 10.9); the game stands still meanwhile.
 
 Verified by an experiment (own instance, PC set to `$B99F` with a poked nuclear robot): the run passes here after the bases and robots are hit. `$5B00` is free scratch at that time (the printer buffer and above, also the save checksum of `$C2E8`).
 
@@ -2253,7 +2253,7 @@ Writes aa into the main set's HL, the drum position (the frames left of the curr
 
 **play the next drum record (a short noise or sweep inside the interrupt)**
 
-HL = the drum position, called by MenuInterrupt when the drum's frames (C) run out. A record is the frames until the next one and a kind: 0 a hiss (96 bytes of ROM from `$08`xx sent to the beeper, about 1 ms), 2 p a falling tone (48 cycles: the low half starts at p - 1 and shortens by 1, the high half starts at p / 2 and lengthens by 4), any other kind a rasp (80 ROM bytes from `$00`xx with a gap that mostly grows). The byte 1 in place of the frames is a goto: 1 aa. The tone loop stands still while a drum plays. In the 5300-frame experiment kinds 1 and 2 ran 72 times each.
+HL = the drum position, called by MenuInterrupt when the drum's frames (C) run out. A record is the frames until the next one and a kind: 0 a hiss meant as 96 bytes of ROM from `$08`xx sent to the beeper, about 1 ms (but DrumHissLoop never steps HL: one ROM byte, `$08` L, 96 times; in the recordings it is `$23`, EAR / MIC 0, so the hiss is silent: docs/09-sound.md), 2 p a falling tone (48 cycles: the low half starts at p - 1 and shortens by 1, the high half starts at p / 2 and lengthens by 4), any other kind a rasp (80 ROM bytes from `$00`xx with a gap that mostly grows). The byte 1 in place of the frames is a goto: 1 aa. The tone loop stands still while a drum plays. In the 5300-frame experiment kinds 1 and 2 ran 72 times each.
 
 | | |
 | --- | --- |
@@ -3244,7 +3244,7 @@ Used by `$AD90` for the day number ("DAY:    4"). Falls into PrintNumber3.
 
 **Print HL as three digits (E = `$20`: leading zeros blank, else printed)**
 
-The operand `$FF9C` is -100 (main.asm shows it as Buildings+155: a false symbol). Used by PrintMenuTotal and `$A833`.
+The operand `$FF9C` is -100 (the source writes it so with @isub; as a label it would read Buildings+155, a false symbol). Used by PrintMenuTotal and `$A833`.
 
 | | |
 | --- | --- |

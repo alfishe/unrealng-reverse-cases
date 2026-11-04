@@ -2683,7 +2683,7 @@ $BA79 ; the radar map must be rebuilt
 $BA7E ; recount the robots and the bases, redraw the status panel
 
 $BA87 c NuclearFlash ; The nuclear blast's flash: the view's paper flickers through random colours with a fading rumble
-> Called only by the blast ($BA76). Saves the 20 x 20 attributes of the view (from $5821, row 1 column 1) to $5B00-$5C8F, then 61 times: a burst of noise ($BAEE, 244 samples first, 4 fewer and a longer delay each time) and a new random paper colour (2-7, never the previous one) on every attribute of the view whose paper is not black. Restores the saved attributes at the end. The noise takes about 3.3 s of beeper time in total; the game stands still meanwhile.
+> Called only by the blast ($BA76). Saves the 20 x 20 attributes of the view (from $5821, row 1 column 1) to $5B00-$5C8F, then 61 times: a burst of noise ($BAEE, 244 samples first, 4 fewer and a longer delay each time) and a new random paper colour (2-7, never the previous one) on every attribute of the view whose paper is not black. Restores the saved attributes at the end. The flash lasts 216 frames (4.3 s, measured; docs/10-gameplay-logic.md 10.9); the game stands still meanwhile.
 > Verified by an experiment (own instance, PC set to $B99F with a poked nuclear robot): the run passes here after the bases and robots are hit. $5B00 is free scratch at that time (the printer buffer and above, also the save checksum of $C2E8).
 $BA8A ; the view's attributes, row 1 column 1
 $BA8D ; C = 20 rows, B = 20 columns
@@ -3877,7 +3877,7 @@ $C5D0 ; low byte into the drum's HL
 $C5D5 ; high byte into the drum's HL
 
 $C5DB c DrumStep ; play the next drum record (a short noise or sweep inside the interrupt)
-> HL = the drum position, called by MenuInterrupt when the drum's frames (C) run out. A record is the frames until the next one and a kind: 0 a hiss (96 bytes of ROM from $08xx sent to the beeper, about 1 ms), 2 p a falling tone (48 cycles: the low half starts at p - 1 and shortens by 1, the high half starts at p / 2 and lengthens by 4), any other kind a rasp (80 ROM bytes from $00xx with a gap that mostly grows). The byte 1 in place of the frames is a goto: 1 aa. The tone loop stands still while a drum plays. In the 5300-frame experiment kinds 1 and 2 ran 72 times each.
+> HL = the drum position, called by MenuInterrupt when the drum's frames (C) run out. A record is the frames until the next one and a kind: 0 a hiss meant as 96 bytes of ROM from $08xx sent to the beeper, about 1 ms (but DrumHissLoop never steps HL: one ROM byte, $08 L, 96 times; in the recordings it is $23, EAR / MIC 0, so the hiss is silent: docs/09-sound.md), 2 p a falling tone (48 cycles: the low half starts at p - 1 and shortens by 1, the high half starts at p / 2 and lengthens by 4), any other kind a rasp (80 ROM bytes from $00xx with a gap that mostly grows). The byte 1 in place of the frames is a goto: 1 aa. The tone loop stands still while a drum plays. In the 5300-frame experiment kinds 1 and 2 ran 72 times each.
 $C5DC ; HL past the frames byte
 $C5DF ; 1: the goto record
 $C5E3 ; HL past the kind: the next record (or p of a sweep)
@@ -3905,7 +3905,7 @@ $C609 ; HL = $08xx: ROM bytes as noise
 $C60B ; 96 beeper writes
 $C60E ; bits 3-4 only
 $C610 ; ... to the beeper
-$C612 ; 96 writes, as fast as DJNZ runs: a burst of noise
+$C612 ; 96 writes of the same byte, as fast as DJNZ runs: no edge when its bits are 0
 $C614 ; HL = the drum position
 $C615 ; back into MenuInterrupt
 $C617 ; past p: the next record
@@ -3932,8 +3932,8 @@ $C5EB DrumRasp ; any other kind: 80 ROM bytes $00xx; the gap (~B & $3F) grows $2
 $C5F0 DrumRaspLoop ; a ROM byte's EAR / MIC bits to the beeper
 $C5F9 DrumRaspGap ; wait (A = 0 waits 256 turns)
 $C601 DrumGoto ; the record 1 aa: continue at aa
-$C608 DrumHiss ; kind 0: 96 ROM bytes $08xx straight to the beeper
-$C60D DrumHissLoop ; a ROM byte's EAR / MIC bits ...
+$C608 DrumHiss ; kind 0: meant as 96 ROM bytes $08xx to the beeper; one byte 96 times, in practice silence
+$C60D DrumHissLoop ; the ROM byte at HL ($08 L: HL never moves, the bug that silences the hiss) ...
 $C616 DrumSweep ; kind 2 p: the falling tone
 $C61B ; the low half
 $C61C ; the high half: p / 2
@@ -5426,7 +5426,7 @@ $D3FE ; the thousands
 $D3F3 ; -10000
 $D3FB ; -1000
 $D401 c PrintNumber3 ; Print HL as three digits (E = $20: leading zeros blank, else printed)
-> The operand $FF9C is -100 (main.asm shows it as Buildings+155: a false symbol). Used by PrintMenuTotal and $A833.
+> The operand $FF9C is -100 (the source writes it so with @isub; as a label it would read Buildings+155, a false symbol). Used by PrintMenuTotal and $A833.
 $D404 ; the hundreds
 $D401 ; -100
 $D407 c PrintTensUnits ; Print the tens and the units of HL
