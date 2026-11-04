@@ -141,6 +141,9 @@ def main():
         a = max(lo, LO)
         while a <= hi:
             e = owner(a)
+            if not e:  # past the image: the work space above it (its EQUs)
+                names.append('work space $%04X+' % a)
+                break
             names.append(e[2])
             a = ends[e[0]] + 1
         shown = ', '.join('`%s`' % n for n in names[:4]) + (' and %d more' % (len(names) - 4) if len(names) > 4 else '')
