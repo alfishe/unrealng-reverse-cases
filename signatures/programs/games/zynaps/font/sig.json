@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/font",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: font",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "font"
+  ],
+  "summary": "The game's own glyphs for the print codes $80-$B5.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 432,
+    "sha1": "bd73a26500d41812bc859feb0a1d2868fdeaf64b",
+    "masked_sha1": "bd73a26500d41812bc859feb0a1d2868fdeaf64b"
+  },
+  "origin": "$B54F",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "Glyphs",
+      "comment": "54 glyphs of 8 x 8, the print codes $80-$B5"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$B54F",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/font.asm",
+    "label": "Glyphs"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

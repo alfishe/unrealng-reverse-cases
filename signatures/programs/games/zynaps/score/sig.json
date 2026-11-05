@@ -1,0 +1,263 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/score",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: score",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "score"
+  ],
+  "summary": "Score and lives on the panel.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 137,
+    "sha1": "0adbe9c1e76405cdfaa654d08d14685c6d357038",
+    "masked_sha1": "9d3c139b0ccf7308d9ac3f794067fb0986635010"
+  },
+  "origin": "$A489",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 6,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8234"
+    },
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F9F"
+    },
+    {
+      "offset": 13,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CurrentPlayer"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FCF"
+    },
+    {
+      "offset": 32,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventRequests"
+    },
+    {
+      "offset": 40,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player1"
+    },
+    {
+      "offset": 43,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5802"
+    },
+    {
+      "offset": 49,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player2"
+    },
+    {
+      "offset": 52,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5816"
+    },
+    {
+      "offset": 55,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CurrentPlayer"
+    },
+    {
+      "offset": 68,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintAttr"
+    },
+    {
+      "offset": 74,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPos"
+    },
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintBcd"
+    },
+    {
+      "offset": 104,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AD8"
+    },
+    {
+      "offset": 107,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LifeSteps"
+    },
+    {
+      "offset": 111,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 122,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "AddScore",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Add award A to the current player's score"
+    },
+    {
+      "offset": 37,
+      "name": "PrintPlayerScore",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print player A's score on the panel"
+    },
+    {
+      "offset": 81,
+      "name": "CompareScore",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Is the score at DE above the score at HL?"
+    },
+    {
+      "offset": 102,
+      "name": "DrawLives",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw the current player's lives on the panel"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 5,
+      "name": "",
+      "comment": "HL = the award's low byte"
+    },
+    {
+      "offset": 9,
+      "name": "",
+      "comment": "player 1's score, low byte"
+    },
+    {
+      "offset": 18,
+      "name": "",
+      "comment": "player 2's"
+    },
+    {
+      "offset": 21,
+      "name": "AddScoreBytes",
+      "comment": ""
+    },
+    {
+      "offset": 23,
+      "name": "AddScoreByte",
+      "comment": ""
+    },
+    {
+      "offset": 31,
+      "name": "",
+      "comment": "the score on the panel is out of date"
+    },
+    {
+      "offset": 54,
+      "name": "PrintPlayerScoreColour",
+      "comment": ""
+    },
+    {
+      "offset": 64,
+      "name": "PrintPlayerScoreAt",
+      "comment": "the leading spaces in blue ink"
+    },
+    {
+      "offset": 79,
+      "name": "PrintPlayerScoreDone",
+      "comment": ""
+    },
+    {
+      "offset": 86,
+      "name": "CompareScoreByte",
+      "comment": ""
+    },
+    {
+      "offset": 92,
+      "name": "CompareScoreNext",
+      "comment": ""
+    },
+    {
+      "offset": 97,
+      "name": "CompareScoreDone",
+      "comment": "equal to the end: SCF then CCF, no carry"
+    },
+    {
+      "offset": 116,
+      "name": "",
+      "comment": "six marks"
+    },
+    {
+      "offset": 120,
+      "name": "DrawLivesMark",
+      "comment": ""
+    },
+    {
+      "offset": 124,
+      "name": "",
+      "comment": "past the lives: black"
+    },
+    {
+      "offset": 126,
+      "name": "DrawLivesNext",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$A489",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/score.asm",
+    "label": "AddScore"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

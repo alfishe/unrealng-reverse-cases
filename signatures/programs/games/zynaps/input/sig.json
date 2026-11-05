@@ -1,0 +1,248 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/input",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: input",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "input"
+  ],
+  "summary": "The controls: keys, Kempston and Sinclair or cursor joystick.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 185,
+    "sha1": "210cf1284b760b1a6344d928b0dfe94b502192e2",
+    "masked_sha1": "f607b0151a3181eb4837ee95a8cec009add65998"
+  },
+  "origin": "$A6B6",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 9,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyTable"
+    },
+    {
+      "offset": 24,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JoystickFlags"
+    },
+    {
+      "offset": 112,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FireHeld"
+    },
+    {
+      "offset": 135,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FireChanged"
+    },
+    {
+      "offset": 138,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ControlBits"
+    },
+    {
+      "offset": 148,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JoystickFlags"
+    },
+    {
+      "offset": 163,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyTable"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "ReadControls",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Read the controls into $8184-$8186"
+    },
+    {
+      "offset": 146,
+      "name": "TitleFireCheck",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Is fire pressed on the title screen? Also picks the Kempston"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 4,
+      "name": "",
+      "comment": "five keys, the first into bit 4"
+    },
+    {
+      "offset": 11,
+      "name": "ControlsKeyLoop",
+      "comment": ""
+    },
+    {
+      "offset": 16,
+      "name": "",
+      "comment": "pressed (0): carry"
+    },
+    {
+      "offset": 23,
+      "name": "",
+      "comment": "the joystick flags"
+    },
+    {
+      "offset": 30,
+      "name": "",
+      "comment": "Kempston: fire bit 4, up 3, down 2, left 1, right 0"
+    },
+    {
+      "offset": 38,
+      "name": "ControlsKeys56789",
+      "comment": "the keys 6-0 and 1-5 rows"
+    },
+    {
+      "offset": 50,
+      "name": "",
+      "comment": "9: the Sinclair joystick"
+    },
+    {
+      "offset": 58,
+      "name": "ControlsCursor",
+      "comment": "cursor keys"
+    },
+    {
+      "offset": 60,
+      "name": "",
+      "comment": "5: left"
+    },
+    {
+      "offset": 66,
+      "name": "ControlsCursorFire",
+      "comment": "0: fire"
+    },
+    {
+      "offset": 72,
+      "name": "ControlsCursorRight",
+      "comment": "8: right"
+    },
+    {
+      "offset": 77,
+      "name": "ControlsCursorUp",
+      "comment": "7: up"
+    },
+    {
+      "offset": 82,
+      "name": "ControlsCursorDown",
+      "comment": "6: down"
+    },
+    {
+      "offset": 87,
+      "name": "ControlsCursorDone",
+      "comment": ""
+    },
+    {
+      "offset": 90,
+      "name": "ControlsSinclair",
+      "comment": "5 down: back to cursor"
+    },
+    {
+      "offset": 94,
+      "name": "",
+      "comment": "Sinclair from now on"
+    },
+    {
+      "offset": 96,
+      "name": "",
+      "comment": "fire, up, down out of bits 0-2 into bits 4-2"
+    },
+    {
+      "offset": 108,
+      "name": "",
+      "comment": "left and right are left in E bits 1-0"
+    },
+    {
+      "offset": 109,
+      "name": "ControlsMerge",
+      "comment": ""
+    },
+    {
+      "offset": 111,
+      "name": "",
+      "comment": "the fire counter"
+    },
+    {
+      "offset": 117,
+      "name": "",
+      "comment": "fire held: count, released: 0"
+    },
+    {
+      "offset": 122,
+      "name": "ControlsFireCount",
+      "comment": ""
+    },
+    {
+      "offset": 125,
+      "name": "",
+      "comment": "$8185 = (held now) XOR (held before)"
+    },
+    {
+      "offset": 152,
+      "name": "",
+      "comment": "the Kempston fire alone"
+    },
+    {
+      "offset": 160,
+      "name": "",
+      "comment": "not the Kempston"
+    },
+    {
+      "offset": 172,
+      "name": "",
+      "comment": "or 0"
+    },
+    {
+      "offset": 179,
+      "name": "",
+      "comment": "no fire: no carry"
+    },
+    {
+      "offset": 182,
+      "name": "TitleFireYes",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$A6B6",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/input.asm",
+    "label": "ReadControls"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

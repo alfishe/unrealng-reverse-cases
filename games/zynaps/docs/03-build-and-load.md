@@ -2,9 +2,9 @@
 
 What this covers: the tape block by block, the Hewson loader (an encrypted copy of the ROM's LD-BYTES with a
 countdown of the bytes still to come), the packed loading screen, the move of the game into place, and the stages up
-to the game's first instruction. The source build (3.8) is still to come.
+to the game's first instruction, and the source build that writes both tapes byte for byte (3.8).
 
-Stage 1 draft (2026-11-05). The recordings it rests on ([Terms](README.md#terms)):
+Stage 2 (2026-11-05): the names are those of `src/tape/*.asm` and `src/game/game.ann`. The recordings it rests on ([Terms](README.md#terms)):
 
 - `c1`: power-on with `orig/Zynaps.tzx.zip`'s `Zynaps.tzx`, 48K, the load (12 700 frames), then 4000 frames with
   no input (`work/c1`, WALKTHROUGH 1). The emulator's fast load took the two ROM-loaded blocks (BASIC and loader)
@@ -74,9 +74,12 @@ FC13  ...              ; decrypted: JP $FE3A
 ```
 
 One pass, forward, `$FC13-$FE9E`: each byte is XORed with the next one as it is on the tape. Of the 652 bytes 647
-change (the five that do not are followed by a zero). `$FE9F-$FEFF` are plain: zeros and, at `$FED5-$FEFE`, 42
-bytes of a ROM-like fragment (`LD A,($5C74)`, `CP 3`, `JP Z,$1C8A`, `RST $20`, `CALL $28B2`: the ROM's SAVE-ETC
-`$0605` area) that the loader never runs: a leftover of the mastering, still to be confirmed against the ROM.
+change (the five that do not are followed by a zero). `$FE9F-$FEFF` are plain and never run: 54 zeros, then at
+`$FED5-$FEE8` 20 bytes that match no part of the 48K ROM longer than three bytes, and at `$FEE9-$FEFF` 23 bytes
+equal to the ROM's `$0652-$0668` byte for byte (SA-DATA: `RST $18`, `CP $E4`, `JR NZ`, `LD A,($5C74)`, `CP 3`,
+`JP Z,$1C8A`, `RST $20`, `CALL $28B2`, `SET 7,C`, `JR NC`, `LD HL,0`, cut off by the block's end). Both are what
+the mastering machine's memory held there when the 768 bytes were saved (`src/tape/loader.asm`, `Leftover` and
+`RomSaData`).
 The decryption in Python is three lines (WALKTHROUGH 2); `work/blocks/loader1.bin` is its output, checked against
 `c1`'s memory in 3.7.
 
@@ -127,11 +130,13 @@ right to left at `$50E4-$50E1` (row 23, columns 4-1) one per call while `CountTi
 
 | Offset | Bytes | What |
 | --- | --- | --- |
-| `$8001` | `18 08` | `JR` over the header |
-| `$8003` | `$009D` | the literal stream, from `$8001` (`$809E-$8C86`, 3049 bytes) |
-| `$8005` | `$0C86` | the mask stream (`$8C87-$8F8D`, 775 bytes) |
-| `$8007` | `$0F8D` | the flag stream (`$8F8E-$8FF9`, 108 bytes) |
-| `$8009` | `$00` | the border colour |
+| `$8000` | `00` | a zero byte before the entry |
+| `$8001` | `18 08` | `JR` over the header (`PicyEntry`) |
+| `$8003` | `00` | unused |
+| `$8004` | `$009D` | the literal stream, from `$8001` (`$809E-$8C86`, 3049 bytes); the unpacker reads it as `IX+3` |
+| `$8006` | `$0C86` | the mask stream (`$8C87-$8F8D`, 775 bytes), `IX+5` |
+| `$8008` | `$0F8D` | the flag stream (`$8F8E-$8FF9`, 108 bytes), `IX+7` |
+| `$800A` | `$00` | the border colour, `IX+9` |
 | `$800B` | | the unpacker: `DI`, finds its own address with a `POP HL` / `JP (HL)` written to `$4000`, clears the screen, unpacks, `EI`, `RET` |
 
 The format (`tools/depack_picy.py`): the 6912 screen bytes are written in order from `$4000`. Each flag byte covers
@@ -141,7 +146,9 @@ first byte is always a literal. The three streams end exactly where the next beg
 `$8FFA-$8FFF` are six zeros. The unpacked screen: "ZYNAPS", "By Dominic Robinson", the ship, the Hewson logo, the
 artist's mark "JMP" (`work/blocks/picy.png`).
 
-The packer (the other direction) is not written yet: stage 2.
+The packer is `tools/picy.py pack`: a byte equal to the one before it is always a repeat, every other byte a
+literal, a flag bit set exactly when its mask is not 0. It gives the tape's three streams byte for byte
+(`tools/picy.py check`): the packer had no choices, so the screen alone fixes the block.
 
 ## 3.5 The stages from power-on to the game
 
@@ -189,13 +196,15 @@ complete at frame 1831 and the counter digits run until 12310.
 B6FF  DI
       LD SP,$5C00
       LD HL,$BC00 / LD DE,$5C00 / LD BC,$0C00 / LDIR   ; 3072 bytes $BC00-$C7FF down to $5C00-$67FF
-      CPL over $E000-$E747 (1864 bytes) and $F048-$F107 (192 bytes)   ; data stored inverted on the tape
-      JP $B200                                          ; the main loop
+      CPL over $E000-$E747 (1864 bytes) and $F048-$F107 (192 bytes)   ; the sprites, stored inverted on the tape
+      JP MainLoop                                       ; $B200
 ```
 
 The copy lands over the 1625 zero bytes and the ROM's system variables are gone from `$5C00` on: the game never
-returns to BASIC. The two inverted ranges are data (stage 2 names them); storing them complemented hides them from
-a casual look at the tape bytes.
+returns to BASIC. The two inverted ranges are the sprites (`$E000-$E747`: the ship, the sight, the explosion, the
+laser, the ball) and the pod (`$F048-$F107`). In play they stay as they are: StripDraw `$8603` stores a sprite byte
+into an empty cell and ANDs it into a cell with scenery, with the object's colour as paper, so a clear bit is a
+sprite pixel ([06](06-rendering.md)). The copied `$BC00-$C7FF` is the 256 scenery tiles and the wave sprites' cells.
 
 ## 3.6 The TAP (`orig/Zynaps.tap.zip`): a 1993 re-tape
 
@@ -251,5 +260,24 @@ So the static decrypt, the unpacker's format, the load addresses and the move ar
 
 ## 3.8 The source build
 
-Not started (stage 2): `src/basic.asm`, `src/loader.asm` (with the encryption applied by the build), `src/picy.asm`
-and a packer for its streams, the game, and `tools/build.sh` writing the TZX's nine blocks.
+`tools/build.sh [SJASMPLUS]` writes both tapes from `src/` and compares them with the originals:
+
+```text
+build: Zynaps.tzx identical to orig/Zynaps.tzx.zip's Zynaps.tzx
+build: ZYNAPS.TAP identical to orig/Zynaps.tap.zip's ZYNAPS.TAP
+```
+
+| Part | Source | Tool | Block |
+| --- | --- | --- | --- |
+| the BASIC | `src/tape/basic.asm` (tokens, line 20's length word 98 with no `$0D`, as on the tape) | sjasmplus | TZX 2 |
+| the loader | `src/tape/loader.asm`, plain, 768 bytes at `$FC00`; the tail is `DS 54`, the 20 left-over bytes and the ROM's SA-DATA bytes | sjasmplus, then `tools/xorchain.py encrypt` (backwards over `$FC13-$FE9E`, the inverse of Decrypt) | TZX 4 |
+| the loading screen | `src/res/screens/loading.scr` | `tools/picy.py pack`: three streams, the original greedy packer (a byte equal to the one before is always a repeat), 3049 / 775 / 108 bytes | TZX 6 |
+| the picy block | `src/tape/picy.asm`: the header, the unpacker, the streams by INCBIN | sjasmplus | TZX 6 |
+| the game | `src/game/game.asm` and its 50 modules, written by `kit/mkgame.py` from `src/game/game.ann`; the resources from `src/res` by `tools/res_formats.py build` | sjasmplus | TZX 8 |
+| the TZX | `src/tape/zynaps-tzx.txt`: the version, the archive info, every header, the pauses (1005, 1009, 1003, 1010, 1010, 1003, 996, 0 ms) | `tools/tzx.py` | all |
+| the TAP's BASIC | `src/tape/drj/basic.asm` (236 bytes, lines 1-50, the `POKE`s) | sjasmplus | TAP 1 |
+| the TAP's screen | `src/tape/drj/zynaps0.asm`: the RLE unpacker at `$C350` and the screen packed by `tools/rle_drj.py` (column order, `$D1 n` zeros, `$D4 v n` runs of 3 or more) | sjasmplus | TAP 2 |
+| the TAP's game | `$6801-$FFFE` of the game build | `kit/tap.py` | TAP 3 |
+
+`tools/build.sh` holds `build/.lock` while it runs; a second build waits for it. `kit/mkgame.py --install` writes
+`src/game/*.asm` only when the bytes it assembles are the image's; the image comes from the tape (`tools/image.py`).

@@ -1,0 +1,295 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/objutil",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: objutil",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "objutil"
+  ],
+  "summary": "The end of an enemy, the wave bonus, the scenery tests and the playfield clamps.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 305,
+    "sha1": "91c78b8a8f1e116cea1a672a4883e5be54661577",
+    "masked_sha1": "9a65c46dc71cb4b060f1d49cb664357bba382cc3"
+  },
+  "origin": "$992A",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeEnemySlots"
+    },
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HarmlessMaskA"
+    },
+    {
+      "offset": 28,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyShotsLeft"
+    },
+    {
+      "offset": 67,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteCacheMask"
+    },
+    {
+      "offset": 81,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaveRecords"
+    },
+    {
+      "offset": 96,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WavesAllowed"
+    },
+    {
+      "offset": 100,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WavesAllowed"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddScore"
+    },
+    {
+      "offset": 128,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 136,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 146,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 172,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollMap"
+    },
+    {
+      "offset": 238,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 267,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "FreeEnemySlot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "an enemy slot back: $8072 + 1, its bit out of $80BD/$80BE"
+    },
+    {
+      "offset": 23,
+      "name": "FreeObject",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "deactivate the object and $8074 + 1"
+    },
+    {
+      "offset": 32,
+      "name": "EnemyEscaped",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the object left the playfield: count its wave down, no bonus"
+    },
+    {
+      "offset": 36,
+      "name": "EnemyKilled",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the object was destroyed: count its wave down"
+    },
+    {
+      "offset": 127,
+      "name": "SceneryAt1",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "carry if the cell under the object is not empty"
+    },
+    {
+      "offset": 135,
+      "name": "SceneryAt2",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "carry if one of the 2 cells (X, X + 1) is not empty"
+    },
+    {
+      "offset": 145,
+      "name": "SceneryAt4",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "carry if one of 2 x 2 cells is not empty"
+    },
+    {
+      "offset": 171,
+      "name": "SceneryAt6",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "carry if one of 2 x 3 cells is not empty"
+    },
+    {
+      "offset": 213,
+      "name": "SceneryCell",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the scenery cell of the object IY"
+    },
+    {
+      "offset": 233,
+      "name": "ClampRow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "keep the object in rows 0-15"
+    },
+    {
+      "offset": 261,
+      "name": "ClampColumn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "keep the player in columns 16-45"
+    },
+    {
+      "offset": 290,
+      "name": "CycleColour",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the next ink colour 1-7 in +$25 (bits 3-5)"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 42,
+      "name": "EnemyGone",
+      "comment": "the sprite descriptor's use count - 1 when +$23 matches its +$0F"
+    },
+    {
+      "offset": 60,
+      "name": "",
+      "comment": "the use count - 1; 0: the sprite's record bit out of $8087"
+    },
+    {
+      "offset": 71,
+      "name": "EnemyGoneWave",
+      "comment": "the wave record $8075 + 3 x +$1A"
+    },
+    {
+      "offset": 90,
+      "name": "EnemyGoneCount",
+      "comment": "count - 1; 0: the wave is over"
+    },
+    {
+      "offset": 95,
+      "name": "",
+      "comment": "the wave is over: $8073 + 1, the record free ($FF); an escape (bit 7): no bonus"
+    },
+    {
+      "offset": 123,
+      "name": "",
+      "comment": "the whole wave destroyed: the bonus score"
+    },
+    {
+      "offset": 163,
+      "name": "SceneryAt4Row",
+      "comment": "the second row"
+    },
+    {
+      "offset": 186,
+      "name": "SceneryAt6Row2",
+      "comment": "the second row (an entry point of the L1 recording: the interrupt returned here)"
+    },
+    {
+      "offset": 189,
+      "name": "SceneryAt6Row2Test",
+      "comment": "the cells of row Y + 1"
+    },
+    {
+      "offset": 205,
+      "name": "SceneryAt6Row3",
+      "comment": "the cells of row Y + 2"
+    },
+    {
+      "offset": 249,
+      "name": "ClampRowBottom",
+      "comment": "16 or more: the bottom row"
+    },
+    {
+      "offset": 278,
+      "name": "ClampColumnRight",
+      "comment": "the right edge"
+    },
+    {
+      "offset": 301,
+      "name": "CycleColourSet",
+      "comment": "0 skipped"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$992A",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/objutil.asm",
+    "label": "FreeEnemySlot"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

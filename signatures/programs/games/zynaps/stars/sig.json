@@ -1,0 +1,208 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/stars",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: stars",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "stars"
+  ],
+  "summary": "The star field: one star per playfield row.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 204,
+    "sha1": "06ebd4a0cc3e8f3f0cd1eca98dee4d6475dd47d3",
+    "masked_sha1": "5152dcb2d0f6ad16522118944abaeb6d50dd1c42"
+  },
+  "origin": "$8846",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 15,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F14C"
+    },
+    {
+      "offset": 24,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 63,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayFlags"
+    },
+    {
+      "offset": 75,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 79,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayFlags"
+    },
+    {
+      "offset": 90,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 94,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 97,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayFlags"
+    },
+    {
+      "offset": 103,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F144"
+    },
+    {
+      "offset": 109,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RowRecords"
+    },
+    {
+      "offset": 130,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 177,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "InitStars",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Give each of the 18 rows a random star"
+    },
+    {
+      "offset": 62,
+      "name": "StarsSwitch",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Turn the stars on (A = 1) or off (A = other) and restart them"
+    },
+    {
+      "offset": 78,
+      "name": "MoveStars",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Move every star and respawn the ones that left the screen"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 20,
+      "name": "InitStarLoop",
+      "comment": ""
+    },
+    {
+      "offset": 58,
+      "name": "InitStarsDone",
+      "comment": "LD SP,n: n = the caller's SP"
+    },
+    {
+      "offset": 72,
+      "name": "StarsOn",
+      "comment": "SET 7: the stars shown"
+    },
+    {
+      "offset": 74,
+      "name": "StarsRestart",
+      "comment": ""
+    },
+    {
+      "offset": 89,
+      "name": "StarsShownMode",
+      "comment": "store the XOR value into StarDotOpcode's operand"
+    },
+    {
+      "offset": 111,
+      "name": "MoveStarLoop",
+      "comment": ""
+    },
+    {
+      "offset": 124,
+      "name": "StarCheckEdge",
+      "comment": "off the left edge?"
+    },
+    {
+      "offset": 161,
+      "name": "StarPlace",
+      "comment": ""
+    },
+    {
+      "offset": 174,
+      "name": "StarDotOpcode",
+      "comment": "XOR n: n = $F8 (SET) or $B8 (RES), written at $889F"
+    },
+    {
+      "offset": 179,
+      "name": "StarDot",
+      "comment": "SET n,B: the bit number written at $88F6"
+    },
+    {
+      "offset": 200,
+      "name": "MoveStarsDone",
+      "comment": "LD SP,n: n = the caller's SP"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$8846",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/stars.asm",
+    "label": "InitStars"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/panel",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: panel",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "panel"
+  ],
+  "summary": "Panel spinners, saving the panel.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 227,
+    "sha1": "f43ae3def2e040ffaced0be43876846d6900b43b",
+    "masked_sha1": "9646a3a97b414f5acbfca9b02cfd0f68e0c0cc5f"
+  },
+  "origin": "$A8BE",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 14,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 60,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F820"
+    },
+    {
+      "offset": 84,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F820"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteCacheImages"
+    },
+    {
+      "offset": 191,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5000"
+    },
+    {
+      "offset": 199,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A60"
+    },
+    {
+      "offset": 208,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteCacheImages"
+    },
+    {
+      "offset": 211,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5000"
+    },
+    {
+      "offset": 219,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A60"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "DrawSpinner",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw a 2x2 cell spinner frame"
+    },
+    {
+      "offset": 187,
+      "name": "RestorePanel",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Restore the bottom third and the panel attributes from $E748"
+    },
+    {
+      "offset": 207,
+      "name": "SavePanel",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Save the bottom third and the panel attributes into $E748"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 11,
+      "name": "",
+      "comment": "the shape's offset"
+    },
+    {
+      "offset": 24,
+      "name": "",
+      "comment": "the screen address of the cell"
+    },
+    {
+      "offset": 32,
+      "name": "",
+      "comment": "H' = the bit-reverse table"
+    },
+    {
+      "offset": 35,
+      "name": "",
+      "comment": "two cells down"
+    },
+    {
+      "offset": 37,
+      "name": "",
+      "comment": "odd offset: upside down"
+    },
+    {
+      "offset": 42,
+      "name": "DrawSpinnerFlippedCell",
+      "comment": ""
+    },
+    {
+      "offset": 45,
+      "name": "DrawSpinnerFlippedRow",
+      "comment": "the byte left, its mirror right"
+    },
+    {
+      "offset": 59,
+      "name": "",
+      "comment": "the cell below"
+    },
+    {
+      "offset": 67,
+      "name": "DrawSpinnerCell",
+      "comment": ""
+    },
+    {
+      "offset": 70,
+      "name": "DrawSpinnerRow",
+      "comment": ""
+    },
+    {
+      "offset": 91,
+      "name": "SpinnerFrames",
+      "comment": "The 16 frames of a spinner: offsets into SpinnerImages"
+    },
+    {
+      "offset": 107,
+      "name": "SpinnerImages",
+      "comment": "The spinner shapes: 5 x 16 rows, the left 8 pixels"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$A8BE",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/panel.asm",
+    "label": "DrawSpinner"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

@@ -1,0 +1,253 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/gamevars",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: gamevars",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "gamevars"
+  ],
+  "summary": "The game variables: the play passes, the scroll, the sound, the current player.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 58,
+    "sha1": "71951510bad058d68323a5ba1a9bb8c29f2bca6d",
+    "masked_sha1": "71951510bad058d68323a5ba1a9bb8c29f2bca6d"
+  },
+  "origin": "$7F62",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "PassCount",
+      "comment": "+1 each play pass (PlayInterrupt $AA03); bit 0 = an odd pass"
+    },
+    {
+      "offset": 1,
+      "name": "PassBit",
+      "comment": "Rotated left each pass ($AA0A): AND an object's bit +$24 picks the objects that act this pass"
+    },
+    {
+      "offset": 2,
+      "name": "PassDepth",
+      "comment": "+1 on the entry of PlayInterrupt, -1 at its end: 1 = not nested"
+    },
+    {
+      "offset": 3,
+      "name": "PassPhase",
+      "comment": "The play pass phase 1-4 then 0; 4 on entry: the pass is skipped ($A9FB)"
+    },
+    {
+      "offset": 4,
+      "name": "ChainStep",
+      "comment": "The drawing chain's current step: $AAE5, +5 each phase (PlayChain $AACC)"
+    },
+    {
+      "offset": 6,
+      "name": "NodeFreeList",
+      "comment": "The head of the span node free list (pool $F800; LevelSetUp $8C3E)"
+    },
+    {
+      "offset": 8,
+      "name": "ShiftPage",
+      "comment": "The glyph cache page of the fine scroll phase: $C0 $C8 $D8 $D0 (a Gray code)"
+    },
+    {
+      "offset": 9,
+      "name": "FineScrollToggle",
+      "comment": "$08 or $10, XORed into ShiftPage by ScrollControl $A9D2"
+    },
+    {
+      "offset": 10,
+      "name": "ScrollThisPass",
+      "comment": "$FF when the pass scrolls one fine step, 0 when not; PathOpScroll $9640 tests bit 0"
+    },
+    {
+      "offset": 11,
+      "name": "TileSet",
+      "comment": "The tile set pointer $5C00 of BuildGlyph $89C9 (L replaced by the tile)"
+    },
+    {
+      "offset": 13,
+      "name": "RowsLeft",
+      "comment": "The renderer's row counter, 18 down to 0 (DrawPlayfield $85CA)"
+    },
+    {
+      "offset": 14,
+      "name": "EmptyRows",
+      "comment": "Rows without nodes counted by the scroll step ($8AED)"
+    },
+    {
+      "offset": 15,
+      "name": "RandomSeed",
+      "comment": "The five bytes of the random number generator (Random $8544, seeded by $8516)"
+    },
+    {
+      "offset": 20,
+      "name": "SkipDraw",
+      "comment": "Bit 0 set: DrawGroup places nothing (the catch-up loop $AF6B)"
+    },
+    {
+      "offset": 21,
+      "name": "PanelBurst",
+      "comment": "Set to 6 by FireLaser $9C1D when 0; the panel ($AB13) counts it down, a pair of cells moving out"
+    },
+    {
+      "offset": 22,
+      "name": "SpinnerFrame",
+      "comment": "The panel spinners' frame 0-15, +1 each odd pass ($AB13)"
+    },
+    {
+      "offset": 23,
+      "name": "SpinnerColour",
+      "comment": "The spinners' ink, + SpinnerColourStep each odd pass, bouncing between 1 and 7"
+    },
+    {
+      "offset": 24,
+      "name": "SpinnerColourStep",
+      "comment": "+1 or -1"
+    },
+    {
+      "offset": 25,
+      "name": "DeathTimer",
+      "comment": "$FF while the ship lives; $16 at its death, counted down (PlayerDying); not $FF stops the scroll and the level script"
+    },
+    {
+      "offset": 26,
+      "name": "EndPending",
+      "comment": "The end of play asked for: 1 a life lost, 2 the level done (script op 5), 4 abort"
+    },
+    {
+      "offset": 27,
+      "name": "EndCode",
+      "comment": "EndPending moved here by $ABD5: ends the play loop ($B1E9)"
+    },
+    {
+      "offset": 28,
+      "name": "RowBeep",
+      "comment": "The beeper bit toggled XOR $18 per playfield row (the engine hum)"
+    },
+    {
+      "offset": 29,
+      "name": "RowBeepMask",
+      "comment": "Its AND mask: the bit shifted out of SoundPattern1 each pass ($AA30)"
+    },
+    {
+      "offset": 30,
+      "name": "SoundPattern1",
+      "comment": "A 16-bit pattern shifted left each pass; $FD00 for an explosion (StartExplosion $A293)"
+    },
+    {
+      "offset": 32,
+      "name": "ObjectBeep",
+      "comment": "The beeper bit toggled per object strip ($8F9B)"
+    },
+    {
+      "offset": 33,
+      "name": "ObjectBeepMask",
+      "comment": "Its mask: the bit of SoundPattern2 ($AA3B)"
+    },
+    {
+      "offset": 34,
+      "name": "SoundPattern2",
+      "comment": "$EDB2 for an explosion"
+    },
+    {
+      "offset": 36,
+      "name": "SlotBeep",
+      "comment": "The beeper bit toggled per object slot (RunObjects $9463)"
+    },
+    {
+      "offset": 37,
+      "name": "SlotBeepMask",
+      "comment": "Its mask: the bit of SoundPattern3 ($AA46)"
+    },
+    {
+      "offset": 38,
+      "name": "SoundPattern3",
+      "comment": "$D6ED for an explosion"
+    },
+    {
+      "offset": 40,
+      "name": "EffectState",
+      "comment": "The playing effect's +0-+6 (EffectPlay $B30C), stepped by $B379"
+    },
+    {
+      "offset": 47,
+      "name": "SegLenA",
+      "comment": "The effect's segment length A (the low nibble of +7)"
+    },
+    {
+      "offset": 48,
+      "name": "SegLenB",
+      "comment": "Segment length B (the high nibble)"
+    },
+    {
+      "offset": 49,
+      "name": "PitchA",
+      "comment": "The effect's pitch A"
+    },
+    {
+      "offset": 50,
+      "name": "PitchB",
+      "comment": "Pitch B"
+    },
+    {
+      "offset": 51,
+      "name": "EffectFrames",
+      "comment": "The frames left in the segment"
+    },
+    {
+      "offset": 52,
+      "name": "EffectTick",
+      "comment": "$80 from the title interrupt $A9E4 and a new effect request, $FF from PlayInterrupt"
+    },
+    {
+      "offset": 53,
+      "name": "CurrentEffect",
+      "comment": "The effect playing (0 none, $80 stop); a request lower than it is refused (RequestEffect $B2F0)"
+    },
+    {
+      "offset": 54,
+      "name": "CurrentPlayer",
+      "comment": "1 or 2 (AddScore $A495, PrintPlayerScore $A4BF; XOR 3 at the change, $B16D)"
+    },
+    {
+      "offset": 55,
+      "name": "PlayerRecord",
+      "comment": "The current player's record: $7F9C or $7FCC (10 readers in c1/c2)"
+    },
+    {
+      "offset": 57,
+      "name": "Players",
+      "comment": "1 or 2 (SelectPlayers $A790; ChangePlayer $B149)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$7F62",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/gamevars.asm",
+    "label": "PassCount"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

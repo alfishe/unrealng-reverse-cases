@@ -1,0 +1,303 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/systemvars",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: systemvars",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "systemvars"
+  ],
+  "summary": "The level order, the scenery coroutine, the wave launcher and the print variables.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 231,
+    "sha1": "756d5c7ccc707d67e489db011b57188638750853",
+    "masked_sha1": "756d5c7ccc707d67e489db011b57188638750853"
+  },
+  "origin": "$8003",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "LevelOrder",
+      "comment": "The order of the 12 levels: 0 1 2, six of 3-8 shuffled, 9 10 11"
+    },
+    {
+      "offset": 12,
+      "name": "ExtraLifeScores",
+      "comment": "The scores of the extra lives: the score's +1 byte (BCD) 01 03 05 07 09, then $FF"
+    },
+    {
+      "offset": 18,
+      "name": "GlyphAlloc",
+      "comment": "The glyph allocator: the slot index, the bitmap byte's low address ($E0-$FF), the bit mask"
+    },
+    {
+      "offset": 19,
+      "name": "GlyphAllocByte",
+      "comment": ""
+    },
+    {
+      "offset": 20,
+      "name": "GlyphAllocBit",
+      "comment": ""
+    },
+    {
+      "offset": 21,
+      "name": "MainSP",
+      "comment": "The main stack pointer, saved while the scenery coroutine runs ($8D60, $8D69)"
+    },
+    {
+      "offset": 23,
+      "name": "ScriptSP",
+      "comment": "The scenery coroutine's stack pointer (its stack top $FDFB, StartScript $8D35)"
+    },
+    {
+      "offset": 25,
+      "name": "ScrollColumn",
+      "comment": "The map ring pointer of the leading column ($B760 at the level start; +1 per scroll step)"
+    },
+    {
+      "offset": 27,
+      "name": "ScriptColumn",
+      "comment": "The column where the next group goes, +16 per group (ResumeScript $8D45)"
+    },
+    {
+      "offset": 28,
+      "name": "ScriptRoom",
+      "comment": "The columns scrolled since the last group: +1 per scroll step, -16 per group"
+    },
+    {
+      "offset": 29,
+      "name": "ScriptBusy",
+      "comment": "$FF while a group is being placed, 0 after it"
+    },
+    {
+      "offset": 30,
+      "name": "ScriptVariant",
+      "comment": "The variant mask (high nibble) the group objects are tested with; $F0 on the tape"
+    },
+    {
+      "offset": 31,
+      "name": "ScrollMap",
+      "comment": "The scenery map position: cell = ScrollMap + 128 Y + X ($B730 at the level start; SceneryCell $99FF)"
+    },
+    {
+      "offset": 33,
+      "name": "DrawQueueRead",
+      "comment": "The sprite build queue's read index 0-7 ($ACAD)"
+    },
+    {
+      "offset": 34,
+      "name": "DrawQueueWrite",
+      "comment": "Its write index (QueueSpriteLoad $9441)"
+    },
+    {
+      "offset": 35,
+      "name": "DrawQueue",
+      "comment": "8 entries of 3 bytes: the kind, the record address"
+    },
+    {
+      "offset": 59,
+      "name": "WaveTemplate",
+      "comment": "The 44-byte object record LaunchWave builds once a wave and copies to each enemy"
+    },
+    {
+      "offset": 100,
+      "name": "WaveTarget",
+      "comment": "+$29/+$2A the target, the player $F36C"
+    },
+    {
+      "offset": 103,
+      "name": "WavePaths",
+      "comment": "The path number of each enemy of the wave being launched ($9231-$9247)"
+    },
+    {
+      "offset": 111,
+      "name": "FreeEnemySlots",
+      "comment": "Free slots of the 8 enemy records at $F398 (5 at the level start)"
+    },
+    {
+      "offset": 112,
+      "name": "WavesAllowed",
+      "comment": "Wave records that may be in use (6 at the level start); LaunchWave -1, the wave's end +1"
+    },
+    {
+      "offset": 113,
+      "name": "EnemyShotsLeft",
+      "comment": "Enemy shots that may still start (3 at the level start; EnemyFire $A113)"
+    },
+    {
+      "offset": 114,
+      "name": "WaveRecords",
+      "comment": "6 wave records of 3 bytes: the live count ($FF free, bit 7 one escaped), the bonus byte, the kind"
+    },
+    {
+      "offset": 132,
+      "name": "SpriteCacheMask",
+      "comment": "A bit per used sprite cache record ($93A7)"
+    },
+    {
+      "offset": 133,
+      "name": "SpriteCacheFree",
+      "comment": "The free record of a use mask: low nibble, or the high one by bit 4 of the kind ($93D8)"
+    },
+    {
+      "offset": 149,
+      "name": "BigSpriteMap1",
+      "comment": "A 7 x 9 cell map (one bit a cell) for BuildBigSprite with A = 1"
+    },
+    {
+      "offset": 158,
+      "name": "BigSpriteMap2",
+      "comment": "The cell map for BuildBigSprite with A <> 1"
+    },
+    {
+      "offset": 167,
+      "name": "PrintPos",
+      "comment": "The print position, an attribute address $5800-$5AFF (PrintChar $A33B, print codes 3-6)"
+    },
+    {
+      "offset": 169,
+      "name": "PrintAttr",
+      "comment": "The printed characters' attribute (print codes 0-2)"
+    },
+    {
+      "offset": 170,
+      "name": "PrintPending",
+      "comment": "Below $20: a print code waiting for its byte; $20 none (PrintChar $A326)"
+    },
+    {
+      "offset": 171,
+      "name": "RasterTable",
+      "comment": "The colour table of the menu raster interrupt ($A520): $FC20"
+    },
+    {
+      "offset": 173,
+      "name": "RasterLines",
+      "comment": "The scan lines the menu raster colours: 168 or 112"
+    },
+    {
+      "offset": 174,
+      "name": "RasterList",
+      "comment": "The colour list ExpandNextColours takes ($A5B0)"
+    },
+    {
+      "offset": 176,
+      "name": "RasterSpare",
+      "comment": "Six bytes no routine reads or writes in c1/c2"
+    },
+    {
+      "offset": 182,
+      "name": "RasterFrames",
+      "comment": "Frames the menu raster still runs (-1 a frame, $A578)"
+    },
+    {
+      "offset": 183,
+      "name": "LaserShotsFree",
+      "comment": "Laser shots not in flight (4 at most, $B2D1); fire when it plus the laser level is 4 or more"
+    },
+    {
+      "offset": 184,
+      "name": "LaserHitMask",
+      "comment": "Per pass: the enemy bits hit by the ship or a laser (TestHitGrid $9150)"
+    },
+    {
+      "offset": 185,
+      "name": "ColourCycle",
+      "comment": "8, $10, $18: +8 each pass ($AA1B); the pods' flashing colour"
+    },
+    {
+      "offset": 186,
+      "name": "HarmlessMaskA",
+      "comment": "Enemy bits that do not kill the ship nor stop a laser (StartExplosion, ExplosionToPod)"
+    },
+    {
+      "offset": 187,
+      "name": "HarmlessMaskB",
+      "comment": "See HarmlessMaskA"
+    },
+    {
+      "offset": 188,
+      "name": "ShipHistoryIndex",
+      "comment": "The index into ShipHistory (PlayerHandler $9AF3)"
+    },
+    {
+      "offset": 189,
+      "name": "ShipHistory",
+      "comment": "The ship's last 8 positions, 4 bytes each (X fraction, X, Y fraction, Y); the sight follows the oldest"
+    },
+    {
+      "offset": 221,
+      "name": "LockTarget",
+      "comment": "The enemy record the sight locked on ($9FFC)"
+    },
+    {
+      "offset": 223,
+      "name": "LockMask",
+      "comment": "Its collision bit, 0 no lock"
+    },
+    {
+      "offset": 224,
+      "name": "MissileHitMask",
+      "comment": "Per pass: the enemies the homing missile hits (cleared by RunObjects $94B2)"
+    },
+    {
+      "offset": 225,
+      "name": "SightMask",
+      "comment": "Per pass: the enemies under the sight"
+    },
+    {
+      "offset": 226,
+      "name": "PlasmaHitMask",
+      "comment": "Per pass: the enemies the plasma or the seeker hit"
+    },
+    {
+      "offset": 227,
+      "name": "Fuel",
+      "comment": "The fuel / power timer: -1 on passes with PassBit bit 0, $B4 from a full pod cycle, halved when a pod is lost"
+    },
+    {
+      "offset": 228,
+      "name": "WeaponRatingMask",
+      "comment": "$FF or $30 (WeaponRating $9B75); EnemyFire $A0F6 reads it"
+    },
+    {
+      "offset": 229,
+      "name": "WeaponRatingValue",
+      "comment": "How fast the next waves fly (WeaponRating $9B75: + ScriptLevelBias); EnemyFire $A109"
+    },
+    {
+      "offset": 230,
+      "name": "WeaponRatingLevel",
+      "comment": "0 or 8: picks the KindColours set (LaunchWave $9271)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$8003",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/systemvars.asm",
+    "label": "LevelOrder"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

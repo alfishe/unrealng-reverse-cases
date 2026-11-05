@@ -1,0 +1,775 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/wavescript",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: wavescript",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "wavescript"
+  ],
+  "summary": "The wave script VM: the level's timeline of waves, scroll stops and checkpoints.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 483,
+    "sha1": "9118b9d5437336e17300ca9e2ca7884e23784896",
+    "masked_sha1": "d61c026416c975acedf77854011be61a93b9bfb4"
+  },
+  "origin": "$AD66",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DeathTimer"
+    },
+    {
+      "offset": 6,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptWaitCount"
+    },
+    {
+      "offset": 9,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptPC"
+    },
+    {
+      "offset": 13,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 17,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptWaitCount"
+    },
+    {
+      "offset": 23,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptPC"
+    },
+    {
+      "offset": 30,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptCommands"
+    },
+    {
+      "offset": 33,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpTable"
+    },
+    {
+      "offset": 39,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptWaitCount"
+    },
+    {
+      "offset": 51,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 56,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 62,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptPC"
+    },
+    {
+      "offset": 65,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptStackPtr"
+    },
+    {
+      "offset": 72,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptStackPtr"
+    },
+    {
+      "offset": 76,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptPC"
+    },
+    {
+      "offset": 81,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 92,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptPC"
+    },
+    {
+      "offset": 99,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 105,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaunchWave"
+    },
+    {
+      "offset": 114,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptFlags"
+    },
+    {
+      "offset": 120,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptPC"
+    },
+    {
+      "offset": 127,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptPC"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptPC"
+    },
+    {
+      "offset": 138,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptPC"
+    },
+    {
+      "offset": 148,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptFlags"
+    },
+    {
+      "offset": 155,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptConditions"
+    },
+    {
+      "offset": 158,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpTable"
+    },
+    {
+      "offset": 197,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollRestart"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayFlags"
+    },
+    {
+      "offset": 207,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayFlags"
+    },
+    {
+      "offset": 213,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayFlags"
+    },
+    {
+      "offset": 219,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 224,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EndPending"
+    },
+    {
+      "offset": 228,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 240,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 244,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 251,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 255,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 264,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 272,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 283,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 287,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 306,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 310,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 323,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 327,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 336,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 342,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 350,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptStackPtr"
+    },
+    {
+      "offset": 357,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptStackPtr"
+    },
+    {
+      "offset": 361,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptPC"
+    },
+    {
+      "offset": 365,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 373,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptState"
+    },
+    {
+      "offset": 383,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RowRecords"
+    },
+    {
+      "offset": 391,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SentinelNode"
+    },
+    {
+      "offset": 434,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyObjects"
+    },
+    {
+      "offset": 442,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyEscaped"
+    },
+    {
+      "offset": 445,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeEnemySlot"
+    },
+    {
+      "offset": 450,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyObjects"
+    },
+    {
+      "offset": 480,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "WaveScriptStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "one frame of the level's script"
+    },
+    {
+      "offset": 109,
+      "name": "ScriptSaveFlags",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "keep F of the last word command for the conditions"
+    },
+    {
+      "offset": 118,
+      "name": "ScriptWord",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DE = the next word of the script"
+    },
+    {
+      "offset": 131,
+      "name": "ScriptByte",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "C = the next byte of the script"
+    },
+    {
+      "offset": 142,
+      "name": "ScriptTest",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "carry when the condition A holds"
+    },
+    {
+      "offset": 166,
+      "name": "CondAlways",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "condition 0: always (SCF)"
+    },
+    {
+      "offset": 168,
+      "name": "CondZero",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "condition 1: Z of the saved flags"
+    },
+    {
+      "offset": 173,
+      "name": "CondNonZero",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "condition 2: NZ of the saved flags (the only one the scripts use)"
+    },
+    {
+      "offset": 178,
+      "name": "CondPositive",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "condition 5: P of the saved flags"
+    },
+    {
+      "offset": 183,
+      "name": "CondNegative",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "condition 6: M of the saved flags"
+    },
+    {
+      "offset": 188,
+      "name": "CondCarry",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "condition 3: the saved carry"
+    },
+    {
+      "offset": 190,
+      "name": "CondNoCarry",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "condition 4: the saved carry inverted"
+    },
+    {
+      "offset": 193,
+      "name": "CmdNop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 0: nothing (2 uses)"
+    },
+    {
+      "offset": 194,
+      "name": "CmdSetFlag",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 1: $81E3 = $FF (never used by the scripts)"
+    },
+    {
+      "offset": 200,
+      "name": "CmdScrollStop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 2: the scroll stops (bit 5 of $81DA cleared; 9 uses)"
+    },
+    {
+      "offset": 206,
+      "name": "CmdModeOn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 3: bit 7 of the scroll flags $81DA set (never used)"
+    },
+    {
+      "offset": 212,
+      "name": "CmdModeOff",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 4: bit 7 of the scroll flags cleared (never used)"
+    },
+    {
+      "offset": 218,
+      "name": "CmdLevelEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 5: the level is done"
+    },
+    {
+      "offset": 238,
+      "name": "CmdNop2",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 6: nothing (never used)"
+    },
+    {
+      "offset": 239,
+      "name": "CmdStore",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 7: (word 1) = word 2 (80 uses, all on the counter $81E4)"
+    },
+    {
+      "offset": 250,
+      "name": "CmdCopy",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 8: (word 1) = (word 2) (never used)"
+    },
+    {
+      "offset": 263,
+      "name": "CmdDecrement",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 9: (word) - 1, the flags kept for the conditions (65 uses)"
+    },
+    {
+      "offset": 286,
+      "name": "CmdIncrement",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 10: (word) + 1, the flags kept (never used)"
+    },
+    {
+      "offset": 309,
+      "name": "CmdTest",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 11: the flags of (word) (0 + word with ADC; never used)"
+    },
+    {
+      "offset": 326,
+      "name": "CmdAdd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 12: the flags of (word 1) + word 2 (never used)"
+    },
+    {
+      "offset": 349,
+      "name": "CmdReturn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 13: return from a script call (never used)"
+    },
+    {
+      "offset": 364,
+      "name": "CmdCheckpoint",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 14: the checkpoint (11 uses)"
+    },
+    {
+      "offset": 381,
+      "name": "CmdResetRecords",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 15: reset the 18 records of 32 bytes at $F12C (8 uses)"
+    },
+    {
+      "offset": 432,
+      "name": "CmdEnemyEscape",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 16: when the enemy record $F398 is active, EnemyEscaped $994A and FreeEnemySlot $992A (5 uses)"
+    },
+    {
+      "offset": 448,
+      "name": "CmdEnemiesLeft",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 17: NZ while one of the five enemies at $F398 lives (15 uses)"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 3,
+      "name": "",
+      "comment": "$FF + 1 = 0: alive"
+    },
+    {
+      "offset": 5,
+      "name": "ScriptNext",
+      "comment": "the wait counter against this instruction's delay"
+    },
+    {
+      "offset": 15,
+      "name": "",
+      "comment": "the delay is over: the counter from 0 for the next one"
+    },
+    {
+      "offset": 19,
+      "name": "",
+      "comment": "the opcode after the delay byte"
+    },
+    {
+      "offset": 25,
+      "name": "",
+      "comment": "$00-$3F: a command"
+    },
+    {
+      "offset": 29,
+      "name": "",
+      "comment": "ScriptCommands, jump-by-index"
+    },
+    {
+      "offset": 35,
+      "name": "",
+      "comment": "and the next instruction in the same frame"
+    },
+    {
+      "offset": 37,
+      "name": "ScriptWait",
+      "comment": "one frame more"
+    },
+    {
+      "offset": 42,
+      "name": "ScriptDecode",
+      "comment": "$40-$7F: a jump"
+    },
+    {
+      "offset": 46,
+      "name": "",
+      "comment": "$80-$BF: a wave"
+    },
+    {
+      "offset": 50,
+      "name": "",
+      "comment": "$C0-$FF: a call: DE = the target"
+    },
+    {
+      "offset": 55,
+      "name": "",
+      "comment": "the condition (opcode & $3F) false: NC"
+    },
+    {
+      "offset": 60,
+      "name": "",
+      "comment": "the return address on the script stack ($81DF, growing down)"
+    },
+    {
+      "offset": 74,
+      "name": "",
+      "comment": "PC = the target"
+    },
+    {
+      "offset": 80,
+      "name": "ScriptJump",
+      "comment": "DE = the target"
+    },
+    {
+      "offset": 85,
+      "name": "",
+      "comment": "the condition false: on with the next instruction"
+    },
+    {
+      "offset": 96,
+      "name": "ScriptWave",
+      "comment": "A = the wave's kind, C = the following byte"
+    },
+    {
+      "offset": 101,
+      "name": "",
+      "comment": "B = the byte, C = $C0"
+    },
+    {
+      "offset": 104,
+      "name": "",
+      "comment": "LaunchWave"
+    },
+    {
+      "offset": 147,
+      "name": "",
+      "comment": "ScriptFlags and $81E3 as AF"
+    },
+    {
+      "offset": 151,
+      "name": "",
+      "comment": "into AF' for the test routine"
+    },
+    {
+      "offset": 154,
+      "name": "",
+      "comment": "ScriptConditions, jump-by-index"
+    },
+    {
+      "offset": 393,
+      "name": "ResetRecord",
+      "comment": "+8 = 0, +6/+7 = $85E4"
+    },
+    {
+      "offset": 418,
+      "name": "ResetRecordByte",
+      "comment": "the byte $40 above is 0: clear this one"
+    },
+    {
+      "offset": 422,
+      "name": "ResetRecordNext",
+      "comment": ""
+    },
+    {
+      "offset": 457,
+      "name": "EnemiesLeftNext",
+      "comment": "bits 5 and 7 of +8: a live enemy"
+    },
+    {
+      "offset": 474,
+      "name": "EnemiesLeftSkip",
+      "comment": ""
+    },
+    {
+      "offset": 479,
+      "name": "EnemiesLeftDone",
+      "comment": "NZ: one found, Z: none"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$AD66",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/wavescript.asm",
+    "label": "WaveScriptStep"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

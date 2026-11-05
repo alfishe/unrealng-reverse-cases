@@ -1,0 +1,669 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/menu",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: menu",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "menu"
+  ],
+  "summary": "Menu screens: the raster colours, the key definition.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 420,
+    "sha1": "7af85bf784b52c5a0935de6a5b42f56a4d7c9d8f",
+    "masked_sha1": "0b1490e45baf13c1c383f514fd0da40cf0106634"
+  },
+  "origin": "$A512",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 12,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RasterTable"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RasterLines"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_57FA"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 65,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 69,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 93,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 103,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RasterFrames"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 127,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InterruptHandler"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RasterFrames"
+    },
+    {
+      "offset": 139,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 143,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleInterrupt"
+    },
+    {
+      "offset": 146,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InterruptHandler"
+    },
+    {
+      "offset": 150,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HitGridX"
+    },
+    {
+      "offset": 159,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RasterList"
+    },
+    {
+      "offset": 174,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 192,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 196,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColoursHighlight"
+    },
+    {
+      "offset": 199,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RasterList"
+    },
+    {
+      "offset": 202,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FC60"
+    },
+    {
+      "offset": 208,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintMessage"
+    },
+    {
+      "offset": 214,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyTable"
+    },
+    {
+      "offset": 220,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintMessage"
+    },
+    {
+      "offset": 226,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 229,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 232,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 237,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 247,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 264,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 267,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 270,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 294,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyNames"
+    },
+    {
+      "offset": 300,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPos"
+    },
+    {
+      "offset": 309,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintMessage"
+    },
+    {
+      "offset": 314,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintChar"
+    },
+    {
+      "offset": 319,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintChar"
+    },
+    {
+      "offset": 323,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPos"
+    },
+    {
+      "offset": 333,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyScanRows"
+    },
+    {
+      "offset": 372,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 375,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 378,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuColours"
+    },
+    {
+      "offset": 382,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RasterTable"
+    },
+    {
+      "offset": 385,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColoursTop"
+    },
+    {
+      "offset": 390,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 393,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FC50"
+    },
+    {
+      "offset": 396,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColoursMenu"
+    },
+    {
+      "offset": 401,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 406,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RasterLines"
+    },
+    {
+      "offset": 409,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "MenuRasterInterrupt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Interrupt handler of the menu screens: a colour per scan line"
+    },
+    {
+      "offset": 123,
+      "name": "SetMenuRaster",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Install MenuRasterInterrupt as the interrupt handler"
+    },
+    {
+      "offset": 131,
+      "name": "WaitMenuRasterEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Wait for the menu raster's frames to run out, then the title interrupt"
+    },
+    {
+      "offset": 149,
+      "name": "ClearColourBuffer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Clear the raster colour buffer $FC00-$FCFF"
+    },
+    {
+      "offset": 158,
+      "name": "ExpandNextColours",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Expand the colour list ($80B1) into the buffer at DE"
+    },
+    {
+      "offset": 161,
+      "name": "ExpandColours",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Expand a run-length colour list into the buffer"
+    },
+    {
+      "offset": 191,
+      "name": "RedefineKeys",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key definition screen (menu key 3)"
+    },
+    {
+      "offset": 273,
+      "name": "PrintKeyName",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print the name of a key and come back to its place"
+    },
+    {
+      "offset": 329,
+      "name": "WaitKeyPress",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Wait for one key, then for its release"
+    },
+    {
+      "offset": 371,
+      "name": "MenuScreenSetup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Clear the screen and start the menu raster"
+    },
+    {
+      "offset": 412,
+      "name": "WaitFrames",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Wait A frames"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 10,
+      "name": "",
+      "comment": "the stack pointer kept in the LD SP below"
+    },
+    {
+      "offset": 14,
+      "name": "",
+      "comment": "DE' the colour table, C' the lines"
+    },
+    {
+      "offset": 24,
+      "name": "",
+      "comment": "one cell above row 0, column 26: the first ADD makes it $581A"
+    },
+    {
+      "offset": 30,
+      "name": "",
+      "comment": "a bit rotating once a line: every 8th line the next attribute row"
+    },
+    {
+      "offset": 34,
+      "name": "",
+      "comment": "border black"
+    },
+    {
+      "offset": 37,
+      "name": "",
+      "comment": "wait for the beam"
+    },
+    {
+      "offset": 39,
+      "name": "MenuRasterWait",
+      "comment": ""
+    },
+    {
+      "offset": 41,
+      "name": "MenuRasterDelay",
+      "comment": ""
+    },
+    {
+      "offset": 50,
+      "name": "",
+      "comment": "and a little more"
+    },
+    {
+      "offset": 52,
+      "name": "MenuRasterAlign",
+      "comment": ""
+    },
+    {
+      "offset": 58,
+      "name": "MenuRasterLine",
+      "comment": "the colour of this line"
+    },
+    {
+      "offset": 64,
+      "name": "",
+      "comment": "every 8th line: the next attribute row"
+    },
+    {
+      "offset": 71,
+      "name": "MenuRasterSameRow",
+      "comment": "the same time as the ADD and JP"
+    },
+    {
+      "offset": 74,
+      "name": "MenuRasterPush",
+      "comment": "20 cells, columns 6-25, in this line's colour"
+    },
+    {
+      "offset": 91,
+      "name": "",
+      "comment": "the next line"
+    },
+    {
+      "offset": 99,
+      "name": "MenuRasterSavedSp",
+      "comment": "LD SP,nn: the stack pointer saved at the start"
+    },
+    {
+      "offset": 102,
+      "name": "",
+      "comment": "the frames left for WaitMenuRasterEnd"
+    },
+    {
+      "offset": 111,
+      "name": "MenuRasterDone",
+      "comment": ""
+    },
+    {
+      "offset": 153,
+      "name": "ClearColourBufferByte",
+      "comment": ""
+    },
+    {
+      "offset": 162,
+      "name": "ExpandColoursRestart",
+      "comment": "$FF: from the list's start again"
+    },
+    {
+      "offset": 164,
+      "name": "ExpandColoursNext",
+      "comment": ""
+    },
+    {
+      "offset": 171,
+      "name": "",
+      "comment": "a single colour: C = 2, one store"
+    },
+    {
+      "offset": 176,
+      "name": "",
+      "comment": "$80+n: n of the next byte"
+    },
+    {
+      "offset": 182,
+      "name": "ExpandColoursStore",
+      "comment": ""
+    },
+    {
+      "offset": 194,
+      "name": "",
+      "comment": "the highlight colours and their place in the buffer"
+    },
+    {
+      "offset": 205,
+      "name": "",
+      "comment": "KEYBOARD DEFINITION"
+    },
+    {
+      "offset": 213,
+      "name": "",
+      "comment": "the key table"
+    },
+    {
+      "offset": 216,
+      "name": "RedefineKeysNext",
+      "comment": "the next prompt"
+    },
+    {
+      "offset": 222,
+      "name": "",
+      "comment": "the current key: C the port, B the mask"
+    },
+    {
+      "offset": 228,
+      "name": "",
+      "comment": "a new key"
+    },
+    {
+      "offset": 239,
+      "name": "",
+      "comment": "stored"
+    },
+    {
+      "offset": 242,
+      "name": "",
+      "comment": "the highlight under this line"
+    },
+    {
+      "offset": 250,
+      "name": "",
+      "comment": "the next line of the buffer, 3 text rows down"
+    },
+    {
+      "offset": 261,
+      "name": "",
+      "comment": "2 seconds"
+    },
+    {
+      "offset": 276,
+      "name": "",
+      "comment": "5 x the half-row"
+    },
+    {
+      "offset": 278,
+      "name": "PrintKeyNameRow",
+      "comment": ""
+    },
+    {
+      "offset": 285,
+      "name": "PrintKeyNameBit",
+      "comment": "+ the bit"
+    },
+    {
+      "offset": 293,
+      "name": "",
+      "comment": "the key names, one per key"
+    },
+    {
+      "offset": 302,
+      "name": "",
+      "comment": "0-3: the name is a message"
+    },
+    {
+      "offset": 313,
+      "name": "PrintKeyNameChar",
+      "comment": ""
+    },
+    {
+      "offset": 316,
+      "name": "PrintKeyNameDone",
+      "comment": ""
+    },
+    {
+      "offset": 332,
+      "name": "WaitKeyPressScan",
+      "comment": ""
+    },
+    {
+      "offset": 337,
+      "name": "WaitKeyPressRow",
+      "comment": ""
+    },
+    {
+      "offset": 345,
+      "name": "",
+      "comment": "a single bit?"
+    },
+    {
+      "offset": 346,
+      "name": "WaitKeyPressBit",
+      "comment": ""
+    },
+    {
+      "offset": 352,
+      "name": "WaitKeyPressNextRow",
+      "comment": ""
+    },
+    {
+      "offset": 357,
+      "name": "WaitKeyPressFound",
+      "comment": ""
+    },
+    {
+      "offset": 359,
+      "name": "WaitKeyPressRelease",
+      "comment": ""
+    },
+    {
+      "offset": 415,
+      "name": "WaitFramesLoop",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$A512",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/menu.asm",
+    "label": "MenuRasterInterrupt"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

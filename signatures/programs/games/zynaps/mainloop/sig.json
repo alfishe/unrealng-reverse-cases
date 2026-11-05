@@ -1,0 +1,770 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/mainloop",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: mainloop",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "mainloop"
+  ],
+  "summary": "The game's top loop, the play loop, the end of a life or level, the object set-up.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 497,
+    "sha1": "a0188eea196a777976d4cae4220f183c306effe0",
+    "masked_sha1": "fb7868ca18f76bc6719652c22ae1e9d05b82b901"
+  },
+  "origin": "$B0FF",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitFrames"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FadeAttributes"
+    },
+    {
+      "offset": 12,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 15,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpTable"
+    },
+    {
+      "offset": 18,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 24,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 28,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 41,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FuelOut"
+    },
+    {
+      "offset": 52,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HighScoreEntry"
+    },
+    {
+      "offset": 57,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 64,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 68,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 75,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Players"
+    },
+    {
+      "offset": 81,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CurrentPlayer"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player1"
+    },
+    {
+      "offset": 93,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player2"
+    },
+    {
+      "offset": 107,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 118,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 136,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetLevelStart"
+    },
+    {
+      "offset": 141,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleInterrupt"
+    },
+    {
+      "offset": 144,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InterruptHandler"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5C00"
+    },
+    {
+      "offset": 150,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 153,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StopAndSettle"
+    },
+    {
+      "offset": 164,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleFireCheck"
+    },
+    {
+      "offset": 178,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EndPending"
+    },
+    {
+      "offset": 184,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShiftPage"
+    },
+    {
+      "offset": 189,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FineScrollToggle"
+    },
+    {
+      "offset": 192,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FF00"
+    },
+    {
+      "offset": 195,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventRequests"
+    },
+    {
+      "offset": 198,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventRequests"
+    },
+    {
+      "offset": 204,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassPhase"
+    },
+    {
+      "offset": 207,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassDepth"
+    },
+    {
+      "offset": 210,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CurrentEffect"
+    },
+    {
+      "offset": 213,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EndPending"
+    },
+    {
+      "offset": 216,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EndCode"
+    },
+    {
+      "offset": 219,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LandingFlag"
+    },
+    {
+      "offset": 225,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayInterrupt"
+    },
+    {
+      "offset": 228,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InterruptHandler"
+    },
+    {
+      "offset": 232,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventDispatch"
+    },
+    {
+      "offset": 235,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EndCode"
+    },
+    {
+      "offset": 244,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleInterrupt"
+    },
+    {
+      "offset": 247,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InterruptHandler"
+    },
+    {
+      "offset": 251,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SavePanel"
+    },
+    {
+      "offset": 254,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EndCode"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InterruptSetup"
+    },
+    {
+      "offset": 262,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CreditsPage"
+    },
+    {
+      "offset": 265,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HiScorePage"
+    },
+    {
+      "offset": 270,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayersSetup"
+    },
+    {
+      "offset": 273,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundSetup"
+    },
+    {
+      "offset": 276,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 279,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 287,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerObject"
+    },
+    {
+      "offset": 316,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerAccelX"
+    },
+    {
+      "offset": 321,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerAccelY"
+    },
+    {
+      "offset": 325,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SightObject"
+    },
+    {
+      "offset": 333,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipHistoryIndex"
+    },
+    {
+      "offset": 338,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 341,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockTarget"
+    },
+    {
+      "offset": 361,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SideShot"
+    },
+    {
+      "offset": 369,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlasmaBall2"
+    },
+    {
+      "offset": 377,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 390,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PodActions"
+    },
+    {
+      "offset": 393,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpTable"
+    },
+    {
+      "offset": 400,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyObjects"
+    },
+    {
+      "offset": 424,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 431,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyShots"
+    },
+    {
+      "offset": 447,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerObject"
+    },
+    {
+      "offset": 467,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaserShotsFree"
+    },
+    {
+      "offset": 473,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaserShots"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "EndOfPlay",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "after the play loop: dispatch on the end code"
+    },
+    {
+      "offset": 26,
+      "name": "PlayerDied",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "end code 1: a life lost"
+    },
+    {
+      "offset": 74,
+      "name": "NextPlayer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the other player's turn, one life less"
+    },
+    {
+      "offset": 117,
+      "name": "LevelDone",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "end code 2: the next level"
+    },
+    {
+      "offset": 139,
+      "name": "AbortGame",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "end codes 3 and 4: back to the title pages"
+    },
+    {
+      "offset": 152,
+      "name": "Pause",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the pause: fire resumes, Q aborts"
+    },
+    {
+      "offset": 181,
+      "name": "PlayLoop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "a life or a level of play"
+    },
+    {
+      "offset": 257,
+      "name": "MainLoop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the game's top loop"
+    },
+    {
+      "offset": 285,
+      "name": "PlayerSetup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the player's ship and the objects tied to it"
+    },
+    {
+      "offset": 396,
+      "name": "EnemiesSetup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the five enemy records inactive, then the pod objects"
+    },
+    {
+      "offset": 427,
+      "name": "PodsSetup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the three objects at $F474 tied to the ship"
+    },
+    {
+      "offset": 464,
+      "name": "ShotsSetup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the four shot records inactive"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 11,
+      "name": "",
+      "comment": "EndHandlers, jump-by-index"
+    },
+    {
+      "offset": 18,
+      "name": "EndHandlers",
+      "comment": "the end codes 1-4: PlayerDied, LevelDone, AbortGame, AbortGame"
+    },
+    {
+      "offset": 43,
+      "name": "",
+      "comment": "no lives left: the high score check"
+    },
+    {
+      "offset": 59,
+      "name": "",
+      "comment": "NextPlayer took a life: negative = no player has one"
+    },
+    {
+      "offset": 67,
+      "name": "PlayerDiedLives",
+      "comment": ""
+    },
+    {
+      "offset": 72,
+      "name": "PlayerDiedOver",
+      "comment": "carry: the game is over"
+    },
+    {
+      "offset": 95,
+      "name": "NextPlayerCheck",
+      "comment": "the other player's lives"
+    },
+    {
+      "offset": 113,
+      "name": "TakeLife",
+      "comment": "DEC lives: -1 is the game's end"
+    },
+    {
+      "offset": 132,
+      "name": "LevelDoneStore",
+      "comment": "12 wraps to level 0"
+    },
+    {
+      "offset": 155,
+      "name": "PauseLoop",
+      "comment": ""
+    },
+    {
+      "offset": 158,
+      "name": "PauseDelay",
+      "comment": ""
+    },
+    {
+      "offset": 167,
+      "name": "",
+      "comment": "key Q"
+    },
+    {
+      "offset": 175,
+      "name": "",
+      "comment": "EndPending = 4: abort"
+    },
+    {
+      "offset": 191,
+      "name": "",
+      "comment": "L = 0 the requests, H = $FF the mask"
+    },
+    {
+      "offset": 197,
+      "name": "",
+      "comment": "bit 2: draw the pod icon first"
+    },
+    {
+      "offset": 224,
+      "name": "",
+      "comment": "the play handler"
+    },
+    {
+      "offset": 231,
+      "name": "PlayLoopPass",
+      "comment": "one pass: the highest job"
+    },
+    {
+      "offset": 234,
+      "name": "PlayLoopCheck",
+      "comment": "EndCode: set by CheckPauseAndEnd"
+    },
+    {
+      "offset": 237,
+      "name": "PlayLoopTest",
+      "comment": ""
+    },
+    {
+      "offset": 238,
+      "name": "PlayLoopBranch",
+      "comment": ""
+    },
+    {
+      "offset": 240,
+      "name": "PlayLoopAgain",
+      "comment": ""
+    },
+    {
+      "offset": 242,
+      "name": "PlayLoopEnd",
+      "comment": "TitleInterrupt again"
+    },
+    {
+      "offset": 260,
+      "name": "MainLoopTitle",
+      "comment": "NC: the title pages (AbortGame and the end of a game come here)"
+    },
+    {
+      "offset": 269,
+      "name": "",
+      "comment": "fire: a new game"
+    },
+    {
+      "offset": 272,
+      "name": "MainLoopRound",
+      "comment": ""
+    },
+    {
+      "offset": 275,
+      "name": "MainLoopPlay",
+      "comment": ""
+    },
+    {
+      "offset": 278,
+      "name": "MainLoopEnd",
+      "comment": ""
+    },
+    {
+      "offset": 281,
+      "name": "",
+      "comment": "NC: the next life or level"
+    },
+    {
+      "offset": 283,
+      "name": "",
+      "comment": "carry: the game is over"
+    },
+    {
+      "offset": 305,
+      "name": "",
+      "comment": "active"
+    },
+    {
+      "offset": 335,
+      "name": "",
+      "comment": "interrupts off: SP is borrowed"
+    },
+    {
+      "offset": 336,
+      "name": "",
+      "comment": "SP into the operand of LD SP at $B262"
+    },
+    {
+      "offset": 343,
+      "name": "",
+      "comment": "eight times the pair $1400, $0800 down from $80E0"
+    },
+    {
+      "offset": 351,
+      "name": "FillPairs",
+      "comment": ""
+    },
+    {
+      "offset": 355,
+      "name": "FillRestoreSP",
+      "comment": "LD SP,old: the operand written at $B24F"
+    },
+    {
+      "offset": 375,
+      "name": "",
+      "comment": "the side weapon +8: 2 or more"
+    },
+    {
+      "offset": 389,
+      "name": "",
+      "comment": "the pod actions at $80F0, JumpTable on the side weapon"
+    },
+    {
+      "offset": 402,
+      "name": "EnemiesSetupNext",
+      "comment": ""
+    },
+    {
+      "offset": 433,
+      "name": "PodsSetupNext",
+      "comment": ""
+    },
+    {
+      "offset": 446,
+      "name": "",
+      "comment": "the ship's record: a pointer"
+    },
+    {
+      "offset": 475,
+      "name": "ShotsSetupNext",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$B0FF",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/mainloop.asm",
+    "label": "EndOfPlay"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

@@ -1,0 +1,509 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/scenery",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: scenery",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "scenery"
+  ],
+  "summary": "The scenery scripts: a coroutine that writes the level's tiles into the map ring.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 422,
+    "sha1": "c65c85440cf3a19838d0cee3cadcf9c55625c44a",
+    "masked_sha1": "e5399ff6bd430f1dbd7c87e3038279b540d05354"
+  },
+  "origin": "$8D35",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptStackTop"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptSP"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptStackTop"
+    },
+    {
+      "offset": 14,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptBusy"
+    },
+    {
+      "offset": 17,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptBusy"
+    },
+    {
+      "offset": 24,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptRoom"
+    },
+    {
+      "offset": 30,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptRoom"
+    },
+    {
+      "offset": 33,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptColumn"
+    },
+    {
+      "offset": 38,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptColumn"
+    },
+    {
+      "offset": 45,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MainSP"
+    },
+    {
+      "offset": 49,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptSP"
+    },
+    {
+      "offset": 54,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptSP"
+    },
+    {
+      "offset": 58,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MainSP"
+    },
+    {
+      "offset": 62,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptNumber"
+    },
+    {
+      "offset": 65,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 70,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryScriptTable"
+    },
+    {
+      "offset": 85,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 93,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptBusy"
+    },
+    {
+      "offset": 96,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptVariant"
+    },
+    {
+      "offset": 127,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 136,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptBusy"
+    },
+    {
+      "offset": 140,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 144,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptVariant"
+    },
+    {
+      "offset": 150,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SkipDraw"
+    },
+    {
+      "offset": 156,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GroupTable"
+    },
+    {
+      "offset": 170,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 177,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptVariant"
+    },
+    {
+      "offset": 186,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 205,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptVariant"
+    },
+    {
+      "offset": 225,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShapeTable"
+    },
+    {
+      "offset": 250,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 255,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 264,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 271,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 284,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 305,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptColumn"
+    },
+    {
+      "offset": 323,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 341,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 358,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 362,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 378,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 397,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 410,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CellPatterns"
+    },
+    {
+      "offset": 414,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WorkGlyph"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "StartScript",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Set up the scenery coroutine for a level"
+    },
+    {
+      "offset": 16,
+      "name": "ResumeScript",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Run the scenery script when 16 more columns have scrolled"
+    },
+    {
+      "offset": 52,
+      "name": "YieldScript",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Switch from the script back to the main stack"
+    },
+    {
+      "offset": 61,
+      "name": "ScriptMain",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The coroutine's body: run the level's script for ever"
+    },
+    {
+      "offset": 69,
+      "name": "RunScript",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Run the script A"
+    },
+    {
+      "offset": 81,
+      "name": "ScriptStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Interpret the script bytes at HL"
+    },
+    {
+      "offset": 149,
+      "name": "DrawGroup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Place the object group A into the map ring"
+    },
+    {
+      "offset": 364,
+      "name": "PlaceColumn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Write one shape column into the map ring"
+    },
+    {
+      "offset": 400,
+      "name": "ScriptSetCell",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Copy the 8-byte cell pattern A to WorkCell"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 43,
+      "name": "SwitchToScript",
+      "comment": ""
+    },
+    {
+      "offset": 67,
+      "name": "ScriptMainAgain",
+      "comment": "the main script ended: run it again"
+    },
+    {
+      "offset": 101,
+      "name": "ScriptCommand",
+      "comment": ""
+    },
+    {
+      "offset": 123,
+      "name": "ScriptPattern",
+      "comment": ""
+    },
+    {
+      "offset": 132,
+      "name": "ScriptCall",
+      "comment": ""
+    },
+    {
+      "offset": 142,
+      "name": "ScriptReturn",
+      "comment": "back from a sub-script: the variant restored"
+    },
+    {
+      "offset": 166,
+      "name": "GroupNext",
+      "comment": ""
+    },
+    {
+      "offset": 191,
+      "name": "GroupObject",
+      "comment": ""
+    },
+    {
+      "offset": 215,
+      "name": "PlaceObject",
+      "comment": ""
+    },
+    {
+      "offset": 249,
+      "name": "ObjectDirections",
+      "comment": ""
+    },
+    {
+      "offset": 274,
+      "name": "ObjectRowClipped",
+      "comment": ""
+    },
+    {
+      "offset": 277,
+      "name": "ObjectRowFlipped",
+      "comment": ""
+    },
+    {
+      "offset": 287,
+      "name": "ObjectStart",
+      "comment": ""
+    },
+    {
+      "offset": 320,
+      "name": "PlaceObjectColumn",
+      "comment": ""
+    },
+    {
+      "offset": 338,
+      "name": "PlaceObjectColumnB",
+      "comment": ""
+    },
+    {
+      "offset": 351,
+      "name": "ObjectRowStep",
+      "comment": "INC D or DEC D (written at $8E3C, $8E50)"
+    },
+    {
+      "offset": 356,
+      "name": "ObjectPlaced",
+      "comment": ""
+    },
+    {
+      "offset": 375,
+      "name": "PlaceFlags",
+      "comment": "OR n: n = the object's flip/mirror bits (written at $8DFD)"
+    },
+    {
+      "offset": 382,
+      "name": "PlaceCell",
+      "comment": ""
+    },
+    {
+      "offset": 389,
+      "name": "PlaceAttr",
+      "comment": "LD A,n: n = the column's attribute (written at $8EAE)"
+    },
+    {
+      "offset": 393,
+      "name": "PlaceCellNext",
+      "comment": ""
+    },
+    {
+      "offset": 394,
+      "name": "PlaceStepE",
+      "comment": "INC E or DEC E (written at $8E2E)"
+    },
+    {
+      "offset": 395,
+      "name": "PlaceStepC",
+      "comment": "INC C or DEC C (written at $8E33)"
+    },
+    {
+      "offset": 399,
+      "name": "PlaceColumnSpare",
+      "comment": "A RET byte after the loop's JP: never reached"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$8D35",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/scenery.asm",
+    "label": "StartScript"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

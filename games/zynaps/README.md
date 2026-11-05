@@ -1,6 +1,6 @@
 # Zynaps (Hewson Consultants, 1987)
 
-State: in progress, stage 1 (the load, the map, the state; no source yet).
+State: in progress, stage 2 (the full annotated source and resources; both tapes rebuilt byte for byte; docs 04-10 are stage 3).
 
 | | |
 | --- | --- |
@@ -14,11 +14,13 @@ The documents: [docs/README.md](docs/README.md). How the reverse was done: [WALK
 
 ## Build
 
-Not written yet (stage 2). The target:
-
 ```bash
-tools/build.sh [SJASMPLUS]     # builds build/Zynaps.tzx and compares it with orig/Zynaps.tzx.zip's TZX byte for byte
+tools/build.sh [SJASMPLUS]     # build/Zynaps.tzx and build/ZYNAPS.TAP, each compared byte for byte with orig/
 ```
 
-The game source is `src/game/*.asm`, written by `kit/mkgame.py` from `src/game/game.ann`; the resources are
-`src/res/` (`src/res/README.md`).
+It prints `build: Zynaps.tzx identical ...` and `build: ZYNAPS.TAP identical ...`. Needs sjasmplus and Python 3
+with Pillow; one build at a time (`build/.lock`).
+
+The game source is `src/game/*.asm` (50 modules), written by `kit/mkgame.py --install` from `src/game/game.ann`
+(SkoolKit in a venv); the tape parts are `src/tape/`; the resources are `src/res/` (`src/res/README.md`), checked
+both ways by `python3 tools/res_formats.py check`. How the parts fit: [03](docs/03-build-and-load.md) 3.8.

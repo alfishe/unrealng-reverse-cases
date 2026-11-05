@@ -1,0 +1,306 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/playfield",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: playfield",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "playfield"
+  ],
+  "summary": "The playfield renderer: attributes, glyph spans, sprite strips and stars, row by row.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 636,
+    "sha1": "76eed932b7b0b955b1d87678787de7186f10a104",
+    "masked_sha1": "314b716e4fcd47a76f89feb8b83a00864f73f94f"
+  },
+  "origin": "$85CA",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 6,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 11,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RowsLeft"
+    },
+    {
+      "offset": 15,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RowRecords"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 40,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 65,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 82,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 85,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 114,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 219,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 234,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 244,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 254,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RowsLeft"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 261,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RowBeep"
+    },
+    {
+      "offset": 272,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShiftPage"
+    },
+    {
+      "offset": 282,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "DrawPlayfield",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw the 18 rows of the playfield"
+    },
+    {
+      "offset": 22,
+      "name": "RenderDone",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Restore the stack pointer and return to the frame handler"
+    },
+    {
+      "offset": 29,
+      "name": "RowEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "End of a row: sprite strips, the star, padding, next row"
+    },
+    {
+      "offset": 56,
+      "name": "StripNext",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Return into the next strip entry"
+    },
+    {
+      "offset": 57,
+      "name": "StripDraw",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw one sprite strip into a character row"
+    },
+    {
+      "offset": 177,
+      "name": "RowStar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw the row's star, pad the row's time, step to the next row"
+    },
+    {
+      "offset": 260,
+      "name": "RowStart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Start a row: beeper toggle, attributes, then the row's span nodes"
+    },
+    {
+      "offset": 372,
+      "name": "SpanDraw4",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Span node handler: a run of four glyphs"
+    },
+    {
+      "offset": 461,
+      "name": "SpanDraw3",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Span node handler: a run of three glyphs"
+    },
+    {
+      "offset": 534,
+      "name": "SpanDraw2",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Span node handler: a run of two glyphs"
+    },
+    {
+      "offset": 591,
+      "name": "SpanDraw1",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Span node handler: one glyph"
+    },
+    {
+      "offset": 632,
+      "name": "SpanDraw0",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Span node handler: an empty node"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 26,
+      "name": "SentinelNode",
+      "comment": "The span node that ends every row: handler RowEnd, then a 0 byte"
+    },
+    {
+      "offset": 71,
+      "name": "StripCell",
+      "comment": "the next cell: test its attribute"
+    },
+    {
+      "offset": 87,
+      "name": "StripCellPlain",
+      "comment": "empty cell: colour it, write 8 lines"
+    },
+    {
+      "offset": 116,
+      "name": "StripCellSkip",
+      "comment": "dark cell: skip it"
+    },
+    {
+      "offset": 121,
+      "name": "StripCellMask",
+      "comment": "scenery cell: AND the 8 lines in"
+    },
+    {
+      "offset": 162,
+      "name": "StripCellsDone",
+      "comment": "LD SP,n: n's low byte = the strip's H (written at $860A)"
+    },
+    {
+      "offset": 221,
+      "name": "StarOnScenery",
+      "comment": "XOR the dot into pixel line 3"
+    },
+    {
+      "offset": 230,
+      "name": "RowPad",
+      "comment": "the row's cost against four glyphs"
+    },
+    {
+      "offset": 236,
+      "name": "RowPadGlyph",
+      "comment": "wait one glyph's time"
+    },
+    {
+      "offset": 238,
+      "name": "RowPadWait",
+      "comment": ""
+    },
+    {
+      "offset": 243,
+      "name": "NextRow",
+      "comment": "store the balance, IX += 32"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$85CA",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/playfield.asm",
+    "label": "DrawPlayfield"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

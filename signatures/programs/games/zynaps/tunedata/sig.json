@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/tunedata",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: tunedata",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "tunedata"
+  ],
+  "summary": "The title tune's notes: the periods, the order, the four patterns.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 211,
+    "sha1": "4abd8fdf0fdb4aa75ccfdf4127ab3e9f3cbd2361",
+    "masked_sha1": "b10e6798d407060775ccc15af0c8508239fd991d"
+  },
+  "origin": "$FF01",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 27,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 33,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 35,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 39,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "TunePeriods",
+      "comment": "the period of each note number, in loop passes (index 0 unused)"
+    },
+    {
+      "offset": 27,
+      "name": "TuneOrder",
+      "comment": "the patterns in play order: A A B A C C D"
+    },
+    {
+      "offset": 41,
+      "name": "TunePatternA",
+      "comment": "pattern A (played 3 times): the opening phrase"
+    },
+    {
+      "offset": 96,
+      "name": "TunePatternB",
+      "comment": "pattern B: the climbing arpeggios"
+    },
+    {
+      "offset": 155,
+      "name": "TunePatternC",
+      "comment": "pattern C (twice): the ostinato"
+    },
+    {
+      "offset": 173,
+      "name": "TunePatternD",
+      "comment": "pattern D: the closing phrase"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$FF01",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/tunedata.asm",
+    "label": "TunePeriods"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

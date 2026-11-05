@@ -1,0 +1,650 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/effects",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: effects",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "effects"
+  ],
+  "summary": "The sound effects: requests by priority, a beeper player inside the scheduler.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 342,
+    "sha1": "8002c7add58cbb367a9f9f755504be2df33cab42",
+    "masked_sha1": "215398c89a3667661f43564408cae9a893c6654f"
+  },
+  "origin": "$B2F0",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CurrentEffect"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EffectTick"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventRequests"
+    },
+    {
+      "offset": 24,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EffectTick"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CurrentEffect"
+    },
+    {
+      "offset": 34,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 44,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EffectTable"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EffectState"
+    },
+    {
+      "offset": 67,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F90"
+    },
+    {
+      "offset": 71,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PitchA"
+    },
+    {
+      "offset": 74,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EffectState"
+    },
+    {
+      "offset": 79,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F8C"
+    },
+    {
+      "offset": 83,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SegLenA"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EffectFrames"
+    },
+    {
+      "offset": 92,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PitchA"
+    },
+    {
+      "offset": 99,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PitchB"
+    },
+    {
+      "offset": 125,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EffectTick"
+    },
+    {
+      "offset": 135,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventDispatch"
+    },
+    {
+      "offset": 142,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 145,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EffectTick"
+    },
+    {
+      "offset": 159,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PitchA"
+    },
+    {
+      "offset": 162,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F8B"
+    },
+    {
+      "offset": 168,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F8D"
+    },
+    {
+      "offset": 175,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PitchA"
+    },
+    {
+      "offset": 178,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F8B"
+    },
+    {
+      "offset": 185,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PitchB"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F8D"
+    },
+    {
+      "offset": 193,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EffectFrames"
+    },
+    {
+      "offset": 199,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F8F"
+    },
+    {
+      "offset": 203,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 206,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F8E"
+    },
+    {
+      "offset": 210,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F8B"
+    },
+    {
+      "offset": 216,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F8D"
+    },
+    {
+      "offset": 226,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SegLenA"
+    },
+    {
+      "offset": 246,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F8B"
+    },
+    {
+      "offset": 265,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F8D"
+    },
+    {
+      "offset": 276,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PitchA"
+    },
+    {
+      "offset": 279,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EffectState"
+    },
+    {
+      "offset": 284,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F8C"
+    },
+    {
+      "offset": 289,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PitchA"
+    },
+    {
+      "offset": 292,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PitchB"
+    },
+    {
+      "offset": 295,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SegLenA"
+    },
+    {
+      "offset": 303,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F8F"
+    },
+    {
+      "offset": 320,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SegLenA"
+    },
+    {
+      "offset": 326,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SegLenB"
+    },
+    {
+      "offset": 332,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EffectFrames"
+    },
+    {
+      "offset": 335,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 339,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CurrentEffect"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "RequestEffect",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ask for effect A (0 = stop), taken when not below the one playing"
+    },
+    {
+      "offset": 28,
+      "name": "EffectPlay",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "play CurrentEffect until it ends or a new request"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 7,
+      "name": "",
+      "comment": "0: the stop, above all"
+    },
+    {
+      "offset": 9,
+      "name": "RequestEffectCheck",
+      "comment": "lower than the one playing: dropped"
+    },
+    {
+      "offset": 13,
+      "name": "",
+      "comment": "EffectTick = $80: a new effect"
+    },
+    {
+      "offset": 18,
+      "name": "",
+      "comment": "event bit 0: EffectJob"
+    },
+    {
+      "offset": 26,
+      "name": "RequestEffectDone",
+      "comment": ""
+    },
+    {
+      "offset": 33,
+      "name": "",
+      "comment": "effect 0: nothing to play"
+    },
+    {
+      "offset": 36,
+      "name": "",
+      "comment": "(n - 1) * 8"
+    },
+    {
+      "offset": 43,
+      "name": "",
+      "comment": "the effect table, F5's"
+    },
+    {
+      "offset": 50,
+      "name": "",
+      "comment": "+0-+6 into the state"
+    },
+    {
+      "offset": 55,
+      "name": "",
+      "comment": "+7: SegLenA the low nibble, SegLenB the high"
+    },
+    {
+      "offset": 66,
+      "name": "",
+      "comment": "C = the flags for the whole effect"
+    },
+    {
+      "offset": 70,
+      "name": "",
+      "comment": "PitchA = +0, PitchB = +2"
+    },
+    {
+      "offset": 82,
+      "name": "",
+      "comment": "the first segment's frames"
+    },
+    {
+      "offset": 85,
+      "name": "EffectFirstLen",
+      "comment": ""
+    },
+    {
+      "offset": 88,
+      "name": "",
+      "comment": "two-tone: the low half on PitchB (DE = $7F94), else both halves on PitchA"
+    },
+    {
+      "offset": 101,
+      "name": "EffectFirst",
+      "comment": "B bit 0 = 1: the first segment plays pitch A"
+    },
+    {
+      "offset": 104,
+      "name": "EffectPeriod",
+      "comment": "the alternate set: HL the high half's pitch, DE the low half's"
+    },
+    {
+      "offset": 105,
+      "name": "EffectHalves",
+      "comment": "two halves"
+    },
+    {
+      "offset": 107,
+      "name": "EffectSpeakerOn",
+      "comment": "the speaker bit on"
+    },
+    {
+      "offset": 109,
+      "name": "EffectHalf",
+      "comment": "B = the half's count"
+    },
+    {
+      "offset": 110,
+      "name": "EffectOut",
+      "comment": ""
+    },
+    {
+      "offset": 112,
+      "name": "EffectWait",
+      "comment": "three NOPs and DJNZ: 25 T a round"
+    },
+    {
+      "offset": 113,
+      "name": "EffectWait1",
+      "comment": ""
+    },
+    {
+      "offset": 114,
+      "name": "EffectWait2",
+      "comment": ""
+    },
+    {
+      "offset": 115,
+      "name": "EffectWait3",
+      "comment": ""
+    },
+    {
+      "offset": 117,
+      "name": "EffectSwap",
+      "comment": "the other half's pitch"
+    },
+    {
+      "offset": 118,
+      "name": "EffectLow",
+      "comment": "the speaker bit off"
+    },
+    {
+      "offset": 120,
+      "name": "EffectHalfNext",
+      "comment": ""
+    },
+    {
+      "offset": 121,
+      "name": "EffectHalfLoop",
+      "comment": ""
+    },
+    {
+      "offset": 123,
+      "name": "EffectTickCheck",
+      "comment": ""
+    },
+    {
+      "offset": 124,
+      "name": "EffectTickRead",
+      "comment": "EffectTick: 0 until the interrupt"
+    },
+    {
+      "offset": 127,
+      "name": "EffectTickTest",
+      "comment": ""
+    },
+    {
+      "offset": 128,
+      "name": "EffectTickBranch",
+      "comment": ""
+    },
+    {
+      "offset": 130,
+      "name": "",
+      "comment": "the registers of the loop kept over the scheduler"
+    },
+    {
+      "offset": 134,
+      "name": "",
+      "comment": "the jobs run in the effect's time"
+    },
+    {
+      "offset": 137,
+      "name": "EffectAfterJobs",
+      "comment": ""
+    },
+    {
+      "offset": 138,
+      "name": "EffectRestore",
+      "comment": ""
+    },
+    {
+      "offset": 141,
+      "name": "",
+      "comment": "a job ran: the effect ends"
+    },
+    {
+      "offset": 144,
+      "name": "",
+      "comment": "EffectTick back to 0"
+    },
+    {
+      "offset": 150,
+      "name": "",
+      "comment": "$80: a new effect was asked for"
+    },
+    {
+      "offset": 154,
+      "name": "",
+      "comment": "two-tone: both pitches step"
+    },
+    {
+      "offset": 174,
+      "name": "EffectStepOne",
+      "comment": "one tone: the pitch this segment plays steps"
+    },
+    {
+      "offset": 190,
+      "name": "EffectStepAdd",
+      "comment": ""
+    },
+    {
+      "offset": 192,
+      "name": "EffectFrame",
+      "comment": "the segment's frames"
+    },
+    {
+      "offset": 198,
+      "name": "",
+      "comment": "a segment over: one fewer"
+    },
+    {
+      "offset": 205,
+      "name": "",
+      "comment": "both steps + the change (+4)"
+    },
+    {
+      "offset": 221,
+      "name": "",
+      "comment": "bit 5: SegLenA one shorter, not below 1"
+    },
+    {
+      "offset": 233,
+      "name": "EffectReverseA",
+      "comment": "bit 3: step A reversed (two-tone, or a pitch-A segment)"
+    },
+    {
+      "offset": 245,
+      "name": "EffectNegateA",
+      "comment": ""
+    },
+    {
+      "offset": 252,
+      "name": "EffectReverseB",
+      "comment": "bit 4: step B reversed (two-tone, or a pitch-B segment)"
+    },
+    {
+      "offset": 264,
+      "name": "EffectNegateB",
+      "comment": ""
+    },
+    {
+      "offset": 271,
+      "name": "EffectRestart",
+      "comment": "bit 6: the pitches back to their start"
+    },
+    {
+      "offset": 287,
+      "name": "EffectNextSeg",
+      "comment": "the next segment's halves and length"
+    },
+    {
+      "offset": 298,
+      "name": "",
+      "comment": "two-tone: both halves, SegLenA"
+    },
+    {
+      "offset": 302,
+      "name": "",
+      "comment": "one tone: the segment count's parity picks a flag bit"
+    },
+    {
+      "offset": 314,
+      "name": "EffectPickBit",
+      "comment": ""
+    },
+    {
+      "offset": 316,
+      "name": "EffectPick",
+      "comment": "bit 0 of B: pitch A (SegLenA) or pitch B (SegLenB) on both halves"
+    },
+    {
+      "offset": 328,
+      "name": "EffectPitchB",
+      "comment": ""
+    },
+    {
+      "offset": 331,
+      "name": "EffectSegLen",
+      "comment": "the segment's frames"
+    },
+    {
+      "offset": 337,
+      "name": "EffectEnd",
+      "comment": "CurrentEffect = 0"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$B2F0",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/effects.asm",
+    "label": "RequestEffect"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

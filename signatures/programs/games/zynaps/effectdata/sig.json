@@ -1,0 +1,133 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/effectdata",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: effectdata",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "effectdata"
+  ],
+  "summary": "The sound effects and the sprite descriptors of the ship, the shots and the explosions.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 264,
+    "sha1": "5199a8d59383cf449094f4dd88662b5affb4d03f",
+    "masked_sha1": "5199a8d59383cf449094f4dd88662b5affb4d03f"
+  },
+  "origin": "$7E5A",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "EffectTable",
+      "comment": "The 6 sound effects, 8 bytes each, from effect 1"
+    },
+    {
+      "offset": 48,
+      "name": "EffectSpare",
+      "comment": "10 zero bytes after effect 6"
+    },
+    {
+      "offset": 58,
+      "name": "ShipDescriptor",
+      "comment": "The sprite descriptor of the ship (record $F36C +0/+1)"
+    },
+    {
+      "offset": 71,
+      "name": "ExplosionAnim",
+      "comment": "The explosion's sprite and animation record"
+    },
+    {
+      "offset": 84,
+      "name": "SightDescriptor",
+      "comment": "The sight's sprite descriptor (record $F600, kind 6)"
+    },
+    {
+      "offset": 97,
+      "name": "PodAnim",
+      "comment": "The weapon pod's sprite and animation record"
+    },
+    {
+      "offset": 110,
+      "name": "LaserDescriptor",
+      "comment": "The laser shot's sprite descriptor (the four records from $F4F8)"
+    },
+    {
+      "offset": 123,
+      "name": "ShotDescriptor",
+      "comment": "The enemy shot's and the plasma ball's sprite descriptor"
+    },
+    {
+      "offset": 136,
+      "name": "SpriteCache",
+      "comment": "The sprite cache: record 0 and records 1-6, 16 bytes each"
+    },
+    {
+      "offset": 152,
+      "name": "SpriteCacheRecord1",
+      "comment": "record 1 (the use count +$0D at $7EFF, the search's first)"
+    },
+    {
+      "offset": 165,
+      "name": "SpriteCacheUse1",
+      "comment": "record 1's use count, the search's start ($93B3) and LevelSetUp's ($8D22)"
+    },
+    {
+      "offset": 168,
+      "name": "SpriteCacheRecord2",
+      "comment": ""
+    },
+    {
+      "offset": 184,
+      "name": "SpriteCacheRecord3",
+      "comment": ""
+    },
+    {
+      "offset": 200,
+      "name": "SpriteCacheRecord4",
+      "comment": ""
+    },
+    {
+      "offset": 216,
+      "name": "SpriteCacheRecord5",
+      "comment": ""
+    },
+    {
+      "offset": 232,
+      "name": "SpriteCacheRecord6",
+      "comment": ""
+    },
+    {
+      "offset": 248,
+      "name": "SpareCacheRecord",
+      "comment": "A seventh record of the same layout, out of the search (B = 6)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$7E5A",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/effectdata.asm",
+    "label": "EffectTable"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

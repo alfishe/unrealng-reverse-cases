@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/buffers",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: buffers",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "buffers"
+  ],
+  "summary": "The map ring, the start-up copy's source and the glyph cache.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 10449,
+    "sha1": "19eb4741b3b7d0e17bc3852d5852093b11ffcd04",
+    "masked_sha1": "19eb4741b3b7d0e17bc3852d5852093b11ffcd04"
+  },
+  "origin": "$B72F",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "MapRingSpace",
+      "comment": "The map ring from $B72F on (zero on the tape)"
+    },
+    {
+      "offset": 1,
+      "name": "",
+      "comment": "ScrollColumnB starts here ($8022 = $B730 at level start)"
+    },
+    {
+      "offset": 49,
+      "name": "",
+      "comment": "ScrollColumn starts here ($801C = $B760 at level start)"
+    },
+    {
+      "offset": 1233,
+      "name": "TileSource",
+      "comment": "The 256 scenery tiles, as the start-up copies them to TileGraphics $5C00"
+    },
+    {
+      "offset": 2257,
+      "name": "GlyphCache",
+      "comment": "the glyph cache $C000-$DFFF in play (shift 0 page; BuildBigSprite $8F0C builds into it too)"
+    },
+    {
+      "offset": 3281,
+      "name": "WaveCellSource",
+      "comment": "The cells of the wave sprites, copied to $6400"
+    },
+    {
+      "offset": 4305,
+      "name": "GlyphCacheUpper",
+      "comment": "The glyph cache pages $C8-$DF (zero on the tape)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$B72F",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/buffers.asm",
+    "label": "MapRingSpace"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

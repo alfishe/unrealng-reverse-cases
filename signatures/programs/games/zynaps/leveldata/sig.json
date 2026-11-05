@@ -1,0 +1,1019 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/leveldata",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: leveldata",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "leveldata"
+  ],
+  "summary": "The level data: enemy paths, waves, kinds, the level table and scripts, the scenery.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 5722,
+    "sha1": "9bd7a62ce73e7f1be31845ff59cfb9af0b872ea7",
+    "masked_sha1": "1b05de8b63439eb06973b2007f347f99bb5669e9"
+  },
+  "origin": "$6800",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2785,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2787,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2789,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2791,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2793,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2795,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2797,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2799,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2801,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2803,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2805,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2807,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2809,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2811,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2813,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2815,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2817,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2819,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2821,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2823,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2825,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2827,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2829,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2831,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2833,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2835,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2837,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2839,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2841,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2843,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2845,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2847,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2849,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2851,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2853,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2855,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2857,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2859,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2861,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3226,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3228,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3230,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3232,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3234,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3236,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3238,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3240,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3242,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3244,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3246,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3248,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3250,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3252,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3254,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3256,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3258,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3260,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3262,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3264,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3266,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3268,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3270,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3272,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3274,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3276,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3278,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3280,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3282,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3284,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3286,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3288,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3290,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3292,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3294,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3296,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3298,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3300,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3302,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3304,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3306,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3308,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3310,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3312,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3314,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3316,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3318,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3320,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3322,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3324,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3326,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3328,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3330,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3332,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3334,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3336,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3338,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3340,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3342,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3344,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3346,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3971,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3973,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3975,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3977,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3979,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3981,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3983,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3985,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3987,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3989,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3991,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3993,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3995,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3997,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3999,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4001,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4003,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4005,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4007,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4009,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4011,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4013,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4015,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4017,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4019,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4021,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4023,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4025,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4027,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4029,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4031,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4033,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4035,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4037,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4039,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4041,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4043,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4045,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4047,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4049,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4051,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4053,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4055,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4057,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4059,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4061,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4063,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4065,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4067,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4069,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4071,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4073,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4075,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4077,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4079,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4081,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4083,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4085,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4087,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4089,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4091,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4093,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4095,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4097,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4099,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4101,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4103,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4105,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4107,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4109,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4111,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4113,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4115,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4117,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4119,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4121,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4123,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4125,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4127,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "PathStarts",
+      "comment": "The start of each of the 28 enemy paths: (address - $681C) / 2"
+    },
+    {
+      "offset": 28,
+      "name": "PathCode",
+      "comment": "The path bytecode of the enemies, 28 paths"
+    },
+    {
+      "offset": 294,
+      "name": "WaveIndex",
+      "comment": "Wave number -> the offset / 2 of its definition from $6943 (29 waves)"
+    },
+    {
+      "offset": 323,
+      "name": "WaveDefinitions",
+      "comment": "The 29 wave definitions"
+    },
+    {
+      "offset": 613,
+      "name": "EnemyKinds",
+      "comment": "The 22 enemy kinds, 8 bytes each"
+    },
+    {
+      "offset": 789,
+      "name": "KindColours",
+      "comment": "8 colour sets of 3 bytes: +$19, +$20, +$22 of the enemy"
+    },
+    {
+      "offset": 813,
+      "name": "LevelTable",
+      "comment": "The 12 levels, 8 bytes each"
+    },
+    {
+      "offset": 909,
+      "name": "LevelScripts",
+      "comment": "The level scripts of the 12 levels (the wave timelines)"
+    },
+    {
+      "offset": 2729,
+      "name": "CellPatterns",
+      "comment": "7 colour patterns of 8 attributes for WorkCell $FFD8"
+    },
+    {
+      "offset": 2785,
+      "name": "SceneryScriptTable",
+      "comment": "The 39 scenery scripts, indexed by ScriptNumber $81DD"
+    },
+    {
+      "offset": 2863,
+      "name": "SceneryScripts",
+      "comment": "The scenery script bodies"
+    },
+    {
+      "offset": 3226,
+      "name": "GroupTable",
+      "comment": "The 61 object groups, word pointers"
+    },
+    {
+      "offset": 3348,
+      "name": "ObjectGroups",
+      "comment": "The group bodies: 3-byte objects, $FF the end"
+    },
+    {
+      "offset": 3971,
+      "name": "ShapeTable",
+      "comment": "The 79 shapes, word pointers"
+    },
+    {
+      "offset": 4129,
+      "name": "Shapes",
+      "comment": "The shape bodies: the row count, then per row an attribute, a cell mask and the tiles"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$6800",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/leveldata.asm",
+    "label": "PathStarts"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

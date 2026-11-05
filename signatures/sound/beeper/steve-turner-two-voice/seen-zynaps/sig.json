@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "id": "sound/beeper/steve-turner-two-voice/seen-zynaps",
+  "kind": "code",
+  "role": "player",
+  "name": "Two-voice beeper tune player (Zynaps title tune, music by Steve Turner)",
+  "authors": [
+    "Steve Turner",
+    "Dominic Robinson"
+  ],
+  "year": 1987,
+  "tags": [
+    "beeper",
+    "two-voice",
+    "tune",
+    "hewson",
+    "graftgold"
+  ],
+  "summary": "Plays a tune of patterns with interrupts off: an order table of pattern pointers, a pattern byte $C0+n sets the note length, $FF ends the pattern, any other byte is a note number into a period table; each note runs two counters of period p and p+1 passes that flip the speaker (OUT $FE bit 4), so the two voices beat. Fire (the game's check) or the keys 1-5 end it.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 105,
+    "sha1": "5f1d91982a6d69df142f5d94f51ee875e2cc14ec",
+    "masked_sha1": "e7c1f153da17ac92a73e93b0bc52cfb2555326f8"
+  },
+  "origin": "$B446",
+  "relocatable": true,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FF1C"
+    },
+    {
+      "offset": 12,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_A748"
+    },
+    {
+      "offset": 41,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 49,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FF01"
+    },
+    {
+      "offset": 60,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "TitleTune",
+      "in": "the tables at TuneOrder / TunePeriods",
+      "out": "carry or NZ: ended by a key",
+      "clobbers": "all, interrupts off",
+      "summary": "play the tune until a key"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "TitleTune",
+      "comment": ""
+    },
+    {
+      "offset": 6,
+      "name": "TunePattern",
+      "comment": ""
+    },
+    {
+      "offset": 10,
+      "name": "TuneByte",
+      "comment": ""
+    },
+    {
+      "offset": 26,
+      "name": "TuneRead",
+      "comment": ""
+    },
+    {
+      "offset": 45,
+      "name": "TuneNote",
+      "comment": ""
+    },
+    {
+      "offset": 64,
+      "name": "TunePass",
+      "comment": ""
+    },
+    {
+      "offset": 70,
+      "name": "TuneCounterL",
+      "comment": ""
+    },
+    {
+      "offset": 76,
+      "name": "TuneMix",
+      "comment": ""
+    },
+    {
+      "offset": 95,
+      "name": "TuneNextPattern",
+      "comment": ""
+    },
+    {
+      "offset": 97,
+      "name": "TuneEnd",
+      "comment": ""
+    },
+    {
+      "offset": 99,
+      "name": "TuneSpare",
+      "comment": ""
+    },
+    {
+      "offset": 103,
+      "name": "TuneDuration",
+      "comment": ""
+    }
+  ],
+  "uses": {
+    "ports": [
+      "$FE r",
+      "$FE w"
+    ],
+    "needs": [
+      "beeper"
+    ]
+  },
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$B446",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/tune.asm",
+    "label": "TitleTune"
+  },
+  "docs": [
+    "games/zynaps/docs/09-sound.md",
+    "games/zynaps/src/res/music/README.md"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/topcells",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: topcells",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "topcells"
+  ],
+  "summary": "The developer switch and the work cells over the ROM font's leftover.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 43,
+    "sha1": "8757c0d220fac064e5214b804d83d423e1177f3e",
+    "masked_sha1": "8757c0d220fac064e5214b804d83d423e1177f3e"
+  },
+  "origin": "$FFD4",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "FontLeftover",
+      "comment": "the lines 4-6 of the ROM's 'P' ($7C, $40, $40), no code reads them"
+    },
+    {
+      "offset": 3,
+      "name": "Invulnerable",
+      "comment": "the developer switch: not 0 = the ship cannot be killed"
+    },
+    {
+      "offset": 4,
+      "name": "WorkGlyph",
+      "comment": "an 8-byte work cell: $8EC5 copies a glyph of $72A9 + 8 n here, $8EA1 draws it (on the tape: the ROM's 'Q')"
+    },
+    {
+      "offset": 12,
+      "name": "ColumnFlags",
+      "comment": "32 flags a screen column (to $FFFF, past the image): cleared by $8C3B at each level start ($8CD9, LDIR of 32 bytes $FFE0-$FFFF), $89C9 sets bits in (H = $FF, L = the object's +$11); on the tape the ROM's 'R'-'U'"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$FFD4",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/topcells.asm",
+    "label": "FontLeftover"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

@@ -1,0 +1,706 @@
+{
+  "schema": 1,
+  "id": "tape/loaders/hewson-countdown-2/decrypted",
+  "kind": "code",
+  "role": "loader",
+  "name": "Hewson Countdown II tape loader (decrypted)",
+  "authors": [
+    "Hewson Consultants"
+  ],
+  "year": 1987,
+  "tags": [
+    "tape",
+    "loader",
+    "ld-bytes",
+    "xor-chain",
+    "countdown",
+    "hewson"
+  ],
+  "summary": "The Hewson loader as it runs after its XOR chain (b[i] ^= b[i+1] over the body) is undone: a copy of the ROM's LD-BYTES whose edge loop draws a rolling four-digit countdown of the bytes still to come, then the load of the picy screen and the code file and an 18-byte stub that moves the game up and jumps to it.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 671,
+    "sha1": "1d4067f4d31417fe197e93c772698debc94bafbe",
+    "masked_sha1": "670a2b1455035cc5343df93ffdabb1efd5f5fced"
+  },
+  "origin": "$FC00",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "length": 28,
+      "kind": "data",
+      "name": "countdown-and-header-state",
+      "offset": 22
+    },
+    {
+      "offset": 161,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 176,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 183,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 198,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 208,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 213,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 217,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 260,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 271,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 285,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 289,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 321,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 332,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 339,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 348,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 382,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 395,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 400,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AE1"
+    },
+    {
+      "offset": 403,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AE2"
+    },
+    {
+      "offset": 406,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AE3"
+    },
+    {
+      "offset": 409,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AE4"
+    },
+    {
+      "offset": 416,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 422,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 425,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 429,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 439,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 445,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 449,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 454,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8000"
+    },
+    {
+      "offset": 457,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8000"
+    },
+    {
+      "offset": 460,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8000"
+    },
+    {
+      "offset": 463,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 471,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 475,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 482,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 494,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 497,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 500,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 503,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 506,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_50E5"
+    },
+    {
+      "offset": 509,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 514,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 525,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 528,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 539,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 571,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 575,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5800"
+    },
+    {
+      "offset": 578,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5801"
+    },
+    {
+      "offset": 588,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 591,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8001"
+    },
+    {
+      "offset": 594,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 597,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 600,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5B00"
+    },
+    {
+      "offset": 608,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5B00"
+    },
+    {
+      "offset": 611,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FBFE"
+    },
+    {
+      "offset": 614,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFE"
+    },
+    {
+      "offset": 617,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_9E57"
+    },
+    {
+      "offset": 622,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_61A7"
+    },
+    {
+      "offset": 626,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8000"
+    },
+    {
+      "offset": 630,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 634,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 642,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 647,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 652,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 656,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 660,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 666,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "Decrypt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "undo the XOR chain, then Start"
+    },
+    {
+      "offset": 570,
+      "name": "Start",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "load picy and the code file, move the game, jump to it"
+    },
+    {
+      "offset": 138,
+      "name": "LdBytes",
+      "in": "IX, DE, A, carry as the ROM's LD-BYTES",
+      "out": "carry: loaded",
+      "clobbers": null,
+      "summary": "the ROM's LD-BYTES with the countdown"
+    },
+    {
+      "offset": 628,
+      "name": "LoadFile",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "a header, then its data at the header's address"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "Decrypt",
+      "comment": ""
+    },
+    {
+      "offset": 9,
+      "name": "DecryptLoop",
+      "comment": ""
+    },
+    {
+      "offset": 19,
+      "name": "DecryptFrom",
+      "comment": ""
+    },
+    {
+      "offset": 22,
+      "name": "CountDigits",
+      "comment": ""
+    },
+    {
+      "offset": 26,
+      "name": "CountOn",
+      "comment": ""
+    },
+    {
+      "offset": 27,
+      "name": "CountGlyph",
+      "comment": ""
+    },
+    {
+      "offset": 29,
+      "name": "CountScreen",
+      "comment": ""
+    },
+    {
+      "offset": 31,
+      "name": "CountTick",
+      "comment": ""
+    },
+    {
+      "offset": 33,
+      "name": "Header",
+      "comment": ""
+    },
+    {
+      "offset": 44,
+      "name": "HeaderLength",
+      "comment": ""
+    },
+    {
+      "offset": 46,
+      "name": "HeaderStart",
+      "comment": ""
+    },
+    {
+      "offset": 50,
+      "name": "DigitGlyphs",
+      "comment": ""
+    },
+    {
+      "offset": 138,
+      "name": "LdBytes",
+      "comment": ""
+    },
+    {
+      "offset": 159,
+      "name": "LdBreak",
+      "comment": ""
+    },
+    {
+      "offset": 160,
+      "name": "LdStart",
+      "comment": ""
+    },
+    {
+      "offset": 168,
+      "name": "LdWait",
+      "comment": ""
+    },
+    {
+      "offset": 180,
+      "name": "LdLeader",
+      "comment": ""
+    },
+    {
+      "offset": 195,
+      "name": "LdSync",
+      "comment": ""
+    },
+    {
+      "offset": 226,
+      "name": "LdLoop",
+      "comment": ""
+    },
+    {
+      "offset": 236,
+      "name": "LdFlag",
+      "comment": ""
+    },
+    {
+      "offset": 246,
+      "name": "LdVerify",
+      "comment": ""
+    },
+    {
+      "offset": 251,
+      "name": "LdNext",
+      "comment": ""
+    },
+    {
+      "offset": 253,
+      "name": "LdDec",
+      "comment": ""
+    },
+    {
+      "offset": 257,
+      "name": "LdMarker",
+      "comment": ""
+    },
+    {
+      "offset": 259,
+      "name": "Ld8Bits",
+      "comment": ""
+    },
+    {
+      "offset": 284,
+      "name": "LdEdge2",
+      "comment": ""
+    },
+    {
+      "offset": 288,
+      "name": "LdEdge1",
+      "comment": ""
+    },
+    {
+      "offset": 291,
+      "name": "LdSample",
+      "comment": ""
+    },
+    {
+      "offset": 315,
+      "name": "CountStep",
+      "comment": ""
+    },
+    {
+      "offset": 384,
+      "name": "CountIdle",
+      "comment": ""
+    },
+    {
+      "offset": 386,
+      "name": "CountDelay",
+      "comment": ""
+    },
+    {
+      "offset": 397,
+      "name": "CountAttrs",
+      "comment": ""
+    },
+    {
+      "offset": 418,
+      "name": "CountAdvance",
+      "comment": ""
+    },
+    {
+      "offset": 435,
+      "name": "CountPad1",
+      "comment": ""
+    },
+    {
+      "offset": 441,
+      "name": "CountTens",
+      "comment": ""
+    },
+    {
+      "offset": 465,
+      "name": "CountTensSkip",
+      "comment": ""
+    },
+    {
+      "offset": 467,
+      "name": "CountHundreds",
+      "comment": ""
+    },
+    {
+      "offset": 484,
+      "name": "CountHundredsSkip",
+      "comment": ""
+    },
+    {
+      "offset": 486,
+      "name": "CountThousands",
+      "comment": ""
+    },
+    {
+      "offset": 492,
+      "name": "CountStore",
+      "comment": ""
+    },
+    {
+      "offset": 527,
+      "name": "CountSet",
+      "comment": ""
+    },
+    {
+      "offset": 532,
+      "name": "CountShift",
+      "comment": ""
+    },
+    {
+      "offset": 541,
+      "name": "CountDigit",
+      "comment": ""
+    },
+    {
+      "offset": 546,
+      "name": "CountSubtract",
+      "comment": ""
+    },
+    {
+      "offset": 570,
+      "name": "Start",
+      "comment": ""
+    },
+    {
+      "offset": 610,
+      "name": "MoveStub",
+      "comment": ""
+    },
+    {
+      "offset": 628,
+      "name": "MoveStubEnd",
+      "comment": ""
+    },
+    {
+      "offset": 628,
+      "name": "LoadFile",
+      "comment": ""
+    }
+  ],
+  "uses": {
+    "ports": [
+      "$FE r",
+      "$FE w"
+    ]
+  },
+  "found_in": [
+    {
+      "program": "Zynaps: the loader",
+      "case": "games/zynaps",
+      "address": "$FC00",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/tape/loader.asm",
+    "label": "Decrypt"
+  },
+  "docs": [
+    "games/zynaps/docs/03-build-and-load.md"
+  ]
+}

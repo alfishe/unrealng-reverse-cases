@@ -1,0 +1,527 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/player",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: player",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "player"
+  ],
+  "summary": "The player's ship: movement, fuel, fire, hit and death.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 552,
+    "sha1": "4f1b57055b2666d311dd4e7c5950f2659b73a61f",
+    "masked_sha1": "bd17d85f98b6ae2e79385f6b7e58e6219dfff19f"
+  },
+  "origin": "$9A5B",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DeathTimer"
+    },
+    {
+      "offset": 6,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 13,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassBit"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 23,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 26,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ReadControls"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ControlBits"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PathOpAccelerate"
+    },
+    {
+      "offset": 127,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClampRow"
+    },
+    {
+      "offset": 130,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClampColumn"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt6"
+    },
+    {
+      "offset": 153,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipHistoryIndex"
+    },
+    {
+      "offset": 160,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipHistory"
+    },
+    {
+      "offset": 170,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F36F"
+    },
+    {
+      "offset": 181,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FireHeld"
+    },
+    {
+      "offset": 190,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpinnerColour"
+    },
+    {
+      "offset": 202,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SideWeaponFrames"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpTable"
+    },
+    {
+      "offset": 218,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FireChanged"
+    },
+    {
+      "offset": 222,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 225,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt6"
+    },
+    {
+      "offset": 230,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HarmlessMaskA"
+    },
+    {
+      "offset": 233,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HarmlessMaskB"
+    },
+    {
+      "offset": 242,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Invulnerable"
+    },
+    {
+      "offset": 247,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 251,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DeathTimer"
+    },
+    {
+      "offset": 257,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EndPending"
+    },
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DeathTimer"
+    },
+    {
+      "offset": 268,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F374"
+    },
+    {
+      "offset": 279,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 288,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 321,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptLevelBias"
+    },
+    {
+      "offset": 325,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WeaponRatingValue"
+    },
+    {
+      "offset": 328,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WeaponRatingMask"
+    },
+    {
+      "offset": 332,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WeaponRatingLevel"
+    },
+    {
+      "offset": 355,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyObjects"
+    },
+    {
+      "offset": 359,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 396,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StartExplosion"
+    },
+    {
+      "offset": 399,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClampRow"
+    },
+    {
+      "offset": 402,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 421,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeEnemySlots"
+    },
+    {
+      "offset": 425,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 433,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 451,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaserShotsFree"
+    },
+    {
+      "offset": 458,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 471,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaserShots"
+    },
+    {
+      "offset": 541,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RequestEffect"
+    },
+    {
+      "offset": 544,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PanelBurst"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "PlayerHandler",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "kind 0: the ship for one frame"
+    },
+    {
+      "offset": 260,
+      "name": "KillPlayer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the ship destroyed: the timer and the explosion"
+    },
+    {
+      "offset": 282,
+      "name": "WeaponRating",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the weapon rating $80E7-$80E9 for the wave launcher"
+    },
+    {
+      "offset": 336,
+      "name": "ScatterDebris",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the 5 records from $F398 as debris around IY"
+    },
+    {
+      "offset": 424,
+      "name": "FuelOut",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the fuel ran out: $80E6 = $5A, laser - 1, speed - $20"
+    },
+    {
+      "offset": 450,
+      "name": "FireLaser",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "fire a laser shot from the ship"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 18,
+      "name": "",
+      "comment": "every second frame: the fuel"
+    },
+    {
+      "offset": 25,
+      "name": "PlayerInput",
+      "comment": "the input bits"
+    },
+    {
+      "offset": 36,
+      "name": "",
+      "comment": "no horizontal input: brake against the motion"
+    },
+    {
+      "offset": 45,
+      "name": "PlayerDrift",
+      "comment": "Vx 0: nothing to brake"
+    },
+    {
+      "offset": 51,
+      "name": "PlayerNoDrift",
+      "comment": "no brake flags"
+    },
+    {
+      "offset": 53,
+      "name": "PlayerVertical",
+      "comment": "up/down: Vy = +-(speed - $20)"
+    },
+    {
+      "offset": 84,
+      "name": "PlayerHorizontal",
+      "comment": "the X speed limit = speed + $20"
+    },
+    {
+      "offset": 110,
+      "name": "PlayerSpeedLimit",
+      "comment": "under the limit: accelerate"
+    },
+    {
+      "offset": 115,
+      "name": "PlayerMove",
+      "comment": "the flags into bits 3-6, move, clamp, scenery"
+    },
+    {
+      "offset": 138,
+      "name": "",
+      "comment": "on the scenery: back to the old row"
+    },
+    {
+      "offset": 144,
+      "name": "PlayerHistory",
+      "comment": "moving: X, Y into the ring at $80C0"
+    },
+    {
+      "offset": 180,
+      "name": "PlayerColour",
+      "comment": "fire held 8 frames: flash"
+    },
+    {
+      "offset": 197,
+      "name": "PlayerWeapon",
+      "comment": "the side weapon's frame routine"
+    },
+    {
+      "offset": 217,
+      "name": "PlayerFire",
+      "comment": "a fire press: a laser shot"
+    },
+    {
+      "offset": 224,
+      "name": "",
+      "comment": "the hit test: scenery under the ship"
+    },
+    {
+      "offset": 229,
+      "name": "",
+      "comment": "or an enemy not of $80BD/$80BE in the overlap mask +$0D"
+    },
+    {
+      "offset": 241,
+      "name": "PlayerHit",
+      "comment": "the test switch at $FFD7: not 0 = immune"
+    },
+    {
+      "offset": 249,
+      "name": "PlayerDying",
+      "comment": "the death timer; at 0: $7F7C = 1"
+    },
+    {
+      "offset": 273,
+      "name": "KillPlayerLoop",
+      "comment": "+$08 bit 7 off in each record"
+    },
+    {
+      "offset": 302,
+      "name": "WeaponRatingHigh",
+      "comment": "7 or more"
+    },
+    {
+      "offset": 308,
+      "name": "WeaponRatingStore",
+      "comment": "the three values"
+    },
+    {
+      "offset": 357,
+      "name": "ScatterDebrisLoop",
+      "comment": "one piece"
+    },
+    {
+      "offset": 438,
+      "name": "FuelOutSpeed",
+      "comment": "the speed one step down, not below $40"
+    },
+    {
+      "offset": 476,
+      "name": "FireLaserFindSlot",
+      "comment": "a free shot slot?"
+    },
+    {
+      "offset": 487,
+      "name": "FireLaserLaunch",
+      "comment": "the gun: two low, one high"
+    },
+    {
+      "offset": 512,
+      "name": "FireLaserPlace",
+      "comment": "the shot's position"
+    },
+    {
+      "offset": 540,
+      "name": "",
+      "comment": "sound effect 2: the laser"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$9A5B",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/player.asm",
+    "label": "PlayerHandler"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

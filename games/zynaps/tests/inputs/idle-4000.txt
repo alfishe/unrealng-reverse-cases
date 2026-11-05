@@ -1,0 +1,3 @@
+# Wait after the load: the title, the menu and whatever the game shows unattended
+0 -
++4000 END

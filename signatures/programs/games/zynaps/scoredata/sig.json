@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/scoredata",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: scoredata",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "scoredata"
+  ],
+  "summary": "The points, the high-score table and the menu colour lists.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 189,
+    "sha1": "c7c45e87064f9f710e0fe81ce750b1c598cdfe3d",
+    "masked_sha1": "c7c45e87064f9f710e0fe81ce750b1c598cdfe3d"
+  },
+  "origin": "$8231",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "PointsTable",
+      "comment": "12 awards x 4 BCD bytes: 0 25 50 75 100 150 200 250 500 1000 2000 5000"
+    },
+    {
+      "offset": 48,
+      "name": "HiScoreTable",
+      "comment": "The high-score table: 5 entries of a print string (position, initials) and a 4-byte BCD score"
+    },
+    {
+      "offset": 118,
+      "name": "ColoursTop",
+      "comment": "A run-length colour list: 48 lines into $FC20 (MenuScreenSetup $A692, SelectPlayers $A799)"
+    },
+    {
+      "offset": 157,
+      "name": "ColoursMenu",
+      "comment": "120 lines into $FC50 (MenuScreenSetup $A69D)"
+    },
+    {
+      "offset": 166,
+      "name": "ColoursHighlight",
+      "comment": "64 lines into $FC50 (SelectPlayers $A7A8, RedefineKeys $A5D5)"
+    },
+    {
+      "offset": 175,
+      "name": "ColoursBar",
+      "comment": "The sweeping bar of SelectPlayers ($A7BB); its $FF at $82ED is also the message list's start"
+    },
+    {
+      "offset": 188,
+      "name": "MessageListBase",
+      "comment": "the $FF before message 0 (PrintMessage $A427 counts A + 1 $FF bytes from here)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$8231",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/scoredata.asm",
+    "label": "PointsTable"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

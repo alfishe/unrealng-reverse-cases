@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/handlertables",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: handlertables",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "handlertables"
+  ],
+  "summary": "The jump tables of the object kinds, the weapons and the path interpreter, the sine table.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 154,
+    "sha1": "2ff5cf41faa50afbbc00eb13a35a12a204dc09fe",
+    "masked_sha1": "2ff5cf41faa50afbbc00eb13a35a12a204dc09fe"
+  },
+  "origin": "$80EA",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "SideWeaponFrames",
+      "comment": "The side weapon's routine per pass: $9C83 plasma, $9CCA homing, $9CFE seeker (index +8 - 2, $9B2E)"
+    },
+    {
+      "offset": 6,
+      "name": "PodActions",
+      "comment": "The pod actions: $9D4C speed, $9D5D laser, $9D68 plasma, $9DA5 homing, $9DDD seeker (index = the selector; $A217, $B284)"
+    },
+    {
+      "offset": 16,
+      "name": "KindHandlers",
+      "comment": "The object handlers by kind (+$07): 0 player, 1 laser, 2 enemy, 3 explosion, 4 pod, 5 enemy shot, 6 sight, 7 seeker, 8 lockable, 9 plasma, 10 missile, 11 enemy, 12 big enemy"
+    },
+    {
+      "offset": 42,
+      "name": "PathOps",
+      "comment": "The path commands 0-7 (bits 0-2 of a command): RunPath $94DC"
+    },
+    {
+      "offset": 58,
+      "name": "PathExtOps",
+      "comment": "The 16 extended path ops (bits 3-6 of command 7): PathOpExtended $950F"
+    },
+    {
+      "offset": 90,
+      "name": "SineTable",
+      "comment": "A signed sine, 64 steps a turn ($20 = 1): SetVelocity $98F1 reads it (c2: 21 entries)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$80EA",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/handlertables.asm",
+    "label": "SideWeaponFrames"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

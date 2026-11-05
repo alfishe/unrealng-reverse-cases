@@ -6,7 +6,7 @@
 The records it reads (WALKTHROUGH 6, docs/02-architecture.md):
   $F36C  the player's object record (44 bytes): +3/+4 X (fraction, integer), +5/+6 Y (fraction, integer)
   $F398  five enemy records of the same shape, +8 bit 7 = active
-  $7F9C  player 1's record: +0..+3 the score (BCD, high byte first), +4 the lives left, +5 the level counter
+  $7F9C  player 1's record: +0..+3 the score (BCD, high byte first), +4 the lives left, +5 the deaths, +6 the level (0-11)
 The steering: fire pressed every other step (the game fires on a press), stay near X 24, in Y move away from an
 active enemy close ahead, else towards the nearest one to shoot it, else back to Y 8, inside Y --top..--bottom; a move into a row whose
 look-ahead on the screen holds more than --wall set pixels (the scenery) is replaced by the emptiest of the three. Writes every change of the held inputs as
@@ -123,8 +123,8 @@ def main():
             img[0x4000:0x5B00] = m.read(0x4000, 6912)
             Z.K.render_screen(img).save(os.path.join(args.shots, f'{frame:06d}.png'))
         if frame % 50 == 0:
-            log.append((frame, lives, score, px, py, mem[5]))
-            print(frame, 'lives', lives, 'score', score, 'x', px, 'y', py, 'level', mem[5], flush=True)
+            log.append((frame, lives, score, px, py, mem[5], mem[6]))
+            print(frame, 'lives', lives, 'score', score, 'x', px, 'y', py, 'deaths', mem[5], 'level', mem[6], flush=True)
     for k in held:
         s.call('joystick_input', {'action': 'release', 'buttons': names[k]}, ok=False)
     script.append(f'+{frame - last_change} -')
@@ -132,7 +132,7 @@ def main():
     open(args.script, 'w').write('# tools/bot.py, from ' + (args.snapshot or 'the live state') + '\n' + '\n'.join(script) + '\n')
     if args.log:
         with open(args.log, 'w') as f:
-            f.write('frame\tlives\tscore\tx\ty\tlevel\n')
+            f.write('frame\tlives\tscore\tx\ty\tdeaths\tlevel\n')
             for row in log:
                 f.write('\t'.join(map(str, row)) + '\n')
 

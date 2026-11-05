@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/icons",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: icons",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "icons"
+  ],
+  "summary": "The five icons of the pod selector.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 160,
+    "sha1": "a8958ad8f20ecd08e3d2fa8a99a93d5d680c9514",
+    "masked_sha1": "a8958ad8f20ecd08e3d2fa8a99a93d5d680c9514"
+  },
+  "origin": "$B4AF",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "PodIcons",
+      "comment": "five 16 x 16 icons, 32 bytes each: the left cell's 8 lines, the right's, then the lower row's two"
+    },
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "icon 0: speed-up"
+    },
+    {
+      "offset": 32,
+      "name": "",
+      "comment": "icon 1: laser"
+    },
+    {
+      "offset": 64,
+      "name": "",
+      "comment": "icon 2: plasma"
+    },
+    {
+      "offset": 96,
+      "name": "",
+      "comment": "icon 3: homing missiles"
+    },
+    {
+      "offset": 128,
+      "name": "",
+      "comment": "icon 4: seeker"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$B4AF",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/icons.asm",
+    "label": "PodIcons"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

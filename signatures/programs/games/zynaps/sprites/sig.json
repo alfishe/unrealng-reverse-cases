@@ -1,0 +1,490 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/sprites",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: sprites",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "sprites"
+  ],
+  "summary": "Sprite builders and the per-row sprite strips of the objects.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 474,
+    "sha1": "cd97490e1747e9e3b5606e922a9810d3c847ca0d",
+    "masked_sha1": "318beae41f6c091786b47489358e02784b1cd7ad"
+  },
+  "origin": "$8EDB",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFF8"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 32,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 50,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GlyphCache"
+    },
+    {
+      "offset": 53,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 59,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BigSpriteGlyphs"
+    },
+    {
+      "offset": 68,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BigSpriteMap1"
+    },
+    {
+      "offset": 73,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5CDC"
+    },
+    {
+      "offset": 82,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BigSpriteMap2"
+    },
+    {
+      "offset": 85,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 100,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 103,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 150,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F141"
+    },
+    {
+      "offset": 193,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 197,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SightObject"
+    },
+    {
+      "offset": 209,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 213,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FontLeftover"
+    },
+    {
+      "offset": 218,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ObjectBeep"
+    },
+    {
+      "offset": 235,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 278,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 284,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 305,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 368,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F141"
+    },
+    {
+      "offset": 382,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 394,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 436,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 469,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "BuildCellSprite",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Build a column-major sprite of C columns of B cells, complemented, with blank borders"
+    },
+    {
+      "offset": 36,
+      "name": "FillBlankCell",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Write a blank cell: eight $FF bytes at DE"
+    },
+    {
+      "offset": 49,
+      "name": "BuildBigSprite",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Build a 7 x 9 cell image at $C000 from a one-bit cell map"
+    },
+    {
+      "offset": 112,
+      "name": "BigSpriteCell",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Copy one glyph complemented to DE"
+    },
+    {
+      "offset": 127,
+      "name": "RotateSprite",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Rotate a column-major image one pixel right, the last bit wrapping to the first byte"
+    },
+    {
+      "offset": 149,
+      "name": "ClearStripCounts",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Clear the sprite-strip count of the 18 row records"
+    },
+    {
+      "offset": 192,
+      "name": "ObjectStrips",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Cut every active object into sprite strips"
+    },
+    {
+      "offset": 231,
+      "name": "BuildObjectStrips",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Link the strips of the object IY into the row records"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 10,
+      "name": "CellSpriteColumn",
+      "comment": ""
+    },
+    {
+      "offset": 11,
+      "name": "CellSpriteCell",
+      "comment": ""
+    },
+    {
+      "offset": 14,
+      "name": "CellSpriteByte",
+      "comment": ""
+    },
+    {
+      "offset": 31,
+      "name": "CellSpriteTail",
+      "comment": ""
+    },
+    {
+      "offset": 42,
+      "name": "FillBlankByte",
+      "comment": ""
+    },
+    {
+      "offset": 72,
+      "name": "BigSpriteFromTiles",
+      "comment": ""
+    },
+    {
+      "offset": 84,
+      "name": "BigSpriteSetUp",
+      "comment": ""
+    },
+    {
+      "offset": 93,
+      "name": "BigSpriteRow",
+      "comment": ""
+    },
+    {
+      "offset": 97,
+      "name": "BigSpriteBit",
+      "comment": ""
+    },
+    {
+      "offset": 116,
+      "name": "BigSpriteByte",
+      "comment": ""
+    },
+    {
+      "offset": 119,
+      "name": "BigSpriteStep",
+      "comment": "INC HL or INC H (written at $8F2F)"
+    },
+    {
+      "offset": 123,
+      "name": "BigSpriteNext",
+      "comment": "NOP NOP or LD H,C; INC L (written at $8F32)"
+    },
+    {
+      "offset": 128,
+      "name": "RotateSpriteRows",
+      "comment": ""
+    },
+    {
+      "offset": 130,
+      "name": "RotateLine",
+      "comment": ""
+    },
+    {
+      "offset": 131,
+      "name": "RotateLineSave",
+      "comment": ""
+    },
+    {
+      "offset": 132,
+      "name": "RotateLineCarry",
+      "comment": "the carry in: 0"
+    },
+    {
+      "offset": 133,
+      "name": "RotateByte",
+      "comment": ""
+    },
+    {
+      "offset": 134,
+      "name": "RotateByteShift",
+      "comment": ""
+    },
+    {
+      "offset": 136,
+      "name": "RotateByteOut",
+      "comment": ""
+    },
+    {
+      "offset": 138,
+      "name": "RotateNextByte",
+      "comment": ""
+    },
+    {
+      "offset": 140,
+      "name": "RotateLineWrap",
+      "comment": "the bit out of the last byte goes into the first"
+    },
+    {
+      "offset": 141,
+      "name": "RotateLineMerge",
+      "comment": ""
+    },
+    {
+      "offset": 142,
+      "name": "RotateLineStore",
+      "comment": ""
+    },
+    {
+      "offset": 143,
+      "name": "RotateLineNext",
+      "comment": ""
+    },
+    {
+      "offset": 144,
+      "name": "RotateLineRestore",
+      "comment": ""
+    },
+    {
+      "offset": 145,
+      "name": "RotateLineCount",
+      "comment": ""
+    },
+    {
+      "offset": 201,
+      "name": "ObjectStripsLoop",
+      "comment": ""
+    },
+    {
+      "offset": 212,
+      "name": "ObjectStripsNext",
+      "comment": ""
+    },
+    {
+      "offset": 249,
+      "name": "StripFrame",
+      "comment": ""
+    },
+    {
+      "offset": 265,
+      "name": "StripSubFrame",
+      "comment": ""
+    },
+    {
+      "offset": 268,
+      "name": "StripClip",
+      "comment": ""
+    },
+    {
+      "offset": 287,
+      "name": "StripClipTop",
+      "comment": ""
+    },
+    {
+      "offset": 297,
+      "name": "StripClipBottom",
+      "comment": ""
+    },
+    {
+      "offset": 311,
+      "name": "StripClipped",
+      "comment": ""
+    },
+    {
+      "offset": 312,
+      "name": "StripVisible",
+      "comment": ""
+    },
+    {
+      "offset": 334,
+      "name": "StripShift",
+      "comment": ""
+    },
+    {
+      "offset": 384,
+      "name": "StripSkipRow",
+      "comment": ""
+    },
+    {
+      "offset": 396,
+      "name": "StripFirstRow",
+      "comment": ""
+    },
+    {
+      "offset": 404,
+      "name": "StripLinkRow",
+      "comment": ""
+    },
+    {
+      "offset": 426,
+      "name": "StripLinkNext",
+      "comment": ""
+    },
+    {
+      "offset": 438,
+      "name": "StripListHead",
+      "comment": "LD (n),SP: n = the row's list field (written at $908E)"
+    },
+    {
+      "offset": 442,
+      "name": "StripRowDone",
+      "comment": ""
+    },
+    {
+      "offset": 457,
+      "name": "BuildStripsDone",
+      "comment": "LD SP,n: n = the caller's SP"
+    },
+    {
+      "offset": 463,
+      "name": "BuildStripsOff",
+      "comment": "the object is out of the playfield: not visible"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$8EDB",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/sprites.asm",
+    "label": "BuildCellSprite"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

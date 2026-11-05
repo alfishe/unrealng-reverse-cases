@@ -1,0 +1,626 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/waves",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: waves",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "waves"
+  ],
+  "summary": "The wave launcher and the sprite cache.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 631,
+    "sha1": "71075e18915dd3c9c0909e120bb871f20a8fcb03",
+    "masked_sha1": "beacd56522228ec6959079e522c6b2d84d398108"
+  },
+  "origin": "$91EC",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 3,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeEnemySlots"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WavesAllowed"
+    },
+    {
+      "offset": 14,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 17,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WavesAllowed"
+    },
+    {
+      "offset": 21,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaveRecords"
+    },
+    {
+      "offset": 47,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaveIndex"
+    },
+    {
+      "offset": 52,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaveDefinitions"
+    },
+    {
+      "offset": 67,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WavePaths"
+    },
+    {
+      "offset": 95,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaveTemplate"
+    },
+    {
+      "offset": 98,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_803F"
+    },
+    {
+      "offset": 108,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerObject"
+    },
+    {
+      "offset": 111,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaveTarget"
+    },
+    {
+      "offset": 118,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyKinds"
+    },
+    {
+      "offset": 127,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8056"
+    },
+    {
+      "offset": 134,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WeaponRatingLevel"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KindColours"
+    },
+    {
+      "offset": 152,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8057"
+    },
+    {
+      "offset": 157,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_805E"
+    },
+    {
+      "offset": 163,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_805F"
+    },
+    {
+      "offset": 168,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8060"
+    },
+    {
+      "offset": 175,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_804A"
+    },
+    {
+      "offset": 183,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8055"
+    },
+    {
+      "offset": 189,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_804E"
+    },
+    {
+      "offset": 194,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8052"
+    },
+    {
+      "offset": 199,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8045"
+    },
+    {
+      "offset": 204,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8063"
+    },
+    {
+      "offset": 208,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_804B"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaveTemplate"
+    },
+    {
+      "offset": 223,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8061"
+    },
+    {
+      "offset": 226,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFD"
+    },
+    {
+      "offset": 231,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8049"
+    },
+    {
+      "offset": 236,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8040"
+    },
+    {
+      "offset": 240,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8058"
+    },
+    {
+      "offset": 255,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WavePaths"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 262,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 265,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 274,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8062"
+    },
+    {
+      "offset": 281,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaveTemplate"
+    },
+    {
+      "offset": 299,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaveTarget"
+    },
+    {
+      "offset": 308,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 313,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PathStarts"
+    },
+    {
+      "offset": 318,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PathCode"
+    },
+    {
+      "offset": 368,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 391,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 394,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaveTemplate"
+    },
+    {
+      "offset": 418,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeEnemySlots"
+    },
+    {
+      "offset": 426,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyObjects"
+    },
+    {
+      "offset": 449,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteCache"
+    },
+    {
+      "offset": 452,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 456,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteCacheUse1"
+    },
+    {
+      "offset": 487,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteCacheMask"
+    },
+    {
+      "offset": 493,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteCacheFree"
+    },
+    {
+      "offset": 508,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 514,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 518,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 535,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteCacheMask"
+    },
+    {
+      "offset": 543,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteCache"
+    },
+    {
+      "offset": 555,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteCacheUse1"
+    },
+    {
+      "offset": 573,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 590,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteCacheMask"
+    },
+    {
+      "offset": 600,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawQueueWrite"
+    },
+    {
+      "offset": 614,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawQueue"
+    },
+    {
+      "offset": 624,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventRequests"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "LaunchWave",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "start wave A: the template, the wave record, the objects"
+    },
+    {
+      "offset": 417,
+      "name": "TakeEnemySlot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "take one free enemy slot from $F398 on"
+    },
+    {
+      "offset": 443,
+      "name": "GetSpriteCache",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the sprite descriptor of kind A, cached or queued"
+    },
+    {
+      "offset": 542,
+      "name": "SpriteCacheRecord",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = $7EE2 + 16 x B"
+    },
+    {
+      "offset": 552,
+      "name": "EvictSpriteCache",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "free the least used sprite-cache record"
+    },
+    {
+      "offset": 597,
+      "name": "QueueSpriteLoad",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "queue the sprite record DE of kind C for building"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 27,
+      "name": "LaunchWaveFindRecord",
+      "comment": "the first wave record with $FF"
+    },
+    {
+      "offset": 38,
+      "name": "LaunchWaveRecord",
+      "comment": "count 0; its index into A'"
+    },
+    {
+      "offset": 82,
+      "name": "LaunchWaveFillSame",
+      "comment": "bit 7: B copies of the next byte"
+    },
+    {
+      "offset": 89,
+      "name": "LaunchWaveFillKind",
+      "comment": "bit 7 clear: B copies of the kind"
+    },
+    {
+      "offset": 93,
+      "name": "LaunchWaveTemplate",
+      "comment": "zero the 44-byte template at $803E, target = the player"
+    },
+    {
+      "offset": 211,
+      "name": "",
+      "comment": "the sprite descriptor of the kind"
+    },
+    {
+      "offset": 225,
+      "name": "",
+      "comment": "DE = -3: the descriptor's +$0C, the row mask"
+    },
+    {
+      "offset": 260,
+      "name": "LaunchWaveObject",
+      "comment": "one object: a free slot, the template, the path, the position"
+    },
+    {
+      "offset": 286,
+      "name": "",
+      "comment": "the template's first 9 bytes"
+    },
+    {
+      "offset": 295,
+      "name": "",
+      "comment": "the bytes +$0B-$2B (+$09/+$0A kept)"
+    },
+    {
+      "offset": 302,
+      "name": "LaunchWavePathList",
+      "comment": "the operand: the next path number in $806A"
+    },
+    {
+      "offset": 374,
+      "name": "LaunchWaveYOffset",
+      "comment": "Y from the stream plus the stagger"
+    },
+    {
+      "offset": 375,
+      "name": "LaunchWaveSetY",
+      "comment": "Y: the integer row (+6) and the fraction (+5)"
+    },
+    {
+      "offset": 393,
+      "name": "LaunchWaveDone",
+      "comment": "the descriptor's use count + the objects launched"
+    },
+    {
+      "offset": 406,
+      "name": "",
+      "comment": "OUT ($FE),0: speaker and border off"
+    },
+    {
+      "offset": 410,
+      "name": "LaunchWaveNoSlot",
+      "comment": "no free slot left: end early"
+    },
+    {
+      "offset": 413,
+      "name": "LaunchWaveRefused",
+      "comment": "NC: nothing launched"
+    },
+    {
+      "offset": 431,
+      "name": "TakeEnemySlotLoop",
+      "comment": "active: the next record"
+    },
+    {
+      "offset": 441,
+      "name": "TakeEnemySlotFound",
+      "comment": "carry: IY free"
+    },
+    {
+      "offset": 455,
+      "name": "SpriteCacheSearch",
+      "comment": "6 records, 16 bytes apart"
+    },
+    {
+      "offset": 463,
+      "name": "SpriteCacheSearchLoop",
+      "comment": "used and of this kind?"
+    },
+    {
+      "offset": 482,
+      "name": "SpriteCacheNext",
+      "comment": "the next record"
+    },
+    {
+      "offset": 486,
+      "name": "SpriteCacheAllocate",
+      "comment": "a free record number for the use mask $8087"
+    },
+    {
+      "offset": 505,
+      "name": "SpriteCacheNibble",
+      "comment": "0: none free, evict one and look again"
+    },
+    {
+      "offset": 548,
+      "name": "SpriteCacheRecordLoop",
+      "comment": "B steps of 16"
+    },
+    {
+      "offset": 551,
+      "name": "SpriteCacheRet",
+      "comment": "HL the record"
+    },
+    {
+      "offset": 564,
+      "name": "EvictSpriteCacheLoop",
+      "comment": "smaller use count than the best so far?"
+    },
+    {
+      "offset": 575,
+      "name": "EvictSpriteCacheNext",
+      "comment": "the next record"
+    },
+    {
+      "offset": 578,
+      "name": "EvictSpriteCachePtr",
+      "comment": "the operand: the record chosen"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$91EC",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/waves.asm",
+    "label": "LaunchWave"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

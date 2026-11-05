@@ -1,0 +1,748 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/objects",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: objects",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "objects"
+  ],
+  "summary": "Enemy fire, explosions, weapon pods and enemy shots.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 566,
+    "sha1": "dc48d6f9a0a469d102f36ed158b6e5b85c2ac333",
+    "masked_sha1": "c844b1e0739c7dcb242147bf4ae59944d9c8e547"
+  },
+  "origin": "$A0EB",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 12,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WeaponRatingMask"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassBit"
+    },
+    {
+      "offset": 28,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WeaponRatingValue"
+    },
+    {
+      "offset": 41,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyShotsLeft"
+    },
+    {
+      "offset": 49,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyShots"
+    },
+    {
+      "offset": 168,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RandomSeed"
+    },
+    {
+      "offset": 181,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RandomSeed"
+    },
+    {
+      "offset": 190,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerObject"
+    },
+    {
+      "offset": 194,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DirectionTo"
+    },
+    {
+      "offset": 207,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetVelocity"
+    },
+    {
+      "offset": 218,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RequestEffect"
+    },
+    {
+      "offset": 222,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassCount"
+    },
+    {
+      "offset": 231,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 251,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeEnemySlot"
+    },
+    {
+      "offset": 254,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 275,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerHitMask"
+    },
+    {
+      "offset": 284,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 287,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FireHeld"
+    },
+    {
+      "offset": 301,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PodActions"
+    },
+    {
+      "offset": 304,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpTable"
+    },
+    {
+      "offset": 309,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RequestEffect"
+    },
+    {
+      "offset": 316,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RequestEffect"
+    },
+    {
+      "offset": 330,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddScore"
+    },
+    {
+      "offset": 335,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 342,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventRequests"
+    },
+    {
+      "offset": 349,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddScore"
+    },
+    {
+      "offset": 354,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PathOpScroll"
+    },
+    {
+      "offset": 357,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColourCycle"
+    },
+    {
+      "offset": 368,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 373,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeEnemySlot"
+    },
+    {
+      "offset": 382,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerHitMask"
+    },
+    {
+      "offset": 391,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt1"
+    },
+    {
+      "offset": 396,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PathOpHome"
+    },
+    {
+      "offset": 403,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 415,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 421,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeObject"
+    },
+    {
+      "offset": 425,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HitGridY"
+    },
+    {
+      "offset": 428,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundPattern1"
+    },
+    {
+      "offset": 431,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_EDB2"
+    },
+    {
+      "offset": 434,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundPattern2"
+    },
+    {
+      "offset": 437,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D6ED"
+    },
+    {
+      "offset": 440,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundPattern3"
+    },
+    {
+      "offset": 448,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ExplosionAnim"
+    },
+    {
+      "offset": 474,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HarmlessMaskA"
+    },
+    {
+      "offset": 505,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt4"
+    },
+    {
+      "offset": 508,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeEnemySlot"
+    },
+    {
+      "offset": 529,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PodAnim"
+    },
+    {
+      "offset": 534,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PodAnim"
+    },
+    {
+      "offset": 548,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HarmlessMaskB"
+    },
+    {
+      "offset": 563,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RequestEffect"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "EnemyFire",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Let the enemy at IY fire a shot"
+    },
+    {
+      "offset": 221,
+      "name": "ExplosionStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Advance an explosion (object kind 3)"
+    },
+    {
+      "offset": 257,
+      "name": "ExplosionAdvance",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Store the explosion's frame and fade its colour"
+    },
+    {
+      "offset": 274,
+      "name": "PodStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A weapon pod (object kind 4): collected or carried by the scroll"
+    },
+    {
+      "offset": 376,
+      "name": "EnemyShotStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Move an enemy shot (object kind 5)"
+    },
+    {
+      "offset": 424,
+      "name": "StartExplosion",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Turn the object at IY into an explosion"
+    },
+    {
+      "offset": 491,
+      "name": "ExplosionToPod",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Turn the finished explosion at IY into a weapon pod"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "no fire rate: the enemy never fires"
+    },
+    {
+      "offset": 5,
+      "name": "",
+      "comment": "fired already: only the random test"
+    },
+    {
+      "offset": 11,
+      "name": "",
+      "comment": "the first shot when the enemy reaches the trigger column"
+    },
+    {
+      "offset": 19,
+      "name": "EnemyFireRandom",
+      "comment": "the enemy's turn this pass ($7F63 PassBit AND its bit)"
+    },
+    {
+      "offset": 27,
+      "name": "",
+      "comment": "Random - $80E8 below the fire rate: fire"
+    },
+    {
+      "offset": 40,
+      "name": "EnemyFireSpend",
+      "comment": "a shot left?"
+    },
+    {
+      "offset": 47,
+      "name": "",
+      "comment": "the three enemy shot records"
+    },
+    {
+      "offset": 56,
+      "name": "EnemyFireFindSlot",
+      "comment": "the first record without bit 7 of +8"
+    },
+    {
+      "offset": 66,
+      "name": "EnemyFireShot",
+      "comment": "take it"
+    },
+    {
+      "offset": 70,
+      "name": "",
+      "comment": "the shot starts 1.5 cells right and down from the enemy"
+    },
+    {
+      "offset": 94,
+      "name": "",
+      "comment": "past row 15: keep it on row 15"
+    },
+    {
+      "offset": 100,
+      "name": "EnemyFireSetY",
+      "comment": ""
+    },
+    {
+      "offset": 109,
+      "name": "",
+      "comment": "+$19: bits 0-2 the step count, bits 3-7 the speed index"
+    },
+    {
+      "offset": 115,
+      "name": "",
+      "comment": "colour of the shot"
+    },
+    {
+      "offset": 140,
+      "name": "",
+      "comment": "lifetime of the shot"
+    },
+    {
+      "offset": 146,
+      "name": "",
+      "comment": "+$21: the direction mode"
+    },
+    {
+      "offset": 149,
+      "name": "",
+      "comment": "IY = the shot from here on"
+    },
+    {
+      "offset": 161,
+      "name": "",
+      "comment": "mode 00: a fixed direction in bits 2-7"
+    },
+    {
+      "offset": 167,
+      "name": "EnemyFireRandomDir",
+      "comment": "mode 10: any of the 64 directions"
+    },
+    {
+      "offset": 174,
+      "name": "EnemyFireAimed",
+      "comment": "mode x1: at the player, bit 1 adds a spread of -4..+3"
+    },
+    {
+      "offset": 188,
+      "name": "EnemyFireAim",
+      "comment": "the player's record"
+    },
+    {
+      "offset": 200,
+      "name": "EnemyFireSetDir",
+      "comment": "+$16 the direction 0-63, then the velocity from it"
+    },
+    {
+      "offset": 211,
+      "name": "",
+      "comment": "the enemy has fired"
+    },
+    {
+      "offset": 215,
+      "name": "",
+      "comment": "sound 1: the enemy shot"
+    },
+    {
+      "offset": 221,
+      "name": "",
+      "comment": "every other pass"
+    },
+    {
+      "offset": 227,
+      "name": "",
+      "comment": "hold the frame"
+    },
+    {
+      "offset": 233,
+      "name": "",
+      "comment": "black while held"
+    },
+    {
+      "offset": 238,
+      "name": "ExplosionNextFrame",
+      "comment": ""
+    },
+    {
+      "offset": 242,
+      "name": "",
+      "comment": "past frame 8: the end"
+    },
+    {
+      "offset": 246,
+      "name": "",
+      "comment": "a pod to leave?"
+    },
+    {
+      "offset": 256,
+      "name": "UnusedRet",
+      "comment": "A RET no code reaches"
+    },
+    {
+      "offset": 260,
+      "name": "",
+      "comment": "colour $50: stop fading"
+    },
+    {
+      "offset": 274,
+      "name": "",
+      "comment": "the player touches the pod?"
+    },
+    {
+      "offset": 286,
+      "name": "",
+      "comment": "fire held 8 passes or more: activate the selected weapon"
+    },
+    {
+      "offset": 293,
+      "name": "",
+      "comment": "the selector back to the first weapon"
+    },
+    {
+      "offset": 300,
+      "name": "",
+      "comment": "the weapon routines: $9D4C $9D5D $9D68 $9DA5 $9DDD"
+    },
+    {
+      "offset": 306,
+      "name": "",
+      "comment": "sound 6: weapon on"
+    },
+    {
+      "offset": 313,
+      "name": "PodSelectNext",
+      "comment": "sound 5: next weapon"
+    },
+    {
+      "offset": 322,
+      "name": "",
+      "comment": "past the fifth weapon: a bonus"
+    },
+    {
+      "offset": 327,
+      "name": "",
+      "comment": "1000 points"
+    },
+    {
+      "offset": 332,
+      "name": "",
+      "comment": "the power timer"
+    },
+    {
+      "offset": 338,
+      "name": "PodSetSelector",
+      "comment": ""
+    },
+    {
+      "offset": 341,
+      "name": "PodCollected",
+      "comment": "the weapon panel needs a redraw"
+    },
+    {
+      "offset": 346,
+      "name": "",
+      "comment": "100 points"
+    },
+    {
+      "offset": 353,
+      "name": "PodDrift",
+      "comment": "not collected: move with the scenery"
+    },
+    {
+      "offset": 356,
+      "name": "",
+      "comment": "flashing with the colour cycle"
+    },
+    {
+      "offset": 362,
+      "name": "",
+      "comment": "still on the playfield: keep it"
+    },
+    {
+      "offset": 367,
+      "name": "",
+      "comment": "lost: halve the power timer"
+    },
+    {
+      "offset": 372,
+      "name": "PodRemove",
+      "comment": ""
+    },
+    {
+      "offset": 376,
+      "name": "",
+      "comment": "lifetime"
+    },
+    {
+      "offset": 381,
+      "name": "",
+      "comment": "the player's hit mask"
+    },
+    {
+      "offset": 390,
+      "name": "",
+      "comment": "hit the scenery?"
+    },
+    {
+      "offset": 395,
+      "name": "",
+      "comment": "move by the velocity"
+    },
+    {
+      "offset": 398,
+      "name": "",
+      "comment": "above the top or below row 16: gone"
+    },
+    {
+      "offset": 409,
+      "name": "",
+      "comment": "left of column 16 or right of column 48: gone"
+    },
+    {
+      "offset": 420,
+      "name": "EnemyShotEnd",
+      "comment": ""
+    },
+    {
+      "offset": 424,
+      "name": "",
+      "comment": "the explosion noise on the three channels"
+    },
+    {
+      "offset": 442,
+      "name": "",
+      "comment": "kind 3: explosion"
+    },
+    {
+      "offset": 447,
+      "name": "",
+      "comment": "the explosion animation"
+    },
+    {
+      "offset": 468,
+      "name": "",
+      "comment": "the bit out of $80BD, into $80BE"
+    },
+    {
+      "offset": 482,
+      "name": "",
+      "comment": "the explosion colour"
+    },
+    {
+      "offset": 491,
+      "name": "",
+      "comment": "round Y to the cell"
+    },
+    {
+      "offset": 504,
+      "name": "ExplosionToPodPlace",
+      "comment": ""
+    },
+    {
+      "offset": 515,
+      "name": "",
+      "comment": "kind 4: pod"
+    },
+    {
+      "offset": 528,
+      "name": "",
+      "comment": "the pod animation (the same in both cases)"
+    },
+    {
+      "offset": 536,
+      "name": "ExplosionToPodSet",
+      "comment": ""
+    },
+    {
+      "offset": 542,
+      "name": "",
+      "comment": "the bit out of $80BE, into $80BD"
+    },
+    {
+      "offset": 560,
+      "name": "",
+      "comment": "sound 4: a pod appears"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$A0EB",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/objects.asm",
+    "label": "EnemyFire"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

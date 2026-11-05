@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/start",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: start",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "start"
+  ],
+  "summary": "The start-up from the loader.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 48,
+    "sha1": "1ff6aee718bc0cc9b58d23dbd5c82cf940b1e32a",
+    "masked_sha1": "1c002b1df728fbe130265405765c37dbb47b4f17"
+  },
+  "origin": "$B6FF",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5C00"
+    },
+    {
+      "offset": 5,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TileSource"
+    },
+    {
+      "offset": 8,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5C00"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpritePad"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PodSprite"
+    },
+    {
+      "offset": 46,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MainLoop"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "Start",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the start: the code below the screen, the complemented graphics, the main loop"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 1,
+      "name": "",
+      "comment": "the stack under the copied block"
+    },
+    {
+      "offset": 4,
+      "name": "",
+      "comment": "3072 bytes from $BC00 to $5C00"
+    },
+    {
+      "offset": 15,
+      "name": "",
+      "comment": "1864 bytes from $E000 complemented"
+    },
+    {
+      "offset": 21,
+      "name": "StartInvertA",
+      "comment": ""
+    },
+    {
+      "offset": 30,
+      "name": "",
+      "comment": "192 bytes from $F048 complemented"
+    },
+    {
+      "offset": 36,
+      "name": "StartInvertB",
+      "comment": ""
+    },
+    {
+      "offset": 45,
+      "name": "",
+      "comment": "MainLoop"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$B6FF",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/start.asm",
+    "label": "Start"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

@@ -1,0 +1,468 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/hud",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: hud",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "hud"
+  ],
+  "summary": "The frame work of the panel: colour cycles, the speed bar, the fuel gauge.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 244,
+    "sha1": "3db6506710125aa0d29379a71409f9dc7d5f982f",
+    "masked_sha1": "31dbf3efb1ea2c8463149f3428a076da833930ad"
+  },
+  "origin": "$AB13",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassCount"
+    },
+    {
+      "offset": 11,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AC6"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 41,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AEE"
+    },
+    {
+      "offset": 44,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AF0"
+    },
+    {
+      "offset": 47,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AEE"
+    },
+    {
+      "offset": 58,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 74,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AC1"
+    },
+    {
+      "offset": 78,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5ADD"
+    },
+    {
+      "offset": 81,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassCount"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpinnerFrame"
+    },
+    {
+      "offset": 94,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpinnerColour"
+    },
+    {
+      "offset": 97,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassCount"
+    },
+    {
+      "offset": 104,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpinnerColourStep"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpinnerColourStep"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpinnerColourStep"
+    },
+    {
+      "offset": 128,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A81"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawSpinner"
+    },
+    {
+      "offset": 138,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A9D"
+    },
+    {
+      "offset": 141,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawSpinner"
+    },
+    {
+      "offset": 144,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassCount"
+    },
+    {
+      "offset": 150,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AAB"
+    },
+    {
+      "offset": 153,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5ACB"
+    },
+    {
+      "offset": 165,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PanelBurst"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Pause"
+    },
+    {
+      "offset": 204,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EndPending"
+    },
+    {
+      "offset": 209,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EndCode"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleInterrupt"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InterruptHandler"
+    },
+    {
+      "offset": 218,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 223,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RequestEffect"
+    },
+    {
+      "offset": 227,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InterruptHandler"
+    },
+    {
+      "offset": 230,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleInterrupt"
+    },
+    {
+      "offset": 233,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InterruptHandler"
+    },
+    {
+      "offset": 241,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InterruptHandler"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "PanelFrame",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the panel's attribute work of one frame of play"
+    },
+    {
+      "offset": 194,
+      "name": "CheckPauseAndEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "key 4 pauses; a pending end code ends the play loop"
+    },
+    {
+      "offset": 221,
+      "name": "StopAndSettle",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "silence the effect and let two frames pass under TitleInterrupt"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "PassCount"
+    },
+    {
+      "offset": 7,
+      "name": "",
+      "comment": "C = 1 every fourth frame, else 0"
+    },
+    {
+      "offset": 10,
+      "name": "PanelInkCells",
+      "comment": "the two cells at row 22, columns 6-7"
+    },
+    {
+      "offset": 15,
+      "name": "PanelInkStep",
+      "comment": "ink + C, the bright and paper bits kept"
+    },
+    {
+      "offset": 23,
+      "name": "",
+      "comment": "the current player's record"
+    },
+    {
+      "offset": 27,
+      "name": "",
+      "comment": "the speed: $20 a step in the top 3 bits"
+    },
+    {
+      "offset": 32,
+      "name": "",
+      "comment": "three RLCAs: the top 3 bits into bits 0-2"
+    },
+    {
+      "offset": 35,
+      "name": "",
+      "comment": "the lit cells: the speed step less one"
+    },
+    {
+      "offset": 37,
+      "name": "",
+      "comment": "the four bar cells unlit first"
+    },
+    {
+      "offset": 46,
+      "name": "",
+      "comment": "then B cells of $31 (blue ink on cyan paper: lit)"
+    },
+    {
+      "offset": 49,
+      "name": "PanelSpeedBar",
+      "comment": ""
+    },
+    {
+      "offset": 54,
+      "name": "",
+      "comment": "both lamps of each pair lit"
+    },
+    {
+      "offset": 57,
+      "name": "",
+      "comment": "Fuel: $5A at a level start and after each FuelOut, $B4 when the pod selector wraps past the fifth pod ($A237)"
+    },
+    {
+      "offset": 64,
+      "name": "",
+      "comment": "below $40: the first lamp of each pair dark"
+    },
+    {
+      "offset": 70,
+      "name": "",
+      "comment": "below $20: the second as well"
+    },
+    {
+      "offset": 72,
+      "name": "PanelFuelLamps",
+      "comment": "the pairs at row 22 column 1 and row 22 column 29"
+    },
+    {
+      "offset": 80,
+      "name": "",
+      "comment": "PanelPhase + (PassCount & 1), 0-15"
+    },
+    {
+      "offset": 93,
+      "name": "",
+      "comment": "PanelBounce: moved by PanelStep on odd frames"
+    },
+    {
+      "offset": 108,
+      "name": "",
+      "comment": "at 7 or 1 of its low bits the step turns"
+    },
+    {
+      "offset": 118,
+      "name": "PanelTurn",
+      "comment": "PanelStep = -PanelStep"
+    },
+    {
+      "offset": 126,
+      "name": "PanelBlocks",
+      "comment": "A = PanelBounce, C = PanelPhase: $A8BE paints the blocks at row 20 columns 1 and 29"
+    },
+    {
+      "offset": 143,
+      "name": "",
+      "comment": "the burst only on even frames"
+    },
+    {
+      "offset": 149,
+      "name": "",
+      "comment": "clear rows 21-22, columns 11-20"
+    },
+    {
+      "offset": 158,
+      "name": "PanelClearRow",
+      "comment": ""
+    },
+    {
+      "offset": 164,
+      "name": "",
+      "comment": "PanelBurst: 0 = idle"
+    },
+    {
+      "offset": 170,
+      "name": "",
+      "comment": "one step less; the new value is both the colour and the distance"
+    },
+    {
+      "offset": 179,
+      "name": "",
+      "comment": "column 15 + n on row 21 and row 22"
+    },
+    {
+      "offset": 186,
+      "name": "",
+      "comment": "column 16 - n on both rows"
+    },
+    {
+      "offset": 194,
+      "name": "",
+      "comment": "the half row 1-5"
+    },
+    {
+      "offset": 198,
+      "name": "",
+      "comment": "key 4 down (0)"
+    },
+    {
+      "offset": 203,
+      "name": "",
+      "comment": "EndPending: set by the death code ($9B5B), the level's end command ($AE40) and Pause (Q)"
+    },
+    {
+      "offset": 208,
+      "name": "",
+      "comment": "EndCode: the play loop sees it"
+    },
+    {
+      "offset": 211,
+      "name": "",
+      "comment": "TitleInterrupt: no frame work from here on"
+    },
+    {
+      "offset": 221,
+      "name": "",
+      "comment": "effect 0: stop the running one"
+    },
+    {
+      "offset": 225,
+      "name": "",
+      "comment": "the handler in use"
+    },
+    {
+      "offset": 235,
+      "name": "",
+      "comment": "two frames under TitleInterrupt: its EffectTick = $80 makes a playing effect take the stop"
+    },
+    {
+      "offset": 238,
+      "name": "",
+      "comment": "back to the old handler with interrupts off"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$AB13",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/hud.asm",
+    "label": "PanelFrame"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

@@ -73,6 +73,23 @@
    "masked_sha1": "9f7ff7ebadcf29a038d69737675a844e68d1f6cc",
    "origin": "$68C5"
   },
+  "packers/picy/seen-zynaps/depacker": {
+   "kind": "code",
+   "role": "depacker",
+   "name": "picy screen unpacker (Hewson loading screens)",
+   "tags": [
+    "screen",
+    "packer",
+    "depacker",
+    "position-independent",
+    "hewson"
+   ],
+   "found_in": 1,
+   "length": 157,
+   "sha1": "f4684ca239fdcf43c739c538f7e87c7cb7ed977d",
+   "masked_sha1": "65ea760e77c0bb16f79badf0fb5e98ad2e8fb6cb",
+   "origin": "$8001"
+  },
   "programs/games/advanced-nether-earth/construction": {
    "kind": "code",
    "role": "game-module",
@@ -853,6 +870,696 @@
    "masked_sha1": "7a3d4ff13cd7249237cf1ede8c068bfb44dce3cd",
    "origin": "$B0CA"
   },
+  "programs/games/zynaps/buffers": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: buffers",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "buffers"
+   ],
+   "found_in": 1,
+   "length": 10449,
+   "sha1": "19eb4741b3b7d0e17bc3852d5852093b11ffcd04",
+   "masked_sha1": "19eb4741b3b7d0e17bc3852d5852093b11ffcd04",
+   "origin": "$B72F"
+  },
+  "programs/games/zynaps/controldata": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: controldata",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "controldata"
+   ],
+   "found_in": 1,
+   "length": 173,
+   "sha1": "48b5a38015416faa52a3091493b7f800b55a1235",
+   "masked_sha1": "48b5a38015416faa52a3091493b7f800b55a1235",
+   "origin": "$8184"
+  },
+  "programs/games/zynaps/effectdata": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: effectdata",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "effectdata"
+   ],
+   "found_in": 1,
+   "length": 264,
+   "sha1": "5199a8d59383cf449094f4dd88662b5affb4d03f",
+   "masked_sha1": "5199a8d59383cf449094f4dd88662b5affb4d03f",
+   "origin": "$7E5A"
+  },
+  "programs/games/zynaps/effects": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: effects",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "effects"
+   ],
+   "found_in": 1,
+   "length": 342,
+   "sha1": "8002c7add58cbb367a9f9f755504be2df33cab42",
+   "masked_sha1": "215398c89a3667661f43564408cae9a893c6654f",
+   "origin": "$B2F0"
+  },
+  "programs/games/zynaps/enemies": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: enemies",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "enemies"
+   ],
+   "found_in": 1,
+   "length": 355,
+   "sha1": "66c53d5b37675462d9aebd04ce959bdb6b664590",
+   "masked_sha1": "308281e15e8fb20a7ffb09e9b1903980c182c05d",
+   "origin": "$9F88"
+  },
+  "programs/games/zynaps/events": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: events",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "events"
+   ],
+   "found_in": 1,
+   "length": 351,
+   "sha1": "65a859217cc63480766e7cdb242824b1fa2035a5",
+   "masked_sha1": "96b916dd62400c88b4414c169077799470ef6768",
+   "origin": "$AC07"
+  },
+  "programs/games/zynaps/font": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: font",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "font"
+   ],
+   "found_in": 1,
+   "length": 432,
+   "sha1": "bd73a26500d41812bc859feb0a1d2868fdeaf64b",
+   "masked_sha1": "bd73a26500d41812bc859feb0a1d2868fdeaf64b",
+   "origin": "$B54F"
+  },
+  "programs/games/zynaps/gamevars": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: gamevars",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "gamevars"
+   ],
+   "found_in": 1,
+   "length": 58,
+   "sha1": "71951510bad058d68323a5ba1a9bb8c29f2bca6d",
+   "masked_sha1": "71951510bad058d68323a5ba1a9bb8c29f2bca6d",
+   "origin": "$7F62"
+  },
+  "programs/games/zynaps/graphics": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: graphics",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "graphics"
+   ],
+   "found_in": 1,
+   "length": 4360,
+   "sha1": "26ff3e271d1dd1e08734895c345fe7f4d15af724",
+   "masked_sha1": "26ff3e271d1dd1e08734895c345fe7f4d15af724",
+   "origin": "$E000"
+  },
+  "programs/games/zynaps/handlertables": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: handlertables",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "handlertables"
+   ],
+   "found_in": 1,
+   "length": 154,
+   "sha1": "2ff5cf41faa50afbbc00eb13a35a12a204dc09fe",
+   "masked_sha1": "2ff5cf41faa50afbbc00eb13a35a12a204dc09fe",
+   "origin": "$80EA"
+  },
+  "programs/games/zynaps/hiscore": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: hiscore",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "hiscore"
+   ],
+   "found_in": 1,
+   "length": 199,
+   "sha1": "bb53e8c8100e383b90368159b021a685571fd1d3",
+   "masked_sha1": "45228698c3b79641626e231131b950ebd218d16b",
+   "origin": "$A7F7"
+  },
+  "programs/games/zynaps/hud": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: hud",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "hud"
+   ],
+   "found_in": 1,
+   "length": 244,
+   "sha1": "3db6506710125aa0d29379a71409f9dc7d5f982f",
+   "masked_sha1": "31dbf3efb1ea2c8463149f3428a076da833930ad",
+   "origin": "$AB13"
+  },
+  "programs/games/zynaps/icons": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: icons",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "icons"
+   ],
+   "found_in": 1,
+   "length": 160,
+   "sha1": "a8958ad8f20ecd08e3d2fa8a99a93d5d680c9514",
+   "masked_sha1": "a8958ad8f20ecd08e3d2fa8a99a93d5d680c9514",
+   "origin": "$B4AF"
+  },
+  "programs/games/zynaps/input": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: input",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "input"
+   ],
+   "found_in": 1,
+   "length": 185,
+   "sha1": "210cf1284b760b1a6344d928b0dfe94b502192e2",
+   "masked_sha1": "f607b0151a3181eb4837ee95a8cec009add65998",
+   "origin": "$A6B6"
+  },
+  "programs/games/zynaps/interrupts": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: interrupts",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "interrupts"
+   ],
+   "found_in": 1,
+   "length": 370,
+   "sha1": "20b68547344388199841f0f63758a5a59986da2c",
+   "masked_sha1": "e4b8e5d8b5c1a306bf585e0b27a1d7364224e319",
+   "origin": "$A9A1"
+  },
+  "programs/games/zynaps/leveldata": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: leveldata",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "leveldata"
+   ],
+   "found_in": 1,
+   "length": 5722,
+   "sha1": "9bd7a62ce73e7f1be31845ff59cfb9af0b872ea7",
+   "masked_sha1": "1b05de8b63439eb06973b2007f347f99bb5669e9",
+   "origin": "$6800"
+  },
+  "programs/games/zynaps/levels": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: levels",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "levels"
+   ],
+   "found_in": 1,
+   "length": 250,
+   "sha1": "7ae2c5e101db8d8c7691cb24ea985c087668cc34",
+   "masked_sha1": "7d00e91228c33960249b4a03549495386f2ea414",
+   "origin": "$8C3B"
+  },
+  "programs/games/zynaps/mainloop": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: mainloop",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "mainloop"
+   ],
+   "found_in": 1,
+   "length": 497,
+   "sha1": "a0188eea196a777976d4cae4220f183c306effe0",
+   "masked_sha1": "fb7868ca18f76bc6719652c22ae1e9d05b82b901",
+   "origin": "$B0FF"
+  },
+  "programs/games/zynaps/menu": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: menu",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "menu"
+   ],
+   "found_in": 1,
+   "length": 420,
+   "sha1": "7af85bf784b52c5a0935de6a5b42f56a4d7c9d8f",
+   "masked_sha1": "0b1490e45baf13c1c383f514fd0da40cf0106634",
+   "origin": "$A512"
+  },
+  "programs/games/zynaps/movers": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: movers",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "movers"
+   ],
+   "found_in": 1,
+   "length": 1223,
+   "sha1": "2d82cf5ddcc8488acce16a3fd50ea51bf75dba63",
+   "masked_sha1": "d9fc526a682e800332c4e9737fe7dda0ec134ae3",
+   "origin": "$9463"
+  },
+  "programs/games/zynaps/objects": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: objects",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "objects"
+   ],
+   "found_in": 1,
+   "length": 566,
+   "sha1": "dc48d6f9a0a469d102f36ed158b6e5b85c2ac333",
+   "masked_sha1": "c844b1e0739c7dcb242147bf4ae59944d9c8e547",
+   "origin": "$A0EB"
+  },
+  "programs/games/zynaps/objgrid": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: objgrid",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "objgrid"
+   ],
+   "found_in": 1,
+   "length": 311,
+   "sha1": "b6b66a3655ac7ce30ba45e3c913c569da0b1a93b",
+   "masked_sha1": "56b174b36032f0b4bd8851cf000cbd2ef1197628",
+   "origin": "$90B5"
+  },
+  "programs/games/zynaps/objutil": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: objutil",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "objutil"
+   ],
+   "found_in": 1,
+   "length": 305,
+   "sha1": "91c78b8a8f1e116cea1a672a4883e5be54661577",
+   "masked_sha1": "9a65c46dc71cb4b060f1d49cb664357bba382cc3",
+   "origin": "$992A"
+  },
+  "programs/games/zynaps/options": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: options",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "options"
+   ],
+   "found_in": 1,
+   "length": 136,
+   "sha1": "4ea8e650340479955e18c12acbe60ec8542bea29",
+   "masked_sha1": "5a91bdb0807cd1efa71aec1ae5fe00b186e5ae66",
+   "origin": "$A76F"
+  },
+  "programs/games/zynaps/panel": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: panel",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "panel"
+   ],
+   "found_in": 1,
+   "length": 227,
+   "sha1": "f43ae3def2e040ffaced0be43876846d6900b43b",
+   "masked_sha1": "9646a3a97b414f5acbfca9b02cfd0f68e0c0cc5f",
+   "origin": "$A8BE"
+  },
+  "programs/games/zynaps/player": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: player",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "player"
+   ],
+   "found_in": 1,
+   "length": 552,
+   "sha1": "4f1b57055b2666d311dd4e7c5950f2659b73a61f",
+   "masked_sha1": "bd17d85f98b6ae2e79385f6b7e58e6219dfff19f",
+   "origin": "$9A5B"
+  },
+  "programs/games/zynaps/playfield": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: playfield",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "playfield"
+   ],
+   "found_in": 1,
+   "length": 636,
+   "sha1": "76eed932b7b0b955b1d87678787de7186f10a104",
+   "masked_sha1": "314b716e4fcd47a76f89feb8b83a00864f73f94f",
+   "origin": "$85CA"
+  },
+  "programs/games/zynaps/print": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: print",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "print"
+   ],
+   "found_in": 1,
+   "length": 360,
+   "sha1": "c8ff7e64d84314c56cd9aae6b81e829bde24ec03",
+   "masked_sha1": "7fd5800b3aea63c323a792dbc78e983dd9f7bf31",
+   "origin": "$A321"
+  },
+  "programs/games/zynaps/records": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: records",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "records"
+   ],
+   "found_in": 1,
+   "length": 1784,
+   "sha1": "2a476556616e56e05193d94621299ca37bb5d041",
+   "masked_sha1": "2a476556616e56e05193d94621299ca37bb5d041",
+   "origin": "$F108"
+  },
+  "programs/games/zynaps/rounds": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: rounds",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "rounds"
+   ],
+   "found_in": 1,
+   "length": 438,
+   "sha1": "f510fb81d41e6a03fb5e085f57f9ba93e1021143",
+   "masked_sha1": "34868c5efbd652ac76786fa43c5982194fd14367",
+   "origin": "$AF49"
+  },
+  "programs/games/zynaps/scenery": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: scenery",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "scenery"
+   ],
+   "found_in": 1,
+   "length": 422,
+   "sha1": "c65c85440cf3a19838d0cee3cadcf9c55625c44a",
+   "masked_sha1": "e5399ff6bd430f1dbd7c87e3038279b540d05354",
+   "origin": "$8D35"
+  },
+  "programs/games/zynaps/score": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: score",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "score"
+   ],
+   "found_in": 1,
+   "length": 137,
+   "sha1": "0adbe9c1e76405cdfaa654d08d14685c6d357038",
+   "masked_sha1": "9d3c139b0ccf7308d9ac3f794067fb0986635010",
+   "origin": "$A489"
+  },
+  "programs/games/zynaps/scoredata": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: scoredata",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "scoredata"
+   ],
+   "found_in": 1,
+   "length": 189,
+   "sha1": "c7c45e87064f9f710e0fe81ce750b1c598cdfe3d",
+   "masked_sha1": "c7c45e87064f9f710e0fe81ce750b1c598cdfe3d",
+   "origin": "$8231"
+  },
+  "programs/games/zynaps/scroll": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: scroll",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "scroll"
+   ],
+   "found_in": 1,
+   "length": 809,
+   "sha1": "fed63d0c2780ff6333a3b0849180107a54ac80a9",
+   "masked_sha1": "3c2346b3805291a7199ee508cd6b2f45eb79c6e4",
+   "origin": "$8912"
+  },
+  "programs/games/zynaps/sprites": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: sprites",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "sprites"
+   ],
+   "found_in": 1,
+   "length": 474,
+   "sha1": "cd97490e1747e9e3b5606e922a9810d3c847ca0d",
+   "masked_sha1": "318beae41f6c091786b47489358e02784b1cd7ad",
+   "origin": "$8EDB"
+  },
+  "programs/games/zynaps/stars": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: stars",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "stars"
+   ],
+   "found_in": 1,
+   "length": 204,
+   "sha1": "06ebd4a0cc3e8f3f0cd1eca98dee4d6475dd47d3",
+   "masked_sha1": "5152dcb2d0f6ad16522118944abaeb6d50dd1c42",
+   "origin": "$8846"
+  },
+  "programs/games/zynaps/start": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: start",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "start"
+   ],
+   "found_in": 1,
+   "length": 48,
+   "sha1": "1ff6aee718bc0cc9b58d23dbd5c82cf940b1e32a",
+   "masked_sha1": "1c002b1df728fbe130265405765c37dbb47b4f17",
+   "origin": "$B6FF"
+  },
+  "programs/games/zynaps/system": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: system",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "system"
+   ],
+   "found_in": 1,
+   "length": 180,
+   "sha1": "bc7d6d7bc7abb21d5727e0e54796318a5c33453b",
+   "masked_sha1": "69b7580237f0edb1472370924dbdb3293f706e7a",
+   "origin": "$8516"
+  },
+  "programs/games/zynaps/systemvars": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: systemvars",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "systemvars"
+   ],
+   "found_in": 1,
+   "length": 231,
+   "sha1": "756d5c7ccc707d67e489db011b57188638750853",
+   "masked_sha1": "756d5c7ccc707d67e489db011b57188638750853",
+   "origin": "$8003"
+  },
+  "programs/games/zynaps/tables": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: tables",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "tables"
+   ],
+   "found_in": 1,
+   "length": 1793,
+   "sha1": "703ddf0c4b9fa2d848f042aabe70c713a2c80152",
+   "masked_sha1": "703ddf0c4b9fa2d848f042aabe70c713a2c80152",
+   "origin": "$F800"
+  },
+  "programs/games/zynaps/texts": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: texts",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "texts"
+   ],
+   "found_in": 1,
+   "length": 552,
+   "sha1": "24f8512ea06190cd5427c9bc3885ddc77918b0bf",
+   "masked_sha1": "24f8512ea06190cd5427c9bc3885ddc77918b0bf",
+   "origin": "$82EE"
+  },
+  "programs/games/zynaps/topcells": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: topcells",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "topcells"
+   ],
+   "found_in": 1,
+   "length": 43,
+   "sha1": "8757c0d220fac064e5214b804d83d423e1177f3e",
+   "masked_sha1": "8757c0d220fac064e5214b804d83d423e1177f3e",
+   "origin": "$FFD4"
+  },
+  "programs/games/zynaps/tunedata": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Zynaps: tunedata",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "tunedata"
+   ],
+   "found_in": 1,
+   "length": 211,
+   "sha1": "4abd8fdf0fdb4aa75ccfdf4127ab3e9f3cbd2361",
+   "masked_sha1": "b10e6798d407060775ccc15af0c8508239fd991d",
+   "origin": "$FF01"
+  },
+  "programs/games/zynaps/waves": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: waves",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "waves"
+   ],
+   "found_in": 1,
+   "length": 631,
+   "sha1": "71075e18915dd3c9c0909e120bb871f20a8fcb03",
+   "masked_sha1": "beacd56522228ec6959079e522c6b2d84d398108",
+   "origin": "$91EC"
+  },
+  "programs/games/zynaps/wavescript": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: wavescript",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "wavescript"
+   ],
+   "found_in": 1,
+   "length": 483,
+   "sha1": "9118b9d5437336e17300ca9e2ca7884e23784896",
+   "masked_sha1": "d61c026416c975acedf77854011be61a93b9bfb4",
+   "origin": "$AD66"
+  },
+  "programs/games/zynaps/weapons": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Zynaps: weapons",
+   "tags": [
+    "zynaps",
+    "game-module",
+    "weapons"
+   ],
+   "found_in": 1,
+   "length": 773,
+   "sha1": "499d5f57ce7eb7a140a5870fc6847e926d15142d",
+   "masked_sha1": "a2345e51d679112164c64c772c65fbc7de92d3cf",
+   "origin": "$9C83"
+  },
   "programs/utilities/nether-earth-editor/mix": {
    "kind": "code",
    "role": "game-module",
@@ -915,6 +1622,41 @@
    "sha1": "cc9dc9e88fa747fb7cf2b560d809b1e06295fdef",
    "masked_sha1": "63d8dda7a455dfe38eaa4b01cb5fd43dfed55ad5",
    "origin": "$C000"
+  },
+  "sound/beeper/steve-turner-two-voice/seen-zynaps": {
+   "kind": "code",
+   "role": "player",
+   "name": "Two-voice beeper tune player (Zynaps title tune, music by Steve Turner)",
+   "tags": [
+    "beeper",
+    "two-voice",
+    "tune",
+    "hewson",
+    "graftgold"
+   ],
+   "found_in": 1,
+   "length": 105,
+   "sha1": "5f1d91982a6d69df142f5d94f51ee875e2cc14ec",
+   "masked_sha1": "e7c1f153da17ac92a73e93b0bc52cfb2555326f8",
+   "origin": "$B446"
+  },
+  "tape/loaders/hewson-countdown-2/decrypted": {
+   "kind": "code",
+   "role": "loader",
+   "name": "Hewson Countdown II tape loader (decrypted)",
+   "tags": [
+    "tape",
+    "loader",
+    "ld-bytes",
+    "xor-chain",
+    "countdown",
+    "hewson"
+   ],
+   "found_in": 1,
+   "length": 671,
+   "sha1": "1d4067f4d31417fe197e93c772698debc94bafbe",
+   "masked_sha1": "670a2b1455035cc5343df93ffdabb1efd5f5fced",
+   "origin": "$FC00"
   }
  },
  "by_sha1": {
@@ -926,6 +1668,9 @@
   ],
   "231da31c51acb45ad66188620032af5de99e12f0": [
    "packers/hrust/1/screen-depacker"
+  ],
+  "f4684ca239fdcf43c739c538f7e87c7cb7ed977d": [
+   "packers/picy/seen-zynaps/depacker"
   ],
   "916863437903993829e90b1bb9f5b54961fff781": [
    "programs/games/advanced-nether-earth/construction"
@@ -1083,6 +1828,144 @@
   "68bb157c118e3c290ee933516d1e9ffc039ba84b": [
    "programs/games/nether-earth/world"
   ],
+  "19eb4741b3b7d0e17bc3852d5852093b11ffcd04": [
+   "programs/games/zynaps/buffers"
+  ],
+  "48b5a38015416faa52a3091493b7f800b55a1235": [
+   "programs/games/zynaps/controldata"
+  ],
+  "5199a8d59383cf449094f4dd88662b5affb4d03f": [
+   "programs/games/zynaps/effectdata"
+  ],
+  "8002c7add58cbb367a9f9f755504be2df33cab42": [
+   "programs/games/zynaps/effects"
+  ],
+  "66c53d5b37675462d9aebd04ce959bdb6b664590": [
+   "programs/games/zynaps/enemies"
+  ],
+  "65a859217cc63480766e7cdb242824b1fa2035a5": [
+   "programs/games/zynaps/events"
+  ],
+  "bd73a26500d41812bc859feb0a1d2868fdeaf64b": [
+   "programs/games/zynaps/font"
+  ],
+  "71951510bad058d68323a5ba1a9bb8c29f2bca6d": [
+   "programs/games/zynaps/gamevars"
+  ],
+  "26ff3e271d1dd1e08734895c345fe7f4d15af724": [
+   "programs/games/zynaps/graphics"
+  ],
+  "2ff5cf41faa50afbbc00eb13a35a12a204dc09fe": [
+   "programs/games/zynaps/handlertables"
+  ],
+  "bb53e8c8100e383b90368159b021a685571fd1d3": [
+   "programs/games/zynaps/hiscore"
+  ],
+  "3db6506710125aa0d29379a71409f9dc7d5f982f": [
+   "programs/games/zynaps/hud"
+  ],
+  "a8958ad8f20ecd08e3d2fa8a99a93d5d680c9514": [
+   "programs/games/zynaps/icons"
+  ],
+  "210cf1284b760b1a6344d928b0dfe94b502192e2": [
+   "programs/games/zynaps/input"
+  ],
+  "20b68547344388199841f0f63758a5a59986da2c": [
+   "programs/games/zynaps/interrupts"
+  ],
+  "9bd7a62ce73e7f1be31845ff59cfb9af0b872ea7": [
+   "programs/games/zynaps/leveldata"
+  ],
+  "7ae2c5e101db8d8c7691cb24ea985c087668cc34": [
+   "programs/games/zynaps/levels"
+  ],
+  "a0188eea196a777976d4cae4220f183c306effe0": [
+   "programs/games/zynaps/mainloop"
+  ],
+  "7af85bf784b52c5a0935de6a5b42f56a4d7c9d8f": [
+   "programs/games/zynaps/menu"
+  ],
+  "2d82cf5ddcc8488acce16a3fd50ea51bf75dba63": [
+   "programs/games/zynaps/movers"
+  ],
+  "dc48d6f9a0a469d102f36ed158b6e5b85c2ac333": [
+   "programs/games/zynaps/objects"
+  ],
+  "b6b66a3655ac7ce30ba45e3c913c569da0b1a93b": [
+   "programs/games/zynaps/objgrid"
+  ],
+  "91c78b8a8f1e116cea1a672a4883e5be54661577": [
+   "programs/games/zynaps/objutil"
+  ],
+  "4ea8e650340479955e18c12acbe60ec8542bea29": [
+   "programs/games/zynaps/options"
+  ],
+  "f43ae3def2e040ffaced0be43876846d6900b43b": [
+   "programs/games/zynaps/panel"
+  ],
+  "4f1b57055b2666d311dd4e7c5950f2659b73a61f": [
+   "programs/games/zynaps/player"
+  ],
+  "76eed932b7b0b955b1d87678787de7186f10a104": [
+   "programs/games/zynaps/playfield"
+  ],
+  "c8ff7e64d84314c56cd9aae6b81e829bde24ec03": [
+   "programs/games/zynaps/print"
+  ],
+  "2a476556616e56e05193d94621299ca37bb5d041": [
+   "programs/games/zynaps/records"
+  ],
+  "f510fb81d41e6a03fb5e085f57f9ba93e1021143": [
+   "programs/games/zynaps/rounds"
+  ],
+  "c65c85440cf3a19838d0cee3cadcf9c55625c44a": [
+   "programs/games/zynaps/scenery"
+  ],
+  "0adbe9c1e76405cdfaa654d08d14685c6d357038": [
+   "programs/games/zynaps/score"
+  ],
+  "c7c45e87064f9f710e0fe81ce750b1c598cdfe3d": [
+   "programs/games/zynaps/scoredata"
+  ],
+  "fed63d0c2780ff6333a3b0849180107a54ac80a9": [
+   "programs/games/zynaps/scroll"
+  ],
+  "cd97490e1747e9e3b5606e922a9810d3c847ca0d": [
+   "programs/games/zynaps/sprites"
+  ],
+  "06ebd4a0cc3e8f3f0cd1eca98dee4d6475dd47d3": [
+   "programs/games/zynaps/stars"
+  ],
+  "1ff6aee718bc0cc9b58d23dbd5c82cf940b1e32a": [
+   "programs/games/zynaps/start"
+  ],
+  "bc7d6d7bc7abb21d5727e0e54796318a5c33453b": [
+   "programs/games/zynaps/system"
+  ],
+  "756d5c7ccc707d67e489db011b57188638750853": [
+   "programs/games/zynaps/systemvars"
+  ],
+  "703ddf0c4b9fa2d848f042aabe70c713a2c80152": [
+   "programs/games/zynaps/tables"
+  ],
+  "24f8512ea06190cd5427c9bc3885ddc77918b0bf": [
+   "programs/games/zynaps/texts"
+  ],
+  "8757c0d220fac064e5214b804d83d423e1177f3e": [
+   "programs/games/zynaps/topcells"
+  ],
+  "4abd8fdf0fdb4aa75ccfdf4127ab3e9f3cbd2361": [
+   "programs/games/zynaps/tunedata"
+  ],
+  "71075e18915dd3c9c0909e120bb871f20a8fcb03": [
+   "programs/games/zynaps/waves"
+  ],
+  "9118b9d5437336e17300ca9e2ca7884e23784896": [
+   "programs/games/zynaps/wavescript"
+  ],
+  "499d5f57ce7eb7a140a5870fc6847e926d15142d": [
+   "programs/games/zynaps/weapons"
+  ],
   "f2575e4b85c775cb5edee37ce6924386750be40a": [
    "programs/utilities/nether-earth-editor/mix"
   ],
@@ -1094,6 +1977,12 @@
   ],
   "cc9dc9e88fa747fb7cf2b560d809b1e06295fdef": [
    "sound/ay-players/pro-tracker-3/nick-gdc-1.0"
+  ],
+  "5f1d91982a6d69df142f5d94f51ee875e2cc14ec": [
+   "sound/beeper/steve-turner-two-voice/seen-zynaps"
+  ],
+  "1d4067f4d31417fe197e93c772698debc94bafbe": [
+   "tape/loaders/hewson-countdown-2/decrypted"
   ]
  },
  "by_masked_sha1": {
@@ -1105,6 +1994,9 @@
   ],
   "9f7ff7ebadcf29a038d69737675a844e68d1f6cc": [
    "packers/hrust/1/screen-depacker"
+  ],
+  "65ea760e77c0bb16f79badf0fb5e98ad2e8fb6cb": [
+   "packers/picy/seen-zynaps/depacker"
   ],
   "1b6340e89c17095d60edf0632a13991b922b753c": [
    "programs/games/advanced-nether-earth/construction"
@@ -1262,6 +2154,144 @@
   "7a3d4ff13cd7249237cf1ede8c068bfb44dce3cd": [
    "programs/games/nether-earth/world"
   ],
+  "19eb4741b3b7d0e17bc3852d5852093b11ffcd04": [
+   "programs/games/zynaps/buffers"
+  ],
+  "48b5a38015416faa52a3091493b7f800b55a1235": [
+   "programs/games/zynaps/controldata"
+  ],
+  "5199a8d59383cf449094f4dd88662b5affb4d03f": [
+   "programs/games/zynaps/effectdata"
+  ],
+  "215398c89a3667661f43564408cae9a893c6654f": [
+   "programs/games/zynaps/effects"
+  ],
+  "308281e15e8fb20a7ffb09e9b1903980c182c05d": [
+   "programs/games/zynaps/enemies"
+  ],
+  "96b916dd62400c88b4414c169077799470ef6768": [
+   "programs/games/zynaps/events"
+  ],
+  "bd73a26500d41812bc859feb0a1d2868fdeaf64b": [
+   "programs/games/zynaps/font"
+  ],
+  "71951510bad058d68323a5ba1a9bb8c29f2bca6d": [
+   "programs/games/zynaps/gamevars"
+  ],
+  "26ff3e271d1dd1e08734895c345fe7f4d15af724": [
+   "programs/games/zynaps/graphics"
+  ],
+  "2ff5cf41faa50afbbc00eb13a35a12a204dc09fe": [
+   "programs/games/zynaps/handlertables"
+  ],
+  "45228698c3b79641626e231131b950ebd218d16b": [
+   "programs/games/zynaps/hiscore"
+  ],
+  "31dbf3efb1ea2c8463149f3428a076da833930ad": [
+   "programs/games/zynaps/hud"
+  ],
+  "a8958ad8f20ecd08e3d2fa8a99a93d5d680c9514": [
+   "programs/games/zynaps/icons"
+  ],
+  "f607b0151a3181eb4837ee95a8cec009add65998": [
+   "programs/games/zynaps/input"
+  ],
+  "e4b8e5d8b5c1a306bf585e0b27a1d7364224e319": [
+   "programs/games/zynaps/interrupts"
+  ],
+  "1b05de8b63439eb06973b2007f347f99bb5669e9": [
+   "programs/games/zynaps/leveldata"
+  ],
+  "7d00e91228c33960249b4a03549495386f2ea414": [
+   "programs/games/zynaps/levels"
+  ],
+  "fb7868ca18f76bc6719652c22ae1e9d05b82b901": [
+   "programs/games/zynaps/mainloop"
+  ],
+  "0b1490e45baf13c1c383f514fd0da40cf0106634": [
+   "programs/games/zynaps/menu"
+  ],
+  "d9fc526a682e800332c4e9737fe7dda0ec134ae3": [
+   "programs/games/zynaps/movers"
+  ],
+  "c844b1e0739c7dcb242147bf4ae59944d9c8e547": [
+   "programs/games/zynaps/objects"
+  ],
+  "56b174b36032f0b4bd8851cf000cbd2ef1197628": [
+   "programs/games/zynaps/objgrid"
+  ],
+  "9a65c46dc71cb4b060f1d49cb664357bba382cc3": [
+   "programs/games/zynaps/objutil"
+  ],
+  "5a91bdb0807cd1efa71aec1ae5fe00b186e5ae66": [
+   "programs/games/zynaps/options"
+  ],
+  "9646a3a97b414f5acbfca9b02cfd0f68e0c0cc5f": [
+   "programs/games/zynaps/panel"
+  ],
+  "bd17d85f98b6ae2e79385f6b7e58e6219dfff19f": [
+   "programs/games/zynaps/player"
+  ],
+  "314b716e4fcd47a76f89feb8b83a00864f73f94f": [
+   "programs/games/zynaps/playfield"
+  ],
+  "7fd5800b3aea63c323a792dbc78e983dd9f7bf31": [
+   "programs/games/zynaps/print"
+  ],
+  "2a476556616e56e05193d94621299ca37bb5d041": [
+   "programs/games/zynaps/records"
+  ],
+  "34868c5efbd652ac76786fa43c5982194fd14367": [
+   "programs/games/zynaps/rounds"
+  ],
+  "e5399ff6bd430f1dbd7c87e3038279b540d05354": [
+   "programs/games/zynaps/scenery"
+  ],
+  "9d3c139b0ccf7308d9ac3f794067fb0986635010": [
+   "programs/games/zynaps/score"
+  ],
+  "c7c45e87064f9f710e0fe81ce750b1c598cdfe3d": [
+   "programs/games/zynaps/scoredata"
+  ],
+  "3c2346b3805291a7199ee508cd6b2f45eb79c6e4": [
+   "programs/games/zynaps/scroll"
+  ],
+  "318beae41f6c091786b47489358e02784b1cd7ad": [
+   "programs/games/zynaps/sprites"
+  ],
+  "5152dcb2d0f6ad16522118944abaeb6d50dd1c42": [
+   "programs/games/zynaps/stars"
+  ],
+  "1c002b1df728fbe130265405765c37dbb47b4f17": [
+   "programs/games/zynaps/start"
+  ],
+  "69b7580237f0edb1472370924dbdb3293f706e7a": [
+   "programs/games/zynaps/system"
+  ],
+  "756d5c7ccc707d67e489db011b57188638750853": [
+   "programs/games/zynaps/systemvars"
+  ],
+  "703ddf0c4b9fa2d848f042aabe70c713a2c80152": [
+   "programs/games/zynaps/tables"
+  ],
+  "24f8512ea06190cd5427c9bc3885ddc77918b0bf": [
+   "programs/games/zynaps/texts"
+  ],
+  "8757c0d220fac064e5214b804d83d423e1177f3e": [
+   "programs/games/zynaps/topcells"
+  ],
+  "b10e6798d407060775ccc15af0c8508239fd991d": [
+   "programs/games/zynaps/tunedata"
+  ],
+  "beacd56522228ec6959079e522c6b2d84d398108": [
+   "programs/games/zynaps/waves"
+  ],
+  "d61c026416c975acedf77854011be61a93b9bfb4": [
+   "programs/games/zynaps/wavescript"
+  ],
+  "a2345e51d679112164c64c772c65fbc7de92d3cf": [
+   "programs/games/zynaps/weapons"
+  ],
   "055e729f1914108f0359f0f536a5cfbefb18cdf2": [
    "programs/utilities/nether-earth-editor/mix"
   ],
@@ -1273,6 +2303,12 @@
   ],
   "63d8dda7a455dfe38eaa4b01cb5fd43dfed55ad5": [
    "sound/ay-players/pro-tracker-3/nick-gdc-1.0"
+  ],
+  "e7c1f153da17ac92a73e93b0bc52cfb2555326f8": [
+   "sound/beeper/steve-turner-two-voice/seen-zynaps"
+  ],
+  "670a2b1455035cc5343df93ffdabb1efd5f5fced": [
+   "tape/loaders/hewson-countdown-2/decrypted"
   ]
  },
  "anchors": {
@@ -1394,6 +2430,42 @@
    [
     "packers/hrust/1/screen-depacker",
     229
+   ]
+  ],
+  "01ff1a3600edb0d1dd6e03dd": [
+   [
+    "packers/picy/seen-zynaps/depacker",
+    47
+   ]
+  ],
+  "e5fde1dd6e05dd660619e5dd": [
+   [
+    "packers/picy/seen-zynaps/depacker",
+    62
+   ]
+  ],
+  "3708066c0e011aa13e002802": [
+   [
+    "packers/picy/seen-zynaps/depacker",
+    86
+   ]
+  ],
+  "08380479a0200afd7e00dd77": [
+   [
+    "packers/picy/seen-zynaps/depacker",
+    104
+   ]
+  ],
+  "7e00dd23dd7700dd23af08cb": [
+   [
+    "packers/picy/seen-zynaps/depacker",
+    124
+   ]
+  ],
+  "10c7f1c1d1e1fde1dde1fbc9": [
+   [
+    "packers/picy/seen-zynaps/depacker",
+    145
    ]
   ],
   "1110000618fd7e01b72805fd": [
@@ -3508,6 +4580,1936 @@
     1809
    ]
   ],
+  "000000000000000e700e700c": [
+   [
+    "programs/games/zynaps/buffers",
+    1230
+   ]
+  ],
+  "00007f3e7f3e1f781f0000f8": [
+   [
+    "programs/games/zynaps/buffers",
+    1491
+   ]
+  ],
+  "1c1c3be23be2ee0300027f01": [
+   [
+    "programs/games/zynaps/buffers",
+    2982
+   ]
+  ],
+  "0600606000c0000000000000": [
+   [
+    "programs/games/zynaps/buffers",
+    4297
+   ]
+  ],
+  "00000000df01bf027f02fd01": [
+   [
+    "programs/games/zynaps/controldata",
+    0
+   ]
+  ],
+  "435641534446475157455254": [
+   [
+    "programs/games/zynaps/controldata",
+    23
+   ]
+  ],
+  "4f495559034c4b4a4802014d": [
+   [
+    "programs/games/zynaps/controldata",
+    46
+   ]
+  ],
+  "2bac2bac2bac2bac2cac7aac": [
+   [
+    "programs/games/zynaps/controldata",
+    69
+   ]
+  ],
+  "7aac6fac0000000000000000": [
+   [
+    "programs/games/zynaps/controldata",
+    79
+   ]
+  ],
+  "000000f68100000027ae28ae": [
+   [
+    "programs/games/zynaps/controldata",
+    115
+   ]
+  ],
+  "ae60ae6dae84ae9baeacaec3": [
+   [
+    "programs/games/zynaps/controldata",
+    138
+   ]
+  ],
+  "0eae13ae22ae24ae18ae1dae": [
+   [
+    "programs/games/zynaps/controldata",
+    161
+   ]
+  ],
+  "80fe01010003870310020000": [
+   [
+    "programs/games/zynaps/effectdata",
+    0
+   ]
+  ],
+  "00051413700850fa00081513": [
+   [
+    "programs/games/zynaps/effectdata",
+    36
+   ]
+  ],
+  "e430000000000003001802e0": [
+   [
+    "programs/games/zynaps/effectdata",
+    72
+   ]
+  ],
+  "03c008e60000100008000206": [
+   [
+    "programs/games/zynaps/effectdata",
+    108
+   ]
+  ],
+  "07073809fe00000048e70000": [
+   [
+    "programs/games/zynaps/effectdata",
+    144
+   ]
+  ],
+  "e0000002c8eb000048004800": [
+   [
+    "programs/games/zynaps/effectdata",
+    180
+   ]
+  ],
+  "48e700006000600003071804": [
+   [
+    "programs/games/zynaps/effectdata",
+    216
+   ]
+  ],
+  "6000600003071804e000000c": [
+   [
+    "programs/games/zynaps/effectdata",
+    252
+   ]
+  ],
+  "a720023e80be380e773e8032": [
+   [
+    "programs/games/zynaps/effects",
+    4
+   ]
+  ],
+  "010700edb07ee60f1213ae0f": [
+   [
+    "programs/games/zynaps/effects",
+    50
+   ]
+  ],
+  "d90601d90e023e1846d3fe00": [
+   [
+    "programs/games/zynaps/effects",
+    101
+   ]
+  ],
+  "7e3600fe802882cb79281021": [
+   [
+    "programs/games/zynaps/effects",
+    147
+   ]
+  ],
+  "3520023601cb59280fcb7920": [
+   [
+    "programs/games/zynaps/effects",
+    228
+   ]
+  ],
+  "59280fcb792004cb40280721": [
+   [
+    "programs/games/zynaps/effects",
+    234
+   ]
+  ],
+  "41cb3f30062002cb18cb18cb": [
+   [
+    "programs/games/zynaps/effects",
+    305
+   ]
+  ],
+  "30062002cb18cb18cb40d93a": [
+   [
+    "programs/games/zynaps/effects",
+    308
+   ]
+  ],
+  "878787c640fd7725fd4e247e": [
+   [
+    "programs/games/zynaps/enemies",
+    132
+   ],
+   [
+    "programs/games/zynaps/enemies",
+    263
+   ]
+  ],
+  "87c640fd7725fd4e247ea121": [
+   [
+    "programs/games/zynaps/enemies",
+    134
+   ]
+  ],
+  "0efefd7e06d60c38063c47cb": [
+   [
+    "programs/games/zynaps/enemies",
+    211
+   ]
+  ],
+  "280efd7e0dd604fd770daf32": [
+   [
+    "programs/games/zynaps/enemies",
+    280
+   ]
+  ],
+  "a6c846c506ff4f78041fb930": [
+   [
+    "programs/games/zynaps/events",
+    6
+   ]
+  ],
+  "dd7e070f0f0f5fe61f57ab5f": [
+   [
+    "programs/games/zynaps/events",
+    60
+   ]
+  ],
+  "77132410fae12c0d20f2c921": [
+   [
+    "programs/games/zynaps/events",
+    93
+   ]
+  ],
+  "dd7e01bed8dd340cdd3404cd": [
+   [
+    "programs/games/zynaps/events",
+    144
+   ]
+  ],
+  "e1110e0019cbbe18d4e5fe14": [
+   [
+    "programs/games/zynaps/events",
+    201
+   ]
+  ],
+  "00380787878787c6206f0901": [
+   [
+    "programs/games/zynaps/events",
+    241
+   ]
+  ],
+  "3e010607ebc51f300ceb2100": [
+   [
+    "programs/games/zynaps/events",
+    300
+   ]
+  ],
+  "19ebedb03e00e5010000f5cd": [
+   [
+    "programs/games/zynaps/events",
+    315
+   ]
+  ],
+  "000000f00000000000003f1e": [
+   [
+    "programs/games/zynaps/font",
+    4
+   ]
+  ],
+  "77777763fe9e0efefefe0e0e": [
+   [
+    "programs/games/zynaps/font",
+    60
+   ]
+  ],
+  "4100000020f0f8fc0e0e0e0e": [
+   [
+    "programs/games/zynaps/font",
+    120
+   ]
+  ],
+  "06050103b4b6260c4cd8b000": [
+   [
+    "programs/games/zynaps/font",
+    180
+   ]
+  ],
+  "00000000030f1f2000000000": [
+   [
+    "programs/games/zynaps/font",
+    240
+   ]
+  ],
+  "80e0f0081f37373730373737": [
+   [
+    "programs/games/zynaps/font",
+    300
+   ]
+  ],
+  "f0d8d8d858589898371f0000": [
+   [
+    "programs/games/zynaps/font",
+    360
+   ]
+  ],
+  "c7000000000000d8f0000000": [
+   [
+    "programs/games/zynaps/font",
+    417
+   ]
+  ],
+  "00010000000000f8c0000000": [
+   [
+    "programs/games/zynaps/gamevars",
+    0
+   ]
+  ],
+  "010000000000f8c00000005c": [
+   [
+    "programs/games/zynaps/gamevars",
+    1
+   ]
+  ],
+  "0000000000f8c00000005c00": [
+   [
+    "programs/games/zynaps/gamevars",
+    2
+   ]
+  ],
+  "00000000f8c00000005c0000": [
+   [
+    "programs/games/zynaps/gamevars",
+    3
+   ]
+  ],
+  "000000f8c00000005c000000": [
+   [
+    "programs/games/zynaps/gamevars",
+    4
+   ]
+  ],
+  "0000f8c00000005c00000000": [
+   [
+    "programs/games/zynaps/gamevars",
+    5
+   ]
+  ],
+  "00f8c00000005c0000000000": [
+   [
+    "programs/games/zynaps/gamevars",
+    6
+   ]
+  ],
+  "f8c00000005c000000000000": [
+   [
+    "programs/games/zynaps/gamevars",
+    7
+   ]
+  ],
+  "0000000000000000001f2244": [
+   [
+    "programs/games/zynaps/graphics",
+    0
+   ]
+  ],
+  "030604000000000000000000": [
+   [
+    "programs/games/zynaps/graphics",
+    620
+   ]
+  ],
+  "f0f870000000000000000000": [
+   [
+    "programs/games/zynaps/graphics",
+    1241
+   ]
+  ],
+  "fc7830000000000000000000": [
+   [
+    "programs/games/zynaps/graphics",
+    1852
+   ]
+  ],
+  "00000000000000000ffffff0": [
+   [
+    "programs/games/zynaps/graphics",
+    2487
+   ]
+  ],
+  "640814c3c3a8000342624005": [
+   [
+    "programs/games/zynaps/graphics",
+    3106
+   ]
+  ],
+  "000000370000e400370000e8": [
+   [
+    "programs/games/zynaps/graphics",
+    3749
+   ]
+  ],
+  "e0e0f0f0f0e0e08000000000": [
+   [
+    "programs/games/zynaps/graphics",
+    4348
+   ]
+  ],
+  "839cca9cfe9c4c9d5d9d689d": [
+   [
+    "programs/games/zynaps/handlertables",
+    0
+   ]
+  ],
+  "889fc8a1fda163a2039e139f": [
+   [
+    "programs/games/zynaps/handlertables",
+    20
+   ]
+  ],
+  "a0299591959c95aa95fc9513": [
+   [
+    "programs/games/zynaps/handlertables",
+    41
+   ]
+  ],
+  "966696799689969996d096a8": [
+   [
+    "programs/games/zynaps/handlertables",
+    61
+   ]
+  ],
+  "97cd97379874989098201f1f": [
+   [
+    "programs/games/zynaps/handlertables",
+    81
+   ]
+  ],
+  "110e0b080400fcf8f5f2efed": [
+   [
+    "programs/games/zynaps/handlertables",
+    101
+   ]
+  ],
+  "e0e1e1e2e4e5e7e8eaebedef": [
+   [
+    "programs/games/zynaps/handlertables",
+    122
+   ]
+  ],
+  "0e1113151618191b1c1e1f1f": [
+   [
+    "programs/games/zynaps/handlertables",
+    142
+   ]
+  ],
+  "381bc5010e0009c110f33e1a": [
+   [
+    "programs/games/zynaps/hiscore",
+    24
+   ]
+  ],
+  "1bc5010e0009c110f33e1acd": [
+   [
+    "programs/games/zynaps/hiscore",
+    25
+   ]
+  ],
+  "e6032804083e64085f79cb1b": [
+   [
+    "programs/games/zynaps/hiscore",
+    135
+   ]
+  ],
+  "400e5a28014f18c171233e2e": [
+   [
+    "programs/games/zynaps/hiscore",
+    160
+   ]
+  ],
+  "0e5a28014f18c171233e2ecd": [
+   [
+    "programs/games/zynaps/hiscore",
+    161
+   ]
+  ],
+  "06027e81e6c7772c10f8dd2a": [
+   [
+    "programs/games/zynaps/hud",
+    13
+   ]
+  ],
+  "0be6e00707073d4721010122": [
+   [
+    "programs/games/zynaps/hud",
+    29
+   ]
+  ],
+  "30081601fe2030021e01ed53": [
+   [
+    "programs/games/zynaps/hud",
+    62
+   ]
+  ],
+  "8677e607fe072804fe012008": [
+   [
+    "programs/games/zynaps/hud",
+    106
+   ]
+  ],
+  "77e607fe072804fe0120083a": [
+   [
+    "programs/games/zynaps/hud",
+    107
+   ]
+  ],
+  "7ea7c83d774f47265a112000": [
+   [
+    "programs/games/zynaps/hud",
+    167
+   ]
+  ],
+  "6f701970c93ef7dbfecb5fcc": [
+   [
+    "programs/games/zynaps/hud",
+    189
+   ]
+  ],
+  "000000230853032300000060": [
+   [
+    "programs/games/zynaps/icons",
+    0
+   ]
+  ],
+  "0000007e7e7c786000000000": [
+   [
+    "programs/games/zynaps/icons",
+    21
+   ]
+  ],
+  "bcdcdcdcdcdc2b2a2a2a0228": [
+   [
+    "programs/games/zynaps/icons",
+    42
+   ]
+  ],
+  "000002373b1d2e7639000000": [
+   [
+    "programs/games/zynaps/icons",
+    63
+   ]
+  ],
+  "000000107044dc1c38000000": [
+   [
+    "programs/games/zynaps/icons",
+    85
+   ]
+  ],
+  "6e5c1864ecc07b370e351b0b": [
+   [
+    "programs/games/zynaps/icons",
+    106
+   ]
+  ],
+  "000000181d0e06010700000c": [
+   [
+    "programs/games/zynaps/icons",
+    127
+   ]
+  ],
+  "18000000c0b0b85c0c000000": [
+   [
+    "programs/games/zynaps/icons",
+    148
+   ]
+  ],
+  "7e23dbfea6fe01cb112310f4": [
+   [
+    "programs/games/zynaps/input",
+    11
+   ]
+  ],
+  "cb462808db1fe61fcbc61847": [
+   [
+    "programs/games/zynaps/input",
+    26
+   ]
+  ],
+  "fecb4b2024cb4e2020cb8ecb": [
+   [
+    "programs/games/zynaps/input",
+    49
+   ]
+  ],
+  "3001040f3002cbd80f3002cb": [
+   [
+    "programs/games/zynaps/input",
+    74
+   ]
+  ],
+  "17cb3b17cb3b170707b3b14f": [
+   [
+    "programs/games/zynaps/input",
+    99
+   ]
+  ],
+  "cba157afba9f57afbb9faa32": [
+   [
+    "programs/games/zynaps/input",
+    123
+   ]
+  ],
+  "cbc6db1fe61ffe102816cb86": [
+   [
+    "programs/games/zynaps/input",
+    150
+   ]
+  ],
+  "efdbfe1f3003a7e1c937e1c9": [
+   [
+    "programs/games/zynaps/input",
+    173
+   ]
+  ],
+  "3680e1fbc9f5e5d5c508d9f5": [
+   [
+    "programs/games/zynaps/interrupts",
+    71
+   ]
+  ],
+  "c508d9f5e5d5c5dde5fde53a": [
+   [
+    "programs/games/zynaps/interrupts",
+    79
+   ]
+  ],
+  "fe0128082b36002b3600181a": [
+   [
+    "programs/games/zynaps/interrupts",
+    312
+   ]
+  ],
+  "c1d1e1f1d908c1d1e1f1fbc9": [
+   [
+    "programs/games/zynaps/interrupts",
+    358
+   ]
+  ],
+  "00020513181d212426282e31": [
+   [
+    "programs/games/zynaps/leveldata",
+    0
+   ]
+  ],
+  "ff40000100001a6cff300002": [
+   [
+    "programs/games/zynaps/leveldata",
+    816
+   ]
+  ],
+  "810042596e0007e481070008": [
+   [
+    "programs/games/zynaps/leveldata",
+    1631
+   ]
+  ],
+  "800009e48100428a710007e4": [
+   [
+    "programs/games/zynaps/leveldata",
+    2447
+   ]
+  ],
+  "2b28ff2a2c2827292c2b2cff": [
+   [
+    "programs/games/zynaps/leveldata",
+    3214
+   ]
+  ],
+  "0454f03b9cf8fc54f0dbbcf9": [
+   [
+    "programs/games/zynaps/leveldata",
+    4129
+   ]
+  ],
+  "7c2c5a01011eb3fc3b261501": [
+   [
+    "programs/games/zynaps/leveldata",
+    4894
+   ]
+  ],
+  "9f2c9e9fb7ee26bebf26bebf": [
+   [
+    "programs/games/zynaps/leveldata",
+    5710
+   ]
+  ],
+  "065feb21080019eb73237210": [
+   [
+    "programs/games/zynaps/levels",
+    6
+   ]
+  ],
+  "eb21080019eb73237210f621": [
+   [
+    "programs/games/zynaps/levels",
+    8
+   ]
+  ],
+  "0319dd7100dd700179c6804f": [
+   [
+    "programs/games/zynaps/levels",
+    68
+   ]
+  ],
+  "dd730ddd720edd361320dd36": [
+   [
+    "programs/games/zynaps/levels",
+    102
+   ]
+  ],
+  "f867112000dd19f13d20b821": [
+   [
+    "programs/games/zynaps/levels",
+    122
+   ]
+  ],
+  "3e80cb051f30fb772c20f521": [
+   [
+    "programs/games/zynaps/levels",
+    174
+   ]
+  ],
+  "0300060636ff1910fb3e0532": [
+   [
+    "programs/games/zynaps/levels",
+    189
+   ]
+  ],
+  "fd7e04a7280cfde5dde1dd22": [
+   [
+    "programs/games/zynaps/mainloop",
+    95
+   ]
+  ],
+  "7e063cfe0c2001afdd7706cd": [
+   [
+    "programs/games/zynaps/mainloop",
+    124
+   ]
+  ],
+  "d83efbdbfecb4720ec3e0432": [
+   [
+    "programs/games/zynaps/mainloop",
+    166
+   ]
+  ],
+  "fd360300fd360414fd360500": [
+   [
+    "programs/games/zynaps/mainloop",
+    289
+   ]
+  ],
+  "1100080608d5e510fc310000": [
+   [
+    "programs/games/zynaps/mainloop",
+    346
+   ]
+  ],
+  "362780012c00fd09c110ebcd": [
+   [
+    "programs/games/zynaps/mainloop",
+    412
+   ]
+  ],
+  "cb08be012c00fd09c110ebc9": [
+   [
+    "programs/games/zynaps/mainloop",
+    485
+   ]
+  ],
+  "f5e5d5c508d9f5e5d5c5ed73": [
+   [
+    "programs/games/zynaps/menu",
+    0
+   ]
+  ],
+  "fe3e00d3fe1a1cd94f080fd2": [
+   [
+    "programs/games/zynaps/menu",
+    53
+   ]
+  ],
+  "d1e1f108d9c1d1e1f1fbc921": [
+   [
+    "programs/games/zynaps/menu",
+    112
+   ]
+  ],
+  "e67f4f0c7e230d28eb121310": [
+   [
+    "programs/games/zynaps/menu",
+    176
+   ]
+  ],
+  "d121180019ebd92323c110d3": [
+   [
+    "programs/games/zynaps/menu",
+    249
+   ]
+  ],
+  "38fa3d3ccb1830fb4f060021": [
+   [
+    "programs/games/zynaps/menu",
+    282
+   ]
+  ],
+  "28052310ee18e7414eafdbfe": [
+   [
+    "programs/games/zynaps/menu",
+    350
+   ]
+  ],
+  "dbfe2fe61f20f8d1e1f1c9cd": [
+   [
+    "programs/games/zynaps/menu",
+    360
+   ]
+  ],
+  "060f48fdcb087e280c0dc5fd": [
+   [
+    "programs/games/zynaps/movers",
+    22
+   ]
+  ],
+  "c9e5fd6e1dfd661e5e235623": [
+   [
+    "programs/games/zynaps/movers",
+    178
+   ]
+  ],
+  "7503fd7404a7c9fd6e05fd66": [
+   [
+    "programs/games/zynaps/movers",
+    346
+   ]
+  ],
+  "0efd770ffd7712fd7713c9cd": [
+   [
+    "programs/games/zynaps/movers",
+    504
+   ]
+  ],
+  "16300392180182e63ffd7716": [
+   [
+    "programs/games/zynaps/movers",
+    692
+   ]
+  ],
+  "e6072803fd771737c9fd6e03": [
+   [
+    "programs/games/zynaps/movers",
+    865
+   ]
+  ],
+  "fd7e06fe11300dfd7e04d610": [
+   [
+    "programs/games/zynaps/movers",
+    1044
+   ]
+  ],
+  "00001910fdfd7512fd7413c9": [
+   [
+    "programs/games/zynaps/movers",
+    1211
+   ]
+  ],
+  "fd7e18a7c8fdcb087620083a": [
+   [
+    "programs/games/zynaps/objects",
+    0
+   ]
+  ],
+  "19dd360300dd7404fd6e05fd": [
+   [
+    "programs/games/zynaps/objects",
+    79
+   ]
+  ],
+  "11cb4f2006e6fc0f0f18213a": [
+   [
+    "programs/games/zynaps/objects",
+    156
+   ]
+  ],
+  "c9fd7e023cfe09200bfd7e26": [
+   [
+    "programs/games/zynaps/objects",
+    237
+   ]
+  ],
+  "dd7e073cfe05380caf3e09cd": [
+   [
+    "programs/games/zynaps/objects",
+    318
+   ]
+  ],
+  "fd7500fd7401fd360201fd36": [
+   [
+    "programs/games/zynaps/objects",
+    450
+   ]
+  ],
+  "a677237eb177fd362570affd": [
+   [
+    "programs/games/zynaps/objects",
+    476
+   ]
+  ],
+  "772b7eb177fd3625083e04cd": [
+   [
+    "programs/games/zynaps/objects",
+    551
+   ]
+  ],
+  "112c000610b7fdcb087e2805": [
+   [
+    "programs/games/zynaps/objgrid",
+    4
+   ]
+  ],
+  "285afdcb086e2854fdf9dde1": [
+   [
+    "programs/games/zynaps/objgrid",
+    43
+   ]
+  ],
+  "7de6e0b4070707dd46080526": [
+   [
+    "programs/games/zynaps/objgrid",
+    85
+   ]
+  ],
+  "6f10f42d7eb177cb01d9fd19": [
+   [
+    "programs/games/zynaps/objgrid",
+    128
+   ]
+  ],
+  "fdf9dde1dd460bfd7e07fe01": [
+   [
+    "programs/games/zynaps/objgrid",
+    171
+   ]
+  ],
+  "e6e0b207070726fd6faff9e1": [
+   [
+    "programs/games/zynaps/objgrid",
+    214
+   ]
+  ],
+  "28014dfd19112c0010a17932": [
+   [
+    "programs/games/zynaps/objgrid",
+    255
+   ]
+  ],
+  "00c9875f1600195e2356ebe9": [
+   [
+    "programs/games/zynaps/objgrid",
+    299
+   ]
+  ],
+  "a6772379a677fdcb08bec9fd": [
+   [
+    "programs/games/zynaps/objutil",
+    12
+   ]
+  ],
+  "fd6e00fd6601110f00197efd": [
+   [
+    "programs/games/zynaps/objutil",
+    42
+   ]
+  ],
+  "cb792802cbfe357ee67fc03a": [
+   [
+    "programs/games/zynaps/objutil",
+    84
+   ]
+  ],
+  "0707fd77267ee63fc8c607cd": [
+   [
+    "programs/games/zynaps/objutil",
+    112
+   ]
+  ],
+  "7e2cb65f7dc6806ffdcb0646": [
+   [
+    "programs/games/zynaps/objutil",
+    174
+   ]
+  ],
+  "01247bb62cb6fe013fc9ed5b": [
+   [
+    "programs/games/zynaps/objutil",
+    203
+   ]
+  ],
+  "d8fd36060ffd3605e0c9fd7e": [
+   [
+    "programs/games/zynaps/objutil",
+    251
+   ]
+  ],
+  "c608e6382002c608fd7725c9": [
+   [
+    "programs/games/zynaps/objutil",
+    293
+   ]
+  ],
+  "c1d1e1f1c9f53e011803f53e": [
+   [
+    "programs/games/zynaps/options",
+    20
+   ]
+  ],
+  "d1e1f1c9f53e011803f53e02": [
+   [
+    "programs/games/zynaps/options",
+    21
+   ]
+  ],
+  "e1f1c9f53e011803f53e0232": [
+   [
+    "programs/games/zynaps/options",
+    22
+   ]
+  ],
+  "0608c5d506107676c5d50610": [
+   [
+    "programs/games/zynaps/options",
+    99
+   ]
+  ],
+  "08c5d506107676c5d50610cd": [
+   [
+    "programs/games/zynaps/options",
+    100
+   ]
+  ],
+  "e5772c77111f0019772c7706": [
+   [
+    "programs/games/zynaps/panel",
+    0
+   ]
+  ],
+  "d926fbd90602cb41281a2cc5": [
+   [
+    "programs/games/zynaps/panel",
+    31
+   ]
+  ],
+  "09c110e8c9c506081a13772c": [
+   [
+    "programs/games/zynaps/panel",
+    62
+   ]
+  ],
+  "102030403f2f1f0f1f2f3f40": [
+   [
+    "programs/games/zynaps/panel",
+    92
+   ]
+  ],
+  "80c0c0a0a060505050282824": [
+   [
+    "programs/games/zynaps/panel",
+    123
+   ]
+  ],
+  "0e60b0908888848482828181": [
+   [
+    "programs/games/zynaps/panel",
+    154
+   ]
+  ],
+  "828181818182828444487021": [
+   [
+    "programs/games/zynaps/panel",
+    176
+   ]
+  ],
+  "5fe603200f0e02fdcb0f7e28": [
+   [
+    "programs/games/zynaps/player",
+    31
+   ]
+  ],
+  "20052e0015ed44fd7712fd72": [
+   [
+    "programs/games/zynaps/player",
+    77
+   ]
+  ],
+  "fd7406fd7e0efdb612281c21": [
+   [
+    "programs/games/zynaps/player",
+    141
+   ]
+  ],
+  "dd7e0add8608fe0438020e30": [
+   [
+    "programs/games/zynaps/player",
+    290
+   ]
+  ],
+  "dd7e0b070707828787e6f021": [
+   [
+    "programs/games/zynaps/player",
+    309
+   ]
+  ],
+  "7406d9fd362600fdcb08fecd": [
+   [
+    "programs/games/zynaps/player",
+    384
+   ]
+  ],
+  "112c00ddcb087e2805dd1910": [
+   [
+    "programs/games/zynaps/player",
+    473
+   ]
+  ],
+  "000119dd7503dd74043e02cd": [
+   [
+    "programs/games/zynaps/player",
+    529
+   ]
+  ],
+  "310000c9e785003e00dd8608": [
+   [
+    "programs/games/zynaps/playfield",
+    22
+   ]
+  ],
+  "08712cd961d173247224d173": [
+   [
+    "programs/games/zynaps/playfield",
+    89
+   ]
+  ],
+  "000021140039f9e1f130294f": [
+   [
+    "programs/games/zynaps/playfield",
+    178
+   ]
+  ],
+  "f933eb562d5e2dd5562d5e2d": [
+   [
+    "programs/games/zynaps/playfield",
+    284
+   ]
+  ],
+  "562d5e2dd5562d5ed5790eff": [
+   [
+    "programs/games/zynaps/playfield",
+    357
+   ]
+  ],
+  "1224147beda8eda8eda8eda8": [
+   [
+    "programs/games/zynaps/playfield",
+    446
+   ]
+  ],
+  "845f50086708eda07e122414": [
+   [
+    "programs/games/zynaps/playfield",
+    535
+   ]
+  ],
+  "24147beda8e1f9c9e1e1f9c9": [
+   [
+    "programs/games/zynaps/playfield",
+    624
+   ]
+  ],
+  "fe20385779fe20383c070707": [
+   [
+    "programs/games/zynaps/print",
+    8
+   ]
+  ],
+  "01003c0901f0062c7e87a1b6": [
+   [
+    "programs/games/zynaps/print",
+    51
+   ]
+  ],
+  "fa18eafe073011875f160021": [
+   [
+    "programs/games/zynaps/print",
+    96
+   ]
+  ],
+  "798787874f7ee6c7b177c921": [
+   [
+    "programs/games/zynaps/print",
+    161
+   ]
+  ],
+  "e603f6586779ade6e0ad6f22": [
+   [
+    "programs/games/zynaps/print",
+    189
+   ]
+  ],
+  "233808feff2810fe1b2805cd": [
+   [
+    "programs/games/zynaps/print",
+    232
+   ]
+  ],
+  "163006073e0fed6ffe0f2003": [
+   [
+    "programs/games/zynaps/print",
+    299
+   ]
+  ],
+  "ed6ffe0f200323ed6f5f82cd": [
+   [
+    "programs/games/zynaps/print",
+    339
+   ]
+  ],
+  "000000000000000000947e01": [
+   [
+    "programs/games/zynaps/records",
+    603
+   ]
+  ],
+  "98f6e0000000000000000000": [
+   [
+    "programs/games/zynaps/records",
+    753
+   ]
+  ],
+  "000001007cf7800000000000": [
+   [
+    "programs/games/zynaps/records",
+    1013
+   ]
+  ],
+  "000000000000ae7e01000000": [
+   [
+    "programs/games/zynaps/records",
+    1266
+   ]
+  ],
+  "0004f7038600000000000000": [
+   [
+    "programs/games/zynaps/records",
+    1519
+   ]
+  ],
+  "00f803860000000000000000": [
+   [
+    "programs/games/zynaps/records",
+    1772
+   ]
+  ],
+  "7d014000a7ed42281130054f": [
+   [
+    "programs/games/zynaps/rounds",
+    44
+   ]
+  ],
+  "30054f0600180a4d443effcd": [
+   [
+    "programs/games/zynaps/rounds",
+    53
+   ]
+  ],
+  "be28ec2310fa12130c79fe07": [
+   [
+    "programs/games/zynaps/rounds",
+    203
+   ]
+  ],
+  "10fa12130c79fe0720e1c9cd": [
+   [
+    "programs/games/zynaps/rounds",
+    207
+   ]
+  ],
+  "1910fdebdde5c1210d0009eb": [
+   [
+    "programs/games/zynaps/rounds",
+    306
+   ]
+  ],
+  "c1210d0009eb010800edb021": [
+   [
+    "programs/games/zynaps/rounds",
+    312
+   ]
+  ],
+  "875f1600195e2356eb7e23a7": [
+   [
+    "programs/games/zynaps/scenery",
+    72
+   ]
+  ],
+  "18cb6f280be60f0f0f0f0f32": [
+   [
+    "programs/games/zynaps/scenery",
+    107
+   ]
+  ],
+  "d118e7eb5fe61f57ab070707": [
+   [
+    "programs/games/zynaps/scenery",
+    188
+   ]
+  ],
+  "23666fcb493e1c28063e0783": [
+   [
+    "programs/games/zynaps/scenery",
+    234
+   ]
+  ],
+  "f5cb13cb3acb1b3eb782573a": [
+   [
+    "programs/games/zynaps/scenery",
+    293
+   ]
+  ],
+  "835fd6404f1442d910dcd9cd": [
+   [
+    "programs/games/zynaps/scenery",
+    346
+   ]
+  ],
+  "087e23123e000208c81c0cc3": [
+   [
+    "programs/games/zynaps/scenery",
+    385
+   ]
+  ],
+  "f1c9e5d5c506041abe280218": [
+   [
+    "programs/games/zynaps/score",
+    79
+   ]
+  ],
+  "021805132310f6373fc1d1e1": [
+   [
+    "programs/games/zynaps/score",
+    89
+   ]
+  ],
+  "132310f6373fc1d1e1c9f521": [
+   [
+    "programs/games/zynaps/score",
+    92
+   ]
+  ],
+  "0071081a13856f0810f1f1c9": [
+   [
+    "programs/games/zynaps/score",
+    125
+   ]
+  ],
+  "000000250000005000000075": [
+   [
+    "programs/games/zynaps/scoredata",
+    4
+   ]
+  ],
+  "000200000002500000050000": [
+   [
+    "programs/games/zynaps/scoredata",
+    25
+   ]
+  ],
+  "0845474f1b08ff0006800004": [
+   [
+    "programs/games/zynaps/scoredata",
+    51
+   ]
+  ],
+  "040c03084241561b08ff0001": [
+   [
+    "programs/games/zynaps/scoredata",
+    76
+   ]
+  ],
+  "00500004120308424d521b08": [
+   [
+    "programs/games/zynaps/scoredata",
+    101
+   ]
+  ],
+  "464747474747474646460642": [
+   [
+    "programs/games/zynaps/scoredata",
+    126
+   ]
+  ],
+  "44040404ff07074606064342": [
+   [
+    "programs/games/zynaps/scoredata",
+    152
+   ]
+  ],
+  "0646468547464606064200ff": [
+   [
+    "programs/games/zynaps/scoredata",
+    177
+   ]
+  ],
+  "e116c0c91e002ee0cb0018cf": [
+   [
+    "programs/games/zynaps/scroll",
+    47
+   ]
+  ],
+  "3e80856f0d280ecb41200125": [
+   [
+    "programs/games/zynaps/scroll",
+    114
+   ]
+  ],
+  "d9dd730fd906081a146f7ed9": [
+   [
+    "programs/games/zynaps/scroll",
+    259
+   ]
+  ],
+  "d5fde1e5dd730ddd720e2104": [
+   [
+    "programs/games/zynaps/scroll",
+    345
+   ]
+  ],
+  "10dd7511fd7302d9e1c9e52a": [
+   [
+    "programs/games/zynaps/scroll",
+    436
+   ]
+  ],
+  "772c20062ee0ddcb0b06dd75": [
+   [
+    "programs/games/zynaps/scroll",
+    569
+   ]
+  ],
+  "cbb3cb772802cbf30f0f0fab": [
+   [
+    "programs/games/zynaps/scroll",
+    683
+   ]
+  ],
+  "01c942881988e08797873e87": [
+   [
+    "programs/games/zynaps/scroll",
+    797
+   ]
+  ],
+  "e1c5c506087e2f12231310f9": [
+   [
+    "programs/games/zynaps/sprites",
+    9
+   ]
+  ],
+  "06083eff121310fcc108c911": [
+   [
+    "programs/games/zynaps/sprites",
+    38
+   ]
+  ],
+  "af17cb1e1f1910f9e1b67723": [
+   [
+    "programs/games/zynaps/sprites",
+    132
+   ]
+  ],
+  "19771977197719771977c9cd": [
+   [
+    "programs/games/zynaps/sprites",
+    181
+   ]
+  ],
+  "471910fdfd7e04d610d14a16": [
+   [
+    "programs/games/zynaps/sprites",
+    264
+   ]
+  ],
+  "6f300125fd7e064fc601e607": [
+   [
+    "programs/games/zynaps/sprites",
+    330
+   ]
+  ],
+  "fd210c00fd39fdf90834235e": [
+   [
+    "programs/games/zynaps/sprites",
+    396
+   ]
+  ],
+  "310000fde1c9fdcb08aeed7b": [
+   [
+    "programs/games/zynaps/sprites",
+    457
+   ]
+  ],
+  "e61fc61047c57b0f0f0fe6f0": [
+   [
+    "programs/games/zynaps/stars",
+    39
+   ]
+  ],
+  "f6805fd5d910da310000c921": [
+   [
+    "programs/games/zynaps/stars",
+    51
+   ]
+  ],
+  "d9d1d9f919cb69d9c1e12801": [
+   [
+    "programs/games/zynaps/stars",
+    111
+   ]
+  ],
+  "0f0f0fe6f0f6806f60e579e6": [
+   [
+    "programs/games/zynaps/stars",
+    137
+   ]
+  ],
+  "a94f7d0600e6e00f0feef832": [
+   [
+    "programs/games/zynaps/stars",
+    165
+   ]
+  ],
+  "c5e5f1f1f1d910a7310000c9": [
+   [
+    "programs/games/zynaps/stars",
+    192
+   ]
+  ],
+  "0148077e2f77230b79b020f7": [
+   [
+    "programs/games/zynaps/start",
+    18
+   ]
+  ],
+  "48077e2f77230b79b020f721": [
+   [
+    "programs/games/zynaps/start",
+    19
+   ]
+  ],
+  "01c0007e2f77230b79b020f7": [
+   [
+    "programs/games/zynaps/start",
+    33
+   ]
+  ],
+  "c0007e2f77230b79b020f7c3": [
+   [
+    "programs/games/zynaps/start",
+    34
+   ]
+  ],
+  "0605ed5fae122c1310f8c922": [
+   [
+    "programs/games/zynaps/system",
+    35
+   ]
+  ],
+  "cb1e2b7e5f1f572b7e4f8787": [
+   [
+    "programs/games/zynaps/system",
+    60
+   ]
+  ],
+  "8787472b7e2377cb3fcb3fcb": [
+   [
+    "programs/games/zynaps/system",
+    72
+   ]
+  ],
+  "7b2377780100001100002100": [
+   [
+    "programs/games/zynaps/system",
+    103
+   ]
+  ],
+  "01ff02fb76afd3fe3600edb0": [
+   [
+    "programs/games/zynaps/system",
+    126
+   ]
+  ],
+  "01ff1775edb0c91e040e07fb": [
+   [
+    "programs/games/zynaps/system",
+    144
+   ]
+  ],
+  "75edb0c91e040e07fb060321": [
+   [
+    "programs/games/zynaps/system",
+    147
+   ]
+  ],
+  "000102000000000000090a0b": [
+   [
+    "programs/games/zynaps/systemvars",
+    0
+   ]
+  ],
+  "e101000000000000000000f0": [
+   [
+    "programs/games/zynaps/systemvars",
+    19
+   ]
+  ],
+  "000000000000000000050603": [
+   [
+    "programs/games/zynaps/systemvars",
+    102
+   ]
+  ],
+  "00ff0000ff00000051626164": [
+   [
+    "programs/games/zynaps/systemvars",
+    125
+   ]
+  ],
+  "f00034347c7cfcfc78780000": [
+   [
+    "programs/games/zynaps/systemvars",
+    156
+   ]
+  ],
+  "580720000000000000000000": [
+   [
+    "programs/games/zynaps/systemvars",
+    168
+   ]
+  ],
+  "000000000000000000f3af32": [
+   [
+    "programs/games/zynaps/tables",
+    1503
+   ]
+  ],
+  "67cd17fe6fcd17fe7723e607": [
+   [
+    "programs/games/zynaps/tables",
+    1527
+   ]
+  ],
+  "fe79c9000000000000000000": [
+   [
+    "programs/games/zynaps/tables",
+    1608
+   ]
+  ],
+  "030d004280818283051b0046": [
+   [
+    "programs/games/zynaps/texts",
+    0
+   ]
+  ],
+  "0601aeafb0b1b2b3b4b5ff96": [
+   [
+    "programs/games/zynaps/texts",
+    77
+   ]
+  ],
+  "060316040c1b051b0104141b": [
+   [
+    "programs/games/zynaps/texts",
+    154
+   ]
+  ],
+  "0355500316ff03090603444f": [
+   [
+    "programs/games/zynaps/texts",
+    231
+   ]
+  ],
+  "4c4159455253ff0046030806": [
+   [
+    "programs/games/zynaps/texts",
+    309
+   ]
+  ],
+  "571b140005030d04104d5553": [
+   [
+    "programs/games/zynaps/texts",
+    386
+   ]
+  ],
+  "040903075052455041524520": [
+   [
+    "programs/games/zynaps/texts",
+    463
+   ]
+  ],
+  "555220494e495449414c53ff": [
+   [
+    "programs/games/zynaps/texts",
+    540
+   ]
+  ],
+  "7c404000003c4242524a3c00": [
+   [
+    "programs/games/zynaps/topcells",
+    0
+   ]
+  ],
+  "003c4242524a3c00007c4242": [
+   [
+    "programs/games/zynaps/topcells",
+    4
+   ]
+  ],
+  "4a3c00007c42427c44420000": [
+   [
+    "programs/games/zynaps/topcells",
+    9
+   ]
+  ],
+  "7c42427c444200003c403c02": [
+   [
+    "programs/games/zynaps/topcells",
+    13
+   ]
+  ],
+  "4200003c403c02423c0000fe": [
+   [
+    "programs/games/zynaps/topcells",
+    18
+   ]
+  ],
+  "403c02423c0000fe10101010": [
+   [
+    "programs/games/zynaps/topcells",
+    22
+   ]
+  ],
+  "0000fe101010101000004242": [
+   [
+    "programs/games/zynaps/topcells",
+    27
+   ]
+  ],
+  "10101010000042424242423c": [
+   [
+    "programs/games/zynaps/topcells",
+    31
+   ]
+  ],
+  "00f2e7d8cdc2b7aca1999088": [
+   [
+    "programs/games/zynaps/tunedata",
+    0
+   ]
+  ],
+  "c10706c204c606c20bc409c1": [
+   [
+    "programs/games/zynaps/tunedata",
+    41
+   ]
+  ],
+  "c606c20ec40dc1100ec20d10": [
+   [
+    "programs/games/zynaps/tunedata",
+    57
+   ]
+  ],
+  "0e0cc20b0c0c0b0b0909ffc2": [
+   [
+    "programs/games/zynaps/tunedata",
+    85
+   ]
+  ],
+  "120d1215120d1217120e1217": [
+   [
+    "programs/games/zynaps/tunedata",
+    114
+   ]
+  ],
+  "0b0909ca0dc20b090bc80d0d": [
+   [
+    "programs/games/zynaps/tunedata",
+    142
+   ]
+  ],
+  "10ffc2060402040d0b0a0d0b": [
+   [
+    "programs/games/zynaps/tunedata",
+    171
+   ]
+  ],
+  "02020202c60ec1020eca02ff": [
+   [
+    "programs/games/zynaps/tunedata",
+    199
+   ]
+  ],
+  "1103004add7e003c2805dd19": [
+   [
+    "programs/games/zynaps/waves",
+    23
+   ]
+  ],
+  "1310fc791804121310fce521": [
+   [
+    "programs/games/zynaps/waves",
+    83
+   ]
+  ],
+  "e1f1d1087e23d95f16010847": [
+   [
+    "programs/games/zynaps/waves",
+    242
+   ]
+  ],
+  "010900edb023231313012100": [
+   [
+    "programs/games/zynaps/waves",
+    283
+   ]
+  ],
+  "fd7703a9fd77047e23feff20": [
+   [
+    "programs/games/zynaps/waves",
+    354
+   ]
+  ],
+  "fd1918f637c94ffe14380721": [
+   [
+    "programs/games/zynaps/waves",
+    437
+   ]
+  ],
+  "1971cbfe237ec61077e60f21": [
+   [
+    "programs/games/zynaps/waves",
+    523
+   ]
+  ],
+  "7e34cb9ed55f87835f160021": [
+   [
+    "programs/games/zynaps/waves",
+    602
+   ]
+  ],
+  "c179c1d1e1c937c90837c83f": [
+   [
+    "programs/games/zynaps/wavescript",
+    160
+   ]
+  ],
+  "f83fc908c9083fc9c93eff32": [
+   [
+    "programs/games/zynaps/wavescript",
+    185
+   ]
+  ],
+  "eb5e2356e5210100a7ed5aeb": [
+   [
+    "programs/games/zynaps/wavescript",
+    289
+   ]
+  ],
+  "210100a7ed5aebe1722b73cd": [
+   [
+    "programs/games/zynaps/wavescript",
+    294
+   ]
+  ],
+  "dd5e00dd56017bc6406f62af": [
+   [
+    "programs/games/zynaps/wavescript",
+    404
+   ]
+  ],
+  "dd7e0d3c2005dd1910ebafcd": [
+   [
+    "programs/games/zynaps/wavescript",
+    468
+   ]
+  ],
+  "ddcb087ec0ddcb08feafdd77": [
+   [
+    "programs/games/zynaps/weapons",
+    25
+   ]
+  ],
+  "361600dd36264bdd362701cd": [
+   [
+    "programs/games/zynaps/weapons",
+    108
+   ]
+  ],
+  "c9dd7e0a3cfe04c8dd770ac9": [
+   [
+    "programs/games/zynaps/weapons",
+    217
+   ]
+  ],
+  "361704dd362801dd362b0221": [
+   [
+    "programs/games/zynaps/weapons",
+    316
+   ]
+  ],
+  "3811fd6e03fd660411400119": [
+   [
+    "programs/games/zynaps/weapons",
+    449
+   ]
+  ],
+  "210000a7ed52cb2ccb1dfd75": [
+   [
+    "programs/games/zynaps/weapons",
+    549
+   ]
+  ],
+  "fd6e29fd662ae5dde1ddcb08": [
+   [
+    "programs/games/zynaps/weapons",
+    659
+   ]
+  ],
+  "e1fd7529fd742afd712618a8": [
+   [
+    "programs/games/zynaps/weapons",
+    761
+   ]
+  ],
   "01d124110000e56e260019eb": [
    [
     "programs/utilities/nether-earth-editor/mix",
@@ -3693,6 +6695,90 @@
     "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
     2797
    ]
+  ],
+  "d938503ef7dbfe2fe61f2047": [
+   [
+    "sound/beeper/steve-turner-two-voice/seen-zynaps",
+    14
+   ]
+  ],
+  "feff284013fec03809878787": [
+   [
+    "sound/beeper/steve-turner-two-voice/seen-zynaps",
+    27
+   ]
+  ],
+  "284013fec038098787878732": [
+   [
+    "sound/beeper/steve-turner-two-voice/seen-zynaps",
+    29
+   ]
+  ],
+  "60af252003f610602d2003f6": [
+   [
+    "sound/beeper/steve-turner-two-voice/seen-zynaps",
+    62
+   ]
+  ],
+  "03f610602d2003f61069c608": [
+   [
+    "sound/beeper/steve-turner-two-voice/seen-zynaps",
+    66
+   ]
+  ],
+  "d3fecb3f1d20e91520e6c1d1": [
+   [
+    "sound/beeper/steve-turner-two-voice/seen-zynaps",
+    80
+   ]
+  ],
+  "18ab10a5fbc9a7c900000000": [
+   [
+    "sound/beeper/steve-turner-two-voice/seen-zynaps",
+    93
+   ]
+  ],
+  "fec6babababac6fefeeeceee": [
+   [
+    "tape/loaders/hewson-countdown-2/decrypted",
+    50
+   ]
+  ],
+  "fabac6fefee6de86babac6fe": [
+   [
+    "tape/loaders/hewson-countdown-2/decrypted",
+    94
+   ]
+  ],
+  "e43ec6b830e02420f106c9cd": [
+   [
+    "tape/loaders/hewson-countdown-2/decrypted",
+    186
+   ]
+  ],
+  "04c83e7fdbfe1fd0a9e62028": [
+   [
+    "tape/loaders/hewson-countdown-2/decrypted",
+    291
+   ]
+  ],
+  "1a771c241a771c241a77d9c3": [
+   [
+    "tape/loaders/hewson-countdown-2/decrypted",
+    370
+   ]
+  ],
+  "3eff01e8033cb7ed4230fa09": [
+   [
+    "tape/loaders/hewson-countdown-2/decrypted",
+    541
+   ]
+  ],
+  "292909291b7bfe1520e4c931": [
+   [
+    "tape/loaders/hewson-countdown-2/decrypted",
+    559
+   ]
   ]
  },
  "by_role": {
@@ -3705,7 +6791,8 @@
   ],
   "depacker": [
    "packers/hrum/3.5/depacker",
-   "packers/hrust/1/screen-depacker"
+   "packers/hrust/1/screen-depacker",
+   "packers/picy/seen-zynaps/depacker"
   ],
   "game-module": [
    "programs/games/advanced-nether-earth/construction",
@@ -3760,6 +6847,52 @@
    "programs/games/nether-earth/view",
    "programs/games/nether-earth/viewbuffer",
    "programs/games/nether-earth/world",
+   "programs/games/zynaps/buffers",
+   "programs/games/zynaps/controldata",
+   "programs/games/zynaps/effectdata",
+   "programs/games/zynaps/effects",
+   "programs/games/zynaps/enemies",
+   "programs/games/zynaps/events",
+   "programs/games/zynaps/font",
+   "programs/games/zynaps/gamevars",
+   "programs/games/zynaps/graphics",
+   "programs/games/zynaps/handlertables",
+   "programs/games/zynaps/hiscore",
+   "programs/games/zynaps/hud",
+   "programs/games/zynaps/icons",
+   "programs/games/zynaps/input",
+   "programs/games/zynaps/interrupts",
+   "programs/games/zynaps/leveldata",
+   "programs/games/zynaps/levels",
+   "programs/games/zynaps/mainloop",
+   "programs/games/zynaps/menu",
+   "programs/games/zynaps/movers",
+   "programs/games/zynaps/objects",
+   "programs/games/zynaps/objgrid",
+   "programs/games/zynaps/objutil",
+   "programs/games/zynaps/options",
+   "programs/games/zynaps/panel",
+   "programs/games/zynaps/player",
+   "programs/games/zynaps/playfield",
+   "programs/games/zynaps/print",
+   "programs/games/zynaps/records",
+   "programs/games/zynaps/rounds",
+   "programs/games/zynaps/scenery",
+   "programs/games/zynaps/score",
+   "programs/games/zynaps/scoredata",
+   "programs/games/zynaps/scroll",
+   "programs/games/zynaps/sprites",
+   "programs/games/zynaps/stars",
+   "programs/games/zynaps/start",
+   "programs/games/zynaps/system",
+   "programs/games/zynaps/systemvars",
+   "programs/games/zynaps/tables",
+   "programs/games/zynaps/texts",
+   "programs/games/zynaps/topcells",
+   "programs/games/zynaps/tunedata",
+   "programs/games/zynaps/waves",
+   "programs/games/zynaps/wavescript",
+   "programs/games/zynaps/weapons",
    "programs/utilities/nether-earth-editor/mix"
   ],
   "protection-layer": [
@@ -3767,7 +6900,11 @@
   ],
   "player": [
    "sound/ay-players/pro-tracker-2/phantom-family-2.40",
-   "sound/ay-players/pro-tracker-3/nick-gdc-1.0"
+   "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
+   "sound/beeper/steve-turner-two-voice/seen-zynaps"
+  ],
+  "loader": [
+   "tape/loaders/hewson-countdown-2/decrypted"
   ]
  },
  "by_tag": {
@@ -3814,17 +6951,32 @@
   ],
   "packer": [
    "packers/hrum/3.5/depacker",
-   "packers/hrust/1/screen-depacker"
+   "packers/hrust/1/screen-depacker",
+   "packers/picy/seen-zynaps/depacker"
   ],
   "depacker": [
    "packers/hrum/3.5/depacker",
-   "packers/hrust/1/screen-depacker"
+   "packers/hrust/1/screen-depacker",
+   "packers/picy/seen-zynaps/depacker"
   ],
   "hrust": [
    "packers/hrust/1/screen-depacker"
   ],
   "self-relocating": [
    "packers/hrust/1/screen-depacker"
+  ],
+  "screen": [
+   "packers/picy/seen-zynaps/depacker",
+   "programs/games/advanced-nether-earth/screen",
+   "programs/games/nether-earth/screen"
+  ],
+  "position-independent": [
+   "packers/picy/seen-zynaps/depacker"
+  ],
+  "hewson": [
+   "packers/picy/seen-zynaps/depacker",
+   "sound/beeper/steve-turner-two-voice/seen-zynaps",
+   "tape/loaders/hewson-countdown-2/decrypted"
   ],
   "advanced-nether-earth": [
    "programs/games/advanced-nether-earth/construction",
@@ -3895,6 +7047,52 @@
    "programs/games/nether-earth/view",
    "programs/games/nether-earth/viewbuffer",
    "programs/games/nether-earth/world",
+   "programs/games/zynaps/buffers",
+   "programs/games/zynaps/controldata",
+   "programs/games/zynaps/effectdata",
+   "programs/games/zynaps/effects",
+   "programs/games/zynaps/enemies",
+   "programs/games/zynaps/events",
+   "programs/games/zynaps/font",
+   "programs/games/zynaps/gamevars",
+   "programs/games/zynaps/graphics",
+   "programs/games/zynaps/handlertables",
+   "programs/games/zynaps/hiscore",
+   "programs/games/zynaps/hud",
+   "programs/games/zynaps/icons",
+   "programs/games/zynaps/input",
+   "programs/games/zynaps/interrupts",
+   "programs/games/zynaps/leveldata",
+   "programs/games/zynaps/levels",
+   "programs/games/zynaps/mainloop",
+   "programs/games/zynaps/menu",
+   "programs/games/zynaps/movers",
+   "programs/games/zynaps/objects",
+   "programs/games/zynaps/objgrid",
+   "programs/games/zynaps/objutil",
+   "programs/games/zynaps/options",
+   "programs/games/zynaps/panel",
+   "programs/games/zynaps/player",
+   "programs/games/zynaps/playfield",
+   "programs/games/zynaps/print",
+   "programs/games/zynaps/records",
+   "programs/games/zynaps/rounds",
+   "programs/games/zynaps/scenery",
+   "programs/games/zynaps/score",
+   "programs/games/zynaps/scoredata",
+   "programs/games/zynaps/scroll",
+   "programs/games/zynaps/sprites",
+   "programs/games/zynaps/stars",
+   "programs/games/zynaps/start",
+   "programs/games/zynaps/system",
+   "programs/games/zynaps/systemvars",
+   "programs/games/zynaps/tables",
+   "programs/games/zynaps/texts",
+   "programs/games/zynaps/topcells",
+   "programs/games/zynaps/tunedata",
+   "programs/games/zynaps/waves",
+   "programs/games/zynaps/wavescript",
+   "programs/games/zynaps/weapons",
    "programs/utilities/nether-earth-editor/mix"
   ],
   "construction": [
@@ -3909,7 +7107,8 @@
   ],
   "font": [
    "programs/games/advanced-nether-earth/font",
-   "programs/games/nether-earth/font"
+   "programs/games/nether-earth/font",
+   "programs/games/zynaps/font"
   ],
   "gameturn": [
    "programs/games/advanced-nether-earth/gameturn",
@@ -3920,7 +7119,8 @@
   ],
   "interrupts": [
    "programs/games/advanced-nether-earth/interrupts",
-   "programs/games/nether-earth/interrupts"
+   "programs/games/nether-earth/interrupts",
+   "programs/games/zynaps/interrupts"
   ],
   "mainmenu": [
    "programs/games/advanced-nether-earth/mainmenu",
@@ -3930,18 +7130,16 @@
    "programs/games/advanced-nether-earth/robotmenu",
    "programs/games/nether-earth/robotmenu"
   ],
-  "screen": [
-   "programs/games/advanced-nether-earth/screen",
-   "programs/games/nether-earth/screen"
-  ],
   "sprites": [
    "programs/games/advanced-nether-earth/sprites",
    "programs/games/hate/sprites",
-   "programs/games/nether-earth/sprites"
+   "programs/games/nether-earth/sprites",
+   "programs/games/zynaps/sprites"
   ],
   "start": [
    "programs/games/advanced-nether-earth/start",
-   "programs/games/nether-earth/start"
+   "programs/games/nether-earth/start",
+   "programs/games/zynaps/start"
   ],
   "viewtail": [
    "programs/games/advanced-nether-earth/viewtail"
@@ -3967,7 +7165,8 @@
    "programs/games/hate/titleplayer"
   ],
   "buffers": [
-   "programs/games/hate/buffers"
+   "programs/games/hate/buffers",
+   "programs/games/zynaps/buffers"
   ],
   "course": [
    "programs/games/hate/course"
@@ -3982,13 +7181,16 @@
    "programs/games/hate/hits"
   ],
   "hud": [
-   "programs/games/hate/hud"
+   "programs/games/hate/hud",
+   "programs/games/zynaps/hud"
   ],
   "mainloop": [
-   "programs/games/hate/mainloop"
+   "programs/games/hate/mainloop",
+   "programs/games/zynaps/mainloop"
   ],
   "menu": [
-   "programs/games/hate/menu"
+   "programs/games/hate/menu",
+   "programs/games/zynaps/menu"
   ],
   "mover": [
    "programs/games/hate/mover"
@@ -3998,6 +7200,7 @@
   ],
   "player": [
    "programs/games/hate/player",
+   "programs/games/zynaps/player",
    "sound/ay-players/pro-tracker-2/phantom-family-2.40",
    "sound/ay-players/pro-tracker-3/nick-gdc-1.0"
   ],
@@ -4054,13 +7257,15 @@
    "programs/games/nether-earth/level"
   ],
   "print": [
-   "programs/games/nether-earth/print"
+   "programs/games/nether-earth/print",
+   "programs/games/zynaps/print"
   ],
   "ship": [
    "programs/games/nether-earth/ship"
   ],
   "tables": [
-   "programs/games/nether-earth/tables"
+   "programs/games/nether-earth/tables",
+   "programs/games/zynaps/tables"
   ],
   "view": [
    "programs/games/nether-earth/view"
@@ -4070,6 +7275,159 @@
   ],
   "world": [
    "programs/games/nether-earth/world"
+  ],
+  "zynaps": [
+   "programs/games/zynaps/buffers",
+   "programs/games/zynaps/controldata",
+   "programs/games/zynaps/effectdata",
+   "programs/games/zynaps/effects",
+   "programs/games/zynaps/enemies",
+   "programs/games/zynaps/events",
+   "programs/games/zynaps/font",
+   "programs/games/zynaps/gamevars",
+   "programs/games/zynaps/graphics",
+   "programs/games/zynaps/handlertables",
+   "programs/games/zynaps/hiscore",
+   "programs/games/zynaps/hud",
+   "programs/games/zynaps/icons",
+   "programs/games/zynaps/input",
+   "programs/games/zynaps/interrupts",
+   "programs/games/zynaps/leveldata",
+   "programs/games/zynaps/levels",
+   "programs/games/zynaps/mainloop",
+   "programs/games/zynaps/menu",
+   "programs/games/zynaps/movers",
+   "programs/games/zynaps/objects",
+   "programs/games/zynaps/objgrid",
+   "programs/games/zynaps/objutil",
+   "programs/games/zynaps/options",
+   "programs/games/zynaps/panel",
+   "programs/games/zynaps/player",
+   "programs/games/zynaps/playfield",
+   "programs/games/zynaps/print",
+   "programs/games/zynaps/records",
+   "programs/games/zynaps/rounds",
+   "programs/games/zynaps/scenery",
+   "programs/games/zynaps/score",
+   "programs/games/zynaps/scoredata",
+   "programs/games/zynaps/scroll",
+   "programs/games/zynaps/sprites",
+   "programs/games/zynaps/stars",
+   "programs/games/zynaps/start",
+   "programs/games/zynaps/system",
+   "programs/games/zynaps/systemvars",
+   "programs/games/zynaps/tables",
+   "programs/games/zynaps/texts",
+   "programs/games/zynaps/topcells",
+   "programs/games/zynaps/tunedata",
+   "programs/games/zynaps/waves",
+   "programs/games/zynaps/wavescript",
+   "programs/games/zynaps/weapons"
+  ],
+  "controldata": [
+   "programs/games/zynaps/controldata"
+  ],
+  "effectdata": [
+   "programs/games/zynaps/effectdata"
+  ],
+  "effects": [
+   "programs/games/zynaps/effects"
+  ],
+  "enemies": [
+   "programs/games/zynaps/enemies"
+  ],
+  "events": [
+   "programs/games/zynaps/events"
+  ],
+  "gamevars": [
+   "programs/games/zynaps/gamevars"
+  ],
+  "graphics": [
+   "programs/games/zynaps/graphics"
+  ],
+  "handlertables": [
+   "programs/games/zynaps/handlertables"
+  ],
+  "hiscore": [
+   "programs/games/zynaps/hiscore"
+  ],
+  "icons": [
+   "programs/games/zynaps/icons"
+  ],
+  "input": [
+   "programs/games/zynaps/input"
+  ],
+  "leveldata": [
+   "programs/games/zynaps/leveldata"
+  ],
+  "levels": [
+   "programs/games/zynaps/levels"
+  ],
+  "movers": [
+   "programs/games/zynaps/movers"
+  ],
+  "objects": [
+   "programs/games/zynaps/objects"
+  ],
+  "objgrid": [
+   "programs/games/zynaps/objgrid"
+  ],
+  "objutil": [
+   "programs/games/zynaps/objutil"
+  ],
+  "options": [
+   "programs/games/zynaps/options"
+  ],
+  "panel": [
+   "programs/games/zynaps/panel"
+  ],
+  "playfield": [
+   "programs/games/zynaps/playfield"
+  ],
+  "records": [
+   "programs/games/zynaps/records"
+  ],
+  "rounds": [
+   "programs/games/zynaps/rounds"
+  ],
+  "scenery": [
+   "programs/games/zynaps/scenery"
+  ],
+  "score": [
+   "programs/games/zynaps/score"
+  ],
+  "scoredata": [
+   "programs/games/zynaps/scoredata"
+  ],
+  "scroll": [
+   "programs/games/zynaps/scroll"
+  ],
+  "stars": [
+   "programs/games/zynaps/stars"
+  ],
+  "system": [
+   "programs/games/zynaps/system"
+  ],
+  "systemvars": [
+   "programs/games/zynaps/systemvars"
+  ],
+  "texts": [
+   "programs/games/zynaps/texts"
+  ],
+  "topcells": [
+   "programs/games/zynaps/topcells"
+  ],
+  "tunedata": [
+   "programs/games/zynaps/tunedata"
+  ],
+  "waves": [
+   "programs/games/zynaps/waves"
+  ],
+  "wavescript": [
+   "programs/games/zynaps/wavescript"
+  ],
+  "weapons": [
+   "programs/games/zynaps/weapons"
   ],
   "nether-earth-editor": [
    "programs/utilities/nether-earth-editor/mix"
@@ -4094,6 +7452,33 @@
   ],
   "golden-disk": [
    "sound/ay-players/pro-tracker-3/nick-gdc-1.0"
+  ],
+  "beeper": [
+   "sound/beeper/steve-turner-two-voice/seen-zynaps"
+  ],
+  "two-voice": [
+   "sound/beeper/steve-turner-two-voice/seen-zynaps"
+  ],
+  "tune": [
+   "sound/beeper/steve-turner-two-voice/seen-zynaps"
+  ],
+  "graftgold": [
+   "sound/beeper/steve-turner-two-voice/seen-zynaps"
+  ],
+  "tape": [
+   "tape/loaders/hewson-countdown-2/decrypted"
+  ],
+  "loader": [
+   "tape/loaders/hewson-countdown-2/decrypted"
+  ],
+  "ld-bytes": [
+   "tape/loaders/hewson-countdown-2/decrypted"
+  ],
+  "xor-chain": [
+   "tape/loaders/hewson-countdown-2/decrypted"
+  ],
+  "countdown": [
+   "tape/loaders/hewson-countdown-2/decrypted"
   ]
  },
  "formats": [

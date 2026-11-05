@@ -1,0 +1,178 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/controldata",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: controldata",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "controldata"
+  ],
+  "summary": "The controls, the key names, the life marks, the event table and the level script's state.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 173,
+    "sha1": "48b5a38015416faa52a3091493b7f800b55a1235",
+    "masked_sha1": "48b5a38015416faa52a3091493b7f800b55a1235"
+  },
+  "origin": "$8184",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "FireHeld",
+      "comment": "Passes fire has been held, 0 released (ReadControls $A725)"
+    },
+    {
+      "offset": 1,
+      "name": "FireChanged",
+      "comment": "$FF when fire was pressed or released since the last read ($A73C)"
+    },
+    {
+      "offset": 2,
+      "name": "ControlBits",
+      "comment": "Bit 0 right, 1 left, 2 down, 3 up ($A742)"
+    },
+    {
+      "offset": 3,
+      "name": "JoystickFlags",
+      "comment": "Bit 0 Kempston, bit 1 Sinclair rather than cursor"
+    },
+    {
+      "offset": 4,
+      "name": "KeyTable",
+      "comment": "5 keys (fire up down left right) as port high byte and bit mask; P L SS A S by default"
+    },
+    {
+      "offset": 14,
+      "name": "KeyScanRows",
+      "comment": "The half-rows WaitKeyPress scans: $FE $FD $FB $DF $BF $7F"
+    },
+    {
+      "offset": 20,
+      "name": "KeyNames",
+      "comment": "The 40 key names in the order of the half-rows $FEFE..$7FFE; 0-3 = messages 9-12 (CS SS SP EN)"
+    },
+    {
+      "offset": 60,
+      "name": "LifeSteps",
+      "comment": "The attribute steps between the life marks (DrawLives $A4EF reads 6 bytes: the 6th is EventRequests, unused)"
+    },
+    {
+      "offset": 65,
+      "name": "EventRequests",
+      "comment": "A bit per job asked for (bit 7 first; EventDispatch $AC07)"
+    },
+    {
+      "offset": 66,
+      "name": "EventMask",
+      "comment": "The enabled jobs ($FF from the play loop's start)"
+    },
+    {
+      "offset": 67,
+      "name": "EventHandlers",
+      "comment": "The 8 job routines, bit 7 first"
+    },
+    {
+      "offset": 83,
+      "name": "ScriptState",
+      "comment": "The level script's state (35 bytes, $AD56 from the player record, $AED2 back)"
+    },
+    {
+      "offset": 84,
+      "name": "ScriptPC",
+      "comment": "the step being waited for (word)"
+    },
+    {
+      "offset": 86,
+      "name": "PlayFlags",
+      "comment": "bit 5 the scroll on, bit 7 the stars shown"
+    },
+    {
+      "offset": 87,
+      "name": "ScrollCount",
+      "comment": "word, +1 per scroll step (the level's start value from LevelTable)"
+    },
+    {
+      "offset": 89,
+      "name": "ScriptNumber",
+      "comment": "the scenery script"
+    },
+    {
+      "offset": 90,
+      "name": "ScriptLevelBias",
+      "comment": "added to WeaponRating ($9B9B)"
+    },
+    {
+      "offset": 91,
+      "name": "ScriptStackPtr",
+      "comment": "word: the script's call stack ($81F6 at the start, two bytes a call)"
+    },
+    {
+      "offset": 93,
+      "name": "ScriptWaitCount",
+      "comment": "the frames waited for the current step"
+    },
+    {
+      "offset": 94,
+      "name": "ScriptFlags",
+      "comment": "the flags of the last counter op (the conditions test them)"
+    },
+    {
+      "offset": 95,
+      "name": "ScrollRestart",
+      "comment": "$FF (op 1): start the scroll again at phase 4 (ScrollControl $A9A8)"
+    },
+    {
+      "offset": 96,
+      "name": "ScriptCounter",
+      "comment": "the word every script loops on (ops 7 and 9)"
+    },
+    {
+      "offset": 98,
+      "name": "ScriptCallStack",
+      "comment": "the call stack, 16 bytes below $81F6 (no script calls)"
+    },
+    {
+      "offset": 118,
+      "name": "ScriptStateInit",
+      "comment": "Copied to the record's +$15-+$19 at a level's start: the stack pointer $81F6, wait 0, flags 0, restart 0"
+    },
+    {
+      "offset": 123,
+      "name": "ScriptCommands",
+      "comment": "The level script ops 0-17 (JumpTable from WaveScriptStep $AD86)"
+    },
+    {
+      "offset": 159,
+      "name": "ScriptConditions",
+      "comment": "The 7 jump conditions on ScriptFlags: always, Z, NZ, C, NC, P, M ($AE00)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$8184",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/controldata.asm",
+    "label": "FireHeld"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

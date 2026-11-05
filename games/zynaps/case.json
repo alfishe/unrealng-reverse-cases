@@ -1,0 +1,33 @@
+{
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/mkgame/original.bin || (mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin)"
+  ],
+  "image": "work/mkgame/original.bin",
+  "lo": "61A8",
+  "hi": "FFFF",
+  "device": "ZXSPECTRUM48",
+  "bases": {
+    "5": "4000",
+    "2": "8000",
+    "0": "C000"
+  },
+  "read_builds": [
+    "c2",
+    "r1"
+  ],
+  "ref_builds": [
+    [
+      "c2",
+      "the first play recording: level 1 from the start, 1500 frames"
+    ],
+    [
+      "r1",
+      "all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames"
+    ]
+  ],
+  "header": [
+    "; Zynaps, Hewson Consultants 1987: the game image as the Hewson loader's move leaves it ($61A8-$FFFE, entry $8000)."
+  ]
+}

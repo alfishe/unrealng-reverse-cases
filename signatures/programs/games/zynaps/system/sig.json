@@ -1,0 +1,226 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/system",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: system",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "system"
+  ],
+  "summary": "Interrupt set-up, random numbers, screen clear and fades.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 180,
+    "sha1": "bc7d6d7bc7abb21d5727e0e54796318a5c33453b",
+    "masked_sha1": "69b7580237f0edb1472370924dbdb3293f706e7a"
+  },
+  "origin": "$8516",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 8,
+      "length": 2,
+      "kind": "ext16",
+      "name": "VectorTable"
+    },
+    {
+      "offset": 21,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InterruptJump"
+    },
+    {
+      "offset": 24,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleInterrupt"
+    },
+    {
+      "offset": 27,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InterruptHandler"
+    },
+    {
+      "offset": 33,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RandomSeed"
+    },
+    {
+      "offset": 47,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 51,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 55,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 58,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F75"
+    },
+    {
+      "offset": 94,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RandomSeed"
+    },
+    {
+      "offset": 97,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F72"
+    },
+    {
+      "offset": 101,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RandomSeed"
+    },
+    {
+      "offset": 118,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 121,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5800"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5801"
+    },
+    {
+      "offset": 139,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 142,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4001"
+    },
+    {
+      "offset": 159,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5800"
+    },
+    {
+      "offset": 169,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "SetUpInterrupts",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Install the IM 2 vector table and seed the random number generator"
+    },
+    {
+      "offset": 46,
+      "name": "Random",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Next random number in A"
+    },
+    {
+      "offset": 117,
+      "name": "ClearScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Fade out, then clear the attributes and the bitmap"
+    },
+    {
+      "offset": 151,
+      "name": "FadeAttributes",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Fade the whole attribute area to black in four steps"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 12,
+      "name": "FillVectorPage",
+      "comment": "$FE00-$FEFF, then one more byte at $FF00"
+    },
+    {
+      "offset": 37,
+      "name": "SeedRandomLoop",
+      "comment": "R XOR ROM byte, five times"
+    },
+    {
+      "offset": 107,
+      "name": "RandomRestoreBC",
+      "comment": "operand written on entry: the caller's BC"
+    },
+    {
+      "offset": 110,
+      "name": "RandomRestoreDE",
+      "comment": "the caller's DE"
+    },
+    {
+      "offset": 113,
+      "name": "RandomRestoreHL",
+      "comment": "the caller's HL"
+    },
+    {
+      "offset": 156,
+      "name": "FadeStep",
+      "comment": "one pass: 3 frames, then the mask over all 768 attributes"
+    },
+    {
+      "offset": 164,
+      "name": "FadeCell",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$8516",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/system.asm",
+    "label": "SetUpInterrupts"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

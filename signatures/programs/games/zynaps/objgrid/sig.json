@@ -1,0 +1,255 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/objgrid",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: objgrid",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "objgrid"
+  ],
+  "summary": "The free-slot search, the collision grid and the jump-table dispatch.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 311,
+    "sha1": "b6b66a3655ac7ce30ba45e3c913c569da0b1a93b",
+    "masked_sha1": "56b174b36032f0b4bd8851cf000cbd2ef1197628"
+  },
+  "origin": "$90B5",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerObject"
+    },
+    {
+      "offset": 24,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyObjects"
+    },
+    {
+      "offset": 107,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 117,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 157,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 161,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerObject"
+    },
+    {
+      "offset": 267,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaserHitMask"
+    },
+    {
+      "offset": 275,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 278,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptStack"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "FindFreeObjectSlot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "find a free record among the 16 from $F36C (unused)"
+    },
+    {
+      "offset": 22,
+      "name": "MarkEnemyGrid",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "mark the 8 enemy slots' collision bits in the grid"
+    },
+    {
+      "offset": 155,
+      "name": "TestHitGrid",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the overlap masks of the player, the shots and the weapons"
+    },
+    {
+      "offset": 273,
+      "name": "ClearHitGrid",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "clear the collision grid $FC00-$FD8F"
+    },
+    {
+      "offset": 301,
+      "name": "JumpTable",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "jump to the word number A of the table at HL"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 10,
+      "name": "FindFreeSlotLoop",
+      "comment": "active: the next record"
+    },
+    {
+      "offset": 21,
+      "name": "FindFreeSlotDone",
+      "comment": "NC: IY free; carry: none"
+    },
+    {
+      "offset": 38,
+      "name": "MarkGridObject",
+      "comment": "the next slot: skip unless active and visible"
+    },
+    {
+      "offset": 72,
+      "name": "MarkGridColumns",
+      "comment": "the bit into every 4th X byte, one a column of the width"
+    },
+    {
+      "offset": 111,
+      "name": "MarkGridSkipRows",
+      "comment": "leading rows outside the row mask: not marked"
+    },
+    {
+      "offset": 119,
+      "name": "MarkGridRowLoop",
+      "comment": "the next row: in the mask?"
+    },
+    {
+      "offset": 123,
+      "name": "MarkGridRow",
+      "comment": "the bit into the Y byte of this row"
+    },
+    {
+      "offset": 131,
+      "name": "MarkGridLastRow",
+      "comment": "the last Y byte of the object"
+    },
+    {
+      "offset": 135,
+      "name": "MarkGridNextObject",
+      "comment": "the next slot's bit"
+    },
+    {
+      "offset": 142,
+      "name": "MarkGridRestoreSp",
+      "comment": "SP back (the operand written at $90CB)"
+    },
+    {
+      "offset": 146,
+      "name": "MarkGridRowOff",
+      "comment": "a row outside the mask: step over it"
+    },
+    {
+      "offset": 170,
+      "name": "TestGridObject",
+      "comment": "the next record: the descriptor and its width"
+    },
+    {
+      "offset": 186,
+      "name": "TestGridWidth",
+      "comment": "the X position into the X bytes at $FC00"
+    },
+    {
+      "offset": 200,
+      "name": "TestGridColumns",
+      "comment": "OR of 4 X bytes a column"
+    },
+    {
+      "offset": 225,
+      "name": "TestGridRows",
+      "comment": "OR of the Y bytes over the height"
+    },
+    {
+      "offset": 240,
+      "name": "",
+      "comment": "+$0D: the enemies this record overlaps"
+    },
+    {
+      "offset": 246,
+      "name": "",
+      "comment": "only the player and the four lasers count for $80BB, and only when active"
+    },
+    {
+      "offset": 258,
+      "name": "TestGridNext",
+      "comment": "the next record: 44 bytes on ($018C for the first step)"
+    },
+    {
+      "offset": 266,
+      "name": "",
+      "comment": "$80BB: the hit mask of the player and the lasers"
+    },
+    {
+      "offset": 269,
+      "name": "TestGridRestoreSp",
+      "comment": "SP back (the operand written at $9150)"
+    },
+    {
+      "offset": 285,
+      "name": "ClearGridLoop",
+      "comment": "10 words a pass"
+    },
+    {
+      "offset": 297,
+      "name": "ClearGridRestoreSp",
+      "comment": "SP back (the operand written at $91C6)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$90B5",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/objgrid.asm",
+    "label": "FindFreeObjectSlot"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

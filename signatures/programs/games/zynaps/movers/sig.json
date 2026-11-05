@@ -1,0 +1,938 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/movers",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: movers",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "movers"
+  ],
+  "summary": "The frame's object loop, the path interpreter and its movement commands.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1223,
+    "sha1": "2d82cf5ddcc8488acce16a3fd50ea51bf75dba63",
+    "masked_sha1": "d9fc526a682e800332c4e9737fe7dda0ec134ae3"
+  },
+  "origin": "$9463",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerObject"
+    },
+    {
+      "offset": 13,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KindHandlers"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpTable"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SightObject"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KindHandlers"
+    },
+    {
+      "offset": 40,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpTable"
+    },
+    {
+      "offset": 44,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FontLeftover"
+    },
+    {
+      "offset": 49,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SlotBeep"
+    },
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaserHitMask"
+    },
+    {
+      "offset": 80,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileHitMask"
+    },
+    {
+      "offset": 83,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SightMask"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlasmaHitMask"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerHitMask"
+    },
+    {
+      "offset": 92,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F505"
+    },
+    {
+      "offset": 110,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 122,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PathOps"
+    },
+    {
+      "offset": 125,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpTable"
+    },
+    {
+      "offset": 129,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 145,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 164,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 173,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PathExtOps"
+    },
+    {
+      "offset": 176,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpTable"
+    },
+    {
+      "offset": 328,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt6"
+    },
+    {
+      "offset": 370,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 381,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt6"
+    },
+    {
+      "offset": 410,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerObject"
+    },
+    {
+      "offset": 428,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 443,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 446,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 464,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 472,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 475,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 478,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollThisPass"
+    },
+    {
+      "offset": 490,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFC0"
+    },
+    {
+      "offset": 516,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 527,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 530,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 535,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 562,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 568,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerObject"
+    },
+    {
+      "offset": 571,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 577,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 628,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFC0"
+    },
+    {
+      "offset": 660,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 673,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 708,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 711,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 741,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 747,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 776,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt6"
+    },
+    {
+      "offset": 796,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryCell"
+    },
+    {
+      "offset": 832,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 849,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 904,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt6"
+    },
+    {
+      "offset": 955,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt6"
+    },
+    {
+      "offset": 981,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 985,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerObject"
+    },
+    {
+      "offset": 1002,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1005,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 1033,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt6"
+    },
+    {
+      "offset": 1037,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1042,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1061,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt6"
+    },
+    {
+      "offset": 1065,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1076,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaserHitMask"
+    },
+    {
+      "offset": 1115,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1125,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1169,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SineTable"
+    },
+    {
+      "offset": 1199,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SineTable"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "RunObjects",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "run every active object's handler, with the engine buzz"
+    },
+    {
+      "offset": 104,
+      "name": "RunPath",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "run the path bytecode of the object IY for one frame"
+    },
+    {
+      "offset": 166,
+      "name": "PathOpExtended",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 7: bits 3-6 pick one of 16 routines from $8124"
+    },
+    {
+      "offset": 179,
+      "name": "PathReadWord",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DE = the next word of the path"
+    },
+    {
+      "offset": 198,
+      "name": "PathOpAccelerate",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 0: accelerate by the flags in C, then move"
+    },
+    {
+      "offset": 302,
+      "name": "PathOpSetLoop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 1: the loop counter +$1F = P"
+    },
+    {
+      "offset": 313,
+      "name": "PathOpSetInterval",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 2: the homing interval +$27 = +$28 = P"
+    },
+    {
+      "offset": 327,
+      "name": "PathOpBounce",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 3: move, bouncing off the scenery"
+    },
+    {
+      "offset": 409,
+      "name": "PathOpHomePlayer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 4: home on the player, turn rate P"
+    },
+    {
+      "offset": 432,
+      "name": "PathOpSetDirection",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 5: direction (C & $78) / 2, then move"
+    },
+    {
+      "offset": 450,
+      "name": "PathOpHomeTarget",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command 6: home on the target, the player once it is gone"
+    },
+    {
+      "offset": 477,
+      "name": "PathOpScroll",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 0: move with the landscape when it scrolls"
+    },
+    {
+      "offset": 501,
+      "name": "PathOpStop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 1: stop"
+    },
+    {
+      "offset": 515,
+      "name": "PathOpRandomDirection",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 2: a random direction, then move"
+    },
+    {
+      "offset": 534,
+      "name": "PathOpLoop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 3: loop back to the word target while +$1F counts down"
+    },
+    {
+      "offset": 550,
+      "name": "PathOpDriftMiddle",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 4: accelerate towards row 8"
+    },
+    {
+      "offset": 566,
+      "name": "PathOpAimPlayer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 5: the direction to the player"
+    },
+    {
+      "offset": 581,
+      "name": "PathOpMove",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 7: X += Vx, Y += Vy"
+    },
+    {
+      "offset": 621,
+      "name": "PathOpScrollAlways",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 6: X - $40 every frame"
+    },
+    {
+      "offset": 639,
+      "name": "PathOpHome",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 8: turn towards the target, then move"
+    },
+    {
+      "offset": 715,
+      "name": "PathOpToCentre",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 9: accelerate towards column 32 and row 8"
+    },
+    {
+      "offset": 746,
+      "name": "PathOpLand",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 10: put the object on the ground below it"
+    },
+    {
+      "offset": 848,
+      "name": "PathOpRandomSpeed",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 11: the speed +$17 one up or down at random"
+    },
+    {
+      "offset": 874,
+      "name": "PathOpBounceArena",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 12: move, bouncing off the scenery and the edges"
+    },
+    {
+      "offset": 980,
+      "name": "PathOpDive",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 13: scroll along, dive at the player when close"
+    },
+    {
+      "offset": 1041,
+      "name": "PathOpMoveFragile",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 14: move; destroyed on scenery or leaving the playfield"
+    },
+    {
+      "offset": 1069,
+      "name": "PathOpWait",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "extended 15: do nothing this frame"
+    },
+    {
+      "offset": 1071,
+      "name": "SelfDestruct",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "mark the object as hit by the player's laser"
+    },
+    {
+      "offset": 1084,
+      "name": "DirectionTo",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = the direction 0-63 from the object IY to IX"
+    },
+    {
+      "offset": 1166,
+      "name": "SetVelocity",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the velocities for direction A and speed B"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 25,
+      "name": "RunObjectsLoop",
+      "comment": "active? run its handler by +$07"
+    },
+    {
+      "offset": 43,
+      "name": "RunObjectsNext",
+      "comment": "the next slot down, and the speaker click"
+    },
+    {
+      "offset": 48,
+      "name": "",
+      "comment": "the beeper: $7F86 ^= $18, AND the enable mask $7F87, OUT ($FE)"
+    },
+    {
+      "offset": 61,
+      "name": "",
+      "comment": "8 or more slots idle: pad the frame"
+    },
+    {
+      "offset": 68,
+      "name": "RunObjectsPad",
+      "comment": "(C - 7) x 128 DJNZ turns"
+    },
+    {
+      "offset": 70,
+      "name": "RunObjectsPadLoop",
+      "comment": "the delay loop"
+    },
+    {
+      "offset": 75,
+      "name": "RunObjectsClear",
+      "comment": "clear the frame's hit masks"
+    },
+    {
+      "offset": 99,
+      "name": "RunObjectsClearMasks",
+      "comment": "+$0D of the 7 records from $F4F8"
+    },
+    {
+      "offset": 115,
+      "name": "RunPathCommand",
+      "comment": "the current command"
+    },
+    {
+      "offset": 118,
+      "name": "RunPathDispatch",
+      "comment": "bits 0-2: the routine from $8114"
+    },
+    {
+      "offset": 131,
+      "name": "RunPathFetch",
+      "comment": "one frame unless a count byte comes"
+    },
+    {
+      "offset": 141,
+      "name": "RunPathFetchLoop",
+      "comment": "bit 7: a repeat count"
+    },
+    {
+      "offset": 154,
+      "name": "RunPathStore",
+      "comment": "the command and the new pointer"
+    },
+    {
+      "offset": 217,
+      "name": "PathAccelXDown",
+      "comment": "bit 4: Vx - Ax"
+    },
+    {
+      "offset": 230,
+      "name": "PathAccelXStore",
+      "comment": "the new Vx"
+    },
+    {
+      "offset": 236,
+      "name": "PathMoveX",
+      "comment": "X + Vx"
+    },
+    {
+      "offset": 268,
+      "name": "PathAccelYDown",
+      "comment": "bit 6: Vy - Ay"
+    },
+    {
+      "offset": 281,
+      "name": "PathAccelYStore",
+      "comment": "the new Vy"
+    },
+    {
+      "offset": 287,
+      "name": "PathMoveY",
+      "comment": "Y + Vy; NC"
+    },
+    {
+      "offset": 353,
+      "name": "PathBounceY",
+      "comment": "free: fall by Vy + Ay"
+    },
+    {
+      "offset": 383,
+      "name": "PathBounceTest",
+      "comment": "hit: Y back, Vy = -Vy"
+    },
+    {
+      "offset": 418,
+      "name": "PathHomeSetRate",
+      "comment": "+$2B = P, one homing step"
+    },
+    {
+      "offset": 561,
+      "name": "PathDriftMove",
+      "comment": "accelerate and move"
+    },
+    {
+      "offset": 677,
+      "name": "PathHomeCompare",
+      "comment": "|difference| within the turn rate?"
+    },
+    {
+      "offset": 683,
+      "name": "PathHomeTurn",
+      "comment": "the shorter way: left or right"
+    },
+    {
+      "offset": 698,
+      "name": "PathHomeTurnRight",
+      "comment": "+ the turn rate"
+    },
+    {
+      "offset": 699,
+      "name": "PathHomeWrap",
+      "comment": "mod 64"
+    },
+    {
+      "offset": 701,
+      "name": "PathHomeSetDirection",
+      "comment": "the new direction and velocities"
+    },
+    {
+      "offset": 710,
+      "name": "PathHomeMove",
+      "comment": "one move"
+    },
+    {
+      "offset": 726,
+      "name": "PathToCentreY",
+      "comment": "the Y flag"
+    },
+    {
+      "offset": 738,
+      "name": "PathToCentreMove",
+      "comment": "accelerate and move"
+    },
+    {
+      "offset": 745,
+      "name": "LandingFlag",
+      "comment": "PathOpLand's per-frame flag and retry count"
+    },
+    {
+      "offset": 768,
+      "name": "PathLandRise",
+      "comment": "out of the scenery first"
+    },
+    {
+      "offset": 785,
+      "name": "PathLandFall",
+      "comment": "down a row: the 4 cells below"
+    },
+    {
+      "offset": 838,
+      "name": "PathLandPark",
+      "comment": "X = 0: off the playfield"
+    },
+    {
+      "offset": 842,
+      "name": "PathLandParkY",
+      "comment": "Y = 0"
+    },
+    {
+      "offset": 862,
+      "name": "PathRandomSpeedSet",
+      "comment": "a new speed of 0 is refused"
+    },
+    {
+      "offset": 872,
+      "name": "PathRandomSpeedDone",
+      "comment": "carry: instant"
+    },
+    {
+      "offset": 909,
+      "name": "PathArenaFlipX",
+      "comment": "X back, Vx reversed"
+    },
+    {
+      "offset": 927,
+      "name": "PathArenaMoveY",
+      "comment": "Y + Vy"
+    },
+    {
+      "offset": 960,
+      "name": "PathArenaFlipY",
+      "comment": "Y back, Vy reversed"
+    },
+    {
+      "offset": 978,
+      "name": "PathArenaDone",
+      "comment": "NC"
+    },
+    {
+      "offset": 1004,
+      "name": "",
+      "comment": "a random byte below 200 (78 %) dives"
+    },
+    {
+      "offset": 1032,
+      "name": "PathDiveTest",
+      "comment": "on the scenery?"
+    },
+    {
+      "offset": 1064,
+      "name": "PathFragileDestroy",
+      "comment": "out or hit"
+    },
+    {
+      "offset": 1122,
+      "name": "DirectionToX",
+      "comment": "the column distance's sign"
+    },
+    {
+      "offset": 1135,
+      "name": "DirectionToOctant",
+      "comment": "swap so the larger distance divides"
+    },
+    {
+      "offset": 1144,
+      "name": "DirectionToDivide",
+      "comment": "the ratio in 8 steps"
+    },
+    {
+      "offset": 1156,
+      "name": "DirectionToLoop",
+      "comment": "one step"
+    },
+    {
+      "offset": 1163,
+      "name": "DirectionToDone",
+      "comment": "the step XOR the octant"
+    },
+    {
+      "offset": 1183,
+      "name": "SetVelocityXLoop",
+      "comment": "Vx = speed x sine"
+    },
+    {
+      "offset": 1213,
+      "name": "SetVelocityYLoop",
+      "comment": "Vy = speed x the sine a quarter turn back"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$9463",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/movers.asm",
+    "label": "RunObjects"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

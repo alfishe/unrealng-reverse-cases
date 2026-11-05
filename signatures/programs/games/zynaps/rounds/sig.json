@@ -1,0 +1,789 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/rounds",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: rounds",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "rounds"
+  ],
+  "summary": "The level start, the player records, the title pages.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 438,
+    "sha1": "f510fb81d41e6a03fb5e085f57f9ba93e1021143",
+    "masked_sha1": "34868c5efbd652ac76786fa43c5982194fd14367"
+  },
+  "origin": "$AF49",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LevelSetUp"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuScreenSetup"
+    },
+    {
+      "offset": 9,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RasterLines"
+    },
+    {
+      "offset": 14,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RasterFrames"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintMessage"
+    },
+    {
+      "offset": 24,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptRoom"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptColumn"
+    },
+    {
+      "offset": 32,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StartScript"
+    },
+    {
+      "offset": 35,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollCount"
+    },
+    {
+      "offset": 42,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollCount"
+    },
+    {
+      "offset": 65,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 72,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SkipDraw"
+    },
+    {
+      "offset": 79,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollStep"
+    },
+    {
+      "offset": 82,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StartColumn"
+    },
+    {
+      "offset": 88,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ResumeScript"
+    },
+    {
+      "offset": 91,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BuildColumn"
+    },
+    {
+      "offset": 104,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetUpInterrupts"
+    },
+    {
+      "offset": 107,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 113,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CurrentPlayer"
+    },
+    {
+      "offset": 116,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player1"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 122,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player1"
+    },
+    {
+      "offset": 125,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F9D"
+    },
+    {
+      "offset": 137,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player1Lives"
+    },
+    {
+      "offset": 140,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Players"
+    },
+    {
+      "offset": 149,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player2Lives"
+    },
+    {
+      "offset": 154,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player1Speed"
+    },
+    {
+      "offset": 157,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player2Speed"
+    },
+    {
+      "offset": 162,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player1LaserLevel"
+    },
+    {
+      "offset": 165,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player2LaserLevel"
+    },
+    {
+      "offset": 169,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player1"
+    },
+    {
+      "offset": 172,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 176,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player2"
+    },
+    {
+      "offset": 179,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 182,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8006"
+    },
+    {
+      "offset": 189,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8006"
+    },
+    {
+      "offset": 219,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RestoreCheckpoint"
+    },
+    {
+      "offset": 222,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemiesSetup"
+    },
+    {
+      "offset": 225,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShotsSetup"
+    },
+    {
+      "offset": 228,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerSetup"
+    },
+    {
+      "offset": 231,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CurrentPlayer"
+    },
+    {
+      "offset": 236,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerDigit"
+    },
+    {
+      "offset": 239,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 242,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitMenuRasterEnd"
+    },
+    {
+      "offset": 246,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearHitGrid"
+    },
+    {
+      "offset": 252,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 257,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DeathTimer"
+    },
+    {
+      "offset": 260,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RestorePanel"
+    },
+    {
+      "offset": 268,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPlayerScore"
+    },
+    {
+      "offset": 272,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPlayerScore"
+    },
+    {
+      "offset": 275,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawLives"
+    },
+    {
+      "offset": 278,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WeaponRating"
+    },
+    {
+      "offset": 287,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollRestart"
+    },
+    {
+      "offset": 295,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LevelOrder"
+    },
+    {
+      "offset": 304,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6B25"
+    },
+    {
+      "offset": 324,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptStateInit"
+    },
+    {
+      "offset": 333,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 338,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintMessage"
+    },
+    {
+      "offset": 343,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintAttr"
+    },
+    {
+      "offset": 347,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AA0"
+    },
+    {
+      "offset": 350,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPos"
+    },
+    {
+      "offset": 353,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player1"
+    },
+    {
+      "offset": 358,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintBcd"
+    },
+    {
+      "offset": 361,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AB8"
+    },
+    {
+      "offset": 364,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPos"
+    },
+    {
+      "offset": 367,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Player2"
+    },
+    {
+      "offset": 372,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintBcd"
+    },
+    {
+      "offset": 375,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleTune"
+    },
+    {
+      "offset": 378,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuKeys"
+    },
+    {
+      "offset": 381,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleFireCheck"
+    },
+    {
+      "offset": 385,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 390,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintMessage"
+    },
+    {
+      "offset": 395,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintAttr"
+    },
+    {
+      "offset": 398,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HiScoreTable"
+    },
+    {
+      "offset": 404,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintString"
+    },
+    {
+      "offset": 416,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintBcd"
+    },
+    {
+      "offset": 427,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleFireCheck"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "LevelStart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the level banner and the scroll to the start point"
+    },
+    {
+      "offset": 71,
+      "name": "ReplayColumns",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "scroll BC columns, ReplayFast = A"
+    },
+    {
+      "offset": 103,
+      "name": "InterruptSetup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the IM 2 table and a clear screen, once at the start"
+    },
+    {
+      "offset": 110,
+      "name": "PlayersSetup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "both player records and the level order of a new game"
+    },
+    {
+      "offset": 218,
+      "name": "RoundSetup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "a level's start: the checkpoint, the objects, the banner, the panel"
+    },
+    {
+      "offset": 281,
+      "name": "SetLevelStart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "a level's start into a player record's checkpoint"
+    },
+    {
+      "offset": 332,
+      "name": "CreditsPage",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the title page with both players' scores and the tune"
+    },
+    {
+      "offset": 384,
+      "name": "HiScorePage",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the high score table, 500 frames or fire"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 6,
+      "name": "",
+      "comment": "the print position"
+    },
+    {
+      "offset": 16,
+      "name": "",
+      "comment": "message $18: the level banner"
+    },
+    {
+      "offset": 34,
+      "name": "ReplayScroll",
+      "comment": "the columns already scrolled before the checkpoint"
+    },
+    {
+      "offset": 37,
+      "name": "",
+      "comment": "zeroed: the scroll counts them again"
+    },
+    {
+      "offset": 48,
+      "name": "",
+      "comment": "up to $40 of them drawn"
+    },
+    {
+      "offset": 55,
+      "name": "",
+      "comment": "$40 or fewer: all drawn"
+    },
+    {
+      "offset": 60,
+      "name": "ReplayFastPart",
+      "comment": "the ones before the last $40 with ReplayFast = $FF: nothing drawn"
+    },
+    {
+      "offset": 67,
+      "name": "",
+      "comment": "then the last $40 drawn"
+    },
+    {
+      "offset": 70,
+      "name": "ReplayDrawn",
+      "comment": "ReplayFast = 0"
+    },
+    {
+      "offset": 75,
+      "name": "",
+      "comment": "the first column without the scroll"
+    },
+    {
+      "offset": 77,
+      "name": "ReplayColumn",
+      "comment": ""
+    },
+    {
+      "offset": 78,
+      "name": "",
+      "comment": "one column scrolled"
+    },
+    {
+      "offset": 81,
+      "name": "ReplayStep",
+      "comment": ""
+    },
+    {
+      "offset": 86,
+      "name": "ReplayRound",
+      "comment": ""
+    },
+    {
+      "offset": 90,
+      "name": "ReplayRoundEnd",
+      "comment": ""
+    },
+    {
+      "offset": 139,
+      "name": "",
+      "comment": "Players: two players give player 2 three lives (the extra one since player 1 is in play first)"
+    },
+    {
+      "offset": 151,
+      "name": "",
+      "comment": "the speed $40: the first speed step"
+    },
+    {
+      "offset": 159,
+      "name": "",
+      "comment": "the laser level 1"
+    },
+    {
+      "offset": 181,
+      "name": "",
+      "comment": "LevelOrder + 3: the six shuffled levels"
+    },
+    {
+      "offset": 186,
+      "name": "ShuffleDraw",
+      "comment": "the slot zeroed, a new number 0-5 from the random generator"
+    },
+    {
+      "offset": 197,
+      "name": "",
+      "comment": "3-8"
+    },
+    {
+      "offset": 203,
+      "name": "ShuffleCheck",
+      "comment": "against the slots filled so far (and the zeroed one)"
+    },
+    {
+      "offset": 209,
+      "name": "",
+      "comment": "a new number: kept"
+    },
+    {
+      "offset": 230,
+      "name": "",
+      "comment": "'1' or '2' into the banner"
+    },
+    {
+      "offset": 241,
+      "name": "RoundPlaySetup",
+      "comment": "the panel and the frame state"
+    },
+    {
+      "offset": 249,
+      "name": "",
+      "comment": "Fuel: $5A steps ($9A6D counts it down when bit 0 of $7F63 is set; about 29 s, F2's measure)"
+    },
+    {
+      "offset": 254,
+      "name": "",
+      "comment": "DeathTimer: the script and the controls run"
+    },
+    {
+      "offset": 265,
+      "name": "",
+      "comment": "both scores"
+    },
+    {
+      "offset": 294,
+      "name": "",
+      "comment": "LevelOrder[+6]"
+    },
+    {
+      "offset": 303,
+      "name": "",
+      "comment": "$6B25 + 8 * (order + 1): the entry of that level"
+    },
+    {
+      "offset": 306,
+      "name": "LevelEntryFind",
+      "comment": ""
+    },
+    {
+      "offset": 323,
+      "name": "",
+      "comment": "the script stack's start ($81FA: the pointer $81F6 and 3 zeros)"
+    },
+    {
+      "offset": 340,
+      "name": "",
+      "comment": "the colour of the scores"
+    },
+    {
+      "offset": 346,
+      "name": "",
+      "comment": "player 1's score at row 21, column 0"
+    },
+    {
+      "offset": 360,
+      "name": "",
+      "comment": "player 2's score at row 21, column 24"
+    },
+    {
+      "offset": 374,
+      "name": "",
+      "comment": "the tune: back at fire or a key 1-5"
+    },
+    {
+      "offset": 397,
+      "name": "",
+      "comment": "the table: five entries"
+    },
+    {
+      "offset": 402,
+      "name": "HiScoreEntry",
+      "comment": ""
+    },
+    {
+      "offset": 421,
+      "name": "",
+      "comment": "500 frames"
+    },
+    {
+      "offset": 424,
+      "name": "HiScoreWait",
+      "comment": ""
+    },
+    {
+      "offset": 437,
+      "name": "HiScoreSpare",
+      "comment": "a lone RET ($C9) no code reaches"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$AF49",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/rounds.asm",
+    "label": "LevelStart"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

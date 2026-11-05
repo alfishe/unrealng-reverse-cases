@@ -1,0 +1,351 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/hiscore",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: hiscore",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "hiscore"
+  ],
+  "summary": "The high-score table: rank and initials.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 199,
+    "sha1": "bb53e8c8100e383b90368159b021a685571fd1d3",
+    "masked_sha1": "45228698c3b79641626e231131b950ebd218d16b"
+  },
+  "origin": "$A7F7",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuScreenSetup"
+    },
+    {
+      "offset": 6,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintMessage"
+    },
+    {
+      "offset": 9,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 17,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_826B"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CompareScore"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintMessage"
+    },
+    {
+      "offset": 43,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleFireCheck"
+    },
+    {
+      "offset": 46,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 51,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 58,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintMessage"
+    },
+    {
+      "offset": 64,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_829D"
+    },
+    {
+      "offset": 76,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFF2"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFF6"
+    },
+    {
+      "offset": 94,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_59AD"
+    },
+    {
+      "offset": 107,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPos"
+    },
+    {
+      "offset": 111,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintChar"
+    },
+    {
+      "offset": 114,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ReadControls"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitFrames"
+    },
+    {
+      "offset": 122,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FireHeld"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ControlBits"
+    },
+    {
+      "offset": 173,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintChar"
+    },
+    {
+      "offset": 178,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitFrames"
+    },
+    {
+      "offset": 190,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitFrames"
+    },
+    {
+      "offset": 193,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitMenuRasterEnd"
+    },
+    {
+      "offset": 196,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "HighScoreEntry",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Rank the current player's score, take the initials"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 3,
+      "name": "",
+      "comment": "ROLE OF HONOUR"
+    },
+    {
+      "offset": 8,
+      "name": "",
+      "comment": "the score at +0 of the player's record"
+    },
+    {
+      "offset": 16,
+      "name": "",
+      "comment": "the first entry's score"
+    },
+    {
+      "offset": 21,
+      "name": "HighScoreRank",
+      "comment": ""
+    },
+    {
+      "offset": 27,
+      "name": "",
+      "comment": "the next entry"
+    },
+    {
+      "offset": 34,
+      "name": "",
+      "comment": "UNRANKED"
+    },
+    {
+      "offset": 39,
+      "name": "",
+      "comment": "3 seconds or fire"
+    },
+    {
+      "offset": 41,
+      "name": "HighScoreUnranked",
+      "comment": ""
+    },
+    {
+      "offset": 53,
+      "name": "HighScoreInsert",
+      "comment": "ENTER YOUR INITIALS"
+    },
+    {
+      "offset": 60,
+      "name": "",
+      "comment": "the first copy (the last entry) goes to the ROM: dropped"
+    },
+    {
+      "offset": 63,
+      "name": "",
+      "comment": "the initials of the last entry"
+    },
+    {
+      "offset": 66,
+      "name": "HighScoreMoveDown",
+      "comment": "an entry's initials, dots and score one entry down"
+    },
+    {
+      "offset": 75,
+      "name": "",
+      "comment": "the entry above"
+    },
+    {
+      "offset": 81,
+      "name": "",
+      "comment": "the player's score into the free entry"
+    },
+    {
+      "offset": 88,
+      "name": "",
+      "comment": "HL = the free entry's initials"
+    },
+    {
+      "offset": 92,
+      "name": "",
+      "comment": "row 13, column 13"
+    },
+    {
+      "offset": 98,
+      "name": "HighScoreLetter",
+      "comment": ""
+    },
+    {
+      "offset": 99,
+      "name": "",
+      "comment": "'A'"
+    },
+    {
+      "offset": 101,
+      "name": "",
+      "comment": "100 steps without input take the letter"
+    },
+    {
+      "offset": 105,
+      "name": "HighScoreLetterShow",
+      "comment": ""
+    },
+    {
+      "offset": 121,
+      "name": "",
+      "comment": "fire: take it"
+    },
+    {
+      "offset": 127,
+      "name": "",
+      "comment": "time out: take it"
+    },
+    {
+      "offset": 132,
+      "name": "",
+      "comment": "left or right: the time out again"
+    },
+    {
+      "offset": 143,
+      "name": "HighScoreLetterMove",
+      "comment": "right +1, left -1"
+    },
+    {
+      "offset": 153,
+      "name": "",
+      "comment": "past Z: A"
+    },
+    {
+      "offset": 159,
+      "name": "",
+      "comment": "before A: Z"
+    },
+    {
+      "offset": 166,
+      "name": "HighScoreLetterLoop",
+      "comment": ""
+    },
+    {
+      "offset": 168,
+      "name": "HighScoreLetterTaken",
+      "comment": "the initial and a dot"
+    },
+    {
+      "offset": 192,
+      "name": "HighScoreDone",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$A7F7",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/hiscore.asm",
+    "label": "HighScoreEntry"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

@@ -1,0 +1,167 @@
+{
+  "schema": 1,
+  "id": "packers/picy/seen-zynaps/depacker",
+  "kind": "code",
+  "role": "depacker",
+  "name": "picy screen unpacker (Hewson loading screens)",
+  "authors": [],
+  "year": 1987,
+  "tags": [
+    "screen",
+    "packer",
+    "depacker",
+    "position-independent",
+    "hewson"
+  ],
+  "summary": "Unpacks a 6912-byte screen to $4000 from three streams (literals, masks, flags) whose offsets from the entry are in a header after the JR; a flag bit per 8 bytes says a mask byte follows, a mask bit per byte says repeat the previous byte or take a literal. Position independent: a POP HL; JP (HL) probe at $4000 finds its own address. The header's offsets and border byte differ per picture.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 157,
+    "sha1": "f4684ca239fdcf43c739c538f7e87c7cb7ed977d",
+    "masked_sha1": "65ea760e77c0bb16f79badf0fb5e98ad2e8fb6cb"
+  },
+  "origin": "$8001",
+  "relocatable": true,
+  "mask": [
+    {
+      "length": 6,
+      "kind": "data",
+      "name": "stream-offsets",
+      "offset": 3
+    },
+    {
+      "length": 1,
+      "kind": "var8",
+      "name": "border",
+      "offset": 9
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_E9E1"
+    },
+    {
+      "offset": 23,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 26,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFE4"
+    },
+    {
+      "offset": 42,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 45,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4001"
+    },
+    {
+      "offset": 84,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "PicyEntry",
+      "in": "none (the streams follow the code)",
+      "out": "the screen at $4000, the border set",
+      "clobbers": "none (all pushed)",
+      "summary": "unpack the screen"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "PicyEntry",
+      "comment": ""
+    },
+    {
+      "offset": 2,
+      "name": "PicyHeader",
+      "comment": "the offsets below are from PicyEntry"
+    },
+    {
+      "offset": 10,
+      "name": "Unpack",
+      "comment": ""
+    },
+    {
+      "offset": 28,
+      "name": "WhereAmI",
+      "comment": ""
+    },
+    {
+      "offset": 90,
+      "name": "UnpackGroup",
+      "comment": ""
+    },
+    {
+      "offset": 92,
+      "name": "UnpackEight",
+      "comment": ""
+    },
+    {
+      "offset": 100,
+      "name": "UnpackMask",
+      "comment": ""
+    },
+    {
+      "offset": 104,
+      "name": "UnpackByte",
+      "comment": ""
+    },
+    {
+      "offset": 111,
+      "name": "UnpackLiteral",
+      "comment": ""
+    },
+    {
+      "offset": 121,
+      "name": "UnpackRepeat",
+      "comment": ""
+    },
+    {
+      "offset": 131,
+      "name": "UnpackNext",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps: the loading screen",
+      "case": "games/zynaps",
+      "address": "$8001",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/tape/picy.asm",
+    "label": "PicyEntry"
+  },
+  "docs": [
+    "games/zynaps/docs/03-build-and-load.md"
+  ]
+}

@@ -1,0 +1,52 @@
+# The memory map, three stages side by side (tools/memmap.py, docs/02-architecture.md 2.2).
+# STAGE START END KIND NAME   (hex, END inclusive; KIND: screen code data graphics work dead system loader stack)
+# Witnesses: the tape blocks (docs/03 3.1), src/tape/*.asm, src/game/game.ann (its modules), WALKTHROUGH 4-5.
+load 4000 5AFF screen the loading screen (picy, block 6)
+load 5B00 5B11 loader MoveStub, run from the printer buffer
+load 5B12 5CCA system system variables
+load 5CCB 5D1B loader the BASIC (81 bytes)
+load 5D1C 5DA7 work free
+load 5DA8 FBFE work the game block, 1024 bytes low (over picy at $8000)
+load FBFF FBFF work free
+load FC00 FEFF loader the Hewson loader (Countdown II)
+load FF00 FFFF stack the loader's stack
+image 4000 5AFF screen the loading screen
+image 5B00 61A7 work MoveStub, system variables (dead)
+image 61A8 67FF dead tilecopy: zeros, the copy's target
+image 6800 7E59 data leveldata: paths, waves, scripts, shapes
+image 7E5A 7FFF data effects, descriptors, variables, players
+image 8000 8515 data entry, variables, tables, texts
+image 8516 B6FE code the code: render, objects, play
+image B6FF B72E code Start, run once
+image B72F BBFF work zeros: the map ring
+image BC00 C7FF graphics tiles and wave cells (to $5C00)
+image C800 DFFF work zeros: the glyph cache
+image E000 E747 graphics sprites, complemented
+image E748 F047 dead a saved panel (tape leftover)
+image F048 F107 graphics the pod, complemented
+image F108 F7FF work object records, strip buffers
+image F800 FDE7 work node pool, bit reverse, hit grid
+image FDE8 FE4A dead an RS-232 download routine (unused)
+image FE4B FF00 system the IM2 jump and vector table
+image FF01 FFD3 data the title tune
+image FFD4 FFFE data ROM font leftover, switches
+play 4000 5AFF screen the screen, the panel rows 19-23
+play 5B00 5BFF stack the stack (SP $5C00 down)
+play 5C00 63FF graphics TileGraphics: 256 scenery tiles
+play 6400 67FF graphics the wave sprites' cells
+play 6800 7E59 data the level data
+play 7E5A 7FFF work effects, descriptors, variables, players
+play 8000 8515 work variables, tables, texts
+play 8516 B6FE code the code
+play B6FF BFFF work the map ring (Start is gone)
+play C000 DFFF work GlyphCache: 4 shifts of 256 glyphs
+play E000 E747 graphics sprites, made plain
+play E748 F047 work the sprite cache images, the panel save
+play F048 F107 graphics the pod, made plain
+play F108 F7FF work row records, objects, strips
+play F800 FAFF work NodePool: 95 span nodes
+play FB00 FBFF data BitReverse
+play FC00 FDFF work HitGridX/Y, the scenery script stack
+play FE00 FF00 system the IM2 vector table
+play FF01 FFD3 data the title tune
+play FFD4 FFFF work work cells, Invulnerable, ColumnFlags

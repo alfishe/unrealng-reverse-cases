@@ -1,0 +1,629 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/weapons",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: weapons",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "weapons"
+  ],
+  "summary": "The side weapons, the pod actions, the sight, the laser shot, the plasma, the missile, the seeker.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 773,
+    "sha1": "499d5f57ce7eb7a140a5870fc6847e926d15142d",
+    "masked_sha1": "a2345e51d679112164c64c772c65fbc7de92d3cf"
+  },
+  "origin": "$9C83",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FireHeld"
+    },
+    {
+      "offset": 11,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SideShot"
+    },
+    {
+      "offset": 23,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlasmaBall2"
+    },
+    {
+      "offset": 46,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F36F"
+    },
+    {
+      "offset": 72,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FireHeld"
+    },
+    {
+      "offset": 78,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SideShot"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockMask"
+    },
+    {
+      "offset": 95,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockTarget"
+    },
+    {
+      "offset": 120,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FireHeld"
+    },
+    {
+      "offset": 131,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 141,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SideShot"
+    },
+    {
+      "offset": 157,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 183,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetVelocity"
+    },
+    {
+      "offset": 192,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyObjects"
+    },
+    {
+      "offset": 202,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 245,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F608"
+    },
+    {
+      "offset": 251,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SideShot"
+    },
+    {
+      "offset": 254,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlasmaBall2"
+    },
+    {
+      "offset": 299,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F5B0"
+    },
+    {
+      "offset": 305,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SideShot"
+    },
+    {
+      "offset": 328,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F608"
+    },
+    {
+      "offset": 333,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 339,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockTarget"
+    },
+    {
+      "offset": 343,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockMask"
+    },
+    {
+      "offset": 347,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F608"
+    },
+    {
+      "offset": 361,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SideShot"
+    },
+    {
+      "offset": 385,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockMask"
+    },
+    {
+      "offset": 401,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SightMask"
+    },
+    {
+      "offset": 404,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipHistoryIndex"
+    },
+    {
+      "offset": 409,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipHistory"
+    },
+    {
+      "offset": 416,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F603"
+    },
+    {
+      "offset": 432,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HarmlessMaskA"
+    },
+    {
+      "offset": 435,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HarmlessMaskB"
+    },
+    {
+      "offset": 447,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt2"
+    },
+    {
+      "offset": 473,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaserShotsFree"
+    },
+    {
+      "offset": 485,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassCount"
+    },
+    {
+      "offset": 492,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CycleColour"
+    },
+    {
+      "offset": 498,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlasmaHitMask"
+    },
+    {
+      "offset": 526,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PathOpAccelerate"
+    },
+    {
+      "offset": 536,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt1"
+    },
+    {
+      "offset": 547,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RequestEffect"
+    },
+    {
+      "offset": 576,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt1"
+    },
+    {
+      "offset": 600,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 603,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CycleColour"
+    },
+    {
+      "offset": 606,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockMask"
+    },
+    {
+      "offset": 618,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileHitMask"
+    },
+    {
+      "offset": 623,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PathOpHome"
+    },
+    {
+      "offset": 626,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClampRow"
+    },
+    {
+      "offset": 657,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CycleColour"
+    },
+    {
+      "offset": 686,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlasmaHitMask"
+    },
+    {
+      "offset": 694,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PathOpHome"
+    },
+    {
+      "offset": 697,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClampRow"
+    },
+    {
+      "offset": 700,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryAt1"
+    },
+    {
+      "offset": 732,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerObject"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "PlasmaFrame",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "side weapon 2: a plasma ball after 3 frames of fire"
+    },
+    {
+      "offset": 45,
+      "name": "PlaceAtPlayer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the object IX two columns ahead of the ship, one row down"
+    },
+    {
+      "offset": 71,
+      "name": "HomingFrame",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "side weapon 3: a homing missile at the locked target"
+    },
+    {
+      "offset": 123,
+      "name": "SeekerFrame",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "side weapon 4: the seeker after 7 frames of fire"
+    },
+    {
+      "offset": 201,
+      "name": "PodSpeedUp",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "pod 0: fuel $BB and the speed one step up, to $A0"
+    },
+    {
+      "offset": 218,
+      "name": "PodLaser",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "pod 1: the laser one level up, to 3"
+    },
+    {
+      "offset": 229,
+      "name": "PodPlasma",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "pod 2: plasma (a second plasma pod: double)"
+    },
+    {
+      "offset": 260,
+      "name": "ResetPlasmaBall",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the slot IX as an idle plasma ball"
+    },
+    {
+      "offset": 290,
+      "name": "PodHoming",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "pod 3: homing missiles and the sight"
+    },
+    {
+      "offset": 346,
+      "name": "PodSeeker",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "pod 4: the seeker"
+    },
+    {
+      "offset": 384,
+      "name": "SightHandler",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "kind 6: the homing sight ahead of the ship"
+    },
+    {
+      "offset": 403,
+      "name": "PlaceSight",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the sight at the ship's position of the history ring, 10 columns ahead"
+    },
+    {
+      "offset": 431,
+      "name": "LaserHandler",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "kind 1: a laser shot"
+    },
+    {
+      "offset": 484,
+      "name": "PlasmaHandler",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "kind 9: a plasma ball, falling and bouncing"
+    },
+    {
+      "offset": 596,
+      "name": "MissileHandler",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "kind 10: the homing missile"
+    },
+    {
+      "offset": 656,
+      "name": "SeekerHandler",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "kind 7: the seeker, killing enemy after enemy"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 30,
+      "name": "PlasmaLaunch",
+      "comment": "the ball into play"
+    },
+    {
+      "offset": 156,
+      "name": "SeekerLaunch",
+      "comment": "a new seeker: the position and velocities"
+    },
+    {
+      "offset": 187,
+      "name": "SeekerTargetFirst",
+      "comment": "hunt from slot $F398"
+    },
+    {
+      "offset": 240,
+      "name": "PodPlasmaSetup",
+      "comment": "the weapon, the sight off, the two balls"
+    },
+    {
+      "offset": 394,
+      "name": "SightColour",
+      "comment": "the colour and the mask"
+    },
+    {
+      "offset": 468,
+      "name": "LaserRemove",
+      "comment": "off, the shot back to $80BA"
+    },
+    {
+      "offset": 477,
+      "name": "LaserStore",
+      "comment": "the new X"
+    },
+    {
+      "offset": 494,
+      "name": "PlasmaMove",
+      "comment": "fall"
+    },
+    {
+      "offset": 546,
+      "name": "",
+      "comment": "sound effect 3: the bounce"
+    },
+    {
+      "offset": 579,
+      "name": "PlasmaBounceDone",
+      "comment": "out of the scenery and bounces left: stay"
+    },
+    {
+      "offset": 587,
+      "name": "PlasmaRemove",
+      "comment": "off"
+    },
+    {
+      "offset": 592,
+      "name": "PlasmaOffBottom",
+      "comment": "below the playfield"
+    },
+    {
+      "offset": 617,
+      "name": "",
+      "comment": "$80E3: the missile's overlap mask"
+    },
+    {
+      "offset": 636,
+      "name": "MissileExpire",
+      "comment": "burn out"
+    },
+    {
+      "offset": 640,
+      "name": "MissileFade",
+      "comment": "the colour one step down a frame; 0: gone"
+    },
+    {
+      "offset": 651,
+      "name": "MissileRemove",
+      "comment": "off"
+    },
+    {
+      "offset": 677,
+      "name": "",
+      "comment": "kind 2? (the same test again at $9F2C)"
+    },
+    {
+      "offset": 685,
+      "name": "SeekerHome",
+      "comment": "home, kill, clamp"
+    },
+    {
+      "offset": 712,
+      "name": "SeekerRemove",
+      "comment": "off"
+    },
+    {
+      "offset": 717,
+      "name": "SeekerRetarget",
+      "comment": "the target is gone"
+    },
+    {
+      "offset": 726,
+      "name": "SeekerSearch",
+      "comment": "the next slot number"
+    },
+    {
+      "offset": 738,
+      "name": "SeekerSearchSlot",
+      "comment": "active and of kind 2?"
+    },
+    {
+      "offset": 759,
+      "name": "SeekerFound",
+      "comment": "the new target"
+    },
+    {
+      "offset": 762,
+      "name": "SeekerSetTarget",
+      "comment": "+$29/+$2A and the slot number +$26"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$9C83",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/weapons.asm",
+    "label": "PlasmaFrame"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

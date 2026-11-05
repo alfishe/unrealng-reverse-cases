@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/tables",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: tables",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "tables"
+  ],
+  "summary": "The span node pool, the bit reverse table, the hit grid, the script stack and the interrupt vectors.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 1793,
+    "sha1": "703ddf0c4b9fa2d848f042aabe70c713a2c80152",
+    "masked_sha1": "703ddf0c4b9fa2d848f042aabe70c713a2c80152"
+  },
+  "origin": "$F800",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "NodePool",
+      "comment": "95 span nodes of 8 bytes"
+    },
+    {
+      "offset": 760,
+      "name": "",
+      "comment": "the end marker ($FFFF)"
+    },
+    {
+      "offset": 768,
+      "name": "BitReverse",
+      "comment": "256 bytes, each the bit reverse of its index"
+    },
+    {
+      "offset": 1024,
+      "name": "HitGridX",
+      "comment": "The collision grid: one byte a column (play) / the menu's raster colours"
+    },
+    {
+      "offset": 1056,
+      "name": "MenuColours",
+      "comment": "the menu's raster colours from here, one a scan line"
+    },
+    {
+      "offset": 1280,
+      "name": "HitGridY",
+      "comment": "The Y half of the collision grid"
+    },
+    {
+      "offset": 1424,
+      "name": "ScriptStack",
+      "comment": "The scenery script's stack (down from $FDFB)"
+    },
+    {
+      "offset": 1512,
+      "name": "",
+      "comment": "leftover routine (DI)"
+    },
+    {
+      "offset": 1531,
+      "name": "ScriptStackTop",
+      "comment": "The scenery script's first return address"
+    },
+    {
+      "offset": 1533,
+      "name": "InterruptJump",
+      "comment": "JP to the frame handler, where every IM 2 interrupt lands"
+    },
+    {
+      "offset": 1534,
+      "name": "InterruptHandler",
+      "comment": "the JP's address: the current interrupt routine"
+    },
+    {
+      "offset": 1536,
+      "name": "VectorTable",
+      "comment": "The IM 2 vector table: 257 bytes of $FD"
+    },
+    {
+      "offset": 1559,
+      "name": "",
+      "comment": "leftover: receive a byte"
+    },
+    {
+      "offset": 1611,
+      "name": "",
+      "comment": "leftover: checksum"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$F800",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/tables.asm",
+    "label": "NodePool"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

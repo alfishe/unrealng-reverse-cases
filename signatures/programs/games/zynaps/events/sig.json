@@ -1,0 +1,623 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/events",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: events",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "events"
+  ],
+  "summary": "The event scheduler: one request bit a job, the sprite builds, the pod icon, the score, the effects.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 351,
+    "sha1": "65a859217cc63480766e7cdb242824b1fa2035a5",
+    "masked_sha1": "96b916dd62400c88b4414c169077799470ef6768"
+  },
+  "origin": "$AC07",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventMask"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventRequests"
+    },
+    {
+      "offset": 21,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventRequests"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventHandlers"
+    },
+    {
+      "offset": 28,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpTable"
+    },
+    {
+      "offset": 32,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventMask"
+    },
+    {
+      "offset": 38,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventMask"
+    },
+    {
+      "offset": 45,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4646"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A86"
+    },
+    {
+      "offset": 51,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4545"
+    },
+    {
+      "offset": 54,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AA6"
+    },
+    {
+      "offset": 58,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 73,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PodIcons"
+    },
+    {
+      "offset": 78,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5086"
+    },
+    {
+      "offset": 81,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 105,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventMask"
+    },
+    {
+      "offset": 112,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EffectPlay"
+    },
+    {
+      "offset": 116,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventMask"
+    },
+    {
+      "offset": 123,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CurrentPlayer"
+    },
+    {
+      "offset": 126,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPlayerScore"
+    },
+    {
+      "offset": 129,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WeaponRating"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 141,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ExtraLifeScores"
+    },
+    {
+      "offset": 156,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawLives"
+    },
+    {
+      "offset": 160,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EventMask"
+    },
+    {
+      "offset": 167,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawQueueRead"
+    },
+    {
+      "offset": 170,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawQueueWrite"
+    },
+    {
+      "offset": 185,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawQueue"
+    },
+    {
+      "offset": 196,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 199,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 218,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BuildBigSprite"
+    },
+    {
+      "offset": 253,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6400"
+    },
+    {
+      "offset": 267,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BuildCellSprite"
+    },
+    {
+      "offset": 283,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 291,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 298,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 327,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RotateSprite"
+    },
+    {
+      "offset": 336,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 343,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptState"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "EventDispatch",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "run the highest requested and enabled job; carry set when one ran"
+    },
+    {
+      "offset": 36,
+      "name": "EventNone",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the handler of the unused bits 6-3: RET"
+    },
+    {
+      "offset": 37,
+      "name": "PodIconJob",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "event bit 2: the pod selector's icon and its colours"
+    },
+    {
+      "offset": 87,
+      "name": "IconRow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "two character cells of 8 lines from DE to the screen at HL"
+    },
+    {
+      "offset": 104,
+      "name": "EffectJob",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "event bit 0: play the requested sound effect"
+    },
+    {
+      "offset": 115,
+      "name": "ScoreJob",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "event bit 1: print the score, the extra life"
+    },
+    {
+      "offset": 159,
+      "name": "SpriteBuildJob",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "event bit 7: build the sprites waiting in the ring"
+    },
+    {
+      "offset": 210,
+      "name": "LoadCellSprite",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "build a kind's image from its glyphs"
+    },
+    {
+      "offset": 271,
+      "name": "SpriteBuildShifts",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the pre-shifted copies of a sprite: seven one-pixel shifts, a new copy where the pattern says"
+    },
+    {
+      "offset": 335,
+      "name": "RestoreCheckpoint",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the wave script's state back from the player record"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 3,
+      "name": "EventPending",
+      "comment": "the requests"
+    },
+    {
+      "offset": 6,
+      "name": "EventEnabled",
+      "comment": "the enabled ones"
+    },
+    {
+      "offset": 7,
+      "name": "EventAny",
+      "comment": "none: Z and NC"
+    },
+    {
+      "offset": 8,
+      "name": "",
+      "comment": "the mask is kept over the handler"
+    },
+    {
+      "offset": 10,
+      "name": "",
+      "comment": "B counts the shifts: the index of the highest set bit, 0 = bit 7"
+    },
+    {
+      "offset": 14,
+      "name": "EventFindBit",
+      "comment": "A halves until it is not above the requests: B shifts = the bit's index"
+    },
+    {
+      "offset": 19,
+      "name": "",
+      "comment": "AND C: the requests below the winner's bit stay"
+    },
+    {
+      "offset": 23,
+      "name": "",
+      "comment": "the bit's index selects the handler"
+    },
+    {
+      "offset": 27,
+      "name": "",
+      "comment": "jump-by-index"
+    },
+    {
+      "offset": 30,
+      "name": "EventDone",
+      "comment": "the mask back"
+    },
+    {
+      "offset": 34,
+      "name": "",
+      "comment": "carry: a job ran"
+    },
+    {
+      "offset": 44,
+      "name": "",
+      "comment": "the upper cells bright yellow on black"
+    },
+    {
+      "offset": 50,
+      "name": "",
+      "comment": "the lower cells bright cyan on black"
+    },
+    {
+      "offset": 56,
+      "name": "",
+      "comment": "the player record: +7 the pod selector, 0-4"
+    },
+    {
+      "offset": 63,
+      "name": "",
+      "comment": "three RRCAs and the split: DE = n * 32"
+    },
+    {
+      "offset": 72,
+      "name": "",
+      "comment": "PodIcons + n * 32"
+    },
+    {
+      "offset": 77,
+      "name": "",
+      "comment": "the upper row of the icon, row 16 columns 6-7"
+    },
+    {
+      "offset": 83,
+      "name": "IconLowerRow",
+      "comment": "HL is one cell further twice: + $1E = the next character row"
+    },
+    {
+      "offset": 89,
+      "name": "IconCell",
+      "comment": ""
+    },
+    {
+      "offset": 92,
+      "name": "IconLine",
+      "comment": "one line a pixel row down (INC H)"
+    },
+    {
+      "offset": 114,
+      "name": "EffectJobDone",
+      "comment": ""
+    },
+    {
+      "offset": 122,
+      "name": "",
+      "comment": "the score of the player in play"
+    },
+    {
+      "offset": 128,
+      "name": "ScoreJobRating",
+      "comment": "WeaponRating"
+    },
+    {
+      "offset": 131,
+      "name": "",
+      "comment": "the next extra life's threshold: $800F + the record's +$0C"
+    },
+    {
+      "offset": 144,
+      "name": "",
+      "comment": "the record's +1 against it"
+    },
+    {
+      "offset": 149,
+      "name": "",
+      "comment": "one threshold on, one life more"
+    },
+    {
+      "offset": 166,
+      "name": "SpriteBuildNext",
+      "comment": "the read index against QueueSpriteLoad's"
+    },
+    {
+      "offset": 173,
+      "name": "SpriteBuildEmpty",
+      "comment": "the ring is empty"
+    },
+    {
+      "offset": 175,
+      "name": "",
+      "comment": "one entry on, wrapping at 8"
+    },
+    {
+      "offset": 178,
+      "name": "",
+      "comment": "the entry: 3 bytes an entry"
+    },
+    {
+      "offset": 188,
+      "name": "",
+      "comment": "A = the type, HL = the record"
+    },
+    {
+      "offset": 201,
+      "name": "SpriteBuildDone",
+      "comment": "+$0E of the descriptor: bit 7 waiting, cleared"
+    },
+    {
+      "offset": 211,
+      "name": "",
+      "comment": "kinds $14 and up: the big sprite"
+    },
+    {
+      "offset": 222,
+      "name": "SpriteBuildSmall",
+      "comment": "DE = the record's screen address"
+    },
+    {
+      "offset": 226,
+      "name": "",
+      "comment": "BC = kind * 32"
+    },
+    {
+      "offset": 237,
+      "name": "",
+      "comment": "kinds 16 and up: 48 bytes each"
+    },
+    {
+      "offset": 251,
+      "name": "SpriteBuildSource",
+      "comment": "+ $6400: the kinds' glyphs"
+    },
+    {
+      "offset": 257,
+      "name": "",
+      "comment": "2 cells by 2 columns; 3 columns for bit 4"
+    },
+    {
+      "offset": 266,
+      "name": "SpriteBuildDraw",
+      "comment": ""
+    },
+    {
+      "offset": 281,
+      "name": "",
+      "comment": "the length into the LD HL operand"
+    },
+    {
+      "offset": 290,
+      "name": "",
+      "comment": "the bit pattern into the LD A operand"
+    },
+    {
+      "offset": 296,
+      "name": "",
+      "comment": "the count into the LD BC operand"
+    },
+    {
+      "offset": 300,
+      "name": "",
+      "comment": "the first pattern bit; seven rounds"
+    },
+    {
+      "offset": 305,
+      "name": "SpriteShiftRound",
+      "comment": ""
+    },
+    {
+      "offset": 306,
+      "name": "",
+      "comment": "the next bit of the pattern"
+    },
+    {
+      "offset": 307,
+      "name": "SpriteShiftTest",
+      "comment": "clear: no new copy, shift the last one on"
+    },
+    {
+      "offset": 310,
+      "name": "SpriteShiftLength",
+      "comment": "LD HL,length: the operand written at $AD20"
+    },
+    {
+      "offset": 317,
+      "name": "SpriteShiftCopy",
+      "comment": ""
+    },
+    {
+      "offset": 319,
+      "name": "SpriteShiftPattern",
+      "comment": "LD A,pattern: the operand written at $AD29"
+    },
+    {
+      "offset": 321,
+      "name": "SpriteShiftStep",
+      "comment": ""
+    },
+    {
+      "offset": 322,
+      "name": "SpriteShiftCount",
+      "comment": "LD BC,count: the operand written at $AD2F"
+    },
+    {
+      "offset": 329,
+      "name": "SpriteShiftNext",
+      "comment": ""
+    },
+    {
+      "offset": 332,
+      "name": "SpriteShiftLoop",
+      "comment": "seven rounds"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$AC07",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/events.asm",
+    "label": "EventDispatch"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

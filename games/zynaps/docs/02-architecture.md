@@ -1,71 +1,57 @@
 # 2. Architecture
 
-What this covers: the machine budget, the memory map, the stages from the tape to play, the frame, the main loop,
-the state. Stage 1 draft (2026-11-05): the map is from the static image and two dumps; the regions marked "stage
-2" are named by their users, not yet decoded.
-
-<!-- Figures this document needs (GUIDE.md 4.2), remove each line when it is in: -->
-<!-- - the memory map (`kit/heatmap.py`, regions) -->
-<!-- - the stages from power-on to play (mermaid) -->
+What this covers: the machine budget, the memory map, the stages from the tape to play, the play pass, the main
+loop, the state and the objects. Stage 2 (2026-11-05): every name is the one in `src/game/game.ann`; the modules
+are the files of `src/game/` ([11](11-data-reference.md) and [12](12-routine-reference.md) list every entry).
 
 The images and recordings it rests on ([Terms](README.md#terms)):
 
-- `work/images/static-entry.bin`: 64K, the loading screen at `$4000`, the game `$61A8-$FFFE` as the move leaves
-  it (equal to `c1`'s memory at `$8000`'s first instruction, [03](03-build-and-load.md) 3.7);
-- `work/images/title.bin`: `c1` at its end (frame 16760, the title);
-- `work/images/play-start.bin`: play on level 1 a few frames in (`work/explore/play-start.szx`, made from the
-  title by `work/explore/menu/menu.txt`);
-- `c1` (power-on to the title), the bot runs of `work/bot/` (WALKTHROUGH).
+- `work/mkgame/original.bin`: 64K, the game `$61A8-$FFFE` as the Hewson loader's move leaves it (`tools/image.py`
+  from TZX block 8; equal to `c1`'s memory at `$8000`'s first instruction, [03](03-build-and-load.md) 3.7);
+- `c1` (power-on to the title), `c2` (level 1 from the start, 1500 frames), `r1` (all 12 levels and the wrap, 75000
+  frames, the bot with `Invulnerable` set; WALKTHROUGH 5).
 
 ## 2.1 The machine budget
 
-A 48K game: no paging, no AY. Sound is the beeper (`OUT ($FE)` bit 4): the title tune is a two-voice player that
-runs with interrupts off ([2.4](#24-the-main-loop)); in play the sound is made inside the object loops: after each object `$8FB4` and `$9493` flip a state byte
-(`$7F82`, `$7F86`) with `XOR $18`, AND it with the next byte (an enable mask) and write it to `$FE`, so the pitch
-follows the work per object (stage 2: the effects). The game
-never returns to BASIC: the start-up writes over the system variables (`$5C00` up). Interrupts are IM2 with the
-vector table at `$FE00`.
+A 48K game: no paging, no AY. The sound is the beeper (`OUT ($FE)` bit 4), made three ways:
+
+- the title tune: TitleTune `$B446`, a two-voice player with interrupts off ([09](09-sound.md));
+- the sound effects: EffectPlay `$B30C` plays one of six effects (EffectTable `$7E5A`) in the play loop's time;
+- the engine hum: the object loop flips the speaker after each object (RunObjects `$9463`, at `$9493`: `$7F86`
+  XOR `$18`, AND the mask `$7F87`) and the playfield after each row (`$7F7E` / `$7F7F`), so the pitch follows the
+  frame's work.
+
+The game never returns to BASIC: Start writes over the system variables (`$5C00` up). Interrupts are IM 2: the
+vector table VectorTable `$FE00` (257 x `$FD`) and the jump InterruptJump `$FDFD`, whose target is switched
+between TitleInterrupt `$A9E4`, PlayInterrupt `$A9ED` and MenuRasterInterrupt `$A512`.
 
 ## 2.2 The memory map
 
-| From | To | What | Evidence |
+![The memory map at three stages: the load, the image at the entry, play](img/memory-map.png)
+
+Made by `tools/memmap.py` from `tools/memmap.txt`. The image is cut into 50 modules:
+
+| From | To | Modules | What |
 | --- | --- | --- | --- |
-| `$4000` | `$5AFF` | the screen; the bottom third plus its attributes is the HUD panel | play screens |
-| `$5B00` | `$5B11` | the loader's `MoveStub` (dead after the move) | `c1` stage 4 |
-| `$5C00` | `$67FF` | 3072 bytes copied from `$BC00-$C7FF` by the start-up (stage 2: what) | `$B6FF` |
-| `$5C00` | | the start-up's SP top (`LD SP,$5C00`) | `$B6FF` |
-| `$6800` | `$7EFF` | game data (stage 2) | |
-| `$7F60` | `$7FFF` | variables: frame counters `$7F62-$7F65`, RNG `$7F71-$7F75`, `$7F7B` death timer, `$7F7C` / `$7F7D` the end-of-life codes, `$7F96` interrupt flag, `$7F98` current player, `$7F99` the current record's address, `$7F9B` players, the player records `$7F9C` / `$7FCC` (2.5) | reads and writes in play |
-| `$8000` | `$8002` | `JP $B6FF`, the entry the loader jumps to | |
-| `$8003` | `$8187` | variables and buffers of the subsystems (stage 2), the print cursor `$80AA` / attribute `$80AC` | |
-| `$8184` | `$81C6` | the controls: fire edge `$8184` / `$8185`, Kempston flag `$8187` bit 0, the five key entries `$8188` (port high byte, mask; FIRE UP DOWN LEFT RIGHT) | `$A6B6`, `$A748` |
-| `$81FA` | | 5 bytes copied into each player record at `+$15` | `$AFB7` |
-| `$8234` | `$824B` | the points table, 12 BCD words (0, 25 ... 5000) | `$A489` |
-| `$8261` | `$82AE` | the high-score table, 5 entries of 14 bytes (print codes, initials, BCD score) | dump, 2.5 |
-| `$82EE` | `$8515` | the messages (print codes, `$FF` ends; [08](08-hud-and-text.md)) | `work/stage1/texts.txt` |
-| `$8516` | `$B6FE` | code: IM2 set-up `$8516`, RNG `$8544`, the play engine, print `$A321-$A4FF`, interrupt handlers `$A512` / `$A9E4` / `$A9ED`, main loop `$B200`, title tune `$B446` | `c1` L1 routines, disassembly |
-| `$B54F` | | glyphs for print codes `$80` up (8 bytes each) | `$A321` |
-| `$B6FF` | `$B72E` | the start-up, used once; in play `$B700-$B9FF` is overwritten (a buffer) | `play-start.bin` |
-| `$BC00` | `$C7FF` | the source of the `$5C00` copy; in play `$BC04-$DFFF` is rewritten (buffers, stage 2) | dump diff |
-| `$E000` | `$E747` | data stored complemented on the tape, made plain by the start-up (stage 2) | `$B6FF` |
-| `$E748` | `$EFE7` | the save of the bottom screen third and its 160 attributes (`$A979` restores, `$A98D` saves) | `$A979` |
-| `$F048` | `$F107` | 192 bytes stored complemented (stage 2) | `$B6FF` |
-| `$F12C` | `$F36B` | 576 bytes cleared at a level's start (stage 2) | `$8C54` |
-| `$F36C` | `$F62B` | the object records, 44 bytes each (2.6) | play |
-| `$F800` | `$FABF` | 95 pointers stepping by 8 (`$8C3B`), a pool (stage 2) | `$8C3B` |
-| `$FB00` | `$FBFF` | a 256-byte lookup (`LD L,A`, `LD A,(HL)`; stage 2: the bit-reverse for mirrored sprites?) | `$8A12` |
-| `$FDFD` | `$FDFF` | `JP handler`, the IM2 jump; `$FDFE` is switched between `$A9E4` (title), `$A9ED` (play), `$A512` (menu raster) | `$8516` |
-| `$FE00` | `$FF00` | the IM2 vector table, 257 bytes of `$FD` | `$8516` |
-| `$FF01` | `$FF1B` | the tune's period table | `$B446` |
-| `$FF1C` | | the tune's patterns | `$B446` |
-| `$FFD7` | | the developer's invulnerability flag: nonzero skips every collision death (2.5) | `$9B4C` |
-| `$FFD8` | `$FFFF` | an 8-byte work cell `$FFD8` (`$8EC5`) and font glyphs (stage 2) | |
+| `$61A8` | `$67FF` | tilecopy | zeros on the tape; Start copies `$BC00-$C7FF` here (TileGraphics `$5C00`, the wave cells `$6400`) |
+| `$6800` | `$7E59` | leveldata | paths, waves, enemy kinds, LevelTable `$6B2D`, the wave scripts, the scenery scripts, groups, shapes |
+| `$7E5A` | `$7FFF` | effectdata, gamevars, playerdata | EffectTable, the sprite descriptors, the sprite cache, the pass and scroll variables, Player1 `$7F9C` / Player2 `$7FCC` |
+| `$8000` | `$8515` | gameentry, systemvars, handlertables, controldata, scoredata, texts | GameEntry (`JP Start`), LevelOrder `$8003`, the handler tables, the key table, ScriptState, PointsTable `$8231`, HiScoreTable `$8261`, the 28 messages |
+| `$8516` | `$90B4` | system, playfield, stars, scroll, levels, scenery, sprites | the renderer: span chains, the glyph cache, the scroll, the scenery coroutine, the sprite strips |
+| `$90B5` | `$A320` | objgrid, waves, movers, objutil, player, weapons, enemies, objects | the hit grid, LaunchWave, the path bytecode, the ship, the weapons, the enemies, explosions and pods |
+| `$A321` | `$AB12` | print, score, menu, input, options, hiscore, panel, interrupts | PrintChar and its codes, the panel, the menus, ReadControls, the high-score entry, the interrupt handlers |
+| `$AB13` | `$B72E` | hud, events, wavescript, rounds, mainloop, effects, tune, icons, font, start | EventDispatch, the wave script VM, the level start, the main loop, the sounds, the glyphs, Start |
+| `$B72F` | `$DFFF` | buffers | the map ring (zeros), TileSource `$BC00`, WaveCellSource `$C400`, the glyph cache `$C000-$DFFF` in play |
+| `$E000` | `$F107` | graphics | the sprites (stored complemented), the sprite cache images `$E748`, PodSprite `$F048` |
+| `$F108` | `$F7FF` | records | RowRecords `$F12C` (18 x 32), PlayerObject `$F36C`, EnemyObjects, the shots, StripBuffers |
+| `$F800` | `$FF00` | tables | NodePool `$F800`, BitReverse `$FB00`, HitGridX / HitGridY `$FC00` / `$FD00`, ScriptStack, InterruptJump, VectorTable |
+| `$FF01` | `$FFFE` | tunedata, topcells | the title tune, the ROM font leftover, Invulnerable `$FFD7`, WorkGlyph `$FFD8`, ColumnFlags `$FFE0` |
 
-![TODO: the memory map (kit/heatmap.py over c1 and a play capture)](img/memory-map.png)
-
-What changes between the static image and `play-start.bin` (`$61A8-$FFFF`, gaps under 16 bytes merged) is the
-list above's variables and buffers, plus self-modified operands: `$9093`, `$90A5` (a saved SP: `LD ($90A5),SP`,
-the sprite code runs with SP as a pointer), `$9144`, `$91C3`, `$91DF`, `$931B`, `$A576`, `$B263`, `$8A1F`.
+Two regions change role in play. Start (`$B6FF`, run once) copies `$BC00-$C7FF` to `$5C00-$67FF` and
+complements `$E000-$E747` and `$F048-$F107`; after that `$B700-$BFFF` is the map ring and `$C000-$DFFF` the glyph
+cache, so Start and the copy's source are overwritten at the first level. Two tape leftovers stay in the image and
+are never run or read as such: a saved panel at `$E748-$EFE7` (in play that area is the sprite cache and the panel
+save) and a ZX Interface 1 RS-232 download routine at `$FDE8-$FE4A` ([11](11-data-reference.md)).
 
 ## 2.3 The stages from the tape to play
 
@@ -73,68 +59,78 @@ The load is [03](03-build-and-load.md) 3.5. From `$8000`:
 
 ```mermaid
 flowchart TD
-  A["$8000: JP $B6FF"] --> B["$B6FF start-up: SP $5C00, copy $BC00-$C7FF to $5C00, un-complement two ranges"]
-  B --> C["$B200 main loop: $8516 IM2 on, RNG seeded from R"]
-  C --> D["title: $B095 credits / $B0C9 high scores, the tune $B446, until fire or a menu key"]
-  D --> E["$A76F menu: 1 or 2 players, 3 redefine keys ($A5D1)"]
-  E --> F["$AFB7 players set up, $B023 level set up, PREPARE FOR COMBAT"]
-  F --> G["$B1B4 play: frame routine $AC07, IM2 $A9ED, until $7F7D is set"]
-  G --> H["$B0FF dispatch by table $B111: $B119 death, $B174 level done, $B18A"]
+  A["GameEntry $8000: JP Start"] --> B["Start $B6FF: SP $5C00, copy $BC00-$C7FF to $5C00, un-complement the sprites"]
+  B --> C["MainLoop $B200: InterruptSetup, SetUpInterrupts (IM 2, the RNG)"]
+  C --> D["title: CreditsPage $B095 / HiScorePage $B0C9, TitleTune $B446"]
+  D --> E["MenuKeys $A76F: 1 or 2 players, 3 RedefineKeys"]
+  E --> F["PlayersSetup $AFB7 (LevelOrder), RoundSetup $B023, LevelStart $AF49"]
+  F --> G["PlayLoop $B1B4: EventDispatch until EndCode; PlayInterrupt $A9ED"]
+  G --> H["EndOfPlay $B0FF via EndHandlers: PlayerDied, LevelDone, AbortGame"]
   H --> F
-  H --> I["game over: high-score entry, back to D"]
+  H --> I["game over: HighScoreEntry, back to D"]
 ```
 
-## 2.4 The main loop
+## 2.4 The play pass and the main loop
 
-- `$B200`: `$AFB0` (once), then the title: `$B095` draws the credits page, `$B0C9` the high-score page, the tune
-  plays between them with interrupts off (the title is DI most of the time: 577 interrupts in `c1`'s 4000 title
-  frames); the keys are polled only between notes, so a key must be held for about 40 frames.
-- `$AFB7` initialises both player records; `$B023` sets up the current player's level.
-- `$B1B4` is the play loop: it runs until `$7F7D` is nonzero. The interrupt handler `$A9ED` does the timed work
-  (it writes `OUT ($FE),0` at fixed points, stage 2) and `$AC07` is the frame's game logic.
-- `$B0FF` reads the end code and jumps through the table at `$B111`: `$B119` the player died (record `+5`
-  incremented, lives `+4` decremented at `$B170`), `$B174` the level is done (record `+6` advances, 0-11 then
-  around), `$B18A` (stage 2).
+- **MainLoop `$B200`**: the title pages, the menu, then a game: PlayersSetup, then per life or level RoundSetup and
+  PlayLoop. EndOfPlay reads EndCode `$7F7D` and jumps through EndHandlers `$B111`: PlayerDied `$B119` (TakeLife
+  `$B170`), LevelDone `$B174` (the level counter `+6` advances 0-11 and wraps), AbortGame `$B18A`.
+- **PlayLoop `$B1B4`** only calls EventDispatch `$AC07` until EndCode is set. The scheduler runs the highest
+  requested and enabled job (EventRequests `$81C5`): the effect, the score, the sprite builds, the panel.
+- **PlayInterrupt `$A9ED`** does the game. Each interrupt starts one phase (PassPhase `$7F65`, 1-4 then 0) and
+  runs a chain of three `CALL BuildColumn; DI; RET` steps. BuildColumn enables interrupts while it builds glyphs, so
+  a step can be interrupted by the next phase; the nested pass turns the interrupted step's `DI; RET` into
+  `NOP; NOP`, and phase 1 puts them back. A game pass takes two frames: the ship, the objects (RunObjects), the
+  scroll step, the playfield (one span chain per row, [06](06-rendering.md)) and the wave script (WaveScriptStep
+  `$AD66`).
+- **Pause** (key 4) runs inside the interrupt and stops everything; fire resumes, Q aborts.
 
 ## 2.5 The state
 
-The player record (48 bytes, P1 `$7F9C`, P2 `$7FCC`; `$7F99` points at the current one, `IX` in the death code):
+The player record (48 bytes, Player1 `$7F9C`, Player2 `$7FCC`; `$7F99` points at the current one):
 
 | Offset | Bytes | What |
 | --- | ---: | --- |
-| `+$00` | 4 | the score, BCD, high byte first (the display shows 8 digits: `00010800`) |
-| `+$04` | 1 | lives in reserve: 2 at the start, +1 at 10 000 points (seen in the bot run `imm2`) |
-| `+$05` | 1 | deaths so far, incremented at `$B11D` |
-| `+$06` | 1 | the level, 0-11 |
-| `+$0D` | 8 | from the table at `$6B25` |
-| `+$15` | 5 | from `$81FA` |
+| `+$00` | 4 | the score, BCD, high byte first |
+| `+$04` | 1 | lives in reserve: 2 at the start, +1 at each of ExtraLifeScores (10000, 30000, 50000, 70000, 90000) |
+| `+$05` | 1 | deaths so far |
+| `+$06` | 1 | the level counter 0-11 (LevelOrder `$8003` maps it to a level: 0 1 2, a shuffle of 3-8, 9 10 11) |
+| `+$07` | 1 | the weapon selector: the pod icon the next pod lights |
+| `+$08` | 1 | the side weapon (2, 3, 4) |
+| `+$09` | 1 | the double plasma |
+| `+$0A` | 1 | the laser level |
+| `+$0B` | 1 | the speed (`$40` up, steps of `$20`) |
+| `+$0D` | 35 | the checkpoint: the wave script's state (ScriptState) at the last restart point |
 
-The two POKEs of the TAP name the same state: `$B170` `DEC (IX+4)` is the life lost, `$9B5F` the routine the
-collision check calls to kill the player. The collision check at `$9B3B-$9B50` returns before the kill when the
-byte at `$FFD7` is nonzero: nothing in the game writes it (one read, `$9B4C`), and it is 0 on the tape. It is a
-developer switch left in the code. `POKE 65495,1` gives an invulnerable ship that still goes through scenery and
-keeps scrolling; the TAP's `$9B5F` `RET` instead leaves the death started and the game stalls (the ship flashes, the
-scroll stops; `work/explore/stuck.szx`).
+The weapons ([10](10-gameplay-logic.md)): a wave destroyed whole can leave a pod (PodStep `$A1FD`). Touching it
+moves the selector along the panel's five icons (speed-up, laser, plasma, homing missiles, seeker); touching it
+with fire held 8 passes takes the lit weapon (the table `$80F0`). Fuel `$80E6` falls one step every 16 frames; at
+zero FuelOut `$9C03` sets `$5A` and takes one laser level and one speed step. The pods are the fuel scoop: taking
+the speed-up refills it to `$BB`, a selector that wraps past the fifth icon to `$B4` (and 1000 points), every pod
+collected gives 100 points, a pod that scrolls away halves the fuel.
 
-High scores at `$8261`: 5 entries of 14 bytes, `04 row 03 08` (print at row, column 8), 3 initials, `1B 08` (message
-8, the dots), `FF`, then the score in BCD (4 bytes). The tape's table: EGO 68000, DFR 25000, BAV 10000, HNR 5000,
-BMR 1000. After the `imm2` run (10 800 points, initials left at the default "AAA") the entry went in third, the
-rows below moved down and the row numbers (`$06 $09 $0C $0F $12`) stayed in place.
+Invulnerable `$FFD7`: nothing writes it and it is 0 on the tape; PlayerHit `$9B4C` returns before KillPlayer
+`$9B5F` when it is not 0. It is a developer switch (`POKE 65495,1`). The TAP's `POKE` of a `RET` at `$9B5F`
+instead leaves the death started and stalls the game.
 
-The weapons (the power-up pod and the five weapon icons in the panel) are stage 2: the panel shows them, the state
-is not yet found.
+High scores at HiScoreTable `$8261`: 5 entries of 14 bytes, a print string (`04 row 03 08`, the initials, `1B 08`
+the dots, `FF`) and the score in BCD. On the tape: EGO 68000, DFR 25000, BAV 10000, HNR 5000, BMR 1000.
 
 ## 2.6 Objects
 
-44-byte records from `$F36C`:
+44-byte records from PlayerObject `$F36C` ([07](07-objects.md)):
 
 | Offset | What |
 | --- | --- |
-| `+$00` / `+$01` | the handler |
-| `+$03` / `+$04` | X: fraction, integer (one unit is about 2 pixels) |
-| `+$05` / `+$06` | Y: fraction, integer (one unit is 8 pixels; the ship's top is about 8Y + 8) |
-| `+$07` | the kind |
-| `+$08` | bit 7: active |
+| `+$00` / `+$01` | the sprite descriptor |
+| `+$03` / `+$04` | X (bits 5-7 of `+$03`: the pixel shift) |
+| `+$05` / `+$06` | Y |
+| `+$07` | the kind: its handler from the handler tables |
+| `+$0D` | the overlap mask from the hit grid |
+| `+$0E`-`+$15` | Vx, Ax, Vy, Ay |
+| `+$25` | the colour (drawn as paper: the sprites are stored complemented) |
 
-Slots: `$F36C` the player's ship, `$F398` five enemies, `$F474` three linked to the player, `$F4F8` four shots,
-`$F5A8`, `$F5D4`, `$F600` (stage 2). The drawing loops step through them with `ADD IY,-44` (`LD DE,$FFD4`).
+Slots: PlayerObject `$F36C`, eight EnemyObjects `$F398`, three EnemyShots `$F474`, four LaserShots `$F4F8`, the
+second plasma ball `$F5A8`, the side shot `$F5D4`, the sight `$F600`. The loops step with `ADD IY,-44`. Each frame
+the hit grid (HitGridX `$FC00`, HitGridY `$FD00`) is rebuilt: enemy slot n sets bit n where it lies, and the
+player's records read their overlap mask.

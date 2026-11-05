@@ -1,0 +1,565 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/print",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps: print",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "print"
+  ],
+  "summary": "Print codes, strings, messages and numbers.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 360,
+    "sha1": "c8ff7e64d84314c56cd9aae6b81e829bde24ec03",
+    "masked_sha1": "7fd5800b3aea63c323a792dbc78e983dd9f7bf31"
+  },
+  "origin": "$A321",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 6,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPending"
+    },
+    {
+      "offset": 27,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPos"
+    },
+    {
+      "offset": 30,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintAttr"
+    },
+    {
+      "offset": 35,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPos"
+    },
+    {
+      "offset": 49,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 82,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPending"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B14F"
+    },
+    {
+      "offset": 108,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 115,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 123,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPending"
+    },
+    {
+      "offset": 130,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 132,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 134,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 136,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 138,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 140,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 142,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 145,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintAttr"
+    },
+    {
+      "offset": 150,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintAttr"
+    },
+    {
+      "offset": 159,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintAttr"
+    },
+    {
+      "offset": 173,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPos"
+    },
+    {
+      "offset": 182,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPos"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPos"
+    },
+    {
+      "offset": 205,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPos"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPos"
+    },
+    {
+      "offset": 227,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPending"
+    },
+    {
+      "offset": 244,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 251,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MessageListBase"
+    },
+    {
+      "offset": 276,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 287,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BcdScratch"
+    },
+    {
+      "offset": 297,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BcdScratch"
+    },
+    {
+      "offset": 321,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintAttr"
+    },
+    {
+      "offset": 328,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 336,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintAttr"
+    },
+    {
+      "offset": 351,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "PrintChar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print a character or take a print code"
+    },
+    {
+      "offset": 120,
+      "name": "PrintCodeDone",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "End a print code: nothing pending"
+    },
+    {
+      "offset": 144,
+      "name": "PrintSetAttr",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print code 0: the attribute"
+    },
+    {
+      "offset": 149,
+      "name": "PrintSetInk",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print code 1: the ink"
+    },
+    {
+      "offset": 158,
+      "name": "PrintSetPaper",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print code 2: the paper"
+    },
+    {
+      "offset": 172,
+      "name": "PrintSetColumn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print code 3: the column"
+    },
+    {
+      "offset": 181,
+      "name": "PrintSetRow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print code 4: the row"
+    },
+    {
+      "offset": 204,
+      "name": "PrintColumnRight",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print code 5: move the column"
+    },
+    {
+      "offset": 211,
+      "name": "PrintRowDown",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print code 6: move the row"
+    },
+    {
+      "offset": 224,
+      "name": "PrintString",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print a string"
+    },
+    {
+      "offset": 258,
+      "name": "PrintMessage",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print message A"
+    },
+    {
+      "offset": 283,
+      "name": "PrintBcdSpaces",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print a BCD number with spaces for its leading zeros (no caller)"
+    },
+    {
+      "offset": 285,
+      "name": "PrintBcd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print an 8-digit BCD number"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 1,
+      "name": "PrintCharSave",
+      "comment": ""
+    },
+    {
+      "offset": 5,
+      "name": "",
+      "comment": "a code waiting for its operand?"
+    },
+    {
+      "offset": 13,
+      "name": "PrintCharTest",
+      "comment": "a code: store it as pending"
+    },
+    {
+      "offset": 15,
+      "name": "PrintCharKind",
+      "comment": ""
+    },
+    {
+      "offset": 17,
+      "name": "",
+      "comment": "DE = 8 A (the glyph offset)"
+    },
+    {
+      "offset": 26,
+      "name": "",
+      "comment": "the attribute first, the position one cell on"
+    },
+    {
+      "offset": 38,
+      "name": "",
+      "comment": "the screen address of the attribute cell: $58-$5A -> $40, $48, $50"
+    },
+    {
+      "offset": 44,
+      "name": "PrintCharGlyph",
+      "comment": ""
+    },
+    {
+      "offset": 46,
+      "name": "",
+      "comment": "$80-$FF: the game's glyphs"
+    },
+    {
+      "offset": 51,
+      "name": "",
+      "comment": "the ROM font"
+    },
+    {
+      "offset": 54,
+      "name": "PrintRomGlyph",
+      "comment": "HL = the ROM glyph"
+    },
+    {
+      "offset": 55,
+      "name": "",
+      "comment": "B 6 rows, C the bold mask of the left nibble"
+    },
+    {
+      "offset": 58,
+      "name": "",
+      "comment": "row 0 of the ROM glyph skipped: it is always blank"
+    },
+    {
+      "offset": 65,
+      "name": "",
+      "comment": "the blank second pixel line"
+    },
+    {
+      "offset": 68,
+      "name": "PrintCharRow",
+      "comment": "rows 2-7, bold"
+    },
+    {
+      "offset": 69,
+      "name": "PrintCharBold",
+      "comment": ""
+    },
+    {
+      "offset": 77,
+      "name": "PrintCharDone",
+      "comment": "the byte becomes the pending mark: $20 or more for a character, the code itself"
+    },
+    {
+      "offset": 85,
+      "name": "PrintGlyph",
+      "comment": "the game's glyph $80-$FF: code $80 at $B54F, 8 rows as they are"
+    },
+    {
+      "offset": 91,
+      "name": "PrintGlyphRow",
+      "comment": ""
+    },
+    {
+      "offset": 99,
+      "name": "PrintCode",
+      "comment": "a code with its operand in C"
+    },
+    {
+      "offset": 101,
+      "name": "",
+      "comment": "7 and up: no routine"
+    },
+    {
+      "offset": 114,
+      "name": "",
+      "comment": "the routine returns to PrintCodeDone"
+    },
+    {
+      "offset": 130,
+      "name": "PrintControlTable",
+      "comment": "The routines of the print codes 0-6"
+    },
+    {
+      "offset": 226,
+      "name": "PrintStringNext",
+      "comment": ""
+    },
+    {
+      "offset": 233,
+      "name": "",
+      "comment": "an operand: print it as it is"
+    },
+    {
+      "offset": 243,
+      "name": "PrintStringChar",
+      "comment": ""
+    },
+    {
+      "offset": 248,
+      "name": "PrintStringMessage",
+      "comment": "$1B n: message n"
+    },
+    {
+      "offset": 255,
+      "name": "PrintStringEnd",
+      "comment": ""
+    },
+    {
+      "offset": 270,
+      "name": "PrintMessageFind",
+      "comment": "skip to the next $FF"
+    },
+    {
+      "offset": 299,
+      "name": "",
+      "comment": "'0'"
+    },
+    {
+      "offset": 301,
+      "name": "",
+      "comment": "at most 7 leading zeros"
+    },
+    {
+      "offset": 305,
+      "name": "PrintBcdLeading",
+      "comment": ""
+    },
+    {
+      "offset": 307,
+      "name": "",
+      "comment": "$0F back: the byte is used up, the next one"
+    },
+    {
+      "offset": 314,
+      "name": "PrintBcdDigit",
+      "comment": ""
+    },
+    {
+      "offset": 318,
+      "name": "",
+      "comment": "the first digit that is not zero: the digits' attribute"
+    },
+    {
+      "offset": 326,
+      "name": "PrintBcdZero",
+      "comment": "a leading zero: the fill character"
+    },
+    {
+      "offset": 330,
+      "name": "PrintBcdLeadNext",
+      "comment": ""
+    },
+    {
+      "offset": 333,
+      "name": "",
+      "comment": "the last digit always prints"
+    },
+    {
+      "offset": 339,
+      "name": "PrintBcdRest",
+      "comment": ""
+    },
+    {
+      "offset": 348,
+      "name": "PrintBcdRestDigit",
+      "comment": ""
+    },
+    {
+      "offset": 349,
+      "name": "PrintBcdOut",
+      "comment": "'0' + digit"
+    },
+    {
+      "offset": 353,
+      "name": "PrintBcdRestNext",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$A321",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/print.asm",
+    "label": "PrintChar"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

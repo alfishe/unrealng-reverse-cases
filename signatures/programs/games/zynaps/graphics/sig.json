@@ -1,0 +1,113 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/graphics",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: graphics",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "graphics"
+  ],
+  "summary": "Sprite images.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 4360,
+    "sha1": "26ff3e271d1dd1e08734895c345fe7f4d15af724",
+    "masked_sha1": "26ff3e271d1dd1e08734895c345fe7f4d15af724"
+  },
+  "origin": "$E000",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "SpritePad",
+      "comment": "8 bytes above the player's image (blank in play)"
+    },
+    {
+      "offset": 8,
+      "name": "PlayerSprite",
+      "comment": "The player's ship: 8 shifts of 3 columns x 24 lines"
+    },
+    {
+      "offset": 584,
+      "name": "SightSprite",
+      "comment": "The homing sight: 8 shifts of 3 columns x 24 lines"
+    },
+    {
+      "offset": 1160,
+      "name": "ExplosionFrames",
+      "comment": "The explosion: 8 frames of 2 columns x 24 lines"
+    },
+    {
+      "offset": 1544,
+      "name": "LaserSprite",
+      "comment": "The laser shot: 4 shifts (2 pixels apart) of 2 columns x 8 lines"
+    },
+    {
+      "offset": 1608,
+      "name": "BallSprite",
+      "comment": "The enemy shot and plasma ball: 8 shifts of 2 columns x 16 lines"
+    },
+    {
+      "offset": 1864,
+      "name": "SpriteCacheImages",
+      "comment": "The sprite cache images, also the panel's save area"
+    },
+    {
+      "offset": 2440,
+      "name": "",
+      "comment": "second cache image"
+    },
+    {
+      "offset": 3016,
+      "name": "",
+      "comment": "third cache image (the second 4-column one)"
+    },
+    {
+      "offset": 3592,
+      "name": "",
+      "comment": "fourth cache image"
+    },
+    {
+      "offset": 3912,
+      "name": "",
+      "comment": "the saved attribute rows 19-23 (160 bytes)"
+    },
+    {
+      "offset": 4072,
+      "name": "",
+      "comment": "zero on the tape from here"
+    },
+    {
+      "offset": 4168,
+      "name": "PodSprite",
+      "comment": "The weapon pod: 4 shifts (2 pixels apart) of 3 columns x 16 lines"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$E000",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/graphics.asm",
+    "label": "SpritePad"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}

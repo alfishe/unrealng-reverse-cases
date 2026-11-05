@@ -1,0 +1,1526 @@
+# Zynaps: the level data $6800-$7E59 (tools/res_levels.py; the format: src/res/levels/README.md)
+
+section path-starts $6800  # path number -> its bytecode (28 bytes: (address - $681C) / 2)
+    path0 path1 path2 path3 path4 path5 path6
+    path7 path8 path9 path10 path11 path12 path13
+    path13 path13 path16 path0 path18 path19 path20
+    path21 path22 path23 path24 path25 path25 path27
+
+section paths $681C  # the path bytecode: *N = the next command runs N frames (0 = for ever)
+path0:
+    randomspeed, direction 8, *0, driftmiddle
+path1:
+    *0, land, *0, dive, *0, movefragile
+path2:
+    *0, land, *33, scroll, *10, driftmiddle, setloop 15
+p682D:
+    direction 8, *16, move, direction 12, *16, move, direction 0, *12, move, direction 4, *8, move, direction 8, *24, move, direction 4, *8, move, loop p682D
+path3:
+    direction 8, *15, move, aimplayer, *20, move, direction 8, *0, move, accel
+path4:
+    direction 13, *20, move, aimplayer, *30, move, direction 8, *0, move, accel
+path5:
+    direction 8, *45, move, *17, tocentre, direction 0, *0, move
+path6:
+    direction 8, *21, move, *0, tocentre, accel
+path7:
+    direction 8, *0, driftmiddle, accel
+path8:
+    randomspeed, direction 8, *0, bounce 0
+path9:
+    direction 8, *7, accel-y, setloop 15
+p6870:
+    *14, accel+y, *14, accel-y, loop p6870, accel
+path10:
+    direction 8, *1, move, interval 2, *0, hometarget 2
+path11:
+    direction 8, randomspeed, interval 1, homeplayer 1, *0, move
+path12:
+    *0, dive, *0, movefragile
+path13:
+    *0, land, *0, scroll
+path16:
+    direction 8, *35, move, setloop 15
+p6890:
+    direction 0, *10, move, direction 8, *10, move, loop p6890, *0, move, accel
+path18:
+    *14, accel-x, *14, accel+x, setloop 2
+p68A1:
+    *100, driftmiddle, loop p68A1, *127, tocentre, direction 8, *0, move, accel
+path19:
+    *14, accel-x, *10, move, setloop 8
+p68B1:
+    *14, accel+x-y, *14, accel+x+y, *14, accel-x+y, *14, accel-x-y, loop p68B1, *14, accel+x-y, *14, accel-x+y, *0, move
+path20:
+    *4, wait, *13, accel-x, *13, accel+x, *127, driftmiddle, *127, driftmiddle, *0, tocentre
+path21:
+    *4, wait, *13, accel-x, *13, accel+x, direction 12, *8, move, setloop 15
+p68D8:
+    direction 4, *16, move, *14, wait, direction 12, *16, move, *14, wait, loop p68D8, *13, accel-x, *0, move, accel
+path22:
+    direction 3, *15, move, aimplayer, *30, move, direction 8, *0, move, accel
+path23:
+    direction 8, *45, move, *18, tocentre, direction 0, *30, move, *18, tocentre, direction 8, *0, move, accel
+path24:
+    direction 8, *40, driftmiddle, *16, tocentre, *0, driftmiddle, accel
+path25:
+    direction 8, *12, move, randomspeed, randomdir, *0, bouncearena, accel
+path27:
+    *4, wait, direction 8, *24, move, *125, wait, setloop 15
+p691A:
+    aimplayer, *25, move, *50, wait, loop p691A, direction 8, *0, move, accel
+
+section wave-index $6926  # wave number (the script's "wave N") -> its definition
+    wave0 wave1 wave2 wave3 wave4 wave5 wave6 wave7
+    wave8 wave9 wave10 wave11 wave12 wave13 wave14 wave15
+    wave16 wave17 wave18 wave19 wave20 wave21 wave22 wave23
+    wave24 wave25 wave26 wave27 wave28
+
+section waves $6943  # bonus, kind, [path N], gap, then the enemies: x,y (y ? = random)
+wave0:
+    bonus $40 kind 0 gap 0 : 0,0
+wave1:
+    bonus $00 kind 1 gap 8 : 0,0 24,0 48,0
+wave2:
+    bonus $01 kind 2 gap 12 : 0,0 0,0 0,0
+wave3:
+    bonus $40 kind 3 gap 0 : 0,16 0,112 32,16 32,112
+wave4:
+    bonus $40 kind 4 gap 8 : 184,0 184,0 184,0
+wave5:
+    bonus $40 kind 5 gap 0 : 0,32 0,96 0,64
+wave6:
+    bonus $41 kind 6 gap 8 : 0,0 0,0 0,0 0,0 0,0
+wave7:
+    bonus $40 kind 7 gap 8 : 0,0 0,0 0,0 0,0
+wave8:
+    bonus $40 kind 8 gap 0 : 16,0 0,16 32,32 48,48
+wave9:
+    bonus $00 kind 9 gap 0 : 0,? 0,? 0,?
+wave10:
+    bonus $42 kind 10 gap 6 : 160,64 160,64 160,64 160,64 160,64
+wave11:
+    bonus $00 kind 11 gap 12 : 0,? 0,? 0,?
+wave12:
+    bonus $00 kind 12 gap 12 : 0,? 0,?
+wave13:
+    bonus $40 kind 13 gap 0 : 0,0
+wave14:
+    bonus $00 kind 14 gap 0 : 0,0
+wave15:
+    bonus $40 kind 15 gap 0 : 0,0
+wave16:
+    bonus $40 kind 16 gap 6 : 0,0 0,24 0,48 0,72
+wave17:
+    bonus $40 kind 17 path 10 gap 24 : 0,0 0,0
+wave18:
+    bonus $40 kind 18 gap 12 : 0,0 32,32
+wave19:
+    bonus $41 kind 19 gap 0 : 0,0
+wave20:
+    bonus $03 kind 20 gap 0 : 0,0
+wave21:
+    bonus $03 kind 21 gap 0 : 0,0
+wave22:
+    bonus $40 kind 3 gap 0 : 0,0 0,40 0,88 0,128
+wave23:
+    bonus $40 kind 4 path 22 gap 8 : 184,0 184,0 184,0
+wave24:
+    bonus $40 kind 5 path 23 gap 0 : 0,24 0,104 0,64
+wave25:
+    bonus $40 kind 7 path 24 gap 8 : 0,0 0,0 0,0 0,0
+wave26:
+    bonus $40 kind 8 path 25 gap 0 : 16,0 0,16 32,32 48,0
+wave27:
+    bonus $00 kind 12 path 26 gap 4 : 0,0 0,0 0,0 0,0
+wave28:
+    bonus $42 kind 21 path 27 gap 0 : 0,0
+
+section kinds $6A65  # kind: +$18 +$19/+$21 colour select, speeds +$0C/+$17, +$10 Ax, +$14 Ay, +$07 handler, +$25, +$0D
+    kind 0: $07 $0A $21 $08 $08 $02 $28 $01
+    kind 1: $00 $02 $42 $10 $10 $02 $38 $01
+    kind 2: $07 $01 $41 $10 $10 $02 $58 $01
+    kind 3: $07 $11 $61 $10 $10 $02 $50 $01
+    kind 4: $05 $09 $51 $10 $10 $02 $58 $01
+    kind 5: $02 $01 $33 $10 $10 $02 $28 $01
+    kind 6: $03 $01 $42 $10 $10 $02 $50 $01
+    kind 7: $01 $02 $31 $10 $10 $02 $60 $01
+    kind 8: $03 $01 $21 $10 $10 $02 $58 $01
+    kind 9: $07 $14 $51 $10 $10 $02 $38 $01
+    kind 10: $0A $01 $23 $10 $10 $08 $30 $08
+    kind 11: $00 $00 $51 $10 $10 $02 $38 $FF
+    kind 12: $00 $02 $52 $40 $40 $02 $30 $01
+    kind 13: $0A $09 $41 $10 $10 $0B $38 $04
+    kind 14: $0A $90 $41 $10 $10 $0B $30 $01
+    kind 15: $04 $07 $22 $10 $10 $0B $78 $02
+    kind 16: $3C $19 $31 $10 $10 $08 $28 $0A
+    kind 17: $28 $0C $21 $10 $10 $08 $50 $08
+    kind 18: $14 $0D $41 $10 $10 $08 $58 $08
+    kind 19: $0A $09 $44 $10 $10 $08 $50 $06
+    kind 20: $3C $11 $31 $10 $10 $0C $50 $30
+    kind 21: $3C $11 $31 $10 $10 $0C $50 $30
+
+section kind-colours $6B15  # the colour sets ($80E9 + the kind's colour select) & $1C: +$19 +$20 +$22
+    colours 0: $0C $FF $FF
+    colours 1: $41 $04 $96
+    colours 2: $0D $FF $FF
+    colours 3: $0A $03 $96
+    colours 4: $0E $FF $FF
+    colours 5: $13 $03 $64
+    colours 6: $0F $FF $FF
+    colours 7: $14 $02 $64
+
+section levels $6B2D  # the level table (LevelStart $B062 copies a record to $81D7)
+    level 0: byte $00 script level0 flags $FF scroll $0040 scenery 1 speed 0
+    level 1: byte $00 script level1 flags $FF scroll $0030 scenery 2 speed 0
+    level 2: byte $00 script level2 flags $FF scroll $0030 scenery 3 speed 0
+    level 3: byte $00 script level3 flags $FF scroll $0038 scenery 4 speed 0
+    level 4: byte $00 script level4 flags $FF scroll $0030 scenery 6 speed 3
+    level 5: byte $00 script level5 flags $FF scroll $0030 scenery 9 speed 10
+    level 6: byte $00 script level6 flags $FF scroll $0030 scenery 10 speed 20
+    level 7: byte $00 script level7 flags $FF scroll $0040 scenery 11 speed 15
+    level 8: byte $00 script level8 flags $FF scroll $0010 scenery 12 speed 15
+    level 9: byte $00 script level9 flags $FF scroll $0030 scenery 2 speed 15
+    level 10: byte $00 script level10 flags $FF scroll $0030 scenery 14 speed 20
+    level 11: byte $00 script level11 flags $FF scroll $0030 scenery 8 speed 15
+
+section scripts $6B8D  # the level scripts: the frames to wait, then a command
+level0:
+    7 wave 15 y 96
+    0 poke $81E4 $0002
+s6B96:
+    18 wave 7 y 56
+    18 wave 7 y 48
+    18 wave 7 y 32
+    0 dec $81E4
+    0 jp nz s6B96
+    13 wave 2 y 96
+    2 wave 7 y 48
+    16 wave 5 y 0
+    17 wave 15 y 96
+    1 wave 7 y 48
+    16 wave 7 y 32
+    20 wave 7 y 24
+    19 wave 15 y 72
+    7 wave 15 y 72
+    0 save
+    0 poke $81E4 $0003
+s6BCA:
+    16 wave 7 y 48
+    16 wave 7 y 30
+    0 dec $81E4
+    0 jp nz s6BCA
+    30 wave 2 y 72
+    0 poke $81E4 $0004
+s6BE1:
+    17 wave 5 y 0
+    0 dec $81E4
+    0 jp nz s6BE1
+    12 wave 15 y 72
+    8 wave 15 y 72
+    8 wave 15 y 72
+    31 scrolloff
+    1 clearrows
+    0 wave 19 y 120
+    0 poke $81E4 $003C
+s6C02:
+    5 anyenemies
+    0 jp nz s6C0E
+    0 poke $81E4 $0001
+s6C0E:
+    0 dec $81E4
+    0 jp nz s6C02
+    6 levelend
+    255 nop
+level1:
+    0 poke $81E4 $0010
+s6C20:
+    4 wave 11 y 0
+    0 dec $81E4
+    0 jp nz s6C20
+    16 wave 6 y 80
+    16 wave 6 y 96
+    0 poke $81E4 $0010
+s6C37:
+    4 wave 11 y 0
+    4 wave 11 y 0
+    4 wave 11 y 0
+    2 wave 5 y 0
+    0 dec $81E4
+    0 jp nz s6C37
+    8 save
+    0 poke $81E4 $0003
+s6C53:
+    4 wave 5 y 0
+    12 wave 6 y 72
+    16 wave 6 y 90
+    16 wave 9 y 96
+    8 wave 5 y 0
+    4 wave 5 y 0
+    16 wave 7 y 32
+    16 wave 11 y 0
+    4 wave 11 y 0
+    0 dec $81E4
+    0 jp nz s6C53
+    32 wave 18 y 108
+    0 poke $81E4 $003C
+s6C7F:
+    5 anyenemies
+    0 jp nz s6C8B
+    0 poke $81E4 $0001
+s6C8B:
+    0 dec $81E4
+    0 jp nz s6C7F
+    6 levelend
+    255 nop
+level2:
+    4 wave 7 y 32
+    16 wave 7 y 16
+    0 poke $81E4 $000C
+s6CA3:
+    14 wave 5 y 0
+    0 dec $81E4
+    0 jp nz s6CA3
+    8 wave 8 y 48
+    16 wave 7 y 32
+    16 wave 7 y 16
+    12 wave 8 y 24
+    16 wave 7 y 24
+    16 wave 8 y 24
+    0 save
+    0 poke $81E4 $0005
+s6CC8:
+    12 wave 8 y 24
+    12 wave 8 y 48
+    0 dec $81E4
+    0 jp nz s6CC8
+    16 wave 5 y 0
+    0 poke $81E4 $0003
+s6CDF:
+    10 wave 8 y 24
+    10 wave 8 y 32
+    0 dec $81E4
+    0 jp nz s6CDF
+    20 wave 25 y 48
+    16 wave 25 y 40
+    16 scrolloff
+    1 clearrows
+    3 wave 21 y 48
+    0 poke $81E4 $003C
+s6D00:
+    5 anyenemies
+    0 jp nz s6D0C
+    0 poke $81E4 $0001
+s6D0C:
+    0 dec $81E4
+    0 jp nz s6D00
+    6 levelend
+    255 nop
+level3:
+    8 wave 0 y 0
+    0 poke $81E4 $0003
+s6D21:
+    8 wave 5 y 0
+    0 dec $81E4
+    0 jp nz s6D21
+    0 poke $81E4 $0004
+s6D32:
+    8 wave 0 y 0
+    0 dec $81E4
+    0 jp nz s6D32
+    0 poke $81E4 $0008
+s6D43:
+    4 wave 12 y 0
+    4 wave 12 y 0
+    4 wave 0 y 48
+    4 wave 12 y 0
+    4 wave 12 y 0
+    4 wave 0 y 8
+    0 dec $81E4
+    0 jp nz s6D43
+    22 wave 11 y 0
+    8 nop
+    0 save
+    0 poke $81E4 $0003
+s6D6A:
+    12 wave 0 y 48
+    4 wave 12 y 0
+    4 wave 9 y 0
+    0 dec $81E4
+    0 jp nz s6D6A
+    0 poke $81E4 $0008
+s6D81:
+    4 wave 12 y 0
+    0 dec $81E4
+    0 jp nz s6D81
+    0 poke $81E4 $0006
+s6D92:
+    10 wave 0 y 0
+    0 dec $81E4
+    0 jp nz s6D92
+    16 scrolloff
+    4 wave 18 y 108
+    0 poke $81E4 $003C
+s6DA8:
+    5 anyenemies
+    0 jp nz s6DB4
+    0 poke $81E4 $0001
+s6DB4:
+    0 dec $81E4
+    0 jp nz s6DA8
+    6 levelend
+    255 nop
+level9:
+    4 wave 7 y 32
+    16 wave 25 y 16
+    12 wave 25 y 24
+    0 poke $81E4 $000A
+s6DCF:
+    12 wave 9 y 0
+    0 dec $81E4
+    0 jp nz s6DCF
+    18 wave 25 y 24
+    14 wave 25 y 32
+    12 wave 11 y 0
+    8 wave 11 y 0
+    8 wave 9 y 0
+    0 poke $81E4 $0006
+s6DEF:
+    8 wave 3 y 0
+    0 dec $81E4
+    0 jp nz s6DEF
+    14 nop
+    0 save
+    1 wave 25 y 24
+    13 wave 25 y 32
+    0 poke $81E4 $0005
+s6E0A:
+    8 wave 11 y 0
+    8 wave 3 y 0
+    0 dec $81E4
+    0 jp nz s6E0A
+    8 wave 25 y 32
+    0 poke $81E4 $0006
+s6E21:
+    12 wave 9 y 0
+    10 wave 3 y 0
+    0 dec $81E4
+    0 jp nz s6E21
+    16 wave 16 y 32
+    0 poke $81E4 $003C
+s6E38:
+    5 anyenemies
+    0 jp nz s6E44
+    0 poke $81E4 $0001
+s6E44:
+    0 dec $81E4
+    0 jp nz s6E38
+    6 levelend
+    255 nop
+level4:
+    1 wave 24 y 0
+    0 poke $81E4 $0004
+s6E59:
+    16 wave 24 y 0
+    0 dec $81E4
+    0 jp nz s6E59
+    0 poke $81E4 $0007
+s6E6A:
+    8 wave 24 y 0
+    4 wave 1 y 0
+    4 wave 1 y 0
+    0 dec $81E4
+    0 jp nz s6E6A
+    0 poke $81E4 $0005
+s6E81:
+    12 wave 2 y 0
+    0 dec $81E4
+    0 jp nz s6E81
+    0 save
+    0 poke $81E4 $0004
+s6E94:
+    16 wave 6 y 32
+    4 wave 1 y 0
+    16 wave 6 y 120
+    4 wave 1 y 0
+    0 dec $81E4
+    0 jp nz s6E94
+    0 poke $81E4 $0004
+s6EAE:
+    10 wave 9 y 0
+    4 wave 15 y 0
+    6 wave 1 y 0
+    8 wave 15 y 0
+    0 dec $81E4
+    0 jp nz s6EAE
+    0 poke $81E4 $0004
+s6EC8:
+    4 wave 0 y 24
+    12 wave 2 y 0
+    6 wave 15 y 0
+    0 dec $81E4
+    0 jp nz s6EC8
+    19 scrolloff
+    1 clearrows
+    0 escapefirst
+    7 wave 28 y 0
+    0 poke $81E4 $003C
+s6EE8:
+    5 anyenemies
+    0 jp nz s6EF4
+    0 poke $81E4 $0001
+s6EF4:
+    0 dec $81E4
+    0 jp nz s6EE8
+    6 levelend
+    255 nop
+level11:
+    0 poke $81E4 $0003
+s6F06:
+    4 wave 9 y 0
+    0 dec $81E4
+    0 jp nz s6F06
+    0 poke $81E4 $0004
+s6F17:
+    16 wave 25 y 48
+    0 dec $81E4
+    0 jp nz s6F17
+    10 wave 13 y 64
+    0 poke $81E4 $0004
+s6F2B:
+    8 wave 13 y 64
+    16 wave 27 y 64
+    8 wave 4 y 128
+    4 wave 23 y 0
+    4 wave 9 y 0
+    8 wave 3 y 0
+    8 wave 27 y 64
+    8 wave 13 y 64
+    12 wave 23 y 0
+    4 wave 4 y 128
+    8 wave 13 y 64
+    0 dec $81E4
+    0 jp nz s6F2B
+    10 wave 3 y 0
+    16 wave 3 y 0
+    20 wave 13 y 64
+    8 wave 13 y 64
+    52 scrolloff
+    1 clearrows
+    0 poke $81E4 $0008
+s6F6A:
+    4 wave 27 y 64
+    0 dec $81E4
+    0 jp nz s6F6A
+    0 poke $81E4 $003C
+s6F7B:
+    5 anyenemies
+    0 jp nz s6F87
+    0 poke $81E4 $0001
+s6F87:
+    0 dec $81E4
+    0 jp nz s6F7B
+    0 poke $81E4 $003C
+s6F95:
+    5 anyenemies
+    0 jp nz s6FA1
+    0 poke $81E4 $0001
+s6FA1:
+    0 dec $81E4
+    0 jp nz s6F95
+    1 wave 10 y 0
+    0 poke $81E4 $003C
+s6FB2:
+    5 anyenemies
+    0 jp nz s6FBE
+    0 poke $81E4 $0001
+s6FBE:
+    0 dec $81E4
+    0 jp nz s6FB2
+    6 levelend
+    255 nop
+level5:
+    4 wave 11 y 0
+    0 poke $81E4 $0003
+s6FD3:
+    12 wave 25 y 24
+    16 wave 9 y 0
+    12 wave 25 y 104
+    16 wave 9 y 0
+    0 dec $81E4
+    0 jp nz s6FD3
+    0 poke $81E4 $0004
+s6FED:
+    8 wave 11 y 0
+    8 wave 9 y 0
+    0 dec $81E4
+    0 jp nz s6FED
+    0 save
+    0 poke $81E4 $0006
+s7003:
+    16 wave 5 y 0
+    16 wave 22 y 0
+    12 wave 3 y 0
+    0 dec $81E4
+    0 jp nz s7003
+    0 poke $81E4 $0004
+s701A:
+    12 wave 27 y 104
+    12 wave 11 y 0
+    0 dec $81E4
+    0 jp nz s701A
+    0 poke $81E4 $003C
+s702E:
+    5 anyenemies
+    0 jp nz s703A
+    0 poke $81E4 $0001
+s703A:
+    0 dec $81E4
+    0 jp nz s702E
+    4 wave 9 y 0
+    12 escapefirst
+    1 wave 17 y 64
+    0 poke $81E4 $003C
+s7050:
+    5 anyenemies
+    0 jp nz s705C
+    0 poke $81E4 $0001
+s705C:
+    0 dec $81E4
+    0 jp nz s7050
+    6 levelend
+    255 nop
+level6:
+    1 wave 25 y 24
+    0 poke $81E4 $0003
+s7071:
+    16 wave 25 y 32
+    16 wave 7 y 40
+    0 dec $81E4
+    0 jp nz s7071
+    0 poke $81E4 $0004
+s7085:
+    4 wave 0 y 8
+    0 dec $81E4
+    0 jp nz s7085
+    0 poke $81E4 $000A
+s7096:
+    12 wave 4 y 128
+    4 wave 0 y 16
+    2 wave 0 y 8
+    0 dec $81E4
+    0 jp nz s7096
+    0 save
+    0 poke $81E4 $0004
+s70AF:
+    16 wave 6 y 16
+    16 wave 8 y 24
+    12 wave 8 y 8
+    0 dec $81E4
+    0 jp nz s70AF
+    0 poke $81E4 $0006
+s70C6:
+    4 wave 27 y 48
+    0 dec $81E4
+    0 jp nz s70C6
+    23 scrolloff
+    1 clearrows
+    7 wave 20 y 32
+    0 poke $81E4 $003C
+s70DE:
+    5 anyenemies
+    0 jp nz s70EA
+    0 poke $81E4 $0001
+s70EA:
+    0 dec $81E4
+    0 jp nz s70DE
+    6 levelend
+    255 nop
+level7:
+    4 wave 22 y 0
+    0 poke $81E4 $0004
+s70FF:
+    8 wave 27 y 88
+    12 wave 4 y 128
+    0 dec $81E4
+    0 jp nz s70FF
+    0 poke $81E4 $0002
+s7113:
+    8 wave 9 y 0
+    12 wave 25 y 120
+    12 wave 25 y 16
+    0 dec $81E4
+    0 jp nz s7113
+    0 save
+    0 poke $81E4 $0006
+s712C:
+    16 wave 2 y 64
+    16 wave 25 y 48
+    12 wave 9 y 0
+    12 wave 7 y 32
+    0 dec $81E4
+    0 jp nz s712C
+    0 poke $81E4 $0003
+s7146:
+    14 wave 24 y 0
+    8 wave 1 y 0
+    7 wave 25 y 0
+    0 dec $81E4
+    0 jp nz s7146
+    21 wave 3 y 0
+    1 scrolloff
+    1 clearrows
+    8 escapefirst
+    1 wave 21 y 48
+    0 poke $81E4 $003C
+s7169:
+    5 anyenemies
+    0 jp nz s7175
+    0 poke $81E4 $0001
+s7175:
+    0 dec $81E4
+    0 jp nz s7169
+    6 levelend
+    255 nop
+level8:
+    4 wave 6 y 96
+    0 poke $81E4 $0004
+s718A:
+    8 wave 9 y 0
+    12 wave 4 y 128
+    0 dec $81E4
+    0 jp nz s718A
+    0 poke $81E4 $0002
+s719E:
+    8 wave 9 y 0
+    12 wave 8 y 12
+    12 wave 8 y 32
+    0 dec $81E4
+    0 jp nz s719E
+    0 poke $81E4 $0006
+s71B5:
+    16 wave 8 y 8
+    0 save
+    16 wave 25 y 88
+    6 wave 0 y 32
+    6 wave 0 y 24
+    12 wave 8 y 32
+    0 dec $81E4
+    0 jp nz s71B5
+    16 wave 6 y 72
+    0 poke $81E4 $0003
+s71D7:
+    7 wave 1 y 0
+    7 wave 1 y 0
+    7 wave 1 y 0
+    8 wave 22 y 0
+    0 dec $81E4
+    0 jp nz s71D7
+    13 scrolloff
+    1 clearrows
+    6 escapefirst
+    1 wave 20 y 16
+    0 poke $81E4 $003C
+s71FA:
+    5 anyenemies
+    0 jp nz s7206
+    0 poke $81E4 $0001
+s7206:
+    0 dec $81E4
+    0 jp nz s71FA
+    6 levelend
+    255 nop
+level10:
+    4 wave 0 y 48
+    0 poke $81E4 $0002
+s721B:
+    8 wave 24 y 0
+    16 wave 2 y 0
+    0 dec $81E4
+    0 jp nz s721B
+    0 poke $81E4 $0006
+s722F:
+    4 wave 1 y 0
+    8 wave 23 y 0
+    4 wave 1 y 0
+    8 wave 4 y 128
+    0 dec $81E4
+    0 jp nz s722F
+    0 poke $81E4 $0004
+s7249:
+    4 wave 1 y 0
+    4 wave 27 y 48
+    4 wave 9 y 0
+    0 dec $81E4
+    0 jp nz s7249
+    0 save
+    0 poke $81E4 $0008
+s7262:
+    8 wave 23 y 0
+    8 wave 27 y 72
+    8 wave 8 y 48
+    8 wave 9 y 0
+    8 wave 8 y 32
+    0 dec $81E4
+    0 jp nz s7262
+    16 scrolloff
+    1 clearrows
+    1 wave 9 y 0
+    8 wave 23 y 0
+    8 escapefirst
+    2 wave 20 y 32
+    6 wave 27 y 64
+    0 poke $81E4 $003C
+s7291:
+    5 anyenemies
+    0 jp nz s729D
+    0 poke $81E4 $0001
+s729D:
+    0 dec $81E4
+    0 jp nz s7291
+    6 levelend
+    255 nop
+
+section patterns $72A9  # the colour patterns: 8 attributes to WorkCell $FFD8 (p0-p7 in the shapes)
+    pattern 0: $74 $6C $5C $54 $24 $2C $54 $34
+    pattern 1: $5C $1C $54 $14 $74 $34 $54 $34
+    pattern 2: $54 $14 $34 $14 $74 $2C $54 $34
+    pattern 3: $74 $2C $64 $24 $6C $2C $64 $24
+    pattern 4: $34 $34 $24 $24 $34 $24 $24 $24
+    pattern 5: $3C $2C $74 $6C $34 $24 $14 $14
+    pattern 6: $4C $0C $74 $6C $34 $24 $14 $14
+
+section scenery-scripts $72E1  # the table (39 entries), then the bodies
+    table scenery0 scenery0 scenery2 scenery3 scenery4 scenery2 scenery6 scenery7
+    table scenery7 scenery2 scenery10 scenery11 scenery12 scenery2 scenery14 scenery15
+    table scenery16 scenery17 scenery18 scenery19 scenery20 scenery21 scenery22 scenery23
+    table scenery24 scenery25 scenery26 scenery27 scenery27 scenery27 scenery27 scenery27
+    table scenery27 scenery33 scenery34 scenery35 scenery36 scenery37 scenery38
+scenery0:
+    pattern 2, mask $10, call 32, call 33, mask $20, call 32, call 34
+scenery2:
+    group 0, group 0, end
+scenery3:
+    mask $10, pattern 0, call 17, mask $20, call 18, call 20, call 18, call 19, call 18, call 20, call 19, end
+scenery4:
+    pattern 1, mask $10, call 24, call 25, call 26, call 25, call 26, call 24, call 26, call 25, end
+scenery6:
+    pattern 1, group 0, mask $10, call 22, call 23, mask $20, call 23, mask $40, call 22, call 23, end
+scenery7:
+    mask $10, pattern 6, group 0, group 0, group 0, group 51, group 53, group 51, group 52, group 52, group 53, group 58, group 57, group 56, group 57, group 58, group 58, group 58, group 57, group 51, group 52, group 53, group 56, group 57, group 56, group 57, group 56, group 58, group 58, group 57, group 51, group 53, group 57, group 51, group 52, group 52, group 53, mask $80, group 51, end
+scenery10:
+    mask $10, pattern 4, group 0, call 35, call 38, call 36, call 37, call 35, end
+scenery11:
+    mask $80, pattern 3, call 20, call 19, pattern 2, mask $40, call 34, pattern 3, mask $20, call 20, pattern 2, mask $80, call 32, end
+scenery12:
+    mask $80, pattern 3, call 20, call 19, pattern 1, mask $20, call 22, pattern 3, call 20, pattern 1, mask $40, call 23, end
+scenery14:
+    mask $20, pattern 1, group 0, call 36, call 37, call 35, call 37, call 38, end
+scenery15:
+    mask $10, pattern 5, group 0, group 45, group 46, group 47, group 48, group 49, group 50, group 51, group 52, group 53, group 45, group 54, group 55, group 47, group 51, group 53, group 56, group 56, group 57, group 58, group 51, group 53, group 59, group 60, end
+scenery16:
+    group 0, group 0, group 0, group 0, group 0, group 0, group 0, group 0, end
+scenery17:
+    group 0, group 2, group 0, group 4, group 0, group 0, group 5, group 6, end
+scenery18:
+    group 5, group 7, group 8, group 8, group 7, group 8, group 6, group 3, end
+scenery19:
+    group 5, group 8, group 6, group 4, group 5, group 7, group 7, group 6, end
+scenery20:
+    group 3, group 5, group 6, group 5, group 8, group 8, group 8, group 6, end
+scenery21:
+    group 5, group 8, group 7, group 6, group 4, group 5, group 8, group 6, end
+scenery22:
+    group 9, group 10, group 0, group 9, group 11, group 12, group 13, group 10, end
+scenery23:
+    group 9, group 13, group 12, group 11, group 10, group 14, group 9, group 10, end
+scenery24:
+    group 24, group 25, group 28, group 24, group 27, group 29, group 23, group 26, end
+scenery25:
+    group 29, group 28, group 24, group 23, group 27, group 23, group 29, group 28, end
+scenery26:
+    group 22, group 23, group 28, group 29, group 22, group 26, group 24, group 28, end
+scenery27:
+    group 30, group 31, group 38, group 36, group 35, group 37, group 34, group 34, end
+scenery33:
+    group 33, group 38, group 35, group 36, group 35, group 37, group 38, group 37, end
+scenery34:
+    group 30, group 32, group 31, group 34, group 30, group 32, group 32, group 31, end
+scenery35:
+    group 39, group 41, group 40, group 39, group 42, group 44, group 44, group 40, end
+scenery36:
+    group 39, group 42, group 41, group 43, group 44, group 41, group 41, group 44, end
+scenery37:
+    group 42, group 40, group 39, group 43, group 42, group 42, group 43, group 40, end
+scenery38:
+    group 42, group 44, group 40, group 39, group 41, group 44, group 43, group 44, end
+
+section groups $749A  # the table (61 entries), then the bodies
+    table group0 group1 group2 group3 group4 group5 group6 group7
+    table group8 group9 group10 group11 group12 group13 group14 group15
+    table group15 group15 group15 group15 group15 group15 group15 group23
+    table group24 group25 group26 group27 group28 group29 group30 group31
+    table group32 group33 group34 group35 group36 group37 group38 group39
+    table group40 group41 group42 group43 group44 group45 group45 group45
+    table group45 group45 group45 group45 group52 group53 group54 group54
+    table group54 group57 group58 group59 group59
+group0:
+    end
+group1:
+    put shape 37 row 10 col 1 mask $F0
+    put shape 37 row 6 col 10 mask $F0
+    end
+group2:
+    put shape 38 row 0 col 6 mask $F0
+    put shape 39 row 8 col 1 mask $F0
+    end
+group3:
+    put shape 40 row 5 col 5 mask $F0
+    put shape 37 row 10 col 11 mask $F0
+    end
+group4:
+    put shape 41 row 3 col 1 mask $F0
+    put shape 38 row 9 col 7 mask $F0
+    end
+group5:
+    put shape 32 row 15 col 8 mask $F0
+    put shape 38 row 4 col 1 mask $10
+    put shape 40 row 0 col 8 mask $10
+    put shape 32 row 0 col 0 mask $20 vflip
+    put shape 34 row 0 col 8 mask $20 vflip
+    end
+group6:
+    put shape 33 row 15 col 0 mask $F0
+    put shape 39 row 5 col 7 mask $30
+    put shape 33 row 0 col 0 mask $20 vflip
+    end
+group7:
+    put shape 34 row 15 col 0 mask $F0
+    put shape 35 row 15 col 8 mask $F0
+    put shape 40 row 3 col 9 mask $10
+    put shape 33 row 0 col 0 mask $20 vflip
+    put shape 32 row 0 col 8 mask $20 vflip
+    end
+group8:
+    put shape 36 row 15 col 0 mask $F0
+    put shape 34 row 15 col 8 mask $F0
+    put shape 37 row 0 col 0 mask $10
+    put shape 39 row 2 col 6 mask $10
+    put shape 35 row 0 col 0 mask $20 vflip
+    put shape 36 row 0 col 8 mask $20 vflip
+    end
+group9:
+    put shape 28 row 8 col 7 mask $20
+    put shape 42 row 16 col 8 mask $F0
+    put shape 47 row 12 col 4 mask $F0
+    put shape 17 row 12 col 7 mask $40 hflip
+    end
+group10:
+    put shape 28 row 4 col 7 mask $40
+    put shape 43 row 16 col 0 mask $F0
+    put shape 46 row 8 col 5 mask $F0
+    end
+group11:
+    put shape 44 row 16 col 0 mask $F0
+    put shape 45 row 16 col 8 mask $F0
+    put shape 46 row 1 col 7 mask $F0
+    put shape 47 row 8 col 4 mask $F0
+    end
+group12:
+    put shape 48 row 9 col 6 mask $60
+    put shape 19 row 9 col 7 mask $20
+    put shape 43 row 16 col 0 mask $F0
+    put shape 42 row 16 col 8 mask $F0
+    put shape 47 row 15 col 4 mask $F0
+    end
+group13:
+    put shape 45 row 16 col 0 mask $F0
+    put shape 44 row 16 col 8 mask $F0
+    put shape 17 row 12 col 5 mask $60
+    put shape 47 row 12 col 9 mask $40
+    end
+group14:
+    put shape 48 row 6 col 5 mask $40
+    put shape 48 row 7 col 8 mask $40
+    put shape 48 row 9 col 6 mask $40
+    put shape 48 row 8 col 3 mask $60
+    put shape 17 row 12 col 9 mask $20
+    put shape 19 row 8 col 4 mask $20
+    put shape 42 row 16 col 0 mask $F0
+    put shape 43 row 16 col 8 mask $F0
+    end
+group15:
+    put shape 56 row 14 col 0 mask $F0
+    put shape 58 row 9 col 7 mask $F0
+    put shape 60 row 5 col 1 mask $F0
+    put shape 59 row 4 col 1 mask $F0
+    end
+group23:
+    put shape 57 row 12 col 1 mask $F0
+    put shape 60 row 4 col 10 mask $F0
+    put shape 59 row 3 col 10 mask $F0
+    end
+group24:
+    put shape 58 row 9 col 1 mask $F0
+    put shape 55 row 13 col 6 mask $F0
+    end
+group25:
+    put shape 56 row 14 col 0 mask $F0
+    put shape 55 row 13 col 8 mask $F0
+    end
+group26:
+    put shape 57 row 0 col 5 mask $F0
+    put shape 55 row 6 col 5 mask $F0 vflip
+    put shape 59 row 15 col 12 mask $F0
+    end
+group27:
+    put shape 59 row 15 col 0 mask $F0
+    put shape 59 row 12 col 9 mask $F0 vflip
+    put shape 58 row 3 col 8 mask $F0
+    end
+group28:
+    put shape 57 row 12 col 2 mask $F0 vflip
+    put shape 58 row 3 col 2 mask $F0
+    put shape 55 row 13 col 9 mask $F0
+    put shape 59 row 15 col 0 mask $F0
+    end
+group29:
+    put shape 56 row 14 col 0 mask $F0
+    put shape 57 row 12 col 9 mask $F0
+    end
+group30:
+    put shape 3 row 14 col 2 mask $30 hflip
+    put shape 61 row 12 col 4 mask $C0
+    put shape 5 row 13 col 8 mask $F0
+    put shape 4 row 13 col 2 mask $F0
+    put shape 3 row 0 col 2 mask $30 hflip vflip
+    put shape 61 row 0 col 4 mask $C0 vflip
+    put shape 5 row 4 col 8 mask $F0
+    put shape 4 row 4 col 2 mask $F0
+    end
+group31:
+    put shape 3 row 14 col 6 mask $30
+    put shape 62 row 12 col 8 mask $C0
+    put shape 4 row 13 col 6 mask $F0 hflip
+    put shape 5 row 13 col 0 mask $F0
+    put shape 3 row 0 col 6 mask $30 vflip
+    put shape 62 row 0 col 8 mask $C0 vflip
+    put shape 4 row 4 col 6 mask $F0 hflip
+    put shape 5 row 4 col 0 mask $F0
+    end
+group32:
+    put shape 2 row 14 col 6 mask $30
+    put shape 63 row 12 col 6 mask $C0
+    put shape 5 row 13 col 0 mask $F0
+    put shape 5 row 13 col 8 mask $F0
+    put shape 2 row 0 col 6 mask $30 vflip
+    put shape 63 row 0 col 6 mask $C0 vflip
+    put shape 5 row 4 col 0 mask $F0
+    put shape 5 row 4 col 8 mask $F0
+    end
+group33:
+    put shape 9 row 0 col 1 mask $F0 vflip
+    put shape 9 row 0 col 7 mask $F0 hflip vflip
+    put shape 26 row 11 col 1 mask $F0
+    put shape 1 row 14 col 8 mask $30
+    put shape 20 row 13 col 8 mask $C0
+    end
+group34:
+    put shape 9 row 0 col 1 mask $F0 vflip
+    put shape 9 row 0 col 7 mask $F0 hflip vflip
+    put shape 1 row 14 col 0 mask $30
+    put shape 1 row 14 col 8 mask $30
+    put shape 20 row 13 col 0 mask $C0
+    put shape 20 row 13 col 8 mask $C0
+    end
+group35:
+    put shape 16 row 16 col 0 mask $F0
+    put shape 1 row 14 col 4 mask $30
+    put shape 20 row 13 col 4 mask $C0
+    put shape 15 row 16 col 8 mask $F0
+    put shape 13 row 0 col 0 mask $F0 vflip
+    put shape 8 row 0 col 8 mask $F0
+    end
+group36:
+    put shape 14 row 16 col 0 mask $F0
+    put shape 14 row 16 col 8 mask $F0
+    put shape 17 row 12 col 1 mask $A0
+    put shape 24 row 11 col 5 mask $A0
+    put shape 17 row 12 col 7 mask $A0 hflip
+    put shape 8 row 0 col 0 mask $F0
+    put shape 8 row 0 col 8 mask $F0
+    end
+group37:
+    put shape 16 row 16 col 8 mask $F0
+    put shape 14 row 16 col 0 mask $F0
+    put shape 29 row 13 col 13 mask $50
+    put shape 21 row 12 col 12 mask $A0
+    put shape 27 row 12 col 2 mask $A0
+    put shape 18 row 0 col 0 mask $F0 vflip
+    put shape 26 row 1 col 1 mask $50 vflip
+    put shape 28 row 1 col 3 mask $A0 vflip
+    put shape 13 row 0 col 8 mask $F0 vflip
+    end
+group38:
+    put shape 15 row 16 col 8 mask $F0
+    put shape 9 row 16 col 1 mask $F0
+    put shape 9 row 16 col 4 mask $F0 hflip
+    put shape 9 row 0 col 1 mask $F0 vflip
+    put shape 9 row 0 col 4 mask $F0 hflip vflip
+    put shape 21 row 0 col 12 mask $30 vflip
+    put shape 17 row 0 col 7 mask $C0 hflip vflip
+    end
+group39:
+    put shape 67 row 15 col 8 mask $F0
+    put shape 69 row 7 col 2 mask $F0
+    put shape 67 row 0 col 0 mask $20 vflip
+    put shape 68 row 0 col 8 mask $20 vflip
+    end
+group40:
+    put shape 67 row 15 col 0 mask $F0
+    put shape 64 row 13 col 8 mask $F0
+    put shape 64 row 0 col 0 mask $20 vflip
+    end
+group41:
+    put shape 67 row 15 col 0 mask $F0
+    put shape 64 row 13 col 8 mask $F0
+    put shape 67 row 0 col 0 mask $20 vflip
+    put shape 68 row 0 col 8 mask $20 vflip
+    end
+group42:
+    put shape 65 row 16 col 0 mask $F0
+    put shape 68 row 16 col 8 mask $F0
+    put shape 66 row 0 col 0 mask $20 vflip
+    put shape 67 row 0 col 8 mask $20 vflip
+    end
+group43:
+    put shape 68 row 16 col 0 mask $F0
+    put shape 66 row 13 col 8 mask $F0
+    put shape 64 row 0 col 0 mask $20 vflip
+    put shape 65 row 0 col 8 mask $20 vflip
+    end
+group44:
+    put shape 67 row 15 col 0 mask $F0
+    put shape 64 row 13 col 8 mask $F0
+    put shape 67 row 0 col 0 mask $20 vflip
+    put shape 68 row 0 col 8 mask $20 vflip
+    end
+group45:
+    put shape 75 row 16 col 0 mask $F0
+    put shape 70 row 12 col 8 mask $F0
+    put shape 75 row 0 col 0 mask $F0 vflip
+    put shape 70 row 0 col 8 mask $F0 vflip
+    put shape 0 row 7 col 3 mask $80
+    end
+group52:
+    put shape 74 row 12 col 0 mask $F0
+    put shape 74 row 12 col 8 mask $F0
+    put shape 74 row 4 col 0 mask $F0 vflip
+    put shape 74 row 4 col 8 mask $F0 vflip
+    end
+group53:
+    put shape 71 row 12 col 0 mask $F0
+    put shape 75 row 16 col 8 mask $F0 hflip
+    put shape 71 row 0 col 0 mask $F0 vflip
+    put shape 75 row 0 col 8 mask $F0 hflip vflip
+    end
+group54:
+    put shape 74 row 16 col 0 mask $F0
+    put shape 76 row 16 col 8 mask $F0
+    put shape 74 row 0 col 0 mask $F0 vflip
+    put shape 76 row 0 col 8 mask $F0 vflip
+    put shape 78 row 8 col 0 mask $F0
+    put shape 78 row 8 col 8 mask $F0
+    end
+group57:
+    put shape 76 row 16 col 0 mask $F0
+    put shape 76 row 16 col 8 mask $F0
+    put shape 76 row 0 col 0 mask $F0 vflip
+    put shape 76 row 0 col 8 mask $F0 vflip
+    end
+group58:
+    put shape 76 row 16 col 0 mask $F0
+    put shape 76 row 16 col 8 mask $F0
+    put shape 76 row 0 col 0 mask $F0 vflip
+    put shape 76 row 0 col 8 mask $F0 vflip
+    put shape 78 row 8 col 8 mask $F0
+    end
+
+section shapes $7783  # the table (79 entries), then the bodies
+group59:
+    table shape0 shape1 shape2 shape3 shape4 shape5 shape6 shape7
+    table shape8 shape9 shape10 shape10 shape10 shape10 shape14 shape15
+    table shape16 shape17 shape18 shape19 shape20 shape21 shape22 shape22
+    table shape22 shape25 shape25 shape27 shape28 shape29 shape30 shape31
+    table shape32 shape33 shape34 shape35 shape36 shape37 shape38 shape39
+    table shape40 shape41 shape42 shape43 shape44 shape45 shape46 shape47
+    table shape48 shape49 shape49 shape49 shape49 shape49 shape49 shape49
+    table shape56 shape57 shape58 shape59 shape60 shape61 shape62 shape63
+    table shape64 shape65 shape66 shape67 shape68 shape69 shape70 shape71
+    table shape72 shape73 shape74 shape75 shape76 shape77 shape78
+shape0:
+    rows 4
+        $54 | 3B 9C F8 FC .. .. .. ..
+        $54 | DB BC F9 FD .. .. .. ..
+        $54 | CF D0 FA FE .. .. .. ..
+        $14 | 1F 88 FB FF .. .. .. ..
+shape1:
+    rows 5
+        p5  | .. 02 03 .. .. 02 03 ..
+        p4  | 0C 0D 0A 0E 0C 0D 0A 0E
+        p5  | 07 .. .. 06 07 .. .. 06
+        p4  | 0A 0E 0C 0D 0A 0E 0C 0D
+        p5  | .. 04 05 .. .. 04 05 ..
+shape2:
+    rows 4
+        p4  | .. 08 09 .. .. .. .. ..
+        p5  | 28 07 06 29 .. .. .. ..
+        p4  | .. 08 09 .. .. .. .. ..
+        p5  | 28 07 06 29 .. .. .. ..
+shape3:
+    rows 4
+        p4  | 0A 0B 08 09 .. .. .. ..
+        p5  | .. 04 07 06 03 .. .. ..
+        p4  | .. .. 08 09 0A 0B .. ..
+        p5  | .. 28 07 06 29 06 29 ..
+shape4:
+    rows 1
+        p6  | 22 23 24 24 24 24 24 25
+shape5:
+    rows 1
+        p6  | 24 24 24 24 24 24 24 25
+shape6:
+    rows 1
+        p7  | 10 7A 7A 7A 7A 7A 7A 7A
+shape7:
+    rows 1
+        p7  | 7A 7A 7A 7A 7A 7A 7A 7A
+shape8:
+    rows 1
+        p1  | 23 69 6A 6B 6B 6A 6C 20
+shape9:
+    rows 2
+        $6C | 98 99 9A 2E 2E 2E 2E 2E
+        $34 | B8 B9 BA 2F 2F 2F 2F 2F
+shape10:
+    rows 2
+        p0  | 49 4B 4B 4A 4A 4B 4B 4C
+        p1  | 69 6B 6B 6A 6A 6B 6B 6C
+shape14:
+    rows 2
+        p2  | 24 24 24 24 24 24 24 24
+        p3  | 74 74 74 74 74 74 74 74
+shape15:
+    rows 2
+        p2  | .. .. .. .. .. 23 24 24
+        p3  | .. .. .. .. .. .. 74 74
+shape16:
+    rows 2
+        p2  | 24 24 24 .. .. .. .. ..
+        p3  | 74 74 .. .. .. .. .. ..
+shape17:
+    rows 4
+        $6C | 98 99 9A .. .. .. .. ..
+        $34 | B8 B9 BA .. .. .. .. ..
+        $3C | 96 97 .. .. .. .. .. ..
+        $24 | B6 B7 .. .. .. .. .. ..
+shape18:
+    rows 3
+        p0  | 40 .. .. .. .. .. .. 40
+        p0  | 60 .. .. .. .. .. .. 60
+        p1  | 60 42 43 53 54 48 48 60
+shape19:
+    rows 1
+        $7C | 78 79 .. .. .. .. .. ..
+shape20:
+    rows 5
+        p4  | .. .. D7 D8 D7 D8 .. ..
+        p5  | .. .. D6 BB 9B D5 .. ..
+        p4  | .. D7 DA .. .. D9 D8 ..
+        p5  | .. 9B D5 .. .. D6 BB ..
+        p4  | D7 D8 D9 D8 D7 DA D7 D8
+shape21:
+    rows 6
+        $7C | .. 40 .. .. .. .. .. ..
+        $74 | 17 18 19 .. .. .. .. ..
+        $34 | 37 38 39 .. .. .. .. ..
+        $3C | 57 58 59 .. .. .. .. ..
+        $24 | .. 1A .. .. .. .. .. ..
+        $24 | .. 3A .. .. .. .. .. ..
+shape22:
+    rows 3
+        $3C | 43 44 3E 3D 3E 03 .. ..
+        $7C | 5A 5B 5C 5D 5E 3A .. ..
+        $34 | 10 7B 7C 7D 7E 05 .. ..
+shape25:
+    rows 7
+        $7C | .. 3B 1B 1C 1D .. .. ..
+        $2C | 17 5A 01 01 1E 19 .. ..
+        $34 | 37 38 18 18 38 39 .. ..
+        $24 | .. 58 59 59 01 .. .. ..
+        $24 | .. 77 58 58 59 .. .. ..
+        $24 | .. 77 58 58 59 .. .. ..
+        $24 | .. 77 58 58 59 .. .. ..
+shape27:
+    rows 4
+        $7C | 32 33 34 35 36 .. .. ..
+        $74 | 55 56 .. 55 56 .. .. ..
+        $64 | 75 76 .. 75 76 56 .. ..
+        $34 | 75 76 .. 75 76 76 .. ..
+shape28:
+    rows 5
+        $7C | 2C 2D .. .. .. .. .. ..
+        $34 | 2A 2B .. .. .. .. .. ..
+        $24 | 77 59 .. .. .. .. .. ..
+        $24 | 77 59 .. .. .. .. .. ..
+        $24 | 75 76 .. .. .. .. .. ..
+shape29:
+    rows 5
+        $7C | 2C 2D .. .. .. .. .. ..
+        $34 | 2A 2B .. .. .. .. .. ..
+        $24 | 08 09 .. .. .. .. .. ..
+        $74 | 55 56 .. .. .. .. .. ..
+        $34 | 75 76 .. .. .. .. .. ..
+shape30:
+    db $02
+shape31:
+    db $03
+shape32:
+    rows 3
+        p0  | .. .. .. .. .. 3B 1B 1C
+        p1  | .. .. .. .. 2C 2D 01 2C
+        p2  | .. 3B 1D 2C 2D 3B 1B 26
+shape33:
+    rows 3
+        p0  | 2C 2D .. .. .. .. .. ..
+        p1  | 2D 3B 1B 1C 1D .. .. ..
+        p2  | 2C 2D 01 01 2C 2D .. ..
+shape34:
+    rows 3
+        p0  | 1D .. 3B 1D .. 3B 1B 1C
+        p1  | 2D 2C 2D 3B 1B 1C 1D 2C
+        p2  | 2C 2D 2C 2D 2C 2D 3B 1D
+shape35:
+    rows 3
+        p0  | 2C 2D .. 3B 1B 1C 1D 3B
+        p1  | 2D 1B 1C 1D 01 01 1E 2C
+        p2  | 2C 2D 01 1E 3B 1D 2C 2D
+shape36:
+    rows 3
+        p0  | 1D .. .. .. .. 3B 1B 1C
+        p1  | 2D 2C 2D .. 2C 5A 01 2C
+        p2  | 2C 2D 3B 1B 1C 1D 3B 1D
+shape37:
+    rows 4
+        p0  | .. 2C 2D .. .. .. .. ..
+        p1  | 2C 26 27 2D .. .. .. ..
+        p2  | 26 27 2D 27 .. .. .. ..
+        p2  | .. 26 27 .. .. .. .. ..
+shape38:
+    rows 5
+        p0  | 3B 1B 1C 1D .. .. .. ..
+        p1  | 5A 01 01 1E 2D .. .. ..
+        p2  | 15 01 2C 2D 27 .. .. ..
+        p2  | 1F 2C 26 27 2D .. .. ..
+        p2  | .. 26 27 26 27 .. .. ..
+shape39:
+    rows 6
+        p0  | 2C 2D 2C 2D .. .. .. ..
+        p0  | 26 3B 1B 1C 1D .. .. ..
+        p1  | 2C 5A 01 01 1E 2D .. ..
+        p1  | 26 15 01 2C 2D 27 .. ..
+        p2  | .. 1F 2C 26 27 2D .. ..
+        p2  | .. .. 26 27 26 27 .. ..
+shape40:
+    rows 5
+        p0  | .. .. .. .. 2C 2D .. ..
+        p0  | .. 2C 2D 3B 1D 3B 1D ..
+        p1  | 3B 1D 2C 2D 2C 1F 7F ..
+        p2  | 1F 2C 26 3B 1D 27 .. ..
+        p2  | .. 26 27 1F 7F .. .. ..
+shape41:
+    rows 6
+        p0  | .. .. 3B 1B 1C 1D .. ..
+        p0  | .. 2C 5A 01 01 1E .. ..
+        p1  | 3B 26 15 01 01 16 .. ..
+        p1  | 5A 2C 2D 3F 5F 7F .. ..
+        p2  | 15 26 27 26 27 .. .. ..
+        p2  | 1F 3F 5F 7F .. .. .. ..
+shape42:
+    rows 2
+        p4  | 6D 6E 6F 71 72 6D 6E 6E
+        p5  | .. .. .. .. 4E 4F 70 6E
+shape43:
+    rows 2
+        p4  | 71 72 71 6E 50 6E 70 50
+        p5  | 6F 4E 4F 4F 6F 50 .. ..
+shape44:
+    rows 2
+        p4  | 6F 6F 71 72 6F 6F 6E 6F
+        p5  | 6F 50 .. 4D 4F 6F 6E 70
+shape45:
+    rows 2
+        p4  | 50 .. .. .. 6D 6E 70 4F
+        p5  | 6F 4F 70 6E 50 .. .. 6D
+shape46:
+    rows 2
+        p4  | 6D 6E 6F 4F 71 72 .. ..
+        p5  | .. .. .. 4D 4E 4D 4E 50
+shape47:
+    rows 1
+        p4  | 6D 6E 6F 70 50 6E 50 ..
+shape48:
+    rows 9
+        $7C | .. 3B 1B 1C 1D .. .. ..
+        $7C | 01 5A 01 01 1E .. .. ..
+        $6C | 0A 0B 0B 0C 0C 0D .. ..
+        $3C | .. 55 55 56 56 01 .. ..
+        $3C | .. .. 58 59 01 .. .. ..
+        $24 | .. .. 75 76 01 .. .. ..
+        $24 | .. .. 75 76 01 .. .. ..
+        $24 | .. .. 75 76 01 .. .. ..
+        $24 | .. .. 75 76 01 .. .. ..
+shape49:
+    rows 5
+        p0  | .. .. .. .. 8E .. .. ..
+        p0  | .. .. 8D .. AE .. .. ..
+        p1  | .. 8D AD .. AD 8D .. ..
+        p2  | 8E AD AF 8D AD AF .. ..
+        p3  | DB F8 F9 F9 F8 F9 FD ..
+shape56:
+    rows 4
+        p0  | .. .. .. 8D .. .. .. ..
+        p1  | .. .. AE AF 8D .. .. ..
+        p2  | .. AE FB DB F9 8D FD ..
+        p3  | DB F8 F9 F9 F8 F9 F9 FD
+shape57:
+    rows 6
+        p0  | .. .. .. .. 8E .. .. ..
+        p0  | .. .. .. .. AE .. .. ..
+        p1  | .. .. .. .. AD .. .. ..
+        p1  | .. .. .. 8E AF FC .. ..
+        p2  | .. DB .. DB DB 88 .. ..
+        p3  | DB F9 DB F9 F8 FB FD ..
+shape58:
+    rows 9
+        p0  | .. .. .. 8E .. .. .. ..
+        p0  | .. .. .. AE .. .. .. ..
+        p0  | .. .. 8D AD .. .. .. ..
+        p1  | .. 8E AD AF 8D .. .. ..
+        p2  | 6D 6E 6F 70 6E 50 .. ..
+        p3  | .. 4D F8 FB FF .. .. ..
+        p3  | .. .. DB 88 .. .. .. ..
+        p3  | .. .. F8 FB .. .. .. ..
+        p3  | .. DB F9 FB FC .. .. ..
+shape59:
+    rows 3
+        p0  | .. .. 8D .. .. .. .. ..
+        p1  | 8E AE AF .. .. .. .. ..
+        p2  | DB F8 F8 FD .. .. .. ..
+shape60:
+    rows 4
+        p0  | 3B 9C F8 FC .. .. .. ..
+        p2  | DB BC F9 FD .. .. .. ..
+        p2  | CF D0 FA FE .. .. .. ..
+        p3  | 1F 88 FB FF .. .. .. ..
+shape61:
+    rows 6
+        p4  | .. .. D7 D8 .. .. .. ..
+        p5  | .. .. D6 BB .. .. .. ..
+        p4  | .. D7 DA .. .. .. .. ..
+        p5  | .. D6 D5 .. .. .. .. ..
+        p4  | D7 DA D9 D8 .. .. .. ..
+        p5  | D6 D5 D6 D5 .. .. .. ..
+shape62:
+    rows 6
+        p4  | D7 D8 .. .. .. .. .. ..
+        p5  | 9B D5 .. .. .. .. .. ..
+        p4  | .. D9 D8 .. .. .. .. ..
+        p5  | .. D6 D5 .. .. .. .. ..
+        p4  | D7 DA D9 D8 .. .. .. ..
+        p5  | D6 D5 D6 D5 .. .. .. ..
+shape63:
+    rows 6
+        p4  | D7 D8 D7 D8 .. .. .. ..
+        p5  | 9B D5 D6 BB .. .. .. ..
+        p4  | .. D9 DA .. .. .. .. ..
+        p5  | .. D6 D5 .. .. .. .. ..
+        p4  | D7 DA D9 D8 .. .. .. ..
+        p5  | D6 D5 D6 D5 .. .. .. ..
+shape64:
+    rows 5
+        p1  | .. .. 89 8A 8B .. .. ..
+        p1  | .. .. A9 AA AB C3 .. ..
+        p1  | .. .. C9 CA CA 89 8A 8B
+        p1  | 8C CC 89 91 92 A9 AA AB
+        p2  | AC CD A9 B2 B2 95 CA CB
+shape65:
+    rows 2
+        p1  | 89 8A 8B CC CE 8C CC CE
+        p2  | A9 AA AB CD C8 AC CD C8
+shape66:
+    rows 5
+        p1  | .. .. .. 89 8A 8B .. ..
+        p1  | .. .. .. A9 AA AB .. ..
+        p1  | .. .. .. C9 CA CB .. ..
+        p1  | 80 92 CE 80 AC 8C CC CE
+        p2  | B2 B2 83 B2 86 AC CD C8
+shape67:
+    rows 3
+        p1  | 89 8A 8B .. .. .. .. ..
+        p1  | A9 AA AB CC 89 8B 80 81
+        p2  | C9 CA CB CD AA AB 85 86
+shape68:
+    rows 2
+        p1  | 8C CC 89 83 89 8B CC CE
+        p2  | AC CD AA A3 A9 AB CD C8
+shape69:
+    rows 4
+        p1  | .. .. 89 8A 8B .. .. ..
+        p1  | 80 92 A9 AA AB 94 83 ..
+        p1  | B1 B2 B3 CA 91 B4 C1 ..
+        p2  | .. C0 C1 AC A0 A1 .. ..
+shape70:
+    rows 6
+        p0  | .. .. .. .. 51 52 4C 9E
+        p1  | .. .. .. .. C4 C5 6C BE
+        p0  | .. .. 51 52 C6 D1 .. ..
+        p1  | .. .. C4 C5 8F D2 .. ..
+        p0  | 9E 49 C6 D1 .. .. .. ..
+        p1  | BE 69 8F D2 .. .. .. ..
+shape71:
+    rows 6
+        p0  | 9E 49 C7 31 .. .. .. ..
+        p1  | BE 69 90 30 .. .. .. ..
+        p0  | .. .. 9D D3 C7 31 .. ..
+        p1  | .. .. BD D4 90 30 .. ..
+        p0  | .. .. .. .. 9D D3 4C 9E
+        p1  | .. .. .. .. BD D4 6C BE
+shape72:
+    rows 2
+        p0  | 49 4A 4A 4A 4A 4A 4A 4C
+        p1  | 69 6A 6A 6A 6A 6A 6A 6C
+shape73:
+    rows 2
+        p0  | 51 52 C7 31 .. .. .. ..
+        p1  | C4 C5 90 30 .. .. .. ..
+shape74:
+    rows 2
+        p0  | 49 4B 4B 4B 4B 4B 4B 4C
+        p1  | 69 6B 6B 6B 6B 6B 6B 6C
+shape75:
+    rows 2
+        p0  | 9E .. .. .. .. .. .. ..
+        p1  | BE 23 24 24 24 24 24 24
+shape76:
+    rows 2
+        p0  | 9E CC CE 8C CC CE 8C 9E
+        p1  | BE CD C8 AC CD C8 AC BE
+shape77:
+    rows 2
+        p0  | 9E 8C 9E 8C CC 9E 8C 9E
+        p1  | BE AC BE AC CD BE AC BE
+shape78:
+    rows 2
+        p2  | 2C 9E 9F .. 2C 9E 9F ..
+        p3  | 26 BE BF .. 26 BE BF ..

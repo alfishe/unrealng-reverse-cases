@@ -1,0 +1,148 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps/records",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps: records",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)"
+  ],
+  "year": 1987,
+  "tags": [
+    "zynaps",
+    "game-module",
+    "records"
+  ],
+  "summary": "The row records, the object records and their strip buffers.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 1784,
+    "sha1": "2a476556616e56e05193d94621299ca37bb5d041",
+    "masked_sha1": "2a476556616e56e05193d94621299ca37bb5d041"
+  },
+  "origin": "$F108",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "RecordsGap",
+      "comment": "36 bytes nothing uses"
+    },
+    {
+      "offset": 36,
+      "name": "RowRecords",
+      "comment": "The 18 row records of the playfield, 32 bytes each"
+    },
+    {
+      "offset": 612,
+      "name": "PlayerObject",
+      "comment": "The player's ship record (kind 0)"
+    },
+    {
+      "offset": 625,
+      "name": "PlayerHitMask",
+      "comment": "+$0D: the object bits the ship touches this pass"
+    },
+    {
+      "offset": 628,
+      "name": "PlayerAccelX",
+      "comment": "+$10/+$11: the X acceleration (PlayerSetup $B21C sets $20)"
+    },
+    {
+      "offset": 632,
+      "name": "PlayerAccelY",
+      "comment": "+$14/+$15: the Y acceleration ($40)"
+    },
+    {
+      "offset": 656,
+      "name": "EnemyObjects",
+      "comment": "The five enemy records (kinds 2, 8, 11 and the cache kinds)"
+    },
+    {
+      "offset": 876,
+      "name": "EnemyShots",
+      "comment": "The three enemy shot records (kind 5, BallSprite)"
+    },
+    {
+      "offset": 1008,
+      "name": "LaserShots",
+      "comment": "The four laser shot records (kind 1, LaserSprite)"
+    },
+    {
+      "offset": 1184,
+      "name": "PlasmaBall2",
+      "comment": "The second plasma ball (the double plasma)"
+    },
+    {
+      "offset": 1228,
+      "name": "SideShot",
+      "comment": "The side weapon's shot: plasma ball, homing missile or seeker"
+    },
+    {
+      "offset": 1272,
+      "name": "SightObject",
+      "comment": "The homing sight (kind 6, SightSprite)"
+    },
+    {
+      "offset": 1316,
+      "name": "StripBuffers",
+      "comment": "The objects' strip entries, 12 bytes each"
+    },
+    {
+      "offset": 1352,
+      "name": "",
+      "comment": "the enemies' entries"
+    },
+    {
+      "offset": 1532,
+      "name": "",
+      "comment": "four entries no record points at in the image"
+    },
+    {
+      "offset": 1580,
+      "name": "",
+      "comment": "the enemy shots' entries"
+    },
+    {
+      "offset": 1652,
+      "name": "",
+      "comment": "the laser shots' entries"
+    },
+    {
+      "offset": 1700,
+      "name": "",
+      "comment": "the plasma ball's entries"
+    },
+    {
+      "offset": 1724,
+      "name": "",
+      "comment": "the side shot's entries"
+    },
+    {
+      "offset": 1748,
+      "name": "",
+      "comment": "the sight's entries"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps",
+      "case": "games/zynaps",
+      "address": "$F108",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "eca32a7"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps",
+    "file": "src/game/records.asm",
+    "label": "RecordsGap"
+  },
+  "docs": [
+    "games/zynaps/docs/README.md"
+  ]
+}
