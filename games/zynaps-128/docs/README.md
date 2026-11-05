@@ -1,4 +1,4 @@
-# GAME: the documents
+# Zynaps 2 in 1: the documents
 
 | Doc | Contents |
 | --- | --- |
@@ -14,6 +14,7 @@
 | [10. Gameplay logic](10-gameplay-logic.md) | the rules as code: the player, enemies and their behaviour, levels, scoring, what the recordings showed |
 | 11. Data reference | every data entry (generated: `kit/refdocs.py --case .`), written in stage 2 |
 | 12. Routine reference | every routine with its figures (generated), written in stage 2 |
+| [Texts](texts/) | every text on screen as UTF-8 Markdown with a translation: [boot](texts/boot.md), [intro](texts/intro.md), [game](texts/game.md); [the differences from the 48K](texts/differences.md) with the side-by-side screenshots of `img/compare/` |
 
 ## Terms
 

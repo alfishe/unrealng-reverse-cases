@@ -1,6 +1,7 @@
 # Zynaps 2 in 1 (goodboy and tiboh, 2018)
 
-State: in progress (stage 1: the medium, the load, the images).
+State: in progress (stage 2: the SCL and the TRD rebuild byte for byte from `src/` with `tools/build.sh`; the 48K game
+inside block 2 is still one binary resource until the 48K case's annotations are complete).
 
 A TR-DOS release of Hewson's Zynaps (1987, Dominic Robinson; graphics Steve Crow): the 48K game with AY music and
 effects taken from the Amstrad CPC version (music by Dave Rogers), an infinite-lives option, a Kempston mouse

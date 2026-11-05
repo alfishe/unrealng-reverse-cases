@@ -1,0 +1,60 @@
+# The annotations of the Kempston mouse driver as it runs at $FE00-$FEDC (221 bytes, block 2's $6299-$6375, copied
+# there by block 2's set-up when K-MOUSE is on): the single source of src/game/mouse*.asm (tools/part_mkasm.py). The
+# image is work/parts/mouse-fe00.bin. No recording of c1 runs it (c1 plays with the options off): the code is
+# mkgame's static walk from the two entries; the runs with the mouse are work/stage1/models/models-mouse.json.
+
+@equ $B1B4 LifeStart ; the game's routine the life start called (CALL $B1B4 at $B212, now CALL MouseReset)
+@equ $F36F ShipX 2 ; the ship's X in its object record: bits 5-7 of the low byte the pixel in the cell, the high byte the column + 16
+@equ $F371 ShipY 2 ; the ship's Y: bits 4-7 of the low byte the line in the row, the high byte the character row
+@const MOUSE_X $FB ; IN A,($FBDF): the Kempston mouse's X counter (the high byte, A, before IN A,($DF))
+@const MOUSE_Y $FF ; IN A,($FFDF): the Y counter
+@const MOUSE_B $FA ; IN A,($FADF): the buttons, active low: bit 0 the right, bit 1 the left
+@const MOUSE_PORT $DF ; the low byte of the mouse's ports
+@isub $FE0B LD A,MOUSE_X
+@isub $FE0D IN A,(MOUSE_PORT)
+@isub $FE12 LD A,MOUSE_Y
+@isub $FE14 IN A,(MOUSE_PORT)
+@isub $FE33 LD A,MOUSE_X
+@isub $FE35 IN A,(MOUSE_PORT)
+@isub $FE76 LD A,MOUSE_Y
+@isub $FE78 IN A,(MOUSE_PORT)
+@isub $FEA5 LD A,MOUSE_B
+@isub $FEA7 IN A,(MOUSE_PORT)
+
+@module mouse ; the Kempston mouse driver (K-MOUSE): the ship follows the mouse, a button fires
+@about goodboy and tiboh's, no author mark. The set-up patches four places of the game when K-MOUSE is on (docs/03-build-and-load.md 3.5): the stick read at $A6D4 becomes CALL MouseRead; the menu's start test at $A74E reads the left button instead of the stick's fire (LD A,$FA: IN A,($DF): AND 2: a left click starts play in mouse mode); the game's IM 2 table fill starts at $FEE8, past the driver; the life start's CALL $B1B4 at $B212 becomes CALL MouseReset.
+@about The mouse's counters are free-running bytes; the driver keeps the last value read of each (MouseLastX, MouseLastY) and its own position (MouseX 0-239, MouseY 0-127), moved by the difference and clamped (MouseMove). The position goes straight into the ship's object record: the game's own movement from the stick bits does nothing then, as MouseRead returns no direction but bit 3.
+$FE00 c MouseReset ; each life: the position to X = 0, Y = $44, the counters' present values taken, then LifeStart
+> Reached from the life start (CALL MouseReset at $B212 instead of CALL LifeStart); jumps on to LifeStart, whose RET returns to the game. AF kept.
+$FE0B ; the counters now: the next read moves from here
+$FE1D c MouseRead ; the mouse to the ship's place; A = the stick value: $08, $18 with a button down
+> Replaces the game's IN A,($1F): AND $1F (the Kempston stick) at $A6D4. For each axis: MouseMove with L = the position, E = the last counter value, A = the counter now, then the position into the ship's record (ShipX, ShipY). X: the column (X / 8 + 16) and the pixel in it; Y: the row (Y / 8 & 15) and the line. The clamp's limits and the Y axis's sign are written into MouseMove first (self-modifying: the CP and LD A operands at MouseMax, MouseMax2 and the byte at MouseSign). Then the buttons: either one down sets bit 4, the stick's fire. Bit 3, the stick's up, is always set; what the game does with it in mouse mode is not traced. DE and HL kept.
+$FE1F ; X: the limit 239 (EF), no sign change (NOP at MouseSign)
+$FE2B ; L = X, E = the last X counter; the counter now
+$FE3A ; the new X; a result below 0 cannot come back (CP 0 with no carry: a leftover test)
+$FE43 MouseXSet ; X kept; its column + 16 and its pixel (bits 5-7) to the ship's X
+$FE5D ; the difference kept (MouseDeltaX)
+$FE61 ; Y: the limit 127 (7F), the counter's sign turned (NEG at MouseSign): the mouse up moves the ship up
+$FE6E ; L = Y, E = the last Y counter; the counter now
+$FE7D ; the new Y
+$FE86 MouseYSet ; Y kept; its row and its line (bits 4-7) to the ship's Y
+$FEA1 ; the difference kept (MouseDeltaY)
+$FEA5 ; the buttons: either one down (a 0 bit) gives $18, none $08
+$FEB2 MouseReadDone
+$FEB5 c MouseMove ; L = the position moved by A - E (the counter's step), clamped to 0..MouseMax
+> Input: A = the counter now, E = the last, L = the position. Output: L the new position, H the counter's step before the sign, A = L. The step is the counter's byte difference, so a move of up to 127 counts a call is read right.
+$FEB9 MouseSign ; NEG for Y, NOP (with the next byte, LD B,H) for X: written by MouseRead
+$FEBB ; a step down: below 0 gives 0
+$FEC2 MouseDownSet
+$FEC5 MouseUp ; a step up: past the limit (or past 255) gives the limit
+$FEC8 MouseMax ; CP limit (the operand written by MouseRead): 239 for X, 127 for Y
+$FECC MouseMax2 ; LD A,limit: the same
+$FECE MouseUpSet
+$FECF MouseMoved ; a last clamp to 255 (it never changes L: a leftover)
+$FED6 MouseMoveDone
+$FED7 b MouseLastX ; the X counter's last value
+$FED8 b MouseLastY ; the Y counter's last value
+$FED9 b MouseX ; the position's X, 0-239
+$FEDA b MouseY ; the position's Y, 0-127 ($44 at a life's start)
+$FEDB b MouseDeltaX ; the last X step (written, not read)
+$FEDC b MouseDeltaY ; the last Y step (written, not read)

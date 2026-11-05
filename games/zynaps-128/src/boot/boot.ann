@@ -1,0 +1,110 @@
+# The annotations of the TRD's boot.B (988 bytes of BASIC at PROG = $5D3B): the single source of src/boot/*.asm
+# (tools/part_mkasm.py). The image is work/parts/boot-5d3b.bin. The code is what the analysis build work/stage2/boot
+# (recording c1, frames 1870-2051: TR-DOS's RUN to the boot's RUN "ZYNAPS") ran, widened by mkgame's walk.
+
+@equ $1FEB TR_1FEB ; TR-DOS ROM routines DiskState runs through TrdosCall (their roles: docs/03-build-and-load.md 3.11)
+@equ $1FF3 TR_1FF3
+@equ $2740 TR_2740
+@equ $2A53 TR_2A53
+@equ $2FC1 TR_2FC1
+@equ $3D00 ROM_FONT 768 ; the 48 BASIC ROM's character set (from the space)
+@equ $3D13 TRDOS_ENTRY ; the TR-DOS ROM's entry for machine code: C = 5 reads B sectors from track D sector E to HL
+@equ $3D30 TRDOS_JUMP ; the TR-DOS ROM's RET-to-the-stacked-address trick: a JP there runs the TR-DOS routine on the stack
+@equ $4000 Screen 6144
+@equ $5800 Attrs 768
+@equ $584B AttrsTitle ; the attributes of the frame's top-left corner (row 2, column 11)
+@equ $586C AttrsList ; the list's window (row 3, column 12)
+@equ $58AC AttrsRows ; row 5, column 12
+@equ $596C AttrsCursor ; row 11, column 12: the cursor's bar
+@equ $5C3D ERR_SP 2 ; the system variable: the error return on the stack
+@equ $5CC2 TRDOS_HOOK 3 ; TR-DOS's RAM hook, called on its errors
+@equ $5CCD TRDOS_5CCD ; TR-DOS's variable whose bit 6 DiskState returns
+@equ $5D0F TRDOS_ERR ; TR-DOS's error code (0: none)
+@equ $80E8 Catalogue 2304 ; track 0's first nine sectors, read here: the catalogue, then sector 8 (the disk's name at +$8F5)
+@equ $89DD DiskName 8 ; the disk's label in sector 8 of track 0: the frame's title
+@equ $8CA0 Blitter 1771 ; the unrolled copy MakeBlitter writes: 104 BlitLine copies, then JP BlitDone
+@equ $9AC0 ListBuffer 8961 ; the list as pixels, 8 bytes (64 pixels) wide, 64 bytes a file
+@equ $9C40 ListStart ; the first file's place: 6 files' room above it, so the first can sit in the window's middle
+@equ $C350 NameTable 1024 ; the BASIC files' names, 8 bytes each, in list order
+@equ $D6D8 LineTable 208 ; the screen addresses of lines 40-143 at column 12, popped by the blitter
+@equ $DAC0 BoldFont 1024 ; the bold copy of the ROM font, indexed from code 0 (the space at $DBC0)
+
+@module boot ; boot.B: the TRD's boot, a scrolling list of the disk's BASIC files
+@about A generic TR-DOS boot, no author mark and no text of its own: line 0 is a REM holding the code, line 1 calls it and then runs the file picked through TR-DOS. The code reads the catalogue, draws a frame titled with the disk's name, and lists the BASIC files in a window 8 characters wide, in a bold copy of the ROM font. The list lives in a buffer as pixels and is copied to the screen each frame by an unrolled LDI blitter (built at $8CA0, with its own line table at $D6D8), so a cursor move scrolls the list smoothly over four frames. Q, A, 9 and 8 (and the keys sharing their bits) move, ENTER, SPACE or 0 runs the file under the bar; a change of the disk's state reads the catalogue again.
+$5D3B b BootLine0 ; line 0: the number 0, the length 925, REM
+$5D40 c BootStart ; the tables, the font and the blitter; the catalogue, the frame, the list; then the menu loop
+> Entered from line 1's RANDOMIZE USR VAL "23872". HL' (BASIC's) is kept on the stack until a file is picked (RunFile). Returns to BASIC through RunFile, with the picked name written into line 1's RUN.
+$5D4B BootMenu ; (again after a disk change) the screen cleared, the catalogue read, the frame and its title drawn
+$5D57 ; the attributes: the window black, the frame's corner, the title row, the list's rows, the cursor's bar
+$5D8E ; the cursor on the first file, the buffer's window from its top, no scroll in progress, the disk's state now
+$5DA7 MenuFrame ; a frame: the list buffer's window to the screen through the blitter (SP on LineTable)
+$5DA8 BlitSource ; HL = the buffer's window (the operand: moved by Scroll)
+$5DB5 BlitDone ; the blitter's end: SP back (the operand written above), the disk's state checked
+$5DBB DiskStateWas ; CP the state the menu began with (the operand): another means a disk change
+$5DBF ScrollSteps ; LD A,frames of scroll left (the operand)
+$5DC8 Scroll ; the window one step on: BlitSource + ScrollStep
+$5DCB ScrollStep ; LD DE,the step (the operand): +16 down, -16 up, 4 steps a file (64 bytes)
+$5DD4 MenuKeys ; the keys: rows $EF, $BF, $7F read together; then A ($FD row) and Q ($FB row)
+$5DD8 ; bit 0 (0, ENTER, SPACE): run the file
+$5DDC ; bit 2 (8, K, M): down
+$5DE0 ; bit 1 (9, L, SYMBOL SHIFT): up
+$5DE4 ; A: down
+$5DEC ; Q: up; no key: the next frame
+$5DF4 CursorUp ; up: not past the first file
+$5DFE MoveCursor ; the cursor kept, a scroll of 4 frames (this one and 3 more) of HL bytes each
+$5E0B CursorDown ; down: not past the last file (FileCount)
+$5E1F RunFile ; the file under the bar: its name into line 1's RUN, the screen cleared, back to BASIC
+$5E25 ; HL' back (BASIC's)
+$5E27 CursorIndex ; LD HL,the cursor's file (the operand), * 8 + NameTable
+$5E39 c ClearScreen ; the border blue, the pixels 0, every attribute $08 (blue paper, black ink)
+$5E51 c FillAttrs ; B rows of C attributes A from HL, 32 bytes a row
+> Input: HL = the first attribute, A = the value, B = the rows, C = the width (2 or more: LDIR copies C - 1).
+$5E65 c MakeBoldFont ; the ROM's 96 characters to BoldFont + $100: the top four lines as they are, the bottom four bold
+> Each of the lower four lines is ORed with itself shifted left (RL A, OR (HL)): the strokes a pixel wider.
+$5E6D MakeBoldChar
+$5E79 MakeBoldLine
+$5E87 b FileCount ; the BASIC files listed (0-128)
+$5E88 c MakeLineTable ; LineTable: the screen address of column 12 on each pixel line 40-143 ($28-$8F)
+$5E8D MakeLineEntry
+$5EAE c ReadCatalogueSectors ; track 0's sectors 0-8 to Catalogue through TR-DOS, errors caught
+> ERR_SP is pointed at the stack so a TR-DOS error returns here; TRDOS_ERR = 0 and ERR_NR (IY+0) = $FF before; TRDOS_HOOK = RET. Then TRDOS_ENTRY with C = 5, B = 9, DE = 0, HL = Catalogue.
+$5ECC c ReadCatalogue ; ListBuffer cleared; the catalogue read until it reads without error; the BASIC files to the list
+> Saves ERR_SP in SavedErrSp and restores it. Then for each of up to 128 catalogue entries until a 0 (the end): a deleted entry (1) or a type other than 'B' is skipped; a BASIC file's name goes to NameTable (DE') and is drawn into the buffer at DE, 8 characters of BoldFont, one byte a line, 8 bytes a buffer line; FileCount + 1, DE on to the next file's 64 bytes.
+$5EDF ReadRetry
+$5EEE SavedErrSp ; LD HL,ERR_SP's value (the operand written above)
+$5F06 ListEntry
+$5F21 ListChar
+$5F34 ListCharLine
+$5F53 ListNext
+$5F5C ListSkip ; not listed: the next entry (16 bytes on)
+$5F62 c MakeBlitter ; Blitter: 104 copies of BlitLine, then BlitLine's last 3 bytes (JP BlitDone)
+$5F67 MakeBlitterLine
+$5F7A c BlitLine ; the blitter's line (copied, not run here): POP DE (the screen line), 8 LDI from the buffer
+> Run as the copies at Blitter, with SP on LineTable and HL on the buffer's window: each copy pops one screen address and copies the next 8 buffer bytes there. The JP BlitDone after the eighth LDI is copied once, after the 104th.
+$5F8B ; the end of the blitter (copied once)
+$5F8E c DiskState ; A = the drive's state bit (TRDOS_5CCD AND $40), from a row of TR-DOS ROM routines run through TrdosCall
+> TRDOS_HOOK is made JP DiskRecover, so an error inside a routine resumes at DiskRecover with the stack it had (the operand at DiskRecover, written before the third call). Then RET at TRDOS_HOOK again. The menu compares the result each frame (DiskStateWas in MenuFrame) and reads the catalogue again on a change: a new disk in the drive.
+$5FBA DiskRecover ; LD SP,the stack before TR_2740 (the operand): the error hook's target
+$5FDD c TrdosCall ; the TR-DOS ROM routine at IX: PUSH IX, JP TRDOS_JUMP
+$5FE2 c DrawFrame ; the frame (10 glyphs wide: top, 13 middle rows, bottom) at row 2 column 11, the disk's name in it
+> DrawGlyphs with FrameGlyphs: FrameTop (its three rows: the top, the title row, the line under it), FrameMiddle 13 times, FrameBottom. Then the 8 characters of DiskName in BoldFont at row 3 column 1 of the frame; the font pointer set back to FrameGlyphs.
+$5FF5 DrawFrameRow
+$6026 c DrawGlyphs ; C glyphs from HL (one byte each, the glyph's number) at Column, Row, 10 a row
+> Each glyph is 8 bytes of the font at the operand of DrawGlyphFont (self-modifying: FrameGlyphs, or BoldFont for the title). The screen address is built from Row (the character row) and Column + 11.
+$6027 DrawGlyph
+$6030 DrawGlyphFont ; LD DE,the font (the operand)
+$604D DrawGlyphLine
+$6060 DrawGlyphNext
+$6069 b Column ; the next glyph's column in the frame (0-9)
+$606A b Row ; its character row
+$606B b FrameTop 10 ; the frame's top row, its title row and the row under the title: glyph numbers, 30 bytes
+$6075 FrameMiddle ; the title row, reused as the middle rows: a side, 8 blanks, a side
+$607F ; the row under the title
+$6089 b FrameBottom 10 ; the frame's bottom row
+$6093 b FrameGlyphs 8 ; the frame's 9 glyphs, 8 bytes each, in a stippled pattern: 0 the sides, 1 the top and bottom edges, 2-7 the corners and the title row's joins, 8 blank
+$60DB b Line0End ; line 0's ENTER, then line 1: number 1, length 55
+$60DC ; line 1: the number (big-endian), the length
+$60E0 ; CLEAR VAL "29999": RANDOMIZE USR VAL "23872": the boot's code at $5D40
+$60F5 ; : CLEAR VAL "64e3": RANDOMIZE USR VAL "15619": REM : RUN: TR-DOS runs the statement after the REM
+$610D RunName ; the 8 characters of the name RunFile writes, in quotes
+$6116 ; ENTER

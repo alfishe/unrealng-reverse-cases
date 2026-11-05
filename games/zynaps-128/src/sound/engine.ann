@@ -1,0 +1,194 @@
+# The page-4 sound engine of Zynaps 2 in 1 ($C968-$CD22, 955 bytes, work/parts/engine-c968.bin): the single source
+# of truth for src/sound/engine*.asm (tools/part_mkasm.py; the format: kit/mkgame.py, class Annotations, plus
+# @const). Its data ($DE48-$FE6F) is a separate image built from src/res/sound/engine-data.txt by
+# tools/sound_data.py; the addresses the engine reads there are the @equ lines below.
+#
+# Witnesses: the L1 of the game window of c1 (work/stage2/game/l1.json, frames 3313-13702: the run counts quoted
+# below), and a SkoolKit simulation of the engine from its loaded image (tools/sound_render.py): the engine's
+# bytes after StartMusic and 118 PlayFrame calls equal page 4 of the recording's menu image (work/images/
+# menu-bank4.bin, frame 3450) at every byte of $C968-$CD22.
+
+@equ $DE48 PeriodTable 190 ; the tone period of note 0-94, a word each (the data image, [periods])
+@equ $DF06 EnvelopeTable 70 ; the envelope pointers, a word each (the data image, [envelopes])
+@equ $DF4D SoundTable 72 ; the sound pointers 0-35, a word each (the data image, [sounds]); CmdSwap swaps 0 and 1
+
+@module engine-entries ; the entries: the jump table, the effect entries, starting and stopping, the AY output
+@about The engine's interface. The game (the 48K Zynaps, patched by the 128K glue) keeps bank 0 at $C000 and pages in page 4 only for a call: the glue's interrupt handler at $5B00 calls EnginePlay once a frame, $5B50 stops the music (EngineStop) and starts it again (EngineStart), and the fifteen hook stubs at $B30D-$B3A8 call one of the effect entries ($C971-$C9B1) with page 4 in (docs/09-sound.md 9.2). Every entry keeps no register: the callers save what they need.
+@about An effect entry loads A with a sound number of the data image's SoundTable ($0E-$1F) and jumps to StartSound, which takes channels B and C in turn (LastChannel XOR 1; channel A only before the music was ever started), or to StartOnChannelA (the player's shot), or to StartTwoSounds (A then B: two sounds on the two effect channels). The music is sounds $0B, $0C, $0D on channels A, B, C (StartMusic); an effect takes its channel from the music until the effect's end command, and the music's channel then stays silent until EngineStart restarts the music (the glue's $5B50 with A not 0: 6 runs in c1).
+@about The entries without a hook stub: EffectSound13 ($C983) and EffectSound17 ($C995) are called by nothing in the game or the glue (a static scan of every part for the call; not run in c1); EffectSound10 ($C9A5) is called by the glue at $5B75 (the game's call at $B024 patched to $5B6D), 18 runs in c1.
+@about The engine is the Amstrad CPC Zynaps's own sound driver (J. Dave Rogers's music, Hewson 1987) moved up by $5000: The Cyborg's AY rip of the CPC game (work/stage2/sound/cpc/local-modland/zynaps.cpc.emul, its code block at $7968) has the same 955 bytes but for: the high bytes of its own addresses ($7A25 there, $CA25 here); the output routine (SendRegisters to $CA5F: the CPC writes the AY through its PPI ports $F4xx / $F6xx, here OUT to $FFFD / $BFFD), whose shorter ZX form leaves room for PitchStep; the pitch envelope's step at $CC43 (the CPC adds step - $80 to the period in line, ADD HL,BC / LD C,$80; here CALL PitchStep adds twice that); StartMusic's LastChannel, $FF there and 3 here; and the variables ($CC8B on), which hold a running engine's values in the rip and a fresh engine's here. The doubled pitch step goes with the doubled periods: the data image's period table is the CPC's moved up 12 notes (docs/09-sound.md 9.6). Its data block ($D000-$FFFF in the rip) holds this data image at the same addresses, $DE48 on (src/res/sound/README.md).
+$C968 c EngineStart ; the jump table: start the music ($C968), stop it ($C96B), play a frame ($C96E)
+> The three entries of the engine's interface. $C968 JP StartMusic: 6 calls in c1's game window (the glue's $5B50 after a life). $C96B JP StopMusic: 29 calls. $C96E JP PlayFrame: 10393 calls, one a frame (the glue's interrupt handler $5B00).
+$C96B EngineStop ; JP StopMusic
+$C96E EnginePlay ; JP PlayFrame
+$C971 c EffectShot ; sound $0E on channel A: the player fires
+> The hook stub $B32F (the 48K shot site $9C77): 91 runs in c1. Always channel A (StartOnChannelA), so a shot cuts the music's channel A.
+$C975 c EffectSound0F10 ; sounds $0F and $10 on the two effect channels
+> The hook stub $B334 (after the level count at $ACA2); not run in c1 (docs/09-sound.md 9.2).
+$C97B c EffectSound11 ; sound $11
+> The hook stub $B33C (an object's countdown at $9EC2); not run in c1.
+$C97F c EffectRoleOfHonour ; sound $12: the role of honour shown
+> The hook stub $B344: 5 runs in c1, one a game.
+$C983 c EffectSound13 ; sound $13
+> No caller: no hook stub and no call in the game or the glue loads this entry (a scan of every part for $83 as the stub's L and for CALL $C983); not run in c1.
+$C987 c EffectShipLost ; sounds $14 and $15: the player's ship destroyed, the role of honour's result
+> The hook stubs $B354 (the ship destroyed, 18 runs) and $B34C (the role of honour's result, 5 runs): 23 runs. Goes on at ShipLostSecond for the second sound.
+$C98B c EffectSound1A1B ; sounds $1A and $1B
+> The hook stub $B35C (an object launched from the ship at $9CFA); not run in c1.
+$C991 c EffectPodTaken ; sound $16: a pod taken
+> The hook stub $B364: 1 run in c1 (frame 12017).
+$C995 c EffectSound17 ; sound $17
+> No caller (as EffectSound13); not run in c1.
+$C999 c EffectSound18 ; sound $18
+> The hook stub $B36C (the weapon slot $F5A8 launched); not run in c1.
+$C99D c EffectEnemyMissile ; sound $19: an enemy fires a missile
+> The hook stub $B374: 6 runs in c1.
+$C9A1 c EffectPodFullGauge ; sound $0F: a pod taken with the power gauge full
+> The hook stub $B379: 1 run in c1.
+$C9A5 c EffectSound10 ; sound $10
+> Called by the glue at $5B75 (the game's call at $B024 goes to $5B6D: the music stopped, then this sound): 18 runs in c1, as many as the ship was lost.
+$C9A9 c EffectPodChange ; sound $1C: a fuel pod changes state
+> The hook stub $B381: 4 runs in c1.
+$C9AD c EffectExplosion ; sound $1D: an explosion starts
+> The hook stub $B386: 115 runs in c1 (L1 count; stage 1 counted 43 frames: several explosions start in one frame).
+$C9B1 c EffectGameOver ; sounds $1E and $1F: the game over (and the end of the game won)
+> The hook stubs $B39C (the game-over wipe, 5 runs) and $B38F (not run in c1).
+$C9B7 c ShipLostSecond ; the second sound of EffectShipLost
+> B = $15, then StartTwoSounds: 23 runs.
+$C9BB c StartOnChannelA ; start sound A on channel A
+> Input: A = the sound number. C = A, A = 1 (channel A), on at SetUpChannel. 97 runs (91 shots, 6 music starts).
+$C9C0 c StartTwoSounds ; start sound A, then sound B, on the two effect channels
+> Input: A, B = the sound numbers. StartSound with A, then A = B and on into StartSound. 28 runs.
+$C9C3 ; the second sound
+$C9C4 c StartSound ; start sound A on the next effect channel
+> Input: A = the sound number. LastChannel XOR 1 picks the channel: 2 or 3 (B or C) after StartMusic set it to 3; 1 or 0 (both channel A) before the music was ever started. SetUpChannel ($C9CD) takes A = 1, 2 or 3 and C = the sound: IX = the channel's record (ChannelA, ChannelB, ChannelC), the sound's address from SoundTable + 2 x C into the record's current, return and start pointers (+$21, +$23, +$25), active (+$1E) = 1, the wait (+$1F) = 1 (the first command is read at the next PlayFrame), the transposition (+$27) = 0, and MixerExtra = 0. Output: IX = the record. 218 runs.
+$C9C5 ; the channel before
+$C9C8 ; the other one: B and C alternate (2, 3)
+$C9CD SetUpChannel ; A = the channel 1-3, C = the sound
+$C9D1 ; 1: channel A
+$C9D9 ; 2: channel B
+$C9DD ; 3: channel C
+$C9E1 ChannelChosen ; the sound's address: SoundTable + 2 x the sound number
+$C9ED ; active
+$C9F1 ; the first command at the next frame
+$C9F6 ; no transposition
+$C9F9 ; no extra mixer bits
+$C9FC ; the current pointer
+$CA02 ; the return pointer (CmdReturn's)
+$CA08 ; the start: CmdReturn at the top level starts the sound again here
+$CA0F c StopMusic ; stop all three channels, silence the AY
+> All three records inactive (+$1E = 0), the volumes R8-R10 0, then on at SilenceAndSend (the mixer $3F, every register sent). An effect running is stopped too. 29 runs.
+$CA25 c StartMusic ; start the music: sounds $0B, $0C, $0D on channels A, B, C
+> LastChannel = 3 (the CPC rip has $FF: StartSound's XOR 1 would then give $FE and $FF, both channel C, and channel B would get no music; the CPC register dump of cpc-power plays all three channels, so the rip's byte is not what that dump ran), then $0B on channel A (StartOnChannelA), $0C (3 XOR 1 = 2: B) and $0D (2 XOR 1 = 3: C) with StartSound; LastChannel ends 3, so the effects alternate B, C. Then SilenceAndSend. 6 runs.
+$CA39 SilenceAndSend ; the mixer: tone and noise off on every channel
+$CA3E c SendRegisters ; write the register image R13 down to R0 to the AY
+> A = 13, HL = AYEnvShape: OUT ($FFFD) the register number, OUTD ($BFFD) the value, down to R0 (AYToneA). R13 (the envelope shape, 0 throughout) is written every frame like the rest: no instrument here uses the hardware envelope. Output: A = $FF, HL = AYRegisters - 1. 10428 runs (PlayFrame's and the stops').
+$CA43 ; D = $FF, E = $BF: the high bytes of the AY's ports
+$CA46 ; C = $FD
+$CA48 SendNext ; $FFFD: the register number
+$CA4B ; $BFFD: OUTD sends (HL) and moves HL down
+$CA53 c PitchStep ; HL + 2 x C - $80 (the pitch envelope's step)
+> Input: HL = the period, BC = the step byte (B = 0). HL + 2 x BC - $80 (- the carry); BC = $0080 on return, and PitchEnvelope subtracts it once more: the period moves by 2 x (step - $80). 9697 runs.
+$CA5A b Unused6 ; six bytes no instruction reads
+> Zeros between PitchStep and PlayFrame: no instruction of the engine refers to them, and no run in c1 executed them.
+@module engine-play ; the frame: the channels' commands, the notes, the envelopes
+@about PlayFrame runs once a frame from the glue's interrupt handler. Each active channel counts down its note's frames; at 0 ReadCommands reads its commands up to the next note (PlayNote: the period from the data image's PeriodTable, the envelopes restarted, the mixer). Every frame each active channel then steps its volume and pitch envelopes, and the one noise envelope steps after channel A.
+@about An envelope is a list of three-byte steps (frames, change + $80, repeats) ended by $FF, which starts it again: VolumeEnvelope adds the change to the channel's volume register, PitchEnvelope 2 x the change to its period (PitchStep), NoiseEnvelope the change to R6. The formats of the commands and envelopes: src/res/sound/README.md and tools/sound_data.py.
+$CA60 c PlayFrame ; one frame of the engine: send the registers, then advance the three channels
+> SendRegisters first (the values the last frame worked out), then PlayChannel for channel A (IY = AYToneA), the noise envelope (NoiseEnvelope), channel B (AYToneB), channel C (AYToneC). The registers so reach the AY one frame after they are made. 10393 runs, one a frame.
+$CA88 c PlayChannel ; one frame of a channel: the next command when its wait ends, then its envelopes
+> Input: IX = the channel's record, IY = its tone register pair in the image. Inactive (+$1E = 0): nothing. Else the wait (+$1F) - 1; at 0 ReadCommands; then, if still active, VolumeEnvelope and PitchEnvelope. 31179 runs.
+$CA8D ; the note's frames
+$CA90 ; at 0: the next commands, to the next note
+$CA98 ; the volume envelope
+$CA9B ; the pitch envelope
+$CA9F NextCommand ; a 2-byte command done: past its operand
+$CAA0 SetPointer ; the channel's current pointer = HL, then on reading
+$CAA6 c ReadCommands ; read the channel's commands up to its next note
+> Input: IX = the record, IY = its tone registers. Reads (+$21) on: A = the command, E = the next byte. 0 (a rest), 1-$64 (a note, + the transposition) and $65-$DB (a one-byte note A & $7F of 8 frames: ShortNote) end the read at PlayNote; the commands $E1 (CmdEnd), $E4 (CmdNoise), $E5 (CmdCall), $E6 (CmdTranspose), $E8 (CmdVolEnv), $E9 (CmdPitchEnv), $EA (CmdNoiseEnv), $EB (CmdMixer), $EC (CmdSwap), $FF (CmdReturn) go on to the next command; any other byte is a one-byte note too. The formats: src/res/sound/README.md. 1352 runs.
+$CAAC ReadCommand ; A = the command, E = its operand
+$CAAF ; 0: a rest (period 0), E frames
+$CAB4 ; 1-$64: a note, E frames
+$CAB9 ; $65-$DB: a one-byte note
+$CAED CmdEnd ; $E1: the channel stops, its volume 0
+$CAFA CmdNoise ; $E4 N: the noise period, noise on for the next note
+$CAFE ; PlayNote turns the noise on for this channel
+$CB03 ; a 2-byte command that does not end the read
+$CB06 CmdTranspose ; $E6 N: added to the next notes
+$CB0B CmdMixer ; $EB M: ORed into the mixer at each note
+$CB11 CmdSwap ; $EC: swap SoundTable's entries 0 and 1 (a 1-byte command; not run in c1, the simulation runs it at the music's frame 6528)
+$CB26 CmdVolEnv ; $E8 E: the volume envelope of the next notes
+$CB28 SetEnvelope ; IX+$18 (or +$1A, +$1C) = EnvelopeTable + 2 x E
+$CB3F CmdPitchEnv ; $E9 E: the pitch envelope (IX+$1A)
+$CB47 CmdNoiseEnv ; $EA E: the noise envelope (one for all channels: ChannelA's +$1C)
+$CB50 CmdCall ; $E5 S: play sound S, come back here at its CmdReturn
+$CB51 ; the return pointer: past this command
+$CB57 ; SoundTable + 2 x S
+$CB67 CmdReturn ; $FF: back to the return pointer; at a second $FF the sound's start
+$CB73 ; a $FF there too: the top level, start the sound again
+$CB7C ShortNote ; a one-byte note: A & $7F for 8 frames
+$CB81 Note ; the note + the channel's transposition
+$CB84 PlayNote ; the period, the envelopes restarted, the mixer
+$CB87 ; PeriodTable + 2 x the note: into the channel's tone registers
+$CB99 ; DE = the record
+$CB9C ; the templates (+$12-$1B) to the running envelopes: counters (+0-5) 0, pointers (+6-9)
+$CBB8 ; and the envelopes' loop points (+$C-$F)
+$CBC2 ; the noise envelope restarts with every note of any channel
+$CBDC ; the volume 0: the volume envelope's first step sets it
+$CBE4 ; the mixer: this channel's tone and noise on
+$CBEA ; no CmdNoise before the note: noise off again
+$CBF2 MixerNoiseDone ; MixerExtra ORed in
+$CBFF ; the command's pointer: past the note
+$CC08 c VolumeEnvelope ; one frame of the channel's volume envelope
+> Input: IX = the record. The step's frame counter (+0) + 1; when it equals the step's first byte (frames) it is zeroed and the step's second byte - $80 is added to the channel's volume register (no clamp); then EnvelopeRepeat. A step is three bytes: frames, the change + $80, repeats; $FF after the last step starts the envelope again. 11801 runs.
+$CC24 ; the repeats
+$CC26 c PitchEnvelope ; one frame of the channel's pitch envelope
+> As VolumeEnvelope on IX+2 (the counters +2, +3, the pointer +8, the loop +$E): the period (IY) moves by 2 x (the step's change - $80) (PitchStep). 11801 runs.
+$CC51 c NoiseEnvelope ; one frame of the noise envelope
+> The one noise envelope, kept in ChannelA's record at +4 (IX = NoiseEnvCounter: the counters +4, +5 of ChannelA, the pointer +$A, the loop +$10): AYNoise = (AYNoise + the change - $80) & $0F. 10393 runs, after channel A each frame.
+$CC71 EnvelopeRepeat ; the step's repeat counter + 1; at its count the next step, or the start after $FF
+$CC7E ; $FF: the envelope again from its loop point
+$CC84 SetStepPointer ; the step pointer for the next frame
+@module engine-state ; the AY register image and the three channel records
+@about The engine's variables, inside its loaded image: the AY register image AYRegisters (R0-R13, sent by SendRegisters every frame), MixerExtra, LastChannel and one 45-byte record a channel. The loaded values are zeros except each record's noise-off bit, mixer mask and volume register address (+$29-$2C): the image holds the state of a fresh engine (page 4 as the intro fills it, docs/03-build-and-load.md; work/images/game-entry-bank4.bin has these bytes at the game's entry).
+$CC8B b AYRegisters 2 ; the AY register image R0-R13, sent by SendRegisters each frame
+> Written by PlayNote (the tone), the envelopes (the volumes, the periods, the noise), CmdNoise, StopMusic, SilenceAndSend; read by SendRegisters. Loaded as zeros.
+$CC8D AYToneB ; R2-R3
+$CC8F AYToneC ; R4-R5
+$CC91 AYNoise ; R6
+$CC92 AYMixer ; R7
+$CC93 AYVolumeA ; R8
+$CC94 AYVolumeB ; R9
+$CC95 AYVolumeC ; R10
+$CC96 AYEnvPeriod ; R11-R12, never written
+$CC98 AYEnvShape ; R13, never written: 0
+$CC99 b MixerExtra ; mixer bits ORed in at each note (CmdMixer; 0 at each StartSound)
+$CC9A b Unused1 ; a byte no instruction reads
+$CC9B b LastChannel ; the channel StartSound took last (1-3; 0 as loaded)
+> StartSound XORs it with 1 for the next effect's channel; StartMusic sets 3.
+$CC9C b ChannelA 15 ; channel A's record: 45 bytes, the layout in src/res/sound/README.md
+> +0-5 the envelopes' frame and repeat counters (volume, pitch, noise), +6-$B their step pointers, +$C-$11 their loop points, +$12-$17 the counters' templates (zeros), +$18-$1D the envelopes chosen by CmdVolEnv / CmdPitchEnv / CmdNoiseEnv, +$1E active, +$1F the frames left of the note, +$20 not used, +$21 the command pointer, +$23 the return pointer, +$25 the sound's start, +$27 the transposition, +$28 the noise request (CmdNoise), +$29 the channel's noise-off bit, +$2A the mixer mask clearing its tone and noise bits, +$2B the address of its volume register. Only the last four are set as loaded ($08, $36, AYVolumeA). The noise envelope lives at +4, +$A, +$10, +$1C of this record (NoiseEnvCounter).
+$CCA0 NoiseEnvCounter ; +4: the noise envelope's counters, IX for NoiseEnvelope and CmdNoiseEnv
+$CCA6 NoiseEnvPointer ; +$A: the noise envelope's step pointer
+$CCAC NoiseEnvLoop ; +$10: its loop point
+$CCAE ; +$12: the templates
+$CCB4 ; +$18: the envelopes chosen
+$CCB8 NoiseEnvChosen ; +$1C: the noise envelope chosen
+$CCBA ChannelAActive ; +$1E: active
+$CCBB ; +$1F: the note's frames left
+$CCBD ; +$21: the command, return and start pointers
+$CCC3 ; +$27: the transposition, +$28 the noise request
+$CCC5 ; +$29: noise-off bit $08, mask $36, volume register AYVolumeA
+$CCC9 b ChannelB 15 ; channel B's record, as ChannelA (noise-off bit $10, mask $2D, AYVolumeB)
+$CCE7 ChannelBActive ; +$1E
+$CCF2 ; +$29
+$CCF6 b ChannelC 15 ; channel C's record, as ChannelA (noise-off bit $20, mask $1B, AYVolumeC)
+$CD14 ChannelCActive ; +$1E
+$CD1F ; +$29
+# the tables' addresses as two immediates (low byte, high byte): ADD A,low; ADC A,high; SUB the low result
+@isub $CB2A ADD A,EnvelopeTable & $FF
+@isub $CB2D ADC A,EnvelopeTable >> 8
+@isub $CB59 ADD A,SoundTable & $FF
+@isub $CB5C ADC A,SoundTable >> 8
+@isub $CB88 ADD A,PeriodTable & $FF
+@isub $CB8B ADC A,PeriodTable >> 8

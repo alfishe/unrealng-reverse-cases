@@ -1,7 +1,7 @@
 # 3. Build and load
 
-Draft (stage 1): the medium, the loader, the packer and what lands where, on every model that runs it. The source
-build (stage 2) and the unpack animations are not yet written.
+The medium, the loader, the packer and what lands where, on every model that runs it; the source build (3.10-3.11).
+The unpack animations are not yet drawn.
 
 <!-- Figures this document needs (GUIDE.md 4.2), remove each line when it is in: -->
 <!-- - an animation of every unpack (`kit/memanim.py`) -->
@@ -123,16 +123,25 @@ Block 2 unpacks to `$6000`-`$FB84`. Its code at `$6000` (`work/stage1/dis/blk2.a
 
 1. `LDDR` moves `$9800` bytes from `$6385`-`$FB84` to `$6800`-`$FFFF`: the 48K game (3.6).
 2. If `$5D3B` = 1, the **128K glue**:
-   - copies `$61B6` (`$E3` bytes) to `$5B00` and calls `$5B87`. This patches the game's interrupt handlers
-     (`$A9E5`, `$A9F7`, `$AB03`, `$A581`) to the glue at `$5B00` (each frame: page 4, `CALL $C96E`, page 0) and
-     `$5B50` (`$C96B` stop, `$C968` start the music). It also patches the calls at `$B1B0`, `$AFB4`, `$A7F3`,
-     `$A620` (to `$5B46`), `$B024` (to `$5B6D`) and `$ABDC` (to `$5B7B`);
-   - puts `RET` at `$B30C`, `$B2F0`, `$B446`: the three beeper routines are off;
-   - copies the trigger stub to `$B30D` (page 4 with `OUT ($7FFD),$14`, `CALL $C9xx`, page 0 with
-     `OUT ($7FFD),$10`) and 15 hook stubs from `$6130` to `$B32F` on. Each hooked call site in the game now calls
-     a stub that starts one page-4 effect, then does what the site did ([9. Sound](09-sound.md));
+   - copies `$61B6` (`$E3` bytes) to `$5B00` and calls `GlueInstall` (`$5B87`, `src/game/glue.asm`). It patches
+     the game's interrupt handler in four places (`$A9E5`, `$A581`, `$A9F7`, `$AB03`) to small entries that call
+     `FramePlay` (`$5B00`: page 4, `CALL $C96E`, page 0) and then do what the patch overwrote. It sends the three
+     screen clears (`CALL $858B` at `$AFB4`, `$A7F3`, `$A620`) to `ClearThenMusic` (`$5B46`), which clears and
+     starts the music (`MusicSwitch`, `$5B50`: `$C96B` stop, then `$C968` start); `MusicOn` also rewrites the main
+     loop's `CALL $AFB0` at `$B200` to call it. A level's start (`CALL $AD56` at `$B024`) goes to
+     `LevelStartSound` (`$5B6D`: the music off, effect `$C9A5`, then `$AD56`), key 4's routine (`CALL Z,$B197` at
+     `$ABDB`) to `Key4MusicOff` (`$5B7B`), and its end (`$B1B0`) to `Key4MusicOn` (`$5B82`);
+   - puts `RET` at `$B30C` and `$B2F0` (the beeper's per-frame player and its sound start) and a `NOP` over the
+     `DI` of the beeper's tone routine at `$B446`;
+   - copies the shared stub to `$B30D` (page 4 with `OUT ($7FFD),$14`, `CALL $C9xx`, page 0 with
+     `OUT ($7FFD),$10`) and the 15 hooks from `$6130` to `$B32F` on, writing each hook's address into its call site
+     as it goes. Each hooked call site in the game now calls a hook that does the site's own instruction and starts
+     one page-4 effect ([9. Sound](09-sound.md));
    - writes `DAVE ROGERS ` over `STEVE TURNER` at `$8484` (the credits name the CPC musician);
-   - sets `$B21B` = `$E4` and zeros `$B496`, `$86D7`, `$8FBD`, `$949C`: the beeper and border `OUT`s become `NOP`s.
+   - sets `$B21B` = `$E4`: the `JR $B203` that ends a game becomes `JR $B200`, so the menu loop passes `$B200`'s
+     call again (the music restarts at the menu);
+   - zeros `$B496`, `$86D7`, `$8FBD`, `$949C`: four `OUT ($FE),A` (the beeper's tone and three border clicks)
+     become `NOP NOP`.
 3. On both machines:
    - `$5D40` ≠ 0 (INF.LIVES): `$B171` = `$B6`, which turns `DEC (IX+4)` into `OR (IX+4)`: lives never drop;
    - `$5D41` ≠ 0 (K-MOUSE): copies the mouse driver (`$6299`, `$DD` bytes) to `$FE00` and patches four places.
@@ -230,6 +239,72 @@ Pentagon 1024 and Scorpion 256 all show `$B171` = `$B6` and the driver at `$FE00
 (a glide of 24 to the right gives the driver's X `$18`, the ship's X `$0013`). On Scorpion an enemy hit the ship
 after that glide, and the life reset sent the driver back to X = 0, Y = `$44`.
 
-The mouse's buttons: the start test reads bit 1 of `$FADF`, the in-play fire either bit 0 or 1. unreal-ng gives the
-left button on bit 0 and the right on bit 1, so on it the game starts in mouse mode with the right button only (the
-left starts nothing). Which bit is "left" on a real Kempston mouse interface is still to check.
+The mouse's buttons: the start test reads bit 1 of `$FADF`, the in-play fire either bit 0 or 1. On a real Kempston
+mouse interface bit 1 is the **left** button and bit 0 the right (MAME's `kempmouse.cpp`, ZEsarUX, the ZX Next VHDL),
+so the game starts in mouse mode with a left click, as a player would expect. unreal-ng's `mouse.cpp` has the two
+swapped (left on bit 0), so on it the right button starts the game: an emulator bug, listed in the WALKTHROUGH's tool
+gaps.
+
+## 3.10 The source build
+
+`tools/build.sh` builds both media from `src/` and compares every step with the original (`tools/parts.py` cuts the
+original's parts from the TRD into `build/orig/parts/`):
+
+```mermaid
+flowchart LR
+    S["src/sound, src/res/sound, src/res/music"] -- build_sound.sh --> SB["build/sound: engine, data, STarKos + SK10"]
+    P["src/res/screens/*.png"] -- res_formats.py --> PB["build/screens/*.scr"]
+    SB --> B1["src/intro/block1.asm"]
+    PB --> B1
+    H["src/game: hooks, glue128, kmouse"] --> B2["src/game/block2.asm"]
+    G["src/res/game/game-6800.bin"] --> B2
+    B1 -- "hrust1.py pack + block1.hints" --> K1["block1.hr"]
+    B2 -- "hrust1.py pack" --> K2["block2.hr"]
+    L["src/loader: zynapsb, depacker"] --> M["mkscl.py / mktrd.py"]
+    K1 --> M
+    K2 --> M
+    BT["src/boot/bootb.asm"] --> M
+    M --> O["build/Zynaps(2In1)(km).scl, .trd"]
+```
+
+Every `.asm` is written from its `.ann` (`tools/part_mkasm.py`, kit/mkgame.py's pipeline; `tools/mkasm_all.sh`
+regenerates all of them and installs a part only when it assembles to the original's bytes). The modules:
+
+| Part | Sources | At | Entries |
+| --- | --- | --- | --- |
+| ZYNAPS.B's BASIC | `src/loader/loader.ann` | `$5D3B` | 7 |
+| the depacker | `src/loader/depacker.ann` | `$5B00` | 1 (every internal label named) |
+| block 1, the intro | `src/intro/intro.ann` | `$6000` | 15 (9 routines, 6 resources) |
+| block 2's set-up | `src/game/setup.ann` | `$6000` | 7 (the set-up, 5 resources and the name) |
+| the hook stubs | `src/game/stubs.ann` | `$B30D` | 16 |
+| the 128K glue | `src/game/glue.ann` | `$5B00` | 11 |
+| the mouse driver | `src/game/mouse.ann` | `$FE00` | 9 |
+| boot.B | `src/boot/boot.ann` | `$5D3B` | 21 |
+
+The 48K game in block 2 is still one binary resource (`src/res/game/game-6800.bin`), until the 48K case's
+`game.ann` is complete (3.6).
+
+### The packer
+
+`tools/hrust1.py pack` reproduces hrust-packer v1.3's choices: on block 2 every token, on block 1 every token but
+one, given by `src/intro/block1.hints` (`12105 m 3 5803`: at 12 105 bytes the original takes the 3-byte match at
+distance 5803 where the rule finds the nearer one at 3756; that one lies inside the long match at 8348, and which
+rule of the original's match finder skips it is not known). The rules are in the tool's docstring: the longest match
+within 8 K, the nearest of that length, the search stopping at 255 bytes or more; a 2-byte match within 768 when
+shorter than 3; an X ? X token unless a 1-byte match and a better next token are there; literal runs of 12 or more
+as one run token of the even count; the window grows right before the first match needing it. After each block the
+packer wrote a TR-DOS descriptor of the plain file (`INTRO`, `BLOK`, type C, `$6000`, the unpacked length and
+sectors), CR LF, `hrust-packer v1.3 by Dima Pyankov,Gorno-Altaisk.` and zeros: `--file NAME` writes the same tail.
+
+## 3.11 boot.B
+
+`src/boot/boot.ann`: a generic boot. It reads track 0's first nine sectors (`$3D13`, C = 5), lists the BASIC files
+(type `B`) of the catalogue in a frame titled with the disk's label (sector 9 `$F5`, read with the catalogue), in a
+bold copy of the ROM font (`$DAC0`), and keeps the list as pixels in a buffer at `$9AC0` that an unrolled
+`POP DE` + 8 `LDI` blitter it builds at `$8CA0` copies to the screen each frame (lines 40-143, column 12, through
+a line table at `$D6D8`). Q / A (and 9 / 8 with their row partners) move the bar with a 4-frame smooth scroll; ENTER,
+SPACE or 0 writes the name into line 1's `RUN "        "` and returns to BASIC, whose line 1 then runs
+`RANDOMIZE USR VAL "15619": REM : RUN "name"` through TR-DOS. Each frame it also calls six TR-DOS ROM routines
+(`$2FC1`, `$2A53`, `$2740`, `$1FF3`, `$1FEB`, `$2FC1`, through the `$3D30` jump) and compares bit 6 of `$5CCD`
+with the value at the start: a change reads the catalogue again (a new disk). What each of those ROM routines does
+is not traced.

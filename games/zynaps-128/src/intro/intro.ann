@@ -1,0 +1,152 @@
+# The annotations of block 1, the intro, as it unpacks to $6000-$E8D4: the single source of src/intro/*.asm
+# (tools/part_mkasm.py). The image is work/parts/intro-6000.bin. Its parts that run elsewhere are their own sources,
+# built first and assembled here with INCBIN: the page-4 sound engine and its data (src/sound/engine.ann,
+# src/res/sound/), the STarKos player with the SK10 song (src/sound/starkos.ann, src/res/music/); the three pictures
+# are src/res/screens/*.png (tools/res_formats.py).
+#
+# The code is what the analysis build work/stage2/intro (recording c1, frames 2182:53027-2838: the title, the
+# options, 0, the Hewson picture) ran, widened by mkgame's walk.
+
+@equ $4000 Screen 6144 ; the screen's pixels
+@equ $5800 Attrs 768 ; the attribute file
+@equ $5A1F AttrsRow16End ; the last attribute of row 16, where the lower colour bars start (going back)
+@equ $5AEB OptionLives 9 ; the attributes of "1.INF.LIVES" on the options screen's last row (row 23, columns 11-19)
+@equ $5AF8 OptionMouse 7 ; the attributes of "2.K-MOUSE" (row 23, columns 24-30)
+@equ $5D3B Is128 ; the loader's flag: 1 = 128K (the paging test passed), 0 = 48K
+@equ $5D40 InfLives ; the option INF.LIVES: 0 off, 1 on (over the loader's first byte); block 2's set-up reads it
+@equ $5D41 KMouse ; the option K-MOUSE: 0 off, 1 on
+@equ $FC00 Im2Table 509 ; the intro's IM 2 vector table: 509 bytes of $FD
+@equ $FDFD Im2Jump 3 ; JP IntroInterrupt, where every vector $FDFD points
+@const StarkosInit $8000 ; the STarKos player as it runs (src/sound/starkos.asm): init with DE = the song
+@const StarkosPlay $8003 ; one frame of the tune
+@const StarkosStop $8006 ; silence the AY
+@const Sk10Song $8990 ; the SK10 song inside the copied player
+@const EngineRun $C968 ; the page-4 sound engine as it runs (src/sound/engine.asm)
+@const EngineDataRun $DE48 ; its data as it runs (in page 4)
+@isub $603C LD DE,StarkosInit
+@isub $6061 CALL StarkosInit
+@isub $605E LD DE,Sk10Song
+@isub $60BA JP StarkosStop
+@isub $60DF CALL StarkosPlay
+@isub $6016 LD DE,EngineRun
+@isub $601E LD DE,EngineDataRun
+@isub $60FB LD HL,CycleTable-1
+@isub $600C LD A,PAGE4
+@isub $600E LD BC,PORT_7FFD
+@isub $6026 LD A,PAGE0
+@isub $6028 LD BC,PORT_7FFD
+@const PAGE4 $14 ; $7FFD: bank 4 at $C000, the 48 BASIC ROM, screen 0
+@const PAGE0 $10 ; $7FFD: bank 0 at $C000
+@const PORT_7FFD $7FFD ; the 128K paging port
+
+@module intro ; the intro: the engine to page 4, the tune, three pictures, the options
+@about Block 1's code. The loader calls IntroStart after the unpack and comes back when the Hewson picture is up; the picture stays on the screen while block 2 loads. On a 48K (Is128 = 0) the copies to page 4 and to $8000 and the tune are skipped; the pictures and the options are the same.
+@about Each picture appears through ShowPicture: the pixels at once under black attributes, then one attribute row a frame in a random order (Random), 24 frames. The options screen runs two colour bars (CycleColours) while it waits: the top eight rows and rows 8-16 from the bottom up, taking their colours from the yellow / white table CycleTable.
+$6000 c IntroStart ; the options off, the engine to page 4, the title, the tune, the options screen, the Hewson picture
+> Called by the loader (LoaderBody) after block 1's unpack; returns to it with the Hewson picture shown (48K: RET Z; 128K: through StarkosStop's RET after IM 1). On 128K: page 4 in, EngineRun ($3BB bytes) and EngineDataRun ($2028) copied from the block, page 0 back; after the title, the player and its song ($10C5 bytes) to $8000, the IM 2 table at $FC00 (I = $FC, every vector $FDFD, JP IntroInterrupt there) and StarkosInit with the song: the tune runs from the title on.
+> The options screen: keys 1 and 2 toggle InfLives and KMouse (ToggleOption, the option's attributes inverted), 0 goes on. The keys are read only when no key was down the frame before (OptionsRelease).
+$6000 ; both options off (they lie over the loader's first two bytes)
+$6006 ; 48K: no engine, no tune
+$600C ; page 4: the engine and its data copied there
+$6026 ; page 0 back
+$602D ShowTitle ; the title picture (RVS / M. Stawicki)
+$6033 ; 48K: no tune
+$6039 ; the STarKos player and its song to $8000
+$6044 ; the IM 2 table $FC00-$FDFD filled with $FD, JP IntroInterrupt at $FDFD, I = $FC
+$605E ; the tune starts: StarkosInit with DE = the SK10 song
+$6065 TitleWait ; a frame; until a key
+$606E ; the options screen
+$6074 ; IXL, the colour bars' step, from 0
+$6077 OptionsRelease ; a frame of colour bars; until no key is down
+$6083 OptionsKeys ; a frame of colour bars, then 1, 2 or 0
+$6087 ; the row 1-5
+$608C ; key 1: INF.LIVES, its 9 attributes from $5AEB
+$6098 ; key 2: K-MOUSE, its 7 attributes from $5AF8
+$60A1 ; key 0 (the row 6-0): go on; else the next frame
+$60A8 ShowHewson ; the Hewson picture
+$60AE ; 48K: back to the loader
+$60B3 ; 128K: IM 1 (I = $3F as the ROM wants), the tune stopped; the player's RET returns to the loader
+$60BD c InvertAttrs ; XOR $2D over IXH attributes from HL: an option shown on / off
+> Input: HL = the first attribute, IXH = the count. XOR $2D swaps the text's colours between the off and the on look (applied twice it gives them back). Output: HL past them, B = 0.
+$60BF InvertAttr
+$60C7 c ToggleOption ; an option key: its attributes inverted, its flag (DE) XOR 1, back to OptionsRelease
+> Input: HL, IXH = the option's attributes (InvertAttrs), DE = its flag (InfLives or KMouse).
+$60D0 c IntroInterrupt ; the intro's IM 2 handler: every register saved, one frame of the tune (StarkosPlay), EI
+> Reached through the vector table at $FC00 and Im2Jump at $FDFD, once a frame from the title to the Hewson picture.
+$60F2 c CycleColours ; every fourth call: the two colour bars one step on
+> The counter is the operand of the first LD A (self-modifying: $60F3 = 3, 0, 1, 2, ...); at 0 the bars move. The upper bar: TopBar's operand ($60FC) steps on through CycleTable, IXL counts 0-31 and sends it back to CycleTable's start when it wraps; rows 0-7 of the attributes ($5800-$58FF) are filled with eight consecutive table bytes, one a row. The lower bar: BottomBar's operand ($6159) steps back through the table; from AttrsRow16End back, nine rows of 32 attributes take one table byte a row, only where the screen's attribute is $46 or more (the bar shows through the picture's bright yellow and white, the darker cells stay). Uses A, B, C, DE, HL, IXL.
+$60FB TopBar ; the upper bar's pointer (the operand, self-modifying; CycleTable - 1 at the start): one byte on
+$60FF ; IXL + 1, mod 32: at 0 the pointer goes back to the table's start
+$610C TopBarKeep ; the pointer kept in the instruction
+$610F ; rows 0-7: 32 cells a row, one table byte a row
+$6114 TopBarRow
+$6158 BottomBar ; the lower bar's pointer (the operand, self-modifying; BottomBarStart at the start): one byte back
+$615C ; at IXL = 0 back to BottomBarWrap
+$6165 BottomBarKeep ; the pointer kept in the instruction
+$6168 ; nine rows from row 16's end back, one table byte a row, only over attributes of $46 and more
+$616D BottomBarRow
+$6175 BottomBarCell2
+$617D BottomBarCell3
+$6185 BottomBarCell4
+$618D BottomBarCell5
+$6195 BottomBarCell6
+$619D BottomBarCell7
+$61A5 BottomBarCell8
+$61AD BottomBarCell9
+$61B5 BottomBarCell10
+$61BD BottomBarCell11
+$61C5 BottomBarCell12
+$61CD BottomBarCell13
+$61D5 BottomBarCell14
+$61DD BottomBarCell15
+$61E5 BottomBarCell16
+$61ED BottomBarCell17
+$61F5 BottomBarCell18
+$61FD BottomBarCell19
+$6205 BottomBarCell20
+$620D BottomBarCell21
+$6215 BottomBarCell22
+$621D BottomBarCell23
+$6225 BottomBarCell24
+$622D BottomBarCell25
+$6235 BottomBarCell26
+$623D BottomBarCell27
+$6245 BottomBarCell28
+$624D BottomBarCell29
+$6255 BottomBarCell30
+$625D BottomBarCell31
+$6265 BottomBarCell32
+$626D BottomBarNext
+$6273 CycleDone ; (the byte before CycleTable)
+$6274 b CycleTable 8 ; the colour bars' colours: $46 (bright yellow on black) and $47 (bright white on black), 48 bytes
+> The upper bar reads eight bytes from TopBar's pointer, one byte on a step from $6274 and back there every 32 steps; the lower bar reads nine bytes back from BottomBar's, which runs from BottomBarStart down to $627E and back to BottomBarWrap.
+$629C BottomBarWrap ; the lower bar's pointer after each wrap
+$629D BottomBarStart ; the lower bar's first pointer
+$62A4 c ShowPicture ; a 6912-byte picture at HL: the pixels at once, the attributes one random row a frame
+> Input: HL = the picture (6144 pixel bytes, 768 attributes). Clears RowShown, waits a frame (EI, HALT), the border and every attribute black, copies the pixels to Screen; then each frame (HALT) a row not yet shown, picked by Random (0-23, again until a free one), gets its 32 attributes from the picture. Returns after the 24th row. IXL counts the rows; the attributes' address is the operand of the LD HL at $62F4 (self-modifying).
+$62A5 ; RowShown cleared: 24 zeros (the picture kept on the stack)
+$62B1 ; a frame, border black, attributes black
+$62C2 ; the pixels
+$62CA ; the picture's attributes kept in PictureAttrs; IXL, the rows shown, from 0
+$62CF RevealRow ; the next row, until 24
+$62D7 PickRow ; a random row 0-23 not shown yet
+$62E0 ; RowShown + the row: 0 free, 1 shown
+$62ED ; the row * 32
+$62F4 PictureAttrs ; HL = the picture's attributes (the operand, written at $62CA) + the row * 32
+$62F9 ; the row's 32 attributes to the screen
+$6305 c Random ; a random byte: the seed doubled (XOR $33 on a carry), XOR R
+> The seed is the operand of the first LD A ($6306, self-modifying), written back each call. Output: A, C changed.
+$630D RandomMix
+$6315 b RowShown 24 ; one byte a row: 1 when ShowPicture has revealed it
+$632D b EngineImage ; the page-4 sound engine, copied to EngineRun ($3BB bytes; src/sound/engine.asm)
+@res sound/engine-c968.bin
+$66E8 b EngineDataImage ; the engine's music and effect data, copied to EngineDataRun ($2028 bytes; src/res/sound)
+@res sound/engine-data-de48.bin
+$8710 b TitlePicture ; the title: the ZYNAPS logo, RVS.M.STAWICKI (6912 bytes)
+@res screens/title.scr
+$A210 b OptionsPicture ; the options screen: WITH AY, 48/128K MUSIC & SFX, the credits, the keys, 0.START 1.INF.LIVES 2.K-MOUSE
+@res screens/options.scr
+$BD10 b HewsonPicture ; the Hewson picture: ZYNAPS, By Dominic Robinson, the HEWSON plate
+@res screens/hewson.scr
+$D810 b StarkosImage ; the STarKos player and the SK10 song, copied to $8000 ($10C5 bytes; src/sound/starkos.asm)
+@res sound/starkos-8000.bin

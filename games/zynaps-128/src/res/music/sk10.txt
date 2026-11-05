@@ -1,0 +1,1314 @@
+; The intro tune of Zynaps 2 in 1: the STarKos song SK10 (tools/sk10.py; the format in its docstring).
+; Read by the STarKos player at $8000 (src/sound/starkos.asm). Blocks in memory order.
+
+song $8990
+drumchannel 1
+rate 50
+speed 5
+loop 0 0 0 0
+
+[transpositions]
+set 0 0 0
+hold 47
+
+[heights]
+lines 32 x18
+lines 48
+lines 32 x18
+lines 48
+lines 32 x8
+lines 16
+lines 64
+
+[linker]
+t00 t01 t02  ; pattern 0
+t00 t03 t02  ; pattern 1
+t04 t01 t02  ; pattern 2
+t04 t03 t02  ; pattern 3
+t04 t05 t02  ; pattern 4
+t04 t05 t02  ; pattern 5
+t02 t06 t07  ; pattern 6
+t08 t09 t10  ; pattern 7
+t11 t06 t07  ; pattern 8
+t12 t09 t10  ; pattern 9
+t13 t14 t15  ; pattern 10
+t16 t17 t18  ; pattern 11
+t02 t06 t07  ; pattern 12
+t08 t09 t10  ; pattern 13
+t11 t06 t07  ; pattern 14
+t12 t09 t10  ; pattern 15
+t13 t14 t15  ; pattern 16
+t16 t17 t18  ; pattern 17
+t19 t20 t21  ; pattern 18
+t22 t23 t24  ; pattern 19
+t22 t23 t25  ; pattern 20
+t22 t23 t24  ; pattern 21
+t22 t23 t25  ; pattern 22
+t26 t27 t28  ; pattern 23
+t29 t30 t28  ; pattern 24
+t02 t06 t07  ; pattern 25
+t08 t09 t10  ; pattern 26
+t11 t06 t07  ; pattern 27
+t12 t09 t10  ; pattern 28
+t13 t14 t15  ; pattern 29
+t16 t17 t18  ; pattern 30
+t02 t06 t07  ; pattern 31
+t08 t09 t10  ; pattern 32
+t11 t06 t07  ; pattern 33
+t12 t09 t10  ; pattern 34
+t13 t14 t15  ; pattern 35
+t16 t17 t18  ; pattern 36
+t19 t20 t21  ; pattern 37
+t22 t23 t24  ; pattern 38
+t22 t23 t25  ; pattern 39
+t22 t23 t24  ; pattern 40
+t22 t23 t25  ; pattern 41
+t26 t27 t28  ; pattern 42
+t29 t30 t28  ; pattern 43
+t31 t32 t33  ; pattern 44
+t34 t32 t33  ; pattern 45
+t31 t32 t33  ; pattern 46
+t35 t36 t37  ; pattern 47
+
+[speciallist]
+same 48 s00
+
+[instruments]
+i0
+i1
+i2
+i3
+i4
+i5
+i6
+i7
+i8
+i9
+i10
+i11
+i12
+
+[instrument i0]
+speed 255
+loops yes
+loopto 0.0
+retrig 0
+mute
+mute
+mute
+
+[instrument i1]
+speed 0
+loops yes
+loopto 1.0
+retrig 0
+soft v15
+
+[instrument i2]
+speed 0
+loops no
+loopto 0.0
+retrig 0
+soft v15
+soft v14
+soft v13
+soft v12
+soft v11
+soft v10
+
+[instrument i3]
+speed 0
+loops no
+loopto 0.0
+retrig 0
+soft v15 a24
+soft v15
+soft v15
+soft v14
+soft v14
+soft v13
+soft v13
+soft v12
+soft v11
+soft v10
+soft v9
+soft v8
+
+[instrument i4]
+speed 0
+loops no
+loopto 0.0
+retrig 0
+hard s12 r3 toff
+hard s12 r3 toff
+hard s12 r3 toff
+hard s12 r3 toff
+
+[instrument i5]
+speed 3
+loops yes
+loopto 5.0
+retrig 0
+soft v15
+soft v15 p-3
+
+[instrument i6]
+speed 3
+loops no
+loopto 0.0
+retrig 0
+soft v15
+soft v15 p-3
+soft v15
+soft v15 p-3
+soft v15 a-1
+soft v15 a-2 p-3
+
+[instrument i7]
+speed 3
+loops yes
+loopto 7.0
+retrig 0
+soft v15
+soft v15 p-2
+
+[instrument i8]
+speed 0
+loops no
+loopto 0.0
+retrig 0
+soft v15
+soft v15 p-2
+soft v15
+soft v15 p-2
+soft v15
+soft v14 p-2
+
+[instrument i9]
+speed 0
+loops no
+loopto 0.0
+retrig 0
+soft v15
+soft v15
+soft v15
+soft v14
+soft v14
+soft v14
+soft v13
+soft v13
+soft v13
+soft v12
+soft v12
+soft v12
+soft v11
+soft v11
+soft v11
+soft v10
+soft v10
+soft v10
+soft v9
+soft v9
+soft v9
+soft v8
+soft v8
+soft v8
+
+[instrument i10]
+speed 0
+loops yes
+loopto 10.0
+retrig 0
+soft v15
+soft v15 a-3
+soft v15
+soft v15 a4
+
+[instrument i11]
+speed 0
+loops yes
+loopto 11.0
+retrig 0
+soft v15
+soft v15 a-4
+soft v15
+soft v15 a3
+
+[instrument i12]
+speed 0
+loops yes
+loopto 12.0
+retrig 0
+soft v15
+soft v15 a-3
+soft v15
+soft v15 a5
+
+[track t00]
+off
+rest
+
+[track t01]
+G#0 v0 i1
+wait 23
+vol 1
+rest
+
+[track t02]
+G#3 v0 i2
+D#3
+B2
+D#3
+G#3
+D#3
+B2
+D#3
+G#3
+D#3
+B2
+D#3
+G#3
+D#3
+B2
+D#3
+G#3
+D#3
+B2
+D#3
+G#3
+D#3
+B2
+D#3
+G#3
+D#3
+B2
+D#3
+G#3
+D#3
+B2
+D#3
+
+[track t03]
+F#1 v0 i1
+wait 15
+vol 1
+rest
+
+[track t04]
+F#3 v0 i3
+wait 1
+D#3
+wait 1
+F3
+wait 1
+C#3
+wait 1
+F#3
+wait 1
+D#3
+wait 1
+F3
+wait 1
+C#3
+wait 1
+F#3
+wait 1
+D#3
+wait 1
+F3
+wait 1
+C#3
+wait 1
+F#3
+wait 1
+D#3
+wait 1
+F3
+wait 1
+C#3
+rest
+
+[track t05]
+F#2 v0 i3
+wait 1
+F3
+wait 1
+C#3
+wait 1
+A#2
+wait 1
+G#2
+wait 1
+F3
+wait 1
+C#3
+wait 1
+A#2
+wait 1
+F#2
+wait 1
+F3
+wait 1
+C#3
+wait 1
+A#2
+wait 1
+F#2
+wait 1
+G#2
+wait 1
+A#2
+wait 1
+C#3
+rest
+
+[track t06]
+G#1 v0 i4
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+
+[track t07]
+G#0 v0 i1
+wait 1
+vol 1
+wait 1
+G#1 v0
+wait 1
+vol 1
+wait 1
+vol 2
+vol 3
+F#0 v0
+wait 1
+vol 1
+wait 1
+F0 v0
+wait 1
+G#0
+wait 1
+vol 1
+wait 1
+G#1 v0
+wait 1
+vol 1
+wait 1
+vol 2
+vol 3
+F#0 v0
+wait 1
+vol 1
+wait 1
+F0 v0
+rest
+
+[track t08]
+B3 i2
+F#3
+D#3
+F#3
+B3
+F#3
+D#3
+F#3
+B3
+F#3
+D#3
+F#3
+B3
+F#3
+D#3
+F#3
+G#3
+F3
+C#3
+F3
+G#3
+F3
+C#3
+F3
+G#3
+F3
+C#3
+F3
+F#3
+D#3
+B2
+D#3
+
+[track t09]
+B1 i4
+B1
+B1
+B1
+B1
+B1
+B1
+B1
+B1
+B1
+B1
+B1
+B1
+B1
+B1
+B1
+C#2
+C#2
+C#2
+C#2
+C#2
+C#2
+C#2
+C#2
+C#2
+C#2
+B1
+B1
+B1
+B1
+A#1
+A#1
+
+[track t10]
+B0 v0 i1
+wait 1
+vol 1
+wait 1
+B1 v0
+wait 1
+vol 1
+wait 1
+vol 2
+vol 3
+F#0 v0
+wait 1
+vol 1
+wait 1
+G#0 v0
+wait 1
+C#1
+wait 1
+vol 1
+wait 1
+C#2 v0
+wait 1
+vol 1
+wait 1
+vol 2
+vol 3
+B0 v0
+wait 1
+vol 1
+wait 1
+A#0 v0
+rest
+
+[track t11]
+B2 v0 i5
+C#3
+B2
+C#3
+B2
+wait 1
+C#3
+wait 1
+B2
+wait 1
+C#3
+wait 1
+B2
+wait 1
+D#3
+wait 1
+G#2
+rest
+
+[track t12]
+D#2 i5
+wait 3
+D#3
+wait 5
+C#3
+wait 1
+D#3
+wait 1
+F#3
+wait 1
+G#3 i6
+wait 3
+F3 i5
+wait 5
+G#3
+F3
+F#3
+D#3
+F3
+C#3
+
+[track t13]
+F#3 v0 i5
+wait 1
+D#3
+F#3
+C#4 i7
+wait 3
+F#3 i5
+wait 1
+D#3
+F#3
+C#4 i7
+wait 1
+C4
+C4 i8
+C4 i7
+wait 13
+C#4
+C4
+
+[track t14]
+D#2 i4
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+D#2
+
+[track t15]
+D#0 v0 i1
+wait 1
+vol 1
+wait 1
+D#1 v0
+wait 1
+vol 1
+wait 1
+vol 2
+vol 3
+C#1 v0
+wait 1
+vol 1
+wait 1
+C1 v0
+wait 1
+D#0
+wait 1
+vol 1
+wait 1
+D#1 v0
+wait 1
+vol 1
+wait 1
+vol 2
+vol 3
+C#1 v0
+wait 1
+vol 1
+wait 1
+C1 v0
+rest
+
+[track t16]
+A#3 i5
+wait 13
+C4 i7
+C#4
+C4
+wait 7
+A#3 i5
+wait 1
+F#3
+wait 1
+G#3
+wait 1
+F3
+rest
+
+[track t17]
+F#2 i4
+F#2
+F#2
+F#2
+F#2
+F#2
+F#2
+F#2
+F#2
+F#2
+F#2
+F#2
+F#2
+F#2
+F#2
+F#2
+G#2
+G#2
+G#2
+G#2
+G#2
+G#2
+G#2
+G#2
+G#2
+G#2
+F#2
+F#2
+F#2
+F#2
+F2
+F2
+
+[track t18]
+F#0 v0 i1
+wait 1
+vol 1
+wait 1
+F#1 v0
+wait 1
+vol 1
+wait 1
+vol 2
+vol 3
+F0 v0
+wait 1
+vol 1
+wait 1
+F#0 v0
+wait 1
+G#0
+wait 1
+vol 1
+wait 1
+G#1 v0
+wait 1
+vol 1
+wait 1
+vol 2
+vol 3
+F#0 v0
+wait 1
+vol 1
+wait 1
+F0 v0
+rest
+
+[track t19]
+F#3 v0 i3
+wait 1
+D#3
+wait 1
+F3
+wait 1
+C#3
+wait 1
+F#3
+wait 1
+D#3
+wait 1
+F3
+wait 1
+C#3
+wait 1
+D#3
+wait 1
+F3
+wait 1
+C#3
+wait 1
+A#2
+wait 1
+D#3
+wait 1
+F3
+wait 1
+C#3
+wait 1
+A#2
+wait 1
+A#3
+wait 1
+F#3
+wait 1
+G#3
+wait 1
+F3
+wait 1
+A#3
+wait 1
+F#3
+wait 1
+G#3
+wait 1
+F3
+rest
+
+[track t20]
+F#3 v0 i3
+wait 1
+F3
+wait 1
+C#3
+wait 1
+A#2
+wait 1
+F#3
+wait 1
+F3
+wait 1
+C#3
+wait 1
+A#2
+wait 1
+G#3
+wait 1
+F3
+wait 1
+F#3
+wait 1
+D#3
+wait 1
+G#3
+wait 1
+F3
+wait 1
+F#3
+wait 1
+D#3
+wait 1
+C3
+wait 1
+C#3
+wait 1
+F#3
+wait 1
+C#3
+wait 1
+C3
+wait 1
+C#3
+wait 1
+F#3
+wait 1
+C#3
+rest
+
+[track t21]
+C#3 v0 i3
+wait 1
+A#2
+wait 1
+C3
+wait 1
+A#2
+wait 1
+C#3
+wait 1
+A#2
+wait 1
+C3
+wait 1
+A#2
+wait 1
+F#0 i1
+wait 7
+vol 1
+wait 7
+A#2 v0 i3
+wait 1
+D#3
+wait 1
+C3
+wait 1
+F#3
+wait 1
+A#2
+wait 1
+D#3
+wait 1
+C3
+wait 1
+F#3
+rest
+
+[track t22]
+B3 i3
+wait 1
+F#3
+wait 1
+D#3
+wait 1
+F#3
+wait 1
+B3
+wait 1
+F#3
+wait 1
+D#3
+wait 1
+F#3
+wait 1
+B3
+wait 1
+F#3
+wait 1
+D#3
+wait 1
+F#3
+wait 1
+B3
+wait 1
+F#3
+wait 1
+D#3
+wait 1
+F#3
+rest
+
+[track t23]
+C#3 i3
+wait 1
+B2
+wait 1
+D#3
+wait 1
+B2
+wait 1
+C#3
+wait 1
+B2
+wait 1
+D#3
+wait 1
+B2
+wait 1
+C#3
+wait 1
+B2
+wait 1
+D#3
+wait 1
+B2
+wait 1
+C#3
+wait 1
+B2
+wait 1
+D#3
+wait 1
+B2
+rest
+
+[track t24]
+B0 v0 i1
+wait 15
+vol 1
+rest
+
+[track t25]
+G#0 v0 i1
+wait 15
+vol 1
+rest
+
+[track t26]
+G#2 v1 i5
+wait 7
+vol 2
+wait 1
+vol 3
+wait 1
+vol 4
+wait 1
+vol 5
+vol 6
+F#2 v1
+wait 7
+vol 2
+wait 1
+vol 3
+wait 1
+vol 4
+wait 1
+vol 5
+vol 6
+
+[track t27]
+G#1 v1 i5
+wait 7
+vol 2
+wait 1
+vol 3
+wait 1
+vol 4
+wait 1
+vol 5
+vol 6
+B1 v1
+wait 7
+vol 2
+wait 1
+vol 3
+wait 1
+vol 4
+wait 1
+vol 5
+vol 6
+
+[track t28]
+G#2 v0 i9
+A#2
+B2
+C#3
+D#3
+B2
+G#2 i1
+wait 1
+C#3 i9
+A#2
+F#2 i1
+wait 1
+C#3 i9
+A#2
+F#2
+wait 1
+G#2
+A#2
+B2
+C#3
+D#3
+B2
+G#2 i1
+wait 1
+C#3 i9
+A#2
+F#2 i1
+wait 1
+C#3 i9
+A#2
+F#2
+rest
+
+[track t29]
+D#2 v1 i5
+wait 7
+vol 2
+wait 1
+vol 3
+wait 1
+vol 4
+wait 1
+vol 5
+vol 6
+C#2 v1
+wait 7
+vol 2
+wait 1
+vol 3
+wait 1
+vol 4
+wait 1
+vol 5
+vol 6
+
+[track t30]
+D#1 v1 i5
+wait 7
+vol 2
+wait 1
+vol 3
+wait 1
+vol 4
+wait 1
+vol 5
+vol 6
+F#1 v1
+wait 7
+vol 2
+wait 1
+vol 3
+wait 1
+vol 4
+wait 1
+vol 5
+vol 6
+
+[track t31]
+B3 v4 i10
+wait 1
+vol 3
+wait 1
+vol 2
+wait 1
+vol 1
+wait 5
+vol 2
+wait 1
+vol 3
+wait 1
+A#3 v4 i11
+wait 1
+vol 3
+wait 1
+vol 2
+wait 1
+vol 1
+wait 5
+vol 2
+wait 1
+vol 3
+rest
+
+[track t32]
+G#1 i4
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+G#1
+
+[track t33]
+G#0 i9
+wait 1
+G#0
+G#0
+G#0
+wait 3
+G#0
+G#0
+G#0
+wait 3
+G#1
+G#1
+G#0
+wait 1
+G#0
+G#0
+G#0
+wait 3
+G#0
+G#0
+G#0
+wait 3
+G#1
+G#1
+
+[track t34]
+F#3 v4 i10
+wait 1
+vol 3
+wait 1
+vol 2
+wait 1
+vol 1
+wait 5
+vol 2
+wait 1
+vol 3
+wait 1
+F#3 v4 i12
+wait 1
+vol 3
+wait 1
+vol 2
+wait 1
+vol 1
+wait 5
+vol 2
+wait 1
+vol 3
+rest
+
+[track t35]
+B3 v4 i10
+wait 1
+vol 3
+wait 1
+vol 2
+wait 1
+vol 1
+wait 17
+vol 2
+wait 1
+vol 3
+wait 1
+vol 4
+wait 1
+vol 5
+wait 1
+vol 6
+wait 1
+vol 7
+wait 1
+vol 8
+wait 1
+vol 9
+wait 1
+vol 10
+wait 1
+vol 11
+wait 1
+vol 12
+wait 1
+vol 13
+wait 1
+vol 14
+wait 1
+vol 15
+rest
+
+[track t36]
+E3 v4 i10
+wait 1
+vol 3
+wait 1
+vol 2
+wait 1
+vol 1
+wait 17
+vol 2
+wait 1
+vol 3
+wait 1
+vol 4
+wait 1
+vol 5
+wait 1
+vol 6
+wait 1
+vol 7
+wait 1
+vol 8
+wait 1
+vol 9
+wait 1
+vol 10
+wait 1
+vol 11
+wait 1
+vol 12
+wait 1
+vol 13
+wait 1
+vol 14
+wait 1
+vol 15
+rest
+
+[track t37]
+F#3 v4 i10
+wait 1
+vol 3
+wait 1
+vol 2
+wait 1
+vol 1
+wait 17
+vol 2
+wait 1
+vol 3
+wait 1
+vol 4
+wait 1
+vol 5
+wait 1
+vol 6
+wait 1
+vol 7
+wait 2
+vol 9
+wait 1
+vol 10
+wait 1
+vol 11
+wait 1
+vol 12
+wait 1
+vol 13
+wait 1
+vol 14
+wait 1
+vol 15
+rest
+
+[special s00]
+wait 128

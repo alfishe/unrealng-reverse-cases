@@ -1,0 +1,132 @@
+# The annotations of block 2 as it unpacks to $6000-$FB84: the single source of src/game/setup*.asm and block2.asm
+# (tools/part_mkasm.py). The image is work/parts/game-6000.bin. Its parts that run elsewhere are their own sources,
+# built first and assembled here with INCBIN: the hook stubs (src/game/stubs.ann, at $B30D), the 128K glue
+# (glue.ann, at $5B00), the mouse driver (mouse.ann, at $FE00). The 48K game ($6385-$FB84, moved to $6800-$FFFF) is
+# one resource, src/res/game/game-6800.bin, until the 48K case's game.ann is ready (docs/03-build-and-load.md 3.10).
+#
+# The code is what the analysis builds work/stage2/load2 (the unpack) and work/stage2/glue (frames 3302-3314: the
+# relocator to JP $8000) ran, widened by mkgame's walk. The game's addresses the set-up writes are inside this image's
+# range but belong to the moved game: they are @const here, written with @isub.
+
+@equ $5B00 GlueRun ; the 128K glue as it runs (src/game/glue.asm)
+@equ $5B87 GlueInstall ; its patching routine
+@equ $5D3B Is128 ; the loader's flag: 1 = 128K, 0 = 48K
+@equ $5D40 InfLives ; the intro's option INF.LIVES: not 0 = on
+@equ $5D41 KMouse ; the option K-MOUSE
+@equ $FE00 MouseReset ; the mouse driver as it runs (src/game/mouse.asm): its first entry
+@const GameStart $8000 ; the game's own start (the menu)
+@const GameTop $FFFF ; the game's last byte once moved
+@const GAME_LENGTH $9800 ; the game's length: $6800-$FFFF
+@const HookSound $B30D ; the hook stubs as they run (src/game/stubs.asm)
+@const SiteShot $9C77 ; the game's call sites given a hook (docs/09-sound.md 9.2): CALL BeeperSound when the player fires
+@const SiteExtraLife $ACA2 ; CALL $A4EF (the lives redrawn) after an extra life is given (10 000, 30 000 ... 90 000)
+@const SiteBombBounce $9EC2 ; CALL $99A9 after a plasma bomb bounces off the ground (DEC (IY+38))
+@const SiteHonour $A81B ; CALL $A423: the role of honour shown
+@const SiteHonourResult $A8B7 ; CALL $A595: its result
+@const SiteShipLost $9BFF ; LD ($8072),A: the ship destroyed (made a CALL)
+@const SiteHomingLaunch $9CFA ; CALL $9CB0: a homing missile launched (fire held with a lock)
+@const SitePodTaken $A247 ; CALL $A489: a pod taken
+@const SiteSpecialLaunch $9CB0 ; LD HL,$F36F: a special weapon placed at the ship (bombs, homing, seekers; made a CALL)
+@const SiteEnemyMissile $A1C4 ; CALL BeeperSound: an enemy's missile
+@const SiteWeaponSelect $A21A ; CALL $91E2: a weapon selected (a pod taken with fire held 8 frames or more)
+@const SitePodAppears $A31D ; CALL BeeperSound: a pod appears (an object gets the pod descriptor $7EBB)
+@const SiteExplosion $A29F ; LD HL,$D6ED: an explosion starts (made a CALL)
+@const SiteSelections $A7BB ; LD HL,$82E0: the SELECTIONS screen (title key 1 or 2; made a CALL)
+@const SiteScreenWipe1 $A5D1 ; CALL $A685: the screen wipe before KEYBOARD DEFINITION (title key 3)
+@const SiteScreenWipe2 $A7F7 ; the routine at $A7F7 (the game over)'s first CALL $A685: the same wipe
+@const CreditName $8484 ; the game's credits: the musician's name, "STEVE TURNER" in the 48K
+@const MenuLoopJump $B21A ; JR $B203 at the end of a game: made JR $B200, back through the main loop's CALL at $B200
+@const BeeperOut1 $B496 ; OUT ($FE),A of the 48K beeper's tone loop: made NOP: NOP
+@const BeeperOut2 $86D7 ; OUT ($FE),A: a border / beeper click
+@const BeeperOut3 $8FBD ; OUT ($FE),A: the same
+@const BeeperOut4 $949C ; OUT ($FE),A: the same
+@const LoseLife $B170 ; DEC (IX+4) (DD 35 04): the ship's lives counted down; the set-up changes its $35
+@const StickRead $A6D4 ; IN A,($1F): AND $1F: the Kempston stick read in play
+@const StartTest $A74E ; IN A,($1F): AND $1F: CP $10: the menu's start test (the stick's fire alone)
+@const Im2Fill $851D ; LD HL,$FE00: the start of the game's IM 2 table fill
+@const LifeStartCall $B212 ; CALL $B1B4 at a life's start
+@isub $6000 LD HL,GameImage+GAME_LENGTH-1
+@isub $6003 LD DE,GameTop
+@isub $6006 LD BC,GAME_LENGTH
+@isub $6023 LD DE,HookSound
+@isub $602B LD (SiteShot+1),DE
+@isub $6033 LD (SiteExtraLife+1),DE
+@isub $603B LD (SiteBombBounce+1),DE
+@isub $6043 LD (SiteHonour+1),DE
+@isub $604B LD (SiteHonourResult+1),DE
+@isub $6055 LD (SiteShipLost),A
+@isub $6058 LD (SiteShipLost+1),DE
+@isub $6060 LD (SiteHomingLaunch+1),DE
+@isub $6068 LD (SitePodTaken+1),DE
+@isub $6070 LD (SiteSpecialLaunch),A
+@isub $6073 LD (SiteSpecialLaunch+1),DE
+@isub $607B LD (SiteEnemyMissile+1),DE
+@isub $6083 LD (SiteWeaponSelect+1),DE
+@isub $608B LD (SitePodAppears+1),DE
+@isub $6093 LD (SiteExplosion),A
+@isub $6096 LD (SiteExplosion+1),DE
+@isub $609E LD (SiteSelections),A
+@isub $60A1 LD (SiteSelections+1),DE
+@isub $60A9 LD (SiteScreenWipe1+1),DE
+@isub $60AD LD (SiteScreenWipe2+1),DE
+@isub $60B8 LD DE,CreditName
+@isub $60C1 LD (MenuLoopJump+1),A
+@isub $60C7 LD (BeeperOut1),HL
+@isub $60CA LD (BeeperOut2),HL
+@isub $60CD LD (BeeperOut3),HL
+@isub $60D0 LD (BeeperOut4),HL
+@isub $60DB LD (LoseLife+1),A
+@isub $60EF LD DE,StickRead
+@isub $60F6 LD DE,StartTest
+@isub $60FD LD DE,Im2Fill+1
+@isub $6104 LD DE,LifeStartCall
+@isub $610B JP GameStart
+
+@module setup ; block 2's set-up: the game moved, the 128K glue and hooks, the options, the start
+@about The loader jumps to $6000 after block 2's unpack and a key. The set-up moves the 48K game ($9800 bytes, LDDR from its end) to $6800-$FFFF, over itself. On a 128K (Is128 = 1) it installs the glue and its patches, copies the shared hook stub and the 15 hooks to $B30D on, writing each hook's address into its call site as it goes, writes the musician's name, sends the menu's loop back through $B200, and silences four OUT ($FE)s. On any machine it then applies the options: INF.LIVES makes the lives count's DEC an OR; K-MOUSE copies the mouse driver to $FE00 and patches four places with the bytes of MousePatches. Then JP GameStart.
+$6000 c SetUp ; the game moved up, the 128K layer (when Is128), the options, JP GameStart
+> The copies of the hooks run as one stream: HL walks the image from HooksImage, DE the destination from HookSound, each LDIR leaving DE on the next hook's address, which is written into its site before the next LDIR. Four sites lost a 3-byte instruction instead of a CALL's operand: their first byte is made $CD (CALL) first. The 15 mouse patch bytes are likewise one stream from MousePatches after the driver.
+$6000 ; the game: $6385-$FB84 to $6800-$FFFF (from the end: the two overlap)
+$600B ; 48K: only the options
+$6012 ; the glue to $5B00 and its patches
+$6020 ; the shared hook stub HookSound ($22 bytes), then each hook: its address to its site, LDIR on
+$602B ; HookShot (5 bytes) at the player's shot
+$6033 ; HookExtraLife (8)
+$603B ; HookBombBounce (8)
+$6043 ; HookHonour (8)
+$604B ; HookHonourResult (8)
+$6053 ; HookShipLost (8): the site's LD ($8072),A becomes CALL HookShipLost
+$6060 ; HookHomingLaunch (8)
+$6068 ; HookPodTaken (8)
+$6070 ; HookSpecialLaunch (8): the site's LD HL,$F36F becomes a CALL (A is still $CD)
+$607B ; HookEnemyMissile (5)
+$6083 ; HookWeaponSelect (8)
+$608B ; HookPodAppears (5)
+$6093 ; HookExplosion (9): the site's LD HL,$D6ED becomes a CALL
+$609E ; HookSelections (13): the site's LD HL,$82E0 becomes a CALL
+$60A9 ; HookScreenWipe (13), for both wipe sites
+$60B5 ; "DAVE ROGERS " over "STEVE TURNER": the CPC version's musician
+$60BF ; JR $B203 made JR $B200: after a game the menu loop passes the main loop's CALL at $B200 again, which the glue turned into MusicOn
+$60C4 ; four OUT ($FE),A made NOP: NOP: the beeper's and the effects' border clicks
+$60D3 SetOptions ; INF.LIVES: DEC (IX+4) ($35) made OR (IX+4) ($B6): the lives never drop
+$60DE SetMouse ; K-MOUSE: the driver to $FE00, then its four patches
+$60EF ; CALL MouseRead: NOP over the stick read
+$60F6 ; LD A,$FA: IN A,($DF): AND 2 over the start test: the left button (bit 1, active low) starts play in mouse mode
+$60FD ; the IM 2 table fill from $FEE8, past the driver
+$6104 ; CALL MouseReset at a life's start
+$610B StartGame ; the game's own start
+$610E b HooksImage ; the hook stubs, copied to HookSound (156 bytes; src/game/stubs.asm)
+@res game/stubs-b30d.bin
+$61AA t MusicianName ; the credit's new name, copied over CreditName
+$61B6 b GlueImage ; the 128K glue, copied to GlueRun (227 bytes; src/game/glue.asm)
+@res game/glue-5b00.bin
+$6299 b MouseImage ; the Kempston mouse driver, copied to MouseReset (221 bytes; src/game/mouse.asm)
+@res game/mouse-fe00.bin
+$6376 b MousePatches ; the K-MOUSE patches' bytes, copied after the driver to StickRead, StartTest, Im2Fill + 1, LifeStartCall
+> CALL $FE1D: NOP (MouseRead, 4 bytes); LD A,$FA: IN A,($DF): AND 2 (6 bytes); $FEE8 (2 bytes, the fill's start); CALL $FE00 (MouseReset, 3 bytes).
+$6376 ; CALL MouseRead: NOP
+$637A ; LD A,$FA: IN A,($DF): AND 2
+$6380 ; $FEE8
+$6382 ; CALL MouseReset
+$6385 b GameImage ; the 48K game as it runs at $6800-$FFFF, with the 2 in 1's Pentagon timing and default keys (docs/03 3.6)
+@res game/game-6800.bin

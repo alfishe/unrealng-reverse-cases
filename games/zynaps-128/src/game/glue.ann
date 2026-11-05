@@ -1,0 +1,84 @@
+# The annotations of the 128K glue as it runs at $5B00-$5BE2 (227 bytes, block 2's $61B6-$6298, copied there by
+# block 2's set-up on a 128K): the single source of src/game/glue*.asm (tools/part_mkasm.py). The image is
+# work/parts/glue-5b00.bin; the code is what the analysis builds work/stage2/glue (the set-up, frames 3302-3314) and
+# work/stage2/game (play, 3313:51573-13702) ran, widened by mkgame's walk. The 48K game's addresses it patches are
+# named here after what the 48K code does there (work/stage1/dis/game48-static.asm).
+
+@equ $7F7C PauseState ; the game's variable the routine at $B197 ends by setting to 4 (LD ($7F7C),A at $B1B0)
+@equ $7F96 IntFlag ; the game's variable its interrupt handler at $A9E4 sets ($80)
+@equ $858B ClearScreen ; the game's routine: the attributes and the border cleared (from $858E)
+@equ $A581 IntTailSite 4 ; the game's handler tail POP BC: POP DE: POP HL (its POP AF at $A584 stays)
+@equ $A584 IntTailRest ; the POP AF after it
+@equ $A620 ClearSite1 2 ; a CALL ClearScreen's operand (the routine before $A623)
+@equ $A7F3 ClearSite2 2 ; a CALL ClearScreen's operand (the game-over routine before $A7F7)
+@equ $A9E5 IntMenuSite 3 ; LD HL,IntFlag in the game's interrupt handler at $A9E4
+@equ $A9F7 IntPlaySite 4 ; PUSH IX: PUSH IY at the start of the game's main interrupt work
+@equ $A9FB IntPlayRest ; the instruction after them
+@equ $AB03 IntEndSite 4 ; POP IY: POP IX at the end of that work
+@equ $AB07 IntEndRest ; the instruction after them
+@equ $ABDC Key4Site 2 ; the operand of CALL Z,$B197 (key 4, row $F7FE bit 3, in the play loop)
+@equ $AD56 LevelSetUp ; the game's routine $B023 called first (it copies a level record to $81D7)
+@equ $AFB4 ClearSite3 2 ; a CALL ClearScreen's operand (in $AFB0, which the main loop calls at $B200)
+@equ $B024 LevelSite 2 ; the operand of CALL LevelSetUp at $B023 (the start of a game's level)
+@equ $B197 Key4Routine ; the game's routine key 4 calls (it ends at $B1B3, after a wait)
+@equ $B1B0 Key4End 3 ; LD (PauseState),A at its end
+@equ $B201 MainLoopCall 2 ; the operand of the main loop's CALL $AFB0 at $B200
+@equ $B2F0 BeeperSound ; the 48K beeper's sound start (A = the sound): RET on 128K
+@equ $B30C BeeperPlay ; the 48K beeper's per-frame player: RET on 128K
+@equ $B30D HookSound ; the shared hook stub (src/game/stubs.asm)
+@equ $B446 BeeperTone ; the 48K beeper tone routine's DI: a NOP on 128K
+@const PAGE4 $14 ; $7FFD: bank 4 at $C000 (the engine), the 48 BASIC ROM, screen 0
+@const PAGE0 $10 ; $7FFD: bank 0 at $C000 (the game)
+@const PORT_7FFD $7FFD ; the 128K paging port
+@const EngineMusicOn $C968 ; the engine (page 4, src/sound/engine.asm): start the music
+@const EngineMusicOff $C96B ; stop the music
+@const EnginePlay $C96E ; one frame of the music and the effects
+@isub $5B08 LD A,PAGE4
+@isub $5B0A LD BC,PORT_7FFD
+@isub $5B0F CALL EnginePlay
+@isub $5B12 LD A,PAGE0
+@isub $5B14 LD BC,PORT_7FFD
+@isub $5B54 LD A,PAGE4
+@isub $5B56 LD BC,PORT_7FFD
+@isub $5B5B CALL EngineMusicOff
+@isub $5B61 CALL NZ,EngineMusicOn
+@isub $5B64 LD A,PAGE0
+@isub $5B66 LD BC,PORT_7FFD
+
+@module glue ; the 128K glue: the engine each frame, the music on and off, the patches
+@about GlueInstall, called once by block 2's set-up on a 128K, writes the patches; the rest is what they reach. Each frame the game's interrupt handler now calls FramePlay through one of four small entries, which each do the instructions their patch overwrote: the engine plays one frame from page 4. The music is started after each screen clear the game does at its menus (ClearThenMusic, MusicOn) and when the pause routine ends (Key4MusicOn), and stopped at a level's start (LevelStartSound, which also plays an effect) and when key 4 is pressed (Key4MusicOff). The 48K beeper is cut off at its three routines.
+$5B00 c FramePlay ; page 4 in, one frame of the engine (EnginePlay), page 0 back; DI, every register but HL kept
+> Called from the game's interrupt handler through PlayAtA9E5, PlayAtA581, PlayAtA9F7 and PlayAtAB03. Leaves interrupts off (the handler enables them itself). AF, DE, BC, IX, IY kept; the engine may change HL.
+$5B01 ; AF, DE, BC, IX, IY kept
+$5B08 ; page 4: the engine
+$5B12 ; page 0: the game
+$5B21 c PlayAtA9E5 ; the handler at $A9E4 (the menu's): a frame of the engine, then the LD HL,IntFlag it lost
+> Reached by CALL PlayAtA9E5 at IntMenuSite, which held LD HL,IntFlag (3 bytes).
+$5B28 c PlayAtA581 ; the handler tail at $A581: a frame of the engine, its POP BC: POP DE: POP HL, back to its POP AF
+> Reached by JP PlayAtA581 at IntTailSite.
+$5B31 c PlayAtA9F7 ; the main handler's work: DI, its PUSH IX: PUSH IY, a frame of the engine, on at IntPlayRest
+> Reached by JP PlayAtA9F7 (and a NOP) at IntPlaySite.
+$5B3C c PlayAtAB03 ; the main handler's other path ($AA00 jumps to $AB03): a frame of the engine, its POP IY: POP IX, on at IntEndRest
+> Reached by JP PlayAtAB03 (and a NOP) at IntEndSite. The work from $A9FB always ends here (it runs to $AB03 or jumps there from $AA00), so the main handler (entered at $A9ED) steps the engine twice an interrupt: in c1 $A9ED ran 3221 times and PlayAtA9F7 and PlayAtAB03 3220 times each, while PlayAtA9E5 (2550) and PlayAtA581 (1403) step it once. Whether the in-play music and effects run at twice the menu's rate, or the in-play handler comes every second frame, is stage 3's (docs/09-sound.md).
+$5B46 c ClearThenMusic ; CALL ClearScreen, then MusicOn
+> Replaces CALL ClearScreen at ClearSite1, ClearSite2 and ClearSite3 (the menu's and the game over's screen clears).
+$5B49 MusicOn ; the main loop's CALL $AFB0 (at $B200) becomes CALL MusicOn; A = $5B (not 0): the music on
+$5B50 c MusicSwitch ; A = 0: the music stopped; else stopped and started again from its beginning
+> Input: A. Pages 4 in, calls EngineMusicOff, then EngineMusicOn when A is not 0 (A is kept in the operand of the LD A at MusicFlag, self-modifying: page 4's paging needs A), pages 0 back and enables interrupts. Used by the stubs too (HookSelections, HookScreenWipe: A = 0).
+$5B54 ; page 4
+$5B5E MusicFlag ; LD A,the switch (the operand written above)
+$5B64 ; page 0
+$5B6D c LevelStartSound ; a level's start: the music off, the engine's effect $C9A5, then LevelSetUp
+> Replaces CALL LevelSetUp at LevelSite (in $B023). Pushes LevelSetUp's address and calls HookSound with L = $A5: HookSound's last POP HL takes this routine's return address and its RET goes to LevelSetUp, whose RET returns to $B023's caller's place after the CALL: the effect starts, then LevelSetUp runs as before (HL is LevelSetUp's own).
+$5B71 ; LevelSetUp, under HookSound's return address
+$5B7B c Key4MusicOff ; key 4 in play: the music off, then the game's routine Key4Routine
+> Replaces the operand of CALL Z,Key4Routine at Key4Site. Key4Routine ends at Key4End, patched to Key4MusicOn.
+$5B82 c Key4MusicOn ; the end of Key4Routine: its LD (PauseState),A, then MusicOn
+> Reached by JP Key4MusicOn at Key4End; MusicOn's RET (MusicSwitch's) returns from Key4Routine.
+$5B87 c GlueInstall ; the patches of the 48K game for the 128K (called once by block 2's set-up)
+> In order: CALL PlayAtA9E5 at IntMenuSite; JP PlayAtA581 at IntTailSite; JP Key4MusicOn at Key4End; JP PlayAtA9F7 at IntPlaySite and JP PlayAtAB03 at IntEndSite, each followed by a NOP; BeeperTone's DI made a NOP; CALL ClearThenMusic at ClearSite3, ClearSite2, ClearSite1; CALL LevelStartSound at LevelSite; CALL Z,Key4MusicOff at Key4Site; RET at BeeperPlay and BeeperSound. The music is not started here: the first screen clear starts it.
+$5B92 ; JP: the handler tail, the pause's end, the main handler's two places
+$5BB8 ; NOPs after the two JPs, the beeper tone's DI off
+$5BC2 ; the screen clears call ClearThenMusic
+$5BCE ; the level's start, key 4
+$5BDA ; the beeper's player and sound start: RET

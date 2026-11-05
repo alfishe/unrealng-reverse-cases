@@ -1,0 +1,345 @@
+# The STarKos player and its song SK10, the intro tune of Zynaps 2 in 1 ($8000-$90C4, 4293 bytes,
+# work/parts/starkos-8000.bin; the intro copies it from block 1's $D810 to $8000 and runs it there): the single
+# source of truth for src/sound/starkos*.asm (tools/part_mkasm.py; the format: kit/mkgame.py, class Annotations).
+#
+# Witnesses: the L1 of the intro window of c1 (work/stage2/intro/l1.json, frames 2182-2838: Init once, Play 566
+# times, the first three patterns: the run counts quoted below); a SkoolKit simulation of the player from its
+# loaded image (tools/sound_render.py): after Init and 385 Play calls its 4293 bytes equal the recording's page 2 at
+# frame 2600 (work/images/intro-title-bank2.bin, $8000-$90C4) at every byte; the song's format by
+# tools/sk10.py check (the text src/res/music/sk10.txt gives the 1845 bytes back).
+#
+# The player is self-modifying: nearly all of its variables are the operands of its own instructions (LD A,n /
+# CP n / LD HL,nn / LD DE,nn / OR A or SCF). A label names the instruction; the variable is Label+1 (or +2, +3).
+# Their loaded values are in the image, Init sets the ones a song needs.
+
+@module starkos-play ; the entries and the line: speed, patterns, the special track, the three tracks
+@about The intro (block 1, docs/03-build-and-load.md 3.4) calls PlayerEntries with DE = Song ($6061), then PlayerPlay from its IM 2 handler once a frame ($60DF), and jumps to PlayerStop when it ends ($60BA). On a 48K ($5D3B = 0) none of them runs.
+@about A STarKos song is a list of patterns. Each pattern has a height (lines), three tracks (the linker: one track address a channel), a transposition per track and a special track (speed changes and digidrums). The three per-pattern values come from run-length streams, each read once a pattern: the transpositions (TranspPointer), the heights (HeightPointer) and the special tracks (SpecialListPointer); the linker (LinkerPointer) gives three words a pattern. The song's last pattern ends where the special list begins (LinkerEnd); the four streams then restart at the song's loop points. The song's bytes and the format: src/res/music/README.md, tools/sk10.py.
+@about Play runs one frame: SpeedCounter counts up to Speed; on the frame it reaches it, a new line: at a pattern's first line (NewPatternFlag = SCF) the streams and the linker give the pattern, then the special track and the three tracks are read (each track's wait counts down the empty lines), LineCounter counts the pattern's lines. Every frame then goes on at PlayInstruments (starkos-frame.asm) for the sound of the three channels.
+$8000 c PlayerEntries ; the jump table: Init ($8000), Play ($8003), Stop ($8006)
+> $8000 JP Init (input DE = the song: $8990); $8003 JP Play; $8006 JP Stop. In c1: Init once, at the intro's start; Play 566 times in the intro window (one a frame); Stop once, when the intro ends.
+$8003 PlayerPlay ; JP Play
+$8006 PlayerStop ; JP Stop
+$8009 w PlayerOrigin 1 ; $8000: the address the player was built for
+> No instruction of the player or of the intro reads it.
+$800B b DigidrumNumber ; the digidrum the song asked for this frame (0: none)
+> Zeroed by Play each frame, set by a special track's drum line or a track's drum command; for the host to play a sample. The intro never reads it (no reference in block 1's code), and SK10 has no drum (sk10.txt).
+$800C b DigidrumChannel ; the channel (1-3) of that digidrum
+> A track's drum command sets its channel number; a special track's drum line sets the song's drum channel (header byte 6, copied to SpecialDrum+4 by Init).
+$800D c Play ; one frame of the song: a line when the speed count ends, then the instruments
+> No input; changes every register (the intro's handler saves them). DigidrumNumber = 0, Retrigger = 0 (the R13 retrigger flag); SpeedCounter + 1 until it equals Speed, else 0 and a new line (NextLine). 566 runs in the intro window, 95 of them a new line (Speed 5: six frames a line).
+$800E ; no digidrum this frame
+$8011 ; no envelope retrigger yet this frame
+$8014 SpeedCounter ; SpeedCounter+1: the frames of this line so far
+$8016 Speed ; Speed+1: the frames a line - 1 (the song's speed, its special track's speed lines)
+$801A ; not yet: count, and only the instruments this frame
+$8021 NextLine ; a new line
+$8025 NewPatternFlag ; OR A ($B7): the pattern goes on; SCF ($37): a new pattern at this line
+$8029 ; a new pattern: the three tracks' waits 0
+$8032 ; the next lines are not the pattern's first
+$8037 TranspWait ; TranspWait+1: patterns left with the same transpositions
+$803D TranspPointer ; TranspPointer+1: the transposition stream
+$8042 ; bit 0: a hold (the count in bits 1-7)
+$8046 ; bits 1-5: track A's transposition (5 bits signed), bit 7: track B's byte follows, bit 6: track C's
+$804F TranspSetA ; into TrackAInstrument+2 (D, added to each note)
+$8052 ; bit 7 of the byte
+$8058 ; track B's transposition byte
+$805D TranspTestC ; bit 6
+$8061 ; track C's
+$8066 TranspStore
+$806B TranspHold ; a hold: the count
+$806E TranspSetWait
+$8071 HeightWait ; HeightWait+1: patterns left with HeightRepeat's height
+$807A HeightRepeat ; HeightRepeat+1: the repeated height
+$807E HeightPointer ; HeightPointer+1: the height stream
+$8083 ; bit 0 clear: the height for this pattern only
+$808C HeightRun ; bit 0 set: the height and a count byte
+$8099 SetHeight ; LineCounter = the height (the lines - 1)
+$809C LinkerPointer ; LinkerPointer+1: the linker, three track addresses a pattern
+$809F ; track A's address
+$80A6 ; track B's
+$80AD ; track C's
+$80B7 SpecialMode ; SpecialMode+1: 0 one special track for several patterns, 1 a list of them
+$80BC SpecialSameWait ; SpecialSameWait+1: patterns left that restart SpecialStart's track
+$80C5 SpecialStart ; SpecialStart+1: the special track of the current run
+$80CA SpecialListWait ; SpecialListWait+1: patterns left in the list
+$80D8 SpecialListPointer ; SpecialListPointer+1: the special-track list
+$80DD ; bit 0 clear: one track for count + 1 patterns
+$80F5 SpecialListRun ; bit 0 set: count + 1 track addresses follow, one a pattern
+$80FD SpecialNext ; the next track address of the list
+$8107 SpecialWait ; SpecialWait+1: the special track's empty lines left
+$810D SpecialPointer ; SpecialPointer+1: the special track
+$8110 ReadSpecial ; a special line: bit 0 a wait, bit 1 a digidrum, else a speed
+$8116 ; bit 1
+$811A ; the speed
+$811F SpecialDrum ; the digidrum; SpecialDrum+4 the song's drum channel (Init)
+$8127 SpecialNoWait ; no wait
+$8128 SpecialStore ; the pointer past the line
+$812B SpecialSetWait ; the wait
+$812E TrackAWait ; TrackAWait+1: track A's empty lines left
+$8134 TrackAPointer ; TrackAPointer+1: track A
+$8137 TrackAVolume ; TrackAVolume+1: track A's attenuation (0 loud, 15 silent), +2 its channel number (1)
+$813A TrackAInstrument ; TrackAInstrument+1: the instrument, +2 the transposition
+$813D TrackANote ; TrackANote+2: the note (before the instrument's arpeggio)
+$8140 ; the line: IYH = 0 a new note, IYL = its wait, HL' the pitch slide
+$8143 ; the note
+$8148 ; the slide into ChanASlide
+$814B ; the main set again: HL = the track
+$814F ; the attenuation into ChanAAtten
+$8156 ; a new note? (IYH = 0)
+$815B ; yes: the instrument from its first line
+$8163 ; the pitch sum 0
+$8168 TrackAInstrTable ; TrackAInstrTable+1: the song's instrument table (Init)
+$816B ; table + 2 x the instrument
+$8172 ; the instrument's loop address
+$8179 ; its end
+$8180 ; its speed
+$8185 ; OR A / SCF: it loops or not
+$818A ; its retrigger byte, ORed into Retrigger
+$8194 TrackAWaitFromLine ; the wait
+$8196 TrackASetWait
+$8199 TrackBWait ; track B, as track A
+$819F TrackBPointer
+$81A2 TrackBVolume ; +2: channel 2
+$81A5 TrackBInstrument
+$81A8 TrackBNote
+$81D3 TrackBInstrTable
+$81FF TrackBWaitFromLine
+$8201 TrackBSetWait
+$8204 TrackCWait ; track C, as track A
+$820A TrackCPointer
+$820D TrackCVolume ; +2: channel 3
+$8210 TrackCInstrument
+$8213 TrackCNote
+$823E TrackCInstrTable
+$826A TrackCWaitFromLine
+$826C TrackCSetWait
+$826F LineCounter ; LineCounter+1: the pattern's lines left - 1
+$8273 ; below 0: the pattern ends
+$827A PatternEnd ; the next line starts a pattern; the song's end restarts the streams
+$827F ; the linker at the special list (LinkerEnd): the song ended
+$8282 LinkerEnd ; LinkerEnd+1: the end of the linker (Init: the special list's address)
+$8288 ; not yet
+$828A ; the streams' waits 0
+$8293 TranspLoop ; TranspLoop+1: the transposition stream's loop point
+$8299 HeightLoop ; HeightLoop+1
+$829F LinkerLoop ; LinkerLoop+1
+$82A5 SpecialListLoop ; SpecialListLoop+1
+$82AB SpecialModeLoop ; SpecialModeLoop+1: the special list's mode at its loop point (Init)
+
+@module starkos-frame ; every frame: the three instruments, the track and instrument line formats
+@about PlayInstruments runs every frame after Play's line work. For each channel (A, B, C: three copies of the same code) it adds the track's pitch slide to the pitch sum, sets LinePitch, IXL = the note and IY = the channel's tone register in SendRegisters' cache, and calls InstrumentLine with HL = the instrument's line and A = the instrument's frame counter. InstrumentLine writes the channel's period, volume (and noise, envelope) into the cache and returns IXH = the channel's mixer bits (bit 0 tone off, bit 3 noise off). The counter then runs up to the instrument's speed; at it the next line, and at the instrument's end its loop address (a looping instrument) or instrument 0's silent line with speed 255 (a one-shot). The three mixer pairs make R7 and SendRegisters (starkos-output.asm) sends what changed.
+@about ReadTrackLine is the track format (a note, a note with volume / instrument / slide, a wait, a rest to the pattern's end, volume, slide, off, a digidrum) and InstrumentLine the instrument line format (the volume, arpeggio, pitch, noise, a fixed period, the hardware envelope with its period from the tone's or the tone's from the envelope's). Both are in tools/sk10.py's docstring with the byte layout; the text src/res/music/sk10.txt writes each line in those terms.
+$82B0 c PlayInstruments ; every frame: the instruments of channels A, B, C, the mixer, then SendRegisters
+> HL' = Retrigger (the instruments' hardware lines OR their retrigger bit into it), D' = the channel's attenuation. Per channel: PitchSum += Slide; LinePitch = PitchSum; InstrumentLine(HL = the instrument line, A = the counter, IXL = the note, IY = the channel's period cache); then the counter: below Speed + 1, the same line next frame; at it, the next line (InstrPointer = the line's end), or at InstrEnd the loop. Ends in JP SendRegisters with A = R7 (IXH of C, B, A: A's bits 0 and 3, B's 1 and 4, C's 2 and 5). 566 runs.
+$82B3 ChanAAtten ; ChanAAtten+1: track A's attenuation, subtracted from every instrument volume
+$82B6 ChanAPitch ; ChanAPitch+1: the pitch sum (the slides of the frames so far)
+$82B9 ChanASlide ; ChanASlide+1: the track's slide a frame
+$82C0 ; LinePitch: half of it is added to the period
+$82C8 ChanAInstrPointer ; ChanAInstrPointer+1: the instrument's line
+$82CB ; IY = AYReg0+1: channel A's period low byte (+$1B the high byte, +$36 the volume)
+$82CF ; A = the counter: InstrumentLine retriggers the envelope at 0 only
+$82D5 ; DE = the line's end
+$82D6 ChanAInstrCounter ; ChanAInstrCounter+1: frames of this line so far
+$82D8 ChanAInstrSpeed ; ChanAInstrSpeed+1: the instrument's speed (frames a line - 1; 255 holds)
+$82DC ; not yet
+$82DF ChanAInstrEnd ; ChanAInstrEnd+1: the instrument's end
+$82E7 ChanAInstrLoop ; ChanAInstrLoop+1: its loop address
+$82EA ChanAInstrLoops ; OR A: a one-shot, SCF: it loops
+$82ED ChanAZeroEnd ; ChanAZeroEnd+1: instrument 0's end (Init): a one-shot ends in instrument 0's line
+$82F3 ; the speed 255: that line holds
+$82F8 ChanANextLine ; the next line
+$82FC ChanASetCounter ; the counter
+$82FF ; channel A's mixer bits into MixerA
+$8304 ; channel B, as channel A
+$8305 ChanBAtten
+$8308 ChanBPitch
+$830B ChanBSlide
+$831A ChanBInstrPointer
+$831D ; IY = AYReg2+1: channel B's period
+$8328 ChanBInstrCounter
+$832A ChanBInstrSpeed
+$8331 ChanBInstrEnd
+$8339 ChanBInstrLoop
+$833C ChanBInstrLoops
+$833F ChanBZeroEnd
+$834A ChanBNextLine
+$834E ChanBSetCounter
+$8351 ; channel B's mixer bits into MixerB
+$8356 ; channel C, as channel A
+$8357 ChanCAtten
+$835A ChanCPitch
+$835D ChanCSlide
+$836C ChanCInstrPointer
+$836F ; IY = AYReg4+1: channel C's period
+$837A ChanCInstrCounter
+$837C ChanCInstrSpeed
+$8383 ChanCInstrEnd
+$838B ChanCInstrLoop
+$838E ChanCInstrLoops
+$8391 ChanCZeroEnd
+$839C ChanCNextLine
+$83A0 ChanCSetCounter
+$83A3 ; channel C's bits
+$83A7 MixerB ; MixerB+1: channel B's mixer bits
+$83A9 ; one more place
+$83AA MixerA ; MixerA+1: channel A's mixer bits
+$83AC ; R7 in A
+$83AF c ReadTrackLine ; read one line of a track
+> Input: HL = the track, B = the channel (1-3), C = the attenuation, D = the transposition, E = the instrument, IXL = the note. Byte bit 0 set: a note (bits 1-7), nothing else. Bit 0 clear, bits 1-7 below $60: a note with a second byte: bit 0 the attenuation follows in bits 1-4, bit 7 an instrument byte follows, bit 6 a slide byte. $60 + k: a command: 0 a wait byte, 1 a rest to the pattern's end (wait 255), 2 the attenuation byte, 3 the slide byte, 4 both, 5 off (instrument 0), 6 a digidrum byte (then off), 7-31 a wait of k - 7 lines. Output: HL past the line, IXL = the note + the transposition, C, E, IYH = 0 a new note (the instrument restarts) or 1, IYL = the empty lines after this one, HL' = the slide; returns with the alternate set in use. 142 runs in the intro window (35 + 12 + 95 for tracks A, B, C).
+$83B3 ; bit 0 set: a note alone
+$83B5 ; $60 and above: a command
+$83B9 ; a new note
+$83BA ; + the transposition
+$83BD ; the second byte
+$83C8 TrackTestInstr ; bit 7: an instrument byte
+$83CE TrackTestSlide ; bit 6: a slide byte
+$83D2 TrackSlide ; the slide byte, sign-extended into HL'
+$83DC SlideDone
+$83E0 NoSlide ; HL' = 0, no wait
+$83E8 TrackNoteOnly ; a one-byte note
+$83F0 TrackCommand ; IYH = 1: no new note
+$8402 ; 7-31: a wait of A - 7 lines
+$8411 CmdWaitByte ; $C0 n: n empty lines
+$841A CmdVolume ; $C4 n: the attenuation
+$8424 CmdVolumeSlide ; $C8 n s: the attenuation and the slide
+$8428 CmdRest ; $C2: no change to the pattern's end
+$8430 CmdDrum ; $CC n: a digidrum on this channel, then off
+$8439 CmdOff ; $CA: instrument 0 from this line (IYH = 0, E = 0)
+$8444 c InstrumentLine ; one line of an instrument: the channel's period, volume, noise and mixer bits
+> Input: HL = the line, A = the instrument's frame counter, IXL = the note, IY = the channel's period low byte in the cache (IY+$1B the high byte, IY+$36 the volume), D' = the attenuation, HL' = Retrigger, LinePitch = the pitch sum. The line's first byte E: bit 7 clear: a soft line. Bits 0-3 the volume (minus the attenuation, not below 0); volume 0 with bit 4 clear: silent (R8 0, tone and noise off), no more bytes. Bit 4: a noise byte N follows: N bit 6 a fixed period (the word after; N bits 0-4 the noise if not 0), else N bits 0-4 the noise and N bit 5 the tone too. With the tone: bit 5 an arpeggio byte (semitones added to the note), bit 6 a pitch word (added to the period); the period = PeriodTable[note + arpeggio, at most 95] + LinePitch / 2 + the pitch. Bit 7 set: a hardware line (HardLine). Output: HL past the line, IXH = the mixer bits (bit 0 tone off, bit 3 noise off). 1698 runs in the intro window (all soft lines: no hardware line played in its three patterns).
+$8448 ; bit 7: the hardware envelope
+$844B ; bit 4: a noise byte
+$844F ; N bit 6: a fixed period
+$8454 ; noise off unless N's bits 0-4
+$845B ; R6
+$8460 FixedVolume ; the volume - the attenuation
+$8469 FixedStore
+$846E ; the fixed period into the cache
+$8479 NoiseLine ; noise N; bit 5 of N: the tone too
+$847D ; tone off, noise on
+$8483 ; tone on as well
+$848E NoiseToneStore
+$8495 NoiseOnly ; the noise alone
+$849E NoiseOnlyStore
+$84A1 SetMixer ; IXH = the mixer bits
+$84A4 SilentLine ; volume 0: tone and noise off
+$84AC SoftLine ; the tone, noise off
+$84B9 SoftStore
+$84BF ArpAndPitch ; bit 5: the arpeggio byte
+$84C7 NoArpeggio
+$84C8 TestPitch ; bit 6: the pitch word
+$84D2 NoPitch
+$84D5 AddArpeggio ; the note + the arpeggio, at most 95
+$84DD PeriodOfNote ; PeriodTable + 2 x the note
+$84E9 LinePitch ; LinePitch+1: the pitch sum (PlayInstruments), halved and added
+$84F2 ; into the cache
+$84FA HardLine ; the hardware envelope: R8 = 16, the shape, the ratio
+> E (the first byte): bit 6 retrigger R13 (only at counter 0), bit 0 tone off, bit 3 a noise byte follows, bit 4 a fixed tone word follows (and with bit 5 an envelope word), else bit 1 an arpeggio byte, bit 2 a pitch word, bit 5 (without sync) an envelope word. The second byte B: bits 0-1 the shape (8, 10, 12, 14), bits 2-4 the ratio R (the envelope period = the tone period >> (7 - R), rounded; R = 3 puts the envelope at the note's own pitch), bit 7 sync (the tone period set back from the envelope period << (7 - R), + the offset byte when bit 6). Not run in c1's intro window (SK10's instrument 4 is the only hardware one: tools/sk10.py).
+$84FD ; the first frame of the line: the retrigger bit
+$8504 HardMixer ; D = tone off (bit 0) and noise off (bit 3)
+$850A ; volume 16: the envelope
+$850E ; the shape: R13 = 8 + 2 x (B & 3)
+$8519 ; bit 3: the noise byte
+$8526 HardSetMixer
+$8529 ; B bit 7: sync; bit 6 its offset byte
+$8533 SetSyncOffset
+$8538 SetSyncFlag ; HardSync+1 = 1 with sync
+$853B ; the ratio x 2 into HardRatio+1
+$8542 ; bit 4: a fixed tone period
+$8547 ; bit 1: the arpeggio
+$854F HardNoArp
+$8550 HardKeepFlags ; E kept in A'
+$8553 ; bit 2: the pitch word
+$855D HardNoPitch
+$8560 HardAddArp ; the note + the arpeggio, at most 95
+$8568 HardPeriod ; the period: PeriodTable[note] + LinePitch / 2 + the pitch
+$857F HardSync ; HardSync+1: 1 the tone follows the envelope
+$8584 ; bit 5: the envelope period given
+$8589 HardTone ; the tone period into the cache
+$8590 HardRatio ; HardRatio+1: the ratio x 2
+$8596 ; skip 3 x ratio bytes of the shifts: >> (7 - ratio)
+$859A HardShiftDown ; JR into the seven shifts
+$859C ShiftsDown
+$85B2 ; rounded
+$85B5 SetEnvPeriod ; R11, R12
+$85BD ; sync: the tone from the envelope period
+$85CA ; skip 3 x ratio bytes: << (7 - ratio)
+$85CE HardShiftUp ; JR into the seven shifts
+$85D0 ShiftsUp
+$85E6 SyncOffset ; SyncOffset+1: the offset added (B bit 6)
+$85F0 HardDone
+$85F2 HardFixed ; bit 4: the fixed tone word
+$85FB HardEnvGiven ; the tone, and the envelope period from the next word
+
+@module starkos-output ; the period table, sending the registers, Stop, Init
+@about SendRegisters writes the AY. The CPC's STarKos player keeps a cache of the 14 register values and the last value sent of each; here each register's value is the operand of LD A,n (AYRegN+1) and the value last sent the operand of CP n (AYRegN+3), and only a changed register is written, to $FFFD (the register number) and $BFFD (the value). Each write is followed by nine NOPs and a tenth before the next: the 28-byte rows keep the layout of a longer port sequence (the CPC writes the AY through its PPI) with the Spectrum's two OUTs in place. R13, the envelope shape, is written when it changed or when Retrigger is set (the hardware line's retrigger bit, at its first frame).
+@about PeriodTable is the CPC's: note 12 is 3822 (C0 at the CPC's 1 MHz AY clock) and each note a tempered semitone higher; notes 0-11 are 0 (their periods do not fit in 12 bits). The table was not converted for the ZX's 1.7734 MHz (Pentagon 1.75 MHz): docs/09-sound.md 9.6.
+@about Init takes the song's header into the player's operands and runs ResetTable (zero the register cache and counters, $FF the last-sent values and instrument speeds, OR A the loop flags), so a second Init starts the song afresh. Stop silences the AY.
+$860D w PeriodTable 12 ; the tone period of notes 0-95 (the CPC's table)
+> Read by InstrumentLine (PeriodOfNote, HardPeriod): $860D + 2 x the note (at most 95). 3822 at note 12 is C0 at 1 MHz; on the ZX the same period is 1.7734 times higher (9.92 semitones; 9.69 on the Pentagon's 1.75 MHz).
+$86CD c SendRegisters ; write the registers that changed to the AY, then R13 if changed or retriggered
+> Input: A = R7 (the mixer). H = R7, C = $FD, D = $FF, E = $BF; per register in the order R0, R1, R8, R2, R3, R9, R4, R5, R10, R6, R7, R11, R12, R13: the value (AYRegN+1) compared with the last sent (AYRegN+3), written when they differ (OUT ($FFFD) the number, OUT ($BFFD) the value) and kept. R13: also when Retrigger is not 0 (an envelope restarts at each write). 567 runs (566 frames and Stop).
+$86D7 AYReg0 ; AYReg0+1: R0 to send (channel A period low, IY of channel A), AYReg0+3: R0 sent
+$86E0 ; the register number to $FFFD
+$86E3 ; the value to $BFFD
+$86F2 AYReg1 ; R1 (IY+$1B of channel A)
+$870D AYReg8 ; R8, channel A's volume (IY+$36)
+$8728 AYReg2 ; R2 (IY of channel B)
+$8743 AYReg3 ; R3
+$875E AYReg9 ; R9, channel B's volume
+$8779 AYReg4 ; R4 (IY of channel C)
+$8794 AYReg5 ; R5
+$87AF AYReg10 ; R10, channel C's volume
+$87CA AYReg6 ; R6, the noise period
+$87E5 AYReg7 ; R7 from H; AYReg7+2: R7 sent
+$87FF AYReg11 ; R11, the envelope period low
+$881A AYReg12 ; R12
+$8835 AYReg13 ; R13, the envelope shape (AYReg13+3: the shape sent)
+$8839 ; changed: write it
+$883C Retrigger ; Retrigger+1: not 0, write R13 even unchanged (a hardware line's bit 6)
+$8841 WriteR13
+$8856 c Stop ; silence the AY
+> The three volumes' values 0 and their last-sent values $FF (so they are written), R7's last sent $FF, then SendRegisters with A = $3F: tone and noise off on all channels. Run once in c1, when the intro ends ($60BA).
+$8872 c Init ; take a song: its header into the player, the variables reset
+> Input: DE = the song (SK10 at $8990). Header byte 6 to SpecialDrum+4 (the drum channel); bytes 9-24: the heights, linker, special list and instrument table addresses and the four loop points into HeightPointer+1, LinkerPointer+1, SpecialListPointer+1, TrackAInstrTable+1, TranspLoop+1, HeightLoop+1, LinkerLoop+1, SpecialListLoop+1; byte 25 the speed into Speed+1 and SpeedCounter+1 (the first Play reads a line); the transposition stream from byte 26. LinkerEnd = the special list; SpecialMode and SpecialModeLoop from bit 0 of the special list's first and loop entries; the instrument table copied to tracks B and C; the instrument pointers, loop and end addresses of all three channels set to instrument 0's line; NewPatternFlag = SCF; then ResetTable. Run once in c1 (frame 2182 window, the intro's $6061).
+$891B ; the reset table
+$891E ResetLoop ; a count (0 ends), a value, then count addresses that get the value
+$8925 ResetNext
+$892E b ResetTable 8 ; the variables Init resets: groups of a count, a value and the count addresses that get it
+> Read by ResetLoop. Three groups: 24 operands set to 0 (the register values R0-R6 and R8-R13, the transposition, height, special and special-list waits, the instrument frame counters, the tracks' attenuations), 17 set to $FF (the last-sent values of R0-R13, so that every register is written at the first frame, and the instruments' speeds), 3 set to $B7 (OR A: the instruments do not loop); a count of 0 ends it. R7's value is not in it: SendRegisters takes it from A.
+$892E ; 24 addresses get 0
+$8930 ResetZeroList
+$8960 ResetFF ; 17 addresses get $FF
+$8962 ResetFFList
+$8984 ResetLoops ; 3 addresses get $B7
+$8986 ResetLoopsList
+$898C ResetEnd ; 0: the end of the table
+$898D b Padding 3 ; three bytes no instruction reads, up to the song
+
+@isub $82C3 LD A,(TrackANote+2)
+@isub $82CF LD A,(ChanAInstrCounter+1)
+@isub $8315 LD A,(TrackBNote+2)
+@isub $8321 LD A,(ChanBInstrCounter+1)
+@isub $8367 LD A,(TrackCNote+2)
+@isub $8373 LD A,(ChanCInstrCounter+1)
+@isub $85BD LD A,(HardSync+1)
+@isub $85C3 LD A,(HardRatio+1)
+@isub $8930 DEFW AYReg0+1,AYReg1+1,AYReg2+1,AYReg3+1
+@isub $8938 DEFW AYReg4+1,AYReg5+1,AYReg6+1,AYReg8+1
+@isub $8940 DEFW AYReg9+1,AYReg10+1,AYReg11+1,AYReg12+1
+@isub $8948 DEFW AYReg13+1,TranspWait+1,HeightWait+1,SpecialSameWait+1
+@isub $8950 DEFW SpecialListWait+1,SpecialWait+1,ChanAInstrCounter+1,ChanBInstrCounter+1
+@isub $8958 DEFW ChanCInstrCounter+1,TrackAVolume+1,TrackBVolume+1,TrackCVolume+1
+@isub $8962 DEFW AYReg0+3,AYReg1+3,AYReg2+3,AYReg3+3
+@isub $896A DEFW AYReg4+3,AYReg5+3,AYReg6+3,AYReg7+2
+@isub $8972 DEFW AYReg8+3,AYReg9+3,AYReg10+3,AYReg11+3
+@isub $897A DEFW AYReg12+3,AYReg13+3,ChanAInstrSpeed+1,ChanBInstrSpeed+1
+@isub $8982 DEFW ChanCInstrSpeed+1
+@isub $8986 DEFW ChanAInstrLoops,ChanBInstrLoops,ChanCInstrLoops
+
+@module starkos-song ; the song SK10
+@about The intro tune, a STarKos song compiled for $8990 (its header holds the address; the player does not relocate it). 1845 bytes: the header, the transposition, height and special-track streams, the linker (48 patterns), the instrument table and 13 instruments, 38 tracks and one special track. The text src/res/music/sk10.txt holds it in STarKos's terms; tools/sk10.py encode builds build/sound/sk10.bin from it for the INCBIN.
+$8990 b Song 16 ; the song SK10 (src/res/music/sk10.txt)
+> Read by Init (the header) and Play (the streams, the tracks, the instruments). Not written.
+@res music/sk10.bin

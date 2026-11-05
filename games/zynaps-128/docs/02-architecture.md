@@ -69,7 +69,12 @@ The frames of each stage in `c1` are in [3.7](03-build-and-load.md#37-the-stages
 
 ## 2.4 The frame (128K)
 
-The game's own IM 2 handlers (`$A9E5`, `$A9F7`, `$AB03`, `$A581`) are patched to the glue at `$5B00`: each frame the
-glue pages 4 in, calls the engine's play entry `$C96E`, and pages 0 back. Game events call the hook stubs, which
-page 4 in, call one of the engine's effect entries `$C971`-`$C9B1`, and page 0 back ([9. Sound](09-sound.md)). The
+The game's interrupt handler is patched in four places (`$A9E5`, `$A581`, `$A9F7`, `$AB03`) to the glue
+(`src/game/glue.asm`): each entry calls `FramePlay` (`$5B00`), which pages 4 in, calls the engine's play entry
+`$C96E` and pages 0 back, then does the instructions the patch overwrote. The main handler (entered at `$A9ED`)
+passes two of them, `$A9F7` at its start and `$AB03` at its end, so it steps the engine twice an interrupt; the menu's
+handler (`$A9E4`) and the one ending at `$A581` step it once. In `c1`: `$A9ED` 3221 times, `$5B31` and `$5B3C` 3220
+each, `$5B21` 2550, `$5B28` 1403 (`work/stage2/game/l1.json`). Whether that doubles the in-play tempo, or the main
+handler runs every second frame, is stage 3's. Game events call the hook stubs, which page 4 in, call one of the
+engine's effect entries `$C971`-`$C9B1`, and page 0 back ([9. Sound](09-sound.md)). The
 rest of the frame is the 48K game's, stage 3's subject.

@@ -1,0 +1,16 @@
+# The SCL inside orig/Zynaps(2In1)(km).scl.zip: written by tools/mkscl.py (the format: its docstring).
+# One file, ZYNAPS.B: the catalogue gives 168 bytes (the BASIC, one sector) but 137 sectors; the loader reads the
+# other 136 by number (docs/03-build-and-load.md 3.1).
+#
+#   sector 0      the BASIC with the REM loader and TR-DOS's autostart mark (build/obj/zynapsb-basic.bin, 172 bytes),
+#                 then what the author's machine had there when the line was saved (src/res/media/README.md)
+#   sector 1      the Hrust 1 depacker (build/obj/depacker.bin)
+#   sectors 2-57  block 1, the intro, packed, with the packer's tail (build/obj/block1.hr, tools/hrust1.py)
+#   sectors 58-136 block 2, the game, packed, with the packer's tail (build/obj/block2.hr)
+
+file ZYNAPS B   168   168 137
+  at 0+0 build/obj/zynapsb-basic.bin
+  at 0+172 src/res/media/zynapsb-sector0-tail.bin
+  at 1+0 build/obj/depacker.bin
+  at 2+0 build/obj/block1.hr
+  at 58+0 build/obj/block2.hr

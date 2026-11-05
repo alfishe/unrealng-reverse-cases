@@ -1,0 +1,18 @@
+# The TRD inside orig/Zynaps(2In1)(km).trd.zip: written by tools/mktrd.py (the format: its docstring and
+# tools/mkscl.py's). ZYNAPS.B is the SCL's (src/media/scl.txt), at track 1 sector 0; boot.B follows it at track 9
+# sector 9. No byte outside the two files and the disk's fields is set.
+
+label src/res/media/trd-label.txt
+gap zeros
+
+file ZYNAPS B   168   168 137
+  at 0+0 build/obj/zynapsb-basic.bin
+  at 0+172 src/res/media/zynapsb-sector0-tail.bin
+  at 1+0 build/obj/depacker.bin
+  at 2+0 build/obj/block1.hr
+  at 58+0 build/obj/block2.hr
+
+# boot.B: 988 bytes of BASIC (src/boot/boot.asm), no autostart mark, zeros to the end of its 4 sectors
+file boot B   988   988   4
+  at 0+0 build/obj/boot-5d3b.bin
+  zero 3+220 36

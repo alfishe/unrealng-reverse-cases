@@ -1,0 +1,1078 @@
+; The page-4 sound engine's data ($DE48-$FE6F), tools/sound_data.py (the format in its docstring).
+; Read by the engine at $C968 (src/sound/engine.asm). Blocks in memory order.
+
+[periods]
+0 0 0 0 0 0 0 0 0 0 0 0  ; notes 0-11
+0 4126 3894 3676 3469 3275 3091 2917 2754 2599 2453 2315  ; notes 12-23
+2186 2063 1947 1838 1735 1637 1545 1459 1377 1300 1227 1158  ; notes 24-35
+1093 1031 974 919 867 819 773 729 688 650 613 579  ; notes 36-47
+546 516 487 459 434 409 386 365 344 325 307 289  ; notes 48-59
+273 258 243 230 217 205 193 182 172 162 153 145  ; notes 60-71
+137 129 122 115 108 102 97 91 86 81 77 72  ; notes 72-83
+68 64 61 57 54 51 48 46 43 41 38  ; notes 84-94
+
+[envelopes]
+e00 e01 e02 e03 e04 e05 e06 e07 e08 e09 e0A e0B
+e0C e0D e0E e0F e10 e11 e12 e13 e14 e15 e16 e17
+e18 e19 e1A e1B e1C e1D e1E 0 0 0 0
+
+[raw]
+db $00  ; $DF4C, between the tables
+
+[sounds]
+s00 s01 s02 s03 s04 s05 s06 s07 s08 s09 s0A s0B
+s0C s0D s0E s0F s10 s11 s12 s13 s14 s15 s16 s17
+s18 s19 s1A s1B s1C s1D s1E s1F s1E s1F 0 0
+
+[sound s14]
+volenv e0C
+noiseenv e1D
+pitchenv e07
+noise 14
+G2 188
+end
+
+[raw]
+db $FF
+
+[sound s15]
+volenv e0C
+noiseenv e1D
+pitchenv e07
+noise 14
+C#3 168
+end
+
+[raw]
+db $FF
+
+[sound s16]
+volenv e08
+pitchenv e10
+C#4 48
+end
+
+[raw]
+db $FF,$E8
+
+[sound s17]
+volenv e11
+noiseenv e00
+pitchenv e0E
+noise 1
+F#6 99
+end
+
+[raw]
+db $FF
+
+[sound s18]
+volenv e11
+noiseenv e00
+pitchenv e19
+noise 4
+G#5 99
+end
+
+[raw]
+db $FF
+
+[sound s19]
+volenv e11
+noiseenv e00
+pitchenv e0E
+noise 7
+D#5 99
+end
+
+[raw]
+db $FF,$E9
+
+[sound s1A]
+volenv e06
+pitchenv e0F
+C4 99
+end
+
+[raw]
+db $FF
+
+[sound s1B]
+volenv e06
+pitchenv e0F
+rest 2
+C4 99
+end
+
+[raw]
+db $FF
+
+[sound s1C]
+volenv e08
+noiseenv e13
+pitchenv e02
+A4 60
+end
+
+[raw]
+db $FF,$EA,$13,$E9,$02,$3D,$3C,$E1,$FF
+zeros 1601
+db $1F,$51,$6E,$66,$64,$71,$72,$58
+
+[envelope e00]
+step 200 0 200
+loop
+
+[envelope e01]
+step 1 15 1
+step 2 -1 3
+step 9 -1 8
+step 200 0 200
+loop
+
+[envelope e02]
+step 1 22 1
+step 1 -22 1
+loop
+
+[envelope e03]
+step 1 4 3
+step 200 0 200
+loop
+
+[envelope e04]
+step 1 9 1
+loop
+
+[envelope e05]
+step 1 -4 3
+step 1 2 3
+loop
+
+[envelope e06]
+step 1 13 1
+step 200 0 200
+loop
+
+[envelope e07]
+step 1 50 1
+loop
+
+[envelope e08]
+step 1 15 1
+step 1 -1 3
+step 1 1 1
+step 200 0 200
+loop
+
+[envelope e09]
+step 1 13 1
+step 2 -1 13
+step 200 0 200
+loop
+
+[envelope e0A]
+step 1 13 1
+step 1 -1 3
+step 3 -1 10
+step 200 0 200
+loop
+
+[envelope e0B]
+step 1 15 1
+step 4 0 1
+step 4 -1 15
+loop
+
+[envelope e0C]
+step 1 15 1
+step 14 0 1
+step 5 -1 4
+step 14 -1 11
+loop
+
+[envelope e0D]
+step 1 15 1
+step 1 -1 14
+step 200 0 200
+loop
+
+[envelope e0E]
+step 1 14 1
+step 1 -15 1
+loop
+
+[envelope e0F]
+step 1 -5 20
+step 1 95 1
+loop
+
+[envelope e10]
+step 1 -20 15
+step 1 10 15
+loop
+
+[envelope e11]
+step 1 2 1
+step 3 1 13
+step 19 0 1
+step 1 -7 1
+step 200 0 200
+loop
+
+[raw]
+@e12
+db $01,$84,$28,$FF
+
+[envelope e13]
+loop
+
+[envelope e14]
+step 1 12 1
+step 1 -4 3
+step 200 0 200
+loop
+
+[raw]
+@e15
+db $01,$74,$01,$01,$84,$03,$C8,$80,$C8,$FF
+@e16
+db $01,$82,$01,$FF
+
+[envelope e17]
+step 1 9 8
+step 1 -5 3
+step 1 14 99
+loop
+
+[envelope e18]
+step 1 1 3
+step 1 -1 3
+loop
+
+[envelope e19]
+step 1 50 1
+step 1 -70 1
+step 1 50 1
+step 1 -40 1
+step 1 12 1
+loop
+
+[raw]
+@e1A
+db $FF
+
+[envelope e1B]
+step 1 1 1
+step 3 -1 1
+step 2 1 1
+step 4 -1 1
+step 1 1 1
+step 5 -1 1
+loop
+
+[raw]
+@e1C
+db $FF
+
+[envelope e1D]
+step 1 1 1
+step 50 0 1
+step 1 6 99
+loop
+
+[raw]
+@e1E
+db $09,$8D,$13,$17,$9B,$1F,$23,$A9,$2D,$31,$B5,$39,$3D,$C1,$45,$49
+db $CD,$00
+
+[sound s00]
+G#2
+G#1
+G#2
+G#1
+noise 14
+G#2
+G#2
+G#2
+G#2
+G#2
+G#1
+G#2
+G#1
+noise 14
+G3
+G2
+G3
+G2
+C3
+C2
+C3
+C2
+noise 14
+C3
+C3
+C3
+C3
+C3
+C2
+C3
+C2
+noise 14
+C3
+C3
+C3
+C3
+G#2
+G#1
+G#2
+G#1
+noise 14
+G#2
+G#2
+noise 6
+G#2
+noise 6
+G#2
+noise 14
+G#2
+G#1
+G#2
+G#1
+noise 14
+G3
+G2
+G3
+G2
+C3
+C2
+noise 14
+C3
+C2
+noise 14
+C3
+noise 4
+C3
+noise 14
+C3
+C3
+C3
+C2
+C3
+C2
+noise 14
+C3
+C3
+C3
+C3
+return
+
+[raw]
+db $FF,$FF,$00
+
+[sound s0E]
+volenv e0A
+noiseenv e19
+pitchenv e17
+noise 14
+rest 8
+rest 32
+end
+
+[raw]
+db $FF
+
+[sound s0F]
+volenv e0E
+pitchenv e00
+A#4
+C#5
+F5
+C#5
+pitchenv e14
+A#5 24
+end
+
+[raw]
+db $FF
+
+[sound s10]
+volenv e08
+pitchenv e02
+G6
+C#6
+G6
+C#6
+G6
+C#6
+G6
+C#6
+end
+
+[raw]
+db $FF,$00
+
+[sound s11]
+volenv e09
+pitchenv e05
+C5 24
+end
+
+[raw]
+db $FF
+
+[sound s12]
+volenv e03
+pitchenv e17
+G4 96
+end
+
+[raw]
+db $FF
+
+[sound s13]
+volenv e09
+noiseenv e05
+pitchenv e04
+noise 14
+C5 72
+end
+
+[raw]
+db $FF,$E1,$FF
+zeros 1601
+db $2D,$1F,$56,$60,$6B,$73,$6E,$21
+
+[sound s0B]
+noiseenv e00
+volenv e08
+pitchenv e1D
+transpose 0
+F2 64
+D#3 192
+pitchenv e18
+call s01
+call s01
+call s01
+transpose 1
+call s01
+volenv e0D
+transpose 3
+call s01
+volenv e08
+pitchenv e1D
+transpose 4
+call s04
+transpose 5
+call s04
+transpose 0
+call s07
+call s0A
+volenv e08
+call s01
+volenv e0D
+transpose 5
+call s01
+transpose 3
+volenv e06
+call s01
+call s01
+call s01
+rest 64
+volenv e08
+pitchenv e18
+transpose 0
+call s01
+transpose 1
+call s01
+transpose 4
+call s01
+volenv e0D
+call s01
+volenv e08
+transpose 12
+call s04
+transpose 19
+call s04
+transpose 0
+call s07
+return
+
+[sound s0C]
+mixer $30
+volenv e08
+pitchenv e1D
+transpose 7
+F3 64
+G#4 32
+G4 160
+pitchenv e1B
+volenv e0D
+call s01
+mixer $00
+volenv e08
+transpose 0
+call s03
+call s02
+transpose 1
+call s02
+transpose 3
+call s02
+pitchenv e1D
+transpose 4
+call s05
+transpose 5
+call s05
+volenv e0D
+transpose 0
+call s08
+volenv e03
+pitchenv e18
+transpose 12
+call s01
+pitchenv e14
+call s01
+pitchenv e00
+volenv e0D
+transpose 17
+call s0A
+transpose 15
+volenv e0E
+call s03
+call s01
+swap
+call s0A
+rest 64
+volenv e08
+pitchenv e1B
+transpose 0
+call s02
+transpose 1
+call s02
+transpose 4
+call s02
+volenv e0D
+call s0A
+volenv e08
+pitchenv e18
+transpose 15
+call s04
+transpose 12
+call s04
+transpose 0
+call s08
+return
+
+[sound s0D]
+volenv e06
+pitchenv e1D
+transpose 12
+F4 64
+C4 32
+A#3 32
+A#3 128
+pitchenv e18
+volenv e03
+call s01
+transpose 0
+call s03
+call s02
+transpose 1
+call s03
+transpose 3
+call s03
+volenv e08
+pitchenv e1D
+transpose 4
+call s06
+transpose 5
+call s06
+transpose 0
+call s09
+volenv e03
+pitchenv e18
+transpose 24
+call s0A
+volenv e03
+call s01
+volenv e0D
+transpose 17
+call s01
+transpose 15
+volenv e0E
+rest 8
+call s03
+call s01
+call s0A
+rest 56
+volenv e03
+transpose 0
+call s03
+transpose 1
+call s03
+transpose 4
+call s03
+volenv e0D
+call s02
+volenv e08
+pitchenv e14
+transpose 19
+call s04
+transpose 16
+call s04
+transpose 0
+call s09
+return
+
+[raw]
+db $04
+
+[sound s07]
+D2 64
+A#1 64
+E2 64
+C2 64
+return
+
+[sound s08]
+D5
+F#5
+E5
+C5
+E5
+D5
+G#4
+C5
+A#4
+F#4
+A#4
+G#4
+D4
+F#4
+E4
+C4
+E4
+D4
+G#3
+C4
+A#3
+F#3
+A#3
+G#3
+D3
+F#3
+E3
+C3
+E3
+D3
+G#2
+C3
+return
+
+[sound s09]
+D4 16
+E4 16
+E4 16
+G#3 16
+A#3 16
+A#3 16
+D3 16
+E3 16
+E3 16
+G#2 16
+A#2 32
+C3 64
+return
+
+[raw]
+db $10
+
+[sound s1D]
+volenv e0B
+noiseenv e00
+pitchenv e00
+noise 14
+C#4 44
+end
+
+[raw]
+db $FF,$FF,$FF,$E9,$00,$E4,$0E,$35,$2C,$E1,$FF,$FF,$FF
+zeros 1601
+db $6D,$2D,$1F,$4B,$26,$6F,$6E,$21
+
+[sound s01]
+F3
+F2
+F3
+F2
+noise 14
+F3
+C3
+G#2
+C3
+F3
+F2
+F3
+F2
+noise 14
+D3
+D2
+D3
+D2
+D#3
+D#2
+D#3
+D#2
+noise 14
+D#3
+A#2
+G#2
+A#2
+D#3
+D#2
+D#3
+D#2
+noise 14
+D#3
+A#2
+G#2
+A#2
+F3
+F2
+F3
+F2
+noise 14
+F3
+C3
+noise 6
+A#2
+noise 6
+C3
+noise 14
+F3
+F2
+F3
+F2
+noise 14
+D3
+D2
+D3
+D2
+D#3
+D#2
+noise 14
+D#3
+D#2
+noise 14
+D#3
+noise 4
+A#2
+noise 14
+G#2
+A#2
+D#3
+D#2
+D#3
+D#2
+noise 14
+D3
+A#2
+G#2
+A#2
+return
+
+[sound s02]
+rest 16
+F4
+G4
+G#4
+rest 40
+F4
+G4
+G#4 16
+A#4 16
+D#4 64
+C#4
+D#4
+C4
+C#4
+A#3
+C4
+G#3 16
+G#3
+G3
+F4
+G4
+G#4
+rest 40
+G#4
+A#4
+D5 16
+A#4 16
+D#5 48
+rest 8
+D#5
+G5
+D#5
+G#5
+D#5
+A5
+D#5
+A#5 16
+return
+
+[sound s03]
+C4 16
+F4 16
+C5 16
+C4
+F4
+C5 32
+D4 32
+A#3 16
+D#4 16
+A#4 16
+A#3 16
+D#4 16
+A#4 16
+A#3 16
+D#4 16
+C4 16
+F4 16
+C5 16
+F5
+D#5
+F5 32
+D4 32
+A#3 16
+D#4 16
+A#4 16
+A#3 16
+rest 8
+A#4 16
+A#3 16
+D#4 16
+rest 8
+return
+
+[raw]
+db $00
+
+[sound s04]
+A#2 16
+A#2 16
+A#2 16
+A#2 16
+A#2 16
+A#2 16
+F3 16
+F3 16
+G#2
+G#1
+noise 14
+G#2
+G#1
+G#2
+G#2
+noise 14
+G#2
+G#2
+C#3
+C#2
+noise 14
+C#3
+C#2
+C#3
+G#2
+noise 14
+F#3
+G#2
+C#3
+C#2
+noise 14
+C#3
+C#2
+C#3
+G#2
+noise 14
+C#3
+C#3
+noise 14
+F#3
+F#2
+F#3
+F#2
+F#3
+C#3
+B2
+C#3
+noise 14
+G#2
+D#3
+noise 14
+C3
+D#3
+noise 11
+G#2
+noise 11
+G#2
+noise 11
+G#2
+G#2
+return
+
+[sound s05]
+rest 16
+F4
+A#4
+D5
+rest 8
+D#5
+rest 8
+D5
+C5
+A#4
+rest 8
+F4
+rest 8
+F4
+G4
+G#4 16
+F4
+rest 8
+F4
+rest 8
+F4
+G4
+G#4 16
+C#5
+rest 8
+F5
+rest 8
+F#5
+rest 8
+F5
+D#5
+C#5
+rest 8
+G#4
+rest 8
+G#4
+A#4
+B4
+A#4
+G#4
+F#4
+C#5 32
+C5
+A#4
+G#4 16
+D#5 24
+rest 8
+return
+
+[sound s06]
+rest 16
+D4
+F4
+A#4
+rest 8
+C5
+rest 8
+A#4
+G4
+F4
+rest 8
+F2 32
+C4 64
+F4 48
+F#4
+rest 8
+G#4 64
+C#5 64
+D#5 64
+return
+
+[raw]
+db $00
+
+[sound s0A]
+F5
+rest 8
+F5
+rest 8
+F5
+C5
+G#4
+C5
+G#4
+F4
+G#4
+F4
+D4
+F4
+D4
+A#3
+G3 24
+C4
+A#3 24
+F4
+D#4 24
+G#4
+G4
+D#4
+A#3
+G3
+G#3
+G3
+F3
+A#3
+G#3
+G3
+C4
+A#3
+G#3
+D4
+C4
+A#3
+D4 16
+A#3 16
+D#4 64
+volenv e06
+rest 64
+return
+
+[raw]
+db $FF,$FF
+zeros 1610
+
+[sound s1E]
+volenv e0D
+noiseenv e01
+pitchenv e1D
+G#2
+C#3
+noise 1
+A#2
+G#2
+C#3
+A#2
+A#2
+D#3 40
+noise 1
+D#4 16
+noise 1
+D#4 16
+return
+
+[sound s1F]
+volenv e03
+pitchenv e00
+C#5 2
+rest 2
+G#4 2
+rest 2
+return
+
+[raw]
+db $FF
