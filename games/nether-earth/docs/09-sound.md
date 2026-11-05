@@ -24,6 +24,10 @@ Evidence:
 - `work/deep` and `work/docC/rec`: the L1 counts of the `Beep` call sites;
 - `work/ann/r4.md`: the menu left alone for 5300 frames on r4's instance (the tune loops at frame 5099).
 
+Listen: the tune and the effects rendered by unreal-ng from the machine state (48K, the beeper's own buffer;
+[audio/README.md](audio/README.md), `tools/render_audio.py`): [the menu tune](audio/menu-tune.mp3), one pass from
+the bass goto and a fade.
+
 ## 9.1 The menu tune at a glance
 
 ```mermaid
@@ -159,7 +163,9 @@ The tracks:
 
 `python3 tools/tune_roll.py events` gives the counts of one pass:
 
-- both voices loop after exactly 5120 frames (102.4 s); r4 saw both jump back at frame 5099 of its menu
+- both voices loop after exactly 5120 interrupt steps (102.4 s at one step a frame). In the machine a pass takes
+  5192 frames (103.8 s): the audio render saw the bass jump back (`BassReturnPos` `$FD54`) at frames 5099 and
+  10291; 72 interrupts give no step, likely those that come while a drum plays inside the handler (not traced). r4 saw both jump back at frame 5099 of its menu
   experiment;
 - the bass has 176 sounding notes on 8 periods, the lead 466 on 17;
 - the drums hit 304 times: 161 hisses, 72 rasps, 71 sweeps. r4's 5300-frame experiment counted 72 rasps and 72
@@ -230,6 +236,11 @@ the hit at 18702 cut it off. The fire sound also restarts at every new shot. The
 20 ms frame, so play goes on while they sound.
 
 `SoundEffect` ran 1356 times in `work/deep`: from frame 18680 (the first shot) to 35333. `FireShot` ran 51 times.
+
+Listen: [a shot cut by a hit](audio/sfx-shot-hit.mp3) (frames 18680-18707 of the bot's game, as in
+`work/docC/fight`), [a kill](audio/sfx-kill-in-play.mp3) (frame 19314); from `SoundFx` set in a snapshot of
+`work/deep`: [the full sweep](audio/sfx-fire-sweep.mp3), [miss](audio/sfx-miss.mp3), [hit](audio/sfx-hit.mp3),
+[kill](audio/sfx-kill.mp3).
 
 ## 9.6 Beep `$CCAC`
 
@@ -303,6 +314,10 @@ odd harmonics; its lowest band lies on the dashed line, the formula's tone (5.65
 the long `$C8`; the shot and the kill are one burst a frame (the vertical stripes, 20 ms apart). The drum rows come
 from the menu tune: the rasp is broadband noise, the sweep a falling tone with its harmonics, the hiss is silent
 (9.3). `python3 tools/ill_ui.py sound`.
+
+Listen: [`$14` click](audio/sfx-cursor-click.mp3), [`$64` part paid](audio/sfx-part-paid.mp3),
+[`$64` + `$78` a target chosen](audio/sfx-target-chosen.mp3), [the build chirp + `$C8`](audio/sfx-robot-start.mp3).
+The `$FA` beep is not rendered: no run reaches it.
 
 ## 9.7 Design notes
 

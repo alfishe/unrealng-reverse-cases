@@ -11,7 +11,7 @@ State: source, resources and documents complete (2026-11-04); the tape rebuilds 
 The TOSEC "Nether Earth (1987)(Argus Press Software).tap" is not the original: its BASIC says "CRACKED BY BILL
 GILBERT'87" and the game is one 42240-byte block.
 
-The documents: [docs/README.md](docs/README.md); the robots' path finding: [docs/13-path-finding.md](docs/13-path-finding.md). How the reverse was done: [WALKTHROUGH.md](WALKTHROUGH.md).
+The documents: [docs/README.md](docs/README.md); the robots' path finding: [docs/13-path-finding.md](docs/13-path-finding.md). The menu tune and the effects as mp3, rendered from the machine state: [docs/audio](docs/audio/README.md). How the reverse was done: [WALKTHROUGH.md](WALKTHROUGH.md).
 
 ## Build
 
