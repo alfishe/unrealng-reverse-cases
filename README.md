@@ -44,6 +44,8 @@ The rest of the repository:
 | [GUIDE.md](GUIDE.md) | the case standard: deliverables, evidence, documents, figures, phases |
 | [recipes/](recipes/README.md) | the steps, phase by phase |
 | [kit/](kit/README.md) | the shared scripts: source generation, reference documents, routine animations, code vs screen maps, beam timelines |
+| [signatures/](signatures/README.md) | the signature base: known players, packers, protections, loaders, routines and the cases' modules, with an index for scans ([format](docs/signature-format.md)) |
+| [docs/](docs/signature-format.md) | the repository's own formats: the signature metadata |
 | `unreal-ng/` | the emulator, as a git submodule: the analysis scripts the kit uses, and the emulator to record new runs |
 
 How to drive the emulator over MCP for a case: unreal-ng's
