@@ -8,6 +8,10 @@ They need Python 3 with Pillow, and an unreal-ng checkout for the access trace r
 checkout is found from `--unreal`, `$UNREAL_NG`, the `unreal-ng` submodule, or one next to this repository. `mkgame.py` also needs SkoolKit (a
 virtualenv: `--venv`) and sjasmplus.
 
+The annotation file these scripts read is described in [docs/ann-format.md](../docs/ann-format.md) (every directive,
+what each generator does with it, the cases' extensions); every file of a case and the command that makes it in
+[docs/case-files.md](../docs/case-files.md).
+
 ## A case
 
 | Script | Does |
@@ -16,14 +20,14 @@ virtualenv: `--venv`) and sjasmplus.
 | `tapblocks.py list FILE.tap` | the blocks of a tape: lengths, header fields, the play time at ROM speed, checksums |
 | `tapblocks.py FILE.tap N OUT` | one block's data |
 | `tap.py` | writes a tape of standard ROM blocks (the build's last step) |
-| `mkgame.py --case C` | `src/game/*.asm` from `game.ann`, the recordings' `l1.json` and the image `case.json` names; refuses to install unless sjasmplus gives the image's bytes |
+| `mkgame.py --case C` | `src/game/*.asm` from `game.ann` ([format](../docs/ann-format.md)), the recordings' `l1.json` and the image `case.json` names; refuses to install unless sjasmplus gives the image's bytes |
 | `ann_names.py --case C ADDR=Name ...` | names labels inside entries of `game.ann` |
 | `input_vars.py --work W --inputs S --start F` | the bytes that follow the held directions and fire over a scripted recording: a first guess at the player's coordinates (a 16-bit coordinate, or one that moves only now and then, scores low: confirm in the code that reads the controls) |
 | `refdocs.py --case C` | docs 11 and 12 from `game.ann` and the recordings; doc 12 links `docs/img/routines/<Label>.gif` |
 | `check_docs.py --case C` | mermaid renders, links resolve, no `$` in prose, every figure in `docs/img` is linked |
 | `code_addresses.py FILE.md` | puts hex addresses in prose into code spans |
 
-`case.json` (the template's is the example):
+`case.json` (the template's is the example; where each file of a case comes from: [case-files.md](../docs/case-files.md)):
 
 | Key | Meaning |
 | --- | --- |

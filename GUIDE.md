@@ -134,3 +134,20 @@ lives only in a chat, a note or `work/` does not count. In the case repository, 
 | Random play reached two rounds | a bot from the game's own records; a list of what no recording reached |
 | Reviews found errors after the documents looked done (31 in the fourth round) | review rounds by fresh agents, each finding verified against code, tape or recording before a fix |
 | `$` pairs rendered as math on GitHub | addresses in code spans, enforced |
+
+### Lessons from the six 2026-11 cases
+
+Zynaps, Zynaps 128K, Zynaps GS, Nether Earth GS, Nether Earth ZS Edition and Advanced Nether Earth; the agents'
+side of it is [recipe 11](recipes/11-agents.md), the derived cases' [recipe 10](recipes/10-derived-case.md).
+
+| Lesson | Now |
+| --- | --- |
+| Stage-2 comments read well and were wrong until a run checked them: the title tune sounds at twice the commented pitch; the "life lost" effect was the laser (RequestEffect's call inside FireLaser); the "engine hum" was the explosion noise, silent unless an explosion opens its masks (Zynaps WALKTHROUGH 6) | a name or a mechanism is checked by a run (a capture, a trace, a hit count) before it goes into a description; the docs agents re-check every comment they quote |
+| Stage-1 conclusions were overturned by the docs: the GS 128 KB "overrun" was the firmware's page list `[2, 3, 4, 1]` (every level fits); "most effects play from disk" was a silent disk edition (each `#39` lost inside `COM40`) | a stage conclusion is a hypothesis; the document states it only with its witness, and the WALKTHROUGH says what was overturned |
+| The owner remembered numbered snapshots chosen with a mouse in ZS '99; no block reads a `$xxDF` port and a live mouse run moved nothing | a memory or a forum claim is checked in the code and a run like any other; the result is documented either way |
+| "Once a frame" for once a pass: Zynaps' pass takes two frames (the next interrupt is lost under DI) | frame and pass are defined in the glossary and measured; the editor greps for them |
+| A bot run and its capture agree only to about frame 3000 (`run_frames` does not stop on frame edges) | frames are quoted from the saved recording, never from a bot's log or a live run |
+| L1 took a nested interrupt's return that does not come back to the interrupted call for a dispatch: 28 false entries inside Zynaps' routines | read odd entries inside routines against the interrupt chain; the gap is in the tool-gap table |
+| Two agents on one port base, or one base's +200 on another instance's server | one base per agent, 100 apart, in the brief; muted instances, each agent stops only its own |
+| A derived case first written as the base's source plus patches was rejected | a full own reverse per part, docs 01-12 on their own, doc 13 from the diff (recipe 10) |
+| Disk recordings start 1602 frames after the script's frame 0; snapshots hold no disk; a paused 128K instance has any bank paged in | the offset written next to the frames; disks inserted after a snapshot; reads through `memory_at` with a page |
