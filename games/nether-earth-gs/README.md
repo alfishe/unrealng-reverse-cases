@@ -1,28 +1,35 @@
 # Nether Earth GS (Tron Z, 2002; tape: Hood, 2017)
 
-State: source, resources and documents complete (2026-11-05); the SCL, the TRD and the TAP rebuild byte for byte
-from source.
+State: source, resources and documents 01-12 complete (2026-11-05); the SCL, the TRD and the TAP rebuild byte for
+byte from source. The comparison with Nether Earth (doc 13) is not written yet.
 
 | | |
 | --- | --- |
-| Machine | Pentagon 128 (or any 128K) with a General Sound card (GS 512 KB or NeoGS); the disk with TR-DOS |
+| Machine | Pentagon 128 (or any 128K) with a General Sound card (GS 512 KB or NeoGS); the disk with TR-DOS; the tape from 48 BASIC with paging free (`USR 0`) |
 | Authors | the game: Argus Press Software, 1987; the GS conversion: Tron Z, 2002 (the loading screen's "TRON 2002"); the tape: Hood, 2017 ("Conversion from TRD by Hood.7.4.2017") |
 | The SCL | `orig/NE_GS_TZ.zip` (md5 b5da07ecbed48679c23473b2164bb828, SHA-1 9c4f84b75819b0a8f9b01432bb2849d8a2f8c4b2), holding `NE_GS_TZ.SCL` |
 | The TRD | `orig/Nether Earth (1987)(Argus Press Software Ltd)(EN)(GS)[h 2002 Tron Z].trd` (md5 b6e5fe105f600ae3dd1221e16cc8062e, SHA-1 63a0fea73f0711f255e8337b1a78413e7e907dfc) |
 | The TAP | `orig/Nether Earth (1987)(Argus Press Software Ltd)(EN)(GS)[h 2017 Hood, Tron Z].tap` (md5 0ef2b5a6c3047da6185c31fded334ff6, SHA-1 245bbe488c0a558ce04de0144d16fbb48e2005f9) |
 
-[Nether Earth](../nether-earth/README.md) with General Sound: a ProTracker module for the menu and 14 sampled
-effects in place of the beeper. The game is Nether Earth's image at Nether Earth's addresses. 159 bytes changed, all
-of them sound: a bridge in NE's spare bytes pages a driver in at `$C000` and the beeper writes became `NOP`s. The
-disk loader uploads the module and the effects without waiting for the card, so the card loses the module and five
-effects: the disk plays no music, and most sounds come out as the wrong sample
-([9.2](docs/09-sound.md#92-what-is-on-the-card)). Hood's 2017 tape loads them with waits and plays them all. It also
-asks "music ON / OFF", and it hangs at the first sound unless it is started from 48 BASIC with paging free
-(`USR 0`, [1.5](docs/01-game-design.md#15-the-hang-of-hoods-tape-on-a-128k)). The TRD adds a HRUM-packed boot menu and two
-programs of other origins: `Neart481`, a cracked 128K build, and `Neart482`, a RAPEWARE intro with a game inside
-([1.2](docs/01-game-design.md#12-starting-each-medium)).
+[Nether Earth](../nether-earth/README.md) (Argus Press Software, 1987) on the General Sound card: a ProTracker
+module for the whole game and 14 sampled effects in place of the beeper. The game is a 48K image. Its changes are
+all sound: a bridge pages a driver in at `$C000` and the beeper writes became `NOP`s
+([2.8](docs/02-architecture.md#28-reaching-the-card-paging-and-the-driver), [9.4](docs/09-sound.md#94-the-drivers)).
 
-The documents: [docs/README.md](docs/README.md). How the reverse was done: [WALKTHROUGH.md](WALKTHROUGH.md).
+- **The disk edition** (SCL and TRD, Tron Z 2002) is silent. Its loader writes commands without waiting for the
+  card, so the card loses the module and 5 of the 14 effects ([9.2](docs/09-sound.md#92-what-the-card-holds)). Its
+  driver loses every effect it sends in a race with the card
+  ([9.5](docs/09-sound.md#95-the-disk-version-plays-no-effect)). This rests on unreal-ng's emulated GS (the GS ROM
+  on a 12 MHz Z80); no real card was run.
+- **Hood's 2017 tape** waits for the card after every command. It plays the module and every effect but 2 and 8,
+  which R never chooses ([9.6](docs/09-sound.md#96-r-and-effects-2-and-8)). It asks "music ON / OFF". It hangs at
+  the first sound in play unless it is started from 48 BASIC with paging free (`USR 0`,
+  [1.10](docs/01-game-design.md#110-the-hang-of-hoods-tape-on-a-128k)).
+- **The TRD** adds a HRUM-packed boot menu and two programs of other origins: `Neart481`, a cracked 128K build, and
+  `Neart482`, a RAPEWARE intro with a game inside ([3.8](docs/03-build-and-load.md#38-the-trds-boot-menu-and-its-extras)).
+
+The documents 01-12, the recordings and the terms: [docs/README.md](docs/README.md). How the reverse was done:
+[WALKTHROUGH.md](WALKTHROUGH.md).
 
 ## Build
 

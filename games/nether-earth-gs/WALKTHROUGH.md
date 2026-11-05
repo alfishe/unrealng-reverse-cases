@@ -3,7 +3,7 @@
 How the reverse was done, step by step, and which command or recording answered each question. Terms:
 [docs/README.md](docs/README.md). Standard: [GUIDE.md](../../GUIDE.md).
 
-The case was done in two stages by agents:
+The case was done in three stages by agents:
 
 - **Stage 1** (one agent, committed 2026-11-05): the media, the load, the GS side, the sound triggers; what the game shares with
   [Nether Earth](../nether-earth/WALKTHROUGH.md) (NE). Committed as stage 1.
@@ -11,6 +11,8 @@ The case was done in two stages by agents:
   bit, the resources in editable form, the screenshots against NE, the texts, the documents. The owner's rule for a
   derived case: the game is reversed in full on its own (its own `game.ann`, every routine named and described, true
   for this game), never "NE's source plus patches".
+- **The documents stage** (2026-11-05, two agents and the lead): docs 01-12, each describing this game fully on its
+  own (section 4). The brief: `work/docs/BRIEF.md`.
 
 Each agent's log is in `work/` (local): `work/stage1/NOTES.md`, `work/stage2/NOTES-ld.md` (loaders, drivers, media),
 `work/stage2/NOTES-trd.md` (the TRD extras), `work/stage2/NOTES-shots.md` (the figures).
@@ -78,7 +80,7 @@ the files:
 - effect 14 is at `$55B27`, equal to the files XOR `$80` from their 4th byte (its first 3 bytes never landed);
 - free from `$61B9E`.
 
-Map in [02.3](docs/02-architecture.md#23-the-gs-cards-memory).
+Map in [2.3](docs/02-architecture.md#23-the-cards-memory).
 
 ### 2.2 Signatures over the images
 
@@ -151,7 +153,7 @@ What the reading found (comments in the sources, [9](docs/09-sound.md)):
   (`neart017` is never read); every effect is stored flipped (signed).
 - Both drivers pick the effect of ids 2 and 4 by R in three windows, but R's bit 7 never changes (no `LD R,A` in
   the game, the loaders, the drivers or the ROMs; TR-DOS's three put back an R it read itself): effects 2 and 8
-  never play ([9.4](docs/09-sound.md#94-the-driver-neart021-bank-1-c000)).
+  never play ([9.6](docs/09-sound.md#96-r-and-effects-2-and-8)).
 - Hood's `POKE 23739,111` points channel S's output at `$096F` and hides the "Bytes:" messages.
 
 ### 3.4 The TRD extras (fork trd)
@@ -184,7 +186,7 @@ one catalogue sector of the author's work disk; sector 9 has 10 spaces at `$EA-$
 ### 3.6 The texts
 
 Owner request: every text on the media as UTF-8 Markdown with English, and as a build resource that converts back
-to the exact bytes. Nine readable copies in `docs/texts/` (index in [8.2](docs/08-hud-and-text.md#82-the-texts-on-the-media)),
+to the exact bytes. Nine readable copies in `docs/texts/` (index in [8.8](docs/08-hud-and-text.md#88-the-texts-on-the-media)),
 the resources in `src/res/text/`: the BASICs through `tools/basic_tok.py`, sector 9 and the label through
 `res_media.py` / `mktrd.py`, the TRD extras' five texts through `tools/trd_text.py` (an encoding line, `|` line ends,
 `\xNN` for odd bytes).
@@ -217,9 +219,49 @@ tools/build.sh
 python3 ../../kit/check_docs.py --case .
 ```
 
-## 4. Tool gaps
+## 4. The documents stage
 
-### 4.1 Stage 1 (unreal-ng and the kit)
+The stage-2 drafts (seven docs) were rewritten to the depth of a finished case: every doc 01-12, each claim with
+its address and its witness. The rule: each doc describes this game on its own; the one comparison with Nether
+Earth is the side-by-side figures of `docs/img/compare`, and doc 13 will come later.
+
+| Agent | Docs | Commands and what each proved |
+| --- | --- | --- |
+| gsA | 01-06: game design, architecture, build and load, game loop, controls, rendering | `work/docs/gsA-NOTES.md` |
+| gsB | 07-12: objects, HUD and text, sound, gameplay logic, the two generated references | `work/docs/gsB-NOTES.md` |
+| lead | `docs/README.md` (the index, the recordings, the terms), this file, `README.md`, the contradiction check | this section |
+
+The new recordings (own instances, muted, stopped at the end; the build of `scratch/wt-nezs-stage1`, read only):
+
+- gsA, port base 15600-15699: `load` (the SCL from power-on with the host's GS ports), `deep` (the bot's SCL game,
+  24 588 frames, four access traces), `tour` (8 269 frames of every menu by keys, and a poked lost end).
+- gsB, port base 15800-15899: `rT` (Hood's tape from `USR 0`, the bot's game of 40 134 frames with the GS ports of
+  the whole game), `rD` (the SCL from the main menu, 2 324 frames with both sides of the GS bus). After each, the
+  renders of the 14 effects from the host and, on `rD`, the experiments of 9.5.
+
+What the stage found, and what it corrected:
+
+- **The disk edition is silent.** Stage 1 had the disk loader lose the module and five effects, and took the other
+  effects as played (some as the wrong sample). `rD` shows the disk driver's commands lost too: each `#39` arrives
+  while the card is still inside `COM40`, and its `RSCOM` clears it. No channel started in 2 324 frames, and
+  `SoundFx` poked to `$01` and `$FC` gave rms 0. The host alone writing data 6 and `#39` to the idle card plays
+  the effect: the card holds them, the driver's timing loses them (9.5). README, 01, 02 and 03 now say so.
+- **The strength of that evidence.** It is unreal-ng's GS: the GS ROM on an emulated 12 MHz Z80. The race is a
+  matter of microseconds (the host's `#39` 9-10 µs after `#40`). A real card runs the same ROM at the same clock, so
+  the same loss is expected; no real card was run.
+- **The bytes sent to the card** are 367 521, the sum of the loader's lengths; the 367 507 of stage 2 came from a
+  port history cut at frame 4 546 (02, 03).
+- **R bit 7 never changes**, so the third window of ids 2 and 4 is dead: effects 2 and 8 never sound (9.6).
+- **The tape's hang** is the same story in 01 1.10, 03 3.7 and 09 9.10: seen from the Tape Loader (`x4`); the
+  128 menu's 48 BASIC (`x5`) leaves bank 6 empty too; a `LOAD ""` typed in 128 BASIC was not run.
+
+Known only from the code (no recording reached it): the nuclear blast and effect 14 in play, the won end, the tape
+save and load of a game, Kempston and Interface 2, a full robot table, a warbase changing hands, and the bugs of
+10.12.
+
+## 5. Tool gaps
+
+### 5.1 Stage 1 (unreal-ng and the kit)
 
 1. **The GS-side `COMRG` read is logged with value 0.** The `zxbus.1` history records the card's `IN` of its command
    register (port 1) with `value` 0, not the command byte, so the card's view of each command cannot be read from
@@ -236,7 +278,7 @@ python3 ../../kit/check_docs.py --case .
 6. **History volume**: `zxbus.1` in capture mode wrote 1.7 GB for a 2600-frame tape load (15 M lines, mostly the card's
    idle polls and interrupts). There is no filter for the host's port writes alone besides `zxbus.1.ports`.
 
-### 4.2 Stage 2
+### 5.2 Stage 2
 
 1. **`kit/mkgame.py` knows one RAM page at `$C000`.** The driver is in another page; the case's wrapper adds
    `# @bank` (not walked, the disassembler's entry mark dropped) as ANE's did. A kit-level directive would serve both.
@@ -257,14 +299,15 @@ python3 ../../kit/check_docs.py --case .
 10. **Reproducibility of tape frames**: the tape is started by a separate call between steps, so 5 of 52 loading
     frames differ between runs.
 
-## 5. What stays unexplained
+## 6. What stays unexplained
 
 - `Neart481` stops in the emulator (PC `$0049` / `$0048`, interrupts off, after its title tune; stage 1 saw a loop at
   `$386E`): not followed further. Its packed blocks stay bytes.
 - `Neart482`'s intro code (`$67F8`, `$8235`) and its inner game (40536 bytes) stay resources; the inner game is
   not reversed.
-- The GS playback rate of the effects (the WAV headers give a nominal 11025 Hz).
+- The GS playback rate of the effects on a real card: on unreal-ng's GS they play at about 8000 bytes a second at
+  note 47 (9.2), against the nominal 11025 Hz of the WAV headers.
 - The code in `neart001`'s TRD tail and in free sector 1943, the bytes of sector 1945; the first letters of the
   leftover catalogue names ("?.EARTH", "?TS6.0").
-- The game: no recording of this case ran combat, the blast, a game's end or the tape save; those parts rest on the
-  code and on NE's experiments (the same bytes), which the annotations name as NE's.
+- The game: no recording of this case ran the blast, the won end or the tape save; those parts rest on the code.
+  Fights, captures and 13 game days ran in `rT`; COMBAT MODE and the lost end (by a poke) in `tour`.

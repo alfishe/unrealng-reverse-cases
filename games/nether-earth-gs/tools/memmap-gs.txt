@@ -1,0 +1,44 @@
+# The memory map of Nether Earth GS, three stages side by side (tools/fig_memmap.py, docs/02-architecture.md 2.2).
+# STAGE START END KIND NAME   (hex, END inclusive; KIND: screen code data graphics work dead system loader stack)
+# Witnesses: src/disk/basic.asm (CLEAR 24999), src/disk/loader.asm (ORG $61A8, Buffer $8000, LoadGame),
+# src/game/game.ann (modules, @equ), the recordings work/gsA/load (frames 739-4868) and work/gsA/deep.
+load 4000 5AFF screen neart000, the loading screen
+load 5B00 5CB5 system printer buffer, system variables
+load 5CB6 5D25 system TR-DOS variables (LoadFile sets them)
+load 5D26 61A7 system BASIC "neart GS", machine stack (RAMTOP $61A7)
+load 61A8 6508 loader neart022, the loader (865 bytes)
+load 6509 7FFF work free
+load 8000 FFFF work Buffer: each sound file, then sent
+image 4000 5AFF screen neart000, the cells and the box
+image 5B00 61A7 system system variables, TR-DOS, BASIC
+image 61A8 6508 loader neart022 (its JP Start is next)
+image 6509 658F work free
+image 6590 677F work ViewBuffer's tail: a view's leftovers
+image 6780 697F graphics Font: 64 glyphs
+image 6980 A568 graphics sprites: 89 blocks
+image A569 A5FF code GsMenuSound, GsSound, spare
+image A600 BDA8 code code: start-up, play loop, AI
+image BDA9 C0FF data the level: scenery, bases
+image C100 C664 code code: main menu, tape, keys
+image C665 C81F data the menu tune
+image C820 D6A7 code code: view, print, radar
+image D6A8 D7D2 data tables
+image D7D3 FCE8 work zeros: future work space
+image FCE9 FFFF work a dump's leftovers (Start rewrites)
+play 4000 5AFF screen the screen
+play 5B00 677F work ViewBuffer, redrawn every turn
+play 6780 697F graphics Font
+play 6980 A568 graphics sprites
+play A569 A5FF code GsMenuSound, GsSound
+play A600 D6A7 code the game code, texts, tables
+play D6A8 D7D2 data tables
+play D7D3 D7FF work Shots: 5 x 9
+play D800 D9FF work RadarOwn, RadarEnemy
+play DA00 DB7F work Robots: ours, 24
+play DB80 DCFF work EnemyRobots: 24
+play DD00 FCFF work Map: 16 rows of 512 cells
+play FD00 FDFC work Variables, capture points
+play FDFD FDFF code ImJump: JP Handler
+play FE00 FF00 data ImTable: the IM 2 vectors
+play FF01 FFA8 work Buildings: 56 x 3
+play FFA9 FFFF stack StackArea (SP = 0)
