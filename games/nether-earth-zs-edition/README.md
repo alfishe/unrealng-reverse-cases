@@ -1,7 +1,6 @@
 # Nether Earth ZS Edition (Sergey Zotov, 1998 / 1999)
 
-State: source, resources and documents 01-12 complete (2026-11-05); both SCLs rebuild byte for byte from source.
-The comparison with Nether Earth (doc 13) is not written yet.
+State: source, resources and documents 01-13 complete (2026-11-05); both SCLs rebuild byte for byte from source.
 
 | | |
 | --- | --- |
@@ -21,9 +20,11 @@ Two Russian editions of Nether Earth (1987).
   and LOAD MAP for the twelve maps on the disk.
   The game has a new font, capture-point counts set by the map, and a built-in level that asks for a map.
 
-The documents 01-12, the recordings and the terms: [docs/README.md](docs/README.md). The texts with English: [docs/texts](docs/texts/README.md). How
+The documents 01-13, the recordings and the terms: [docs/README.md](docs/README.md). The texts with English: [docs/texts](docs/texts/README.md). How
 the reverse was done: [WALKTHROUGH.md](WALKTHROUGH.md). The authors' claims against the code:
 [docs/01, 1.11](docs/01-game-design.md#111-the-authors-claims-against-the-code).
+What the two editions changed in Nether Earth, and what each changed against the other:
+[docs/13](docs/13-differences-from-nether-earth.md).
 
 ## Build
 

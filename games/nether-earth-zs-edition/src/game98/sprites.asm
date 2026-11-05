@@ -981,7 +981,7 @@ SprTrenchEndY:
 
 ; SprTrenchEndY: 23 rows of 3 (mask, graphic) pairs, bottom line first
 ;
-; ZS redrew rows 8-15 (35 bytes of $9856-$987F differ from NE, masks and
+; ZS redrew rows 8-15 (36 bytes of $9856-$987F differ from NE, masks and
 ; graphics): the middle of the trench end has a new shape. Rows 0-7 and 16-22
 ; are NE's.
 SprTrenchEndYRows:

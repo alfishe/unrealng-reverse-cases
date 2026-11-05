@@ -14,6 +14,7 @@
 | [10. Gameplay logic](10-gameplay-logic.md) | the turn and the clock, production in both releases, the four difficulty levels as code patches, the enemy's daily upgrade (a figure), captures and the capture-index bug (a figure and an animation), a whole war on `NELEV_00` (a figure), the blocked pad, the bugs checked in both releases |
 | [11. Data reference](11-data-reference.md) | every data entry of every annotated part (generated: `python3 tools/zsB_refdocs.py`) |
 | [12. Routine reference](12-routine-reference.md) | every routine of every annotated part with its L1 counts and animations (generated: `python3 tools/zsB_refdocs.py`) |
+| [13. Differences from Nether Earth](13-differences-from-nether-earth.md) | both editions against Nether Earth (1987) and against each other: the game images byte by byte (a heat map, a per-module figure, the changed regions with both sides' names), the disk and the load, the memory, the menus, the difficulty levels as code patches, the enemy's resources, production and upgrade, the maps cell by cell (a figure), one bot in all three games (a figure, one new EASY run), NE's bugs kept and the new ones, sound, texts, rendering (font and sprites figure), the author's claims resolved |
 | [audio/](audio/README.md) | the tunes and effects rendered by unreal-ng to MP3, never played aloud |
 
 ## Texts
@@ -53,6 +54,7 @@ otherwise. Frames count from each recording's own start.
 | `work/zsB/deep` | the '99 on HARD on the built-in level, played by NE's bot as a library: 30 602 frames, 2 224 turns, 7.7 game days |
 | `deep-map0` | the '99 on HARD with `NELEV_00`, the same bot: 24 416 frames, 2 094 turns, 76 shots, 17 robots destroyed (`work/zsB/deep-map0`) |
 | `intro98`, `intro99`, `sfx99`, `pokes99` | the audio captures of `tools/zsB_render_audio.py` (`work/zsB/audio/`): the two intro tunes and the '98 menu tune, the menu beeps of the bot's game, the play effects with `SoundFx` written by hand ([audio/](audio/README.md)) |
+| `work/diff/deep-easy-map0` | the '99 on EASY with `NELEV_00`, the same bot: 24 500 frames, made for doc 13 (`work/diff/menu-easy-map0` is its start-up menu run; [13.8](13-differences-from-nether-earth.md#138-one-bot-in-the-three-games)) |
 | `ne-play` | Nether Earth's own recording, used only in the side-by-side figures of `img/compare` |
 
 ## Terms
