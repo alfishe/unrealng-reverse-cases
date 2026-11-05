@@ -78,7 +78,7 @@ EventNone:
 ; Allows only bit 7 meanwhile (EventMask AND $80). Attributes $46 (bright
 ; yellow) at $5A86-$5A87 and $45 (bright cyan) at $5AA6-$5AA7; the 16 x 16 icon
 ; n = the player record's +7 (0-4, the selected pod) from PodIcons + 32 n drawn
-; as two 2-cell rows at $5086 and $50A6 (screen third 2, rows 16-17, columns
+; as two 2-cell rows at $5086 and $50A6 (screen third 2, rows 20-21, columns
 ; 6-7) by IconRow. c2: entries through $91E2 (indirect); posted by the play
 ; loop's start ($B1C7) and by the pod pick-up ($A243).
 PodIconJob:

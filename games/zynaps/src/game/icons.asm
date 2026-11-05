@@ -2,16 +2,16 @@
 ; icons.asm: the five icons of the pod selector
 ;
 ; Five 16 x 16 pictures, one for each pod action the selector offers (record +7): 0 speed-up, 1 laser, 2 plasma, 3
-; homing missiles, 4 seeker (the pod table $80F0), drawn by PodIconJob into the panel at rows 16-17, columns 6-7 in
+; homing missiles, 4 seeker (the pod table $80F0), drawn by PodIconJob into the panel at rows 20-21, columns 6-7 in
 ; bright yellow over bright cyan. A preview: work/f4/icons.preview.png.
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; five 16 x 16 icons, 32 bytes each: the left cell's 8 lines, the right's, then
 ; the lower row's two
 ;
-; Drawn by PodIconJob at rows 16-17, columns 6-7, icon n = the player record's
-; +7 (the selected pod, 0-4). Bytes in the order IconRow reads them: TL, TR,
-; BL, BR, each top line first.
+; Drawn by PodIconJob at rows 20-21 ($5086/$50A6), columns 6-7, icon n = the
+; player record's +7 (the selected pod, 0-4). Bytes in the order IconRow reads
+; them: TL, TR, BL, BR, each top line first.
 PodIcons:
   DEFB $00,$00,$00,$23,$08,$53,$03,$23 ; icon 0: speed-up
   DEFB $00,$00,$00,$60,$18,$64,$7A,$7E

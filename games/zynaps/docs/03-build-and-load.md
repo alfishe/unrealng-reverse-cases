@@ -43,7 +43,20 @@ cassette by Church of the Latter-Day Speccy".
   timings (3.4). A copier that reads standard blocks copies the tape; the protection is only that the loader's
   code is encrypted and that the game expects the loader's move (3.6).
 
-![TODO: the tape as a picture, blocks against time (fig_load_tape.py)](img/load-tape.png)
+![Zynaps.tzx: 13220 frames of signal and pauses; c1 reaches the game at frame 12323](img/load-tape.png)
+
+How to read the figure:
+
+- **The upper bar** is the TZX played at ROM speed, in frames from the start of the tape (50 a second): each block a
+  box (grey: headers; blue: the BASIC; orange: the loader; violet: picy; green: the game), the pauses dark between.
+- **The lower bar** is what `c1` did: the ROM files taken fast by the emulator's LD-BYTES trap (the loader entered at
+  frame 250), the picy file until frame 1830, the code file until MoveStub at 12310, the game at 12323.
+- **The point**: the two ROM files cost nothing in `c1`; the two Hewson files play at the signal's own speed, so the
+  recording's load takes 12 323 frames, about 4 minutes.
+
+```bash
+python3 tools/fig_load_tape.py --out docs/img/load-tape.png
+```
 
 ## 3.2 The BASIC (TZX block 2)
 
@@ -81,7 +94,29 @@ equal to the ROM's `$0652-$0668` byte for byte (SA-DATA: `RST $18`, `CP $E4`, `J
 the mastering machine's memory held there when the 768 bytes were saved (`src/tape/loader.asm`, `Leftover` and
 `RomSaData`).
 The decryption in Python is three lines (WALKTHROUGH 2); `work/blocks/loader1.bin` is its output, checked against
-`c1`'s memory in 3.7.
+`c1`'s memory in 3.7. In `c1` the chain runs from frame 250 T 34 709 to frame 251 T 4 155, about 39 000 T-states
+(from the access trace `work/zyA/c1/traces/250_34000-251_6000.uatr`).
+
+![Decrypt: each byte XORed with the next, from FC13 up to FE9E hex; the loader appears byte by byte](img/load/decrypt.gif)
+
+How to read the animation:
+
+- **The grid** is the loader's 768 bytes `$FC00-$FEFF`, 32 a row, each cell with its value at that moment of `c1`.
+- **The colours**:
+  - grey: plain on the tape (Decrypt itself and the tail `$FE9F-$FEFF`);
+  - red: still as the tape holds it (encrypted);
+  - green: decrypted;
+  - yellow: decrypted in this step of the animation; the white box is the byte HL points at.
+- **The subtitle** gives the frame, the T-state, the count of decrypted bytes and HL.
+- **The last picture** names the parts of the decrypted loader (the table below).
+- **What it shows**: the green front moves forward one byte at a time. Each byte becomes readable code or data only
+  when the chain passes it: `JP Start` at `$FC13`, the digit glyphs, the moved LD-BYTES.
+- **The point**: the protection is one forward pass of XOR with the next byte. It needs no key, but a disassembler
+  sees only noise until the chain has run.
+
+```bash
+python3 tools/fig_loader.py decrypt --trace work/zyA/c1/traces/250_34000-251_6000.uatr --out docs/img/load/decrypt.gif
+```
 
 The decrypted loader (names given here, the source will use them):
 
@@ -124,6 +159,30 @@ digit moves one eighth of a glyph: the digits roll like an odometer, one unit pe
 right to left at `$50E4-$50E1` (row 23, columns 4-1) one per call while `CountTick` is 1-4, and their cells
 `$5AE1-$5AE4` are set to `$47` (bright white) on the other calls.
 
+In `c1` the counter's bytes are junk until the code file's header has loaded (they belong to the loader's own
+image). At frame 2150 CountDigits holds `30 30 10 08`: 6, 6, 2, 1 (units first, 8 x digit + a sub-step), the start
+value 1266 of the code file.
+
+![Countdown II: four digits roll down like an odometer, one unit per 32 bytes still to come](img/load/countdown.gif)
+
+How to read the animation:
+
+- **The left strip** is row 23, columns 0-5, at 10x (the yellow box on the whole screen at the right). The
+  labels under it name the four digit columns: 1000s, 100s, 10s, units.
+- **The subtitle** is the frame of `c1`, CountDigits `$FC16-$FC19` as read with TTD `memory_at`, the counter value
+  and the bytes still to come (x 32).
+- **The cells** are bright white (`$47`) with dark glyphs: DigitGlyphs are stored inverted.
+- **A digit mid-roll** shows the lower lines of one glyph and the upper lines of the next: one pixel line of one
+  digit is drawn per edge-routine call.
+- **The cyan and green cells** at columns 0 and 5 are the loading picture's own art, not the loader's.
+- **The point**: the countdown is drawn inside the bit loop, with no time of its own: the units digit rolls one
+  eighth of a glyph every 4 bytes.
+
+```bash
+python3 tools/fig_loader.py countdown --work work/zyA/c1 --from 2400 --to 2700 --step 3 \
+    --out docs/img/load/countdown.gif
+```
+
 ## 3.4 The loading screen (TZX block 6, `picy`)
 
 4096 bytes at `$8000`: a 9-byte header, the unpacker, three streams. `Start` calls `$8001`:
@@ -149,6 +208,32 @@ artist's mark "JMP" (`work/blocks/picy.png`).
 The packer is `tools/picy.py pack`: a byte equal to the one before it is always a repeat, every other byte a
 literal, a flag bit set exactly when its mask is not 0. It gives the tape's three streams byte for byte
 (`tools/picy.py check`): the packer had no choices, so the screen alone fixes the block.
+
+In `c1` (the access trace `work/zyA/c1/traces/1830_69000-1848_0.uatr`):
+
+- the unpacker is entered at frame 1830 T 69 547;
+- its screen clear (`LDIR`) runs until frame 1833 T 44 563;
+- the unpack runs from frame 1833 T 44 584 to frame 1847 T 18 752, 14 frames;
+- 3049 bytes come from the literal stream (written at `$8073`) and 3863 are repeats (written at `$8081`):
+  3049 + 3863 = 6912.
+
+![picy: 6912 bytes in screen order; the picture shows only when the attributes come last](img/load/picy-unpack.gif)
+
+How to read the animation:
+
+- **Left, "what the TV shows"**: the screen as the TV draws it at that moment. It stays black: `Start` cleared the
+  attributes to 0, black ink on black paper.
+- **Right, "the bitmap as written"**: the same bytes drawn white on dark, so the bitmap can be seen. The bitmap goes
+  down in the Spectrum's screen order: line 0 of every character row of the first third, then line 1, and so on.
+  New bytes are coloured: yellow a literal from the stream, cyan a repeat of the byte before.
+- **The four bars** count the output bytes and how much of each stream is used: literals (`$809E`, IY), masks
+  (`$8C87`, HL), flags (`$8F8E`, DE).
+- **The last pictures**: the attributes `$5800-$5AFF` arrive and the picture appears on the TV at once.
+- **The point**: the screen is unpacked hidden and shown in one stroke, in the last 768 bytes.
+
+```bash
+python3 tools/fig_loader.py unpack --trace work/zyA/c1/traces/1830_69000-1848_0.uatr --out docs/img/load/picy-unpack.gif
+```
 
 ## 3.5 The stages from power-on to the game
 
@@ -188,7 +273,23 @@ it after power-on):
 
 The picy file (header and data) took frames 251-1830, 31.6 s (the signal: 32.4 s with the pauses); the code file
 1831-12310, 209.6 s (208.9 s). The `LDDR` of 40535 bytes takes 13 frames (12310-12323). The loading screen is
-complete at frame 1831 and the counter digits run until 12310.
+complete at frame 1847 (the unpack, 3.4) and the counter digits run until 12310.
+
+![The load as the player sees it (c1, from power-on)](img/load/load-film.gif)
+
+How to read the animation:
+
+- **One picture about every 300 frames** of `c1` (6 seconds), from power-on to the credits page, with the stage
+  moments added (frame 250 the loader entered, 12330, 12600). The subtitle gives the frame, the time and the stage.
+- **What it shows**: a black screen and the ROM's "Bytes:" message at frame 250; black while picy loads, with only
+  the counter at the bottom left (`0033` at frame 1500); the loading screen from frame 1847; the code file's long load
+  with the counter running down; the credits page at frame 12600.
+- **The point**: the player sees the picture after about 37 s and then waits about 3.5 minutes with only the
+  countdown moving.
+
+```bash
+python3 tools/fig_loader.py loadfilm --work work/zyA/c1 --step 300 --out docs/img/load/load-film.gif
+```
 
 ### 3.5.1 The game's start-up (`$B6FF`)
 

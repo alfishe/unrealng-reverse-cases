@@ -29,7 +29,7 @@ NAMES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 HEADER = """# The title tune of Zynaps: TitleTune ($B446) plays it with the interrupts off.
 # src/res/music/titletune.bin as text (tools/res_tune.py); the bytes are at $FF01-$FFD3.
 # periods: a note number's period p in passes of the tone loop (81 T), two counters p and p + 1 passes, each wrap
-#   flips the speaker: about 3500000 / (2 * 81 * p) Hz, with a slow beat between the two.
+#   flips the speaker: a pulse train at 3500000 / (81 * p) Hz (measured, docs/09 9.3), with a slow beat.
 # order: the patterns in play order.
 # pattern: L<n> sets the note length to n * 16 * 256 passes (n * 0.095 s on a 48K); a number plays that note; end closes it.
 """
@@ -54,7 +54,7 @@ def to_text(data, name=''):
             raise ValueError(f'{name}: the order points at ${p:04X}, no pattern starts there')
     out = [HEADER]
     out.append('# note:   ' + ' '.join(f'{n:>4}' for n in range(1, PERIODS)) + '\n')
-    out.append('# Hz:     ' + ' '.join(f'{round(CLOCK / (2 * PASS_T * p)):>4}' for p in periods[1:]) + '\n')
+    out.append('# Hz:     ' + ' '.join(f'{round(CLOCK / (PASS_T * p)):>4}' for p in periods[1:]) + '\n')
     out.append('periods ' + ' '.join(str(p) for p in periods) + '\n')
     out.append('order ' + ' '.join(names[p] for p in pointers) + '\n')
     for offset, body in patterns:

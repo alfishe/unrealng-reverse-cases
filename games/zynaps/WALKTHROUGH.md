@@ -69,12 +69,12 @@ builds never share `build/`.
 
 First look (stage 1): the disassembly from `$8000` gave the start-up, the main loop, the print routines (and so the
 messages, `tools/texts.py`), the controls and the player records; `tools/drive.py` ran the menu by an input script
-(`work/explore/menu/menu.txt`) to `play-start.szx`; `tools/bot.py` played level 1 honestly (275 points and a death
+(`work/explore/menu/menu.txt`) to `play-start.szx`; `tools/bot.py` played the first level (level 0) honestly (275 points and a death
 in 1500 frames), recorded as `c2`. The TAP's POKEs pointed at the lives and the kill routine, and next to the kill
 the collision check reads `$FFD7`, which nothing writes: the developer switch Invulnerable.
 
 - `tools/bot.py` (Kempston, reads the ship's record and the screen) played from `work/run/play-imm.szx` (play on
-  level 1 with `Invulnerable` `$FFD7` = 1) for 100000 frames: its input script is `work/run/all.txt`, its log
+  level 0 with `Invulnerable` `$FFD7` = 1) for 100000 frames: its input script is `work/run/all.txt`, its log
   `work/run/all.tsv` (frame, lives, score, X, Y, deaths, level). It went through all twelve level slots and wrapped
   to the first (`work/run/levels-sheet.png`, a screen at each level's start; `work/run/shots/` every 250 frames).
 - `r1`: `re_session.py capture --snapshot work/run/play-imm.szx --inputs work/run/all75k.txt --model 48K --ranges
@@ -150,7 +150,51 @@ Signatures (`signatures/sources.json`, the four Zynaps additions; metadata in `w
 
 ## 8. Review
 
-Open (stage 3): the weapons were never taken in any recording (the bot does not hold fire on a pod), so the pod
-actions and the plasma, homing missile and seeker handlers are read from the code and the tables only; the four
-unused strip entries `$F704-$F733`; the 36 bytes `$F108-$F12B`; the fields `+2/+3`, `+9`, `+$0A`, `+$0C` of the
-sprite descriptors; StarsSwitch `$8884` has no caller.
+Open after stage 2: the weapons were never taken in any recording (the bot does not hold fire on a pod), so the
+pod actions and the plasma, homing missile and seeker handlers were read from the code and the tables only (closed
+in the documents stage, section 9: `w1`, `w2`, `tools/exp_pods.py`); the four unused strip entries `$F704-$F733`;
+the 36 bytes `$F108-$F12B`; the fields `+2/+3`, `+9`, `+$0A`, `+$0C` of the sprite descriptors; StarsSwitch `$8884`
+has no caller (still open: [07](docs/07-objects.md) 7.10, [10](docs/10-gameplay-logic.md) 10.13).
+
+## 9. The documents stage
+
+Docs 01-12 were written at Nether Earth's standard by two agents, then merged and checked by the lead:
+
+| Agent | Docs | Own instances | Notes |
+| --- | --- | --- | --- |
+| zyA | 01 game design, 02 architecture, 03 build and load, 04 game loop, 05 controls, 06 rendering | 14500-14599 | `work/docs/zyA-NOTES.md` |
+| zyB | 07 objects, 08 HUD and text, 09 sound, 10 gameplay logic, 11 and 12 (generated, `tools/refdocs_zy.py`) | 14700-14799 | `work/docs/zyB-NOTES.md` |
+
+New recordings and experiments (all listed in [docs/README.md](docs/README.md#recordings)):
+
+- `w1` and `w2` (zyB, `tools/podbot.py --record`): a bot that holds fire on the pods, so every weapon is taken in
+  real play; `w2` adds a homing missile's lock and launch, the level 0 end and an extra life;
+- `menu` (zyA): the title keys, the selections and a key definition from `c1`'s credits page;
+- the pod experiment (zyA, `tools/exp_pods.py`): one pod, six runs, one action each;
+- `rig` (zyB, `tools/render_audio.py`): the tune and the six effects captured as WAV, rendered to `docs/audio/*.mp3`;
+- access traces of `c1`, `c2`, `r1` and `w2` windows on read-only opens of the TTD sessions (the loader, the unpack,
+  the pass, the nested pass, the drawing, RunObjects, the hit grid, the speaker writes).
+
+What the documents found against the stage 2 comments (each checked against the trace or the capture named in the
+notes, then fixed in `src/game/game.ann`, descriptions only, `kit/mkgame.py --install`: the bytes identical):
+
+- a pass is one play interrupt and takes two frames (the next interrupt is lost under DI): many comments said
+  "once a frame" for once a pass, and `$AA74` "phases 2-3" for phases 2-4 (L1 of `r1`, `c2`'s pass trace);
+- the title tune sounds at 3500000 / (81 p), twice the commented pitch (the capture, [09](docs/09-sound.md) 9.3); the
+  unused notes are 3, 5, 8, 15, 22, 24 and 26 (also `src/res/music/README.md` and `tools/res_tune.py`'s header);
+- RequestEffect's call at `$9C75` is the laser (FireLaser), not a lost life; PanelBurst is set by FireLaser
+  (`$9C80`), not by a lost life;
+- the three speaker toggles (rows, strips, slots) are the explosion noise, silent unless an explosion or a big
+  enemy's hit opens their masks: not an engine hum (`w2` 702-704, [09](docs/09-sound.md) 9.5);
+- PodIconJob writes the icon to rows 20-21 (`$5A86` / `$5AA6`), not 16-17;
+- the level record's "scroll" field is the number of columns ReplayScroll builds at the level start, not a speed;
+- WeaponRatingValue `$80E8` is the enemies' fire chance (only EnemyFire reads it), not the waves' speed; `$80E9`
+  picks the waves' colour set;
+- in play the sprites are negative (a clear bit is a pixel): `tools/memmap.txt` and `tools/heatmap-regions.txt`
+  said "made plain", both figures redrawn.
+
+Known from the code only (no recording reached it): the game over and HighScoreEntry, the two-player game, the
+cursor and Sinclair joystick paths, the pause (only the stage 2 experiment `work/f4/pause.py`), a homing missile's
+kill, the seeker against a kind 11 enemy, laser level 3 and `$80E9` = 8, the last life lost (only `c2` dies, once),
+and every effect request but the laser's (the effects were rendered from hand-written requests). The tune's 1.7 %
+against the model is measured but not explained ([09](docs/09-sound.md) 9.6).

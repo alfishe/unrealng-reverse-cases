@@ -1,6 +1,6 @@
 # Zynaps (Hewson Consultants, 1987)
 
-State: in progress, stage 2 (the full annotated source and resources; both tapes rebuilt byte for byte; docs 04-10 are stage 3).
+State: in progress, stage 3: the full annotated source and resources, both tapes rebuilt byte for byte, and the documents 01-12 complete ([docs/README.md](docs/README.md); how they were made: [WALKTHROUGH](WALKTHROUGH.md) 9).
 
 | | |
 | --- | --- |

@@ -1,15 +1,16 @@
 # 2. Architecture
 
 What this covers: the machine budget, the memory map, the stages from the tape to play, the play pass, the main
-loop, the state and the objects. Stage 2 (2026-11-05): every name is the one in `src/game/game.ann`; the modules
+loop, the state and the objects, where the CPU time goes (2.7), the memory heatmap of a whole game (2.8) and the
+call graph of a pass (2.9). Stage 2 (2026-11-05): every name is the one in `src/game/game.ann`; the modules
 are the files of `src/game/` ([11](11-data-reference.md) and [12](12-routine-reference.md) list every entry).
 
 The images and recordings it rests on ([Terms](README.md#terms)):
 
 - `work/mkgame/original.bin`: 64K, the game `$61A8-$FFFE` as the Hewson loader's move leaves it (`tools/image.py`
   from TZX block 8; equal to `c1`'s memory at `$8000`'s first instruction, [03](03-build-and-load.md) 3.7);
-- `c1` (power-on to the title), `c2` (level 1 from the start, 1500 frames), `r1` (all 12 levels and the wrap, 75000
-  frames, the bot with `Invulnerable` set; WALKTHROUGH 5).
+- `c1` (power-on to the title), `c2` (level 0 from the start, 1500 frames), `r1` (all 12 levels and the wrap, 75003
+  frames, its L1 `work/r1/l1.json` for 2.7 and 2.8, the bot with `Invulnerable` set; WALKTHROUGH 5).
 
 ## 2.1 The machine budget
 
@@ -17,9 +18,10 @@ A 48K game: no paging, no AY. The sound is the beeper (`OUT ($FE)` bit 4), made 
 
 - the title tune: TitleTune `$B446`, a two-voice player with interrupts off ([09](09-sound.md));
 - the sound effects: EffectPlay `$B30C` plays one of six effects (EffectTable `$7E5A`) in the play loop's time;
-- the engine hum: the object loop flips the speaker after each object (RunObjects `$9463`, at `$9493`: `$7F86`
-  XOR `$18`, AND the mask `$7F87`) and the playfield after each row (`$7F7E` / `$7F7F`), so the pitch follows the
-  frame's work.
+- the explosion noise: three speaker toggles, after each object slot (RunObjects `$9463`, at `$949C`: `$7F86`
+  XOR `$18`, AND the mask `$7F87`), each object strip (`$7F82` / `$7F83`) and each playfield row (`$7F7E` /
+  `$7F7F`); the masks are 0 (silent) except for 16 passes after an explosion or a big enemy's hit, and the pitch
+  follows the pass's work ([9.5](09-sound.md#95-who-drives-the-speaker-in-a-frame-of-play)).
 
 The game never returns to BASIC: Start writes over the system variables (`$5C00` up). Interrupts are IM 2: the
 vector table VectorTable `$FE00` (257 x `$FD`) and the jump InterruptJump `$FDFD`, whose target is switched
@@ -28,6 +30,18 @@ between TitleInterrupt `$A9E4`, PlayInterrupt `$A9ED` and MenuRasterInterrupt `$
 ## 2.2 The memory map
 
 ![The memory map at three stages: the load, the image at the entry, play](img/memory-map.png)
+
+How to read the figure:
+
+- **Three bars**, each the address space `$4000-$FFFF` from the top down, at three stages:
+  - the code file loading (`c1` before MoveStub);
+  - the image as the game's first instruction at `$8000` finds it;
+  - in play.
+- **A colour** is the kind of the region (the legend): screen, code, data, graphics, work space, dead bytes, the ROM's
+  system area, the loader, the stack.
+- **A label** gives the region's first address and what it holds at that stage.
+- **The point**: the game fills almost all of 48K. Two regions change role in play: `$5C00-$67FF` gets the copied
+  tiles, and `$B700-$DFFF` becomes the map ring and the glyph cache over Start and the copy's source.
 
 Made by `tools/memmap.py` from `tools/memmap.txt`. The image is cut into 50 modules:
 
@@ -131,6 +145,85 @@ the dots, `FF`) and the score in BCD. On the tape: EGO 68000, DFR 25000, BAV 100
 | `+$25` | the colour (drawn as paper: the sprites are stored complemented) |
 
 Slots: PlayerObject `$F36C`, eight EnemyObjects `$F398`, three EnemyShots `$F474`, four LaserShots `$F4F8`, the
-second plasma ball `$F5A8`, the side shot `$F5D4`, the sight `$F600`. The loops step with `ADD IY,-44`. Each frame
-the hit grid (HitGridX `$FC00`, HitGridY `$FD00`) is rebuilt: enemy slot n sets bit n where it lies, and the
-player's records read their overlap mask.
+second plasma ball `$F5A8`, the side shot `$F5D4`, the sight `$F600`. The loops step with `ADD IY,-44`. The hit grid
+(HitGridX `$FC00`, HitGridY `$FD00`) is rebuilt by the passes: MarkEnemyGrid `$90CB` (odd phases) sets bit n where
+enemy slot n lies, TestHitGrid `$9150` and ClearHitGrid `$91C6` (phases 2-4) give the player's records their overlap
+mask and clear it ([4.3](04-game-loop.md#43-the-play-interrupt-one-pass-four-phases)).
+
+## 2.7 Where the time goes
+
+![r1, 75003 frames: where the CPU time goes, per routine](img/arch/budget.png)
+
+How to read the figure:
+
+- **A bar** is one routine of `src/game/game.ann`: its T-states over all of `r1` (L1, `work/r1/l1.json`), as a share
+  of all the recording's T-states (75 003 frames x 69 888 = 5 241 809 664). Labels inside a routine count for it.
+- **The colour** is the routine's module (the legend).
+- **The top 24** routines cover 90.5 %. All instructions together are 100.0 % of the frames: the CPU never idles in
+  play.
+- **What it shows**:
+  - EffectPlay `$B30C` (22.5 %) is the main loop's time: the beeper tone loop of the sound effects, which calls
+    EventDispatch from inside its loop ([4.2](04-game-loop.md#42-the-main-loop-in-play-jobs-only)). PlayLoop (3.2 %)
+    and EventDispatch (2.5 %) are the rest of it;
+  - the playfield (green) is the largest group: RowStart 9.6 %, StripDraw 8.5 %, RowStar 6.1 %, SpanDraw4 5.9 % and
+    the smaller handlers ([6.8](06-rendering.md#68-the-cost-of-drawing));
+  - the objects: BuildObjectStrips 5.9 %, RunObjects 5.7 %, ObjectStrips 1.6 %;
+  - the stars 4.1 %, the hit grid 2.2 % + 1.3 % + 0.8 %, the panel spinners 2.2 %.
+- **The point**: Zynaps spends its frame drawing (about 40 %) and making sound in the gaps (about a quarter). The
+  game logic proper is a small share.
+
+```bash
+python3 tools/fig_budget.py work/r1/l1.json docs/img/arch/budget.png
+```
+
+## 2.8 The memory heatmap
+
+![r1, 75003 frames of play: every byte of 16K-64K by what touched it](img/arch/heatmap.png)
+
+How to read the figure:
+
+- **The big grid** is `$4000-$FFFF`, 256 bytes a row, `$4000` at the top left; each byte is 2 pixels wide.
+- **The colour** mixes three counts over all of `r1` (log2 of each): red = written, green = read, blue = executed.
+  Yellow is read and written, magenta executed and written.
+- **The brackets on the right** name the regions of the "in play" bar of the memory map (2.2,
+  `tools/heatmap-regions.txt`).
+- **The three small grids** below are the counts alone: executed, read, written; bright = many. The maximum on one
+  byte is printed under each.
+- **What it shows**:
+  - the code `$8516-$B6FE` is blue; the hot lines are the renderer and the object loop;
+  - the glyph cache `$C000-$DFFF` is read and written all over (yellow-green): every column is built into it and every
+    row read out of it;
+  - the screen is red-orange: written every pass; the panel rows are written less;
+  - the level data `$6800-$7E59` and the tiles `$5C00` are read (green), never written;
+  - `$E000-$F107` (the sprites) is read; `$F108-$F7FF` (records, strips) read and written;
+  - the map ring `$B700-$BFFF` is written by the scenery coroutine and read by RowStart.
+- **The point**: the memory map of 2.2 as the game uses it. Nothing in 48K is idle in play except the leftovers.
+
+```bash
+python3 tools/fig_heatmap.py work/r1/l1.json docs/img/arch/heatmap.png --regions tools/heatmap-regions.txt
+```
+
+## 2.9 The call graph of a pass
+
+```mermaid
+flowchart TD
+  INT["INT, IM 2: InterruptJump $FDFD"] --> PI["PlayInterrupt $A9ED<br/>PassPhase +1"]
+  PI -->|phase 1| SS["ScrollStep $8AED<br/>StartColumn $894D"]
+  PI -->|phases 2-4| HG["TestHitGrid $9150<br/>ClearHitGrid $91C6"]
+  SS --> MS["MoveStars $8894<br/>PanelFrame $AB13"]
+  HG --> MS
+  MS --> DP["DrawPlayfield $85CA<br/>18 rows, interrupts off"]
+  DP --> PP["PlayPass $AA96: CheckPauseAndEnd, ScrollControl,<br/>RunObjects $9463, ObjectStrips $8F9B,<br/>MarkEnemyGrid, WaveScriptStep, ResumeScript"]
+  PP --> PC["PlayChain $AAC3"]
+  PC -->|depth 1| CS["ChainBuildColumn1-3: BuildColumn $896D<br/>or ChainEnd $AAF9"]
+  PC -->|depth 2| NOP["NOP the step before"]
+  CS --> EX["PlayInterruptExit $AAFF: EI; RET"]
+  NOP --> EX
+  EX --> ML["PlayLoop $B1B4: EventDispatch $AC07<br/>SpriteBuildJob, PodIconJob, ScoreJob, EffectJob"]
+  ML -.->|next INT| INT
+```
+
+- **The solid arrows** are one pass, in order; **the dotted arrow** is the wait for the next interrupt, spent in the
+  main loop's jobs.
+- RunObjects calls each object's handler through the kind tables (KindHandlers `$80FA`, [7](07-objects.md)).
+- The whole pass takes two frames ([4.3](04-game-loop.md#43-the-play-interrupt-one-pass-four-phases)).

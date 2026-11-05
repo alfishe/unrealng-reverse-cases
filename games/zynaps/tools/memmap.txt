@@ -40,9 +40,9 @@ play 8000 8515 work variables, tables, texts
 play 8516 B6FE code the code
 play B6FF BFFF work the map ring (Start is gone)
 play C000 DFFF work GlyphCache: 4 shifts of 256 glyphs
-play E000 E747 graphics sprites, made plain
+play E000 E747 graphics sprites, negative (clear bit = pixel)
 play E748 F047 work the sprite cache images, the panel save
-play F048 F107 graphics the pod, made plain
+play F048 F107 graphics the pod, negative
 play F108 F7FF work row records, objects, strips
 play F800 FAFF work NodePool: 95 span nodes
 play FB00 FBFF data BitReverse

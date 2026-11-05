@@ -28,9 +28,11 @@ frequencies are written again on every install.
 TitleTune (`$B446`) runs with the interrupts off. A length command `$C0+n` (`L<n>`) sets the note to n x 16 x 256
 passes of the tone loop (`$B486-$B49B`, 81 T a pass, so `L1` is 0.095 s on a 48K). A note byte n takes p =
 TunePeriods[n] and runs two counters, p and p + 1 passes; each counter's wrap flips the speaker bit (both at once flip
-it once). So a note is two square waves a pass apart, about 3500000 / (2 x 81 x p) Hz, with a slow beat between them:
-note 1 (p = 242) is about 89 Hz, note 26 (p = 54) about 400 Hz; the periods fall by about a semitone a step. Between
-notes the player checks fire (TitleFireCheck `$A748`) and the keys 1-5; either ends the tune.
+it once). The speaker is the XOR of two square waves a pass apart: a pulse train at 3500000 / (81 x p) Hz, two
+pulses per counter period, whose width grows a pass a period (a slow beat); the beeper capture confirms the pitch
+([09](../../../docs/09-sound.md) 9.3). Note 1 (p = 242) is about 179 Hz, note 26 (p = 54) about 800 Hz; the periods
+fall by about a semitone a step. Between notes the player checks fire (TitleFireCheck `$A748`) and the keys 1-5;
+either ends the tune.
 
 The four patterns: A (three times) the theme, B the climbing arpeggios, C (twice) an ostinato of 16 quavers, D the
-closing phrase. Notes 3, 15, 22, 24 and 26 are never played (a c1 recording reads only the other periods).
+closing phrase. Notes 3, 5, 8, 15, 22, 24 and 26 are never played (none of the four patterns holds them).

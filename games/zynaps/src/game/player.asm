@@ -193,12 +193,13 @@ KillPlayerLoop:
   CALL ScatterDebris
   RET
 
-; the weapon rating $80E7-$80E9 for the wave launcher
+; the weapon rating $80E7-$80E9 for the enemy fire and the wave colours
 ;
 ; L = laser level + side weapon: $80E7 = $FF, $30 from 4; $80E9 = 0, 8 from 7;
 ; $80E8 = ((speed / 32 + L) x 4) & $F0 + ($81DE). LaunchWave adds $80E9 to a
-; kind's speed level, so a well armed ship meets faster waves. Called from
-; $AC7A and $B03A (10 entries in c2).
+; kind's colour select (the KindColours set); EnemyFire reads $80E7 (the first
+; shot's column) and $80E8 (the fire chance), so a well armed, fast ship draws
+; more fire. Called from $AC7A and $B03A (10 entries in c2).
 WeaponRating:
   LD C,$FF
   LD B,$00
