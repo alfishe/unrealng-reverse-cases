@@ -239,7 +239,7 @@ python3 tools/fig_loader.py unpack --trace work/zyA/c1/traces/1830_69000-1848_0.
 
 ```mermaid
 flowchart TD
-  A["ROM: LOAD &quot;&quot;, BASIC line 10"] --> B["LOAD &quot;&quot; CODE: the loader at $FC00 (ROM LD-BYTES)"]
+  A["ROM: LOAD #quot;#quot;, BASIC line 10"] --> B["LOAD #quot;#quot; CODE: the loader at $FC00 (ROM LD-BYTES)"]
   B --> C["RANDOMIZE USR 64512: Decrypt $FC13-$FE9E"]
   C --> D["Start $FE3A: SP $FFFF, DI, attributes cleared to 0"]
   D --> E["LoadFile: picy header + $8000-$8FFF"]

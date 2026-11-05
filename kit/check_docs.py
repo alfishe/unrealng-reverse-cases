@@ -31,6 +31,12 @@ def main():
         for path in files:
             text = open(path).read()
             for n, block in enumerate(re.findall(r'```mermaid\n(.*?)```', text, re.S)):
+                # GitHub decodes HTML entities before mermaid parses the block, so &quot; becomes a bare quote
+                # that ends the label; mmdc accepts it. Mermaid's own escapes are #quot; #amp; #lt; #gt; #NN;.
+                for ent in re.findall(r'&(?:[a-z]+|#\d+);', block):
+                    bad += 1
+                    print(f'{os.path.relpath(path, here)}: mermaid diagram {n + 1}: HTML entity {ent} '
+                          f'(GitHub breaks on it; write #{ent[1:]})')
                 src = os.path.join(tmp, f'd{n}.mmd')
                 open(src, 'w').write(block)
                 r = subprocess.run(['mmdc', '-q', '-i', src, '-o', os.path.join(tmp, f'd{n}.svg')],

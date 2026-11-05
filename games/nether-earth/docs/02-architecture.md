@@ -107,7 +107,7 @@ What it shows:
 
 ```mermaid
 flowchart TD
-    A["Tape: BASIC N.EARTH, LINE 0<br/>LOAD &quot;&quot; CODE 64730 (3. Build and load)"] --> B["N1 at $FCDA, 180 bytes<br/>entered at frame 253 by RANDOMIZE USR 64730"]
+    A["Tape: BASIC N.EARTH, LINE 0<br/>LOAD #quot;#quot; CODE 64730 (3. Build and load)"] --> B["N1 at $FCDA, 180 bytes<br/>entered at frame 253 by RANDOMIZE USR 64730"]
     B -->|"48361 bytes headerless<br/>$4000-$FCE8, frames 253-12660"| C["RET to the pushed $A600: Start<br/>frame 12660"]
     C --> D["Start $A600: DI, SP = 0, IM 2 table,<br/>Handler = StartInterrupt, seed"]
     D --> E["MainMenu $C100<br/>MenuMusic: Handler = MenuInterrupt"]
