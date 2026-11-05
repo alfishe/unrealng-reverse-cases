@@ -1,23 +1,29 @@
 # Nether Earth ZS Edition (Sergey Zotov, 1998 / 1999)
 
-State: source, resources and documents complete (2026-11-05); both SCLs rebuild byte for byte from source.
+State: source, resources and documents 01-12 complete (2026-11-05); both SCLs rebuild byte for byte from source.
+The comparison with Nether Earth (doc 13) is not written yet.
 
 | | |
 | --- | --- |
-| Machine | 128K with TR-DOS: Pentagon 128 (booted from TR-DOS), Scorpion ZS-256. The '99 does not run on 48K ([3.6](docs/03-build-and-load.md)) |
+| Machine | 128K with TR-DOS: Pentagon 128 (the disk's autostart; started from the boot menu's TR-DOS item the '99 hangs), Scorpion ZS-256. The '99 resets on a 48K + Beta 128 ([3.6](docs/03-build-and-load.md)) |
 | Author | Sergey Zotov (ZS); the '98 dated 23.12.1998, the '99 28-30.01.1999 |
 | '98 | `orig/NEZSED98.zip` (md5 d5e0b181c5323a9bc5459399f4c4953f, SHA-1 b2e91f69ff3b5579d48c70330f6b7f7b6d0548fc), holding `NEZSED98.SCL` (40 219 bytes, md5 f031101cee5ddb9b20d5ee6f99278161, SHA-1 9ba8536089b383347b396340c848eed9647f4158) |
 | '99 | `orig/NEZSED.ZIP` (md5 24a13a6972ddfad4db560ec496799f2b, SHA-1 4a982e720b1e3be216d32674643888ac4b909ae5), holding `NEZSED.SCL` (61 705 bytes, md5 a39d18de215faccbf8c5bd193e5e2218, SHA-1 d1001dc48a278fe4958f020cb6e38dd86bf69b74) |
 
-Two Russian editions of Nether Earth (1987). The '98 is one BASIC file: an intro with a PT3 tune and a scroller,
-then NE's game with a harder enemy, more money for the player, a new map and a broken LOAD NEW LEVEL. The '99 is a
-disk of packed blocks: a photo intro with a Sound Tracker tune, a memory test over many paging schemes, a start-up
-menu with four difficulty levels, enemy upgrades, controls, twelve maps on the disk and four texts, and the game
-with a new font and variable base counts.
+Two Russian editions of Nether Earth (1987).
 
-The documents: [docs/README.md](docs/README.md). The texts with English: [docs/texts](docs/texts/README.md). How
+- The '98 is one BASIC file: an intro with a PT3 tune and a scroller, a beeper menu tune, then the game.
+  The enemy's robots are upgraded and its resources refilled every midnight; a warbase pays the player 8 a day.
+  The built-in level has 28 capture points; LOAD NEW LEVEL crashes.
+- The '99 is a disk of packed blocks: a photo intro with a Sound Tracker tune, a memory test over many paging
+  schemes, and a silent start-up menu.
+  The menu has four difficulty levels written into the game as code patches, enemy upgrades, controls, four texts
+  and LOAD MAP for the twelve maps on the disk.
+  The game has a new font, capture-point counts set by the map, and a built-in level that asks for a map.
+
+The documents 01-12, the recordings and the terms: [docs/README.md](docs/README.md). The texts with English: [docs/texts](docs/texts/README.md). How
 the reverse was done: [WALKTHROUGH.md](WALKTHROUGH.md). The authors' claims against the code:
-[docs/01, 1.10](docs/01-game-design.md).
+[docs/01, 1.11](docs/01-game-design.md#111-the-authors-claims-against-the-code).
 
 ## Build
 

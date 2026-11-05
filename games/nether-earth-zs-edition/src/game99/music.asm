@@ -2,9 +2,9 @@
 ; music.asm: The menu tune: a two-voice beeper loop, the drum and the note readers in the interrupt, the title colours
 ;
 ; NE's beeper tune of the main menu (MenuMusic $C4A7, MenuInterrupt $C4FD and the tracks from $C665) and the colour
-; cycle of the title. The '99 program never plays the tune: its start-up menu has its own music, and nothing calls
-; MenuMusic. TitleColourCycle ($C820) is still called, by the start-up menu, for its title rows. The tune's tracks are
-; src/res/game99/music/menu.txt (tools/game99_res.py, the menu tune text).
+; cycle of the title. The '99 program never plays the tune: its start-up menu is silent (no OUT to a sound port, no
+; Beep call), and nothing calls MenuMusic. TitleColourCycle ($C820) is still called, by the start-up menu, for its
+; title rows. The tune's tracks are src/res/game99/music/menu.txt (tools/game99_res.py, the menu tune text).
 ;
 ; Calling order: MainMenuKeys ($C19E) calls MenuMusic, which saves SP in SavedSP, makes MenuInterrupt the Handler,
 ; sets the track positions and never returns by itself: it runs the tone loop (LeadStep / BassStep, each voice a

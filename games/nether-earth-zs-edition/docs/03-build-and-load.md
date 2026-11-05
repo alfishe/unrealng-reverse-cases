@@ -1,23 +1,33 @@
 # 3. Build and load
 
-Status: stage 2. What is here is taken from the recordings' writes and runs, the static unpacks that match them
-and the source (`src/`); the source build (3.7) rebuilds both disks bit for bit.
+This document covers how the two releases get from their disks into memory:
 
-This document covers how the two releases of Nether Earth ZS Edition get from their disks into memory: the BASIC,
-the loaders, the '99 packer and its block format, what is unpacked where and in which page.
+- the media and the sector layout of both disks (3.1);
+- the '98 load (3.2);
+- the '99's three-stage load (3.3);
+- the '99's packer and its block format (3.4);
+- the map files and LOAD MAP (3.5);
+- the machines and the ROM (3.6);
+- the source build, which rebuilds both disks bit for bit (3.7).
+
+What is here comes from three sources: the recordings' writes and runs, the static unpacks that match them, and the
+source in `src/`.
 
 The recordings and runs it rests on (all PENTAGON 128 + TR-DOS 5.04T in unreal-ng, muted, own port bases):
 
-- `r98`: power-on, TR-DOS from the Pentagon menu, `RUN "NEZSEd"`, the intro, SPACE, the menu, `0`, play
-  (`work/stage1/r98`, script `inputs/r98.txt`, recording frames 103-5903; a recording frame is the script's + 1603);
+- `r98`: power-on, TR-DOS from the Pentagon menu, `RUN "NEZSEd"`, the intro, SPACE, the menu, `0`, play.
+  `work/stage1/r98`, script `inputs/r98.txt`, recording frames 103-5903. A recording frame is the script's + 1603.
 - `r99`: the '99 disk autostarted (the quick reset into TR-DOS, recording from frame 2), the intro, SPACE, the
-  start-up menu, every menu page, LOAD MAP, LEVEL HARD, UPGRADING PHASERS, START, play (`work/stage1/r99`, script
-  `inputs/r99-128.txt`, frames 2-6462);
-- `r99-48`: power-on, the Pentagon menu's "48 BASIC" (paging locked), `RANDOMIZE USR 15616`, `RUN "NEZSEd99"`: the
-  path a 48 K machine would take (`work/stage1/r99-48`, frames 101-7201);
-- `x99p`: the '99 disk started from the Pentagon menu's TR-DOS item: hangs in the intro (3.6).
+  start-up menu, every menu page, LOAD MAP, LEVEL HARD, UPGRADING PHASERS, START, play. `work/stage1/r99`, script
+  `inputs/r99-128.txt`, frames 2-6462.
+- `r99-48`: power-on, the Pentagon menu's "48 BASIC" (paging locked), `RANDOMIZE USR 15616`, `RUN "NEZSEd99"`. This
+  is the path a 48 K machine would take. `work/stage1/r99-48`, frames 101-7201.
+- `x99p`: the '99 disk started from the Pentagon menu's TR-DOS item; it hangs in the intro (3.6).
 
-The static side: `tools/scl.py` (SCL list and extract), `tools/zsdepack.py` (the '99 depacker reimplemented).
+The static side has two tools:
+
+- `tools/scl.py`: SCL list and extract;
+- `tools/zsdepack.py`: the '99 depacker, reimplemented.
 
 ## 3.1 The media
 
@@ -38,7 +48,44 @@ The '99 disk:
 | `NEZSEd99.W` | `W`, 5384 bytes | 22 | the readme (not read by the program) |
 | `NELEV_00.N` .. `NELEV_11.N` | `N`, words 0 | 2 each | twelve maps, 512 bytes each (3.5) |
 
-The `.W` texts are ZX Word documents (the intro scroller says so); content and translation: `work/stage1/texts.md`.
+The `.W` texts are ZX Word documents (the intro scroller says so). Their content and translation are in
+[texts/](texts/README.md).
+
+![The two disks sector by sector, and the five packed blocks](img/load/disks.png)
+
+How to read the figure:
+
+- **The top two bars** are the disks, one 256-byte sector a step, counted from the first file's first sector.
+- **The '98** is one file: the BASIC with its REM loader (sectors 0-1), the intro (2-43) and the game (44-156), the
+  game not packed.
+- **The '99**: `NEZSEd99.B` holds the BASIC (sector 0) and every block, read by sector number:
+
+  | Sectors | Content |
+  | --- | --- |
+  | 1-18 | stage 2 |
+  | 19-31 | the pictures |
+  | 32-44 | the music |
+  | 45-50 | stage 3 |
+  | 51-118 | the game |
+  | 119-122 | the patches |
+  | 123-132 | the menu |
+
+  - The four texts and the readme follow (133-215), then the twelve maps of two sectors each (216-239).
+  - The arrow marks where stage 3 starts its 64-sector read into page 3: the four texts and the first 3 sectors of
+    the readme.
+- **The colours**:
+  - blue: a packed block;
+  - amber: a raw block of the '99;
+  - green: the '98's raw game;
+  - violet: the '98 intro;
+  - teal: a text;
+  - red: a map.
+- **The bottom panel** shows each '99 block's stream (blue) inside the image it unpacks to (grey), with the ratio and
+  the far-offset width.
+- **The point**: 25 772 bytes of streams unpack to 42 202 bytes (61 %). The game block is the bulk: 17 206 -> 28 755
+  (60 %).
+- Drawn by `python3 tools/fig_zs_disk.py --out docs/img/load/disks.png`, from `src/disk98.txt`,
+  `src/disk99.txt` and `work/media/99/blocks.json`.
 
 ## 3.2 The '98 load
 
@@ -50,7 +97,7 @@ the game, read by sector number from the BASIC's own position.
 | line 10 `CLEAR VAL "26495": RANDOMIZE USR VAL "23872"` | `$5D40`, the code in line 1's REM | `r98` stage 3: `$5D40` entered at frame 2000 from `$34BB` (`USR`) |
 | copy ROM's font `$3D00` to `$C000` area, bold, `CHARS=$BF00`; print "ZS'98 Presents: NETHER EARTH ZS EDITION" | REM code | screen in `r98` |
 | `#3D13` read `$2A` sectors to `$C000-$E9FF`, `CALL $D88F` | the intro (3.4) | stage 4: `$C000-$E9FF` written by `$3FEC` (TR-DOS), `$D88F` entered at frame 2048 |
-| read `$71` sectors to `$6780-$D87F`, `JP $A600` | the game, at NE's own addresses, not packed | stage 9: `$A600` entered at frame 4500 from `$5D94` |
+| read `$71` sectors to `$6780-$D87F`, `JP $A600` | the game, not packed | stage 9: `$A600` entered at frame 4500 from `$5D94` |
 
 - The game image equals the file's bytes from offset `$2C00` placed at `$6780` (`work/static98-game.bin`): at the
   menu (`r98` frame 4600) 3 bytes differ, all game variables (`$C4D0`, `$C4D6`, `$C4EF`).
@@ -73,20 +120,68 @@ number; sector numbers below count from the file's first sector.
 | 19-31 | `$7D87` | | not packed: the RLE screen decoder and the pictures | `$7D87` at 464 |
 | 32-44 | `$C000` | | not packed: Sound Tracker compiled module and player (init `$C00B`, mute `$C011`) | `$C00B` at 261 |
 | 45-50 | `$8000` | `$61A8-$67EB` (far 10) | stage 3: "System checking", the memory test, the game load | after SPACE |
-| 51-118 | `$6780` | `$6780-$D7D2` (far 11) | the game, at NE's addresses | `$6780` at 2299 |
-| 119-122 | `$DC00` | `$D800-$DB6F` (far 10) | patches: `$D800` -> `$A598` (`$3E` bytes), `$D83E` -> `$C1FD` (`$136` bytes) | `$DC00` at 2545 |
+| 51-118 | `$6780` | `$6780-$D7D2` (far 11), in place | the game | `$6780` at 2299 |
+| 119-122 | `$DC00` | `$D800-$DB6F` (far 10) | patches: eight pieces in two sets; on 128 K stage 3 copies `paging128` to `$A56A`, `diskread` to `$A598`, `menu128` to `$C100`, `diskmap` to `$C1FD` (frames 2553-2659) | `$DC00` at 2545 |
 | 123-132 | `$E800`, page 1 | `$D800-$E6F3`, page 1 (far 10) | the 128 K start-up menu (128 K only) | `$E800` at 2561 |
 | `NEabout.W` .. 3 sectors of `NEZSEd99.W` (64) | page 3 `$C000` | | the four texts: `$C000` about, `$CF00` description, `$E500` greets, `$E700` advice | before 2659 |
 
-Then stage 3 patches NE's menu pointers (`$C116`, `$C146`, `$C125`, `$C13B`, `$C130`) and:
+![The '99 from the disk to the start-up menu](img/load/boot99.png)
 
-- if `(IY+$77)` (`$5CB1`, the page count the memory test left) is 1 (`$62B4`): the one-page route (the tape /
-  one-page patch set of `src/patches99`: the texts and maps read from disk when asked; no machine counts 1, 3.6);
-- else pages 1 in by `$A58A`, loads the menu block, pages 3 in, reads the 64 text sectors, sets the pointers to
-  the texts in page 3 and `JP $A600`. The patched main menu at `$C100` calls a stub at `$6700` that copies
-  `$D800-$E7FF` from page 1 to page 0 every time the menu is entered, so the start-up menu RUNS in page 0 at
-  `$D800` (`r99` frame 2661), over the game's radar and map area, and its level and pointer start afresh each time
-  (`work/stage2/STATE-menu99.md`).
+How to read the figure:
+
+- **The axis** is `r99`'s frame, from the reset to 3050.
+- **The seven screens** above it are `r99`'s own at the frames under them, joined to their place on the axis:
+  - 102: TR-DOS's title;
+  - 600: the picture rolling in;
+  - 1002: the intro;
+  - 1600: the picture pushed apart after SPACE;
+  - 2300 and 2652: "System checking" as the loads tick off;
+  - 3002: the start-up menu.
+- **The marks below** are the first arrivals of code (`re_session.py stages --work work/stage1/r99`), each with its
+  address. SPACE (red) is the script's one key before the menu.
+- **The point**: the intro waits 1 310 frames for SPACE, and nothing more is read until it is pressed. Stage 3 then
+  loads, unpacks and pages in the rest in about 480 frames (2179-2661).
+- Drawn by `python3 tools/fig_zs_boot.py --work work/docs/zsA/r99 --out docs/img/load/boot99.png`, on an instance
+  with `r99` loaded (`re_session.py open --work work/docs/zsA/r99 --ttd work/stage1/r99/session.ttd --model
+  PENTAGON --port-base 15220`).
+
+![The game block unpacks from the top down, r99](img/load/depack-game.gif)
+
+How to read the animation:
+
+- **The left grid** is the 64 K at `$6000-$DFFF`, one row per 256 bytes, every 322 560 T (4.5 frames) of `r99`
+  frames 2290-2560.
+  - A byte's grey is its value.
+  - A byte written since the last picture flashes yellow, then fades through red.
+- **The right picture** is the screen at the same moment.
+- **What it shows**:
+  - The block's 68 sectors were read to `$6780-$AB66` just before (TR-DOS's writes). Stage 3 has already printed
+    "Game... O.k." on the screen.
+  - The first pictures (frame 2303) flash the whole stream yellow: the depacker's first `LDIR` moves it down by
+    `$B0` bytes, over the set-up, to `$6780`.
+  - Then the writes run from `$D7D2` downwards (yellow at the front, red behind it). The depacker fills the image
+    from its top while it reads the stream from its end.
+  - The stream lies at the bottom, so the writes never catch up with unread bytes.
+  - The front passes `$9C00` at frame 2425 and reaches `$6780` before the patches block is read (2545).
+- Drawn by `python3 tools/zs_memanim.py --work work/docs/zsA/r99 --from 2290 --to 2560 --step 322560
+  --from-address 6000 --to-address DFFF --screen --cell 2 --label "r99: the game block unpacks from the top down"
+  --unreal <unreal-ng checkout> docs/img/load/depack-game.gif`. The script is the kit's `memanim.py` with the
+  Pentagon's 71 680 T frame.
+
+Then stage 3 installs one set of patch pieces and decides the route by `(IY+$77)` (`$5CB1`), the page count the
+memory test left.
+
+- **A count of 1** (`$62B4`): the one-page route. It uses the tape / one-page patch set of `src/patches99`, which
+  reads the texts and the maps from the disk when asked. No machine counts 1 (3.6).
+- **Any other count**: the 128 K route.
+  1. Page 1 in by `$A58A`; the menu block is loaded and unpacked there.
+  2. Page 3 in; the 64 text sectors are read.
+  3. The texts' page-3 addresses and lengths go into the operands at `$C124-$C150` (`Stage3Paged` `$62E7`).
+  4. `JP $A600`.
+
+  `ShowMenu128`, entered through `$C100`, runs a stub at `$6700`. The stub copies `$D800-$E7FF` from page 1 to
+  page 0 every time the menu is entered. So the start-up menu runs in page 0 at `$D800` (`r99` frame 2661), over
+  the game's radar and map area, and its level and pointer start afresh each time ([04](04-game-loop.md)).
 
 Each part's source and the stage 2 findings: `src/` (README.md lists the parts); the memory test, the menu and the
 level table: `src/stage3/stage3.ann`, `src/menu99/menu.ann`.
@@ -132,6 +227,46 @@ The tokens (bits from bit 7 of each byte, bytes from the end down):
 The match is an `LDDR` from `DE + offset`. Sizes: stage 2 4424 -> 7135, stage 3 1268 -> 1604, game 17206 -> 28755,
 patches 651 -> 880, menu 2223 -> 3828.
 
+### What the streams are made of
+
+![How the game block is packed](img/load/lz-game.png)
+
+How to read the figure:
+
+- **The left grid** is the unpacked game image `$6780-$D7D2`, 256 bytes a row. Each byte is coloured by the token of
+  the original stream that wrote it:
+  - amber: a literal;
+  - red: a literal run;
+  - three blues by the match's offset: light for near (1-`$20`), mid for middle (`$21-$220`), violet for far
+    (`$221` and up).
+- **The labels** on its right are the image's regions: font, sprites, code, level lists, tables.
+- **The top right panel** shows each block's output bytes by token kind.
+- **The bottom right panel** is the histogram of match lengths in the game block.
+- **The point**:
+  - Matches make 80 % of the game block's 28 755 bytes: 5 997 matches, 68 % of them 2-3 bytes long. Literals make
+    5 870 bytes.
+  - The sprites are 9 % literal, and 34 % of their bytes come from far matches (the pictures repeat across the
+    sheet).
+  - The code is 32-35 % literal, the tables 80 %.
+- The figure is read from the original streams' own tokens (`tools/zspack.py` `stream_tokens`, through the depacker
+  `tools/zsdepack.py`), not from the reimplemented packer, so it shows the author's streams.
+- Drawn by `python3 tools/fig_zs_lz.py --out docs/img/load/lz-game.png`.
+
+The byte shares by token kind, each block's output (%):
+
+| Block | literal | literal run | near match | middle match | far match |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| stage 2 | 13.6 | 2.7 | 13.0 | 46.5 | 24.2 |
+| stage 3 | 34.9 | 15.6 | 25.0 | 23.3 | 1.2 |
+| game | 18.5 | 1.9 | 18.2 | 33.5 | 27.9 |
+| patches | 27.0 | 19.7 | 15.0 | 36.9 | 1.4 |
+| menu | 17.5 | 5.4 | 14.0 | 53.1 | 10.1 |
+
+The blocks with 10-bit far offsets (stage 3, the patches, the menu) are small: their far matches make 1-10 %. The two
+11-bit blocks make a quarter of their bytes from far matches.
+
+### The packer
+
 The packer, reimplemented (`tools/zspack.py`, stage 2): every stream rebuilds bit for bit from its unpacked image.
 `python3 tools/zspack.py check` prints per block:
 
@@ -172,7 +307,7 @@ holds LCP 128 ("COMPRESSOR BY ALEXANDER TRUSH ODESSA"). That is a candidate attr
 
 ## 3.5 The maps (`NELEV_xx.N`) and LOAD MAP
 
-512 bytes each: NE's four 3-byte record lists (scenery west, scenery east, ending 0; bases west, east, ending `$FF`),
+512 bytes each: four lists of 3-byte records (scenery west, scenery east, ending 0; bases west, east, ending `$FF`),
 zeros after them, then at `$1F3` a 13-byte tail. LOAD MAP's code (the patch piece at `$C1FD`, `src/patches99`
 module `diskmap`) reads the TR-DOS catalogue (8 sectors to `$F000`), lists the `N` files, reads the chosen one to
 `$F000` and `DiskApplyLevel` (`$C2EB-$C332`) copies `$1F3` bytes to `$BDA9-$BF9B` and writes the tail into the
@@ -191,7 +326,7 @@ game's instruction operands:
 
 A map file is a level only, no game state: no robots, day, clock, owners or the enemy's resources. Every field but
 the last follows from the lists (`tools/zs_level.py` derives them and checks). The text form is
-`src/res/maps/NELEV_xx.txt` (NE's level text plus the tail), with a preview per map (`src/res/maps/README.md`).
+`src/res/maps/NELEV_xx.txt` (the level's text form plus the tail), with a preview per map (`src/res/maps/README.md`).
 
 The catalogue screen shows the file names only, four to a row, no numbers; the highlight is attribute `$38`.
 Keys: Q the previous name, A the next, SPACE loads; nothing else (P does not move it, as stage 1 saw). Keys are
@@ -203,8 +338,8 @@ back; START plays the map. No mouse: no block of either release reads a port `$x
 
 ### The '98's LOAD NEW LEVEL
 
-The '98 menu's key 5 jumps (`$C1B5`) to `$C1FD`, where ZS cleared NE's tape load to 62 `NOP`s and wrote no disk
-read: the '98 game has no TR-DOS call at all. `LoadLevelCopy` `$C23B` then copies 500 bytes from `$DD00` to `$BDA9`
+The '98 menu's key 5 jumps (`$C1B5`) to `$C1FD`. There 62 `NOP`s stand where a load would be, and no disk read
+follows: the '98 game has no TR-DOS call at all. `LoadLevelCopy` `$C23B` then copies 500 bytes from `$DD00` to `$BDA9`
 (one byte past the lists, into the shape table), loads the words at `$DEF4-$DEFA` into BuildMap's list operands
 `$BC8A`, `$BC92`, `$BCA2`, `$BCAA` and jumps to `$A600`: the second half of what became the '99's map loader,
 without the read that should fill `$DD00`. `$DD00` holds the intro's scroller text left in memory, so the four list

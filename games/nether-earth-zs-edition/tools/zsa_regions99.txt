@@ -1,0 +1,10 @@
+4000 5AFF the screen: view, panel, radar, clock
+5B00 677F ViewBuffer: 160 x 160 pixels, redrawn every turn
+6780 697F Font
+6980 A569 sprites
+A56A A5FF paging, patch, difficulty routines
+A600 D6A7 the game code, texts and tables
+D800 D9FF radar layers (the menu runs from $D800 first)
+DA00 DCFF Robots
+DD00 FCFF Map: 16 rows of 512 cells
+FD00 FFFF variables, IM 2, Buildings, stack
