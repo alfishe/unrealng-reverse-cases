@@ -1,0 +1,109 @@
+; NELEV_08.N, a LOAD MAP file of the '99 disk (512 bytes)
+; tools/zs_level.py (format: its doc string, src/res/maps/README.md). Lists from $BDA9, 268 of the 499 bytes of the lists' room used, the rest zero.
+
+scenery SceneryWest
+  shape 9     5  9     ; ShapeLowWallH
+  block $11   8 12
+  block $11   8  6
+  block $11  10  7
+  block $11  10 11
+  shape 6    12  9     ; ShapeEdgeFence
+  shape 6    12  1     ; ShapeEdgeFence
+  block $11  14  9
+  block $11  28  8
+  block $11  28 10
+  block $11  28 12
+  block $11  28 14
+  block $11  30 10
+  block $11  32 12
+  block $11  34 10
+  block $11  36 14
+  block $11  36 12
+  block $11  36 10
+  block $11  36  8
+  block $11  40 14
+  block $11  40  8
+  block $11  42 14
+  block $11  42 12
+  block $11  42 10
+  block $11  42  8
+  block $11  44 14
+  block $11  44  8
+  block $11  48  8
+  block $11  48 10
+  block $11  48 12
+  block $11  48 14
+  block $11  50 10
+  block $11  52 12
+  block $11  54  8
+  block $11  54 10
+  block $11  54 12
+  block $11  54 14
+  block $11  58 14
+  block $11  58  8
+  block $11  60 14
+  block $11  60 12
+  block $11  60 10
+  block $11  60  8
+  block $11  62 14
+  block $11  62  8
+  shape 7    68  6     ; ShapeFlatLineV
+  shape 7    72  8     ; ShapeFlatLineV
+  shape 6   244  9     ; ShapeEdgeFence
+  shape 6   244  1     ; ShapeEdgeFence
+  shape 4   246  9     ; ShapeTallWallV
+  shape 4   246  1     ; ShapeTallWallV
+  shape 4   248  1     ; ShapeTallWallV
+  shape 4   248  9     ; ShapeTallWallV
+  shape 4   250  9     ; ShapeTallWallV
+  shape 4   250  1     ; ShapeTallWallV
+  shape 4   252  9     ; ShapeTallWallV
+  shape 4   252  1     ; ShapeTallWallV
+  shape 4   254  9     ; ShapeTallWallV
+  shape 4   254  1     ; ShapeTallWallV
+  end
+
+scenery SceneryEast
+  shape 6   256  9     ; ShapeEdgeFence
+  shape 6   256  1     ; ShapeEdgeFence
+  end
+
+bases BaseListWest
+  warbase    20 10
+  factory 3  30  3     ; phasers
+  factory 3  38  3     ; phasers
+  factory 3  46  3     ; phasers
+  factory 3  54  3     ; phasers
+  factory 3  62  3     ; phasers
+  factory 3  70  3     ; phasers
+  factory 3  78  3     ; phasers
+  factory 3  86  3     ; phasers
+  factory 3  94  3     ; phasers
+  factory 3 102  3     ; phasers
+  factory 3 110  3     ; phasers
+  factory 3 118  3     ; phasers
+  factory 3 126  3     ; phasers
+  warbase   136 10
+  factory 3 146  3     ; phasers
+  factory 3 154  3     ; phasers
+  factory 3 162  3     ; phasers
+  factory 3 170  3     ; phasers
+  factory 3 178  3     ; phasers
+  factory 3 186  3     ; phasers
+  factory 3 194  3     ; phasers
+  factory 3 202  3     ; phasers
+  factory 3 210  3     ; phasers
+  factory 3 218  3     ; phasers
+  factory 3 226  3     ; phasers
+  warbase   236 10
+  end
+
+bases BaseListEast
+  end
+
+tail
+  points auto        ; capture points: 27
+  lists auto        ; $BDA9 $BE5B $BE62 $BEB4
+  factories auto    ; the first factory record $FD7F
+  enemy auto        ; enemy warbases: 2 of 3
+  general 99

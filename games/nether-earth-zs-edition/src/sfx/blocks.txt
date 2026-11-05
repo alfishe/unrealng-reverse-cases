@@ -1,0 +1,7 @@
+# The packed blocks of NEZSEd99.B (tools/build.sh): name, the unpacked image (build/), AT, DST_END, STOP, FARBITS, DONE
+# The unpacked images are the parts' build outputs; the stream comes from tools/zspack.py with hints/<name>.lzhints.
+stage2   front99/stage2-61a8.bin   8000 7D86 61A7 11 61A8
+stage3   menu99/stage3-61a8.bin    8000 67EB 61A7 10 61A8
+game     game99/game-6780.bin      6780 D7D2 677F 11 0052
+patches  game99/patches-d800.bin   DC00 DB6F D7FF 10 0052
+menu     menu99/menu-d800.bin      E800 E6F3 D7FF 10 0052

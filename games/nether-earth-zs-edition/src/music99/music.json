@@ -1,0 +1,14 @@
+{
+ "name": "music",
+ "image": "work/media/99/music.bin",
+ "at": "C000",
+ "out": "build/front99/music-c000.bin",
+ "dest": "src/music99",
+ "header": ["; Nether Earth ZS Edition'99: the music block, $C000-$CCFF: NEZSEd99.B sectors 32-44, not packed, read by stage 2",
+            "; to $C000: a Sound Tracker compiled player and its module."],
+ "l1": ["work/stage2/front99/intro/l1.json"],
+ "segments": [
+  {"title": "the music block", "ann": "src/music99/music.ann", "lo": "C000", "hi": "CD00", "run": "C000",
+   "bases": {"5": "4000", "2": "8000", "0": "C000"}, "read_builds": ["intro"], "same_bytes": true, "data_entries": true}
+ ]
+}

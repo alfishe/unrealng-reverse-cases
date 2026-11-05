@@ -1,0 +1,14 @@
+{
+ "name": "pictures",
+ "image": "work/media/99/pictures.bin",
+ "at": "7D87",
+ "out": "build/front99/pictures-7d87.bin",
+ "dest": "src/pictures99",
+ "header": ["; Nether Earth ZS Edition'99: the pictures block, $7D87-$8A86: NEZSEd99.B sectors 19-31, not packed, read by",
+            "; stage 2 to $7D87: the RLE screen decoder and the packed pictures."],
+ "l1": ["work/stage2/front99/intro/l1.json"],
+ "segments": [
+  {"title": "the pictures block", "ann": "src/pictures99/pictures.ann", "lo": "7D87", "hi": "8A87", "run": "7D87",
+   "bases": {"5": "4000", "2": "8000", "0": "C000"}, "read_builds": ["intro"], "same_bytes": true, "data_entries": true}
+ ]
+}

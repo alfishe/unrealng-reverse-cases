@@ -1,0 +1,186 @@
+; NELEV_02.N, a LOAD MAP file of the '99 disk (512 bytes)
+; tools/zs_level.py (format: its doc string, src/res/maps/README.md). Lists from $BDA9, 499 of the 499 bytes of the lists' room used, the rest zero.
+
+scenery SceneryWest
+  shape 6    12  9     ; ShapeEdgeFence
+  shape 6    12  1     ; ShapeEdgeFence
+  block $11  36  4
+  block $11  36 12
+  block $11  38  3
+  block $11  38 13
+  block $11  40  2
+  block $11  40 14
+  block $11  42  1
+  block $11  42 15
+  shape 9    48  7     ; ShapeLowWallH
+  shape 9    48 11     ; ShapeLowWallH
+  shape 9    56  7     ; ShapeLowWallH
+  shape 9    56 11     ; ShapeLowWallH
+  block $11  64  7
+  block $11  66  7
+  block $11  68  7
+  block $11  68  5
+  block $11  68 15
+  shape 7    76  2     ; ShapeFlatLineV
+  shape 7    80  8     ; ShapeFlatLineV
+  shape 7    84  2     ; ShapeFlatLineV
+  shape 7    88  8     ; ShapeFlatLineV
+  shape 10  103 13     ; ShapeMixedWallH
+  shape 10  103  3     ; ShapeMixedWallH
+  shape 10  105 11     ; ShapeMixedWallH
+  shape 10  105  5     ; ShapeMixedWallH
+  shape 10  107  7     ; ShapeMixedWallH
+  shape 10  107  9     ; ShapeMixedWallH
+  block $12 117 10
+  shape 5   117 12     ; ShapeTallWallH
+  shape 5   117  4     ; ShapeTallWallH
+  block $12 119  8
+  block $12 121  8
+  block $12 123  6
+  block $12 127 12
+  block $12 127  6
+  block $12 129 12
+  block $12 129  8
+  block $12 129  4
+  block $12 131 12
+  block $12 131  8
+  block $12 131  4
+  block $12 133  4
+  block $12 133 10
+  shape 7   137  6     ; ShapeFlatLineV
+  shape 8   150 11     ; ShapeFlatLineH
+  shape 8   150  5     ; ShapeFlatLineH
+  shape 4   160  5     ; ShapeTallWallV
+  shape 3   177  5     ; ShapeMidTiles
+  shape 5   210 10     ; ShapeTallWallH
+  shape 5   210  6     ; ShapeTallWallH
+  shape 9   218  4     ; ShapeLowWallH
+  shape 9   218 12     ; ShapeLowWallH
+  shape 9   226 14     ; ShapeLowWallH
+  shape 9   226  2     ; ShapeLowWallH
+  shape 8   234 13     ; ShapeFlatLineH
+  shape 8   234  9     ; ShapeFlatLineH
+  shape 8   234  5     ; ShapeFlatLineH
+  shape 8   234  1     ; ShapeFlatLineH
+  shape 3   242  3     ; ShapeMidTiles
+  shape 3   242 11     ; ShapeMidTiles
+  shape 9   242  9     ; ShapeLowWallH
+  block $11 250  2
+  block $11 250  8
+  block $11 252  9
+  block $11 252  1
+  block $11 254  1
+  block $11 254  9
+  end
+
+scenery SceneryEast
+  block $11 256  1
+  shape 4   256  9     ; ShapeTallWallV
+  shape 2   261  1     ; ShapeLowTiles
+  shape 3   270 11     ; ShapeMidTiles
+  block $11 280 13
+  block $11 280  9
+  block $11 280  5
+  block $11 280  3
+  block $11 280  1
+  block $11 281  7
+  block $11 282  4
+  block $11 282 13
+  block $11 282 15
+  block $11 283  6
+  block $11 284 15
+  shape 3   290  3     ; ShapeMidTiles
+  shape 7   304  2     ; ShapeFlatLineV
+  block $12 313 11
+  block $12 313 13
+  block $12 313 15
+  block $12 313  5
+  block $12 313  3
+  block $12 313  1
+  shape 2   315  6     ; ShapeLowTiles
+  shape 4   323  9     ; ShapeTallWallV
+  shape 4   327  1     ; ShapeTallWallV
+  shape 4   331  9     ; ShapeTallWallV
+  shape 3   333 11     ; ShapeMidTiles
+  shape 4   335  1     ; ShapeTallWallV
+  shape 3   337  5     ; ShapeMidTiles
+  shape 3   345  1     ; ShapeMidTiles
+  shape 3   345 11     ; ShapeMidTiles
+  shape 8   353 11     ; ShapeFlatLineH
+  shape 8   363 13     ; ShapeFlatLineH
+  shape 8   363  9     ; ShapeFlatLineH
+  shape 4   373  7     ; ShapeTallWallV
+  shape 7   384  6     ; ShapeFlatLineV
+  shape 8   388 13     ; ShapeFlatLineH
+  shape 8   388  3     ; ShapeFlatLineH
+  shape 2   390  6     ; ShapeLowTiles
+  shape 5   398 10     ; ShapeTallWallH
+  shape 5   398  6     ; ShapeTallWallH
+  block $12 407  6
+  block $12 407 10
+  block $12 410  4
+  block $12 410 12
+  block $12 413  1
+  block $12 413 15
+  shape 2   417 11     ; ShapeLowTiles
+  shape 2   417  1     ; ShapeLowTiles
+  shape 3   429  1     ; ShapeMidTiles
+  shape 3   435  7     ; ShapeMidTiles
+  shape 3   441 11     ; ShapeMidTiles
+  shape 4   463  7     ; ShapeTallWallV
+  shape 5   463  5     ; ShapeTallWallH
+  shape 3   465 11     ; ShapeMidTiles
+  shape 5   471  9     ; ShapeTallWallH
+  shape 5   471  5     ; ShapeTallWallH
+  shape 3   473 11     ; ShapeMidTiles
+  shape 10  479  5     ; ShapeMixedWallH
+  shape 10  479  9     ; ShapeMixedWallH
+  shape 10  481  3     ; ShapeMixedWallH
+  shape 10  481 11     ; ShapeMixedWallH
+  shape 10  483  1     ; ShapeMixedWallH
+  shape 10  483 13     ; ShapeMixedWallH
+  shape 10  485 15     ; ShapeMixedWallH
+  shape 6   503  9     ; ShapeEdgeFence
+  shape 6   503  1     ; ShapeEdgeFence
+  end
+
+bases BaseListWest
+  warbase    20 14
+  factory 5  66  3     ; cannon
+  factory 1  66 13     ; electronics
+  factory 4  94  9     ; missiles
+  factory 2  94  3     ; nuclear
+  factory 6 144 13     ; chassis
+  factory 5 144  5     ; cannon
+  factory 1 168  9     ; electronics
+  factory 5 187 13     ; cannon
+  factory 4 187  3     ; missiles
+  factory 1 193  8     ; electronics
+  factory 3 204 13     ; phasers
+  factory 1 204  3     ; electronics
+  end
+
+bases BaseListEast
+  warbase   264 14
+  factory 3 274  3     ; phasers
+  factory 6 292 11     ; chassis
+  factory 2 349  9     ; nuclear
+  factory 6 355  3     ; chassis
+  factory 4 367  4     ; missiles
+  factory 3 375  5     ; phasers
+  factory 1 420  9     ; electronics
+  warbase   430 13
+  factory 6 439  3     ; chassis
+  factory 6 445  5     ; chassis
+  factory 2 451  5     ; nuclear
+  factory 5 457  3     ; cannon
+  factory 6 457 13     ; chassis
+  warbase   495 10
+  end
+
+tail
+  points auto        ; capture points: 28
+  lists auto        ; $BDA9 $BE79 $BF46 $BF6E
+  factories auto    ; the first factory record $FD84
+  enemy auto        ; enemy warbases: 3 of 4
+  general 99

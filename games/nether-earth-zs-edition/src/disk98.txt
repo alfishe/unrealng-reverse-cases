@@ -1,0 +1,6 @@
+# NEZSED98.SCL (orig/NEZSED98.zip): one file, NEZSEd.B, a BASIC monoblock of 157 sectors (docs/03 3.2). The REM
+# loader reads the intro and the game by sector number from the file's own position.
+file NEZSEd B 340 340
+  part build/intro98/basic.bin          # sectors 0-1: the 340-byte BASIC and the 172 bytes after it
+  part build/intro98/intro-c000.bin     # sectors 2-43: the intro, read to $C000-$E9FF
+  part build/game98/game98-6780.bin     # sectors 44-156: the game, read to $6780-$D87F

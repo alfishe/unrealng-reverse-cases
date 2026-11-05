@@ -1,0 +1,113 @@
+# The robot animation's token list (tools/intro98_res.py: RobotStream, $E4B3-$E6CB). One token a line;
+# frames end with "end". The literal and fill bytes come from robot.png.
+# frame 1
+skipl 1023
+skipl 1023
+skipl 1023
+skipl 1023
+skipl 838
+lit 2
+filll 58
+lit 2
+skip 2
+lit 2
+skip 10
+fill 3
+fill 3
+lit 20
+skip 2
+lit 5
+skip 15
+lit 2
+skip 2
+lit 2
+skip 3
+lit 31
+lit 19
+skip 5
+lit 2
+skip 2
+lit 2
+skip 3
+lit 31
+lit 17
+skip 7
+lit 2
+skip 2
+lit 2
+skip 13
+lit 3
+fill 7
+lit 12
+fill 3
+lit 9
+skip 11
+lit 2
+skip 2
+lit 1
+copy 4 -29
+filll 55
+lit 2
+end
+# frame 2
+skipl 1023
+skipl 1023
+skipl 1023
+skipl 1023
+skipl 922
+lit 1
+fill 3
+lit 11
+skip 34
+lit 10
+skip 13
+lit 19
+skip 22
+lit 3
+skip 3
+lit 4
+skip 16
+lit 14
+skip 46
+lit 14
+end
+# frame 3
+skipl 1023
+skipl 1023
+skipl 1023
+skipl 1023
+skipl 922
+lit 16
+skip 33
+lit 10
+skip 13
+lit 19
+skip 25
+lit 7
+skip 16
+lit 14
+skip 46
+lit 14
+end
+# frame 4
+skipl 1023
+skipl 1023
+skipl 1023
+skipl 1023
+skipl 922
+lit 1
+fill 3
+lit 12
+skip 33
+lit 9
+skip 14
+lit 18
+skip 24
+lit 8
+skip 17
+lit 4
+fill 3
+lit 7
+skip 46
+lit 13
+end

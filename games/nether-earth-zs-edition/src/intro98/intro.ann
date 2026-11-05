@@ -1,0 +1,584 @@
+# The '98 intro block, $C000-$E9FF (NEZSEd.B sectors 2-43, read there by the REM loader, src/basic98/basic.asm):
+# the annotations tools/intro98_mkgame.py turns into src/intro98/*.asm. The format is kit/mkgame.py's (class
+# Annotations); the code is what recording r98 ran in the intro window, frames 2048 to 4500
+# (work/stage2/intro98/w-intro/l1.json), widened by the kit's walk. Counts quoted below ("entered N times") are that
+# window's L1 counts. The player's names and most of its descriptions start from Advanced Nether Earth's
+# src/music/pt3-player.asm (the same player, byte for byte but for the two places named in the module's header).
+
+@module pt3player ; PT 3 Player v1.0 by Nick of GDC: the compiled tune's player
+@about The player Pro Tracker 3.x writes in front of a compiled tune ("PT 3 Player v1.0 by Nick of GDC" at +$0B), with the module right after it at +$E21 ($CE21, module pt3tune). The block starts with it: the REM loader reads the block to $C000 and the intro (IntroMain) CALLs Pt3Init at $C000 once (r98 frame 2048), its interrupt IntroInterrupt CALLs Pt3PlayEntry every frame (2155 times, frames 2049-4203) and IntroEnd CALLs Pt3StopEntry once (frame 4203). Entries: Pt3Init +0 (LD HL,Pt3Module; the module set up, every channel muted, the AY written silent; DI, returns with interrupts off), Pt3PlayEntry +5 (JP Pt3Play: one frame; interrupts off, it uses SP as a data pointer and IYL as a scratch, IY = $5C3A again on return), Pt3StopEntry +8 (JP Pt3Stop: the three volumes 0, the registers written once).
+@about How it works (a frame): 1. the three channel ticks (ChAMute..., ChBMute..., ChCMute...): sample line, volume (VolumeTable), noise / envelope offset, mixer, ornament, tone (NoteTable) + slide, on-off; the envelope slide; 2. WriteAy: registers 0-12 from the AY block at a page start (L = the register number), 13 only when a new envelope type was set (EnvType); 3. the pattern reading, spread over three frames by RowFrame: channel A's row two frames before the row, B's one frame before, C's on the row's frame. A and B are decoded into a staging area (the operands of the blocks from ChANewNoteJr on, each block skipped by a JR / JP whose displacement the decoder clears), C applies its row at once; the staged A and B blocks run right after C's decode, so all three channels change on the same frame. RowFrame is reloaded with the delay there: the player needs a delay of 3 or more (COOL WINTER's is 5).
+@about The channel bytes (the decoders ChADecode, ChBDecode, ChCDecode; B = $10, C = $20 step the accumulator through the ranges with ADD and the carry): $F0-$FF ornament n + the next byte: sample * 2 (envelope off, ornament from its start); $D1-$EF sample n-$D0 (for the next note); $D0 the row ends, nothing new; $C1-$CF volume n-$C0; $C0 sound off, the row ends; $B2-$BF envelope type n-$B1 + period (2 bytes, high first); $B1 + byte: rows to skip; $B0 envelope off; $50-$AF note n-$50, the row ends; $40-$4F ornament n-$40; $11-$1F envelope type n-$10 + period (2 bytes) + sample * 2; $10 envelope off + sample * 2; $20-$3F noise base n-$20 in channel B (A and C take them as $11-$1F, a quirk of this player); $01-$09 an effect: its routine's address (ChAEffects...) is pushed and runs after the row's note, its parameters follow the row's bytes (1 gliss: delay, step word; 2 portamento: delay, distance word, step word; 3 sample offset; 4 ornament offset; 5 on-off: off frames, on frames; 8 envelope slide: delay, step word; 9 delay; 6 and 7 do nothing: $0052, a RET in the 48 K BASIC ROM, which is paged in while the intro runs, $7FFD = $10); $00 at the start of channel A's row: the pattern ends, the next position.
+@about Against the signature R/signatures/sound/ay-players/pro-tracker-3/nick-gdc-1.0 (Advanced Nether Earth's copy at the same address $C000): 3557 of the player's 3617 bytes are equal; 60 differ, in two places. (1) VolumeTable ($C100-$C1FF, 50 bytes): here it is Ivan Roshin's volume table in its Pro Tracker 3.3x-3.4x form (row v, column l: v = 0 gives 0, else l * (v + 1) / 16 rounded down), the signature's is the 3.5x+ form (l * (v * 17 + (v > 6)) / 256 rounded to nearest). The module after it says "ProTracker 3.3 compilation": the tracker writes the table that fits the version it compiles for (Bulba's player builds the same two forms at init, chosen by the version digit); this player never builds it, it plays with the one in the file. (2) AyPad ($C2F6-$C2FF, 10 bytes): the text "-VORONEZH-" here, zeros in the signature; no code reads these bytes (no read in the window). Everything else, the code and the note table included, is the same bytes; the variables in the operands and SamplePtrs / OrnamentPtrs are zero in the file in both (Pt3Init fills them: 130 bytes of $C048-$C0FF change at frame 2048).
+@about Known bug (from the code, as in the signature's copy): channel B's on-off effect (ChBEffOnOff) sets ChBOnOffJp to jump to itself, so the player would hang on a row that applies it to channel B; the window played COOL WINTER for 2155 frames with no hang.
+$C000 c Pt3Init ; the module set up: LD HL,Pt3Module, into InitModule
+> Entry +0 of the compiled player. HL = Pt3Module ($CE21, the tune right after the player), then InitModule: the pointers, the delay, every channel muted and the AY written silent (through InitState into Pt3Stop). Returns with interrupts off (InitModule's DI). Called once by IntroMain (r98 frame 2048).
+$C005 c Pt3PlayEntry ; entry +5: JP Pt3Play, one frame of the tune
+> Called by IntroInterrupt every frame (2155 times, r98 frames 2049-4203), with interrupts off.
+$C008 c Pt3StopEntry ; entry +8: JP Pt3Stop, the AY silent
+> Called once by IntroEnd (frame 4203) when a key ended the intro.
+$C00B t PlayerId ; " PT 3 Player v1.0 by Nick of GDC " (33 bytes, never read)
+$C02C c InitModule ; HL = the module
+> HL = the module. The module address into every reader's operand, the delay, the position pointers (the start and the loop), the pattern table, the 48 sample and ornament pointers (offsets + the address) copied to SamplePtrs / OrnamentPtrs; then InitState.
+$C039 ; +100: the delay
+$C047 InitPositions
+$C04A ; +201: the position list
+$C05E InitPatterns
+$C068 ; 32 sample + 16 ornament pointers
+$C06A InitPointerLoop
+$C06B InitPointerBase
+$C078 InitSp
+$C07B ; volume 15 (its row of VolumeTable)
+$C09B ; RowFrame: A decoded on the next frame
+$C0A0 b SamplePtrs 16 ; 32 sample pointers (module address added by InitModule); at a page offset $A0: the decoders index ...
+> 32 sample pointers (module address added by InitModule); at a page offset $A0: the decoders index it by the low byte
+$C0E0 b OrnamentPtrs 16 ; 16 ornament pointers, right after the samples (page offset $E0)
+> 16 ornament pointers, right after the samples (page offset $E0)
+$C100 b VolumeTable 16 ; 16 x 16 bytes at a page start: [channel volume * 16 + sample level] -> the AY volume (3.3x-3.4x form)
+> 16 x 16 bytes at a page start: [channel volume * 16 + sample level] -> the AY volume. Pro Tracker 3.3x-3.4x's form of Ivan Roshin's table (row v, column l: 0 for v = 0, else l * (v + 1) / 16 rounded down; row 1 = 0 x 8, 1 x 8; row 2 = 0 x 6, 1 x 5, 2 x 5), written by the tracker for this 3.3 module; the signature's copy holds the 3.5x+ form (50 of the 256 bytes differ). Its first byte (0) is also the "end of pattern" InitState points channel A at.
+$C200 b NoteTable 16 ; 96 tone periods (words, notes C-1 .. B-8 of the tracker), at a page start: PT3's tone table #1 ...
+> 96 tone periods (words, notes C-1 .. B-8 of the tracker), at a page start: PT3's tone table #1 (Sound Tracker's, $0EF8 for the lowest note), the only one this player has. The effect tables follow it in the same page (the decoders index them by the low byte).
+$C2C0 w ChAEffects ; The effect routines of the three channels, effects 1-9 (6 and 7 unused: $0052, a RET in the 48 K ...
+> The effect routines of the three channels, effects 1-9 (6 and 7 unused: $0052, a RET in the 48 K ROM).
+$C2D2 ChBEffects
+$C2E4 ChCEffects
+$C2F6 t AyPad ; "-VORONEZH-": 10 bytes up to the page start the AY block needs, never read
+> The text "-VORONEZH-" (the town of the player's authors, Nick of GDC: "Golden Disk, Voronezh" in ANE's source of the player; who put it here is not known; ANE's copy holds zeros here). WriteAy needs the AY block at a page start, so these bytes are padding: no code reads or writes them (none in the window).
+$C300 b AyToneA 2 ; The AY block, at a page start (WriteAy uses L as the register number): registers 0-12
+> The AY block, at a page start (WriteAy uses L as the register number): registers 0-12.
+$C302 AyToneB
+$C304 AyToneC
+$C306 AyUnused ; registers 6 and 7: WriteAy takes IXH and IXL instead
+$C308 AyVolumeA
+$C309 AyVolumeB
+$C30A AyVolumeC
+$C30B AyEnvPeriod
+$C30D AyEnvTypeUnused ; register 13: written from EnvType, not from here
+$C30E c InitState ; the channels' start values: RowFrame 3, every row skip counter 1 (decode on the first frame), the ...
+> the channels' start values: RowFrame 3, every row skip counter 1 (decode on the first frame), the channels muted, the envelope masks off, RowCounter -1, channel A's pattern pointer at a 0 byte (VolumeTable's first) so that the first frame reads position 0. Falls into Pt3Stop.
+$C340 c Pt3Stop ; the three volumes 0, then WriteAy with RestoreIy patched to RET (only the AY write)
+> the three volumes 0, then WriteAy with RestoreIy patched to RET (only the AY write).
+$C358 c Pt3Play ; one frame
+> one frame. IYL = 0 (the envelope offset of the samples), IX = the noise of the last frame (IXH) and the mixer 0 (IXL); SP saved in PlaySp (the ticks read with POP). NoiseMixer+3 = IXH: the noise is kept from frame to frame.
+$C35B NoiseMixer
+$C363 c ChAMute ; Channel A, one tick: the sample line, the volume, the noise or envelope offset, the mixer bits, the ...
+> Channel A, one tick: the sample line, the volume, the noise or envelope offset, the mixer bits, the ornament, the tone and its slide. Runs every frame; the channel's state lives in the operands of these instructions (each label names the value its operand holds). Out: the tone in the AY block, the volume in AyVolumeA (0 when muted), the mixer bits ORed into IXL, the noise into IXH, the envelope offset added to IYL.
+> ChAMute: 0 while the channel sounds, $FF when it is off ($C0, before the first note, or the on-off effect's off phase).
+$C36A ChASamplePtr
+$C36E ChASamplePos
+$C376 ChASampleStep
+$C39A ChAVolSlideUp
+$C3A0 ChAVolSlideSet
+$C3A3 ChAVolSlide
+$C3AD ChALevelHigh
+$C3B3 ChAVolume
+$C3BF ChAEnvMask
+$C3C8 ChANoiseAcc
+$C3D2 ChANoiseSet
+$C3D8 ChAEnvOffset
+$C3E2 ChAEnvOffsetAcc
+$C3EB ChAEnvOffsetAdd
+$C3F0 ChAMixer
+$C3F9 ChAToneAcc
+$C404 ChAOrnament
+$C405 ChAOrnamentPtr
+$C409 ChAOrnamentPos
+$C411 ChAOrnamentStep
+$C41A ChANote
+$C422 ChAToneSlide
+$C429 ChAGlissCount
+$C431 ChAGlissStep
+$C438 ChAPortaJr
+$C43B ChAPortaDistance
+$C444 ChAPortaSub
+$C446 ChAPortaTest
+$C449 ChAPortaNote
+$C459 ChAGlissReload
+$C45B ChAGlissStore
+$C45E ChATickEnd
+$C45F ChAStoreVolume
+$C462 ChAOnOffCount
+$C475 ChAOffTime
+$C47A ChAOnTime
+$C47C ChAOnOffStore
+$C47F c ChBMute ; Channel B, one tick: the sample line, the volume, the noise or envelope offset, the mixer bits, the ...
+> Channel B, one tick: the sample line, the volume, the noise or envelope offset, the mixer bits, the ornament, the tone and its slide. Runs every frame; the channel's state lives in the operands of these instructions (each label names the value its operand holds). Out: the tone in the AY block, the volume in AyVolumeB (0 when muted), the mixer bits ORed into IXL, the noise into IXH, the envelope offset added to IYL.
+> ChBMute: 0 while the channel sounds, $FF when it is off ($C0, before the first note, or the on-off effect's off phase).
+$C486 ChBSamplePtr
+$C48A ChBSamplePos
+$C492 ChBSampleStep
+$C4B6 ChBVolSlideUp
+$C4BC ChBVolSlideSet
+$C4BF ChBVolSlide
+$C4C9 ChBLevelHigh
+$C4CF ChBVolume
+$C4DB ChBEnvMask
+$C4E4 ChBNoiseAcc
+$C4EE ChBNoiseSet
+$C4F4 ChBEnvOffset
+$C4FE ChBEnvOffsetAcc
+$C507 ChBEnvOffsetAdd
+$C50C ChBMixer
+$C518 ChBToneAcc
+$C523 ChBOrnament
+$C524 ChBOrnamentPtr
+$C528 ChBOrnamentPos
+$C530 ChBOrnamentStep
+$C539 ChBNote
+$C541 ChBToneSlide
+$C548 ChBGlissCount
+$C550 ChBGlissStep
+$C557 ChBPortaJr
+$C559 c ChBPortaRun ; channel B's portamento step (ChBPortaJr cleared)
+> Reached when the row's portamento effect cleared ChBPortaJr's displacement: the slide so far against ChBPortaDistance; once the tone has covered the distance, ChBPortaNote becomes the note and the slide ends. Not run in the window: known from the code only.
+$C55A ChBPortaDistance
+$C563 ChBPortaSub
+$C565 ChBPortaTest
+$C568 ChBPortaNote
+$C578 c ChBGlissReload ; channel B's gliss counter reloaded
+> The gliss / portamento delay back into ChBGlissCount (its operand set by the row's effect), then the tick's end. A jump target of ChBPortaJr and ChBPortaTest. Not run in the window: known from the code only.
+$C57A ChBGlissStore
+$C57D ChBTickEnd
+$C57E ChBStoreVolume
+$C581 ChBOnOffCount
+$C594 ChBOffTime
+$C599 ChBOnTime
+$C59B ChBOnOffStore
+$C59E c ChCMute ; Channel C, one tick: the sample line, the volume, the noise or envelope offset, the mixer bits, the ...
+> Channel C, one tick: the sample line, the volume, the noise or envelope offset, the mixer bits, the ornament, the tone and its slide. Runs every frame; the channel's state lives in the operands of these instructions (each label names the value its operand holds). Out: the tone in the AY block, the volume in AyVolumeC (0 when muted), the mixer bits ORed into IXL, the noise into IXH, the envelope offset added to IYL.
+> ChCMute: 0 while the channel sounds, $FF when it is off ($C0, before the first note, or the on-off effect's off phase).
+$C5A5 ChCSamplePtr
+$C5A9 ChCSamplePos
+$C5B1 ChCSampleStep
+$C5D5 ChCVolSlideUp
+$C5DB ChCVolSlideSet
+$C5DE ChCVolSlide
+$C5E8 ChCLevelHigh
+$C5EE ChCVolume
+$C5FA ChCEnvMask
+$C603 ChCNoiseAcc
+$C60D ChCNoiseSet
+$C613 ChCEnvOffset
+$C61D ChCEnvOffsetAcc
+$C626 ChCEnvOffsetAdd
+$C62B ChCMixer
+$C636 ChCToneAcc
+$C641 ChCOrnament
+$C642 ChCOrnamentPtr
+$C646 ChCOrnamentPos
+$C64E ChCOrnamentStep
+$C657 ChCNote
+$C65F ChCToneSlide
+$C666 ChCGlissCount
+$C66E ChCGlissStep
+$C675 ChCPortaJr
+$C677 c ChCPortaRun ; channel C's portamento step (ChCPortaJr cleared)
+> As ChBPortaRun, for channel C. Not run in the window: known from the code only.
+$C678 ChCPortaDistance
+$C682 ChCPortaAdd
+$C683 ChCPortaTest
+$C686 ChCPortaNote
+$C696 c ChCGlissReload ; channel C's gliss counter reloaded
+> As ChBGlissReload, for channel C. Not run in the window: known from the code only.
+$C698 ChCGlissStore
+$C69B ChCTickEnd
+$C69C ChCStoreVolume
+$C69F ChCOnOffCount
+$C6B2 ChCOffTime
+$C6B7 ChCOnTime
+$C6B9 ChCOnOffStore
+$C6BC c EnvSlideAcc ; The envelope: EnvPeriod (set by the row) + the samples' offsets (IYL, low byte only) + the slide ...
+> The envelope: EnvPeriod (set by the row) + the samples' offsets (IYL, low byte only) + the slide (EnvSlideAcc, stepped by EnvSlideStep every EnvSlideReload frames: effect 8) into AyEnvPeriod.
+$C6BF EnvPeriod
+$C6CA EnvSlideCount
+$C6D2 EnvSlideStep
+$C6D9 EnvSlideReload
+$C6DB EnvSlideStore
+$C6DE PlaySp
+$C6E1 c WriteAy ; the AY registers 0-12 from the block AyToneA at a page start (L = the register number; B = $FF ...
+> the AY registers 0-12 from the block AyToneA at a page start (L = the register number; B = $FF selects, B = $BF writes): tones, noise (IXH + NoiseBase), mixer (IXL), volumes, envelope period; register 13 only when EnvType holds a new type (then cleared).
+$C715 NoiseBase
+$C742 EnvType
+$C751 c RestoreIy ; IY = $5C3A for the ROM's interrupt (Pt3Stop patches this opcode to RET)
+> IY = $5C3A for the ROM's interrupt (Pt3Stop patches this opcode to RET). Then the row scheduler: RowFrame counts down from the delay: 2 -> channel A's row, 1 -> B's, 0 -> C's (and the staged A and B applied, RowFrame reloaded); above 2 nothing.
+$C751 ; IY back to the ROM's $5C3A (patched to RET by Pt3Stop)
+$C754 RowFrame
+$C763 c ChARowSkip ; Channel A's row (two frames before the row)
+> Channel A's row (two frames before the row). First every staging JR / JP of A is set to skip (H, L, E, A: the displacements); unless ChARowSkip ran out, done. Else the skips go to the alternate set (EXX / EX AF,AF'), B' = 0: each decoded command clears its block's skip (H' note, L' volume, A' ornament / envelope, E' gliss / portamento), C' = the old note (portamento). A 0 at the row's start: the next position (PositionPtr, $FF -> LoopPositionPtr), its pattern's three channel pointers (+ the module address) into ChAPatternPtr, ChBPatternPtr, ChCPatternPtr, the noise base 0.
+$C783 ChAPatternPtr
+$C78E PositionPtr
+$C795 LoopPositionPtr
+$C79A PositionStep
+$C7A4 PatternTable
+$C7AA ModuleAddr
+$C7B9 PositionSp
+$C7BC ChAReadRow
+$C7C3 ChARowSkipLen
+$C7DA c ChADecode ; DE = channel A's bytes; decodes one row (the ranges in the module header above) into the staging operands; ...
+> DE = channel A's bytes; decodes one row (the ranges in the module header above) into the staging operands; ends on a note, $D0 or $C0 (RET runs the pushed effect routines, which read their parameters from DE). Out: DE = the next row.
+$C7DC c ChADecodeLimits ; B = $10, C = $20, then the next byte
+> Re-entered by the commands that change the H register (sample, ornament): the range steps reloaded (331 entries in the window).
+$C7DC ; B = $10, C = $20: the steps of the byte ranges
+$C7DF c ChADecodeByte ; the next byte of channel A's row through the ranges
+> One byte of the row: ADD steps through the ranges (module header above) and jumps to its command; an effect number pushes its routine from ChAEffects (526 entries).
+$C814 c ChAEffGliss ; Channel A's effects (ChAEffects), run after the row's note, DE at their parameters: ChAEffGliss ...
+> Channel A's effects (ChAEffects), run after the row's note, DE at their parameters: ChAEffGliss (1): delay, step word; ChAEffPorta (2): delay, distance word, step word (the note stays the old one until the slide has covered the distance, then ChANewPortaNote); ChAEffSampleOffset (3), ChAEffOrnOffset (4): the start position; ChAEffOnOff (5): off frames, on frames. EffEnvSlide (8): delay, step word; EffDelay (9): the delay (shared by the channels).
+$C82C c ChAEffPorta ; effect 2 on channel A: portamento
+> DE at delay, distance word, step word: staged into ChANewGlissDelay, ChANewPortaDistance, ChANewGlissStep; ChANewPortaJr cleared (the tick runs ChAPortaRun); the new note kept in ChANewPortaNote and the old one (C') played until the slide arrives. Ran twice in the window (COOL WINTER uses portamento on channel A).
+$C855 c ChAEffSampleOffset ; effect 3 on channel A: the sample's start position
+> The position byte into ChANewSamplePos; ChASampleOffJp retargeted to it, so the once-only block runs on the row's frame. Not run in the window: known from the code only.
+$C860 c ChAEffOrnOffset ; effect 4 on channel A: the ornament's start position
+> The position byte into ChANewOrnamentPos; ChAOrnOffJp retargeted to it, so the once-only block runs on the row's frame. Not run in the window: known from the code only.
+$C86B c ChAEffOnOff ; effect 5 on channel A: on-off
+> DE at off frames, on frames: staged into ChANewOffTime / ChANewOnTime; ChAOnOffJp retargeted to ChAOnOffApply. Not run in the window: known from the code only.
+$C87B c EffEnvSlide ; effect 8 (any channel): the envelope slide
+> DE at delay, step word: into NewEnvSlideDelay / NewEnvSlideStep; EnvSlideJr cleared so NewEnvSlideStep runs once on the row's frame. Not run in the window: known from the code only.
+$C88F c EffDelay ; effect 9 (any channel): the tune's delay
+> The byte at DE into Delay, the frames per row from the next row on. Not run in the window: known from the code only.
+$C895 c ChAOrnSampleCmd ; Channel A's commands (the jumps of ChADecodeByte; A = the byte less the range's start): the sample ...
+> Channel A's commands (the jumps of ChADecodeByte; A = the byte less the range's start): the sample and ornament numbers index SamplePtrs / OrnamentPtrs by the low byte (H = HIGH SamplePtrs).
+$C8B6 c ChASampleCmd ; $D0-$EF on channel A: the row's end ($D0) or a sample
+> Z ($D0): the row ends with nothing new (ChARowEnd); else the sample's pointer from SamplePtrs into ChANewSample, then ChADecodeLimits (54 entries).
+$C8C6 ChARowEnd
+$C8C7 ChASoundOff
+$C8D0 ChAEnvOff
+$C8D9 ChASkipCmd
+$C8E1 c ChAVolumeCmd ; $C0-$CF on channel A: sound off or the channel volume
+> Z ($C0): ChASoundOff; else volume * 16 into ChANewVolume (a row of VolumeTable), L' = 0 clears the volume block's skip (127 entries).
+$C8F0 c ChAEnvCmd ; $B0-$BF on channel A: envelope off, row skip, or an envelope
+> $B0: ChAEnvOff; $B1: ChASkipCmd; else the envelope type and its period (2 bytes, high first) into NewEnvType / NewEnvPeriod, the envelope mask on (66 entries).
+$C90C c ChANoteCmd ; $50-$AF on channel A: a note, the row ends
+> The note into ChANewNote, ChANoteOnOp = NOP (sounds), H' = 0 clears the note block's skip; RET runs any pushed effect (247 entries).
+$C917 c ChAOrnamentCmd ; $40-$4F on channel A: an ornament
+> The ornament's pointer from OrnamentPtrs into ChANewOrnament, A' = 0 (the ornament block runs), then ChADecodeLimits (20 entries).
+$C927 ChAEnvOffSample
+$C92F ChAEnvSampleCmd
+$C943 ChAEnvSampleSet
+$C954 c ChBRowSkip ; Channel B's row (one frame before the row): as channel A's (ChARowSkip), without the positions
+> Channel B's row (one frame before the row): as channel A's (ChARowSkip), without the positions.
+$C974 ChBPatternPtr
+$C97E ChBRowSkipLen
+$C995 c ChBDecode ; as ChADecode; channel B also takes $20-$3F, the noise base (ChBNoiseCmd)
+> as ChADecode; channel B also takes $20-$3F, the noise base (ChBNoiseCmd).
+$C997 c ChBDecodeLimits ; as ChADecodeLimits, for channel B
+> 87 entries in the window.
+$C99A c ChBDecodeByte ; as ChADecodeByte, for channel B
+> 101 entries in the window.
+$C9D2 c ChBEffGliss ; Channel B's effects (ChBEffects): as channel A's
+> Channel B's effects (ChBEffects): as channel A's. ChBEffOnOff's jump is wrong (the known bug in the module header).
+$C9EA c ChBEffPorta ; effect 2 on channel B: portamento
+> As ChAEffPorta, into channel B's staging. Not run in the window: known from the code only.
+$CA13 c ChBEffSampleOffset ; effect 3 on channel B: the sample's start position
+> As ChAEffSampleOffset, through ChBSampleOffJp to ChBNewSamplePos. Not run in the window: known from the code only.
+$CA1E c ChBEffOrnOffset ; effect 4 on channel B: the ornament's start position
+> As ChAEffOrnOffset, through ChBOrnOffJp to ChBNewOrnamentPos. Not run in the window: known from the code only.
+$CA29 c ChBEffOnOff ; effect 5 on channel B: on-off (with the known bug)
+> As ChAEffOnOff, but the byte written into ChBOnOffJp is LOW ChBOnOffJp ($1A), not LOW ChBNewOnTime ($1D): the staged JP would jump to itself and the player would hang (the bug in the module header). Not run in the window: known from the code only.
+$CA33 ; BUG: the JP's own address (LOW ChBNewOnTime meant)
+$CA39 c ChBNoiseCmd ; Channel B's commands: as channel A's; ChBNoiseCmd: the noise base for the row
+> Channel B's commands: as channel A's; ChBNoiseCmd: the noise base for the row.
+$CA3F c ChBOrnSampleCmd ; as ChAOrnSampleCmd, for channel B
+> 7 entries in the window.
+$CA60 ChBSampleCmd
+$CA70 ChBRowEnd
+$CA71 ChBSoundOff
+$CA7A ChBEnvOff
+$CA83 ChBSkipCmd
+$CA8B c ChBVolumeCmd ; as ChAVolumeCmd, for channel B
+> 7 entries in the window.
+$CA9A c ChBEnvCmd ; as ChAEnvCmd, for channel B
+> 7 entries in the window.
+$CAB6 c ChBNoteCmd ; as ChANoteCmd, for channel B
+> 54 entries in the window.
+$CAC1 c ChBOrnamentCmd ; as ChAOrnamentCmd, for channel B
+> 26 entries in the window.
+$CAD1 ChBEnvOffSample
+$CAD9 ChBEnvSampleCmd
+$CAED ChBEnvSampleSet
+$CAFE c ChCRowSkip ; Channel C's row (on the row's frame): decoded straight into the tick's operands (ChCDecode), then ...
+> Channel C's row (on the row's frame): decoded straight into the tick's operands (ChCDecode), then the staged rows of A and B applied (from ChANewNoteJr), the envelope, the delay.
+$CB07 ChCPatternPtr
+$CB11 ChCRowSkipLen
+$CB16 c ChANewNoteJr ; The staged row of channel A, applied after channel C's decode
+> The staged row of channel A, applied after channel C's decode. Each block is skipped by its JR unless the decoder cleared the displacement: ChANewNoteJr: a note or sound off: the tick's state cleared (slides, positions, accumulators), ChANoteOnOp (NOP: the note sounds, CPL: muted), ChANewNote, ChANewSample; ChAVolumeJr: the channel volume (ChANewVolume = volume * 16, a row of VolumeTable); ChAOrnEnvJr: ornament or envelope: the ornament from its start, the envelope slide cleared, ChANewOrnament, ChANewEnvMask; ChAGlissJr: gliss / portamento (delay, distance, step, the JR of the tick's test); ChAOnOffJp: the on-off effect (JP to ChAOnOffApply, which sets the JP back to skip).
+$CB36 ChANoteOnOp
+$CB3A ChANewNote
+$CB3F ChANewSample
+$CB45 ChAVolumeJr
+$CB47 ChANewVolume
+$CB4C ChAOrnEnvJr
+$CB5A ChANewOrnament
+$CB60 ChANewEnvMask
+$CB65 ChAGlissJr
+$CB67 ChANewPortaNote
+$CB6C ChANewGlissDelay
+$CB74 ChANewPortaDistance
+$CB7A ChANewGlissStep
+$CB80 ChANewPortaJr
+$CB89 ChAOnOffJp
+$CB8C c ChAOnOffApply ; channel A's on-off effect applied once
+> Entered through ChAOnOffJp when ChAEffOnOff set it: the gliss and the slide cleared, ChAOnOffJp set back to skip, the on and off times (ChANewOnTime, ChANewOffTime) into the tick, the counter at the on time. Not run in the window: known from the code only.
+$CB95 ; this block runs once: skip it again
+$CB9A ChANewOnTime
+$CBA2 ChANewOffTime
+$CBA7 c ChBNewNoteJr ; The staged row of channel B: as channel A's
+> The staged row of channel B: as channel A's.
+$CBC7 ChBNoteOnOp
+$CBCB ChBNewNote
+$CBD0 ChBNewSample
+$CBD6 ChBVolumeJr
+$CBD8 ChBNewVolume
+$CBDD ChBOrnEnvJr
+$CBEB ChBNewOrnament
+$CBF1 ChBNewEnvMask
+$CBF6 ChBGlissJr
+$CBF8 c ChBNewPortaNote ; channel B's staged gliss / portamento block
+> Run when ChBGlissJr's displacement was cleared by a gliss or portamento row: the porta note, delay, distance, step and the JR of the tick's test (ChBNewPortaJr) into channel B's tick. Not run in the window: known from the code only.
+$CBFD ChBNewGlissDelay
+$CC05 ChBNewPortaDistance
+$CC0B ChBNewGlissStep
+$CC11 ChBNewPortaJr
+$CC1A c ChBOnOffJp ; channel B's on-off jump: JP EnvSlideJr unless set
+> Its low byte is the target: EnvSlideJr normally (431 entries, every row of the window); ChBEffOnOff writes LOW ChBOnOffJp ($1A) here instead of LOW ChBNewOnTime, so the JP would jump to itself (the known bug in the module header).
+$CC1D c ChBNewOnTime ; channel B's on-off effect applied once (never reached, see ChBOnOffJp)
+> As ChAOnOffApply for channel B; ChBEffOnOff's bug means no row can reach it. Not run in the window: known from the code only.
+$CC25 ChBNewOffTime
+$CC33 ; this block runs once: skip it again
+$CC38 c EnvSlideJr ; Once-only blocks, entered when a row set them (their JR / JP retargeted, the block retargets it ...
+> Once-only blocks, entered when a row set them (their JR / JP retargeted, the block retargets it back): the envelope slide (EnvSlideJr), the sample and ornament offsets of A and B (ChASampleOffJp ...). Then the row's envelope (NewEnvType: 0 = none, NewEnvPeriod), RowFrame reloaded with Delay, the noise base, RowCounter + 1 (the rows played, from 0).
+$CC3A c NewEnvSlideStep ; the envelope slide set up once (effect 8)
+> Entered when EffEnvSlide cleared EnvSlideJr: the step and the delay into EnvSlideStep, EnvSlideCount, EnvSlideReload, EnvSlideJr set back to skip. Not run in the window: known from the code only.
+$CC40 NewEnvSlideDelay
+$CC48 ; this block runs once: skip it again
+$CC4D c ChASampleOffJp ; the once-only jumps: channel A's sample offset unless set
+> JP ChAOrnOffJp normally (431 entries); ChAEffSampleOffset retargets it to ChANewSamplePos.
+$CC50 c ChANewSamplePos ; channel A's sample position set once (effect 3)
+> The position into ChASamplePos, ChASampleOffJp set back to skip. Not run in the window: known from the code only.
+$CC5A c ChAOrnOffJp ; channel A's ornament offset unless set
+> JP ChBSampleOffJp normally (431 entries); ChAEffOrnOffset retargets it to ChANewOrnamentPos.
+$CC5D c ChANewOrnamentPos ; channel A's ornament position set once (effect 4)
+> The position into ChAOrnamentPos, ChAOrnOffJp set back to skip. Not run in the window: known from the code only.
+$CC67 c ChBSampleOffJp ; channel B's sample offset unless set
+> JP ChBOrnOffJp normally (431 entries); ChBEffSampleOffset retargets it to ChBNewSamplePos.
+$CC6A c ChBNewSamplePos ; channel B's sample position set once (effect 3)
+> As ChANewSamplePos, for channel B. Not run in the window: known from the code only.
+$CC74 c ChBOrnOffJp ; channel B's ornament offset unless set
+> JP NewEnvType normally (431 entries); ChBEffOrnOffset retargets it to ChBNewOrnamentPos.
+$CC77 c ChBNewOrnamentPos ; channel B's ornament position set once (effect 4)
+> As ChANewOrnamentPos, for channel B. Not run in the window: known from the code only.
+$CC81 c NewEnvType ; the row's end: envelope, delay, noise base, row counter
+> The envelope type the row set (0 = none) into EnvType and, if any, NewEnvPeriod into EnvPeriod; RowFrame reloaded from Delay, the noise base, RowCounter + 1 (431 entries: the rows of the window).
+$CC89 NewEnvPeriod
+$CC93 Delay
+$CC98 NewNoiseBase
+$CC9D RowCounter
+$CCA5 c ChCDecode ; as ChADecode, but into channel C's tick at once (no staging)
+> as ChADecode, but into channel C's tick at once (no staging).
+$CCA7 c ChCDecodeLimits ; as ChADecodeLimits, for channel C
+> 578 entries in the window.
+$CCAA c ChCDecodeByte ; as ChADecodeByte, for channel C
+> 598 entries in the window.
+$CCDF c ChCEffGliss ; Channel C's effects (ChCEffects): as channel A's, applied at once
+> Channel C's effects (ChCEffects): as channel A's, applied at once.
+$CCFB c ChCEffPorta ; effect 2 on channel C: portamento, applied at once
+> As ChAEffPorta, but straight into channel C's tick (ChCGlissCount, ChCGlissReload, ChCPortaDistance, ...). Not run in the window: known from the code only.
+$CD29 c ChCEffSampleOffset ; effect 3 on channel C: the sample's start position, at once
+> The position byte straight into ChCSamplePos (channel C has no staging). Not run in the window: known from the code only.
+$CD2F c ChCEffOrnOffset ; effect 4 on channel C: the ornament's start position, at once
+> The position byte straight into ChCOrnamentPos. Not run in the window: known from the code only.
+$CD35 c ChCEffOnOff ; effect 5 on channel C: on-off, at once
+> Off and on frames straight into ChCOffTime / ChCOnTime, the counter at the on time, the gliss and the slide cleared. Not run in the window: known from the code only.
+$CD4C c ChCOrnSampleCmd ; Channel C's commands: as channel A's, applied at once (ChCNoteCmd clears the tick's state)
+> Channel C's commands: as channel A's, applied at once (ChCNoteCmd clears the tick's state).
+$CD6F c ChCSampleCmd ; as ChASampleCmd, applied to channel C at once
+> 1 entry in the window.
+$CD7F ChCRowEnd
+$CD80 ChCSoundOff
+$CD89 ChCEnvOff
+$CD91 ChCSkipCmd
+$CD99 c ChCVolumeCmd ; as ChAVolumeCmd, applied to channel C at once
+> 1 entry in the window.
+$CDA5 c ChCEnvCmd ; as ChAEnvCmd, applied to channel C at once
+> 20 entries in the window.
+$CDBF c ChCNoteCmd ; as ChANoteCmd: the note into channel C's tick, its state cleared
+> 391 entries in the window.
+$CDE4 ChCOrnamentCmd
+$CDF6 ChCEnvOffSample
+$CDFE ChCEnvSampleCmd
+$CE12 ChCEnvSampleSet
+
+@module pt3tune ; "COOL WINTER" by KLIM / OHG '97: the Pro Tracker 3.3 module
+@about The module right after the player (Pt3Init + $E21), the Pro Tracker 3 file as the tracker saves it: "ProTracker 3.3 compilation of COOL WINTER.......KLIM/OHG/'97", tone table 1, delay 5, 15 positions (loop to position 1), 9 patterns, 8 samples, 10 ornaments; 2670 bytes, its last ornament ends at $D88E, the byte before the intro's code. Every pointer in it is an offset from its start: InitModule adds the address. It is src/res/intro98/cool-winter.pt3 as it is (tools/intro98_res.py pt3 parses it to its last byte). The window read its header, positions, patterns, samples and ornaments ($CE85-$D873) while it played.
+$CE21 b Pt3Module 16 ; the module: src/res/intro98/cool-winter.pt3
+> COOL WINTER by KLIM of OHG (Omega Hackers Group, named in the scroller's greetings), 1997, as Pro Tracker 3.3 compiled it. Read only by the player (InitModule and the decoders through the pointers it sets up).
+@res intro98/cool-winter.pt3
+
+@module intromain ; the intro: logo, robot, AY bars and the scroller over the tune
+@about ZS's own code, after the compiled tune: IntroMain at $D88F, CALLed by the REM loader (src/basic98/basic.asm, RemLoader $5D84) once the block is in; it returns there when a key is pressed and the loader reads the game. r98: entered at frame 2048, returned at frame 4331 (the key at 4203).
+@about The screen it builds: the title text left by the REM loader faded out by a diagonal sweep (AttrWipe), the screen cleared (ClearScreen), the ZS logo in the top middle (8 x 8 attribute cells at column 12, row 0, LogoMask) whose paper colour changes every frame (LogoColour), a one-line scroller on row 11 (ScrollStep, from the interrupt; the text ScrollText, the font IntroFont or the ROM's), three AY volume bars in the bottom left corner (AyBars: columns 0-2, rows 22-23, red / yellow / green), three coloured cells on row 9 that follow AY registers 2, 4 and 6 (IntroLoop), and the robot in its yellow box at column 13, row 16 (RobotFrame every 32 frames: a four-frame animation). The interrupt (IM 2 through the table IntroMain builds at $8100, IntroInterrupt) plays the tune and moves the scroller, then goes on to the ROM's IM 1 handler (FRAMES and the keyboard).
+$D88F c IntroMain ; the intro: set up, the frame loop until a key, then IntroEnd
+> Entered from the REM loader with interrupts on, IM 1, the 48 K BASIC ROM paged and page 0 at $C000. Sets up the player (Pt3Init), the IM 2 table and vector, pages $7FFD = $10, fades the loader's title out (AttrWipe), clears the screen (ClearScreen), colours the bottom third and the bars' cells, then loops once a frame (IntroLoop) until LAST_K ($5C08) is not 0 (the ROM's handler, run from IntroInterrupt, sets it when a key is pressed). Then IntroEnd. Out: interrupts on, IM 0 (behaves as IM 1 here), the AY silent, the attributes black. Uses AF BC DE HL; the IM 2 table at $8080-$8200 is left in memory (the game load overwrites it).
+$D890 ; the player set up: the module's pointers, the AY silent (Pt3Init leaves interrupts off)
+$D893 ; the IM 2 table: $8100-$8200, 257 bytes of $80 ...
+$D8A0 ; ... so every vector is $8080, where a JP IntroInterrupt goes
+$D8AC ; $7FFD = $10: page 0 at $C000, the 48 K BASIC ROM, screen 5 (the loader's own state)
+$D8B3 ; I = $81: the table above; IM 2 on
+$D8BA ; the loader's title text faded out (128 frames)
+$D8BD ; then the screen cleared, white on black, border black
+$D8C0 ; the bottom third's attributes ($5A00-$5AFF): yellow ink on black (the robot's box, RobotHeader's colour)
+$D8C5 BottomAttrLoop
+$D8CA ; the bars' cells, rows 23 and 22: column 0 red (channel A) ...
+$D8D2 ; ... column 1 yellow (B) ...
+$D8DA ; ... column 2 green (C)
+$D8E2 ; LAST_K = 0: the loop runs until the ROM's keyboard scan stores a key
+$D8E6 IntroLoop ; a frame of the intro
+$D8EC ; wait for the frame (the interrupt has played the tune and moved the scroller)
+$D8ED ; AY register 2 (channel B's tone, low byte) ...
+$D8F6 ; ... its low 5 bits pick a cell of row 9 ($5920-$593F): paper red
+$D8FF ; the cell's address kept to clear it at the end of the frame
+$D900 ; AY register 4 (channel C's tone, low byte): a cell of row 9 in yellow
+$D913 ; AY register 6 (the noise period): a cell of row 9 in green
+$D926 ; the bars, three times ...
+$D92F ; every 32 frames (FRAMES' low byte & $1F = 0) the robot's next frame
+$D937 ; the bars again ...
+$D93A ; the logo in the colour FRAMES & 7
+$D942 ; ... and once more
+$D945 ; the three cells of row 9 back to black: they show only while this frame is drawn
+$D950 IntroEnd ; a key: the tune stopped, the screen faded, back to the loader
+$D950 ; I = $3F (the ROM's value), IM 0: the bus reads $FF, so the interrupt is RST $38 as under IM 1
+$D957 ; the AY silent
+$D95B ; the screen faded out by the same diagonal sweep (128 frames)
+$D95F c LogoColour ; the ZS logo's cells in paper colour A (0-7)
+> A = the colour (IntroLoop passes FRAMES & 7, so it changes every frame and goes black every eighth). Writes the attribute A * 8 (paper A, ink 0) to every cell of the 8 x 8 block at column 12, row 0 ($580C) whose byte in LogoMask is not 0; the other cells are left as they are. The colour goes into the LD (HL),n below (self-modified). Entered 2008 times (frames 2180-4203). Uses AF BC DE HL.
+$D962 ; A * 8: the paper colour ...
+$D965 ; ... into LogoInk's operand
+$D968 ; the logo's 64 mask bytes, 8 rows of 8 cells
+$D96D LogoRow
+$D96F LogoCell
+$D973 LogoInk ; the cell's attribute (operand: the colour * 8)
+$D975 LogoNextCell
+$D979 ; to the next row: 24 cells on
+$D97B LogoRowSkip
+$D982 c ScrollStep ; the scroller: one pixel further, a new glyph column at the right
+> From IntroInterrupt every frame (2155 times, frames 2049-4203). ScrollPtr's operand is the text pointer, ScrollColumn's the column counter (0-7, one up a frame). On counter 0 the byte at the pointer is taken and the pointer moves on: $00 ends the text (the pointer = the word after it: ScrollTextLoop) and $01 LO HI switches the font (ScrollFont's operand = HI LO), both giving a space; on 1-7 the byte at the pointer is used without moving. The byte's glyph is ScrollFont - 256 + code * 8 (codes below $20: ScrollFont itself, a space), and one pixel column of it, chosen by the counter (counter 2-7: columns 0-5, counter 0: column 6, counter 1: column 7 of the byte after: the pointer has moved on; no glyph of either font has a pixel in column 7), is ORed into the right-hand byte of row 11 ($487F) on its 8 lines. Then the 8 lines of row 11 ($4860-$487F) shift left one pixel. Uses AF BC DE HL.
+$D982 ScrollPtr ; the text pointer (operand), ScrollText at first
+$D985 ; the counter + 1, mod 8
+$D98E ; counter not 0: the byte at the pointer, the pointer stays
+$D991 ; counter 0: the next byte, the pointer moves on
+$D996 ; $00: the text ends, the pointer from the word after it (ScrollTextLoop)
+$D99A ; ... and a space this time
+$D99E ScrollFontCode
+$D99E ; $01 LO HI: the font from here on
+$D9AA ; ... and a space this time
+$D9AC ScrollKeep ; the pointer kept
+$D9AF ScrollFont ; the font (operand): IntroFont, or $3D00 (the ROM's) after a switch
+$D9B2 ; below $20: the font's address as it is (the space)
+$D9B6 ; font - 256 + code * 8
+$D9C7 ScrollGlyph
+$D9C7 ; DE = the scroller's right-hand byte on row 11's first line
+$D9CD ScrollColumn ; the column counter (operand, 0-7)
+$D9CF ; B = counter + 8: the byte rotated left counter - 1 times (mod 8), bit 0 taken
+$D9D3 ScrollBitRotate
+$D9D9 ; ORed into the screen byte
+$D9DB ; the next pixel line (INC H)
+$D9E0 ; the 8 lines of row 11 shifted left one pixel, right to left
+$D9E5 ScrollShiftLine
+$D9E6 ; no carry into the right-hand byte
+$D9E9 ScrollShiftByte
+$D9F4 c AyBars ; the three AY volume bars
+> AyBar for register 8 (channel A's volume) at column 0, 9 (B) at column 1, 10 (C) at column 2, each from the bottom line of row 23 up. IntroLoop calls it five times a frame (10040 entries in 2008 frames). Uses AF BC DE HL.
+$DA0D c IntroInterrupt ; the IM 2 handler: a frame of the tune and of the scroller, then the ROM's
+> Reached through the vector $8080 (a JP here) on every interrupt from IntroMain's IM 2 on (2155 times, frames 2048-4202). Saves every register (AF' too: the player uses it), CALLs Pt3PlayEntry and ScrollStep, restores them and jumps to $0038, the 48 K ROM's IM 1 handler: FRAMES + 1 and the keyboard scan into LAST_K, then EI and RET.
+$DA27 ; the ROM's handler does the EI / RET
+$DA2A c AyBar ; one volume bar: AY register A, its column from HL up
+> A = the AY register (8-10: the channel volumes), HL = the bar's bottom byte ($57E0 + column). Reads the register; its low 4 bits v (the envelope bit dropped) are the bar's height in pixel lines: v lines of $7E from the bottom up, then 15 - v lines of 0 above them; past the top line of row 23 ($50xx) it goes on at the bottom line of row 22 ($57C0 + column). Entered 30120 times. Uses AF BC E HL.
+$DA2D ; register select, read back
+$DA31 ; E = the column
+$DA32 ; C = 15 - v: the clear lines ...
+$DA37 ; ... B = v: the bar's lines
+$DA3C AyBarUp ; a line of the bar
+$DA41 ; above row 23: on at the bottom line of row 22
+$DA49 AyBarPut
+$DA49 ; the bar's pattern
+$DA4E AyBarClear ; the rest up to 15 lines cleared
+$DA52 AyBarClearLine
+$DA5F AyBarClearPut
+$DA65 c ClearScreen ; the screen cleared: white on black, the border black
+> ATTR_P ($5C8D) = 7, BORDER 0 (ROM $229B with A = 0), CLS (ROM $0D6B), channel 2 (the upper screen) opened (ROM $1601). The same steps as the REM loader's start. Entered once (frame 2176). Uses all.
+$DA77 c AttrWipe ; the diagonal fade: 128 frames of AttrDiagonal
+> E from $F8 to $77: AttrDiagonal(E), then HALT. Each frame the band of eight diagonals moves one cell right: whatever the attributes held is overwritten, first white ink (the band's front, $47) then darker inks down to black ($40), so the screen's contents fade out from left to right; at the end every cell is $40 (bright, black on black). Run twice: on IntroMain's start (frames 2048-2176, over the REM loader's title) and in IntroEnd (frames 4203-4331, over the intro). Uses AF BC DE HL.
+$DA79 AttrWipeFrame
+$DA84 c AttrDiagonal ; the band of 8 attribute diagonals at column E of row 0
+> For each row D = 0-23, eight cells leftwards from column E - D: the attributes $47, $46 ... $40 (bright, ink 7 down to 0, black paper), through AttrCell (cells off the screen skipped). Keeps DE and AF; uses BC HL.
+$DA88 AttrDiagonalRow
+$DA8B AttrDiagonalCell
+$DA9F c AttrCell ; attribute A at row D, column E (if on the screen)
+> D = the row, E = the column, A = the attribute; nothing when E >= 32 or D >= 24. HL = $5800 + D * 32 + E. Keeps AF DE.
+$DAC0 AttrCellOff ; off the screen
+
+@module introtext ; the scroller's text
+@about The text ScrollStep shows, $DAC2-$E3B8: KOI-7 N2 letters ($40-$7F drawn as Cyrillic by IntroFont), $01 LO HI font switches ($3D00, the ROM's font, for the Latin names), $00 at the end followed by the address the scroller goes on from (ScrollTextLoop: the last "Press something..." is repeated until a key). src/res/intro98/scroll-text.txt is the UTF-8 copy the build turns back into these bytes; the translation is in work/stage1/texts.md, section 6. The window's run read $DAC2-$DBCF (the text up to where the key was pressed at frame 4203).
+$DAC2 b ScrollText 16 ; the scroller text (src/res/intro98/scroll-text.txt)
+> Signed "ZS. 23.12.1998": Sergey Zotov's greetings, the story of the edition, what he changed in the game, his phone and e-mail, the greetings; it ends with "Нажмите что-нибудь..." (press something), from ScrollTextLoop on again and again.
+@res intro98/scroll-text.bin
+
+@module intrologo ; the ZS logo's cells and the robot box's header
+@about LogoMask is the logo LogoColour paints in attribute cells (src/res/intro98/logo.png); RobotHeader the five bytes in front of the robot's code, no code reads them.
+$E3B9 b LogoMask 8 ; the ZS logo: 8 x 8 cells, 1 = painted (src/res/intro98/logo.png)
+> Read by LogoColour every frame: row by row, the cells of the block at column 12, row 0 that take the colour.
+@res intro98/logo-mask.bin
+$E3F9 b RobotHeader 5 ; the robot box: column 13, row 16, 6 x 8 cells, attribute 6
+> Column 13, row 16, width 6, height 8 cells, attribute 6 (yellow ink on black): exactly the box RobotStream draws into (tools/intro98_res.py decodes every write of it inside that box) and the colour IntroMain gives the bottom third. Nothing reads these bytes (no read in the window): the header the picture's packer put in front of its depacker, kept with it.
+
+@module robot ; the robot animation: its depacker and its four frames
+@about RobotFrame (from IntroLoop every 32 frames: 63 times in the window) draws the next frame of a four-frame animation of the robot into its box (column 13, row 16, 6 x 8 cells), each frame a delta from the screen as the previous one left it; after the fourth it starts again at the first, which redraws the whole robot. The code is position independent: it learns its address from the ROM (CALL $1FC6 lands on POP HL / RET Z / JP (HL) with Z clear), keeps the stream position in its own LD BC operand (RobotPos) and finds the stream at its own address + $B0. Not identified as a known depacker; tools/intro98_res.py implements it both ways (the frames as robot.png, the token list as robot.parse).
+@about The stream, one frame after the other, each ended by $C0. The output position DE starts at $4000 and runs through the decoder's order of the screen: down each column of bytes of a third (8 lines of a cell, then the next cell down), then the next column; the attributes ($5800-) in their own order. Codes: $00-$7F + a byte: copy (code >> 3 & 15) + 3 bytes from (code & 7) * 256 + byte - $800 behind; $80-$83 + a byte: skip (code & 3) * 256 + byte; $84-$BF: skip code - $83; $C0: the frame ends; $C1 + n + v: n times v; $C3 + n: n zeros (n = 0: 256); even $C2-$FE: (code - $C0) / 2 literal bytes; $C5, $C9 .. $FD (4j + 1): j + 2 times the next byte; $C7, $CB .. $FF (4j + 3): j + 1 zeros.
+$E3FE c RobotFrame ; the robot's next animation frame from RobotStream
+> No input. Finds its own address (the ROM's $1FC6: POP HL, RET Z not taken, JP (HL): HL = RobotSelf), takes the stream position from RobotPos (the first time $FFFF, and after the last frame a position past the stream's end: both restart at RobotStream), decodes one frame into the screen (RobotNext ... RobotFrameEnd) and stores the position after its $C0 in RobotPos. Self-modifying (RobotPos). Uses all registers and the alternate set (BC' DE' HL', AF').
+$E3FE ; A = 1: NZ for the ROM's RET Z
+$E400 ; to $1FC6 in the 48 K ROM: POP HL / RET Z / JP (HL): back at RobotSelf with HL = RobotSelf
+$E403 c RobotSelf ; where RobotFrame goes on: the ROM's JP (HL) at $1FC8 lands here with HL = RobotSelf
+> The second half of RobotFrame, an entry of its own because it is reached from the ROM (the get-PC trick: RobotFrame CALLs $1FC6, whose POP HL takes the return address, RET Z is not taken with A = 1, and JP (HL) comes back here). Entered 63 times in the window (one per robot frame). All addresses of the robot (RobotStream, its end) are HL-relative from here, so the block could run at any address.
+$E403 ; BC = the stream position (operand, RobotPos)
+$E404 RobotPos
+$E406 ; DE = RobotSelf
+$E407 ; HL = RobotSelf + $2C8 = RobotStreamEnd - 1, the last byte of the stream
+$E40B ; carry: the position is past it ...
+$E40F ; ... else go on from it
+$E411 ; restart: RobotSelf + $B0 = RobotStream
+$E415 RobotStart ; RobotSelf kept for the end
+$E416 ; C = $F8: the mask of the address conversion
+$E418 ; DE = the output position, from $4000
+$E41B RobotNext ; the next code
+$E41D ; $C0-$FF: the fills, literals and the end
+$E421 ; $00-$7F: a copy
+$E425 ; $80-$BF: a skip; $80-$83 with a byte, else code - $83
+$E434 RobotSkipLong ; DE + (code & 3) * 256 + the next byte
+$E43E RobotCopy ; HL = DE + the negative offset, B = the count; carry set (the copy mode)
+$E44C RobotCopyNext ; a source byte: past $57FF as it is, else through the conversion
+$E452 ; the screen address of HL into DE': H = H & $F8 | L & 7, L = (L & $F8 | H & 7) rotated left twice
+$E45F ; the source byte
+$E461 RobotPut ; a byte to the output: past $57FF as it is, else through the conversion
+$E474 ; written
+$E476 RobotAdvance ; the next position; carry: copy, zero: fill (the same byte), else a literal (the next byte)
+$E47D RobotRepeat
+$E481 RobotCopyStep
+$E488 RobotFill ; $C1-$FF: bit 0 of code - $C0 clear: literals (n / 2), set: fills
+$E494 RobotZeros ; A = 0 (zero set, carry clear: the fill mode)
+$E497 RobotFillShort
+$E49C RobotFillByte ; the fill's byte
+$E4A0 RobotLiteral ; n / 2 literal bytes (n = 0: the frame's end)
+$E4A5 RobotFrameEnd ; $C0: the position after it into RobotPos
+$E4AC RobotCopyAttr ; a source byte past $57FF
+$E4AF RobotPutAttr ; a byte past $57FF: written as it is
+$E4B3 b RobotStream 16 ; the four frames (src/res/intro98/robot.png, robot.parse)
+> 537 bytes: frame 1 (the whole robot, 303 bytes written), frames 2-4 (the changes, 78-80 bytes each); each frame skips $1342 positions first (four skips of 1023 and one of 838 or 922) to reach the box. Read by RobotFrame only (the window read all of it, $E4B3-$E6CB).
+@res intro98/robot.bin
+
+@module introfont ; the scroller's font and the bytes after it
+$E6CC b IntroFont 8 ; the scroller's font: 96 glyphs from code $20 (src/res/intro98/font.png)
+> 8 x 8 glyphs for $20-$7F: digits and signs as ASCII, $40-$5F upper-case and $60-$7F lower-case Cyrillic in the KOI-7 N2 order (ЮАБЦДЕФГХИЙКЛМНОПЯРСТУЖВЬЫЗШЭЩЧЪ). ScrollStep's font until the text switches to the ROM's ($3D00) and back; glyph = IntroFont - 256 + code * 8.
+@res intro98/font.bin
+$E9CC b FontTailLeftover 13 ; 52 bytes after the font that nothing reads (src/res/intro98/font-tail-leftover.bin)
+> The end of the block's last sector after the font: no code reads them (no read in the window) and nothing addresses them. Kept as a leftover resource; what they were is not known (they look like a table of 3-byte records: 3 7 0 / 3 7 0 ... 4 7 0 ...).
+@res intro98/font-tail-leftover.bin

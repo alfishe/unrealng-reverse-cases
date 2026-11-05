@@ -1,0 +1,229 @@
+# Stage 2 of Nether Earth ZS Edition'99, $61A8-$7D86 (tools/front99_mkgame.py --part src/stage2/stage2.json): the
+# 7135 bytes the depacker of NEZSEd99.B sectors 1-18 writes (read to $8000 by the BASIC's reader at $5D5B, unpacked
+# by the block's own depacker at $5B00, which jumps to $61A8). The packed block's set-up and depacker are the lead's
+# part (src/sfx); this source stands for the unpacked bytes (work/media/99/stage2-out.bin).
+# Witness: L1 window work/stage2/front99/intro (r99 frames 227-2178): Stage2Start entered at frame 227 from the
+# depacker, the music block read by frame 261, the pictures decoded at 464-472, the picture rolled in 472-726, the
+# scroller 746-1310 (23 lines, 184 one-pixel scrolls), SPACE at 1310, the doors effect 1312-1953, the spiral to white
+# and the music muted at 2114, stage 3 read to $8000 and entered at 2179.
+
+@equ $0038 RomIM1 ; the ROM's IM 1 handler (keyboard scan, FRAMES)
+@equ $0E9E RomClAddr ; ROM CL-ADDR from $0E9E: A = the character row (0-23) -> HL = its screen address, column 0
+@equ $22B0 RomPixelAddr ; ROM PIXEL-ADD from $22B0: A = the pixel line from the top, C = x -> HL = the screen byte
+@equ $3D13 TrDosEntry ; TR-DOS's entry from BASIC ROM: C = 5 reads B sectors from track D sector E to HL
+@equ $4000 Screen 6144 ; the screen's pixels
+@equ $5800 Attrs 768 ; the screen's attributes
+@equ $5CF4 DosNextSector 2 ; TR-DOS: the sector and track after the last one read (E sector, D track)
+@equ $7D87 Pictures ; the pictures block (src/pictures99): DecodeScreen, its entry
+@equ $7D99 DecodePixelsTo 2 ; the pictures block's DecodeScreen: the operand of its LD HL,$4000 (the pixels' target)
+@equ $7DD7 DecodeAttrsTo 2 ; the pictures block's DecodeScreen: the operand of its LD HL,$5800 (the attributes' target)
+@equ $8000 Stage3Load ; where stage 3's packed block is read and entered
+@equ $8A87 PictureBuffer 6144 ; the decoded picture's pixels (screen layout), $8A87-$A286
+@equ $A287 PictureBufferAttrs 768 ; the decoded picture's attributes, $A287-$A586
+@equ $B000 IM2Table 257 ; the IM 2 vector table: 257 bytes $B1 (I = $B0)
+@equ $B1B1 IM2Jump 3 ; JP IM2Handler, written here by IntroMain
+@equ $C000 Music ; the music block (src/music99): its first byte
+@equ $C00B MusicInit ; the music block's Init
+@equ $C00E MusicPlay ; the music block's Play
+@equ $C011 MusicMute ; the music block's Mute
+
+@module loader ; the intro's sequence: the two reads, the picture, the scroller loop, the exit to stage 3
+@about Stage 2 is the intro of the '99: it reads the pictures block (13 sectors to $7D87) and the music block (13 sectors to $C000) from where TR-DOS stopped (DosNextSector: the sectors right after its own), starts the Sound Tracker tune on an IM 2 interrupt, dissolves the screen, decodes the picture (photo, logo, the "You wanted new levels? Take its!" line) into a buffer and rolls it in, flashes the border and runs the 64-column scroller in a window under the logo until SPACE. Then it pushes the picture out sideways, wipes the attributes to white in a spiral, mutes the music, returns to IM 0 (the ROM's handler: on the Spectrum IM 0 reads $FF, RST $38) and reads stage 3 (6 sectors) to $8000, entering it by the RET of TR-DOS's read.
+
+$61A8 c Stage2Start ; Read the pictures block: 13 sectors to $7D87
+> Entered by the depacker's jump (r99 frame 227). TR-DOS reads (C = 5) 13 sectors from DosNextSector, where the BASIC's read stopped: sectors 19-31 of NEZSEd99.B. Falls through to ReadMusic.
+@isub $61AF LD HL,Pictures
+$61B5 c ReadMusic ; Read the music block: the next 13 sectors to $C000
+> Sectors 32-44 of NEZSEd99.B. Falls through to IntroMain.
+@isub $61BC LD HL,Music
+
+$61C2 c IntroMain ; The intro from the music's start to stage 3's read
+> Sets IM 2 (table $B000 of $B1, I = $B0, JP IM2Handler at $B1B1), initialises the tune (MusicInit, A = $80) and enables interrupts: from now on the tune plays each frame. Dissolves the screen (DissolveScreen), border black, the attributes to white ink on black in a spiral (SpiralAttrs, A = 7), patches the pictures block's two targets to PictureBuffer and PictureBufferAttrs, decodes the picture (DecodeScreen at $7D87) and rolls it in (RollInPicture). The border flashes yellow / black ten times (20 frames). The bottom row of the scroller window ($5AD0-$5ADF) is made black on black, the print font set to Font64, and the scroller runs (ScrollerLoop) until SPACE; then OutroAndLoad.
+$61C3 ; the IM 2 table: 257 bytes $B1 from $B000
+$61D0 ; I = $B0, IM 2: every vector reads $B1B1
+$61D6 ; JP IM2Handler at $B1B1
+$61E1 ; the tune from its start (A is not read by the player)
+$61E7 ; the old screen's pixels dissolved to nothing
+$61ED ; the attributes to ink 7, paper 0, cell by cell in a spiral
+$61F2 ; the pictures block decodes into the buffer, not the screen
+$61FE ; the picture into PictureBuffer
+$6204 ; and onto the screen, line by line
+$6207 ; the border yellow / black ten times
+$6209 BorderFlash
+$6215 ; row 22, columns 16-31: the window's bottom row, black on black (the line printed there is not seen)
+$621A ClearPrintRow
+$621F ; the scroller's font
+@isub $621F LD HL,Font64
+@isub $6222 LD (PrintFont),HL
+
+$6225 c ScrollerLoop ; The scroller: a line printed in the window's bottom row, then eight one-pixel scrolls
+> From ScrollText: PrintLine prints AT 32,22 and a line up to its CR, INC DE skips the LF, then 8 one-pixel scrolls of the window (ScrollWindowUp), each scroll two frames with the logo (CycleLogoColours) and the bottom line (CycleBottomRow) recoloured. The first line is printed before the loop without the skip, so the first pass prints its LF (the print row 23, below the window) and the empty second line. 156 passes print lines 2-157; then it starts again from the first. ENTER held stops the scroller (the colours keep cycling); SPACE ends it (OutroAndLoad). Ran r99 frames 746-1310 (23 lines, 184 scrolls).
+@isub $6225 LD DE,ScrollText
+$622B ; 156 lines
+$622D ScrollerLine
+$6231 ; past the LF
+@isub $6233 LD IX,ScrollWindow
+$6239 ScrollerStep ; the 8 scrolls of a line
+$623D ScrollerPause ; two frames of colours
+$6248 ; ENTER (port $BFFE bit 0): held, stay here
+$6251 ; SPACE (port $7FFE bit 0): on to the end
+$6262 OutroAndLoad ; SPACE: the stack's three loop words dropped
+$6265 ; the picture pushed out to both sides
+$6268 ; border white
+$626C ; the attributes to black ink on white paper in a spiral
+$6271 ; I = $3F and IM 0: the ROM's handler again (the game is later unpacked over $B000)
+$6278 ; the tune off
+$627C ; stage 3: 6 sectors to $8000 ...
+@isub $6283 LD HL,Stage3Load
+$6286 ; ... entered by the RET of TR-DOS's read (r99 frame 2179)
+
+@module effects ; the intro's screen effects and colour cycles
+@about The effects of the intro: the colour cycles that run with the scroller, the picture rolled in from a buffer, the screen pushed out to the sides, the dissolve of the old screen, the spiral attribute wipe and its delay. They write the screen ($4000-$5AFF) directly, with the ROM's PIXEL-ADD for line addresses.
+
+$628B c CycleBottomRow ; Recolour the bottom text row (row 23): each cell the next ink 1-7
+> Attributes $5AE0-$5AFF: each cell takes the previous cell's colour + 1 (mod 8, 0 skipped), from the first cell's own colour + 1: a rainbow of inks over "You wanted new levels? Take its!" that moves each call. Called twice a scroll (r99 frames 747-1310, 368 calls). A, B, HL changed.
+@isub $628B LD HL,Attrs+736
+$6291 BottomRowCell
+$6292 BottomRowInk ; the next ink, never 0 (black)
+
+$629C c CycleLogoColours ; Recolour the logo's box: 15 rows of 14 cells, each row the next ink 1-7
+> Attributes from $5831 (row 1, column 17): row by row each takes the next colour (mod 8, 0 skipped) after the box's first cell's: the stripes of the logo move up each call. Called once a scroll (184 calls). A, C, DE, HL changed; BC kept.
+@isub $629D LD HL,Attrs+49
+$62A3 LogoRow
+$62A4 LogoInk ; the next ink, never 0
+$62AB LogoCell
+
+$62B9 c PrintLine ; Print the line at DE at the scroller's bottom row, up to its CR
+> Prints ScrollText's first three bytes (AT 32,22: column 32 of 64, row 22) through PrintChars, then the bytes at DE through PrintChar until a CR ($0D). Output: DE past the CR. 24 calls in the window (r99 frames 746-1287).
+@isub $62BA LD DE,ScrollText
+$62C4 PrintLineChar
+
+@isub $62CE LD HL,Font64-256
+$62CE c PrintLineFont ; Not reached: CHARS = $7487 (a ROM-layout font at $7587), then PrintLine's character loop
+> Code no recording reached and no instruction of the block jumps to: sets the ROM's CHARS ($5C36) to $7487 (or, from PrintLineRom, to the ROM's font $3C00) and continues in PrintLine's character loop. A leftover of a version that printed through the ROM (the bytes at $7587 are not in the ROM's font layout, see Font64). Known only from the code.
+$62D1 PrintLineSetChars
+$62D6 c PrintLineRom ; Not reached: CHARS = $3C00 (the ROM's font), then as PrintLineFont
+
+$62DB c RollInPicture ; Show the picture at HL: line y of it fills screen lines 0-y, y from 191 down to 0, then its attributes
+> Input: HL = the picture (screen layout: 6144 pixel bytes, 768 attributes). For y = 191 down to 0 the picture's line y is copied into every screen line from 0 to y: the picture rolls down from the top, its lower lines first stretched over the screen above them. Then the 768 attributes to $5800. The pixel lines through the ROM's PIXEL-ADD. Ran once, r99 frames 472-726. A, BC, DE, HL changed.
+@isub $62E0 LD BC,192*256
+$62E3 RollInLine
+$62E5 ; HL = screen line y ...
+$62E8 ; ... DE = the same line in the picture
+$62F6 RollInCopy ; screen lines 0..y = the picture's line y
+$630F ; the attributes
+@isub $6316 LD DE,Attrs
+
+$631F w RollInSource ; RollInPicture's picture address
+
+$6321 c PushOutScreen ; Push the screen out: each half shifted one pixel outwards, more lines each step
+> The left half (bytes 0-15 of a line) is shifted left and the right half (16-31) right, one pixel a pass (ShiftLinesApart): lines 0..n-1 for n = 1 to 191 (the opening runs down the screen), then lines 64-191 128 times more. Ran once after SPACE, r99 frames 1312-1953. A, BC, DE, HL changed.
+@isub $6321 LD HL,Screen+15
+$6326 PushOutStep
+@isub $6333 LD HL,Screen+2063
+$6338 PushOutEnd
+
+$6344 c ShiftLinesApart ; Shift B screen lines from the one at HL+1 apart by one pixel
+> Input: HL = the 16th byte of the first line (its left half's last), B = the number of lines. Each line: RL through bytes 15 down to 0 (the left half one pixel left), RR through bytes 16 to 31 (the right half one pixel right); the next line through NextLineDown.
+$634A ShiftLeftHalf
+$6354 ShiftRightHalf
+
+$6361 c NextLineDown ; HL = the screen address one pixel line down
+> The usual INC H, then across a character row or a third.
+
+$6370 c DissolveScreen ; Clear the screen's pixels bit by bit: 250 passes over every 29th byte
+> HL steps through $4000-$57FF by 29 (wrapping back by $1800); each byte is ANDed with C, a mask whose clear bit moves one place each pass ($FE, $FD, ...): 250 passes, so every bit of every byte is reached and the old screen's pixels fade to nothing in a scattered order. Ran once, r99 frames 261-303. A, BC, DE, HL changed.
+@isub $6374 LD HL,Screen
+$637A DissolveByte
+
+$638B c SpiralAttrs ; Fill the attributes with A in a spiral from the outside in, one cell a delay
+> Input: A = the attribute. 12 rings from the corner (0,0): the top row to the right, the right column down, the bottom row to the left, the left column up, each next ring one cell further in; a Delay500 after each cell. Ran r99 frames 303-472 (A = 7) and 1953-2114 (A = $38). A', BC, DE, HL changed.
+@isub $638B LD HL,Attrs
+$6390 ; A' = the attribute
+$6391 SpiralRing
+$6396 SpiralTop
+$63A6 SpiralRight
+$63B6 SpiralBottom
+$63C3 SpiralLeft
+$63CE ; the next ring starts one cell down and right
+
+$63D6 c Delay500 ; A delay loop of 500 counts (BC, AF kept)
+$63DB DelayLoop
+
+$63E3 c WindowAttrAddr ; Not reached: HL = the attribute address of the window at IX, C = its width, B = its height
+> IX as ScrollWindow (column, row, width, height). No instruction of the block calls it and no recording ran it: known only from the code.
+
+$63FE c ScrollWindowUp ; Scroll the window at IX up by one pixel line; its last line cleared
+> IX = the window: +0 column, +1 row, +2 width (bytes), +3 height (character rows). For each of its height x 8 - 1 lines the next line's bytes are copied up (LDIR, addresses through the ROM's PIXEL-ADD), then the last line is cleared. 184 calls (r99 frames 746-1309), always ScrollWindow. A, BC, DE, HL changed.
+$6421 ScrollWindowLine
+$6436 ; the last line cleared
+
+@module print ; the 64-column print routine and its variables
+@about A print routine of 4-pixel-wide characters, 64 columns by 24 rows, with its own control codes; the glyphs come from a font of 256 characters stored row by row (PrintFont + character + 256 x row), each glyph in both nibbles of its bytes, so that a mask ($F0 for even columns, $0F for odd) cuts the half for the column. It writes into the screen through the ROM's CL-ADDR; rows from 24 on are not drawn.
+
+$6446 c PrintChars ; Print BC bytes from DE
+> Input: DE = the bytes, BC = their count. Each through PrintChar. Output: DE past them, BC = $FFFF.
+
+$6451 c PrintChar ; Print the character or control code A at PrintCol, PrintRow
+> Codes: $20-$FF a glyph from PrintFont (the bits under PrintMask of the 8 glyph rows replace the screen's; then the next column, past 63 the next row's column 0); $0A the next row; $0D column 0; $09 the next column that is a multiple of 8; $08 one column back (meant to stop at 0, but DEC A sets no carry, so the RET C never returns and column 0 becomes 255; the text has no $08); $16 col row: AT (two bytes follow: the column, then the row); $17 lo hi: the font address (the two bytes into PrintFont); others ignored. A row of 24 or more is counted but not drawn. 568 calls (r99 frames 746-1287). A, F, the alternate set (glyphs) changed.
+$6461 ; a glyph: HL' = PrintFont + the character
+$6469 ; rows 24 and on are not drawn
+$6471 ; HL = the row's screen address + column / 2
+@isub $6471 CALL RomClAddr
+$647B ; even column: the left nibble ($F0), odd: the right ($0F)
+$6483 PrintMaskSet
+$6489 PrintGlyphRow ; 8 rows: the glyph's bits under the mask into the screen byte
+$649B ; the next column; at 64 the next row
+$64B2 PrintCharDone
+$64B4 PrintArgument ; a byte after a $16 or a $17: AT's column, row, or the font address
+$64BB ; $16: the column into PrintCol, then the row into PrintRow
+$64BE PrintArgumentStore ; HL = the slot: PrintArgsLeft bytes below HL
+$64C2 PrintArgumentSlot
+$64CB PrintArgumentFont ; $17: the two bytes into PrintFont
+
+$64CF c PrintFontArgument ; $17's bytes: low into PrintFont, high into PrintFont+1 (not reached: the text has no $17)
+> HL = PrintFont + 2, back into PrintArgument's store: the first byte (2 left) goes to PrintFont, the second to PrintFont+1. Known only from the code.
+@isub $64CF LD HL,PrintFont+2
+
+$64D4 c PrintArgumentDone ; One argument byte less to come
+$64DC c PrintControl ; A control code below $20: LF here, the others in PrintControlRest
+
+$64E0 c PrintNewRow ; LF: the next print row (also after column 63)
+$64E8 c PrintControlRest ; CR, AT, TAB, back, $17; any other code is ignored
+> Part of PrintChar's control codes (PrintControl falls here past LF); each sets PrintCol, the argument count or returns.
+$64E8 ; CR: column 0
+$64ED PrintSetCol
+$64F1 PrintAt ; $16 AT: two arguments to come
+$64F5 PrintArgs
+$64FE PrintTab ; $09: the next multiple of 8
+$650B PrintBack ; $08: one column back
+$6513 ; the carry is CP $08's (clear): never returns here
+$6516 PrintFontCode ; $17: two arguments (the font address)
+$651C PrintIgnore ; any other code below $20
+
+$651D b PrintCol ; The print column, 0-63
+$651E PrintRow ; the print row, 0-23 (more: not drawn)
+$651F PrintArgsLeft ; the argument bytes still to come after $16 or $17
+$6520 PrintCode ; the control code waiting for its arguments ($16 or $17)
+$6521 PrintCurrent ; the byte being printed
+$6522 PrintMask ; $F0 (even column) or $0F (odd)
+$6523 w PrintFont ; The font: glyph row r of character c at PrintFont + c + 256 x r (Font64 once IntroMain set it; on the disk $3C00, the ROM's font, which is not in this layout)
+
+@module interrupt ; the IM 2 handler: the tune each frame
+$6525 c IM2Handler ; The IM 2 handler: the tune's frame (MusicPlay), then the ROM's IM 1 handler
+> Saves every register (main and alternate, IX, IY), calls MusicPlay, restores them and jumps to the ROM's $0038 (which scans the keyboard, counts FRAMES and returns with EI). Entered through $B1B1 1845 times (r99 frames 261-2114).
+
+@module texts ; the scroller's window, text and font
+@about The data the scroller prints: its window, its text (CP866, CR LF lines, src/res/stage2/scroller.txt) and its 64-column font (src/res/stage2/font64.png).
+
+$6547 b ScrollWindow ; The scroller's window: column 16, row 17, 16 bytes wide, 6 rows high
+> Read by ScrollWindowUp through IX (+0 column, +1 row, +2 width in bytes, +3 height in character rows): the screen's right half, rows 17-22, under the logo's box.
+$654B b ScrollWindowPad ; A byte no code reads ($00)
+
+$654C t ScrollText ; The scroller's text: AT 32,22, then 157 lines of CP866 text, each ending CR LF
+> 4155 bytes, $654C-$7586. Its first three bytes are AT 32,22 ($16 $20 $16), which PrintLine prints before every line; the text itself starts with them too. The lines are Russian (CP866) with Latin names and TAB indents: ZS's greeting, the story of the Edition, thanks (M.M.A.) and the date 28.01.1999, ending "Нажмите пробел..." (press space). The recording (r99) scrolled the first 23 lines. The source is src/res/stage2/scroller.txt (UTF-8).
+@res stage2/scroller.bin
+
+$7587 b Font64 16 ; The 64-column font: 256 characters x 8 rows, row-major (row r of character c at Font64 + 256 x r + c)
+> CP866 glyphs 4 pixels wide, each drawn in both nibbles of its bytes (PrintChar keeps the half for the column). Characters $00-$1F are never printed (codes below $20 are control codes), their bytes are there all the same. 2048 bytes, $7587-$7D86, the block's last. The source is src/res/stage2/font64.png.
+@res stage2/font64.bin

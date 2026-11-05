@@ -1,0 +1,14 @@
+{
+ "name": "stage2",
+ "image": "work/media/99/stage2-out.bin",
+ "at": "61A8",
+ "out": "build/front99/stage2-61a8.bin",
+ "dest": "src/stage2",
+ "header": ["; Nether Earth ZS Edition'99: stage 2, the intro, $61A8-$7D86: the unpacked bytes of NEZSEd99.B sectors 1-18",
+            "; (read to $8000 by the BASIC's reader, unpacked by the block's own depacker at $5B00, entered at $61A8)."],
+ "l1": ["work/stage2/front99/intro/l1.json"],
+ "segments": [
+  {"title": "stage 2", "ann": "src/stage2/stage2.ann", "lo": "61A8", "hi": "7D87", "run": "61A8",
+   "bases": {"5": "4000", "2": "8000", "0": "C000"}, "read_builds": [], "same_bytes": true, "data_entries": true}
+ ]
+}

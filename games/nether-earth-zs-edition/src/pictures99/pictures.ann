@@ -1,0 +1,57 @@
+# The pictures block of Nether Earth ZS Edition'99, $7D87-$8A86 (tools/front99_mkgame.py --part
+# src/pictures99/pictures.json): NEZSEd99.B sectors 19-31, not packed, read to $7D87 by stage 2 (Stage2Start, $61A8).
+# The RLE screen decoder ($7D87-$7DF9), one RLE-packed screen ($7DFA-$8A35: the photo of the author, the
+# "NETHER EARTH ZS EDITION 1999" logo, "ZS", "You wanted new levels? Take its!"), 81 bytes of sector slack.
+# Witness: L1 window work/stage2/front99/intro (r99 frames 227-2178): DecodeScreen called once from stage 2 ($61FE)
+# at frame 464, returning at 472, with its two targets patched to $8A87 / $A287; the buffer $8A87-$A586 at frames 473,
+# 747, 1300 and 2178 equals tools/front99_res.py's decode of the stream (front99_res.py check).
+# Identification: the decoder's 115 bytes are byte for byte in software/other/AYSCHEME.$B ("AYscheme", 1996, before
+# its own packed screen) and in a CHASE HQ disk (CHHQ_SCI.SCL) of the owner's collection: a screen depacker of a
+# screen-compressor utility of the time; the utility is not named by any of the copies.
+
+@equ $1792 RomRet ; a RET in the 48 BASIC ROM (the end of a ROM routine): called only to leave the return address below SP
+@equ $4000 Screen 6144 ; the screen's pixels: DecodeScreen's own target
+@equ $5800 Attrs 768 ; the screen's attributes: DecodeScreen's own target
+
+@module decoder ; the RLE screen decoder
+@about DecodeScreen finds its own address (it calls a RET in the ROM and reads the return address back from below the stack), so it runs wherever it is loaded: the packed screen starts $6F bytes after the CALL's return address, i.e. right after the decoder. Its two LD HL operands are the targets of the pixels and of the attributes; stage 2 patches them to $8A87 and $A287 before the call, so the picture lands in a buffer in the screen's layout and is shown by stage 2's RollInPicture.
+@about The stream: a byte other than $9A is itself; $9A V N is V N times. The order: column by column (32), each column's 192 pixel lines from the top (the third, the character row, the line: INC H, +32, +$800), then the 768 attributes in order. The run counter is kept in the alternate B across the pixels and the attributes.
+
+$7D87 c DecodeScreen ; Decode the RLE screen that follows the routine into the targets at DecodePixels+1 and DecodeAttrs+1
+> No inputs: the stream is found from the routine's own address (CALL RomRet, then the return address read back from below SP, + $6F = PackedScreen). The 6144 pixel bytes are written column by column, each column top to bottom, at the target as a screen layout; the 768 attributes in order. DI on entry, EI on return. Outputs: the screen (or the patched buffer); A, BC, DE, HL and the alternate BC, DE changed. Ran once (r99 frames 464-472, called from stage 2's IntroMain at $61FE).
+$7D88 ; the return address ($7D8B) is left below SP ...
+$7D8B DecodeReturn ; ... and taken back
+$7D8E ; + $6F: the packed screen right after this routine
+@isub $7D8E LD DE,PackedScreen-DecodeReturn
+$7D93 ; DE' = the stream, B' = 0: no run going
+$7D98 DecodePixels ; DecodePixels+1: the pixels' target ($4000; stage 2 writes $8A87 here)
+$7D9B ; 32 columns
+$7D9D DecodeColumn
+$7D9E ; 3 thirds
+$7DA0 DecodeThird
+$7DA2 ; 8 character rows
+$7DA4 DecodeRow
+$7DA5 ; 8 lines
+$7DA7 DecodeLine ; the next byte of the stream into (HL)
+$7DA8 ; a run going (B' > 0): its value again
+$7DAD ; a new byte: itself, or $9A V N
+$7DB3 ; $9A: C' = the value, B' = the count
+$7DB9 DecodeRunByte
+$7DBB DecodeStore
+$7DBD ; the next pixel line
+$7DC1 ; the next character row
+$7DC9 ; the next third
+$7DD2 ; the next column
+$7DD6 DecodeAttrs ; DecodeAttrs+1: the attributes' target ($5800; stage 2 writes $A287 here)
+$7DD9 ; 768 attributes in order, the same stream
+$7DDC DecodeAttr
+$7DEE DecodeAttrRun
+$7DF0 DecodeAttrStore
+
+@module picture ; the packed intro screen
+$7DFA b PackedScreen ; The intro's screen, RLE-packed (3132 bytes): the author's photo, the logo, the bottom line
+> 6912 bytes once decoded: on the left the photo of Sergey Zotov (ZS) in black on white; on the right in a red frame the logo "NETHER EARTH / ZS / EDITION / 1999" (green, magenta, cyan), "ZS" under it; on the bottom row "You wanted new levels? Take its!" in yellow. 429 runs ($9A V N), one of them a $9A literal; the stream ends at $8A35, the decoder's run counter back at 0. The source is src/res/pictures99/intro-screen.png; the build packs it (tools/front99_res.py) into these bytes.
+@res pictures99/intro-screen.rle
+$8A36 b SectorSlack ; The 81 bytes after the packed screen to the end of the 13th sector: no code reads them
+> RLE bytes of another picture (runs of $00 and of $3F / $F0, not this screen's tail), left in the memory the block was saved from. Kept as a leftover (src/res/pictures99/leftover-8a36.bin).
+@res pictures99/leftover-8a36.bin

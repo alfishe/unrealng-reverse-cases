@@ -1,0 +1,116 @@
+; The shapes of the '99 game block (DrawShape $BD61, PlaceBases $BCF9), assembled by tools/game99_res.py
+; into the files of src/res/game99/map. The sections follow each other from $BF9C; an address is Label,
+; Label+offset or $xxxx.
+; table:   dw Label, the shape of each index from 0
+; shape:   the steps from the start cell, each a block (or none) and then a move: block TILE move DX DY |
+;          move DX DY (no block) | block TILE end | end (the last step: its move is (0, 0)); DX columns,
+;          DY rows, signed
+; db $xx,... and dw Label,... write bytes as they are
+
+table ShapeTable
+  dw ShapeWarbase     ; shape 0
+  dw ShapeFactory     ; shape 1
+  dw ShapeLowTiles    ; shape 2
+  dw ShapeMidTiles    ; shape 3
+  dw ShapeTallWallV   ; shape 4
+  dw ShapeTallWallH   ; shape 5
+  dw ShapeEdgeFence   ; shape 6
+  dw ShapeFlatLineV   ; shape 7
+  dw ShapeFlatLineH   ; shape 8
+  dw ShapeLowWallH    ; shape 9
+  dw ShapeMixedWallH  ; shape 10
+
+shape ShapeWarbase
+  move -4 -4
+  block $10 move 0 -2
+  block $10 move 2 5
+  block $0F move 0 -2
+  block $0F move 0 -2
+  block $0F move 0 -2
+  block $10 move 2 5
+  block $0F move 0 -2
+  block $10 move 0 -2
+  block $10 move 2 5
+  block $0F move 0 -2
+  block $0F move 0 -2
+  block $0F move 0 -2
+  block $10 move 2 3
+  block $10 move 0 -2
+  block $10 end
+
+shape ShapeFactory
+  move -2 0
+  block $0F move 0 -2
+  block $10 move 2 0
+  block $10 move 2 0
+  block $10 move 0 2
+  block $0F end
+
+shape ShapeLowTiles
+  block $02 move 2 0
+  block $03 move 2 0
+  block $04 move 2 0
+  block $05 move -6 2
+  block $04 move 2 0
+  block $05 move 2 0
+  block $02 move 2 0
+  block $03 move -6 2
+  block $03 move 2 0
+  block $02 move 2 0
+  block $05 move 2 0
+  block $04 end
+
+shape ShapeMidTiles
+  block $08 move 2 0
+  block $09 move 2 0
+  block $0A move 2 0
+  block $0B move -6 2
+  block $0A move 2 0
+  block $0B move 2 0
+  block $08 move 2 0
+  block $09 move -6 2
+  block $09 move 2 0
+  block $08 move 2 0
+  block $0B move 2 0
+  block $0A end
+
+shape ShapeTallWallV
+  block $12 move 0 2
+  block $12 move 0 2
+  block $12 move 0 2
+  block $12 end
+
+shape ShapeTallWallH
+  block $12 move 2 0
+  block $12 move 2 0
+  block $12 move 2 0
+  block $12 end
+
+shape ShapeEdgeFence
+  block $15 move 0 2
+  block $15 move 0 2
+  block $15 move 0 2
+  block $15 end
+
+shape ShapeFlatLineV
+  block $0C move 0 2
+  block $0D move 0 2
+  block $0D move 0 2
+  block $0E end
+
+shape ShapeFlatLineH
+  block $0C move 2 0
+  block $0D move 2 0
+  block $0D move 2 0
+  block $0E end
+
+shape ShapeLowWallH
+  block $11 move 2 0
+  block $11 move 2 0
+  block $11 move 2 0
+  block $11 end
+
+shape ShapeMixedWallH
+  block $11 move 2 0
+  block $12 move 2 0
+  block $11 end

@@ -1,0 +1,6 @@
+# Packer hints for tools/zspack.py: game.bin
+# The original token decisions the greedy rule does not reproduce (see zspack.py docstring).
+# POS KIND LEN OFF  RULE_KIND RULE_LEN RULE_OFF  (POS counts down from the top byte, decimal;
+# a hint applies only where the rule decides RULE_* and the hinted token is valid for the data)
+# pad XX: the stream's lowest byte (never read by the depacker)
+pad 71

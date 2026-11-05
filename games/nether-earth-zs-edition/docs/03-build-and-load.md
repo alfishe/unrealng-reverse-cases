@@ -126,6 +126,38 @@ The tokens (bits from bit 7 of each byte, bytes from the end down):
 The match is an `LDDR` from `DE + offset`. Sizes: stage 2 4424 -> 7135, stage 3 1268 -> 1604, game 17206 -> 28755,
 patches 651 -> 880, menu 2223 -> 3828.
 
+The packer, reimplemented (`tools/zspack.py`, stage 2): every stream rebuilds bit for bit from its unpacked image.
+`python3 tools/zspack.py check` prints per block:
+
+| Block | Unpacked -> packed | Tokens | Decisions | By the rule | Hints | Pad byte |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| stage 2 | 7135 -> 4424 | 2722 | 2907 | 2907 | 0 | `$00` |
+| stage 3 | 1604 -> 1268 | 799 | 1041 | 1041 | 0 | `$2A` |
+| game | 28755 -> 17206 | 11351 | 11867 | 11867 | 0 | `$71` |
+| patches | 880 -> 651 | 365 | 529 | 528 | 1 | `$00` |
+| menu | 3828 -> 2223 | 1399 | 1596 | 1596 | 0 | `$00` |
+
+The rule (a decision is a match or one literal; positions count from the top byte down, as the depacker writes):
+
+1. at each position the longest match whose offset k is at most the window (`$220` + 2 to the far bits) and whose
+   length is at most k (no self-overlap), the nearest of the equally long, taken when its length is at least 2;
+2. only where step 1 finds nothing: a run of one byte repeated at least 8 times, written as a match of offset 1 and
+   length min(run, 22) (the only overlapping matches in the five streams);
+3. else a literal. Literals between matches go out singly when fewer than 14; 14 or more go out as literal runs of
+   45 (`1001 1111` + 5 bits), the last run taking the rest (14-45).
+
+The stream ends with the last token's bits padded with zeros in its byte, then one more byte the depacker never
+reads (the pad byte above: a left-over of the packer's buffer). The one decision the rule misses is the patches'
+last match, two bytes before the end: the original took offset `$64` where `$15` is nearer, as if it compared one byte
+past the data's end. It and the pad bytes are kept in `src/sfx/hints/<block>.lzhints`; a hint applies only where it
+is valid for the data being packed, so an edited image packs by the rule.
+
+The set-up and the depacker are source, `src/sfx/zsblock.asm` (every label named and described), assembled once a
+block by `tools/build.sh` with the block's parameters from `src/sfx/blocks.txt`; the five blocks come out identical.
+The rest of each block's last sector is not slack from the disk: it is the block's own unpacked image from the
+block's length on (zero past the image's end) - the author packed each image in place in memory and saved the
+sectors over it. `tools/build.sh` writes it so.
+
 Identification: not identified. The depacker is byte-identical except for its addresses in other disks of the time
 (ZX Format #7 disk 2 "R.R.demo", `CHASE_HQ.SCL`, `HAPPYNEW.$B`, `BRAIN_CR.$B`, `XAS9_10`, `SAA10991.TRD`,
 `SG2.01m.scl`), and a variant with a 12-bit far offset is in `POOGABOO.$B` of Spectrum Expert #1, whose disk also
@@ -148,8 +180,23 @@ a byte (the enemy's war bases?) and `$63`. LOAD MAP in the '99 menu shows the tw
   finds 5 (`$5CB0=$01`), prints "Memory 128Kb" (`(n + 3) * 16`).
 - In `r99-48` (paging locked by "48 BASIC") the count is 0: "Memory 56Kb" (the formula's carry), then the 128 K
   branch, the menu and texts go into the one page at `$C000` over the game, and it ends in BASIC with `0 OK`
-  (screens `work/stage1/screens/99-48lock-*.png`). Whether a real 48 K machine gets 1 is open; unreal-ng has no
-  48 K + Beta Disk model to test it, and its 48K / 128K models have no usable TR-DOS here.
-- Started from the Pentagon menu's TR-DOS item the '99 hangs in the intro (`x99p`): unreal-ng's patched 48 BASIC
-  ROM (`data/rom/pentagon.rom`) calls `$3A42` from its ISR when FLAGS bit 4 is set and that writes `$5B88`, inside
-  the depacker copy. The autostart (FLAGS `$C8`) and "48 BASIC" paths do not set it.
+  (screens `work/stage1/screens/99-48lock-*.png`). What a real 48 K machine with a Beta Disk interface gets is
+  pending: unreal-ng is getting a 48 K + Beta 128 model; until it lands the 48 K path is known from the code only.
+- Scorpion ZS-256 (unreal-ng model `SCORPION`, `work/stage2/scorpion`): both releases autostart, load and play.
+  The '99 prints "Computer Scorpion", "Memory 256Kb", "Using TR-DOS Ver 5.03" and goes through the start-up menu,
+  its texts and START into play (`e99s`, `s99`); the '98 goes through its intro and menu into play (`e98s`, `s98`).
+  On Scorpion the default map was played (no LOAD MAP): its scenery spells "ЗАГРУЗИСЬ" ("load up") on the radar, the
+  built-in level is a prompt to load a map, not a fault.
+
+### The hang from the Pentagon 128 menu's TR-DOS item
+
+Started from the Pentagon 128 boot menu's TR-DOS item, the '99 hangs in the intro (`work/stage1/x99p`). This is the
+game's incompatibility with the Pentagon 128 ROM, not an emulator fault: the ROM is the original. Its 48 BASIC IM 1
+handler at `$004A` calls `$386E`, which with FLAGS (`$5C3B`) bit 4 set calls `$3A42`; that reads the AY's port A and
+writes `$5B88`. Every packed block copies its depacker to `$5B00-$5B99` (the printer buffer, free on a 48 K machine)
+and runs it with interrupts on, and `$5B88` is the depacker's own code (`DepackGetBits+5`, the `RL C`,
+`src/sfx/zsblock.asm`): the first interrupt during an unpack breaks it. The menu's TR-DOS item leaves FLAGS bit 4
+set (the 128 BASIC mode bit); the disk's autostart (FLAGS `$C8`, bit 4 clear) and the menu's "48 BASIC" path then
+`RANDOMIZE USR 15616` do not, so the handler never reaches `$3A42`. The author most likely tested only on Scorpion
+and Leningrad-type machines, where the printer buffer is free at any time; the '98 does not use `$5B00` and is
+not affected.

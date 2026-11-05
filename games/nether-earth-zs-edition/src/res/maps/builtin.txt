@@ -1,0 +1,75 @@
+; The '99 game block's own level at $BDA9-$BF9B (BuildMap's lists before any LOAD MAP)
+; tools/zs_level.py (format: its doc string, src/res/maps/README.md). Lists from $BDA9, 187 of the 499 bytes of the lists' room used, the rest zero.
+
+scenery SceneryWest
+  shape 6    12  1     ; ShapeEdgeFence
+  shape 6    12  9     ; ShapeEdgeFence
+  shape 6    24  1     ; ShapeEdgeFence
+  shape 6    24  9     ; ShapeEdgeFence
+  block $11  32  3
+  block $11  30  3
+  block $11  34  5
+  block $11  32  7
+  block $11  34  9
+  block $11  32 11
+  block $11  30 11
+  shape 4    38  5     ; ShapeTallWallV
+  shape 4    42  5     ; ShapeTallWallV
+  block $12  40  3
+  block $12  40  7
+  shape 4    46  5     ; ShapeTallWallV
+  block $12  46  3
+  block $12  48  3
+  block $12  50  3
+  shape 4    54  5     ; ShapeTallWallV
+  block $12  54  3
+  block $12  56  3
+  block $12  58  5
+  block $12  56  7
+  shape 4    66  3     ; ShapeTallWallV
+  block $12  62  3
+  block $12  62  5
+  block $12  64  7
+  block $12  64 11
+  block $12  62 11
+  block $12  70  3
+  block $12  72  3
+  block $12  74  5
+  block $12  72  7
+  block $12  74  9
+  block $12  72 11
+  block $12  70 11
+  shape 4    78  3     ; ShapeTallWallV
+  shape 4    84  3     ; ShapeTallWallV
+  block $12  78 11
+  block $12  80  9
+  block $12  82  7
+  block $12  84 11
+  block $12  88  5
+  block $12  88  7
+  block $12  88  9
+  block $12  90  3
+  block $12  92  5
+  block $12  92  9
+  block $12  90 11
+  shape 4    96  5     ; ShapeTallWallV
+  block $12  96  3
+  block $12  98 11
+  block $12 100  9
+  block $12  98  7
+  end
+
+scenery SceneryEast
+  shape 6   503  1     ; ShapeEdgeFence
+  shape 6   503  9     ; ShapeEdgeFence
+  shape 6   491  1     ; ShapeEdgeFence
+  shape 6   491  9     ; ShapeEdgeFence
+  end
+
+bases BaseListWest
+  warbase    18  8
+  end
+
+bases BaseListEast
+  warbase   497  8
+  end

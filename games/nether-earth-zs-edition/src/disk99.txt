@@ -1,0 +1,51 @@
+# NEZSED.SCL (orig/NEZSED.ZIP): NEZSEd99.B (133 sectors, every block read by sector number, docs/03 3.3), the
+# five ZX Word texts and the twelve maps. The order of the first five files matters: stage 3 reads the four texts
+# that follow the game file by position.
+file NEZSEd99 B 48 48
+  part build/front99/basic.bin          # sector 0: the BASIC and the reader at $5D5B
+  part build/lead/stage2.blk            # sectors 1-18: stage 2 (the intro), packed, read to $8000
+  slack build/lead/stage2.slack
+  part build/front99/pictures-7d87.bin  # sectors 19-31: the RLE decoder and pictures at $7D87
+  part build/front99/music-c000.bin     # sectors 32-44: the Sound Tracker player and tune at $C000
+  part build/lead/stage3.blk            # sectors 45-50: stage 3, packed, read to $8000
+  slack build/lead/stage3.slack
+  part build/lead/game.blk              # sectors 51-118: the game, packed, read to $6780
+  slack build/lead/game.slack
+  part build/lead/patches.blk           # sectors 119-122: the patches, packed, read to $DC00
+  slack build/lead/patches.slack
+  part build/lead/menu.blk              # sectors 123-132: the start-up menu, packed, read to $E800 of page 1
+  slack build/lead/menu.slack
+file NEabout W 38912 3763
+  part build/texts/NEabout.W
+file NEdescri W 38912 5469
+  part build/texts/NEdescri.W
+file NEgreets W 38912 313
+  part build/texts/NEgreets.W
+file NEadvice W 38912 5572
+  part build/texts/NEadvice.W
+file NEZSEd99 W 38912 5384
+  part build/texts/NEZSEd99.W
+file NELEV_00 N 0 0
+  part build/maps/NELEV_00.N
+file NELEV_01 N 0 0
+  part build/maps/NELEV_01.N
+file NELEV_02 N 0 0
+  part build/maps/NELEV_02.N
+file NELEV_03 N 0 0
+  part build/maps/NELEV_03.N
+file NELEV_04 N 0 0
+  part build/maps/NELEV_04.N
+file NELEV_05 N 0 0
+  part build/maps/NELEV_05.N
+file NELEV_06 N 0 0
+  part build/maps/NELEV_06.N
+file NELEV_07 N 0 0
+  part build/maps/NELEV_07.N
+file NELEV_08 N 0 0
+  part build/maps/NELEV_08.N
+file NELEV_09 N 0 0
+  part build/maps/NELEV_09.N
+file NELEV_10 N 0 0
+  part build/maps/NELEV_10.N
+file NELEV_11 N 0 0
+  part build/maps/NELEV_11.N

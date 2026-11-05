@@ -1,0 +1,172 @@
+# The music block of Nether Earth ZS Edition'99, $C000-$CCFF (tools/front99_mkgame.py --part src/music99/music.json):
+# NEZSEd99.B sectors 32-44, not packed, read to $C000 by stage 2 ($61B5). A Sound Tracker 1.x compiled block: the
+# player Sound Tracker's compile function writes ($C000-$C4A7, 1192 bytes), then the module in the STC format
+# ($C4A8-$CC8E, 2023 bytes: src/res/music99/ne_mus.stc), then 113 bytes of sector slack.
+# Witness: L1 window work/stage2/front99/intro (r99 frames 227-2178): Init entered once at frame 261, Play 1845
+# times (frames 262-2114, from stage 2's interrupt handler $6525), Mute once at frame 2114 (after SPACE).
+# Identification: the player's 1192 bytes equal, byte for byte outside the name text $C014-$C04A, the player of
+# "Unknown - Slide (1998) (FunTop 1998)" (zxart.ee tune 87860, a file of the same compiled form); relocated copies
+# (the high bytes of the addresses differ) are in CHHQ_SCI.SCL, DIZCOLF1.trd. zxtune reads the module as STC
+# ("SONG BY ST COMPILE", 18 positions, 6912 frames).
+
+@module player ; the Sound Tracker 1.x compiled player
+@about The player the Sound Tracker 1.x editor's compile function puts in front of a module: three entry jumps (init, play, mute), the compile text, the set-up, the variables, the per-frame play routine, the note table and the AY register writer. It plays STC modules: a tempo (frames a row), a position list (pattern, transposition), 16 samples of 32 lines (volume, noise, tone shift, masks; a loop), ornaments of 32 note offsets, patterns of three channel streams (notes, sample / ornament / envelope / length commands).
+@about Its variables live inside the block ($C0C9-$C107) and some operands are patched as it runs (the module address in ModuleOffset, the transposition in NoteTransposition, the sample line in OrnamentLine): the block is not re-entrant and is only correct once Init has run.
+
+$C000 b CompileHeader ; Eleven bytes the compiler leaves in front of the jumps
+> $0B $00 $0E $00: the offsets of the init and play entries ($C00B, $C00E) as words; $7E $80 $81 $80 $80 $10 $1F: bytes no code of the block reads (the compiler's own; their meaning is not known from this block). Nothing in the recording reads any of them.
+
+$C00B c Init ; Entry: set the module at Module up for playing from its first position
+> JR to InitEntry (HL = Module). Called once by stage 2 at $61E3 (r99 frame 261) with A = $80, which the player ignores. Interrupts are disabled while it runs and enabled again on return.
+$C00D b InitPad ; A padding byte after the JR (NOP)
+
+$C00E c Play ; Entry: one frame of the tune (called once an interrupt)
+> JR to PlayEntry. Called by stage 2's interrupt handler ($6525) every frame from r99 frame 262 to 2114.
+$C010 b PlayPad ; A padding byte after the JR (NOP)
+
+$C011 c Mute ; Entry: silence the AY
+> JR to MuteAY. Called once by stage 2 ($6278) after SPACE (r99 frame 2114).
+$C013 b MutePad ; A padding byte after the JR (NOP)
+
+$C014 t CompileText ; "SOUND TRACKER COMPILATION OF NE___MUS   BY KSA SOFTWARE" and the byte $7F
+> The compiler's signature with the module name ("NE___MUS") and the author field ("KSA SOFTWARE") filled in when compiling: other compiled blocks carry their own (the reference copy "SLIDE" with an empty author, "BURO NAHOD BY WILLIS SOFT"). Whether KSA Software is the musician or the author field of the copy of Sound Tracker used is not known from this block. $7F at $C04B ends it.
+
+$C04C c MuteAY ; Silence the AY: register 12 stepped through 0-255, the mixer (register 7) set to $FF
+> Selects AY register 12 and writes A = 0, 1, ... 255 to it (MuteLoop, ending when A wraps to 0), then register 7 = $FF: every tone and noise channel off. A, BC changed. Ports $FFFD / $BFFD.
+$C04F ; register 12, the envelope period's high byte, is selected
+$C053 ; A = 0 to the data port first, then 1, 2 ... in MuteLoop
+
+$C059 c InitEntry ; Init's jump: HL = the module
+> HL = Module, on to InitModule.
+$C05F c PlayEntry ; Play's jump: on to PlayFrame
+
+$C062 c InitModule ; Set the player's variables up for the STC module at HL
+> Input: HL = the module. Reads the tempo, patches ModuleOffset with the module address (the module's offsets become addresses), takes the positions list (its first byte + 1 = the count), the ornaments, the patterns and the samples (module + 27) addresses; points channel A's pattern stream at PatternEnd ($FF, so that the first Play fetches position 0), zeroes ChannelState..AYEnvShape, sets every channel's ornament to ornament 0 and its sample counter to $FF (silent), the delay counter to 1, and writes the AY registers once (WriteAY). DI on entry, EI on return. Outputs: every variable of the player; A, BC, DE, HL changed.
+$C062 ; interrupts off while the variables are half set
+$C063 ; the module's first byte: frames a row
+$C067 ; the module address into ModuleOffset's operand
+$C06B ; DE = the positions list ...
+$C06E ; ... its first byte: the last position's index
+$C070 ; + 1: the count of positions
+$C078 ; DE = the ornaments
+$C080 ; DE = the patterns
+$C087 ; DE = the samples (module + 27)
+$C091 ; channel A's stream at the $FF of PatternEnd
+$C097 ; ChannelState..AYEnvShape cleared (45 bytes)
+$C0A3 ; ornament 0: found in the ornament list
+$C0AB ; A = $FF: every channel's sample counter ...
+$C0B5 ; ... and the delay counter at 1: the next Play reads a row
+$C0BA ; every channel plays ornament 0 (its offsets, past the number byte)
+$C0C4 ; the registers once
+
+$C0C9 w PositionsAddr ; The module's position list (past its count byte)
+> The player's variables, $C0C9-$C107. Before Init they hold the compiler's leftovers (as on the disk); InitModule sets them.
+$C0CB OrnamentsAddr ; the module's ornaments
+$C0CD PatternsAddr ; the module's pattern table
+$C0CF SamplesAddr ; the module's samples (module + 27)
+$C0D1 b Tempo ; Frames a row (the module's first byte)
+$C0D2 DelayCounter ; frames left until the next row
+$C0D3 PositionCount ; the number of positions (list byte + 1)
+$C0D4 w PatternPtrA ; Channel A's pattern stream: the next row's byte
+$C0D6 PatternPtrB ; channel B's pattern stream
+$C0D8 PatternPtrC ; channel C's pattern stream
+$C0DA b PatternEnd ; $FF: channel A's stream points here after Init (an end of pattern: the first Play fetches a position)
+$C0DB b ChannelState 10 ; Channel A's 10 bytes; IX points at +2 (ChannelA)
+> Per channel (A $C0DB, B $C0E5, C $C0EF), IX = the channel + 2: IX-2 the envelope state (0 none, 1 set by the row, 2 written once), IX-1 the row length reload, IX+0 the sample line (0-31), IX+1 the note, IX+2 the rows left until the next note, IX+3/4 the sample's address, IX+5/6 the ornament's address, IX+7 the sample lines left ($FF: silent).
+$C0DD ChannelA ; channel A: IX here
+$C0E5 ChannelStateB ; channel B's 10 bytes
+$C0E7 ChannelB ; channel B: IX here
+$C0EF ChannelStateC ; channel C's 10 bytes
+$C0F1 ChannelC ; channel C: IX here
+$C0F9 b PositionIndex ; The next position to play
+$C0FA w AYTone 2 ; The AY registers 0-13 as WriteAY writes them (down from 13 or 10): tone A, B, C periods
+$C100 b AYNoise ; Register 6: the noise period
+$C101 AYMixer ; register 7: the mixer
+$C102 AYVolume ; registers 8-10: the volumes A, B, C (bit 4: the envelope)
+$C105 AYEnvPeriod ; registers 11-12: the envelope period
+$C107 AYEnvShape ; register 13: the envelope shape (0: not written this frame)
+
+$C108 c FindNumbered ; Find the record whose first byte is A
+> Inputs: A = the number, HL = the first record, BC = the record size. Steps HL by BC until (HL) = A. Output: HL = the record (no end check: the number must be there).
+
+$C10E c ReadOffset ; Read a module offset at HL and make it an address
+> Input: HL = a word in the module. Output: DE = the word + the module address (through ModuleOffset), HL past the word. BC changed.
+
+$C113 c ModuleOffset ; DE = HL + the module address (the operand patched by InitModule)
+> ModuleOffset+1 holds the module address once Init has run (on the disk the compiler's $EE43). Input HL, output DE = HL + module; BC changed. InitModule calls it directly for the samples (HL = 27).
+
+$C119 c SampleLine ; Decode one line of a sample
+> Inputs: IX = the sample's address (IX+3/4 of a channel), A = the line (0-31). Outputs: L = the volume (0-15), H = the noise period, DE = the tone shift (12 bits, bit 4 of D set when it is added), C = $10 when the tone is masked off, B = $02 when the noise is masked off; IX moved to the line. Called three times a frame from PlayFrameOut.
+$C12C SampleNoiseMask ; bit 6: the noise mask
+$C134 SampleNoise ; the noise period
+$C149 ; bit 5: the shift is added
+
+$C151 c NextPosition ; Move to the next position: the three pattern streams and the transposition
+> Takes PositionIndex (back to 0 after the last), reads the position's pattern number and transposition (the transposition patched into NoteTransposition), finds the pattern in the pattern table and points PatternPtrA/B/C at its three streams. Called from PlayFrame when channel A's stream reaches $FF (5 times in the window, frames 262-1806). A, BC, DE, HL changed.
+$C15E NextPositionSet ; the index after this one
+
+$C192 c RowCountdown ; Count a channel's rows down
+> IX = the channel. DEC (IX+2); when it goes below zero the reload (IX-1) is put back and the sign flag is set (M): the caller reads the channel's next row.
+
+$C19D c PlayFrame ; One frame of the tune: every Tempo frames a row of each channel, then the sound
+> DelayCounter counted down; at zero it is reloaded from Tempo and each channel whose row counter ran out reads its stream (ReadRow; channel A first fetches the next position when its stream is at $FF). Then PlayFrameOut works out and writes the registers. Called through Play from the interrupt handler.
+$C1C8 PlayChannelB ; channel B
+$C1DB PlayChannelC ; channel C
+
+$C1F1 c ReadRow ; Read a channel's pattern stream up to its next note or rest
+> Inputs: HL = the stream, IX = the channel. Bytes: $00-$5F a note (IX+1; the sample restarts: line 0, 32 lines); $60-$6F the sample (number - $60); $70-$7F the ornament (number - $70, the envelope off); $80 a rest (the channel silent); $81 an empty row; $82 ornament 0, the envelope off; $83-$8E the envelope shape (- $80) with the next byte its period (low), ornament 0; $A1 and above the row length (- $A1). Commands loop until a note, a rest or an empty row. Output: HL past the row.
+$C21F RowNote ; a note
+$C22A RowEmpty ; an empty row
+$C22C RowSample ; a sample
+$C244 RowRest ; a rest
+
+$C245 c ChannelOff ; The channel's sample counter to $FF: the channel is silent
+$C24A c OrnamentZero ; Row byte $82: ornament 0, the envelope off
+$C24D c SetOrnament ; Row byte $70-$7F: point the channel at ornament A - $70, the envelope off
+> Inputs: A = the row byte, HL = the stream, IX = the channel. Back into ReadRow with HL past the byte.
+$C24F SetOrnamentA
+
+$C269 c SetEnvelope ; Row bytes $83-$8E, period: the envelope shape and period, ornament 0
+> AYEnvShape = A - $80, AYEnvPeriod = the next byte, the channel's envelope state 1, ornament 0; back into ReadRow.
+
+$C28E c SampleStep ; Advance a channel's sample by one line
+> IX = the channel. When the channel is silent ($FF) returns at once (Z). Else the line counter IX+7 is decreased and the line IX+0 advanced (mod 32); C = the line to play. When the counter runs out the sample's loop (its byte $60: start + 1, $61: length) restarts it, or (no loop) the channel goes silent.
+
+$C2C2 c NoiseFromSample ; Register 6 = H when the noise is on (C = 0)
+$C2CA c EnvelopeFlag ; Set bit 4 of the volume at HL while the channel uses the envelope
+> IX = the channel, HL = its volume register in AYVolume. On the first frame after an envelope command (IX-2 = 1) the state becomes 2; on the next ones (2) AYEnvShape is cleared, so the shape register is written once. The volume's bit 4 (the envelope) is set while the state is non-zero.
+$C2E0 EnvelopeOnce ; the shape is written only on the first frame
+$C2E4 EnvelopeOn ; the envelope on
+
+$C2E7 c PlayFrameOut ; The frame's sound of the three channels into AYTone..AYVolume, then WriteAY
+> For each channel: SampleStep; SampleLine of the line; the mixer bits; the tone period (TonePeriod); the volume; the envelope state. AYMixer is built from the three channels' tone and noise masks. Ends in WriteAY.
+$C313 VolumeA ; channel A's volume
+$C31A OutChannelB ; channel B
+$C348 VolumeB ; channel B's volume
+$C34F OutChannelC ; channel C
+$C381 VolumeC ; channel C's volume
+
+$C38B c TonePeriod ; The tone period of a channel's note, ornament and sample shift
+> Inputs: IX = the channel, DE = the sample's shift (bit 4 of D: add), L = the volume (kept). The note (IX+1) + the ornament's offset at the line (OrnamentLine's operand, patched with the line) + the position's transposition (NoteTransposition's operand) indexes NoteTable; the shift is added or subtracted. Output: HL = the period, A = the volume.
+$C394 OrnamentLine ; OrnamentLine+1: the sample line, patched by PlayFrameOut
+$C39C NoteTransposition ; NoteTransposition+1: the position's transposition, patched by NextPosition
+@isub $C3A2 LD HL,NoteTable
+$C3B4 ShiftDown ; bit 4 clear: the shift is subtracted
+
+$C3B8 w NoteTable 8 ; The 96 tone periods of the notes (8 octaves of 12, $0EF8 down to $000F)
+> The AY tone period of each note (the Sound Tracker table, for the AY's 1.77 MHz clock).
+
+$C478 c WriteAY ; Write the AY registers from AYTone..AYEnvShape
+> When AYEnvShape is non-zero registers 13 down to 0 are written, else 10 down to 0 (the envelope shape is written only when a row set it: writing register 13 restarts the envelope). OUTD from the top register's byte downwards. A, BC, HL changed. Ports $FFFD / $BFFD.
+$C486 WriteAYFrom ; C = $FD: port $FFFD selects, $BFFD (B after OUTD's decrement: $BEFD, decoded the same) writes
+$C488 WriteAYLoop ; one register: select A, write (HL), down
+
+$C495 c MuteLoop ; MuteAY's loop: register 12 = A, A + 1, ... until A wraps to 0; then register 7 = $FF
+$C49A ; every tone and noise off
+
+$C4A8 b Module ; The tune: an STC module (Sound Tracker compiled, 2023 bytes)
+> Its 27-byte header: tempo 6, positions at +$026D, ornaments at +$0292, patterns at +$0358, the identifier "SONG BY ST COMPILE", the size $07E7; then 16 samples of 99 bytes, the 18 positions, the ornaments, the pattern table and the patterns. The source is the .stc file (src/res/music99/ne_mus.stc, readable by zxtune and other STC players).
+@res music99/ne_mus.stc
+$CC8F b SectorSlack ; The 113 bytes after the module to the end of the 13th sector: no code reads them
+> They look like the end of another tune's patterns (the same kind of bytes as the module's pattern data) left in the memory the block was saved from. Kept as a leftover (src/res/music99/leftover-cc8f.bin).
+@res music99/leftover-cc8f.bin
