@@ -1495,6 +1495,7 @@ The GIF is the run `win` from 20 frames before the poke to 5400 frames after it,
 `NETHER+.W` is a text file on the disk. No program reads it: it is meant to be read in a disk tool or a text
 viewer. The disk stores it in CP866 with CR LF; the repo keeps it as UTF-8 in
 [`src/res/text/nether-plus-w.txt`](../src/res/text/nether-plus-w.txt), and `tools/mkdisk.py` writes it back.
+The whole file as readable Markdown, with the English translation: [texts/nether-plus-w.md](texts/nether-plus-w.md).
 
 It opens with ASCII art: the "Eternity Industry" logo, "Proudly presents", "Realtime strategy game", the word
 "ADVANCED" in block letters and the line "A D V A N C E D   N E T H E R   E A R T H". The art is in the file and is
