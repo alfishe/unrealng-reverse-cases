@@ -1,7 +1,7 @@
 # Nether Earth GS (Tron Z, 2002; tape: Hood, 2017)
 
-State: source, resources and documents 01-12 complete (2026-11-05); the SCL, the TRD and the TAP rebuild byte for
-byte from source. The comparison with Nether Earth (doc 13) is not written yet.
+State: source, resources and documents 01-13 complete (2026-11-05); the SCL, the TRD and the TAP rebuild byte for
+byte from source. The comparison with Nether Earth is doc 13.
 
 | | |
 | --- | --- |
@@ -28,7 +28,10 @@ all sound: a bridge pages a driver in at `$C000` and the beeper writes became `N
 - **The TRD** adds a HRUM-packed boot menu and two programs of other origins: `Neart481`, a cracked 128K build, and
   `Neart482`, a RAPEWARE intro with a game inside ([3.8](docs/03-build-and-load.md#38-the-trds-boot-menu-and-its-extras)).
 
-The documents 01-12, the recordings and the terms: [docs/README.md](docs/README.md). How the reverse was done:
+What the conversion changed in Nether Earth, byte by byte and sound by sound:
+[13. Differences from Nether Earth](docs/13-differences-from-nether-earth.md).
+
+The documents 01-13, the recordings and the terms: [docs/README.md](docs/README.md). How the reverse was done:
 [WALKTHROUGH.md](WALKTHROUGH.md).
 
 ## Build
