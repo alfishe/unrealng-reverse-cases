@@ -1,0 +1,28 @@
+# The game starter, $9C40-$B78F (tools/disk_mkgame.py --part src/disk/starter.json): bank 7's first 6992 bytes
+# once ane3's HRUM block d07 is unpacked there. The boot program's key 1 ($61C4) copies bank 7 $C000 to $9C40 and
+# calls it before the game starts. Witness: L1 window work/stage3/aned/a-start (frames 4550-5100 of recording a).
+
+@module starter ; the game starter: the title picture shown in, then the game
+@about Run once, as the game starts: the screen and the 48 K system variables area are cleared, the title picture's pixels drawn with the attributes of a colour run, the border and the paper stepped through the 8 colours (two frames each), then the picture's own attributes; interrupts off and back to the boot program, which starts the game.
+
+$9C40 c StartPicture ; Clear $4000-$5AFF, draw the title picture, fade it in through the 8 paper colours, its attributes
+> Interrupts on (the HALTs of FillColour need them), border black. $5AFF down to the first non-zero byte below the screen is cleared (the loop stops on a byte that stays non-zero after LD (HL),0: the ROM). The 6144 pixel bytes of TitlePicture go to $4000; FlashColours' 8 attributes each fill the whole attribute area (FillColour); TitlePicture's 768 attributes go to $5800; interrupts off.
+$9C40 ; the HALTs below need interrupts
+$9C42 ; border black
+$9C44 ; the screen and on down, cleared ...
+$9C49 ; ... until a byte stays non-zero (the ROM)
+@isub $9C4C LD HL,TitlePicture
+$9C4C ; the picture's pixels to the screen
+$9C57 ; the 8 colours
+@isub $9C66 LD HL,TitlePicture+$1800
+$9C66 ; the picture's attributes
+$9C71 ; the boot program goes on with interrupts off
+
+$9C73 c FillColour ; Every attribute and the border from the colour at HL; two frames
+> A = (HL): all 768 attributes (an LDIR from $5800), the border A / 8 (the paper's colour); two HALTs.
+$9C78 ; the paper bits to the border's
+$9C85 ; two frames
+
+$9C88 b FlashColours ; The 8 attributes of the fade: paper 0-7, ink black
+$9C90 b TitlePicture 8 ; The title picture: 6144 pixel bytes ($9C90-$B48F), 768 attributes ($B490-$B78F)
+@res diskmod/title.bin

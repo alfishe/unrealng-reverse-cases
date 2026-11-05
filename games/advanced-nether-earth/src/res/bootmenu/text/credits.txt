@@ -1,0 +1,73 @@
+# help item 6, "CREDITZ": 3 pages
+# tools/bootmenu_res.py: the format; the build turns it back into the bytes
+@wrap 33
+== 1
+‹lat›        TOTAL CREDITZ:
+       ----------------
+             INTRO:
+ Senat/EI:
+main coding, criticz.
+ Paracels/EI:
+grafix, XOR service, fixing, text
+ Syrus/EI:
+music, criticz.
+ D-Man/EI:
+main criticz.
+            HELP:
+ D-Man/EI:
+main coding, texts, details scrn.
+ Paracels/EI:
+title scrn, producing scrn, prog-
+ramming scrn.
+ Demiurge Ash/EI:
+description scrn, credits scrn.
+ X-Man:
+music.                           ¶
+== 2
+‹lat› Spy/EI:
+testing, criticz.
+ Crazy Softvor/EI:
+main beta-testing, criticz.
+             GAME:
+ D-Man/EI:
+add  coding, restoring,  packing,
+dead end coding.
+ Paracels/EI:
+final cut coding, menu scrn, fin-
+al cut scrn, turbo WG93 control.
+ Demiurge Ash/EI:
+title scrn, dead end scrn.
+ Syrus/EI:
+muzak in Dead End.
+ X-Man:
+main muzak, muzak in Final Cut.
+ Crazy Softvor/EI:
+main testing, criticz.
+ Spy/EI:
+testing, criticz.
+Tape version was kindly  supplied
+        by Melted Snow           ¶
+== 3
+‹lat›Thanks for moral support &  some-
+times   quite   wise  advises  to
+all from Eternity Industry !
+  AND NOW WE'D LIKE 2 GREET ALL
+           OUR PALS:
+MegaCode,  Phantom Family,  Cyber
+Punks Unity,Virtual Vision Group,
+Accept corp., Flash inc., C.I.C.,
+Player, Serzh,GAS 13,Melted Snow,
+RUSH ISPA, Global Corp.
+  BIG HELLO 2 OTHER COOL PEOPLE:
+Prestige, Progress, Extreme,Rush,
+Virtual Brozerz, Max Petrov, LAV,
+X-Trade,Mednonogov, E-Mage,Style,
+Mayhem,XL-Design of coz 2 U !
+   If U want 2 contact with Eter-
+nity Industry please write at the
+next address:                    ‹rus›
+601901 Россия, Владимирская обл.,
+  г.Ковров, ул. Чернышевского
+          д.7, кв.17
+       Калинину Дмитрию          ‹lat›
+          (D-Man/EI)             ¶

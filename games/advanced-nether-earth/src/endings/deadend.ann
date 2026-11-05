@@ -1,0 +1,234 @@
+# Dead End: bank 3 from $D2EF. The player and the tune before it ($C000-$D2EE) are aneS's: src/music/stp-player.asm
+# and src/res/music/nether-earth-end.pt2, included by src/endings/deadend.json. tools/endings_mkgame.py turns this
+# file and the recording work/endings/de into src/endings/deadend.asm and src/endings/deadend/*.asm.
+
+@equ $0052 RomRet ; a RET in the 48 BASIC ROM: CALL RomRet leaves the caller's address just under SP
+@equ $2758 RomHlAlt ; HL' as the 48 ROM's interrupt routine needs it
+@equ $74A6 LzPutByteOrg ; PutByte where the authors assembled the LZ depacker: LzScreen and MenuPicture write the real address over these CALL operands before they run
+@equ $A3B5 HrustGetBitOrg ; GetBit where the authors assembled HrustScreen: patched the same way
+@equ $A5EF Restart ; the game's restart (aneD's Restart): back to the game menu
+@equ $C000 nst.Init ; the player's init (src/music/stp-player.asm, assembled at $C000 in module nst)
+@equ $C005 nst.Play ; the player's frame
+
+@module deadend ; Dead End: the sequence and its starfield
+@about The game jumps to DeadEnd when the player loses (bank 3 paged at $C000, interrupt mode 1). The sequence: the Dead End picture (LzScreen) with Syrus's tune NETHER EARTH (END) played from an interrupt of its own (mode 2, the vector table Im2Table, the handler Im2Handler); a key; the GAME OVER screen (HrustScreen) under a starfield of 120 stars in four layers moving right at 1, 2, 4 and 8 pixels a frame; a key; the AY silenced, the screen cleared, interrupt mode 1 again and back to the game through Restart.
+@about The starfield is drawn the fast way: SP points into the star tables and each POP gives one star's screen address. Every frame StarsRestore puts back the 120 screen bytes saved under the stars, StarsMove moves them, StarsSave saves the bytes under their new places and StarsDraw ORs each layer's pixel in. A star's address only ever moves one byte right (INC of its low byte), so a star walks along its pixel line and drops to the next character row at the right edge.
+$D2EF c DeadEnd ; Dead End: the picture, the tune, GAME OVER and the stars, then the game menu
+> Entered by a jump from the game's end test with bank 3 at $C000 when the player has no buildings left (the recording work/endings/de: PlayerBuildings $FD3A poked to 0 in a saved game). Never returns: it ends with JP Restart.
+$D2EF ; the stack at the top of memory (SP = 0: the first push goes to $FFFE)
+$D2F2 ; a black screen
+$D2F6 ; start the tune: the player's init (it leaves interrupts enabled; mode 1 is still on)
+$D2F9 ; the Dead End picture to the screen
+$D2FC ; the vector table: 257 bytes of $FD, so any data bus value gives the handler at $FDFD
+$D309 ; I = the table's page
+$D30F ; from now on the tune plays every frame
+$D311 DeadEndKey ; wait for any key (all half rows, the five key bits)
+$D319 ; the GAME OVER screen
+$D320 ; save the bytes under the stars' first places
+$D323 DeadEndStars ; a frame of the starfield
+$D330 ; until a key
+$D338 ; silence the AY (the player's init writes the silent registers)
+$D33E ; I as the ROM keeps it, interrupt mode 1, back to the game menu
+@isub $D309 LD A,Im2Table/256
+$D348 c ClearScreen ; clear the screen (pixels and attributes) to 0
+> Writes 0 from $5AFF down and reads it back: RAM reads 0 and the loop goes on; the first byte that reads non-zero is the ROM's below $4000. Out: HL there, A that ROM byte.
+$D34C ClearScreenLoop
+$D352 c StarsSave ; save the screen byte under each of the 120 stars
+> SP walks the star tables (StarsLayer1 .. StarsLayer4), DE the save buffer StarsSaved; one LDI a star. C = $FF keeps the LDIs from carrying into B, the outer count (4 x 30). Ends through StarsRet, which restores SP.
+$D352 ; SP into StarsRet's operand
+$D35C ; C = $FF: the LDIs count C down, not B
+$D35E ; 4 rounds of 30 stars
+$D360 StarsSaveLoop
+$D3BF c StarsRestore ; put the saved bytes back under the 120 stars
+> The reverse of StarsSave: SP walks the star tables, HL the save buffer; one LDI from the buffer to each star's address.
+$D3CD StarsRestoreLoop
+$D42C c StarsDraw ; OR each layer's pixel into its 30 stars
+> Each layer's one-pixel mask is the operand StarsMove rotates (StarsMove+1 for layer 1, StarsMask2+1 .. StarsMask4+1); StarsPlot ORs it into the 30 screen bytes of the layer. B (3-6) is set for StarsPlot but not used there (it sets its own B).
+$D456 c StarsMove ; move the four layers: 1, 2, 4 and 8 pixels right a frame
+> Each layer keeps its one-pixel mask in the operand of its LD A: rotated right 1 (layer 1), 2 (layer 2) or 4 (layer 3) bits a frame; when the pixel wraps from bit 0 to bit 7 (the carry), StarsStep moves the layer's stars one byte right. Layer 4's mask stays $80 and its stars step every frame. Layer 3's mask is stored twice (the second store after StarsStep is harmless: A is unchanged).
+$D456 ; layer 1's mask (the operand: StarsMove+1)
+$D463 StarsMask2 ; layer 2's mask
+$D471 StarsMask3 ; layer 3's mask
+$D484 StarsMask4 ; layer 4's mask: always $80
+$D48D c StarsStep ; move the 30 stars at HL one byte right
+> INC of the low byte of each of the 30 addresses (HL steps over the high bytes). Saves SP like the others, so it can end through StarsRet.
+$D493 StarsStepLoop
+$D4F1 c StarsRet ; restore SP and return
+> The routines that borrow SP (StarsSave, StarsRestore, StarsStep, StarsPlot) store SP into this LD SP's operand first and jump here at the end.
+$D4F1 ; the operand: SP as it was
+$D4F5 c StarsPlot ; OR the mask A into the 30 screen bytes whose addresses are at HL
+> In: A the mask, HL one layer's table. Keeps the mask in StarMask (A is needed for the OR).
+$D4FF StarsPlotLoop
+$D5BA b StarMask ; StarsPlot's mask while it draws a layer
+$D5BB w StarsLayer1 6 ; layer 1 (1 pixel a frame): the screen addresses of its 30 stars
+$D5F7 w StarsLayer2 6 ; layer 2 (2 pixels a frame)
+$D633 w StarsLayer3 6 ; layer 3 (4 pixels a frame)
+$D66F w StarsLayer4 6 ; layer 4 (8 pixels a frame)
+$D6AB b StarsSaved 8 ; the 120 screen bytes under the stars (StarsSave / StarsRestore), 0 in the image
+
+@module lzscreen ; the Dead End picture and its depacker
+@about LzScreen unpacks a screen packed by the authors' own LZ (tools/endings_lz.py has the format and the packer) into $4000. It is position-independent: CALL RomRet leaves its own address (LzHere) under SP, and it writes the address of LzPutByte over the operands of its three CALLs; the image holds them as the authors assembled them (LzPutByteOrg). The stream follows the routine (LzHere + $BE). The game menu's picture routine (menupicture.asm) is a byte-identical copy.
+@about The bytes come in the order of character cells: down the 8 pixel lines of a cell, the next cell down a column of a third, the next column, the next third; then the 768 attributes. A back reference counts in that order: the copy turns the sequence address (DE) back into a screen address before it reads. Tokens: 0LLLLHHH + a byte, a match (length 3-18, distance up to 2047); 11NNNNNN + a byte, a run (3-66); 10NNNNNN + bytes, literals (1-63); $80 the end.
+$D723 c LzScreen ; unpack the LZ screen that follows this routine into the screen
+> Uses both register sets: DE the sequence address (from $4000), HL the stream; the second set writes: HL' the screen address, B' the lines left in a cell, C' the cells left in a column, A' the column count of a third (it carries out after 32 columns; Z after the third third: the attributes). Enables interrupts (the picture builds while the tune plays). Returns with HL' = RomHlAlt.
+$D724 ; a RET in the ROM: the return address, LzHere, stays just under SP
+$D727 LzHere ; SP back onto it: BC = LzHere
+$D72A ; DE = LzPutByte
+$D72F ; over the three CALL operands
+$D744 ; HL = the stream (LzHere + $BE)
+$D748 ; the sequence address and the screen address both start at $4000
+$D74E ; A' = 3 with Z clear, B' = C' = 8
+$D757 LzToken ; the next token: bit 7 clear, a match
+$D75C ; C = the distance's high bits
+$D767 ; B = the length (3-18)
+$D769 ; HL = DE - distance: the source's sequence address
+$D771 LzMatchByte ; the sequence address to a screen address (attributes stay as they are)
+$D78B LzMatchRead ; the byte from the screen
+$D78C LzMatchCall ; (CALL LzPutByte)
+$D796 LzNotMatch ; bit 7 set: the end, literals or a run
+$D7A0 LzLiteralByte
+$D7A1 LzLiteralCall ; (CALL LzPutByte)
+$D7A9 LzRun ; a run: the byte 3-66 times
+$D7AF LzRunCall ; (CALL LzPutByte)
+$D7B7 LzEnd ; $80: HL' as the ROM needs it
+@isub $D724 CALL RomRet
+@isub $D72A LD HL,LzPutByte-LzHere
+@isub $D72F LD HL,LzMatchCall+1-LzHere
+@isub $D736 LD HL,LzLiteralCall+1-LzHere
+@isub $D73D LD HL,LzRunCall+1-LzHere
+@isub $D744 LD HL,DeadEndPicture-LzHere
+@isub $D78C CALL LzPutByteOrg
+@isub $D7A1 CALL LzPutByteOrg
+@isub $D7AF CALL LzPutByteOrg
+@isub $D7B8 LD HL,RomHlAlt
+$D7BE c LzPutByte ; the byte A to the screen in the depacker's order
+> DE (the sequence address) counts on; in the second set HL' gets the byte and moves on: down the cell's lines, down the column of cells, along the columns, across the thirds, then the attributes one by one.
+$D7C2 ; Z (A' after the last third): an attribute, the next one
+$D7C4 ; the next pixel line of the cell
+$D7C7 ; 8 lines done: back 8 lines and down one character row
+$D7CB ; 8 cells done: back to the third's top, one column right
+$D7D2 ; a column more: 32 carry out
+$D7D6 ; the next third (Z after the third one)
+$D7DD LzPutAttr ; an attribute: the next one
+$D7DE LzPutCells ; a new column: 8 cells
+$D7E0 LzPutLines ; a new cell: 8 lines
+$D7E2 LzPutDone
+@isub $D7C7 LD DE,-$07E0
+@isub $D7CE LD DE,-$00FF
+$D7E5 b DeadEndPicture ; the Dead End picture (screen LZ, 3266 bytes)
+@res pictures/dead-end.lz
+
+@module gameover ; the GAME OVER screen and its depacker (Hrust 1)
+@about HrustScreen unpacks the Hrust 1 stream that follows it (Dmitry Pyankov's packer, without its header) into the screen at $4000; the format of the boot program's pictures (aneM's ScreenDepack), in a variant that takes its stream at a fixed place after itself. It is position-independent: CALL RomRet leaves its own address (HrustHere) under SP; it writes the address of HrustGetBit over the operands of its eleven CALLs (HrustRelocTable, read from its end) before it starts; the image holds them as the authors assembled them (HrustGetBitOrg).
+@about The stream: bits MSB first from 16-bit little-endian words, each fetched when the previous one's last bit is taken; a 0 bit is a literal byte, a 1 a match: the length from 2-4 more bits (2, 3, 4-5, 6-9) or a byte (10-263, $FE: a word, $FF: the end), then the distance: a 1 bit and a byte (1-256), or a 0, a prefix of 3-6 bits for the high byte (1-31) and a byte. A length-2 match has only the byte. tools/endings_hrust.py packs it back byte for byte.
+$E4A7 c HrustScreen ; unpack the GAME OVER stream (HrustStream) into the screen
+> The main set holds the output (DE) and the match length (BC); the second set the bit buffer (HL') and its count (B'). IX walks the stream. Returns with HL' = RomHlAlt.
+$E4A7 ; a RET in the ROM: the return address, HrustHere, stays just under SP
+$E4AA HrustHere ; SP back onto it: DE = HrustHere
+$E4AD ; IX = the stream (HrustHere + $EF), also the end of HrustRelocTable
+$E4B5 ; B = 0 (the main set's B stays 0: the high byte of a short distance or a byte length)
+$E4BA ; DE = HrustGetBit, HL = HrustHere
+$E4BB ; eleven CALL operands
+$E4BD HrustPatchCalls ; the next distance, from the table's end
+$E4C2 ; HL = the next CALL's operand: = HrustGetBit
+$E4C9 ; IX = the stream
+$E4CB ; the output: the screen
+$E4CF ; the bit set: B' = 1, so the first HrustGetBit only fetches the first word
+$E4D6 HrustLiteral ; a 0 bit: the next byte of the stream to the output
+$E4DF HrustNextToken ; the next bit: 0 a literal, 1 a match
+$E4E5 ; a match: A = 0, then two bits of its length code
+$E4EF ; 00: length 3
+$E4F1 ; 01, 10, 11: a third bit (A = 2-7)
+$E4F8 ; 11x: a fourth (A = 12-15)
+$E4FB HrustLengthCode ; the main set; H = 0 for a distance of one byte
+$E501 ; 010: length 2 and only a distance byte (1-256)
+$E504 HrustNotTwo ; 00: length 3
+$E506 ; 011: a length byte follows
+$E510 ; $FF: the end
+$E512 ; HL' as the ROM keeps it (the bit buffer is done)
+$E517 HrustByteLength ; $FE: a word length follows
+$E51A ; else the byte + 10 (B = 1 past 255)
+$E521 HrustCopyFar ; from the bit set
+$E522 HrustCopyMatch ; L = the distance byte, H = its high part: HL = DE - HL - 1
+$E52E ; the match, BC bytes
+$E533 HrustWordLength ; the length as a little-endian word
+$E53F HrustLongCode ; 100, 101: length 4 or 5
+$E541 ; 1100-1111 (12-15): length 6-9
+$E545 HrustCodeShort ; 00: 0 + 3
+$E547 HrustSetLength ; C = the length (B: 0, or 1 past 255)
+$E548 HrustReadDistance ; the bit set: a 1 bit is a distance of one byte
+$E54F ; else the high byte's prefix: 3 bits first
+$E552 HrustHighBits
+$E558 ; 000, 001: high 1, 2
+$E55D HrustSetHigh ; the main set: H = the distance's high byte, the byte follows in the stream
+$E561 HrustHigh3 ; 010x, 011x (4-7): high 3-6
+$E56B HrustHigh7 ; 1xxxx below 10111 (16-22): high 7-13
+$E576 HrustHigh14 ; 10111x-11111x (46-63): high 14-31
+@isub $E4A7 CALL RomRet
+@isub $E4AD LD IX,HrustStream-HrustHere
+@isub $E4B5 LD HL,HrustGetBit-HrustHere
+@isub $E4D1 CALL HrustGetBitOrg
+@isub $E4DF CALL HrustGetBitOrg
+@isub $E4E6 CALL HrustGetBitOrg
+@isub $E4E9 CALL HrustGetBitOrg
+@isub $E4F1 CALL HrustGetBitOrg
+@isub $E4F8 CALL HrustGetBitOrg
+@isub $E549 CALL HrustGetBitOrg
+@isub $E552 CALL HrustGetBitOrg
+@isub $E561 CALL HrustGetBitOrg
+@isub $E56B CALL HrustGetBitOrg
+@isub $E576 CALL HrustGetBitOrg
+@isub $E512 LD HL,RomHlAlt
+$E57D c HrustGetBit ; the next bit into A's bit 0 (and the carry out of A's bit 7)
+> In the second set: HL the bit buffer, B the bits left in it. Shifts HL left (the carry is the bit), counts B down and fetches the next word from the stream (IX) when the 16th bit is taken; RLA puts the bit into A. HrustScreen calls it through the operands it patched.
+$E57E ; bits left: done
+$E580 ; the next word, low byte first
+$E58C HrustGetBitDone ; the bit into A
+$E58E b HrustRelocTable 11 ; the distances between HrustGetBit's CALL operands, read from the end
+> HrustPatchCalls starts at HrustHere and adds each byte from the table's end down, stepping one more for the operand's high byte: $E4D2, $E4E0, $E4E7, $E4EA, $E4F2, $E4F9, $E54A, $E553, $E562, $E56C, $E577.
+$E599 b HrustStream ; the GAME OVER screen (Hrust 1, 418 bytes)
+@res pictures/game-over.hrust
+
+@module menupicture ; the game menu's picture (the game calls it)
+@about Not Dead End's: the game draws its menu picture with this routine (the recording work/endings/de runs it at frame 1505, after Restart). A byte-identical copy of LzScreen (lzscreen.asm has the format), followed by its stream.
+$E73B c MenuPicture ; unpack the game menu's picture (MenuPictureData) into the screen
+> The same code as LzScreen at its own place: the operands it patches and the stream it takes are its own (MenuHere + ...). Called by the game with bank 3 paged.
+$E73C ; a RET in the ROM: the return address, MenuHere, stays just under SP
+$E73F MenuHere ; SP back onto it: BC = MenuHere
+$E76F MenuToken
+$E789 MenuMatchByte
+$E7A3 MenuMatchRead
+$E7A4 MenuMatchCall ; (CALL MenuPutByte)
+$E7AE MenuNotMatch
+$E7B8 MenuLiteralByte
+$E7B9 MenuLiteralCall ; (CALL MenuPutByte)
+$E7C1 MenuRun
+$E7C7 MenuRunCall ; (CALL MenuPutByte)
+$E7CF MenuEnd
+@isub $E73C CALL RomRet
+@isub $E742 LD HL,MenuPutByte-MenuHere
+@isub $E747 LD HL,MenuMatchCall+1-MenuHere
+@isub $E74E LD HL,MenuLiteralCall+1-MenuHere
+@isub $E755 LD HL,MenuRunCall+1-MenuHere
+@isub $E75C LD HL,MenuPictureData-MenuHere
+@isub $E7A4 CALL LzPutByteOrg
+@isub $E7B9 CALL LzPutByteOrg
+@isub $E7C7 CALL LzPutByteOrg
+@isub $E7D0 LD HL,RomHlAlt
+$E7D6 c MenuPutByte ; the byte A to the screen in the depacker's order (LzPutByte's copy)
+$E7F5 MenuPutAttr
+$E7F6 MenuPutCells
+$E7F8 MenuPutLines
+$E7FA MenuPutDone
+@isub $E7DF LD DE,-$07E0
+@isub $E7E6 LD DE,-$00FF
+$E7FD b MenuPictureData ; the game menu's picture (screen LZ, 2545 bytes)
+@res pictures/game-menu.lz
+
+@module im2 ; the interrupt: the tune's frame
+@about Dead End plays its tune from an interrupt of its own: interrupt mode 2 with I = Im2Table's page; the table is filled with $FD at run time (DeadEnd), so whatever byte the bus holds, the vector is $FDFD: Im2Handler. The bytes before the table and between it and the handler are free space, zero in the image.
+$F1EE s DeadEndSpare1 ; free space, zero
+$FC00 s Im2Table ; the vector table: 257 bytes of $FD (DeadEnd fills it), zero in the image
+$FD01 s DeadEndSpare2 ; free space, zero
+$FDFD c Im2Handler ; the interrupt: one frame of the tune
+> Saves every register (both sets, IX, IY), calls the player's frame (nst.Play), restores them.

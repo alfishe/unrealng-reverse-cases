@@ -1,0 +1,10 @@
+# Final Cut, the screens after the bank 7 block ($A66D-$F76C), in place (banks 2 and 0 while it runs).
+
+@module fcscreens ; the screens
+@about Three plain screens (6912 bytes each) FinalCut copies to $4000: the caption shown first, the alien for the scroll (the normal screen's half of it) and the Victory screen at the end.
+$A66D b AlienMagentaScreen ; the alien in magenta: the normal screen during the scroll
+@res pictures/alien-magenta.scr
+$C16D b CaptionScreen ; the caption (Russian): "after long fierce battles the human army has at last destroyed the Insignians' base. Now their race is destroyed!", the burning base
+@res pictures/caption.scr
+$DC6D b VictoryScreen ; "Victory is with U!!!": the V-sign
+@res pictures/victory.scr

@@ -1,0 +1,14 @@
+; The order names (OrderNames $A848), one line an order 0-8 (robot +$0B): three quoted lines of 8
+; characters in the game font (tools/game_text.py: the Russian letters; $33 is 3 or З). ShowOrder copies
+; the 27-byte record (the lines joined by code 3, ended by 0) into OrderLine. A record that is not so is
+; written N db $xx,...
+
+0 "СТОЯТЬ И" "ДЕРЖАТЬ " "ОБОРОНУ "
+1 " ВПЕРЕД " "        " " МИЛЬ   "
+2 " НАЗАД  " "        " " МИЛЬ   "
+3 "ЛИКВИД. " "ВРАЖЕСК." "РОБОТОВ "
+4 "ЛИКВИД. " "ВРАЖЕСК." " ЗАВОДЫ "
+5 "ЛИКВИД. " "ВРАЖЕСК." "  БАЗЫ  "
+6 " ЗАХВАТ " "НЕИТРАЛ." " ЗАВОДОВ"
+7 " ЗАХВАТ " "ВРАЖЕСК." " ЗАВОДОВ"
+8 " ЗАХВАТ " "ВРАЖЕСК." "  БАЗ   "

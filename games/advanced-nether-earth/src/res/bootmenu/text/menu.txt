@@ -1,0 +1,19 @@
+# the help menu: its seven items and the copyright line (HelpMenu)
+# tools/bootmenu_res.py: the format; the build turns it back into the bytes
+@wrap 0
+== 1
+‹rus›ОПИСАНИЕ ИГРЫ¶
+== 2
+‹rus›ПРОИЗВОДСТВО РОБОТОВ¶
+== 3
+‹rus›ХАРАКТЕРИСТИКА КОМПОНЕНТОВ¶
+== 4
+‹rus›ПРОГРАММИРОВАНИЕ РОБОТОВ¶
+== 5
+‹rus›ОСОБЕННОСТИ ИГРЫ¶
+== 6
+‹lat›CREDITZ¶
+== 7
+‹rus›ВЫХОД¶
+== 8
+‹lat›(C) 1998 ETERNITY INDUSTRY. KOVROV COOL CITY.¶

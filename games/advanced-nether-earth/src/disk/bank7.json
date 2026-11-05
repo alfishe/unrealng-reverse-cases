@@ -1,0 +1,14 @@
+{
+ "name": "bank7",
+ "image": "src/res/img/d06-c000-bank7.bin",
+ "at": "C000",
+ "out": "build/disk/d06-c000-bank7.bin",
+ "header": ["; Advanced Nether Earth (Eternity Industry, 1998): bank 7 as its HRUM block unpacks it at the boot ($C000-$FFFF).",
+            "; $C000-$CE08 is the game starter's own HRUM block (src/disk/starter.asm, packed by src/sfx/blocks.asm with",
+            "; INNER, put in by src/images.asm): zero here. $CE09-$FFFF is the boot menu's digitised sample."],
+ "l1": ["work/stage3/aned/a-start/l1.json"],
+ "segments": [
+  {"title": "the sample", "ann": "src/disk/bank7.ann", "lo": "CE09", "hi": "10000", "run": "CE09",
+   "bases": {"7": "C000"}}
+ ]
+}

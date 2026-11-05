@@ -1,0 +1,50 @@
+; The game's texts: every PrintInline string and text table of the game image except the order names
+; (order-names.txt). One line a file of src/res/game/text, in address order: the file, then its bytes as
+; "letters" (the game font's Russian letters, tools/game_text.py; $33 is 3 or З) and PrintInline codes:
+; {at Y,X} (1 Y X), {attr $A} (2 A), {nl} (3: the next line, same column), {size $S} (4 S: height x 16 +
+; width), {end} (0), {$xx} any other byte. tools/game_res.py builds the .bin files from it.
+
+text/robot-menu.bin                {at 4,23} {attr $4D} "ПРЯМОЕ  " {nl} " УПРАВЛ." {nl} {nl} "ОТДАТЬ  " {nl} "  ПРИКАЗ" {nl} {nl} "БОЕВОИ  " {nl} "   РЕЖИМ" {nl} {nl} "ОСТАВИТЬ" {nl} "  РОБОТА" {at 17,23} {attr $20} "ПРИКАЗ  " {end}
+text/order-line-head.bin           {at 18,23} {attr $45}
+text/miles-pos.bin                 {at 19,25} {end}
+text/strength.bin                  {at 22,23} {attr $46} "  СИЛА  " {at 23,25} {attr $47} {end}
+text/orders-menu.bin               {at 4,24} {attr $47} "ОТДАТЬ" {nl} "ПРИКАЗ" {attr $4D} {at 7,23} "ДЕРЖАТЫ " {nl} " ОБОРОНУ" {nl} {nl} "ВПЕРЕД  " {nl} "?? МИЛЬ " {nl} {nl} " НАЗАД  " {nl} "?? МИЛЬ " {nl} {nl} "ПОИСК И " {nl} "ЛИКВИД. " {nl} {nl} "ПОИСК И " {nl} " ЗАХВАТ " {end}
+text/advance-title.bin             {at 5,23} {attr $4F} " ВПЕРЕД " {end}
+text/retreat-title.bin             {at 5,23} {attr $20} " НАЗАД  " {end}
+text/distance.bin                  {nl} "?? МИЛЬ " {at 9,23} {attr $45} " ВЫБОР " {nl} "ДИСТАН. " {at 13,24} {attr $46} "0 МИЛЬ " {end}
+text/distance-at.bin               {at 13,23} {attr $46} {end}
+text/destroy-menu.bin              {at 4,23} {attr $4F} "ПОИСК И " {nl} "ЛИКВИД. " {at 8,24} {attr $45} "ВЫБОР " {nl} "ЦЕЛИ  " {at 12,23} {attr $4D} "ВРАЖЕСК." {nl} " РОБОТЫ " {nl} {nl} "ВРАЖЕСК." {nl} "ЗАВОДЫ  " {nl} {nl} "ВРАЖЕСК." {nl} "  БАЗЫ  " {end}
+text/capture-menu.bin              {at 4,23} {attr $20} "ПОИСК  И" {nl} " ЗАХВАТ " {at 8,24} {attr $45} "ВЫБОР " {nl} " ЦЕЛИ " {at 12,23} {attr $4D} "НЕИТР.  " {nl} " ЗАВОДЫ " {nl} {nl} "ВРАЖЕСК." {nl} " ЗАВОДЫ " {nl} {nl} "ВРАЖЕСК." {nl} "  БАЗЫ  " {end}
+text/combat-menu.bin               {at 4,23} {attr $4D} "АТОМНАЯ " {nl} "   БОМБА" {nl} {nl} "ОГОНЬ   " {nl} " ФАЗОРОВ" {nl} {nl} "ОГОНЬ   " {nl} "   РАКЕТ" {nl} {nl} "ОГОНЬ   " {nl} "   ПУШЕК" {nl} {nl} " ДВИЖЕ- " {nl} "   НИЕ  " {nl} {nl} "ВЫХОД ИЗ" {nl} "  МЕНЮ  " {end}
+text/clock-pos.bin                 {at 0,27} {size $00} {attr $57} {end}
+text/menu-start.bin                {attr $46} {size $21} {at 10,1} "0..СТАРТ ИГРЫ" {size $00} {end}
+text/menu-keyboard.bin             {nl} {nl} {nl} "1..КЛАВИШИ " {end}
+text/menu-kempston.bin             {nl} {nl} "2..КЕМПСТОН ДЖ." {end}
+text/menu-more.bin                 {nl} {nl} "3..ИНТЕРФЕИС 2" {nl} {nl} {attr $46} "4..ЗАДАТЬ КЛАВ. " {nl} {nl} "5..ЗАГРУЗКА" {end}
+text/play-tape.bin                 {at 22,7} {attr $45} {size $21} "ВКЛЮЧИТЕ МАГНИТОФОН" {end}
+text/load-error.bin                {at 22,2} {attr $47} {size $22} "ОШИБКА ВВОДА !" {end}
+text/record.bin                    {at 22,0} {attr $45} "ВКЛЮЧИТЕ МАГНИТОФОН   " {nl} "И НАЖМИТЕ ЛЮБУЮ КЛАВ. " {end}
+text/redefine-title.bin            {at 2,9} {attr $47} {size $21} "ЗАДАИТЕ КЛАВ." {at 5,3} {size $00} {end}
+text/key-name-up.bin               "ВВЕРХ" {end}
+text/key-name-down.bin             " ВНИЗ" {end}
+text/key-name-left.bin             "ВЛЕВО" {end}
+text/key-name-right.bin            "ВПР. " {end}
+text/key-name-fire.bin             "ОГОНЬ" {end}
+text/key-name-pause.bin            "ПАУЗА" {end}
+text/key-name-abort.bin            "СБРОС" {end}
+text/key-name-save.bin             "ВЫГР." {end}
+text/press-key-for.bin             {nl} {nl} {attr $46} "НАЖМ. КЛАВИШУ " {attr $45} {end}
+text/define-key-blank.bin          "  " {attr $46} {end}
+text/key-name-sym-shift.bin        "ЯУМ ЯН" {end}
+text/key-name-enter.bin            "ЕНТЕР" {end}
+text/key-name-caps-shift.bin       "К. ШИФТ" {end}
+text/key-name-space.bin            "ПРОБЕЛ" {end}
+text/construction-title.bin        {size $22} {attr $47} {at 0,3} " ЦЕХ " {at 2,2} {size $21} "  РОБОТОВ   " {size $00}
+text/part-names.bin                {attr $45} {at 1,21} "ЭЛЕКТРОНИКА" {at 4,21} "А-БОМБЫ" {at 7,21} "ФАЗОРЫ " {at 10,21} "РАКЕТЫ  " {at 13,21} "ПУШКИ " {at 16,21} "АНТИГРАВЫ" {at 19,21} "ТРАКИ " {at 22,21} "БИПОД"
+text/exit-start.bin                {at 21,5} "ВЫ-  ВЫ-  " {nl} "ХОД  ПУСК "
+text/part-costs.bin                {attr $43} {at 2,22} "3" {at 5,22} "20" {at 8,22} "4" {at 11,22} "4" {at 14,22} "2" {at 17,22} "10" {at 20,22} "5" {at 23,22} "3"
+text/resource-names.bin            {size $00} {attr $46} {at 6,0} "-- НАЛИЧНЫЕ  --" {nl} "--  РЕСУРСЫ  --" {attr $44} {at 9,4} "ОБЩИЕ  " {at 11,0} "ЭЛЕКТРОНИКА" {at 12,4} "А-БОМБЫ" {nl} "ФАЗОРЫ " {at 14,3} " РАКЕТЫ " {at 15,5} "ПУШКИ " {at 16,4} "ШАССИ  " {at 18,6} "ВСЕГО" {end}
+text/total-position.bin            {at 18,12} {end}
+text/play-screen.bin               {attr $57} {at 0,22} {size $00} "ДЕНЬ:" {nl} " ЧАС:" {at 22,0} {size $21} {attr $45} "РАДАР:" {end}
+text/status-panel.bin              {at 3,22} {attr $46} "  СТАТУС" {nl} "ИНОП. ЛЮДИ" {at 6,23} {attr $45} "  БАЗЫ  " {nl} "ЭЛЕКТР. " {nl} "А-БОМБЫ" {nl} " ФАЗОРЫ" {nl} " РАКЕТЫ " {nl} " ПУШКИ " {nl} " ШАССИ " {nl} " РОБОТЫ" {at 15,23} {attr $46} " РЕСУРСЫ " {nl} {nl} {attr $44} "ОБЩИЕ  " {nl} "ЭЛЕКТР." {nl} "АТОМН. " {nl} "ФАЗОРЫ " {nl} "РАКЕТЫ " {nl} "ПУШКИ " {nl} "ШАССИ  " {end}
+text/panel-blank-line.bin          "          " {nl} {end}

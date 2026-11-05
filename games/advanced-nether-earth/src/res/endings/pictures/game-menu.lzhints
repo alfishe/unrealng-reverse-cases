@@ -1,0 +1,27 @@
+# The original packer's decisions the rule of tools/endings_lz.py does not make, for game-menu.png:
+# index (in the depacker's byte order) kind (m match, r run, l literals) length [distance]
+3216 l 3
+3334 l 2
+3392 l 2
+3399 l 1
+3463 l 1
+3490 r 5
+3527 l 1
+3591 l 1
+3696 r 4
+3703 r 6
+3790 l 23
+3867 l 1
+4966 r 17
+5292 r 4
+5414 r 10
+5504 r 18
+5538 l 2
+5540 r 4
+5554 r 5
+5604 r 4
+5628 r 10
+5732 r 4
+5983 l 1
+6046 l 2
+6080 r 5

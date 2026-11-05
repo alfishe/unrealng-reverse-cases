@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The game's Cyrillic: which letter each code of ANE's game font draws (src/res/gfx/game-font.png, $C400).
+"""The game's Cyrillic: which letter each code of ANE's game font draws (src/res/game/gfx/font.png, $C400).
 
 ANE kept NE's codes and drew Russian letters over the Latin ones, a look-alike where there is one (A, B, C, E, K,
 M, O, P, T, X, and the digit 3 for З) and a free code for the rest. Й is written with И, Ё with Е; there is no Ъ.

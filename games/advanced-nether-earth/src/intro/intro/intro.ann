@@ -1,0 +1,114 @@
+# The intro, $6600-$7536 of its image (src/intro/intro.asm puts it together with the picture block at $7537 and the
+# player and tune at $7D2D): the annotations that tools/intro_mkpart.py turns into src/intro/intro/*.asm.
+# The format is kit/mkgame.py's (class Annotations); the code is what tools/intro_trace.py's run executed.
+
+@module intromain ; the intro: the Eternity Industry logo, its music and the decorated picture
+@about The first of the boot's three programs at $6600 (HRUM block 1 inside the loader, src/loader.asm: LoaderMain calls IntroRun = $6600 once the block has unpacked itself there). Intro runs about 800 frames (tools/intro_trace.py: frames 52-859 of the run; the emulator recording work/intro/i1, its screens of script frames 750 and 1250 hold the decorated logo in screen 5; recording frame = script frame + about 1602) and returns to LoaderMain, which keeps the picture 309 frames more with the tune playing.
+@about What it does in order: the attributes white (IntroWhite), bank 7's screen cleared, the player (New SoundTrack Player by Phantom Family with "MAD NIGHT" by Syrus, $7D2D) copied to bank 6 $C000 and initialised, the IM 2 table of $61 bytes at $6000-$6100 for LoaderInterrupt ($6161), the picture block ($7537, HRUM) copied to bank 7 $C000 and run there: it unpacks the plain "ETERNITY industry" logo (src/res/intro/eternity.png) into screen 7. Then screen 7 is shown ($7FFD = $18) while LogoPicture unpacks the decorated version of the same logo (src/res/intro/logo.png: the logo with lightning, sparks and coloured blobs around it) into screen 5; IM 2 starts the music. After 576 frames, 192 frames of IntroAyEnvelope (a bug: it writes $7FFD, not the AY); then screen 5 (the decorated logo) is shown, screen 7 is whitened behind it and shown for one white frame, and the decorated logo comes back with a black border: the loader's wait follows.
+@about LogoPicture is the screen depacker of the authors' screen packer, the same code as the title picture's (src/intro/title/title.ann, TitlePicture) but for its first byte (EI instead of DI); its stream LogoStream follows it. The format is in src/intro/title: tools/intro_screen.py packs src/res/intro/logo.png along src/res/intro/logo.parse.
+$6600 c Intro ; the intro: logo, music, decorated logo
+> Entered from LoaderMain with interrupts off, IM 1, bank 0 paged, screen 5 shown. Uses the loader's SetPage ($6207: A to $7FFD and BANKM) and WaitFrames ($6200); returns with bank 0 paged, screen 5 shown, IM 2 on LoaderInterrupt (the music plays on).
+$6600 ; screen 5's attributes white on white, the border white: nothing shows while the logo is set up
+$6606 ; interrupts off while the banks are switched
+$6607 ; bank 7 at $C000
+$660C ; bank 7's screen ($C000-$DAFF) zero: screen 7 black
+$6615 ; L = 0: the first byte zero, LDIR spreads it
+$6618 ; bank 6 at $C000
+$661D ; the player and its tune to bank 6 $C000 ($2681 bytes: to one byte past the image's end)
+$6628 ; Init (src/music/stp-player.asm): the tune set up (and the AY silenced)
+$662B ; bank 0 at $C000 again
+$6630 ; the IM 2 table: $6000-$6100 all $61, so any bus byte gives the vector $6161, LoaderInterrupt
+$663D ; still IM 1: this HALT only waits for the frame
+$663F ; bank 7 at $C000
+$6644 ; the logo's HRUM block to bank 7 $C000 ...
+$664F ; ... and run: it unpacks itself (the depacker at $5B89) into screen 7, $C000-$DAFF, then EI; RET
+$6652 ; black border
+$6655 ; bank 0 at $C000, screen 7 shown: the plain logo appears
+$665A ; the decorated logo into screen 5, unseen
+$665D ; I = $60: the vector table above
+$6661 ; IM 2: LoaderInterrupt plays the tune from here on
+$6664 ; 576 frames of the plain logo
+$666A ; then 192 frames ...
+$666D IntroEnvelopeLoop
+$666E ; ... each after the interrupt (and its music frame) ...
+$666F ; ... with the (broken) switch of channel A's volume 15 to the envelope
+$6678 ; bank 7 paged, screen 5 shown ($17): the decorated logo appears
+$667D ; screen 7's attributes white (unseen), the border white
+$6683 ; screen 7 shown: one white frame
+$6689 ; black border
+$668C ; bank 0, screen 5 shown: the decorated logo stays
+$6692 c IntroWhite ; the attributes at HL white on white, the border white
+> 768 bytes of $3F from HL after a frame's HALT, and one more HALT after them (interrupts on: the caller's IM). The same as the loader's WhiteScreen ($6215) but for its EI.
+$6694 ; white border
+$669B ; paper and ink white
+$66A4 c IntroAyEnvelope ; meant to give channel A's volume 15 to the envelope; writes $7FFD instead (bug)
+> AY register 8 (channel A's volume) read back; if the player has set it to 15, 16 is meant to go to the AY data port, so that the envelope generator drives channel A's volume this frame. But LD B,$7F leaves C = $FD: the OUT goes to $7FFD, not to $BFFD. The envelope never sounds; $10 pages bank 0 and shows screen 5 until the next interrupt sets $7FFD again. Called once a frame for the 192 frames after the first 576; in recording d1 (frames 2761-2952) the write ran 49 times and the only port written was $7FFD (docs/09-sound.md 9.7).
+$66A4 ; AY register select
+$66AB ; the volume as the player left it
+$66AF ; not 15: kept
+$66B0 ; 16: the envelope's level
+$66B1 ; meant as the AY data port $BFFD, but C = $FD: this is $7FFD (bug)
+$66B6 c IntroDeadFill ; never run: the tail of a white-screen fill
+> LD D,H / LD E,L / INC E / LD (HL),$3F / LD BC,$02FF / LDIR / RET: IntroWhite's fill without its HALTs and border, left by the authors' assembly. Nothing calls or jumps here (no run of tools/intro_trace.py reaches it).
+$66C1 c LogoPicture ; the decorated Eternity Industry picture unpacked to screen 5 ($4000)
+> Called by Intro while screen 7 (the plain logo) is shown, so the picture builds up unseen; the 48 ROM is paged ($7FFD = $18: CALL $0052 needs its RET there). EI first (where the title picture's copy has DI): the loader's interrupt cannot run yet anyway (IM 1 until Intro sets IM 2), and the unpacking takes about 1.4 frames. Returns with HL' = $2758, the ROM's value.
+$66C2 ; the ROM's RET at $0052 returns at once and leaves $66C5 below SP
+$66C5 LogoBase ; SP - 2 is the return address just left: BC = LogoBase, wherever the code was loaded
+$66C8 ; DE = LogoPutByte
+$66CD ; the CALL of LogoCopy ...
+$66D4 ; ... the CALL of LogoLiteral ...
+$66DB ; ... and the CALL of LogoRun to LogoPutByte
+$66E2 ; HL = LogoStream, the packed screen
+$66E6 ; HL' = $4000, the first byte of the shown screen; DE = $4000, the count of bytes out (as an address in the stream's order)
+$66EC ; A' = 3: three thirds of pixels to go, NZ: pixels, not attributes
+$66EF ; B' = 8 lines of a character row, C' = 8 rows of a column
+$66F5 LogoNextToken ; the next token
+$66F8 ; bit 7 set: a literal block, a run or the end
+$66FA ; a copy: C = the offset's high bits
+$66FD ; B = the length, bits 3-6 + 3: 3-18 bytes
+$6706 ; the offset's low byte
+$6707 ; HL = DE - offset: where the copy starts, in the stream's order
+$670F LogoCopy ; one byte of a copy: its stream position to a screen address
+$6710 ; the attributes ($5800-$5AFF) are in screen order already
+$6717 ; C = $40 + third x 8 + the pixel line (L bits 0-2)
+$671D ; HL x 4: H bits 0-4 the column, L bits 5-7 the character row
+$6728 ; HL = the screen address of that byte
+$6729 ; the byte from the screen, written again at the current place
+$672A LogoCopyCall ; operand patched to LogoPutByte
+$672E ; the next source byte
+$6731 ; the token's pointer back
+$6734 LogoBlock ; bit 7 set: the low 7 bits, 0 the end
+$6738 ; the byte after the token
+$6739 ; bit 6 set: a run
+$673D LogoLiteral ; a literal block of B bytes
+$673F LogoLiteralCall ; operand patched to LogoPutByte
+$6747 LogoRun ; a run: the next byte (b & $3F) + 3 times
+$674D LogoRunCall ; operand patched to LogoPutByte
+$6755 LogoDone ; the end: HL' = $2758 as the ROM keeps it, interrupts on
+$675C c LogoPutByte ; write A to the screen at HL' and step HL' in the stream's order
+> DE counts the bytes out (LogoCopy reads its sources by that count). In the alternate set: HL' the screen address, B' the lines left in the character row, C' the rows left in the column, A' (with its flags) 3 - third and the columns done x 8; Z' set once the pixels are done: then HL' just counts on through the attributes.
+$6760 ; Z': the attributes, one after another
+$6762 ; the next pixel line down
+$6765 ; a character row done: H - 8 (back to its first line), L + $20 (the next row)
+$6769 ; 8 rows: the column is done
+$676C ; the next column, the third's top row (H - 1 undoes the carry of the 8th row)
+$6770 ; A' + 8 a column: the 32nd carries
+$6774 ; the third is done: on to the next third's first column
+$6778 ; one third less: Z after the third third, the attributes next
+$677B ; an attribute: the next one
+$677C ; a new column: 8 rows
+$677E ; a new character row: 8 lines
+@isub $66C8 LD HL,LogoPutByte-LogoBase
+@isub $66CD LD HL,LogoCopyCall+1-LogoBase
+@isub $66D4 LD HL,LogoLiteralCall+1-LogoBase
+@isub $66DB LD HL,LogoRunCall+1-LogoBase
+@isub $66E2 LD HL,LogoStream-LogoBase
+@isub $661D LD HL,NstPlayerImage
+@isub $6623 LD BC,NstPlayerCopyLength
+@isub $6644 LD HL,IntroScreenBlock
+@isub $664A LD BC,IntroScreenBlockLength
+@equ $6200 WaitFrames ; the loader's (src/loader.asm): wait BC frames
+@equ $6207 SetPage ; the loader's: A to $7FFD and BANKM
+$6783 b LogoStream ; the packed decorated logo, 3508 bytes
+> Built from src/res/intro/logo.png and src/res/intro/logo.parse by tools/intro_screen.py pack. Ends at $7536, right before the picture block.
+@res logo.lz

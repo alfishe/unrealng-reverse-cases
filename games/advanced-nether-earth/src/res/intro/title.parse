@@ -1,0 +1,624 @@
+# src/res/intro/title.parse: the authors' packer's tokens in order (tools/intro_screen.py)
+run 66
+run 66
+run 66
+lit 3
+run 31
+copy 18 33
+copy 13 250
+lit 2
+copy 5 265
+lit 6
+copy 5 81
+lit 12
+copy 10 33
+run 24
+copy 7 64
+lit 1
+copy 4 73
+lit 15
+copy 3 20
+copy 18 64
+copy 16 375
+lit 1
+copy 7 95
+lit 11
+run 4
+lit 4
+copy 18 64
+run 19
+lit 3
+copy 5 183
+copy 6 463
+lit 5
+run 3
+lit 7
+copy 18 128
+copy 10 312
+copy 7 512
+lit 7
+copy 7 333
+copy 3 252
+lit 1
+copy 3 249
+run 3
+lit 2
+copy 4 209
+lit 7
+copy 15 556
+lit 5
+copy 9 128
+lit 25
+copy 4 256
+lit 1
+run 3
+lit 2
+copy 18 620
+lit 2
+copy 10 384
+copy 4 181
+lit 6
+run 6
+run 5
+copy 4 11
+copy 3 342
+lit 3
+run 3
+run 27
+copy 12 415
+lit 1
+run 3
+lit 9
+run 3
+lit 4
+run 4
+lit 1
+run 27
+copy 12 479
+lit 6
+copy 4 123
+run 5
+copy 4 448
+lit 6
+copy 9 621
+lit 11
+copy 17 128
+lit 17
+copy 4 512
+lit 1
+run 3
+lit 2
+copy 6 876
+lit 14
+copy 17 192
+lit 6
+copy 5 660
+lit 2
+run 5
+lit 4
+run 4
+lit 1
+copy 7 477
+lit 13
+copy 17 256
+lit 5
+run 10
+lit 2
+copy 4 704
+lit 6
+copy 11 1004
+lit 8
+copy 8 565
+copy 10 735
+lit 2
+run 4
+lit 17
+copy 3 383
+lit 1
+copy 16 1068
+lit 2
+copy 9 790
+copy 3 832
+copy 3 507
+run 6
+copy 4 820
+lit 9
+copy 3 833
+copy 4 128
+lit 5
+copy 10 1132
+lit 6
+copy 5 477
+copy 9 896
+run 7
+run 3
+lit 3
+copy 5 301
+copy 5 530
+lit 4
+copy 3 991
+run 3
+copy 17 1195
+lit 4
+copy 14 960
+lit 6
+copy 8 706
+copy 5 707
+lit 2
+copy 3 918
+lit 6
+copy 13 1260
+copy 3 400
+run 4
+copy 14 1024
+lit 20
+copy 4 960
+lit 6
+run 27
+copy 7 1088
+lit 4
+copy 4 709
+lit 3
+copy 5 387
+lit 2
+copy 3 780
+copy 3 1046
+lit 2
+run 4
+run 27
+copy 4 1152
+lit 13
+copy 4 707
+lit 6
+copy 4 704
+lit 5
+run 28
+copy 4 1216
+lit 17
+copy 3 390
+lit 1
+copy 3 847
+copy 18 1152
+copy 18 1525
+copy 4 1280
+lit 7
+copy 4 642
+lit 15
+copy 18 1280
+copy 18 1344
+lit 12
+run 12
+lit 1
+copy 18 128
+run 19
+lit 2
+copy 3 1276
+lit 2
+copy 3 228
+copy 12 406
+copy 4 1227
+copy 7 421
+copy 4 33
+run 66
+run 66
+run 66
+run 66
+run 66
+run 42
+lit 27
+copy 18 1907
+run 14
+lit 1
+run 3
+lit 30
+run 24
+copy 3 1997
+lit 36
+copy 11 551
+copy 11 2046
+lit 18
+copy 4 1401
+lit 6
+run 8
+lit 3
+run 24
+lit 39
+copy 7 1835
+run 22
+copy 3 1666
+lit 34
+run 40
+lit 20
+run 10
+copy 18 1302
+run 19
+lit 7
+copy 18 304
+lit 17
+copy 7 1383
+copy 3 1389
+copy 4 12
+copy 14 1518
+run 21
+lit 24
+copy 3 1155
+lit 9
+copy 3 89
+run 29
+lit 37
+copy 18 369
+run 5
+lit 14
+run 5
+lit 18
+copy 3 1995
+lit 32
+copy 3 1634
+lit 33
+copy 4 72
+copy 3 1716
+lit 25
+copy 3 2019
+lit 34
+run 9
+lit 3
+copy 3 151
+lit 27
+copy 3 11
+lit 36
+run 3
+lit 15
+copy 3 1652
+copy 3 1529
+lit 19
+copy 3 9
+lit 1
+copy 8 1863
+copy 3 585
+lit 4
+copy 7 143
+lit 14
+copy 3 611
+lit 2
+copy 3 1950
+lit 3
+copy 4 2036
+lit 1
+copy 4 181
+lit 23
+copy 8 207
+lit 58
+copy 8 130
+lit 3
+copy 5 352
+lit 18
+copy 3 2001
+lit 21
+run 3
+lit 10
+copy 4 176
+run 10
+lit 26
+run 18
+lit 5
+copy 4 126
+lit 5
+copy 3 320
+lit 8
+copy 9 671
+lit 14
+run 18
+lit 6
+copy 3 363
+lit 1
+run 29
+lit 6
+run 66
+run 66
+run 66
+run 66
+run 32
+lit 2
+copy 3 1167
+lit 2
+run 5
+lit 7
+run 45
+lit 8
+run 3
+lit 22
+copy 5 10
+run 26
+copy 3 50
+lit 12
+copy 3 71
+lit 5
+copy 3 1735
+run 3
+lit 9
+run 26
+lit 1
+run 4
+lit 28
+copy 5 10
+run 25
+lit 3
+run 3
+lit 1
+copy 7 7
+lit 2
+copy 3 199
+lit 3
+run 17
+run 66
+run 6
+lit 19
+copy 7 1263
+run 30
+run 15
+lit 1
+copy 3 1167
+lit 3
+copy 3 1274
+run 39
+run 14
+lit 11
+run 38
+lit 1
+run 14
+lit 13
+run 35
+copy 5 1247
+run 9
+lit 11
+copy 5 1514
+copy 3 1420
+run 29
+lit 2
+copy 17 1874
+lit 10
+copy 3 1501
+run 29
+lit 5
+run 17
+lit 7
+copy 4 1563
+run 28
+lit 7
+run 18
+copy 3 1196
+lit 10
+copy 18 449
+copy 7 1661
+lit 5
+run 26
+lit 9
+copy 11 1710
+copy 12 1374
+lit 5
+run 4
+lit 1
+run 23
+lit 2
+run 28
+lit 4
+copy 3 4
+lit 3
+copy 14 383
+copy 10 2017
+lit 5
+run 24
+lit 1
+copy 3 756
+copy 4 4
+lit 3
+run 22
+lit 1
+copy 5 443
+lit 1
+copy 18 447
+copy 3 1983
+lit 6
+copy 5 963
+lit 1
+copy 5 446
+lit 5
+copy 4 1610
+lit 4
+copy 5 1822
+copy 3 1973
+lit 5
+run 5
+lit 1
+run 5
+lit 16
+copy 4 1027
+lit 4
+copy 5 70
+copy 3 1979
+lit 35
+run 3
+lit 12
+copy 4 1098
+lit 2
+copy 3 1932
+lit 1
+run 3
+lit 3
+copy 3 1933
+copy 4 971
+copy 3 1741
+lit 32
+copy 7 1015
+lit 1
+copy 4 1018
+copy 3 1162
+copy 3 1868
+lit 8
+copy 3 2022
+run 4
+lit 7
+run 3
+lit 1
+run 4
+copy 4 194
+copy 10 1819
+lit 2
+run 4
+lit 4
+copy 5 360
+copy 3 1375
+lit 16
+copy 3 46
+lit 36
+copy 6 424
+copy 3 1787
+lit 51
+copy 4 309
+copy 6 1882
+lit 3
+run 3
+copy 3 132
+lit 49
+copy 7 553
+copy 16 1890
+lit 11
+copy 3 1090
+lit 3
+copy 3 1161
+lit 13
+copy 5 248
+lit 2
+copy 7 1208
+copy 18 773
+copy 4 1657
+lit 29
+copy 3 1683
+run 3
+lit 2
+run 25
+lit 6
+copy 3 829
+lit 1
+run 9
+copy 3 129
+lit 13
+run 3
+copy 16 1337
+run 9
+lit 4
+copy 3 596
+lit 1
+run 21
+lit 3
+copy 7 1524
+copy 18 64
+run 4
+lit 15
+copy 18 1217
+lit 5
+run 4
+copy 18 128
+run 5
+lit 12
+copy 3 1159
+copy 18 1538
+lit 4
+copy 4 760
+lit 1
+copy 18 193
+run 4
+lit 2
+copy 3 1538
+copy 6 1536
+copy 18 1084
+copy 6 1616
+lit 3
+copy 4 130
+copy 18 257
+run 3
+lit 14
+copy 18 1605
+copy 6 1682
+lit 6
+copy 6 393
+copy 5 1994
+copy 4 1940
+lit 21
+run 28
+lit 1
+copy 5 2043
+lit 2
+copy 7 1994
+lit 2
+copy 6 2010
+run 3
+lit 8
+copy 3 1282
+copy 18 1281
+copy 10 134
+lit 2
+copy 3 2045
+copy 6 1994
+copy 3 1800
+lit 4
+copy 3 1169
+lit 9
+copy 4 513
+run 30
+lit 4
+copy 9 2001
+run 6
+lit 11
+copy 3 384
+run 33
+lit 3
+run 16
+lit 2
+copy 3 383
+lit 6
+copy 3 1177
+copy 18 582
+copy 16 2004
+run 3
+run 25
+run 7
+copy 18 32
+run 6
+copy 18 32
+copy 18 64
+copy 18 64
+copy 18 96
+run 25
+copy 14 128
+run 10
+copy 15 160
+run 66
+run 27
+run 7
+run 25
+lit 2
+run 4
+copy 18 32
+copy 5 60
+copy 4 64
+run 5
+copy 18 64
+copy 7 90
+lit 1
+run 8
+copy 18 204
+copy 6 122
+run 9
+copy 18 153
+copy 12 32
+run 20
+copy 11 96
+copy 18 192
+copy 8 32
+run 27
+copy 18 248
+copy 17 283
+run 66
+run 66
+run 62

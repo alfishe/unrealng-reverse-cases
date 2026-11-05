@@ -1,0 +1,25 @@
+# The original packer's decisions the rule of tools/endings_lz.py does not make, for dead-end.png:
+# index (in the depacker's byte order) kind (m match, r run, l literals) length [distance]
+2293 r 11
+2353 r 8
+2532 l 3
+2606 r 10
+2638 r 15
+3036 l 1
+3370 l 7
+3381 r 10
+3428 r 6
+3450 l 30
+3487 l 1
+3809 l 1
+3863 l 12
+3875 r 4
+4288 r 8
+4386 l 2
+4435 l 11
+4450 l 1
+4704 l 2
+5410 l 1
+5647 r 9
+5847 l 2
+6141 r 3

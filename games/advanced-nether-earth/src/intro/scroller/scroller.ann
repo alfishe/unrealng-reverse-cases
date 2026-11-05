@@ -1,0 +1,201 @@
+# The credits scroller, $6600-$FFFF (HRUM block 3: file sectors 72-86 of A_NETHER.B, read to bank 4, copied to
+# $6600 and called by LoaderMain, src/loader.asm): the annotations that tools/intro_mkpart.py turns into
+# src/intro/scroller/*.asm. The format is kit/mkgame.py's (class Annotations); the code is what tools/intro_trace.py's
+# run executed (phase "scroller", simulator frames 1295-5954: the scroller from its start to SPACE).
+# The resources (text, font, dither levels, the screen, the star's circle) are in src/res/intro/scroller,
+# converted by tools/intro_scroller.py.
+
+@equ $618A LoaderHook 3 ; the three NOPs after CALL PlayerFrame in LoaderInterrupt (src/loader.asm): a CALL here runs every frame after the tune
+
+@module star ; the burning star: its points, its lines, the flames, the picture on the screen
+@about The left part of the screen under the logo: a pentagram whose five tips turn on a circle, drawn as glowing lines that burn upwards (the frames of work/intro/i1's sheet after the logo). It is drawn in StarBuffer, a grid of heat cells (one byte a cell, 0-15, a page a row: cell (x, y) at StarBuffer + y x 256 + x), and shown at a quarter of the resolution in dither patterns: a cell is 4 x 4 pixels, 40 x 38 cells from the screen's column 1, line 40.
+@about ScrollerStart runs once: black screen, ScrollerScreen (the logo and "Presents") copied to $4000, StarBuffer cleared, ScrollerInit (the tables), then the CALL to TextInterrupt patched into the loader's interrupt (LoaderHook), and the star's loop forever (the loader's interrupt ends it with SPACE: LoaderEnd). A pass of the loop: the five tips from StarPath (StarPoints), the pentagram's five lines at the heat StarHeat (StarLine), the flames (StarBurn), the picture to the screen (StarShow, two HALTs), StarHeat one up or down (15 down to 2 and back: the lines pulse).
+@about StarPath is a circle of 90 points; the tips are 18 points apart (72 degrees) and move one point a pass, so after 18 passes the star looks as at the start and StarStep goes back to the table's first point.
+$6600 c ScrollerStart ; the scroller's start: the screen, the tables, the text's interrupt, the star's loop
+> Called by LoaderMain at $6600 after the HRUM depacker, with bank 0 at $C000 and interrupts on (IM 2 through the loader's LoaderInterrupt). Never returns: SPACE ends the boot in LoaderInterrupt (LoaderEnd), wherever this loop is.
+$6600 ; black border
+$6603 ; the whole screen ($4000-$5AFF) to $FF: (HL) = L of $5AFF, then LDDR spreads it down
+$6610 ; the logo screen over it
+$6619 ; StarBuffer-$BFFF to 0 (L = 0 of $9800): the heat grid and the rows past it
+$6625 ; the dither patterns, the pair index, the row address tables
+$6628 ; one frame
+$662A ; CALL TextInterrupt into LoaderHook: the text from the next frame on
+$6636 StarStep ; A = the passes left before StarPath starts again (operand, from 1: the first pass restarts)
+$663C ; back to the first point of the circle
+$6642 ; 18 passes, then again
+$6644 StarStepStore ; the passes left
+$6647 StarPathPointer ; HL = the current point of tip 0 (operand)
+$664A ; the next tip: 18 points (36 bytes) on, 2 read already
+$664D ; tip 0: C = x, B = y
+$6651 ; the next pass starts one point on
+$6658 ; tip 1 ...
+$667B ; the pentagram: tip 0 to tip 2 ...
+$6685 ; ... 2 to 4 ...
+$668F ; ... 4 to 1 ...
+$6699 ; ... 1 to 3 ...
+$66A3 ; ... and 3 to 0
+$66AD ; the flames
+$66B0 ; to the screen (two frames)
+$66B3 HeatDirection ; A = $FF while StarHeat rises, 0 while it falls (operand, flipped at the ends)
+$66B9 ; rising: one up, to 15
+$66C8 HeatFall ; falling: one down, to 2
+$66D7 HeatTurn ; at an end: the direction turns
+$66DE StarNext ; the next pass
+@isub $66D7 LD A,(HeatDirection+1)
+$66E1 c ScrollerUnusedShow ; never called: shows bank 7's screen (left over from another part)
+> Nothing in the image calls it (no read or run of it in tools/intro_trace.py's run). It whitens the attributes, pages bank 7 with ScrollerSetPage, copies $DB00-$F5FF to the screen, pages bank 0 back: code of an earlier take of the boot left in the block.
+$6709 w StarPoints 2 ; the five tips of this pass: x (low byte), y (high byte), cells of StarBuffer
+> Written by ScrollerStart from StarPath, read in pairs for StarLine.
+$6713 c StarShow ; StarBuffer to the screen in dither patterns
+> Two frames: the first 29 rows of cells after one HALT (4 pixel lines each), the last 9 after the next (2 lines each), so the copy keeps behind the beam. The stack walks StarRows (a screen address a row) and the row of StarBuffer (IX, a page a row): POP takes two cells, SET 7,H makes the pair's index address in PairIndex ($80 + right cell, left cell), and its value C chooses the pattern bytes in DitherPatterns (page $7C + line, C). Each row is 20 such pairs, written out without a loop.
+$6716 ; SP kept in the LD SP at the end
+$671A ; HL = StarRows, C = 29 rows
+$6720 ; B' = the patterns' first page, IX = the first row of StarBuffer
+$6727 StarShowRow ; one row of cells: 20 bytes of 4 lines
+$6727 ; SP = the row's entry in StarRows
+$672B ; DE = the row's screen address
+$672C ; SP = the row of cells; IX the next row
+$6730 ; L, H = two cells (x, x + 1)
+$6731 ; H = $80 + the right cell: the pair's place in PairIndex
+$6733 ; C = the pair's index, the low byte of its pattern
+$6734 ; four lines of the pattern, down (the next pair up again)
+$68B1 StarShowSP ; SP back (operand)
+$68B4 ; the next frame
+$68BB ; the last 9 rows, 2 lines each
+$68BD StarShowRowLow ; one row of the bottom part: 20 bytes of 2 lines
+$6A47 StarShowSP2 ; SP back (operand)
+$6A4C c StarBurn ; the flames: every cell the mean of the four below it, the heat rising
+> A cell (x, y) becomes (cell (x, y + 2) + cells (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)) / 4, for 38 rows and the columns of a row from 1 (written out without a loop): the lines StarLine draws spread and fade upwards one row a pass. The rows are done top down, each from the rows below it as the last pass left them.
+$6A4C ; BC = cell (1, 0): the cell written
+$6A4F ; HL = cell (0, 1): the three cells under it
+$6A52 ; DE = cell (1, 2): the one under those
+$6A55 ; 38 rows
+$6A58 StarBurnRow ; one row
+$6C87 ; the next row: columns from 1 again
+$6C96 c StarLine ; a line of heat StarHeat in StarBuffer from cell (L, H) to cell (E, D)
+> Bresenham's line: B and C the steps (+1 or -1) in y and x, the longer side counted in the loop, the shorter one's error kept in L or H with the step's correction written into the ADD after the step (StarLineXError, StarLineYError). A cell's address is (y + $98) x 256 + x. Called five times a pass by ScrollerStart.
+$6C96 ; the steps -1 ...
+$6C99 ; dx = x1 - x0; negative: +1
+$6CAF ; dx = 0: one cell
+$6CA1 StarLineDy ; dy = y1 - y0; negative: +1
+$6CAA StarLineLonger ; dx >= dy: along x
+$6CBC StarLineX ; along x: dx steps; the correction dx into the error's ADD
+$6CBF ; the error starts at dx / 2
+$6CC1 StarLineXStep ; one cell, then x one step
+$6CD1 ; the error less dy; below 0: y one step
+$6CD6 StarLineXError ; the error + dx (operand)
+$6CDC StarLineXCount ; dx cells
+$6CE0 ; the last cell
+$6CE9 StarLineSteep ; dy > dx: along y
+$6CF6 StarLineY ; along y: dy steps
+$6CFB StarLineYStep ; one cell, then y one step
+$6D10 StarLineYError ; the error + dy (operand)
+$6D16 StarLineYCount ; dy cells
+$6D23 b StarHeat ; the heat StarLine draws: 2-15, one up or down a pass
+@module text ; the text: typed down the screen's right columns, held, wiped
+@about The right side of the screen: the credits typed a character a frame down a column (24 rows), the next line in the next column to the left, ten columns; they stay 200 frames, then the ten columns go black from the right a frame each, and the next ten lines come. The 100 lines of ScrollerText (src/res/intro/scroller/text.txt) are ten screens: a cycle is 10 x (240 + 1 + 200 + 11) frames, about 4520 (work/stage3/NOTES.md: "about 4500"); after the last line ("PRESS 'SPACE'", "AND", "N'JOY !!!") the text starts again.
+@about It all runs in the interrupt: ScrollerStart writes CALL TextInterrupt into LoaderHook, so LoaderInterrupt (src/loader.asm) calls it every frame after the tune. Three stages, each a CALL NZ whose flag (the LD A before it) the stages switch: TypeChar (TypeOn), HoldText (HoldOn), WipeColumn (WipeOn). The glyphs lie turned a quarter clockwise in ScrollerFont, so the columns read top down with the head turned right.
+$6D24 c TextInterrupt ; the text's frame, called from LoaderInterrupt through LoaderHook
+> JP TextStages; TextStop turns it into JP TextDone (the text off), which nothing reaches in this block.
+$6D27 TextStages ; A = the finale flag (0: never set in this block): nonzero runs TextFinale instead
+$6D2D TypeOn ; A = $FF: typing (operand, switched by TypeChar and WipeColumn)
+$6D33 HoldOn ; A = 0: holding (operand, switched by TypeChar and HoldText)
+$6D39 WipeOn ; A = 0: wiping (operand, switched by HoldText and WipeColumn)
+$6D3F TextStagesDone ; this frame's stages done
+$6D42 TextFinale ; never run (TextStages' flag is never set): wipe 10 columns, type 240 characters more, then the text off
+$6D50 TextFinaleType ; then 240 characters
+$6D61 TextStop ; the text off: TextInterrupt jumps to TextDone
+$6D67 TextDone ; nothing more this frame
+$6D68 c ScrollerSetPage ; never called: page A at $C000 (BANKM kept)
+> The loader's SetPage, used only by ScrollerUnusedShow.
+$6D73 b ScrollerText 24 ; the credits: 100 lines of 24 characters, one a column
+> Read by TypeChar a character a frame; codes $20-$5F (ScrollerFont). Built from src/res/intro/scroller/text.txt.
+@res scroller/text.bin
+$76D3 b ScrollerTextEnd ; 0: the text's end, TypeChar starts again at ScrollerText
+$76D4 c WipeColumn ; one column of the text black, from the right; after 10 (and a frame), typing again
+$76D4 ; A = the frames left (operand, 11 to 0)
+$76DA ; done: WipeOn off ...
+$76DD ; ... TypeOn on
+$76E1 ; 11 frames for the next wipe, from column 31
+$76EC WipeNext ; the frames left
+$76EF WipeAddress ; HL = the column's top attribute (operand: $581F, then one left a frame)
+$76F7 ; 24 attributes down the column to 0 (black on black)
+$772B c HoldText ; the typed screen held 200 frames, then the wipe
+$772B ; A = the frames left (operand)
+$7731 ; done: HoldOn off ...
+$7734 ; ... WipeOn on
+$773A HoldStore ; the frames left
+$773D ; A = 0: TextHook (a RET) is called
+$7744 c TypeChar ; one character of the text, a frame; after 240 the hold
+$7744 ; A = the frames left in this screen (operand, 241)
+$774A ; done: the next screen starts at column 31 ...
+$774F ; ... HoldOn on ...
+$7752 ; ... TypeOn off
+$775C TypeRow ; the frames left
+$775F RowCount ; A = the rows left in the column (operand: 1 at the start, so the first frame starts a column)
+$7765 ; a new column: one left of the last (TextColumn + 1)
+$776C ; from the top row (RowPointer's low byte 0)
+$7770 ; 24 rows
+$7772 RowStore ; the rows left
+$7775 RowPointer ; HL = the row's entry in TextRows (operand)
+$777F TextColumn ; A = the row's address low byte - the column count: the column (operand)
+$7782 TextPointer ; HL = the next character (operand)
+$7786 ; 0: the end of the text ...
+$778A ; ... the first character again
+$778E TypeGlyph ; the next character on
+$7792 ; HL = TextRows + code x 8: the glyph (codes $20-$5F: ScrollerFont)
+$779C ; 8 lines of the glyph down the character cell
+$77BA ; the cell's attribute address
+$77C3 ; bright white on black
+$77C6 ; A = 0: TextHook (a RET) is called
+@isub $7765 LD A,(TextColumn+1)
+$77CD c TextHook ; RET: a hook HoldText and TypeChar call, left empty
+@module tables ; the tables and pictures the star and the text read
+@about The font, the text's row addresses, the dither levels and the patterns built from them, the screen at the start and the heat grid over its end. Most of $7800-$BFFF is zero in the image and built or cleared at run time (ScrollerInit, ScrollerStart).
+$77CE s ScrollerSpare ; 50 zero bytes
+$7800 s TextRows ; the 24 rows' screen addresses (ScrollerInit), and the font's base
+> ScrollerInit writes 24 words here: the screen address of character row r at column 31 ($401F, then 8 lines down each). TypeChar also takes the glyph of code c at TextRows + 8 c: codes $20-$5F lie in ScrollerFont, codes 0-$1F would be this page. Zero in the image.
+$7900 b ScrollerFont 8 ; the glyphs of codes $20-$5F, 8 bytes each, turned a quarter clockwise
+> Built from src/res/intro/scroller/font.png.
+@res scroller/font.bin
+$7B00 s ScrollerSpare2 ; zero
+$7C00 s DitherPatterns ; the patterns of the 256 pairs of heat levels (ScrollerInit): page $7C + line, pair index
+> Built by ScrollerInit from DitherLevels: for the pair index (a, b) = a x 16 + b, line n of the byte is the left nibble of level a and the right nibble of level b, both swapped (RLCA x 4). Zero in the image.
+$8000 b DitherLevels 4 ; the 16 heat levels as 4 lines of a dither pattern
+> Read once by ScrollerInit; then ScrollerInit's PairIndex overwrites it. Built from src/res/intro/scroller/dither.png.
+@res scroller/dither.bin
+$8040 s PairIndex ; zero; at run time PairIndex: (page $80 + right cell, left cell) = right x 16 + left
+> ScrollerInit fills $8000-$800F, $8100-$810F, ... $8F00-$8F0F with 0-255 in order: StarShow looks a pair of cells up there (H = $80 + the right cell's heat, L = the left cell's).
+$8500 b ScrollerScreen ; the screen at the start: the logo "ETERNITY INDUSTRY 1998 Presents", the rest black
+> Copied to $4000 by ScrollerStart, then its bytes serve as work space: StarRows (written by ScrollerInit) and StarBuffer (cleared) lie over its end. Built from src/res/intro/scroller/screen.png.
+$8F10 StarRows ; at run time: the 40 screen addresses of StarShow's rows ($40A1, then 4 lines down each)
+$9800 StarBuffer ; at run time: the heat grid, a page a row (cleared by ScrollerStart up to $BFFF)
+@res scroller/screen.bin
+$A000 s StarBufferRest ; the heat grid's rows past ScrollerScreen: zero
+@module init ; the tables built once at the start, in bank 0
+@about ScrollerInit at $C000 (the block's part in bank 0, which the scroller keeps paged): DitherPatterns, PairIndex, StarRows and TextRows; then StarPath, the circle of the star's tips, and the block's zero end.
+$C000 c ScrollerInit ; the tables: DitherPatterns, PairIndex, StarRows, TextRows
+> Called once by ScrollerStart (bank 0 at $C000: the block's last part lies there). DitherPatterns: for every pair of levels (b, c), 4 lines combined from DitherLevels. PairIndex: 0-255 over the first 16 bytes of pages $80-$8F. StarRows: 40 rows from $40A1 (column 1, line 40), 4 lines apart. TextRows: 24 character rows of column 31 from $401F.
+$C000 ; IX = the pattern being built (page $7C, index B x 16 + C)
+$C004 ; H, D = DitherLevels' page
+$C00A ; 16 levels b
+$C00C ScrollerInitB ; 16 levels c
+$C012 ScrollerInitPair ; the pair (b, c): E = b x 4, L = c x 4 (the levels' first lines)
+$C021 ; 4 lines
+$C024 ScrollerInitLine ; level b's left nibble with level c's right nibble, swapped
+$C032 ; line n on page $7C + n
+$C04C ; PairIndex: A = 0-255 over (page $80-$8F, 0-15)
+$C051 ScrollerInitIndex ; 16 a page
+$C05E ; StarRows: 40 rows from $40A1, 4 lines apart
+$C066 ScrollerInitStarRow ; a row's address
+$C074 ; TextRows: 24 character rows of column 31
+$C07C ScrollerInitTextRow ; a row's address
+$C055 ScrollerInitIndexByte ; one index
+$C06C ScrollerInitStarLines ; 4 lines down
+$C082 ScrollerInitTextLines ; 8 lines down
+$C08B c NextLine ; DE one pixel line down the screen
+$C09A b StarPath 18 ; the circle the star's tips run on: 90 points (x, y)
+> Built from src/res/intro/scroller/star-path.txt. ScrollerStart reads tip k of pass s at point s + 18 k.
+@res scroller/star-path.bin
+$C14E s ScrollerTail ; zero
+$DB00 s UnusedScreenPlace ; zero: where ScrollerUnusedShow would copy a screen from (bank 7 paged in)

@@ -1,0 +1,99 @@
+# The 128K memory map at four moments (tools/fig_banks.py, docs/02-architecture.md 2.2).
+# STAGE BANK START END KIND NAME     (hex, END inclusive; KIND: screen code data graphics work free packed system
+#                                    music sequence; banks 5 and 2 at $4000 / $8000, the others at $C000)
+# Witnesses: tools/ane_sim.py's log (work/stage2/tmp/log3.txt: reads, depacks, $7FFD writes), the dumps
+# work/images/scl-{intro,menu,play}-bank*.bin (stage 1 recording s2, frames 5000 / 8400 / 11500), src/boot/a-nether.asm
+# (the reader), src/loader.asm, src/sfx/blocks.asm, the game's labels (GameEntry, MusicInterrupt, ImTable ...), the
+# players' handover in work/stage3/SOURCE-STATE.md (bank 1's and bank 3's player, tunes and tables).
+boot 5 4000 5AFF screen the screen, cleared
+boot 5 5B00 5D3A system system variables
+boot 5 5D3B 6160 code the BASIC; the reader at $5D3F
+boot 5 6161 62C7 code the loader (read)
+boot 5 62C8 65FF data the loader's tables (read)
+boot 5 6600 7FFF packed intro block (read)
+boot 2 8000 8D60 packed intro block (read)
+boot 2 8D61 BFFF free free
+boot 0 C000 FFFF free free
+boot 1 C000 FFFF free free
+boot 3 C000 FFFF free free
+boot 4 C000 CEFF packed scroller block (read)
+boot 4 CF00 FFFF free free
+boot 6 C000 FFFF free free
+boot 7 C000 DAFF free free
+boot 7 DB00 EBFF packed Presents block (read)
+boot 7 EC00 FFFF free free
+intro 5 4000 5AFF screen the screen
+intro 5 5B00 5B88 system system variables
+intro 5 5B89 5BFF code the HRUM depacker
+intro 5 5C00 6160 system system area
+intro 5 6161 62C7 code the loader, its IM 2 music
+intro 5 62C8 65FF work the intro's vector table
+intro 5 6600 7FFF code the intro program
+intro 2 8000 A3AC code the intro program
+intro 2 A3AD BFFF free free
+intro 0 C000 FFFF free free
+intro 1 C000 FFFF free free
+intro 3 C000 FFFF free free
+intro 4 C000 CEFF packed scroller block
+intro 4 CF00 FFFF free free
+intro 6 C000 E67F music PT3 player and tune
+intro 6 E680 FFFF free free
+intro 7 C000 DAFF screen the Eternity picture
+intro 7 DB00 EBFF packed Presents block
+intro 7 EC00 FFFF free free
+menu 5 4000 5AFF screen the screen
+menu 5 5B00 605F system system area
+menu 5 6060 7FFF code the boot program
+menu 2 8000 BFFF code the boot program
+menu 0 C000 F6D4 code the boot program
+menu 0 F6D5 FFFF free free
+menu 1 C000 D60E music boot music: PT3
+menu 1 D60F FFFF free free
+menu 3 C000 E79D packed Dead End block
+menu 3 E79E EB2F packed game block, tail
+menu 3 EB30 FAFF packed game music block
+menu 3 FB00 FFFF free free
+menu 4 C000 FFFF packed game block, 16 K
+menu 6 C000 F62C packed Final Cut block
+menu 6 F62D F636 free filler
+menu 6 F637 FEE7 packed disk module block
+menu 6 FEE8 FFFF free free
+menu 7 C000 CE08 packed game starter block
+menu 7 CE09 FFFF data bank 7's boot image
+play 5 4000 5AFF screen the screen
+play 5 5B00 677F work ViewBuffer
+play 5 6780 67FF code music glue
+play 5 6800 6900 data IM 2 table
+play 5 6901 697F code GameSave, ImJump
+play 5 6980 7FFF graphics sprites
+play 2 8000 A569 graphics sprites
+play 2 A56A A5FF code GameLoad..Restart
+play 2 A600 BFFF code the game code, the level
+play 0 C000 C4A7 code main menu, disk calls
+play 0 C4A8 C4FF free free
+play 0 C500 C6FF graphics the Cyrillic font
+play 0 C700 C848 free free
+play 0 C849 D7D2 code view, print, radar
+play 0 D7D3 FCFF work shots, radar, robots, map
+play 0 FD00 FFFF work variables
+play 1 C000 C82B code SoundTrack player
+play 1 C82C C845 data operand list
+play 1 C846 C905 data note table
+play 1 C906 CA05 data volume table
+play 1 CA06 CA16 work AY registers
+play 1 CA17 CA44 data string, length
+play 1 CA45 D8E0 music the tune TAIGA (X-Man)
+play 1 D8E1 E21A code logos set-up, called once by GameEntry
+play 1 E21B FFFF free free
+play 3 C000 CA42 code SoundTrack player (a copy)
+play 3 CA43 D2EE music NETHER EARTH (END) tune
+play 3 D2EF FE1E sequence Dead End ($D2EF), menu picture ($E73B)
+play 3 FE1F FFFF free free
+play 4 C000 CD2B code the disk module
+play 4 CD2C FFFF packed leftover game block
+play 6 C000 F62C packed Final Cut block
+play 6 F62D F636 free filler
+play 6 F637 FEE7 packed disk module block
+play 6 FEE8 FFFF free free
+play 7 C000 CE08 packed game starter block
+play 7 CE09 FFFF data bank 7's boot image

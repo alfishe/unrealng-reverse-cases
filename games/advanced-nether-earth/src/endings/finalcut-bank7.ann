@@ -1,0 +1,7 @@
+# Final Cut, the block FinalCut copies to bank 7 ($70F5-$8BF4 here, run at $C000-$DAFF): the green alien screen. The
+# rest of the block ($DB00-$F577: the PT3 player and REM) is aneS's, included by src/endings/finalcut.json.
+
+@module fcbank7 ; the shadow screen (bank 7)
+@about Bank7Block is copied by FinalCut to bank 7 at $C000 ($3578 bytes: this screen, the PT3 player at $DB00 and the tune REM after it). The screen is the shadow screen's picture: the alien in green, the scroll's other half (the normal screen holds it in magenta, AlienMagentaScreen). After the copy the 768 bytes of Bank7Block here hold FinalCut's line table.
+$C000 b AlienGreenScreen ; the alien in green: the shadow screen (6912 bytes, plain)
+@res pictures/alien-green.scr

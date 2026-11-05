@@ -1,0 +1,74 @@
+{
+ "name": "finalcut",
+ "image": "src/res/img/final-cut-6060.bin",
+ "at": "6060",
+ "out": "build/endings/finalcut-6060.bin",
+ "header": [
+  "; Advanced Nether Earth (Eternity Industry, 1998): Final Cut, the win sequence, as HRUM unpacks it",
+  "; ($6060-$F76C; GameWon copies the packed block from bank 6 to $6060 and jumps there)."
+ ],
+ "l1": [
+  "work/endings/fcw/l1.json"
+ ],
+ "segments": [
+  {
+   "title": "the sequence's code, texts and font (bank 5)",
+   "ann": "src/endings/finalcut-main.ann",
+   "lo": "6060",
+   "hi": "70F5",
+   "run": "6060",
+   "bases": {
+    "5": "4000"
+   },
+   "read_builds": [
+    "fcw"
+   ]
+  },
+  {
+   "title": "the block copied to bank 7, its first part: the green alien screen",
+   "ann": "src/endings/finalcut-bank7.ann",
+   "lo": "70F5",
+   "hi": "8BF5",
+   "run": "C000",
+   "bases": {
+    "7": "C000"
+   },
+   "read_builds": [
+    "fcw"
+   ],
+   "load_label": "Bank7Block"
+  },
+  {
+   "lo": "8BF5",
+   "hi": "A66D",
+   "lines": [
+    "; $8BF5-$A66C, run at $DB00 in bank 7: the PT3 player and X-Man's REM, aneS's sources (src/music/pt3-player.asm,",
+    "; Pt3Init $DB00, Pt3PlayEntry $DB05; the tune src/res/music/rem.pt3 as it is: the player relocates it at its init)",
+    "  DISP $DB00",
+    "  MODULE pt3",
+    "  INCLUDE \"src/music/pt3-player.asm\"",
+    "  ENDMODULE",
+    "  INCBIN \"src/res/music/rem.pt3\"",
+    "  ENT"
+   ]
+  },
+  {
+   "title": "the screens",
+   "ann": "src/endings/finalcut-screens.ann",
+   "lo": "A66D",
+   "hi": "F76D",
+   "run": "A66D",
+   "bases": {
+    "2": "8000",
+    "0": "C000"
+   },
+   "read_builds": [
+    "fcw"
+   ]
+  }
+ ],
+ "external": [
+  "Pt3Init",
+  "Pt3PlayEntry"
+ ]
+}

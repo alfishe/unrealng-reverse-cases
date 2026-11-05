@@ -1,0 +1,685 @@
+# The annotations of the boot program ($6060-$F6D4: the boot menu and the help): the single source of truth for
+# src/bootmenu/*.asm (tools/bootmenu_mkasm.py, kit/mkgame.py's pipeline). The format is kit/mkgame.py's, class
+# Annotations, plus @const:
+#
+#   @module NAME ; title            the entries from here on go to NAME.asm, the title heads the file
+#   @about a paragraph              the module file's header text, one paragraph a line
+#   $ADDR c Name ; title            a routine
+#   > a description line
+#   $ADDR b Name [N] ; title        data (w words, t text, s space; N items a line)
+#   @res KIND/NAME                  the entry is a resource: src/res/bootmenu/..., INCBIN (tools/bootmenu_res.py)
+#   $ADDR Name ; comment            a label and comment inside an entry
+#   @isub $ADDR INSTRUCTION         the instruction written so
+#   @equ $ADDR Name [N] ; comment   a variable outside the image
+#   @const NAME VALUE ; comment     an EQU for an address in another bank or a value that only looks like one
+#
+# The code is what tools/bootmenu_sim.py ran in work/stage3/bootmenu/{tour,extra,nofire} (the boot menu, every help
+# page, keys 1, 2 and 3, the three control sets), widened by mkgame's walk; frames there count from the boot
+# program's entry (ane_sim frame 1473).
+
+@equ $4000 Screen 6912 ; the screen: ScreenDepack's output, the printer's and the pointer's
+@equ $5B00 Im2Table 257 ; the IM 2 vector table BootMenu fills with $60 (I = $5B: every vector reads $6060)
+@const PAGE_PORT $7FFD ; the 128's paging port
+@const AY_SELECT $FFFD ; the AY's register select (its data port is $BFFD: B = $BF)
+@const ROM_RET $0052 ; a RET in the 48 BASIC ROM: CALL ROM_RET leaves the caller's address under SP
+@const ROM_HL_ALT $2758 ; the value the BASIC ROM keeps in HL' (the depacker leaves it there)
+@const BANK_WINDOW $C000 ; the start of the paged bank: the entry of the block or player that bank holds
+@const PLAYER_PLAY $C005 ; bank 1: the boot tune player's play-one-frame entry (Pt3PlayEntry, src/music/pt3-player.asm)
+@const STARTER $9C40 ; where the game starter's block runs (it unpacks itself there)
+@const STARTER_LENGTH $0E09 ; the game starter's HRUM block at bank 7 $C000
+@const GAME_BLOCK $6731 ; the game's HRUM block: copied here from bank 4 and bank 3, run with JP
+@const GAME_HEAD_LENGTH $4000 ; the game block's first part, bank 4 $C000-$FFFF
+@const GAME_TAIL $E79E ; bank 3: the game block's last part (behind Dead End)
+@const GAME_TAIL_AT $A731 ; GAME_BLOCK + GAME_HEAD_LENGTH: where the last part goes
+@const GAME_TAIL_LENGTH $0392 ; 914 bytes
+@const MUSIC_BLOCK $EB30 ; bank 3: the game music's HRUM block, for bank 1 $C000
+@const MUSIC_BLOCK_LENGTH $0F98
+@const DISK_BLOCK $F637 ; bank 6: the disk module's HRUM block, for bank 4 $C000
+@const DISK_BLOCK_LENGTH $08B1
+@const SAMPLE $CE09 ; bank 7: the sample boot menu key 3 plays (after the starter's block)
+@const SAMPLE_LENGTH $31F6 ; 12790 bytes, one a sample
+@const DEPACK_GETBIT_ORG $62D5 ; GetBit where the authors assembled the depacker ($6203 + $D2): ScreenDepack writes the real address over these CALL operands before it runs
+
+@module boot ; the entry, the interrupt, paging, the game's start, the sample
+@about The boot program is block 5 of the disk (HRUM, src/sfx/blocks.asm Block05): UltraXOR's reader unpacks it to $6060-$F6D4 with bank 0 at $C000 and jumps to Start ($61A8) with SP = $6060. It holds the boot menu ("1-Game 2-Help 3-NOT used"), the help program (seven items, 28 pages of pictures and text) and the code that starts the game. Every other bank is loaded by then: bank 1 holds the boot tune (PT 3 Player v1.0 by Nick of GDC with X-Man's TOMY: src/music, aneS), bank 7 the game starter's block and a sample, banks 3, 4 and 6 the game's packed blocks.
+@about Start plays the tune's init, unpacks bank 7's image and goes to BootMenu (menus.asm), which installs BootInterrupt as the IM 2 handler: from then on the tune plays one frame an interrupt, paging bank 1 in and out ($11 / $10 through SetPage), until key 1. Key 1 leaves through LeaveForGame (print.asm) to StartGame: the starter from bank 7, the game's blocks put together and unpacked, JP to the game's block. Key 3 ("NOT used") plays a 1.1 s sample from bank 7 through the AY's three volume registers (PlaySample).
+@about Page values: $10 = bank 0 at $C000, the 48 BASIC ROM; $11 bank 1, $13 bank 3, $14 bank 4, $16 bank 6, $17 bank 7. The stack is the 284 bytes under Start ($608C-$61A7).
+$6060 c BootInterrupt ; the IM 2 handler of the boot menu and the help: one frame of the boot tune
+> Reached through Im2Table (every vector $6060, I = $5B) once a frame from BootMenu on. Keeps every register (both sets, IX, IY), pages bank 1 in, calls the player's play entry (PLAYER_PLAY, $C005 in bank 1), pages bank 0 back. The help's typing and pointer run under it; PlaySample turns interrupts off, LeaveForGame changes to IM 1.
+$6060 ; nothing nests: the player is not reentrant
+$6065 ; IX and IY too: the player uses them
+$6069 ; and the second set
+$606F ; bank 1 at $C000 (the tune and its player), the 48 ROM
+$6074 ; one frame of the tune
+@isub $6074 CALL PLAYER_PLAY
+$6077 ; bank 0 back
+$608A ; interrupts on for the next frame
+$608C s Stack ; the boot program's stack, $608C-$61A7 (SP starts at Start)
+> 284 zero bytes the image carries; Start and HelpMenu set SP = $61A8, the stack grows down into them.
+$61A8 c Start ; the entry: the tune's init, bank 7's image unpacked, the boot menu
+> Jumped to by the block's HRUM set-up (JP $61A8, interrupts off). Calls bank 1's $C000 (the player's init: the boot tune), then bank 7's $C000: bank 7's image is still packed there (BootBank7, src/sfx/blocks.asm) and unpacks in place with its depacker at $5B00, returning with interrupts off. Then BootMenu.
+@isub $61A9 LD SP,Stack+284
+$61A9 ; the stack under Start
+$61AC ; bank 1
+$61B1 ; the boot tune's init
+$61B4 ; bank 7
+$61B9 ; bank 7's image unpacks itself in place
+$61BC ; bank 0
+@isub $61B1 CALL BANK_WINDOW
+@isub $61B9 CALL BANK_WINDOW
+$61C4 c StartGame ; key 1: the game starter, the game's blocks put together and unpacked, the game
+> Reached from LeaveForGame (IM 1 already). Copies the game starter's HRUM block (STARTER_LENGTH bytes from bank 7 $C000) to $9C40 and calls it: it unpacks over itself and runs the starter (the screen then shows "Eternity Industry": tour frame 11700). Then the game's packed block is put together at $6731: 16 K from bank 4 and its last 914 bytes from bank 3 $E79E; the game music's block goes from bank 3 to bank 1 $C000 and the disk module's from bank 6 to bank 4 $C000 (CopyBank, a byte at a time between two banks). Each of the three blocks at $C000 of banks 1, 3 (Dead End, loaded there) and 4 is then run: each HRUM block unpacks in place and returns. Last JP to the game's block at $6731, which unpacks the game over this program and starts it.
+@isub $61C5 LD SP,Stack+284
+@isub $61CD LD HL,BANK_WINDOW
+@isub $61D0 LD DE,STARTER
+@isub $61D3 LD BC,STARTER_LENGTH
+@isub $61DD CALL STARTER
+@isub $61EB LD HL,BANK_WINDOW
+@isub $61EE LD DE,GAME_BLOCK
+@isub $61F1 LD BC,GAME_HEAD_LENGTH
+@isub $61FB LD HL,GAME_TAIL
+@isub $61FE LD DE,GAME_TAIL_AT
+@isub $6201 LD BC,GAME_TAIL_LENGTH
+@isub $6206 LD HL,MUSIC_BLOCK
+@isub $6209 LD DE,BANK_WINDOW
+@isub $620C LD BC,MUSIC_BLOCK_LENGTH
+@isub $6217 LD HL,DISK_BLOCK
+@isub $621A LD DE,BANK_WINDOW
+@isub $621D LD BC,DISK_BLOCK_LENGTH
+@isub $622E CALL BANK_WINDOW
+@isub $6236 CALL BANK_WINDOW
+@isub $623E CALL BANK_WINDOW
+@isub $6246 JP GAME_BLOCK
+$61C8 ; bank 7: the starter's block at its $C000
+$61D6 ; to $9C40, over the help's pictures
+$61D8 ; bank 0
+$61DD ; the starter unpacks itself and runs; it returns here
+$61E0 ; 50 turns with interrupts on: a pending interrupt is taken
+$61E6 ; bank 4: the game block's first 16 K
+$61F6 ; bank 3: the game block's last part, behind Dead End
+$620F ; from bank 3 (A = $13)
+$6211 ; to bank 1
+$6214 ; the game music's block to bank 1 $C000
+$6220 ; from bank 6
+$6223 ; to bank 4
+$6226 ; the disk module's block to bank 4 $C000
+$6229 ; bank 1
+$622E ; the game music unpacks in place
+$6231 ; bank 3
+$6236 ; Dead End unpacks in place
+$6239 ; bank 4
+$623E ; the disk module unpacks in place
+$6241 ; bank 0 for the game
+$6246 ; the game's block unpacks the game and starts it; nothing returns
+$6249 c SetPage ; $7FFD = A
+> The boot program's only paging: every bank switch goes through here (BootInterrupt twice a frame). Keeps BC. The game starter calls it too (docs/03-build-and-load.md).
+@isub $624A LD BC,PAGE_PORT
+$6251 c CopyBank ; copy BC bytes from (HL) in page IXL to (DE) in page IXH
+> One byte a turn: page IXL in, read, page IXH in, write. Used by StartGame for the blocks that go from one bank's $C000 window to another's. Leaves the last page (IXH) in.
+$6256 ; the byte from the source bank
+$625A ; the destination bank
+$6267 c ClearScreen ; zero $5AFF down to the first byte that will not take a zero, then wait for a frame
+> HL from $5B00 down: each byte is written 0 and read back; the loop ends at the first byte that reads non-zero, the ROM's $3FFF (writes to the ROM do nothing). So it clears the screen and the attributes ($4000-$5AFF) without a count. Then EI; HALT: the next frame (BootInterrupt plays the tune). Called before every picture is drawn.
+@isub $6268 LD HL,Screen+6912
+$6268 ; from the attributes' end down
+$626B ; the next byte down
+$626D ; reads back 0 while it is RAM
+$6270 ; the ROM's $3FFF stopped it
+$6273 c PlaySample ; boot menu key 3 ("NOT used"): 12790 samples from bank 7 through the AY's volumes
+> Interrupts off (the tune stops), SilenceAy, bank 7. Each byte of SAMPLE ($CE09-$FFFE in bank 7) is written as it is to the AY's volume registers 8, 9 and 10 (the three channels together as one DAC), then a short wait (B = 8): 307 T a sample, 11.4 kHz on a Pentagon, 1.1 s. Then SilenceAy, bank 0, EI. The menu's "3-NOT used" hides it; extra frame 50 plays it.
+@isub $627C LD HL,SAMPLE
+@isub $627F LD DE,SAMPLE_LENGTH
+@isub $6284 LD BC,AY_SELECT
+$6277 ; bank 7
+$6282 ; the sample
+$6287 ; register 8: channel A's volume
+$628C ; B = $BF: the data port $BFFD
+$6293 ; register 9: channel B's volume
+$629F ; register 10: channel C's volume
+$62A8 ; the wait between samples
+$62B2 ; the sound off again
+$62B5 ; bank 0
+$62BC c SilenceAy ; the AY's volumes 8-10 to 0, its mixer (register 7) to $FF
+> Used by PlaySample before and after the sample.
+@isub $62C2 LD BC,AY_SELECT
+@isub $62D1 LD BC,AY_SELECT
+$62BC ; three registers from 8
+$62C7 ; volume 0
+$62D4 ; register 7, the mixer
+$62D8 ; B = $FF: every tone and noise off
+
+@module helppic ; the picture of help item 1
+@about The first of the fifteen Hrust 1 streams: the picture of "Описание игры" (help item 1), held before the depacker. The others are in pictures.asm. Each is a whole screen packed by Hrust 1 (tools/bootmenu_hrust.py has the format; the PNG in src/res/bootmenu/pictures). After every stream one byte nothing reads.
+$62DE b DescriptionPicture ; help item 1 "Описание игры": a planet over a figure by a craft (Hrust 1)
+> Drawn by HelpDescription for each of its 5 pages.
+@res pictures/description.hrust
+$68C4 b DescriptionPictureSpare ; a byte after the stream: never read
+
+@module depack ; the screen depacker (Hrust 1)
+@about ScreenDepack unpacks a Hrust 1 stream (Dmitry Pyankov's packer, the depacker without its header) from HL into the screen at $4000. It is position-independent: CALL ROM_RET leaves its own address under SP, and it writes the address of GetBit over the operands of its eleven CALLs (RelocTable: the distances between them) before it starts; the image holds the operands as the authors assembled them (DEPACK_GETBIT_ORG).
+@about The stream: bits MSB first from 16-bit little-endian words, each fetched when the previous one's last bit is taken; a 0 bit is a literal byte, a 1 a match: the length from 2-4 more bits (2, 3, 4-5, 6-9) or a byte (10-263, $FE: a word, $FF: the end), then the distance: a 1 bit and a byte (1-256), or a 0, a prefix of 3-6 bits for the high byte (1-31) and a byte. A length-2 match has only the byte. tools/bootmenu_hrust.py packs as the authors' packer did: the longest match within 8192 bytes, the nearest of that length, unused bits of the last word set (a whole word fetched after the end code: 0).
+$68C5 c ScreenDepack ; unpack the Hrust 1 stream at HL into the screen
+> In: HL the stream. Uses both register sets: the main set holds the output (DE) and the match length (BC); the second the bit buffer (HL') and its count (B'). Called by BootMenu, HelpMenu and the help items; ClearScreen first, so the picture appears line by line in its own order (half a frame). Returns with HL' = ROM_HL_ALT for the ROM.
+@isub $68C5 CALL ROM_RET
+@isub $68CB LD IX,RelocTable+11-DepackHere
+@isub $68D2 LD HL,GetBit-DepackHere
+@isub $68EE CALL DEPACK_GETBIT_ORG
+@isub $68FC CALL DEPACK_GETBIT_ORG
+@isub $6903 CALL DEPACK_GETBIT_ORG
+@isub $6906 CALL DEPACK_GETBIT_ORG
+@isub $690E CALL DEPACK_GETBIT_ORG
+@isub $6915 CALL DEPACK_GETBIT_ORG
+@isub $6966 CALL DEPACK_GETBIT_ORG
+@isub $696F CALL DEPACK_GETBIT_ORG
+@isub $697E CALL DEPACK_GETBIT_ORG
+@isub $6988 CALL DEPACK_GETBIT_ORG
+@isub $6993 CALL DEPACK_GETBIT_ORG
+@isub $692F LD HL,ROM_HL_ALT
+@isub $68E8 LD DE,Screen
+$68C5 ; a RET in the ROM: the return address, DepackHere, stays just under SP
+$68C8 DepackHere ; SP back onto it
+$68CA ; DE = DepackHere: where this copy of the depacker runs
+$68CF ; IX = the end of RelocTable
+$68D5 ; B = 0 (the main set's B stays 0: the high byte of a short distance, of a byte length)
+$68D7 ; DE = GetBit, HL = DepackHere
+$68D8 ; eleven CALL operands
+$68DA PatchCalls ; the next distance, from the table's end
+$68DF ; HL = the next CALL's operand
+$68E0 ; = GetBit
+$68E6 ; IX = the stream
+$68E8 ; the output: the screen
+$68EB ; the bit set: HL' the word, B' its bits left
+$68EC ; the first GetBit only fetches the first word
+$68F3 Literal ; a 0 bit: the next byte of the stream to the output
+$68FC NextToken ; the next bit into the carry: 0 a literal, 1 a match
+$6902 ; a match: A = 0, then two bits of its length code
+$690A ; A = 0-3 again, Z when 0 (code 00: length 3)
+$690E ; 01, 10, 11: a third bit (A = 2-7)
+$6915 ; 11x: a fourth (A = 12-15)
+$6918 LengthCode ; the main set; H = 0 for a distance of one byte
+$691A ; 010: length 2 and only a distance byte (1-256)
+$6921 ; 00: length 3
+$6923 ; 011: a length byte follows
+$6927 ; $FF: the end
+$692F ; HL' as the ROM keeps it (the bit buffer is done)
+$6934 ; $FE: a word length follows
+$6937 ; else the byte + 10
+$693B ; past 255 (bytes $F6-$FD): B = 1 (no stream here has one)
+$693E ShortDistance ; the main set, H = 0
+$693F CopyMatch ; L = the distance byte, H = its high part: HL = DE - HL - 1
+$694B ; the match, BC bytes
+$6950 WordLength ; the length as a little-endian word
+$695C ; 100, 101: length 4 or 5
+$6960 ; 1100-1111 (12-15): length 6-9
+$6962 ; 00: 0 + 3
+$6964 SetLength ; C = the length (B: 0, or 1 past 255)
+$6965 ReadDistance ; the bit set: a 1 bit is a distance of one byte
+$696C ; else the high byte's prefix: 3 bits first
+$696F HighBits
+$6975 ; 000, 001: high 1, 2
+$697A SetHigh ; the main set: H = the distance's high byte, the byte follows in the stream
+$697E ; 010x, 011x (4-7): high 3-6
+$6988 ; 1xxxx below 10111 (16-22): high 7-13
+$6993 ; 10111x-11111x (46-63): high 14-31
+$699A c GetBit ; the next bit into A's bit 0 (and the carry out of A's bit 7)
+> In the second set: HL the bit buffer, B the bits left in it. Shifts HL left (the carry is the bit), counts B down and fetches the next word from the stream (IX) when the 16th bit is taken; RLA puts the bit into A. ScreenDepack calls it through the operands it patched.
+$699B ; bits left: done
+$699D ; the next word, low byte first
+$69A9 ; the bit into A
+$69AB b RelocTable 11 ; the distances between GetBit's CALL operands, read from the end
+> ScreenDepack starts at DepackHere + $27 (the first CALL's operand, $68EF) and adds each byte from the table's end down: $68EF, $68FD, $6904, $6907, $690F, $6916, $6967, $6970, $697F, $6989, $6994.
+
+@module pictures ; the help's pictures and the boot menu's (Hrust 1 streams)
+@about Fourteen whole screens packed by Hrust 1 (ScreenDepack, depack.asm), each followed by one byte nothing reads. src/res/bootmenu/pictures holds them as PNG; the build packs them back to these bytes (tools/bootmenu_hrust.py). The eight of help item 3 (HelpComponents) show one robot part a page; the others one help item's pages each, the help menu and the boot menu.
+$69B6 b ElectronicsPicture ; help item 3, page 1: "ЭЛЕКТРОНИКА"
+@res pictures/electronics.hrust
+$6DF1 b ElectronicsPictureSpare ; never read
+$6DF2 b PhasersPicture ; help item 3, page 3: "ФАЗОРЫ"
+@res pictures/phasers.hrust
+$7168 b PhasersPictureSpare ; never read
+$7169 b MissilesPicture ; help item 3, page 4: "РАКЕТЫ"
+@res pictures/missiles.hrust
+$74CA b MissilesPictureSpare ; never read
+$74CB b AntigravPicture ; help item 3, page 6: "АНТИГРАВЫ"
+@res pictures/antigrav.hrust
+$78BE b AntigravPictureSpare ; never read
+$78BF b TracksPicture ; help item 3, page 7: "ТРАКИ"
+@res pictures/tracks.hrust
+$7C64 b TracksPictureSpare ; never read
+$7C65 b BipodsPicture ; help item 3, page 8: "БИПОДЫ"
+@res pictures/bipods.hrust
+$802A b BipodsPictureSpare ; never read
+$802B b HelpMenuPicture ; the help menu: the title, seven bars, the woman with the gun, the colour band
+> The bars are empty: HelpMenu prints the items into them.
+@res pictures/help-menu.hrust
+$8C73 b HelpMenuPictureSpare ; never read
+$8C74 b FeaturesPicture ; help item 5 "Особенности игры": a map, "Advises"
+@res pictures/features.hrust
+$904D b FeaturesPictureSpare ; never read
+$904E b CreditsPicture ; help item 6 "CREDITZ": a computer and a book
+@res pictures/credits.hrust
+$9419 b CreditsPictureSpare ; never read
+$941A b CannonsPicture ; help item 3, page 5: "ПУШКИ"
+@res pictures/cannons.hrust
+$97D1 b CannonsPictureSpare ; never read
+$97D2 b ProductionPicture ; help item 2 "Производство роботов": a satellite, a purple craft, cables
+@res pictures/production.hrust
+$9B97 b ProductionPictureSpare ; never read
+$9B98 b ProgrammingPicture ; help item 4 "Программирование роботов": a computer desk on a chequered floor, "Programming"
+@res pictures/programming.hrust
+$A143 b ProgrammingPictureSpare ; never read
+$A144 b BombPicture ; help item 3, page 2: "АТОМНАЯ БОМБА"
+@res pictures/bomb.hrust
+$A461 b BombPictureSpare ; never read
+$A462 b BootMenuPicture ; the boot menu: the "Адская Земля" logo, "Boot Menu: 1-Game 2-Help 3-NOT used"
+@res pictures/boot-menu.hrust
+$AA68 b BootMenuPictureSpare ; never read
+
+@module menus ; the boot menu, the help menu, the pointer, the controls
+@about BootMenu installs the interrupt and shows its picture; its loop reads the keys 1-3 (half row $F7FE): 1 LeaveForGame (print.asm), 2 HelpMenu, 3 PlaySample (boot.asm). The help menu is a picture with seven empty bars; HelpMenu prints the item names into them at once (TypeAtOnce = 1) and runs a loop a frame: the arrow pointer is drawn (DrawPointer), the controls read (ReadControls), the pointer moved (MovePointer), a HALT, the pointer erased (ErasePointer); without fire the bar under the pointer is lit (FindItem, HighlightItem: ink and paper of its cells swapped), with fire RunItem jumps to the lit bar's routine through ItemRoutines.
+@about The pointer is a 16-line, 8-pixel arrow (PointerSprite, mask and image) drawn over the screen with the 16 x 2 bytes under it saved (PointerUnder); its place is Pointer (x, y in pixels, the hot spot one pixel right and down of the arrow's corner), kept within PointerLimits. It starts at x 195, y 55 (BootMenu) and stays where it was when a help item returns. It moves Speed pixels a frame: 1 at first, one more every 8 frames the same direction is held, at most 10; a change of the controls starts again at 1.
+@about The controls (Controls: bit 0 right, 1 left, 2 down, 3 up, 4 fire) are Q A O P and SPACE together with either the keys 6 7 8 9 0 (the Sinclair joystick: left, right, down, up, fire) or, with CAPS SHIFT held, the cursor keys 5 6 7 8 and 0. There is no Kempston read. The item's hit boxes (ItemBoxes) are the bars' text cells: columns 9-22 of rows 7, 9, ... 19.
+$AA69 c BootMenu ; the boot menu: the tune's init again, the IM 2 interrupt, then ShowBootMenu
+> From Start. Calls bank 1's $C000 (the player's init: the boot tune from its start), fills Im2Table with $60 (257 bytes), I = $5B, IM 2, EI and a HALT: BootInterrupt plays from the next frame on. Falls into ShowBootMenu.
+@isub $AA6E CALL BANK_WINDOW
+$AA69 ; bank 1
+$AA6E ; the tune from its start
+$AA71 ; bank 0
+@isub $AA7E LD BC,256
+$AA7C ; every byte $60: whatever the data bus holds, the vector read is $6060
+$AA83 ; I = $5B
+$AA8A ; the first BootInterrupt
+$AA8B c ShowBootMenu ; the boot menu's picture, the pointer's start, the key loop
+> Also help item 7 ("Выход", through ItemRoutines). Border black, ClearScreen, BootMenuPicture, Pointer = x 195, y 55 (where the help menu will show it). The loop reads the half row 1-5: 1 LeaveForGame, 2 HelpMenu, 3 PlaySample and on; nothing waits for a key's release, so key 3 held plays the sample again and again.
+@isub $AA97 LD DE,55*256+195
+$AA8C ; border black
+$AA97 ; y 55, x 195
+$AA9E BootMenuKeys ; the half row 1-5
+$AAA3 ; key 1: the game
+$AAA7 ; key 2: the help
+$AAAB ; key 3: the sample
+$AAB1 c HelpMenu ; the help menu: its picture, the items printed into the bars, the pointer loop
+> Reached from ShowBootMenu (key 2), from every help item's end, from SPACE while a page types (PrintString) or after it (WaitPageKey): SP is set again, so nothing left on the stack matters. Border black, ClearScreen, HelpMenuPicture; TypeAtOnce = 1, the seven names and the copyright line printed at their places (row, column in 4-pixel cells: 7,25 9,22 11,19 13,20 15,24 17,28 19,29 and 22,8: each name centred on its bar); ResetPointerSpeed, LitItem = none. Then a frame a turn: DrawPointer, ReadControls, MovePointer, HALT; with fire RunItem (it does not come back when a bar is lit), else FindItem and HighlightItem; ErasePointer. The pointer is visible from the frame's start to its HALT, so the HALT shows it.
+@isub $AAB1 LD SP,Stack+284
+@isub $AAC5 LD DE,7*256+25
+@isub $AAD2 LD DE,9*256+22
+@isub $AADF LD DE,11*256+19
+@isub $AAEC LD DE,13*256+20
+@isub $AAF9 LD DE,15*256+24
+@isub $AB06 LD DE,17*256+28
+@isub $AB13 LD DE,19*256+29
+@isub $AB20 LD DE,22*256+8
+$AAB1 ; the stack from its top: the help menu is a fresh start
+$AAB5 ; border black
+$AAC0 ; the names print at once
+$AAC5 ; row 7, column 25
+$AAD2 ; row 9, column 22
+$AADF ; row 11, column 19
+$AAEC ; row 13, column 20
+$AAF9 ; row 15, column 24
+$AB06 ; row 17, column 28
+$AB13 ; row 19, column 29
+$AB20 ; the copyright line, row 22, column 8
+$AB2D ; the pointer at 1 pixel a frame
+$AB30 ; no bar lit
+$AB35 HelpLoop
+$AB3E ; one frame with the pointer shown
+$AB42 ; fire?
+$AB46 ; no: the bar under the pointer, lit
+$AB4C ; the screen as it was for the next frame's pointer
+$AB51 HelpFire ; RunItem does not come back when a bar is lit
+$AB59 c FindItem ; the item under the pointer: A = 1-7, or $FF (CurrentItem then counts 8)
+> The pointer's x and y divided by 8 give the cell; each ItemBoxes record (column, row, width) is tried: the cell's column within the box's and its row equal. CurrentItem counts the records from 1.
+$AB5D ; CurrentItem = 1
+$AB62 ; L = x, H = y
+$AB65 ; H = y / 8: the cell's row
+$AB6C ; L = x / 8: its column
+$AB72 ; H = the column, L = the row
+$AB74 FindItemNext ; the box's first column ($FF: no more boxes, A = $FF)
+$AB7D ; left of the box
+$AB84 ; A = its last column
+$AB86 ; right of it
+$AB88 ; its row
+$AB8E ; A = the item
+$AB92 FindItemSkip ; the next record
+$AB97 ; CurrentItem + 1
+$ABA0 c HighlightItem ; light the bar of item A (or none, $FF), the old one put back
+> When A is LitItem nothing changes. Else the old lit bar (if any) is inverted back (InvertItem) and LitItem = A; the new one is inverted when it is a bar.
+$ABA4 ; the same bar: nothing to do
+$ABA6 ; none lit yet
+$ABAA ; LitItem = the new one
+$ABB0 ; the old bar back
+$ABB3 InvertLit ; the new bar (none: done)
+$ABD2 FirstLit ; LitItem = the new one
+$ABB9 c InvertItem ; swap ink and paper over item A's bar
+> IX = its ItemBoxes record; InvertCells at its column and row, its width cells.
+$ABBF ; HL = (A - 1) * 3
+$ABC2 ; IX = the record
+$ABC8 ; H = the column, L = the row
+$ABD8 c InvertCells ; swap ink and paper of (IX + 2) cells from column H, row L
+> The attribute address $5800 + row * 32 + column, computed from H and L. The first cell's attribute, swapped, is written to all the cells; bright and flash are dropped (the bars have neither).
+$ABD8 ; A = the column
+$ABD9 ; L = row * 8 (rows 0-23 fit a byte)
+$ABDC ; H = $16: HL * 4 = $5800 + row * 32
+$ABE0 ; + the column
+$ABE2 ; the first cell's attribute
+$ABE4 ; the ink becomes the paper
+$ABEE ; the paper becomes the ink
+$ABF7 ; the width
+$ABFA InvertCellsNext ; every cell of the bar
+$ABFF c RunItem ; fire: jump to the lit item's routine, dropping the caller (nothing lit: return)
+> The routine's address from ItemRoutines; PUSH; RET. The routines end with JP HelpMenu (item 7 is ShowBootMenu itself), which sets SP again.
+$AC04 ; nothing lit: back to the loop
+$AC05 ; HelpLoop's return address dropped
+$AC0B ; the item's routine
+$AC12 ; into it
+$AC14 b ItemBoxes 3 ; the seven bars' hit boxes: column, row, width in 8-pixel cells
+> Columns 9-22 (14 cells) of rows 7, 9, 11, 13, 15, 17, 19; $FF ends the table.
+$AC29 ; the end
+$AC2A w ItemRoutines 1 ; the seven items' routines, in the menu's order
+> HelpDescription, HelpProduction, HelpComponents, HelpProgramming, HelpFeatures, HelpCredits, ShowBootMenu ("Выход").
+$AC38 b CurrentItem ; FindItem's count: the item under the pointer, 8 past the last
+$AC39 b LitItem ; the lit bar's item, $FF none (RunItem's choice)
+$AC3A c WaitFrames ; ten HALTs: no code calls it
+> A routine left in the image: LD B,10, HALT, DJNZ, RET. Not referenced (the bytes $3A,$AC appear nowhere) and never run.
+$AC3C WaitFramesNext
+$AC40 c ResetPointerSpeed ; Speed = SpeedStart: the pointer at 1 pixel a frame again
+> Also reached from PointerAcceleration when the controls change or no direction is held.
+@isub $AC46 LD BC,3
+$AC4C c MovePointer ; move the pointer by the controls: x first, then y, Speed pixels, clamped
+> Controls' bits: 0 right, 1 left, 2 down, 3 up. PointerAcceleration first. A direction counts only alone on its axis (B = C XOR (C >> 1 AND 5): right with left cancel, down with up). StepAxis moves x (DE = Pointer, HL = its limits), then y (Pointer + 1, the y limits).
+$AC50 ; the speed for these controls
+$AC54 ; C = the controls
+$AC55 ; B bit 0: right XOR left, bit 2: down XOR up
+$AC5A ; carry: x moves
+$AC5B ; x's limits
+$AC62 ; C bit 0 (right) adds, else (left) subtracts
+$AC66 ; C bit 0 now: down
+$AC6B ; carry (B bit 2): y moves
+$AC6E ; y
+$AC6F ; y's limits
+$AC75 c PointerAcceleration ; A = the controls: speed up while the same controls are held
+> LastInput = A. A change from the last frame (fire too), or no direction: ResetPointerSpeed. Else Speed's delay counts down; at 0 it is reloaded (8 frames) and, while the steps left (10 at the start) last, Speed's step grows by one: 1 pixel a frame, 2 after 8 frames, at most 10 after 72.
+$AC75 ; C = the last frame's controls (B, PointerAddress's low byte, is not used)
+$AC79 ; this frame's for the next
+$AC7C ; changed: start slow again
+$AC7F ; no direction: the same
+$AC83 ; Speed's delay
+$AC88 ; 8 frames on
+$AC8D ; steps left
+$AC8F ; none left: the fastest
+$AC92 ; one pixel faster
+$AC94 c StepAxis ; move one coordinate (DE) by Speed's step: C bit 0 set adds, clear subtracts; clamp to (HL) and (HL + 1)
+> Subtracting below the minimum or past 0 gives the minimum; adding up to the maximum or past 255 gives the maximum.
+@isub $AC96 LD A,(Speed+2)
+$AC95 ; carry: add (right, down)
+$AC96 ; the step
+$AC9D ; subtract (left, up)
+$AC9E ; past 0
+$ACA1 ; below the minimum
+$ACA5 StepUp ; add
+$ACA6 ; HL on the maximum
+$ACA7 ; past 255
+$ACAA ; below the maximum: done
+$ACAC ClampAxis ; the limit
+$ACAF c DrawPointer ; save the 16 x 2 bytes under the pointer and draw it (mask and image) at Pointer
+> The corner is one pixel left and up of Pointer (unless at 0). PointerAddress = the screen byte of the corner (where PointerUnder goes back); nothing is drawn when the corner is below the pixel area ($5800), and the drawing stops there. Each sprite line (PointerSprite: mask, image) is shifted to the pixel and laid over two screen bytes (AND the mask, OR the image); at column 31 only the first byte. The save takes 16 lines even past the pixel area (reads only).
+$ACAF ; E = x, D = y
+$ACB3 ; y - 1 unless 0
+$ACB8 ; x - 1 unless 0
+$ACBD ; HL = the screen address of the corner (x, y)
+$ACD3 ; for ErasePointer
+$ACD6 ; the corner below the pixel area: nothing drawn
+$ACDA ; the bytes under the pointer
+$ACDD ; B = 16 lines (C = $FF: the 32 LDIs leave B alone)
+$ACE0 SaveUnder ; two bytes a line
+$ACEC ; the shift: 8 - (x - 1) & 7, 1-8 (9 at x 0, which PointerLimits keeps out)
+$ACFA ; the sprite
+$ACFD ; 16 lines
+$ACFF DrawLine ; HL = the sprite line, DE = the screen
+$AD03 ; D:E = $FF, the mask; H:L = 0, the image
+$AD0A ShiftLine ; SLL (undocumented: a 1 shifted in): the mask left into D, the image into H
+$AD11 ; B:C = the image's two bytes
+$AD13 ; the left byte: AND the mask, OR the image
+$AD18 ; past column 31 (L wraps to the next row): no right byte
+$AD1E ; the right byte
+$AD22 DrawLineNext
+$AD2B ; past the pixel area: stop
+$AD32 c ErasePointer ; put back the bytes DrawPointer saved; PointerAddress then points past the pixels
+> Stops at the pixel area's end as DrawPointer did. PointerAddress = $58xx afterwards, so a second erase restores nothing.
+$AD3A RestoreLine ; past the pixel area: stop
+$AD4B ; a second erase stops at once
+$AD51 c NextLineDown ; HL = the screen address one pixel line down
+> Past the screen's last line H becomes $58: the callers stop there.
+$AD60 b Pointer 2 ; the pointer's x, y in pixels (192, 55 in the image; ShowBootMenu sets 195, 55)
+$AD62 b PointerLimits 2 ; x 1-255, y 9-182
+$AD66 b SpeedStart 3 ; Speed's start: the delay 8, the steps 10, the step 1 pixel
+$AD69 b Speed 3 ; the delay counter, the steps left, the step in pixels
+$AD6C b LastInput ; the controls of the last frame
+$AD6D w PointerAddress ; the screen byte of the pointer's corner (where PointerUnder goes back)
+$AD6F b PointerSprite 2 ; the arrow: 16 lines of mask (AND), image (OR)
+@res sprites/pointer.bin
+$AD8F b PointerUnder 2 ; the 16 x 2 screen bytes under the pointer
+$ADAF b PointerSpare ; 4 bytes nothing uses
+$ADB3 c ReadControls ; Controls = Q A O P SPACE with 6 7 8 9 0, or with the cursor keys 5 6 7 8 0 when CAPS SHIFT is held
+> Bit 0 right, 1 left, 2 down, 3 up, 4 fire. Each reader shifts five keys into C, inverts them (1 = pressed) and stores Controls itself (the shared tail at StoreControls); the last store is the OR of both readers.
+$ADB5 ; the half row CAPS SHIFT-V
+$ADB9 ; CAPS SHIFT in the carry
+$ADBA ; held: the cursor keys
+$ADBC ; else the Sinclair joystick's keys
+$ADBF MergeControls
+$ADC1 ; and Q A O P SPACE
+$ADC6 StoreControls
+$ADCC CursorControls
+$ADD1 c ReadQaop ; SPACE, Q, A, O, P into C's low five bits (fire, up, down, left, right)
+$ADD1 ; SPACE
+$ADD8 ; Q
+$ADDF ; A
+$ADE6 ; P (bit 0) and O (bit 1)
+$ADEA LeftRight ; A's bit 1 (left), then its bit 0 (right)
+$ADF0 LastBit
+$ADF2 ; 1 = pressed
+$ADF6 c ReadCursorKeys ; with CAPS SHIFT: 0 fire, 7 up, 6 down, 5 left, 8 right
+$ADF6 ; 0 9 8 7 6
+$ADFA ; 0: fire
+$ADFD ; 9 not used; 8 (right) into the carry, kept for last
+$AE00 ; 7: up
+$AE03 ; 6: down
+$AE06 ; 5: left, on the next half row
+$AE0C ; the carry = 5 not pressed
+$AE10 ; 8: right
+$AE13 c ReadSinclairJoystick ; 0 fire, 9 up, 8 down, 6 left, 7 right (the Sinclair joystick on the keys 6-0)
+$AE13 ; 0 9 8 7 6
+$AE17 ; 0, 9, 8
+$AE19 SinclairNext
+$AE1E ; then 6 and 7 as O and P
+$AE20 b Controls ; this frame's controls: bit 0 right, 1 left, 2 down, 3 up, 4 fire
+
+@module help ; the help items: pictures and typed pages
+@about Each of the six help items (ItemRoutines) clears the screen, sets TypeAtOnce = 0 (the typewriter) and shows its pages: per page the picture is unpacked again (ScreenDepack), the text cursor set to row 1 (rows 5-9 for the parts of item 3), column 30, and ShowPage types the page's string into the right half (columns 30-62 of 64 four-pixel cells, 33 a line) and waits: ENTER or 0 the next page, SPACE the help menu (also while it types). After the last page JP HelpMenu. Items 3, 5 and 6 wait one more frame (HALT) between their pages.
+@about Typing takes about a quarter of a frame a character (PrintString's delay): a full page of 759 characters about 200 frames. Items: 1 "Описание игры" 5 pages, 2 "Производство роботов" 4, 3 "Характеристика компонентов" 8 (a part and its picture a page: electronics, A-bomb, phasers, missiles, cannons, anti-gravs, tracks, bipods), 4 "Программирование роботов" 3, 5 "Особенности игры" 5, 6 "CREDITZ" 3. The texts are in texts.asm (src/res/bootmenu/text).
+$AE21 c HelpCredits ; help item 6 "CREDITZ": CreditsPicture, 3 pages
+$AE24 ; the typewriter
+$AE28 ; page 1: the picture
+$AE2E ; at row 1, column 30
+$AE35 ; the text
+$AE3B ; a frame between the pages (items 3, 5 and 6 only)
+$AE67 c HelpFeatures ; help item 5 "Особенности игры": FeaturesPicture, 5 pages
+$AED5 c ShowPage ; type the string at HL, then wait for ENTER / 0 (back) or SPACE (the help menu)
+$AEDB c HelpDescription ; help item 1 "Описание игры": DescriptionPicture, 5 pages
+$AF44 c HelpProduction ; help item 2 "Производство роботов": ProductionPicture, 4 pages
+$AF9A c HelpProgramming ; help item 4 "Программирование роботов": ProgrammingPicture, 3 pages
+$AFDD c HelpComponents ; help item 3 "Характеристика компонентов": a part a page, its picture each
+> Electronics, A-bomb, phasers, missiles, cannons, anti-gravs, tracks, bipods; the text starts at row 5, 7, 9, 8, 9, 8, 8, 7 (under the part's name in the picture).
+
+@isub $AE2E LD DE,1*256+30
+@isub $AE42 LD DE,1*256+30
+@isub $AE56 LD DE,1*256+30
+@isub $AE74 LD DE,1*256+30
+@isub $AE88 LD DE,1*256+30
+@isub $AE9C LD DE,1*256+30
+@isub $AEB0 LD DE,1*256+30
+@isub $AEC4 LD DE,1*256+30
+@isub $AEE8 LD DE,1*256+30
+@isub $AEFB LD DE,1*256+30
+@isub $AF0E LD DE,1*256+30
+@isub $AF21 LD DE,1*256+30
+@isub $AF34 LD DE,1*256+30
+@isub $AF51 LD DE,1*256+30
+@isub $AF64 LD DE,1*256+30
+@isub $AF77 LD DE,1*256+30
+@isub $AF8A LD DE,1*256+30
+@isub $AFA7 LD DE,1*256+30
+@isub $AFBA LD DE,1*256+30
+@isub $AFCD LD DE,1*256+30
+@isub $AFEA LD DE,5*256+30
+@isub $AFFE LD DE,7*256+30
+@isub $B012 LD DE,9*256+30
+@isub $B026 LD DE,8*256+30
+@isub $B03A LD DE,9*256+30
+@isub $B04E LD DE,8*256+30
+@isub $B062 LD DE,8*256+30
+@isub $B076 LD DE,7*256+30
+
+@module print ; the help's text printer, the page keys, the game key
+@about PrintString prints a 0-terminated string at PrintAt (column 0-63 in 4-pixel half cells, row 0-23): code 1 switches to FontLatin, 2 to FontCyrillic (UseLatin / UseCyrillic patch the font base in PrintGlyph), every other byte is a glyph. PrintGlyph ORs the glyph's 7 lines (its bytes 1-7; byte 0 is the blank line above) into the left or right half of the screen byte (masks $F0 / $0F): text over a picture keeps the picture. Past column 62 the line goes on at column 30 of the next row; past row 23, row 0.
+@about With TypeAtOnce = 0 (the pages) each glyph is followed by a delay (BC = $02BC: about 18000 T) and a look at SPACE, which drops the page for HelpMenu. With 1 (the help menu's names) neither.
+$B086 c UseLatin ; code 1: the Latin font from here; A = the next byte, HL on it
+@isub $B087 LD HL,FontLatin-$0100
+$B087 ; glyph = code * 8 + FontLatin - $100
+$B091 c UseCyrillic ; code 2: the Cyrillic font from here; A = the next byte, HL on it
+@isub $B092 LD HL,FontCyrillic-$0100
+$B09C c PrintGlyph ; print glyph A at PrintAt, then PrintAt on one column
+> The glyph's address: A * 8 + the font base (GlyphFont's operand). The column wraps at 63 to 30 on the next row, the row at 24 to 0 (never on the help's pages). The screen byte from ScreenRows and the column / 2; the column's bit 0 picks the right half (mask $0F) or the left ($F0). Seven lines from the cell's second.
+@isub $B0A0 LD DE,FontLatin-$0100
+@isub $B0B1 LD A,(PrintAt+1)
+@isub $B0BE LD A,(PrintAt+1)
+$B09C ; HL = the code
+$B09F ; B = 0 (PrintString's delay sets it again)
+$B0A0 GlyphFont ; the font base: UseLatin / UseCyrillic write the operand
+$B0A6 ; HL = the glyph
+$B0A8 ; PrintAt: the column
+$B0AC GlyphColumn ; C = the column
+$B0AD ; past column 62
+$B0B1 ; the next row
+$B0B8 ; column 30 of it
+$B0BC GlyphHere ; the column after this one
+$B0C1 ; past row 23
+$B0C5 ; row 0 (the help never gets there)
+$B0C9 ; the row's screen address
+$B0D2 ; the column's byte, its half in the carry
+$B0DE ; the right half
+$B0E0 ; the left half
+$B0E2 ; the glyph's line 0 is not drawn: lines 1-7 to the cell's lines 1-7
+$B0E4 ; OR the glyph's half into the screen
+$B10D RightHalf ; the same with the low nibble
+$B13A c PrintString ; print the 0-terminated string at HL: codes 1 / 2 the fonts, with TypeAtOnce 0 a delay a glyph and SPACE to the help menu
+$B13A PrintNext
+$B13C ; 0: the end
+$B13E ; 1: Latin from here
+$B143 ; 2: Cyrillic from here
+$B149 ; the glyph
+$B14C ; at once?
+$B152 ; SPACE: the help menu (it sets the stack again)
+@isub $B15A LD BC,700
+$B15A ; the typewriter's delay: 700 turns of 26 T
+$B15D TypeDelay
+$B162 PrintSkip ; the next byte
+$B166 PrintEnd ; the 0
+$B167 b TypeAtOnce ; 1: PrintString prints at once (the help menu), 0: types (the pages)
+$B168 c LeaveForGame ; boot menu key 1: the tune from its start, the screen cleared, IM 1, StartGame
+> Calls bank 1's $C000 (the player's init: the tune from its start, its AY registers set), bank 0, ClearScreen (one more interrupt: a frame of the tune), I = $3F, IM 1, EI, JP StartGame.
+@isub $B16E CALL BANK_WINDOW
+$B169 ; bank 1
+$B16E ; the tune's init: the tune back at its start
+$B171 ; bank 0
+$B176 ; one more frame under IM 2 (ClearScreen's HALT)
+$B179 ; I as the ROM keeps it
+$B17D ; IM 1: no more BootInterrupt
+$B183 c WaitPageKey ; ENTER or 0: return (the next page); SPACE: the help menu
+> A HALT a turn (the tune plays on).
+$B183 ; ENTER
+$B189 ; 0
+$B18F ; SPACE
+$B198 ; a frame
+$B19B b PrintAt 2 ; the printer's column (0-63, 4-pixel cells) and row (0-23)
+$B19D b FontLatin 8 ; the Latin font: 96 glyphs $20-$7F, 8 bytes each (line 0 blank), 4 pixels in both nibbles
+@res fonts/latin.bin
+$B49D b FontCyrillic 8 ; the Cyrillic font: the same codes, the authors' KOI-7-like layout (a = а, q = я, w = в ...)
+@res fonts/cyrillic.bin
+$B79D w ScreenRows 8 ; the screen address of each character row's first line, rows 0-23
+
+@module texts ; the help menu's names and the 28 pages
+@about The strings PrintString prints (print.asm), 0-terminated, each starting with its font code (1 Latin, 2 Cyrillic). src/res/bootmenu/text holds them as UTF-8 (tools/bootmenu_res.py: the glyphs of the font in force, the codes as ‹lat› / ‹rus›, the pages in lines of 33). A page's text is one string: the printer wraps it at column 62, so the authors padded the lines with spaces to 33.
+$B7CD b MenuDescription ; "ОПИСАНИЕ ИГРЫ"
+@res text/menu.bin
+$B7DC b MenuProduction ; "ПРОИЗВОДСТВО РОБОТОВ"
+@res text/menu.bin
+$B7F2 b MenuComponents ; "ХАРАКТЕРИСТИКА КОМПОНЕНТОВ"
+@res text/menu.bin
+$B80E b MenuProgramming ; "ПРОГРАММИРОВАНИЕ РОБОТОВ"
+@res text/menu.bin
+$B828 b MenuFeatures ; "ОСОБЕННОСТИ ИГРЫ"
+@res text/menu.bin
+$B83A b MenuCredits ; "CREDITZ"
+@res text/menu.bin
+$B843 b MenuExit ; "ВЫХОД"
+@res text/menu.bin
+$B84A b MenuCopyright ; "(C) 1998 ETERNITY INDUSTRY. KOVROV COOL CITY."
+@res text/menu.bin
+$B879 b CreditsPage1 ; "TOTAL CREDITZ": the intro's and the help's authors
+@res text/credits.bin
+$BB30 b CreditsPage2 ; the intro's testers, the game's authors, the tape version's supplier
+@res text/credits.bin
+$BE29 b CreditsPage3 ; thanks, greetings, Eternity Industry's postal address
+@res text/credits.bin
+$C124 b DescriptionPage1 ; "Описание игры" 1: the Isignians' robots, the planetoid, its four bases
+@res text/description.bin
+$C3FC b DescriptionPage2 ; 2: (continues) buying components, capturing factories
+@res text/description.bin
+$C6F5 b DescriptionPage3 ; 3: what a captured factory gives, the start over the base
+@res text/description.bin
+$C9EE b DescriptionPage4 ; 4: the craft's shadow and shield, what it can do, the status panel
+@res text/description.bin
+$CCE7 b DescriptionPage5 ; 5: resources in cosmodollars, the goal
+@res text/description.bin
+$CE96 b ProductionPage1 ; "Производство роботов" 1: landing on the base, choosing components
+@res text/production.bin
+$D18F b ProductionPage2 ; 2: taking a component off, what a robot must have, towers
+@res text/production.bin
+$D488 b ProductionPage3 ; 3: cheap robots, 'ВЫПУСК' and 'ВЫХОД', releasing three
+@res text/production.bin
+$D781 b ProductionPage4 ; 4: a released robot does nothing until programmed
+@res text/production.bin
+$D807 b ElectronicsPage ; "Характеристика компонентов": electronics
+@res text/components.bin
+$DA3A b BombPage ; the A-bomb
+@res text/components.bin
+$DBA7 b PhasersPage ; phasers
+@res text/components.bin
+$DC6F b MissilesPage ; missiles
+@res text/components.bin
+$DD9A b CannonsPage ; cannons
+@res text/components.bin
+$DE83 b AntigravPage ; anti-gravs
+@res text/components.bin
+$DF6C b TracksPage ; tracks
+@res text/components.bin
+$E097 b BipodsPage ; bipods
+@res text/components.bin
+$E204 b ProgrammingPage1 ; "Программирование роботов" 1: landing on a robot, the combat mode, direct control
+@res text/programming.bin
+$E4FD b ProgrammingPage2 ; 2: giving an order, leaving the robot
+@res text/programming.bin
+$E7F6 b ProgrammingPage3 ; 3: when an order is refused, reprogramming
+@res text/programming.bin
+$EA29 b FeaturesPage1 ; "Особенности игры" 1: wreck heaps, the A-bomb clears them
+@res text/features.bin
+$ED22 b FeaturesPage2 ; 2: robots firing through walls, own robots in the line of fire
+@res text/features.bin
+$F01B b FeaturesPage3 ; 3: friend or foe: the radar
+@res text/features.bin
+$F314 b FeaturesPage4 ; 4: "ЗАХВАТ ЗАВОДОВ И БАЗ": 45 seconds in the yard, the flags
+@res text/features.bin
+$F60D b FeaturesPage5 ; 5: capture with two robots, "Удачи !"
+@res text/features.bin

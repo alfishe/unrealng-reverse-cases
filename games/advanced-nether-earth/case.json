@@ -1,0 +1,11 @@
+{
+  "image_cmd": ["python3", "tools/game_image.py", "--out", "work/mkgame"],
+  "image": "work/mkgame/original.bin",
+  "lo": "6731",
+  "hi": "D7D3",
+  "device": "ZXSPECTRUM48",
+  "bases": {"5": "4000", "2": "8000", "0": "C000"},
+  "read_builds": ["game", "game-r2"],
+  "ref_builds": [["game", "the SCL's first game: the menu, play to frame 11601 (work/stage1/s2 from the game's entry)"], ["game-r2", "save and load through the disk module (work/stage3/r2 from the game's entry)"]],
+  "header": ["; Advanced Nether Earth, Eternity Industry 1998: the game image in play, banks 5, 2 and 0 as the CPU sees them.", "; The game block unpacks to $6731-$D7D7 (tools/build_game.sh adds its last 5 bytes, the first of Shots); entry GameEntry $A5DA."]
+}

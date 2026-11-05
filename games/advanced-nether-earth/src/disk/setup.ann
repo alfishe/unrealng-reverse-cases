@@ -1,0 +1,51 @@
+# The disk module's set-up: bank 4 $C000-$C064, run where it lies (tools/disk_mkgame.py --part src/disk/diskio.json).
+# Witness: work/stage3/aned/a (recording frames 7652 save, 8932 load, 10180 load of a missing file; L1 window
+# work/stage3/aned/a-disk).
+
+@module setup ; the set-up, run in bank 4 at $C000
+@about The game's GameSave ($6905) and GameLoad ($A56A) page bank 4 in at $C000, set FLAGS, LAST_K and CAPS LOCK as the ROM's key reading wants, put the module's entry in IX ($4000 load, $4033 save) and jump to $C000. The set-up makes the 48 K state TR-DOS expects: a black, cleared screen, the stack at $5000, IM 1 with the ROM's I, IY and HL', a silent AY, cyan text rows 16-21 and yellow rows 22-23; then it copies the module ($C065-$CD2B) to $4000 and jumps to IX.
+@about The module runs in the screen's first two thirds (just cleared); its texts print in the last third, which its code and stack never reach.
+
+@equ $4000 LoadEntry ; the module's load entry once copied (a label of the module's segment)
+@equ $C065 ModuleImage ; the module's bytes in bank 4 (the set-up's end): copied to $4000
+@equ $5CC2 TrdosHook 2 ; TR-DOS's hook in the system variables: TR-DOS jumps there through a pushed return (a RET, $C9, after TR-DOS's own start-up)
+@equ $5C3A RomIY ; the ROM's IY: ERR_NR, the base of the system variables
+@equ $2758 RomHLx ; the 48 K ROM's value for HL' (the calculator's return), as the IM 1 handler expects
+
+$C000 c Setup ; Set up the 48 K state TR-DOS needs, copy the module to $4000 and run it at IX
+> In: IX = the module's entry ($4000 load, $4033 save), bank 4 at $C000 (GameSave, GameLoad). The screen ($4000-$5AFF) is cleared with an LDDR down from $5AFF, the border black; the stack goes to $5000, in the screen's second third, below the rows the module prints on; SetRomState; the 3271 bytes of the module go to $4000 and the CPU jumps to IX. Never returns: the module leaves through the game's SaveReturn, LoadReturn or Restart.
+$C001 ; A = 0
+$C002 ; border black
+$C004 ; the screen's last attribute byte
+$C009 ; DE = HL - 1
+$C00A ; that byte 0 ...
+$C00B ; ... and the 6911 below it
+$C00E ; $4000-$5AFF all 0
+$C010 ; the stack in the screen, below the text rows 16-23 ($5000)
+$C013 ; IM 1, the ROM's registers, the AY quiet, the colours
+$C016 ; the module from bank 4 ...
+$C019 ; ... to $4000 (where it was assembled)
+$C01C ; 3271 bytes: $C065-$CD2B
+$C021 ; IX: $4000 load, $4033 save
+
+$C023 c SetRomState ; The ROM's interrupt state and registers, a silent AY, the text colours, the TR-DOS hook
+> Interrupts off; I = $3F (the ROM's), IM 1, IY = $5C3A and HL' = $2758 as the 48 K ROM's IM 1 handler and TR-DOS expect. One EI / HALT so the IM 1 handler runs once (the keyboard and FRAMES as the ROM keeps them), then interrupts off again. AY registers 0-14 are written 0 (silence: the game's tune stops). Attributes: rows 16-21 (192 bytes) 5, cyan on black, for the texts; rows 22-23 (64 bytes) 6, yellow, for the status line. TrdosHook ($5CC2) gets $F1 $C9: POP AF / RET.
+$C02F ; HL' = the ROM's
+$C033 ; A = 0: the first AY register
+$C034 ; one frame with the ROM's IM 1 handler (key scan, FRAMES)
+$C037 SilenceAy ; the AY register port
+$C03A ; select register A
+$C03D ; the value 0
+$C03E ; the AY data port ($BFFD)
+$C040 ; register A = 0
+$C043 ; the next register
+$C044 ; registers 0-14
+$C048 ; row 16's attributes
+$C04E ; cyan ink on black
+$C050 ; 191 more: rows 16-21
+$C055 ; rows 22-23 ...
+$C057 ; ... yellow on black
+$C059 ; 63 more
+$C05E ; the bytes $F1 $C9: POP AF / RET
+@isub $C05E LD HL,$C9F1
+$C061 ; at TrdosHook

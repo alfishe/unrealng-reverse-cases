@@ -3,8 +3,9 @@
 
     python3 tools/packall.py OUTDIR NAME=IMAGE ...
 
-Writes OUTDIR/NAME.hrm (the stream) and appends `PK_NAME EQU length` to OUTDIR/sizes.inc (the macro HRUM_SFX of
-src/sfx/hrum35.asm needs the stream's length for its LDDR and its LD SP; sjasmplus has no file-size function).
+Writes OUTDIR/NAME.hrm (the stream), OUTDIR/NAME.img (the image, whose last 5 bytes the block keeps in the
+depacker's tail) and appends `PK_NAME EQU` the stream's length and `UN_NAME EQU` the image's to OUTDIR/sizes.inc (the
+macro HRUM_SFX of src/sfx/hrum35.asm needs them for its LDDR and its LD SP; sjasmplus has no file-size function).
 """
 import os
 import sys
@@ -20,9 +21,11 @@ def main():
     with open(sizes, 'a') as inc:
         for arg in sys.argv[2:]:
             name, image = arg.split('=', 1)
-            stream, _tail = hrum.pack(open(image, 'rb').read())
+            data = open(image, 'rb').read()
+            stream, _tail = hrum.pack(data)
             open(os.path.join(out, name + '.hrm'), 'wb').write(stream)
-            inc.write('PK_%s EQU %d\n' % (name, len(stream)))
+            open(os.path.join(out, name + '.img'), 'wb').write(data)
+            inc.write('PK_%s EQU %d\nUN_%s EQU %d\n' % (name, len(stream), name, len(data)))
 
 
 if __name__ == '__main__':

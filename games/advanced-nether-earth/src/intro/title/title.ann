@@ -1,0 +1,67 @@
+# The title picture at $9C40 (file sectors 87-99 of A_NETHER.B, read there unpacked by UltraXOR's sector reader,
+# which then calls $9C40): the annotations that tools/intro_mkpart.py turns into src/intro/title*.asm.
+# The format is kit/mkgame.py's (class Annotations); the code is what tools/intro_trace.py's run executed.
+
+@module titlepic ; the title picture: a relocatable screen depacker and its packed screen
+@about UltraXOR's reader (src/boot/a-nether.asm) reads 13 sectors to $9C40 after the loader returns on SPACE and calls TitlePicture before it reads the boot program: the picture "АДСКАЯ ЗЕМЛЯ / ADVANCED NETHER EARTH / ETERNITY INDUSTRY PRODUCTION" (src/res/intro/title.png) unpacks straight into the shown screen at $4000 and stays there while the rest of the disk loads: the recording work/intro/i1 (inputs/i1-intro.txt: SPACE at script frame 6600) shows it in its screen of script frame 7000 (recording frame about 8600), the boot menu by 7250; tools/intro_trace.py runs it at frames 5954-5955.
+@about The code is position independent, as the authors' screen packer wrote it for any address: CALL $0052 (a RET in the 48 ROM) leaves its own return address under SP, which TitlePicture reads back as TitleBase, then patches the three CALLs to TitlePutByte with TitleBase + offset (their operands hold $74A6, the address the packer's template was assembled for) and takes the stream at TitleBase + $BE. The intro carries the same depacker for its picture (src/intro/intro.ann, LogoDepack $66C1).
+@about The stream (tools/intro_screen.py): a token byte with bit 7 clear copies ((b >> 3) & 15) + 3 bytes from ((b & 7) << 8) + the next byte back, bit 7 set with bit 6 clear is a literal block of b & $3F bytes, bits 7 and 6 set repeat the next byte (b & $3F) + 3 times, $80 ends. The bytes go out in TitlePutByte's order: per third of the screen, column by column, the 8 character rows of a column top down, each 8 pixel lines; then the 768 attributes. A copy's source is the same order counted back, which TitleCopy turns into a screen address. 6912 bytes from 3034.
+$9C40 c TitlePicture ; the title picture unpacked to the screen
+> Entered by UltraXOR's reader with the 48 ROM paged (CALL $0052 needs its RET there) and returns to it with interrupts on and HL' = $2758 (the ROM's value, for BASIC). DI first: the unpacking runs with no interrupt, about 14 frames (recording d1: 8215:18141-8229:52720).
+$9C41 ; the ROM's RET at $0052 returns at once and leaves $9C44 below SP
+$9C44 TitleBase ; SP - 2 is the return address just left: BC = TitleBase, wherever the code was loaded
+$9C47 ; DE = TitlePutByte
+$9C4C ; the CALL of TitleCopy ...
+$9C53 ; ... the CALL of TitleLiteral ...
+$9C5A ; ... and the CALL of TitleRun to TitlePutByte
+$9C61 ; HL = TitleStream, the packed screen
+$9C65 ; HL' = $4000, the first byte of the shown screen; DE = $4000, the count of bytes out (as an address in the stream's order)
+$9C6B ; A' = 3: three thirds of pixels to go, NZ: pixels, not attributes
+$9C6E ; B' = 8 lines of a character row, C' = 8 rows of a column
+$9C74 TitleNextToken ; the next token
+$9C77 ; bit 7 set: a literal block, a run or the end
+$9C79 ; a copy: C = the offset's high bits
+$9C7C ; B = the length, bits 3-6 + 3: 3-18 bytes
+$9C85 ; the offset's low byte
+$9C86 ; HL = DE - offset: where the copy starts, in the stream's order
+$9C8E TitleCopy ; one byte of a copy: its stream position to a screen address
+$9C8F ; the attributes ($5800-$5AFF) are in screen order already
+$9C96 ; C = $40 + third x 8 + the pixel line (L bits 0-2)
+$9C9C ; HL x 4: H bits 0-4 the column, L bits 5-7 the character row
+$9CA7 ; HL = the screen address of that byte
+$9CA8 ; the byte from the screen, written again at the current place
+$9CA9 TitleCopyCall ; operand patched to TitlePutByte
+$9CAD ; the next source byte
+$9CB0 ; the token's pointer back
+$9CB3 TitleBlock ; bit 7 set: the low 7 bits, 0 the end
+$9CB7 ; the byte after the token
+$9CB8 ; bit 6 set: a run
+$9CBC TitleLiteral ; a literal block of B bytes
+$9CBE TitleLiteralCall ; operand patched to TitlePutByte
+$9CC6 TitleRun ; a run: the next byte (b & $3F) + 3 times
+$9CCC TitleRunCall ; operand patched to TitlePutByte
+$9CD4 TitleDone ; the end: HL' = $2758 as the ROM keeps it, interrupts on
+$9CDB c TitlePutByte ; write A to the screen at HL' and step HL' in the stream's order
+> DE counts the bytes out (TitleCopy reads its sources by that count). In the alternate set: HL' the screen address, B' the lines left in the character row, C' the rows left in the column, A' (with its flags) 3 - third and the columns done x 8; Z' set once the pixels are done: then HL' just counts on through the attributes.
+$9CDF ; Z': the attributes, one after another
+$9CE1 ; the next pixel line down
+$9CE4 ; a character row done: H - 8 (back to its first line), L + $20 (the next row)
+$9CE8 ; 8 rows: the column is done
+$9CEB ; the next column, the third's top row (H - 1 undoes the carry of the 8th row)
+$9CEF ; A' + 8 a column: the 32nd carries
+$9CF3 ; the third is done: on to the next third's first column
+$9CF7 ; one third less: Z after the third third, the attributes next
+$9CFA ; an attribute: the next one
+$9CFB ; a new column: 8 rows
+$9CFD ; a new character row: 8 lines
+@isub $9C47 LD HL,TitlePutByte-TitleBase
+@isub $9C4C LD HL,TitleCopyCall+1-TitleBase
+@isub $9C53 LD HL,TitleLiteralCall+1-TitleBase
+@isub $9C5A LD HL,TitleRunCall+1-TitleBase
+@isub $9C61 LD HL,TitleStream-TitleBase
+$9D02 b TitleStream ; the packed title picture, 3034 bytes
+> Built from src/res/intro/title.png and src/res/intro/title.parse by tools/intro_screen.py pack (the authors' token choices kept in the parse: the same picture gives the same stream).
+@res title.lz
+$A8DC b TitleLeftover ; 100 bytes after the stream: never read
+> What the authors' tool left in the last of the 13 sectors after the stream ($A8DC-$A93F): a piece of some other packed data. Nothing reads it (tools/intro_trace.py: no read in the title's run); kept as the bytes on the disk.
+@res title-leftover.bin

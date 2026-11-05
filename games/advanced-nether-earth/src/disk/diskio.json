@@ -1,0 +1,36 @@
+{
+ "name": "diskio",
+ "image": "src/res/img/disk-io-c000-bank4.bin",
+ "at": "C000",
+ "out": "build/disk/disk-io-c000-bank4.bin",
+ "header": [
+  "; Advanced Nether Earth (Eternity Industry, 1998): the disk module, bank 4 $C000-$CD2B as the game starter",
+  "; unpacks it. The game's GameSave / GameLoad page bank 4 and jump to $C000 with IX = the entry: the set-up",
+  "; clears the screen, goes back to IM 1 and the ROM's state, copies $C065-$CD2B to $4000 and jumps to IX."
+ ],
+ "l1": [
+  "work/stage3/aned/a-disk/l1.json"
+ ],
+ "segments": [
+  {
+   "title": "the set-up, run in bank 4",
+   "ann": "src/disk/setup.ann",
+   "lo": "C000",
+   "hi": "C065",
+   "run": "C000",
+   "bases": {
+    "4": "C000"
+   }
+  },
+  {
+   "title": "the module, copied to and run at $4000 (the screen)",
+   "ann": "src/disk/module.ann",
+   "lo": "C065",
+   "hi": "CD2C",
+   "run": "4000",
+   "bases": {
+    "5": "4000"
+   }
+  }
+ ]
+}

@@ -1,0 +1,9 @@
+# Bank 7's last part, $CE09-$FFFF (tools/disk_mkgame.py --part src/disk/bank7.json). $C000-$CE08 is the slot of
+# ane3's HRUM block d07 (the game starter, src/disk/starter.asm) and is zero in the raw file
+# src/res/img/d06-c000-bank7.bin; this source gives the same zeros.
+
+@module sample ; the boot menu's digitised sample
+@about The boot menu's key 3 (the boot program's $6273, in d05) pages bank 7 in and plays $31F6 = 12790 of these bytes from $CE09 through AY registers 8, 9 and 10 (the three volumes at once, tone and noise off): one byte every 307 T-states, 11401 samples a second at 3.5 MHz, about 1.1 s. Each byte is an AY volume, 0-11 in this sample; the last byte ($FFFF) is never played.
+
+$CE09 b Sample 16 ; The sample: 12791 AY volumes, one a byte (src/res/diskmod/sample.wav)
+@res diskmod/sample.bin

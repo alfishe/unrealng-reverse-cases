@@ -1,0 +1,48 @@
+{
+ "name": "deadend",
+ "image": "src/res/img/dead-end-c000-bank3.bin",
+ "at": "C000",
+ "out": "build/endings/deadend-c000-bank3.bin",
+ "header": [
+  "; Advanced Nether Earth (Eternity Industry, 1998): bank 3 as the game starter unpacks it ($C000-$FE1E):",
+  "; Dead End, the loss sequence, with its tune and player, and the game menu's picture routine."
+ ],
+ "l1": [
+  "work/endings/de/l1.json"
+ ],
+ "segments": [
+  {
+   "lo": "C000",
+   "hi": "D2EF",
+   "lines": [
+    "; $C000-$D2EE: the New SoundTrack player and Syrus's NETHER EARTH (END), aneS's sources (the player in module nst:",
+    "; nst.Init $C000, nst.Play $C005; the tune compiled for $CA45 from src/res/music/nether-earth-end.pt2)",
+    "  MODULE nst",
+    "  INCLUDE \"src/music/stp-player.asm\"",
+    "TuneLength:",
+    "  DW TuneEnd-Tune",
+    "Tune:",
+    "  INCBIN \"res/music/nether-earth-end.bin\"",
+    "TuneEnd:",
+    "  ENDMODULE"
+   ]
+  },
+  {
+   "title": "Dead End, bank 3 from $D2EF",
+   "ann": "src/endings/deadend.ann",
+   "lo": "D2EF",
+   "hi": "FE1F",
+   "run": "D2EF",
+   "bases": {
+    "3": "C000"
+   },
+   "read_builds": [
+    "de"
+   ]
+  }
+ ],
+ "external": [
+  "nst.Init",
+  "nst.Play"
+ ]
+}

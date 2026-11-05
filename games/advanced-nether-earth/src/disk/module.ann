@@ -1,0 +1,275 @@
+# The disk module: bank 4 $C065-$CD2B, copied to $4000 by the set-up and run there (tools/disk_mkgame.py --part
+# src/disk/diskio.json). Witnesses (work/stage3/aned, Pentagon 128 + TR-DOS 5.04T, recording frame = script frame +
+# 1602): recording a (the original SCL): the save screen 7652, "Saving..." 7947, back in play 8102; the load screen
+# 8932, "Loading..." 8990, the game loaded 9202; a load of "nofile": "File not found !" 10250. Recording b (the SCL
+# with nether.N damaged by tools/disk_damage.py): "Loading..." 7380, play with the damaged values 7550. L1 window of
+# a: work/stage3/aned/a-disk (frames 7600-11201). The error paths (no disk, a sector error, Retry / Abort, write
+# protect, a full catalogue or disk, EDIT) ran in no recording: read from the code and TR-DOS 5.04T's ROM.
+
+@module diskmod ; the disk module at $4000: the name prompt, the TR-DOS file load and save
+@about Two entries: LoadEntry ($4000, GameLoad's IX) and SaveEntry ($4033, GameSave's IX). Each sets the file's start ($D92B) and length (9941 bytes: $D92B-$FFFF of bank 0, the game's whole state: the staged shots and buildings, the robots, the map, the variables, the buildings), prints its screen and reads a name of up to 8 letters, then loads or saves the file "name.N" and goes back to the game: a load to LoadReturn ($A590: the game plays on with the loaded state, NZ), a save to SaveReturn ($692B), a failed or abandoned load to Restart ($A5EF, the game's menu again).
+@about The disk is driven below TR-DOS's file layer, through the TR-DOS ROM's own instructions: RomCall pushes a ROM address and jumps to TR-DOS's RET at $3D2F (the Beta interface pages the ROM in on the fetch from $3D00-$3DFF and out again when the CPU leaves it), so OUT (C),A at $2A53 reaches the WD1793's ports, the ROM's sector read at $2090 and its INI loop at $3FE5 read a sector, its OUTI loop at $3FCA and the status test at $2099 write one, $2740 reads the status and $3EF5 waits for the end of a command. ReadSector / WriteSector push their own code's first byte ($01, the LD BC opcode) as the ROM's "sector list": the ROM reads it as the list's end mark and returns after one sector.
+@about The file is found and written as TR-DOS keeps a disk: the catalogue in track 0 sectors 0-7 (16-byte entries: name, type, start, length, sectors, first sector, first track) and the disk's information in sector 8 ($E1 the first free sector, $E2 its track, $E4 the number of files, $E5 the free sectors). Both use $F800-$FFFF of bank 4 as their buffer (bank 4's bytes past the module are leftovers of the boot there). There is no checksum: the save writes the bytes, the load reads whole sectors into $D92B on (the last sector's tail past $FFFF goes to the ROM, which ignores it) and the game's LoadReturn writes $FFFF over NE's checksum word at $5B00, so a damaged file loads as it is (recording b).
+@about Ok ($45B1) is 1 in the image (the module is copied fresh at each entry) and goes to 0 on any failure (no disk, a sector error abandoned with A, file not found, write protect, catalogue or disk full, EDIT at the prompt); the entries pick their exit from it.
+
+@equ $D92B SavedGame ; the game's saved state, $D92B-$FFFF in bank 0 (NE's SaveShots on): the file's start
+@equ $A590 LoadReturn ; the game's return after a load (src/game: IM 2 again, $5B00 = $FFFF, JP NewGameSetup with NZ)
+@equ $A5EF Restart ; the game's restart: the player, Start, the main menu
+@equ $692B SaveReturn ; the game's return after a save (IM 2 again, the play screen)
+@equ $5CD6 TrdosSector ; TR-DOS's variable: the sector of the read or write going on; the ROM adds 1 to it when a sector fails
+@equ $5CCD TrdosStatus ; TR-DOS's variable: the WD1793 status $2740 read
+@equ $5CD8 TrdosFlag ; TR-DOS's variable at $5CD8, set to 1 before $2740
+@equ $F800 CatBuffer ; the sector buffer, $F800-$FFFF of bank 4: the catalogue (8 sectors) or one sector of it
+@equ $F8E1 CatFreeSector 2 ; the disk information sector's first free sector and track
+@equ $F8E4 CatFiles ; the disk information sector's number of files
+@equ $F8E5 CatFreeSectors 2 ; the disk information sector's count of free sectors
+@equ $3D2F TrdosRet ; TR-DOS ROM: NOP / RET, the entry that pages the ROM in
+@equ $2A53 TrdosOutC ; TR-DOS ROM: OUT (C),A / RET
+@equ $2740 TrdosStatusSeek ; TR-DOS ROM: IN A,($1F) to TrdosStatus, then a seek to track D
+@equ $3EF5 TrdosWaitDone ; TR-DOS ROM: wait for INTRQ (port $FF bit 7), reading data on DRQ
+@equ $2090 TrdosReadSector ; TR-DOS ROM: READ SECTOR ($80) with the INI loop $3FE5 (B = 1: 256 bytes from $7F to HL), then the status and the sector list
+@equ $2099 TrdosSectorStatus ; TR-DOS ROM: the status after a sector command, then the sector list
+@equ $3FCA TrdosWriteLoop ; TR-DOS ROM: the OUTI loop (HL to port $7F on DRQ) until INTRQ
+
+$4000 c LoadEntry ; Load a game: the load screen, the name, the file into $D92B-$FFFF, then back to the game
+> GameLoad's IX. The file's start and length go into File (the name and type come from the prompt and the image); PrintLoadScreen, InputName; unless EDIT abandoned the prompt (Cancelled), Load. Then the exit by Ok: 1 to LoadReturn ($A590), 0 to Restart ($A5EF), with bank 0 paged back and NZ (from the OR A) for LoadReturn's JP NewGameSetup.
+$4000 ; the file's start
+$4006 ; 9941 bytes: $D92B-$FFFF
+@isub $4006 LD HL,$26D5
+$4012 ; EDIT at the prompt?
+$4018 ; no: load the file
+$401B LoadLeave ; Ok: 1 a game was loaded, 0 not
+$401E ; the exit if not: the game's restart
+$4021 ; the exit if loaded: the game's LoadReturn
+$4024 ; NZ when loaded (LoadReturn passes it to NewGameSetup)
+$4025 ; Ok back to 1 (the module's copy, rewritten at each entry anyway)
+$402C ; not loaded: to Restart
+$402D LoadExit ; bank 0 at $C000 again (the game's)
+$4032 ; LoadReturn or Restart
+
+$4033 c SaveEntry ; Save the game: the save screen, the name, $D92B-$FFFF to the file "name.N", then back to play
+> GameSave's IX. The same set-up as LoadEntry, PrintSaveScreen, InputName and, unless EDIT abandoned the prompt, Save. Both exits are SaveReturn ($692B, the play screen again), whatever Ok says.
+$4033 ; the file's start
+$4039 ; 9941 bytes
+@isub $4039 LD HL,$26D5
+$4045 ; EDIT at the prompt?
+$404B ; no: save the file
+$404E SaveLeave ; Ok (both exits are the same)
+$4060 SaveExit ; bank 0 at $C000 again
+$4065 ; SaveReturn
+
+$4066 c PrintLoadScreen ; The load screen's three lines, the name prompt and the rule (rows 17-21)
+$4085 c PrintSaveScreen ; The save screen's three lines, the name prompt and the rule (rows 17-21)
+
+$40A4 t SaveText1 ; the save screen, row 17: column, row, the text, $FF (PrintText's record)
+> Each text is a PrintText record: the column (0-63, half character cells), the row (0-23), the characters, $FF. The module's font draws some signs as letters (the texts write "!" for i, "(" and "[" for c, "0" for o).
+$40E7 t SaveText2 ; row 18
+$412A t SaveText3 ; row 19
+$416D t LoadText1 ; the load screen, row 17
+$4196 t LoadText2 ; row 18
+$41C6 t LoadText3 ; row 19
+$41F6 t NamePrompt ; row 20: the prompt; the name prints after it, at column 32 (NameText)
+$4219 t RuleLine ; row 21: 64 dashes under the prompt
+
+$425C c GetKey ; Wait for a new key from the ROM's IM 1 scan: A = LAST_K
+> Interrupts on; FLAGS bit 5 (a new key) cleared, then two frames at a time until the ROM's IM 1 handler sets it; A = LAST_K ($5C08). The game left FLAGS as the ROM's key reading wants (GameSave, GameLoad), so LAST_K holds the code of the key with CAPS LOCK off: letters in lower case, EDIT 7, DELETE 12, ENTER 13.
+$425D ; FLAGS: no new key yet
+$4261 GetKeyWait ; two frames, until a new key
+$4263 ; a new key?
+$4269 ; LAST_K
+
+$426D c InputName ; Read the file name: up to 8 characters at column 32 of row 20; ENTER ends, DELETE rubs out, EDIT abandons
+> A loop over GetKey (interrupts off after each key). EDIT (7): NameCancel. DELETE (12): NameDelete. ENTER (13): NameEnter, the return. Other codes below 32 are ignored. A character: a click on the speaker (border bit 4 for three NOPs), the field cleared (ClearRow at $5090, 4 bytes: 8 half cells), the character stored at NamePos, NameText printed, NamePos + 1 unless it is 7 (the 8th character is overwritten by the next one).
+$4271 ; EDIT
+$4275 ; DELETE
+$4279 ; ENTER
+$427D ; other control codes: ignored
+$4282 ; a click: the speaker bit (and border 0) ...
+$4289 ; ... and off again
+$428C ; the name's field: row 20, columns 32-39
+$4294 ; the character at NamePos
+$42A0 ; the name, printed again
+$42A6 ; the next place, up to the 8th
+$42B3 NameCancel ; EDIT: the name blanked, Cancelled = 1, Ok = 0
+$42BA ; 8 spaces
+$42BD BlankName ; the 8 places blank
+$42C6 ; A = 0
+$42CC NameEnter ; ENTER: the name to File, the field blanked for the next time, Cancelled = 0
+$42D4 ; the 8 characters to the catalogue name
+$42E0 ; the name buffer blanked (8 spaces)
+$42EC NameDelete ; DELETE: the last character rubbed out (the one at NamePos, or the one before it if that is blank)
+$430A ; the character at NamePos blank?
+$4310 ; then back one place (not before the first)
+$4316 NameBack ; the place one back
+$4319 NameRubOut ; the character at NamePos blank, the name printed again
+$4320 ; that place blank
+
+$42CB b Cancelled ; 1 when EDIT abandoned the name prompt
+$432B b NamePos ; the place (0-7) the next character of the name goes to
+$432C b NameText 2 ; the name's PrintText record: column 32, row 20 ...
+$432E t NameChars ; ... the 8 characters typed (blanks when empty) ...
+$4336 b NameEnd ; ... and the end mark
+
+$4337 c ClearRow ; Clear C bytes of a character row from HL (8 pixel lines)
+> In: HL = the screen address of the row's top line, C = the width in bytes (two half cells a byte). Each of the 8 lines: the first byte 0, an LDIR of C - 1 more; NextPixelLine.
+$433A ClearRowLine ; one pixel line of the row
+$434C c NextPixelLine ; HL one pixel line down the screen
+
+$435B c Load ; "Loading...", the file, then "Loading...OK" or "Loading had errors !!!"
+$4361 ; the file
+$436A ; not loaded
+$4379 LoadOk ; loaded
+$4387 SetOk ; Ok = 1
+$438D c FindFile ; Read the catalogue and find "name.N": its 16-byte entry into File
+> The disk information sector (track 0 sector 8) to CatBuffer, its number of files into FindFile's LD B; the catalogue (track 0, sectors 0-7) to CatBuffer; each entry's first 9 bytes (the name and the type) against File's. Found: the whole entry (start, length, sectors, the first sector and track) over File, Ok as it was. Not found: Restore, "File not found !", a key, Ok = 0. A read that fails leaves Ok 0 and returns at once.
+$4396 ; the information sector
+$439F ; the number of files ...
+$43A2 ; ... into the loop's count
+$43A6 ; track 0, sector 0: the catalogue's 8 sectors
+$43B4 ; 16 bytes an entry
+$43B7 FindCount ; the files (written above)
+$43B9 FindEntry ; the next catalogue entry against File
+$43BC ; 9 bytes: name and type
+$43C2 FindCompare ; a byte of File against the entry's
+$43C8 ; the next byte, 9 in all
+$43CB ; the 9 bytes alike: found
+$43CE ; the entry over File
+$43D7 FindNext ; the next entry
+$43DD ; not found
+$43EE ; a key
+
+$43F6 c SectorCount ; File's sector count from HL: the length rounded up to whole sectors
+> In: HL = the length. A = 1 for HL < 256, + 1 for each further 256 started; to FileSectors.
+$4400 SectorCountLoop ; one sector more for each 256 started
+$4407 SectorCountDone
+$440B c LoadFile ; Load the file: the disk, the catalogue, the sectors into the file's start (bank 0)
+> CheckDisk (no disk: a key, the end); FindFile; found: bank 0 at $C000, FileSectors sectors from FileTrack / FileSector to FileStart (the start the module set, not the one in the catalogue). DiskDone after.
+$4416 LoadDiskThere ; a disk: the file in the catalogue
+$4434 DiskDone ; the controller reset, the error marks cleared
+$443F c CheckDisk ; Is a disk spinning? NZ (and A = the status bits) when it is, else "No disk !" and Ok = 0
+> The head to track 0 (Seek); ReadStatus, then up to 4096 more until the bits differ (the index pulse goes by: a disk turns). They do: NZ, A = the status AND $42 (bit 6 write protect, bit 1 the index). They do not: Restore, row 22 cleared, "No disk !", Ok = 0, Z.
+$444E ; up to 4096 reads
+$4455 CheckDiskLoop ; the status changed?
+$4460 ; no disk
+$448F DiskThere ; NZ: a disk
+$4479 c ReadStatus ; A = the WD1793's status AND $42 (write protect, index), through TR-DOS's $2740
+$4493 c ReadSectors ; Read B sectors from logical track D, sector E (0-15) to HL
+> Each sector: Seek to D; the sector register E + 1; TR-DOS's READ SECTOR through its own code ($2090: the command, the INI loop of 256 bytes, the status). TR-DOS adds 1 to TrdosSector when the status shows an error, so ReadSectorEnd compares it with E. An error: 14 tries, then Restore, "Load error ! (R)etry/(A)bort.", R: CheckDisk and the same sector again (14 more tries), A: Ok = 0, the return. After a sector: HL + 256, E + 1, past 15 the next track (D + 1, E = 0).
+$4499 ; the sector
+$449B c OutCommand ; A to the WD1793's command register ($1F)
+$449D OutPort ; A to port C (TR-DOS's ports decode the low byte), through TR-DOS's OUT (C),A
+$44A1 RomCall ; Run the TR-DOS ROM at IX: IX pushed as the return of TR-DOS's RET at $3D2F
+$44A6 ReadSector ; one sector: ReadSectorEnd and this code's first byte pushed under the ROM's read
+$44A9 ; the buffer under the return ...
+$44AA ; ... ReadSectorEnd
+$44AE ; the ROM's "sector list": this code's first byte, $01, the list's end
+$44AF ; TrdosSector = the sector
+$44B3 ; the sector register counts from 1
+$44B9 ; the ROM's READ SECTOR ...
+$44BD ; ... with B = 1 (one try, 256 bytes in its INI loop) and C = the data port
+$44C3 ReadSectorEnd ; TrdosSector still the sector: read well
+$44CB ReadTries ; the tries left (14 at each sector)
+$44EF LoadErrorKey ; A: abandon, R: try again
+$450D LoadRetry ; R: a disk turns: rows 22-23 cleared, the sector again
+$4529 LoadAbort ; A: Ok = 0
+$4531 NextSector ; RetryMark ($FF after an error prompt: one more word on the stack to drop)
+$4537 NextSectorOn ; the next sector: tries back to 14, HL + 256, E + 1, past 15 the next track
+$454E c Seek ; The head to logical track A: physical track A / 2, side from D bit 0
+> Track = A / 2, written to the data register ($7F); the system register ($FF) $3C (side 0) or $2C (side 1, from D bit 0); SEEK ($18) to the command register; TrdosWaitDone.
+$4560 SeekSide ; the system register: side and density
+$4573 b Track ; the physical track Seek went to (Restore gives it back to the track register)
+$4574 c Restore ; Reset the WD1793 and give the track register back its track
+> The system register 0 (reset) for 256 loops, then $3C; FORCE INTERRUPT ($D0); two frames; Track to the track register ($3F).
+$457C RestoreReset ; 256 loops in reset
+$4598 c WaitKey ; Wait until a key is held (any half row)
+
+$45A1 t FileName ; File: the catalogue entry, 16 bytes: the name (8, from InputName) ...
+$45A9 t FileType ; ... the type, "N" ...
+$45AA w FileStart ; ... the start (the module's $D92B) ...
+$45AC w FileLength ; ... the length (9941) ...
+$45AE b FileSectors ; ... the sectors ...
+$45AF b FileSector ; ... the first sector ...
+$45B0 b FileTrack ; ... and its track (logical)
+$45B1 b Ok ; 1: all went well (the image's value), 0: no disk, an abandoned error, not found, write protect, catalogue or disk full, EDIT
+
+$45B2 c PrintText ; Print the record at HL: a column (0-63), a row (0-23), characters to $FF
+> Keeps every register (HL' too). PrintChar for each character.
+$45C2 PrintTextLoop
+$45CF PrintTextEnd ; the registers back
+$45D6 c PrintChar ; Print the character A at Column, Row in the module's half-width font; Column + 1
+> The glyph at Font + (A - 32) * 8; past column 63 the next row's start, past row 23 row 0. The cell's screen address from RowAddresses + Column / 2; an even column takes the glyph's left nibble ($F0), an odd one the right ($0F). The glyph's first byte (its top line) is not drawn; the 7 others are ORed into the screen, so the place must be clear.
+@isub $45DA LD DE,Font-$0100
+$45E6 PrintCharPlace ; the column and row checked
+$45EB ; past column 63: the next row
+$45F5 PrintCharNext ; Column + 1
+$45FE ; past row 23: row 0
+$4602 PrintCharRow ; the row's screen address
+$460B ; Column / 2: the byte; the carry: the right nibble
+$4619 ; the left nibble
+$464C PrintRight ; the right nibble
+$467F b Column ; PrintChar's column (0-63)
+$4680 b Row ; PrintChar's row (0-23)
+$4681 w RowAddresses 8 ; the screen address of each character row's top line, rows 0-23
+
+$46B1 t NoDiskText ; row 22
+$46BD t LoadErrorText ; the status line, row 23
+$46DD t LoadingText
+$46EA t LoadingOkText
+$46F9 t LoadFailedText
+$4712 t NotFoundText
+$4725 t WriteProtectText
+$4737 t SaveErrorText
+$4757 t CatFullText
+$4764 t DiskFullText
+$4772 t SavingText
+$477E t SavingOkText
+$478C t SaveFailedText
+
+$47A4 c Save ; "Saving...", the file, then "Saving...OK" or "Saving had errors !!!"
+$47AA ; the sectors for the length
+$47B0 ; the file
+$47C8 SaveOk ; saved
+$47D9 c SaveFile ; Save the file: the disk, write protect, then WriteFile
+> CheckDisk (no disk: a key, the end); the status's write protect bit set: Restore, "Write protect !", a key, the end; else WaitFrames, WriteFile. DiskDone after. An existing file of the same name is not looked for: a second save adds a second entry.
+$47E8 SaveDiskThere ; write protected?
+$4803 SaveWritable ; 29 frames (the motor up to speed)
+$480C c WriteFile ; Write the file's sectors at the disk's first free sector and its catalogue entry
+> The information sector (track 0 sector 8) to CatBuffer. 127 files already: "Cat full !". Fewer free sectors than FileSectors: "Disk full !" (both: a key, Ok = 0). Else the free count less FileSectors, the first free sector and track to File; bank 0, WriteSectors from FileStart; bank 4; the next free sector and track (where WriteSectors stopped) and the information sector written back; the catalogue sector of the new entry (files - 1) * 16 read, File's 16 bytes put in, written back. Each disk step returns at once if it failed (Ok 0).
+$4821 ; the number of files ...
+$4824 ; ... 127: the catalogue is full
+$4842 CatRoom ; one file more
+$4844 ; DE = the free sectors
+$484F ; enough?
+$486C DiskRoom ; the free count less the file's
+$486F ; the file goes to the first free sector
+$487E ; bank 0: the game's state
+$4886 ; bank 4: CatBuffer
+$4895 ; the next free sector
+$4899 ; the information sector back
+$48AE ; the new entry's place: (files - 1) * 16 ...
+$48BA ; ... its catalogue sector (A) and the offset in it (HL)
+$48BD EntryPlaceLoop ; the entry offset into a sector and an offset
+$48C4 EntryPlace
+$48CA ; that sector read
+$48E5 ; File into it
+$48EE ; and written back
+$4902 c WriteSectors ; Write B sectors from HL to logical track D, sector E (0-15)
+> As ReadSectors, with TR-DOS's OUTI loop ($3FCA) and status test ($2099) under WRITE SECTOR ($A0): 14 tries a sector, then "Save error ! (R)etry/(A)bort.", R: CheckDisk and again, A: Ok = 0.
+$4908 WriteSector ; one sector: WriteSectorEnd and this code's first byte pushed under the ROM's write
+$4916 ; the sector register, B = 1 for the ROM's one try
+$491D ; the ROM's status test ...
+$4921 ; ... after its OUTI loop ...
+$4925 ; ... after WRITE SECTOR
+$4930 WriteSectorEnd ; TrdosSector still the sector: written well
+$4938 WriteTries ; the tries left (14 a sector)
+$495C SaveErrorKey ; A: abandon, R: try again
+$497A SaveRetry ; R: rows 22-23 cleared, the sector again
+$4995 SaveAbort ; A: Ok = 0
+$499D NextWriteSector ; RetryMark, the next sector as in ReadSectors
+$49A3 NextWriteSectorOn
+$49B5 c WaitFrames ; 29 frames with interrupts on
+$49B8 WaitFramesLoop
+$49BF c SetPage ; A to port $7FFD (keeps BC)
+
+$49C7 b Font 8 ; The module's font: codes 32-127, 8 bytes each, the glyph in both nibbles (PrintChar masks one)
+@res diskmod/font.bin

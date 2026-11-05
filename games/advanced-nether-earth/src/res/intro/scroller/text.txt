@@ -1,0 +1,101 @@
+# The credits scroller's text (ScrollerText): one line a column of 24 characters, | marks its ends
+|      HEY GUYZZZ !      |
+| 'TIS ETERNITY INDUSTRY |
+|  WITH OUR NEW COOLEZT  |
+|     RELEAZE CALLED     |
+|'ADVANCED  NETHER EARTH'|
+|DA KOOLEZT REMIX OF GOOD|
+| REALTIME STRATEGY GAME |
+|     'NETHER EARTH'     |
+|     (C) 1998 REMIX     |
+|    ETERNITY INDUSTRY   |
+|------------------------|
+| DA SMASHED UP CREDITZ: |
+|INTRO CODING.......SENAT|
+|GFX.............PARACELS|
+|MUZAK..............SYRUS|
+|VIOLENTLY PACKED...D-MAN|
+|MORAL SUPPORT.........EI|
+|XOR SERVICE.....PARACELS|
+|------------------------|
+|GAME CREDZ COMIN' UP--->|
+|  CHILLY GAME CREDITZ:  |
+|PRODUCED..............EI|
+|SUPPLIED.....MELTED SNOW|
+|REMIXED............D-MAN|
+|PACKED.............D-MAN|
+|TESTED.............CRAZY|
+|------------------------|
+|YAH! IT WAS A LITTLE BIT|
+|BORING DOIN' ALL THIS...|
+|BUT NOW 'TIS JUST COOOL!|
+|  GOOD OLD GREEETZZZ:   |
+|       MEGACODE         |
+|     PHANTOM FAMILY     |
+|   CYBER PUNKS UNITY    |
+|  VIRTUAL VISION GROUP  |
+|         RUSH           |
+|   ACCEPT CORPORATION   |
+|       FLASH INC.       |
+|         GAS 13         |
+|       LASER SOFT       |
+|      GLOBAL CORP.      |
+|         SERZH          |
+|         PLAYER         |
+|       MELTED SNOW      |
+|        RED LTD.        |
+|         MAFIA          |
+|       XL-DESIGN        |
+|    SLAVA MEDNONOGOV    |
+|     VIRTUAL BROZERZ    |
+|       MAX PETROV       |
+|         MAYHEM         |
+|         EXCESS         |
+|      JURRASIC SOFT.    |
+|        ZOMBUSTERS      |
+|          STEP          |
+|         EXTREME        |
+|         PROGRESS       |
+|          ZER0          |
+|        EXTASY 3        |
+|      AND OZERZ !!!     |
+| CRAZY COOMIN' SOON FROM|
+|   ETERNITY INDUSTRY:   |
+|  MANDARIN COPIER V1.0  |
+| RPG 12 MYSTERIOUS BOOKS|
+|   NEW ISSUES OF BUZZ   |
+|     AND MANY OTHER     |
+|    COOLEZT PROJECTS    |
+|          !!!           |
+|      LOOK FOR IT !     |
+|                    --->|
+| PLATINUM RELEAZE DATE: |
+|    9TH OF MARCH 1998   |
+|                        |
+| SPECCY RULEZ 4EVER !!! |
+|                        |
+|   AND NOW              |
+|       WE WANNA         |
+|            SAY YOU     |
+|                        |
+|        BYE !!!         |
+|************************|
+|***                  ***|
+|******    ****    ******|
+|***       ****       ***|
+|********  ****  ********|
+|          ****          |
+|   ******************   |
+|       (C) 1998         |
+|    ETERNITY INDUSTRY   |
+|    KOVROV COOL CITY!   |
+|                        |
+|                        |
+|                        |
+|     PRESS 'SPACE'      |
+|                        |
+|         AND            |
+|                        |
+|       N'JOY !!!        |
+|                        |
+|                        |

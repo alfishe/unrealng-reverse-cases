@@ -1,0 +1,170 @@
+# Final Cut's scroll text: one line = one row of 8 characters (16 x 16 glyphs, $20-$5A: space, ! " ' ( ) * + , - . /,
+# digits, : ; < = > ?, @ and A-Z), scrolled up 16 pixel lines a row; the build pads each line to 8 and adds the 0
+# that ends the text.
+
+
+
+
+
+CONGRATU
+LATIONS!
+
+  Y'VE
+
+ FINALY
+
+DESTRO-
+     YED
+
+ THOSE
+
+ STINKY
+
+ISIGNIA-
+    NTS!
+
+
+
+
+AND NOW
+
+ YOUR
+
+ NATIVE
+
+ PLANET
+
+  AND
+
+ NATION
+
+  ARE
+
+ FREE !
+
+
+
+
+NOW YOU
+
+  ARE
+
+  REAL
+
+  HERO
+
+ OF THE
+
+ GALAXY
+
+  AND
+
+  FOR
+
+ EVERY
+
+ HUMAN
+
+ BEING
+
+  ALL
+
+  OVER
+
+  THE
+
+ WORLD !
+
+
+
+
+LOOSERS-
+
+ISIGNIA-
+     NTS
+
+  ARE
+
+COWARDLY
+
+RUNNING
+
+  BACK
+
+TO THEIR
+
+ DIRTY
+
+ PLANET
+
+AND NOW
+
+  YOU
+
+  CAN
+
+ BREATH
+
+  DEEP
+
+  AND
+
+ ACCEPT
+
+  FROM
+
+  THE
+
+THANKFUL
+
+ PEOPLE
+
+A LITTLE
+
+  GIFT
+
+  FOR
+
+ GIVING
+
+  THEM
+
+FREEDOM!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  GAME
+
+  OVER
+
+
+
+
+
+
+
+(C) 1998
+
+ETERNITY
+
+INDUSTRY
+

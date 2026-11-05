@@ -1,8 +1,8 @@
 ; Advanced Nether Earth (Eternity Industry, 1998): the loader, $6161-$8D60 (docs/03-build-and-load.md 3).
 ;
-; UltraXOR (the boot BASIC's line 0, src/res/disk/boot-a-nether-b.bin) reads these 44 sectors of A_NETHER.B
-; (file sectors 11-54) to $6161, bank 7's $DB00 and bank 4's $C000 parts after them, and jumps to LoaderMain. The
-; loader runs the intro and the two programs of the boot (each a HRUM 3.5 block called at $6600) and plays their
+; UltraXOR's sector reader (src/boot/a-nether.asm, ReadSectors) reads these 44 sectors of A_NETHER.B (file sectors
+; 11-54) to $6161, then bank 7's $DB00 and bank 4's $C000 parts, and calls LoaderMain ($6221). The loader runs the
+; intro and the two programs after it (each a HRUM 3.5 block called at $6600: Presents, the scroller) and plays their
 ; music from an IM 2 handler: LoaderInterrupt sits at $6161 so that a vector table of $61 bytes reaches it whatever
 ; the data bus holds (the intro builds that table).
 ;
@@ -12,8 +12,9 @@
     DEVICE ZXSPECTRUM48
 
 BANKM       EQU $5B5C           ; the 128 ROM's copy of the last $7FFD write
-PT3Init     EQU $C000           ; the PT3 player in bank 6: init (also silences the AY)
-PT3Play     EQU $C005           ; ... and one frame of play
+PlayerInit  EQU $C000           ; bank 6: the intro's copy of New SoundTrack Player (Phantom Family) with "MAD NIGHT"
+                                ; (copied there from the intro's image at $7D2D): init, also silences the AY
+PlayerFrame EQU $C005           ; ... and one frame of play
 IntroRun    EQU $6600           ; every block of the boot is called here
 
     ORG $6161
@@ -44,7 +45,7 @@ LoaderInterrupt:
 .page:
     LD BC,$7FFD
     OUT (C),A
-    CALL PT3Play
+    CALL PlayerFrame
     NOP
     NOP
     NOP
@@ -154,7 +155,7 @@ LoaderMain:
     DJNZ .flash
     LD HL,$5800
     CALL WhiteScreen
-    LD A,$14                    ; bank 4: the boot menu's block
+    LD A,$14                    ; bank 4: the scroller's block
     CALL SetPage
     LD HL,$C000
     LD DE,IntroRun
@@ -162,7 +163,7 @@ LoaderMain:
     LDIR
     LD A,$10
     CALL SetPage
-    CALL IntroRun               ; Block03: the boot menu
+    CALL IntroRun               ; Block03: the credits scroller (back here only through SPACE: LoaderEnd)
 
 ; The end of the boot, also SPACE in LoaderInterrupt: IM 1, the player silenced, the BASIC's registers back, a
 ; return to UltraXOR's caller
@@ -174,7 +175,7 @@ LoaderEnd:
     IM 1
     LD A,$16
     CALL SetPage
-    CALL PT3Init                ; silence
+    CALL PlayerInit                ; silence
     LD A,$10
     CALL SetPage
     LD IY,$5C3A

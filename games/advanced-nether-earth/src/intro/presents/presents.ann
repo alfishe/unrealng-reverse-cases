@@ -1,0 +1,59 @@
+# "Presents", $6600-$D4A3: the second program of the boot (HRUM block 2, read to bank 7 $DB00 by UltraXOR's reader,
+# copied to $6600 and called by the loader's LoaderMain): the annotations that tools/intro_mkpart.py turns into
+# src/intro/presents/*.asm. The format is kit/mkgame.py's (class Annotations); the code is what
+# tools/intro_trace.py's run executed (work/intro/trace.json, phase "presents", sim frames 1192-1230).
+
+@module presentsmain ; "Presents": the word spins and grows in the middle of the screen
+@about What it shows: the loader has blacked out the screen (LoaderMain), the block unpacks to $6600 and runs here. PresentsClear clears screen 5 to bright green ink on black ($44), PresentsBuildShow writes the unrolled copy routine PresentsShowLines after the image, and PresentsLoop shows the 16 frames of PresentsFrames one after another, two interrupts each (32 frames, about 0.64 s: sim frames 1198-1230 of tools/intro_trace.py, the recording work/intro/i1 a little after the intro's picture): the word "Presents" turning a full turn about its centre while it grows from a speck to 176 pixels across, ending upright. Then it returns to the loader, which flashes screen 5 (the word) against the white screen 7 twenty times and goes on to the scroller.
+@about The frames (src/res/intro/presents/frames.png, tools/intro_presents.py): 16 bitmaps of 176 x 80 pixels (22 bytes x 80 lines, 1760 bytes each), one under another in play order, ink 1 paper 0. They are shown at character columns 5-26, pixel lines 56-135 (from $40E5: character row 7), with no mask: each frame overwrites the whole 22 x 80 window, so a smaller frame clears what a larger one left.
+@about SPACE ends the part early (PresentsLoop reads the half row SPACE..B after each frame); so does the loader's own interrupt (LoaderInterrupt's SPACE test ends the whole boot at once). The interrupts run the loader's IM 2 handler, which plays "MAD NIGHT" on: Presents itself makes no sound.
+$6600 c Presents ; the entry: the screen cleared, the show routine built, the frames played
+> Called by LoaderMain at $6600 with interrupts off (the HRUM block's set-up ends EI; JP $6600: they are on). Returns to LoaderMain after the 16th frame (PresentsFramePtr set back to the table's start) or on SPACE (the pointer left where it was).
+$6600 ; screen 5: pixels clear, attributes bright green on black
+$6603 ; PresentsShowLines: the unrolled copy of one frame
+$6606 PresentsLoop ; one frame of the animation
+$6607 ; two interrupts a frame: 25 frames a second
+$6609 PresentsFramePtr ; HL = the table entry of this frame (the operand is the pointer, moved on below)
+$660C ; DE = the frame's offset in PresentsFrames
+$6610 ; the pointer on to the next entry
+$6613 ; high byte $FF: the end of the table
+$6617 ; the pointer back to the first entry for a next run, and back to the loader
+$661E PresentsShowFrame ; HL = PresentsFrames + the offset: the frame's first byte
+$6623 ; copy it to the screen
+$6626 ; the half row SPACE..B
+$662A ; bit 0 set (SPACE up): the next frame
+$662D ; SPACE: back to the loader at once
+@isub $661F LD HL,PresentsFrames
+$662E c PresentsClear ; screen 5 cleared: pixels 0, attributes $44
+> The 6144 pixel bytes zero (L of $4000), then the 768 attributes $44: bright, paper black, ink green. The frames are drawn in green on black over it.
+$6634 ; 6144 + 1 bytes: the first attribute byte too, which the next LDIR overwrites
+$663A ; HL = $5800 here: 767 more after it
+$6642 c PresentsBuildShow ; write PresentsShowLines: 80 lines of 11 POP HL / LD (nn),HL
+> The code it writes at PresentsShowLines ($D4A4-$E266, 3523 bytes, just past the loaded image, in bank 0, which the loader leaves paged at $C000): for each of the 80 screen lines of the window, top down, 11 times POP HL (E1) and LD (address),HL (22 lo hi) with the address going 2 bytes right each time; at the end LD SP,IX (DD F9) and RET (C9). PresentsShow points SP at a frame first, so the routine moves the frame's 1760 bytes to the screen at 16 + 16 T a word: about 31 000 T, under half a frame.
+$6642 ; where the code goes
+$6645 ; the window's top left: character row 7, column 5, pixel line 0 (screen line 56)
+$6648 ; 80 lines
+$664A PresentsBuildLine ; one screen line of the window
+$664C ; 11 words a line: 22 bytes, columns 5-26
+$664E PresentsBuildWord ; POP HL
+$6651 ; LD (nn),HL with nn = DE
+$6658 ; two bytes right
+$665C ; the line's start back
+$665D ; one pixel line down
+$6663 ; after the 80th line: LD SP,IX ...
+$6669 ; ... RET
+$666C c PresentsLineDown ; DE one pixel line down the screen
+> The usual step: D + 1 within a character row; after its 8th line E + $20 (the next row) with D back by 8, unless E carries (the next third: D stays + 8 past the third's first line).
+$6671 ; the next character row
+$6675 ; the next third: D is right as it is
+$6676 ; the same third: D back to the row's first line
+$667B w PresentsFrameTable 2 ; the frames' offsets in PresentsFrames, in play order, then $FFFF
+> 16 words, k x 1760 for frames 0-15 (the frames are stored in play order, so the table is a plain count up), and $FFFF that ends the run (PresentsLoop tests the high byte). PresentsFramePtr walks it.
+$669D b PresentsFrames ; the 16 frames: 22 bytes x 80 lines each
+> The bytes of src/res/intro/presents/frames.png (tools/intro_presents.py): frame k at PresentsFrames + 1760 x k, each line 22 bytes left to right, top line first, in the order PresentsShowLines' POPs take them.
+@res presents/frames.bin
+$D49D c PresentsShow ; copy one frame (HL) to the screen
+> SP is kept in IX and set to the frame; the code falls through into PresentsShowLines (written by PresentsBuildShow just past the image), whose last instructions put SP back from IX and return to PresentsLoop. Interrupts stay on: an interrupt during the copy pushes its return address over the word just taken (below SP), so the frame's bytes in memory change after it is shown; each frame is shown once, so it does not show.
+$D4A1 ; IX = SP
+$D4A3 ; SP = the frame: the POPs of PresentsShowLines read it
+@equ $D4A4 PresentsShowLines ; the copy routine PresentsBuildShow writes ($D4A4-$E266), entered by falling out of PresentsShow

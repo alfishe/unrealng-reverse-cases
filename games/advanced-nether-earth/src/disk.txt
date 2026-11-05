@@ -13,9 +13,8 @@
 # at 476 (the numbers below count from A_NETHER.B's first sector, across the files, as the loader's reads do).
 
 file A_NETHER B 2808 2795 255
-# The boot BASIC and UltraXOR, sectors 0-10: kept as the original bytes (src/res/disk/README.md: the envelope
-# re-encrypts itself with R-register keys; docs/03-build-and-load.md 3)
-at 0+0 src/res/disk/boot-a-nether-b.bin
+# The boot BASIC and UltraXOR, sectors 0-10: src/boot/a-nether.asm encrypted by tools/ultraxor.py
+at 0+0 build/boot/a-nether-b.bin
 # 11-54: the loader, read to $6161
 at 11+0 build/loader.bin
 # 55-71: read to bank 7 $DB00
@@ -25,7 +24,7 @@ at 71+5 src/res/disk/filler-after-d02.bin
 at 72+0 build/blk/d03.bin
 zero 86+95 161
 # 87-99: read to $9C40, not packed
-at 87+0 src/res/img/plain-9c40.bin
+at 87+0 build/intro/plain-9c40.bin
 # 100-211: read to $6060
 at 100+0 build/blk/d05.bin
 at 211+254 src/res/disk/filler-after-d05.bin
