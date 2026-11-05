@@ -1,0 +1,46 @@
+# The memory map by stage (tools/fig_memmap.py, docs/02-architecture.md). STAGE START END KIND NAME (hex, END inclusive).
+# KIND: screen code data sound work system loader stack. Witnesses: src/disk/install.asm, block4.asm, boot.ann,
+# loader.ann; r1's heatmaps (docs/img/arch/heatmap-*.png); the stage-1 images work/images/*.
+menu 4000 5AFF screen the menu screen
+menu 5B00 5D3A system system variables
+menu 5D3B 5F3A loader the boot code
+menu 5F3B 607B work free
+menu 607C 61A7 loader Trush head (spent)
+menu 61A8 64B2 loader the installer (779 bytes)
+menu 64B3 73FF sound driver file, menu $6D60
+menu 7400 C7FF code Zynaps $7400-$C7FF
+menu C800 DFFF code Zynaps low 6 K, parked
+menu E000 FFFF code Zynaps $E000-$FFFF
+play 4000 5AFF screen the screen
+play 5B00 5BFF stack the stack (SP $5C00 down)
+play 5C00 67FF data tiles, wave sprites' cells
+play 6800 7FFF data level data, players
+play 8000 8515 data variables, tables, texts
+play 8516 B445 code the code (patched)
+play B446 B4A7 sound trampolines, GS flags
+play B4A8 B6FE code the code
+play B6FF BFFF work the map ring
+play C000 DFFF work the glyph cache
+play E000 FDFF data sprites, records
+play FE00 FF00 system the IM2 vector table
+play FF1C FFD1 sound the 20 GS stubs
+play FFD4 FFFF work flags
+load 4000 5AFF screen the loading screen
+load 5B00 5D3A sound GS stubs (bank 1 $D190)
+load 5D3B 61A7 data Zynaps (idle)
+load 61A8 65C0 loader level loader (bank 1)
+load 65C1 BDFF data Zynaps (idle)
+load BE00 BFFF loader stack, unpack heads
+load C000 FFFF work banks 1, 3, 4, 6, 7
+bank1 C000 CF4C sound the GS driver file
+bank1 CF4D CF8F work the next $43 bytes of block 4
+bank1 CF90 D18F work the save of $BE00 (load)
+bank1 D190 D3CA sound the save of $5B00 (stubs)
+bank1 D3CB FAA4 sound the start jingle (9946 bytes)
+bank1 FAA5 FFFF sound FX 1, FX 2's start
+bank3 C000 FFFF sound FX 2-5 (raw from the disk)
+bank4 C000 FFFF sound FX 5-8 (Trush block 2)
+bank6 C000 FFFF sound FX 8-10 (Trush block 3)
+bank7 C000 DAFF screen boot: the loading screen copy
+bank7 DB00 FFFF work boot: free
+bank7l C000 FFFF work level load: the unpack buffer

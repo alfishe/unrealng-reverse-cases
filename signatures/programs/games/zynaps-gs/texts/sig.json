@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps-gs/texts",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps GS: texts",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)",
+    "ZX-Masters (Mike Blum)"
+  ],
+  "year": 1997,
+  "tags": [
+    "zynaps-gs",
+    "game-module",
+    "texts"
+  ],
+  "summary": "The messages.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 552,
+    "sha1": "a9f8373ea30ed75cb0b8731f0901e26ff93c23ac",
+    "masked_sha1": "a9f8373ea30ed75cb0b8731f0901e26ff93c23ac"
+  },
+  "origin": "$82EE",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "Messages",
+      "comment": "The 28 messages"
+    },
+    {
+      "offset": 461,
+      "name": "PlayerDigit",
+      "comment": "the digit of \"PLAYER n\" (message 23), written by $B034"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps GS",
+      "case": "games/zynaps-gs",
+      "address": "$82EE",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "b92fa86"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps-gs",
+    "file": "src/game/texts.asm",
+    "label": "Messages"
+  },
+  "docs": [
+    "games/zynaps-gs/docs/README.md"
+  ]
+}

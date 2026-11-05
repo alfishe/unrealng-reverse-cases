@@ -1,0 +1,210 @@
+{
+  "schema": 1,
+  "id": "packers/trush/seen-zynaps-gs/depacker",
+  "kind": "code",
+  "role": "depacker",
+  "name": "Trush depacker (COMPRESSOR BY ALEXANDER TRUSH ODESSA), the copy a self-unpacking block puts over its head",
+  "authors": [
+    "Alexander Trush"
+  ],
+  "year": null,
+  "tags": [
+    "trush",
+    "packer",
+    "depacker",
+    "self-unpacking"
+  ],
+  "summary": "Unpacks a Trush stream read through SP (bytes and 16-bit bit words interleaved) upwards from the block's base + $CE, then moves the output down to end at the block's destination end (LD SP,IX, LDDR) and returns with interrupts enabled. Relative jumps only: the same bytes in every block but the output length (LD BC at Done).",
+  "bytes": {
+    "file": "code.bin",
+    "length": 206,
+    "sha1": "075755b411bfea42a80686f68028c2604cb0af33",
+    "masked_sha1": "f243192428321a04eee3e1c5040b364b05593979"
+  },
+  "origin": "$607C",
+  "relocatable": true,
+  "mask": [
+    {
+      "length": 2,
+      "kind": "var16",
+      "name": "output-length",
+      "offset": 198
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "Depack",
+      "in": "SP = the stream, IX = the caller's SP, B' = 16",
+      "out": null,
+      "clobbers": null,
+      "summary": "unpack the stream, move the output to its end, return"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "Depack",
+      "comment": ""
+    },
+    {
+      "offset": 4,
+      "name": "Literal",
+      "comment": ""
+    },
+    {
+      "offset": 10,
+      "name": "NextToken",
+      "comment": ""
+    },
+    {
+      "offset": 16,
+      "name": "Bit",
+      "comment": ""
+    },
+    {
+      "offset": 25,
+      "name": "B1",
+      "comment": ""
+    },
+    {
+      "offset": 32,
+      "name": "B2",
+      "comment": ""
+    },
+    {
+      "offset": 42,
+      "name": "B3",
+      "comment": ""
+    },
+    {
+      "offset": 53,
+      "name": "B4",
+      "comment": ""
+    },
+    {
+      "offset": 54,
+      "name": "Length",
+      "comment": ""
+    },
+    {
+      "offset": 63,
+      "name": "Long",
+      "comment": ""
+    },
+    {
+      "offset": 84,
+      "name": "CopyBack",
+      "comment": ""
+    },
+    {
+      "offset": 85,
+      "name": "ShortOffset",
+      "comment": ""
+    },
+    {
+      "offset": 100,
+      "name": "Length16",
+      "comment": ""
+    },
+    {
+      "offset": 103,
+      "name": "LengthCode",
+      "comment": ""
+    },
+    {
+      "offset": 109,
+      "name": "Length3",
+      "comment": ""
+    },
+    {
+      "offset": 111,
+      "name": "SetLength",
+      "comment": ""
+    },
+    {
+      "offset": 112,
+      "name": "OffsetKind",
+      "comment": ""
+    },
+    {
+      "offset": 119,
+      "name": "K",
+      "comment": ""
+    },
+    {
+      "offset": 128,
+      "name": "H1",
+      "comment": ""
+    },
+    {
+      "offset": 135,
+      "name": "H2",
+      "comment": ""
+    },
+    {
+      "offset": 142,
+      "name": "H3",
+      "comment": ""
+    },
+    {
+      "offset": 148,
+      "name": "High",
+      "comment": ""
+    },
+    {
+      "offset": 152,
+      "name": "H4",
+      "comment": ""
+    },
+    {
+      "offset": 158,
+      "name": "H5",
+      "comment": ""
+    },
+    {
+      "offset": 166,
+      "name": "H6",
+      "comment": ""
+    },
+    {
+      "offset": 172,
+      "name": "H7",
+      "comment": ""
+    },
+    {
+      "offset": 181,
+      "name": "H8",
+      "comment": ""
+    },
+    {
+      "offset": 187,
+      "name": "H9",
+      "comment": ""
+    },
+    {
+      "offset": 192,
+      "name": "Done",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps GS: Trush block 4",
+      "case": "games/zynaps-gs",
+      "address": "$607C",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "b92fa86"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps-gs",
+    "file": "src/disk/trush.asm",
+    "label": "Depack"
+  },
+  "docs": [
+    "games/zynaps-gs/docs/03-build-and-load.md"
+  ]
+}

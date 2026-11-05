@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps-gs/tilecopy",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Zynaps GS: tilecopy",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)",
+    "ZX-Masters (Mike Blum)"
+  ],
+  "year": 1997,
+  "tags": [
+    "zynaps-gs",
+    "game-module",
+    "tilecopy"
+  ],
+  "summary": "The tile set and the sprite glyphs at $5C00-$67FF, where the 48K start-up copies them.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 3072,
+    "sha1": "56166a141b07fa76aa64ebcabff0f67dbc5e0b5e",
+    "masked_sha1": "56166a141b07fa76aa64ebcabff0f67dbc5e0b5e"
+  },
+  "origin": "$5C00",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "TileGraphics",
+      "comment": "The 256 scenery tiles, 8 line pages of 256 bytes: line y of tile t at $5C00 + 256 y + t"
+    },
+    {
+      "offset": 2048,
+      "name": "WaveCellGraphics",
+      "comment": "The cells of the wave sprites: 8-byte linear glyphs for the sprite builders"
+    },
+    {
+      "offset": 2784,
+      "name": "BigSpriteGlyphs",
+      "comment": "8-byte linear glyphs read by BuildBigSprite $8F0C when A = 1 (the operand at $8F15)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps GS",
+      "case": "games/zynaps-gs",
+      "address": "$5C00",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "b92fa86"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps-gs",
+    "file": "src/game/tilecopy.asm",
+    "label": "TileGraphics"
+  },
+  "docs": [
+    "games/zynaps-gs/docs/README.md"
+  ]
+}

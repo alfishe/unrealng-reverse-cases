@@ -1,0 +1,454 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps-gs/enemies",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps GS: enemies",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)",
+    "ZX-Masters (Mike Blum)"
+  ],
+  "year": 1997,
+  "tags": [
+    "zynaps-gs",
+    "game-module",
+    "enemies"
+  ],
+  "summary": "The enemy handlers: the common enemy, the lockable enemy, the big enemy.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 355,
+    "sha1": "70d9bac6b11189c2a6990a52b20d96578923cff2",
+    "masked_sha1": "6dcc824deff8da308bd69ec4af36c478cdeb49d2"
+  },
+  "origin": "$9F88",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 6,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 13,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyEscaped"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeEnemySlot"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RunPath"
+    },
+    {
+      "offset": 23,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClampRow"
+    },
+    {
+      "offset": 26,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyFire"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlasmaHitMask"
+    },
+    {
+      "offset": 43,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaserHitMask"
+    },
+    {
+      "offset": 52,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyKilled"
+    },
+    {
+      "offset": 55,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StartExplosion"
+    },
+    {
+      "offset": 61,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddScore"
+    },
+    {
+      "offset": 70,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 81,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockMask"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyEscaped"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeEnemySlot"
+    },
+    {
+      "offset": 93,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RunPath"
+    },
+    {
+      "offset": 96,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClampRow"
+    },
+    {
+      "offset": 99,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyFire"
+    },
+    {
+      "offset": 102,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockMask"
+    },
+    {
+      "offset": 109,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SightMask"
+    },
+    {
+      "offset": 118,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockTarget"
+    },
+    {
+      "offset": 130,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpinnerColour"
+    },
+    {
+      "offset": 146,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileHitMask"
+    },
+    {
+      "offset": 152,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaserHitMask"
+    },
+    {
+      "offset": 165,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockMask"
+    },
+    {
+      "offset": 170,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyKilled"
+    },
+    {
+      "offset": 173,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StartExplosionQuiet"
+    },
+    {
+      "offset": 179,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddScore"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 196,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockMask"
+    },
+    {
+      "offset": 199,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyEscaped"
+    },
+    {
+      "offset": 202,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeEnemySlot"
+    },
+    {
+      "offset": 206,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RunPath"
+    },
+    {
+      "offset": 209,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClampRow"
+    },
+    {
+      "offset": 230,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyFire"
+    },
+    {
+      "offset": 233,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockMask"
+    },
+    {
+      "offset": 240,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SightMask"
+    },
+    {
+      "offset": 249,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockTarget"
+    },
+    {
+      "offset": 261,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpinnerColour"
+    },
+    {
+      "offset": 277,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileHitMask"
+    },
+    {
+      "offset": 292,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockMask"
+    },
+    {
+      "offset": 297,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaserHitMask"
+    },
+    {
+      "offset": 304,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CycleColour"
+    },
+    {
+      "offset": 334,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LockMask"
+    },
+    {
+      "offset": 337,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyKilled"
+    },
+    {
+      "offset": 346,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScatterDebris"
+    },
+    {
+      "offset": 352,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddScore"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "EnemyHandler",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "kinds 2 and 11: a common enemy"
+    },
+    {
+      "offset": 64,
+      "name": "LockableHandler",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "kind 8: an enemy the homing sight can lock"
+    },
+    {
+      "offset": 182,
+      "name": "BigEnemyHandler",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "kind 12: the big (boss) enemy"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 12,
+      "name": "EnemyLeaves",
+      "comment": "out of the playfield: escaped"
+    },
+    {
+      "offset": 19,
+      "name": "EnemyMove",
+      "comment": "path, clamp, $A0EB, hits"
+    },
+    {
+      "offset": 51,
+      "name": "EnemyDies",
+      "comment": "destroyed: the wave, the explosion, the score"
+    },
+    {
+      "offset": 54,
+      "name": "",
+      "comment": "GS: the installer points this CALL at ExplodeHook ($FF3B): FX 7, an enemy explodes"
+    },
+    {
+      "offset": 76,
+      "name": "LockableLeaves",
+      "comment": "its lock bit off, escaped"
+    },
+    {
+      "offset": 92,
+      "name": "LockableMove",
+      "comment": "path, clamp, $A0EB, the lock"
+    },
+    {
+      "offset": 124,
+      "name": "LockableFlash",
+      "comment": "locked: flash"
+    },
+    {
+      "offset": 140,
+      "name": "LockableHits",
+      "comment": "a missile hit on the lock, or a laser hit"
+    },
+    {
+      "offset": 160,
+      "name": "LockableDies",
+      "comment": "destroyed: the lock off, the wave, the explosion, the score"
+    },
+    {
+      "offset": 172,
+      "name": "",
+      "comment": "GS: CALL StartExplosionQuiet in the image; the installer makes it CALL ExplodeHook ($FF3B): FX 7, a lockable enemy explodes"
+    },
+    {
+      "offset": 194,
+      "name": "BigEnemyLeaves",
+      "comment": "the lock off, escaped"
+    },
+    {
+      "offset": 205,
+      "name": "BigEnemyMove",
+      "comment": "path, clamp"
+    },
+    {
+      "offset": 222,
+      "name": "BigEnemyRowMask",
+      "comment": "one row less for each row below 11"
+    },
+    {
+      "offset": 226,
+      "name": "BigEnemyRowSet",
+      "comment": "the mask, $A0EB, the lock"
+    },
+    {
+      "offset": 255,
+      "name": "BigEnemyFlash",
+      "comment": "locked: flash"
+    },
+    {
+      "offset": 271,
+      "name": "BigEnemyHits",
+      "comment": "a missile hit: - 4 and the lock off"
+    },
+    {
+      "offset": 296,
+      "name": "BigEnemyLaser",
+      "comment": "a laser hit: - 1 and a flash"
+    },
+    {
+      "offset": 306,
+      "name": "",
+      "comment": "GS: the installer writes CALL BigEnemyHitHook ($FF99) here: the big enemy hit; effects only, FX 12 on levels 7 and 11, else FX 13 or 14, unless the hit destroyed it"
+    },
+    {
+      "offset": 309,
+      "name": "BigEnemyHitSound",
+      "comment": "the hit sound; below 0: destroyed (GS: CALL NZ,0 and 15 NOPs where the 48K set the beeper crackle's three patterns ($7F80, $7F84, $7F88); the installer writes a NOP over the CALL's $C4 (its two zero bytes are NOPs too))"
+    },
+    {
+      "offset": 333,
+      "name": "",
+      "comment": "GS: the installer writes CALL BigEnemyDestroyedHook ($FFA3) here: the big enemy destroyed, in both modes (music: FX 8; effects only: four FX at once)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps GS",
+      "case": "games/zynaps-gs",
+      "address": "$9F88",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "b92fa86"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps-gs",
+    "file": "src/game/enemies.asm",
+    "label": "EnemyHandler"
+  },
+  "docs": [
+    "games/zynaps-gs/docs/README.md"
+  ]
+}

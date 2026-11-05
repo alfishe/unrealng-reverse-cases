@@ -1,11 +1,35 @@
 # 12. Routine reference
 
-Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
-the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/z48c2` (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames), `work/z48r1` (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames). They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
-Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
-of the recording. Memory ranges name the entries they cover. An entry no recording reached says so.
-Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --venv SKOOLKIT_VENV --sjasmplus SJASMPLUS --install`
-(see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
+Every code entry of the game, in address order by module (`src/game/<module>.asm`): the image `$5C00`-`$FFFF` in
+banks 5, 2 and 0 as the installer leaves it. The name, the title and the description are the source's
+(`src/game/game.ann`). The rest is what the recordings saw:
+
+- `gsplay`: the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)
+- `z48r1`: the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)
+- `z48c2`: the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames
+
+They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
+
+- **Runs** count the calls of the entry itself. The time is its own t-states (callees excluded) and its share of
+  the recording.
+- **Called from / Calls** are the calls the recordings made, by entry; "(tail)" is a jump into another entry.
+- **Reads / Writes** name the entries the ranges cover.
+- The patched call sites run their GS form only in `gsplay`; the 48K recordings have the original bytes there. The
+  hook stubs the installer writes (`$FF1C`-`$FFD1`, `$B2F0`, `$B47F`, `$A6AE`) are not entries of the image: they
+  have a table of their own at the end, with their counts over whole levels (the memory profiler, levels 1-11).
+- An entry no recording reached says so; such code is read, not seen.
+
+Where a routine's rules are explained with figures, the chapter is named here:
+
+| Routines | Explained in |
+| --- | --- |
+| `RunObjects`, the handlers, `RunPath` and the path ops | [7. Objects](07-objects.md) |
+| `PrintChar`, the panel, the score, `DrawLives` | [8. HUD and text](08-hud-and-text.md) |
+| the hook stubs `$FF1C`-`$FFC3`, `ObjectSoundStub` `$B2F0`, `SlotGoneHook` `$B47F`, `WaitStub` `$A6AE` | [9.4](09-sound.md#94-where-the-game-makes-a-sound) |
+| `PodStep`, `FireLaser`, `PlasmaFrame`, `HomingFrame`, `SeekerFrame`, `FuelOut` | [10.2](10-gameplay-logic.md#102-weapons-pods-and-the-selector), [10.3](10-gameplay-logic.md#103-fuel) |
+| `PlayersSetup`, `SetLevelStart`, `CmdLevelEnd`, `EndOfPlay`, `MainLoop` | [10.5](10-gameplay-logic.md#105-levels-and-their-order), [10.6](10-gameplay-logic.md#106-the-hidden-options) |
+
+Written by `python3 tools/fig_routines.py` (through `kit/refdocs.py`); edit `src/game/game.ann` and run it again.
 
 | Module | Entries | Code entries |
 | --- | --- | --- |
@@ -42,14 +66,14 @@ Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py -
 | [`options`](#options) | `$A76F`-`$A7F6` | 3 of 3 |
 | [`hiscore`](#hiscore) | `$A7F7`-`$A8BD` | 2 of 3 |
 | [`panel`](#panel) | `$A8BE`-`$A9A0` | 3 of 5 |
-| [`interrupts`](#interrupts) | `$A9A1`-`$AB12` | 11 of 11 |
+| [`interrupts`](#interrupts) | `$A9A1`-`$AB12` | 12 of 12 |
 | [`hud`](#hud) | `$AB13`-`$AC06` | 3 of 3 |
 | [`events`](#events) | `$AC07`-`$AD65` | 27 of 27 |
 | [`wavescript`](#wavescript) | `$AD66`-`$AF48` | 30 of 30 |
 | [`rounds`](#rounds) | `$AF49`-`$B0FE` | 13 of 14 |
 | [`mainloop`](#mainloop) | `$B0FF`-`$B2EF` | 19 of 20 |
 | [`effects`](#effects) | `$B2F0`-`$B445` | 23 of 23 |
-| [`tune`](#tune) | `$B446`-`$B4AE` | 1 of 3 |
+| [`tune`](#tune) | `$B446`-`$B4AE` | 3 of 5 |
 | [`icons`](#icons) | `$B4AF`-`$B54E` | 0 of 1 |
 | [`font`](#font) | `$B54F`-`$B6FE` | 0 of 1 |
 | [`start`](#start) | `$B6FF`-`$B72E` | 1 of 2 |
@@ -104,8 +128,9 @@ Output: A random byte, F changed. Callers all over the game (stars, enemies, eff
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 303 calls, 105,190 t-states own (0.10 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 12,253 calls, 4,161,202 t-states own (0.08 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 352 calls, 117,568 t-states own (0.09 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 12,253 calls, 4,161,202 t-states own (0.08 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 303 calls, 105,190 t-states own (0.10 %) |
 | Called from | `InitStars`, `MoveStars`, `LaunchWave`, `PathOpRandomDirection`, `PathOpRandomSpeed`, `PathOpDive`, `ScatterDebris`, `EnemyFire` |
 | Reads | `$7F71`-`$7F75` (`RandomSeed`) |
 | Writes | `$7F71`-`$7F75` (`RandomSeed`); `$8582`-`$8589` (`Random`) |
@@ -120,8 +145,9 @@ Input: none. Output: BC, DE, HL changed; interrupts enabled. c1: 4 entries (betw
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 459,088 t-states own (0.44 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 22 calls, 5,049,962 t-states own (0.10 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 calls, 1,537,528 t-states own (1.21 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 22 calls, 5,049,962 t-states own (0.10 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 459,088 t-states own (0.44 %) |
 | Called from | `MenuScreenSetup`, `RoundPlaySetup` |
 | Calls | `FadeAttributes`, `InterruptJump` |
 | Reads | `$4000`-`$5AFE` (screen); `$8599` (`ClearScreen`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -138,12 +164,13 @@ Output: BC, E, HL changed. Called by ClearScreen (c1: 4 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 3 calls, 2,513,000 t-states own (2.40 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 33 calls, 27,636,614 t-states own (0.53 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 12 calls, 10,245,352 t-states own (8.06 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 33 calls, 27,636,614 t-states own (0.53 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 3 calls, 2,513,000 t-states own (2.40 %) |
 | Called from | `ClearScreen`, `EndOfPlay` |
 | Calls | `InterruptJump` |
 | Reads | `$5800`-`$5AFF` (screen); `$85B8`-`$85BA` (`FadeAttributes`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5800`-`$5AFF` (screen); `$5BF4`-`$5BF9` (system) |
+| Writes | `$5800`-`$5AFF` (screen); `$5BF4`-`$5BFB` (system) |
 
 ## playfield
 
@@ -161,9 +188,10 @@ Called from the frame handler `$A9ED` once a frame while playing (c2: 659 entrie
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 659 calls, 60,206 t-states own (0.06 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,542 calls, 3,334,174 t-states own (0.06 %) |
-| Called from | `PlayInterrupt` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 585 calls, 53,235 t-states own (0.04 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 3,334,174 t-states own (0.06 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 60,206 t-states own (0.06 %) |
+| Called from | `PlayInterrupt`, `l_A9EF` |
 | Calls | `RowStart` (tail) |
 | Writes | `$7F6F` (`RowsLeft`); `$85E1`-`$85E8` (`RenderDone`, `SentinelNode`, `RowEnd`) |
 
@@ -175,8 +203,9 @@ The operand of LD SP is the SP that DrawPlayfield saved.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 659 calls, 13,428 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,542 calls, 760,264 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 585 calls, 11,700 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 760,264 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 13,428 t-states own (0.01 %) |
 | Called from | `RowStar` (tail) |
 | Calls | `PlayPass` |
 
@@ -194,8 +223,9 @@ c2: 11592 entries (= 659 frames * 18 rows minus the frames cut short).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 11,592 calls, 1,072,154 t-states own (1.02 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 657,486 calls, 66,802,368 t-states own (1.27 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 10,494 calls, 909,870 t-states own (0.72 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 657,486 calls, 66,802,368 t-states own (1.27 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 11,592 calls, 1,072,154 t-states own (1.02 %) |
 | Called from | `RowStart`, `SpanDraw4`, `SpanDraw3`, `SpanDraw2`, `SpanDraw1`, `SpanDraw0` |
 | Calls | `StripNext`, `RowStar` (tail) |
 | Reads | `$F12F`-`$F363` (`RowRecords`) |
@@ -208,8 +238,9 @@ SP points at a strip entry whose first word is StripDraw: the RET starts it. The
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 7,283 calls, 72,830 t-states own (0.07 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 502,608 calls, 5,026,080 t-states own (0.10 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4,794 calls, 47,940 t-states own (0.04 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 502,608 calls, 5,026,080 t-states own (0.10 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 7,283 calls, 72,830 t-states own (0.07 %) |
 | Called from | `RowEnd`, `StripDraw` (tail) |
 | Calls | `StripDraw` |
 
@@ -227,8 +258,9 @@ c2: 7168 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 7,168 calls, 5,781,900 t-states own (5.51 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 502,493 calls, 444,612,951 t-states own (8.48 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4,790 calls, 3,640,247 t-states own (2.86 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 502,493 calls, 444,612,951 t-states own (8.48 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 7,168 calls, 5,781,900 t-states own (5.51 %) |
 | Called from | `StripNext` |
 | Calls | `StripNext` (tail), `RowStar` |
 | Reads | `$4022`-`$40FF` (screen); `$4122`-`$41FF` (screen); `$4222`-`$42FF` (screen); `$4322`-`$43FF` (screen); `$4422`-`$44FF` (screen); `$4522`-`$45FF` (screen); 10 more ranges |
@@ -248,8 +280,9 @@ c2: 11592 entries (as RowEnd).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 11,862 calls, 3,562,032 t-states own (3.40 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 657,756 calls, 322,107,180 t-states own (6.14 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 10,530 calls, 3,055,399 t-states own (2.40 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 657,756 calls, 322,107,180 t-states own (6.14 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 11,862 calls, 3,562,032 t-states own (3.40 %) |
 | Called from | `RowEnd` (tail), `StripDraw` |
 | Calls | `RenderDone` (tail), `RowStart` |
 | Reads | `$4321`-`$43FF` (screen); `$4B00`-`$4BFF` (screen); `$5300`-`$535F` (screen); `$5820`-`$5A5F` (screen); `$7F6F` (`RowsLeft`); `$F12F`-`$F271` (`RowRecords`); 7 more ranges |
@@ -269,8 +302,9 @@ c2: 11862 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 11,862 calls, 9,033,641 t-states own (8.61 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 657,756 calls, 504,208,413 t-states own (9.62 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 10,530 calls, 7,444,710 t-states own (5.86 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 657,756 calls, 504,208,413 t-states own (9.62 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 11,862 calls, 9,033,641 t-states own (8.61 %) |
 | Called from | `DrawPlayfield` (tail), `RowStar` |
 | Calls | `RowEnd`, `SpanDraw4`, `SpanDraw3`, `SpanDraw2`, `SpanDraw1`, `SpanDraw0` |
 | Reads | `$7F6A` (`ShiftPage`); `$7F7E`-`$7F7F` (`RowBeep`, `RowBeepMask`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`) |
@@ -289,8 +323,9 @@ The top cost of the game: c2 18726 entries, 123 per mille of all instructions.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 18,726 calls, 12,886,201 t-states own (12.28 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 460,312 calls, 308,016,042 t-states own (5.88 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 15,887 calls, 9,854,010 t-states own (7.75 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 460,312 calls, 308,016,042 t-states own (5.88 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 18,726 calls, 12,886,201 t-states own (12.28 %) |
 | Called from | `RowStart`, `SpanDraw3`, `SpanDraw2`, `SpanDraw1` |
 | Calls | `RowEnd`, `SpanDraw3`, `SpanDraw2`, `SpanDraw1`, `SpanDraw0` |
 | Reads | `$C000`-`$DFFE` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`) |
@@ -304,8 +339,9 @@ As SpanDraw4 with three bytes a line. c2: 5790 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 5,790 calls, 2,983,964 t-states own (2.84 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 87,051 calls, 46,246,929 t-states own (0.88 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 2,249 calls, 1,104,950 t-states own (0.87 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 87,051 calls, 46,246,929 t-states own (0.88 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 5,790 calls, 2,983,964 t-states own (2.84 %) |
 | Called from | `RowStart`, `SpanDraw4`, `SpanDraw2`, `SpanDraw1` |
 | Calls | `RowEnd`, `SpanDraw4`, `SpanDraw2`, `SpanDraw1`, `SpanDraw0` |
 | Reads | `$C000`-`$DFFE` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`) |
@@ -319,8 +355,9 @@ As SpanDraw4 with two bytes a line. c2: 2306 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2,306 calls, 927,494 t-states own (0.88 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 89,368 calls, 34,606,194 t-states own (0.66 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 2,614 calls, 950,612 t-states own (0.75 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 89,368 calls, 34,606,194 t-states own (0.66 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2,306 calls, 927,494 t-states own (0.88 %) |
 | Called from | `RowStart`, `SpanDraw4`, `SpanDraw3`, `SpanDraw1` |
 | Calls | `RowEnd`, `SpanDraw4`, `SpanDraw3`, `SpanDraw1`, `SpanDraw0` |
 | Reads | `$C000`-`$DFFE` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`) |
@@ -334,8 +371,9 @@ As SpanDraw4 with one byte a line (LD A,(HL); LD (DE),A). c2: 5328 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 5,328 calls, 1,290,464 t-states own (1.23 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 110,470 calls, 26,625,232 t-states own (0.51 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4,340 calls, 1,019,304 t-states own (0.80 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 110,470 calls, 26,625,232 t-states own (0.51 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 5,328 calls, 1,290,464 t-states own (1.23 %) |
 | Called from | `RowStart`, `SpanDraw4`, `SpanDraw3`, `SpanDraw2` |
 | Calls | `RowEnd`, `SpanDraw4`, `SpanDraw3`, `SpanDraw2`, `SpanDraw0` |
 | Reads | `$C000`-`$DFFE` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`) |
@@ -349,8 +387,9 @@ A node whose last glyph has scrolled out but which still links the row: skips th
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 522 calls, 19,044 t-states own (0.02 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 12,697 calls, 457,344 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 426 calls, 15,336 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 12,697 calls, 457,344 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 522 calls, 19,044 t-states own (0.02 %) |
 | Called from | `RowStart`, `SpanDraw4`, `SpanDraw3`, `SpanDraw2`, `SpanDraw1` |
 | Calls | `RowEnd` |
 
@@ -372,8 +411,9 @@ Called by LevelSetUp (`$8D30`) and StarsSwitch.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 3,664 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 40,294 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 14,616 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 40,294 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 3,664 t-states own (0.00 %) |
 | Called from | `LevelSetUp` |
 | Calls | `Random` |
 | Writes | `$8881`-`$8882` (`InitStars`) |
@@ -400,9 +440,10 @@ Called by the frame handler (c2: 659 entries, 37 per mille).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 659 calls, 3,877,411 t-states own (3.70 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,542 calls, 214,262,766 t-states own (4.09 %) |
-| Called from | `PlayInterrupt` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 585 calls, 3,433,122 t-states own (2.70 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 214,262,766 t-states own (4.09 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 3,877,411 t-states own (3.70 %) |
+| Called from | `PlayInterrupt`, `l_A9EF` |
 | Calls | `Random` |
 | Reads | `$81DA` (`ScriptState`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`) |
 | Writes | `$88F5`-`$88FA` (`MoveStars`); `$890F`-`$8910` (`MoveStars`) |
@@ -423,8 +464,9 @@ Called by NewSpanNode (c2: 307 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 307 calls, 58,627 t-states own (0.06 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 5,559 calls, 1,066,067 t-states own (0.02 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 421 calls, 75,369 t-states own (0.06 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5,559 calls, 1,066,067 t-states own (0.02 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 307 calls, 58,627 t-states own (0.06 %) |
 | Called from | `NewSpanNode` |
 | Calls | `InterruptJump` |
 | Reads | `$8015`-`$8017` (`GlyphAlloc`); `$FEFF`-`$FF00` (`VectorTable`); `$FFE0`-`$FFFF` (`ColumnFlags`) |
@@ -440,9 +482,10 @@ Called from the frame handler cycle (c2: 229 entries, one per scroll step).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 229 calls, 32,223 t-states own (0.03 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 9,658 calls, 1,183,829 t-states own (0.02 %) |
-| Called from | `PlayInterrupt`, `ReplayStep` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 403 calls, 56,195 t-states own (0.04 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 9,658 calls, 1,183,829 t-states own (0.02 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 229 calls, 32,223 t-states own (0.03 %) |
+| Called from | `PlayInterrupt`, `l_A9EF`, `ReplayStep` |
 | Reads | `$801C`-`$801D` (`ScrollColumn`); `$81DA` (`ScriptState`) |
 | Writes | `$896F`-`$8975` (`BuildColumn`) |
 
@@ -458,8 +501,9 @@ c2: 688 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 688 calls, 582,970 t-states own (0.56 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 28,975 calls, 1,419,437 t-states own (0.03 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,207 calls, 937,983 t-states own (0.74 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 28,975 calls, 1,419,437 t-states own (0.03 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 688 calls, 582,970 t-states own (0.56 %) |
 | Called from | `ChainDrawStrips1`, `ChainDrawStrips2`, `ChainDrawStrips3`, `ReplayRoundEnd` |
 | Calls | `BuildColumnLoop`, `BuildCell`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -471,7 +515,7 @@ c2: 688 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 138,858 calls, 4,979,328 t-states own (0.09 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 138,858 calls, 4,979,328 t-states own (0.09 %) |
 | Called from | `BuildColumn`, `BuildColumnStep` (tail) |
 | Calls | `BuildCell`, `InterruptJump` |
 
@@ -481,7 +525,7 @@ c2: 688 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 5 calls, 6,720,140 t-states own (0.13 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5 calls, 6,720,140 t-states own (0.13 %) |
 | Called from | `BuildCellDone`, `GlyphBuilt` |
 | Calls | `BuildColumnStep`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -493,7 +537,7 @@ c2: 688 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 138,859 calls, 7,575,510 t-states own (0.14 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 138,859 calls, 7,575,510 t-states own (0.14 %) |
 | Called from | `BuildColumnBack`, `PlayInterruptExit` |
 | Calls | `BuildColumnLoop` (tail), `ChainStep1End`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -509,8 +553,9 @@ A tile: BuildGlyph. Input: IX = the row record, HL = the map cell. c2: 3948 entr
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 3,948 calls, 302,926 t-states own (0.29 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 138,859 calls, 10,867,098 t-states own (0.21 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 6,882 calls, 518,973 t-states own (0.41 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 138,859 calls, 10,867,098 t-states own (0.21 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 3,948 calls, 302,926 t-states own (0.29 %) |
 | Called from | `BuildColumn`, `BuildColumnLoop`, `PlayInterruptExit` |
 | Calls | `BuildGlyph` (tail), `InterruptJump` |
 | Reads | `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F2AC` (`RowRecords`); `$F2BF`-`$F2CC` (`RowRecords`); `$F2DF`-`$F2EC` (`RowRecords`); `$F2FF`-`$F30C` (`RowRecords`); `$F31F`-`$F32C` (`RowRecords`); 3 more ranges |
@@ -522,7 +567,7 @@ A tile: BuildGlyph. Input: IX = the row record, HL = the map cell. c2: 3948 entr
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1 call, 80,403 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1 call, 80,403 t-states own (0.00 %) |
 | Called from | `GlyphBuilt` |
 | Calls | `BuildColumnBack` |
 | Reads | `$F140`-`$F280` (`RowRecords`); `$F2A0` (`RowRecords`); `$F2C0` (`RowRecords`); `$F2E0` (`RowRecords`); `$F300` (`RowRecords`); `$F320` (`RowRecords`); 2 more ranges |
@@ -542,12 +587,13 @@ c2: 1025 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1,025 calls, 2,165,679 t-states own (2.06 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 19,108 calls, 6,524,131 t-states own (0.12 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,386 calls, 2,889,050 t-states own (2.27 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 19,108 calls, 6,524,131 t-states own (0.12 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,025 calls, 2,165,679 t-states own (2.06 %) |
 | Called from | `BuildCell` (tail) |
 | Calls | `GlyphLine`, `NewSpanNode`, `InterruptJump` |
-| Reads | `$5C00`-`$5DBA` (`TileGraphics`); `$5E00`-`$5EBA` (`TileGraphics`); `$5F00`-`$5FBA` (`TileGraphics`); `$6000`-`$60BA` (`TileGraphics`); `$6100`-`$61BA` (`TileGraphics`); `$6200`-`$62BA` (`TileGraphics`); 11 more ranges |
-| Writes | `$5BEE`-`$5BF1` (system); `$8A1D`-`$8A1F` (`GlyphLine`); `$C000`-`$DFFE` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`); `$F13B`-`$F2A0` (`RowRecords`); `$F2BB`-`$F2C0` (`RowRecords`); `$F2DB`-`$F2E0` (`RowRecords`); 5 more ranges |
+| Reads | `$5C00`-`$5EBA` (`TileGraphics`); `$5F00`-`$5FBA` (`TileGraphics`); `$6000`-`$60BA` (`TileGraphics`); `$6100`-`$61BA` (`TileGraphics`); `$6200`-`$62BA` (`TileGraphics`); `$6300`-`$63BA` (`TileGraphics`); 10 more ranges |
+| Writes | `$5BEC`-`$5BF1` (system); `$8A1D`-`$8A1F` (`GlyphLine`); `$C000`-`$DFFE` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`); `$F13B`-`$F2A0` (`RowRecords`); `$F2BB`-`$F2C0` (`RowRecords`); `$F2DB`-`$F2E0` (`RowRecords`); 5 more ranges |
 
 ### `GlyphLine` (`$8A1C`)
 
@@ -555,7 +601,7 @@ c2: 1025 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 152,864 calls, 7,163,268 t-states own (0.14 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 152,864 calls, 7,163,268 t-states own (0.14 %) |
 | Called from | `BuildGlyph`, `GlyphShift4` (tail) |
 | Calls | `GlyphShift2`, `InterruptJump` |
 | Reads | `$5C00`-`$5EDB` (`TileGraphics`); `$5EF8`-`$5FDB` (`TileGraphics`); `$5FF8`-`$60DB` (`TileGraphics`); `$60F8`-`$61DB` (`TileGraphics`); `$61F8`-`$62DB` (`TileGraphics`); `$62F8`-`$63DB` (`TileGraphics`); 8 more ranges |
@@ -567,7 +613,7 @@ c2: 1025 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 152,865 calls, 15,439,416 t-states own (0.29 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 152,865 calls, 15,439,416 t-states own (0.29 %) |
 | Called from | `GlyphLine`, `PlayInterruptExit` |
 | Calls | `GlyphShift4`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -579,7 +625,7 @@ c2: 1025 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 152,865 calls, 9,171,973 t-states own (0.17 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 152,865 calls, 9,171,973 t-states own (0.17 %) |
 | Called from | `GlyphShift2`, `PlayInterruptExit` |
 | Calls | `GlyphLine` (tail), `GlyphMarkBits`, `InterruptJump` |
 | Reads | `$F13C`-`$F29D` (`RowRecords`); `$F2BC`-`$F2BD` (`RowRecords`); `$F2DC`-`$F2DD` (`RowRecords`); `$F2FC`-`$F2FD` (`RowRecords`); `$F31C`-`$F31D` (`RowRecords`); `$F33C`-`$F33D` (`RowRecords`); 2 more ranges |
@@ -591,7 +637,7 @@ c2: 1025 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 19,109 calls, 1,652,046 t-states own (0.03 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 19,109 calls, 1,652,046 t-states own (0.03 %) |
 | Called from | `GlyphShift4`, `PlayInterruptExit` |
 | Calls | `GlyphBuilt`, `InterruptJump` |
 | Reads | `$F13C`-`$F2A0` (`RowRecords`); `$F2BC`-`$F2C0` (`RowRecords`); `$F2DC`-`$F2E0` (`RowRecords`); `$F2FC`-`$F300` (`RowRecords`); `$F31C`-`$F320` (`RowRecords`); `$F33C`-`$F340` (`RowRecords`); 2 more ranges |
@@ -603,7 +649,7 @@ c2: 1025 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 19,109 calls, 244,099 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 19,109 calls, 244,099 t-states own (0.00 %) |
 | Called from | `GlyphMarkBits`, `PlayInterruptExit` |
 | Calls | `BuildColumnBack`, `BuildCellDone` |
 
@@ -619,8 +665,9 @@ c2: 307 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 307 calls, 244,420 t-states own (0.23 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 5,559 calls, 4,436,634 t-states own (0.08 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 421 calls, 316,047 t-states own (0.25 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5,559 calls, 4,436,634 t-states own (0.08 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 307 calls, 244,420 t-states own (0.23 %) |
 | Called from | `BuildGlyph` |
 | Calls | `AllocGlyphs`, `PopNode`, `InterruptJump` |
 | Reads | `$7F65` (`PassPhase`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F132`-`$F2FF` (`RowRecords`); `$F312`-`$F31F` (`RowRecords`); `$F332`-`$F33F` (`RowRecords`); `$F352`-`$F35F` (`RowRecords`); 2 more ranges |
@@ -634,11 +681,13 @@ Output: DE = the node, NodeFreeList (`$7F68`) = the node's link. HL preserved. c
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 307 calls, 34,044 t-states own (0.03 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 5,559 calls, 618,050 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 421 calls, 40,894 t-states own (0.03 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5,559 calls, 618,050 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 307 calls, 34,044 t-states own (0.03 %) |
 | Called from | `NewSpanNode` |
-| Reads | `$7F68`-`$7F69` (`NodeFreeList`); `$F800`-`$FA31` (`NodePool`) |
-| Writes | `$7F68`-`$7F69` (`NodeFreeList`) |
+| Calls | `InterruptJump` |
+| Reads | `$7F68`-`$7F69` (`NodeFreeList`); `$F800`-`$FA31` (`NodePool`); `$FEFF`-`$FF00` (`VectorTable`) |
+| Writes | `$5BE8`-`$5BE9` (system); `$7F68`-`$7F69` (`NodeFreeList`) |
 
 ### `PushNode` (`$8ADF`)
 
@@ -648,11 +697,13 @@ The node's first word = the old NodeFreeList, NodeFreeList = HL. DE preserved. c
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 230 calls, 21,578 t-states own (0.02 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 5,193 calls, 483,204 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 238 calls, 22,172 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5,193 calls, 483,204 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 230 calls, 21,578 t-states own (0.02 %) |
 | Called from | `ScrollStep` |
-| Reads | `$7F68`-`$7F69` (`NodeFreeList`) |
-| Writes | `$7F68`-`$7F69` (`NodeFreeList`); `$F800`-`$FA19` (`NodePool`) |
+| Calls | `InterruptJump` |
+| Reads | `$7F68`-`$7F69` (`NodeFreeList`); `$FEFF`-`$FF00` (`VectorTable`) |
+| Writes | `$5BF2`-`$5BF3` (system); `$7F68`-`$7F69` (`NodeFreeList`); `$F800`-`$FA19` (`NodePool`) |
 
 ### `ScrollStep` (`$8AED`)
 
@@ -672,9 +723,10 @@ Called from the frame handler cycle (c2: 228 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 228 calls, 1,871,733 t-states own (1.78 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 9,647 calls, 62,617,919 t-states own (1.19 %) |
-| Called from | `PlayInterrupt`, `ReplayRoundEnd` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 399 calls, 3,014,587 t-states own (2.37 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 9,647 calls, 62,617,919 t-states own (1.19 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 228 calls, 1,871,733 t-states own (1.78 %) |
+| Called from | `PlayInterrupt`, `l_A9EF`, `ReplayRoundEnd` |
 | Calls | `PushNode`, `SetSpanHandler`, `InterruptJump` |
 | Reads | `$7F70` (`EmptyRows`); `$801C`-`$8022` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 2 more); `$81DA`-`$81DC` (`ScriptState`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F360` (`RowRecords`); `$F802`-`$FA36` (`NodePool`); 2 more ranges |
 | Writes | `$5BF6`-`$5BF7` (system); `$7F70` (`EmptyRows`); `$801C`-`$8022` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 2 more); `$81DB`-`$81DC` (`ScriptState`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F360` (`RowRecords`); 2 more ranges |
@@ -687,8 +739,9 @@ Handler = SpanHandlers[(IY+6)] into the node's first word. c2: 1559 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1,559 calls, 192,424 t-states own (0.18 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 31,867 calls, 3,921,354 t-states own (0.07 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,943 calls, 239,160 t-states own (0.19 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 31,867 calls, 3,921,354 t-states own (0.07 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,559 calls, 192,424 t-states own (0.18 %) |
 | Called from | `ScrollStep` |
 | Calls | `InterruptJump` |
 | Reads | `$8C33`-`$8C3A` (`SpanHandlers`); `$F806`-`$FA36` (`NodePool`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -712,8 +765,9 @@ Called from the level start `$AF49` (c2: 1 entry).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 130,873 t-states own (0.12 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 1,439,982 t-states own (0.03 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 522,056 t-states own (0.41 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 1,439,982 t-states own (0.03 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 130,873 t-states own (0.12 %) |
 | Called from | `LevelStart` |
 | Calls | `InitStars`, `ClearHitGrid`, `InterruptJump` |
 | Reads | `$B700`-`$BFFE` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F36A` (`RowRecords`); `$FEFF`-`$FF00` (`VectorTable`); `$FFE0`-`$FFFE` (`ColumnFlags`) |
@@ -731,8 +785,9 @@ Script stack top `$FDFB` holds the entry ScriptMain, ScriptSP (`$801A`) = `$FDFB
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 69 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 759 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 276 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 759 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 69 t-states own (0.00 %) |
 | Called from | `LevelStart` |
 | Calls | `ResumeScript` |
 | Writes | `$801A`-`$8020` (`ScriptSP`, `ScrollColumn`, `ScriptColumn`, `ScriptRoom` and 1 more); `$FDFB`-`$FDFC` (`ScriptStackTop`) |
@@ -747,8 +802,9 @@ Called from the frame handler cycle `$AA96` (c2: 524 entries) and from the catch
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 524 calls, 35,639 t-states own (0.03 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 19,842 calls, 1,298,532 t-states own (0.02 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,064 calls, 68,792 t-states own (0.05 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 19,842 calls, 1,298,532 t-states own (0.02 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 524 calls, 35,639 t-states own (0.03 %) |
 | Called from | `StartScript`, `PlayPass`, `ReplayRound` |
 | Calls | `ScriptMain`, `InterruptJump` |
 | Reads | `$801A`-`$8020` (`ScriptSP`, `ScrollColumn`, `ScriptColumn`, `ScriptRoom` and 1 more); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -762,9 +818,10 @@ ScriptSP = SP, SP = the main SP: the RET returns to ResumeScript's caller. c2: 9
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 90 calls, 4,889 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,557 calls, 84,437 t-states own (0.00 %) |
-| Called from | `ScriptStep`, `DrawGroup` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 164 calls, 8,200 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,557 calls, 84,437 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 90 calls, 4,889 t-states own (0.00 %) |
+| Called from | `RunScript`, `ScriptStep`, `DrawGroup` |
 | Calls | `PlayChain`, `ReplayScroll`, `ReplayRoundEnd` |
 | Reads | `$8018`-`$8019` (`MainSP`) |
 | Writes | `$801A`-`$801B` (`ScriptSP`) |
@@ -777,8 +834,9 @@ A = ScriptNumber (`$81DD`), RunScript, again. Its first RET came from StartScrip
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 30 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 78 calls, 2,670 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 120 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 78 calls, 2,670 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 30 t-states own (0.00 %) |
 | Called from | `ResumeScript`, `ScriptMainAgain` (tail) |
 | Calls | `RunScript` |
 | Reads | `$81DD` (`ScriptState`) |
@@ -789,7 +847,7 @@ A = ScriptNumber (`$81DD`), RunScript, again. Its first RET came from StartScrip
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 936 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 936 t-states own (0.00 %) |
 | Called from | `ScriptStep` |
 | Calls | `ScriptMain` (tail) |
 
@@ -801,11 +859,13 @@ HL = the script's address from the word table `$72E1`, then ScriptStep. c2: 4 en
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 4 calls, 249 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 127 calls, 7,988 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 calls, 4,732 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 127 calls, 7,988 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 4 calls, 249 t-states own (0.00 %) |
 | Called from | `ScriptMain`, `ScriptStep` |
-| Calls | `ScriptStep` |
-| Reads | `$72E3`-`$732E` (`SceneryScriptTable`) |
+| Calls | `YieldScript`, `ScriptStep`, `DrawGroup`, `ScriptSetCell` |
+| Reads | `$72E3`-`$7332` (`SceneryScriptTable`, `SceneryScripts`); `$745B`-`$7461` (`SceneryScripts`); `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
+| Writes | `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
 
 ### `ScriptStep` (`$8D86`)
 
@@ -815,8 +875,8 @@ Below `$80`: DrawGroup n, ScriptBusy = 0, YieldScript, go on. `$FF`: return. `$8
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 6 calls, 2,392 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 160 calls, 68,851 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 160 calls, 68,851 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 6 calls, 2,392 t-states own (0.00 %) |
 | Called from | `RunScript`, `ScriptReturn` (tail) |
 | Calls | `YieldScript`, `ScriptMainAgain`, `RunScript`, `DrawGroup`, `ScriptSetCell` |
 | Reads | `$732F`-`$73DB` (`SceneryScripts`); `$7401`-`$7499` (`SceneryScripts`); `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
@@ -828,8 +888,8 @@ Below `$80`: DrawGroup n, ScriptBusy = 0, YieldScript, go on. `$FF`: return. `$8
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 90 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 1,485 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,485 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 90 t-states own (0.00 %) |
 | Calls | `ScriptStep` (tail) |
 | Writes | `$8021` (`ScriptVariant`) |
 
@@ -847,9 +907,10 @@ c2: 15 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 15 calls, 66,220 t-states own (0.06 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 488 calls, 1,016,316 t-states own (0.02 %) |
-| Called from | `ScriptStep` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 26 calls, 115,237 t-states own (0.09 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 488 calls, 1,016,316 t-states own (0.02 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 15 calls, 66,220 t-states own (0.06 %) |
+| Called from | `RunScript`, `ScriptStep` |
 | Calls | `YieldScript`, `PlaceColumn`, `InterruptJump` |
 | Reads | `$749A`-`$799B` (`GroupTable`, `ObjectGroups`, `ShapeTable`, `Shapes`); `$79CA`-`$7AC7` (`Shapes`); `$7AF2`-`$7B16` (`Shapes`); `$7B41`-`$7BA3` (`Shapes`); `$7BD9`-`$7C31` (`Shapes`); `$7C5E`-`$7DB5` (`Shapes`); 5 more ranges |
 | Writes | `$8E94` (`DrawGroup`); `$8EAD` (`PlaceColumn`); `$8EBF`-`$8EC0` (`PlaceColumn`); `$FDED`-`$FDEE` (`ScriptStack`) |
@@ -864,8 +925,9 @@ c2: 209 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 209 calls, 111,149 t-states own (0.11 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 3,394 calls, 1,749,260 t-states own (0.03 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 326 calls, 168,527 t-states own (0.13 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 3,394 calls, 1,749,260 t-states own (0.03 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 209 calls, 111,149 t-states own (0.11 %) |
 | Called from | `DrawGroup` |
 | Calls | `InterruptJump` |
 | Reads | `$7822`-`$78A6` (`Shapes`); `$78BE`-`$7DD9` (`Shapes`); `$7DFD`-`$7E33` (`Shapes`); `$7E4A`-`$7E59` (`Shapes`); `$FEFF`-`$FF00` (`VectorTable`); `$FFD8`-`$FFDE` (`WorkGlyph`) |
@@ -879,9 +941,10 @@ HL = `$72A9` + 8A, 8 bytes to `$FFD8`. c2: 1 entry.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 257 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 17 calls, 4,440 t-states own (0.00 %) |
-| Called from | `ScriptStep` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 996 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 17 calls, 4,440 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 257 t-states own (0.00 %) |
+| Called from | `RunScript`, `ScriptStep` |
 | Reads | `$72A9`-`$72E0` (`CellPatterns`) |
 | Writes | `$FFD8`-`$FFDF` (`WorkGlyph`) |
 
@@ -899,8 +962,9 @@ Input: HL = the source glyphs, DE = the destination, B = the cells a column, C =
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 5 calls, 9,281 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 338 calls, 630,863 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 7 calls, 12,117 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 338 calls, 630,863 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 5 calls, 9,281 t-states own (0.01 %) |
 | Called from | `LoadCellSprite` |
 | Calls | `FillBlankCell` |
 | Reads | `$6400`-`$653F` (`WaveCellGraphics`); `$6560`-`$65BF` (`WaveCellGraphics`); `$65E0`-`$65FF` (`WaveCellGraphics`); `$6620`-`$66DF` (`WaveCellGraphics`) |
@@ -914,8 +978,9 @@ A and BC preserved. c2: 30 entries.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 30 calls, 7,939 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,201 calls, 588,956 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 42 calls, 10,752 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,201 calls, 588,956 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 30 calls, 7,939 t-states own (0.01 %) |
 | Called from | `BuildCellSprite`, `BuildBigSprite` |
 | Writes | `$C000`-`$C0B7` (`TileSource`); `$C0E0`-`$C0E7` (`TileSource`); `$C118`-`$C11F` (`TileSource`); `$C150`-`$C1FF` (`TileSource`); `$E740`-`$E7A7` (`BallSprite`, `SpriteCacheImages`); `$E980`-`$E9CF` (`SpriteCacheImages`); 2 more ranges |
 
@@ -929,7 +994,7 @@ Each map bit (7 a byte, 9 bytes) set = the next glyph complemented (BigSpriteCel
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 6 calls, 23,039 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 6 calls, 23,039 t-states own (0.00 %) |
 | Called from | `LoadCellSprite` |
 | Calls | `FillBlankCell`, `BigSpriteCell` |
 | Reads | `$8098`-`$80A9` (`BigSpriteMap1`, `BigSpriteMap2`) |
@@ -941,7 +1006,7 @@ Each map bit (7 a byte, 9 bytes) set = the next glyph complemented (BigSpriteCel
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 216 calls, 83,525 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 216 calls, 83,525 t-states own (0.00 %) |
 | Called from | `BuildBigSprite` |
 | Reads | `$5CDC`-`$5DFF` (`TileGraphics`); `$5EDC`-`$5EFF` (`TileGraphics`); `$5FDC`-`$5FFF` (`TileGraphics`); `$60DC`-`$60FF` (`TileGraphics`); `$61DC`-`$61FF` (`TileGraphics`); `$62DC`-`$62FF` (`TileGraphics`); 2 more ranges |
 | Writes | `$C018`-`$C037` (`TileSource`); `$C048`-`$C06F` (`TileSource`); `$C080`-`$C0A7` (`TileSource`); `$C0B8`-`$C17F` (`TileSource`); `$C190`-`$C1B7` (`TileSource`) |
@@ -956,9 +1021,10 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 35 calls, 385 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,408 calls, 9,651 t-states own (0.00 %) |
-| Called from | `SpriteShiftCopy` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 49 calls, 539 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,408 calls, 9,651 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 35 calls, 385 t-states own (0.00 %) |
+| Called from | `SpriteShiftRound`, `SpriteShiftCopy` |
 | Calls | `RotateSpriteRows`, `RotateLine`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
 | Writes | `$5BDC`-`$5BDD` (system) |
@@ -969,7 +1035,7 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,409 calls, 16,856 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,409 calls, 16,856 t-states own (0.00 %) |
 | Called from | `RotateSprite`, `PlayInterruptExit` |
 | Calls | `RotateLine` |
 
@@ -979,10 +1045,11 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 840 calls, 22,753 t-states own (0.02 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 59,140 calls, 687,177 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 25,891 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,140 calls, 687,177 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 840 calls, 22,753 t-states own (0.02 %) |
 | Called from | `RotateSprite`, `RotateSpriteRows`, `RotateNextByte` (tail), `RotateLineCount` (tail), `PlayInterruptExit` |
-| Calls | `RotateLineSave`, `RotateByte`, `InterruptJump` |
+| Calls | `RotateLineSave`, `RotateLineCarry`, `RotateByte`, `InterruptJump` |
 
 ### `RotateLineSave` (`$8F5E`)
 
@@ -990,7 +1057,7 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 59,139 calls, 678,894 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,139 calls, 678,894 t-states own (0.01 %) |
 | Called from | `RotateLine`, `PlayInterruptExit` |
 | Calls | `RotateLineCarry`, `InterruptJump` |
 
@@ -1000,8 +1067,9 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 59,137 calls, 236,582 t-states own (0.00 %) |
-| Called from | `RotateLineSave`, `PlayInterruptExit` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 4,704 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,137 calls, 236,582 t-states own (0.00 %) |
+| Called from | `RotateLine`, `RotateLineSave`, `PlayInterruptExit` |
 | Calls | `RotateByte`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
 | Writes | `$5BD8`-`$5BD9` (system) |
@@ -1012,12 +1080,13 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2,520 calls, 85,718 t-states own (0.08 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 192,411 calls, 769,554 t-states own (0.01 %) |
-| Called from | `RotateLine`, `RotateLineCarry`, `RotateNextByte` (tail), `PlayInterruptExit` |
-| Calls | `RotateByteShift`, `RotateNextByte`, `InterruptJump` |
-| Reads | `$E790`-`$E987` (`SpriteCacheImages`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BD8`-`$5BE7` (system); `$E790`-`$E987` (`SpriteCacheImages`) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 3,528 calls, 67,051 t-states own (0.05 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 192,411 calls, 769,554 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2,520 calls, 85,718 t-states own (0.08 %) |
+| Called from | `RotateLine`, `RotateLineCarry`, `RotateByteOut` (tail), `RotateNextByte` (tail), `PlayInterruptExit` |
+| Calls | `RotateByteShift`, `RotateByteOut`, `RotateNextByte`, `InterruptJump` |
+| Reads | `$E790`-`$E987` (`SpriteCacheImages`); `$E9D0`-`$EBC7` (`SpriteCacheImages`); `$FEFF`-`$FF00` (`VectorTable`) |
+| Writes | `$5BD8`-`$5BE7` (system); `$E790`-`$E987` (`SpriteCacheImages`); `$E9D0`-`$EBC7` (`SpriteCacheImages`) |
 
 ### `RotateByteShift` (`$8F61`)
 
@@ -1025,7 +1094,7 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 192,366 calls, 2,886,008 t-states own (0.06 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 192,366 calls, 2,886,008 t-states own (0.06 %) |
 | Called from | `RotateByte`, `PlayInterruptExit` |
 | Calls | `RotateByteOut`, `InterruptJump` |
 | Reads | `$C200`-`$CFC7` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`); `$E790`-`$EBC7` (`SpriteCacheImages`); `$EC10`-`$F047` (`SpriteCacheImages`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -1037,9 +1106,10 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 192,392 calls, 2,890,036 t-states own (0.06 %) |
-| Called from | `RotateByteShift`, `PlayInterruptExit` |
-| Calls | `RotateNextByte`, `InterruptJump` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 3,529 calls, 92,923 t-states own (0.07 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 192,392 calls, 2,890,036 t-states own (0.06 %) |
+| Called from | `RotateByte`, `RotateByteShift`, `PlayInterruptExit` |
+| Calls | `RotateByte` (tail), `RotateNextByte`, `RotateLineWrap`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
 | Writes | `$5BD8`-`$5BE7` (system) |
 
@@ -1049,8 +1119,8 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2,522 calls, 79,981 t-states own (0.08 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 192,604 calls, 2,205,969 t-states own (0.04 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 192,604 calls, 2,205,969 t-states own (0.04 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2,522 calls, 79,981 t-states own (0.08 %) |
 | Called from | `RotateByte`, `RotateByteOut`, `PlayInterruptExit` |
 | Calls | `RotateLine` (tail), `RotateByte` (tail), `RotateLineWrap`, `SpriteShiftNext`, `InterruptJump` |
 | Reads | `$E790`-`$E7A7` (`SpriteCacheImages`); `$E7D8`-`$E7EF` (`SpriteCacheImages`); `$E820`-`$E837` (`SpriteCacheImages`); `$E868`-`$E87F` (`SpriteCacheImages`); `$E8B0`-`$E8C7` (`SpriteCacheImages`); `$E8F8`-`$E90F` (`SpriteCacheImages`); 2 more ranges |
@@ -1062,8 +1132,9 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 59,138 calls, 804,476 t-states own (0.02 %) |
-| Called from | `RotateNextByte`, `PlayInterruptExit` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 11,779 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,138 calls, 804,476 t-states own (0.02 %) |
+| Called from | `RotateByteOut`, `RotateNextByte`, `PlayInterruptExit` |
 | Calls | `RotateLineMerge`, `InterruptJump` |
 
 ### `RotateLineMerge` (`$8F68`)
@@ -1072,11 +1143,12 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 59,140 calls, 414,009 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 23,539 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,140 calls, 414,009 t-states own (0.01 %) |
 | Called from | `RotateLineWrap`, `PlayInterruptExit` |
-| Calls | `RotateLineStore`, `InterruptJump` |
+| Calls | `RotateLineStore`, `RotateLineRestore`, `InterruptJump` |
 | Reads | `$C200`-`$C42F` (`TileSource`, `WaveCellSource`); `$C5F0`-`$C627` (`WaveCellSource`); `$C7E8`-`$C81F` (`WaveCellSource`, `GlyphCacheUpper`); `$C9E0`-`$CA17` (`GlyphCacheUpper`); `$CBD8`-`$CC0F` (`GlyphCacheUpper`); `$CDD0`-`$CE07` (`GlyphCacheUpper`); 2 more ranges |
-| Writes | `$5BDA`-`$5BDB` (system) |
+| Writes | `$5BDA`-`$5BE9` (system); `$E790`-`$E957` (`SpriteCacheImages`); `$E9D0`-`$E9E7` (`SpriteCacheImages`); `$EA18`-`$EA2F` (`SpriteCacheImages`); `$EA60`-`$EA77` (`SpriteCacheImages`); `$EAA8`-`$EABF` (`SpriteCacheImages`); 3 more ranges |
 
 ### `RotateLineStore` (`$8F69`)
 
@@ -1084,7 +1156,7 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 59,139 calls, 413,990 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,139 calls, 413,990 t-states own (0.01 %) |
 | Called from | `RotateLineMerge`, `PlayInterruptExit` |
 | Calls | `RotateLineNext`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -1096,7 +1168,7 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 59,138 calls, 354,873 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,138 calls, 354,873 t-states own (0.01 %) |
 | Called from | `RotateLineStore`, `PlayInterruptExit` |
 | Calls | `RotateLineRestore`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -1108,8 +1180,9 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 59,139 calls, 686,844 t-states own (0.01 %) |
-| Called from | `RotateLineNext`, `PlayInterruptExit` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 11,779 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,139 calls, 686,844 t-states own (0.01 %) |
+| Called from | `RotateLineMerge`, `RotateLineNext`, `PlayInterruptExit` |
 | Calls | `RotateLineCount`, `InterruptJump` |
 
 ### `RotateLineCount` (`$8F6C`)
@@ -1118,11 +1191,12 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 59,137 calls, 958,947 t-states own (0.02 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 19,080 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,137 calls, 958,947 t-states own (0.02 %) |
 | Called from | `RotateLineRestore`, `PlayInterruptExit` |
 | Calls | `RotateLine` (tail), `SpriteShiftNext`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BDC`-`$5BDD` (system) |
+| Writes | `$5BDC`-`$5BEB` (system) |
 
 ### `ClearStripCounts` (`$8F70`)
 
@@ -1132,8 +1206,9 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 660 calls, 231,598 t-states own (0.22 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,543 calls, 12,755,783 t-states own (0.24 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 584 calls, 202,648 t-states own (0.16 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,543 calls, 12,755,783 t-states own (0.24 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 660 calls, 231,598 t-states own (0.22 %) |
 | Called from | `ObjectStrips` |
 | Writes | `$F141` (`RowRecords`); `$F161` (`RowRecords`); `$F181` (`RowRecords`); `$F1A1` (`RowRecords`); `$F1C1` (`RowRecords`); `$F1E1` (`RowRecords`); 12 more ranges |
 
@@ -1147,8 +1222,9 @@ Called from the frame handler cycle `$AA96` (c2: 660 entries).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 660 calls, 1,571,099 t-states own (1.50 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,543 calls, 85,014,184 t-states own (1.62 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 584 calls, 1,250,268 t-states own (0.98 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,543 calls, 85,014,184 t-states own (1.62 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 660 calls, 1,571,099 t-states own (1.50 %) |
 | Called from | `PlayPass` |
 | Calls | `ClearStripCounts`, `BuildObjectStrips` |
 | Reads | `$7F82`-`$7F83` (`ObjectBeep`, `ObjectBeepMask`); `$F374`-`$F4D4` (`PlayerObject`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots`); `$F52C` (`LaserShots`); `$F558` (`LaserShots`); `$F584` (`LaserShots`); 3 more ranges |
@@ -1167,8 +1243,9 @@ Saves SP into BuildStripsDone. c2: 3327 entries, 46 per mille.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 3,327 calls, 4,845,376 t-states own (4.62 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 198,736 calls, 309,524,067 t-states own (5.90 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,732 calls, 2,741,037 t-states own (2.16 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 198,736 calls, 309,524,067 t-states own (5.90 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 3,327 calls, 4,845,376 t-states own (4.62 %) |
 | Called from | `ObjectStrips` |
 | Reads | `$90A5`-`$90A6` (`BuildObjectStrips`); `$F141`-`$F283` (`RowRecords`); `$F2A1`-`$F2A3` (`RowRecords`); `$F2C1`-`$F2C3` (`RowRecords`); `$F2E1`-`$F2E3` (`RowRecords`); `$F301`-`$F303` (`RowRecords`); 10 more ranges |
 | Writes | `$9093`-`$9094` (`BuildObjectStrips`); `$90A5`-`$90A6` (`BuildObjectStrips`); `$F141`-`$F2A3` (`RowRecords`); `$F2C1`-`$F2C3` (`RowRecords`); `$F2E1`-`$F2E3` (`RowRecords`); `$F301`-`$F303` (`RowRecords`); 11 more ranges |
@@ -1197,8 +1274,9 @@ Reads the records with SP (POP IX, POP HL); SP is kept in the operand at `$9144`
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 331 calls, 599,463 t-states own (0.57 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 18,277 calls, 41,740,213 t-states own (0.80 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 293 calls, 448,174 t-states own (0.35 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 18,277 calls, 41,740,213 t-states own (0.80 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 331 calls, 599,463 t-states own (0.57 %) |
 | Called from | `PlayPass` |
 | Reads | `$7EA9`-`$7EAC` (`ExplosionAnim`); `$7EC3`-`$7EC6` (`PodAnim`); `$7EDD`-`$7F4D` (`ShotDescriptor`, `SpriteCache`); `$F3A0`-`$F3A3` (`EnemyObjects`); `$F3CC`-`$F3CF` (`EnemyObjects`); `$F3F8`-`$F3FB` (`EnemyObjects`); 7 more ranges |
 | Writes | `$9144`-`$9145` (`MarkEnemyGrid`); `$FC34`-`$FCDE` (`HitGridX`); `$FD00`-`$FD96` (`HitGridY`, `ScriptStack`) |
@@ -1211,9 +1289,10 @@ Called once a frame from `$A9ED` (494 entries in c2, 2 % of play's time). For th
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 494 calls, 2,115,709 t-states own (2.02 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 27,404 calls, 117,375,966 t-states own (2.24 %) |
-| Called from | `PlayInterrupt` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 438 calls, 1,876,431 t-states own (1.48 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 27,404 calls, 117,375,966 t-states own (2.24 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 494 calls, 2,115,709 t-states own (2.02 %) |
+| Called from | `PlayInterrupt`, `l_A9EF` |
 | Reads | `$7E9C`-`$7E9F` (`ShipDescriptor`); `$7EB6`-`$7EB9` (`SightDescriptor`); `$7ED0`-`$7EE0` (`LaserDescriptor`, `ShotDescriptor`); `$F373`-`$F374` (`PlayerObject`); `$F4FF`-`$F500` (`LaserShots`); `$F52B`-`$F52C` (`LaserShots`); 5 more ranges |
 | Writes | `$80BB` (`LaserHitMask`); `$91C3`-`$91C4` (`TestHitGrid`); `$F379` (`PlayerObject`); `$F505` (`LaserShots`); `$F531` (`LaserShots`); `$F55D` (`LaserShots`); 4 more ranges |
 
@@ -1225,9 +1304,10 @@ Pushes 200 zero words down from `$FD90` (20 x 10 PUSH HL): the X bytes `$FC00-$F
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 496 calls, 1,250,924 t-states own (1.19 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 27,426 calls, 69,168,495 t-states own (1.32 %) |
-| Called from | `LevelSetUp`, `PlayInterrupt`, `RoundPlaySetup` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 446 calls, 1,124,812 t-states own (0.89 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 27,426 calls, 69,168,495 t-states own (1.32 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 496 calls, 1,250,924 t-states own (1.19 %) |
+| Called from | `LevelSetUp`, `PlayInterrupt`, `l_A9EF`, `RoundPlaySetup`, `TuneOrder` (tail) |
 | Writes | `$91DF`-`$91E0` (`ClearHitGrid`) |
 
 ### `JumpTable` (`$91E2`)
@@ -1238,8 +1318,9 @@ HL = the word at HL + 2A, JP (HL); DE is spoilt. The routine reached returns to 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 6,080 calls, 328,320 t-states own (0.31 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 392,407 calls, 21,189,978 t-states own (0.40 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 3,462 calls, 186,948 t-states own (0.15 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 392,407 calls, 21,189,978 t-states own (0.40 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 6,080 calls, 328,320 t-states own (0.31 %) |
 | Called from | `RunObjects`, `RunPath`, `PathOpExtended`, `EventAny`, `WaveScriptStep`, `ScriptTest`, `EndOfPlay` |
 | Calls | `PathOpExtended`, `PathOpAccelerate`, `PathOpSetLoop`, `PathOpSetInterval`, `PathOpBounce`, `PathOpHomePlayer`, `PathOpSetDirection`, `PathOpHomeTarget`, `PathOpScroll`, `PathOpRandomDirection`, `PathOpLoop`, `PathOpDriftMiddle`, `PathOpAimPlayer`, `PathOpMove`, `PathOpToCentre`, `PathOpLand`, `PathOpRandomSpeed`, `PathOpBounceArena`, `PathOpDive`, `PathOpMoveFragile`, `PathOpWait`, `PlayerHandler`, `LaserHandler`, `EnemyHandler`, `LockableHandler`, `BigEnemyHandler`, `ExplosionStep`, `PodStep`, `EnemyShotStep`, `PodIconJob`, `EffectJob`, `ScoreJob`, `SpriteBuildJob`, `CondNonZero`, `CmdNop`, `CmdScrollStop`, `CmdLevelEnd`, `CmdStore`, `CmdDecrement`, `CmdCheckpoint`, `CmdResetRecords`, `CmdEnemyEscape`, `CmdEnemiesLeft`, `PlayerDied`, `LevelDone` |
 | Reads | `$80FA`-`$8143` (`KindHandlers`, `PathOps`, `PathExtOps`); `$81C7`-`$81D6` (`EventHandlers`); `$81FF`-`$8228` (`ScriptCommands`, `ScriptConditions`); `$B111`-`$B114` (`EndHandlers`) |
@@ -1260,8 +1341,9 @@ Then for each object: TakeEnemySlot, count + 1, the template copied over the slo
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 9 calls, 52,177 t-states own (0.05 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 754 calls, 3,319,949 t-states own (0.06 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 7 calls, 35,327 t-states own (0.03 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 754 calls, 3,319,949 t-states own (0.06 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9 calls, 52,177 t-states own (0.05 %) |
 | Called from | `WaveScriptStep` |
 | Calls | `Random`, `TakeEnemySlot`, `GetSpriteCache` |
 | Reads | `$6800`-`$681B` (`PathStarts`); `$6926`-`$6B29` (`WaveIndex`, `WaveDefinitions`, `EnemyKinds`, `KindColours`); `$7EEE`-`$7F51` (`SpriteCache`); `$803E`-`$8081` (`WaveTemplate`, `WavePaths`, `FreeEnemySlots`, `WavesAllowed` and 2 more); `$80E9` (`WeaponRatingLevel`); `$F3A0` (`EnemyObjects`); 5 more ranges |
@@ -1276,8 +1358,9 @@ NC (Z) when `$8072`, the free enemy slots, is 0; else `$8072` - 1 and IY = the f
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 25 calls, 5,101 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,568 calls, 268,288 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 13 calls, 2,471 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,568 calls, 268,288 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 25 calls, 5,101 t-states own (0.00 %) |
 | Called from | `LaunchWave` |
 | Reads | `$8072` (`FreeEnemySlots`); `$F3A0` (`EnemyObjects`); `$F3CC` (`EnemyObjects`); `$F3F8` (`EnemyObjects`); `$F424` (`EnemyObjects`); `$F450` (`EnemyObjects`) |
 | Writes | `$8072` (`FreeEnemySlots`) |
@@ -1290,8 +1373,9 @@ A = the kind. From `$14` up: HL = `$7EE2` (record 0) with a load queued each tim
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 7 calls, 4,232 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 599 calls, 324,333 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 7 calls, 5,109 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 599 calls, 324,333 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 7 calls, 4,232 t-states own (0.00 %) |
 | Called from | `LaunchWave` |
 | Calls | `SpriteCacheRecord` (tail), `SpriteCacheRet` (tail), `QueueSpriteLoad` |
 | Reads | `$7EFF`-`$7F51` (`SpriteCache`); `$8087`-`$8094` (`SpriteCacheMask`, `SpriteCacheFree`) |
@@ -1303,8 +1387,9 @@ A = the kind. From `$14` up: HL = `$7EE2` (record 0) with a load queued each tim
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 7 calls, 273 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 593 calls, 33,255 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 7 calls, 321 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 593 calls, 33,255 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 7 calls, 273 t-states own (0.00 %) |
 | Called from | `GetSpriteCache` (tail) |
 | Calls | `SpriteCacheRet` |
 
@@ -1314,8 +1399,9 @@ A = the kind. From `$14` up: HL = `$7EE2` (record 0) with a load queued each tim
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 12 calls, 148 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 931 calls, 12,694 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 14 calls, 140 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 931 calls, 12,694 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 12 calls, 148 t-states own (0.00 %) |
 | Called from | `GetSpriteCache` (tail), `SpriteCacheRecord` |
 
 ### `EvictSpriteCache` (`$9414`)
@@ -1336,8 +1422,9 @@ The ring at `$8026` (8 entries of 3 bytes: the kind, the record address), index 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 5 calls, 1,132 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 344 calls, 75,199 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 7 calls, 1,435 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 344 calls, 75,199 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 5 calls, 1,132 t-states own (0.00 %) |
 | Called from | `GetSpriteCache` |
 | Reads | `$8025` (`DrawQueueWrite`); `$81C5` (`EventRequests`) |
 | Writes | `$8025`-`$803D` (`DrawQueueWrite`, `DrawQueue`); `$81C5` (`EventRequests`) |
@@ -1356,8 +1443,9 @@ After the loop the per-frame hit masks are cleared: `$80BB` (lasers and player),
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 659 calls, 5,942,216 t-states own (5.66 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,542 calls, 298,726,790 t-states own (5.70 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 585 calls, 7,171,168 t-states own (5.64 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 298,726,790 t-states own (5.70 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 5,942,216 t-states own (5.66 %) |
 | Called from | `PlayPass` |
 | Calls | `JumpTable` |
 | Reads | `$7F86`-`$7F87` (`SlotBeep`, `SlotBeepMask`); `$974C` (`LandingFlag`); `$F373` (`PlayerObject`); `$F39F`-`$F4D4` (`EnemyObjects`, `EnemyShots`); `$F4FF`-`$F500` (`LaserShots`); `$F52B`-`$F52C` (`LaserShots`); 5 more ranges |
@@ -1372,8 +1460,9 @@ Frames left +`$1B` - 1: 0 fetches the next command; a count that was already 0 (
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1,405 calls, 192,569 t-states own (0.18 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 98,490 calls, 13,190,721 t-states own (0.25 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 847 calls, 112,623 t-states own (0.09 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 98,490 calls, 13,190,721 t-states own (0.25 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,405 calls, 192,569 t-states own (0.18 %) |
 | Called from | `EnemyHandler`, `LockableHandler`, `BigEnemyHandler` |
 | Calls | `JumpTable` |
 | Reads | `$681C`-`$6918` (`PathCode`); `$F3B3`-`$F3B6` (`EnemyObjects`); `$F3DF`-`$F3E2` (`EnemyObjects`); `$F40B`-`$F40E` (`EnemyObjects`); `$F437`-`$F43A` (`EnemyObjects`); `$F463`-`$F466` (`EnemyObjects`) |
@@ -1387,8 +1476,9 @@ Frames left +`$1B` - 1: 0 fetches the next command; a count that was already 0 (
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 75,596 t-states own (0.07 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 4,847,339 t-states own (0.09 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 44,580 t-states own (0.04 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 4,847,339 t-states own (0.09 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 75,596 t-states own (0.07 %) |
 | Called from | `JumpTable` |
 | Calls | `JumpTable` |
 
@@ -1400,7 +1490,7 @@ Used by PathOpLoop for its jump target. Not run in c1/c2.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 180 calls, 24,279 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 180 calls, 24,279 t-states own (0.00 %) |
 | Called from | `PathOpLoop` |
 | Reads | `$6840`-`$6841` (`PathCode`); `$6875`-`$6876` (`PathCode`); `$6897`-`$68A5` (`PathCode`); `$68BA`-`$68BB` (`PathCode`); `$68E3`-`$68E4` (`PathCode`); `$F3B5`-`$F3B6` (`EnemyObjects`); 4 more ranges |
 | Writes | `$F3B5`-`$F3B6` (`EnemyObjects`); `$F3E1`-`$F3E2` (`EnemyObjects`); `$F40D`-`$F40E` (`EnemyObjects`); `$F439`-`$F43A` (`EnemyObjects`); `$F465`-`$F466` (`EnemyObjects`) |
@@ -1413,9 +1503,10 @@ C bit 3: Vx += Ax; bit 4: Vx -= Ax; bit 5: Vy += Ay; bit 6: Vy -= Ay. Then X += 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1,684 calls, 784,805 t-states own (0.75 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 67,062 calls, 31,351,459 t-states own (0.60 %) |
-| Called from | `JumpTable`, `PathOpBounce`, `PathOpDriftMiddle`, `PathOpToCentre`, `PlayerHandler` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 897 calls, 415,118 t-states own (0.33 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 67,062 calls, 31,351,459 t-states own (0.60 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,684 calls, 784,805 t-states own (0.75 %) |
+| Called from | `JumpTable`, `PathOpBounce`, `PathOpDriftMiddle`, `PathOpToCentre`, `PlayerHandler`, `RequestEffect` (tail) |
 | Reads | `$F36F`-`$F381` (`PlayerObject`); `$F39B`-`$F3AD` (`EnemyObjects`); `$F3C7`-`$F3D9` (`EnemyObjects`); `$F3F3`-`$F405` (`EnemyObjects`); `$F41F`-`$F431` (`EnemyObjects`); `$F44B`-`$F45D` (`EnemyObjects`) |
 | Writes | `$F36F`-`$F37F` (`PlayerObject`); `$F39B`-`$F3AB` (`EnemyObjects`); `$F3C7`-`$F3D7` (`EnemyObjects`); `$F3F3`-`$F403` (`EnemyObjects`); `$F41F`-`$F42F` (`EnemyObjects`); `$F44B`-`$F45B` (`EnemyObjects`) |
 
@@ -1427,7 +1518,7 @@ Carry: an instant command. Not run in c1/c2.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 8,604 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 8,604 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Writes | `$F3B7` (`EnemyObjects`); `$F3E3` (`EnemyObjects`); `$F40F` (`EnemyObjects`); `$F43B` (`EnemyObjects`); `$F467` (`EnemyObjects`) |
 
@@ -1439,7 +1530,7 @@ Carry. Not run in c1/c2.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 8,850 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 8,850 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Writes | `$F3BF`-`$F3C0` (`EnemyObjects`); `$F3EB`-`$F3EC` (`EnemyObjects`); `$F417`-`$F418` (`EnemyObjects`); `$F443`-`$F444` (`EnemyObjects`); `$F46F`-`$F470` (`EnemyObjects`) |
 
@@ -1451,7 +1542,7 @@ With scenery under the object (SceneryAt6): only X moves. Else Y moves with the 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 2,035,992 t-states own (0.04 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 2,035,992 t-states own (0.04 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpAccelerate`, `SceneryAt6` |
 | Reads | `$F39B`-`$F3AB` (`EnemyObjects`); `$F3C7`-`$F3D7` (`EnemyObjects`); `$F3F3`-`$F403` (`EnemyObjects`); `$F41F`-`$F42F` (`EnemyObjects`); `$F44B`-`$F45B` (`EnemyObjects`) |
@@ -1465,7 +1556,7 @@ The target +`$29`/+`$2A` = the player `$F36C`, the turn rate +`$2B` = P, then Pa
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1 call, 5,616 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1 call, 5,616 t-states own (0.00 %) |
 | Called from | `JumpTable`, `PathOpHomeTarget` (tail) |
 | Calls | `PathHomeSetRate` |
 | Writes | `$F3C1`-`$F3C2` (`EnemyObjects`); `$F3ED`-`$F3EE` (`EnemyObjects`); `$F419`-`$F41A` (`EnemyObjects`); `$F445`-`$F446` (`EnemyObjects`); `$F471`-`$F472` (`EnemyObjects`) |
@@ -1476,7 +1567,7 @@ The target +`$29`/+`$2A` = the player `$F36C`, the turn rate +`$2B` = P, then Pa
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 176 calls, 12,878 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 176 calls, 12,878 t-states own (0.00 %) |
 | Called from | `PathOpHomePlayer`, `PathOpHomeTarget` (tail) |
 | Calls | `PathOpHome` |
 | Writes | `$F3C3` (`EnemyObjects`); `$F3EF` (`EnemyObjects`); `$F41B` (`EnemyObjects`); `$F447` (`EnemyObjects`); `$F473` (`EnemyObjects`) |
@@ -1489,8 +1580,9 @@ The target +`$29`/+`$2A` = the player `$F36C`, the turn rate +`$2B` = P, then Pa
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 2,098 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 139,560 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 808 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 139,560 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 2,098 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpMove`, `SetVelocity` |
 | Reads | `$F3AF` (`EnemyObjects`); `$F3DB` (`EnemyObjects`); `$F407` (`EnemyObjects`); `$F433` (`EnemyObjects`); `$F45F` (`EnemyObjects`) |
@@ -1504,7 +1596,7 @@ The target record +`$29`: no longer active, or of kind 3, makes it PathOpHomePla
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 8,330 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 8,330 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpHomePlayer` (tail), `PathHomeSetRate` (tail) |
 | Reads | `$F373`-`$F374` (`PlayerObject`); `$F39F`-`$F3A0` (`EnemyObjects`); `$F3C1`-`$F3C2` (`EnemyObjects`); `$F445`-`$F446` (`EnemyObjects`) |
@@ -1517,8 +1609,9 @@ Bit 0 of `$7F6C` set (a frame the playfield scrolls one step): X - `$40` (a quar
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 172 calls, 35,916 t-states own (0.03 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 15,486 calls, 2,264,213 t-states own (0.04 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 46,092 t-states own (0.04 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 15,486 calls, 2,264,213 t-states own (0.04 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 172 calls, 35,916 t-states own (0.03 %) |
 | Called from | `JumpTable`, `PathOpDive`, `PodStep` |
 | Reads | `$7F6C` (`ScrollThisPass`); `$F39B`-`$F39C` (`EnemyObjects`); `$F3C7`-`$F3C8` (`EnemyObjects`); `$F3F3`-`$F3F4` (`EnemyObjects`); `$F41F`-`$F420` (`EnemyObjects`); `$F44B`-`$F44C` (`EnemyObjects`) |
 | Writes | `$F39B`-`$F39C` (`EnemyObjects`); `$F3C7`-`$F3C8` (`EnemyObjects`); `$F3F3`-`$F3F4` (`EnemyObjects`); `$F41F`-`$F420` (`EnemyObjects`); `$F44B`-`$F44C` (`EnemyObjects`) |
@@ -1541,7 +1634,7 @@ Vx = Vy = 0; the flags of XOR A: NC. Not run in c1/c2.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 3,640 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 3,640 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `Random`, `PathOpMove`, `SetVelocity` |
 | Reads | `$F3AF` (`EnemyObjects`); `$F3DB` (`EnemyObjects`); `$F407` (`EnemyObjects`); `$F433` (`EnemyObjects`); `$F45F` (`EnemyObjects`) |
@@ -1555,7 +1648,7 @@ Reads the target word; +`$1F` - 1: not 0 = the path pointer goes to the target; 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 17,995 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 17,995 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathReadWord` |
 | Reads | `$F3B7` (`EnemyObjects`); `$F3E3` (`EnemyObjects`); `$F40F` (`EnemyObjects`); `$F43B` (`EnemyObjects`); `$F467` (`EnemyObjects`) |
@@ -1569,10 +1662,11 @@ Above row 8: C = `$20` (Vy + Ay), else `$40` (Vy - Ay); PathOpAccelerate; NC. 10
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 91,094 t-states own (0.09 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 1,217,893 t-states own (0.02 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 31,106 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,217,893 t-states own (0.02 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 91,094 t-states own (0.09 %) |
 | Called from | `JumpTable` |
-| Calls | `PathOpAccelerate` |
+| Calls | `PathOpAccelerate`, `RequestEffect` |
 | Reads | `$F39E` (`EnemyObjects`); `$F3CA` (`EnemyObjects`); `$F3F6` (`EnemyObjects`); `$F422` (`EnemyObjects`); `$F44E` (`EnemyObjects`) |
 
 ### `PathOpAimPlayer` (`$9699`)
@@ -1583,7 +1677,7 @@ Above row 8: C = `$20` (Vy + Ay), else `$40` (Vy - Ay); PathOpAccelerate; NC. 10
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 11,745 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 11,745 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `DirectionTo`, `SetVelocity` |
 | Reads | `$F3AF` (`EnemyObjects`); `$F3DB` (`EnemyObjects`); `$F407` (`EnemyObjects`); `$F433` (`EnemyObjects`); `$F45F` (`EnemyObjects`) |
@@ -1596,8 +1690,9 @@ NC. Also the move of SetDirection, RandomDirection, PathOpHome and MoveFragile. 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 38 calls, 10,110 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 12,011 calls, 9,459,489 t-states own (0.18 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 calls, 2,112 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 12,011 calls, 9,459,489 t-states own (0.18 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 38 calls, 10,110 t-states own (0.01 %) |
 | Called from | `JumpTable`, `PathOpSetDirection`, `PathOpRandomDirection`, `PathOpHome`, `PathOpMoveFragile` |
 | Reads | `$F39B`-`$F3AB` (`EnemyObjects`); `$F3C7`-`$F3D7` (`EnemyObjects`); `$F3F3`-`$F403` (`EnemyObjects`); `$F41F`-`$F42F` (`EnemyObjects`); `$F44B`-`$F45B` (`EnemyObjects`); `$F477`-`$F487` (`EnemyShots`); 2 more ranges |
 | Writes | `$F39B`-`$F39E` (`EnemyObjects`); `$F3C7`-`$F3CA` (`EnemyObjects`); `$F3F3`-`$F3F6` (`EnemyObjects`); `$F41F`-`$F422` (`EnemyObjects`); `$F44B`-`$F44E` (`EnemyObjects`); `$F477`-`$F47A` (`EnemyShots`); 2 more ranges |
@@ -1620,8 +1715,8 @@ Every +`$28` frames (+`$27` counts down): the direction to the target (+`$29`/+`
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 18 calls, 1,327 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 10,266 calls, 943,249 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 10,266 calls, 943,249 t-states own (0.02 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 18 calls, 1,327 t-states own (0.00 %) |
 | Called from | `PathHomeSetRate`, `EnemyShotStep` |
 | Calls | `PathOpMove`, `DirectionTo`, `SetVelocity` |
 | Reads | `$F3AE`-`$F3C3` (`EnemyObjects`); `$F3DA`-`$F3EF` (`EnemyObjects`); `$F406`-`$F41B` (`EnemyObjects`); `$F432`-`$F447` (`EnemyObjects`); `$F45E`-`$F473` (`EnemyObjects`); `$F48A`-`$F49F` (`EnemyShots`); 2 more ranges |
@@ -1635,7 +1730,7 @@ X below 32: C = 8 (Vx + Ax), else `$10`; Y below 8: `$20`, else `$40`; PathOpAcc
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 1,115,506 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,115,506 t-states own (0.02 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpAccelerate` |
 | Reads | `$F39C`-`$F39E` (`EnemyObjects`); `$F3C8`-`$F3CA` (`EnemyObjects`); `$F3F4`-`$F3F6` (`EnemyObjects`); `$F420`-`$F422` (`EnemyObjects`); `$F44C`-`$F44E` (`EnemyObjects`) |
@@ -1648,8 +1743,9 @@ One object a frame (bit 7 of LandingFlag). After 8 failed tries in a row, or whe
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 598 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 792,952 t-states own (0.02 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 2,990 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 792,952 t-states own (0.02 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 598 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `SceneryAt6`, `SceneryCell` |
 | Reads | `$974C` (`LandingFlag`); `$B800`-`$BFFF` (`MapRingSpace`, `TileSource`); `$F39E` (`EnemyObjects`); `$F3CA` (`EnemyObjects`); `$F3F6` (`EnemyObjects`); `$F422` (`EnemyObjects`); 1 more ranges |
@@ -1663,7 +1759,7 @@ A random byte below `$55` keeps it, below `$AA` + 1, else - 1; kept in 1-7 (0 re
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 28,295 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 28,295 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `Random` |
 | Reads | `$F3AF` (`EnemyObjects`); `$F3DB` (`EnemyObjects`); `$F407` (`EnemyObjects`); `$F433` (`EnemyObjects`); `$F45F` (`EnemyObjects`) |
@@ -1677,7 +1773,7 @@ X + Vx: outside columns 16-45 or on scenery: X back, Vx = -Vx. Y + Vy: Y 17 or m
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 9,772,567 t-states own (0.19 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 9,772,567 t-states own (0.19 %) |
 | Called from | `JumpTable` |
 | Calls | `SceneryAt6` |
 | Reads | `$F39B`-`$F3AB` (`EnemyObjects`); `$F3C7`-`$F3D7` (`EnemyObjects`); `$F3F3`-`$F403` (`EnemyObjects`); `$F41F`-`$F42F` (`EnemyObjects`); `$F44B`-`$F45B` (`EnemyObjects`) |
@@ -1691,7 +1787,7 @@ PathOpScroll, then, once its column is no more than the player's plus half the r
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 687,779 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 687,779 t-states own (0.01 %) |
 | Called from | `JumpTable` |
 | Calls | `Random`, `PathOpScroll`, `SelfDestruct`, `SceneryAt6` |
 | Reads | `$F370`-`$F372` (`PlayerObject`); `$F39C`-`$F39E` (`EnemyObjects`); `$F3C8`-`$F3CA` (`EnemyObjects`); `$F3F4`-`$F3F6` (`EnemyObjects`); `$F420`-`$F422` (`EnemyObjects`); `$F44C`-`$F44E` (`EnemyObjects`) |
@@ -1705,7 +1801,7 @@ PathOpMove; Y 17 or more, X outside 16-46, or scenery under it: SelfDestruct. NC
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 44,545 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 44,545 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpMove`, `SelfDestruct`, `SceneryAt6` |
 | Reads | `$F39C`-`$F39E` (`EnemyObjects`); `$F3C8`-`$F3CA` (`EnemyObjects`); `$F3F4`-`$F3F6` (`EnemyObjects`); `$F420`-`$F422` (`EnemyObjects`); `$F44C`-`$F44E` (`EnemyObjects`) |
@@ -1718,7 +1814,7 @@ NC. Not run in c1/c2.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 9,842 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 9,842 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 
 ### `SelfDestruct` (`$9892`)
@@ -1729,7 +1825,7 @@ NC. Not run in c1/c2.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36 calls, 2,656 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36 calls, 2,656 t-states own (0.00 %) |
 | Called from | `PathOpDive`, `PathOpMoveFragile` |
 | Reads | `$80BB` (`LaserHitMask`); `$F3BC` (`EnemyObjects`); `$F3E8` (`EnemyObjects`); `$F414` (`EnemyObjects`); `$F440` (`EnemyObjects`); `$F46C` (`EnemyObjects`) |
 | Writes | `$80BB` (`LaserHitMask`); `$F3A5` (`EnemyObjects`); `$F3D1` (`EnemyObjects`); `$F3FD` (`EnemyObjects`); `$F429` (`EnemyObjects`); `$F455` (`EnemyObjects`) |
@@ -1742,7 +1838,7 @@ The rounded column and row distances; their signs pick the octant, the ratio of 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,431 calls, 658,847 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,431 calls, 658,847 t-states own (0.01 %) |
 | Called from | `PathOpAimPlayer`, `PathOpHome`, `EnemyFire` |
 | Reads | `$F36F`-`$F372` (`PlayerObject`); `$F39B`-`$F39E` (`EnemyObjects`); `$F3C8`-`$F3CA` (`EnemyObjects`); `$F3F4`-`$F3F6` (`EnemyObjects`); `$F420`-`$F422` (`EnemyObjects`); `$F44C`-`$F44E` (`EnemyObjects`); 3 more ranges |
 
@@ -1754,8 +1850,9 @@ Vx = B x sine[A] and Vy = B x sine[(A - 16) & `$3F`] with the 64-entry signed si
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 21 calls, 8,399 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,720 calls, 1,193,533 t-states own (0.02 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 calls, 3,144 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,720 calls, 1,193,533 t-states own (0.02 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 21 calls, 8,399 t-states own (0.01 %) |
 | Called from | `PathOpSetDirection`, `PathOpRandomDirection`, `PathOpAimPlayer`, `PathOpHome`, `EnemyFire` |
 | Reads | `$8144`-`$8183` (`SineTable`) |
 | Writes | `$F3A6`-`$F3AB` (`EnemyObjects`); `$F3D2`-`$F3D7` (`EnemyObjects`); `$F3FE`-`$F403` (`EnemyObjects`); `$F42A`-`$F42F` (`EnemyObjects`); `$F456`-`$F45B` (`EnemyObjects`); `$F482`-`$F487` (`EnemyShots`); 2 more ranges |
@@ -1772,8 +1869,9 @@ Its collision bit (+`$24`) is cleared from the masks `$80BD` and `$80BE` (the ha
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 26 calls, 3,401 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,212 calls, 157,702 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 20 calls, 2,580 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,212 calls, 157,702 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 26 calls, 3,401 t-states own (0.00 %) |
 | Called from | `EnemyHandler`, `LockableHandler`, `ExplosionStep` (tail), `PodStep`, `ExplosionToPod` (tail), `CmdEnemyEscape` |
 | Reads | `$8072` (`FreeEnemySlots`); `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F3A0` (`EnemyObjects`); `$F3BC`-`$F3CC` (`EnemyObjects`); `$F3E8`-`$F3F8` (`EnemyObjects`); `$F414`-`$F424` (`EnemyObjects`); 2 more ranges |
 | Writes | `$8072` (`FreeEnemySlots`); `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F3A0` (`EnemyObjects`); `$F3CC` (`EnemyObjects`); `$F3F8` (`EnemyObjects`); `$F424` (`EnemyObjects`); 1 more ranges |
@@ -1786,8 +1884,8 @@ Used by `$A263` (the kind 5 handler); `$8074` is set at `$8D0D` and read at `$A1
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 59 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 514 calls, 28,045 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 514 calls, 28,045 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 59 t-states own (0.00 %) |
 | Called from | `EnemyShotStep` |
 | Reads | `$8074` (`EnemyShotsLeft`); `$F47C` (`EnemyShots`); `$F4A8` (`EnemyShots`); `$F4D4` (`EnemyShots`) |
 | Writes | `$8074` (`EnemyShotsLeft`); `$F47C` (`EnemyShots`); `$F4A8` (`EnemyShots`); `$F4D4` (`EnemyShots`) |
@@ -1800,8 +1898,8 @@ C = `$FF`: the wave record gets bit 7 (an escape), so the wave pays no bonus. 7 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 7 calls, 133 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 408 calls, 7,752 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 408 calls, 7,752 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 7 calls, 133 t-states own (0.00 %) |
 | Called from | `EnemyHandler`, `LockableHandler`, `CmdEnemyEscape` |
 | Calls | `EnemyGone` (tail) |
 
@@ -1813,8 +1911,8 @@ C = `$FF`: the wave record gets bit 7 (an escape), so the wave pays no bonus. 7 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 9 calls, 234 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 789 calls, 20,514 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 789 calls, 20,514 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9 calls, 234 t-states own (0.00 %) |
 | Called from | `EnemyHandler`, `LockableHandler`, `BigEnemyHandler` |
 | Calls | `EnemyGone` |
 | Writes | `$F3BE` (`EnemyObjects`); `$F3EA` (`EnemyObjects`); `$F416` (`EnemyObjects`); `$F442` (`EnemyObjects`); `$F46E` (`EnemyObjects`) |
@@ -1825,8 +1923,8 @@ C = `$FF`: the wave record gets bit 7 (an escape), so the wave pays no bonus. 7 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 16 calls, 4,590 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,197 calls, 369,981 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,197 calls, 369,981 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 16 calls, 4,590 t-states own (0.00 %) |
 | Called from | `EnemyEscaped` (tail), `EnemyKilled` |
 | Calls | `AddScore` |
 | Reads | `$7ECA` (`LaserDescriptor`); `$7EEF`-`$7F51` (`SpriteCache`); `$8073`-`$8087` (`WavesAllowed`, `EnemyShotsLeft`, `WaveRecords`, `SpriteCacheMask`); `$F398`-`$F399` (`EnemyObjects`); `$F3B2`-`$F3C5` (`EnemyObjects`); `$F3DE`-`$F3F1` (`EnemyObjects`); 3 more ranges |
@@ -1840,8 +1938,8 @@ Used by PlasmaHandler, SeekerHandler and `$A263`. 18 entries in c2.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 18 calls, 918 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 10,226 calls, 469,322 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 10,226 calls, 469,322 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 18 calls, 918 t-states own (0.00 %) |
 | Called from | `EnemyShotStep` |
 | Calls | `SceneryCell` |
 | Reads | `$B706`-`$B75A` (`data_B700`, `MapRingSpace`); `$B76F`-`$B77C` (`MapRingSpace`); `$B799`-`$BF02` (`MapRingSpace`, `TileSource`); `$BF18`-`$BF23` (`TileSource`); `$BF3A`-`$BF9F` (`TileSource`); `$BFB9`-`$BFE5` (`TileSource`) |
@@ -1854,8 +1952,9 @@ Used by LaserHandler (869 entries in c2).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 869 calls, 52,135 t-states own (0.05 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 38,542 calls, 2,219,265 t-states own (0.04 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 44 calls, 2,464 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 38,542 calls, 2,219,265 t-states own (0.04 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 869 calls, 52,135 t-states own (0.05 %) |
 | Called from | `LaserHandler` |
 | Calls | `SceneryCell` |
 | Reads | `$B700`-`$B7CD` (`data_B700`, `MapRingSpace`); `$B7E0`-`$BFFF` (`MapRingSpace`, `TileSource`) |
@@ -1868,8 +1967,8 @@ Used by `$A2D6`. 2 entries in c2.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 258 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 239 calls, 31,128 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 239 calls, 31,128 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 258 t-states own (0.00 %) |
 | Called from | `ExplosionToPod` |
 | Calls | `SceneryCell` |
 | Reads | `$B7A3`-`$B7A4` (`MapRingSpace`); `$B823`-`$B824` (`MapRingSpace`); `$B842`-`$B87C` (`MapRingSpace`); `$B8D5`-`$B8DB` (`MapRingSpace`); `$B8F3`-`$B8F4` (`MapRingSpace`); `$B90E`-`$BEFF` (`MapRingSpace`, `TileSource`); 7 more ranges |
@@ -1882,11 +1981,12 @@ The ship's and most movers' test: rows Y, Y + 1, Y + 2 of columns X and X + 1 (a
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1,227 calls, 92,222 t-states own (0.09 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 134,520 calls, 10,086,924 t-states own (0.19 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 991 calls, 199,191 t-states own (0.16 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 134,520 calls, 10,086,924 t-states own (0.19 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,227 calls, 92,222 t-states own (0.09 %) |
 | Called from | `PathOpBounce`, `PathOpLand`, `PathOpBounceArena`, `PathOpDive`, `PathOpMoveFragile`, `PlayerHandler` |
 | Calls | `SceneryAt6Row2`, `SceneryCell` |
-| Reads | `$B700`-`$BF10` (`data_B700`, `MapRingSpace`, `TileSource`); `$BF26`-`$BF27` (`TileSource`); `$BF50`-`$BFB7` (`TileSource`); `$BFCE`-`$BFD6` (`TileSource`); `$BFEB`-`$BFEC` (`TileSource`); `$F372` (`PlayerObject`); 5 more ranges |
+| Reads | `$B700`-`$BF11` (`data_B700`, `MapRingSpace`, `TileSource`); `$BF26`-`$BF27` (`TileSource`); `$BF50`-`$BFB7` (`TileSource`); `$BFCE`-`$BFD6` (`TileSource`); `$BFEB`-`$BFEC` (`TileSource`); `$F372` (`PlayerObject`); 5 more ranges |
 
 ### `SceneryAt6Row2` (`$99E4`)
 
@@ -1894,8 +1994,8 @@ The ship's and most movers' test: rows Y, Y + 1, Y + 2 of columns X and X + 1 (a
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1,227 calls, 157,374 t-states own (0.15 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 134,520 calls, 17,253,141 t-states own (0.33 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 134,520 calls, 17,253,141 t-states own (0.33 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,227 calls, 157,374 t-states own (0.15 %) |
 | Called from | `SceneryAt6` |
 | Reads | `$B700`-`$C010` (`data_B700`, `MapRingSpace`, `TileSource`); `$C026`-`$C027` (`TileSource`); `$C050`-`$C0B7` (`TileSource`); `$C0CE`-`$C0D6` (`TileSource`); `$C0EB`-`$C0EC` (`TileSource`); `$F372` (`PlayerObject`); 5 more ranges |
 
@@ -1907,8 +2007,9 @@ HL = (`$8022`) + Y x 128 + X with the integer parts +`$06` and +`$04`. 2118 entr
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2,118 calls, 222,913 t-states own (0.21 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 187,305 calls, 19,707,390 t-states own (0.38 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,045 calls, 108,680 t-states own (0.09 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 187,305 calls, 19,707,390 t-states own (0.38 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2,118 calls, 222,913 t-states own (0.21 %) |
 | Called from | `PathOpLand`, `SceneryAt1`, `SceneryAt2`, `SceneryAt4`, `SceneryAt6` |
 | Reads | `$8022`-`$8023` (`ScrollMap`); `$F370`-`$F3F6` (`PlayerObject`, `EnemyObjects`); `$F420`-`$F422` (`EnemyObjects`); `$F44C`-`$F44E` (`EnemyObjects`); `$F478`-`$F47A` (`EnemyShots`); `$F4A4`-`$F4A6` (`EnemyShots`); 3 more ranges |
 
@@ -1920,8 +2021,9 @@ A negative row: Y = 0.0; 16 or more: Y = 15 + `$E0`/256. 2028 entries in c2.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2,028 calls, 107,254 t-states own (0.10 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 135,057 calls, 7,036,872 t-states own (0.13 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,360 calls, 69,444 t-states own (0.05 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 135,057 calls, 7,036,872 t-states own (0.13 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2,028 calls, 107,254 t-states own (0.10 %) |
 | Called from | `PlayerHandler`, `ScatterDebris`, `EnemyHandler`, `LockableHandler`, `BigEnemyHandler` |
 | Reads | `$F372` (`PlayerObject`); `$F39E` (`EnemyObjects`); `$F3CA` (`EnemyObjects`); `$F3F6` (`EnemyObjects`); `$F422` (`EnemyObjects`); `$F44E` (`EnemyObjects`) |
 | Writes | `$F371`-`$F372` (`PlayerObject`); `$F39D`-`$F39E` (`EnemyObjects`); `$F3C9`-`$F3CA` (`EnemyObjects`); `$F3F5`-`$F3F6` (`EnemyObjects`); `$F421`-`$F422` (`EnemyObjects`); `$F44D`-`$F44E` (`EnemyObjects`) |
@@ -1934,8 +2036,9 @@ Below 16: X = 16.0; 46 or more: X = 45 + `$E0`/256. Only the player uses it (613
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 613 calls, 33,887 t-states own (0.03 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,542 calls, 2,000,737 t-states own (0.04 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 493 calls, 29,502 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 2,000,737 t-states own (0.04 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 613 calls, 33,887 t-states own (0.03 %) |
 | Called from | `PlayerHandler` |
 | Reads | `$F370` (`PlayerObject`) |
 | Writes | `$F36F`-`$F370` (`PlayerObject`) |
@@ -1948,7 +2051,7 @@ The flash of the missiles, the plasma and the hit big enemy. Not run in c1/c2.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 291 calls, 21,718 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 291 calls, 21,718 t-states own (0.00 %) |
 | Called from | `BigEnemyHandler` |
 | Reads | `$F3BD` (`EnemyObjects`) |
 | Writes | `$F3BD` (`EnemyObjects`) |
@@ -1967,11 +2070,12 @@ The colour +`$25`: `$70`, or the flashing `$7F79` x 8 + `$40` while fire has bee
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 613,496 t-states own (0.58 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 32,438,068 t-states own (0.62 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 503,383 t-states own (0.40 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 32,438,068 t-states own (0.62 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 613,496 t-states own (0.58 %) |
 | Called from | `JumpTable` |
-| Calls | `PathOpAccelerate`, `SceneryAt6`, `ClampRow`, `ClampColumn`, `ScatterDebris`, `FuelOut`, `FireLaser`, `ReadControls` |
-| Reads | `$7F63` (`PassBit`); `$7F7B` (`DeathTimer`); `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$80BD`-`$80BF` (`HarmlessMaskA`, `HarmlessMaskB`, `ShipHistoryIndex`); `$80E6` (`Fuel`); `$8184`-`$8186` (`FireHeld`, `FireChanged`, `ControlBits`); 9 more ranges |
+| Calls | `PathOpAccelerate`, `SceneryAt6`, `ClampRow`, `ClampColumn`, `ScatterDebris`, `FuelOut`, `FireLaser`, `ReadControls`, `TunePatternA` (tail) |
+| Reads | `$7F63` (`PassBit`); `$7F79`-`$7F7B` (`SpinnerColour`, `SpinnerColourStep`, `DeathTimer`); `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$7FD4`-`$7FD7` (`Player2`); `$80BD`-`$80BF` (`HarmlessMaskA`, `HarmlessMaskB`, `ShipHistoryIndex`); `$80E6` (`Fuel`); 10 more ranges |
 | Writes | `$7F7B`-`$7F7C` (`DeathTimer`, `EndPending`); `$80BF`-`$80E6` (`ShipHistoryIndex`, `ShipHistory`, `LockTarget`, `LockMask` and 4 more); `$F371`-`$F4D4` (`PlayerObject`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots`); `$F52C` (`LaserShots`); `$F558` (`LaserShots`); 4 more ranges |
 
 ### `KillPlayer` (`$9B5F`)
@@ -1982,7 +2086,11 @@ The colour +`$25`: `$70`, or the flashing `$7F79` x 8 + `$40` while fire has bee
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 2,772 t-states own (0.00 %) |
+| Called from | `TunePatternA` (tail) |
+| Calls | `ScatterDebris` |
+| Reads | `$F374`-`$F4D4` (`PlayerObject`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots`); `$F52C` (`LaserShots`); `$F558` (`LaserShots`); `$F584` (`LaserShots`); `$F5B0` (`PlasmaBall2`); 2 more ranges |
+| Writes | `$7F7B` (`DeathTimer`); `$F374`-`$F4D4` (`PlayerObject`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots`); `$F52C` (`LaserShots`); `$F558` (`LaserShots`); `$F584` (`LaserShots`); 3 more ranges |
 
 ### `WeaponRating` (`$9B75`)
 
@@ -1992,10 +2100,11 @@ L = laser level + side weapon: `$80E7` = `$FF`, `$30` from 4; `$80E9` = 0, 8 fro
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 10 calls, 2,508 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 914 calls, 229,050 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 952 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 914 calls, 229,050 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 10 calls, 2,508 t-states own (0.00 %) |
 | Called from | `ScoreJob`, `ScoreJobRating`, `RoundPlaySetup` |
-| Reads | `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$81DE` (`ScriptState`) |
+| Reads | `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$7FD4`-`$7FD7` (`Player2`); `$81DE` (`ScriptState`) |
 | Writes | `$80E7`-`$80E9` (`WeaponRatingMask`, `WeaponRatingValue`, `WeaponRatingLevel`) |
 
 ### `ScatterDebris` (`$9BAB`)
@@ -2006,10 +2115,11 @@ Each at a random column X - 1 + 0-3 and a random row near Y, active, +`$26` = 0,
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 3,767 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 5 calls, 8,971 t-states own (0.00 %) |
-| Called from | `PlayerHandler`, `BigEnemyHandler` |
-| Calls | `Random`, `ClampRow`, `StartExplosion` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 7,080 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5 calls, 8,971 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 3,767 t-states own (0.00 %) |
+| Called from | `PlayerHandler`, `KillPlayer`, `BigEnemyHandler` |
+| Calls | `Random`, `ClampRow`, `StartExplosion`, `StartExplosionQuiet` |
 | Reads | `$F370`-`$F372` (`PlayerObject`); `$F39C`-`$F3A0` (`EnemyObjects`); `$F3CC` (`EnemyObjects`); `$F3F8` (`EnemyObjects`); `$F424` (`EnemyObjects`); `$F450` (`EnemyObjects`) |
 | Writes | `$8072` (`FreeEnemySlots`); `$F39C`-`$F3A0` (`EnemyObjects`); `$F3BE`-`$F3CC` (`EnemyObjects`); `$F3EA`-`$F3F8` (`EnemyObjects`); `$F416`-`$F424` (`EnemyObjects`); `$F442`-`$F450` (`EnemyObjects`); 1 more ranges |
 
@@ -2021,11 +2131,12 @@ The laser level +`$0A` of IX does not go below 0, the speed +`$0B` not below `$4
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 97 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 33 calls, 4,042 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 434 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 33 calls, 4,042 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 97 t-states own (0.00 %) |
 | Called from | `PlayerHandler`, `PlayerDied` |
-| Reads | `$7FA6`-`$7FA7` (`Player1`) |
-| Writes | `$7FA6` (`Player1`); `$80E6` (`Fuel`) |
+| Reads | `$7FA6`-`$7FA7` (`Player1`); `$7FD6`-`$7FD7` (`Player2`) |
+| Writes | `$7FA6` (`Player1`); `$7FD6` (`Player2`); `$80E6` (`Fuel`) |
 
 ### `FireLaser` (`$9C1D`)
 
@@ -2035,10 +2146,11 @@ The laser level +`$0A` of IX does not go below 0, the speed +`$0B` not below `$4
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 564 calls, 74,369 t-states own (0.07 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,480 calls, 6,935,239 t-states own (0.13 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 3 calls, 1,081 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,480 calls, 6,935,239 t-states own (0.13 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 564 calls, 74,369 t-states own (0.07 %) |
 | Called from | `PlayerHandler` |
-| Calls | `RequestEffect` |
+| Calls | `RequestEffect`, `TunePatternB` |
 | Reads | `$7F77` (`PanelBurst`); `$7F99`-`$7FA6` (`PlayerRecord`, `Players`, `Player1`); `$80BA` (`LaserShotsFree`); `$F36F`-`$F372` (`PlayerObject`); `$F392` (`PlayerObject`); `$F500` (`LaserShots`); 1 more ranges |
 | Writes | `$7F77` (`PanelBurst`); `$80BA` (`LaserShotsFree`); `$F392` (`PlayerObject`); `$F4FB`-`$F500` (`LaserShots`); `$F527`-`$F52C` (`LaserShots`) |
 
@@ -2174,8 +2286,9 @@ Gone on an enemy in its overlap mask (the harmless enemies of `$80BD`/`$80BE` an
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 201,636 t-states own (0.19 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 8,689,155 t-states own (0.17 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 10,034 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 8,689,155 t-states own (0.17 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 201,636 t-states own (0.19 %) |
 | Called from | `JumpTable` |
 | Calls | `SceneryAt2` |
 | Reads | `$80BA`-`$80BE` (`LaserShotsFree`, `LaserHitMask`, `ColourCycle`, `HarmlessMaskA` and 1 more); `$F4FB`-`$F505` (`LaserShots`); `$F527`-`$F531` (`LaserShots`) |
@@ -2223,8 +2336,9 @@ Flashes. A target (+`$29`) that is active and of kind 2: PathOpHome on it, its m
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 305,329 t-states own (0.29 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 18,787,283 t-states own (0.36 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 173,635 t-states own (0.14 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 18,787,283 t-states own (0.36 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 305,329 t-states own (0.29 %) |
 | Called from | `JumpTable` |
 | Calls | `RunPath`, `FreeEnemySlot`, `EnemyEscaped`, `EnemyKilled`, `ClampRow`, `EnemyFire`, `StartExplosion`, `AddScore` |
 | Reads | `$80BB` (`LaserHitMask`); `$80E5` (`PlasmaHitMask`); `$F39C`-`$F3A5` (`EnemyObjects`); `$F3BC`-`$F3D1` (`EnemyObjects`); `$F3E8`-`$F3FD` (`EnemyObjects`); `$F414`-`$F429` (`EnemyObjects`); 2 more ranges |
@@ -2238,7 +2352,7 @@ As EnemyHandler without the plasma kill; with no lock (`$80E2` = 0) and its bit 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 947,997 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 947,997 t-states own (0.02 %) |
 | Called from | `JumpTable` |
 | Calls | `RunPath`, `FreeEnemySlot`, `EnemyEscaped`, `EnemyKilled`, `ClampRow`, `EnemyFire`, `StartExplosion`, `AddScore` |
 | Reads | `$80BB` (`LaserHitMask`); `$80E2`-`$80E4` (`LockMask`, `MissileHitMask`, `SightMask`); `$F39C`-`$F3A5` (`EnemyObjects`); `$F3BC`-`$F3D1` (`EnemyObjects`); `$F3E8`-`$F3FD` (`EnemyObjects`); `$F414`-`$F429` (`EnemyObjects`); 2 more ranges |
@@ -2252,7 +2366,7 @@ Columns 7-55. Its row mask +`$0B` = `$FE` shifted left once per row below row 11
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 1,504,025 t-states own (0.03 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,504,025 t-states own (0.03 %) |
 | Called from | `JumpTable` |
 | Calls | `RunPath`, `EnemyKilled`, `ClampRow`, `CycleColour`, `ScatterDebris`, `EnemyFire`, `AddScore` |
 | Reads | `$80BB` (`LaserHitMask`); `$80E2`-`$80E4` (`LockMask`, `MissileHitMask`, `SightMask`); `$F39C`-`$F3A5` (`EnemyObjects`); `$F3BC` (`EnemyObjects`) |
@@ -2276,8 +2390,9 @@ Callers: the enemy movers at `$9FA2`, `$9FEB` and `$A06E` (EnemyHandler). Eviden
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1,405 calls, 215,050 t-states own (0.21 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 98,490 calls, 10,653,700 t-states own (0.20 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 847 calls, 126,382 t-states own (0.10 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 98,490 calls, 10,653,700 t-states own (0.20 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,405 calls, 215,050 t-states own (0.21 %) |
 | Called from | `EnemyHandler`, `LockableHandler`, `BigEnemyHandler` |
 | Calls | `Random`, `DirectionTo`, `SetVelocity`, `RequestEffect` |
 | Reads | `$7F63`-`$7F71` (`PassBit`, `PassDepth`, `PassPhase`, `ChainStep` and 8 more); `$8074` (`EnemyShotsLeft`); `$80E7`-`$80E8` (`WeaponRatingMask`, `WeaponRatingValue`); `$F39B`-`$F48B` (`EnemyObjects`, `EnemyShots`); `$F4A8`-`$F4B7` (`EnemyShots`); `$F4D4`-`$F4E3` (`EnemyShots`) |
@@ -2293,8 +2408,9 @@ After frame 8 the explosion ends: removed (RemoveObject `$992A`) when +`$26` is 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 32,812 t-states own (0.03 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 1,319,791 t-states own (0.03 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 37,368 t-states own (0.03 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,319,791 t-states own (0.03 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 32,812 t-states own (0.03 %) |
 | Called from | `JumpTable` |
 | Calls | `FreeEnemySlot` (tail), `ExplosionToPod` (tail) |
 | Reads | `$7F62` (`PassCount`); `$F39A` (`EnemyObjects`); `$F3BD`-`$F3C6` (`EnemyObjects`); `$F3E9`-`$F3F2` (`EnemyObjects`); `$F415`-`$F41E` (`EnemyObjects`); `$F441`-`$F44A` (`EnemyObjects`); 1 more ranges |
@@ -2324,8 +2440,8 @@ Not collected: the pod moves with the scenery (ScrollObject `$9640`), its colour
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 22,659 t-states own (0.02 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 1,456,894 t-states own (0.03 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,456,894 t-states own (0.03 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 22,659 t-states own (0.02 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpScroll`, `FreeEnemySlot`, `AddScore`, `RequestEffect` |
 | Reads | `$7F99`-`$7FA3` (`PlayerRecord`, `Players`, `Player1`); `$80BC` (`ColourCycle`); `$80E6` (`Fuel`); `$8184` (`FireHeld`); `$81C5` (`EventRequests`); `$F379` (`PlayerObject`); 6 more ranges |
@@ -2339,8 +2455,8 @@ IY: the shot. It ends (FreeShot `$9941`) when its lifetime +`$26` runs out, when
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 4,139 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 2,238,080 t-states own (0.04 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 2,238,080 t-states own (0.04 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 4,139 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpHome`, `FreeObject`, `SceneryAt1` |
 | Reads | `$F379` (`PlayerObject`); `$F478`-`$F47A` (`EnemyShots`); `$F498`-`$F4A6` (`EnemyShots`); `$F4C4`-`$F4D2` (`EnemyShots`); `$F4F0`-`$F4F2` (`EnemyShots`) |
@@ -2356,8 +2472,8 @@ Callers: the hit handling at ScatterDebris and the enemy movers (EnemyHandler).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 19 calls, 6,600 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 809 calls, 275,451 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 809 calls, 275,451 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19 calls, 6,600 t-states own (0.01 %) |
 | Called from | `ScatterDebris`, `EnemyHandler`, `LockableHandler` |
 | Reads | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F3BC` (`EnemyObjects`); `$F3E8` (`EnemyObjects`); `$F414` (`EnemyObjects`); `$F440` (`EnemyObjects`); `$F46C` (`EnemyObjects`) |
 | Writes | `$7F80`-`$7F89` (`SoundPattern1`, `ObjectBeep`, `ObjectBeepMask`, `SoundPattern2` and 3 more); `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F398`-`$F3A3` (`EnemyObjects`); `$F3BD`-`$F3CF` (`EnemyObjects`); `$F3E9`-`$F3FB` (`EnemyObjects`); `$F415`-`$F427` (`EnemyObjects`); 2 more ranges |
@@ -2368,7 +2484,10 @@ Callers: the hit handling at ScatterDebris and the enemy movers (EnemyHandler).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 20 calls, 5,160 t-states own (0.00 %) |
+| Called from | `ScatterDebris` |
+| Reads | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F3BC` (`EnemyObjects`); `$F3E8` (`EnemyObjects`); `$F414` (`EnemyObjects`); `$F440` (`EnemyObjects`); `$F46C` (`EnemyObjects`) |
+| Writes | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F398`-`$F3A3` (`EnemyObjects`); `$F3BD`-`$F3CF` (`EnemyObjects`); `$F3E9`-`$F3FB` (`EnemyObjects`); `$F415`-`$F427` (`EnemyObjects`); `$F441`-`$F453` (`EnemyObjects`); 1 more ranges |
 
 ### `ExplosionToPod` (`$A2D6`)
 
@@ -2380,8 +2499,8 @@ Used by ExplosionStep.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 772 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 239 calls, 85,737 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 239 calls, 85,737 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 772 t-states own (0.00 %) |
 | Called from | `ExplosionStep` (tail) |
 | Calls | `FreeEnemySlot` (tail), `SceneryAt4`, `RequestEffect` |
 | Reads | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F39D`-`$F39E` (`EnemyObjects`); `$F3BC`-`$F3CA` (`EnemyObjects`); `$F3E8`-`$F3F6` (`EnemyObjects`); `$F414`-`$F422` (`EnemyObjects`); `$F440`-`$F44E` (`EnemyObjects`); 1 more ranges |
@@ -2403,12 +2522,13 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 122 calls, 84,490 t-states own (0.08 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 7,774 calls, 110,266 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 200 calls, 120,016 t-states own (0.09 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,774 calls, 110,266 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 122 calls, 84,490 t-states own (0.08 %) |
 | Called from | `PrintString`, `PrintBcd`, `PrintBcdLeading`, `PrintBcdOut` |
 | Calls | `PrintCharSave`, `PrintSetColumn`, `PrintSetRow`, `InterruptJump` |
 | Reads | `$80AA`-`$80AD` (`PrintPos`, `PrintAttr`, `PrintPending`); `$A3A9`-`$A3AC` (`PrintControlTable`) |
-| Writes | `$4002`-`$401D` (screen); `$4102`-`$411D` (screen); `$4202`-`$461D` (screen); `$4702`-`$471D` (screen); `$4827`-`$4838` (screen); `$486C`-`$4873` (screen); 12 more ranges |
+| Writes | `$4002`-`$401D` (screen); `$4102`-`$411D` (screen); `$4202`-`$461D` (screen); `$4702`-`$471D` (screen); `$4827`-`$4838` (screen); `$486C`-`$4873` (screen); 8 more ranges |
 
 ### `PrintCharSave` (`$A322`)
 
@@ -2416,7 +2536,7 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 7,775 calls, 605,189 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,775 calls, 605,189 t-states own (0.01 %) |
 | Called from | `PrintChar`, `PlayInterruptExit` |
 | Calls | `PrintCharTest`, `PrintSetColumn`, `PrintSetRow`, `InterruptJump` |
 | Reads | `$80AD` (`PrintPending`); `$A3A9`-`$A3AC` (`PrintControlTable`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -2428,7 +2548,7 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 7,731 calls, 54,129 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,731 calls, 54,129 t-states own (0.00 %) |
 | Called from | `PrintCharSave`, `PlayInterruptExit` |
 | Calls | `PrintCharKind`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -2440,7 +2560,7 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 7,731 calls, 998,127 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,731 calls, 998,127 t-states own (0.02 %) |
 | Called from | `PrintCharTest`, `PlayInterruptExit` |
 | Calls | `PrintCharGlyph`, `PrintCharDone` (tail), `InterruptJump` |
 | Reads | `$80AA`-`$80AC` (`PrintPos`, `PrintAttr`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -2452,7 +2572,7 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 7,688 calls, 276,715 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,688 calls, 276,715 t-states own (0.01 %) |
 | Called from | `PrintCharKind`, `PlayInterruptExit` |
 | Calls | `PrintRomGlyph`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -2464,7 +2584,7 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 7,687 calls, 576,364 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,687 calls, 576,364 t-states own (0.01 %) |
 | Called from | `PrintCharGlyph`, `PlayInterruptExit` |
 | Calls | `PrintCharRow` |
 | Writes | `$4002`-`$401D` (screen); `$4102`-`$411D` (screen); `$4827`-`$4838` (screen); `$486C`-`$4873` (screen); `$4927`-`$4938` (screen); `$496C`-`$4973` (screen) |
@@ -2475,7 +2595,7 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 46,116 calls, 184,483 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 46,116 calls, 184,483 t-states own (0.00 %) |
 | Called from | `PrintRomGlyph`, `PrintCharBold` (tail) |
 | Calls | `PrintCharBold`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -2487,7 +2607,7 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 46,117 calls, 2,184,763 t-states own (0.04 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 46,117 calls, 2,184,763 t-states own (0.04 %) |
 | Called from | `PrintCharRow`, `PlayInterruptExit` |
 | Calls | `PrintCharRow` (tail), `PrintCharDone` |
 | Writes | `$4202`-`$461D` (screen); `$4702`-`$471D` (screen); `$4A27`-`$4A73` (screen); `$4B27`-`$4B73` (screen); `$4C27`-`$4C73` (screen); `$4D27`-`$4D73` (screen); 2 more ranges |
@@ -2498,7 +2618,7 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 7,730 calls, 646,051 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,730 calls, 646,051 t-states own (0.01 %) |
 | Called from | `PrintCharKind` (tail), `PrintCharBold` |
 | Calls | `PrintBcdLeadNext`, `PrintBcdRestNext` |
 | Writes | `$80AD` (`PrintPending`) |
@@ -2511,8 +2631,9 @@ The return of every print code routine (pushed by PrintChar): `$80AD` = `$20`, t
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 4 calls, 371 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 44 calls, 4,081 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 16 calls, 1,120 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 44 calls, 4,081 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 4 calls, 371 t-states own (0.00 %) |
 | Called from | `PrintSetColumn`, `PrintSetRow` |
 | Writes | `$80AD` (`PrintPending`) |
 
@@ -2554,8 +2675,9 @@ C: the column 0-31 of the print position.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 98 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 1,078 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 360 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,078 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 98 t-states own (0.00 %) |
 | Called from | `PrintChar`, `PrintCharSave` |
 | Calls | `PrintCodeDone` |
 | Reads | `$80AA` (`PrintPos`) |
@@ -2569,8 +2691,9 @@ C: the row 0-23: the print position's high byte `$58` + C / 8, bits 5-7 of the l
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 206 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 2,266 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 824 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 2,266 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 206 t-states own (0.00 %) |
 | Called from | `PrintChar`, `PrintCharSave` |
 | Calls | `PrintCodeDone` |
 | Reads | `$80AA`-`$80AB` (`PrintPos`) |
@@ -2606,8 +2729,9 @@ Callers: PrintMessage and the title loop (HiScorePage).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 3,666 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 22 calls, 40,326 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 calls, 14,172 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 22 calls, 40,326 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 3,666 t-states own (0.00 %) |
 | Called from | `PrintMessage` |
 | Calls | `PrintChar`, `PrintMessage` |
 | Reads | `$80AD` (`PrintPending`); `$84B2`-`$84D7` (`Messages`) |
@@ -2622,8 +2746,9 @@ Callers: PrintString, the menu screens (RedefineKeys, PrintKeyName, SelectPlayer
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 20,152 t-states own (0.02 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 22 calls, 221,672 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 calls, 80,264 t-states own (0.06 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 22 calls, 221,672 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 20,152 t-states own (0.02 %) |
 | Called from | `PrintString`, `LevelStart` |
 | Calls | `PrintString`, `InterruptJump` |
 | Reads | `$82ED`-`$84BC` (`ColoursBar`, `Messages`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -2649,8 +2774,9 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 11 calls, 13,079 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 925 calls, 181,913 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 calls, 8,128 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 925 calls, 181,913 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 11 calls, 13,079 t-states own (0.01 %) |
 | Called from | `PrintPlayerScore` |
 | Calls | `PrintChar`, `PrintBcdLeading` |
 | Reads | `$7F9C`-`$7F9F` (`Player1`); `$7FCC`-`$7FCF` (`Player2`); `$7FFC`-`$7FFF` (`BcdScratch`) |
@@ -2662,7 +2788,7 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 3,849 calls, 378,348 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 3,849 calls, 378,348 t-states own (0.01 %) |
 | Called from | `PrintBcd`, `PrintBcdLeadNext` (tail) |
 | Calls | `PrintChar`, `PrintBcdOut` (tail) |
 | Reads | `$7FFC`-`$7FFF` (`BcdScratch`) |
@@ -2674,7 +2800,7 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 3 calls, 50,115 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 3 calls, 50,115 t-states own (0.00 %) |
 | Called from | `PrintCharDone` |
 | Calls | `PrintBcdLeading` (tail), `PrintBcdRest` |
 | Writes | `$80AC` (`PrintAttr`) |
@@ -2685,7 +2811,7 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 3,551 calls, 215,641 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 3,551 calls, 215,641 t-states own (0.00 %) |
 | Called from | `PrintBcdLeadNext`, `PrintBcdRestNext` (tail) |
 | Calls | `PrintBcdOut` |
 | Reads | `$7FFD`-`$7FFF` (`BcdScratch`) |
@@ -2697,7 +2823,7 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 4,465 calls, 107,937 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 4,465 calls, 107,937 t-states own (0.00 %) |
 | Called from | `PrintBcdLeading` (tail), `PrintBcdRest` |
 | Calls | `PrintChar` |
 
@@ -2707,7 +2833,7 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 4 calls, 122,074 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 4 calls, 122,074 t-states own (0.00 %) |
 | Called from | `PrintCharDone` |
 | Calls | `PrintBcdRest` (tail), `PrintPlayerScoreDone` |
 | Reads | `$7FFF` (`BcdScratch`) |
@@ -2727,8 +2853,8 @@ Callers: the enemy kill (EnemyGone), the enemy movers (EnemyHandler), PodStep.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 9 calls, 2,964 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,003 calls, 324,270 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,003 calls, 324,270 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9 calls, 2,964 t-states own (0.00 %) |
 | Called from | `EnemyGone`, `EnemyHandler`, `LockableHandler`, `BigEnemyHandler`, `PodStep` |
 | Reads | `$7F98`-`$7F9F` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$81C5` (`EventRequests`); `$8235`-`$825C` (`PointsTable`) |
 | Writes | `$7F9C`-`$7F9F` (`Player1`); `$81C5` (`EventRequests`) |
@@ -2741,8 +2867,9 @@ A: the player, 1 or 2. Player 1's score at column 2, player 2's at column 22 of 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 11 calls, 2,065 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 925 calls, 151,690 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 calls, 1,468 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 925 calls, 151,690 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 11 calls, 2,065 t-states own (0.00 %) |
 | Called from | `ScoreJob`, `RoundPlaySetup` |
 | Calls | `PrintBcd` |
 | Reads | `$7F98` (`CurrentPlayer`) |
@@ -2754,7 +2881,7 @@ A: the player, 1 or 2. Player 1's score at column 2, player 2's at column 22 of 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 7 calls, 22,295 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7 calls, 22,295 t-states own (0.00 %) |
 | Called from | `PrintBcdRestNext` |
 | Calls | `ScoreJobRating` |
 
@@ -2776,10 +2903,11 @@ Six life marks from the attribute `$5AD8` (row 22, column 24), the steps between
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 552 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 16 calls, 8,304 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 2,048 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 16 calls, 8,304 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 552 t-states own (0.00 %) |
 | Called from | `ScoreJobRating`, `RoundPlaySetup` |
-| Reads | `$7F99`-`$7FA0` (`PlayerRecord`, `Players`, `Player1`); `$81C0`-`$81C5` (`LifeSteps`, `EventRequests`) |
+| Reads | `$7F99`-`$7FA0` (`PlayerRecord`, `Players`, `Player1`); `$7FD0` (`Player2`); `$81C0`-`$81C5` (`LifeSteps`, `EventRequests`) |
 | Writes | `$5A98`-`$5A99` (screen); `$5AB8`-`$5AB9` (screen); `$5AD8`-`$5AD9` (screen) |
 
 ## menu
@@ -2796,8 +2924,9 @@ Installed by SetMenuRaster in the interrupt handler pointer `$FDFE`. Evidence: c
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 76 calls, 2,720,324 t-states own (2.59 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 836 calls, 29,923,238 t-states own (0.57 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 304 calls, 10,527,512 t-states own (8.28 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 836 calls, 29,923,238 t-states own (0.57 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 76 calls, 2,720,324 t-states own (2.59 %) |
 | Called from | `InterruptJump` (tail) |
 | Reads | `$581A`-`$589A` (screen); `$58BA` (screen); `$58DA` (screen); `$58FA` (screen); `$591A` (screen); `$593A` (screen); 4 more ranges |
 | Writes | `$80B9` (`RasterFrames`); `$A576`-`$A577` (`MenuRasterInterrupt`) |
@@ -2811,8 +2940,9 @@ Writes `$A512` to the handler pointer `$FDFE`, EI. Callers: MenuScreenSetup, Sel
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 40 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 440 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 160 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 440 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 40 t-states own (0.00 %) |
 | Called from | `MenuScreenSetup` |
 | Writes | `$FDFE`-`$FDFF` (`InterruptJump`) |
 
@@ -2824,8 +2954,9 @@ Waits (HALT) until `$80B9` is 0, clears the colour buffer, then installs TitleIn
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 1,105,430 t-states own (1.05 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 20,024,954 t-states own (0.38 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 5,620,488 t-states own (4.42 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 20,024,954 t-states own (0.38 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 1,105,430 t-states own (1.05 %) |
 | Called from | `RoundPlaySetup` |
 | Calls | `ClearColourBuffer`, `InterruptJump` |
 | Reads | `$80B9` (`RasterFrames`); `$A596`-`$A5A0` (`WaitMenuRasterEnd`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -2839,8 +2970,9 @@ Callers: WaitMenuRasterEnd, MenuScreenSetup, SelectPlayers.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 11,824 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 22 calls, 130,064 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 calls, 47,256 t-states own (0.04 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 22 calls, 130,064 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 11,824 t-states own (0.01 %) |
 | Called from | `WaitMenuRasterEnd`, `MenuScreenSetup` |
 | Writes | `$FC00`-`$FCFF` (`HitGridX`) |
 
@@ -2864,8 +2996,9 @@ Callers: MenuScreenSetup, SelectPlayers, RedefineKeys (by ExpandNextColours).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 17,082 t-states own (0.02 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 22 calls, 187,902 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 calls, 68,240 t-states own (0.05 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 22 calls, 187,902 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 17,082 t-states own (0.02 %) |
 | Called from | `MenuScreenSetup` |
 | Reads | `$82A7`-`$82D6` (`ColoursTop`, `ColoursMenu`) |
 | Writes | `$FC20`-`$FCC7` (`HitGridX`) |
@@ -2910,8 +3043,9 @@ ClearScreen `$858B`, ClearColourBuffer, the colours `$82A7` (48 lines) into `$FC
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 202 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 2,205 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 756 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 2,205 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 202 t-states own (0.00 %) |
 | Called from | `LevelStart` |
 | Calls | `ClearScreen`, `SetMenuRaster`, `ClearColourBuffer`, `ExpandColours` |
 | Writes | `$80AE`-`$80B0` (`RasterTable`, `RasterLines`) |
@@ -2926,10 +3060,11 @@ GS: the installer copies WaitStub over it (src/disk/install.asm): a call of the 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 3,838,981 t-states own (3.66 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 38,349,918 t-states own (0.73 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 96 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 38,349,918 t-states own (0.73 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 3,838,981 t-states own (3.66 %) |
 | Called from | `EndOfPlay` |
-| Calls | `InterruptJump` |
+| Calls | `l_B466` (tail), `InterruptJump` |
 | Reads | `$A6B2` (`WaitFrames`); `$FEFF`-`$FF00` (`VectorTable`) |
 | Writes | `$5BF6`-`$5BF7` (system) |
 
@@ -2947,12 +3082,13 @@ Callers: the player mover (PlayerHandler) and HighScoreEntry. Evidence: the bits
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 613 calls, 399,178 t-states own (0.38 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,542 calls, 23,808,021 t-states own (0.45 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 493 calls, 318,478 t-states own (0.25 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 23,808,021 t-states own (0.45 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 613 calls, 399,178 t-states own (0.38 %) |
 | Called from | `PlayerHandler` |
 | Reads | `$8184`-`$8191` (`FireHeld`, `FireChanged`, `ControlBits`, `JoystickFlags` and 1 more) |
 | Writes | `$8184`-`$8187` (`FireHeld`, `FireChanged`, `ControlBits`, `JoystickFlags`) |
-| Ports in | `$011F`, `$7FFE`, `$DFFE`, `$FBFE`, `$FDFE` |
+| Ports in | `$011F`, `$021F`, `$7FFE`, `$BFFE`, `$DFFE`, `$FBFE`, `$FDFE` |
 
 ### `TitleFireCheck` (`$A748`)
 
@@ -3044,8 +3180,9 @@ Callers: the panel update PanelFrame (`$AB97`, `$AB9F`).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1,318 calls, 2,058,285 t-states own (1.96 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 73,084 calls, 114,155,973 t-states own (2.18 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,170 calls, 1,742,418 t-states own (1.37 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 73,084 calls, 114,155,973 t-states own (2.18 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,318 calls, 2,058,285 t-states own (1.96 %) |
 | Called from | `PanelFrame` |
 | Reads | `$A919`-`$A978` (`SpinnerFrames`, `SpinnerImages`); `$FB03`-`$FBC0` (`BitReverse`); `$FBE0` (`BitReverse`) |
 | Writes | `$5081`-`$50BE` (screen); `$5181`-`$51BE` (screen); `$5281`-`$52BE` (screen); `$5381`-`$53BE` (screen); `$5481`-`$54BE` (screen); `$5581`-`$55BE` (screen); 5 more ranges |
@@ -3058,8 +3195,9 @@ Callers: the panel update PanelFrame (`$AB97`, `$AB9F`).
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 56,671 t-states own (0.05 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 623,381 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 185,672 t-states own (0.15 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 623,381 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 56,671 t-states own (0.05 %) |
 | Called from | `RoundPlaySetup` |
 | Calls | `InterruptJump` |
 | Reads | `$E748`-`$EFE7` (`SpriteCacheImages`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -3073,8 +3211,9 @@ The reverse of RestorePanel. Called at `$B1F9`.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 97,379 t-states own (0.09 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 532,107 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 185,672 t-states own (0.15 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 532,107 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 97,379 t-states own (0.09 %) |
 | Called from | `PlayLoopTest`, `PlayLoopBranch` |
 | Calls | `InterruptJump` |
 | Reads | `$5000`-`$57FF` (screen); `$5A60`-`$5AFF` (screen); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -3094,8 +3233,9 @@ Called by PlayPass. Evidence: TTD c2 frames 300-316: `$7F6A` C8, D8, D0, C0, `$7
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 659 calls, 130,431 t-states own (0.12 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,542 calls, 7,067,427 t-states own (0.13 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 585 calls, 109,553 t-states own (0.09 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 7,067,427 t-states own (0.13 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 130,431 t-states own (0.12 %) |
 | Called from | `PlayPass` |
 | Reads | `$7F65`-`$7F7B` (`PassPhase`, `ChainStep`, `NodeFreeList`, `ShiftPage` and 12 more); `$81DA`-`$81E3` (`ScriptState`) |
 | Writes | `$7F6A`-`$7F6C` (`ShiftPage`, `FineScrollToggle`, `ScrollThisPass`); `$81DA` (`ScriptState`) |
@@ -3108,8 +3248,9 @@ Only sets the interrupt flag `$7F96` = `$80`. Installed by WaitMenuRasterEnd and
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 106 calls, 5,830 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,089 calls, 59,895 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 188 calls, 10,340 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,089 calls, 59,895 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 106 calls, 5,830 t-states own (0.01 %) |
 | Called from | `InterruptJump` (tail) |
 | Writes | `$7F96` (`EffectTick`) |
 
@@ -3125,12 +3266,26 @@ Installed at `$B1DF`. Evidence: c2 L1 659 entries, 12 permille own time.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 659 calls, 1,295,432 t-states own (1.23 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,542 calls, 83,050,319 t-states own (1.58 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 584 calls, 12,848 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 83,050,319 t-states own (1.58 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 1,295,432 t-states own (1.23 %) |
 | Called from | `InterruptJump` (tail) |
-| Calls | `DrawPlayfield`, `MoveStars`, `StartColumn`, `ScrollStep`, `TestHitGrid`, `ClearHitGrid`, `PanelFrame` |
+| Calls | `DrawPlayfield`, `MoveStars`, `StartColumn`, `ScrollStep`, `TestHitGrid`, `ClearHitGrid`, `l_A9EF`, `PanelFrame` |
 | Reads | `$7F62`-`$7F65` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase`); `$7F80`-`$7F89` (`SoundPattern1`, `ObjectBeep`, `ObjectBeepMask`, `SoundPattern2` and 3 more); `$80BC` (`ColourCycle`); `$81DA` (`ScriptState`) |
 | Writes | `$7F62`-`$7F67` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase` and 1 more); `$7F7F`-`$7F96` (`RowBeepMask`, `SoundPattern1`, `ObjectBeep`, `ObjectBeepMask` and 11 more); `$80BC` (`ColourCycle`); `$AAED`-`$AAF8` (`ChainStep1End`, `ChainDrawStrips2`, `ChainDrawStrips3`) |
+| Ports out | `$00FE` |
+
+### `l_A9EF` (`$A9EF`)
+
+**l_A9EF**
+
+| | |
+| --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 584 calls, 1,129,946 t-states own (0.89 %) |
+| Called from | `PlayInterrupt` |
+| Calls | `DrawPlayfield`, `MoveStars`, `StartColumn`, `ScrollStep`, `TestHitGrid`, `ClearHitGrid`, `PanelFrame` |
+| Reads | `$7F62`-`$7F65` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase`); `$80BC` (`ColourCycle`); `$81DA` (`ScriptState`) |
+| Writes | `$7F62`-`$7F67` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase` and 1 more); `$7F96` (`EffectTick`); `$80BC` (`ColourCycle`); `$AA29` (`l_A9EF`); `$AAED`-`$AAF8` (`ChainStep1End`, `ChainDrawStrips2`, `ChainDrawStrips3`) |
 | Ports out | `$00FE` |
 
 ### `PlayPass` (`$AA96`)
@@ -3141,8 +3296,9 @@ Installed at `$B1DF`. Evidence: c2 L1 659 entries, 12 permille own time.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 644 calls, 144,544 t-states own (0.14 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,527 calls, 7,873,699 t-states own (0.15 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 583 calls, 117,880 t-states own (0.09 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,527 calls, 7,873,699 t-states own (0.15 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 644 calls, 144,544 t-states own (0.14 %) |
 | Called from | `RenderDone` |
 | Calls | `ResumeScript`, `ObjectStrips`, `MarkEnemyGrid`, `RunObjects`, `ScrollControl`, `PlayChain`, `CheckPauseAndEnd`, `WaveScriptStep` |
 | Reads | `$7F64`-`$7F65` (`PassDepth`, `PassPhase`) |
@@ -3155,8 +3311,9 @@ A wait, the border black, the chain step `$7F66` + 5. At depth 1 the step runs (
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 393 calls, 235,607 t-states own (0.22 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 19,761 calls, 12,957,520 t-states own (0.25 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 352 calls, 199,728 t-states own (0.16 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 19,761 calls, 12,957,520 t-states own (0.25 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 393 calls, 235,607 t-states own (0.22 %) |
 | Called from | `YieldScript`, `PlayPass` |
 | Calls | `ChainDrawStrips1`, `ChainDrawStrips2`, `ChainDrawStrips3`, `ChainEnd`, `PlayInterruptExit` (tail) |
 | Reads | `$7F64`-`$7F67` (`PassDepth`, `PassPhase`, `ChainStep`) |
@@ -3171,8 +3328,9 @@ CALL DrawStrips `$896D` then DI; RET (two NOPs when a nested pass chained step 2
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 6,894 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 194,062 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 4,557 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 194,062 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 6,894 t-states own (0.01 %) |
 | Called from | `PlayChain` |
 | Calls | `BuildColumn`, `PlayInterruptExit` |
 
@@ -3182,7 +3340,7 @@ CALL DrawStrips `$896D` then DI; RET (two NOPs when a nested pass chained step 2
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 6 calls, 168,340 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 6 calls, 168,340 t-states own (0.00 %) |
 | Called from | `BuildColumnStep` |
 | Calls | `ChainDrawStrips2`, `PlayInterruptExit` |
 
@@ -3192,8 +3350,9 @@ CALL DrawStrips `$896D` then DI; RET (two NOPs when a nested pass chained step 2
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 6,855 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 6 calls, 366,226 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 4,526 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 6 calls, 366,226 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 6,855 t-states own (0.01 %) |
 | Called from | `PlayChain`, `ChainStep1End` |
 | Calls | `BuildColumn`, `PlayInterruptExit` |
 
@@ -3203,8 +3362,9 @@ CALL DrawStrips `$896D` then DI; RET (two NOPs when a nested pass chained step 2
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 6,626 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 366,758 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 4,526 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 366,758 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 6,626 t-states own (0.01 %) |
 | Called from | `PlayChain` |
 | Calls | `BuildColumn`, `PlayInterruptExit` |
 
@@ -3216,8 +3376,9 @@ DI, `$7F65` = 0, so the next interrupt starts a new pass.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 5,818 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 315,052 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 4,495 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 315,052 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 5,818 t-states own (0.01 %) |
 | Called from | `PlayChain` |
 | Calls | `PlayInterruptExit` |
 | Writes | `$7F65` (`PassPhase`) |
@@ -3230,8 +3391,9 @@ Depth `$7F64` down by one, all registers back, EI.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 649 calls, 122,141 t-states own (0.12 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,532 calls, 6,625,887 t-states own (0.13 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 583 calls, 88,184 t-states own (0.07 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,532 calls, 6,625,887 t-states own (0.13 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 649 calls, 122,141 t-states own (0.12 %) |
 | Called from | `PlayChain` (tail), `ChainDrawStrips1`, `ChainStep1End`, `ChainDrawStrips2`, `ChainDrawStrips3`, `ChainEnd` |
 | Calls | `BuildColumnStep`, `BuildCell`, `GlyphShift2`, `GlyphShift4`, `GlyphMarkBits`, `GlyphBuilt`, `RotateSpriteRows`, `RotateLine`, `RotateLineSave`, `RotateLineCarry`, `RotateByte`, `RotateByteShift`, `RotateByteOut`, `RotateNextByte`, `RotateLineWrap`, `RotateLineMerge`, `RotateLineStore`, `RotateLineNext`, `RotateLineRestore`, `RotateLineCount`, `PrintCharSave`, `PrintCharTest`, `PrintCharKind`, `PrintCharGlyph`, `PrintRomGlyph`, `PrintCharBold`, `EventDispatch`, `EventPending`, `EventEnabled`, `EventAny`, `IconLine`, `SpriteBuildEmpty`, `SpriteShiftTest`, `SpriteShiftCopy`, `SpriteShiftLoop`, `PlayLoopPass`, `PlayLoopCheck`, `PlayLoopTest`, `PlayLoopBranch`, `PlayLoopAgain`, `EffectFirstLen`, `EffectPeriod`, `EffectHalves`, `EffectSpeakerOn`, `EffectHalf`, `EffectOut`, `EffectWait`, `EffectWait1`, `EffectWait2`, `EffectWait3`, `EffectSwap`, `EffectLow`, `EffectHalfNext`, `EffectHalfLoop`, `EffectTickCheck`, `EffectTickRead`, `EffectTickTest`, `EffectTickBranch`, `EffectRestore` |
 | Reads | `$7F64` (`PassDepth`) |
@@ -3259,11 +3421,12 @@ Called from PlayInterrupt `$A9ED` (at `$AA87`) once a frame; c2: 659 entries in 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 659 calls, 630,704 t-states own (0.60 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,542 calls, 35,117,718 t-states own (0.67 %) |
-| Called from | `PlayInterrupt` |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 585 calls, 481,719 t-states own (0.38 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 35,117,718 t-states own (0.67 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 630,704 t-states own (0.60 %) |
+| Called from | `PlayInterrupt`, `l_A9EF` |
 | Calls | `DrawSpinner` |
-| Reads | `$5AC6`-`$5AC7` (screen); `$7F62` (`PassCount`); `$7F77`-`$7F7A` (`PanelBurst`, `SpinnerFrame`, `SpinnerColour`, `SpinnerColourStep`); `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$80E6` (`Fuel`) |
+| Reads | `$5AC6`-`$5AC7` (screen); `$7F62` (`PassCount`); `$7F77`-`$7F7A` (`PanelBurst`, `SpinnerFrame`, `SpinnerColour`, `SpinnerColourStep`); `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$7FD7` (`Player2`); `$80E6` (`Fuel`) |
 | Writes | `$5AAB`-`$5AF1` (screen); `$7F77`-`$7F7A` (`PanelBurst`, `SpinnerFrame`, `SpinnerColour`, `SpinnerColourStep`) |
 
 ### `CheckPauseAndEnd` (`$ABD5`)
@@ -3274,8 +3437,9 @@ Called by the play interrupt once a frame (the phase dispatch in the routine at 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 659 calls, 42,852 t-states own (0.04 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 36,542 calls, 2,388,289 t-states own (0.05 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 585 calls, 37,680 t-states own (0.03 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 2,388,289 t-states own (0.05 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 42,852 t-states own (0.04 %) |
 | Called from | `PlayPass` |
 | Calls | `StopAndSettle` |
 | Reads | `$7F7C` (`EndPending`) |
@@ -3290,8 +3454,9 @@ Requests effect 0 (RequestEffect `$B2F0` takes 0 as `$80`: the stop), keeps Inte
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 278,742 t-states own (0.27 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 933,558 t-states own (0.02 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 327,828 t-states own (0.26 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 933,558 t-states own (0.02 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 278,742 t-states own (0.27 %) |
 | Called from | `CheckPauseAndEnd` |
 | Calls | `RequestEffect`, `InterruptJump` |
 | Reads | `$AC00`-`$AC01` (`StopAndSettle`); `$FDFE`-`$FDFF` (`InterruptJump`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -3309,8 +3474,9 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 68,560 calls, 685,745 t-states own (0.65 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,924,873 calls, 29,259,036 t-states own (0.56 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 291,523 calls, 2,915,443 t-states own (2.29 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,924,873 calls, 29,259,036 t-states own (0.56 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,560 calls, 685,745 t-states own (0.65 %) |
 | Called from | `PlayInterruptExit`, `PlayLoopPass`, `EffectTickTest`, `EffectTickBranch` |
 | Calls | `EventPending`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -3322,8 +3488,9 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 68,552 calls, 891,421 t-states own (0.85 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,924,937 calls, 38,029,390 t-states own (0.73 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 291,493 calls, 3,790,397 t-states own (2.98 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,924,937 calls, 38,029,390 t-states own (0.73 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,552 calls, 891,421 t-states own (0.85 %) |
 | Called from | `PlayInterruptExit`, `EventDispatch` |
 | Calls | `EventEnabled`, `InterruptJump` |
 | Reads | `$81C5` (`EventRequests`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -3335,8 +3502,9 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 68,557 calls, 479,746 t-states own (0.46 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,924,872 calls, 20,467,383 t-states own (0.39 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 291,527 calls, 2,040,698 t-states own (1.61 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,924,872 calls, 20,467,383 t-states own (0.39 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,557 calls, 479,746 t-states own (0.46 %) |
 | Called from | `PlayInterruptExit`, `EventPending` |
 | Calls | `EventAny`, `InterruptJump` |
 | Reads | `$81C6` (`EventMask`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -3348,8 +3516,9 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 68,530 calls, 936,005 t-states own (0.89 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,923,881 calls, 40,855,638 t-states own (0.78 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 291,469 calls, 3,208,572 t-states own (2.52 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,923,881 calls, 40,855,638 t-states own (0.78 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,530 calls, 936,005 t-states own (0.89 %) |
 | Called from | `PlayInterruptExit`, `EventEnabled` |
 | Calls | `JumpTable`, `PlayLoopCheck`, `EffectAfterJobs`, `InterruptJump` |
 | Reads | `$81C6` (`EventMask`) |
@@ -3361,8 +3530,9 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 38 calls, 2,564 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,984 calls, 142,200 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 7 calls, 407 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,984 calls, 142,200 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 38 calls, 2,564 t-states own (0.00 %) |
 | Called from | `IconLine`, `EffectJobDone`, `ScoreJobRating`, `SpriteBuildNext`, `SpriteBuildEmpty` |
 | Calls | `PlayLoopCheck`, `EffectAfterJobs` |
 | Writes | `$81C6` (`EventMask`) |
@@ -3383,11 +3553,12 @@ Allows only bit 7 meanwhile (EventMask AND `$80`). Attributes `$46` (bright yell
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 224 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 36,388 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 896 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 36,388 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 224 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `IconRow` |
-| Reads | `$7F99`-`$7FA3` (`PlayerRecord`, `Players`, `Player1`); `$81C6` (`EventMask`) |
+| Reads | `$7F99`-`$7FA3` (`PlayerRecord`, `Players`, `Player1`); `$7FD3` (`Player2`); `$81C6` (`EventMask`) |
 | Writes | `$5A86`-`$5A87` (screen); `$5AA6`-`$5AA7` (screen); `$81C6` (`EventMask`) |
 
 ### `IconLowerRow` (`$AC5A`)
@@ -3396,7 +3567,7 @@ Allows only bit 7 meanwhile (EventMask AND `$80`). Attributes `$46` (bright yell
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1 call, 2,445 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1 call, 2,445 t-states own (0.00 %) |
 | Called from | `IconLine` |
 | Calls | `IconRow` |
 
@@ -3408,8 +3579,9 @@ In: DE the bytes (8 of the left cell, then 8 of the right), HL the screen addres
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 1,380 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 326 calls, 2,282 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 calls, 5,520 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 326 calls, 2,282 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 1,380 t-states own (0.00 %) |
 | Called from | `PodIconJob`, `IconLowerRow` |
 | Calls | `IconCell` |
 | Reads | `$B4AF`-`$B4CE` (`PodIcons`) |
@@ -3421,7 +3593,7 @@ In: DE the bytes (8 of the left cell, then 8 of the right), HL the screen addres
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 652 calls, 13,834 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 652 calls, 13,834 t-states own (0.00 %) |
 | Called from | `IconRow`, `IconLine` (tail) |
 | Calls | `IconLine` |
 
@@ -3431,7 +3603,7 @@ In: DE the bytes (8 of the left cell, then 8 of the right), HL the screen addres
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 653 calls, 220,189 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 653 calls, 220,189 t-states own (0.00 %) |
 | Called from | `PlayInterruptExit`, `IconCell` |
 | Calls | `EventDone`, `IconLowerRow`, `IconCell` (tail), `InterruptJump` |
 | Reads | `$B4AF`-`$B54E` (`PodIcons`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -3445,8 +3617,8 @@ Drops bit 0 from the mask (a second effect request waits; the effect player post
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 2,365 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 102,275 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 102,275 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 2,365 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `EffectPlay` |
 | Reads | `$81C6` (`EventMask`) |
@@ -3458,8 +3630,8 @@ Drops bit 0 from the mask (a second effect request waits; the effect player post
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 33 calls, 588 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,633 calls, 23,959 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,633 calls, 23,959 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 33 calls, 588 t-states own (0.00 %) |
 | Called from | `EffectEnd` |
 | Calls | `EventDone` |
 
@@ -3471,8 +3643,8 @@ Allows only bit 7 meanwhile. Prints the current player's score (PrintPlayerScore
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 1,796 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 59,456 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 59,456 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 1,796 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `WeaponRating`, `PrintPlayerScore` |
 | Reads | `$7F98`-`$7FA8` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$800F` (`ExtraLifeScores`); `$81C6` (`EventMask`) |
@@ -3484,7 +3656,7 @@ Allows only bit 7 meanwhile. Prints the current player's score (PrintPlayerScore
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 7 calls, 121,600 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7 calls, 121,600 t-states own (0.00 %) |
 | Called from | `PrintPlayerScoreDone` |
 | Calls | `WeaponRating`, `DrawLives`, `EventDone` |
 | Reads | `$7F99`-`$7FA8` (`PlayerRecord`, `Players`, `Player1`); `$800F`-`$8014` (`ExtraLifeScores`) |
@@ -3498,8 +3670,9 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 155 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 10,664 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 217 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 10,664 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 155 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `SpriteBuildNext` |
 | Reads | `$81C6` (`EventMask`) |
@@ -3511,8 +3684,9 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 10 calls, 1,271 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 688 calls, 20,659 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 14 calls, 1,645 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 688 calls, 20,659 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 10 calls, 1,271 t-states own (0.00 %) |
 | Called from | `SpriteBuildJob`, `SpriteBuildDone` (tail) |
 | Calls | `EventDone`, `SpriteBuildEmpty`, `LoadCellSprite`, `SpriteBuildShifts`, `InterruptJump` |
 | Reads | `$8024`-`$802E` (`DrawQueueRead`, `DrawQueueWrite`, `DrawQueue`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -3524,7 +3698,7 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 689 calls, 66,342 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 689 calls, 66,342 t-states own (0.00 %) |
 | Called from | `PlayInterruptExit`, `SpriteBuildNext` |
 | Calls | `EventDone`, `LoadCellSprite`, `SpriteBuildShifts` |
 | Reads | `$8024`-`$803D` (`DrawQueueRead`, `DrawQueueWrite`, `DrawQueue`) |
@@ -3536,8 +3710,9 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 5 calls, 314 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 343 calls, 21,914 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 7 calls, 406 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 343 calls, 21,914 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 5 calls, 314 t-states own (0.00 %) |
 | Called from | `SpriteShiftNext`, `SpriteShiftLoop` |
 | Calls | `SpriteBuildNext` (tail) |
 | Reads | `$7EF0`-`$7F50` (`SpriteCache`) |
@@ -3551,8 +3726,9 @@ In: A the kind, HL the descriptor (+0/+1 the image's address). Kinds `$14` and u
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 5 calls, 1,410 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 344 calls, 96,317 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 7 calls, 1,785 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 344 calls, 96,317 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 5 calls, 1,410 t-states own (0.00 %) |
 | Called from | `SpriteBuildNext`, `SpriteBuildEmpty` |
 | Calls | `BuildCellSprite`, `BuildBigSprite` |
 | Reads | `$7EF2`-`$7F43` (`SpriteCache`) |
@@ -3565,8 +3741,9 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 5 calls, 993 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 344 calls, 68,350 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 7 calls, 1,302 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 344 calls, 68,350 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 5 calls, 993 t-states own (0.00 %) |
 | Called from | `SpriteBuildNext`, `SpriteBuildEmpty` |
 | Calls | `SpriteShiftRound` |
 | Reads | `$7EE2`-`$7F4D` (`SpriteCache`) |
@@ -3578,12 +3755,13 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 35 calls, 2,103 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,408 calls, 37,680 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 49 calls, 79,478 t-states own (0.06 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,408 calls, 37,680 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 35 calls, 2,103 t-states own (0.00 %) |
 | Called from | `SpriteBuildShifts`, `SpriteShiftNext` (tail), `SpriteShiftLoop` (tail) |
-| Calls | `SpriteShiftTest`, `SpriteShiftCopy`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BE2`-`$5BE3` (system) |
+| Calls | `RotateSprite`, `SpriteShiftTest`, `SpriteShiftCopy`, `InterruptJump` |
+| Reads | `$E748`-`$E93F` (`SpriteCacheImages`); `$E988`-`$EB7F` (`SpriteCacheImages`); `$FEFF`-`$FF00` (`VectorTable`) |
+| Writes | `$5BE2`-`$5BE3` (system); `$E790`-`$E987` (`SpriteCacheImages`); `$E9D0`-`$EBC7` (`SpriteCacheImages`) |
 
 ### `SpriteShiftTest` (`$AD3A`)
 
@@ -3591,7 +3769,7 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,409 calls, 105,952 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,409 calls, 105,952 t-states own (0.00 %) |
 | Called from | `PlayInterruptExit`, `SpriteShiftRound` |
 | Calls | `SpriteShiftCopy` |
 
@@ -3601,8 +3779,8 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 38 calls, 55,100 t-states own (0.05 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,509 calls, 4,184,182 t-states own (0.08 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,509 calls, 4,184,182 t-states own (0.08 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 38 calls, 55,100 t-states own (0.05 %) |
 | Called from | `PlayInterruptExit`, `SpriteShiftRound`, `SpriteShiftTest` |
 | Calls | `RotateSprite`, `InterruptJump` |
 | Reads | `$C008`-`$CDCF` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`); `$E748`-`$EB7F` (`SpriteCacheImages`); `$EBC8`-`$EFFF` (`SpriteCacheImages`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -3614,8 +3792,9 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 1,564 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 357 calls, 73,816 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 7 calls, 2,142 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 357 calls, 73,816 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 1,564 t-states own (0.00 %) |
 | Called from | `RotateNextByte`, `RotateLineCount` |
 | Calls | `SpriteBuildDone`, `SpriteShiftRound` (tail), `SpriteShiftLoop`, `InterruptJump` |
 
@@ -3625,7 +3804,7 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,409 calls, 33,255 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,409 calls, 33,255 t-states own (0.00 %) |
 | Called from | `PlayInterruptExit`, `SpriteShiftNext` |
 | Calls | `SpriteBuildDone`, `SpriteShiftRound` (tail) |
 
@@ -3637,10 +3816,11 @@ Copies the player record's +`$0D`-+`$2F` (35 bytes, the checkpoint that CmdCheck
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 852 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 9,407 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 3,188 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 9,407 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 852 t-states own (0.00 %) |
 | Called from | `RoundSetup` |
-| Reads | `$7F99`-`$7FCB` (`PlayerRecord`, `Players`, `Player1`) |
+| Reads | `$7F99`-`$7FFB` (`PlayerRecord`, `Players`, `Player1`, `Player2`) |
 | Writes | `$81D7`-`$81F9` (`ScriptState`) |
 
 ## wavescript
@@ -3655,8 +3835,9 @@ Called from the play interrupt at phase 2 (`$AA96`; c2: 165 entries in 165 frame
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 165 calls, 19,047 t-states own (0.02 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 9,138 calls, 1,556,056 t-states own (0.03 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 146 calls, 14,515 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 9,138 calls, 1,556,056 t-states own (0.03 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 165 calls, 19,047 t-states own (0.02 %) |
 | Called from | `PlayPass` |
 | Calls | `JumpTable`, `LaunchWave`, `ScriptWord`, `ScriptByte`, `ScriptTest` |
 | Reads | `$6B8D`-`$6FA6` (`LevelScripts`); `$6FCA`-`$72A7` (`LevelScripts`); `$7F7B` (`DeathTimer`); `$81D8`-`$81E1` (`ScriptState`) |
@@ -3670,8 +3851,8 @@ PUSH AF / POP HL takes F into L, stored in ScriptFlags `$81E2` (the conditions r
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 165 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,176 calls, 92,311 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,176 calls, 92,311 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 165 t-states own (0.00 %) |
 | Called from | `CmdDecrement`, `CmdEnemiesLeft` |
 | Writes | `$81E2` (`ScriptState`) |
 
@@ -3683,8 +3864,9 @@ Reads the word at the PC (`$81D8`) and steps the PC past it; HL kept.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 6 calls, 598 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,042 calls, 198,942 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 10 calls, 890 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,042 calls, 198,942 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 6 calls, 598 t-states own (0.00 %) |
 | Called from | `WaveScriptStep`, `CmdStore`, `CmdDecrement` |
 | Reads | `$6B92`-`$6BA6` (`LevelScripts`); `$6BC6`-`$6C52` (`LevelScripts`); `$6C70`-`$6CAD` (`LevelScripts`); `$6CC4`-`$6D42` (`LevelScripts`); `$6D57`-`$6F2A` (`LevelScripts`); `$6F4E`-`$6FA8` (`LevelScripts`); 3 more ranges |
 | Writes | `$81D8`-`$81D9` (`ScriptState`) |
@@ -3697,8 +3879,9 @@ Reads the byte at the PC and steps it; HL kept.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 9 calls, 773 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 754 calls, 63,369 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 7 calls, 532 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 754 calls, 63,369 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9 calls, 773 t-states own (0.00 %) |
 | Called from | `WaveScriptStep` |
 | Reads | `$6B8F`-`$6BFB` (`LevelScripts`); `$6C22`-`$6EE1` (`LevelScripts`); `$6F08`-`$6F6C` (`LevelScripts`); `$6FCC`-`$701F` (`LevelScripts`); `$7044`-`$70D7` (`LevelScripts`); `$70F8`-`$7162` (`LevelScripts`); 3 more ranges |
 | Writes | `$81D8`-`$81D9` (`ScriptState`) |
@@ -3711,8 +3894,8 @@ In: A the condition (0-6). Out: carry when it holds; A, BC, DE, HL kept (A is th
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 425 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,176 calls, 245,176 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,176 calls, 245,176 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 425 t-states own (0.00 %) |
 | Called from | `WaveScriptStep` |
 | Calls | `JumpTable` |
 | Reads | `$81E2`-`$81E3` (`ScriptState`) |
@@ -3739,8 +3922,8 @@ In: A the condition (0-6). Out: carry when it holds; A, BC, DE, HL kept (A is th
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 55 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 27,885 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 27,885 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 55 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 
 ### `CondPositive` (`$AE18`)
@@ -3781,7 +3964,7 @@ In: A the condition (0-6). Out: carry when it holds; A, BC, DE, HL kept (A is th
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 28 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 28 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 
 ### `CmdSetFlag` (`$AE28`)
@@ -3802,7 +3985,7 @@ Also called by CmdLevelEnd. The scroll (`$8AED` area) runs while bit 5 is set; a
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 725 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 725 t-states own (0.00 %) |
 | Called from | `JumpTable`, `CmdLevelEnd` |
 | Reads | `$81DA` (`ScriptState`) |
 | Writes | `$81DA` (`ScriptState`) |
@@ -3831,7 +4014,7 @@ The scroll stops, EndPending (`$7F7C`) = 2 (the play loop ends with code 2: Leve
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 1,231 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,231 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `CmdScrollStop` |
 | Reads | `$7F99`-`$7F9A` (`PlayerRecord`) |
@@ -3851,8 +4034,9 @@ The scroll stops, EndPending (`$7F7C`) = 2 (the play loop ends with code 2: Leve
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 88 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 5,704 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 340 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 5,704 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 88 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `ScriptWord` |
 | Writes | `$81E4`-`$81E5` (`ScriptState`) |
@@ -3873,8 +4057,8 @@ The word is read, ADC HL,DE with HL = `$FFFF` gives word - 1 with Z when it reac
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 324 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 112,823 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 112,823 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 324 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `ScriptSaveFlags`, `ScriptWord` |
 | Reads | `$81E4`-`$81E5` (`ScriptState`) |
@@ -3922,7 +4106,7 @@ Copies the VM state `$81D7-$81F9` (35 bytes, PC past this instruction) to the pl
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 18,125 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 18,125 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Reads | `$7F99`-`$7F9A` (`PlayerRecord`); `$81D7`-`$81F9` (`ScriptState`) |
 | Writes | `$7FA9`-`$7FCB` (`Player1`) |
@@ -3935,7 +4119,7 @@ For each record: +8 = 0, +6/+7 = `$85E4`; then of the 32 bytes below its pointer
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 214,426 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 214,426 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Reads | `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F26D` (`RowRecords`); `$F28C`-`$F28D` (`RowRecords`); `$F2AC`-`$F2AD` (`RowRecords`); `$F2CC`-`$F2CD` (`RowRecords`); `$F2EC`-`$F2ED` (`RowRecords`); 3 more ranges |
 | Writes | `$B700`-`$BF03` (`data_B700`, `MapRingSpace`, `TileSource`); `$BF1E`-`$BF7F` (`TileSource`); `$BF93`-`$BFD7` (`TileSource`); `$BFEC`-`$BFFF` (`TileSource`); `$F132`-`$F274` (`RowRecords`); `$F292`-`$F294` (`RowRecords`); 6 more ranges |
@@ -3946,7 +4130,7 @@ For each record: +8 = 0, +6/+7 = `$85E4`; then of the 32 bytes below its pointer
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 320 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 320 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `FreeEnemySlot`, `EnemyEscaped` |
 | Reads | `$F3A0` (`EnemyObjects`) |
@@ -3959,7 +4143,7 @@ A record counts when +8 has bits 5 and 7 set and +`$0D` is not `$FF`. The flags 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 92,206 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 92,206 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `ScriptSaveFlags` |
 | Reads | `$F3A0`-`$F3A5` (`EnemyObjects`); `$F3CC`-`$F3D1` (`EnemyObjects`); `$F3F8`-`$F3FD` (`EnemyObjects`); `$F424`-`$F429` (`EnemyObjects`); `$F450`-`$F455` (`EnemyObjects`) |
@@ -3976,10 +4160,11 @@ LevelSetUp `$8C3B` (the playfield model, the map buffer), MenuScreenSetup `$A685
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 176 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 1,885 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 636 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 1,885 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 176 t-states own (0.00 %) |
 | Called from | `RoundSetup` |
-| Calls | `LevelSetUp`, `StartScript`, `PrintMessage`, `MenuScreenSetup` |
+| Calls | `LevelSetUp`, `StartScript`, `PrintMessage`, `MenuScreenSetup`, `TuneOrder` |
 | Writes | `$801E`-`$801F` (`ScriptColumn`, `ScriptRoom`); `$80B0`-`$80B9` (`RasterLines`, `RasterList`, `RasterSpare`, `RasterFrames`) |
 
 ### `ReplayScroll` (`$AF6B`)
@@ -3988,8 +4173,9 @@ LevelSetUp `$8C3B` (the playfield model, the map buffer), MenuScreenSetup `$A685
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 131 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 1,720 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 524 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 1,720 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 131 t-states own (0.00 %) |
 | Called from | `YieldScript` |
 | Calls | `ReplayStep` (tail) |
 | Reads | `$81DB`-`$81DC` (`ScriptState`) |
@@ -4011,8 +4197,9 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 1,662 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 13,300 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 6,144 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 13,300 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 1,662 t-states own (0.00 %) |
 | Called from | `ReplayScroll` (tail) |
 | Calls | `StartColumn`, `ReplayRound`, `InterruptJump` |
 
@@ -4022,8 +4209,9 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 192 calls, 6,211 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,560 calls, 50,549 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 768 calls, 21,504 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,560 calls, 50,549 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 192 calls, 6,211 t-states own (0.01 %) |
 | Called from | `ReplayStep`, `ReplayRoundEnd` (tail) |
 | Calls | `ResumeScript`, `InterruptJump` |
 
@@ -4033,8 +4221,9 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 25 calls, 12,856 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 57 calls, 103,675 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 100 calls, 45,732 t-states own (0.04 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 57 calls, 103,675 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 25 calls, 12,856 t-states own (0.01 %) |
 | Called from | `YieldScript` |
 | Calls | `BuildColumn`, `ScrollStep`, `ReplayRound` (tail), `RoundPlaySetup`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4070,8 +4259,9 @@ WaitMenuRasterEnd `$A595`, ClearHitGrid `$91C6` with interrupts off, Fuel = `$5A
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 139 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 1,543 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 472 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 1,543 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 139 t-states own (0.00 %) |
 | Called from | `MainLoopEnd` |
 | Calls | `RestoreCheckpoint`, `LevelStart`, `PlayerSetup`, `EnemiesSetup`, `ShotsSetup` |
 | Reads | `$7F98` (`CurrentPlayer`) |
@@ -4083,10 +4273,11 @@ WaitMenuRasterEnd `$A595`, ClearHitGrid `$91C6` with interrupts off, Fuel = `$5A
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 249 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 2,735 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 820 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 2,735 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 249 t-states own (0.00 %) |
 | Called from | `ReplayRoundEnd` |
-| Calls | `ClearScreen`, `ClearHitGrid`, `WeaponRating`, `PrintPlayerScore`, `DrawLives`, `WaitMenuRasterEnd`, `RestorePanel`, `MainLoopPlay` |
+| Calls | `ClearScreen`, `ClearHitGrid`, `WeaponRating`, `PrintPlayerScore`, `DrawLives`, `WaitMenuRasterEnd`, `RestorePanel`, `MainLoopPlay`, `TuneOrder` |
 | Writes | `$7F7B` (`DeathTimer`); `$80E6` (`Fuel`) |
 
 ### `SetLevelStart` (`$B062`)
@@ -4097,7 +4288,7 @@ In: IX the record. +5 = 0, `$81E3` = 0; the record's +`$0D` gets the 8 bytes of 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 8,444 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 8,444 t-states own (0.00 %) |
 | Called from | `LevelDone` |
 | Reads | `$6B35`-`$6B8C` (`LevelTable`); `$7FA2` (`Player1`); `$8004`-`$800E` (`LevelOrder`); `$81FA`-`$81FE` (`ScriptStateInit`) |
 | Writes | `$7FA1`-`$7FB5` (`Player1`); `$81E3` (`ScriptState`) |
@@ -4136,10 +4327,12 @@ GS: LD (`$B109`),A; CALL WaitFrames; CALL FadeAttributes; LD A,code; DEC A; LD H
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 144 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 1,222 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 312 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 1,222 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 144 t-states own (0.00 %) |
 | Called from | `MainLoopEnd` |
 | Calls | `FadeAttributes`, `JumpTable`, `WaitFrames` |
+| Writes | `$B109` (`EndOfPlay`) |
 
 ### `PlayerDied` (`$B119`)
 
@@ -4149,11 +4342,12 @@ The record's deaths +5 + 1, +8 and +9 zeroed (the side weapon and the double pla
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | run into, not called, 205 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 672 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 205 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `FuelOut`, `NextPlayer` |
-| Reads | `$7F99`-`$7FA1` (`PlayerRecord`, `Players`, `Player1`) |
-| Writes | `$7FA1`-`$7FA5` (`Player1`) |
+| Reads | `$7F99`-`$7FA1` (`PlayerRecord`, `Players`, `Player1`); `$7FD0`-`$7FD1` (`Player2`) |
+| Writes | `$7FA1`-`$7FA5` (`Player1`); `$7FD1`-`$7FD5` (`Player2`) |
 
 ### `NextPlayer` (`$B149`)
 
@@ -4163,10 +4357,11 @@ One player: the life is taken from the current record. Two: when the other recor
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 80 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 834 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 80 t-states own (0.00 %) |
 | Called from | `PlayerDied` |
-| Reads | `$7F9B`-`$7FA0` (`Players`, `Player1`) |
-| Writes | `$7FA0` (`Player1`) |
+| Reads | `$7F98`-`$7FA0` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$7FD0` (`Player2`) |
+| Writes | `$7F98`-`$7FA0` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$7FD0` (`Player2`) |
 
 ### `LevelDone` (`$B174`)
 
@@ -4176,7 +4371,7 @@ The record's +6 + 1, wrapping from 12 to 0, SetLevelStart. Not in c1 or c2; r1 (
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | run into, not called, 1,751 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,751 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `SetLevelStart` |
 | Reads | `$7F99`-`$7FA2` (`PlayerRecord`, `Players`, `Player1`) |
@@ -4210,8 +4405,9 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 21,595 t-states own (0.02 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 237,768 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 36,268 t-states own (0.03 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 237,768 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 21,595 t-states own (0.02 %) |
 | Called from | `MainLoopPlay` |
 | Calls | `PlayLoopPass`, `InterruptJump` |
 | Reads | `$81C5` (`EventRequests`); `$B1DE` (`PlayLoop`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4223,8 +4419,9 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 68,083 calls, 1,344,154 t-states own (1.28 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,894,567 calls, 58,001,436 t-states own (1.11 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 291,521 calls, 4,956,065 t-states own (3.90 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,894,567 calls, 58,001,436 t-states own (1.11 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,083 calls, 1,344,154 t-states own (1.28 %) |
 | Called from | `PlayInterruptExit`, `PlayLoop`, `PlayLoopAgain` (tail) |
 | Calls | `EventDispatch`, `InterruptJump` |
 
@@ -4234,8 +4431,9 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 148 calls, 954,572 t-states own (0.91 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 5,380 calls, 40,902,188 t-states own (0.78 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 340 calls, 3,790,403 t-states own (2.98 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5,380 calls, 40,902,188 t-states own (0.78 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 148 calls, 954,572 t-states own (0.91 %) |
 | Called from | `PlayInterruptExit`, `EventAny`, `EventDone` |
 | Calls | `PlayLoopTest`, `InterruptJump` |
 | Reads | `$7F7D` (`EndCode`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4247,8 +4445,9 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 68,079 calls, 749,140 t-states own (0.71 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,894,519 calls, 11,574,063 t-states own (0.22 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 291,527 calls, 1,166,177 t-states own (0.92 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,894,519 calls, 11,574,063 t-states own (0.22 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,079 calls, 749,140 t-states own (0.71 %) |
 | Called from | `PlayInterruptExit`, `PlayLoopCheck` |
 | Calls | `SavePanel`, `PlayLoopBranch`, `PlayLoopAgain`, `MainLoopEnd`, `InterruptJump` |
 | Reads | `$7F7D` (`EndCode`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4260,7 +4459,8 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,893,497 calls, 20,276,374 t-states own (0.39 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 291,458 calls, 2,041,121 t-states own (1.61 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,893,497 calls, 20,276,374 t-states own (0.39 %) |
 | Called from | `PlayInterruptExit`, `PlayLoopTest` |
 | Calls | `SavePanel`, `PlayLoopAgain`, `MainLoopEnd`, `InterruptJump` |
 | Reads | `$7F7D` (`EndCode`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4272,8 +4472,9 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 68,070 calls, 817,222 t-states own (0.78 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 2,894,587 calls, 34,742,197 t-states own (0.66 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 291,471 calls, 3,498,806 t-states own (2.75 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,894,587 calls, 34,742,197 t-states own (0.66 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,070 calls, 817,222 t-states own (0.78 %) |
 | Called from | `PlayInterruptExit`, `PlayLoopTest`, `PlayLoopBranch` |
 | Calls | `PlayLoopPass` (tail), `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4297,8 +4498,9 @@ GS: MainLoopTitle is CALL CreditsPage (the 48K: AND A; CALL NC), CALL NC,HiScore
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 17 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 187 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 68 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 187 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 17 t-states own (0.00 %) |
 | Called from | `RoundPlaySetup` |
 | Calls | `PlayLoop` |
 
@@ -4308,8 +4510,9 @@ GS: MainLoopTitle is CALL CreditsPage (the 48K: AND A; CALL NC), CALL NC,HiScore
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 2 calls, 63 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 561 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 184 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 561 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 63 t-states own (0.00 %) |
 | Called from | `PlayLoopTest`, `PlayLoopBranch` |
 | Calls | `RoundSetup`, `EndOfPlay` |
 
@@ -4321,10 +4524,11 @@ The ship's record `$F36C`: X 0/`$14`, Y 0/8, active (bit 7 of +8), +`$25` = `$68
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 717 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 7,911 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 2,828 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 7,911 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 717 t-states own (0.00 %) |
 | Called from | `RoundSetup` |
-| Reads | `$7F99`-`$7FA4` (`PlayerRecord`, `Players`, `Player1`); `$F374` (`PlayerObject`); `$F5B0` (`PlasmaBall2`); `$F5DC` (`SideShot`); `$F608` (`SightObject`) |
+| Reads | `$7F99`-`$7FA4` (`PlayerRecord`, `Players`, `Player1`); `$7FD4` (`Player2`); `$F374` (`PlayerObject`); `$F5B0` (`PlasmaBall2`); `$F5DC` (`SideShot`); `$F608` (`SightObject`) |
 | Writes | `$80BF` (`ShipHistoryIndex`); `$B263`-`$B264` (`PlayerSetup`); `$F36F`-`$F380` (`PlayerObject`); `$F391` (`PlayerObject`); `$F5B0` (`PlasmaBall2`); `$F5DC` (`SideShot`); 1 more ranges |
 
 ### `EnemiesSetup` (`$B28B`)
@@ -4335,8 +4539,9 @@ The five records of `$2C` bytes at `$F398`: inactive (bit 7 of +8), +`$26` = `$E
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 689 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 7,621 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 2,572 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 7,621 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 689 t-states own (0.00 %) |
 | Called from | `RoundSetup` |
 | Calls | `PodsSetup` |
 | Reads | `$F3A0` (`EnemyObjects`); `$F3CC` (`EnemyObjects`); `$F3F8` (`EnemyObjects`); `$F424` (`EnemyObjects`); `$F450` (`EnemyObjects`) |
@@ -4350,8 +4555,9 @@ Three records of `$2C` bytes at `$F474`: +`$25` = `$48`, kind +7 = 5, inactive, 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 567 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 6,163 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 2,120 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 6,163 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 567 t-states own (0.00 %) |
 | Called from | `EnemiesSetup` |
 | Reads | `$F47C` (`EnemyShots`); `$F4A8` (`EnemyShots`); `$F4D4` (`EnemyShots`) |
 | Writes | `$F47B`-`$F47C` (`EnemyShots`); `$F499`-`$F4A8` (`EnemyShots`); `$F4C5`-`$F4D4` (`EnemyShots`); `$F4F1`-`$F4F6` (`EnemyShots`) |
@@ -4364,8 +4570,9 @@ Three records of `$2C` bytes at `$F474`: +`$25` = `$48`, kind +7 = 5, inactive, 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 1 call, 554 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11 calls, 6,176 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 2,104 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 6,176 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 554 t-states own (0.00 %) |
 | Called from | `RoundSetup` |
 | Reads | `$F500` (`LaserShots`); `$F52C` (`LaserShots`); `$F558` (`LaserShots`); `$F584` (`LaserShots`) |
 | Writes | `$80BA` (`LaserShotsFree`); `$F500`-`$F503` (`LaserShots`); `$F51D`-`$F52F` (`LaserShots`); `$F549`-`$F55B` (`LaserShots`); `$F575`-`$F587` (`LaserShots`); `$F5A1` (`LaserShots`) |
@@ -4384,11 +4591,13 @@ GS: the installer copies ObjectSoundStub here: the two path movers (`$9694`, `$9
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 66 calls, 9,024 t-states own (0.01 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 10,281 calls, 1,383,656 t-states own (0.03 %) |
-| Called from | `FireLaser`, `EnemyFire`, `PodStep`, `ExplosionToPod`, `StopAndSettle` |
-| Reads | `$7F97` (`CurrentEffect`); `$81C5` (`EventRequests`) |
-| Writes | `$7F96`-`$7F97` (`EffectTick`, `CurrentEffect`); `$81C5` (`EventRequests`) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 404 calls, 58,580 t-states own (0.05 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 10,281 calls, 1,383,656 t-states own (0.03 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 66 calls, 9,024 t-states own (0.01 %) |
+| Called from | `PathOpDriftMiddle`, `FireLaser`, `EnemyFire`, `PodStep`, `ExplosionToPod`, `StopAndSettle` |
+| Calls | `PathOpAccelerate` (tail), `l_B47E` |
+| Reads | `$7F97` (`CurrentEffect`); `$81C5` (`EventRequests`); `$F3DF`-`$F3E2` (`EnemyObjects`); `$F40B`-`$F40E` (`EnemyObjects`); `$F437`-`$F43A` (`EnemyObjects`); `$F463`-`$F466` (`EnemyObjects`) |
+| Writes | `$7F96`-`$7F97` (`EffectTick`, `CurrentEffect`); `$81C5` (`EventRequests`); `$B497`-`$B498` (`l_B47E`) |
 
 ### `EffectPlay` (`$B30C`)
 
@@ -4398,8 +4607,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 106 calls, 49,692 t-states own (0.05 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 11,165 calls, 4,836,111 t-states own (0.09 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11,165 calls, 4,836,111 t-states own (0.09 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 106 calls, 49,692 t-states own (0.05 %) |
 | Called from | `EffectJob`, `EffectAfterJobs` (tail), `EffectRestore` (tail) |
 | Calls | `EffectFirstLen`, `EffectPeriod`, `EffectEnd` (tail), `InterruptJump` |
 | Reads | `$7E5A`-`$7E81` (`EffectTable`); `$7F8A`-`$7F97` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 4 more); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4411,7 +4620,7 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 10,850 calls, 733,667 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 10,850 calls, 733,667 t-states own (0.01 %) |
 | Called from | `PlayInterruptExit`, `EffectPlay` |
 | Calls | `EffectPeriod` |
 | Writes | `$7F95` (`EffectFrames`) |
@@ -4422,8 +4631,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 9,788 calls, 39,178 t-states own (0.04 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 992,841 calls, 3,971,125 t-states own (0.08 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 992,841 calls, 3,971,125 t-states own (0.08 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9,788 calls, 39,178 t-states own (0.04 %) |
 | Called from | `PlayInterruptExit`, `EffectPlay`, `EffectFirstLen`, `EffectTickTest` (tail), `EffectTickBranch` (tail), `EffectAfterJobs` (tail), `EffectRestore` (tail) |
 | Calls | `EffectHalves`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4435,8 +4644,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 9,787 calls, 137,047 t-states own (0.13 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 992,680 calls, 6,950,604 t-states own (0.13 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 992,680 calls, 6,950,604 t-states own (0.13 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9,787 calls, 137,047 t-states own (0.13 %) |
 | Called from | `PlayInterruptExit`, `EffectPeriod` |
 | Calls | `EffectSpeakerOn`, `EffectHalf`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4448,7 +4657,7 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 992,760 calls, 6,956,627 t-states own (0.13 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 992,760 calls, 6,956,627 t-states own (0.13 %) |
 | Called from | `PlayInterruptExit`, `EffectHalves` |
 | Calls | `EffectHalf`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4460,8 +4669,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 19,577 calls, 146,812 t-states own (0.14 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,986,257 calls, 15,058,773 t-states own (0.29 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,986,257 calls, 15,058,773 t-states own (0.29 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19,577 calls, 146,812 t-states own (0.14 %) |
 | Called from | `PlayInterruptExit`, `EffectHalves`, `EffectSpeakerOn`, `EffectHalfLoop` (tail) |
 | Calls | `EffectOut`, `InterruptJump` |
 | Reads | `$7F93`-`$7F94` (`PitchA`, `PitchB`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4473,8 +4682,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 19,572 calls, 243,380 t-states own (0.23 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,985,443 calls, 24,926,222 t-states own (0.48 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,985,443 calls, 24,926,222 t-states own (0.48 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19,572 calls, 243,380 t-states own (0.23 %) |
 | Called from | `PlayInterruptExit`, `EffectHalf` |
 | Calls | `EffectWait`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4487,8 +4696,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 479,160 calls, 1,917,054 t-states own (1.83 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 41,284,083 calls, 165,150,782 t-states own (3.15 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 41,284,083 calls, 165,150,782 t-states own (3.15 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 479,160 calls, 1,917,054 t-states own (1.83 %) |
 | Called from | `PlayInterruptExit`, `EffectOut`, `EffectWait3` (tail) |
 | Calls | `EffectWait1`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4500,8 +4709,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 479,013 calls, 1,917,073 t-states own (1.83 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 41,273,629 calls, 165,147,894 t-states own (3.15 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 41,273,629 calls, 165,147,894 t-states own (3.15 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 479,013 calls, 1,917,073 t-states own (1.83 %) |
 | Called from | `PlayInterruptExit`, `EffectWait` |
 | Calls | `EffectWait2`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4513,8 +4722,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 479,014 calls, 1,917,168 t-states own (1.83 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 41,273,480 calls, 165,163,816 t-states own (3.15 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 41,273,480 calls, 165,163,816 t-states own (3.15 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 479,014 calls, 1,917,168 t-states own (1.83 %) |
 | Called from | `PlayInterruptExit`, `EffectWait1` |
 | Calls | `EffectWait3`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4526,8 +4735,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 479,020 calls, 6,132,414 t-states own (5.85 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 41,274,317 calls, 526,847,808 t-states own (10.05 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 41,274,317 calls, 526,847,808 t-states own (10.05 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 479,020 calls, 6,132,414 t-states own (5.85 %) |
 | Called from | `PlayInterruptExit`, `EffectWait2` |
 | Calls | `EffectWait` (tail), `EffectSwap`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4539,8 +4748,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 19,571 calls, 78,299 t-states own (0.07 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,985,485 calls, 7,943,690 t-states own (0.15 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,985,485 calls, 7,943,690 t-states own (0.15 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19,571 calls, 78,299 t-states own (0.07 %) |
 | Called from | `PlayInterruptExit`, `EffectWait3` |
 | Calls | `EffectLow`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4552,8 +4761,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 19,571 calls, 137,028 t-states own (0.13 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,985,435 calls, 13,900,270 t-states own (0.27 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,985,435 calls, 13,900,270 t-states own (0.27 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19,571 calls, 137,028 t-states own (0.13 %) |
 | Called from | `PlayInterruptExit`, `EffectSwap` |
 | Calls | `EffectHalfNext`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4565,8 +4774,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 19,572 calls, 78,318 t-states own (0.07 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,985,470 calls, 7,942,987 t-states own (0.15 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,985,470 calls, 7,942,987 t-states own (0.15 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19,572 calls, 78,318 t-states own (0.07 %) |
 | Called from | `PlayInterruptExit`, `EffectLow` |
 | Calls | `EffectHalfLoop`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4578,8 +4787,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 19,572 calls, 186,010 t-states own (0.18 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,985,398 calls, 18,872,807 t-states own (0.36 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,985,398 calls, 18,872,807 t-states own (0.36 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19,572 calls, 186,010 t-states own (0.18 %) |
 | Called from | `PlayInterruptExit`, `EffectHalfNext` |
 | Calls | `EffectHalf` (tail), `EffectTickCheck`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4591,8 +4800,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 9,786 calls, 179,771 t-states own (0.17 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 992,778 calls, 3,978,474 t-states own (0.08 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 992,778 calls, 3,978,474 t-states own (0.08 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9,786 calls, 179,771 t-states own (0.17 %) |
 | Called from | `PlayInterruptExit`, `EffectHalfLoop` |
 | Calls | `EffectTickRead`, `EffectTickTest`, `InterruptJump` |
 | Reads | `$7F96` (`EffectTick`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4604,7 +4813,7 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 993,066 calls, 14,559,330 t-states own (0.28 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 993,066 calls, 14,559,330 t-states own (0.28 %) |
 | Called from | `PlayInterruptExit`, `EffectTickCheck` |
 | Calls | `EffectTickTest`, `InterruptJump` |
 | Reads | `$7F96` (`EffectTick`); `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4616,8 +4825,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 9,788 calls, 186,470 t-states own (0.18 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 992,867 calls, 3,970,931 t-states own (0.08 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 992,867 calls, 3,970,931 t-states own (0.08 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9,788 calls, 186,470 t-states own (0.18 %) |
 | Called from | `PlayInterruptExit`, `EffectTickCheck`, `EffectTickRead` |
 | Calls | `EventDispatch`, `EffectPeriod` (tail), `EffectTickBranch`, `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4629,7 +4838,7 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 992,669 calls, 13,788,428 t-states own (0.26 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 992,669 calls, 13,788,428 t-states own (0.26 %) |
 | Called from | `PlayInterruptExit`, `EffectTickTest` |
 | Calls | `EventDispatch`, `EffectPeriod` (tail), `InterruptJump` |
 | Reads | `$FEFF`-`$FF00` (`VectorTable`) |
@@ -4641,8 +4850,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 4 calls, 157,783 t-states own (0.15 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 275 calls, 372,600 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 275 calls, 372,600 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 4 calls, 157,783 t-states own (0.15 %) |
 | Called from | `EventAny`, `EventDone` |
 | Calls | `EffectPlay` (tail), `EffectPeriod` (tail), `EffectRestore`, `EffectEnd` (tail), `InterruptJump` |
 | Reads | `$7F8A`-`$7F96` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 3 more) |
@@ -4654,7 +4863,7 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 30,372 calls, 8,067,507 t-states own (0.15 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 30,372 calls, 8,067,507 t-states own (0.15 %) |
 | Called from | `PlayInterruptExit`, `EffectAfterJobs` |
 | Calls | `EffectPlay` (tail), `EffectPeriod` (tail), `EffectEnd` (tail) |
 | Reads | `$7F8A`-`$7F96` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 3 more) |
@@ -4666,8 +4875,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 
 | | |
 | --- | --- |
-| Runs (the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames) | 45 calls, 1,462 t-states own (0.00 %) |
-| Runs (the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames) | 1,941 calls, 60,442 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,941 calls, 60,442 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 45 calls, 1,462 t-states own (0.00 %) |
 | Called from | `EffectPlay` (tail), `EffectAfterJobs` (tail), `EffectRestore` (tail) |
 | Calls | `EffectJobDone` |
 | Writes | `$7F97` (`CurrentEffect`) |
@@ -4688,6 +4897,27 @@ GS: the installer copies its trampolines over the player (`$B446-$B4A8`: the att
 | --- | --- |
 | Runs | not reached in the recordings |
 
+### `l_B466` (`$B466`)
+
+**l_B466**
+
+| | |
+| --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 18 calls, 2,556 t-states own (0.00 %) |
+| Called from | `WaitFrames` (tail), `TuneOrder`, `TunePatternA`, `TunePatternB` |
+| Calls | `l_B47E` (tail) |
+| Ports out | `$7FFD` |
+
+### `l_B47E` (`$B47E`)
+
+**l_B47E**
+
+| | |
+| --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 18 calls, 47,252 t-states own (0.04 %) |
+| Called from | `RequestEffect`, `l_B466` (tail) |
+| Reads | `$F3C4` (`EnemyObjects`); `$F3F0` (`EnemyObjects`); `$F41C` (`EnemyObjects`); `$F448` (`EnemyObjects`) |
+
 ## start
 
 `src/game/start.asm`
@@ -4701,3 +4931,98 @@ Entered by the loader's jump (`$B6FF`). DI, SP = `$5C00`; `$BC00-$C7FF` (3072 by
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
+
+## The hook stubs
+
+The installer (`src/disk/install.asm`, `HookStubs`, `WaitStub` and the `$B2F0` / `$B47F` stubs) writes these into the
+image over the 48K's title tune data and over the beeper routine. Each does the instruction its site lost, loads HL
+with a driver entry and calls `CallDriver` (`$B466`) or, for the effects-only sounds, `CallDriverFx` (`$B482`). The
+address is the one the memory profiler counted; "Ran" is the total of the zgsB runs e1, e2 and e3 plus stage 2's h2
+(levels 1-11, `docs/img/sound/hooks.png`).
+
+| Address | Stub | The site and what it replaced | Driver entry | Through | Ran |
+| --- | --- | --- | --- | --- | --- |
+| `$A6AE` | `WaitStub` | `$B102` (EndOfPlay) and the other callers of `$A6AE`: the wait between rounds | `RoundWait` | `CallDriver` | 19 |
+| `$B2F0` | `ObjectSoundStub` | the 48K's beeper request `$B2F0` itself, called by the path movers `$9694`, `$9747` | `ObjectSound` | `CallDriverFx` | 53667 |
+| `$B47F` | `SlotGoneHook` | `$9954` LD L,(IY+0): the object's slot freed in the driver | `ClearSlot` | `CallDriverFx` | 1258 |
+| `$FF1C` | `RoundStartHook` | `$B03E` CALL `$91C6`: the round start's level sound, then `$91C6` | `LevelChange` | `CallDriver` | 19 |
+| `$FF26` | `GameStartHook` | `$AF51` LD (`$80B0`),A: the game start (LoadKind 1: the jingle) | `LevelChange` | `CallDriver` | 19 |
+| `$FF3B` | `ExplodeHook` | `$9FBE`, `$A034` CALL `$A293`: FX 7, then the explosion without the beeper crackle | `ExplosionSound` | `CallDriver` | 667 |
+| `$FF44` | `ShipHitHook` | `$9B51` JP `$9B5F`: FX 8, then the ship hit | `ShipExplodesSound` | `CallDriver` | 8 |
+| `$FF4D` | `MissileLaunchHook` | `$9CFA`, `$9D1F` CALL `$9CB0`: FX 5, then `$9CB0` | `MissileLaunchSound` | `CallDriver` | 8 |
+| `$FF56` | `PlasmaLaunchHook` | `$9CA6` LD (IX+`$12`),A: FX 4 | `PlasmaLaunchSound` | `CallDriver` | 99 |
+| `$FF60` | `EnemyFireHook` | `$A1C4` the beeper request, sound 1: FX 4 | `EnemyFireSound` | `CallDriver` | 1195 |
+| `$FF69` | `PlasmaBounceHook` | sound 3: FX 6 | `PlasmaBounceSound` | `CallDriver` | 236 |
+| `$FF6F` | `ShotHook` | sound 2: the shot (FX 9 / 10) | `ShotSound` | `CallDriver` | 1511 |
+| `$FF75` | `WeaponOnHook` | sound 6: FX 3 | `WeaponOnSound` | `CallDriver` | 38 |
+| `$FF7B` | `PodAppearsHook` | sound 4: FX 1 | `PodAppearsSound` | `CallDriver` | 175 |
+| `$FF81` | `NextWeaponHook` | sound 5: FX 2 | `NextWeaponSound` | `CallDriver` | 77 |
+| `$FF87` | `NextLevelHook` | `$B075` LD DE,8: the level in B is the next one | `-` | `-` | 12 |
+| `$FF8F` | `SceneryBounceHook` | `$95E7` LD HL,0: effects only | `SceneryBounceSound` | `CallDriverFx` | 353 |
+| `$FF99` | `BigEnemyHitHook` | `$A0BA` DEC (IY+`$0D`): the sound unless it reached 0 (effects only) | `BigEnemyHitSound` | `CallDriverFx` | 130 |
+| `$FFA3` | `BigEnemyDestroyedHook` | `$A0D5` LD (`$80E2`),A | `BigEnemyDestroyedSound` | `CallDriver` | 2 |
+| `$FFAC` | `ArenaBounceHook` | `$9823` LD HL,0: effects only | `ArenaBounceSound` | `CallDriverFx` | 892 |
+| `$FFB6` | `DiveHook` | `$9856` LD (IY+`$1B`),1: effects only | `DiveSound` | `CallDriverFx` | 26 |
+| `$FFC3` | `AimPlayerHook` | `$969D` CALL `$989F`: effects only, with the object's path pointer in DE | `PathSound` | `CallDriverFx` | 162 |
+
+## The driver in bank 1
+
+The GS driver is not part of the game image: the loader puts it in bank 1 at `$C000` (`src/disk/driver/driver.asm`,
+annotated in `src/disk/driver.ann`) and the stubs at the top of the image page it in for each call. Its entries, as
+the stubs call them:
+
+| Address | Entry | What |
+| --- | --- | --- |
+| `$C000` | `LevelInList` | Z set when Level is in the zero-ended list at HL; A = 0 at the end of the list (NZ) |
+| `$C010` | `ArenaBounceSound` | FX 18, note `$3A`, channel 3 (from the `$9823` site, effects only) |
+| `$C018` | `ObjectSound` | the beeper request `$B2F0`'s replacement: a sound chosen by where the object is in its path (DE) and the frames left (C) |
+| `$C02B` | `PathSound` | by the path pointer DE: `$6850` (path 4 + 4, or E = `$EE`) FX 19 note `$28`, `$6846` (path 3 + 4) FX 20 note `$24`, channel 3 |
+| `$C042` | `Path6850Sound` | FX 19, note `$28`, channel 3 when DE = `$6850` or E = `$EE` |
+| `$C058` | `Path685BSound` | FX 20, note `$28`, channel 3 when DE = `$685B` and C = `$11` |
+| `$C067` | `Path68F9Sound` | FX 20, note `$28`, channel 3 when DE = `$68F9` and C = `$12` |
+| `$C07E` | `Path682CSound` | FX 16, note `$3C`, channel 3 when DE = `$682C` and C = `$0A` |
+| `$C095` | `SaturnSound` | SATURNS on: path pointer `$6820` (path 1's start) plays FX 21 (note `$32`, volume FxVolume / 4) when its object slot's B changed |
+| `$C0D5` | `ClearSlot` | the object at IY gone: its slot's last value cleared (from the `$9954` site through `$B47F`) |
+| `$C0DF` | `ObjectSlot` | IY's object slot: (IY - `$F398`) / `$2C`, 0-6 with carry; no carry for an IY outside the 7 slots |
+| `$C113` | `BigEnemyHitSound` | from the `$A0BA` site (effects only): on levels 7 and 11 FX 12, else FX 13 or 14; channel 0 |
+| `$C13E` | `DiveSound` | FX 17, channel 0: note `$3C` on level 4, else `$28` (from the `$9856` site, effects only) |
+| `$C153` | `BigEnemyDestroyedSound` | from the `$A0D5` site: music mode as ShipExplodesSound; effects only all four channels at once |
+| `$C17F` | `SceneryBounceSound` | FX 15, note `$2D` + 0-1, channel 3, when D bit 7 is clear (from the `$95E7` site, effects only) |
+| `$C191` | `EnemyFireSound` | FX 4, note `$30` + 0-1, channel 1 (beeper sound 1) |
+| `$C19D` | `PlasmaLaunchSound` | FX 4, note `$2A` + 0-1 (the `$9CA6` site) |
+| `$C1B2` | `MissileLaunchSound` | FX 5, note `$32` + 0-1 (the `$9CFA` / `$9D1F` sites) |
+| `$C1BD` | `ExplosionSound` | FX 7, note `$2C` + 0-3: channel 1 in music mode, 0 in effects only (the `$9FBE` / `$A034` sites) |
+| `$C1D0` | `ShipExplodesSound` | FX 8, note `$2D`, not gated: channel 1 in music mode, 0 in effects only (the `$9B51` site) |
+| `$C1DF` | `ShotSound` | beeper sound 2: FX 10 note `$32` if Player1LaserLevel >= 2, else FX 9 note `$34`; + 0-1 |
+| `$C208` | `PodAppearsSound` | beeper sound 4: FX 1, note `$26` (channel 1, or 2 in effects only) |
+| `$C20D` | `WeaponOnSound` | beeper sound 6: FX 3, note `$32`, channel 1 |
+| `$C212` | `PlasmaBounceSound` | beeper sound 3: FX 6, note `$3C` + 0-1 (channel 1, or 2 in effects only) |
+| `$C21D` | `NextWeaponSound` | beeper sound 5: FX 2, note `$32` + 0-3, channel 1 |
+| `$C228` | `GateChannel1` | Gate with channel 1 |
+| `$C22A` | `Gate` | a sound through the gate: dropped while GateCountdown runs, unless ZynapsState is `$C0` |
+| `$C23C` | `PlayFx` | FX L at note H in channel C: `#2E` L, `#40` H, `#80`+C with data L |
+| `$C24F` | `PlayFxDefault` | the same through the gate, played with the firmware's channel choice: `#45` B (default volume), `#39` L |
+| `$C27D` | `StopAll` | `#32` (stop the module), then `#3A` with `$FF` (stop every FX): no caller |
+| `$C28F` | `SetLoopStart` | FX L, note H, `#48` with E, D, B: no caller |
+| `$C2AD` | `SetLoopEnd` | `#49` with E, D, B, then `#41` H and `#80`+C with L: no caller (follows SetLoopStart) |
+| `$C2D1` | `SelectFx` | A to the data register, `#2E` (select FX) |
+| `$C2D9` | `SetNote` | A, `#40` (FX note) |
+| `$C2E1` | `SetFxVolume` | A, `#41` (FX volume) |
+| `$C2E7` | `WaitCommand` | until the card has taken the command (status bit 0 clear) |
+| `$C2ED` | `WaitData` | until the card has taken the data byte (status bit 7 clear) |
+| `$C2F3` | `StopModule` | data 1, `#32`: stop the module |
+| `$C2FD` | `WarmReset` | the command `$F3`: the card emptied (the load-once patch makes this a RET) |
+| `$C303` | `CardPages` | `#23`: the card's 32 K pages; 7 or more in effects-only mode: the command `$F3` once, then the load-once patches |
+| `$C328` | `SendFxVolume` | `#2B` with FxVolume |
+| `$C333` | `PlayModule` | `#2A` with ModuleVolume (module volume), then data 1 and `#31` (play the module) |
+| `$C34C` | `RoundWait` | Zynaps's wait between rounds (`$A6AE` stub): a delay, or in music mode the module faded out |
+| `$C355` | `FadeModule` | `#2A` from A down to 0, a delay of 3000 loop steps between the steps |
+| `$C36D` | `Delay` | a fixed delay of 65536 loop steps |
+| `$C376` | `SwapBytes` | BC bytes exchanged between HL and DE |
+| `$C385` | `LevelChange` | the round start: when NextLevel is not Level, the sound of the next level, the start or the title |
+| `$C432` | `SwapSavedArea` | SavedArea <-> SavedAreaCopy |
+| `$C43E` | `SwapLoader` | the 1049 bytes at `$61A8` <-> LoaderCopy |
+| `$C863` | `LoadOncePatch2` | the load-once patch's tail: INC L at PlayFxDefaultFrom and FX 22 in SaturnSound |
+| `$C86C` | `RoundWaitMusic` | music mode: the module faded out (from ModuleVolume) when RoundWaitFrames is 2 and the level select is off, else Delay |
+
+How each entry talks to the card is in [9. Sound](09-sound.md).

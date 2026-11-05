@@ -79,6 +79,15 @@
       "delta": "+$0000",
       "match": "exact",
       "commit": "e03a78e"
+    },
+    {
+      "program": "Zynaps GS",
+      "case": "games/zynaps-gs",
+      "address": "$8231",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "b92fa86"
     }
   ],
   "source": {

@@ -1,0 +1,1174 @@
+{
+  "schema": 1,
+  "id": "sound/gs/zx-masters-zynaps-driver/seen-zynaps-gs",
+  "kind": "code",
+  "role": "sfx",
+  "name": "General Sound driver of Zynaps GS (ZX-Masters), bank 1 $C000: the sounds of the patched sites, the level change, the card commands",
+  "authors": [
+    "ZX-Masters (Mike Blum)"
+  ],
+  "year": 1997,
+  "tags": [
+    "general-sound",
+    "gs",
+    "driver",
+    "sound",
+    "zx-masters"
+  ],
+  "summary": "Called from the game's stubs with bank 1 paged: sends an effect (#2E select, #40 note, #80+c play), each command after the card took the one before (IN $BB bits 0 and 7); LevelChange swaps the level loader in at $61A8, loads the level's module and effects to the card and swaps back; RoundWait waits or fades the module between rounds.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1098,
+    "sha1": "5385464f41804fbcb3ead63080c1ec6dcd8a6719",
+    "masked_sha1": "2e927ae80c3bed29547677636a47f5bd23bc7014"
+  },
+  "origin": "$C000",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B461"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 33,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B464"
+    },
+    {
+      "offset": 41,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 44,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6846"
+    },
+    {
+      "offset": 62,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 67,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6850"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_685B"
+    },
+    {
+      "offset": 104,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_68F9"
+    },
+    {
+      "offset": 122,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 127,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_682C"
+    },
+    {
+      "offset": 145,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 150,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6820"
+    },
+    {
+      "offset": 160,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 163,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 176,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 184,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 194,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 197,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B45F"
+    },
+    {
+      "offset": 204,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 209,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 214,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 217,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 231,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F398"
+    },
+    {
+      "offset": 248,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 276,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 279,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 302,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 316,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 319,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B461"
+    },
+    {
+      "offset": 331,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 337,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 340,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B486"
+    },
+    {
+      "offset": 358,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 366,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 374,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 381,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 399,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 411,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 423,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B486"
+    },
+    {
+      "offset": 427,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 432,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 455,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B486"
+    },
+    {
+      "offset": 468,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B486"
+    },
+    {
+      "offset": 480,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FA6"
+    },
+    {
+      "offset": 495,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B465"
+    },
+    {
+      "offset": 507,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B486"
+    },
+    {
+      "offset": 555,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F6A"
+    },
+    {
+      "offset": 562,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_AA29"
+    },
+    {
+      "offset": 569,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_AA29"
+    },
+    {
+      "offset": 574,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 578,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 589,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 592,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7F6A"
+    },
+    {
+      "offset": 599,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_AA29"
+    },
+    {
+      "offset": 606,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_AA29"
+    },
+    {
+      "offset": 611,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 615,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 625,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 635,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 642,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 653,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 657,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 661,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 671,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 677,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 683,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 693,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 699,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 705,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 709,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 776,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 784,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B486"
+    },
+    {
+      "offset": 789,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 794,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 797,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 802,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 805,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C863"
+    },
+    {
+      "offset": 809,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B45F"
+    },
+    {
+      "offset": 820,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B460"
+    },
+    {
+      "offset": 829,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 836,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B460"
+    },
+    {
+      "offset": 845,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B486"
+    },
+    {
+      "offset": 851,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C86C"
+    },
+    {
+      "offset": 865,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 903,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B462"
+    },
+    {
+      "offset": 907,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B461"
+    },
+    {
+      "offset": 924,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 927,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_BE00"
+    },
+    {
+      "offset": 930,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CF90"
+    },
+    {
+      "offset": 938,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_BED3"
+    },
+    {
+      "offset": 941,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 944,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 947,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 950,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 953,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B463"
+    },
+    {
+      "offset": 963,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 968,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 971,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_61A8"
+    },
+    {
+      "offset": 974,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 981,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_61B7"
+    },
+    {
+      "offset": 984,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 989,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6277"
+    },
+    {
+      "offset": 992,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 996,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B461"
+    },
+    {
+      "offset": 999,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1006,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6277"
+    },
+    {
+      "offset": 1011,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B462"
+    },
+    {
+      "offset": 1014,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B461"
+    },
+    {
+      "offset": 1017,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B486"
+    },
+    {
+      "offset": 1021,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6277"
+    },
+    {
+      "offset": 1024,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_61BF"
+    },
+    {
+      "offset": 1027,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1030,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1037,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_61BF"
+    },
+    {
+      "offset": 1040,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B486"
+    },
+    {
+      "offset": 1044,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1047,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1050,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1056,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_BE00"
+    },
+    {
+      "offset": 1059,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CF90"
+    },
+    {
+      "offset": 1075,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D190"
+    },
+    {
+      "offset": 1078,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5B00"
+    },
+    {
+      "offset": 1084,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1087,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_61A8"
+    },
+    {
+      "offset": 1090,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C44A"
+    },
+    {
+      "offset": 1096,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "LevelInList",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the first routine of the driver"
+    },
+    {
+      "offset": 901,
+      "name": "LevelChange",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "load the level's sound to the card when the level changed"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "LevelInList",
+      "comment": ""
+    },
+    {
+      "offset": 4,
+      "name": "l_C004",
+      "comment": ""
+    },
+    {
+      "offset": 13,
+      "name": "Fx12Levels",
+      "comment": ""
+    },
+    {
+      "offset": 16,
+      "name": "ArenaBounceSound",
+      "comment": ""
+    },
+    {
+      "offset": 24,
+      "name": "ObjectSound",
+      "comment": ""
+    },
+    {
+      "offset": 43,
+      "name": "PathSound",
+      "comment": ""
+    },
+    {
+      "offset": 66,
+      "name": "Path6850Sound",
+      "comment": ""
+    },
+    {
+      "offset": 77,
+      "name": "l_C04D",
+      "comment": ""
+    },
+    {
+      "offset": 88,
+      "name": "Path685BSound",
+      "comment": ""
+    },
+    {
+      "offset": 103,
+      "name": "Path68F9Sound",
+      "comment": ""
+    },
+    {
+      "offset": 116,
+      "name": "l_C074",
+      "comment": ""
+    },
+    {
+      "offset": 126,
+      "name": "Path682CSound",
+      "comment": ""
+    },
+    {
+      "offset": 147,
+      "name": "l_C093",
+      "comment": ""
+    },
+    {
+      "offset": 149,
+      "name": "SaturnSound",
+      "comment": ""
+    },
+    {
+      "offset": 175,
+      "name": "l_C0AF",
+      "comment": ""
+    },
+    {
+      "offset": 189,
+      "name": "SaturnFx",
+      "comment": ""
+    },
+    {
+      "offset": 213,
+      "name": "ClearSlot",
+      "comment": ""
+    },
+    {
+      "offset": 223,
+      "name": "ObjectSlot",
+      "comment": ""
+    },
+    {
+      "offset": 240,
+      "name": "l_C0F0",
+      "comment": ""
+    },
+    {
+      "offset": 252,
+      "name": "l_C0FC",
+      "comment": ""
+    },
+    {
+      "offset": 257,
+      "name": "l_C101",
+      "comment": ""
+    },
+    {
+      "offset": 259,
+      "name": "SlotValues",
+      "comment": ""
+    },
+    {
+      "offset": 267,
+      "name": "SlotCounters",
+      "comment": ""
+    },
+    {
+      "offset": 275,
+      "name": "BigEnemyHitSound",
+      "comment": ""
+    },
+    {
+      "offset": 304,
+      "name": "l_C130",
+      "comment": ""
+    },
+    {
+      "offset": 318,
+      "name": "DiveSound",
+      "comment": ""
+    },
+    {
+      "offset": 333,
+      "name": "l_C14D",
+      "comment": ""
+    },
+    {
+      "offset": 339,
+      "name": "BigEnemyDestroyedSound",
+      "comment": ""
+    },
+    {
+      "offset": 383,
+      "name": "SceneryBounceSound",
+      "comment": ""
+    },
+    {
+      "offset": 401,
+      "name": "EnemyFireSound",
+      "comment": ""
+    },
+    {
+      "offset": 413,
+      "name": "PlasmaLaunchSound",
+      "comment": ""
+    },
+    {
+      "offset": 422,
+      "name": "Channel1Or2",
+      "comment": ""
+    },
+    {
+      "offset": 434,
+      "name": "MissileLaunchSound",
+      "comment": ""
+    },
+    {
+      "offset": 445,
+      "name": "ExplosionSound",
+      "comment": ""
+    },
+    {
+      "offset": 464,
+      "name": "ShipExplodesSound",
+      "comment": ""
+    },
+    {
+      "offset": 479,
+      "name": "ShotSound",
+      "comment": ""
+    },
+    {
+      "offset": 491,
+      "name": "l_C1EB",
+      "comment": ""
+    },
+    {
+      "offset": 494,
+      "name": "l_C1EE",
+      "comment": ""
+    },
+    {
+      "offset": 520,
+      "name": "PodAppearsSound",
+      "comment": ""
+    },
+    {
+      "offset": 525,
+      "name": "WeaponOnSound",
+      "comment": ""
+    },
+    {
+      "offset": 530,
+      "name": "PlasmaBounceSound",
+      "comment": ""
+    },
+    {
+      "offset": 541,
+      "name": "NextWeaponSound",
+      "comment": ""
+    },
+    {
+      "offset": 552,
+      "name": "GateChannel1",
+      "comment": ""
+    },
+    {
+      "offset": 554,
+      "name": "Gate",
+      "comment": ""
+    },
+    {
+      "offset": 571,
+      "name": "PlayFxFrom",
+      "comment": ""
+    },
+    {
+      "offset": 572,
+      "name": "PlayFx",
+      "comment": ""
+    },
+    {
+      "offset": 591,
+      "name": "PlayFxDefault",
+      "comment": ""
+    },
+    {
+      "offset": 608,
+      "name": "PlayFxDefaultFrom",
+      "comment": ""
+    },
+    {
+      "offset": 637,
+      "name": "StopAll",
+      "comment": ""
+    },
+    {
+      "offset": 655,
+      "name": "SetLoopStart",
+      "comment": ""
+    },
+    {
+      "offset": 685,
+      "name": "SetLoopEnd",
+      "comment": ""
+    },
+    {
+      "offset": 721,
+      "name": "SelectFx",
+      "comment": ""
+    },
+    {
+      "offset": 729,
+      "name": "SetNote",
+      "comment": ""
+    },
+    {
+      "offset": 737,
+      "name": "SetFxVolume",
+      "comment": ""
+    },
+    {
+      "offset": 743,
+      "name": "WaitCommand",
+      "comment": ""
+    },
+    {
+      "offset": 749,
+      "name": "WaitData",
+      "comment": ""
+    },
+    {
+      "offset": 755,
+      "name": "StopModule",
+      "comment": ""
+    },
+    {
+      "offset": 765,
+      "name": "WarmReset",
+      "comment": ""
+    },
+    {
+      "offset": 771,
+      "name": "CardPages",
+      "comment": ""
+    },
+    {
+      "offset": 807,
+      "name": "data_C327",
+      "comment": ""
+    },
+    {
+      "offset": 808,
+      "name": "SendFxVolume",
+      "comment": ""
+    },
+    {
+      "offset": 819,
+      "name": "PlayModule",
+      "comment": ""
+    },
+    {
+      "offset": 844,
+      "name": "RoundWait",
+      "comment": ""
+    },
+    {
+      "offset": 853,
+      "name": "FadeModule",
+      "comment": ""
+    },
+    {
+      "offset": 854,
+      "name": "l_C356",
+      "comment": ""
+    },
+    {
+      "offset": 870,
+      "name": "l_C366",
+      "comment": ""
+    },
+    {
+      "offset": 877,
+      "name": "Delay",
+      "comment": ""
+    },
+    {
+      "offset": 880,
+      "name": "l_C370",
+      "comment": ""
+    },
+    {
+      "offset": 886,
+      "name": "SwapBytes",
+      "comment": ""
+    },
+    {
+      "offset": 901,
+      "name": "LevelChange",
+      "comment": ""
+    },
+    {
+      "offset": 970,
+      "name": "PlayStartFx",
+      "comment": ""
+    },
+    {
+      "offset": 988,
+      "name": "LoadTitle",
+      "comment": ""
+    },
+    {
+      "offset": 1010,
+      "name": "LoadLevel",
+      "comment": ""
+    },
+    {
+      "offset": 1039,
+      "name": "l_C40F",
+      "comment": ""
+    },
+    {
+      "offset": 1046,
+      "name": "LevelChangeDone",
+      "comment": ""
+    },
+    {
+      "offset": 1052,
+      "name": "RestoreStack",
+      "comment": ""
+    },
+    {
+      "offset": 1074,
+      "name": "SwapSavedArea",
+      "comment": ""
+    },
+    {
+      "offset": 1086,
+      "name": "SwapLoader",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps GS: the GS driver (bank 1)",
+      "case": "games/zynaps-gs",
+      "address": "$C000",
+      "bank": 1,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "b92fa86"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps-gs",
+    "file": "src/disk/driver/driver.asm",
+    "label": "LevelInList"
+  },
+  "docs": [
+    "games/zynaps-gs/docs/03-build-and-load.md",
+    "games/zynaps-gs/docs/09-sound.md"
+  ]
+}

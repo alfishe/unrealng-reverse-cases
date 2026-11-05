@@ -1,0 +1,10 @@
+# Regions for tools/fig_heatmap.py on r1's level-load window (docs/02), START END NAME.
+4000 5AFF the loading screen, written once
+5B00 5D3A GS stubs, from bank 1 $D190
+61A8 65C0 the level loader, from bank 1 $C44A
+91C6 91E0 Zynaps: the round start
+A514 A5A6 Zynaps: the round start
+B03D B040 RoundStartHook
+B446 B4A7 trampolines; $B460-$B461 written
+BE00 BFFF loader stack, unpack heads ($BED4)
+FF1C FFD1 the GS stubs
