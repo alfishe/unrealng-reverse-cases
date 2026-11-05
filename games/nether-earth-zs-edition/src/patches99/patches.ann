@@ -1,0 +1,453 @@
+# The annotations of the Nether Earth ZS Edition '99 patches block ($D800-$DB6F as unpacked, 880 bytes): the single
+# source of truth for src/patches99/*.asm (tools/game99_mkgame.py patches -> kit/mkgame.py, one run a piece).
+# Format: kit/mkgame.py, class Annotations. The block holds eight pieces in two sets that stage 3 copies to the same
+# run addresses in the game (tools/game99_image.py PIECES); each piece follows a line '# @piece NAME' and is
+# annotated at its run address. The lines before the first piece hold for every piece.
+#
+# The disk set (diskread, diskmap, paging128, menu128) ran in the recordings (r99-play, crit-play, loadmap-menu);
+# the tape / one-page set (taperead, tapemap, textload48, menu48) never ran: its code is these entries walked
+# statically.
+
+@inline $D42D
+
+# The game's routines and operands the pieces use (game99 labels; the operands are the bytes LOAD MAP writes)
+@equ $A56A TextEntry ; the text reader stage 3 installs: PagedText (128 K) or LoadText (one page, tape)
+@equ $A58A SetPage ; paging128: page A in at $C000, the 48 ROM in
+@equ $A598 ReadBlock ; the reader stage 3 installs: DiskRead (TR-DOS) or TapeRead (ROM LD-BYTES)
+@equ $A600 Start ; game99: the entry; CALL $C100 (the start-up menu), then StartGame at $A603
+@equ $A684 MapGeneral ; game99: the operand of LD A,99 at $A683 (NewGameSetup: the player's general resource)
+@equ $ADB4 CapturePoints ; game99: the operand of LD B,n at $ADB3 (the capture tick: the capture points)
+@equ $B3E6 TargetWarbases ; game99: the operand of LD B,n at $B3E5 (the warbases a robot may target)
+@equ $B817 SpawnWarbases ; game99: the operand of LD B,n at $B816 (the warbases the enemy builds at)
+@equ $BB1F CountPoints ; game99: the operand of LD B,n at $BB1E (CountBuildings: the records counted)
+@equ $BC8A SceneryWestList 2 ; game99: the operand of LD HL,nn at $BC89 (BuildMap: the west scenery list)
+@equ $BC92 SceneryEastList 2 ; game99: the operand of LD HL,nn at $BC91 (BuildMap: the east scenery list)
+@equ $BC9B FirstFactory 2 ; game99: the operand of LD IX,nn at $BC99 (BuildMap: the first factory record)
+@equ $BCA2 BaseWestList 2 ; game99: the operand of LD HL,nn at $BCA1 (BuildMap: the west base list)
+@equ $BCAA BaseEastList 2 ; game99: the operand of LD HL,nn at $BCA9 (BuildMap: the east base list)
+@equ $BCB7 EnemyWarbases ; game99: the operand of LD B,n at $BCB6 (BuildMap: the enemy's warbases)
+@equ $BDA9 SceneryWest ; game99: the level area $BDA9-$BF9B (scenery and base lists) that a map file's first 499 bytes replace
+@equ $C150 QuietScreen ; menu48: clear the screen, DI, I = $3F, IM 0
+@equ $C1FD LoadMap ; the LOAD MAP screen stage 3 installs: DiskLoadMap or TapeLoadMap
+@equ $D0B9 ClearScreen ; game99: pixels and attributes to 0, border black
+@equ $D42D PrintInline ; game99: print the codes and characters after the CALL up to a 0
+@equ $D800 MenuCode ; menu99: the start-up menu's code (unpacked in page 1, copied into page 0 to run)
+@equ $E800 MenuFile ; menu99: the start-up menu's packed block as read (page 1 on 128 K), unpacking itself to $D800
+@equ $F000 LoadBuffer 512 ; the catalogue (8 sectors) and then the map file (2 sectors) are read here, over the map's rows 9-14
+@equ $F800 FileList ; LOAD MAP's list of the N files: 16-byte catalogue entries, over the map's rows 13-14
+@equ $FD04 PrintAddr 2 ; game99: the screen address of the next printed character
+@equ $6700 MenuStubRun ; menu128: where MenuStub runs (below the game block, under the stack top $6780)
+# ROM entries
+@equ $028E KeyScan ; 48 ROM KEY-SCAN: E = the key's number ($FF none), D = the shift
+@equ $0562 LdBytesIn ; 48 ROM LD-BYTES past its set-up (after LD HL,SA/LD-RET; PUSH HL): the edges and bytes
+@equ $2F1B TrDosReadSector ; TR-DOS ROM: sector E + 1 into the sector register, read 256 bytes to HL
+@equ $2F4D TrDosSeek ; TR-DOS ROM: A to the system register ($FF), seek track C
+@equ $2F65 TrDosRestore ; TR-DOS ROM: the RESTORE command, the head to track 0
+@equ $33C3 RomLdirRet ; 48 ROM: LDIR; RET (inside the calculator's stack moves)
+@equ $3D2F TrDosEntry ; the TR-DOS ROM's RET at $3D2F: the trap pages the TR-DOS ROM in and returns to the address pushed
+@equ $7FFD Port7FFD ; the 128 K paging port
+
+# @piece diskread
+@module diskread ; The TR-DOS sector reader (the disk set), run at $A598
+@about The patches block's `$D800-$D83D` (62 bytes). Stage 3 copies it to `$A598-$A5D5` on the disk paths ($6264), over the room the game block leaves there (src/game99 difficulty: PieceRoomA59C). LOAD MAP (DiskLoadMap) and the one-page text reader (LoadText) call it; on 128 K the texts come from page 3 instead.
+@about Every step is a routine of the TR-DOS ROM, reached by DiskRomCall: PUSH IX; JP $3D2F. The TR-DOS ROM pages itself in when the CPU fetches from `$3D00-$3DFF`; at `$3D2F` it holds a RET, which takes the pushed IX: the routine runs with the TR-DOS ROM in, and its own RET leaves through the same window back to the 48 ROM and to the caller. The routines are the same in TR-DOS 5.03 and 5.04T.
+$A598 c DiskRead ; Read B sectors from logical track D, sector E (0-15) to HL, through the TR-DOS ROM
+> In: HL the destination, D the logical track (the physical track D / 2, the side D bit 0: odd tracks are side 1), E the first sector, B the count; C is not used. A RESTORE first (the head to track 0), then a seek at the start and at each new logical track, and per sector a read of 256 bytes to HL, HL one page on each. After sector 15, sector 0 of the next logical track. No error check: what the ROM routines do on a bad sector is all.
+> Out: HL past the data, D, E past the last sector. A, BC, IX lost.
+$A598 ; TR-DOS $2F65: the RESTORE command
+$A59C ; (the 4 bytes up to here are also in the game block: DiskReadLeftover)
+$A59F DiskSeekTrack ; keep the count and the position
+$A5A1 ; the logical track
+$A5A2 ; no carry in
+$A5A3 ; the side into the carry...
+$A5A4 ; ... C = the physical track
+$A5A5 ; even: side 0
+$A5A7 ; odd: the system register for side 1 ($2C: the drive A, side 1, no reset)
+$A5AB DiskSide0 ; the system register for side 0 ($3C)
+$A5AD DiskSeek ; TR-DOS $2F4D: A to the system register, seek track C
+$A5B4 ; the position and the count back
+$A5B6 DiskReadSector ; keep them over the read
+$A5B8 ; TR-DOS $2F1B: sector E + 1, 256 bytes to HL
+$A5BF ; the position back
+$A5C0 ; the next 256 bytes
+$A5C1 ; the next sector
+$A5C2 ; past sector 15?
+$A5C4 ; no: the same track, no seek
+$A5C6 ; yes: sector 0...
+$A5C8 ; ... of the next logical track
+$A5C9 ; the count
+$A5CA ; the next sector, with a seek first
+$A5CC ; done
+$A5CD DiskSameTrack ; the count
+$A5CE ; the next sector on this track
+$A5D0 ; done
+$A5D1 c DiskRomCall ; Run the TR-DOS ROM routine at IX: PUSH IX; JP $3D2F (the RET there takes IX)
+> The TR-DOS ROM is paged in by the fetch at `$3D2F` and stays in while the routine runs; its RET returns here through the same window, with the 48 ROM back. The ROM routines keep BC, DE and HL as they leave them.
+$A5D1 ; the routine's address under the caller's return
+$A5D3 ; into the TR-DOS ROM: its RET at $3D2F jumps to IX
+
+# @piece diskmap
+@module diskmap ; LOAD MAP from disk (the disk set), run at $C1FD
+@about The patches block's `$D83E-$D973` (310 bytes). Stage 3 copies it to `$C1FD-$C332` on the disk paths ($626F), over the game block's LoadMapRoom (src/game99 mainmenu). The start-up menu's LOAD MAP item reaches it through the launcher at `$C10F` (menu128 LoadMapLauncher on 128 K, a JP on one page).
+@about The screen: the disk's catalogue (track 0, sectors 0-7: 128 entries of 16 bytes) is read to LoadBuffer `$F000`; every live entry of type N is copied to FileList `$F800` and its 8-character name printed, four names a row, eight columns each, from the screen's top left in attribute $01 (blue on black). The chosen name's eight attribute cells are $38 (black on white). Q moves the choice one name back, A one name on, SPACE loads it; other keys do nothing. The keys are read with the 48 ROM's KEY-SCAN and its key table (`$0205`), three frames (HALT) apart and with no wait for a release: a held key repeats every three frames.
+@about Loading: the chosen entry's sector and track (its bytes +14, +15) give the map file's first sector; two sectors (512 bytes) are read to `$F000`. The first 499 bytes replace the game's level area (`$BDA9-$BF9B`: the scenery and base lists); the 13-byte tail patches the game: see DiskApplyLevel. Then JP Start: the start-up menu again, whose START plays the map. No N file at all, or a choice past the list whose word +14 is 0, goes back to the menu with nothing loaded.
+@about Limits: the cursor goes up to the 96th name (index 95, $C2C4) with no check against the count of files; past the list, FileList's bytes are whatever was in the map there before. The print fix at $C263 moves the print address from the screen's first third to the second ($41xx to $48xx) only: from the 65th name on (the third third) the names land in the wrong pixel lines, while the attributes (and so the highlight) go on in order.
+$C1FD c DiskLoadMap ; LOAD MAP from disk: list the catalogue's N files, Q / A / SPACE to choose and load one
+> No interrupts while it runs (DI; I = $3F, IM 0: the play interrupt is off, I points at the ROM); EI comes before the key loop for the HALTs, with IM 0 and I = $3F (an interrupt executes the bus's $FF: RST $38, the 48 ROM's handler).
+> The catalogue: 8 sectors of track 0 to LoadBuffer. Then the print position (0,0), attribute $01, setting $11 (single size) for the names.
+$C1FD ; a blank screen
+$C200 ; the play interrupt off
+$C201 ; I points at the ROM
+$C205 ; IM 0
+$C207 ; the catalogue...
+$C20A ; ... track 0, sector 0...
+$C20D ; ... 8 sectors (C is not used)
+$C210 ; read
+$C213 ; the names' position and colour
+$C216 b DiskListPos 8 ; Inline string: position (0,0), attribute $01, setting $11, end
+> The bytes 1 0 0 (position (0,0)), 2 $01 (blue on black), 4 $11 (single size), 0.
+$C216 ; AT (0,0), attribute $01, size $11
+$C21E c DiskListFiles ; Copy each live N entry of the catalogue to FileList and print its name
+> 128 entries from `$F000` (IX), 16 bytes each (bytes 0-7 the name, 8 the type, 9-10 the start, 11-12 the length, 13 the sectors, 14 the first sector, 15 the first track). A first byte 0 ends the catalogue; below $20 (1: deleted) the entry is skipped; a type other than N too.
+> A live N entry is copied to the list (DE), then patched in its place to print its own name: CALL PrintInline into the 3 bytes before it (ix-3, the end of the entry before, already copied), 0 after the name (+8, the type) and RET (+9). The CALL at $C25D, whose operand gets the patched entry's address - 3, prints the name and returns at the entry's +9 to $C260.
+> The print address: when it has run into $41xx (the first screen third full after 32 names, PrintAddr's high byte from $40 to $41) it is set to $48xx, the second third. The jump from the second third to the third is not fixed.
+$C21E ; the list
+$C221 ; 128 catalogue entries
+$C223 ; the catalogue
+$C227 DiskListEntry ; the count
+$C228 ; an entry's length
+$C22B ; the name's first byte
+$C22E ; 0?
+$C22F ; the catalogue's end
+$C231 ; below $20?
+$C233 ; a deleted file: skip
+$C235 ; the type
+$C237 ; N?
+$C23A ; no: skip
+$C23C ; HL = the entry
+$C23F ; kept
+$C240 ; to the list (DE moves on)
+$C242 ; CALL...
+$C246 ; ... PrintInline...
+$C24A ; ... in the 3 bytes before the entry
+$C24E ; the name's end: 0 over the type
+$C252 ; then RET
+$C256 ; the entry...
+$C257 ; ... - 3: the patched CALL
+$C25A ; into the CALL below
+$C25D PrintNameCall ; print the name (the CALL returns at the entry's +9)
+$C260 ; the entry's length again
+$C263 ; the print address's high byte
+$C266 ; $41: past the first third?
+$C268 ; the second third
+$C26A ; no: as it is
+$C26C ; the print address on in the second third
+$C26F DiskListNext ; the next entry
+$C271 ; the count
+$C272 ; all 128
+$C274 DiskListEnd ; any file listed?
+$C277 ; no carry
+$C278 ; the list's start - its end
+$C27A ; none: back to the menu
+$C27D ; the HALTs below need interrupts
+$C27E MapCursor ; B = the choice (the operand at $C27F: the name's index 0-95, 0 the first time)
+$C280 ; B = the index + 1
+$C281 ; the attribute cell before the first...
+$C284 ; ... 8 cells a name
+$C287 DiskCursorAddr ; the index + 1 times
+$C28A ; the choice's first attribute cell, kept
+$C28B ; 8 cells
+$C28D DiskCursorPaint ; black on white
+$C28F ; the next cell
+$C290 ; the whole name
+$C292 DiskMapKeys ; three frames a poll
+$C295 ; ROM KEY-SCAN: E = the key, $FF none
+$C298 ; the key
+$C299 ; a key?
+$C29A ; no: wait on
+$C29D ; the key table at $0205...
+$C29F ; ...
+$C2A1 ; ... HL = $0205 + E
+$C2A2 ; the choice
+$C2A5 ; C = it
+$C2A6 ; A = the key's character
+$C2A7 ; the choice's attribute cells
+$C2A8 ; 8 cells
+$C2AA DiskCursorClear ; back to blue on black
+$C2AC ; the next cell
+$C2AD ; the whole name
+$C2AF ; Q?
+$C2B1 ; no
+$C2B3 ; the name before
+$C2B4 ; to the check
+$C2B6 DiskMapKeyA ; A?
+$C2B8 ; no
+$C2BA ; the next name
+$C2BB ; to the check
+$C2BD DiskMapKeySpace ; SPACE?
+$C2BF ; load the choice
+$C2C1 ; another key: the same choice again
+$C2C3 DiskMapMove ; the new choice
+$C2C4 ; 96 names at most (0 - 1 is $FF: refused too)
+$C2C6 ; out of range: the old choice
+$C2C8 ; the new choice into the operand
+$C2CB ; highlight it
+$C2CD DiskMapLoad ; the choice...
+$C2D0 ; ... + 1
+$C2D1 ; times
+$C2D2 ; the list's +14, less one entry...
+$C2D5 ; ... 16 bytes an entry
+$C2D8 DiskFindEntry ; HL = FileList + 16 x the choice + 14
+$C2DB ; E = the first sector
+$C2DC ; (on)
+$C2DD ; D = the first track
+$C2DE ; both 0?
+$C2E0 ; yes (past the list): back to the menu
+$C2E2 ; the map file...
+$C2E5 ; ... 2 sectors
+$C2E8 ; read
+$C2EB c DiskApplyLevel ; The map file into the game: 499 bytes to the level area, the tail into the game's operands
+> The file's bytes $000-$1F2 go to `$BDA9-$BF9B` (SceneryWest on: the scenery lists, the base lists, spare). The tail: the four list addresses (+$1F4, +$1F6, +$1F8, +$1FA) into BuildMap's LD HL operands; the first factory record (+$1FC) into BuildMap's LD IX; the capture points (+$1F3) into the capture tick and CountBuildings; the enemy's warbases (+$1FE) into BuildMap and, + 1 (all the warbases), into the target table and the enemy's build; the player's general resource at the start (+$1FF) into NewGameSetup. Then JP Start.
+> The tail stays in the game until the next LOAD MAP: a later START plays the same map. The built-in level's values come back only with a new load of the game.
+$C2EB ; the file
+$C2EE ; the level area
+$C2F1 ; 499 bytes
+$C2F4 ; the level's lists
+$C2F6 ; +$1F4: the west scenery's address
+$C2F9 ; into BuildMap
+$C2FC ; +$1F6: the east scenery's address
+$C2FF ; into BuildMap
+$C302 ; +$1F8: the west bases' address
+$C305 ; into BuildMap
+$C308 ; +$1FA: the east bases' address
+$C30B ; into BuildMap
+$C30E ; +$1FC: the first factory record ($FD70 + 5 x the warbases)
+$C311 ; into BuildMap
+$C314 ; +$1F3: the capture points (warbases + factories)
+$C317 ; the capture tick
+$C31A ; CountBuildings
+$C31D ; +$1FE: the enemy's warbases
+$C320 ; into BuildMap
+$C323 ; + 1: all the warbases
+$C324 ; the target table
+$C327 ; the enemy's build
+$C32A ; +$1FF: the player's general resource at the start
+$C32D ; into NewGameSetup
+$C330 DiskMapDone ; back to the start-up menu
+
+# @piece taperead
+@module taperead ; The tape block reader (the tape set), run at $A598
+@about The patches block's `$D974-$D9AB` (56 bytes). Stage 3 copies it to `$A598-$A5CF` when the program was loaded from tape (PROG below `$5D3B`: no TR-DOS system variables, $638F). LOAD MAP (TapeLoadMap) and the text reader (LoadText) call it. Never run in a recording: the code is read from its bytes.
+$A598 c TapeRead ; Load a tape block of BC bytes with flag A to HL; on an error print "ERROR! LOAD AGAIN..." and wait for it again
+> In: HL the destination, BC the length, A the flag byte. It sets up what LD-BYTES ($0556) would (IX the address, DE the length, the carry set for a load, A and the flags into AF') with the border black instead of the ROM's, and enters the ROM past its set-up at $0562, so the ROM's SA/LD-RET (the BREAK test and its error report) is not pushed: the ROM returns here with the carry set for a good block, clear for an error, the BREAK key (SPACE) included. Interrupts stay off.
+> On an error: "ERROR! LOAD AGAIN... " at (11,5), attribute $42 (bright red on black), double height, then the next try from the set-up with IX, DE and AF' as the ROM left them; a break before the block's data (no block, a wrong flag, SPACE) tries again in full, a break inside the data goes on from where it stopped with the flag the ROM had swapped back.
+$A598 ; IX = the destination
+$A59B ; DE = the length
+$A59D TapeLoadSetUp ; a load, not a verify
+$A59E ; NZ (the flag byte comes first)...
+$A59F ; ... into AF' with the flag
+$A5A0 ; (D back)
+$A5A1 ; no interrupts
+$A5A2 ; the border black
+$A5A5 ; ROM LD-BYTES past its set-up
+$A5A8 ; loaded
+$A5A9 ; the error line
+$A5AC t TapeErrorText ; PrintInline text: "ERROR! LOAD AGAIN... " at (11,5), attribute $42, setting $21
+> The bytes 1 11 5 (position (11,5)), 2 $42 (bright red on black), 4 $21 (double height), the 21 characters, 0.
+$A5AC ; AT (11,5), attribute $42, size $21
+$A5C9 c TapeRetry ; Try the load again: AF' back, then the set-up
+$A5C9 ; the flag as the ROM left it in AF'
+$A5CA ; again
+$A5CC s TapeReadSpare ; Zero: 4 bytes of the piece never used
+
+# @piece tapemap
+@module tapemap ; LOAD MAP from tape (the tape set), run at $C1FD
+@about The patches block's `$D9AC-$DA3E` (147 bytes). Stage 3 copies it to `$C1FD-$C28F` on the tape path ($639A), over the game block's LoadMapRoom. Never run in a recording: the code is read from its bytes.
+@about "WAITING FOR LEVELFILE", then the next tape block with flag N ($4E), 512 bytes to LoadBuffer `$F000` (TapeRead repeats it until it loads), "LOADED O.K.", and the same tail as the disk version's DiskApplyLevel. It ends with JP $D800, into the start-up menu's code, not JP Start as the disk version does.
+$C1FD c TapeLoadMap ; LOAD MAP from tape: "WAITING FOR LEVELFILE", then a 512-byte block with flag N
+> A tape map file is a headerless block of 512 bytes with the flag byte $4E: the 499 level bytes and the 13-byte tail of a NELEV file.
+$C1FD ; a blank screen
+$C200 ; the play interrupt off
+$C201 ; I points at the ROM
+$C205 ; IM 0
+$C207 ; the prompt
+$C20A t TapeWaitText ; PrintInline text: "WAITING FOR LEVELFILE" at (11,5), attribute $05, setting $21
+> The bytes 1 11 5 (position (11,5)), 2 $05 (cyan on black), 4 $21 (double height), the 21 characters, 0.
+$C20A ; AT (11,5), attribute $05, size $21
+$C227 c TapeLoadLevel ; The map block: 512 bytes, flag N, to LoadBuffer
+$C227 ; the buffer
+$C22A ; 512 bytes
+$C22D ; flag N
+$C22F ; load (until it loads)
+$C232 ; the report, over the prompt
+$C235 t TapeLoadedText ; PrintInline text: "LOADED O.K." at (11,5), attribute $05, setting $22
+> The bytes 1 11 5 (position (11,5)), 2 $05, 4 $22 (double height, double width), the 11 characters, 0.
+$C235 ; AT (11,5), attribute $05, size $22
+$C248 c TapeApplyLevel ; The map block into the game: as DiskApplyLevel, then JP $D800
+> The bytes $000-$1F2 to `$BDA9-$BF9B`, the tail $1F3-$1FF into the game's operands (DiskApplyLevel tells them), then the start-up menu's code at $D800.
+$C248 ; the block
+$C24B ; the level area
+$C24E ; 499 bytes
+$C251 ; the level's lists
+$C253 ; +$1F4: the west scenery's address
+$C256 ; into BuildMap
+$C259 ; +$1F6: the east scenery's address
+$C25C ; into BuildMap
+$C25F ; +$1F8: the west bases' address
+$C262 ; into BuildMap
+$C265 ; +$1FA: the east bases' address
+$C268 ; into BuildMap
+$C26B ; +$1FC: the first factory record
+$C26E ; into BuildMap
+$C271 ; +$1F3: the capture points
+$C274 ; the capture tick
+$C277 ; CountBuildings
+$C27A ; +$1FE: the enemy's warbases
+$C27D ; into BuildMap
+$C280 ; + 1: all the warbases
+$C281 ; the target table
+$C284 ; the enemy's build
+$C287 ; +$1FF: the player's general resource at the start
+$C28A ; into NewGameSetup
+$C28D ; the start-up menu's code
+
+# @piece paging128
+@module paging128 ; 128 K: the text copy from page 3 and the paging routine (the disk set), run at $A56A
+@about The patches block's `$DA3F-$DA67` (41 bytes). Stage 3 copies it to `$A56A-$A592` when the machine has more than one page ($6335), over textload48 that it copied there first.
+$A56A c PagedText ; 128 K: copy BC bytes of a text from page 3 at DE to HL, through the screen
+> In: DE the text in page 3, BC its length, HL the destination in page 0 or 2; A is not used (menu128's text entries load it with the text's number for the one-page reader). The screen is cleared first (ClearScreen: the attributes 0, black on black), the text copied with page 3 in to `$4000` (pixels only: the texts are shorter than $1800 bytes, so nothing shows), then with page 0 back from `$4000` to HL. Page 0 stays in and interrupts off (SetPage's DI).
+> The menu's texts: menu128's entries at $C124-$C14F with the operands stage 3 writes: 1 NEdescri at page 3 `$CF00` ($155D bytes), 2 NEadvice `$E700` ($15C4), 3 NEgreets `$E500` ($0139), 4 NEabout `$C000` ($0EB3).
+$A56A ; keep the destination...
+$A56B ; ... the source...
+$A56C ; ... and the length
+$A56D ; a blank screen: its attributes black on black
+$A570 ; page 3 in
+$A575 ; the length
+$A576 ; HL = the source
+$A577 ; the length again
+$A578 ; to the screen's pixels
+$A57D ; page 0 back
+$A582 ; the length
+$A583 ; DE = the destination
+$A584 ; from the screen
+$A587 ; into place
+$A58A c SetPage ; Page A (0-7) in at $C000, the 48 ROM in (port $7FFD = A OR $10); interrupts off
+> No copy goes to BANKM ($5B5C): nothing else here reads it. DI first, never undone: the callers run with interrupts off.
+$A58A ; no interrupt while the page changes
+$A58B ; bit 4: the 48 ROM
+$A58D ; the paging port
+
+# @piece menu128
+@module menu128 ; 128 K: the start-up menu's entries in the game, the menu copy from page 1 (the disk set), run at $C100
+@about The patches block's `$DA68-$DAE6` (127 bytes). Stage 3 copies it to `$C100-$C17E` when the machine has more than one page ($6340), over menu48 that it copied there first and over the game block's MenuPieceRoom (src/game99 mainmenu). The game calls it at Start ($A600: CALL $C100); the start-up menu (menu99, running at $D800 in page 0) calls the text entries and the LOAD MAP launcher.
+@about The menu itself lives in page 1 at `$D800-$E7FF` (stage 3 unpacks it there) because in page 0 that RAM belongs to the game (the radar layers, the robot tables, the map from `$DD00`). ShowMenu128 copies 4 K of it into page 0 each time, through the screen and a stub at `$6700`, and the menu runs with the caller's stack: its last RET (START) returns to $A603, behind the CALL at Start.
+$C100 c MenuTable128 ; The menu's jump table: $C100 the menu, $C103-$C10C the four texts, $C10F LOAD MAP
+> The menu99 code calls these addresses; on one page menu48 holds the same table.
+$C100 ; Start's CALL $C100: the start-up menu
+$C103 MenuText1Jump ; text 1 (NEdescri)
+$C106 MenuText2Jump ; text 2 (NEadvice)
+$C109 MenuText3Jump ; text 3 (NEgreets)
+$C10C MenuText4Jump ; text 4 (NEabout)
+$C10F c MenuLoadMapJump ; JP LoadMapLauncher: LOAD MAP (page 0 first)
+$C112 c ShowMenu128 ; Copy the start-up menu from page 1 into page 0 and run it, with the caller's stack
+> The stack pointer goes into MenuStub's LD SP operand; MenuStub (40 bytes) is copied to `$6700` and the copy's own RET (ROM LDIR; RET at $33C3, with $6700 pushed) runs it. The menu's code RETs at the end to the return address on that stack.
+$C112 ; the caller's stack into MenuStub
+$C116 ; MenuStub...
+$C119 ; ... to $6700, below the game
+$C11C ; 40 bytes
+$C11F ; the copy returns to it
+$C120 ; ROM: LDIR; RET
+$C123 s MenuGap128 ; Zero: never run
+$C124 c PageText1 ; Text 1 (NEdescri): DE, BC from stage 3 ($CF00 in page 3, $155D bytes), to the caller's HL
+> Stage 3 writes the operands ($62F7, $62FD on 128 K). A = the text's number, used by the one-page reader only.
+$C124 ; the text in page 3 (stage 3: $CF00)
+$C127 ; its length (stage 3: $155D)
+$C12F c PageText2 ; Text 2 (NEadvice): stage 3's operands $E700 in page 3, $15C4 bytes
+$C12F ; the text in page 3 (stage 3: $E700)
+$C132 ; its length (stage 3: $15C4)
+$C13A c PageText3 ; Text 3 (NEgreets): stage 3's operands $E500 in page 3, $0139 bytes
+$C13A ; the text in page 3 (stage 3: $E500)
+$C13D ; its length (stage 3: $0139)
+$C145 c PageText4 ; Text 4 (NEabout): stage 3's operands $C000 in page 3, $0EB3 bytes
+$C145 ; the text in page 3 (stage 3: $C000)
+$C148 ; its length (stage 3: $0EB3)
+$C150 c LoadMapLauncher ; LOAD MAP: page 0 in, then (by SetPage's RET) LoadMap at $C1FD
+$C150 ; the return into LoadMap
+$C154 ; page 0
+$C158 b MenuStub ; Code copied to $6700 and run there (bytes here: the copy reads them): page 1's $D800-$E7FF into page 0 through the screen, then RET into the menu
+> Runs at `$6700` with the stack at `$6780` (below the game block, above the stub): page 1 in, 4 K from `$D800` to the screen `$4000-$4FFF` (its pixels: the picture on the screen is lost, the menu redraws it), page 0, the 4 K back to `$D800`, then the caller's stack (the operand at $C179, written by ShowMenu128) with `$D800` pushed and the ROM's LDIR; RET: the menu starts, and its last RET goes where ShowMenu128's caller returns. Only absolute addresses, so it runs at `$6700` as it is.
+$C158 ; a stack of its own
+$C15B ; page 1
+$C160 ; the menu in page 1...
+$C163 ; ... to the screen...
+$C166 ; ... 4 K
+$C16B ; page 0
+$C16F ; from the screen...
+$C172 ; ... into page 0
+$C175 ; 4 K
+$C178 ; LD SP,nn: the caller's stack (the operand at $C179, ShowMenu128 writes it)
+$C17B ; the menu's start for the copy's RET
+$C17C ; ROM: LDIR; RET
+
+# @piece textload48
+@module textload48 ; One page / tape: a text or the menu read from disk or tape (the tape set), run at $A56A
+@about The patches block's `$DAE7-$DB14` (46 bytes). Stage 3 copies it to `$A56A-$A597` on every path ($631E); on 128 K paging128 then replaces it. Never run in a recording: the code is read from its bytes.
+$A56A c LoadText ; "WAITING FILE n", then ReadBlock with the caller's HL, DE, BC and the flag n
+> In: A the file's number (its low 4 bits: menu48's text entries 1-4; the menu file takes what A holds at Start), HL the destination, DE the disk position (track, sector), BC the length (B the sectors on disk, BC the bytes on tape). The screen is cleared (QuietScreen), "WAITING FILE n" printed at (11,8), attribute $06, double height, then ReadBlock: on disk DiskRead (DE, B; A not used), on tape TapeRead (BC, the flag byte n: the tape blocks carry their file number as the flag).
+$A56A ; the number, 0-15
+$A56C ; keep the registers
+$A570 ; the digit...
+$A572 ; ... into the text
+$A575 ; a blank screen, interrupts off
+$A578 ; the prompt
+$A57B t WaitFileText ; PrintInline text: "WAITING FILE n" at (11,8), attribute $06, setting $21
+> The bytes 1 11 8 (position (11,8)), 2 $06 (yellow on black), 4 $21 (double height), "WAITING FILE " and the digit LoadText writes at $A58F, 0.
+$A57B ; AT (11,8), attribute $06, size $21
+$A58F WaitFileDigit ; the file's digit (LoadText writes it)
+$A591 c LoadTextRead ; The registers back, then ReadBlock
+$A591 ; the destination
+$A592 ; the position
+$A593 ; the length
+$A594 ; the number (the tape flag)
+$A595 ; read the file
+
+# @piece menu48
+@module menu48 ; One page / tape: the start-up menu's entries in the game (the tape set), run at $C100
+@about The patches block's `$DB15-$DB6F` (91 bytes). Stage 3 copies it to `$C100-$C15A` on every path ($6329); on 128 K menu128 then replaces it. Never run in a recording: the code is read from its bytes.
+@about On one page the menu has no page to live in: at each call of $C100 its packed file is read again (from disk or tape) to `$E800` and unpacked to `$D800`. The operands are stage 3's: on the one-page disk path ($627D-$62B3) the menu file's position (the TR-DOS system variable `$5CF4` after the patches block) and 10 sectors, then the four texts that follow the game file by position: 4 NEabout 15 sectors, 1 NEdescri 22, 3 NEgreets 2, 2 NEadvice 22. Stage 3 writes text 2's count to $C133, the C byte, not to $C134, the B byte: B stays 0 and DiskRead would read 256 sectors. On the tape path ($63A8-$63BD) the lengths of texts 1-3 ($155D, $15C4, $0139) go to their BC; text 4's $0EB3 goes to $C146, the DE that TapeRead does not use, so its BC stays 0; the menu file's BC ($C119) is not written. Not run: read from the code.
+$C100 c MenuTable48 ; The menu's jump table: $C100 the menu, $C103-$C10C the four texts, $C10F LOAD MAP
+$C100 ; Start's CALL $C100: read and unpack the start-up menu
+$C103 c LoadText1Jump ; JP LoadText1: text 1 (NEdescri)
+$C106 c LoadText2Jump ; JP LoadText2: text 2 (NEadvice)
+$C109 c LoadText3Jump ; JP LoadText3: text 3 (NEgreets)
+$C10C c LoadText4Jump ; JP LoadText4: text 4 (NEabout)
+$C10F c LoadMapJump48 ; JP LoadMap: LOAD MAP at once (nothing to page)
+$C112 c ShowMenu48 ; Read the menu's packed file to $E800, unpack it to $D800 and run it
+> The file's position and length are stage 3's operands; A (the tape flag, the digit shown) is what Start's caller left. The menu's last RET (START) goes to $A603 behind the CALL at Start; LOAD MAP from tape ends with JP $D800, into the menu without a new read.
+$C112 ; the packed menu's place
+$C115 ; its position on disk (stage 3: the TR-DOS position after the patches block)
+$C118 ; its length (stage 3: 10 sectors on disk; 0 on tape)
+$C11B ; read
+$C11E ; unpack it to $D800
+$C121 ; the start-up menu
+$C124 c LoadText1 ; Text 1 (NEdescri): DE, BC from stage 3 (disk: the position, 22 sectors; tape: $155D bytes)
+$C124 ; the position (stage 3)
+$C127 ; the length (stage 3)
+$C12A ; file 1
+$C12F c LoadText2 ; Text 2 (NEadvice): disk 22 sectors, written into C (B stays 0); tape $15C4 bytes
+$C12F ; the position (stage 3)
+$C132 ; the length (stage 3: C = 22 on disk, B 0)
+$C135 ; file 2
+$C13A c LoadText3 ; Text 3 (NEgreets): disk 2 sectors; tape $0139 bytes
+$C13A ; the position (stage 3)
+$C13D ; the length (stage 3)
+$C140 ; file 3
+$C145 c LoadText4 ; Text 4 (NEabout): disk 15 sectors; tape: $0EB3 lands in DE, the length stays 0
+$C145 ; the position (stage 3; the tape length $0EB3 lands here)
+$C148 ; the length (stage 3: 15 sectors on disk; nothing on tape)
+$C14B ; file 4
+$C150 c QuietScreen ; Clear the screen, interrupts off, I = $3F, IM 0
+$C150 ; a blank screen
+$C153 ; the play interrupt off
+$C154 ; I points at the ROM
+$C158 ; IM 0

@@ -206,9 +206,9 @@ StrengthText:
 ShowStrengthValue:
   LD A,(IX+$0C)           ; the strength +$0C
   OR A                    ; negative: a dying robot
-  JP P,l_A83B             ; 0 or more: print it
+  JP P,ShowStrengthNumber ; 0 or more: print it
   XOR A                   ; negative (dying): print 0
-l_A83B:
+ShowStrengthNumber:
   LD L,A                  ; HL = the strength
   LD H,$00                ; HL = the strength, 0-127
   LD E,$20                ; leading zeros as spaces
@@ -416,7 +416,7 @@ DistanceText:
 DistanceSelect:
   LD D,$00                ; D = the miles: start at 0
 ; This entry point is used by the routine at DistanceShow.
-l_AA70:
+DistanceLoop:
   PUSH DE
   CALL ShowStrength       ; the strength
   CALL WorldTurn          ; the robots and the shots go on
@@ -429,12 +429,12 @@ l_AA70:
   JP Z,CloseRobotMenu     ; destroyed: close the whole menu
   CALL WaitKey            ; A = Input
   BIT 4,A                 ; fire?
-  JR NZ,l_AAB8            ; fire: store the miles
+  JR NZ,DistanceFire      ; fire: store the miles
   LD C,D                  ; C = the old miles
   RRCA                    ; Input bit 2 (down) and bit 3 (up)
   RRCA                    ; now in bits 0 and 1
   AND $03                 ; 1 down, 2 up, 3 both
-  JR Z,l_AA70             ; neither: the next turn
+  JR Z,DistanceLoop       ; neither: the next turn
   AND $02                 ; B = 0 down, 2 up (both: up)
   LD B,A                  ; B = 0 or 2
   ADD A,A                 ; x2
@@ -443,7 +443,7 @@ l_AA70:
   SUB $05                 ; -5 or +5
   ADD A,C                 ; A = the old miles +- 5
   CP $33                  ; past 50 miles?
-  JR NC,l_AA70            ; past 50 or below 0 (wrapped to $FB): keep the old
+  JR NC,DistanceLoop      ; past 50 or below 0 (wrapped to $FB): keep the old
                           ; value
   LD D,A                  ; D = the new miles
   CALL PrintInline        ; the position of the number
@@ -464,16 +464,16 @@ DistanceShow:
   CALL PrintNumber2       ; two digits, a leading space
   LD A,$14                ; the click of a change
   CALL Beep               ; beep
-  JR l_AA70               ; held keys step again after one game turn
+  JR DistanceLoop         ; held keys step again after one game turn
 ; This entry point is used by the routine at DistanceSelect.
-l_AAB8:
+DistanceFire:
   LD A,D
   RLCA                    ; x2: +$0E counts map columns, 2 a mile
   LD (IX+$0E),A           ; +$0E: the distance to go
   OR A                    ; 0 miles?
-  JR NZ,l_AAC4            ; not 0: the order stands
+  JR NZ,DistanceDone      ; not 0: the order stands
   LD (IX+$0B),$00         ; 0 miles: order 0, stop and defend
-l_AAC4:
+DistanceDone:
   LD A,$78
   CALL Beep               ; beep
   CALL WaitRelease        ; fire up first
@@ -635,7 +635,7 @@ CombatMenuText:
 CombatMenuCode:
   CALL ShowStrength       ; the strength
   LD A,$06                ; STOP COMBAT highlighted first
-l_AC81:
+CombatMenuLoop:
   LD HL,$5837
   LD E,$07                ; six items
   CALL ListMenu           ; A = the item, 1-6
@@ -643,47 +643,47 @@ l_AC81:
   JP Z,RobotMenuShow      ; back to the robot menu
   PUSH AF                 ; keep the item
   CP $05                  ; 5: MOVE ROBOT?
-  JR NZ,l_AC99            ; 1-4: a weapon
+  JR NZ,CombatWeapon      ; 1-4: a weapon
   CALL DirectControl      ; drive the robot until fire
   POP AF                  ; A = 5: the menu reopens on MOVE ROBOT
-  JR l_AC81               ; the combat list again
-l_AC99:
+  JR CombatMenuLoop       ; the combat list again
+CombatWeapon:
   LD C,A
   LD B,A                  ; B = item + 1 rotations
   INC B                   ; B = item + 1
   LD A,(IX+$07)           ; the robot's parts
-l_AC9F:
+CombatPartBit:
   RLCA
-  DJNZ l_AC9F             ; item 1 bit 6 nuclear, 2 bit 5 phasers, 3 bit 4
+  DJNZ CombatPartBit      ; item 1 bit 6 nuclear, 2 bit 5 phasers, 3 bit 4
                           ; missiles, 4 bit 3 cannon
-  JR NC,l_ACCE            ; no such part: the buzz
+  JR NC,CombatRefused     ; no such part: the buzz
   POP AF                  ; the item back (the stack clean)
   CP $01                  ; 1: NUCLEAR BOMB?
-  JR NZ,l_ACB3            ; 2-4: a shot
+  JR NZ,CombatFireShot    ; 2-4: a shot
   PUSH IX                 ; IY = the robot: the blast's centre
   POP IY                  ; IY = IX
   CALL NuclearBlast       ; a base in reach, every robot in 9 x 9 cells and
                           ; this robot destroyed
   JP CloseRobotMenu       ; the robot is gone with it: close the menu
-l_ACB3:
+CombatFireShot:
   PUSH AF
   LD IY,Shots             ; shot record 0 (Shots), the only one COMBAT MODE
                           ; uses
   LD A,(IY+$01)           ; its +$01
   OR A                    ; flying?
-  JR NZ,l_ACCE            ; still in the air: the buzz
+  JR NZ,CombatRefused     ; still in the air: the buzz
   LD A,$05                ; A = 5 - item: 3 phasers, 2 missiles, 1 cannon
   SUB C                   ; the weapon number of the shot
   CALL FireShot           ; launch it from IX along its facing +$08
   CALL DrawView           ; the view with the shot
   CALL GameTurn           ; the turn's clock and pacing
   POP AF                  ; the item back
-  JP l_AC81               ; the menu again on the same weapon
-l_ACCE:
+  JP CombatMenuLoop       ; the menu again on the same weapon
+CombatRefused:
   LD A,$FA
   CALL Beep               ; the low buzz
   POP AF                  ; the item back
-  JP l_AC81               ; the menu again on that item
+  JP CombatMenuLoop       ; the menu again on that item
 
 ; a list menu: HL the attribute of item 0 (an item every 3 rows), E the items +
 ; 1, A the first highlighted; down / up move, fire returns A
@@ -766,9 +766,9 @@ PaintMenuItem:
   PUSH DE                 ; kept for the caller
   PUSH HL                 ; kept: the attribute of item 0
   LD DE,$0060             ; 3 attribute rows an item
-l_AD42:
+PaintMenuItemRow:
   ADD HL,DE
-  DJNZ l_AD42             ; A times
+  DJNZ PaintMenuItemRow   ; A times
   LD B,$08                ; the item's top row
   CALL FillAttributes     ; 8 cells in C
   LD A,$18                ; the next row, same column

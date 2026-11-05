@@ -1,0 +1,218 @@
+# The '99 stage 3, $61A8-$67EB (NEZSED.SCL sectors 45-50, read to $8000 by stage 2 and unpacked to $61A8, 1604 bytes,
+# work/media/99/stage3-out.bin): the annotations tools/menu99_mkgame.py stage3 turns into src/stage3/*.asm. The
+# format is kit/mkgame.py's (class Annotations). The code is what four recordings ran, each window clamped (see the
+# wrapper's PARTS): r99 (Pentagon 128, the disk) frames 2194-2300 and 2299-2662, r99-48 (the Pentagon locked in
+# 48 K BASIC) frames 5182-5648, s99 (Scorpion ZS-256) frames 1903-2278 (work/stage2/menu99/<window>/l1.json),
+# widened by the kit's walk; the tape path and ListPage were run by no recording and are seeded below.
+# The witnesses quoted: $5CB0 / $5CB1 (IY+$76 / IY+$77) read with tools/ttd_find.py at the frame named.
+#
+# @over $6780 ; the game block's entry: CALLed after the game is read over this stage's strings at $6780
+
+@equ $67EC TrdosVersion 17 ; the TR-DOS ROM's version text (16 bytes from ROM $0365) + $FF, past the image
+@equ $5C53 SysProg ; PROG: $5D3B when TR-DOS has made its variables, lower without it
+@equ $5C6B SysDfSz ; DF SZ: the lower screen's lines
+@equ $5CF4 TrdosNextSector ; TR-DOS: the track / sector after the last one read (the next file on the disk)
+@equ $1601 RomChanOpen ; ROM CHAN-OPEN: A = the stream
+@equ $203C RomPrString ; ROM PR-STRING: BC bytes from DE to the open channel
+@equ $2D2B RomStackBc ; ROM STACK-BC: BC onto the calculator stack
+@equ $2DE3 RomPrintFp ; ROM PRINT-FP: print the top of the calculator stack
+@equ $0562 RomLdBytesIn ; ROM LD-BYTES past its set-up (no SA/LD-RET pushed: returns to the caller as it ends)
+@equ $3D13 TrdosCommand ; TR-DOS: the command in C (5 = read B sectors from track/sector DE to HL)
+@equ $3D2F TrdosRet ; TR-DOS ROM: NOP, RET (pages the TR-DOS ROM in and returns to the address pushed)
+@equ $180D TrdosLdir ; TR-DOS ROM: LDIR, RET (copies with the TR-DOS ROM paged in)
+@equ $2A53 TrdosOut ; TR-DOS ROM: OUT (C),A, RET (an OUT the ATM decodes only with the TR-DOS ROM in)
+@equ $0365 TrdosVersionRom ; TR-DOS ROM: "TR-DOS Ver 5.03 " in 5.03 and 5.04T (data/rom of unreal-ng)
+@equ $A600 Start ; the game's entry (NE's Start)
+@equ $A58A PagedSelect ; patches block: OUT $7FFD,A OR $10 (128 K route only)
+@equ $A598 BlockReader ; patches block: the disk sector reader / tape block reader (the copied variant)
+@equ $A56A TextLoader ; patches block: a text into the buffer (the copied variant)
+@equ $C100 MainMenu ; NE's MainMenu, replaced by the patches block's jump table
+@equ $C1FD LoadMap ; patches block: LOAD MAP (disk or tape variant)
+@equ $DC00 PatchesPacked ; the patches block as read (sectors 119-122), its depacker at the start
+@equ $D800 PatchDiskReader ; unpacked patches block: the disk sector reader (62 bytes)
+@equ $D83E PatchDiskLoadMap ; the disk LOAD MAP (310 bytes)
+@equ $D974 PatchTapeReader ; the tape block reader (56 bytes)
+@equ $D9AC PatchTapeLoadMap ; the tape LOAD MAP (147 bytes)
+@equ $DA3F PatchPagedLoader ; 128 K: the text copy from page 3 and PagedSelect (41 bytes)
+@equ $DA68 PatchPagedMenu ; 128 K: the jump table, the menu copy from page 1 (127 bytes)
+@equ $DAE7 PatchOneLoader ; one page: the text read from disk or tape (46 bytes)
+@equ $DB15 PatchOneMenu ; one page: the jump table (91 bytes)
+@equ $E800 MenuPacked ; the menu block as read into page 1 (sectors 123-132), its depacker at the start
+@equ $C116 OneMenuPos 2 ; one-page table: LD DE operand, the menu block's track / sector
+@equ $C11A OneMenuCount ; one-page table: B of LD BC, the menu block's sectors
+@equ $C125 DescPos 2 ; LD DE operand of the description loader ($C124): disk position / page-3 address
+@equ $C128 DescLen 2 ; LD BC operand of the description loader (paged table): the length
+@equ $C129 DescCount ; B of that LD BC (one-page table): the sectors
+@equ $C130 AdvicePos 2 ; LD DE operand of the advices loader ($C12F)
+@equ $C133 AdviceLen 2 ; LD BC operand of the advices loader ($C132)
+@equ $C13B GreetsPos 2 ; LD DE operand of the greets loader ($C13A)
+@equ $C13E GreetsLen ; LD BC operand of the greets loader ($C13D): C, the low byte
+@equ $C13F GreetsCount ; its B
+@equ $C146 AboutPos 2 ; LD DE operand of the about loader ($C145)
+@equ $C149 AboutLen ; LD BC operand of the about loader ($C148): C
+@equ $C14A AboutCount ; its B
+@equ $CF00 PageDesc ; page 3: the description text
+@equ $E500 PageGreets ; page 3: the greets text
+@equ $E700 PageAdvices ; page 3: the advices text
+
+@module s3main ; "System checking": the machine, the memory, the loads, the patches, the 128 K route, the tape path
+@about Stage 2 unpacks this block to $61A8 and jumps to it (r99 frame 2194). It fades the screen out, prints the title and "System checking...", runs MemoryTest and prints the machine's name and the memory size, then loads the rest of the release from the disk (TR-DOS, from the sector after stage 3's file, TrdosNextSector) or, when no TR-DOS variables exist, from tape: the game block to $6780 (68 sectors, unpacked in place by its own CALL), the patches block to $DC00 (4 sectors, unpacked to $D800), whose pieces it copies into the game (BlockReader, LoadMap, TextLoader, the MainMenu jump table at $C100); then, on more than one page of memory, the menu block into page 1 and the four texts ("RAM-Disk") into page 3, and the paged jump table. It ends at the game's Start ($A600).
+@about What each machine gets (witnessed): Pentagon 128 (r99 frame 2300): scheme $01, count 5, "Computer Spectrum", "Memory 128Kb". Scorpion ZS-256 (s99 frame 2000): scheme $83 (bits 7, 1, 0), count $0D, "Computer Scorpion", "Memory 256Kb". Pentagon locked in 48 K BASIC (r99-48 frame 5300): scheme 0, count 0, "Computer Spectrum", "Memory 56Kb", and the 128 K route (count is not 1): the menu and the texts are read over the game's $C000-$FFFF, Start's CALL MainMenu runs text bytes and the ROM resets the machine (see Stage3Paged). A real 48 K + Beta 128 is the same case (no paging: count 0); the one-page route (count = 1) is reached by no machine (see MemoryTest).
+$61A8 c Stage3Entry ; Fade the screen out, clear it, print the title, test the memory, print what was found
+> Entered from stage 2 (r99 frame 2194). Eight steps (B = 8..1): border B-1, every attribute (B-1) * 8 (the paper colour), two HALTs; then the pixels and attributes $4000-$5BFF to 0, stream 2 open (RomChanOpen), SysDfSz = 0 (the whole screen for printing), the title (TitleText). Then MemoryTest and the line "Computer <name>": the name is NameDefault ("Spectrum") when the scheme ($5CB0) is 0, else the string for its highest set bit (FirstSetBit, SkipStrings over MachineNames).
+$61AA c FadeStep ; One fade step (B = 8..1): border B-1, all attributes paper B-1
+> Part of Stage3Entry; an entry because the recording window r99-s3a starts inside the fade (frame 2194).
+$61B8 ; paper = B-1
+$61BE c FadeWait ; Two frames a step, the next step; then the clear, the title, MemoryTest, the machine name
+$61C3 ; the whole screen and its attributes to 0
+$61D0 ; stream 2: the upper screen
+$61D5 ; DF SZ = 0: PR-STRING may print on lines 22 and 23
+$61D9 ; "NETHER  EARTH", "ZS Edition'99", "System checking...", "Computer "
+$61DF ; $5CB0 = the scheme bits, $5CB1 = the page count
+$61E2 ; no scheme bit: "Spectrum"
+$61EB ; B = 1 + the number of clear bits above the highest set one
+$61EE ; the B-th string after the $FF at $67B0
+$61F4 PrintMemory ; the machine's name, "Memory "
+$61FD ; BC = 48 when the count is 1
+$6203 ; count - 1 + 4 = count + 3, with the carry out of the ADD when the count is 0
+$620B ; BC = (A:carry) * 16: (count + 3) * 16, or (3 + 4) * 8 = 56 for count 0
+$621B PrintMemSize ; the number, then "Kb", "Using "
+$6227 ; PROG below $5D3B: no TR-DOS variables, the tape path
+$6236 ; the TR-DOS ROM's version text
+$6239 ; its $FF end
+$623C ; "TR-DOS Ver 5.03 " as the ROM holds it
+$6242 ; "Loading...", "Game... "
+$6248 ; the game block: 68 sectors to $6780, over these strings from $6780 on
+$6250 c RunGameBlock ; CALL the game block: it unpacks itself in place (game99's part); then the patches block
+> An entry because the recording window r99-s3b starts here (frame 2299).
+$6253 ; "Drivers... "
+$6259 ; the patches block: 4 sectors to $DC00
+$6261 c InstallPatches ; Unpack the patches block, copy the disk reader and LOAD MAP, set the one-page table, branch by the count
+$6264 ; the disk sector reader to $A598
+$626F ; the disk LOAD MAP to $C1FD
+$627A ; the one-page TextLoader and jump table first
+$627D ; the files after the patches block, in disk order: menu 10 sectors, about 15, description 22, greets 2, advices 22
+$62A9 ; the advices position
+$62AF ; bug: B of the advices' LD BC is AdviceLen+1 ($C134); $C133 is C. The one-page table never runs (see MemoryTest)
+$62B4 ; count 1: the one-page game (no machine gets here)
+$62BB ; more than one page: the paged TextLoader and jump table over the one-page ones
+$62C4 ; page 1: the menu block to $E800, unpacked to $D800-$E6F3 of page 1
+$62D4 ; "RAM-Disk... "
+$62DA ; page 3: the next 64 sectors (the four texts) to $C000-$FFFF
+$62E7 c Stage3Paged ; Page 0 back, the paged jump table's text addresses and lengths, into the game
+> The end of both 128 K routes (disk, and the tape path's JP). Page 0 at $C000 (PagedSelect), then the four LD DE / LD BC operands of the paged MainMenu table ($C124-$C150, patches $DA68): about $C000 + $0EB3 bytes, description $CF00 + $155D, greets $E500 + $0139, advices $E700 + $15C4, all in page 3; then JP Start. Run in r99 (frame about 2660) and s99. On a machine with one 16 K page at $C000 (the Pentagon locked in 48 K mode, r99-48; the lead's 48K-BETA128 run) PagedSelect changes nothing: the menu block was read to $E800 and unpacked to $D800, the 64 "RAM-Disk" sectors to $C000-$FFFF over the game's $C000-$D7D2 (MainMenu, the patched jump table) and over the menu; Start CALLs MainMenu at $C100 (r99-48 frame 5647), which now holds the about text's bytes $100 on (CP866 Russian text): they run as code (CALL PE,$A0AD, then $EF = RST $28 into the ROM calculator, frames 5647-5664), the calculator's literal stream ends in USR-NO ($34B3, frame 5664), which jumps to $0001: the ROM's NEW from $11CB, and the copyright message (r99-48 frame 5760). The "0 OK" later in r99-48 (frame 7200) is after a key in the BASIC editor, not this run's end.
+$62EB ; about: page 3 $C000, 3763 bytes
+$62F7 ; description: $CF00, 5469 bytes
+$6303 ; greets: $E500, 313 bytes
+$630F ; advices: $E700, 5572 bytes
+$631E c InstallOnePage ; Copy the one-page TextLoader ($A56A) and MainMenu jump table ($C100) from the patches block
+> PatchOneLoader (46 bytes) to TextLoader and PatchOneMenu (91 bytes) to MainMenu. Called on both paths (disk $627A, tape $63A5): the 128 K route then overwrites both (InstallPaged).
+$6335 c InstallPaged ; Copy the 128 K TextLoader ($A56A) and MainMenu jump table ($C100) from the patches block
+> PatchPagedLoader (41 bytes, ends with PagedSelect at $A58A) and PatchPagedMenu (127 bytes). Called when the count is not 1 (r99 frame about 2300, r99-48, s99).
+$634C c AdvanceSectors ; HL = the TR-DOS track/sector HL advanced by A sectors (16 a track)
+> HL = track (H) / sector (L) as in TrdosNextSector, A = sectors (below 16 + 240). Out: HL the position A sectors on (L kept below 16, the overflow added to H). BC is changed.
+$6362 c TapePath ; The tape version of the loads (PROG below $5D3B): game, patches, menu, texts from tape blocks
+> Known only from the code: no recording ran it (every recording booted the disk, PROG = $5D3B). "TAPE RECORDER", then the blocks through LoadBlock (flag in A, IX the address, DE the length): game $FF ($440E bytes to $6780), patches $FE ($033B to $DC00), the tape BlockReader / LoadMap pieces, InstallOnePage, then the one-page lengths into the table; on more than one page the menu (flag 0, $095F bytes to $E800 in page 1) and the four texts into page 3 (flags $FD-$FA), then Stage3Paged. Bugs: (1) the description, greets and advices loads set BC, not DE: LoadBlock gets DE as it is after the previous load (LD-BYTES counts it down to 0 on success); (2) the one-page lengths go to AboutPos (the about loader's LD DE) for the about text but to the LD BC operands for the other three, while the tape BlockReader ($D974) takes the length from BC.
+$6365 ; "Loading...", "Game... "
+$636B ; the game block, flag $FF
+$6380 ; the patches block, flag $FE
+$638F ; the tape block reader to $A598
+$639A ; the tape LOAD MAP to $C1FD
+$63A8 ; the one-page lengths: about into the LD DE operand (bug), the rest into LD BC
+$63D5 ; the menu block, flag 0
+$63EE ; about, flag $FD
+$63FA ; description, flag $FC: length in BC (bug)
+$6406 ; greets, flag $FB: BC (bug)
+$6412 ; advices, flag $FA: BC (bug)
+
+@module s3util ; TR-DOS and tape loading, the string helpers
+@about The loaders and the print helpers of stage 3. Strings end with $FF (PrintFF counts them for the ROM's PR-STRING, so they may hold the ROM's controls: $16 AT, $10 INK, $11 PAPER, $12 FLASH, $13 BRIGHT, $0D new line). The TR-DOS calls go through the ROM's entry $3D13 and through TrdosRet ($3D2F, NOP RET in TR-DOS 5.03 and 5.04T): a routine PUSHes an address inside the TR-DOS ROM and jumps to $3D2F, which pages that ROM in and RETs to the address, so the TR-DOS ROM's own LDIR ($180D) or OUT (C),A ($2A53) runs with that ROM paged and returns to the caller.
+$6421 c ReadTrdosVersion ; Copy the TR-DOS ROM's version text ($0365, 16 bytes) to TrdosVersion
+> Through TrdosRet into TrdosLdir. Out: DE = TrdosVersion + 16, where Stage3Entry puts the $FF. Run in r99, r99-48 and s99 ("Using TR-DOS Ver 5.03", r99 frame 2300).
+$6433 c ReadSectors ; Read B sectors from TrdosNextSector to HL, then print "O.k."
+> TR-DOS command 5 (TrdosCommand) from the disk position after the last file read; the position moves on. Then LoadOk.
+$643C c LoadOk ; Interrupts off again (TR-DOS turns them on) and print "O.k." (OkText)
+$6443 c LoadBlock ; Load a tape block: A = the flag, IX = the address, DE = the length; retry, or halt on an error
+> LD-BYTES' own set-up (carry = load, the flag into A'), border 1, then RomLdBytesIn; NZ: again; NC: "Tape Error. System Halted." and DI, HALT. Known only from the code (the tape path).
+$6454 TapeHalt ; the error: the message, then the machine stops
+$645C c SkipStrings ; DE past B strings that end in $FF
+$6465 c FirstSetBit ; B = the position of A's highest set bit, from the top (bit 7 gives 1)
+> A must not be 0. A is shifted.
+$6467 FirstSetBitLoop
+$646C c PrintFF ; Print the string at DE up to its $FF (not printed) through the ROM's PR-STRING
+> BC = the length, DE the start, into RomPrString (which RETs to the caller).
+$6470 PrintFFCount ; BC counts the bytes before the $FF
+
+@module s3memtest ; MemoryTest: the paging scheme, the page count, the page select
+@about MemoryTest ($647B) finds how the machine pages memory and how many distinct 16 K pages it has, into two system variables the game keeps: $5CB0 (IY+$76) the scheme bits and $5CB1 (IY+$77) the count. Bit 7: the ROM paged in by $7FFD = $10 holds $C3 at $0008 (Scorpion's ROMs; also +2A / +3 ROM 1: data/rom of unreal-ng holds $C3 there; the 48 K and 128 K ROMs hold $2A). Then the first of four tests that succeeds sets its bit and skips the rest: bit 3 "TURBO 2+" (ATM Turbo 2+: through the TR-DOS ROM, $FFF7 = $1F maps a ROM page into window 3; the word at $0457 equals the one at $C457); bit 2 "PROFI" ($DFFD = $10 makes $0080 writable; Profi's $DFFD bit 4 maps RAM at $0000, unreal-ng portdecoder_profi); bit 1 "KAY" ($1FFD = $11 makes $0080 writable: Scorpion and KAY $1FFD bit 0 = RAM at $0000; on a +2A / +3, $1FFD = $11 is the special paging mode 0, RAM page 0 at $0000, so it passes too); bit 4 "ATM" ($FDFD = $11 and $FF select two pages at $C000: ATM Turbo 1, $FDFD bits 0-1 extend the window-3 page). Bit 0 "Spectrum" (always tested): $7FFD = $10 and $80 show different bytes at $0080 (two ROMs). Then CountPages, and bit 5 "Spectrum" when the count is 8 or more and the scheme is exactly 1 (a $7FFD-only machine with more than 128 K). Bit 6 is never set.
+@about Witnessed: Pentagon 128 r99 frame 2300 $5CB0 = $01, $5CB1 = 5; Scorpion ZS-256 s99 frame 2000 $83, $0D; the Pentagon locked in 48 K mode r99-48 frame 5300: 0, 0 (no OUT pages anything). Known only from the code: a +2A / +3 sets bits 7 and 1 ("Computer Scorpion", the KAY page select on $1FFD); a Profi bit 2; ATM Turbo 2+ bit 3 (PROFI, TURBO 2+, ATM and KAY were run by no recording).
+@about The count is the number of distinct pages of PageList (0-63 without 2 and 5) found at $C000, minus 1: 5 on a 128 K (0, 1, 3, 4, 6, 7), 13 on a 256 K Scorpion, 0 on a machine that cannot page. The one-page route of stage 3 (count = 1, "Memory 48Kb") needs exactly two distinct pages besides 2 and 5: no machine has that, so the one-page MainMenu table and the 48 K game are never set up; a 48 K + Beta 128 takes the 128 K route with count 0 (the lead's 48K-BETA128 run: $5CB0 = 0, $5CB1 = 0, "Memory 56Kb") and resets (Stage3Paged).
+$647B c MemoryTest ; Find the paging scheme ($5CB0) and the page count ($5CB1); ends with page 0 at $C000, interrupts on
+> Out: $5CB0 (IY+$76) the scheme bits (7 Scorpion ROM, 3 ATM Turbo 2+, 2 Profi, 1 KAY / Scorpion $1FFD, 4 ATM Turbo 1, 0 $7FFD, 5 more than 128 K on $7FFD alone), $5CB1 (IY+$77) the count. The bytes at $C000 of every page are put back (CountPages). Called once by Stage3Entry (r99 frame about 2200).
+$647F ; the count starts at 1
+$6484 ; $7FFD = $10: page 0, ROM 1
+$648C ; $C3 at $0008 (JP): a Scorpion's ROM (or a +2A / +3 ROM 1)
+$6497 TestAtm2 ; ATM Turbo 2+: $FFF7 = $1F, window 3 a ROM page (bits 7-6 = 0)
+$64A2 ; the same word at $0457 and at $C457: the ROM shows at $C000
+$64A9 ; $FFF7 = $FF: window 3 RAM under $7FFD again
+$64B9 TestProfi ; Profi: $DFFD = $10 (bit 4: RAM at $0000)
+$64C5 ; writable at $0080?
+$64C9 ; $DFFD = $80
+$64D3 TestKay ; KAY / Scorpion: $1FFD = $11 (bit 0: RAM at $0000)
+$64DF ; $1FFD = $80, then 0 on success
+$64ED TestAtm1 ; ATM Turbo 1: $FDFD = $11, page 1 by $7FFD, $11 to $FFFF
+$64FA ; $FDFD = $FF, $FF to $FFFF
+$6504 ; $FDFD = $11 again: $11 still there = two different pages
+$6515 TestTwoRoms ; two ROMs on $7FFD bit 4: $0080 with ROM 0 and ROM 1
+$652F TestCount ; the count
+$6532 ; 8 or more on a $7FFD-only machine: bit 5
+$6544 TestEnd ; page 0 at $C000
+$654B c CountPages ; Count the distinct pages: mark $C000 of pages 63..0, drop the aliases from PageList, restore the bytes
+> Pages 63 down to 0 (SelectPage): the byte at $C000 is saved (PageSave, from $66B2 down) and replaced by the page number. Then each page of PageList is selected: if $C000 does not hold its number the page is an alias of a later one (or absent) and is removed from the list (the rest moved down, the count less 1). The count starts at 61 ($3D, the 62 entries minus 1). Then the 64 saved bytes go back. Out: $5CB1 = the count, PageList = the distinct pages (r99 frame about 2200 writes $663A-$6671: the list compacted to 0 1 3 4 6 7).
+$6554 MarkPages ; page B-1: save its $C000 byte, write its number there
+$6564 ; 62 entries in the list, minus 1
+$656A ; each page of the list
+$656D CheckPage ; the next list entry, $FF ends
+$657A ; not its own number: remove it, the count less 1
+$658D NextListPage
+$6590 RestorePages ; the saved bytes back, pages 0..63
+$6595 RestoreLoop
+$65A3 c ListPage ; Select the page PageList holds at index A (falls into SelectPage)
+> Known only from the code: nothing in stage 3, the game, the patches or the menu block CALLs $65A3 (a byte search of work/media/99 for the address finds none).
+$65AF c SelectPage ; Page A (0-63) in at $C000 by the scheme found; with no scheme bit nothing happens
+> A = the page. Interrupts off. One extended register by priority (bit 1 $1FFD, bit 2 $DFFD, bit 3 the ATM Turbo 2+ register, bit 4 $FDFD), then $7FFD = page bits 0-2, bits 3-4 into $7FFD bits 6-7, bit 4 set (ROM 1); bits 0 and 7 alone use only $7FFD. AF, BC, HL kept.
+$65D9 SelectAtm2 ; ATM Turbo 2+: NOT (A AND $18) through the TR-DOS ROM to $7FF7
+$65E5 ; open point: $7FF7 is window 1 ($4000) by unreal-ng's IsPort_FFF7 (A15-A14), not window 3; no ATM recording
+$65EA SelectAtm1 ; ATM Turbo 1: $FDFD = page bits 3-4
+$65F5 SelectProfi ; Profi: $DFFD = page bits 3-5
+$6600 SelectKay ; KAY / Scorpion: $1FFD = page bit 3 to bit 4, bits 4-5 to bits 6-7
+$660F SelectExtOut ; the extended register
+$6613 Select7ffd ; $7FFD: bits 0-2 the page, 6-7 from page bits 3-4, ROM 1
+$6626 SelectDone
+$662A c TrdosPortOut ; OUT (C),A with the TR-DOS ROM paged (TrdosRet into TrdosOut): the ATM decodes its xFF7 ports only then
+> IX is changed.
+
+@module s3data ; The page list, the saved bytes, the strings
+@about The data of stage 3: the 62 page numbers CountPages checks, the 64 bytes it saves, and the $FF-ended strings. The strings after $6780 (and the end of BattleText) are under the game block once ReadSectors has read it (r99 frame 2299 writes $6780-$67EB): the machine names are needed only before that.
+$6633 b PageListGuard ; $FF in front of PageList (no window reads it)
+$6634 b PageList 16 ; the pages to count: 0 1 3 4 6 7 8 .. 63, $FF
+> The 62 pages 0-63 without 2 and 5 (the fixed pages at $8000 and $4000), $FF at $6672. CountPages removes the aliases in place.
+$6672 ; the end mark
+$6673 b PageSave 16 ; the byte at $C000 of pages 0-63 while CountPages marks them
+$66B3 b TitleText 8 ; AT 0,10 INK 4 PAPER 0 FLASH 0 BRIGHT 0 "NETHER  EARTH" AT 1,10 "ZS Edition'99" INK 6 AT 3,1 "System checking..." CR "Computer " INK 5
+$66FF b MemoryText 8 ; CR INK 6 "Memory " INK 5
+$670C b KbText 8 ; INK 6 "Kb" CR "Using " INK 5
+$671A b TapeRecorderText 8 ; "TAPE RECORDER" (the tape path; no window reads it)
+$6728 b LoadingText 8 ; AT 8,1 INK 6 "Loading... " CR "Game... "
+$6742 b OkText 8 ; INK 4 "O.k." INK 6 CR
+$674C b DriversText 8 ; "Drivers... "
+$6758 b MenusText 8 ; "Menus... "
+$6762 b RamDiskText 8 ; "RAM-Disk... "
+$676F b BattleText 8 ; AT 20,5 INK 0 "Let the Battle begin!": nothing prints it
+> No code of stage 3, the game, the patches or the menu block names $676F (byte search); its tail from $6780 is the game block's once loaded.
+$6780 GameBlock ; the game block's first byte once read (ReadSectors, 68 sectors): its entry
+$678A b TapeErrorText 8 ; AT 20,3 INK 2 PAPER 6 BRIGHT 1 FLASH 1 "Tape Error. System Halted."
+$67B0 b MachineNames 8 ; $FF, then "Scorpion" "Spectrum" "Spectrum" "ATM" "TURBO 2+" "PROFI" "KAY" "Spectrum": bits 7-0
+> SkipStrings from the $FF at $67B0: the B-th string is the name of bit 8-B. Bit 6 is never set; bits 5 and 0 are both "Spectrum", NameDefault is used for scheme 0.
+$67B1 NameScorpion
+$67E3 NameDefault

@@ -74,7 +74,9 @@ $D589 ; silent: on to the exit
 $D58C ; the tone's end?
 $D58E ; no: keep the count
 $D590 ; the tone is over: silent
+$D591 InterruptSoundStore
 $D595 ; this frame's burst (the flags of the OR above choose its kind)
+$D598 InterruptExit
 $D599 ; (DE)
 $D59A ; (BC)
 $D59B ; (AF; on into StartInterrupt
@@ -122,7 +124,9 @@ $AF5F ; HL = the ship's column inside the view
 $AF61 ; A = it (the view is narrower than 256)
 $AF62 ; at view column 13?
 $AF66 ; ViewX - 1
+$AF67 ViewCheckRight
 $AF6B ; ViewX + 1
+$AF6C ViewStore
 $AF73 ; HL = the map row 0 address of the view's left column
 $AF74 ; MapView, where DrawView starts
 $AF7A ; C = the row, changed below
@@ -476,7 +480,7 @@ $A707 ; recount the robots of both sides
 $A70A ; reprint the status values
 $A70D CheckGameKeys ; Input bit 6 (key I): abandon the game
 $A715 ; the next turn (NE tested the save key here)
-$A718 ; eight NOPs, NE's save call and EnterPlay jump: never run
+$A718 SaveCallRemoved ; eight NOPs, NE's save call and EnterPlay jump: never run
 
 $A720 ; IX = the robot record (from FindRobot)
 $A724 ; +$0A = 1: the player sits on it; the robot stops (UpdateRobot skips it)
@@ -573,7 +577,7 @@ $A83C ; HL = the strength, 0-127
 $A840 ; three digits at (23,25)
 $A845 ; "%" and return
 $A836 ; negative: a dying robot
-$A83B ; HL = the strength
+$A83B ShowStrengthNumber ; HL = the strength
 $A83E ; leading zeros as spaces
 $A843 ; "%"
 
@@ -684,6 +688,7 @@ $AA6E c DistanceSelect ; choose the miles, 0-50 by 5
 > D = the miles, from 0. Each pass of DistanceLoop is one game turn (ShowStrength, WorldTurn, DrawView, MenuRadarTick, GameTurn; a destroyed robot (+$01 = 0) closes the whole menu (JP CloseRobotMenu). Then WaitKey: fire goes to DistanceFire; up adds 5, down takes 5 (up wins when both are held; a value out of 0-50 (CP $33, a negative one wraps above it) is refused. A change is printed at (13,23), attribute $46, by DistanceShow with the click $14. No release wait: a held key steps once a game turn.
 > DistanceFire: +$0E = miles x 2; 0 miles turns the order back into 0 (stop and defend; the beep $78, WaitRelease, back to the robot menu.
 $AA6E ; D = the miles: start at 0
+$AA70 DistanceLoop
 $AA71 ; the strength
 $AA74 ; the robots and the shots go on
 $AA77 ; the view
@@ -722,11 +727,13 @@ $AAAE ; two digits, a leading space
 $AAB1 ; the click of a change
 $AAB3 ; beep
 $AAB6 ; held keys step again after one game turn
+$AAB8 DistanceFire
 $AAB9 ; x2: +$0E counts map columns, 2 a mile
 $AABA ; +$0E: the distance to go
 $AABD ; 0 miles?
 $AABE ; not 0: the order stands
 $AAC0 ; 0 miles: order 0, stop and defend
+$AAC4 DistanceDone
 $AAC6 ; beep
 $AAC9 ; fire up first
 $AACC ; back to the robot menu
@@ -815,6 +822,7 @@ $AC7C c CombatMenuCode ; the combat menu
 > FIRE MISSILES without missiles changed nothing.
 $AC7C ; the strength
 $AC7F ; STOP COMBAT highlighted first
+$AC81 CombatMenuLoop
 $AC84 ; six items
 $AC86 ; A = the item, 1-6
 $AC89 ; 6: STOP COMBAT
@@ -825,9 +833,11 @@ $AC91 ; 1-4: a weapon
 $AC93 ; drive the robot until fire
 $AC96 ; A = 5: the menu reopens on MOVE ROBOT
 $AC97 ; the combat list again
+$AC99 CombatWeapon
 $AC9A ; B = item + 1 rotations
 $AC9B ; B = item + 1
 $AC9C ; the robot's parts
+$AC9F CombatPartBit
 $ACA0 ; item 1 bit 6 nuclear, 2 bit 5 phasers, 3 bit 4 missiles, 4 bit 3 cannon
 $ACA2 ; no such part: the buzz
 $ACA4 ; the item back (the stack clean)
@@ -837,6 +847,7 @@ $ACA9 ; IY = the robot: the blast's centre
 $ACAB ; IY = IX
 $ACAD ; a base in reach, every robot in 9 x 9 cells and this robot destroyed
 $ACB0 ; the robot is gone with it: close the menu
+$ACB3 CombatFireShot
 $ACB4 ; shot record 0 (Shots), the only one COMBAT MODE uses
 $ACB8 ; its +$01
 $ACBB ; flying?
@@ -848,6 +859,7 @@ $ACC4 ; the view with the shot
 $ACC7 ; the turn's clock and pacing
 $ACCA ; the item back
 $ACCB ; the menu again on the same weapon
+$ACCE CombatRefused
 $ACD0 ; the low buzz
 $ACD3 ; the item back
 $ACD4 ; the menu again on that item
@@ -886,6 +898,7 @@ $AD54 ; the attribute of item 0 back
 $AD55 ; DE back
 $AD56 ; done
 $AD3F ; 3 attribute rows an item
+$AD42 PaintMenuItemRow
 $AD45 ; the item's top row
 $AD4A ; the next row, same column
 $AD4F ; its bottom row
@@ -917,7 +930,7 @@ $AD65 ; 5 minutes a turn
 $AD70 ; an hour
 $AD79 ; a day
 $AD82 ; the day's production of both sides
-$AD85 ; position, setting 0, attribute $57
+$AD85 ClockPrint ; position, setting 0, attribute $57
 $AD88 t ClockPos ; The clock: (0,27), setting 0, attribute $57
 $AD88 ; AT (0,27), size 0, attribute $57 (white on red): where the clock's day and time go
 
@@ -955,6 +968,7 @@ $ADF8 ; B = the new owner's side
 $ADFC ; done with this point
 $AE00 ; B = the new owner's side
 $AE01 ; the factory changes side, its flag moves
+$AE04 CapturePointDone
 $AE07 ; ...
 $AE09 ; ...
 $AE0B ; ...
@@ -988,7 +1002,7 @@ $ADEF ; one more capture
 $ADF1 ; A = the point's index
 $ADF4 ; 0-3: a warbase
 $ADF9 ; the warbase changes side
-$ADFE ; 4-27: factory A - 4
+$ADFE CaptureFactory ; 4-27: factory A - 4
 $AE05 CaptureNext ; 5 bytes a point
 $AE13 ; any capture?
 $AE17 ; recount the buildings of both sides
@@ -1033,6 +1047,7 @@ $AE61 ; the side is paid
 $AE4E ; 5 x warbases
 $AE53 ; into the general resource
 $AE56 ; six factory kinds
+$AE58 ProduceFactoryLoop
 $AE5A ; 2 x the factories of the kind
 
 $AE62 c AddCapped ; (HL) += A, at most 99
@@ -1042,7 +1057,7 @@ $AE63 ; 100 or more?
 $AE65 ; no: as it is
 $AE67 ; yes: 99, the most a resource holds
 $AE6A ; HL kept for the next resource
-$AE69 ; store
+$AE69 AddCappedStore ; store
 
 $AE6B c CheckGameEnd ; The end of the game: the enemy has no warbase (won) or we have none (lost)
 > $FD42 (the enemy's warbases) = 0: GameWon. Else $FD3A (ours) = 0: GameStop, "YOU HAVE NO BASES LEFT / BETTER LUCK NEXT TIME!" at (22,0), then the common end at $AEEA.
@@ -1073,8 +1088,10 @@ $AEEA c GameOverWait ; the end of a won or lost game
 $AEEA ; a low tone
 $AEEC ; the buzz
 $AEEF ; 100 frames, 2 s
+$AEF1 GameOverPause
 $AEF2 ; until 100 frames went
 $AEF4 ; let go of any control first
+$AEF7 GameOverKey
 $AEFA ; a control held?
 $AEFB ; not yet: wait
 $AEFD ; the title menu
@@ -1095,21 +1112,21 @@ $AF1B ; the auto-climb runs out twice as fast
 $AF25 MoveShipX ; right / left, not both
 $AF33 ; carry: right
 $AF36 ; left: not past column $0E
-$AF3F ; one column left
-$AF42 ; right: not past column $1F5
-$AF4B ; one column right
-$AF4C ; refused where the ship would be lower than what stands there
+$AF3F ShipStepLeft ; one column left
+$AF42 ShipCheckRight ; right: not past column $1F5
+$AF4B ShipStepRight ; one column right
+$AF4C ShipCheckX ; refused where the ship would be lower than what stands there
 $AF57 FollowView ; the view keeps the ship between its columns 13 and 22
 $AF64 ; at 13: the view one column left
 $AF69 ; at 22: one column right
 $AF70 ; MapView = $DD00 + ViewX
 $AF77 MoveShipY ; down / up, not both
 $AF88 ; down: Y + 1
-$AF8C ; up: Y - 1
-$AF90 ; Y 0 (or 16) is off the map
+$AF8C ShipCheckUp ; up: Y - 1
+$AF90 ShipCheckY ; Y 0 (or 16) is off the map
 $AF99 ; refused where the ship would be too low
 $AFA2 AutoClimb ; $FD30 > 0: climb whatever fire says
-$AFAE ; fire: climb
+$AFAE ClimbByFire ; fire: climb
 $AFB5 Climb ; 2 a turn up to $30
 $AFC3 Sink ; 1 a turn, not below 0
 $AFCA ; C = the height under the ship
@@ -1144,7 +1161,7 @@ $B01C ; the window moved
 $AFE9 ; C = the window's left edge, in units of 8 columns
 $AFED ; A = ShipX / 8
 $AFF5 ; the ship's place in the window, 0-15
-$AFFF ; left by 8 units
+$AFFF RadarScrollLeft ; left by 8 units
 
 
 
@@ -1200,7 +1217,7 @@ $B06A ; objects only, the anchors whose footprint overlaps ours: (X-1, Y-1)
 $B06F ; (X-1, Y)
 $B074 ; the row Y+1 only inside the map
 $B079 ; (X-1, Y+1), (X, Y+1), (X+1, Y+1)
-$B084 ; carry when the ship is lower than the highest top: C stays for MoveShip's sinking
+$B084 ShipCompareTop ; carry when the ship is lower than the highest top: C stays for MoveShip's sinking
 $B08A c TerrainTop ; C = max(C, the ground height of the terrain type at DE)
 > DE a map cell. The cell's type (bits 0-4) indexes the ground height table TerrainHeights $D7BC (00 00 02 02 02 02 03 03 06 06 06 06 00 00 00 07 0F 07 0F...: types 2-5 height 2, 6-7 (the wreck a destroyed robot leaves) 3, 8-$0B 6, $0F/$11 7, $10/$12 15). Keeps the higher of it and C (KeepHigher). Used by CheckShipMove (through CellTop) and GroundUnderFootprint; 39396 calls.
 $B08A ; the cell byte
@@ -1229,6 +1246,7 @@ $B0AB c KeepHigher ; C = max(C, A)
 $B0AB ; higher than C?
 $B0AC ; no: C stays
 $B0AE ; yes: C = A
+$B0AF KeepHigherDone
 $B0B3 ; C = the top so far
 $B0B8 ; its height by type
 $B0BB ; HL = the type's entry
@@ -1539,7 +1557,7 @@ $B33C ; (the free set...)
 $B33D ; (... without the opposite: B is not 0, it holds D)
 $B223 ; the order
 $B229 ; 0 stop: stand
-$B22B ; 1-2: advance / retreat
+$B22B SteerMoveOrders ; 1-2: advance / retreat
 $B230 ; 4-8: the building orders
 $B232 ; 3 destroy robots: a target already?
 $B239 ; HL = the target robot's record
@@ -1559,19 +1577,19 @@ $B2AA ; found one
 $B2AC ; none left: stand
 $B2AE ; ours: stand and wait
 $B2B3 ; the enemy's: hunt robots instead
-$B2B8 ; the new target (HL is not on it: the bug above)
+$B2B8 SteerNewBuilding ; the new target (HL is not on it: the bug above)
 $B2BB SteerAtBuilding ; B = our row - the building's row, DE = its column
 $B2CC ; HL = our column - its column
 $B2D1 ; columns differ: aim at the row 3 below it
 $B2D5 RobotAim ; horizontal: 2 left when we are right of it, 1 right when left
 $B2DC RobotAimVertical ; vertical: 8 up when we are below it, 4 down when above
-$B2E8 ; D = the wanted directions
+$B2E8 RobotAimCheck ; D = the wanted directions
 $B2EC ; on the target: stand
 $B2F4 ; destroy factories / warbases: the nuclear charge
-$B2F9 ; already facing down: stand
+$B2F9 RobotFaceDown ; already facing down: stand
 $B2FF ; else turn down and stay so
-$B306 ; L = |the column difference| (low byte)
-$B30E ; 8 or more columns: lean horizontally
+$B306 RobotAimMove ; L = |the column difference| (low byte)
+$B30E RobotAimColumns ; 8 or more columns: lean horizontally
 $B314 ; the wanted directions that are free
 $B315 ; none: any free direction
 $B318 ; only vertical ones: pick one
@@ -1625,12 +1643,14 @@ $B377 ; Side...
 $B37A ; (0 ours?)
 $B37B ; ours: $DA00
 $B37D ; the enemy's: $DB80
+$B381 ConsiderBuildingStart
 $B386 ; (+$01 = 0: a free slot)
 $B387 ; free: next
 $B38C ; (the same order?)
 $B38D ; no: next
 $B392 ; (the same target index?)
 $B393 ; yes: someone is after it already
+$B395 ConsiderBuildingNext
 $B396 ; (16 bytes a record)
 $B399 ; IY = the next record
 $B39B ; (E = the order again)
@@ -1673,9 +1693,10 @@ $B3C4 ; (low byte)
 $B3C5 ; back to the main registers
 $B3C6 ; D = the candidate's index
 $B3C7 ; done
+$B3C8 KeepNearestDone
 $B3C9 ; done
 $B3B6 ; the distance
-$B3C3 ; nearer: the new best, D = its index
+$B3C3 KeepNearestNew ; nearer: the new best, D = its index
 $B3CA c ColumnDistance ; HL = |HL - DE|
 > HL, DE two columns (0-511). A 16-bit absolute difference: SBC HL,DE and, when the result's sign is set, 0 - HL. DE is kept; A = 0 on the positive path, the high byte's negation on the other. Used by KeepNearest and by SteerByOrder's 50-column test of a robot target.
 $B3CA ; A = 0, no borrow
@@ -1702,9 +1723,10 @@ $B3EE ; ours: $20 (the computer's)
 $B3F3 ; 6 capture neutral factories?
 $B3F5 ; no: E stays the opponent's mark
 $B3F8 ; done
-$B3E2 ; warbases
-$B3E7 ; the opponent's mark: $20 for us...
+$B3E2 TargetWarbaseTable ; warbases
+$B3E7 TargetBuildingMark ; the opponent's mark: $20 for us...
 $B3F0 ; ... $40 for the enemy
+$B3F2 TargetNeutralCheck
 $B3F6 ; capture neutral: owner bits 0
 
 $B3E5 ; ... all the warbases: 4 in the image, the warbase count after LOAD MAP (NELEV byte $1FE + 1)
@@ -1714,6 +1736,7 @@ $B3F9 ; DE = our records...
 $B3FF ; (0 ours?)
 $B400 ; the enemy's robot: our records
 $B402 ; our robot: the computer's records
+$B405 TargetRobotIndex
 $B408 ; (2 x)
 $B409 ; (4 x)
 $B40A ; (8 x: at most 23 x 8 = 184, still a byte)
@@ -1741,11 +1764,13 @@ $B426 ; Side...
 $B429 ; (0 ours?)
 $B42A ; the enemy's robot: our records
 $B42C ; our robot: the computer's records
+$B430 FindOpponentStart
 $B435 ; (+$01 = 0: free)
 $B436 ; free: next
 $B438 ; HL = its column...
 $B43B ; ... (high byte)
 $B43E ; nearer than the best: D = C
+$B441 FindOpponentNext
 $B442 ; (16 bytes a record)
 $B445 ; IY = the next record
 $B447 ; (D = the best so far)
@@ -1757,9 +1782,11 @@ $B44F ; D = the slot, Z when none
 $B454 ; C = the free directions again
 $B459 ; another direction: a turn, taken as it is
 $B45B ; (ahead only when free, else 0)
+$B45C DirectStepSet
 $B460 ; yes: that one
 $B465 ; (only if still free)
 $B466 ; C = it, or 0: stand
+$B467 DirectStepStore
 $B46A ; A = the step
 $B46E ; turn or step, the delay, back on the map
 $B422 ; the opponent's records
@@ -1804,8 +1831,8 @@ $B4B8 ; done
 $B473 ; already facing it: step
 $B478 ; C = the new facing
 $B47C ; right <-> left: turn down / up first
-$B486 ; down <-> up: turn right / left first
-$B48E ; face it; the turn does not count as a course step
+$B486 TurnCheckVertical ; down <-> up: turn right / left first
+$B48E TurnFace ; face it; the turn does not count as a course step
 $B495 TurnOrStepStep ; step: the new column / row in HL / B
 $B498 ; the highest ground under the new footprint
 $B49E ; direct control?
@@ -1851,9 +1878,9 @@ $B4F8 ; +$0E one less...
 $B4FB ; ... not there yet
 $B500 ; and its course is spent
 $B504 ; done
-$B4C7 ; not right
-$B4D5 ; not left: down?
-$B4DA ; up?
+$B4C7 StepLeft ; not right
+$B4D5 StepDown ; not left: down?
+$B4DA StepUp ; up?
 $B4DE OrderDistanceUp ; a column away from the order's aim: one more to go (max 99)
 $B4F2 OrderDistanceDown ; a column toward it: one less; there: stop
 $B4FC ; arrived: the order becomes stop
@@ -1895,16 +1922,17 @@ $B54E ; Z when free
 $B551 ; HL = the anchor again
 $B552 ; blocked
 $B554 ; bit 3: up
+$B556 FreeDirDone
 $B515 ; the ship lower than our top?
 $B51E ; then bit 7 (the ship's cell) blocks too
 $B520 ; objects always block
 $B526 ; bipod: types below 8
 $B52B ; tracks: types below $0C
 $B530 ; anti-grav: types below $0F
-$B532 ; right free?
-$B53B ; left free?
-$B544 ; down free?
-$B54D ; up free?
+$B532 FreeDirRight ; right free?
+$B53B FreeDirLeft ; left free?
+$B544 FreeDirDown ; down free?
+$B54D FreeDirUp ; up free?
 $B557 c CanMoveRight ; Z when the robot at HL can step right
 > Terrain and objects at the column it enters, (X+2, Y-1) and (X+2, Y; an object anchored at (X+2, Y+1) (its footprint would overlap) when that row exists.
 $B557 ; X + 1...
@@ -2061,6 +2089,7 @@ $B61B ; the row back
 $B61C ; done
 $B5FD ; low ground
 $B603 ; high ground
+$B605 SetStepDelayFind
 $B60A SetStepDelayPart ; D = the locomotion: the index of the first set part bit
 $B61D b StepDelays 3 ; Game turns a robot step takes: rows flat, low, high ground; columns bipod, tracks, anti-grav
 > 6 4 3 / 8 6 3 / 9 7 4. Read by SetStepDelay; a game turn is about 10 frames, so a bipod on flat ground steps every 60 frames.
@@ -2104,7 +2133,7 @@ $B632 ; the range: 8 cells
 $B635 ; the facing direction...
 $B63A ; ... sees 10 cells...
 $B642 ; ... 12 with electronics...
-$B644 ; ... in three lanes
+$B644 SpotEnemiesThree ; ... in three lanes
 $B649 ; up / down: the columns X-1, X, X+1
 $B657 SpotEnemiesRows ; left / right: the rows Y-1, Y, Y+1
 $B666 SpotEnemiesLane ; the (last) lane
@@ -2160,6 +2189,7 @@ $B6B8 ; IY = record 1 ($D7DC), our first
 $B6BC ; the shooter the enemy's?
 $B6C0 ; no: records 1-2
 $B6C5 ; IY = record 3 ($D7EE)
+$B6C7 FindFreeShotSlot
 $B6CA ; (+$01 = 0: free)
 $B6CB ; free: take it
 $B6CF ; IY = record 2 or 4
@@ -2177,6 +2207,7 @@ $B6DD ; (no)
 $B6DF ; ... missiles 7
 $B6E5 ; (no)
 $B6E7 ; (+1)
+$B6E8 FireShotStart
 $B6EE ; +$05 = the direction it flies
 $B6F5 ; HL = the robot's column...
 $B6F8 ; ... (high byte)
@@ -2185,8 +2216,9 @@ $B701 ; still flying?
 $B704 ; (+$01 = 0: gone)
 $B705 ; gone already
 $B709 ; SoundFx = 1
+$B70C FireShotDone
 $B6DB ; missiles fly further
-$B6E1 ; electronics: one step more
+$B6E1 FireShotElectronics ; electronics: one step more
 $B6EB ; the robot's facing
 $B6F1 ; ground of height 10 or more stops it (TerrainHeights 15)
 $B6FE ; the first step
@@ -2286,6 +2318,7 @@ $B7CE ; A = its strength...
 $B7D2 ; exactly 0: destroyed
 $B7D4 ; still above 0: it lives
 $B7D9 ; C = $C8, the explosion
+$B7DB MoveShotStrength
 $B7E0 ; drop the cell pushed above
 $B7E1 ; +$01 = 0: the shot record is free
 $B7E5 ; the sound: $FC miss, $FA hit, $C8 destroyed
@@ -2295,10 +2328,10 @@ $B7EE ; $FC: the short sound
 $B7F0 ; SoundFx = it
 $B7F3 ; done
 $B727 ; right: 2 columns
-$B72E ; left
-$B735 ; down: 2 rows
-$B73C ; up
-$B741 ; off the map's rows: gone
+$B72E MoveShotLeft ; left
+$B735 MoveShotDown ; down: 2 rows
+$B73C MoveShotUp ; up
+$B741 MoveShotRows ; off the map's rows: gone
 $B747 MoveShotStore ; the new position
 $B750 ; the ground under it
 $B753 ; too high: it hits the wall
@@ -2315,7 +2348,7 @@ $B7C7 ; ... times the weapon + 1
 $B7C8 MoveShotDamage ; one more multiple
 $B7CC ; the hit sound
 $B7D1 ; the strength left
-$B7D7 ; destroyed: dying for 4 turns, the explosion sound
+$B7D7 MoveShotKill ; destroyed: dying for 4 turns, the explosion sound
 $B7DE MoveShotGone ; the shot is gone
 $B7EA c ShotGone ; out of range or off the map: the shot is gone with the short sound
 $B7EA ; +$01 = 0: the shot record is free
@@ -2923,7 +2956,7 @@ $BBD4 ; A = the row
 $BBD5 ; HL = the door's map cell, return from there
 $BBC2 ; the player's bit 6...
 $BBC6 ; ... or the enemy's bit 5
-$BBC7 ; keep the type, set the owner
+$BBC7 SetBaseOwnerBits ; keep the type, set the owner
 $BBCD BaseCell ; HL at a base's +3: HL = the map cell of its x (+0/+1), y (+2)
 
 $BBD8 c DestroyFactory ; Factory A (0-23) destroyed by a nuclear blast: buildings removed, blocks turned to debris
@@ -3029,6 +3062,7 @@ $BC60 ; IY = the building record on cell HL, Z when there is one
 $BC63 ; none here: nothing to do
 $BC65 ; the record's high byte 0: free
 $BC69 ; the cell's anchor bit off
+$BC6B RemoveBuildingDone
 $BC6C ; IY back
 $BC6E ; the building is gone
 
@@ -4263,6 +4297,7 @@ $CC43 ; all eight
 $CC48 ; the chosen parts
 $CC51 ; the parts from +$0D up, into the view buffer
 $CC64 ; the line's screen address
+$CC65 PreviewByteLoop
 $CC66 ; onto the screen
 $CC67 ; the next buffer byte
 $CC68 ; the next screen byte
@@ -4281,7 +4316,9 @@ $CC1F ; the attributes of part row 0 (electronics, bit 7)
 $CC28 PartRowLoop ; E = $06: not chosen
 $CC2A ; the next part bit into carry, highest first
 $CC2E ; chosen: bright white
+$CC30 PartRowPaint
 $CC31 ; 4 cells by 3 rows
+$CC34 PartRowLine
 $CC35 PartCellLoop ; the attribute
 $CC39 ; to the next attribute row (32 - 4)
 $CC45 ; empty view buffer
@@ -4395,7 +4432,7 @@ $CCF3 DiagonalLoop ; start the next diagonal one column further left
 $CCF7 DiagonalCellLoop ; the view column of this cell
 $CCF9 ; left of the view: nothing to draw
 $CCFE ; an occupied cell
-$CD01 ; down the diagonal: row + 1, column + 1
+$CD01 DiagonalNext ; down the diagonal: row + 1, column + 1
 $CD07 ; past row 15
 $CD0C ; past column 31
 $CD10 DiagonalDone ; A = the column where this diagonal ended
@@ -4409,6 +4446,7 @@ $CD1D ; covered half: on to the object and the ship
 $CD21 ; type 0: no block
 $CD26 ; into DrawSprite's operand
 $CD28 ; the block: sprite = its type, A
+$CD2B DrawCellObjects
 $CD2C ; the view position back
 $CD2D ; the cell back
 $CD30 ; the robot, building or shot of this cell
@@ -4468,7 +4506,7 @@ $CD4C ; (x-1, y)
 $CD51 ; (x-1, y+1) unless past row 15
 $CD5B ; (x, y+1)
 $CD5F ; (x+1, y+1)
-$CD63 ; nothing later than the ship's own cell?
+$CD63 ShipCompareLatest ; nothing later than the ship's own cell?
 $CD6D ; draw the ship now
 $CD6F ShipDefer ; mark the later cell with bit 7, keep the ship's view position
 $CD74 ; $FD11 = column, $FD12 = row
@@ -4503,7 +4541,7 @@ $CDB7 ; DE = the latest cell
 $CD97 ; (x-1, y+1)
 $CD9A ; row 16 is past the map ($DD00 + $200*16 = $FD00)
 $CDA2 ; (x, y+1)
-$CDA7 ; (x-1, y)
+$CDA7 FindLatestSameRow ; (x-1, y)
 $CDAC ; through (x+1, y) to (x+1, y+1), unless past row 15
 $CDB8 c CheckBlockNeighbour ; A block at HL competes for the latest cell
 > Bit 5 set (the right half of a block) or type 0 (empty): nothing. Otherwise falls into KeepLaterCell.
@@ -4533,12 +4571,12 @@ $CDC2 ; B = yDE
 $CDC8 ; A = yHL - yDE + xDE - xHL
 $CDCF ; HL drawn earlier
 $CDD2 ; same diagonal: the bigger column is later
-$CDD5 ; HL is later: it becomes the latest cell
+$CDD5 KeepLaterTake ; HL is later: it becomes the latest cell
 $CDDE FindRobotLoop ; compare +$00/+$01 with HL
-$CDE9 ; the next 16-byte record
+$CDE9 FindRobotNext ; the next 16-byte record
 $CDF2 ; none: NZ
 $CDFB FindBuildingLoop ; compare the cell address with HL
-$CE06 ; the next 3-byte record
+$CE06 FindBuildingNext ; the next 3-byte record
 $CE0F ; none: NZ
 $CE12 c DrawCellObject ; Draw the object of map cell HL (bit 6): a robot, a building or a shot
 > A robot whose +$00/+$01 is HL goes to DrawMover. A building record goes to its sprite: BuildingSprites[type] at height BuildingHeights[type]. Otherwise the five shot records at $D7D3 (9 bytes: +$00/+$01 cell, +$02/+$03 x, +$04 y, +$05 direction, +$06 range, +$07 weapon 1-3, +$08 height) are searched; a match goes to DrawMover. Nothing found: nothing drawn. the shot path is read from the code and from the shot records at frame 20000).
@@ -4572,6 +4610,7 @@ $CE1A ; a building here
 $CE1C ; the five shot records, 9 bytes each
 $CE22 ShotSearchLoop ; the shot's draw cell, the low byte
 $CE2C ; a shot here
+$CE2E ShotSearchNext
 $CE38 DrawBuilding ; building type C: sprite and height from the tables below
 $CE3E ; the height of the type
 $CE49 ; the sprite of the type
@@ -4639,11 +4678,11 @@ $CE6B ; a later block next to it?
 $CE76 MoverDefer ; defer: mark the later cell and point the record at it
 $CE82 MoverDeferred ; reached: the real cell from +$02-$04
 $CE99 ; this is the real cell: draw here
-$CE9C ; back to the real cell; clear the deferred mark
+$CE9C MoverRestore ; back to the real cell; clear the deferred mark
 $CEAA ; the view column: from the deferred column - 1 up to the real one
 $CEAC MoverColumnLoop ; the real column
 $CEB4 MoverRowLoop ; the view row: up to the real row
-$CEBD ; draw at the real position
+$CEBD MoverDrawReal ; draw at the real position
 $CEC3 c DrawMoverSprite ; Draw IY: a robot record ($DA00 up) as a stack of parts, a shot as one sprite
 > Records at $D800 and up are robots: DrawRobot. A shot (records at $D7D3) is sprite $2B + 2 * weapon (+$07: 1 cannon, 2 missiles, 3 phasers) + 1 when it flies down or up (+$05 = 4 or 8), at height +$08: $2D/$2E a cannon shell, $2F/$30 a missile trail, $31/$32 a phaser beam (the sprite pictures in start.bin).
 $CEC5 ; BC = the record's address
@@ -4795,6 +4834,7 @@ $CFCA ; no borrow: D stays
 $CFCD ; borrow from D
 $CFCE ; the high byte
 $CFD1 ; $5Axx: the top of the sprite is cut off
+$CFD2 SpriteRowNext
 $CFD3 ; more rows: the next one up
 $CFD6 ; the sprite is drawn
 $CF2E ; E * 2
@@ -4814,6 +4854,7 @@ $CF61 ; entirely below
 $CF64 ; rows below the buffer
 $CF68 ; C = the rows that remain
 $CF6B ClipBottomLoop ; skip a row of the sprite
+$CF6C ClipBottomSkip
 $CF77 ClipLeft ; the byte column
 $CF7C ; bytes cut on the left
 $CF85 ClipRight ; the start column
@@ -4947,6 +4988,7 @@ $D0AE ; carry: into the next third, where D (+8 from the lines) already points
 $D0B0 ; inside the same third...
 $D0B1 ; ... D back by the 8 lines
 $D0B3 ; (the character row's line 0)
+$D0B4 CopyCharRowNext
 $D0B5 ; the next of the 20 character rows
 $D0B8 ; the view is on the screen
 $D074 ; the screen: line 0 of character row 1, column 1
@@ -4994,24 +5036,30 @@ $D0FD ; 21 more: columns 0-21
 $D100 ; full line
 $D102 ; line 7 of row 21
 $D107 ; lines 1-6 of row 0, column 0
+$D109 FrameCornerTopLeft
 $D10B ; the next pixel line of the character cell
 $D10C ; 6 lines
 $D10E ; row 0, column 21
 $D111 ; lines 1-6
+$D113 FrameCornerTopRight
 $D115 ; the next pixel line
 $D116 ; 6 lines
 $D118 ; row 21, column 0
 $D11B ; lines 0-6
+$D11D FrameCornerBottomLeft
 $D11F ; the next pixel line
 $D120 ; 7 lines
 $D122 ; row 21, column 21
 $D125 ; lines 0-6
+$D127 FrameCornerBottomRight
 $D129 ; the next pixel line
 $D12A ; 7 lines
 $D12F ; from line 7 of row 0 to line 0 of row 21
+$D131 FrameSideLeft
 $D133 ; the next screen line
 $D136 ; 162 lines
 $D13B ; 162 lines
+$D13D FrameSideRight
 $D13F ; the next screen line
 $D142 ; 162 lines
 $D147 ; (the next cell)
@@ -5027,6 +5075,7 @@ $D164 ; 21 more: columns 0-21
 $D167 ; $3D, the frame's bottom row
 $D169 ; row 21
 $D16E ; rows 1-20
+$D170 FrameAttrSides
 $D172 ; 21: to column 21
 $D174 ; HL = column 21
 $D177 ; the right side
@@ -5034,6 +5083,8 @@ $D179 ; 11: to column 0 of the next row
 $D17B ; HL = column 0
 $D17E ; the next row
 $D183 ; B = 20 cells a row, C = 20 rows
+$D186 ViewAttrRow
+$D187 ViewAttrCell
 $D189 ; the next cell
 $D18A ; 20 cells
 $D18C ; the counts back
@@ -5042,6 +5093,7 @@ $D18F ; HL = column 1
 $D192 ; one row less
 $D193 ; the next row
 $D197 ; row 17, column 19: the diagonal edge's cells, $31: blue ink on yellow
+$D19A BlueCornerLoop
 $D19C ; the next column
 $D19D ; 2 cells
 $D19F ; 29: two columns further left in the next row, along the edge
@@ -5053,10 +5105,12 @@ $D1AB ; the next column
 $D1AC ; column 20
 $D1AE ; row 19, columns 17-20
 $D1B1 ; 4 cells
+$D1B3 BlueEdgeRow1
 $D1B5 ; the next column
 $D1B6 ; 4 cells
 $D1B8 ; row 20, columns 15-20
 $D1BB ; 6 cells
+$D1BD BlueEdgeRow2
 $D1BF ; the next column
 $D1C0 ; 6 cells
 $D0D0 ; the frame's top line
@@ -5138,7 +5192,7 @@ $D2C4 ; seven single digits, one a line
 
 $D2C7 ; $FD49: the enemy's robots, two digits
 $D2C8 ; two digits with a leading zero. MEDIUM and up: the start-up menu writes NOP, CALL PrintInline, "??" over these 6 bytes: the enemy's robots show as ?? and the string goes on into HumnCountsPos
-$D2CB ; the player's column
+$D2CB PrintHumnCountsPos ; the player's column: PrintInline, the position string follows
 $D2CE b HumnCountsPos 4 ; Inline string: position (6,31)
 > The bytes 1 6 $1F (position (6,31)), 0; the attribute stays $47.
 $D2CE ; AT (6,31): our (HUMN) base counts, still in $47
@@ -5280,7 +5334,7 @@ $D38D ; C = 1: the end marker, shifted out after 8 keys
 $D38F KeyLoop ; A = the port's high byte: it selects the key's half row
 $D393 ; Z: pressed
 $D398 ; pressed: carry 1
-$D399 ; the first key of the table ends in bit 7
+$D399 KeyShift ; the first key of the table ends in bit 7
 $D39D ; the joystick chosen in the menu
 $D3A8 ; keyboard only
 $D3AB Kempston ; port $1F: fire, up, down, left, right in bits 4-0
@@ -5337,7 +5391,7 @@ $D414 DigitCountLoop ; take the power once more
 $D418 ; one too far: undo
 $D41D ; a leading zero
 $D420 ; blank: E = $20 is the space
-$D424 ; a digit: no more leading zeros
+$D424 DigitPrint ; a digit: no more leading zeros
 $D427 c PrintCharKeep ; PrintChar A with BC, DE, HL kept (EXX around)
 > PrintChar in the alternate registers: the caller's BC, DE, HL are kept (the number printers keep HL, E and the loop counters in them). A and the flags change.
 $D427 ; the alternate set
@@ -5346,7 +5400,7 @@ $D42B ; the caller's registers back
 $D42C ; done
 $D42E PrintInlineLoop ; the next byte after the CALL: the return address moves with it
 $D435 ; a control code or a character
-$D43A ; 0: return past the string
+$D43A PrintInlineEnd ; 0: return past the string
 $D43C c PrintControl ; PrintInline's byte A: control codes 1-4 or a character
 > 1 Y X: the position (row Y, column X, kept in $FD32/$FD31). 2 A: the attribute $FD13. 3: newline (the next row, the same column). 4 N: the size, high nibble the height in character rows ($FD16), low nibble the width in bytes ($FD17; 0 = normal. A character goes to PrintChar for size 0, else to PrintBigChar. The operands are read through the caller's return address on the stack, two levels up.
 $D43C ; 1: a position, Y X
@@ -5538,7 +5592,7 @@ $D56A ; the frame counter: the play loop waits for 10 ($AE1D)
 $D56E ; the player's radar picture, cyan
 $D573 ; the other picture each frame
 $D57D ; the enemy's radar picture, yellow
-$D582 ; show it
+$D582 InterruptRadar ; show it
 $D585 ; a sound effect running?
 $D58B ; one step on each frame: a tone ends at $80, a noise when it wraps past $FF to 0
 $D594 ; the flags of A: M noise, P the falling tone
@@ -5640,6 +5694,7 @@ $D646 ; ... to bit 0
 $D648 ; B = the picture: 0 the player's, 1 the enemy's
 $D64C ; 2: direct control
 $D64E ; XOR the robot's dot in
+$D651 RadarRobotNext
 $D654 ; IY = the next record
 $D656 ; the count back
 $D657 ; the next robot
@@ -5663,6 +5718,7 @@ $D660 ; flip the pixel
 $D661 ; back
 $D664 ; carry: the mask wrapped to bit 7
 $D666 ; of the next byte
+$D667 RadarDotRight
 $D668 ; flip (x+1, y)
 $D669 ; back
 $D66A ; (x, y) again
@@ -5675,6 +5731,7 @@ $D673 ; back
 $D674 ; the mask to x+1
 $D676 ; no wrap: the same byte
 $D678 ; wrapped: the next byte
+$D679 RadarDotAboveRight
 $D67A ; flip (x+1, y-1)
 $D67B ; back
 $D67C ; the dot is toggled
@@ -5707,13 +5764,14 @@ $D69D ; ...
 $D69E ; ... swapped
 $D69F ; L = 16 y + x / 8
 $D6A1 ; the 1...
+$D6A2 RadarMaskShift
 $D6A3 ; B times
 $D6A5 ; HL = the byte, A = the mask
 $D6A7 ; to ToggleRadarDot's caller: nothing drawn
 $D68D ; $D800 or $D900
 $D696 ; L = 16*y + x/8
 $D6A0 ; the mask: $80 shifted right x AND 7 times
-$D6A6 ; outside the window: return from the caller too
+$D6A6 RadarDotOutside ; outside the window: return from the caller too
 
 
 

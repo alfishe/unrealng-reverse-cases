@@ -124,7 +124,21 @@ four levels, EASY to CRITICAL, even EASY "an order of magnitude harder than the 
 enemy depend on the factories and bases it holds; UPGRADING makes every enemy robot be built up each day to at least
 the parts the player marked, on every level but CRITICAL, which uses the author's own setting. Stage 1 found the
 level choice patching five places of the game from a table at `$D980` (`$B87E`, `$D2C8`, `$AE41`, `$A5E7`,
-`$A5E5`); what each does is the game agents' (1.10).
+`$A5E5`). What the code does on each level (the table at `$D980`, applied by StartGame `$DA8E` of the start-up
+menu):
+
+| Level | `$B87E` (the enemy's build) | `$D2C8` (its robot count) | `$AE41` (its daily production) | `$A5E7` / `$A5E5` | The enemy |
+| --- | --- | --- | --- | --- | --- |
+| EASY | NE's code | shown | NE's ProduceSide | as UPGRADING set them (unused) | Nether Earth's commander: it starts with 99 of each resource (NewGameSetup calls FillEnemyResources `$A5F2` on every level), then lives on what its bases and factories produce |
+| MEDIUM | `CALL $A5F2` | `??` | NE's | (unused) | its resources are 99 again before every robot it builds: it never runs short |
+| HARD | `CALL $A5F2` | `??` | 6 `NOP`s + `CALL $A5D6` | as UPGRADING set them | as MEDIUM; its production is gone, instead UpgradeEnemyRobots builds up every enemy robot once a game day |
+| CRITICAL | `CALL $A5F2` | `??` | `CALL $A5D6` | `$FC` / 0 | as HARD with every part: all enemy robots become anti-grav with the four weapons and electronics |
+
+UpgradeEnemyRobots (`$A5D6`) sets the parts byte of each of the 24 enemy robot slots to (parts AND [`$A5E5`]) OR
+[`$A5E7`]. UPGRADING's six items toggle the bits 7-2 of `$A5E7` (ToggleUpgrade `$DA41`) and make the mask `$F8`
+when anti-grav is chosen (the old chassis dropped), else `$FF`; the image's own values `$78` / `$84` (the '98's
+rule: the weapons kept, electronics and anti-grav added) are used until the item is first toggled. So UPGRADING
+matters on HARD only: EASY and MEDIUM upgrade nothing, and CRITICAL writes its own values over the marks.
 
 The '98 has no choice: its scroller ([text](texts/scroller98.md)) claims unlimited enemy money, more money for the
 player, enemy upgrades of robots already built and a map that favours the enemy.
@@ -133,7 +147,17 @@ player, enemy upgrades of robots already built and a map that favours the enemy.
 
 LOAD MAP shows the disk's catalogue of `.N` files, four to a row, the current one highlighted; A moves to the next,
 Q back, SPACE loads it and returns to the menu ([05](05-controls.md)). The twelve maps of the disk are 512 bytes
-each and hold up to 28 bases (stage 1); the readme claims up to 96 maps a disk.
+each and hold up to 28 bases; the readme claims up to 96 maps a disk. A map file is a level only (the four record
+lists and a 13-byte tail of pointers and counts, [03](03-build-and-load.md), 3.5): no robots, no day, no owners, no
+resources; the game cannot save, so there is nothing else to load.
+
+The owner remembers choosing among numbered "snapshots", about sixteen, with the mouse. The only sixteen numbered entries on the disk are a tool's buffer in the readme's last sector (`n 01 00 00`
+for n = 1 to 16, with `CONVER Commander`): slack no program reads ([src/res/text](../src/res/text/README.md)). The code does not do that:
+no block of either release reads a mouse port (`$FBDF`, `$FFDF`, `$FADF`; no `IN` of a port `$xxDF` at all); the
+only Kempston read is the joystick's `IN ($1F)` in play. LOAD MAP prints the catalogue's `N` file names, four to a
+row, without numbers; Q and A move the highlight, SPACE loads. Its cursor runs over 96 places whatever is on the
+disk; the disk holds twelve (three rows). The menus' arrow pointer (start-up menu) moves by Q A O P, not by a
+mouse.
 
 | ![](img/screens/99-load-map.png) | ![](img/screens/99-load-map-nelev06.png) |
 | --- | --- |
@@ -174,4 +198,32 @@ No recording reaches the end of a game (a win or a loss), so the end screens are
 
 ## 1.10 The author's claims against the code
 
-filled from the game agents' tables
+The '98's claims are in its scroller ([scroller98](texts/scroller98.md)); the code is `src/game98`.
+
+| Claim | Verdict | The code |
+| --- | --- | --- |
+| the enemy's robot count is hidden | true | the count's print at `$D2C8` is `NOP`ped; the panel field stays blank |
+| more money for the player | true | GENERAL starts at 99 (`$A684`), and each warbase pays 8 general a day instead of NE's 5 (`$AE4F`) |
+| unlimited money for the enemy | true in effect | the enemy's production is gone; FillEnemyResources (`$A5F2`) sets every enemy resource to 99 at a new game and at every midnight |
+| the enemy upgrades the robots it has built | true | UpgradeEnemyRobots (`$A5D6`) each night: parts byte (+ 7) AND `$78` OR `$84`: anti-grav and electronics on, the bipod and tracks off, the weapons kept |
+| the map favours the enemy | partly | the map is changed: the enemy's half has 336 trench and 598 rock cells against 204 and 436 in the player's; the bases are NE's |
+| LOAD NEW LEVEL! | broken | no disk read: the key copies the scroller text as a map and the game resets at START ([03](03-build-and-load.md), 3.5) |
+
+The '99's claims are in [NEabout](texts/NEabout.md), [NEdescri](texts/NEdescri.md), [NEadvice](texts/NEadvice.md)
+and the readme [NEZSEd99](texts/NEZSEd99.md); the code is `src/game99`, `src/patches99` and `src/menu99`.
+
+| Claim | Verdict | The code |
+| --- | --- | --- |
+| runs on 48K and 128K | 128K only | the one-page route (`$62B4`) is built, but on 48K the texts land over the ROM's top and START runs text bytes: a reset ([03](03-build-and-load.md), 3.6) |
+| loads from tape too | code only | the tape set of the patches (`$6227`, taperead, tapemap) is never selected by the disk loader |
+| four levels, EASY harder than the original | true | 1.6; even EASY has the 99 GENERAL and the map's extra bases |
+| the enemy depends on its factories only on EASY | true | MEDIUM and up refill its resources before each build (`$B87E`); HARD and up also drop its production (`$AE41`) |
+| UPGRADING: the enemy builds up its robots each day on every level but CRITICAL, which uses the author's setting | partly | the daily upgrade runs on HARD and CRITICAL only (`$AE41`); CRITICAL forces every part (`$A5E7` = `$FC`, mask 0) |
+| up to 28 bases on a map (NE: 4) | partly | NE already has 28 records (4 warbases + 24 factories); a map's tail now sets the counts and a map may have up to 16 warbases (`NELEV_11`), but NE's 4 / 24 split and the capture index (`$ADF1`) break the capture of a warbase past the fourth and of maps with fewer than 28 points |
+| up to 96 maps a disk | partly | the cursor has 96 places (`$C2C4`); names past the 64th print on the wrong lines (`$C263`); the disk holds twelve |
+| protection proportional to the armament (a cannon + chassis robot dies to one phaser shot, the heaviest to six) | NE's rule, other numbers | the damage is NE's ((60 - top) / 4) x (weapon + 1) (MoveShot `$B7A7-$B7E9`): taller robots take less; cannon + bipod takes 40 a phaser shot (3 shots), not one (the formula, not a recorded fight) |
+| all weapons the same range, 15-18 miles | false | cannon and phasers 5 miles (6 with electronics), missiles 7 (8), as NE (FireShot `$B6D9-$B6E7`) |
+| impassable places left when fire is held in COMBAT MODE as a shot kills | not traced | the freeze while fire is held is real (ListMenu `$ACD8` waits for all controls up, NE's bytes); how it would leave a cell blocked is not found |
+| some routines rewritten from scratch | not in the game | 1601 bytes of the block differ from NE: the font (347), the level (479), the menu room (539), patches of a few bytes and the two difficulty routines; the new code is the patches block and the start-up menu |
+| no save | true | the SAVE key and NE's tape save are removed |
+

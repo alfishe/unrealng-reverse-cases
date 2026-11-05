@@ -1,6 +1,6 @@
 # 2. Architecture
 
-Status: stage 1 draft. The memory maps come from the dumps in `work/images/` (TTD `memory_at`, every bank and the
+Status: stage 2 (the code is in `src/`, [3.7](03-build-and-load.md)). The memory maps come from the dumps in `work/images/` (TTD `memory_at`, every bank and the
 Z80 view) and the signature and NE matches in `work/stage1/` (`sig_scan.tsv`, `ne-match-98.tsv`,
 `ne-match-99.tsv`). The recordings (`r98`, `r99`, `r99-48`) are described in
 [03-build-and-load.md](03-build-and-load.md).
@@ -24,7 +24,7 @@ Both releases are Nether Earth (Argus Press Software, 1987) with its game image 
 | --- | --- | --- |
 | needs | 48 K BASIC + TR-DOS; pages `$7FFD` only in the intro | TR-DOS; 128 K for the start-up menu and texts |
 | pages used at play | 0 (`$C000`), 2, 5 | 0 (game), 1 (start-up menu `$D800-$FFFF`), 3 (texts), 2, 5 |
-| 48 K | runs (nothing outside 48 K at play) | a 48 K branch exists (`(IY+$77)=1`); not reached on any machine tested (03, 3.6) |
+| 48 K | runs (nothing outside 48 K at play) | does not run: a 48 K machine counts 0 pages, the 128 K route overwrites the game and START resets (03, 3.6) |
 
 Bank 7 holds 197-199 non-zero bytes in every dump: the machine's own (TR-DOS / 128 system area), not the game's.
 
@@ -43,7 +43,7 @@ At play ('98 `r98` frame 5900, '99 `r99` frame 6450):
 | `$BDA9-` | the map lists (NE's level) | the map lists, loaded from `NELEV_xx.N` |
 | `$C100-$C17E`, `$C1FD-$C332` | NE's menu, rewritten | NE's menu with the patch from `$D83E` and the disk / text pointers |
 | `$D800-$FFFF` page 0 | '98: menu data, `$DD00` scroller text | |
-| page 1 `$D800-$E6F3` | | the 128 K start-up menu (pointer x `$DD74`, y `$DD75`; level `$D980`; upgrades `$A5E7`) |
+| page 1 `$D800-$E6F3` | | the 128 K start-up menu as stored; copied to page 0 `$D800` each time the menu is entered (pointer x `$DD74`, y `$DD75`; level `$D980`; upgrades `$A5E7`) |
 | page 3 `$C000-$FFFF` | | `NEabout` `$C000`, `NEdescri` `$CF00`, `NEgreets` `$E500`, `NEadvice` `$E700` |
 
 At the intro:
@@ -68,7 +68,7 @@ flowchart LR
   subgraph s99 ['99]
     B99[BASIC $5D5B] --> S2[stage 2 $61A8 intro] --> S3[stage 3 $61A8 test + load]
     S3 -->|count 1| G48[JP $A600]
-    S3 -->|else| M128[page 1 menu, page 3 texts] --> G99[JP $A600 -> start-up menu $D800]
+    S3 -->|else| M128[page 1 menu, page 3 texts] --> G99[JP $A600 -> menu copied to page 0, $D800]
   end
 ```
 

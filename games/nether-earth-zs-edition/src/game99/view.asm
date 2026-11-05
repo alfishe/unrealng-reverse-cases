@@ -87,11 +87,11 @@ DiagonalLoop:
 DiagonalCellLoop:
   LD A,E                  ; the view column of this cell
   OR A                    ; negative: left of the view
-  JP M,l_CD01             ; left of the view: nothing to draw
+  JP M,DiagonalNext       ; left of the view: nothing to draw
   LD A,(HL)               ; the map cell's byte
   OR A                    ; 0: an empty cell, nothing to draw
   CALL NZ,DrawCell        ; an occupied cell
-l_CD01:
+DiagonalNext:
   INC H                   ; down the diagonal: row + 1, column + 1
   INC H                   ; (one map row is $200 bytes)
   INC HL                  ; and one column right
@@ -133,13 +133,13 @@ DrawCell:
   PUSH AF                 ; and its byte
   BIT 5,A                 ; bit 5: the right half of a block, no sprite of its
                           ; own
-  JR NZ,l_CD2B            ; covered half: on to the object and the ship
+  JR NZ,DrawCellObjects   ; covered half: on to the object and the ship
   AND $1F                 ; the block type is the sprite number
-  JR Z,l_CD2B             ; type 0: no block
+  JR Z,DrawCellObjects    ; type 0: no block
   LD HL,DrawSprite+$0012  ; height 0
   LD (HL),$00             ; into DrawSprite's operand
   CALL DrawSprite         ; the block: sprite = its type, A
-l_CD2B:
+DrawCellObjects:
   POP AF
   POP DE                  ; the view position back
   POP HL                  ; the cell back
@@ -169,13 +169,13 @@ l_CD2B:
   INC H                   ; (one map row down)
   LD A,H                  ; the row of (x-1, y+1)
   CP $FD                  ; $FD00: row 16, past the map
-  JR NC,l_CD63            ; the ship is on row 15: no cells below
+  JR NC,ShipCompareLatest ; the ship is on row 15: no cells below
   CALL CheckObjectNeighbour ; an object there and the blocks around it
   INC HL                  ; (x, y+1)
   CALL CheckObjectNeighbour ; an object there and the blocks around it
   INC HL                  ; (x+1, y+1)
   CALL CheckObjectNeighbour ; an object there and the blocks around it
-l_CD63:
+ShipCompareLatest:
   POP HL                  ; nothing later than the ship's own cell?
   LD A,D                  ; the latest cell's high byte
   CP H                    ; the ship's?
@@ -241,12 +241,12 @@ FindLatestBlock:
   INC H                   ; (the row's second half)
   LD A,H                  ; row 16 is past the map ($DD00 + $200*16 = $FD00)
   CP $FD                  ; at or past $FD00?
-  JR NC,l_CDA7            ; y = 15: no cells below; only (x-1, y) is checked
+  JR NC,FindLatestSameRow ; y = 15: no cells below; only (x-1, y) is checked
   CALL CheckBlockNeighbour ; (x-1, y+1)
   INC HL                  ; (x, y+1)
   CALL CheckBlockNeighbour ; (x, y+1)
   DEC HL                  ; back to (x-1, y+1)
-l_CDA7:
+FindLatestSameRow:
   DEC H                   ; (x-1, y)
   DEC H                   ; (one map row up)
   CALL CheckBlockNeighbour ; (x-1, y)
@@ -291,11 +291,11 @@ KeepLaterCell:
   SUB B                   ; yHL - yDE
   ADD A,C                 ; + xDE - xHL: the diagonal difference
   RET M                   ; HL drawn earlier
-  JR NZ,l_CDD5            ; positive: HL's diagonal is later
+  JR NZ,KeepLaterTake     ; positive: HL's diagonal is later
   LD A,C                  ; same diagonal: the bigger column is later
   OR A                    ; xDE - xHL
   RET P                   ; xHL <= xDE: DE stays the latest
-l_CDD5:
+KeepLaterTake:
   LD D,H                  ; HL is later: it becomes the latest cell
   LD E,L                  ; (DE = HL)
   RET                     ; DE = the latest cell
@@ -315,11 +315,11 @@ FindRobot:
 FindRobotLoop:
   LD A,(IY+$00)           ; compare +$00/+$01 with HL
   CP L                    ; the low byte of the cell
-  JR NZ,l_CDE9            ; not this robot
+  JR NZ,FindRobotNext     ; not this robot
   LD A,(IY+$01)           ; the high byte (0 for a free slot)
   CP H                    ; the same cell?
   RET Z                   ; found: Z, IY = the record
-l_CDE9:
+FindRobotNext:
   PUSH DE                 ; the next 16-byte record
   LD DE,$0010             ; the record size
   ADD IY,DE               ; IY = the next record
@@ -340,11 +340,11 @@ FindBuilding:
 FindBuildingLoop:
   LD A,(IY+$00)           ; compare the cell address with HL
   CP L                    ; the low byte of the cell
-  JR NZ,l_CE06            ; not this building
+  JR NZ,FindBuildingNext  ; not this building
   LD A,(IY+$01)           ; the high byte
   CP H                    ; the same cell?
   RET Z                   ; found: Z, IY = the record
-l_CE06:
+FindBuildingNext:
   PUSH DE                 ; the next 3-byte record
   LD DE,$0003             ; the record size
   ADD IY,DE               ; IY = the next record
@@ -371,11 +371,11 @@ DrawCellObject:
 ShotSearchLoop:
   LD A,(IY+$00)           ; the shot's draw cell, the low byte
   CP L                    ; this cell?
-  JR NZ,l_CE2E            ; no: the next shot
+  JR NZ,ShotSearchNext    ; no: the next shot
   LD A,(IY+$01)           ; the high byte (0: a free record)
   CP H                    ; this cell?
   JR Z,DrawMover          ; a shot here
-l_CE2E:
+ShotSearchNext:
   PUSH DE
   LD DE,$0009             ; the record size
   ADD IY,DE               ; IY = the next shot
@@ -475,13 +475,13 @@ MoverDeferred:
   CALL MapCell            ; HL = the real map cell
   LD A,D                  ; the real cell's high byte
   CP H                    ; this cell's?
-  JR NZ,l_CE9C            ; no: the object was deferred here
+  JR NZ,MoverRestore      ; no: the object was deferred here
   LD A,E                  ; the low byte
   CP L                    ; this cell's?
-  JR NZ,l_CE9C            ; no: deferred here
+  JR NZ,MoverRestore      ; no: deferred here
   POP DE                  ; this is the real cell: draw here
   JR DrawMoverSprite      ; draw at this view position
-l_CE9C:
+MoverRestore:
   LD (IY+$00),L           ; back to the real cell; clear the deferred mark
   LD (IY+$01),H           ; (the high byte)
   LD B,H                  ; BC = the real cell
@@ -505,12 +505,12 @@ MoverColumnLoop:
 MoverRowLoop:
   LD A,B                  ; the view row: up to the real row
   CP H                    ; reached?
-  JR Z,l_CEBD             ; yes: draw
+  JR Z,MoverDrawReal      ; yes: draw
   DEC H                   ; (one map row up)
   DEC H                   ; (the row's second half)
   DEC D                   ; and in the view
   JR MoverRowLoop         ; again
-l_CEBD:
+MoverDrawReal:
   CALL DrawMoverSprite    ; draw at the real position
   POP HL                  ; the deferred cell back
   POP DE                  ; its view position back
@@ -669,10 +669,10 @@ DrawSprite:
   LD C,A                  ; the rows that stay in the buffer
 ClipBottomLoop:
   PUSH BC                 ; skip a row of the sprite
-l_CF6C:
+ClipBottomSkip:
   INC DE
   INC DE                  ; (2 bytes a pair)
-  DJNZ l_CF6C             ; each pair of the row
+  DJNZ ClipBottomSkip     ; each pair of the row
   POP BC                  ; the width back
   DEC H                   ; the bottom line one up
   LD A,H                  ; up to the buffer's last line?
@@ -747,12 +747,12 @@ SpriteByteLoop:
   LD A,$EC                ; one buffer row up
   ADD A,E                 ; (E - 20)
   LD E,A                  ; the low byte
-  JP C,l_CFD2             ; no borrow: D stays
+  JP C,SpriteRowNext      ; no borrow: D stays
   DEC D                   ; borrow from D
   LD A,D                  ; the high byte
   CP $5A                  ; above $5B00: stop
   RET Z                   ; $5Axx: the top of the sprite is cut off
-l_CFD2:
+SpriteRowNext:
   DEC C
   JP NZ,SpriteRowLoop     ; more rows: the next one up
   RET                     ; the sprite is drawn
@@ -920,12 +920,12 @@ CopyLineLoop:
   ADD A,$20               ; + 32: the next character row (the source HL runs on
                           ; by itself)
   LD E,A                  ; the low byte
-  JR C,l_D0B4             ; carry: into the next third, where D (+8 from the
+  JR C,CopyCharRowNext    ; carry: into the next third, where D (+8 from the
                           ; lines) already points
   LD A,D                  ; inside the same third...
   SUB $08                 ; ... D back by the 8 lines
   LD D,A                  ; (the character row's line 0)
-l_D0B4:
+CopyCharRowNext:
   DEC C
   JP NZ,CopyCharRowLoop   ; the next of the 20 character rows
   RET                     ; the view is on the screen

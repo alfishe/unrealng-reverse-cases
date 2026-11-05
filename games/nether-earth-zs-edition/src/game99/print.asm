@@ -85,12 +85,12 @@ DigitCountLoop:
   JR C,DigitCountLoop     ; carry: no borrow, it fitted
   SBC HL,BC               ; one too far: undo
   DEC A                   ; A = the digit
-  JR NZ,l_D424            ; not 0: print it
+  JR NZ,DigitPrint        ; not 0: print it
   LD A,E                  ; a leading zero
   CP $20                  ; still in the leading zeros?
   JP Z,PrintCharKeep      ; blank: E = $20 is the space
   XOR A                   ; a zero after a printed digit
-l_D424:
+DigitPrint:
   INC E                   ; a digit: no more leading zeros
   ADD A,$30               ; as a character
 
@@ -124,10 +124,10 @@ PrintInlineLoop:
   INC HL                  ; one on
   PUSH HL                 ; the return address follows it
   OR A                    ; 0?
-  JR Z,l_D43A             ; the end of the string
+  JR Z,PrintInlineEnd     ; the end of the string
   CALL PrintControl       ; a control code or a character
   JR PrintInlineLoop      ; the next byte
-l_D43A:
+PrintInlineEnd:
   EXX                     ; 0: return past the string
   RET                     ; past the string
 

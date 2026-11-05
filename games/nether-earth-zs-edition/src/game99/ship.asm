@@ -52,26 +52,26 @@ MoveShipX:
   JR Z,MoveShipY          ; they cancel, no X move
   LD HL,(ShipX)           ; HL = ShipX, the column 0-511
   RRCA                    ; carry: right
-  JR C,l_AF42             ; right: its own bound check
+  JR C,ShipCheckRight     ; right: its own bound check
   LD A,H                  ; left: not past column $0E
   OR A                    ; a column of 256 or more:
-  JR NZ,l_AF3F            ; always free to go left
+  JR NZ,ShipStepLeft      ; always free to go left
   LD A,L                  ; the low byte:
   CP $0E                  ; column 14, the left limit?
   JR Z,MoveShipY          ; there: no X move
-l_AF3F:
+ShipStepLeft:
   DEC HL                  ; one column left
-  JR l_AF4C               ; test the new column
-l_AF42:
+  JR ShipCheckX           ; test the new column
+ShipCheckRight:
   LD A,H                  ; right: not past column $1F5
   OR A                    ; a column below 256:
-  JR Z,l_AF4B             ; always free to go right
+  JR Z,ShipStepRight      ; always free to go right
   LD A,L                  ; the low byte:
   CP $F5                  ; column $1F5 (501), the right limit?
   JR Z,MoveShipY          ; there: no X move
-l_AF4B:
+ShipStepRight:
   INC HL                  ; one column right
-l_AF4C:
+ShipCheckX:
   LD A,(ShipY)            ; refused where the ship would be lower than what
                           ; stands there
   CALL CheckShipMove      ; carry: a top there is higher than Altitude
@@ -85,13 +85,13 @@ FollowView:
   SBC HL,DE               ; HL = the ship's column inside the view
   LD A,L                  ; A = it (the view is narrower than 256)
   CP $0D                  ; at view column 13?
-  JR NZ,l_AF67            ; at 13: the view one column left
+  JR NZ,ViewCheckRight    ; at 13: the view one column left
   DEC DE                  ; ViewX - 1
-l_AF67:
+ViewCheckRight:
   CP $16
-  JR NZ,l_AF6C            ; at 22: one column right
+  JR NZ,ViewStore         ; at 22: one column right
   INC DE                  ; ViewX + 1
-l_AF6C:
+ViewStore:
   LD (ViewX),DE
   LD HL,Map             ; MapView = $DD00 + ViewX
   ADD HL,DE               ; HL = the map row 0 address of the view's left
@@ -108,13 +108,13 @@ MoveShipY:
   CP $03                  ; both:
   JR Z,AutoClimb          ; they cancel, no Y move
   RRCA                    ; down: Y + 1
-  JR NC,l_AF8C            ; not down
+  JR NC,ShipCheckUp       ; not down
   INC C                   ; down: one row lower on the map (Y + 1)
-l_AF8C:
+ShipCheckUp:
   RRCA                    ; up: Y - 1
-  JR NC,l_AF90            ; not up
+  JR NC,ShipCheckY        ; not up
   DEC C                   ; up: one row higher on the map (Y - 1)
-l_AF90:
+ShipCheckY:
   LD A,C                  ; Y 0 (or 16) is off the map
   AND $0F                 ; row 0 or 16 (wrapped to 0)?
   JR Z,AutoClimb          ; off the map rows 1-15: no Y move
@@ -127,11 +127,11 @@ l_AF90:
 AutoClimb:
   LD A,(ClimbTurns)            ; $FD30 > 0: climb whatever fire says
   OR A                    ; no forced climb:
-  JR Z,l_AFAE             ; fire decides
+  JR Z,ClimbByFire        ; fire decides
   DEC A                   ; one climb turn less
   LD (ClimbTurns),A            ; ClimbTurns - 1
   JR Climb                ; climb as if fire were held
-l_AFAE:
+ClimbByFire:
   LD A,(Input)            ; fire: climb
   AND $10                 ; Input bit 4: fire
   JR Z,Sink               ; not held: sink
@@ -181,11 +181,11 @@ ScrollRadar:
   SRL A                   ; ShipX / 8, 0-63
   SUB C                   ; the ship's place in the window, 0-15
   CP $02                  ; in the window's first 2 units (16 columns)?
-  JR C,l_AFFF             ; yes: the window left
+  JR C,RadarScrollLeft    ; yes: the window left
   CP $0E                  ; in its last 2 units?
   JR NC,RadarScrollRight  ; yes: the window right
   RET                     ; inside: the window stays
-l_AFFF:
+RadarScrollLeft:
   LD A,C                  ; left by 8 units
   SUB $08                 ; the window would move 8 columns left
   RET M                   ; already at the left end: stay
@@ -314,13 +314,13 @@ CheckShipMove:
   INC D                   ; ... (X-1, Y+1)
   LD A,D                  ; the row Y+1 only inside the map
   CP $FD                  ; past row 15 ($FD00 is past the map)?
-  JR NC,l_B084            ; yes: no row below to test
+  JR NC,ShipCompareTop    ; yes: no row below to test
   CALL ObjectTop          ; (X-1, Y+1), (X, Y+1), (X+1, Y+1)
   INC DE                  ; (X, Y+1)
   CALL ObjectTop          ; anything anchored there
   INC DE                  ; (X+1, Y+1)
   CALL ObjectTop          ; anything anchored there
-l_B084:
+ShipCompareTop:
   LD A,(Altitude)            ; carry when the ship is lower than the highest top:
                           ; C stays for MoveShip's sinking
   CP C                    ; carry: Altitude < C, the move is refused
@@ -373,9 +373,9 @@ ObjectTop:
 ; The common tail of TerrainTop and ObjectTop.
 KeepHigher:
   CP C                    ; higher than C?
-  JR C,l_B0AF             ; no: C stays
+  JR C,KeepHigherDone     ; no: C stays
   LD C,A                  ; yes: C = A
-l_B0AF:
+KeepHigherDone:
   RET
 ; This entry point is used by the routine at ObjectTop.
 ObjectTopBuilding:

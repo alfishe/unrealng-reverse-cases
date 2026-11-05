@@ -1,0 +1,12 @@
+{
+  "image_cmd": ["python3", "tools/game99_image.py", "--out", "work/stage2/game99/mkgame"],
+  "image": "work/stage2/game99/mkgame/game/original.bin",
+  "lo": "6780",
+  "hi": "D7D3",
+  "device": "ZXSPECTRUM48",
+  "bases": {"5": "4000", "2": "8000", "0": "C000"},
+  "read_builds": ["r99-play", "crit-play", "loadmap-menu"],
+  "ref_builds": [["r99-play", "the '99 start-up menu, LOAD MAP, HARD + PHASERS, play (work/stage2/game99/r99-play, a window of work/stage1/r99)"], ["crit-play", "CRITICAL with every upgrade, several game days (work/stage2/game99/crit-play)"], ["loadmap-menu", "LOAD MAP: the catalogue and a map loaded (work/stage2/game99/loadmap-menu)"]],
+  "header": ["; Nether Earth ZS Edition '99 (Sergey Zotov, 1999): the game block as it unpacks, $6780-$D7D2 (page 0 at $C000)."],
+  "parts_note": "The case has nine annotated parts, each written by its own wrapper around kit/mkgame.py (the L1 windows live under work/stage2/<part>/, not work/<build>/): this config is the '99 game's (tools/game99_mkgame.py). The others: tools/game98_mkgame.py, intro98_mkgame.py, front99_mkgame.py (stage2, pictures99, music99), menu99_mkgame.py (stage3, menu), game99_mkgame.py patches. README.md lists them."
+}

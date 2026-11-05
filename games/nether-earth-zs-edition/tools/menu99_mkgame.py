@@ -15,7 +15,8 @@ What it changes in kit/mkgame.py:
 - Only the windows listed for the part are read, each clamped to an address range: the recordings of the '99 overlap
   in memory (stage 2 and the game at $6780 over stage 3; the game's page 0 at $C000 vs the menu's page 1), so a
   window counts only for the bytes that held this part's code while it ran. The windows are the L1 builds of
-  work/stage2/menu99/<window>/l1.json (re_session.py build --from-frame --to-frame, see STATE-menu99.md).
+  work/stage2/menu99/<window>/l1.json (re_session.py build --from-frame --to-frame, see STATE-menu99.md).- `# @over $ADDR ; why` in the .ann (a comment line to kit): a branch target that holds other bytes when the branch
+  runs (stage 3 CALLs the game block at $6780, loaded over its own strings): the walk does not follow it.
 """
 import argparse
 import importlib.util
@@ -35,8 +36,8 @@ PARTS = {
     'stage3': {
         'block': 'work/media/99/stage3-out.bin', 'lo': 0x61A8, 'bases': {5: 0x4000},
         'ann': 'src/stage3/stage3.ann', 'dest': 'src/stage3', 'top': 'stage3', 'bin': 'stage3-61a8.bin',
-        # (window, lo, hi, reads count): the game block overwrites $6780- from frame 2299 on
-        'windows': [('r99-s3a', 0x61A8, 0x67EC, True), ('r99-s3b', 0x61A8, 0x6780, True),
+        # (window, lo, hi, reads count): the game block overwrites $6780- from frame 2299 on (and runs there)
+        'windows': [('r99-s3a', 0x61A8, 0x6780, True), ('r99-s3b', 0x61A8, 0x6780, True),
                     ('r48-s3', 0x61A8, 0x6780, True), ('s99-s3', 0x61A8, 0x6780, True)],
         'header': ["; Nether Earth ZS Edition '99, stage 3: \"System checking\", the memory test, the loads ($61A8-$67EB).",
                    "; Unpacked by the block of sectors 45-50 (read to $8000); entered at Stage3Entry $61A8."],
@@ -128,6 +129,18 @@ def main():
     kit.header = own_header
 
     ann = os.path.join(ROOT, part['ann'])
+    over = set()
+    if os.path.exists(ann):
+        for line in open(ann):
+            m = re.match(r'^#\s*@over\s+\$([0-9A-Fa-f]{4})\b', line.strip())
+            if m:
+                over.add(int(m.group(1), 16))
+    decode = kit.decode
+
+    def own_decode(mem, at):
+        n, targets, falls, call = decode(mem, at)
+        return n, [t for t in targets if t not in over], falls, call
+    kit.decode = own_decode
     sys.argv = [KIT, '--case', ROOT, '--venv', a.venv, '--sjasmplus', a.sjasmplus, '--out', out, '--ann', ann]
     status = kit.main()
     if status or not a.install:
@@ -138,9 +151,16 @@ def main():
         shutil.copyfile(os.path.join(out, name + '.asm'), os.path.join(dest, name + '.asm'))
     top = open(os.path.join(out, 'game.asm')).read().replace('SAVEBIN "game.bin"', 'SAVEBIN "%s"' % part['bin'])
     open(os.path.join(dest, part['top'] + '.asm'), 'w').write(top)
-    if os.path.isdir(os.path.join(out, 'res')) and os.listdir(os.path.join(out, 'res')):
-        sys.exit('menu99_mkgame: @res entries are not installed by this wrapper: build them in tools/menu99_res.py')
-    print(f'installed {len(modules) + 1} files in {part["dest"]}')
+    files = {}
+    for base, _, names in os.walk(os.path.join(out, 'res')):
+        for name in names:
+            path = os.path.join(base, name)
+            files[os.path.relpath(path, os.path.join(out, 'res'))] = open(path, 'rb').read()
+    if files:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import menu99_res  # noqa: E402
+        menu99_res.install(files)
+    print(f'installed {len(modules) + 1} files in {part["dest"]}, {len(files)} resources')
     return 0
 
 

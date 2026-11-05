@@ -43,25 +43,25 @@ PlayInterrupt:
   LD A,(RadarPhase)            ; the other picture each frame
   XOR $01                 ; toggle
   LD (RadarPhase),A            ; kept for the next frame
-  JR Z,l_D582             ; phase 0: the player's picture
+  JR Z,InterruptRadar     ; phase 0: the player's picture
   LD HL,RadarEnemy             ; the enemy's radar picture, yellow
   LD C,$4E                ; bright yellow on blue
-l_D582:
+InterruptRadar:
   CALL ShowRadar          ; show it
   LD A,(SoundFx)            ; a sound effect running?
   OR A                    ; (0: silent)
-  JR Z,l_D598             ; silent: on to the exit
+  JR Z,InterruptExit      ; silent: on to the exit
   INC A                   ; one step on each frame: a tone ends at $80, a noise
                           ; when it wraps past $FF to 0
   CP $80                  ; the tone's end?
-  JR NZ,l_D591            ; no: keep the count
+  JR NZ,InterruptSoundStore ; no: keep the count
   XOR A                   ; the tone is over: silent
-l_D591:
+InterruptSoundStore:
   LD (SoundFx),A
   OR A                    ; the flags of A: M noise, P the falling tone
   CALL NZ,SoundEffect     ; this frame's burst (the flags of the OR above
                           ; choose its kind)
-l_D598:
+InterruptExit:
   POP HL
   POP DE                  ; (DE)
   POP BC                  ; (BC)
@@ -217,7 +217,7 @@ RadarRobotLoop:
   PUSH BC                 ; keep the count
   LD A,(IY+$01)           ; +$01, the cell's high byte
   OR A                    ; 0: a free slot
-  JR Z,l_D651             ; skip it
+  JR Z,RadarRobotNext     ; skip it
   LD L,(IY+$02)           ; HL = the column, +$02...
   LD H,(IY+$03)           ; ... +$03
   LD C,(IY+$04)           ; C = the row +$04
@@ -229,7 +229,7 @@ RadarRobotLoop:
                           ; stands for it)
   CP $02                  ; 2: direct control
   CALL NZ,ToggleRadarDot  ; XOR the robot's dot in
-l_D651:
+RadarRobotNext:
   LD DE,$0010
   ADD IY,DE               ; IY = the next record
   POP BC                  ; the count back
@@ -252,9 +252,9 @@ ToggleRadarDot:
   XOR C                   ; flip the pixel
   LD (HL),A               ; back
   RRC C                   ; the next pixel, maybe in the next byte
-  JR NC,l_D667            ; carry: the mask wrapped to bit 7
+  JR NC,RadarDotRight     ; carry: the mask wrapped to bit 7
   INC HL                  ; of the next byte
-l_D667:
+RadarDotRight:
   LD A,(HL)
   XOR C                   ; flip (x+1, y)
   LD (HL),A               ; back
@@ -268,9 +268,9 @@ l_D667:
   XOR C                   ; flip it
   LD (HL),A               ; back
   RRC C                   ; the mask to x+1
-  JR NC,l_D679            ; no wrap: the same byte
+  JR NC,RadarDotAboveRight ; no wrap: the same byte
   INC HL                  ; wrapped: the next byte
-l_D679:
+RadarDotAboveRight:
   LD A,(HL)
   XOR C                   ; flip (x+1, y-1)
   LD (HL),A               ; back
@@ -287,11 +287,11 @@ RadarDotAddress:
   SBC HL,DE               ; HL = x - the window's left edge
   LD A,H                  ; the high byte
   OR A                    ; not 0: left (negative) or more than 255 right
-  JR NZ,l_D6A6            ; outside
+  JR NZ,RadarDotOutside   ; outside
   LD A,L                  ; 0-255
   CP $7F                  ; 127 or more: the dot's right half would leave the
                           ; window
-  JR NC,l_D6A6            ; outside
+  JR NC,RadarDotOutside   ; outside
   LD A,$D8                ; $D800 or $D900
   ADD A,B                 ; + B, the picture
   LD H,A                  ; H = its page
@@ -310,10 +310,10 @@ RadarDotAddress:
   LD L,A                  ; L = 16 y + x / 8
   XOR A                   ; the mask: $80 shifted right x AND 7 times
   SCF                     ; the 1...
-l_D6A2:
+RadarMaskShift:
   RRA
-  DJNZ l_D6A2             ; B times
+  DJNZ RadarMaskShift     ; B times
   RET                     ; HL = the byte, A = the mask
-l_D6A6:
+RadarDotOutside:
   POP HL                  ; outside the window: return from the caller too
   RET                     ; to ToggleRadarDot's caller: nothing drawn

@@ -81,40 +81,40 @@ DrawPlayScreen:
   LDIR                    ; line 7 of row 21
   LD HL,$4100             ; the corners of the double lines
   LD B,$06                ; lines 1-6 of row 0, column 0
-l_D109:
+FrameCornerTopLeft:
   LD (HL),$80
   INC H                   ; the next pixel line of the character cell
-  DJNZ l_D109             ; 6 lines
+  DJNZ FrameCornerTopLeft ; 6 lines
   LD HL,$4115             ; row 0, column 21
   LD B,$06                ; lines 1-6
-l_D113:
+FrameCornerTopRight:
   LD (HL),$01
   INC H                   ; the next pixel line
-  DJNZ l_D113             ; 6 lines
+  DJNZ FrameCornerTopRight ; 6 lines
   LD HL,$50A0             ; row 21, column 0
   LD B,$07                ; lines 0-6
-l_D11D:
+FrameCornerBottomLeft:
   LD (HL),$80
   INC H                   ; the next pixel line
-  DJNZ l_D11D             ; 7 lines
+  DJNZ FrameCornerBottomLeft ; 7 lines
   LD HL,$50B5             ; row 21, column 21
   LD B,$07                ; lines 0-6
-l_D127:
+FrameCornerBottomRight:
   LD (HL),$01
   INC H                   ; the next pixel line
-  DJNZ l_D127             ; 7 lines
+  DJNZ FrameCornerBottomRight ; 7 lines
   LD HL,$4700             ; the left side, 162 lines
   LD B,$A2                ; from line 7 of row 0 to line 0 of row 21
-l_D131:
+FrameSideLeft:
   LD (HL),$81
   CALL NextScreenLine     ; the next screen line
-  DJNZ l_D131             ; 162 lines
+  DJNZ FrameSideLeft      ; 162 lines
   LD HL,$4715             ; the right side
   LD B,$A2                ; 162 lines
-l_D13D:
+FrameSideRight:
   LD (HL),$81
   CALL NextScreenLine     ; the next screen line
-  DJNZ l_D13D             ; 162 lines
+  DJNZ FrameSideRight     ; 162 lines
   LD HL,$5800             ; all attributes $07
   LD DE,$5801             ; (the next cell)
   LD BC,$02FF             ; 767 more: all 768 cells
@@ -132,39 +132,39 @@ l_D13D:
   LDIR                    ; row 21
   LD HL,$5820             ; the frame's left and right columns
   LD B,$14                ; rows 1-20
-l_D170:
+FrameAttrSides:
   LD (HL),$3D
   LD A,$15                ; 21: to column 21
   CALL AddAToHL           ; HL = column 21
   LD (HL),$3D             ; the right side
   LD A,$0B                ; 11: to column 0 of the next row
   CALL AddAToHL           ; HL = column 0
-  DJNZ l_D170             ; the next row
+  DJNZ FrameAttrSides     ; the next row
   LD HL,$5821             ; the view: 20 x 20 cells of $30 (black ink on
                           ; yellow, no BRIGHT)
   LD BC,$1414             ; B = 20 cells a row, C = 20 rows
-l_D186:
+ViewAttrRow:
   PUSH BC
-l_D187:
+ViewAttrCell:
   LD (HL),$30
   INC HL                  ; the next cell
-  DJNZ l_D187             ; 20 cells
+  DJNZ ViewAttrCell       ; 20 cells
   POP BC                  ; the counts back
   LD A,$0C                ; 12: to column 1 of the next row
   CALL AddAToHL           ; HL = column 1
   DEC C                   ; one row less
-  JR NZ,l_D186            ; the next row
+  JR NZ,ViewAttrRow       ; the next row
   LD B,$04                ; the bottom right corner: blue past the map's edge
   LD HL,$5A33             ; row 17, column 19: the diagonal edge's cells, $31:
                           ; blue ink on yellow
-l_D19A:
+BlueCornerLoop:
   LD (HL),$31
   INC HL                  ; the next column
   LD (HL),$31             ; 2 cells
   LD A,$1D                ; 29: two columns further left in the next row, along
                           ; the edge
   CALL AddAToHL           ; rows 17, 18, 19, 20 at columns 19, 17, 15, 13
-  DJNZ l_D19A             ; the next row
+  DJNZ BlueCornerLoop     ; the next row
   LD HL,$5A53             ; row 18, columns 19-20: past the edge, $01: blue ink
                           ; on black
   LD (HL),$01             ; (row 18, column 19)
@@ -172,16 +172,16 @@ l_D19A:
   LD (HL),$01             ; column 20
   LD HL,$5A71             ; row 19, columns 17-20
   LD B,$04                ; 4 cells
-l_D1B3:
+BlueEdgeRow1:
   LD (HL),$01
   INC HL                  ; the next column
-  DJNZ l_D1B3             ; 4 cells
+  DJNZ BlueEdgeRow1       ; 4 cells
   LD HL,$5A8F             ; row 20, columns 15-20
   LD B,$06                ; 6 cells
-l_D1BD:
+BlueEdgeRow2:
   LD (HL),$01
   INC HL                  ; the next column
-  DJNZ l_D1BD             ; 6 cells
+  DJNZ BlueEdgeRow2       ; 6 cells
   CALL PrintInline        ; DAY:, TIME:, RADAR:
 
 ; Inline string: " DAY:" and "TIME:" at (0,22), the tall "RADAR:" at (22,0)
@@ -314,9 +314,10 @@ PrintInsgCounts:
                           ; over these 6 bytes: the enemy's robots show as ??
                           ; and the string goes on into HumnCountsPos
 
-; data_D2CB
-data_D2CB:
-  DEFB $CD,$2D,$D4        ; the player's column
+; PrintHumnCountsPos
+PrintHumnCountsPos:
+  DEFB $CD,$2D,$D4        ; the player's column: PrintInline, the position
+                          ; string follows
 
 ; Inline string: position (6,31)
 ;

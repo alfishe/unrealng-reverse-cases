@@ -36,19 +36,19 @@ GameTurn:
   ADD A,$05               ; + 5
   LD (HL),A               ; store
   CP $3C                  ; 60 minutes?
-  JR NZ,l_AD85            ; not yet: print
+  JR NZ,ClockPrint        ; not yet: print
   LD (HL),$00             ; an hour
   INC HL                  ; HL = the hours
   INC (HL)                ; one hour more
   LD A,(HL)               ; the hours:
   CP $18                  ; 24?
-  JR NZ,l_AD85            ; not yet: print
+  JR NZ,ClockPrint        ; not yet: print
   LD (HL),$00             ; a day
   LD HL,(Clock+2)           ; the day count, 16 bits
   INC HL                  ; one day more
   LD (Clock+2),HL           ; store it
   CALL DailyProduction    ; the day's production of both sides
-l_AD85:
+ClockPrint:
   CALL PrintInline        ; position, setting 0, attribute $57
 
 ; The clock: (0,27), setting 0, attribute $57
@@ -138,7 +138,7 @@ CaptureCount:
   LD A,B                  ; no robot found
   OR A                    ; B = 0: FindRobot found none (a building or a shot
                           ; on the door)
-  JR Z,l_AE04             ; no capture
+  JR Z,CapturePointDone   ; no capture
   POP BC                  ; the counters back:
   INC C                   ; one more capture
   PUSH BC                 ; and kept again for the hand-over
@@ -146,15 +146,15 @@ CaptureCount:
   SUB B                   ; 28 - the points left: the record's index only when
                           ; the count is 28
   CP $04                  ; 0-3: a warbase
-  JR NC,l_ADFE            ; 4-27: a factory
+  JR NC,CaptureFactory    ; 4-27: a factory
   LD B,E                  ; B = the new owner's side
   CALL GiveWarbase        ; the warbase changes side
-  JR l_AE04               ; done with this point
-l_ADFE:
+  JR CapturePointDone     ; done with this point
+CaptureFactory:
   SUB $04                 ; 4-27: factory A - 4
   LD B,E                  ; B = the new owner's side
   CALL GiveFactory        ; the factory changes side, its flag moves
-l_AE04:
+CapturePointDone:
   POP BC
 CaptureNext:
   INC IY                  ; 5 bytes a point
@@ -226,14 +226,14 @@ ProduceSide:
   ADD A,C                 ; + 1: * 5
   CALL AddCapped          ; into the general resource
   LD B,$06                ; six factory kinds
-l_AE58:
+ProduceFactoryLoop:
   INC HL
   INC DE                  ; DE = the next count: electronics, nuclear, phasers,
                           ; missiles, cannon, chassis
   LD A,(DE)               ; 2 x the factories of the kind
   ADD A,A                 ; * 2
   CALL AddCapped          ; into the resource of the kind
-  DJNZ l_AE58             ; all six kinds
+  DJNZ ProduceFactoryLoop ; all six kinds
   RET                     ; the side is paid
 
 ; (HL) += A, at most 99
@@ -244,9 +244,9 @@ l_AE58:
 AddCapped:
   ADD A,(HL)              ; the resource + the income
   CP $64                  ; 100 or more?
-  JR C,l_AE69             ; no: as it is
+  JR C,AddCappedStore     ; no: as it is
   LD A,$63                ; yes: 99, the most a resource holds
-l_AE69:
+AddCappedStore:
   LD (HL),A               ; store
   RET                     ; HL kept for the next resource
 
@@ -306,14 +306,14 @@ GameOverWait:
   LD A,$FA                ; a low tone
   CALL Beep               ; the buzz
   LD B,$64                ; 100 frames, 2 s
-l_AEF1:
+GameOverPause:
   HALT
-  DJNZ l_AEF1             ; until 100 frames went
+  DJNZ GameOverPause      ; until 100 frames went
   CALL WaitRelease        ; let go of any control first
-l_AEF7:
+GameOverKey:
   CALL WaitKey
   OR A                    ; a control held?
-  JR Z,l_AEF7             ; not yet: wait
+  JR Z,GameOverKey        ; not yet: wait
   JP Start                ; the title menu
 
 ; Stop play: give the panel back to the status and switch to the idle interrupt

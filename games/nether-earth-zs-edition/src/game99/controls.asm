@@ -54,9 +54,9 @@ KeyLoop:
   AND (HL)                ; Z: pressed
   INC HL                  ; past the mask
   INC HL                  ; past the key code: the next record
-  JR NZ,l_D399            ; not pressed: the AND left carry 0
+  JR NZ,KeyShift          ; not pressed: the AND left carry 0
   CCF                     ; pressed: carry 1
-l_D399:
+KeyShift:
   RL C                    ; the first key of the table ends in bit 7
   JR NC,KeyLoop           ; no carry: the end marker is still in C, the next
                           ; key

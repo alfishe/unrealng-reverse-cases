@@ -664,12 +664,12 @@ ShowRobotDesign:
 PartRowLoop:
   LD E,$06                ; E = $06: not chosen
   RL C                    ; the next part bit into carry, highest first
-  JR NC,l_CC30            ; not chosen
+  JR NC,PartRowPaint      ; not chosen
   LD E,$47                ; chosen: bright white
-l_CC30:
+PartRowPaint:
   PUSH BC
   LD BC,$0403             ; 4 cells by 3 rows
-l_CC34:
+PartRowLine:
   PUSH BC
 PartCellLoop:
   LD (HL),E               ; the attribute
@@ -679,7 +679,7 @@ PartCellLoop:
   CALL AddAToHL           ; HL = the next row's column 16
   POP BC                  ; C = the rows left
   DEC C                   ; one row done
-  JR NZ,l_CC34            ; three rows a part
+  JR NZ,PartRowLine       ; three rows a part
   POP BC                  ; B = the parts left
   DJNZ PartRowLoop        ; all eight
   CALL ClearViewBuffer    ; empty view buffer
@@ -696,12 +696,12 @@ PartCellLoop:
 PreviewLineLoop:
   PUSH BC                 ; C = the lines left
   PUSH HL                 ; the line's screen address
-l_CC65:
+PreviewByteLoop:
   LD A,(DE)
   LD (HL),A               ; onto the screen
   INC DE                  ; the next buffer byte
   INC HL                  ; the next screen byte
-  DJNZ l_CC65             ; four bytes: columns 0-3
+  DJNZ PreviewByteLoop    ; four bytes: columns 0-3
   LD A,E                  ; the next buffer row (20 bytes in all)
   ADD A,$10               ; + 16: with the 4 copied, a buffer row of 20
   LD E,A                  ; E = it

@@ -238,7 +238,7 @@ CheckGameKeys:
   JP NZ,Start             ; abandon: Start, the start-up menu again
   JP PlayLoop             ; the next turn (NE tested the save key here)
 
-; data_A718
-data_A718:
+; SaveCallRemoved
+SaveCallRemoved:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; eight NOPs, NE's save call and
                                        ; EnterPlay jump: never run

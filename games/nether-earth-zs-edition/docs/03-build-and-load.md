@@ -1,7 +1,7 @@
 # 3. Build and load
 
-Status: stage 1 draft. What is here is taken from the recordings' writes and runs and from the static unpacks that
-match them; the source build does not exist yet.
+Status: stage 2. What is here is taken from the recordings' writes and runs, the static unpacks that match them
+and the source (`src/`); the source build (3.7) rebuilds both disks bit for bit.
 
 This document covers how the two releases of Nether Earth ZS Edition get from their disks into memory: the BASIC,
 the loaders, the '99 packer and its block format, what is unpacked where and in which page.
@@ -80,10 +80,16 @@ number; sector numbers below count from the file's first sector.
 
 Then stage 3 patches NE's menu pointers (`$C116`, `$C146`, `$C125`, `$C13B`, `$C130`) and:
 
-- if `(IY+$77)` (`$5CB1`, the page count the memory test left) is 1: `JP $A600` (the 48 K path: the texts and maps
-  are read from disk when asked);
+- if `(IY+$77)` (`$5CB1`, the page count the memory test left) is 1 (`$62B4`): the one-page route (the tape /
+  one-page patch set of `src/patches99`: the texts and maps read from disk when asked; no machine counts 1, 3.6);
 - else pages 1 in by `$A58A`, loads the menu block, pages 3 in, reads the 64 text sectors, sets the pointers to
-  the texts in page 3 and `JP $A600`; `$A600` reaches the start-up menu at `$D800` in page 1 (`r99` frame 2661).
+  the texts in page 3 and `JP $A600`. The patched main menu at `$C100` calls a stub at `$6700` that copies
+  `$D800-$E7FF` from page 1 to page 0 every time the menu is entered, so the start-up menu RUNS in page 0 at
+  `$D800` (`r99` frame 2661), over the game's radar and map area, and its level and pointer start afresh each time
+  (`work/stage2/STATE-menu99.md`).
+
+Each part's source and the stage 2 findings: `src/` (README.md lists the parts); the memory test, the menu and the
+level table: `src/stage3/stage3.ann`, `src/menu99/menu.ann`.
 
 Checks against the static unpacks (`tools/zsdepack.py block`):
 
@@ -164,13 +170,47 @@ Identification: not identified. The depacker is byte-identical except for its ad
 holds LCP 128 ("COMPRESSOR BY ALEXANDER TRUSH ODESSA"). That is a candidate attribution only; the packer is not in
 `R/signatures` and is not added (`work/stage1/NOTES.md`).
 
-## 3.5 The maps (`NELEV_xx.N`)
+## 3.5 The maps (`NELEV_xx.N`) and LOAD MAP
 
 512 bytes each: NE's four 3-byte record lists (scenery west, scenery east, ending 0; bases west, east, ending `$FF`),
-then at `$1F3` a tail: the base count (`$1C` = 28 in `NELEV_00`), four list pointers (`$BDA9`, ...), a word `$FDxx`,
-a byte (the enemy's war bases?) and `$63`. LOAD MAP in the '99 menu shows the twelve names and loads the one chosen
-(`r99` around frame 5550). The '98 menu's key 5 copies 500 bytes from `$DD00` (scroller text in the image) to
-`$BDA9` without reading the disk: starting a game after it crashes (`work/stage1/NOTES.md`, the brief of the changes).
+zeros after them, then at `$1F3` a 13-byte tail. LOAD MAP's code (the patch piece at `$C1FD`, `src/patches99`
+module `diskmap`) reads the TR-DOS catalogue (8 sectors to `$F000`), lists the `N` files, reads the chosen one to
+`$F000` and `DiskApplyLevel` (`$C2EB-$C332`) copies `$1F3` bytes to `$BDA9-$BF9B` and writes the tail into the
+game's instruction operands:
+
+| Offset | Size | Written to | What |
+| --- | --- | --- | --- |
+| `$1F3` | 1 | `$ADB4`, `$BB1F` | capture points = warbases + factories (28; 27 in `NELEV_08`) |
+| `$1F4` | 2 | `$BC8A` | the address of the west scenery list (`$BDA9`) |
+| `$1F6` | 2 | `$BC92` | the east scenery list |
+| `$1F8` | 2 | `$BCA2` | the west base list |
+| `$1FA` | 2 | `$BCAA` | the east base list |
+| `$1FC` | 2 | `$BC9B` | the first factory's record in the buildings table, `$FD70` + 5 x warbases (a pointer) |
+| `$1FE` | 1 | `$BCB7`; +1 to `$B3E6`, `$B817` | the enemy's warbases |
+| `$1FF` | 1 | `$A684` | the player's starting general resource (`$63` = 99 in all twelve) |
+
+A map file is a level only, no game state: no robots, day, clock, owners or the enemy's resources. Every field but
+the last follows from the lists (`tools/zs_level.py` derives them and checks). The text form is
+`src/res/maps/NELEV_xx.txt` (NE's level text plus the tail), with a preview per map (`src/res/maps/README.md`).
+
+The catalogue screen shows the file names only, four to a row, no numbers; the highlight is attribute `$38`.
+Keys: Q the previous name, A the next, SPACE loads; nothing else (P does not move it, as stage 1 saw). Keys are
+read by the ROM's KEY-SCAN every third interrupt with no wait for release, so a held key repeats. The cursor runs
+over 96 places (`$C2C4`) whatever the file count; names past the 64th print on the wrong lines (`$C263` corrects
+only the first third of the screen), and SPACE on an empty place returns to the menu. After a load the menu comes
+back; START plays the map. No mouse: no block of either release reads a port `$xxDF`; the menus read the keyboard
+(Q A O P, SPACE; `$DDE4`), and the only Kempston read is the game's joystick `IN ($1F)` at `$D3AC`.
+
+### The '98's LOAD NEW LEVEL
+
+The '98 menu's key 5 jumps (`$C1B5`) to `$C1FD`, where ZS cleared NE's tape load to 62 `NOP`s and wrote no disk
+read: the '98 game has no TR-DOS call at all. `LoadLevelCopy` `$C23B` then copies 500 bytes from `$DD00` to `$BDA9`
+(one byte past the lists, into the shape table), loads the words at `$DEF4-$DEFA` into BuildMap's list operands
+`$BC8A`, `$BC92`, `$BCA2`, `$BCAA` and jumps to `$A600`: the second half of what became the '99's map loader,
+without the read that should fill `$DD00`. `$DD00` holds the intro's scroller text left in memory, so the four list
+operands become `$2020` (spaces), an address in the ROM; START GAME builds the map from ROM bytes, rows past 15 wrap
+round the 64 K and overwrite the code, a `CALL $ED48` lands in the map and the machine resets to the 48 BASIC
+copyright screen (`work/stage2/game98/key5menu`: the call at frame 415, PC `$0000` at 462).
 
 ## 3.6 Machines and the ROM
 
@@ -178,10 +218,20 @@ a byte (the enemy's war bases?) and `$63`. LOAD MAP in the '99 menu shows the tw
 - The '99's stage 3 runs a memory test (`$647B`) that knows many paging schemes (`$7FFD`, `$1FFD`, `$DFFD`, `$FDFD`,
   `$7FF7`/`$FFF7` ...) and leaves the page count in `$5CB1` and a scheme bitmask in `$5CB0`. On Pentagon 128 it
   finds 5 (`$5CB0=$01`), prints "Memory 128Kb" (`(n + 3) * 16`).
-- In `r99-48` (paging locked by "48 BASIC") the count is 0: "Memory 56Kb" (the formula's carry), then the 128 K
-  branch, the menu and texts go into the one page at `$C000` over the game, and it ends in BASIC with `0 OK`
-  (screens `work/stage1/screens/99-48lock-*.png`). What a real 48 K machine with a Beta Disk interface gets is
-  pending: unreal-ng is getting a 48 K + Beta 128 model; until it lands the 48 K path is known from the code only.
+- With no paging the test finds no page: count 0 (`$5CB0` = 0, `$5CB1` = 0), "Memory 56Kb" (`(0 + 3) * 16`). The
+  one-page branch at `$62B4` needs a count of exactly 1, which no machine gives (a 48 K machine counts 0), so the
+  128 K route runs: the menu block is unpacked at `$E800` and the 64 text sectors are read to `$C000-$FFFF`, which
+  on a machine without paging is the game itself, the patched table at `$C100` included. START calls `$C100`, now
+  the bytes of the about text: they run as code (`CALL PE,$A0AD`, then `RST $28`), the ROM calculator reaches
+  USR-NO `$34B3` and jumps to `$0001`, NEW `$11CB`: the machine resets. Seen twice:
+  - `r99-48` (Pentagon 128, "48 BASIC", paging locked): frames 5647-5664, the "(c) 1982 Sinclair" screen at 5760
+    (`work/stage2/menu99/r48-5760.png`); the `0 OK` at frame 7200 that stage 1 noted came later, from a key in the
+    BASIC editor after the reset;
+  - unreal-ng's `48K-BETA128` model (a 48 K Spectrum with a Beta 128 interface, TR-DOS 5.03): "Computer Spectrum /
+    Memory 56Kb / Using TR-DOS Ver 5.03 / ... RAM-Disk... O.k.", then about 300 frames after the second SPACE the
+    same reset (PC `$34B6-$34BB` -> `$0001` -> `$11CB`).
+  So the '99 does not run on a 48 K machine with a Beta disk, although its texts say it does: its 48 K path (the
+  one-page patch set of `src/patches99`, the tape pieces) is unreachable. The '98's code needs only 48 K (its one `$7FFD` write does nothing there); it was not run on the `48K-BETA128` model.
 - Scorpion ZS-256 (unreal-ng model `SCORPION`, `work/stage2/scorpion`): both releases autostart, load and play.
   The '99 prints "Computer Scorpion", "Memory 256Kb", "Using TR-DOS Ver 5.03" and goes through the start-up menu,
   its texts and START into play (`e99s`, `s99`); the '98 goes through its intro and menu into play (`e98s`, `s98`).
@@ -200,3 +250,30 @@ set (the 128 BASIC mode bit); the disk's autostart (FLAGS `$C8`, bit 4 clear) an
 `RANDOMIZE USR 15616` do not, so the handler never reaches `$3A42`. The author most likely tested only on Scorpion
 and Leningrad-type machines, where the printer buffer is free at any time; the '98 does not use `$5B00` and is
 not affected.
+
+## 3.7 The source build
+
+`tools/build.sh [SJASMPLUS]` (a lock in `build/.lock` keeps one build at a time) runs each part's build, then packs
+and writes the disks:
+
+| Part | Source (`src/`) | Bytes | Build |
+| --- | --- | --- | --- |
+| '98 BASIC + REM loader | `basic98/basic.asm` | `NEZSEd.B` sectors 0-1 | `tools/build_intro98.sh` |
+| '98 intro (PT3 player and tune, logo, robot, scroller) | `intro98/intro.ann` | sectors 2-43, `$C000-$E9FF` | `tools/build_intro98.sh` |
+| '98 game | `game98/game.ann` | sectors 44-156, `$6780-$D87F` | `tools/build_game98.sh` |
+| '99 BASIC + reader | `basic99/basic.asm` | `NEZSEd99.B` sector 0 | `tools/build_front99.sh` |
+| '99 stage 2 (the intro) | `stage2/stage2.ann` | `$61A8-$7D86`, packed | `tools/build_front99.sh` |
+| '99 RLE decoder and picture | `pictures99/pictures.ann` | sectors 19-31 | `tools/build_front99.sh` |
+| '99 Sound Tracker player and tune | `music99/music.ann` | sectors 32-44 | `tools/build_front99.sh` |
+| '99 stage 3 (System checking, the loads) | `stage3/stage3.ann` | `$61A8-$67EB`, packed | `tools/build_menu99.sh` |
+| '99 game | `game99/game.ann` | `$6780-$D7D2`, packed | `tools/build_game99.sh` |
+| '99 patches (eight pieces, two sets) | `patches99/patches.ann` | `$D800-$DB6F`, packed | `tools/build_game99.sh` |
+| '99 start-up menu | `menu99/menu.ann` | `$D800-$E6F3` of page 1, packed | `tools/build_menu99.sh` |
+| the five `.W` texts | `res/text/*.txt` | the `W` files | `tools/build_texts.sh` |
+| the twelve maps | `res/maps/NELEV_xx.txt` | the `N` files | `tools/build_game99.sh` |
+| the five packed blocks | `sfx/zsblock.asm`, `sfx/blocks.txt`, `sfx/hints/` | | `tools/build.sh` (`tools/zspack.py`) |
+| the disks | `disk98.txt`, `disk99.txt` | the SCLs | `tools/mkscl.py` |
+
+Each `.ann` is turned into its `.asm` files by its part's wrapper around `kit/mkgame.py` (`tools/<part>_mkgame.py
+--install`), which installs only when sjasmplus gives the original bytes. Result:
+`build: NEZSED98.SCL identical to orig/NEZSED98.zip`, `build: NEZSED.SCL identical to orig/NEZSED.ZIP`.

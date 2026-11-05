@@ -205,9 +205,9 @@ SetBaseOwner:
   LD A,B                  ; the side:
   OR A                    ; 0, the player?
   LD A,$40                ; the player's bit 6...
-  JR Z,l_BBC7             ; yes: $40
+  JR Z,SetBaseOwnerBits   ; yes: $40
   RRCA                    ; ... or the enemy's bit 5
-l_BBC7:
+SetBaseOwnerBits:
   LD C,A                  ; keep the type, set the owner
   LD A,(HL)               ; the base's +3
   AND $1F                 ; the type bits 0-4 kept, owner and destroyed bits
@@ -366,10 +366,10 @@ RemoveBuilding:
   PUSH BC                 ; ... and BC
   CALL FindBuilding       ; IY = the building record on cell HL, Z when there
                           ; is one
-  JR NZ,l_BC6B            ; none here: nothing to do
+  JR NZ,RemoveBuildingDone ; none here: nothing to do
   LD (IY+$01),$00         ; the record's high byte 0: free
   RES 6,(HL)              ; the cell's anchor bit off
-l_BC6B:
+RemoveBuildingDone:
   POP BC
   POP IY                  ; IY back
   RET                     ; the building is gone

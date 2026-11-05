@@ -1,1 +1,217 @@
+# The '99 start-up menu, $D800-$E6F3 (NEZSED.SCL sectors 123-132, read by stage 3 to $E800 of page 1 and unpacked by
+# its own depacker to $D800-$E6F3 of page 1, 3828 bytes, work/media/99/menu-out.bin): the annotations
+# tools/menu99_mkgame.py menu turns into src/menu99/*.asm. The format is kit/mkgame.py's (class Annotations).
+# The menu runs in page 0, not in page 1: MainMenu ($C100, the paged jump table of the patches block) JPs to $C112,
+# which copies a stub to $6700 (ROM LDIR at $33C3) that pages 1 in, copies $D800-$E7FF to the screen at $4000, pages 0
+# in, copies it to $D800 of page 0 and RETs to MenuEntry. So the windows are read with page 0 at $C000. The code is
+# what six windows ran (reads off: the copy reads every byte): r99 frames 2661-6462 (the menu idle), s99 frames
+# 2277-4802 (Scorpion), m99 frames 2661-6454, 6668-7099, 7314-7613, 7828-8737 (the four menu phases of the recording
+# with input work/stage2/menu99/inputs/m99.txt; between them the game ran and page 0 $D800 held the game's bytes),
+# widened by the kit's walk. Witnesses: the variables read with tools/ttd_find.py from the m99 recording, scanned
+# every 10 frames (work/stage2/menu99/scan_m99.py), screens rendered by work/stage2/menu99/shot_m99.py.
+#
+# m99 timeline (frame by which the value is seen): menu entry 2660 ($D800 = the menu's bytes); level MEDIUM 2841, HARD
+# 2981, CRITICAL 3121, EASY 3251; EnemyUpgrade $84 -> $04 (3401), $44 (3561), $64 (3721), $74 (3881), $7C (4051), $78
+# with EnemyPartsMask $F8 -> $FF (4221); Controls 2 (4411), 3 (4601), 1 (4791); DESCRIPTION about 5000; HARD 5511,
+# LOAD MAP (the catalogue on screen 5700-5950, NELEV_02 highlighted 5900), the menu back with level 1 and the pointer
+# at (8,8) by 5961; CRITICAL 6311, START 6452 (game patches seen at 6500); MEDIUM START 7098; EASY START 7612.
+
 @inline $D42D
+
+@equ $D0B9 ClearScreen ; the game's: pixels and attributes to 0, border black
+@equ $D42D PrintInline ; the game's: prints the bytes after the CALL (0 end, 1 Y X, 2 attribute, 3 next line, 4 size)
+@equ $C820 TitleColourCycle ; the game's: cycles the ink of the title rows
+@equ $C34A RedefineKeys ; the game's: the eight-key redefine screen
+@equ $D3E4 Controls ; the game's: 1 keyboard, 2 Kempston, 3 Interface 2
+@equ $A5E5 EnemyPartsMask ; patches block: the AND mask EnemyUpgrade applies to an enemy robot's parts
+@equ $A5E7 EnemyUpgrade ; patches block: the parts ORed into every enemy robot (bit 7 electronics .. bit 2 anti-gravs)
+@equ $C1FD LoadMap ; patches block: LOAD MAP (the disk catalogue's NELEV files)
+@equ $C103 LoadDescription ; MainMenu table: the description text into HL
+@equ $C106 LoadAdvices ; MainMenu table: the advices text into HL
+@equ $C109 LoadGreets ; MainMenu table: the greets text into HL
+@equ $C10C LoadAbout ; MainMenu table: the about text into HL
+@equ $C1E1 MenuHook 2 ; a word of the game's that MenuEntry sets to MenuRedraw (no window reads it)
+@equ $E6F4 TextBuffer ; the text the viewer shows (copied there from page 3)
+@equ $B87E SpawnResources 3 ; the game's SpawnCheckWeapons: LD HL,$FD4A (the enemy's resources)
+@equ $D2C8 InsgRobotCount 6 ; the game's PrintInsgCounts: CALL PrintNumber2Zero, CALL PrintInline (the enemy robots)
+@equ $AE41 EnemyProduce 9 ; the game's daily income: LD HL,$FD4A, LD DE,$FD42, CALL ProduceSide (the enemy's)
+@equ $0E9E RomClAddr ; ROM CL-ADDR past its LD A,$18 / SUB B: A = the text line from the top, HL its pixel address
+@equ $22B0 RomPixelAdd ; ROM PIXEL-ADD past its 175 - y: A = the pixel line from the top, C = x; HL the byte
+
+@isub $DAA9 LD A,(LevelLd+1)
+@isub $DAC4 LD A,(LevelLd+1)
+@isub $DAD4 LD A,(LevelLd+1)
+@isub $D9B4 LD BC,(DrawPointer+1)
+@isub $D9F8 LD BC,(DrawPointer+1)
+@isub $DDB7 LD BC,(DrawPointer+1)
+@isub $DD8D LD A,(DrawPointer+1)
+@isub $DD0C LD HL,ViewerFontPtr+2
+
+@module menumain ; The menu screen, the pointer loop, the choices, START and its level patches
+@about MenuEntry runs once per MainMenu call: at the first one from the game's Start, after LOAD MAP (which JPs to Start), and after a game ends (aborted or over), each time from a fresh copy of page 1, so the level and the pointer start again at EASY and (8,8) (m99 frame 5961, after LOAD MAP). Controls, EnemyUpgrade and EnemyPartsMask live in the game and keep their values.
+@about The screen (MenuText, MenuBottomText through the game's PrintInline): the title, LEVEL: EASY MEDIUM HARD CRITICAL (rows 10-13, column 1, attribute 5), UPGRADING: the six robot parts (rows 10-15, column 11, attribute 6), CONTROL: KEYBOARD KEMPSTON INTERFACE REDEFINE (rows 10-13, column 23, attribute 5), and START, LOAD MAP, DESCRIPTION (row 17), ADVICES, GREETS, ABOUT ZS NE (row 21), attribute 2, double height. MenuRedraw marks the chosen level, the parts on and the control with PaintBar (attribute $47, 10 cells). The pointer (an arrow sprite) moves one pixel a pass with Q A O P (ReadMenuKeys: the keyboard only; no block of either release reads a $xxDF mouse port, and the only IN from $1F, the Kempston joystick, is the game's at $D3AC); SPACE picks the 8 x 8 cell under the pointer's corner.
+@about The choice by the cell's row and column (MenuSelect): rows 10-16 need attribute 5, 6 or $47 (an item); column 0-10 the level (row - 9), 11-22 an upgrade toggle, 23-31 the control (rows 10-12) or REDEFINE (row 13). Rows 17 and more need attribute 2: row 17 columns 0-7 START, 8-17 LOAD MAP, 18-31 DESCRIPTION; row 21 columns 0-9 ADVICES, 10-17 GREETS, 18-31 ABOUT.
+@about START (StartGame) writes three places of the game by the level and returns to Start's caller ($A603): EASY the game's own bytes (as Nether Earth); MEDIUM the enemy's resources 99 each time it builds (SpawnResources = CALL $A5F2) and "??" in place of its robot count (InsgRobotCount); HARD also EnemyProduce = CALL $A5D6 (the enemy's production replaced by EnemyUpgrade over its robots, game99's part); CRITICAL also EnemyUpgrade = $FC (every part) and EnemyPartsMask = 0. Witnessed in m99: CRITICAL frame 6500 SpawnResources CD F2 A5, InsgRobotCount 00 CD 2D D4 3F 3F, EnemyProduce 6 x 00 CD D6 A5, $A5E5-$A5E7 = 00 F6 FC; MEDIUM frame 7500 the first two patched and EnemyProduce the game's own; EASY frame 8000 all three the game's own.
+$D800 c MenuEntry ; IM 0 with I = $3F, the stack at $677E, then the menu screen
+> Entered from the stub at $6700 (page 0, m99 frame 2660). The return address (into Start, $A603) is moved onto the new stack at $677E (under stage 3's strings, which the stub overwrote). MenuHook = MenuRedraw: a dead store (no window reads $C1E1).
+$D807 ; the return address onto the new stack
+$D80D ; MenuHook: never read
+$D813 c MenuScreen ; Clear the screen, attributes 7, print the menu (MenuText)
+> Also the return after REDEFINE and after a text was shown (TextShow).
+$D826 b MenuText 8 ; the menu's upper part through PrintInline (src/res/menu99/menu-strings.txt [menu])
+@res menu99/menu-text.bin
+$D912 c MenuBottom ; Save the attributes of rows 10-15, print START .. ABOUT ZS NE (MenuBottomText)
+> SavedAttrs: the colours of the items without the marks; MenuRedraw restores them before it marks again.
+$D920 b MenuBottomText 8 ; the six items of rows 17 and 21 (menu-strings.txt [bottom])
+@res menu99/menu-bottom.bin
+$D967 c MenuRedraw ; Restore rows 10-15, mark the control, the level and the parts on; then the pointer loop
+> After a HALT, SavedAttrs back to $5940; PaintBar at column 23 for Controls, column 0 for the level (the operand of LD A at LevelLd), column 11 for each bit 7..2 of EnemyUpgrade (rows 10-15). PaintBar paints 10 cells, so the CONTROL bar from column 23 runs into columns 0-0 of the next row (2 cells, black on the empty left of the row).
+$D973 ; the control
+$D97C ; the level
+$D97F LevelLd ; the level 1-4: this operand is the menu's level variable (MenuSelect writes it, StartGame reads it)
+$D984 ; the parts: bit 7 electronics (row 10) .. bit 2 anti-gravs (row 15)
+$D98C MarkPartsLoop
+$D99A MarkPartsNext
+$D99D PointerShow ; save the background under the pointer, draw it
+$D9A3 MenuLoop ; the title colours, a delay, the keys
+$D9A8 DelayOuter
+$D9AA DelayInner
+$D9B2 ; D counts the moves of this pass
+$D9B8 ; Q: up (y 0 at least)
+$D9C2 KeyDown ; A: down (y $B8 at most)
+$D9CD KeyLeft ; O: left
+$D9D7 KeyRight ; P: right (x $F8 at most)
+$D9E2 KeySpace ; SPACE: choose; no move: the next pass
+$D9EA ; moved: the old background back, the new position, draw again
+$D9F5 MenuSelect ; SPACE: the cell under the pointer's corner, by row and column
+$DA06 ; rows 0-9: nothing
+$DA1B CellRowLoop
+$DA1F ; rows 17 on: the bottom items
+$DA23 ; an item colour: 5 (level, control), 6 (part), $47 (marked)
+$DA33 SelectLevel ; columns 0-10: the level = row - 9
+$DA41 ToggleUpgrade ; columns 11-22: the part of the row, XOR into EnemyUpgrade
+$DA48 ; A = $80 >> (row - 10): B = row - 8 RRAs of the carry
+$DA4A PartMaskLoop
+$DA52 ; any of bits 2-0 set: the mask $F8, else $FF
+$DA5A SetPartsMask
+$DA5D WaitSpaceUp ; wait until SPACE is released
+$DA68 SelectControl ; columns 23-31: rows 10-12 Controls = row - 9, row 13 REDEFINE
+$DA74 SelectControlDone
+$DA77 RedefineItem ; REDEFINE: the game's screen, then the menu again
+$DA7D BottomItem ; rows 17 on: attribute 2 needed; row 21 on: the second line
+$DA8E StartGame ; row 17, columns 0-7: the level's patches; RET to Start ($A603)
+$DAA9 ; EASY ends here (A = 0)
+$DAB1 ; MEDIUM and up: the enemy's resources 99, its robot count hidden
+$DACC ; HARD and up: the enemy's production upgraded
+$DADC ; CRITICAL: every part, mask 0
+$DAE6 b LevelPatches 3 ; the bytes StartGame copies: EASY (the game's own), then MEDIUM and HARD
+> Six pieces copied in order: 3 bytes to SpawnResources, 6 to InsgRobotCount, 9 to EnemyProduce (EASY), then 3 and 6 (MEDIUM up) and 9 (HARD up).
+$DAE6 PatchEasySpawn ; LD HL,$FD4A
+$DAE9 PatchEasyInsg ; CALL $D3EC (PrintNumber2Zero), CALL PrintInline
+$DAEF PatchEasyProduce ; LD HL,$FD4A, LD DE,$FD42, CALL $AE4E (ProduceSide)
+$DAF8 PatchSpawn99 ; CALL $A5F2: the enemy's resources 99 (game99's part)
+$DAFB PatchInsgHidden ; NOP, CALL PrintInline, "??" over the first two bytes of the game's inline text
+$DB01 PatchProduceUpgrade ; six NOPs, CALL $A5D6: EnemyUpgrade over the enemy robots (game99's part)
+$DB0A c BottomColumn ; Row 17 past START: LOAD MAP (columns 8-17) or DESCRIPTION; row 21: ADVICES, GREETS, ABOUT
+> LOAD MAP: JP LoadMap (the patches block's catalogue, m99 frames 5600-5960).
+$DB12 BottomRow21 ; row 21: columns 0-9 ADVICES, 10-17 GREETS, 18-31 ABOUT
+$DB1F ShowDescription ; the description into TextBuffer, the screen, its title
+$DB2B b DescTitle 8 ; "NETHER EARTH" / "DESCRIPTION" (menu-strings.txt [description])
+@res menu99/title-description.bin
+$DB4D c DescView ; to TextShow
+$DB4F c ShowAbout ; The about text into TextBuffer (LoadAbout), the screen, its title, TextShow
+$DB5B b AboutTitle 8 ; "NETHER EARTH" / "ZS EDITION'99" (menu-strings.txt [about])
+@res menu99/title-about.bin
+$DB7F c TextShow ; The viewer from the start of TextBuffer, then the menu again
+$DB82 ; the viewer's top line: the start
+$DB8B c ShowAdvices ; The advices text into TextBuffer (LoadAdvices), the screen, its title, TextShow
+$DB97 b AdvicesTitle 8 ; "NETHER EARTH" / "ADVICES" (menu-strings.txt [advices])
+@res menu99/title-advices.bin
+$DBB5 c AdvicesView ; to TextShow
+$DBB7 c ShowGreets ; The greets text into TextBuffer (LoadGreets), the screen, its title, TextShow
+$DBC3 b GreetsTitle 8 ; "NETHER EARTH" / "GREETS" (menu-strings.txt [greets])
+@res menu99/title-greets.bin
+$DBE0 c GreetsView ; to TextShow
+
+@module menuviewer ; The text viewer: 64 columns, 16 lines a page, Q / A / SPACE
+@about TextViewer shows TextBuffer from the line at ViewerTopLd's operand in rows 8-23 with a 4 x 8 font (ViewerFont, the same 2048 bytes as stage 2's Font64, src/res/stage2/font64.png), fading the rows out and in (attributes 7..1, 1..7, a frame each). The texts are CP866 with CR LF; TextStart in front of them (0, CR, LF) stops a page back at the start. Keys (ReadMenuKeys): Q 16 lines back, A 16 lines on (nothing at either end), SPACE back to the menu. Witnessed in the live exploration of r99 (work/stage2/menu99/live-r99): the top went $E6F4 -> $E980 -> $ECE6 -> $E980 -> $E6F4 with A A Q Q; in m99 DESCRIPTION was opened about frame 5000.
+@about ViewerPutChar takes controls like the ROM's print: $16 AT column, row (two parameters), $17 the font address (two parameters, low first), $0D column 0, $0A the next row, $09 the next multiple of 8, $08 one column back; other codes below 32 are ignored. A character in the font's layout: byte font + 256 * r + c is pixel row r of character c, drawn in both nibbles; the column's parity picks the half (mask $F0 or $0F).
+$DBE2 c TextViewer ; Print the header (row 8, the font), fade rows 8-23 out, clear them, print a page, fade in, keys
+> The top line is the operand of LD HL at ViewerTopLd (TextShow sets it to TextBuffer). Prints until row 24 or a 0 byte. Returns on SPACE.
+$DBEB ; fade out: attributes 7..1 over rows 8-23, one a frame
+$DBED FadeOutStep
+$DC00 ; the pixels of rows 8-23 to 0
+$DC0D ViewerTopLd ; the first line shown: this operand is the viewer's position
+$DC10 PrintPage ; up to row 24 or the text's 0
+$DC23 FadeIn ; attributes 1..7
+$DC25 FadeInStep
+$DC39 ViewerKeys ; the title colours, a frame, the keys
+$DC44 ; Q: 16 lines back (a 0 before: the start, nothing)
+$DC49 PageBackLine
+$DC4B PageBackScan
+$DC5D PageForward ; A: 16 lines on (a 0 first: the end, nothing)
+$DC66 PageForwardScan
+$DC78 ViewerSpace ; SPACE: back to the menu
+$DC7D b ViewerHeader 6 ; AT 0,8 then the font: $16 0 8, $17 ViewerFont
+$DC83 c PrintCount ; Print BC bytes from DE through ViewerPutChar
+$DC8E c ViewerPutChar ; One byte to the 64-column screen: a control, a parameter or a character
+> A = the byte. Keeps BC, DE, HL (the character's work in the alternate set). Columns 0-63, rows 0-23; a character in row 24 or more is not drawn; column 64 is the next row.
+$DC9E ; HL = the font + the code
+$DCA6 ; row 24 on: not drawn
+$DCAE ; HL = the row's pixel address + column / 2
+$DCB8 ; the half: column even $F0, odd $0F
+$DCC0 SetViewerMask
+$DCC6 PutCharRow ; eight pixel rows, the font's planes 256 bytes apart
+$DCD8 ; the next column; 64 = the next row
+$DCEF PutCharDone
+$DCF1 ViewerParam ; a parameter of $16 or $17: stored backwards from ViewerParams (AT: column, row) or ViewerFontPtr + 2 (font)
+$DCFB ViewerParamStore
+$DCFF ParamBack
+$DD08 ViewerParamFont
+$DD11 ViewerParamDone
+$DD19 ViewerControl ; a control: $0A, $0D, $16, $09, $08, $17
+$DD25 ViewerControlCr
+$DD2A ViewerSetCol
+$DD2E ViewerControlAt
+$DD32 ViewerTwoParams
+$DD3B ViewerControlTab
+$DD48 ViewerControlBack
+$DD4F ; RET C never returns (DEC keeps the carry of CP $08, clear): at column 0 the column becomes $FF
+$DD53 ViewerControlFont
+$DD59 ViewerIgnore
+$DD1D c ViewerNewLine ; The next row (the column is not changed)
+$DD5A b ViewerCol ; the column 0-63
+$DD5B b ViewerRow ; the row 0-23 (24: the page is full)
+$DD5C b ViewerParams ; parameters still to come
+$DD5D b ViewerCode ; the control they belong to
+$DD5E b ViewerChar ; the byte being printed
+$DD5F b ViewerMask ; the half of the cell: $F0 or $0F
+$DD60 w ViewerFontPtr ; the font ($3C00 in the image; the header sets ViewerFont)
+
+@module menupointer ; The pointer sprite, the marks, the keys
+@about The pointer is an 8 x 8 arrow (PointerSprite: mask and pixels a row) drawn at pixel (x, y) = the operand of LD BC at DrawPointer (C = x 0-$F8, B = y 0-$B8), the 16 bytes under it kept in PointerBg. One copy loop serves the save and the restore: SavePointerBg writes NOPs into it, RestorePointerBg EX DE,HL (self-modified at BgSwap1 and BgSwap2).
+$DD62 c PaintBar ; Attribute $47 in 10 cells of row A + 9 from HL ($5800 + the column)
+> A = 1-6 (the item's row - 9). HL: $5800 + the column. The 10 cells may run into the next row.
+$DD68 PaintBarRow
+$DD6D PaintBarCell
+$DD73 c DrawPointer ; Draw the pointer sprite at the position (this LD BC's operand), shifted by x AND 7
+> The mask and the pixels shifted right by x AND 7 (the mask filled with 1s), screen = screen AND mask OR pixels over two bytes, eight lines down.
+$DD7B DrawPointerRow
+$DD95 DrawPointerShift
+$DDA1 DrawPointerPut
+$DDB7 PointerBgCopy ; 16 bytes between the screen under the pointer and PointerBg, the way BgSwap1 / BgSwap2 say
+$DDC0 PointerBgRow
+$DDC6 BgSwap1 ; NOP: screen -> PointerBg; EX DE,HL: PointerBg -> screen
+$DDCF BgSwap2 ; the same, undone
+$DDD7 c SavePointerBg ; The background under the pointer into PointerBg (NOPs into the copy loop)
+$DDD8 c SetPointerBgWay ; A into BgSwap1 and BgSwap2, then PointerBgCopy
+$DDE0 c RestorePointerBg ; PointerBg back to the screen (EX DE,HL into the copy loop)
+$DDE4 c ReadMenuKeys ; E (and A) = the menu keys, 0 = pressed: bit 0 P, 1 O, 2 Q, 3 A, 4 SPACE
+> The four half-rows $DFFE (P, O), $FBFE (Q), $FDFE (A), $7FFE (SPACE). Used by the menu and the viewer.
+$DE11 b PointerSprite 2 ; 8 rows of mask, pixels: the arrow (src/res/menu99/pointer.png)
+@res menu99/pointer.bin
+$DE21 b PointerBg 2 ; the 16 screen bytes under the pointer
+$DE31 b SavedAttrs 16 ; the attributes of rows 10-15 as MenuBottom found them (192 bytes)
+$DEF1 b ViewerFont 8 ; the 64-column font, 8 planes of 256 (src/res/menu99/viewer-font.png)
+@res menu99/viewer-font.bin
+$E6F1 b TextStart ; 0, CR, LF: the stop in front of TextBuffer for the viewer's Q

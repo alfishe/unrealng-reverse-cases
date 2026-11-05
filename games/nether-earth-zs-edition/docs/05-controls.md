@@ -81,6 +81,17 @@ asks for SAVE; ZS Edition has no save, so it is gone.
 | --- | --- |
 | LOAD MAP (`r99` 5452) | the highlight moved to `NELEV_06` (`x99` 4127) |
 
+LOAD MAP reads the keys through the ROM's KEY-SCAN every third interrupt, without waiting for a release: a held
+key repeats. O and P do nothing there. The highlight has 96 places, four to a row, whatever the disk holds; names
+past the 64th print on the wrong lines, and SPACE on an empty place returns to the menu with nothing loaded
+([03](03-build-and-load.md), 3.5).
+
+No mouse. Neither release reads a Kempston mouse (no `IN` of a port `$xxDF` in any block); the start-up menu's
+arrow is moved by Q A O P (`$DDE4` reads the half-rows `$DFFE`, `$FBFE`, `$FDFE`, `$7FFE`), and the only Kempston
+read is the joystick (`IN ($1F)` at `$D3AC`) when CONTROL is KEMPSTON. The owner's memory of choosing among about
+sixteen numbered snapshots with the mouse does not match this code: LOAD MAP lists the `N` file names without
+numbers, the disk has twelve, and each is a map, not a saved game ([01](01-game-design.md), 1.7).
+
 ## 5.6 Play
 
 Nether Earth's play keys (or the chosen joystick), with ABORT: in the '99 it returns to the start-up menu (`x99`
