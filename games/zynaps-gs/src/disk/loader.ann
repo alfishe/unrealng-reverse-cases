@@ -1,0 +1,92 @@
+# The annotations of the level loader: the $419 bytes the driver keeps at bank 1 $C44A (LoaderCopy in
+# src/disk/driver.ann) and swaps to $61A8 for a load (LevelChange, SwapLoader). The single source of
+# src/disk/loader/*.asm (tools/part_mkasm.py). It runs with bank 1 paged at $C000, so it calls the driver directly.
+#
+# The code is what the recording work/stage2/r1 ran at $61A8 (the game start: the jingle and the FX; a level's
+# module), widened by mkgame's walk.
+
+@equ $2090 TRDOS_READ_SECTOR ; TR-DOS ROM: the read-sector command ($80) to the FDC and its data loop (BC = $017F: port $7F)
+@equ $2A53 TRDOS_OUT_C ; TR-DOS ROM: OUT (C),A; RET
+@equ $2F59 TRDOS_WAIT_INTRQ ; TR-DOS ROM: wait for the FDC's INTRQ (port $FF bit 7)
+@equ $3D13 TRDOS_ENTRY ; the TR-DOS ROM's entry for machine code: C = the function (5: read B sectors from D:E to HL)
+@equ $3D2F TRDOS_CALL ; a RET in the TR-DOS ROM: the address pushed before the JP here runs with TR-DOS paged in
+@equ $4000 Screen 6912 ; the screen
+@equ $5B5C BANKM ; the 128 system variable: the last value written to port $7FFD
+@equ $5C3A ERR_NR ; IY's base for the ROM's system variables
+@equ $5CD6 TRDOS_ERRORS ; TR-DOS: the count the ROM's read routine raises on a failed sector
+@equ $5D10 TRDOS_5D10 ; a TR-DOS work byte zeroed before each read
+@equ $5D16 TRDOS_SYSREG ; TR-DOS's copy of the system register (port $FF)
+@equ $B460 ModuleVolume ; the installer's variables at $B446 (src/disk/install.asm): the level's module volume ...
+@equ $B461 Level ; ... the level whose sound is loaded (1-13)
+@equ $B463 LoadKind ; ... 0 a level, 1 the game start, 2 the title (module 13)
+@equ $B464 OptionSaturns ; ... the menu's SATURNS: 0 = NO
+@equ $B486 EffectsOnly ; the operand of CallDriverFx's LD A,n: 1 effects only
+@equ $BED4 PackedAt ; where every record is read: a Trush block there unpacks itself to $C000 (bank 7)
+@equ $C000 Bank 16384 ; the paged bank
+@equ $C23C PlayFx ; the driver (bank 1): FX L at note H in channel C
+@equ $C340 ModuleHandle ; the driver: the operand of PlayModule's LD A,1 (the module's handle for #31)
+@equ $D3CB StartFxData ; bank 1: the start jingle (the boot's Trush block 1)
+@equ $FAA5 InGameFxData ; bank 1: the 10 in-game FX, on through banks 3, 4 and 6
+@const GS_DATA $B3 ; the GS ports: data ...
+@const GS_CMD $BB ; ... and command / status (bit 0 command busy, bit 7 data busy)
+@const PAGE_BANK1 $11 ; port $7FFD values (the 48 ROM): bank 1 ...
+@const PAGE_BANK7 $17 ; ... bank 7
+
+@module loader ; the level loader: the FX in the banks, the disk FX and the modules sent to the card
+@about Three entries, called by the driver's LevelChange: StartFx (the game start: the jingle uploaded from bank 1 and played), LoadFx (the 10 in-game FX from the banks; in effects-only mode the 11 disk FX after them) and LoadModule (a level's module, read from the disk record by record).
+@about The disk part is a table of 6-byte records (FxRecords, ModuleRecords): the number of sectors, flags (bit 0 delta coded: never set; bit 1 a Trush block; bit 7 the last record of a set), the sector and the track (written at start-up by the installer's FillRecords: the records lie one after another from the sector after Trush block 4), and a word: for the FX sets the address of the FX lengths, for a module part its length. The lengths are negative: the senders count BC up to 0.
+@about Each record is read to PackedAt with bank 7 paged; a Trush block there unpacks itself to $C000. The bytes go to the card through the data port, each after the card took the one before (status bit 7). While a module loads, bank 7's copy of the loading screen is on the screen.
+$61A8 c StartFx ; the game start: the jingle uploaded from bank 1 (StartFxData), then played: FX 1, note $33, channel 1
+> The driver's load-once patch turns the CALL of this entry into a CALL of PlayStartFx: the jingle stays on the card.
+@isub $61AA LD (NextPage+1),A
+$61B7 PlayStartFx ; FX 1 at note $33 in channel 1 (PlayFx, not the patched PlayFxFrom: the jingle keeps handle 1)
+$61BF c LoadFx ; the 10 in-game FX from bank 1 $FAA5 on; in effects-only mode the disk FX after them
+> In effects-only mode with SATURNS off, the third FX record gets bit 7 (the last): FX 21 (the fourth record, the Saturn sound) is not loaded. The disk FX are loaded with the loading screen shown (bank 7's copy).
+@isub $61C7 LD (NextPage+1),A
+$61E8 ; the loading screen from bank 7
+$61FF ScreenToBank7 ; the screen back to bank 7's copy
+$620F ; bank 1 again (the driver's)
+$6217 c UploadFxList ; one FX a negative length at IX (to a zero word): #38 (load FX), its handle read, the command $D1, the bytes, the command $D2
+$6240 c SendBanked ; BC (negative) bytes from HL to the card; past $FFFF the next bank of 1, 3, 4, 6, 7 at $C000
+$624E NextPage ; the bank being read (the operand of the LD A, written by the entries and here)
+$626F c SkipPage ; banks 2 and 5 are skipped (they are the 128's fixed $8000 and $4000)
+$6271 c WaitCommand ; until the card has taken the command (status bit 0 clear)
+$6277 c LoadModule ; the module of Level (13 when LoadKind is 2) from the disk: #30 (load module), its handle, the command $D1, the parts, the command $D2
+> The handle goes to the driver's PlayModule (ModuleHandle), the level's volume from ModuleVolumes to ModuleVolume, the first record from ModuleRecords. Each part is read (ReadRecord) and sent from $C000 (a Trush part) or PackedAt (a raw part), plain or delta coded by its flags, until the record with bit 7.
+$62BF ; one part
+$62F5 c LoadDiskFx ; the disk FX sets (UploadFxSets from FxRecords), then #2B (FX volume) with $40
+$6303 c ReadRecord ; the record at IX: its sectors to PackedAt with bank 7 paged, then run when it is a Trush block (bit 1)
+> Returns NZ for a Trush part (its bytes are at $C000), Z for a raw one (at PackedAt).
+$6327 c UploadFxSets ; the FX records from IX: each read (ReadRecord), then its FX uploaded by the length list it points to
+@isub $634C LD (SendCall+1),DE
+$6350 ; one FX
+$636D SendCall ; the sender the record's bit 0 chose (SendPlain or SendDelta; the operand written above)
+$637D ; the next record, until bit 7
+$638C b FxHandle ; the handle the card gave the last FX (kept, not used)
+$638D c SendPlain ; BC (negative) bytes from HL to the card
+$63A0 c SendDelta ; BC (negative) bytes from HL to the card, each the running sum of the bytes (no record uses it)
+$63B6 b FxRecords 6 ; the disk FX: 4 records (FX 11-12 raw, FX 13-16 Trush, FX 17-20 raw, FX 21 Trush)
+> Their words are the addresses of FxSet1Lengths, FxSet2Lengths, FxSet3Lengths and FxSet4Lengths ($650C, $6512, $651C, $6526). The sector and track bytes are what the disk carries before FillRecords writes them: older values of another layout.
+> LoadFx sets bit 7 of the third record's flags (FxRecords+13) when SATURNS is off.
+$63CE b ModuleRecords 6 ; the 13 modules' 42 parts, in the disk's order: levels 9, 3, 13, 7, 5, 6, 1, 12, 2, 11, 4, 8, 10
+> A part is 16384 bytes, the last one the rest; the words are the parts' negative lengths.
+$64CA b RecordsEnd ; 0: the end of the records for FillRecords
+$64CB w LevelRecords ; each level's first record (levels 1-13; 13 is the title module)
+$64E5 b ModuleVolumes 13 ; each level's module volume (#2A)
+$64F2 w StartFxLength ; the jingle's length (negative), then 0
+$64F6 w InGameFxLengths ; the 10 in-game FX lengths, then 0
+$650C w FxSet1Lengths ; FX 11, 12
+$6512 w FxSet2Lengths ; FX 13-16
+$651C w FxSet3Lengths ; FX 17-20
+$6526 w FxSet4Lengths ; FX 21
+$652A c ReadSectors ; B sectors from D:E to HL: the TURBO LOADER option (TurboTest) picks FastRead or TR-DOS's function 5
+$6532 TurboTest ; LD A,1: the menu's TURBO LOADER (YES = 1) writes the operand
+$654B c FastRead ; TURBO LOADER: the sectors with TR-DOS's own FDC routines, each retried until it reads without error
+$6555 ; one sector: TRDOS_ERRORS before
+$656B ; read: the next sector, the next track after 16
+$657D c ReadSector ; sector E + 1 to the FDC's sector register, then TR-DOS's read-sector code with BC = $017F
+> The LD BC pushes this routine's own address before the jumps into the ROM: a word the ROM code takes from the stack on its way out.
+$6591 c SeekTrack ; drive side from D bit 0 (system register), track D >> 1 to the data register, the seek command ($18)
+$65AD c WriteFdc ; A to the port C through TRDOS_OUT_C
+$65B1 c RomCall ; IX run inside the TR-DOS ROM (PUSH IX; JP TRDOS_CALL)
+$65B6 c SetPage ; A to port $7FFD and BANKM

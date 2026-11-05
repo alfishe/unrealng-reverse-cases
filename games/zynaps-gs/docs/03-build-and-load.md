@@ -2,11 +2,10 @@
 
 What this covers: the disk block by block, the boot, the Trush packer, the patch installer that turns Hewson's
 Zynaps into the GS version, and what is uploaded to the General Sound card and when. The runs it rests on are listed
-in `work/stage1/NOTES.md`. This is the stage 1 draft; the source build is not written yet.
+in `work/stage1/NOTES.md`; the source build (3.7) in `work/stage2/`.
 
 <!-- Figures this document needs (GUIDE.md 4.2), remove each line when it is in: -->
 <!-- - an animation of every unpack (`kit/memanim.py`) -->
-<!-- - the build (mermaid) -->
 <!-- - the disk map (sectors by owner) -->
 
 ## 3.1 The medium
@@ -122,7 +121,8 @@ Zynaps at `$C800`. The installer does these things:
 
 - It copies the stubs:
   - `$AA28`: the effects timer and the title entry;
-  - `$5B00`: code that the game reaches through the word patched at `$B20A` (stage 2 reads it);
+  - `$5B00`: TitleStub, which the title loop's `JP NC` at `$B209` reaches: the title routine and the loading screen
+    from bank 7 between the title pages ([img/compare/title-picture.png](img/compare/title-picture.png));
   - `$B2F0` and `$A6AE`;
   - `$FF1C` (`$B6` bytes): 20 sound and level stubs;
   - `$B446` (`$62` bytes): the bank 1 trampolines `$B466` / `$B482` and the flags `$B45F..$B486`.
@@ -163,5 +163,64 @@ Nether Earth GS's 2002 loader lost its module.
 
 ## 3.7 The build
 
-Not written yet (stage 2). The disk is to be rebuilt from source byte for byte. The packed blocks are to be repacked
-by a Trush packer that gives the same bytes; if that is not possible, they stay as resources.
+`tools/build.sh` writes the TRD from source and compares it with `orig/ZYNAP_GS.ZIP`'s `ZYNAP_GS.TRD`: identical,
+all 655360 bytes. One build at a time: it holds `build/.lock` (a folder) while it runs.
+
+```mermaid
+flowchart LR
+  ann["src/game/game.ann"] -- kit/mkgame.py --> gasm["src/game/*.asm (50 modules)"]
+  dann["src/disk/*.ann"] -- tools/part_mkasm.py --> dasm["src/disk/boot, screen, loader, menu, driver"]
+  res["src/res/ (PNG, text, MOD, WAV)"] -- res_formats.py, disk_media.py --> bres["build/res/"]
+  gasm -- sjasmplus --> game["build/game.bin ($5C00-$FFFF)"]
+  dasm -- sjasmplus --> parts["build/disk/*.bin"]
+  inst["src/disk/install.asm, basic.asm, block4.asm"] -- sjasmplus --> parts
+  game --> parts
+  bres --> parts
+  parts -- "tools/mkdisk.py + src/media/trd.txt" --> trd["build/ZYNAP_GS.TRD"]
+  bres --> trd
+```
+
+1. `tools/res_formats.py build` and `tools/disk_media.py build`: the resources into `build/res/`
+   ([src/res/README.md](../src/res/README.md)).
+2. sjasmplus: the game (`src/game/game.asm` → `build/game.bin`, `$5C00-$FFFF`), then the BASIC, the boot sectors, the
+   screen block, the loader, the menu, the driver file (which INCBINs the loader and the menu, its copies), the
+   installer and block 4 (the installer, the driver file and the three slices of the game image the block carries:
+   `$7400-$C7FF`, `$5C00-$73FF` stored at `$C800`, and `$E000-$FFFF`) into `build/disk/`.
+3. `tools/mkdisk.py src/media/trd.txt build/ZYNAP_GS.TRD`: the data run from track 1 sector 0, the catalogue and
+   sector 9.
+
+**The game image.** Block 4 carries Zynaps as the memory after the 48K start-up ran (the tiles and the wave cells
+copied to `$5C00`/`$6400`, the sprites complemented, the start-up never runs again: `$8000` is `JP $B200`) with the
+GS conversion's own edits in it (the credits message, `$9BE6`/`$A034` `CALL StartExplosionQuiet`, `$A0BD`
+`CALL NZ,0` and 15 `NOP`s, the HALT loops that replace five calls of the wait routine, EndOfPlay's end code, the
+title loop). `tools/game_image.py` unpacks it from the original into `work/mkgame/original.bin`, the image
+`kit/mkgame.py` checks the source against. `$C800-$DFFF` is not in the block: zero in the image. The source is the
+case's own `src/game/game.ann` (546 entries, 50 modules), seeded from the 48K case's annotations and carrying a
+`GS:` note at every place the conversion or its installer changes; the 25 installer patches are written at run time
+by `src/disk/install.asm`, so the game's source holds the bytes the block holds.
+
+**The disk parts.** `tools/part_mkasm.py` runs kit/mkgame.py's pipeline over the original's bytes of each part
+(`work/stage2/*.bin`, Trush block 0 from `work/media/unpacked/`), with the code the recording `work/stage2/r1` ran,
+and writes the part's `.asm` from its `.ann` (boot 1, screen 1, loader 1, menu 1, driver 1 module). Each is
+assembled and compared before it is installed. `tools/regen.sh` writes every source again (the parts, then the game)
+and builds.
+
+**The Trush blocks** are made by `src/disk/trush.asm` (the self-unpacking head, the depacker and the stream) with
+`tools/trush.py`'s packer, which gives the original's streams byte for byte: mkdisk assembles each block with its
+base, end and length and unpacks it again to prove it.
+
+**The packing rule.** The level records (`FxRecords`, `ModuleRecords` in the loader) say which records are Trush
+blocks. The rule that gives the same choice for all 49: a record is packed when its in-place unpack is safe
+(`tools/trush.py margin` above 0: the stream, moved to end at the destination's end, is never overtaken by the
+output) and the block takes fewer sectors than the raw bytes. A module is padded with zeros to a whole sector and
+cut into 16384-byte parts; a set of FX is its FX one after the other. A raw FX set's last sector ends with what the
+sets before it left in the same buffer (set 3 ends with bytes of set 2): mkdisk models that buffer.
+
+**The boot banks** are the join of `fx-start` and FX 1-10, cut as the loader reads them: 11317 bytes Trush-packed to
+`$D3CB` (bank 1), 16384 raw (bank 3), 16384 packed to `$C000` (bank 4), 16384 packed to `$C000` (bank 6). The join's
+last 7 bytes are not on the disk: FX 10's tail is read from bank 7's zeros (9.3).
+
+**The catalogue** (sector 9): `ZYNAP_GS` (BASIC, 65 bytes, but 255 sectors: its entry covers the boot code and the start of
+the data run) and 8 `zynapsGS` covers, types `1`-`8`, start = length = the digit, 255 sectors each and 134 for the
+last, so that the 9 entries hold the whole run of 2174 sectors; label `AMD4ever`, 9 files, 370
+free sectors, the first free one track 136 sector 14.

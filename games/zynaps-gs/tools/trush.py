@@ -9,8 +9,8 @@ The block (loaded at base B, run at B):
   B+$00  DI; LD B,16; EXX; PUSH HL; LD HL,src_end; LD DE,dest_end; LD BC,packed_len; PUSH DE; LDDR
          EX DE,HL; INC HL; LD IX,0; ADD IX,SP; LD SP,HL        moves the packed stream to end at dest_end,
                                                                SP = its first byte
-  B+$22  LD HL,B+$4B; LD DE,B; LD BC,$CE; PUSH DE; JP $33C3   copies the depacker over the head (ROM LDIR; RET)
-  B+$31  the name "COMPRESSOR BY ALEXANDER TRUSH ODESSA"
+  B+$1A  LD HL,B+$4B; LD DE,B; LD BC,$CE; PUSH DE; JP $33C3   copies the depacker over the head (ROM LDIR; RET)
+  B+$27  the name "COMPRESSOR BY ALEXANDER TRUSH ODESSA"
   B+$4B  the depacker ($CE bytes); its LD BC at +$C5 holds the unpacked length
   ...    the packed stream (bytes and 16-bit bit words interleaved, read through SP)
 
@@ -133,6 +133,184 @@ def _copy(out, off, n):
     assert off <= len(out), f'offset {off} before the start'
     for _ in range(n):
         out.append(out[-off])
+
+
+# --- the packer ---
+
+WINDOW = 8192      # the farthest offset: high part 31, low byte 255
+SHORT = 256        # the farthest offset of a 2-byte match (its one-byte form)
+
+
+def tokens(data):
+    """the token choice of the original packer, found on all 38 blocks of the disk: at each position the longest
+    match (2 bytes at most 256 back, 3 or more at most 8192 back), the nearest of equal length; a literal when there
+    is none"""
+    chains = {}
+    out, p, n = [], 0, len(data)
+    while p < n:
+        best, off = 0, 0
+        if p + 1 < n:
+            for q in reversed(chains.get(data[p:p + 2], ())):
+                d = p - q
+                if d > WINDOW:
+                    break
+                k = 2
+                while p + k < n and data[q + k] == data[p + k]:
+                    k += 1
+                if k == 2 and d > SHORT:
+                    continue
+                if k > best:
+                    best, off = k, d
+                    if p + k == n:
+                        break
+        step = best if best >= 2 else 1
+        out.append((best, off) if best >= 2 else (1, 0))
+        for q in range(p, p + step):
+            if q + 1 < n:
+                chains.setdefault(data[q:q + 2], []).append(q)
+        p += step
+    return out
+
+
+class BitWriter:
+    """bytes and 16-bit bit words interleaved as the depacker reads them through SP: a word's place is taken as
+    soon as the previous one is full (the first one at the start); bits most significant first; the unused bits of
+    the last word are 1s (a word left with no bit at all stays 0)"""
+
+    def __init__(self):
+        self.out = bytearray(2)
+        self.at, self.word, self.n = 0, 0, 0
+
+    def bit(self, b):
+        self.word = self.word << 1 | b
+        self.n += 1
+        if self.n == 16:
+            self.out[self.at:self.at + 2] = bytes((self.word & 255, self.word >> 8))
+            self.at, self.word, self.n = len(self.out), 0, 0
+            self.out += b'\0\0'
+
+    def bits(self, value, count):
+        for i in range(count - 1, -1, -1):
+            self.bit(value >> i & 1)
+
+    def byte(self, v):
+        self.out.append(v)
+
+    def end(self):
+        if self.n:
+            w = self.word << (16 - self.n) | ((1 << (16 - self.n)) - 1)
+            self.out[self.at:self.at + 2] = bytes((w & 255, w >> 8))
+        return bytes(self.out)
+
+
+def pack(data):
+    """the packed stream of data (the bytes after the depacker)"""
+    w, p = BitWriter(), 0
+    for length, off in tokens(data):
+        if length == 1:
+            w.bit(0)
+            w.byte(data[p])
+            p += 1
+            continue
+        w.bit(1)
+        p += length
+        if length == 2:
+            w.bits(0b010, 3)
+            w.byte(off - 1)
+            continue
+        if length == 3:
+            w.bits(0b00, 2)
+        elif length <= 5:
+            w.bits(length, 3)                 # 100, 101
+        elif length <= 9:
+            w.bits(length + 6, 4)             # 1100..1111
+        else:
+            w.bits(0b011, 3)
+            if length <= 265:
+                w.byte(length - 10)
+            else:
+                w.byte(0xFE)
+                w.byte(length & 255)
+                w.byte(length >> 8)
+        if off <= SHORT:
+            w.bit(1)
+            w.byte(off - 1)
+        else:
+            w.bit(0)
+            high = (off - 1) >> 8
+            if high <= 2:
+                w.bits(high - 1, 3)           # 000, 001
+            elif high <= 6:
+                w.bits(high + 1, 4)           # 0100..0111
+            elif high <= 13:
+                w.bits(high + 9, 5)           # 10000..10110
+            else:
+                w.bits(high | 0x20, 6)        # 101110..111111
+            w.byte((off - 1) & 255)
+    w.bit(1)
+    w.bits(0b011, 3)
+    w.byte(0xFF)                              # the end
+    return w.end()
+
+
+def margin(data, dest_end, stream=None):
+    """the in-place depack of data packed into a block loaded at dest_end - len(data) + 1 - $12C (the disk's rule:
+    the output starts $12C above the base): the smallest distance, over the whole depack, from the last byte written
+    (from base + $CE up) to the first stream byte not yet read (the stream ends at dest_end). Above 0 the depacker
+    never overwrites its own stream; returns (margin, the stream's length)"""
+    st = stream if stream is not None else pack(data)
+    base = dest_end - len(data) + 1 - 0x12C
+    start = dest_end - len(st) + 1
+    s = Stream(st, 0)
+    s.word, s.left = s.word16(), 16
+    out, low = 0, 1 << 30
+
+    def check():
+        nonlocal low
+        low = min(low, start + s.p - (base + 0xCE + out - 1))
+
+    while True:
+        if not s.bit():
+            s.byte()
+            out += 1
+            check()
+            continue
+        code = s.bits(2)
+        if code:
+            code = s.bits(1, code)
+            if code >= 6:
+                code = s.bits(1, code)
+        if code == 2:
+            s.byte()
+            out += 2
+            check()
+            continue
+        if code == 3:
+            v = s.byte()
+            if v == 0xFF:
+                break
+            n = s.word16() if v == 0xFE else v + 10
+        elif code == 0:
+            n = 3
+        elif code < 6:
+            n = code
+        else:
+            n = code - 6
+        if s.bit():
+            s.byte()
+        else:
+            a = s.bits(3)
+            if a >= 2:
+                a = s.bits(1, a)
+                if a >= 8:
+                    a = s.bits(1, a)
+                    if a >= 0x17:
+                        s.bits(1, a)
+            s.byte()
+        out += n
+        check()
+    assert out == len(data)
+    return low, len(st)
 
 
 def main():

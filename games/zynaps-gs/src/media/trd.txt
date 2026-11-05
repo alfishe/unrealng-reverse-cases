@@ -1,0 +1,38 @@
+# The TRD inside orig/ZYNAP_GS.ZIP (ZYNAP_GS.TRD, 655360 bytes): written by tools/mkdisk.py.
+# One run of 2174 sectors from track 1 sector 0, in the order the boot (src/disk/boot.ann) and the loader
+# (src/disk/loader.ann) read it; the catalogue only cuts the run into 9 files of 255 sectors (the last 134) that no
+# program opens by name. Every byte past the run and every sector tail is zero.
+
+label AMD4ever
+
+entry ZYNAP_GS B 65 65 255
+entry zynapsGS 1 1 1 255
+entry zynapsGS 2 2 2 255
+entry zynapsGS 3 3 3 255
+entry zynapsGS 4 4 4 255
+entry zynapsGS 5 5 5 255
+entry zynapsGS 6 6 6 255
+entry zynapsGS 7 7 7 255
+entry zynapsGS 8 8 8 134
+
+# sector 0: the BASIC; sectors 1-2: the boot, which BootLoader reads to $5D3B
+raw build/disk/basic.bin
+raw build/disk/boot.bin
+
+# block 0: the loading screen and its fade, unpacked to $7F58-$9AFF
+trush build/disk/screen.bin 0 - $7F58
+
+# the sound the card gets at the game start: the jingle and FX 1-10, one run on through banks 1, 3, 4 and 6
+# (the loader's SendBanked); the run's last 7 bytes (zeros of FX 10) are not on the disk
+join banks build/res/sfx/fx-start.bin build/res/sfx/fx01.bin build/res/sfx/fx02.bin build/res/sfx/fx03.bin build/res/sfx/fx04.bin build/res/sfx/fx05.bin build/res/sfx/fx06.bin build/res/sfx/fx07.bin build/res/sfx/fx08.bin build/res/sfx/fx09.bin build/res/sfx/fx10.bin
+trush banks 0 11317 $D3CB       # block 1: bank 1 $D3CB-$FFFF
+raw banks 11317 16384           # bank 3 as it is (its in-place depack is not safe)
+trush banks 27701 16384 $C000   # block 2: bank 4
+trush banks 44085 16384 $C000   # block 3: bank 6
+
+# block 4: the installer, the GS driver file and Zynaps, unpacked to $61A8-$FFFF
+trush build/disk/block4.bin 0 - $61A8
+
+# the level data: 4 FX sets and the 13 modules' 42 parts (raw FX set 3's last sector ends with set 2's bytes:
+# tools/mkdisk.py)
+records build/disk/loader.bin

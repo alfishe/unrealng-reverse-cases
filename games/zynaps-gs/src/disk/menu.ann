@@ -1,0 +1,93 @@
+# The annotations of the options menu: the 1696 bytes at $C8AD of the GS driver file (MenuCopy in
+# src/disk/driver.ann). The boot calls it in place, at $6D60 inside Trush block 4, before the installer: its
+# writes go to the not yet installed code (the driver file at $64B3, the trampolines at $6451, the loader copy, the
+# Zynaps image). The single source of src/disk/menu/*.asm (tools/part_mkasm.py).
+#
+# The code is what the recording work/stage2/r1 ran at $6D60 (the menu shown, key 1), widened by mkgame's walk.
+
+@equ $3D00 ROM_FONT 768 ; the 48 ROM's character set (codes 32-127)
+@equ $4000 Screen 6144 ; the screen's bitmap
+@equ $5800 Attrs 768 ; the attribute file
+@equ $5B5C BANKM ; the 128 system variable: the last value written to port $7FFD
+@equ $646F SaturnsOption ; in the trampolines (src/disk/install.asm, run at $B464): OptionSaturns, 1 = YES
+@equ $6470 ShootingOption ; ... OptionShooting ($B465): 0 NORMAL, 1 DISABLED, 2 CHANNEL
+@equ $6491 SoundModeOption ; ... the EffectsOnly operand ($B486): 0 music and effects, 1 effects only
+@equ $66EA TimerOperand1 ; in the driver file: Gate's EFFECTS TIMER operand (bank 1 $C237) ...
+@equ $670F TimerOperand2 ; ... and PlayFxDefault's (bank 1 $C25C)
+@equ $6C88 TurboOption ; in the driver file: the loader copy's TurboTest operand (loader $6533): 1 = YES
+@equ $9B50 ShipHitJump ; Zynaps: the JP after the invulnerability test at $9B4C; INFINITE LIFE writes RET ($C9) there
+@equ $B073 LevelSelectCode 2 ; Zynaps: LD B,(HL) / INC B, the level the game goes on to; SELECT LEVEL writes LD B,n
+@equ $B218 RoundsJump ; Zynaps: a JR NC at $B218; INFINITE ROUNDS writes JR ($18)
+@equ $FC00 Font 1024 ; bank 7: the menu's bold copy of ROM_FONT (codes 32-127 at $FD00-$FFFF)
+@const PAGE_ROM48 $10 ; port $7FFD values (the 48 ROM): bank 0 ...
+@const PAGE_BANK7 $17 ; ... bank 7
+
+@module menu ; the options menu: ZYNAPS OPTIONS, the keys 1-7 and the hidden 0, 8 and level select
+@about The boot calls Menu after the loading screen. It draws the options (Text, printed by PrintText with a bold copy of the ROM font) and waits: key 1 starts with music and effects, key 2 with effects only; keys 3-7 change an option and draw the menu again.
+@about Key 0 is not shown. It writes $16 (AT) over the zero that ends Text, so the two lines after it print too ("8. INFINITE LIFE" and "Q-P,A-S. SELECT LEVEL!!!"), turns key 8's jump into the INFINITE LIFE toggle and makes the key loop go on to the level keys: Q W E R T for levels 1-5, Y U I O P for 6-10, A and S for 11 and 12.
+@about An option is a byte the menu keeps and writes into the code at the start (Start) or a byte in the code it toggles directly: INFINITE ROUNDS (JR at RoundsJump), TURBO LOADER (the loader's reader), SATURNS (FX 21 and its sound), SHOOTING (the shot's channel or no shot sound), EFFECTS TIMER (the gate's length, 0-9), INFINITE LIFE (RET at ShipHitJump), SELECT LEVEL (LD B,n at LevelSelectCode).
+$6D60 c Menu ; bank 7 paged for the font at $FD00, the menu run (MenuLoop), bank 0 paged back
+$6D78 s Spare 76 ; zeros
+$6DC4 c MenuLoop ; the font, the screen cleared, then the values, Text and the key wait until key 1 or 2
+$6DCA Redraw ; after every option key: the values into Text and Text printed again
+$6DD3 ; 10 frames before the keys are read again
+$6DD8 KeyLoop ; keys 1-5 (row $F7FE), then 0, 8, 7, 6 (row $EFFE)
+$6DFD ; key 9: its bit passed over
+$6DFF KeyEight ; key 8: JP NC to KeyLoop until key 0 sets InfiniteLifeKey as its target
+$6E0A NoKey ; JP KeyLoop until key 0 sets LevelKeys as its target
+$6E0D c Reveal ; key 0: the hidden lines shown (the end of Text becomes AT), key 8 and the level keys turned on
+@isub $6E0F LD (TextEnd),A
+@isub $6E15 LD (KeyEight+1),HL
+@isub $6E1B LD (NoKey+1),HL
+$6E21 c LevelKeys ; Q-T (row $FBFE) levels 1-5, P O I U Y (row $DFFE) 10-6, A S (row $FDFE) 11, 12
+$6E6F c SelectLevel ; LD B,E ($06 E) at LevelSelectCode: the level the game goes on to is E
+$6E7B c InfiniteLifeKey ; key 8: INFINITE LIFE toggled
+$6E80 c InfiniteRoundsKey ; key 3: INFINITE ROUNDS toggled
+$6E83 c Toggle ; the byte at HL XOR 1, then Redraw
+$6E8A c TurboKey ; key 4: TURBO LOADER toggled
+$6E8F c SaturnsKey ; key 5: SATURNS toggled
+$6E94 c ShootingKey ; key 6: SHOOTING 0 NORMAL, 1 DISABLED, 2 CHANNEL, round
+$6EA3 c TimerKey ; key 7: the EFFECTS TIMER digit 0-9, round
+$6EB3 c Start ; key 1 (E = 0) or 2 (E = 1): the sound mode and the options written into the code
+> SoundModeOption = E; INFINITE LIFE: RET at ShipHitJump; INFINITE ROUNDS: JR at RoundsJump; EFFECTS TIMER: the digit's value to TimerOperand1 and TimerOperand2. TURBO LOADER, SATURNS and SHOOTING are written at once by their keys.
+$6ED9 c ClearScreen ; border black, bitmap and attributes zeroed
+$6EE9 c PrintText ; the text at HL: 32 and up a character, $10 a the attribute, $0D a new line, $16 r c a position, 0 the end
+> Other codes below 32 are skipped. A row of 24 or more and a column of 32 or more are taken as 0. The attribute is a letter in the texts: "A" $41 bright blue, "B" bright red, "C" bright magenta, "E" bright cyan, "F" bright yellow, "G" bright white.
+$6F01 ; $10: the attribute into PrintChar's LD A
+@isub $6F03 LD (CharAttr+1),A
+$6F0A ; $0D: column 0, the next row (row 23 goes back to 0)
+@isub $6F0C LD (CharPosition+1),A
+@isub $6F0F LD A,(CharPosition+2)
+@isub $6F17 LD (CharPosition+2),A
+@isub $6F1E LD (CharPosition+2),A
+$6F24 ; $16: row and column
+@isub $6F2A LD (CharPosition+2),A
+@isub $6F33 LD (CharPosition+1),A
+$6F42 c PrintChar ; the character A at the position (CharPosition), the attribute (CharAttr), the column on
+$6F44 CharPosition ; LD DE,nn: the column (E) and row (D)
+$6F5C CharAttr ; LD A,n: the attribute
+@isub $6F61 LD (CharPosition+1),HL
+$6F69 c NextRow ; column 0, the next row (24 back to 0)
+$6F73 c CellAddress ; DE = the screen address of row D, column E
+$6F82 c AttrAddress ; D = the attribute row of the screen address in DE
+$6F8A c GlyphAddress ; HL = Font + L * 8
+$6F99 c CopyGlyph ; 8 bytes from HL down the character cell at DE
+$6FA2 c MakeFont ; ROM_FONT to Font + $100 with every row ORed with itself shifted right: a bold font
+$6FB7 c ShowValues ; the options' values into Text: YES / NOP for the toggles, the SHOOTING word
+$6FF5 c YesNo ; "YES" or "NOP" (the byte at HL not 0 / 0) to the 3 characters at DE
+$7005 b InfiniteRounds ; 1: INFINITE ROUNDS YES (at the start)
+$7006 b InfiniteLife ; 0: INFINITE LIFE NOP
+$7007 t Text ; ZYNAPS OPTIONS, items 1-7, the credits; the end mark; then the hidden lines (the texts: docs/texts/menu.md)
+$706B RoundsValue ; item 3's YES / NOP
+$708A TurboValue ; item 4's
+$70A9 SaturnsValue ; item 5's
+$70C1 ShootingValue ; item 6's 8 characters
+$70E7 TimerDigit ; item 7's digit ("2" at the start)
+$7164 TextEnd ; the zero that ends the visible text: key 0 writes $16 (AT 13,4 with the next two bytes)
+$7180 LifeValue ; the hidden item 8's YES / NOP
+$71A1 t Yes ; "YES"
+$71A4 t Nop ; "NOP"
+$71A7 t Normal ; "..NORMAL"
+$71AF t Channel ; ".CHANNEL"
+$71B7 t Disabled ; "DISABLED"
+$71BF s MenuSpare ; zeros to the end of the driver file

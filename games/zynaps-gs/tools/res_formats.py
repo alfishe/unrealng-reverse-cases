@@ -1,41 +1,121 @@
 #!/usr/bin/env python3
 """The case's resources in editable formats (src/res) and back to bytes (build/res); kit/mkgame.py --install calls
-install(files) with the bytes of each @res entry.
+install(files) with the bytes of each @res entry of src/game/game.ann.
 
     python3 tools/res_formats.py build --out build/res     # src/res -> the bytes the source INCBINs
-    python3 tools/res_formats.py check                     # every file round-trips to the original bytes
+    python3 tools/res_formats.py check                     # every editable file both ways: to bytes and back the same
 
-Start with every resource as bytes (the default here); give a kind its editable format (PNG for graphics, text for a
-tune or a level) one at a time, each with check proving it. H.A.T.E.'s tools/res_formats.py is a full example.
+The formats live in the plugins tools/res_*.py: each has KINDS, a list of (pattern, suffix, to_editable, from_editable)
+where pattern is an fnmatch of the resource's name under src/res (as game.ann's @res names it, ending .bin), suffix
+replaces .bin in the editable file's name, to_editable(bytes, name) -> bytes and from_editable(bytes, name) -> bytes.
+A resource no pattern matches stays as its bytes. Other files under src/res (a .scr, a README, previews *.preview.png)
+are copied as they are, previews and READMEs left out.
+
+Copied from ../zynaps/tools/res_formats.py, with two additions for the GS image: ALIASES (a resource with the bytes of
+another one has no file: build writes it from the other's) and SKIP (the disk's media, which tools/disk_media.py
+builds).
 """
 import argparse
+import fnmatch
+import glob
+import importlib
 import os
 import shutil
 import sys
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
 RES = os.path.join(ROOT, 'src', 'res')
+sys.path.insert(0, HERE)
 
-# name pattern -> (to_editable(bytes) -> (suffix, data), from_editable(data) -> bytes); none yet
-FORMATS = []
+# the tape copies at $BC00 / $C400 hold the bytes of TileGraphics / WaveCellGraphics (src/game/game.ann)
+ALIASES = {'gfx/tiles-tape.bin': 'gfx/tiles.bin', 'gfx/wave-cells-tape.bin': 'gfx/wave-cells.bin'}
+SKIP = ('music/*.mod', 'sfx/*', 'screen/*')  # tools/disk_media.py's
+
+
+def kinds():
+    out = []
+    for path in sorted(glob.glob(os.path.join(HERE, 'res_*.py'))):
+        name = os.path.splitext(os.path.basename(path))[0]
+        if name == 'res_formats':
+            continue
+        out += importlib.import_module(name).KINDS
+    return out
+
+
+def kind_of(name):
+    for k in kinds():
+        if fnmatch.fnmatch(name, k[0]):
+            return k
+    return None
 
 
 def install(files):
+    """The @res entries' bytes as their editable files under src/res; each proved both ways"""
     for name, data in files.items():
+        if name in ALIASES:
+            if files.get(ALIASES[name]) != data:
+                sys.exit(f'res: {name}: not the bytes of {ALIASES[name]}')
+            continue
+        k = kind_of(name)
         path = os.path.join(RES, name)
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        open(path, 'wb').write(data)
+        if k is None:
+            open(path, 'wb').write(data)
+            continue
+        edit = k[2](data, name)
+        if k[3](edit, name) != data:
+            sys.exit(f'res: {name}: the editable form does not give the bytes back')
+        if os.path.exists(path):
+            os.remove(path)
+        open(path[:-4] + k[1], 'wb').write(edit)
+
+
+def sources():
+    """(path under src/res, the resource name it builds, kind or None) of every source file"""
+    suffixes = {k[1]: k for k in kinds()}
+    for top, _dirs, names in os.walk(RES):
+        for n in sorted(names):
+            if n == 'README.md' or n.endswith('.preview.png') or n.startswith('.'):
+                continue
+            rel = os.path.relpath(os.path.join(top, n), RES)
+            if any(fnmatch.fnmatch(rel, p) for p in SKIP):
+                continue
+            hit = None
+            for suffix, k in suffixes.items():
+                if rel.endswith(suffix) and fnmatch.fnmatch(rel[:-len(suffix)] + '.bin', k[0]):
+                    hit = k
+                    break
+            yield rel, (rel[:-len(hit[1])] + '.bin') if hit else rel, hit
 
 
 def build(out):
-    for top, _dirs, names in os.walk(RES):
-        for n in names:
-            if n == 'README.md':
-                continue
-            src = os.path.join(top, n)
-            dst = os.path.join(out, os.path.relpath(src, RES))
-            os.makedirs(os.path.dirname(dst), exist_ok=True)
+    for rel, name, k in sources():
+        src = os.path.join(RES, rel)
+        dst = os.path.join(out, name)
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        if k is None:
             shutil.copyfile(src, dst)
+        else:
+            open(dst, 'wb').write(k[3](open(src, 'rb').read(), name))
+    for alias, name in ALIASES.items():
+        shutil.copyfile(os.path.join(out, name), os.path.join(out, alias))
+
+
+def check():
+    bad = n = 0
+    for rel, name, k in sources():
+        if k is None:
+            continue
+        n += 1
+        edit = open(os.path.join(RES, rel), 'rb').read()
+        data = k[3](edit, name)
+        again = k[2](data, name)
+        if again != edit:
+            bad += 1
+            print(f'res: {rel}: bytes -> editable is not the file')
+    print(f'res: {n} editable files, ' + ('every one both ways' if not bad else f'{bad} FAIL'))
+    return 1 if bad else 0
 
 
 def main():
@@ -45,9 +125,8 @@ def main():
     args = p.parse_args()
     if args.command == 'build':
         build(args.out)
-    else:
-        print('res: every file is its bytes (no editable formats yet)')
-    return 0
+        return 0
+    return check()
 
 
 if __name__ == '__main__':

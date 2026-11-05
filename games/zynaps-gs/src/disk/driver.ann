@@ -1,0 +1,126 @@
+# The annotations of the GS driver file: the $F4D bytes the installer copies from $64B3 (inside Trush block 4) to
+# bank 1 $C000, where they run. The single source of src/disk/driver/*.asm (tools/part_mkasm.py). The file also
+# carries the level loader's copy (src/disk/loader.ann, run at $61A8 after the driver swaps it in) and the options
+# menu (src/disk/menu.ann, run in place at $6D60 before the installer); both are built resources here.
+#
+# The code is what the recording work/stage2/r1 ran in page 1, widened by mkgame's walk from the entries below. The
+# game events named here are those of docs/09 9.4 (the patched Zynaps sites that call each entry).
+
+@equ $61A8 LoaderStartFx ; the level loader's entries once SwapLoader has put it at $61A8 (src/disk/loader.ann)
+@equ $61B7 LoaderPlayStartFx ; inside LoaderStartFx: the jingle played without uploading it again
+@equ $61BF LoaderFx ; the loader: the 10 in-game FX, and in effects-only mode the 11 disk FX
+@equ $6277 LoaderModule ; the loader: the module of level (Level)
+@equ $5B00 SavedArea 571 ; the stub and the system variable area $5B00-$5D3A, swapped with SavedAreaCopy over a level load
+@equ $7F6A ZynapsState ; a Zynaps byte: $C0 lets every sound past the gate (the game's play state, to be named with the game)
+@equ $7FA6 Player1LaserLevel ; Zynaps: player 1's laser level 0-3 (its record $7F9C + $0A); 2 and up picks FX 10. Player 2's record is not read: in a two-player game the second player's shot sound follows player 1's laser
+@equ $AA29 GateCountdown ; the countdown the gate sets and the $AA28 stub counts down (the operand of its LD A,n)
+@equ $B073 LevelSelectCode ; Zynaps's LD B,(HL) at $B073: the menu's level select writes LD B,n there ($06)
+@equ $B109 RoundWaitFrames ; the operand of Zynaps's LD A,n at $B108: the frames of the wait between rounds
+@equ $B45F FxVolume ; the variables the installer puts at $B446 (src/disk/install.asm): the FX volume ($40) ...
+@equ $B460 ModuleVolume ; ... the level's module volume (the loader sets it from its table)
+@equ $B461 Level ; ... the level whose sound is loaded (1-13, 13 the title)
+@equ $B462 NextLevel ; ... the level the game goes to (the $FF87 stub writes it)
+@equ $B463 LoadKind ; ... what LevelChange loads: 0 a level, 1 the game start (jingle and FX), 2 the title module
+@equ $B464 OptionSaturns ; ... the menu's "SATURNS": 0 = NO
+@equ $B465 OptionShooting ; ... the menu's "SHOOTING": 0 NORMAL, 1 DISABLED (no shot sound), 2 CHANNEL
+@equ $B472 SoundOn ; the operand of CallDriver's LD A,1: the driver is called when it is not 0
+@equ $B486 EffectsOnly ; the operand of CallDriverFx's LD A,n: 0 music and effects, 1 effects only (menu key 1 / 2)
+@equ $BE00 StackArea 512 ; Zynaps's bytes under the loader's stack, kept in StackAreaCopy over a level load
+@equ $BED3 LoaderStack ; the stack during a level load (below the Trush blocks' load address $BED4)
+@equ $CF90 StackAreaCopy 512 ; bank 1: the copy of StackArea
+@equ $D190 SavedAreaCopy 571 ; bank 1: the copy of SavedArea
+@const GS_DATA $B3 ; the GS ports: the data register (write: to the card; read: the card's answer) ...
+@const GS_CMD $BB ; ... the command register (write) and the status (read: bit 0 command busy, bit 7 data busy)
+
+@module driver ; the GS driver: the sounds the patched sites ask for, the level change, the card commands
+@about The game reaches every entry here through the stubs the installer put in Zynaps's memory ($FF1C-$FFD1, $B2F0, $A6AE, $B47F: src/disk/install.asm): each loads HL with an entry and calls CallDriver ($B466) or CallDriverFx ($B482), which page bank 1, call (HL) and page bank 0 back. CallDriverFx calls only in effects-only mode (EffectsOnly), so the entries reached through it are effects-only sounds.
+@about A sound is an FX number L, a note H and a channel C: PlayFx sends them as the firmware's #2E (select FX), #40 (note) and #80+C (play in channel C). Gate drops a sound while GateCountdown runs (the menu's EFFECTS TIMER sets its length) unless ZynapsState is $C0. Many sounds add 0-1 or 0-3 semitones from the R register.
+@about In effects-only mode on a card of 7 pages or more (CardPages) the start jingle and all 21 FX stay on the card from the first upload: the driver patches itself so that every FX number is one higher (the jingle keeps handle 1) and no later upload happens.
+$C000 c LevelInList ; Z set when Level is in the zero-ended list at HL; A = 0 at the end of the list (NZ)
+$C00D b Fx12Levels ; the levels where BigEnemyHitSound plays FX 12 (7 and 11), zero-ended
+$C010 c ArenaBounceSound ; FX 18, note $3A, channel 3 (from the $9823 site, effects only)
+$C018 c ObjectSound ; the beeper request $B2F0's replacement: a sound chosen by where the object is in its path (DE) and the frames left (C)
+> The installer's stub at $B2F0 enters here before Zynaps's own $9529, with DE = the object's path pointer (IY+$1D/+$1E, the next command of its path bytecode: Zynaps's RunPath $94CB), C = the frames its path command has left (IY+$1B) and B = the movement flags its caller gave PathOpAccelerate $9529 (C there). Path pointer $682C (path 2 + 6) with C = $0A: FX 16, note $3C; $68F9 (path 23 + 5) with C = $12 or $685B (path 5 + 5) with C = $11: FX 20, note $28. Otherwise, with SATURNS on, SaturnSound; else PathSound. So a sound marks one moment of one path: a turn of a given enemy formation, not a kind of enemy. Each test returns Z when it played (or when nothing is to be played), NZ to go on.
+$C02B c PathSound ; by the path pointer DE: $6850 (path 4 + 4, or E = $EE) FX 19 note $28, $6846 (path 3 + 4) FX 20 note $24, channel 3
+$C042 c Path6850Sound ; FX 19, note $28, channel 3 when DE = $6850 or E = $EE
+$C058 c Path685BSound ; FX 20, note $28, channel 3 when DE = $685B and C = $11
+$C067 c Path68F9Sound ; FX 20, note $28, channel 3 when DE = $68F9 and C = $12
+$C074 ; FX 20, note $28
+$C07E c Path682CSound ; FX 16, note $3C, channel 3 when DE = $682C and C = $0A
+$C093 ; Z: played
+$C095 c SaturnSound ; SATURNS on: path pointer $6820 (path 1's start) plays FX 21 (note $32, volume FxVolume / 4) when its object slot's B changed
+> B is the movement flags the caller gave PathOpAccelerate $9529 (the $B2F0 stub passes them). The slot (ObjectSlot from IY) has a counter in SlotCounters: while it runs, it is counted down and nothing plays; when B is the slot's last value nothing plays either. Otherwise the new value is kept, the counter set to 8 and FX 21 played in channel 3 with #41 (FX volume). In effects-only mode on a big card the FX number in the LD HL is patched to 22 (LoadOncePatch2).
+$C0BD SaturnFx ; FX 21, note $32 (22 after the load-once patch)
+$C0D5 c ClearSlot ; the object at IY gone: its slot's last value cleared (from the $9954 site through $B47F)
+$C0DF c ObjectSlot ; IY's object slot: (IY - $F398) / $2C, 0-6 with carry; no carry for an IY outside the 7 slots
+> On carry HL = HL + the slot (the callers point HL at SlotValues or SlotCounters first).
+@isub $C0E6 LD BC,$F398
+$C103 b SlotValues 8 ; the last B each object slot played FX 21 with
+$C10B b SlotCounters 8 ; each slot's countdown before FX 21 may play again
+$C113 c BigEnemyHitSound ; from the $A0BA site (effects only): on levels 7 and 11 FX 12, else FX 13 or 14; channel 0
+$C130 ; levels 7, 11: FX 12, note $2C + 0-1
+$C13E c DiveSound ; FX 17, channel 0: note $3C on level 4, else $28 (from the $9856 site, effects only)
+$C153 c BigEnemyDestroyedSound ; from the $A0D5 site: music mode as ShipExplodesSound; effects only all four channels at once
+> Effects only: FX 11 note $28 + 0-3 in channel 0, FX 8 note $2D in channel 1, FX 7 note $2C in channel 2, FX 11 one note higher in channel 3.
+$C17F c SceneryBounceSound ; FX 15, note $2D + 0-1, channel 3, when D bit 7 is clear (from the $95E7 site, effects only)
+$C191 c EnemyFireSound ; FX 4, note $30 + 0-1, channel 1 (beeper sound 1)
+$C19D c PlasmaLaunchSound ; FX 4, note $2A + 0-1 (the $9CA6 site)
+$C1A6 Channel1Or2 ; channel 1 in music mode, 2 in effects only
+$C1B2 c MissileLaunchSound ; FX 5, note $32 + 0-1 (the $9CFA / $9D1F sites)
+$C1BD c ExplosionSound ; FX 7, note $2C + 0-3: channel 1 in music mode, 0 in effects only (the $9FBE / $A034 sites)
+$C1D0 c ShipExplodesSound ; FX 8, note $2D, not gated: channel 1 in music mode, 0 in effects only (the $9B51 site)
+$C1DF c ShotSound ; beeper sound 2: FX 10 note $32 if Player1LaserLevel >= 2, else FX 9 note $34; + 0-1
+> SHOOTING (OptionShooting): bit 0 set (DISABLED) plays nothing. In music mode with bit 1 clear (NORMAL) the shot goes through PlayFxDefault in channel 1 (#45 1, then #39: the firmware's own channel choice), else (CHANNEL, or effects only) Gate and channel 1.
+$C208 c PodAppearsSound ; beeper sound 4: FX 1, note $26 (channel 1, or 2 in effects only)
+$C20D c WeaponOnSound ; beeper sound 6: FX 3, note $32, channel 1
+$C212 c PlasmaBounceSound ; beeper sound 3: FX 6, note $3C + 0-1 (channel 1, or 2 in effects only)
+$C21D c NextWeaponSound ; beeper sound 5: FX 2, note $32 + 0-3, channel 1
+$C228 c GateChannel1 ; Gate with channel 1
+$C22A c Gate ; a sound through the gate: dropped while GateCountdown runs, unless ZynapsState is $C0
+> When the sound passes, GateCountdown is set to the EFFECTS TIMER value (the LD A operand, written by the menu) and the sound plays (PlayFx).
+$C236 ; the EFFECTS TIMER (the menu writes the operand)
+$C23B PlayFxFrom ; a NOP: the load-once patch makes it INC L (FX number + 1)
+$C23C c PlayFx ; FX L at note H in channel C: #2E L, #40 H, #80+C with data L
+$C24F c PlayFxDefault ; the same through the gate, played with the firmware's channel choice: #45 B (default volume), #39 L
+$C260 PlayFxDefaultFrom ; a NOP: INC L after the load-once patch
+$C27D c StopAll ; #32 (stop the module), then #3A with $FF (stop every FX): no caller
+$C28F c SetLoopStart ; FX L, note H, #48 with E, D, B: no caller
+$C2AD c SetLoopEnd ; #49 with E, D, B, then #41 H and #80+C with L: no caller (follows SetLoopStart)
+$C2D1 c SelectFx ; A to the data register, #2E (select FX)
+$C2D9 c SetNote ; A, #40 (FX note)
+$C2E1 c SetFxVolume ; A, #41 (FX volume)
+$C2E7 c WaitCommand ; until the card has taken the command (status bit 0 clear)
+$C2ED c WaitData ; until the card has taken the data byte (status bit 7 clear)
+$C2F3 c StopModule ; data 1, #32: stop the module
+$C2FD c WarmReset ; the command $F3: the card emptied (the load-once patch makes this a RET)
+$C303 c CardPages ; #23: the card's 32 K pages; 7 or more in effects-only mode: the command $F3 once, then the load-once patches
+> The patches: RET at WarmReset and here, INC L ($2C) at PlayFxFrom and $C260 (LoadOncePatch2) and 22 as SaturnSound's FX. From then on LevelChange uploads nothing.
+$C328 c SendFxVolume ; #2B with FxVolume
+$C333 c PlayModule ; #2A with ModuleVolume (module volume), then data 1 and #31 (play the module)
+> The LD A,(ModuleVolume) before the #31 has no effect.
+$C34C c RoundWait ; Zynaps's wait between rounds ($A6AE stub): a delay, or in music mode the module faded out
+$C355 c FadeModule ; #2A from A down to 0, a delay of 3000 loop steps between the steps
+$C36D c Delay ; a fixed delay of 65536 loop steps
+$C376 c SwapBytes ; BC bytes exchanged between HL and DE
+$C385 c LevelChange ; the round start: when NextLevel is not Level, the sound of the next level, the start or the title
+> From the $FF1C (round start) and $FF26 (game start, LoadKind = 1) stubs and the title ($AA33, LoadKind = 2). Interrupts go to IM 1 with I = $3F, StackArea is kept in bank 1 and the stack moved to LoaderStack; SwapSavedArea and SwapLoader put the loader at $61A8. CardPages and WarmReset (#23, the command $F3) start each load.
+> LoadKind 1 (the game start): StopModule if the load-once patch is in, then LoaderStartFx (the jingle); with the patch in its CALL is turned into LoaderPlayStartFx. LoadKind 2 (the title, entered at $C38F past the level test): LoaderModule (it takes module 13 for LoadKind 2), PlayModule, Level = 0; with the patch in, LoaderModule becomes a RET. LoadKind 0 (a new level): Level = NextLevel, in music mode LoaderModule, then LoaderFx and SendFxVolume (with the patch in, LoaderFx becomes a RET), in music mode PlayModule.
+> Everything is swapped back, the stack and StackArea restored and IM 2 set again.
+$C39A ; the stack pointer into the LD SP at RestoreStack
+@isub $C39A LD (RestoreStack+1),SP
+$C3CA PlayStartFx ; the jingle: LoaderStartFx, or LoaderPlayStartFx after the patch
+@isub $C3D7 LD (PlayStartFx+1),HL
+$C3DC LoadTitle ; the title module
+$C3F2 LoadLevel ; a new level
+$C416 LevelChangeDone ; back: the loader and SavedArea swapped out again
+$C41C RestoreStack ; Zynaps's stack (the operand written at $C39A)
+$C432 c SwapSavedArea ; SavedArea <-> SavedAreaCopy
+$C43E c SwapLoader ; the 1049 bytes at $61A8 <-> LoaderCopy
+$C44A b LoaderCopy ; the level loader (src/disk/loader.ann), assembled for $61A8
+@res disk/loader.bin
+$C863 c LoadOncePatch2 ; the load-once patch's tail: INC L at PlayFxDefaultFrom and FX 22 in SaturnSound
+@isub $C868 LD (SaturnFx+1),A
+$C86C c RoundWaitMusic ; music mode: the module faded out (from ModuleVolume) when RoundWaitFrames is 2 and the level select is off, else Delay
+$C882 s Spare ; zeros
+$C8AD b MenuCopy ; the options menu (src/disk/menu.ann): it runs here, at $6D60 in Trush block 4, before the installer
+@res disk/menu.bin

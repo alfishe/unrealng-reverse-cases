@@ -1,7 +1,7 @@
 # 2. Architecture
 
 What this covers: the machine budget, the memory map of the Spectrum and of the card, and the stages from the disk to
-play. This is the stage 1 draft. The images it rests on are in `work/images/`:
+play. The images it rests on are in `work/images/` (stage 1):
 
 - `options-menu/`: the menu, after the boot;
 - `play-music-gs512/`: level 1 in music mode on a 512 KB card;
@@ -13,7 +13,7 @@ Each holds the 8 RAM pages, the 64 K view and the card's RAM (`work/stage1/NOTES
 <!-- Figures this document needs (GUIDE.md 4.2), remove each line when it is in: -->
 <!-- - the memory map (`kit/heatmap.py`, regions) -->
 <!-- - the stages from power-on to play (mermaid) -->
-<!-- - the card's memory (module, FX, the 128 KB wrap) -->
+<!-- - the card's memory (module, FX, the 128 KB half page) -->
 
 ## 2.1 The machine
 
@@ -49,7 +49,7 @@ The GS flags:
 | `$B461` | the level whose sound is loaded |
 | `$B462` | the next level |
 | `$B463` | the load kind: 0 level, 1 game start, 2 title |
-| `$B464` | enables `$C095` |
+| `$B464` | enables SaturnSound (`$C095`) |
 | `$B465` | `$C1DF`'s two bits |
 | `$B486` | 0 music, 1 effects only |
 
@@ -78,20 +78,25 @@ The firmware loads in order into the sample pages, which start at card RAM `$080
 - effects-only mode: the title module at `$08000` (it stays), then the jingle at `$14900`, then the 21 FX. The title
   module is stopped (`#32`) at the game start.
 
-On 128 KB the sample pages end at `$1FFFF`, and larger loads wrap to `$00000` ([9.5](09-sound.md#95-card-sizes)).
+On 128 KB the firmware's pages are 2, 3 and 4 (card RAM `$08000-$1FFFF`) and then the lower half of page 1
+(`$00000-$03FFF`), whose upper half is its own work memory: 112 K in all, enough for every load
+([9.5](09-sound.md#95-card-sizes)).
 
 ## 2.4 From the disk to play
 
 1. TR-DOS loads the BASIC line. Its code reads the boot code over it ([3.1](03-build-and-load.md#31-the-medium)).
 2. The boot reads and unpacks the loading screen, then banks 1, 3, 4 and 6, then blk04
    ([3.3](03-build-and-load.md#33-the-boot)).
-3. blk04's installer copies the stubs and the driver, patches Zynaps, moves `$C800` → `$5C00` and starts Zynaps at
-   `$B200` ([3.5](03-build-and-load.md#35-the-patch-installer)).
-4. The GS options menu appears. Up to this point nothing has been sent to the card.
-5. Key 1 or 2 shows the title, which loads the title module.
-6. The title loop (the title picture, the credits page, the high scores) waits for "1,2,3 & FIRE". It then shows
-   "SELECTIONS / 1 PLAYER / 2 PLAYERS". Key 2 selects the Kempston joystick, and fire starts the game.
+3. The boot runs the options menu in place inside blk04 (`$6D60`, [5.1](05-controls.md#51-the-options-menu)). Up to
+   this point nothing has been sent to the card.
+4. Key 1 or 2 writes the options and goes on to blk04's installer, which copies the stubs and the driver, patches
+   Zynaps, moves `$C800` → `$5C00` and starts Zynaps at `$B200` ([3.5](03-build-and-load.md#35-the-patch-installer)).
+5. The title loop's first call loads the title module.
+6. The title loop (the credits page, the high scores, the loading screen) waits for "1,2,3 & FIRE": key 1 or 2
+   picks one or two players ("SELECTIONS"), 3 the key definition, and fire starts the game (the Kempston's fire
+   selects the Kempston).
 7. The game start plays the jingle. Each round's "PREPARE FOR COMBAT" goes through the level change, which loads the
    level's sound when the level changed ([9.2](09-sound.md#92-the-driver-bank-1-c000)).
 
-The main loop, the frame and the module map of Zynaps itself are for stage 2.
+The main loop and the frame: [4](04-game-loop.md). The module map of the source: `src/game/game.asm` (50 modules from
+`src/game/game.ann`) and `src/disk/*/`; every routine: [12](12-routine-reference.md).

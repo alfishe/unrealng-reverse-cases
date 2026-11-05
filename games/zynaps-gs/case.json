@@ -1,11 +1,35 @@
 {
-  "image_cmd": ["sh", "-c", "mkdir -p work/mkgame && python3 ../kit/tapblocks.py orig/GAME.TAP 3 work/mkgame/original.bin"],
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/mkgame/original.bin || python3 tools/game_image.py work/mkgame/original.bin"
+  ],
   "image": "work/mkgame/original.bin",
-  "lo": "6000",
+  "lo": "5C00",
   "hi": "10000",
   "device": "ZXSPECTRUM48",
-  "bases": {"5": "4000", "2": "8000", "0": "C000"},
-  "read_builds": ["game"],
-  "ref_builds": [["game", "the first recording's game window"]],
-  "header": ["; GAME, PUBLISHER YEAR: the game image as the loader leaves it."]
+  "bases": {
+    "5": "4000",
+    "2": "8000",
+    "0": "C000"
+  },
+  "read_builds": [
+    "z48c2",
+    "z48r1"
+  ],
+  "ref_builds": [
+    [
+      "z48c2",
+      "the 48K case's c2 (../zynaps/work/c2): level 1 from the start, 1500 frames"
+    ],
+    [
+      "z48r1",
+      "the 48K case's r1 (../zynaps/work/r1): all 12 levels and the wrap, tools/bot.py with the invulnerability flag set (POKE 65495,1), 75000 frames"
+    ]
+  ],
+  "header": [
+    "; Zynaps GS (ZX-Masters 1997, from Zynaps, Hewson Consultants 1987): the game as Trush block 4 carries it, at its",
+    "; run addresses ($5C00-$FFFF; $C800-$DFFF not carried, zero), entry $8000. tools/game_image.py; block4.asm takes",
+    "; its three parts."
+  ]
 }
