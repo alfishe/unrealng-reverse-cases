@@ -15,9 +15,9 @@ The case was done in two stages by agents:
 Each agent's log is in `work/` (local): `work/stage1/NOTES.md`, `work/stage2/NOTES-ld.md` (loaders, drivers, media),
 `work/stage2/NOTES-trd.md` (the TRD extras), `work/stage2/NOTES-shots.md` (the figures).
 
-`C` = this case, `R` = the repository, `U` = the unreal-ng worktree
-`/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/wt-negs-stage1` (detached at github/master `e3d341d38`,
-`tools/build/build.sh unreal-qt`). Port base 12340 (WebAPI 12340, CLI 12440, MCP 12540, GDB 12640, DeZog 12740,
+`C` = this case, `R` = the repository, `U` = an unreal-ng checkout built with `tools/build/build.sh unreal-qt`
+(the stages ran a worktree detached at github/master `e3d341d38`; `tools/gs_session.py` takes the checkout from
+`UNREAL_NG`, default `/Volumes/TB4-4Tb/Projects/Test/unreal-ng`). Port base 12340 (WebAPI 12340, CLI 12440, MCP 12540, GDB 12640, DeZog 12740,
 ZRCP 12840): none of them hits 10000. Every instance muted at launch and stopped after use; audio only to files.
 
 Tools written for the case (all in `C/tools/`): `disk_files.py` (SCL / TRD catalogue and files), `basic_list.py`

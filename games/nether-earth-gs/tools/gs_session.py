@@ -48,7 +48,7 @@ import time
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-UNREAL = os.environ.get('UNREAL_NG', '/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/wt-negs-stage1')
+UNREAL = os.environ.get('UNREAL_NG', '/Volumes/TB4-4Tb/Projects/Test/unreal-ng')
 sys.path.insert(0, os.path.join(UNREAL, 'tools', 'verification', 'mcp'))
 sys.path.insert(0, os.path.join(UNREAL, 'tools', 'verification', 'analysis'))
 import mcplib  # noqa: E402
