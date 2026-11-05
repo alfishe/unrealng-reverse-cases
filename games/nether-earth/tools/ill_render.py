@@ -1085,7 +1085,9 @@ def fig_worldmap(a):
 # ---------------------------------------------------------------------------------------------------------------
 # 06: the screen copy against the beam: a torn frame
 
-PAPER_T, LINE_T = 14336, 224          # 48K: the first paper line's first byte, T-states a line
+# 48K in unreal-ng: the trace's T is the frame T (0 = the emulator's frame start, the INT at frame T 1812); the first
+# paper line's first byte at frame T 16152 (14340 T after the INT), T-states a line
+PAPER_T, LINE_T = 16152, 224
 
 
 def fig_tear(a):
@@ -1150,12 +1152,12 @@ def fig_tear(a):
                                   'written in time, the', f'other {20 - torn} ' + (
                                       'the same in' if same else 'still old'), 'both views' if same else '']):
             d.text((x + 160 * S + 16, y - 16 + 15 * j), line, fill=(255, 40, 40), font=small)
-        d.text((x, top + 160 * S + 22), f'lines 0-{tear}: new (copied before the beam came)', fill=K.DIM, font=tiny)
+        d.text((x, top + 160 * S + 22), f'lines 0-{tear - 1}: new (copied before the beam came)', fill=K.DIM, font=tiny)
         d.text((x, top + 160 * S + 36), f'lines {tear + 1}-159: old (the beam came first)', fill=K.DIM, font=tiny)
     y = top + 160 * S + 64
     d.text((20, y), f'The copy writes a view line every ~468 T-states, the beam shows a screen line every {LINE_T}: '
            'the beam catches the copy up', fill=K.DIM, font=tiny)
-    d.text((20, y + 14), 'when the copy starts in the last ~23 400 T of a frame or the first ~15 600; started '
+    d.text((20, y + 14), 'when the copy starts in the last ~21 600 T of a frame or the first ~17 400 (frame T); started '
            'between those, the copy stays ahead and the frame is whole.', fill=K.DIM, font=tiny)
     d.text((20, H - 22), f'tools/ill_render.py tear --trace {rel(a.trace)} --out {rel(a.out)}', fill=K.DIM,
            font=tiny)

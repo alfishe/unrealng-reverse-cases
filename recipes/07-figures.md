@@ -19,7 +19,11 @@ density required are in [the guide, section 4](../GUIDE.md#4-figures).
    grid, `--sources` names the data each writer read before its writes (a sprite frame, a mask, a glyph).
 4. **Beam timelines**: `kit/beam_timeline.py --work W --window F:0-F+3:0 --listing build/game.lst --out ...` draws
    each frame's T axis with the routine running, the beam's diagonal and every screen write against it, with the
-   counts of writes before and after the beam (128K timing: `--paper-t 14361 --line-t 228`).
+   counts of writes before and after the beam. The T axis is the frame T, the T-state in unreal-ng's frame as the
+   trace stores it, not the time from the INT: the INT is at frame T 1812 on the 48K, 1846 on the 128K and -44 on
+   the Pentagon, so the paper starts at frame T 16 152, 16 212 and 17 944. The machine follows the trace's frame
+   length; `--machine`, `--int-t`, `--int-to-paper` or `--paper-t` override it. A case's own beam figure takes the
+   same numbers and labels its axis "frame T" (or converts to "T from the INT" and says so).
 5. **Stage animations, heatmaps, screenshots**: `kit/memanim.py`, `kit/heatmap.py`, `kit/screen_shot.py`.
 6. Put each figure in the document where its routine is described, a caption first: what it shows, the
    recording, frames and T-states. Link the hot routines' animations from doc 12 (`refdocs.py` links

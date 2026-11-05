@@ -118,16 +118,18 @@ bytes x 72 lines to `$48E0`), the nuclear flash (the view's attributes saved at 
 
 **Tearing.** The copy writes a line every 468 T-states (20 `LDI` and the address stepping), the beam shows one every
 224: the copy runs at half the beam's speed, so the beam can only catch it from behind. A 48K frame shows the paper
-from T 14336; the view's line 0 is screen line 8.
+from frame T 16 152 (the T-state in unreal-ng's frame, as the trace stores it; the INT rises at frame T 1812, 14 340 T
+before the paper); the view's line 0 is screen line 8.
 
-- A copy that starts in the last ~23 400 T-states of a frame or the first ~15 600 is overtaken in the next frame.
+- A copy that starts in the last ~21 600 T-states of a frame or the first ~17 400 (frame T) is overtaken in the next
+  frame.
   The lines the copy already wrote show the new view, the rest the old.
 - A copy that starts between those stays ahead of the beam to the end, and the frame is whole.
 
 In `work/deep` the copy at 25081:66907 started 2981 T-states before the frame's end. The beam overtakes it in frame
-25082 at view line 87 (screen line 95):
+25082 at view line 94 (screen line 102):
 
-![A torn frame: the new view down to view line 87, the old one below](img/render/tear.png)
+![A torn frame: the new view down to view line 94, the old one below](img/render/tear.png)
 
 How to read the figure:
 
@@ -135,35 +137,36 @@ How to read the figure:
 - **Left:** the screen before the copy. The turn before it was a menu's, so it is blank and the tear is plain to see.
 - **Middle:** the new view in the buffer `$5B00`, what the copy writes.
 - **Right:** what the beam showed in frame 25082. For each byte, the value in memory at the moment the beam fetched
-  it (T 14336 + 224 x screen line + 4 x column), from the trace's write cycles.
-- **The red line** is the tear. In view line 87 the copy wrote 17 of the 20 bytes before the beam came. The other 3
-  are blank in both views, so the picture changes from view line 88 down.
+  it (frame T 16 152 + 224 x screen line + 4 x column), from the trace's write cycles.
+- **The red line** is the tear. In view line 94 the copy wrote 6 of the 20 bytes before the beam came; the other 14
+  still show the old (blank) line, and the lines below it are old too.
 
 In play the old and the new view differ by at most one column, and the tear is a small step.
 
 The beam against the copy's writes, in the same two frames:
 
-![The beam overtakes the view copy at screen line 95](img/render/tear-beam.png)
+![The beam overtakes the view copy at screen line 102](img/render/tear-beam.png)
 
 How to read the figure:
 
-- **Across:** T-states from the interrupt of frame 25081; the thin vertical line is the interrupt of 25082.
+- **Across:** the frame T from the start of frame 25081 (69 888 a frame); the thin vertical lines are the interrupts
+  of 25081 and 25082, at frame T 1812.
 - **Down:** the screen line, 0 at the top.
 - **The white diagonals** are the beam: the line the TV shows at that moment, one diagonal a frame. A byte written
   left of a diagonal shows in that frame; one written right of it waits for the next pass.
 - **The red slope** is the copy, one dot a byte written, 20 a line. It starts at screen line 8 near the end of 25081.
-  It is slower than the beam (a flatter slope), so in 25082 the beam crosses it at screen line 95: the
+  It is slower than the beam (a flatter slope), so in 25082 the beam crosses it at screen line 102: the
   tear of the figure above.
 - **The blue marks** at the top right are the clock, printed after the copy.
 
-Of the 3200 bytes, 1757 were written before the beam fetched them in 25082 and show there. The other 1443 show only
-in 25083. The two figures agree: screen line 95 is view line 87.
+Of the 3200 bytes, 1886 were written before the beam fetched them in 25082 and show there. The other 1314 show only
+in 25083. The two figures agree: screen line 102 is view line 94.
 
 ```
 python3 tools/ill_render.py tear --trace work/ill2/deep/traces/25081_0-25083_0.uatr --out docs/img/render/tear.png
 python3 tools/fig_beam_turn.py --trace work/ill2/deep/traces/25081_0-25083_0.uatr --listing work/mkgame/game.lst \
     --copy-frame 25081 --copy-only --out docs/img/render/tear-beam.png \
-    --title 'The beam overtakes the view copy at screen line 95: frame 25082 shows the new view above, the old one below'
+    --title 'The beam overtakes the view copy at screen line 102: frame 25082 shows the new view above, the old one below'
 ```
 
 The trace is the access trace of frames 25081:0-25083:0 of `work/deep`. Neither figure needs an emulator.

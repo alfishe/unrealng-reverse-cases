@@ -1,19 +1,31 @@
 #!/usr/bin/env python3
 """Code vs the beam: when, in each frame, each routine runs and writes which screen line, against the raster.
 
-One panel a frame of the trace. Across: the frame's T-states, from the interrupt (0) to the next. Down: the 192
-paper lines. The diagonal is the beam: the line the ULA is showing at that T-state. Every write into the screen is
-a dot at (when, which line) in its routine's colour, a square outline for an attribute (at its character row). A
-dot left of the diagonal lands before the beam reaches its line: it shows in this frame. A dot right of it lands
-after the beam passed: the line shows the old byte until the next frame, the tearing a game avoids by drawing
-behind the beam or off screen. Above the panel a strip shows which routine the CPU is in at each T-state.
+One panel a frame of the trace. Across: the frame T, the T-state in the emulator's frame as the trace stores it (0 is
+the frame start, not the interrupt; a green tick marks the INT). Down: the 192 paper lines. The diagonal is the
+beam: the line the ULA is showing at that T-state. Every write into the screen is a dot at (when, which line) in its
+routine's colour, a square outline for an attribute (at its character row). A dot left of the diagonal lands before
+the beam reaches its line: it shows in this frame. A dot right of it lands after the beam passed: the line shows the
+old byte until the next frame, the tearing a game avoids by drawing behind the beam or off screen. Above the panel a
+strip shows which routine the CPU is in at each T-state.
 
     python3 beam_timeline.py (--trace pass.uatr | --work W --window F:T-F:T)
            --listing build/game.lst --out docs/img/beam-pass.png
-           [--screen 4000] [--paper-t 14336] [--line-t 224] [--frames 3] [--pc 8000-FFFF] [--unreal U]
+           [--screen 4000] [--machine 48k|128k|pentagon] [--int-t T] [--int-to-paper T] [--paper-t T]
+           [--line-t 224] [--frames 3] [--pc 8000-FFFF] [--unreal U]
 
-48K timing by default (the first paper line at T 14336, 224 T a line); 128K / +2: --paper-t 14361 --line-t 228;
-Pentagon: --paper-t 17988 --line-t 224 (the 71680 T frame comes from the trace). The counts below the panel give
+The beam comes from unreal-ng's timing (core/src/emulator/config.cpp, ApplyModelTimingDefaults): the INT rises at
+frame T intstart + 1 and the first paper pixel follows it by a fixed distance, so the paper starts at frame T
+int-t + int-to-paper:
+
+    machine    frame T   INT at frame T     INT to paper   paper at frame T   T a line
+    48k        69888     1812               14340          16152              224
+    128k       70908     1846               14366          16212              228
+    pentagon   71680     -44 (71636 of      17988          17944              224
+                         the frame before)
+
+--machine picks the row (by default from the trace's frame length); --int-t and --int-to-paper override a column
+(an emulator with another intstart), --paper-t gives the paper's frame T outright. The counts below the panel give
 each routine's writes before and after the beam.
 """
 import argparse
@@ -29,6 +41,19 @@ import kitlib as K  # noqa: E402
 WIDTH = 1000
 LINES = 192
 STRIP = 14
+# machine: (frame T, the INT's frame T, INT to the first paper pixel, T a line), see the docstring
+MACHINES = {'48k': (69888, 1812, 14340, 224), '128k': (70908, 1846, 14366, 228), 'pentagon': (71680, -44, 17988, 224)}
+
+
+def beam_timing(args, frame_t):
+    """(the INT's frame T, the first paper pixel's frame T, T a line) from --machine / --int-t / --int-to-paper /
+    --paper-t / --line-t, the machine guessed from the trace's frame length when not given"""
+    machine = args.machine or next((k for k, v in MACHINES.items() if v[0] == frame_t), '48k')
+    _, int_t, to_paper, line_t = MACHINES[machine]
+    int_t = int_t if args.int_t is None else args.int_t
+    to_paper = to_paper if args.int_to_paper is None else args.int_to_paper
+    paper_t = int_t + to_paper if args.paper_t is None else args.paper_t
+    return int_t, paper_t, args.line_t or line_t
 
 
 def main():
@@ -37,8 +62,11 @@ def main():
     p.add_argument('--listing')
     p.add_argument('--out', required=True)
     p.add_argument('--screen', default='4000')
-    p.add_argument('--paper-t', type=int, default=14336)
-    p.add_argument('--line-t', type=int, default=224)
+    p.add_argument('--machine', choices=sorted(MACHINES), help='the timing (default: from the trace\'s frame length)')
+    p.add_argument('--int-t', type=int, help='the INT\'s frame T (default the machine\'s: 1812, 1846, -44)')
+    p.add_argument('--int-to-paper', type=int, help='T from the INT to the first paper pixel (14340, 14366, 17988)')
+    p.add_argument('--paper-t', type=int, help='the first paper pixel\'s frame T (default int-t + int-to-paper)')
+    p.add_argument('--line-t', type=int, help='T a line (default the machine\'s: 224, 228)')
     p.add_argument('--frames', type=int, default=3, help='at most this many frames, the first of the trace')
     p.add_argument('--pc', help='only these instructions\' writes and time (hex range)')
     p.add_argument('--title')
@@ -50,6 +78,8 @@ def main():
     pc_lo, pc_hi = K.hex_range(args.pc) if args.pc else (0, 0xFFFF)
     frame_t = trace.frame_t or 69888
     units = max(1, trace.units_per_t)
+    int_t, paper_t, line_t = beam_timing(args, frame_t)
+    print(f'frame {frame_t} T: the INT at frame T {int_t}, the paper at frame T {paper_t}, {line_t} T a line')
 
     frames = sorted({x.frame for x in trace.instructions})[:args.frames]
     keep = set(frames)
@@ -82,7 +112,7 @@ def main():
                 line, attr = ((offset - 0x1800) >> 5) * 8, True
             dots[frame].append((t, line, routine, attr))
             order[routine] += 1
-            beam = args.paper_t + line * args.line_t
+            beam = paper_t + line * line_t
             (ahead if t < beam else behind)[routine] += 1
 
     names = [k for k, _ in order.most_common()] + [k for k, _ in totals.most_common() if k not in order]
@@ -96,8 +126,8 @@ def main():
     height = top + len(frames) * (panel_h + gap) + legend_h + 10
     image = Image.new('RGB', (left + WIDTH + 20, height), K.BACKGROUND)
     draw = ImageDraw.Draw(image)
-    draw.text((left, 8), args.title or f'Screen writes vs the beam, frames {frames[0]}..{frames[-1]}',
-              fill=K.TEXT, font=K.font(15))
+    draw.text((left, 8), args.title or f'Screen writes vs the beam, frames {frames[0]}..{frames[-1]} '
+              f'(frame T; INT {int_t} green; paper {paper_t})', fill=K.TEXT, font=K.font(15))
 
     def tx(t):
         return left + int(WIDTH * t / frame_t)
@@ -111,10 +141,12 @@ def main():
         py = y + STRIP + 6
         draw.rectangle([left, py, left + WIDTH, py + LINES * 2], fill=K.PANEL)
         # the border time before the paper and after it
-        draw.rectangle([left, py, tx(args.paper_t), py + LINES * 2], fill=(30, 26, 36))
-        end = args.paper_t + LINES * args.line_t
+        draw.rectangle([left, py, tx(paper_t), py + LINES * 2], fill=(30, 26, 36))
+        end = paper_t + LINES * line_t
         draw.rectangle([tx(end), py, left + WIDTH, py + LINES * 2], fill=(30, 26, 36))
-        draw.line([(tx(args.paper_t), py), (tx(end), py + LINES * 2)], fill=(255, 255, 255), width=1)
+        draw.line([(tx(paper_t), py), (tx(end), py + LINES * 2)], fill=(255, 255, 255), width=1)
+        int_x = tx(int_t % frame_t)  # a negative INT (Pentagon) rises in the frame before: its mark is at the end
+        draw.line([(int_x, y - 3), (int_x, py + LINES * 2)], fill=(90, 220, 110), width=1)
         for t, line, routine, attr in dots[frame]:
             cx, cy = tx(t), py + line * 2
             if attr:
@@ -127,6 +159,7 @@ def main():
         y += panel_h + gap
     for t in range(0, frame_t, 10000):
         draw.text((tx(t), y - gap + 4), f'{t}', fill=K.DIM, font=small)
+    draw.text((tx(frame_t) - 50, y - gap + 4), 'frame T', fill=K.DIM, font=small)
 
     for k in names[:12]:
         draw.rectangle([left, y + 2, left + 12, y + 14], fill=colour[k])

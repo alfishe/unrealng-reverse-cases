@@ -194,38 +194,44 @@ $AE1D  LD A,(TurnFrames)   ; TurnPace
 So a turn is at least 10 frames, 200 ms: 5 turns a second, 12 turns a game hour, 288 a game day (57.6 s).
 
 - **The work fits.** The work of a turn takes about 8.3 frames. In the traced turn, the work ended in frame 20013
-  at T 18 396; the wait then spun for 53 385 T, three quarters of a frame, until the tenth interrupt of the turn.
+  at frame T 18 396; the wait then spun for 53 385 T, three quarters of a frame, until the tenth interrupt of the turn.
 - **Turns are 10 frames almost always.** `deep` averages 36 046 / 3 414 = 10.6 frames a turn. The excess comes from
   the frames no turn runs in: the construction menus (the first one was open for about 120 frames), and the start before frame 130.
 - **The clear drops leftover frames.** A turn whose work ran past 10 frames does not carry the extra frames into the
   next turn, because the clear sets the count to 0.
 
 **The beam.** The turn is not synchronised with the beam. Its start drifts with the work, and only the interrupt
-gives it a phase: the wait ends just after an interrupt, so a turn starts about 10 400 T into a frame.
+gives it a phase: the wait ends just after an interrupt, so a turn starts at about frame T 10 260, 8 450 T after the
+interrupt.
+
+T here is the frame T: the T-state in the emulator's frame, as unreal-ng's access trace stores it. Frame T 0 is not
+the interrupt: on the 48K the INT rises at frame T 1812 and the first paper pixel comes 14 340 T later, at frame
+T 16 152 (unreal-ng `ApplyModelTimingDefaults`, `intstart` 1811).
 
 ![One game turn: its phases over 11 frames, then the copy's two frames against the beam](img/beam-turn.png)
 
 How to read the figure:
 
 - **The top strip** is one turn of `deep`, frames 20004-20014, one colour for each phase:
-  - the interrupt at the start of every frame (green);
+  - the interrupt near the start of every frame, at frame T 1812 (green; the white lines);
   - the ship, robots, shots and clock (blue, frame 20004);
   - drawing the view in the buffer (purple, about seven frames);
   - copying it to the screen (red, about a frame);
   - waiting for the tenth interrupt (yellow);
   - from frame 20014, the next turn.
 - **The lower panel** enlarges the copy's two frames, 20011 and 20012:
-  - across: the time from the interrupt of 20011, in T-states;
+  - across: the frame T from the start of frame 20011 (69 888 a frame); the thin vertical lines are the interrupts,
+    at frame T 1812;
   - down: the screen line;
   - each dot: one byte written into the screen.
 - **The white diagonals** are the beam: the line the TV shows at that moment, one diagonal a frame. A byte written
   left of the diagonal shows in that frame; one written right of it waits for the beam's next pass.
 - **The red slope** is the copy, 20 bytes a line. It starts at line 8 late in frame 20011 and pauses for the
-  interrupt. In 20012 it is slower than the beam and crosses it at line 110:
-  - lines 8-109 were written before the beam passed and show the new view;
-  - line 110 is split: 11 of its 20 bytes are new;
-  - lines 111-167 were written after the beam passed: for that frame they still show the old view;
-  - in all, 2051 of the 3200 bytes show in frame 20012, the other 1149 only in 20013.
+  interrupt. In 20012 it is slower than the beam and crosses it at line 116:
+  - lines 8-115 were written before the beam passed and show the new view;
+  - line 116 is split: 16 of its 20 bytes are new;
+  - lines 117-167 were written after the beam passed: for that frame they still show the old view;
+  - in all, 2177 of the 3200 bytes show in frame 20012, the other 1023 only in 20013.
   - That is the tear.
 - **The green steps** at lines 176-191 are the radar, redrawn by every interrupt at the start of the frame, long
   before the beam reaches the bottom: it never tears.
@@ -240,11 +246,11 @@ python3 tools/fig_beam_turn.py --trace work/docA/deep/traces/20004_0-20015_0.uat
 
 The writers to the screen in the 11 frames, by loop. "Ahead" counts a write made before the beam reached its line
 in the same frame; a copy byte written behind the beam late in 20011 still shows in 20012, so these columns are not
-the 2051 above:
+the 2177 above:
 
 | Loop | Writes | Ahead of the beam | Behind the beam | What |
 | --- | ---: | ---: | ---: | --- |
-| `CopyLineLoop` (`CopyViewToScreen` `$D071`) | 3 200 | 1 294 | 1 906 | the 160 x 160 view, 20 bytes a line |
+| `CopyLineLoop` (`CopyViewToScreen` `$D071`) | 3 200 | 1 420 | 1 780 | the 160 x 160 view, 20 bytes a line |
 | `RadarLineLoop` (`ShowRadar` `$D59E`) | 2 816 | 2 816 | 0 | the radar picture, lines 176-191, at the start of every interrupt |
 | `FillAttrLoop` (`FillAttr16` `$D5BD`) | 352 | 352 | 0 | the radar's attributes |
 | `GlyphLineLoop` (`PrintChar` `$D4B1`) | 90 | 54 | 36 | the clock |
@@ -254,7 +260,7 @@ What this shows:
 - **The radar never tears.** The interrupt draws it at the top of the frame, long before the beam reaches screen
   line 176.
 - **The view copy does tear.** It takes about 1.05 frames, starting wherever the drawing ended (here frame 20011,
-  T 54 139), and it overtakes the beam: in frame 20012 the beam crosses it at screen line 110. Above that line
+  frame T 54 139), and it overtakes the beam: in frame 20012 the beam crosses it at screen line 116. Above that line
   the screen shows the new view, below it the old one, for one frame.
 - **The tear is at a different place every turn.** The copy's start depends on how long the drawing took, and the
   game makes no attempt to start it at the interrupt.

@@ -26,7 +26,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, '..', '..', '..', 'kit'))
 import kitlib as K  # noqa: E402
 
-FRAME_T, PAPER_T, LINE_T = 69888, 14336, 224
+# 48K in unreal-ng (config.cpp ApplyModelTimingDefaults): the trace's T is the frame T (0 = the emulator's frame
+# start); the INT rises at frame T 1812 (intstart 1811 + 1), the first paper pixel 14340 T later, at frame T 16152
+FRAME_T, INT_T, PAPER_T, LINE_T = 69888, 1812, 16152, 224
 # module ranges of src/game/game.ann
 MODULES = [(0xA600, 'start'), (0xA720, 'robotmenu'), (0xAD62, 'gameturn'), (0xAF11, 'ship'), (0xB0CA, 'world'),
            (0xB7F4, 'enemy'), (0xBB09, 'bases'), (0xBDA9, 'level'), (0xC100, 'mainmenu'), (0xC4A7, 'music'),
@@ -141,14 +143,14 @@ def draw_turn(ax, runs, frames, f0, cf):
     for a0, a1, ph in runs:
         ax.barh(0, max(a1 - a0, 1e-4), left=a0, height=0.8, color=COLOUR[ph], linewidth=0)
     n = len(frames)
-    for i in range(n + 1):
-        ax.axvline(i, color='#ffffff', lw=0.6, alpha=0.5)
+    for i in range(n):
+        ax.axvline(i + INT_T / FRAME_T, color='#ffffff', lw=0.6, alpha=0.5)
     ax.set_xlim(0, n)
     ax.set_ylim(-0.6, 1.3)
     ax.set_yticks([])
     ax.set_xticks([i + 0.5 for i in range(n)])
     ax.set_xticklabels([str(f) for f in frames])
-    ax.set_xlabel('frame of work/deep (white lines: the 50 Hz interrupts)', color='#b8bcc8', fontsize=9)
+    ax.set_xlabel('frame of work/deep (white lines: the 50 Hz interrupts, at frame T 1812)', color='#b8bcc8', fontsize=9)
     ax.set_title('One game turn: what the CPU does in each of its frames', color='#e8e8ee', fontsize=12, loc='left')
     ax.annotate('', xy=(cf - f0, 1.05), xytext=(cf - f0 + 2, 1.05),
                 arrowprops=dict(arrowstyle='<->', color='#e8e8ee', lw=0.8))
@@ -163,8 +165,8 @@ def draw_copy(bx, dots, cf, title):
     for k in range(2):
         b0 = k * FRAME_T + PAPER_T
         bx.plot([b0, b0 + 191 * LINE_T], [0, 191], color='#ffffff', lw=1.2)
-        bx.axvline(k * FRAME_T, color='#ffffff', lw=0.6, alpha=0.5)
-        bx.text(k * FRAME_T + 600, -4, f'interrupt, frame {cf + k}', color='#b8bcc8', fontsize=8.5)
+        bx.axvline(k * FRAME_T + INT_T, color='#ffffff', lw=0.6, alpha=0.5)
+        bx.text(k * FRAME_T + INT_T + 600, -4, f'interrupt, frame {cf + k}', color='#b8bcc8', fontsize=8.5)
     bx.text(PAPER_T + 105 * LINE_T + 1500, 100, 'the beam: the screen line\nthe TV shows at this moment',
             color='#ffffff', fontsize=9, rotation=0)
     for kind, colour, size in (('other', '#5c8fd6', 2), ('radar', '#4caf50', 3), ('copy', '#e5534b', 2)):
@@ -172,7 +174,7 @@ def draw_copy(bx, dots, cf, title):
             xs, ys = zip(*dots[kind])
             bx.scatter(xs, ys, s=size, color=colour, linewidths=0)
     # what frame cf+1 shows: a byte is new there when it was written before the beam fetched it in that frame
-    # (line L, column c: T 14336 + 224 L + 4 c); the tear is the first line the beam reaches before the copy does
+    # (line L, column c: frame T 16152 + 224 L + 4 c); the tear is the first line the beam reaches before the copy does
     def shown_new(t, line, col):
         return t <= FRAME_T + PAPER_T + line * LINE_T + 4 * col
     lines = {}
@@ -199,7 +201,7 @@ def draw_copy(bx, dots, cf, title):
                     f'({ahead} of {len(copy)} bytes show in {cf + 1},\n'
                     f'the rest only in {cf + 2})',
                     xy=cross, xytext=(2 * FRAME_T - 1500, cross[1] - 55), ha='right', va='top', color='#e8e8ee',
-                    fontsize=9.5,
+                    fontsize=9.5, bbox=dict(facecolor='#1c1d24', edgecolor='none', alpha=0.85, pad=2),
                     arrowprops=dict(arrowstyle='->', color='#e8e8ee', lw=0.8))
     if dots['radar']:
         r = sorted(dots['radar'])
@@ -215,7 +217,7 @@ def draw_copy(bx, dots, cf, title):
     bx.set_xlim(0, total)
     bx.set_ylim(196, -10)
     bx.set_ylabel('screen line', color='#b8bcc8', fontsize=9)
-    bx.set_xlabel(f'T-states from the interrupt of frame {cf} (69888 a frame)', color='#b8bcc8', fontsize=9)
+    bx.set_xlabel(f'frame T from the start of frame {cf} (69888 a frame; the interrupts at frame T 1812)', color='#b8bcc8', fontsize=9)
     bx.set_title(title or f'Frames {cf}-{cf + 1}: every write into the screen against the beam', color='#e8e8ee',
                  fontsize=12, loc='left', pad=16)
 

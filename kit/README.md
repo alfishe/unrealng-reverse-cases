@@ -45,7 +45,7 @@ yellow fading through red, trails dark.
 | --- | --- | --- |
 | `routine_anim.py` | a routine at work: memory map lit by age, the screen or buffer it draws into, the listing window, the registers | an access trace |
 | `writers_map.py` | code vs screen: each byte of the screen or a buffer coloured by the routine (or instruction) that wrote it, the data it read, a zoom | an access trace |
-| `beam_timeline.py` | code vs the beam: the routines along a frame's T-states, every screen write against the raster | an access trace |
+| `beam_timeline.py` | code vs the beam: the routines along a frame's T-states (frame T, the INT marked), every screen write against the raster | an access trace |
 | `memanim.py` | memory over a longer stretch (a load, an unpack, a level set-up) | `memory_at` samples |
 | `screen_anim.py` | the screen over frames | `memory_at` samples |
 | `screen_shot.py` | the screen at named moments | `memory_at` |
