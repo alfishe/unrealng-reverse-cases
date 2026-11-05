@@ -206,7 +206,7 @@ class Rig:
                 self.armed_frames += step
 
     def key(self, name, down):
-        self.s.call('type_input', {'action': 'press' if down else 'release', 'key': name}, ok=False)
+        self.s.call('type_input', {'action': 'press' if down else 'release', 'key': name})
 
     def tap(self, name, hold=6, gap=20):
         self.key(name, True)
