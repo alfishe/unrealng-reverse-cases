@@ -1,0 +1,11 @@
+{
+  "image_cmd": ["sh", "-c", "mkdir -p work/mkgame && python3 ../kit/tapblocks.py orig/GAME.TAP 3 work/mkgame/original.bin"],
+  "image": "work/mkgame/original.bin",
+  "lo": "6000",
+  "hi": "10000",
+  "device": "ZXSPECTRUM48",
+  "bases": {"5": "4000", "2": "8000", "0": "C000"},
+  "read_builds": ["game"],
+  "ref_builds": [["game", "the first recording's game window"]],
+  "header": ["; GAME, PUBLISHER YEAR: the game image as the loader leaves it."]
+}
