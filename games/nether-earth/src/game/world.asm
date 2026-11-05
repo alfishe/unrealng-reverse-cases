@@ -282,9 +282,11 @@ RobotMove:
 ; IY the robot, C the free directions (FreeDirections); out C a single
 ; direction bit, or 0 to stand. B keeps the free set. By the order +$0B:
 ;
-; 0 stop: C = 0. 1 advance / 2 retreat: right / left (RobotLeanTo, a 3/4 chance
-; to take that direction when free, else a random free one other than the
-; opposite); RobotStepPos counts the distance +$0E.
+; 0 stop: C = 0. 1 advance / 2 retreat: right / left (RobotLeanTo). When that
+; direction is free: two random bits for it, else a random free one other than
+; the opposite, which may be it again (0.835 with all four free, 0.88 with up
+; or down blocked, 1.0 in a corridor; docs/13 13.3.2). When it is blocked: any
+; free one, the opposite included. RobotStepPos counts the distance +$0E.
 ;
 ; 3 destroy robots: the target is the opponent robot of index +$0E
 ; (TargetRobotRecord). It is kept while it lives and is less than 50 columns
@@ -300,17 +302,23 @@ RobotMove:
 ; The aim (RobotAim): D = the directions toward the target, horizontal from the
 ; sign of the column difference, vertical from the row difference; for a
 ; building, while the columns differ, the row aimed at is 3 below the
-; building's row. More than 7 columns away the robot leans horizontally like an
-; advance (RobotLeanTo); closer, one of the free wanted directions at random, a
-; horizontal one kept for |dx| - 1 steps (+$06). On the target (D = 0): the
-; destroy orders 4-5 go to the nuclear charge at NuclearBlast (outside this
+; building's row. More than 7 columns away (the low byte of the column
+; difference only) the robot leans horizontally like an advance (RobotLeanTo):
+; the target's row is ignored. Closer, one of the free wanted directions at
+; random (none free: any free one); when a horizontal one is among them, +$06 =
+; |dx| - 1 for whichever is picked, a vertical one too. On the target (D = 0):
+; the destroy orders 4-5 go to the nuclear charge at NuclearBlast (outside this
 ; range); the others turn the robot to face down and stand.
 ;
 ; Bug (experiment, breakpoint at $B2B8 after poking the target factory's
 ; owner): FindTargetBuilding leaves HL past the table, not on the new target,
 ; so the step right after a new building target aims at the bytes below $FDFF
-; (the JP at $FDFD and Handler: row $66, column $C300): one step of a wrong
-; course, corrected on the next decision.
+; (the JP at $FDFD and Handler: row $66, column $C300; the warbase orders read
+; factory 0's door). The wrong decision lasts a whole course of 3-6 steps:
+; right from column 256 on; a random free direction on columns 14-255, rows
+; 1-8; on columns 14-255, rows 9-15 the aim is "on the target": the robot faces
+; down and stands, and a nuclear robot with order 4 blows up where it stands
+; (NuclearBlast; experiment in docs/13 13.3.6). The next decision aims right.
 SteerByOrder:
   LD B,C                  ; B = the free directions, kept for the random picks
   LD A,(IY+$0B)           ; the order
@@ -471,8 +479,9 @@ RobotAimMove:
   NEG                     ; negative: A = -L
   LD L,A                  ; L = |the difference| (modulo 256)
 RobotAimColumns:
-  CP $08                  ; 8 or more columns away: lean horizontally, else
-                          ; pick among the free wanted directions
+  CP $08                  ; 8 or more columns away: lean horizontally (the row
+                          ; ignored), else pick among the free wanted
+                          ; directions
   LD B,C                  ; B = the free directions again
   LD A,D                  ; A = the wanted directions
   JR NC,RobotLeanTo       ; far: lean as an advance does
@@ -495,16 +504,19 @@ RobotLeanTo:
                           ; one)
   LD E,A                  ; E = the directions allowed when the lean fails
   LD A,C                  ; the free directions ...
-  AND D                   ; wanted direction blocked: any free one
+  AND D                   ; wanted direction blocked: any free one, the
+                          ; opposite included
   JR Z,PickOneDirection   ; (blocked)
   LD C,D                  ; C = the wanted direction
-  CALL Random             ; taken with a 3/4 chance (two random bits)
+  CALL Random             ; two random bits for it (0.74 together; with the
+                          ; fall-back pick 0.835 when all four are free)
   AND D                   ; (its bit in a random byte)
   RET NZ                  ; set: take it (1/2)
   CALL Random             ; a second try ...
   AND D                   ; (its bit again)
   RET NZ                  ; set: take it (another 1/4)
-  LD A,B                  ; else: among the free ones but the opposite
+  LD A,B                  ; else: among the free ones but the opposite (it may
+                          ; be the wanted one again)
   AND E                   ; (the free set ...)
   LD B,A                  ; (... without the opposite: B is not 0, it holds D)
 

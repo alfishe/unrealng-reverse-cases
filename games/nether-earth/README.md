@@ -11,7 +11,7 @@ State: source, resources and documents complete (2026-11-04); the tape rebuilds 
 The TOSEC "Nether Earth (1987)(Argus Press Software).tap" is not the original: its BASIC says "CRACKED BY BILL
 GILBERT'87" and the game is one 42240-byte block.
 
-The documents: [docs/README.md](docs/README.md). How the reverse was done: [WALKTHROUGH.md](WALKTHROUGH.md).
+The documents: [docs/README.md](docs/README.md); the robots' path finding: [docs/13-path-finding.md](docs/13-path-finding.md). How the reverse was done: [WALKTHROUGH.md](WALKTHROUGH.md).
 
 ## Build
 
@@ -34,5 +34,5 @@ python3 kit/check_docs.py --case games/nether-earth
 | What | Size |
 | --- | --- |
 | `src/game/*.asm` | 22 modules, 564 entries: every routine and data block named and described, every instruction commented |
-| `docs/` | 12 documents, 44 figures from the recordings |
+| `docs/` | 13 documents, 44 figures from the recordings and 5 of the path-finding study |
 | `tools/` | the bot that played the recorded games (`bot.py`), the resource formats, the figure scripts |

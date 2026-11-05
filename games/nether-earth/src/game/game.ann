@@ -1468,11 +1468,11 @@ $B21F ; PlaceRobot: store x / y / the cell, set bit 6, plot the dot
 
 $B222 c SteerByOrder ; C = the direction the robot's order wants, chosen among the free ones in C
 > IY the robot, C the free directions (FreeDirections); out C a single direction bit, or 0 to stand. B keeps the free set. By the order +$0B:
-> 0 stop: C = 0. 1 advance / 2 retreat: right / left (RobotLeanTo, a 3/4 chance to take that direction when free, else a random free one other than the opposite); RobotStepPos counts the distance +$0E.
+> 0 stop: C = 0. 1 advance / 2 retreat: right / left (RobotLeanTo). When that direction is free: two random bits for it, else a random free one other than the opposite, which may be it again (0.835 with all four free, 0.88 with up or down blocked, 1.0 in a corridor; docs/13 13.3.2). When it is blocked: any free one, the opposite included. RobotStepPos counts the distance +$0E.
 > 3 destroy robots: the target is the opponent robot of index +$0E (TargetRobotRecord). It is kept while it lives and is less than 50 columns away; else the nearest live opponent by column distance is taken (FindNearestOpponent), none: a random free direction.
 > 4-8 the building orders: the target is record +$0E of the factory table $FD84 or the warbase table $FD70 (TargetBuildingTable). It is kept while its owner bits are still the ones the order looks for; else the nearest such building nobody of the side is already after is taken (FindTargetBuilding). None: the robot stands, and an enemy robot falls back to destroy robots.
-> The aim (RobotAim): D = the directions toward the target, horizontal from the sign of the column difference, vertical from the row difference; for a building, while the columns differ, the row aimed at is 3 below the building's row. More than 7 columns away the robot leans horizontally like an advance (RobotLeanTo); closer, one of the free wanted directions at random, a horizontal one kept for |dx| - 1 steps (+$06). On the target (D = 0): the destroy orders 4-5 go to the nuclear charge at NuclearBlast (outside this range); the others turn the robot to face down and stand.
-> Bug (experiment, breakpoint at $B2B8 after poking the target factory's owner): FindTargetBuilding leaves HL past the table, not on the new target, so the step right after a new building target aims at the bytes below $FDFF (the JP at $FDFD and Handler: row $66, column $C300): one step of a wrong course, corrected on the next decision.
+> The aim (RobotAim): D = the directions toward the target, horizontal from the sign of the column difference, vertical from the row difference; for a building, while the columns differ, the row aimed at is 3 below the building's row. More than 7 columns away (the low byte of the column difference only) the robot leans horizontally like an advance (RobotLeanTo): the target's row is ignored. Closer, one of the free wanted directions at random (none free: any free one); when a horizontal one is among them, +$06 = |dx| - 1 for whichever is picked, a vertical one too. On the target (D = 0): the destroy orders 4-5 go to the nuclear charge at NuclearBlast (outside this range); the others turn the robot to face down and stand.
+> Bug (experiment, breakpoint at $B2B8 after poking the target factory's owner): FindTargetBuilding leaves HL past the table, not on the new target, so the step right after a new building target aims at the bytes below $FDFF (the JP at $FDFD and Handler: row $66, column $C300; the warbase orders read factory 0's door). The wrong decision lasts a whole course of 3-6 steps: right from column 256 on; a random free direction on columns 14-255, rows 1-8; on columns 14-255, rows 9-15 the aim is "on the target": the robot faces down and stands, and a nuclear robot with order 4 blows up where it stands (NuclearBlast; experiment in docs/13 13.3.6). The next decision aims right.
 $B222 ; B = the free directions, kept for the random picks
 $B226 ; 0 stop?
 $B227 ; no: an order that moves
@@ -1632,10 +1632,10 @@ $B318 ; only vertical ones: pick one
 $B31C ; the columns agree: pick one
 $B320 ; keep a horizontal course for |dx| - 1 steps
 $B326 RobotLeanTo ; D = the horizontal part (1 right, 2 left), E = all but the opposite one
-$B32D ; wanted direction blocked: any free one
+$B32D ; wanted direction blocked: any free one, the opposite included
 $B330 ; C = the wanted direction
-$B331 ; taken with a 3/4 chance (two random bits)
-$B33B ; else: among the free ones but the opposite
+$B331 ; two random bits for it (0.74 together; with the fall-back pick 0.835 when all four are free)
+$B33B ; else: among the free ones but the opposite (it may be the wanted one again)
 $B33E c PickOneDirection ; C = one direction bit picked at random from the set in B
 > Masks C with random bytes until exactly one bit is left (CountDirections); when nothing is left it starts again from B. B must not be 0. The common exit of SteerByOrder's branches and used by RobotTurnToEnemy for several opponents.
 $B33E ; C = the whole set
@@ -7088,7 +7088,7 @@ $B2B8 SteerNewBuilding ; another target building found: +$0E = its index
 $B2E8 RobotAimCheck ; D = the wanted directions: 0 means on the target
 $B2F9 RobotFaceDown ; on the target: face down and stand (destroy orders blast first)
 $B306 RobotAimMove ; off the target: L = |the column difference|
-$B30E RobotAimColumns ; 8 or more columns away: lean horizontally, else pick among the free wanted directions
+$B30E RobotAimColumns ; 8 or more columns away: lean horizontally (the row ignored), else pick among the free wanted directions
 $B381 ConsiderBuildingStart ; IY = the side's 24 robot records
 $B395 ConsiderBuildingNext ; the next 16-byte robot record
 $B3C3 KeepNearestNew ; nearer: BC = the new best distance, D = its index

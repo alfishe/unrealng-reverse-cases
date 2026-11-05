@@ -179,6 +179,8 @@ electronics) on three parallel lanes. The first object on a lane ends it. Only a
 with strength above 0 counts, so buildings, shots and friends hide what is behind them. The result E has the
 direction bits in the `Input` order: 0 right, 1 left, 2 down, 3 up.
 
+How these steps add up to a walk, and where it fails: [13. Path finding](13-path-finding.md).
+
 **An opponent ahead.** The robot moves on if it can. It fires if a shot record of its side is free
 (`FindFreeShot` `$B6B8`: records 1-2 ours, 3-4 the enemy's) and it has a weapon:
 
@@ -198,7 +200,7 @@ has no opponent in sight and its course `+$06` is used up or blocked. The new co
 | Order | Name ([8.3](08-hud-and-text.md)) | Steering |
 | --- | --- | --- |
 | 0 | STOP AND DEFEND | stand; it still turns and fires at what it sees |
-| 1 | ADVANCE n MILES | lean right: the order's direction with chance 3/4 when free, else a random free one other than the opposite (`RobotLeanTo` `$B326`). `+$0E` = miles × 2 counts the columns down (`StepPosition` `$B4B9`: -1 a column in the order's direction, +1 against, at most 99); at 0 the order becomes 0 |
+| 1 | ADVANCE n MILES | lean right (`RobotLeanTo` `$B326`): when right is free, two coin flips for it and else a random free direction other than the opposite, which may be right again: right 0.835 with all four free, 0.88 with up or down blocked, 1.0 in a corridor; when right is blocked, a random free direction, left included ([13.3.2](13-path-finding.md#1332-probabilities-per-decision)). `+$0E` = miles × 2 counts the columns down (`StepPosition` `$B4B9`: -1 a column in the order's direction, +1 against, at most 99); at 0 the order becomes 0 |
 | 2 | RETREAT n MILES | the same to the left |
 | 3 | SEARCH & DESTROY ENEMY ROBOTS | the opponent at slot `+$0E`, kept while it lives and is under 50 columns away; else the nearest live opponent by column (`FindNearestOpponent` `$B41D`); none: a random free direction |
 | 4 | ... ENEMY FACTORYS | a building target (below); needs the nuclear part |
@@ -225,8 +227,11 @@ the nearest by column that no robot of the side with the same order is already a
 
 - D = the directions toward the target. While the columns differ, the row aimed at is 3 below the building's row:
   its door.
-- 8 or more columns away: lean horizontally, as an advance does.
-- Closer: a random free direction among the wanted ones. A horizontal one is kept for |dx| - 1 steps.
+- 8 or more columns away: lean horizontally, as an advance does. The target's row is ignored.
+- Closer: a random free direction among the wanted ones (none free: any free one). When the free wanted set has a
+  horizontal direction, `+$06` = |dx| - 1 for whichever direction is picked, vertical too.
+- "Away" and "closer" use the low byte of the column difference.
+- The whole decision, its odds and what it does on obstacles: [13. Path finding](13-path-finding.md).
 - Arrived (D = 0): orders 4 and 5 detonate (`NuclearBlast`, 10.9); the others face down and stand. A robot that
   stands on a door captures it (10.7).
 
@@ -682,7 +687,7 @@ What the game did:
 | Where | What | Witness |
 | --- | --- | --- |
 | `ConstructionMenu`, the play loop at `$A6F3` | With all 24 of our slots taken, the menu returns at once with IY = `$DB80`, the enemy's slot 24. The play loop then writes the new-robot values there: that enemy robot gets strength 100 and order 0 back, every turn the ship sits on the pad | r1, on its instance: a poked strength `$20` was `$64` again after landing |
-| `SteerByOrder` `$B2B8` | After `FindTargetBuilding` finds a new target, HL is past the table (`$FDFF` for factories, `$FD87` for warbases). The aim reads `$FDFE` / `$FDFD` (the `JP` and `Handler`) as row `$66`, column `$C300`: one step of a wrong course, corrected at the next decision | r2, a breakpoint at `$B2BB`: HL = `$FDFF`, DE = `$C300` |
+| `SteerByOrder` `$B2B8` | After `FindTargetBuilding` finds a new target, HL is past the table (`$FDFF` for factories, `$FD87` for warbases). The aim reads `$FDFE` / `$FDFD` (the `JP` and `Handler`) as row `$66`, column `$C300` (warbase orders: factory 0's door). That decision is wrong for a whole course of 3-6 steps: right from column 256 on, a random free direction on the left half's rows 1-8, and on its rows 9-15 "on the target": the robot stands, and a nuclear robot with order 4 blows up where it is ([13.3.6](13-path-finding.md#1336-the-bug-of-1012-the-first-aim-after-a-new-target)) | r2, a breakpoint at `$B2BB`: HL = `$FDFF`, DE = `$C300`; nepath: the nuclear robot on the game (`work/path/NOTES.md`) |
 | `PrintTensUnits` `$D407` | A value above 99 prints a wrong tens digit (200 is "D0"); only poked resources get there | r4 ([8.6](08-hud-and-text.md)) |
 | `ConstructionMenuLoop` `$CA0F` | A refused chassis swap leaves the old chassis refunded: the robot has no chassis until another is chosen | r4, experiment 3 |
 | `MenuMusic` `$C4A7` | A restarted tune keeps a voice's on/off state from where it was cut | `work/docC/rec` frames 406-427 ([9.4](09-sound.md)) |

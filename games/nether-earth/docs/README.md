@@ -14,6 +14,7 @@
 | [10. Gameplay logic](10-gameplay-logic.md) | the rules as code: the player, enemies and their behaviour, levels, scoring, what the recordings showed |
 | [11. Data reference](11-data-reference.md) | every data entry (generated: `kit/refdocs.py --case .`) |
 | [12. Routine reference](12-routine-reference.md) | every routine with its figures (generated) |
+| [13. Path finding](13-path-finding.md) | how robots walk to a target: the decision from the code, what it is not, its odds, obstacles, traps, the door approach, the target bug, the ship; checked byte for byte against the game |
 
 ## Terms
 
