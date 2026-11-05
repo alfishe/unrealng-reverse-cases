@@ -166,6 +166,40 @@ state.
 <!-- snippet: MusicInterrupt -->
 <!-- snippet: PlayMusic -->
 
+### Where the time goes
+
+![deep, 36009 frames: where the CPU time goes, per routine](img/arch/budget.png)
+
+How to read the figure:
+
+- **A bar** is one routine of `src/game/game.ann` (banks 5, 2 and 0): its own T-states over all of `deep` (L1,
+  `work/docL/deep/l1.json`, the bot's game of [01](01-game-design.md)), as a share of all the recording's T-states
+  (36 009 frames x 71 680 = 2 581 125 120). Labels inside a routine count for it; the routines it calls count for
+  themselves.
+- **Bank 1** has no `.ann`: its bar is all the code run in bank 1, the New SoundTrack Player
+  ([9.2](09-sound.md#92-new-soundtrack-player)).
+- **The colour** is the routine's module (the legend). HALT is its own bar: the CPU waiting for the interrupt, here
+  `MenuPauseLoop` `$CB4C` in the construction menu (640 frames).
+- **The top 24** routines cover 96.2 %. All instructions together are 100.0 % of the frames; the ROMs 0.01 %.
+- **What it shows**:
+  - `DrawSprite` `$CF2D` takes 37.0 %; with `DrawMapObjects` (8.7 %), `CopyViewToScreen` (8.2 %),
+    `ClearViewBuffer` (2.8 %), `DrawCell` (2.1 %) and `FindRobot` (1.8 %) the `view` module is 64.0 %
+    ([6.1](06-rendering.md#61-the-play-view-a-buffer-redrawn-from-nothing));
+  - the play interrupt's radar: `ShowRadar` 9.1 %, `FillAttr16` 1.1 %;
+  - `GameTurnEnd` 8.1 %: `TurnPace`'s wait for the tenth frame ([4.7](04-game-loop.md#47-time));
+  - the music: the player in bank 1 4.3 % and `PlayMusic` 0.3 %, the budget of
+    [9.5](09-sound.md#95-the-cost-of-a-frame-of-music);
+  - the robots and the enemy: `ScanLane` 1.7 %, `WorldTurn` 0.7 %, `RobotStep` 0.4 %; the `world` module 4.1 %.
+- **The point**: the 128K adds the music for about 4.6 % of the CPU and nothing else to play. Drawing the view
+  still takes almost two thirds, the radar a tenth, the turn's wait a twelfth; the game's logic is about 5 %.
+
+```bash
+python3 ../../kit/fig_budget.py work/docL/deep/l1.json docs/img/arch/budget.png \
+    --ann src/game/game.ann,page=0/2/5 --page-name '1=bank 1: the STP player' \
+    --title 'deep, 36009 frames: where the CPU time goes, per routine' \
+    --note '(HALT is MenuPauseLoop in the construction menu; the turn waits in GameTurnEnd, spinning on TurnFrames)'
+```
+
 ## 2.5 The call graph of ANE's own code
 
 ANE's own code is what pages banks, plays the music, reaches the disk, and starts the endings. The graph has every

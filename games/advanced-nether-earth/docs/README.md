@@ -3,7 +3,7 @@
 | Doc | Contents |
 | --- | --- |
 | [1. Game design](01-game-design.md) | the game as a player meets it, from the boot to the two endings: the screen, the ship, bases and capture, the robot parts and orders, combat, the enemy, time and production, saving; the authors' claims (the help, `NETHER+.W`) checked against the code (1.13) |
-| [2. Architecture](02-architecture.md) | the 128K budget, the eight banks in play and at four moments of the boot (figures), the stages, the IM 2 handlers, the call graph of the game's own code, the module map, paging |
+| [2. Architecture](02-architecture.md) | the 128K budget, the eight banks in play and at four moments of the boot (figures), the stages, the IM 2 handlers, where the time goes (a figure), the call graph of the game's own code, the module map, paging |
 | [3. Build and load](03-build-and-load.md) | the SCL sector by sector (figure), UltraXOR's 78 layers (figure), the sector reader, the boot chain, the `$7FFD` writes over time (figure), every packed block (table: packed / unpacked size, contents), HRUM 3.5 and its unpack animation, the saved game, the Final Cut disk, the source build |
 | [4. Game loop](04-game-loop.md) | the state machine from the boot to both endings (a diagram), the frame schedule with the music in the interrupt, the order of work inside a turn, the beam timings on the Pentagon |
 | [5. Controls](05-controls.md) | every key and device, the game menu and redefine, the ship and the landings, the construction and robot menus, direct control and combat, the disk module, the boot menu and the help |

@@ -49,6 +49,9 @@ flowchart LR
 | `CopyViewToScreen` `$D071` | 74 889 | 10.2 % | 3422 |
 | `ShowRadar` `$D59E`, every frame from the interrupt | 8 134 | 11.2 % | 34 645 |
 
+Per routine's own T-states, the whole of `deep` ([2.5](02-architecture.md#where-the-time-goes)): `DrawSprite` 38.8 %,
+`CopyViewToScreen` 10.2 %, `DrawMapObjects` 8.9 %, `ClearViewBuffer` 3.3 %; the `view` module is 68.8 % of the CPU.
+
 One call in `work/docB/rec` runs from 1995:21923 to 2003:60028: 597 209 T-states, 68 515 instructions. In order:
 
 - the PUSH clear sweeps the buffer from the bottom up;

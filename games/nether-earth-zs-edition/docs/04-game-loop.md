@@ -268,6 +268,10 @@ How to read the figure:
 - Drawn by `python3 tools/fig_zs_turns.py --trace work/docs/zsA/rc/traces/8026_0-8326_0.uatr --out
   docs/img/loop/turn-phases.png`.
 
+Over the bot's whole games the wait is smaller than in this parked-ship trace: `GameTurnEnd` is 1.4 % of the CPU in
+the '98's `deep` (its 2 693 turns average 11.2 frames) and 5.7 % in the '99's `deep-easy-map0`
+([2.2](02-architecture.md#where-the-time-and-the-bytes-go-at-play)).
+
 The first whole turn of the shorter trace, frames 8002-8012 (`python3 tools/zs_turn_profile.py
 work/docs/zsA/rc/traces/8000_0-8026_0.uatr`):
 

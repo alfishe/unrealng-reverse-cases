@@ -192,6 +192,8 @@ around the blit: `DrawSprites` (`$EAE3`) puts the moving objects into the playfi
 first keeps the strips each object will cover, and after the blit `RestoreStrips` (`$DDC9`) puts them back
 ([6.6](06-rendering.md)). The names are the source's ([12. Routine reference](12-routine-reference.md)).
 
+The same game coloured by the source's modules: [2.5](02-architecture.md#where-the-time-goes).
+
 ## 4.6 Design notes
 
 - **One routine, no scheduler.** The game is a single loop of calls in a fixed order. Every module runs once a pass,

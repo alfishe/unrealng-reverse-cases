@@ -67,6 +67,7 @@ yellow fading through red, trails dark.
 | `screen_anim.py` | the screen over frames | `memory_at` samples |
 | `screen_shot.py` | the screen at named moments | `memory_at` |
 | `heatmap.py` | executed / read / written per byte over a build | `l1.json` |
+| `fig_budget.py` | where the CPU time goes: each routine's (or module's) own T-states as a share of all the frames, coloured by module; several `.ann` parts (page, range), HALT and the ROM apart, a panel per state | `l1.json` |
 | `zxscreen.py` | a 6912-byte screen or a 64 K image to PNG | a file |
 
 The access trace is unreal-ng's `analysis trace` (docs/emulator/analysis/analysis-layers.md, "Access trace"): one

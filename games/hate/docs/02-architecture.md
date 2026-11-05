@@ -305,6 +305,44 @@ documents confirmed or corrected each one from the code; the last column gives t
 Of all T-states in the window, the title player's code (`$8000-$83E1`) took 64.8 % and the game code (`$C2B1-$F2E1`)
 35.2 %. That matches the frames: the title is 64.8 % of the window.
 
+### Where the time goes
+
+The window above is mostly the title. The bot's game (`work/p2`, [10.1](10-gameplay-logic.md#101-the-second-recording):
+the menu, rounds 1 to 4, the fall back and GAME OVER) shows where play spends the CPU:
+
+![p2, the bot game, 14020 frames: where the CPU time goes, per routine](img/arch/budget.png)
+
+How to read the figure:
+
+- **A bar** is one routine of `src/game/game.ann`: its own T-states over all of `p2` (L1, `work/p2/l1.json`), as a
+  share of all the recording's T-states (14 020 frames x 69 888 = 979 829 760). Labels inside a routine count for it;
+  the routines it calls count for themselves.
+- **The colour** is the routine's module (the legend; 2.6).
+- **The top 24** routines cover 96.9 %. All instructions together are 100.0 % of the frames: there is no HALT, play
+  runs with interrupts off (2.4).
+- **What it shows**:
+  - `Blit` `$D35E` alone is 27.6 %: the 32 strips of the playfield buffer to the screen, every pass
+    ([6.3](06-rendering.md#63-the-blit-d35e-and-the-address-list-d5b2)). With the scroll's fresh strips and phases the
+    `scroller` module is 30.7 %;
+  - `Menu` `$F1AA` (14.8 %) is the menu polling the keys, 2 062 frames over its two visits (before the game and
+    after GAME OVER): time the player spends choosing, not the game's work;
+  - the beeper effects stop the game while they sound ([9.6](09-sound.md#96-effects-in-play)): `Sweep` 6.2 %, `Beep`
+    5.2 %;
+  - the hit test: `PairScanStep` 5.8 % and `PairScan` 4.1 %, every live record against every other, every pass; with
+    `MoveRecord` (3.6 %) the `mover` module is 15.2 % ([7.4](07-objects.md#74-moving-e15c-once-a-pass));
+  - the objects on the playfield: `DrawSprites` 4.9 %, `SaveStrips` 3.5 %, `RestoreStrips` 3.4 %, `DrawShadows`
+    3.1 %, `PlaceObject` 2.5 % ([6.6](06-rendering.md#66-objects-on-the-playfield)).
+- **The point**: H.A.T.E. spends its CPU moving pixels. The blit and the scroll take almost a third, the objects'
+  drawing (`sprites`, `objview`, `statics`, `shadows`) a quarter, and the hit test, the one piece of game logic that
+  costs, about 15 %. With no frame lock, every T-state saved there would be a faster pass
+  ([4.5](04-game-loop.md#45-time)).
+
+```bash
+python3 ../../kit/fig_budget.py work/p2/l1.json docs/img/arch/budget.png \
+    --title 'p2, the bot game, 14020 frames: where the CPU time goes, per routine' \
+    --note '(no HALT: play runs with interrupts off; Menu is the menu polling the keys, 2062 frames over two visits)'
+```
+
 ## 2.6 Module map
 
 The source (`src/game`, [3.7](03-build-and-load.md)) splits the image into 18 modules by address. The arrows are the

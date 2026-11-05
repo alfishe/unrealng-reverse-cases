@@ -224,6 +224,8 @@ So a turn is at least 10 frames, 200 ms: 5 turns a second, 12 turns a game hour,
 
 - **The work fits.** In the measured turn the work took 8.6 frames and ended in frame 20 011 at frame T 33 517. The
   wait then spun for 101 532 T, 1.42 frames, until the tenth interrupt of the turn.
+  Over all of `deep` the wait (`GameTurnEnd`) is 13.8 % of the CPU, 9.6 % over the tape's busier `rT`
+  ([2.6](02-architecture.md#26-the-main-loop-and-where-the-time-goes)).
 - **Turns are 10 frames almost always.** `deep` averages 24 588 / 2 358 = 10.4 frames a turn. The excess comes from
   the frames no turn runs in: the main menu before frame 105 and the construction menus (7 x 126 frames).
 - **The clear drops leftover frames.** A turn whose work ran past 10 frames does not carry the extra frames into

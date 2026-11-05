@@ -208,6 +208,50 @@ The routines that take the time in `deep` (`python3 tools/l1_table.py --l1 work/
 - **2 358 game turns**: 2 275 from `PlayLoop` and 83 inside the robot menus (`ListMenu` `$ACD7` → `GameTurn`,
   [4.2](04-game-loop.md#42-the-states)). `MoveShip` ran 2 276 times: the last pass was cut by the recording's end.
 
+**Where the time goes, per routine**, one figure for each edition:
+
+![deep (the disk), 24588 frames: where the CPU time goes, per routine](img/arch/budget-disk.png)
+
+![rT (Hood's tape), 40134 frames: where the CPU time goes, per routine](img/arch/budget-tape.png)
+
+How to read the figures:
+
+- **A bar** is one routine of `src/game/game.ann` (banks 5, 2 and 0): its own T-states over the whole recording (L1),
+  as a share of all its T-states: `deep` 24 588 frames x 71 680 = 1 762 467 840, `rT` 40 134 x 71 680 =
+  2 876 805 120. Labels inside a routine count for it; the routines it calls count for themselves (the table above
+  gives the inclusive shares).
+- **The driver's bank** has no `.ann`: its bar is all the code run in bank 1 (the disk) or bank 6 (the tape).
+- **The colour** is the routine's module (the legend; the same colours in both). HALT is its own bar: the CPU waiting
+  for the interrupt, here `MenuPauseLoop` `$CB4C` in the construction menu.
+- **The top 24** routines cover 97.1 % (`deep`) and 96.2 % (`rT`). All instructions together, HALT included, are
+  100.0 % of the frames.
+- **What they show**:
+  - `DrawSprite` `$CF2D` alone is 37.3 % (`deep`) and 38.9 % (`rT`); with `DrawMapObjects` (8.8 %),
+    `CopyViewToScreen` (8.3 %), `ClearViewBuffer` (2.8 %), `DrawCell` and `FindRobot` the `view` module is 64.7 %
+    and 67.2 %;
+  - `GameTurnEnd` is `TurnPace`'s wait for the tenth frame: 13.8 % on the disk, 9.6 % on the tape. The tape's game
+    is busier (more robots on the map: `FindRobot` 2.4 % against 1.8 %, `ScanLane` 2.0 % against 1.3 %), so its
+    views take longer and the wait is shorter;
+  - the play interrupt's radar: `ShowRadar` 9.1 % and 9.2 %, `FillAttr16` 1.2 %;
+  - the sound card costs almost nothing: the disk's driver 0.01 % (152 782 T), the tape's 0.34 % (9 833 917 T, nine
+    tenths of it the loop `$C0FE` that waits for the card after each command, 340 082 rounds;
+    [9.4](09-sound.md#two-play-routines)).
+- **The point**: the GS takes the sound off the CPU, and the CPU has nothing to do with the time: two thirds of every
+  frame draw the view, a tenth shows the radar, and the rest is mostly waiting for the turn's tenth frame. The
+  robots' logic (`world`) is 3.3 % and 4.7 %.
+
+```bash
+python3 ../../kit/fig_budget.py work/gsA/deep/l1.json docs/img/arch/budget-disk.png \
+    --ann src/game/game.ann,page=0/2/5 --page-name '1=bank 1: the GS driver' \
+    --title 'deep (the disk), 24588 frames: where the CPU time goes, per routine' \
+    --note '(HALT is MenuPauseLoop in the construction menu; the turn waits in GameTurnEnd, spinning on TurnFrames)'
+python3 ../../kit/fig_budget.py work/gsB/rT/l1.json docs/img/arch/budget-tape.png \
+    --ann src/game/game.ann,page=0/2/5 --page-name '6=bank 6: the GS driver' \
+    --colour-order view,gameturn,interrupts,world,print,screen,controls \
+    --title "rT (Hood's tape), 40134 frames: where the CPU time goes, per routine" \
+    --note '(HALT is MenuPauseLoop in the construction menu; the turn waits in GameTurnEnd, spinning on TurnFrames)'
+```
+
 ## 2.7 Module map
 
 The source is 24 modules in `src/game/`, assembled in this order from `game.asm` (`ORG $6590`). Own T is the share of

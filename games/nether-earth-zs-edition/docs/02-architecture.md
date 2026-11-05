@@ -160,6 +160,52 @@ How to read the figure:
 - Drawn by `python3 tools/fig_zs_heatmap.py --l1 work/stage2/game99/crit-play/l1.json --out
   docs/img/arch/heatmap-play.png` (the kit `heatmap.py`'s composite panel alone, with this game's regions).
 
+**Where the time goes, per routine**: the bot's whole games, one figure for each release.
+
+![deep ('98), 30284 frames: where the CPU time goes, per routine](img/arch/budget-98.png)
+
+![deep-easy-map0 ('99), 24524 frames: where the CPU time goes, per routine](img/arch/budget-99.png)
+
+How to read the figures:
+
+- **A bar** is one routine of the release's `game.ann` (`src/game98/`, `src/game99/`): its own T-states over the
+  whole recording (L1), as a share of all its T-states. `deep` ('98, `work/stage2/game98/deep`, 9 game days):
+  30 284 frames x 71 680 = 2 170 757 120. `deep-easy-map0` ('99 on EASY with `NELEV_00`,
+  `work/diff/deep-easy-map0`): 24 524 x 71 680 = 1 757 880 320. Labels inside a routine count for it; the routines
+  it calls count for themselves.
+- **The colour** is the routine's module (the legend; the same colours in both). HALT is its own bar: the CPU waiting
+  for the interrupt, here `MenuPauseLoop` `$CB4C` in the construction menu (310 frames in the '98, 1 150 in the
+  '99).
+- **The top 24** routines cover 94.8 % ('98) and 94.9 % ('99). All instructions together, HALT included, are
+  100.0 % of the frames.
+- **What they show**:
+  - `DrawSprite` `$CF2D` is 43.6 % ('98) and 34.8 % ('99); with `DrawMapObjects` (8.2 %, 8.0 %),
+    `CopyViewToScreen` (7.7 %, 7.5 %), `FindRobot`, `ClearViewBuffer` and `DrawCell` the `view` module is 72.5 % and
+    61.0 %;
+  - the play interrupt's radar: `ShowRadar` 9.3 % and 8.6 % (the `interrupts` module 11.1 % and 10.6 %);
+  - the world is busier than the pace allows in the '98's game: `ScanLane` 3.8 %, `FindRobot` 4.3 %, the `world`
+    module 8.2 %. A view takes 637 369 T on average (8.9 frames, the interrupts inside included), a turn 11.2
+    frames, and `TurnPace`'s wait (`GameTurnEnd`) is only 1.4 %;
+  - the '99's game spends more in the menus: `Beep` `$CCAC` 5.4 % (479 menu clicks of 209 815 T, nearly 3 frames
+    each, [9.6](09-sound.md#96-beep-ccac)) and the construction menu's HALT 4.5 %. A view takes 561 490 T on average
+    (7.8 frames), and the wait is 5.7 %.
+- **The point**: in both releases the program is the view: two thirds to three quarters of the CPU draw it, a tenth
+  shows the radar, and the robots' logic is 6.6-8.2 %. What is left goes to the menus' beeps and the wait for the
+  tenth frame, and on a crowded map nothing is left: the turn runs past its 10 frames.
+
+```bash
+python3 ../../kit/fig_budget.py work/stage2/game98/deep/l1.json docs/img/arch/budget-98.png \
+    --ann src/game98/game.ann,page=0/2/5 \
+    --colour-order view,interrupts,world,gameturn,construction,screen,print,controls,ship \
+    --title "deep ('98), 30284 frames: where the CPU time goes, per routine" \
+    --note '(HALT is MenuPauseLoop in the construction menu; the turn waits in GameTurnEnd, spinning on TurnFrames)'
+python3 ../../kit/fig_budget.py work/diff/deep-easy-map0/l1.json docs/img/arch/budget-99.png \
+    --ann src/game99/game.ann,page=0/2/5 \
+    --colour-order view,interrupts,world,gameturn,construction,screen,print,controls,ship \
+    --title "deep-easy-map0 ('99), 24524 frames: where the CPU time goes, per routine" \
+    --note '(HALT is MenuPauseLoop in the construction menu; the turn waits in GameTurnEnd, spinning on TurnFrames)'
+```
+
 ## 2.3 The stages from the disk to play
 
 ```mermaid

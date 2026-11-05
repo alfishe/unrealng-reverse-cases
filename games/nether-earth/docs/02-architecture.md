@@ -1,8 +1,8 @@
 # 2. Architecture
 
 This document gives the shape of the program: the machine it targets, where everything lives in memory, the stages
-from the tape to play, how time is kept, and which parts of the code do what. Later documents take each part apart;
-this one is the map they hang on.
+from the tape to play, how time is kept, where the CPU time goes, and which parts of the code do what. Later
+documents take each part apart; this one is the map they hang on.
 
 The recordings it rests on ([Terms](README.md#terms)):
 
@@ -233,6 +233,38 @@ its share: `DrawView`'s 78.6 % includes about one interrupt a frame of its 8.3 f
 `$D0CA` (7 after the construction menus, 1 at `EnterPlay`). L1 files the `PlayLoop` calls under `NewGameSetup`,
 because `PlayLoop` is a fall-through label inside it, not a routine of its own. A turn's average cost is 578 128 T,
 8.27 frames, interrupts inside included.
+
+### Where the time goes
+
+![deep, 36046 frames: where the CPU time goes, per routine](img/arch/budget.png)
+
+How to read the figure:
+
+- **A bar** is one routine of `src/game/game.ann`: its own T-states over all of `deep` (L1, `work/deep/l1.json`), as
+  a share of all the recording's T-states (36 046 frames x 69 888 = 2 519 182 848). Labels inside a routine count for
+  it; the routines it calls count for themselves (the table above gives the inclusive shares).
+- **The colour** is the routine's module (the legend; 2.6).
+- **HALT** is its own bar: the CPU waiting for the interrupt. The only HALT of `deep` is `MenuPauseLoop` `$CB4C` in
+  the construction menu (640 frames).
+- **The top 24** routines cover 96.6 %. All instructions together are 100.0 % of the frames.
+- **What it shows**:
+  - `DrawSprite` `$CF2D` alone takes 38.8 %: the masked blit of every block, building, robot part and shot
+    ([6.5](06-rendering.md#65-sprites)). With `DrawMapObjects` (8.9 %), `CopyViewToScreen` (10.2 %),
+    `ClearViewBuffer` (3.3 %), `DrawCell` (2.1 %), `FindRobot` (1.9 %) and the edges, the `view` module is 68.8 %;
+  - the interrupt's radar comes next: `ShowRadar` 9.4 % and `FillAttr16` 1.2 % (the `interrupts` module 11.3 %);
+  - `GameTurnEnd` (7.5 %) is almost all `TurnPace`: the loop on `TurnFrames` that fills a turn up to 10 frames
+    ([4.5](04-game-loop.md#45-time));
+  - the world turn, the robots' thinking and moving, is small: `ScanLane` 1.6 %, `WorldTurn` 0.7 %, `RobotStep`
+    0.4 %; the `world` module 3.9 % in all, the enemy commander 0.06 %.
+- **The point**: Nether Earth is a renderer with a strategy game attached. Seven tenths of the CPU draw the view, one
+  tenth shows the radar, and the robots' logic gets under 5 %; the time left over is spent waiting for the tenth
+  frame.
+
+```bash
+python3 ../../kit/fig_budget.py work/deep/l1.json docs/img/arch/budget.png \
+    --title 'deep, 36046 frames: where the CPU time goes, per routine' \
+    --note '(HALT is MenuPauseLoop in the construction menu; the turn waits in GameTurnEnd, spinning on TurnFrames)'
+```
 
 ## 2.6 Module map
 

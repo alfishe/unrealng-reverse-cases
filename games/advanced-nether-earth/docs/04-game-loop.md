@@ -696,6 +696,9 @@ r4 runs 16 000 frames:
 | the title cards | 345 frames | d1 8852-9197 |
 | Final Cut's base | 1 280 frames | `$61E4` |
 
+Over a whole game (`deep`, 36 009 frames) the view takes 64.0 % of the CPU, the play interrupt (the radar) 10.9 %,
+`TurnPace`'s wait 8.1 % and the music 4.6 % ([2.4](02-architecture.md#where-the-time-goes)).
+
 ## 4.8 Design notes
 
 - **One interrupt does two jobs in play.**
