@@ -1,0 +1,4 @@
+#codec ascii
+# Nether Earth GS, TRD file Neart482: a signature inside the intro's data, $89F7-$8A14 (no code reads it).
+# docs/texts/trd-neart482-hacked.md
+ HACKED BY KIDSON OF RAPEWARE |

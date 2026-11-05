@@ -1,0 +1,122 @@
+# The TRD orig/Nether Earth (1987)(Argus Press Software Ltd)(EN)(GS)[h 2002 Tron Z].trd: written by tools/mktrd.py.
+# The SCL's 25 files (src/media/scl.txt) between "boot" and the two picture BASICs Neart481 / Neart482, laid out from
+# track 1 sector 0; the disk's own bytes: the files' sector tails that are not zero (src/res/media/trd-tail-*.bin,
+# leftovers of the copier's buffer, see src/res/media/README.md), sector 9 (the copier's text + the disk fields)
+# and the free area's 176 sectors 1941-2116, which hold older copies (see the free lines).
+
+# the label "n-earth " (with its trailing space) and the copier's text before the disk fields
+label src/res/text/media-trd-label.txt
+sector9 build/res/text/media-trd-sector9.bin
+
+# boot, Neart481, Neart482: build/trd/ (tools/build_trd_extras.sh writes their full sectors)
+file boot       B   172   172  13
+  at 0+0 $TRD_DIR/boot.bin
+
+file "neart GS" B    67    67   1
+  at 0+0 build/disk/basic.bin
+  at 0+71 src/res/media/trd-tail-neart-gs.bin
+
+file neart000   C 16384  6912  27
+  at 0+0 build/res/screen/neart000.bin
+
+file neart001   C 26000 39536 155
+  at 0+0 $GAME_DIR/neart001-scl.bin 0 39536
+  at 154+112 src/res/media/trd-tail-neart001.bin
+
+file neart002   C 32768 32768 128
+  at 0+0 build/res/music/neart002.bin
+
+file neart003   C 32768 32768 128
+  at 0+0 build/res/music/neart003.bin
+
+file neart004   C 32768 32768 128
+  at 0+0 build/res/music/neart004.bin
+
+file neart005   C 32768 32768 128
+  at 0+0 build/res/music/neart005.bin
+
+file neart006   C 32768  6998  28
+  at 0+0 build/res/music/neart006.bin
+  zero 27+86 170
+
+file neart007   C 32768 14798  58
+  at 0+0 build/res/sfx/neart007.bin
+  zero 57+206 50
+
+file neart008   C 32768 14592  57
+  at 0+0 build/res/sfx/neart008.bin
+
+file neart009   C 32768 23296  91
+  at 0+0 build/res/sfx/neart009.bin
+
+file neart010   C 32768 19456  76
+  at 0+0 build/res/sfx/neart010.bin
+
+file neart011   C 32768 26880 105
+  at 0+0 build/res/sfx/neart011.bin
+
+file neart012   C 32768  8499  34
+  at 0+0 build/res/sfx/neart012.bin
+  zero 33+51 205
+
+file neart013   C 32768 15427  61
+  at 0+0 build/res/sfx/neart013.bin
+  zero 60+67 189
+
+file neart014   C 32768 19187  75
+  at 0+0 build/res/sfx/neart014.bin
+  zero 74+243 13
+
+file neart015   C 32768  9056  36
+  at 0+0 build/res/sfx/neart015.bin
+  zero 35+96 160
+
+file neart016   C 32768   176   1
+  at 0+0 build/res/sfx/neart016.bin
+  zero 0+176 80
+
+file neart017   C 32768   401   2
+  at 0+0 build/res/sfx/neart017.bin
+  zero 1+145 111
+
+file neart018   C 32768 15849  62
+  at 0+0 build/res/sfx/neart018.bin
+  zero 61+233 23
+
+file neart019   C 32768 32768 128
+  at 0+0 build/res/sfx/neart019.bin
+
+file neart020   C 32768 16506  65
+  at 0+0 build/res/sfx/neart020.bin
+  zero 64+122 134
+
+file neart021   C 49152   248   1
+  at 0+0 build/disk/driver.bin
+  at 0+248 src/res/media/trd-tail-neart021.bin
+
+file neart022   C 25000   865   4
+  at 0+0 build/disk/loader.bin
+  at 3+97 src/res/media/trd-tail-neart022.bin
+
+file neart023   C 32768 12560  50
+  at 0+0 build/res/sfx/neart023.bin
+  zero 49+16 240
+
+file Neart481   B   572   572 171
+  at 0+0 $TRD_DIR/Neart481.bin
+
+file Neart482   B   116   116 112
+  at 0+0 $TRD_DIR/Neart482.bin
+
+# Catalogue entry 28, the end mark: its name's first byte is the $00 that ends the catalogue, the other 15 bytes
+# are an older entry, a 572-byte BASIC of 171 sectors at sector 1946 (track 121 sector 10): the entry of the
+# Neart481 copy that lies there. Its name's first letter is lost to the mark ("?.EARTH ").
+entry 28 "{00}.EARTH" B 572 572 171 1946
+
+# The free area (sectors 1941-2116, never in the catalogue): a TR-DOS SAVE over an older disk left its bytes.
+# 1941-1942: the last two sectors of an older, two sectors longer, Neart482 (its sectors 110-111).
+free 1941 $TRD_DIR/Neart482.bin $6E00 512
+# 1943-1945: older bytes again (src/res/media/README.md).
+free 1943 src/res/media/trd-free-1943.bin
+# 1946-2116: a whole copy of Neart481 (171 sectors), from an earlier write of the disk.
+free 1946 $TRD_DIR/Neart481.bin

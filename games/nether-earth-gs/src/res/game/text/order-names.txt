@@ -1,0 +1,13 @@
+; The order names (OrderNames $A848), one line an order 0-8 (robot +$0B): three quoted lines of 8
+; characters (font codes $20-$5F, no quote). ShowOrder copies the 27-byte record (the lines joined by
+; code 3, ended by 0) into OrderLine. A record that is not so is written N db $xx,...
+
+0 "  STOP  " "  AND   " " DEFEND "
+1 "ADVANCE " "        " " MILES  "
+2 "RETREAT " "        " " MILES  "
+3 "DESTROY " " ENEMY  " " ROBOTS "
+4 "DESTROY " " ENEMY  " "FACTORYS"
+5 "DESTROY " " ENEMY  " "WARBASES"
+6 "CAPTURE " "NEUTRAL " "FACTORYS"
+7 "CAPTURE " " ENEMY  " "FACTORYS"
+8 "CAPTURE " " ENEMY  " "WARBASES"

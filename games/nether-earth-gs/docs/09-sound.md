@@ -29,13 +29,13 @@ What really lands on the card differs between the disk and the tape loader; see 
 | --- | --- | ---: | --- | --- |
 | module 1 | `neart002`-`neart006` | 138 070 | ProTracker `M.K.`, "_desert dream vol.2": "song composed by laxity / kefrens in the year 1993, ripped from the demo "desert dream" by sven g., original format: "laxity tracker", converted with "pro wizard 1.5"" (the sample names); 26 samples, 36 positions, 29 patterns, restart position 2 | always, from the load on |
 | effect 1 | `neart007` | 14 798 | 8-bit unsigned PCM (every effect) | id 1, id `$C8` (`StartRobot`'s last beep) |
-| effect 2 | `neart008` | 14 592 | | id 2 (a robot destroyed), 1 in 3 |
-| effect 3 | `neart009` | 23 296 | | id 2, 1 in 3 |
-| effect 4 | `neart010` | 19 456 | | id 2, 1 in 3 |
+| effect 2 | `neart008` | 14 592 | | id 2 (a robot destroyed): never chosen (9.4) |
+| effect 3 | `neart009` | 23 296 | | id 2, R `$00-$50` |
+| effect 4 | `neart010` | 19 456 | | id 2, R `$51-$7F` |
 | effect 5 | `neart011` | 26 880 | | id 3 (the construction menu opens) |
-| effect 6 | `neart012` | 8 499 | | id 4 (a shot fired), 1 in 3 |
-| effect 7 | `neart013` | 15 427 | | id 4, 1 in 3 |
-| effect 8 | `neart014` | 19 187 | | id 4, 1 in 3 |
+| effect 6 | `neart012` | 8 499 | | id 4 (a shot fired), R `$00-$50` |
+| effect 7 | `neart013` | 15 427 | | id 4, R `$51-$7F` |
+| effect 8 | `neart014` | 19 187 | | id 4: never chosen (9.4) |
 | effect 9 | `neart015` | 9 056 | | id `$78` (menu confirm) |
 | effect 10 | `neart016` | 176 | | id `$14` (menu click) |
 | effect 11 | the first 401 bytes of `neart019` | 401 | meant to be `neart017` (401 bytes), see 9.5 | id `$64` |
@@ -117,9 +117,9 @@ The driver at `$C000` compares A against a list (`CP n` / `JR NZ`) and plays one
 | Game id | GS effect | Notes |
 | --- | --- | --- |
 | 1 | 1 | no caller found in stage 1 |
-| 2 | 3, 4 or 2 | chosen from the R register (thirds of `$00-$FF`: `$50`, `$A0`, `$FF` windows) |
+| 2 | 3 or 4 (2 never) | chosen from the R register: windows `$01-$50` -> 3, `$51-$A0` -> 4, `$A1-$FF` -> 2, 0 -> 3. R's bit 7 changes only by `LD R,A`: the game, the loaders and the drivers have none, the 48K and 128K ROMs have none, and TR-DOS's three (`$2AE1`, `$2B1C`, `$2EBF` of `trdos.rom`) put back an R it read itself. So R stays `$00-$7F`: effect 3 for 81 of its 128 values, 4 for 47, effect 2 never |
 | 3 | 5 | |
-| 4 | 6, 7 or 8 | as id 2 |
+| 4 | 6 or 7 (8 never) | as id 2: 6 for R `$00-$50`, 7 for `$51-$7F` |
 | `$78` | 9 | a second `CP $78` (-> effect 1) further down is never reached |
 | `$14` | 10 | |
 | `$64` | 11 | |

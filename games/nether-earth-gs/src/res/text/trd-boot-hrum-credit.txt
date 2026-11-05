@@ -1,0 +1,6 @@
+#codec ascii
+# Nether Earth GS, TRD file boot: the packer's credit after the HRUM stream (file offset $0C13-$0C5F, bytes
+# $80 and $81 end its lines). docs/texts/trd-boot-hrum-credit.md
+HRUM v3.5 by Dmitry Pyankov\x80|
+Tel.(38822)-4421-1.Bye!!!\x80|
+ Gorno-Altaisk, 09.01.97\x81|

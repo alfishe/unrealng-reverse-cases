@@ -1,0 +1,95 @@
+# The SCL inside orig/NE_GS_TZ.zip (NE_GS_TZ.SCL, 417387 bytes): written by tools/mkscl.py.
+# Every file's sectors byte for byte: the file's bytes, then zeros to the sector's end (the SCL holds no leftovers;
+# "neart GS" ends with its TR-DOS autostart mark, $80 $AA and the line 10, in build/disk/basic.bin).
+# Lines: file NAME TYPE START LENGTH SECTORS, then at SECTOR+OFFSET PATH [FROM [COUNT]] / zero SECTOR+OFFSET COUNT,
+# sectors counted from the file's first one. A BASIC file's START holds its length, as TR-DOS writes it.
+
+file "neart GS" B    67    67   1
+  at 0+0 build/disk/basic.bin
+  zero 0+71 185
+
+file neart000   C 16384  6912  27
+  at 0+0 build/res/screen/neart000.bin
+
+file neart001   C 26000 39536 155
+  at 0+0 $GAME_DIR/neart001-scl.bin 0 39536
+  zero 154+112 144
+
+file neart002   C 32768 32768 128
+  at 0+0 build/res/music/neart002.bin
+
+file neart003   C 32768 32768 128
+  at 0+0 build/res/music/neart003.bin
+
+file neart004   C 32768 32768 128
+  at 0+0 build/res/music/neart004.bin
+
+file neart005   C 32768 32768 128
+  at 0+0 build/res/music/neart005.bin
+
+file neart006   C 32768  6998  28
+  at 0+0 build/res/music/neart006.bin
+  zero 27+86 170
+
+file neart007   C 32768 14798  58
+  at 0+0 build/res/sfx/neart007.bin
+  zero 57+206 50
+
+file neart008   C 32768 14592  57
+  at 0+0 build/res/sfx/neart008.bin
+
+file neart009   C 32768 23296  91
+  at 0+0 build/res/sfx/neart009.bin
+
+file neart010   C 32768 19456  76
+  at 0+0 build/res/sfx/neart010.bin
+
+file neart011   C 32768 26880 105
+  at 0+0 build/res/sfx/neart011.bin
+
+file neart012   C 32768  8499  34
+  at 0+0 build/res/sfx/neart012.bin
+  zero 33+51 205
+
+file neart013   C 32768 15427  61
+  at 0+0 build/res/sfx/neart013.bin
+  zero 60+67 189
+
+file neart014   C 32768 19187  75
+  at 0+0 build/res/sfx/neart014.bin
+  zero 74+243 13
+
+file neart015   C 32768  9056  36
+  at 0+0 build/res/sfx/neart015.bin
+  zero 35+96 160
+
+file neart016   C 32768   176   1
+  at 0+0 build/res/sfx/neart016.bin
+  zero 0+176 80
+
+file neart017   C 32768   401   2
+  at 0+0 build/res/sfx/neart017.bin
+  zero 1+145 111
+
+file neart018   C 32768 15849  62
+  at 0+0 build/res/sfx/neart018.bin
+  zero 61+233 23
+
+file neart019   C 32768 32768 128
+  at 0+0 build/res/sfx/neart019.bin
+
+file neart020   C 32768 16506  65
+  at 0+0 build/res/sfx/neart020.bin
+  zero 64+122 134
+
+file neart021   C 49152   248   1
+  at 0+0 build/disk/driver.bin
+  zero 0+248 8
+
+file neart022   C 25000   865   4
+  at 0+0 build/disk/loader.bin
+  zero 3+97 159
+
+file neart023   C 32768 12560  50
+  at 0+0 build/res/sfx/neart023.bin
+  zero 49+16 240

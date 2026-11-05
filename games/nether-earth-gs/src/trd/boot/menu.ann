@@ -1,0 +1,142 @@
+# The annotations of the boot menu's main part ($61A8-$68CB, the first 1828 bytes of what boot's HRUM block unpacks):
+# the single source of src/trd/boot/menu*.asm (tools/trd_mkasm.py, kit/mkgame.py's pipeline). The format is
+# kit/mkgame.py's class Annotations, plus @const (see tools/trd_mkasm.py). The second part, the 64-column printer
+# copied to $8156, is src/trd/boot/print64.ann.
+#
+# The code is what the recording work/stage2/trd/rA ran (the menu shown, cursor keys, ENTER on Neart482), widened by
+# mkgame's walk from the code entries below.
+
+@equ $3D13 TRDOS_ENTRY ; the TR-DOS ROM's entry for machine code: C = the function (5 reads B sectors from D:E to HL)
+@equ $3D2F TRDOS_CALL ; a RET in the TR-DOS ROM: a routine address pushed before JP here runs with TR-DOS paged in
+@equ $3D30 TRDOS_CALL1 ; the same trick one byte on (the address pushed is entered through the RET at $3D2F's neighbour)
+@equ $203C PR_STRING ; the 48 BASIC ROM's PR-STRING: BC characters from DE to the current channel
+@equ $4000 Screen 2048 ; the screen's first third: here a 2 K scratch buffer for the catalogue's names
+@equ $5800 Attrs 768 ; the attribute file
+@equ $5B00 ClearStackTop ; the stack ClearScreen sets: PUSHes from here down clear the screen
+@equ $5C09 REPDEL ; the keyboard's repeat delay (system variable)
+@equ $5C0A REPPER ; the keyboard's repeat period
+@equ $5C48 BORDCR ; the border colour and the lower screen's attribute
+@equ $5C8D ATTR_P ; the permanent attribute
+@equ $5CC2 TRDOS_HOOK 3 ; TR-DOS's error hook: a RET ($C9) normally; DriveCall writes JP DriveTrap there
+@equ $5CD8 TRDOS_5CD8 ; a TR-DOS work byte the drive reset sets to $FF (the error flag of the next call)
+@equ $5DDD RunName 8 ; the 8 spaces of boot's line 3 RUN "        ": the menu writes the chosen file's name there
+@equ $8156 PrintInit ; the 64-column printer's set-up (print64.asm, copied there by Start)
+@equ $8461 PrintColumn ; the 64-column printer's column (0-63)
+@equ $8462 PrintRow ; its row (0-23)
+@const PRINT64_IMAGE $68CC ; where the 64-column printer's bytes follow this part in the unpacked block (print64.asm, assembled for $8156)
+@const PRINT64_COPY $08E1 ; the bytes Start copies: the printer's 2272 and one more (the first byte past the unpacked block)
+@equ $C350 SortedCatalogue 2048 ; the names sorted by their first character, 8 bytes each
+@equ $EA60 Catalogue 2304 ; the disk's catalogue: 9 sectors of track 0 (8 sectors of 16-byte entries and the disk's sector 9)
+
+@module menu ; Work Loader v1.2 (TRON 1999): the boot program's catalogue menu
+@about Boot's line 1 loads 20 sectors to $61A8 and calls them: the HRUM block (src/trd/boot/boot.asm) unpacks this program over itself and returns; line 1 then jumps to Start. The screen says "Work Loader v1.2 / Prepared by TRON 1999": a file selector that reads the disk's catalogue, lists the BASIC files (type B) in four columns of 24 and RUNs the one chosen.
+@about The choice is not run from here: Run copies the file's 8-character name over the 8 spaces of boot's line 3 (RUN "        ", RunName) and returns to BASIC, which goes on at line 2 (CLEAR 24999 : RANDOMIZE USR 23872 returned) and then line 3: CLEAR 65500 : RANDOMIZE USR 15619 : REM : RUN "name", TR-DOS's RUN of the file.
+@about Keys (KeyLoop): 0-9 the first ten files at once; Q/A/O/P, the cursor keys and the Sinclair arrows move the cursor (up, down, left, right); SPACE or ENTER runs the file under it; EDIT reads the catalogue again; SYMBOL SHIFT + CAPS SHIFT switches between the catalogue's order and the sorted one.
+$61A8 c Start ; the entry: system variables, the printer copied and set up, the catalogue read and shown
+> Reached by JP $61A8 from boot's line 1 after the HRUM block returned. Sets BORDCR / ATTR_P to 7 (white ink on black), the keyboard repeat to 15 / 1, IM 1 with I = 0, copies the printer (Print64, $68CC-$71AC: the copy takes 2273 bytes, one past the image) to $8156, then clears the screen, the work buffers and draws the frame.
+$61C2 ; the 64-column printer to $8156 (its variables run on to $8DD8: past the copy)
+@isub $61C2 LD HL,PRINT64_IMAGE
+@isub $61C8 LD BC,PRINT64_COPY
+$61CD Restart ; EDIT comes back here: clear, read the catalogue again
+$61CF ; no files yet
+$61D5 ; the cursor at row 0, column 0
+$61E1 ; the frame, the titles and the help lines
+$61E7 ; track 0's 9 sectors to Catalogue
+$61EA ; the drive's state after the read (DriveReset)
+$61EE ; the BASIC files' names into Screen (the scratch buffer)
+$61F1 ; "Сортировка каталога." on the status line
+$61F4 ; the sorted copy
+$61F7 ; the catalogue's order first
+$61FF ; the file names, four columns of 24
+$6205 ; the cursor
+$6208 KeyLoop ; wait for a key (FLAGS bit 5: a new LAST_K), then dispatch it
+$6209 ; FLAGS bit 5 is set by the ROM's key scan at the interrupt
+$6213 ; LAST_K
+$6217 ; EDIT: read the catalogue again
+$621C ; SS + CS (code 14): the other order
+$6221 ; SPACE / ENTER: run the file under the cursor
+$622B ; 0-9: a file by its number
+$625D ; Q, q, cursor up ($0B)
+$626C ; A, a, cursor down ($0A)
+$627B ; O, o, cursor left (8)
+$628A ; P, p, cursor right (9)
+$6299 ; any other key: wait again
+$629C c CursorUp ; one row up (not past row 0)
+$62B7 c CursorDown ; one row down (not past row 23)
+$62D2 c CursorRight ; one column right (5 cells a column: column cells 0, 5, 10, ... 25), the index 24 on
+$62F0 c CursorLeft ; one column left, the index 24 back
+> The SBC instructions rely on the carry the CP 0 before them left clear (A is not 0 there).
+$630E c NumberKey ; key 0-9: the file of that number in the first column, then Run
+> A is the key's code: SBC A,"0" (carry clear from the CP that matched) gives the index, the cursor goes to row = the index in column 0.
+$631E c ToggleOrder ; SS + CS: the catalogue's order <-> the sorted order; the cursor back to the first file
+$6349 c Run ; the file under the cursor: its name to RunName, back to BASIC
+> Nothing happens past the last file. The cursor bar blinks four times (HighlightRow / HighlightCursor, two HALTs each); the name is taken from Catalogue or SortedCatalogue by the order (ClearBuffers left the 8-byte names in both), the screen is cleared and the 8 bytes go to RunName. EI; RET ends the RANDOMIZE USR 23872 of boot's line 2 (the REM code jumped here, so this RET is its return): BASIC goes on to line 3 and RUNs the name.
+$6396 c SetPrintPosition ; the printer's position: L = the column, H = the row
+$639F c HighlightRow ; the attribute frame: the screen white on black ($47), the ten left cells of every row $45
+> Called before every cursor draw (it wipes the old cursor bar).
+$63BB c DrawFrame ; the screen's frame and texts: title, credit, status line and the key help
+> The printer prints the texts through the 48 ROM's PR_STRING (channel 2 goes to the printer's ChannelOut after PrintInit). The texts are Texts (CP866 Russian and English, src/res/text/trd-boot-menu.txt).
+$63EF ; the key help's box: five rows of 9 attribute cells
+@isub $6401 LD HL,21*256+5
+@isub $6410 LD HL,22*256+5
+@isub $641F LD HL,23*256+5
+@isub $642E LD HL,15*256+5
+@isub $643D LD HL,17*256+5
+@isub $644C LD HL,18*256+5
+@isub $645B LD HL,19*256+5
+@isub $646A LD HL,13*256+10
+@isub $6479 LD HL,11*256+17
+$6489 c FillAttr9 ; A into 9 attribute cells from IX
+$64A5 c ShowSorting ; the status line: "Сортировка каталога." on $42 (red on black, bright)
+@isub $64B2 LD HL,23*256+5
+$64C2 c CatalogueFilter ; the BASIC files (type B at +8) of Catalogue: their 8-byte names packed into Screen, the count to FileCount
+> 133 entries ($85) are looked at (the catalogue has 128: the last ones read the disk's sector 9 too, which a name never starts there with a code >= 32 and B at +8). An entry whose first byte is below 32 (0 = the end, 1 = deleted) is skipped.
+$6503 c ClearBuffers ; SortedCatalogue cleared ($3CAF + 1 bytes from $C350), then the names from Screen copied to Catalogue and SortedCatalogue
+$6527 c SortCatalogue ; the names of SortedCatalogue sorted by their first character (32-254), through Screen
+> For each character code from 32 to 254 every name starting with it is copied, in their order, to Screen; then the 2 K back to SortedCatalogue. Only the first character sorts: names with the same first character keep the disk's order.
+$6586 c ListFiles ; the digits 0-9, then every name of the order chosen, 24 rows a column, columns 10 cells apart
+@isub $659E LD HL,0*256+2
+$65C7 c PrintDigits ; "0-" to "9-" in the first column's ten rows
+$65E2 c HighlightCursor ; the cursor bar: 4 cells of $71 at the cursor's row and column (+1)
+$6610 b Texts ; the menu's texts, CP866: title, credit, status, help (src/res/text/trd-boot-menu.txt)
+> PR_STRING prints them with counted lengths (BC), so no terminators: 16, 22, 19, 20 bytes, four 42-byte help lines, then 21 and 30.
+@res boot/texts.bin
+$6610 TextTitle ; "Work Loader v1.2"
+$6620 TextCredit ; "Prepared by TRON 1999"
+$6636 TextReading ; "Жди, читаю каталог!" ("Wait, reading the catalogue!")
+$6649 TextSorting ; "Сортировка каталога." ("Sorting the catalogue.")
+$665D TextHelp2 ; "'0...9'" (left: the run keys)
+$6687 TextHelp3 ; "Cursor keys 'ENTER'"
+$66B1 TextHelp4 ; "Q,A,O,P 'SPACE'"
+$66DB TextHelp1 ; "Управление: Старт программы:" ("Control:" / "Program start:")
+$6705 TextEdit ; "'EDIT' читать каталог" ("'EDIT' read the catalogue")
+$671A TextSsCs ; "'SS+CS' альтернативный каталог" ("'SS+CS' alternative catalogue")
+$6738 b FileCount ; the number of BASIC files listed
+$6739 b SortKey ; SortCatalogue's current first character
+$673A b CursorIndex ; the file under the cursor: row + 24 * column
+$673B b CatalogueOrder ; 0 the disk's order (Catalogue), 1 sorted (SortedCatalogue)
+$673C b CursorColumn ; the cursor's column cell (0, 5, ... 25) ...
+$673D b CursorRow ; ... and row (0-23): read and written as one word with CursorColumn
+$673E c ReadCatalogue ; TR-DOS function 5: 9 sectors from track 0 sector 0 to Catalogue
+$674C b SpareRets ; six RET bytes: unused
+$6752 c FdcSectors ; unused: B sectors between HL and the disk at track D, sector E+1, by the FDC's ports (through TRDOS_CALL)
+> No call in the program reaches it (it is a library routine of the author's loader). C bit 0 selects the transfer: 0 reads with the TR-DOS ROM's sector-read loop $3FE5 (command $80), 1 writes with $3FCA (command $A0); D's bit 0 is the side. It restores the head (command 8), seeks to the track ($18), then for each sector sets the sector register and starts the command, waiting at $67E9 for INTRQ with a time-out (FdcTimeout) that restarts the whole transfer. FdcCommand writes the FDC's command port $1F through the TR-DOS ROM's OUT (C),A ($2A53), FdcPort any port, FdcWait polls the status ($3C30, IN A,($1F)) until not busy.
+$67BE c FdcTransfer ; one sector: sector register, the command, then the ROM's read or write loop (IX)
+$67D9 c FdcCommand ; A to the FDC's command register ($1F) through the TR-DOS ROM
+$67DF c FdcPortIY ; A to port C through the ROM routine IY
+$67E4 c FdcRomCall ; the TR-DOS ROM routine IX
+$67E9 c FdcWaitIntrq ; wait for the end of the command (status bit 3? the ROM's $3C30): a 255-frame time-out
+$6816 c FdcWait ; wait while the FDC is busy (status bit 0)
+$682C b FdcTimeout ; the time-out counter
+$682D b FdcSpare 2
+$682F b FdcSide ; the side flag FdcSectors keeps (written, then added to the system register value $3C)
+$6830 b FdcCommandCode ; the transfer's command ($80 read, $A0 write)
+$6831 c ClearScreen ; the screen and attributes zeroed by PUSH from ClearStackTop down (216 x 16 x 2 = 6912 bytes); border black
+$6870 w SavedSp ; ClearScreen's SP while it pushes
+$6872 c DriveReset ; after the catalogue read: the TR-DOS ROM's drive and controller reset, with TR-DOS's errors trapped
+> Calls TR-DOS ROM routines through TRDOS_CALL1: $2FC1 (select the drive), $2A53 with A = 8 C = $1F (restore the head), $2076 under the trap (DriveCall), $1FF3 and $1FEB, $2FC1 again. TRDOS_HOOK is put back to RET before the last calls. The routines' names in TR-DOS 5.0x are not checked here: what they do is read from the arguments only.
+$68AC c RomCall ; the TR-DOS ROM routine IX (PUSH IX: JP TRDOS_CALL1)
+$68B1 c DriveCall ; $2076 with TR-DOS's error hook set to JP DriveTrap: an error returns here with A = 0 instead of a BASIC report
+$68C7 c DriveTrap ; TR-DOS's error hook jumps here: the SP DriveCall saved (the operand), A = 0, RET to DriveReset
+$68C8 SavedTrapSp ; DriveCall writes its SP into this operand
+@isub $68C7 LD SP,0

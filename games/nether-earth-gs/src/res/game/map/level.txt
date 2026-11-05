@@ -1,0 +1,297 @@
+; The level (r3.md: BuildMap $BC6F, PlaceScenery, PlaceBases, DrawShape $BD61), assembled by
+; tools/res_formats.py into the files of src/res/map. The sections follow each other from $BDA9; an
+; address is Label, Label+offset or $xxxx.
+; A column x is the map column 0-511 (the West lists hold 0-255, the East lists 256-511), a row y 0-15.
+; scenery: block TILE x y (a 2 x 2 block of the tile, its bottom left cell at (x, y)) | shape N x y
+;          (ShapeTable entry N drawn from (x, y)) | end (the 0 that ends the list)
+; bases:   warbase x y | factory TYPE x y (TYPE 1-6: the resource it makes) | base TYPE x y | end ($FF)
+; table:   dw Label, the shape of each index from 0
+; shape:   the steps from the start cell, each a block (or none) and then a move: block TILE move DX DY |
+;          move DX DY (no block) | block TILE end | end (the last step: its move is (0, 0)); DX columns,
+;          DY rows, signed
+; db $xx,... and dw Label,... write bytes as they are
+
+scenery SceneryWest
+  shape 6    12  1     ; ShapeEdgeFence
+  shape 6    12  9     ; ShapeEdgeFence
+  block $11  16 14
+  block $11  32  3
+  shape 2    34 10     ; ShapeLowTiles
+  block $05  32 12
+  block $04  42 10
+  block $07  42 12
+  block $06  42 14
+  block $03  44 10
+  block $09  44 12
+  block $07  44 14
+  shape 3    46 10     ; ShapeMidTiles
+  block $03  48  8
+  block $04  50  8
+  block $02  54 12
+  block $06  54 14
+  block $03  56 14
+  block $12  63  2
+  block $12  65  2
+  block $12  70  1
+  block $11  70 15
+  block $11  72 15
+  shape 7    72  2     ; ShapeFlatLineV
+  shape 7    83  8     ; ShapeFlatLineV
+  block $06  83  2
+  block $05  83  4
+  shape 3    85  2     ; ShapeMidTiles
+  block $02  85  6
+  block $04  91  6
+  block $07  93  2
+  block $03  93  4
+  shape 5    94 15     ; ShapeTallWallH
+  shape 8   104  9     ; ShapeFlatLineH
+  shape 8   110  9     ; ShapeFlatLineH
+  block $0D 110  9
+  shape 5   106  4     ; ShapeTallWallH
+  shape 5   108 13     ; ShapeTallWallH
+  shape 4   121  9     ; ShapeTallWallV
+  block $11 127 12
+  block $11 129  7
+  shape 5   134  4     ; ShapeTallWallH
+  block $12 133 11
+  block $12 133 13
+  shape 7   151  6     ; ShapeFlatLineV
+  shape 2   165  2     ; ShapeLowTiles
+  shape 3   167  6     ; ShapeMidTiles
+  shape 3   173  8     ; ShapeMidTiles
+  shape 3   179 10     ; ShapeMidTiles
+  block $12 191  8
+  shape 9   191  3     ; ShapeLowWallH
+  shape 9   193  8     ; ShapeLowWallH
+  shape 9   191 13     ; ShapeLowWallH
+  shape 9   199  3     ; ShapeLowWallH
+  shape 9   199 13     ; ShapeLowWallH
+  shape 9   207  3     ; ShapeLowWallH
+  shape 9   201  8     ; ShapeLowWallH
+  shape 9   207 13     ; ShapeLowWallH
+  block $12 209  8
+  shape 9   215 13     ; ShapeLowWallH
+  shape 9   223 13     ; ShapeLowWallH
+  block $11 229 11
+  shape 4   233  9     ; ShapeTallWallV
+  block $12 233  7
+  shape 2   235 10     ; ShapeLowTiles
+  shape 2   243 10     ; ShapeLowTiles
+  block $02 251 12
+  block $04 251 14
+  block $03 253 14
+  end
+
+scenery SceneryEast
+  shape 3   270  2     ; ShapeMidTiles
+  shape 3   268 10     ; ShapeMidTiles
+  shape 3   272 10     ; ShapeMidTiles
+  block $08 264 14
+  block $09 266 12
+  block $0A 266 14
+  block $08 280 12
+  block $0B 280 14
+  block $12 289  3
+  block $11 299  9
+  block $12 307 13
+  block $11 320 10
+  block $11 322 12
+  block $11 324 14
+  block $12 329 12
+  shape 5   336  5     ; ShapeTallWallH
+  shape 5   336  9     ; ShapeTallWallH
+  shape 5   344  5     ; ShapeTallWallH
+  shape 5   344  9     ; ShapeTallWallH
+  shape 4   352  9     ; ShapeTallWallV
+  block $12 350  1
+  block $12 350  3
+  block $11 344  1
+  block $11 338  3
+  block $11 338 13
+  block $11 342 13
+  block $11 342 15
+  block $11 344 15
+  block $11 346 15
+  block $11 346 11
+  shape 10  356  5     ; ShapeMixedWallH
+  block $11 379  4
+  block $03 379 14
+  block $04 381 12
+  block $02 381 14
+  shape 2   383 10     ; ShapeLowTiles
+  block $05 391 12
+  block $02 391 14
+  block $04 393 14
+  block $12 394  1
+  block $11 401 15
+  block $12 409  1
+  shape 8   406  5     ; ShapeFlatLineH
+  shape 8   409  9     ; ShapeFlatLineH
+  shape 8   409 13     ; ShapeFlatLineH
+  shape 7   420  8     ; ShapeFlatLineV
+  shape 7   424  2     ; ShapeFlatLineV
+  shape 7   428  8     ; ShapeFlatLineV
+  shape 7   432  2     ; ShapeFlatLineV
+  block $09 436 14
+  shape 3   438 10     ; ShapeMidTiles
+  shape 3   444 10     ; ShapeMidTiles
+  block $04 448 10
+  block $03 450 10
+  block $02 450 12
+  shape 8   453  3     ; ShapeFlatLineH
+  block $11 464 10
+  block $11 467 13
+  shape 10  478  1     ; ShapeMixedWallH
+  shape 10  476  3     ; ShapeMixedWallH
+  shape 10  474  5     ; ShapeMixedWallH
+  shape 10  474  9     ; ShapeMixedWallH
+  shape 10  476 11     ; ShapeMixedWallH
+  shape 10  478 13     ; ShapeMixedWallH
+  shape 10  480 15     ; ShapeMixedWallH
+  shape 10  480  5     ; ShapeMixedWallH
+  shape 6   503  1     ; ShapeEdgeFence
+  shape 6   503  9     ; ShapeEdgeFence
+  end
+
+bases BaseListWest
+  warbase    22  9
+  factory 4  39  6     ; missiles
+  factory 6  53  3     ; chassis
+  factory 1  62 10     ; electronics
+  factory 5  79  3     ; cannon
+  factory 3  97  3     ; phasers
+  factory 2 125  3     ; nuclear
+  factory 6 140 11     ; chassis
+  factory 1 160  5     ; electronics
+  factory 3 180  3     ; phasers
+  factory 4 217  3     ; missiles
+  factory 5 227  9     ; cannon
+  factory 6 241  3     ; chassis
+  end
+
+bases BaseListEast
+  warbase   261  8
+  factory 3 282  3     ; phasers
+  factory 1 288 13     ; electronics
+  factory 2 296  3     ; nuclear
+  factory 4 311  7     ; missiles
+  factory 6 322  3     ; chassis
+  warbase   369  8
+  factory 3 386  3     ; phasers
+  factory 5 401  7     ; cannon
+  factory 1 416  3     ; electronics
+  factory 2 436  5     ; nuclear
+  factory 4 446  3     ; missiles
+  factory 5 456 10     ; cannon
+  factory 6 466  3     ; chassis
+  warbase   494  8
+  end
+
+table ShapeTable
+  dw ShapeWarbase     ; shape 0
+  dw ShapeFactory     ; shape 1
+  dw ShapeLowTiles    ; shape 2
+  dw ShapeMidTiles    ; shape 3
+  dw ShapeTallWallV   ; shape 4
+  dw ShapeTallWallH   ; shape 5
+  dw ShapeEdgeFence   ; shape 6
+  dw ShapeFlatLineV   ; shape 7
+  dw ShapeFlatLineH   ; shape 8
+  dw ShapeLowWallH    ; shape 9
+  dw ShapeMixedWallH  ; shape 10
+
+shape ShapeWarbase
+  move -4 -4
+  block $10 move 0 -2
+  block $10 move 2 5
+  block $0F move 0 -2
+  block $0F move 0 -2
+  block $0F move 0 -2
+  block $10 move 2 5
+  block $0F move 0 -2
+  block $10 move 0 -2
+  block $10 move 2 5
+  block $0F move 0 -2
+  block $0F move 0 -2
+  block $0F move 0 -2
+  block $10 move 2 3
+  block $10 move 0 -2
+  block $10 end
+
+shape ShapeFactory
+  move -2 0
+  block $0F move 0 -2
+  block $10 move 2 0
+  block $10 move 2 0
+  block $10 move 0 2
+  block $0F end
+
+shape ShapeLowTiles
+  block $02 move 2 0
+  block $03 move 2 0
+  block $04 move 2 0
+  block $05 move -6 2
+  block $04 move 2 0
+  block $05 move 2 0
+  block $02 move 2 0
+  block $03 move -6 2
+  block $03 move 2 0
+  block $02 move 2 0
+  block $05 move 2 0
+  block $04 end
+
+shape ShapeMidTiles
+  block $08 move 2 0
+  block $09 move 2 0
+  block $0A move 2 0
+  block $0B move -6 2
+  block $0A move 2 0
+  block $0B move 2 0
+  block $08 move 2 0
+  block $09 move -6 2
+  block $09 move 2 0
+  block $08 move 2 0
+  block $0B move 2 0
+  block $0A end
+
+shape ShapeTallWallV
+  block $12 move 0 2
+  block $12 move 0 2
+  block $12 move 0 2
+  block $12 end
+
+shape ShapeTallWallH
+  block $12 move 2 0
+  block $12 move 2 0
+  block $12 move 2 0
+  block $12 end
+
+shape ShapeEdgeFence
+  block $15 move 0 2
+  block $15 move 0 2
+  block $15 move 0 2
+  block $15 end
+
+shape ShapeFlatLineV
+  block $0C move 0 2
+  block $0D move 0 2
+  block $0D move 0 2
+  block $0E end
+
+shape ShapeFlatLineH
+  block $0C move 2 0
+  block $0D move 2 0
+  block $0D move 2 0
+  block $0E end
+
+shape ShapeLowWallH
+  block $11 move 2 0
+  block $11 move 2 0
+  block $11 move 2 0
+  block $11 end
+
+shape ShapeMixedWallH
+  block $11 move 2 0
+  block $12 move 2 0
+  block $11 end

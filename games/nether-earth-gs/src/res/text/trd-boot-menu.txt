@@ -1,0 +1,14 @@
+#codec cp866
+# Nether Earth GS, TRD file boot: the texts of the boot menu (Work Loader v1.2), $6610-$6737 of the unpacked
+# menu, CP866. One string a line, its padding before the |; PR_STRING prints them with counted lengths.
+# docs/texts/trd-boot-menu.md
+Work Loader v1.2|
+Prepared by TRON 1999|
+Жди, читаю каталог!|
+Сортировка каталога.|
+                        '0...9'           |
+Cursor keys             'ENTER'           |
+Q,A,O,P                 'SPACE'           |
+Управление:             Старт программы:  |
+'EDIT' читать каталог|
+'SS+CS' альтернативный каталог|

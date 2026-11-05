@@ -1,0 +1,7 @@
+#codec ascii
+# Nether Earth GS, TRD file Neart482: the note in the tail of the BASIC sector (file offset $98-$D7, past the
+# program's end): four fields of 8, 24, 8 and 24 characters. docs/texts/trd-neart482-sector-note.md
+10.12.95|
+KIDSON OF RAPEWARE CORP.|
+PRESENTS|
+NEW INTRO FOR NEW PROG'S|

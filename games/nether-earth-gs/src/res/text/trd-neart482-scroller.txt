@@ -1,0 +1,26 @@
+#codec ascii
+# Nether Earth GS, TRD file Neart482: the intro's scroller, $78DC-$80E6 of the unpacked intro, Russian in Latin
+# letters (w = в, ^ = ч, x = ь, q = я, _ = ю, ` = э, < = ш, > = щ, v = ж); the zero after it is the source's.
+# Cut at word ends: every space is kept before a |. docs/texts/trd-neart482-scroller.md
+                               priwet wsem poklonnikam zame^atelxnoj igry +NETHER EARTH+!   KIDSON |
+oF RAPEWARE CORP. predlagaet wam ulu^<ennu_ wersi_ `toj igry.        tak ^to ve w nej osobennogo?,- |
+sprosite wy.   a q otwe^u:   1. w igre neograni^ennoe kolli^estwo 'deneg'.   2. no, ^to by wam igra |
+ne pokazalasx sli<kom prostoj, q sdelal tak, ^to wraveskie roboty wypuska_tsq na swoih bazah ne |
+zawisimo ot togo, estx ili net u nih zahwa^ennye zawody.  pri^em wypuskaemye roboty o^enx dave |
+ni^ego osna>eny!   3. no ne gor_jte, t.k. q e>e wwel wozmovnostx ustanowki na swoih robotow qdernoj |
+bomby, nezawisimo ot togo, skolxko oruviq wy wyberite na swoego robota.   4. takve q uweli^il wsem |
+robotam `nergi_ do 127!! a perwye tri robota woob>e neuqzwimy ( za iskl_^eniem qdernogo wzrywa ). |
+ho^etsq otmetitx, ^to `ti tri robota 'stacionarno' programmiru_tsq na zahwat wraveskih baz! i ^to |
+samoe interesnoe, esli odin iz `tih robotow pogibnet, to ego missi_ i neuqzwimostx perenimaet |
+drugoj robot, kotoryj byl izgotowlen wsled za nim!   tak-^to igrajte, sravajtesx, razbiwajte |
+gnusnyh insigniancew w swoe udowolxstwie!!!        ah-da!, ^utx ne zabyl!   5. w igre q ubral |
+otgruzku i zagruzku otlovennoj igry, t.k. s^ita_, ^to `ta igra dolvna bytx projdena na odnom |
+dyhanii! tak-^to w men_ igry klawi<a '5' movet bytx ispolxzowana kak 'START', a w igre klawi<a |
+wygruzki ( byw<aq ) zamenena na klawi<u 'STOP' ( w principe `to to ve samoe, ^to i 'PAUSE'.   no w |
+kompensaci_ za `to delo q isprawil opros klawi<i 'BREAK/SPACE' TAK ^TO MOvETE smelo wybiratx |
+klawi<u 'SPACE', ne boqsx, ^to igra zawisnet!!!   nu sobstwenno ob igre i wse, ostaetsq tolxko |
+poblagodaritx CHEMIST SOFT za ego diskowu_ ( 48/128k ) wersi_ igry, ona mne o^enx pomogla dlq |
+raskrytiq nekotoryh sekretow `toj zame^atelxnoj igry!!!          na posledok nemnogo priwetow.   |
+HELLO TO:   FLASH INC   PETER NOVAK   ALEX KISELEV   PRESTIGE   KSA   AIG   RED LTD   TAW   BLACK |
+EAGLE   FFF   AND OTHERS...                    BYE.....                       (C)dekabrx 1995 |
+KIDSON OF RAPEWARE CORP.           |

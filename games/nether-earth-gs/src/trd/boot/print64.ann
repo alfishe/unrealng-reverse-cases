@@ -1,0 +1,74 @@
+# The annotations of the boot menu's second part: the 64-column printer the menu's Start copies from $68CC to $8156
+# ($8156-$8A35, the last 2272 bytes of what boot's HRUM block unpacks). The single source of src/trd/boot/print64*.asm
+# (tools/trd_mkasm.py). The menu uses PrintInit, the channel output ChannelOut (through the ROM's PR_STRING and RST
+# $10), the print position and the font; the rest is library code no call reaches (the author's 64-column package:
+# scrolls, a line input with a cursor, inline and zero-ended strings), kept and named.
+
+@equ $03B5 BEEPER ; the 48 ROM's BEEPER (HL = the pitch, DE = the duration)
+@equ $1601 CHAN_OPEN ; the 48 ROM's CHAN-OPEN: A = the stream
+@equ $4000 Screen 6144 ; the screen's bitmap
+@equ $50E0 ScreenRow23 ; the bitmap's character row 23 (its first pixel line)
+@equ $5800 Attrs 768 ; the attribute file
+@equ $5C3D ERR_SP ; the BASIC error stack pointer
+@equ $5C8D ATTR_P ; the permanent attribute
+@equ $5D2B ChannelSOutput 2 ; the output address of channel S in CHANS (TR-DOS moves CHANS to $5D25): PrintInit points it at ChannelOut
+@equ $8DD8 InputPosition 2 ; InputLine's start column and row (past the copied bytes: the package's variables)
+@const OLD_CODE_815F $815F ; the scrolls' CALL target in the package's older layout: here inside PrintInit's LD ($8461),A
+@const OLD_CODE_88C4 $88C4 ; a CALL target of the leftover code: inside the font here, a routine of the package's older layout
+
+@module print64 ; the 64-column printer (relocated to $8156)
+@about Characters are 4 pixels wide: a font byte holds two glyphs' rows (high nibble for the even code, low for the odd: Font + (code >> 1) * 8, 7 rows from the second byte), and DrawHalfChar merges the glyph's nibble into the screen byte at column >> 1, the left or the right half by the column's bit 0. PrintColumn (0-63) and PrintRow (0-23) are the position; PrintChar draws and advances, wrapping at 64.
+@about PrintInit opens stream 2 and points channel S's output at ChannelOut, so the ROM's PR_STRING and RST $10 print through it: codes from 31 up are glyphs, 12 clears the screen, 13 is a new line, the rest is ignored. A new line or a character past row 23 scrolls the screen up a row (ScrollUp).
+$8156 c PrintInit ; stream 2 opened, the position 0, 0, channel S's output = ChannelOut
+$816C b Spare 3 ; three zero bytes
+$816F c PrintChar ; A drawn at the position, the column advanced (64 = the next row)
+$8187 c ScrollRowsUpOld ; unused, older layout: B rows moved up; its CALL $815F lands inside PrintInit
+> No call reaches it. Its CALL $815F was a routine of the package's earlier layout (the screen address of row L): in this copy $815F is the operand of PrintInit's LD ($8461),A, so the routine would not run right. It and ScrollRowsDownOld use LineCopy, as ScrollUp does through ScrollRowsDown.
+@isub $818D CALL OLD_CODE_815F
+$81AF c ScrollRowsDownOld ; unused, older layout: rows moved down from row B; the same CALL $815F
+@isub $81B4 CALL OLD_CODE_815F
+$81B9 c ScrollRows ; A pixel-row groups moved: HL from DE + 32 (the next character row), LineCopy each
+> Entered with A = the rows, HL = DE = the first row's address; ScrollUp calls it for 23 rows from Screen. The loop is the second half of ScrollRowsDownOld's body.
+$81D6 c LineCopy ; one character row (8 pixel lines of 32 bytes) from HL to DE, alternating LDI and LDD lines
+> The first line is copied from the row's second pixel line (INC H / INC D first) forwards with 31 LDI and a last byte, the next backwards with LDD, and so on: no pointer reload between the lines. The top pixel line of each row is not copied (the font leaves it blank).
+$83A9 c NextRowAddress ; HL down one character row (32 bytes; a new third: +8 to H)
+$83B3 c PreviousRowAddress ; HL up one character row
+$83BD c CellAddress ; HL = the screen address of the position (column >> 1), carry = the column's bit 0
+$83D7 c DrawHalfChar ; A's glyph at the position: a space erases the half cell (EraseHalfChar)
+> The glyph rows come from Font + (A >> 1) * 8 + 1; A's bit 0 says which nibble of the font byte, the column's bit 0 which half of the screen byte: four ways (the same half: masked; the other: shifted by four RLCAs).
+$8409 c EraseHalfChar ; the position's half cell cleared (7 pixel lines)
+$83F7 ; an even column, an odd code: the font's low nibble moved to the left (high) half
+$8430 DrawEvenLeft ; an even column, an even code: the font's high nibble into the left half
+$843E DrawRightHalf ; an odd column: the right (low) half of the screen byte
+$8441 ; an odd code: the font's low nibble as it is
+$844F DrawEvenRight ; an even code: the font's high nibble moved to the right half
+$8461 b PrintColumn ; the print position's column (0-63) ...
+$8462 b PrintRow ; ... and row (0-23); written as one word too
+$8463 c InputLine ; unused: wait for a key with a blinking cursor at InputPosition, a click, its code in A (the case swapped)
+> No call in the menu reaches it. It sets PageCounter's count to 23, puts the position at InputPosition, XORs the cursor in and out around the key wait (FLAGS bit 5), clicks with BEEPER when ClickOn is not 0 (the border ClickBorder through BORDCR) and swaps the key's case (SwapCase).
+$84B4 c CursorXor ; the half cell at the position inverted (8 pixel lines)
+$84C7 c SwapCase ; A's letter case swapped (A-Z <-> a-z)
+$84DB c TranslateKey ; A through KeyTable: the second byte of the pair whose first is A (no end mark: A must be in the table)
+$84E8 b KeyTable 2 ; (key code, character) pairs: the Symbol Shift codes of the BASIC tokens to ~ | { } [ ] and \
+$8500 c ChannelOut ; channel S's output: 31 and up a glyph, 12 clears the screen, 13 a new line; row 24 scrolls
+$8517 ; a glyph
+$851A ; after a glyph or a new line: past row 23?
+$8521 ; 16 NOPs: room left in the package
+$8531 ChannelOutEnd
+$8535 c ScrollUp ; the screen one character row up (ScrollRows from Screen, 23 rows), row 23 cleared, the row back to 23
+$8596 c ClearAll ; code 12: bitmap cleared, attributes = ATTR_P, the position 0, 0
+$85C3 b LeftoverCode ; unused code of the package's earlier layout: no set-up before it, a CALL into the font
+> Read as instructions: 20 x PUSH HL and DJNZ (a clear by PUSH without its LD SP before it), LD SP,$74EB, the border black, RepeatPeriod / RepeatDelay to REPPER / REPDEL, PageCounter's count 23, the position 0, CALL $88C4 (the font here: OLD_CODE_88C4), POP HL, POP BC, JP $851A. No jump reaches it.
+$85FE c NewLine ; code 13: column 0, the next row
+$8609 c PageCounter ; unused: counts lines down from the count in the operand (PageCount); at 0 wait for a key (InputLine)
+$860A PageCount ; the LD A operand: the lines left before the wait
+$8613 c PrintInline ; unused: the zero-ended string after the CALL printed with RST $10, the return after it
+$861B c PrintStringRst ; unused: the zero-ended string at HL with RST $10
+$8622 c PrintString64 ; unused: the zero-ended string at HL with PrintChar
+$862B c ErrorReturn ; unused: a BASIC error report A (LD SP,(ERR_SP), the code into ERR_NR)
+$8633 b RepeatPeriod ; the keyboard repeat period the leftover code sets (2)
+$8634 b RepeatDelay ; the keyboard repeat delay the leftover code sets (14)
+$8635 b ClickBorder ; the border colour during the click
+$8636 b ClickOn ; 0 = no click
+$8637 b Font 8 ; 128 x 8 bytes: two 4-pixel glyphs a byte (codes 0-255), the first byte of each eight unused
+@res boot/font64.bin

@@ -34,6 +34,7 @@ Steps, run in order:
   poke:ADDR:HEX          write bytes at a Z80 address (an experiment: never in a recording)
   save:PATH / load:PATH  a snapshot (.szx)
   ttd:start / ttd:dump:PATH   start TTD recording / write it
+  l1:PATH                build L1 from the recording (analysis build) to PATH (l1.json), waiting for it
   regs                   print the main CPU's registers
   frame                  print the frame counter
 """
@@ -84,7 +85,7 @@ class Live:
             self.s.call('joystick_input', {'action': action, 'buttons': mm_session.KEMPSTON[name]}, ok=False)
         else:
             self.s.call('type_input', {'action': action,
-                                       'key': mm_session.KEY_NAMES.get(name, name.lower())}, ok=False)
+                                       'key': mm_session.KEY_NAMES.get(name, name.lower())})
 
     def script(self, path):
         held, last = [], 0
@@ -234,6 +235,14 @@ def steps(args):
             else:
                 _, _, path = rest.partition(':')
                 print(s.call('time_travel', {'action': 'dump', 'path': os.path.abspath(path)}, ok=False).text[:200])
+        elif kind == 'l1':
+            print(s.call('analysis', {'action': 'build', 'path': os.path.abspath(rest), 'wait': 30000},
+                         ok=False).text[:300])
+            state = s.call('analysis', {'action': 'status'}, ok=False).text
+            while ': running' in state:
+                time.sleep(5)
+                state = s.call('analysis', {'action': 'status'}, ok=False).text
+            print(state[:400])
         elif kind == 'regs':
             print(json.dumps(L.get('/registers')))
         elif kind == 'frame':

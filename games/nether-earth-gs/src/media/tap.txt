@@ -1,0 +1,34 @@
+# The TAP orig/Nether Earth (1987)(Argus Press Software Ltd)(EN)(GS)[h 2017 Hood, Tron Z].tap: written by
+# tools/mktap.py, 25 header + data pairs in the order Hood's BASIC loads them.
+# Lines: basic NAME LINE PATH / code NAME ADDRESS PATH [PARAM2] (PARAM2 defaults to 32768, the ROM SAVE's value).
+
+basic "NetherE GS" 10 build/tape/basic.bin
+# the loader: TR-DOS's neart022 rewritten for the tape (src/tape/loader.asm), the name keeps a 4th digit
+code neart0222 25000 build/tape/loader.bin
+code neart000 16384 build/res/screen/neart000.bin
+# the module and the effects all load at 32768 and go to the card from there
+code neart002 32768 build/res/music/neart002.bin
+code neart003 32768 build/res/music/neart003.bin
+code neart004 32768 build/res/music/neart004.bin
+code neart005 32768 build/res/music/neart005.bin
+code neart006 32768 build/res/music/neart006.bin
+code neart007 32768 build/res/sfx/neart007.bin
+code neart008 32768 build/res/sfx/neart008.bin
+code neart009 32768 build/res/sfx/neart009.bin
+code neart010 32768 build/res/sfx/neart010.bin
+code neart011 32768 build/res/sfx/neart011.bin
+code neart012 32768 build/res/sfx/neart012.bin
+code neart013 32768 build/res/sfx/neart013.bin
+code neart014 32768 build/res/sfx/neart014.bin
+code neart015 32768 build/res/sfx/neart015.bin
+code neart016 32768 build/res/sfx/neart016.bin
+code neart017 32768 build/res/sfx/neart017.bin
+code neart018 32768 build/res/sfx/neart018.bin
+# effect 13 (neart023) before effect 14 (neart019 + neart020), unlike the disk's file order
+code neart023 32768 build/res/sfx/neart023.bin
+code neart019 32768 build/res/sfx/neart019.bin
+code neart020 32768 build/res/sfx/neart020.bin
+# the tape driver (src/tape/driver.asm, 271 bytes, bank 6 at $C000): the only header with param 2 = 0
+code neart021 49152 build/tape/driver.bin 0
+# the game, Hood's tape build of it
+code neart001 26000 $GAME_DIR/neart001-tap.bin

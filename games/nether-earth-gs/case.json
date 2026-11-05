@@ -1,0 +1,28 @@
+{
+  "image_cmd": ["python3", "tools/game_image.py", "--out", "work/mkgame"],
+  "image": "work/mkgame/original.bin",
+  "lo": "6590",
+  "hi": "10000",
+  "device": "ZXSPECTRUM128",
+  "bases": {"5": "4000", "2": "8000", "0": "C000"},
+  "read_builds": ["stage2/r1"],
+  "ref_builds": [["stage2/r1", "the SCL on Pentagon 128 + GS 512 KB, from the main menu: tools/play_gs.py builds 5 robots and gives their orders, 12073 frames"]],
+  "driver_page": {"disk": {"bank": 1, "source": "src/disk/driver.asm", "file": "neart021 (SCL, TRD)"},
+                  "tape": {"bank": 6, "source": "src/tape/driver.asm", "file": "neart021 (TAP)"}},
+  "header": [
+    "; Nether Earth GS, Tron Z 2002 (tape: Hood 2017): the game in play, banks 5, 2 and 0 as the CPU sees them. The",
+    "; file neart001 is $6590-$FFFF; entry Start $A600. The GS driver lives in another RAM page at $C000 (GsDriver):",
+    "; bank 1 on the disk (src/disk/driver.asm), bank 6 on Hood's tape (src/tape/driver.asm).",
+    ";",
+    "; One source, two targets: assembled as is it gives the disk's neart001; with -DHOOD_TAPE it gives the tape's,",
+    "; which differs in the driver's page and in the ROM entry of the game's tape save (tools/build_game.sh).",
+    "  IFDEF HOOD_TAPE",
+    "DriverBank     EQU 6       ; Hood's tape: the driver in RAM bank 6",
+    "SaveBytesEntry EQU $04C2   ; ROM SA-BYTES from its start: the ROM's own pilot length and its SA/LD-RET exit",
+    "  ELSE",
+    "DriverBank     EQU 1       ; the disk: the driver in RAM bank 1",
+    "SaveBytesEntry EQU $04D0   ; ROM SA-BYTES past its pilot choice: the game's short pilot (HL) and no SA/LD-RET",
+    "  ENDIF",
+    "PageRom48      EQU $10     ; port $7FFD: bit 4 the 48 BASIC ROM, bits 0-2 the RAM bank at $C000"
+  ]
+}
