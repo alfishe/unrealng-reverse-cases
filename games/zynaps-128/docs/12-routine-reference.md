@@ -1344,6 +1344,8 @@ After the loop the per-frame hit masks are cleared: `$80BB` (lasers and player),
 
 On a 128K: the OUT (`$FE`),A at `$949C` is made NOP: NOP (src/game/setup.asm, glue.asm; docs/09-sound.md 9.2).
 
+[Animation: `RunObjects` at work](img/routines/RunObjects.gif)
+
 | | |
 | --- | --- |
 | Runs (c1, the menu and six short games) | 3,220 calls, 36,507,398 t-states own (4.90 %) |

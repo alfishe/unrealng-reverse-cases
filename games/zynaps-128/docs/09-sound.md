@@ -11,9 +11,6 @@ event starts which effect.
 Both players are assembled from `src/sound/` and `src/res/music/`, `src/res/sound/` to the original's bytes by
 `tools/build_sound.sh`.
 
-<!-- Figures this document needs (GUIDE.md 4.2), remove each line when it is in: -->
-<!-- - a routine animation of the player -->
-
 What this rests on:
 
 - **The recording `c1`** (Pentagon 128, random play from frame 3902 to 13702: five games to their end and a sixth),
@@ -31,8 +28,17 @@ What this rests on:
   - the CPC disk and tape images.
 
   Copies of all of these are in `work/stage2/sound/cpc/`.
-- **The stage-1 captures** `work/stage1/audio/intro-tune.wav` and `play-fire.wav`, and the renders of section 9.6.
-  All are written to files only, never played.
+- **The stage-1 captures** `work/stage1/audio/intro-tune.wav` and `play-fire.wav`, and the renders of sections 9.6
+  and 9.7. All are written to files only, never played.
+- **The bot recordings of stage 2 and stage 3.** All are Pentagon 128 (`tools/play_live.py`: RAM zeroed, a Kempston
+  card, muted), each started from a title snapshot with INF.LIVES:
+  - `r1` (`work/stage2/stubs/r1`, 7701 frames) and `r2` (1001 frames from `r1`'s frame 4400), with `$FFD7` = 1;
+  - `w1` (`work/z128B/w1`, 9700 frames, `tools/weapons_bot.py`), the weapons run of doc 10, with `$FFD7` = 1;
+  - `d1` (`work/z128B/d1`, 3700 frames, the same bot from `title-inf.szx`, `$FFD7` = 0): three ships lost.
+
+  Every AY write of `r1` frames 0-1200 and of `w1` frames 0-9699 was collected with `time_travel port_events`
+  (`tools/fig_ports.py collect`: `work/z128B/ports-r1.json`, `ports-w1.json`). The same tool's `coverage_scan`
+  gives the frames each hook stub and glue entry ran in.
 
 ## 9.1 Two players
 
@@ -40,7 +46,7 @@ What this rests on:
 | --- | --- | --- |
 | Where | `$8000`-`$90C4`, copied from block 1 `$D810` | page 4: `$C968`-`$CD22`, copied from block 1 `$632D`; data `$DE48`-`$FE6F`, from `$66E8` |
 | Player | STarKos (Targhan / Arkos, a CPC tracker's player). Entries: `$8000` init with DE = the song, `$8003` play, `$8006` stop | the CPC Zynaps's driver, moved up by `$5000`. Entries: `$C968` start the music, `$C96B` stop it, `$C96E` play a frame, `$C971`-`$C9B1` start an effect |
-| Called | by the intro's IM 2 handler, once a frame (`$60DF`) | by the glue's interrupt handler (`$5B00`), once a frame, with page 4 paged in |
+| Called | by the intro's IM 2 handler, once a frame (`$60DF`) | by the glue's four entries in the game's interrupt handlers, page 4 paged in: one step a frame at the menus, two steps per two-frame pass in play (section 9.8) |
 | Song | `SK10` at `$8990`, 1845 bytes | sounds `$0B`, `$0C`, `$0D` (the music's three channels) and effects `$0E`-`$1F`, through the sound table at `$DF4D` |
 | Periods | `$860D`, 96 words: note 12 = 3822 (C0 at 1 MHz), notes 0-11 = 0. The CPC's table, unchanged | `$DE48`, 95 words: note 13 = 4126, notes 0-12 = 0. The CPC driver's table moved up 12 notes |
 | AY | only the registers that changed, through `$FFFD` / `$BFFD` | the whole register image `$CC8B`-`$CC98`, R13 down to R0, with `OUTD` every frame |
@@ -55,32 +61,59 @@ What this rests on:
 ## 9.2 Which event starts which effect
 
 The 128K glue replaces the 48K game's beeper calls (`CALL $B2F0` with A = the beeper sound, and a few other calls)
-with calls to 15 hook stubs at `$B32F`-`$B3A8`. Each stub loads L with an engine entry, jumps to the shared stub at
-`$B30D` (page 4, `CALL $C9xx`, page 0), then does what the site did. The event names come from the 48K code around
-each site (`work/stage1/dis/game48-static.asm`) and from screenshots at the frames each stub ran in `c1`
+with calls to 15 hook stubs at `$B32F`-`$B3A8` (`src/game/stubs.ann`). A stub works in three steps:
+
+1. It does the instruction its site lost, when the site was not the beeper call itself (for example `LD HL,$F36F`
+   at `$9CB0`, `CALL $A489` at `$A247`).
+2. It pushes HL and loads L with the low byte of an engine entry.
+3. It jumps to the shared `HookSound` (`$B30D`). HookSound writes L into the operand of its own `CALL $C9xx`
+   (`$B31E`), pages in RAM page 4 (`$7FFD` = `$14`), calls the entry, pages RAM page 0 back (`$10`) and returns to
+   the site with every register kept.
+
+The engine entry only queues the sound in a channel record: the AY hears it at the next engine step (section 9.8).
+
+The event names come from the 48K code around each site (`work/stage1/dis/game48-static.asm`) and from screenshots at the frames each stub ran in `c1`
 (`time_travel coverage_scan`, `work/stage1/stub-frames.txt`; shots in `work/stage1/screens/events/`).
 
-| Site | Stub | Entry, sounds | Runs in `c1` | The event |
-| --- | --- | --- | --- | --- |
-| `$9C77` | `$B32F` | `$C971`: `$0E` | 91 | the player fires: `$9C1D` takes a free shot slot of four (`$F4F8`, `$2C` each) and places it at the ship (48K beeper sound 2) |
-| `$A29F` | `$B386` | `$1D` | 43 | an explosion starts: `$A293` sets an object's explosion frames (`$FD00`, `$EDB2`, `$D6ED`); alone 25 times (an enemy destroyed), 18 times with `$B354` |
-| `$9BFF` | `$B354` | `$14` + `$15` | 18 | the player's ship destroyed: three times per game, the game over after the third (`c1` 4351, 4626, 5055, game over 5165; six games, the sixth cut by the recording's end), with the explosion `$1D` in the same frame |
-| `$A1C4` | `$B374` | `$19` | 6 | an enemy fires a missile aimed at the ship (`$A14F` copies the firer's place, aims at `$F36C`; 48K sound 1) |
-| `$A31D` | `$B381` | `$1C` | 4 | a pod appears: an object gets the pod descriptor `$7EBB` (48K sound 4; 29 times in `r1`) |
-| `$A21A` | `$B379` | `$0F` | 1 | a weapon selected: a pod taken with fire held 8 frames or more (`$8184` ≥ 8) runs the highlighted entry (player record +7) of the table at `$80F0`: 0 speed, 1 laser, 2 bombs, 3 homing, 4 seekers (48K sound 6; `r1` 1097 bombs, 1713 homing) |
-| `$A247` | `$B364` | `$16` | 1 | a pod taken: the highlight (player record +7) moves on, wrapping after 5 with a bonus; `$81C5` bit 2 set (23 times in `r1`) |
-| `$A5D1` / `$A7F7` | `$B39C` | `$1E` + `$1F` | 5 | the screen wipe (`$A685`): `$A7F7` before the role of honour at the game over, `$A5D1` before KEYBOARD DEFINITION (title key 3) |
-| `$A81B` | `$B344` | `$12` | 5 | the role of honour shown (18 frames after the wipe) |
-| `$A8B7` | `$B34C` | `$14` + `$15` | 5 | the role of honour's result (2 frames later; `UNRANKED` in all five) |
-| `$ACA2` | `$B334` | `$0F` + `$10` | 0 (`r1` 6590) | an extra life: `$AC7A` compares the score's second BCD byte with the `$800F` table (`01 03 05 07 09 FF`), a life at 10 000, 30 000, 50 000, 70 000, 90 000 (`INC (IX+12)`, `INC (IX+4)`), the stub calls `$A4EF` (the lives redrawn) first |
-| `$9EC2` | `$B33C` | `$11` | 0 (`r1`: 22 frames from 1141) | a plasma bomb bounces off the ground: handler `$9E67` negates and halves its vertical speed, `DEC (IY+38)` counts three bounces, then `$9ECE` removes it; the 48K beeper call at `$9EA5` became a `RET` |
-| `$9CFA` | `$B35C` | `$1A` + `$1B` | 0 (`r2` 127, 287) | a homing missile launched: `$9CCA` runs while fire is held with a lock (`$80E2` ≠ 0); through `$9CB0` the launch also plays `$18` in the same tick |
-| `$9CB0` | `$B36C` | `$18` | 0 (`r1`: 9 frames from 1113) | a special weapon placed at the ship's place (`$F36F`): `$9CB0` is shared by the bombs (`$9C83`, fire held 3 frames, slots `$F5D4` then `$F5A8`), the homing missiles (`$9CFA`) and the seekers (`$9D1F`, from the code only) |
-| `$A7BB` | `$B38F` | `$1E` + `$1F`, the music stopped first | 0 (`r1` 23) | the SELECTIONS screen: key 1 or 2 on the title's credits page runs `$A76F` → `$A790`; the effect starts between the heading and the 1 PLAYER / 2 PLAYERS lines. Not a game end: the game has none (a level done wraps 0-11) |
+| Site | Stub | Entry, sounds | Runs in `c1` | Frames in `w1` | The event |
+| --- | --- | --- | --- | --- | --- |
+| `$9C77` | `$B32F` | `$C971`: `$0E` | 91 | 474 | the player fires: `$9C1D` takes a free shot slot of four (`$F4F8`, `$2C` each) and places it at the ship (48K beeper sound 2) |
+| `$A29F` | `$B386` | `$1D` | 43 | 94 | an explosion starts: `$A293` sets an object's explosion frames (`$FD00`, `$EDB2`, `$D6ED`); alone 25 times (an enemy destroyed), 18 times with `$B354` |
+| `$9BFF` | `$B354` | `$14` + `$15` | 18 | 0 (no ship lost: `$FFD7` = 1); `d1` 1713, 2522, 3311 | the player's ship destroyed: three times per game, the game over after the third (`c1` 4351, 4626, 5055, game over 5165; six games, the sixth cut by the recording's end), with the explosion `$1D` in the same frame |
+| `$A1C4` | `$B374` | `$19` | 6 | 45 | an enemy fires a missile aimed at the ship (`$A14F` copies the firer's place, aims at `$F36C`; 48K sound 1) |
+| `$A31D` | `$B381` | `$1C` | 4 | 30 | a pod appears: an object gets the pod descriptor `$7EBB` (48K sound 4; 29 times in `r1`) |
+| `$A21A` | `$B379` | `$0F` | 1 | 5: 1009, 1421, 1741, 2528, 2984 | a weapon selected: a pod taken with fire held 8 frames or more (`$8184` ≥ 8) runs the highlighted entry (player record +7) of the table at `$80F0`: 0 speed, 1 laser, 2 bombs, 3 homing, 4 seekers (48K sound 6; `r1` 1097 bombs, 1713 homing) |
+| `$A247` | `$B364` | `$16` | 1 | 29 | a pod taken, with fire or without: the call of its 100 points (AddScore award 4) after the selector moved on or the action ran; `$81C5` bit 2 set (23 times in `r1`) |
+| `$A5D1` / `$A7F7` | `$B39C` | `$1E` + `$1F` | 5 | 0 | the screen wipe (`$A685`): `$A7F7` before the role of honour at the game over, `$A5D1` before KEYBOARD DEFINITION (title key 3) |
+| `$A81B` | `$B344` | `$12` | 5 | 0 | the role of honour shown (18 frames after the wipe) |
+| `$A8B7` | `$B34C` | `$14` + `$15` | 5 | 0 | the role of honour's result (2 frames later; `UNRANKED` in all five) |
+| `$ACA2` | `$B334` | `$0F` + `$10` | 0 (`r1` 6590) | 1: 8596 | an extra life: `$AC7A` compares the score's second BCD byte with the `$800F` table (`01 03 05 07 09 FF`), a life at 10 000, 30 000, 50 000, 70 000, 90 000 (`INC (IX+12)`, `INC (IX+4)`), the stub calls `$A4EF` (the lives redrawn) first |
+| `$9EC2` | `$B33C` | `$11` | 0 (`r1`: 22 frames from 1141) | 42 | a plasma bomb bounces off the ground: handler `$9E67` negates and halves its vertical speed, `DEC (IY+38)` counts three bounces, then `$9ECE` removes it; the 48K beeper call at `$9EA5` became a `RET` |
+| `$9CFA` | `$B35C` | `$1A` + `$1B` | 0 (`r2` 127, 287) | 2: 4530, 4690 | a homing missile launched: `$9CCA` runs while fire is held with a lock (`$80E2` ≠ 0); through `$9CB0` the launch also plays `$18` in the same tick |
+| `$9CB0` | `$B36C` | `$18` | 0 (`r1`: 9 frames from 1113) | 33 | a special weapon placed at the ship's place (`$F36F`): `$9CB0` is shared by the bombs (`$9C83`, fire held 3 frames, slots `$F5D4` then `$F5A8`), the homing missiles (`$9CFA`) and the seekers (`$9D1F`, from the code only) |
+| `$A7BB` | `$B38F` | `$1E` + `$1F`, the music stopped first | 0 (`r1` 23) | 1: 23 | the SELECTIONS screen: key 1 or 2 on the title's credits page runs `$A76F` → `$A790`; the effect starts between the heading and the 1 PLAYER / 2 PLAYERS lines. Not a game end: the game has none (a level done wraps 0-11) |
 
 One more effect starts outside the stubs: the glue's `LevelStartSound` (`$5B6D`, hooked into `CALL LevelSetUp` at
 `$B023`) stops the music and calls `$C9A5` (sound `$10`) at each level's start, 18 times in `c1`. The engine entries
 `$C983` (`$13`) and `$C995` (`$17`) are called by nothing.
+
+```mermaid
+flowchart LR
+  site["a game event site<br/>(e.g. FireLaser $9C77)"] --> stub["hook stub $B32F-$B3A8<br/>the site's lost instruction,<br/>PUSH HL, LD L,entry"]
+  stub --> hs["HookSound $B30D<br/>CALL operand := L<br/>$7FFD := $14 (page 4)"]
+  hs --> entry["effect entry $C971-$C9B1<br/>StartSound: a channel record"]
+  entry --> back["$7FFD := $10 (page 0)<br/>back to the site"]
+  irq["the game's interrupt handler<br/>(glue entries $5B21 $5B28 $5B31 $5B3C)"] --> pf["PlayFrame $CA60<br/>14 registers to the AY,<br/>then the channels advance"]
+  entry -. the record .-> pf
+```
+
+How to read it: the upper chain runs in the game's own time, at the event. The lower chain is the interrupt's. The
+dotted line is the channel record the entry writes and the next PlayFrame reads.
+
+`w1`'s column gives the frames each stub's first byte ran in (`time_travel coverage_scan` over pages 2 and 4: the
+stub and its engine entry ran in the same frames). Two stubs run in the same frame on every weapon selection: the
+site `$A21A` (`$0F`) is followed in the same pass by `$A247` (`$16`, the 100 points every scooped pod pays), so the
+two sounds take channels B and C together. The level start (`$5B6D`) ran in `w1` at 500 and 6971.
 
 Five events never happened in `c1` (the play was random keys over short games). Stage 2 witnessed them in two bot
 recordings (`work/stage2/stubs/r1`, 7701 frames from the title with INF.LIVES and `$FFD7` = 1, and `r2`, 1001 frames
@@ -190,6 +223,25 @@ A sound is a list of commands:
 An envelope is a list of three-byte steps (frames, change + `$80`, repeats), and `$FF` starts it again. The pitch
 envelope adds twice the change to the period (`PitchStep`, `$CA53`).
 
+One engine step, as it ran in `w1` (an access trace of frame 4532, T 300-9000, the step at the play pass's start
+two frames after a homing launch put sounds `$1A` and `$1B` on B and C):
+
+![PlayFrame `$CA60` at w1 frame 4532: the 14 registers out, then channels A, B and C advanced](img/routines/PlayFrame.gif)
+
+How to read it:
+
+- The left grid is page 4's `$C900`-`$CDFF`, 256 bytes a row: green the code run in the slice, blue the bytes read,
+  yellow the bytes written.
+- The right column is the listing (`build/lst/engine.lst`) around the PC, with the registers.
+- The first pictures are `SendRegisters` (`$CA3E`-`$CA52`): the `OUT (C),A` to `$FFFD` and the `OUTD` to `$BFFD`,
+  R13 down to R0. Then `PlayChannel` and the envelopes run for each channel record (`$CC9C`, `$CCC9`, `$CCF6`).
+
+```
+python3 ../../kit/routine_anim.py --work work/z128B/w1 --window 4532:300-4532:9000 --listing build/lst/engine.lst \
+    --view none --range C900-CDFF --pc C968-CD22 --pictures 60 --out docs/img/routines/PlayFrame.gif \
+    --title 'PlayFrame $CA60: one engine step, w1 frame 4532 (a homing launch on B and C)'
+```
+
 The music is the three sounds `$0B`, `$0C`, `$0D`:
 
 - All three call sounds 0 and 1 as phrases.
@@ -285,7 +337,163 @@ Renders, written only (`tools/sound_render.py wav`, 44.1 kHz mono, never played)
 | `work/stage2/sound/game-music-zx128.wav` | the game's music, one pass (10 304 frames, 206.1 s), at 1 773 400 Hz |
 | `work/stage2/sound/game-music-cpc-ym.wav` | the CPC dump (10 306 frames) at its 1 MHz |
 
-## 9.7 Open
+## 9.7 The effects one by one
+
+Each effect entry (`$C971`-`$C9B1`) is three bytes or more: `LD A,sound`, then `JP StartSound` (or two sounds, one
+for each of B and C). `tools/fig_effects.py` runs every entry in SkoolKit's simulator from the engine's loaded bytes,
+in the state of play (StartMusic, then StopMusic, as the glue's level start leaves it), then PlayFrame a step at a
+time until no channel record is active (`+$1E` at `$CCBA`, `$CCE7`, `$CD14`).
+
+| Entry | Name | Sounds | Event | Called by | Channels | Steps | Tone (Hz) | Noise |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `$C971` | `EffectShot` | `$0E` | the player fires a laser shot | stub `$B32F`, site `$9C77` | A | 41 | 158-6158 | yes |
+| `$C975` | `EffectExtraLife` | `$0F` + `$10` | an extra life | stub `$B334`, site `$ACA2` | BC | 65 | 456-1539 | no |
+| `$C97B` | `EffectBombBounce` | `$11` | a plasma bomb bounces | stub `$B33C`, site `$9EC2` | B | 25 | 530-706 | no |
+| `$C97F` | `EffectRoleOfHonour` | `$12` | the role of honour shown | stub `$B344`, site `$A81B` | B | 97 | 40-361 | no |
+| `$C983` | `EffectSound13` | `$13` | no caller | - | B | 73 | 162-472 | yes |
+| `$C987` | `EffectShipLost` | `$14` + `$15` | the ship destroyed; the honour result | stubs `$B354`, `$B34C` | BC | 189 | 27-4819 | yes |
+| `$C98B` | `EffectHomingLaunch` | `$1A` + `$1B` | a homing missile launched | stub `$B35C`, site `$9CFA` | BC | 102 | 27-543 | no |
+| `$C991` | `EffectPodTaken` | `$16` | a pod scooped (100 points) | stub `$B364`, site `$A247` | B | 49 | 27-12315 | no |
+| `$C995` | `EffectSound17` | `$17` | no caller | - | B | 100 | 27-110838 | yes |
+| `$C999` | `EffectSpecialLaunch` | `$18` | a bomb, missile or seeker leaves the ship | stub `$B36C`, site `$9CB0` | B | 100 | 354-1143 | yes |
+| `$C99D` | `EffectEnemyMissile` | `$19` | an enemy fires | stub `$B374`, site `$A1C4` | B | 100 | 528-1319 | yes |
+| `$C9A1` | `EffectWeaponSelect` | `$0F` | a weapon selected (pod + fire held) | stub `$B379`, site `$A21A` | B | 57 | 456-909 | no |
+| `$C9A5` | `EffectLevelStart` | `$10` | a level starts | glue `$5B6D` | B | 65 | 759-1539 | no |
+| `$C9A9` | `EffectPodAppears` | `$1C` | a pod appears | stub `$B381`, site `$A31D` | B | 61 | 367-430 | no |
+| `$C9AD` | `EffectExplosion` | `$1D` | an explosion starts | stub `$B386`, site `$A29F` | B | 45 | 271 | yes |
+| `$C9B1` | `EffectScreenWipe` | `$1E` + `$1F` | the screen wipe; SELECTIONS | stubs `$B39C`, `$B38F` | BC | 300+ (loops) | 101-541 | yes |
+
+- **Channels.** A one-sound effect takes B or C: StartSound XORs `LastChannel` (`$CC9B`) with 1, so effects take
+  the two in turn. The table shows B, the channel from `LastChannel` = 3 (StartMusic's value). The laser shot is
+  the only effect on channel A.
+- **Steps** are engine steps, one a frame on average (section 9.8). The screen wipe's top level ends in `$FF`: it
+  starts again until the next StopMusic (MusicSwitch `$5B50` before SELECTIONS, the role of honour's end).
+- **Tone** is the range of the sounding periods (1 773 400 / (16 period) Hz). The extremes of `$16` and `$17`
+  come from pitch envelopes that pass period 1 or 2 for a step.
+
+The simulation against the recording (`tools/fig_effects.py check`: the volume and both period registers of the
+effect's channel, step by step, from the frame the stub ran in up to the next effect on B / C):
+
+| Effect | `w1` frames | Channel-steps equal |
+| --- | --- | --- |
+| laser shot `$C971` | 1357, 4069, 4427, 6902 | 40 / 41 at each |
+| pod appears `$C9A9` | 975 | 29 / 30 |
+| homing launch `$C98B` | 4530 | 202 / 204 (B and C swapped) |
+| extra life `$C975` | 8596 | 128 / 130 |
+| bomb bounce `$C97B` | 1455 | 24 / 25 |
+| explosion `$C9AD` | 893 | 31 / 32 |
+| enemy missile `$C99D` | 1121 | 99 / 100 |
+| pod taken `$C991` | 849 | 48 / 49 |
+| level start `$C9A5` | 6971 | 64 / 65 |
+| special launch `$C999` | 1433 | 7 / 8 (the next effect 8 steps later) |
+| weapon select `$C9A1`, then pod taken `$C991` in the same frame | 1009, 1421, 1741, 2528, 2984 | 146 / 156 (38/40, 2/4, 14/16, 46/48, 46/48) |
+| screen wipe `$C9B1` (SELECTIONS) | 23 | 546 / 600 |
+
+The one step that differs in each row is the first. PlayFrame sends the register image before it advances the
+channels, so its first step after the entry still carries the state from before the effect. That is the sound the
+channel played before in the recording, and silence in the simulation (`w1` 1357: volume 10 against 0). The wipe's
+other 54 differing steps were not traced.
+
+![Every engine effect as it starts in play: pitch dots, volume shading, noise squares, one panel an entry](img/sound/effects.png)
+
+How to read it:
+
+- One panel an entry, its title the entry, the sounds, the event, the length and the channels.
+- Dots: the tone pitch on the left scale (C2-C8). Shading: the volume 0-15. Squares at the bottom: noise on.
+- Colour: blue channel A, orange B, pink C. The x axis is engine steps, the first 120.
+
+```
+python3 tools/fig_effects.py chart --out docs/img/sound/effects.png --steps 120
+```
+
+Renders, written to files only and never played (`python3 tools/fig_effects.py wav --dir work/z128B/effects`,
+44.1 kHz mono at 1 773 400 Hz, up to 150 steps and 10 silent ones): `work/z128B/effects/C971-EffectShot.wav` to
+`work/z128B/effects/C9B1-EffectScreenWipe.wav`, one a row of the table.
+
+In play the AY carries only effects:
+
+- **The music is off from each round's start.** LevelStartSound (`$5B6D`) is `XOR A`, `CALL MusicSwitch`, then
+  `LD L,$A5` and HookSound. So StopMusic (`$CA0F`) runs before the level-start sound: `w1` frame 500, T 17 098
+  (MusicSwitch) and T 17 171 (StopMusic), and frame 6971. After it all three volumes are 0 and the mixer is `$3F`.
+- **The music comes back only after a pause.** The pause's end (Key4MusicOn `$5B82`) calls MusicOn, which starts the
+  music from its beginning. No recording here paused, so this is known from the code only.
+- **The engine keeps no priority between effects.** StartSound takes the channel `LastChannel` XOR 1 gives, and a new
+  effect there replaces the one playing. Two effects in the same frame take B and C together (the weapon selection
+  and the pod's points).
+
+## 9.8 When the engine steps: the port timeline
+
+Four glue entries step the engine (`src/game/glue.ann`): each takes the place of a few instructions in one of the
+game's interrupt handlers, pages in page 4, calls PlayFrame and goes back.
+
+| Glue entry | In the handler | When |
+| --- | --- | --- |
+| PlayAtA9E5 `$5B21` | TitleInterrupt `$A9E4`, the title pages and between screens | every frame, T 217-219 |
+| PlayAtA581 `$5B28` | MenuRasterInterrupt `$A512`, at its end (the raster pages) | every frame, T 39 547-43 136 |
+| PlayAtA9F7 `$5B31` | PlayInterrupt `$A9ED`, at its start | every second frame, T 329-349 |
+| PlayAtAB03 `$5B3C` | PlayInterruptExit `$AAFF`, at its end | every second frame, T 10 362-69 890 of the next frame |
+
+Every AY write of `r1` frames 0-1200 and of `w1` frames 0-9699 was paired into engine steps (one select of R13,
+its write, ... R0: 14 pairs from the PCs `$CA49` and `$CA4C`): 1204 steps in 1201 frames, and 9701 in 9700. Each
+step is labelled by the glue entry whose run came before it.
+
+![The engine writes the AY once a TV frame on average: one step a frame at the menus, two steps per two-frame pass in play](img/sound/port-timeline.png)
+
+How to read it:
+
+- Top: each dot is one engine step, at its frame (x) and its T-state in the frame (y, thousands). The colour is the
+  glue entry. The shaded bands are the pages `r1` went through: the credits, SELECTIONS (raster), the high scores,
+  PREPARE FOR COMBAT (raster), the level start's replay and play.
+- Bottom: the time from the step before, in TV frames (71 680 T on the Pentagon). 1 is an even 50 Hz.
+- At the menus the steps sit on one line: T 219 under TitleInterrupt, T 43 132 or 39 552 behind the raster.
+- In play the orange dots (pass start) stay at T 334 every second frame. The pink dots (pass end) wander from
+  T 22 000 to 59 000 of the following frame: the end comes when the pass's work is done.
+
+```
+python3 tools/fig_ports.py collect --work work/z128B/r1 --from 0 --to 1200 --out work/z128B/ports-r1.json
+python3 tools/fig_ports.py draw --kind timing --data work/z128B/ports-r1.json --out docs/img/sound/port-timeline.png \
+    --phases '[[0,"credits"],[24,"SELECTIONS"],[283,"high scores"],[518,"PREPARE"],[594,""],[610,"play"]]' ...
+```
+
+The answer this gives (`tools/fig_ports.py stats`, `w1`):
+
+- **In play the interrupt handler runs every second frame, not every frame.** A pass of PlayInterrupt ends 0.14-0.98
+  frame into the next frame (PlayAtAB03 at T 10 362-69 890). The next frame's interrupt pulse comes while the pass
+  still runs with the interrupts off, and it is gone when the pass's `EI` comes. Every PlayAtA9F7 of `w1` is at
+  T 329-349, so no interrupt was ever taken in the middle of a pass. PlayAtA9F7 ran 4457 times and PlayAtAB03
+  4456 times: one each per two frames of play (about 8910 of `w1`'s 9700 frames).
+- **The effects keep the menus' step rate.** Two steps a two-frame pass is one step a frame: `w1` has 9701 steps in
+  9700 frames. The steps are uneven: a median 95 642 T (1.33 frames) from the pass start to its end, and 47 757 T
+  (0.67 frame) from the end to the next start. An effect's steps stretch and shrink by a third of a frame.
+- **The menus step once a frame**, 71 680 T apart (min 71 663, max 71 698). SELECTIONS and PREPARE FOR COMBAT step
+  from the raster handler's end, the others from TitleInterrupt's start.
+- **MusicSwitch adds steps.** StopMusic and StartMusic send the register image too, so the frames 23, 297 and 500
+  of `r1` each hold one step more (the frame count 1204 against 1201).
+
+These are Pentagon 128 measurements. A 128K or +2 has a different frame (70 908 T) and interrupt pulse, but both
+are far shorter than a pass. So the same every-second-frame rhythm is expected there, but no 128K recording checks
+it.
+
+This answers the question `src/game/glue.ann` left open at PlayAtAB03: the play handler steps the engine twice an
+interrupt, but the interrupt is taken only every second frame, so the in-play rate equals the menus'.
+
+![Each game event starts its effect in the same frame: r1 frames 1090-1200](img/sound/port-effects.png)
+
+How to read it:
+
+- Top rows: the frames each hook stub ran in (the triangles), named by its event and sound.
+- The three lower panels: the volume register of A, B and C after each engine step (a step of the line is one engine
+  step), with the tone and noise bits of the mixer above (squares when on).
+- Each triangle has a thin line through the channel panels: the channel's volume changes at the next step.
+- The window: a weapon taken (pod with fire held, frame 1097: `$0F` and `$16` on B and C at once), then laser
+  shots on A (40-step decays with noise), enemy missiles, bombs launched (`$18`) and bouncing (`$11`).
+
+```
+python3 tools/fig_ports.py draw --kind effects --window 1090:1200 --data work/z128B/ports-r1.json \
+    --out docs/img/sound/port-effects.png --title '...'
+```
+
+## 9.9 Open
 
 - The CPC rip's `StartMusic` sets `LastChannel` to `$FF`. With it, `StartSound`'s `XOR 1` gives `$FE`, then `$FF`:
   both go to channel C, and channel B would get no music. The cpc-power dump plays all three channels, so it did not
@@ -299,3 +507,11 @@ Renders, written only (`tools/sound_render.py wav`, 44.1 kHz mono, never played)
   128K, too, plays channel A's phrase as the simulation does: for 41 s of each pass, a different phrase from the CPC
   dump.
 - Where `SK10` comes from, and who wrote it.
+- The bytes that stay unexplained in the engine:
+  - `$CA5A`-`$CA5F` (`Unused6`): six zeros between PitchStep and PlayFrame. No instruction reads them and no run
+    executed them. They are probably the room left where the CPC's longer PPI output routine stood (section 9.6),
+    but that is an inference.
+  - `$CC9A` (`Unused1`): a zero in the variables that no instruction reads.
+  - The two effects `$C983` (sound `$13`) and `$C995` (sound `$17`): complete sounds that nothing calls. Whether the
+    CPC game calls them was not checked (the CPC disk images were not run).
+- Whether a 128K or +2 (not a Pentagon) shows the same every-second-frame play handler (section 9.8).

@@ -1,15 +1,17 @@
 # 3. Build and load
 
-The medium, the loader, the packer and what lands where, on every model that runs it; the source build (3.10-3.11).
-The unpack animations are not yet drawn.
+What this covers:
 
-<!-- Figures this document needs (GUIDE.md 4.2), remove each line when it is in: -->
-<!-- - an animation of every unpack (`kit/memanim.py`) -->
-<!-- - the build (mermaid) -->
+- the disk and its one file (3.1), the loader in the REM line and its paging test (3.2);
+- the Hrust 1 packer, with an animation of each unpack (3.3);
+- the two blocks: the intro (3.4), the game with its 128K set-up and glue (3.5), and where the game image comes
+  from (3.6);
+- the whole load against time, from the 128 menu to the game menu (3.7), and which machine takes which path (3.8);
+- the runs on other models (3.9), the source build (3.10) and the boot (3.11).
 
 This document covers how Zynaps 2 in 1 gets from its disk into the 128 K. The disk is simple: one BASIC file of 137
 sectors carries a loader in a REM line, a Hrust 1 depacker and two packed blocks. The first block is the intro (three
-pictures, the options, the STarKos tune, and the sound engine for page 4). The second is the 48K game with the
+pictures, the options, the STarKos tune, and the sound engine for page 4). The second is the game, Hewson's code, with the
 128K glue that sends its sound calls to the AY. A paging test in the loader picks the 128K path or the 48K one.
 
 The recordings and runs it rests on:
@@ -91,6 +93,39 @@ matches this depacker (it is new to the base).
 | 1 | `$3724` | `$88D5` (`$6000`-`$E8D4`) | `0e ce c4 0f c2 ff` | `257122c695da3fb66a056855e9782dd7` |
 | 2 | `$4E3B` | `$9B85` (`$6000`-`$FB84`) | `00 00 00 00 00 73` | `538bde1c38b329498d81d9468d2ec93f` |
 
+Both unpacks, as `c1` ran them:
+
+![Block 1, the intro: 56 sectors read to the address 6000, moved up, unpacked in place (c1 2061-2182)](img/load/unpack-block1.gif)
+
+![Block 2, the game: 79 sectors read to the address 6000, moved up, unpacked in place (c1 2838-2975)](img/load/unpack-block2.gif)
+
+How to read the animations:
+
+- **The big panel** is the memory `$5B00`-`$FFFF`, one row per 256 bytes, read with `memory_at` at each picture's
+  frame and T (the title line names them and the phase: reading, moving, unpacking).
+- **The colours** come from comparing that memory with the block's own bytes:
+  - green: unpacked bytes already final, below the output pointer;
+  - bright blue: the packed block still to be read; dim blue: packed bytes already read;
+  - yellow: written since the previous picture; grey: anything else (its value).
+- **The two arrows**: the output pointer (DE, the first byte from `$6000` not yet final) and the input pointer
+  (where the bit reader stands for that much output, from `tools/hrust1.py`'s decoder on the same block).
+- **Right**: the screen at that moment (the Hewson picture stays while block 2 loads), the input's lead over the
+  output, and the two lengths.
+- **The strip at the bottom**: the stretch of `c1` with the read and the move + unpack; the white tick is the
+  picture's moment.
+- **What it shows**:
+  - the sectors arrive at `$6000` upwards;
+  - the LDDR moves the packed block to end at the block's end (`$E8D4` / `$FB84`);
+  - the output then grows from `$6000` towards the input and never overtakes it (block 2: 19 405 bytes ahead
+    at 2915).
+- **The point**: Hrust 1 unpacks in place, in one buffer: the packed bytes sit at the top of the destination and are
+  consumed just ahead of the output. Block 1 takes 57 frames (2125-2182), block 2 70 frames (2905-2975).
+
+```bash
+python3 tools/fig_unpack.py --work work/z128A/c1 --block 1 --out docs/img/load/unpack-block1.gif
+python3 tools/fig_unpack.py --work work/z128A/c1 --block 2 --out docs/img/load/unpack-block2.gif
+```
+
 ## 3.4 Block 1: the intro
 
 | Range | Size | What | Goes to |
@@ -151,12 +186,12 @@ Block 2 unpacks to `$6000`-`$FB84`. Its code at `$6000` (`work/stage1/dis/blk2.a
      resets X = 0, Y = `$44` and takes the counters' first values).
 4. `JP $8000`: the game's own start.
 
-## 3.6 The game against the 48K tape
+## 3.6 Where the game image comes from
 
-The 48K game is the original Hewson tape's main block (`ZYNAPS.TAP`, the code block of 38 910 bytes at `$6801`;
+The game image is the original Hewson tape's main block (`ZYNAPS.TAP`, the code block of 38 910 bytes at `$6801`;
 `work/ref48`). The 128K image `$6800`-`$FFFF` before the glue differs from it in **151 bytes, 11 runs**:
 
-| Where | 48K | 2 in 1 | What |
+| Where | Hewson tape | This disk | What |
 | --- | --- | --- | --- |
 | `$8188`-`$8191` | `DF01 BF02 7F02 FD01 FD02` | `7F01 FB01 FD01 DF02 DF01` | the default keys: SPACE fire, Q, A, O, P |
 | `$86B7` | `$0A` | `$0C` | a delay count |
@@ -172,6 +207,28 @@ place in the frame, so the original's beam-timed loops ran early; the new counts
 what is stage 3's.
 
 ## 3.7 The stages in `c1`
+
+![From the disk to the game: 137 sectors, two Hrust 1 blocks, 1700 frames (34 s) from the 128 menu](img/load/load-timeline.png)
+
+How to read the figure:
+
+- **Top left**: the disk's tracks 1-9, one cell per sector, coloured by what it holds. `ZYNAPS.B` runs from track 1
+  sector 0 to sector 136 (the BASIC with the loader, the depacker, block 1, block 2); `boot.B` (TRD only) sits after it.
+- **Middle**: the screen at seven moments of `c1`, each with its frame, joined by a line to its place on the time
+  axis.
+- **The yellow curve**: how many sectors of `ZYNAPS.B` are in memory, compared with the file every frame
+  (measured). The two climbs are the loader's reads: block 1, 56 sectors in 52 frames (53.8 a second), and block 2,
+  79 sectors in 66 frames (59.8 a second).
+- **The bar under it**: the stages of the table below, by frame.
+- **The point**: the intro is not a wait screen. It runs between the two reads, and the load of the game happens
+  under the Hewson picture; the whole way from the 128 menu to the game menu takes about 34 seconds.
+
+```bash
+python3 tools/fig_load_timeline.py --work work/z128A/c1 --out docs/img/load/load-timeline.png
+```
+
+The moments, to the T state where the recording gives it:
+
 
 | Frame:T | What |
 | --- | --- |

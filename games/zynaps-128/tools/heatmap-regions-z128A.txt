@@ -1,0 +1,25 @@
+# Regions for tools/fig_heatmap.py on the play recordings (docs/02 2.3): START END NAME, the game's map with bank 0 at $C000.
+4000 5AFF the screen, the panel rows 19-23
+5B00 5B86 the 128K glue (FramePlay)
+5B87 5BAF GlueInstall (run once)
+5BB0 5BFF the stack (SP $5C00 down)
+5C00 63FF TileGraphics: 256 scenery tiles
+6400 67FF the wave sprites' cells
+6800 7E59 the level data
+7E5A 7FFF effects, variables, players
+8000 8515 variables, tables, texts
+8516 B30C the code
+B30D B3A8 the 15 hook stubs (128K)
+B3A9 B6FE the code
+B6FF BFFF the map ring (Start is gone)
+C000 DFFF GlyphCache: 4 shifts of 256 glyphs
+E000 E747 sprites, made plain
+E748 F047 sprite cache images, panel save
+F048 F107 the pod, made plain
+F108 F7FF row records, objects, strips
+F800 FAFF NodePool: 95 span nodes
+FB00 FBFF BitReverse
+FC00 FDFF HitGridX/Y, scenery script stack
+FE00 FF00 IM2 table or K-MOUSE driver
+FF01 FFD3 the title tune data (played silent)
+FFD4 FFFF Invulnerable, ColumnFlags
