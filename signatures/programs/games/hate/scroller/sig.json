@@ -1,0 +1,979 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/scroller",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: scroller",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "scroller"
+  ],
+  "summary": "Scroller.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1656,
+    "sha1": "a3d230eede693b17a113ccfe9bf4cd41586b71f2",
+    "masked_sha1": "711825fc392dc30ab46d24fb420401e4781e13ce"
+  },
+  "origin": "$D35E",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SavedStack"
+    },
+    {
+      "offset": 5,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollHalf"
+    },
+    {
+      "offset": 17,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollPage"
+    },
+    {
+      "offset": 98,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollHalf"
+    },
+    {
+      "offset": 142,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollHalf"
+    },
+    {
+      "offset": 150,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SavedStack"
+    },
+    {
+      "offset": 153,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RestoreUnderSprites"
+    },
+    {
+      "offset": 156,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollDistance"
+    },
+    {
+      "offset": 161,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollDistance"
+    },
+    {
+      "offset": 164,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollHalf"
+    },
+    {
+      "offset": 171,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollHalf"
+    },
+    {
+      "offset": 174,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollPage"
+    },
+    {
+      "offset": 179,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 182,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollPage"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollPage"
+    },
+    {
+      "offset": 191,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreshStripPage"
+    },
+    {
+      "offset": 243,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollHalf"
+    },
+    {
+      "offset": 246,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollPage"
+    },
+    {
+      "offset": 251,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 254,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreshStripPage"
+    },
+    {
+      "offset": 319,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollPage"
+    },
+    {
+      "offset": 325,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollPage"
+    },
+    {
+      "offset": 328,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseRowPtr"
+    },
+    {
+      "offset": 340,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StripCount"
+    },
+    {
+      "offset": 344,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StripCount"
+    },
+    {
+      "offset": 354,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundSetup"
+    },
+    {
+      "offset": 357,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BuildGroundProfile"
+    },
+    {
+      "offset": 360,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DemoFlag"
+    },
+    {
+      "offset": 367,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MainLoop"
+    },
+    {
+      "offset": 370,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseRecord"
+    },
+    {
+      "offset": 377,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseRecord"
+    },
+    {
+      "offset": 387,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseTable"
+    },
+    {
+      "offset": 390,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseRecord"
+    },
+    {
+      "offset": 398,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RowList"
+    },
+    {
+      "offset": 411,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SegmentRows"
+    },
+    {
+      "offset": 435,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RowList"
+    },
+    {
+      "offset": 438,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseRowPtr"
+    },
+    {
+      "offset": 444,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StripCount"
+    },
+    {
+      "offset": 448,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitlePlayer"
+    },
+    {
+      "offset": 451,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollPage"
+    },
+    {
+      "offset": 458,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EdgeTiles"
+    },
+    {
+      "offset": 461,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollPage"
+    },
+    {
+      "offset": 490,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SavedStack"
+    },
+    {
+      "offset": 493,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseRowPtr"
+    },
+    {
+      "offset": 499,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseRowPtr"
+    },
+    {
+      "offset": 515,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Tiles"
+    },
+    {
+      "offset": 542,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SavedStack"
+    },
+    {
+      "offset": 546,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreshStripPage"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "Blit",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Copy the 32 strips of the playfield to the screen"
+    },
+    {
+      "offset": 155,
+      "name": "ScrollStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One scroll step: toggle the half, make one strip"
+    },
+    {
+      "offset": 181,
+      "name": "StripPhase4",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Make the 4-pixel phase in page H - 1, half 0"
+    },
+    {
+      "offset": 253,
+      "name": "StripPhase2",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Make the 2-pixel phase in page H - 1, half $80"
+    },
+    {
+      "offset": 379,
+      "name": "CourseExpand",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Expand a course record into RowList"
+    },
+    {
+      "offset": 447,
+      "name": "FreshStrip",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Make a fresh strip from tiles, and the phase 2 pixels left of it"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "SP kept in $C331"
+    },
+    {
+      "offset": 4,
+      "name": "",
+      "comment": "SP walks the address list"
+    },
+    {
+      "offset": 7,
+      "name": "",
+      "comment": "DE = page $80 + $C32E, byte $C32F"
+    },
+    {
+      "offset": 24,
+      "name": "",
+      "comment": "16 column pairs"
+    },
+    {
+      "offset": 26,
+      "name": "BlitEvenColumn",
+      "comment": "an even column: the first cell, 4 lines"
+    },
+    {
+      "offset": 42,
+      "name": "",
+      "comment": "15 full cells"
+    },
+    {
+      "offset": 44,
+      "name": "BlitCellLoop",
+      "comment": ""
+    },
+    {
+      "offset": 78,
+      "name": "",
+      "comment": "the last cell, 4 lines"
+    },
+    {
+      "offset": 93,
+      "name": "",
+      "comment": "2 pages on, wrapping in $80-$BF"
+    },
+    {
+      "offset": 97,
+      "name": "",
+      "comment": "the same half"
+    },
+    {
+      "offset": 101,
+      "name": "",
+      "comment": "an odd column: 16 full cells"
+    },
+    {
+      "offset": 103,
+      "name": "BlitOddColumn",
+      "comment": "one cell, 8 lines up"
+    },
+    {
+      "offset": 137,
+      "name": "",
+      "comment": "2 pages on, wrapping in $80-$BF"
+    },
+    {
+      "offset": 145,
+      "name": "",
+      "comment": "the next column pair"
+    },
+    {
+      "offset": 148,
+      "name": "",
+      "comment": "SP back"
+    },
+    {
+      "offset": 152,
+      "name": "",
+      "comment": "the sprite lists; then on into the scroll step"
+    },
+    {
+      "offset": 155,
+      "name": "",
+      "comment": "the scroll distance + 2"
+    },
+    {
+      "offset": 163,
+      "name": "",
+      "comment": "half $80:"
+    },
+    {
+      "offset": 169,
+      "name": "",
+      "comment": "back to half 0"
+    },
+    {
+      "offset": 176,
+      "name": "",
+      "comment": "odd offset: the course check"
+    },
+    {
+      "offset": 181,
+      "name": "",
+      "comment": "the page offset + 1, mod 64"
+    },
+    {
+      "offset": 190,
+      "name": "",
+      "comment": "H = the page of the last fresh strip"
+    },
+    {
+      "offset": 193,
+      "name": "",
+      "comment": "DE = page H - 1, half 0, wrapping in $80-$BF"
+    },
+    {
+      "offset": 203,
+      "name": "",
+      "comment": "lines 0 and 1 clear"
+    },
+    {
+      "offset": 208,
+      "name": "",
+      "comment": "H's half 0, two lines up"
+    },
+    {
+      "offset": 213,
+      "name": "",
+      "comment": "HL = page H - 1, half 0"
+    },
+    {
+      "offset": 214,
+      "name": "",
+      "comment": "DE = page H - 2, line 2"
+    },
+    {
+      "offset": 226,
+      "name": "ShiftRight4Loop",
+      "comment": "4 pixels right, the nibble from H - 2 coming in"
+    },
+    {
+      "offset": 233,
+      "name": "",
+      "comment": "the last two lines: nothing comes in"
+    },
+    {
+      "offset": 240,
+      "name": "EnterHalf80",
+      "comment": "half 0: to half $80"
+    },
+    {
+      "offset": 248,
+      "name": "",
+      "comment": "even offset: a fresh strip"
+    },
+    {
+      "offset": 253,
+      "name": "",
+      "comment": "H = the page of the last fresh strip"
+    },
+    {
+      "offset": 256,
+      "name": "",
+      "comment": "DE = page H - 1, half $80"
+    },
+    {
+      "offset": 267,
+      "name": "",
+      "comment": "line 0 clear"
+    },
+    {
+      "offset": 270,
+      "name": "",
+      "comment": "H's half 0, one line up"
+    },
+    {
+      "offset": 275,
+      "name": "",
+      "comment": "HL = page H - 1, half $80"
+    },
+    {
+      "offset": 276,
+      "name": "",
+      "comment": "DE = page H - 2, line 3"
+    },
+    {
+      "offset": 288,
+      "name": "ShiftRight2Loop",
+      "comment": "2 pixels right, 2 bits from H - 2 coming in"
+    },
+    {
+      "offset": 301,
+      "name": "",
+      "comment": "the last lines: nothing comes in"
+    },
+    {
+      "offset": 318,
+      "name": "CourseCheck",
+      "comment": "the page offset + 1, mod 64"
+    },
+    {
+      "offset": 327,
+      "name": "",
+      "comment": "the high byte of the row 15 ahead"
+    },
+    {
+      "offset": 335,
+      "name": "",
+      "comment": "$FF: the course has run out"
+    },
+    {
+      "offset": 339,
+      "name": "",
+      "comment": "strips drawn this course + 1"
+    },
+    {
+      "offset": 349,
+      "name": "",
+      "comment": "the 32nd strip:"
+    },
+    {
+      "offset": 353,
+      "name": "",
+      "comment": "set up the round"
+    },
+    {
+      "offset": 356,
+      "name": "",
+      "comment": "build the ground profile; returns to ScrollStep's caller"
+    },
+    {
+      "offset": 359,
+      "name": "CourseEnd",
+      "comment": "the end of a course: the demo?"
+    },
+    {
+      "offset": 365,
+      "name": "",
+      "comment": "the demo: drop the return address, back to the menu"
+    },
+    {
+      "offset": 369,
+      "name": "NextCourse",
+      "comment": "otherwise the next course record, expanded"
+    },
+    {
+      "offset": 379,
+      "name": "",
+      "comment": "DE = the course data"
+    },
+    {
+      "offset": 382,
+      "name": "",
+      "comment": "$FFFF ends the table:"
+    },
+    {
+      "offset": 386,
+      "name": "",
+      "comment": "back to the record of round 1"
+    },
+    {
+      "offset": 395,
+      "name": "CourseDataFound",
+      "comment": ""
+    },
+    {
+      "offset": 396,
+      "name": "",
+      "comment": "skip the player's type"
+    },
+    {
+      "offset": 397,
+      "name": "",
+      "comment": "BC = RowList"
+    },
+    {
+      "offset": 400,
+      "name": "CourseSegment",
+      "comment": "the next course byte; $FF ends the course"
+    },
+    {
+      "offset": 406,
+      "name": "",
+      "comment": "its rows at $C8EA + 2 x b"
+    },
+    {
+      "offset": 414,
+      "name": "CopyRow",
+      "comment": "the next row"
+    },
+    {
+      "offset": 418,
+      "name": "",
+      "comment": "a zero high byte ends the list"
+    },
+    {
+      "offset": 422,
+      "name": "",
+      "comment": "the row into RowList"
+    },
+    {
+      "offset": 430,
+      "name": "NextCourseByte",
+      "comment": ""
+    },
+    {
+      "offset": 434,
+      "name": "CourseExpanded",
+      "comment": "the next row to draw: the first"
+    },
+    {
+      "offset": 440,
+      "name": "",
+      "comment": "no strips drawn yet"
+    },
+    {
+      "offset": 447,
+      "name": "",
+      "comment": "the new strip: page $80 + $C32E, half 0"
+    },
+    {
+      "offset": 457,
+      "name": "",
+      "comment": "the edge tile 23"
+    },
+    {
+      "offset": 460,
+      "name": "",
+      "comment": "...or 24 for one strip in four"
+    },
+    {
+      "offset": 472,
+      "name": "EdgeLines",
+      "comment": "8 lines of edge"
+    },
+    {
+      "offset": 488,
+      "name": "",
+      "comment": "SP kept in $C331"
+    },
+    {
+      "offset": 492,
+      "name": "",
+      "comment": "SP walks the rows from $C3F8"
+    },
+    {
+      "offset": 496,
+      "name": "",
+      "comment": "the next strip starts one row on"
+    },
+    {
+      "offset": 501,
+      "name": "",
+      "comment": "tile i = 0"
+    },
+    {
+      "offset": 502,
+      "name": "FreshTile",
+      "comment": "row i at offset i"
+    },
+    {
+      "offset": 508,
+      "name": "",
+      "comment": "the tile number"
+    },
+    {
+      "offset": 509,
+      "name": "",
+      "comment": "HL = $C400 + 8 x tile"
+    },
+    {
+      "offset": 518,
+      "name": "",
+      "comment": "8 lines of the tile"
+    },
+    {
+      "offset": 534,
+      "name": "",
+      "comment": "the next tile, 15 in all"
+    },
+    {
+      "offset": 540,
+      "name": "",
+      "comment": "SP back"
+    },
+    {
+      "offset": 544,
+      "name": "",
+      "comment": "the page of the fresh strip"
+    },
+    {
+      "offset": 548,
+      "name": "",
+      "comment": "DE = page H - 2, half $80"
+    },
+    {
+      "offset": 560,
+      "name": "",
+      "comment": "lines 0-2 clear"
+    },
+    {
+      "offset": 567,
+      "name": "",
+      "comment": "H's half 0, three lines up"
+    },
+    {
+      "offset": 572,
+      "name": "",
+      "comment": "HL = page H - 2, half $80"
+    },
+    {
+      "offset": 573,
+      "name": "",
+      "comment": "DE = page H - 2, line 1"
+    },
+    {
+      "offset": 580,
+      "name": "ShiftLeft2Loop",
+      "comment": "2 pixels left, 2 bits from H coming in"
+    },
+    {
+      "offset": 593,
+      "name": "",
+      "comment": "the last line clear"
+    },
+    {
+      "offset": 596,
+      "name": "BlitAddresses",
+      "comment": "Blit addresses, column 0 (17 cells)"
+    },
+    {
+      "offset": 630,
+      "name": "BlitColumn01",
+      "comment": "Blit addresses, column 1 (16 cells)"
+    },
+    {
+      "offset": 662,
+      "name": "BlitColumn02",
+      "comment": "Blit addresses, column 2 (17 cells)"
+    },
+    {
+      "offset": 696,
+      "name": "BlitColumn03",
+      "comment": "Blit addresses, column 3 (16 cells)"
+    },
+    {
+      "offset": 728,
+      "name": "BlitColumn04",
+      "comment": "Blit addresses, column 4 (17 cells)"
+    },
+    {
+      "offset": 762,
+      "name": "BlitColumn05",
+      "comment": "Blit addresses, column 5 (16 cells)"
+    },
+    {
+      "offset": 794,
+      "name": "BlitColumn06",
+      "comment": "Blit addresses, column 6 (17 cells)"
+    },
+    {
+      "offset": 828,
+      "name": "BlitColumn07",
+      "comment": "Blit addresses, column 7 (16 cells)"
+    },
+    {
+      "offset": 860,
+      "name": "BlitColumn08",
+      "comment": "Blit addresses, column 8 (17 cells)"
+    },
+    {
+      "offset": 894,
+      "name": "BlitColumn09",
+      "comment": "Blit addresses, column 9 (16 cells)"
+    },
+    {
+      "offset": 926,
+      "name": "BlitColumn10",
+      "comment": "Blit addresses, column 10 (17 cells)"
+    },
+    {
+      "offset": 960,
+      "name": "BlitColumn11",
+      "comment": "Blit addresses, column 11 (16 cells)"
+    },
+    {
+      "offset": 992,
+      "name": "BlitColumn12",
+      "comment": "Blit addresses, column 12 (17 cells)"
+    },
+    {
+      "offset": 1026,
+      "name": "BlitColumn13",
+      "comment": "Blit addresses, column 13 (16 cells)"
+    },
+    {
+      "offset": 1058,
+      "name": "BlitColumn14",
+      "comment": "Blit addresses, column 14 (17 cells)"
+    },
+    {
+      "offset": 1092,
+      "name": "BlitColumn15",
+      "comment": "Blit addresses, column 15 (16 cells)"
+    },
+    {
+      "offset": 1124,
+      "name": "BlitColumn16",
+      "comment": "Blit addresses, column 16 (17 cells)"
+    },
+    {
+      "offset": 1158,
+      "name": "BlitColumn17",
+      "comment": "Blit addresses, column 17 (16 cells)"
+    },
+    {
+      "offset": 1190,
+      "name": "BlitColumn18",
+      "comment": "Blit addresses, column 18 (17 cells)"
+    },
+    {
+      "offset": 1224,
+      "name": "BlitColumn19",
+      "comment": "Blit addresses, column 19 (16 cells)"
+    },
+    {
+      "offset": 1256,
+      "name": "BlitColumn20",
+      "comment": "Blit addresses, column 20 (17 cells)"
+    },
+    {
+      "offset": 1290,
+      "name": "BlitColumn21",
+      "comment": "Blit addresses, column 21 (16 cells)"
+    },
+    {
+      "offset": 1322,
+      "name": "BlitColumn22",
+      "comment": "Blit addresses, column 22 (17 cells)"
+    },
+    {
+      "offset": 1356,
+      "name": "BlitColumn23",
+      "comment": "Blit addresses, column 23 (16 cells)"
+    },
+    {
+      "offset": 1388,
+      "name": "BlitColumn24",
+      "comment": "Blit addresses, column 24 (17 cells)"
+    },
+    {
+      "offset": 1422,
+      "name": "BlitColumn25",
+      "comment": "Blit addresses, column 25 (16 cells)"
+    },
+    {
+      "offset": 1454,
+      "name": "BlitColumn26",
+      "comment": "Blit addresses, column 26 (17 cells)"
+    },
+    {
+      "offset": 1488,
+      "name": "BlitColumn27",
+      "comment": "Blit addresses, column 27 (16 cells)"
+    },
+    {
+      "offset": 1520,
+      "name": "BlitColumn28",
+      "comment": "Blit addresses, column 28 (17 cells)"
+    },
+    {
+      "offset": 1554,
+      "name": "BlitColumn29",
+      "comment": "Blit addresses, column 29 (16 cells)"
+    },
+    {
+      "offset": 1586,
+      "name": "BlitColumn30",
+      "comment": "Blit addresses, column 30 (17 cells)"
+    },
+    {
+      "offset": 1620,
+      "name": "BlitColumn31",
+      "comment": "Blit addresses, column 31 (16 cells)"
+    },
+    {
+      "offset": 1652,
+      "name": "BlitListEnd",
+      "comment": "The end mark of BlitAddresses ($FFFF), and a spare zero word"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$D35E",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/scroller.asm",
+    "label": "Blit"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

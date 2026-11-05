@@ -1,0 +1,206 @@
+{
+  "schema": 1,
+  "id": "programs/games/advanced-nether-earth/im2",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Advanced Nether Earth: im2",
+  "authors": [
+    "Eternity Industry"
+  ],
+  "year": 1998,
+  "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "im2"
+  ],
+  "summary": "The IM 2 table and jump, and the disk save's bridge between them.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 384,
+    "sha1": "65e1e473edbb69867d34fff7306f76532019ed3c",
+    "masked_sha1": "c4ff3f8cb0461bccc3fa9eedaba14c1fcc07ef41"
+  },
+  "origin": "$6800",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 266,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_A5ED"
+    },
+    {
+      "offset": 270,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4033"
+    },
+    {
+      "offset": 277,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    },
+    {
+      "offset": 284,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FLAGS"
+    },
+    {
+      "offset": 289,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LAST_K"
+    },
+    {
+      "offset": 292,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FLAGS2"
+    },
+    {
+      "offset": 297,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C000"
+    },
+    {
+      "offset": 311,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayRedraw"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 261,
+      "name": "GameSave",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Save the game through the disk module in bank 4, then back to play"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "ImTable",
+      "comment": "The IM 2 vector table: $6800-$6900, 257 bytes of $69 written by Restart; zero in the block"
+    },
+    {
+      "offset": 261,
+      "name": "",
+      "comment": "keep SP in SaveReturn's LD SP"
+    },
+    {
+      "offset": 265,
+      "name": "",
+      "comment": "GlueStack: bank 4 covers the game's stack"
+    },
+    {
+      "offset": 268,
+      "name": "",
+      "comment": "the module's save entry"
+    },
+    {
+      "offset": 272,
+      "name": "",
+      "comment": "bank 4: the disk module"
+    },
+    {
+      "offset": 275,
+      "name": "",
+      "comment": "a frame's start: the music handler has run before the switch"
+    },
+    {
+      "offset": 281,
+      "name": "",
+      "comment": "FLAGS: the keyboard state the module's key reading expects"
+    },
+    {
+      "offset": 286,
+      "name": "",
+      "comment": "LAST_K = ENTER"
+    },
+    {
+      "offset": 291,
+      "name": "",
+      "comment": "FLAGS2 bit 3: CAPS LOCK off"
+    },
+    {
+      "offset": 296,
+      "name": "",
+      "comment": "the disk module; it comes back with JP SaveReturn"
+    },
+    {
+      "offset": 299,
+      "name": "SaveReturn",
+      "comment": "back from the disk module (bank 0 paged again)"
+    },
+    {
+      "offset": 300,
+      "name": "SaveReturnSP",
+      "comment": "the old SP (self-modified operand)"
+    },
+    {
+      "offset": 302,
+      "name": "",
+      "comment": "IM 2 through ImTable again"
+    },
+    {
+      "offset": 309,
+      "name": "",
+      "comment": "a frame's start"
+    },
+    {
+      "offset": 310,
+      "name": "",
+      "comment": "PlayLoop's JP EnterPlay: the play screen again"
+    },
+    {
+      "offset": 313,
+      "name": "Im2Spare",
+      "comment": "48 bytes, never used"
+    },
+    {
+      "offset": 361,
+      "name": "ImJump",
+      "comment": "The JP the vector $6969 lands on: $C3 written by Restart, zero in the block"
+    },
+    {
+      "offset": 362,
+      "name": "ImHandler",
+      "comment": "The interrupt handler's address, the operand of ImJump: MusicInterrupt or PlayInterrupt"
+    },
+    {
+      "offset": 364,
+      "name": "ImSpare",
+      "comment": "20 bytes, never used, up to the sprites"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth",
+      "case": "games/advanced-nether-earth",
+      "address": "$6800",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/game/im2.asm",
+    "label": "ImTable"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/README.md"
+  ]
+}

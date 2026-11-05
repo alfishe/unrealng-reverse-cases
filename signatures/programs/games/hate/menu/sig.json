@@ -1,0 +1,559 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/menu",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: menu",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "menu"
+  ],
+  "summary": "Menu.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 549,
+    "sha1": "f12a394283098dd0454adb1750965c33aabb555a",
+    "masked_sha1": "0a86f73ef76ba1c1f9492004d75f3b3b5f9421e0"
+  },
+  "origin": "$F0DB",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 210,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PaintAttributes"
+    },
+    {
+      "offset": 213,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 219,
+      "length": 2,
+      "kind": "ext16",
+      "name": "UpdateHigh"
+    },
+    {
+      "offset": 222,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScores"
+    },
+    {
+      "offset": 226,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 229,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 232,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintString"
+    },
+    {
+      "offset": 235,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CreditsText1"
+    },
+    {
+      "offset": 238,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintString"
+    },
+    {
+      "offset": 241,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CreditsText2"
+    },
+    {
+      "offset": 244,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintString"
+    },
+    {
+      "offset": 255,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_465A"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 264,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 268,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 271,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InputDevice"
+    },
+    {
+      "offset": 274,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_590A"
+    },
+    {
+      "offset": 287,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 305,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RandomSeed"
+    },
+    {
+      "offset": 309,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RandomSeed"
+    },
+    {
+      "offset": 312,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 316,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 321,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 325,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 336,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_59CA"
+    },
+    {
+      "offset": 355,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_59AA"
+    },
+    {
+      "offset": 360,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 373,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 400,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 404,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InputDevice"
+    },
+    {
+      "offset": 410,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 413,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 423,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 486,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 507,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 514,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 517,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 207,
+      "name": "Menu",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The menu: device, demo or start"
+    },
+    {
+      "offset": 425,
+      "name": "BeepAt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Beep with the length and pitch at HL"
+    },
+    {
+      "offset": 429,
+      "name": "Beep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A two-tone beep"
+    },
+    {
+      "offset": 456,
+      "name": "Sweep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A rising sweep"
+    },
+    {
+      "offset": 485,
+      "name": "PlayEffect",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Play the requested effect of the highest priority"
+    },
+    {
+      "offset": 510,
+      "name": "PlaySound",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Play one effect entry"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "DemoFlag",
+      "comment": "The demo: $FF while the demo plays"
+    },
+    {
+      "offset": 1,
+      "name": "MenuIdleLow",
+      "comment": "The menu's idle count, low byte"
+    },
+    {
+      "offset": 2,
+      "name": "MenuIdleHigh",
+      "comment": "The menu's idle count in 256 passes; 2 000 starts the demo"
+    },
+    {
+      "offset": 4,
+      "name": "MenuBarAttr",
+      "comment": "The attribute address of the device highlight bar"
+    },
+    {
+      "offset": 6,
+      "name": "DemoMessage",
+      "comment": "\" DEMO \" at (2,6)"
+    },
+    {
+      "offset": 16,
+      "name": "PauseMessage",
+      "comment": "\"PAUSE!\" at (2,6)"
+    },
+    {
+      "offset": 26,
+      "name": "GameOverBox",
+      "comment": "The GAME OVER box"
+    },
+    {
+      "offset": 81,
+      "name": "AbortMessage",
+      "comment": "\"ABORT!\" at (2,6)"
+    },
+    {
+      "offset": 91,
+      "name": "BlankMessage",
+      "comment": "Six spaces at (2,6): clears the message window"
+    },
+    {
+      "offset": 101,
+      "name": "MenuText",
+      "comment": "The menu: SELECT and the six choices"
+    },
+    {
+      "offset": 209,
+      "name": "",
+      "comment": "attribute 6 over the cells of the list $D5B2"
+    },
+    {
+      "offset": 212,
+      "name": "",
+      "comment": "returning from the demo: the scores are left alone"
+    },
+    {
+      "offset": 218,
+      "name": "",
+      "comment": "MAX into HIGH"
+    },
+    {
+      "offset": 221,
+      "name": "",
+      "comment": "a new game's SCORE, MAX and round table"
+    },
+    {
+      "offset": 224,
+      "name": "MenuKeepScores",
+      "comment": ""
+    },
+    {
+      "offset": 228,
+      "name": "",
+      "comment": "the menu, then the credits stored in the font"
+    },
+    {
+      "offset": 246,
+      "name": "MenuReleaseWait",
+      "comment": "wait until no key is pressed"
+    },
+    {
+      "offset": 254,
+      "name": "",
+      "comment": "the menu beep"
+    },
+    {
+      "offset": 260,
+      "name": "MenuShowDevice",
+      "comment": "the idle count starts again"
+    },
+    {
+      "offset": 273,
+      "name": "",
+      "comment": "the bar: attribute row 8 + device, column 10"
+    },
+    {
+      "offset": 282,
+      "name": "BarRowLoop",
+      "comment": ""
+    },
+    {
+      "offset": 286,
+      "name": "BarRowFound",
+      "comment": ""
+    },
+    {
+      "offset": 291,
+      "name": "BarHighlightLoop",
+      "comment": "13 cells highlighted"
+    },
+    {
+      "offset": 296,
+      "name": "DeviceReleaseWait",
+      "comment": "wait until no key is pressed"
+    },
+    {
+      "offset": 304,
+      "name": "MenuLoop",
+      "comment": "the random seed, once a pass"
+    },
+    {
+      "offset": 311,
+      "name": "",
+      "comment": "the idle count"
+    },
+    {
+      "offset": 327,
+      "name": "",
+      "comment": "2 000 * 256 passes: the demo"
+    },
+    {
+      "offset": 335,
+      "name": "MenuReadKeys",
+      "comment": "key 6: start the game (bar on row 14)"
+    },
+    {
+      "offset": 346,
+      "name": "",
+      "comment": "key 5: the demo"
+    },
+    {
+      "offset": 354,
+      "name": "StartDemo",
+      "comment": "the demo (bar on row 13)"
+    },
+    {
+      "offset": 362,
+      "name": "HighlightChoice",
+      "comment": ""
+    },
+    {
+      "offset": 364,
+      "name": "ChoiceBarLoop",
+      "comment": ""
+    },
+    {
+      "offset": 369,
+      "name": "",
+      "comment": "the start beep"
+    },
+    {
+      "offset": 376,
+      "name": "MenuDevice",
+      "comment": "keys 1-4: the device"
+    },
+    {
+      "offset": 402,
+      "name": "DeviceChosen",
+      "comment": ""
+    },
+    {
+      "offset": 403,
+      "name": "",
+      "comment": "the chosen device"
+    },
+    {
+      "offset": 406,
+      "name": "",
+      "comment": "the device beep"
+    },
+    {
+      "offset": 412,
+      "name": "",
+      "comment": "the old bar back to white"
+    },
+    {
+      "offset": 417,
+      "name": "BarWhiteLoop",
+      "comment": ""
+    },
+    {
+      "offset": 435,
+      "name": "BeepStepLoop",
+      "comment": "the beeper, border 0"
+    },
+    {
+      "offset": 437,
+      "name": "",
+      "comment": "wave 1: 256 - L steps"
+    },
+    {
+      "offset": 443,
+      "name": "BeepWaveTwo",
+      "comment": "wave 2: 257 - L steps"
+    },
+    {
+      "offset": 450,
+      "name": "BeepNextStep",
+      "comment": ""
+    },
+    {
+      "offset": 465,
+      "name": "SweepToneLoop",
+      "comment": ""
+    },
+    {
+      "offset": 467,
+      "name": "SweepHalfPeriod",
+      "comment": "one half-period"
+    },
+    {
+      "offset": 470,
+      "name": "SweepWaitLoop",
+      "comment": ""
+    },
+    {
+      "offset": 477,
+      "name": "",
+      "comment": "the next tone, shorter by the step"
+    },
+    {
+      "offset": 484,
+      "name": "SoundRequests",
+      "comment": "The sound requests: one bit an effect"
+    },
+    {
+      "offset": 490,
+      "name": "LowestBitLoop",
+      "comment": "the lowest set bit"
+    },
+    {
+      "offset": 496,
+      "name": "EffectFound",
+      "comment": "entry = 5 * bit"
+    },
+    {
+      "offset": 519,
+      "name": "EffectTable",
+      "comment": "The five request effects"
+    },
+    {
+      "offset": 544,
+      "name": "RoundStartSound",
+      "comment": "The sweep of the round setup"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$F0DB",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/menu.asm",
+    "label": "DemoFlag"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

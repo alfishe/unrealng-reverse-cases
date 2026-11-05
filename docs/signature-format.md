@@ -6,8 +6,8 @@ names the known pieces at once, with their base address and ready annotations fo
 starts from what is still unknown.
 
 This document is the format: the folder tree, one entry's files, `sig.json` field by field, the match rules and the
-index. The scripts that read it are `kit/sig_index.py` (builds and checks the index) and `kit/sig_scan.py` (scans an
-image). Both are still to be written; this format is their specification.
+index. The scripts: `kit/sig_add.py` (makes entries from a finished case), `kit/sig_index.py` (checks the base and
+writes the index) and `kit/sig_scan.py` (scans an image); their shared code is `kit/siglib.py`.
 
 ## 1. The tree
 
@@ -50,9 +50,11 @@ signatures/
   programs/
     games/<game>/<module>/        the modules of a finished case, by the case's module names
     demos/<demo>/<part>/          the parts of a finished demo case
+    utilities/<program>/<module>/ editors, copiers, other tools
   formats/
-    music/                        pt2-module/, pt3-module/, stc-module/ ... (detectors, no bytes)
-    graphics/                     scr/, hrust-stream/ ...
+    music/                        pt2-module/main/, pt3-module/main/, stc-module/main/ ... (detectors, no bytes)
+    graphics/                     scr/main/, hrust-stream/main/ ...
+  sources.json                    what kit/sig_add.py sources adds, in order (section 6)
 ```
 
 Rules for names:
@@ -114,7 +116,8 @@ optional otherwise.
 
 | `kind` | What it covers | How a match treats it |
 | --- | --- | --- |
-| `rel16` | a little-endian word that holds an address inside the piece (`JP`, `CALL`, `LD HL,nn` to its own code or data) | skipped in the byte compare. Every `rel16` must give the same delta, its value minus the reference value: that delta is the found piece's base shift |
+| `rel16` | a little-endian word that holds an address inside the piece (`JP`, `CALL`, `LD HL,nn` to its own code or data) | skipped in the byte compare. Every `rel16` must give the same delta, its value minus the reference value: that delta is the found piece's base shift. When it differs from the place's own shift, the copy is stored here and moved before it runs: the hit gives `runs_at` |
+| `rel8hi` | a byte that holds the high byte of an address inside the piece (`LD H,n` before a table at a page start) | skipped. Its difference must be the high byte of the rel16 shift, whose low byte must be 0 |
 | `ext16` | a word that holds an address outside the piece: the host program's buffer, tune or variables | skipped. The found value is reported under `name` (`tune`, `screen_buffer`) |
 | `var8`, `var16` | settings and initial values that programs change: a speed, a self-modified operand's first value | skipped. The found value is reported |
 | `data` | a block of data embedded in the code (a table a program may replace) | skipped. Reported as a range |
@@ -163,7 +166,7 @@ and port numbers are not masked: they are the same in every copy and are the str
 | Match | Condition | Reported |
 | --- | --- | --- |
 | `exact` | the bytes at the place equal `code.bin` | the id, the address, `delta` = address minus `origin` |
-| `masked` | every unmasked byte equal, and all `rel16` words give one delta | the same, plus each `ext16`, `var8`, `var16` value by name and each `data` range |
+| `masked` | every unmasked byte equal, all `rel16` words give one delta, every `rel8hi` follows it | the same, plus each `ext16`, `var8`, `var16` value by name and each `data` range; `delta` is the rel16 shift, and `runs_at` the address the copy runs at when that is not where it lies |
 | `candidate` | at least half of the entry's anchors (section 4) hit in order at consistent offsets, but no full match | the id, the address, the differing offsets; a person decides whether it is a new variant |
 
 A `masked` match must have at least 32 unmasked bytes, or it is reported as a `candidate`; short pieces match too easily.
@@ -196,7 +199,7 @@ An entry is never edited only in the index.
   "anchors": {"21xxxxxxxxxxxxxxxxxxxxxx": [["packers/hrum/3.5/depacker", 17]]},
   "by_role": {"depacker": ["packers/hrum/3.5/depacker"]},
   "by_tag": {"hrum": ["packers/hrum/3.5/depacker"]},
-  "formats": ["formats/music/pt3-module"]
+  "formats": ["formats/music/pt3-module/main"]
 }
 ```
 
@@ -204,7 +207,8 @@ An entry is never edited only in the index.
 scan looks every 12-byte window of the image up in the table directly, with no hash to collide.
 - The index takes up to 8 anchors an entry, spread over its length.
 - It skips runs with fewer than 4 distinct byte values (fills, zero tables).
-- An entry with no such run gets no anchors and is found only through `by_sha1` and `by_masked_sha1`.
+- An entry with no such run gets no anchors; the scan looks for it as an exact copy only. `kit/sig_add.py` does not
+  add such pieces (a buffer of zeros, a fill): nothing would tell them from any other.
 
 **The scan.** `kit/sig_scan.py IMAGE --base ADDR [--bank N] [--out hits.json] [--ann]`:
 1. It looks every window of the image up in `anchors`.
@@ -212,7 +216,7 @@ scan looks every 12-byte window of the image up in the table directly, with no h
 3. It runs the full match of 3.8 for each group.
 4. It runs every `formats` detector.
 
-The output is a list of hits: `{"id", "address", "match", "delta", "values", "differs"}`. `--ann` writes the hits'
+The output is a list of hits: `{"id", "address", "match", "delta", "runs_at", "values", "differs", "anchors"}`. `--ann` writes the hits'
 `entries` and `labels` as `.ann` lines with the found addresses, ready to merge into the case's annotations.
 
 `INDEX.md` is the human view, one table per folder: name, role, length, authors, year, the programs it was found in.
@@ -233,9 +237,28 @@ checks or it does not.
 
 ## 6. Adding entries
 
-- **A finished case** adds its modules under `programs/games/<game>/` (or `demos/`). Also:
+`kit/sig_add.py` makes the entries; `signatures/sources.json` lists every addition in order, so the base is rebuilt
+with one command after the cases' builds (the listings are build output):
+
+```bash
+python3 kit/sig_add.py sources                 # every addition in signatures/sources.json
+python3 kit/sig_index.py                       # the check, then index.json and INDEX.md
+```
+
+| Mode | Makes | From |
+| --- | --- | --- |
+| `ann` | one entry per module of a case's annotations, `programs/<family>/<case>/<module>`: the bytes from the case's image, the module's range as `kit/mkgame.py` cuts it, `entries` from the code entries, `labels` from the data entries and the inline names | `case.json`, the `.ann`, and the build's listing for the instruction starts (without it the code entries are decoded in a line) |
+| `lst` | one entry from a sjasmplus listing, label to label (the nth time the first appears: a macro's expansions), with its metadata given in the addition | the listing; an image when the listing does not show every byte (an `INCBIN`) |
+
+The mask is made from the code: each instruction's 16-bit operand is `rel16` inside the piece, `ext16` outside it
+(named by the annotations), and unmasked in the ROM; a word table (`w` entries, `DW`) that points inside the piece is
+`rel16`. A `lst` addition may list `copies` (other listings or expansions of the same piece): the bytes in which a copy
+differs become `rel8hi` (they follow the shift's high byte) or `var8`, and each copy becomes a `found_in` item.
+
+- **A finished case** adds its modules under `programs/games/<game>/` (or `demos/`, `utilities/`). Also:
   - each third-party piece it identified goes under its domain;
-  - a copy of a piece already in the base becomes one more `found_in` item on that entry, not a new entry.
+  - a copy of a piece already in the base becomes one more `found_in` item on that entry, not a new entry. The add
+    finds this itself: a piece that matches an entry (exact, or masked) is added to it.
 
   The case's WALKTHROUGH says which entries it added.
 - **A piece from outside a case** (a player from its author's release) gets `found_in` with `case: null` and the

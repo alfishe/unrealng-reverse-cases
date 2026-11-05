@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "id": "formats/music/pt2-module/main",
+  "kind": "format",
+  "role": "music-data",
+  "name": "Pro Tracker 2 module (file form or compiled with its player)",
+  "authors": [],
+  "year": null,
+  "tags": [
+    "ay",
+    "pt2",
+    "music"
+  ],
+  "summary": "A tune in the Pro Tracker 2 layout, found by its structure: delay, positions, loop, the position list ending in $FF, a printable name and pointers that land inside the module, either as offsets or absolute.",
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth: TAIGA by X-Man, the game music",
+      "case": "games/advanced-nether-earth",
+      "address": "$CA45",
+      "bank": 1,
+      "delta": null,
+      "match": "format",
+      "commit": null
+    },
+    {
+      "program": "Advanced Nether Earth: NETHER EARTH (END) by Syrus, Dead End",
+      "case": "games/advanced-nether-earth",
+      "address": "$CA45",
+      "bank": 3,
+      "delta": null,
+      "match": "format",
+      "commit": null
+    },
+    {
+      "program": "Advanced Nether Earth: MAD NIGHT by Syrus, the intro",
+      "case": "games/advanced-nether-earth",
+      "address": "$CA45",
+      "bank": 6,
+      "delta": null,
+      "match": "format",
+      "commit": null
+    }
+  ],
+  "docs": [
+    "games/advanced-nether-earth/docs/09-sound.md",
+    "games/advanced-nether-earth/src/music/stp-player.asm"
+  ]
+}

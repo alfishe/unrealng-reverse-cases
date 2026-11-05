@@ -1,0 +1,4103 @@
+{
+ "schema": 1,
+ "anchor_length": 12,
+ "entries": {
+  "disk/tr-dos/rom-gadget-reader/ultraxor-1.2": {
+   "kind": "code",
+   "role": "sector-reader",
+   "name": "Sector reader through TR-DOS ROM gadgets (UltraXOR v1.2's)",
+   "tags": [
+    "tr-dos",
+    "wd1793",
+    "sector-reader",
+    "rom-gadgets",
+    "128k-paging"
+   ],
+   "found_in": 1,
+   "length": 117,
+   "sha1": "f01bf2eb9be5fbcd3875b5dfb3d1639dd2c21a51",
+   "masked_sha1": "303de01931cbb0292d8c1b78dad2e330b23988f9",
+   "origin": "$5DF7"
+  },
+  "formats/music/pt2-module/main": {
+   "kind": "format",
+   "role": "music-data",
+   "name": "Pro Tracker 2 module (file form or compiled with its player)",
+   "tags": [
+    "ay",
+    "pt2",
+    "music"
+   ],
+   "found_in": 3
+  },
+  "formats/music/pt3-module/main": {
+   "kind": "format",
+   "role": "music-data",
+   "name": "Pro Tracker 3 / Vortex Tracker II module",
+   "tags": [
+    "ay",
+    "pt3",
+    "vortex",
+    "music"
+   ],
+   "found_in": 2
+  },
+  "packers/hrum/3.5/depacker": {
+   "kind": "code",
+   "role": "depacker",
+   "name": "HRUM 3.5 depacker (the copy a block's set-up moves to a free place)",
+   "tags": [
+    "hrum",
+    "packer",
+    "depacker"
+   ],
+   "found_in": 3,
+   "length": 114,
+   "sha1": "d882be7576ed9bb1eff70aea9a6dbd924a1dcd25",
+   "masked_sha1": "8b6b1bb5c19821d8839a64641b660ee695ec2109",
+   "origin": "$5B89"
+  },
+  "packers/hrust/1/screen-depacker": {
+   "kind": "code",
+   "role": "depacker",
+   "name": "Hrust 1 depacker, self-relocating, without its header",
+   "tags": [
+    "hrust",
+    "packer",
+    "depacker",
+    "self-relocating"
+   ],
+   "found_in": 1,
+   "length": 241,
+   "sha1": "231da31c51acb45ad66188620032af5de99e12f0",
+   "masked_sha1": "9f7ff7ebadcf29a038d69737675a844e68d1f6cc",
+   "origin": "$68C5"
+  },
+  "programs/games/advanced-nether-earth/construction": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Advanced Nether Earth: construction",
+   "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "construction"
+   ],
+   "found_in": 1,
+   "length": 1140,
+   "sha1": "916863437903993829e90b1bb9f5b54961fff781",
+   "masked_sha1": "1b6340e89c17095d60edf0632a13991b922b753c",
+   "origin": "$C849"
+  },
+  "programs/games/advanced-nether-earth/disk": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Advanced Nether Earth: disk",
+   "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "disk"
+   ],
+   "found_in": 1,
+   "length": 112,
+   "sha1": "6e7d3d2cac1c7e04e6845121c22483dbd8443bda",
+   "masked_sha1": "5021c0bc61ee4ba9b380f3facb35ec35a898b5a8",
+   "origin": "$A56A"
+  },
+  "programs/games/advanced-nether-earth/endings": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Advanced Nether Earth: endings",
+   "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "endings"
+   ],
+   "found_in": 1,
+   "length": 166,
+   "sha1": "de11051844a6751eb1b96002660e8ca40276efff",
+   "masked_sha1": "99f73765697db485e15117a87dfa6020c9bbb62f",
+   "origin": "$AE6B"
+  },
+  "programs/games/advanced-nether-earth/font": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Advanced Nether Earth: font",
+   "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "font"
+   ],
+   "found_in": 1,
+   "length": 929,
+   "sha1": "e2d03720e958b18f2a05d445de5bdfa4740f85ae",
+   "masked_sha1": "e2d03720e958b18f2a05d445de5bdfa4740f85ae",
+   "origin": "$C4A8"
+  },
+  "programs/games/advanced-nether-earth/gameturn": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Advanced Nether Earth: gameturn",
+   "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "gameturn"
+   ],
+   "found_in": 1,
+   "length": 265,
+   "sha1": "42d548e804c108faa9e1495e37b121779e093dd5",
+   "masked_sha1": "6c3328fd953557f6615080c9cfdf39a35722752e",
+   "origin": "$AD62"
+  },
+  "programs/games/advanced-nether-earth/im2": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Advanced Nether Earth: im2",
+   "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "im2"
+   ],
+   "found_in": 1,
+   "length": 384,
+   "sha1": "65e1e473edbb69867d34fff7306f76532019ed3c",
+   "masked_sha1": "c4ff3f8cb0461bccc3fa9eedaba14c1fcc07ef41",
+   "origin": "$6800"
+  },
+  "programs/games/advanced-nether-earth/interrupts": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Advanced Nether Earth: interrupts",
+   "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "interrupts"
+   ],
+   "found_in": 1,
+   "length": 322,
+   "sha1": "e8907630e34ed78840331cd5be1b8cc31c253b5e",
+   "masked_sha1": "fffa988c29c2038b38d42b84d944f462f8b11568",
+   "origin": "$D566"
+  },
+  "programs/games/advanced-nether-earth/mainmenu": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Advanced Nether Earth: mainmenu",
+   "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "mainmenu"
+   ],
+   "found_in": 1,
+   "length": 936,
+   "sha1": "91edd8839270b8ea38733f869ff9081190586d7d",
+   "masked_sha1": "e6493d739bb50324caf467e132476ec2d351c22d",
+   "origin": "$C100"
+  },
+  "programs/games/advanced-nether-earth/music": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Advanced Nether Earth: music",
+   "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "music"
+   ],
+   "found_in": 1,
+   "length": 128,
+   "sha1": "e9945034889efe95f2867742d4e3ff14bd86fa6d",
+   "masked_sha1": "c5a559642dccdc5e79ef965e1e663bb8f5acedef",
+   "origin": "$6780"
+  },
+  "programs/games/advanced-nether-earth/robotmenu": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Advanced Nether Earth: robotmenu",
+   "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "robotmenu"
+   ],
+   "found_in": 1,
+   "length": 1602,
+   "sha1": "ef4f2139c460bdd9ee5dcaea05a0b93544be7ec4",
+   "masked_sha1": "54a0065c3cf22d7e9e8c3edced437af2fd4fa860",
+   "origin": "$A720"
+  },
+  "programs/games/advanced-nether-earth/screen": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Advanced Nether Earth: screen",
+   "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "screen"
+   ],
+   "found_in": 1,
+   "length": 707,
+   "sha1": "dbe42ad0ce65818768116d3605875242f44b3c61",
+   "masked_sha1": "e4a61b477e6f4930ee80466d366ecc61f2fdfcb9",
+   "origin": "$D0B9"
+  },
+  "programs/games/advanced-nether-earth/sprites": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Advanced Nether Earth: sprites",
+   "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "sprites"
+   ],
+   "found_in": 1,
+   "length": 15338,
+   "sha1": "972d71684d9353dad80959a42add3a5f720a2009",
+   "masked_sha1": "972d71684d9353dad80959a42add3a5f720a2009",
+   "origin": "$6980"
+  },
+  "programs/games/advanced-nether-earth/start": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Advanced Nether Earth: start",
+   "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "start"
+   ],
+   "found_in": 1,
+   "length": 326,
+   "sha1": "d8a7b2a1d5dc09384a186a772cb5f810b8da8486",
+   "masked_sha1": "76f4f510da25bdc831d610c29e9f69614efef4ea",
+   "origin": "$A5DA"
+  },
+  "programs/games/advanced-nether-earth/viewtail": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Advanced Nether Earth: viewtail",
+   "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "viewtail"
+   ],
+   "found_in": 1,
+   "length": 79,
+   "sha1": "cf9634f5dee253d87dcfe531c0e7527b717c0e66",
+   "masked_sha1": "cf9634f5dee253d87dcfe531c0e7527b717c0e66",
+   "origin": "$6731"
+  },
+  "programs/games/hate/buffers": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: buffers",
+   "tags": [
+    "hate",
+    "game-module",
+    "buffers"
+   ],
+   "found_in": 1,
+   "length": 8268,
+   "sha1": "d87fed60c6e5218163d9963f04bb38a53e6485fe",
+   "masked_sha1": "7b1a5a2adb082b40b53a2a7d455e7a46836af6d1",
+   "origin": "$5FB4"
+  },
+  "programs/games/hate/course": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "H.A.T.E.: course",
+   "tags": [
+    "hate",
+    "game-module",
+    "course"
+   ],
+   "found_in": 1,
+   "length": 2866,
+   "sha1": "31230763c7a81537d4cd8a39bacb4b80fd256e28",
+   "masked_sha1": "f14e9eb244a5e8dc004f9ddd2e331e6da1761377",
+   "origin": "$C400"
+  },
+  "programs/games/hate/coursedata": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: coursedata",
+   "tags": [
+    "hate",
+    "game-module",
+    "coursedata"
+   ],
+   "found_in": 1,
+   "length": 3328,
+   "sha1": "9b761bc1556bccd10c51a3797b004b6ce3b78863",
+   "masked_sha1": "a384830fe37199834d52ad19d585dc03f3aa8823",
+   "origin": "$F300"
+  },
+  "programs/games/hate/gamedata": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: gamedata",
+   "tags": [
+    "hate",
+    "game-module",
+    "gamedata"
+   ],
+   "found_in": 1,
+   "length": 1024,
+   "sha1": "3cc316bbd45ce9c8caff4172d11163f8a877b25d",
+   "masked_sha1": "8b5c1fe294973ebf0fa8e66b8a702a1e54d368b9",
+   "origin": "$C000"
+  },
+  "programs/games/hate/hits": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: hits",
+   "tags": [
+    "hate",
+    "game-module",
+    "hits"
+   ],
+   "found_in": 1,
+   "length": 617,
+   "sha1": "588b51c80d39bfab16a030b74635afb79fc2292b",
+   "masked_sha1": "96f1b8cbf5effec78aad26671a7f843cc7d8263f",
+   "origin": "$EBAA"
+  },
+  "programs/games/hate/hud": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: hud",
+   "tags": [
+    "hate",
+    "game-module",
+    "hud"
+   ],
+   "found_in": 1,
+   "length": 402,
+   "sha1": "3c0089a00d43ba20d081e0c1ad99c485ba222d62",
+   "masked_sha1": "64a21ea16dbc77d143bec2e2d9240aeae00f486b",
+   "origin": "$EE13"
+  },
+  "programs/games/hate/mainloop": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: mainloop",
+   "tags": [
+    "hate",
+    "game-module",
+    "mainloop"
+   ],
+   "found_in": 1,
+   "length": 445,
+   "sha1": "4fe642a31368810298d4d21c136f6c8015006448",
+   "masked_sha1": "e989ce3fd4de961435d6ae7e1937f8cd947bcc87",
+   "origin": "$CF32"
+  },
+  "programs/games/hate/menu": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: menu",
+   "tags": [
+    "hate",
+    "game-module",
+    "menu"
+   ],
+   "found_in": 1,
+   "length": 549,
+   "sha1": "f12a394283098dd0454adb1750965c33aabb555a",
+   "masked_sha1": "0a86f73ef76ba1c1f9492004d75f3b3b5f9421e0",
+   "origin": "$F0DB"
+  },
+  "programs/games/hate/mover": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: mover",
+   "tags": [
+    "hate",
+    "game-module",
+    "mover"
+   ],
+   "found_in": 1,
+   "length": 1328,
+   "sha1": "00c32bb83d37d090c6cd68d305c9f2ee27f23ae2",
+   "masked_sha1": "0f53788b0528164c54483a40b507e8c64871782e",
+   "origin": "$E15C"
+  },
+  "programs/games/hate/objview": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: objview",
+   "tags": [
+    "hate",
+    "game-module",
+    "objview"
+   ],
+   "found_in": 1,
+   "length": 310,
+   "sha1": "61e1a8cb707ab475c4ca2f07345854194fa4baa1",
+   "masked_sha1": "53a374f027def00e597231c007b02d9d74bf6110",
+   "origin": "$EFA5"
+  },
+  "programs/games/hate/player": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: player",
+   "tags": [
+    "hate",
+    "game-module",
+    "player"
+   ],
+   "found_in": 1,
+   "length": 940,
+   "sha1": "98a04f541eb47c509afb90aff305059836bc59df",
+   "masked_sha1": "b65c8e59b1a763f7c09da29e7d4fc48071be20c1",
+   "origin": "$E68C"
+  },
+  "programs/games/hate/roundsetup": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: roundsetup",
+   "tags": [
+    "hate",
+    "game-module",
+    "roundsetup"
+   ],
+   "found_in": 1,
+   "length": 623,
+   "sha1": "e84570d2bfeb17c91cdf13c4d6c67b64d65e61e4",
+   "masked_sha1": "06d8441b81979f176b0982c93abe643640fa6bc5",
+   "origin": "$D0EF"
+  },
+  "programs/games/hate/scroller": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: scroller",
+   "tags": [
+    "hate",
+    "game-module",
+    "scroller"
+   ],
+   "found_in": 1,
+   "length": 1656,
+   "sha1": "a3d230eede693b17a113ccfe9bf4cd41586b71f2",
+   "masked_sha1": "711825fc392dc30ab46d24fb420401e4781e13ce",
+   "origin": "$D35E"
+  },
+  "programs/games/hate/shadows": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: shadows",
+   "tags": [
+    "hate",
+    "game-module",
+    "shadows"
+   ],
+   "found_in": 1,
+   "length": 886,
+   "sha1": "b3108f481f6521d3721a048950ed2937d8be72d0",
+   "masked_sha1": "932219181ae05a14dbcd4a7f7eaa47be004b1163",
+   "origin": "$DDE6"
+  },
+  "programs/games/hate/sprites": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: sprites",
+   "tags": [
+    "hate",
+    "game-module",
+    "sprites"
+   ],
+   "found_in": 1,
+   "length": 1040,
+   "sha1": "171c8657e39958dc72937b440ff9079b19a18835",
+   "masked_sha1": "fad26114f171284124b45e58c59208b6084b555c",
+   "origin": "$D9D6"
+  },
+  "programs/games/hate/startup": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: startup",
+   "tags": [
+    "hate",
+    "game-module",
+    "startup"
+   ],
+   "found_in": 1,
+   "length": 14848,
+   "sha1": "7134fa78ba588afa42b2274a370bc3140daa8cc4",
+   "masked_sha1": "85ad97068172b254f419898b4e00039f90615fab",
+   "origin": "$8600"
+  },
+  "programs/games/hate/statics": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: statics",
+   "tags": [
+    "hate",
+    "game-module",
+    "statics"
+   ],
+   "found_in": 1,
+   "length": 370,
+   "sha1": "99e10b8eb41cac27848202d1b542fe16f3284b01",
+   "masked_sha1": "6216eec8855a0c2a6cffae4af8b63477ce6b55d9",
+   "origin": "$EA38"
+  },
+  "programs/games/hate/titleplayer": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "H.A.T.E.: titleplayer",
+   "tags": [
+    "hate",
+    "game-module",
+    "titleplayer"
+   ],
+   "found_in": 1,
+   "length": 1536,
+   "sha1": "6dec36ad620c046e31c431db16dee87c35144d80",
+   "masked_sha1": "bb7a40583084dcad9af91ca9a4347fa2569f4435",
+   "origin": "$8000"
+  },
+  "programs/games/nether-earth/bases": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: bases",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "bases"
+   ],
+   "found_in": 2,
+   "length": 672,
+   "sha1": "e7e83331fef7e24ffe55db057b53f7e67c90a43a",
+   "masked_sha1": "76423721220587c2a72ce4f7a6db5b124cd7a0d2",
+   "origin": "$BB09"
+  },
+  "programs/games/nether-earth/construction": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: construction",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "construction"
+   ],
+   "found_in": 1,
+   "length": 1140,
+   "sha1": "1f5fb0893bf4dac84556edf25a337c6573f2d8fc",
+   "masked_sha1": "13a8cd805e9bc87cbe205fe04f9e94cdb2229395",
+   "origin": "$C849"
+  },
+  "programs/games/nether-earth/controls": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: controls",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "controls"
+   ],
+   "found_in": 2,
+   "length": 105,
+   "sha1": "78cd7e753520f9b299aedadf95282e226085af19",
+   "masked_sha1": "6c1272147e57e0e0710c7d25e91b008762609937",
+   "origin": "$D37C"
+  },
+  "programs/games/nether-earth/enemy": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: enemy",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "enemy"
+   ],
+   "found_in": 2,
+   "length": 789,
+   "sha1": "d35a48d44f9b1225597fc7d969805d1778c9164c",
+   "masked_sha1": "43d768bd366ad946f4fa3aebb516a64779efc717",
+   "origin": "$B7F4"
+  },
+  "programs/games/nether-earth/font": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth: font",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "font"
+   ],
+   "found_in": 1,
+   "length": 512,
+   "sha1": "a00080362581f5259b1b72f7eafd12a9ae232466",
+   "masked_sha1": "a00080362581f5259b1b72f7eafd12a9ae232466",
+   "origin": "$6780"
+  },
+  "programs/games/nether-earth/gameturn": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: gameturn",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "gameturn"
+   ],
+   "found_in": 1,
+   "length": 431,
+   "sha1": "df15060490e90ca2f8c307de4c769dfb3aab9f5a",
+   "masked_sha1": "a2180d1ccd24054aed5550c3ad0e57b135d96928",
+   "origin": "$AD62"
+  },
+  "programs/games/nether-earth/interrupts": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: interrupts",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "interrupts"
+   ],
+   "found_in": 1,
+   "length": 322,
+   "sha1": "38f5f0a3793574a5525e9553b42f8e62ba0f26bd",
+   "masked_sha1": "0afdabb33870e3d185bfd7eef0fb43e96ed2ced0",
+   "origin": "$D566"
+  },
+  "programs/games/nether-earth/level": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth: level",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "level"
+   ],
+   "found_in": 2,
+   "length": 855,
+   "sha1": "c7b766ec8e0f7085f3917fef7776d209df4715ba",
+   "masked_sha1": "22e275777715e6398a40ee20eeb0e780245787ef",
+   "origin": "$BDA9"
+  },
+  "programs/games/nether-earth/mainmenu": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: mainmenu",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "mainmenu"
+   ],
+   "found_in": 1,
+   "length": 935,
+   "sha1": "28ff026832a0b38b76ab2bed2a93f2bf416ab848",
+   "masked_sha1": "bc97ebeef6b7f9897cafbe73bf9bac4ae88ffe7a",
+   "origin": "$C100"
+  },
+  "programs/games/nether-earth/music": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: music",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "music"
+   ],
+   "found_in": 1,
+   "length": 930,
+   "sha1": "4b2012085331f031f4c9daa0c63d012c2ffeb219",
+   "masked_sha1": "dfd19e24d64e8c9acb6fc47b02d0a367ae0a8f62",
+   "origin": "$C4A7"
+  },
+  "programs/games/nether-earth/print": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: print",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "print"
+   ],
+   "found_in": 2,
+   "length": 385,
+   "sha1": "3a1f4725982e4f6b2a9c390657c0640fda3612df",
+   "masked_sha1": "3adcb15883afe922a7ff30d6296a8ae0ab33d1a1",
+   "origin": "$D3E5"
+  },
+  "programs/games/nether-earth/robotmenu": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: robotmenu",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "robotmenu"
+   ],
+   "found_in": 1,
+   "length": 1602,
+   "sha1": "875c7fbb9f5e521c911ce5d82a3f53fe632e7a8d",
+   "masked_sha1": "fbdbb5e59f67e5913f7194f78f996ec08da5e677",
+   "origin": "$A720"
+  },
+  "programs/games/nether-earth/screen": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: screen",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "screen"
+   ],
+   "found_in": 1,
+   "length": 707,
+   "sha1": "1cb801919a5789720f2ac0ff28a478b74efd4374",
+   "masked_sha1": "f15d52223a4ff6329805479075be409330d3264a",
+   "origin": "$D0B9"
+  },
+  "programs/games/nether-earth/ship": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: ship",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "ship"
+   ],
+   "found_in": 2,
+   "length": 441,
+   "sha1": "3b416276166ed52335804c75a0c5dbf609b9a69e",
+   "masked_sha1": "d52e223dca42356a074b505b94cfde39c2938c75",
+   "origin": "$AF11"
+  },
+  "programs/games/nether-earth/sprites": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth: sprites",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "sprites"
+   ],
+   "found_in": 1,
+   "length": 15488,
+   "sha1": "a135a60a0f1e970daf56f3c317b0a7b7c28f5140",
+   "masked_sha1": "a135a60a0f1e970daf56f3c317b0a7b7c28f5140",
+   "origin": "$6980"
+  },
+  "programs/games/nether-earth/start": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: start",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "start"
+   ],
+   "found_in": 1,
+   "length": 288,
+   "sha1": "d1bcdac30ad188141963a9d27f2e763aec456b84",
+   "masked_sha1": "e781504770eb85f50a6800d2929a61d7395cef77",
+   "origin": "$A600"
+  },
+  "programs/games/nether-earth/tables": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth: tables",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "tables"
+   ],
+   "found_in": 2,
+   "length": 299,
+   "sha1": "725df228788003e8540b7ad64f1ec531cf20f998",
+   "masked_sha1": "725df228788003e8540b7ad64f1ec531cf20f998",
+   "origin": "$D6A8"
+  },
+  "programs/games/nether-earth/view": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: view",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "view"
+   ],
+   "found_in": 2,
+   "length": 1020,
+   "sha1": "b872775e816e43c63e36003367838fc84bb93a83",
+   "masked_sha1": "1f0eb2f74042fafa3a8b2bbf4fe391229ccf47a3",
+   "origin": "$CCBD"
+  },
+  "programs/games/nether-earth/viewbuffer": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth: viewbuffer",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "viewbuffer"
+   ],
+   "found_in": 1,
+   "length": 3200,
+   "sha1": "9d2f7f66b5a69c5f989555928970122e2b005e88",
+   "masked_sha1": "9d2f7f66b5a69c5f989555928970122e2b005e88",
+   "origin": "$5B00"
+  },
+  "programs/games/nether-earth/world": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth: world",
+   "tags": [
+    "nether-earth",
+    "game-module",
+    "world"
+   ],
+   "found_in": 2,
+   "length": 1834,
+   "sha1": "68bb157c118e3c290ee933516d1e9ffc039ba84b",
+   "masked_sha1": "7a3d4ff13cd7249237cf1ede8c068bfb44dce3cd",
+   "origin": "$B0CA"
+  },
+  "programs/utilities/nether-earth-editor/mix": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth Editor: mix",
+   "tags": [
+    "nether-earth-editor",
+    "game-module",
+    "mix"
+   ],
+   "found_in": 1,
+   "length": 2244,
+   "sha1": "f2575e4b85c775cb5edee37ce6924386750be40a",
+   "masked_sha1": "055e729f1914108f0359f0f536a5cfbefb18cdf2",
+   "origin": "$C350"
+  },
+  "protection/ultraxor/1.2/head": {
+   "kind": "code",
+   "role": "protection-layer",
+   "name": "UltraXOR v1.2 by Paracels: the envelope's head and its first, plain layer",
+   "tags": [
+    "ultraxor",
+    "protection",
+    "xor",
+    "r-register"
+   ],
+   "found_in": 1,
+   "length": 83,
+   "sha1": "62e0afa46f9e34a0334c3a83e4f160ffa2f5b1d6",
+   "masked_sha1": "ef7aa33682af3ad7b978e3583798bb292dd5e820",
+   "origin": "$7705"
+  },
+  "sound/ay-players/pro-tracker-2/phantom-family-2.40": {
+   "kind": "code",
+   "role": "player",
+   "name": "New SoundTrack Player by Phantom Family 1996 (Pro Tracker 2.40 compiled player)",
+   "tags": [
+    "ay",
+    "pt2",
+    "player",
+    "self-modifying"
+   ],
+   "found_in": 3,
+   "length": 2627,
+   "sha1": "0ed0ae6935b32b5cd86fd8594370018027891f9b",
+   "masked_sha1": "3e14328996a89c84af3689f481947d70121f3da5",
+   "origin": "$C000"
+  },
+  "sound/ay-players/pro-tracker-3/nick-gdc-1.0": {
+   "kind": "code",
+   "role": "player",
+   "name": "PT 3 Player v1.0 by Nick of GDC (Pro Tracker 3.x compiled player)",
+   "tags": [
+    "ay",
+    "pt3",
+    "player",
+    "golden-disk"
+   ],
+   "found_in": 2,
+   "length": 3617,
+   "sha1": "cc9dc9e88fa747fb7cf2b560d809b1e06295fdef",
+   "masked_sha1": "63d8dda7a455dfe38eaa4b01cb5fd43dfed55ad5",
+   "origin": "$C000"
+  }
+ },
+ "by_sha1": {
+  "f01bf2eb9be5fbcd3875b5dfb3d1639dd2c21a51": [
+   "disk/tr-dos/rom-gadget-reader/ultraxor-1.2"
+  ],
+  "d882be7576ed9bb1eff70aea9a6dbd924a1dcd25": [
+   "packers/hrum/3.5/depacker"
+  ],
+  "231da31c51acb45ad66188620032af5de99e12f0": [
+   "packers/hrust/1/screen-depacker"
+  ],
+  "916863437903993829e90b1bb9f5b54961fff781": [
+   "programs/games/advanced-nether-earth/construction"
+  ],
+  "6e7d3d2cac1c7e04e6845121c22483dbd8443bda": [
+   "programs/games/advanced-nether-earth/disk"
+  ],
+  "de11051844a6751eb1b96002660e8ca40276efff": [
+   "programs/games/advanced-nether-earth/endings"
+  ],
+  "e2d03720e958b18f2a05d445de5bdfa4740f85ae": [
+   "programs/games/advanced-nether-earth/font"
+  ],
+  "42d548e804c108faa9e1495e37b121779e093dd5": [
+   "programs/games/advanced-nether-earth/gameturn"
+  ],
+  "65e1e473edbb69867d34fff7306f76532019ed3c": [
+   "programs/games/advanced-nether-earth/im2"
+  ],
+  "e8907630e34ed78840331cd5be1b8cc31c253b5e": [
+   "programs/games/advanced-nether-earth/interrupts"
+  ],
+  "91edd8839270b8ea38733f869ff9081190586d7d": [
+   "programs/games/advanced-nether-earth/mainmenu"
+  ],
+  "e9945034889efe95f2867742d4e3ff14bd86fa6d": [
+   "programs/games/advanced-nether-earth/music"
+  ],
+  "ef4f2139c460bdd9ee5dcaea05a0b93544be7ec4": [
+   "programs/games/advanced-nether-earth/robotmenu"
+  ],
+  "dbe42ad0ce65818768116d3605875242f44b3c61": [
+   "programs/games/advanced-nether-earth/screen"
+  ],
+  "972d71684d9353dad80959a42add3a5f720a2009": [
+   "programs/games/advanced-nether-earth/sprites"
+  ],
+  "d8a7b2a1d5dc09384a186a772cb5f810b8da8486": [
+   "programs/games/advanced-nether-earth/start"
+  ],
+  "cf9634f5dee253d87dcfe531c0e7527b717c0e66": [
+   "programs/games/advanced-nether-earth/viewtail"
+  ],
+  "d87fed60c6e5218163d9963f04bb38a53e6485fe": [
+   "programs/games/hate/buffers"
+  ],
+  "31230763c7a81537d4cd8a39bacb4b80fd256e28": [
+   "programs/games/hate/course"
+  ],
+  "9b761bc1556bccd10c51a3797b004b6ce3b78863": [
+   "programs/games/hate/coursedata"
+  ],
+  "3cc316bbd45ce9c8caff4172d11163f8a877b25d": [
+   "programs/games/hate/gamedata"
+  ],
+  "588b51c80d39bfab16a030b74635afb79fc2292b": [
+   "programs/games/hate/hits"
+  ],
+  "3c0089a00d43ba20d081e0c1ad99c485ba222d62": [
+   "programs/games/hate/hud"
+  ],
+  "4fe642a31368810298d4d21c136f6c8015006448": [
+   "programs/games/hate/mainloop"
+  ],
+  "f12a394283098dd0454adb1750965c33aabb555a": [
+   "programs/games/hate/menu"
+  ],
+  "00c32bb83d37d090c6cd68d305c9f2ee27f23ae2": [
+   "programs/games/hate/mover"
+  ],
+  "61e1a8cb707ab475c4ca2f07345854194fa4baa1": [
+   "programs/games/hate/objview"
+  ],
+  "98a04f541eb47c509afb90aff305059836bc59df": [
+   "programs/games/hate/player"
+  ],
+  "e84570d2bfeb17c91cdf13c4d6c67b64d65e61e4": [
+   "programs/games/hate/roundsetup"
+  ],
+  "a3d230eede693b17a113ccfe9bf4cd41586b71f2": [
+   "programs/games/hate/scroller"
+  ],
+  "b3108f481f6521d3721a048950ed2937d8be72d0": [
+   "programs/games/hate/shadows"
+  ],
+  "171c8657e39958dc72937b440ff9079b19a18835": [
+   "programs/games/hate/sprites"
+  ],
+  "7134fa78ba588afa42b2274a370bc3140daa8cc4": [
+   "programs/games/hate/startup"
+  ],
+  "99e10b8eb41cac27848202d1b542fe16f3284b01": [
+   "programs/games/hate/statics"
+  ],
+  "6dec36ad620c046e31c431db16dee87c35144d80": [
+   "programs/games/hate/titleplayer"
+  ],
+  "e7e83331fef7e24ffe55db057b53f7e67c90a43a": [
+   "programs/games/nether-earth/bases"
+  ],
+  "1f5fb0893bf4dac84556edf25a337c6573f2d8fc": [
+   "programs/games/nether-earth/construction"
+  ],
+  "78cd7e753520f9b299aedadf95282e226085af19": [
+   "programs/games/nether-earth/controls"
+  ],
+  "d35a48d44f9b1225597fc7d969805d1778c9164c": [
+   "programs/games/nether-earth/enemy"
+  ],
+  "a00080362581f5259b1b72f7eafd12a9ae232466": [
+   "programs/games/nether-earth/font"
+  ],
+  "df15060490e90ca2f8c307de4c769dfb3aab9f5a": [
+   "programs/games/nether-earth/gameturn"
+  ],
+  "38f5f0a3793574a5525e9553b42f8e62ba0f26bd": [
+   "programs/games/nether-earth/interrupts"
+  ],
+  "c7b766ec8e0f7085f3917fef7776d209df4715ba": [
+   "programs/games/nether-earth/level"
+  ],
+  "28ff026832a0b38b76ab2bed2a93f2bf416ab848": [
+   "programs/games/nether-earth/mainmenu"
+  ],
+  "4b2012085331f031f4c9daa0c63d012c2ffeb219": [
+   "programs/games/nether-earth/music"
+  ],
+  "3a1f4725982e4f6b2a9c390657c0640fda3612df": [
+   "programs/games/nether-earth/print"
+  ],
+  "875c7fbb9f5e521c911ce5d82a3f53fe632e7a8d": [
+   "programs/games/nether-earth/robotmenu"
+  ],
+  "1cb801919a5789720f2ac0ff28a478b74efd4374": [
+   "programs/games/nether-earth/screen"
+  ],
+  "3b416276166ed52335804c75a0c5dbf609b9a69e": [
+   "programs/games/nether-earth/ship"
+  ],
+  "a135a60a0f1e970daf56f3c317b0a7b7c28f5140": [
+   "programs/games/nether-earth/sprites"
+  ],
+  "d1bcdac30ad188141963a9d27f2e763aec456b84": [
+   "programs/games/nether-earth/start"
+  ],
+  "725df228788003e8540b7ad64f1ec531cf20f998": [
+   "programs/games/nether-earth/tables"
+  ],
+  "b872775e816e43c63e36003367838fc84bb93a83": [
+   "programs/games/nether-earth/view"
+  ],
+  "9d2f7f66b5a69c5f989555928970122e2b005e88": [
+   "programs/games/nether-earth/viewbuffer"
+  ],
+  "68bb157c118e3c290ee933516d1e9ffc039ba84b": [
+   "programs/games/nether-earth/world"
+  ],
+  "f2575e4b85c775cb5edee37ce6924386750be40a": [
+   "programs/utilities/nether-earth-editor/mix"
+  ],
+  "62e0afa46f9e34a0334c3a83e4f160ffa2f5b1d6": [
+   "protection/ultraxor/1.2/head"
+  ],
+  "0ed0ae6935b32b5cd86fd8594370018027891f9b": [
+   "sound/ay-players/pro-tracker-2/phantom-family-2.40"
+  ],
+  "cc9dc9e88fa747fb7cf2b560d809b1e06295fdef": [
+   "sound/ay-players/pro-tracker-3/nick-gdc-1.0"
+  ]
+ },
+ "by_masked_sha1": {
+  "303de01931cbb0292d8c1b78dad2e330b23988f9": [
+   "disk/tr-dos/rom-gadget-reader/ultraxor-1.2"
+  ],
+  "8b6b1bb5c19821d8839a64641b660ee695ec2109": [
+   "packers/hrum/3.5/depacker"
+  ],
+  "9f7ff7ebadcf29a038d69737675a844e68d1f6cc": [
+   "packers/hrust/1/screen-depacker"
+  ],
+  "1b6340e89c17095d60edf0632a13991b922b753c": [
+   "programs/games/advanced-nether-earth/construction"
+  ],
+  "5021c0bc61ee4ba9b380f3facb35ec35a898b5a8": [
+   "programs/games/advanced-nether-earth/disk"
+  ],
+  "99f73765697db485e15117a87dfa6020c9bbb62f": [
+   "programs/games/advanced-nether-earth/endings"
+  ],
+  "e2d03720e958b18f2a05d445de5bdfa4740f85ae": [
+   "programs/games/advanced-nether-earth/font"
+  ],
+  "6c3328fd953557f6615080c9cfdf39a35722752e": [
+   "programs/games/advanced-nether-earth/gameturn"
+  ],
+  "c4ff3f8cb0461bccc3fa9eedaba14c1fcc07ef41": [
+   "programs/games/advanced-nether-earth/im2"
+  ],
+  "fffa988c29c2038b38d42b84d944f462f8b11568": [
+   "programs/games/advanced-nether-earth/interrupts"
+  ],
+  "e6493d739bb50324caf467e132476ec2d351c22d": [
+   "programs/games/advanced-nether-earth/mainmenu"
+  ],
+  "c5a559642dccdc5e79ef965e1e663bb8f5acedef": [
+   "programs/games/advanced-nether-earth/music"
+  ],
+  "54a0065c3cf22d7e9e8c3edced437af2fd4fa860": [
+   "programs/games/advanced-nether-earth/robotmenu"
+  ],
+  "e4a61b477e6f4930ee80466d366ecc61f2fdfcb9": [
+   "programs/games/advanced-nether-earth/screen"
+  ],
+  "972d71684d9353dad80959a42add3a5f720a2009": [
+   "programs/games/advanced-nether-earth/sprites"
+  ],
+  "76f4f510da25bdc831d610c29e9f69614efef4ea": [
+   "programs/games/advanced-nether-earth/start"
+  ],
+  "cf9634f5dee253d87dcfe531c0e7527b717c0e66": [
+   "programs/games/advanced-nether-earth/viewtail"
+  ],
+  "7b1a5a2adb082b40b53a2a7d455e7a46836af6d1": [
+   "programs/games/hate/buffers"
+  ],
+  "f14e9eb244a5e8dc004f9ddd2e331e6da1761377": [
+   "programs/games/hate/course"
+  ],
+  "a384830fe37199834d52ad19d585dc03f3aa8823": [
+   "programs/games/hate/coursedata"
+  ],
+  "8b5c1fe294973ebf0fa8e66b8a702a1e54d368b9": [
+   "programs/games/hate/gamedata"
+  ],
+  "96f1b8cbf5effec78aad26671a7f843cc7d8263f": [
+   "programs/games/hate/hits"
+  ],
+  "64a21ea16dbc77d143bec2e2d9240aeae00f486b": [
+   "programs/games/hate/hud"
+  ],
+  "e989ce3fd4de961435d6ae7e1937f8cd947bcc87": [
+   "programs/games/hate/mainloop"
+  ],
+  "0a86f73ef76ba1c1f9492004d75f3b3b5f9421e0": [
+   "programs/games/hate/menu"
+  ],
+  "0f53788b0528164c54483a40b507e8c64871782e": [
+   "programs/games/hate/mover"
+  ],
+  "53a374f027def00e597231c007b02d9d74bf6110": [
+   "programs/games/hate/objview"
+  ],
+  "b65c8e59b1a763f7c09da29e7d4fc48071be20c1": [
+   "programs/games/hate/player"
+  ],
+  "06d8441b81979f176b0982c93abe643640fa6bc5": [
+   "programs/games/hate/roundsetup"
+  ],
+  "711825fc392dc30ab46d24fb420401e4781e13ce": [
+   "programs/games/hate/scroller"
+  ],
+  "932219181ae05a14dbcd4a7f7eaa47be004b1163": [
+   "programs/games/hate/shadows"
+  ],
+  "fad26114f171284124b45e58c59208b6084b555c": [
+   "programs/games/hate/sprites"
+  ],
+  "85ad97068172b254f419898b4e00039f90615fab": [
+   "programs/games/hate/startup"
+  ],
+  "6216eec8855a0c2a6cffae4af8b63477ce6b55d9": [
+   "programs/games/hate/statics"
+  ],
+  "bb7a40583084dcad9af91ca9a4347fa2569f4435": [
+   "programs/games/hate/titleplayer"
+  ],
+  "76423721220587c2a72ce4f7a6db5b124cd7a0d2": [
+   "programs/games/nether-earth/bases"
+  ],
+  "13a8cd805e9bc87cbe205fe04f9e94cdb2229395": [
+   "programs/games/nether-earth/construction"
+  ],
+  "6c1272147e57e0e0710c7d25e91b008762609937": [
+   "programs/games/nether-earth/controls"
+  ],
+  "43d768bd366ad946f4fa3aebb516a64779efc717": [
+   "programs/games/nether-earth/enemy"
+  ],
+  "a00080362581f5259b1b72f7eafd12a9ae232466": [
+   "programs/games/nether-earth/font"
+  ],
+  "a2180d1ccd24054aed5550c3ad0e57b135d96928": [
+   "programs/games/nether-earth/gameturn"
+  ],
+  "0afdabb33870e3d185bfd7eef0fb43e96ed2ced0": [
+   "programs/games/nether-earth/interrupts"
+  ],
+  "22e275777715e6398a40ee20eeb0e780245787ef": [
+   "programs/games/nether-earth/level"
+  ],
+  "bc97ebeef6b7f9897cafbe73bf9bac4ae88ffe7a": [
+   "programs/games/nether-earth/mainmenu"
+  ],
+  "dfd19e24d64e8c9acb6fc47b02d0a367ae0a8f62": [
+   "programs/games/nether-earth/music"
+  ],
+  "3adcb15883afe922a7ff30d6296a8ae0ab33d1a1": [
+   "programs/games/nether-earth/print"
+  ],
+  "fbdbb5e59f67e5913f7194f78f996ec08da5e677": [
+   "programs/games/nether-earth/robotmenu"
+  ],
+  "f15d52223a4ff6329805479075be409330d3264a": [
+   "programs/games/nether-earth/screen"
+  ],
+  "d52e223dca42356a074b505b94cfde39c2938c75": [
+   "programs/games/nether-earth/ship"
+  ],
+  "a135a60a0f1e970daf56f3c317b0a7b7c28f5140": [
+   "programs/games/nether-earth/sprites"
+  ],
+  "e781504770eb85f50a6800d2929a61d7395cef77": [
+   "programs/games/nether-earth/start"
+  ],
+  "725df228788003e8540b7ad64f1ec531cf20f998": [
+   "programs/games/nether-earth/tables"
+  ],
+  "1f0eb2f74042fafa3a8b2bbf4fe391229ccf47a3": [
+   "programs/games/nether-earth/view"
+  ],
+  "9d2f7f66b5a69c5f989555928970122e2b005e88": [
+   "programs/games/nether-earth/viewbuffer"
+  ],
+  "7a3d4ff13cd7249237cf1ede8c068bfb44dce3cd": [
+   "programs/games/nether-earth/world"
+  ],
+  "055e729f1914108f0359f0f536a5cfbefb18cdf2": [
+   "programs/utilities/nether-earth-editor/mix"
+  ],
+  "ef7aa33682af3ad7b978e3583798bb292dd5e820": [
+   "protection/ultraxor/1.2/head"
+  ],
+  "3e14328996a89c84af3689f481947d70121f3da5": [
+   "sound/ay-players/pro-tracker-2/phantom-family-2.40"
+  ],
+  "63d8dda7a455dfe38eaa4b01cb5fd43dfed55ad5": [
+   "sound/ay-players/pro-tracker-3/nick-gdc-1.0"
+  ]
+ },
+ "anchors": {
+  "d1c1241c7bfe103f8a9357cb": [
+   [
+    "disk/tr-dos/rom-gadget-reader/ultraxor-1.2",
+    48
+   ]
+  ],
+  "fe103f8a9357cba310c5ed53": [
+   [
+    "disk/tr-dos/rom-gadget-reader/ultraxor-1.2",
+    53
+   ]
+  ],
+  "c9dd21f31fdde5c32f3dafcd": [
+   [
+    "disk/tr-dos/rom-gadget-reader/ultraxor-1.2",
+    67
+   ]
+  ],
+  "fb7676f33e000e3fdd21532a": [
+   [
+    "disk/tr-dos/rom-gadget-reader/ultraxor-1.2",
+    95
+   ]
+  ],
+  "7676f33e000e3fdd21532acd": [
+   [
+    "disk/tr-dos/rom-gadget-reader/ultraxor-1.2",
+    96
+   ]
+  ],
+  "c1e13bf1d91213d9291002e1": [
+   [
+    "packers/hrum/3.5/depacker",
+    7
+   ]
+  ],
+  "291002e14138f31e013e8029": [
+   [
+    "packers/hrum/3.5/depacker",
+    15
+   ]
+  ],
+  "e1411738f8ba3805835fa920": [
+   [
+    "packers/hrum/3.5/depacker",
+    29
+   ]
+  ],
+  "3f30099a28288a291002e141": [
+   [
+    "packers/hrum/3.5/depacker",
+    44
+   ]
+  ],
+  "26ff3d3e3f2804300fcbafd9": [
+   [
+    "packers/hrum/3.5/depacker",
+    58
+   ]
+  ],
+  "e1411730f8d92803673bf16f": [
+   [
+    "packers/hrum/3.5/depacker",
+    73
+   ]
+  ],
+  "19edb018b43bf1a720d4d921": [
+   [
+    "packers/hrum/3.5/depacker",
+    85
+   ]
+  ],
+  "cd52003b3bd1dd21ee00dd19": [
+   [
+    "packers/hrust/1/screen-depacker",
+    0
+   ]
+  ],
+  "4e00097323723d20f4dde111": [
+   [
+    "packers/hrust/1/screen-depacker",
+    24
+   ]
+  ],
+  "d960fe0220034f181e383ffe": [
+   [
+    "packers/hrust/1/screen-depacker",
+    83
+   ]
+  ],
+  "dd7e00dd233c2005215827d9": [
+   [
+    "packers/hrust/1/screen-depacker",
+    98
+   ]
+  ],
+  "7a9c67edb0d918acdd4e00dd": [
+   [
+    "packers/hrust/1/screen-depacker",
+    131
+   ]
+  ],
+  "0d20fafe0230053cd96718c1": [
+   [
+    "packers/hrust/1/screen-depacker",
+    173
+   ]
+  ],
+  "e61f18e029100cdd6e00dd23": [
+   [
+    "packers/hrust/1/screen-depacker",
+    209
+   ]
+  ],
+  "c90a090e0850060702060d27": [
+   [
+    "packers/hrust/1/screen-depacker",
+    229
+   ]
+  ],
+  "1110000618fd7e01b72805fd": [
+   [
+    "programs/games/advanced-nether-earth/construction",
+    4
+   ],
+   [
+    "programs/games/nether-earth/construction",
+    4
+   ]
+  ],
+  "494b41010415412d5b4f4d5b": [
+   [
+    "programs/games/advanced-nether-earth/construction",
+    161
+   ]
+  ],
+  "435950435120202d2d024401": [
+   [
+    "programs/games/advanced-nether-earth/construction",
+    322
+   ]
+  ],
+  "4fa220697bfe03301779e607": [
+   [
+    "programs/games/advanced-nether-earth/construction",
+    494
+   ],
+   [
+    "programs/games/nether-earth/construction",
+    494
+   ]
+  ],
+  "7e8077e57dd6076f46e17eb8": [
+   [
+    "programs/games/advanced-nether-earth/construction",
+    654
+   ],
+   [
+    "programs/games/nether-earth/construction",
+    654
+   ]
+  ],
+  "7dfe022815878587c6a46f26": [
+   [
+    "programs/games/advanced-nether-earth/construction",
+    867
+   ],
+   [
+    "programs/games/nether-earth/construction",
+    867
+   ]
+  ],
+  "4f06081e06cb1130021e47c5": [
+   [
+    "programs/games/advanced-nether-earth/construction",
+    988
+   ],
+   [
+    "programs/games/nether-earth/construction",
+    988
+   ]
+  ],
+  "ee10d3fe10fec10d20f5c1c9": [
+   [
+    "programs/games/advanced-nether-earth/construction",
+    1128
+   ],
+   [
+    "programs/games/nether-earth/construction",
+    1128
+   ]
+  ],
+  "3100003e68ed47ed5efb7621": [
+   [
+    "programs/games/advanced-nether-earth/disk",
+    38
+   ]
+  ],
+  "000000000000000000af76f3": [
+   [
+    "programs/games/advanced-nether-earth/endings",
+    32
+   ]
+  ],
+  "ed79f5af06bfed79f13cfe0f": [
+   [
+    "programs/games/advanced-nether-earth/endings",
+    47
+   ]
+  ],
+  "20efc90000000000000000cd": [
+   [
+    "programs/games/advanced-nether-earth/endings",
+    59
+   ]
+  ],
+  "00002020202120202020003e": [
+   [
+    "programs/games/advanced-nether-earth/endings",
+    116
+   ]
+  ],
+  "2020202120202020003efacd": [
+   [
+    "programs/games/advanced-nether-earth/endings",
+    118
+   ]
+  ],
+  "0018006c6c00000000000006": [
+   [
+    "programs/games/advanced-nether-earth/font",
+    101
+   ]
+  ],
+  "1830660600386c386f6c6e3b": [
+   [
+    "programs/games/advanced-nether-earth/font",
+    131
+   ]
+  ],
+  "3c001e33607e63663c007f63": [
+   [
+    "programs/games/advanced-nether-earth/font",
+    262
+   ]
+  ],
+  "3b5b5b3e1818001f30606060": [
+   [
+    "programs/games/advanced-nether-earth/font",
+    393
+   ]
+  ],
+  "3f0303007f63636363630300": [
+   [
+    "programs/games/advanced-nether-earth/font",
+    524
+   ]
+  ],
+  "385410101000000000000000": [
+   [
+    "programs/games/advanced-nether-earth/font",
+    586
+   ],
+   [
+    "programs/games/nether-earth/font",
+    498
+   ]
+  ],
+  "7ec60577fe3c201536002334": [
+   [
+    "programs/games/advanced-nether-earth/gameturn",
+    6
+   ],
+   [
+    "programs/games/nether-earth/gameturn",
+    6
+   ]
+  ],
+  "360023347efe18200c36002a": [
+   [
+    "programs/games/advanced-nether-earth/gameturn",
+    14
+   ]
+  ],
+  "061c0e00fd6e00fd6601fd7e": [
+   [
+    "programs/games/advanced-nether-earth/gameturn",
+    81
+   ],
+   [
+    "programs/games/nether-earth/gameturn",
+    81
+   ]
+  ],
+  "3404fd7e04fe90382efd3604": [
+   [
+    "programs/games/advanced-nether-earth/gameturn",
+    108
+   ]
+  ],
+  "c10cc53e1c90fe04300643cd": [
+   [
+    "programs/games/advanced-nether-earth/gameturn",
+    140
+   ]
+  ],
+  "23fd2310a6fde179b72806cd": [
+   [
+    "programs/games/advanced-nether-earth/gameturn",
+    170
+   ],
+   [
+    "programs/games/nether-earth/gameturn",
+    170
+   ]
+  ],
+  "10f7c986fe6438023e6377c9": [
+   [
+    "programs/games/advanced-nether-earth/gameturn",
+    253
+   ],
+   [
+    "programs/games/nether-earth/gameturn",
+    253
+   ]
+  ],
+  "3100003e68ed47ed5efb76c3": [
+   [
+    "programs/games/advanced-nether-earth/im2",
+    299
+   ]
+  ],
+  "473c3c21f4015f16000e00af": [
+   [
+    "programs/games/advanced-nether-earth/interrupts",
+    97
+   ],
+   [
+    "programs/games/nether-earth/interrupts",
+    97
+   ]
+  ],
+  "fec10d20f3afd3fec9061ecd": [
+   [
+    "programs/games/advanced-nether-earth/interrupts",
+    125
+   ],
+   [
+    "programs/games/nether-earth/interrupts",
+    125
+   ]
+  ],
+  "23c110eed1c114140d20e521": [
+   [
+    "programs/games/advanced-nether-earth/interrupts",
+    176
+   ],
+   [
+    "programs/games/nether-earth/interrupts",
+    176
+   ]
+  ],
+  "7e0a07e60147fd7e0afe02c4": [
+   [
+    "programs/games/advanced-nether-earth/interrupts",
+    221
+   ],
+   [
+    "programs/games/nether-earth/interrupts",
+    221
+   ]
+  ],
+  "017ea977cb093001237ea977": [
+   [
+    "programs/games/advanced-nether-earth/interrupts",
+    266
+   ],
+   [
+    "programs/games/nether-earth/interrupts",
+    266
+   ]
+  ],
+  "0707076faf371f10fdc9e1c9": [
+   [
+    "programs/games/advanced-nether-earth/interrupts",
+    310
+   ],
+   [
+    "programs/games/nether-earth/interrupts",
+    310
+   ]
+  ],
+  "02460421010a01302e2e4354": [
+   [
+    "programs/games/advanced-nether-earth/mainmenu",
+    9
+   ]
+  ],
+  "475059334b41007600000000": [
+   [
+    "programs/games/advanced-nether-earth/mainmenu",
+    132
+   ]
+  ],
+  "0421424b4c5556495445204d": [
+   [
+    "programs/games/advanced-nether-earth/mainmenu",
+    264
+   ]
+  ],
+  "0116000245424b4c55564954": [
+   [
+    "programs/games/advanced-nether-earth/mainmenu",
+    406
+   ]
+  ],
+  "01d1241100007e23835f3001": [
+   [
+    "programs/games/advanced-nether-earth/mainmenu",
+    530
+   ],
+   [
+    "programs/games/nether-earth/mainmenu",
+    530
+   ]
+  ],
+  "010503040000cd8e027bb7f2": [
+   [
+    "programs/games/advanced-nether-earth/mainmenu",
+    612
+   ],
+   [
+    "programs/games/nether-earth/mainmenu",
+    612
+   ]
+  ],
+  "204b4c4142494e5920024500": [
+   [
+    "programs/games/advanced-nether-earth/mainmenu",
+    792
+   ]
+  ],
+  "4b2e204e49465400c9fe20c2": [
+   [
+    "programs/games/advanced-nether-earth/mainmenu",
+    911
+   ]
+  ],
+  "f3f5c5d5e5dde5fde5d908f5": [
+   [
+    "programs/games/advanced-nether-earth/music",
+    0
+   ]
+  ],
+  "e5fde5d908f5c5d5e53e1101": [
+   [
+    "programs/games/advanced-nether-earth/music",
+    6
+   ]
+  ],
+  "e1d1c1f108d9fde1dde1e1d1": [
+   [
+    "programs/games/advanced-nether-earth/music",
+    33
+   ]
+  ],
+  "d9fde1dde1e1d1c1f1fbc9cd": [
+   [
+    "programs/games/advanced-nether-earth/music",
+    38
+   ]
+  ],
+  "010417024d5750534d4f4520": [
+   [
+    "programs/games/advanced-nether-earth/robotmenu",
+    24
+   ]
+  ],
+  "0116170246202043494c4120": [
+   [
+    "programs/games/advanced-nether-earth/robotmenu",
+    256
+   ]
+  ],
+  "512020002033415842415420": [
+   [
+    "programs/games/advanced-nether-earth/robotmenu",
+    454
+   ]
+  ],
+  "49434b204920034c494b4249": [
+   [
+    "programs/games/advanced-nether-earth/robotmenu",
+    681
+   ]
+  ],
+  "18b87a07dd770eb72004dd36": [
+   [
+    "programs/games/advanced-nether-earth/robotmenu",
+    918
+   ],
+   [
+    "programs/games/nether-earth/robotmenu",
+    918
+   ]
+  ],
+  "512003034250414a45434b2e": [
+   [
+    "programs/games/advanced-nether-earth/robotmenu",
+    1136
+   ]
+  ],
+  "330320204d454855202000cd": [
+   [
+    "programs/games/advanced-nether-earth/robotmenu",
+    1361
+   ]
+  ],
+  "47d5e51160001910fd0608cd": [
+   [
+    "programs/games/advanced-nether-earth/robotmenu",
+    1564
+   ],
+   [
+    "programs/games/nether-earth/robotmenu",
+    1564
+   ]
+  ],
+  "011414c536702310fbc13e0c": [
+   [
+    "programs/games/advanced-nether-earth/screen",
+    202
+   ],
+   [
+    "programs/games/nether-earth/screen",
+    202
+   ]
+  ],
+  "010316024620204354415459": [
+   [
+    "programs/games/advanced-nether-earth/screen",
+    306
+   ]
+  ],
+  "5b4f5451010f170246205045": [
+   [
+    "programs/games/advanced-nether-earth/screen",
+    397
+   ]
+  ],
+  "4920034e414343492020003a": [
+   [
+    "programs/games/advanced-nether-earth/screen",
+    463
+   ]
+  ],
+  "202020030010efc9c5d51aa6": [
+   [
+    "programs/games/advanced-nether-earth/screen",
+    596
+   ],
+   [
+    "programs/games/nether-earth/screen",
+    596
+   ]
+  ],
+  "cb162dcb162e007ee6036f32": [
+   [
+    "programs/games/advanced-nether-earth/screen",
+    690
+   ],
+   [
+    "programs/games/nether-earth/screen",
+    690
+   ]
+  ],
+  "1b03ff007f80ff00fe011fe0": [
+   [
+    "programs/games/advanced-nether-earth/sprites",
+    0
+   ],
+   [
+    "programs/games/nether-earth/sprites",
+    0
+   ]
+  ],
+  "e0fe0100e6000f1fa0fe0100": [
+   [
+    "programs/games/advanced-nether-earth/sprites",
+    2189
+   ]
+  ],
+  "030f90e01200000f90c02400": [
+   [
+    "programs/games/advanced-nether-earth/sprites",
+    4379
+   ]
+  ],
+  "07c8ff0000c50ff0ff00c037": [
+   [
+    "programs/games/advanced-nether-earth/sprites",
+    6568
+   ]
+  ],
+  "7f80ff00fc03ff00ff00fc03": [
+   [
+    "programs/games/advanced-nether-earth/sprites",
+    8758
+   ]
+  ],
+  "0000841f60f00a00831f80f8": [
+   [
+    "programs/games/advanced-nether-earth/sprites",
+    10947
+   ]
+  ],
+  "440708f80600ac00110708f0": [
+   [
+    "programs/games/advanced-nether-earth/sprites",
+    13137
+   ]
+  ],
+  "c738ff00ff00ff00f708ff00": [
+   [
+    "programs/games/advanced-nether-earth/sprites",
+    15326
+   ]
+  ],
+  "fe0f2033fd6e00fd7e01c608": [
+   [
+    "programs/games/advanced-nether-earth/start",
+    252
+   ],
+   [
+    "programs/games/nether-earth/start",
+    214
+   ]
+  ],
+  "24b62bb62323b6e640201dcd": [
+   [
+    "programs/games/advanced-nether-earth/start",
+    267
+   ]
+  ],
+  "360b00fd360c64fd360f01cd": [
+   [
+    "programs/games/advanced-nether-earth/start",
+    290
+   ],
+   [
+    "programs/games/nether-earth/start",
+    252
+   ]
+  ],
+  "00e057710e0001300ddb024d": [
+   [
+    "programs/games/advanced-nether-earth/viewtail",
+    0
+   ]
+  ],
+  "024d00b75cf30dce0be650ce": [
+   [
+    "programs/games/advanced-nether-earth/viewtail",
+    10
+   ]
+  ],
+  "e650ce0be7501a16dc0ace0b": [
+   [
+    "programs/games/advanced-nether-earth/viewtail",
+    19
+   ]
+  ],
+  "ce0bed501416dc0adb024d00": [
+   [
+    "programs/games/advanced-nether-earth/viewtail",
+    29
+   ]
+  ],
+  "024d00085c5c00f30db72de9": [
+   [
+    "programs/games/advanced-nether-earth/viewtail",
+    38
+   ]
+  ],
+  "2de95ce45c58ff2b2d653358": [
+   [
+    "programs/games/advanced-nether-earth/viewtail",
+    48
+   ]
+  ],
+  "65335827ed100d000900851c": [
+   [
+    "programs/games/advanced-nether-earth/viewtail",
+    57
+   ]
+  ],
+  "851c101c521b761b0313003e": [
+   [
+    "programs/games/advanced-nether-earth/viewtail",
+    67
+   ],
+   [
+    "programs/games/nether-earth/viewbuffer",
+    3188
+   ]
+  ],
+  "3f003f803f801f800fc00f60": [
+   [
+    "programs/games/hate/buffers",
+    0
+   ]
+  ],
+  "000000030303037e00000063": [
+   [
+    "programs/games/hate/buffers",
+    1179
+   ]
+  ],
+  "00ff00ff00ff003f000f8003": [
+   [
+    "programs/games/hate/buffers",
+    2359
+   ]
+  ],
+  "00ff00ff00ff00ff00fc00f0": [
+   [
+    "programs/games/hate/buffers",
+    3541
+   ]
+  ],
+  "009e00ff00ff00fc00000100": [
+   [
+    "programs/games/hate/buffers",
+    4718
+   ]
+  ],
+  "00ff00ff00ff00ff00fc00f8": [
+   [
+    "programs/games/hate/buffers",
+    5897
+   ]
+  ],
+  "00ff00ff00f000e00ac01dc0": [
+   [
+    "programs/games/hate/buffers",
+    7077
+   ]
+  ],
+  "10c700ff00ff00ff00ff00ff": [
+   [
+    "programs/games/hate/buffers",
+    8199
+   ]
+  ],
+  "0000ffffffffffffffffaa55": [
+   [
+    "programs/games/hate/course",
+    6
+   ]
+  ],
+  "fcf0c2142a54aa54fcf3cf3f": [
+   [
+    "programs/games/hate/course",
+    408
+   ]
+  ],
+  "000000000701090109012c02": [
+   [
+    "programs/games/hate/course",
+    815
+   ]
+  ],
+  "400000000043414141414141": [
+   [
+    "programs/games/hate/course",
+    1223
+   ]
+  ],
+  "38ff00ff00ff00ff08ff00ff": [
+   [
+    "programs/games/hate/course",
+    1591
+   ]
+  ],
+  "7a7a7a7a7a7a7a7a7e820404": [
+   [
+    "programs/games/hate/course",
+    2039
+   ]
+  ],
+  "080808200404142004040404": [
+   [
+    "programs/games/hate/course",
+    2446
+   ]
+  ],
+  "7a7a7a7e8204146e201c00ff": [
+   [
+    "programs/games/hate/course",
+    2808
+   ]
+  ],
+  "08cc01200604011108dc0120": [
+   [
+    "programs/games/hate/coursedata",
+    0
+   ]
+  ],
+  "0412000400480ec404200004": [
+   [
+    "programs/games/hate/coursedata",
+    474
+   ]
+  ],
+  "220204048106ac030a020404": [
+   [
+    "programs/games/hate/coursedata",
+    947
+   ]
+  ],
+  "0088fafcfafcfafcfafcfafc": [
+   [
+    "programs/games/hate/coursedata",
+    1278
+   ]
+  ],
+  "f5409a000000000000000000": [
+   [
+    "programs/games/hate/coursedata",
+    1820
+   ]
+  ],
+  "000000000000000000b0c921": [
+   [
+    "programs/games/hate/coursedata",
+    2380
+   ]
+  ],
+  "f531ffc3c9500000582000c3": [
+   [
+    "programs/games/hate/coursedata",
+    2802
+   ]
+  ],
+  "101010000042424242423c00": [
+   [
+    "programs/games/hate/coursedata",
+    3316
+   ]
+  ],
+  "00000000000000ff0000080d": [
+   [
+    "programs/games/hate/gamedata",
+    617
+   ]
+  ],
+  "000203220806000000000403": [
+   [
+    "programs/games/hate/gamedata",
+    723
+   ]
+  ],
+  "00060018000000000000000c": [
+   [
+    "programs/games/hate/gamedata",
+    869
+   ]
+  ],
+  "0403020343ca000000000000": [
+   [
+    "programs/games/hate/gamedata",
+    1012
+   ]
+  ],
+  "e57ee60e6fdd7e00e60e8787": [
+   [
+    "programs/games/hate/hits",
+    12
+   ]
+  ],
+  "cbfe18e1e118deddcb0046c2": [
+   [
+    "programs/games/hate/hits",
+    83
+   ]
+  ],
+  "e1e53e05856f7ea72029ddcb": [
+   [
+    "programs/games/hate/hits",
+    201
+   ]
+  ],
+  "e1e5cb4620233e0f856f7e3c": [
+   [
+    "programs/games/hate/hits",
+    265
+   ]
+  ],
+  "1c2cebd5010700edb0e1ed4b": [
+   [
+    "programs/games/hate/hits",
+    342
+   ]
+  ],
+  "2c56eb09eb722d732c2ced5b": [
+   [
+    "programs/games/hate/hits",
+    427
+   ]
+  ],
+  "360bdd5ddd54eb0106001c2c": [
+   [
+    "programs/games/hate/hits",
+    521
+   ]
+  ],
+  "001c2cedb0eb2c36160620c3": [
+   [
+    "programs/games/hate/hits",
+    603
+   ]
+  ],
+  "fc50fc5a7efeffc8cbbf0816": [
+   [
+    "programs/games/hate/hud",
+    0
+   ]
+  ],
+  "eb7ecb7f20c3e5d6206f2600": [
+   [
+    "programs/games/hate/hud",
+    60
+   ]
+  ],
+  "7efe2020023e303cfe3a3805": [
+   [
+    "programs/games/hate/hud",
+    119
+   ]
+  ],
+  "12142310fa511dc10b18e021": [
+   [
+    "programs/games/hate/hud",
+    166
+   ]
+  ],
+  "7e23b82005c110f41812b830": [
+   [
+    "programs/games/hate/hud",
+    223
+   ]
+  ],
+  "10f41812b83003c1180cc121": [
+   [
+    "programs/games/hate/hud",
+    278
+   ]
+  ],
+  "202020302e20202020203000": [
+   [
+    "programs/games/hate/hud",
+    385
+   ]
+  ],
+  "2e2020202020300000000000": [
+   [
+    "programs/games/hate/hud",
+    389
+   ]
+  ],
+  "060b111000368b1910fb36ff": [
+   [
+    "programs/games/hate/mainloop",
+    83
+   ]
+  ],
+  "1110000605afcb7e28013c19": [
+   [
+    "programs/games/hate/mainloop",
+    150
+   ]
+  ],
+  "10fba728064723362f10fb21": [
+   [
+    "programs/games/hate/mainloop",
+    172
+   ]
+  ],
+  "3edfdbfecb5f20293efddbfe": [
+   [
+    "programs/games/hate/mainloop",
+    343
+   ]
+  ],
+  "5f20293efddbfecb67202121": [
+   [
+    "programs/games/hate/mainloop",
+    348
+   ]
+  ],
+  "3ebfdbfecb4720f8213c0fcd": [
+   [
+    "programs/games/hate/mainloop",
+    422
+   ]
+  ],
+  "000000000000870206204445": [
+   [
+    "programs/games/hate/menu",
+    0
+   ]
+  ],
+  "2e2e2eff87020641424f5254": [
+   [
+    "programs/games/hate/menu",
+    77
+   ]
+  ],
+  "4f4e202020870a0b34205052": [
+   [
+    "programs/games/hate/menu",
+    153
+   ]
+  ],
+  "52542047414d4520ff0606cd": [
+   [
+    "programs/games/hate/menu",
+    198
+   ]
+  ],
+  "2c10fbafdbfe2fe61f20f82a": [
+   [
+    "programs/games/hate/menu",
+    293
+   ]
+  ],
+  "281004cb4f280b04cb572806": [
+   [
+    "programs/games/hate/menu",
+    384
+   ]
+  ],
+  "56235e6069af4dee1842d3fe": [
+   [
+    "programs/games/hate/menu",
+    460
+   ]
+  ],
+  "0000010204420a0108040364": [
+   [
+    "programs/games/hate/menu",
+    537
+   ]
+  ],
+  "a7ed427ccb7f2807ddcb00fe": [
+   [
+    "programs/games/hate/mover",
+    28
+   ]
+  ],
+  "2c77dd7e042c77dd7e06a7c2": [
+   [
+    "programs/games/hate/mover",
+    176
+   ]
+  ],
+  "198110fcdd4e01dd46020922": [
+   [
+    "programs/games/hate/mover",
+    368
+   ]
+  ],
+  "57282cdd7e0e3cdd770e4f06": [
+   [
+    "programs/games/hate/mover",
+    564
+   ]
+  ],
+  "081730651e17dd7e00e60ffe": [
+   [
+    "programs/games/hate/mover",
+    759
+   ]
+  ],
+  "0230023e02cb412802cbc732": [
+   [
+    "programs/games/hate/mover",
+    936
+   ]
+  ],
+  "2c5e2c56eba7ed42eb7aa7c2": [
+   [
+    "programs/games/hate/mover",
+    1137
+   ]
+  ],
+  "03111000dd19dd7e00cb7fca": [
+   [
+    "programs/games/hate/mover",
+    1303
+   ]
+  ],
+  "111000dd1918ecdd6e01dd66": [
+   [
+    "programs/games/hate/objview",
+    48
+   ]
+  ],
+  "07fe01c07dfe1fd02323cb3c": [
+   [
+    "programs/games/hate/objview",
+    85
+   ]
+  ],
+  "81c61083dd770add7e00e60f": [
+   [
+    "programs/games/hate/objview",
+    132
+   ]
+  ],
+  "cb3ccb1d7d3c4fdd7e044721": [
+   [
+    "programs/games/hate/objview",
+    167
+   ]
+  ],
+  "b8c1e1702c712cdd5ddd5473": [
+   [
+    "programs/games/hate/objview",
+    213
+   ]
+  ],
+  "7b954f06000c6b1c1c1c1ced": [
+   [
+    "programs/games/hate/objview",
+    282
+   ]
+  ],
+  "954f06000c6b1c1c1c1ced53": [
+   [
+    "programs/games/hate/objview",
+    283
+   ]
+  ],
+  "fe2c280838043d3d18023c3c": [
+   [
+    "programs/games/hate/player",
+    36
+   ]
+  ],
+  "3efbdbfe1f380acb462804cb": [
+   [
+    "programs/games/hate/player",
+    135
+   ]
+  ],
+  "3eefdbfecb672002cbd3cb5f": [
+   [
+    "programs/games/hate/player",
+    265
+   ]
+  ],
+  "52cb6e2002cbfe192310e63a": [
+   [
+    "programs/games/hate/player",
+    375
+   ]
+  ],
+  "e12c77010a0009731821e511": [
+   [
+    "programs/games/hate/player",
+    499
+   ]
+  ],
+  "602804cb582021cb50280d3a": [
+   [
+    "programs/games/hate/player",
+    642
+   ]
+  ],
+  "feff2812671a6f2d2d2dcbee": [
+   [
+    "programs/games/hate/player",
+    795
+   ]
+  ],
+  "52de005f1600ed5230012322": [
+   [
+    "programs/games/hate/player",
+    923
+   ]
+  ],
+  "097afe633802f1c97efeff28": [
+   [
+    "programs/games/hate/roundsetup",
+    35
+   ]
+  ],
+  "eb18cac10318b8000000003a": [
+   [
+    "programs/games/hate/roundsetup",
+    87
+   ]
+  ],
+  "fe0a380304d60a4f78fe3130": [
+   [
+    "programs/games/hate/roundsetup",
+    184
+   ]
+  ],
+  "3130023e207779c630237721": [
+   [
+    "programs/games/hate/roundsetup",
+    194
+   ]
+  ],
+  "eb0610c5010800edb0af0608": [
+   [
+    "programs/games/hate/roundsetup",
+    363
+   ]
+  ],
+  "06107ee60f110700194efe0a": [
+   [
+    "programs/games/hate/roundsetup",
+    448
+   ]
+  ],
+  "a7ed52dd7501dd7402dd3606": [
+   [
+    "programs/games/hate/roundsetup",
+    535
+   ]
+  ],
+  "18e70e00060010fe0d20f9c9": [
+   [
+    "programs/games/hate/roundsetup",
+    611
+   ]
+  ],
+  "82cbbd85570e10e11a771c25": [
+   [
+    "programs/games/hate/scroller",
+    19
+   ]
+  ],
+  "10f9afed672c3600c93e8032": [
+   [
+    "programs/games/hate/scroller",
+    231
+   ]
+  ],
+  "2ec0eda0eda0eda0eda0eda0": [
+   [
+    "programs/games/hate/scroller",
+    470
+   ]
+  ],
+  "57a357835763574357235703": [
+   [
+    "programs/games/hate/scroller",
+    705
+   ]
+  ],
+  "570a57ea4fca4faa4f8a4f6a": [
+   [
+    "programs/games/hate/scroller",
+    939
+   ]
+  ],
+  "714f514f314f114ff147d147": [
+   [
+    "programs/games/hate/scroller",
+    1174
+   ]
+  ],
+  "47b847984778475847384718": [
+   [
+    "programs/games/hate/scroller",
+    1409
+   ]
+  ],
+  "1f47000800080008ffff0000": [
+   [
+    "programs/games/hate/scroller",
+    1644
+   ]
+  ],
+  "2c5e2c4e2c46fe043808fe0b": [
+   [
+    "programs/games/hate/shadows",
+    16
+   ]
+  ],
+  "2c2c2c2c4e2c7e2c5e2c562c": [
+   [
+    "programs/games/hate/shadows",
+    232
+   ],
+   [
+    "programs/games/hate/shadows",
+    455
+   ]
+  ],
+  "856febe506041aa6772c1c1a": [
+   [
+    "programs/games/hate/shadows",
+    250
+   ]
+  ],
+  "772c1c1aa6772c1c1aa6772c": [
+   [
+    "programs/games/hate/shadows",
+    499
+   ]
+  ],
+  "d11d1d1d1d1414cbb210e1c3": [
+   [
+    "programs/games/hate/shadows",
+    616
+   ]
+  ],
+  "12231c1aa612233e07835fc3": [
+   [
+    "programs/games/hate/shadows",
+    722
+   ]
+  ],
+  "231c1aa612231c1aa61223c9": [
+   [
+    "programs/games/hate/shadows",
+    874
+   ]
+  ],
+  "2c2c7edd6f2c7edd672ce5dd": [
+   [
+    "programs/games/hate/sprites",
+    42
+   ]
+  ],
+  "f40209eb0e330601181ffefe": [
+   [
+    "programs/games/hate/sprites",
+    147
+   ]
+  ],
+  "eb01fc0009eb0e0b0602dd7e": [
+   [
+    "programs/games/hate/sprites",
+    299
+   ]
+  ],
+  "2c2c2c702c712c732c722c22": [
+   [
+    "programs/games/hate/sprites",
+    430
+   ]
+  ],
+  "200e017e0009eb01f40209eb": [
+   [
+    "programs/games/hate/sprites",
+    587
+   ]
+  ],
+  "01220009eb01fc0009eb0602": [
+   [
+    "programs/games/hate/sprites",
+    736
+   ]
+  ],
+  "08780806004fe5edb0e12d2d": [
+   [
+    "programs/games/hate/sprites",
+    885
+   ]
+  ],
+  "1d1d1d1414cbb2083d20ec22": [
+   [
+    "programs/games/hate/sprites",
+    1025
+   ]
+  ],
+  "f321007c110063010024edb0": [
+   [
+    "programs/games/hate/startup",
+    0
+   ]
+  ],
+  "00ff00ff00ff00ff00f800e0": [
+   [
+    "programs/games/hate/startup",
+    2119
+   ]
+  ],
+  "28001400b9005b00a9005600": [
+   [
+    "programs/games/hate/startup",
+    4239
+   ]
+  ],
+  "050006060606010000000000": [
+   [
+    "programs/games/hate/startup",
+    6335
+   ],
+   [
+    "programs/games/hate/titleplayer",
+    1471
+   ]
+  ],
+  "3fff0080ff00ff3fff1ffcff": [
+   [
+    "programs/games/hate/startup",
+    8478
+   ]
+  ],
+  "000000007ffffcfffc3fffff": [
+   [
+    "programs/games/hate/startup",
+    10597
+   ]
+  ],
+  "c000000000fea30000000000": [
+   [
+    "programs/games/hate/startup",
+    12717
+   ]
+  ],
+  "8f3f3fff0000000000000000": [
+   [
+    "programs/games/hate/startup",
+    14836
+   ]
+  ],
+  "e5e17edd6f2c7e2cfeffc8dd": [
+   [
+    "programs/games/hate/statics",
+    3
+   ]
+  ],
+  "12fe2320cc0601180add7e09": [
+   [
+    "programs/games/hate/statics",
+    51
+   ]
+  ],
+  "7000093d20fc084fd506031a": [
+   [
+    "programs/games/hate/statics",
+    102
+   ]
+  ],
+  "b61223d11d1d1d1d1414cbb2": [
+   [
+    "programs/games/hate/statics",
+    153
+   ]
+  ],
+  "d506051aa623b612231c1aa6": [
+   [
+    "programs/games/hate/statics",
+    215
+   ]
+  ],
+  "1d1d1d1d1414cbb20d20cdc3": [
+   [
+    "programs/games/hate/statics",
+    255
+   ]
+  ],
+  "23d11d1d1d1d1414cbb20d20": [
+   [
+    "programs/games/hate/statics",
+    307
+   ]
+  ],
+  "1d1d1d1d1414cbb20d20d4c3": [
+   [
+    "programs/games/hate/statics",
+    356
+   ]
+  ],
+  "f30e00d9e1e52b562b5e213a": [
+   [
+    "programs/games/hate/titleplayer",
+    0
+   ]
+  ],
+  "e1af32d082323283c38880e1": [
+   [
+    "programs/games/hate/titleplayer",
+    218
+   ]
+  ],
+  "cb3fcb3fcb3fc61806179032": [
+   [
+    "programs/games/hate/titleplayer",
+    434
+   ]
+  ],
+  "32d082d92601c3c18206033e": [
+   [
+    "programs/games/hate/titleplayer",
+    653
+   ]
+  ],
+  "d53e18d3fe112c011b7ab3c2": [
+   [
+    "programs/games/hate/titleplayer",
+    871
+   ]
+  ],
+  "84fba285057384fbb48501a8": [
+   [
+    "programs/games/hate/titleplayer",
+    1089
+   ]
+  ],
+  "450ab848000bb812030bb800": [
+   [
+    "programs/games/hate/titleplayer",
+    1306
+   ]
+  ],
+  "060736002310fb2306073600": [
+   [
+    "programs/games/nether-earth/bases",
+    3
+   ]
+  ],
+  "78b7280423232323c6074fcd": [
+   [
+    "programs/games/nether-earth/bases",
+    110
+   ]
+  ],
+  "0f4f7ee61fb1772b4e2b7e2b": [
+   [
+    "programs/games/nether-earth/bases",
+    189
+   ]
+  ],
+  "06381ab7280613131310f7c9": [
+   [
+    "programs/games/nether-earth/bases",
+    317
+   ]
+  ],
+  "06fd360100cbb6c1fde1c921": [
+   [
+    "programs/games/nether-earth/bases",
+    347
+   ]
+  ],
+  "7eb7c84f235e237e23e5d521": [
+   [
+    "programs/games/nether-earth/bases",
+    461
+   ]
+  ],
+  "7300dd7201dd7002dd7103dd": [
+   [
+    "programs/games/nether-earth/bases",
+    566
+   ]
+  ],
+  "10fae1c125250d20f1e1d1c9": [
+   [
+    "programs/games/nether-earth/bases",
+    660
+   ]
+  ],
+  "4943530104154e55434c4541": [
+   [
+    "programs/games/nether-earth/construction",
+    161
+   ]
+  ],
+  "494c41424c45202d2d024401": [
+   [
+    "programs/games/nether-earth/construction",
+    322
+   ]
+  ],
+  "0e017e23dbfea6232320013f": [
+   [
+    "programs/games/nether-earth/controls",
+    17
+   ]
+  ],
+  "fea6232320013fcb1130f23a": [
+   [
+    "programs/games/nether-earth/controls",
+    22
+   ]
+  ],
+  "fe03280aaf181cafdb1fe61f": [
+   [
+    "programs/games/nether-earth/controls",
+    40
+   ]
+  ],
+  "153eefdbfe2fe61f47afcb38": [
+   [
+    "programs/games/nether-earth/controls",
+    53
+   ]
+  ],
+  "17cb3817cb38171717b0b132": [
+   [
+    "programs/games/nether-earth/controls",
+    65
+   ]
+  ],
+  "f70131df0449f710357f0282": [
+   [
+    "programs/games/nether-earth/controls",
+    80
+   ]
+  ],
+  "0151fd0141df024fdf015001": [
+   [
+    "programs/games/nether-earth/controls",
+    93
+   ]
+  ],
+  "e61ffe18d08787876f260029": [
+   [
+    "programs/games/nether-earth/enemy",
+    3
+   ]
+  ],
+  "c0790f0f0fe60fc8fe0fc84f": [
+   [
+    "programs/games/nether-earth/enemy",
+    111
+   ]
+  ],
+  "d9fd360504fd360804fd3606": [
+   [
+    "programs/games/nether-earth/enemy",
+    232
+   ]
+  ],
+  "7ee6e0bb28152bfd7e049620": [
+   [
+    "programs/games/nether-earth/enemy",
+    334
+   ]
+  ],
+  "fe04fd7e043002c6043c96f2": [
+   [
+    "programs/games/nether-earth/enemy",
+    442
+   ]
+  ],
+  "280cfe02280bfe082807fe09": [
+   [
+    "programs/games/nether-earth/enemy",
+    555
+   ]
+  ],
+  "011414c5eda00c10fb3e0ccd": [
+   [
+    "programs/games/nether-earth/enemy",
+    665
+   ]
+  ],
+  "fbc110f1c10505050c0c0cc9": [
+   [
+    "programs/games/nether-earth/enemy",
+    777
+   ]
+  ],
+  "00001818181800180000366c": [
+   [
+    "programs/games/nether-earth/font",
+    7
+   ]
+  ],
+  "042030181818183020000014": [
+   [
+    "programs/games/nether-earth/font",
+    71
+   ]
+  ],
+  "003c763604087e7e00347606": [
+   [
+    "programs/games/nether-earth/font",
+    143
+   ]
+  ],
+  "180000001818001818100008": [
+   [
+    "programs/games/nether-earth/font",
+    214
+   ]
+  ],
+  "170074767777777674007771": [
+   [
+    "programs/games/nether-earth/font",
+    286
+   ]
+  ],
+  "73770063777f7f7777770067": [
+   [
+    "programs/games/nether-earth/font",
+    357
+   ]
+  ],
+  "77360063636363773e1c006b": [
+   [
+    "programs/games/nether-earth/font",
+    429
+   ]
+  ],
+  "fe90382efd360400c5fde5cd": [
+   [
+    "programs/games/nether-earth/gameturn",
+    113
+   ]
+  ],
+  "4241534553204c4546540342": [
+   [
+    "programs/games/nether-earth/gameturn",
+    299
+   ]
+  ],
+  "455354524f59454420032020": [
+   [
+    "programs/games/nether-earth/gameturn",
+    359
+   ]
+  ],
+  "4f4e202120202020003efacd": [
+   [
+    "programs/games/nether-earth/gameturn",
+    383
+   ]
+  ],
+  "860c01860c0911100e112003": [
+   [
+    "programs/games/nether-earth/level",
+    0
+   ]
+  ],
+  "11810785860412850b12850d": [
+   [
+    "programs/games/nether-earth/level",
+    120
+   ]
+  ],
+  "11400a11420c11440e12490c": [
+   [
+    "programs/games/nether-earth/level",
+    241
+   ]
+  ],
+  "83bc0a04c00a03c20a02c20c": [
+   [
+    "programs/games/nether-earth/level",
+    361
+   ]
+  ],
+  "0302b40504be0305c80a06d2": [
+   [
+    "programs/games/nether-earth/level",
+    482
+   ]
+  ],
+  "05020002020003fa02030200": [
+   [
+    "programs/games/nether-earth/level",
+    602
+   ]
+  ],
+  "020011020011000011020012": [
+   [
+    "programs/games/nether-earth/level",
+    723
+   ]
+  ],
+  "120200110000000000000000": [
+   [
+    "programs/games/nether-earth/level",
+    734
+   ]
+  ],
+  "02460421010b08302e2e5354": [
+   [
+    "programs/games/nether-earth/mainmenu",
+    9
+   ]
+  ],
+  "41442053415645442047414d": [
+   [
+    "programs/games/nether-earth/mainmenu",
+    132
+   ]
+  ],
+  "0421505245535320504c4159": [
+   [
+    "programs/games/nether-earth/mainmenu",
+    264
+   ]
+  ],
+  "011600024550524553532052": [
+   [
+    "programs/games/nether-earth/mainmenu",
+    406
+   ]
+  ],
+  "53204b455920464f52200245": [
+   [
+    "programs/games/nether-earth/mainmenu",
+    791
+   ]
+  ],
+  "4341505320534800c9fe20c2": [
+   [
+    "programs/games/nether-earth/mainmenu",
+    911
+   ]
+  ],
+  "3ee7dbfe2fe61f2004d9f1fb": [
+   [
+    "programs/games/nether-earth/music",
+    103
+   ]
+  ],
+  "2fe61f2004d9f1fbc9f3ed7b": [
+   [
+    "programs/games/nether-earth/music",
+    107
+   ]
+  ],
+  "e1237e23d96fd97e23d967d9": [
+   [
+    "programs/games/nether-earth/music",
+    293
+   ]
+  ],
+  "673d20fd10ebe1c9e13e1832": [
+   [
+    "programs/games/nether-earth/music",
+    390
+   ]
+  ],
+  "02ccc60365c60178c67c1005": [
+   [
+    "programs/games/nether-earth/music",
+    525
+   ]
+  ],
+  "02c5c702d2c702c5c73e2037": [
+   [
+    "programs/games/nether-earth/music",
+    656
+   ]
+  ],
+  "2e2029102e1034102e10063e": [
+   [
+    "programs/games/nether-earth/music",
+    787
+   ]
+  ],
+  "01070cc5772310fc473e14cd": [
+   [
+    "programs/games/nether-earth/music",
+    908
+   ]
+  ],
+  "6f26001e20181b6f26001e00": [
+   [
+    "programs/games/nether-earth/print",
+    0
+   ]
+  ],
+  "3c38fced423d20077bfe20ca": [
+   [
+    "programs/games/nether-earth/print",
+    48
+   ]
+  ],
+  "2813fe032828fe0428304f3a": [
+   [
+    "programs/games/nether-earth/print",
+    93
+   ]
+  ],
+  "7e23e5d54f0f0f0f0fe60f32": [
+   [
+    "programs/games/nether-earth/print",
+    153
+   ]
+  ],
+  "d506087e12231410fad113ed": [
+   [
+    "programs/games/nether-earth/print",
+    218
+   ]
+  ],
+  "10f9130d20f11830dde5e5dd": [
+   [
+    "programs/games/nether-earth/print",
+    277
+   ]
+  ],
+  "cb13cb12f1cb13cb1210f33a": [
+   [
+    "programs/games/nether-earth/print",
+    302
+   ]
+  ],
+  "206f7cce00670d20ede178cd": [
+   [
+    "programs/games/nether-earth/print",
+    367
+   ]
+  ],
+  "010417024d44495245435420": [
+   [
+    "programs/games/nether-earth/robotmenu",
+    24
+   ]
+  ],
+  "0116170246535452454e4754": [
+   [
+    "programs/games/nether-earth/robotmenu",
+    256
+   ]
+  ],
+  "534553004341505455524520": [
+   [
+    "programs/games/nether-earth/robotmenu",
+    454
+   ]
+  ],
+  "415243482026032044455354": [
+   [
+    "programs/games/nether-earth/robotmenu",
+    681
+   ]
+  ],
+  "59530303454e454d59202020": [
+   [
+    "programs/games/nether-earth/robotmenu",
+    1136
+   ]
+  ],
+  "20032020434f4d42415400cd": [
+   [
+    "programs/games/nether-earth/robotmenu",
+    1361
+   ]
+  ],
+  "010316024620205354415455": [
+   [
+    "programs/games/nether-earth/screen",
+    306
+   ]
+  ],
+  "424f5453010f170246524553": [
+   [
+    "programs/games/nether-earth/screen",
+    397
+   ]
+  ],
+  "4f4e0343484153534953003a": [
+   [
+    "programs/games/nether-earth/screen",
+    463
+   ]
+  ],
+  "0f380c7cb720057dfe0e2838": [
+   [
+    "programs/games/nether-earth/ship",
+    34
+   ]
+  ],
+  "0a7cb728057dfef5282c233a": [
+   [
+    "programs/games/nether-earth/ship",
+    48
+   ]
+  ],
+  "010c0f30010d79e60f280d2a": [
+   [
+    "programs/games/nether-earth/ship",
+    121
+   ]
+  ],
+  "4f7dcb1c1fcb3fcb3f91fe02": [
+   [
+    "programs/games/nether-earth/ship",
+    219
+   ]
+  ],
+  "d608f8180679c608fe38c832": [
+   [
+    "programs/games/nether-earth/ship",
+    239
+   ]
+  ],
+  "200cc1fd7e09fd860db93801": [
+   [
+    "programs/games/nether-earth/ship",
+    401
+   ]
+  ],
+  "7e18ea0f1615151616161919": [
+   [
+    "programs/games/nether-earth/ship",
+    429
+   ]
+  ],
+  "613f40fc020090001a7f80f8": [
+   [
+    "programs/games/nether-earth/sprites",
+    2211
+   ]
+  ],
+  "0fd0806000080f708060000c": [
+   [
+    "programs/games/nether-earth/sprites",
+    4422
+   ]
+  ],
+  "009f60ff00ff008758ff00ff": [
+   [
+    "programs/games/nether-earth/sprites",
+    6633
+   ]
+  ],
+  "003fc0ff00e718ff003fc0ff": [
+   [
+    "programs/games/nether-earth/sprites",
+    8843
+   ]
+  ],
+  "ff00ff00ff00ff00ff000f90": [
+   [
+    "programs/games/nether-earth/sprites",
+    11054
+   ]
+  ],
+  "007f80f00c000000007f80fc": [
+   [
+    "programs/games/nether-earth/sprites",
+    13265
+   ]
+  ],
+  "f708ff000000000000000000": [
+   [
+    "programs/games/nether-earth/sprites",
+    15334
+   ]
+  ],
+  "fd360504fd360605fd360b00": [
+   [
+    "programs/games/nether-earth/start",
+    243
+   ]
+  ],
+  "fffffffcfff0ffc0ff00fc00": [
+   [
+    "programs/games/nether-earth/tables",
+    0
+   ]
+  ],
+  "0404040506070809090a0a0b": [
+   [
+    "programs/games/nether-earth/tables",
+    41
+   ]
+  ],
+  "7892f892f8929c9d349ef69e": [
+   [
+    "programs/games/nether-earth/tables",
+    82
+   ]
+  ],
+  "981499169a189b5a9ce2a0e4": [
+   [
+    "programs/games/nether-earth/tables",
+    123
+   ]
+  ],
+  "326ee26ecc6f58701271bc71": [
+   [
+    "programs/games/nether-earth/tables",
+    164
+   ]
+  ],
+  "7d307e1a7fb87f8a803a8124": [
+   [
+    "programs/games/nether-earth/tables",
+    205
+   ]
+  ],
+  "24896689b689068a8c8a3e8b": [
+   [
+    "programs/games/nether-earth/tables",
+    246
+   ]
+  ],
+  "06000000070f070f00006300": [
+   [
+    "programs/games/nether-earth/tables",
+    287
+   ]
+  ],
+  "242423141c7afe1030057bfe": [
+   [
+    "programs/games/nether-earth/view",
+    68
+   ]
+  ],
+  "e17abc20077bbd2003d11812": [
+   [
+    "programs/games/nether-earth/view",
+    166
+   ]
+  ],
+  "30fd7e00bd2005fd7e01bcc8": [
+   [
+    "programs/games/nether-earth/view",
+    288
+   ]
+  ],
+  "7abc20047bbd280cebcbf6fd": [
+   [
+    "programs/games/nether-earth/view",
+    433
+   ]
+  ],
+  "c5d53e0890f5fd4e0806ff04": [
+   [
+    "programs/games/nether-earth/view",
+    576
+   ]
+  ],
+  "1b1b3d20fbd57df56c260029": [
+   [
+    "programs/games/nether-earth/view",
+    723
+   ]
+  ],
+  "e5e5e5e5e5e5e5e510f6ed7b": [
+   [
+    "programs/games/nether-earth/view",
+    845
+   ]
+  ],
+  "7bc6205f38047ad608570dc2": [
+   [
+    "programs/games/nether-earth/view",
+    1005
+   ]
+  ],
+  "000000000000ff0000000d05": [
+   [
+    "programs/games/nether-earth/viewbuffer",
+    250
+   ]
+  ],
+  "c415508080ef2222aa3af230": [
+   [
+    "programs/games/nether-earth/viewbuffer",
+    455
+   ]
+  ],
+  "aace5c000000000000000000": [
+   [
+    "programs/games/nether-earth/viewbuffer",
+    523
+   ]
+  ],
+  "000000000000000000e05771": [
+   [
+    "programs/games/nether-earth/viewbuffer",
+    3113
+   ]
+  ],
+  "110900fd19c110f0c9fd7e0c": [
+   [
+    "programs/games/nether-earth/world",
+    39
+   ]
+  ],
+  "e1dde1fd36060118364b41cd": [
+   [
+    "programs/games/nether-earth/world",
+    260
+   ]
+  ],
+  "03477c0fe603ee025778b728": [
+   [
+    "programs/games/nether-earth/world",
+    521
+   ]
+  ],
+  "afed52f0956f3e009c67c921": [
+   [
+    "programs/games/nether-earth/world",
+    768
+   ]
+  ],
+  "d005c9fd7e0afe02c8fd340e": [
+   [
+    "programs/games/nether-earth/world",
+    1041
+   ]
+  ],
+  "79c1e1c9c5e5fd7e0d0e00b7": [
+   [
+    "programs/games/nether-earth/world",
+    1317
+   ]
+  ],
+  "7e28010cfd7106dd7e08fd77": [
+   [
+    "programs/games/nether-earth/world",
+    1562
+   ]
+  ],
+  "fd770cfde1e1fd3601007932": [
+   [
+    "programs/games/nether-earth/world",
+    1809
+   ]
+  ],
+  "01d124110000e56e260019eb": [
+   [
+    "programs/utilities/nether-earth-editor/mix",
+    55
+   ]
+  ],
+  "e1c1d1d5c5e53e16d73e1092": [
+   [
+    "programs/utilities/nether-earth-editor/mix",
+    323
+   ]
+  ],
+  "0c03804d3260900826518c83": [
+   [
+    "programs/utilities/nether-earth-editor/mix",
+    638
+   ]
+  ],
+  "e1e5e10501ff00000000000f": [
+   [
+    "programs/utilities/nether-earth-editor/mix",
+    957
+   ]
+  ],
+  "55015501c1c1c1ffffb9a5b9": [
+   [
+    "programs/utilities/nether-earth-editor/mix",
+    1275
+   ]
+  ],
+  "3000060c183060c080007cc6": [
+   [
+    "programs/utilities/nether-earth-editor/mix",
+    1594
+   ]
+  ],
+  "783000c6c6c6d6feeec600c6": [
+   [
+    "programs/utilities/nether-earth-editor/mix",
+    1913
+   ]
+  ],
+  "000000003c4299a1a199423c": [
+   [
+    "programs/utilities/nether-earth-editor/mix",
+    2232
+   ]
+  ],
+  "181a556c747261584f522076": [
+   [
+    "protection/ultraxor/1.2/head",
+    0
+   ]
+  ],
+  "2076312e3220286329205041": [
+   [
+    "protection/ultraxor/1.2/head",
+    10
+   ]
+  ],
+  "5041524143454c53f33e2aed": [
+   [
+    "protection/ultraxor/1.2/head",
+    20
+   ]
+  ],
+  "524143454c53f33e2aed4f11": [
+   [
+    "protection/ultraxor/1.2/head",
+    22
+   ]
+  ],
+  "060fed5f0f15fdaded07a890": [
+   [
+    "protection/ultraxor/1.2/head",
+    49
+   ]
+  ],
+  "ed5f0f15fdaded07a890071d": [
+   [
+    "protection/ultraxor/1.2/head",
+    51
+   ]
+  ],
+  "071dee50ddaded440ded0d2f": [
+   [
+    "protection/ultraxor/1.2/head",
+    61
+   ]
+  ],
+  "0d2fed07a8ddf9ae772310e0": [
+   [
+    "protection/ultraxor/1.2/head",
+    71
+   ]
+  ],
+  "2100007e8730052100007e87": [
+   [
+    "sound/ay-players/pro-tracker-2/phantom-family-2.40",
+    175
+   ]
+  ],
+  "ed444fa7ed423011e13e0032": [
+   [
+    "sound/ay-players/pro-tracker-2/phantom-family-2.40",
+    366
+   ]
+  ],
+  "3e0dc35200af47083e033d32": [
+   [
+    "sound/ay-players/pro-tracker-2/phantom-family-2.40",
+    689
+   ]
+  ],
+  "1a13c620382bc6603885c610": [
+   [
+    "sound/ay-players/pro-tracker-2/phantom-family-2.40",
+    1147
+   ]
+  ],
+  "25210000874f097e23666f22": [
+   [
+    "sound/ay-players/pro-tracker-2/phantom-family-2.40",
+    1489
+   ]
+  ],
+  "edab3d42ed7943edab3d42ed": [
+   [
+    "sound/ay-players/pro-tracker-2/phantom-family-2.40",
+    1868
+   ]
+  ],
+  "006b0064005e00590054004f": [
+   [
+    "sound/ay-players/pro-tracker-2/phantom-family-2.40",
+    2241
+   ]
+  ],
+  "2046414d494c592731393936": [
+   [
+    "sound/ay-players/pro-tracker-2/phantom-family-2.40",
+    2615
+   ]
+  ],
+  "205054203320506c61796572": [
+   [
+    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
+    11
+   ]
+  ],
+  "0e600d800cd80b280b880af0": [
+   [
+    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
+    515
+   ]
+  ],
+  "0000c13e006f3cb820017932": [
+   [
+    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
+    1030
+   ]
+  ],
+  "073811673e0083cb6d280332": [
+   [
+    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
+    1535
+   ]
+  ],
+  "0019f9e101000009ebe10922": [
+   [
+    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
+    1958
+   ]
+  ],
+  "d960d9c987c6e06f4e2c46ed": [
+   [
+    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
+    2749
+   ]
+  ],
+  "af081a13c6a06f4e2c46ed43": [
+   [
+    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
+    2797
+   ]
+  ]
+ },
+ "by_role": {
+  "sector-reader": [
+   "disk/tr-dos/rom-gadget-reader/ultraxor-1.2"
+  ],
+  "music-data": [
+   "formats/music/pt2-module/main",
+   "formats/music/pt3-module/main"
+  ],
+  "depacker": [
+   "packers/hrum/3.5/depacker",
+   "packers/hrust/1/screen-depacker"
+  ],
+  "game-module": [
+   "programs/games/advanced-nether-earth/construction",
+   "programs/games/advanced-nether-earth/disk",
+   "programs/games/advanced-nether-earth/endings",
+   "programs/games/advanced-nether-earth/font",
+   "programs/games/advanced-nether-earth/gameturn",
+   "programs/games/advanced-nether-earth/im2",
+   "programs/games/advanced-nether-earth/interrupts",
+   "programs/games/advanced-nether-earth/mainmenu",
+   "programs/games/advanced-nether-earth/music",
+   "programs/games/advanced-nether-earth/robotmenu",
+   "programs/games/advanced-nether-earth/screen",
+   "programs/games/advanced-nether-earth/sprites",
+   "programs/games/advanced-nether-earth/start",
+   "programs/games/advanced-nether-earth/viewtail",
+   "programs/games/hate/buffers",
+   "programs/games/hate/course",
+   "programs/games/hate/coursedata",
+   "programs/games/hate/gamedata",
+   "programs/games/hate/hits",
+   "programs/games/hate/hud",
+   "programs/games/hate/mainloop",
+   "programs/games/hate/menu",
+   "programs/games/hate/mover",
+   "programs/games/hate/objview",
+   "programs/games/hate/player",
+   "programs/games/hate/roundsetup",
+   "programs/games/hate/scroller",
+   "programs/games/hate/shadows",
+   "programs/games/hate/sprites",
+   "programs/games/hate/startup",
+   "programs/games/hate/statics",
+   "programs/games/hate/titleplayer",
+   "programs/games/nether-earth/bases",
+   "programs/games/nether-earth/construction",
+   "programs/games/nether-earth/controls",
+   "programs/games/nether-earth/enemy",
+   "programs/games/nether-earth/font",
+   "programs/games/nether-earth/gameturn",
+   "programs/games/nether-earth/interrupts",
+   "programs/games/nether-earth/level",
+   "programs/games/nether-earth/mainmenu",
+   "programs/games/nether-earth/music",
+   "programs/games/nether-earth/print",
+   "programs/games/nether-earth/robotmenu",
+   "programs/games/nether-earth/screen",
+   "programs/games/nether-earth/ship",
+   "programs/games/nether-earth/sprites",
+   "programs/games/nether-earth/start",
+   "programs/games/nether-earth/tables",
+   "programs/games/nether-earth/view",
+   "programs/games/nether-earth/viewbuffer",
+   "programs/games/nether-earth/world",
+   "programs/utilities/nether-earth-editor/mix"
+  ],
+  "protection-layer": [
+   "protection/ultraxor/1.2/head"
+  ],
+  "player": [
+   "sound/ay-players/pro-tracker-2/phantom-family-2.40",
+   "sound/ay-players/pro-tracker-3/nick-gdc-1.0"
+  ]
+ },
+ "by_tag": {
+  "tr-dos": [
+   "disk/tr-dos/rom-gadget-reader/ultraxor-1.2"
+  ],
+  "wd1793": [
+   "disk/tr-dos/rom-gadget-reader/ultraxor-1.2"
+  ],
+  "sector-reader": [
+   "disk/tr-dos/rom-gadget-reader/ultraxor-1.2"
+  ],
+  "rom-gadgets": [
+   "disk/tr-dos/rom-gadget-reader/ultraxor-1.2"
+  ],
+  "128k-paging": [
+   "disk/tr-dos/rom-gadget-reader/ultraxor-1.2"
+  ],
+  "ay": [
+   "formats/music/pt2-module/main",
+   "formats/music/pt3-module/main",
+   "sound/ay-players/pro-tracker-2/phantom-family-2.40",
+   "sound/ay-players/pro-tracker-3/nick-gdc-1.0"
+  ],
+  "pt2": [
+   "formats/music/pt2-module/main",
+   "sound/ay-players/pro-tracker-2/phantom-family-2.40"
+  ],
+  "music": [
+   "formats/music/pt2-module/main",
+   "formats/music/pt3-module/main",
+   "programs/games/advanced-nether-earth/music",
+   "programs/games/nether-earth/music"
+  ],
+  "pt3": [
+   "formats/music/pt3-module/main",
+   "sound/ay-players/pro-tracker-3/nick-gdc-1.0"
+  ],
+  "vortex": [
+   "formats/music/pt3-module/main"
+  ],
+  "hrum": [
+   "packers/hrum/3.5/depacker"
+  ],
+  "packer": [
+   "packers/hrum/3.5/depacker",
+   "packers/hrust/1/screen-depacker"
+  ],
+  "depacker": [
+   "packers/hrum/3.5/depacker",
+   "packers/hrust/1/screen-depacker"
+  ],
+  "hrust": [
+   "packers/hrust/1/screen-depacker"
+  ],
+  "self-relocating": [
+   "packers/hrust/1/screen-depacker"
+  ],
+  "advanced-nether-earth": [
+   "programs/games/advanced-nether-earth/construction",
+   "programs/games/advanced-nether-earth/disk",
+   "programs/games/advanced-nether-earth/endings",
+   "programs/games/advanced-nether-earth/font",
+   "programs/games/advanced-nether-earth/gameturn",
+   "programs/games/advanced-nether-earth/im2",
+   "programs/games/advanced-nether-earth/interrupts",
+   "programs/games/advanced-nether-earth/mainmenu",
+   "programs/games/advanced-nether-earth/music",
+   "programs/games/advanced-nether-earth/robotmenu",
+   "programs/games/advanced-nether-earth/screen",
+   "programs/games/advanced-nether-earth/sprites",
+   "programs/games/advanced-nether-earth/start",
+   "programs/games/advanced-nether-earth/viewtail"
+  ],
+  "game-module": [
+   "programs/games/advanced-nether-earth/construction",
+   "programs/games/advanced-nether-earth/disk",
+   "programs/games/advanced-nether-earth/endings",
+   "programs/games/advanced-nether-earth/font",
+   "programs/games/advanced-nether-earth/gameturn",
+   "programs/games/advanced-nether-earth/im2",
+   "programs/games/advanced-nether-earth/interrupts",
+   "programs/games/advanced-nether-earth/mainmenu",
+   "programs/games/advanced-nether-earth/music",
+   "programs/games/advanced-nether-earth/robotmenu",
+   "programs/games/advanced-nether-earth/screen",
+   "programs/games/advanced-nether-earth/sprites",
+   "programs/games/advanced-nether-earth/start",
+   "programs/games/advanced-nether-earth/viewtail",
+   "programs/games/hate/buffers",
+   "programs/games/hate/course",
+   "programs/games/hate/coursedata",
+   "programs/games/hate/gamedata",
+   "programs/games/hate/hits",
+   "programs/games/hate/hud",
+   "programs/games/hate/mainloop",
+   "programs/games/hate/menu",
+   "programs/games/hate/mover",
+   "programs/games/hate/objview",
+   "programs/games/hate/player",
+   "programs/games/hate/roundsetup",
+   "programs/games/hate/scroller",
+   "programs/games/hate/shadows",
+   "programs/games/hate/sprites",
+   "programs/games/hate/startup",
+   "programs/games/hate/statics",
+   "programs/games/hate/titleplayer",
+   "programs/games/nether-earth/bases",
+   "programs/games/nether-earth/construction",
+   "programs/games/nether-earth/controls",
+   "programs/games/nether-earth/enemy",
+   "programs/games/nether-earth/font",
+   "programs/games/nether-earth/gameturn",
+   "programs/games/nether-earth/interrupts",
+   "programs/games/nether-earth/level",
+   "programs/games/nether-earth/mainmenu",
+   "programs/games/nether-earth/music",
+   "programs/games/nether-earth/print",
+   "programs/games/nether-earth/robotmenu",
+   "programs/games/nether-earth/screen",
+   "programs/games/nether-earth/ship",
+   "programs/games/nether-earth/sprites",
+   "programs/games/nether-earth/start",
+   "programs/games/nether-earth/tables",
+   "programs/games/nether-earth/view",
+   "programs/games/nether-earth/viewbuffer",
+   "programs/games/nether-earth/world",
+   "programs/utilities/nether-earth-editor/mix"
+  ],
+  "construction": [
+   "programs/games/advanced-nether-earth/construction",
+   "programs/games/nether-earth/construction"
+  ],
+  "disk": [
+   "programs/games/advanced-nether-earth/disk"
+  ],
+  "endings": [
+   "programs/games/advanced-nether-earth/endings"
+  ],
+  "font": [
+   "programs/games/advanced-nether-earth/font",
+   "programs/games/nether-earth/font"
+  ],
+  "gameturn": [
+   "programs/games/advanced-nether-earth/gameturn",
+   "programs/games/nether-earth/gameturn"
+  ],
+  "im2": [
+   "programs/games/advanced-nether-earth/im2"
+  ],
+  "interrupts": [
+   "programs/games/advanced-nether-earth/interrupts",
+   "programs/games/nether-earth/interrupts"
+  ],
+  "mainmenu": [
+   "programs/games/advanced-nether-earth/mainmenu",
+   "programs/games/nether-earth/mainmenu"
+  ],
+  "robotmenu": [
+   "programs/games/advanced-nether-earth/robotmenu",
+   "programs/games/nether-earth/robotmenu"
+  ],
+  "screen": [
+   "programs/games/advanced-nether-earth/screen",
+   "programs/games/nether-earth/screen"
+  ],
+  "sprites": [
+   "programs/games/advanced-nether-earth/sprites",
+   "programs/games/hate/sprites",
+   "programs/games/nether-earth/sprites"
+  ],
+  "start": [
+   "programs/games/advanced-nether-earth/start",
+   "programs/games/nether-earth/start"
+  ],
+  "viewtail": [
+   "programs/games/advanced-nether-earth/viewtail"
+  ],
+  "hate": [
+   "programs/games/hate/buffers",
+   "programs/games/hate/course",
+   "programs/games/hate/coursedata",
+   "programs/games/hate/gamedata",
+   "programs/games/hate/hits",
+   "programs/games/hate/hud",
+   "programs/games/hate/mainloop",
+   "programs/games/hate/menu",
+   "programs/games/hate/mover",
+   "programs/games/hate/objview",
+   "programs/games/hate/player",
+   "programs/games/hate/roundsetup",
+   "programs/games/hate/scroller",
+   "programs/games/hate/shadows",
+   "programs/games/hate/sprites",
+   "programs/games/hate/startup",
+   "programs/games/hate/statics",
+   "programs/games/hate/titleplayer"
+  ],
+  "buffers": [
+   "programs/games/hate/buffers"
+  ],
+  "course": [
+   "programs/games/hate/course"
+  ],
+  "coursedata": [
+   "programs/games/hate/coursedata"
+  ],
+  "gamedata": [
+   "programs/games/hate/gamedata"
+  ],
+  "hits": [
+   "programs/games/hate/hits"
+  ],
+  "hud": [
+   "programs/games/hate/hud"
+  ],
+  "mainloop": [
+   "programs/games/hate/mainloop"
+  ],
+  "menu": [
+   "programs/games/hate/menu"
+  ],
+  "mover": [
+   "programs/games/hate/mover"
+  ],
+  "objview": [
+   "programs/games/hate/objview"
+  ],
+  "player": [
+   "programs/games/hate/player",
+   "sound/ay-players/pro-tracker-2/phantom-family-2.40",
+   "sound/ay-players/pro-tracker-3/nick-gdc-1.0"
+  ],
+  "roundsetup": [
+   "programs/games/hate/roundsetup"
+  ],
+  "scroller": [
+   "programs/games/hate/scroller"
+  ],
+  "shadows": [
+   "programs/games/hate/shadows"
+  ],
+  "startup": [
+   "programs/games/hate/startup"
+  ],
+  "statics": [
+   "programs/games/hate/statics"
+  ],
+  "titleplayer": [
+   "programs/games/hate/titleplayer"
+  ],
+  "nether-earth": [
+   "programs/games/nether-earth/bases",
+   "programs/games/nether-earth/construction",
+   "programs/games/nether-earth/controls",
+   "programs/games/nether-earth/enemy",
+   "programs/games/nether-earth/font",
+   "programs/games/nether-earth/gameturn",
+   "programs/games/nether-earth/interrupts",
+   "programs/games/nether-earth/level",
+   "programs/games/nether-earth/mainmenu",
+   "programs/games/nether-earth/music",
+   "programs/games/nether-earth/print",
+   "programs/games/nether-earth/robotmenu",
+   "programs/games/nether-earth/screen",
+   "programs/games/nether-earth/ship",
+   "programs/games/nether-earth/sprites",
+   "programs/games/nether-earth/start",
+   "programs/games/nether-earth/tables",
+   "programs/games/nether-earth/view",
+   "programs/games/nether-earth/viewbuffer",
+   "programs/games/nether-earth/world"
+  ],
+  "bases": [
+   "programs/games/nether-earth/bases"
+  ],
+  "controls": [
+   "programs/games/nether-earth/controls"
+  ],
+  "enemy": [
+   "programs/games/nether-earth/enemy"
+  ],
+  "level": [
+   "programs/games/nether-earth/level"
+  ],
+  "print": [
+   "programs/games/nether-earth/print"
+  ],
+  "ship": [
+   "programs/games/nether-earth/ship"
+  ],
+  "tables": [
+   "programs/games/nether-earth/tables"
+  ],
+  "view": [
+   "programs/games/nether-earth/view"
+  ],
+  "viewbuffer": [
+   "programs/games/nether-earth/viewbuffer"
+  ],
+  "world": [
+   "programs/games/nether-earth/world"
+  ],
+  "nether-earth-editor": [
+   "programs/utilities/nether-earth-editor/mix"
+  ],
+  "mix": [
+   "programs/utilities/nether-earth-editor/mix"
+  ],
+  "ultraxor": [
+   "protection/ultraxor/1.2/head"
+  ],
+  "protection": [
+   "protection/ultraxor/1.2/head"
+  ],
+  "xor": [
+   "protection/ultraxor/1.2/head"
+  ],
+  "r-register": [
+   "protection/ultraxor/1.2/head"
+  ],
+  "self-modifying": [
+   "sound/ay-players/pro-tracker-2/phantom-family-2.40"
+  ],
+  "golden-disk": [
+   "sound/ay-players/pro-tracker-3/nick-gdc-1.0"
+  ]
+ },
+ "formats": [
+  "formats/music/pt2-module/main",
+  "formats/music/pt3-module/main"
+ ]
+}

@@ -1,0 +1,2523 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth/mainmenu",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth: mainmenu",
+  "authors": [
+    "Argus Press Software"
+  ],
+  "year": 1987,
+  "tags": [
+    "nether-earth",
+    "game-module",
+    "mainmenu"
+  ],
+  "summary": "The main menu, the tape save and load of a game, the redefine-keys screen.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 935,
+    "sha1": "28ff026832a0b38b76ab2bed2a93f2bf416ab848",
+    "masked_sha1": "bc97ebeef6b7f9897cafbe73bf9bac4ae88ffe7a"
+  },
+  "origin": "$C100",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 35,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 38,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 58,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 61,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 84,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 87,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 148,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleColourCycle"
+    },
+    {
+      "offset": 156,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 159,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuMusic"
+    },
+    {
+      "offset": 163,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleColourCycle"
+    },
+    {
+      "offset": 171,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 204,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 207,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 222,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Controls"
+    },
+    {
+      "offset": 225,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 228,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 254,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 257,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 292,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewBuffer"
+    },
+    {
+      "offset": 308,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SaveShots"
+    },
+    {
+      "offset": 326,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 329,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewBuffer"
+    },
+    {
+      "offset": 339,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SaveShots"
+    },
+    {
+      "offset": 342,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Shots"
+    },
+    {
+      "offset": 350,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Buildings"
+    },
+    {
+      "offset": 362,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 389,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 392,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 395,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Start"
+    },
+    {
+      "offset": 398,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StartInterrupt"
+    },
+    {
+      "offset": 401,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Handler"
+    },
+    {
+      "offset": 404,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 458,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 463,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RadarDirty"
+    },
+    {
+      "offset": 466,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Shots"
+    },
+    {
+      "offset": 469,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SaveShots"
+    },
+    {
+      "offset": 477,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Buildings"
+    },
+    {
+      "offset": 486,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 490,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewBuffer"
+    },
+    {
+      "offset": 497,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewBuffer"
+    },
+    {
+      "offset": 512,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SaveShots"
+    },
+    {
+      "offset": 528,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SaveShots"
+    },
+    {
+      "offset": 567,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Controls"
+    },
+    {
+      "offset": 573,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 580,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 587,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 590,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 624,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 627,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyTable"
+    },
+    {
+      "offset": 630,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3CD"
+    },
+    {
+      "offset": 640,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 649,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3DA"
+    },
+    {
+      "offset": 652,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 655,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 664,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3DD"
+    },
+    {
+      "offset": 667,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 670,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 679,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3E0"
+    },
+    {
+      "offset": 682,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 685,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 694,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3E3"
+    },
+    {
+      "offset": 697,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 700,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 709,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3D7"
+    },
+    {
+      "offset": 712,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 715,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNewline"
+    },
+    {
+      "offset": 718,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 727,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3CE"
+    },
+    {
+      "offset": 730,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 733,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 742,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3D1"
+    },
+    {
+      "offset": 745,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 748,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 757,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3D4"
+    },
+    {
+      "offset": 760,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 768,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 781,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 805,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 809,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 822,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 832,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3CE"
+    },
+    {
+      "offset": 880,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 895,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 909,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 923,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCharKeep"
+    },
+    {
+      "offset": 926,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "MainMenu",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The main menu: clear the screen, the title, the options; Z = start a new game, NZ = a game was loaded"
+    },
+    {
+      "offset": 3,
+      "name": "MainMenuTitle",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The main menu without the clearing: the title, then the options"
+    },
+    {
+      "offset": 6,
+      "name": "MainMenuOptions",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The main menu's options (re-entered after keys 1-3)"
+    },
+    {
+      "offset": 32,
+      "name": "MenuKeyboardOption",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Option 1, KEYBOARD, in the colour of Controls 1"
+    },
+    {
+      "offset": 55,
+      "name": "MenuKempstonOption",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Option 2, KEMPSTON J/S, in the colour of Controls 2"
+    },
+    {
+      "offset": 81,
+      "name": "MenuInterface2Option",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Option 3, INTERFACE 2, in the colour of Controls 3; then options 4 and 5"
+    },
+    {
+      "offset": 146,
+      "name": "MainMenuKeys",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The main menu's keys: the title music until a key, then 0-5"
+    },
+    {
+      "offset": 227,
+      "name": "PrintTitle",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "\"NETHER\" and \"EARTH\" in big white letters at the top"
+    },
+    {
+      "offset": 252,
+      "name": "PrintTitleEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "PrintTitle's return; then the load option"
+    },
+    {
+      "offset": 286,
+      "name": "LoadGameBlocks",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Load a saved game: the checksum block, the game block; NZ when it is good"
+    },
+    {
+      "offset": 386,
+      "name": "LoadError",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "After LOADING ERROR!: a beep, a key, then the start again (Start)"
+    },
+    {
+      "offset": 397,
+      "name": "SaveGame",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Save the game to tape: the prompt, a key, the checksum block and the game block"
+    },
+    {
+      "offset": 457,
+      "name": "SaveGameBlocks",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "After the prompt: a key, the staging, the checksum, the two blocks"
+    },
+    {
+      "offset": 527,
+      "name": "SaveChecksum",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DE = the 16-bit sum of the $24D1 bytes at $D92B (the saved game block)"
+    },
+    {
+      "offset": 549,
+      "name": "WaitAnyKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Wait until no key is held, then until one is (all half rows of port $FE)"
+    },
+    {
+      "offset": 566,
+      "name": "ControlsOptionAttr",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The attribute for menu option C: cyan ($45) when it is the current Controls, else yellow ($46)"
+    },
+    {
+      "offset": 578,
+      "name": "ControlsOptionPlain",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ControlsOptionAttr's return, the option not chosen"
+    },
+    {
+      "offset": 585,
+      "name": "ControlsOptionChosen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ControlsOptionAttr's return, the option chosen"
+    },
+    {
+      "offset": 586,
+      "name": "RedefineKeys",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Redefine the eight keys: UP, DOWN, LEFT, RIGHT, FIRE, PAUSE, ABORT, SAVE"
+    },
+    {
+      "offset": 618,
+      "name": "RedefineKeysBody",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Wait for no key, clear KeyTable, ask for UP"
+    },
+    {
+      "offset": 648,
+      "name": "ReadUpKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for UP (KeyTable record 4), then ask for DOWN"
+    },
+    {
+      "offset": 663,
+      "name": "ReadDownKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for DOWN (record 5), then ask for LEFT"
+    },
+    {
+      "offset": 678,
+      "name": "ReadLeftKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for LEFT (record 6), then ask for RIGHT"
+    },
+    {
+      "offset": 693,
+      "name": "ReadRightKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for RIGHT (record 7), then ask for FIRE"
+    },
+    {
+      "offset": 708,
+      "name": "ReadFireKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for FIRE (record 3), a blank line, then ask for PAUSE"
+    },
+    {
+      "offset": 726,
+      "name": "ReadPauseKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for PAUSE (record 0), then ask for ABORT"
+    },
+    {
+      "offset": 741,
+      "name": "ReadAbortKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for ABORT (record 1), then ask for SAVE"
+    },
+    {
+      "offset": 756,
+      "name": "ReadSaveKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for SAVE (record 2), wait for its release and a pause, back to the menu"
+    },
+    {
+      "offset": 780,
+      "name": "PrintKeyPrompt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "\"PRESS KEY FOR \" and then the key's name that follows the caller's CALL"
+    },
+    {
+      "offset": 804,
+      "name": "PrintKeyPromptName",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "print the caller's inline key name and return past it"
+    },
+    {
+      "offset": 807,
+      "name": "DefineKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "wait for a free key, store its port, mask and code into a KeyTable entry, print its name"
+    },
+    {
+      "offset": 816,
+      "name": "DefineKeyScan",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "wait for a key that no entry holds yet"
+    },
+    {
+      "offset": 889,
+      "name": "KeyNameSymShiftEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "a RET ($C9): PrintInline returns here and the routine ends"
+    },
+    {
+      "offset": 890,
+      "name": "CheckEnterKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DefineKey: is the new key ENTER?"
+    },
+    {
+      "offset": 903,
+      "name": "KeyNameEnterEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "a RET ($C9) after the string"
+    },
+    {
+      "offset": 904,
+      "name": "CheckCapsShiftKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DefineKey: is the new key CAPS SHIFT?"
+    },
+    {
+      "offset": 919,
+      "name": "KeyNameCapsShiftEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "a RET ($C9) after the string"
+    },
+    {
+      "offset": 920,
+      "name": "CheckSpaceKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DefineKey: SPACE prints its name, any other key prints its own character"
+    },
+    {
+      "offset": 934,
+      "name": "DefineKeyDone",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "RET: the end of DefineKey; also the target of the music's command 0"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "the menu starts on an empty black screen"
+    },
+    {
+      "offset": 3,
+      "name": "",
+      "comment": "NETHER EARTH in big letters"
+    },
+    {
+      "offset": 6,
+      "name": "",
+      "comment": "option 0, START GAME"
+    },
+    {
+      "offset": 9,
+      "name": "MenuStartText",
+      "comment": "\"0..START GAME\" at (11,8) in double height, yellow"
+    },
+    {
+      "offset": 9,
+      "name": "",
+      "comment": "attribute $46 (yellow), size $21 (tall), AT (11,8)"
+    },
+    {
+      "offset": 16,
+      "name": "",
+      "comment": "\"0..START GAME\", rows 11-12"
+    },
+    {
+      "offset": 29,
+      "name": "",
+      "comment": "size 0 again for the options after it, then the end"
+    },
+    {
+      "offset": 32,
+      "name": "",
+      "comment": "option 1: Controls value 1"
+    },
+    {
+      "offset": 34,
+      "name": "",
+      "comment": "cyan if it is the current choice, else yellow"
+    },
+    {
+      "offset": 37,
+      "name": "",
+      "comment": "the KEYBOARD text"
+    },
+    {
+      "offset": 40,
+      "name": "MenuKeyboardText",
+      "comment": "Three new lines and \"1..KEYBOARD\""
+    },
+    {
+      "offset": 40,
+      "name": "",
+      "comment": "three rows down, (14,8): \"1..KEYBOARD\", in the attribute ControlsOptionAttr just set"
+    },
+    {
+      "offset": 55,
+      "name": "",
+      "comment": "option 2: Controls value 2"
+    },
+    {
+      "offset": 57,
+      "name": "",
+      "comment": "cyan if chosen, else yellow"
+    },
+    {
+      "offset": 60,
+      "name": "",
+      "comment": "the KEMPSTON J/S text"
+    },
+    {
+      "offset": 63,
+      "name": "MenuKempstonText",
+      "comment": "Two new lines and \"2..KEMPSTON J/S\""
+    },
+    {
+      "offset": 63,
+      "name": "",
+      "comment": "two rows down, (16,8): \"2..KEMPSTON J/S\""
+    },
+    {
+      "offset": 81,
+      "name": "",
+      "comment": "option 3: Controls value 3"
+    },
+    {
+      "offset": 83,
+      "name": "",
+      "comment": "cyan if chosen, else yellow"
+    },
+    {
+      "offset": 86,
+      "name": "",
+      "comment": "INTERFACE 2, then options 4 and 5 in yellow"
+    },
+    {
+      "offset": 89,
+      "name": "MenuMoreText",
+      "comment": "\"3..INTERFACE 2\", then in yellow \"4..REDEFINE KEYS\", \"5..LOAD SAVED GAME\""
+    },
+    {
+      "offset": 89,
+      "name": "",
+      "comment": "two rows down, (18,8): \"3..INTERFACE 2\""
+    },
+    {
+      "offset": 105,
+      "name": "",
+      "comment": "(20,8) in $46 (yellow): \"4..REDEFINE KEYS\""
+    },
+    {
+      "offset": 125,
+      "name": "",
+      "comment": "(22,8): \"5..LOAD SAVED GAME\""
+    },
+    {
+      "offset": 146,
+      "name": "",
+      "comment": "wait until no key is held"
+    },
+    {
+      "offset": 147,
+      "name": "",
+      "comment": "the title's colours, also while keys are still held"
+    },
+    {
+      "offset": 150,
+      "name": "",
+      "comment": "ROM KEY-SCAN: E = the key value, $FF none"
+    },
+    {
+      "offset": 153,
+      "name": "",
+      "comment": "E bit 7 set: no key"
+    },
+    {
+      "offset": 154,
+      "name": "",
+      "comment": "sets S from bit 7"
+    },
+    {
+      "offset": 155,
+      "name": "",
+      "comment": "a key still held (from the last choice): wait"
+    },
+    {
+      "offset": 158,
+      "name": "",
+      "comment": "the title music, until a key"
+    },
+    {
+      "offset": 161,
+      "name": "MenuWaitKey",
+      "comment": "back from MenuMusic: a number key is down; one frame"
+    },
+    {
+      "offset": 162,
+      "name": "",
+      "comment": "the title's colours"
+    },
+    {
+      "offset": 165,
+      "name": "",
+      "comment": "ROM KEY-SCAN"
+    },
+    {
+      "offset": 168,
+      "name": "",
+      "comment": "E = $FF: no key"
+    },
+    {
+      "offset": 169,
+      "name": "",
+      "comment": "sets S from bit 7"
+    },
+    {
+      "offset": 170,
+      "name": "",
+      "comment": "none yet: wait"
+    },
+    {
+      "offset": 173,
+      "name": "",
+      "comment": "the key's character from the ROM's main key table"
+    },
+    {
+      "offset": 176,
+      "name": "",
+      "comment": "$0205 + E (no carry: E is at most $27)"
+    },
+    {
+      "offset": 177,
+      "name": "",
+      "comment": "L = $05 + E"
+    },
+    {
+      "offset": 178,
+      "name": "",
+      "comment": "A = the key's character"
+    },
+    {
+      "offset": 179,
+      "name": "",
+      "comment": "\"5\"?"
+    },
+    {
+      "offset": 181,
+      "name": "",
+      "comment": "5: load a saved game"
+    },
+    {
+      "offset": 183,
+      "name": "",
+      "comment": "\"0\"?"
+    },
+    {
+      "offset": 185,
+      "name": "",
+      "comment": "0: start"
+    },
+    {
+      "offset": 187,
+      "name": "",
+      "comment": "\"1\"?"
+    },
+    {
+      "offset": 189,
+      "name": "",
+      "comment": "1: keyboard"
+    },
+    {
+      "offset": 191,
+      "name": "",
+      "comment": "\"2\"?"
+    },
+    {
+      "offset": 193,
+      "name": "",
+      "comment": "2: Kempston"
+    },
+    {
+      "offset": 195,
+      "name": "",
+      "comment": "\"3\"?"
+    },
+    {
+      "offset": 197,
+      "name": "",
+      "comment": "3: Interface 2"
+    },
+    {
+      "offset": 199,
+      "name": "",
+      "comment": "\"4\"?"
+    },
+    {
+      "offset": 201,
+      "name": "",
+      "comment": "any other key: ignored, wait again"
+    },
+    {
+      "offset": 203,
+      "name": "",
+      "comment": "4: redefine the keys, then the whole menu again"
+    },
+    {
+      "offset": 206,
+      "name": "",
+      "comment": "the whole menu again (clear, title, options, keys)"
+    },
+    {
+      "offset": 209,
+      "name": "MenuStart",
+      "comment": "Z: a new game"
+    },
+    {
+      "offset": 210,
+      "name": "",
+      "comment": "Z: Start goes on into NewGameSetup ($A62D)"
+    },
+    {
+      "offset": 211,
+      "name": "MenuKeyboard",
+      "comment": "1: keyboard"
+    },
+    {
+      "offset": 213,
+      "name": "",
+      "comment": "Controls = 1"
+    },
+    {
+      "offset": 215,
+      "name": "MenuKempston",
+      "comment": "2: Kempston"
+    },
+    {
+      "offset": 217,
+      "name": "",
+      "comment": "Controls = 2"
+    },
+    {
+      "offset": 219,
+      "name": "MenuInterface2",
+      "comment": "3: Interface 2"
+    },
+    {
+      "offset": 221,
+      "name": "MenuSetControls",
+      "comment": "Controls, then the options again"
+    },
+    {
+      "offset": 224,
+      "name": "",
+      "comment": "reprint the options in the new colours, then the keys (MenuMusic restarts)"
+    },
+    {
+      "offset": 227,
+      "name": "",
+      "comment": "the inline title text"
+    },
+    {
+      "offset": 230,
+      "name": "TitleText",
+      "comment": "\"NETHER\" at (1,10) and \"EARTH\" at (5,11), attribute $47, setting $32 (triple height, double width)"
+    },
+    {
+      "offset": 230,
+      "name": "",
+      "comment": "\"NETHER\" at (1,10) in $47 (white), size $32: double width, three rows high"
+    },
+    {
+      "offset": 243,
+      "name": "",
+      "comment": "\"EARTH\" at (5,11), the same size"
+    },
+    {
+      "offset": 252,
+      "name": "",
+      "comment": "back to the caller after the title text"
+    },
+    {
+      "offset": 253,
+      "name": "LoadGame",
+      "comment": "key 5: the title again, PRESS PLAY ON TAPE"
+    },
+    {
+      "offset": 256,
+      "name": "",
+      "comment": "the prompt, then on into the load"
+    },
+    {
+      "offset": 259,
+      "name": "PlayTapeText",
+      "comment": "\"PRESS PLAY ON TAPE\" at (22,7), cyan, double height"
+    },
+    {
+      "offset": 259,
+      "name": "",
+      "comment": "AT (22,7) in $45 (cyan), tall: LOAD SAVED GAME (key 5)"
+    },
+    {
+      "offset": 266,
+      "name": "",
+      "comment": "\"PRESS PLAY ON TAPE \", rows 22-23"
+    },
+    {
+      "offset": 286,
+      "name": "",
+      "comment": "red border while it loads"
+    },
+    {
+      "offset": 288,
+      "name": "",
+      "comment": "border red ($02)"
+    },
+    {
+      "offset": 290,
+      "name": "",
+      "comment": "2 bytes: the checksum"
+    },
+    {
+      "offset": 294,
+      "name": "",
+      "comment": "DE = 2 bytes"
+    },
+    {
+      "offset": 297,
+      "name": "",
+      "comment": "flag $00, carry set: load"
+    },
+    {
+      "offset": 298,
+      "name": "",
+      "comment": "carry set: LOAD, not VERIFY"
+    },
+    {
+      "offset": 299,
+      "name": "",
+      "comment": "INC D / DEC D with the flags saved between: NZ in AF' as LD-BYTES wants"
+    },
+    {
+      "offset": 300,
+      "name": "",
+      "comment": "AF' = flag $00, load"
+    },
+    {
+      "offset": 301,
+      "name": "",
+      "comment": "D back to 0"
+    },
+    {
+      "offset": 302,
+      "name": "",
+      "comment": "LD-BYTES runs with interrupts off"
+    },
+    {
+      "offset": 303,
+      "name": "",
+      "comment": "ROM LD-BYTES past its border set-up and the SA/LD-RET push; its error carry is not looked at"
+    },
+    {
+      "offset": 306,
+      "name": "",
+      "comment": "the game block"
+    },
+    {
+      "offset": 310,
+      "name": "",
+      "comment": "DE = $24D1 bytes: $D92B-$FDFB"
+    },
+    {
+      "offset": 313,
+      "name": "",
+      "comment": "flag $00"
+    },
+    {
+      "offset": 314,
+      "name": "",
+      "comment": "load"
+    },
+    {
+      "offset": 315,
+      "name": "",
+      "comment": "NZ into AF' as before"
+    },
+    {
+      "offset": 316,
+      "name": "",
+      "comment": "AF' = flag $00, load, NZ"
+    },
+    {
+      "offset": 317,
+      "name": "",
+      "comment": "D back to 0 (DE = $24D1)"
+    },
+    {
+      "offset": 318,
+      "name": "",
+      "comment": "interrupts off"
+    },
+    {
+      "offset": 319,
+      "name": "",
+      "comment": "ROM LD-BYTES: the robots, the map, the variables, the staged shots and buildings"
+    },
+    {
+      "offset": 322,
+      "name": "",
+      "comment": "border black again"
+    },
+    {
+      "offset": 323,
+      "name": "",
+      "comment": "(also MIC / EAR off)"
+    },
+    {
+      "offset": 325,
+      "name": "",
+      "comment": "DE = the block's sum"
+    },
+    {
+      "offset": 328,
+      "name": "",
+      "comment": "the saved sum"
+    },
+    {
+      "offset": 331,
+      "name": "",
+      "comment": "clear the carry for the SBC"
+    },
+    {
+      "offset": 332,
+      "name": "",
+      "comment": "HL = the saved sum - the sum of the loaded block"
+    },
+    {
+      "offset": 334,
+      "name": "",
+      "comment": "HL = 0: the sums agree"
+    },
+    {
+      "offset": 335,
+      "name": "",
+      "comment": "Z: equal"
+    },
+    {
+      "offset": 336,
+      "name": "",
+      "comment": "they differ: LOADING ERROR!"
+    },
+    {
+      "offset": 338,
+      "name": "",
+      "comment": "good: the staged tables back to their places"
+    },
+    {
+      "offset": 341,
+      "name": "",
+      "comment": "the 5 records of 9 bytes at $D7D3"
+    },
+    {
+      "offset": 344,
+      "name": "",
+      "comment": "45 bytes: 5 records of 9"
+    },
+    {
+      "offset": 347,
+      "name": "",
+      "comment": "SaveShots -> Shots; HL now SaveBuildings"
+    },
+    {
+      "offset": 349,
+      "name": "",
+      "comment": "the buildings"
+    },
+    {
+      "offset": 352,
+      "name": "",
+      "comment": "168 bytes: 56 records of 3"
+    },
+    {
+      "offset": 355,
+      "name": "",
+      "comment": "SaveBuildings -> Buildings"
+    },
+    {
+      "offset": 357,
+      "name": "",
+      "comment": "LD-BYTES left interrupts off"
+    },
+    {
+      "offset": 358,
+      "name": "",
+      "comment": "NZ: a game was loaded"
+    },
+    {
+      "offset": 360,
+      "name": "",
+      "comment": "NZ: Start skips the new game set-up and goes to EnterPlay"
+    },
+    {
+      "offset": 361,
+      "name": "LoadBad",
+      "comment": "LOADING ERROR!"
+    },
+    {
+      "offset": 364,
+      "name": "LoadErrorText",
+      "comment": "\"LOADING ERROR!\" at (22,2), white, double size"
+    },
+    {
+      "offset": 364,
+      "name": "",
+      "comment": "AT (22,2) in $47 (white), size $22 (double size)"
+    },
+    {
+      "offset": 371,
+      "name": "",
+      "comment": "\"LOADING ERROR!\": the checksum failed"
+    },
+    {
+      "offset": 386,
+      "name": "",
+      "comment": "the error beep: half-period delay $FA"
+    },
+    {
+      "offset": 388,
+      "name": "",
+      "comment": "about 530 Hz for 0.24 s"
+    },
+    {
+      "offset": 391,
+      "name": "",
+      "comment": "a key to go on"
+    },
+    {
+      "offset": 394,
+      "name": "",
+      "comment": "the whole start-up again, then the menu"
+    },
+    {
+      "offset": 397,
+      "name": "",
+      "comment": "the start-up's handler: the play handler's work stops"
+    },
+    {
+      "offset": 400,
+      "name": "",
+      "comment": "Handler: StartInterrupt"
+    },
+    {
+      "offset": 403,
+      "name": "",
+      "comment": "the prompt at row 22"
+    },
+    {
+      "offset": 406,
+      "name": "RecordText",
+      "comment": "\"PRESS RECORD AND PLAY \", a new line, \"     THEN ANY KEY     \" at (22,0), cyan"
+    },
+    {
+      "offset": 406,
+      "name": "",
+      "comment": "\"PRESS RECORD AND PLAY \" at (22,0) in $45 (cyan): the save key (Input bit 5)"
+    },
+    {
+      "offset": 433,
+      "name": "",
+      "comment": "the next row (23,0): \"     THEN ANY KEY     \""
+    },
+    {
+      "offset": 457,
+      "name": "",
+      "comment": "the player starts the tape and presses a key"
+    },
+    {
+      "offset": 460,
+      "name": "",
+      "comment": "the radar map is rebuilt afterwards"
+    },
+    {
+      "offset": 462,
+      "name": "",
+      "comment": "RadarDirty: the staging below overwrites the tail of RadarEnemy"
+    },
+    {
+      "offset": 465,
+      "name": "",
+      "comment": "stage the 5 records of 9 bytes at $D7D3 ..."
+    },
+    {
+      "offset": 468,
+      "name": "",
+      "comment": "to SaveShots ($D92B)"
+    },
+    {
+      "offset": 471,
+      "name": "",
+      "comment": "45 bytes"
+    },
+    {
+      "offset": 474,
+      "name": "",
+      "comment": "Shots -> SaveShots; DE now SaveBuildings"
+    },
+    {
+      "offset": 476,
+      "name": "",
+      "comment": "... and the buildings at $D958"
+    },
+    {
+      "offset": 479,
+      "name": "",
+      "comment": "168 bytes"
+    },
+    {
+      "offset": 482,
+      "name": "",
+      "comment": "Buildings -> SaveBuildings: $D92B-$FDFB is now the whole game"
+    },
+    {
+      "offset": 484,
+      "name": "",
+      "comment": "no interrupts while the tape runs"
+    },
+    {
+      "offset": 485,
+      "name": "",
+      "comment": "the checksum"
+    },
+    {
+      "offset": 488,
+      "name": "",
+      "comment": "the sum at $5B00, the first tape block"
+    },
+    {
+      "offset": 492,
+      "name": "",
+      "comment": "a short pilot"
+    },
+    {
+      "offset": 495,
+      "name": "",
+      "comment": "the 2 checksum bytes, flag $00"
+    },
+    {
+      "offset": 499,
+      "name": "",
+      "comment": "2 bytes"
+    },
+    {
+      "offset": 502,
+      "name": "",
+      "comment": "flag $00"
+    },
+    {
+      "offset": 503,
+      "name": "",
+      "comment": "carry set as for the ROM's own callers; this entry does not use it"
+    },
+    {
+      "offset": 504,
+      "name": "",
+      "comment": "ROM SA-BYTES past its pilot choice: HL = the pilot, A = the flag"
+    },
+    {
+      "offset": 507,
+      "name": "",
+      "comment": "the game block $D92B-$FDFB"
+    },
+    {
+      "offset": 510,
+      "name": "",
+      "comment": "from SaveShots ..."
+    },
+    {
+      "offset": 514,
+      "name": "",
+      "comment": "... $24D1 bytes, to $FDFB"
+    },
+    {
+      "offset": 517,
+      "name": "",
+      "comment": "flag $00"
+    },
+    {
+      "offset": 518,
+      "name": "",
+      "comment": "(unused, as above)"
+    },
+    {
+      "offset": 519,
+      "name": "",
+      "comment": "ROM SA-BYTES: the game block"
+    },
+    {
+      "offset": 522,
+      "name": "",
+      "comment": "border black"
+    },
+    {
+      "offset": 523,
+      "name": "",
+      "comment": "(MIC off)"
+    },
+    {
+      "offset": 525,
+      "name": "",
+      "comment": "interrupts back on (the caller then redraws the play screen)"
+    },
+    {
+      "offset": 526,
+      "name": "",
+      "comment": "back to the play loop ($A71D)"
+    },
+    {
+      "offset": 527,
+      "name": "",
+      "comment": "HL = the block's start"
+    },
+    {
+      "offset": 530,
+      "name": "",
+      "comment": "BC = its length"
+    },
+    {
+      "offset": 533,
+      "name": "",
+      "comment": "DE = the sum, from 0"
+    },
+    {
+      "offset": 536,
+      "name": "ChecksumLoop",
+      "comment": "the next byte"
+    },
+    {
+      "offset": 537,
+      "name": "",
+      "comment": "HL to the next byte"
+    },
+    {
+      "offset": 538,
+      "name": "",
+      "comment": "added into E ..."
+    },
+    {
+      "offset": 539,
+      "name": "",
+      "comment": "E = the low byte of the sum"
+    },
+    {
+      "offset": 540,
+      "name": "",
+      "comment": "... with the carry into D"
+    },
+    {
+      "offset": 542,
+      "name": "",
+      "comment": "the carry into the high byte"
+    },
+    {
+      "offset": 543,
+      "name": "ChecksumNext",
+      "comment": "carry added into D; the next byte"
+    },
+    {
+      "offset": 544,
+      "name": "",
+      "comment": "until BC = 0"
+    },
+    {
+      "offset": 545,
+      "name": "",
+      "comment": "Z when BC = 0"
+    },
+    {
+      "offset": 546,
+      "name": "",
+      "comment": "more bytes"
+    },
+    {
+      "offset": 548,
+      "name": "",
+      "comment": "DE = the sum"
+    },
+    {
+      "offset": 549,
+      "name": "",
+      "comment": "A = 0: all eight half rows"
+    },
+    {
+      "offset": 550,
+      "name": "",
+      "comment": "IN with address $00FE: every half row"
+    },
+    {
+      "offset": 552,
+      "name": "",
+      "comment": "a pressed key reads 0: invert"
+    },
+    {
+      "offset": 553,
+      "name": "",
+      "comment": "bits 0-4: the five keys of each half row"
+    },
+    {
+      "offset": 555,
+      "name": "",
+      "comment": "any key still down: wait"
+    },
+    {
+      "offset": 557,
+      "name": "WaitAnyKeyDown",
+      "comment": "all half rows again"
+    },
+    {
+      "offset": 558,
+      "name": "",
+      "comment": "every half row"
+    },
+    {
+      "offset": 560,
+      "name": "",
+      "comment": "inverted"
+    },
+    {
+      "offset": 561,
+      "name": "",
+      "comment": "the five key bits"
+    },
+    {
+      "offset": 563,
+      "name": "",
+      "comment": "no key yet: wait"
+    },
+    {
+      "offset": 565,
+      "name": "",
+      "comment": "a key is down"
+    },
+    {
+      "offset": 566,
+      "name": "",
+      "comment": "A = Controls (1 keyboard, 2 Kempston, 3 Interface 2)"
+    },
+    {
+      "offset": 569,
+      "name": "",
+      "comment": "this option?"
+    },
+    {
+      "offset": 570,
+      "name": "",
+      "comment": "yes: the cyan attribute"
+    },
+    {
+      "offset": 572,
+      "name": "",
+      "comment": "no: the yellow attribute code"
+    },
+    {
+      "offset": 575,
+      "name": "OptionAttrPlain",
+      "comment": "PrintInline: attribute $46"
+    },
+    {
+      "offset": 575,
+      "name": "",
+      "comment": "attribute $46 (yellow): a control option not chosen"
+    },
+    {
+      "offset": 578,
+      "name": "",
+      "comment": "back to the option, which prints its text next"
+    },
+    {
+      "offset": 579,
+      "name": "ControlsOptionMarked",
+      "comment": "the option chosen"
+    },
+    {
+      "offset": 582,
+      "name": "OptionAttrChosen",
+      "comment": "PrintInline: attribute $45"
+    },
+    {
+      "offset": 582,
+      "name": "",
+      "comment": "attribute $45 (cyan): the control option chosen (Controls)"
+    },
+    {
+      "offset": 585,
+      "name": "",
+      "comment": "back to the option"
+    },
+    {
+      "offset": 586,
+      "name": "",
+      "comment": "a blank screen for the redefine screen"
+    },
+    {
+      "offset": 589,
+      "name": "",
+      "comment": "the heading and the first print position"
+    },
+    {
+      "offset": 592,
+      "name": "RedefineTitleText",
+      "comment": "\"REDEFINE KEYS\" at (2,9), white, double height, then position (5,3) and normal size"
+    },
+    {
+      "offset": 592,
+      "name": "",
+      "comment": "\"REDEFINE KEYS\" at (2,9) in $47 (white), tall (size $21)"
+    },
+    {
+      "offset": 612,
+      "name": "",
+      "comment": "then AT (5,3) and size 0: the first PRESS KEY FOR line goes two rows below"
+    },
+    {
+      "offset": 618,
+      "name": "",
+      "comment": "wait until no key is held"
+    },
+    {
+      "offset": 621,
+      "name": "",
+      "comment": "E bit 7 set: no key"
+    },
+    {
+      "offset": 622,
+      "name": "",
+      "comment": "sets S from bit 7"
+    },
+    {
+      "offset": 623,
+      "name": "",
+      "comment": "key 4 is still held: wait for its release"
+    },
+    {
+      "offset": 626,
+      "name": "",
+      "comment": "KeyTable: 24 bytes of 0"
+    },
+    {
+      "offset": 629,
+      "name": "",
+      "comment": "DE = HL + 1: the LDIR spreads the 0"
+    },
+    {
+      "offset": 632,
+      "name": "",
+      "comment": "23 more bytes: the whole table, 8 records of 3"
+    },
+    {
+      "offset": 635,
+      "name": "",
+      "comment": "the first byte 0"
+    },
+    {
+      "offset": 637,
+      "name": "",
+      "comment": "KeyTable all 0: no key is taken yet"
+    },
+    {
+      "offset": 639,
+      "name": "",
+      "comment": "\"PRESS KEY FOR\" and the name below"
+    },
+    {
+      "offset": 642,
+      "name": "KeyNameUp",
+      "comment": "\"   UP\""
+    },
+    {
+      "offset": 642,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: UP (Input bit 3, KeyTable record 4)"
+    },
+    {
+      "offset": 648,
+      "name": "",
+      "comment": "HL = the code byte of record 4 (Input bit 3, UP)"
+    },
+    {
+      "offset": 651,
+      "name": "",
+      "comment": "wait for a free key, fill the record, print its name"
+    },
+    {
+      "offset": 654,
+      "name": "",
+      "comment": "the next prompt"
+    },
+    {
+      "offset": 657,
+      "name": "KeyNameDown",
+      "comment": "\" DOWN\""
+    },
+    {
+      "offset": 657,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: DOWN (Input bit 2, KeyTable record 5)"
+    },
+    {
+      "offset": 663,
+      "name": "",
+      "comment": "record 5 (Input bit 2, DOWN)"
+    },
+    {
+      "offset": 666,
+      "name": "",
+      "comment": "wait for the DOWN key, fill record 5, print its name"
+    },
+    {
+      "offset": 669,
+      "name": "",
+      "comment": "the next prompt"
+    },
+    {
+      "offset": 672,
+      "name": "KeyNameLeft",
+      "comment": "\" LEFT\""
+    },
+    {
+      "offset": 672,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: LEFT (Input bit 1, KeyTable record 6)"
+    },
+    {
+      "offset": 678,
+      "name": "",
+      "comment": "record 6 (Input bit 1, LEFT)"
+    },
+    {
+      "offset": 681,
+      "name": "",
+      "comment": "the LEFT key into record 6"
+    },
+    {
+      "offset": 684,
+      "name": "",
+      "comment": "the next prompt"
+    },
+    {
+      "offset": 687,
+      "name": "KeyNameRight",
+      "comment": "\"RIGHT\""
+    },
+    {
+      "offset": 687,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: RIGHT (Input bit 0, KeyTable record 7)"
+    },
+    {
+      "offset": 693,
+      "name": "",
+      "comment": "record 7 (Input bit 0, RIGHT)"
+    },
+    {
+      "offset": 696,
+      "name": "",
+      "comment": "the RIGHT key into record 7"
+    },
+    {
+      "offset": 699,
+      "name": "",
+      "comment": "the next prompt"
+    },
+    {
+      "offset": 702,
+      "name": "KeyNameFire",
+      "comment": "\" FIRE\""
+    },
+    {
+      "offset": 702,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: FIRE (Input bit 4, KeyTable record 3)"
+    },
+    {
+      "offset": 708,
+      "name": "",
+      "comment": "record 3 (Input bit 4, FIRE)"
+    },
+    {
+      "offset": 711,
+      "name": "",
+      "comment": "the FIRE key into record 3"
+    },
+    {
+      "offset": 714,
+      "name": "",
+      "comment": "a blank row between the moves and the game keys"
+    },
+    {
+      "offset": 717,
+      "name": "",
+      "comment": "the next prompt"
+    },
+    {
+      "offset": 720,
+      "name": "KeyNamePause",
+      "comment": "\"PAUSE\""
+    },
+    {
+      "offset": 720,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: PAUSE (Input bit 7, KeyTable record 0)"
+    },
+    {
+      "offset": 726,
+      "name": "",
+      "comment": "record 0 (Input bit 7, PAUSE)"
+    },
+    {
+      "offset": 729,
+      "name": "",
+      "comment": "the PAUSE key into record 0"
+    },
+    {
+      "offset": 732,
+      "name": "",
+      "comment": "the next prompt"
+    },
+    {
+      "offset": 735,
+      "name": "KeyNameAbort",
+      "comment": "\"ABORT\""
+    },
+    {
+      "offset": 735,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: ABORT (Input bit 6, KeyTable record 1)"
+    },
+    {
+      "offset": 741,
+      "name": "",
+      "comment": "record 1 (Input bit 6, ABORT)"
+    },
+    {
+      "offset": 744,
+      "name": "",
+      "comment": "the ABORT key into record 1"
+    },
+    {
+      "offset": 747,
+      "name": "",
+      "comment": "the last prompt"
+    },
+    {
+      "offset": 750,
+      "name": "KeyNameSave",
+      "comment": "\" SAVE\""
+    },
+    {
+      "offset": 750,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: SAVE (Input bit 5, KeyTable record 2)"
+    },
+    {
+      "offset": 756,
+      "name": "",
+      "comment": "record 2 (Input bit 5, SAVE)"
+    },
+    {
+      "offset": 759,
+      "name": "",
+      "comment": "the SAVE key into record 2"
+    },
+    {
+      "offset": 762,
+      "name": "RedefineWaitRelease",
+      "comment": "until the SAVE key is let go"
+    },
+    {
+      "offset": 765,
+      "name": "",
+      "comment": "E bit 7 set: no key"
+    },
+    {
+      "offset": 766,
+      "name": "",
+      "comment": "sets S from bit 7"
+    },
+    {
+      "offset": 767,
+      "name": "",
+      "comment": "the last key still held: wait"
+    },
+    {
+      "offset": 770,
+      "name": "",
+      "comment": "all keys up: a fixed pause of 65536 turns of the loop below (about 2 million T, 0.56 s) before the menu"
+    },
+    {
+      "offset": 773,
+      "name": "RedefineKeysPause",
+      "comment": "count BC down from $0000 through all 65536 values"
+    },
+    {
+      "offset": 774,
+      "name": "RedefineKeysPauseNop",
+      "comment": "a pad (the label is a false entry of the static walk: the string bytes before it read as JR NZ,$C406)"
+    },
+    {
+      "offset": 775,
+      "name": "",
+      "comment": "BC = 0 after 65536 turns?"
+    },
+    {
+      "offset": 776,
+      "name": "",
+      "comment": "Z when BC = 0"
+    },
+    {
+      "offset": 777,
+      "name": "",
+      "comment": "not yet"
+    },
+    {
+      "offset": 779,
+      "name": "",
+      "comment": "back to the caller of $C34A, which restarts the main menu ($C1CE)"
+    },
+    {
+      "offset": 780,
+      "name": "",
+      "comment": "our own text first"
+    },
+    {
+      "offset": 783,
+      "name": "PressKeyForText",
+      "comment": "PrintInline text: new line, new line, attribute $46, \"PRESS KEY FOR \", attribute $45"
+    },
+    {
+      "offset": 783,
+      "name": "",
+      "comment": "two rows down, attribute $46 (yellow): \"PRESS KEY FOR \""
+    },
+    {
+      "offset": 801,
+      "name": "",
+      "comment": "attribute $45 (cyan) for the action's name that follows the CALL"
+    },
+    {
+      "offset": 804,
+      "name": "",
+      "comment": "the caller's string, and back past it"
+    },
+    {
+      "offset": 807,
+      "name": "",
+      "comment": "keep the entry's address"
+    },
+    {
+      "offset": 808,
+      "name": "",
+      "comment": "two spaces, then the attribute of the name"
+    },
+    {
+      "offset": 811,
+      "name": "DefineKeyBlank",
+      "comment": "PrintInline text: two spaces, attribute $46"
+    },
+    {
+      "offset": 811,
+      "name": "",
+      "comment": "two spaces after the name, then $46 (yellow) for the key chosen"
+    },
+    {
+      "offset": 816,
+      "name": "DefineKeyWait",
+      "comment": "ROM KEY-SCAN: E = the key value, $FF none"
+    },
+    {
+      "offset": 819,
+      "name": "",
+      "comment": "E bit 7 set: no key"
+    },
+    {
+      "offset": 820,
+      "name": "",
+      "comment": "sets S from bit 7"
+    },
+    {
+      "offset": 821,
+      "name": "",
+      "comment": "no key yet"
+    },
+    {
+      "offset": 824,
+      "name": "",
+      "comment": "the ROM's key table: E -> the key's code"
+    },
+    {
+      "offset": 827,
+      "name": "",
+      "comment": "$0205 + E (CAPS SHIFT alone, E = $27, reads $E3 just past the table)"
+    },
+    {
+      "offset": 828,
+      "name": "",
+      "comment": "L = $05 + E (no carry: E is at most $27)"
+    },
+    {
+      "offset": 829,
+      "name": "",
+      "comment": "A = the key's code (a character, $0D ENTER, $0E SYM SHIFT, $20 SPACE, $E3 CAPS SHIFT)"
+    },
+    {
+      "offset": 830,
+      "name": "",
+      "comment": "D = the code"
+    },
+    {
+      "offset": 831,
+      "name": "",
+      "comment": "the code bytes of the eight entries"
+    },
+    {
+      "offset": 834,
+      "name": "",
+      "comment": "eight records"
+    },
+    {
+      "offset": 836,
+      "name": "KeyTakenLoop",
+      "comment": "a code already used is refused: wait again"
+    },
+    {
+      "offset": 837,
+      "name": "",
+      "comment": "this code is taken: refused, scan again (the entry address stays pushed)"
+    },
+    {
+      "offset": 839,
+      "name": "",
+      "comment": "HL + 3 ..."
+    },
+    {
+      "offset": 840,
+      "name": "",
+      "comment": "(3 bytes a record)"
+    },
+    {
+      "offset": 841,
+      "name": "",
+      "comment": "... the next record's code byte"
+    },
+    {
+      "offset": 842,
+      "name": "",
+      "comment": "eight codes compared"
+    },
+    {
+      "offset": 844,
+      "name": "",
+      "comment": "HL = the entry's code byte"
+    },
+    {
+      "offset": 845,
+      "name": "",
+      "comment": "store the code"
+    },
+    {
+      "offset": 846,
+      "name": "",
+      "comment": "C = the row index (0 = port $7FFE ... 7 = port $FEFE)"
+    },
+    {
+      "offset": 847,
+      "name": "",
+      "comment": "the row: bits 0-2 of E"
+    },
+    {
+      "offset": 849,
+      "name": "",
+      "comment": "C = the row index 0-7"
+    },
+    {
+      "offset": 850,
+      "name": "",
+      "comment": "E / 2: three shifts make E / 8, the key's place in its half-row from bit 4 down"
+    },
+    {
+      "offset": 852,
+      "name": "",
+      "comment": "E / 4"
+    },
+    {
+      "offset": 854,
+      "name": "",
+      "comment": "E / 8, 0-4"
+    },
+    {
+      "offset": 856,
+      "name": "",
+      "comment": "B = E/8 + 1 rotations"
+    },
+    {
+      "offset": 857,
+      "name": "",
+      "comment": "one more than the place"
+    },
+    {
+      "offset": 858,
+      "name": "",
+      "comment": "the mask: $20 rotated right E/8 + 1 times"
+    },
+    {
+      "offset": 860,
+      "name": "KeyMaskShift",
+      "comment": "one place right: bit 4 - E/8 is the key's bit"
+    },
+    {
+      "offset": 861,
+      "name": "",
+      "comment": "B rotations: $10 for E/8 = 0 ... $01 for E/8 = 4"
+    },
+    {
+      "offset": 863,
+      "name": "",
+      "comment": "the entry's mask byte"
+    },
+    {
+      "offset": 864,
+      "name": "",
+      "comment": "store the mask"
+    },
+    {
+      "offset": 865,
+      "name": "",
+      "comment": "the port high byte: row + 1 RRAs of $FF with the carry clear, the 0 walking right ($7F row 0 ... $FE row 7)"
+    },
+    {
+      "offset": 866,
+      "name": "",
+      "comment": "B = row + 1 rotations"
+    },
+    {
+      "offset": 867,
+      "name": "",
+      "comment": "A = 0, carry clear"
+    },
+    {
+      "offset": 868,
+      "name": "",
+      "comment": "A = $FF; DEC leaves the carry clear"
+    },
+    {
+      "offset": 869,
+      "name": "KeyPortShift",
+      "comment": "the one 0 bit walks right ($7F, $BF ... $FE), ones come in from the carry"
+    },
+    {
+      "offset": 870,
+      "name": "",
+      "comment": "B rotations"
+    },
+    {
+      "offset": 872,
+      "name": "",
+      "comment": "the entry's port byte"
+    },
+    {
+      "offset": 873,
+      "name": "",
+      "comment": "store the port high byte: the record is complete"
+    },
+    {
+      "offset": 874,
+      "name": "",
+      "comment": "the code decides the name"
+    },
+    {
+      "offset": 875,
+      "name": "",
+      "comment": "SYMBOL SHIFT"
+    },
+    {
+      "offset": 877,
+      "name": "",
+      "comment": "not SYMBOL SHIFT"
+    },
+    {
+      "offset": 879,
+      "name": "",
+      "comment": "its name, and the RET after the string"
+    },
+    {
+      "offset": 882,
+      "name": "KeyNameSymShift",
+      "comment": "PrintInline text: \"SYM SH\""
+    },
+    {
+      "offset": 882,
+      "name": "",
+      "comment": "the name of key code $0E: SYMBOL SHIFT (the default KeyTable has $82 there)"
+    },
+    {
+      "offset": 889,
+      "name": "",
+      "comment": "the end of DefineKey"
+    },
+    {
+      "offset": 890,
+      "name": "",
+      "comment": "ENTER"
+    },
+    {
+      "offset": 892,
+      "name": "",
+      "comment": "not ENTER"
+    },
+    {
+      "offset": 894,
+      "name": "",
+      "comment": "its name, and the RET after the string"
+    },
+    {
+      "offset": 897,
+      "name": "KeyNameEnter",
+      "comment": "PrintInline text: \"ENTER\""
+    },
+    {
+      "offset": 897,
+      "name": "",
+      "comment": "the name of key code $0D: ENTER"
+    },
+    {
+      "offset": 903,
+      "name": "",
+      "comment": "the end of DefineKey"
+    },
+    {
+      "offset": 904,
+      "name": "",
+      "comment": "CAPS SHIFT"
+    },
+    {
+      "offset": 906,
+      "name": "",
+      "comment": "not CAPS SHIFT"
+    },
+    {
+      "offset": 908,
+      "name": "",
+      "comment": "its name, and the RET after the string"
+    },
+    {
+      "offset": 911,
+      "name": "KeyNameCapsShift",
+      "comment": "PrintInline text: \"CAPS SH\""
+    },
+    {
+      "offset": 911,
+      "name": "",
+      "comment": "the name of key code $E3: CAPS SHIFT (the byte past the ROM key table)"
+    },
+    {
+      "offset": 919,
+      "name": "",
+      "comment": "the end of DefineKey"
+    },
+    {
+      "offset": 920,
+      "name": "",
+      "comment": "SPACE"
+    },
+    {
+      "offset": 922,
+      "name": "",
+      "comment": "any other key: print its code as a character and return"
+    },
+    {
+      "offset": 925,
+      "name": "",
+      "comment": "\"SPACE\""
+    },
+    {
+      "offset": 928,
+      "name": "KeyNameSpace",
+      "comment": "PrintInline text: \"SPACE\""
+    },
+    {
+      "offset": 928,
+      "name": "",
+      "comment": "the name of key code $20: SPACE"
+    },
+    {
+      "offset": 934,
+      "name": "",
+      "comment": "the end of DefineKey for SPACE"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth",
+      "case": "games/nether-earth",
+      "address": "$C100",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth",
+    "file": "src/game/mainmenu.asm",
+    "label": "MainMenu"
+  },
+  "docs": [
+    "games/nether-earth/docs/README.md"
+  ]
+}

@@ -1,0 +1,952 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth/start",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth: start",
+  "authors": [
+    "Argus Press Software"
+  ],
+  "year": 1987,
+  "tags": [
+    "nether-earth",
+    "game-module",
+    "start"
+  ],
+  "summary": "The start-up, the new game set-up and the play loop.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 288,
+    "sha1": "d1bcdac30ad188141963a9d27f2e763aec456b84",
+    "masked_sha1": "e781504770eb85f50a6800d2929a61d7395cef77"
+  },
+  "origin": "$A600",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 5,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FE00"
+    },
+    {
+      "offset": 18,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FDFD"
+    },
+    {
+      "offset": 21,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StartInterrupt"
+    },
+    {
+      "offset": 24,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Handler"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RandomSeed"
+    },
+    {
+      "offset": 40,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD02"
+    },
+    {
+      "offset": 43,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MainMenu"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Robots"
+    },
+    {
+      "offset": 51,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DA01"
+    },
+    {
+      "offset": 61,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintAddr"
+    },
+    {
+      "offset": 64,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD05"
+    },
+    {
+      "offset": 74,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Buildings"
+    },
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FF02"
+    },
+    {
+      "offset": 87,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Shots"
+    },
+    {
+      "offset": 90,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D7D4"
+    },
+    {
+      "offset": 100,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Map"
+    },
+    {
+      "offset": 103,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MapView"
+    },
+    {
+      "offset": 109,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewX"
+    },
+    {
+      "offset": 115,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipX"
+    },
+    {
+      "offset": 120,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipY"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Altitude"
+    },
+    {
+      "offset": 129,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClimbTurns"
+    },
+    {
+      "offset": 134,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Resources"
+    },
+    {
+      "offset": 137,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyResources"
+    },
+    {
+      "offset": 140,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BuildMap"
+    },
+    {
+      "offset": 143,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawViewBackground"
+    },
+    {
+      "offset": 146,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawPlayScreen"
+    },
+    {
+      "offset": 149,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayInterrupt"
+    },
+    {
+      "offset": 152,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Handler"
+    },
+    {
+      "offset": 155,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 158,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoveShip"
+    },
+    {
+      "offset": 161,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WorldTurn"
+    },
+    {
+      "offset": 164,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawView"
+    },
+    {
+      "offset": 167,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GameTurn"
+    },
+    {
+      "offset": 170,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipCell"
+    },
+    {
+      "offset": 177,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FindRobot"
+    },
+    {
+      "offset": 187,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Altitude"
+    },
+    {
+      "offset": 196,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RobotMenu"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FindBuilding"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Altitude"
+    },
+    {
+      "offset": 241,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ConstructionMenu"
+    },
+    {
+      "offset": 264,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CountRobots"
+    },
+    {
+      "offset": 267,
+      "length": 2,
+      "kind": "ext16",
+      "name": "UpdateStatusPanel"
+    },
+    {
+      "offset": 270,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Input"
+    },
+    {
+      "offset": 275,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 280,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 283,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SaveGame"
+    },
+    {
+      "offset": 286,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "Start",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the entry from N1: the IM 2 table, the start-up, the menu"
+    },
+    {
+      "offset": 45,
+      "name": "NewGameSetup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "New game: clear the robots, variables, buildings and shots, place the ship, build the map"
+    },
+    {
+      "offset": 142,
+      "name": "EnterPlay",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw the play screen and switch to the play interrupt"
+    },
+    {
+      "offset": 154,
+      "name": "PlayLoop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The play loop: one game turn a pass (at least 10 frames)"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "no interrupts while the vector table is built"
+    },
+    {
+      "offset": 1,
+      "name": "",
+      "comment": "SP = 0: the stack grows down from $FFFF"
+    },
+    {
+      "offset": 4,
+      "name": "",
+      "comment": "the IM 2 table: 257 bytes of $FD at $FE00-$FF00"
+    },
+    {
+      "offset": 7,
+      "name": "",
+      "comment": "B = 0: 256 bytes, C = $FD the byte stored"
+    },
+    {
+      "offset": 10,
+      "name": "FillVectorTable",
+      "comment": "256 bytes, then the 257th below"
+    },
+    {
+      "offset": 11,
+      "name": "",
+      "comment": "the next vector byte"
+    },
+    {
+      "offset": 12,
+      "name": "",
+      "comment": "256 times"
+    },
+    {
+      "offset": 14,
+      "name": "",
+      "comment": "the 257th byte, $FF00: the vector $FEFF (bus byte $FF) reads its high byte here"
+    },
+    {
+      "offset": 15,
+      "name": "",
+      "comment": "JP at $FDFD: every vector lands on Handler"
+    },
+    {
+      "offset": 17,
+      "name": "",
+      "comment": "the JP opcode at $FDFD, its operand Handler at $FDFE"
+    },
+    {
+      "offset": 20,
+      "name": "",
+      "comment": "StartInterrupt (EI; RET) while the menu runs"
+    },
+    {
+      "offset": 23,
+      "name": "",
+      "comment": "Handler = StartInterrupt"
+    },
+    {
+      "offset": 26,
+      "name": "",
+      "comment": "I = $FE: the vector table's page"
+    },
+    {
+      "offset": 28,
+      "name": "",
+      "comment": "I points at $FE00"
+    },
+    {
+      "offset": 30,
+      "name": "",
+      "comment": "IM 2: the interrupt jumps through ($FE00 + the bus byte) = $FDFD"
+    },
+    {
+      "offset": 32,
+      "name": "",
+      "comment": "interrupts on from here"
+    },
+    {
+      "offset": 33,
+      "name": "",
+      "comment": "the random seed $FD00-$FD03 = $39,$30,$39,$30 (12345 twice)"
+    },
+    {
+      "offset": 36,
+      "name": "",
+      "comment": "$FD00-$FD01 = $39,$30"
+    },
+    {
+      "offset": 39,
+      "name": "",
+      "comment": "$FD02-$FD03 = $39,$30: the same seed at every start, so each game begins the same"
+    },
+    {
+      "offset": 42,
+      "name": "",
+      "comment": "the title menu: Z = START GAME, NZ = a saved game was loaded"
+    },
+    {
+      "offset": 45,
+      "name": "",
+      "comment": "NZ: a loaded game, nothing to set up"
+    },
+    {
+      "offset": 47,
+      "name": "",
+      "comment": "the 48 robot records"
+    },
+    {
+      "offset": 50,
+      "name": "",
+      "comment": "LDIR copy: each byte the one before it, all 0"
+    },
+    {
+      "offset": 53,
+      "name": "",
+      "comment": "$2FF more bytes: 48 x 16 = $300 in all"
+    },
+    {
+      "offset": 56,
+      "name": "",
+      "comment": "the first byte 0"
+    },
+    {
+      "offset": 58,
+      "name": "",
+      "comment": "zero $DA00-$DCFF"
+    },
+    {
+      "offset": 60,
+      "name": "",
+      "comment": "the variables past the seed"
+    },
+    {
+      "offset": 63,
+      "name": "",
+      "comment": "the fill target one byte up"
+    },
+    {
+      "offset": 66,
+      "name": "",
+      "comment": "$F8 more: $FD04-$FDFC in all"
+    },
+    {
+      "offset": 69,
+      "name": "",
+      "comment": "the first byte 0"
+    },
+    {
+      "offset": 71,
+      "name": "",
+      "comment": "zero the variables (the seed and the JP at $FDFD kept)"
+    },
+    {
+      "offset": 73,
+      "name": "",
+      "comment": "the 56 building records (and 33 bytes more)"
+    },
+    {
+      "offset": 76,
+      "name": "",
+      "comment": "the fill target one byte up"
+    },
+    {
+      "offset": 79,
+      "name": "",
+      "comment": "$C8 more: $FF01-$FFC9 in all"
+    },
+    {
+      "offset": 82,
+      "name": "",
+      "comment": "the first byte 0"
+    },
+    {
+      "offset": 84,
+      "name": "",
+      "comment": "zero the building table"
+    },
+    {
+      "offset": 86,
+      "name": "",
+      "comment": "the 5 shot records"
+    },
+    {
+      "offset": 89,
+      "name": "",
+      "comment": "the fill target one byte up"
+    },
+    {
+      "offset": 92,
+      "name": "",
+      "comment": "$2C more: 45 bytes, 5 shot records x 9"
+    },
+    {
+      "offset": 95,
+      "name": "",
+      "comment": "the first byte 0"
+    },
+    {
+      "offset": 97,
+      "name": "",
+      "comment": "zero the shots: all free (+$01 = 0)"
+    },
+    {
+      "offset": 99,
+      "name": "",
+      "comment": "the view starts at the map's left edge"
+    },
+    {
+      "offset": 102,
+      "name": "",
+      "comment": "MapView = $DD00: the view's top left map cell"
+    },
+    {
+      "offset": 105,
+      "name": "",
+      "comment": "column 0"
+    },
+    {
+      "offset": 108,
+      "name": "",
+      "comment": "ViewX = 0: the view's first column"
+    },
+    {
+      "offset": 111,
+      "name": "",
+      "comment": "the ship over column 17, row 10, on the ground"
+    },
+    {
+      "offset": 114,
+      "name": "",
+      "comment": "ShipX = 17"
+    },
+    {
+      "offset": 117,
+      "name": "",
+      "comment": "row 10"
+    },
+    {
+      "offset": 119,
+      "name": "",
+      "comment": "ShipY = 10"
+    },
+    {
+      "offset": 122,
+      "name": "",
+      "comment": "altitude 0: the ship on the ground"
+    },
+    {
+      "offset": 123,
+      "name": "",
+      "comment": "Altitude = 0"
+    },
+    {
+      "offset": 126,
+      "name": "",
+      "comment": "auto-climb for 3 turns"
+    },
+    {
+      "offset": 128,
+      "name": "",
+      "comment": "ClimbTurns = 3: the ship rises on its own at the start"
+    },
+    {
+      "offset": 131,
+      "name": "",
+      "comment": "20 general resource for each side"
+    },
+    {
+      "offset": 133,
+      "name": "",
+      "comment": "Resources+0, our general resource"
+    },
+    {
+      "offset": 136,
+      "name": "",
+      "comment": "EnemyResources+0, the enemy's general resource"
+    },
+    {
+      "offset": 139,
+      "name": "",
+      "comment": "build the map"
+    },
+    {
+      "offset": 142,
+      "name": "",
+      "comment": "clear the view buffer, paint the corners outside the map"
+    },
+    {
+      "offset": 145,
+      "name": "",
+      "comment": "the whole play screen: view, frame, radar, status panel"
+    },
+    {
+      "offset": 148,
+      "name": "",
+      "comment": "PlayInterrupt from now on"
+    },
+    {
+      "offset": 151,
+      "name": "",
+      "comment": "Handler: the frame count $FD34 and the radar each frame"
+    },
+    {
+      "offset": 154,
+      "name": "",
+      "comment": "the controls; the pause while key 1 is held"
+    },
+    {
+      "offset": 157,
+      "name": "",
+      "comment": "the ship (unless a robot is under direct control)"
+    },
+    {
+      "offset": 160,
+      "name": "",
+      "comment": "the robots and the shots"
+    },
+    {
+      "offset": 163,
+      "name": "",
+      "comment": "the view"
+    },
+    {
+      "offset": 166,
+      "name": "",
+      "comment": "the turn: clock, captures, game end, frame pacing"
+    },
+    {
+      "offset": 169,
+      "name": "",
+      "comment": "HL = the map cell under the ship"
+    },
+    {
+      "offset": 172,
+      "name": "",
+      "comment": "bit 6: a robot or a building under the ship"
+    },
+    {
+      "offset": 174,
+      "name": "",
+      "comment": "nothing there: only the game keys"
+    },
+    {
+      "offset": 176,
+      "name": "",
+      "comment": "one of ours? B = 48 - slot"
+    },
+    {
+      "offset": 179,
+      "name": "",
+      "comment": "not a robot: try a building"
+    },
+    {
+      "offset": 181,
+      "name": "",
+      "comment": "B = 48 - the slot"
+    },
+    {
+      "offset": 182,
+      "name": "",
+      "comment": "slots 24-47 (B < 25) are the enemy's"
+    },
+    {
+      "offset": 184,
+      "name": "",
+      "comment": "an enemy robot: no menu"
+    },
+    {
+      "offset": 186,
+      "name": "",
+      "comment": "the ship must rest exactly on the robot's top"
+    },
+    {
+      "offset": 189,
+      "name": "",
+      "comment": "minus the robot's height +$09 (its parts)"
+    },
+    {
+      "offset": 192,
+      "name": "",
+      "comment": "minus its ground +$0D: 0 when the ship sits on its top"
+    },
+    {
+      "offset": 195,
+      "name": "",
+      "comment": "landed on our robot"
+    },
+    {
+      "offset": 198,
+      "name": "",
+      "comment": "then the game keys"
+    },
+    {
+      "offset": 200,
+      "name": "CheckWarbasePad",
+      "comment": "not a robot: a building?"
+    },
+    {
+      "offset": 203,
+      "name": "",
+      "comment": "neither robot nor building record here: the game keys"
+    },
+    {
+      "offset": 205,
+      "name": "",
+      "comment": "type 0: the pad of our warbase"
+    },
+    {
+      "offset": 208,
+      "name": "",
+      "comment": "building type +$02 = 0?"
+    },
+    {
+      "offset": 209,
+      "name": "",
+      "comment": "other buildings open nothing"
+    },
+    {
+      "offset": 211,
+      "name": "",
+      "comment": "the pad's top is 15"
+    },
+    {
+      "offset": 214,
+      "name": "",
+      "comment": "altitude 15?"
+    },
+    {
+      "offset": 216,
+      "name": "",
+      "comment": "the ship has not landed on the pad yet"
+    },
+    {
+      "offset": 218,
+      "name": "",
+      "comment": "HL = the pad's cell + 4 rows: the door, where the robot appears"
+    },
+    {
+      "offset": 221,
+      "name": "",
+      "comment": "the cell's high byte"
+    },
+    {
+      "offset": 224,
+      "name": "",
+      "comment": "+ 8 = 4 map rows of $200 bytes down"
+    },
+    {
+      "offset": 226,
+      "name": "",
+      "comment": "HL = the door cell"
+    },
+    {
+      "offset": 227,
+      "name": "",
+      "comment": "the door's flags"
+    },
+    {
+      "offset": 228,
+      "name": "",
+      "comment": "the door, the cell below it and its two neighbours"
+    },
+    {
+      "offset": 229,
+      "name": "",
+      "comment": "$200 on: HL = the cell under the door"
+    },
+    {
+      "offset": 230,
+      "name": "",
+      "comment": "its flags"
+    },
+    {
+      "offset": 231,
+      "name": "",
+      "comment": "its left neighbour"
+    },
+    {
+      "offset": 232,
+      "name": "",
+      "comment": "its flags"
+    },
+    {
+      "offset": 233,
+      "name": "",
+      "comment": "back to the cell under the door"
+    },
+    {
+      "offset": 234,
+      "name": "",
+      "comment": "its right neighbour"
+    },
+    {
+      "offset": 235,
+      "name": "",
+      "comment": "its flags: A = the four cells' bits ORed"
+    },
+    {
+      "offset": 236,
+      "name": "",
+      "comment": "any of them taken: no menu"
+    },
+    {
+      "offset": 238,
+      "name": "",
+      "comment": "a robot or building in the way: the menu stays shut"
+    },
+    {
+      "offset": 240,
+      "name": "",
+      "comment": "IY = the free robot slot it filled (or $DB80 when none was free)"
+    },
+    {
+      "offset": 243,
+      "name": "",
+      "comment": "the new robot's start state"
+    },
+    {
+      "offset": 247,
+      "name": "",
+      "comment": "+$06 = 5 steps on that course"
+    },
+    {
+      "offset": 251,
+      "name": "",
+      "comment": "order 0: stop and defend"
+    },
+    {
+      "offset": 255,
+      "name": "",
+      "comment": "strength 100 %"
+    },
+    {
+      "offset": 259,
+      "name": "",
+      "comment": "+$0F = 1: its first step at once"
+    },
+    {
+      "offset": 263,
+      "name": "",
+      "comment": "recount the robots of both sides"
+    },
+    {
+      "offset": 266,
+      "name": "",
+      "comment": "reprint the status values"
+    },
+    {
+      "offset": 269,
+      "name": "CheckGameKeys",
+      "comment": "Input bit 6 (key I): abandon the game"
+    },
+    {
+      "offset": 272,
+      "name": "",
+      "comment": "key I held?"
+    },
+    {
+      "offset": 274,
+      "name": "",
+      "comment": "abandon: the start-up and the title menu again"
+    },
+    {
+      "offset": 277,
+      "name": "",
+      "comment": "Input bit 5 (key 5): save the game"
+    },
+    {
+      "offset": 279,
+      "name": "",
+      "comment": "neither key: the next turn"
+    },
+    {
+      "offset": 282,
+      "name": "",
+      "comment": "\"PRESS RECORD AND PLAY\", the tape save"
+    },
+    {
+      "offset": 285,
+      "name": "",
+      "comment": "redraw the play screen"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth",
+      "case": "games/nether-earth",
+      "address": "$A600",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth",
+    "file": "src/game/start.asm",
+    "label": "Start"
+  },
+  "docs": [
+    "games/nether-earth/docs/README.md"
+  ]
+}

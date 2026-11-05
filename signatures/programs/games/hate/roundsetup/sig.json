@@ -1,0 +1,1002 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/roundsetup",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: roundsetup",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "roundsetup"
+  ],
+  "summary": "Roundsetup.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 623,
+    "sha1": "e84570d2bfeb17c91cdf13c4d6c67b64d65e61e4",
+    "masked_sha1": "06d8441b81979f176b0982c93abe643640fa6bc5"
+  },
+  "origin": "$D0EF",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ProfileBuffer"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6001"
+    },
+    {
+      "offset": 13,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseRecord"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6008"
+    },
+    {
+      "offset": 33,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GroundAnchors"
+    },
+    {
+      "offset": 52,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFF8"
+    },
+    {
+      "offset": 99,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DemoFlag"
+    },
+    {
+      "offset": 103,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 106,
+      "length": 2,
+      "kind": "ext16",
+      "name": "UpdateMax"
+    },
+    {
+      "offset": 109,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundNumber"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundTable"
+    },
+    {
+      "offset": 123,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Followers"
+    },
+    {
+      "offset": 128,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Score"
+    },
+    {
+      "offset": 137,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShowScore"
+    },
+    {
+      "offset": 140,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2FD"
+    },
+    {
+      "offset": 143,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundNumber"
+    },
+    {
+      "offset": 151,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LapNumber"
+    },
+    {
+      "offset": 155,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LapNumber"
+    },
+    {
+      "offset": 159,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundTable"
+    },
+    {
+      "offset": 162,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_EF8B"
+    },
+    {
+      "offset": 173,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundNumber"
+    },
+    {
+      "offset": 176,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LapNumber"
+    },
+    {
+      "offset": 182,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundNumber"
+    },
+    {
+      "offset": 206,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundText"
+    },
+    {
+      "offset": 209,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintString"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Followers"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Lives"
+    },
+    {
+      "offset": 218,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A58"
+    },
+    {
+      "offset": 228,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 231,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A58"
+    },
+    {
+      "offset": 240,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseRecord"
+    },
+    {
+      "offset": 243,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RestartRecord"
+    },
+    {
+      "offset": 248,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpeedReserve"
+    },
+    {
+      "offset": 252,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Followers"
+    },
+    {
+      "offset": 255,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFF6"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FollowerOffset"
+    },
+    {
+      "offset": 261,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_ECE9"
+    },
+    {
+      "offset": 264,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ConvoyLinkEnd"
+    },
+    {
+      "offset": 274,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C001"
+    },
+    {
+      "offset": 283,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 286,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C001"
+    },
+    {
+      "offset": 289,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerTemplate"
+    },
+    {
+      "offset": 298,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 301,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 304,
+      "length": 2,
+      "kind": "ext16",
+      "name": "VehicleTemplate"
+    },
+    {
+      "offset": 309,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C0A1"
+    },
+    {
+      "offset": 317,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseRecord"
+    },
+    {
+      "offset": 325,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 330,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2BD"
+    },
+    {
+      "offset": 337,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ParkedVehicleRecord"
+    },
+    {
+      "offset": 344,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C008"
+    },
+    {
+      "offset": 355,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AutoCountdown"
+    },
+    {
+      "offset": 361,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseObjectRecords"
+    },
+    {
+      "offset": 401,
+      "length": 2,
+      "kind": "ext16",
+      "name": "VehicleTemplate"
+    },
+    {
+      "offset": 412,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2A4"
+    },
+    {
+      "offset": 424,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LapNumber"
+    },
+    {
+      "offset": 435,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 440,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 443,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 446,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseObjectRecords"
+    },
+    {
+      "offset": 501,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PodRecords"
+    },
+    {
+      "offset": 521,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PodRecords"
+    },
+    {
+      "offset": 533,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 556,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundStartSound"
+    },
+    {
+      "offset": 559,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlaySound"
+    },
+    {
+      "offset": 562,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundNumber"
+    },
+    {
+      "offset": 569,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DemoFlag"
+    },
+    {
+      "offset": 586,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BlitAddresses"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "BuildGroundProfile",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Build the ground profile $6000 from the course"
+    },
+    {
+      "offset": 98,
+      "name": "RoundSetup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Set up a round: round table, round number, lives, objects, colour"
+    },
+    {
+      "offset": 585,
+      "name": "PaintAttributes",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Colour the cells of the blit address list with B"
+    },
+    {
+      "offset": 613,
+      "name": "ShortPause",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A busy wait of 65 536 DJNZ steps"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "clear the 768-byte profile"
+    },
+    {
+      "offset": 12,
+      "name": "",
+      "comment": "BC = the course data"
+    },
+    {
+      "offset": 18,
+      "name": "",
+      "comment": "skip the player's type"
+    },
+    {
+      "offset": 19,
+      "name": "",
+      "comment": "the first anchor; $6000 is the anchor before it"
+    },
+    {
+      "offset": 22,
+      "name": "ProfileSegment",
+      "comment": "the next course byte; $FF ends the course"
+    },
+    {
+      "offset": 27,
+      "name": "",
+      "comment": "its anchors at $C9FE + b / 2"
+    },
+    {
+      "offset": 36,
+      "name": "ProfileAnchor",
+      "comment": "the buffer full at $6300: done"
+    },
+    {
+      "offset": 41,
+      "name": "",
+      "comment": "drop the saved course pointer"
+    },
+    {
+      "offset": 43,
+      "name": "NextAnchor",
+      "comment": "the next anchor; $FF ends the segment"
+    },
+    {
+      "offset": 48,
+      "name": "",
+      "comment": "the new anchor"
+    },
+    {
+      "offset": 51,
+      "name": "",
+      "comment": "back to the previous anchor"
+    },
+    {
+      "offset": 60,
+      "name": "",
+      "comment": "the previous anchor takes the new walls"
+    },
+    {
+      "offset": 64,
+      "name": "",
+      "comment": "(old height - new height) / 8: the step"
+    },
+    {
+      "offset": 76,
+      "name": "",
+      "comment": "the 7 bytes in between"
+    },
+    {
+      "offset": 78,
+      "name": "InBetweenLoop",
+      "comment": ""
+    },
+    {
+      "offset": 83,
+      "name": "",
+      "comment": "on to the new anchor"
+    },
+    {
+      "offset": 90,
+      "name": "SegmentDone",
+      "comment": "the next course byte"
+    },
+    {
+      "offset": 94,
+      "name": "ScrollDistance",
+      "comment": "The distance scrolled into the round"
+    },
+    {
+      "offset": 96,
+      "name": "ConvoyShift",
+      "comment": "The player's old position less $6C"
+    },
+    {
+      "offset": 98,
+      "name": "",
+      "comment": "the demo skips the score and the panel"
+    },
+    {
+      "offset": 105,
+      "name": "",
+      "comment": "MAX from SCORE"
+    },
+    {
+      "offset": 108,
+      "name": "",
+      "comment": "round table entry $EF4F + 6 x round"
+    },
+    {
+      "offset": 122,
+      "name": "",
+      "comment": "the carried lives"
+    },
+    {
+      "offset": 127,
+      "name": "",
+      "comment": "then SCORE, 5 characters"
+    },
+    {
+      "offset": 136,
+      "name": "",
+      "comment": "print SCORE"
+    },
+    {
+      "offset": 139,
+      "name": "",
+      "comment": "the round's two digits go to $C2FD-$C2FE"
+    },
+    {
+      "offset": 142,
+      "name": "",
+      "comment": "the next round"
+    },
+    {
+      "offset": 146,
+      "name": "",
+      "comment": "after round 10:"
+    },
+    {
+      "offset": 150,
+      "name": "",
+      "comment": "the next lap"
+    },
+    {
+      "offset": 157,
+      "name": "",
+      "comment": "round 10's entry into round 0's"
+    },
+    {
+      "offset": 172,
+      "name": "StoreRoundNumber",
+      "comment": ""
+    },
+    {
+      "offset": 175,
+      "name": "",
+      "comment": "tens digit: the lap, plus 1 from round 10"
+    },
+    {
+      "offset": 191,
+      "name": "RoundUnits",
+      "comment": ""
+    },
+    {
+      "offset": 193,
+      "name": "",
+      "comment": "a leading 0 becomes a space"
+    },
+    {
+      "offset": 199,
+      "name": "StoreTensDigit",
+      "comment": ""
+    },
+    {
+      "offset": 205,
+      "name": "",
+      "comment": "print the round number"
+    },
+    {
+      "offset": 211,
+      "name": "",
+      "comment": "lives = the carried lives"
+    },
+    {
+      "offset": 217,
+      "name": "",
+      "comment": "hide the 4 dots"
+    },
+    {
+      "offset": 222,
+      "name": "HideDotsLoop",
+      "comment": ""
+    },
+    {
+      "offset": 227,
+      "name": "",
+      "comment": "a short pause; A still holds the lives"
+    },
+    {
+      "offset": 234,
+      "name": "LifeDotsLoop",
+      "comment": "a cyan dot per life"
+    },
+    {
+      "offset": 239,
+      "name": "ObjectSetup",
+      "comment": "the round's objects"
+    },
+    {
+      "offset": 242,
+      "name": "",
+      "comment": "a retry restarts this course"
+    },
+    {
+      "offset": 245,
+      "name": "",
+      "comment": "the speed reserve $E7B8 = 10"
+    },
+    {
+      "offset": 250,
+      "name": "",
+      "comment": "no followers"
+    },
+    {
+      "offset": 254,
+      "name": "",
+      "comment": "the first follower 10 bytes back"
+    },
+    {
+      "offset": 260,
+      "name": "",
+      "comment": "the follower list $ECE9 (pointer $ECF1): empty"
+    },
+    {
+      "offset": 268,
+      "name": "ClearLinksLoop",
+      "comment": ""
+    },
+    {
+      "offset": 273,
+      "name": "",
+      "comment": "how far the player has come, less $6C"
+    },
+    {
+      "offset": 285,
+      "name": "",
+      "comment": "the player's start fields +1-+7 from $C292"
+    },
+    {
+      "offset": 296,
+      "name": "",
+      "comment": "the scroll distance starts again (BC = 0 after LDIR)"
+    },
+    {
+      "offset": 300,
+      "name": "",
+      "comment": "the type of the round before: kept for the record $C260"
+    },
+    {
+      "offset": 308,
+      "name": "",
+      "comment": "the parked vehicle $C0A1-$C0AF from $C2A2"
+    },
+    {
+      "offset": 316,
+      "name": "",
+      "comment": "the course data"
+    },
+    {
+      "offset": 323,
+      "name": "",
+      "comment": "the player's type, the course's first byte"
+    },
+    {
+      "offset": 327,
+      "name": "",
+      "comment": "$C2BD = type + 6"
+    },
+    {
+      "offset": 332,
+      "name": "",
+      "comment": "the parked vehicle is of the other type"
+    },
+    {
+      "offset": 339,
+      "name": "",
+      "comment": "$C008 = 2 x type"
+    },
+    {
+      "offset": 346,
+      "name": "",
+      "comment": "AUTO countdown: 70 passes, or 14 for a nonzero type"
+    },
+    {
+      "offset": 353,
+      "name": "SetAutoCountdown",
+      "comment": ""
+    },
+    {
+      "offset": 357,
+      "name": "",
+      "comment": "the object block of the round"
+    },
+    {
+      "offset": 364,
+      "name": "",
+      "comment": "16 course objects at $C0B0: 8 bytes from the block, 8 zero"
+    },
+    {
+      "offset": 366,
+      "name": "CourseObjectLoop",
+      "comment": ""
+    },
+    {
+      "offset": 375,
+      "name": "ZeroTailLoop",
+      "comment": ""
+    },
+    {
+      "offset": 383,
+      "name": "",
+      "comment": "the 11 slots $C1B0-$C250 free"
+    },
+    {
+      "offset": 388,
+      "name": "FreeSixSlotsLoop",
+      "comment": ""
+    },
+    {
+      "offset": 395,
+      "name": "FreeFiveSlotsLoop",
+      "comment": ""
+    },
+    {
+      "offset": 400,
+      "name": "",
+      "comment": "$C260: the vehicle of the round before, at $006C"
+    },
+    {
+      "offset": 411,
+      "name": "",
+      "comment": "its fields +3 on from $C2A4"
+    },
+    {
+      "offset": 421,
+      "name": "",
+      "comment": "the end of the list ($C270)"
+    },
+    {
+      "offset": 423,
+      "name": "",
+      "comment": "the lap: 0 skips the arming"
+    },
+    {
+      "offset": 432,
+      "name": "",
+      "comment": "from lap 2, own operands: CP $05 becomes CP $02, types 2-9 fire"
+    },
+    {
+      "offset": 437,
+      "name": "",
+      "comment": "every launch pad's behaviour becomes $88"
+    },
+    {
+      "offset": 445,
+      "name": "LapArming",
+      "comment": "arm the 16 course objects"
+    },
+    {
+      "offset": 450,
+      "name": "ArmObjectLoop",
+      "comment": "the type"
+    },
+    {
+      "offset": 457,
+      "name": "",
+      "comment": "C = the behaviour"
+    },
+    {
+      "offset": 462,
+      "name": "",
+      "comment": "operand changed at $D2A1"
+    },
+    {
+      "offset": 466,
+      "name": "",
+      "comment": "types 5-9 (2-9 from lap 2): fire"
+    },
+    {
+      "offset": 471,
+      "name": "NotFiringType",
+      "comment": "type $0E, a launch pad: rotate what it launches"
+    },
+    {
+      "offset": 484,
+      "name": "",
+      "comment": "others: $88"
+    },
+    {
+      "offset": 488,
+      "name": "Pad18To48",
+      "comment": "$18 becomes $48 (operand changed at $D2A6)"
+    },
+    {
+      "offset": 492,
+      "name": "Pad48To08",
+      "comment": "$48 becomes $08 (operand changed at $D2A9)"
+    },
+    {
+      "offset": 494,
+      "name": "NextArmedObject",
+      "comment": ""
+    },
+    {
+      "offset": 500,
+      "name": "SetField8",
+      "comment": "every record from $C060 to the end: +8 = 2 x type"
+    },
+    {
+      "offset": 506,
+      "name": "Field8Loop",
+      "comment": ""
+    },
+    {
+      "offset": 519,
+      "name": "ShiftFollowers",
+      "comment": "the 4 records $C060-$C090 (the followers)"
+    },
+    {
+      "offset": 525,
+      "name": "ShiftFollowerLoop",
+      "comment": "position along less ConvoyShift"
+    },
+    {
+      "offset": 544,
+      "name": "",
+      "comment": "speed 0"
+    },
+    {
+      "offset": 555,
+      "name": "",
+      "comment": "the round sound: entry 5 of the effect table $F2E2"
+    },
+    {
+      "offset": 561,
+      "name": "",
+      "comment": "the course colour from the round"
+    },
+    {
+      "offset": 568,
+      "name": "",
+      "comment": "the demo subtracts one less"
+    },
+    {
+      "offset": 575,
+      "name": "CourseInk",
+      "comment": "ink 6 - that"
+    },
+    {
+      "offset": 578,
+      "name": "",
+      "comment": "bright below 5"
+    },
+    {
+      "offset": 584,
+      "name": "CourseColourReady",
+      "comment": ""
+    },
+    {
+      "offset": 588,
+      "name": "PaintCell",
+      "comment": "the next screen address"
+    },
+    {
+      "offset": 593,
+      "name": "",
+      "comment": "attribute row block $58"
+    },
+    {
+      "offset": 595,
+      "name": "",
+      "comment": "$FF ends the list"
+    },
+    {
+      "offset": 598,
+      "name": "",
+      "comment": "below $47: a clipped entry"
+    },
+    {
+      "offset": 602,
+      "name": "",
+      "comment": "$47: block $58"
+    },
+    {
+      "offset": 604,
+      "name": "",
+      "comment": "$48-$4F: block $59; $50 and up: $5A"
+    },
+    {
+      "offset": 609,
+      "name": "AttrBlock59",
+      "comment": ""
+    },
+    {
+      "offset": 610,
+      "name": "PaintThisCell",
+      "comment": "the cell's colour"
+    },
+    {
+      "offset": 615,
+      "name": "PauseOuterLoop",
+      "comment": ""
+    },
+    {
+      "offset": 617,
+      "name": "PauseInnerLoop",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$D0EF",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/roundsetup.asm",
+    "label": "BuildGroundProfile"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

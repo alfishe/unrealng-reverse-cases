@@ -1,0 +1,1216 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth/interrupts",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth: interrupts",
+  "authors": [
+    "Argus Press Software"
+  ],
+  "year": 1987,
+  "tags": [
+    "nether-earth",
+    "game-module",
+    "interrupts"
+  ],
+  "summary": "The frame interrupts of play, the radar, the shot sounds.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 322,
+    "sha1": "38f5f0a3793574a5525e9553b42f8e62ba0f26bd",
+    "masked_sha1": "0afdabb33870e3d185bfd7eef0fb43e96ed2ced0"
+  },
+  "origin": "$D566",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 5,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TurnFrames"
+    },
+    {
+      "offset": 9,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RadarOwn"
+    },
+    {
+      "offset": 14,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RadarPhase"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RadarPhase"
+    },
+    {
+      "offset": 24,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RadarEnemy"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 32,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundFx"
+    },
+    {
+      "offset": 44,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundFx"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 60,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_50C6"
+    },
+    {
+      "offset": 72,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextScreenLine"
+    },
+    {
+      "offset": 80,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AC6"
+    },
+    {
+      "offset": 83,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 95,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 137,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RadarOwn"
+    },
+    {
+      "offset": 151,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RadarColumn"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RadarOwn"
+    },
+    {
+      "offset": 191,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RadarEnemy"
+    },
+    {
+      "offset": 200,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Robots"
+    },
+    {
+      "offset": 233,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 245,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 281,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RadarColumn"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "PlayInterrupt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the interrupt handler of play, one a frame"
+    },
+    {
+      "offset": 54,
+      "name": "StartInterrupt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the interrupt handler while the start-up runs"
+    },
+    {
+      "offset": 56,
+      "name": "ShowRadar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Show radar picture HL (16 lines x 16 bytes) at (22,6) in attribute C"
+    },
+    {
+      "offset": 87,
+      "name": "FillAttr16",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Write C into 16 bytes from HL"
+    },
+    {
+      "offset": 94,
+      "name": "SoundEffect",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The interrupt's sound: A = $FD53 (1-$7F a falling tone, $C8-$FF noise)"
+    },
+    {
+      "offset": 146,
+      "name": "BuildRadar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Build both radar pictures for the 128 columns from $FD1C"
+    },
+    {
+      "offset": 244,
+      "name": "ToggleRadarDot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "XOR a 2x2 dot at map column HL, row C into radar picture B (0 player, 1 enemy)"
+    },
+    {
+      "offset": 279,
+      "name": "RadarDotAddress",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the radar byte of column HL, row C in picture B, A = the pixel mask"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "keep the interrupted code's registers"
+    },
+    {
+      "offset": 1,
+      "name": "",
+      "comment": "(BC)"
+    },
+    {
+      "offset": 2,
+      "name": "",
+      "comment": "(DE)"
+    },
+    {
+      "offset": 3,
+      "name": "",
+      "comment": "(HL)"
+    },
+    {
+      "offset": 4,
+      "name": "",
+      "comment": "the frame counter: the play loop waits for 10 ($AE1D)"
+    },
+    {
+      "offset": 7,
+      "name": "",
+      "comment": "one more frame of this turn"
+    },
+    {
+      "offset": 8,
+      "name": "",
+      "comment": "the player's radar picture, cyan"
+    },
+    {
+      "offset": 11,
+      "name": "",
+      "comment": "its attribute: bright cyan on blue"
+    },
+    {
+      "offset": 13,
+      "name": "",
+      "comment": "the other picture each frame"
+    },
+    {
+      "offset": 16,
+      "name": "",
+      "comment": "toggle"
+    },
+    {
+      "offset": 18,
+      "name": "",
+      "comment": "kept for the next frame"
+    },
+    {
+      "offset": 21,
+      "name": "",
+      "comment": "phase 0: the player's picture"
+    },
+    {
+      "offset": 23,
+      "name": "",
+      "comment": "the enemy's radar picture, yellow"
+    },
+    {
+      "offset": 26,
+      "name": "",
+      "comment": "bright yellow on blue"
+    },
+    {
+      "offset": 28,
+      "name": "InterruptRadar",
+      "comment": "show this frame's radar picture"
+    },
+    {
+      "offset": 31,
+      "name": "",
+      "comment": "a sound effect running?"
+    },
+    {
+      "offset": 34,
+      "name": "",
+      "comment": "(0: silent)"
+    },
+    {
+      "offset": 35,
+      "name": "",
+      "comment": "silent: on to the exit"
+    },
+    {
+      "offset": 37,
+      "name": "",
+      "comment": "one step on each frame: a tone ends at $80, a noise when it wraps past $FF to 0"
+    },
+    {
+      "offset": 38,
+      "name": "",
+      "comment": "the tone's end?"
+    },
+    {
+      "offset": 40,
+      "name": "",
+      "comment": "no: keep the count"
+    },
+    {
+      "offset": 42,
+      "name": "",
+      "comment": "the tone is over: silent"
+    },
+    {
+      "offset": 43,
+      "name": "InterruptSoundStore",
+      "comment": "SoundFx = the count, the effect's next step"
+    },
+    {
+      "offset": 46,
+      "name": "",
+      "comment": "the flags of A: M noise, P the falling tone"
+    },
+    {
+      "offset": 47,
+      "name": "",
+      "comment": "this frame's burst (the flags of the OR above choose its kind)"
+    },
+    {
+      "offset": 50,
+      "name": "InterruptExit",
+      "comment": "restore the registers, on into EI; RET"
+    },
+    {
+      "offset": 51,
+      "name": "",
+      "comment": "(DE)"
+    },
+    {
+      "offset": 52,
+      "name": "",
+      "comment": "(BC)"
+    },
+    {
+      "offset": 53,
+      "name": "",
+      "comment": "(AF); on into StartInterrupt"
+    },
+    {
+      "offset": 54,
+      "name": "",
+      "comment": "interrupts on again (the CPU turned them off on acceptance)"
+    },
+    {
+      "offset": 55,
+      "name": "",
+      "comment": "back to the interrupted code"
+    },
+    {
+      "offset": 56,
+      "name": "",
+      "comment": "keep the attribute C"
+    },
+    {
+      "offset": 57,
+      "name": "",
+      "comment": "16 lines"
+    },
+    {
+      "offset": 59,
+      "name": "",
+      "comment": "screen line 0 of character row 22, column 6"
+    },
+    {
+      "offset": 62,
+      "name": "RadarLineLoop",
+      "comment": "keep the count"
+    },
+    {
+      "offset": 63,
+      "name": "",
+      "comment": "and the line's screen address"
+    },
+    {
+      "offset": 64,
+      "name": "",
+      "comment": "16 bytes: 128 map columns"
+    },
+    {
+      "offset": 67,
+      "name": "",
+      "comment": "one picture line onto the screen"
+    },
+    {
+      "offset": 69,
+      "name": "",
+      "comment": "the line's start"
+    },
+    {
+      "offset": 70,
+      "name": "",
+      "comment": "HL = the screen address (DE = the picture's next line)"
+    },
+    {
+      "offset": 71,
+      "name": "",
+      "comment": "the next screen line"
+    },
+    {
+      "offset": 74,
+      "name": "",
+      "comment": "back: DE = screen, HL = picture"
+    },
+    {
+      "offset": 75,
+      "name": "",
+      "comment": "the count back"
+    },
+    {
+      "offset": 76,
+      "name": "",
+      "comment": "the next line"
+    },
+    {
+      "offset": 78,
+      "name": "",
+      "comment": "the attribute back"
+    },
+    {
+      "offset": 79,
+      "name": "",
+      "comment": "the attributes of row 22"
+    },
+    {
+      "offset": 82,
+      "name": "",
+      "comment": "16 cells of row 22"
+    },
+    {
+      "offset": 85,
+      "name": "",
+      "comment": "row 23 ($5AE6), then on into FillAttr16 for its 16 cells"
+    },
+    {
+      "offset": 87,
+      "name": "",
+      "comment": "16 cells"
+    },
+    {
+      "offset": 89,
+      "name": "FillAttrLoop",
+      "comment": "the attribute"
+    },
+    {
+      "offset": 90,
+      "name": "",
+      "comment": "the next cell"
+    },
+    {
+      "offset": 91,
+      "name": "",
+      "comment": "16 cells"
+    },
+    {
+      "offset": 93,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 94,
+      "name": "",
+      "comment": "$80-$FF: the noise"
+    },
+    {
+      "offset": 97,
+      "name": "",
+      "comment": "B = the delay between pulses"
+    },
+    {
+      "offset": 98,
+      "name": "",
+      "comment": "A + 2 ..."
+    },
+    {
+      "offset": 99,
+      "name": "",
+      "comment": "... the divisor"
+    },
+    {
+      "offset": 100,
+      "name": "",
+      "comment": "C = about 500 / (A + 2) pulses"
+    },
+    {
+      "offset": 103,
+      "name": "",
+      "comment": "DE = A + 2"
+    },
+    {
+      "offset": 104,
+      "name": "",
+      "comment": "(D = 0)"
+    },
+    {
+      "offset": 106,
+      "name": "",
+      "comment": "C counts"
+    },
+    {
+      "offset": 108,
+      "name": "",
+      "comment": "no borrow into the first SBC"
+    },
+    {
+      "offset": 109,
+      "name": "PulseCountLoop",
+      "comment": "one more pulse"
+    },
+    {
+      "offset": 110,
+      "name": "",
+      "comment": "500 - n (A+2)"
+    },
+    {
+      "offset": 112,
+      "name": "",
+      "comment": "until it goes below 0: C = 500 / (A+2) + 1"
+    },
+    {
+      "offset": 114,
+      "name": "",
+      "comment": "the ROM as noise"
+    },
+    {
+      "offset": 117,
+      "name": "PulseLoop",
+      "comment": "keep the delay and the count"
+    },
+    {
+      "offset": 118,
+      "name": "",
+      "comment": "a ROM byte"
+    },
+    {
+      "offset": 119,
+      "name": "",
+      "comment": "the next"
+    },
+    {
+      "offset": 120,
+      "name": "",
+      "comment": "its bit 4: the speaker"
+    },
+    {
+      "offset": 122,
+      "name": "",
+      "comment": "the speaker level (border black)"
+    },
+    {
+      "offset": 124,
+      "name": "PulseDelay",
+      "comment": "wait B x 13 T"
+    },
+    {
+      "offset": 126,
+      "name": "",
+      "comment": "the delay and the count back"
+    },
+    {
+      "offset": 127,
+      "name": "",
+      "comment": "one pulse less"
+    },
+    {
+      "offset": 128,
+      "name": "",
+      "comment": "the next pulse"
+    },
+    {
+      "offset": 130,
+      "name": "",
+      "comment": "speaker off"
+    },
+    {
+      "offset": 131,
+      "name": "",
+      "comment": "(port $FE)"
+    },
+    {
+      "offset": 133,
+      "name": "",
+      "comment": "this frame's burst is over"
+    },
+    {
+      "offset": 134,
+      "name": "NoiseSound",
+      "comment": "30 levels"
+    },
+    {
+      "offset": 136,
+      "name": "NoiseLoop",
+      "comment": "a random byte"
+    },
+    {
+      "offset": 139,
+      "name": "",
+      "comment": "its bit 4: the speaker"
+    },
+    {
+      "offset": 141,
+      "name": "",
+      "comment": "the level"
+    },
+    {
+      "offset": 143,
+      "name": "",
+      "comment": "30 times"
+    },
+    {
+      "offset": 145,
+      "name": "",
+      "comment": "this frame's crackle is over"
+    },
+    {
+      "offset": 146,
+      "name": "",
+      "comment": "the player's picture first"
+    },
+    {
+      "offset": 149,
+      "name": "",
+      "comment": "the window's first map column"
+    },
+    {
+      "offset": 153,
+      "name": "",
+      "comment": "its high byte ..."
+    },
+    {
+      "offset": 154,
+      "name": "",
+      "comment": "... on the map's base: $DD00 + column, row 0"
+    },
+    {
+      "offset": 156,
+      "name": "",
+      "comment": "DE = the map cell"
+    },
+    {
+      "offset": 157,
+      "name": "",
+      "comment": "16 rows of 16 bytes"
+    },
+    {
+      "offset": 160,
+      "name": "RadarRowLoop",
+      "comment": "keep the counts"
+    },
+    {
+      "offset": 161,
+      "name": "",
+      "comment": "and the row's first cell"
+    },
+    {
+      "offset": 162,
+      "name": "RadarByteLoop",
+      "comment": "keep the counts"
+    },
+    {
+      "offset": 163,
+      "name": "",
+      "comment": "8 cells a byte"
+    },
+    {
+      "offset": 165,
+      "name": "RadarBitLoop",
+      "comment": "the cell"
+    },
+    {
+      "offset": 166,
+      "name": "",
+      "comment": "the next column"
+    },
+    {
+      "offset": 167,
+      "name": "",
+      "comment": "the block type"
+    },
+    {
+      "offset": 169,
+      "name": "",
+      "comment": "carry: the type is $0F or more"
+    },
+    {
+      "offset": 171,
+      "name": "",
+      "comment": "(CCF: carry now set for $0F and above)"
+    },
+    {
+      "offset": 172,
+      "name": "",
+      "comment": "the pixel into the radar byte from the right"
+    },
+    {
+      "offset": 174,
+      "name": "",
+      "comment": "8 cells"
+    },
+    {
+      "offset": 176,
+      "name": "",
+      "comment": "the next radar byte"
+    },
+    {
+      "offset": 177,
+      "name": "",
+      "comment": "the counts back"
+    },
+    {
+      "offset": 178,
+      "name": "",
+      "comment": "16 bytes: 128 columns"
+    },
+    {
+      "offset": 180,
+      "name": "",
+      "comment": "the row's first cell"
+    },
+    {
+      "offset": 181,
+      "name": "",
+      "comment": "the counts back"
+    },
+    {
+      "offset": 182,
+      "name": "",
+      "comment": "the next map row"
+    },
+    {
+      "offset": 183,
+      "name": "",
+      "comment": "(+$200)"
+    },
+    {
+      "offset": 184,
+      "name": "",
+      "comment": "one row less"
+    },
+    {
+      "offset": 185,
+      "name": "",
+      "comment": "the next of the 16 map rows"
+    },
+    {
+      "offset": 187,
+      "name": "",
+      "comment": "the same terrain for the enemy's picture"
+    },
+    {
+      "offset": 190,
+      "name": "",
+      "comment": "into the enemy's picture"
+    },
+    {
+      "offset": 193,
+      "name": "",
+      "comment": "256 bytes"
+    },
+    {
+      "offset": 196,
+      "name": "",
+      "comment": "copy"
+    },
+    {
+      "offset": 198,
+      "name": "",
+      "comment": "the robots"
+    },
+    {
+      "offset": 202,
+      "name": "",
+      "comment": "48 records"
+    },
+    {
+      "offset": 204,
+      "name": "RadarRobotLoop",
+      "comment": "keep the count"
+    },
+    {
+      "offset": 205,
+      "name": "",
+      "comment": "+$01, the cell's high byte"
+    },
+    {
+      "offset": 208,
+      "name": "",
+      "comment": "0: a free slot"
+    },
+    {
+      "offset": 209,
+      "name": "",
+      "comment": "skip it"
+    },
+    {
+      "offset": 211,
+      "name": "",
+      "comment": "HL = the column, +$02 ..."
+    },
+    {
+      "offset": 214,
+      "name": "",
+      "comment": "... +$03"
+    },
+    {
+      "offset": 217,
+      "name": "",
+      "comment": "C = the row +$04"
+    },
+    {
+      "offset": 220,
+      "name": "",
+      "comment": "the side flags +$0A"
+    },
+    {
+      "offset": 223,
+      "name": "",
+      "comment": "bit 7, the enemy, ..."
+    },
+    {
+      "offset": 224,
+      "name": "",
+      "comment": "... to bit 0"
+    },
+    {
+      "offset": 226,
+      "name": "",
+      "comment": "B = the picture: 0 the player's, 1 the enemy's"
+    },
+    {
+      "offset": 227,
+      "name": "",
+      "comment": "not the robot under direct control (the ship's dot stands for it)"
+    },
+    {
+      "offset": 230,
+      "name": "",
+      "comment": "2: direct control"
+    },
+    {
+      "offset": 232,
+      "name": "",
+      "comment": "XOR the robot's dot in"
+    },
+    {
+      "offset": 235,
+      "name": "RadarRobotNext",
+      "comment": "the next 16-byte robot record"
+    },
+    {
+      "offset": 238,
+      "name": "",
+      "comment": "IY = the next record"
+    },
+    {
+      "offset": 240,
+      "name": "",
+      "comment": "the count back"
+    },
+    {
+      "offset": 241,
+      "name": "",
+      "comment": "the next robot"
+    },
+    {
+      "offset": 243,
+      "name": "",
+      "comment": "both pictures are built"
+    },
+    {
+      "offset": 244,
+      "name": "",
+      "comment": "HL = the dot's byte, A = the mask (outside the window: returns from here)"
+    },
+    {
+      "offset": 247,
+      "name": "",
+      "comment": "C = the pixel mask"
+    },
+    {
+      "offset": 248,
+      "name": "",
+      "comment": "keep the byte's address"
+    },
+    {
+      "offset": 249,
+      "name": "",
+      "comment": "(x, y)"
+    },
+    {
+      "offset": 250,
+      "name": "",
+      "comment": "flip the pixel"
+    },
+    {
+      "offset": 251,
+      "name": "",
+      "comment": "back"
+    },
+    {
+      "offset": 252,
+      "name": "",
+      "comment": "the next pixel, maybe in the next byte"
+    },
+    {
+      "offset": 254,
+      "name": "",
+      "comment": "carry: the mask wrapped to bit 7"
+    },
+    {
+      "offset": 256,
+      "name": "",
+      "comment": "of the next byte"
+    },
+    {
+      "offset": 257,
+      "name": "RadarDotRight",
+      "comment": "the right pixel, maybe in the next byte"
+    },
+    {
+      "offset": 258,
+      "name": "",
+      "comment": "flip (x+1, y)"
+    },
+    {
+      "offset": 259,
+      "name": "",
+      "comment": "back"
+    },
+    {
+      "offset": 260,
+      "name": "",
+      "comment": "(x, y) again"
+    },
+    {
+      "offset": 261,
+      "name": "",
+      "comment": "the line above"
+    },
+    {
+      "offset": 262,
+      "name": "",
+      "comment": "- 16: one line up (a row 0 dot would wrap to line 15; probably never: row 0 is the map's edge)"
+    },
+    {
+      "offset": 264,
+      "name": "",
+      "comment": "(L)"
+    },
+    {
+      "offset": 265,
+      "name": "",
+      "comment": "the mask back to x"
+    },
+    {
+      "offset": 267,
+      "name": "",
+      "comment": "(x, y-1)"
+    },
+    {
+      "offset": 268,
+      "name": "",
+      "comment": "flip it"
+    },
+    {
+      "offset": 269,
+      "name": "",
+      "comment": "back"
+    },
+    {
+      "offset": 270,
+      "name": "",
+      "comment": "the mask to x+1"
+    },
+    {
+      "offset": 272,
+      "name": "",
+      "comment": "no wrap: the same byte"
+    },
+    {
+      "offset": 274,
+      "name": "",
+      "comment": "wrapped: the next byte"
+    },
+    {
+      "offset": 275,
+      "name": "RadarDotAboveRight",
+      "comment": "the right pixel of the line above"
+    },
+    {
+      "offset": 276,
+      "name": "",
+      "comment": "flip (x+1, y-1)"
+    },
+    {
+      "offset": 277,
+      "name": "",
+      "comment": "back"
+    },
+    {
+      "offset": 278,
+      "name": "",
+      "comment": "the dot is toggled"
+    },
+    {
+      "offset": 279,
+      "name": "",
+      "comment": "the window's first column"
+    },
+    {
+      "offset": 283,
+      "name": "",
+      "comment": "no borrow"
+    },
+    {
+      "offset": 284,
+      "name": "",
+      "comment": "HL = x - the window's left edge"
+    },
+    {
+      "offset": 286,
+      "name": "",
+      "comment": "the high byte"
+    },
+    {
+      "offset": 287,
+      "name": "",
+      "comment": "not 0: left (negative) or more than 255 right"
+    },
+    {
+      "offset": 288,
+      "name": "",
+      "comment": "outside"
+    },
+    {
+      "offset": 290,
+      "name": "",
+      "comment": "0-255"
+    },
+    {
+      "offset": 291,
+      "name": "",
+      "comment": "127 or more: the dot's right half would leave the window"
+    },
+    {
+      "offset": 293,
+      "name": "",
+      "comment": "outside"
+    },
+    {
+      "offset": 295,
+      "name": "",
+      "comment": "$D800 or $D900"
+    },
+    {
+      "offset": 297,
+      "name": "",
+      "comment": "+ B, the picture"
+    },
+    {
+      "offset": 298,
+      "name": "",
+      "comment": "H = its page"
+    },
+    {
+      "offset": 299,
+      "name": "",
+      "comment": "the column"
+    },
+    {
+      "offset": 300,
+      "name": "",
+      "comment": "the pixel in the byte"
+    },
+    {
+      "offset": 302,
+      "name": "",
+      "comment": "+ 1: the shift count"
+    },
+    {
+      "offset": 303,
+      "name": "",
+      "comment": "B = it"
+    },
+    {
+      "offset": 304,
+      "name": "",
+      "comment": "L = 16*y + x/8"
+    },
+    {
+      "offset": 305,
+      "name": "",
+      "comment": "the byte column x / 8 ..."
+    },
+    {
+      "offset": 306,
+      "name": "",
+      "comment": "... to the high nibble"
+    },
+    {
+      "offset": 308,
+      "name": "",
+      "comment": "the row y in the low nibble"
+    },
+    {
+      "offset": 309,
+      "name": "",
+      "comment": "nibbles ..."
+    },
+    {
+      "offset": 310,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 311,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 312,
+      "name": "",
+      "comment": "... swapped"
+    },
+    {
+      "offset": 313,
+      "name": "",
+      "comment": "L = 16 y + x / 8"
+    },
+    {
+      "offset": 314,
+      "name": "",
+      "comment": "the mask: $80 shifted right x AND 7 times"
+    },
+    {
+      "offset": 315,
+      "name": "",
+      "comment": "the 1 ..."
+    },
+    {
+      "offset": 316,
+      "name": "RadarMaskShift",
+      "comment": "$80 shifted right (x AND 7) times"
+    },
+    {
+      "offset": 317,
+      "name": "",
+      "comment": "B times"
+    },
+    {
+      "offset": 319,
+      "name": "",
+      "comment": "HL = the byte, A = the mask"
+    },
+    {
+      "offset": 320,
+      "name": "RadarDotOutside",
+      "comment": "outside the window: return from ToggleRadarDot too"
+    },
+    {
+      "offset": 321,
+      "name": "",
+      "comment": "to ToggleRadarDot's caller: nothing drawn"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth",
+      "case": "games/nether-earth",
+      "address": "$D566",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth",
+    "file": "src/game/interrupts.asm",
+    "label": "PlayInterrupt"
+  },
+  "docs": [
+    "games/nether-earth/docs/README.md"
+  ]
+}

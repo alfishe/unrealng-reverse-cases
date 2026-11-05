@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/coursedata",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: coursedata",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "coursedata"
+  ],
+  "summary": "Coursedata.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 3328,
+    "sha1": "9b761bc1556bccd10c51a3797b004b6ce3b78863",
+    "masked_sha1": "a384830fe37199834d52ad19d585dc03f3aa8823"
+  },
+  "origin": "$F300",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2814,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleInterrupt"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 2813,
+      "name": "Im2Jump",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The IM 2 jump"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "RoundObjects1",
+      "comment": "The objects of round 1"
+    },
+    {
+      "offset": 128,
+      "name": "RoundObjects2",
+      "comment": "The objects of round 2"
+    },
+    {
+      "offset": 256,
+      "name": "RoundObjects3",
+      "comment": "The objects of round 3"
+    },
+    {
+      "offset": 384,
+      "name": "RoundObjects4",
+      "comment": "The objects of round 4"
+    },
+    {
+      "offset": 512,
+      "name": "RoundObjects5",
+      "comment": "The objects of round 5"
+    },
+    {
+      "offset": 640,
+      "name": "RoundObjects6",
+      "comment": "The objects of round 6"
+    },
+    {
+      "offset": 768,
+      "name": "RoundObjects7",
+      "comment": "The objects of round 7"
+    },
+    {
+      "offset": 896,
+      "name": "RoundObjects8",
+      "comment": "The objects of round 8"
+    },
+    {
+      "offset": 1024,
+      "name": "RoundObjects9",
+      "comment": "The objects of round 9"
+    },
+    {
+      "offset": 1152,
+      "name": "RoundObjects10",
+      "comment": "The objects of round 10"
+    },
+    {
+      "offset": 1280,
+      "name": "SpriteSaveBuffer",
+      "comment": "The strips under the sprites, saved"
+    },
+    {
+      "offset": 2816,
+      "name": "Im2Table",
+      "comment": "The IM 2 vector table, then the shadow list"
+    },
+    {
+      "offset": 3072,
+      "name": "SpriteListArea",
+      "comment": "The depth list and the sprite list, then the stack"
+    },
+    {
+      "offset": 3160,
+      "name": "UdgLeftover",
+      "comment": "The 48K BASIC's user-defined graphics, left in the image"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$F300",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/coursedata.asm",
+    "label": "RoundObjects1"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

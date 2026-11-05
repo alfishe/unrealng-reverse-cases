@@ -1,0 +1,199 @@
+{
+  "schema": 1,
+  "id": "packers/hrum/3.5/depacker",
+  "kind": "code",
+  "role": "depacker",
+  "name": "HRUM 3.5 depacker (the copy a block's set-up moves to a free place)",
+  "authors": [
+    "Dmitry Pyankov"
+  ],
+  "year": null,
+  "tags": [
+    "hrum",
+    "packer",
+    "depacker"
+  ],
+  "summary": "HRUM 3.5's depacker (114 bytes; the 5 bytes after it are the last 5 of the block's output, a per-block tail): the set-up copies it to a free place and RETs into it; it moves the stream up with LDDR and unpacks in place, SP reading the stream.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 114,
+    "sha1": "d882be7576ed9bb1eff70aea9a6dbd924a1dcd25",
+    "masked_sha1": "8b6b1bb5c19821d8839a64641b660ee695ec2109"
+  },
+  "origin": "$5B89",
+  "relocatable": true,
+  "mask": [
+    {
+      "offset": 5,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7D5F"
+    },
+    {
+      "offset": 97,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5BFB"
+    },
+    {
+      "offset": 108,
+      "length": 1,
+      "kind": "var8"
+    },
+    {
+      "offset": 109,
+      "length": 1,
+      "kind": "var8"
+    },
+    {
+      "offset": 110,
+      "length": 1,
+      "kind": "var8"
+    },
+    {
+      "offset": 111,
+      "length": 1,
+      "kind": "var8"
+    },
+    {
+      "offset": 112,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6600"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "Depack",
+      "in": "HL, DE, BC: the LDDR that moves the stream; DE' the output",
+      "out": null,
+      "clobbers": null,
+      "summary": "move the stream up, then unpack"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "DpStart",
+      "comment": ""
+    },
+    {
+      "offset": 9,
+      "name": "DpLiteral",
+      "comment": ""
+    },
+    {
+      "offset": 14,
+      "name": "DpNext",
+      "comment": ""
+    },
+    {
+      "offset": 20,
+      "name": "Flag1",
+      "comment": ""
+    },
+    {
+      "offset": 24,
+      "name": "Code",
+      "comment": ""
+    },
+    {
+      "offset": 26,
+      "name": "Code2",
+      "comment": ""
+    },
+    {
+      "offset": 31,
+      "name": "Flag2",
+      "comment": ""
+    },
+    {
+      "offset": 42,
+      "name": "CodeEnd",
+      "comment": ""
+    },
+    {
+      "offset": 51,
+      "name": "DpFarFlag",
+      "comment": ""
+    },
+    {
+      "offset": 56,
+      "name": "DpOffset",
+      "comment": ""
+    },
+    {
+      "offset": 69,
+      "name": "Bits",
+      "comment": ""
+    },
+    {
+      "offset": 70,
+      "name": "Bit",
+      "comment": ""
+    },
+    {
+      "offset": 75,
+      "name": "Flag3",
+      "comment": ""
+    },
+    {
+      "offset": 82,
+      "name": "DpLow",
+      "comment": ""
+    },
+    {
+      "offset": 84,
+      "name": "DpCopy",
+      "comment": ""
+    },
+    {
+      "offset": 90,
+      "name": "DpLong",
+      "comment": ""
+    },
+    {
+      "offset": 107,
+      "name": "DpSp",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth: the intro block",
+      "case": "games/advanced-nether-earth",
+      "address": "$5B89",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    },
+    {
+      "program": "Advanced Nether Earth: the game block",
+      "case": "games/advanced-nether-earth",
+      "address": "$FE4C",
+      "bank": null,
+      "delta": "-$5D3D",
+      "match": "masked",
+      "commit": "c94d092"
+    },
+    {
+      "program": "Advanced Nether Earth: bank 7's block",
+      "case": "games/advanced-nether-earth",
+      "address": "$5B00",
+      "bank": null,
+      "delta": "-$0089",
+      "match": "masked",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/sfx/hrum35.asm",
+    "label": ".dpStart"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/03-build-and-load.md"
+  ]
+}

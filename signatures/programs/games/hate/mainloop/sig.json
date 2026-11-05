@@ -1,0 +1,929 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/mainloop",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: mainloop",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "mainloop"
+  ],
+  "summary": "Mainloop.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 445,
+    "sha1": "4fe642a31368810298d4d21c136f6c8015006448",
+    "masked_sha1": "e989ce3fd4de961435d6ae7e1937f8cd947bcc87"
+  },
+  "origin": "$CF32",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Menu"
+    },
+    {
+      "offset": 5,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_EF50"
+    },
+    {
+      "offset": 8,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Score"
+    },
+    {
+      "offset": 17,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundNumber"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Followers"
+    },
+    {
+      "offset": 28,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseTable"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DemoFlag"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseTable"
+    },
+    {
+      "offset": 52,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RestartRecord"
+    },
+    {
+      "offset": 55,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RestartRecord"
+    },
+    {
+      "offset": 58,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseRecord"
+    },
+    {
+      "offset": 61,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ProfileBuffer"
+    },
+    {
+      "offset": 64,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6001"
+    },
+    {
+      "offset": 74,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StripCount"
+    },
+    {
+      "offset": 78,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollDistance"
+    },
+    {
+      "offset": 81,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 98,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverHeight"
+    },
+    {
+      "offset": 102,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollPage"
+    },
+    {
+      "offset": 105,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollHalf"
+    },
+    {
+      "offset": 108,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseRecord"
+    },
+    {
+      "offset": 111,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseExpand"
+    },
+    {
+      "offset": 117,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollStep"
+    },
+    {
+      "offset": 123,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DemoFlag"
+    },
+    {
+      "offset": 129,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DemoMessage"
+    },
+    {
+      "offset": 132,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintString"
+    },
+    {
+      "offset": 136,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C006"
+    },
+    {
+      "offset": 139,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 142,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AutoCountdown"
+    },
+    {
+      "offset": 148,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerShotRecords"
+    },
+    {
+      "offset": 165,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C33A"
+    },
+    {
+      "offset": 184,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShotGaugeText"
+    },
+    {
+      "offset": 187,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintString"
+    },
+    {
+      "offset": 190,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 197,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8C05"
+    },
+    {
+      "offset": 200,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 203,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Lives"
+    },
+    {
+      "offset": 207,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Followers"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A58"
+    },
+    {
+      "offset": 217,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShortPause"
+    },
+    {
+      "offset": 220,
+      "length": 2,
+      "kind": "ext16",
+      "name": "UpdateMax"
+    },
+    {
+      "offset": 223,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundNumber"
+    },
+    {
+      "offset": 227,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 231,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 234,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundNumber"
+    },
+    {
+      "offset": 242,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CourseTable"
+    },
+    {
+      "offset": 246,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RestartRecord"
+    },
+    {
+      "offset": 249,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundNumber"
+    },
+    {
+      "offset": 257,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundTable"
+    },
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Score"
+    },
+    {
+      "offset": 272,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Followers"
+    },
+    {
+      "offset": 279,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 282,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundNumber"
+    },
+    {
+      "offset": 287,
+      "length": 2,
+      "kind": "ext16",
+      "name": "UpdateMax"
+    },
+    {
+      "offset": 290,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundNumber"
+    },
+    {
+      "offset": 294,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RoundNumber"
+    },
+    {
+      "offset": 304,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_EF50"
+    },
+    {
+      "offset": 308,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Score"
+    },
+    {
+      "offset": 316,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 319,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ReadControls"
+    },
+    {
+      "offset": 322,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoveObjects"
+    },
+    {
+      "offset": 325,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlaceObjects"
+    },
+    {
+      "offset": 328,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BuildSpriteLists"
+    },
+    {
+      "offset": 331,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawShadows"
+    },
+    {
+      "offset": 334,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Blit"
+    },
+    {
+      "offset": 337,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayEffect"
+    },
+    {
+      "offset": 341,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 360,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AbortMessage"
+    },
+    {
+      "offset": 363,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintString"
+    },
+    {
+      "offset": 366,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DemoFlag"
+    },
+    {
+      "offset": 372,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GameOverBox"
+    },
+    {
+      "offset": 375,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintString"
+    },
+    {
+      "offset": 378,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C814"
+    },
+    {
+      "offset": 381,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 384,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C814"
+    },
+    {
+      "offset": 387,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 390,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 399,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 408,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 414,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 417,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PauseMessage"
+    },
+    {
+      "offset": 420,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintString"
+    },
+    {
+      "offset": 434,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 437,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BlankMessage"
+    },
+    {
+      "offset": 440,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintString"
+    },
+    {
+      "offset": 443,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "GameEntry",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The game's entry: interrupts off"
+    },
+    {
+      "offset": 1,
+      "name": "MainLoop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Menu, game start, round start and the pass loop"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "interrupts off for good"
+    },
+    {
+      "offset": 1,
+      "name": "",
+      "comment": "the menu; returns when a game or the demo starts"
+    },
+    {
+      "offset": 4,
+      "name": "",
+      "comment": "SCORE ($EF49) = round 0's saved SCORE"
+    },
+    {
+      "offset": 15,
+      "name": "",
+      "comment": "round number $C2F7 = 0"
+    },
+    {
+      "offset": 19,
+      "name": "",
+      "comment": "no sound requests"
+    },
+    {
+      "offset": 22,
+      "name": "",
+      "comment": "carried lives $ECE4 = 4"
+    },
+    {
+      "offset": 27,
+      "name": "",
+      "comment": "a game starts with the record of round 1"
+    },
+    {
+      "offset": 30,
+      "name": "",
+      "comment": "the demo?"
+    },
+    {
+      "offset": 36,
+      "name": "",
+      "comment": "random number in HL"
+    },
+    {
+      "offset": 40,
+      "name": "",
+      "comment": "the demo: one of records 3-10, (L AND $1C) + 8 bytes in"
+    },
+    {
+      "offset": 51,
+      "name": "KeepRestartRecord",
+      "comment": "the record a round start uses"
+    },
+    {
+      "offset": 54,
+      "name": "RoundStart",
+      "comment": "a round start or a retry"
+    },
+    {
+      "offset": 60,
+      "name": "",
+      "comment": "clear the ground profile $6000-$62FF"
+    },
+    {
+      "offset": 72,
+      "name": "",
+      "comment": "strips drawn $C3FA = 0"
+    },
+    {
+      "offset": 76,
+      "name": "",
+      "comment": "scroll distance = 0"
+    },
+    {
+      "offset": 80,
+      "name": "",
+      "comment": "11 records from $C000: free ($8B), then the end of the list"
+    },
+    {
+      "offset": 88,
+      "name": "FreeRecordsLoop",
+      "comment": ""
+    },
+    {
+      "offset": 95,
+      "name": "",
+      "comment": "$C2F6, the new height worked on by the mover, = 2"
+    },
+    {
+      "offset": 101,
+      "name": "",
+      "comment": "scroll state: page offset 0, half 0"
+    },
+    {
+      "offset": 110,
+      "name": "",
+      "comment": "the course into RowList"
+    },
+    {
+      "offset": 113,
+      "name": "",
+      "comment": "pre-roll: 128 scroll steps, 32 strips; the last one calls RoundSetup"
+    },
+    {
+      "offset": 115,
+      "name": "PreRollLoop",
+      "comment": ""
+    },
+    {
+      "offset": 122,
+      "name": "PassLoop",
+      "comment": "one pass of the game"
+    },
+    {
+      "offset": 128,
+      "name": "",
+      "comment": "\" DEMO \" in the status window"
+    },
+    {
+      "offset": 135,
+      "name": "",
+      "comment": "the demo: player's speed 0"
+    },
+    {
+      "offset": 141,
+      "name": "ShotGauge",
+      "comment": "the shot gauge, not during the AUTO start"
+    },
+    {
+      "offset": 147,
+      "name": "",
+      "comment": "count the free ones of the 5 shot slots (bit 7)"
+    },
+    {
+      "offset": 156,
+      "name": "CountFreeShots",
+      "comment": ""
+    },
+    {
+      "offset": 161,
+      "name": "NextShotSlot",
+      "comment": ""
+    },
+    {
+      "offset": 164,
+      "name": "",
+      "comment": "the gauge text at $C333: five spaces, then a \"/\" per free slot"
+    },
+    {
+      "offset": 169,
+      "name": "BlankGauge",
+      "comment": ""
+    },
+    {
+      "offset": 178,
+      "name": "GaugeSlashes",
+      "comment": ""
+    },
+    {
+      "offset": 183,
+      "name": "PrintGauge",
+      "comment": ""
+    },
+    {
+      "offset": 189,
+      "name": "CheckLost",
+      "comment": "the player's record gone: the vehicle is lost"
+    },
+    {
+      "offset": 196,
+      "name": "",
+      "comment": "the loss beep"
+    },
+    {
+      "offset": 202,
+      "name": "",
+      "comment": "lives less one, carried to the next round start"
+    },
+    {
+      "offset": 209,
+      "name": "",
+      "comment": "lives left: the same round again"
+    },
+    {
+      "offset": 211,
+      "name": "",
+      "comment": "no lives: hide the last dot"
+    },
+    {
+      "offset": 216,
+      "name": "",
+      "comment": "a short pause"
+    },
+    {
+      "offset": 219,
+      "name": "",
+      "comment": "MAX from SCORE"
+    },
+    {
+      "offset": 222,
+      "name": "",
+      "comment": "round 1: GAME OVER"
+    },
+    {
+      "offset": 229,
+      "name": "LookBack",
+      "comment": "try the round before, down to round 2"
+    },
+    {
+      "offset": 233,
+      "name": "",
+      "comment": "the round number one less; RoundSetup counts it up again"
+    },
+    {
+      "offset": 241,
+      "name": "",
+      "comment": "its course record"
+    },
+    {
+      "offset": 256,
+      "name": "",
+      "comment": "its round table entry: lives at its start, then SCORE"
+    },
+    {
+      "offset": 262,
+      "name": "",
+      "comment": "SCORE back to that round's start"
+    },
+    {
+      "offset": 270,
+      "name": "",
+      "comment": "its lives less one"
+    },
+    {
+      "offset": 276,
+      "name": "",
+      "comment": "1-4 lives: restart that round"
+    },
+    {
+      "offset": 281,
+      "name": "SkipThatRound",
+      "comment": ""
+    },
+    {
+      "offset": 286,
+      "name": "RetryRound",
+      "comment": "MAX from SCORE"
+    },
+    {
+      "offset": 303,
+      "name": "",
+      "comment": "SCORE back to the round's start"
+    },
+    {
+      "offset": 318,
+      "name": "ReadInput",
+      "comment": "the device, or the AUTO start"
+    },
+    {
+      "offset": 321,
+      "name": "PassWork",
+      "comment": "objects moved and hit tested"
+    },
+    {
+      "offset": 324,
+      "name": "",
+      "comment": "objects to screen positions"
+    },
+    {
+      "offset": 327,
+      "name": "",
+      "comment": "save the strips under the objects, shadow and sprite lists"
+    },
+    {
+      "offset": 330,
+      "name": "",
+      "comment": "shadows and sprites into the playfield buffer (docs/06-rendering.md)"
+    },
+    {
+      "offset": 333,
+      "name": "",
+      "comment": "the playfield to the screen, then one scroll step"
+    },
+    {
+      "offset": 336,
+      "name": "",
+      "comment": "the requested sound effect"
+    },
+    {
+      "offset": 339,
+      "name": "",
+      "comment": "clear the sound requests"
+    },
+    {
+      "offset": 343,
+      "name": "",
+      "comment": "U ..."
+    },
+    {
+      "offset": 351,
+      "name": "",
+      "comment": "... and G: abort"
+    },
+    {
+      "offset": 359,
+      "name": "",
+      "comment": "\"ABORT!\""
+    },
+    {
+      "offset": 365,
+      "name": "",
+      "comment": "the demo: no GAME OVER box"
+    },
+    {
+      "offset": 371,
+      "name": "GameOver",
+      "comment": "the GAME OVER box and two beeps"
+    },
+    {
+      "offset": 383,
+      "name": "BackToMenu",
+      "comment": "one beep, back to the menu"
+    },
+    {
+      "offset": 392,
+      "name": "PauseKeys",
+      "comment": "P held, ENTER not: pause"
+    },
+    {
+      "offset": 410,
+      "name": "",
+      "comment": "pause beep"
+    },
+    {
+      "offset": 416,
+      "name": "",
+      "comment": "\"PAUSE!\""
+    },
+    {
+      "offset": 422,
+      "name": "PauseWait",
+      "comment": "wait for ENTER"
+    },
+    {
+      "offset": 436,
+      "name": "",
+      "comment": "clear the status window"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$CF32",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/mainloop.asm",
+    "label": "GameEntry"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

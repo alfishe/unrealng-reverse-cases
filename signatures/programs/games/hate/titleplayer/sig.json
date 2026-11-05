@@ -1,0 +1,1934 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/titleplayer",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: titleplayer",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "titleplayer"
+  ],
+  "summary": "Titleplayer.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1536,
+    "sha1": "6dec36ad620c046e31c431db16dee87c35144d80",
+    "masked_sha1": "bb7a40583084dcad9af91ca9a4347fa2569f4435"
+  },
+  "origin": "$8000",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 35,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 39,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 60,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 63,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 74,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 85,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 97,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 112,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 125,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 130,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 144,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 156,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 159,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 162,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 168,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 171,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 174,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 180,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 183,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 189,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 192,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 210,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 216,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 249,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 255,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 260,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 267,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 273,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 278,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 314,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 318,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 322,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 327,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 335,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 339,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 344,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 347,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 352,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 361,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 366,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 370,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 376,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 382,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 385,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 392,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 399,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 404,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 409,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 432,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 446,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 450,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 455,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 458,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 461,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 467,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 481,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 485,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 488,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 492,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 506,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 520,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 524,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 529,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 532,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 536,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 550,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 564,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 568,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 573,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 576,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 583,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 589,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 592,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 597,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 600,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 603,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 606,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 610,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 615,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 619,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 623,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 627,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 631,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 676,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 682,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 687,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 711,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 752,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 758,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 765,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 768,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 774,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 780,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 785,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 809,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 830,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 844,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 857,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 860,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 868,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFF9"
+    },
+    {
+      "offset": 883,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 893,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 914,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 920,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 938,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 942,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 960,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 964,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 988,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 992,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1020,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1022,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1024,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1026,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1028,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1030,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1032,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1034,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1036,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1038,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1040,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1042,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1044,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1046,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1048,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1050,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1052,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1054,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1056,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1085,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "TitlePlayer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title music player: relocating entry"
+    },
+    {
+      "offset": 37,
+      "name": "TitlePlayerSwapBack",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title music player: swap the body back"
+    },
+    {
+      "offset": 58,
+      "name": "TitleSetup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player set-up: hook IM 2, reset the voices, start the tune"
+    },
+    {
+      "offset": 127,
+      "name": "NoteTimeCheck",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: is the current note over?"
+    },
+    {
+      "offset": 132,
+      "name": "PatternStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: next note, reload the note length"
+    },
+    {
+      "offset": 136,
+      "name": "PatternCommand",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: dispatch one pattern command"
+    },
+    {
+      "offset": 152,
+      "name": "CmdWidthA",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 1: voice A's starting pulse width"
+    },
+    {
+      "offset": 164,
+      "name": "CmdWidthB",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 2: voice B's starting pulse width"
+    },
+    {
+      "offset": 176,
+      "name": "CmdEnvelopeA",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 3: envelope step time of voice A"
+    },
+    {
+      "offset": 185,
+      "name": "CmdEnvelopeB",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 4: envelope step time of voice B"
+    },
+    {
+      "offset": 206,
+      "name": "CmdModeBHold",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 7: voice B envelope mode 1 (hold)"
+    },
+    {
+      "offset": 212,
+      "name": "CmdModeBDecay",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 8: voice B envelope mode 0 (decay)"
+    },
+    {
+      "offset": 245,
+      "name": "CmdNoteLength",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 17: set the note length"
+    },
+    {
+      "offset": 257,
+      "name": "CmdDrums",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 16: change the drum pattern from a pattern"
+    },
+    {
+      "offset": 265,
+      "name": "CmdPatternEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 9: end of pattern"
+    },
+    {
+      "offset": 280,
+      "name": "SongStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: interpret the song"
+    },
+    {
+      "offset": 290,
+      "name": "SongCallCheck",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: song byte $FE?"
+    },
+    {
+      "offset": 305,
+      "name": "SongJump",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: song bytes $FD, $FC, $FB and patterns"
+    },
+    {
+      "offset": 342,
+      "name": "PatternEnter",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: enter a pattern"
+    },
+    {
+      "offset": 346,
+      "name": "SongDrums",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title song byte $FB: start a drum pattern"
+    },
+    {
+      "offset": 350,
+      "name": "DrumStart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: start the drum pattern at the address after HL"
+    },
+    {
+      "offset": 373,
+      "name": "CmdHold",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 0: hold the notes one more note length"
+    },
+    {
+      "offset": 378,
+      "name": "CmdLongNote",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 18: hold the notes n note lengths"
+    },
+    {
+      "offset": 411,
+      "name": "CmdNoteAB",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 10: a note on both voices"
+    },
+    {
+      "offset": 417,
+      "name": "CmdNoteABVoiceB",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 10: voice B mode and the periods"
+    },
+    {
+      "offset": 494,
+      "name": "CmdNoteA",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 11: a note on voice A only"
+    },
+    {
+      "offset": 500,
+      "name": "CmdNoteAPeriod",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 11: voice A's period"
+    },
+    {
+      "offset": 538,
+      "name": "CmdNoteB",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title command 12: a note on voice B only"
+    },
+    {
+      "offset": 579,
+      "name": "DrumTick",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: drum timer, then the voices"
+    },
+    {
+      "offset": 633,
+      "name": "VoiceAEnvelope",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: voice A's envelope tick"
+    },
+    {
+      "offset": 675,
+      "name": "VoiceADecay",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: voice A's decay step"
+    },
+    {
+      "offset": 705,
+      "name": "VoicesPlay",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: the two voices"
+    },
+    {
+      "offset": 803,
+      "name": "VoiceBDelay",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: balance the envelope branch"
+    },
+    {
+      "offset": 805,
+      "name": "VoiceBDelayLoop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: delay loop"
+    },
+    {
+      "offset": 807,
+      "name": "VoiceBStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: voice B's period step"
+    },
+    {
+      "offset": 832,
+      "name": "TitleInterrupt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title player: the IM 2 handler, once a frame"
+    },
+    {
+      "offset": 871,
+      "name": "DrumClick",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title drum 2: a click"
+    },
+    {
+      "offset": 895,
+      "name": "DrumNoise",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title drum 3: noise from the ROM"
+    },
+    {
+      "offset": 922,
+      "name": "DrumRise",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title drum 4: a rising tone, half-period 50 down to 1"
+    },
+    {
+      "offset": 944,
+      "name": "DrumFall",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title drum 6: a falling tone, period 180 up in steps of 4"
+    },
+    {
+      "offset": 966,
+      "name": "DrumSweep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Title drum 5: a rising tone, period 200 down to 124"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 1,
+      "name": "",
+      "comment": "the tune number: an operand written by the start-up ($9F16)"
+    },
+    {
+      "offset": 4,
+      "name": "",
+      "comment": "the return address: points after our CALL"
+    },
+    {
+      "offset": 6,
+      "name": "",
+      "comment": "DE = the CALL's operand, the address this copy was called at"
+    },
+    {
+      "offset": 10,
+      "name": "",
+      "comment": "the player's body follows $3A bytes after the entry"
+    },
+    {
+      "offset": 15,
+      "name": "",
+      "comment": "length of the body"
+    },
+    {
+      "offset": 21,
+      "name": "SwapInLoop",
+      "comment": "exchange (DE) and (HL), byte by byte"
+    },
+    {
+      "offset": 34,
+      "name": "",
+      "comment": "play; returns here on the tune's end or a key"
+    },
+    {
+      "offset": 44,
+      "name": "SwapBackLoop",
+      "comment": "exchange the bytes again"
+    },
+    {
+      "offset": 58,
+      "name": "",
+      "comment": "saved for the exits: the operand of LD SP,nn at $8363"
+    },
+    {
+      "offset": 62,
+      "name": "",
+      "comment": "the player's own stack, $83E2-$83F6"
+    },
+    {
+      "offset": 65,
+      "name": "",
+      "comment": "I = the high byte of the vector table"
+    },
+    {
+      "offset": 70,
+      "name": "",
+      "comment": "D = E = the table byte: the vector address is $FDFD"
+    },
+    {
+      "offset": 73,
+      "name": "",
+      "comment": "the vector address, used again by the exit $8356"
+    },
+    {
+      "offset": 82,
+      "name": "",
+      "comment": "keep the 3 bytes found at the vector"
+    },
+    {
+      "offset": 84,
+      "name": "",
+      "comment": "JP $8340, written backwards over the vector"
+    },
+    {
+      "offset": 94,
+      "name": "",
+      "comment": "nine patches"
+    },
+    {
+      "offset": 99,
+      "name": "PatchLoop",
+      "comment": "(DE) = the patch byte"
+    },
+    {
+      "offset": 109,
+      "name": "",
+      "comment": "wait for the first interrupt: start on a frame"
+    },
+    {
+      "offset": 111,
+      "name": "",
+      "comment": "HL = the song of tune C"
+    },
+    {
+      "offset": 124,
+      "name": "",
+      "comment": "C = 0: no note sounding yet"
+    },
+    {
+      "offset": 127,
+      "name": "",
+      "comment": "C: frames left of the note"
+    },
+    {
+      "offset": 132,
+      "name": "",
+      "comment": "the note length, an operand written by command 17 ($80F8)"
+    },
+    {
+      "offset": 135,
+      "name": "",
+      "comment": "HL = the pattern position, kept in DE' between notes"
+    },
+    {
+      "offset": 142,
+      "name": "",
+      "comment": "the handler pops the position"
+    },
+    {
+      "offset": 143,
+      "name": "",
+      "comment": "the command table"
+    },
+    {
+      "offset": 151,
+      "name": "",
+      "comment": "to the command's handler"
+    },
+    {
+      "offset": 155,
+      "name": "",
+      "comment": "voice A, command 10's set-up"
+    },
+    {
+      "offset": 158,
+      "name": "",
+      "comment": "voice A, command 11's set-up"
+    },
+    {
+      "offset": 167,
+      "name": "",
+      "comment": "voice B, command 10's set-up"
+    },
+    {
+      "offset": 170,
+      "name": "",
+      "comment": "voice B, command 12's set-up"
+    },
+    {
+      "offset": 179,
+      "name": "",
+      "comment": "read by $81E7 and $8213 into H"
+    },
+    {
+      "offset": 188,
+      "name": "",
+      "comment": "read by $81CC and $823F into L"
+    },
+    {
+      "offset": 194,
+      "name": "CmdModeA",
+      "comment": "Title commands 5 and 6: envelope mode of voice A (not run)"
+    },
+    {
+      "offset": 218,
+      "name": "CmdSilence",
+      "comment": "Title commands 13-15: silence the voices (not run)"
+    },
+    {
+      "offset": 248,
+      "name": "",
+      "comment": "the reload at $8084"
+    },
+    {
+      "offset": 266,
+      "name": "",
+      "comment": "the pattern's start, an operand written by $8152"
+    },
+    {
+      "offset": 269,
+      "name": "",
+      "comment": "repeats left, an operand written by $8110 and $8146"
+    },
+    {
+      "offset": 275,
+      "name": "",
+      "comment": "again: restart the pattern"
+    },
+    {
+      "offset": 277,
+      "name": "",
+      "comment": "the song position, an operand written by $814E"
+    },
+    {
+      "offset": 282,
+      "name": "",
+      "comment": "not $FF"
+    },
+    {
+      "offset": 284,
+      "name": "SongReturn",
+      "comment": "Title song byte $FF: return (not run)"
+    },
+    {
+      "offset": 291,
+      "name": "",
+      "comment": "not $FE"
+    },
+    {
+      "offset": 293,
+      "name": "SongCall",
+      "comment": "Title song byte $FE: call a sub-song (not run)"
+    },
+    {
+      "offset": 316,
+      "name": "SongEndOrDrums",
+      "comment": "$FC, $FB or a pattern"
+    },
+    {
+      "offset": 317,
+      "name": "",
+      "comment": "$FC: the end of the tune"
+    },
+    {
+      "offset": 321,
+      "name": "",
+      "comment": "$FB: drums"
+    },
+    {
+      "offset": 324,
+      "name": "",
+      "comment": "n - 1 more repeats after this one"
+    },
+    {
+      "offset": 326,
+      "name": "",
+      "comment": "repeats, the operand of LD A,n at $810D"
+    },
+    {
+      "offset": 334,
+      "name": "",
+      "comment": "the song position, the operand at $8115"
+    },
+    {
+      "offset": 338,
+      "name": "",
+      "comment": "the pattern's start, the operand at $810A"
+    },
+    {
+      "offset": 351,
+      "name": "",
+      "comment": "drum timer = 0: the first step at once"
+    },
+    {
+      "offset": 360,
+      "name": "",
+      "comment": "the speed: frames a step"
+    },
+    {
+      "offset": 364,
+      "name": "",
+      "comment": "the loop point, used by drum byte 1"
+    },
+    {
+      "offset": 368,
+      "name": "",
+      "comment": "the position"
+    },
+    {
+      "offset": 378,
+      "name": "",
+      "comment": "the counter, an operand: 0 = not counting"
+    },
+    {
+      "offset": 387,
+      "name": "",
+      "comment": "one note length done"
+    },
+    {
+      "offset": 391,
+      "name": "",
+      "comment": "more to go: keep the notes"
+    },
+    {
+      "offset": 401,
+      "name": "LongNoteStart",
+      "comment": "the argument n: the counter"
+    },
+    {
+      "offset": 403,
+      "name": "",
+      "comment": "start counting"
+    },
+    {
+      "offset": 413,
+      "name": "",
+      "comment": "voice A in mode 0: leave it"
+    },
+    {
+      "offset": 415,
+      "name": "NoteABModeA",
+      "comment": "Title command 10: voice A mode 3 (not run)"
+    },
+    {
+      "offset": 421,
+      "name": "",
+      "comment": "voice B starts in mode 3"
+    },
+    {
+      "offset": 423,
+      "name": "NoteABPeriods",
+      "comment": "the two periods"
+    },
+    {
+      "offset": 431,
+      "name": "",
+      "comment": "voice B's period reload"
+    },
+    {
+      "offset": 442,
+      "name": "",
+      "comment": "voice B's starting width, an operand written by command 2"
+    },
+    {
+      "offset": 445,
+      "name": "",
+      "comment": "voice B's pre-delay: period / 8 + $18 - width"
+    },
+    {
+      "offset": 449,
+      "name": "",
+      "comment": "voice B's pulse width"
+    },
+    {
+      "offset": 454,
+      "name": "",
+      "comment": "voice B on"
+    },
+    {
+      "offset": 457,
+      "name": "",
+      "comment": "voice A on"
+    },
+    {
+      "offset": 460,
+      "name": "",
+      "comment": "L = voice B's envelope time"
+    },
+    {
+      "offset": 466,
+      "name": "",
+      "comment": "voice A's period reload"
+    },
+    {
+      "offset": 477,
+      "name": "",
+      "comment": "voice A's starting width, an operand written by command 1"
+    },
+    {
+      "offset": 480,
+      "name": "",
+      "comment": "voice A's pre-delay"
+    },
+    {
+      "offset": 484,
+      "name": "",
+      "comment": "voice A's pulse width"
+    },
+    {
+      "offset": 487,
+      "name": "",
+      "comment": "H = voice A's envelope time"
+    },
+    {
+      "offset": 496,
+      "name": "",
+      "comment": "mode 0: leave it"
+    },
+    {
+      "offset": 498,
+      "name": "NoteAModeA",
+      "comment": "Title command 11: voice A mode 3 (not run)"
+    },
+    {
+      "offset": 505,
+      "name": "",
+      "comment": "voice A's period reload"
+    },
+    {
+      "offset": 516,
+      "name": "",
+      "comment": "voice A's starting width, an operand written by command 1"
+    },
+    {
+      "offset": 519,
+      "name": "",
+      "comment": "voice A's pre-delay"
+    },
+    {
+      "offset": 523,
+      "name": "",
+      "comment": "voice A's pulse width"
+    },
+    {
+      "offset": 528,
+      "name": "",
+      "comment": "voice A on"
+    },
+    {
+      "offset": 542,
+      "name": "",
+      "comment": "voice B starts in mode 3"
+    },
+    {
+      "offset": 544,
+      "name": "NoteBPeriod",
+      "comment": "the period"
+    },
+    {
+      "offset": 549,
+      "name": "",
+      "comment": "voice B's period reload"
+    },
+    {
+      "offset": 560,
+      "name": "",
+      "comment": "voice B's starting width, an operand written by command 2"
+    },
+    {
+      "offset": 563,
+      "name": "",
+      "comment": "voice B's pre-delay"
+    },
+    {
+      "offset": 567,
+      "name": "",
+      "comment": "voice B's pulse width"
+    },
+    {
+      "offset": 572,
+      "name": "",
+      "comment": "voice B on"
+    },
+    {
+      "offset": 579,
+      "name": "",
+      "comment": "the drum timer, an operand the IM 2 handler decrements"
+    },
+    {
+      "offset": 586,
+      "name": "",
+      "comment": "the speed, an operand written by $8168"
+    },
+    {
+      "offset": 591,
+      "name": "",
+      "comment": "the drum position, an operand written by $8170 and $8261"
+    },
+    {
+      "offset": 594,
+      "name": "DrumByte",
+      "comment": "the next drum byte"
+    },
+    {
+      "offset": 596,
+      "name": "",
+      "comment": "not 1: a sound or a rest"
+    },
+    {
+      "offset": 599,
+      "name": "",
+      "comment": "the loop point, an operand written by $816C"
+    },
+    {
+      "offset": 608,
+      "name": "DrumSound",
+      "comment": "play byte 2-6; 0 falls through to the voices"
+    },
+    {
+      "offset": 635,
+      "name": "",
+      "comment": "not yet: play the voices"
+    },
+    {
+      "offset": 637,
+      "name": "",
+      "comment": "an operand written by command 3"
+    },
+    {
+      "offset": 642,
+      "name": "",
+      "comment": "mode 0: decay"
+    },
+    {
+      "offset": 644,
+      "name": "VoiceAModes",
+      "comment": "Title player: voice A envelope modes 1-3 (not run)"
+    },
+    {
+      "offset": 675,
+      "name": "",
+      "comment": "voice A's pulse width"
+    },
+    {
+      "offset": 681,
+      "name": "",
+      "comment": "voice A's pre-delay"
+    },
+    {
+      "offset": 689,
+      "name": "VoiceAOff",
+      "comment": "Title player: voice A's pulse width ran out (not run)"
+    },
+    {
+      "offset": 705,
+      "name": "",
+      "comment": "balance the time of the envelope branch"
+    },
+    {
+      "offset": 707,
+      "name": "BalanceDelayLoop",
+      "comment": ""
+    },
+    {
+      "offset": 709,
+      "name": "VoiceAStep",
+      "comment": "voice A's period counter"
+    },
+    {
+      "offset": 713,
+      "name": "",
+      "comment": "voice A's period, an operand written by the note commands"
+    },
+    {
+      "offset": 715,
+      "name": "",
+      "comment": "voice A's pre-delay, an operand"
+    },
+    {
+      "offset": 717,
+      "name": "VoiceAPreDelay",
+      "comment": ""
+    },
+    {
+      "offset": 719,
+      "name": "",
+      "comment": "voice A's OUT value: $18 on, 0 silenced"
+    },
+    {
+      "offset": 721,
+      "name": "",
+      "comment": "beeper on, border black"
+    },
+    {
+      "offset": 723,
+      "name": "",
+      "comment": "voice A's pulse width, an operand"
+    },
+    {
+      "offset": 725,
+      "name": "VoiceAPulse",
+      "comment": ""
+    },
+    {
+      "offset": 729,
+      "name": "",
+      "comment": "beeper off"
+    },
+    {
+      "offset": 731,
+      "name": "VoiceBEnvelope",
+      "comment": "L: voice B's envelope frames"
+    },
+    {
+      "offset": 735,
+      "name": "",
+      "comment": "an operand written by command 4"
+    },
+    {
+      "offset": 738,
+      "name": "",
+      "comment": "C: voice B's envelope mode"
+    },
+    {
+      "offset": 740,
+      "name": "",
+      "comment": "mode 0: decay"
+    },
+    {
+      "offset": 743,
+      "name": "",
+      "comment": "mode 1: hold"
+    },
+    {
+      "offset": 746,
+      "name": "",
+      "comment": "mode 2"
+    },
+    {
+      "offset": 748,
+      "name": "",
+      "comment": "mode 3: the voice off for one tick, then mode 2"
+    },
+    {
+      "offset": 760,
+      "name": "VoiceBModeOn",
+      "comment": "mode 2: the voice on, the period restarted, then mode 3"
+    },
+    {
+      "offset": 773,
+      "name": "VoiceBDecay",
+      "comment": "voice B's pulse width"
+    },
+    {
+      "offset": 779,
+      "name": "",
+      "comment": "voice B's pre-delay"
+    },
+    {
+      "offset": 787,
+      "name": "VoiceBOff",
+      "comment": "Title player: voice B's pulse width ran out (not run)"
+    },
+    {
+      "offset": 811,
+      "name": "",
+      "comment": "voice B's period, an operand written by the note commands"
+    },
+    {
+      "offset": 813,
+      "name": "",
+      "comment": "voice B's pre-delay, an operand"
+    },
+    {
+      "offset": 815,
+      "name": "VoiceBPreDelay",
+      "comment": ""
+    },
+    {
+      "offset": 817,
+      "name": "",
+      "comment": "voice B's OUT value: $18 on, 0 silenced"
+    },
+    {
+      "offset": 819,
+      "name": "",
+      "comment": "beeper on"
+    },
+    {
+      "offset": 821,
+      "name": "",
+      "comment": "voice B's pulse width, an operand"
+    },
+    {
+      "offset": 823,
+      "name": "VoiceBPulse",
+      "comment": ""
+    },
+    {
+      "offset": 827,
+      "name": "",
+      "comment": "beeper off"
+    },
+    {
+      "offset": 835,
+      "name": "",
+      "comment": "A = 0: all keyboard rows"
+    },
+    {
+      "offset": 840,
+      "name": "",
+      "comment": "a key: leave the music"
+    },
+    {
+      "offset": 843,
+      "name": "",
+      "comment": "the drum timer"
+    },
+    {
+      "offset": 848,
+      "name": "",
+      "comment": "the note length"
+    },
+    {
+      "offset": 849,
+      "name": "",
+      "comment": "voice A's envelope"
+    },
+    {
+      "offset": 850,
+      "name": "",
+      "comment": "voice B's envelope"
+    },
+    {
+      "offset": 854,
+      "name": "TitleExit",
+      "comment": "the tune ends ($FC) or a key: unhook and unwind"
+    },
+    {
+      "offset": 855,
+      "name": "",
+      "comment": "the vector address saved at $8049"
+    },
+    {
+      "offset": 859,
+      "name": "",
+      "comment": "put back the 3 bytes the set-up replaced"
+    },
+    {
+      "offset": 867,
+      "name": "",
+      "comment": "SP as $803A saved it: the operand $8364"
+    },
+    {
+      "offset": 870,
+      "name": "",
+      "comment": "back into $8025, at any depth of the player"
+    },
+    {
+      "offset": 874,
+      "name": "",
+      "comment": "beeper on"
+    },
+    {
+      "offset": 879,
+      "name": "ClickHoldLoop",
+      "comment": ""
+    },
+    {
+      "offset": 885,
+      "name": "",
+      "comment": "A = 0 here: beeper off"
+    },
+    {
+      "offset": 889,
+      "name": "ClickPauseLoop",
+      "comment": ""
+    },
+    {
+      "offset": 898,
+      "name": "",
+      "comment": "the ROM as a noise table"
+    },
+    {
+      "offset": 901,
+      "name": "NoisePulseLoop",
+      "comment": ""
+    },
+    {
+      "offset": 905,
+      "name": "",
+      "comment": "a level from one byte"
+    },
+    {
+      "offset": 907,
+      "name": "",
+      "comment": "a length from the next"
+    },
+    {
+      "offset": 912,
+      "name": "NoiseLengthLoop",
+      "comment": ""
+    },
+    {
+      "offset": 926,
+      "name": "RiseStepLoop",
+      "comment": ""
+    },
+    {
+      "offset": 927,
+      "name": "RiseFirstWait",
+      "comment": ""
+    },
+    {
+      "offset": 930,
+      "name": "RiseSecondWait",
+      "comment": ""
+    },
+    {
+      "offset": 934,
+      "name": "",
+      "comment": "toggle the beeper"
+    },
+    {
+      "offset": 948,
+      "name": "FallStepLoop",
+      "comment": ""
+    },
+    {
+      "offset": 949,
+      "name": "FallWait",
+      "comment": ""
+    },
+    {
+      "offset": 953,
+      "name": "",
+      "comment": "toggle the beeper"
+    },
+    {
+      "offset": 971,
+      "name": "SweepStepLoop",
+      "comment": ""
+    },
+    {
+      "offset": 973,
+      "name": "SweepWait",
+      "comment": ""
+    },
+    {
+      "offset": 977,
+      "name": "",
+      "comment": "toggle the beeper"
+    },
+    {
+      "offset": 994,
+      "name": "TitleStack",
+      "comment": "Title player's stack"
+    },
+    {
+      "offset": 1015,
+      "name": "TitleVectorAddr",
+      "comment": "The IM 2 vector address"
+    },
+    {
+      "offset": 1017,
+      "name": "TitleVectorSave",
+      "comment": "The 3 bytes the title replaced at the vector"
+    },
+    {
+      "offset": 1020,
+      "name": "TitleCommands",
+      "comment": "Pattern command handlers 0-18"
+    },
+    {
+      "offset": 1058,
+      "name": "TitlePatches",
+      "comment": "Patch list: 9 x (address, byte)"
+    },
+    {
+      "offset": 1085,
+      "name": "TuneTable",
+      "comment": "Tune table"
+    },
+    {
+      "offset": 1087,
+      "name": "TuneSong",
+      "comment": "Tune 0: the song"
+    },
+    {
+      "offset": 1127,
+      "name": "PatternInit",
+      "comment": "Tune 0: set-up pattern"
+    },
+    {
+      "offset": 1139,
+      "name": "PatternA",
+      "comment": "Tune 0: pattern A"
+    },
+    {
+      "offset": 1192,
+      "name": "PatternB",
+      "comment": "Tune 0: pattern B"
+    },
+    {
+      "offset": 1222,
+      "name": "PatternC",
+      "comment": "Tune 0: pattern C"
+    },
+    {
+      "offset": 1339,
+      "name": "PatternD",
+      "comment": "Tune 0: pattern D"
+    },
+    {
+      "offset": 1442,
+      "name": "DrumPatternA",
+      "comment": "Drum pattern: clicks and noise"
+    },
+    {
+      "offset": 1460,
+      "name": "DrumPatternB",
+      "comment": "Drum pattern: the three tones"
+    },
+    {
+      "offset": 1478,
+      "name": "TitleTail",
+      "comment": "Unused, zero"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$8000",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/titleplayer.asm",
+    "label": "TitlePlayer"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

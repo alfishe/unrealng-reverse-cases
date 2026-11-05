@@ -1,0 +1,1574 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/mover",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: mover",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "mover"
+  ],
+  "summary": "Mover.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1328,
+    "sha1": "00c32bb83d37d090c6cd68d305c9f2ee27f23ae2",
+    "masked_sha1": "0f53788b0528164c54483a40b507e8c64871782e"
+  },
+  "origin": "$E15C",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassCounter"
+    },
+    {
+      "offset": 5,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassCounter"
+    },
+    {
+      "offset": 9,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 26,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollDistance"
+    },
+    {
+      "offset": 41,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 54,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 61,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 91,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 98,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyShotTemplate"
+    },
+    {
+      "offset": 101,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyShotRecords"
+    },
+    {
+      "offset": 116,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaunchTemplates"
+    },
+    {
+      "offset": 131,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaunchedRecords"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 208,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 231,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 254,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2C6"
+    },
+    {
+      "offset": 257,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaunchedRecords"
+    },
+    {
+      "offset": 260,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 272,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Followers"
+    },
+    {
+      "offset": 279,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Followers"
+    },
+    {
+      "offset": 282,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ConvoyLinkEnd"
+    },
+    {
+      "offset": 293,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ConvoyLinkEnd"
+    },
+    {
+      "offset": 308,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FollowerOffset"
+    },
+    {
+      "offset": 315,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FollowerOffset"
+    },
+    {
+      "offset": 344,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Directions"
+    },
+    {
+      "offset": 380,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverAlong"
+    },
+    {
+      "offset": 386,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverAcross"
+    },
+    {
+      "offset": 394,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 401,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverAcross"
+    },
+    {
+      "offset": 425,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassCounter"
+    },
+    {
+      "offset": 432,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C003"
+    },
+    {
+      "offset": 436,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverAcross"
+    },
+    {
+      "offset": 464,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassCounter"
+    },
+    {
+      "offset": 483,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WeavePattern"
+    },
+    {
+      "offset": 497,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassCounter"
+    },
+    {
+      "offset": 504,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 533,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassCounter"
+    },
+    {
+      "offset": 540,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C004"
+    },
+    {
+      "offset": 578,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileArc"
+    },
+    {
+      "offset": 585,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 609,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 628,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HeightWave"
+    },
+    {
+      "offset": 647,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverHeight"
+    },
+    {
+      "offset": 650,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5FF6"
+    },
+    {
+      "offset": 727,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverHeight"
+    },
+    {
+      "offset": 734,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverHeight"
+    },
+    {
+      "offset": 750,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 757,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 775,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverAcross"
+    },
+    {
+      "offset": 780,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 785,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 801,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 810,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverAlong"
+    },
+    {
+      "offset": 825,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverAcross"
+    },
+    {
+      "offset": 850,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 855,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 862,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 886,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 899,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 902,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Followers"
+    },
+    {
+      "offset": 916,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 921,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverAcross"
+    },
+    {
+      "offset": 948,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverAcross"
+    },
+    {
+      "offset": 956,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 982,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverAlong"
+    },
+    {
+      "offset": 988,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HitWindowAlong"
+    },
+    {
+      "offset": 993,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2EE"
+    },
+    {
+      "offset": 998,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2F0"
+    },
+    {
+      "offset": 1001,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverAcross"
+    },
+    {
+      "offset": 1005,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HitWindowAcross"
+    },
+    {
+      "offset": 1010,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2F4"
+    },
+    {
+      "offset": 1015,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2F5"
+    },
+    {
+      "offset": 1019,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1022,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1027,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1030,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1035,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1038,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1041,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 1047,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1064,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1071,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1076,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1081,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1096,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2F0"
+    },
+    {
+      "offset": 1110,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1116,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1119,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2F5"
+    },
+    {
+      "offset": 1128,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1131,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HitDispatch"
+    },
+    {
+      "offset": 1135,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2F0"
+    },
+    {
+      "offset": 1149,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1155,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1158,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2F5"
+    },
+    {
+      "offset": 1167,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1178,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1181,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HitDispatch"
+    },
+    {
+      "offset": 1185,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2EE"
+    },
+    {
+      "offset": 1199,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1205,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1208,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2F4"
+    },
+    {
+      "offset": 1217,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1228,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1231,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HitDispatch"
+    },
+    {
+      "offset": 1235,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HitWindowAlong"
+    },
+    {
+      "offset": 1249,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1255,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1258,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C2F4"
+    },
+    {
+      "offset": 1267,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1278,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1281,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HitDispatch"
+    },
+    {
+      "offset": 1284,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverHeight"
+    },
+    {
+      "offset": 1290,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverAlong"
+    },
+    {
+      "offset": 1299,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverAcross"
+    },
+    {
+      "offset": 1315,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1320,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "MoveObjects",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Objects: move, steer, height, walls and hits, once a pass"
+    },
+    {
+      "offset": 18,
+      "name": "MoveRecord",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Move one record"
+    },
+    {
+      "offset": 1043,
+      "name": "PairScan",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Hit test: the moving record against every record"
+    },
+    {
+      "offset": 1058,
+      "name": "PairScanNext",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Drop the other record's address and go on"
+    },
+    {
+      "offset": 1059,
+      "name": "PairScanStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The next record of the scan"
+    },
+    {
+      "offset": 1283,
+      "name": "StoreMove",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Write the new position and height into the record"
+    },
+    {
+      "offset": 1304,
+      "name": "NextMover",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The next live record to move"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "the pass counter: steering every 4 passes, height every 2"
+    },
+    {
+      "offset": 11,
+      "name": "",
+      "comment": "the player gone: start with the next record"
+    },
+    {
+      "offset": 24,
+      "name": "",
+      "comment": "minus the distance scrolled"
+    },
+    {
+      "offset": 32,
+      "name": "",
+      "comment": "behind the scroll: gone"
+    },
+    {
+      "offset": 43,
+      "name": "AheadOfScroll",
+      "comment": "$160 (352) or more ahead: not yet"
+    },
+    {
+      "offset": 56,
+      "name": "WithinRange",
+      "comment": "dying?"
+    },
+    {
+      "offset": 63,
+      "name": "",
+      "comment": "behaviour bit 3: fires"
+    },
+    {
+      "offset": 69,
+      "name": "",
+      "comment": "less than 190 ahead: no"
+    },
+    {
+      "offset": 79,
+      "name": "",
+      "comment": "the fire timer: every 8th pass"
+    },
+    {
+      "offset": 90,
+      "name": "",
+      "comment": "and on a random bit"
+    },
+    {
+      "offset": 97,
+      "name": "",
+      "comment": "an enemy shot: template $C2E1, slots from $C210"
+    },
+    {
+      "offset": 108,
+      "name": "",
+      "comment": "pads and dishes launch instead (no dish has behaviour bit 3)"
+    },
+    {
+      "offset": 112,
+      "name": "",
+      "comment": "the highest of behaviour bits 7-4 picks the template"
+    },
+    {
+      "offset": 123,
+      "name": "HighestBitLoop",
+      "comment": ""
+    },
+    {
+      "offset": 129,
+      "name": "TemplateChosen",
+      "comment": ""
+    },
+    {
+      "offset": 130,
+      "name": "",
+      "comment": "launched objects: $C1B0-$C200"
+    },
+    {
+      "offset": 133,
+      "name": "LaunchObject",
+      "comment": "DE = template, HL = the first slot: 6 slots"
+    },
+    {
+      "offset": 138,
+      "name": "FreeSlotLoop",
+      "comment": "bit 7: a free slot"
+    },
+    {
+      "offset": 146,
+      "name": "",
+      "comment": "all taken: no launch"
+    },
+    {
+      "offset": 148,
+      "name": "FillSlot",
+      "comment": "9 bytes of template, 7 zero"
+    },
+    {
+      "offset": 158,
+      "name": "ZeroRecordTail",
+      "comment": ""
+    },
+    {
+      "offset": 162,
+      "name": "",
+      "comment": "the position of the firer"
+    },
+    {
+      "offset": 183,
+      "name": "CheckSpeed",
+      "comment": "the speed"
+    },
+    {
+      "offset": 190,
+      "name": "",
+      "comment": "no speed, no height behaviour ..."
+    },
+    {
+      "offset": 197,
+      "name": "",
+      "comment": "... and not the player: nothing more"
+    },
+    {
+      "offset": 210,
+      "name": "StandStill",
+      "comment": "no step along or across"
+    },
+    {
+      "offset": 217,
+      "name": "RecordDying",
+      "comment": "the explosion counter + 2"
+    },
+    {
+      "offset": 222,
+      "name": "",
+      "comment": "45: gone"
+    },
+    {
+      "offset": 233,
+      "name": "StoreExplosion",
+      "comment": ""
+    },
+    {
+      "offset": 236,
+      "name": "",
+      "comment": "at 34 and 40 a dome of type 2 throws out a jet"
+    },
+    {
+      "offset": 244,
+      "name": "DomeJet",
+      "comment": ""
+    },
+    {
+      "offset": 253,
+      "name": "",
+      "comment": "template $C2C6"
+    },
+    {
+      "offset": 262,
+      "name": "FollowerShield",
+      "comment": "the player hit with followers: the last one lost instead"
+    },
+    {
+      "offset": 271,
+      "name": "",
+      "comment": "the followers"
+    },
+    {
+      "offset": 281,
+      "name": "",
+      "comment": "the end of the follower list"
+    },
+    {
+      "offset": 299,
+      "name": "",
+      "comment": "that follower is hit ..."
+    },
+    {
+      "offset": 305,
+      "name": "",
+      "comment": "... its explosion starts at 32"
+    },
+    {
+      "offset": 317,
+      "name": "",
+      "comment": "the player is not hit after all"
+    },
+    {
+      "offset": 325,
+      "name": "",
+      "comment": "+8 = 2 x type again: its own sprite"
+    },
+    {
+      "offset": 331,
+      "name": "DyingSpeed",
+      "comment": "dying records go on moving at their speed"
+    },
+    {
+      "offset": 343,
+      "name": "RecordStep",
+      "comment": "the direction table $C340, 4 bytes a direction"
+    },
+    {
+      "offset": 353,
+      "name": "",
+      "comment": "DE = the step along"
+    },
+    {
+      "offset": 357,
+      "name": "",
+      "comment": "A = the step across"
+    },
+    {
+      "offset": 359,
+      "name": "",
+      "comment": "times the speed"
+    },
+    {
+      "offset": 368,
+      "name": "SpeedLoop",
+      "comment": ""
+    },
+    {
+      "offset": 372,
+      "name": "NewPosition",
+      "comment": ""
+    },
+    {
+      "offset": 379,
+      "name": "",
+      "comment": "the new position along"
+    },
+    {
+      "offset": 385,
+      "name": "",
+      "comment": "the new position across"
+    },
+    {
+      "offset": 388,
+      "name": "",
+      "comment": "behaviour bits 4-7: steering"
+    },
+    {
+      "offset": 396,
+      "name": "",
+      "comment": "bit 5: turn round at the edge"
+    },
+    {
+      "offset": 404,
+      "name": "",
+      "comment": "across 0 or $47 and up"
+    },
+    {
+      "offset": 420,
+      "name": "NotTurnAtEdge",
+      "comment": "bit 4: toward the player across, every 4 passes"
+    },
+    {
+      "offset": 431,
+      "name": "",
+      "comment": "the player's position across"
+    },
+    {
+      "offset": 441,
+      "name": "",
+      "comment": "from 3 below to 2 above the player: direction 4, straight"
+    },
+    {
+      "offset": 447,
+      "name": "",
+      "comment": "direction 5, across + 1"
+    },
+    {
+      "offset": 452,
+      "name": "",
+      "comment": "direction 3, across - 1"
+    },
+    {
+      "offset": 454,
+      "name": "SetChaseDirection",
+      "comment": ""
+    },
+    {
+      "offset": 459,
+      "name": "NotChase",
+      "comment": "bit 6: the weave $C3F0, every 4 passes"
+    },
+    {
+      "offset": 492,
+      "name": "NotWeave",
+      "comment": "bit 7: a random turn, every 4 passes"
+    },
+    {
+      "offset": 516,
+      "name": "StoreRandomTurn",
+      "comment": ""
+    },
+    {
+      "offset": 521,
+      "name": "HeightBehaviour",
+      "comment": "behaviour bits 0-2: the height"
+    },
+    {
+      "offset": 528,
+      "name": "",
+      "comment": "bit 0: follow the player's height, a step every other pass"
+    },
+    {
+      "offset": 554,
+      "name": "RiseOne",
+      "comment": ""
+    },
+    {
+      "offset": 555,
+      "name": "ClampHeight",
+      "comment": "at most 24"
+    },
+    {
+      "offset": 563,
+      "name": "NotFollowHeight",
+      "comment": "bit 2: the arc $C282"
+    },
+    {
+      "offset": 582,
+      "name": "",
+      "comment": "the arc's end (25 or more) ..."
+    },
+    {
+      "offset": 587,
+      "name": "",
+      "comment": "... a dying record stays at 2"
+    },
+    {
+      "offset": 604,
+      "name": "ArcEndGone",
+      "comment": "... otherwise it is gone"
+    },
+    {
+      "offset": 611,
+      "name": "NotArc",
+      "comment": "bit 1: the wave $C272, 16 steps"
+    },
+    {
+      "offset": 634,
+      "name": "NoHeightBehaviour",
+      "comment": "no height behaviour: the player keeps $C2F6, the others their height"
+    },
+    {
+      "offset": 643,
+      "name": "KeepHeight",
+      "comment": ""
+    },
+    {
+      "offset": 646,
+      "name": "StoreHeight",
+      "comment": "the new height"
+    },
+    {
+      "offset": 649,
+      "name": "TerrainHeight",
+      "comment": "the profile under the record"
+    },
+    {
+      "offset": 652,
+      "name": "",
+      "comment": "types 0-3: 6 profile bytes"
+    },
+    {
+      "offset": 663,
+      "name": "",
+      "comment": "types 4-10: 4"
+    },
+    {
+      "offset": 669,
+      "name": "",
+      "comment": "types 11-15: 2, one further on"
+    },
+    {
+      "offset": 672,
+      "name": "ProfileUnder",
+      "comment": ""
+    },
+    {
+      "offset": 683,
+      "name": "",
+      "comment": "ground bits 0-4"
+    },
+    {
+      "offset": 689,
+      "name": "",
+      "comment": "A' = the profile bytes ORed: the walls"
+    },
+    {
+      "offset": 690,
+      "name": "HighestGroundLoop",
+      "comment": "D = the highest ground"
+    },
+    {
+      "offset": 700,
+      "name": "NotHigher",
+      "comment": ""
+    },
+    {
+      "offset": 702,
+      "name": "",
+      "comment": "+ 2: the floor"
+    },
+    {
+      "offset": 707,
+      "name": "",
+      "comment": "not dying, a type below 10 ..."
+    },
+    {
+      "offset": 717,
+      "name": "",
+      "comment": "... and odd: on the ground"
+    },
+    {
+      "offset": 726,
+      "name": "FlyingFloor",
+      "comment": "flying: raised to the floor, never lowered"
+    },
+    {
+      "offset": 732,
+      "name": "SetFloorHeight",
+      "comment": ""
+    },
+    {
+      "offset": 736,
+      "name": "HeightBox",
+      "comment": "IYL = height - 7: the low edge of the height box"
+    },
+    {
+      "offset": 740,
+      "name": "",
+      "comment": "across limit $47 with no wall"
+    },
+    {
+      "offset": 747,
+      "name": "",
+      "comment": "pods and dying records: no walls"
+    },
+    {
+      "offset": 759,
+      "name": "",
+      "comment": "profile bit 7: a wall, limit $17"
+    },
+    {
+      "offset": 765,
+      "name": "WallLimit",
+      "comment": ""
+    },
+    {
+      "offset": 770,
+      "name": "",
+      "comment": "shots"
+    },
+    {
+      "offset": 778,
+      "name": "",
+      "comment": "inside the limit"
+    },
+    {
+      "offset": 787,
+      "name": "",
+      "comment": "behaviour bit 5: turn to direction 2"
+    },
+    {
+      "offset": 797,
+      "name": "WallOvershoot",
+      "comment": "within 6 of the wall: put just inside"
+    },
+    {
+      "offset": 803,
+      "name": "",
+      "comment": "further: no step along, 6 back across"
+    },
+    {
+      "offset": 820,
+      "name": "ClearAcrossBit0",
+      "comment": ""
+    },
+    {
+      "offset": 824,
+      "name": "ShotOnWall",
+      "comment": ""
+    },
+    {
+      "offset": 831,
+      "name": "",
+      "comment": "direction 0: a shot of the player"
+    },
+    {
+      "offset": 837,
+      "name": "ShotStopped",
+      "comment": "hit, stopped, explosion at 32"
+    },
+    {
+      "offset": 849,
+      "name": "",
+      "comment": "sound request bit 2 (docs/09-sound.md 9.6)"
+    },
+    {
+      "offset": 857,
+      "name": "ShotVanishes",
+      "comment": "other shots just vanish"
+    },
+    {
+      "offset": 864,
+      "name": "CheckWallBit6",
+      "comment": "profile bit 6: a wall, limit $27"
+    },
+    {
+      "offset": 871,
+      "name": "Barrier",
+      "comment": "profile bit 5 alone: the barrier (docs/10-gameplay-logic.md 10.4)"
+    },
+    {
+      "offset": 883,
+      "name": "",
+      "comment": "types 2-10: not moved this pass, no hit test"
+    },
+    {
+      "offset": 888,
+      "name": "",
+      "comment": "types 12-15: direction 0 (the player's shots) stops on it; others pass"
+    },
+    {
+      "offset": 896,
+      "name": "BarrierPlayer",
+      "comment": "the player: the AUTO countdown starts, with or without followers"
+    },
+    {
+      "offset": 901,
+      "name": "",
+      "comment": "followers: it passes"
+    },
+    {
+      "offset": 907,
+      "name": "",
+      "comment": "none: the player is hit"
+    },
+    {
+      "offset": 915,
+      "name": "",
+      "comment": "sound request bit 1"
+    },
+    {
+      "offset": 920,
+      "name": "AcrossClamp",
+      "comment": "across within 2 .. limit - 1"
+    },
+    {
+      "offset": 931,
+      "name": "JustInsideLimit",
+      "comment": ""
+    },
+    {
+      "offset": 935,
+      "name": "CheckLowEdge",
+      "comment": ""
+    },
+    {
+      "offset": 939,
+      "name": "ClampAcrossLow",
+      "comment": ""
+    },
+    {
+      "offset": 941,
+      "name": "KeepStepBit0",
+      "comment": "keep bit 0 of the step's across"
+    },
+    {
+      "offset": 947,
+      "name": "StoreAcross",
+      "comment": "the new position across"
+    },
+    {
+      "offset": 955,
+      "name": "",
+      "comment": "dying: no hit test"
+    },
+    {
+      "offset": 958,
+      "name": "",
+      "comment": "half the box: 7 for types 0-3"
+    },
+    {
+      "offset": 969,
+      "name": "",
+      "comment": "5 for types 4-10"
+    },
+    {
+      "offset": 977,
+      "name": "",
+      "comment": "3 for types 11 and up"
+    },
+    {
+      "offset": 981,
+      "name": "HitBoxes",
+      "comment": "the box starts, one for each class of the other record"
+    },
+    {
+      "offset": 987,
+      "name": "",
+      "comment": "along: position - half (others 11-13)"
+    },
+    {
+      "offset": 992,
+      "name": "",
+      "comment": "- 2 more (others 4-10)"
+    },
+    {
+      "offset": 997,
+      "name": "",
+      "comment": "- 2 more, 4 in all (others 0-3)"
+    },
+    {
+      "offset": 1004,
+      "name": "",
+      "comment": "across - half: written, not read by the scan"
+    },
+    {
+      "offset": 1009,
+      "name": "",
+      "comment": "across - half - 2 (others 4-13)"
+    },
+    {
+      "offset": 1014,
+      "name": "",
+      "comment": "across - half - 4 (others 0-3)"
+    },
+    {
+      "offset": 1017,
+      "name": "",
+      "comment": "the box widths into the CP operands below"
+    },
+    {
+      "offset": 1018,
+      "name": "",
+      "comment": "others 11-13: 2 x half + 1"
+    },
+    {
+      "offset": 1026,
+      "name": "",
+      "comment": "others 4-10: + 4"
+    },
+    {
+      "offset": 1034,
+      "name": "",
+      "comment": "others 0-3: + 8"
+    },
+    {
+      "offset": 1040,
+      "name": "",
+      "comment": "every record, from $C000"
+    },
+    {
+      "offset": 1044,
+      "name": "",
+      "comment": "the end of the list: done"
+    },
+    {
+      "offset": 1050,
+      "name": "",
+      "comment": "gone"
+    },
+    {
+      "offset": 1054,
+      "name": "",
+      "comment": "dying"
+    },
+    {
+      "offset": 1066,
+      "name": "PairByClass",
+      "comment": ""
+    },
+    {
+      "offset": 1080,
+      "name": "",
+      "comment": "11-13"
+    },
+    {
+      "offset": 1083,
+      "name": "",
+      "comment": "14: pads are never hit"
+    },
+    {
+      "offset": 1085,
+      "name": "",
+      "comment": "15: dishes, only the player"
+    },
+    {
+      "offset": 1094,
+      "name": "",
+      "comment": "along, a box 23 wide"
+    },
+    {
+      "offset": 1118,
+      "name": "",
+      "comment": "across, 23 wide; no height test"
+    },
+    {
+      "offset": 1130,
+      "name": "",
+      "comment": "a hit: the handler table"
+    },
+    {
+      "offset": 1133,
+      "name": "PairWithBig",
+      "comment": "the other is of types 0-3"
+    },
+    {
+      "offset": 1152,
+      "name": "",
+      "comment": "the width: self-modified, 2 x half + 9"
+    },
+    {
+      "offset": 1157,
+      "name": "",
+      "comment": "across"
+    },
+    {
+      "offset": 1164,
+      "name": "",
+      "comment": "self-modified like $E5DC"
+    },
+    {
+      "offset": 1170,
+      "name": "",
+      "comment": "the other's height"
+    },
+    {
+      "offset": 1173,
+      "name": "",
+      "comment": "within 7 either way"
+    },
+    {
+      "offset": 1183,
+      "name": "PairWithMid",
+      "comment": "the other is of types 4-10"
+    },
+    {
+      "offset": 1202,
+      "name": "",
+      "comment": "the width: self-modified, 2 x half + 5"
+    },
+    {
+      "offset": 1214,
+      "name": "",
+      "comment": "self-modified like $E60E"
+    },
+    {
+      "offset": 1233,
+      "name": "PairWithSmall",
+      "comment": "the other is of types 11-13"
+    },
+    {
+      "offset": 1252,
+      "name": "",
+      "comment": "the width: self-modified, 2 x half + 1"
+    },
+    {
+      "offset": 1257,
+      "name": "",
+      "comment": "across from $C2F4, not $C2F3"
+    },
+    {
+      "offset": 1264,
+      "name": "",
+      "comment": "self-modified like $E640"
+    },
+    {
+      "offset": 1323,
+      "name": "DownHeldCount",
+      "comment": "Passes down has been held, up to 6: the aircraft's climb step"
+    },
+    {
+      "offset": 1324,
+      "name": "UpHeldCount",
+      "comment": "Passes up has been held, up to 6"
+    },
+    {
+      "offset": 1325,
+      "name": "LeftHeldCount",
+      "comment": "Passes left has been held, up to 6"
+    },
+    {
+      "offset": 1326,
+      "name": "RightHeldCount",
+      "comment": "Passes right has been held, up to 6"
+    },
+    {
+      "offset": 1327,
+      "name": "AutoCountdown",
+      "comment": "The AUTO countdown: passes left, 0 when off"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$E15C",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/mover.asm",
+    "label": "MoveObjects"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

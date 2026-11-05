@@ -1,0 +1,357 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/objview",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: objview",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "objview"
+  ],
+  "summary": "Objview.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 310,
+    "sha1": "61e1a8cb707ab475c4ca2f07345854194fa4baa1",
+    "masked_sha1": "53a374f027def00e597231c007b02d9d74bf6110"
+  },
+  "origin": "$EFA5",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 5,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C99E"
+    },
+    {
+      "offset": 8,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StaticListEnd"
+    },
+    {
+      "offset": 14,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FF01"
+    },
+    {
+      "offset": 17,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DepthListEnd"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6501"
+    },
+    {
+      "offset": 28,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawListEnd"
+    },
+    {
+      "offset": 41,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 46,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 63,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollDistance"
+    },
+    {
+      "offset": 130,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollHalf"
+    },
+    {
+      "offset": 149,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StaticListEnd"
+    },
+    {
+      "offset": 160,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StaticListEnd"
+    },
+    {
+      "offset": 179,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteListArea"
+    },
+    {
+      "offset": 189,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 193,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DepthListEnd"
+    },
+    {
+      "offset": 210,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DepthListEnd"
+    },
+    {
+      "offset": 229,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteListArea"
+    },
+    {
+      "offset": 242,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 251,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 262,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 273,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 280,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawListEnd"
+    },
+    {
+      "offset": 295,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawListEnd"
+    },
+    {
+      "offset": 308,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "PlaceObjects",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Objects to screen places and depth lists"
+    },
+    {
+      "offset": 55,
+      "name": "PlaceObject",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One record: its screen place, into a list"
+    },
+    {
+      "offset": 228,
+      "name": "SortDrawList",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The depth list into the draw list at $6500"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 4,
+      "name": "",
+      "comment": "the static-object list, empty"
+    },
+    {
+      "offset": 13,
+      "name": "",
+      "comment": "the depth list, only the $40 end entry"
+    },
+    {
+      "offset": 24,
+      "name": "",
+      "comment": "the draw list, only the $40 end entry"
+    },
+    {
+      "offset": 35,
+      "name": "PlaceRecordsLoop",
+      "comment": ""
+    },
+    {
+      "offset": 38,
+      "name": "",
+      "comment": "bit 6: the end of the records"
+    },
+    {
+      "offset": 43,
+      "name": "",
+      "comment": "bit 7: gone, not shown"
+    },
+    {
+      "offset": 61,
+      "name": "",
+      "comment": "less the distance scrolled"
+    },
+    {
+      "offset": 76,
+      "name": "",
+      "comment": "less the position across"
+    },
+    {
+      "offset": 80,
+      "name": "",
+      "comment": "behind the view: not shown"
+    },
+    {
+      "offset": 89,
+      "name": "",
+      "comment": "$120 or more ahead: not shown"
+    },
+    {
+      "offset": 93,
+      "name": "InViewAhead",
+      "comment": ""
+    },
+    {
+      "offset": 107,
+      "name": "",
+      "comment": "+B: the strip column"
+    },
+    {
+      "offset": 111,
+      "name": "",
+      "comment": "+9: the phase, 0-3"
+    },
+    {
+      "offset": 117,
+      "name": "",
+      "comment": "exploding: phase 1"
+    },
+    {
+      "offset": 125,
+      "name": "StorePhase",
+      "comment": ""
+    },
+    {
+      "offset": 129,
+      "name": "",
+      "comment": "+A: the line in the strip"
+    },
+    {
+      "offset": 144,
+      "name": "",
+      "comment": "types 14-15: the static list"
+    },
+    {
+      "offset": 166,
+      "name": "DepthListInsert",
+      "comment": "(distance + across) / 2 + 1"
+    },
+    {
+      "offset": 178,
+      "name": "",
+      "comment": "the first entry higher than this record"
+    },
+    {
+      "offset": 181,
+      "name": "FindHeightSlot",
+      "comment": ""
+    },
+    {
+      "offset": 191,
+      "name": "OpenDepthGap",
+      "comment": "open a 4-byte gap: the tail moves up"
+    },
+    {
+      "offset": 216,
+      "name": "",
+      "comment": "height, depth, record address"
+    },
+    {
+      "offset": 231,
+      "name": "SortEntryLoop",
+      "comment": "bit 6: the $40 end entry"
+    },
+    {
+      "offset": 244,
+      "name": "FindDrawSlot",
+      "comment": "heights within 9 of each other?"
+    },
+    {
+      "offset": 253,
+      "name": "",
+      "comment": "more than 9 higher: insert here"
+    },
+    {
+      "offset": 264,
+      "name": "CompareDepth",
+      "comment": "overlapping: by the depth byte"
+    },
+    {
+      "offset": 275,
+      "name": "BackToEntryStart",
+      "comment": ""
+    },
+    {
+      "offset": 276,
+      "name": "InsertDrawEntry",
+      "comment": "open a 4-byte gap and copy the entry in"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$EFA5",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/objview.asm",
+    "label": "PlaceObjects"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

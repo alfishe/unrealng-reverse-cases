@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "id": "protection/ultraxor/1.2/head",
+  "kind": "code",
+  "role": "protection-layer",
+  "name": "UltraXOR v1.2 by Paracels: the envelope's head and its first, plain layer",
+  "authors": [
+    "Paracels"
+  ],
+  "year": null,
+  "tags": [
+    "ultraxor",
+    "protection",
+    "xor",
+    "r-register"
+  ],
+  "summary": "The envelope's first bytes: JR over the sign \"UltraXOR v1.2 (c) PARACELS\", then the plain loop that sets R and decrypts the next layer; the 77 layers after it are encrypted in the file.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 83,
+    "sha1": "62e0afa46f9e34a0334c3a83e4f160ffa2f5b1d6",
+    "masked_sha1": "ef7aa33682af3ad7b978e3583798bb292dd5e820"
+  },
+  "origin": "$7705",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 34,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_E82E"
+    },
+    {
+      "offset": 40,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5FBB"
+    },
+    {
+      "offset": 44,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D64D"
+    },
+    {
+      "offset": 47,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "UltraXor",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the envelope's entry"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "CopyTo",
+      "comment": ""
+    },
+    {
+      "offset": 28,
+      "name": "Layer0",
+      "comment": ""
+    },
+    {
+      "offset": 51,
+      "name": "Loop",
+      "comment": ""
+    },
+    {
+      "offset": 82,
+      "name": "Layer0Disp",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth: the boot",
+      "case": "games/advanced-nether-earth",
+      "address": "$7705",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/boot/ultraxor-layers.asm",
+    "label": "CopyTo"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/03-build-and-load.md"
+  ]
+}

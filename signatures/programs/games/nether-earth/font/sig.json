@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth/font",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Nether Earth: font",
+  "authors": [
+    "Argus Press Software"
+  ],
+  "year": 1987,
+  "tags": [
+    "nether-earth",
+    "game-module",
+    "font"
+  ],
+  "summary": "The character set: 64 glyphs of 8 x 8 pixels, codes $20-$5F.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 512,
+    "sha1": "a00080362581f5259b1b72f7eafd12a9ae232466",
+    "masked_sha1": "a00080362581f5259b1b72f7eafd12a9ae232466"
+  },
+  "origin": "$6780",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "Font",
+      "comment": "Font: 64 glyphs of 8 bytes, codes $20-$5F"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth",
+      "case": "games/nether-earth",
+      "address": "$6780",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth",
+    "file": "src/game/font.asm",
+    "label": "Font"
+  },
+  "docs": [
+    "games/nether-earth/docs/README.md"
+  ]
+}

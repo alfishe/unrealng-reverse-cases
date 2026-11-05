@@ -1,0 +1,354 @@
+{
+  "schema": 1,
+  "id": "programs/games/advanced-nether-earth/endings",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Advanced Nether Earth: endings",
+  "authors": [
+    "Eternity Industry"
+  ],
+  "year": 1998,
+  "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "endings"
+  ],
+  "summary": "The end of a game: Dead End or Final Cut, the AY silenced.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 166,
+    "sha1": "de11051844a6751eb1b96002660e8ca40276efff",
+    "masked_sha1": "99f73765697db485e15117a87dfa6020c9bbb62f"
+  },
+  "origin": "$AE6B",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyBuildings"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerBuildings"
+    },
+    {
+      "offset": 12,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 24,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D2EF"
+    },
+    {
+      "offset": 45,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFD"
+    },
+    {
+      "offset": 71,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 83,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    },
+    {
+      "offset": 88,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C000"
+    },
+    {
+      "offset": 91,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6060"
+    },
+    {
+      "offset": 101,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    },
+    {
+      "offset": 106,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6060"
+    },
+    {
+      "offset": 130,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 138,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitRelease"
+    },
+    {
+      "offset": 141,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Restart"
+    },
+    {
+      "offset": 151,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PanelBusy"
+    },
+    {
+      "offset": 154,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearPanel"
+    },
+    {
+      "offset": 157,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShowStatusPanel"
+    },
+    {
+      "offset": 160,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MusicInterrupt"
+    },
+    {
+      "offset": 163,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6D6A"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "CheckGameEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The end of the game: the enemy has no warbase (won) or we have none (lost)"
+    },
+    {
+      "offset": 41,
+      "name": "Silence",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The AY's registers 0-14 to zero: no tone, no noise, volume 0 on all three channels"
+    },
+    {
+      "offset": 70,
+      "name": "GameWon",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The enemy has no warbase left: the Final Cut block from bank 6 to $6060, and run"
+    },
+    {
+      "offset": 127,
+      "name": "GameOverWait",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Code nothing reaches: the old end of a game, a beep, a pause, a key, Restart"
+    },
+    {
+      "offset": 149,
+      "name": "GameStop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Code nothing calls: give the panel back to the status, the menu handler"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "the enemy's warbases"
+    },
+    {
+      "offset": 4,
+      "name": "",
+      "comment": "none left: won"
+    },
+    {
+      "offset": 6,
+      "name": "",
+      "comment": "ours"
+    },
+    {
+      "offset": 10,
+      "name": "",
+      "comment": "we still have one: play on"
+    },
+    {
+      "offset": 11,
+      "name": "",
+      "comment": "lost: the tune off"
+    },
+    {
+      "offset": 14,
+      "name": "",
+      "comment": "the ROM's I and IM 1: no game handler from here on"
+    },
+    {
+      "offset": 21,
+      "name": "",
+      "comment": "bank 3: Dead End"
+    },
+    {
+      "offset": 28,
+      "name": "",
+      "comment": "Dead End's entry, never back"
+    },
+    {
+      "offset": 31,
+      "name": "EndingsSpare1",
+      "comment": "10 bytes, never used"
+    },
+    {
+      "offset": 42,
+      "name": "",
+      "comment": "the last frame of the tune"
+    },
+    {
+      "offset": 43,
+      "name": "",
+      "comment": "no more handlers"
+    },
+    {
+      "offset": 44,
+      "name": "SilenceRegister",
+      "comment": "select register A"
+    },
+    {
+      "offset": 50,
+      "name": "",
+      "comment": "write 0 to it"
+    },
+    {
+      "offset": 56,
+      "name": "",
+      "comment": "the next register, up to 14"
+    },
+    {
+      "offset": 62,
+      "name": "EndingsSpare2",
+      "comment": "8 bytes, never used"
+    },
+    {
+      "offset": 70,
+      "name": "",
+      "comment": "the tune off"
+    },
+    {
+      "offset": 73,
+      "name": "",
+      "comment": "the ROM's I and IM 1"
+    },
+    {
+      "offset": 80,
+      "name": "",
+      "comment": "bank 6: the Final Cut block"
+    },
+    {
+      "offset": 87,
+      "name": "",
+      "comment": "from bank 6's start"
+    },
+    {
+      "offset": 93,
+      "name": "",
+      "comment": "the block's bytes"
+    },
+    {
+      "offset": 96,
+      "name": "",
+      "comment": "copied over the game itself"
+    },
+    {
+      "offset": 98,
+      "name": "",
+      "comment": "bank 0 at $C000 again"
+    },
+    {
+      "offset": 105,
+      "name": "",
+      "comment": "the Final Cut block's start"
+    },
+    {
+      "offset": 108,
+      "name": "EndingsSpare3",
+      "comment": "10 bytes, never used"
+    },
+    {
+      "offset": 118,
+      "name": "OldEndText",
+      "comment": "The last 9 bytes of an old end-of-game text line: 8 spaces and its 0, never read"
+    },
+    {
+      "offset": 134,
+      "name": "GameOverPause",
+      "comment": "100 frames of HALT before the key is read"
+    },
+    {
+      "offset": 140,
+      "name": "GameOverKey",
+      "comment": "wait for a key, then back to Restart"
+    },
+    {
+      "offset": 162,
+      "name": "",
+      "comment": "meant for ImHandler: $6D6A is a byte of the sprites"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth",
+      "case": "games/advanced-nether-earth",
+      "address": "$AE6B",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/game/endings.asm",
+    "label": "CheckGameEnd"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/README.md"
+  ]
+}

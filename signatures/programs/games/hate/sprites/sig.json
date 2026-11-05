@@ -1,0 +1,1045 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/sprites",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: sprites",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "sprites"
+  ],
+  "summary": "Sprites.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1040,
+    "sha1": "171c8657e39958dc72937b440ff9079b19a18835",
+    "masked_sha1": "fad26114f171284124b45e58c59208b6084b555c"
+  },
+  "origin": "$D9D6",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StampStatics"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteSaveBuffer"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteListArea"
+    },
+    {
+      "offset": 13,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 18,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FE64"
+    },
+    {
+      "offset": 21,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 26,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 35,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 40,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 63,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 68,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 84,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5FF6"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 176,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 196,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5FF7"
+    },
+    {
+      "offset": 220,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 297,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 318,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 323,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 337,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5FF8"
+    },
+    {
+      "offset": 342,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 382,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 402,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 408,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollPage"
+    },
+    {
+      "offset": 421,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 442,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 447,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 450,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 453,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 462,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 521,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 526,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 624,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 646,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 651,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 734,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 757,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 806,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 828,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 834,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollPage"
+    },
+    {
+      "offset": 848,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 860,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D9D4"
+    },
+    {
+      "offset": 869,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 873,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 876,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 879,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D9D4"
+    },
+    {
+      "offset": 883,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 909,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 919,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteSaveBuffer"
+    },
+    {
+      "offset": 922,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 925,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FE64"
+    },
+    {
+      "offset": 965,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 970,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteListArea"
+    },
+    {
+      "offset": 1007,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1012,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1037,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "BuildSpriteLists",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Shadow and sprite lists of the visible objects, the strips under them saved"
+    },
+    {
+      "offset": 29,
+      "name": "ShadowListLoop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Shadow list: the next visible record"
+    },
+    {
+      "offset": 406,
+      "name": "ShadowListAdd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Finish a shadow entry, save the strips under it"
+    },
+    {
+      "offset": 452,
+      "name": "SpriteListBuild",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Sprite list: the visible records at their own heights"
+    },
+    {
+      "offset": 878,
+      "name": "SaveSpriteStrips",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Save the strips under the sprite just listed"
+    },
+    {
+      "offset": 881,
+      "name": "SaveStrips",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Copy the strips an object will cover into the save area"
+    },
+    {
+      "offset": 918,
+      "name": "RestoreUnderSprites",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "After the blit: the strips under every shadow and sprite put back"
+    },
+    {
+      "offset": 1011,
+      "name": "RestoreStrips",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Copy saved strips back into the playfield buffer"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "pads and dishes (list $C99E)"
+    },
+    {
+      "offset": 3,
+      "name": "",
+      "comment": "the save area starts again at $F800"
+    },
+    {
+      "offset": 9,
+      "name": "",
+      "comment": "the sprite list $FF00, empty"
+    },
+    {
+      "offset": 17,
+      "name": "",
+      "comment": "the shadow list $FE64, empty"
+    },
+    {
+      "offset": 25,
+      "name": "",
+      "comment": "the visible records, from $EFA5"
+    },
+    {
+      "offset": 30,
+      "name": "",
+      "comment": "bit 6: the end of the list"
+    },
+    {
+      "offset": 37,
+      "name": "",
+      "comment": "end the shadow list, go on with the sprites"
+    },
+    {
+      "offset": 42,
+      "name": "ShadowEntryRecord",
+      "comment": "IX = the record"
+    },
+    {
+      "offset": 53,
+      "name": "",
+      "comment": "type; a dying record (bit 5 set) fails every compare and gets no shadow"
+    },
+    {
+      "offset": 70,
+      "name": "",
+      "comment": "types 14 and up: not here"
+    },
+    {
+      "offset": 72,
+      "name": "ShadowBig",
+      "comment": "types 0-3: 4 strips of 17 lines"
+    },
+    {
+      "offset": 83,
+      "name": "",
+      "comment": "the profile under the record: $5FF6 + position / 2"
+    },
+    {
+      "offset": 94,
+      "name": "",
+      "comment": "entry +2, +3: the profile address"
+    },
+    {
+      "offset": 98,
+      "name": "",
+      "comment": "+A: the line in the strip, +B: the column"
+    },
+    {
+      "offset": 105,
+      "name": "",
+      "comment": "the ground height"
+    },
+    {
+      "offset": 114,
+      "name": "",
+      "comment": "column - 4 = the screen column"
+    },
+    {
+      "offset": 116,
+      "name": "",
+      "comment": "0-28: every strip shows"
+    },
+    {
+      "offset": 125,
+      "name": "BigShadowCol30",
+      "comment": ""
+    },
+    {
+      "offset": 133,
+      "name": "BigShadowCol31",
+      "comment": ""
+    },
+    {
+      "offset": 141,
+      "name": "BigShadowLeft3",
+      "comment": "columns -3 to -1: the first strips are off the left edge"
+    },
+    {
+      "offset": 151,
+      "name": "",
+      "comment": "C = the mask bytes skipped (17 a strip)"
+    },
+    {
+      "offset": 157,
+      "name": "BigShadowLeft2",
+      "comment": ""
+    },
+    {
+      "offset": 173,
+      "name": "BigShadowLeft1",
+      "comment": ""
+    },
+    {
+      "offset": 188,
+      "name": "BigShadowPhase",
+      "comment": "phase 0: one strip fewer"
+    },
+    {
+      "offset": 198,
+      "name": "BigShadowLines",
+      "comment": "17 lines a strip"
+    },
+    {
+      "offset": 203,
+      "name": "ShadowMid",
+      "comment": "types 4-10: 3 strips of 11 lines"
+    },
+    {
+      "offset": 214,
+      "name": "",
+      "comment": "the profile one byte further on"
+    },
+    {
+      "offset": 242,
+      "name": "",
+      "comment": "phase 2 and 3: one column on, 4 lines lower"
+    },
+    {
+      "offset": 254,
+      "name": "MidShadowColumn",
+      "comment": ""
+    },
+    {
+      "offset": 270,
+      "name": "MidShadowCol31",
+      "comment": ""
+    },
+    {
+      "offset": 278,
+      "name": "MidShadowLeft2",
+      "comment": ""
+    },
+    {
+      "offset": 294,
+      "name": "MidShadowLeft1",
+      "comment": ""
+    },
+    {
+      "offset": 309,
+      "name": "MidShadowPhase",
+      "comment": "phase 2: one strip fewer"
+    },
+    {
+      "offset": 320,
+      "name": "MidShadowLines",
+      "comment": "11 lines a strip"
+    },
+    {
+      "offset": 325,
+      "name": "ShadowSmall",
+      "comment": "types 11-13: 2 strips of 4 lines"
+    },
+    {
+      "offset": 336,
+      "name": "",
+      "comment": "the profile two bytes further on"
+    },
+    {
+      "offset": 362,
+      "name": "",
+      "comment": "one column on"
+    },
+    {
+      "offset": 379,
+      "name": "SmallShadowLeft1",
+      "comment": ""
+    },
+    {
+      "offset": 394,
+      "name": "SmallShadowPhase",
+      "comment": "phase 0: one strip fewer"
+    },
+    {
+      "offset": 404,
+      "name": "SmallShadowLines",
+      "comment": "4 lines a strip"
+    },
+    {
+      "offset": 407,
+      "name": "",
+      "comment": "the scroll state: page of column 0"
+    },
+    {
+      "offset": 415,
+      "name": "",
+      "comment": "wrap into $80-$BF"
+    },
+    {
+      "offset": 424,
+      "name": "",
+      "comment": "+0 type"
+    },
+    {
+      "offset": 426,
+      "name": "",
+      "comment": "+1 phase"
+    },
+    {
+      "offset": 433,
+      "name": "",
+      "comment": "+4 strips"
+    },
+    {
+      "offset": 435,
+      "name": "",
+      "comment": "+5 mask offset"
+    },
+    {
+      "offset": 437,
+      "name": "",
+      "comment": "+6, +7 the address in the playfield buffer"
+    },
+    {
+      "offset": 441,
+      "name": "",
+      "comment": "the next free entry"
+    },
+    {
+      "offset": 446,
+      "name": "",
+      "comment": "save the strips under the shadow"
+    },
+    {
+      "offset": 456,
+      "name": "SpriteListLoop",
+      "comment": ""
+    },
+    {
+      "offset": 464,
+      "name": "",
+      "comment": "end the sprite list"
+    },
+    {
+      "offset": 467,
+      "name": "SpriteEntryRecord",
+      "comment": ""
+    },
+    {
+      "offset": 478,
+      "name": "",
+      "comment": "+A: the line in the strip, +B: the column"
+    },
+    {
+      "offset": 484,
+      "name": "",
+      "comment": "+ the height"
+    },
+    {
+      "offset": 493,
+      "name": "",
+      "comment": "dying?"
+    },
+    {
+      "offset": 500,
+      "name": "",
+      "comment": "at 25 a line lower, above that two"
+    },
+    {
+      "offset": 510,
+      "name": "DrawAsExplosion",
+      "comment": "dying: drawn as a type 3, the explosion"
+    },
+    {
+      "offset": 512,
+      "name": "SpriteByType",
+      "comment": ""
+    },
+    {
+      "offset": 528,
+      "name": "",
+      "comment": "types 14 and up: not here"
+    },
+    {
+      "offset": 530,
+      "name": "SpriteBig",
+      "comment": "types 0-3: 4 strips of 21 lines"
+    },
+    {
+      "offset": 531,
+      "name": "",
+      "comment": "the graphic: the word at $C300 + (+8)"
+    },
+    {
+      "offset": 540,
+      "name": "",
+      "comment": "one frame: 4 strips x 21 lines x 2 bytes"
+    },
+    {
+      "offset": 543,
+      "name": "",
+      "comment": "frame (phase - 1) AND 3"
+    },
+    {
+      "offset": 551,
+      "name": "BigFrameLoop",
+      "comment": ""
+    },
+    {
+      "offset": 555,
+      "name": "BigSpriteColumn",
+      "comment": ""
+    },
+    {
+      "offset": 569,
+      "name": "BigSpriteCol30",
+      "comment": ""
+    },
+    {
+      "offset": 577,
+      "name": "BigSpriteCol31",
+      "comment": ""
+    },
+    {
+      "offset": 585,
+      "name": "BigSpriteLeft3",
+      "comment": ""
+    },
+    {
+      "offset": 589,
+      "name": "",
+      "comment": "3 strips off the left: the graphic 3 strips on"
+    },
+    {
+      "offset": 603,
+      "name": "BigSpriteLeft2",
+      "comment": ""
+    },
+    {
+      "offset": 621,
+      "name": "BigSpriteLeft1",
+      "comment": ""
+    },
+    {
+      "offset": 638,
+      "name": "BigSpritePhase",
+      "comment": ""
+    },
+    {
+      "offset": 648,
+      "name": "BigSpriteLines",
+      "comment": "21 lines a strip"
+    },
+    {
+      "offset": 653,
+      "name": "SpriteMid",
+      "comment": "types 4-10: 3 strips of 17 lines"
+    },
+    {
+      "offset": 663,
+      "name": "",
+      "comment": "one frame: 3 strips x 17 lines x 2 bytes"
+    },
+    {
+      "offset": 668,
+      "name": "",
+      "comment": "phase 2 and 3: one column on, 4 lines lower"
+    },
+    {
+      "offset": 680,
+      "name": "MidFrameIndex",
+      "comment": "frame (phase + 1) AND 3"
+    },
+    {
+      "offset": 685,
+      "name": "MidFrameLoop",
+      "comment": ""
+    },
+    {
+      "offset": 691,
+      "name": "MidSpriteColumn",
+      "comment": ""
+    },
+    {
+      "offset": 705,
+      "name": "MidSpriteCol31",
+      "comment": ""
+    },
+    {
+      "offset": 713,
+      "name": "MidSpriteLeft2",
+      "comment": ""
+    },
+    {
+      "offset": 731,
+      "name": "MidSpriteLeft1",
+      "comment": ""
+    },
+    {
+      "offset": 748,
+      "name": "MidSpritePhase",
+      "comment": ""
+    },
+    {
+      "offset": 759,
+      "name": "MidSpriteLines",
+      "comment": "17 lines a strip"
+    },
+    {
+      "offset": 763,
+      "name": "SpriteSmall",
+      "comment": "types 11-13: 2 strips of 13 lines"
+    },
+    {
+      "offset": 774,
+      "name": "",
+      "comment": "one frame: 2 strips x 13 lines x 2 bytes"
+    },
+    {
+      "offset": 785,
+      "name": "SmallFrameLoop",
+      "comment": ""
+    },
+    {
+      "offset": 789,
+      "name": "SmallSpriteColumn",
+      "comment": ""
+    },
+    {
+      "offset": 803,
+      "name": "SmallSpriteLeft1",
+      "comment": ""
+    },
+    {
+      "offset": 820,
+      "name": "SmallSpritePhase",
+      "comment": ""
+    },
+    {
+      "offset": 830,
+      "name": "SmallSpriteLines",
+      "comment": "13 lines a strip"
+    },
+    {
+      "offset": 832,
+      "name": "SpriteListAdd",
+      "comment": "the page from the column, as at ShadowListAdd"
+    },
+    {
+      "offset": 851,
+      "name": "",
+      "comment": "+0 type"
+    },
+    {
+      "offset": 853,
+      "name": "",
+      "comment": "+1 strips"
+    },
+    {
+      "offset": 855,
+      "name": "",
+      "comment": "+2, +3 the address in the playfield buffer"
+    },
+    {
+      "offset": 864,
+      "name": "",
+      "comment": "+4, +5 the graphic"
+    },
+    {
+      "offset": 872,
+      "name": "",
+      "comment": "save the strips under the sprite"
+    },
+    {
+      "offset": 881,
+      "name": "",
+      "comment": "DE = the free save area"
+    },
+    {
+      "offset": 887,
+      "name": "SaveStripLoop",
+      "comment": ""
+    },
+    {
+      "offset": 888,
+      "name": "",
+      "comment": "BC = lines"
+    },
+    {
+      "offset": 895,
+      "name": "",
+      "comment": "the next strip: 4 lines lower ..."
+    },
+    {
+      "offset": 899,
+      "name": "",
+      "comment": "... two pages on, $80-$BF"
+    },
+    {
+      "offset": 907,
+      "name": "",
+      "comment": "the save area's new end"
+    },
+    {
+      "offset": 912,
+      "name": "ShadowListPtr",
+      "comment": "The shadow list's next free entry ($FE64 on); DrawShadows reuses it to walk the list"
+    },
+    {
+      "offset": 914,
+      "name": "SpriteListPtr",
+      "comment": "The next free entry of the sprite list ($FF00 on)"
+    },
+    {
+      "offset": 916,
+      "name": "SaveAreaPtr",
+      "comment": "The free end of the strip save area ($F800 on)"
+    },
+    {
+      "offset": 918,
+      "name": "",
+      "comment": "the saved strips, in the order they were saved"
+    },
+    {
+      "offset": 924,
+      "name": "",
+      "comment": "the shadow list"
+    },
+    {
+      "offset": 928,
+      "name": "RestoreShadowLoop",
+      "comment": ""
+    },
+    {
+      "offset": 938,
+      "name": "",
+      "comment": "+4 strips"
+    },
+    {
+      "offset": 941,
+      "name": "",
+      "comment": "+6, +7 the buffer address"
+    },
+    {
+      "offset": 958,
+      "name": "RestoreMidShadow",
+      "comment": ""
+    },
+    {
+      "offset": 962,
+      "name": "RestoreBigShadow",
+      "comment": "types 0-3: 17 lines"
+    },
+    {
+      "offset": 964,
+      "name": "RestoreShadowStrips",
+      "comment": ""
+    },
+    {
+      "offset": 969,
+      "name": "RestoreSprites",
+      "comment": "the sprite list"
+    },
+    {
+      "offset": 973,
+      "name": "RestoreSpriteLoop",
+      "comment": ""
+    },
+    {
+      "offset": 979,
+      "name": "",
+      "comment": "+1 strips"
+    },
+    {
+      "offset": 981,
+      "name": "",
+      "comment": "+2, +3 the buffer address"
+    },
+    {
+      "offset": 1000,
+      "name": "RestoreMidSprite",
+      "comment": ""
+    },
+    {
+      "offset": 1004,
+      "name": "RestoreBigSprite",
+      "comment": "types 0-3: 21 lines"
+    },
+    {
+      "offset": 1006,
+      "name": "RestoreSpriteStrips",
+      "comment": ""
+    },
+    {
+      "offset": 1011,
+      "name": "",
+      "comment": "HL = the next saved bytes"
+    },
+    {
+      "offset": 1016,
+      "name": "RestoreStripLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1024,
+      "name": "",
+      "comment": "the next strip: 4 lines lower, two pages on"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$D9D6",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/sprites.asm",
+    "label": "BuildSpriteLists"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

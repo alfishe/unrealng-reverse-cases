@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "id": "formats/music/pt3-module/main",
+  "kind": "format",
+  "role": "music-data",
+  "name": "Pro Tracker 3 / Vortex Tracker II module",
+  "authors": [],
+  "year": null,
+  "tags": [
+    "ay",
+    "pt3",
+    "vortex",
+    "music"
+  ],
+  "summary": "A tune in the Pro Tracker 3 file form, found by its header text and a position list that parses; the detector reports its title, author, delay and pattern count.",
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth: TOMY by X-Man, the boot music",
+      "case": "games/advanced-nether-earth",
+      "address": "$CE21",
+      "bank": 1,
+      "delta": null,
+      "match": "format",
+      "commit": null
+    },
+    {
+      "program": "Advanced Nether Earth: REM by X-Man, Final Cut",
+      "case": "games/advanced-nether-earth",
+      "address": "$E921",
+      "bank": null,
+      "delta": null,
+      "match": "format",
+      "commit": null
+    }
+  ],
+  "docs": [
+    "games/advanced-nether-earth/docs/09-sound.md",
+    "games/advanced-nether-earth/src/music/pt3-player.asm"
+  ]
+}

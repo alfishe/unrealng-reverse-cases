@@ -1,0 +1,153 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth/viewbuffer",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Nether Earth: viewbuffer",
+  "authors": [
+    "Argus Press Software"
+  ],
+  "year": 1987,
+  "tags": [
+    "nether-earth",
+    "game-module",
+    "viewbuffer"
+  ],
+  "summary": "The view's back buffer at $5B00-$677F (also the tape checksum and the flash's attribute store).",
+  "bytes": {
+    "file": "data.bin",
+    "length": 3200,
+    "sha1": "9d2f7f66b5a69c5f989555928970122e2b005e88",
+    "masked_sha1": "9d2f7f66b5a69c5f989555928970122e2b005e88"
+  },
+  "origin": "$5B00",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "ViewBuffer",
+      "comment": "The view's back buffer: 160 lines of 20 bytes (160 x 160 pixels)"
+    },
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "lines 0-7, screen row 1; $5B00: the tape sum; to $5C8F the flash's attributes"
+    },
+    {
+      "offset": 160,
+      "name": "",
+      "comment": "lines 8-15, screen row 2; $5C00-$5D0D: system variables left in the image"
+    },
+    {
+      "offset": 320,
+      "name": "",
+      "comment": "lines 16-23, screen row 3; the flash's attributes end at line 19"
+    },
+    {
+      "offset": 480,
+      "name": "",
+      "comment": "lines 24-31, screen row 4; the leftovers end at $5D0D"
+    },
+    {
+      "offset": 640,
+      "name": "",
+      "comment": "lines 32-39, screen row 5"
+    },
+    {
+      "offset": 800,
+      "name": "",
+      "comment": "lines 40-47, screen row 6"
+    },
+    {
+      "offset": 960,
+      "name": "",
+      "comment": "lines 48-55, screen row 7"
+    },
+    {
+      "offset": 1120,
+      "name": "",
+      "comment": "lines 56-63, screen row 8"
+    },
+    {
+      "offset": 1280,
+      "name": "",
+      "comment": "lines 64-71, screen row 9"
+    },
+    {
+      "offset": 1440,
+      "name": "",
+      "comment": "lines 72-79, screen row 10"
+    },
+    {
+      "offset": 1600,
+      "name": "",
+      "comment": "lines 80-87, screen row 11; the robot preview from line 82"
+    },
+    {
+      "offset": 1760,
+      "name": "",
+      "comment": "lines 88-95, screen row 12"
+    },
+    {
+      "offset": 1920,
+      "name": "",
+      "comment": "lines 96-103, screen row 13"
+    },
+    {
+      "offset": 2080,
+      "name": "",
+      "comment": "lines 104-111, screen row 14"
+    },
+    {
+      "offset": 2240,
+      "name": "",
+      "comment": "lines 112-119, screen row 15"
+    },
+    {
+      "offset": 2400,
+      "name": "",
+      "comment": "lines 120-127, screen row 16"
+    },
+    {
+      "offset": 2560,
+      "name": "",
+      "comment": "lines 128-135, screen row 17"
+    },
+    {
+      "offset": 2720,
+      "name": "",
+      "comment": "lines 136-143, screen row 18"
+    },
+    {
+      "offset": 2880,
+      "name": "",
+      "comment": "lines 144-151, screen row 19"
+    },
+    {
+      "offset": 3040,
+      "name": "",
+      "comment": "lines 152-159, screen row 20; $6732 on: loader leftovers"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth",
+      "case": "games/nether-earth",
+      "address": "$5B00",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth",
+    "file": "src/game/viewbuffer.asm",
+    "label": "ViewBuffer"
+  },
+  "docs": [
+    "games/nether-earth/docs/README.md"
+  ]
+}

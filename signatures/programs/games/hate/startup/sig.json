@@ -1,0 +1,257 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/startup",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: startup",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "startup"
+  ],
+  "summary": "Startup.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 14848,
+    "sha1": "7134fa78ba588afa42b2274a370bc3140daa8cc4",
+    "masked_sha1": "85ad97068172b254f419898b4e00039f90615fab"
+  },
+  "origin": "$8600",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 6419,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 6423,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8002"
+    },
+    {
+      "offset": 6426,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitlePlayer"
+    },
+    {
+      "offset": 6430,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 6433,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 6442,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LapNumber"
+    },
+    {
+      "offset": 6445,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GameStart"
+    },
+    {
+      "offset": 6478,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Im2Jump"
+    },
+    {
+      "offset": 6481,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 6484,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FDFE"
+    },
+    {
+      "offset": 6487,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Im2Table"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 6418,
+      "name": "Startup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Start-up: IM 2, the title music, then the game"
+    },
+    {
+      "offset": 6428,
+      "name": "StartGame",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Start-up, after the title music: the play screen, then the game"
+    },
+    {
+      "offset": 6475,
+      "name": "SetupIM2",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Set up IM 2 with a safe vector"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "StartupCopy",
+      "comment": "A stale copy of $9F00-$9F69"
+    },
+    {
+      "offset": 106,
+      "name": "StartupCopyTail",
+      "comment": "Unused, zero"
+    },
+    {
+      "offset": 256,
+      "name": "SpriteGfxCopy",
+      "comment": "A stale copy of the sprite graphics $6E00-$7FFF"
+    },
+    {
+      "offset": 4864,
+      "name": "TitlePlayerCopy",
+      "comment": "A stale copy of the title player $8000-$85FF"
+    },
+    {
+      "offset": 6400,
+      "name": "StartupHead",
+      "comment": "Start-up head (not run)"
+    },
+    {
+      "offset": 6421,
+      "name": "",
+      "comment": "tune 0"
+    },
+    {
+      "offset": 6422,
+      "name": "",
+      "comment": "into the operand of LD C,n at $8001"
+    },
+    {
+      "offset": 6425,
+      "name": "",
+      "comment": "the title music"
+    },
+    {
+      "offset": 6428,
+      "name": "",
+      "comment": "the music is over"
+    },
+    {
+      "offset": 6429,
+      "name": "",
+      "comment": "the game screen image: pixels, attributes and $5B00-$5FFF"
+    },
+    {
+      "offset": 6441,
+      "name": "",
+      "comment": "lap 0"
+    },
+    {
+      "offset": 6444,
+      "name": "",
+      "comment": "the main loop, interrupts off from here on"
+    },
+    {
+      "offset": 6447,
+      "name": "PressKeyText",
+      "comment": "\"PRESS ANY KEY WHEN READY\""
+    },
+    {
+      "offset": 6475,
+      "name": "",
+      "comment": "JP opcode"
+    },
+    {
+      "offset": 6480,
+      "name": "",
+      "comment": "the default handler: EI; RET"
+    },
+    {
+      "offset": 6489,
+      "name": "",
+      "comment": "B = 0: 256 bytes, C = the fill byte $FD"
+    },
+    {
+      "offset": 6492,
+      "name": "FillVectorTable",
+      "comment": ""
+    },
+    {
+      "offset": 6496,
+      "name": "",
+      "comment": "the 257th byte"
+    },
+    {
+      "offset": 6497,
+      "name": "",
+      "comment": "the vector table's page"
+    },
+    {
+      "offset": 6504,
+      "name": "DefaultInterrupt",
+      "comment": "Default IM 2 handler: EI; RET"
+    },
+    {
+      "offset": 6506,
+      "name": "StartupPad",
+      "comment": "Unused, zero"
+    },
+    {
+      "offset": 6656,
+      "name": "GameScreenImage",
+      "comment": "Game screen image: pixels"
+    },
+    {
+      "offset": 12800,
+      "name": "GameScreenAttrs",
+      "comment": "Game screen image: attributes"
+    },
+    {
+      "offset": 13568,
+      "name": "RendererTablesImage",
+      "comment": "Image of $5B00-$5FFF: the renderer's tables"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$8600",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/startup.asm",
+    "label": "StartupCopy"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

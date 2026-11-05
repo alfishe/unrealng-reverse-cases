@@ -1,0 +1,476 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/hud",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: hud",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "hud"
+  ],
+  "summary": "Hud.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 402,
+    "sha1": "3c0089a00d43ba20d081e0c1ad99c485ba222d62",
+    "masked_sha1": "64a21ea16dbc77d143bec2e2d9240aeae00f486b"
+  },
+  "origin": "$EE13",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 42,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 58,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 76,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Font"
+    },
+    {
+      "offset": 83,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 93,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 101,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 105,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 110,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 117,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 140,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_529D"
+    },
+    {
+      "offset": 143,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 159,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6302"
+    },
+    {
+      "offset": 178,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 198,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 209,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 241,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 244,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 252,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_51FD"
+    },
+    {
+      "offset": 255,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 261,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 264,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 290,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 293,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 301,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_51BD"
+    },
+    {
+      "offset": 304,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 307,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 4,
+      "name": "PrintString",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print a string of records"
+    },
+    {
+      "offset": 116,
+      "name": "AddPoints",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Add B tens of points to SCORE"
+    },
+    {
+      "offset": 139,
+      "name": "ShowScore",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw SCORE in the panel"
+    },
+    {
+      "offset": 145,
+      "name": "DrawDigits",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw a number in small digits, right to left"
+    },
+    {
+      "offset": 177,
+      "name": "ClearScores",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Clear SCORE, MAX and the round table"
+    },
+    {
+      "offset": 208,
+      "name": "UpdateHigh",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "MAX into HIGH if higher, and draw HIGH"
+    },
+    {
+      "offset": 260,
+      "name": "UpdateMax",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "SCORE into MAX if higher, and draw MAX"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "PrintScreenPos",
+      "comment": "The print routine's screen address"
+    },
+    {
+      "offset": 2,
+      "name": "PrintAttrPos",
+      "comment": "The print routine's attribute address"
+    },
+    {
+      "offset": 5,
+      "name": "PrintRecord",
+      "comment": ""
+    },
+    {
+      "offset": 8,
+      "name": "",
+      "comment": "the attribute, kept in A'"
+    },
+    {
+      "offset": 11,
+      "name": "",
+      "comment": "the screen third by the row: $40, $48 or $50"
+    },
+    {
+      "offset": 35,
+      "name": "RowInThird",
+      "comment": "(row AND 7) * 32 + column"
+    },
+    {
+      "offset": 46,
+      "name": "",
+      "comment": "attribute address: $5800 + row * 32 + column"
+    },
+    {
+      "offset": 61,
+      "name": "PrintCharLoop",
+      "comment": "a character, or bit 7: the next record"
+    },
+    {
+      "offset": 67,
+      "name": "",
+      "comment": "glyph: $6300 + (code - $20) * 8"
+    },
+    {
+      "offset": 85,
+      "name": "GlyphLineLoop",
+      "comment": "8 lines down the cell"
+    },
+    {
+      "offset": 95,
+      "name": "",
+      "comment": "the attribute"
+    },
+    {
+      "offset": 103,
+      "name": "",
+      "comment": "the next cell"
+    },
+    {
+      "offset": 116,
+      "name": "",
+      "comment": "the tens digit"
+    },
+    {
+      "offset": 119,
+      "name": "AddTenToDigit",
+      "comment": ""
+    },
+    {
+      "offset": 120,
+      "name": "",
+      "comment": "a leading space counts as 0"
+    },
+    {
+      "offset": 126,
+      "name": "DigitUp",
+      "comment": ""
+    },
+    {
+      "offset": 131,
+      "name": "",
+      "comment": "carry into the next digit to the left"
+    },
+    {
+      "offset": 136,
+      "name": "StoreDigit",
+      "comment": ""
+    },
+    {
+      "offset": 137,
+      "name": "",
+      "comment": "B times"
+    },
+    {
+      "offset": 146,
+      "name": "",
+      "comment": "'.': the field starts here"
+    },
+    {
+      "offset": 158,
+      "name": "",
+      "comment": "lines 2-6 of the glyph"
+    },
+    {
+      "offset": 165,
+      "name": "SmallDigitLineLoop",
+      "comment": ""
+    },
+    {
+      "offset": 182,
+      "name": "ClearRoundTableLoop",
+      "comment": ""
+    },
+    {
+      "offset": 192,
+      "name": "ClearScoreLoop",
+      "comment": ""
+    },
+    {
+      "offset": 202,
+      "name": "ClearMaxLoop",
+      "comment": ""
+    },
+    {
+      "offset": 219,
+      "name": "HighCompareLoop",
+      "comment": "the first digit that differs decides"
+    },
+    {
+      "offset": 233,
+      "name": "HighDigitDiffers",
+      "comment": ""
+    },
+    {
+      "offset": 239,
+      "name": "MaxIntoHigh",
+      "comment": "MAX is higher"
+    },
+    {
+      "offset": 251,
+      "name": "DrawHigh",
+      "comment": "HIGH in the panel"
+    },
+    {
+      "offset": 268,
+      "name": "MaxCompareLoop",
+      "comment": ""
+    },
+    {
+      "offset": 282,
+      "name": "MaxDigitDiffers",
+      "comment": ""
+    },
+    {
+      "offset": 288,
+      "name": "ScoreIntoMax",
+      "comment": "SCORE is higher"
+    },
+    {
+      "offset": 300,
+      "name": "DrawMax",
+      "comment": "MAX in the panel"
+    },
+    {
+      "offset": 309,
+      "name": "ScoreStop",
+      "comment": "'.': the left end of SCORE for $EEA4"
+    },
+    {
+      "offset": 310,
+      "name": "Score",
+      "comment": "SCORE: five characters and a fixed '0'"
+    },
+    {
+      "offset": 316,
+      "name": "RoundTable",
+      "comment": "The round table: 6 bytes a round, rounds 0-10"
+    },
+    {
+      "offset": 382,
+      "name": "HighStop",
+      "comment": "'.': the left end of HIGH"
+    },
+    {
+      "offset": 383,
+      "name": "HighScore",
+      "comment": "HIGH: kept until the machine is reset"
+    },
+    {
+      "offset": 389,
+      "name": "MaxStop",
+      "comment": "'.': the left end of MAX"
+    },
+    {
+      "offset": 390,
+      "name": "MaxScore",
+      "comment": "MAX: the best SCORE of this game"
+    },
+    {
+      "offset": 396,
+      "name": "DrawListEnd",
+      "comment": "The end of the draw list at $6500"
+    },
+    {
+      "offset": 398,
+      "name": "DepthListEnd",
+      "comment": "The end of the depth list at $FF00"
+    },
+    {
+      "offset": 400,
+      "name": "StaticListEnd",
+      "comment": "The end of the static-object list at $C99E"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$EE13",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/hud.asm",
+    "label": "PrintScreenPos"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

@@ -1,0 +1,246 @@
+{
+  "schema": 1,
+  "id": "packers/hrust/1/screen-depacker",
+  "kind": "code",
+  "role": "depacker",
+  "name": "Hrust 1 depacker, self-relocating, without its header",
+  "authors": [
+    "Dmitry Pyankov"
+  ],
+  "year": null,
+  "tags": [
+    "hrust",
+    "packer",
+    "depacker",
+    "self-relocating"
+  ],
+  "summary": "Unpacks a Hrust 1 stream from HL to DE; PatchCalls fixes its own CALL operands from RelocTable wherever it was loaded.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 241,
+    "sha1": "231da31c51acb45ad66188620032af5de99e12f0",
+    "masked_sha1": "9f7ff7ebadcf29a038d69737675a844e68d1f6cc"
+  },
+  "origin": "$68C5",
+  "relocatable": true,
+  "mask": [
+    {
+      "offset": 36,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 42,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_62D5"
+    },
+    {
+      "offset": 56,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_62D5"
+    },
+    {
+      "offset": 63,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_62D5"
+    },
+    {
+      "offset": 66,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_62D5"
+    },
+    {
+      "offset": 74,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_62D5"
+    },
+    {
+      "offset": 81,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_62D5"
+    },
+    {
+      "offset": 162,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_62D5"
+    },
+    {
+      "offset": 171,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_62D5"
+    },
+    {
+      "offset": 186,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_62D5"
+    },
+    {
+      "offset": 196,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_62D5"
+    },
+    {
+      "offset": 207,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_62D5"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "ScreenDepack",
+      "in": "HL the stream, DE the output",
+      "out": null,
+      "clobbers": null,
+      "summary": "unpack a Hrust 1 stream"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "ScreenDepack",
+      "comment": ""
+    },
+    {
+      "offset": 3,
+      "name": "DepackHere",
+      "comment": ""
+    },
+    {
+      "offset": 21,
+      "name": "PatchCalls",
+      "comment": ""
+    },
+    {
+      "offset": 46,
+      "name": "Literal",
+      "comment": ""
+    },
+    {
+      "offset": 55,
+      "name": "NextToken",
+      "comment": ""
+    },
+    {
+      "offset": 83,
+      "name": "LengthCode",
+      "comment": ""
+    },
+    {
+      "offset": 92,
+      "name": "l_6921",
+      "comment": ""
+    },
+    {
+      "offset": 111,
+      "name": "l_6934",
+      "comment": ""
+    },
+    {
+      "offset": 121,
+      "name": "ShortDistance",
+      "comment": ""
+    },
+    {
+      "offset": 122,
+      "name": "CopyMatch",
+      "comment": ""
+    },
+    {
+      "offset": 139,
+      "name": "WordLength",
+      "comment": ""
+    },
+    {
+      "offset": 151,
+      "name": "l_695C",
+      "comment": ""
+    },
+    {
+      "offset": 157,
+      "name": "l_6962",
+      "comment": ""
+    },
+    {
+      "offset": 159,
+      "name": "SetLength",
+      "comment": ""
+    },
+    {
+      "offset": 160,
+      "name": "ReadDistance",
+      "comment": ""
+    },
+    {
+      "offset": 170,
+      "name": "HighBits",
+      "comment": ""
+    },
+    {
+      "offset": 181,
+      "name": "SetHigh",
+      "comment": ""
+    },
+    {
+      "offset": 185,
+      "name": "l_697E",
+      "comment": ""
+    },
+    {
+      "offset": 195,
+      "name": "l_6988",
+      "comment": ""
+    },
+    {
+      "offset": 206,
+      "name": "l_6993",
+      "comment": ""
+    },
+    {
+      "offset": 213,
+      "name": "GetBit",
+      "comment": ""
+    },
+    {
+      "offset": 228,
+      "name": "l_69A9",
+      "comment": ""
+    },
+    {
+      "offset": 230,
+      "name": "RelocTable",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth: the boot menu",
+      "case": "games/advanced-nether-earth",
+      "address": "$68C5",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/bootmenu/depack.asm",
+    "label": "ScreenDepack"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/03-build-and-load.md"
+  ]
+}

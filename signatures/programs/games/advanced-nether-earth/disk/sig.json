@@ -1,0 +1,203 @@
+{
+  "schema": 1,
+  "id": "programs/games/advanced-nether-earth/disk",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Advanced Nether Earth: disk",
+  "authors": [
+    "Eternity Industry"
+  ],
+  "year": 1998,
+  "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "disk"
+  ],
+  "summary": "The disk load bridge and the stack the bank calls run on.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 112,
+    "sha1": "6e7d3d2cac1c7e04e6845121c22483dbd8443bda",
+    "masked_sha1": "5021c0bc61ee4ba9b380f3facb35ec35a898b5a8"
+  },
+  "origin": "$A56A",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 5,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_A5ED"
+    },
+    {
+      "offset": 9,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    },
+    {
+      "offset": 23,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FLAGS"
+    },
+    {
+      "offset": 28,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LAST_K"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FLAGS2"
+    },
+    {
+      "offset": 36,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C000"
+    },
+    {
+      "offset": 50,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 53,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewBuffer"
+    },
+    {
+      "offset": 56,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewGameSetup"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "GameLoad",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Load a saved game through the disk module in bank 4"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "keep SP in LoadReturn's LD SP"
+    },
+    {
+      "offset": 4,
+      "name": "",
+      "comment": "GlueStack"
+    },
+    {
+      "offset": 7,
+      "name": "",
+      "comment": "the module's load entry"
+    },
+    {
+      "offset": 11,
+      "name": "",
+      "comment": "bank 4: the disk module"
+    },
+    {
+      "offset": 14,
+      "name": "",
+      "comment": "a frame's start"
+    },
+    {
+      "offset": 20,
+      "name": "",
+      "comment": "FLAGS: the keyboard state the module expects"
+    },
+    {
+      "offset": 25,
+      "name": "",
+      "comment": "LAST_K = ENTER"
+    },
+    {
+      "offset": 30,
+      "name": "",
+      "comment": "FLAGS2 bit 3: CAPS LOCK off"
+    },
+    {
+      "offset": 35,
+      "name": "",
+      "comment": "the disk module; it comes back with JP LoadReturn"
+    },
+    {
+      "offset": 38,
+      "name": "LoadReturn",
+      "comment": "back from the disk module (bank 0 paged again), its flags kept"
+    },
+    {
+      "offset": 39,
+      "name": "LoadReturnSP",
+      "comment": "the old SP (self-modified operand)"
+    },
+    {
+      "offset": 41,
+      "name": "",
+      "comment": "IM 2 through ImTable again"
+    },
+    {
+      "offset": 48,
+      "name": "",
+      "comment": "a frame's start"
+    },
+    {
+      "offset": 49,
+      "name": "",
+      "comment": "$FFFF into the view buffer's first word, which nothing reads"
+    },
+    {
+      "offset": 55,
+      "name": "",
+      "comment": "with the module's flags: NZ a game was loaded (NewGameSetup goes straight to EnterPlay), Z a new game"
+    },
+    {
+      "offset": 58,
+      "name": "GlueStack",
+      "comment": "The stack of the bank calls: SP = $A5ED, down over these 54 bytes and GameEntry's"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth",
+      "case": "games/advanced-nether-earth",
+      "address": "$A56A",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/game/disk.asm",
+    "label": "GameLoad"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/README.md"
+  ]
+}

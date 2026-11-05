@@ -1,0 +1,401 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth/controls",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth: controls",
+  "authors": [
+    "Argus Press Software"
+  ],
+  "year": 1987,
+  "tags": [
+    "nether-earth",
+    "game-module",
+    "controls"
+  ],
+  "summary": "The controls: KeyTable and the joystick into Input, the pause.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 105,
+    "sha1": "78cd7e753520f9b299aedadf95282e226085af19",
+    "masked_sha1": "6c1272147e57e0e0710c7d25e91b008762609937"
+  },
+  "origin": "$D37C",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 6,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 12,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 15,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 34,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Input"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "WaitKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ReadControls; while key 1 (Input bit 7) is held, the pause: wait for another key"
+    },
+    {
+      "offset": 14,
+      "name": "ReadControls",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Input from the redefinable keys (KeyTable) or the joystick the menu chose (Controls)"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "this turn's controls"
+    },
+    {
+      "offset": 3,
+      "name": "",
+      "comment": "bit 7, the pause, into the sign"
+    },
+    {
+      "offset": 4,
+      "name": "",
+      "comment": "not held: Input stands"
+    },
+    {
+      "offset": 5,
+      "name": "PauseLoop",
+      "comment": "key 1 held: wait for another control"
+    },
+    {
+      "offset": 8,
+      "name": "",
+      "comment": "nothing held?"
+    },
+    {
+      "offset": 9,
+      "name": "",
+      "comment": "then wait on"
+    },
+    {
+      "offset": 11,
+      "name": "",
+      "comment": "the pause key still held: wait on; else read once more, below"
+    },
+    {
+      "offset": 14,
+      "name": "",
+      "comment": "the eight key records"
+    },
+    {
+      "offset": 17,
+      "name": "",
+      "comment": "C = 1: the end marker, shifted out after 8 keys"
+    },
+    {
+      "offset": 19,
+      "name": "KeyLoop",
+      "comment": "A = the port's high byte: it selects the key's half row"
+    },
+    {
+      "offset": 20,
+      "name": "",
+      "comment": "to the mask"
+    },
+    {
+      "offset": 21,
+      "name": "",
+      "comment": "A = the half row's keys (0 = pressed)"
+    },
+    {
+      "offset": 23,
+      "name": "",
+      "comment": "Z: pressed"
+    },
+    {
+      "offset": 24,
+      "name": "",
+      "comment": "past the mask"
+    },
+    {
+      "offset": 25,
+      "name": "",
+      "comment": "past the key code: the next record"
+    },
+    {
+      "offset": 26,
+      "name": "",
+      "comment": "not pressed: the AND left carry 0"
+    },
+    {
+      "offset": 28,
+      "name": "",
+      "comment": "pressed: carry 1"
+    },
+    {
+      "offset": 29,
+      "name": "KeyShift",
+      "comment": "the key's state (carry 1 pressed) into C"
+    },
+    {
+      "offset": 31,
+      "name": "",
+      "comment": "no carry: the end marker is still in C, the next key"
+    },
+    {
+      "offset": 33,
+      "name": "",
+      "comment": "the joystick chosen in the menu"
+    },
+    {
+      "offset": 36,
+      "name": "",
+      "comment": "2: Kempston?"
+    },
+    {
+      "offset": 38,
+      "name": "",
+      "comment": "(yes)"
+    },
+    {
+      "offset": 40,
+      "name": "",
+      "comment": "3: Interface 2?"
+    },
+    {
+      "offset": 42,
+      "name": "",
+      "comment": "(yes)"
+    },
+    {
+      "offset": 44,
+      "name": "",
+      "comment": "keyboard only"
+    },
+    {
+      "offset": 45,
+      "name": "",
+      "comment": "nothing to add"
+    },
+    {
+      "offset": 47,
+      "name": "Kempston",
+      "comment": "port $1F: fire, up, down, left, right in bits 4-0"
+    },
+    {
+      "offset": 48,
+      "name": "",
+      "comment": "(port $001F)"
+    },
+    {
+      "offset": 50,
+      "name": "",
+      "comment": "bits 5-7 off: only the five directions and fire"
+    },
+    {
+      "offset": 52,
+      "name": "",
+      "comment": "on to the keys"
+    },
+    {
+      "offset": 54,
+      "name": "Interface2",
+      "comment": "keys 6-0 (port $EFFE) into the Kempston order"
+    },
+    {
+      "offset": 56,
+      "name": "",
+      "comment": "bits 0-4 = keys 0, 9, 8, 7, 6 (0 = pressed)"
+    },
+    {
+      "offset": 58,
+      "name": "",
+      "comment": "1 = pressed"
+    },
+    {
+      "offset": 59,
+      "name": "",
+      "comment": "the five keys"
+    },
+    {
+      "offset": 61,
+      "name": "",
+      "comment": "B = them"
+    },
+    {
+      "offset": 62,
+      "name": "",
+      "comment": "A collects the Kempston order"
+    },
+    {
+      "offset": 63,
+      "name": "",
+      "comment": "0 (fire) to bit 4, 9 (up) to bit 3, 8 (down) to bit 2"
+    },
+    {
+      "offset": 65,
+      "name": "",
+      "comment": "fire into A"
+    },
+    {
+      "offset": 66,
+      "name": "",
+      "comment": "9 (up)"
+    },
+    {
+      "offset": 68,
+      "name": "",
+      "comment": "into A"
+    },
+    {
+      "offset": 69,
+      "name": "",
+      "comment": "8 (down)"
+    },
+    {
+      "offset": 71,
+      "name": "",
+      "comment": "into A: now fire, up, down in bits 2-0"
+    },
+    {
+      "offset": 72,
+      "name": "",
+      "comment": "shifted ..."
+    },
+    {
+      "offset": 73,
+      "name": "",
+      "comment": "... to bits 4-2"
+    },
+    {
+      "offset": 74,
+      "name": "",
+      "comment": "7 (right) to bit 0, 6 (left) to bit 1"
+    },
+    {
+      "offset": 75,
+      "name": "InputDone",
+      "comment": "plus the keys"
+    },
+    {
+      "offset": 76,
+      "name": "",
+      "comment": "Input: the byte every routine reads"
+    },
+    {
+      "offset": 79,
+      "name": "",
+      "comment": "A = Input"
+    },
+    {
+      "offset": 80,
+      "name": "KeyTable",
+      "comment": "the keys, eight of 3 bytes: the port high byte, the bit mask, the key code (shown by the redefine menu)"
+    },
+    {
+      "offset": 80,
+      "name": "",
+      "comment": "Input bit 7 pause: key 1, port $F7FE (1-5) mask $01; the bytes: port high byte, mask, key code (redefine only)"
+    },
+    {
+      "offset": 83,
+      "name": "",
+      "comment": "Input bit 6 abort: key I, port $DFFE (P-Y) mask $04"
+    },
+    {
+      "offset": 86,
+      "name": "",
+      "comment": "Input bit 5 save: key 5, port $F7FE (1-5) mask $10"
+    },
+    {
+      "offset": 89,
+      "name": "",
+      "comment": "Input bit 4 fire: SYMBOL SHIFT, port $7FFE (SPACE-B) mask $02, code $82 (a redefine stores $0E)"
+    },
+    {
+      "offset": 92,
+      "name": "",
+      "comment": "Input bit 3 up: key Q, port $FBFE (Q-T) mask $01"
+    },
+    {
+      "offset": 95,
+      "name": "",
+      "comment": "Input bit 2 down: key A, port $FDFE (A-G) mask $01"
+    },
+    {
+      "offset": 98,
+      "name": "",
+      "comment": "Input bit 1 left: key O, port $DFFE (P-Y) mask $02"
+    },
+    {
+      "offset": 101,
+      "name": "",
+      "comment": "Input bit 0 right: key P, port $DFFE (P-Y) mask $01"
+    },
+    {
+      "offset": 104,
+      "name": "Controls",
+      "comment": "the menu's choice: 1 keyboard, 2 Kempston, 3 Interface 2"
+    },
+    {
+      "offset": 104,
+      "name": "",
+      "comment": "1 in the image: keyboard only (2 Kempston, 3 Interface 2)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth",
+      "case": "games/nether-earth",
+      "address": "$D37C",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    },
+    {
+      "program": "Advanced Nether Earth",
+      "case": "games/advanced-nether-earth",
+      "address": "$D37C",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth",
+    "file": "src/game/controls.asm",
+    "label": "WaitKey"
+  },
+  "docs": [
+    "games/nether-earth/docs/README.md"
+  ]
+}

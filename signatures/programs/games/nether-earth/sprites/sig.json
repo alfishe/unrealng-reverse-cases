@@ -1,0 +1,948 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth/sprites",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Nether Earth: sprites",
+  "authors": [
+    "Argus Press Software"
+  ],
+  "year": 1987,
+  "tags": [
+    "nether-earth",
+    "game-module",
+    "sprites"
+  ],
+  "summary": "The 89 sprite blocks: the ship, the map objects, the robot parts, the buildings' signs, the shots.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 15488,
+    "sha1": "a135a60a0f1e970daf56f3c317b0a7b7c28f5140",
+    "masked_sha1": "a135a60a0f1e970daf56f3c317b0a7b7c28f5140"
+  },
+  "origin": "$6980",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "SprTracksX",
+      "comment": "Sprite 22 (even column; SpriteTable 44): tracks, moving along X (directions 0-1), 27 rows x 3 bytes"
+    },
+    {
+      "offset": 2,
+      "name": "SprTracksXRows",
+      "comment": "SprTracksX: 27 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 164,
+      "name": "SprTracksXOdd",
+      "comment": "Sprite 22 (odd column; SpriteTable 45): tracks, moving along X (directions 0-1), 27 rows x 4 bytes"
+    },
+    {
+      "offset": 166,
+      "name": "SprTracksXOddRows",
+      "comment": "SprTracksXOdd: 27 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 382,
+      "name": "SprTracksY",
+      "comment": "Sprite 23 (even column; SpriteTable 46): tracks, moving along Y (directions 2-3), 28 rows x 3 bytes"
+    },
+    {
+      "offset": 384,
+      "name": "SprTracksYRows",
+      "comment": "SprTracksY: 28 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 552,
+      "name": "SprTracksYOdd",
+      "comment": "Sprite 23 (odd column; SpriteTable 47): tracks, moving along Y (directions 2-3), 28 rows x 4 bytes"
+    },
+    {
+      "offset": 554,
+      "name": "SprTracksYOddRows",
+      "comment": "SprTracksYOdd: 28 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 778,
+      "name": "SprBipodX",
+      "comment": "Sprite 24 (even column; SpriteTable 48): bipod legs, along X, 30 rows x 3 bytes"
+    },
+    {
+      "offset": 780,
+      "name": "SprBipodXRows",
+      "comment": "SprBipodX: 30 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 960,
+      "name": "SprBipodXOdd",
+      "comment": "Sprite 24 (odd column; SpriteTable 49): bipod legs, along X, 30 rows x 4 bytes"
+    },
+    {
+      "offset": 962,
+      "name": "SprBipodXOddRows",
+      "comment": "SprBipodXOdd: 30 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 1202,
+      "name": "SprBipodY",
+      "comment": "Sprite 25 (even column; SpriteTable 50): bipod legs, along Y, 29 rows x 3 bytes"
+    },
+    {
+      "offset": 1204,
+      "name": "SprBipodYRows",
+      "comment": "SprBipodY: 29 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 1378,
+      "name": "SprBipodYOdd",
+      "comment": "Sprite 25 (odd column; SpriteTable 51): bipod legs, along Y, 29 rows x 4 bytes"
+    },
+    {
+      "offset": 1380,
+      "name": "SprBipodYOddRows",
+      "comment": "SprBipodYOdd: 29 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 1612,
+      "name": "SprAntiGrav",
+      "comment": "Sprite 26 (even column; SpriteTable 52): anti-grav unit, every direction, 23 rows x 3 bytes"
+    },
+    {
+      "offset": 1614,
+      "name": "SprAntiGravRows",
+      "comment": "SprAntiGrav: 23 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 1752,
+      "name": "SprAntiGravOdd",
+      "comment": "Sprite 26 (odd column; SpriteTable 53): anti-grav unit, every direction, 23 rows x 4 bytes"
+    },
+    {
+      "offset": 1754,
+      "name": "SprAntiGravOddRows",
+      "comment": "SprAntiGravOdd: 23 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 1938,
+      "name": "SprCannonXp",
+      "comment": "Sprite 27 (even column; SpriteTable 54): cannon facing X+ (direction 0), 28 rows x 3 bytes"
+    },
+    {
+      "offset": 1940,
+      "name": "SprCannonXpRows",
+      "comment": "SprCannonXp: 28 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 2108,
+      "name": "SprCannonXpOdd",
+      "comment": "Sprite 27 (odd column; SpriteTable 55): cannon facing X+ (direction 0), 28 rows x 4 bytes"
+    },
+    {
+      "offset": 2110,
+      "name": "SprCannonXpOddRows",
+      "comment": "SprCannonXpOdd: 28 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 2334,
+      "name": "SprCannonXm",
+      "comment": "Sprite 28 (even column; SpriteTable 56): cannon facing X- (direction 1), 30 rows x 3 bytes"
+    },
+    {
+      "offset": 2336,
+      "name": "SprCannonXmRows",
+      "comment": "SprCannonXm: 30 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 2516,
+      "name": "SprCannonXmOdd",
+      "comment": "Sprite 28 (odd column; SpriteTable 57): cannon facing X- (direction 1), 30 rows x 4 bytes"
+    },
+    {
+      "offset": 2518,
+      "name": "SprCannonXmOddRows",
+      "comment": "SprCannonXmOdd: 30 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 2758,
+      "name": "SprCannonYp",
+      "comment": "Sprite 29 (even column; SpriteTable 58): cannon facing Y+ (direction 2), 30 rows x 3 bytes"
+    },
+    {
+      "offset": 2760,
+      "name": "SprCannonYpRows",
+      "comment": "SprCannonYp: 30 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 2940,
+      "name": "SprCannonYpOdd",
+      "comment": "Sprite 29 (odd column; SpriteTable 59): cannon facing Y+ (direction 2), 30 rows x 4 bytes"
+    },
+    {
+      "offset": 2942,
+      "name": "SprCannonYpOddRows",
+      "comment": "SprCannonYpOdd: 30 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 3182,
+      "name": "SprCannonYm",
+      "comment": "Sprite 30 (even column; SpriteTable 60): cannon facing Y- (direction 3), 25 rows x 3 bytes"
+    },
+    {
+      "offset": 3184,
+      "name": "SprCannonYmRows",
+      "comment": "SprCannonYm: 25 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 3334,
+      "name": "SprCannonYmOdd",
+      "comment": "Sprite 30 (odd column; SpriteTable 61): cannon facing Y- (direction 3), 25 rows x 4 bytes"
+    },
+    {
+      "offset": 3336,
+      "name": "SprCannonYmOddRows",
+      "comment": "SprCannonYmOdd: 25 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 3536,
+      "name": "SprMissilesX",
+      "comment": "Sprite 31 (even column; SpriteTable 62): missile pod along X, 27 rows x 3 bytes"
+    },
+    {
+      "offset": 3538,
+      "name": "SprMissilesXRows",
+      "comment": "SprMissilesX: 27 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 3700,
+      "name": "SprMissilesXOdd",
+      "comment": "Sprite 31 (odd column; SpriteTable 63): missile pod along X, 27 rows x 4 bytes"
+    },
+    {
+      "offset": 3702,
+      "name": "SprMissilesXOddRows",
+      "comment": "SprMissilesXOdd: 27 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 3918,
+      "name": "SprMissilesY",
+      "comment": "Sprite 32 (even column; SpriteTable 64): missile pod along Y, 28 rows x 3 bytes"
+    },
+    {
+      "offset": 3920,
+      "name": "SprMissilesYRows",
+      "comment": "SprMissilesY: 28 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 4088,
+      "name": "SprMissilesYOdd",
+      "comment": "Sprite 32 (odd column; SpriteTable 65): missile pod along Y, 28 rows x 4 bytes"
+    },
+    {
+      "offset": 4090,
+      "name": "SprMissilesYOddRows",
+      "comment": "SprMissilesYOdd: 28 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 4314,
+      "name": "SprPhasersXp",
+      "comment": "Sprite 33 (even column; SpriteTable 66): phasers facing X+, 28 rows x 3 bytes"
+    },
+    {
+      "offset": 4316,
+      "name": "SprPhasersXpRows",
+      "comment": "SprPhasersXp: 28 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 4484,
+      "name": "SprPhasersXpOdd",
+      "comment": "Sprite 33 (odd column; SpriteTable 67): phasers facing X+, 28 rows x 4 bytes"
+    },
+    {
+      "offset": 4486,
+      "name": "SprPhasersXpOddRows",
+      "comment": "SprPhasersXpOdd: 28 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 4710,
+      "name": "SprPhasersXm",
+      "comment": "Sprite 34 (even column; SpriteTable 68): phasers facing X-, 29 rows x 3 bytes"
+    },
+    {
+      "offset": 4712,
+      "name": "SprPhasersXmRows",
+      "comment": "SprPhasersXm: 29 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 4886,
+      "name": "SprPhasersXmOdd",
+      "comment": "Sprite 34 (odd column; SpriteTable 69): phasers facing X-, 29 rows x 4 bytes"
+    },
+    {
+      "offset": 4888,
+      "name": "SprPhasersXmOddRows",
+      "comment": "SprPhasersXmOdd: 29 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 5120,
+      "name": "SprPhasersYp",
+      "comment": "Sprite 35 (even column; SpriteTable 70): phasers facing Y+, 29 rows x 3 bytes"
+    },
+    {
+      "offset": 5122,
+      "name": "SprPhasersYpRows",
+      "comment": "SprPhasersYp: 29 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 5296,
+      "name": "SprPhasersYpOdd",
+      "comment": "Sprite 35 (odd column; SpriteTable 71): phasers facing Y+, 29 rows x 4 bytes"
+    },
+    {
+      "offset": 5298,
+      "name": "SprPhasersYpOddRows",
+      "comment": "SprPhasersYpOdd: 29 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 5530,
+      "name": "SprPhasersYm",
+      "comment": "Sprite 36 (even column; SpriteTable 72): phasers facing Y-, 26 rows x 3 bytes"
+    },
+    {
+      "offset": 5532,
+      "name": "SprPhasersYmRows",
+      "comment": "SprPhasersYm: 26 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 5688,
+      "name": "SprPhasersYmOdd",
+      "comment": "Sprite 36 (odd column; SpriteTable 73): phasers facing Y-, 26 rows x 4 bytes"
+    },
+    {
+      "offset": 5690,
+      "name": "SprPhasersYmOddRows",
+      "comment": "SprPhasersYmOdd: 26 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 5898,
+      "name": "SprNuclear",
+      "comment": "Sprite 37 (even column; SpriteTable 74): nuclear bomb (the ball with the trefoil), every direction, 29 rows x 3 bytes"
+    },
+    {
+      "offset": 5900,
+      "name": "SprNuclearRows",
+      "comment": "SprNuclear: 29 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 6074,
+      "name": "SprNuclearOdd",
+      "comment": "Sprite 37 (odd column; SpriteTable 75): nuclear bomb (the ball with the trefoil), every direction, 29 rows x 4 bytes"
+    },
+    {
+      "offset": 6076,
+      "name": "SprNuclearOddRows",
+      "comment": "SprNuclearOdd: 29 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 6308,
+      "name": "SprElectronicsXp",
+      "comment": "Sprite 38 (even column; SpriteTable 76): electronics dome facing X+, 24 rows x 3 bytes"
+    },
+    {
+      "offset": 6310,
+      "name": "SprElectronicsXpRows",
+      "comment": "SprElectronicsXp: 24 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 6454,
+      "name": "SprElectronicsXpOdd",
+      "comment": "Sprite 38 (odd column; SpriteTable 77): electronics dome facing X+, 24 rows x 3 bytes"
+    },
+    {
+      "offset": 6456,
+      "name": "SprElectronicsXpOddRows",
+      "comment": "SprElectronicsXpOdd: 24 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 6600,
+      "name": "SprElectronicsXm",
+      "comment": "Sprite 39 (even column; SpriteTable 78): electronics dome facing X-, 24 rows x 3 bytes"
+    },
+    {
+      "offset": 6602,
+      "name": "SprElectronicsXmRows",
+      "comment": "SprElectronicsXm: 24 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 6746,
+      "name": "SprElectronicsXmOdd",
+      "comment": "Sprite 39 (odd column; SpriteTable 79): electronics dome facing X-, 24 rows x 3 bytes"
+    },
+    {
+      "offset": 6748,
+      "name": "SprElectronicsXmOddRows",
+      "comment": "SprElectronicsXmOdd: 24 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 6892,
+      "name": "SprElectronicsYp",
+      "comment": "Sprite 40 (even column; SpriteTable 80): electronics dome facing Y+, 24 rows x 3 bytes"
+    },
+    {
+      "offset": 6894,
+      "name": "SprElectronicsYpRows",
+      "comment": "SprElectronicsYp: 24 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 7038,
+      "name": "SprElectronicsYpOdd",
+      "comment": "Sprite 40 (odd column; SpriteTable 81): electronics dome facing Y+, 24 rows x 3 bytes"
+    },
+    {
+      "offset": 7040,
+      "name": "SprElectronicsYpOddRows",
+      "comment": "SprElectronicsYpOdd: 24 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 7184,
+      "name": "SprElectronicsYm",
+      "comment": "Sprite 41 (even column; SpriteTable 82): electronics dome facing Y-, 24 rows x 3 bytes"
+    },
+    {
+      "offset": 7186,
+      "name": "SprElectronicsYmRows",
+      "comment": "SprElectronicsYm: 24 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 7330,
+      "name": "SprElectronicsYmOdd",
+      "comment": "Sprite 41 (odd column; SpriteTable 83): electronics dome facing Y-, 24 rows x 3 bytes"
+    },
+    {
+      "offset": 7332,
+      "name": "SprElectronicsYmOddRows",
+      "comment": "SprElectronicsYmOdd: 24 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 7476,
+      "name": "SprFlagPlayer",
+      "comment": "Sprite 42 (even column; SpriteTable 84): the player's flag, building type 7, 11 rows x 3 bytes"
+    },
+    {
+      "offset": 7478,
+      "name": "SprFlagPlayerRows",
+      "comment": "SprFlagPlayer: 11 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 7544,
+      "name": "SprFlagPlayerOdd",
+      "comment": "Sprite 42 (odd column; SpriteTable 85): the player's flag, building type 7, 11 rows x 4 bytes"
+    },
+    {
+      "offset": 7546,
+      "name": "SprFlagPlayerOddRows",
+      "comment": "SprFlagPlayerOdd: 11 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 7634,
+      "name": "SprFlagEnemy",
+      "comment": "Sprite 43 (even column; SpriteTable 86): the enemy's flag, building type 8, 11 rows x 3 bytes"
+    },
+    {
+      "offset": 7636,
+      "name": "SprFlagEnemyRows",
+      "comment": "SprFlagEnemy: 11 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 7702,
+      "name": "SprFlagEnemyOdd",
+      "comment": "Sprite 43 (odd column; SpriteTable 87): the enemy's flag, building type 8, 11 rows x 4 bytes"
+    },
+    {
+      "offset": 7704,
+      "name": "SprFlagEnemyOddRows",
+      "comment": "SprFlagEnemyOdd: 11 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 7792,
+      "name": "SprWarbaseSign",
+      "comment": "Sprite 44 (even column; SpriteTable 88): the warbase sign, building type 0, 17 rows x 3 bytes"
+    },
+    {
+      "offset": 7794,
+      "name": "SprWarbaseSignRows",
+      "comment": "SprWarbaseSign: 17 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 7896,
+      "name": "SprWarbaseSignOdd",
+      "comment": "Sprite 44 (odd column; SpriteTable 89): the warbase sign, building type 0, 17 rows x 4 bytes"
+    },
+    {
+      "offset": 7898,
+      "name": "SprWarbaseSignOddRows",
+      "comment": "SprWarbaseSignOdd: 17 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 8034,
+      "name": "SprShotCannonX",
+      "comment": "Sprite 45 (even column; SpriteTable 90): cannon shell, flying along X, 16 rows x 2 bytes"
+    },
+    {
+      "offset": 8036,
+      "name": "SprShotCannonXRows",
+      "comment": "SprShotCannonX: 16 rows of 2 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 8100,
+      "name": "SprShotCannonXOdd",
+      "comment": "Sprite 45 (odd column; SpriteTable 91): cannon shell, flying along X, 16 rows x 2 bytes"
+    },
+    {
+      "offset": 8102,
+      "name": "SprShotCannonXOddRows",
+      "comment": "SprShotCannonXOdd: 16 rows of 2 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 8166,
+      "name": "SprShotCannonY",
+      "comment": "Sprite 46 (even column; SpriteTable 92): cannon shell, flying along Y, 13 rows x 3 bytes"
+    },
+    {
+      "offset": 8168,
+      "name": "SprShotCannonYRows",
+      "comment": "SprShotCannonY: 13 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 8246,
+      "name": "SprShotCannonYOdd",
+      "comment": "Sprite 46 (odd column; SpriteTable 93): cannon shell, flying along Y, 13 rows x 3 bytes"
+    },
+    {
+      "offset": 8248,
+      "name": "SprShotCannonYOddRows",
+      "comment": "SprShotCannonYOdd: 13 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 8326,
+      "name": "SprShotMissileX",
+      "comment": "Sprite 47 (even column; SpriteTable 94): missile, flying along X, 22 rows x 3 bytes"
+    },
+    {
+      "offset": 8328,
+      "name": "SprShotMissileXRows",
+      "comment": "SprShotMissileX: 22 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 8460,
+      "name": "SprShotMissileXOdd",
+      "comment": "Sprite 47 (odd column; SpriteTable 95): missile, flying along X, 22 rows x 4 bytes"
+    },
+    {
+      "offset": 8462,
+      "name": "SprShotMissileXOddRows",
+      "comment": "SprShotMissileXOdd: 22 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 8638,
+      "name": "SprShotMissileY",
+      "comment": "Sprite 48 (even column; SpriteTable 96): missile, flying along Y, 22 rows x 3 bytes"
+    },
+    {
+      "offset": 8640,
+      "name": "SprShotMissileYRows",
+      "comment": "SprShotMissileY: 22 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 8772,
+      "name": "SprShotMissileYOdd",
+      "comment": "Sprite 48 (odd column; SpriteTable 97): missile, flying along Y, 22 rows x 4 bytes"
+    },
+    {
+      "offset": 8774,
+      "name": "SprShotMissileYOddRows",
+      "comment": "SprShotMissileYOdd: 22 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 8950,
+      "name": "SprShotPhaserX",
+      "comment": "Sprite 49 (even column; SpriteTable 98): phaser beam, along X, 17 rows x 3 bytes"
+    },
+    {
+      "offset": 8952,
+      "name": "SprShotPhaserXRows",
+      "comment": "SprShotPhaserX: 17 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 9054,
+      "name": "SprShotPhaserXOdd",
+      "comment": "Sprite 49 (odd column; SpriteTable 99): phaser beam, along X, 17 rows x 3 bytes"
+    },
+    {
+      "offset": 9056,
+      "name": "SprShotPhaserXOddRows",
+      "comment": "SprShotPhaserXOdd: 17 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 9158,
+      "name": "SprShotPhaserY",
+      "comment": "Sprite 50 (even column; SpriteTable 100): phaser beam, along Y, 20 rows x 3 bytes"
+    },
+    {
+      "offset": 9160,
+      "name": "SprShotPhaserYRows",
+      "comment": "SprShotPhaserY: 20 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 9280,
+      "name": "SprShotPhaserYOdd",
+      "comment": "Sprite 50 (odd column; SpriteTable 101): phaser beam, along Y, 20 rows x 3 bytes"
+    },
+    {
+      "offset": 9282,
+      "name": "SprShotPhaserYOddRows",
+      "comment": "SprShotPhaserYOdd: 20 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 9402,
+      "name": "SprShip",
+      "comment": "Sprite 0 (even column; SpriteTable 0, 38, 39, 40, 41): the player's ship, 30 rows x 4 bytes"
+    },
+    {
+      "offset": 9404,
+      "name": "SprShipRows",
+      "comment": "SprShip: 30 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 9644,
+      "name": "SprShipOdd",
+      "comment": "Sprite 0 (odd column; SpriteTable 1): the player's ship, 30 rows x 4 bytes"
+    },
+    {
+      "offset": 9646,
+      "name": "SprShipOddRows",
+      "comment": "SprShipOdd: 30 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 9886,
+      "name": "SprShadow",
+      "comment": "Sprite 1 (even column; SpriteTable 2): the ship's shadow on the ground, 24 rows x 3 bytes"
+    },
+    {
+      "offset": 9888,
+      "name": "SprShadowRows",
+      "comment": "SprShadow: 24 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 10032,
+      "name": "SprShadowOdd",
+      "comment": "Sprite 1 (odd column; SpriteTable 3): the ship's shadow on the ground, 24 rows x 4 bytes"
+    },
+    {
+      "offset": 10034,
+      "name": "SprShadowOddRows",
+      "comment": "SprShadowOdd: 24 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 10226,
+      "name": "SprStonesA",
+      "comment": "Sprite 2 (both columns; SpriteTable 4, 5): stones, map type 2, 21 rows x 3 bytes"
+    },
+    {
+      "offset": 10228,
+      "name": "SprStonesARows",
+      "comment": "SprStonesA: 21 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 10354,
+      "name": "SprStonesB",
+      "comment": "Sprite 3 (both columns; SpriteTable 6, 7): stones, map type 3, 22 rows x 3 bytes"
+    },
+    {
+      "offset": 10356,
+      "name": "SprStonesBRows",
+      "comment": "SprStonesB: 22 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 10488,
+      "name": "SprStonesC",
+      "comment": "Sprite 4 (both columns; SpriteTable 8, 9): stones, map type 4, 21 rows x 3 bytes"
+    },
+    {
+      "offset": 10490,
+      "name": "SprStonesCRows",
+      "comment": "SprStonesC: 21 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 10616,
+      "name": "SprStonesD",
+      "comment": "Sprite 5 (both columns; SpriteTable 10, 11): stones, map type 5, 20 rows x 3 bytes"
+    },
+    {
+      "offset": 10618,
+      "name": "SprStonesDRows",
+      "comment": "SprStonesD: 20 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 10738,
+      "name": "SprRocksA",
+      "comment": "Sprite 8 (both columns; SpriteTable 16, 17): rocks, map type 8, 25 rows x 3 bytes"
+    },
+    {
+      "offset": 10740,
+      "name": "SprRocksARows",
+      "comment": "SprRocksA: 25 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 10890,
+      "name": "SprRocksB",
+      "comment": "Sprite 9 (both columns; SpriteTable 18, 19): rocks, map type 9, 26 rows x 3 bytes"
+    },
+    {
+      "offset": 10892,
+      "name": "SprRocksBRows",
+      "comment": "SprRocksB: 26 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 11048,
+      "name": "SprRocksC",
+      "comment": "Sprite 10 (both columns; SpriteTable 20, 21): rocks, map type 10, 23 rows x 3 bytes"
+    },
+    {
+      "offset": 11050,
+      "name": "SprRocksCRows",
+      "comment": "SprRocksC: 23 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 11188,
+      "name": "SprRocksD",
+      "comment": "Sprite 11 (both columns; SpriteTable 22, 23): rocks, map type 11, 24 rows x 3 bytes"
+    },
+    {
+      "offset": 11190,
+      "name": "SprRocksDRows",
+      "comment": "SprRocksD: 24 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 11334,
+      "name": "SprTrenchStartY",
+      "comment": "Sprite 12 (even column; SpriteTable 24): trench start along Y (map type 12 on even rows), 20 rows x 3 bytes"
+    },
+    {
+      "offset": 11336,
+      "name": "SprTrenchStartYRows",
+      "comment": "SprTrenchStartY: 20 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 11456,
+      "name": "SprTrenchStartX",
+      "comment": "Sprite 12 (odd column; SpriteTable 25): trench start along X (map type 12 on odd rows), 21 rows x 4 bytes"
+    },
+    {
+      "offset": 11458,
+      "name": "SprTrenchStartXRows",
+      "comment": "SprTrenchStartX: 21 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 11626,
+      "name": "SprTrenchMiddleY",
+      "comment": "Sprite 13 (even column; SpriteTable 26): trench middle along Y (map type 13 on even rows), 23 rows x 3 bytes"
+    },
+    {
+      "offset": 11628,
+      "name": "SprTrenchMiddleYRows",
+      "comment": "SprTrenchMiddleY: 23 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 11766,
+      "name": "SprTrenchMiddleX",
+      "comment": "Sprite 13 (odd column; SpriteTable 27): trench middle along X (map type 13 on odd rows), 21 rows x 4 bytes"
+    },
+    {
+      "offset": 11768,
+      "name": "SprTrenchMiddleXRows",
+      "comment": "SprTrenchMiddleX: 21 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 11936,
+      "name": "SprTrenchEndY",
+      "comment": "Sprite 14 (even column; SpriteTable 28): trench end along Y (map type 14 on even rows), 23 rows x 3 bytes"
+    },
+    {
+      "offset": 11938,
+      "name": "SprTrenchEndYRows",
+      "comment": "SprTrenchEndY: 23 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 12076,
+      "name": "SprTrenchEndX",
+      "comment": "Sprite 14 (odd column; SpriteTable 29): trench end along X (map type 14 on odd rows), 17 rows x 3 bytes"
+    },
+    {
+      "offset": 12078,
+      "name": "SprTrenchEndXRows",
+      "comment": "SprTrenchEndX: 17 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 12180,
+      "name": "SprBlockLow",
+      "comment": "Sprite 15 (even column; SpriteTable 30): low block, map type 15, 32 rows x 4 bytes"
+    },
+    {
+      "offset": 12182,
+      "name": "SprBlockLowRows",
+      "comment": "SprBlockLow: 32 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 12438,
+      "name": "SprBlockLowOdd",
+      "comment": "Sprite 15 (odd column; SpriteTable 31): low block, map type 15, 32 rows x 4 bytes"
+    },
+    {
+      "offset": 12440,
+      "name": "SprBlockLowOddRows",
+      "comment": "SprBlockLowOdd: 32 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 12696,
+      "name": "SprBlockTall",
+      "comment": "Sprite 16 (even column; SpriteTable 32): tall block with an arch, map type 16, 40 rows x 4 bytes"
+    },
+    {
+      "offset": 12698,
+      "name": "SprBlockTallRows",
+      "comment": "SprBlockTall: 40 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 13018,
+      "name": "SprBlockTallOdd",
+      "comment": "Sprite 16 (odd column; SpriteTable 33): tall block with an arch, map type 16, 40 rows x 4 bytes"
+    },
+    {
+      "offset": 13020,
+      "name": "SprBlockTallOddRows",
+      "comment": "SprBlockTallOdd: 40 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 13340,
+      "name": "SprBouldersA",
+      "comment": "Sprite 6 (even column; SpriteTable 12): boulders, map type 6, 25 rows x 3 bytes"
+    },
+    {
+      "offset": 13342,
+      "name": "SprBouldersARows",
+      "comment": "SprBouldersA: 25 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 13492,
+      "name": "SprBouldersAOdd",
+      "comment": "Sprite 6 (odd column; SpriteTable 13): boulders, map type 6, 24 rows x 4 bytes"
+    },
+    {
+      "offset": 13494,
+      "name": "SprBouldersAOddRows",
+      "comment": "SprBouldersAOdd: 24 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 13686,
+      "name": "SprBouldersB",
+      "comment": "Sprite 7 (even column; SpriteTable 14): boulders, map type 7, 25 rows x 3 bytes"
+    },
+    {
+      "offset": 13688,
+      "name": "SprBouldersBRows",
+      "comment": "SprBouldersB: 25 rows of 3 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 13838,
+      "name": "SprBouldersBOdd",
+      "comment": "Sprite 7 (odd column; SpriteTable 15): boulders, map type 7, 24 rows x 4 bytes"
+    },
+    {
+      "offset": 13840,
+      "name": "SprBouldersBOddRows",
+      "comment": "SprBouldersBOdd: 24 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 14032,
+      "name": "SprPost",
+      "comment": "Sprite 21 (both columns; SpriteTable 42, 43): border post, map type 21, 36 rows x 2 bytes"
+    },
+    {
+      "offset": 14034,
+      "name": "SprPostRows",
+      "comment": "SprPost: 36 rows of 2 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 14178,
+      "name": "SprBlockDoor",
+      "comment": "Sprite 17 (even column; SpriteTable 34): low block with a door, map type 17 on even rows, 32 rows x 4 bytes"
+    },
+    {
+      "offset": 14180,
+      "name": "SprBlockDoorRows",
+      "comment": "SprBlockDoor: 32 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 14436,
+      "name": "SprBlockWindow",
+      "comment": "Sprite 17 (odd column; SpriteTable 35): low block with a window, map type 17 on odd rows, 32 rows x 4 bytes"
+    },
+    {
+      "offset": 14438,
+      "name": "SprBlockWindowRows",
+      "comment": "SprBlockWindow: 32 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 14694,
+      "name": "SprBlockGrid",
+      "comment": "Sprite 18 (even column; SpriteTable 36): tall block with a grid face and a door, map type 18 on even rows, 40 rows x 4 bytes"
+    },
+    {
+      "offset": 14696,
+      "name": "SprBlockGridRows",
+      "comment": "SprBlockGrid: 40 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 15016,
+      "name": "SprBlockDotted",
+      "comment": "Sprite 18 (odd column; SpriteTable 37): tall block with a dotted face, map type 18 on odd rows, 40 rows x 4 bytes"
+    },
+    {
+      "offset": 15018,
+      "name": "SprBlockDottedRows",
+      "comment": "SprBlockDotted: 40 rows of 4 (mask, graphic) pairs, bottom line first"
+    },
+    {
+      "offset": 15338,
+      "name": "SpriteSpare",
+      "comment": "Free space after the sprites (150 zero bytes)"
+    },
+    {
+      "offset": 15338,
+      "name": "",
+      "comment": "150 zero bytes up to Start at $A600: free, never read or written"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth",
+      "case": "games/nether-earth",
+      "address": "$6980",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth",
+    "file": "src/game/sprites.asm",
+    "label": "SprTracksX"
+  },
+  "docs": [
+    "games/nether-earth/docs/README.md"
+  ]
+}

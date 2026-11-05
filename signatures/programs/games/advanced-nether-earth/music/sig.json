@@ -1,0 +1,268 @@
+{
+  "schema": 1,
+  "id": "programs/games/advanced-nether-earth/music",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Advanced Nether Earth: music",
+  "authors": [
+    "Eternity Industry"
+  ],
+  "year": 1998,
+  "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "music"
+  ],
+  "summary": "The AY music in the interrupts, the game's bank paging, the menu picture.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 128,
+    "sha1": "e9945034889efe95f2867742d4e3ff14bd86fa6d",
+    "masked_sha1": "c5a559642dccdc5e79ef965e1e663bb8f5acedef"
+  },
+  "origin": "$6780",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 18,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    },
+    {
+      "offset": 23,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C005"
+    },
+    {
+      "offset": 26,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 50,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShowRadar"
+    },
+    {
+      "offset": 63,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    },
+    {
+      "offset": 68,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C005"
+    },
+    {
+      "offset": 71,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    },
+    {
+      "offset": 74,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 87,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InterruptSound"
+    },
+    {
+      "offset": 92,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    },
+    {
+      "offset": 95,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 103,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 106,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_A5ED"
+    },
+    {
+      "offset": 111,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 114,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_E73B"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "MusicInterrupt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The interrupt handler outside play: one frame of the tune"
+    },
+    {
+      "offset": 49,
+      "name": "PlayMusic",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The music in play: PlayInterrupt's radar call, then one frame of the tune"
+    },
+    {
+      "offset": 90,
+      "name": "SetGameBank",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Page the bank in A ($7FFD) and keep it in GameBank"
+    },
+    {
+      "offset": 101,
+      "name": "MenuPicture",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The main menu's picture: bank 3's code draws it"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "(the CPU has already turned interrupts off on acceptance)"
+    },
+    {
+      "offset": 15,
+      "name": "",
+      "comment": "bank 1: the tunes and their player"
+    },
+    {
+      "offset": 22,
+      "name": "",
+      "comment": "one frame of the tune"
+    },
+    {
+      "offset": 28,
+      "name": "",
+      "comment": "the bank the game had paged"
+    },
+    {
+      "offset": 47,
+      "name": "",
+      "comment": "interrupts on again"
+    },
+    {
+      "offset": 49,
+      "name": "",
+      "comment": "this frame's radar picture, as PlayInterrupt set it up"
+    },
+    {
+      "offset": 60,
+      "name": "",
+      "comment": "bank 1"
+    },
+    {
+      "offset": 67,
+      "name": "",
+      "comment": "one frame of the tune"
+    },
+    {
+      "offset": 73,
+      "name": "",
+      "comment": "the game's bank again"
+    },
+    {
+      "offset": 86,
+      "name": "",
+      "comment": "on in PlayInterrupt: the sound effect, the exit"
+    },
+    {
+      "offset": 89,
+      "name": "GameBank",
+      "comment": "The $7FFD value the game last set: $10 (bank 0, screen 5, the 48 BASIC ROM)"
+    },
+    {
+      "offset": 101,
+      "name": "",
+      "comment": "keep SP in the LD SP below"
+    },
+    {
+      "offset": 105,
+      "name": "",
+      "comment": "GlueStack: the bank-3 call needs a stack below $C000"
+    },
+    {
+      "offset": 108,
+      "name": "",
+      "comment": "bank 3: Dead End and the picture"
+    },
+    {
+      "offset": 113,
+      "name": "",
+      "comment": "the picture onto the screen"
+    },
+    {
+      "offset": 116,
+      "name": "",
+      "comment": "bank 0, the game's own, again"
+    },
+    {
+      "offset": 121,
+      "name": "MenuPictureSP",
+      "comment": "the old SP (self-modified operand)"
+    },
+    {
+      "offset": 125,
+      "name": "MusicSpare",
+      "comment": "3 bytes, never used"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth",
+      "case": "games/advanced-nether-earth",
+      "address": "$6780",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/game/music.asm",
+    "label": "MusicInterrupt"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/README.md"
+  ]
+}

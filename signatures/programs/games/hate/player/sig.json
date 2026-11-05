@@ -1,0 +1,1307 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/player",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: player",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "player"
+  ],
+  "summary": "Player.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 940,
+    "sha1": "98a04f541eb47c509afb90aff305059836bc59df",
+    "masked_sha1": "b65c8e59b1a763f7c09da29e7d4fc48071be20c1"
+  },
+  "origin": "$E68C",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AutoCountdown"
+    },
+    {
+      "offset": 8,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AutoCountdown"
+    },
+    {
+      "offset": 11,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BlankMessage"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AutoText"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintString"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AutoCountdown"
+    },
+    {
+      "offset": 26,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 34,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C003"
+    },
+    {
+      "offset": 49,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C003"
+    },
+    {
+      "offset": 52,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C004"
+    },
+    {
+      "offset": 60,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverHeight"
+    },
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverHeight"
+    },
+    {
+      "offset": 82,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 94,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C006"
+    },
+    {
+      "offset": 97,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Followers"
+    },
+    {
+      "offset": 103,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C066"
+    },
+    {
+      "offset": 116,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InputDevice"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 197,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ControlByte"
+    },
+    {
+      "offset": 200,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 226,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ControlByte"
+    },
+    {
+      "offset": 229,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 249,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ControlByte"
+    },
+    {
+      "offset": 295,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ControlByte"
+    },
+    {
+      "offset": 302,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Followers"
+    },
+    {
+      "offset": 307,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_ECF0"
+    },
+    {
+      "offset": 333,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C006"
+    },
+    {
+      "offset": 350,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 353,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerShotRecords"
+    },
+    {
+      "offset": 387,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ControlByte"
+    },
+    {
+      "offset": 395,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 398,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 401,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 405,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 411,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 414,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 425,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerShotRecords"
+    },
+    {
+      "offset": 435,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 438,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 445,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ControlByte"
+    },
+    {
+      "offset": 454,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 458,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShellTemplate"
+    },
+    {
+      "offset": 468,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C001"
+    },
+    {
+      "offset": 481,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C003"
+    },
+    {
+      "offset": 488,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileArc"
+    },
+    {
+      "offset": 511,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShotTemplate"
+    },
+    {
+      "offset": 521,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C001"
+    },
+    {
+      "offset": 534,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C003"
+    },
+    {
+      "offset": 543,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 548,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ControlByte"
+    },
+    {
+      "offset": 552,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 559,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C004"
+    },
+    {
+      "offset": 562,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverHeight"
+    },
+    {
+      "offset": 571,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DownHeldCount"
+    },
+    {
+      "offset": 579,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DownHeldCount"
+    },
+    {
+      "offset": 592,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverHeight"
+    },
+    {
+      "offset": 601,
+      "length": 2,
+      "kind": "ext16",
+      "name": "UpHeldCount"
+    },
+    {
+      "offset": 609,
+      "length": 2,
+      "kind": "ext16",
+      "name": "UpHeldCount"
+    },
+    {
+      "offset": 628,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoverHeight"
+    },
+    {
+      "offset": 633,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 654,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 661,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 671,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 679,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 684,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C006"
+    },
+    {
+      "offset": 687,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_ECF0"
+    },
+    {
+      "offset": 708,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5FF7"
+    },
+    {
+      "offset": 711,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C001"
+    },
+    {
+      "offset": 750,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C003"
+    },
+    {
+      "offset": 756,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRecord"
+    },
+    {
+      "offset": 762,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C006"
+    },
+    {
+      "offset": 767,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C008"
+    },
+    {
+      "offset": 770,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C001"
+    },
+    {
+      "offset": 773,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFE"
+    },
+    {
+      "offset": 777,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C001"
+    },
+    {
+      "offset": 780,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 786,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Followers"
+    },
+    {
+      "offset": 789,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_ECF0"
+    },
+    {
+      "offset": 835,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ControlByte"
+    },
+    {
+      "offset": 844,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LeftHeldCount"
+    },
+    {
+      "offset": 852,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LeftHeldCount"
+    },
+    {
+      "offset": 860,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C003"
+    },
+    {
+      "offset": 869,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C003"
+    },
+    {
+      "offset": 877,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RightHeldCount"
+    },
+    {
+      "offset": 885,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RightHeldCount"
+    },
+    {
+      "offset": 893,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C003"
+    },
+    {
+      "offset": 906,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C003"
+    },
+    {
+      "offset": 911,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 935,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "ReadControls",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Input: the AUTO countdown, or the chosen device into the control byte"
+    },
+    {
+      "offset": 301,
+      "name": "ConvoyFollow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The followers copy the one in front"
+    },
+    {
+      "offset": 349,
+      "name": "MovePlayer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The player: shot life, firing"
+    },
+    {
+      "offset": 547,
+      "name": "PlayerSteer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The player: height or speed, walls, across"
+    },
+    {
+      "offset": 909,
+      "name": "Random",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The random number generator"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "AUTO countdown, set by the round setup ($D251) and at the barrier"
+    },
+    {
+      "offset": 10,
+      "name": "",
+      "comment": "the count reached 0: clear the message window"
+    },
+    {
+      "offset": 15,
+      "name": "",
+      "comment": "still counting: \" AUTO \" (the string stored in the font's spare slots)"
+    },
+    {
+      "offset": 18,
+      "name": "PrintAutoText",
+      "comment": ""
+    },
+    {
+      "offset": 21,
+      "name": "",
+      "comment": "the count, kept in A' for the height ease below"
+    },
+    {
+      "offset": 25,
+      "name": "",
+      "comment": "sound request bit 3: the AUTO beep"
+    },
+    {
+      "offset": 30,
+      "name": "",
+      "comment": "the followers copy the leader"
+    },
+    {
+      "offset": 33,
+      "name": "",
+      "comment": "position across: 2 a pass toward the start position, $2C"
+    },
+    {
+      "offset": 46,
+      "name": "AutoAcrossUp",
+      "comment": ""
+    },
+    {
+      "offset": 48,
+      "name": "AutoStoreAcross",
+      "comment": ""
+    },
+    {
+      "offset": 51,
+      "name": "",
+      "comment": "height - 1, but not below 2"
+    },
+    {
+      "offset": 59,
+      "name": "AutoStoreHeight",
+      "comment": ""
+    },
+    {
+      "offset": 63,
+      "name": "",
+      "comment": "last 6 passes: + (6 - count) / 2"
+    },
+    {
+      "offset": 79,
+      "name": "AutoSpeed",
+      "comment": ""
+    },
+    {
+      "offset": 81,
+      "name": "",
+      "comment": "speed 0 while the reserve lasts, then 1"
+    },
+    {
+      "offset": 92,
+      "name": "AutoStoreSpeed",
+      "comment": ""
+    },
+    {
+      "offset": 96,
+      "name": "",
+      "comment": "no followers: done"
+    },
+    {
+      "offset": 102,
+      "name": "",
+      "comment": "+6 (speed) of the four pod slots $C060-$C090"
+    },
+    {
+      "offset": 110,
+      "name": "AutoPodSpeedLoop",
+      "comment": ""
+    },
+    {
+      "offset": 115,
+      "name": "ReadDevice",
+      "comment": "$C28F: the device chosen in the menu"
+    },
+    {
+      "offset": 130,
+      "name": "ReadKeyboard",
+      "comment": "device 0: Q, A, K, L, fire on the bottom two rows"
+    },
+    {
+      "offset": 135,
+      "name": "",
+      "comment": "Q"
+    },
+    {
+      "offset": 142,
+      "name": "",
+      "comment": "bit 0 of $C000 (the vehicle type) decides whether Q is up or down"
+    },
+    {
+      "offset": 150,
+      "name": "QIsDown",
+      "comment": ""
+    },
+    {
+      "offset": 152,
+      "name": "ReadKeyA",
+      "comment": "A, the opposite of Q"
+    },
+    {
+      "offset": 167,
+      "name": "AIsUp",
+      "comment": ""
+    },
+    {
+      "offset": 169,
+      "name": "ReadKeysKL",
+      "comment": "L (bit 1) right, K (bit 2) left"
+    },
+    {
+      "offset": 179,
+      "name": "ReadKeyK",
+      "comment": ""
+    },
+    {
+      "offset": 184,
+      "name": "ReadFireRows",
+      "comment": "$7EFE selects the rows $7FFE and $FEFE together: any key there fires"
+    },
+    {
+      "offset": 195,
+      "name": "StoreKeyboard",
+      "comment": ""
+    },
+    {
+      "offset": 196,
+      "name": "",
+      "comment": "the control byte"
+    },
+    {
+      "offset": 202,
+      "name": "ReadSinclair",
+      "comment": "device 1, both Interface 2 rows: 1-5 left, right, down, up, fire as they are"
+    },
+    {
+      "offset": 210,
+      "name": "",
+      "comment": "0, 9, 8, 7, 6 from bit 0: reversed below to line up with 1-5"
+    },
+    {
+      "offset": 219,
+      "name": "ReverseBitsLoop",
+      "comment": "five bits of C reversed into A"
+    },
+    {
+      "offset": 224,
+      "name": "",
+      "comment": "the two sticks ORed together"
+    },
+    {
+      "offset": 231,
+      "name": "ReadKempston",
+      "comment": "device 2: port $1F"
+    },
+    {
+      "offset": 234,
+      "name": "",
+      "comment": "down, up, fire as they are"
+    },
+    {
+      "offset": 236,
+      "name": "",
+      "comment": "Kempston right (bit 0) is the game's bit 1"
+    },
+    {
+      "offset": 242,
+      "name": "KempstonLeft",
+      "comment": "Kempston left (bit 1) is the game's bit 0"
+    },
+    {
+      "offset": 248,
+      "name": "StoreKempston",
+      "comment": ""
+    },
+    {
+      "offset": 253,
+      "name": "ReadProtek",
+      "comment": "device 3: the cursor keys 5, 6, 7, 8 and 0"
+    },
+    {
+      "offset": 259,
+      "name": "",
+      "comment": "5: left"
+    },
+    {
+      "offset": 265,
+      "name": "ProtekDown",
+      "comment": ""
+    },
+    {
+      "offset": 269,
+      "name": "",
+      "comment": "6: down"
+    },
+    {
+      "offset": 275,
+      "name": "ProtekUp",
+      "comment": "7: up"
+    },
+    {
+      "offset": 281,
+      "name": "ProtekRight",
+      "comment": "8: right"
+    },
+    {
+      "offset": 287,
+      "name": "ProtekFire",
+      "comment": "0: fire"
+    },
+    {
+      "offset": 293,
+      "name": "StoreProtek",
+      "comment": ""
+    },
+    {
+      "offset": 299,
+      "name": "FireCount",
+      "comment": "Passes with fire held"
+    },
+    {
+      "offset": 300,
+      "name": "SpeedReserve",
+      "comment": "The ground vehicle's speed reserve"
+    },
+    {
+      "offset": 301,
+      "name": "",
+      "comment": "followers"
+    },
+    {
+      "offset": 306,
+      "name": "",
+      "comment": "the last link: DE = its follower's +3"
+    },
+    {
+      "offset": 311,
+      "name": "ConvoyLinkLoop",
+      "comment": ""
+    },
+    {
+      "offset": 322,
+      "name": "",
+      "comment": "BC = the link in front ($FF high byte: none)"
+    },
+    {
+      "offset": 330,
+      "name": "",
+      "comment": "across from the one in front"
+    },
+    {
+      "offset": 332,
+      "name": "",
+      "comment": "standing: the height is not copied"
+    },
+    {
+      "offset": 342,
+      "name": "NextConvoyLink",
+      "comment": ""
+    },
+    {
+      "offset": 352,
+      "name": "",
+      "comment": "the five shot slots, +F (16 - 1 bytes on)"
+    },
+    {
+      "offset": 360,
+      "name": "AgeShotLoop",
+      "comment": ""
+    },
+    {
+      "offset": 366,
+      "name": "",
+      "comment": "the shot's age, one more a pass"
+    },
+    {
+      "offset": 369,
+      "name": "",
+      "comment": "12 passes: its life is over"
+    },
+    {
+      "offset": 376,
+      "name": "",
+      "comment": "exploding shots run their explosion out"
+    },
+    {
+      "offset": 380,
+      "name": "",
+      "comment": "gone"
+    },
+    {
+      "offset": 382,
+      "name": "ShotExploding",
+      "comment": ""
+    },
+    {
+      "offset": 383,
+      "name": "NextShotAge",
+      "comment": ""
+    },
+    {
+      "offset": 386,
+      "name": "",
+      "comment": "fire held?"
+    },
+    {
+      "offset": 393,
+      "name": "",
+      "comment": "released: the count starts again"
+    },
+    {
+      "offset": 400,
+      "name": "FireHeld",
+      "comment": ""
+    },
+    {
+      "offset": 408,
+      "name": "",
+      "comment": "every other pass"
+    },
+    {
+      "offset": 416,
+      "name": "",
+      "comment": "a player being hit does not fire, and RET skips its steering and walls this pass"
+    },
+    {
+      "offset": 427,
+      "name": "FreeShotLoop",
+      "comment": "the first free shot slot (bit 7)"
+    },
+    {
+      "offset": 437,
+      "name": "ShotSlotFound",
+      "comment": ""
+    },
+    {
+      "offset": 440,
+      "name": "",
+      "comment": "the ground vehicle ..."
+    },
+    {
+      "offset": 447,
+      "name": "",
+      "comment": "... with up held ..."
+    },
+    {
+      "offset": 451,
+      "name": "",
+      "comment": "... lobs a shell every fourth pass"
+    },
+    {
+      "offset": 457,
+      "name": "",
+      "comment": "the shell template"
+    },
+    {
+      "offset": 467,
+      "name": "",
+      "comment": "along: the player's position + 4"
+    },
+    {
+      "offset": 479,
+      "name": "",
+      "comment": "across and (D) height"
+    },
+    {
+      "offset": 487,
+      "name": "",
+      "comment": "the step of the arc table $C282 at the player's height"
+    },
+    {
+      "offset": 492,
+      "name": "ArcStepLoop",
+      "comment": ""
+    },
+    {
+      "offset": 499,
+      "name": "StoreArcStep",
+      "comment": ""
+    },
+    {
+      "offset": 506,
+      "name": "",
+      "comment": "+E: the arc step"
+    },
+    {
+      "offset": 509,
+      "name": "FireShot",
+      "comment": ""
+    },
+    {
+      "offset": 510,
+      "name": "",
+      "comment": "the shot template"
+    },
+    {
+      "offset": 539,
+      "name": "",
+      "comment": "2 below the player's height"
+    },
+    {
+      "offset": 542,
+      "name": "ShotSound",
+      "comment": "sound request bit 4: a shot"
+    },
+    {
+      "offset": 551,
+      "name": "",
+      "comment": "type 0 the aircraft, type 1 the ground vehicle"
+    },
+    {
+      "offset": 558,
+      "name": "",
+      "comment": "the aircraft: height into $C2F6"
+    },
+    {
+      "offset": 566,
+      "name": "",
+      "comment": "down held: the down counter grows to 6"
+    },
+    {
+      "offset": 578,
+      "name": "StoreDownCount",
+      "comment": ""
+    },
+    {
+      "offset": 581,
+      "name": "",
+      "comment": "+ (counter + 1) / 2"
+    },
+    {
+      "offset": 585,
+      "name": "",
+      "comment": "at most 26"
+    },
+    {
+      "offset": 591,
+      "name": "HeightAfterDown",
+      "comment": ""
+    },
+    {
+      "offset": 596,
+      "name": "",
+      "comment": "up held: the up counter grows to 6"
+    },
+    {
+      "offset": 608,
+      "name": "StoreUpCount",
+      "comment": ""
+    },
+    {
+      "offset": 615,
+      "name": "",
+      "comment": "- (counter + 1) / 2"
+    },
+    {
+      "offset": 625,
+      "name": "HeightFloor",
+      "comment": "below 3 or wrapped: 2"
+    },
+    {
+      "offset": 627,
+      "name": "HeightAfterUp",
+      "comment": ""
+    },
+    {
+      "offset": 632,
+      "name": "GroundVehicle",
+      "comment": "the ground vehicle: speed, not height"
+    },
+    {
+      "offset": 635,
+      "name": "",
+      "comment": "being hit: no steering"
+    },
+    {
+      "offset": 641,
+      "name": "",
+      "comment": "fire and up together: speed 1 (the shell is lobbed)"
+    },
+    {
+      "offset": 649,
+      "name": "CheckSlowDown",
+      "comment": "down: slower, spending the reserve"
+    },
+    {
+      "offset": 666,
+      "name": "CheckSpeedUp",
+      "comment": "up: faster, earning the reserve back to 32"
+    },
+    {
+      "offset": 682,
+      "name": "StoreVehicleSpeed",
+      "comment": ""
+    },
+    {
+      "offset": 683,
+      "name": "",
+      "comment": "the speed"
+    },
+    {
+      "offset": 686,
+      "name": "",
+      "comment": "the followers' +6 get the same speed"
+    },
+    {
+      "offset": 691,
+      "name": "FollowerSpeedLoop",
+      "comment": ""
+    },
+    {
+      "offset": 704,
+      "name": "NextFollowerSpeed",
+      "comment": ""
+    },
+    {
+      "offset": 707,
+      "name": "WallCheck",
+      "comment": "the profile under the player: $6000 - 9 + position / 2"
+    },
+    {
+      "offset": 722,
+      "name": "",
+      "comment": "C = 0 if the first byte is a bit 7 wall, 1 if bit 6, 2 if neither"
+    },
+    {
+      "offset": 733,
+      "name": "OrProfileBytes",
+      "comment": "six bytes ORed"
+    },
+    {
+      "offset": 734,
+      "name": "OrProfileLoop",
+      "comment": ""
+    },
+    {
+      "offset": 738,
+      "name": "",
+      "comment": "no wall: the track's full width"
+    },
+    {
+      "offset": 743,
+      "name": "",
+      "comment": "bit 7 wall: limit $17"
+    },
+    {
+      "offset": 746,
+      "name": "",
+      "comment": "already beside that wall: only limited"
+    },
+    {
+      "offset": 749,
+      "name": "WallCrash",
+      "comment": "past the limit: the player crashes into the wall"
+    },
+    {
+      "offset": 758,
+      "name": "",
+      "comment": "hit"
+    },
+    {
+      "offset": 764,
+      "name": "",
+      "comment": "the explosion counter"
+    },
+    {
+      "offset": 769,
+      "name": "",
+      "comment": "back 2 along"
+    },
+    {
+      "offset": 779,
+      "name": "",
+      "comment": "sound request bit 1"
+    },
+    {
+      "offset": 784,
+      "name": "",
+      "comment": "the convoy is lost"
+    },
+    {
+      "offset": 788,
+      "name": "",
+      "comment": "every follower in the links is hit"
+    },
+    {
+      "offset": 793,
+      "name": "FollowerCrashLoop",
+      "comment": ""
+    },
+    {
+      "offset": 817,
+      "name": "NextFollowerCrash",
+      "comment": ""
+    },
+    {
+      "offset": 824,
+      "name": "CheckWall27",
+      "comment": "bit 6 wall: limit $27"
+    },
+    {
+      "offset": 834,
+      "name": "SteerAcross",
+      "comment": "left and right"
+    },
+    {
+      "offset": 839,
+      "name": "",
+      "comment": "left: the counter $E689 grows to 6"
+    },
+    {
+      "offset": 851,
+      "name": "StoreLeftCount",
+      "comment": ""
+    },
+    {
+      "offset": 854,
+      "name": "",
+      "comment": "step 2 * ((counter + 1) / 2)"
+    },
+    {
+      "offset": 859,
+      "name": "",
+      "comment": "left raises the position across, below the limit E"
+    },
+    {
+      "offset": 868,
+      "name": "StoreLeftAcross",
+      "comment": ""
+    },
+    {
+      "offset": 872,
+      "name": "",
+      "comment": "right: the counter $E68A"
+    },
+    {
+      "offset": 884,
+      "name": "StoreRightCount",
+      "comment": ""
+    },
+    {
+      "offset": 892,
+      "name": "",
+      "comment": "right lowers it, not below 2"
+    },
+    {
+      "offset": 903,
+      "name": "AcrossFloor",
+      "comment": ""
+    },
+    {
+      "offset": 905,
+      "name": "StoreRightAcross",
+      "comment": ""
+    },
+    {
+      "offset": 934,
+      "name": "StoreSeed",
+      "comment": ""
+    },
+    {
+      "offset": 938,
+      "name": "RandomSeed",
+      "comment": "The random seed"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$E68C",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/player.asm",
+    "label": "ReadControls"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

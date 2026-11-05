@@ -1,0 +1,272 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/statics",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: statics",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "statics"
+  ],
+  "summary": "Statics.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 370,
+    "sha1": "99e10b8eb41cac27848202d1b542fe16f3284b01",
+    "masked_sha1": "6216eec8855a0c2a6cffae4af8b63477ce6b55d9"
+  },
+  "origin": "$EA38",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C99E"
+    },
+    {
+      "offset": 68,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 71,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollPage"
+    },
+    {
+      "offset": 169,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 172,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteListArea"
+    },
+    {
+      "offset": 175,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteListPtr"
+    },
+    {
+      "offset": 178,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteListPtr"
+    },
+    {
+      "offset": 197,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteListPtr"
+    },
+    {
+      "offset": 210,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 213,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 267,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 321,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 368,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "StampStatics",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Static objects into the playfield buffer"
+    },
+    {
+      "offset": 171,
+      "name": "DrawSprites",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The moving objects into the playfield buffer"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "the list of types 14-15, made by $EFDC"
+    },
+    {
+      "offset": 4,
+      "name": "NextStaticRecord",
+      "comment": ""
+    },
+    {
+      "offset": 11,
+      "name": "",
+      "comment": "$FF: the end"
+    },
+    {
+      "offset": 17,
+      "name": "",
+      "comment": "+A plus the height: the line in the strip"
+    },
+    {
+      "offset": 30,
+      "name": "",
+      "comment": "only columns $20-$23, the edge being drawn"
+    },
+    {
+      "offset": 44,
+      "name": "NotColumn21",
+      "comment": ""
+    },
+    {
+      "offset": 52,
+      "name": "NotColumn22",
+      "comment": ""
+    },
+    {
+      "offset": 60,
+      "name": "FirstEdgeColumn",
+      "comment": "column $20: 4 strips, 3 with phase 0"
+    },
+    {
+      "offset": 70,
+      "name": "StaticTarget",
+      "comment": "the buffer row of the column"
+    },
+    {
+      "offset": 84,
+      "name": "",
+      "comment": "the sprite: pointer table at $C300 + (+8)"
+    },
+    {
+      "offset": 93,
+      "name": "",
+      "comment": "+ $70 times ((phase - 1) AND 3): phase 1 first, phase 0 last"
+    },
+    {
+      "offset": 104,
+      "name": "PhaseStepLoop",
+      "comment": ""
+    },
+    {
+      "offset": 108,
+      "name": "StaticFrameReady",
+      "comment": ""
+    },
+    {
+      "offset": 110,
+      "name": "StaticStripLoop",
+      "comment": "one strip: 14 bytes masked in (AND mask, OR data)"
+    },
+    {
+      "offset": 113,
+      "name": "StaticByteLoop",
+      "comment": ""
+    },
+    {
+      "offset": 161,
+      "name": "",
+      "comment": "the next strip: 2 rows of the buffer on, wrapping in $8000-$BFFF"
+    },
+    {
+      "offset": 171,
+      "name": "",
+      "comment": "the sprite list"
+    },
+    {
+      "offset": 177,
+      "name": "NextSpriteEntry",
+      "comment": ""
+    },
+    {
+      "offset": 180,
+      "name": "",
+      "comment": "kind; $FF ends the list"
+    },
+    {
+      "offset": 185,
+      "name": "",
+      "comment": "strip count, buffer address, sprite address"
+    },
+    {
+      "offset": 206,
+      "name": "",
+      "comment": "the kind picks the height of a strip"
+    },
+    {
+      "offset": 215,
+      "name": "DrawSpriteTall",
+      "comment": "kinds 0-3: 21 bytes a strip"
+    },
+    {
+      "offset": 218,
+      "name": "TallByteLoop",
+      "comment": ""
+    },
+    {
+      "offset": 269,
+      "name": "DrawSpriteMid",
+      "comment": "kinds 4-10: 17 bytes a strip"
+    },
+    {
+      "offset": 272,
+      "name": "MidByteLoop",
+      "comment": ""
+    },
+    {
+      "offset": 323,
+      "name": "DrawSpriteShort",
+      "comment": "kinds 11 and up: 13 bytes a strip"
+    },
+    {
+      "offset": 326,
+      "name": "ShortByteLoop",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$EA38",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/statics.asm",
+    "label": "StampStatics"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

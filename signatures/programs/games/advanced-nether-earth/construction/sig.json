@@ -1,0 +1,3048 @@
+{
+  "schema": 1,
+  "id": "programs/games/advanced-nether-earth/construction",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Advanced Nether Earth: construction",
+  "authors": [
+    "Eternity Industry"
+  ],
+  "year": 1998,
+  "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "construction"
+  ],
+  "summary": "The construction menu, robot placement on the map, the beeper tone.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1140,
+    "sha1": "916863437903993829e90b1bb9f5b54961fff781",
+    "masked_sha1": "1b6340e89c17095d60edf0632a13991b922b753c"
+  },
+  "origin": "$C849",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Robots"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MusicInterrupt"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ImHandler"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 34,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_57F0"
+    },
+    {
+      "offset": 45,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PartSpriteTable"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 54,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D740"
+    },
+    {
+      "offset": 57,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TableWord"
+    },
+    {
+      "offset": 66,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawMaskedUp"
+    },
+    {
+      "offset": 97,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_59E0"
+    },
+    {
+      "offset": 108,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 115,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 423,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Resources"
+    },
+    {
+      "offset": 426,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuResources"
+    },
+    {
+      "offset": 434,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 440,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuCursor"
+    },
+    {
+      "offset": 444,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuParts"
+    },
+    {
+      "offset": 447,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 452,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 455,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 462,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuCursor"
+    },
+    {
+      "offset": 465,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Input"
+    },
+    {
+      "offset": 470,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 475,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 479,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 492,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuParts"
+    },
+    {
+      "offset": 516,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 523,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuParts"
+    },
+    {
+      "offset": 533,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 536,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 540,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 544,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 548,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 552,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuResources"
+    },
+    {
+      "offset": 555,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 560,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 566,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuResources"
+    },
+    {
+      "offset": 570,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 573,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuResources"
+    },
+    {
+      "offset": 580,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuParts"
+    },
+    {
+      "offset": 585,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 588,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 591,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 594,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 601,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 604,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 609,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuParts"
+    },
+    {
+      "offset": 614,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 617,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 620,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 623,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 630,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 633,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 637,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 641,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 645,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 649,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuResources"
+    },
+    {
+      "offset": 652,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 672,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuResources"
+    },
+    {
+      "offset": 676,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuResources"
+    },
+    {
+      "offset": 696,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Input"
+    },
+    {
+      "offset": 720,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 723,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Input"
+    },
+    {
+      "offset": 753,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 757,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuCursor"
+    },
+    {
+      "offset": 762,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 767,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 775,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 778,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuParts"
+    },
+    {
+      "offset": 791,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuResources"
+    },
+    {
+      "offset": 794,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Resources"
+    },
+    {
+      "offset": 802,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipX"
+    },
+    {
+      "offset": 805,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipY"
+    },
+    {
+      "offset": 815,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 818,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuParts"
+    },
+    {
+      "offset": 827,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 840,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 845,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClimbTurns"
+    },
+    {
+      "offset": 850,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearViewBuffer"
+    },
+    {
+      "offset": 853,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawPlayScreen"
+    },
+    {
+      "offset": 858,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayInterrupt"
+    },
+    {
+      "offset": 861,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ImHandler"
+    },
+    {
+      "offset": 865,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuCursor"
+    },
+    {
+      "offset": 883,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 909,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5815"
+    },
+    {
+      "offset": 920,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuResources"
+    },
+    {
+      "offset": 931,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 935,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 948,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 957,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber3"
+    },
+    {
+      "offset": 962,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 965,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 976,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber2"
+    },
+    {
+      "offset": 983,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5810"
+    },
+    {
+      "offset": 986,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuParts"
+    },
+    {
+      "offset": 1011,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 1021,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearViewBuffer"
+    },
+    {
+      "offset": 1024,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuParts"
+    },
+    {
+      "offset": 1033,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawRobot"
+    },
+    {
+      "offset": 1036,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CF3F"
+    },
+    {
+      "offset": 1045,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6168"
+    },
+    {
+      "offset": 1048,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_48E0"
+    },
+    {
+      "offset": 1068,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextScreenLine"
+    },
+    {
+      "offset": 1087,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1109,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ToggleRadarDot"
+    },
+    {
+      "offset": 1112,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipX"
+    },
+    {
+      "offset": 1115,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipY"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "ConstructionMenu",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "landing on the warbase pad at altitude 15: choose the parts (MenuCursor, MenuParts), ВЫПУСК (start the robot) or ВЫХОД (exit)"
+    },
+    {
+      "offset": 414,
+      "name": "ConstructionMenuSetup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "reset the preview robot, copy the resources, cursor on BIPOD, nothing chosen"
+    },
+    {
+      "offset": 454,
+      "name": "ConstructionMenuLoop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "wait for a control; fire acts on the cursor's item, a direction moves the cursor"
+    },
+    {
+      "offset": 632,
+      "name": "RefundPart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "give back the cost of part E to MenuResources, the overflow to the general resource"
+    },
+    {
+      "offset": 695,
+      "name": "MoveMenuCursor",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "right / left change the column (0-2), down / up the part row (0-7) in column 2"
+    },
+    {
+      "offset": 769,
+      "name": "MenuPause",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "10 frames, then back to ConstructionMenuLoop"
+    },
+    {
+      "offset": 777,
+      "name": "StartRobot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ВЫПУСК (start the robot): needs a chassis and a weapon; spend the resources, place the robot at the warbase's door, leave"
+    },
+    {
+      "offset": 864,
+      "name": "PaintMenuCursor",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "paint the item under MenuCursor with attribute C ($46 the cursor, $45 the rest)"
+    },
+    {
+      "offset": 914,
+      "name": "FillAttributes",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "write C into B bytes from HL"
+    },
+    {
+      "offset": 919,
+      "name": "PrintMenuResources",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "print MenuResources (two digits each) and their total"
+    },
+    {
+      "offset": 954,
+      "name": "PrintMenuTotal",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Construction menu: print the total of the costs (the tail of $CBE0)"
+    },
+    {
+      "offset": 959,
+      "name": "PrintMenuResource",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Construction menu: print one resource value A at row C, column 13"
+    },
+    {
+      "offset": 971,
+      "name": "PrintMenuResourceValue",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Construction menu: print A as two digits, registers kept (the tail of $CC08)"
+    },
+    {
+      "offset": 982,
+      "name": "ShowRobotDesign",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Construction menu: highlight the chosen parts and draw the robot preview"
+    },
+    {
+      "offset": 1075,
+      "name": "PlaceRobot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Put robot IY at map column HL, row B: record, map bit 6, radar dot"
+    },
+    {
+      "offset": 1111,
+      "name": "ShipCell",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the map cell under the ship (ShipX, ShipY)"
+    },
+    {
+      "offset": 1117,
+      "name": "MapCell",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the map cell of column HL, row A: $DD00 + $200*A + HL"
+    },
+    {
+      "offset": 1123,
+      "name": "Beep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Beeper tone: 256 half-periods, A = the half-period delay (bigger is lower)"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "the player's robot slots 0-23"
+    },
+    {
+      "offset": 4,
+      "name": "",
+      "comment": "16 bytes a record"
+    },
+    {
+      "offset": 7,
+      "name": "",
+      "comment": "24 slots"
+    },
+    {
+      "offset": 9,
+      "name": "FindFreeRobotSlot",
+      "comment": "a slot whose cell address high byte is 0 is free"
+    },
+    {
+      "offset": 12,
+      "name": "",
+      "comment": "0?"
+    },
+    {
+      "offset": 13,
+      "name": "",
+      "comment": "a free slot: open the menu"
+    },
+    {
+      "offset": 15,
+      "name": "",
+      "comment": "the next record"
+    },
+    {
+      "offset": 17,
+      "name": "",
+      "comment": "all 24 slots"
+    },
+    {
+      "offset": 19,
+      "name": "",
+      "comment": "all 24 slots in use: no menu at all"
+    },
+    {
+      "offset": 20,
+      "name": "OpenConstructionMenu",
+      "comment": "IY = the free slot: it becomes the preview robot and, on ВЫПУСК (start the robot), the new robot"
+    },
+    {
+      "offset": 21,
+      "name": "",
+      "comment": "the menu handler: the tune plays, no frame count, no radar; the world stands still while the menu is open"
+    },
+    {
+      "offset": 24,
+      "name": "",
+      "comment": "ImHandler = MusicInterrupt"
+    },
+    {
+      "offset": 27,
+      "name": "",
+      "comment": "interrupts again"
+    },
+    {
+      "offset": 28,
+      "name": "",
+      "comment": "clear the screen"
+    },
+    {
+      "offset": 31,
+      "name": "",
+      "comment": "the eight part pictures, bipod at the bottom"
+    },
+    {
+      "offset": 33,
+      "name": "",
+      "comment": "the bottom pixel line of row 23, column 16"
+    },
+    {
+      "offset": 36,
+      "name": "PartIconLoop",
+      "comment": "part k = 8 - B"
+    },
+    {
+      "offset": 37,
+      "name": "",
+      "comment": "the screen address"
+    },
+    {
+      "offset": 38,
+      "name": "",
+      "comment": "the part's sprite number for the second facing: $D6C8 + 4k + 1"
+    },
+    {
+      "offset": 40,
+      "name": "",
+      "comment": "A = k"
+    },
+    {
+      "offset": 41,
+      "name": "",
+      "comment": "2k"
+    },
+    {
+      "offset": 42,
+      "name": "",
+      "comment": "4k: four facings a part"
+    },
+    {
+      "offset": 43,
+      "name": "",
+      "comment": "the second facing"
+    },
+    {
+      "offset": 44,
+      "name": "",
+      "comment": "PartSpriteTable + 4k + 1"
+    },
+    {
+      "offset": 47,
+      "name": "",
+      "comment": "HL = the entry"
+    },
+    {
+      "offset": 50,
+      "name": "",
+      "comment": "the second graphic of that sprite: the pointer at $D740 + 4 * number + 2"
+    },
+    {
+      "offset": 51,
+      "name": "",
+      "comment": "2 x the number"
+    },
+    {
+      "offset": 52,
+      "name": "",
+      "comment": "+ 1: its second graphic"
+    },
+    {
+      "offset": 53,
+      "name": "",
+      "comment": "the part sprites' pointers (sprite id $16 on)"
+    },
+    {
+      "offset": 56,
+      "name": "",
+      "comment": "HL = that graphic"
+    },
+    {
+      "offset": 59,
+      "name": "",
+      "comment": "C = the lines, B = the bytes a line"
+    },
+    {
+      "offset": 60,
+      "name": "",
+      "comment": "to the width byte"
+    },
+    {
+      "offset": 61,
+      "name": "",
+      "comment": "B = the bytes a line"
+    },
+    {
+      "offset": 62,
+      "name": "",
+      "comment": "HL = the first line"
+    },
+    {
+      "offset": 63,
+      "name": "",
+      "comment": "skip the graphic's first line of mask / pixel pairs"
+    },
+    {
+      "offset": 64,
+      "name": "",
+      "comment": "2 bytes (mask, pixels) a byte of width"
+    },
+    {
+      "offset": 65,
+      "name": "",
+      "comment": "HL = the second line"
+    },
+    {
+      "offset": 68,
+      "name": "",
+      "comment": "the lines after the first, at most 24 (3 rows)"
+    },
+    {
+      "offset": 69,
+      "name": "",
+      "comment": "the lines left"
+    },
+    {
+      "offset": 70,
+      "name": "",
+      "comment": "more than 24?"
+    },
+    {
+      "offset": 72,
+      "name": "",
+      "comment": "fits"
+    },
+    {
+      "offset": 74,
+      "name": "",
+      "comment": "cut to 24 lines, the part's 3 character rows"
+    },
+    {
+      "offset": 76,
+      "name": "PartIconDraw",
+      "comment": "draw upwards from DE, masked"
+    },
+    {
+      "offset": 79,
+      "name": "",
+      "comment": "DE = the bottom line of this part's place"
+    },
+    {
+      "offset": 80,
+      "name": "",
+      "comment": "B = the parts left"
+    },
+    {
+      "offset": 81,
+      "name": "",
+      "comment": "three character rows up"
+    },
+    {
+      "offset": 82,
+      "name": "",
+      "comment": "the low byte - 3 x 32"
+    },
+    {
+      "offset": 84,
+      "name": "",
+      "comment": "E = it"
+    },
+    {
+      "offset": 85,
+      "name": "",
+      "comment": "no borrow: the same third of the screen"
+    },
+    {
+      "offset": 87,
+      "name": "",
+      "comment": "a borrow: the third above"
+    },
+    {
+      "offset": 88,
+      "name": "",
+      "comment": "D - 8: one screen third up"
+    },
+    {
+      "offset": 90,
+      "name": "",
+      "comment": "D = it"
+    },
+    {
+      "offset": 91,
+      "name": "PartIconNext",
+      "comment": "all eight parts, bottom to top"
+    },
+    {
+      "offset": 93,
+      "name": "",
+      "comment": "the preview's frame: 4 columns x 9 rows from row 15, column 0"
+    },
+    {
+      "offset": 96,
+      "name": "",
+      "comment": "the attribute of row 15, column 0"
+    },
+    {
+      "offset": 99,
+      "name": "PreviewAttrRow",
+      "comment": "C = the rows left"
+    },
+    {
+      "offset": 100,
+      "name": "PreviewAttrCell",
+      "comment": "bright yellow"
+    },
+    {
+      "offset": 102,
+      "name": "",
+      "comment": "the next cell"
+    },
+    {
+      "offset": 103,
+      "name": "",
+      "comment": "four cells"
+    },
+    {
+      "offset": 105,
+      "name": "",
+      "comment": "to the next row: 4 + 28"
+    },
+    {
+      "offset": 107,
+      "name": "",
+      "comment": "HL = the next row's column 0"
+    },
+    {
+      "offset": 110,
+      "name": "",
+      "comment": "C = the rows left"
+    },
+    {
+      "offset": 111,
+      "name": "",
+      "comment": "one row done"
+    },
+    {
+      "offset": 112,
+      "name": "",
+      "comment": "nine rows"
+    },
+    {
+      "offset": 114,
+      "name": "",
+      "comment": "the menu's text"
+    },
+    {
+      "offset": 117,
+      "name": "ConstructionTitleText",
+      "comment": "\"ЦЕХ\" (double size) at row 0, \"РОБОТОВ\" (double height) at row 2: the construction menu's title"
+    },
+    {
+      "offset": 148,
+      "name": "PartNamesText",
+      "comment": "The part names at column 21, ЭЛЕКТРОНИКА row 1 down to БИПОД row 22, every 3 rows"
+    },
+    {
+      "offset": 233,
+      "name": "ExitStartText",
+      "comment": "\"ВЫ-ХОД\" (exit) / \"ВЫ-ПУСК\" (start the robot) at rows 21-22, columns 5 and 10"
+    },
+    {
+      "offset": 257,
+      "name": "PartCostsText",
+      "comment": "The costs under the names at column 22: 3 20 4 4 2 10 5 3"
+    },
+    {
+      "offset": 293,
+      "name": "ResourceNamesText",
+      "comment": "\"-- НАЛИЧНЫЕ --\" / \"-- РЕСУРСЫ --\" (resources at hand), ОБЩИЕ (general) row 9, ЭЛЕКТРОНИКА-ШАССИ, ВСЕГО (total)"
+    },
+    {
+      "offset": 414,
+      "name": "",
+      "comment": "+$08 = 4: the preview faces down (the robot built keeps it)"
+    },
+    {
+      "offset": 418,
+      "name": "",
+      "comment": "+$0D = 0: the preview stands on ground 0"
+    },
+    {
+      "offset": 422,
+      "name": "",
+      "comment": "the menu spends a copy"
+    },
+    {
+      "offset": 425,
+      "name": "",
+      "comment": "into MenuResources"
+    },
+    {
+      "offset": 428,
+      "name": "",
+      "comment": "general and the six part resources"
+    },
+    {
+      "offset": 431,
+      "name": "",
+      "comment": "copy"
+    },
+    {
+      "offset": 433,
+      "name": "",
+      "comment": "print the copy"
+    },
+    {
+      "offset": 436,
+      "name": "",
+      "comment": "column 2 (the parts), row 0 (bipod)"
+    },
+    {
+      "offset": 439,
+      "name": "",
+      "comment": "MenuCursor = (2, 0)"
+    },
+    {
+      "offset": 442,
+      "name": "",
+      "comment": "nothing chosen"
+    },
+    {
+      "offset": 443,
+      "name": "",
+      "comment": "MenuParts = 0"
+    },
+    {
+      "offset": 446,
+      "name": "",
+      "comment": "the part pictures and the preview robot"
+    },
+    {
+      "offset": 449,
+      "name": "",
+      "comment": "the cursor in $46"
+    },
+    {
+      "offset": 451,
+      "name": "",
+      "comment": "paint the cursor"
+    },
+    {
+      "offset": 454,
+      "name": "",
+      "comment": "a direction or fire"
+    },
+    {
+      "offset": 457,
+      "name": "",
+      "comment": "bits 0-4: right, left, down, up, fire"
+    },
+    {
+      "offset": 459,
+      "name": "",
+      "comment": "nothing (keys 5 and I do nothing here)"
+    },
+    {
+      "offset": 461,
+      "name": "",
+      "comment": "L = the column, H = the part row"
+    },
+    {
+      "offset": 464,
+      "name": "",
+      "comment": "no fire: a move"
+    },
+    {
+      "offset": 467,
+      "name": "",
+      "comment": "fire?"
+    },
+    {
+      "offset": 469,
+      "name": "",
+      "comment": "a direction: move the cursor"
+    },
+    {
+      "offset": 472,
+      "name": "",
+      "comment": "column 0: ВЫХОД (exit)"
+    },
+    {
+      "offset": 473,
+      "name": "",
+      "comment": "column 0?"
+    },
+    {
+      "offset": 474,
+      "name": "",
+      "comment": "ВЫХОД (exit)"
+    },
+    {
+      "offset": 477,
+      "name": "",
+      "comment": "column 1: ВЫПУСК (start the robot)"
+    },
+    {
+      "offset": 478,
+      "name": "",
+      "comment": "ВЫПУСК (start the robot)"
+    },
+    {
+      "offset": 481,
+      "name": "PartToggle",
+      "comment": "E = the part, D = its bit"
+    },
+    {
+      "offset": 482,
+      "name": "",
+      "comment": "E = the part row, 0-7"
+    },
+    {
+      "offset": 483,
+      "name": "",
+      "comment": "B = row + 1"
+    },
+    {
+      "offset": 484,
+      "name": "",
+      "comment": "B = row + 1 shifts"
+    },
+    {
+      "offset": 485,
+      "name": "",
+      "comment": "A = 0"
+    },
+    {
+      "offset": 486,
+      "name": "",
+      "comment": "carry = 1: the bit to shift in"
+    },
+    {
+      "offset": 487,
+      "name": "PartBitLoop",
+      "comment": "shift it up"
+    },
+    {
+      "offset": 488,
+      "name": "",
+      "comment": "row + 1 times: A = 1 << row"
+    },
+    {
+      "offset": 490,
+      "name": "",
+      "comment": "D = the part's bit in MenuParts"
+    },
+    {
+      "offset": 491,
+      "name": "",
+      "comment": "C = the parts chosen"
+    },
+    {
+      "offset": 494,
+      "name": "",
+      "comment": "C = MenuParts"
+    },
+    {
+      "offset": 495,
+      "name": "",
+      "comment": "chosen already: take it back"
+    },
+    {
+      "offset": 496,
+      "name": "",
+      "comment": "refund and clear it"
+    },
+    {
+      "offset": 498,
+      "name": "",
+      "comment": "a chassis (rows 0-2) ..."
+    },
+    {
+      "offset": 499,
+      "name": "",
+      "comment": "rows 0-2: bipod, tracks, anti-grav"
+    },
+    {
+      "offset": 501,
+      "name": "",
+      "comment": "a weapon or electronics: no chassis rule"
+    },
+    {
+      "offset": 503,
+      "name": "",
+      "comment": "... and a chassis already chosen: refund that one first"
+    },
+    {
+      "offset": 504,
+      "name": "",
+      "comment": "the chassis bits 0-2"
+    },
+    {
+      "offset": 506,
+      "name": "",
+      "comment": "no chassis yet"
+    },
+    {
+      "offset": 508,
+      "name": "",
+      "comment": "E = the chosen chassis' row"
+    },
+    {
+      "offset": 509,
+      "name": "",
+      "comment": "E = -1, so the first INC gives 0"
+    },
+    {
+      "offset": 511,
+      "name": "FindChosenChassis",
+      "comment": "the next row"
+    },
+    {
+      "offset": 512,
+      "name": "",
+      "comment": "the next bit into carry"
+    },
+    {
+      "offset": 513,
+      "name": "",
+      "comment": "until the set bit"
+    },
+    {
+      "offset": 515,
+      "name": "",
+      "comment": "its resources back"
+    },
+    {
+      "offset": 518,
+      "name": "",
+      "comment": "no chassis now"
+    },
+    {
+      "offset": 519,
+      "name": "",
+      "comment": "clear the chassis bits"
+    },
+    {
+      "offset": 521,
+      "name": "",
+      "comment": "C = the parts without a chassis"
+    },
+    {
+      "offset": 522,
+      "name": "",
+      "comment": "stored at once: the refund stays even if the new chassis is refused"
+    },
+    {
+      "offset": 525,
+      "name": "",
+      "comment": "E, D = the new part again"
+    },
+    {
+      "offset": 526,
+      "name": "CheckWeaponCount",
+      "comment": "cannon + missiles + phasers + nuclear all four: refused"
+    },
+    {
+      "offset": 527,
+      "name": "",
+      "comment": "with the new part"
+    },
+    {
+      "offset": 528,
+      "name": "",
+      "comment": "the weapon bits 3-6"
+    },
+    {
+      "offset": 530,
+      "name": "",
+      "comment": "all four?"
+    },
+    {
+      "offset": 532,
+      "name": "",
+      "comment": "a fourth weapon: refused"
+    },
+    {
+      "offset": 535,
+      "name": "",
+      "comment": "B = the part's cost"
+    },
+    {
+      "offset": 538,
+      "name": "",
+      "comment": "the part"
+    },
+    {
+      "offset": 539,
+      "name": "",
+      "comment": "HL = PartCosts + part"
+    },
+    {
+      "offset": 542,
+      "name": "",
+      "comment": "B = the cost"
+    },
+    {
+      "offset": 543,
+      "name": "",
+      "comment": "the resource it takes first"
+    },
+    {
+      "offset": 546,
+      "name": "",
+      "comment": "the part"
+    },
+    {
+      "offset": 547,
+      "name": "",
+      "comment": "HL = PartCosts + 8 + part"
+    },
+    {
+      "offset": 550,
+      "name": "",
+      "comment": "A = the resource index (1-6)"
+    },
+    {
+      "offset": 551,
+      "name": "",
+      "comment": "the menu's resources"
+    },
+    {
+      "offset": 554,
+      "name": "",
+      "comment": "HL = that resource"
+    },
+    {
+      "offset": 557,
+      "name": "",
+      "comment": "pay from the part's own resource"
+    },
+    {
+      "offset": 558,
+      "name": "",
+      "comment": "minus the cost"
+    },
+    {
+      "offset": 559,
+      "name": "",
+      "comment": "enough: what is left"
+    },
+    {
+      "offset": 562,
+      "name": "",
+      "comment": "short by the rest: the general resource pays it"
+    },
+    {
+      "offset": 564,
+      "name": "",
+      "comment": "B = what the general resource must pay"
+    },
+    {
+      "offset": 565,
+      "name": "",
+      "comment": "the general resource"
+    },
+    {
+      "offset": 568,
+      "name": "",
+      "comment": "minus the rest"
+    },
+    {
+      "offset": 569,
+      "name": "",
+      "comment": "not enough: refused"
+    },
+    {
+      "offset": 572,
+      "name": "",
+      "comment": "the general resource pays it"
+    },
+    {
+      "offset": 575,
+      "name": "",
+      "comment": "the own resource is spent to 0"
+    },
+    {
+      "offset": 576,
+      "name": "PartPaid",
+      "comment": "store what is left, choose the part"
+    },
+    {
+      "offset": 577,
+      "name": "",
+      "comment": "the parts"
+    },
+    {
+      "offset": 578,
+      "name": "",
+      "comment": "with the new one"
+    },
+    {
+      "offset": 579,
+      "name": "",
+      "comment": "MenuParts"
+    },
+    {
+      "offset": 582,
+      "name": "",
+      "comment": "the beep of a part accepted"
+    },
+    {
+      "offset": 584,
+      "name": "",
+      "comment": "beep"
+    },
+    {
+      "offset": 587,
+      "name": "",
+      "comment": "repaint the part pictures and the preview"
+    },
+    {
+      "offset": 590,
+      "name": "",
+      "comment": "reprint the resources"
+    },
+    {
+      "offset": 593,
+      "name": "AcceptFireUp",
+      "comment": "wait for fire up"
+    },
+    {
+      "offset": 596,
+      "name": "",
+      "comment": "fire still held?"
+    },
+    {
+      "offset": 598,
+      "name": "",
+      "comment": "wait"
+    },
+    {
+      "offset": 600,
+      "name": "",
+      "comment": "the 10-frame pause, then the loop"
+    },
+    {
+      "offset": 603,
+      "name": "PartTakeBack",
+      "comment": "refund and clear the part"
+    },
+    {
+      "offset": 606,
+      "name": "",
+      "comment": "the parts"
+    },
+    {
+      "offset": 607,
+      "name": "",
+      "comment": "the part's bit off"
+    },
+    {
+      "offset": 608,
+      "name": "",
+      "comment": "MenuParts"
+    },
+    {
+      "offset": 611,
+      "name": "PartRefused",
+      "comment": "refused or taken back: the low beep"
+    },
+    {
+      "offset": 613,
+      "name": "",
+      "comment": "beep"
+    },
+    {
+      "offset": 616,
+      "name": "",
+      "comment": "repaint the part pictures and the preview"
+    },
+    {
+      "offset": 619,
+      "name": "",
+      "comment": "reprint the resources"
+    },
+    {
+      "offset": 622,
+      "name": "RefuseFireUp",
+      "comment": "wait for fire up"
+    },
+    {
+      "offset": 625,
+      "name": "",
+      "comment": "fire still held?"
+    },
+    {
+      "offset": 627,
+      "name": "",
+      "comment": "wait"
+    },
+    {
+      "offset": 629,
+      "name": "",
+      "comment": "the 10-frame pause, then the loop"
+    },
+    {
+      "offset": 632,
+      "name": "",
+      "comment": "B = the part's cost"
+    },
+    {
+      "offset": 635,
+      "name": "",
+      "comment": "the part"
+    },
+    {
+      "offset": 636,
+      "name": "",
+      "comment": "HL = PartCosts + part"
+    },
+    {
+      "offset": 639,
+      "name": "",
+      "comment": "B = the cost"
+    },
+    {
+      "offset": 640,
+      "name": "",
+      "comment": "the resource it takes first"
+    },
+    {
+      "offset": 643,
+      "name": "",
+      "comment": "the part"
+    },
+    {
+      "offset": 644,
+      "name": "",
+      "comment": "HL = PartCosts + 8 + part"
+    },
+    {
+      "offset": 647,
+      "name": "",
+      "comment": "A = the resource index"
+    },
+    {
+      "offset": 648,
+      "name": "",
+      "comment": "the menu's resources"
+    },
+    {
+      "offset": 651,
+      "name": "",
+      "comment": "HL = that resource"
+    },
+    {
+      "offset": 654,
+      "name": "",
+      "comment": "A = its value"
+    },
+    {
+      "offset": 655,
+      "name": "",
+      "comment": "refund it there"
+    },
+    {
+      "offset": 656,
+      "name": "",
+      "comment": "stored"
+    },
+    {
+      "offset": 657,
+      "name": "",
+      "comment": "B = the same resource when the menu opened"
+    },
+    {
+      "offset": 658,
+      "name": "",
+      "comment": "the same index in Resources:"
+    },
+    {
+      "offset": 659,
+      "name": "",
+      "comment": "7 bytes below MenuResources (no page crossing: $FD22-$FD2F)"
+    },
+    {
+      "offset": 661,
+      "name": "",
+      "comment": "HL = Resources + index"
+    },
+    {
+      "offset": 662,
+      "name": "",
+      "comment": "B = the value when the menu opened"
+    },
+    {
+      "offset": 663,
+      "name": "",
+      "comment": "HL = the menu's resource"
+    },
+    {
+      "offset": 664,
+      "name": "",
+      "comment": "A = its value now"
+    },
+    {
+      "offset": 665,
+      "name": "",
+      "comment": "the same as at the opening?"
+    },
+    {
+      "offset": 666,
+      "name": "",
+      "comment": "not above it: done"
+    },
+    {
+      "offset": 667,
+      "name": "",
+      "comment": "below it: done"
+    },
+    {
+      "offset": 668,
+      "name": "",
+      "comment": "above: cap it, the rest goes back to general"
+    },
+    {
+      "offset": 669,
+      "name": "",
+      "comment": "A = the excess: what general had paid"
+    },
+    {
+      "offset": 670,
+      "name": "",
+      "comment": "B = it"
+    },
+    {
+      "offset": 671,
+      "name": "",
+      "comment": "the general resource"
+    },
+    {
+      "offset": 674,
+      "name": "",
+      "comment": "plus the excess"
+    },
+    {
+      "offset": 675,
+      "name": "",
+      "comment": "back into the general resource"
+    },
+    {
+      "offset": 678,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 679,
+      "name": "PartCosts",
+      "comment": "the parts' cost (bipod, tracks, anti-grav, cannon, missiles, phasers, nuclear, electronics), then the resource each takes first (an index into Resources)"
+    },
+    {
+      "offset": 679,
+      "name": "",
+      "comment": "the cost: bipod 3, tracks 5, anti-grav 10, cannon 2, missiles 4, phasers 4, nuclear 20, electronics 3"
+    },
+    {
+      "offset": 687,
+      "name": "",
+      "comment": "the Resources index paid first: chassis 6 x3, cannon 5, missiles 4, phasers 3, nuclear 2, electronics 1 (then general 0)"
+    },
+    {
+      "offset": 695,
+      "name": "",
+      "comment": "right / left?"
+    },
+    {
+      "offset": 698,
+      "name": "",
+      "comment": "bits 0 right, 1 left"
+    },
+    {
+      "offset": 700,
+      "name": "",
+      "comment": "neither: down / up"
+    },
+    {
+      "offset": 702,
+      "name": "",
+      "comment": "C = the two bits"
+    },
+    {
+      "offset": 703,
+      "name": "",
+      "comment": "A = the column"
+    },
+    {
+      "offset": 704,
+      "name": "",
+      "comment": "right: the next column"
+    },
+    {
+      "offset": 706,
+      "name": "",
+      "comment": "not right"
+    },
+    {
+      "offset": 708,
+      "name": "",
+      "comment": "right: column + 1"
+    },
+    {
+      "offset": 709,
+      "name": "CursorLeft",
+      "comment": "left: the previous one"
+    },
+    {
+      "offset": 711,
+      "name": "",
+      "comment": "not left"
+    },
+    {
+      "offset": 713,
+      "name": "",
+      "comment": "left: column - 1 (both: no change)"
+    },
+    {
+      "offset": 714,
+      "name": "CursorColumnCheck",
+      "comment": "0-2 only ($FF too is refused)"
+    },
+    {
+      "offset": 716,
+      "name": "",
+      "comment": "out of range: no move, only the pause"
+    },
+    {
+      "offset": 718,
+      "name": "",
+      "comment": "L = the new column"
+    },
+    {
+      "offset": 719,
+      "name": "",
+      "comment": "repaint and click"
+    },
+    {
+      "offset": 722,
+      "name": "CursorUpDown",
+      "comment": "down / up, only in the parts column"
+    },
+    {
+      "offset": 725,
+      "name": "",
+      "comment": "Input bits 2 down, 3 up"
+    },
+    {
+      "offset": 726,
+      "name": "",
+      "comment": "now bits 0, 1"
+    },
+    {
+      "offset": 727,
+      "name": "",
+      "comment": "C = them"
+    },
+    {
+      "offset": 728,
+      "name": "",
+      "comment": "A = the column"
+    },
+    {
+      "offset": 729,
+      "name": "",
+      "comment": "the parts column?"
+    },
+    {
+      "offset": 731,
+      "name": "",
+      "comment": "columns 0, 1 have no rows"
+    },
+    {
+      "offset": 733,
+      "name": "",
+      "comment": "A = the part row"
+    },
+    {
+      "offset": 734,
+      "name": "",
+      "comment": "down: the row below (a lower part)"
+    },
+    {
+      "offset": 736,
+      "name": "",
+      "comment": "not down"
+    },
+    {
+      "offset": 738,
+      "name": "",
+      "comment": "down: the part below"
+    },
+    {
+      "offset": 739,
+      "name": "CursorUp",
+      "comment": "up: the row above"
+    },
+    {
+      "offset": 741,
+      "name": "",
+      "comment": "not up"
+    },
+    {
+      "offset": 743,
+      "name": "",
+      "comment": "up: the part above (both: no change)"
+    },
+    {
+      "offset": 744,
+      "name": "CursorRowCheck",
+      "comment": "0-7 only"
+    },
+    {
+      "offset": 746,
+      "name": "",
+      "comment": "out of range: no move"
+    },
+    {
+      "offset": 748,
+      "name": "",
+      "comment": "H = the new row"
+    },
+    {
+      "offset": 749,
+      "name": "CursorMoved",
+      "comment": "the old item back to $45"
+    },
+    {
+      "offset": 750,
+      "name": "",
+      "comment": "attribute $45"
+    },
+    {
+      "offset": 752,
+      "name": "",
+      "comment": "the old item (MenuCursor still the old one)"
+    },
+    {
+      "offset": 755,
+      "name": "",
+      "comment": "HL = the new cursor"
+    },
+    {
+      "offset": 756,
+      "name": "",
+      "comment": "the new cursor in $46"
+    },
+    {
+      "offset": 759,
+      "name": "",
+      "comment": "attribute $46"
+    },
+    {
+      "offset": 761,
+      "name": "",
+      "comment": "the new item"
+    },
+    {
+      "offset": 764,
+      "name": "",
+      "comment": "a click"
+    },
+    {
+      "offset": 766,
+      "name": "",
+      "comment": "beep"
+    },
+    {
+      "offset": 769,
+      "name": "",
+      "comment": "10 frames"
+    },
+    {
+      "offset": 771,
+      "name": "MenuPauseLoop",
+      "comment": "one frame (MusicInterrupt plays the tune meanwhile)"
+    },
+    {
+      "offset": 772,
+      "name": "",
+      "comment": "10 times"
+    },
+    {
+      "offset": 774,
+      "name": "",
+      "comment": "the next press"
+    },
+    {
+      "offset": 777,
+      "name": "",
+      "comment": "the chosen parts"
+    },
+    {
+      "offset": 780,
+      "name": "",
+      "comment": "no chassis: refused"
+    },
+    {
+      "offset": 781,
+      "name": "",
+      "comment": "bipod, tracks or anti-grav?"
+    },
+    {
+      "offset": 783,
+      "name": "",
+      "comment": "no chassis: no robot (no beep), the pause"
+    },
+    {
+      "offset": 785,
+      "name": "",
+      "comment": "no weapon: refused"
+    },
+    {
+      "offset": 786,
+      "name": "",
+      "comment": "cannon, missiles, phasers or nuclear?"
+    },
+    {
+      "offset": 788,
+      "name": "",
+      "comment": "no weapon: no robot"
+    },
+    {
+      "offset": 790,
+      "name": "",
+      "comment": "the menu's spending becomes real"
+    },
+    {
+      "offset": 793,
+      "name": "",
+      "comment": "into Resources"
+    },
+    {
+      "offset": 796,
+      "name": "",
+      "comment": "general and the six part resources"
+    },
+    {
+      "offset": 799,
+      "name": "",
+      "comment": "copy"
+    },
+    {
+      "offset": 801,
+      "name": "",
+      "comment": "the robot stands 4 rows below the ship (the pad)"
+    },
+    {
+      "offset": 804,
+      "name": "",
+      "comment": "the ship's row"
+    },
+    {
+      "offset": 807,
+      "name": "",
+      "comment": "+ 4: the door below the pad"
+    },
+    {
+      "offset": 809,
+      "name": "",
+      "comment": "B = the row"
+    },
+    {
+      "offset": 810,
+      "name": "",
+      "comment": "not in the menu, not under direct control"
+    },
+    {
+      "offset": 814,
+      "name": "",
+      "comment": "place it on the map"
+    },
+    {
+      "offset": 817,
+      "name": "",
+      "comment": "its parts"
+    },
+    {
+      "offset": 820,
+      "name": "",
+      "comment": "+$07 = the parts"
+    },
+    {
+      "offset": 823,
+      "name": "",
+      "comment": "the chirp: $50 down to $14, a shorter period each beep"
+    },
+    {
+      "offset": 825,
+      "name": "BuildChirp",
+      "comment": "the period"
+    },
+    {
+      "offset": 826,
+      "name": "",
+      "comment": "beep"
+    },
+    {
+      "offset": 829,
+      "name": "",
+      "comment": "the period"
+    },
+    {
+      "offset": 830,
+      "name": "",
+      "comment": "5 shorter: a higher tone"
+    },
+    {
+      "offset": 832,
+      "name": "",
+      "comment": "B = it"
+    },
+    {
+      "offset": 833,
+      "name": "",
+      "comment": "down to $14?"
+    },
+    {
+      "offset": 835,
+      "name": "",
+      "comment": "13 tones in all"
+    },
+    {
+      "offset": 837,
+      "name": "LeaveConstructionMenu",
+      "comment": "a long low beep"
+    },
+    {
+      "offset": 839,
+      "name": "",
+      "comment": "beep"
+    },
+    {
+      "offset": 842,
+      "name": "",
+      "comment": "$FD30 = 5: the ship climbs 5 game turns on its own, so it does not sink straight back into the menu"
+    },
+    {
+      "offset": 844,
+      "name": "",
+      "comment": "ClimbTurns = 5"
+    },
+    {
+      "offset": 847,
+      "name": "",
+      "comment": "the play screen redrawn"
+    },
+    {
+      "offset": 849,
+      "name": "",
+      "comment": "empty view buffer"
+    },
+    {
+      "offset": 852,
+      "name": "",
+      "comment": "the whole play screen"
+    },
+    {
+      "offset": 855,
+      "name": "",
+      "comment": "IY = the slot again, for PlayLoop's writes"
+    },
+    {
+      "offset": 857,
+      "name": "",
+      "comment": "the play interrupt again"
+    },
+    {
+      "offset": 860,
+      "name": "",
+      "comment": "ImHandler = PlayInterrupt"
+    },
+    {
+      "offset": 863,
+      "name": "",
+      "comment": "back to PlayLoop"
+    },
+    {
+      "offset": 864,
+      "name": "",
+      "comment": "L = the column, H = the part row"
+    },
+    {
+      "offset": 867,
+      "name": "",
+      "comment": "the parts column?"
+    },
+    {
+      "offset": 868,
+      "name": "",
+      "comment": "column 2?"
+    },
+    {
+      "offset": 870,
+      "name": "",
+      "comment": "the part's name"
+    },
+    {
+      "offset": 872,
+      "name": "",
+      "comment": "$5AA4 + 6 * column: row 21"
+    },
+    {
+      "offset": 873,
+      "name": "",
+      "comment": "3 x column"
+    },
+    {
+      "offset": 874,
+      "name": "",
+      "comment": "6 x column"
+    },
+    {
+      "offset": 875,
+      "name": "",
+      "comment": "+ $A4: row 21, column 4"
+    },
+    {
+      "offset": 877,
+      "name": "",
+      "comment": "L = it"
+    },
+    {
+      "offset": 878,
+      "name": "",
+      "comment": "HL = $5AA4 + 6 x column"
+    },
+    {
+      "offset": 880,
+      "name": "",
+      "comment": "5 cells"
+    },
+    {
+      "offset": 882,
+      "name": "",
+      "comment": "row 21"
+    },
+    {
+      "offset": 885,
+      "name": "",
+      "comment": "the same columns on row 22"
+    },
+    {
+      "offset": 886,
+      "name": "",
+      "comment": "+ 27: past the 5 cells, the next row"
+    },
+    {
+      "offset": 888,
+      "name": "",
+      "comment": "L = it (no carry: $5AC4 + 6 x column)"
+    },
+    {
+      "offset": 889,
+      "name": "",
+      "comment": "5 cells"
+    },
+    {
+      "offset": 891,
+      "name": "",
+      "comment": "row 22, and return"
+    },
+    {
+      "offset": 893,
+      "name": "PartNameCursor",
+      "comment": "row 22 - 3 * part, column 21, 11 cells"
+    },
+    {
+      "offset": 894,
+      "name": "",
+      "comment": "2 x row"
+    },
+    {
+      "offset": 895,
+      "name": "",
+      "comment": "3 x row"
+    },
+    {
+      "offset": 896,
+      "name": "",
+      "comment": "- 3 x row"
+    },
+    {
+      "offset": 898,
+      "name": "",
+      "comment": "22 - 3 x row: the screen row of the name"
+    },
+    {
+      "offset": 900,
+      "name": "",
+      "comment": "x2"
+    },
+    {
+      "offset": 901,
+      "name": "",
+      "comment": "x4"
+    },
+    {
+      "offset": 902,
+      "name": "",
+      "comment": "x8"
+    },
+    {
+      "offset": 903,
+      "name": "",
+      "comment": "L = row x 8"
+    },
+    {
+      "offset": 904,
+      "name": "",
+      "comment": "HL = row x 8"
+    },
+    {
+      "offset": 906,
+      "name": "",
+      "comment": "x16"
+    },
+    {
+      "offset": 907,
+      "name": "",
+      "comment": "x32: the row's attribute offset"
+    },
+    {
+      "offset": 908,
+      "name": "",
+      "comment": "the attributes' column 21"
+    },
+    {
+      "offset": 911,
+      "name": "",
+      "comment": "HL = the name's first attribute"
+    },
+    {
+      "offset": 912,
+      "name": "",
+      "comment": "11 cells (ELECTRONICS is 11 letters)"
+    },
+    {
+      "offset": 914,
+      "name": "",
+      "comment": "the attribute"
+    },
+    {
+      "offset": 915,
+      "name": "",
+      "comment": "the next cell"
+    },
+    {
+      "offset": 916,
+      "name": "",
+      "comment": "B cells"
+    },
+    {
+      "offset": 918,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 919,
+      "name": "",
+      "comment": "HL = the total"
+    },
+    {
+      "offset": 922,
+      "name": "",
+      "comment": "the sum starts at 0"
+    },
+    {
+      "offset": 925,
+      "name": "",
+      "comment": "C = the row: 9 for GENERAL"
+    },
+    {
+      "offset": 927,
+      "name": "",
+      "comment": "seven values"
+    },
+    {
+      "offset": 929,
+      "name": "PrintResourceLoop",
+      "comment": "the value"
+    },
+    {
+      "offset": 930,
+      "name": "",
+      "comment": "HL += it: the total"
+    },
+    {
+      "offset": 933,
+      "name": "",
+      "comment": "print the value at row C"
+    },
+    {
+      "offset": 934,
+      "name": "",
+      "comment": "at (C,13), two digits"
+    },
+    {
+      "offset": 937,
+      "name": "",
+      "comment": "the next value"
+    },
+    {
+      "offset": 938,
+      "name": "",
+      "comment": "the next row"
+    },
+    {
+      "offset": 939,
+      "name": "",
+      "comment": "a blank row after GENERAL"
+    },
+    {
+      "offset": 940,
+      "name": "",
+      "comment": "just printed GENERAL?"
+    },
+    {
+      "offset": 942,
+      "name": "",
+      "comment": "no"
+    },
+    {
+      "offset": 944,
+      "name": "",
+      "comment": "skip row 10"
+    },
+    {
+      "offset": 945,
+      "name": "PrintResourceNext",
+      "comment": "all seven"
+    },
+    {
+      "offset": 947,
+      "name": "",
+      "comment": "the total at row 18, column 12"
+    },
+    {
+      "offset": 950,
+      "name": "TotalPosition",
+      "comment": "AT 18,12"
+    },
+    {
+      "offset": 954,
+      "name": "",
+      "comment": "blank the leading zeros"
+    },
+    {
+      "offset": 956,
+      "name": "",
+      "comment": "three digits of HL"
+    },
+    {
+      "offset": 959,
+      "name": "",
+      "comment": "the value"
+    },
+    {
+      "offset": 960,
+      "name": "",
+      "comment": "the row into the string below"
+    },
+    {
+      "offset": 961,
+      "name": "",
+      "comment": "Y of the string below"
+    },
+    {
+      "offset": 964,
+      "name": "",
+      "comment": "the position (C,13)"
+    },
+    {
+      "offset": 967,
+      "name": "MenuResourcePos",
+      "comment": "Inline string: position (row patched, column 13)"
+    },
+    {
+      "offset": 967,
+      "name": "",
+      "comment": "AT (Y,13), Y patched by PrintMenuResource (0, then one row per resource)"
+    },
+    {
+      "offset": 971,
+      "name": "",
+      "comment": "the value back"
+    },
+    {
+      "offset": 972,
+      "name": "",
+      "comment": "kept"
+    },
+    {
+      "offset": 973,
+      "name": "",
+      "comment": "kept"
+    },
+    {
+      "offset": 974,
+      "name": "",
+      "comment": "kept"
+    },
+    {
+      "offset": 975,
+      "name": "",
+      "comment": "two digits, blank leading zero"
+    },
+    {
+      "offset": 978,
+      "name": "",
+      "comment": "HL back"
+    },
+    {
+      "offset": 979,
+      "name": "",
+      "comment": "DE back"
+    },
+    {
+      "offset": 980,
+      "name": "",
+      "comment": "BC back"
+    },
+    {
+      "offset": 981,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 982,
+      "name": "",
+      "comment": "the attributes of part row 0 (electronics, bit 7)"
+    },
+    {
+      "offset": 985,
+      "name": "",
+      "comment": "the chosen parts"
+    },
+    {
+      "offset": 988,
+      "name": "",
+      "comment": "C = them, shifted out from bit 7 (electronics, the top)"
+    },
+    {
+      "offset": 989,
+      "name": "",
+      "comment": "eight parts"
+    },
+    {
+      "offset": 991,
+      "name": "PartRowLoop",
+      "comment": "E = $06: not chosen"
+    },
+    {
+      "offset": 993,
+      "name": "",
+      "comment": "the next part bit into carry, highest first"
+    },
+    {
+      "offset": 995,
+      "name": "",
+      "comment": "not chosen"
+    },
+    {
+      "offset": 997,
+      "name": "",
+      "comment": "chosen: bright white"
+    },
+    {
+      "offset": 999,
+      "name": "PartRowPaint",
+      "comment": "paint the part's 4 x 3 cells in attribute E"
+    },
+    {
+      "offset": 1000,
+      "name": "",
+      "comment": "4 cells by 3 rows"
+    },
+    {
+      "offset": 1003,
+      "name": "PartRowLine",
+      "comment": "one attribute row of the part's 4 cells"
+    },
+    {
+      "offset": 1004,
+      "name": "PartCellLoop",
+      "comment": "the attribute"
+    },
+    {
+      "offset": 1005,
+      "name": "",
+      "comment": "the next cell"
+    },
+    {
+      "offset": 1006,
+      "name": "",
+      "comment": "four cells"
+    },
+    {
+      "offset": 1008,
+      "name": "",
+      "comment": "to the next attribute row (32 - 4)"
+    },
+    {
+      "offset": 1010,
+      "name": "",
+      "comment": "HL = the next row's column 16"
+    },
+    {
+      "offset": 1013,
+      "name": "",
+      "comment": "C = the rows left"
+    },
+    {
+      "offset": 1014,
+      "name": "",
+      "comment": "one row done"
+    },
+    {
+      "offset": 1015,
+      "name": "",
+      "comment": "three rows a part"
+    },
+    {
+      "offset": 1017,
+      "name": "",
+      "comment": "B = the parts left"
+    },
+    {
+      "offset": 1018,
+      "name": "",
+      "comment": "all eight"
+    },
+    {
+      "offset": 1020,
+      "name": "",
+      "comment": "empty view buffer"
+    },
+    {
+      "offset": 1023,
+      "name": "",
+      "comment": "the chosen parts"
+    },
+    {
+      "offset": 1026,
+      "name": "",
+      "comment": "the robot's parts"
+    },
+    {
+      "offset": 1029,
+      "name": "",
+      "comment": "row 10, column 7 of the view"
+    },
+    {
+      "offset": 1032,
+      "name": "",
+      "comment": "the parts from +$0D up, into the view buffer"
+    },
+    {
+      "offset": 1035,
+      "name": "",
+      "comment": "the stack's height after the last part"
+    },
+    {
+      "offset": 1038,
+      "name": "",
+      "comment": "+$09: the robot's height (the landing test adds +$0D)"
+    },
+    {
+      "offset": 1041,
+      "name": "",
+      "comment": "4 bytes, 72 lines"
+    },
+    {
+      "offset": 1044,
+      "name": "",
+      "comment": "buffer row 82, column 0"
+    },
+    {
+      "offset": 1047,
+      "name": "",
+      "comment": "screen: character row 15, column 0"
+    },
+    {
+      "offset": 1050,
+      "name": "PreviewLineLoop",
+      "comment": "C = the lines left"
+    },
+    {
+      "offset": 1051,
+      "name": "",
+      "comment": "the line's screen address"
+    },
+    {
+      "offset": 1052,
+      "name": "PreviewByteLoop",
+      "comment": "copy B bytes of the buffer row to the screen line"
+    },
+    {
+      "offset": 1053,
+      "name": "",
+      "comment": "onto the screen"
+    },
+    {
+      "offset": 1054,
+      "name": "",
+      "comment": "the next buffer byte"
+    },
+    {
+      "offset": 1055,
+      "name": "",
+      "comment": "the next screen byte"
+    },
+    {
+      "offset": 1056,
+      "name": "",
+      "comment": "four bytes: columns 0-3"
+    },
+    {
+      "offset": 1058,
+      "name": "",
+      "comment": "the next buffer row (20 bytes in all)"
+    },
+    {
+      "offset": 1059,
+      "name": "",
+      "comment": "+ 16: with the 4 copied, a buffer row of 20"
+    },
+    {
+      "offset": 1061,
+      "name": "",
+      "comment": "E = it"
+    },
+    {
+      "offset": 1062,
+      "name": "",
+      "comment": "the carry"
+    },
+    {
+      "offset": 1063,
+      "name": "",
+      "comment": "into the high byte"
+    },
+    {
+      "offset": 1065,
+      "name": "",
+      "comment": "DE = the next buffer row"
+    },
+    {
+      "offset": 1066,
+      "name": "",
+      "comment": "HL = the line's start"
+    },
+    {
+      "offset": 1067,
+      "name": "",
+      "comment": "the next screen line"
+    },
+    {
+      "offset": 1070,
+      "name": "",
+      "comment": "C = the lines left"
+    },
+    {
+      "offset": 1071,
+      "name": "",
+      "comment": "one line done"
+    },
+    {
+      "offset": 1072,
+      "name": "",
+      "comment": "72 lines"
+    },
+    {
+      "offset": 1074,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 1075,
+      "name": "",
+      "comment": "+$02 = the column, low byte"
+    },
+    {
+      "offset": 1078,
+      "name": "",
+      "comment": "+$03 = its high byte"
+    },
+    {
+      "offset": 1081,
+      "name": "",
+      "comment": "+$04 = the row"
+    },
+    {
+      "offset": 1084,
+      "name": "",
+      "comment": "keep x for the radar"
+    },
+    {
+      "offset": 1085,
+      "name": "",
+      "comment": "A = the row"
+    },
+    {
+      "offset": 1086,
+      "name": "",
+      "comment": "HL = $DD00 + $200*y + x"
+    },
+    {
+      "offset": 1089,
+      "name": "",
+      "comment": "+$00 = the cell, low byte"
+    },
+    {
+      "offset": 1092,
+      "name": "",
+      "comment": "+$01 = its high byte (not 0: the slot is in use)"
+    },
+    {
+      "offset": 1095,
+      "name": "",
+      "comment": "bit 6: draw an object here"
+    },
+    {
+      "offset": 1097,
+      "name": "",
+      "comment": "HL = the column"
+    },
+    {
+      "offset": 1098,
+      "name": "",
+      "comment": "C = y"
+    },
+    {
+      "offset": 1101,
+      "name": "",
+      "comment": "B = side: +$0A bit 7 (enemy)"
+    },
+    {
+      "offset": 1104,
+      "name": "",
+      "comment": "bit 7 into bit 0"
+    },
+    {
+      "offset": 1105,
+      "name": "",
+      "comment": "0 ours, 1 the enemy's"
+    },
+    {
+      "offset": 1107,
+      "name": "",
+      "comment": "B = the radar picture"
+    },
+    {
+      "offset": 1108,
+      "name": "",
+      "comment": "XOR the 2x2 dot into the side's radar"
+    },
+    {
+      "offset": 1111,
+      "name": "",
+      "comment": "the ship's column"
+    },
+    {
+      "offset": 1114,
+      "name": "",
+      "comment": "the ship's row"
+    },
+    {
+      "offset": 1117,
+      "name": "",
+      "comment": "2 x row: $200 bytes a map row"
+    },
+    {
+      "offset": 1118,
+      "name": "",
+      "comment": "+ $DD: the map's page"
+    },
+    {
+      "offset": 1120,
+      "name": "",
+      "comment": "+ the column's high byte"
+    },
+    {
+      "offset": 1121,
+      "name": "",
+      "comment": "HL = the cell"
+    },
+    {
+      "offset": 1122,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 1123,
+      "name": "",
+      "comment": "kept"
+    },
+    {
+      "offset": 1124,
+      "name": "",
+      "comment": "B = the half-period delay"
+    },
+    {
+      "offset": 1125,
+      "name": "",
+      "comment": "C = 0: 256 toggles"
+    },
+    {
+      "offset": 1126,
+      "name": "",
+      "comment": "C = 0"
+    },
+    {
+      "offset": 1127,
+      "name": "BeepLoop",
+      "comment": "keep the delay and the count"
+    },
+    {
+      "offset": 1128,
+      "name": "",
+      "comment": "flip the speaker bit"
+    },
+    {
+      "offset": 1130,
+      "name": "",
+      "comment": "the speaker (bit 4), border 0, MIC 0"
+    },
+    {
+      "offset": 1132,
+      "name": "BeepDelay",
+      "comment": "the half-period"
+    },
+    {
+      "offset": 1134,
+      "name": "",
+      "comment": "B = the delay, C = the count"
+    },
+    {
+      "offset": 1135,
+      "name": "",
+      "comment": "one toggle done"
+    },
+    {
+      "offset": 1136,
+      "name": "",
+      "comment": "256 toggles: 128 periods"
+    },
+    {
+      "offset": 1138,
+      "name": "",
+      "comment": "BC back"
+    },
+    {
+      "offset": 1139,
+      "name": "",
+      "comment": "done"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth",
+      "case": "games/advanced-nether-earth",
+      "address": "$C849",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/game/construction.asm",
+    "label": "ConstructionMenu"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/README.md"
+  ]
+}

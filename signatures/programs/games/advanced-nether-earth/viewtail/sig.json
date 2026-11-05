@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "id": "programs/games/advanced-nether-earth/viewtail",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Advanced Nether Earth: viewtail",
+  "authors": [
+    "Eternity Industry"
+  ],
+  "year": 1998,
+  "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "viewtail"
+  ],
+  "summary": "The tail of the view buffer the game block loads over.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 79,
+    "sha1": "cf9634f5dee253d87dcfe531c0e7527b717c0e66",
+    "masked_sha1": "cf9634f5dee253d87dcfe531c0e7527b717c0e66"
+  },
+  "origin": "$6731",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "ViewBufferTail",
+      "comment": "The last 79 bytes of ViewBuffer as the block loads them (lines 156-159, from byte 1 of line 156)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth",
+      "case": "games/advanced-nether-earth",
+      "address": "$6731",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/game/viewtail.asm",
+    "label": "ViewBufferTail"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/README.md"
+  ]
+}

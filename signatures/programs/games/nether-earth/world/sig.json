@@ -1,0 +1,5974 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth/world",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth: world",
+  "authors": [
+    "Argus Press Software"
+  ],
+  "year": 1987,
+  "tags": [
+    "nether-earth",
+    "game-module",
+    "world"
+  ],
+  "summary": "The world turn: each robot's step (sight, fire, steering by order, movement) and each shot's flight.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1834,
+    "sha1": "68bb157c118e3c290ee933516d1e9ffc039ba84b",
+    "masked_sha1": "7a3d4ff13cd7249237cf1ede8c068bfb44dce3cd"
+  },
+  "origin": "$B0CA",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyCommander"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Robots"
+    },
+    {
+      "offset": 15,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 27,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Shots"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 55,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 99,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 106,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PutBlock"
+    },
+    {
+      "offset": 125,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ToggleRadarDot"
+    },
+    {
+      "offset": 132,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CountRobots"
+    },
+    {
+      "offset": 135,
+      "length": 2,
+      "kind": "ext16",
+      "name": "UpdateStatusPanel"
+    },
+    {
+      "offset": 148,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Side"
+    },
+    {
+      "offset": 180,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ToggleRadarDot"
+    },
+    {
+      "offset": 184,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 192,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 196,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 221,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 226,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 243,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 272,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 275,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 285,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 291,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 300,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 310,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 313,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 336,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 339,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 342,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlaceRobot"
+    },
+    {
+      "offset": 356,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 365,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 368,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 387,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 410,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 417,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 420,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 448,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 458,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 477,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 557,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NuclearBlast"
+    },
+    {
+      "offset": 575,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 616,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 621,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 630,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 635,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 646,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 652,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 655,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 662,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 683,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Robots"
+    },
+    {
+      "offset": 686,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Side"
+    },
+    {
+      "offset": 693,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyRobots"
+    },
+    {
+      "offset": 736,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 749,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 780,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD87"
+    },
+    {
+      "offset": 793,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD73"
+    },
+    {
+      "offset": 801,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Side"
+    },
+    {
+      "offset": 816,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Robots"
+    },
+    {
+      "offset": 819,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Side"
+    },
+    {
+      "offset": 825,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyRobots"
+    },
+    {
+      "offset": 852,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 858,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Robots"
+    },
+    {
+      "offset": 861,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Side"
+    },
+    {
+      "offset": 868,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyRobots"
+    },
+    {
+      "offset": 885,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 904,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 916,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 930,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Input"
+    },
+    {
+      "offset": 933,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 972,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 975,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 991,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoveShip"
+    },
+    {
+      "offset": 1004,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Altitude"
+    },
+    {
+      "offset": 1100,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Altitude"
+    },
+    {
+      "offset": 1130,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1139,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1148,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1157,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1170,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1176,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1193,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1207,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1229,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1234,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1270,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1275,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1296,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MapCell"
+    },
+    {
+      "offset": 1302,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TerrainTop"
+    },
+    {
+      "offset": 1306,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TerrainTop"
+    },
+    {
+      "offset": 1311,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TerrainTop"
+    },
+    {
+      "offset": 1315,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TerrainTop"
+    },
+    {
+      "offset": 1351,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1354,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 1410,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1415,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1425,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1431,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1437,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1448,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1479,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FindRobot"
+    },
+    {
+      "offset": 1495,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1499,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1520,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D7DC"
+    },
+    {
+      "offset": 1589,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1600,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundFx"
+    },
+    {
+      "offset": 1615,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1659,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1671,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1677,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1681,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MapCell"
+    },
+    {
+      "offset": 1765,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FindRobot"
+    },
+    {
+      "offset": 1774,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1803,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1821,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundFx"
+    },
+    {
+      "offset": 1831,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundFx"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "WorldTurn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "one game turn of the world: the enemy commander, every robot, every shot"
+    },
+    {
+      "offset": 48,
+      "name": "UpdateRobot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "one robot's game turn: dying, destroyed or a step of its AI"
+    },
+    {
+      "offset": 138,
+      "name": "RobotStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "a live robot: wait for its step delay, then look, fire, steer and move one step"
+    },
+    {
+      "offset": 344,
+      "name": "SteerByOrder",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "C = the direction the robot's order wants, chosen among the free ones in C"
+    },
+    {
+      "offset": 628,
+      "name": "PickOneDirection",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "C = one direction bit picked at random from the set in B"
+    },
+    {
+      "offset": 643,
+      "name": "FindTargetBuilding",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "D = the nearest building the order wants and no teammate is after; Z when none"
+    },
+    {
+      "offset": 674,
+      "name": "ConsiderBuilding",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "offer building C to KeepNearest unless a teammate with the same order already targets it"
+    },
+    {
+      "offset": 745,
+      "name": "KeepNearest",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "keep candidate C when the column HL is nearer to DE' than the best BC'"
+    },
+    {
+      "offset": 768,
+      "name": "ColumnDistance",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = |HL - DE|"
+    },
+    {
+      "offset": 779,
+      "name": "TargetBuildingTable",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL, B, E = the building table, its size and the owner a building order wants"
+    },
+    {
+      "offset": 815,
+      "name": "TargetRobotRecord",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the opponent robot record of index +$0E"
+    },
+    {
+      "offset": 839,
+      "name": "InitNearestSearch",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "start a nearest-by-column search from column HL"
+    },
+    {
+      "offset": 851,
+      "name": "FindNearestOpponent",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "D = the index of the nearest live opponent robot by column; Z when none"
+    },
+    {
+      "offset": 902,
+      "name": "RobotDirectControl",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "direct control: the stick steers the robot"
+    },
+    {
+      "offset": 935,
+      "name": "TurnOrStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "turn the robot toward direction A, or step one cell when it faces it"
+    },
+    {
+      "offset": 1007,
+      "name": "StepPosition",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "move HL (column) / B (row) one cell in direction A; advance / retreat count their distance"
+    },
+    {
+      "offset": 1083,
+      "name": "CountDirections",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "flags of (the number of set bits in C's low nibble) - 1"
+    },
+    {
+      "offset": 1097,
+      "name": "FreeDirections",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "C = the directions the robot at cell HL may step to"
+    },
+    {
+      "offset": 1165,
+      "name": "CanMoveRight",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Z when the robot at HL can step right"
+    },
+    {
+      "offset": 1189,
+      "name": "CanMoveLeft",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Z when the robot at HL can step left"
+    },
+    {
+      "offset": 1221,
+      "name": "CanMoveDown",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Z when the robot at HL can step down"
+    },
+    {
+      "offset": 1255,
+      "name": "CanMoveUp",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Z when the robot at HL can step up"
+    },
+    {
+      "offset": 1278,
+      "name": "CellOffMapFree",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Z: a probe that runs past the bottom row finds the way free"
+    },
+    {
+      "offset": 1280,
+      "name": "CellBlocked",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "NZ: the way is blocked"
+    },
+    {
+      "offset": 1283,
+      "name": "TestCell",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Z when cell HL is passable: type below D and none of the bits E"
+    },
+    {
+      "offset": 1292,
+      "name": "GroundUnderFootprint",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = the highest ground under the 2x2 footprint anchored at (HL, B)"
+    },
+    {
+      "offset": 1321,
+      "name": "SetStepDelay",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "+$0F = the turns until the robot's next step, by the ground and its locomotion"
+    },
+    {
+      "offset": 1372,
+      "name": "SpotEnemies",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "E = the directions in which a live opponent robot is in sight"
+    },
+    {
+      "offset": 1444,
+      "name": "ScanLane",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "set E bit 0 when a live opponent's anchor lies within B cells from HL in direction D"
+    },
+    {
+      "offset": 1518,
+      "name": "FindFreeShot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "IY = a free shot record of the shooter IX's side; Z when one is free"
+    },
+    {
+      "offset": 1548,
+      "name": "FireShot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "launch shot IY of weapon A from robot IX in its facing direction"
+    },
+    {
+      "offset": 1603,
+      "name": "UpdateShot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "one game turn of shot IY: off its cell, count its range, a step"
+    },
+    {
+      "offset": 1626,
+      "name": "MoveShot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "move shot IY 2 cells, then hit a wall, an object or fly on"
+    },
+    {
+      "offset": 1824,
+      "name": "ShotGone",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "out of range or off the map: the shot is gone with the short sound"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "first the computer: one of its slots built or re-ordered"
+    },
+    {
+      "offset": 3,
+      "name": "",
+      "comment": "the 48 robot records"
+    },
+    {
+      "offset": 5,
+      "name": "",
+      "comment": "IY = the first record, slot 0 (ours; 24-47 the enemy's follow at $DB80)"
+    },
+    {
+      "offset": 9,
+      "name": "WorldTurnRobotLoop",
+      "comment": "a live robot (+$01 = the high byte of its cell, 0 = free)"
+    },
+    {
+      "offset": 10,
+      "name": "",
+      "comment": "+$01 = 0: a free slot"
+    },
+    {
+      "offset": 13,
+      "name": "",
+      "comment": "(test it)"
+    },
+    {
+      "offset": 14,
+      "name": "",
+      "comment": "a live robot takes its turn"
+    },
+    {
+      "offset": 17,
+      "name": "",
+      "comment": "the next 16-byte record"
+    },
+    {
+      "offset": 20,
+      "name": "",
+      "comment": "(IY on it)"
+    },
+    {
+      "offset": 22,
+      "name": "",
+      "comment": "the record count back"
+    },
+    {
+      "offset": 23,
+      "name": "",
+      "comment": "all 48"
+    },
+    {
+      "offset": 25,
+      "name": "",
+      "comment": "the 5 shot records"
+    },
+    {
+      "offset": 29,
+      "name": "",
+      "comment": "record 0 the player's COMBAT MODE shot, 1-2 ours, 3-4 the enemy's"
+    },
+    {
+      "offset": 31,
+      "name": "WorldTurnShotLoop",
+      "comment": "a live shot"
+    },
+    {
+      "offset": 32,
+      "name": "",
+      "comment": "+$01 = 0: no shot in this record"
+    },
+    {
+      "offset": 35,
+      "name": "",
+      "comment": "(test it)"
+    },
+    {
+      "offset": 36,
+      "name": "",
+      "comment": "a flying shot takes its step"
+    },
+    {
+      "offset": 39,
+      "name": "",
+      "comment": "the next 9-byte record"
+    },
+    {
+      "offset": 42,
+      "name": "",
+      "comment": "(IY on it)"
+    },
+    {
+      "offset": 44,
+      "name": "",
+      "comment": "the record count back"
+    },
+    {
+      "offset": 45,
+      "name": "",
+      "comment": "all 5"
+    },
+    {
+      "offset": 47,
+      "name": "",
+      "comment": "the turn is over"
+    },
+    {
+      "offset": 48,
+      "name": "",
+      "comment": "A = the strength +$0C"
+    },
+    {
+      "offset": 51,
+      "name": "",
+      "comment": "zero, positive or negative (dying)?"
+    },
+    {
+      "offset": 52,
+      "name": "",
+      "comment": "strength 0: destroyed"
+    },
+    {
+      "offset": 54,
+      "name": "",
+      "comment": "strength positive: alive"
+    },
+    {
+      "offset": 57,
+      "name": "",
+      "comment": "dying: one turn closer to 0"
+    },
+    {
+      "offset": 60,
+      "name": "",
+      "comment": "HL = the robot's anchor cell ..."
+    },
+    {
+      "offset": 63,
+      "name": "",
+      "comment": "... (high byte)"
+    },
+    {
+      "offset": 66,
+      "name": "",
+      "comment": "the old value's bit 0: the object bit flickers"
+    },
+    {
+      "offset": 68,
+      "name": "",
+      "comment": "odd old value: show the robot this turn"
+    },
+    {
+      "offset": 70,
+      "name": "",
+      "comment": "even: hidden from sight and shots this turn"
+    },
+    {
+      "offset": 72,
+      "name": "",
+      "comment": "done: a dying robot does nothing else"
+    },
+    {
+      "offset": 73,
+      "name": "RobotDyingShow",
+      "comment": "odd: the object is there"
+    },
+    {
+      "offset": 75,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 76,
+      "name": "RobotDestroyed",
+      "comment": "remove the robot: a wreck on bare ground, the dot, the slot, the counts"
+    },
+    {
+      "offset": 79,
+      "name": "",
+      "comment": "(the cell's high byte)"
+    },
+    {
+      "offset": 82,
+      "name": "",
+      "comment": "no object on its cell any more"
+    },
+    {
+      "offset": 84,
+      "name": "",
+      "comment": "OR of the four footprint cells (X, Y), (X+1, Y), (X+1, Y-1), (X, Y-1)"
+    },
+    {
+      "offset": 85,
+      "name": "",
+      "comment": "(X+1, Y)"
+    },
+    {
+      "offset": 86,
+      "name": "",
+      "comment": "(OR it in)"
+    },
+    {
+      "offset": 87,
+      "name": "",
+      "comment": "one row up ..."
+    },
+    {
+      "offset": 88,
+      "name": "",
+      "comment": "... (rows are $200 apart): (X+1, Y-1)"
+    },
+    {
+      "offset": 89,
+      "name": "",
+      "comment": "(OR it in)"
+    },
+    {
+      "offset": 90,
+      "name": "",
+      "comment": "(X, Y-1)"
+    },
+    {
+      "offset": 91,
+      "name": "",
+      "comment": "(OR it in)"
+    },
+    {
+      "offset": 92,
+      "name": "",
+      "comment": "back down to the anchor row ..."
+    },
+    {
+      "offset": 93,
+      "name": "",
+      "comment": "... HL = (X, Y) again for PutBlock"
+    },
+    {
+      "offset": 94,
+      "name": "",
+      "comment": "bits 0-5: anything but bare type-0 ground?"
+    },
+    {
+      "offset": 96,
+      "name": "",
+      "comment": "something there already (terrain or a block part): no wreck"
+    },
+    {
+      "offset": 98,
+      "name": "",
+      "comment": "bare ground: a wreck, terrain type 6 or 7 at random"
+    },
+    {
+      "offset": 101,
+      "name": "",
+      "comment": "0 or 1 ..."
+    },
+    {
+      "offset": 103,
+      "name": "",
+      "comment": "... + 6: the wreck types 6 / 7 (height 3)"
+    },
+    {
+      "offset": 105,
+      "name": "",
+      "comment": "PutBlock: a 2x2 terrain feature of type A at HL (the anchor A, the other three cells A + $20)"
+    },
+    {
+      "offset": 108,
+      "name": "RobotRemove",
+      "comment": "erase its radar dot: layer B = +$0A bit 7 (0 ours, 1 the enemy's)"
+    },
+    {
+      "offset": 111,
+      "name": "",
+      "comment": "HL = its column, C = its row ..."
+    },
+    {
+      "offset": 114,
+      "name": "",
+      "comment": "(the row)"
+    },
+    {
+      "offset": 117,
+      "name": "",
+      "comment": "B = the radar layer: bit 7 of +$0A ..."
+    },
+    {
+      "offset": 120,
+      "name": "",
+      "comment": "(to bit 0)"
+    },
+    {
+      "offset": 121,
+      "name": "",
+      "comment": "(only it)"
+    },
+    {
+      "offset": 123,
+      "name": "",
+      "comment": "(B = 0 ours $D800, 1 the enemy's $D900)"
+    },
+    {
+      "offset": 124,
+      "name": "",
+      "comment": "XOR the dot away"
+    },
+    {
+      "offset": 127,
+      "name": "",
+      "comment": "the slot is free"
+    },
+    {
+      "offset": 131,
+      "name": "",
+      "comment": "recount: OurRobots $FD41, EnemyRobots $FD49"
+    },
+    {
+      "offset": 134,
+      "name": "",
+      "comment": "and the status panel"
+    },
+    {
+      "offset": 137,
+      "name": "",
+      "comment": "the robot is gone"
+    },
+    {
+      "offset": 138,
+      "name": "",
+      "comment": "A = the control byte +$0A: 0 AI, 1 the player on it, 2 direct control, $80 the enemy's"
+    },
+    {
+      "offset": 141,
+      "name": "",
+      "comment": "the player sits on it: frozen while the robot menu is open"
+    },
+    {
+      "offset": 143,
+      "name": "",
+      "comment": "frozen: no delay counted, nothing moves"
+    },
+    {
+      "offset": 144,
+      "name": "",
+      "comment": "Side: 0 ours, 1 the enemy's"
+    },
+    {
+      "offset": 145,
+      "name": "",
+      "comment": "(bit 7 of +$0A now in bit 0)"
+    },
+    {
+      "offset": 147,
+      "name": "",
+      "comment": "Side = 0 / 1, read by the target searches"
+    },
+    {
+      "offset": 150,
+      "name": "",
+      "comment": "the step delay"
+    },
+    {
+      "offset": 153,
+      "name": "",
+      "comment": "not yet: wait another turn"
+    },
+    {
+      "offset": 154,
+      "name": "",
+      "comment": "time to step: off the map"
+    },
+    {
+      "offset": 157,
+      "name": "",
+      "comment": "(the cell's high byte)"
+    },
+    {
+      "offset": 160,
+      "name": "",
+      "comment": "the anchor's object bit off: no one sees it during the step (nor its own shot hits it)"
+    },
+    {
+      "offset": 162,
+      "name": "",
+      "comment": "keep the cell for FreeDirections"
+    },
+    {
+      "offset": 163,
+      "name": "",
+      "comment": "erase its radar dot"
+    },
+    {
+      "offset": 166,
+      "name": "",
+      "comment": "(HL = its column)"
+    },
+    {
+      "offset": 169,
+      "name": "",
+      "comment": "C = its row"
+    },
+    {
+      "offset": 172,
+      "name": "",
+      "comment": "B = the radar layer, +$0A bit 7 ..."
+    },
+    {
+      "offset": 175,
+      "name": "",
+      "comment": "(to bit 0)"
+    },
+    {
+      "offset": 176,
+      "name": "",
+      "comment": "(only it)"
+    },
+    {
+      "offset": 178,
+      "name": "",
+      "comment": "(0 ours, 1 the enemy's)"
+    },
+    {
+      "offset": 179,
+      "name": "",
+      "comment": "the old dot off (PlaceRobot plots the new one)"
+    },
+    {
+      "offset": 182,
+      "name": "",
+      "comment": "HL = the anchor cell again"
+    },
+    {
+      "offset": 183,
+      "name": "",
+      "comment": "C = the free directions from this cell"
+    },
+    {
+      "offset": 186,
+      "name": "",
+      "comment": "A = the control byte again"
+    },
+    {
+      "offset": 189,
+      "name": "",
+      "comment": "under direct control?"
+    },
+    {
+      "offset": 191,
+      "name": "",
+      "comment": "yes: the player's stick steers"
+    },
+    {
+      "offset": 194,
+      "name": "",
+      "comment": "keep C, the free directions"
+    },
+    {
+      "offset": 195,
+      "name": "",
+      "comment": "E = the directions with an opponent in sight"
+    },
+    {
+      "offset": 198,
+      "name": "",
+      "comment": "C back"
+    },
+    {
+      "offset": 199,
+      "name": "",
+      "comment": "A = the directions with an opponent ..."
+    },
+    {
+      "offset": 200,
+      "name": "",
+      "comment": "... none?"
+    },
+    {
+      "offset": 201,
+      "name": "",
+      "comment": "nobody in sight"
+    },
+    {
+      "offset": 203,
+      "name": "",
+      "comment": "an opponent straight ahead?"
+    },
+    {
+      "offset": 206,
+      "name": "",
+      "comment": "no: only to a side"
+    },
+    {
+      "offset": 208,
+      "name": "",
+      "comment": "move on ahead if free (else stand)"
+    },
+    {
+      "offset": 209,
+      "name": "",
+      "comment": "+$05 = the facing if free, else 0: stand"
+    },
+    {
+      "offset": 212,
+      "name": "",
+      "comment": "keep the caller's IX"
+    },
+    {
+      "offset": 214,
+      "name": "",
+      "comment": "keep the robot record (IY)"
+    },
+    {
+      "offset": 216,
+      "name": "",
+      "comment": "IX = the shooter, IY = the free shot record"
+    },
+    {
+      "offset": 218,
+      "name": "",
+      "comment": "(IX = the robot)"
+    },
+    {
+      "offset": 220,
+      "name": "",
+      "comment": "IY = a free shot record of the robot's side, Z when one is free"
+    },
+    {
+      "offset": 223,
+      "name": "",
+      "comment": "both of our side's shots are flying"
+    },
+    {
+      "offset": 225,
+      "name": "",
+      "comment": "each weapon (bits 3 cannon, 4 missiles, 5 phasers) fires this turn at even odds"
+    },
+    {
+      "offset": 228,
+      "name": "",
+      "comment": "(the three weapon bits of a random byte)"
+    },
+    {
+      "offset": 230,
+      "name": "",
+      "comment": "(those the robot carries)"
+    },
+    {
+      "offset": 233,
+      "name": "",
+      "comment": "no weapon chosen this turn"
+    },
+    {
+      "offset": 235,
+      "name": "",
+      "comment": "the highest chosen weapon: phasers 3, missiles 2, cannon 1"
+    },
+    {
+      "offset": 237,
+      "name": "RobotWeaponPick",
+      "comment": "count the rotations until the weapon bit leaves"
+    },
+    {
+      "offset": 238,
+      "name": "",
+      "comment": "(the next bit into carry)"
+    },
+    {
+      "offset": 239,
+      "name": "",
+      "comment": "until the first set bit (the highest weapon) leaves"
+    },
+    {
+      "offset": 241,
+      "name": "",
+      "comment": "A = the weapon: 1 cannon, 2 missiles, 3 phasers"
+    },
+    {
+      "offset": 242,
+      "name": "",
+      "comment": "launch the shot"
+    },
+    {
+      "offset": 245,
+      "name": "",
+      "comment": "IY = the robot again"
+    },
+    {
+      "offset": 247,
+      "name": "",
+      "comment": "the caller's IX back"
+    },
+    {
+      "offset": 249,
+      "name": "",
+      "comment": "the shot costs the step: stand, decide again next step"
+    },
+    {
+      "offset": 253,
+      "name": "",
+      "comment": "one step on this course: the next step decides again"
+    },
+    {
+      "offset": 257,
+      "name": "",
+      "comment": "(a standing robot: TurnOrStep does nothing)"
+    },
+    {
+      "offset": 259,
+      "name": "RobotNoShot",
+      "comment": "no shot: walk on ahead"
+    },
+    {
+      "offset": 261,
+      "name": "",
+      "comment": "the caller's IX back"
+    },
+    {
+      "offset": 263,
+      "name": "",
+      "comment": "one step on: ahead (+$05 set above) or standing when blocked"
+    },
+    {
+      "offset": 267,
+      "name": "",
+      "comment": "walk"
+    },
+    {
+      "offset": 269,
+      "name": "RobotTurnToEnemy",
+      "comment": "opponents to a side: face one of them"
+    },
+    {
+      "offset": 270,
+      "name": "",
+      "comment": "B = the set to pick from"
+    },
+    {
+      "offset": 271,
+      "name": "",
+      "comment": "several: one at random"
+    },
+    {
+      "offset": 274,
+      "name": "",
+      "comment": "(more than one: PickOneDirection)"
+    },
+    {
+      "offset": 277,
+      "name": "",
+      "comment": "+$05 = that side: TurnOrStep turns to face it (a turn needs no free cell)"
+    },
+    {
+      "offset": 280,
+      "name": "",
+      "comment": "two steps on that course"
+    },
+    {
+      "offset": 284,
+      "name": "",
+      "comment": "turn"
+    },
+    {
+      "offset": 287,
+      "name": "RobotNoEnemy",
+      "comment": "nobody in sight: keep the course while it lasts and is free"
+    },
+    {
+      "offset": 290,
+      "name": "",
+      "comment": "spent: a new course"
+    },
+    {
+      "offset": 293,
+      "name": "",
+      "comment": "the course ..."
+    },
+    {
+      "offset": 296,
+      "name": "",
+      "comment": "... still free?"
+    },
+    {
+      "offset": 297,
+      "name": "",
+      "comment": "yes: on along it"
+    },
+    {
+      "offset": 299,
+      "name": "RobotNewCourse",
+      "comment": "a new course for 3-6 steps"
+    },
+    {
+      "offset": 302,
+      "name": "",
+      "comment": "(0-3 ...)"
+    },
+    {
+      "offset": 304,
+      "name": "",
+      "comment": "(... + 3)"
+    },
+    {
+      "offset": 306,
+      "name": "",
+      "comment": "+$06 = the steps of the new course (SteerByOrder may set its own)"
+    },
+    {
+      "offset": 309,
+      "name": "",
+      "comment": "at least one free direction: ask the order"
+    },
+    {
+      "offset": 312,
+      "name": "",
+      "comment": "(carry: boxed in, C = 0: stand)"
+    },
+    {
+      "offset": 315,
+      "name": "",
+      "comment": "the robot blew itself up (a nuclear charge, NuclearBlast)"
+    },
+    {
+      "offset": 318,
+      "name": "",
+      "comment": "(+$01 = 0 when NuclearBlast freed the slot)"
+    },
+    {
+      "offset": 319,
+      "name": "",
+      "comment": "gone: nothing to move or place"
+    },
+    {
+      "offset": 320,
+      "name": "",
+      "comment": "+$05 = the new course (0: stand)"
+    },
+    {
+      "offset": 323,
+      "name": "RobotMove",
+      "comment": "turn or step in +$05, the new delay, back on the map"
+    },
+    {
+      "offset": 326,
+      "name": "",
+      "comment": "HL = the column ..."
+    },
+    {
+      "offset": 329,
+      "name": "",
+      "comment": "... (high byte)"
+    },
+    {
+      "offset": 332,
+      "name": "",
+      "comment": "B = the row"
+    },
+    {
+      "offset": 335,
+      "name": "",
+      "comment": "a turn, a step or nothing"
+    },
+    {
+      "offset": 338,
+      "name": "",
+      "comment": "+$0F = the turns to the next step"
+    },
+    {
+      "offset": 341,
+      "name": "",
+      "comment": "PlaceRobot: store x / y / the cell, set bit 6, plot the dot"
+    },
+    {
+      "offset": 344,
+      "name": "",
+      "comment": "B = the free directions, kept for the random picks"
+    },
+    {
+      "offset": 345,
+      "name": "",
+      "comment": "the order"
+    },
+    {
+      "offset": 348,
+      "name": "",
+      "comment": "0 stop?"
+    },
+    {
+      "offset": 349,
+      "name": "",
+      "comment": "no: an order that moves"
+    },
+    {
+      "offset": 351,
+      "name": "",
+      "comment": "0 stop: stand"
+    },
+    {
+      "offset": 352,
+      "name": "",
+      "comment": "C = 0"
+    },
+    {
+      "offset": 353,
+      "name": "SteerMoveOrders",
+      "comment": "orders 1-8: advance / retreat, destroy robots, the building orders"
+    },
+    {
+      "offset": 355,
+      "name": "",
+      "comment": "1-2: lean right / left (A AND 3 is the direction)"
+    },
+    {
+      "offset": 358,
+      "name": "",
+      "comment": "4-8: the building orders"
+    },
+    {
+      "offset": 360,
+      "name": "",
+      "comment": "3 destroy robots: a target already?"
+    },
+    {
+      "offset": 363,
+      "name": "",
+      "comment": "+$0E = $FF: none"
+    },
+    {
+      "offset": 364,
+      "name": "",
+      "comment": "none: find one"
+    },
+    {
+      "offset": 367,
+      "name": "",
+      "comment": "HL = the target robot's record"
+    },
+    {
+      "offset": 370,
+      "name": "",
+      "comment": "HL = its +$01"
+    },
+    {
+      "offset": 371,
+      "name": "",
+      "comment": "dead (its +$01 = 0)?"
+    },
+    {
+      "offset": 372,
+      "name": "",
+      "comment": "(+$01 = 0?)"
+    },
+    {
+      "offset": 373,
+      "name": "",
+      "comment": "dead (slot free): find another (a dying one is still a target)"
+    },
+    {
+      "offset": 375,
+      "name": "",
+      "comment": "HL = its +$02"
+    },
+    {
+      "offset": 376,
+      "name": "",
+      "comment": "its column (low)"
+    },
+    {
+      "offset": 377,
+      "name": "",
+      "comment": "(+$03)"
+    },
+    {
+      "offset": 378,
+      "name": "",
+      "comment": "(high)"
+    },
+    {
+      "offset": 379,
+      "name": "",
+      "comment": "HL = its column"
+    },
+    {
+      "offset": 380,
+      "name": "",
+      "comment": "DE = our column ..."
+    },
+    {
+      "offset": 383,
+      "name": "",
+      "comment": "... (high byte)"
+    },
+    {
+      "offset": 386,
+      "name": "",
+      "comment": "HL = |its column - ours|"
+    },
+    {
+      "offset": 389,
+      "name": "",
+      "comment": "256 columns or more ..."
+    },
+    {
+      "offset": 390,
+      "name": "",
+      "comment": "(test the high byte)"
+    },
+    {
+      "offset": 391,
+      "name": "",
+      "comment": "... too far: another target"
+    },
+    {
+      "offset": 393,
+      "name": "",
+      "comment": "A = the distance"
+    },
+    {
+      "offset": 394,
+      "name": "",
+      "comment": "less than 50 columns: chase it"
+    },
+    {
+      "offset": 396,
+      "name": "",
+      "comment": "yes: aim at it"
+    },
+    {
+      "offset": 398,
+      "name": "SteerNewRobotTarget",
+      "comment": "find the nearest live opponent"
+    },
+    {
+      "offset": 401,
+      "name": "",
+      "comment": "(HL = our column)"
+    },
+    {
+      "offset": 404,
+      "name": "",
+      "comment": "no target while the search runs (FindNearestOpponent does not read it)"
+    },
+    {
+      "offset": 408,
+      "name": "",
+      "comment": "keep B, the free set"
+    },
+    {
+      "offset": 409,
+      "name": "",
+      "comment": "D = the nearest opponent's slot in its side ($FF none), Z: none"
+    },
+    {
+      "offset": 412,
+      "name": "",
+      "comment": "B back (the flags stay)"
+    },
+    {
+      "offset": 413,
+      "name": "",
+      "comment": "+$0E = its index, $FF none"
+    },
+    {
+      "offset": 416,
+      "name": "",
+      "comment": "nobody: wander"
+    },
+    {
+      "offset": 419,
+      "name": "SteerAtRobot",
+      "comment": "DE = the target's column, B = our row - its row"
+    },
+    {
+      "offset": 422,
+      "name": "",
+      "comment": "(+$01)"
+    },
+    {
+      "offset": 423,
+      "name": "",
+      "comment": "HL = its +$02"
+    },
+    {
+      "offset": 424,
+      "name": "",
+      "comment": "E = its column (low) ..."
+    },
+    {
+      "offset": 425,
+      "name": "",
+      "comment": "(+$03)"
+    },
+    {
+      "offset": 426,
+      "name": "",
+      "comment": "... D (high)"
+    },
+    {
+      "offset": 427,
+      "name": "",
+      "comment": "HL = its +$04, the row"
+    },
+    {
+      "offset": 428,
+      "name": "",
+      "comment": "our row ..."
+    },
+    {
+      "offset": 431,
+      "name": "",
+      "comment": "... - its row"
+    },
+    {
+      "offset": 432,
+      "name": "",
+      "comment": "B = the row difference (positive: we are below it)"
+    },
+    {
+      "offset": 433,
+      "name": "",
+      "comment": "HL = our column ..."
+    },
+    {
+      "offset": 436,
+      "name": "",
+      "comment": "... (high byte)"
+    },
+    {
+      "offset": 439,
+      "name": "",
+      "comment": "A = 0 and no carry for SBC"
+    },
+    {
+      "offset": 440,
+      "name": "",
+      "comment": "HL = our column - its column"
+    },
+    {
+      "offset": 442,
+      "name": "",
+      "comment": "D = 0: no wanted direction yet (the flags stay)"
+    },
+    {
+      "offset": 443,
+      "name": "",
+      "comment": "same column: only the vertical part"
+    },
+    {
+      "offset": 445,
+      "name": "",
+      "comment": "else the horizontal part first"
+    },
+    {
+      "offset": 447,
+      "name": "SteerBuildingOrder",
+      "comment": "HL = the owner byte of the first record, E = the owner the order wants"
+    },
+    {
+      "offset": 450,
+      "name": "",
+      "comment": "HL = the target record's owner byte (5 bytes a record)"
+    },
+    {
+      "offset": 453,
+      "name": "",
+      "comment": "B = the index"
+    },
+    {
+      "offset": 454,
+      "name": "",
+      "comment": "(2 x)"
+    },
+    {
+      "offset": 455,
+      "name": "",
+      "comment": "(4 x)"
+    },
+    {
+      "offset": 456,
+      "name": "",
+      "comment": "(5 x)"
+    },
+    {
+      "offset": 457,
+      "name": "",
+      "comment": "HL += 5 x index ($FF lands in the IM 2 table, $FD: owner bits $E0, never wanted)"
+    },
+    {
+      "offset": 460,
+      "name": "",
+      "comment": "its owner byte ..."
+    },
+    {
+      "offset": 461,
+      "name": "",
+      "comment": "... bits 5-7: $20 the enemy's, $40 ours, $80 destroyed, 0 neutral"
+    },
+    {
+      "offset": 463,
+      "name": "",
+      "comment": "still a building we want?"
+    },
+    {
+      "offset": 464,
+      "name": "",
+      "comment": "yes: aim at it"
+    },
+    {
+      "offset": 466,
+      "name": "",
+      "comment": "no: find another"
+    },
+    {
+      "offset": 469,
+      "name": "",
+      "comment": "keep C, the free set"
+    },
+    {
+      "offset": 470,
+      "name": "",
+      "comment": "HL = our column ..."
+    },
+    {
+      "offset": 473,
+      "name": "",
+      "comment": "... (high byte)"
+    },
+    {
+      "offset": 476,
+      "name": "",
+      "comment": "D = the new target, NZ: found (HL is left past the table)"
+    },
+    {
+      "offset": 479,
+      "name": "",
+      "comment": "C back (B is no longer the free set; the aim reloads it from C)"
+    },
+    {
+      "offset": 480,
+      "name": "",
+      "comment": "found one"
+    },
+    {
+      "offset": 482,
+      "name": "",
+      "comment": "none left: stand"
+    },
+    {
+      "offset": 484,
+      "name": "",
+      "comment": "ours: stand and wait"
+    },
+    {
+      "offset": 488,
+      "name": "",
+      "comment": "(our robot: the order stays)"
+    },
+    {
+      "offset": 489,
+      "name": "",
+      "comment": "the enemy's: hunt robots instead"
+    },
+    {
+      "offset": 493,
+      "name": "",
+      "comment": "(C = 0: stands this step)"
+    },
+    {
+      "offset": 494,
+      "name": "SteerNewBuilding",
+      "comment": "another target building found: +$0E = its index"
+    },
+    {
+      "offset": 497,
+      "name": "SteerAtBuilding",
+      "comment": "B = our row - the building's row, DE = its column"
+    },
+    {
+      "offset": 498,
+      "name": "",
+      "comment": "our row ..."
+    },
+    {
+      "offset": 501,
+      "name": "",
+      "comment": "... - the record's row (the door's)"
+    },
+    {
+      "offset": 502,
+      "name": "",
+      "comment": "B = the row difference"
+    },
+    {
+      "offset": 503,
+      "name": "",
+      "comment": "HL = +$01"
+    },
+    {
+      "offset": 504,
+      "name": "",
+      "comment": "D = its column (high) ..."
+    },
+    {
+      "offset": 505,
+      "name": "",
+      "comment": "(+$00)"
+    },
+    {
+      "offset": 506,
+      "name": "",
+      "comment": "... E (low)"
+    },
+    {
+      "offset": 507,
+      "name": "",
+      "comment": "HL = our column ..."
+    },
+    {
+      "offset": 510,
+      "name": "",
+      "comment": "... (high byte)"
+    },
+    {
+      "offset": 513,
+      "name": "",
+      "comment": "A = 0 and no carry for SBC"
+    },
+    {
+      "offset": 514,
+      "name": "",
+      "comment": "HL = our column - its column"
+    },
+    {
+      "offset": 516,
+      "name": "",
+      "comment": "D = 0: no wanted direction yet"
+    },
+    {
+      "offset": 517,
+      "name": "",
+      "comment": "same column: go for the door's own row"
+    },
+    {
+      "offset": 519,
+      "name": "",
+      "comment": "columns differ: aim at the row 3 below it"
+    },
+    {
+      "offset": 520,
+      "name": "",
+      "comment": "(the row aimed at: the door's + 3)"
+    },
+    {
+      "offset": 522,
+      "name": "",
+      "comment": "B = the new row difference"
+    },
+    {
+      "offset": 523,
+      "name": "RobotAim",
+      "comment": "horizontal: 2 left when we are right of it, 1 right when left"
+    },
+    {
+      "offset": 524,
+      "name": "",
+      "comment": "(H's bits 1-2 to bits 0-1: H is $FF / $FE when we are left of it, 0 / 1 when right)"
+    },
+    {
+      "offset": 525,
+      "name": "",
+      "comment": "(3 when we are left of it, 0 when right)"
+    },
+    {
+      "offset": 527,
+      "name": "",
+      "comment": "(1 right, 2 left)"
+    },
+    {
+      "offset": 529,
+      "name": "",
+      "comment": "D = the horizontal wanted direction"
+    },
+    {
+      "offset": 530,
+      "name": "RobotAimVertical",
+      "comment": "vertical: 8 up when we are below it, 4 down when above"
+    },
+    {
+      "offset": 531,
+      "name": "",
+      "comment": "same row?"
+    },
+    {
+      "offset": 532,
+      "name": "",
+      "comment": "yes: no vertical part"
+    },
+    {
+      "offset": 534,
+      "name": "",
+      "comment": "(B's bits 4-5, its sign for B in -16..15 ...)"
+    },
+    {
+      "offset": 535,
+      "name": "",
+      "comment": "(... rotated to bits 2-3)"
+    },
+    {
+      "offset": 536,
+      "name": "",
+      "comment": "($0C when we are above it, 0 below)"
+    },
+    {
+      "offset": 538,
+      "name": "",
+      "comment": "(4 down, 8 up)"
+    },
+    {
+      "offset": 540,
+      "name": "",
+      "comment": "with the horizontal part ..."
+    },
+    {
+      "offset": 541,
+      "name": "",
+      "comment": "... D = the wanted directions"
+    },
+    {
+      "offset": 542,
+      "name": "RobotAimCheck",
+      "comment": "D = the wanted directions: 0 means on the target"
+    },
+    {
+      "offset": 543,
+      "name": "",
+      "comment": "any?"
+    },
+    {
+      "offset": 544,
+      "name": "",
+      "comment": "yes: move toward it"
+    },
+    {
+      "offset": 546,
+      "name": "",
+      "comment": "on the target: stand"
+    },
+    {
+      "offset": 547,
+      "name": "",
+      "comment": "the order ..."
+    },
+    {
+      "offset": 550,
+      "name": "",
+      "comment": "... below 4 (only 3 gets here)?"
+    },
+    {
+      "offset": 552,
+      "name": "",
+      "comment": "destroy robots: just face down"
+    },
+    {
+      "offset": 554,
+      "name": "",
+      "comment": "destroy factories / warbases: the nuclear charge"
+    },
+    {
+      "offset": 556,
+      "name": "",
+      "comment": "4-5: blow up here (the robot and what is around it)"
+    },
+    {
+      "offset": 559,
+      "name": "RobotFaceDown",
+      "comment": "on the target: face down and stand (destroy orders blast first)"
+    },
+    {
+      "offset": 562,
+      "name": "",
+      "comment": "facing down already?"
+    },
+    {
+      "offset": 564,
+      "name": "",
+      "comment": "yes: stand (C = 0)"
+    },
+    {
+      "offset": 565,
+      "name": "",
+      "comment": "else turn down and stay so"
+    },
+    {
+      "offset": 567,
+      "name": "",
+      "comment": "the turn's INC makes it 0: the next step decides again"
+    },
+    {
+      "offset": 571,
+      "name": "",
+      "comment": "C = 4: TurnOrStep turns it down"
+    },
+    {
+      "offset": 572,
+      "name": "RobotAimMove",
+      "comment": "off the target: L = |the column difference|"
+    },
+    {
+      "offset": 573,
+      "name": "",
+      "comment": "(L's sign: only the low byte of the difference is used)"
+    },
+    {
+      "offset": 574,
+      "name": "",
+      "comment": "positive: A = L"
+    },
+    {
+      "offset": 577,
+      "name": "",
+      "comment": "negative: A = -L"
+    },
+    {
+      "offset": 579,
+      "name": "",
+      "comment": "L = |the difference| (modulo 256)"
+    },
+    {
+      "offset": 580,
+      "name": "RobotAimColumns",
+      "comment": "8 or more columns away: lean horizontally (the row ignored), else pick among the free wanted directions"
+    },
+    {
+      "offset": 582,
+      "name": "",
+      "comment": "B = the free directions again"
+    },
+    {
+      "offset": 583,
+      "name": "",
+      "comment": "A = the wanted directions"
+    },
+    {
+      "offset": 584,
+      "name": "",
+      "comment": "far: lean as an advance does"
+    },
+    {
+      "offset": 586,
+      "name": "",
+      "comment": "the wanted directions that are free"
+    },
+    {
+      "offset": 587,
+      "name": "",
+      "comment": "none: any free direction"
+    },
+    {
+      "offset": 589,
+      "name": "",
+      "comment": "B = the free wanted ones"
+    },
+    {
+      "offset": 590,
+      "name": "",
+      "comment": "only vertical ones: pick one"
+    },
+    {
+      "offset": 592,
+      "name": "",
+      "comment": "(no horizontal part)"
+    },
+    {
+      "offset": 594,
+      "name": "",
+      "comment": "the columns agree: pick one"
+    },
+    {
+      "offset": 595,
+      "name": "",
+      "comment": "(a column difference of 0 modulo 256)"
+    },
+    {
+      "offset": 596,
+      "name": "",
+      "comment": "(no horizontal course to keep)"
+    },
+    {
+      "offset": 598,
+      "name": "",
+      "comment": "keep a horizontal course for |dx| - 1 steps"
+    },
+    {
+      "offset": 599,
+      "name": "",
+      "comment": "+$06 = the steps of that course"
+    },
+    {
+      "offset": 602,
+      "name": "",
+      "comment": "pick one of the free wanted ones"
+    },
+    {
+      "offset": 604,
+      "name": "RobotLeanTo",
+      "comment": "D = the horizontal part (1 right, 2 left), E = all but the opposite one"
+    },
+    {
+      "offset": 606,
+      "name": "",
+      "comment": "D = right or left"
+    },
+    {
+      "offset": 607,
+      "name": "",
+      "comment": "(1 -> $FD, 2 -> $FE: every bit but the opposite one)"
+    },
+    {
+      "offset": 609,
+      "name": "",
+      "comment": "E = the directions allowed when the lean fails"
+    },
+    {
+      "offset": 610,
+      "name": "",
+      "comment": "the free directions ..."
+    },
+    {
+      "offset": 611,
+      "name": "",
+      "comment": "wanted direction blocked: any free one, the opposite included"
+    },
+    {
+      "offset": 612,
+      "name": "",
+      "comment": "(blocked)"
+    },
+    {
+      "offset": 614,
+      "name": "",
+      "comment": "C = the wanted direction"
+    },
+    {
+      "offset": 615,
+      "name": "",
+      "comment": "two random bits for it (0.74 together; with the fall-back pick 0.835 when all four are free)"
+    },
+    {
+      "offset": 618,
+      "name": "",
+      "comment": "(its bit in a random byte)"
+    },
+    {
+      "offset": 619,
+      "name": "",
+      "comment": "set: take it (1/2)"
+    },
+    {
+      "offset": 620,
+      "name": "",
+      "comment": "a second try ..."
+    },
+    {
+      "offset": 623,
+      "name": "",
+      "comment": "(its bit again)"
+    },
+    {
+      "offset": 624,
+      "name": "",
+      "comment": "set: take it (another 1/4)"
+    },
+    {
+      "offset": 625,
+      "name": "",
+      "comment": "else: among the free ones but the opposite (it may be the wanted one again)"
+    },
+    {
+      "offset": 626,
+      "name": "",
+      "comment": "(the free set ...)"
+    },
+    {
+      "offset": 627,
+      "name": "",
+      "comment": "(... without the opposite: B is not 0, it holds D)"
+    },
+    {
+      "offset": 628,
+      "name": "",
+      "comment": "C = the whole set"
+    },
+    {
+      "offset": 629,
+      "name": "PickOneLoop",
+      "comment": "C AND a random byte"
+    },
+    {
+      "offset": 632,
+      "name": "",
+      "comment": "(C AND it)"
+    },
+    {
+      "offset": 633,
+      "name": "",
+      "comment": "C = the narrowed set"
+    },
+    {
+      "offset": 634,
+      "name": "",
+      "comment": "how many are left?"
+    },
+    {
+      "offset": 637,
+      "name": "",
+      "comment": "exactly one: done"
+    },
+    {
+      "offset": 638,
+      "name": "",
+      "comment": "still several: narrow on"
+    },
+    {
+      "offset": 640,
+      "name": "",
+      "comment": "none left: from the whole set again"
+    },
+    {
+      "offset": 641,
+      "name": "",
+      "comment": "try again"
+    },
+    {
+      "offset": 643,
+      "name": "",
+      "comment": "3 destroy robots ..."
+    },
+    {
+      "offset": 645,
+      "name": "",
+      "comment": "... is a search for a robot"
+    },
+    {
+      "offset": 648,
+      "name": "",
+      "comment": "(keep A and the flags ...)"
+    },
+    {
+      "offset": 649,
+      "name": "",
+      "comment": "A' = the order, for ConsiderBuilding"
+    },
+    {
+      "offset": 650,
+      "name": "",
+      "comment": "(... A stays the order too)"
+    },
+    {
+      "offset": 651,
+      "name": "",
+      "comment": "the search: DE' = our column, BC' = the best distance ($2000), C = the index, D = $FF"
+    },
+    {
+      "offset": 654,
+      "name": "",
+      "comment": "HL = the first record's owner byte, B = the records, E = the owner wanted"
+    },
+    {
+      "offset": 657,
+      "name": "FindTargetLoop",
+      "comment": "owner bits 5-7 the ones wanted?"
+    },
+    {
+      "offset": 658,
+      "name": "",
+      "comment": "(bits 5-7)"
+    },
+    {
+      "offset": 660,
+      "name": "",
+      "comment": "(the owner the order wants?)"
+    },
+    {
+      "offset": 661,
+      "name": "",
+      "comment": "yes: a candidate unless a teammate has it"
+    },
+    {
+      "offset": 664,
+      "name": "",
+      "comment": "next record (L only: the tables sit inside page $FD)"
+    },
+    {
+      "offset": 665,
+      "name": "",
+      "comment": "(5 bytes a record)"
+    },
+    {
+      "offset": 667,
+      "name": "",
+      "comment": "HL = the next owner byte"
+    },
+    {
+      "offset": 668,
+      "name": "",
+      "comment": "C = its index"
+    },
+    {
+      "offset": 669,
+      "name": "",
+      "comment": "all records of the table"
+    },
+    {
+      "offset": 671,
+      "name": "",
+      "comment": "A = the index + 1: Z when none was found"
+    },
+    {
+      "offset": 672,
+      "name": "",
+      "comment": "($FF + 1 = 0: Z)"
+    },
+    {
+      "offset": 673,
+      "name": "",
+      "comment": "D = the index, Z when none"
+    },
+    {
+      "offset": 674,
+      "name": "",
+      "comment": "keep the asking robot ..."
+    },
+    {
+      "offset": 676,
+      "name": "",
+      "comment": "... the loop count and index ..."
+    },
+    {
+      "offset": 677,
+      "name": "",
+      "comment": "... and the search result D, the owner E"
+    },
+    {
+      "offset": 678,
+      "name": "",
+      "comment": "A = the order (from A')"
+    },
+    {
+      "offset": 679,
+      "name": "",
+      "comment": "E = the order"
+    },
+    {
+      "offset": 680,
+      "name": "",
+      "comment": "A' = the order again"
+    },
+    {
+      "offset": 681,
+      "name": "",
+      "comment": "our side's robots"
+    },
+    {
+      "offset": 685,
+      "name": "",
+      "comment": "Side ..."
+    },
+    {
+      "offset": 688,
+      "name": "",
+      "comment": "(0 ours?)"
+    },
+    {
+      "offset": 689,
+      "name": "",
+      "comment": "ours: $DA00"
+    },
+    {
+      "offset": 691,
+      "name": "",
+      "comment": "the enemy's: $DB80"
+    },
+    {
+      "offset": 695,
+      "name": "ConsiderBuildingStart",
+      "comment": "IY = the side's 24 robot records"
+    },
+    {
+      "offset": 697,
+      "name": "ConsiderBuildingLoop",
+      "comment": "a live robot ..."
+    },
+    {
+      "offset": 700,
+      "name": "",
+      "comment": "(+$01 = 0: a free slot)"
+    },
+    {
+      "offset": 701,
+      "name": "",
+      "comment": "free: next"
+    },
+    {
+      "offset": 703,
+      "name": "",
+      "comment": "... with the same order ..."
+    },
+    {
+      "offset": 706,
+      "name": "",
+      "comment": "(the same order?)"
+    },
+    {
+      "offset": 707,
+      "name": "",
+      "comment": "no: next"
+    },
+    {
+      "offset": 709,
+      "name": "",
+      "comment": "... after the same building?"
+    },
+    {
+      "offset": 712,
+      "name": "",
+      "comment": "(the same target index?)"
+    },
+    {
+      "offset": 713,
+      "name": "",
+      "comment": "yes: someone is after it already"
+    },
+    {
+      "offset": 715,
+      "name": "ConsiderBuildingNext",
+      "comment": "the next 16-byte robot record"
+    },
+    {
+      "offset": 716,
+      "name": "",
+      "comment": "(16 bytes a record)"
+    },
+    {
+      "offset": 719,
+      "name": "",
+      "comment": "IY = the next record"
+    },
+    {
+      "offset": 721,
+      "name": "",
+      "comment": "(E = the order again)"
+    },
+    {
+      "offset": 722,
+      "name": "",
+      "comment": "all 24 of the side"
+    },
+    {
+      "offset": 724,
+      "name": "",
+      "comment": "D, E back (the best so far, the owner)"
+    },
+    {
+      "offset": 725,
+      "name": "",
+      "comment": "B, C back (count, index)"
+    },
+    {
+      "offset": 726,
+      "name": "",
+      "comment": "IY = the asking robot"
+    },
+    {
+      "offset": 728,
+      "name": "",
+      "comment": "nobody: HL = the building's column"
+    },
+    {
+      "offset": 729,
+      "name": "",
+      "comment": "(+$02)"
+    },
+    {
+      "offset": 730,
+      "name": "",
+      "comment": "(+$01: X high)"
+    },
+    {
+      "offset": 731,
+      "name": "",
+      "comment": "A = X high"
+    },
+    {
+      "offset": 732,
+      "name": "",
+      "comment": "(+$00)"
+    },
+    {
+      "offset": 733,
+      "name": "",
+      "comment": "L = X low"
+    },
+    {
+      "offset": 734,
+      "name": "",
+      "comment": "HL = the door's column"
+    },
+    {
+      "offset": 735,
+      "name": "",
+      "comment": "nearer than the best: D = C"
+    },
+    {
+      "offset": 738,
+      "name": "",
+      "comment": "HL = the owner byte again for the table walk"
+    },
+    {
+      "offset": 739,
+      "name": "",
+      "comment": "back to FindTargetLoop"
+    },
+    {
+      "offset": 740,
+      "name": "ConsiderBuildingTaken",
+      "comment": "taken: skip it"
+    },
+    {
+      "offset": 741,
+      "name": "",
+      "comment": "B, C back"
+    },
+    {
+      "offset": 742,
+      "name": "",
+      "comment": "IY = the asking robot"
+    },
+    {
+      "offset": 744,
+      "name": "",
+      "comment": "not offered"
+    },
+    {
+      "offset": 745,
+      "name": "",
+      "comment": "the candidate's column ..."
+    },
+    {
+      "offset": 746,
+      "name": "",
+      "comment": "(the search registers: DE' our column, BC' the best)"
+    },
+    {
+      "offset": 747,
+      "name": "",
+      "comment": "... into HL'"
+    },
+    {
+      "offset": 748,
+      "name": "",
+      "comment": "the distance"
+    },
+    {
+      "offset": 751,
+      "name": "",
+      "comment": "the high bytes first:"
+    },
+    {
+      "offset": 752,
+      "name": "",
+      "comment": "(below the best?)"
+    },
+    {
+      "offset": 753,
+      "name": "",
+      "comment": "yes: nearer"
+    },
+    {
+      "offset": 755,
+      "name": "",
+      "comment": "above: farther"
+    },
+    {
+      "offset": 757,
+      "name": "",
+      "comment": "equal: the low bytes"
+    },
+    {
+      "offset": 758,
+      "name": "",
+      "comment": "(below the best?)"
+    },
+    {
+      "offset": 759,
+      "name": "",
+      "comment": "not below: keep the old best"
+    },
+    {
+      "offset": 761,
+      "name": "KeepNearestNew",
+      "comment": "nearer: BC = the new best distance, D = its index"
+    },
+    {
+      "offset": 762,
+      "name": "",
+      "comment": "(low byte)"
+    },
+    {
+      "offset": 763,
+      "name": "",
+      "comment": "back to the main registers"
+    },
+    {
+      "offset": 764,
+      "name": "",
+      "comment": "D = the candidate's index"
+    },
+    {
+      "offset": 765,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 766,
+      "name": "KeepNearestDone",
+      "comment": "back to the main registers"
+    },
+    {
+      "offset": 767,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 768,
+      "name": "",
+      "comment": "A = 0, no borrow"
+    },
+    {
+      "offset": 769,
+      "name": "",
+      "comment": "HL - DE"
+    },
+    {
+      "offset": 771,
+      "name": "",
+      "comment": "not negative: done (columns are 0-511, so the sign is the true one)"
+    },
+    {
+      "offset": 772,
+      "name": "",
+      "comment": "negative: 0 - HL"
+    },
+    {
+      "offset": 773,
+      "name": "",
+      "comment": "(low byte of the negation)"
+    },
+    {
+      "offset": 774,
+      "name": "",
+      "comment": "(keeps the borrow)"
+    },
+    {
+      "offset": 776,
+      "name": "",
+      "comment": "(0 - H - the borrow)"
+    },
+    {
+      "offset": 777,
+      "name": "",
+      "comment": "HL = DE - HL"
+    },
+    {
+      "offset": 778,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 779,
+      "name": "",
+      "comment": "the factories' first owner byte ($FD87) ..."
+    },
+    {
+      "offset": 782,
+      "name": "",
+      "comment": "... 24 records"
+    },
+    {
+      "offset": 784,
+      "name": "",
+      "comment": "5 destroy warbases?"
+    },
+    {
+      "offset": 786,
+      "name": "",
+      "comment": "(yes)"
+    },
+    {
+      "offset": 788,
+      "name": "",
+      "comment": "8 capture warbases?"
+    },
+    {
+      "offset": 790,
+      "name": "",
+      "comment": "no: the factories"
+    },
+    {
+      "offset": 792,
+      "name": "TargetWarbaseTable",
+      "comment": "orders 5 and 8: the 4 warbase records"
+    },
+    {
+      "offset": 795,
+      "name": "",
+      "comment": "... 4 records"
+    },
+    {
+      "offset": 797,
+      "name": "TargetBuildingMark",
+      "comment": "E = the owner mark wanted: the opponent's"
+    },
+    {
+      "offset": 799,
+      "name": "",
+      "comment": "keep the order"
+    },
+    {
+      "offset": 800,
+      "name": "",
+      "comment": "Side ..."
+    },
+    {
+      "offset": 803,
+      "name": "",
+      "comment": "(0 ours?)"
+    },
+    {
+      "offset": 804,
+      "name": "",
+      "comment": "ours: $20 (the computer's)"
+    },
+    {
+      "offset": 806,
+      "name": "",
+      "comment": "... $40 for the enemy"
+    },
+    {
+      "offset": 808,
+      "name": "TargetNeutralCheck",
+      "comment": "order 6 (capture neutral): mark 0"
+    },
+    {
+      "offset": 809,
+      "name": "",
+      "comment": "6 capture neutral factories?"
+    },
+    {
+      "offset": 811,
+      "name": "",
+      "comment": "no: E stays the opponent's mark"
+    },
+    {
+      "offset": 812,
+      "name": "",
+      "comment": "capture neutral: owner bits 0"
+    },
+    {
+      "offset": 814,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 815,
+      "name": "",
+      "comment": "DE = our records ..."
+    },
+    {
+      "offset": 818,
+      "name": "",
+      "comment": "the enemy's robots for us, ours for the enemy"
+    },
+    {
+      "offset": 821,
+      "name": "",
+      "comment": "(0 ours?)"
+    },
+    {
+      "offset": 822,
+      "name": "",
+      "comment": "the enemy's robot: our records"
+    },
+    {
+      "offset": 824,
+      "name": "",
+      "comment": "our robot: the computer's records"
+    },
+    {
+      "offset": 827,
+      "name": "TargetRobotIndex",
+      "comment": "HL = DE + 16 x (+$0E)"
+    },
+    {
+      "offset": 830,
+      "name": "",
+      "comment": "(2 x)"
+    },
+    {
+      "offset": 831,
+      "name": "",
+      "comment": "(4 x)"
+    },
+    {
+      "offset": 832,
+      "name": "",
+      "comment": "(8 x: at most 23 x 8 = 184, still a byte)"
+    },
+    {
+      "offset": 833,
+      "name": "",
+      "comment": "(L)"
+    },
+    {
+      "offset": 834,
+      "name": "",
+      "comment": "HL = 8 x index"
+    },
+    {
+      "offset": 836,
+      "name": "",
+      "comment": "HL = 16 x index"
+    },
+    {
+      "offset": 837,
+      "name": "",
+      "comment": "HL = the record"
+    },
+    {
+      "offset": 838,
+      "name": "",
+      "comment": "done (DE = the table)"
+    },
+    {
+      "offset": 839,
+      "name": "",
+      "comment": "our column ..."
+    },
+    {
+      "offset": 840,
+      "name": "",
+      "comment": "(the shadow registers)"
+    },
+    {
+      "offset": 841,
+      "name": "",
+      "comment": "... DE' = our column"
+    },
+    {
+      "offset": 842,
+      "name": "",
+      "comment": "BC' = $2000: farther than any real distance (at most 511)"
+    },
+    {
+      "offset": 845,
+      "name": "",
+      "comment": "back"
+    },
+    {
+      "offset": 846,
+      "name": "",
+      "comment": "C = the first index"
+    },
+    {
+      "offset": 848,
+      "name": "",
+      "comment": "D = $FF: none found yet"
+    },
+    {
+      "offset": 850,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 851,
+      "name": "",
+      "comment": "DE' = our column, BC' = $2000, C = 0, D = $FF"
+    },
+    {
+      "offset": 854,
+      "name": "",
+      "comment": "keep the asking robot"
+    },
+    {
+      "offset": 856,
+      "name": "",
+      "comment": "the opponent's records"
+    },
+    {
+      "offset": 860,
+      "name": "",
+      "comment": "Side ..."
+    },
+    {
+      "offset": 863,
+      "name": "",
+      "comment": "(0 ours?)"
+    },
+    {
+      "offset": 864,
+      "name": "",
+      "comment": "the enemy's robot: our records"
+    },
+    {
+      "offset": 866,
+      "name": "",
+      "comment": "our robot: the computer's records"
+    },
+    {
+      "offset": 870,
+      "name": "FindOpponentStart",
+      "comment": "IY = the opponent's 24 records"
+    },
+    {
+      "offset": 872,
+      "name": "FindOpponentLoop",
+      "comment": "a live record: compare its column"
+    },
+    {
+      "offset": 875,
+      "name": "",
+      "comment": "(+$01 = 0: free)"
+    },
+    {
+      "offset": 876,
+      "name": "",
+      "comment": "free: next"
+    },
+    {
+      "offset": 878,
+      "name": "",
+      "comment": "HL = its column ..."
+    },
+    {
+      "offset": 881,
+      "name": "",
+      "comment": "... (high byte)"
+    },
+    {
+      "offset": 884,
+      "name": "",
+      "comment": "nearer than the best: D = C"
+    },
+    {
+      "offset": 887,
+      "name": "FindOpponentNext",
+      "comment": "the next 16-byte record, C its index"
+    },
+    {
+      "offset": 888,
+      "name": "",
+      "comment": "(16 bytes a record)"
+    },
+    {
+      "offset": 891,
+      "name": "",
+      "comment": "IY = the next record"
+    },
+    {
+      "offset": 893,
+      "name": "",
+      "comment": "(D = the best so far)"
+    },
+    {
+      "offset": 894,
+      "name": "",
+      "comment": "C = its index"
+    },
+    {
+      "offset": 895,
+      "name": "",
+      "comment": "all 24"
+    },
+    {
+      "offset": 897,
+      "name": "",
+      "comment": "IY = the asking robot"
+    },
+    {
+      "offset": 899,
+      "name": "",
+      "comment": "A = the index + 1: Z when none"
+    },
+    {
+      "offset": 900,
+      "name": "",
+      "comment": "($FF + 1 = 0: Z)"
+    },
+    {
+      "offset": 901,
+      "name": "",
+      "comment": "D = the slot, Z when none"
+    },
+    {
+      "offset": 902,
+      "name": "",
+      "comment": "keep C, the free directions FreeDirections found"
+    },
+    {
+      "offset": 903,
+      "name": "",
+      "comment": "Input, with the pause on key 1"
+    },
+    {
+      "offset": 906,
+      "name": "",
+      "comment": "C = the free directions again"
+    },
+    {
+      "offset": 907,
+      "name": "",
+      "comment": "B = the free directions"
+    },
+    {
+      "offset": 908,
+      "name": "",
+      "comment": "pushing the way it faces: go only if free (a turn needs no free cell)"
+    },
+    {
+      "offset": 911,
+      "name": "",
+      "comment": "another direction: a turn, taken as it is"
+    },
+    {
+      "offset": 913,
+      "name": "",
+      "comment": "(ahead only when free, else 0)"
+    },
+    {
+      "offset": 914,
+      "name": "DirectStepSet",
+      "comment": "C = the pushed direction (masked by the free ones when it faces it)"
+    },
+    {
+      "offset": 915,
+      "name": "",
+      "comment": "exactly one direction?"
+    },
+    {
+      "offset": 918,
+      "name": "",
+      "comment": "yes: that one"
+    },
+    {
+      "offset": 920,
+      "name": "",
+      "comment": "none or several: go on the way it went, if still free"
+    },
+    {
+      "offset": 923,
+      "name": "",
+      "comment": "(only if still free)"
+    },
+    {
+      "offset": 924,
+      "name": "",
+      "comment": "C = it, or 0: stand"
+    },
+    {
+      "offset": 925,
+      "name": "DirectStepStore",
+      "comment": "+$05 and Input = the step, then RobotMove"
+    },
+    {
+      "offset": 928,
+      "name": "",
+      "comment": "A = the step"
+    },
+    {
+      "offset": 929,
+      "name": "",
+      "comment": "Input = the step, so MoveShip carries the ship along (TurnOrStep)"
+    },
+    {
+      "offset": 932,
+      "name": "",
+      "comment": "turn or step, the delay, back on the map"
+    },
+    {
+      "offset": 935,
+      "name": "",
+      "comment": "no direction?"
+    },
+    {
+      "offset": 936,
+      "name": "",
+      "comment": "then nothing: the robot stands"
+    },
+    {
+      "offset": 937,
+      "name": "",
+      "comment": "already facing it: step"
+    },
+    {
+      "offset": 940,
+      "name": "",
+      "comment": "(yes)"
+    },
+    {
+      "offset": 942,
+      "name": "",
+      "comment": "C = the new facing"
+    },
+    {
+      "offset": 943,
+      "name": "",
+      "comment": "A = the new and the old facing together"
+    },
+    {
+      "offset": 946,
+      "name": "",
+      "comment": "right <-> left: turn down / up first"
+    },
+    {
+      "offset": 948,
+      "name": "",
+      "comment": "(not right + left)"
+    },
+    {
+      "offset": 950,
+      "name": "",
+      "comment": "(1 right -> 4 down, 2 left -> 8 up ...)"
+    },
+    {
+      "offset": 952,
+      "name": "",
+      "comment": "(... two rotations)"
+    },
+    {
+      "offset": 954,
+      "name": "",
+      "comment": "face that way this step"
+    },
+    {
+      "offset": 956,
+      "name": "TurnCheckVertical",
+      "comment": "down <-> up: turn right / left first"
+    },
+    {
+      "offset": 958,
+      "name": "",
+      "comment": "(any other pair is a 90-degree turn already)"
+    },
+    {
+      "offset": 960,
+      "name": "",
+      "comment": "(4 down -> 1 right, 8 up -> 2 left ...)"
+    },
+    {
+      "offset": 962,
+      "name": "",
+      "comment": "(... two rotations)"
+    },
+    {
+      "offset": 964,
+      "name": "TurnFace",
+      "comment": "+$08 = the new facing, +$06 counts the turn"
+    },
+    {
+      "offset": 967,
+      "name": "",
+      "comment": "+$06 one more: the turn does not use up the course"
+    },
+    {
+      "offset": 970,
+      "name": "",
+      "comment": "the turn is the whole step"
+    },
+    {
+      "offset": 971,
+      "name": "TurnOrStepStep",
+      "comment": "step: the new column / row in HL / B"
+    },
+    {
+      "offset": 974,
+      "name": "",
+      "comment": "the highest ground under the new footprint"
+    },
+    {
+      "offset": 977,
+      "name": "",
+      "comment": "+$0D = it: the robot is drawn on it, the ship sits on it"
+    },
+    {
+      "offset": 980,
+      "name": "",
+      "comment": "direct control?"
+    },
+    {
+      "offset": 983,
+      "name": "",
+      "comment": "(2?)"
+    },
+    {
+      "offset": 985,
+      "name": "",
+      "comment": "no: done"
+    },
+    {
+      "offset": 986,
+      "name": "",
+      "comment": "keep the new row ..."
+    },
+    {
+      "offset": 987,
+      "name": "",
+      "comment": "... the new column ..."
+    },
+    {
+      "offset": 988,
+      "name": "",
+      "comment": "... and the robot (MoveShip uses them all)"
+    },
+    {
+      "offset": 990,
+      "name": "",
+      "comment": "the ship moves by the same Input"
+    },
+    {
+      "offset": 993,
+      "name": "",
+      "comment": "the robot back ..."
+    },
+    {
+      "offset": 995,
+      "name": "",
+      "comment": "... the new column ..."
+    },
+    {
+      "offset": 996,
+      "name": "",
+      "comment": "... the new row, for PlaceRobot"
+    },
+    {
+      "offset": 997,
+      "name": "",
+      "comment": "and sits on the robot's top"
+    },
+    {
+      "offset": 1000,
+      "name": "",
+      "comment": "(+ the ground under it)"
+    },
+    {
+      "offset": 1003,
+      "name": "",
+      "comment": "Altitude = the robot's top"
+    },
+    {
+      "offset": 1006,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 1007,
+      "name": "",
+      "comment": "bit 0 into carry: right?"
+    },
+    {
+      "offset": 1008,
+      "name": "",
+      "comment": "no"
+    },
+    {
+      "offset": 1010,
+      "name": "",
+      "comment": "right: column + 1"
+    },
+    {
+      "offset": 1011,
+      "name": "",
+      "comment": "the order ..."
+    },
+    {
+      "offset": 1014,
+      "name": "",
+      "comment": "(1 advance?)"
+    },
+    {
+      "offset": 1015,
+      "name": "",
+      "comment": "advance: right is its way, one column less to go"
+    },
+    {
+      "offset": 1017,
+      "name": "",
+      "comment": "(2 retreat?)"
+    },
+    {
+      "offset": 1018,
+      "name": "",
+      "comment": "retreat: right is against it, one more"
+    },
+    {
+      "offset": 1020,
+      "name": "",
+      "comment": "other orders count nothing"
+    },
+    {
+      "offset": 1021,
+      "name": "StepLeft",
+      "comment": "left: column - 1, the distance order counted the other way"
+    },
+    {
+      "offset": 1022,
+      "name": "",
+      "comment": "no"
+    },
+    {
+      "offset": 1024,
+      "name": "",
+      "comment": "left: column - 1"
+    },
+    {
+      "offset": 1025,
+      "name": "",
+      "comment": "the order ..."
+    },
+    {
+      "offset": 1028,
+      "name": "",
+      "comment": "(1 advance?)"
+    },
+    {
+      "offset": 1029,
+      "name": "",
+      "comment": "advance: left is against it, one more"
+    },
+    {
+      "offset": 1031,
+      "name": "",
+      "comment": "(2 retreat?)"
+    },
+    {
+      "offset": 1032,
+      "name": "",
+      "comment": "retreat: left is its way, one less"
+    },
+    {
+      "offset": 1034,
+      "name": "",
+      "comment": "other orders count nothing"
+    },
+    {
+      "offset": 1035,
+      "name": "StepDown",
+      "comment": "down: row + 1"
+    },
+    {
+      "offset": 1036,
+      "name": "",
+      "comment": "no"
+    },
+    {
+      "offset": 1038,
+      "name": "",
+      "comment": "row + 1"
+    },
+    {
+      "offset": 1039,
+      "name": "",
+      "comment": "rows do not count for the distance"
+    },
+    {
+      "offset": 1040,
+      "name": "StepUp",
+      "comment": "up: row - 1"
+    },
+    {
+      "offset": 1041,
+      "name": "",
+      "comment": "no bit: no move"
+    },
+    {
+      "offset": 1042,
+      "name": "",
+      "comment": "row - 1"
+    },
+    {
+      "offset": 1043,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 1044,
+      "name": "OrderDistanceUp",
+      "comment": "a column away from the order's aim: one more to go (max 99)"
+    },
+    {
+      "offset": 1047,
+      "name": "",
+      "comment": "(direct control?)"
+    },
+    {
+      "offset": 1049,
+      "name": "",
+      "comment": "the player steers: no count"
+    },
+    {
+      "offset": 1050,
+      "name": "",
+      "comment": "+$0E one more ..."
+    },
+    {
+      "offset": 1053,
+      "name": "",
+      "comment": "... up to 99 ..."
+    },
+    {
+      "offset": 1056,
+      "name": "",
+      "comment": "(100 or more?)"
+    },
+    {
+      "offset": 1058,
+      "name": "",
+      "comment": "no: done"
+    },
+    {
+      "offset": 1059,
+      "name": "",
+      "comment": "... at most 99"
+    },
+    {
+      "offset": 1063,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 1064,
+      "name": "OrderDistanceDown",
+      "comment": "a column toward it: one less; there: stop"
+    },
+    {
+      "offset": 1067,
+      "name": "",
+      "comment": "(direct control?)"
+    },
+    {
+      "offset": 1069,
+      "name": "",
+      "comment": "the player steers: no count"
+    },
+    {
+      "offset": 1070,
+      "name": "",
+      "comment": "+$0E one less ..."
+    },
+    {
+      "offset": 1073,
+      "name": "",
+      "comment": "... not there yet"
+    },
+    {
+      "offset": 1074,
+      "name": "",
+      "comment": "arrived: the order becomes stop"
+    },
+    {
+      "offset": 1078,
+      "name": "",
+      "comment": "and its course is spent"
+    },
+    {
+      "offset": 1082,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 1083,
+      "name": "",
+      "comment": "keep the set"
+    },
+    {
+      "offset": 1084,
+      "name": "",
+      "comment": "the four direction bits"
+    },
+    {
+      "offset": 1086,
+      "name": "",
+      "comment": "A = the count, carry clear"
+    },
+    {
+      "offset": 1087,
+      "name": "CountDirectionsLoop",
+      "comment": "add each bit"
+    },
+    {
+      "offset": 1089,
+      "name": "",
+      "comment": "(+ the bit)"
+    },
+    {
+      "offset": 1091,
+      "name": "",
+      "comment": "all four"
+    },
+    {
+      "offset": 1093,
+      "name": "",
+      "comment": "C back"
+    },
+    {
+      "offset": 1094,
+      "name": "",
+      "comment": "count - 1: Z one, carry none"
+    },
+    {
+      "offset": 1096,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 1097,
+      "name": "",
+      "comment": "C = no direction yet"
+    },
+    {
+      "offset": 1099,
+      "name": "",
+      "comment": "the ship lower than our top?"
+    },
+    {
+      "offset": 1102,
+      "name": "",
+      "comment": "(minus its height)"
+    },
+    {
+      "offset": 1105,
+      "name": "",
+      "comment": "(minus the ground under it: negative = the ship hangs below the robot's top)"
+    },
+    {
+      "offset": 1108,
+      "name": "",
+      "comment": "then bit 7 (the ship's cell) blocks too"
+    },
+    {
+      "offset": 1110,
+      "name": "",
+      "comment": "objects always block"
+    },
+    {
+      "offset": 1112,
+      "name": "",
+      "comment": "E = the blocking bits: $40, or $C0 under a low ship"
+    },
+    {
+      "offset": 1113,
+      "name": "",
+      "comment": "A = the parts: bit 0 bipod, 1 tracks, 2 anti-grav"
+    },
+    {
+      "offset": 1116,
+      "name": "",
+      "comment": "bipod: types below 8"
+    },
+    {
+      "offset": 1118,
+      "name": "",
+      "comment": "(bit 0)"
+    },
+    {
+      "offset": 1119,
+      "name": "",
+      "comment": "a bipod"
+    },
+    {
+      "offset": 1121,
+      "name": "",
+      "comment": "tracks: types below $0C"
+    },
+    {
+      "offset": 1123,
+      "name": "",
+      "comment": "(bit 1)"
+    },
+    {
+      "offset": 1124,
+      "name": "",
+      "comment": "tracks"
+    },
+    {
+      "offset": 1126,
+      "name": "",
+      "comment": "anti-grav: types below $0F"
+    },
+    {
+      "offset": 1128,
+      "name": "FreeDirRight",
+      "comment": "D = the terrain limit of the locomotion; right free?"
+    },
+    {
+      "offset": 1129,
+      "name": "",
+      "comment": "Z when free"
+    },
+    {
+      "offset": 1132,
+      "name": "",
+      "comment": "HL = the anchor again"
+    },
+    {
+      "offset": 1133,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1135,
+      "name": "",
+      "comment": "bit 0: right"
+    },
+    {
+      "offset": 1137,
+      "name": "FreeDirLeft",
+      "comment": "left free?"
+    },
+    {
+      "offset": 1138,
+      "name": "",
+      "comment": "Z when free"
+    },
+    {
+      "offset": 1141,
+      "name": "",
+      "comment": "HL = the anchor again"
+    },
+    {
+      "offset": 1142,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1144,
+      "name": "",
+      "comment": "bit 1: left"
+    },
+    {
+      "offset": 1146,
+      "name": "FreeDirDown",
+      "comment": "down free?"
+    },
+    {
+      "offset": 1147,
+      "name": "",
+      "comment": "Z when free"
+    },
+    {
+      "offset": 1150,
+      "name": "",
+      "comment": "HL = the anchor again"
+    },
+    {
+      "offset": 1151,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1153,
+      "name": "",
+      "comment": "bit 2: down"
+    },
+    {
+      "offset": 1155,
+      "name": "FreeDirUp",
+      "comment": "up free?"
+    },
+    {
+      "offset": 1156,
+      "name": "",
+      "comment": "Z when free"
+    },
+    {
+      "offset": 1159,
+      "name": "",
+      "comment": "HL = the anchor again"
+    },
+    {
+      "offset": 1160,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1162,
+      "name": "",
+      "comment": "bit 3: up"
+    },
+    {
+      "offset": 1164,
+      "name": "FreeDirDone",
+      "comment": "C = the free directions"
+    },
+    {
+      "offset": 1165,
+      "name": "",
+      "comment": "X + 1 ..."
+    },
+    {
+      "offset": 1166,
+      "name": "",
+      "comment": "... X + 2: the column it enters"
+    },
+    {
+      "offset": 1167,
+      "name": "",
+      "comment": "one row up ..."
+    },
+    {
+      "offset": 1168,
+      "name": "",
+      "comment": "... (X+2, Y-1)"
+    },
+    {
+      "offset": 1169,
+      "name": "",
+      "comment": "terrain and objects"
+    },
+    {
+      "offset": 1172,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1173,
+      "name": "",
+      "comment": "down a row ..."
+    },
+    {
+      "offset": 1174,
+      "name": "",
+      "comment": "... (X+2, Y)"
+    },
+    {
+      "offset": 1175,
+      "name": "",
+      "comment": "terrain and objects"
+    },
+    {
+      "offset": 1178,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1179,
+      "name": "",
+      "comment": "down a row ..."
+    },
+    {
+      "offset": 1180,
+      "name": "",
+      "comment": "... (X+2, Y+1): an anchor there would overlap"
+    },
+    {
+      "offset": 1181,
+      "name": "",
+      "comment": "the row below only inside the map"
+    },
+    {
+      "offset": 1182,
+      "name": "",
+      "comment": "(past the last row: $FDxx or more?)"
+    },
+    {
+      "offset": 1184,
+      "name": "",
+      "comment": "off the map: free"
+    },
+    {
+      "offset": 1186,
+      "name": "",
+      "comment": "the cell ..."
+    },
+    {
+      "offset": 1187,
+      "name": "",
+      "comment": "... objects only (an anchor's footprint reaches up a row)"
+    },
+    {
+      "offset": 1188,
+      "name": "",
+      "comment": "Z when free"
+    },
+    {
+      "offset": 1189,
+      "name": "",
+      "comment": "one row up ..."
+    },
+    {
+      "offset": 1190,
+      "name": "",
+      "comment": "... (X, Y-1)"
+    },
+    {
+      "offset": 1191,
+      "name": "",
+      "comment": "(X-1, Y-1): the column it enters"
+    },
+    {
+      "offset": 1192,
+      "name": "",
+      "comment": "terrain and objects"
+    },
+    {
+      "offset": 1195,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1196,
+      "name": "",
+      "comment": "(X-2, Y-1) ..."
+    },
+    {
+      "offset": 1197,
+      "name": "",
+      "comment": "(the cell)"
+    },
+    {
+      "offset": 1198,
+      "name": "",
+      "comment": "... objects only: an anchor there covers X-1"
+    },
+    {
+      "offset": 1199,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1200,
+      "name": "",
+      "comment": "down a row ..."
+    },
+    {
+      "offset": 1201,
+      "name": "",
+      "comment": "... (X-2, Y)"
+    },
+    {
+      "offset": 1202,
+      "name": "",
+      "comment": "(the cell)"
+    },
+    {
+      "offset": 1203,
+      "name": "",
+      "comment": "objects only"
+    },
+    {
+      "offset": 1204,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1205,
+      "name": "",
+      "comment": "(X-1, Y)"
+    },
+    {
+      "offset": 1206,
+      "name": "",
+      "comment": "terrain and objects"
+    },
+    {
+      "offset": 1209,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1210,
+      "name": "",
+      "comment": "(X-2, Y)"
+    },
+    {
+      "offset": 1211,
+      "name": "",
+      "comment": "down a row ..."
+    },
+    {
+      "offset": 1212,
+      "name": "",
+      "comment": "... (X-2, Y+1)"
+    },
+    {
+      "offset": 1213,
+      "name": "",
+      "comment": "the row below only inside the map"
+    },
+    {
+      "offset": 1214,
+      "name": "",
+      "comment": "(past the last row?)"
+    },
+    {
+      "offset": 1216,
+      "name": "",
+      "comment": "off the map: free"
+    },
+    {
+      "offset": 1218,
+      "name": "",
+      "comment": "the cell ..."
+    },
+    {
+      "offset": 1219,
+      "name": "",
+      "comment": "... objects only"
+    },
+    {
+      "offset": 1220,
+      "name": "",
+      "comment": "Z when free"
+    },
+    {
+      "offset": 1221,
+      "name": "",
+      "comment": "down a row ..."
+    },
+    {
+      "offset": 1222,
+      "name": "",
+      "comment": "... (X, Y+1): the row it enters"
+    },
+    {
+      "offset": 1223,
+      "name": "",
+      "comment": "the bottom row: blocked"
+    },
+    {
+      "offset": 1224,
+      "name": "",
+      "comment": "(past the last row?)"
+    },
+    {
+      "offset": 1226,
+      "name": "",
+      "comment": "yes: blocked"
+    },
+    {
+      "offset": 1228,
+      "name": "",
+      "comment": "terrain and objects"
+    },
+    {
+      "offset": 1231,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1232,
+      "name": "",
+      "comment": "(X+1, Y+1)"
+    },
+    {
+      "offset": 1233,
+      "name": "",
+      "comment": "terrain and objects"
+    },
+    {
+      "offset": 1236,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1237,
+      "name": "",
+      "comment": "down a row ..."
+    },
+    {
+      "offset": 1238,
+      "name": "",
+      "comment": "... (X+1, Y+2): anchors whose footprint reaches Y+1"
+    },
+    {
+      "offset": 1239,
+      "name": "",
+      "comment": "the row below only inside the map"
+    },
+    {
+      "offset": 1240,
+      "name": "",
+      "comment": "(past the last row?)"
+    },
+    {
+      "offset": 1242,
+      "name": "",
+      "comment": "off the map: free"
+    },
+    {
+      "offset": 1244,
+      "name": "",
+      "comment": "(the cell)"
+    },
+    {
+      "offset": 1245,
+      "name": "",
+      "comment": "objects only"
+    },
+    {
+      "offset": 1246,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1247,
+      "name": "",
+      "comment": "(X, Y+2)"
+    },
+    {
+      "offset": 1248,
+      "name": "",
+      "comment": "(the cell)"
+    },
+    {
+      "offset": 1249,
+      "name": "",
+      "comment": "objects only"
+    },
+    {
+      "offset": 1250,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1251,
+      "name": "",
+      "comment": "(X-1, Y+2)"
+    },
+    {
+      "offset": 1252,
+      "name": "",
+      "comment": "(the cell)"
+    },
+    {
+      "offset": 1253,
+      "name": "",
+      "comment": "objects only"
+    },
+    {
+      "offset": 1254,
+      "name": "",
+      "comment": "Z when free"
+    },
+    {
+      "offset": 1255,
+      "name": "",
+      "comment": "up two rows ..."
+    },
+    {
+      "offset": 1256,
+      "name": "",
+      "comment": "(...)"
+    },
+    {
+      "offset": 1257,
+      "name": "",
+      "comment": "(...)"
+    },
+    {
+      "offset": 1258,
+      "name": "",
+      "comment": "... (X, Y-2): the row it enters"
+    },
+    {
+      "offset": 1259,
+      "name": "",
+      "comment": "Y-2 off the map: blocked"
+    },
+    {
+      "offset": 1260,
+      "name": "",
+      "comment": "(above the first row, $DDxx?)"
+    },
+    {
+      "offset": 1262,
+      "name": "",
+      "comment": "yes: blocked"
+    },
+    {
+      "offset": 1264,
+      "name": "",
+      "comment": "(X-1, Y-2) ..."
+    },
+    {
+      "offset": 1265,
+      "name": "",
+      "comment": "(the cell)"
+    },
+    {
+      "offset": 1266,
+      "name": "",
+      "comment": "... objects only: an anchor there covers X"
+    },
+    {
+      "offset": 1267,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1268,
+      "name": "",
+      "comment": "(X, Y-2)"
+    },
+    {
+      "offset": 1269,
+      "name": "",
+      "comment": "terrain and objects"
+    },
+    {
+      "offset": 1272,
+      "name": "",
+      "comment": "blocked"
+    },
+    {
+      "offset": 1273,
+      "name": "",
+      "comment": "(X+1, Y-2)"
+    },
+    {
+      "offset": 1274,
+      "name": "",
+      "comment": "terrain and objects"
+    },
+    {
+      "offset": 1277,
+      "name": "",
+      "comment": "Z when free"
+    },
+    {
+      "offset": 1278,
+      "name": "",
+      "comment": "A = 0: Z, free"
+    },
+    {
+      "offset": 1279,
+      "name": "",
+      "comment": "back to FreeDirections"
+    },
+    {
+      "offset": 1280,
+      "name": "",
+      "comment": "A not 0: NZ, blocked"
+    },
+    {
+      "offset": 1282,
+      "name": "",
+      "comment": "back to FreeDirections (or to TestCell's caller)"
+    },
+    {
+      "offset": 1283,
+      "name": "",
+      "comment": "the cell ..."
+    },
+    {
+      "offset": 1284,
+      "name": "",
+      "comment": "... its terrain type (bits 0-4)"
+    },
+    {
+      "offset": 1286,
+      "name": "",
+      "comment": "at or past the locomotion's limit D?"
+    },
+    {
+      "offset": 1287,
+      "name": "",
+      "comment": "yes: blocked"
+    },
+    {
+      "offset": 1289,
+      "name": "",
+      "comment": "an object (or the low ship) in it?"
+    },
+    {
+      "offset": 1290,
+      "name": "",
+      "comment": "(bit 6, and bit 7 when E has it)"
+    },
+    {
+      "offset": 1291,
+      "name": "",
+      "comment": "Z when free"
+    },
+    {
+      "offset": 1292,
+      "name": "",
+      "comment": "keep the column ..."
+    },
+    {
+      "offset": 1293,
+      "name": "",
+      "comment": "... and the row"
+    },
+    {
+      "offset": 1294,
+      "name": "",
+      "comment": "A = the row"
+    },
+    {
+      "offset": 1295,
+      "name": "",
+      "comment": "HL = the cell (X, Y)"
+    },
+    {
+      "offset": 1298,
+      "name": "",
+      "comment": "DE = it (DE is lost)"
+    },
+    {
+      "offset": 1299,
+      "name": "",
+      "comment": "C = the highest so far: 0"
+    },
+    {
+      "offset": 1301,
+      "name": "",
+      "comment": "(X, Y)"
+    },
+    {
+      "offset": 1304,
+      "name": "",
+      "comment": "(X+1, Y) ..."
+    },
+    {
+      "offset": 1305,
+      "name": "",
+      "comment": "(its height)"
+    },
+    {
+      "offset": 1308,
+      "name": "",
+      "comment": "one row up ..."
+    },
+    {
+      "offset": 1309,
+      "name": "",
+      "comment": "... (X+1, Y-1)"
+    },
+    {
+      "offset": 1310,
+      "name": "",
+      "comment": "(its height)"
+    },
+    {
+      "offset": 1313,
+      "name": "",
+      "comment": "(X, Y-1)"
+    },
+    {
+      "offset": 1314,
+      "name": "",
+      "comment": "(its height)"
+    },
+    {
+      "offset": 1317,
+      "name": "",
+      "comment": "A = the highest"
+    },
+    {
+      "offset": 1318,
+      "name": "",
+      "comment": "the row back"
+    },
+    {
+      "offset": 1319,
+      "name": "",
+      "comment": "the column back"
+    },
+    {
+      "offset": 1320,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 1321,
+      "name": "",
+      "comment": "keep the row ..."
+    },
+    {
+      "offset": 1322,
+      "name": "",
+      "comment": "... and the column for PlaceRobot"
+    },
+    {
+      "offset": 1323,
+      "name": "",
+      "comment": "A = the ground under it +$0D"
+    },
+    {
+      "offset": 1326,
+      "name": "",
+      "comment": "C = the row of StepDelays: 0 flat ..."
+    },
+    {
+      "offset": 1328,
+      "name": "",
+      "comment": "(flat?)"
+    },
+    {
+      "offset": 1329,
+      "name": "",
+      "comment": "yes"
+    },
+    {
+      "offset": 1331,
+      "name": "",
+      "comment": "low ground"
+    },
+    {
+      "offset": 1333,
+      "name": "",
+      "comment": "(below 4?)"
+    },
+    {
+      "offset": 1335,
+      "name": "",
+      "comment": "yes: low"
+    },
+    {
+      "offset": 1337,
+      "name": "",
+      "comment": "high ground"
+    },
+    {
+      "offset": 1339,
+      "name": "SetStepDelayFind",
+      "comment": "C = the ground class (0 flat, 3 low, 6 high); find the locomotion part"
+    },
+    {
+      "offset": 1342,
+      "name": "",
+      "comment": "D = -1, counted up to the part's index"
+    },
+    {
+      "offset": 1344,
+      "name": "SetStepDelayPart",
+      "comment": "D = the locomotion: the index of the first set part bit"
+    },
+    {
+      "offset": 1345,
+      "name": "",
+      "comment": "(the next part bit into carry)"
+    },
+    {
+      "offset": 1346,
+      "name": "",
+      "comment": "until the first set one"
+    },
+    {
+      "offset": 1348,
+      "name": "",
+      "comment": "the row ..."
+    },
+    {
+      "offset": 1349,
+      "name": "",
+      "comment": "... + the column"
+    },
+    {
+      "offset": 1350,
+      "name": "",
+      "comment": "the table ..."
+    },
+    {
+      "offset": 1353,
+      "name": "",
+      "comment": "... HL = the entry"
+    },
+    {
+      "offset": 1356,
+      "name": "",
+      "comment": "A = the turns"
+    },
+    {
+      "offset": 1357,
+      "name": "",
+      "comment": "+$0F = the step delay"
+    },
+    {
+      "offset": 1360,
+      "name": "",
+      "comment": "the column back"
+    },
+    {
+      "offset": 1361,
+      "name": "",
+      "comment": "the row back"
+    },
+    {
+      "offset": 1362,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 1363,
+      "name": "StepDelays",
+      "comment": "Game turns a robot step takes: rows flat, low, high ground; columns bipod, tracks, anti-grav"
+    },
+    {
+      "offset": 1363,
+      "name": "",
+      "comment": "flat ground (+$0D = 0): bipod 6, tracks 4, anti-grav 3 turns a step"
+    },
+    {
+      "offset": 1366,
+      "name": "",
+      "comment": "low ground (+$0D 1-3): bipod 8, tracks 6, anti-grav 3"
+    },
+    {
+      "offset": 1369,
+      "name": "",
+      "comment": "high ground (+$0D 4 and more): bipod 9, tracks 7, anti-grav 4"
+    },
+    {
+      "offset": 1372,
+      "name": "",
+      "comment": "E = no opponent seen yet"
+    },
+    {
+      "offset": 1374,
+      "name": "",
+      "comment": "D = the direction scanned: up first"
+    },
+    {
+      "offset": 1376,
+      "name": "SpotEnemiesLoop",
+      "comment": "the next result bit"
+    },
+    {
+      "offset": 1378,
+      "name": "",
+      "comment": "HL = the anchor cell ..."
+    },
+    {
+      "offset": 1381,
+      "name": "",
+      "comment": "... (high byte)"
+    },
+    {
+      "offset": 1384,
+      "name": "",
+      "comment": "the range: 8 cells"
+    },
+    {
+      "offset": 1386,
+      "name": "",
+      "comment": "this direction ..."
+    },
+    {
+      "offset": 1387,
+      "name": "",
+      "comment": "the facing direction ..."
+    },
+    {
+      "offset": 1390,
+      "name": "",
+      "comment": "no: one lane of 8"
+    },
+    {
+      "offset": 1392,
+      "name": "",
+      "comment": "... sees 10 cells ..."
+    },
+    {
+      "offset": 1394,
+      "name": "",
+      "comment": "electronics?"
+    },
+    {
+      "offset": 1398,
+      "name": "",
+      "comment": "no: 10"
+    },
+    {
+      "offset": 1400,
+      "name": "",
+      "comment": "... 12 with electronics ..."
+    },
+    {
+      "offset": 1402,
+      "name": "SpotEnemiesThree",
+      "comment": "B = the range; three lanes, columns for down / up, rows for right / left"
+    },
+    {
+      "offset": 1403,
+      "name": "",
+      "comment": "(right / left?)"
+    },
+    {
+      "offset": 1405,
+      "name": "",
+      "comment": "yes: the rows"
+    },
+    {
+      "offset": 1407,
+      "name": "",
+      "comment": "up / down: the columns X-1, X, X+1"
+    },
+    {
+      "offset": 1408,
+      "name": "",
+      "comment": "(X-1)"
+    },
+    {
+      "offset": 1409,
+      "name": "",
+      "comment": "the first lane"
+    },
+    {
+      "offset": 1412,
+      "name": "",
+      "comment": "(the range again)"
+    },
+    {
+      "offset": 1413,
+      "name": "",
+      "comment": "(X)"
+    },
+    {
+      "offset": 1414,
+      "name": "",
+      "comment": "the second lane"
+    },
+    {
+      "offset": 1417,
+      "name": "",
+      "comment": "(the range again)"
+    },
+    {
+      "offset": 1418,
+      "name": "",
+      "comment": "(X+1), the last lane below"
+    },
+    {
+      "offset": 1419,
+      "name": "",
+      "comment": "scan it"
+    },
+    {
+      "offset": 1421,
+      "name": "SpotEnemiesRows",
+      "comment": "left / right: the rows Y-1, Y, Y+1"
+    },
+    {
+      "offset": 1422,
+      "name": "",
+      "comment": "one row up ..."
+    },
+    {
+      "offset": 1423,
+      "name": "",
+      "comment": "... (Y-1)"
+    },
+    {
+      "offset": 1424,
+      "name": "",
+      "comment": "the first lane"
+    },
+    {
+      "offset": 1427,
+      "name": "",
+      "comment": "(the range again)"
+    },
+    {
+      "offset": 1428,
+      "name": "",
+      "comment": "down a row ..."
+    },
+    {
+      "offset": 1429,
+      "name": "",
+      "comment": "... (Y)"
+    },
+    {
+      "offset": 1430,
+      "name": "",
+      "comment": "the second lane"
+    },
+    {
+      "offset": 1433,
+      "name": "",
+      "comment": "(the range again)"
+    },
+    {
+      "offset": 1434,
+      "name": "",
+      "comment": "down a row ..."
+    },
+    {
+      "offset": 1435,
+      "name": "",
+      "comment": "... (Y+1), the last lane below"
+    },
+    {
+      "offset": 1436,
+      "name": "SpotEnemiesLane",
+      "comment": "the (last) lane"
+    },
+    {
+      "offset": 1439,
+      "name": "",
+      "comment": "the next direction: down, left, right"
+    },
+    {
+      "offset": 1441,
+      "name": "",
+      "comment": "until the bit leaves (after right)"
+    },
+    {
+      "offset": 1443,
+      "name": "",
+      "comment": "E: bit 0 right, 1 left, 2 down, 3 up"
+    },
+    {
+      "offset": 1444,
+      "name": "",
+      "comment": "keep the start cell"
+    },
+    {
+      "offset": 1445,
+      "name": "",
+      "comment": "keep D (the direction) and E (the results)"
+    },
+    {
+      "offset": 1446,
+      "name": "",
+      "comment": "the start cell again, for the walk"
+    },
+    {
+      "offset": 1447,
+      "name": "",
+      "comment": "LaneSteps - 2"
+    },
+    {
+      "offset": 1450,
+      "name": "",
+      "comment": "A = the direction bit"
+    },
+    {
+      "offset": 1451,
+      "name": "ScanLaneStep",
+      "comment": "the step word for D's bit"
+    },
+    {
+      "offset": 1452,
+      "name": "",
+      "comment": "(2 bytes a word)"
+    },
+    {
+      "offset": 1453,
+      "name": "",
+      "comment": "(the next bit into carry)"
+    },
+    {
+      "offset": 1454,
+      "name": "",
+      "comment": "until it"
+    },
+    {
+      "offset": 1456,
+      "name": "",
+      "comment": "DE = the step ..."
+    },
+    {
+      "offset": 1457,
+      "name": "",
+      "comment": "(high byte)"
+    },
+    {
+      "offset": 1458,
+      "name": "",
+      "comment": "... +1, -1, +$200 or -$200"
+    },
+    {
+      "offset": 1459,
+      "name": "",
+      "comment": "HL = the start cell"
+    },
+    {
+      "offset": 1460,
+      "name": "ScanLaneLoop",
+      "comment": "one cell on"
+    },
+    {
+      "offset": 1461,
+      "name": "",
+      "comment": "off the map's rows: stop"
+    },
+    {
+      "offset": 1462,
+      "name": "",
+      "comment": "(row 0 is $DD)"
+    },
+    {
+      "offset": 1464,
+      "name": "",
+      "comment": "(16 rows of 2 pages)"
+    },
+    {
+      "offset": 1466,
+      "name": "",
+      "comment": "out of the map: nothing seen (left / right run on into the next row's other end)"
+    },
+    {
+      "offset": 1468,
+      "name": "",
+      "comment": "the first object stops the view"
+    },
+    {
+      "offset": 1470,
+      "name": "",
+      "comment": "yes: whose?"
+    },
+    {
+      "offset": 1472,
+      "name": "",
+      "comment": "B cells"
+    },
+    {
+      "offset": 1474,
+      "name": "",
+      "comment": "nothing in range"
+    },
+    {
+      "offset": 1476,
+      "name": "ScanLaneObject",
+      "comment": "a robot?"
+    },
+    {
+      "offset": 1478,
+      "name": "",
+      "comment": "Z: IY = the robot anchored here"
+    },
+    {
+      "offset": 1481,
+      "name": "",
+      "comment": "its side bit (+$0A bit 7)"
+    },
+    {
+      "offset": 1484,
+      "name": "",
+      "comment": "and its strength (both junk when NZ)"
+    },
+    {
+      "offset": 1487,
+      "name": "",
+      "comment": "IY = the looking robot"
+    },
+    {
+      "offset": 1489,
+      "name": "",
+      "comment": "not a robot (a building, a shot): the view ends"
+    },
+    {
+      "offset": 1491,
+      "name": "",
+      "comment": "same side: no"
+    },
+    {
+      "offset": 1494,
+      "name": "",
+      "comment": "(bit 7 0: the same side)"
+    },
+    {
+      "offset": 1497,
+      "name": "",
+      "comment": "dead or dying: no"
+    },
+    {
+      "offset": 1498,
+      "name": "",
+      "comment": "(strength 0 or below: dying)"
+    },
+    {
+      "offset": 1501,
+      "name": "",
+      "comment": "an opponent in sight"
+    },
+    {
+      "offset": 1502,
+      "name": "",
+      "comment": "(the saved results)"
+    },
+    {
+      "offset": 1503,
+      "name": "",
+      "comment": "(bit 0: this direction)"
+    },
+    {
+      "offset": 1505,
+      "name": "",
+      "comment": "(E bit 0 set)"
+    },
+    {
+      "offset": 1506,
+      "name": "",
+      "comment": "the saved DE now carries it"
+    },
+    {
+      "offset": 1507,
+      "name": "ScanLaneDone",
+      "comment": "back with E"
+    },
+    {
+      "offset": 1508,
+      "name": "",
+      "comment": "the start cell back"
+    },
+    {
+      "offset": 1509,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 1510,
+      "name": "LaneSteps",
+      "comment": "The map steps of the four directions: right +1, left -1, down +$200, up -$200"
+    },
+    {
+      "offset": 1510,
+      "name": "",
+      "comment": "Input bit 0 right +1, bit 1 left -1, bit 2 down +$200 (next row), bit 3 up -$200"
+    },
+    {
+      "offset": 1518,
+      "name": "",
+      "comment": "IY = record 1 ($D7DC), our first"
+    },
+    {
+      "offset": 1522,
+      "name": "",
+      "comment": "the shooter the enemy's?"
+    },
+    {
+      "offset": 1526,
+      "name": "",
+      "comment": "no: records 1-2"
+    },
+    {
+      "offset": 1528,
+      "name": "",
+      "comment": "the enemy's records"
+    },
+    {
+      "offset": 1531,
+      "name": "",
+      "comment": "IY = record 3 ($D7EE)"
+    },
+    {
+      "offset": 1533,
+      "name": "FindFreeShotSlot",
+      "comment": "IY = the side's first shot record; Z when free, else the second"
+    },
+    {
+      "offset": 1536,
+      "name": "",
+      "comment": "(+$01 = 0: free)"
+    },
+    {
+      "offset": 1537,
+      "name": "",
+      "comment": "free: take it"
+    },
+    {
+      "offset": 1538,
+      "name": "",
+      "comment": "the second record"
+    },
+    {
+      "offset": 1541,
+      "name": "",
+      "comment": "IY = record 2 or 4"
+    },
+    {
+      "offset": 1543,
+      "name": "",
+      "comment": "(+$01 ...)"
+    },
+    {
+      "offset": 1546,
+      "name": "",
+      "comment": "(... 0: free)"
+    },
+    {
+      "offset": 1547,
+      "name": "",
+      "comment": "Z: free, NZ: both fly"
+    },
+    {
+      "offset": 1548,
+      "name": "",
+      "comment": "+$07 = the weapon: 1 cannon, 2 missiles, 3 phasers"
+    },
+    {
+      "offset": 1551,
+      "name": "",
+      "comment": "C = the range: 5 steps (10 cells) ..."
+    },
+    {
+      "offset": 1553,
+      "name": "",
+      "comment": "missiles fly further"
+    },
+    {
+      "offset": 1555,
+      "name": "",
+      "comment": "(no)"
+    },
+    {
+      "offset": 1557,
+      "name": "",
+      "comment": "... missiles 7"
+    },
+    {
+      "offset": 1559,
+      "name": "FireShotElectronics",
+      "comment": "electronics: the range one step more"
+    },
+    {
+      "offset": 1563,
+      "name": "",
+      "comment": "(no)"
+    },
+    {
+      "offset": 1565,
+      "name": "",
+      "comment": "(+1)"
+    },
+    {
+      "offset": 1566,
+      "name": "FireShotStart",
+      "comment": "+$06 the range, +$05 the robot's facing, +$08 the wall height, the first step"
+    },
+    {
+      "offset": 1569,
+      "name": "",
+      "comment": "the robot's facing"
+    },
+    {
+      "offset": 1572,
+      "name": "",
+      "comment": "+$05 = the direction it flies"
+    },
+    {
+      "offset": 1575,
+      "name": "",
+      "comment": "ground of height 10 or more stops it (TerrainHeights 15)"
+    },
+    {
+      "offset": 1579,
+      "name": "",
+      "comment": "HL = the robot's column ..."
+    },
+    {
+      "offset": 1582,
+      "name": "",
+      "comment": "... (high byte)"
+    },
+    {
+      "offset": 1585,
+      "name": "",
+      "comment": "B = its row"
+    },
+    {
+      "offset": 1588,
+      "name": "",
+      "comment": "the first step"
+    },
+    {
+      "offset": 1591,
+      "name": "",
+      "comment": "still flying?"
+    },
+    {
+      "offset": 1594,
+      "name": "",
+      "comment": "(+$01 = 0: gone)"
+    },
+    {
+      "offset": 1595,
+      "name": "",
+      "comment": "gone already"
+    },
+    {
+      "offset": 1597,
+      "name": "",
+      "comment": "it flies: the firing sound"
+    },
+    {
+      "offset": 1599,
+      "name": "",
+      "comment": "SoundFx = 1"
+    },
+    {
+      "offset": 1602,
+      "name": "FireShotDone",
+      "comment": "the shot ended at once: MoveShot's miss / hit sound stays"
+    },
+    {
+      "offset": 1603,
+      "name": "",
+      "comment": "HL = the shot's cell ..."
+    },
+    {
+      "offset": 1606,
+      "name": "",
+      "comment": "... (high byte)"
+    },
+    {
+      "offset": 1609,
+      "name": "",
+      "comment": "the shot leaves its cell"
+    },
+    {
+      "offset": 1611,
+      "name": "",
+      "comment": "out of range: gone"
+    },
+    {
+      "offset": 1614,
+      "name": "",
+      "comment": "(its last step was the turn before)"
+    },
+    {
+      "offset": 1617,
+      "name": "",
+      "comment": "HL = its column ..."
+    },
+    {
+      "offset": 1620,
+      "name": "",
+      "comment": "... (high byte)"
+    },
+    {
+      "offset": 1623,
+      "name": "",
+      "comment": "B = its row; on into MoveShot"
+    },
+    {
+      "offset": 1626,
+      "name": "",
+      "comment": "A = the direction +$05"
+    },
+    {
+      "offset": 1629,
+      "name": "",
+      "comment": "right: 2 columns"
+    },
+    {
+      "offset": 1630,
+      "name": "",
+      "comment": "(no)"
+    },
+    {
+      "offset": 1632,
+      "name": "",
+      "comment": "(+1)"
+    },
+    {
+      "offset": 1633,
+      "name": "",
+      "comment": "(+2; the columns are not range-checked)"
+    },
+    {
+      "offset": 1634,
+      "name": "",
+      "comment": "store it"
+    },
+    {
+      "offset": 1636,
+      "name": "MoveShotLeft",
+      "comment": "left: 2 columns"
+    },
+    {
+      "offset": 1637,
+      "name": "",
+      "comment": "(no)"
+    },
+    {
+      "offset": 1639,
+      "name": "",
+      "comment": "(-1)"
+    },
+    {
+      "offset": 1640,
+      "name": "",
+      "comment": "(-2)"
+    },
+    {
+      "offset": 1641,
+      "name": "",
+      "comment": "store it"
+    },
+    {
+      "offset": 1643,
+      "name": "MoveShotDown",
+      "comment": "down: 2 rows"
+    },
+    {
+      "offset": 1644,
+      "name": "",
+      "comment": "(no)"
+    },
+    {
+      "offset": 1646,
+      "name": "",
+      "comment": "(+1)"
+    },
+    {
+      "offset": 1647,
+      "name": "",
+      "comment": "(+2)"
+    },
+    {
+      "offset": 1648,
+      "name": "",
+      "comment": "check the row"
+    },
+    {
+      "offset": 1650,
+      "name": "MoveShotUp",
+      "comment": "up: 2 rows"
+    },
+    {
+      "offset": 1651,
+      "name": "",
+      "comment": "(no direction: it stays)"
+    },
+    {
+      "offset": 1653,
+      "name": "",
+      "comment": "(-1)"
+    },
+    {
+      "offset": 1654,
+      "name": "",
+      "comment": "(-2; below 0 wraps to $FE / $FF)"
+    },
+    {
+      "offset": 1655,
+      "name": "MoveShotRows",
+      "comment": "past the map's rows: the shot is gone"
+    },
+    {
+      "offset": 1656,
+      "name": "",
+      "comment": "(0-15?)"
+    },
+    {
+      "offset": 1658,
+      "name": "",
+      "comment": "no: gone"
+    },
+    {
+      "offset": 1661,
+      "name": "MoveShotStore",
+      "comment": "the new position"
+    },
+    {
+      "offset": 1664,
+      "name": "",
+      "comment": "(column high)"
+    },
+    {
+      "offset": 1667,
+      "name": "",
+      "comment": "(row)"
+    },
+    {
+      "offset": 1670,
+      "name": "",
+      "comment": "the ground under it"
+    },
+    {
+      "offset": 1673,
+      "name": "",
+      "comment": "too high: it hits the wall"
+    },
+    {
+      "offset": 1676,
+      "name": "",
+      "comment": "yes: gone"
+    },
+    {
+      "offset": 1679,
+      "name": "",
+      "comment": "A = the row"
+    },
+    {
+      "offset": 1680,
+      "name": "",
+      "comment": "the new cell"
+    },
+    {
+      "offset": 1683,
+      "name": "",
+      "comment": "+$00/+$01 = the cell ..."
+    },
+    {
+      "offset": 1686,
+      "name": "",
+      "comment": "... (high byte)"
+    },
+    {
+      "offset": 1689,
+      "name": "",
+      "comment": "the row above: Y-1, columns X-1 to X+1 (when inside the map)"
+    },
+    {
+      "offset": 1690,
+      "name": "",
+      "comment": "(X-1)"
+    },
+    {
+      "offset": 1691,
+      "name": "",
+      "comment": "one row up ..."
+    },
+    {
+      "offset": 1692,
+      "name": "",
+      "comment": "... (X-1, Y-1)"
+    },
+    {
+      "offset": 1693,
+      "name": "",
+      "comment": "above the map?"
+    },
+    {
+      "offset": 1694,
+      "name": "",
+      "comment": "(row 0 is $DD)"
+    },
+    {
+      "offset": 1696,
+      "name": "",
+      "comment": "yes: skip the row"
+    },
+    {
+      "offset": 1698,
+      "name": "",
+      "comment": "(X-1, Y-1)?"
+    },
+    {
+      "offset": 1700,
+      "name": "",
+      "comment": "an object: hit"
+    },
+    {
+      "offset": 1702,
+      "name": "",
+      "comment": "(X, Y-1)"
+    },
+    {
+      "offset": 1703,
+      "name": "",
+      "comment": "(an object there?)"
+    },
+    {
+      "offset": 1705,
+      "name": "",
+      "comment": "hit"
+    },
+    {
+      "offset": 1707,
+      "name": "",
+      "comment": "(X+1, Y-1)"
+    },
+    {
+      "offset": 1708,
+      "name": "",
+      "comment": "(an object there?)"
+    },
+    {
+      "offset": 1710,
+      "name": "",
+      "comment": "hit"
+    },
+    {
+      "offset": 1712,
+      "name": "",
+      "comment": "back ..."
+    },
+    {
+      "offset": 1713,
+      "name": "",
+      "comment": "... to X-1"
+    },
+    {
+      "offset": 1714,
+      "name": "MoveShotRow",
+      "comment": "the shot's row"
+    },
+    {
+      "offset": 1715,
+      "name": "",
+      "comment": "... (X-1, Y)"
+    },
+    {
+      "offset": 1716,
+      "name": "",
+      "comment": "(an object there?)"
+    },
+    {
+      "offset": 1718,
+      "name": "",
+      "comment": "hit"
+    },
+    {
+      "offset": 1720,
+      "name": "",
+      "comment": "(X, Y): its own cell, cleared by UpdateShot"
+    },
+    {
+      "offset": 1721,
+      "name": "",
+      "comment": "(an object there?)"
+    },
+    {
+      "offset": 1723,
+      "name": "",
+      "comment": "hit"
+    },
+    {
+      "offset": 1725,
+      "name": "",
+      "comment": "(X+1, Y)"
+    },
+    {
+      "offset": 1726,
+      "name": "",
+      "comment": "(an object there?)"
+    },
+    {
+      "offset": 1728,
+      "name": "",
+      "comment": "hit"
+    },
+    {
+      "offset": 1730,
+      "name": "",
+      "comment": "back ..."
+    },
+    {
+      "offset": 1731,
+      "name": "",
+      "comment": "... to X-1"
+    },
+    {
+      "offset": 1732,
+      "name": "",
+      "comment": "the row below (when inside the map)"
+    },
+    {
+      "offset": 1733,
+      "name": "",
+      "comment": "... (X-1, Y+1)"
+    },
+    {
+      "offset": 1734,
+      "name": "",
+      "comment": "past the last row?"
+    },
+    {
+      "offset": 1735,
+      "name": "",
+      "comment": "(row 15 is $FB/$FC)"
+    },
+    {
+      "offset": 1737,
+      "name": "",
+      "comment": "yes: nothing below"
+    },
+    {
+      "offset": 1739,
+      "name": "",
+      "comment": "(X-1, Y+1)?"
+    },
+    {
+      "offset": 1741,
+      "name": "",
+      "comment": "hit"
+    },
+    {
+      "offset": 1743,
+      "name": "",
+      "comment": "(X, Y+1)"
+    },
+    {
+      "offset": 1744,
+      "name": "",
+      "comment": "(an object there?)"
+    },
+    {
+      "offset": 1746,
+      "name": "",
+      "comment": "hit"
+    },
+    {
+      "offset": 1748,
+      "name": "",
+      "comment": "(X+1, Y+1)"
+    },
+    {
+      "offset": 1749,
+      "name": "",
+      "comment": "(an object there?)"
+    },
+    {
+      "offset": 1751,
+      "name": "",
+      "comment": "hit"
+    },
+    {
+      "offset": 1753,
+      "name": "MoveShotFlies",
+      "comment": "nothing near: the shot occupies its cell"
+    },
+    {
+      "offset": 1754,
+      "name": "",
+      "comment": "bit 6 on it: robots see it, other shots hit it"
+    },
+    {
+      "offset": 1756,
+      "name": "",
+      "comment": "it flies on next turn"
+    },
+    {
+      "offset": 1757,
+      "name": "MoveShotHit",
+      "comment": "hit: E = the weapon, C = the sound for a miss"
+    },
+    {
+      "offset": 1759,
+      "name": "",
+      "comment": "E = the weapon: 1-3"
+    },
+    {
+      "offset": 1762,
+      "name": "",
+      "comment": "C = $FC: no damage"
+    },
+    {
+      "offset": 1764,
+      "name": "",
+      "comment": "a robot anchored at the cell hit?"
+    },
+    {
+      "offset": 1767,
+      "name": "",
+      "comment": "no (a building, a shot): the shot just ends"
+    },
+    {
+      "offset": 1769,
+      "name": "",
+      "comment": "alive?"
+    },
+    {
+      "offset": 1772,
+      "name": "",
+      "comment": "(strength 0 or below?)"
+    },
+    {
+      "offset": 1773,
+      "name": "",
+      "comment": "dying: no damage"
+    },
+    {
+      "offset": 1776,
+      "name": "",
+      "comment": "(60 - its top) / 4 ..."
+    },
+    {
+      "offset": 1778,
+      "name": "",
+      "comment": "(minus its height)"
+    },
+    {
+      "offset": 1781,
+      "name": "",
+      "comment": "(minus its ground)"
+    },
+    {
+      "offset": 1784,
+      "name": "",
+      "comment": "(/ 2)"
+    },
+    {
+      "offset": 1786,
+      "name": "",
+      "comment": "(/ 4)"
+    },
+    {
+      "offset": 1788,
+      "name": "",
+      "comment": "D = the damage a point"
+    },
+    {
+      "offset": 1789,
+      "name": "",
+      "comment": "... times the weapon + 1"
+    },
+    {
+      "offset": 1790,
+      "name": "MoveShotDamage",
+      "comment": "one more multiple"
+    },
+    {
+      "offset": 1791,
+      "name": "",
+      "comment": "weapon times: A = D x (weapon + 1)"
+    },
+    {
+      "offset": 1793,
+      "name": "",
+      "comment": "B = the damage"
+    },
+    {
+      "offset": 1794,
+      "name": "",
+      "comment": "the hit sound"
+    },
+    {
+      "offset": 1796,
+      "name": "",
+      "comment": "A = its strength ..."
+    },
+    {
+      "offset": 1799,
+      "name": "",
+      "comment": "the strength left"
+    },
+    {
+      "offset": 1800,
+      "name": "",
+      "comment": "exactly 0: destroyed"
+    },
+    {
+      "offset": 1802,
+      "name": "",
+      "comment": "still above 0: it lives"
+    },
+    {
+      "offset": 1805,
+      "name": "MoveShotKill",
+      "comment": "strength 0 or less: dying for 4 turns, the explosion sound"
+    },
+    {
+      "offset": 1807,
+      "name": "",
+      "comment": "C = $C8, the explosion"
+    },
+    {
+      "offset": 1809,
+      "name": "MoveShotStrength",
+      "comment": "+$0C = the strength left"
+    },
+    {
+      "offset": 1812,
+      "name": "MoveShotGone",
+      "comment": "the shot is gone"
+    },
+    {
+      "offset": 1814,
+      "name": "",
+      "comment": "drop the cell pushed above"
+    },
+    {
+      "offset": 1815,
+      "name": "",
+      "comment": "+$01 = 0: the shot record is free"
+    },
+    {
+      "offset": 1819,
+      "name": "",
+      "comment": "the sound: $FC miss, $FA hit, $C8 destroyed"
+    },
+    {
+      "offset": 1820,
+      "name": "",
+      "comment": "SoundFx = it"
+    },
+    {
+      "offset": 1823,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 1824,
+      "name": "",
+      "comment": "+$01 = 0: the shot record is free"
+    },
+    {
+      "offset": 1828,
+      "name": "",
+      "comment": "$FC: the short sound"
+    },
+    {
+      "offset": 1830,
+      "name": "",
+      "comment": "SoundFx = it"
+    },
+    {
+      "offset": 1833,
+      "name": "",
+      "comment": "done"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth",
+      "case": "games/nether-earth",
+      "address": "$B0CA",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    },
+    {
+      "program": "Advanced Nether Earth",
+      "case": "games/advanced-nether-earth",
+      "address": "$B0CA",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth",
+    "file": "src/game/world.asm",
+    "label": "WorldTurn"
+  },
+  "docs": [
+    "games/nether-earth/docs/README.md"
+  ]
+}

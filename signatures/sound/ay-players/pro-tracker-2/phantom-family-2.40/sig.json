@@ -1,0 +1,2631 @@
+{
+  "schema": 1,
+  "id": "sound/ay-players/pro-tracker-2/phantom-family-2.40",
+  "kind": "code",
+  "role": "player",
+  "name": "New SoundTrack Player by Phantom Family 1996 (Pro Tracker 2.40 compiled player)",
+  "authors": [
+    "Phantom Family"
+  ],
+  "year": 1996,
+  "tags": [
+    "ay",
+    "pt2",
+    "player",
+    "self-modifying"
+  ],
+  "summary": "The player Pro Tracker 2.40 (Phantom Family) compiles in front of a tune: Init +0, Play +5; the length word and the tune follow at +$0A43.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 2627,
+    "sha1": "0ed0ae6935b32b5cd86fd8594370018027891f9b",
+    "masked_sha1": "3e14328996a89c84af3689f481947d70121f3da5"
+  },
+  "origin": "$C000",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CA45"
+    },
+    {
+      "offset": 6,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 12,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 15,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 28,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 36,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 39,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 42,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 50,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 53,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 56,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 59,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 62,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 75,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 80,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 85,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 92,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 103,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 112,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 115,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 118,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 123,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 126,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 129,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 132,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 135,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 138,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 141,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 144,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 151,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 154,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 162,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 165,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 169,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 173,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 189,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 206,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 210,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 250,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 275,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 313,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 317,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 329,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 338,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 345,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 353,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 364,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 378,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 382,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 387,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 392,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 399,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 404,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 416,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 440,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 444,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 456,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 465,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 472,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 480,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 491,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 505,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 509,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 514,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 519,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 526,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 531,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 546,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 570,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 574,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 586,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 595,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 602,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 610,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 621,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 634,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 638,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 643,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 649,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 656,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 661,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 677,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 680,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 683,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFBF"
+    },
+    {
+      "offset": 701,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 710,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 713,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 717,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 727,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 730,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 734,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 737,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 740,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 743,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 747,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 755,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 759,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 762,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 765,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 768,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 772,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 780,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 784,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 791,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 794,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 799,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 802,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 806,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 811,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 817,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 824,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 829,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 834,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 840,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 847,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 850,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 856,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 863,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 868,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 874,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 879,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 885,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 894,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 897,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 900,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 903,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 907,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 912,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 918,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 925,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 930,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 935,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 941,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 948,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 951,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 957,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 964,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 970,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 975,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 980,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 986,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 991,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 997,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1002,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1006,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1009,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1012,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1015,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1022,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1026,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1031,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1036,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1039,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1044,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1051,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1054,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1064,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1069,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1075,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1080,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1088,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1093,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1097,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1108,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1113,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1117,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1126,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1134,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1142,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1145,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1187,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1192,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1209,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1212,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1225,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1230,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1233,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1237,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1242,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1249,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1256,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1262,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1271,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1276,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1280,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1285,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1292,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1297,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1300,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1303,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1306,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1310,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1314,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1318,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1323,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1328,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1331,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1336,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1343,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1346,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1356,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1361,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1367,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1372,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1380,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1385,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1389,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1400,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1405,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1409,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1418,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1426,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1434,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1437,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1479,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1484,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1501,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1504,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1517,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1522,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1525,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1529,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1534,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1541,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1548,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1554,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1563,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1568,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1572,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1577,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1584,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1589,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1592,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1596,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1601,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1608,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1611,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1614,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1617,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1621,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1625,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1631,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1634,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1637,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1646,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1651,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1655,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1666,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1671,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1675,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1684,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1692,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1697,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1700,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1742,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1759,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1762,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1775,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1779,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1782,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1787,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1796,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1801,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1805,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1810,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1814,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1818,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1821,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1826,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1829,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1836,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1841,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1844,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1847,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1852,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1855,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1955,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1958,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1962,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1967,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1994,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2007,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2044,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2061,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2079,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2087,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2090,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2092,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2094,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2096,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2098,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2100,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2102,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2104,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2106,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2108,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2110,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2112,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2114,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2116,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "Init",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "start the tune that follows the player"
+    },
+    {
+      "offset": 5,
+      "name": "Play",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "one frame, from the interrupt"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "Init",
+      "comment": ""
+    },
+    {
+      "offset": 5,
+      "name": "Play",
+      "comment": ""
+    },
+    {
+      "offset": 8,
+      "name": "InitAt",
+      "comment": ""
+    },
+    {
+      "offset": 94,
+      "name": "InitClearRegs",
+      "comment": ""
+    },
+    {
+      "offset": 105,
+      "name": "InitClearState",
+      "comment": ""
+    },
+    {
+      "offset": 164,
+      "name": "InitSetOut",
+      "comment": ""
+    },
+    {
+      "offset": 171,
+      "name": "NextPosition",
+      "comment": ""
+    },
+    {
+      "offset": 175,
+      "name": "PositionPtr",
+      "comment": ""
+    },
+    {
+      "offset": 182,
+      "name": "LoopPosition",
+      "comment": ""
+    },
+    {
+      "offset": 187,
+      "name": "NextPositionTake",
+      "comment": ""
+    },
+    {
+      "offset": 197,
+      "name": "PatternTable",
+      "comment": ""
+    },
+    {
+      "offset": 212,
+      "name": "NextPositionSp",
+      "comment": ""
+    },
+    {
+      "offset": 216,
+      "name": "ChannelTone",
+      "comment": ""
+    },
+    {
+      "offset": 229,
+      "name": "ChannelToneMask",
+      "comment": ""
+    },
+    {
+      "offset": 253,
+      "name": "ChannelToneOffset",
+      "comment": ""
+    },
+    {
+      "offset": 265,
+      "name": "OrnamentData",
+      "comment": ""
+    },
+    {
+      "offset": 289,
+      "name": "ChannelToneAdd",
+      "comment": ""
+    },
+    {
+      "offset": 291,
+      "name": "ChAOff",
+      "comment": ""
+    },
+    {
+      "offset": 296,
+      "name": "ChAPos",
+      "comment": ""
+    },
+    {
+      "offset": 299,
+      "name": "ChASample",
+      "comment": ""
+    },
+    {
+      "offset": 302,
+      "name": "ChAOrnament",
+      "comment": ""
+    },
+    {
+      "offset": 312,
+      "name": "ChAOrnamentNext",
+      "comment": ""
+    },
+    {
+      "offset": 328,
+      "name": "ChASampleNext",
+      "comment": ""
+    },
+    {
+      "offset": 332,
+      "name": "ChANote",
+      "comment": ""
+    },
+    {
+      "offset": 335,
+      "name": "ChANoise",
+      "comment": ""
+    },
+    {
+      "offset": 340,
+      "name": "ChASlide",
+      "comment": ""
+    },
+    {
+      "offset": 348,
+      "name": "ChASlideMode",
+      "comment": ""
+    },
+    {
+      "offset": 358,
+      "name": "ChAPortaLeft",
+      "comment": ""
+    },
+    {
+      "offset": 368,
+      "name": "ChAPortaStep",
+      "comment": ""
+    },
+    {
+      "offset": 375,
+      "name": "ChAPortaNote",
+      "comment": ""
+    },
+    {
+      "offset": 391,
+      "name": "ChAPortaGo",
+      "comment": ""
+    },
+    {
+      "offset": 395,
+      "name": "ChASlideSign",
+      "comment": ""
+    },
+    {
+      "offset": 401,
+      "name": "ChAMix",
+      "comment": ""
+    },
+    {
+      "offset": 408,
+      "name": "ChAVolume",
+      "comment": ""
+    },
+    {
+      "offset": 413,
+      "name": "ChAEnvelope",
+      "comment": ""
+    },
+    {
+      "offset": 415,
+      "name": "ChAVolumeSet",
+      "comment": ""
+    },
+    {
+      "offset": 418,
+      "name": "ChBOff",
+      "comment": ""
+    },
+    {
+      "offset": 423,
+      "name": "ChBPos",
+      "comment": ""
+    },
+    {
+      "offset": 426,
+      "name": "ChBSample",
+      "comment": ""
+    },
+    {
+      "offset": 429,
+      "name": "ChBOrnament",
+      "comment": ""
+    },
+    {
+      "offset": 439,
+      "name": "ChBOrnamentNext",
+      "comment": ""
+    },
+    {
+      "offset": 455,
+      "name": "ChBSampleNext",
+      "comment": ""
+    },
+    {
+      "offset": 459,
+      "name": "ChBNote",
+      "comment": ""
+    },
+    {
+      "offset": 462,
+      "name": "ChBNoise",
+      "comment": ""
+    },
+    {
+      "offset": 467,
+      "name": "ChBSlide",
+      "comment": ""
+    },
+    {
+      "offset": 475,
+      "name": "ChBSlideMode",
+      "comment": ""
+    },
+    {
+      "offset": 485,
+      "name": "ChBPortaLeft",
+      "comment": ""
+    },
+    {
+      "offset": 495,
+      "name": "ChBPortaStep",
+      "comment": ""
+    },
+    {
+      "offset": 502,
+      "name": "ChBPortaNote",
+      "comment": ""
+    },
+    {
+      "offset": 518,
+      "name": "ChBPortaGo",
+      "comment": ""
+    },
+    {
+      "offset": 522,
+      "name": "ChBSlideSign",
+      "comment": ""
+    },
+    {
+      "offset": 528,
+      "name": "ChBMix",
+      "comment": ""
+    },
+    {
+      "offset": 538,
+      "name": "ChBVolume",
+      "comment": ""
+    },
+    {
+      "offset": 543,
+      "name": "ChBEnvelope",
+      "comment": ""
+    },
+    {
+      "offset": 545,
+      "name": "ChBVolumeSet",
+      "comment": ""
+    },
+    {
+      "offset": 548,
+      "name": "ChCOff",
+      "comment": ""
+    },
+    {
+      "offset": 553,
+      "name": "ChCPos",
+      "comment": ""
+    },
+    {
+      "offset": 556,
+      "name": "ChCSample",
+      "comment": ""
+    },
+    {
+      "offset": 559,
+      "name": "ChCOrnament",
+      "comment": ""
+    },
+    {
+      "offset": 569,
+      "name": "ChCOrnamentNext",
+      "comment": ""
+    },
+    {
+      "offset": 585,
+      "name": "ChCSampleNext",
+      "comment": ""
+    },
+    {
+      "offset": 589,
+      "name": "ChCNote",
+      "comment": ""
+    },
+    {
+      "offset": 592,
+      "name": "ChCNoise",
+      "comment": ""
+    },
+    {
+      "offset": 597,
+      "name": "ChCSlide",
+      "comment": ""
+    },
+    {
+      "offset": 605,
+      "name": "ChCSlideMode",
+      "comment": ""
+    },
+    {
+      "offset": 615,
+      "name": "ChCPortaLeft",
+      "comment": ""
+    },
+    {
+      "offset": 625,
+      "name": "ChCPortaStep",
+      "comment": ""
+    },
+    {
+      "offset": 631,
+      "name": "ChCPortaNote",
+      "comment": ""
+    },
+    {
+      "offset": 648,
+      "name": "ChCPortaGo",
+      "comment": ""
+    },
+    {
+      "offset": 652,
+      "name": "ChCSlideSign",
+      "comment": ""
+    },
+    {
+      "offset": 658,
+      "name": "ChCMix",
+      "comment": ""
+    },
+    {
+      "offset": 669,
+      "name": "ChCVolume",
+      "comment": ""
+    },
+    {
+      "offset": 674,
+      "name": "ChCEnvelope",
+      "comment": ""
+    },
+    {
+      "offset": 676,
+      "name": "ChCVolumeSet",
+      "comment": ""
+    },
+    {
+      "offset": 679,
+      "name": "WriteAy",
+      "comment": ""
+    },
+    {
+      "offset": 691,
+      "name": "AyOutVector",
+      "comment": ""
+    },
+    {
+      "offset": 694,
+      "name": "PlayFrame",
+      "comment": ""
+    },
+    {
+      "offset": 697,
+      "name": "TickCount",
+      "comment": ""
+    },
+    {
+      "offset": 719,
+      "name": "ChARowReload",
+      "comment": ""
+    },
+    {
+      "offset": 721,
+      "name": "ChAPattern",
+      "comment": ""
+    },
+    {
+      "offset": 742,
+      "name": "PlayRowB",
+      "comment": ""
+    },
+    {
+      "offset": 749,
+      "name": "ChBRowReload",
+      "comment": ""
+    },
+    {
+      "offset": 751,
+      "name": "ChBPattern",
+      "comment": ""
+    },
+    {
+      "offset": 767,
+      "name": "PlayRowC",
+      "comment": ""
+    },
+    {
+      "offset": 774,
+      "name": "ChCRowReload",
+      "comment": ""
+    },
+    {
+      "offset": 776,
+      "name": "ChCPattern",
+      "comment": ""
+    },
+    {
+      "offset": 786,
+      "name": "ApplyPending",
+      "comment": ""
+    },
+    {
+      "offset": 787,
+      "name": "ChANewNote",
+      "comment": ""
+    },
+    {
+      "offset": 804,
+      "name": "ChANewOff",
+      "comment": ""
+    },
+    {
+      "offset": 808,
+      "name": "ChANextNote",
+      "comment": ""
+    },
+    {
+      "offset": 813,
+      "name": "ChANextSample",
+      "comment": ""
+    },
+    {
+      "offset": 820,
+      "name": "ChANewParams",
+      "comment": ""
+    },
+    {
+      "offset": 826,
+      "name": "ChANextEnvelope",
+      "comment": ""
+    },
+    {
+      "offset": 831,
+      "name": "ChANextNoise",
+      "comment": ""
+    },
+    {
+      "offset": 836,
+      "name": "ChANextVolume",
+      "comment": ""
+    },
+    {
+      "offset": 843,
+      "name": "ChANewOrnament",
+      "comment": ""
+    },
+    {
+      "offset": 852,
+      "name": "ChANextOrnament",
+      "comment": ""
+    },
+    {
+      "offset": 859,
+      "name": "ChANewSlide",
+      "comment": ""
+    },
+    {
+      "offset": 865,
+      "name": "ChANextPortaNote",
+      "comment": ""
+    },
+    {
+      "offset": 870,
+      "name": "ChANextPortaLeft",
+      "comment": ""
+    },
+    {
+      "offset": 876,
+      "name": "ChANextSlideSign",
+      "comment": ""
+    },
+    {
+      "offset": 881,
+      "name": "ChANextSlideMode",
+      "comment": ""
+    },
+    {
+      "offset": 888,
+      "name": "ChBNewNote",
+      "comment": ""
+    },
+    {
+      "offset": 905,
+      "name": "ChBNewOff",
+      "comment": ""
+    },
+    {
+      "offset": 909,
+      "name": "ChBNextNote",
+      "comment": ""
+    },
+    {
+      "offset": 914,
+      "name": "ChBNextSample",
+      "comment": ""
+    },
+    {
+      "offset": 921,
+      "name": "ChBNewParams",
+      "comment": ""
+    },
+    {
+      "offset": 927,
+      "name": "ChBNextEnvelope",
+      "comment": ""
+    },
+    {
+      "offset": 932,
+      "name": "ChBNextNoise",
+      "comment": ""
+    },
+    {
+      "offset": 937,
+      "name": "ChBNextVolume",
+      "comment": ""
+    },
+    {
+      "offset": 944,
+      "name": "ChBNewOrnament",
+      "comment": ""
+    },
+    {
+      "offset": 953,
+      "name": "ChBNextOrnament",
+      "comment": ""
+    },
+    {
+      "offset": 960,
+      "name": "ChBNewSlide",
+      "comment": ""
+    },
+    {
+      "offset": 966,
+      "name": "ChBNextPortaLeft",
+      "comment": ""
+    },
+    {
+      "offset": 972,
+      "name": "ChBNextPortaNote",
+      "comment": ""
+    },
+    {
+      "offset": 977,
+      "name": "ChBNextSlideSign",
+      "comment": ""
+    },
+    {
+      "offset": 982,
+      "name": "ChBNextSlideMode",
+      "comment": ""
+    },
+    {
+      "offset": 988,
+      "name": "NextEnvShape",
+      "comment": ""
+    },
+    {
+      "offset": 993,
+      "name": "NextEnvPeriod",
+      "comment": ""
+    },
+    {
+      "offset": 999,
+      "name": "Speed",
+      "comment": ""
+    },
+    {
+      "offset": 1011,
+      "name": "ChANotePorta",
+      "comment": ""
+    },
+    {
+      "offset": 1025,
+      "name": "ChANotePortaSet",
+      "comment": ""
+    },
+    {
+      "offset": 1034,
+      "name": "ChASetNote",
+      "comment": ""
+    },
+    {
+      "offset": 1059,
+      "name": "ChASetVolume",
+      "comment": ""
+    },
+    {
+      "offset": 1077,
+      "name": "ChAGliss",
+      "comment": ""
+    },
+    {
+      "offset": 1096,
+      "name": "ChAGlissSign",
+      "comment": ""
+    },
+    {
+      "offset": 1102,
+      "name": "ChAPortamento",
+      "comment": ""
+    },
+    {
+      "offset": 1116,
+      "name": "ChAPortaSign",
+      "comment": ""
+    },
+    {
+      "offset": 1131,
+      "name": "ChASetNoise",
+      "comment": ""
+    },
+    {
+      "offset": 1141,
+      "name": "ChASkip",
+      "comment": ""
+    },
+    {
+      "offset": 1147,
+      "name": "ChADecode",
+      "comment": ""
+    },
+    {
+      "offset": 1196,
+      "name": "ChASampleOrOff",
+      "comment": ""
+    },
+    {
+      "offset": 1198,
+      "name": "ChASampleTable",
+      "comment": ""
+    },
+    {
+      "offset": 1214,
+      "name": "ChAOrnamentTable",
+      "comment": ""
+    },
+    {
+      "offset": 1235,
+      "name": "ChANoteOff",
+      "comment": ""
+    },
+    {
+      "offset": 1247,
+      "name": "ChAEmptyRow",
+      "comment": ""
+    },
+    {
+      "offset": 1254,
+      "name": "ChAEnvelopeOff",
+      "comment": ""
+    },
+    {
+      "offset": 1264,
+      "name": "ChAEnvelopeOn",
+      "comment": ""
+    },
+    {
+      "offset": 1294,
+      "name": "ChASpeed",
+      "comment": ""
+    },
+    {
+      "offset": 1302,
+      "name": "ChBNotePorta",
+      "comment": ""
+    },
+    {
+      "offset": 1317,
+      "name": "ChBNotePortaSet",
+      "comment": ""
+    },
+    {
+      "offset": 1326,
+      "name": "ChBSetNote",
+      "comment": ""
+    },
+    {
+      "offset": 1351,
+      "name": "ChBSetVolume",
+      "comment": ""
+    },
+    {
+      "offset": 1369,
+      "name": "ChBGliss",
+      "comment": ""
+    },
+    {
+      "offset": 1388,
+      "name": "ChBGlissSign",
+      "comment": ""
+    },
+    {
+      "offset": 1394,
+      "name": "ChBPortamento",
+      "comment": ""
+    },
+    {
+      "offset": 1408,
+      "name": "ChBPortaSign",
+      "comment": ""
+    },
+    {
+      "offset": 1423,
+      "name": "ChBSetNoise",
+      "comment": ""
+    },
+    {
+      "offset": 1433,
+      "name": "ChBSkip",
+      "comment": ""
+    },
+    {
+      "offset": 1439,
+      "name": "ChBDecode",
+      "comment": ""
+    },
+    {
+      "offset": 1488,
+      "name": "ChBSampleOrOff",
+      "comment": ""
+    },
+    {
+      "offset": 1490,
+      "name": "ChBSampleTable",
+      "comment": ""
+    },
+    {
+      "offset": 1506,
+      "name": "ChBOrnamentTable",
+      "comment": ""
+    },
+    {
+      "offset": 1527,
+      "name": "ChBNoteOff",
+      "comment": ""
+    },
+    {
+      "offset": 1539,
+      "name": "ChBEmptyRow",
+      "comment": ""
+    },
+    {
+      "offset": 1546,
+      "name": "ChBEnvelopeOff",
+      "comment": ""
+    },
+    {
+      "offset": 1556,
+      "name": "ChBEnvelopeOn",
+      "comment": ""
+    },
+    {
+      "offset": 1586,
+      "name": "ChBSpeed",
+      "comment": ""
+    },
+    {
+      "offset": 1594,
+      "name": "ChCSetNote",
+      "comment": ""
+    },
+    {
+      "offset": 1613,
+      "name": "ChCNotePorta",
+      "comment": ""
+    },
+    {
+      "offset": 1628,
+      "name": "ChCNoteStart",
+      "comment": ""
+    },
+    {
+      "offset": 1640,
+      "name": "ChCGliss",
+      "comment": ""
+    },
+    {
+      "offset": 1654,
+      "name": "ChCGlissSign",
+      "comment": ""
+    },
+    {
+      "offset": 1660,
+      "name": "ChCPortamento",
+      "comment": ""
+    },
+    {
+      "offset": 1674,
+      "name": "ChCPortaSign",
+      "comment": ""
+    },
+    {
+      "offset": 1689,
+      "name": "ChCSetNoise",
+      "comment": ""
+    },
+    {
+      "offset": 1696,
+      "name": "ChCSkip",
+      "comment": ""
+    },
+    {
+      "offset": 1702,
+      "name": "ChCDecode",
+      "comment": ""
+    },
+    {
+      "offset": 1746,
+      "name": "ChCSampleOrOff",
+      "comment": ""
+    },
+    {
+      "offset": 1748,
+      "name": "ChCSampleTable",
+      "comment": ""
+    },
+    {
+      "offset": 1764,
+      "name": "ChCOrnamentTable",
+      "comment": ""
+    },
+    {
+      "offset": 1784,
+      "name": "ChCNoteOff",
+      "comment": ""
+    },
+    {
+      "offset": 1790,
+      "name": "ChCEnvelopeOn",
+      "comment": ""
+    },
+    {
+      "offset": 1816,
+      "name": "ChCEnvelopeOff",
+      "comment": ""
+    },
+    {
+      "offset": 1823,
+      "name": "ChCSpeed",
+      "comment": ""
+    },
+    {
+      "offset": 1831,
+      "name": "ChCSetVolume",
+      "comment": ""
+    },
+    {
+      "offset": 1846,
+      "name": "AyOut",
+      "comment": ""
+    },
+    {
+      "offset": 1857,
+      "name": "AyOutFrom13",
+      "comment": ""
+    },
+    {
+      "offset": 1878,
+      "name": "AyOutFrom10",
+      "comment": ""
+    },
+    {
+      "offset": 1941,
+      "name": "AyOutLast2",
+      "comment": ""
+    },
+    {
+      "offset": 1961,
+      "name": "AyOutSwapBC",
+      "comment": ""
+    },
+    {
+      "offset": 1969,
+      "name": "AyOutSwapFrom13",
+      "comment": ""
+    },
+    {
+      "offset": 1990,
+      "name": "AyOutSwapFrom10",
+      "comment": ""
+    },
+    {
+      "offset": 2092,
+      "name": "InitClearList",
+      "comment": ""
+    },
+    {
+      "offset": 2118,
+      "name": "NoteTable",
+      "comment": ""
+    },
+    {
+      "offset": 2310,
+      "name": "VolumeTable",
+      "comment": ""
+    },
+    {
+      "offset": 2550,
+      "name": "VolumeTableLoudest",
+      "comment": ""
+    },
+    {
+      "offset": 2566,
+      "name": "ChARows",
+      "comment": ""
+    },
+    {
+      "offset": 2567,
+      "name": "ChBRows",
+      "comment": ""
+    },
+    {
+      "offset": 2568,
+      "name": "ChCRows",
+      "comment": ""
+    },
+    {
+      "offset": 2569,
+      "name": "AyToneA",
+      "comment": ""
+    },
+    {
+      "offset": 2570,
+      "name": "AyToneAHigh",
+      "comment": ""
+    },
+    {
+      "offset": 2571,
+      "name": "AyToneB",
+      "comment": ""
+    },
+    {
+      "offset": 2572,
+      "name": "AyToneBHigh",
+      "comment": ""
+    },
+    {
+      "offset": 2573,
+      "name": "AyToneC",
+      "comment": ""
+    },
+    {
+      "offset": 2574,
+      "name": "AyToneCHigh",
+      "comment": ""
+    },
+    {
+      "offset": 2575,
+      "name": "AyNoise",
+      "comment": ""
+    },
+    {
+      "offset": 2576,
+      "name": "AyMixer",
+      "comment": ""
+    },
+    {
+      "offset": 2577,
+      "name": "AyVolumeA",
+      "comment": ""
+    },
+    {
+      "offset": 2578,
+      "name": "AyVolumeB",
+      "comment": ""
+    },
+    {
+      "offset": 2579,
+      "name": "AyVolumeC",
+      "comment": ""
+    },
+    {
+      "offset": 2580,
+      "name": "AyEnvPeriod",
+      "comment": ""
+    },
+    {
+      "offset": 2582,
+      "name": "AyEnvShape",
+      "comment": ""
+    },
+    {
+      "offset": 2583,
+      "name": "PlayerName",
+      "comment": ""
+    }
+  ],
+  "uses": {
+    "ports": [
+      "$FFFD w",
+      "$BFFD w"
+    ],
+    "needs": [
+      "ay"
+    ]
+  },
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth",
+      "case": "games/advanced-nether-earth",
+      "address": "$C000",
+      "bank": 1,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    },
+    {
+      "program": "Advanced Nether Earth: Dead End",
+      "case": "games/advanced-nether-earth",
+      "address": "$C000",
+      "bank": 3,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    },
+    {
+      "program": "Advanced Nether Earth: the intro",
+      "case": "games/advanced-nether-earth",
+      "address": "$C000",
+      "bank": 6,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/music/stp-player.asm",
+    "label": "Init"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/09-sound.md"
+  ]
+}

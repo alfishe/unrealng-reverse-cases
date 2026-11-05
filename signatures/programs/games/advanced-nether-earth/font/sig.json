@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "id": "programs/games/advanced-nether-earth/font",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Advanced Nether Earth: font",
+  "authors": [
+    "Eternity Industry"
+  ],
+  "year": 1998,
+  "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "font"
+  ],
+  "summary": "The game's Cyrillic font and the free bytes round it.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 929,
+    "sha1": "e2d03720e958b18f2a05d445de5bdfa4740f85ae",
+    "masked_sha1": "e2d03720e958b18f2a05d445de5bdfa4740f85ae"
+  },
+  "origin": "$C4A8",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "FontSpare1",
+      "comment": "88 bytes, never used: a $FE, then zeros"
+    },
+    {
+      "offset": 88,
+      "name": "GameFont",
+      "comment": "The font: 64 glyphs of 8 bytes, codes $20-$5F, the Russian letters over the Latin ones"
+    },
+    {
+      "offset": 600,
+      "name": "FontSpare2",
+      "comment": "329 bytes, never used, up to ConstructionMenu"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth",
+      "case": "games/advanced-nether-earth",
+      "address": "$C4A8",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/game/font.asm",
+    "label": "FontSpare1"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/README.md"
+  ]
+}

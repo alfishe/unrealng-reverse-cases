@@ -1,0 +1,402 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth/tables",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Nether Earth: tables",
+  "authors": [
+    "Argus Press Software"
+  ],
+  "year": 1987,
+  "tags": [
+    "nether-earth",
+    "game-module",
+    "tables"
+  ],
+  "summary": "Lookup tables of the view and the robots: view edges, part sprites, sprite pointers, heights.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 299,
+    "sha1": "725df228788003e8540b7ad64f1ec531cf20f998",
+    "masked_sha1": "725df228788003e8540b7ad64f1ec531cf20f998"
+  },
+  "origin": "$D6A8",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "ViewEdgeA",
+      "comment": "View edge, black on the left: 8 lines of 2 bytes"
+    },
+    {
+      "offset": 16,
+      "name": "ViewEdgeB",
+      "comment": "View edge, black on the right: 8 lines of 2 bytes"
+    },
+    {
+      "offset": 32,
+      "name": "PartSpriteTable",
+      "comment": "Robot part sprites: 8 parts x 4 directions, sprite id - $16"
+    },
+    {
+      "offset": 32,
+      "name": "",
+      "comment": "part 0 bipod (+$07 bit 0): ids 24 24 25 25 (along X, along Y); columns: facing X+, X-, Y+, Y-"
+    },
+    {
+      "offset": 36,
+      "name": "",
+      "comment": "part 1 tracks (+$07 bit 1): ids 22 22 23 23 (along X, along Y)"
+    },
+    {
+      "offset": 40,
+      "name": "",
+      "comment": "part 2 anti-grav (+$07 bit 2): id 26 for all four"
+    },
+    {
+      "offset": 44,
+      "name": "",
+      "comment": "part 3 cannon (+$07 bit 3): ids 27-30"
+    },
+    {
+      "offset": 48,
+      "name": "",
+      "comment": "part 4 missiles (+$07 bit 4): ids 31 31 32 32 (X, Y)"
+    },
+    {
+      "offset": 52,
+      "name": "",
+      "comment": "part 5 phasers (+$07 bit 5): ids 33-36"
+    },
+    {
+      "offset": 56,
+      "name": "",
+      "comment": "part 6 nuclear (+$07 bit 6): id 37 for all four"
+    },
+    {
+      "offset": 60,
+      "name": "",
+      "comment": "part 7 electronics (+$07 bit 7): ids 38-41"
+    },
+    {
+      "offset": 64,
+      "name": "SpriteTable",
+      "comment": "Sprite pointers: 51 sprite ids x (even column, odd column)"
+    },
+    {
+      "offset": 64,
+      "name": "",
+      "comment": "id 0: the player's ship; each row: the even and the odd column's block"
+    },
+    {
+      "offset": 68,
+      "name": "",
+      "comment": "id 1: the ship's shadow"
+    },
+    {
+      "offset": 72,
+      "name": "",
+      "comment": "id 2: map type 2: stones A"
+    },
+    {
+      "offset": 76,
+      "name": "",
+      "comment": "id 3: map type 3: stones B"
+    },
+    {
+      "offset": 80,
+      "name": "",
+      "comment": "id 4: map type 4: stones C"
+    },
+    {
+      "offset": 84,
+      "name": "",
+      "comment": "id 5: map type 5: stones D"
+    },
+    {
+      "offset": 88,
+      "name": "",
+      "comment": "id 6: map type 6: boulders A"
+    },
+    {
+      "offset": 92,
+      "name": "",
+      "comment": "id 7: map type 7: boulders B"
+    },
+    {
+      "offset": 96,
+      "name": "",
+      "comment": "id 8: map type 8: rocks A"
+    },
+    {
+      "offset": 100,
+      "name": "",
+      "comment": "id 9: map type 9: rocks B"
+    },
+    {
+      "offset": 104,
+      "name": "",
+      "comment": "id 10: map type 10: rocks C"
+    },
+    {
+      "offset": 108,
+      "name": "",
+      "comment": "id 11: map type 11: rocks D"
+    },
+    {
+      "offset": 112,
+      "name": "",
+      "comment": "id 12: map type 12: trench start (along Y, along X)"
+    },
+    {
+      "offset": 116,
+      "name": "",
+      "comment": "id 13: map type 13: trench middle (along Y, along X)"
+    },
+    {
+      "offset": 120,
+      "name": "",
+      "comment": "id 14: map type 14: trench end (along Y, along X)"
+    },
+    {
+      "offset": 124,
+      "name": "",
+      "comment": "id 15: map type 15: low block"
+    },
+    {
+      "offset": 128,
+      "name": "",
+      "comment": "id 16: map type 16: tall block with an arch"
+    },
+    {
+      "offset": 132,
+      "name": "",
+      "comment": "id 17: map type 17: low block (door, window)"
+    },
+    {
+      "offset": 136,
+      "name": "",
+      "comment": "id 18: map type 18: tall block (grid, dotted)"
+    },
+    {
+      "offset": 140,
+      "name": "",
+      "comment": "id 19: unused: points at the ship"
+    },
+    {
+      "offset": 144,
+      "name": "",
+      "comment": "id 20: unused: points at the ship"
+    },
+    {
+      "offset": 148,
+      "name": "",
+      "comment": "id 21: map type 21: the border post"
+    },
+    {
+      "offset": 152,
+      "name": "",
+      "comment": "id 22: tracks along X (part 1, X+ / X-); ConstructionMenu reads from here (SpriteTable+$58)"
+    },
+    {
+      "offset": 156,
+      "name": "",
+      "comment": "id 23: tracks along Y (part 1, Y+ / Y-); also the chassis factory's sign"
+    },
+    {
+      "offset": 160,
+      "name": "",
+      "comment": "id 24: bipod along X (part 0)"
+    },
+    {
+      "offset": 164,
+      "name": "",
+      "comment": "id 25: bipod along Y (part 0)"
+    },
+    {
+      "offset": 168,
+      "name": "",
+      "comment": "id 26: anti-grav (part 2, every direction)"
+    },
+    {
+      "offset": 172,
+      "name": "",
+      "comment": "id 27: cannon facing X+ (part 3)"
+    },
+    {
+      "offset": 176,
+      "name": "",
+      "comment": "id 28: cannon facing X-"
+    },
+    {
+      "offset": 180,
+      "name": "",
+      "comment": "id 29: cannon facing Y+ (also the cannon factory's sign)"
+    },
+    {
+      "offset": 184,
+      "name": "",
+      "comment": "id 30: cannon facing Y-"
+    },
+    {
+      "offset": 188,
+      "name": "",
+      "comment": "id 31: missiles along X (part 4)"
+    },
+    {
+      "offset": 192,
+      "name": "",
+      "comment": "id 32: missiles along Y (also the missiles factory's sign)"
+    },
+    {
+      "offset": 196,
+      "name": "",
+      "comment": "id 33: phasers facing X+ (part 5)"
+    },
+    {
+      "offset": 200,
+      "name": "",
+      "comment": "id 34: phasers facing X-"
+    },
+    {
+      "offset": 204,
+      "name": "",
+      "comment": "id 35: phasers facing Y+ (also the phasers factory's sign)"
+    },
+    {
+      "offset": 208,
+      "name": "",
+      "comment": "id 36: phasers facing Y-"
+    },
+    {
+      "offset": 212,
+      "name": "",
+      "comment": "id 37: nuclear (part 6, every direction; also the nuclear factory's sign)"
+    },
+    {
+      "offset": 216,
+      "name": "",
+      "comment": "id 38: electronics facing X+ (part 7)"
+    },
+    {
+      "offset": 220,
+      "name": "",
+      "comment": "id 39: electronics facing X-"
+    },
+    {
+      "offset": 224,
+      "name": "",
+      "comment": "id 40: electronics facing Y+ (also the electronics factory's sign)"
+    },
+    {
+      "offset": 228,
+      "name": "",
+      "comment": "id 41: electronics facing Y-"
+    },
+    {
+      "offset": 232,
+      "name": "",
+      "comment": "id 42: the player's flag (building type 7)"
+    },
+    {
+      "offset": 236,
+      "name": "",
+      "comment": "id 43: the enemy's flag (building type 8)"
+    },
+    {
+      "offset": 240,
+      "name": "",
+      "comment": "id 44: the warbase sign (building type 0, the pad)"
+    },
+    {
+      "offset": 244,
+      "name": "",
+      "comment": "id 45: shot: cannon shell along X (weapon 1)"
+    },
+    {
+      "offset": 248,
+      "name": "",
+      "comment": "id 46: shot: cannon shell along Y"
+    },
+    {
+      "offset": 252,
+      "name": "",
+      "comment": "id 47: shot: missile along X (weapon 2)"
+    },
+    {
+      "offset": 256,
+      "name": "",
+      "comment": "id 48: shot: missile along Y"
+    },
+    {
+      "offset": 260,
+      "name": "",
+      "comment": "id 49: shot: phaser beam along X (weapon 3)"
+    },
+    {
+      "offset": 264,
+      "name": "",
+      "comment": "id 50: shot: phaser beam along Y"
+    },
+    {
+      "offset": 268,
+      "name": "PartHeights",
+      "comment": "Height of each robot part in units (bipod $0B, tracks 7, anti-grav 8, cannon 6, missiles 6, phasers 7, nuclear 7, electronics 7)"
+    },
+    {
+      "offset": 268,
+      "name": "",
+      "comment": "by part: bipod 11, tracks 7, anti-grav 8, cannon 6, missiles 6, phasers 7, nuclear 7, electronics 7"
+    },
+    {
+      "offset": 276,
+      "name": "TerrainHeights",
+      "comment": "Height of each map cell type (0-22)"
+    },
+    {
+      "offset": 276,
+      "name": "",
+      "comment": "types 0-7: 0 empty 0, 1 0, stones 2-5 2, boulders 6-7 3"
+    },
+    {
+      "offset": 284,
+      "name": "",
+      "comment": "types 8-15: rocks 8-11 6, trench 12-14 0, low block 15 7"
+    },
+    {
+      "offset": 292,
+      "name": "",
+      "comment": "types 16-22: tall block 16 15, low block 17 7, tall block 18 15, 19-20 0, post 21 99 (no flight), 22 0"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth",
+      "case": "games/nether-earth",
+      "address": "$D6A8",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    },
+    {
+      "program": "Advanced Nether Earth",
+      "case": "games/advanced-nether-earth",
+      "address": "$D6A8",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth",
+    "file": "src/game/tables.asm",
+    "label": "ViewEdgeA"
+  },
+  "docs": [
+    "games/nether-earth/docs/README.md"
+  ]
+}

@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/buffers",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: buffers",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "buffers"
+  ],
+  "summary": "Buffers.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 8268,
+    "sha1": "d87fed60c6e5218163d9963f04bb38a53e6485fe",
+    "masked_sha1": "7b1a5a2adb082b40b53a2a7d455e7a46836af6d1"
+  },
+  "origin": "$5FB4",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 501,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 505,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Startup"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 500,
+      "name": "Entry",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Game entry (RANDOMIZE USR 25000)"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "ProfileMargin",
+      "comment": "Bytes below the ground profile"
+    },
+    {
+      "offset": 76,
+      "name": "ProfileBuffer",
+      "comment": "Ground profile buffer (768 bytes)"
+    },
+    {
+      "offset": 500,
+      "name": "",
+      "comment": "the stack grows down from the top of RAM"
+    },
+    {
+      "offset": 503,
+      "name": "",
+      "comment": "the game proper runs with interrupts off"
+    },
+    {
+      "offset": 504,
+      "name": "",
+      "comment": "the start-up"
+    },
+    {
+      "offset": 507,
+      "name": "GroundProfileTail",
+      "comment": "Ground profile buffer, after the entry"
+    },
+    {
+      "offset": 844,
+      "name": "Font",
+      "comment": "Font, codes $20-$3A"
+    },
+    {
+      "offset": 1060,
+      "name": "CreditsText1",
+      "comment": "Credits, first part (in the font's \";\" to \"?\" slots)"
+    },
+    {
+      "offset": 1100,
+      "name": "FontHigh",
+      "comment": "Font, codes $40-$5A"
+    },
+    {
+      "offset": 1316,
+      "name": "CreditsText2",
+      "comment": "Credits, second part (in the font's \"[\" to \"_\" slots)"
+    },
+    {
+      "offset": 1346,
+      "name": "AutoText",
+      "comment": "\" AUTO \" in the top window"
+    },
+    {
+      "offset": 1356,
+      "name": "SpriteScratch",
+      "comment": "Visible-record list and sprite scratch page"
+    },
+    {
+      "offset": 1484,
+      "name": "SpriteGfx00",
+      "comment": "Sprite graphics, table slot $00"
+    },
+    {
+      "offset": 2114,
+      "name": "SpriteGfx02",
+      "comment": "Sprite graphics, table slot $02"
+    },
+    {
+      "offset": 2744,
+      "name": "SpriteGfx04",
+      "comment": "Sprite graphics, table slot $04"
+    },
+    {
+      "offset": 3374,
+      "name": "SpriteGfx06",
+      "comment": "Sprite graphics, table slot $06"
+    },
+    {
+      "offset": 4004,
+      "name": "SpriteGfx1C",
+      "comment": "Sprite graphics, table slot $1C"
+    },
+    {
+      "offset": 4424,
+      "name": "SpriteGfx1E",
+      "comment": "Sprite graphics, table slot $1E"
+    },
+    {
+      "offset": 4844,
+      "name": "SpriteGfx14",
+      "comment": "Sprite graphics, table slot $14"
+    },
+    {
+      "offset": 5218,
+      "name": "SpriteGfx08",
+      "comment": "Sprite graphics, table slot $08 (the type 4 missile template)"
+    },
+    {
+      "offset": 5592,
+      "name": "SpriteGfx0A",
+      "comment": "Sprite graphics, table slots $0A and $0C (the type 6 missile template)"
+    },
+    {
+      "offset": 5966,
+      "name": "SpriteGfx0E",
+      "comment": "Sprite graphics, table slot $0E (the type 7 missile template)"
+    },
+    {
+      "offset": 6340,
+      "name": "SpriteGfx10",
+      "comment": "Sprite graphics, table slots $10 and $12 (the jet templates)"
+    },
+    {
+      "offset": 6714,
+      "name": "SpriteGfx16",
+      "comment": "Sprite graphics, table slot $16"
+    },
+    {
+      "offset": 6896,
+      "name": "SpriteGfx18",
+      "comment": "Sprite graphics, table slot $18 (shots: templates $C360, $C2E1)"
+    },
+    {
+      "offset": 7078,
+      "name": "SpriteGfx1A",
+      "comment": "Sprite graphics, table slot $1A (the shell: template $C370)"
+    },
+    {
+      "offset": 7260,
+      "name": "ExplosionGfx22",
+      "comment": "Explosion frame, table slot $22"
+    },
+    {
+      "offset": 7428,
+      "name": "ExplosionGfx20",
+      "comment": "Explosion frame, table slots $20 and $24"
+    },
+    {
+      "offset": 7596,
+      "name": "ExplosionGfx26",
+      "comment": "Explosion frame, table slot $26"
+    },
+    {
+      "offset": 7764,
+      "name": "ExplosionGfx28",
+      "comment": "Explosion frame, table slot $28"
+    },
+    {
+      "offset": 7932,
+      "name": "ExplosionGfx2A",
+      "comment": "Explosion frame, table slot $2A"
+    },
+    {
+      "offset": 8100,
+      "name": "ExplosionGfx2C",
+      "comment": "Explosion frame, table slot $2C (the last before the record is gone)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$5FB4",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/buffers.asm",
+    "label": "ProfileMargin"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

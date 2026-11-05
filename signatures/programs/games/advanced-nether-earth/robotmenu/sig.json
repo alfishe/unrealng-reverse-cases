@@ -1,0 +1,2594 @@
+{
+  "schema": 1,
+  "id": "programs/games/advanced-nether-earth/robotmenu",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Advanced Nether Earth: robotmenu",
+  "authors": [
+    "Eternity Industry"
+  ],
+  "year": 1998,
+  "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "robotmenu"
+  ],
+  "summary": "The robot menu and its submenus: orders, distance, targets, combat, direct control.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1602,
+    "sha1": "ef4f2139c460bdd9ee5dcaea05a0b93544be7ec4",
+    "masked_sha1": "54a0065c3cf22d7e9e8c3edced437af2fd4fa860"
+  },
+  "origin": "$A720",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 11,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuCursor"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PanelBusy"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearPanel"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 122,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 131,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 139,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 182,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 194,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber2"
+    },
+    {
+      "offset": 197,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 200,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5837"
+    },
+    {
+      "offset": 205,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuCursor"
+    },
+    {
+      "offset": 208,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 211,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuCursor"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 219,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 223,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 228,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 240,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClimbTurns"
+    },
+    {
+      "offset": 243,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearPanel"
+    },
+    {
+      "offset": 247,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PanelBusy"
+    },
+    {
+      "offset": 250,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShowStatusPanel"
+    },
+    {
+      "offset": 254,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 280,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 289,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber3"
+    },
+    {
+      "offset": 294,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCharKeep"
+    },
+    {
+      "offset": 540,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 543,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 554,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 557,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WorldTurn"
+    },
+    {
+      "offset": 560,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawView"
+    },
+    {
+      "offset": 563,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuRadarTick"
+    },
+    {
+      "offset": 566,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GameTurn"
+    },
+    {
+      "offset": 569,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 577,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 590,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 594,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearPanel"
+    },
+    {
+      "offset": 597,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 717,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 720,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5897"
+    },
+    {
+      "offset": 727,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 731,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 743,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 746,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 751,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 758,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearPanel"
+    },
+    {
+      "offset": 765,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 784,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 801,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 850,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 853,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WorldTurn"
+    },
+    {
+      "offset": 856,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawView"
+    },
+    {
+      "offset": 859,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuRadarTick"
+    },
+    {
+      "offset": 862,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GameTurn"
+    },
+    {
+      "offset": 870,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 873,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 901,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 911,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber2"
+    },
+    {
+      "offset": 916,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 935,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 938,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 941,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 944,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 947,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearPanel"
+    },
+    {
+      "offset": 950,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1054,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1057,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5937"
+    },
+    {
+      "offset": 1064,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1071,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearPanel"
+    },
+    {
+      "offset": 1074,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1178,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1181,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5937"
+    },
+    {
+      "offset": 1188,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1218,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Side"
+    },
+    {
+      "offset": 1226,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FindTargetBuilding"
+    },
+    {
+      "offset": 1240,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 1243,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1246,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1249,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearPanel"
+    },
+    {
+      "offset": 1252,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1373,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1378,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5837"
+    },
+    {
+      "offset": 1383,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1388,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1396,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1422,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NuclearBlast"
+    },
+    {
+      "offset": 1425,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1430,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Shots"
+    },
+    {
+      "offset": 1442,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FireShot"
+    },
+    {
+      "offset": 1445,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawView"
+    },
+    {
+      "offset": 1448,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GameTurn"
+    },
+    {
+      "offset": 1452,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1457,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 1461,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1465,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1472,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1482,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1486,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 1491,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Input"
+    },
+    {
+      "offset": 1516,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1523,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1528,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 1533,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WorldTurn"
+    },
+    {
+      "offset": 1536,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawView"
+    },
+    {
+      "offset": 1539,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuRadarTick"
+    },
+    {
+      "offset": 1542,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GameTurn"
+    },
+    {
+      "offset": 1545,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1555,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1560,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Beep"
+    },
+    {
+      "offset": 1576,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillAttributes"
+    },
+    {
+      "offset": 1581,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 1586,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillAttributes"
+    },
+    {
+      "offset": 1594,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "RobotMenu",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "landing on a robot of ours: ПРЯМОЕ УПРАВЛ. (direct control), ОТДАТЬ ПРИКАЗ (give orders), БОЕВОИ РЕЖИМ (combat mode), ОСТАВИТЬ РОБОТА (leave the robot); the order to +$0B"
+    },
+    {
+      "offset": 18,
+      "name": "RobotMenuShow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Robot menu: draw the four items, the current order and the strength, then choose"
+    },
+    {
+      "offset": 117,
+      "name": "ShowOrder",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Robot menu: print the name of the robot's order"
+    },
+    {
+      "offset": 173,
+      "name": "ShowOrderMiles",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Robot menu: for ADVANCE and RETREAT, the miles under the order's name"
+    },
+    {
+      "offset": 188,
+      "name": "ShowMilesCode",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "LD A,(IX+$0E); SRL A; CALL $D3E5"
+    },
+    {
+      "offset": 196,
+      "name": "RobotMenuChoose",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Robot menu: choose an item and run it; ОСТАВИТЬ РОБОТА (leave the robot) closes the menu"
+    },
+    {
+      "offset": 253,
+      "name": "ShowStrength",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Robot menus: print STRENGTH and the robot's strength in %"
+    },
+    {
+      "offset": 275,
+      "name": "ShowStrengthValue",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print the strength +$0C as \"nnn%\""
+    },
+    {
+      "offset": 539,
+      "name": "DirectControlItem",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Robot menu item 1: direct control, then the robot menu again"
+    },
+    {
+      "offset": 545,
+      "name": "DirectControl",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Drive the robot with the controls until fire"
+    },
+    {
+      "offset": 593,
+      "name": "OrdersMenu",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ОТДАТЬ ПРИКАЗ (give orders): the five orders"
+    },
+    {
+      "offset": 716,
+      "name": "OrdersMenuChoose",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ОТДАТЬ ПРИКАЗ (give orders): choose; stop at once, advance / retreat ask the miles, search asks the target"
+    },
+    {
+      "offset": 781,
+      "name": "AdvanceJump",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "JR $AA40, past the RETREAT title"
+    },
+    {
+      "offset": 783,
+      "name": "RetreatTitle",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ОТДАТЬ ПРИКАЗ (give orders), RETREAT: the title of the distance menu"
+    },
+    {
+      "offset": 800,
+      "name": "DistanceMenu",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "CALL PrintInline, the distance menu's texts"
+    },
+    {
+      "offset": 846,
+      "name": "DistanceSelect",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 909,
+      "name": "DistanceShow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the miles in D printed (PrintNumber2), a click, back to the distance loop"
+    },
+    {
+      "offset": 943,
+      "name": "TargetMenu",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ПОИСК И ЛИКВИД. (search and destroy) or ПОИСК И ЗАХВАТ (search and capture): the three targets"
+    },
+    {
+      "offset": 1053,
+      "name": "DestroyMenuChoose",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ПОИСК И ЛИКВИД. (search and destroy): choose the target, orders 3-5"
+    },
+    {
+      "offset": 1070,
+      "name": "CaptureMenu",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ПОИСК И ЗАХВАТ (search and capture): the three targets"
+    },
+    {
+      "offset": 1177,
+      "name": "CaptureMenuChoose",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ПОИСК И ЗАХВАТ (search and capture): choose the target, orders 6-8"
+    },
+    {
+      "offset": 1192,
+      "name": "SetOrder",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Store a search order, look for its first target, or fall back to stop"
+    },
+    {
+      "offset": 1372,
+      "name": "CombatMenuCode",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 1463,
+      "name": "ListMenu",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "a list menu: HL the attribute of item 0 (an item every 3 rows), E the items + 1, A the first highlighted; down / up move, fire returns A"
+    },
+    {
+      "offset": 1564,
+      "name": "PaintMenuItem",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Colour list item A: 2 rows of 8 attributes with C"
+    },
+    {
+      "offset": 1591,
+      "name": "WaitRelease",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "wait until no control is held"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "IX = the robot record (from FindRobot)"
+    },
+    {
+      "offset": 2,
+      "name": "",
+      "comment": "IX = IY"
+    },
+    {
+      "offset": 4,
+      "name": "",
+      "comment": "+$0A = 1: the player sits on it; the robot stops (UpdateRobot skips it)"
+    },
+    {
+      "offset": 8,
+      "name": "",
+      "comment": "MenuCursor = 4: ОСТАВИТЬ РОБОТА (leave the robot) highlighted first"
+    },
+    {
+      "offset": 10,
+      "name": "",
+      "comment": "the robot menu uses only the low byte of MenuCursor"
+    },
+    {
+      "offset": 13,
+      "name": "",
+      "comment": "$FD39 = 1: the panel shows the menu, UpdateStatusPanel keeps off it"
+    },
+    {
+      "offset": 15,
+      "name": "",
+      "comment": "PanelBusy = 1"
+    },
+    {
+      "offset": 18,
+      "name": "",
+      "comment": "clear the side panel"
+    },
+    {
+      "offset": 21,
+      "name": "",
+      "comment": "the four items and -ORDERS-"
+    },
+    {
+      "offset": 24,
+      "name": "RobotMenuText",
+      "comment": "The robot menu: ПРЯМОЕ УПРАВЛ. / ОТДАТЬ ПРИКАЗ / БОЕВОИ РЕЖИМ / ОСТАВИТЬ РОБОТА, then the ПРИКАЗ heading"
+    },
+    {
+      "offset": 117,
+      "name": "",
+      "comment": "B = order + 1"
+    },
+    {
+      "offset": 120,
+      "name": "",
+      "comment": "one more: the loop below adds 27 before the first name"
+    },
+    {
+      "offset": 121,
+      "name": "",
+      "comment": "OrderNames - 27"
+    },
+    {
+      "offset": 124,
+      "name": "",
+      "comment": "27 bytes a name"
+    },
+    {
+      "offset": 127,
+      "name": "OrderNameIndex",
+      "comment": "HL += 27, order + 1 times"
+    },
+    {
+      "offset": 128,
+      "name": "",
+      "comment": "order + 1 times: HL = OrderNames + 27 x order"
+    },
+    {
+      "offset": 130,
+      "name": "",
+      "comment": "into the string after the next CALL"
+    },
+    {
+      "offset": 133,
+      "name": "",
+      "comment": "the 27 bytes of the name, its end byte 0 included"
+    },
+    {
+      "offset": 136,
+      "name": "",
+      "comment": "copy it into OrderLine"
+    },
+    {
+      "offset": 138,
+      "name": "",
+      "comment": "print the order's name"
+    },
+    {
+      "offset": 141,
+      "name": "OrderLineHead",
+      "comment": "The order line: (18,23), attribute $45, then the copied name"
+    },
+    {
+      "offset": 146,
+      "name": "OrderLine",
+      "comment": "The order's name, 27 bytes copied from OrderNames (zero in the image)"
+    },
+    {
+      "offset": 146,
+      "name": "",
+      "comment": "the order's three 9-character lines and the end 0, copied from OrderNames by ShowOrder"
+    },
+    {
+      "offset": 173,
+      "name": "",
+      "comment": "order 1 or 2?"
+    },
+    {
+      "offset": 176,
+      "name": "",
+      "comment": "order - 1: 0 advance, 1 retreat"
+    },
+    {
+      "offset": 177,
+      "name": "",
+      "comment": "anything else (stop: $FF, searches: 2-7)"
+    },
+    {
+      "offset": 179,
+      "name": "",
+      "comment": "no miles to print"
+    },
+    {
+      "offset": 181,
+      "name": "",
+      "comment": "the position for the number"
+    },
+    {
+      "offset": 184,
+      "name": "MilesPos",
+      "comment": "(19,25), the position of the miles"
+    },
+    {
+      "offset": 188,
+      "name": "",
+      "comment": "the miles, stored doubled in +$0E"
+    },
+    {
+      "offset": 191,
+      "name": "",
+      "comment": "halved"
+    },
+    {
+      "offset": 193,
+      "name": "",
+      "comment": "two digits, a leading space; then falls into RobotMenuChoose"
+    },
+    {
+      "offset": 196,
+      "name": "",
+      "comment": "the strength"
+    },
+    {
+      "offset": 199,
+      "name": "",
+      "comment": "item 1 at row 4, column 23"
+    },
+    {
+      "offset": 202,
+      "name": "",
+      "comment": "four items"
+    },
+    {
+      "offset": 204,
+      "name": "",
+      "comment": "highlight the last choice"
+    },
+    {
+      "offset": 207,
+      "name": "",
+      "comment": "A = the item chosen, 1-4"
+    },
+    {
+      "offset": 210,
+      "name": "",
+      "comment": "remembered: the menu reopens on it"
+    },
+    {
+      "offset": 213,
+      "name": "",
+      "comment": "1: ПРЯМОЕ УПРАВЛ. (direct control)"
+    },
+    {
+      "offset": 214,
+      "name": "",
+      "comment": "drive the robot, then this menu again"
+    },
+    {
+      "offset": 217,
+      "name": "",
+      "comment": "2: ОТДАТЬ ПРИКАЗ (give orders)"
+    },
+    {
+      "offset": 218,
+      "name": "",
+      "comment": "the five orders"
+    },
+    {
+      "offset": 221,
+      "name": "",
+      "comment": "3: БОЕВОИ РЕЖИМ (combat mode)"
+    },
+    {
+      "offset": 222,
+      "name": "",
+      "comment": "the six combat items"
+    },
+    {
+      "offset": 225,
+      "name": "LeaveRobot",
+      "comment": "4: ОСТАВИТЬ РОБОТА (leave the robot)"
+    },
+    {
+      "offset": 227,
+      "name": "",
+      "comment": "the beep of a choice"
+    },
+    {
+      "offset": 230,
+      "name": "",
+      "comment": "+$06 = 0"
+    },
+    {
+      "offset": 231,
+      "name": "",
+      "comment": "+$06 = 0: no steps left on its course, so it picks a new one"
+    },
+    {
+      "offset": 234,
+      "name": "",
+      "comment": "+$0A = 0: no longer held by the player"
+    },
+    {
+      "offset": 237,
+      "name": "",
+      "comment": "climb for 5 turns"
+    },
+    {
+      "offset": 239,
+      "name": "",
+      "comment": "ClimbTurns = 5: the ship lifts off before the menu could reopen"
+    },
+    {
+      "offset": 242,
+      "name": "CloseRobotMenu",
+      "comment": "clear the panel and give it back to the status display"
+    },
+    {
+      "offset": 245,
+      "name": "",
+      "comment": "PanelBusy = 0: the status panel may print again"
+    },
+    {
+      "offset": 246,
+      "name": "",
+      "comment": "PanelBusy = 0"
+    },
+    {
+      "offset": 249,
+      "name": "",
+      "comment": "the status panel"
+    },
+    {
+      "offset": 252,
+      "name": "",
+      "comment": "back to PlayLoop, after its CALL Z,RobotMenu"
+    },
+    {
+      "offset": 253,
+      "name": "",
+      "comment": "\"СИЛА\" (strength), then the position of the value"
+    },
+    {
+      "offset": 256,
+      "name": "StrengthText",
+      "comment": "\"СИЛА\" (strength) at (22,23) attribute $46, then (23,25) attribute $47"
+    },
+    {
+      "offset": 275,
+      "name": "",
+      "comment": "the strength +$0C"
+    },
+    {
+      "offset": 278,
+      "name": "",
+      "comment": "negative: a dying robot"
+    },
+    {
+      "offset": 279,
+      "name": "",
+      "comment": "0 or more: print it"
+    },
+    {
+      "offset": 282,
+      "name": "",
+      "comment": "negative (dying): print 0"
+    },
+    {
+      "offset": 283,
+      "name": "ShowStrengthNumber",
+      "comment": "A = the strength (0 for a dying robot): three digits, leading spaces, then \"%\""
+    },
+    {
+      "offset": 284,
+      "name": "",
+      "comment": "HL = the strength, 0-127"
+    },
+    {
+      "offset": 286,
+      "name": "",
+      "comment": "leading zeros as spaces"
+    },
+    {
+      "offset": 288,
+      "name": "",
+      "comment": "three digits at (23,25)"
+    },
+    {
+      "offset": 291,
+      "name": "",
+      "comment": "\"%\""
+    },
+    {
+      "offset": 293,
+      "name": "",
+      "comment": "\"%\" and return"
+    },
+    {
+      "offset": 296,
+      "name": "OrderNames",
+      "comment": "Order 0: \"СТОЯТЬ И ДЕРЖАТЬ ОБОРОНУ\" (stop and defend)"
+    },
+    {
+      "offset": 323,
+      "name": "OrderName1",
+      "comment": "Order 1: \"ВПЕРЕД ... МИЛЬ\" (advance; the miles go in the blank middle line)"
+    },
+    {
+      "offset": 350,
+      "name": "OrderName2",
+      "comment": "Order 2: \"НАЗАД ... МИЛЬ\" (retreat; the miles in the middle line)"
+    },
+    {
+      "offset": 377,
+      "name": "OrderName3",
+      "comment": "Order 3: \"ЛИКВИД. ВРАЖЕСК. РОБОТОВ\" (destroy enemy robots)"
+    },
+    {
+      "offset": 404,
+      "name": "OrderName4",
+      "comment": "Order 4: \"ЛИКВИД. ВРАЖЕСК. ЗАВОДЫ\" (destroy enemy factories)"
+    },
+    {
+      "offset": 431,
+      "name": "OrderName5",
+      "comment": "Order 5: \"ЛИКВИД. ВРАЖЕСК. БАЗЫ\" (destroy enemy warbases)"
+    },
+    {
+      "offset": 458,
+      "name": "OrderName6",
+      "comment": "Order 6: \"ЗАХВАТ НЕИТРАЛ. ЗАВОДОВ\" (capture neutral factories)"
+    },
+    {
+      "offset": 485,
+      "name": "OrderName7",
+      "comment": "Order 7: \"ЗАХВАТ ВРАЖЕСК. ЗАВОДОВ\" (capture enemy factories)"
+    },
+    {
+      "offset": 512,
+      "name": "OrderName8",
+      "comment": "Order 8: \"ЗАХВАТ ВРАЖЕСК. БАЗ\" (capture enemy warbases)"
+    },
+    {
+      "offset": 539,
+      "name": "",
+      "comment": "until fire (or the robot is destroyed)"
+    },
+    {
+      "offset": 542,
+      "name": "",
+      "comment": "redraw the robot menu"
+    },
+    {
+      "offset": 545,
+      "name": "",
+      "comment": "+$0A = 2: the robot follows Input"
+    },
+    {
+      "offset": 549,
+      "name": "",
+      "comment": "+$05 = 0: no course of its own"
+    },
+    {
+      "offset": 553,
+      "name": "",
+      "comment": "the fire that chose the item must go first"
+    },
+    {
+      "offset": 556,
+      "name": "DirectControlLoop",
+      "comment": "a game turn with the robot driven"
+    },
+    {
+      "offset": 559,
+      "name": "",
+      "comment": "the view"
+    },
+    {
+      "offset": 562,
+      "name": "",
+      "comment": "the ship's radar blink"
+    },
+    {
+      "offset": 565,
+      "name": "",
+      "comment": "the clock and the turn pacing"
+    },
+    {
+      "offset": 568,
+      "name": "",
+      "comment": "the strength"
+    },
+    {
+      "offset": 571,
+      "name": "",
+      "comment": "destroyed: back"
+    },
+    {
+      "offset": 574,
+      "name": "",
+      "comment": "+$01 = 0: the slot was freed"
+    },
+    {
+      "offset": 575,
+      "name": "",
+      "comment": "Z: the robot is gone, return at once"
+    },
+    {
+      "offset": 576,
+      "name": "",
+      "comment": "the controls"
+    },
+    {
+      "offset": 579,
+      "name": "",
+      "comment": "fire: give the robot back"
+    },
+    {
+      "offset": 581,
+      "name": "",
+      "comment": "no fire: the next turn"
+    },
+    {
+      "offset": 583,
+      "name": "",
+      "comment": "+$0A = 1: held, not driven"
+    },
+    {
+      "offset": 587,
+      "name": "",
+      "comment": "the beep of a choice"
+    },
+    {
+      "offset": 589,
+      "name": "",
+      "comment": "beep"
+    },
+    {
+      "offset": 592,
+      "name": "",
+      "comment": "back to the menu that called it"
+    },
+    {
+      "offset": 593,
+      "name": "",
+      "comment": "clear the right panel"
+    },
+    {
+      "offset": 596,
+      "name": "",
+      "comment": "SELECT ORDERS and the five items"
+    },
+    {
+      "offset": 599,
+      "name": "OrdersMenuText",
+      "comment": "ОТДАТЬ ПРИКАЗ (give orders) and the five items: ДЕРЖАТЬ ОБОРОНУ, ВПЕРЕД / НАЗАД ?? МИЛЬ, ПОИСК И ЛИКВИД., ПОИСК И ЗАХВАТ"
+    },
+    {
+      "offset": 716,
+      "name": "",
+      "comment": "the strength"
+    },
+    {
+      "offset": 719,
+      "name": "",
+      "comment": "the attribute of item 0: row 4, column 23 (item 1 at row 7)"
+    },
+    {
+      "offset": 722,
+      "name": "",
+      "comment": "five items"
+    },
+    {
+      "offset": 724,
+      "name": "",
+      "comment": "СТОЯТЬ И ДЕРЖАТЬ ОБОРОНУ (stop and defend) highlighted first"
+    },
+    {
+      "offset": 726,
+      "name": "",
+      "comment": "the item, 1-5"
+    },
+    {
+      "offset": 729,
+      "name": "",
+      "comment": "keep the item"
+    },
+    {
+      "offset": 730,
+      "name": "",
+      "comment": "the fire must go"
+    },
+    {
+      "offset": 733,
+      "name": "",
+      "comment": "the item back"
+    },
+    {
+      "offset": 734,
+      "name": "",
+      "comment": "1: СТОЯТЬ И ДЕРЖАТЬ ОБОРОНУ (stop and defend)"
+    },
+    {
+      "offset": 735,
+      "name": "",
+      "comment": "not item 1"
+    },
+    {
+      "offset": 737,
+      "name": "",
+      "comment": "order 0"
+    },
+    {
+      "offset": 740,
+      "name": "",
+      "comment": "the beep of a choice"
+    },
+    {
+      "offset": 742,
+      "name": "",
+      "comment": "beep"
+    },
+    {
+      "offset": 745,
+      "name": "",
+      "comment": "back to the robot menu, which shows the new order"
+    },
+    {
+      "offset": 748,
+      "name": "OrderMove",
+      "comment": "2 ADVANCE (A = 1), 3 RETREAT (A = 2); 4, 5 the searches"
+    },
+    {
+      "offset": 750,
+      "name": "",
+      "comment": "3, 4 (ПОИСК И ЛИКВИД. (search and destroy), & CAPTURE): the target menu, Z for destroy"
+    },
+    {
+      "offset": 753,
+      "name": "",
+      "comment": "order 1 or 2"
+    },
+    {
+      "offset": 756,
+      "name": "",
+      "comment": "keep the order"
+    },
+    {
+      "offset": 757,
+      "name": "",
+      "comment": "clear the panel for the distance menu"
+    },
+    {
+      "offset": 760,
+      "name": "",
+      "comment": "the order back"
+    },
+    {
+      "offset": 761,
+      "name": "",
+      "comment": "1 advance -> 0, 2 retreat -> 1"
+    },
+    {
+      "offset": 762,
+      "name": "",
+      "comment": "retreat: its own title"
+    },
+    {
+      "offset": 764,
+      "name": "",
+      "comment": "ADVANCE: its title, then the distance menu"
+    },
+    {
+      "offset": 767,
+      "name": "AdvanceTitle",
+      "comment": "\"ВПЕРЕД\" (advance) at (5,23), attribute $4F"
+    },
+    {
+      "offset": 781,
+      "name": "",
+      "comment": "past the RETREAT title to the shared distance menu"
+    },
+    {
+      "offset": 783,
+      "name": "",
+      "comment": "the RETREAT title, then into DistanceMenu"
+    },
+    {
+      "offset": 786,
+      "name": "RetreatTitleText",
+      "comment": "\"НАЗАД\" (retreat) at (5,23), attribute $20"
+    },
+    {
+      "offset": 800,
+      "name": "",
+      "comment": "the distance menu's texts"
+    },
+    {
+      "offset": 803,
+      "name": "DistanceText",
+      "comment": "The distance menu: ?? МИЛЬ, ВЫБОР ДИСТАН. (select the distance), 0 МИЛЬ"
+    },
+    {
+      "offset": 846,
+      "name": "",
+      "comment": "D = the miles: start at 0"
+    },
+    {
+      "offset": 848,
+      "name": "DistanceLoop",
+      "comment": "a game turn under the open menu, then WaitKey: fire sets, down / up step the miles"
+    },
+    {
+      "offset": 849,
+      "name": "",
+      "comment": "the strength"
+    },
+    {
+      "offset": 852,
+      "name": "",
+      "comment": "the robots and the shots go on"
+    },
+    {
+      "offset": 855,
+      "name": "",
+      "comment": "the view"
+    },
+    {
+      "offset": 858,
+      "name": "",
+      "comment": "the ship's radar blink"
+    },
+    {
+      "offset": 861,
+      "name": "",
+      "comment": "the clock and the turn pacing"
+    },
+    {
+      "offset": 864,
+      "name": "",
+      "comment": "D = the miles back"
+    },
+    {
+      "offset": 865,
+      "name": "",
+      "comment": "the robot's +$01"
+    },
+    {
+      "offset": 868,
+      "name": "",
+      "comment": "destroyed?"
+    },
+    {
+      "offset": 869,
+      "name": "",
+      "comment": "destroyed: close the whole menu"
+    },
+    {
+      "offset": 872,
+      "name": "",
+      "comment": "A = Input"
+    },
+    {
+      "offset": 875,
+      "name": "",
+      "comment": "fire?"
+    },
+    {
+      "offset": 877,
+      "name": "",
+      "comment": "fire: store the miles"
+    },
+    {
+      "offset": 879,
+      "name": "",
+      "comment": "C = the old miles"
+    },
+    {
+      "offset": 880,
+      "name": "",
+      "comment": "Input bit 2 (down) and bit 3 (up)"
+    },
+    {
+      "offset": 881,
+      "name": "",
+      "comment": "now in bits 0 and 1"
+    },
+    {
+      "offset": 882,
+      "name": "",
+      "comment": "1 down, 2 up, 3 both"
+    },
+    {
+      "offset": 884,
+      "name": "",
+      "comment": "neither: the next turn"
+    },
+    {
+      "offset": 886,
+      "name": "",
+      "comment": "B = 0 down, 2 up (both: up)"
+    },
+    {
+      "offset": 888,
+      "name": "",
+      "comment": "B = 0 or 2"
+    },
+    {
+      "offset": 889,
+      "name": "",
+      "comment": "x2"
+    },
+    {
+      "offset": 890,
+      "name": "",
+      "comment": "x4"
+    },
+    {
+      "offset": 891,
+      "name": "",
+      "comment": "x5: 0 or 10"
+    },
+    {
+      "offset": 892,
+      "name": "",
+      "comment": "-5 or +5"
+    },
+    {
+      "offset": 894,
+      "name": "",
+      "comment": "A = the old miles +- 5"
+    },
+    {
+      "offset": 895,
+      "name": "",
+      "comment": "past 50 miles?"
+    },
+    {
+      "offset": 897,
+      "name": "",
+      "comment": "past 50 or below 0 (wrapped to $FB): keep the old value"
+    },
+    {
+      "offset": 899,
+      "name": "",
+      "comment": "D = the new miles"
+    },
+    {
+      "offset": 900,
+      "name": "",
+      "comment": "the position of the number"
+    },
+    {
+      "offset": 903,
+      "name": "DistanceAtText",
+      "comment": "PrintInline: (13,23), attribute $46, where the miles are printed"
+    },
+    {
+      "offset": 909,
+      "name": "",
+      "comment": "the miles"
+    },
+    {
+      "offset": 910,
+      "name": "",
+      "comment": "two digits, a leading space"
+    },
+    {
+      "offset": 913,
+      "name": "",
+      "comment": "the click of a change"
+    },
+    {
+      "offset": 915,
+      "name": "",
+      "comment": "beep"
+    },
+    {
+      "offset": 918,
+      "name": "",
+      "comment": "held keys step again after one game turn"
+    },
+    {
+      "offset": 920,
+      "name": "DistanceFire",
+      "comment": "fire: +$0E = miles x 2; 0 miles turns the order back into 0 (stop)"
+    },
+    {
+      "offset": 921,
+      "name": "",
+      "comment": "x2: +$0E counts map columns, 2 a mile"
+    },
+    {
+      "offset": 922,
+      "name": "",
+      "comment": "+$0E: the distance to go"
+    },
+    {
+      "offset": 925,
+      "name": "",
+      "comment": "0 miles?"
+    },
+    {
+      "offset": 926,
+      "name": "",
+      "comment": "not 0: the order stands"
+    },
+    {
+      "offset": 928,
+      "name": "",
+      "comment": "0 miles: order 0, stop and defend"
+    },
+    {
+      "offset": 932,
+      "name": "DistanceDone",
+      "comment": "the beep, WaitRelease, back to the robot menu"
+    },
+    {
+      "offset": 934,
+      "name": "",
+      "comment": "beep"
+    },
+    {
+      "offset": 937,
+      "name": "",
+      "comment": "fire up first"
+    },
+    {
+      "offset": 940,
+      "name": "",
+      "comment": "back to the robot menu"
+    },
+    {
+      "offset": 943,
+      "name": "",
+      "comment": "ПОИСК И ЗАХВАТ (search and capture)"
+    },
+    {
+      "offset": 946,
+      "name": "",
+      "comment": "clear the right panel"
+    },
+    {
+      "offset": 949,
+      "name": "",
+      "comment": "ПОИСК И ЛИКВИД. (search and destroy) and its three targets"
+    },
+    {
+      "offset": 952,
+      "name": "DestroyMenuText",
+      "comment": "ПОИСК И ЛИКВИД. (search and destroy): ВЫБОР ЦЕЛИ, ВРАЖЕСК. РОБОТЫ / ЗАВОДЫ / БАЗЫ"
+    },
+    {
+      "offset": 1053,
+      "name": "",
+      "comment": "the strength"
+    },
+    {
+      "offset": 1056,
+      "name": "",
+      "comment": "the attribute of item 0: row 9, column 23 (item 1 at row 12)"
+    },
+    {
+      "offset": 1059,
+      "name": "",
+      "comment": "ENEMY ROBOTS highlighted first"
+    },
+    {
+      "offset": 1061,
+      "name": "",
+      "comment": "three items"
+    },
+    {
+      "offset": 1063,
+      "name": "",
+      "comment": "A = the target, 1-3"
+    },
+    {
+      "offset": 1066,
+      "name": "",
+      "comment": "order 3-5"
+    },
+    {
+      "offset": 1068,
+      "name": "",
+      "comment": "store it, find the target"
+    },
+    {
+      "offset": 1070,
+      "name": "",
+      "comment": "clear the right panel"
+    },
+    {
+      "offset": 1073,
+      "name": "",
+      "comment": "ПОИСК И ЗАХВАТ (search and capture) and its three targets"
+    },
+    {
+      "offset": 1076,
+      "name": "CaptureMenuText",
+      "comment": "ПОИСК И ЗАХВАТ (search and capture): ВЫБОР ЦЕЛИ, НЕИТР. ЗАВОДЫ, ВРАЖЕСК. ЗАВОДЫ / БАЗЫ"
+    },
+    {
+      "offset": 1177,
+      "name": "",
+      "comment": "the strength"
+    },
+    {
+      "offset": 1180,
+      "name": "",
+      "comment": "the attribute of item 0: row 9, column 23"
+    },
+    {
+      "offset": 1183,
+      "name": "",
+      "comment": "NEUTRAL FACTORYS highlighted first"
+    },
+    {
+      "offset": 1185,
+      "name": "",
+      "comment": "three items"
+    },
+    {
+      "offset": 1187,
+      "name": "",
+      "comment": "A = the target, 1-3"
+    },
+    {
+      "offset": 1190,
+      "name": "",
+      "comment": "order 6-8"
+    },
+    {
+      "offset": 1192,
+      "name": "",
+      "comment": "+$0B = the order"
+    },
+    {
+      "offset": 1195,
+      "name": "",
+      "comment": "orders 4 and 5 need the bomb"
+    },
+    {
+      "offset": 1197,
+      "name": "",
+      "comment": "3: destroy robots, no bomb needed"
+    },
+    {
+      "offset": 1199,
+      "name": "",
+      "comment": "6-8: the captures"
+    },
+    {
+      "offset": 1201,
+      "name": "",
+      "comment": "no bomb needed"
+    },
+    {
+      "offset": 1203,
+      "name": "",
+      "comment": "the nuclear part, +$07 bit 6?"
+    },
+    {
+      "offset": 1207,
+      "name": "",
+      "comment": "no bomb: buildings cannot be destroyed"
+    },
+    {
+      "offset": 1209,
+      "name": "FindOrderTarget",
+      "comment": "HL = the robot's X"
+    },
+    {
+      "offset": 1212,
+      "name": "",
+      "comment": "the column's high byte (0-511)"
+    },
+    {
+      "offset": 1215,
+      "name": "",
+      "comment": "keep the order"
+    },
+    {
+      "offset": 1216,
+      "name": "",
+      "comment": "side 0"
+    },
+    {
+      "offset": 1217,
+      "name": "",
+      "comment": "$FD51 = 0: the search runs for our side"
+    },
+    {
+      "offset": 1220,
+      "name": "",
+      "comment": "A = the order for the search"
+    },
+    {
+      "offset": 1221,
+      "name": "",
+      "comment": "no target yet"
+    },
+    {
+      "offset": 1225,
+      "name": "",
+      "comment": "Z: nothing to go for"
+    },
+    {
+      "offset": 1228,
+      "name": "",
+      "comment": "the target found"
+    },
+    {
+      "offset": 1231,
+      "name": "",
+      "comment": "found: keep the order"
+    },
+    {
+      "offset": 1233,
+      "name": "OrderRefused",
+      "comment": "order 0: stop and defend"
+    },
+    {
+      "offset": 1237,
+      "name": "OrderSet",
+      "comment": "the beep of a choice"
+    },
+    {
+      "offset": 1239,
+      "name": "",
+      "comment": "beep"
+    },
+    {
+      "offset": 1242,
+      "name": "",
+      "comment": "fire up first"
+    },
+    {
+      "offset": 1245,
+      "name": "",
+      "comment": "back to the robot menu, which shows the order"
+    },
+    {
+      "offset": 1248,
+      "name": "CombatMenu",
+      "comment": "БОЕВОИ РЕЖИМ (combat mode): the six items, then the code at $AC7C"
+    },
+    {
+      "offset": 1251,
+      "name": "",
+      "comment": "the six combat items, then the code at $AC7C"
+    },
+    {
+      "offset": 1254,
+      "name": "CombatMenuText",
+      "comment": "БОЕВОИ РЕЖИМ (combat): АТОМНАЯ БОМБА, ОГОНЬ ФАЗОРОВ / РАКЕТ / ПУШЕК, ДВИЖЕНИЕ, ВЫХОД ИЗ МЕНЮ"
+    },
+    {
+      "offset": 1372,
+      "name": "",
+      "comment": "the strength"
+    },
+    {
+      "offset": 1375,
+      "name": "",
+      "comment": "ВЫХОД ИЗ МЕНЮ (leave the menu) highlighted first"
+    },
+    {
+      "offset": 1377,
+      "name": "CombatMenuLoop",
+      "comment": "the combat list menu, A the highlighted item; 6 EXIT, 5 direct control, else a weapon"
+    },
+    {
+      "offset": 1380,
+      "name": "",
+      "comment": "six items"
+    },
+    {
+      "offset": 1382,
+      "name": "",
+      "comment": "A = the item, 1-6"
+    },
+    {
+      "offset": 1385,
+      "name": "",
+      "comment": "6: ВЫХОД ИЗ МЕНЮ (leave the menu)"
+    },
+    {
+      "offset": 1387,
+      "name": "",
+      "comment": "back to the robot menu"
+    },
+    {
+      "offset": 1390,
+      "name": "",
+      "comment": "keep the item"
+    },
+    {
+      "offset": 1391,
+      "name": "",
+      "comment": "5: ДВИЖЕНИЕ (move)?"
+    },
+    {
+      "offset": 1393,
+      "name": "",
+      "comment": "1-4: a weapon"
+    },
+    {
+      "offset": 1395,
+      "name": "",
+      "comment": "drive the robot until fire"
+    },
+    {
+      "offset": 1398,
+      "name": "",
+      "comment": "A = 5: the menu reopens on ДВИЖЕНИЕ (move)"
+    },
+    {
+      "offset": 1399,
+      "name": "",
+      "comment": "the combat list again"
+    },
+    {
+      "offset": 1401,
+      "name": "CombatWeapon",
+      "comment": "a weapon item: shift its part bit of +$07 into carry"
+    },
+    {
+      "offset": 1402,
+      "name": "",
+      "comment": "B = item + 1 rotations"
+    },
+    {
+      "offset": 1403,
+      "name": "",
+      "comment": "B = item + 1"
+    },
+    {
+      "offset": 1404,
+      "name": "",
+      "comment": "the robot's parts"
+    },
+    {
+      "offset": 1407,
+      "name": "CombatPartBit",
+      "comment": "rotate +$07 item + 1 times: carry = the robot has the weapon"
+    },
+    {
+      "offset": 1408,
+      "name": "",
+      "comment": "item 1 bit 6 nuclear, 2 bit 5 phasers, 3 bit 4 missiles, 4 bit 3 cannon"
+    },
+    {
+      "offset": 1410,
+      "name": "",
+      "comment": "no such part: the buzz"
+    },
+    {
+      "offset": 1412,
+      "name": "",
+      "comment": "the item back (the stack clean)"
+    },
+    {
+      "offset": 1413,
+      "name": "",
+      "comment": "1: АТОМНАЯ БОМБА (nuclear bomb)?"
+    },
+    {
+      "offset": 1415,
+      "name": "",
+      "comment": "2-4: a shot"
+    },
+    {
+      "offset": 1417,
+      "name": "",
+      "comment": "IY = the robot: the blast's centre"
+    },
+    {
+      "offset": 1419,
+      "name": "",
+      "comment": "IY = IX"
+    },
+    {
+      "offset": 1421,
+      "name": "",
+      "comment": "a base in reach, every robot in 9 x 9 cells and this robot destroyed"
+    },
+    {
+      "offset": 1424,
+      "name": "",
+      "comment": "the robot is gone with it: close the menu"
+    },
+    {
+      "offset": 1427,
+      "name": "CombatFireShot",
+      "comment": "cannon / missiles / phasers: fire only when shot record 0 is free, then a turn"
+    },
+    {
+      "offset": 1428,
+      "name": "",
+      "comment": "shot record 0 (Shots), the only one БОЕВОИ РЕЖИМ (combat mode) uses"
+    },
+    {
+      "offset": 1432,
+      "name": "",
+      "comment": "its +$01"
+    },
+    {
+      "offset": 1435,
+      "name": "",
+      "comment": "flying?"
+    },
+    {
+      "offset": 1436,
+      "name": "",
+      "comment": "still in the air: the buzz"
+    },
+    {
+      "offset": 1438,
+      "name": "",
+      "comment": "A = 5 - item: 3 phasers, 2 missiles, 1 cannon"
+    },
+    {
+      "offset": 1440,
+      "name": "",
+      "comment": "the weapon number of the shot"
+    },
+    {
+      "offset": 1441,
+      "name": "",
+      "comment": "launch it from IX along its facing +$08"
+    },
+    {
+      "offset": 1444,
+      "name": "",
+      "comment": "the view with the shot"
+    },
+    {
+      "offset": 1447,
+      "name": "",
+      "comment": "the turn's clock and pacing"
+    },
+    {
+      "offset": 1450,
+      "name": "",
+      "comment": "the item back"
+    },
+    {
+      "offset": 1451,
+      "name": "",
+      "comment": "the menu again on the same weapon"
+    },
+    {
+      "offset": 1454,
+      "name": "CombatRefused",
+      "comment": "no such weapon or the shot still flies: the refusal beep, back to the menu"
+    },
+    {
+      "offset": 1456,
+      "name": "",
+      "comment": "the low buzz"
+    },
+    {
+      "offset": 1459,
+      "name": "",
+      "comment": "the item back"
+    },
+    {
+      "offset": 1460,
+      "name": "",
+      "comment": "the menu again on that item"
+    },
+    {
+      "offset": 1463,
+      "name": "",
+      "comment": "the fire or move that opened the menu must go first"
+    },
+    {
+      "offset": 1464,
+      "name": "",
+      "comment": "all controls up"
+    },
+    {
+      "offset": 1467,
+      "name": "",
+      "comment": "A = the first item"
+    },
+    {
+      "offset": 1468,
+      "name": "",
+      "comment": "D = the highlighted item"
+    },
+    {
+      "offset": 1469,
+      "name": "",
+      "comment": "$4E: highlighted"
+    },
+    {
+      "offset": 1471,
+      "name": "",
+      "comment": "paint it highlighted"
+    },
+    {
+      "offset": 1474,
+      "name": "ListMenuLoop",
+      "comment": "the robot destroyed (+$01 = 0)?"
+    },
+    {
+      "offset": 1477,
+      "name": "",
+      "comment": "+$01 = 0: the slot was freed"
+    },
+    {
+      "offset": 1478,
+      "name": "",
+      "comment": "alive: read the controls"
+    },
+    {
+      "offset": 1480,
+      "name": "",
+      "comment": "drop our return: close the robot menu"
+    },
+    {
+      "offset": 1481,
+      "name": "",
+      "comment": "the whole robot menu closed, back to PlayLoop"
+    },
+    {
+      "offset": 1484,
+      "name": "ListMenuKey",
+      "comment": "the controls"
+    },
+    {
+      "offset": 1485,
+      "name": "",
+      "comment": "the controls into Input (key 1 pauses)"
+    },
+    {
+      "offset": 1488,
+      "name": "",
+      "comment": "HL = the attribute of item 0 again"
+    },
+    {
+      "offset": 1489,
+      "name": "",
+      "comment": "C = the highlighted item"
+    },
+    {
+      "offset": 1490,
+      "name": "",
+      "comment": "Input: bit 2 down, bit 3 up, bit 4 fire"
+    },
+    {
+      "offset": 1493,
+      "name": "",
+      "comment": "fire: chosen"
+    },
+    {
+      "offset": 1495,
+      "name": "",
+      "comment": "fire: the item is chosen"
+    },
+    {
+      "offset": 1497,
+      "name": "",
+      "comment": "bit 2 down / bit 3 up, now bits 1 / 2"
+    },
+    {
+      "offset": 1498,
+      "name": "",
+      "comment": "down or up?"
+    },
+    {
+      "offset": 1500,
+      "name": "",
+      "comment": "neither: one game turn and read again"
+    },
+    {
+      "offset": 1502,
+      "name": "",
+      "comment": "A = 2 for down, 0 for up"
+    },
+    {
+      "offset": 1504,
+      "name": "",
+      "comment": "item - 1, then + 2 for down"
+    },
+    {
+      "offset": 1505,
+      "name": "",
+      "comment": "A = the new item"
+    },
+    {
+      "offset": 1506,
+      "name": "",
+      "comment": "item 0 does not exist"
+    },
+    {
+      "offset": 1508,
+      "name": "",
+      "comment": "past the last item"
+    },
+    {
+      "offset": 1509,
+      "name": "",
+      "comment": "no move: one game turn"
+    },
+    {
+      "offset": 1511,
+      "name": "",
+      "comment": "keep the new item"
+    },
+    {
+      "offset": 1512,
+      "name": "",
+      "comment": "the old item"
+    },
+    {
+      "offset": 1513,
+      "name": "",
+      "comment": "$4D: the old item back to normal"
+    },
+    {
+      "offset": 1515,
+      "name": "",
+      "comment": "back to normal"
+    },
+    {
+      "offset": 1518,
+      "name": "",
+      "comment": "A = the new item"
+    },
+    {
+      "offset": 1519,
+      "name": "",
+      "comment": "D = the new item"
+    },
+    {
+      "offset": 1520,
+      "name": "",
+      "comment": "highlight the new one"
+    },
+    {
+      "offset": 1522,
+      "name": "",
+      "comment": "in $4E"
+    },
+    {
+      "offset": 1525,
+      "name": "",
+      "comment": "the click of a move"
+    },
+    {
+      "offset": 1527,
+      "name": "",
+      "comment": "beep"
+    },
+    {
+      "offset": 1530,
+      "name": "ListMenuTurn",
+      "comment": "a game turn while the menu waits"
+    },
+    {
+      "offset": 1531,
+      "name": "",
+      "comment": "and the attribute address"
+    },
+    {
+      "offset": 1532,
+      "name": "",
+      "comment": "the robots and the shots go on"
+    },
+    {
+      "offset": 1535,
+      "name": "",
+      "comment": "the view"
+    },
+    {
+      "offset": 1538,
+      "name": "",
+      "comment": "the ship's radar blink"
+    },
+    {
+      "offset": 1541,
+      "name": "",
+      "comment": "the clock and the turn pacing (at least 10 frames a pass)"
+    },
+    {
+      "offset": 1544,
+      "name": "",
+      "comment": "the strength"
+    },
+    {
+      "offset": 1547,
+      "name": "",
+      "comment": "HL = the attribute of item 0"
+    },
+    {
+      "offset": 1548,
+      "name": "",
+      "comment": "D = the item, E = the items + 1"
+    },
+    {
+      "offset": 1549,
+      "name": "",
+      "comment": "check the robot, the next key"
+    },
+    {
+      "offset": 1551,
+      "name": "ListMenuChosen",
+      "comment": "$4F: the chosen item"
+    },
+    {
+      "offset": 1552,
+      "name": "",
+      "comment": "attribute $4F"
+    },
+    {
+      "offset": 1554,
+      "name": "",
+      "comment": "paint the chosen item"
+    },
+    {
+      "offset": 1557,
+      "name": "",
+      "comment": "the beep of a choice"
+    },
+    {
+      "offset": 1559,
+      "name": "",
+      "comment": "beep"
+    },
+    {
+      "offset": 1562,
+      "name": "",
+      "comment": "A = the item"
+    },
+    {
+      "offset": 1563,
+      "name": "",
+      "comment": "A = the item chosen"
+    },
+    {
+      "offset": 1564,
+      "name": "",
+      "comment": "B = the item: the row loop count"
+    },
+    {
+      "offset": 1565,
+      "name": "",
+      "comment": "kept for the caller"
+    },
+    {
+      "offset": 1566,
+      "name": "",
+      "comment": "kept: the attribute of item 0"
+    },
+    {
+      "offset": 1567,
+      "name": "",
+      "comment": "3 attribute rows an item"
+    },
+    {
+      "offset": 1570,
+      "name": "PaintMenuItemRow",
+      "comment": "HL += 3 attribute rows, A times: item A's top row"
+    },
+    {
+      "offset": 1571,
+      "name": "",
+      "comment": "A times"
+    },
+    {
+      "offset": 1573,
+      "name": "",
+      "comment": "the item's top row"
+    },
+    {
+      "offset": 1575,
+      "name": "",
+      "comment": "8 cells in C"
+    },
+    {
+      "offset": 1578,
+      "name": "",
+      "comment": "the next row, same column"
+    },
+    {
+      "offset": 1580,
+      "name": "",
+      "comment": "HL += $18: 8 cells already passed, so the next row's same column"
+    },
+    {
+      "offset": 1583,
+      "name": "",
+      "comment": "its bottom row"
+    },
+    {
+      "offset": 1585,
+      "name": "",
+      "comment": "8 cells in C"
+    },
+    {
+      "offset": 1588,
+      "name": "",
+      "comment": "the attribute of item 0 back"
+    },
+    {
+      "offset": 1589,
+      "name": "",
+      "comment": "DE back"
+    },
+    {
+      "offset": 1590,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 1591,
+      "name": "",
+      "comment": "kept"
+    },
+    {
+      "offset": 1592,
+      "name": "",
+      "comment": "kept"
+    },
+    {
+      "offset": 1593,
+      "name": "WaitReleaseLoop",
+      "comment": "until Input is 0"
+    },
+    {
+      "offset": 1596,
+      "name": "",
+      "comment": "anything held?"
+    },
+    {
+      "offset": 1597,
+      "name": "",
+      "comment": "still held: read again"
+    },
+    {
+      "offset": 1599,
+      "name": "",
+      "comment": "HL back"
+    },
+    {
+      "offset": 1600,
+      "name": "",
+      "comment": "BC back"
+    },
+    {
+      "offset": 1601,
+      "name": "",
+      "comment": "all up"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth",
+      "case": "games/advanced-nether-earth",
+      "address": "$A720",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/game/robotmenu.asm",
+    "label": "RobotMenu"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/README.md"
+  ]
+}

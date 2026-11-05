@@ -1,0 +1,185 @@
+{
+  "schema": 1,
+  "id": "disk/tr-dos/rom-gadget-reader/ultraxor-1.2",
+  "kind": "code",
+  "role": "sector-reader",
+  "name": "Sector reader through TR-DOS ROM gadgets (UltraXOR v1.2's)",
+  "authors": [
+    "Paracels"
+  ],
+  "year": null,
+  "tags": [
+    "tr-dos",
+    "wd1793",
+    "sector-reader",
+    "rom-gadgets",
+    "128k-paging"
+  ],
+  "summary": "Reads B logical sectors to HL by driving the WD1793 through the TR-DOS ROM's OUT-and-RET gadgets (entered via its RET at $3D2F); also the FDC reset and the 128K page switch.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 117,
+    "sha1": "f01bf2eb9be5fbcd3875b5dfb3d1639dd2c21a51",
+    "masked_sha1": "303de01931cbb0292d8c1b78dad2e330b23988f9"
+  },
+  "origin": "$5DF7",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5CF4"
+    },
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 30,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 39,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 46,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 65,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5CF4"
+    },
+    {
+      "offset": 79,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 84,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 93,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 108,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 112,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "ReadSectors",
+      "in": "HL the address, B the sectors, the next logical sector in the reader's state",
+      "out": null,
+      "clobbers": null,
+      "summary": "read B sectors"
+    },
+    {
+      "offset": 77,
+      "name": "ResetFdc",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the FDC reset"
+    },
+    {
+      "offset": 111,
+      "name": "SetPage",
+      "in": "A the $7FFD value",
+      "out": null,
+      "clobbers": null,
+      "summary": "page a bank in"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "ReadSectors",
+      "comment": ""
+    },
+    {
+      "offset": 4,
+      "name": "Sector",
+      "comment": ""
+    },
+    {
+      "offset": 19,
+      "name": "Side",
+      "comment": ""
+    },
+    {
+      "offset": 68,
+      "name": "OutSystem",
+      "comment": ""
+    },
+    {
+      "offset": 72,
+      "name": "RomCall",
+      "comment": ""
+    },
+    {
+      "offset": 77,
+      "name": "ResetFdc",
+      "comment": ""
+    },
+    {
+      "offset": 99,
+      "name": "Track",
+      "comment": ""
+    },
+    {
+      "offset": 111,
+      "name": "SetPage",
+      "comment": ""
+    }
+  ],
+  "uses": {
+    "needs": [
+      "tr-dos",
+      "128k-paging"
+    ]
+  },
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth: the boot",
+      "case": "games/advanced-nether-earth",
+      "address": "$5DF7",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/boot/a-nether.asm",
+    "label": "ReadSectors"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/03-build-and-load.md"
+  ]
+}

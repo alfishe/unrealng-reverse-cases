@@ -1,0 +1,646 @@
+{
+  "schema": 1,
+  "id": "programs/utilities/nether-earth-editor/mix",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth Editor: mix",
+  "authors": [
+    "V.O.software"
+  ],
+  "year": 1996,
+  "tags": [
+    "nether-earth-editor",
+    "game-module",
+    "mix"
+  ],
+  "summary": "Nee.mix: tape I/O for the saved game, its checksum, the map drawer, the tiles and the font.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 2244,
+    "sha1": "f2575e4b85c775cb5edee37ce6924386750be40a",
+    "masked_sha1": "055e729f1914108f0359f0f536a5cfbefb18cdf2"
+  },
+  "origin": "$C350",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Checksum"
+    },
+    {
+      "offset": 15,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GameBlock"
+    },
+    {
+      "offset": 28,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Checksum"
+    },
+    {
+      "offset": 41,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GameBlock"
+    },
+    {
+      "offset": 53,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GameBlock"
+    },
+    {
+      "offset": 76,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Checksum"
+    },
+    {
+      "offset": 82,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CHARS"
+    },
+    {
+      "offset": 85,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 90,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 94,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 99,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 104,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 109,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ATTR_P"
+    },
+    {
+      "offset": 112,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 116,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ATTR_P"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 127,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 132,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 135,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 141,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 153,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 197,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 211,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ATTR_P"
+    },
+    {
+      "offset": 214,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 217,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CHARS"
+    },
+    {
+      "offset": 235,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 269,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EdSaveBuildings"
+    },
+    {
+      "offset": 296,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 308,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_9D11"
+    },
+    {
+      "offset": 318,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 321,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CHARS"
+    },
+    {
+      "offset": 364,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 372,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 376,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 386,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 390,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "LoadChecksum",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "USR 50000: load the checksum block, 2 bytes to $9858 (flag $00)"
+    },
+    {
+      "offset": 13,
+      "name": "LoadGameBlock",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "USR 50013: load the game block, 9425 bytes to $9C40-$C110 (flag $00)"
+    },
+    {
+      "offset": 26,
+      "name": "SaveChecksum",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "USR 50026: save the checksum block, 2 bytes from $9858 (flag $00)"
+    },
+    {
+      "offset": 39,
+      "name": "SaveGameBlock",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "USR 50039: save the game block, 9425 bytes from $9C40 (flag $00)"
+    },
+    {
+      "offset": 52,
+      "name": "SumGameBlock",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "USR 50052: the checksum: the 16-bit sum of the 9425 bytes at $9C40, into $9858"
+    },
+    {
+      "offset": 80,
+      "name": "DrawMap",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "USR 50080: draw the map page from MapPtr into rows 0-15 of the screen"
+    },
+    {
+      "offset": 317,
+      "name": "DoorUnknown",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "No SaveBuildings record names this door: nothing drawn"
+    },
+    {
+      "offset": 320,
+      "name": "PrintTile",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Set CHARS to HL, then print the tile at the cell's screen position"
+    },
+    {
+      "offset": 366,
+      "name": "ClearBox",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print spaces over BoxHeight rows of BoxWidth from (BoxRow, BoxColumn) on the upper screen"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 10,
+      "name": "",
+      "comment": "ROM LD-BLOCK: LD-BYTES, an error report on failure"
+    },
+    {
+      "offset": 23,
+      "name": "",
+      "comment": "ROM LD-BLOCK"
+    },
+    {
+      "offset": 36,
+      "name": "",
+      "comment": "ROM SA-BYTES"
+    },
+    {
+      "offset": 49,
+      "name": "",
+      "comment": "ROM SA-BYTES"
+    },
+    {
+      "offset": 58,
+      "name": "",
+      "comment": "DE: the sum"
+    },
+    {
+      "offset": 61,
+      "name": "SumLoop",
+      "comment": "add the next byte"
+    },
+    {
+      "offset": 74,
+      "name": "",
+      "comment": "the checksum block's word"
+    },
+    {
+      "offset": 79,
+      "name": "Unused",
+      "comment": "One zero byte: DrawMap starts at 50080"
+    },
+    {
+      "offset": 80,
+      "name": "",
+      "comment": "no interrupts: CHARS is not the ROM's while it runs"
+    },
+    {
+      "offset": 81,
+      "name": "",
+      "comment": "keep CHARS"
+    },
+    {
+      "offset": 87,
+      "name": "",
+      "comment": "ClearBox: columns 1-30, rows 0-15, black on white"
+    },
+    {
+      "offset": 106,
+      "name": "",
+      "comment": "ATTR_P: paper 7, ink 0"
+    },
+    {
+      "offset": 114,
+      "name": "",
+      "comment": "then the edge columns 0 and 31 black on black"
+    },
+    {
+      "offset": 137,
+      "name": "",
+      "comment": "TEMPS: the permanent colours to the temporary ones"
+    },
+    {
+      "offset": 140,
+      "name": "",
+      "comment": "INK 8, PAPER 8 ..."
+    },
+    {
+      "offset": 149,
+      "name": "",
+      "comment": "... made permanent (ROM $1CAD: ATTR_T / MASK_T and P_FLAG's temporary bits to the permanent ones)"
+    },
+    {
+      "offset": 152,
+      "name": "",
+      "comment": "the map row under screen row 1: MapPtr + 512"
+    },
+    {
+      "offset": 157,
+      "name": "",
+      "comment": "15 rows"
+    },
+    {
+      "offset": 159,
+      "name": "DrawRow",
+      "comment": ""
+    },
+    {
+      "offset": 160,
+      "name": "",
+      "comment": "31 cells"
+    },
+    {
+      "offset": 162,
+      "name": "DrawCell",
+      "comment": ""
+    },
+    {
+      "offset": 166,
+      "name": "",
+      "comment": "0-1: nothing"
+    },
+    {
+      "offset": 170,
+      "name": "",
+      "comment": "2-18: a block piece"
+    },
+    {
+      "offset": 174,
+      "name": "",
+      "comment": "$13-$4F: nothing"
+    },
+    {
+      "offset": 178,
+      "name": "",
+      "comment": "$50: a building's door"
+    },
+    {
+      "offset": 182,
+      "name": "NextCell",
+      "comment": ""
+    },
+    {
+      "offset": 186,
+      "name": "",
+      "comment": "on to the next row: 31 + 481 = 512"
+    },
+    {
+      "offset": 193,
+      "name": "",
+      "comment": "INK 0 PAPER 7 made permanent"
+    },
+    {
+      "offset": 208,
+      "name": "",
+      "comment": "ATTR_P $07: white ink, black paper, as BASIC had it"
+    },
+    {
+      "offset": 213,
+      "name": "",
+      "comment": "CHARS back"
+    },
+    {
+      "offset": 221,
+      "name": "DrawPiece",
+      "comment": "a block piece: the tile of block A, its odd-row variant for blocks 12-18"
+    },
+    {
+      "offset": 223,
+      "name": "",
+      "comment": "HL = (A - 2) x 32: the block's tile"
+    },
+    {
+      "offset": 230,
+      "name": "",
+      "comment": "ROM $30A9: HL = HL x DE"
+    },
+    {
+      "offset": 234,
+      "name": "",
+      "comment": "+ Tiles - 256: CHARS for characters $20-$23 = the tile's four characters"
+    },
+    {
+      "offset": 239,
+      "name": "",
+      "comment": "blocks 2-11: one tile"
+    },
+    {
+      "offset": 243,
+      "name": "",
+      "comment": "blocks 12-18: the row counter (the outer B) from the stack ..."
+    },
+    {
+      "offset": 249,
+      "name": "",
+      "comment": "... odd: the variant tile, 224 bytes on"
+    },
+    {
+      "offset": 259,
+      "name": "DrawDoor",
+      "comment": "a door: the building's type from SaveBuildings, its tile from BuildingTiles"
+    },
+    {
+      "offset": 263,
+      "name": "",
+      "comment": "HL was past the cell: + $3CEA = the cell's game address"
+    },
+    {
+      "offset": 268,
+      "name": "",
+      "comment": "the first SaveBuildings record (game $D958)"
+    },
+    {
+      "offset": 271,
+      "name": "FindBuilding",
+      "comment": "the record's address word against the cell's"
+    },
+    {
+      "offset": 280,
+      "name": "",
+      "comment": "found: its type (0 pad, 1-6 factory, 7 / 8 flag) ..."
+    },
+    {
+      "offset": 291,
+      "name": "",
+      "comment": "... picks BuildingTiles + type x 32"
+    },
+    {
+      "offset": 302,
+      "name": "NextBuildingHi",
+      "comment": "the low byte differed: skip 3"
+    },
+    {
+      "offset": 303,
+      "name": "NextBuildingLo",
+      "comment": "the high byte differed: skip 2"
+    },
+    {
+      "offset": 307,
+      "name": "",
+      "comment": "past the 56th record: none"
+    },
+    {
+      "offset": 323,
+      "name": "",
+      "comment": "the stacked counters: H = cells left in the row, D = rows left"
+    },
+    {
+      "offset": 329,
+      "name": "",
+      "comment": "AT 16 - D, 31 - H: the cell's own character square ..."
+    },
+    {
+      "offset": 340,
+      "name": "",
+      "comment": "... characters $22 $23 (the tile's lower half)"
+    },
+    {
+      "offset": 346,
+      "name": "",
+      "comment": "AT the row above: characters $20 $21 (the upper half)"
+    },
+    {
+      "offset": 366,
+      "name": "",
+      "comment": "stream 2: the upper screen"
+    },
+    {
+      "offset": 379,
+      "name": "ClearRow",
+      "comment": ""
+    },
+    {
+      "offset": 393,
+      "name": "ClearSpace",
+      "comment": ""
+    },
+    {
+      "offset": 403,
+      "name": "MapPtr",
+      "comment": "The map address at the page's left column (nee.bas's DA, 40996-41453), POKEd by nee.bas line 33"
+    },
+    {
+      "offset": 405,
+      "name": "BoxColumn",
+      "comment": "ClearBox's column"
+    },
+    {
+      "offset": 406,
+      "name": "BoxRow",
+      "comment": "ClearBox's first row"
+    },
+    {
+      "offset": 407,
+      "name": "BoxWidth",
+      "comment": "ClearBox's width"
+    },
+    {
+      "offset": 408,
+      "name": "BoxHeight",
+      "comment": "ClearBox's rows"
+    },
+    {
+      "offset": 409,
+      "name": "SavedChars",
+      "comment": "CHARS while DrawMap runs"
+    },
+    {
+      "offset": 411,
+      "name": "ColoursClear",
+      "comment": "INK 8, PAPER 8: printed as control codes, then made permanent"
+    },
+    {
+      "offset": 415,
+      "name": "ColoursMap",
+      "comment": "INK 0, PAPER 7: the same at the end"
+    },
+    {
+      "offset": 419,
+      "name": "Tiles",
+      "comment": "The map blocks' tiles: 32 bytes a block (characters $20-$23), blocks 2-18, then the odd-row variants of 12-18"
+    },
+    {
+      "offset": 1187,
+      "name": "BuildingTiles",
+      "comment": "The doors' tiles by SaveBuildings type: 0 the warbase pad, 1-6 the factories (electronics ... chassis), 7 the human flag, 8 the insignian flag"
+    },
+    {
+      "offset": 1475,
+      "name": "Unused2",
+      "comment": "One zero byte before the font"
+    },
+    {
+      "offset": 1476,
+      "name": "Font",
+      "comment": "The editor's font: 96 characters from $20, 8 bytes each; nee.bas line 1 sets CHARS = 51220 (Font - 256)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth Editor",
+      "case": "games/nether-earth-editor",
+      "address": "$C350",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-editor",
+    "file": "src/mix/mix.asm",
+    "label": "LoadChecksum"
+  },
+  "docs": [
+    "games/nether-earth-editor/docs/README.md"
+  ]
+}

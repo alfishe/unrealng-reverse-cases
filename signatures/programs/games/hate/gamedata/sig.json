@@ -1,0 +1,279 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/gamedata",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: gamedata",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "gamedata"
+  ],
+  "summary": "Gamedata.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1024,
+    "sha1": "3cc316bbd45ce9c8caff4172d11163f8a877b25d",
+    "masked_sha1": "8b5c1fe294973ebf0fa8e66b8a702a1e54d368b9"
+  },
+  "origin": "$C000",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 690,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GameEntry"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 689,
+      "name": "GameStart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Game start: JP to the main loop"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "PlayerRecord",
+      "comment": "Object record: the player"
+    },
+    {
+      "offset": 16,
+      "name": "PlayerShotRecords",
+      "comment": "Object records: the player's shots (5)"
+    },
+    {
+      "offset": 96,
+      "name": "PodRecords",
+      "comment": "Object records: pods (4)"
+    },
+    {
+      "offset": 160,
+      "name": "ParkedVehicleRecord",
+      "comment": "Object record: the vehicle of the other kind"
+    },
+    {
+      "offset": 176,
+      "name": "CourseObjectRecords",
+      "comment": "Object records: the course's objects (16)"
+    },
+    {
+      "offset": 432,
+      "name": "LaunchedRecords",
+      "comment": "Object records: launched missiles and jets (6)"
+    },
+    {
+      "offset": 528,
+      "name": "EnemyShotRecords",
+      "comment": "Object records: the enemy's shots (5)"
+    },
+    {
+      "offset": 608,
+      "name": "PreviousVehicleRecord",
+      "comment": "Object record: the vehicle of the round before"
+    },
+    {
+      "offset": 624,
+      "name": "ObjectListEnd",
+      "comment": "End of the object list ($FF)"
+    },
+    {
+      "offset": 625,
+      "name": "PassCounter",
+      "comment": "Pass counter of the mover"
+    },
+    {
+      "offset": 626,
+      "name": "HeightWave",
+      "comment": "Height wave: 16 steps"
+    },
+    {
+      "offset": 642,
+      "name": "MissileArc",
+      "comment": "Height arc of a missile or shell"
+    },
+    {
+      "offset": 655,
+      "name": "InputDevice",
+      "comment": "Input device: 0 keyboard, 1 Sinclair, 2 Kempston, 3 Protek-AGF"
+    },
+    {
+      "offset": 656,
+      "name": "ControlByte",
+      "comment": "Control byte: bit 0 left, 1 right, 2 down, 3 up, 4 fire"
+    },
+    {
+      "offset": 658,
+      "name": "PlayerTemplate",
+      "comment": "Player start: +1 to +7 of $C000"
+    },
+    {
+      "offset": 665,
+      "name": "UnusedC299",
+      "comment": "Not referenced by address"
+    },
+    {
+      "offset": 673,
+      "name": "VehicleTemplate",
+      "comment": "The parked and the previous vehicle records"
+    },
+    {
+      "offset": 692,
+      "name": "LaunchTemplates",
+      "comment": "Templates of launched objects (5 x 9 bytes)"
+    },
+    {
+      "offset": 737,
+      "name": "EnemyShotTemplate",
+      "comment": "Template of an enemy shot"
+    },
+    {
+      "offset": 746,
+      "name": "MoverAlong",
+      "comment": "New position along of the record being moved"
+    },
+    {
+      "offset": 748,
+      "name": "HitWindowAlong",
+      "comment": "Hit test window starts, along (3 words)"
+    },
+    {
+      "offset": 754,
+      "name": "MoverAcross",
+      "comment": "New position across of the record being moved"
+    },
+    {
+      "offset": 755,
+      "name": "HitWindowAcross",
+      "comment": "Hit test window starts, across (3 bytes)"
+    },
+    {
+      "offset": 758,
+      "name": "MoverHeight",
+      "comment": "New height of the record being moved"
+    },
+    {
+      "offset": 759,
+      "name": "RoundNumber",
+      "comment": "Round number, 1-10"
+    },
+    {
+      "offset": 760,
+      "name": "LapNumber",
+      "comment": "Lap: passes through the 10 rounds"
+    },
+    {
+      "offset": 761,
+      "name": "Lives",
+      "comment": "Lives of the round"
+    },
+    {
+      "offset": 762,
+      "name": "RoundText",
+      "comment": "Round number string: two digits at (21,18)"
+    },
+    {
+      "offset": 768,
+      "name": "SpriteTable",
+      "comment": "Sprite graphics pointers"
+    },
+    {
+      "offset": 814,
+      "name": "ScrollPage",
+      "comment": "Scroll state: page step 0-63"
+    },
+    {
+      "offset": 815,
+      "name": "ScrollHalf",
+      "comment": "Scroll state: strip half, 0 or $80"
+    },
+    {
+      "offset": 816,
+      "name": "UnusedC330",
+      "comment": "Not referenced by address"
+    },
+    {
+      "offset": 817,
+      "name": "SavedStack",
+      "comment": "SP saved by the blit and the strip builder"
+    },
+    {
+      "offset": 819,
+      "name": "ShotGaugeText",
+      "comment": "Shot gauge string"
+    },
+    {
+      "offset": 832,
+      "name": "Directions",
+      "comment": "Direction steps: along, across (8 x 4 bytes)"
+    },
+    {
+      "offset": 864,
+      "name": "ShotTemplate",
+      "comment": "Template of the player's shot"
+    },
+    {
+      "offset": 880,
+      "name": "ShellTemplate",
+      "comment": "Template of the ground vehicle's shell"
+    },
+    {
+      "offset": 896,
+      "name": "HitHandlers",
+      "comment": "Hit handlers: 7 rows of 8"
+    },
+    {
+      "offset": 1008,
+      "name": "WeavePattern",
+      "comment": "Weave: direction sequence 4 5 6 5 4 3 2 3"
+    },
+    {
+      "offset": 1016,
+      "name": "CourseRowPtr",
+      "comment": "Next row of the expanded course"
+    },
+    {
+      "offset": 1018,
+      "name": "StripCount",
+      "comment": "Strips drawn in the round"
+    },
+    {
+      "offset": 1020,
+      "name": "FreshStripPage",
+      "comment": "Page of the last fresh strip"
+    },
+    {
+      "offset": 1022,
+      "name": "UnusedC3FE",
+      "comment": "Not referenced by address"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$C000",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/gamedata.asm",
+    "label": "PlayerRecord"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

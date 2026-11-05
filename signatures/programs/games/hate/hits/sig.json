@@ -1,0 +1,765 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/hits",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: hits",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "hits"
+  ],
+  "summary": "Hits.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 617,
+    "sha1": "588b51c80d39bfab16a030b74635afb79fc2292b",
+    "masked_sha1": "96f1b8cbf5effec78aad26671a7f843cc7d8263f"
+  },
+  "origin": "$EBAA",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PairScanStep"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddPoints"
+    },
+    {
+      "offset": 75,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 80,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StoreMove"
+    },
+    {
+      "offset": 95,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PairScanNext"
+    },
+    {
+      "offset": 99,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextMover"
+    },
+    {
+      "offset": 123,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextMover"
+    },
+    {
+      "offset": 134,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PairScanNext"
+    },
+    {
+      "offset": 137,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 144,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PairScanNext"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 160,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 167,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PairScanNext"
+    },
+    {
+      "offset": 173,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextMover"
+    },
+    {
+      "offset": 182,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 192,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PairScanStep"
+    },
+    {
+      "offset": 199,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextMover"
+    },
+    {
+      "offset": 229,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 245,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 250,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextMover"
+    },
+    {
+      "offset": 256,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextMover"
+    },
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 283,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 299,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 304,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextMover"
+    },
+    {
+      "offset": 312,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextMover"
+    },
+    {
+      "offset": 327,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 334,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 354,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 369,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 377,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 380,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFA"
+    },
+    {
+      "offset": 384,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 387,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 391,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 394,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 399,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PairScanNext"
+    },
+    {
+      "offset": 406,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 424,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 439,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 447,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 450,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFA"
+    },
+    {
+      "offset": 454,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 457,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 461,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 464,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 469,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextMover"
+    },
+    {
+      "offset": 486,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PairScanNext"
+    },
+    {
+      "offset": 492,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextMover"
+    },
+    {
+      "offset": 501,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 504,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PodRecords"
+    },
+    {
+      "offset": 519,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 542,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 559,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PairScanNext"
+    },
+    {
+      "offset": 567,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextMover"
+    },
+    {
+      "offset": 576,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 579,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PodRecords"
+    },
+    {
+      "offset": 594,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 615,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "HitDispatch",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A pair hit: jump through the handler table $C380"
+    },
+    {
+      "offset": 36,
+      "name": "HitScore",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Points, then both hit"
+    },
+    {
+      "offset": 39,
+      "name": "HitBoth",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Both records are hit"
+    },
+    {
+      "offset": 82,
+      "name": "HitShotOnShot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: a shot against a shot (not run in the recordings)"
+    },
+    {
+      "offset": 87,
+      "name": "HitPlayerOnStatic",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: the player against a pad or a dish (not run)"
+    },
+    {
+      "offset": 90,
+      "name": "HitBlockOnOther",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: a cube or pod against types 2-11 (not run)"
+    },
+    {
+      "offset": 97,
+      "name": "HitNone",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: nothing happens"
+    },
+    {
+      "offset": 101,
+      "name": "HitTurnRound",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: two missiles of types 4-5 turn round"
+    },
+    {
+      "offset": 125,
+      "name": "HitPlayerOnShot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: the player against a shot"
+    },
+    {
+      "offset": 139,
+      "name": "HitShotOnPlayer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: a shot against the player (not run)"
+    },
+    {
+      "offset": 149,
+      "name": "HitTargetOnShot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: a missile or a jet (types 4-9) against a shot"
+    },
+    {
+      "offset": 175,
+      "name": "HitShotOnTarget",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: a shot against a missile or a jet"
+    },
+    {
+      "offset": 201,
+      "name": "HitBlockOnShot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: a cube or a pod against a shot (not run)"
+    },
+    {
+      "offset": 258,
+      "name": "HitShotOnBlock",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: a shot against a cube or a pod"
+    },
+    {
+      "offset": 329,
+      "name": "HitPlayerOnPod",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: the player against a cube or a pod"
+    },
+    {
+      "offset": 401,
+      "name": "HitBlockOnPlayer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: a cube or a pod against the player (not run)"
+    },
+    {
+      "offset": 471,
+      "name": "HitDomeOnShot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: a dome against a shot (not run)"
+    },
+    {
+      "offset": 544,
+      "name": "HitShotOnDome",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Handler: a shot against a dome"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "the other record"
+    },
+    {
+      "offset": 6,
+      "name": "",
+      "comment": "the record against itself: skip it"
+    },
+    {
+      "offset": 12,
+      "name": "NotItself",
+      "comment": ""
+    },
+    {
+      "offset": 13,
+      "name": "",
+      "comment": "column: the other's type pair * 2"
+    },
+    {
+      "offset": 18,
+      "name": "",
+      "comment": "row: the moving record's type pair * 16"
+    },
+    {
+      "offset": 26,
+      "name": "",
+      "comment": "$C380 + row + column"
+    },
+    {
+      "offset": 35,
+      "name": "",
+      "comment": "the handler, the other record still on the stack"
+    },
+    {
+      "offset": 39,
+      "name": "",
+      "comment": "the other record"
+    },
+    {
+      "offset": 46,
+      "name": "",
+      "comment": "a moving one slows to speed 1 while it explodes"
+    },
+    {
+      "offset": 52,
+      "name": "OtherExplodes",
+      "comment": "+8: the explosion counter"
+    },
+    {
+      "offset": 56,
+      "name": "MovingHit",
+      "comment": "the same for the moving record (entered here by $EBFC and $EC01)"
+    },
+    {
+      "offset": 70,
+      "name": "MovingExplodes",
+      "comment": ""
+    },
+    {
+      "offset": 74,
+      "name": "",
+      "comment": "sound request bit 1: an explosion"
+    },
+    {
+      "offset": 131,
+      "name": "",
+      "comment": "the shot's direction: 0 is the player's own"
+    },
+    {
+      "offset": 157,
+      "name": "",
+      "comment": "14 tens: 140 points"
+    },
+    {
+      "offset": 162,
+      "name": "",
+      "comment": "an enemy shot on a moving missile: no effect"
+    },
+    {
+      "offset": 170,
+      "name": "",
+      "comment": "on a standing one: the shot is removed"
+    },
+    {
+      "offset": 179,
+      "name": "",
+      "comment": "14 tens: 140 points"
+    },
+    {
+      "offset": 194,
+      "name": "",
+      "comment": "an enemy shot on a standing target: removed"
+    },
+    {
+      "offset": 252,
+      "name": "RemoveOtherRecord",
+      "comment": ""
+    },
+    {
+      "offset": 267,
+      "name": "",
+      "comment": "the other is a pod: the shot just goes"
+    },
+    {
+      "offset": 271,
+      "name": "",
+      "comment": "+F: the cube's hits"
+    },
+    {
+      "offset": 280,
+      "name": "",
+      "comment": "4th hit: 18 tens, 180 points"
+    },
+    {
+      "offset": 285,
+      "name": "",
+      "comment": "hits 1-3: the shot explodes, the cube stays"
+    },
+    {
+      "offset": 298,
+      "name": "",
+      "comment": "sound request bit 2"
+    },
+    {
+      "offset": 306,
+      "name": "RemoveShot",
+      "comment": "the shot is removed"
+    },
+    {
+      "offset": 314,
+      "name": "Followers",
+      "comment": "The number of followers (the lives carried into the next round)"
+    },
+    {
+      "offset": 315,
+      "name": "FollowerOffset",
+      "comment": "Where the next follower goes, along, from the player"
+    },
+    {
+      "offset": 317,
+      "name": "ConvoyLinks",
+      "comment": "The convoy: the leader's and the followers' +3 addresses"
+    },
+    {
+      "offset": 327,
+      "name": "ConvoyLinkEnd",
+      "comment": "The next free convoy link"
+    },
+    {
+      "offset": 331,
+      "name": "",
+      "comment": "bit 0 clear: a cube (10), both are hit"
+    },
+    {
+      "offset": 346,
+      "name": "",
+      "comment": "the player's +1..+7 into the pod"
+    },
+    {
+      "offset": 352,
+      "name": "",
+      "comment": "along: behind the player by the offset"
+    },
+    {
+      "offset": 367,
+      "name": "",
+      "comment": "its +3 into the next convoy link"
+    },
+    {
+      "offset": 379,
+      "name": "",
+      "comment": "the next one 6 further back"
+    },
+    {
+      "offset": 386,
+      "name": "",
+      "comment": "one more follower"
+    },
+    {
+      "offset": 393,
+      "name": "",
+      "comment": "sound request bit 0: a pod joins"
+    },
+    {
+      "offset": 449,
+      "name": "",
+      "comment": "6 further back"
+    },
+    {
+      "offset": 494,
+      "name": "DomeHitByPlayer",
+      "comment": ""
+    },
+    {
+      "offset": 511,
+      "name": "PodSlotLoop",
+      "comment": ""
+    },
+    {
+      "offset": 521,
+      "name": "PodFromDome",
+      "comment": ""
+    },
+    {
+      "offset": 548,
+      "name": "",
+      "comment": "direction 0: the player's shot"
+    },
+    {
+      "offset": 562,
+      "name": "",
+      "comment": "an enemy shot on a standing dome: removed"
+    },
+    {
+      "offset": 569,
+      "name": "ShotHitsDome",
+      "comment": "the player's shot"
+    },
+    {
+      "offset": 571,
+      "name": "",
+      "comment": "type 2: 21 tens, 210 points"
+    },
+    {
+      "offset": 578,
+      "name": "",
+      "comment": "type 3: a free pod slot"
+    },
+    {
+      "offset": 586,
+      "name": "PodSlotLoop2",
+      "comment": ""
+    },
+    {
+      "offset": 596,
+      "name": "ReleasePod",
+      "comment": "type 11 at the dome's place"
+    },
+    {
+      "offset": 612,
+      "name": "",
+      "comment": "32 tens: 320 points"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$EBAA",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/hits.asm",
+    "label": "HitDispatch"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}

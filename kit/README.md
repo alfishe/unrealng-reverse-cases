@@ -36,6 +36,23 @@ virtualenv: `--venv`) and sjasmplus.
 | `overlay` | a buffer laid over code once play starts (`lo`, `hi`, `name`, `why`), optional |
 | `header`, `data_note` | the first comment lines of `game.asm`; a sentence for doc 11, optional |
 
+## The signature base
+
+Known pieces (players, packers, protections, loaders, the cases' modules) in `signatures/`; the format is
+[docs/signature-format.md](../docs/signature-format.md).
+
+| Script | Does |
+| --- | --- |
+| `sig_scan.py IMAGE --base ADDR [--ann]` | names the known pieces in an image: exact, masked (with the base shift, the external addresses it uses, where a moved copy runs) or a candidate; runs the format detectors (PT2, PT3 modules); `--ann` prints the hits as `.ann` lines |
+| `sig_add.py ann --case C ...` | one entry per module of a finished case, from `case.json`, the `.ann` and the build's listing |
+| `sig_add.py lst --lst L --start A --end B ...` | one entry from a sjasmplus listing, label to label |
+| `sig_add.py sources` | every addition in `signatures/sources.json`, in order: the whole base from the cases' builds |
+| `sig_index.py [--check]` | checks every entry, writes `signatures/index.json` and `INDEX.md` |
+| `siglib.py` | their shared code: masks, anchors, the match, the listing reader |
+
+A new case starts with a scan of its images; when it is finished it adds its modules and the third-party pieces it
+identified to `signatures/sources.json`.
+
 ## Figures
 
 GUIDE.md 4 says which figure goes where. All share one palette (`kitlib.py`): executed green, read blue, written

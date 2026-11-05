@@ -1,0 +1,927 @@
+{
+  "schema": 1,
+  "id": "programs/games/advanced-nether-earth/gameturn",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Advanced Nether Earth: gameturn",
+  "authors": [
+    "Eternity Industry"
+  ],
+  "year": 1998,
+  "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "gameturn"
+  ],
+  "summary": "The game turn: the clock, daily production, capture and the turn pacing.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 265,
+    "sha1": "42d548e804c108faa9e1495e37b121779e093dd5",
+    "masked_sha1": "6c3328fd953557f6615080c9cfdf39a35722752e"
+  },
+  "origin": "$AD62",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Clock"
+    },
+    {
+      "offset": 26,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD37"
+    },
+    {
+      "offset": 30,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD37"
+    },
+    {
+      "offset": 33,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 36,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 47,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD37"
+    },
+    {
+      "offset": 50,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber5"
+    },
+    {
+      "offset": 53,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNewline"
+    },
+    {
+      "offset": 56,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD36"
+    },
+    {
+      "offset": 59,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber2Zero"
+    },
+    {
+      "offset": 64,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCharKeep"
+    },
+    {
+      "offset": 67,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Clock"
+    },
+    {
+      "offset": 70,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber2Zero"
+    },
+    {
+      "offset": 73,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CheckGameEnd"
+    },
+    {
+      "offset": 79,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Warbases"
+    },
+    {
+      "offset": 95,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MapCell"
+    },
+    {
+      "offset": 125,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FindRobot"
+    },
+    {
+      "offset": 152,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GiveWarbase"
+    },
+    {
+      "offset": 160,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GiveFactory"
+    },
+    {
+      "offset": 182,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CountBases"
+    },
+    {
+      "offset": 185,
+      "length": 2,
+      "kind": "ext16",
+      "name": "UpdateStatusPanel"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TurnFrames"
+    },
+    {
+      "offset": 196,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TurnFrames"
+    },
+    {
+      "offset": 207,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Restart"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Resources"
+    },
+    {
+      "offset": 218,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerBuildings"
+    },
+    {
+      "offset": 221,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 224,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyResources"
+    },
+    {
+      "offset": 227,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyBuildings"
+    },
+    {
+      "offset": 230,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 233,
+      "length": 2,
+      "kind": "ext16",
+      "name": "UpdateStatusPanel"
+    },
+    {
+      "offset": 242,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 251,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "GameTurn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One game turn: the random step, the clock, the daily production, the clock print"
+    },
+    {
+      "offset": 46,
+      "name": "GameTurnEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Game turn, second half: the clock print, the game end, captures, the frame pacing"
+    },
+    {
+      "offset": 199,
+      "name": "UnusedTapeCode",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Unreferenced code: keys 6 and 7 together jump into the tape ROM"
+    },
+    {
+      "offset": 214,
+      "name": "DailyProduction",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A new day: each side's buildings add to its resources"
+    },
+    {
+      "offset": 236,
+      "name": "ProduceSide",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One side's production: 5 general a warbase, 2 a factory of each kind"
+    },
+    {
+      "offset": 256,
+      "name": "AddCapped",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "(HL) += A, at most 99"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "the random generator"
+    },
+    {
+      "offset": 3,
+      "name": "",
+      "comment": "5 minutes a turn"
+    },
+    {
+      "offset": 6,
+      "name": "",
+      "comment": "the minutes"
+    },
+    {
+      "offset": 7,
+      "name": "",
+      "comment": "+ 5"
+    },
+    {
+      "offset": 9,
+      "name": "",
+      "comment": "store"
+    },
+    {
+      "offset": 10,
+      "name": "",
+      "comment": "60 minutes?"
+    },
+    {
+      "offset": 12,
+      "name": "",
+      "comment": "not yet: print"
+    },
+    {
+      "offset": 14,
+      "name": "",
+      "comment": "an hour"
+    },
+    {
+      "offset": 16,
+      "name": "",
+      "comment": "HL = the hours"
+    },
+    {
+      "offset": 17,
+      "name": "",
+      "comment": "one hour more"
+    },
+    {
+      "offset": 18,
+      "name": "",
+      "comment": "the hours:"
+    },
+    {
+      "offset": 19,
+      "name": "",
+      "comment": "24?"
+    },
+    {
+      "offset": 21,
+      "name": "",
+      "comment": "not yet: print"
+    },
+    {
+      "offset": 23,
+      "name": "",
+      "comment": "a day"
+    },
+    {
+      "offset": 25,
+      "name": "",
+      "comment": "the day count, 16 bits"
+    },
+    {
+      "offset": 28,
+      "name": "",
+      "comment": "one day more"
+    },
+    {
+      "offset": 29,
+      "name": "",
+      "comment": "store it"
+    },
+    {
+      "offset": 32,
+      "name": "",
+      "comment": "the day's production of both sides"
+    },
+    {
+      "offset": 35,
+      "name": "ClockPrint",
+      "comment": "print the clock (also when no minute wrapped)"
+    },
+    {
+      "offset": 38,
+      "name": "ClockPos",
+      "comment": "The clock: (0,27), size 0, attribute $57"
+    },
+    {
+      "offset": 46,
+      "name": "",
+      "comment": "HL = the day count"
+    },
+    {
+      "offset": 49,
+      "name": "",
+      "comment": "days, five digits"
+    },
+    {
+      "offset": 52,
+      "name": "",
+      "comment": "the next line"
+    },
+    {
+      "offset": 55,
+      "name": "",
+      "comment": "hours, two digits with zeros"
+    },
+    {
+      "offset": 58,
+      "name": "",
+      "comment": "\"HH\" with a leading zero"
+    },
+    {
+      "offset": 61,
+      "name": "",
+      "comment": "\".\""
+    },
+    {
+      "offset": 63,
+      "name": "",
+      "comment": "print it, the registers kept"
+    },
+    {
+      "offset": 66,
+      "name": "",
+      "comment": "minutes"
+    },
+    {
+      "offset": 69,
+      "name": "",
+      "comment": "\"MM\" with a leading zero"
+    },
+    {
+      "offset": 72,
+      "name": "",
+      "comment": "won or lost?"
+    },
+    {
+      "offset": 75,
+      "name": "",
+      "comment": "keep the caller's IY (a robot record in the menus)"
+    },
+    {
+      "offset": 77,
+      "name": "",
+      "comment": "the capture points"
+    },
+    {
+      "offset": 81,
+      "name": "",
+      "comment": "28: 4 warbases, 24 factories"
+    },
+    {
+      "offset": 83,
+      "name": "",
+      "comment": "C = captures this turn"
+    },
+    {
+      "offset": 85,
+      "name": "CaptureLoop",
+      "comment": "the point's door cell"
+    },
+    {
+      "offset": 88,
+      "name": "",
+      "comment": "the door's column, high byte"
+    },
+    {
+      "offset": 91,
+      "name": "",
+      "comment": "A = the door's row"
+    },
+    {
+      "offset": 94,
+      "name": "",
+      "comment": "HL = the door's map cell"
+    },
+    {
+      "offset": 97,
+      "name": "",
+      "comment": "a robot on it?"
+    },
+    {
+      "offset": 99,
+      "name": "",
+      "comment": "an anchor on the door: count"
+    },
+    {
+      "offset": 101,
+      "name": "",
+      "comment": "empty: the count starts again"
+    },
+    {
+      "offset": 105,
+      "name": "",
+      "comment": "on to the next point"
+    },
+    {
+      "offset": 107,
+      "name": "CaptureCount",
+      "comment": "one more turn on the door"
+    },
+    {
+      "offset": 110,
+      "name": "",
+      "comment": "the turns so far"
+    },
+    {
+      "offset": 113,
+      "name": "",
+      "comment": "144 turns: taken"
+    },
+    {
+      "offset": 115,
+      "name": "",
+      "comment": "not yet: next point"
+    },
+    {
+      "offset": 117,
+      "name": "",
+      "comment": "the count starts again for the new owner"
+    },
+    {
+      "offset": 121,
+      "name": "",
+      "comment": "keep the loop counter B and the captures C"
+    },
+    {
+      "offset": 122,
+      "name": "",
+      "comment": "keep the point's record"
+    },
+    {
+      "offset": 124,
+      "name": "",
+      "comment": "the robot standing there"
+    },
+    {
+      "offset": 127,
+      "name": "",
+      "comment": "E = its side: 0 ours, 1 the enemy's"
+    },
+    {
+      "offset": 130,
+      "name": "",
+      "comment": "bit 7 (the enemy's $80) ..."
+    },
+    {
+      "offset": 131,
+      "name": "",
+      "comment": "... to bit 0:"
+    },
+    {
+      "offset": 133,
+      "name": "",
+      "comment": "E = the side, the B of GiveWarbase / GiveFactory"
+    },
+    {
+      "offset": 134,
+      "name": "",
+      "comment": "IY = the point's record again"
+    },
+    {
+      "offset": 136,
+      "name": "",
+      "comment": "no robot found"
+    },
+    {
+      "offset": 137,
+      "name": "",
+      "comment": "B = 0: FindRobot found none (a building or a shot on the door)"
+    },
+    {
+      "offset": 138,
+      "name": "",
+      "comment": "no capture"
+    },
+    {
+      "offset": 140,
+      "name": "",
+      "comment": "the counters back:"
+    },
+    {
+      "offset": 141,
+      "name": "",
+      "comment": "one more capture"
+    },
+    {
+      "offset": 142,
+      "name": "",
+      "comment": "and kept again for the hand-over"
+    },
+    {
+      "offset": 143,
+      "name": "",
+      "comment": "A = the point's index"
+    },
+    {
+      "offset": 145,
+      "name": "",
+      "comment": "28 - the points left"
+    },
+    {
+      "offset": 146,
+      "name": "",
+      "comment": "0-3: a warbase"
+    },
+    {
+      "offset": 148,
+      "name": "",
+      "comment": "4-27: a factory"
+    },
+    {
+      "offset": 150,
+      "name": "",
+      "comment": "B = the new owner's side"
+    },
+    {
+      "offset": 151,
+      "name": "",
+      "comment": "the warbase changes side"
+    },
+    {
+      "offset": 154,
+      "name": "",
+      "comment": "done with this point"
+    },
+    {
+      "offset": 156,
+      "name": "CaptureFactory",
+      "comment": "a point 4-27: factory A - 4 changes side"
+    },
+    {
+      "offset": 158,
+      "name": "",
+      "comment": "B = the new owner's side"
+    },
+    {
+      "offset": 159,
+      "name": "",
+      "comment": "the factory changes side, its flag moves"
+    },
+    {
+      "offset": 162,
+      "name": "CapturePointDone",
+      "comment": "restore the capture count, on to the next point"
+    },
+    {
+      "offset": 163,
+      "name": "CaptureNext",
+      "comment": "5 bytes a point"
+    },
+    {
+      "offset": 165,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 167,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 169,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 171,
+      "name": "",
+      "comment": "... IY + 5: the next point's record"
+    },
+    {
+      "offset": 173,
+      "name": "",
+      "comment": "all 28 points"
+    },
+    {
+      "offset": 175,
+      "name": "",
+      "comment": "the caller's IY back"
+    },
+    {
+      "offset": 177,
+      "name": "",
+      "comment": "any capture?"
+    },
+    {
+      "offset": 178,
+      "name": "",
+      "comment": "C = 0:"
+    },
+    {
+      "offset": 179,
+      "name": "",
+      "comment": "nothing changed hands"
+    },
+    {
+      "offset": 181,
+      "name": "",
+      "comment": "recount the buildings of both sides"
+    },
+    {
+      "offset": 184,
+      "name": "",
+      "comment": "reprint the status values"
+    },
+    {
+      "offset": 187,
+      "name": "TurnPace",
+      "comment": "at least 10 frames a turn"
+    },
+    {
+      "offset": 190,
+      "name": "",
+      "comment": "10 frames since the last turn?"
+    },
+    {
+      "offset": 192,
+      "name": "",
+      "comment": "not yet: wait (the interrupt counts on)"
+    },
+    {
+      "offset": 194,
+      "name": "",
+      "comment": "the next turn's frames"
+    },
+    {
+      "offset": 195,
+      "name": "",
+      "comment": "TurnFrames = 0"
+    },
+    {
+      "offset": 198,
+      "name": "",
+      "comment": "the turn is over"
+    },
+    {
+      "offset": 199,
+      "name": "",
+      "comment": "the keyboard half-row 6-0"
+    },
+    {
+      "offset": 201,
+      "name": "",
+      "comment": "read it"
+    },
+    {
+      "offset": 203,
+      "name": "",
+      "comment": "bits 3-4: keys 7 and 6 (0 = held)"
+    },
+    {
+      "offset": 205,
+      "name": "",
+      "comment": "not both held: back"
+    },
+    {
+      "offset": 206,
+      "name": "",
+      "comment": "Restart as the return address ..."
+    },
+    {
+      "offset": 209,
+      "name": "",
+      "comment": "... on the stack"
+    },
+    {
+      "offset": 210,
+      "name": "",
+      "comment": "no interrupts"
+    },
+    {
+      "offset": 211,
+      "name": "",
+      "comment": "into the 48K ROM's SAVE code"
+    },
+    {
+      "offset": 214,
+      "name": "",
+      "comment": "ours: counts $FD3A"
+    },
+    {
+      "offset": 217,
+      "name": "",
+      "comment": "our building counts"
+    },
+    {
+      "offset": 220,
+      "name": "",
+      "comment": "our day's income"
+    },
+    {
+      "offset": 223,
+      "name": "",
+      "comment": "the enemy's: counts $FD42, resources $FD4A"
+    },
+    {
+      "offset": 226,
+      "name": "",
+      "comment": "the enemy's building counts"
+    },
+    {
+      "offset": 229,
+      "name": "",
+      "comment": "the enemy's day's income"
+    },
+    {
+      "offset": 232,
+      "name": "",
+      "comment": "the new resources on the panel"
+    },
+    {
+      "offset": 235,
+      "name": "",
+      "comment": "the day is paid"
+    },
+    {
+      "offset": 236,
+      "name": "",
+      "comment": "5 x warbases"
+    },
+    {
+      "offset": 237,
+      "name": "",
+      "comment": "C = the warbases"
+    },
+    {
+      "offset": 238,
+      "name": "",
+      "comment": "* 2"
+    },
+    {
+      "offset": 239,
+      "name": "",
+      "comment": "* 4"
+    },
+    {
+      "offset": 240,
+      "name": "",
+      "comment": "+ 1: * 5"
+    },
+    {
+      "offset": 241,
+      "name": "",
+      "comment": "into the general resource"
+    },
+    {
+      "offset": 244,
+      "name": "",
+      "comment": "six factory kinds"
+    },
+    {
+      "offset": 246,
+      "name": "ProduceFactoryLoop",
+      "comment": "each factory kind: 2 x its factories into its resource"
+    },
+    {
+      "offset": 247,
+      "name": "",
+      "comment": "DE = the next count: electronics, nuclear, phasers, missiles, cannon, chassis"
+    },
+    {
+      "offset": 248,
+      "name": "",
+      "comment": "2 x the factories of the kind"
+    },
+    {
+      "offset": 249,
+      "name": "",
+      "comment": "* 2"
+    },
+    {
+      "offset": 250,
+      "name": "",
+      "comment": "into the resource of the kind"
+    },
+    {
+      "offset": 253,
+      "name": "",
+      "comment": "all six kinds"
+    },
+    {
+      "offset": 255,
+      "name": "",
+      "comment": "the side is paid"
+    },
+    {
+      "offset": 256,
+      "name": "",
+      "comment": "the resource + the income"
+    },
+    {
+      "offset": 257,
+      "name": "",
+      "comment": "100 or more?"
+    },
+    {
+      "offset": 259,
+      "name": "",
+      "comment": "no: as it is"
+    },
+    {
+      "offset": 261,
+      "name": "",
+      "comment": "yes: 99, the most a resource holds"
+    },
+    {
+      "offset": 263,
+      "name": "AddCappedStore",
+      "comment": "store the capped sum"
+    },
+    {
+      "offset": 264,
+      "name": "",
+      "comment": "HL kept for the next resource"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth",
+      "case": "games/advanced-nether-earth",
+      "address": "$AD62",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/game/gameturn.asm",
+    "label": "GameTurn"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/README.md"
+  ]
+}

@@ -1,0 +1,1838 @@
+{
+  "schema": 1,
+  "id": "programs/games/advanced-nether-earth/screen",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Advanced Nether Earth: screen",
+  "authors": [
+    "Eternity Industry"
+  ],
+  "year": 1998,
+  "tags": [
+    "advanced-nether-earth",
+    "game-module",
+    "screen"
+  ],
+  "summary": "The play screen: its frame and colours, the status panel, screen-line steps, Random.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 707,
+    "sha1": "dbe42ad0ce65818768116d3605875242f44b3c61",
+    "masked_sha1": "e4a61b477e6f4930ee80466d366ecc61f2fdfcb9"
+  },
+  "origin": "$D0B9",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4001"
+    },
+    {
+      "offset": 18,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 21,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawView"
+    },
+    {
+      "offset": 24,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 27,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4001"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4701"
+    },
+    {
+      "offset": 40,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4702"
+    },
+    {
+      "offset": 50,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_50A1"
+    },
+    {
+      "offset": 53,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_50A2"
+    },
+    {
+      "offset": 63,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_57A0"
+    },
+    {
+      "offset": 66,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_57A1"
+    },
+    {
+      "offset": 76,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4100"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4115"
+    },
+    {
+      "offset": 96,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_50A0"
+    },
+    {
+      "offset": 106,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_50B5"
+    },
+    {
+      "offset": 116,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4700"
+    },
+    {
+      "offset": 123,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 128,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4715"
+    },
+    {
+      "offset": 135,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 140,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5800"
+    },
+    {
+      "offset": 143,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5801"
+    },
+    {
+      "offset": 153,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5800"
+    },
+    {
+      "offset": 156,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5801"
+    },
+    {
+      "offset": 166,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AA0"
+    },
+    {
+      "offset": 169,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AA1"
+    },
+    {
+      "offset": 179,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5820"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 195,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 200,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5821"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 223,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A33"
+    },
+    {
+      "offset": 233,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 238,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A53"
+    },
+    {
+      "offset": 246,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A71"
+    },
+    {
+      "offset": 256,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A8F"
+    },
+    {
+      "offset": 266,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 301,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 304,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 475,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PanelBusy"
+    },
+    {
+      "offset": 480,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 491,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Resources"
+    },
+    {
+      "offset": 498,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNewline"
+    },
+    {
+      "offset": 505,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber2"
+    },
+    {
+      "offset": 512,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 521,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyBuildings"
+    },
+    {
+      "offset": 524,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 528,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber2Zero"
+    },
+    {
+      "offset": 531,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 538,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerBuildings"
+    },
+    {
+      "offset": 541,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 544,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 552,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber2Zero"
+    },
+    {
+      "offset": 562,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCharKeep"
+    },
+    {
+      "offset": 566,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNewline"
+    },
+    {
+      "offset": 574,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 587,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 618,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 622,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 657,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 673,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RandomSeed"
+    },
+    {
+      "offset": 702,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "ClearScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Clear the screen (pixels and attributes to 0) and make the border black"
+    },
+    {
+      "offset": 14,
+      "name": "ClearScreenFill",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ClearScreen's LDIR"
+    },
+    {
+      "offset": 17,
+      "name": "DrawPlayScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw the whole play screen: the view, its frame, the colours, DAY / TIME / RADAR"
+    },
+    {
+      "offset": 300,
+      "name": "ShowStatusPanel",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Clear the right panel and print the status labels"
+    },
+    {
+      "offset": 474,
+      "name": "UpdateStatusPanel",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print the panel's numbers: resources, then both sides' buildings and robots"
+    },
+    {
+      "offset": 490,
+      "name": "PrintResourceValues",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The seven resource values, each on the next line (the tail of $D293)"
+    },
+    {
+      "offset": 520,
+      "name": "PrintInsgCounts",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The enemy's building counts and its robots (the tail of $D293)"
+    },
+    {
+      "offset": 537,
+      "name": "PrintHumnCounts",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The player's building counts (the tail of $D293)"
+    },
+    {
+      "offset": 550,
+      "name": "PrintHumnRobots",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The player's robots $FD41, two digits (the tail of $D293)"
+    },
+    {
+      "offset": 554,
+      "name": "PrintDigitColumn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print seven bytes from HL as single digits, one under the other"
+    },
+    {
+      "offset": 573,
+      "name": "ClearPanel",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Blank the right panel: 22 lines of 10 spaces from (2,22) in attribute 0"
+    },
+    {
+      "offset": 584,
+      "name": "ClearPanelLines",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "22 lines (the tail of ClearPanel)"
+    },
+    {
+      "offset": 586,
+      "name": "ClearPanelLine",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print 10 spaces and a newline"
+    },
+    {
+      "offset": 601,
+      "name": "ClearPanelNext",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The next of the 22 lines"
+    },
+    {
+      "offset": 604,
+      "name": "DrawMaskedUp",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw a masked image on the screen: C lines of B (mask, pixel) pairs from HL to DE, going up"
+    },
+    {
+      "offset": 625,
+      "name": "NextScreenLine",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the screen address one pixel line down"
+    },
+    {
+      "offset": 640,
+      "name": "PrevScreenLine",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DE = the screen address one pixel line up"
+    },
+    {
+      "offset": 655,
+      "name": "TableWord",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the word at HL + 2*A"
+    },
+    {
+      "offset": 664,
+      "name": "AddAToHL",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL += A"
+    },
+    {
+      "offset": 671,
+      "name": "Random",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = a pseudo-random byte"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "border 0, black; the speaker off"
+    },
+    {
+      "offset": 1,
+      "name": "",
+      "comment": "to port $FE"
+    },
+    {
+      "offset": 3,
+      "name": "",
+      "comment": "the screen"
+    },
+    {
+      "offset": 6,
+      "name": "",
+      "comment": "the LDIR copies the zero along"
+    },
+    {
+      "offset": 9,
+      "name": "",
+      "comment": "6911 more: all pixels and attributes"
+    },
+    {
+      "offset": 12,
+      "name": "",
+      "comment": "the first zero"
+    },
+    {
+      "offset": 14,
+      "name": "",
+      "comment": "$4000-$5AFF to 0"
+    },
+    {
+      "offset": 16,
+      "name": "",
+      "comment": "the screen is black"
+    },
+    {
+      "offset": 17,
+      "name": "",
+      "comment": "the whole screen black"
+    },
+    {
+      "offset": 20,
+      "name": "",
+      "comment": "the view into character rows 1-20, columns 1-20"
+    },
+    {
+      "offset": 23,
+      "name": "",
+      "comment": "the frame's top line"
+    },
+    {
+      "offset": 26,
+      "name": "",
+      "comment": "(the next byte)"
+    },
+    {
+      "offset": 29,
+      "name": "",
+      "comment": "21 more: columns 0-21"
+    },
+    {
+      "offset": 32,
+      "name": "",
+      "comment": "full line"
+    },
+    {
+      "offset": 34,
+      "name": "",
+      "comment": "line 0 of row 0"
+    },
+    {
+      "offset": 36,
+      "name": "",
+      "comment": "the inner top line"
+    },
+    {
+      "offset": 39,
+      "name": "",
+      "comment": "(the next byte)"
+    },
+    {
+      "offset": 42,
+      "name": "",
+      "comment": "19 more: columns 1-20"
+    },
+    {
+      "offset": 45,
+      "name": "",
+      "comment": "full line"
+    },
+    {
+      "offset": 47,
+      "name": "",
+      "comment": "line 7 of row 0"
+    },
+    {
+      "offset": 49,
+      "name": "",
+      "comment": "the inner bottom line"
+    },
+    {
+      "offset": 52,
+      "name": "",
+      "comment": "(the next byte)"
+    },
+    {
+      "offset": 55,
+      "name": "",
+      "comment": "19 more: columns 1-20"
+    },
+    {
+      "offset": 58,
+      "name": "",
+      "comment": "full line"
+    },
+    {
+      "offset": 60,
+      "name": "",
+      "comment": "line 0 of row 21"
+    },
+    {
+      "offset": 62,
+      "name": "",
+      "comment": "the frame's bottom line"
+    },
+    {
+      "offset": 65,
+      "name": "",
+      "comment": "(the next byte)"
+    },
+    {
+      "offset": 68,
+      "name": "",
+      "comment": "21 more: columns 0-21"
+    },
+    {
+      "offset": 71,
+      "name": "",
+      "comment": "full line"
+    },
+    {
+      "offset": 73,
+      "name": "",
+      "comment": "line 7 of row 21"
+    },
+    {
+      "offset": 75,
+      "name": "",
+      "comment": "the corners of the double lines"
+    },
+    {
+      "offset": 78,
+      "name": "",
+      "comment": "lines 1-6 of row 0, column 0"
+    },
+    {
+      "offset": 80,
+      "name": "FrameCornerTopLeft",
+      "comment": "$80 down 6 lines at $4100: the top left corner of the double lines"
+    },
+    {
+      "offset": 82,
+      "name": "",
+      "comment": "the next pixel line of the character cell"
+    },
+    {
+      "offset": 83,
+      "name": "",
+      "comment": "6 lines"
+    },
+    {
+      "offset": 85,
+      "name": "",
+      "comment": "row 0, column 21"
+    },
+    {
+      "offset": 88,
+      "name": "",
+      "comment": "lines 1-6"
+    },
+    {
+      "offset": 90,
+      "name": "FrameCornerTopRight",
+      "comment": "$01 down 6 lines at $4115"
+    },
+    {
+      "offset": 92,
+      "name": "",
+      "comment": "the next pixel line"
+    },
+    {
+      "offset": 93,
+      "name": "",
+      "comment": "6 lines"
+    },
+    {
+      "offset": 95,
+      "name": "",
+      "comment": "row 21, column 0"
+    },
+    {
+      "offset": 98,
+      "name": "",
+      "comment": "lines 0-6"
+    },
+    {
+      "offset": 100,
+      "name": "FrameCornerBottomLeft",
+      "comment": "$80 down 7 lines at $50A0"
+    },
+    {
+      "offset": 102,
+      "name": "",
+      "comment": "the next pixel line"
+    },
+    {
+      "offset": 103,
+      "name": "",
+      "comment": "7 lines"
+    },
+    {
+      "offset": 105,
+      "name": "",
+      "comment": "row 21, column 21"
+    },
+    {
+      "offset": 108,
+      "name": "",
+      "comment": "lines 0-6"
+    },
+    {
+      "offset": 110,
+      "name": "FrameCornerBottomRight",
+      "comment": "$01 down 7 lines at $50B5"
+    },
+    {
+      "offset": 112,
+      "name": "",
+      "comment": "the next pixel line"
+    },
+    {
+      "offset": 113,
+      "name": "",
+      "comment": "7 lines"
+    },
+    {
+      "offset": 115,
+      "name": "",
+      "comment": "the left side, 162 lines"
+    },
+    {
+      "offset": 118,
+      "name": "",
+      "comment": "from line 7 of row 0 to line 0 of row 21"
+    },
+    {
+      "offset": 120,
+      "name": "FrameSideLeft",
+      "comment": "$81 down 162 lines at column 0"
+    },
+    {
+      "offset": 122,
+      "name": "",
+      "comment": "the next screen line"
+    },
+    {
+      "offset": 125,
+      "name": "",
+      "comment": "162 lines"
+    },
+    {
+      "offset": 127,
+      "name": "",
+      "comment": "the right side"
+    },
+    {
+      "offset": 130,
+      "name": "",
+      "comment": "162 lines"
+    },
+    {
+      "offset": 132,
+      "name": "FrameSideRight",
+      "comment": "$81 down 162 lines at column 21"
+    },
+    {
+      "offset": 134,
+      "name": "",
+      "comment": "the next screen line"
+    },
+    {
+      "offset": 137,
+      "name": "",
+      "comment": "162 lines"
+    },
+    {
+      "offset": 139,
+      "name": "",
+      "comment": "all attributes $07"
+    },
+    {
+      "offset": 142,
+      "name": "",
+      "comment": "(the next cell)"
+    },
+    {
+      "offset": 145,
+      "name": "",
+      "comment": "767 more: all 768 cells"
+    },
+    {
+      "offset": 148,
+      "name": "",
+      "comment": "white ink on black"
+    },
+    {
+      "offset": 150,
+      "name": "",
+      "comment": "fill"
+    },
+    {
+      "offset": 152,
+      "name": "",
+      "comment": "the frame's top row $78"
+    },
+    {
+      "offset": 155,
+      "name": "",
+      "comment": "(the next cell)"
+    },
+    {
+      "offset": 158,
+      "name": "",
+      "comment": "21 more: columns 0-21"
+    },
+    {
+      "offset": 161,
+      "name": "",
+      "comment": "bright, black ink on white"
+    },
+    {
+      "offset": 163,
+      "name": "",
+      "comment": "row 0"
+    },
+    {
+      "offset": 165,
+      "name": "",
+      "comment": "the frame's bottom row"
+    },
+    {
+      "offset": 168,
+      "name": "",
+      "comment": "(the next cell)"
+    },
+    {
+      "offset": 171,
+      "name": "",
+      "comment": "21 more: columns 0-21"
+    },
+    {
+      "offset": 174,
+      "name": "",
+      "comment": "bright, black ink on white"
+    },
+    {
+      "offset": 176,
+      "name": "",
+      "comment": "row 21"
+    },
+    {
+      "offset": 178,
+      "name": "",
+      "comment": "the frame's left and right columns"
+    },
+    {
+      "offset": 181,
+      "name": "",
+      "comment": "rows 1-20"
+    },
+    {
+      "offset": 183,
+      "name": "FrameAttrSides",
+      "comment": "attribute $78 at columns 0 and 21 of 20 rows"
+    },
+    {
+      "offset": 185,
+      "name": "",
+      "comment": "21: to column 21"
+    },
+    {
+      "offset": 187,
+      "name": "",
+      "comment": "HL = column 21"
+    },
+    {
+      "offset": 190,
+      "name": "",
+      "comment": "the right side"
+    },
+    {
+      "offset": 192,
+      "name": "",
+      "comment": "11: to column 0 of the next row"
+    },
+    {
+      "offset": 194,
+      "name": "",
+      "comment": "HL = column 0"
+    },
+    {
+      "offset": 197,
+      "name": "",
+      "comment": "the next row"
+    },
+    {
+      "offset": 199,
+      "name": "",
+      "comment": "the view: 20 x 20 cells of $70"
+    },
+    {
+      "offset": 202,
+      "name": "",
+      "comment": "B = 20 cells a row, C = 20 rows"
+    },
+    {
+      "offset": 205,
+      "name": "ViewAttrRow",
+      "comment": "a row of 20 view cells"
+    },
+    {
+      "offset": 206,
+      "name": "ViewAttrCell",
+      "comment": "attribute $70"
+    },
+    {
+      "offset": 208,
+      "name": "",
+      "comment": "the next cell"
+    },
+    {
+      "offset": 209,
+      "name": "",
+      "comment": "20 cells"
+    },
+    {
+      "offset": 211,
+      "name": "",
+      "comment": "the counts back"
+    },
+    {
+      "offset": 212,
+      "name": "",
+      "comment": "12: to column 1 of the next row"
+    },
+    {
+      "offset": 214,
+      "name": "",
+      "comment": "HL = column 1"
+    },
+    {
+      "offset": 217,
+      "name": "",
+      "comment": "one row less"
+    },
+    {
+      "offset": 218,
+      "name": "",
+      "comment": "the next row"
+    },
+    {
+      "offset": 220,
+      "name": "",
+      "comment": "the bottom right corner: blue past the map's edge"
+    },
+    {
+      "offset": 222,
+      "name": "",
+      "comment": "row 17, column 19: the diagonal edge's cells, bright blue ink on yellow"
+    },
+    {
+      "offset": 225,
+      "name": "BlueCornerLoop",
+      "comment": "2 cells of $71 a row, 4 rows from $5A33"
+    },
+    {
+      "offset": 227,
+      "name": "",
+      "comment": "the next column"
+    },
+    {
+      "offset": 228,
+      "name": "",
+      "comment": "2 cells"
+    },
+    {
+      "offset": 230,
+      "name": "",
+      "comment": "29: two columns further left in the next row, along the edge"
+    },
+    {
+      "offset": 232,
+      "name": "",
+      "comment": "rows 17, 18, 19, 20 at columns 19, 17, 15, 13"
+    },
+    {
+      "offset": 235,
+      "name": "",
+      "comment": "the next row"
+    },
+    {
+      "offset": 237,
+      "name": "",
+      "comment": "row 18, columns 19-20: past the edge, bright blue ink on black"
+    },
+    {
+      "offset": 240,
+      "name": "",
+      "comment": "(row 18, column 19)"
+    },
+    {
+      "offset": 242,
+      "name": "",
+      "comment": "the next column"
+    },
+    {
+      "offset": 243,
+      "name": "",
+      "comment": "column 20"
+    },
+    {
+      "offset": 245,
+      "name": "",
+      "comment": "row 19, columns 17-20"
+    },
+    {
+      "offset": 248,
+      "name": "",
+      "comment": "4 cells"
+    },
+    {
+      "offset": 250,
+      "name": "BlueEdgeRow1",
+      "comment": "4 cells of $41 at $5A71"
+    },
+    {
+      "offset": 252,
+      "name": "",
+      "comment": "the next column"
+    },
+    {
+      "offset": 253,
+      "name": "",
+      "comment": "4 cells"
+    },
+    {
+      "offset": 255,
+      "name": "",
+      "comment": "row 20, columns 15-20"
+    },
+    {
+      "offset": 258,
+      "name": "",
+      "comment": "6 cells"
+    },
+    {
+      "offset": 260,
+      "name": "BlueEdgeRow2",
+      "comment": "6 cells of $41 at $5A8F"
+    },
+    {
+      "offset": 262,
+      "name": "",
+      "comment": "the next column"
+    },
+    {
+      "offset": 263,
+      "name": "",
+      "comment": "6 cells"
+    },
+    {
+      "offset": 265,
+      "name": "",
+      "comment": "ДЕНЬ:, ЧАС:, РАДАР:"
+    },
+    {
+      "offset": 268,
+      "name": "PlayScreenText",
+      "comment": "\"ДЕНЬ:\" (day) and \"ЧАС:\" (hour) at (0,22), the tall \"РАДАР:\" at (22,0)"
+    },
+    {
+      "offset": 300,
+      "name": "",
+      "comment": "the panel blank first"
+    },
+    {
+      "offset": 303,
+      "name": "",
+      "comment": "the labels"
+    },
+    {
+      "offset": 306,
+      "name": "StatusPanelText",
+      "comment": "The right panel's labels: СТАТУС, ИНОП. ЛЮДИ (aliens, people), БАЗЫ ... РОБОТЫ, РЕСУРСЫ ОБЩИЕ ... ШАССИ"
+    },
+    {
+      "offset": 474,
+      "name": "",
+      "comment": "a robot menu in the panel?"
+    },
+    {
+      "offset": 477,
+      "name": "",
+      "comment": "(PanelBusy not 0)"
+    },
+    {
+      "offset": 478,
+      "name": "",
+      "comment": "then leave the panel alone"
+    },
+    {
+      "offset": 479,
+      "name": "",
+      "comment": "position (16,30), attribute $4E, size 0"
+    },
+    {
+      "offset": 482,
+      "name": "ResourceValuesPos",
+      "comment": "Inline string: position (16,30), attribute $4E, size 0"
+    },
+    {
+      "offset": 482,
+      "name": "",
+      "comment": "AT (16,30), $4E (yellow on blue), size 0: one newline later the first resource value"
+    },
+    {
+      "offset": 490,
+      "name": "",
+      "comment": "the player's seven resources"
+    },
+    {
+      "offset": 493,
+      "name": "",
+      "comment": "7 values"
+    },
+    {
+      "offset": 495,
+      "name": "ResourceValueLoop",
+      "comment": "keep the count"
+    },
+    {
+      "offset": 496,
+      "name": "",
+      "comment": "and the pointer (PrintNewline changes BC and HL)"
+    },
+    {
+      "offset": 497,
+      "name": "",
+      "comment": "the next line first"
+    },
+    {
+      "offset": 500,
+      "name": "",
+      "comment": "the pointer back"
+    },
+    {
+      "offset": 501,
+      "name": "",
+      "comment": "the resource, 0-99"
+    },
+    {
+      "offset": 502,
+      "name": "",
+      "comment": "the next"
+    },
+    {
+      "offset": 503,
+      "name": "",
+      "comment": "keep it"
+    },
+    {
+      "offset": 504,
+      "name": "",
+      "comment": "two digits, blank leading zero"
+    },
+    {
+      "offset": 507,
+      "name": "",
+      "comment": "the pointer back"
+    },
+    {
+      "offset": 508,
+      "name": "",
+      "comment": "the count back"
+    },
+    {
+      "offset": 509,
+      "name": "",
+      "comment": "the next resource"
+    },
+    {
+      "offset": 511,
+      "name": "",
+      "comment": "the enemy's column"
+    },
+    {
+      "offset": 514,
+      "name": "InsgCountsPos",
+      "comment": "Inline string: position (6,22), attribute $47"
+    },
+    {
+      "offset": 514,
+      "name": "",
+      "comment": "AT (6,22), $47 (white): the enemy's (INSG) base counts"
+    },
+    {
+      "offset": 520,
+      "name": "",
+      "comment": "the enemy's counts by type"
+    },
+    {
+      "offset": 523,
+      "name": "",
+      "comment": "seven single digits, one a line"
+    },
+    {
+      "offset": 526,
+      "name": "",
+      "comment": "$FD49: the enemy's robots, two digits"
+    },
+    {
+      "offset": 527,
+      "name": "",
+      "comment": "two digits with a leading zero"
+    },
+    {
+      "offset": 530,
+      "name": "",
+      "comment": "the player's column"
+    },
+    {
+      "offset": 533,
+      "name": "HumnCountsPos",
+      "comment": "Inline string: position (6,31)"
+    },
+    {
+      "offset": 533,
+      "name": "",
+      "comment": "AT (6,31): our (HUMN) base counts, still in $47"
+    },
+    {
+      "offset": 537,
+      "name": "",
+      "comment": "the player's counts by type"
+    },
+    {
+      "offset": 540,
+      "name": "",
+      "comment": "rows 6-12, column 31"
+    },
+    {
+      "offset": 543,
+      "name": "",
+      "comment": "the player's robot count's place"
+    },
+    {
+      "offset": 546,
+      "name": "HumnRobotsPos",
+      "comment": "Inline string: position (13,30)"
+    },
+    {
+      "offset": 546,
+      "name": "",
+      "comment": "AT (13,30): our robot count"
+    },
+    {
+      "offset": 550,
+      "name": "",
+      "comment": "HL = PlayerRobotCount, right after the seven counts"
+    },
+    {
+      "offset": 551,
+      "name": "",
+      "comment": "two digits at (13,30); its RET ends UpdateStatusPanel"
+    },
+    {
+      "offset": 554,
+      "name": "",
+      "comment": "7 counts"
+    },
+    {
+      "offset": 556,
+      "name": "DigitColumnLoop",
+      "comment": "keep the count"
+    },
+    {
+      "offset": 557,
+      "name": "",
+      "comment": "the count"
+    },
+    {
+      "offset": 558,
+      "name": "",
+      "comment": "the next"
+    },
+    {
+      "offset": 559,
+      "name": "",
+      "comment": "as a digit"
+    },
+    {
+      "offset": 561,
+      "name": "",
+      "comment": "print it (BC, DE, HL kept)"
+    },
+    {
+      "offset": 564,
+      "name": "",
+      "comment": "keep the pointer"
+    },
+    {
+      "offset": 565,
+      "name": "",
+      "comment": "the next row, the same column"
+    },
+    {
+      "offset": 568,
+      "name": "",
+      "comment": "the pointer back"
+    },
+    {
+      "offset": 569,
+      "name": "",
+      "comment": "the count back"
+    },
+    {
+      "offset": 570,
+      "name": "",
+      "comment": "the next count"
+    },
+    {
+      "offset": 572,
+      "name": "",
+      "comment": "HL = the byte after the seven"
+    },
+    {
+      "offset": 573,
+      "name": "",
+      "comment": "the panel's top left, size 0, attribute 0"
+    },
+    {
+      "offset": 576,
+      "name": "ClearPanelPos",
+      "comment": "Inline string: position (2,22), size 0, attribute 0"
+    },
+    {
+      "offset": 576,
+      "name": "",
+      "comment": "AT (2,22), size 0, attribute 0 (black on black): ClearPanel's start"
+    },
+    {
+      "offset": 584,
+      "name": "",
+      "comment": "22 rows: 2-23"
+    },
+    {
+      "offset": 586,
+      "name": "",
+      "comment": "10 spaces, the next row"
+    },
+    {
+      "offset": 589,
+      "name": "PanelBlankLine",
+      "comment": "10 spaces, a new line"
+    },
+    {
+      "offset": 601,
+      "name": "",
+      "comment": "the next row"
+    },
+    {
+      "offset": 603,
+      "name": "",
+      "comment": "the panel is blank"
+    },
+    {
+      "offset": 604,
+      "name": "",
+      "comment": "keep the width and the line count"
+    },
+    {
+      "offset": 605,
+      "name": "",
+      "comment": "and the line's screen address"
+    },
+    {
+      "offset": 606,
+      "name": "MaskedByteLoop",
+      "comment": "the screen byte"
+    },
+    {
+      "offset": 607,
+      "name": "",
+      "comment": "the mask keeps what is around the picture"
+    },
+    {
+      "offset": 608,
+      "name": "",
+      "comment": "to the pixels"
+    },
+    {
+      "offset": 609,
+      "name": "",
+      "comment": "the picture's ink"
+    },
+    {
+      "offset": 610,
+      "name": "",
+      "comment": "back to the screen"
+    },
+    {
+      "offset": 611,
+      "name": "",
+      "comment": "the next pair"
+    },
+    {
+      "offset": 612,
+      "name": "",
+      "comment": "the byte to the right"
+    },
+    {
+      "offset": 613,
+      "name": "",
+      "comment": "each byte of the line"
+    },
+    {
+      "offset": 615,
+      "name": "",
+      "comment": "the line's start"
+    },
+    {
+      "offset": 616,
+      "name": "",
+      "comment": "the counts back"
+    },
+    {
+      "offset": 617,
+      "name": "",
+      "comment": "one screen line up"
+    },
+    {
+      "offset": 620,
+      "name": "",
+      "comment": "one line less"
+    },
+    {
+      "offset": 621,
+      "name": "",
+      "comment": "the next line up"
+    },
+    {
+      "offset": 624,
+      "name": "",
+      "comment": "the picture is drawn"
+    },
+    {
+      "offset": 625,
+      "name": "",
+      "comment": "the next pixel line inside the character row"
+    },
+    {
+      "offset": 626,
+      "name": "",
+      "comment": "the line number ..."
+    },
+    {
+      "offset": 628,
+      "name": "",
+      "comment": "... bits 0-2 of H"
+    },
+    {
+      "offset": 629,
+      "name": "",
+      "comment": "not 0: still in the same character row"
+    },
+    {
+      "offset": 630,
+      "name": "",
+      "comment": "past line 7: the next character row"
+    },
+    {
+      "offset": 631,
+      "name": "",
+      "comment": "+ 32"
+    },
+    {
+      "offset": 633,
+      "name": "",
+      "comment": "(the low byte)"
+    },
+    {
+      "offset": 634,
+      "name": "",
+      "comment": "carry: the next third, which H (+8 from the lines) already is"
+    },
+    {
+      "offset": 635,
+      "name": "",
+      "comment": "the same third ..."
+    },
+    {
+      "offset": 636,
+      "name": "",
+      "comment": "... H back by 8"
+    },
+    {
+      "offset": 638,
+      "name": "",
+      "comment": "(line 0 of the next character row)"
+    },
+    {
+      "offset": 639,
+      "name": "",
+      "comment": "HL = one line down"
+    },
+    {
+      "offset": 640,
+      "name": "",
+      "comment": "the old line number in bits 0-2"
+    },
+    {
+      "offset": 641,
+      "name": "",
+      "comment": "one pixel line up"
+    },
+    {
+      "offset": 642,
+      "name": "",
+      "comment": "was it line 0?"
+    },
+    {
+      "offset": 644,
+      "name": "",
+      "comment": "no: still the same character row"
+    },
+    {
+      "offset": 645,
+      "name": "",
+      "comment": "line 0: the character row above"
+    },
+    {
+      "offset": 646,
+      "name": "",
+      "comment": "- 32"
+    },
+    {
+      "offset": 648,
+      "name": "",
+      "comment": "(the low byte)"
+    },
+    {
+      "offset": 649,
+      "name": "",
+      "comment": "borrow: the third above, where D (-1: its line 7) already is"
+    },
+    {
+      "offset": 650,
+      "name": "",
+      "comment": "the same third ..."
+    },
+    {
+      "offset": 651,
+      "name": "",
+      "comment": "... D up by 8: line 7 of the row above"
+    },
+    {
+      "offset": 653,
+      "name": "",
+      "comment": "(D)"
+    },
+    {
+      "offset": 654,
+      "name": "",
+      "comment": "DE = one line up"
+    },
+    {
+      "offset": 655,
+      "name": "",
+      "comment": "two bytes an entry"
+    },
+    {
+      "offset": 656,
+      "name": "",
+      "comment": "HL = the entry"
+    },
+    {
+      "offset": 659,
+      "name": "",
+      "comment": "the low byte"
+    },
+    {
+      "offset": 660,
+      "name": "",
+      "comment": "the high byte's place"
+    },
+    {
+      "offset": 661,
+      "name": "",
+      "comment": "H = the high byte"
+    },
+    {
+      "offset": 662,
+      "name": "",
+      "comment": "HL = the word"
+    },
+    {
+      "offset": 663,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 664,
+      "name": "",
+      "comment": "the low byte"
+    },
+    {
+      "offset": 665,
+      "name": "",
+      "comment": "(L)"
+    },
+    {
+      "offset": 666,
+      "name": "",
+      "comment": "the carry ..."
+    },
+    {
+      "offset": 667,
+      "name": "",
+      "comment": "... into H"
+    },
+    {
+      "offset": 669,
+      "name": "",
+      "comment": "(H)"
+    },
+    {
+      "offset": 670,
+      "name": "",
+      "comment": "done"
+    },
+    {
+      "offset": 671,
+      "name": "",
+      "comment": "HL kept"
+    },
+    {
+      "offset": 672,
+      "name": "",
+      "comment": "the four bytes, the top first"
+    },
+    {
+      "offset": 675,
+      "name": "",
+      "comment": "the top byte"
+    },
+    {
+      "offset": 676,
+      "name": "",
+      "comment": "bits 6 and 3"
+    },
+    {
+      "offset": 678,
+      "name": "",
+      "comment": "bit 6 of the sum = bit 6 XOR bit 3"
+    },
+    {
+      "offset": 680,
+      "name": "",
+      "comment": "carry = the feedback bit"
+    },
+    {
+      "offset": 681,
+      "name": "",
+      "comment": "(two rotations: bit 6 of the sum reaches the carry)"
+    },
+    {
+      "offset": 682,
+      "name": "",
+      "comment": "shift $FD03..$FD00 left"
+    },
+    {
+      "offset": 684,
+      "name": "",
+      "comment": "$FD03 gets the feedback bit"
+    },
+    {
+      "offset": 686,
+      "name": "",
+      "comment": "(the next byte up)"
+    },
+    {
+      "offset": 687,
+      "name": "",
+      "comment": "$FD02"
+    },
+    {
+      "offset": 689,
+      "name": "",
+      "comment": "(the next byte up)"
+    },
+    {
+      "offset": 690,
+      "name": "",
+      "comment": "$FD01"
+    },
+    {
+      "offset": 692,
+      "name": "",
+      "comment": "(the next byte up)"
+    },
+    {
+      "offset": 693,
+      "name": "",
+      "comment": "$FD00, the top; its bit 7 drops out"
+    },
+    {
+      "offset": 695,
+      "name": "",
+      "comment": "the index from the last call: the operand $D371"
+    },
+    {
+      "offset": 697,
+      "name": "",
+      "comment": "that byte, after the shift"
+    },
+    {
+      "offset": 698,
+      "name": "",
+      "comment": "the next index"
+    },
+    {
+      "offset": 700,
+      "name": "",
+      "comment": "L = the index"
+    },
+    {
+      "offset": 701,
+      "name": "",
+      "comment": "kept for the next call"
+    },
+    {
+      "offset": 704,
+      "name": "",
+      "comment": "A = the byte at that index"
+    },
+    {
+      "offset": 705,
+      "name": "",
+      "comment": "HL back"
+    },
+    {
+      "offset": 706,
+      "name": "",
+      "comment": "A = a random byte"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Advanced Nether Earth",
+      "case": "games/advanced-nether-earth",
+      "address": "$D0B9",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/advanced-nether-earth",
+    "file": "src/game/screen.asm",
+    "label": "ClearScreen"
+  },
+  "docs": [
+    "games/advanced-nether-earth/docs/README.md"
+  ]
+}

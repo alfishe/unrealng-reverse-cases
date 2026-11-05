@@ -1,0 +1,1069 @@
+{
+  "schema": 1,
+  "id": "programs/games/hate/shadows",
+  "kind": "code",
+  "role": "game-module",
+  "name": "H.A.T.E.: shadows",
+  "authors": [
+    "Vortex Software"
+  ],
+  "year": 1989,
+  "tags": [
+    "hate",
+    "game-module",
+    "shadows"
+  ],
+  "summary": "Shadows.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 886,
+    "sha1": "b3108f481f6521d3721a048950ed2937d8be72d0",
+    "masked_sha1": "932219181ae05a14dbcd4a7f7eaa47be004b1163"
+  },
+  "origin": "$DDE6",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FE64"
+    },
+    {
+      "offset": 5,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShadowListPtr"
+    },
+    {
+      "offset": 8,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShadowListPtr"
+    },
+    {
+      "offset": 14,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawSprites"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 32,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 39,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 42,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 55,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5DE8"
+    },
+    {
+      "offset": 61,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5EF0"
+    },
+    {
+      "offset": 68,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5CE0"
+    },
+    {
+      "offset": 74,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 79,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 84,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 87,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6502"
+    },
+    {
+      "offset": 90,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 95,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 100,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 105,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 110,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 115,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 118,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 125,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6503"
+    },
+    {
+      "offset": 128,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 138,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 143,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 148,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 153,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 162,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6504"
+    },
+    {
+      "offset": 165,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 170,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 175,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 180,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 185,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 190,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 199,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6505"
+    },
+    {
+      "offset": 202,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 207,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 217,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 222,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 227,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 230,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShadowListPtr"
+    },
+    {
+      "offset": 245,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShadowListPtr"
+    },
+    {
+      "offset": 248,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 295,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 302,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 305,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 318,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5B60"
+    },
+    {
+      "offset": 325,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5C60"
+    },
+    {
+      "offset": 332,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5BE0"
+    },
+    {
+      "offset": 338,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 343,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 348,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 355,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6502"
+    },
+    {
+      "offset": 358,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 363,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 368,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 373,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 382,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6503"
+    },
+    {
+      "offset": 385,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 390,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 395,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 400,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 405,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 408,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 413,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 418,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 423,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 432,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6501"
+    },
+    {
+      "offset": 435,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 440,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 445,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 450,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 453,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShadowListPtr"
+    },
+    {
+      "offset": 468,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShadowListPtr"
+    },
+    {
+      "offset": 471,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 544,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 556,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5B00"
+    },
+    {
+      "offset": 562,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5B20"
+    },
+    {
+      "offset": 569,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5B40"
+    },
+    {
+      "offset": 590,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShadowListPtr"
+    },
+    {
+      "offset": 628,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 631,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 641,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 646,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 653,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 656,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 666,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 671,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 678,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 681,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 691,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 696,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 703,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 706,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 716,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 734,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 737,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 747,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 752,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 759,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 762,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 772,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 777,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 784,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 787,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 797,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 802,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 809,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 816,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 819,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 829,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteScratch"
+    },
+    {
+      "offset": 843,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 1,
+      "name": "DrawShadows",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Shadows into the playfield buffer, then the sprites"
+    },
+    {
+      "offset": 630,
+      "name": "MaskStepRuns5x3",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Next profile byte, then MaskRuns5x3"
+    },
+    {
+      "offset": 645,
+      "name": "MaskRuns5x3",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AND 5 shape bytes into the mask at DE, then 3 more 7 on"
+    },
+    {
+      "offset": 655,
+      "name": "MaskStepRuns4x4",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Next profile byte, then MaskRuns4x4"
+    },
+    {
+      "offset": 670,
+      "name": "MaskRuns4x4",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AND 4 shape bytes, then 4 more 7 on"
+    },
+    {
+      "offset": 680,
+      "name": "MaskStepRuns3x5",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Next profile byte, then MaskRuns3x5"
+    },
+    {
+      "offset": 695,
+      "name": "MaskRuns3x5",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AND 3 shape bytes, then 5 more 7 on"
+    },
+    {
+      "offset": 705,
+      "name": "MaskStepRuns2x6",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Next profile byte, then MaskRuns2x6"
+    },
+    {
+      "offset": 720,
+      "name": "MaskRuns2x6",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AND 2 shape bytes, then 6 more 7 on"
+    },
+    {
+      "offset": 736,
+      "name": "MaskStepRuns5x5",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Next profile byte, then MaskRuns5x5"
+    },
+    {
+      "offset": 751,
+      "name": "MaskRuns5x5",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AND 5 shape bytes, then 5 more 11 on"
+    },
+    {
+      "offset": 761,
+      "name": "MaskStepRuns4x6",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Next profile byte, then MaskRuns4x6"
+    },
+    {
+      "offset": 776,
+      "name": "MaskRuns4x6",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AND 4 shape bytes, then 6 more 11 on"
+    },
+    {
+      "offset": 786,
+      "name": "MaskStepRuns3x7x3",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Next profile byte, then MaskRuns3x7x3"
+    },
+    {
+      "offset": 801,
+      "name": "MaskRuns3x7x3",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AND 3 shape bytes, 7 more 11 on, 3 more 11 on"
+    },
+    {
+      "offset": 818,
+      "name": "MaskStepRuns1x6x4",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Next profile byte, then MaskRuns1x6x4"
+    },
+    {
+      "offset": 833,
+      "name": "MaskRuns1x6x4",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AND 1 shape byte, 6 more 12 on, 4 more 11 on"
+    },
+    {
+      "offset": 851,
+      "name": "MaskAnd7",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AND 7 shape bytes into the mask"
+    },
+    {
+      "offset": 856,
+      "name": "MaskAnd6",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AND 6 shape bytes into the mask"
+    },
+    {
+      "offset": 861,
+      "name": "MaskAnd5",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AND 5 shape bytes into the mask"
+    },
+    {
+      "offset": 866,
+      "name": "MaskAnd4",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AND 4 shape bytes into the mask"
+    },
+    {
+      "offset": 871,
+      "name": "MaskAnd3",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AND 3 shape bytes into the mask"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "ShadowGround",
+      "comment": "The ground height under the shadow being drawn"
+    },
+    {
+      "offset": 7,
+      "name": "ShadowsLoop",
+      "comment": ""
+    },
+    {
+      "offset": 13,
+      "name": "",
+      "comment": "the shadow list is done: the sprites"
+    },
+    {
+      "offset": 17,
+      "name": "",
+      "comment": "E = +1 phase"
+    },
+    {
+      "offset": 19,
+      "name": "",
+      "comment": "BC = +2, +3 the profile under the object"
+    },
+    {
+      "offset": 34,
+      "name": "ShadowBigMask",
+      "comment": "types 0-3"
+    },
+    {
+      "offset": 35,
+      "name": "",
+      "comment": "the ground height where the shadow starts"
+    },
+    {
+      "offset": 41,
+      "name": "",
+      "comment": "the mask: 4 strips of 17 bytes, clear"
+    },
+    {
+      "offset": 48,
+      "name": "ClearBigMaskLoop",
+      "comment": ""
+    },
+    {
+      "offset": 54,
+      "name": "",
+      "comment": "the shape: $5DE8 type 0, $5EF0 type 2, $5CE0 types 1 and 3"
+    },
+    {
+      "offset": 70,
+      "name": "BigShapeChosen",
+      "comment": "one sequence of runs a phase"
+    },
+    {
+      "offset": 86,
+      "name": "",
+      "comment": "phase 0"
+    },
+    {
+      "offset": 120,
+      "name": "BigMaskPhase1",
+      "comment": "phase 1"
+    },
+    {
+      "offset": 157,
+      "name": "BigMaskPhase2",
+      "comment": "phase 2"
+    },
+    {
+      "offset": 194,
+      "name": "BigMaskPhase3",
+      "comment": "phase 3"
+    },
+    {
+      "offset": 229,
+      "name": "ShadowBigApply",
+      "comment": ""
+    },
+    {
+      "offset": 234,
+      "name": "",
+      "comment": "C = +4 strips"
+    },
+    {
+      "offset": 236,
+      "name": "",
+      "comment": "A = +5 the first mask byte"
+    },
+    {
+      "offset": 238,
+      "name": "",
+      "comment": "DE = +6, +7 the buffer address"
+    },
+    {
+      "offset": 253,
+      "name": "BigApplyStripLoop",
+      "comment": ""
+    },
+    {
+      "offset": 256,
+      "name": "BigApplyLineLoop",
+      "comment": "17 lines: buffer AND mask"
+    },
+    {
+      "offset": 286,
+      "name": "",
+      "comment": "the next strip: 4 lines lower, two pages on"
+    },
+    {
+      "offset": 297,
+      "name": "ShadowMidMask",
+      "comment": "types 4-10"
+    },
+    {
+      "offset": 299,
+      "name": "",
+      "comment": "the ground height where the shadow starts"
+    },
+    {
+      "offset": 304,
+      "name": "",
+      "comment": "the mask: 3 strips of 11 bytes, clear"
+    },
+    {
+      "offset": 311,
+      "name": "ClearMidMaskLoop",
+      "comment": ""
+    },
+    {
+      "offset": 316,
+      "name": "",
+      "comment": "the shape: $5B60 type 10, $5C60 types 8-9, $5BE0 types 4-7"
+    },
+    {
+      "offset": 334,
+      "name": "MidShapeChosen",
+      "comment": ""
+    },
+    {
+      "offset": 377,
+      "name": "MidMaskPhase1",
+      "comment": ""
+    },
+    {
+      "offset": 404,
+      "name": "MidMaskPhase2",
+      "comment": ""
+    },
+    {
+      "offset": 427,
+      "name": "MidMaskPhase3",
+      "comment": ""
+    },
+    {
+      "offset": 452,
+      "name": "ShadowMidApply",
+      "comment": ""
+    },
+    {
+      "offset": 476,
+      "name": "MidApplyStripLoop",
+      "comment": "11 lines: buffer AND mask"
+    },
+    {
+      "offset": 546,
+      "name": "ShadowTiny",
+      "comment": "types 11-13"
+    },
+    {
+      "offset": 550,
+      "name": "",
+      "comment": "the ground rise to the next profile byte"
+    },
+    {
+      "offset": 555,
+      "name": "",
+      "comment": "flat: $5B00"
+    },
+    {
+      "offset": 561,
+      "name": "",
+      "comment": "a rise of 1: $5B20"
+    },
+    {
+      "offset": 568,
+      "name": "",
+      "comment": "any other change, a fall too: $5B40"
+    },
+    {
+      "offset": 571,
+      "name": "TinyShapeChosen",
+      "comment": "+ 8 x phase"
+    },
+    {
+      "offset": 581,
+      "name": "",
+      "comment": "+ the skipped bytes (+5)"
+    },
+    {
+      "offset": 596,
+      "name": "TinyStripLoop",
+      "comment": ""
+    },
+    {
+      "offset": 597,
+      "name": "",
+      "comment": "4 lines a strip: buffer AND shape"
+    },
+    {
+      "offset": 630,
+      "name": "",
+      "comment": "the ground height where the shadow starts"
+    },
+    {
+      "offset": 634,
+      "name": "",
+      "comment": "the next profile byte"
+    },
+    {
+      "offset": 638,
+      "name": "",
+      "comment": "its ground, relative"
+    },
+    {
+      "offset": 639,
+      "name": "",
+      "comment": "+ the run's place in the mask"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "H.A.T.E.",
+      "case": "games/hate",
+      "address": "$DDE6",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "c94d092"
+    }
+  ],
+  "source": {
+    "case": "games/hate",
+    "file": "src/game/shadows.asm",
+    "label": "ShadowGround"
+  },
+  "docs": [
+    "games/hate/docs/README.md"
+  ]
+}
