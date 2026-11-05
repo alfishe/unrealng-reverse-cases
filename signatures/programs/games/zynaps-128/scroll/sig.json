@@ -1,0 +1,660 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps-128/scroll",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps 2 in 1: scroll",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)",
+    "goodboy",
+    "tiboh"
+  ],
+  "year": 2018,
+  "tags": [
+    "zynaps-128",
+    "game-module",
+    "scroll"
+  ],
+  "summary": "Scrolling: glyph allocation, the column builder and the scroll step.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 809,
+    "sha1": "07ea92fedd74dd9eb396b134e76f52c4371797c2",
+    "masked_sha1": "433c417fbbf7a11e35e62cc63cf4167d758be868"
+  },
+  "origin": "$8912",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GlyphAllocByte"
+    },
+    {
+      "offset": 5,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GlyphAlloc"
+    },
+    {
+      "offset": 17,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 24,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 33,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GlyphAlloc"
+    },
+    {
+      "offset": 45,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GlyphAllocByte"
+    },
+    {
+      "offset": 60,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayFlags"
+    },
+    {
+      "offset": 66,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_F34C"
+    },
+    {
+      "offset": 69,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 72,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollColumn"
+    },
+    {
+      "offset": 83,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 88,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 106,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 110,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColumnFlags"
+    },
+    {
+      "offset": 130,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 137,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 176,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 200,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TileSet"
+    },
+    {
+      "offset": 211,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 221,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TileSet"
+    },
+    {
+      "offset": 227,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 231,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 244,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 254,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 257,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BitReverse"
+    },
+    {
+      "offset": 343,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 377,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpanDraw0"
+    },
+    {
+      "offset": 394,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassPhase"
+    },
+    {
+      "offset": 431,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 448,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NodeFreeList"
+    },
+    {
+      "offset": 455,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NodeFreeList"
+    },
+    {
+      "offset": 464,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NodeFreeList"
+    },
+    {
+      "offset": 467,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NodeFreeList"
+    },
+    {
+      "offset": 476,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayFlags"
+    },
+    {
+      "offset": 482,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollCount"
+    },
+    {
+      "offset": 486,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollCount"
+    },
+    {
+      "offset": 489,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScriptRoom"
+    },
+    {
+      "offset": 494,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EmptyRows"
+    },
+    {
+      "offset": 498,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RowRecords"
+    },
+    {
+      "offset": 507,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 522,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 606,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 627,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 654,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 663,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EmptyRows"
+    },
+    {
+      "offset": 725,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 728,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollColumn"
+    },
+    {
+      "offset": 732,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollMap"
+    },
+    {
+      "offset": 736,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollColumn"
+    },
+    {
+      "offset": 764,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EmptyRows"
+    },
+    {
+      "offset": 786,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "AllocGlyphs",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Find C free glyph slots in a row of the glyph bitmap"
+    },
+    {
+      "offset": 59,
+      "name": "StartColumn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Set up the column builder for a new column"
+    },
+    {
+      "offset": 91,
+      "name": "BuildColumn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Build up to six cells of the new column, bottom row first"
+    },
+    {
+      "offset": 140,
+      "name": "BuildCell",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Turn one map cell of the new column into a glyph"
+    },
+    {
+      "offset": 183,
+      "name": "BuildGlyph",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Build one glyph of the new column in all four shifts"
+    },
+    {
+      "offset": 328,
+      "name": "NewSpanNode",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Link a new span node at the row's tail and reserve its glyph run"
+    },
+    {
+      "offset": 446,
+      "name": "PopNode",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Take a span node from the free list"
+    },
+    {
+      "offset": 461,
+      "name": "PushNode",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Return the span node HL to the free list"
+    },
+    {
+      "offset": 475,
+      "name": "ScrollStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Scroll the playfield model one step (two pixels) left"
+    },
+    {
+      "offset": 778,
+      "name": "SetSpanHandler",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Point the node IY at the handler for its width"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 10,
+      "name": "AllocScan",
+      "comment": ""
+    },
+    {
+      "offset": 26,
+      "name": "AllocFound",
+      "comment": ""
+    },
+    {
+      "offset": 43,
+      "name": "AllocStore",
+      "comment": ""
+    },
+    {
+      "offset": 51,
+      "name": "AllocWrap",
+      "comment": "restart at slot 0"
+    },
+    {
+      "offset": 95,
+      "name": "BuildColumnCell",
+      "comment": "LD HL,n: the map cell of the next row"
+    },
+    {
+      "offset": 98,
+      "name": "BuildColumnLeft",
+      "comment": "LD BC,$0600+n: n = the rows left"
+    },
+    {
+      "offset": 104,
+      "name": "BuildColumnLoop",
+      "comment": ""
+    },
+    {
+      "offset": 108,
+      "name": "BuildColumnBack",
+      "comment": "back from BuildCell: the cell above"
+    },
+    {
+      "offset": 117,
+      "name": "BuildColumnStep",
+      "comment": "L = the next cell row"
+    },
+    {
+      "offset": 126,
+      "name": "BuildColumnNext",
+      "comment": ""
+    },
+    {
+      "offset": 135,
+      "name": "BuildColumnSave",
+      "comment": ""
+    },
+    {
+      "offset": 159,
+      "name": "CellGapStart",
+      "comment": ""
+    },
+    {
+      "offset": 174,
+      "name": "CellGapDone",
+      "comment": ""
+    },
+    {
+      "offset": 178,
+      "name": "BuildCellDone",
+      "comment": "the cell built: clear its pending bit"
+    },
+    {
+      "offset": 202,
+      "name": "GlyphHaveLeft",
+      "comment": ""
+    },
+    {
+      "offset": 246,
+      "name": "GlyphNoFlip",
+      "comment": ""
+    },
+    {
+      "offset": 259,
+      "name": "GlyphNoMirror",
+      "comment": ""
+    },
+    {
+      "offset": 266,
+      "name": "GlyphLine",
+      "comment": ""
+    },
+    {
+      "offset": 267,
+      "name": "GlyphLineStep",
+      "comment": "INC D or DEC D (written at $89F4, $8A05): down or up the source tile"
+    },
+    {
+      "offset": 269,
+      "name": "GlyphMirror",
+      "comment": "LD A,(HL) (mirror through $FB00) or NOP, written at $89F8, $8A0F"
+    },
+    {
+      "offset": 275,
+      "name": "GlyphShift2",
+      "comment": "the copy shifted 2 pixels"
+    },
+    {
+      "offset": 290,
+      "name": "GlyphShift4",
+      "comment": "the copy shifted 4 pixels"
+    },
+    {
+      "offset": 308,
+      "name": "GlyphMarkBits",
+      "comment": "set the slot bits in the bitmap $FFE0"
+    },
+    {
+      "offset": 319,
+      "name": "GlyphMarkSlot",
+      "comment": ""
+    },
+    {
+      "offset": 327,
+      "name": "GlyphBuilt",
+      "comment": ""
+    },
+    {
+      "offset": 401,
+      "name": "RunMeasure",
+      "comment": ""
+    },
+    {
+      "offset": 405,
+      "name": "RunMeasureLoop",
+      "comment": ""
+    },
+    {
+      "offset": 410,
+      "name": "RunMeasureNext",
+      "comment": ""
+    },
+    {
+      "offset": 416,
+      "name": "RunMeasureGap",
+      "comment": ""
+    },
+    {
+      "offset": 424,
+      "name": "RunStore",
+      "comment": ""
+    },
+    {
+      "offset": 502,
+      "name": "ScrollRow",
+      "comment": ""
+    },
+    {
+      "offset": 509,
+      "name": "ScrollRowHead",
+      "comment": ""
+    },
+    {
+      "offset": 547,
+      "name": "FreeMaskShift",
+      "comment": ""
+    },
+    {
+      "offset": 555,
+      "name": "GlyphLeaves",
+      "comment": ""
+    },
+    {
+      "offset": 579,
+      "name": "GlyphLeftFreed",
+      "comment": ""
+    },
+    {
+      "offset": 626,
+      "name": "NodeNarrowed",
+      "comment": ""
+    },
+    {
+      "offset": 632,
+      "name": "TailGrow",
+      "comment": ""
+    },
+    {
+      "offset": 662,
+      "name": "ScrollRowEmpty",
+      "comment": ""
+    },
+    {
+      "offset": 666,
+      "name": "LeadAttribute",
+      "comment": "the new leading attribute from the flag byte"
+    },
+    {
+      "offset": 691,
+      "name": "LeadInk",
+      "comment": ""
+    },
+    {
+      "offset": 700,
+      "name": "LeadPaper",
+      "comment": ""
+    },
+    {
+      "offset": 706,
+      "name": "LeadNoAttribute",
+      "comment": ""
+    },
+    {
+      "offset": 713,
+      "name": "LeadKeep",
+      "comment": ""
+    },
+    {
+      "offset": 714,
+      "name": "LeadStore",
+      "comment": ""
+    },
+    {
+      "offset": 748,
+      "name": "ClearAheadPage",
+      "comment": ""
+    },
+    {
+      "offset": 770,
+      "name": "ScrollPad",
+      "comment": "B = $14 a step (the Pentagon timing: $13 in the 48K)"
+    },
+    {
+      "offset": 772,
+      "name": "ScrollPadWait",
+      "comment": ""
+    },
+    {
+      "offset": 799,
+      "name": "SpanHandlers",
+      "comment": "The span handler of each run width 0-4"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps 2 in 1",
+      "case": "games/zynaps-128",
+      "address": "$8912",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "e03a78e"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps-128",
+    "file": "src/game/scroll.asm",
+    "label": "AllocGlyphs"
+  },
+  "docs": [
+    "games/zynaps-128/docs/README.md"
+  ]
+}

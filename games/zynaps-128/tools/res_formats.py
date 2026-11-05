@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
-"""The case's editable resources and their build: the intro's three pictures as PNG.
+"""The case's editable resources and their build: the intro's three pictures as PNG, the game's graphics, levels,
+texts, effects and title tune in the formats of the plugins tools/res_*.py.
 
-    python3 tools/res_formats.py build [--out build]     src/res/screens/NAME.png -> build/screens/NAME.scr
+    python3 tools/res_formats.py build [--out build]     src/res/screens/NAME.png -> build/screens/NAME.scr, and each
+                                                         game resource src/res/X.<format> -> build/res/X.bin
+    python3 tools/res_formats.py install DIR             DIR/res/X.bin (kit/mkgame.py's resources) -> src/res/X.<format>
     python3 tools/res_formats.py export SCR PNG          a 6912-byte screen to its PNG
-    python3 tools/res_formats.py check                   each PNG built, written back, built again: the same bytes
+    python3 tools/res_formats.py check                   each source built, written back, built again: the same bytes
+
+The game's resources (the @res entries of src/game/game.ann) go through the plugins: each tools/res_*.py has KINDS, a
+list of (pattern, suffix, to_editable, from_editable), the pattern an fnmatch of the resource's name ending .bin.
+The plugins are the 48K case's (../zynaps/tools), copied: the bytes are the same. kit/mkgame.py calls install(files).
 
 | Source | Built | What |
 | --- | --- | --- |
@@ -19,6 +26,9 @@ the three pictures has flash). The converter is copied from ../nether-earth-gs/t
 apart).
 """
 import argparse
+import fnmatch
+import glob
+import importlib
 import os
 import struct
 import sys
@@ -26,6 +36,9 @@ import zlib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = os.path.join(ROOT, 'src', 'res', 'screens')
+GAME_RES = os.path.join(ROOT, 'src', 'res')
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
 SCREENS = ('title', 'options', 'hewson')
 
 
@@ -157,12 +170,60 @@ def png_to_screen(path):
 
 
 
+# --- the game's resources through the plugins ---
+
+def kinds():
+    out = []
+    for path in sorted(glob.glob(os.path.join(HERE, 'res_*.py'))):
+        name = os.path.splitext(os.path.basename(path))[0]
+        if name != 'res_formats':
+            out += importlib.import_module(name).KINDS
+    return out
+
+
+def install(files):
+    """The @res entries' bytes as their editable files under src/res; each proved both ways"""
+    ks = kinds()
+    for name, data in files.items():
+        k = next((k for k in ks if fnmatch.fnmatch(name, k[0])), None)
+        path = os.path.join(GAME_RES, name)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        if k is None:
+            open(path, 'wb').write(data)
+            continue
+        edit = k[2](data, name)
+        if k[3](edit, name) != data:
+            sys.exit(f'res: {name}: the editable form does not give the bytes back')
+        if os.path.exists(path):
+            os.remove(path)
+        open(path[:-4] + k[1], 'wb').write(edit)
+
+
+def game_sources():
+    """(path under src/res, the resource name it builds, its kind) of every game resource's editable file"""
+    ks = kinds()
+    for top, _dirs, names in os.walk(GAME_RES):
+        for n in sorted(names):
+            rel = os.path.relpath(os.path.join(top, n), GAME_RES)
+            for k in ks:
+                if rel.endswith(k[1]) and fnmatch.fnmatch(rel[:-len(k[1])] + '.bin', k[0]):
+                    yield rel, rel[:-len(k[1])] + '.bin', k
+                    break
+
+
 def build(out):
     os.makedirs(os.path.join(out, 'screens'), exist_ok=True)
     for name in SCREENS:
         data = png_to_screen(os.path.join(RES, name + '.png'))
         open(os.path.join(out, 'screens', name + '.scr'), 'wb').write(data)
     print(f'res_formats: {len(SCREENS)} screens built in {os.path.relpath(out, ROOT)}/screens')
+    n = 0
+    for rel, name, k in game_sources():
+        dst = os.path.join(out, 'res', name)
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        open(dst, 'wb').write(k[3](open(os.path.join(GAME_RES, rel), 'rb').read(), name))
+        n += 1
+    print(f'res_formats: {n} game resources built in {os.path.relpath(out, ROOT)}/res')
 
 
 def check():
@@ -177,6 +238,11 @@ def check():
         ok = first == second
         bad += not ok
         print(f'{name}: {"round trip identical" if ok else "DIFFERS after a round trip"}')
+    for rel, name, k in game_sources():
+        edit = open(os.path.join(GAME_RES, rel), 'rb').read()
+        ok = k[2](k[3](edit, name), name) == edit
+        bad += not ok
+        print(f'{rel}: {"both ways identical" if ok else "DIFFERS: bytes -> editable is not the file"}')
     return 1 if bad else 0
 
 
@@ -189,6 +255,8 @@ def main():
     e.add_argument('scr')
     e.add_argument('png')
     sub.add_parser('check')
+    i = sub.add_parser('install')
+    i.add_argument('dir', help='a kit/mkgame.py --out folder: its res/ files')
     a = p.parse_args()
     if a.mode == 'build':
         build(a.out)
@@ -197,6 +265,15 @@ def main():
         if len(data) != 6912:
             sys.exit(f'{a.scr}: {len(data)} bytes, not 6912')
         screen_to_png(data, a.png)
+    elif a.mode == 'install':
+        top = os.path.join(a.dir, 'res')
+        files = {}
+        for d, _dirs, names in os.walk(top):
+            for n in names:
+                path = os.path.join(d, n)
+                files[os.path.relpath(path, top)] = open(path, 'rb').read()
+        install(files)
+        print(f'res_formats: {len(files)} game resources installed in src/res')
     else:
         return check()
     return 0

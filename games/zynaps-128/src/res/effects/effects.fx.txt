@@ -1,0 +1,8 @@
+# The sound effects of Zynaps: EffectTable $7E5A, played by EffectPlay $B30C (tools/res_effects.py).
+# RequestEffect $B2F0 takes effect n only when n >= the one playing: the number is the priority.
+effect 1 pitchA=$80 stepA=-2 pitchB=$01 stepB=+1 change=+0 segments=3 flags=%10000111 lenA=3 lenB=0  # the enemy shot
+effect 2 pitchA=$10 stepA=+2 pitchB=$00 stepB=+0 change=+0 segments=5 flags=%00000111 lenA=2 lenB=0  # the laser
+effect 3 pitchA=$90 stepA=+2 pitchB=$00 stepB=+0 change=+0 segments=1 flags=%00000111 lenA=6 lenB=0  # the plasma bounce
+effect 4 pitchA=$50 stepA=-5 pitchB=$00 stepB=+0 change=+0 segments=6 flags=%01100111 lenA=5 lenB=0  # a pod appears
+effect 5 pitchA=$70 stepA=+8 pitchB=$50 stepB=-6 change=+0 segments=5 flags=%00010100 lenA=3 lenB=1  # the next weapon
+effect 6 pitchA=$70 stepA=+8 pitchB=$50 stepB=-6 change=+0 segments=8 flags=%00010101 lenA=3 lenB=1  # a weapon on

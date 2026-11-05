@@ -15,8 +15,8 @@
 ; $5B50 with A not 0: 6 runs in c1).
 ;
 ; The entries without a hook stub: EffectSound13 ($C983) and EffectSound17 ($C995) are called by nothing in the game
-; or the glue (a static scan of every part for the call; not run in c1); EffectSound10 ($C9A5) is called by the glue
-; at $5B75 (the game's call at $B024 patched to $5B6D), 18 runs in c1.
+; or the glue (a static scan of every part for the call; not run in c1); EffectLevelStart ($C9A5) is called by the
+; glue at $5B75 (the game's call at $B024 patched to $5B6D), 18 runs in c1.
 ;
 ; The engine is the Amstrad CPC Zynaps's own sound driver (J. Dave Rogers's music, Hewson 1987) moved up by $5000: The
 ; Cyborg's AY rip of the CPC game (work/stage2/sound/cpc/local-modland/zynaps.cpc.emul, its code block at $7968) has
@@ -52,19 +52,19 @@ EffectShot:
   LD A,$0E
   JR StartOnChannelA
 
-; sounds $0F and $10 on the two effect channels
+; sounds $0F and $10 on the two effect channels: an extra life
 ;
-; The hook stub $B334 (after the level count at $ACA2); not run in c1
-; (docs/09-sound.md 9.2).
-EffectSound0F10:
+; The hook stub $B334 (the extra life at $ACA2, 10 000 to 90 000 points): not
+; run in c1, witnessed in r1 frame 6590 (docs/09-sound.md 9.2).
+EffectExtraLife:
   LD A,$0F
   LD B,$10
   JR StartTwoSounds
 
-; sound $11
+; sound $11: a plasma bomb bounces off the ground
 ;
-; The hook stub $B33C (an object's countdown at $9EC2); not run in c1.
-EffectSound11:
+; The hook stub $B33C (the bounce at $9EC2): not run in c1, 22 times in r1.
+EffectBombBounce:
   LD A,$11
   JR StartSound
 
@@ -93,11 +93,11 @@ EffectShipLost:
   LD A,$14
   JR ShipLostSecond
 
-; sounds $1A and $1B
+; sounds $1A and $1B: a homing missile launched
 ;
-; The hook stub $B35C (an object launched from the ship at $9CFA); not run in
-; c1.
-EffectSound1A1B:
+; The hook stub $B35C (the launch at $9CFA): not run in c1, in r2 at frames 127
+; and 287.
+EffectHomingLaunch:
   LD A,$1A
   LD B,$1B
   JR StartTwoSounds
@@ -116,10 +116,11 @@ EffectSound17:
   LD A,$17
   JR StartSound
 
-; sound $18
+; sound $18: a special weapon placed at the ship
 ;
-; The hook stub $B36C (the weapon slot $F5A8 launched); not run in c1.
-EffectSound18:
+; The hook stub $B36C ($9CB0, shared by the bombs, the homing missiles and the
+; seekers): not run in c1, 9 bombs in r1.
+EffectSpecialLaunch:
   LD A,$18
   JR StartSound
 
@@ -130,25 +131,25 @@ EffectEnemyMissile:
   LD A,$19
   JR StartSound
 
-; sound $0F: a pod taken with the power gauge full
+; sound $0F: a weapon selected (a pod taken with fire held)
 ;
-; The hook stub $B379: 1 run in c1.
-EffectPodFullGauge:
+; The hook stub $B379: 1 run in c1, in r1 at frames 1097 and 1713.
+EffectWeaponSelect:
   LD A,$0F
   JR StartSound
 
-; sound $10
+; sound $10: a level starts (the glue's LevelStartSound)
 ;
 ; Called by the glue at $5B75 (the game's call at $B024 goes to $5B6D: the
 ; music stopped, then this sound): 18 runs in c1, as many as the ship was lost.
-EffectSound10:
+EffectLevelStart:
   LD A,$10
   JR StartSound
 
-; sound $1C: a fuel pod changes state
+; sound $1C: a pod appears
 ;
-; The hook stub $B381: 4 runs in c1.
-EffectPodChange:
+; The hook stub $B381: 4 runs in c1, 29 in r1.
+EffectPodAppears:
   LD A,$1C
   JR StartSound
 
@@ -160,10 +161,12 @@ EffectExplosion:
   LD A,$1D
   JR StartSound
 
-; sounds $1E and $1F: the game over (and the end of the game won)
+; sounds $1E and $1F: the screen wipe, the SELECTIONS screen
 ;
-; The hook stubs $B39C (the game-over wipe, 5 runs) and $B38F (not run in c1).
-EffectGameOver:
+; The hook stubs $B39C (the screen wipe at the game over and before KEYBOARD
+; DEFINITION, 5 runs in c1) and $B38F (the SELECTIONS screen: not run in c1, r1
+; frame 23).
+EffectScreenWipe:
   LD A,$1E
   LD B,$1F
   JR StartTwoSounds

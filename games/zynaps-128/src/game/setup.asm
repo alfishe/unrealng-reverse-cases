@@ -166,7 +166,7 @@ MousePatches:
   DEFB $E8,$FE            ; $FEE8
   DEFB $CD,$00,$FE        ; CALL MouseReset
 
-; the 48K game as it runs at $6800-$FFFF, with the 2 in 1's Pentagon timing and
-; default keys (docs/03 3.6)
+; the game as it runs at $6800-$FFFF (src/game/game.asm): the 48K's, with the 2
+; in 1's Pentagon timing and default keys (docs/03 3.6)
 GameImage:
-  INCBIN "../res/game/game-6800.bin",$0000,38912
+  INCBIN "obj/game.bin",$0000,38912

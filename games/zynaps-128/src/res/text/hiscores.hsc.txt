@@ -1,0 +1,7 @@
+# Zynaps: the high-score table $8261-$82A6 (ROLE OF HONOUR): "score: the line | the score"
+# (tools/res_text.py; src/res/text/README.md)
+score: {row 6}{col 8}EGO{msg 8} | 68000
+score: {row 9}{col 8}DFR{msg 8} | 25000
+score: {row 12}{col 8}BAV{msg 8} | 10000
+score: {row 15}{col 8}HNR{msg 8} | 5000
+score: {row 18}{col 8}BMR{msg 8} | 1000

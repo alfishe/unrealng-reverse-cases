@@ -1,0 +1,818 @@
+{
+  "schema": 1,
+  "id": "sound/ay-players/zynaps-cpc/zx-port-2018",
+  "kind": "code",
+  "role": "player",
+  "name": "The sound driver of the Amstrad CPC Zynaps (Hewson 1987, music by J. Dave Rogers), on the ZX AY",
+  "authors": [
+    "Hewson Consultants"
+  ],
+  "year": 1987,
+  "tags": [
+    "ay",
+    "cpc",
+    "player",
+    "sfx",
+    "zynaps",
+    "hewson"
+  ],
+  "summary": "Music on three channels and effects that take channel B or C (A for the shot) from it until their end: start +0, stop +3, a frame +6, then one entry per effect. The CPC driver moved up by $5000, its PPI output replaced by OUT to $FFFD / $BFFD.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 803,
+    "sha1": "95403bbb669e6d8338de3dd8a2f800f4c3f88f70",
+    "masked_sha1": "0589f07a93003655154639922d248ce383200475"
+  },
+  "origin": "$C968",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 94,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC9B"
+    },
+    {
+      "offset": 99,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC9B"
+    },
+    {
+      "offset": 103,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC9C"
+    },
+    {
+      "offset": 111,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCC9"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCF6"
+    },
+    {
+      "offset": 122,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DF4D"
+    },
+    {
+      "offset": 146,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC99"
+    },
+    {
+      "offset": 169,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCBA"
+    },
+    {
+      "offset": 172,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCE7"
+    },
+    {
+      "offset": 175,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CD14"
+    },
+    {
+      "offset": 178,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC93"
+    },
+    {
+      "offset": 181,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC94"
+    },
+    {
+      "offset": 184,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC95"
+    },
+    {
+      "offset": 187,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 192,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC9B"
+    },
+    {
+      "offset": 197,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 202,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 207,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC92"
+    },
+    {
+      "offset": 217,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC98"
+    },
+    {
+      "offset": 220,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFBF"
+    },
+    {
+      "offset": 232,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 249,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 253,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC9C"
+    },
+    {
+      "offset": 257,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC8B"
+    },
+    {
+      "offset": 260,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 267,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCC9"
+    },
+    {
+      "offset": 271,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC8D"
+    },
+    {
+      "offset": 274,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 278,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCF6"
+    },
+    {
+      "offset": 282,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC8F"
+    },
+    {
+      "offset": 285,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 297,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 305,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 308,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 330,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 335,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 340,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 361,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 366,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 379,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 384,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 387,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 404,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC91"
+    },
+    {
+      "offset": 412,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 421,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC99"
+    },
+    {
+      "offset": 427,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DF4D"
+    },
+    {
+      "offset": 432,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DF4F"
+    },
+    {
+      "offset": 436,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DF4D"
+    },
+    {
+      "offset": 441,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DF4F"
+    },
+    {
+      "offset": 444,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 469,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 483,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCA0"
+    },
+    {
+      "offset": 486,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 509,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 521,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 530,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 605,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCA0"
+    },
+    {
+      "offset": 608,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCA1"
+    },
+    {
+      "offset": 611,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCB8"
+    },
+    {
+      "offset": 614,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCA6"
+    },
+    {
+      "offset": 617,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCAC"
+    },
+    {
+      "offset": 620,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCB9"
+    },
+    {
+      "offset": 623,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCA7"
+    },
+    {
+      "offset": 626,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCAD"
+    },
+    {
+      "offset": 637,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC92"
+    },
+    {
+      "offset": 651,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC99"
+    },
+    {
+      "offset": 657,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC92"
+    },
+    {
+      "offset": 732,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 747,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CCA0"
+    },
+    {
+      "offset": 764,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC91"
+    },
+    {
+      "offset": 775,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_CC91"
+    },
+    {
+      "offset": 788,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "EngineStart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "start the music"
+    },
+    {
+      "offset": 3,
+      "name": "EngineStop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "stop the music"
+    },
+    {
+      "offset": 6,
+      "name": "EnginePlay",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "one frame of the music and the effects"
+    },
+    {
+      "offset": 9,
+      "name": "EffectShot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "sound $0E on channel A"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "EngineStart",
+      "comment": ""
+    },
+    {
+      "offset": 3,
+      "name": "EngineStop",
+      "comment": ""
+    },
+    {
+      "offset": 6,
+      "name": "EnginePlay",
+      "comment": ""
+    },
+    {
+      "offset": 9,
+      "name": "EffectShot",
+      "comment": ""
+    },
+    {
+      "offset": 13,
+      "name": "EffectSound0F10",
+      "comment": ""
+    },
+    {
+      "offset": 19,
+      "name": "EffectSound11",
+      "comment": ""
+    },
+    {
+      "offset": 23,
+      "name": "EffectRoleOfHonour",
+      "comment": ""
+    },
+    {
+      "offset": 27,
+      "name": "EffectSound13",
+      "comment": ""
+    },
+    {
+      "offset": 31,
+      "name": "EffectShipLost",
+      "comment": ""
+    },
+    {
+      "offset": 35,
+      "name": "EffectSound1A1B",
+      "comment": ""
+    },
+    {
+      "offset": 41,
+      "name": "EffectPodTaken",
+      "comment": ""
+    },
+    {
+      "offset": 45,
+      "name": "EffectSound17",
+      "comment": ""
+    },
+    {
+      "offset": 49,
+      "name": "EffectSound18",
+      "comment": ""
+    },
+    {
+      "offset": 53,
+      "name": "EffectEnemyMissile",
+      "comment": ""
+    },
+    {
+      "offset": 57,
+      "name": "EffectPodFullGauge",
+      "comment": ""
+    },
+    {
+      "offset": 61,
+      "name": "EffectSound10",
+      "comment": ""
+    },
+    {
+      "offset": 65,
+      "name": "EffectPodChange",
+      "comment": ""
+    },
+    {
+      "offset": 69,
+      "name": "EffectExplosion",
+      "comment": ""
+    },
+    {
+      "offset": 73,
+      "name": "EffectGameOver",
+      "comment": ""
+    },
+    {
+      "offset": 79,
+      "name": "ShipLostSecond",
+      "comment": ""
+    },
+    {
+      "offset": 83,
+      "name": "StartOnChannelA",
+      "comment": ""
+    },
+    {
+      "offset": 88,
+      "name": "StartTwoSounds",
+      "comment": ""
+    },
+    {
+      "offset": 92,
+      "name": "StartSound",
+      "comment": ""
+    },
+    {
+      "offset": 101,
+      "name": "SetUpChannel",
+      "comment": ""
+    },
+    {
+      "offset": 121,
+      "name": "ChannelChosen",
+      "comment": ""
+    },
+    {
+      "offset": 167,
+      "name": "StopMusic",
+      "comment": ""
+    },
+    {
+      "offset": 189,
+      "name": "StartMusic",
+      "comment": ""
+    },
+    {
+      "offset": 209,
+      "name": "SilenceAndSend",
+      "comment": ""
+    },
+    {
+      "offset": 214,
+      "name": "SendRegisters",
+      "comment": ""
+    },
+    {
+      "offset": 224,
+      "name": "SendNext",
+      "comment": ""
+    },
+    {
+      "offset": 235,
+      "name": "PitchStep",
+      "comment": ""
+    },
+    {
+      "offset": 242,
+      "name": "Unused6",
+      "comment": ""
+    },
+    {
+      "offset": 248,
+      "name": "PlayFrame",
+      "comment": ""
+    },
+    {
+      "offset": 288,
+      "name": "PlayChannel",
+      "comment": ""
+    },
+    {
+      "offset": 311,
+      "name": "NextCommand",
+      "comment": ""
+    },
+    {
+      "offset": 312,
+      "name": "SetPointer",
+      "comment": ""
+    },
+    {
+      "offset": 318,
+      "name": "ReadCommands",
+      "comment": ""
+    },
+    {
+      "offset": 324,
+      "name": "ReadCommand",
+      "comment": ""
+    },
+    {
+      "offset": 389,
+      "name": "CmdEnd",
+      "comment": ""
+    },
+    {
+      "offset": 402,
+      "name": "CmdNoise",
+      "comment": ""
+    },
+    {
+      "offset": 414,
+      "name": "CmdTranspose",
+      "comment": ""
+    },
+    {
+      "offset": 419,
+      "name": "CmdMixer",
+      "comment": ""
+    },
+    {
+      "offset": 425,
+      "name": "CmdSwap",
+      "comment": ""
+    },
+    {
+      "offset": 446,
+      "name": "CmdVolEnv",
+      "comment": ""
+    },
+    {
+      "offset": 448,
+      "name": "SetEnvelope",
+      "comment": ""
+    },
+    {
+      "offset": 471,
+      "name": "CmdPitchEnv",
+      "comment": ""
+    },
+    {
+      "offset": 479,
+      "name": "CmdNoiseEnv",
+      "comment": ""
+    },
+    {
+      "offset": 488,
+      "name": "CmdCall",
+      "comment": ""
+    },
+    {
+      "offset": 511,
+      "name": "CmdReturn",
+      "comment": ""
+    },
+    {
+      "offset": 532,
+      "name": "ShortNote",
+      "comment": ""
+    },
+    {
+      "offset": 537,
+      "name": "Note",
+      "comment": ""
+    },
+    {
+      "offset": 540,
+      "name": "PlayNote",
+      "comment": ""
+    },
+    {
+      "offset": 650,
+      "name": "MixerNoiseDone",
+      "comment": ""
+    },
+    {
+      "offset": 672,
+      "name": "VolumeEnvelope",
+      "comment": ""
+    },
+    {
+      "offset": 702,
+      "name": "PitchEnvelope",
+      "comment": ""
+    },
+    {
+      "offset": 745,
+      "name": "NoiseEnvelope",
+      "comment": ""
+    },
+    {
+      "offset": 777,
+      "name": "EnvelopeRepeat",
+      "comment": ""
+    },
+    {
+      "offset": 796,
+      "name": "SetStepPointer",
+      "comment": ""
+    }
+  ],
+  "uses": {
+    "needs": [
+      "ay"
+    ],
+    "ports": [
+      "$FFFD w",
+      "$BFFD w"
+    ]
+  },
+  "found_in": [
+    {
+      "program": "Zynaps 2 in 1: the game",
+      "case": "games/zynaps-128",
+      "address": "$C968",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "e03a78e"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps-128",
+    "file": "src/sound/engine.asm",
+    "label": "EngineStart"
+  },
+  "docs": [
+    "games/zynaps-128/docs/09-sound.md"
+  ]
+}

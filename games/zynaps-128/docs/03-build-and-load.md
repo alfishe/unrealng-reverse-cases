@@ -257,7 +257,8 @@ flowchart LR
     SB --> B1["src/intro/block1.asm"]
     PB --> B1
     H["src/game: hooks, glue128, kmouse"] --> B2["src/game/block2.asm"]
-    G["src/res/game/game-6800.bin"] --> B2
+    GA["src/game/game.asm + 49 modules, src/res: gfx, levels, text, fonts, effects, music"] --> G["build/obj/game.bin"]
+    G --> B2
     B1 -- "hrust1.py pack + block1.hints" --> K1["block1.hr"]
     B2 -- "hrust1.py pack" --> K2["block2.hr"]
     L["src/loader: zynapsb, depacker"] --> M["mkscl.py / mktrd.py"]
@@ -280,9 +281,18 @@ regenerates all of them and installs a part only when it assembles to the origin
 | the 128K glue | `src/game/glue.ann` | `$5B00` | 11 |
 | the mouse driver | `src/game/mouse.ann` | `$FE00` | 9 |
 | boot.B | `src/boot/boot.ann` | `$5D3B` | 21 |
+| the game | `src/game/game.ann` (`kit/mkgame.py`, `tools/mkgame.sh`) | `$6800` | 519 in 49 modules |
+| the STarKos player and SK10 | `src/sound/starkos.ann` | `$8000` | 15 |
+| the page-4 engine | `src/sound/engine.ann` | `$C968` | 39 |
 
-The 48K game in block 2 is still one binary resource (`src/res/game/game-6800.bin`), until the 48K case's
-`game.ann` is complete (3.6).
+The game in block 2 is the 48K's annotations made this game's: `src/game/game.ann` was seeded from the 48K case's
+(`../zynaps/src/game/game.ann`, the same bytes keep their names and descriptions, the 48K's evidence named "48K c2"
+and so on), with this game's default keys and Pentagon counts described where they differ (3.6), zeros where the
+48K tape had leftovers (`$FDE8`-`$FE4A`, `$FFD9`-`$FFFF`), and an "On a 128K" paragraph on each of the 34 entries the
+set-up or the glue patches at load. `kit/mkgame.py` writes the 49 modules; the resources (graphics, levels, texts,
+effects, the title tune) are in the 48K's editable formats (the plugins `tools/res_*.py`, copied). The routines and
+the data are listed in [11. Data reference](11-data-reference.md) and [12. Routine reference](12-routine-reference.md),
+with this case's counts.
 
 ### The packer
 

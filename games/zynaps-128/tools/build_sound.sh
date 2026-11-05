@@ -24,7 +24,8 @@ else
 fi
 
 asm() { # SOURCE: from the case's folder (SAVEBIN and INCBIN paths are relative to it), no warnings allowed
-    out=$("$SJASMPLUS" --nologo --msg=war --fullpath -I. "$1" 2>&1) || { echo "$out"; exit 1; }
+    mkdir -p build/lst
+    out=$("$SJASMPLUS" --nologo --msg=war --fullpath -I. --lst="build/lst/$(basename "$1" .asm).lst" "$1" 2>&1) || { echo "$out"; exit 1; }
     [ -z "$out" ] || { echo "$out"; echo "build_sound: $1: warnings"; exit 1; }
 }
 same() { # NAME: build/sound/NAME against the original's part

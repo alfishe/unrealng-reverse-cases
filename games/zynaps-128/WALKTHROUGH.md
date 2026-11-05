@@ -51,15 +51,38 @@ python3 $R stop --work work/stage2/c1
 
 Each part is annotated in its `.ann` and written by `tools/part_mkasm.py` (kit/mkgame.py's pipeline on an image that
 is not the game: the L1 basic blocks whose bytes equal the image's, widened by the static walk; an `@const` / `@isub`
-names a game address the set-up writes inside block 2's range). `tools/mkasm_all.sh` writes all eight parts and
+names a game address the set-up writes inside block 2's range). `tools/mkasm_all.sh` writes all ten parts and
 installs each only when it assembles to the original's bytes. The packer: `tools/hrust1.py check` on both packed
 blocks first showed which rules give the original's tokens (block 2 all of them; block 1 all but one, kept in
 `src/intro/block1.hints`); `pack --file NAME` adds the packer's TR-DOS tail. The intro's pictures:
-`tools/res_formats.py export` once, then `build`. Then:
+`tools/res_formats.py export` once, then `build`.
+
+The game (step 2, once the 48K case's annotations were complete): `src/game/game.ann` seeded from
+`../zynaps/src/game/game.ann` by a one-off script (`work/stage2/game128/mkann.py`: the module below `$6800` dropped,
+the 48K's evidence renamed "48K c2" and so on, the changed places and the leftovers' zeros described, an "On a 128K"
+paragraph on every routine the set-up or the glue patches), then edited by hand. kit/mkgame.py reads `case.json`
+(the image `$6800`-`$FFFF` from `work/parts/game-6800.bin`) and the L1 of `work/c1`, `work/r1`, `work/r2`: links to
+`work/stage2/game/l1.json` and `work/stage2/stubs/r1`, `r2`. The resource plugins `tools/res_*.py` are the 48K case's,
+copied. Then the generated references:
 
 ```sh
+ln -s ../stage2/game/l1.json work/c1/l1.json; ln -s ../stage2/stubs/r1/l1.json work/r1/l1.json; ln -s ../stage2/stubs/r2/l1.json work/r2/l1.json
+sh tools/mkgame.sh          # kit/mkgame.py: 519 entries, 49 modules, identical; installed beside the parts
+python3 tools/res_preview.py
+sh tools/mkasm_all.sh       # block 2 now includes build/obj/game.bin
+python3 ../../kit/refdocs.py --case .
 tools/build.sh      # build/Zynaps(2In1)(km).scl and .trd: identical to the originals, every part compared on the way
 ```
+
+The signatures (`../../signatures/sources.json`, the five `games/zynaps-128` items, from the listings `tools/build.sh`
+writes in `build/lst/`): the game's modules through `kit/sig_add.py ann` (41 the same pieces as already in the base,
+`found_in` added: 40 of the 48K's modules and the title tune on `sound/beeper/steve-turner-two-voice/seen-zynaps`;
+`controldata`, `playfield`, `scroll`, `menu`, `interrupts` new, the modules with the changed places; `playerdata`,
+`tables`, `topcells` have no anchor), and four `lst` entries: `sound/ay-players/starkos/seen-zynaps-128`,
+`sound/ay-players/zynaps-cpc/zx-port-2018` (the CPC-derived engine), `system/input/kempston-mouse/seen-zynaps-128`,
+`packers/hrust/1/seen-zynaps-128` (the base's `packers/hrust/1/screen-depacker` is the self-relocating variant, not
+the same bytes; `tools/sig/depacker-end.asm` gives the depacker an end label). Then `python3 ../../kit/sig_index.py`
+and `--check`: ok, 119 entries.
 
 The mouse: the game's start test reads bit 1 of `$FADF` (`src/game/setup.ann`, the patch at `$A74E`); on a real
 Kempston mouse that is the left button (MAME `kempmouse.cpp`, ZEsarUX, ZX Next VHDL). The glue's counts (the engine

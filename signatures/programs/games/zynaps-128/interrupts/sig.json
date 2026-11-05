@@ -1,0 +1,704 @@
+{
+  "schema": 1,
+  "id": "programs/games/zynaps-128/interrupts",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Zynaps 2 in 1: interrupts",
+  "authors": [
+    "Hewson Consultants (Dominic Robinson)",
+    "goodboy",
+    "tiboh"
+  ],
+  "year": 2018,
+  "tags": [
+    "zynaps-128",
+    "game-module",
+    "interrupts"
+  ],
+  "summary": "The interrupts: the title, the play passes and their scheduler.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 370,
+    "sha1": "f19951b58e739a5ef417ea4c4b93a1b6f834d4c1",
+    "masked_sha1": "90c6af02ce426525d0a418f0bf5324c9d4ba1aef"
+  },
+  "origin": "$A9A1",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassPhase"
+    },
+    {
+      "offset": 8,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollRestart"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayFlags"
+    },
+    {
+      "offset": 21,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DeathTimer"
+    },
+    {
+      "offset": 27,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayFlags"
+    },
+    {
+      "offset": 34,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollThisPass"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayFlags"
+    },
+    {
+      "offset": 44,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShiftPage"
+    },
+    {
+      "offset": 50,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FineScrollToggle"
+    },
+    {
+      "offset": 57,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShiftPage"
+    },
+    {
+      "offset": 64,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollThisPass"
+    },
+    {
+      "offset": 69,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EffectTick"
+    },
+    {
+      "offset": 91,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassPhase"
+    },
+    {
+      "offset": 96,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 99,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassCount"
+    },
+    {
+      "offset": 103,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassBit"
+    },
+    {
+      "offset": 108,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassDepth"
+    },
+    {
+      "offset": 112,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassPhase"
+    },
+    {
+      "offset": 120,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EffectTick"
+    },
+    {
+      "offset": 123,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColourCycle"
+    },
+    {
+      "offset": 136,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundPattern1"
+    },
+    {
+      "offset": 140,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundPattern1"
+    },
+    {
+      "offset": 144,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RowBeepMask"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundPattern2"
+    },
+    {
+      "offset": 151,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundPattern2"
+    },
+    {
+      "offset": 155,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ObjectBeepMask"
+    },
+    {
+      "offset": 158,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundPattern3"
+    },
+    {
+      "offset": 162,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundPattern3"
+    },
+    {
+      "offset": 166,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SlotBeepMask"
+    },
+    {
+      "offset": 169,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassPhase"
+    },
+    {
+      "offset": 175,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollStep"
+    },
+    {
+      "offset": 178,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 181,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChainStep"
+    },
+    {
+      "offset": 184,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C9F3"
+    },
+    {
+      "offset": 187,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 190,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 193,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 196,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StartColumn"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayFlags"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TestHitGrid"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearHitGrid"
+    },
+    {
+      "offset": 225,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 228,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoveStars"
+    },
+    {
+      "offset": 231,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PanelFrame"
+    },
+    {
+      "offset": 243,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawPlayfield"
+    },
+    {
+      "offset": 246,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CheckPauseAndEnd"
+    },
+    {
+      "offset": 249,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 252,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RunObjects"
+    },
+    {
+      "offset": 255,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ObjectStrips"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassPhase"
+    },
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarkEnemyGrid"
+    },
+    {
+      "offset": 266,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassPhase"
+    },
+    {
+      "offset": 271,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaveScriptStep"
+    },
+    {
+      "offset": 274,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassDepth"
+    },
+    {
+      "offset": 281,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassPhase"
+    },
+    {
+      "offset": 288,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ResumeScript"
+    },
+    {
+      "offset": 300,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChainStep"
+    },
+    {
+      "offset": 307,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChainStep"
+    },
+    {
+      "offset": 310,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassDepth"
+    },
+    {
+      "offset": 325,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 330,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BuildColumn"
+    },
+    {
+      "offset": 335,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BuildColumn"
+    },
+    {
+      "offset": 340,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BuildColumn"
+    },
+    {
+      "offset": 347,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassPhase"
+    },
+    {
+      "offset": 351,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PassDepth"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "ScrollControl",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Start, stop and step the fine scroll"
+    },
+    {
+      "offset": 67,
+      "name": "TitleInterrupt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Interrupt handler of the title and between screens"
+    },
+    {
+      "offset": 76,
+      "name": "PlayInterrupt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Interrupt handler in play: one phase of a game pass"
+    },
+    {
+      "offset": 245,
+      "name": "PlayPass",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The play logic of a phase"
+    },
+    {
+      "offset": 290,
+      "name": "PlayChain",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Advance the drawing chain"
+    },
+    {
+      "offset": 329,
+      "name": "ChainBuildColumn1",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Chain step 1: build cells of the new column"
+    },
+    {
+      "offset": 334,
+      "name": "ChainBuildColumn2",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Chain step 2: build cells of the new column"
+    },
+    {
+      "offset": 339,
+      "name": "ChainBuildColumn3",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Chain step 3: build cells of the new column"
+    },
+    {
+      "offset": 344,
+      "name": "ChainEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The end of the chain: phase 0"
+    },
+    {
+      "offset": 350,
+      "name": "PlayInterruptExit",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Leave the play interrupt"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 7,
+      "name": "",
+      "comment": "the restart flag"
+    },
+    {
+      "offset": 15,
+      "name": "",
+      "comment": "the scroll on"
+    },
+    {
+      "offset": 20,
+      "name": "ScrollControlRunning",
+      "comment": ""
+    },
+    {
+      "offset": 26,
+      "name": "",
+      "comment": "the scroll off"
+    },
+    {
+      "offset": 32,
+      "name": "ScrollControlStep",
+      "comment": ""
+    },
+    {
+      "offset": 43,
+      "name": "",
+      "comment": "stopped: only up to the cell boundary"
+    },
+    {
+      "offset": 49,
+      "name": "ScrollControlGray",
+      "comment": "the next fine position"
+    },
+    {
+      "offset": 90,
+      "name": "",
+      "comment": "a pass still in its chain: skip"
+    },
+    {
+      "offset": 98,
+      "name": "",
+      "comment": "PassCount"
+    },
+    {
+      "offset": 102,
+      "name": "",
+      "comment": "PassBit"
+    },
+    {
+      "offset": 107,
+      "name": "",
+      "comment": "depth"
+    },
+    {
+      "offset": 111,
+      "name": "",
+      "comment": "the phase"
+    },
+    {
+      "offset": 117,
+      "name": "",
+      "comment": "the interrupt flag"
+    },
+    {
+      "offset": 122,
+      "name": "",
+      "comment": "the colour cycle: 8, $10, $18"
+    },
+    {
+      "offset": 134,
+      "name": "PlayInterruptColour",
+      "comment": ""
+    },
+    {
+      "offset": 135,
+      "name": "",
+      "comment": "the sound bit patterns, one bit a pass"
+    },
+    {
+      "offset": 168,
+      "name": "",
+      "comment": "phase 1: a new pass"
+    },
+    {
+      "offset": 177,
+      "name": "",
+      "comment": "the chain from its start"
+    },
+    {
+      "offset": 183,
+      "name": "",
+      "comment": "F3 C9: DI; RET after each chain step again"
+    },
+    {
+      "offset": 198,
+      "name": "",
+      "comment": "the wait with the scroll on: $0B ($02 in the 48K)"
+    },
+    {
+      "offset": 207,
+      "name": "",
+      "comment": "and without"
+    },
+    {
+      "offset": 211,
+      "name": "PlayInterruptPhase",
+      "comment": "phases 2-3"
+    },
+    {
+      "offset": 217,
+      "name": "",
+      "comment": "phases 2-3: $10 ($05 in the 48K)"
+    },
+    {
+      "offset": 219,
+      "name": "PlayInterruptWait",
+      "comment": ""
+    },
+    {
+      "offset": 221,
+      "name": "PlayInterruptDelay",
+      "comment": ""
+    },
+    {
+      "offset": 230,
+      "name": "",
+      "comment": "the panel spinners, power and weapon marks"
+    },
+    {
+      "offset": 235,
+      "name": "",
+      "comment": "$77 ($10 in the 48K)"
+    },
+    {
+      "offset": 237,
+      "name": "PlayInterruptDelay2",
+      "comment": ""
+    },
+    {
+      "offset": 239,
+      "name": "",
+      "comment": "border black"
+    },
+    {
+      "offset": 294,
+      "name": "PlayChainDelay",
+      "comment": ""
+    },
+    {
+      "offset": 299,
+      "name": "",
+      "comment": "the next chain step"
+    },
+    {
+      "offset": 309,
+      "name": "",
+      "comment": "nested?"
+    },
+    {
+      "offset": 316,
+      "name": "",
+      "comment": "NOP the DI; RET of the step before"
+    },
+    {
+      "offset": 324,
+      "name": "RunChainStep",
+      "comment": "run it, returning to PlayInterruptExit"
+    },
+    {
+      "offset": 332,
+      "name": "ChainStep1End",
+      "comment": "DI; RET or NOP; NOP"
+    },
+    {
+      "offset": 337,
+      "name": "ChainStep2End",
+      "comment": "DI; RET or NOP; NOP"
+    },
+    {
+      "offset": 342,
+      "name": "ChainStep3End",
+      "comment": "DI; RET or NOP; NOP"
+    },
+    {
+      "offset": 354,
+      "name": "PlayInterruptRestore",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps 2 in 1",
+      "case": "games/zynaps-128",
+      "address": "$A9A1",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "e03a78e"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps-128",
+    "file": "src/game/interrupts.asm",
+    "label": "ScrollControl"
+  },
+  "docs": [
+    "games/zynaps-128/docs/README.md"
+  ]
+}

@@ -38,9 +38,15 @@ gen --image work/parts/glue-5b00.bin --org '$5B00' --ann src/game/glue.ann --top
     $(l1 glue game) --title 'Zynaps 2 in 1: the 128K glue ($5B00)' --save build/obj/glue-5b00.bin
 gen --image work/parts/mouse-fe00.bin --org '$FE00' --ann src/game/mouse.ann --top kmouse --dest src/game \
     --title 'Zynaps 2 in 1: the Kempston mouse driver ($FE00)' --save build/obj/mouse-fe00.bin
+# block 2 includes the game as tools/build.sh assembles it (src/game/game.asm, tools/mkgame.sh's)
+python3 tools/res_formats.py build --out build > /dev/null
+mkdir -p build/obj
+(cd build/obj && "${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}" --nologo \
+    --msg=war -I.. -I../../src/game ../../src/game/game.asm)
 gen --image work/parts/game-6000.bin --org '$6000' --ann src/game/setup.ann --top block2 --dest src/game \
     $(l1 load2 glue) --title 'Zynaps 2 in 1: block 2, the game and its 128K layer ($6000-$FB84)' \
     --built game/stubs-b30d.bin=obj/stubs-b30d.bin --built game/glue-5b00.bin=obj/glue-5b00.bin \
-    --built game/mouse-fe00.bin=obj/mouse-fe00.bin --save build/obj/block2.bin
+    --built game/mouse-fe00.bin=obj/mouse-fe00.bin \
+    --built game/game-6800.bin=obj/game.bin --save build/obj/block2.bin
 gen --image work/parts/boot-5d3b.bin --org '$5D3B' --ann src/boot/boot.ann --top bootb --dest src/boot \
     $(l1 boot) --title "Zynaps 2 in 1: the TRD's boot.B (\$5D3B)" --save build/obj/boot-5d3b.bin

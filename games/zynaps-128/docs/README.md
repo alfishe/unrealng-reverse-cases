@@ -12,8 +12,8 @@
 | [8. HUD and text](08-hud-and-text.md) | panels, fonts, the print routine, every string |
 | [9. Sound](09-sound.md) | the engines, music and effects formats, the players, timing |
 | [10. Gameplay logic](10-gameplay-logic.md) | the rules as code: the player, enemies and their behaviour, levels, scoring, what the recordings showed |
-| 11. Data reference | every data entry (generated: `kit/refdocs.py --case .`), written in stage 2 |
-| 12. Routine reference | every routine with its figures (generated), written in stage 2 |
+| [11. Data reference](11-data-reference.md) | every data entry of the game (generated: `kit/refdocs.py --case .`) |
+| [12. Routine reference](12-routine-reference.md) | every routine of the game with what the recordings saw it do (generated) |
 | [Texts](texts/) | every text on screen as UTF-8 Markdown with a translation: [boot](texts/boot.md), [intro](texts/intro.md), [game](texts/game.md); [the differences from the 48K](texts/differences.md) with the side-by-side screenshots of `img/compare/` |
 
 ## Terms

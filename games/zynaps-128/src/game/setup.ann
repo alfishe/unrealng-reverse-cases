@@ -1,8 +1,8 @@
 # The annotations of block 2 as it unpacks to $6000-$FB84: the single source of src/game/setup*.asm and block2.asm
 # (tools/part_mkasm.py). The image is work/parts/game-6000.bin. Its parts that run elsewhere are their own sources,
 # built first and assembled here with INCBIN: the hook stubs (src/game/stubs.ann, at $B30D), the 128K glue
-# (glue.ann, at $5B00), the mouse driver (mouse.ann, at $FE00). The 48K game ($6385-$FB84, moved to $6800-$FFFF) is
-# one resource, src/res/game/game-6800.bin, until the 48K case's game.ann is ready (docs/03-build-and-load.md 3.10).
+# (glue.ann, at $5B00), the mouse driver (mouse.ann, at $FE00) and the game ($6385-$FB84, moved to $6800-$FFFF:
+# src/game/game.ann, kit/mkgame.py, assembled at $6800 into build/obj/game.bin).
 #
 # The code is what the analysis builds work/stage2/load2 (the unpack) and work/stage2/glue (frames 3302-3314: the
 # relocator to JP $8000) ran, widened by mkgame's walk. The game's addresses the set-up writes are inside this image's
@@ -128,5 +128,5 @@ $6376 ; CALL MouseRead: NOP
 $637A ; LD A,$FA: IN A,($DF): AND 2
 $6380 ; $FEE8
 $6382 ; CALL MouseReset
-$6385 b GameImage ; the 48K game as it runs at $6800-$FFFF, with the 2 in 1's Pentagon timing and default keys (docs/03 3.6)
+$6385 b GameImage ; the game as it runs at $6800-$FFFF (src/game/game.asm): the 48K's, with the 2 in 1's Pentagon timing and default keys (docs/03 3.6)
 @res game/game-6800.bin

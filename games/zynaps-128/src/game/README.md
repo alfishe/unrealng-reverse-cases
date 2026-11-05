@@ -11,7 +11,11 @@ with `tools/hrust1.py` into sectors 58-136 of `ZYNAPS.B`. [docs/03-build-and-loa
 | `glue128.asm` + `glue.asm` | `glue.ann` | `build/obj/glue-5b00.bin` | `$5B00` | the 128K glue: the engine each frame from the game's interrupt, the music on and off, the patches it writes |
 | `kmouse.asm` + `mouse.asm` | `mouse.ann` | `build/obj/mouse-fe00.bin` | `$FE00` | the Kempston mouse driver (option K-MOUSE) |
 
-The 48K game itself (`$6800`-`$FFFF` as it runs, 38 912 bytes) is one resource, `src/res/game/game-6800.bin`, until
-the 48K case's `game.ann` (`../zynaps/src/game/game.ann`) is complete: this case's `game.ann` will then be seeded from
-it for the identical bytes, with the 11 changed places of the 2 in 1 annotated (docs/03 3.6). The `.asm` files are
-written from the `.ann` files by `tools/part_mkasm.py` (`tools/mkasm_all.sh`); edit the `.ann`.
+| `game.asm` + 49 modules (`buffers.asm` ... `weapons.asm`) | `game.ann` | `build/obj/game.bin` | `$6800` | the game: the 48K Zynaps as the set-up moves it, with this game's keys and Pentagon timing (docs/03 3.6); 519 entries |
+
+The game's modules are written by `kit/mkgame.py` from `game.ann` (case.json: the image `$6800`-`$FFFF`, the L1 of
+`work/c1`, `r1`, `r2`; `tools/mkgame.sh` runs it and installs the modules and the resources only when they assemble to
+the image). The names and descriptions of the bytes the two games share are the 48K case's (`../zynaps`); the
+changed places are described as they are here, and every routine the set-up or the glue patches has an "On a 128K"
+paragraph. The parts' `.asm` files are written from their `.ann` files by `tools/part_mkasm.py`
+(`tools/mkasm_all.sh`, after `tools/mkgame.sh`: block 2 includes `build/obj/game.bin`). Edit the `.ann`.

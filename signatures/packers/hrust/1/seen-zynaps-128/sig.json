@@ -1,0 +1,249 @@
+{
+  "schema": 1,
+  "id": "packers/hrust/1/seen-zynaps-128",
+  "kind": "code",
+  "role": "depacker",
+  "name": "Hrust 1 depacker, in place (HR header), one sector at $5B00",
+  "authors": [
+    "Dmitry Pyankov"
+  ],
+  "year": null,
+  "tags": [
+    "hrust",
+    "packer",
+    "depacker"
+  ],
+  "summary": "Unpacks the HR block at HL to DE in place: moves it up to end on the destination's end, unpacks forward, writes the header's six last bytes at the end, returns to the caller's caller.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 256,
+    "sha1": "5c6f62bc48c2cc6bafa045396509cc09ef8e15f2",
+    "masked_sha1": "0982e3b36de9322c4c277b2dc83dfeb502961671"
+  },
+  "origin": "$5B00",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFF4"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "Depack",
+      "in": "HL = the HR block, DE = the destination",
+      "out": null,
+      "clobbers": null,
+      "summary": "unpack in place"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "Depack",
+      "comment": ""
+    },
+    {
+      "offset": 24,
+      "name": "MoveBlock",
+      "comment": ""
+    },
+    {
+      "offset": 39,
+      "name": "SaveLast6",
+      "comment": ""
+    },
+    {
+      "offset": 55,
+      "name": "Literal",
+      "comment": ""
+    },
+    {
+      "offset": 58,
+      "name": "PutByte",
+      "comment": ""
+    },
+    {
+      "offset": 60,
+      "name": "NextToken",
+      "comment": ""
+    },
+    {
+      "offset": 61,
+      "name": "TokenFlag",
+      "comment": ""
+    },
+    {
+      "offset": 66,
+      "name": "TokenFlagIn",
+      "comment": ""
+    },
+    {
+      "offset": 68,
+      "name": "Match",
+      "comment": ""
+    },
+    {
+      "offset": 70,
+      "name": "LengthGroup",
+      "comment": ""
+    },
+    {
+      "offset": 72,
+      "name": "LengthBit",
+      "comment": ""
+    },
+    {
+      "offset": 77,
+      "name": "LengthBitIn",
+      "comment": ""
+    },
+    {
+      "offset": 89,
+      "name": "LengthDone",
+      "comment": ""
+    },
+    {
+      "offset": 99,
+      "name": "SetLength",
+      "comment": ""
+    },
+    {
+      "offset": 100,
+      "name": "Distance",
+      "comment": ""
+    },
+    {
+      "offset": 105,
+      "name": "DistanceBit",
+      "comment": ""
+    },
+    {
+      "offset": 110,
+      "name": "DistanceBitIn",
+      "comment": ""
+    },
+    {
+      "offset": 120,
+      "name": "Len2Distance",
+      "comment": ""
+    },
+    {
+      "offset": 125,
+      "name": "ShortDistance",
+      "comment": ""
+    },
+    {
+      "offset": 127,
+      "name": "HighBits",
+      "comment": ""
+    },
+    {
+      "offset": 132,
+      "name": "HighBitsIn",
+      "comment": ""
+    },
+    {
+      "offset": 135,
+      "name": "SetHigh",
+      "comment": ""
+    },
+    {
+      "offset": 146,
+      "name": "CopyMatch",
+      "comment": ""
+    },
+    {
+      "offset": 150,
+      "name": "NextTokenJump",
+      "comment": ""
+    },
+    {
+      "offset": 152,
+      "name": "GrowWindow",
+      "comment": ""
+    },
+    {
+      "offset": 157,
+      "name": "ByteDistance",
+      "comment": ""
+    },
+    {
+      "offset": 169,
+      "name": "InsertCopy",
+      "comment": ""
+    },
+    {
+      "offset": 184,
+      "name": "Special",
+      "comment": ""
+    },
+    {
+      "offset": 186,
+      "name": "SpecialBit",
+      "comment": ""
+    },
+    {
+      "offset": 191,
+      "name": "SpecialBitIn",
+      "comment": ""
+    },
+    {
+      "offset": 200,
+      "name": "LongLength",
+      "comment": ""
+    },
+    {
+      "offset": 207,
+      "name": "LengthOrEnd",
+      "comment": ""
+    },
+    {
+      "offset": 219,
+      "name": "FourBits",
+      "comment": ""
+    },
+    {
+      "offset": 222,
+      "name": "FourBit",
+      "comment": ""
+    },
+    {
+      "offset": 227,
+      "name": "FourBitIn",
+      "comment": ""
+    },
+    {
+      "offset": 239,
+      "name": "CopyWords",
+      "comment": ""
+    },
+    {
+      "offset": 240,
+      "name": "CopyWord",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Zynaps 2 in 1: ZYNAPS.B",
+      "case": "games/zynaps-128",
+      "address": "$5B00",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "e03a78e"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps-128",
+    "file": "src/loader/depack.asm",
+    "label": "Depack"
+  },
+  "docs": [
+    "games/zynaps-128/docs/03-build-and-load.md"
+  ]
+}

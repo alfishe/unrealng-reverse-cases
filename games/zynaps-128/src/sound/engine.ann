@@ -15,7 +15,7 @@
 @module engine-entries ; the entries: the jump table, the effect entries, starting and stopping, the AY output
 @about The engine's interface. The game (the 48K Zynaps, patched by the 128K glue) keeps bank 0 at $C000 and pages in page 4 only for a call: the glue's interrupt handler at $5B00 calls EnginePlay once a frame, $5B50 stops the music (EngineStop) and starts it again (EngineStart), and the fifteen hook stubs at $B30D-$B3A8 call one of the effect entries ($C971-$C9B1) with page 4 in (docs/09-sound.md 9.2). Every entry keeps no register: the callers save what they need.
 @about An effect entry loads A with a sound number of the data image's SoundTable ($0E-$1F) and jumps to StartSound, which takes channels B and C in turn (LastChannel XOR 1; channel A only before the music was ever started), or to StartOnChannelA (the player's shot), or to StartTwoSounds (A then B: two sounds on the two effect channels). The music is sounds $0B, $0C, $0D on channels A, B, C (StartMusic); an effect takes its channel from the music until the effect's end command, and the music's channel then stays silent until EngineStart restarts the music (the glue's $5B50 with A not 0: 6 runs in c1).
-@about The entries without a hook stub: EffectSound13 ($C983) and EffectSound17 ($C995) are called by nothing in the game or the glue (a static scan of every part for the call; not run in c1); EffectSound10 ($C9A5) is called by the glue at $5B75 (the game's call at $B024 patched to $5B6D), 18 runs in c1.
+@about The entries without a hook stub: EffectSound13 ($C983) and EffectSound17 ($C995) are called by nothing in the game or the glue (a static scan of every part for the call; not run in c1); EffectLevelStart ($C9A5) is called by the glue at $5B75 (the game's call at $B024 patched to $5B6D), 18 runs in c1.
 @about The engine is the Amstrad CPC Zynaps's own sound driver (J. Dave Rogers's music, Hewson 1987) moved up by $5000: The Cyborg's AY rip of the CPC game (work/stage2/sound/cpc/local-modland/zynaps.cpc.emul, its code block at $7968) has the same 955 bytes but for: the high bytes of its own addresses ($7A25 there, $CA25 here); the output routine (SendRegisters to $CA5F: the CPC writes the AY through its PPI ports $F4xx / $F6xx, here OUT to $FFFD / $BFFD), whose shorter ZX form leaves room for PitchStep; the pitch envelope's step at $CC43 (the CPC adds step - $80 to the period in line, ADD HL,BC / LD C,$80; here CALL PitchStep adds twice that); StartMusic's LastChannel, $FF there and 3 here; and the variables ($CC8B on), which hold a running engine's values in the rip and a fresh engine's here. The doubled pitch step goes with the doubled periods: the data image's period table is the CPC's moved up 12 notes (docs/09-sound.md 9.6). Its data block ($D000-$FFFF in the rip) holds this data image at the same addresses, $DE48 on (src/res/sound/README.md).
 $C968 c EngineStart ; the jump table: start the music ($C968), stop it ($C96B), play a frame ($C96E)
 > The three entries of the engine's interface. $C968 JP StartMusic: 6 calls in c1's game window (the glue's $5B50 after a life). $C96B JP StopMusic: 29 calls. $C96E JP PlayFrame: 10393 calls, one a frame (the glue's interrupt handler $5B00).
@@ -23,36 +23,36 @@ $C96B EngineStop ; JP StopMusic
 $C96E EnginePlay ; JP PlayFrame
 $C971 c EffectShot ; sound $0E on channel A: the player fires
 > The hook stub $B32F (the 48K shot site $9C77): 91 runs in c1. Always channel A (StartOnChannelA), so a shot cuts the music's channel A.
-$C975 c EffectSound0F10 ; sounds $0F and $10 on the two effect channels
-> The hook stub $B334 (after the level count at $ACA2); not run in c1 (docs/09-sound.md 9.2).
-$C97B c EffectSound11 ; sound $11
-> The hook stub $B33C (an object's countdown at $9EC2); not run in c1.
+$C975 c EffectExtraLife ; sounds $0F and $10 on the two effect channels: an extra life
+> The hook stub $B334 (the extra life at $ACA2, 10 000 to 90 000 points): not run in c1, witnessed in r1 frame 6590 (docs/09-sound.md 9.2).
+$C97B c EffectBombBounce ; sound $11: a plasma bomb bounces off the ground
+> The hook stub $B33C (the bounce at $9EC2): not run in c1, 22 times in r1.
 $C97F c EffectRoleOfHonour ; sound $12: the role of honour shown
 > The hook stub $B344: 5 runs in c1, one a game.
 $C983 c EffectSound13 ; sound $13
 > No caller: no hook stub and no call in the game or the glue loads this entry (a scan of every part for $83 as the stub's L and for CALL $C983); not run in c1.
 $C987 c EffectShipLost ; sounds $14 and $15: the player's ship destroyed, the role of honour's result
 > The hook stubs $B354 (the ship destroyed, 18 runs) and $B34C (the role of honour's result, 5 runs): 23 runs. Goes on at ShipLostSecond for the second sound.
-$C98B c EffectSound1A1B ; sounds $1A and $1B
-> The hook stub $B35C (an object launched from the ship at $9CFA); not run in c1.
+$C98B c EffectHomingLaunch ; sounds $1A and $1B: a homing missile launched
+> The hook stub $B35C (the launch at $9CFA): not run in c1, in r2 at frames 127 and 287.
 $C991 c EffectPodTaken ; sound $16: a pod taken
 > The hook stub $B364: 1 run in c1 (frame 12017).
 $C995 c EffectSound17 ; sound $17
 > No caller (as EffectSound13); not run in c1.
-$C999 c EffectSound18 ; sound $18
-> The hook stub $B36C (the weapon slot $F5A8 launched); not run in c1.
+$C999 c EffectSpecialLaunch ; sound $18: a special weapon placed at the ship
+> The hook stub $B36C ($9CB0, shared by the bombs, the homing missiles and the seekers): not run in c1, 9 bombs in r1.
 $C99D c EffectEnemyMissile ; sound $19: an enemy fires a missile
 > The hook stub $B374: 6 runs in c1.
-$C9A1 c EffectPodFullGauge ; sound $0F: a pod taken with the power gauge full
-> The hook stub $B379: 1 run in c1.
-$C9A5 c EffectSound10 ; sound $10
+$C9A1 c EffectWeaponSelect ; sound $0F: a weapon selected (a pod taken with fire held)
+> The hook stub $B379: 1 run in c1, in r1 at frames 1097 and 1713.
+$C9A5 c EffectLevelStart ; sound $10: a level starts (the glue's LevelStartSound)
 > Called by the glue at $5B75 (the game's call at $B024 goes to $5B6D: the music stopped, then this sound): 18 runs in c1, as many as the ship was lost.
-$C9A9 c EffectPodChange ; sound $1C: a fuel pod changes state
-> The hook stub $B381: 4 runs in c1.
+$C9A9 c EffectPodAppears ; sound $1C: a pod appears
+> The hook stub $B381: 4 runs in c1, 29 in r1.
 $C9AD c EffectExplosion ; sound $1D: an explosion starts
 > The hook stub $B386: 115 runs in c1 (L1 count; stage 1 counted 43 frames: several explosions start in one frame).
-$C9B1 c EffectGameOver ; sounds $1E and $1F: the game over (and the end of the game won)
-> The hook stubs $B39C (the game-over wipe, 5 runs) and $B38F (not run in c1).
+$C9B1 c EffectScreenWipe ; sounds $1E and $1F: the screen wipe, the SELECTIONS screen
+> The hook stubs $B39C (the screen wipe at the game over and before KEYBOARD DEFINITION, 5 runs in c1) and $B38F (the SELECTIONS screen: not run in c1, r1 frame 23).
 $C9B7 c ShipLostSecond ; the second sound of EffectShipLost
 > B = $15, then StartTwoSounds: 23 runs.
 $C9BB c StartOnChannelA ; start sound A on channel A

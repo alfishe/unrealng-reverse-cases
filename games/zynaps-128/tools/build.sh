@@ -4,13 +4,16 @@
 #   tools/build.sh [SJASMPLUS]
 #
 # 1. tools/build_sound.sh       the page-4 engine, its data, the STarKos player with SK10: build/sound/
-# 2. tools/res_formats.py       the intro's three pictures: build/screens/*.scr
-# 3. sjasmplus (-Ibuild)        the parts, each to build/obj/: the hook stubs, the glue, the mouse driver (block 2
-#                               INCBINs them), block 1 (the intro), block 2 (the game), the BASIC loader, the
-#                               depacker, boot.B
+# 2. tools/res_formats.py       the intro's three pictures: build/screens/*.scr; the game's graphics, levels, texts,
+#                               effects and title tune: build/res/
+# 3. sjasmplus (-Ibuild)        the parts, each to build/obj/: the game (src/game/game.asm, from game.ann by
+#                               kit/mkgame.py), the hook stubs, the glue, the mouse driver (block 2 INCBINs them
+#                               all), block 1 (the intro), block 2, the BASIC loader, the depacker, boot.B
 # 4. tools/hrust1.py pack       block 1 (with src/intro/block1.hints) and block 2, each with the packer's tail:
 #                               build/obj/block1.hr, block2.hr
 # 5. tools/mkscl.py / mktrd.py  with src/media/{scl,trd}.txt: build/Zynaps(2In1)(km).scl and .trd
+#
+# The listings (build/lst/) are for kit/sig_add.py (signatures/sources.json).
 #
 # Each part is compared with the original's (tools/parts.py cuts them from the TRD into build/orig/parts/), so a
 # difference is reported where it starts. One build at a time: build/.lock (a folder) is held while it runs.
@@ -31,11 +34,11 @@ same() { # BUILT ORIGINAL
     if cmp -s "$1" "$2"; then echo "build: $1 identical"; else echo "build: $1 DIFFERS from $2"; fail=1; fi
 }
 asm() { # SOURCE: assembled from the case's folder with -Ibuild, no warnings allowed
-    out=$("$SJASMPLUS" --nologo --msg=war --fullpath -Ibuild "$1" 2>&1) || { echo "$out"; exit 1; }
+    out=$("$SJASMPLUS" --nologo --msg=war --fullpath -Ibuild --lst="build/lst/$(basename "$1" .asm).lst" "$1" 2>&1) || { echo "$out"; exit 1; }
     [ -z "$out" ] || { echo "$out"; echo "build: $1: warnings"; exit 1; }
 }
 
-mkdir -p build/obj build/orig
+mkdir -p build/obj build/orig build/lst
 python3 tools/parts.py --out build/orig/parts > /dev/null
 
 # 1. the sound
@@ -46,10 +49,13 @@ fi
 sh tools/build_sound.sh "$SJASMPLUS"
 for f in engine-c968.bin engine-data-de48.bin starkos-8000.bin; do same build/sound/$f build/orig/parts/$f; done
 
-# 2. the pictures
+# 2. the pictures and the game's resources
 python3 tools/res_formats.py build --out build > /dev/null
 
-# 3. the parts
+# 3. the parts: the game first (kit/mkgame.py's game.asm saves game.bin where it runs: build/obj)
+out=$(cd build/obj && "$SJASMPLUS" --nologo --msg=war -I.. -I../../src/game --lst=../lst/game.lst ../../src/game/game.asm 2>&1) || { echo "$out"; exit 1; }
+[ -z "$out" ] || { echo "$out"; echo "build: src/game/game.asm: warnings"; exit 1; }
+same build/obj/game.bin build/orig/parts/game-6800.bin
 asm src/game/hooks.asm
 asm src/game/glue128.asm
 asm src/game/kmouse.asm
@@ -58,6 +64,7 @@ asm src/game/block2.asm
 asm src/loader/zynapsb.asm
 asm src/loader/depacker.asm
 asm src/boot/bootb.asm
+asm tools/sig/depacker-end.asm  # the depacker again with a label after it: its listing for kit/sig_add.py
 same build/obj/stubs-b30d.bin build/orig/parts/stubs-b30d.bin
 same build/obj/glue-5b00.bin build/orig/parts/glue-5b00.bin
 same build/obj/mouse-fe00.bin build/orig/parts/mouse-fe00.bin

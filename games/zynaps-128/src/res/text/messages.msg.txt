@@ -1,0 +1,29 @@
+# Zynaps: the messages $82EE-$8515, one a line (tools/res_text.py; src/res/text/README.md)
+msg 0: {col 13}{attr $42}{G80}{G81}{G82}{G83}{col+27}{attr $46}{G84}{G85}{G86}{G87}{G88}{G89}{G8A}{G8B}{col+24}{attr $47}{G8C}{G8D}{G8E}{G8F}{G90}{G91}{G92} {col+25}{attr $46}{G93}{G94}  {G95}
+msg 1: {row 0}{msg 0}
+msg 2: {attr $05}{col 12}{G9E}{G9F}{GA0}{GA1}{GA2}{GA3}{GA4}{GA5}{attr $47}{col 12}{row+1}{GA6}{GA7}{GA8}{GA9}{GAA}{GAB}{GAC}{GAD}{attr $47}{col 12}{row+1}{GAE}{GAF}{GB0}{GB1}{GB2}{GB3}{GB4}{GB5}
+msg 3: {G96}{G97}{col+-2}{row+1}{G98}{G99}{col+-3}{row+1}
+msg 4: {G9A}{G9B}{col+-2}{row+1}{G9C}{G9D} {col+-2}{row+1}
+msg 5: {msg 3}{msg 3}{msg 3}{msg 3}{msg 3}
+msg 6: {msg 4}{msg 4}{msg 4}{msg 4}{msg 4}
+msg 7: {col 12}{row 2}{msg 5}{col 18}{row 2}{msg 6}{col 8}{row 12}{msg 6}{col 22}{row 12}{msg 5}{msg 1}{row 20}{msg 0}
+msg 8: {attr $45}.....
+msg 9: CS
+msg 10: SS
+msg 11: SP
+msg 12: EN
+msg 13: {row 0}{msg 0}{col 6}{row 5}KEYBOARD  DEFINITION
+msg 14: {col 9}{row+3}FIRE{col 22}
+msg 15: {col 9}{row+3}UP{col 22}
+msg 16: {col 9}{row+3}DOWN{col 22}
+msg 17: {col 9}{row+3}LEFT{col 22}
+msg 18: {col 9}{row+3}RIGHT{col 22}
+msg 19: {row 0}{msg 0}{col 11}{row 5}SELECTIONS{row 9}{col 12}1 PLAYER{row 13}{col 11}2  PLAYERS
+msg 20: {attr $46}{col 8}{row+1}DOMINIC ROBINSON
+msg 21: {attr $42}{msg 7}{attr $05}{col 15}{row 5}BY{msg 20}{row 8}{msg 2}{attr $05}{col 12}{row 12}GRAPHICS{attr $46}{col 11}{row+1}STEVE CROW{msg 20}{attr $05}{col 13}{row 16}MUSIC{attr $46}{col 10}{row+1}STEVE TURNER{attr $03}{col 0}{row 23}COPYRIGHT{col 21}HEWSON 1987
+msg 22: {attr $42}{msg 7}
+msg 23: {col 12}PLAYER n
+msg 24: {row 9}{col 7}PREPARE FOR COMBAT{row 11}{msg 23}
+msg 25: {msg 0}{row 5}{col 9}ROLE OF HONOUR{row 9}{msg 23}
+msg 26: {row 11}{col 12}UNRANKED
+msg 27: {row 11}{col 6}ENTER YOUR INITIALS

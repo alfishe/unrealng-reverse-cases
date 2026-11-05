@@ -1,0 +1,39 @@
+{
+  "image_cmd": [
+    "sh",
+    "-c",
+    "python3 tools/parts.py > /dev/null && mkdir -p work/mkgame && python3 -c \"import sys; g = open('work/parts/game-6800.bin', 'rb').read(); open('work/mkgame/original.bin', 'wb').write(bytes(0x6800) + g)\""
+  ],
+  "image": "work/mkgame/original.bin",
+  "lo": "6800",
+  "hi": "10000",
+  "device": "ZXSPECTRUM128",
+  "bases": {
+    "5": "4000",
+    "2": "8000",
+    "0": "C000"
+  },
+  "read_builds": [
+    "c1",
+    "r1",
+    "r2"
+  ],
+  "ref_builds": [
+    [
+      "c1",
+      "c1, the menu and six short games"
+    ],
+    [
+      "r1",
+      "r1, the bot over level 1 with the weapons"
+    ],
+    [
+      "r2",
+      "r2, homing missiles at the guardian"
+    ]
+  ],
+  "header": [
+    "; Zynaps 2 in 1 (goodboy / tiboh 2018, after Hewson Consultants 1987): the game as block 2's set-up moves it",
+    "; ($6800-$FFFF, entry $8000), before the set-up's 128K patches."
+  ]
+}

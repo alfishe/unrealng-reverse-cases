@@ -1,0 +1,2363 @@
+{
+  "schema": 1,
+  "id": "sound/ay-players/starkos/seen-zynaps-128",
+  "kind": "code",
+  "role": "player",
+  "name": "STarKos player (the CPC tracker STarKos, its player on the ZX AY)",
+  "authors": [
+    "Targhan / Arkos"
+  ],
+  "year": null,
+  "tags": [
+    "ay",
+    "starkos",
+    "player",
+    "cpc"
+  ],
+  "summary": "A STarKos song player, self-modifying (its variables are its own instructions' operands): Init with DE = the song, Play once a frame, Stop, from a jump table at +0, +3, +6. Its period table is STarKos's 1 MHz one, so on a 128K a song sounds 9.9 semitones higher.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 2448,
+    "sha1": "d2160354bcbb1873379d5e4495feb1e931bcfd66",
+    "masked_sha1": "8872163e12ac6fbf448b0e78bad7ba72fb7a6ecc"
+  },
+  "origin": "$8000",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 9,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 15,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 18,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 28,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 35,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 39,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 42,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 45,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 53,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 80,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 90,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 99,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 103,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 108,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 111,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 120,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 136,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 141,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 150,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 154,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 160,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 167,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 174,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 181,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 195,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 209,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 226,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 230,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 237,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 241,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 246,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 251,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 283,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 288,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 293,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 297,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 300,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 321,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 326,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 329,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 333,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 337,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 340,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 348,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 353,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 358,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 371,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 378,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 385,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 390,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 397,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 400,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 407,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 428,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 433,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 436,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 440,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 444,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 447,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 455,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 460,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 465,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 478,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 485,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 492,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 497,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 504,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 507,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 514,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 535,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 540,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 543,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 547,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 551,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 554,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 562,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 567,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 572,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 585,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 592,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 599,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 604,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 611,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 614,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 621,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 630,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 637,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 640,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 651,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 654,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 657,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 663,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 669,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 675,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 681,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 686,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 689,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 702,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 705,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 708,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 717,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 720,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 723,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 753,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 757,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 762,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 765,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 770,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 784,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 787,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 790,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 799,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 802,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 805,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 835,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 839,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 844,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 847,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 852,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 866,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 869,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 872,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 881,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 884,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 887,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 917,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 921,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 926,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 929,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 941,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1075,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1079,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1097,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1116,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1146,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1251,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1303,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1312,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1332,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1337,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1344,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1349,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1390,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1397,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1431,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1463,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1467,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1470,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1476,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1483,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1540,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1545,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1745,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFBF"
+    },
+    {
+      "offset": 1775,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1802,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1829,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1856,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1883,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1910,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1937,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1964,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1991,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2018,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2044,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2071,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2098,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2131,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2136,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2139,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2142,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2146,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2149,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2152,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2155,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2160,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2168,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2175,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2182,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2189,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2196,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2203,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2210,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2217,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2224,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2233,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2236,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2239,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2242,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2245,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2251,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2254,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2260,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2263,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2266,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2269,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2281,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2284,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2287,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2290,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2293,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2296,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2304,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2308,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2312,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2316,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2320,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2324,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2329,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2332,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2352,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2354,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2356,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2358,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2360,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2362,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2364,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2366,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2368,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2370,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2372,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2374,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2376,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2378,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2380,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2382,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2384,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2386,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2388,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2390,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2392,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2394,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2396,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2398,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2402,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2404,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2406,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2408,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2410,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2412,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2414,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2416,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2418,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2420,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2422,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2424,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2426,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2428,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2430,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2432,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2434,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2438,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2440,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2442,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "PlayerEntries",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the jump table: Init, Play, Stop"
+    },
+    {
+      "offset": 2162,
+      "name": "Init",
+      "in": "DE = the song",
+      "out": null,
+      "clobbers": null,
+      "summary": "take a song"
+    },
+    {
+      "offset": 13,
+      "name": "Play",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "one frame of the song"
+    },
+    {
+      "offset": 2134,
+      "name": "Stop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "silence the AY"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "PlayerEntries",
+      "comment": ""
+    },
+    {
+      "offset": 3,
+      "name": "PlayerPlay",
+      "comment": ""
+    },
+    {
+      "offset": 6,
+      "name": "PlayerStop",
+      "comment": ""
+    },
+    {
+      "offset": 9,
+      "name": "PlayerOrigin",
+      "comment": ""
+    },
+    {
+      "offset": 11,
+      "name": "DigidrumNumber",
+      "comment": ""
+    },
+    {
+      "offset": 12,
+      "name": "DigidrumChannel",
+      "comment": ""
+    },
+    {
+      "offset": 13,
+      "name": "Play",
+      "comment": ""
+    },
+    {
+      "offset": 20,
+      "name": "SpeedCounter",
+      "comment": ""
+    },
+    {
+      "offset": 22,
+      "name": "Speed",
+      "comment": ""
+    },
+    {
+      "offset": 33,
+      "name": "NextLine",
+      "comment": ""
+    },
+    {
+      "offset": 37,
+      "name": "NewPatternFlag",
+      "comment": ""
+    },
+    {
+      "offset": 55,
+      "name": "TranspWait",
+      "comment": ""
+    },
+    {
+      "offset": 61,
+      "name": "TranspPointer",
+      "comment": ""
+    },
+    {
+      "offset": 79,
+      "name": "TranspSetA",
+      "comment": ""
+    },
+    {
+      "offset": 93,
+      "name": "TranspTestC",
+      "comment": ""
+    },
+    {
+      "offset": 102,
+      "name": "TranspStore",
+      "comment": ""
+    },
+    {
+      "offset": 107,
+      "name": "TranspHold",
+      "comment": ""
+    },
+    {
+      "offset": 110,
+      "name": "TranspSetWait",
+      "comment": ""
+    },
+    {
+      "offset": 113,
+      "name": "HeightWait",
+      "comment": ""
+    },
+    {
+      "offset": 122,
+      "name": "HeightRepeat",
+      "comment": ""
+    },
+    {
+      "offset": 126,
+      "name": "HeightPointer",
+      "comment": ""
+    },
+    {
+      "offset": 140,
+      "name": "HeightRun",
+      "comment": ""
+    },
+    {
+      "offset": 153,
+      "name": "SetHeight",
+      "comment": ""
+    },
+    {
+      "offset": 156,
+      "name": "LinkerPointer",
+      "comment": ""
+    },
+    {
+      "offset": 183,
+      "name": "SpecialMode",
+      "comment": ""
+    },
+    {
+      "offset": 188,
+      "name": "SpecialSameWait",
+      "comment": ""
+    },
+    {
+      "offset": 197,
+      "name": "SpecialStart",
+      "comment": ""
+    },
+    {
+      "offset": 202,
+      "name": "SpecialListWait",
+      "comment": ""
+    },
+    {
+      "offset": 216,
+      "name": "SpecialListPointer",
+      "comment": ""
+    },
+    {
+      "offset": 245,
+      "name": "SpecialListRun",
+      "comment": ""
+    },
+    {
+      "offset": 253,
+      "name": "SpecialNext",
+      "comment": ""
+    },
+    {
+      "offset": 263,
+      "name": "SpecialWait",
+      "comment": ""
+    },
+    {
+      "offset": 269,
+      "name": "SpecialPointer",
+      "comment": ""
+    },
+    {
+      "offset": 272,
+      "name": "ReadSpecial",
+      "comment": ""
+    },
+    {
+      "offset": 287,
+      "name": "SpecialDrum",
+      "comment": ""
+    },
+    {
+      "offset": 295,
+      "name": "SpecialNoWait",
+      "comment": ""
+    },
+    {
+      "offset": 296,
+      "name": "SpecialStore",
+      "comment": ""
+    },
+    {
+      "offset": 299,
+      "name": "SpecialSetWait",
+      "comment": ""
+    },
+    {
+      "offset": 302,
+      "name": "TrackAWait",
+      "comment": ""
+    },
+    {
+      "offset": 308,
+      "name": "TrackAPointer",
+      "comment": ""
+    },
+    {
+      "offset": 311,
+      "name": "TrackAVolume",
+      "comment": ""
+    },
+    {
+      "offset": 314,
+      "name": "TrackAInstrument",
+      "comment": ""
+    },
+    {
+      "offset": 317,
+      "name": "TrackANote",
+      "comment": ""
+    },
+    {
+      "offset": 360,
+      "name": "TrackAInstrTable",
+      "comment": ""
+    },
+    {
+      "offset": 404,
+      "name": "TrackAWaitFromLine",
+      "comment": ""
+    },
+    {
+      "offset": 406,
+      "name": "TrackASetWait",
+      "comment": ""
+    },
+    {
+      "offset": 409,
+      "name": "TrackBWait",
+      "comment": ""
+    },
+    {
+      "offset": 415,
+      "name": "TrackBPointer",
+      "comment": ""
+    },
+    {
+      "offset": 418,
+      "name": "TrackBVolume",
+      "comment": ""
+    },
+    {
+      "offset": 421,
+      "name": "TrackBInstrument",
+      "comment": ""
+    },
+    {
+      "offset": 424,
+      "name": "TrackBNote",
+      "comment": ""
+    },
+    {
+      "offset": 467,
+      "name": "TrackBInstrTable",
+      "comment": ""
+    },
+    {
+      "offset": 511,
+      "name": "TrackBWaitFromLine",
+      "comment": ""
+    },
+    {
+      "offset": 513,
+      "name": "TrackBSetWait",
+      "comment": ""
+    },
+    {
+      "offset": 516,
+      "name": "TrackCWait",
+      "comment": ""
+    },
+    {
+      "offset": 522,
+      "name": "TrackCPointer",
+      "comment": ""
+    },
+    {
+      "offset": 525,
+      "name": "TrackCVolume",
+      "comment": ""
+    },
+    {
+      "offset": 528,
+      "name": "TrackCInstrument",
+      "comment": ""
+    },
+    {
+      "offset": 531,
+      "name": "TrackCNote",
+      "comment": ""
+    },
+    {
+      "offset": 574,
+      "name": "TrackCInstrTable",
+      "comment": ""
+    },
+    {
+      "offset": 618,
+      "name": "TrackCWaitFromLine",
+      "comment": ""
+    },
+    {
+      "offset": 620,
+      "name": "TrackCSetWait",
+      "comment": ""
+    },
+    {
+      "offset": 623,
+      "name": "LineCounter",
+      "comment": ""
+    },
+    {
+      "offset": 634,
+      "name": "PatternEnd",
+      "comment": ""
+    },
+    {
+      "offset": 642,
+      "name": "LinkerEnd",
+      "comment": ""
+    },
+    {
+      "offset": 659,
+      "name": "TranspLoop",
+      "comment": ""
+    },
+    {
+      "offset": 665,
+      "name": "HeightLoop",
+      "comment": ""
+    },
+    {
+      "offset": 671,
+      "name": "LinkerLoop",
+      "comment": ""
+    },
+    {
+      "offset": 677,
+      "name": "SpecialListLoop",
+      "comment": ""
+    },
+    {
+      "offset": 683,
+      "name": "SpecialModeLoop",
+      "comment": ""
+    },
+    {
+      "offset": 688,
+      "name": "PlayInstruments",
+      "comment": ""
+    },
+    {
+      "offset": 691,
+      "name": "ChanAAtten",
+      "comment": ""
+    },
+    {
+      "offset": 694,
+      "name": "ChanAPitch",
+      "comment": ""
+    },
+    {
+      "offset": 697,
+      "name": "ChanASlide",
+      "comment": ""
+    },
+    {
+      "offset": 712,
+      "name": "ChanAInstrPointer",
+      "comment": ""
+    },
+    {
+      "offset": 726,
+      "name": "ChanAInstrCounter",
+      "comment": ""
+    },
+    {
+      "offset": 728,
+      "name": "ChanAInstrSpeed",
+      "comment": ""
+    },
+    {
+      "offset": 735,
+      "name": "ChanAInstrEnd",
+      "comment": ""
+    },
+    {
+      "offset": 743,
+      "name": "ChanAInstrLoop",
+      "comment": ""
+    },
+    {
+      "offset": 746,
+      "name": "ChanAInstrLoops",
+      "comment": ""
+    },
+    {
+      "offset": 749,
+      "name": "ChanAZeroEnd",
+      "comment": ""
+    },
+    {
+      "offset": 760,
+      "name": "ChanANextLine",
+      "comment": ""
+    },
+    {
+      "offset": 764,
+      "name": "ChanASetCounter",
+      "comment": ""
+    },
+    {
+      "offset": 773,
+      "name": "ChanBAtten",
+      "comment": ""
+    },
+    {
+      "offset": 776,
+      "name": "ChanBPitch",
+      "comment": ""
+    },
+    {
+      "offset": 779,
+      "name": "ChanBSlide",
+      "comment": ""
+    },
+    {
+      "offset": 794,
+      "name": "ChanBInstrPointer",
+      "comment": ""
+    },
+    {
+      "offset": 808,
+      "name": "ChanBInstrCounter",
+      "comment": ""
+    },
+    {
+      "offset": 810,
+      "name": "ChanBInstrSpeed",
+      "comment": ""
+    },
+    {
+      "offset": 817,
+      "name": "ChanBInstrEnd",
+      "comment": ""
+    },
+    {
+      "offset": 825,
+      "name": "ChanBInstrLoop",
+      "comment": ""
+    },
+    {
+      "offset": 828,
+      "name": "ChanBInstrLoops",
+      "comment": ""
+    },
+    {
+      "offset": 831,
+      "name": "ChanBZeroEnd",
+      "comment": ""
+    },
+    {
+      "offset": 842,
+      "name": "ChanBNextLine",
+      "comment": ""
+    },
+    {
+      "offset": 846,
+      "name": "ChanBSetCounter",
+      "comment": ""
+    },
+    {
+      "offset": 855,
+      "name": "ChanCAtten",
+      "comment": ""
+    },
+    {
+      "offset": 858,
+      "name": "ChanCPitch",
+      "comment": ""
+    },
+    {
+      "offset": 861,
+      "name": "ChanCSlide",
+      "comment": ""
+    },
+    {
+      "offset": 876,
+      "name": "ChanCInstrPointer",
+      "comment": ""
+    },
+    {
+      "offset": 890,
+      "name": "ChanCInstrCounter",
+      "comment": ""
+    },
+    {
+      "offset": 892,
+      "name": "ChanCInstrSpeed",
+      "comment": ""
+    },
+    {
+      "offset": 899,
+      "name": "ChanCInstrEnd",
+      "comment": ""
+    },
+    {
+      "offset": 907,
+      "name": "ChanCInstrLoop",
+      "comment": ""
+    },
+    {
+      "offset": 910,
+      "name": "ChanCInstrLoops",
+      "comment": ""
+    },
+    {
+      "offset": 913,
+      "name": "ChanCZeroEnd",
+      "comment": ""
+    },
+    {
+      "offset": 924,
+      "name": "ChanCNextLine",
+      "comment": ""
+    },
+    {
+      "offset": 928,
+      "name": "ChanCSetCounter",
+      "comment": ""
+    },
+    {
+      "offset": 935,
+      "name": "MixerB",
+      "comment": ""
+    },
+    {
+      "offset": 938,
+      "name": "MixerA",
+      "comment": ""
+    },
+    {
+      "offset": 943,
+      "name": "ReadTrackLine",
+      "comment": ""
+    },
+    {
+      "offset": 968,
+      "name": "TrackTestInstr",
+      "comment": ""
+    },
+    {
+      "offset": 974,
+      "name": "TrackTestSlide",
+      "comment": ""
+    },
+    {
+      "offset": 978,
+      "name": "TrackSlide",
+      "comment": ""
+    },
+    {
+      "offset": 988,
+      "name": "SlideDone",
+      "comment": ""
+    },
+    {
+      "offset": 992,
+      "name": "NoSlide",
+      "comment": ""
+    },
+    {
+      "offset": 1000,
+      "name": "TrackNoteOnly",
+      "comment": ""
+    },
+    {
+      "offset": 1008,
+      "name": "TrackCommand",
+      "comment": ""
+    },
+    {
+      "offset": 1041,
+      "name": "CmdWaitByte",
+      "comment": ""
+    },
+    {
+      "offset": 1050,
+      "name": "CmdVolume",
+      "comment": ""
+    },
+    {
+      "offset": 1060,
+      "name": "CmdVolumeSlide",
+      "comment": ""
+    },
+    {
+      "offset": 1064,
+      "name": "CmdRest",
+      "comment": ""
+    },
+    {
+      "offset": 1072,
+      "name": "CmdDrum",
+      "comment": ""
+    },
+    {
+      "offset": 1081,
+      "name": "CmdOff",
+      "comment": ""
+    },
+    {
+      "offset": 1092,
+      "name": "InstrumentLine",
+      "comment": ""
+    },
+    {
+      "offset": 1120,
+      "name": "FixedVolume",
+      "comment": ""
+    },
+    {
+      "offset": 1129,
+      "name": "FixedStore",
+      "comment": ""
+    },
+    {
+      "offset": 1145,
+      "name": "NoiseLine",
+      "comment": ""
+    },
+    {
+      "offset": 1166,
+      "name": "NoiseToneStore",
+      "comment": ""
+    },
+    {
+      "offset": 1173,
+      "name": "NoiseOnly",
+      "comment": ""
+    },
+    {
+      "offset": 1182,
+      "name": "NoiseOnlyStore",
+      "comment": ""
+    },
+    {
+      "offset": 1185,
+      "name": "SetMixer",
+      "comment": ""
+    },
+    {
+      "offset": 1188,
+      "name": "SilentLine",
+      "comment": ""
+    },
+    {
+      "offset": 1196,
+      "name": "SoftLine",
+      "comment": ""
+    },
+    {
+      "offset": 1209,
+      "name": "SoftStore",
+      "comment": ""
+    },
+    {
+      "offset": 1215,
+      "name": "ArpAndPitch",
+      "comment": ""
+    },
+    {
+      "offset": 1223,
+      "name": "NoArpeggio",
+      "comment": ""
+    },
+    {
+      "offset": 1224,
+      "name": "TestPitch",
+      "comment": ""
+    },
+    {
+      "offset": 1234,
+      "name": "NoPitch",
+      "comment": ""
+    },
+    {
+      "offset": 1237,
+      "name": "AddArpeggio",
+      "comment": ""
+    },
+    {
+      "offset": 1245,
+      "name": "PeriodOfNote",
+      "comment": ""
+    },
+    {
+      "offset": 1257,
+      "name": "LinePitch",
+      "comment": ""
+    },
+    {
+      "offset": 1274,
+      "name": "HardLine",
+      "comment": ""
+    },
+    {
+      "offset": 1284,
+      "name": "HardMixer",
+      "comment": ""
+    },
+    {
+      "offset": 1318,
+      "name": "HardSetMixer",
+      "comment": ""
+    },
+    {
+      "offset": 1331,
+      "name": "SetSyncOffset",
+      "comment": ""
+    },
+    {
+      "offset": 1336,
+      "name": "SetSyncFlag",
+      "comment": ""
+    },
+    {
+      "offset": 1359,
+      "name": "HardNoArp",
+      "comment": ""
+    },
+    {
+      "offset": 1360,
+      "name": "HardKeepFlags",
+      "comment": ""
+    },
+    {
+      "offset": 1373,
+      "name": "HardNoPitch",
+      "comment": ""
+    },
+    {
+      "offset": 1376,
+      "name": "HardAddArp",
+      "comment": ""
+    },
+    {
+      "offset": 1384,
+      "name": "HardPeriod",
+      "comment": ""
+    },
+    {
+      "offset": 1407,
+      "name": "HardSync",
+      "comment": ""
+    },
+    {
+      "offset": 1417,
+      "name": "HardTone",
+      "comment": ""
+    },
+    {
+      "offset": 1424,
+      "name": "HardRatio",
+      "comment": ""
+    },
+    {
+      "offset": 1434,
+      "name": "HardShiftDown",
+      "comment": ""
+    },
+    {
+      "offset": 1436,
+      "name": "ShiftsDown",
+      "comment": ""
+    },
+    {
+      "offset": 1461,
+      "name": "SetEnvPeriod",
+      "comment": ""
+    },
+    {
+      "offset": 1486,
+      "name": "HardShiftUp",
+      "comment": ""
+    },
+    {
+      "offset": 1488,
+      "name": "ShiftsUp",
+      "comment": ""
+    },
+    {
+      "offset": 1510,
+      "name": "SyncOffset",
+      "comment": ""
+    },
+    {
+      "offset": 1520,
+      "name": "HardDone",
+      "comment": ""
+    },
+    {
+      "offset": 1522,
+      "name": "HardFixed",
+      "comment": ""
+    },
+    {
+      "offset": 1531,
+      "name": "HardEnvGiven",
+      "comment": ""
+    },
+    {
+      "offset": 1549,
+      "name": "PeriodTable",
+      "comment": ""
+    },
+    {
+      "offset": 1741,
+      "name": "SendRegisters",
+      "comment": ""
+    },
+    {
+      "offset": 1751,
+      "name": "AYReg0",
+      "comment": ""
+    },
+    {
+      "offset": 1778,
+      "name": "AYReg1",
+      "comment": ""
+    },
+    {
+      "offset": 1805,
+      "name": "AYReg8",
+      "comment": ""
+    },
+    {
+      "offset": 1832,
+      "name": "AYReg2",
+      "comment": ""
+    },
+    {
+      "offset": 1859,
+      "name": "AYReg3",
+      "comment": ""
+    },
+    {
+      "offset": 1886,
+      "name": "AYReg9",
+      "comment": ""
+    },
+    {
+      "offset": 1913,
+      "name": "AYReg4",
+      "comment": ""
+    },
+    {
+      "offset": 1940,
+      "name": "AYReg5",
+      "comment": ""
+    },
+    {
+      "offset": 1967,
+      "name": "AYReg10",
+      "comment": ""
+    },
+    {
+      "offset": 1994,
+      "name": "AYReg6",
+      "comment": ""
+    },
+    {
+      "offset": 2021,
+      "name": "AYReg7",
+      "comment": ""
+    },
+    {
+      "offset": 2047,
+      "name": "AYReg11",
+      "comment": ""
+    },
+    {
+      "offset": 2074,
+      "name": "AYReg12",
+      "comment": ""
+    },
+    {
+      "offset": 2101,
+      "name": "AYReg13",
+      "comment": ""
+    },
+    {
+      "offset": 2108,
+      "name": "Retrigger",
+      "comment": ""
+    },
+    {
+      "offset": 2113,
+      "name": "WriteR13",
+      "comment": ""
+    },
+    {
+      "offset": 2134,
+      "name": "Stop",
+      "comment": ""
+    },
+    {
+      "offset": 2162,
+      "name": "Init",
+      "comment": ""
+    },
+    {
+      "offset": 2334,
+      "name": "ResetLoop",
+      "comment": ""
+    },
+    {
+      "offset": 2341,
+      "name": "ResetNext",
+      "comment": ""
+    },
+    {
+      "offset": 2350,
+      "name": "ResetTable",
+      "comment": ""
+    },
+    {
+      "offset": 2352,
+      "name": "ResetZeroList",
+      "comment": ""
+    },
+    {
+      "offset": 2400,
+      "name": "ResetFF",
+      "comment": ""
+    },
+    {
+      "offset": 2402,
+      "name": "ResetFFList",
+      "comment": ""
+    },
+    {
+      "offset": 2436,
+      "name": "ResetLoops",
+      "comment": ""
+    },
+    {
+      "offset": 2438,
+      "name": "ResetLoopsList",
+      "comment": ""
+    },
+    {
+      "offset": 2444,
+      "name": "ResetEnd",
+      "comment": ""
+    },
+    {
+      "offset": 2445,
+      "name": "Padding",
+      "comment": ""
+    }
+  ],
+  "uses": {
+    "needs": [
+      "ay"
+    ],
+    "ports": [
+      "$FFFD w",
+      "$BFFD w"
+    ]
+  },
+  "found_in": [
+    {
+      "program": "Zynaps 2 in 1: the intro",
+      "case": "games/zynaps-128",
+      "address": "$8000",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "e03a78e"
+    }
+  ],
+  "source": {
+    "case": "games/zynaps-128",
+    "file": "src/sound/starkos.asm",
+    "label": "PlayerEntries"
+  },
+  "docs": [
+    "games/zynaps-128/docs/09-sound.md"
+  ]
+}

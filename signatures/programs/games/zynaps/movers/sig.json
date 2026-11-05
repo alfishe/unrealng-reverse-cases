@@ -925,6 +925,15 @@
       "delta": "+$0000",
       "match": "exact",
       "commit": "eca32a7"
+    },
+    {
+      "program": "Zynaps 2 in 1",
+      "case": "games/zynaps-128",
+      "address": "$9463",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "e03a78e"
     }
   ],
   "source": {
