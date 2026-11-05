@@ -100,8 +100,8 @@ SetUp:
                           ; passes the main loop's CALL at $B200 again, which
                           ; the glue turned into MusicOn
   LD (MenuLoopJump+1),A
-  LD HL,$0000             ; four OUT ($FE),A made NOP: NOP: the beeper's and
-                          ; the effects' border clicks
+  LD HL,$0000             ; four OUT ($FE),A made NOP: NOP: the title tune's
+                          ; tone and the three toggles of the explosion noise
   LD (BeeperOut1),HL
   LD (BeeperOut2),HL
   LD (BeeperOut3),HL

@@ -13,9 +13,10 @@
 ; addresses, the head node, counters for the scroll step and the column builder, the sprite-strip list and the row's
 ; star. The renderer runs with SP pointing at the record and POPs its fields.
 ;
-; Per row: one beeper toggle (the in-game engine hum: RowBeep $7F7E XOR $18, AND the mask $7F7F, OUT $FE), the 32
-; attributes pushed from the map ring onto the attribute row, the span nodes, the sprite strips, the star, then a
-; delay that pads every row to the cost of at least four glyphs, so the 18 toggles are evenly spaced.
+; Per row: one beeper toggle (RowBeep $7F7E XOR $18, AND the mask $7F7F, OUT $FE: one of the three explosion-noise
+; toggles, silent while the mask is 0), the 32 attributes pushed from the map ring onto the attribute row, the span
+; nodes, the sprite strips, the star, then a delay that pads every row to the cost of at least four glyphs, so the 18
+; toggles are evenly spaced.
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; Draw the 18 rows of the playfield
@@ -29,8 +30,8 @@
 ; the sentinel node ($85E4) returns into RowEnd; RowEnd moves to the next
 ; record and jumps to RowStart or, after 18 rows, to RenderDone.
 ;
-; Called from the frame handler $A9ED once a frame while playing (48K c2: 659
-; entries in 1500 frames, all from $A9ED).
+; Called from the play interrupt $A9ED once a pass (two frames) while playing
+; (48K c2: 659 entries in 1500 frames, all from $A9ED).
 DrawPlayfield:
   LD (RenderDone+$0001),SP
   XOR A
@@ -293,8 +294,10 @@ NextRow:
 
 ; Start a row: beeper toggle, attributes, then the row's span nodes
 ;
-; Toggles the beeper (RowBeep $7F7E XOR $18, AND the mask $7F7F, OUT $FE): the
-; in-game engine sound is this click, 18 times a frame.
+; Toggles the beeper (RowBeep $7F7E XOR $18, AND the mask $7F7F, OUT $FE), 18
+; times a pass: the row part of the explosion noise. The mask is 0 (no sound)
+; except for the 16 passes after an explosion or a big enemy's hit
+; (SoundPattern1 $7F80).
 ;
 ; A' = ShiftPage ($7F6A). POP DE = the map ring pointer (+0), HL = the
 ; attribute address of column 31 (+2), BC = the screen address of the row (+4),
@@ -307,8 +310,9 @@ NextRow:
 ;
 ; 48K c2: 11862 entries.
 ;
-; On a 128K: the OUT ($FE),A at $86D7 is made NOP: NOP: no engine hum
-; (src/game/setup.asm, glue.asm; docs/09-sound.md 9.2).
+; On a 128K: the OUT ($FE),A at $86D7 is made NOP: NOP: the row part of the
+; explosion noise is gone (src/game/setup.asm, glue.asm;
+; docs/13-differences-from-zynaps-48k.md).
 RowStart:
   LD HL,RowBeep
   LD A,(HL)

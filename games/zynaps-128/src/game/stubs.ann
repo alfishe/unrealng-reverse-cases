@@ -63,13 +63,13 @@ $B364 c HookPodTaken ; a pod taken, the highlight moves on (site $A247): CALL Ta
 > Entry $C991.
 $B368 ; the low byte of the engine entry $C991
 $B36C c HookSpecialLaunch ; a special weapon placed at the ship (site $9CB0, which lost LD HL,$F36F): the load, then sound $18
-> Entry $C999. $9CB0 is the shared launch from the ship's place, reached from the bombs ($9C83, fire held 3 frames), the homing missiles ($9CFA) and the seekers ($9D1F). Witnessed in r1 (bombs, 9 frames from 1113) and r2 (homing).
+> Entry $C999. $9CB0 is the shared launch from the ship's place, reached from the plasma ($9C83, fire held 3 passes), the homing missiles ($9CFA) and the seekers ($9D1F). Witnessed in r1 (bombs, 9 frames from 1113) and r2 (homing).
 $B370 ; the low byte of the engine entry $C999
 $B374 c HookEnemyMissile ; an enemy fires a missile at the ship (site $A1C4, the beeper call): sound $19
 > Entry $C99D.
 $B375 ; the low byte of the engine entry $C99D
 $B379 c HookWeaponSelect ; a weapon selected (site $A21A): CALL SelectWeapon, then sound $0F
-> Entry $C9A1. A pod taken with fire held 8 frames or more ($8184 >= 8) runs the highlighted entry (player record +7) of the table at $80F0: 0 speed, 1 laser, 2 bombs, 3 homing, 4 seekers. Witnessed in r1 frames 1097 and 1713.
+> Entry $C9A1. A pod taken with fire held 8 passes or more ($8184 >= 8) runs the highlighted entry (player record +7) of the table at $80F0: 0 speed, 1 laser, 2 plasma, 3 homing, 4 seekers. Witnessed in r1 frames 1097 and 1713.
 $B37D ; the low byte of the engine entry $C9A1
 $B381 c HookPodAppears ; a pod appears (site $A31D, the beeper call): sound $1C
 > Entry $C9A9. An object gets the pod descriptor $7EBB (29 times in r1).

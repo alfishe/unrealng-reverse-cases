@@ -64,7 +64,7 @@ nibble to `+$0C` (the score), high nibble to `+$17` (the speed); b3 to `+$10` (X
 
 copied to ScriptState `$81D7-$81DE` (through the player record's `+$0D`): the unused byte, the script's start, PlayFlags
 `$81DA` (bit 5 the scroll, bit 7 the stars), ScrollCount `$81DB`, the scenery script ScriptNumber `$81DD`, and
-ScriptLevelBias `$81DE` (added to the weapon rating: the later levels' waves fly faster). The game plays the records in
+ScriptLevelBias `$81DE` (added to the weapon rating `$80E8`: the later levels' enemies fire more often). The game plays the records in
 LevelOrder (`$8003`): 0, 1, 2, then 3-8 shuffled for each game, then 9, 10, 11.
 
 ## Level scripts

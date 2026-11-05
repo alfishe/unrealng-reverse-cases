@@ -14,8 +14,8 @@
 ; from Random, C = $E0), +$18/+$19 = E (Random bits 3-6 moved to 4-7, OR $80)
 ; and D = $FF.
 ;
-; MoveStars rewrites the fields every frame: +$1C = the cell's low byte and
-; +$1D = the dot byte that RowStar draws, +$1E carry = visible.
+; MoveStars rewrites the fields every pass: +$1C = the cell's low byte and +$1D
+; = the dot byte that RowStar draws, +$1E carry = visible.
 ;
 ; Saves and restores SP through the operand of InitStarsDone. Output: all
 ; registers changed.

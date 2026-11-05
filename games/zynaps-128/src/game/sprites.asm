@@ -257,13 +257,14 @@ ClearStripCounts:
 ;
 ; ClearStripCounts, then the 16 objects from IY = $F600 down by 44 bytes: an
 ; active object (+8 bit 7) goes through BuildObjectStrips. One beeper toggle
-; per object (ObjectBeep $7F82 XOR $18, AND the mask $7F83): the second sound
-; voice of the game.
+; per object (ObjectBeep $7F82 XOR $18, AND the mask $7F83): the strip part of
+; the explosion noise, silent while the mask is 0.
 ;
 ; Called from the frame handler cycle $AA96 (48K c2: 660 entries).
 ;
-; On a 128K: the OUT ($FE),A at $8FBD is made NOP: NOP (src/game/setup.asm,
-; glue.asm; docs/09-sound.md 9.2).
+; On a 128K: the OUT ($FE),A at $8FBD is made NOP: NOP: the strip part of the
+; explosion noise is gone (src/game/setup.asm, glue.asm;
+; docs/13-differences-from-zynaps-48k.md).
 ObjectStrips:
   CALL ClearStripCounts
   LD IY,SightObject

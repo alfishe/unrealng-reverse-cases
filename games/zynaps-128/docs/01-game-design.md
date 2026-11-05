@@ -319,7 +319,7 @@ difficulty option; INF.LIVES is the only help. How much more often enemies fire 
 - The game menu plays the CPC Zynaps music on the AY. A level's start stops it; play has the AY effects only:
   the shot, the pods, the explosions, the launches, the extra life.
 - Key 4 stops the music; the pause's end restarts it.
-- The 48K beeper is cut off: no beeper effect, no title tune on the beeper, no border clicks.
+- The 48K beeper is cut off: no beeper effect, no title tune on the beeper, no explosion noise on the speaker.
 
 The engine, the songs and every effect are [9. Sound](09-sound.md).
 

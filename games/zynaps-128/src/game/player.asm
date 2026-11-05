@@ -6,12 +6,12 @@
 ; none, 2 plasma, 3 homing missiles, 4 seeker), +$09 the double plasma flag, +$0A the laser level 0-3, +$0B the speed
 ; $40-$A0 in steps of $20.
 ;
-; The fuel: $80E6 counts down in the game frames with bit 0 of $7F63 set, one step every 16 TV frames in play
-; (measured: $54, $4A, $40 at 160-frame intervals); at 0 FuelOut sets it back to $5A and takes a laser level and a
-; speed step away. A collected pod refills it ($BB with a speed-up, $B4 when the selector wraps), a missed pod halves
-; it ($A25C). So the ship must keep scooping pods to keep its power: $5A steps, about 29 s, a level with nothing
-; collected. Measured: $80E6 = 2 with laser 3 and speed $A0 gave $80E6 = $5A, laser 2 and speed $80 forty frames later
-; (../zynaps/work/f2, play-imm.szx).
+; The fuel: $80E6 counts down in the passes whose PassBit $7F63 (rotated left each pass) has bit 0 set, one in 8
+; passes, so one step every 16 TV frames in play (measured: $54, $4A, $40 at 160-frame intervals); at 0 FuelOut sets
+; it back to $5A and takes a laser level and a speed step away. A collected pod refills it ($BB with a speed-up, $B4
+; when the selector wraps), a missed pod halves it ($A25C). So the ship must keep scooping pods to keep its power: $5A
+; steps, about 29 s, a level with nothing collected. Measured: $80E6 = 2 with laser 3 and speed $A0 gave $80E6 = $5A,
+; laser 2 and speed $80 forty frames later (../zynaps/work/f2, play-imm.szx).
 ;
 ; The death: a scenery hit or an enemy overlap (the enemies of $80BD/$80BE excepted) calls KillPlayer unless the byte
 ; at $FFD7 is not 0. That byte is 0 in the image and nothing writes it: a switch left for testing. Measured
@@ -20,7 +20,7 @@
 ; $16 frames of explosion, then $7F7C = 1 tells the game loop.
 ; --------------------------------------------------------------------------------------------------------------------
 
-; kind 0: the ship for one frame
+; kind 0: the ship for one pass
 ;
 ; Not alive ($7F7B not $FF): PlayerDying. Else the fuel count; $A6B6; the input
 ; $8186 (bits 0/1 right/left, 2/3 down/up): up or down sets Vy = the speed -
@@ -32,7 +32,7 @@
 ; follows it from there.
 ;
 ; The colour +$25: $70, or the flashing $7F79 x 8 + $40 while fire has been
-; held 8 frames or more ($8184, the pod-collect signal). The side weapon's
+; held 8 passes or more ($8184, the pod-collect signal). The side weapon's
 ; frame routine from $80EA by +$08 - 2; a fire press ($8185 = $FF) FireLaser;
 ; then the hit test. 659 executions in 48K c2.
 PlayerHandler:
@@ -43,7 +43,8 @@ PlayerHandler:
   LD A,(PassBit)
   RRA
   JR NC,PlayerInput
-  LD HL,Fuel              ; every second frame: the fuel
+  LD HL,Fuel              ; the fuel, on the passes with PassBit bit 0 set (one
+                          ; in 8)
   DEC (HL)
   CALL Z,FuelOut
 PlayerInput:
@@ -133,7 +134,7 @@ PlayerHistory:
   LDI
   LDI
 PlayerColour:
-  LD A,(FireHeld)         ; fire held 8 frames: flash
+  LD A,(FireHeld)         ; fire held 8 passes: flash
   CP $08
   LD A,$70
   JR C,PlayerWeapon
@@ -193,12 +194,13 @@ KillPlayerLoop:
   CALL ScatterDebris
   RET
 
-; the weapon rating $80E7-$80E9 for the wave launcher
+; the weapon rating $80E7-$80E9 for the enemy fire and the wave colours
 ;
 ; L = laser level + side weapon: $80E7 = $FF, $30 from 4; $80E9 = 0, 8 from 7;
 ; $80E8 = ((speed / 32 + L) x 4) & $F0 + ($81DE). LaunchWave adds $80E9 to a
-; kind's speed level, so a well armed ship meets faster waves. Called from
-; $AC7A and $B03A (10 entries in 48K c2).
+; kind's colour select (the KindColours set); EnemyFire reads $80E7 (the first
+; shot's column) and $80E8 (the fire chance), so a well armed, fast ship draws
+; more fire. Called from $AC7A and $B03A (10 entries in 48K c2).
 WeaponRating:
   LD C,$FF
   LD B,$00

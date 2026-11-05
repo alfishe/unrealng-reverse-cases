@@ -51,7 +51,7 @@ second screen: every `OUT ($7FFD)` it makes writes `$10`, `$11` or `$14`, all wi
 | the level banner | PREPARE FOR COMBAT, PLAYER 1 | the same raster |
 | play | the score line, the playfield, the panel | DrawPlayfield `$85CA` and the panel's routines (below) |
 
-The play screen has three areas ([1.1](01-game-design.md#11-the-play-screen) names every part):
+The play screen has three areas ([1.2](01-game-design.md#12-the-play-screen) names every part):
 
 | Rows | Lines | What | Drawn by |
 | --- | --- | --- | --- |
@@ -389,8 +389,10 @@ Both are per row, inside DrawPlayfield.
 - **The row click**: RowStart toggles RowBeep `$7F7E` once a row and writes it, ANDed with a mask, with an
   `OUT ($FE),A` at `$86D7`. In this game that `OUT` is `NOP: NOP`, written by the set-up at load
   ([3.5](03-build-and-load.md#35-block-2-the-game-and-its-glue)). `c1` frame 12200 reads `00 00` at `$86D7`.
-- So the 18 row clicks of a pass make no sound and no border colour. The row's work and its padding stay, so every
-  row still takes the same time.
+- On the 48K this toggle is one of the three parts of the explosion noise: its mask is 0 (silence) except in the 16
+  passes after an explosion or a guardian's hit. Here the 18 toggles of a pass reach no port at all. The row's work
+  and its padding stay, so every row still takes the same time
+  ([13.6](13-differences-from-zynaps-48k.md#136-sound)).
 - The explosion's noise is the AY engine's sound `$1D` instead (HookExplosion, [9. Sound](09-sound.md)).
 
 ## 6.9 The intro's pictures
@@ -460,8 +462,9 @@ How to read the figure:
 - **What it shows**: the pushes follow the beam line by line over lines 0-95. A row's attributes are rewritten 8
   times in its 8 lines' time, each just as the beam reaches the line.
 - **The point**: the raster colours are timed to the beam, so the handler must start at the same T every frame. That
-  is why this game's delay counts are set for the Pentagon, whose INT falls at another place of the frame than on a
-  Sinclair 128 ([3.6](03-build-and-load.md#36-the-game-against-the-48k-tape): `$A538`, `$A545`, `$A568`-`$A570`).
+  is why this game's delay counts are set for the Pentagon, whose screen starts 16 lines later after the INT than a
+  48K's ([13.5](13-differences-from-zynaps-48k.md#135-timing-the-pentagon-retiming): `$A538`, `$A545`,
+  `$A568`-`$A570`).
 
 ```bash
 python3 ../../kit/beam_timeline.py --work work/z128A/c1 --window 3950:0-3951:0 --listing build/lst/game.lst \

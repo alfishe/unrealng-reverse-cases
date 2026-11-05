@@ -1,13 +1,13 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; objgrid.asm: the free-slot search, the collision grid and the jump-table dispatch
 ;
-; The collision test of Zynaps is a bitmap grid rebuilt every frame: ClearHitGrid zeroes $FC00-$FD8F, MarkEnemyGrid
-; ORs the collision bit (+$24) of each of the 8 enemy slots ($F398-$F4CC) into the X bytes ($FC00, one byte a quarter
-; column) and the Y bytes ($FD00, one byte an eighth of a row) the object covers, and TestHitGrid ORs those bytes back
-; over the 8 friendly records (the player $F36C, the four laser shots $F4F8-$F57C, the two side-weapon slots
-; $F5A8/$F5D4 and the sight $F600). The AND of the X union and the Y union is the set of enemies that overlap the
-; record; it goes into the record's +$0D, and the union for the player and the active laser shots goes into $80BB,
-; which every enemy handler tests with its own bit.
+; The collision test of Zynaps is a bitmap grid rebuilt every other pass (marked in phases 1 and 3, tested and cleared
+; in phases 2-4): ClearHitGrid zeroes $FC00-$FD8F, MarkEnemyGrid ORs the collision bit (+$24) of each of the 8 enemy
+; slots ($F398-$F4CC) into the X bytes ($FC00, one byte a quarter column) and the Y bytes ($FD00, one byte an eighth
+; of a row) the object covers, and TestHitGrid ORs those bytes back over the 8 friendly records (the player $F36C, the
+; four laser shots $F4F8-$F57C, the two side-weapon slots $F5A8/$F5D4 and the sight $F600). The AND of the X union and
+; the Y union is the set of enemies that overlap the record; it goes into the record's +$0D, and the union for the
+; player and the active laser shots goes into $80BB, which every enemy handler tests with its own bit.
 ;
 ; The grid routines walk the records and the grid with SP (POP is the fastest read on the Z80): each saves SP into the
 ; operand of its final LD SP,$0000 first and runs with interrupts on, so the interrupt pushes land in the record or
@@ -39,15 +39,15 @@ FindFreeSlotDone:
 
 ; mark the 8 enemy slots' collision bits in the grid
 ;
-; Called once a frame from the play loop at $AA96 (331 entries in 48K c2). C =
-; the collision bit, 1 for the slot $F398 and rotated left for each next slot,
-; so slot n owns bit n. For each active and visible slot (+$08 bits 7 and 5):
-; its sprite descriptor (+0/+1, IX) gives the width +$0B and the height +$08;
-; the X position (+3/+4, in 1/4 columns) picks the first of the X bytes at
-; $FC00, every 4th byte over the width plus the last gets the bit; the Y
-; position (+5/+6, in 1/8 rows) picks the Y byte at $FD00, every 8th byte over
-; the height gets the bit, the rows whose bit in the row mask +$0B is clear
-; excepted (a big enemy's rows out of play).
+; Called from PlayPass $AA96 in the odd phases (1 and 3), every other pass (331
+; entries in 48K c2's 659 passes). C = the collision bit, 1 for the slot $F398
+; and rotated left for each next slot, so slot n owns bit n. For each active
+; and visible slot (+$08 bits 7 and 5): its sprite descriptor (+0/+1, IX) gives
+; the width +$0B and the height +$08; the X position (+3/+4, in 1/4 columns)
+; picks the first of the X bytes at $FC00, every 4th byte over the width plus
+; the last gets the bit; the Y position (+5/+6, in 1/8 rows) picks the Y byte
+; at $FD00, every 8th byte over the height gets the bit, the rows whose bit in
+; the row mask +$0B is clear excepted (a big enemy's rows out of play).
 ;
 ; Reads the records with SP (POP IX, POP HL); SP is kept in the operand at
 ; $9144.
@@ -146,15 +146,15 @@ MarkGridRowOff:
 
 ; the overlap masks of the player, the shots and the weapons
 ;
-; Called once a frame from $A9ED (494 entries in 48K c2, 2 % of play's time).
-; For the 8 records from $F36C (the player, then $F4F8 = $F36C + $018C and
-; every 44 bytes on: the four laser shots, the plasma/missile slots $F5A8 and
-; $F5D4, the sight $F600): OR of the X bytes over the width (the player's width
-; less one) and OR of the Y bytes over the height (4 bytes an eighth of a row
-; step, read with POP); the AND of both is the set of enemy bits this record
-; touches, stored in +$0D. The union for the first five records (the player and
-; the lasers), active ones only, goes into $80BB, the laser-hit mask the enemy
-; handlers test. SP is kept in the operand at $91C3.
+; Called from $A9ED in phases 2-4 (494 entries in 48K c2's 659 passes, 2 % of
+; play's time). For the 8 records from $F36C (the player, then $F4F8 = $F36C +
+; $018C and every 44 bytes on: the four laser shots, the plasma/missile slots
+; $F5A8 and $F5D4, the sight $F600): OR of the X bytes over the width (the
+; player's width less one) and OR of the Y bytes over the height (4 bytes an
+; eighth of a row step, read with POP); the AND of both is the set of enemy
+; bits this record touches, stored in +$0D. The union for the first five
+; records (the player and the lasers), active ones only, goes into $80BB, the
+; laser-hit mask the enemy handlers test. SP is kept in the operand at $91C3.
 TestHitGrid:
   LD (TestGridRestoreSp+$0001),SP
   LD IY,PlayerObject

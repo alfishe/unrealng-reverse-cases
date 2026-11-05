@@ -165,7 +165,7 @@ Then it runs the work of the new phase:
   glyph cache. It enables interrupts while it works (`EI` at `$8AA2`).
 - The waits are `DJNZ` loops (PlayInterruptWait `$AA7C`). They hold the panel work and the playfield behind the
   beam (4.6). This game's counts at `$AA68`, `$AA7B` and `$AA8D` are set for the Pentagon
-  ([3.6](03-build-and-load.md#36-the-game-against-the-48k-tape)).
+  ([13.5](13-differences-from-zynaps-48k.md#135-timing-the-pentagon-retiming)).
 - At the end, at `$AB03`, the glue's JP PlayAtAB03 `$5B3C` steps the engine a second time, then PlayInterruptExit
   `$AAFF` restores the registers and returns with `EI; RET`.
 
@@ -345,4 +345,4 @@ EndOfPlay `$B0FF` waits 50 frames, fades the attributes (FadeAttributes `$85AD`)
 - At the game over HighScoreEntry `$A7F7` runs (the screen wipe and its sound through HookScreenWipe `$B39C`), then
   the main loop's `JR $B200` (made so by the set-up at `$B21A`) passes MusicOn again: the menu's music restarts. In
   `c1` CreditsPage follows each HighScoreEntry by 37 frames (5165 to 5202, 12358 to 12395).
-- A level ends by its script, not by a kill: the level-end GIF of [1.7](01-game-design.md#17-a-level-ends) shows one.
+- A level ends by its script, not by a kill: the level-end GIF of [1.8](01-game-design.md#18-a-level-ends) shows one.

@@ -2,10 +2,12 @@
 ; engine-entries.asm: the entries: the jump table, the effect entries, starting and stopping, the AY output
 ;
 ; The engine's interface. The game (the 48K Zynaps, patched by the 128K glue) keeps bank 0 at $C000 and pages in page
-; 4 only for a call: the glue's interrupt handler at $5B00 calls EnginePlay once a frame, $5B50 stops the music
-; (EngineStop) and starts it again (EngineStart), and the fifteen hook stubs at $B30D-$B3A8 call one of the effect
-; entries ($C971-$C9B1) with page 4 in (docs/09-sound.md 9.2). Every entry keeps no register: the callers save what
-; they need.
+; 4 only for a call: the glue's FramePlay at $5B00 calls EnginePlay once a TV frame on average (once an interrupt at
+; the menus; in play twice a pass, at its start and its end, and a pass takes two TV frames because the next interrupt
+; is lost under DI: one step a TV frame on average, the steps a third of a frame uneven; docs/09-sound.md 9.8), $5B50
+; stops the music (EngineStop) and starts it again (EngineStart), and the fifteen hook stubs at $B30D-$B3A8 call one
+; of the effect entries ($C971-$C9B1) with page 4 in (docs/09-sound.md 9.2). Every entry keeps no register: the
+; callers save what they need.
 ;
 ; An effect entry loads A with a sound number of the data image's SoundTable ($0E-$1F) and jumps to StartSound, which
 ; takes channels B and C in turn (LastChannel XOR 1; channel A only before the music was ever started), or to

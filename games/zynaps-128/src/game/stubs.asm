@@ -126,7 +126,7 @@ HookPodTaken:
 ; load, then sound $18
 ;
 ; Entry $C999. $9CB0 is the shared launch from the ship's place, reached from
-; the bombs ($9C83, fire held 3 frames), the homing missiles ($9CFA) and the
+; the plasma ($9C83, fire held 3 passes), the homing missiles ($9CFA) and the
 ; seekers ($9D1F). Witnessed in r1 (bombs, 9 frames from 1113) and r2 (homing).
 HookSpecialLaunch:
   LD HL,ShipPlace
@@ -144,9 +144,9 @@ HookEnemyMissile:
 
 ; a weapon selected (site $A21A): CALL SelectWeapon, then sound $0F
 ;
-; Entry $C9A1. A pod taken with fire held 8 frames or more ($8184 >= 8) runs
+; Entry $C9A1. A pod taken with fire held 8 passes or more ($8184 >= 8) runs
 ; the highlighted entry (player record +7) of the table at $80F0: 0 speed, 1
-; laser, 2 bombs, 3 homing, 4 seekers. Witnessed in r1 frames 1097 and 1713.
+; laser, 2 plasma, 3 homing, 4 seekers. Witnessed in r1 frames 1097 and 1713.
 HookWeaponSelect:
   CALL SelectWeapon
   PUSH HL

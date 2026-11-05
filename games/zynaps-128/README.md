@@ -1,7 +1,8 @@
 # Zynaps 2 in 1 (goodboy and tiboh, 2018)
 
-State: stage 2 done: the SCL and the TRD rebuild byte for byte from `src/` with `tools/build.sh`, every part from its
-own annotated source (the game's 519 entries in 49 modules included) and every resource in an editable format.
+State: done. The SCL and the TRD rebuild byte for byte from `src/` with `tools/build.sh`, every part from its own
+annotated source (the game's 519 entries in 49 modules included) and every resource in an editable format. Docs 01-12
+describe the game; doc 13 compares it with the 48K original ([`../zynaps`](../zynaps/README.md)).
 
 A TR-DOS release of Hewson's Zynaps (1987, Dominic Robinson; graphics Steve Crow): the 48K game with AY music and
 effects taken from the Amstrad CPC version (music by Dave Rogers), an infinite-lives option, a Kempston mouse
@@ -19,4 +20,6 @@ effects) or a 48K one (the original's beeper); the 48K branch is in the code and
 | Inside | `Zynaps(2In1)(km).scl` (35099 bytes, md5 `ff9a3a7b670039e9972b24011b77ba29`, SHA-1 `528aff7278e60c80308476d0149fbd6c94043893`) |
 | | `Zynaps(2In1)(km).trd` (655360 bytes, md5 `ed6455389ec8600cb1ecc3247001e88f`, SHA-1 `330dd0f61108218984cf52955c3b4b900a0fea61`) |
 
-The documents: [docs/README.md](docs/README.md). How the reverse was done: [WALKTHROUGH.md](WALKTHROUGH.md).
+The documents: [docs/README.md](docs/README.md); what the 2 in 1 changed in the 48K game, and why:
+[13. Differences from Zynaps (48K)](docs/13-differences-from-zynaps-48k.md). How the reverse was done:
+[WALKTHROUGH.md](WALKTHROUGH.md).

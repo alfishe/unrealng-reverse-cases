@@ -8,11 +8,11 @@
 ; record's +$0D (then into ScriptState $81D7 by $AD56): the level script's start, the play flags, the scroll counter
 ; and the scenery script number.
 ;
-; The level script (WaveScriptStep $AD66, once a frame while the ship lives) is the level's timeline: a step is a wait
-; in frames and a command: a wave launch (LaunchWave $91EC), the scroll on or off, a counter (the only one the scripts
-; use is ScriptCounter $81E4), a conditional jump, the save of the state at a checkpoint (op 14, $AED2) and the
-; level's end (op 5). The scenery script (ScriptMain $8D72, a coroutine) places object groups of shapes into the map
-; ring 16 columns at a time.
+; The level script (WaveScriptStep $AD66, once in four passes, every 8 frames, while the ship lives) is the level's
+; timeline: a step is a wait in counts (one count = one WaveScriptStep run, 8 frames) and a command: a wave launch
+; (LaunchWave $91EC), the scroll on or off, a counter (the only one the scripts use is ScriptCounter $81E4), a
+; conditional jump, the save of the state at a checkpoint (op 14, $AED2) and the level's end (op 5). The scenery
+; script (ScriptMain $8D72, a coroutine) places object groups of shapes into the map ring 16 columns at a time.
 ;
 ; A wave definition gives the kind of its enemies (EnemyKinds: speed, accelerations, handler, colour set, hit points),
 ; their path (the path bytecode run by RunPath $94CB) and their start positions; the script's byte after the wave
@@ -81,20 +81,22 @@ KindColours:
 ; LevelStart $B062 copies LevelTable[LevelOrder[+6]] (HL = $6B25 + 8 (n + 1))
 ; to the record's +$0D-+$14: +0 a byte (0 in all twelve, ScriptState $81D7,
 ; never read), +1/+2 the level script, +3 PlayFlags ($FF), +4/+5 ScrollCount
-; (the start: $40, $30, $38 or $10), +6 the scenery script number ($81DD), +7
-; ScriptLevelBias ($81DE, added to WeaponRating).
+; (the start value $40, $30, $38 or $10: the number of map columns ReplayScroll
+; $AF6B builds at the level start, not a speed), +6 the scenery script number
+; ($81DD), +7 ScriptLevelBias ($81DE, added to WeaponRating).
 LevelTable:
   INCBIN "res/levels/levels.bin",$032D,96
 
 ; The level scripts of the 12 levels (the wave timelines)
 ;
 ; Run by WaveScriptStep $AD66 (48K c2: 165 entries, the steps $6B8D-$6BA6 of
-; level 1). A step: the wait (ScriptWaitCount $81E1 counts the frames up to
-; it), the command: below $40 an op of ScriptCommands $81FF (ops 7-12 take one
-; or two words); $40-$7F a jump on the condition (ScriptConditions $8223, on
-; the flags ScriptFlags $81E2 of the last counter op) to the word; $80-$BF wave
-; A AND $3F with the next byte as its row offset; $C0-$FF a conditional call.
-; All twelve end with op 5 (the level's end) and a $FF wait.
+; level 1). A step: the wait (ScriptWaitCount $81E1 counts the WaveScriptStep
+; runs, 8 frames each, up to it), the command: below $40 an op of
+; ScriptCommands $81FF (ops 7-12 take one or two words); $40-$7F a jump on the
+; condition (ScriptConditions $8223, on the flags ScriptFlags $81E2 of the last
+; counter op) to the word; $80-$BF wave A AND $3F with the next byte as its row
+; offset; $C0-$FF a conditional call. All twelve end with op 5 (the level's
+; end) and a $FF wait.
 LevelScripts:
   INCBIN "res/levels/levels.bin",$038D,1820
 

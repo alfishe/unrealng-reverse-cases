@@ -96,7 +96,8 @@ ScriptStackPtr:
   DEFB $00,$00            ; word: the script's call stack ($81F6 at the start,
                           ; two bytes a call)
 ScriptWaitCount:
-  DEFB $00                ; the frames waited for the current step
+  DEFB $00                ; the counts waited for the current step (one a
+                          ; WaveScriptStep run, 8 frames)
 ScriptFlags:
   DEFB $00                ; the flags of the last counter op (the conditions
                           ; test them)

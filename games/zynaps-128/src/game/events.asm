@@ -78,7 +78,7 @@ EventNone:
 ; Allows only bit 7 meanwhile (EventMask AND $80). Attributes $46 (bright
 ; yellow) at $5A86-$5A87 and $45 (bright cyan) at $5AA6-$5AA7; the 16 x 16 icon
 ; n = the player record's +7 (0-4, the selected pod) from PodIcons + 32 n drawn
-; as two 2-cell rows at $5086 and $50A6 (screen third 2, rows 16-17, columns
+; as two 2-cell rows at $5086 and $50A6 (screen third 2, rows 20-21, columns
 ; 6-7) by IconRow. 48K c2: entries through $91E2 (indirect); posted by the play
 ; loop's start ($B1C7) and by the pod pick-up ($A243).
 PodIconJob:
@@ -151,10 +151,11 @@ EffectJobDone:
 ;
 ; Allows only bit 7 meanwhile. Prints the current player's score
 ; (PrintPlayerScore $A4AE with A = CurrentPlayer $7F98) and recomputes
-; WeaponRating ($9B75: how fast the next waves fly). The extra life: when the
-; record's +1 (the score's high part) is at least ExtraLifeScores[+$0C] ($800F:
-; 1, 3, 5, 7, 9, then $FF), +$0C steps on, the lives (+4) + 1 and DrawLives
-; $A4EF shows them. Posted by the score adder ($A4AB).
+; WeaponRating ($9B75: the enemy fire and the waves' colours). The extra life:
+; when the record's +1 (the score's high part) is at least
+; ExtraLifeScores[+$0C] ($800F: 1, 3, 5, 7, 9, then $FF), +$0C steps on, the
+; lives (+4) + 1 and DrawLives $A4EF shows them. Posted by the score adder
+; ($A4AB).
 ;
 ; On a 128K: the CALL $A4EF at $ACA2, after an extra life is given, becomes
 ; CALL HookExtraLife ($B334): the call, then sounds $0F + $10 (witnessed in r1

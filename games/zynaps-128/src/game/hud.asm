@@ -1,30 +1,31 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; hud.asm: the frame work of the panel: colour cycles, the speed bar, the fuel gauge
 ;
-; PanelFrame runs once a frame from the play interrupt ($AA87 in the handler $A9ED) and only writes attributes of the
+; PanelFrame runs once a pass from the play interrupt ($AA87 in the handler $A9ED) and only writes attributes of the
 ; panel's rows 20-23 ($5A80-$5AFF): it never touches pixels, so it costs nothing in the drawing code. 659 entries in
-; 48K c2, one a frame of play.
+; 48K c2, one a pass of play.
 ;
-; What it shows: two cells at $5AC6 whose ink steps every fourth frame; the speed bar at $5AEE (one to four lit cells
+; What it shows: two cells at $5AC6 whose ink steps every fourth pass; the speed bar at $5AEE (one to four lit cells
 ; for the speeds $40-$A0, the player record's +$0B); the fuel gauge, two pairs of lamps at $5AC1 and $5ADD that go
 ; dark one by one as Fuel ($80E6) falls below $40 and $20; two colour blocks at $5A81 and $5A9D through $A8BE with a
-; phase and a bouncing value ($7F78-$7F7A); and every other frame the burst of $7F77 (set to 6 when the player loses a
-; life, $9C80): a pair of cells that walks out from column 15 of rows 21-22 while the counter runs down.
+; phase and a bouncing value ($7F78-$7F7A); and every other pass the burst of $7F77 (set to 6 by FireLaser at $9C80
+; when it is 0: a laser shot): a pair of cells that walks out from column 15 of rows 21-22 while the counter runs
+; down.
 ;
 ; CheckPauseAndEnd, the play interrupt's check of the key 4 (pause) and of a pending end code (from the phase dispatch
-; at $AA96, once a frame of play), and StopAndSettle, which silences the effect and lets two frames pass under
+; at $AA96, once a pass of play), and StopAndSettle, which silences the effect and lets two frames pass under
 ; TitleInterrupt, are kept here: the pause runs inside the interrupt, so the play loop and the effect stand still
 ; under it.
 ; --------------------------------------------------------------------------------------------------------------------
 
-; the panel's attribute work of one frame of play
+; the panel's attribute work of one pass of play
 ;
-; Called from PlayInterrupt $A9ED (at $AA87) once a frame; 48K c2: 659 entries
-; in 659 frames, 630704 T own (6 permille of the recording). Reads PassCount
+; Called from PlayInterrupt $A9ED (at $AA87) once a pass; 48K c2: 659 entries
+; in 659 passes, 630704 T own (6 permille of the recording). Reads PassCount
 ; $7F62, the player record ($7F99: +$0B speed), Fuel $80E6, $7F77-$7F7A; writes
 ; only the attribute rows 20-23.
 ;
-; 1. The ink of $5AC6-$5AC7 + 1 every fourth frame (PassCount & 3 = 0), kept in
+; 1. The ink of $5AC6-$5AC7 + 1 every fourth pass (PassCount & 3 = 0), kept in
 ; 0-7 with the paper and bright bits (AND $C7 drops the carry into paper).
 ;
 ; 2. The speed bar: $5AEE-$5AF1 = $01, then (speed >> 5) - 1 cells of $31 from
@@ -35,10 +36,10 @@
 ; darkens E too.
 ;
 ; 4. The two colour blocks: PanelPhase $7F78 + (PassCount & 1) in 0-15 (C),
-; PanelBounce $7F79 + PanelStep $7F7A on odd frames, the step reversed at 7 or
+; PanelBounce $7F79 + PanelStep $7F7A on odd passes, the step reversed at 7 or
 ; 1 of the low 3 bits; $A8BE draws A at $5A81 and $5A9D with C.
 ;
-; 5. On even frames: rows 21-22 columns 11-20 ($5AAB, $5ACB) cleared;
+; 5. On even passes: rows 21-22 columns 11-20 ($5AAB, $5ACB) cleared;
 ; PanelBurst $7F77 not 0: counted down, its new value n written as the
 ; attribute at columns 15+n and 16-n of both rows (the pair moves out as n
 ; falls and goes black at 0).
@@ -46,7 +47,7 @@ PanelFrame:
   LD A,(PassCount)        ; PassCount
   AND $03
   LD C,$01
-  JR Z,PanelInkCells      ; C = 1 every fourth frame, else 0
+  JR Z,PanelInkCells      ; C = 1 every fourth pass, else 0
   DEC C
 PanelInkCells:
   LD HL,$5AC6             ; the two cells at row 22, columns 6-7
@@ -94,7 +95,7 @@ PanelFuelLamps:
   AND $0F
   LD (HL),A
   LD C,A
-  LD HL,SpinnerColour     ; PanelBounce: moved by PanelStep on odd frames
+  LD HL,SpinnerColour     ; PanelBounce: moved by PanelStep on odd passes
   LD A,(PassCount)
   AND $01
   JR Z,PanelBlocks
@@ -121,7 +122,7 @@ PanelBlocks:
   POP AF
   LD HL,$5A9D
   CALL DrawSpinner
-  LD A,(PassCount)        ; the burst only on even frames
+  LD A,(PassCount)        ; the burst only on even passes
   AND $01
   RET NZ
   LD HL,$5AAB             ; clear rows 21-22, columns 11-20
@@ -162,8 +163,8 @@ PanelClearRow:
 
 ; key 4 pauses; a pending end code ends the play loop
 ;
-; Called by the play interrupt once a frame (the phase dispatch in the routine
-; at $AA96; 48K c2: 659 entries in 659 frames). Key 4 (half row $F7FE, bit 3)
+; Called by the play interrupt once a pass (the phase dispatch in the routine
+; at $AA96; 48K c2: 659 entries in 659 passes). Key 4 (half row $F7FE, bit 3)
 ; calls Pause ($B197). Then a pending end code in EndPending ($7F7C: 1 a life
 ; lost, 2 the level done, 4 abort) is moved to EndCode ($7F7D), which ends the
 ; play loop at $B1E9, the interrupt handler ($FDFE) becomes TitleInterrupt

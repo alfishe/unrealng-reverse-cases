@@ -1,9 +1,11 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; glue.asm: the 128K glue: the engine each frame, the music on and off, the patches
 ;
-; GlueInstall, called once by block 2's set-up on a 128K, writes the patches; the rest is what they reach. Each frame
-; the game's interrupt handler now calls FramePlay through one of four small entries, which each do the instructions
-; their patch overwrote: the engine plays one frame from page 4. The music is started after each screen clear the game
+; GlueInstall, called once by block 2's set-up on a 128K, writes the patches; the rest is what they reach. The game's
+; interrupt handlers now call FramePlay through one of four small entries, which each do the instructions their patch
+; overwrote: the engine plays one step from page 4. The menus' handlers step it once an interrupt, every TV frame; the
+; play handler twice a pass, and a pass takes two TV frames (the next interrupt is lost under DI), so the engine steps
+; once a TV frame on average in play too (docs/09-sound.md 9.8). The music is started after each screen clear the game
 ; does at its menus (ClearThenMusic, MusicOn) and when the pause routine ends (Key4MusicOn), and stopped at a level's
 ; start (LevelStartSound, which also plays an effect) and when key 4 is pressed (Key4MusicOff). The 48K beeper is cut
 ; off at its three routines.
@@ -75,9 +77,11 @@ PlayAtA9F7:
 ; always ends here (it runs to $AB03 or jumps there from $AA00), so the main
 ; handler (entered at $A9ED) steps the engine twice an interrupt: in c1 $A9ED
 ; ran 3221 times and PlayAtA9F7 and PlayAtAB03 3220 times each, while
-; PlayAtA9E5 (2550) and PlayAtA581 (1403) step it once. Whether the in-play
-; music and effects run at twice the menu's rate, or the in-play handler comes
-; every second frame, is stage 3's (docs/09-sound.md).
+; PlayAtA9E5 (2550) and PlayAtA581 (1403) step it once. The in-play handler is
+; taken only every second TV frame (a pass ends with the next frame's interrupt
+; already gone), so the in-play music and effects keep the menus' rate: w1 has
+; 9701 engine steps in 9700 frames, z128A's r3 75 988 in 76 003
+; (docs/09-sound.md 9.8, docs/04-game-loop.md 4.3).
 PlayAtAB03:
   CALL FramePlay
   POP IY

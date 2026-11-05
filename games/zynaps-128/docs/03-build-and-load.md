@@ -175,8 +175,8 @@ Block 2 unpacks to `$6000`-`$FB84`. Its code at `$6000` (`work/stage1/dis/blk2.a
    - writes `DAVE ROGERS ` over `STEVE TURNER` at `$8484` (the credits name the CPC musician);
    - sets `$B21B` = `$E4`: the `JR $B203` that ends a game becomes `JR $B200`, so the menu loop passes `$B200`'s
      call again (the music restarts at the menu);
-   - zeros `$B496`, `$86D7`, `$8FBD`, `$949C`: four `OUT ($FE),A` (the beeper's tone and three border clicks)
-     become `NOP NOP`.
+   - zeros `$B496`, `$86D7`, `$8FBD`, `$949C`: four `OUT ($FE),A` (the title tune's tone and the three toggles of the 48K's explosion noise:
+     per row, per strip, per slot) become `NOP NOP`.
 3. On both machines:
    - `$5D40` ≠ 0 (INF.LIVES): `$B171` = `$B6`, which turns `DEC (IX+4)` into `OR (IX+4)`: lives never drop;
    - `$5D41` ≠ 0 (K-MOUSE): copies the mouse driver (`$6299`, `$DD` bytes) to `$FE00` and patches four places.
@@ -188,10 +188,12 @@ Block 2 unpacks to `$6000`-`$FB84`. Its code at `$6000` (`work/stage1/dis/blk2.a
 
 ## 3.6 Where the game image comes from
 
-The game image is the original Hewson tape's main block (`ZYNAPS.TAP`, the code block of 38 910 bytes at `$6801`;
-`work/ref48`). The 128K image `$6800`-`$FFFF` before the glue differs from it in **151 bytes, 11 runs**:
+The game image is the 48K Zynaps's game, at the same addresses. The 48K tape's code block (Hewson 1987; the 1993
+`ZYNAPS.TAP` in `work/ref48` holds the same bytes, 38 910 from `$6801`) is moved by the 48K loader to `$61A8`-`$FFFE`
+([the 48K case](../../zynaps/docs/03-build-and-load.md)). The 128K image `$6800`-`$FFFF` before the glue differs from
+it in **152 bytes in 11 places**, `$FFFF` included (`python3 tools/diff_48k.py --summary`):
 
-| Where | Hewson tape | This disk | What |
+| Where | 48K tape | This disk | What |
 | --- | --- | --- | --- |
 | `$8188`-`$8191` | `DF01 BF02 7F02 FD01 FD02` | `7F01 FB01 FD01 DF02 DF01` | the default keys: SPACE fire, Q, A, O, P |
 | `$86B7` | `$0A` | `$0C` | a delay count |
@@ -199,12 +201,14 @@ The game image is the original Hewson tape's main block (`ZYNAPS.TAP`, the code 
 | `$A538`, `$A545` | `$3D`, `$10` | `$4D`, `$17` | a delay loop |
 | `$A568`-`$A570` | 3 × `NOP`, `JP NZ` | `LD B,(HL)` × 2, `JR NZ` | the line loop, slower |
 | `$AA68`, `$AA7B`, `$AA8D` | `$02`, `$05`, `$10` | `$0B`, `$10`, `$77` | delay counts |
-| `$FDE8`-`$FE4A` | the tape loader's rest | zeros | |
-| `$FFD9`-`$FFFE` | a font's rest | zeros | |
+| `$FDE8`-`$FE4A` | an Interface 1 RS-232 download routine left by the mastering | zeros | |
+| `$FFD9`-`$FFFE` | the ROM font's `Q`-`U` left by the 48K loader | zeros | |
+| `$FFFF` | (past the tape's block) | `$73` | |
 
-The delay changes are the "Pentagon fix". The Pentagon has no contended memory and its interrupt comes at another
-place in the frame, so the original's beam-timed loops ran early; the new counts move them back. Which loop times
-what is stage 3's.
+The delay changes are the Pentagon fix. The Pentagon has 16 more lines above the screen than a 48K (line 0 comes
+about 17 920 T after the INT, not 14 336) and no contended memory, so the original's beam-timed loops ran early; the
+new counts move them back. Which count times what, and what it means on other machines:
+[13.5](13-differences-from-zynaps-48k.md#135-timing-the-pentagon-retiming).
 
 ## 3.7 The stages in `c1`
 

@@ -1,10 +1,12 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; engine-play.asm: the frame: the channels' commands, the notes, the envelopes
 ;
-; PlayFrame runs once a frame from the glue's interrupt handler. Each active channel counts down its note's frames; at
-; 0 ReadCommands reads its commands up to the next note (PlayNote: the period from the data image's PeriodTable, the
-; envelopes restarted, the mixer). Every frame each active channel then steps its volume and pitch envelopes, and the
-; one noise envelope steps after channel A.
+; PlayFrame is one engine step, run from the glue's FramePlay once a TV frame on average (once an interrupt at the
+; menus; in play twice a pass, at its start and its end, and a pass takes two TV frames because the next interrupt is
+; lost under DI: one step a TV frame on average, the steps a third of a frame uneven; docs/09-sound.md 9.8). Each
+; active channel counts down its note's frames; at 0 ReadCommands reads its commands up to the next note (PlayNote:
+; the period from the data image's PeriodTable, the envelopes restarted, the mixer). Every frame each active channel
+; then steps its volume and pitch envelopes, and the one noise envelope steps after channel A.
 ;
 ; An envelope is a list of three-byte steps (frames, change + $80, repeats) ended by $FF, which starts it again:
 ; VolumeEnvelope adds the change to the channel's volume register, PitchEnvelope 2 x the change to its period

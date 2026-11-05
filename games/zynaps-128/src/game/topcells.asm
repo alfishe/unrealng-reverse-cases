@@ -2,9 +2,9 @@
 ; topcells.asm: the developer switch and the work cells at the top of memory
 ;
 ; The tune data ends at $FFD3. $FFD4-$FFD8 are the 48K tape's bytes (what its loader left of the ROM font's 'P' and
-; the first line of 'Q'); from $FFD9 to $FFFF the 2 in 1 holds zeros, where the 48K tape had the rest of the font's
-; 'Q'-'U'. The game uses three parts as variables: Invulnerable ($FFD7, 0), WorkGlyph ($FFD8, 8 bytes) and ColumnFlags
-; ($FFE0, 32 bytes to $FFFF).
+; the first line of 'Q'); from $FFD9 to $FFFE the 2 in 1 holds zeros, where the 48K tape had the rest of the font's
+; 'Q'-'U', and $FFFF (past the 48K tape's block, which ends at $FFFE) holds $73. The game uses three parts as
+; variables: Invulnerable ($FFD7, 0), WorkGlyph ($FFD8, 8 bytes) and ColumnFlags ($FFE0, 32 bytes to $FFFF).
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; the lines 4-6 of the ROM's 'P' ($7C, $40, $40), no code reads them
@@ -33,7 +33,9 @@ WorkGlyph:
 
 ; 32 flags a screen column (to $FFFF, the image's last byte): cleared by $8C3B
 ; at each level start ($8CD9, LDIR of 32 bytes $FFE0-$FFFF), $89C9 sets bits in
-; (H = $FF, L = the object's +$11); zero in block 2
+; (H = $FF, L = the object's +$11); zero in block 2 but the last byte, $73 at
+; $FFFF (past the 48K tape's block; the level start's clear makes it 0 before
+; any read)
 ColumnFlags:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00

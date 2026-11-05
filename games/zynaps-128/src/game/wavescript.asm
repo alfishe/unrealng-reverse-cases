@@ -1,13 +1,13 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; wavescript.asm: the wave script VM: the level's timeline of waves, scroll stops and checkpoints
 ;
-; Each level is a script (the twelve at $6B8D-$72A4, F5's data) run by WaveScriptStep once a frame of play: at the
-; interrupt's phase 2 ($AA96) and only while the player is alive (DeathTimer $7F7B = $FF; the death count-down stops
-; the timeline). The state is 35 bytes at ScriptState $81D7: +1 the PC ($81D8), +3 the scroll flags ($81DA, bit 5 the
-; scroll runs, bit 7 a mode flag), +4 the replay count ($81DB, the columns LevelStart scrolls through at a restart),
-; +8 the call stack pointer ($81DF, growing down from $81F6), +$0A the wait counter ($81E1), +$0B the saved flags
-; ($81E2), +$0C a flag ($81E3). The player record keeps a copy at +$0D (the checkpoint), and RestoreCheckpoint brings
-; it back at each level start.
+; Each level is a script (the twelve at $6B8D-$72A4, F5's data) run by WaveScriptStep once in four passes (8 frames)
+; of play: at the interrupt's phase 2 ($AA96) and only while the player is alive (DeathTimer $7F7B = $FF; the death
+; count-down stops the timeline). The state is 35 bytes at ScriptState $81D7: +1 the PC ($81D8), +3 the scroll flags
+; ($81DA, bit 5 the scroll runs, bit 7 a mode flag), +4 the replay count ($81DB, the columns LevelStart scrolls
+; through at a restart), +8 the call stack pointer ($81DF, growing down from $81F6), +$0A the wait counter ($81E1),
+; +$0B the saved flags ($81E2), +$0C a flag ($81E3). The player record keeps a copy at +$0D (the checkpoint), and
+; RestoreCheckpoint brings it back at each level start.
 ;
 ; An instruction is a delay byte and an opcode. The wait counter counts frames up to the delay; then the opcode runs
 ; and the next instruction is looked at in the same frame (so a run of delay-0 instructions runs at once). Opcodes
@@ -32,12 +32,12 @@
 
 ; one frame of the level's script
 ;
-; Called from the play interrupt at phase 2 ($AA96; 48K c2: 165 entries in 165
-; frames), returns at once unless DeathTimer ($7F7B) is $FF. When the wait
-; counter ($81E1) equals the delay byte at the PC ($81D8): the counter is
-; zeroed, the opcode is read and run, and the next instruction is looked at at
-; once; else the counter + 1 and return. Callees: JumpTable $91E2 (commands),
-; LaunchWave $91EC (waves), ScriptWord, ScriptByte, ScriptTest.
+; Called from the play interrupt at phase 2 ($AA96; 48K c2: 165 entries, one in
+; four of its 659 passes), returns at once unless DeathTimer ($7F7B) is $FF.
+; When the wait counter ($81E1) equals the delay byte at the PC ($81D8): the
+; counter is zeroed, the opcode is read and run, and the next instruction is
+; looked at at once; else the counter + 1 and return. Callees: JumpTable $91E2
+; (commands), LaunchWave $91EC (waves), ScriptWord, ScriptByte, ScriptTest.
 WaveScriptStep:
   LD A,(DeathTimer)
   INC A                   ; $FF + 1 = 0: alive

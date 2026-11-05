@@ -23,16 +23,16 @@
 @equ $B197 Key4Routine ; the game's routine key 4 calls (it ends at $B1B3, after a wait)
 @equ $B1B0 Key4End 3 ; LD (PauseState),A at its end
 @equ $B201 MainLoopCall 2 ; the operand of the main loop's CALL $AFB0 at $B200
-@equ $B2F0 BeeperSound ; the 48K beeper's sound start (A = the sound): RET on 128K
-@equ $B30C BeeperPlay ; the 48K beeper's per-frame player: RET on 128K
+@equ $B2F0 BeeperSound ; the 48K's RequestEffect (A = the beeper effect, 1-6): RET on 128K
+@equ $B30C BeeperPlay ; the 48K's EffectPlay (the beeper effect player, a main-loop job): RET on 128K
 @equ $B30D HookSound ; the shared hook stub (src/game/stubs.asm)
-@equ $B446 BeeperTone ; the 48K beeper tone routine's DI: a NOP on 128K
+@equ $B446 BeeperTone ; the DI of TitleTune, the 48K's beeper title tune: a NOP on 128K
 @const PAGE4 $14 ; $7FFD: bank 4 at $C000 (the engine), the 48 BASIC ROM, screen 0
 @const PAGE0 $10 ; $7FFD: bank 0 at $C000 (the game)
 @const PORT_7FFD $7FFD ; the 128K paging port
 @const EngineMusicOn $C968 ; the engine (page 4, src/sound/engine.asm): start the music
 @const EngineMusicOff $C96B ; stop the music
-@const EnginePlay $C96E ; one frame of the music and the effects
+@const EnginePlay $C96E ; one step of the music and the effects
 @isub $5B08 LD A,PAGE4
 @isub $5B0A LD BC,PORT_7FFD
 @isub $5B0F CALL EnginePlay
@@ -46,7 +46,7 @@
 @isub $5B66 LD BC,PORT_7FFD
 
 @module glue ; the 128K glue: the engine each frame, the music on and off, the patches
-@about GlueInstall, called once by block 2's set-up on a 128K, writes the patches; the rest is what they reach. Each frame the game's interrupt handler now calls FramePlay through one of four small entries, which each do the instructions their patch overwrote: the engine plays one frame from page 4. The music is started after each screen clear the game does at its menus (ClearThenMusic, MusicOn) and when the pause routine ends (Key4MusicOn), and stopped at a level's start (LevelStartSound, which also plays an effect) and when key 4 is pressed (Key4MusicOff). The 48K beeper is cut off at its three routines.
+@about GlueInstall, called once by block 2's set-up on a 128K, writes the patches; the rest is what they reach. The game's interrupt handlers now call FramePlay through one of four small entries, which each do the instructions their patch overwrote: the engine plays one step from page 4. The menus' handlers step it once an interrupt, every TV frame; the play handler twice a pass, and a pass takes two TV frames (the next interrupt is lost under DI), so the engine steps once a TV frame on average in play too (docs/09-sound.md 9.8). The music is started after each screen clear the game does at its menus (ClearThenMusic, MusicOn) and when the pause routine ends (Key4MusicOn), and stopped at a level's start (LevelStartSound, which also plays an effect) and when key 4 is pressed (Key4MusicOff). The 48K beeper is cut off at its three routines.
 $5B00 c FramePlay ; page 4 in, one frame of the engine (EnginePlay), page 0 back; DI, every register but HL kept
 > Called from the game's interrupt handler through PlayAtA9E5, PlayAtA581, PlayAtA9F7 and PlayAtAB03. Leaves interrupts off (the handler enables them itself). AF, DE, BC, IX, IY kept; the engine may change HL.
 $5B01 ; AF, DE, BC, IX, IY kept
@@ -59,7 +59,7 @@ $5B28 c PlayAtA581 ; the handler tail at $A581: a frame of the engine, its POP B
 $5B31 c PlayAtA9F7 ; the main handler's work: DI, its PUSH IX: PUSH IY, a frame of the engine, on at IntPlayRest
 > Reached by JP PlayAtA9F7 (and a NOP) at IntPlaySite.
 $5B3C c PlayAtAB03 ; the main handler's other path ($AA00 jumps to $AB03): a frame of the engine, its POP IY: POP IX, on at IntEndRest
-> Reached by JP PlayAtAB03 (and a NOP) at IntEndSite. The work from $A9FB always ends here (it runs to $AB03 or jumps there from $AA00), so the main handler (entered at $A9ED) steps the engine twice an interrupt: in c1 $A9ED ran 3221 times and PlayAtA9F7 and PlayAtAB03 3220 times each, while PlayAtA9E5 (2550) and PlayAtA581 (1403) step it once. Whether the in-play music and effects run at twice the menu's rate, or the in-play handler comes every second frame, is stage 3's (docs/09-sound.md).
+> Reached by JP PlayAtAB03 (and a NOP) at IntEndSite. The work from $A9FB always ends here (it runs to $AB03 or jumps there from $AA00), so the main handler (entered at $A9ED) steps the engine twice an interrupt: in c1 $A9ED ran 3221 times and PlayAtA9F7 and PlayAtAB03 3220 times each, while PlayAtA9E5 (2550) and PlayAtA581 (1403) step it once. The in-play handler is taken only every second TV frame (a pass ends with the next frame's interrupt already gone), so the in-play music and effects keep the menus' rate: w1 has 9701 engine steps in 9700 frames, z128A's r3 75 988 in 76 003 (docs/09-sound.md 9.8, docs/04-game-loop.md 4.3).
 $5B46 c ClearThenMusic ; CALL ClearScreen, then MusicOn
 > Replaces CALL ClearScreen at ClearSite1, ClearSite2 and ClearSite3 (the menu's and the game over's screen clears).
 $5B49 MusicOn ; the main loop's CALL $AFB0 (at $B200) becomes CALL MusicOn; A = $5B (not 0): the music on

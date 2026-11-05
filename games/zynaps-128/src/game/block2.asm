@@ -18,7 +18,7 @@ SiteHomingLaunch   EQU $9CFA  ; CALL $9CB0: a homing missile launched (fire held
 SitePodTaken       EQU $A247  ; CALL $A489: a pod taken
 SiteSpecialLaunch  EQU $9CB0  ; LD HL,$F36F: a special weapon placed at the ship (bombs, homing, seekers; made a CALL)
 SiteEnemyMissile   EQU $A1C4  ; CALL BeeperSound: an enemy's missile
-SiteWeaponSelect   EQU $A21A  ; CALL $91E2: a weapon selected (a pod taken with fire held 8 frames or more)
+SiteWeaponSelect   EQU $A21A  ; CALL $91E2: a weapon selected (a pod taken with fire held 8 passes or more)
 SitePodAppears     EQU $A31D  ; CALL BeeperSound: a pod appears (an object gets the pod descriptor $7EBB)
 SiteExplosion      EQU $A29F  ; LD HL,$D6ED: an explosion starts (made a CALL)
 SiteSelections     EQU $A7BB  ; LD HL,$82E0: the SELECTIONS screen (title key 1 or 2; made a CALL)
@@ -27,9 +27,9 @@ SiteScreenWipe2    EQU $A7F7  ; the routine at $A7F7 (the game over)'s first CAL
 CreditName         EQU $8484  ; the game's credits: the musician's name, "STEVE TURNER" in the 48K
 MenuLoopJump       EQU $B21A  ; JR $B203 at the end of a game: made JR $B200, back through the main loop's CALL at $B200
 BeeperOut1         EQU $B496  ; OUT ($FE),A of the 48K beeper's tone loop: made NOP: NOP
-BeeperOut2         EQU $86D7  ; OUT ($FE),A: a border / beeper click
-BeeperOut3         EQU $8FBD  ; OUT ($FE),A: the same
-BeeperOut4         EQU $949C  ; OUT ($FE),A: the same
+BeeperOut2         EQU $86D7  ; OUT ($FE),A: the explosion noise's toggle per playfield row (RowBeep $7F7E)
+BeeperOut3         EQU $8FBD  ; OUT ($FE),A: its toggle per object strip (ObjectBeep $7F82)
+BeeperOut4         EQU $949C  ; OUT ($FE),A: its toggle per object slot in RunObjects ($7F86)
 LoseLife           EQU $B170  ; DEC (IX+4) (DD 35 04): the ship's lives counted down; the set-up changes its $35
 StickRead          EQU $A6D4  ; IN A,($1F): AND $1F: the Kempston stick read in play
 StartTest          EQU $A74E  ; IN A,($1F): AND $1F: CP $10: the menu's start test (the stick's fire alone)

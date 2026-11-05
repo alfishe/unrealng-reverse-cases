@@ -109,7 +109,8 @@ So the icon steps with the selector (doc 10, 10.2).
 The five icons, in the selector's order: the speed-up, the laser, the plasma, the homing missiles, the seeker.
 
 In w1's level start the icon's lines were written by IconLine `$AC64`: 32 writes, 32 bytes (8.5).
-`src/game/game.ann` says the icon sits at rows 16-17; the cells PodIconJob writes are rows 20-21.
+The stage 2 comments put the icon at rows 16-17; the cells PodIconJob writes are rows 20-21, and `src/game/game.ann`
+now says so.
 
 ## 8.4 The spinners
 

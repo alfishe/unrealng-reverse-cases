@@ -148,3 +148,57 @@ frames (`memory_at`, exact), and `tools/fig_compare.py` draws the side-by-side f
 ## 6. The game
 
 ## 7. Review
+
+## 8. The documents stage
+
+Docs 01-12 were written to the case standard (`work/docs/BRIEF.md`) by two agents, then merged and checked by the
+lead in an editor pass:
+
+| Agent | Docs | Notes |
+| --- | --- | --- |
+| z128A | 01 game design, 02 architecture, 03 build and load, 04 game loop, 05 controls, 06 rendering | `work/docs/z128A-NOTES.md`, `z128A-fork-NOTES.md`, `z128A-index.md` |
+| z128B | 07 objects, 08 HUD and text, 09 sound, 10 gameplay logic, 11 and 12 (generated, `kit/refdocs.py --case .`) | `work/docs/z128B-NOTES.md`, `z128B-index.md` |
+
+New recordings (all listed in [docs/README.md](docs/README.md#recordings)), every one on a Pentagon 128 with the TRD,
+on the agents' own muted instances:
+
+- `r3` (z128A): the bot through all 12 levels, 76 001 frames, with L1 (the budget, the heatmap, the counts);
+- `o3` (z128A): the intro's options toggled; `m1` (z128A, `tools/rec_mouse.py`): one life with K-MOUSE;
+- `w0`, `w1` and `d1` (z128B, `tools/weapons_bot.py`): every weapon taken in play, a homing lock and kill, and three
+  ships lost with INF.LIVES and `$FFD7` = 0;
+- every AY write of `r1` and `w1` (`tools/fig_ports.py collect`, `time_travel port_events`), and access traces of
+  `c1`, `r3` and `w1` windows on read-only opens.
+
+The editor pass:
+
+- **The two halves made to agree**, each against the evidence in the notes:
+  - the engine's rate: z128A wrote that it runs twice a pass, z128B that the handler steps every other frame. Both
+    are true: two steps a pass, at its start (PlayAtA9F7) and its end (PlayAtAB03), one a TV frame on average
+    (`w1`: 9701 steps in 9700 frames; `r3`: 75 988 in 76 003), unevenly spaced; once an interrupt at the menus.
+    Docs 02, 04, 09, `engine.ann` and `glue.ann` now say so;
+  - the beeper writes the set-up silences are the 48K's explosion noise (per row, strip and slot), not "border
+    clicks"; the plasma is not "bombs"; fire is held 8 passes, not frames;
+  - the sprites are negative in play (`tools/heatmap-regions-z128A.txt`, the heatmap of 02 redrawn).
+- **The source comments fixed** (descriptions only, `src/game/game.ann`, `setup.ann`, `glue.ann`, `stubs.ann`,
+  `src/sound/engine.ann`; `tools/mkgame.sh`, `tools/mkasm_all.sh`, `kit/refdocs.py`, then `tools/build.sh`: the SCL
+  and the TRD identical). The 48K case's commit `b92fa86` made the same fixes there; they were ported to the shared
+  entries:
+  - a pass, not a frame, in the play code's comments;
+  - PodIconJob writes rows 20-21 (`$5A86` / `$5AA6`), not 16-17;
+  - PanelBurst is set by FireLaser, not by a lost life;
+  - the three speaker toggles are the explosion noise, not an engine hum;
+  - `$80E8` is the enemies' fire chance (only EnemyFire reads it), not the waves' speed;
+  - the title tune sounds at 3500000 / (81 p), 179-800 Hz (`src/res/music/README.md`, `titletune.tune.txt`,
+    `tools/res_tune.py`);
+  - the header of `game.ann`: 152 bytes in 11 places, seven delay counts and the raster's line loop, `$FFFF`.
+- **Broken links** between the docs fixed (renumbered sections of 01, 3.6's new title); 3.6 rewritten: the image is
+  the 48K's at its addresses, 152 bytes, the Pentagon's 16 lines.
+
+Doc 13 (the lead), from the two finished cases with no new emulator run:
+
+- `tools/diff_48k.py` (from `nether-earth-gs`'s `diff_ne.py`): the two images address by address, the 11 places named
+  from both `game.ann`, both listings side by side, and the set-up's 241 bytes from `c1`'s image at `JP $8000`;
+- `tools/fig_diff_memmap.py`, `fig_diff_load.py`, `fig_diff_budget.py` (both L1 builds) and `fig_diff_pairs.py` (the
+  two cases' own figures side by side);
+- the timing of the Sinclair 128K and of the 48K path is computed from the counts and the frame layouts, not
+  recorded.

@@ -1,10 +1,11 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; interrupts.asm: The interrupts: the title, the play passes and their scheduler
 ;
-; In play the interrupt handler pointer $FDFE holds PlayInterrupt. One pass of the game is spread over the frames by
-; the phase $7F65: the interrupt of phase 1 starts a pass (moves the objects $8AED, prepares the strips $894D), the
-; next ones (phases 2-3) run the sprites and collisions ($9150, $91C6); each runs the scroll and the play logic
-; (PlayPass), then the next step of the drawing chain.
+; In play the interrupt handler pointer $FDFE holds PlayInterrupt. One play interrupt is one pass of the game, and a
+; pass takes two frames (the next frame's interrupt is lost under DI). The phase $7F65 cycles 1-4: phase 1 scrolls a
+; column (ScrollStep $8AED) and starts the next one ($894D), phases 2-4 test and clear the hit grid ($9150, $91C6);
+; each then runs the stars, the panel, the playfield, the play logic (PlayPass) and the next step of the drawing
+; chain.
 ;
 ; The chain is three CALL BuildColumn ($896D) each followed by DI; RET (ChainBuildColumn1-3), then ChainEnd.
 ; BuildColumn enables the interrupts while it builds glyphs (EI at $8AA2, not in phase 4), so the next interrupt
@@ -102,9 +103,9 @@ TitleInterrupt:
 ; Installed at $B1DF. Evidence: 48K c2 L1 659 entries, 12 permille own time.
 ;
 ; On a 128K: the glue makes the PUSH IX: PUSH IY at $A9F7 JP PlayAtA9F7 ($5B31)
-; and a NOP: a frame of the engine; with PlayAtAB03 the engine steps twice an
-; interrupt in play (c1: 3220 times each) (src/game/setup.asm, glue.asm;
-; docs/09-sound.md 9.2).
+; and a NOP: one engine step; with PlayAtAB03 the engine steps twice a pass in
+; play (c1: 3220 times each), and a pass takes two TV frames, so one step a TV
+; frame on average (src/game/setup.asm, glue.asm; docs/09-sound.md 9.8).
 PlayInterrupt:
   PUSH AF
   PUSH HL
@@ -177,7 +178,7 @@ PlayInterruptColour:
   ADD A,$24               ; and without
   JR PlayInterruptWait
 PlayInterruptPhase:
-  CALL TestHitGrid        ; phases 2-3
+  CALL TestHitGrid        ; phases 2-4
   CALL ClearHitGrid
   LD A,$10                ; phases 2-3: $10 ($05 in the 48K)
 PlayInterruptWait:

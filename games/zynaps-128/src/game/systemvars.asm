@@ -243,8 +243,8 @@ Fuel:
 WeaponRatingMask:
   DEFB $FF
 
-; How fast the next waves fly (WeaponRating $9B75: + ScriptLevelBias);
-; EnemyFire $A109
+; The enemies' fire chance (WeaponRating $9B75: + ScriptLevelBias); read only
+; by EnemyFire $A109 (Random below it: a shot)
 WeaponRatingValue:
   DEFB $00
 

@@ -65,7 +65,7 @@ python3 tools/fig_keys.py --out docs/img/controls/keys.png
 ```
 
 The defaults are this game's: the five pairs at `$8188`-`$8191` are SPACE, Q, A, O, P
-([3.6](03-build-and-load.md#36-the-game-against-the-48k-tape)). `c1` plays with them.
+([3.6](03-build-and-load.md#36-where-the-game-image-comes-from)). `c1` plays with them.
 
 ## 5.2 ReadControls: one routine for all devices
 
@@ -308,5 +308,5 @@ laser level and a speed step ([10](10-gameplay-logic.md)).
 
 In `r3` the pod's pick-up with fire held (`$A209`) runs in 119 frames, the first at 849. The selector moves 0 to 1
 at 852 and to 2 at 1008; plasma (`+8` = 2) is taken at 1100 (HookWeaponSelect at 1097), homing missiles (3) at 1716
-(at 1713). The bot never took the seeker. The GIF of [1.4](01-game-design.md#14-the-ship-the-weapons-and-the-pods)
+(at 1713). The bot never took the seeker. The GIF of [1.5](01-game-design.md#15-the-ship-the-weapons-and-the-pods)
 shows both takes.

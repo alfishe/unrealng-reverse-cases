@@ -9,7 +9,7 @@ PAGE0              EQU $10  ; $7FFD: bank 0 at $C000 (the game)
 PORT_7FFD          EQU $7FFD  ; the 128K paging port
 EngineMusicOn      EQU $C968  ; the engine (page 4, src/sound/engine.asm): start the music
 EngineMusicOff     EQU $C96B  ; stop the music
-EnginePlay         EQU $C96E  ; one frame of the music and the effects
+EnginePlay         EQU $C96E  ; one step of the music and the effects
 
 ; The variables past the loaded image (game.ann @equ)
 PauseState     EQU $7F7C  ; the game's variable the routine at $B197 ends by setting to 4 (LD ($7F7C),A at $B1B0)
@@ -31,10 +31,10 @@ LevelSite      EQU $B024  ; the operand of CALL LevelSetUp at $B023 (the start o
 Key4Routine    EQU $B197  ; the game's routine key 4 calls (it ends at $B1B3, after a wait)
 Key4End        EQU $B1B0  ; LD (PauseState),A at its end
 MainLoopCall   EQU $B201  ; the operand of the main loop's CALL $AFB0 at $B200
-BeeperSound    EQU $B2F0  ; the 48K beeper's sound start (A = the sound): RET on 128K
-BeeperPlay     EQU $B30C  ; the 48K beeper's per-frame player: RET on 128K
+BeeperSound    EQU $B2F0  ; the 48K's RequestEffect (A = the beeper effect, 1-6): RET on 128K
+BeeperPlay     EQU $B30C  ; the 48K's EffectPlay (the beeper effect player, a main-loop job): RET on 128K
 HookSound      EQU $B30D  ; the shared hook stub (src/game/stubs.asm)
-BeeperTone     EQU $B446  ; the 48K beeper tone routine's DI: a NOP on 128K
+BeeperTone     EQU $B446  ; the DI of TitleTune, the 48K's beeper title tune: a NOP on 128K
   ORG $5B00
   INCLUDE "glue.asm"  ; the 128K glue: the engine each frame, the music on and off, the patches
 

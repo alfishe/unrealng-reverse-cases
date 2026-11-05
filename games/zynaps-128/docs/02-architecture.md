@@ -94,8 +94,8 @@ How to read the figure:
   - the code `$8516`-`$B72E` is blue, with the 15 hook stubs at `$B30D`;
   - `$FE00` is the IM 2 table, read once an interrupt (no driver: `r3` plays with K-MOUSE off);
   - `$FF01`-`$FFD3` is the title tune's data, played silent on the credits page, which `r3` never shows.
-- **The point**: the game's map is the 48K's; page 4's engine is not in this picture because it is never mapped
-  while the game runs.
+- **The point**: the game's map is the 48K's; page 4's engine is not in this picture: it is paged in only inside
+  FramePlay and HookSound, and the picture shows bank 0 at `$C000`.
 
 ```bash
 python3 tools/fig_heatmap.py work/z128A/r3/l1.json docs/img/arch/heatmap.png --regions tools/heatmap-regions-z128A.txt \
@@ -117,7 +117,7 @@ The regions in play (the ranges are the `.ann` entries'):
 | `$8516`-`$B72E` | the code, with the hook stubs at `$B30D`-`$B3A8` |
 | `$B72F`-`$BFFF` | the map ring |
 | `$C000`-`$DFFF` | GlyphCache: 4 shifts of 256 glyphs |
-| `$E000`-`$F107` | the sprites (made plain at the start), the sprite cache images, the panel save, the pod |
+| `$E000`-`$F107` | the sprites (negative: a clear bit is a pixel), the sprite cache images, the panel save, the pod |
 | `$F108`-`$F7FF` | the row records, the object records, the strips |
 | `$F800`-`$FDFF` | NodePool (95 span nodes), BitReverse, the hit grid, the scenery script stack |
 | `$FE00`-`$FF00` | the IM 2 table, or the K-MOUSE driver and the table from `$FEE8` |
@@ -222,7 +222,8 @@ the music and the effects), `OUT ($7FFD),$10` (page 0 back), and returns with in
   `$B200`, LevelStartSound `$5B6D` (the music off at a level's start), Key4MusicOff `$5B7B` and Key4MusicOn `$5B82`
   around the pause.
 - The beeper is cut off: `RET` at EffectPlay `$B30C` and BeeperSound `$B2F0`, `NOP: NOP` over four `OUT ($FE),A`
-  (the title tune's at `$B496`, the row click at `$86D7`, two border clicks at `$8FBD` and `$949C`).
+  (the title tune's at `$B496`; the three toggles of the 48K's explosion noise: per row at `$86D7`, per strip at
+  `$8FBD`, per slot at `$949C`).
 
 ## 2.8 The main loop's call graph
 

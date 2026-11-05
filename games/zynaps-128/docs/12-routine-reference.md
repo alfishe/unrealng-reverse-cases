@@ -162,7 +162,7 @@ Saves SP into the operand of RenderDone, clears the padding balance (the operand
 
 The rows run as a chain of RETs: RowStart pushes the attributes and returns into the row's head span node; each span handler returns into the next node; the sentinel node (`$85E4`) returns into RowEnd; RowEnd moves to the next record and jumps to RowStart or, after 18 rows, to RenderDone.
 
-Called from the frame handler `$A9ED` once a frame while playing (48K c2: 659 entries in 1500 frames, all from `$A9ED`).
+Called from the play interrupt `$A9ED` once a pass (two frames) while playing (48K c2: 659 entries in 1500 frames, all from `$A9ED`).
 
 | | |
 | --- | --- |
@@ -270,7 +270,7 @@ Then the padding: A' - 4 left over is the new balance; a row cheaper than four g
 
 **Start a row: beeper toggle, attributes, then the row's span nodes**
 
-Toggles the beeper (RowBeep `$7F7E` XOR `$18`, AND the mask `$7F7F`, OUT `$FE`): the in-game engine sound is this click, 18 times a frame.
+Toggles the beeper (RowBeep `$7F7E` XOR `$18`, AND the mask `$7F7F`, OUT `$FE`), 18 times a pass: the row part of the explosion noise. The mask is 0 (no sound) except for the 16 passes after an explosion or a big enemy's hit (SoundPattern1 `$7F80`).
 
 A' = ShiftPage (`$7F6A`). POP DE = the map ring pointer (+0), HL = the attribute address of column 31 (+2), BC = the screen address of the row (+4), IY = the head node (+6); saves SP (the record + 8) in RowStar's operand.
 
@@ -278,7 +278,7 @@ SP = the attribute address + 1, then 16 PUSH DE of map bytes read downwards (DEC
 
 48K c2: 11862 entries.
 
-On a 128K: the OUT (`$FE`),A at `$86D7` is made NOP: NOP: no engine hum (src/game/setup.asm, glue.asm; docs/09-sound.md 9.2).
+On a 128K: the OUT (`$FE`),A at `$86D7` is made NOP: NOP: the row part of the explosion noise is gone (src/game/setup.asm, glue.asm; docs/13-differences-from-zynaps-48k.md).
 
 | | |
 | --- | --- |
@@ -381,7 +381,7 @@ A node whose last glyph has scrolled out but which still links the row: skips th
 
 Walks the records from the top with SP at record + `$20` and pushes, per row: +`$1E`/+`$1F` = F and the colour (`$47` XOR Random AND 3), +`$1C`/+`$1D` = L the row's screen low byte (`$20`, `$40`, ...) and H = `$20`, +`$1A`/+`$1B` = the speed (B = 16-47 from Random, C = `$E0`), +`$18`/+`$19` = E (Random bits 3-6 moved to 4-7, OR `$80`) and D = `$FF`.
 
-MoveStars rewrites the fields every frame: +`$1C` = the cell's low byte and +`$1D` = the dot byte that RowStar draws, +`$1E` carry = visible.
+MoveStars rewrites the fields every pass: +`$1C` = the cell's low byte and +`$1D` = the dot byte that RowStar draws, +`$1E` carry = visible.
 
 Saves and restores SP through the operand of InitStarsDone. Output: all registers changed.
 
@@ -1116,11 +1116,11 @@ Called from `$AD44` (48K c2: 35 entries).
 
 **Cut every active object into sprite strips**
 
-ClearStripCounts, then the 16 objects from IY = `$F600` down by 44 bytes: an active object (+8 bit 7) goes through BuildObjectStrips. One beeper toggle per object (ObjectBeep `$7F82` XOR `$18`, AND the mask `$7F83`): the second sound voice of the game.
+ClearStripCounts, then the 16 objects from IY = `$F600` down by 44 bytes: an active object (+8 bit 7) goes through BuildObjectStrips. One beeper toggle per object (ObjectBeep `$7F82` XOR `$18`, AND the mask `$7F83`): the strip part of the explosion noise, silent while the mask is 0.
 
 Called from the frame handler cycle `$AA96` (48K c2: 660 entries).
 
-On a 128K: the OUT (`$FE`),A at `$8FBD` is made NOP: NOP (src/game/setup.asm, glue.asm; docs/09-sound.md 9.2).
+On a 128K: the OUT (`$FE`),A at `$8FBD` is made NOP: NOP: the strip part of the explosion noise is gone (src/game/setup.asm, glue.asm; docs/13-differences-from-zynaps-48k.md).
 
 | | |
 | --- | --- |
@@ -1169,7 +1169,7 @@ IY = the first of the 16 records of 44 bytes from `$F36C` whose +`$08` bit 7 (ac
 
 **mark the 8 enemy slots' collision bits in the grid**
 
-Called once a frame from the play loop at `$AA96` (331 entries in 48K c2). C = the collision bit, 1 for the slot `$F398` and rotated left for each next slot, so slot n owns bit n. For each active and visible slot (+`$08` bits 7 and 5): its sprite descriptor (+0/+1, IX) gives the width +`$0B` and the height +`$08`; the X position (+3/+4, in 1/4 columns) picks the first of the X bytes at `$FC00`, every 4th byte over the width plus the last gets the bit; the Y position (+5/+6, in 1/8 rows) picks the Y byte at `$FD00`, every 8th byte over the height gets the bit, the rows whose bit in the row mask +`$0B` is clear excepted (a big enemy's rows out of play).
+Called from PlayPass `$AA96` in the odd phases (1 and 3), every other pass (331 entries in 48K c2's 659 passes). C = the collision bit, 1 for the slot `$F398` and rotated left for each next slot, so slot n owns bit n. For each active and visible slot (+`$08` bits 7 and 5): its sprite descriptor (+0/+1, IX) gives the width +`$0B` and the height +`$08`; the X position (+3/+4, in 1/4 columns) picks the first of the X bytes at `$FC00`, every 4th byte over the width plus the last gets the bit; the Y position (+5/+6, in 1/8 rows) picks the Y byte at `$FD00`, every 8th byte over the height gets the bit, the rows whose bit in the row mask +`$0B` is clear excepted (a big enemy's rows out of play).
 
 Reads the records with SP (POP IX, POP HL); SP is kept in the operand at `$9144`.
 
@@ -1186,7 +1186,7 @@ Reads the records with SP (POP IX, POP HL); SP is kept in the operand at `$9144`
 
 **the overlap masks of the player, the shots and the weapons**
 
-Called once a frame from `$A9ED` (494 entries in 48K c2, 2 % of play's time). For the 8 records from `$F36C` (the player, then `$F4F8` = `$F36C` + `$018C` and every 44 bytes on: the four laser shots, the plasma/missile slots `$F5A8` and `$F5D4`, the sight `$F600`): OR of the X bytes over the width (the player's width less one) and OR of the Y bytes over the height (4 bytes an eighth of a row step, read with POP); the AND of both is the set of enemy bits this record touches, stored in +`$0D`. The union for the first five records (the player and the lasers), active ones only, goes into `$80BB`, the laser-hit mask the enemy handlers test. SP is kept in the operand at `$91C3`.
+Called from `$A9ED` in phases 2-4 (494 entries in 48K c2's 659 passes, 2 % of play's time). For the 8 records from `$F36C` (the player, then `$F4F8` = `$F36C` + `$018C` and every 44 bytes on: the four laser shots, the plasma/missile slots `$F5A8` and `$F5D4`, the sight `$F600`): OR of the X bytes over the width (the player's width less one) and OR of the Y bytes over the height (4 bytes an eighth of a row step, read with POP); the AND of both is the set of enemy bits this record touches, stored in +`$0D`. The union for the first five records (the player and the lasers), active ones only, goes into `$80BB`, the laser-hit mask the enemy handlers test. SP is kept in the operand at `$91C3`.
 
 | | |
 | --- | --- |
@@ -1336,13 +1336,13 @@ The ring at `$8026` (8 entries of 3 bytes: the kind, the record address), index 
 
 ### `RunObjects` (`$9463`)
 
-**run every active object's handler, with the engine buzz**
+**run every active object's handler, with the slot toggle of the explosion noise**
 
-Called once a frame from `$AA96` (659 entries in 48K c2, 5.7 % of play's time without the handlers). The landing flag `$974C` is freed (bit 7), the player (`$F36C`) runs by its kind, then the 15 slots from `$F600` down in steps of -44 (DE = `$FFD4`); C counts the slots not active.
+Called once a pass from `$AA96` (659 entries in 48K c2, 5.7 % of play's time without the handlers). The landing flag `$974C` is freed (bit 7), the player (`$F36C`) runs by its kind, then the 15 slots from `$F600` down in steps of -44 (DE = `$FFD4`); C counts the slots not active.
 
 After the loop the per-frame hit masks are cleared: `$80BB` (lasers and player), `$80E3` (the homing missile), `$80E4` (the sight), `$80E5` (plasma and seeker), the player's +`$0D` (`$F379`) and the +`$0D` of the 7 records from `$F4F8` (lasers, side weapons, sight; `$F505` on).
 
-On a 128K: the OUT (`$FE`),A at `$949C` is made NOP: NOP (src/game/setup.asm, glue.asm; docs/09-sound.md 9.2).
+On a 128K: the OUT (`$FE`),A at `$949C` is made NOP: NOP: the slot part of the explosion noise is gone (src/game/setup.asm, glue.asm; docs/13-differences-from-zynaps-48k.md).
 
 [Animation: `RunObjects` at work](img/routines/RunObjects.gif)
 
@@ -1579,7 +1579,7 @@ NC. Also the move of SetDirection, RandomDirection, PathOpHome and MoveFragile. 
 
 ### `PathOpScrollAlways` (`$96D0`)
 
-**extended 6: X - `$40` every frame**
+**extended 6: X - `$40` every pass**
 
 NC. Not run in 48K c1/c2.
 
@@ -1920,11 +1920,11 @@ The flash of the missiles, the plasma and the hit big enemy. Not run in 48K c1/c
 
 ### `PlayerHandler` (`$9A5B`)
 
-**kind 0: the ship for one frame**
+**kind 0: the ship for one pass**
 
 Not alive (`$7F7B` not `$FF`): PlayerDying. Else the fuel count; `$A6B6`; the input `$8186` (bits 0/1 right/left, 2/3 down/up): up or down sets Vy = the speed - `$20` at once, left or right accelerate X up to the speed + `$20` (the acceleration masked at the limit), no horizontal input brakes Vx to 0. PathOpAccelerate moves, ClampRow and ClampColumn keep it on the screen, scenery under the ship undoes the row move (to the row's edge). A moving ship writes its position into the ring of 8 at `$80C0` (index `$80BF`): the sight follows it from there.
 
-The colour +`$25`: `$70`, or the flashing `$7F79` x 8 + `$40` while fire has been held 8 frames or more (`$8184`, the pod-collect signal). The side weapon's frame routine from `$80EA` by +`$08` - 2; a fire press (`$8185` = `$FF`) FireLaser; then the hit test. 659 executions in 48K c2.
+The colour +`$25`: `$70`, or the flashing `$7F79` x 8 + `$40` while fire has been held 8 passes or more (`$8184`, the pod-collect signal). The side weapon's frame routine from `$80EA` by +`$08` - 2; a fire press (`$8185` = `$FF`) FireLaser; then the hit test. 659 executions in 48K c2.
 
 | | |
 | --- | --- |
@@ -1948,9 +1948,9 @@ The colour +`$25`: `$70`, or the flashing `$7F79` x 8 + `$40` while fire has bee
 
 ### `WeaponRating` (`$9B75`)
 
-**the weapon rating `$80E7-$80E9` for the wave launcher**
+**the weapon rating `$80E7-$80E9` for the enemy fire and the wave colours**
 
-L = laser level + side weapon: `$80E7` = `$FF`, `$30` from 4; `$80E9` = 0, 8 from 7; `$80E8` = ((speed / 32 + L) x 4) & `$F0` + (`$81DE`). LaunchWave adds `$80E9` to a kind's speed level, so a well armed ship meets faster waves. Called from `$AC7A` and `$B03A` (10 entries in 48K c2).
+L = laser level + side weapon: `$80E7` = `$FF`, `$30` from 4; `$80E9` = 0, 8 from 7; `$80E8` = ((speed / 32 + L) x 4) & `$F0` + (`$81DE`). LaunchWave adds `$80E9` to a kind's colour select (the KindColours set); EnemyFire reads `$80E7` (the first shot's column) and `$80E8` (the fire chance), so a well armed, fast ship draws more fire. Called from `$AC7A` and `$B03A` (10 entries in 48K c2).
 
 | | |
 | --- | --- |
@@ -3171,7 +3171,7 @@ Phase 1: `$8AED`, the chain from its start (`$7F66` = `$AAE5`), the three DI; RE
 
 Installed at `$B1DF`. Evidence: 48K c2 L1 659 entries, 12 permille own time.
 
-On a 128K: the glue makes the PUSH IX: PUSH IY at `$A9F7` JP PlayAtA9F7 (`$5B31`) and a NOP: a frame of the engine; with PlayAtAB03 the engine steps twice an interrupt in play (c1: 3220 times each) (src/game/setup.asm, glue.asm; docs/09-sound.md 9.2).
+On a 128K: the glue makes the PUSH IX: PUSH IY at `$A9F7` JP PlayAtA9F7 (`$5B31`) and a NOP: one engine step; with PlayAtAB03 the engine steps twice a pass in play (c1: 3220 times each), and a pass takes two TV frames, so one step a TV frame on average (src/game/setup.asm, glue.asm; docs/09-sound.md 9.8).
 
 | | |
 | --- | --- |
@@ -3324,19 +3324,19 @@ On a 128K: the glue makes the POP IY: POP IX at `$AB03` JP PlayAtAB03 (`$5B3C`) 
 
 ### `PanelFrame` (`$AB13`)
 
-**the panel's attribute work of one frame of play**
+**the panel's attribute work of one pass of play**
 
-Called from PlayInterrupt `$A9ED` (at `$AA87`) once a frame; 48K c2: 659 entries in 659 frames, 630704 T own (6 permille of the recording). Reads PassCount `$7F62`, the player record (`$7F99`: +`$0B` speed), Fuel `$80E6`, `$7F77-$7F7A`; writes only the attribute rows 20-23.
+Called from PlayInterrupt `$A9ED` (at `$AA87`) once a pass; 48K c2: 659 entries in 659 passes, 630704 T own (6 permille of the recording). Reads PassCount `$7F62`, the player record (`$7F99`: +`$0B` speed), Fuel `$80E6`, `$7F77-$7F7A`; writes only the attribute rows 20-23.
 
-1. The ink of `$5AC6-$5AC7` + 1 every fourth frame (PassCount & 3 = 0), kept in 0-7 with the paper and bright bits (AND `$C7` drops the carry into paper).
+1. The ink of `$5AC6-$5AC7` + 1 every fourth pass (PassCount & 3 = 0), kept in 0-7 with the paper and bright bits (AND `$C7` drops the carry into paper).
 
 2. The speed bar: `$5AEE-$5AF1` = `$01`, then (speed >> 5) - 1 cells of `$31` from `$5AEE`: one lit cell at `$40` up to four at `$A0`, the top speed (FuelOut keeps it from going below `$40`, which would make B = 0 and the DJNZ write 256 cells).
 
 3. The fuel lamps: DE = `$3131` at `$5AC1` and `$5ADD`; Fuel < `$40` darkens D, < `$20` darkens E too.
 
-4. The two colour blocks: PanelPhase `$7F78` + (PassCount & 1) in 0-15 (C), PanelBounce `$7F79` + PanelStep `$7F7A` on odd frames, the step reversed at 7 or 1 of the low 3 bits; `$A8BE` draws A at `$5A81` and `$5A9D` with C.
+4. The two colour blocks: PanelPhase `$7F78` + (PassCount & 1) in 0-15 (C), PanelBounce `$7F79` + PanelStep `$7F7A` on odd passes, the step reversed at 7 or 1 of the low 3 bits; `$A8BE` draws A at `$5A81` and `$5A9D` with C.
 
-5. On even frames: rows 21-22 columns 11-20 (`$5AAB`, `$5ACB`) cleared; PanelBurst `$7F77` not 0: counted down, its new value n written as the attribute at columns 15+n and 16-n of both rows (the pair moves out as n falls and goes black at 0).
+5. On even passes: rows 21-22 columns 11-20 (`$5AAB`, `$5ACB`) cleared; PanelBurst `$7F77` not 0: counted down, its new value n written as the attribute at columns 15+n and 16-n of both rows (the pair moves out as n falls and goes black at 0).
 
 | | |
 | --- | --- |
@@ -3352,7 +3352,7 @@ Called from PlayInterrupt `$A9ED` (at `$AA87`) once a frame; 48K c2: 659 entries
 
 **key 4 pauses; a pending end code ends the play loop**
 
-Called by the play interrupt once a frame (the phase dispatch in the routine at `$AA96`; 48K c2: 659 entries in 659 frames). Key 4 (half row `$F7FE`, bit 3) calls Pause (`$B197`). Then a pending end code in EndPending (`$7F7C`: 1 a life lost, 2 the level done, 4 abort) is moved to EndCode (`$7F7D`), which ends the play loop at `$B1E9`, the interrupt handler (`$FDFE`) becomes TitleInterrupt `$A9E4` (it only sets `$7F96` = `$80`, no frame work) and StopAndSettle silences the effect. Returns with A = 0 when nothing is pending.
+Called by the play interrupt once a pass (the phase dispatch in the routine at `$AA96`; 48K c2: 659 entries in 659 passes). Key 4 (half row `$F7FE`, bit 3) calls Pause (`$B197`). Then a pending end code in EndPending (`$7F7C`: 1 a life lost, 2 the level done, 4 abort) is moved to EndCode (`$7F7D`), which ends the play loop at `$B1E9`, the interrupt handler (`$FDFE`) becomes TitleInterrupt `$A9E4` (it only sets `$7F96` = `$80`, no frame work) and StopAndSettle silences the effect. Returns with A = 0 when nothing is pending.
 
 On a 128K: the glue makes the CALL Z,`$B197` (key 4) at `$ABDB` CALL Z,Key4MusicOff (`$5B7B`): the music off first (src/game/setup.asm, glue.asm; docs/09-sound.md 9.2).
 
@@ -3468,7 +3468,7 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 
 **event bit 2: the pod selector's icon and its colours**
 
-Allows only bit 7 meanwhile (EventMask AND `$80`). Attributes `$46` (bright yellow) at `$5A86-$5A87` and `$45` (bright cyan) at `$5AA6-$5AA7`; the 16 x 16 icon n = the player record's +7 (0-4, the selected pod) from PodIcons + 32 n drawn as two 2-cell rows at `$5086` and `$50A6` (screen third 2, rows 16-17, columns 6-7) by IconRow. 48K c2: entries through `$91E2` (indirect); posted by the play loop's start (`$B1C7`) and by the pod pick-up (`$A243`).
+Allows only bit 7 meanwhile (EventMask AND `$80`). Attributes `$46` (bright yellow) at `$5A86-$5A87` and `$45` (bright cyan) at `$5AA6-$5AA7`; the 16 x 16 icon n = the player record's +7 (0-4, the selected pod) from PodIcons + 32 n drawn as two 2-cell rows at `$5086` and `$50A6` (screen third 2, rows 20-21, columns 6-7) by IconRow. 48K c2: entries through `$91E2` (indirect); posted by the play loop's start (`$B1C7`) and by the pod pick-up (`$A243`).
 
 | | |
 | --- | --- |
@@ -3507,7 +3507,7 @@ Drops bit 0 from the mask (a second effect request waits; the effect player post
 
 **event bit 1: print the score, the extra life**
 
-Allows only bit 7 meanwhile. Prints the current player's score (PrintPlayerScore `$A4AE` with A = CurrentPlayer `$7F98`) and recomputes WeaponRating (`$9B75`: how fast the next waves fly). The extra life: when the record's +1 (the score's high part) is at least ExtraLifeScores[+`$0C`] (`$800F`: 1, 3, 5, 7, 9, then `$FF`), +`$0C` steps on, the lives (+4) + 1 and DrawLives `$A4EF` shows them. Posted by the score adder (`$A4AB`).
+Allows only bit 7 meanwhile. Prints the current player's score (PrintPlayerScore `$A4AE` with A = CurrentPlayer `$7F98`) and recomputes WeaponRating (`$9B75`: the enemy fire and the waves' colours). The extra life: when the record's +1 (the score's high part) is at least ExtraLifeScores[+`$0C`] (`$800F`: 1, 3, 5, 7, 9, then `$FF`), +`$0C` steps on, the lives (+4) + 1 and DrawLives `$A4EF` shows them. Posted by the score adder (`$A4AB`).
 
 On a 128K: the CALL `$A4EF` at `$ACA2`, after an extra life is given, becomes CALL HookExtraLife (`$B334`): the call, then sounds `$0F` + `$10` (witnessed in r1 frame 6590) (src/game/setup.asm, glue.asm; docs/09-sound.md 9.2).
 
@@ -3677,7 +3677,7 @@ Copies the player record's +`$0D`-+`$2F` (35 bytes, the checkpoint that CmdCheck
 
 **one frame of the level's script**
 
-Called from the play interrupt at phase 2 (`$AA96`; 48K c2: 165 entries in 165 frames), returns at once unless DeathTimer (`$7F7B`) is `$FF`. When the wait counter (`$81E1`) equals the delay byte at the PC (`$81D8`): the counter is zeroed, the opcode is read and run, and the next instruction is looked at at once; else the counter + 1 and return. Callees: JumpTable `$91E2` (commands), LaunchWave `$91EC` (waves), ScriptWord, ScriptByte, ScriptTest.
+Called from the play interrupt at phase 2 (`$AA96`; 48K c2: 165 entries, one in four of its 659 passes), returns at once unless DeathTimer (`$7F7B`) is `$FF`. When the wait counter (`$81E1`) equals the delay byte at the PC (`$81D8`): the counter is zeroed, the opcode is read and run, and the next instruction is looked at at once; else the counter + 1 and return. Callees: JumpTable `$91E2` (commands), LaunchWave `$91EC` (waves), ScriptWord, ScriptByte, ScriptTest.
 
 | | |
 | --- | --- |
@@ -4473,7 +4473,7 @@ Three records of `$2C` bytes at `$F474`: +`$25` = `$48`, kind +7 = 5, inactive, 
 
 **ask for effect A (0 = stop), taken when not below the one playing**
 
-In: A the effect, 0 is stored as `$80` (above every effect: a stop always wins). Taken when A >= CurrentEffect (`$7F97`): CurrentEffect = A, EffectTick = `$80` (new effect), event bit 0 posted. HL kept. Callers (48K c2): FireLaser `$9C1D` x61, `$A2D6` x2, `$A0EB` x1, StopAndSettle x2; in the listing also A = 1 (`$A1C2`), 2 (`$9C75`, a life lost), 4 (`$A31B`), 5 (`$A224`, a pod) and 6 (`$A21D`).
+In: A the effect, 0 is stored as `$80` (above every effect: a stop always wins). Taken when A >= CurrentEffect (`$7F97`): CurrentEffect = A, EffectTick = `$80` (new effect), event bit 0 posted. HL kept. Callers (48K c2): FireLaser `$9C1D` x61, `$A2D6` x2, `$A0EB` x1, StopAndSettle x2; in the listing also A = 1 (`$A1C2`), 2 (`$9C75`, the laser: FireLaser), 4 (`$A31B`), 5 (`$A224`, a pod) and 6 (`$A21D`).
 
 On a 128K: the glue makes its first byte a RET: the beeper effects are off (src/game/setup.asm, glue.asm; docs/09-sound.md 9.2).
 

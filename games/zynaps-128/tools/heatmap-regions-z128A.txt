@@ -13,9 +13,9 @@ B30D B3A8 the 15 hook stubs (128K)
 B3A9 B6FE the code
 B6FF BFFF the map ring (Start is gone)
 C000 DFFF GlyphCache: 4 shifts of 256 glyphs
-E000 E747 sprites, made plain
+E000 E747 sprites, negative (clear bit = pixel)
 E748 F047 sprite cache images, panel save
-F048 F107 the pod, made plain
+F048 F107 the pod, negative
 F108 F7FF row records, objects, strips
 F800 FAFF NodePool: 95 span nodes
 FB00 FBFF BitReverse

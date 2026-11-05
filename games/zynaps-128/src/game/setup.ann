@@ -28,7 +28,7 @@
 @const SitePodTaken $A247 ; CALL $A489: a pod taken
 @const SiteSpecialLaunch $9CB0 ; LD HL,$F36F: a special weapon placed at the ship (bombs, homing, seekers; made a CALL)
 @const SiteEnemyMissile $A1C4 ; CALL BeeperSound: an enemy's missile
-@const SiteWeaponSelect $A21A ; CALL $91E2: a weapon selected (a pod taken with fire held 8 frames or more)
+@const SiteWeaponSelect $A21A ; CALL $91E2: a weapon selected (a pod taken with fire held 8 passes or more)
 @const SitePodAppears $A31D ; CALL BeeperSound: a pod appears (an object gets the pod descriptor $7EBB)
 @const SiteExplosion $A29F ; LD HL,$D6ED: an explosion starts (made a CALL)
 @const SiteSelections $A7BB ; LD HL,$82E0: the SELECTIONS screen (title key 1 or 2; made a CALL)
@@ -37,9 +37,9 @@
 @const CreditName $8484 ; the game's credits: the musician's name, "STEVE TURNER" in the 48K
 @const MenuLoopJump $B21A ; JR $B203 at the end of a game: made JR $B200, back through the main loop's CALL at $B200
 @const BeeperOut1 $B496 ; OUT ($FE),A of the 48K beeper's tone loop: made NOP: NOP
-@const BeeperOut2 $86D7 ; OUT ($FE),A: a border / beeper click
-@const BeeperOut3 $8FBD ; OUT ($FE),A: the same
-@const BeeperOut4 $949C ; OUT ($FE),A: the same
+@const BeeperOut2 $86D7 ; OUT ($FE),A: the explosion noise's toggle per playfield row (RowBeep $7F7E)
+@const BeeperOut3 $8FBD ; OUT ($FE),A: its toggle per object strip (ObjectBeep $7F82)
+@const BeeperOut4 $949C ; OUT ($FE),A: its toggle per object slot in RunObjects ($7F86)
 @const LoseLife $B170 ; DEC (IX+4) (DD 35 04): the ship's lives counted down; the set-up changes its $35
 @const StickRead $A6D4 ; IN A,($1F): AND $1F: the Kempston stick read in play
 @const StartTest $A74E ; IN A,($1F): AND $1F: CP $10: the menu's start test (the stick's fire alone)
@@ -107,7 +107,7 @@ $609E ; HookSelections (13): the site's LD HL,$82E0 becomes a CALL
 $60A9 ; HookScreenWipe (13), for both wipe sites
 $60B5 ; "DAVE ROGERS " over "STEVE TURNER": the CPC version's musician
 $60BF ; JR $B203 made JR $B200: after a game the menu loop passes the main loop's CALL at $B200 again, which the glue turned into MusicOn
-$60C4 ; four OUT ($FE),A made NOP: NOP: the beeper's and the effects' border clicks
+$60C4 ; four OUT ($FE),A made NOP: NOP: the title tune's tone and the three toggles of the explosion noise
 $60D3 SetOptions ; INF.LIVES: DEC (IX+4) ($35) made OR (IX+4) ($B6): the lives never drop
 $60DE SetMouse ; K-MOUSE: the driver to $FE00, then its four patches
 $60EF ; CALL MouseRead: NOP over the stick read

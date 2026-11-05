@@ -26,8 +26,8 @@ BitReverse:
 ; The collision grid: one byte a column (play) / the menu's raster colours
 ;
 ; Play: ClearHitGrid ($91C6, SP = $FD90, 200 bytes of PUSHes) clears
-; $FC00-$FD8F each frame, MarkEnemyGrid ($90CB) ORs the collision bit of each
-; enemy slot into the X bytes (step 4) and the Y bytes $FD00 (step 8),
+; $FC00-$FD8F in phases 2-4, MarkEnemyGrid ($90CB) ORs the collision bit of
+; each enemy slot into the X bytes (step 4) and the Y bytes $FD00 (step 8),
 ; TestHitGrid ($9150) ANDs them for the ship and its shots.
 ;
 ; Menu: ClearColourBuffer ($A5A7) zeroes it, ExpandColours ($A5D1 and its
