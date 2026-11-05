@@ -170,18 +170,22 @@ timing) was not resolved here.
 - **An effect** in music mode: a hook (a stub at `$FF1C+` or a trampoline at `$B446+`) pages bank 1, the driver
   sends 3 commands (`#2E` select FX, `#40` FX note, `#80+c` play in channel c), each waiting for the card to take the one
   before, and pages bank 0 back.
-- **In `r1-play`** the stubs and trampolines took under 0.05 % of the T-states and the driver's sound code a few
-  hundred T-states per effect ([2.5](02-architecture.md#25-the-cpu-budget-in-play)). The 6.4 % in bank 1 is
+- **In `r1-play`** the stubs and trampolines took under 0.05 % of the T-states
+  ([2.5](02-architecture.md#25-the-cpu-budget-in-play)); the window sent only 6 effects. The 6.4 % in bank 1 is
   RoundWait's delay.
+- **Busy play** costs more: in `e1` (music mode, the pod bot, 2069 commands over level 1) the host waited for the
+  card 2.09 % of its time, the select command `#2E` a median 8743 T and at most 85783 T, more than a frame. Without a
+  module (effects only) the median is 151 T ([9.5](09-sound.md#95-a-level-as-the-card-hears-it)).
 - **The per-frame hooks**: the path movers' ObjectSoundStub (`$9694`, `$9747`) and SlotGoneHook (`$9954`) are
   called almost every frame. In music mode they return at once (CallDriverFx); in effects-only mode they send the
   object's sound when its kind has one.
-- **The level load** is the real cost: 464 frames without play at each level change (4.3).
+- **The level load** is the real cost: 464 frames without play at `r1`'s first level load (4.3), 450 at `e1`'s change
+  from level 1 to level 2 ([9.5](09-sound.md#the-level-change)).
 
 ## 4.6 Known from the code only
 
-- **A level done**: no recording here ended a level. RoundWait's fade on code 2, NextLevelHook's next level and the
-  load of a second level are read from `driver.ann` and `install.asm`.
+- **A level done**: no recording of this document ended a level. zgsB `e1` did: RoundWait's fade on code 2 (26
+  `#2A` steps), the jingle and level 2's load are measured in [9.5](09-sound.md#the-level-change).
 - **The abort** (code 4, key 4 then Q) and **the game over** were not recorded.
 - **The title loop's TitleStub** showing the loading screen: seen in stage 1's captures
   (`img/compare/title-picture.png`), not in `r1`, which left the title at the first fire.

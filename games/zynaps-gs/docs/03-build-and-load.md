@@ -196,7 +196,7 @@ addresses from `$7400` up, and Zynaps's `$5C00-$73FF` at `$C800`. The installer:
 5. copies Mover to `$5BCC` and jumps to it. Mover moves `$C800` → `$5C00` (`$1800` bytes), clears `$C800-$DFFF` and
    jumps to MainLoop `$B200` (frame 1505).
 
-![The installer rewrites 31 places in Zynaps; 14 ran in the recordings, 17 were not reached](img/load/patch-sites.png)
+![The installer rewrites 31 places in Zynaps; 14 ran in r1 and fx2, 17 were not reached there](img/load/patch-sites.png)
 
 How to read the figure:
 
@@ -206,8 +206,9 @@ How to read the figure:
   the screen at the first time the place ran, with the recording, the frame and the T-state.
 - **"not reached"**: neither `r1` (4724 frames, music mode) nor `fx2` (62931 frames, effects only, level 1) ran it.
 - **The point**: the hooks sit on the game's own events: the title, the game and round start, the ship hit, the
-  shot, the explosions, the object movers. Fourteen ran; the plasma, the missiles, the bounces, the big enemies, the
-  pods and the weapon changes did not come up in these runs.
+  shot, the explosions, the object movers. Fourteen ran in these two runs; the plasma, the missiles, the bounces, the
+  big enemies, the pods and the weapon changes did not come up in them. The longer runs of doc 9 (`h2`, `e1`-`e3`)
+  ran every one of the 22 hook stubs ([9.4](09-sound.md#94-where-the-game-makes-a-sound)).
 
 ```bash
 python3 tools/fig_patches.py --out docs/img/load/patch-sites.png
@@ -364,5 +365,5 @@ the first free one track 136 sector 14.
 
 - **The ENTER switch** of the boot's reader and **the TURBO LOADER off**: no recording booted with ENTER held or
   TURBO LOADER set to NOP; both paths are read from `src/disk/boot.ann` and `loader.ann`.
-- **Effects-only uploads** (the 11 disk FX): `fx2` recorded them, but no figure here is drawn from its port journal.
-- **17 patch places** never ran (3.5).
+- **Effects-only uploads** (the 11 disk FX): `fx2` recorded them, but no figure here is drawn from its port journal;
+  doc 9 draws them from `e2` and `e3` ([9.7](09-sound.md#97-the-effects-only-mode)).

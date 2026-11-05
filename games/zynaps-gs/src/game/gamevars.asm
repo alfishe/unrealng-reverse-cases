@@ -103,7 +103,8 @@ EndPending:
 EndCode:
   DEFB $00
 
-; The beeper bit toggled XOR $18 per playfield row (the engine hum)
+; The beeper bit toggled XOR $18 per playfield row (one of the three
+; explosion-noise toggles; silent while the mask is 0)
 RowBeep:
   DEFB $00
 

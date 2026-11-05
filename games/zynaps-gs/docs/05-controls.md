@@ -158,6 +158,8 @@ It is 0 in the image. The GS stubs end at `$FFD1`, below it. The menu's INFINITE
   3, 4 or reached a game over (INFINITE ROUNDS was on).
 - **TURBO LOADER off** and **SHOOTING CHANNEL**: no run started with them; their effect is read from the loader and
   driver code ([3.3](03-build-and-load.md#33-the-boot), [9](09-sound.md)).
-- **Invulnerable** in the GS: `fx2` wrote `$FFD7` = 1 when play began, yet the ship was hit at frame 3644. The
-  64 K view read at the frame's end showed other values at `$FFD7` later (frame 3000: 6, frame 3640: 0), so the
-  byte was overwritten or another bank was paged; this was not resolved.
+- **Invulnerable** in the GS: `fx2` wrote `$FFD7` = 1 when play began, yet the ship was hit at frame 3644, and the
+  64 K view showed other values there later (frame 3000: 6, frame 3640: 0). Stage 2's `h2` wrote the same byte
+  (`work/stage2/hooks2.py`, POKE 65495,1) and the ship lived through ten levels: the switch works. `$FFD7` lies in
+  the `$C000` window, which holds bank 1 while the driver runs (zgsB saw bank 1 there at 316 of 1600 frame ends), so
+  `fx2`'s write and reads most likely met bank 1, not the game's bank 0.

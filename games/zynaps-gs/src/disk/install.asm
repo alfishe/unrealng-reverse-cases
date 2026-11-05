@@ -3,12 +3,13 @@
 ;
 ; The boot's JP Install comes here after the options menu. The installer:
 ;   1. fills in the sector and track of the loader's records (FillRecords);
-;   2. copies the stubs over parts of Zynaps the GS version does not use (the beeper crackle at $AA28, the title
+;   2. copies the stubs over parts of Zynaps the GS version does not use (the explosion noise at $AA28, the title
 ;      tune's player at $B446 and its data at $FF1C, the wait routine $A6AE, the beeper request $B2F0) and puts the
 ;      title stub at $5B00;
 ;   3. copies the GS driver file ($64B3, 4 K) to bank 1 $C000, and the $5B00-$5D3A area to bank 1 $D190 (the copy
 ;      the driver swaps back after a level load);
-;   4. points 25 places in Zynaps at the stubs (the patch list below);
+;   4. writes 31 places in Zynaps: 28 operands pointed at the stubs (10 of them made CALLs over the instruction
+;      they replace) and 3 NOP runs (the patch list below);
 ;   5. moves Zynaps's $5C00-$73FF (kept at $C800-$DFFF in the block, because the installer, the driver file and
 ;      the menu lie at $61A8-$73FF) down to $5C00, clears $C800-$DFFF and starts Zynaps at $B200 (Mover).
 ;
@@ -52,7 +53,7 @@ DirectionTo     EQU $989F  ; the direction to the player; PathOpAimPlayer calls 
 KillPlayer      EQU $9B5F  ; the ship destroyed, after the Invulnerable test at $9B4C
 PlaceAtPlayer   EQU $9CB0  ; a new homing missile or seeker at the ship ($9CFA, $9D1F)
 StartExplosionQuiet EQU $A2A5 ; StartExplosion past its beeper noise set-up ($A293-$A2A4)
-PlayInterruptPass EQU $AA49 ; the play interrupt after the beeper crackle's patterns ($AA28-$AA48)
+PlayInterruptPass EQU $AA49 ; the play interrupt after the explosion noise's patterns ($AA28-$AA48)
 CreditsPage     EQU $B095  ; the title page with the scores (the 48K plays the title tune here)
 HiScoreHold     EQU $B0EE  ; HiScorePage's 500-frame wait for fire
 MainLoop        EQU $B200  ; the game's top loop (the 48K's GameEntry goes to Start $B6FF first)
@@ -87,7 +88,7 @@ SiteSpriteB     EQU $9747  ; CALL PathOpAccelerate
 Site9856        EQU $9856  ; LD (IY+$1B),1
 Site969D        EQU $969D  ; CALL DirectionTo
 Site9954        EQU $9954  ; LD L,(IY+0)
-SiteA0BD        EQU $A0BD  ; the GS image's CALL NZ,0 where the 48K set the beeper crackle's three patterns
+SiteA0BD        EQU $A0BD  ; the GS image's CALL NZ,0 where the 48K set the explosion noise's three patterns
 Site9859        EQU $9859  ; the last byte of the 4-byte LD (IY+$1B),1 that the 3-byte CALL leaves
 SiteSound0      EQU $ABF1  ; CALL $B2F0 with A = 0 (beeper sound 0): three NOPs
 
@@ -109,7 +110,7 @@ Install:
   DI
   CALL FillRecords
   LD SP,$5C00
-; the beeper crackle's code at $AA28: 33 bytes cleared, the gate stub over its first 32
+; the explosion noise's code at $AA28: 33 bytes cleared, the gate stub over its first 32
   LD HL,GateStubAt
   PUSH HL
   LD D,H
@@ -156,7 +157,7 @@ Install:
   LD BC,$7FFD
   LD A,PAGE_ROM48
   OUT (C),A
-; the patches: the operands of 25 CALLs and JPs in Zynaps (docs/09-sound.md 9.4)
+; the patches: the operands of 28 CALLs and JPs in Zynaps, 10 opcodes, 3 NOP runs (docs/09-sound.md 9.4)
   LD HL,TitleStubAt
   LD (SiteTitleLoop+1),HL ; the title loop's JP NC: the title stub (the loading screen, then the attract loop)
   LD HL,KeyWait
@@ -254,7 +255,7 @@ MoverAt:
   ENT
 
 ; --------------------------------------------------------------------------------------------------------------------
-; GateStub (run at $AA28, inside the routine whose beeper crackle shift registers it replaces): GateCountdown
+; GateStub (run at $AA28, inside the routine whose explosion noise shift registers it replaces): GateCountdown
 ; counted down to 0 once a call (the driver's Gate sets it), then the routine goes on at PlayInterruptPass. TitleEntry:
 ; the title page's module, loaded once (LoadKind 2), then the title page.
 GateStub:
@@ -388,7 +389,7 @@ GameStartHook:            ; $AF51 LD ($80B0),A: the game start (LoadKind 1: the 
   LD (LoadKind),A
   EI
   RET
-ExplodeHook:              ; $9FBE, $A034 CALL $A293: FX 7, then the explosion without the beeper crackle
+ExplodeHook:              ; $9FBE, $A034 CALL $A293: FX 7, then the explosion with its beeper noise left out
   LD HL,ExplosionSound
   CALL CallDriver
   JP StartExplosionQuiet

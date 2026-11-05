@@ -226,7 +226,7 @@ beeper's sound-0 call at `$ABF1`, and writes three stubs over Zynaps's own code:
 | `$B075` (SetLevelStart) | the next level chosen | `NextLevelHook` | `NextLevel` = B; no sound | both |
 | `$B03E` (RoundPlaySetup) | the round start | `RoundStartHook` → `LevelChange` | the level's module and FX, when the level changed | both |
 | `$AF51` | PREPARE FOR COMBAT | `GameStartHook` → `LevelChange` (LoadKind 1) | the start jingle | both |
-| `$9BE6` | the ship's explosion | `StartExplosionQuiet` | none: the explosion without the beeper crackle | both |
+| `$9BE6` | the ship's explosion | `StartExplosionQuiet` | none: the explosion with its beeper noise left out | both |
 | `$9B51` (PlayerHit) | the ship hit | `ShipHitHook` → `ShipExplodesSound` | FX 8, note `$2D`, not gated | both |
 | `$9FBE`, `$A034` (EnemyDies, LockableDies) | an enemy explodes | `ExplodeHook` → `ExplosionSound` | FX 7, note `$2C`+r&3 | both |
 | `$A1C4` (EnemyFire) | an enemy fires | `EnemyFireHook` → `EnemyFireSound` | FX 4, note `$30`+r&1 | both |
@@ -269,7 +269,8 @@ How to read it:
 What it shows:
 
 - Every one of the 22 stubs ran in play. The rare ones: `BigEnemyDestroyedHook` twice (h2 L5, e2 L11),
-  `ShipHitHook` only in the mortal run (INFINITE LIFE returns before its site: 10.6), `MissileLaunchHook` only where
+  `ShipHitHook` only in the mortal run (INFINITE LIFE returns before its site: 10.6; `r1`, music mode, sent its FX 8
+  at frame 3296), `MissileLaunchHook` only where
   the bot held a homing missile or a seeker (e2 L11, e3 L1).
 - The effects-only stubs run in music mode as well (e1: `ObjectSoundStub` 1180 times on level 1). There
   `CallDriverFx` returns at once: no command reaches the card (e1's ports hold no FX above 10).
@@ -507,8 +508,6 @@ The pages per load:
 - The music-mode branch of `BigEnemyDestroyedSound` (FX 8 alone): the two big-enemy deaths seen (h2 level 5, e2 level
   11) were both in effects-only mode. Read in the code.
 - SATURNS on 128 KB (9.7): no recording had a path-1 object on a 128 KB card. Read in the code.
-- `ShipHitHook` with a mortal ship in music mode: the mortal run was effects-only. Its 8 runs there are the witness
-  for the site; the music path is the same entry.
 - The modules of levels 3-12 were not streamed live (no recording reached those levels in music mode). Their bytes are
   the loader's records, cut by `tools/gs_media.py`.
 - Which path sounds (FX 16, 19, 20) play for which formation: e2 counted the plays (FX 16 once, FX 19 37 times, FX

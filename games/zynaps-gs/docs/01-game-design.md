@@ -183,7 +183,7 @@ The menu's first two keys pick the mode ([9](09-sound.md) has the driver and the
 | Title pages | the title module | the title module |
 | Game start | the jingle | the jingle |
 | Play | the level's module and 10 effects | no module; 21 effects |
-| Level change | the module and the 10 effects read and sent | the effects only |
+| Level change | the module and the 10 effects read and sent | 512 KB: nothing (all loaded once at the game start); 128 KB: the jingle and the 21 effects again |
 | `$B486` | 0 | 1 |
 
 - In music mode the effects are the in-game ten: shots, explosions, the ship's death, the weapons.
@@ -205,12 +205,19 @@ The menu's first two keys pick the mode ([9](09-sound.md) has the driver and the
 
 ## 1.10 What no recording reached
 
-- **A level done**: no recording here played a level to its end. `fx2` stayed on level 1 for 60 000 frames (the
-  ship lost again and again) and the `tour` runs stopped after 1500 frames. RoundWait's fade and the next level's
-  load are known from the code (`$C34C`, `$C385`).
-- **The guardians**: none was on the screen in these recordings.
-- **Two players**, **the high-score entry** and **the key definition**: not recorded. The code is at `$7FCC`, `$8261`
-  and `$A76F`.
-- **17 of the installer's 31 patch places** never ran in `r1` and `fx2`
-  ([3.5](03-build-and-load.md#35-the-patch-installer)). Their sounds (the plasma, the missiles, the bounces, the big
-  enemies, the dive) are known from the code only.
+The recordings of this document (`r1`, `tour`, `menu`, `fx2`) stop on level 1 or after 1500 frames. The longer runs
+of docs 7-10 reach further:
+
+- **A level done** and **the next level's load**: zgsB `e1` (music mode, level 1 done at bot frame 6128, the change to
+  level 2 in port frames 9270-9720, [9.5](09-sound.md#the-level-change)) and stage 2's `h2` (effects only, levels 1-9
+  and into 10).
+- **The guardians** (big enemies): `h2` on levels 5, 7, 8 and 9, zgsB `e2` on level 11, destroyed by homing missiles
+  ([10.4](10-gameplay-logic.md#104-the-homing-missile-and-the-big-enemy-level-11)).
+- **The installer's 31 patch places**: 14 ran in `r1` and `fx2`
+  ([3.5](03-build-and-load.md#35-the-patch-installer)); every one of the 22 hook stubs ran in `h2`, `e1`-`e3`
+  ([9.4](09-sound.md#94-where-the-game-makes-a-sound)).
+
+Not reached by any recording:
+
+- **Two players**, **the high-score entry** and **the key definition**. The code is at `$7FCC`, `$8261` and `$A76F`.
+- **A normal game through all twelve levels**: the furthest, `h2`, ended in level 10.

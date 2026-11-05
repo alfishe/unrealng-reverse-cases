@@ -29,12 +29,12 @@
 ; object count; the path numbers fill $806A.
 ;
 ; The template $803E is zeroed, its target (+$29) = the player $F36C; $6A65 + 8
-; x kind gives +$18, the speed level (combined with the weapon rating $80E9 to
-; pick 3 bytes of $6B15 for +$19, +$20/+$21, +$22), the score index (+$0C) and
-; the speed (+$17) nibbles, the X acceleration (+$10), the Y acceleration
-; (+$14), the handler kind (+$07), the colour (+$25) and the hit points (+$0D).
-; GetSpriteCache gives the descriptor (+0/+1), its +$0F goes to +$23 and its
-; +$0C to the row mask +$0B; +$02 = 1, +$1A = the wave record.
+; x kind gives +$18 (the fire rate), the colour select (combined with the
+; weapon rating $80E9 to pick 3 bytes of $6B15 for +$19, +$20/+$21, +$22), the
+; score index (+$0C) and the speed (+$17) nibbles, the X acceleration (+$10),
+; the Y acceleration (+$14), the handler kind (+$07), the colour (+$25) and the
+; hit points (+$0D). GetSpriteCache gives the descriptor (+0/+1), its +$0F goes
+; to +$23 and its +$0C to the row mask +$0B; +$02 = 1, +$1A = the wave record.
 ;
 ; Then for each object: TakeEnemySlot, count + 1, the template copied over the
 ; slot (bytes +$09/+$0A and the slot's own collision bit +$24 kept), the target

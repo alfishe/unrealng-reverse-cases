@@ -218,7 +218,9 @@ How to read the figure:
   - the GS driver's 6.4 % is almost all RoundWait (`$C34C`, its delay loop at `$C370-$C374`), run from frame 3343,
     after the ship was destroyed at frame 3296: it is the pause between rounds, not sound work;
   - the menu module's 8.4 % is MenuRasterInterrupt (`$A512`), the PREPARE FOR COMBAT banner after the death;
-  - sending an effect costs almost nothing: the stubs and trampolines together are under 0.05 %.
+  - the stubs and trampolines together are under 0.05 %, but `r1-play` sent only 6 effects in its 1773 frames (its
+    port journal). With the pod bot's 592 plays in 7300 frames, `e1`'s waits for the card took 2.09 % of the
+    Spectrum's time in music mode ([9.5](09-sound.md#95-a-level-as-the-card-hears-it)).
 
 ```bash
 python3 tools/fig_budget.py work/zgsA/r1-play/l1.json docs/img/arch/budget-play.png \

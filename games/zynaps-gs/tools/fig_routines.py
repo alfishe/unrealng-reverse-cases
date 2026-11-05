@@ -129,7 +129,7 @@ STUB_AT = {'RoundStartHook': 0xFF1C, 'GameStartHook': 0xFF26, 'ExplodeHook': 0xF
            'AimPlayerHook': 0xFFC3, 'ObjectSoundStub': 0xB2F0, 'SlotGoneHook': 0xB47F, 'WaitStub': 0xA6AE}
 
 
-STUB_SITE = {'WaitStub': '$B102 (EndOfPlay) and the other callers of $A6AE: the wait between rounds',
+STUB_SITE = {'WaitStub': '$B102 (EndOfPlay), the only caller of $A6AE left: the wait between rounds',
              'ObjectSoundStub': "the 48K's beeper request $B2F0 itself, called by the path movers $9694, $9747"}
 
 

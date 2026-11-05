@@ -25,7 +25,7 @@
 ; wins). Taken when A >= CurrentEffect ($7F97): CurrentEffect = A, EffectTick =
 ; $80 (new effect), event bit 0 posted. HL kept. Callers (c2): FireLaser $9C1D
 ; x61, $A2D6 x2, $A0EB x1, StopAndSettle x2; in the listing also A = 1 ($A1C2),
-; 2 ($9C75, a life lost), 4 ($A31B), 5 ($A224, a pod) and 6 ($A21D).
+; 2 ($9C75, the laser: FireLaser), 4 ($A31B), 5 ($A224, a pod) and 6 ($A21D).
 ;
 ; GS: the installer copies ObjectSoundStub here: the two path movers ($9694,
 ; $9747) call it in place of PathOpAccelerate, and it asks the driver's

@@ -90,9 +90,6 @@ The burst is the laser's mark on the panel:
 - In e1 it read 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0 in the samples after a shot (one sample every second frame).
 - It was non-zero in 3040 of e1's 5000 samples.
 
-hud.asm's header says the burst is set "when the player loses a life"; the only write is FireLaser's, and the
-recording follows the shots.
-
 ![PanelFrame in f1 frame 9124: the attribute rows written cell by cell, the spinners drawn by DrawSpinner](img/hud/PanelFrame.gif)
 
 ```sh

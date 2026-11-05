@@ -195,7 +195,7 @@ BigEnemyLaser:
                           ; hit destroyed it
 BigEnemyHitSound:
   CALL NZ,$0000           ; the hit sound; below 0: destroyed (GS: CALL NZ,0
-                          ; and 15 NOPs where the 48K set the beeper crackle's
+                          ; and 15 NOPs where the 48K set the explosion noise's
                           ; three patterns ($7F80, $7F84, $7F88); the installer
                           ; writes a NOP over the CALL's $C4 (its two zero
                           ; bytes are NOPs too))

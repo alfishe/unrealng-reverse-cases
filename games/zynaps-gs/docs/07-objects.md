@@ -496,7 +496,8 @@ The counts are the executions of the hook's first byte over each whole recording
 `work/zgsB/eN/bot-counts.json`).
 
 - ShipHitHook ran 0 times: INFINITE LIFE writes `RET` at `$9B50`, the byte before its site, so with it on the ship
-  never explodes. No recording here played FX 8 for the ship.
+  never explodes. With a mortal ship it does: `r1` (music mode) sent FX 8, note `$2D`, at frame 3296, and stage 2's
+  mortal run ran ShipHitHook 8 times.
 - The hooks of FX 11-21 call the card only in the effects-only mode (CallDriverFx); BigEnemyDestroyedHook plays FX 8
   in the music mode. The counts count the calls in both modes.
 - e1 and e3 flew levels 1 and 2, whose paths have no `aimplayer`, `bouncearena` or `dive`: those hooks ran 0 times

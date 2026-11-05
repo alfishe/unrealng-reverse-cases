@@ -6,10 +6,11 @@
 ; table $80FA by its kind (+$07): 0 PlayerHandler, 1 LaserHandler, 2 and 11 EnemyHandler, 3 $A1C8, 4 $A1FD (the pod),
 ; 5 $A263, 6 SightHandler, 7 SeekerHandler, 8 LockableHandler, 9 PlasmaHandler, 10 MissileHandler, 12 BigEnemyHandler.
 ;
-; The in-game engine sound is made here: after each slot $7F86 is XORed with $18 and ANDed with the enable mask $7F87,
-; then OUT ($FE): the speaker (bit 4) and the MIC (bit 3) flip 15 times a frame, a buzz whose pitch follows the time
-; the handlers take; the border stays black (bits 0-2 are 0). When fewer than 8 slots are active the loop pads with (C
-; - 7) x 128 DJNZ turns so the frame time, and the buzz, stay even.
+; The slot part of the explosion noise is made here: after each slot $7F86 is XORed with $18 and ANDed with the enable
+; mask $7F87, then OUT ($FE): the speaker (bit 4) and the MIC (bit 3) flip 15 times a pass, a buzz whose pitch follows
+; the time the handlers take; the mask is 0 (silence) except for the 16 passes after an explosion or a big enemy's hit
+; (SoundPattern3 $7F88), so this is no engine hum; the border stays black (bits 0-2 are 0). When fewer than 8 slots
+; are active the loop pads with (C - 7) x 128 DJNZ turns so the frame time, and the buzz, stay even.
 ;
 ; The enemies move by a path bytecode (RunPath, kept in each record: +$1D/+$1E the pointer, +$1C the command, +$1B the
 ; frames left). A byte with bit 7 set gives the repeat count (b & $7F, 0 = forever) of the command byte after it;
@@ -27,9 +28,10 @@
 ; +$17 the speed.
 ; --------------------------------------------------------------------------------------------------------------------
 
-; run every active object's handler, with the engine buzz
+; run every active object's handler, with the slot toggle of the explosion
+; noise
 ;
-; Called once a frame from $AA96 (659 entries in c2, 5.7 % of play's time
+; Called once a pass from $AA96 (659 entries in c2, 5.7 % of play's time
 ; without the handlers). The landing flag $974C is freed (bit 7), the player
 ; ($F36C) runs by its kind, then the 15 slots from $F600 down in steps of -44
 ; (DE = $FFD4); C counts the slots not active.
@@ -462,7 +464,7 @@ PathOpMove:
   AND A
   RET
 
-; extended 6: X - $40 every frame
+; extended 6: X - $40 every pass
 ;
 ; NC. Not run in c1/c2.
 PathOpScrollAlways:
@@ -553,8 +555,8 @@ PathToCentreMove:
 
 ; PathOpLand's per-frame flag and retry count
 ;
-; Bit 7: an object has used PathOpLand in this frame (RunObjects clears it each
-; frame); bits 0-6: the failed tries since the last landing.
+; Bit 7: an object has used PathOpLand in this pass (RunObjects clears it each
+; pass); bits 0-6: the failed tries since the last landing.
 LandingFlag:
   DEFB $00
 

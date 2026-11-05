@@ -11,7 +11,7 @@ The frames in work/stage2/shots (copies, so that the figures do not depend on th
     gs-options.png, gs-credits.png, gs-hiscore.png, gs-picture.png, gs-level1.png: work/stage1/screens (stage 1)
     gs-options-hidden.png: work/stage2/menu/m2-key8.png (fresh boot, keys 0 and 8 in the menu)
     gs-level5.png: work/stage2/menu/b4-play.png (keys 0, T, 1, then 2 and fire on the title: 500 frames into play)
-    z48-*.png: ../zynaps/work/explore t0.png, t6.png, s1.png (the 48K case's captures)
+    z48-*.png: ../zynaps/work/explore t0.png, t6.png, s1.png (the 48K case's captures; s1.png is level 1 in play)
 """
 import argparse
 import os
@@ -54,6 +54,12 @@ FIGURES = {
         'With key 0 then T in the menu, the game starts on level 5 (the driver loads level 5\'s module; the '
         'level index of the player record stays 0). The key writes LD B,5 over LD B,(HL) / INC B at $B073, which '
         'runs at every level start, so every level after a completed one is level 5 again.'),
+    'play-level1.png': (
+        'gs-level1.png', 'GS: level 1 in play',
+        'z48-level1.png', '48K: level 1 in play',
+        'The play screen is the 48K\'s: the same renderer, panel and sprites at the same addresses; the GS adds no '
+        'graphics. The two frames are other moments of level 1, so the scenery, the score and the panel\'s '
+        'gauges differ.'),
 }
 
 BG, FG, DIM = (24, 24, 24), (235, 235, 235), (170, 170, 170)

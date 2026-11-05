@@ -1,18 +1,19 @@
 # Zynaps GS (ZX-Masters, 1997)
 
-State: stage 2 (2026-11-05). The disk is rebuilt from the case's own sources, byte for byte: the BASIC, the boot,
-the loader, the options menu, the GS driver, the installer and the game (50 modules, 546 entries, every routine
-named), packed by the case's Trush packer. The media are cut, the 13 modules and 22 FX rendered. Every sound
-site is witnessed in play. The documents 1-12 are written.
+State: documents stage (2026-11-05). The disk is rebuilt from the case's own sources, byte for byte: the BASIC, the
+boot, the loader, the options menu, the GS driver, the installer and the game (50 modules, 546 entries, every routine
+named), packed by the case's Trush packer. The media are cut, the 13 modules and 22 FX rendered. Every sound site is
+witnessed in play. The documents 1-13 are written, 13 being the differences from the 48K game
+([docs/13](docs/13-differences-from-zynaps.md)); how they were made: [WALKTHROUGH](WALKTHROUGH.md) 6.
 
 | | |
 | --- | --- |
-| Machine | a 128K Spectrum with TR-DOS and a General Sound card (128 KB is enough: the firmware uses 112 KB of it and the largest level fits, [9.5](docs/09-sound.md#95-card-sizes)) |
+| Machine | a 128K Spectrum with TR-DOS and a General Sound card (128 KB is enough: the firmware uses 112 KB of it and the largest level fits, [9.8](docs/09-sound.md#98-128-kb-and-512-kb-the-cards-pages)) |
 | Authors | the game: Dominic Robinson, graphics Steve Crow (Hewson, 1987); the GS conversion: Mike Blum, ZX-Masters, 1997; music and FX mixed by John Underwood and Dangerous; the modules credit wendetta 2175 / wortex design, kbx128 / tesko!, dextrous, pyratronik, nuke of lemon |
 | Original | `orig/ZYNAP_GS.ZIP` (md5 `187e99851aad93ecd03c032e65f753aa`, SHA-1 `73c7880e5a262cfb9fd0883bfb00ebed07fc568e`), holding `ZYNAP_GS.TRD` (md5 `133a8fe861f814b2d6d67e6539c81b85`, SHA-1 `bc0661fc8f384d76b4d5c321c151d156b538c52e`) |
 
 This is Hewson's Zynaps with General Sound. The disk holds 38 blocks packed by Alexander Trush's compressor. The
-last of them carries Zynaps at its own addresses and an installer that patches 25 places in it.
+last of them carries Zynaps at its own addresses and an installer that patches 31 places in it.
 
 - **Sound sites.** Each sound site calls a driver in bank 1, which plays sampled effects through the GS ROM's
   firmware. The beeper requests are gone, and the beeper player still runs but stays silent.
@@ -20,11 +21,14 @@ last of them carries Zynaps at its own addresses and an installer that patches 2
   10 effects are uploaded at each level change. In "only effects" mode there is no music and 21 effects.
 - **The upload.** It waits for the card on every byte, so nothing is lost, unlike Nether Earth GS's 2002 loader.
 - **128 KB cards.** The firmware keeps 112 KB for data and stops storing at its end; every level's module and FX
-  fit, so nothing is overwritten ([9.5](docs/09-sound.md#95-card-sizes)).
-- **The options menu.** Seven options and three hidden by key 0: INFINITE LIFE and SELECT LEVEL
-  ([5](docs/05-controls.md), [10.3](docs/10-gameplay-logic.md#103-the-menus-options-as-code)).
+  fit, so nothing is overwritten ([9.8](docs/09-sound.md#98-128-kb-and-512-kb-the-cards-pages)).
+- **The options menu.** Seven options and two more hidden behind key 0: INFINITE LIFE and SELECT LEVEL. INFINITE
+  ROUNDS is on at the boot, so a game never ends ([5](docs/05-controls.md),
+  [10.6](docs/10-gameplay-logic.md#106-the-hidden-options)).
 
-The documents: [docs/README.md](docs/README.md). How the reverse was done: [WALKTHROUGH.md](WALKTHROUGH.md).
+The documents: [docs/README.md](docs/README.md); what the conversion changed against the 48K tape:
+[13. Differences from Zynaps (48K)](docs/13-differences-from-zynaps.md). How the reverse was done:
+[WALKTHROUGH.md](WALKTHROUGH.md).
 
 ## Build
 

@@ -5,10 +5,11 @@
 ; C D), a pattern is note bytes and duration commands up to $FF. A command $C0+n sets the note length to n x 16 x 256
 ; loop passes (TuneDuration $B4AE, the low byte $B4AD stays 0); a note n takes the period p = TunePeriods[n] ($FF01)
 ; and runs two counters, p and p + 1 passes: each wrap toggles the speaker (both at once toggle it once), so one note
-; sounds as two tones a pass apart, a slow beat. A pass is 81 T (uncontended code at $B486-$B49B), so p sounds at
-; about 3500000 / (2 x 81 p) Hz on a 48K: from 89 Hz (p = 242, note 1) to 400 Hz (p = 54, note 26). The periods fall
-; by about a semitone a step (notes 24 to 25 a whole tone); the patterns use notes 1-25, never 3, 15, 22 and 24 (c1:
-; TitleTune reads $FF02-$FF03, $FF05-$FF0F, $FF11-$FF16, $FF18, $FF1A of the table).
+; sounds as two tones a pass apart, a slow beat. A pass is 81 T (uncontended code at $B486-$B49B), so the speaker, the
+; XOR of the two counters, gives a pulse train at 3500000 / (81 p) Hz on a 48K (two pulses per counter period; the
+; capture of docs 9.3 confirms it): from 179 Hz (p = 242, note 1) to 800 Hz (p = 54, note 26). The periods fall by
+; about a semitone a step (notes 24 to 25 a whole tone); the patterns use notes 1, 2, 4, 6, 7, 9-14, 16-21, 23 and 25,
+; never 3, 5, 8, 15, 22, 24 and 26 (src/res/music/titletune.tune.txt).
 ;
 ; Between notes it checks fire (TitleFireCheck $A748) and the keys 1-5 (half row $F7FE): either ends the tune and the
 ; credits page goes on to the menu. c1: 2 entries, 230 permille of the attract recording (269491882 T in the tune's
