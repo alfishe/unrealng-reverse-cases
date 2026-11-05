@@ -6,7 +6,9 @@
 
 One row a frame of the trace: the interrupt from its first instruction ($6969) to its RET, every instruction
 coloured by the routine it belongs to (the radar, PlayInterrupt's own counting, the music player's parts in bank 1),
-every AY data write a tick, and the T-states where the beam starts the paper (17 988) and the view (19 780).
+every AY data write a tick, and the T-states where the beam starts the paper (17 944) and the view (19 736). The T
+axis is the frame T, the T-state in the emulator's frame as the trace stores it: the INT is at frame T -44 (71 636 of
+the frame before), so the interrupt's first instructions run in the last T-states of the frame before, left out.
 """
 import argparse
 import os
@@ -93,10 +95,10 @@ def main():
         mt = (m[-1][1] - m[0][0]) if m else 0
         music.append(mt)
         ends.append(end)
-        ax.text(end + 250, i, f'ends at T {end}; music {mt} T, {len(outs)} AY writes', color=DIM, fontsize=8,
+        ax.text(end + 250, i, f'ends at frame T {end}; music {mt} T, {len(outs)} AY writes', color=DIM, fontsize=8,
                 va='center')
-    for t, label, ha, dx in ((A.PAPER_T, 'the beam reaches\nthe paper, T 17 988', 'right', -150),
-                             (A.PAPER_T + 8 * A.LINE_T, 'the view\'s first\nline, T 19 780', 'left', 150)):
+    for t, label, ha, dx in ((A.PAPER_T, 'the beam reaches\nthe paper, frame T 17 944', 'right', -150),
+                             (A.PAPER_T + 8 * A.LINE_T, 'the view\'s first\nline, frame T 19 736', 'left', 150)):
         ax.axvline(t, color='#ffffff', lw=0.8, ls='--', alpha=0.7)
         ax.text(t + dx, len(frames) - 0.2, label, color=FG, fontsize=8.5, va='top', ha=ha)
     ax.set_yticks(range(len(frames)))
@@ -104,15 +106,15 @@ def main():
     ax.set_ylim(len(frames) - 0.2 + 1.0, -0.8)
     ax.set_xlim(0, 24000)
     ax.set_ylabel('frame of the recording d1 (one row an interrupt)', color=DIM, fontsize=9)
-    ax.set_xlabel('T-states from the interrupt (white ticks under a bar: the AY data writes, OUT ($BFFD))', color=DIM,
-                  fontsize=9)
-    ax.set_title(f'The play interrupt in {len(frames)} frames: the radar, then the music; done by T {max(ends)}, '
+    ax.set_xlabel('frame T (the INT at frame T -44; white ticks under a bar: the AY data writes, OUT ($BFFD))',
+                  color=DIM, fontsize=9)
+    ax.set_title(f'The play interrupt in {len(frames)} frames: the radar, then the music; done by frame T {max(ends)}, '
                  f'before the beam reaches the paper', color=FG, fontsize=12, loc='left')
     ax.legend(handles=[Patch(color=c, label=l) for k, l, c in PARTS], loc='upper center', ncol=2, fontsize=8.5,
               bbox_to_anchor=(0.5, -0.1), frameon=False, labelcolor='#d6d8e0')
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     fig.savefig(args.out, facecolor=fig.get_facecolor(), bbox_inches='tight')
-    print(f'{len(frames)} interrupts, end T {min(ends)}..{max(ends)}, music {min(music)}..{max(music)} T')
+    print(f'{len(frames)} interrupts, end frame T {min(ends)}..{max(ends)}, music {min(music)}..{max(music)} T')
 
 
 if __name__ == '__main__':

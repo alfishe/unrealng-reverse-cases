@@ -182,7 +182,7 @@ Measured in d1, frame 13014:
 
 - 61 736 T of its own, 379 T a line.
 - The beam draws a line every 224 T, so a copy that starts above the beam is overtaken.
-- Chapter 04.5 has the beam figures: a torn TV frame rebuilt from d1 (line 39), and the 24 tears of 45 copies.
+- Chapter 04.5 has the beam figures: a torn TV frame rebuilt from d1 (line 38), and the 24 tears of 45 copies.
 
 ## 6.4 The radar
 
@@ -233,8 +233,9 @@ FillAttrLoop:
   RET                     ; done
 ```
 
-Measured in d1, frames 13005-13016: 8 124 T every frame, from about T 145 to T 8 270.
-The beam reaches row 22 at about T 17 988 + 176 x 224 = 57 412, so the radar is always complete before it is shown.
+Measured in d1, frames 13005-13016: 8 124 T every frame, from about frame T 145 to frame T 8 270.
+The beam reaches row 22 at about frame T 17 944 + 176 x 224 = 57 368 (frame T: the T-state in the emulator's frame;
+the INT is at frame T -44), so the radar is always complete before it is shown.
 
 ## 6.5 The screen depacker: a third at a time, column by column
 

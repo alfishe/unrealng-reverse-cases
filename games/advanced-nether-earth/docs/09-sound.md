@@ -405,8 +405,8 @@ NoiseLoop:
   - A = 40: 13 pulses of 583 T, about 7 000 T.
   - So the burst gets sparser and lower as A counts up: a falling sweep over 126 frames (2.6 s).
 - A noise value: 30 calls of `Random`, each setting the speaker to bit 4 of the random byte.
-- It runs inside the interrupt, after the music, at about T 12 000. A 15 000 T burst ends near T 27 000: into the
-  paper's time, but it writes no screen byte (chapter 04.4).
+- It runs inside the interrupt, after the music, at about frame T 12 000. A 15 000 T burst ends near frame T 27 000:
+  into the paper's time, but it writes no screen byte (chapter 04.4).
 
 ### Beep: the menu sounds
 

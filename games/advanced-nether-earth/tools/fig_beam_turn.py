@@ -4,16 +4,17 @@
     python3 tools/fig_beam_turn.py --trace work/docR/d1/traces/12446_0-12458_0.uatr --copy-frame 12454 \
         --turn-out docs/img/loop/turn-frames.png --tear-out docs/img/loop/tear-tv.png
 
-turn-frames.png: one row per frame of the turn, time across the frame (0-71 680 T), every instruction coloured by
-its phase (tools/ane_trace.py). The paper's beam time is marked, so it shows at a glance which work runs while the
+turn-frames.png: one row per frame of the turn, the frame T across (0-71 680, the T-state in the emulator's frame as
+the trace stores it; the INT is at frame T -44, 71 636 of the frame before), every instruction coloured by its phase
+(tools/ane_trace.py). The paper's beam time is marked, so it shows at a glance which work runs while the
 TV draws the picture.
 
 --turn-trace draws turn-frames.png from another trace (when --trace is not one whole turn).
 
 tear-tv.png: top, the play view of the three TV pictures around the copy, rebuilt from the trace: every screen byte
-takes the value it had when the beam fetched it (line L, column c at T 17 988 + 224 L + 4 c of its frame). Bottom, the copy against
-the beam in the copy's first frame: above the crossing line the copy is ahead and the TV shows the new view, below
-it the beam came first and the TV still shows the old one.
+takes the value it had when the beam fetched it (line L, column c at frame T 17 944 + 224 L + 4 c). Bottom, the copy
+against the beam in the copy's first frame, in frame T: above the crossing line the copy is ahead and the TV shows
+the new view, below it the beam came first and the TV still shows the old one.
 """
 import argparse
 import bisect
@@ -31,7 +32,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ane_trace as A  # noqa: E402
 import kitlib as K  # noqa: E402
 
-FRAME_T, PAPER_T, LINE_T = A.FRAME_T, A.PAPER_T, A.LINE_T
+FRAME_T, INT_T, PAPER_T, LINE_T = A.FRAME_T, A.INT_T, A.PAPER_T, A.LINE_T
 BG, AX, FG, DIM = '#15161b', '#1c1d24', '#e8e8ee', '#b8bcc8'
 VIEW_TOP, VIEW_LINES = 8, 160      # the play view on the screen: lines 8-167, columns 1-20 (20 bytes a line)
 
@@ -109,11 +110,14 @@ def turn_frames(trace, out, title):
     ax.axvspan(PAPER_T, PAPER_T + 192 * LINE_T, color='#ffffff', alpha=0.06, lw=0)
     ax.text(PAPER_T + 96 * LINE_T, -0.9, 'the beam draws the picture (screen lines 0-191)', color=DIM, fontsize=9,
             ha='center')
+    ax.axvline(FRAME_T + INT_T, color='#ffffff', lw=0.6, alpha=0.5)
+    ax.text(FRAME_T + INT_T - 300, -0.9, 'the next INT', color=DIM, fontsize=8.5, ha='right')
     ax.set_yticks(range(len(frames)))
     ax.set_yticklabels([f'frame {f}' for f in frames], fontsize=8.5)
     ax.set_ylim(len(frames) - 0.5, -1.4)
     ax.set_xlim(0, FRAME_T)
-    ax.set_xlabel('T-states from the frame\'s interrupt (71 680 a frame on the Pentagon)', color=DIM, fontsize=9)
+    ax.set_xlabel('frame T (71 680 a frame on the Pentagon; the INT at frame T 71 636, 44 T before the frame ends)',
+                  color=DIM, fontsize=9)
     ax.set_title(title or f'One game turn, frames {frames[0]}-{frames[-1]}', color=FG, fontsize=11.5, loc='left')
     used = {ph for f in frames for _, _, ph in rows[f]}
     ax.legend(handles=[Patch(color=c, label=l) for k, l, c in A.PHASES if k in used], loc='upper center',
@@ -164,7 +168,7 @@ def main():
     tv[0].set_xlabel('the TV picture\nbefore the copy', color=DIM, fontsize=9.5)
     tv[2].set_xlabel(f'the TV picture after the copy\n{changed} view bytes changed', color=DIM, fontsize=9.5)
 
-    # the copy against the beam, frame tf (time from its interrupt)
+    # the copy against the beam, frame tf (its frame T)
     k = tf - cf
     pts = sorted((t - k * FRAME_T, line) for t, line, col in w)
     end = PAPER_T + 191 * LINE_T
@@ -175,8 +179,8 @@ def main():
     bx.scatter([t for t, l in pts], [l for t, l in pts], s=3, color='#e5534b', linewidths=0,
                label='the copy: each byte written to the screen')
     bx.axhline(tline, color='#ff4040', lw=1, ls='--')
-    bx.axvline(FRAME_T, color='#ffffff', lw=0.6, alpha=0.5)
-    bx.text(FRAME_T + 500, 4, f'interrupt of\nframe {tf + 1}', color=DIM, fontsize=8.5, va='top')
+    bx.axvline(FRAME_T + INT_T, color='#ffffff', lw=0.6, alpha=0.5)
+    bx.text(FRAME_T + INT_T + 500, 4, f'interrupt of\nframe {tf + 1}', color=DIM, fontsize=8.5, va='top')
     cross = PAPER_T + tline * LINE_T
     bx.text(cross + 6000, (VIEW_TOP + tline) / 2, f'lines 8-{tline - 1}: the copy writes them before the beam\n'
             f'gets there, so frame {tf} shows them new', color='#7fd68a', fontsize=9.5, va='center')
@@ -185,9 +189,9 @@ def main():
     bx.set_xlim(0, right)
     bx.set_ylim(192, 0)
     bx.set_ylabel('screen line', color=DIM, fontsize=9)
-    bx.set_xlabel(f'T-states from the interrupt of frame {tf}', color=DIM, fontsize=9)
+    bx.set_xlabel(f'frame T of frame {tf} (its INT at frame T -44, the next at 71 636)', color=DIM, fontsize=9)
     first = min(t for t, l in pts)
-    bx.set_title(f'Why: the copy writes line 8 at T {first:,}'.replace(',', ' ') +
+    bx.set_title(f'Why: the copy writes line 8 at frame T {first:,}'.replace(',', ' ') +
                  f', before the beam; the beam is faster and overtakes it at line {tline}', color=FG,
                  fontsize=11.5, loc='left')
     bx.legend(loc='lower left', fontsize=9, frameon=False, labelcolor='#d6d8e0', markerscale=4)

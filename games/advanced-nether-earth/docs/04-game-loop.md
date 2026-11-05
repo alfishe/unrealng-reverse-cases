@@ -284,7 +284,9 @@ PlayMusic:
 How to read it:
 
 - One row is one interrupt of d1, frames 13005-13016: a whole game turn and two frames around it.
-- Time runs right from the interrupt, in T-states.
+- Time runs right in frame T: the T-state in the emulator's frame, as unreal-ng's access trace stores it. Frame
+  T 0 is not the interrupt: on the Pentagon the INT rises at frame T -44 (71 636 of the frame before;
+  unreal-ng `ApplyModelTimingDefaults`, `intstart` 71635), 17 988 T before the first paper pixel.
 - Green is `ShowRadar`. Grey is `PlayInterrupt`'s own work and `PlayMusic`'s paging.
 - The four blue and orange colours are the music player's parts (chapter 09.2):
   - pale cyan: `PlayFrame` and `ApplyPending`, the tick count;
@@ -292,16 +294,17 @@ How to read it:
   - cyan: the channels' ticks (`ChAOff`, `ChBOff`, `ChCOff`);
   - red: the AY writes (`WriteAy`, `AyOut`).
 - The white ticks under a bar are the AY data writes (`OUT ($BFFD)`).
-- The dashed lines are the beam: the paper starts at T 17 988, the view's first line at T 19 780.
+- The dashed lines are the beam: the paper starts at frame T 17 944, the view's first line at frame T 19 736.
 - Drawn by `python3 tools/fig_interrupt.py --trace work/docR/d1/traces/13005_0-13017_0.uatr --out docs/img/loop/interrupt-frames.png`.
 
 What it shows:
 
-- The interrupt starts within 10 T of the frame.
-- The radar runs from about T 145 to T 8 270, 8 124 T in every frame (`work/docR/radar_cost.py`).
-- The music starts at T 8 394-8 416 and costs 2 745-3 612 T.
+- The interrupt starts just before the frame: its first instruction (the IM 2 jump at `$6969`) runs at frame
+  T 71 655-71 666 of the frame before, 19-30 T after the INT; the handler `$D566` follows 10 T later.
+- The radar runs from about frame T 145 to frame T 8 270, 8 124 T in every frame (`work/docR/radar_cost.py`).
+- The music starts at frame T 8 394-8 416 and costs 2 745-3 612 T.
   - A frame where a channel reads its next row (orange) costs the most.
-- Every interrupt ends between T 11 349 and T 12 207, long before the beam reaches the paper.
+- Every interrupt ends between frame T 11 349 and frame T 12 207, long before the beam reaches the paper.
   - So the radar never shows half drawn.
   - The music writes no screen byte.
 - A frame with a shot adds `SoundEffect`'s burst after the music: up to about 15 000 T (chapter 09.6).
@@ -344,7 +347,9 @@ The turn below is one of d1 while the view scrolls (key O held): the view change
 
 How to read it:
 
-- One row is one frame of the turn, from its interrupt (left) to the next (right).
+- One row is one frame of the turn, in frame T from the frame's start (left) to its end (right). The interrupt
+  that belongs to a row starts 13-25 T before it, so its green bar starts at the left edge; the thin line at the right
+  is the next INT, frame T 71 636.
 - Each instruction is coloured by its phase (`tools/ane_trace.py`):
   - green: the interrupt's radar;
   - cyan: the music;
@@ -355,7 +360,7 @@ How to read it:
 - The lighter band is the time the beam draws the picture, screen lines 0-191.
 - Drawn by `python3 tools/fig_beam_turn.py --trace work/docR/d1/traces/12446_0-12458_0.uatr --copy-frame 12454 --turn-out docs/img/loop/turn-frames.png --tear-out docs/img/loop/tear-tv.png`.
 
-The turn of the figure, measured in d1:
+The turn of the figure, measured in d1 (frame T):
 
 | Moment | Frame:T |
 | --- | --- |
@@ -366,15 +371,16 @@ The turn of the figure, measured in d1:
 | the copy's last screen write | 12455:15 987 |
 | the next turn starts | 12457:12 122 |
 
-![The torn TV frame 12454: the new view above line 39, the old view below; the copy against the beam](img/loop/tear-tv.png)
+![The torn TV frame 12454: the new view above line 38, the old view below; the copy against the beam](img/loop/tear-tv.png)
 
 How to read it:
 
 - Top: the play view of the three TV pictures around the copy, rebuilt from the trace.
   - Each screen byte has the value it held when the beam fetched it.
   - Left, frame 12453: the old view. Right, frame 12455: the new view.
-  - Middle, frame 12454: the new view above the red line (line 39), the old view below it.
-- Bottom: the copy against the beam in frame 12454. Time runs across, the screen line runs down.
+  - Middle, frame 12454: the new view above the red line (line 38), the old view below it.
+- Bottom: the copy against the beam in frame 12454. The frame T runs across, the screen line runs down; the thin
+  vertical line is the next INT (frame T 71 636).
   - The white diagonal is the beam: the screen line the TV draws at that moment.
   - Every red dot is a byte the copy writes to the screen.
   - Above the crossing (green band) the copy is ahead; below it (red band) the beam came first.
@@ -384,9 +390,10 @@ The copy:
 
 - It takes 72 952 T of wall time from its first screen write to its last, with the interrupt it crosses.
 - Its own instructions take 61 736 T, 379 T a line.
-- It starts at T 14 645: 3 343 T before the beam reaches the paper, 5 135 T before the view's first line.
-- The beam overtakes it at screen line 39, where 9 of the line's 20 bytes are already new.
-- So frame 12454 shows the new view above line 39 and the old one below.
+- It starts at frame T 14 645: 3 299 T before the beam reaches the paper (frame T 17 944), 5 091 T before the view's
+  first line (frame T 19 736).
+- The beam overtakes it at screen line 38, where 19 of the line's 20 bytes are already new.
+- So frame 12454 shows the new view above line 38 and the old one below.
 - Frame 12455 shows the new view whole.
 
 Where the 716 800 T of this turn went, frames 12447-12456
@@ -413,15 +420,16 @@ Where the 716 800 T of this turn went, frames 12447-12456
 The copy starts wherever the turn's work ends, so its place in the frame wanders from turn to turn.
 That place decides what the player sees.
 
-![45 view copies of d1: a copy that starts before T 19 780 tears the screen, one that starts later does not](img/loop/tear-band.png)
+![45 view copies of d1: a copy that starts before frame T 19 736 tears the screen, one that starts later does not](img/loop/tear-band.png)
 
 How to read it:
 
 - One filled dot is one copy in d1's traces.
-  - Across: the T-state of its first instruction in its frame.
+  - Across: the frame T of its first instruction.
   - Down: the screen line where the beam overtook it. The rows "late" and "no tear" are at the bottom.
-- The red dashed curve is the model for a copy that starts before the view's first line (T 19 780).
-  - Line = (21 020 - T) / 155, because the copy writes a line every 379 T and the beam draws one every 224 T.
+- The red dashed curve is the model for a copy that starts before the view's first line (frame T 19 736).
+  - Line = (20 976 - T) / 155, with T the frame T, because the copy writes a line every 379 T and the beam draws
+    one every 224 T.
 - Hollow cyan marks are the same copies moved earlier by the T-states the music took between the turn's start and
   the copy. They are computed, not recorded.
 - Drawn by `python3 tools/fig_tear.py --trace work/docR/d1/traces/11400_0-11525_0.uatr --trace work/docR/d1/traces/12300_0-12425_0.uatr --trace work/docR/d1/traces/13600_0-13725_0.uatr --trace work/docR/d1/traces/14250_0-14375_0.uatr --out docs/img/loop/tear-band.png`.
@@ -429,9 +437,9 @@ How to read it:
 What it shows:
 
 - 24 of the 45 copies tear.
-  - A copy that starts at T 14 104-18 376 tears at lines 16-42.
-  - A copy that starts near T 55 000 runs into the next interrupt and is caught at lines 160-161.
-- A copy that starts between about T 20 000 and T 49 480 stays behind the beam.
+  - A copy that starts at frame T 14 104-18 376 tears at lines 15-42.
+  - A copy that starts near frame T 55 000 runs into the next interrupt and is caught at lines 160-161.
+- A copy that starts between about frame T 20 000 and frame T 49 480 stays behind the beam.
   - Its frame shows the old view whole; the next frame shows the new one.
 - The music before a copy adds 20 723-28 944 T (median 24 636).
   - The turn starts after an interrupt, and each of the seven interrupts of the draw plays its music frame.
@@ -676,10 +684,11 @@ r4 runs 16 000 frames:
 | Quantity | Value | Source |
 | --- | --- | --- |
 | a frame on the Pentagon | 71 680 T, 20.48 ms (48.83 a second) | the machine |
-| the paper | from T 17 988, 224 T a line | the machine |
+| the INT | frame T -44 (71 636 of the frame before) | unreal-ng `intstart` 71635 |
+| the paper | from frame T 17 944 (17 988 T after the INT), 224 T a line | the machine |
 | a game turn | at least 10 frames, 0.205 s | `TurnPace`; d1: 328 turns of 10 frames |
 | a game hour, a game day | 12 turns (2.46 s), 288 turns (59 s) | `GameTurn`: 5 minutes a turn |
-| the play interrupt | ends at T 11 349-12 207 | d1 13005-13016 |
+| the play interrupt | ends at frame T 11 349-12 207 | d1 13005-13016 |
 | the radar in it | 8 124 T | the same |
 | the music in it | 2 745-3 612 T (all tunes: 750-4 777 T, chapter 09) | the same; `tools/ay_play.py` |
 | drawing one view | about 410 000 T of CPU, 7 frames of wall time | d1 13007-13014 |

@@ -10,7 +10,8 @@ game's frame by its address and bank (the address ranges of the game's modules i
 
 `turns` prints one line a game turn found in the trace: where it starts (the instruction after the turn pace), the
 copy's start, the frames between, and the tear line of the frame the copy crosses. `frames` prints the T-states of
-each phase in each frame (the interrupt, the radar, the music, the rest).
+each phase in each frame (the interrupt, the radar, the music, the rest). Every T is the frame T: the T-state in the
+emulator's frame as the trace stores it (the INT is at frame T -44, 71636 of the frame before).
 """
 import argparse
 import os
@@ -21,7 +22,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, '..', '..', '..', 'kit'))
 import kitlib as K  # noqa: E402
 
-FRAME_T, PAPER_T, LINE_T = 71680, 17988, 224  # Pentagon: 320 lines of 224 T, the paper's first line at 17988
+# Pentagon in unreal-ng (core/src/emulator/config.cpp, ApplyModelTimingDefaults): 320 lines of 224 T. A trace's T is
+# the frame T, counted from the emulator's frame start, not from the interrupt: the INT rises at frame T 71636 of the
+# frame before (intstart 71635 + 1), INT_T = -44, and the first paper pixel comes 17 988 T later, at frame T 17944.
+FRAME_T, INT_T, PAPER_T, LINE_T = 71680, -44, 17944, 224
 
 PHASES = [  # key, label, colour
     ('int', 'the interrupt: radar, clock count, shot sound', '#4caf50'),
@@ -89,13 +93,13 @@ def per_frame(trace):
 
 
 def shown_new(t_from_cf, line, col):
-    """a byte written at t (T from the interrupt of the copy's first frame) shows in the next frame when written
-    before the beam fetched it there"""
+    """a byte written at t (frame T counted from the start of the copy's first frame) shows in the next frame when
+    written before the beam fetched it there"""
     return t_from_cf <= FRAME_T + PAPER_T + line * LINE_T + 4 * col
 
 
 def copy_writes(trace, cf):
-    """[(t from the interrupt of frame cf, screen line, column)] of the view copy's screen writes"""
+    """[(frame T counted from the start of frame cf, screen line, column)] of the view copy's screen writes"""
     out = []
     for x, bank, ph in walk(trace):
         if ph != 'copy':

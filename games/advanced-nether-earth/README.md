@@ -16,6 +16,8 @@ The 2017 TRD holds only the Final Cut win sequence, repacked with Hrust 1 ([3](d
 
 The documents: [docs/README.md](docs/README.md). The five tunes, the sample and the effects as mp3, rendered from
 the machine state: [docs/audio](docs/audio/README.md). How the reverse was done: [WALKTHROUGH.md](WALKTHROUGH.md).
+What this game changed in Nether Earth, why, and what for, with illustrations:
+[docs/13](docs/13-differences-from-nether-earth.md).
 
 ## Build
 

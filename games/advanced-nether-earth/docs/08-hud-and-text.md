@@ -276,8 +276,9 @@ The translation was made over existing strings of fixed length. Some slips show 
   `$47`. `tour` 1942 and 1990 show the green bars.
 - **"ДЕРЖАТЫ ОБОРОНУ"** in the orders menu (`$A977`) has Ы for Ь. The order names (`$A848`) spell it right:
   "ДЕРЖАТЬ".
-- **"ЛИКВИД. ВРАЖЕСК. ЗАВОДЫ"** (entry 4 at `$A848`) uses the nominative where the genitive "ЗАВОДОВ" belongs, as
-  entry 7 has it.
+- **"ЛИКВИД. ВРАЖЕСК. ЗАВОДЫ"** (entry 4 at `$A848`) and entry 7's "ЗАВОДОВ" are both right: ЛИКВИД. reads as the
+  verb ЛИКВИДИРОВАТЬ (liquidate), which takes the accusative ЗАВОДЫ; entry 7's noun ЗАХВАТ (capture) takes the
+  genitive.
 - **Й is И everywhere**, because the font has no Й: БОЕВОИ, ЗАДАИТЕ, ИНТЕРФЕИС, НЕИТР.
 - **The key names keep Latin spellings.** "SYM SH" comes out "ЯУМ ЯН" because the font draws S as Я and H as Н.
   "ЕНТЕР" is ENTER spelt in Russian letters.

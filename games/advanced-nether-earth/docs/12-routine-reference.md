@@ -86,7 +86,7 @@ Installed in ImHandler by Restart (`$A614`) for the main menu and by Constructio
 
 **The music in play: PlayInterrupt's radar call, then one frame of the tune**
 
-PlayInterrupt jumps here at `$D582` in place of its CALL ShowRadar: ShowRadar runs as before, then bank 1's player plays a frame (the main registers and IX, IY kept), the bank in GameBank goes back, and the JP returns to PlayInterrupt after its call (`$D585`: the sound effect step, the exit).
+PlayInterrupt jumps here at `$D582` in place of its CALL ShowRadar: ShowRadar runs as before, then bank 1's player plays a frame (the main registers and IX, IY kept), the bank in GameBank goes back, and the JP returns to PlayInterrupt after its call (`$D585`: the sound effect step, the exit). Bug: AF' is not kept, and the player swaps it 10-12 times a frame; FindTargetBuilding keeps the order in A' over a table walk longer than a frame, so the walk's teammate check reads the player's value after the interrupt (trace d1 14257-14258: the order 6 read as 56 for records 21-23).
 
 | | |
 | --- | --- |

@@ -3,17 +3,18 @@
 
     python3 tools/fig_tear.py --trace work/docR/d1/traces/11400_0-11525_0.uatr ... --out docs/img/loop/tear-band.png
 
-For every copy of the view the traces hold whole (tools/ane_trace.py): the T-state of its first instruction in
-its frame, and the screen line where the beam overtakes it (none: the frame shows the old view whole, the next the
-new one whole). Also, for each copy, the T-states the music player took in the interrupts between the turn's
-start and the copy's start: without the music the copy would start that much earlier (a computation, not a
-recording), drawn as a hollow mark on the same model.
+For every copy of the view the traces hold whole (tools/ane_trace.py): the frame T of its first instruction (the
+T-state in the emulator's frame as the trace stores it; the INT is at frame T -44, 71 636 of the frame before), and
+the screen line where the beam overtakes it (none: the frame shows the old view whole, the next the new one whole).
+Also, for each copy, the T-states the music player took in the interrupts between the turn's start and the copy's
+start: without the music the copy would start that much earlier (a computation, not a recording), drawn as a hollow
+mark on the same model.
 
-The model: the copy writes view line L (screen line L) at t0 + 379 (L - 8) (379 T a line on the Pentagon, measured),
-the beam reaches it at 17 988 + 224 L; a copy that starts before the beam reaches screen line 8 (T 19 780) is
-overtaken at L = (21 020 - t0) / 155; one that starts while the beam is on the paper is behind it all the way and
-shows whole in the next frame; one that starts late enough to run into the next interrupt is paused by it and
-overtaken near the bottom of the next frame.
+The model, in frame T: the copy writes view line L (screen line L) at t0 + 379 (L - 8) (379 T a line on the
+Pentagon, measured), the beam reaches it at 17 944 + 224 L; a copy that starts before the beam reaches screen line 8
+(frame T 19 736) is overtaken at L = (20 976 - t0) / 155; one that starts while the beam is on the paper is behind it
+all the way and shows whole in the next frame; one that starts late enough to run into the next interrupt is paused
+by it and overtaken near the bottom of the next frame.
 """
 import argparse
 import os
@@ -33,7 +34,7 @@ F = A.FRAME_T
 
 def model_line(t0):
     if t0 < A.PAPER_T + 8 * A.LINE_T:
-        return (21020 - t0) / 155
+        return (20976 - t0) / 155
     return None
 
 
@@ -82,18 +83,19 @@ def main():
         s.set_color('#444')
     NONE, LATE = 185, 172
     # bands
-    ax.axvspan(0, 19780, color='#e5534b', alpha=0.12, lw=0)
-    ax.axvspan(19780, 52000, color='#4caf50', alpha=0.10, lw=0)
+    VIEW = A.PAPER_T + 8 * A.LINE_T  # frame T 19 736: the beam reaches the view's first line
+    ax.axvspan(0, VIEW, color='#e5534b', alpha=0.12, lw=0)
+    ax.axvspan(VIEW, 52000, color='#4caf50', alpha=0.10, lw=0)
     ax.axvspan(52000, F, color='#e5534b', alpha=0.12, lw=0)
-    ax.text(1000, 5, 'starts before the beam reaches\nthe view (T 19 780): the beam\novertakes the copy, a tear',
+    ax.text(1000, 5, 'starts before the beam reaches\nthe view (frame T 19 736): the\nbeam overtakes the copy, a tear',
             color='#f08a84', fontsize=9, va='top')
     ax.text(21000, 5, 'starts while the beam draws the paper: the copy stays behind the beam;\n'
             'this frame shows the old view whole, the next the new view whole', color='#7fd483', fontsize=9, va='top')
     ax.text(F - 500, 5, 'runs into the next\ninterrupt: overtaken\nnear the bottom', color='#f08a84', fontsize=9,
             va='top', ha='right')
-    xs = list(range(0, 19780, 200))
+    xs = list(range(0, VIEW, 200))
     ax.plot(xs, [model_line(x) for x in xs], color='#e5534b', lw=1, ls='--')
-    ax.text(7000, 80, 'model:\nline = (21 020 - T) / 155', color='#e5534b', fontsize=8.5)
+    ax.text(7000, 80, 'model:\nline = (20 976 - T) / 155', color='#e5534b', fontsize=8.5)
     torn = [(t, l) for t, l, m, cf, tf in rows if l is not None]
     whole = [(t, NONE) for t, l, m, cf, tf in rows if l is None]
     ax.scatter(*zip(*torn), s=28, color='#e5534b', zorder=3, label=f'a copy of the recording, torn ({len(torn)})')
@@ -116,10 +118,10 @@ def main():
     ax.set_yticklabels(['0', '25', '50', '75', '100', '125', '150', 'late (no model)', 'no tear'])
     ax.set_ylim(NONE + 8, -6)
     ax.set_xlim(0, F)
-    ax.set_xlabel('T-state of the copy\'s start in its frame (from the interrupt; 71 680 a frame)', color=DIM,
-                  fontsize=9)
+    ax.set_xlabel('frame T of the copy\'s start (71 680 a frame; the INT at frame T -44, 71 636 of the frame before)',
+                  color=DIM, fontsize=9)
     ax.set_ylabel('screen line of the tear', color=DIM, fontsize=9)
-    ax.set_title(f'{len(rows)} view copies of d1: a copy that starts before T 19 780 tears the screen, '
+    ax.set_title(f'{len(rows)} view copies of d1: a copy that starts before frame T 19 736 tears the screen, '
                  f'one that starts later does not', color=FG, fontsize=12, loc='left')
     ax.legend(loc='lower center', fontsize=8.5, frameon=False, labelcolor='#d6d8e0', ncol=3,
               bbox_to_anchor=(0.5, -0.24))
