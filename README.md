@@ -20,10 +20,17 @@ Each case is a full reverse of one game:
 
 ## Cases
 
-| Game | Publisher, year | State |
-| --- | --- | --- |
-| [H.A.T.E.](games/hate/README.md) | Vortex Software, 1989 | closed 2026-11-03 |
-| [Nether Earth](games/nether-earth/README.md) | Argus Press Software, 1987 | complete 2026-11-04 |
+| Game | Publisher, year | Machine, medium | State | What it is |
+| --- | --- | --- | --- | --- |
+| [Nether Earth](games/nether-earth/README.md) | Argus Press Software, 1987 | 48K, tape | complete 2026-11-04 | the robot strategy game: the base of five derived cases |
+| [H.A.T.E.](games/hate/README.md) | Vortex Software, 1989 | 48K, tape | closed 2026-11-03 | an isometric shoot-'em-up, freeware since 1995 |
+| [Nether Earth Editor](games/nether-earth-editor/README.md) | V.O.software, 1996 | 48K, tape | complete 2026-11-04 | a level editor for Nether Earth: a BASIC program with machine-code help, and seven levels as saved games |
+| [Advanced Nether Earth](games/advanced-nether-earth/README.md) | Eternity Industry, 1998 | Pentagon 128, TR-DOS | complete 2026-11-04 | a Russian 128K remake: AY music, a Cyrillic font, a boot menu, disk save and two endings; doc 13 the differences |
+| [Nether Earth ZS Edition](games/nether-earth-zs-edition/README.md) | Sergey Zotov, 1998 / 1999 | 128K, TR-DOS | complete 2026-11-05 | two Russian editions, nine parts reversed one by one, the '99 with its own packer; doc 13 the differences |
+| [Nether Earth GS](games/nether-earth-gs/README.md) | Tron Z, 2002; tape: Hood, 2017 | 128K + General Sound, TR-DOS and tape | complete 2026-11-05 | the game with General Sound music and effects, on SCL, TRD and TAP; doc 13 the differences |
+| [Zynaps](games/zynaps/README.md) | Hewson Consultants, 1987 | 48K, tape | documents 01-12 complete | the horizontal shoot-'em-up: the base of two derived cases |
+| [Zynaps 2 in 1](games/zynaps-128/README.md) | goodboy and tiboh, 2018 | 128K, TR-DOS | done | Zynaps with the Amstrad CPC version's AY music and effects, a mouse option, a 48K branch; doc 13 the differences |
+| [Zynaps GS](games/zynaps-gs/README.md) | ZX-Masters, 1997 | 128K + General Sound, TR-DOS | documents stage, 01-13 written | Zynaps patched for General Sound: 13 MOD tunes and 22 effects, a Trush-packed disk, an installer; doc 13 the differences |
 
 Every case is one folder in `games/`:
 
@@ -94,6 +101,7 @@ research: to study how the programs work and to verify that the reverse is exact
 
 - H.A.T.E. was released as freeware by Vortex Software in 1995 (`games/hate/orig/VORTEX.TXT`).
 - Nether Earth: (c) Argus Press Software.
+- The other games and conversions: (c) their authors and publishers, named in each case's README.
 
 If you hold the rights to a game here and want it removed, open an issue and it will be taken down.
 
