@@ -1,6 +1,6 @@
 # The annotations of the 128K hook stubs as they run at $B30D-$B3A8 (156 bytes, block 2's $610E-$61A9, copied there
 # piece by piece by block 2's set-up, src/game/setup.asm): the single source of src/game/stubs*.asm
-# (tools/part_mkasm.py). The image is work/parts/stubs-b30d.bin; the code is what the analysis build work/stage2/game
+# (kit/mkgame.py --image). The image is work/parts/stubs-b30d.bin; the code is what the analysis build work/stage2/game
 # (recording c1, frames 3313:51573-13702: the game menu and six games) ran, widened by mkgame's walk.
 #
 # The 48K game called its beeper (CALL $B2F0 with A = the sound) at each of these events; the set-up points those

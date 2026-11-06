@@ -329,7 +329,7 @@ flowchart LR
     M --> O["build/Zynaps(2In1)(km).scl, .trd"]
 ```
 
-Every `.asm` is written from its `.ann` (`tools/part_mkasm.py`, kit/mkgame.py's pipeline; `tools/mkasm_all.sh`
+Every `.asm` is written from its `.ann` (`kit/mkgame.py --image`; `tools/mkasm_all.sh`
 regenerates all of them and installs a part only when it assembles to the original's bytes). The modules:
 
 | Part | Sources | At | Entries |

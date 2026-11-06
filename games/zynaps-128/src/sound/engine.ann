@@ -1,5 +1,5 @@
 # The page-4 sound engine of Zynaps 2 in 1 ($C968-$CD22, 955 bytes, work/parts/engine-c968.bin): the single source
-# of truth for src/sound/engine*.asm (tools/part_mkasm.py; the format: kit/mkgame.py, class Annotations, plus
+# of truth for src/sound/engine*.asm (kit/mkgame.py --image; the format: kit/mkgame.py, class Annotations, plus
 # @const). Its data ($DE48-$FE6F) is a separate image built from src/res/sound/engine-data.txt by
 # tools/sound_data.py; the addresses the engine reads there are the @equ lines below.
 #

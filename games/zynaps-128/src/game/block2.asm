@@ -1,5 +1,5 @@
 ; Zynaps 2 in 1: block 2, the game and its 128K layer ($6000-$FB84)
-; Written by tools/part_mkasm.py from src/game/setup.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/game/setup.ann and the recordings; edit setup.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

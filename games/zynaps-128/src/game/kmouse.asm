@@ -1,5 +1,5 @@
 ; Zynaps 2 in 1: the Kempston mouse driver ($FE00)
-; Written by tools/part_mkasm.py from src/game/mouse.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/game/mouse.ann; edit mouse.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

@@ -1,5 +1,5 @@
 # The annotations of the Kempston mouse driver as it runs at $FE00-$FEDC (221 bytes, block 2's $6299-$6375, copied
-# there by block 2's set-up when K-MOUSE is on): the single source of src/game/mouse*.asm (tools/part_mkasm.py). The
+# there by block 2's set-up when K-MOUSE is on): the single source of src/game/mouse*.asm (kit/mkgame.py --image). The
 # image is work/parts/mouse-fe00.bin. No recording of c1 runs it (c1 plays with the options off): the code is
 # mkgame's static walk from the two entries; the runs with the mouse are work/stage1/models/models-mouse.json.
 

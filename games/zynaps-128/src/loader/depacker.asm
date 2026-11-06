@@ -1,5 +1,5 @@
 ; Zynaps 2 in 1: ZYNAPS.B sector 1, the Hrust 1 depacker ($5B00)
-; Written by tools/part_mkasm.py from src/loader/depacker.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/loader/depacker.ann and the recordings; edit depacker.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

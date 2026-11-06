@@ -1,7 +1,7 @@
 # boot.B: the TRD's boot
 
 `boot.B` (988 bytes of BASIC, 4 sectors at track 9 sector 9 of the TRD; the SCL has no boot), assembled to the
-original's bytes: `bootb.asm` (the top file) + `boot.asm`, written from `boot.ann` by `tools/part_mkasm.py`
+original's bytes: `bootb.asm` (the top file) + `boot.asm`, written from `boot.ann` by `kit/mkgame.py --image`
 (`tools/mkasm_all.sh`). Built: `build/obj/boot-5d3b.bin`; `src/media/trd.txt` adds the zeros to the end of its last
 sector. [docs/03-build-and-load.md](../../docs/03-build-and-load.md) 3.1.
 

@@ -18,14 +18,14 @@ Both are block 1's bytes (the intro copies them where they run) and are assemble
 | `engine-state.asm` | the AY register image and the three channel records |
 | `engine.ann` | the annotations the four files are written from |
 
-The `.asm` files are written by `tools/part_mkasm.py`; edit the `.ann`, not the `.asm`:
+The `.asm` files are written by `kit/mkgame.py --image`; edit the `.ann`, not the `.asm`:
 
 ```sh
-python3 tools/part_mkasm.py --image work/parts/starkos-8000.bin --org '$8000' --ann src/sound/starkos.ann \
+python3 ../../kit/mkgame.py --blocks --page 5 --page 2 --page 0 --page 4 --image work/parts/starkos-8000.bin --org '$8000' --ann src/sound/starkos.ann \
     --top starkos --dest src/sound --res src/res --l1 work/stage2/intro/l1.json \
     --title "The STarKos player and the intro tune SK10" --out work/stage2/sound/mk/starkos \
     --built music/sk10.bin=build/sound/sk10.bin --save build/sound/starkos-8000.bin --install
-python3 tools/part_mkasm.py --image work/parts/engine-c968.bin --org '$C968' --ann src/sound/engine.ann \
+python3 ../../kit/mkgame.py --blocks --page 5 --page 2 --page 0 --page 4 --image work/parts/engine-c968.bin --org '$C968' --ann src/sound/engine.ann \
     --top engine --dest src/sound --res src/res --l1 work/stage2/game/l1.json \
     --title "The page-4 sound engine of the 128K game" --out work/stage2/sound/mk/engine \
     --save build/sound/engine-c968.bin --install

@@ -12,7 +12,7 @@
 # from orig/ into build/sound/orig/): the script fails on the first difference. tools/build.sh calls it first.
 set -eu
 cd "$(dirname "$0")/.."
-SJASMPLUS=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+SJASMPLUS=$(python3 ../../kit/toolpaths.py sjasmplus "${1:-}") || exit 1
 OUT=build/sound
 
 mkdir -p "$OUT"

@@ -19,7 +19,7 @@
 # difference is reported where it starts. One build at a time: build/.lock (a folder) is held while it runs.
 set -eu
 cd "$(dirname "$0")/.."
-SJASMPLUS=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+SJASMPLUS=$(python3 ../../kit/toolpaths.py sjasmplus "${1:-}") || exit 1
 NAME="Zynaps(2In1)(km)"
 
 mkdir -p build

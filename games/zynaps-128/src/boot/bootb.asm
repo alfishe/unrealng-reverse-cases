@@ -1,5 +1,5 @@
 ; Zynaps 2 in 1: the TRD's boot.B ($5D3B)
-; Written by tools/part_mkasm.py from src/boot/boot.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/boot/boot.ann and the recordings; edit boot.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

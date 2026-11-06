@@ -17,5 +17,5 @@ The game's modules are written by `kit/mkgame.py` from `game.ann` (case.json: th
 `work/c1`, `r1`, `r2`; `tools/mkgame.sh` runs it and installs the modules and the resources only when they assemble to
 the image). The names and descriptions of the bytes the two games share are the 48K case's (`../zynaps`); the
 changed places are described as they are here, and every routine the set-up or the glue patches has an "On a 128K"
-paragraph. The parts' `.asm` files are written from their `.ann` files by `tools/part_mkasm.py`
+paragraph. The parts' `.asm` files are written from their `.ann` files by `kit/mkgame.py --image`
 (`tools/mkasm_all.sh`, after `tools/mkgame.sh`: block 2 includes `build/obj/game.bin`). Edit the `.ann`.

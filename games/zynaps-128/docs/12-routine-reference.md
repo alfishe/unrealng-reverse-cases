@@ -4,21 +4,21 @@ Every code entry of the game, in address order by module (`src/game/<module>.asm
 the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/c1` (c1, the menu and six short games), `work/r1` (r1, the bot over level 1 with the weapons), `work/r2` (r2, homing missiles at the guardian). They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
 of the recording. Memory ranges name the entries they cover. An entry no recording reached says so.
-Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --venv SKOOLKIT_VENV --sjasmplus SJASMPLUS --install`
+Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 
 | Module | Entries | Code entries |
 | --- | --- | --- |
-| [`leveldata`](#leveldata) | `$6800`-`$7E59` | 0 of 15 |
-| [`effectdata`](#effectdata) | `$7E5A`-`$7F61` | 0 of 10 |
-| [`gamevars`](#gamevars) | `$7F62`-`$7F9B` | 0 of 41 |
-| [`playerdata`](#playerdata) | `$7F9C`-`$7FFF` | 0 of 3 |
+| [`leveldata`](11-data-reference.md#leveldata) | `$6800`-`$7E59` | 0 of 15 |
+| [`effectdata`](11-data-reference.md#effectdata) | `$7E5A`-`$7F61` | 0 of 10 |
+| [`gamevars`](11-data-reference.md#gamevars) | `$7F62`-`$7F9B` | 0 of 41 |
+| [`playerdata`](11-data-reference.md#playerdata) | `$7F9C`-`$7FFF` | 0 of 3 |
 | [`gameentry`](#gameentry) | `$8000`-`$8002` | 1 of 1 |
-| [`systemvars`](#systemvars) | `$8003`-`$80E9` | 0 of 48 |
-| [`handlertables`](#handlertables) | `$80EA`-`$8183` | 0 of 6 |
-| [`controldata`](#controldata) | `$8184`-`$8230` | 0 of 15 |
-| [`scoredata`](#scoredata) | `$8231`-`$82ED` | 0 of 6 |
-| [`texts`](#texts) | `$82EE`-`$8515` | 0 of 1 |
+| [`systemvars`](11-data-reference.md#systemvars) | `$8003`-`$80E9` | 0 of 48 |
+| [`handlertables`](11-data-reference.md#handlertables) | `$80EA`-`$8183` | 0 of 6 |
+| [`controldata`](11-data-reference.md#controldata) | `$8184`-`$8230` | 0 of 15 |
+| [`scoredata`](11-data-reference.md#scoredata) | `$8231`-`$82ED` | 0 of 6 |
+| [`texts`](11-data-reference.md#texts) | `$82EE`-`$8515` | 0 of 1 |
 | [`system`](#system) | `$8516`-`$85C9` | 4 of 4 |
 | [`playfield`](#playfield) | `$85CA`-`$8845` | 12 of 13 |
 | [`stars`](#stars) | `$8846`-`$8911` | 3 of 3 |
@@ -49,15 +49,15 @@ Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py -
 | [`mainloop`](#mainloop) | `$B0FF`-`$B2EF` | 21 of 22 |
 | [`effects`](#effects) | `$B2F0`-`$B445` | 9 of 9 |
 | [`tune`](#tune) | `$B446`-`$B4AE` | 3 of 5 |
-| [`icons`](#icons) | `$B4AF`-`$B54E` | 0 of 1 |
-| [`font`](#font) | `$B54F`-`$B6FE` | 0 of 1 |
+| [`icons`](11-data-reference.md#icons) | `$B4AF`-`$B54E` | 0 of 1 |
+| [`font`](11-data-reference.md#font) | `$B54F`-`$B6FE` | 0 of 1 |
 | [`start`](#start) | `$B6FF`-`$B72E` | 1 of 1 |
-| [`buffers`](#buffers) | `$B72F`-`$DFFF` | 0 of 4 |
-| [`graphics`](#graphics) | `$E000`-`$F107` | 0 of 8 |
-| [`records`](#records) | `$F108`-`$F7FF` | 0 of 10 |
-| [`tables`](#tables) | `$F800`-`$FF00` | 0 of 8 |
-| [`tunedata`](#tunedata) | `$FF01`-`$FFD3` | 0 of 6 |
-| [`topcells`](#topcells) | `$FFD4`-`$FFFF` | 0 of 4 |
+| [`buffers`](11-data-reference.md#buffers) | `$B72F`-`$DFFF` | 0 of 4 |
+| [`graphics`](11-data-reference.md#graphics) | `$E000`-`$F107` | 0 of 8 |
+| [`records`](11-data-reference.md#records) | `$F108`-`$F7FF` | 0 of 10 |
+| [`tables`](11-data-reference.md#tables) | `$F800`-`$FF00` | 0 of 8 |
+| [`tunedata`](11-data-reference.md#tunedata) | `$FF01`-`$FFD3` | 0 of 6 |
+| [`topcells`](11-data-reference.md#topcells) | `$FFD4`-`$FFFF` | 0 of 4 |
 
 ## gameentry
 

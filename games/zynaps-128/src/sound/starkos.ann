@@ -1,6 +1,6 @@
 # The STarKos player and its song SK10, the intro tune of Zynaps 2 in 1 ($8000-$90C4, 4293 bytes,
 # work/parts/starkos-8000.bin; the intro copies it from block 1's $D810 to $8000 and runs it there): the single
-# source of truth for src/sound/starkos*.asm (tools/part_mkasm.py; the format: kit/mkgame.py, class Annotations).
+# source of truth for src/sound/starkos*.asm (kit/mkgame.py --image; the format: kit/mkgame.py, class Annotations).
 #
 # Witnesses: the L1 of the intro window of c1 (work/stage2/intro/l1.json, frames 2182-2838: Init once, Play 566
 # times, the first three patterns: the run counts quoted below); a SkoolKit simulation of the player from its

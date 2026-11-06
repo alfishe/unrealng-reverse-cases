@@ -1,5 +1,5 @@
 ; Zynaps 2 in 1: ZYNAPS.B sector 0, the BASIC with the REM loader ($5D3B)
-; Written by tools/part_mkasm.py from src/loader/loader.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/loader/loader.ann and the recordings; edit loader.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

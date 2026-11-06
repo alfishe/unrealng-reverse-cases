@@ -1,5 +1,5 @@
 # The annotations of ZYNAPS.B's BASIC program (168 bytes at PROG = $5D3B, then TR-DOS's autostart mark): the single
-# source of src/loader/loader*.asm (tools/part_mkasm.py, kit/mkgame.py's pipeline; the format is kit/mkgame.py's
+# source of src/loader/loader*.asm (kit/mkgame.py --image; the format is kit/mkgame.py's
 # class Annotations, plus @const). The image is work/parts/loader-5d3b.bin and the 4 autostart bytes after it.
 #
 # The code is what the analysis build work/stage2/loader (recording c1, frames 2051-2183: the loader from TR-DOS's

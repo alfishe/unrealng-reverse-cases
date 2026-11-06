@@ -1,5 +1,5 @@
 # The annotations of block 1, the intro, as it unpacks to $6000-$E8D4: the single source of src/intro/*.asm
-# (tools/part_mkasm.py). The image is work/parts/intro-6000.bin. Its parts that run elsewhere are their own sources,
+# (kit/mkgame.py --image). The image is work/parts/intro-6000.bin. Its parts that run elsewhere are their own sources,
 # built first and assembled here with INCBIN: the page-4 sound engine and its data (src/sound/engine.ann,
 # src/res/sound/), the STarKos player with the SK10 song (src/sound/starkos.ann, src/res/music/); the three pictures
 # are src/res/screens/*.png (tools/res_formats.py).

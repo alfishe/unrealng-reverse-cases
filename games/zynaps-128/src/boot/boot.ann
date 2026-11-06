@@ -1,5 +1,5 @@
 # The annotations of the TRD's boot.B (988 bytes of BASIC at PROG = $5D3B): the single source of src/boot/*.asm
-# (tools/part_mkasm.py). The image is work/parts/boot-5d3b.bin. The code is what the analysis build work/stage2/boot
+# (kit/mkgame.py --image). The image is work/parts/boot-5d3b.bin. The code is what the analysis build work/stage2/boot
 # (recording c1, frames 1870-2051: TR-DOS's RUN to the boot's RUN "ZYNAPS") ran, widened by mkgame's walk.
 
 @equ $1FEB TR_1FEB ; TR-DOS ROM routines DiskState runs through TrdosCall (their roles: docs/03-build-and-load.md 3.11)

@@ -1,5 +1,5 @@
 # The annotations of ZYNAPS.B's sector 1: the Hrust 1 depacker (256 bytes at $5B00), the single source of
-# src/loader/depack*.asm (tools/part_mkasm.py). The image is work/parts/depacker-5b00.bin.
+# src/loader/depack*.asm (kit/mkgame.py --image). The image is work/parts/depacker-5b00.bin.
 #
 # The code is what the analysis builds work/stage2/loader (block 1's unpack, recording c1 frames 2051-2183) and
 # work/stage2/load2 (block 2's, frames 2838-3302) ran. The format it reads is tools/hrust1.py's docstring; both blocks

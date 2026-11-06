@@ -49,7 +49,7 @@ python3 $R build --work work/stage2/c1 --from-frame 3313 --from-tinframe 51573 -
 python3 $R stop --work work/stage2/c1
 ```
 
-Each part is annotated in its `.ann` and written by `tools/part_mkasm.py` (kit/mkgame.py's pipeline on an image that
+Each part is annotated in its `.ann` and written by `kit/mkgame.py --image` (the kit's pipeline on an image that
 is not the game: the L1 basic blocks whose bytes equal the image's, widened by the static walk; an `@const` / `@isub`
 names a game address the set-up writes inside block 2's range). `tools/mkasm_all.sh` writes all ten parts and
 installs each only when it assembles to the original's bytes. The packer: `tools/hrust1.py check` on both packed

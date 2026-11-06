@@ -1,5 +1,5 @@
 # The annotations of block 2 as it unpacks to $6000-$FB84: the single source of src/game/setup*.asm and block2.asm
-# (tools/part_mkasm.py). The image is work/parts/game-6000.bin. Its parts that run elsewhere are their own sources,
+# (kit/mkgame.py --image). The image is work/parts/game-6000.bin. Its parts that run elsewhere are their own sources,
 # built first and assembled here with INCBIN: the hook stubs (src/game/stubs.ann, at $B30D), the 128K glue
 # (glue.ann, at $5B00), the mouse driver (mouse.ann, at $FE00) and the game ($6385-$FB84, moved to $6800-$FFFF:
 # src/game/game.ann, kit/mkgame.py, assembled at $6800 into build/obj/game.bin).

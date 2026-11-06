@@ -1,5 +1,5 @@
 ; Zynaps 2 in 1: block 1, the intro ($6000-$E8D4)
-; Written by tools/part_mkasm.py from src/intro/intro.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/intro/intro.ann and the recordings; edit intro.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

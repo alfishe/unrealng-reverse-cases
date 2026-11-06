@@ -241,7 +241,7 @@ PlayNote:
   LD A,(NoiseEnvChosen)
   LD (NoiseEnvPointer),A
   LD (NoiseEnvLoop),A
-  LD A,($CCB9)
+  LD A,(NoiseEnvChosen+$0001)
   LD (NoiseEnvPointer+$0001),A
   LD (NoiseEnvLoop+$0001),A
   LD H,(IX+$2C)           ; the volume 0: the volume envelope's first step sets

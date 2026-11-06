@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """The pristine code images of Zynaps 2 in 1, cut from the original medium (no recording): each part as the address
-it runs at, the input of tools/part_mkasm.py and the compare target of the build.
+it runs at, the input of kit/mkgame.py --image and the compare target of the build.
 
     python3 tools/parts.py [--out work/parts]
 

@@ -107,7 +107,7 @@ l_B32F:
 l_B33C:
   LD (HL),A
   INC HL
-  LD A,($7F8C)
+  LD A,(EffectState+$0002)
   LD (HL),A
   LD A,(SegLenA)          ; the first segment's frames
 EffectFirstLen:
@@ -189,11 +189,11 @@ l_B386:
   BIT 7,C                 ; two-tone: both pitches step
   JR Z,EffectStepOne
   LD HL,PitchA
-  LD A,($7F8B)
+  LD A,(EffectState+$0001)
   ADD A,(HL)
   LD (HL),A
   INC HL
-  LD A,($7F8D)
+  LD A,(EffectState+$0003)
   ADD A,(HL)
   LD (HL),A
 
@@ -203,11 +203,11 @@ l_B39C:
 ; This entry point is used by the routine at l_B386.
 EffectStepOne:
   LD HL,PitchA            ; one tone: the pitch this segment plays steps
-  LD A,($7F8B)
+  LD A,(EffectState+$0001)
   BIT 0,B
   JR NZ,EffectStepAdd
   LD HL,PitchB
-  LD A,($7F8D)
+  LD A,(EffectState+$0003)
 EffectStepAdd:
   ADD A,(HL)
   LD (HL),A
@@ -267,7 +267,7 @@ EffectRestart:
   LD A,(EffectState)
   LD (HL),A
   INC HL
-  LD A,($7F8C)
+  LD A,(EffectState+$0002)
   LD (HL),A
 EffectNextSeg:
   EXX                     ; the next segment's halves and length
@@ -277,8 +277,8 @@ EffectNextSeg:
   EXX
   BIT 7,C                 ; two-tone: both halves, SegLenA
   JR NZ,EffectSegLen
-  LD A,($7F8F)            ; one tone: the segment count's parity picks a flag
-                          ; bit
+  LD A,(EffectState+$0005) ; one tone: the segment count's parity picks a flag
+                           ; bit
   LD B,C
   SRL A
   JR NC,EffectPick

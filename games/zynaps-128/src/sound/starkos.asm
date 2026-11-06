@@ -1,5 +1,5 @@
 ; The STarKos player and the intro tune SK10
-; Written by tools/part_mkasm.py from src/sound/starkos.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/sound/starkos.ann and the recordings; edit starkos.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
   ORG $8000

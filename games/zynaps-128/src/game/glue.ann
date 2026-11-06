@@ -1,5 +1,5 @@
 # The annotations of the 128K glue as it runs at $5B00-$5BE2 (227 bytes, block 2's $61B6-$6298, copied there by
-# block 2's set-up on a 128K): the single source of src/game/glue*.asm (tools/part_mkasm.py). The image is
+# block 2's set-up on a 128K): the single source of src/game/glue*.asm (kit/mkgame.py --image). The image is
 # work/parts/glue-5b00.bin; the code is what the analysis builds work/stage2/glue (the set-up, frames 3302-3314) and
 # work/stage2/game (play, 3313:51573-13702) ran, widened by mkgame's walk. The 48K game's addresses it patches are
 # named here after what the 48K code does there (work/stage1/dis/game48-static.asm).

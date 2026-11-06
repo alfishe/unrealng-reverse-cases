@@ -1,5 +1,5 @@
 ; Zynaps 2 in 1: the 128K glue ($5B00)
-; Written by tools/part_mkasm.py from src/game/glue.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/game/glue.ann and the recordings; edit glue.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

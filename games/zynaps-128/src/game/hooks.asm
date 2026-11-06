@@ -1,5 +1,5 @@
 ; Zynaps 2 in 1: the 128K hook stubs ($B30D)
-; Written by tools/part_mkasm.py from src/game/stubs.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/game/stubs.ann and the recordings; edit stubs.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

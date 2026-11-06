@@ -115,7 +115,7 @@ MenuKeys:
   BIT 0,A
   JR NZ,MenuFrame
 CursorUp:
-  LD A,($5E28)            ; up: not past the first file
+  LD A,(CursorIndex+$0001) ; up: not past the first file
   OR A
   JR Z,MenuFrame
   LD HL,$FFF0
@@ -128,7 +128,7 @@ MoveCursor:
   LD (ScrollStep+$0001),HL
   JR Scroll
 CursorDown:
-  LD A,($5E28)            ; down: not past the last file (FileCount)
+  LD A,(CursorIndex+$0001) ; down: not past the last file (FileCount)
   INC A
   LD B,A
   LD A,(FileCount)

@@ -1,6 +1,7 @@
 #!/bin/sh
-# Regenerate src/**/*.asm from their .ann files (tools/part_mkasm.py), each checked to assemble to the original's
-# bytes before it is installed. Run after editing an .ann; the build (tools/build.sh) needs only the .asm files.
+# Regenerate src/**/*.asm from their .ann files (kit/mkgame.py --image, one part each), each checked to assemble
+# to the original's bytes before it is installed. Run after editing an .ann; the build (tools/build.sh) needs only
+# the .asm files.
 #
 #   tools/mkasm_all.sh
 #
@@ -11,7 +12,12 @@ set -eu
 cd "$(dirname "$0")/.."
 python3 tools/parts.py > /dev/null
 l1() { for s in "$@"; do [ -f work/stage2/$s/l1.json ] && printf -- '--l1 work/stage2/%s/l1.json ' "$s"; done; return 0; }
-gen() { python3 tools/part_mkasm.py --res src/res --install "$@" | tail -1; }
+# the code: whole recorded basic blocks with the image's bytes in RAM pages 5, 2, 0, 4 (--blocks: a later program
+# at the same addresses cannot make a lone byte look like code); the .ann's data entries stop the walk
+gen() { python3 ../../kit/mkgame.py --blocks --page 5 --page 2 --page 0 --page 4 --res src/res \
+    --out "work/stage2/mkasm/$(top "$@")" --install "$@" | tail -1; }
+top() { while [ $# -gt 0 ]; do [ "$1" = --top ] && { echo "$2"; return; }; shift; done; }
+SJASMPLUS=$(python3 ../../kit/toolpaths.py sjasmplus "${SJASMPLUS:-}")
 
 sh tools/build_sound.sh > /dev/null
 gen --image work/parts/starkos-8000.bin --org '$8000' --ann src/sound/starkos.ann --top starkos --dest src/sound \
@@ -41,7 +47,7 @@ gen --image work/parts/mouse-fe00.bin --org '$FE00' --ann src/game/mouse.ann --t
 # block 2 includes the game as tools/build.sh assembles it (src/game/game.asm, tools/mkgame.sh's)
 python3 tools/res_formats.py build --out build > /dev/null
 mkdir -p build/obj
-(cd build/obj && "${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}" --nologo \
+(cd build/obj && "$SJASMPLUS" --nologo \
     --msg=war -I.. -I../../src/game ../../src/game/game.asm)
 gen --image work/parts/game-6000.bin --org '$6000' --ann src/game/setup.ann --top block2 --dest src/game \
     $(l1 load2 glue) --title 'Zynaps 2 in 1: block 2, the game and its 128K layer ($6000-$FB84)' \

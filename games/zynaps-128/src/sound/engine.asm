@@ -1,5 +1,5 @@
 ; The page-4 sound engine of the 128K game
-; Written by tools/part_mkasm.py from src/sound/engine.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/sound/engine.ann and the recordings; edit engine.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 
