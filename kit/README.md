@@ -4,12 +4,21 @@ The case standard is [GUIDE.md](../GUIDE.md), the steps are [recipes/](../recipe
 work that is the same in every game; what is particular to one game (its packer, its resource formats, its bot)
 stays in the case's own `tools/`.
 
-They need Python 3 with Pillow, and an unreal-ng checkout for the access trace reader and `re_session.py`. The
-checkout is found from `--unreal`, `$UNREAL_NG`, the `unreal-ng` submodule, or one next to this repository. `mkgame.py` also needs SkoolKit (a
-virtualenv: `--venv`) and sjasmplus.
+They need Python 3 with Pillow, and an unreal-ng checkout for the access trace reader and `re_session.py`.
+`mkgame.py` also needs SkoolKit (a virtualenv) and sjasmplus. `toolpaths.py` finds the three, and no script holds
+a path of one machine:
+
+| Tool | Given by (first found) |
+| --- | --- |
+| unreal-ng | `--unreal`, `$UNREAL_NG`, the `unreal-ng` submodule, a checkout near this repository |
+| sjasmplus | `--sjasmplus`, `$SJASMPLUS`, `PATH`, a `sjasmplus/build/release/sjasmplus` checkout near this repository |
+| unreal-qt | `--binary`, `$UNREAL_BINARY`, `cmake-build-agent-release/bin/unreal-qt` of that checkout |
+| SkoolKit | `--venv`, `$SKOOLKIT_VENV`, `$VIRTUAL_ENV`, `.venv` here, `sna2skool.py` on `PATH`, `$UNREAL_NG/scratch/venv-skoolkit` |
+
+`python3 kit/toolpaths.py sjasmplus|venv|unreal|binary [HINT]` prints the path (the cases' shell scripts use it).
 
 The annotation file these scripts read is described in [docs/ann-format.md](../docs/ann-format.md) (every directive,
-what each generator does with it, the cases' extensions); every file of a case and the command that makes it in
+what the generator does with it, the part files); every file of a case and the command that makes it in
 [docs/case-files.md](../docs/case-files.md).
 
 ## A case
@@ -21,10 +30,14 @@ what each generator does with it, the cases' extensions); every file of a case a
 | `tapblocks.py FILE.tap N OUT` | one block's data |
 | `tap.py` | writes a tape of standard ROM blocks (the build's last step) |
 | `mkgame.py --case C` | `src/game/*.asm` from `game.ann` ([format](../docs/ann-format.md)), the recordings' `l1.json` and the image `case.json` names; refuses to install unless sjasmplus gives the image's bytes |
+| `mkgame.py --part F.json` / `--image BIN --org A ...` | any other code image the same way: a loader, a menu, a bank, an image of several segments or pieces ([part files](../docs/ann-format.md#5-parts-banks-and-pieces)) |
+| `ctl2ann.py DRAFT.ctl --out F.ann` | a first `.ann` from `re_session.py`'s `draft.ctl` (or an L2 export JSON) |
+| `toolpaths.py` | finds sjasmplus, the SkoolKit venv and unreal-ng (above) |
 | `ann_names.py --case C ADDR=Name ...` | names labels inside entries of `game.ann` |
 | `input_vars.py --work W --inputs S --start F` | the bytes that follow the held directions and fire over a scripted recording: a first guess at the player's coordinates (a 16-bit coordinate, or one that moves only now and then, scores low: confirm in the code that reads the controls) |
 | `refdocs.py --case C` | docs 11 and 12 from `game.ann` and the recordings; doc 12 links `docs/img/routines/<Label>.gif` |
-| `check_docs.py --case C` | mermaid renders, links resolve, no `$` in prose, every figure in `docs/img` is linked |
+| `check_docs.py --case C` | mermaid renders, links and `#anchors` resolve (GitHub slugs), no `$` in prose, every figure in `docs/img` and its subfolders is linked |
+| `check_docs.py --repo` | the same for the repository's own documents: README, GUIDE, recipes, docs, kit |
 | `code_addresses.py FILE.md` | puts hex addresses in prose into code spans |
 
 `case.json` (the template's is the example; where each file of a case comes from: [case-files.md](../docs/case-files.md)):
@@ -35,10 +48,15 @@ what each generator does with it, the cases' extensions); every file of a case a
 | `lo`, `hi` | the bytes of the image that are the game (hex; `hi` exclusive) |
 | `device` | sjasmplus `DEVICE` |
 | `bases` | L1 page -> Z80 base of each bank of the image |
-| `read_builds` | the `work/<build>` whose data reads count (not those over a depacker's input) |
+| `read_builds` | the `work/<build>` whose instructions and data reads count; the only recordings mkgame reads with `code_builds` |
+| `code_builds` | the `work/<build>` whose instructions count but not the reads (over a depacker's input), optional |
+| `dest`, `work`, `res_install`, `operands`, ... | any key of a part file ([ann-format.md 5.2](../docs/ann-format.md#52-part-files)), optional |
 | `ref_builds` | `[key, text]` of the builds docs 11 and 12 report |
 | `overlay` | a buffer laid over code once play starts (`lo`, `hi`, `name`, `why`), optional |
 | `header`, `data_note` | the first comment lines of `game.asm`; a sentence for doc 11, optional |
+
+`--install` writes the modules, `game.asm` and the resources, and deletes only the modules the old `game.asm`
+included that the `.ann` no longer has: a hand-written `.asm` beside them stays.
 
 ## The signature base
 

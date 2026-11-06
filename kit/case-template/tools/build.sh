@@ -4,7 +4,7 @@
 #   tools/build.sh [SJASMPLUS]
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1  # $SJASMPLUS, PATH or a checkout
 mkdir -p "$here/build"
 cd "$here/build"
 if [ -f "$here/tools/res_formats.py" ]; then

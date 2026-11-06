@@ -17,12 +17,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def unreal_root(hint=None):
-    # the submodule first, then a checkout next to this repository
-    for candidate in (hint, os.environ.get('UNREAL_NG'), os.path.join(HERE, '..', 'unreal-ng'),
-                      os.path.join(HERE, '..', '..', '..', 'Test', 'unreal-ng'), os.path.join(HERE, '..', '..', 'unreal-ng')):
-        if candidate and os.path.isfile(os.path.join(candidate, 'tools/verification/analysis/access_trace.py')):
-            return os.path.abspath(candidate)
-    raise SystemExit('unreal-ng checkout not found: pass --unreal or set UNREAL_NG')
+    """the unreal-ng checkout: --unreal, $UNREAL_NG, the submodule, a checkout near this repository (toolpaths.py)"""
+    import sys
+    if HERE not in sys.path:
+        sys.path.insert(0, HERE)
+    import toolpaths
+    return toolpaths.unreal_ng(hint)
 
 
 def access_trace(hint=None):

@@ -219,14 +219,21 @@ def main():
            'of the recording. Memory ranges name the entries they cover'
            + (f'; in `${BUFFER_LO:04X}-${BUFFER_HI:04X}` the accesses of code outside it are {OVERLAY_NAME}\'s, {OVERLAY_WHY}'
               if OVERLAY_NAME else '') + '. An entry no recording reached says so.',
-           'Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --venv SKOOLKIT_VENV --sjasmplus SJASMPLUS --install`',
+           'Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`',
            '(see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.', '']
     out.append('| Module | Entries | Code entries |')
     out.append('| --- | --- | --- |')
     for k, (start, name) in enumerate(modules):
         end = modules[k + 1][0] if k + 1 < len(modules) else HI
         inside = [e for e in entries if start <= e[0] < end]
-        out.append(f'| [`{name}`](#{name}) | `${start:04X}`-`${end - 1:04X}` | '
+        # a module with code has its heading here; one of data only, in doc 11 (GitHub's slug: lower case)
+        if any(e[1] == 'c' for e in inside):
+            link = f'[`{name}`](#{name.lower()})'
+        elif any(e[1] == 'b' for e in inside):
+            link = f'[`{name}`](11-data-reference.md#{name.lower()})'
+        else:
+            link = f'`{name}`'
+        out.append(f'| {link} | `${start:04X}`-`${end - 1:04X}` | '
                    f'{sum(1 for e in inside if e[1] == "c")} of {len(inside)} |')
     out.append('')
     current = None

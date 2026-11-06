@@ -1,30 +1,32 @@
 #!/usr/bin/env python3
-"""Write the first cut of a case's game source (src/game) from the pristine image and the recordings.
+"""Write the source of a code image from its annotations (.ann) and the recordings, and check it assembles to the
+image's bytes: a case's game, or any other part of the medium (a loader, a menu, a driver, a bank, several pieces).
 
-    python3 kit/mkgame.py --case CASE --venv VENV [--sjasmplus BIN] [--out CASE/work/mkgame] [--install]
+    python3 kit/mkgame.py [--case CASE] [--config FILE] [--ann FILE] [--out DIR] [--install]      the case's game
+    python3 kit/mkgame.py [--case CASE] --part FILE.json [--install]                               a part file
+    python3 kit/mkgame.py [--case CASE] --image BIN --org ADDR --ann FILE --top NAME --dest DIR     one image
+                          [--range LO-HI] [--res DIR] [--l1 L1.json ...] [--l1-reads L1.json ...] [--blocks]
+                          [--page N ...] [--bank N] [--built NAME=PATH ...] [--save PATH] [--title TEXT] [--install]
+    every form also takes --venv VENV --sjasmplus BIN (else $SKOOLKIT_VENV / $SJASMPLUS, kit/toolpaths.py)
 
-CASE/case.json says what the image is (kit/case-template/case.json):
+The game: CASE/case.json (or --config) names the 64 K image, the range that is the game, the banks, the recordings
+(read_builds: work/<build>/l1.json whose instructions and data reads count; code_builds: whose instructions only)
+and the header; the source goes to src/game, the resources through tools/res_formats.py (case.json res_install
+names another). A part: a JSON part file (one image, or segments of one image each with its own .ann, run address
+and banks), or the command line for one image at its ORG. The keys and the reasons are in docs/ann-format.md
+section 5, the .ann format in sections 1-4; what each file of a case is in docs/case-files.md.
 
-    {"image": "work/image.bin",          the 64 K image as the loader leaves it (or "image_cmd": a command
-                                         run in CASE that prints nothing and writes it)
-     "lo": "5FB4", "hi": "10000",        the bytes of it that are the game
-     "device": "ZXSPECTRUM48",           sjasmplus DEVICE
-     "bases": {"5": "4000", "2": "8000", "0": "C000"},   L1 pages -> Z80 base of the image's banks
-     "read_builds": ["game", "p2"],      the work/<build>/l1.json whose data reads count (not the loader's)
-     "header": ["; Game, Publisher 19xx: ...", "..."]}  the first comment lines of game.asm
-
-The code is what the recordings
-ran (work/*/l1.json: every instruction start whose bytes are the image's), widened by a static walk over the branches
-the recordings did not take. Everything else is data. Entries, names, comments and descriptions come from
-src/game/game.ann (the format is in the Annotations class, docs 4-12). The result goes through SkoolKit (sna2skool.py
-with a control file, skool2asm.py) and sjasmplus; the assembled bytes must be the image's. The entries game.ann marks
-as resources (@res) are written as files under res/ (src/res with --install) and assembled with INCBIN; src/res/README.md
-lists them. --install writes src/game/*.asm and the resources only when the bytes are the image's. When the case
-has tools/res_formats.py with install(files), the resources go through it (graphics as PNG, a tune as text);
-else they are installed as the bytes.
+The pipeline is the same for every form: the code is what the recordings ran (instruction starts whose bytes are the
+image's, or whole basic blocks with --blocks), widened by a static walk over the branches no recording took and
+from the .ann's code entries; everything else is data. Entries, names, comments, data shapes and resources come
+from the .ann. SkoolKit (sna2skool.py with a control file, skool2asm.py) writes the listing, the kit cuts it into
+the .ann's modules and writes the top file, sjasmplus assembles it, and --install writes the sources only when the
+bytes are the image's. Install never deletes a file it did not write: only the modules an earlier top file
+INCLUDEd that are gone now.
 """
 import argparse
 import glob
+import importlib.util
 import json
 import os
 import re
@@ -33,12 +35,16 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import toolpaths  # noqa: E402
+
 ROOT = None  # the case, set by main()
 LO, HI = 0x0000, 0x10000
 BASES = {5: 0x4000, 2: 0x8000, 0: 0xC000}
 # The builds whose data reads count: the ones that start after the loader (a depacker reads its packed input where
 # the game's code later lies)
 READ_BUILDS = ()
+
 
 # Z80 instruction lengths (the unprefixed table; CB 2; ED 2 or 4; DD / FD add one and a displacement)
 LEN2 = {0x06, 0x0E, 0x16, 0x1E, 0x26, 0x2E, 0x36, 0x3E, 0xC6, 0xCE, 0xD6, 0xDE, 0xE6, 0xEE, 0xF6, 0xFE, 0xD3, 0xDB,
@@ -89,38 +95,120 @@ def decode(mem, a):
 
 
 def load_l1(paths, mem):
-    """Instruction starts the recordings ran with the image's bytes, routine entries, data reads"""
+    """Instruction starts the recordings ran with the image's bytes, routine entries, data reads (the case's game:
+    every path's instructions count, the data reads only of READ_BUILDS)"""
+    sources = [Source(p, reads=os.path.basename(os.path.dirname(p)) in READ_BUILDS) for p in paths]
+    return read_sources(sources, mem, LO, HI, BASES)
+
+
+class Source:
+    """One recording a part's code comes from: an unreal-ng L1 build (l1.json) or a simulator trace
+
+        path      the file (a glob: every match, sorted)
+        reads     its data reads count (they stop the walk): not for a build over a depacker's input
+        lo, hi    only this window of addresses counts (the bytes that held this part's code while it ran)
+        roots     False: a routine that is only the window's root (where the build began, mid-routine) is no entry
+        format    'l1' (re_session.py build) or 'trace' ({"starts": {ADDR: length}, "entries": [ADDR],
+                  "reads": {ADDR: count}}, a case's simulator: tools/bootmenu_sim.py)
+        optional  a missing file is skipped (a window not every checkout has), not an error
+    """
+
+    def __init__(self, path, reads=False, lo=None, hi=None, roots=True, fmt='l1', optional=False):
+        self.path, self.reads, self.lo, self.hi, self.roots, self.format = path, reads, lo, hi, roots, fmt
+        self.optional = optional
+
+    @staticmethod
+    def parse(spec, root, read_builds=()):
+        """a source from a part file: "PATH" or {"path", "reads", "lo", "hi", "roots", "format", "optional"}"""
+        if isinstance(spec, str):
+            spec = {'path': spec}
+        path = os.path.join(root, spec['path'])
+        reads = spec.get('reads', os.path.basename(os.path.dirname(path)) in read_builds)
+        return Source(path, reads, hexa(spec['lo']) if 'lo' in spec else None,
+                      hexa(spec['hi']) if 'hi' in spec else None, spec.get('roots', True), spec.get('format', 'l1'),
+                      spec.get('optional', False))
+
+
+def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=False):
+    """(instruction starts, routine entries, data reads) of the image lo..hi-1 from its recordings.
+
+    mode 'instructions': every recorded instruction whose opcode and length are the image's (an operand may be
+    self-modified; same_bytes: all its bytes), and the routines' entries. mode 'blocks': only the recorded basic
+    blocks whose every instruction has the image's bytes (another program that ran at these addresses later in the
+    same recording cannot make a lone byte look like code), no entries. Only the pages in bases count."""
     starts, entries, reads = set(), set(), [0] * 0x10000
-    bases = BASES
-    for path in paths:
-        doc = json.load(open(path))
-        for z80, page, code, *_ in doc['instructions']:
-            a = int(z80[1:], 16)
-            raw = bytes.fromhex(code)
-            if a < LO or page not in bases or a + len(raw) > HI:
+    for src in sources:
+        paths = sorted(glob.glob(src.path)) if any(c in src.path for c in '*?[') else [src.path]
+        for path in paths:
+            if not os.path.exists(path):
+                if src.optional:
+                    continue
+                sys.exit(f'no recording {path} (the WALKTHROUGH command that makes it)')
+            doc = json.load(open(path))
+            wlo = lo if src.lo is None else max(lo, src.lo)
+            whi = hi if src.hi is None else min(hi, src.hi)
+            if src.format == 'trace':
+                for a, n in doc['starts'].items():
+                    if decode(mem, int(a, 16))[0] == n:
+                        starts.add(int(a, 16))
+                entries |= {int(a, 16) for a in doc['entries']}
+                for a, n in doc['reads'].items():
+                    reads[int(a, 16)] += n
                 continue
-            # The opcode as the image holds it (an operand may be self-modified)
-            if decode(mem, a)[0] == len(raw) and mem[a] == raw[0]:
-                starts.add(a)
-        for r in doc['routines']:
-            a = int(r['entry'][1:], 16)
-            if a >= LO and r['page'] in bases:
-                entries.add(a)
-        # In the builds over the tape load the depacker reads its packed input where the game's code later lies: their reads say nothing
-        if os.path.basename(os.path.dirname(path)) not in READ_BUILDS:
-            continue
-        for page in doc.get('byte_counts', []):
-            base = bases.get(page['page'])
-            if base is not None:
-                for i, n in enumerate(page['reads']):
-                    reads[base + i] += n
+            if mode == 'blocks':
+                ran = {}
+                for z80, page, code, *_ in doc['instructions']:
+                    if page in bases:
+                        ran[(page, int(z80[1:], 16))] = bytes.fromhex(code)
+                for b in doc['blocks']:
+                    first, last = int(b['start'][1:], 16), int(b['end'][1:], 16)
+                    if b['page'] not in bases or first < wlo or last >= whi:
+                        continue
+                    a, block = first, []
+                    while a <= last:
+                        raw = ran.get((b['page'], a))
+                        if raw is None or mem[a:a + len(raw)] != raw or decode(mem, a)[0] != len(raw):
+                            break
+                        block.append(a)
+                        a += len(raw)
+                    if a == last + 1:
+                        starts.update(block)
+            else:
+                for z80, page, code, *_ in doc['instructions']:
+                    a = int(z80[1:], 16)
+                    raw = bytes.fromhex(code)
+                    if a < wlo or page not in bases or a + len(raw) > whi:
+                        continue
+                    # The opcode as the image holds it (an operand may be self-modified)
+                    if decode(mem, a)[0] == len(raw) and mem[a] == raw[0] and \
+                            (not same_bytes or mem[a:a + len(raw)] == raw):
+                        starts.add(a)
+                for r in doc['routines']:
+                    a = int(r['entry'][1:], 16)
+                    if not src.roots and r.get('kinds') == 'root':
+                        continue
+                    if r['page'] in bases and wlo <= a < whi:
+                        entries.add(a)
+            # In the builds over the tape load the depacker reads its packed input where the game's code later lies:
+            # their reads say nothing
+            if not src.reads:
+                continue
+            for page in doc.get('byte_counts', []):
+                base = bases.get(page['page'])
+                if base is not None:
+                    for i, n in enumerate(page['reads']):
+                        if n and wlo <= base + i < whi:
+                            reads[base + i] += n
+    if same_bytes:  # a routine whose bytes another program later put there is not one of this image's
+        entries &= starts
     return starts, entries, reads
 
 
-def walk(mem, starts, reads, seeds=(), inline=()):
+def walk(mem, starts, reads, seeds=(), inline=(), cut=None):
     """Code: the ran instructions and what their untaken branches reach, stopping at bytes read as data; seeds are
     entries the reverse knows as code that no recording ran (handlers reached through a table); a call to a routine in
-    inline reads its data after the CALL: the walk does not go on past it (where the code resumes, a recording says)"""
+    inline reads its data after the CALL: the walk does not go on past it (where the code resumes, a recording says);
+    cut(address, targets) gives the targets of the instruction at address the walk follows (@over, @bank)"""
     code, targets, calls = {}, set(), set()
     # The ran instructions own their bytes first: a walked one never cuts into them
     owner = {b: a for a in starts for b in range(a, a + decode(mem, a)[0])}
@@ -130,6 +218,8 @@ def walk(mem, starts, reads, seeds=(), inline=()):
         a = todo.pop()
         while LO <= a < HI and a not in seen:
             n, tg, falls, call = decode(mem, a)
+            if cut:
+                tg = cut(a, tg)
             span = range(a, a + n)
             ran = a in starts
             if a + n > HI or any(owner.get(b, a) != a for b in span):
@@ -152,10 +242,20 @@ def walk(mem, starts, reads, seeds=(), inline=()):
 
 
 ANNOTATION = re.compile(r'\$([0-9A-Fa-f]{4})(?:\s+([cbwts])\b)?(?:\s+([A-Za-z_]\w*))?(?:\s+(\d+))?\s*(?:;\s*(.*))?$')
+HEX4 = r'\$([0-9A-Fa-f]{4})'
+NAME = r'([A-Za-z_][\w.]*)'
+# The directives the cases added, each also accepted in its old form behind '#' (a comment to the older kit)
+CONST = re.compile(r'^@const\s+' + NAME + r'\s+(\$[0-9A-Fa-f]+|\d+)\s*(?:;\s*(.*))?$')
+BANK = re.compile(r'^@bank\s+' + HEX4 + r'\s+' + NAME + r'\s+(\w+)\s*(?:;\s*(.*))?$')
+VAR = re.compile(r'^@var\s+' + HEX4 + r'\s+' + NAME + r'(?:\s+(\d+))?\s*(?:;\s*(.*))?$')
+ALIAS = re.compile(r'^@alias\s+' + NAME + r'\s+(\S+)\s*(?:;\s*(.*))?$')
+OVER = re.compile(r'^@over\s+' + HEX4 + r'\s*(?:;\s*(.*))?$')
+PIECE = re.compile(r'^@piece\s+(\w+)\s*$')
+OLD_FORM = re.compile(r'^#\s*(@(?:bank|var|alias|over|piece)\s.*)$')
 
 
 class Annotations:
-    """src/game/game.ann: what the reverse knows, one line an address
+    """An annotation file (docs/ann-format.md): what the reverse knows, one line an address
 
         @module NAME [; title]    the entries from the next address on go to NAME.asm; the title heads the file
         @about text               a paragraph of the current module's header (what it holds, how its parts work)
@@ -171,24 +271,90 @@ class Annotations:
                                   inline): no walk goes past a call to it, the bytes after it are data unless a
                                   recording ran them
         @equ $ADDR NAME [N] ; c   a variable outside the image (the work space the game keeps past its loaded bytes):
-                                  NAME EQU $ADDR in game.asm, and every instruction operand $ADDR..$ADDR+N-1 written
-                                  as NAME / NAME+k (N defaults to 1)
+                                  NAME EQU $ADDR in the top file, and every instruction operand $ADDR..$ADDR+N-1
+                                  written as NAME / NAME+k (N defaults to 1)
+        @const NAME VALUE ; c     NAME EQU VALUE in the top file: a port, a ROM entry, a page value, an address in
+                                  another program; the instructions use it through @isub
+        @bank $ADDR NAME BANK ; c an address in another RAM bank (BANK a number or a name): NAME EQU $ADDR; the walk
+                                  does not follow the instructions whose @isub names it, and the entry mark the
+                                  disassembler puts on this image's byte there is dropped
+        @var $ADDR NAME [N] ; c   a variable inside the image's work space: a label in its data entry (the line is
+                                  cut there), every instruction operand $ADDR+1..$ADDR+N-1 written NAME+k
+        @alias NAME EXPR ; c      NAME EQU EXPR, for a name that cannot be a label (the operand of a JP into code)
+        @over $ADDR ; why         a branch target that holds other bytes when the branch runs: not followed
+        @piece NAME               the lines from here to the next @piece are piece NAME of a part file's segments
+                                  (each piece is its own segment); the lines before the first piece hold for all
+
+    @bank, @var, @alias, @over and @piece are also read behind '#' ('# @bank ...'), their form in the cases' first
+    generators. piece: read only the common lines and that piece's (an @equ of the common lines inside this image is
+    then dropped: another piece's address).
     """
 
-    def __init__(self, path):
+    def __init__(self, path, piece=None, top=None):
         self.entries, self.inline, self.modules, self.descriptions = {}, {}, [], {}
         self.module_info = {}  # module name: [title, [paragraphs]]
         self.resources = {}  # entry address: the resource file under src/res
         self.isub = {}  # instruction address: the instruction as the source writes it
         self.equ = {}  # address outside the image: (name, size, comment)
         self.inline_data = set()  # routines whose callers place data after the CALL
+        self.consts = []  # (name, value, comment)
+        self.banks = []  # (address, name, bank, comment)
+        self.vars = []  # (address, name, size, comment)
+        self.aliases = []  # (name, expression, comment)
+        self.over = set()  # branch targets not followed
+        self.pieces = []  # the piece names, in the file's order
+        self.path = path
         last = None
         if not os.path.exists(path):
             return
-        for number, line in enumerate(open(path), 1):
+        current = None  # the piece the line belongs to
+        where = os.path.basename(path)
+        for number, line in enumerate(open(path, encoding='utf-8'), 1):
             line = line.rstrip('\n')
             text = line.strip()
+            old = OLD_FORM.match(text)
+            if old:
+                text = old.group(1)
+            if text.startswith('@piece'):
+                m = PIECE.match(text)
+                if not m:
+                    sys.exit(f'{path}:{number}: cannot read: {line}')
+                current = m.group(1)
+                self.pieces.append(current)
+                continue
+            if current is not None and current != piece:
+                continue
             if not text or text.startswith('#'):
+                continue
+            if text.startswith('@const'):
+                m = CONST.match(text)
+                if not m:
+                    sys.exit(f'{path}:{number}: cannot read: {line}')
+                self.consts.append((m.group(1), m.group(2), m.group(3) or ''))
+                continue
+            if text.startswith('@bank'):
+                m = BANK.match(text)
+                if not m:
+                    sys.exit(f'{path}:{number}: cannot read: {line}')
+                self.banks.append((int(m.group(1), 16), m.group(2), m.group(3), m.group(4) or ''))
+                continue
+            if text.startswith('@var'):
+                m = VAR.match(text)
+                if not m:
+                    sys.exit(f'{path}:{number}: cannot read: {line}')
+                self.vars.append((int(m.group(1), 16), m.group(2), int(m.group(3) or 1), m.group(4) or ''))
+                continue
+            if text.startswith('@alias'):
+                m = ALIAS.match(text)
+                if not m:
+                    sys.exit(f'{path}:{number}: cannot read: {line}')
+                self.aliases.append((m.group(1), m.group(2), m.group(3) or ''))
+                continue
+            if text.startswith('@over'):
+                m = OVER.match(text)
+                if not m:
+                    sys.exit(f'{path}:{number}: cannot read: {line}')
+                self.over.add(int(m.group(1), 16))
                 continue
             if text.startswith('@about'):
                 if not self.modules:
@@ -199,9 +365,10 @@ class Annotations:
                 body, _, title = text.partition(';')
                 name = body.split()[1]
                 self.module_info[name] = [title.strip(), []]
-                if name == 'game':
-                    # game.asm is the top file that includes the modules: a module of that name would include itself
-                    raise SystemExit("game.ann: '@module game' is taken by game.asm, the file that includes the modules")
+                if name == (top or 'game'):
+                    # the top file includes the modules: a module of its name would include itself
+                    raise SystemExit(f"{where}: '@module {name}' is taken by {name}.asm, the file that includes "
+                                     "the modules")
                 self.modules.append([None, name])
                 continue
             if text.startswith('@equ'):
@@ -209,7 +376,9 @@ class Annotations:
                 parts = body.split()
                 address = int(parts[1].lstrip('$'), 16)
                 if LO <= address < HI:
-                    raise SystemExit(f'game.ann:{number}: @equ ${address:04X} is inside the image: name it as a label')
+                    if piece is not None and current is None:
+                        continue  # a common line: another piece's address, a label in this one
+                    raise SystemExit(f'{where}:{number}: @equ ${address:04X} is inside the image: name it as a label')
                 self.equ[address] = (parts[2], int(parts[3]) if len(parts) > 3 else 1, comment.strip())
                 continue
             if text.startswith('@inline'):
@@ -247,14 +416,22 @@ class Annotations:
                 if self.modules and self.modules[-1][0] is None:
                     self.modules[-1][0] = a
             else:
-                # Two lines for one address (a name on one, a comment on the other) are merged, not the last kept
-                was_name, was_comment = self.inline.get(a, (None, None))
-                if name and was_name and name != was_name:
-                    sys.exit(f'{path}:{number}: ${a:04X} named twice: {was_name}, {name}')
-                self.inline[a] = (name or was_name, comment or was_comment)
+                self.merge_inner(a, name, comment, f'{path}:{number}')
+        if piece is not None and piece not in self.pieces:
+            sys.exit(f'{path}: no @piece {piece}')
+        # A variable is a label inside its data entry, as if its line came last: '$ADDR NAME ; comment'
+        for a, name, _, comment in self.vars:
+            self.merge_inner(a, name, comment or None, f'{path}: @var')
         for start, name in self.modules:
             if start is None:
                 sys.exit(f'{path}: module {name} holds no entry')
+
+    def merge_inner(self, a, name, comment, where):
+        # Two lines for one address (a name on one, a comment on the other) are merged, not the last kept
+        was_name, was_comment = self.inline.get(a, (None, None))
+        if name and was_name and name != was_name:
+            sys.exit(f'{where}: ${a:04X} named twice: {was_name}, {name}')
+        self.inline[a] = (name or was_name, comment or was_comment)
 
     def name(self, a):
         if a in self.entries and self.entries[a][1]:
@@ -262,6 +439,20 @@ class Annotations:
         if a in self.inline and self.inline[a][0]:
             return self.inline[a][0]
         return None
+
+    def cut(self):
+        """the walk's filter of branch targets: none into @over addresses, and none into an @bank address from an
+        instruction whose @isub names a bank (it would read this image's bytes there as code); None when neither"""
+        bank_names = {name for _, name, _, _ in self.banks}
+        bank_targets = {a for a, _, _, _ in self.banks}
+        crossing = {a for a, text in self.isub.items() if set(re.findall(r'[A-Za-z_]\w*', text)) & bank_names}
+        if not self.over and not crossing:
+            return None
+        over = self.over
+
+        def cut(at, targets):
+            return [t for t in targets if t not in over and not (at in crossing and t in bank_targets)]
+        return cut
 
 
 DATA = {'b': 'B', 'w': 'W', 't': 'T', 's': 'S'}
@@ -329,11 +520,18 @@ def data_blocks(lo, hi, kind, width, ann):
         if name and start != lo:
             out.append('@ $%04X label=%s' % (start, name))
         length = end - start
-        if kind == 's' or not width:
+        odd = kind == 'w' and length % 2 == 1  # a word block of odd length: sna2skool would write one byte more
+        if odd:
+            length -= 1
+        if length and (kind == 's' or not width):
             item = '%s $%04X,%d' % (spec, start, length)
-        else:
+        elif length:
             item = '%s $%04X,%d,%d' % (spec, start, length, width * (2 if kind == 'w' else 1))
+        else:
+            item = 'B $%04X,1' % start
         out.append(item + (' ' + comment if comment else ''))
+        if odd and length:
+            out.append('B $%04X,1' % (start + length))
     return out
 
 
@@ -415,12 +613,21 @@ def split_modules(text, ann):
     return parts, '\n'.join(head).rstrip() + '\n'
 
 
-ADDRESS_OPERAND = re.compile(r'^(LD (?:\((?=\$)|(?:HL|DE|IX|IY|SP),\(?))\$([0-9A-F]{4})(\)?.*)$')
+# The operands that are always addresses: an LD through memory ((nn) on either side, any register), the LD of an
+# address register (HL, DE, IX, IY, SP), and a JP / CALL / JR / DJNZ target that has no label of its own (a jump into
+# an instruction's operand, into a data entry)
+ADDRESS_OPERAND = re.compile(r'^(LD (?:\((?=\$)|(?:A|BC|HL|DE|IX|IY|SP),\((?=\$)|(?:HL|DE|IX|IY|SP),)'
+                             r'|(?:JP|CALL|JR|DJNZ) (?:(?:NZ|Z|NC|C|PO|PE|P|M),)?)\$([0-9A-F]{4})(\)?.*)$')
+# "operands": "wide" adds LD BC,nn: an address in the cases that use it, but a count in others (a part where one is
+# a count keeps the default, or puts an @isub on it)
+ADDRESS_OPERAND_WIDE = re.compile(r'^(LD (?:\((?=\$)|(?:A|BC|HL|DE|IX|IY|SP),\((?=\$)|(?:HL|DE|BC|IX|IY|SP),)'
+                                  r'|(?:JP|CALL|JR|DJNZ) (?:(?:NZ|Z|NC|C|PO|PE|P|M),)?)\$([0-9A-F]{4})(\)?.*)$')
 
 
-def label_inner_addresses(skool, written=None):
+def label_inner_addresses(skool, written=None, wide=False):
     """An address operand inside an entry (a field of a record, a byte of a table) as Label+offset: @isub lines for
     skool2asm, which only replaces the addresses that have a label of their own"""
+    pattern = ADDRESS_OPERAND_WIDE if wide else ADDRESS_OPERAND
     lines = skool.splitlines()
     labels, entry_of, entry = {}, {}, None
     pending = None
@@ -438,6 +645,7 @@ def label_inner_addresses(skool, written=None):
                 labels[a] = pending
                 pending = None
     starts = sorted(entry_of)
+    line_starts = set(starts)
     import bisect
 
     def resolve(target):
@@ -456,7 +664,9 @@ def label_inner_addresses(skool, written=None):
         if m and written and int(m.group(2), 16) in written:
             out.append('@isub=' + written.pop(int(m.group(2), 16)))
         elif m:
-            op = ADDRESS_OPERAND.match(m.group(3))
+            op = pattern.match(m.group(3))
+            if op and not op.group(1).startswith('LD') and int(op.group(2), 16) in line_starts:
+                op = None  # a branch to a line start: skool2asm gives it a label of its own
             if op:
                 target = int(op.group(2), 16)
                 name = resolve(target) if LO <= target < HI else None
@@ -465,6 +675,530 @@ def label_inner_addresses(skool, written=None):
                     count += 1
         out.append(line)
     return '\n'.join(out) + '\n', count
+
+
+def name_variables(text, equ, inner=None):
+    """Every instruction operand that is a variable's address (@equ; inner: {address: NAME+k} of the @var lines),
+    written as the variable's name"""
+    names = {}
+    for address, (name, size, _) in equ.items():
+        for k in range(size):
+            names[address + k] = name if k == 0 else '%s+%d' % (name, k)
+    passes = [p for p in (names, inner or {}) if p]
+    if not passes:
+        return text
+    for table in passes:
+        out = []
+        for line in text.splitlines(True):
+            code, semi, comment = line.partition(';')
+            if re.match(r'^  [A-Z]', code) and not re.match(r'^  DEF[BWMS]', code):
+                code = re.sub(r'\$([0-9A-F]{4})\b', lambda m: table.get(int(m.group(1), 16), m.group(0)), code)
+            out.append(code + semi + comment)
+        text = ''.join(out)
+    return text
+
+
+def equates(equ, title='; The variables past the loaded image (game.ann @equ)'):
+    """The variables outside the image (@equ), as EQU lines"""
+    if not equ:
+        return ''
+    lines = ['', title]
+    for address, (name, size, comment) in sorted(equ.items()):
+        lines.append('%-14s EQU $%04X%s' % (name, address, ('  ; ' + comment) if comment else ''))
+    return '\n'.join(lines) + '\n'
+
+
+def constants(consts):
+    """@const lines as EQU lines"""
+    if not consts:
+        return ''
+    lines = ['', '; Constants: addresses outside this image, ROM entries, ports (@const)']
+    for name, value, comment in consts:
+        lines.append('%-18s EQU %s%s' % (name, value, ('  ; ' + comment) if comment else ''))
+    return '\n'.join(lines) + '\n'
+
+
+def bank_equates(banks):
+    """@bank lines as EQU lines, by bank and address"""
+    if not banks:
+        return ''
+    lines = ['', '; Addresses in other RAM banks (@bank)']
+
+    def order(x):
+        return (0, int(x[2]), '') if x[2].isdigit() else (1, 0, x[2]), x[0]
+
+    for addr, name, bank, comment in sorted(banks, key=order):
+        lines.append('%-14s EQU $%04X  ; bank %s%s' % (name, addr, bank, (': ' + comment) if comment else ''))
+    return '\n'.join(lines) + '\n'
+
+
+def alias_equates(aliases):
+    if not aliases:
+        return ''
+    lines = ['', '; Names that cannot be labels (@alias)']
+    for name, expr, comment in aliases:
+        lines.append('%-14s EQU %s%s' % (name, expr, ('  ; ' + comment) if comment else ''))
+    return '\n'.join(lines) + '\n'
+
+
+def decimal_isubs(text, isubs):
+    """skool2asm -H writes every number of an @isub in hex (LD DE,1*256+30 as LD DE,$0001*$0100+$001E): the
+    instructions as the .ann writes them again"""
+    for isub in set(isubs):
+        parts = re.split(r'(?<![$\w])(\d+)(?!\w)', isub)
+        if len(parts) == 1:
+            continue
+        pattern = ''.join(r'\$0*%X(?![0-9A-F])' % int(p) if k % 2 else re.escape(p) for k, p in enumerate(parts))
+        text = re.sub(r'^  %s(?:\s+(;.*))?$' % pattern,
+                      lambda m: ('%-26s%s' % ('  ' + isub, m.group(m.lastindex))).rstrip()
+                      if m.lastindex and m.group(m.lastindex) else '  ' + isub, text, flags=re.M)
+    return text
+
+
+def run(cmd, **kw):
+    p = subprocess.run(cmd, capture_output=True, text=True, **kw)
+    if p.returncode:
+        sys.exit(f'{cmd[0]}: {p.stderr.strip() or p.stdout.strip()}')
+    return p
+
+
+def hexa(text):
+    """'$C000', 'C000', '0xC000' -> 0xC000; an int stays"""
+    if isinstance(text, int):
+        return text
+    text = text.strip()
+    return int(text[2:], 16) if text.lower().startswith('0x') else int(text.lstrip('$'), 16)
+
+
+def natural_bases(pages, run_at=None):
+    """L1 page -> Z80 base: page 5 at $4000, 2 at $8000, any other at $C000 (the 128K's paged slot)"""
+    return {p: {5: 0x4000, 2: 0x8000}.get(p, 0xC000) for p in pages}
+
+
+# ------------------------------------------------------------------------------------------------- one segment
+
+
+class Segment:
+    """One run of the pipeline: an .ann over bytes lo..hi-1 of the image, run (assembled) at run..; its options
+    fall back to the part's (docs/ann-format.md 5)"""
+
+    def __init__(self, spec, part):
+        get = lambda k, d=None: spec.get(k, part.get(k, d))  # noqa: E731
+        self.spec = spec
+        self.ann = os.path.join(ROOT, spec['ann']) if spec.get('ann') else None
+        self.piece = spec.get('piece')
+        self.lines = spec.get('lines')
+        self.lo = hexa(spec['lo']) if 'lo' in spec else None
+        self.hi = hexa(spec['hi']) if 'hi' in spec else None
+        self.run = hexa(spec['run']) if 'run' in spec else self.lo
+        self.title = spec.get('title')
+        self.load_label = spec.get('load_label')
+        self.bank = get('bank')
+        if 'bases' in spec or 'bases' in part:
+            self.bases = {int(k): hexa(v) for k, v in get('bases').items()}
+        elif get('pages') is not None or self.bank is not None:
+            pages = list(get('pages') or []) + ([self.bank] if self.bank is not None else [])
+            self.bases = natural_bases(pages, self.run or 0)
+        else:
+            self.bases = {5: 0x4000, 2: 0x8000, 0: 0xC000}
+        read_builds = tuple(get('read_builds', ()))
+        l1 = spec['l1'] if 'l1' in spec else part.get('l1', [])
+        self.sources = [Source.parse(s, ROOT, read_builds) for s in l1]
+        self.mode = get('mode', 'instructions')
+        self.same_bytes = bool(get('same_bytes'))
+        self.data_entries = get('data_entries')
+        self.overwritten = [(hexa(a), hexa(b)) for a, b in get('overwritten', [])]
+        self.wide = get('operands') == 'wide'
+        self.isub_as_written = bool(get('isub_as_written'))
+        self.drop_data_refs = bool(get('drop_data_refs'))
+        self.no_entries = bool(get('no_entries', self.mode == 'blocks'))
+        self.entries_in_code = bool(get('entries_in_code'))
+        self.single = False  # set by single_part
+
+    def tag(self):
+        return os.path.splitext(os.path.basename(self.ann))[0] + ('-' + self.piece if self.piece else '')
+
+
+def generate(seg, mem, args, out, top):
+    """The segment through the pipeline: (modules [(name, text)], head, resources {file: bytes}, ann, labels,
+    stats); mem is the 64 K image with the segment's bytes at their run address; LO, HI set to the run range"""
+    starts, entries, reads = read_sources(seg.sources, mem, LO, HI, seg.bases, seg.mode, seg.same_bytes)
+    for s, e in seg.overwritten:  # code another block puts there later ran there, not this image's bytes
+        starts = {a for a in starts if not s <= a < e}
+        entries = {a for a in entries if not s <= a < e}
+        for b in range(s, e):
+            reads[b] = max(reads[b], 1)
+    ann = Annotations(seg.ann, seg.piece, top)
+    if seg.data_entries:
+        # an annotated data entry (to the next entry) is data: an instruction a recording ran there is another
+        # program's whose bytes match (a lone NOP equal to a zero of the font); the walk stops there
+        bounds = sorted(ann.entries) + [HI]
+        for k, a in enumerate(bounds[:-1]):
+            if ann.entries[a][0] == 'c':
+                continue
+            if seg.data_entries == 'first':
+                if a not in starts:
+                    reads[a] += 1
+                continue
+            for b in range(a, bounds[k + 1]):
+                reads[b] += 1
+                starts.discard(b)
+    if seg.no_entries:
+        entries = set()
+    code, targets, calls = walk(mem, starts, reads, [a for a, e in ann.entries.items() if e[0] == 'c'],
+                                ann.inline_data, ann.cut())
+    if seg.entries_in_code:
+        # a CALL a recording saw into code that is no longer this image's (copied over it later) is no entry
+        entries = {a for a in entries if a in code}
+    # the single layout's control file is work/.../game.ctl, as kit/refdocs.py and the cases' doc tools read it
+    tag = 'game' if seg.single else seg.tag()
+    ctl = os.path.join(out, tag + '.ctl')
+    extents = write_ctl(mem, code, targets, calls, entries, ann, ctl)
+    image = os.path.join(out, tag + '-image.bin')
+    open(image, 'wb').write(mem[LO:])
+    py = toolpaths.skoolkit_python(args.venv)
+    sk = run([py, os.path.join(args.venv, 'bin', 'sna2skool.py'), '-H', '-c', ctl, '-o', str(LO), image]).stdout
+    if seg.drop_data_refs:
+        # sna2skool marks every operand's address as a reference (*); inside data that is only an operand the
+        # source writes with a constant: no label for skool2asm to make
+        sk = re.sub(r'^\*(\$[0-9A-F]{4} DEF)', r' \1', sk, flags=re.M)
+    if ann.banks:
+        # no entry mark on this image's byte at another bank's address
+        marks = '|'.join('%04X' % a for a, _, _, _ in ann.banks)
+        sk = re.sub(r'^\*\$(%s) ' % marks, r' $\1 ', sk, flags=re.M)
+    written = dict(ann.isub)
+    sk, inner = label_inner_addresses(sk, written, seg.wide)
+    if written:
+        sys.exit('%s: @isub on no instruction: %s' % (os.path.relpath(seg.ann, ROOT),
+                                                      ', '.join('$%04X' % a for a in sorted(written))))
+    skool = os.path.join(out, tag + '.skool')
+    open(skool, 'w').write(sk)
+    text = run([py, os.path.join(args.venv, 'bin', 'skool2asm.py'), '-H', skool]).stdout
+    for half in ('IXl', 'IXh', 'IYl', 'IYh'):
+        text = text.replace(half, half.upper())
+    var_names = {a + k: '%s+%d' % (name, k) for a, name, size, _ in ann.vars for k in range(1, size)}
+    text = name_variables(text, ann.equ, var_names)
+    if seg.isub_as_written:
+        text = decimal_isubs(text, ann.isub.values())
+    # a commented data sub-block of several lines: SkoolKit leaves a bare ';' on the lines after the first
+    text = re.sub(r'^(  DEF[BWMS] .*?)\s+;$', r'\1', text, flags=re.M)
+    text, files = write_resources(text, mem, extents, ann, out)
+    modules, head = split_modules(text, ann)
+    resources = {name: mem[a:b] for name, (a, b) in files.items()}
+    labels = set(re.findall(r'^([A-Za-z_]\w*):$', text, flags=re.M))
+    stats = (f'code bytes {sum(code.values())} ({len(code)} instructions, {len(starts)} ran), '
+             f'entries {sum(1 for line in open(ctl) if line[:2] in ("c ", "b ", "t ", "w ", "s "))}, '
+             f'modules {len(modules)}, resources {len(files)}, addresses inside entries as Label+offset {inner}')
+    return modules, head, resources, ann, labels, stats
+
+
+# ------------------------------------------------------------------------------------------------- a part
+
+
+def part_image(part):
+    """(64 K memory with the image at its address, the image's bytes, the address of its byte 0)"""
+    missing = not os.path.exists(os.path.join(ROOT, part['image']))
+    if part.get('image_cmd') and (part.get('image_always', True) or missing):
+        run(part['image_cmd'], cwd=ROOT)
+    path = os.path.join(ROOT, part['image'])
+    if not os.path.exists(path):
+        sys.exit(f'{path}: no image (%s)' % (part.get('image_note') or 'its part file says what makes it'))
+    data = open(path, 'rb').read()
+    at = hexa(part['at']) if 'at' in part else (0 if len(data) == 0x10000 else hexa(part['org']))
+    if at + len(data) > 0x10000:
+        sys.exit(f'{path}: {len(data)} bytes at ${at:04X} run past $FFFF')
+    mem = bytearray(0x10000)
+    mem[at:at + len(data)] = data
+    return bytes(mem), data, at
+
+
+def call_hook(spec, *args):
+    """'tools/x.py' (its install) or 'tools/x.py:function' of the case, called with args"""
+    path, _, func = spec.partition(':')
+    full = os.path.join(ROOT, path)
+    sys.path.insert(0, os.path.dirname(full))
+    name = os.path.splitext(os.path.basename(full))[0]
+    mod = sys.modules.get(name)
+    if mod is None or os.path.abspath(getattr(mod, '__file__', '')) != os.path.abspath(full):
+        loader = importlib.util.spec_from_file_location(name, full)
+        mod = importlib.util.module_from_spec(loader)
+        sys.modules[name] = mod
+        loader.loader.exec_module(mod)
+    return getattr(mod, func or 'install')(*args)
+
+
+def install_resources(part, resources, built=()):
+    """the part's resources into the case: through its res_install hook, as bytes into its res folder, or (the
+    case's game) through tools/res_formats.py when the case has one, else as bytes into src/res"""
+    files = {k: v for k, v in resources.items() if k not in built}
+    if not files:
+        return 0
+    if part.get('res_install'):
+        call_hook(part['res_install'], files)
+    elif part.get('res'):
+        for name, data in files.items():
+            path = os.path.join(ROOT, part['res'], name)
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            open(path, 'wb').write(data)
+    elif part.get('game'):
+        if os.path.isfile(os.path.join(ROOT, 'tools', 'res_formats.py')):
+            call_hook('tools/res_formats.py', files)
+        else:
+            for name, data in files.items():
+                path = os.path.join(ROOT, 'src', 'res', name)
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                open(path, 'wb').write(data)
+    else:
+        return 0
+    return len(files)
+
+
+def included(path):
+    """the files a top file INCLUDEs (relative to its folder)"""
+    if not os.path.exists(path):
+        return set()
+    return {os.path.normpath(os.path.join(os.path.dirname(path), m))
+            for m in re.findall(r'^\s+INCLUDE\s+"([^"]+)"', open(path).read(), re.M)}
+
+
+def install_files(files, dest_top):
+    """write {path: text}; then delete the files the old top file INCLUDEd that are written no more (and only
+    those: a file of the folder this generator does not write stays)"""
+    stale = included(dest_top) - {os.path.normpath(p) for p in files}
+    for path, text in files.items():
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        open(path, 'w').write(text)
+    for path in sorted(stale):
+        if os.path.exists(path) and path.endswith('.asm'):
+            os.remove(path)
+            print(f'removed {os.path.relpath(path, ROOT)} (no module of the .ann now)')
+
+
+def written_line(part, anns):
+    """the top file's second comment line: what it is written from"""
+    if part.get('written'):
+        return part['written']
+    names = ', '.join(os.path.relpath(a, ROOT) for a in anns)
+    recorded = bool(part.get('l1')) or any(s.get('l1') for s in part.get('segments') or [])
+    if len(anns) > 1:
+        return '; Written by kit/mkgame.py from the annotations (%s)%s; edit the annotations,\n; not the .asm.' % (
+            names, ' and the recordings' if recorded else '')
+    return '; Written by kit/mkgame.py from %s%s; edit %s, not the .asm.' % (
+        names, ' and the recordings' if recorded else '', os.path.basename(anns[0]))
+
+
+def make_part(part, args):
+    """One part: the single layout (one .ann, the top file as kit/mkgame.py writes the game's) or the segments
+    layout (several .ann / pieces, each at its run address with ORG / DISP, raw lines between). Returns 0 when the
+    bytes are the image's"""
+    global LO, HI
+    mem, original, at = part_image(part)
+    top = part.get('top') or part.get('name') or 'game'
+    default_work = os.path.join('work', 'mkgame' if part.get('game') else os.path.join('mkpart', top))
+    out = os.path.join(ROOT, part.get('work') or default_work)
+    if part.get('clean_work', True):
+        import shutil
+        shutil.rmtree(os.path.join(out, 'res'), ignore_errors=True)
+    os.makedirs(out, exist_ok=True)
+    device = part.get('device', 'ZXSPECTRUM48')
+    built = dict(part.get('built', {}))
+    segments = part.get('segments')
+    if not segments:
+        return single_part(part, args, mem, original, at, top, out, device, built)
+
+    results = []
+    for spec in segments:
+        if 'lines' in spec:
+            results.append(None)
+            continue
+        seg = Segment(spec, part)
+        lo, hi = seg.lo, seg.hi
+        LO, HI = seg.run, seg.run + hi - lo
+        smem = bytearray(0x10000)
+        smem[LO:HI] = original[lo - at:hi - at]
+        results.append(generate(seg, bytes(smem), args, out, None if part.get('subdir', True) else top))
+        print(f'{os.path.relpath(seg.ann, ROOT)}{" " + seg.piece if seg.piece else ""}: {results[-1][5]}')
+    every_label = set().union(*(r[4] for r in results if r), set(part.get('external', ())),
+                              {s['load_label'] for s in segments if 'load_label' in s})
+    equ, seen = {}, set()
+    for r in filter(None, results):
+        for address, (var, size, comment) in r[3].equ.items():
+            if var not in every_label and var not in seen:
+                equ[address] = (var, size, comment)
+                seen.add(var)
+    names = [m for r in results if r for m, _ in r[0]]
+    if len(set(names)) != len(names):
+        sys.exit('module names repeat across segments: ' + ', '.join(sorted({n for n in names if names.count(n) > 1})))
+    subdir = part.get('subdir', True)
+    inc = (top + '/') if subdir else ''
+    anns = []
+    for s in segments:
+        if s.get('ann') and os.path.join(ROOT, s['ann']) not in anns:
+            anns.append(os.path.join(ROOT, s['ann']))
+    text = '\n'.join(part.get('header') or ['; ' + top]) + '\n'
+    text += written_line(part, anns) + '\n\n  DEVICE %s\n' % device
+    consts, banks, aliases = [], [], []
+    for r in filter(None, results):
+        consts += [c for c in r[3].consts if c not in consts]
+        banks += [b for b in r[3].banks if b not in banks]
+        aliases += [x for x in r[3].aliases if x not in aliases]
+    text += constants(consts) + equates(equ, '; Addresses outside this image (@equ in the annotations)') + \
+        bank_equates(banks) + alias_equates(aliases)
+    if part.get('org_once'):
+        text += '\n  ORG $%04X\n' % at
+    for spec, result in zip(segments, results):
+        lo = hexa(spec['lo'])
+        if result is None:
+            text += '\n  ORG $%04X\n' % lo + '\n'.join(spec['lines']) + '\n'
+            if 'hi' in spec:
+                text += '  ASSERT $ == $%04X\n' % hexa(spec['hi'])
+            continue
+        modules, head, _, ann, _, _ = result
+        run_at = hexa(spec['run']) if 'run' in spec else lo
+        title = spec.get('title') or (spec['ann'] + (' ' + spec['piece'] if spec.get('piece') else ''))
+        text += '\n; %s: $%04X-$%04X%s\n' % (title, lo, hexa(spec['hi']) - 1,
+                                             ', run at $%04X' % run_at if run_at != lo else '')
+        if not part.get('org_once'):
+            text += '  ORG $%04X\n' % lo
+        if 'load_label' in spec:
+            text += spec['load_label'] + ':\n'
+        if run_at != lo:
+            text += '  DISP $%04X\n' % run_at
+        head = '\n'.join(line for line in head.splitlines() if not re.match(r'^\s+ORG ', line)).strip()
+        if head:
+            text += head + '\n'
+        for module, _ in modules:
+            mtitle = ann.module_info.get(module, [''])[0]
+            text += '  INCLUDE "%s%s.asm"%s\n' % (inc, module, ('  ; ' + mtitle) if mtitle else '')
+        if run_at != lo:
+            text += '  ENT\n'
+    binary = os.path.basename(part.get('out') or top + '.bin')
+    text += '\n  SAVEBIN "%s",$%04X,%d\n' % (binary, at, len(original))
+    os.makedirs(os.path.join(out, top) if subdir else out, exist_ok=True)
+    resources = {}
+    for r in filter(None, results):
+        for module, body in r[0]:
+            open(os.path.join(out, inc + module + '.asm'), 'w').write(body)
+        resources.update(r[2])
+    for res, data in resources.items():
+        path = os.path.join(out, 'res', res)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        open(path, 'wb').write(data)
+    open(os.path.join(out, top + '.asm'), 'w').write(text)
+    if part.get('before_assemble'):
+        call_hook(part['before_assemble'], out)
+    assemble(part, args, out, top)
+    got = open(os.path.join(out, binary), 'rb').read()
+    diff = next((i for i in range(len(original)) if i >= len(got) or got[i] != original[i]), None)
+    print('assembled: identical to %s' % part['image'] if diff is None else
+          'assembled: first difference at $%04X: %02X, original %02X' % (
+              at + diff, got[diff] if diff < len(got) else 0, original[diff]))
+    if diff is None and args.install:
+        dest = os.path.join(ROOT, part['dest'])
+        files = {os.path.join(dest, inc + m + '.asm'): open(os.path.join(out, inc + m + '.asm')).read() for m in names}
+        files[os.path.join(dest, top + '.asm')] = text
+        install_files(files, os.path.join(dest, top + '.asm'))
+        n = install_resources(part, resources, built)
+        print(f'installed {os.path.relpath(dest, ROOT)}/{top}.asm, {len(names)} modules, {n} resources')
+    return 0 if diff is None else 1
+
+
+def assemble(part, args, out, top):
+    cmd = [args.sjasmplus, '--nologo', '--msg=war'] + ['-I' + os.path.join(ROOT, d) for d in part.get('include', [])]
+    run(cmd + ['--lst=%s.lst' % top, top + '.asm'], cwd=out)
+
+
+def single_part(part, args, mem, original, at, top, out, device, built):
+    """the single layout: the image's range lo..hi with one .ann (or one piece)"""
+    global LO, HI
+    seg = Segment(part, part)
+    seg.single = True
+    LO = seg.lo if seg.lo is not None else at
+    HI = seg.hi if seg.hi is not None else at + len(original)
+    seg.run = LO
+    if seg.bank is not None and 'bases' not in part and part.get('pages') is None:
+        seg.bases = natural_bases([seg.bank], LO)
+    result = generate(seg, mem, args, out, top)
+    modules, head, resources, ann, _, stats = result
+    if part.get('game'):
+        print(f'resources {len(resources)} files, {sum(len(v) for v in resources.values())} bytes')
+    print(f'{top}: {stats}')
+    for name, body in modules:
+        open(os.path.join(out, name + '.asm'), 'w').write(body)
+    text = '\n'.join(part.get('header') or ['; ' + top]) + '\n' + written_line(part, [seg.ann]) + \
+        '\n\n  DEVICE %s\n' % device
+    if seg.bank is not None and part.get('slot', True):
+        text += '  SLOT 3\n  PAGE %s\n' % seg.bank
+    text += constants(ann.consts) + equates(ann.equ) + bank_equates(ann.banks) + alias_equates(ann.aliases) + head
+    text += ''.join('  INCLUDE "%s.asm"%s\n' % (name, ('  ; ' + ann.module_info[name][0])
+                                                if ann.module_info.get(name, [''])[0] else '') for name, _ in modules)
+    binary = part.get('bin') or top + '.bin'
+    text += '\n  SAVEBIN "%s",$%04X,$%04X\n' % (binary, LO, HI - LO)
+    open(os.path.join(out, top + '.asm'), 'w').write(text)
+    if part.get('before_assemble'):
+        call_hook(part['before_assemble'], out)
+    assemble(part, args, out, top)
+    got = open(os.path.join(out, binary), 'rb').read()
+    diff = next((LO + i for i in range(HI - LO) if i >= len(got) or got[i] != mem[LO + i]), None)
+    print(('assembled: identical to the original image' if part.get('game') else 'assembled: identical')
+          if diff is None else 'assembled: first difference at $%04X: %02X, image %02X'
+          % (diff, got[diff - LO] if diff - LO < len(got) else 0, mem[diff]))
+    if diff is None and args.install:
+        dest = os.path.join(ROOT, part.get('dest') or os.path.join('src', 'game'))
+        prefix = os.path.relpath(os.path.join(ROOT, part['res']), dest) + '/' if part.get('res') else None
+        files = {}
+        for name in [n for n, _ in modules] + [top]:
+            body = open(os.path.join(out, name + '.asm')).read()
+            for res, path in built.items():
+                body = body.replace('INCBIN "res/%s"' % res, 'INCBIN "%s"' % path)
+            if prefix:
+                body = body.replace('INCBIN "res/', 'INCBIN "' + prefix)
+            if part.get('save'):
+                body = body.replace('SAVEBIN "%s"' % binary, 'SAVEBIN "%s"' % part['save'])
+            files[os.path.join(dest, name + '.asm')] = body
+        install_files(files, os.path.join(dest, top + '.asm'))
+        n = install_resources(part, resources, built)
+        print(f'installed {len(modules) + 1} files in {os.path.relpath(dest, ROOT)}, {n} resources')
+    return 0 if diff is None else 1
+
+
+# ------------------------------------------------------------------------------------------------- the case's game
+
+
+def load_case(case, config_path=None):
+    """case.json (or config_path) of the case: sets ROOT, LO, HI, BASES, READ_BUILDS"""
+    global ROOT, LO, HI, BASES, READ_BUILDS
+    ROOT = os.path.abspath(case)
+    config = json.load(open(config_path or os.path.join(ROOT, 'case.json')))
+    LO, HI = int(config['lo'], 16), int(config.get('hi', '10000'), 16)
+    BASES = {int(k): int(v, 16) for k, v in config.get('bases', {'5': '4000', '2': '8000', '0': 'C000'}).items()}
+    READ_BUILDS = tuple(config.get('read_builds', ()))
+    return config
+
+
+def case_builds(config):
+    """the recordings of the case's game: work/<build>/l1.json of read_builds (instructions and data reads) and
+    code_builds (instructions only), never every work/*/l1.json"""
+    out = [{'path': os.path.join('work', b, 'l1.json'), 'reads': True} for b in config.get('read_builds', ())]
+    out += [{'path': os.path.join('work', b, 'l1.json'), 'reads': False} for b in config.get('code_builds', ())]
+    return out
+
+
+def game_part(config, ann):
+    """case.json as a part: the 64 K image, lo..hi, into src/game"""
+    part = {'game': True, 'image': config['image'], 'at': '0', 'lo': config['lo'], 'hi': config.get('hi', '10000'),
+            'bases': config.get('bases', {'5': '4000', '2': '8000', '0': 'C000'}), 'l1': case_builds(config),
+            'ann': os.path.relpath(ann, ROOT), 'top': 'game', 'device': config.get('device', 'ZXSPECTRUM48'),
+            'header': config.get('header') or ['; The game image $%04X-$%04X.' % (LO, HI - 1)],
+            'dest': config.get('dest', os.path.join('src', 'game')), 'clean_work': False}
+    if config.get('image_cmd'):
+        part['image_cmd'] = config['image_cmd']
+    for key in ('work', 'operands', 'res_install', 'mode', 'same_bytes', 'data_entries', 'overwritten',
+                'isub_as_written',
+                'drop_data_refs'):
+        if key in config:
+            part[key] = config[key]
+    return part
 
 
 def original_image(config):
@@ -478,143 +1212,85 @@ def original_image(config):
     return mem
 
 
-def load_case(case):
-    global ROOT, LO, HI, BASES, READ_BUILDS
-    ROOT = os.path.abspath(case)
-    config = json.load(open(os.path.join(ROOT, 'case.json')))
-    LO, HI = int(config['lo'], 16), int(config.get('hi', '10000'), 16)
-    BASES = {int(k): int(v, 16) for k, v in config.get('bases', {'5': '4000', '2': '8000', '0': 'C000'}).items()}
-    READ_BUILDS = tuple(config.get('read_builds', ()))
-    return config
-
-
-def install_resources(files):
-    """The case's res_formats.install when it has one, else the bytes into src/res"""
-    tools = os.path.join(ROOT, 'tools')
-    if os.path.isfile(os.path.join(tools, 'res_formats.py')):
-        sys.path.insert(0, tools)
-        import res_formats  # noqa: E402
-        res_formats.install(files)
-        return
-    for name, data in files.items():
-        path = os.path.join(ROOT, 'src', 'res', name)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        open(path, 'wb').write(data)
-
-
-def run(cmd, **kw):
-    p = subprocess.run(cmd, capture_output=True, text=True, **kw)
-    if p.returncode:
-        sys.exit(f'{cmd[0]}: {p.stderr.strip() or p.stdout.strip()}')
-    return p
+def cli_part(args):
+    """the command line's one image as a part"""
+    org = hexa(args.org)
+    part = {'image': os.path.relpath(os.path.abspath(args.image), ROOT), 'at': '%04X' % org,
+            'ann': os.path.relpath(os.path.abspath(args.ann), ROOT), 'top': args.top,
+            'dest': os.path.relpath(os.path.abspath(args.dest), ROOT), 'device': args.device,
+            'header': ['; ' + (args.title or args.top)], 'mode': 'blocks' if args.blocks else 'instructions',
+            'data_entries': 'stop', 'isub_as_written': True, 'drop_data_refs': True,
+            'l1': ([{'path': os.path.relpath(os.path.abspath(p), ROOT)} for p in args.l1] +
+                   [{'path': os.path.relpath(os.path.abspath(p), ROOT), 'reads': True} for p in args.l1_reads]),
+            'built': dict(b.split('=', 1) for b in args.built)}
+    if args.range:
+        lo, _, hi = args.range.partition('-')
+        part['lo'], part['hi'] = lo, hi
+    if args.res:
+        part['res'] = os.path.relpath(os.path.abspath(args.res), ROOT)
+    if args.page:
+        part['pages'] = args.page
+    if args.bank is not None:
+        part['bank'] = args.bank
+    if args.save:
+        part['save'] = args.save
+    if args.out:
+        part['work'] = os.path.relpath(os.path.abspath(args.out), ROOT)
+    if args.wide:
+        part['operands'] = 'wide'
+    return part
 
 
 def main():
-    p = argparse.ArgumentParser()
-    p.add_argument('--case', required=True, help='the case folder (holds case.json)')
-    p.add_argument('--venv', required=True, help='a virtualenv with SkoolKit')
-    p.add_argument('--sjasmplus', default='sjasmplus')
-    p.add_argument('--out')
-    p.add_argument('--ann')
-    p.add_argument('--install', action='store_true', help='write src/game/*.asm when the bytes are the image\'s')
+    global ROOT
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument('--case', default='.', help='the case folder (default: here)')
+    p.add_argument('--config', help='the game\'s config instead of CASE/case.json')
+    p.add_argument('--part', help='a part file (JSON, docs/ann-format.md 5)')
+    p.add_argument('--image', help='one image: its bytes')
+    p.add_argument('--org', help='the address of the image\'s first byte')
+    p.add_argument('--range', help='LO-HI (hex, HI exclusive): only these addresses of the image')
+    p.add_argument('--top', help='the top file\'s name (TOP.asm)')
+    p.add_argument('--dest', help='where --install writes the .asm')
+    p.add_argument('--res', help='where --install writes the resources (the INCBINs name it relative to --dest)')
+    p.add_argument('--l1', action='append', default=[], help='an L1 build whose instructions count')
+    p.add_argument('--l1-reads', action='append', default=[], help='an L1 build whose instructions and reads count')
+    p.add_argument('--blocks', action='store_true', help='only whole recorded basic blocks with the image\'s bytes')
+    p.add_argument('--page', type=int, action='append', help='an L1 page that counts (repeat; default 5, 2, 0)')
+    p.add_argument('--bank', type=int, help='the RAM bank the image runs in at $C000 (SLOT 3 / PAGE in the top file)')
+    p.add_argument('--built', action='append', default=[], metavar='NAME=PATH',
+                   help='the resource NAME is made by the build: INCBIN PATH, not installed')
+    p.add_argument('--save', help='the SAVEBIN path of the installed top file')
+    p.add_argument('--title', default='', help='the top file\'s first comment line')
+    p.add_argument('--device', default='ZXSPECTRUM128')
+    p.add_argument('--wide', action='store_true', help='Label+offset also for LD BC,nn')
+    p.add_argument('--venv', help='a virtualenv with SkoolKit (else $SKOOLKIT_VENV, kit/toolpaths.py)')
+    p.add_argument('--sjasmplus', help='sjasmplus (else $SJASMPLUS, kit/toolpaths.py)')
+    p.add_argument('--out', help='the work folder')
+    p.add_argument('--ann', help='the annotations (the game: src/game/game.ann)')
+    p.add_argument('--install', action='store_true', help='write the sources when the bytes are the image\'s')
     args = p.parse_args()
-    config = load_case(args.case)
-    args.out = args.out or os.path.join(ROOT, 'work', 'mkgame')
-    args.ann = args.ann or os.path.join(ROOT, 'src', 'game', 'game.ann')
-    os.makedirs(args.out, exist_ok=True)
-    mem = original_image(config)
-    starts, entries, reads = load_l1(sorted(glob.glob(os.path.join(ROOT, 'work', '*', 'l1.json'))), mem)
-    ann = Annotations(args.ann)
-    code, targets, calls = walk(mem, starts, reads, [a for a, e in ann.entries.items() if e[0] == 'c'],
-                                 ann.inline_data)
-    os.makedirs(args.out, exist_ok=True)
-    ctl = os.path.join(args.out, 'game.ctl')
-    extents = write_ctl(mem, code, targets, calls, entries, ann, ctl)
-    image = os.path.join(args.out, 'image.bin')
-    open(image, 'wb').write(mem[LO:])
-    py = os.path.join(args.venv, 'bin', 'python')
-    skool = os.path.join(args.out, 'game.skool')
-    out = run([py, os.path.join(args.venv, 'bin', 'sna2skool.py'), '-H', '-c', ctl, '-o', str(LO), image]).stdout
-    written = dict(ann.isub)
-    out, inner = label_inner_addresses(out, written)
-    if written:
-        sys.exit('game.ann: @isub on no instruction: ' + ', '.join('$%04X' % a for a in sorted(written)))
-    open(skool, 'w').write(out)
-    asm = run([py, os.path.join(args.venv, 'bin', 'skool2asm.py'), '-H', skool])
-    text = asm.stdout
-    for half in ('IXl', 'IXh', 'IYl', 'IYh'):
-        text = text.replace(half, half.upper())
-    text = name_variables(text, ann.equ)
-    # a commented data sub-block of several lines: SkoolKit leaves a bare ';' on the lines after the first
-    text = re.sub(r'^(  DEF[BWMS] .*?)\s+;$', r'\1', text, flags=re.M)
-    text, resources = write_resources(text, mem, extents, ann, args.out)
-    modules, head = split_modules(text, ann)
-    for name, body in modules:
-        open(os.path.join(args.out, name + '.asm'), 'w').write(body)
-    main_asm = header(config) + equates(ann.equ) + head + ''.join('  INCLUDE "%s.asm"%s\n' % (name, ('  ; ' + ann.module_info[name][0])
-                                                     if ann.module_info.get(name, [''])[0] else '')
-                          for name, _ in modules) + \
-        '\n  SAVEBIN "game.bin",$%04X,$%04X\n' % (LO, HI - LO)
-    open(os.path.join(args.out, 'game.asm'), 'w').write(main_asm)
-    run([args.sjasmplus, '--nologo', '--msg=war', 'game.asm'], cwd=args.out)
-    built = open(os.path.join(args.out, 'game.bin'), 'rb').read()
-    diff = next((LO + i for i in range(HI - LO) if built[i] != mem[LO + i]), None)
-    print(f'resources {len(resources)} files, {sum(hi - lo for lo, hi in resources.values())} bytes')
-    print(f'code bytes {sum(code.values())} ({len(code)} instructions, {len(starts)} ran), '
-          f'entries {sum(1 for l in open(ctl) if l[:2] in ("c ", "b "))}, modules {len(modules)}, '
-          f'addresses inside entries as Label+offset {inner}')
-    print('assembled: identical to the original image' if diff is None else
-          'assembled: first difference at $%04X: %02X, image %02X' % (diff, built[diff - LO], mem[diff]))
-    if diff is None and args.install:
-        dest = os.path.join(ROOT, 'src', 'game')
-        for old in glob.glob(os.path.join(dest, '*.asm')):
-            os.remove(old)
-        for name in [n for n, _ in modules] + ['game']:
-            open(os.path.join(dest, name + '.asm'), 'w').write(open(os.path.join(args.out, name + '.asm')).read())
-        # the graphics and the tune go in as their editable sources (PNG, text), the rest as bytes
-        install_resources({name: open(os.path.join(args.out, 'res', name), 'rb').read() for name in resources})
-        print(f'installed {len(modules) + 1} files in src/game, {len(resources)} resources in src/res')
-    return 0 if diff is None else 1
-
-
-def name_variables(text, equ):
-    """Every instruction operand that is a variable's address (@equ), written as the variable's name"""
-    if not equ:
-        return text
-    names = {}
-    for address, (name, size, _) in equ.items():
-        for k in range(size):
-            names[address + k] = name if k == 0 else '%s+%d' % (name, k)
-
-    def operand(m):
-        return names.get(int(m.group(1), 16), m.group(0))
-
-    out = []
-    for line in text.splitlines(True):
-        code, semi, comment = line.partition(';')
-        if re.match(r'^  [A-Z]', code) and not re.match(r'^  DEF[BWMS]', code):
-            code = re.sub(r'\$([0-9A-F]{4})\b', operand, code)
-        out.append(code + semi + comment)
-    return ''.join(out)
-
-
-def equates(equ):
-    """The variables outside the image (game.ann @equ), as EQU lines"""
-    if not equ:
-        return ''
-    lines = ['', '; The variables past the loaded image (game.ann @equ)']
-    for address, (name, size, comment) in sorted(equ.items()):
-        lines.append('%-14s EQU $%04X%s' % (name, address, ('  ; ' + comment) if comment else ''))
-    return '\n'.join(lines) + '\n'
-
-
-def header(config):
-    lines = config.get('header') or ['; The game image $%04X-$%04X.' % (LO, HI - 1)]
-    return '\n'.join(lines) + """
-; Written by kit/mkgame.py from src/game/game.ann and the recordings; edit game.ann, not the .asm.
-
-  DEVICE %s
-""" % config.get('device', 'ZXSPECTRUM48')
+    args.venv = toolpaths.skoolkit_venv(args.venv)
+    args.sjasmplus = toolpaths.sjasmplus(args.sjasmplus)
+    if args.part:
+        ROOT = os.path.abspath(args.case)
+        part = json.load(open(os.path.join(ROOT, args.part) if not os.path.isabs(args.part) else args.part))
+        if args.out:
+            part['work'] = os.path.relpath(os.path.abspath(args.out), ROOT)
+        part.setdefault('name', os.path.splitext(os.path.basename(args.part))[0])
+        return make_part(part, args)
+    if args.image:
+        ROOT = os.path.abspath(args.case)
+        missing = [k for k in ('org', 'ann', 'top', 'dest') if not getattr(args, k)]
+        if missing:
+            sys.exit('--image needs ' + ', '.join('--' + k for k in missing))
+        return make_part(cli_part(args), args)
+    config = load_case(args.case, args.config)
+    ann = os.path.abspath(args.ann) if args.ann else os.path.join(ROOT, 'src', 'game', 'game.ann')
+    part = game_part(config, ann)
+    if args.out:
+        part['work'] = os.path.relpath(os.path.abspath(args.out), ROOT)
+    return make_part(part, args)
 
 
 if __name__ == '__main__':

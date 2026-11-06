@@ -3,13 +3,15 @@
 
     python3 kit/sig_add.py ann --case games/nether-earth --program "Nether Earth" --authors "Argus Press Software" \
         --year 1987 [--lst build/game.lst] [--bank N] [--modules a,b]
+        [--part src/<part>/<name>.json [--segment N] --prefix PART]
     python3 kit/sig_add.py lst --case games/advanced-nether-earth --lst build/music/boot-music.lst \
         --start Pt3Init --end Pt3Module --id sound/ay-players/pro-tracker-3/nick-gdc-1.0 --meta META.json \
         --program "Advanced Nether Earth" [--nth N] [--image FILE --image-origin ADDR] [--bank N]
     python3 kit/sig_add.py sources [signatures/sources.json]     # every addition the file lists, in order
 
-ann: one entry per module of the case's annotations (case.json's game.ann and image), under
-programs/games/<case>/<module>. The instruction starts come from the build's listing (--lst) when given, else from
+ann: one entry per module of the case's annotations (case.json's game.ann and image, or a part file's image and
+.ann: --part, one segment of it with --segment), under programs/games/<case>/<module> (<prefix>-<module> with
+--prefix, for the parts of a case whose module names repeat). The instruction starts come from the build's listing (--lst) when given, else from
 the annotations' code entries decoded in a line; the mask from the 16-bit operands (inside the module rel16, the ROM
 unmasked, the rest ext16, named by the annotations) and from the word entries that point inside the module.
 
@@ -118,13 +120,33 @@ def module_segments(ann, hi):
 def add_ann(args):
     case = os.path.abspath(args.case)
     mk = S.kit_import('mkgame')
-    config = json.load(open(os.path.join(case, args.config)))
-    mk.LO, mk.HI = int(config['lo'], 16), int(config.get('hi', '10000'), 16)
-    image_path = os.path.join(case, args.image or config['image'])
-    if not os.path.exists(image_path):
-        subprocess.run(config['image_cmd'], cwd=case, check=True)  # the command runs in the case, as mkgame's
-    mem = open(image_path, 'rb').read()
-    ann = mk.Annotations(os.path.join(case, args.ann))
+    if args.part:
+        # a part file (docs/ann-format.md 5.2): its image at its address, its .ann (or one segment's) and range
+        mk.ROOT = case
+        part = json.load(open(os.path.join(case, args.part)))
+        mem, data, at = mk.part_image(dict(part, image_always=False))
+        segs = part.get('segments') or [{}]
+        seg = segs[args.segment]
+        if 'lines' in seg or mk.hexa(seg.get('run', seg.get('lo', '0'))) != mk.hexa(seg.get('lo', '0')):
+            sys.exit(f'{args.part}: segment {args.segment} is not an annotated image at its run address')
+        ann_path = seg.get('ann') or part['ann']
+        lo = mk.hexa(seg.get('lo') or part.get('lo') or '%X' % at)
+        hi = mk.hexa(seg.get('hi') or part.get('hi') or '%X' % (at + len(data)))
+        mk.LO, mk.HI = lo, hi
+        ann = mk.Annotations(os.path.join(case, ann_path), piece=seg.get('piece'))
+        args.ann = ann_path
+        module_dir = part.get('dest') or os.path.dirname(ann_path)
+        if part.get('segments') and part.get('subdir', True):
+            module_dir += '/' + (part.get('top') or part.get('name'))
+    else:
+        module_dir = None
+        config = json.load(open(os.path.join(case, args.config)))
+        mk.LO, mk.HI = int(config['lo'], 16), int(config.get('hi', '10000'), 16)
+        image_path = os.path.join(case, args.image or config['image'])
+        if not os.path.exists(image_path):
+            subprocess.run(config['image_cmd'], cwd=case, check=True)  # the command runs in the case, as mkgame's
+        mem = open(image_path, 'rb').read()
+        ann = mk.Annotations(os.path.join(case, args.ann))
     lo, hi = mk.LO, mk.HI
     rows = S.read_listing(os.path.join(case, args.lst)) if args.lst else None
     listed_starts = {r['address'] for r in rows if r['instruction'] and lo <= r['address'] < hi} if rows else None
@@ -145,6 +167,8 @@ def add_ann(args):
                   f'{", space only" if all(ann.entries[a][0] == "s" for a in addrs) else ""})')
             continue
         name = module if count[module] == 1 else f'{module}-{kebab(ann.entries[addrs[0]][1] or S.hexaddr(start)[1:])}'
+        if args.prefix:
+            name = f'{args.prefix}-{name}'
         starts, words = [], []
         for i, a in enumerate(addrs):
             kind, ename, width, etitle = ann.entries[a]
@@ -179,7 +203,8 @@ def add_ann(args):
                'origin': S.hexaddr(start), 'relocatable': False, 'mask': mask, 'entries': entries, 'labels': labels,
                'found_in': [{'program': args.program, 'case': rel(case), 'address': S.hexaddr(start),
                              'bank': args.bank, 'delta': '+$0000', 'match': 'exact', 'commit': commit()}],
-               'source': {'case': rel(case), 'file': f'{os.path.dirname(args.ann)}/{module}.asm', 'label': first},
+               'source': {'case': rel(case), 'file': f'{module_dir or os.path.dirname(args.ann)}/{module}.asm',
+                          'label': first},
                'docs': [f'{rel(case)}/docs/README.md']}
         store(finish(sig, data), data, sig['found_in'][0])
 
@@ -253,7 +278,7 @@ def add_sources(args):
 
 DEFAULTS = {
     'ann': {'ann': 'src/game/game.ann', 'config': 'case.json', 'family': 'games', 'image': None, 'lst': None, 'bank': None, 'modules': None, 'authors': None,
-            'year': None},
+            'year': None, 'part': None, 'segment': 0, 'prefix': None},
     'lst': {'nth': 1, 'image': None, 'image_origin': None, 'bank': None},
 }
 
@@ -273,6 +298,9 @@ def main():
     a.add_argument('--lst')
     a.add_argument('--bank', type=int)
     a.add_argument('--modules')
+    a.add_argument('--part', help='a part file (src/<part>/<name>.json) instead of case.json')
+    a.add_argument('--segment', type=int, default=0, help='the segment of the part file (default the first)')
+    a.add_argument('--prefix', help='entry ids <prefix>-<module>: the parts of one case whose module names repeat')
     b = sub.add_parser('lst')
     b.add_argument('--case', required=True)
     b.add_argument('--lst', required=True)

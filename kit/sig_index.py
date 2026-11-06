@@ -11,6 +11,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import siglib as S  # noqa: E402
+import code_addresses  # noqa: E402
 
 REQUIRED = ('schema', 'id', 'kind', 'role', 'name', 'authors', 'year', 'tags', 'summary', 'found_in')
 
@@ -122,7 +123,7 @@ def index_md(entries):
             programs = sorted({f['program'] for f in sig['found_in'] if f.get('program')})
             link = '/'.join(eid.split('/')[2:])
             lines.append('| [%s](%s/sig.json) | %s | %s, %s | %s | %s | %s |' % (
-                link, '/'.join(eid.split('/')), sig['name'].replace('|', '/'), sig['kind'], sig['role'],
+                link, '/'.join(eid.split('/')), code_addresses.convert(sig['name'].replace('|', '/')), sig['kind'], sig['role'],
                 len(data) if data is not None else '', ', '.join(sig['authors']) + (
                     f', {sig["year"]}' if sig.get('year') else ''), ', '.join(programs)))
         lines.append('')

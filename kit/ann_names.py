@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
-"""Name labels inside entries of src/game/game.ann (the l_XXXX labels of the generated source).
+"""Name labels inside entries of an .ann (the l_XXXX labels of the generated source).
 
-    python3 kit/ann_names.py --case CASE CF65=SetRestart CF8A=FreeRecordsLoop ...
+    python3 kit/ann_names.py --case CASE [--ann FILE] CF65=SetRestart $cf8a=FreeRecordsLoop ...
+
+--ann defaults to CASE/src/game/game.ann (a part's .ann is given relative to the case). Addresses in either case,
+with or without the $. The lines are read with kit/mkgame.py's grammar (docs/ann-format.md 1): a kind is a lone
+lower-case c, b, w, t or s; a one-letter name (X, Y) is a name, never a kind; the width of a data entry is not a name.
 
 An address with a comment line ("$CF65 ; text") gets the name on that line; otherwise a line "$ADDR Name" goes in
 after the annotation line of the nearest address below it. A name already used, or an address that is an entry, is
@@ -11,8 +15,10 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from mkgame import ANNOTATION as LINE  # noqa: E402  (address, kind, name, width, comment)
+
 ANN = None
-LINE = re.compile(r'\$([0-9A-F]{4})(\s+[cbwts])?(?:\s+(\w+))?')
 
 
 def main():
@@ -21,14 +27,20 @@ def main():
     if argv[:1] != ['--case'] or len(argv) < 3:
         sys.exit(__doc__)
     ANN = os.path.join(argv[1], 'src', 'game', 'game.ann')
+    rest = argv[2:]
+    if rest[:1] == ['--ann']:
+        if len(rest) < 3:
+            sys.exit(__doc__)
+        ANN = os.path.join(argv[1], rest[1])
+        rest = rest[2:]
     pairs = []
-    for arg in argv[2:]:
+    for arg in rest:
         a, name = arg.split('=')
         pairs.append((int(a.lstrip('$'), 16), name))
     lines = open(ANN).read().split('\n')
     used = set()
     for line in lines:
-        m = LINE.match(line)
+        m = LINE.match(line.strip())
         if m and m.group(3):
             used.add(m.group(3))
     for a, name in pairs:
@@ -38,7 +50,7 @@ def main():
             sys.exit(f'{name}: PascalCase, letters and digits')
         best, best_x = None, -1
         for i, line in enumerate(lines):
-            m = LINE.match(line)
+            m = LINE.match(line.strip()) if line.startswith('$') else None
             if not m:
                 continue
             x = int(m.group(1), 16)
