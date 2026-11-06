@@ -1,0 +1,40 @@
+{
+  "about": "The '98 game: python3 ../../kit/mkgame.py --part src/game98/game.json --install",
+  "image_cmd": [
+    "python3",
+    "tools/game98_image.py",
+    "--out",
+    "work/stage2/game98/mk"
+  ],
+  "image": "work/stage2/game98/mk/original.bin",
+  "at": "0000",
+  "lo": "6780",
+  "hi": "D880",
+  "ann": "src/game98/game.ann",
+  "top": "game98",
+  "dest": "src/game98",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; Nether Earth ZS Edition '98 (ZS, 23.12.1998): the game, the file NEZSEd.B's sectors 44-156 as the REM",
+    "; loader reads them to $6780-$D87F (28928 bytes, not packed); entered at Start $A600."
+  ],
+  "l1": [
+    {
+      "path": "work/stage2/game98/play/l1.json",
+      "reads": true,
+      "roots": false
+    },
+    {
+      "path": "work/stage2/game98/key5menu/l1.json",
+      "reads": true,
+      "roots": false
+    },
+    {
+      "path": "work/stage2/game98/deep/l1.json",
+      "reads": true,
+      "roots": false
+    }
+  ],
+  "res_install": "tools/game98_res.py:install_game",
+  "work": "work/stage2/game98/mk"
+}

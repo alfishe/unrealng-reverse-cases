@@ -8,5 +8,5 @@
   "read_builds": ["r99-play", "crit-play", "loadmap-menu"],
   "ref_builds": [["r99-play", "the '99 start-up menu, LOAD MAP, HARD + PHASERS, play (work/stage2/game99/r99-play, a window of work/stage1/r99)"], ["crit-play", "CRITICAL with every upgrade, several game days (work/stage2/game99/crit-play)"], ["loadmap-menu", "LOAD MAP: the catalogue and a map loaded (work/stage2/game99/loadmap-menu)"]],
   "header": ["; Nether Earth ZS Edition '99 (Sergey Zotov, 1999): the game block as it unpacks, $6780-$D7D2 (page 0 at $C000)."],
-  "parts_note": "The case has nine annotated parts, each written by its own wrapper around kit/mkgame.py (the L1 windows live under work/stage2/<part>/, not work/<build>/): this config is the '99 game's (tools/game99_mkgame.py). The others: tools/game98_mkgame.py, intro98_mkgame.py, front99_mkgame.py (stage2, pictures99, music99), menu99_mkgame.py (stage3, menu), game99_mkgame.py patches. README.md lists them."
+  "parts_note": "The case has nine annotated parts, each written by kit/mkgame.py --part from its part file src/<part>/<name>.json (the L1 windows live under work/stage2/<part>/, not work/<build>/): this config is the '99 game's (src/game99/game.json). tools/regen.sh runs them all; README.md lists them."
 }

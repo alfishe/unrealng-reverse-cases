@@ -1,0 +1,55 @@
+{
+  "about": "The '99 stage 3 ($61A8-$67EB): python3 ../../kit/mkgame.py --part src/stage3/stage3.json --install",
+  "image_cmd": [
+    "python3",
+    "tools/zs_media.py"
+  ],
+  "image_always": false,
+  "image": "work/media/99/stage3-out.bin",
+  "at": "61A8",
+  "ann": "src/stage3/stage3.ann",
+  "top": "stage3",
+  "bin": "stage3-61a8.bin",
+  "dest": "src/stage3",
+  "device": "ZXSPECTRUM48",
+  "bases": {
+    "5": "4000"
+  },
+  "header": [
+    "; Nether Earth ZS Edition '99, stage 3: \"System checking\", the memory test, the loads ($61A8-$67EB).",
+    "; Unpacked by the block of sectors 45-50 (read to $8000); entered at Stage3Entry $61A8."
+  ],
+  "l1_note": "each window counts only below $6780: the game block overwrites $6780- from frame 2299 on (and runs there)",
+  "l1": [
+    {
+      "path": "work/stage2/menu99/r99-s3a/l1.json",
+      "lo": "61A8",
+      "hi": "6780",
+      "reads": true,
+      "optional": true
+    },
+    {
+      "path": "work/stage2/menu99/r99-s3b/l1.json",
+      "lo": "61A8",
+      "hi": "6780",
+      "reads": true,
+      "optional": true
+    },
+    {
+      "path": "work/stage2/menu99/r48-s3/l1.json",
+      "lo": "61A8",
+      "hi": "6780",
+      "reads": true,
+      "optional": true
+    },
+    {
+      "path": "work/stage2/menu99/s99-s3/l1.json",
+      "lo": "61A8",
+      "hi": "6780",
+      "reads": true,
+      "optional": true
+    }
+  ],
+  "work": "work/stage2/menu99/mk-stage3",
+  "res_install": "tools/menu99_res.py"
+}

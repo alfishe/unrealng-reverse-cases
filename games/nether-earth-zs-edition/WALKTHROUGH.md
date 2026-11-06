@@ -47,7 +47,8 @@ TR-DOS item for an emulator ROM patch; stage 2 found it is the game's (4.3).
 The lead cut the disks into parts by the stages of 03 and gave each to one agent with the brief: the part's bytes
 from `tools/zs_media.py` (`work/media/98`, `work/media/99`, one `.bin` and one unpacked `-out.bin` per '99 block),
 its own L1 windows from new recordings (`re_session.py open/build/stop`, under `work/stage2/<part>/`), a
-`tools/<part>_mkgame.py` wrapper around `kit/mkgame.py` like ANE's, a `tools/build_<part>.sh` that compares with the
+`tools/<part>_mkgame.py` wrapper around `kit/mkgame.py` like ANE's (since replaced by
+`kit/mkgame.py --part src/<part>/<name>.json`), a `tools/build_<part>.sh` that compares with the
 original bytes, a resource tool, and a state file.
 
 | Part | Agent's result | Entries / modules |
@@ -197,6 +198,14 @@ Known only from the code (no recording reached it):
   buffer in the readme's slack. Documented in [01](docs/01-game-design.md), 1.7 and [05](docs/05-controls.md), 5.6; the live run with a
   Kempston mouse fitted (`mouse99`) moved neither the pointer nor LOAD MAP.
 - **The claims.** Checked against the code in [01, 1.11](docs/01-game-design.md).
+
+### 6.1 Signatures added
+
+`signatures/sources.json` has one `ann` row a part (`--part src/<part>/<name>.json`, ids
+`programs/games/nether-earth-zs-edition/<part>-<module>`): game99, game98, intro98, stage2, pictures99, music99,
+stage3, menu99. The '98 game's modules equal to Nether Earth's became `found_in` items of Nether Earth's entries,
+and its `construction` and `view` of the '99's. The patches block has no row: its pieces run at other addresses
+than they load (`DISP`), and a piece of 41 to 310 bytes copied over the game is no module to find.
 
 ## 7. Tool gaps
 

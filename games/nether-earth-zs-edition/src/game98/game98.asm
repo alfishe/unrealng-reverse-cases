@@ -1,6 +1,6 @@
 ; Nether Earth ZS Edition '98 (ZS, 23.12.1998): the game, the file NEZSEd.B's sectors 44-156 as the REM
 ; loader reads them to $6780-$D87F (28928 bytes, not packed); entered at Start $A600.
-; Written by kit/mkgame.py from src/game98/game.ann (tools/game98_mkgame.py) and the recordings; edit src/game98/game.ann, not the .asm.
+; Written by kit/mkgame.py from src/game98/game.ann and the recordings; edit game.ann, not the .asm.
 
   DEVICE ZXSPECTRUM48
 

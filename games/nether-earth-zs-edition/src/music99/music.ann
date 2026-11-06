@@ -1,4 +1,4 @@
-# The music block of Nether Earth ZS Edition'99, $C000-$CCFF (tools/front99_mkgame.py --part src/music99/music.json):
+# The music block of Nether Earth ZS Edition'99, $C000-$CCFF (kit/mkgame.py --part src/music99/music.json):
 # NEZSEd99.B sectors 32-44, not packed, read to $C000 by stage 2 ($61B5). A Sound Tracker 1.x compiled block: the
 # player Sound Tracker's compile function writes ($C000-$C4A7, 1192 bytes), then the module in the STC format
 # ($C4A8-$CC8E, 2023 bytes: src/res/music99/ne_mus.stc), then 113 bytes of sector slack.

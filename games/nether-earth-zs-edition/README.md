@@ -54,17 +54,20 @@ and depacker (`src/sfx/zsblock.asm`), writes each block's slack and the disks (`
 | '99 texts | | | `text/` | `tools/build_texts.sh` |
 | '99 packed blocks | `sfx/zsblock.asm`, `sfx/blocks.txt`, `sfx/hints/` | | | `tools/build.sh` (`tools/zspack.py`) |
 
-Each `.ann` becomes its `.asm` through its part's wrapper around `kit/mkgame.py`, which installs only when the
-result assembles to the original bytes:
+Each `.ann` becomes its `.asm` through `kit/mkgame.py --part` and the part's file (`src/<part>/<name>.json`: the
+image, the range, the L1 windows, the resource installer), which installs only when the result assembles to the
+original bytes:
 
 ```bash
-python3 tools/game99_mkgame.py all --install   # src/game99/*.asm and src/patches99/*.asm
-python3 tools/game98_mkgame.py --install       # src/game98/*.asm
+sh tools/regen.sh                                                    # every part, then the build
+python3 ../../kit/mkgame.py --part src/game99/game.json --install    # one part: src/game99/*.asm
 python3 ../../kit/check_docs.py --case .
 ```
 
-The other wrappers: `tools/intro98_mkgame.py`, `tools/front99_mkgame.py` (stage2, pictures99, music99),
-`tools/menu99_mkgame.py` (stage3, menu). `case.json` is the '99 game's config for the kit.
+The part files: `src/game99/game.json`, `src/patches99/patches.json` (eight pieces, each at its run address),
+`src/game98/game.json`, `src/intro98/intro.json`, `src/stage2/stage2.json`, `src/pictures99/pictures.json`,
+`src/music99/music.json`, `src/stage3/stage3.json`, `src/menu99/menu.json`. `case.json` is the '99 game's config for
+`kit/refdocs.py`.
 
 ## Tools
 
@@ -76,4 +79,4 @@ The other wrappers: `tools/intro98_mkgame.py`, `tools/front99_mkgame.py` (stage2
 | `tools/texts_build.py` | the `.W` texts: UTF-8 to CP866 with the end mark and slack |
 | `tools/mkscl.py`, `tools/scl.py` | write and list an SCL |
 | `tools/fig_screens.py`, `tools/fig_compare.py` | the screenshots and the side-by-side figures against NE (real frames, nearest neighbour) |
-| `tools/*_image.py`, `*_res.py`, `*_mkgame.py`, `build_*.sh` | per part: the image, the resources, the source, the build |
+| `tools/*_image.py`, `*_res.py`, `src/<part>/*.json` (kit/mkgame.py part files), `build_*.sh` | per part: the image, the resources, the source, the build |

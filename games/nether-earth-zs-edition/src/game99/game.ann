@@ -1,5 +1,5 @@
 # The annotations of the Nether Earth ZS Edition '99 game block ($6780-$D7D2 as unpacked): the single source
-# of truth for src/game99/*.asm (tools/game99_mkgame.py -> kit/mkgame.py). Format: kit/mkgame.py, class
+# of truth for src/game99/*.asm (kit/mkgame.py --part src/game99/game.json). Format: kit/mkgame.py, class
 # Annotations. Seeded from Nether Earth's game.ann where the bytes are the same; every entry is checked for
 # this game.
 

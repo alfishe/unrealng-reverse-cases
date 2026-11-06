@@ -1,0 +1,106 @@
+{
+  "about": "The '99 patches block as it unpacks, eight pieces each at its run address: python3 ../../kit/mkgame.py --part src/patches99/patches.json --install",
+  "image_cmd": [
+    "python3",
+    "tools/game99_image.py",
+    "--out",
+    "work/stage2/game99/mkgame"
+  ],
+  "image": "work/stage2/game99/mkgame/patches-out.bin",
+  "at": "D800",
+  "top": "patches",
+  "dest": "src/patches99",
+  "subdir": false,
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; Nether Earth ZS Edition '99: the patches block as it unpacks, $D800-$DB6F (880 bytes).",
+    "; Eight pieces that stage 3 copies to their run addresses (two sets: TR-DOS + 128 K, tape / one page);",
+    "; each is assembled with DISP at the address it runs at, laid at its offset of the block. The tape and",
+    "; one-page pieces never ran in a recording: their code is the annotation's entries walked statically."
+  ],
+  "l1": [
+    {
+      "path": "work/stage2/game99/r99-play/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage2/game99/crit-play/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage2/game99/loadmap-menu/l1.json",
+      "reads": true
+    }
+  ],
+  "segments": [
+    {
+      "ann": "src/patches99/patches.ann",
+      "piece": "diskread",
+      "lo": "D800",
+      "hi": "D83E",
+      "run": "A598",
+      "title": "diskread (disk set), 62 bytes"
+    },
+    {
+      "ann": "src/patches99/patches.ann",
+      "piece": "diskmap",
+      "lo": "D83E",
+      "hi": "D974",
+      "run": "C1FD",
+      "title": "diskmap (disk set), 310 bytes"
+    },
+    {
+      "ann": "src/patches99/patches.ann",
+      "piece": "taperead",
+      "lo": "D974",
+      "hi": "D9AC",
+      "run": "A598",
+      "title": "taperead (tape set), 56 bytes",
+      "l1": []
+    },
+    {
+      "ann": "src/patches99/patches.ann",
+      "piece": "tapemap",
+      "lo": "D9AC",
+      "hi": "DA3F",
+      "run": "C1FD",
+      "title": "tapemap (tape set), 147 bytes",
+      "l1": []
+    },
+    {
+      "ann": "src/patches99/patches.ann",
+      "piece": "paging128",
+      "lo": "DA3F",
+      "hi": "DA68",
+      "run": "A56A",
+      "title": "paging128 (disk set), 41 bytes"
+    },
+    {
+      "ann": "src/patches99/patches.ann",
+      "piece": "menu128",
+      "lo": "DA68",
+      "hi": "DAE7",
+      "run": "C100",
+      "title": "menu128 (disk set), 127 bytes"
+    },
+    {
+      "ann": "src/patches99/patches.ann",
+      "piece": "textload48",
+      "lo": "DAE7",
+      "hi": "DB15",
+      "run": "A56A",
+      "title": "textload48 (tape set), 46 bytes",
+      "l1": []
+    },
+    {
+      "ann": "src/patches99/patches.ann",
+      "piece": "menu48",
+      "lo": "DB15",
+      "hi": "DB70",
+      "run": "C100",
+      "title": "menu48 (tape set), 91 bytes",
+      "l1": []
+    }
+  ],
+  "work": "work/stage2/game99/mkgame/out-patches"
+}

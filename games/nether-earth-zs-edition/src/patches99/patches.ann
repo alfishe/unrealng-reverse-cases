@@ -1,5 +1,5 @@
 # The annotations of the Nether Earth ZS Edition '99 patches block ($D800-$DB6F as unpacked, 880 bytes): the single
-# source of truth for src/patches99/*.asm (tools/game99_mkgame.py patches -> kit/mkgame.py, one run a piece).
+# source of truth for src/patches99/*.asm (kit/mkgame.py --part src/patches99/patches.json, one segment a piece).
 # Format: kit/mkgame.py, class Annotations. The block holds eight pieces in two sets that stage 3 copies to the same
 # run addresses in the game (tools/game99_image.py PIECES); each piece follows a line '# @piece NAME' and is
 # annotated at its run address. The lines before the first piece hold for every piece.

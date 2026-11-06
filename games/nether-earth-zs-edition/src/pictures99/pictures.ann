@@ -1,4 +1,4 @@
-# The pictures block of Nether Earth ZS Edition'99, $7D87-$8A86 (tools/front99_mkgame.py --part
+# The pictures block of Nether Earth ZS Edition'99, $7D87-$8A86 (kit/mkgame.py --part
 # src/pictures99/pictures.json): NEZSEd99.B sectors 19-31, not packed, read to $7D87 by stage 2 (Stage2Start, $61A8).
 # The RLE screen decoder ($7D87-$7DF9), one RLE-packed screen ($7DFA-$8A35: the photo of the author, the
 # "NETHER EARTH ZS EDITION 1999" logo, "ZS", "You wanted new levels? Take its!"), 81 bytes of sector slack.

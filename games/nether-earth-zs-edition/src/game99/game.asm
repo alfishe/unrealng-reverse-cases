@@ -1,7 +1,7 @@
 ; Nether Earth ZS Edition '99 (ZS, 1999): the game block as it unpacks, $6780-$D7D2 (page 0 at $C000).
 ; Stage 3 then copies pieces of the patches block (src/patches99) over $A56A-$A5D5, $C100-$C17E and
 ; $C1FD-$C332, and the start-up menu and LOAD MAP patch operands (game.ann says where). Entry Start $A600.
-; Written by kit/mkgame.py from src/game/game.ann and the recordings; edit game.ann, not the .asm.
+; Written by kit/mkgame.py from src/game99/game.ann and the recordings; edit game.ann, not the .asm.
 
   DEVICE ZXSPECTRUM48
 

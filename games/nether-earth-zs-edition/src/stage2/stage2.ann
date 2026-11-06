@@ -1,4 +1,4 @@
-# Stage 2 of Nether Earth ZS Edition'99, $61A8-$7D86 (tools/front99_mkgame.py --part src/stage2/stage2.json): the
+# Stage 2 of Nether Earth ZS Edition'99, $61A8-$7D86 (kit/mkgame.py --part src/stage2/stage2.json): the
 # 7135 bytes the depacker of NEZSEd99.B sectors 1-18 writes (read to $8000 by the BASIC's reader at $5D5B, unpacked
 # by the block's own depacker at $5B00, which jumps to $61A8). The packed block's set-up and depacker are the lead's
 # part (src/sfx); this source stands for the unpacked bytes (work/media/99/stage2-out.bin).

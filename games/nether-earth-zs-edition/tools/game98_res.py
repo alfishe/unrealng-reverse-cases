@@ -24,7 +24,7 @@ over the background (mask 1, graphic 1). A PNG may be saved indexed or as RGB in
     python3 tools/game98_res.py check                             # every source: built, written back, built again
     (--res DIR before the command works on another folder, a scratch copy)
 
-tools/game98_mkgame.py --install calls install(files) with the bytes of each @res entry (names without the prefix);
+kit/mkgame.py --part src/game98/game.json --install calls install_game(files) with the bytes of each @res entry;
 tools/build_game98.sh builds the files and checks the assembled game against the file's bytes.
 """
 import argparse
@@ -690,6 +690,14 @@ def build(out, res=RES):
         os.makedirs(os.path.dirname(path), exist_ok=True)
         open(path, 'wb').write(data)
     return files
+
+
+def install_game(files):
+    """kit/mkgame.py --part src/game98/game.json --install (res_install): the @res names carry PREFIX"""
+    bad = [n for n in files if not n.startswith(PREFIX)]
+    if bad:
+        sys.exit(f'game98_res: resources not under {PREFIX}: {", ".join(bad)}')
+    install({n[len(PREFIX):]: data for n, data in files.items()})
 
 
 def install(files, res=RES):

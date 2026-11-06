@@ -1,5 +1,6 @@
 {
  "name": "pictures",
+ "work": "work/stage2/front99/mk-pictures",
  "image": "work/media/99/pictures.bin",
  "at": "7D87",
  "out": "build/front99/pictures-7d87.bin",

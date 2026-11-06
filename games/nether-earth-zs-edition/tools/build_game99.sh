@@ -7,7 +7,7 @@
 # - The resources (src/res/game99, tools/game99_res.py) into build/game99/res; the maps (src/res/maps,
 #   tools/zs_level.py) into build/maps/NELEV_00.N .. NELEV_11.N (512 bytes each), the built-in level into
 #   build/game99/res/maps/builtin.bin.
-# - src/game99/game.asm (tools/game99_mkgame.py from src/game99/game.ann) into build/game99/game-6780.bin, the game
+# - src/game99/game.asm (kit/mkgame.py --part src/game99/game.json from src/game99/game.ann) into build/game99/game-6780.bin, the game
 #   block as it unpacks ($6780-$D7D2, 28755 bytes).
 # - src/patches99/patches.asm (from src/patches99/patches.ann) into build/game99/patches-d800.bin, the patches block
 #   as it unpacks ($D800-$DB6F, 880 bytes: eight pieces, each assembled at the address it runs at).
@@ -15,7 +15,7 @@
 # and lays the maps on the disk.
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 b="$here/build/game99"
 m="$here/build/maps"
 mkdir -p "$b" "$m"

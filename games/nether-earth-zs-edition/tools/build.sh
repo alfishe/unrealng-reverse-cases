@@ -15,7 +15,7 @@
 # One build at a time: a second run waits for build/.lock (a folder; a stale one older than 30 minutes is taken).
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 b="$here/build"
 mkdir -p "$b"
 lock="$b/.lock"

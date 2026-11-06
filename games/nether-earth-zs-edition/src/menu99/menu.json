@@ -1,0 +1,62 @@
+{
+  "about": "The '99 128 K start-up menu in page 1 ($D800-$E6F3): python3 ../../kit/mkgame.py --part src/menu99/menu.json --install",
+  "image_cmd": [
+    "python3",
+    "tools/zs_media.py"
+  ],
+  "image_always": false,
+  "image": "work/media/99/menu-out.bin",
+  "at": "D800",
+  "ann": "src/menu99/menu.ann",
+  "top": "menu",
+  "bin": "menu-d800.bin",
+  "dest": "src/menu99",
+  "device": "ZXSPECTRUM48",
+  "bases": {
+    "0": "C000"
+  },
+  "header": [
+    "; Nether Earth ZS Edition '99, the 128 K start-up menu in page 1 ($D800-$E6F3).",
+    "; Unpacked by the block of sectors 123-132 (read to $E800 of page 1); entered at MenuEntry $D800."
+  ],
+  "l1": [
+    {
+      "path": "work/stage2/menu99/r99-menu/l1.json",
+      "lo": "D800",
+      "hi": "E6F4",
+      "optional": true
+    },
+    {
+      "path": "work/stage2/menu99/s99-menu/l1.json",
+      "lo": "D800",
+      "hi": "E6F4",
+      "optional": true
+    },
+    {
+      "path": "work/stage2/menu99/m99-menu1/l1.json",
+      "lo": "D800",
+      "hi": "E6F4",
+      "optional": true
+    },
+    {
+      "path": "work/stage2/menu99/m99-menu2/l1.json",
+      "lo": "D800",
+      "hi": "E6F4",
+      "optional": true
+    },
+    {
+      "path": "work/stage2/menu99/m99-menu3/l1.json",
+      "lo": "D800",
+      "hi": "E6F4",
+      "optional": true
+    },
+    {
+      "path": "work/stage2/menu99/m99-menu4/l1.json",
+      "lo": "D800",
+      "hi": "E6F4",
+      "optional": true
+    }
+  ],
+  "res_install": "tools/menu99_res.py",
+  "work": "work/stage2/menu99/mk-menu"
+}

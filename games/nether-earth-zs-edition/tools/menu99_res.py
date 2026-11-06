@@ -3,7 +3,7 @@
 
     python3 tools/menu99_res.py build OUT     OUT/res/menu99/*.bin: the bytes src/menu99/*.asm INCBIN
     python3 tools/menu99_res.py check         the editable files give the bytes of work/media/99/menu-out.bin
-    install(files)                            (from tools/menu99_mkgame.py menu --install) the bytes kit/mkgame.py
+    install(files)                            (kit/mkgame.py --part src/menu99/menu.json --install) the bytes kit/mkgame.py
                                               wrote, as the editable files
 
 Formats (src/res/menu99/README.md):

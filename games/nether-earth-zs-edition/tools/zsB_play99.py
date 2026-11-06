@@ -23,10 +23,12 @@ import json
 import os
 import sys
 import time
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import toolpaths  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 NE_TOOLS = os.path.join(ROOT, '..', 'nether-earth', 'tools')
-UNREAL = os.environ.get('UNREAL_NG', '/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/wt-nezs-stage1')
+UNREAL = toolpaths.unreal_ng(required=False) or 'unreal-ng'
 BIN = os.path.join(UNREAL, 'cmake-build-agent-release', 'bin', 'unreal-qt.app', 'Contents', 'MacOS', 'unreal-qt')
 SCL = os.path.join(ROOT, 'work', 'scl', 'z99', 'NEZSED.SCL')
 sys.path.insert(0, NE_TOOLS)

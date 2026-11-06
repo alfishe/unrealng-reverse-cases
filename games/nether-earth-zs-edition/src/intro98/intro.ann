@@ -1,5 +1,5 @@
 # The '98 intro block, $C000-$E9FF (NEZSEd.B sectors 2-43, read there by the REM loader, src/basic98/basic.asm):
-# the annotations tools/intro98_mkgame.py turns into src/intro98/*.asm. The format is kit/mkgame.py's (class
+# the annotations kit/mkgame.py --part src/intro98/intro.json turns into src/intro98/*.asm. The format is kit/mkgame.py's (class
 # Annotations); the code is what recording r98 ran in the intro window, frames 2048 to 4500
 # (work/stage2/intro98/w-intro/l1.json), widened by the kit's walk. Counts quoted below ("entered N times") are that
 # window's L1 counts. The player's names and most of its descriptions start from Advanced Nether Earth's

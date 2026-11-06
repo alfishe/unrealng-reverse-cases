@@ -1,6 +1,6 @@
 # The '99 start-up menu, $D800-$E6F3 (NEZSED.SCL sectors 123-132, read by stage 3 to $E800 of page 1 and unpacked by
 # its own depacker to $D800-$E6F3 of page 1, 3828 bytes, work/media/99/menu-out.bin): the annotations
-# tools/menu99_mkgame.py menu turns into src/menu99/*.asm. The format is kit/mkgame.py's (class Annotations).
+# kit/mkgame.py --part src/menu99/menu.json turns into src/menu99/*.asm. The format is kit/mkgame.py's (class Annotations).
 # The menu runs in page 0, not in page 1: MainMenu ($C100, the paged jump table of the patches block) JPs to $C112,
 # which copies a stub to $6700 (ROM LDIR at $33C3) that pages 1 in, copies $D800-$E7FF to the screen at $4000, pages 0
 # in, copies it to $D800 of page 0 and RETs to MenuEntry. So the windows are read with page 0 at $C000. The code is

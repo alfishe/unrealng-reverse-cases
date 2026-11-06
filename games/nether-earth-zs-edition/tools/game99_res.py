@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Editable sources for the resources of the '99 game block, src/res/game99. Graphics are PNG, the shapes, the menu
 tune and the order names are text. They become the `.bin` files src/game99/*.asm INCBINs (tools/build_game99.sh),
-and the build's byte-exact check against the game block keeps them honest. tools/game99_mkgame.py --install calls
-install(files) with the bytes of each @res entry (the built-in level, maps/builtin.bin, goes to tools/zs_level.py).
+and the build's byte-exact check against the game block keeps them honest. kit/mkgame.py --part src/game99/game.json
+--install calls install_game(files) with the bytes of each @res entry (the built-in level, maps/builtin.bin, goes to
+tools/zs_level.py).
 The formats are Nether Earth's (its tools/res_formats.py, of which this is a copy for this part's folder).
 
 | Source | Files built | Format |
@@ -679,6 +680,15 @@ def build(out, res=RES):
         os.makedirs(os.path.dirname(os.path.join(out, name)), exist_ok=True)
         open(os.path.join(out, name), 'wb').write(data)
     return files
+
+
+def install_game(files):
+    """the game block's resources (src/game99/game.json res_install): maps/ through tools/zs_level.py, the rest here"""
+    import zs_level
+    install({k: v for k, v in files.items() if not k.startswith('maps/')})
+    for k, v in files.items():
+        if k.startswith('maps/'):
+            zs_level.install(k, v)
 
 
 def install(files, res=RES):

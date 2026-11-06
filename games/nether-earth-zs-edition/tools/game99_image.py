@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The '99 game block and patches block as the disk leaves them, as 64 K images for tools/game99_mkgame.py.
+"""The '99 game block and patches block as the disk leaves them, as 64 K images for kit/mkgame.py (src/game99/game.json, src/patches99/patches.json).
 
     python3 tools/game99_image.py [--out work/stage2/game99/mkgame]
 

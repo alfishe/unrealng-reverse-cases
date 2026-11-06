@@ -1,0 +1,31 @@
+{
+  "about": "The '98 intro block ($C000-$E9FF): python3 ../../kit/mkgame.py --part src/intro98/intro.json --install",
+  "image_cmd": [
+    "python3",
+    "tools/zs_media.py"
+  ],
+  "image_always": false,
+  "image": "work/media/98/intro.bin",
+  "at": "C000",
+  "ann": "src/intro98/intro.ann",
+  "top": "intro98",
+  "bin": "intro-c000.bin",
+  "dest": "src/intro98",
+  "device": "ZXSPECTRUM128",
+  "bases": {
+    "0": "C000"
+  },
+  "header": [
+    "; Nether Earth ZS Edition '98 (ZS, 23.12.1998): the intro block, $C000-$E9FF, as the REM loader reads it",
+    "; (NEZSEd.B sectors 2-43). PT 3 Player v1.0 by Nick of GDC + \"COOL WINTER\" (KLIM/OHG '97) at $C000-$D88E,",
+    "; the intro (entered at $D88F by CALL from the REM loader) and its data at $D88F-$E9FF."
+  ],
+  "l1": [
+    {
+      "path": "work/stage2/intro98/w-intro/l1.json",
+      "reads": true
+    }
+  ],
+  "res_install": "tools/intro98_res.py",
+  "work": "work/stage2/intro98/mkgame"
+}

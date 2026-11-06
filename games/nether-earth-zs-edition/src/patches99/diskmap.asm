@@ -141,7 +141,7 @@ DiskMapKeys:
   ADD A,$05               ; the key table at $0205...
   LD H,$02                ; ...
   LD L,A                  ; ... HL = $0205 + E
-  LD A,($C27F)            ; the choice
+  LD A,(MapCursor+$0001)  ; the choice
   LD C,A                  ; C = it
   LD A,(HL)               ; A = the key's character
   POP HL                  ; the choice's attribute cells
@@ -170,7 +170,7 @@ DiskMapMove:
   LD (MapCursor+$0001),A  ; the new choice into the operand
   JR MapCursor            ; highlight it
 DiskMapLoad:
-  LD A,($C27F)            ; the choice...
+  LD A,(MapCursor+$0001)  ; the choice...
   INC A                   ; ... + 1
   LD B,A                  ; times
   LD HL,$F7FE             ; the list's +14, less one entry...

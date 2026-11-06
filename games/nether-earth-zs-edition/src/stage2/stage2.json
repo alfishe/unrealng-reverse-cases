@@ -1,5 +1,6 @@
 {
  "name": "stage2",
+ "work": "work/stage2/front99/mk-stage2",
  "image": "work/media/99/stage2-out.bin",
  "at": "61A8",
  "out": "build/front99/stage2-61a8.bin",

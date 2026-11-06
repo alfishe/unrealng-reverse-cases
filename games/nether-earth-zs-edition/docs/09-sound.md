@@ -76,7 +76,7 @@ VENV/bin/python tools/zsB_ay_play.py --load build/intro98/intro-c000.bin@C000 --
 python3 tools/zsB_fig_tunes.py --ay work/zsB/ay --out-dir docs/img/sound
 ```
 
-`VENV` is the SkoolKit virtualenv (`/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/venv-skoolkit`). The loop is
+`VENV` is the SkoolKit virtualenv (`$SKOOLKIT_VENV`). The loop is
 found where the 14 AY registers after each call repeat to the end of the run.
 
 In unreal-ng the tune sounds the same: the capture of the running intro repeats with a loudness correlation of 0.942

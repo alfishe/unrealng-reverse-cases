@@ -4,12 +4,12 @@
 #   tools/build_game98.sh [SJASMPLUS]
 #
 # The resources (src/res/game98, tools/game98_res.py) into build/game98/res/game98; src/game98/game98.asm (written by
-# tools/game98_mkgame.py from src/game98/game.ann) assembled into build/game98/game98.bin, its SAVEBIN of
+# kit/mkgame.py --part src/game98/game.json from src/game98/game.ann) assembled into build/game98/game98.bin, its SAVEBIN of
 # $6780-$D87F (28928 bytes), renamed game98-6780.bin and compared with NEZSEd.B's sectors 44-156 in
 # orig/NEZSED98.zip (tools/game98_image.py). src/disk98.txt puts game98-6780.bin back into the file.
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 b="$here/build/game98"
 mkdir -p "$b"
 python3 "$here/tools/game98_res.py" build --out "$b/res"

@@ -15,7 +15,7 @@
 # build/front99/res, which the sources INCBIN as "res/<part>/<file>".
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 b="$here/build/front99"
 m="$here/work/media/99"
 rm -rf "$b"

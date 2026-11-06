@@ -379,7 +379,7 @@ ChASampleStep:
   AND A
   JP P,ChAVolSlide
   AND $40
-  LD A,($C3A4)
+  LD A,(ChAVolSlide+$0001)
   JP NZ,ChAVolSlideUp
   DEC A
   CP $F0
@@ -532,7 +532,7 @@ ChAOnOffCount:
   DEC A
   JP M,ChBMute
   JR NZ,ChAOnOffStore
-  LD A,($C364)
+  LD A,(ChAMute+$0001)
   XOR $FF
   LD (ChAMute+$0001),A
   JP Z,ChAOnTime
@@ -587,7 +587,7 @@ ChBSampleStep:
   AND A
   JP P,ChBVolSlide
   AND $40
-  LD A,($C4C0)
+  LD A,(ChBVolSlide+$0001)
   JP NZ,ChBVolSlideUp
   DEC A
   CP $F0
@@ -759,7 +759,7 @@ ChBOnOffCount:
   DEC A
   JP M,ChCMute
   JR NZ,ChBOnOffStore
-  LD A,($C480)
+  LD A,(ChBMute+$0001)
   XOR $FF
   LD (ChBMute+$0001),A
   JP Z,ChBOnTime
@@ -814,7 +814,7 @@ ChCSampleStep:
   AND A
   JP P,ChCVolSlide
   AND $40
-  LD A,($C5DF)
+  LD A,(ChCVolSlide+$0001)
   JP NZ,ChCVolSlideUp
   DEC A
   CP $F0
@@ -982,7 +982,7 @@ ChCOnOffCount:
   DEC A
   JP M,EnvSlideAcc
   JR NZ,ChCOnOffStore
-  LD A,($C59F)
+  LD A,(ChCMute+$0001)
   XOR $FF
   LD (ChCMute+$0001),A
   JP Z,ChCOnTime
@@ -1257,7 +1257,7 @@ ChADecodeByte:
   LD H,(HL)
   LD L,A
   PUSH HL
-  LD A,($C41B)
+  LD A,(ChANote+$0001)
   EXX
   LD C,A
   EXX
@@ -1315,7 +1315,7 @@ ChAEffPorta:
   LD (ChANewGlissStep+$0001),DE
   XOR A
   LD (ChANewPortaJr+$0001),A
-  LD A,($CB3B)
+  LD A,(ChANewNote+$0001)
   LD (ChANewPortaNote+$0001),A
   EXX
   LD A,C
@@ -1642,7 +1642,7 @@ ChBDecodeByte:
   LD H,(HL)
   LD L,A
   PUSH HL
-  LD A,($C53A)
+  LD A,(ChBNote+$0001)
   EXX
   LD C,A
   EXX
@@ -1691,7 +1691,7 @@ ChBEffPorta:
   LD (ChBNewGlissStep+$0001),DE
   XOR A
   LD (ChBNewPortaJr+$0001),A
-  LD A,($CBCC)
+  LD A,(ChBNewNote+$0001)
   LD (ChBNewPortaNote+$0001),A
   EXX
   LD A,C
@@ -2280,7 +2280,7 @@ ChCDecodeByte:
   LD H,(HL)
   LD L,A
   PUSH HL
-  LD A,($C658)
+  LD A,(ChCNote+$0001)
   EXX
   LD C,A
   EXX
@@ -2331,7 +2331,7 @@ ChCEffPorta:
   XOR A
   LD (ChCOnOffCount+$0001),A
   LD (ChCPortaJr+$0001),A
-  LD A,($C658)
+  LD A,(ChCNote+$0001)
   LD (ChCPortaNote+$0001),A
   EXX
   LD A,C

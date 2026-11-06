@@ -5,12 +5,12 @@
 
 kit/refdocs.py reads one case: case.json, work/mkgame/game.ctl (kit/mkgame.py's control file), src/game/game.ann and
 the L1 builds work/<key>/l1.json. This case has nine annotated parts, each with its own .ann, its own control file
-(written by its part's wrapper around kit/mkgame.py under work/stage2/) and its own recordings. For each part this
+(written by kit/mkgame.py --part src/<part>/<name>.json under work/stage2/) and its own recordings. For each part this
 script makes a scratch case under --work with those files linked (the patches block's pieces each get the lines of
 their own piece of src/patches99/patches.ann), runs kit/refdocs.py there, and joins the parts into
 docs/11-data-reference.md and docs/12-routine-reference.md, one section a part, the headings one level down.
-Nothing outside --work and the two documents is written. The control files are the parts' own: run the part's
-*_mkgame.py first when an .ann changed.
+Nothing outside --work and the two documents is written. The control files are the parts' own: run
+tools/regen.sh (or the part's kit/mkgame.py --part) first when an .ann changed.
 """
 import argparse
 import os
@@ -91,8 +91,8 @@ The recordings are local (`work/`), not in the repository; [the WALKTHROUGH](../
 | `SoundEffect`, `Beep`, `PlayInterrupt`, the PT3 and Sound Tracker players | [9. Sound](09-sound.md) |
 | `GameTurn`, `DailyProduction`, `EnemyCommander`, `UpgradeEnemyRobots`, `FillEnemyResources`, `GameTurnEnd`, `CheckGameEnd` | [10. Gameplay logic](10-gameplay-logic.md) |
 
-Written by `python3 tools/zsB_refdocs.py` (through `kit/refdocs.py`); edit the part's `.ann`, run its
-`tools/*_mkgame.py`, then this script.
+Written by `python3 tools/zsB_refdocs.py` (through `kit/refdocs.py`); edit the part's `.ann`, run
+`kit/mkgame.py --part` on its part file (all: `tools/regen.sh`), then this script.
 """
 
 INTRO11 = """# 11. Data reference
@@ -169,7 +169,7 @@ def section(text, start, title, src, builds, key, data=False):
     body = text[i:] if i >= 0 else ''
     body = body.replace('`src/game/', '`%s/' % src)
     # the module table's links would collide between parts: plain names
-    body = re.sub(r'\[`(\w+)`\]\(#\w+\)', r'`\1`', body)
+    body = re.sub(r'\[`(\w+)`\]\((?:11-data-reference\.md)?#\w+\)', r'`\1`', body)
     lines = []
     for line in body.split('\n'):
         if line.startswith('#'):
@@ -199,7 +199,7 @@ def main():
         ann = os.path.join(work, f'patch-{name}.ann')
         piece_ann(name, lo, hi, ann)
         r12, r11 = run_part(work, 'patch-' + name, f"The '99 patches block: `{name}` (`src/patches99`)", 'src/patches99',
-                            ann, f'{S2}/game99/mkgame/out-{name}/game.ctl', lo, hi, PATCH_BUILDS, False)
+                            ann, f'{S2}/game99/mkgame/out-patches/patches-{name}.ctl', lo, hi, PATCH_BUILDS, False)
         s12.append(r12)
         s11.append(r11)
     toc12 = '\n'.join('- ' + s.split('\n')[0][3:] for s in s12)

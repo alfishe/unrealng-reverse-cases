@@ -22,10 +22,12 @@ import time
 import urllib.request
 
 from PIL import Image, ImageDraw, ImageFont
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import toolpaths  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CASES = os.path.dirname(ROOT)
-UNREAL = os.environ.get('UNREAL_NG', '/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/wt-nezs-stage1')
+UNREAL = toolpaths.unreal_ng(required=False) or 'unreal-ng'
 BINARY = os.path.join(UNREAL, 'cmake-build-agent-release', 'bin', 'unreal-qt.app', 'Contents', 'MacOS', 'unreal-qt')
 sys.path.insert(0, os.path.join(UNREAL, 'tools', 'verification', 'mcp'))
 import mcplib  # noqa: E402

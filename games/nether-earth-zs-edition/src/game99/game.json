@@ -1,0 +1,52 @@
+{
+  "about": "The '99 game block as it unpacks: python3 ../../kit/mkgame.py --part src/game99/game.json --install",
+  "image_cmd": [
+    "python3",
+    "tools/game99_image.py",
+    "--out",
+    "work/stage2/game99/mkgame"
+  ],
+  "image": "work/stage2/game99/mkgame/game/original.bin",
+  "at": "0000",
+  "lo": "6780",
+  "hi": "D7D3",
+  "ann": "src/game99/game.ann",
+  "top": "game",
+  "dest": "src/game99",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; Nether Earth ZS Edition '99 (ZS, 1999): the game block as it unpacks, $6780-$D7D2 (page 0 at $C000).",
+    "; Stage 3 then copies pieces of the patches block (src/patches99) over $A56A-$A5D5, $C100-$C17E and",
+    "; $C1FD-$C332, and the start-up menu and LOAD MAP patch operands (game.ann says where). Entry Start $A600."
+  ],
+  "l1": [
+    {
+      "path": "work/stage2/game99/r99-play/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage2/game99/crit-play/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage2/game99/loadmap-menu/l1.json",
+      "reads": true
+    }
+  ],
+  "overwritten": [
+    [
+      "A56A",
+      "A5D6"
+    ],
+    [
+      "C100",
+      "C17F"
+    ],
+    [
+      "C1FD",
+      "C333"
+    ]
+  ],
+  "res_install": "tools/game99_res.py:install_game",
+  "work": "work/stage2/game99/mkgame/out-game"
+}

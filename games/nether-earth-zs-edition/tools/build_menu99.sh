@@ -11,10 +11,10 @@
 #
 # The menu's resources go first through tools/menu99_res.py (the PrintInline strings from text, the pointer and the
 # viewer font from PNG) into build/menu99/res/menu99, which src/menu99 INCBINs as "res/menu99/<file>".
-# The .asm files are written from src/stage3/stage3.ann and src/menu99/menu.ann by tools/menu99_mkgame.py --install.
+# The .asm files are written from src/stage3/stage3.ann and src/menu99/menu.ann by kit/mkgame.py --part src/stage3/stage3.json / src/menu99/menu.json --install.
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 b="$here/build/menu99"
 m="$here/work/media/99"
 rm -rf "$b"

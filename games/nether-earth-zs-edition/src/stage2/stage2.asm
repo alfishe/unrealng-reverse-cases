@@ -1,11 +1,10 @@
 ; Nether Earth ZS Edition'99: stage 2, the intro, $61A8-$7D86: the unpacked bytes of NEZSEd99.B sectors 1-18
 ; (read to $8000 by the BASIC's reader, unpacked by the block's own depacker at $5B00, entered at $61A8).
-; Written by tools/front99_mkgame.py from the annotations (src/stage2/stage2.ann) and the recordings; edit the annotations,
-; not the .asm.
+; Written by kit/mkgame.py from src/stage2/stage2.ann and the recordings; edit stage2.ann, not the .asm.
 
   DEVICE ZXSPECTRUM48
 
-; Addresses outside this image (the annotations @equ lines): the ROMs, the system variables, the game
+; Addresses outside this image (@equ in the annotations)
 RomIM1         EQU $0038  ; the ROM's IM 1 handler (keyboard scan, FRAMES)
 RomClAddr      EQU $0E9E  ; ROM CL-ADDR from $0E9E: A = the character row (0-23) -> HL = its screen address, column 0
 RomPixelAddr   EQU $22B0  ; ROM PIXEL-ADD from $22B0: A = the pixel line from the top, C = x -> HL = the screen byte

@@ -1,5 +1,6 @@
 {
  "name": "music",
+ "work": "work/stage2/front99/mk-music",
  "image": "work/media/99/music.bin",
  "at": "C000",
  "out": "build/front99/music-c000.bin",

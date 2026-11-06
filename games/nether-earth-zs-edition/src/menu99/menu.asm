@@ -1,6 +1,6 @@
 ; Nether Earth ZS Edition '99, the 128 K start-up menu in page 1 ($D800-$E6F3).
 ; Unpacked by the block of sectors 123-132 (read to $E800 of page 1); entered at MenuEntry $D800.
-; Written by kit/mkgame.py from src/menu99/menu.ann (tools/menu99_mkgame.py menu) and the recordings; edit menu.ann, not the .asm.
+; Written by kit/mkgame.py from src/menu99/menu.ann and the recordings; edit menu.ann, not the .asm.
 
   DEVICE ZXSPECTRUM48
 

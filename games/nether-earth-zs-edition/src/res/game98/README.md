@@ -8,9 +8,9 @@ shapes) and the menu tune. Each is kept in an editable source here; `tools/game9
 `INCBIN "res/game98/..."` from there and compares the result with the file's 28928 bytes.
 
 - **Where they come from.** An entry of `src/game98/game.ann` followed by `@res game98/FILE` is a resource:
-  `tools/game98_mkgame.py` (kit/mkgame.py with this part's config) writes its bytes, and its data lines in
+  `kit/mkgame.py --part src/game98/game.json` writes its bytes, and its data lines in
   `src/game98/*.asm` become `INCBIN` lines under the entry's label. Entries that name one file share it: a sprite's
-  header and rows, the two view edges, the nine order names. `tools/game98_mkgame.py --install` writes them through
+  header and rows, the two view edges, the nine order names. `kit/mkgame.py --part src/game98/game.json --install` writes them through
   `game98_res.install`: every file here is an editable source, no `.bin` is kept. Edit the sources, not the `.asm`.
 - **What differs from NE.** Four sprite blocks (the table below), the scenery and base lists (`map/level.txt`).
   The font, the edges, the order names, the shapes and the tune are NE's bytes.

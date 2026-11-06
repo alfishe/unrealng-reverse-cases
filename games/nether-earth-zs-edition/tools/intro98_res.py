@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """The resources of the '98 intro and BASIC (src/res/intro98) as editable files, built back into the bytes the
-sources INCBIN (src/intro98/*.asm through tools/intro98_mkgame.py, src/basic98/basic.asm).
+sources INCBIN (src/intro98/*.asm through kit/mkgame.py --part src/intro98/intro.json, src/basic98/basic.asm).
 
 | Source (src/res/intro98)     | Built (build/intro98/res/intro98) | Format                                           |
 | ---------------------------- | --------------------------------- | ------------------------------------------------ |
@@ -479,7 +479,7 @@ def encode_files(files):
 
 
 def install(files, res=RES):
-    """mkgame's {intro98/NAME: bytes} into src/res/intro98 as sources (called by tools/intro98_mkgame.py)"""
+    """mkgame's {intro98/NAME: bytes} into src/res/intro98 as sources (called by kit/mkgame.py --part src/intro98/intro.json --install)"""
     folder = os.path.join(res, PART)
     os.makedirs(folder, exist_ok=True)
     plain = {}

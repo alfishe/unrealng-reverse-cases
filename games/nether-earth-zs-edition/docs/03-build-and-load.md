@@ -409,6 +409,6 @@ and writes the disks:
 | the five packed blocks | `sfx/zsblock.asm`, `sfx/blocks.txt`, `sfx/hints/` | | `tools/build.sh` (`tools/zspack.py`) |
 | the disks | `disk98.txt`, `disk99.txt` | the SCLs | `tools/mkscl.py` |
 
-Each `.ann` is turned into its `.asm` files by its part's wrapper around `kit/mkgame.py` (`tools/<part>_mkgame.py
---install`), which installs only when sjasmplus gives the original bytes. Result:
+Each `.ann` is turned into its `.asm` files by `kit/mkgame.py --part src/<part>/<name>.json --install` (all parts:
+`tools/regen.sh`), which installs only when sjasmplus gives the original bytes. Result:
 `build: NEZSED98.SCL identical to orig/NEZSED98.zip`, `build: NEZSED.SCL identical to orig/NEZSED.ZIP`.

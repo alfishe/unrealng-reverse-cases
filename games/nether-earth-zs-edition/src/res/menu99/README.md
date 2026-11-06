@@ -3,7 +3,7 @@
 The menu block (`src/menu99/menu.asm`, unpacked to `$D800-$E6F3` of page 1 and run from a copy in page 0) INCBINs
 these resources as `res/menu99/<file>.bin`. `tools/menu99_res.py build OUT` turns the files here back into those
 bytes; `tools/menu99_res.py check` compares them with `work/media/99/menu-out.bin`; `tools/build_menu99.sh` builds and
-compares the whole block. `tools/menu99_mkgame.py menu --install` writes these files from the image (first cut).
+compares the whole block. `kit/mkgame.py --part src/menu99/menu.json --install` writes these files from the image (first cut).
 
 | File | Bytes it stands for | Size | Format | Who reads it |
 | --- | --- | ---: | --- | --- |

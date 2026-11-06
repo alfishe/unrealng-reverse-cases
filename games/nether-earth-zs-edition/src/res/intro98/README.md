@@ -2,7 +2,7 @@
 
 The '98 file NEZSEd.B starts with the BASIC (`src/basic98/basic.asm`, sectors 0-1 at `$5D3B`) and the intro block
 (`src/intro98/intro98.asm`, sectors 2-43 at `$C000-$E9FF`, from `src/intro98/intro.ann` through
-`tools/intro98_mkgame.py`). `tools/intro98_res.py build` turns these files into the bytes the sources INCBIN as
+`kit/mkgame.py --part src/intro98/intro.json`). `tools/intro98_res.py build` turns these files into the bytes the sources INCBIN as
 `res/intro98/<file>`; `tools/build_intro98.sh` builds both parts and compares them with `work/media/98/basic.bin`
 and `work/media/98/intro.bin`. `python3 tools/intro98_res.py check` builds each source, writes it back and builds it
 again. The bytes are the file's, not the ones at run time.

@@ -23,8 +23,8 @@ The recordings are local (`work/`), not in the repository; [the WALKTHROUGH](../
 | `SoundEffect`, `Beep`, `PlayInterrupt`, the PT3 and Sound Tracker players | [9. Sound](09-sound.md) |
 | `GameTurn`, `DailyProduction`, `EnemyCommander`, `UpgradeEnemyRobots`, `FillEnemyResources`, `GameTurnEnd`, `CheckGameEnd` | [10. Gameplay logic](10-gameplay-logic.md) |
 
-Written by `python3 tools/zsB_refdocs.py` (through `kit/refdocs.py`); edit the part's `.ann`, run its
-`tools/*_mkgame.py`, then this script.
+Written by `python3 tools/zsB_refdocs.py` (through `kit/refdocs.py`); edit the part's `.ann`, run
+`kit/mkgame.py --part` on its part file (all: `tools/regen.sh`), then this script.
 
 The parts:
 

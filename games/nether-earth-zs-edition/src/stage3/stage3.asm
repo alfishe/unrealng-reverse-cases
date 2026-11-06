@@ -1,6 +1,6 @@
 ; Nether Earth ZS Edition '99, stage 3: "System checking", the memory test, the loads ($61A8-$67EB).
 ; Unpacked by the block of sectors 45-50 (read to $8000); entered at Stage3Entry $61A8.
-; Written by kit/mkgame.py from src/stage3/stage3.ann (tools/menu99_mkgame.py stage3) and the recordings; edit stage3.ann, not the .asm.
+; Written by kit/mkgame.py from src/stage3/stage3.ann and the recordings; edit stage3.ann, not the .asm.
 
   DEVICE ZXSPECTRUM48
 

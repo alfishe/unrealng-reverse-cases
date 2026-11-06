@@ -335,7 +335,7 @@ def export_one(name, data, folder=MAPS):
 
 
 def install(name, data):
-    """game99_mkgame.py: a maps/ resource of the game block (maps/builtin.bin) as its text"""
+    """game99_res.install_game: a maps/ resource of the game block (maps/builtin.bin) as its text"""
     base = os.path.basename(name)
     if base != BUILTIN + '.bin':
         fail(f'zs_level.install: no text format for {name}')

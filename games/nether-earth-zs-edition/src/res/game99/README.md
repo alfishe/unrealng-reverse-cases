@@ -10,9 +10,9 @@ base lists (`$BDA9-$BF9B`) are not here: they are a map like the twelve NELEV fi
 (`tools/zs_level.py`, [src/res/maps/README.md](../maps/README.md)), built to `build/game99/res/maps/builtin.bin`.
 
 - **Where they come from.** An entry of `src/game99/game.ann` followed by `@res FILE` is a resource:
-  `tools/game99_mkgame.py game` (kit/mkgame.py with this part's config) writes its bytes, and its data lines in
+  `kit/mkgame.py --part src/game99/game.json` writes its bytes, and its data lines in
   `src/game99/*.asm` become `INCBIN` lines under the entry's label. Entries that name one file share it: a sprite's
-  header and rows, the two view edges, the nine order names, the four level lists. `tools/game99_mkgame.py game
+  header and rows, the two view edges, the nine order names, the four level lists. `kit/mkgame.py --part src/game99/game.json
   --install` writes them through `game99_res.install` (and `zs_level.install` for `maps/builtin.bin`): every file
   here is an editable source, no `.bin` is kept. Edit the sources, not the `.asm`.
 - **What differs from NE.** The font (a new design: 347 of its 512 bytes differ) and four bytes in three sprite

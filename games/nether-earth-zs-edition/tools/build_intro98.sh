@@ -15,7 +15,7 @@
 # are built, not the ones at run time (Pt3Init fills $C048-$C0FF when the intro starts).
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 b="$here/build/intro98"
 m="$here/work/media/98"
 rm -rf "$b"

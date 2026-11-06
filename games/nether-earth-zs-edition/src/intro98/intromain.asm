@@ -196,7 +196,7 @@ LogoRowSkip:
 ; lines of row 11 ($4860-$487F) shift left one pixel. Uses AF BC DE HL.
 ScrollStep:
   LD HL,ScrollText        ; the text pointer (operand), ScrollText at first
-  LD A,($D9CE)            ; the counter + 1, mod 8
+  LD A,(ScrollColumn+$0001) ; the counter + 1, mod 8
   INC A
   AND $07
   LD (ScrollColumn+$0001),A

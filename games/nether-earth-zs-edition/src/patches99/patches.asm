@@ -1,11 +1,12 @@
 ; Nether Earth ZS Edition '99: the patches block as it unpacks, $D800-$DB6F (880 bytes).
-; Written by tools/game99_mkgame.py from src/patches99/patches.ann and the recordings; edit the .ann.
 ; Eight pieces that stage 3 copies to their run addresses (two sets: TR-DOS + 128 K, tape / one page);
-; each is assembled with DISP at the address it runs at, laid at its offset of the block.
+; each is assembled with DISP at the address it runs at, laid at its offset of the block. The tape and
+; one-page pieces never ran in a recording: their code is the annotation's entries walked statically.
+; Written by kit/mkgame.py from src/patches99/patches.ann and the recordings; edit patches.ann, not the .asm.
 
   DEVICE ZXSPECTRUM48
 
-; The addresses the pieces use outside themselves (game99 labels, ROM entries, menu99 labels)
+; Addresses outside this image (@equ in the annotations)
 KeyScan        EQU $028E  ; 48 ROM KEY-SCAN: E = the key's number ($FF none), D = the shift
 LdBytesIn      EQU $0562  ; 48 ROM LD-BYTES past its set-up (after LD HL,SA/LD-RET; PUSH HL): the edges and bytes
 TrDosReadSector EQU $2F1B  ; TR-DOS ROM: sector E + 1 into the sector register, read 256 bytes to HL
@@ -39,46 +40,52 @@ LoadBuffer     EQU $F000  ; the catalogue (8 sectors) and then the map file (2 s
 FileList       EQU $F800  ; LOAD MAP's list of the N files: 16-byte catalogue entries, over the map's rows 13-14
 PrintAddr      EQU $FD04  ; game99: the screen address of the next printed character
 
+; diskread (disk set), 62 bytes: $D800-$D83D, run at $A598
   ORG $D800
-
-; $D800: diskread (disk set), 62 bytes, run at $A598
   DISP $A598
-  INCLUDE "diskread.asm"
+  INCLUDE "diskread.asm"  ; The TR-DOS sector reader (the disk set), run at $A598
   ENT
 
-; $D83E: diskmap (disk set), 310 bytes, run at $C1FD
+; diskmap (disk set), 310 bytes: $D83E-$D973, run at $C1FD
+  ORG $D83E
   DISP $C1FD
-  INCLUDE "diskmap.asm"
+  INCLUDE "diskmap.asm"  ; LOAD MAP from disk (the disk set), run at $C1FD
   ENT
 
-; $D974: taperead (tape set), 56 bytes, run at $A598
+; taperead (tape set), 56 bytes: $D974-$D9AB, run at $A598
+  ORG $D974
   DISP $A598
-  INCLUDE "taperead.asm"
+  INCLUDE "taperead.asm"  ; The tape block reader (the tape set), run at $A598
   ENT
 
-; $D9AC: tapemap (tape set), 147 bytes, run at $C1FD
+; tapemap (tape set), 147 bytes: $D9AC-$DA3E, run at $C1FD
+  ORG $D9AC
   DISP $C1FD
-  INCLUDE "tapemap.asm"
+  INCLUDE "tapemap.asm"  ; LOAD MAP from tape (the tape set), run at $C1FD
   ENT
 
-; $DA3F: paging128 (disk set), 41 bytes, run at $A56A
+; paging128 (disk set), 41 bytes: $DA3F-$DA67, run at $A56A
+  ORG $DA3F
   DISP $A56A
-  INCLUDE "paging128.asm"
+  INCLUDE "paging128.asm"  ; 128 K: the text copy from page 3 and the paging routine (the disk set), run at $A56A
   ENT
 
-; $DA68: menu128 (disk set), 127 bytes, run at $C100
+; menu128 (disk set), 127 bytes: $DA68-$DAE6, run at $C100
+  ORG $DA68
   DISP $C100
-  INCLUDE "menu128.asm"
+  INCLUDE "menu128.asm"  ; 128 K: the start-up menu's entries in the game, the menu copy from page 1 (the disk set), run at $C100
   ENT
 
-; $DAE7: textload48 (tape set), 46 bytes, run at $A56A
+; textload48 (tape set), 46 bytes: $DAE7-$DB14, run at $A56A
+  ORG $DAE7
   DISP $A56A
-  INCLUDE "textload48.asm"
+  INCLUDE "textload48.asm"  ; One page / tape: a text or the menu read from disk or tape (the tape set), run at $A56A
   ENT
 
-; $DB15: menu48 (tape set), 91 bytes, run at $C100
+; menu48 (tape set), 91 bytes: $DB15-$DB6F, run at $C100
+  ORG $DB15
   DISP $C100
-  INCLUDE "menu48.asm"
+  INCLUDE "menu48.asm"  ; One page / tape: the start-up menu's entries in the game (the tape set), run at $C100
   ENT
 
-  SAVEBIN "patches.bin",$D800,$0370
+  SAVEBIN "patches.bin",$D800,880

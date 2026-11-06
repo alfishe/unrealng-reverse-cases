@@ -1,7 +1,7 @@
 # The '99 stage 3, $61A8-$67EB (NEZSED.SCL sectors 45-50, read to $8000 by stage 2 and unpacked to $61A8, 1604 bytes,
-# work/media/99/stage3-out.bin): the annotations tools/menu99_mkgame.py stage3 turns into src/stage3/*.asm. The
-# format is kit/mkgame.py's (class Annotations). The code is what four recordings ran, each window clamped (see the
-# wrapper's PARTS): r99 (Pentagon 128, the disk) frames 2194-2300 and 2299-2662, r99-48 (the Pentagon locked in
+# work/media/99/stage3-out.bin): the annotations kit/mkgame.py --part src/stage3/stage3.json turns into
+# src/stage3/*.asm. The format is kit/mkgame.py's (class Annotations). The code is what four recordings ran, each
+# window clamped (see the part file's l1): r99 (Pentagon 128, the disk) frames 2194-2300 and 2299-2662, r99-48 (the Pentagon locked in
 # 48 K BASIC) frames 5182-5648, s99 (Scorpion ZS-256) frames 1903-2278 (work/stage2/menu99/<window>/l1.json),
 # widened by the kit's walk; the tape path and ListPage were run by no recording and are seeded below.
 # The witnesses quoted: $5CB0 / $5CB1 (IY+$76 / IY+$77) read with tools/ttd_find.py at the frame named.
