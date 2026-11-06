@@ -14,7 +14,7 @@
 # One build at a time: a second one waits for build/.lock (a directory) to go away.
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1  # $SJASMPLUS, PATH or a checkout
 mkdir -p "$here/build"
 lock="$here/build/.lock"
 waited=0

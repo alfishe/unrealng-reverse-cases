@@ -17,6 +17,9 @@
     "c2",
     "r1"
   ],
+  "code_builds": [
+    "c1"
+  ],
   "ref_builds": [
     [
       "c2",

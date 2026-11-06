@@ -20,9 +20,10 @@ import sys
 import numpy as np
 
 import zynlib as Z
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import toolpaths  # noqa: E402
 
-BINARY = ('/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/wt-nezs-stage1/cmake-build-agent-release/bin/'
-          'unreal-qt.app/Contents/MacOS/unreal-qt')
+BINARY = toolpaths.unreal_binary(required=False) or 'unreal-qt'
 RUNS = [('select', 0, False), ('take-0', 0, True), ('take-1', 1, True), ('take-2', 2, True), ('take-3', 3, True),
         ('take-4', 4, True)]
 
