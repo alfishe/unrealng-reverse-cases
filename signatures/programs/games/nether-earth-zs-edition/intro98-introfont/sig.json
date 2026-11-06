@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/intro98-introfont",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '98: the intro: introfont",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1998,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "introfont"
+  ],
+  "summary": "The scroller's font and the bytes after it.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 820,
+    "sha1": "94f9eb380770648bc0aed0ed2387cec25023c40c",
+    "masked_sha1": "94f9eb380770648bc0aed0ed2387cec25023c40c"
+  },
+  "origin": "$E6CC",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "IntroFont",
+      "comment": "the scroller's font: 96 glyphs from code $20 (src/res/intro98/font.png)"
+    },
+    {
+      "offset": 768,
+      "name": "FontTailLeftover",
+      "comment": "52 bytes after the font that nothing reads (src/res/intro98/font-tail-leftover.bin)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '98: the intro",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$E6CC",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/intro98/introfont.asm",
+    "label": "IntroFont"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

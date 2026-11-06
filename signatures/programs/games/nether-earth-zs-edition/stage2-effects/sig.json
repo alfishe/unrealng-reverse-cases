@@ -1,0 +1,437 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/stage2-effects",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: stage 2: effects",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "effects"
+  ],
+  "summary": "The intro's screen effects and colour cycles.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 443,
+    "sha1": "f8244db6542dbaa56c5b30ccfa29f94961a19af8",
+    "masked_sha1": "ca2d4b040b248e79415b76c6d53c188a484ae1bd"
+  },
+  "origin": "$628B",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AE0"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5831"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollText"
+    },
+    {
+      "offset": 54,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintChars"
+    },
+    {
+      "offset": 63,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintChar"
+    },
+    {
+      "offset": 68,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7487"
+    },
+    {
+      "offset": 71,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5C36"
+    },
+    {
+      "offset": 81,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Music"
+    },
+    {
+      "offset": 95,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 140,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Attrs"
+    },
+    {
+      "offset": 151,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_400F"
+    },
+    {
+      "offset": 158,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 169,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_480F"
+    },
+    {
+      "offset": 178,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 208,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 234,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Screen"
+    },
+    {
+      "offset": 257,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Attrs"
+    },
+    {
+      "offset": 273,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 289,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 305,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 319,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 354,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Attrs"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "CycleBottomRow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Recolour the bottom text row (row 23): each cell the next ink 1-7"
+    },
+    {
+      "offset": 17,
+      "name": "CycleLogoColours",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Recolour the logo's box: 15 rows of 14 cells, each row the next ink 1-7"
+    },
+    {
+      "offset": 46,
+      "name": "PrintLine",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print the line at DE at the scroller's bottom row, up to its CR"
+    },
+    {
+      "offset": 67,
+      "name": "PrintLineFont",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Not reached: CHARS = $7487 (a ROM-layout font at $7587), then PrintLine's character loop"
+    },
+    {
+      "offset": 75,
+      "name": "PrintLineRom",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Not reached: CHARS = $3C00 (the ROM's font), then as PrintLineFont"
+    },
+    {
+      "offset": 80,
+      "name": "RollInPicture",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Show the picture at HL: line y of it fills screen lines 0-y, y from 191 down to 0, then its attributes"
+    },
+    {
+      "offset": 150,
+      "name": "PushOutScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Push the screen out: each half shifted one pixel outwards, more lines each step"
+    },
+    {
+      "offset": 185,
+      "name": "ShiftLinesApart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Shift B screen lines from the one at HL+1 apart by one pixel"
+    },
+    {
+      "offset": 214,
+      "name": "NextLineDown",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the screen address one pixel line down"
+    },
+    {
+      "offset": 229,
+      "name": "DissolveScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Clear the screen's pixels bit by bit: 250 passes over every 29th byte"
+    },
+    {
+      "offset": 256,
+      "name": "SpiralAttrs",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Fill the attributes with A in a spiral from the outside in, one cell a delay"
+    },
+    {
+      "offset": 331,
+      "name": "Delay500",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A delay loop of 500 counts (BC, AF kept)"
+    },
+    {
+      "offset": 344,
+      "name": "WindowAttrAddr",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Not reached: HL = the attribute address of the window at IX, C = its width, B = its height"
+    },
+    {
+      "offset": 371,
+      "name": "ScrollWindowUp",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Scroll the window at IX up by one pixel line; its last line cleared"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 6,
+      "name": "BottomRowCell",
+      "comment": ""
+    },
+    {
+      "offset": 7,
+      "name": "BottomRowInk",
+      "comment": "the next ink, never 0 (black)"
+    },
+    {
+      "offset": 24,
+      "name": "LogoRow",
+      "comment": ""
+    },
+    {
+      "offset": 25,
+      "name": "LogoInk",
+      "comment": "the next ink, never 0"
+    },
+    {
+      "offset": 32,
+      "name": "LogoCell",
+      "comment": ""
+    },
+    {
+      "offset": 57,
+      "name": "PrintLineChar",
+      "comment": ""
+    },
+    {
+      "offset": 70,
+      "name": "PrintLineSetChars",
+      "comment": ""
+    },
+    {
+      "offset": 88,
+      "name": "RollInLine",
+      "comment": ""
+    },
+    {
+      "offset": 90,
+      "name": "",
+      "comment": "HL = screen line y ..."
+    },
+    {
+      "offset": 93,
+      "name": "",
+      "comment": "... DE = the same line in the picture"
+    },
+    {
+      "offset": 107,
+      "name": "RollInCopy",
+      "comment": "screen lines 0..y = the picture's line y"
+    },
+    {
+      "offset": 132,
+      "name": "",
+      "comment": "the attributes"
+    },
+    {
+      "offset": 148,
+      "name": "RollInSource",
+      "comment": "RollInPicture's picture address"
+    },
+    {
+      "offset": 155,
+      "name": "PushOutStep",
+      "comment": ""
+    },
+    {
+      "offset": 173,
+      "name": "PushOutEnd",
+      "comment": ""
+    },
+    {
+      "offset": 191,
+      "name": "ShiftLeftHalf",
+      "comment": ""
+    },
+    {
+      "offset": 201,
+      "name": "ShiftRightHalf",
+      "comment": ""
+    },
+    {
+      "offset": 239,
+      "name": "DissolveByte",
+      "comment": ""
+    },
+    {
+      "offset": 261,
+      "name": "",
+      "comment": "A' = the attribute"
+    },
+    {
+      "offset": 262,
+      "name": "SpiralRing",
+      "comment": ""
+    },
+    {
+      "offset": 267,
+      "name": "SpiralTop",
+      "comment": ""
+    },
+    {
+      "offset": 283,
+      "name": "SpiralRight",
+      "comment": ""
+    },
+    {
+      "offset": 299,
+      "name": "SpiralBottom",
+      "comment": ""
+    },
+    {
+      "offset": 312,
+      "name": "SpiralLeft",
+      "comment": ""
+    },
+    {
+      "offset": 323,
+      "name": "",
+      "comment": "the next ring starts one cell down and right"
+    },
+    {
+      "offset": 336,
+      "name": "DelayLoop",
+      "comment": ""
+    },
+    {
+      "offset": 406,
+      "name": "ScrollWindowLine",
+      "comment": ""
+    },
+    {
+      "offset": 427,
+      "name": "",
+      "comment": "the last line cleared"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99: stage 2",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$628B",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/stage2/stage2/effects.asm",
+    "label": "CycleBottomRow"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

@@ -1,0 +1,254 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/intro98-robot",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '98: the intro: robot",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1998,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "robot"
+  ],
+  "summary": "The robot animation: its depacker and its four frames.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 718,
+    "sha1": "1893ec05ff6582c352cfdc06db0efcd20f698e4b",
+    "masked_sha1": "310934161ef9dc27dae790650b98288b581bab75"
+  },
+  "origin": "$E3FE",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 6,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 27,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "RobotFrame",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the robot's next animation frame from RobotStream"
+    },
+    {
+      "offset": 5,
+      "name": "RobotSelf",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "where RobotFrame goes on: the ROM's JP (HL) at $1FC8 lands here with HL = RobotSelf"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "A = 1: NZ for the ROM's RET Z"
+    },
+    {
+      "offset": 2,
+      "name": "",
+      "comment": "to $1FC6 in the 48 K ROM: POP HL / RET Z / JP (HL): back at RobotSelf with HL = RobotSelf"
+    },
+    {
+      "offset": 5,
+      "name": "",
+      "comment": "BC = the stream position (operand, RobotPos)"
+    },
+    {
+      "offset": 6,
+      "name": "RobotPos",
+      "comment": ""
+    },
+    {
+      "offset": 8,
+      "name": "",
+      "comment": "DE = RobotSelf"
+    },
+    {
+      "offset": 9,
+      "name": "",
+      "comment": "HL = RobotSelf + $2C8 = RobotStreamEnd - 1, the last byte of the stream"
+    },
+    {
+      "offset": 13,
+      "name": "",
+      "comment": "carry: the position is past it ..."
+    },
+    {
+      "offset": 17,
+      "name": "",
+      "comment": "... else go on from it"
+    },
+    {
+      "offset": 19,
+      "name": "",
+      "comment": "restart: RobotSelf + $B0 = RobotStream"
+    },
+    {
+      "offset": 23,
+      "name": "RobotStart",
+      "comment": "RobotSelf kept for the end"
+    },
+    {
+      "offset": 24,
+      "name": "",
+      "comment": "C = $F8: the mask of the address conversion"
+    },
+    {
+      "offset": 26,
+      "name": "",
+      "comment": "DE = the output position, from $4000"
+    },
+    {
+      "offset": 29,
+      "name": "RobotNext",
+      "comment": "the next code"
+    },
+    {
+      "offset": 31,
+      "name": "",
+      "comment": "$C0-$FF: the fills, literals and the end"
+    },
+    {
+      "offset": 35,
+      "name": "",
+      "comment": "$00-$7F: a copy"
+    },
+    {
+      "offset": 39,
+      "name": "",
+      "comment": "$80-$BF: a skip; $80-$83 with a byte, else code - $83"
+    },
+    {
+      "offset": 54,
+      "name": "RobotSkipLong",
+      "comment": "DE + (code & 3) * 256 + the next byte"
+    },
+    {
+      "offset": 64,
+      "name": "RobotCopy",
+      "comment": "HL = DE + the negative offset, B = the count; carry set (the copy mode)"
+    },
+    {
+      "offset": 78,
+      "name": "RobotCopyNext",
+      "comment": "a source byte: past $57FF as it is, else through the conversion"
+    },
+    {
+      "offset": 84,
+      "name": "",
+      "comment": "the screen address of HL into DE': H = H & $F8 | L & 7, L = (L & $F8 | H & 7) rotated left twice"
+    },
+    {
+      "offset": 97,
+      "name": "",
+      "comment": "the source byte"
+    },
+    {
+      "offset": 99,
+      "name": "RobotPut",
+      "comment": "a byte to the output: past $57FF as it is, else through the conversion"
+    },
+    {
+      "offset": 118,
+      "name": "",
+      "comment": "written"
+    },
+    {
+      "offset": 120,
+      "name": "RobotAdvance",
+      "comment": "the next position; carry: copy, zero: fill (the same byte), else a literal (the next byte)"
+    },
+    {
+      "offset": 127,
+      "name": "RobotRepeat",
+      "comment": ""
+    },
+    {
+      "offset": 131,
+      "name": "RobotCopyStep",
+      "comment": ""
+    },
+    {
+      "offset": 138,
+      "name": "RobotFill",
+      "comment": "$C1-$FF: bit 0 of code - $C0 clear: literals (n / 2), set: fills"
+    },
+    {
+      "offset": 150,
+      "name": "RobotZeros",
+      "comment": "A = 0 (zero set, carry clear: the fill mode)"
+    },
+    {
+      "offset": 153,
+      "name": "RobotFillShort",
+      "comment": ""
+    },
+    {
+      "offset": 158,
+      "name": "RobotFillByte",
+      "comment": "the fill's byte"
+    },
+    {
+      "offset": 162,
+      "name": "RobotLiteral",
+      "comment": "n / 2 literal bytes (n = 0: the frame's end)"
+    },
+    {
+      "offset": 167,
+      "name": "RobotFrameEnd",
+      "comment": "$C0: the position after it into RobotPos"
+    },
+    {
+      "offset": 174,
+      "name": "RobotCopyAttr",
+      "comment": "a source byte past $57FF"
+    },
+    {
+      "offset": 177,
+      "name": "RobotPutAttr",
+      "comment": "a byte past $57FF: written as it is"
+    },
+    {
+      "offset": 181,
+      "name": "RobotStream",
+      "comment": "the four frames (src/res/intro98/robot.png, robot.parse)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '98: the intro",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$E3FE",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/intro98/robot.asm",
+    "label": "RobotFrame"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/stage3-s3data",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: stage 3: s3data",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "s3data"
+  ],
+  "summary": "The page list, the saved bytes, the strings.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 441,
+    "sha1": "edf957720708f31f905c46b77a7ead54ee5e319a",
+    "masked_sha1": "edf957720708f31f905c46b77a7ead54ee5e319a"
+  },
+  "origin": "$6633",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "PageListGuard",
+      "comment": "$FF in front of PageList (no window reads it)"
+    },
+    {
+      "offset": 1,
+      "name": "PageList",
+      "comment": "the pages to count: 0 1 3 4 6 7 8 .. 63, $FF"
+    },
+    {
+      "offset": 63,
+      "name": "",
+      "comment": "the end mark"
+    },
+    {
+      "offset": 64,
+      "name": "PageSave",
+      "comment": "the byte at $C000 of pages 0-63 while CountPages marks them"
+    },
+    {
+      "offset": 128,
+      "name": "TitleText",
+      "comment": "AT 0,10 INK 4 PAPER 0 FLASH 0 BRIGHT 0 \"NETHER  EARTH\" AT 1,10 \"ZS Edition'99\" INK 6 AT 3,1 \"System checking...\" CR \"Computer \" INK 5"
+    },
+    {
+      "offset": 204,
+      "name": "MemoryText",
+      "comment": "CR INK 6 \"Memory \" INK 5"
+    },
+    {
+      "offset": 217,
+      "name": "KbText",
+      "comment": "INK 6 \"Kb\" CR \"Using \" INK 5"
+    },
+    {
+      "offset": 231,
+      "name": "TapeRecorderText",
+      "comment": "\"TAPE RECORDER\" (the tape path; no window reads it)"
+    },
+    {
+      "offset": 245,
+      "name": "LoadingText",
+      "comment": "AT 8,1 INK 6 \"Loading... \" CR \"Game... \""
+    },
+    {
+      "offset": 271,
+      "name": "OkText",
+      "comment": "INK 4 \"O.k.\" INK 6 CR"
+    },
+    {
+      "offset": 281,
+      "name": "DriversText",
+      "comment": "\"Drivers... \""
+    },
+    {
+      "offset": 293,
+      "name": "MenusText",
+      "comment": "\"Menus... \""
+    },
+    {
+      "offset": 303,
+      "name": "RamDiskText",
+      "comment": "\"RAM-Disk... \""
+    },
+    {
+      "offset": 316,
+      "name": "BattleText",
+      "comment": "AT 20,5 INK 0 \"Let the Battle begin!\": nothing prints it"
+    },
+    {
+      "offset": 333,
+      "name": "GameBlock",
+      "comment": "the game block's first byte once read (ReadSectors, 68 sectors): its entry"
+    },
+    {
+      "offset": 343,
+      "name": "TapeErrorText",
+      "comment": "AT 20,3 INK 2 PAPER 6 BRIGHT 1 FLASH 1 \"Tape Error. System Halted.\""
+    },
+    {
+      "offset": 381,
+      "name": "MachineNames",
+      "comment": "$FF, then \"Scorpion\" \"Spectrum\" \"Spectrum\" \"ATM\" \"TURBO 2+\" \"PROFI\" \"KAY\" \"Spectrum\": bits 7-0"
+    },
+    {
+      "offset": 382,
+      "name": "NameScorpion",
+      "comment": ""
+    },
+    {
+      "offset": 432,
+      "name": "NameDefault",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99: stage 3",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$6633",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/stage3/s3data.asm",
+    "label": "PageListGuard"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/intro98-intrologo",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '98: the intro: intrologo",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1998,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "intrologo"
+  ],
+  "summary": "The ZS logo's cells and the robot box's header.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 69,
+    "sha1": "98a02c2938550d91f43bb910e3ddda2c34196812",
+    "masked_sha1": "98a02c2938550d91f43bb910e3ddda2c34196812"
+  },
+  "origin": "$E3B9",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "LogoMask",
+      "comment": "the ZS logo: 8 x 8 cells, 1 = painted (src/res/intro98/logo.png)"
+    },
+    {
+      "offset": 64,
+      "name": "RobotHeader",
+      "comment": "the robot box: column 13, row 16, 6 x 8 cells, attribute 6"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '98: the intro",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$E3B9",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/intro98/intrologo.asm",
+    "label": "LogoMask"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

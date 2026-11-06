@@ -1,0 +1,3719 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/game99-view",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: view",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "view"
+  ],
+  "summary": "The isometric view: the buffer, the painter's walk over the map, the masked sprites.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1020,
+    "sha1": "37d4fc8b9a35b94165ef1faa6e81e9df7abbb2d8",
+    "masked_sha1": "630feae71d94844c8c2e091378eb2fbf86ece3ea"
+  },
+  "origin": "$CCBD",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 13,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipDrawPos"
+    },
+    {
+      "offset": 17,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipX"
+    },
+    {
+      "offset": 24,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MapView"
+    },
+    {
+      "offset": 35,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipY"
+    },
+    {
+      "offset": 41,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 44,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MapView"
+    },
+    {
+      "offset": 49,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 61,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 66,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 103,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 108,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 116,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipDrawPos"
+    },
+    {
+      "offset": 134,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 141,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 146,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 156,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 160,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 164,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 185,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipDrawPos"
+    },
+    {
+      "offset": 199,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Altitude"
+    },
+    {
+      "offset": 202,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 206,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 227,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 231,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 237,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 247,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 285,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Robots"
+    },
+    {
+      "offset": 314,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Buildings"
+    },
+    {
+      "offset": 342,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 347,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 353,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Shots"
+    },
+    {
+      "offset": 386,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 389,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 393,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 397,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 400,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 404,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 431,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 466,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MapCell"
+    },
+    {
+      "offset": 513,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 525,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 544,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 550,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 565,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 570,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 596,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PartSpriteTable"
+    },
+    {
+      "offset": 599,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 605,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 611,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PartHeights"
+    },
+    {
+      "offset": 614,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 617,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 621,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 652,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpriteTable"
+    },
+    {
+      "offset": 655,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TableWord"
+    },
+    {
+      "offset": 665,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 701,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 706,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 721,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 743,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 746,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewBuffer"
+    },
+    {
+      "offset": 757,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 764,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 782,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 791,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 795,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 798,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 801,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewEdgeA"
+    },
+    {
+      "offset": 806,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5B0A"
+    },
+    {
+      "offset": 809,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 812,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewEdgeA"
+    },
+    {
+      "offset": 817,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_65B2"
+    },
+    {
+      "offset": 820,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 823,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewEdgeB"
+    },
+    {
+      "offset": 828,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6512"
+    },
+    {
+      "offset": 831,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 835,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SavedSP"
+    },
+    {
+      "offset": 838,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Font"
+    },
+    {
+      "offset": 857,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SavedSP"
+    },
+    {
+      "offset": 860,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewBuffer"
+    },
+    {
+      "offset": 863,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5B01"
+    },
+    {
+      "offset": 876,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 879,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 882,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewBuffer"
+    },
+    {
+      "offset": 902,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 909,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 914,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 949,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewBuffer"
+    },
+    {
+      "offset": 952,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4021"
+    },
+    {
+      "offset": 1017,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "DrawView",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw the isometric view: background, objects, copy to the screen"
+    },
+    {
+      "offset": 9,
+      "name": "DrawMapObjects",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw the 32 x 16 cells of the view back to front into the view buffer"
+    },
+    {
+      "offset": 91,
+      "name": "DrawCell",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw map cell HL (A = its byte) at view row D, column E"
+    },
+    {
+      "offset": 211,
+      "name": "CheckObjectNeighbour",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Ship: an object at HL counts, and so do the blocks around it"
+    },
+    {
+      "offset": 217,
+      "name": "FindLatestBlock",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DE = the cell drawn last among DE and the blocks next to HL"
+    },
+    {
+      "offset": 251,
+      "name": "CheckBlockNeighbour",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A block at HL competes for the latest cell"
+    },
+    {
+      "offset": 258,
+      "name": "KeepLaterCell",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DE = HL if map cell HL is drawn after cell DE"
+    },
+    {
+      "offset": 283,
+      "name": "FindRobot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Z: IY the robot record standing on map cell HL, B = 48 - its slot (slots 0-23 the player's)"
+    },
+    {
+      "offset": 312,
+      "name": "FindBuilding",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Z: IY the building record (Buildings) on map cell HL"
+    },
+    {
+      "offset": 341,
+      "name": "DrawCellObject",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw the object of map cell HL (bit 6): a robot, a building or a shot"
+    },
+    {
+      "offset": 427,
+      "name": "DrawMover",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw robot or shot IY found at cell HL (view row D, column E), after the blocks that overlap it"
+    },
+    {
+      "offset": 518,
+      "name": "DrawMoverSprite",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw IY: a robot record ($DA00 up) as a stack of parts, a shot as one sprite"
+    },
+    {
+      "offset": 555,
+      "name": "DrawRobot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw robot IY at view row D, column E: its parts bottom up"
+    },
+    {
+      "offset": 576,
+      "name": "DrawRobotPart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw part 8 - B of robot IY facing +$08, then raise the height"
+    },
+    {
+      "offset": 624,
+      "name": "DrawSprite",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw sprite A at view row D, column E, height ($CF3F) into the view buffer"
+    },
+    {
+      "offset": 794,
+      "name": "DrawViewBackground",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Clear the view buffer and paint the corners outside the map"
+    },
+    {
+      "offset": 833,
+      "name": "ClearViewBuffer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Zero the view buffer $5B00-$677F (20 bytes x 160 rows)"
+    },
+    {
+      "offset": 873,
+      "name": "FillViewCorner",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Fill the top left corner of the view buffer: a staircase of 5 bands"
+    },
+    {
+      "offset": 922,
+      "name": "DrawEdgeStrips",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Copy B strips of 8 rows x 2 bytes (pattern HL) into the buffer, each 8 rows down and 2 bytes left"
+    },
+    {
+      "offset": 948,
+      "name": "CopyViewToScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Copy the view buffer to the screen at character row 1, column 1 (20 x 20 characters)"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "clear the buffer, paint the corners and the map's edge"
+    },
+    {
+      "offset": 3,
+      "name": "",
+      "comment": "the shadow, the blocks, buildings, robots, shots and the ship"
+    },
+    {
+      "offset": 6,
+      "name": "",
+      "comment": "the buffer to the screen; its RET ends DrawView"
+    },
+    {
+      "offset": 9,
+      "name": "",
+      "comment": "no deferred ship yet"
+    },
+    {
+      "offset": 12,
+      "name": "",
+      "comment": "ShipDrawPos = 0"
+    },
+    {
+      "offset": 15,
+      "name": "",
+      "comment": "height 0 for the shadow"
+    },
+    {
+      "offset": 16,
+      "name": "",
+      "comment": "into DrawSprite's height operand ($CF3F)"
+    },
+    {
+      "offset": 19,
+      "name": "",
+      "comment": "the shadow's view column: ShipX - ViewX"
+    },
+    {
+      "offset": 22,
+      "name": "",
+      "comment": "DE = MapView with D reduced to its low bit: only the low byte of the difference matters"
+    },
+    {
+      "offset": 26,
+      "name": "",
+      "comment": "the high byte of MapView ($DD or $DE)..."
+    },
+    {
+      "offset": 27,
+      "name": "",
+      "comment": "... cut to its low bit: 1 for ViewX below 256, 0 above"
+    },
+    {
+      "offset": 29,
+      "name": "",
+      "comment": "DE = ViewX + $100 or ViewX - $100: the low byte is ViewX's"
+    },
+    {
+      "offset": 30,
+      "name": "",
+      "comment": "no borrow into the SBC"
+    },
+    {
+      "offset": 31,
+      "name": "",
+      "comment": "L = the low byte of ShipX - ViewX"
+    },
+    {
+      "offset": 33,
+      "name": "",
+      "comment": "E = the ship's column in the view"
+    },
+    {
+      "offset": 34,
+      "name": "",
+      "comment": "D = the shadow's view row: ShipY"
+    },
+    {
+      "offset": 37,
+      "name": "",
+      "comment": "(the view row is the map row: the view shows rows 0-15)"
+    },
+    {
+      "offset": 38,
+      "name": "",
+      "comment": "sprite 1: the ship's shadow on the ground"
+    },
+    {
+      "offset": 40,
+      "name": "",
+      "comment": "draw the shadow first: everything else covers it"
+    },
+    {
+      "offset": 43,
+      "name": "",
+      "comment": "HL = the cell 32 columns right of the view's left edge"
+    },
+    {
+      "offset": 46,
+      "name": "",
+      "comment": "32 columns: one past the view's last column"
+    },
+    {
+      "offset": 48,
+      "name": "",
+      "comment": "HL = the map cell at view column 32, row 0"
+    },
+    {
+      "offset": 51,
+      "name": "",
+      "comment": "D = row 0, E = column 32"
+    },
+    {
+      "offset": 54,
+      "name": "DiagonalLoop",
+      "comment": "start the next diagonal one column further left"
+    },
+    {
+      "offset": 55,
+      "name": "",
+      "comment": "and its view column"
+    },
+    {
+      "offset": 56,
+      "name": "",
+      "comment": "keep the diagonal's first cell"
+    },
+    {
+      "offset": 57,
+      "name": "",
+      "comment": "and its row / column"
+    },
+    {
+      "offset": 58,
+      "name": "DiagonalCellLoop",
+      "comment": "the view column of this cell"
+    },
+    {
+      "offset": 59,
+      "name": "",
+      "comment": "negative: left of the view"
+    },
+    {
+      "offset": 60,
+      "name": "",
+      "comment": "left of the view: nothing to draw"
+    },
+    {
+      "offset": 63,
+      "name": "",
+      "comment": "the map cell's byte"
+    },
+    {
+      "offset": 64,
+      "name": "",
+      "comment": "0: an empty cell, nothing to draw"
+    },
+    {
+      "offset": 65,
+      "name": "",
+      "comment": "an occupied cell"
+    },
+    {
+      "offset": 68,
+      "name": "DiagonalNext",
+      "comment": "down the diagonal: row + 1, column + 1"
+    },
+    {
+      "offset": 69,
+      "name": "",
+      "comment": "(one map row is $200 bytes)"
+    },
+    {
+      "offset": 70,
+      "name": "",
+      "comment": "and one column right"
+    },
+    {
+      "offset": 71,
+      "name": "",
+      "comment": "view row + 1"
+    },
+    {
+      "offset": 72,
+      "name": "",
+      "comment": "view column + 1"
+    },
+    {
+      "offset": 73,
+      "name": "",
+      "comment": "the row reached"
+    },
+    {
+      "offset": 74,
+      "name": "",
+      "comment": "past row 15"
+    },
+    {
+      "offset": 76,
+      "name": "",
+      "comment": "past row 15: the diagonal ends"
+    },
+    {
+      "offset": 78,
+      "name": "",
+      "comment": "the column reached"
+    },
+    {
+      "offset": 79,
+      "name": "",
+      "comment": "past column 31"
+    },
+    {
+      "offset": 81,
+      "name": "",
+      "comment": "not yet column 32: the next cell"
+    },
+    {
+      "offset": 83,
+      "name": "DiagonalDone",
+      "comment": "A = the column where this diagonal ended"
+    },
+    {
+      "offset": 84,
+      "name": "",
+      "comment": "back to the diagonal's first cell"
+    },
+    {
+      "offset": 85,
+      "name": "",
+      "comment": "and its map address"
+    },
+    {
+      "offset": 86,
+      "name": "",
+      "comment": "the last diagonal ends at column 1 (it started at column -15)"
+    },
+    {
+      "offset": 88,
+      "name": "",
+      "comment": "not the last diagonal: one column further left"
+    },
+    {
+      "offset": 90,
+      "name": "",
+      "comment": "all 47 diagonals drawn"
+    },
+    {
+      "offset": 91,
+      "name": "",
+      "comment": "keep the cell"
+    },
+    {
+      "offset": 92,
+      "name": "",
+      "comment": "and its view row / column"
+    },
+    {
+      "offset": 93,
+      "name": "",
+      "comment": "and its byte"
+    },
+    {
+      "offset": 94,
+      "name": "",
+      "comment": "bit 5: the right half of a block, no sprite of its own"
+    },
+    {
+      "offset": 96,
+      "name": "",
+      "comment": "covered half: on to the object and the ship"
+    },
+    {
+      "offset": 98,
+      "name": "",
+      "comment": "the block type is the sprite number"
+    },
+    {
+      "offset": 100,
+      "name": "",
+      "comment": "type 0: no block"
+    },
+    {
+      "offset": 102,
+      "name": "",
+      "comment": "height 0"
+    },
+    {
+      "offset": 105,
+      "name": "",
+      "comment": "into DrawSprite's operand"
+    },
+    {
+      "offset": 107,
+      "name": "",
+      "comment": "the block: sprite = its type, A"
+    },
+    {
+      "offset": 110,
+      "name": "DrawCellObjects",
+      "comment": ""
+    },
+    {
+      "offset": 111,
+      "name": "",
+      "comment": "the view position back"
+    },
+    {
+      "offset": 112,
+      "name": "",
+      "comment": "the cell back"
+    },
+    {
+      "offset": 113,
+      "name": "",
+      "comment": "bit 6: an object stands or is deferred here"
+    },
+    {
+      "offset": 115,
+      "name": "",
+      "comment": "the robot, building or shot of this cell"
+    },
+    {
+      "offset": 118,
+      "name": "",
+      "comment": "the cell's byte again (A was used)"
+    },
+    {
+      "offset": 119,
+      "name": "",
+      "comment": "bit 7: the ship"
+    },
+    {
+      "offset": 121,
+      "name": "",
+      "comment": "no ship here: done"
+    },
+    {
+      "offset": 122,
+      "name": "",
+      "comment": "already deferred?"
+    },
+    {
+      "offset": 126,
+      "name": "",
+      "comment": "ShipDrawPos not 0: this is the cell the ship was deferred to"
+    },
+    {
+      "offset": 127,
+      "name": "",
+      "comment": "(B the row, C the column)"
+    },
+    {
+      "offset": 128,
+      "name": "",
+      "comment": "draw the ship there"
+    },
+    {
+      "offset": 130,
+      "name": "",
+      "comment": "DE = the latest cell found so far: this one"
+    },
+    {
+      "offset": 131,
+      "name": "",
+      "comment": "the ship's own cell is the latest so far"
+    },
+    {
+      "offset": 132,
+      "name": "",
+      "comment": "(DE = HL)"
+    },
+    {
+      "offset": 133,
+      "name": "",
+      "comment": "the blocks around the ship's cell"
+    },
+    {
+      "offset": 136,
+      "name": "",
+      "comment": "keep the ship's cell"
+    },
+    {
+      "offset": 137,
+      "name": "",
+      "comment": "(x-1, y-1)"
+    },
+    {
+      "offset": 138,
+      "name": "",
+      "comment": "(two DEC H: one map row up)"
+    },
+    {
+      "offset": 139,
+      "name": "",
+      "comment": "(the row's second half)"
+    },
+    {
+      "offset": 140,
+      "name": "",
+      "comment": "an object there and the blocks around it"
+    },
+    {
+      "offset": 143,
+      "name": "",
+      "comment": "(x-1, y)"
+    },
+    {
+      "offset": 144,
+      "name": "",
+      "comment": "(one map row down)"
+    },
+    {
+      "offset": 145,
+      "name": "",
+      "comment": "an object there and the blocks around it"
+    },
+    {
+      "offset": 148,
+      "name": "",
+      "comment": "(x-1, y+1) unless past row 15"
+    },
+    {
+      "offset": 149,
+      "name": "",
+      "comment": "(one map row down)"
+    },
+    {
+      "offset": 150,
+      "name": "",
+      "comment": "the row of (x-1, y+1)"
+    },
+    {
+      "offset": 151,
+      "name": "",
+      "comment": "$FD00: row 16, past the map"
+    },
+    {
+      "offset": 153,
+      "name": "",
+      "comment": "the ship is on row 15: no cells below"
+    },
+    {
+      "offset": 155,
+      "name": "",
+      "comment": "an object there and the blocks around it"
+    },
+    {
+      "offset": 158,
+      "name": "",
+      "comment": "(x, y+1)"
+    },
+    {
+      "offset": 159,
+      "name": "",
+      "comment": "an object there and the blocks around it"
+    },
+    {
+      "offset": 162,
+      "name": "",
+      "comment": "(x+1, y+1)"
+    },
+    {
+      "offset": 163,
+      "name": "",
+      "comment": "an object there and the blocks around it"
+    },
+    {
+      "offset": 166,
+      "name": "ShipCompareLatest",
+      "comment": "nothing later than the ship's own cell?"
+    },
+    {
+      "offset": 167,
+      "name": "",
+      "comment": "the latest cell's high byte"
+    },
+    {
+      "offset": 168,
+      "name": "",
+      "comment": "the ship's?"
+    },
+    {
+      "offset": 169,
+      "name": "",
+      "comment": "another cell: defer the ship to it"
+    },
+    {
+      "offset": 171,
+      "name": "",
+      "comment": "the low byte"
+    },
+    {
+      "offset": 172,
+      "name": "",
+      "comment": "the ship's?"
+    },
+    {
+      "offset": 173,
+      "name": "",
+      "comment": "another cell: defer"
+    },
+    {
+      "offset": 175,
+      "name": "",
+      "comment": "the view position back (the ship's own)"
+    },
+    {
+      "offset": 176,
+      "name": "",
+      "comment": "draw the ship now"
+    },
+    {
+      "offset": 178,
+      "name": "ShipDefer",
+      "comment": "mark the later cell with bit 7, keep the ship's view position"
+    },
+    {
+      "offset": 179,
+      "name": "",
+      "comment": "bit 7 on the later cell: draw the ship there"
+    },
+    {
+      "offset": 181,
+      "name": "",
+      "comment": "HL = the ship's cell again"
+    },
+    {
+      "offset": 182,
+      "name": "",
+      "comment": "DE = the ship's view row / column"
+    },
+    {
+      "offset": 183,
+      "name": "",
+      "comment": "$FD11 = column, $FD12 = row"
+    },
+    {
+      "offset": 187,
+      "name": "",
+      "comment": "nothing drawn yet"
+    },
+    {
+      "offset": 188,
+      "name": "ShipDeferred",
+      "comment": "the deferred cell: clear its mark and draw at the kept position"
+    },
+    {
+      "offset": 190,
+      "name": "",
+      "comment": "keep the deferred cell"
+    },
+    {
+      "offset": 191,
+      "name": "",
+      "comment": "and its view position"
+    },
+    {
+      "offset": 192,
+      "name": "",
+      "comment": "D = the ship's view row, kept in ShipDrawPos"
+    },
+    {
+      "offset": 193,
+      "name": "",
+      "comment": "E = its view column"
+    },
+    {
+      "offset": 194,
+      "name": "",
+      "comment": "draw it there"
+    },
+    {
+      "offset": 196,
+      "name": "ShipDrawNow",
+      "comment": "keep the cell"
+    },
+    {
+      "offset": 197,
+      "name": "",
+      "comment": "and the view position (the ship's own)"
+    },
+    {
+      "offset": 198,
+      "name": "ShipDraw",
+      "comment": "sprite 0 at height Altitude"
+    },
+    {
+      "offset": 201,
+      "name": "",
+      "comment": "into DrawSprite's operand"
+    },
+    {
+      "offset": 204,
+      "name": "",
+      "comment": "sprite 0: the ship"
+    },
+    {
+      "offset": 205,
+      "name": "",
+      "comment": "draw it, over everything drawn so far"
+    },
+    {
+      "offset": 208,
+      "name": "",
+      "comment": "the view position back"
+    },
+    {
+      "offset": 209,
+      "name": "",
+      "comment": "the cell back"
+    },
+    {
+      "offset": 210,
+      "name": "",
+      "comment": "back to the walk"
+    },
+    {
+      "offset": 211,
+      "name": "",
+      "comment": "an object (bit 6) on this neighbour?"
+    },
+    {
+      "offset": 213,
+      "name": "",
+      "comment": "none: nothing competes"
+    },
+    {
+      "offset": 214,
+      "name": "",
+      "comment": "it competes; then, falling through, the blocks around it"
+    },
+    {
+      "offset": 217,
+      "name": "",
+      "comment": "keep HL: the cell the neighbours are taken around"
+    },
+    {
+      "offset": 218,
+      "name": "",
+      "comment": "(x-1, y+1)"
+    },
+    {
+      "offset": 219,
+      "name": "",
+      "comment": "(one map row down)"
+    },
+    {
+      "offset": 220,
+      "name": "",
+      "comment": "(the row's second half)"
+    },
+    {
+      "offset": 221,
+      "name": "",
+      "comment": "row 16 is past the map ($DD00 + $200*16 = $FD00)"
+    },
+    {
+      "offset": 222,
+      "name": "",
+      "comment": "at or past $FD00?"
+    },
+    {
+      "offset": 224,
+      "name": "",
+      "comment": "y = 15: no cells below; only (x-1, y) is checked"
+    },
+    {
+      "offset": 226,
+      "name": "",
+      "comment": "(x-1, y+1)"
+    },
+    {
+      "offset": 229,
+      "name": "",
+      "comment": "(x, y+1)"
+    },
+    {
+      "offset": 230,
+      "name": "",
+      "comment": "(x, y+1)"
+    },
+    {
+      "offset": 233,
+      "name": "",
+      "comment": "back to (x-1, y+1)"
+    },
+    {
+      "offset": 234,
+      "name": "FindLatestSameRow",
+      "comment": "(x-1, y)"
+    },
+    {
+      "offset": 235,
+      "name": "",
+      "comment": "(one map row up)"
+    },
+    {
+      "offset": 236,
+      "name": "",
+      "comment": "(x-1, y)"
+    },
+    {
+      "offset": 239,
+      "name": "",
+      "comment": "through (x+1, y) to (x+1, y+1), unless past row 15"
+    },
+    {
+      "offset": 240,
+      "name": "",
+      "comment": "(x+1, y): passed over, never checked"
+    },
+    {
+      "offset": 241,
+      "name": "",
+      "comment": "(one map row down)"
+    },
+    {
+      "offset": 242,
+      "name": "",
+      "comment": "(the row's second half)"
+    },
+    {
+      "offset": 243,
+      "name": "",
+      "comment": "the row of (x+1, y+1)"
+    },
+    {
+      "offset": 244,
+      "name": "",
+      "comment": "past row 15?"
+    },
+    {
+      "offset": 246,
+      "name": "",
+      "comment": "(x+1, y+1) when on the map"
+    },
+    {
+      "offset": 249,
+      "name": "",
+      "comment": "HL back: the cell the search was around"
+    },
+    {
+      "offset": 250,
+      "name": "",
+      "comment": "DE = the latest cell"
+    },
+    {
+      "offset": 251,
+      "name": "",
+      "comment": "covered half of a 2 x 2 block?"
+    },
+    {
+      "offset": 253,
+      "name": "",
+      "comment": "yes: it has no sprite of its own"
+    },
+    {
+      "offset": 254,
+      "name": "",
+      "comment": "the cell's byte"
+    },
+    {
+      "offset": 255,
+      "name": "",
+      "comment": "the block type"
+    },
+    {
+      "offset": 257,
+      "name": "",
+      "comment": "empty: nothing to compete"
+    },
+    {
+      "offset": 258,
+      "name": "",
+      "comment": "the column of DE (the low byte)"
+    },
+    {
+      "offset": 259,
+      "name": "",
+      "comment": "C = xDE - xHL"
+    },
+    {
+      "offset": 260,
+      "name": "",
+      "comment": "(C = xDE - xHL)"
+    },
+    {
+      "offset": 261,
+      "name": "",
+      "comment": "B = yDE"
+    },
+    {
+      "offset": 262,
+      "name": "",
+      "comment": "minus the map's base page"
+    },
+    {
+      "offset": 264,
+      "name": "",
+      "comment": "/ 2: a map row is two pages"
+    },
+    {
+      "offset": 266,
+      "name": "",
+      "comment": "(B = yDE)"
+    },
+    {
+      "offset": 267,
+      "name": "",
+      "comment": "A = yHL - yDE + xDE - xHL"
+    },
+    {
+      "offset": 268,
+      "name": "",
+      "comment": "minus the map's base page"
+    },
+    {
+      "offset": 270,
+      "name": "",
+      "comment": "/ 2: yHL"
+    },
+    {
+      "offset": 272,
+      "name": "",
+      "comment": "yHL - yDE"
+    },
+    {
+      "offset": 273,
+      "name": "",
+      "comment": "+ xDE - xHL: the diagonal difference"
+    },
+    {
+      "offset": 274,
+      "name": "",
+      "comment": "HL drawn earlier"
+    },
+    {
+      "offset": 275,
+      "name": "",
+      "comment": "positive: HL's diagonal is later"
+    },
+    {
+      "offset": 277,
+      "name": "",
+      "comment": "same diagonal: the bigger column is later"
+    },
+    {
+      "offset": 278,
+      "name": "",
+      "comment": "xDE - xHL"
+    },
+    {
+      "offset": 279,
+      "name": "",
+      "comment": "xHL <= xDE: DE stays the latest"
+    },
+    {
+      "offset": 280,
+      "name": "KeepLaterTake",
+      "comment": "HL is later: it becomes the latest cell"
+    },
+    {
+      "offset": 281,
+      "name": "",
+      "comment": "(DE = HL)"
+    },
+    {
+      "offset": 282,
+      "name": "",
+      "comment": "DE = the latest cell"
+    },
+    {
+      "offset": 283,
+      "name": "",
+      "comment": "the 48 robot records, 16 bytes each"
+    },
+    {
+      "offset": 287,
+      "name": "",
+      "comment": "48 slots: B = 48 - the slot at a match"
+    },
+    {
+      "offset": 289,
+      "name": "FindRobotLoop",
+      "comment": "compare +$00/+$01 with HL"
+    },
+    {
+      "offset": 292,
+      "name": "",
+      "comment": "the low byte of the cell"
+    },
+    {
+      "offset": 293,
+      "name": "",
+      "comment": "not this robot"
+    },
+    {
+      "offset": 295,
+      "name": "",
+      "comment": "the high byte (0 for a free slot)"
+    },
+    {
+      "offset": 298,
+      "name": "",
+      "comment": "the same cell?"
+    },
+    {
+      "offset": 299,
+      "name": "",
+      "comment": "found: Z, IY = the record"
+    },
+    {
+      "offset": 300,
+      "name": "FindRobotNext",
+      "comment": "the next 16-byte record"
+    },
+    {
+      "offset": 301,
+      "name": "",
+      "comment": "the record size"
+    },
+    {
+      "offset": 304,
+      "name": "",
+      "comment": "IY = the next record"
+    },
+    {
+      "offset": 306,
+      "name": "",
+      "comment": "DE back (the view position for DrawCellObject)"
+    },
+    {
+      "offset": 307,
+      "name": "",
+      "comment": "the next slot"
+    },
+    {
+      "offset": 309,
+      "name": "",
+      "comment": "none: NZ"
+    },
+    {
+      "offset": 311,
+      "name": "",
+      "comment": "IY past the last record"
+    },
+    {
+      "offset": 312,
+      "name": "",
+      "comment": "the 56 building records, 3 bytes each"
+    },
+    {
+      "offset": 316,
+      "name": "",
+      "comment": "56 records"
+    },
+    {
+      "offset": 318,
+      "name": "FindBuildingLoop",
+      "comment": "compare the cell address with HL"
+    },
+    {
+      "offset": 321,
+      "name": "",
+      "comment": "the low byte of the cell"
+    },
+    {
+      "offset": 322,
+      "name": "",
+      "comment": "not this building"
+    },
+    {
+      "offset": 324,
+      "name": "",
+      "comment": "the high byte"
+    },
+    {
+      "offset": 327,
+      "name": "",
+      "comment": "the same cell?"
+    },
+    {
+      "offset": 328,
+      "name": "",
+      "comment": "found: Z, IY = the record"
+    },
+    {
+      "offset": 329,
+      "name": "FindBuildingNext",
+      "comment": "the next 3-byte record"
+    },
+    {
+      "offset": 330,
+      "name": "",
+      "comment": "the record size"
+    },
+    {
+      "offset": 333,
+      "name": "",
+      "comment": "IY = the next record"
+    },
+    {
+      "offset": 335,
+      "name": "",
+      "comment": "DE back"
+    },
+    {
+      "offset": 336,
+      "name": "",
+      "comment": "the next record"
+    },
+    {
+      "offset": 338,
+      "name": "",
+      "comment": "none: NZ"
+    },
+    {
+      "offset": 340,
+      "name": "",
+      "comment": "IY past the last record"
+    },
+    {
+      "offset": 341,
+      "name": "",
+      "comment": "a robot whose draw cell +$00/+$01 is HL?"
+    },
+    {
+      "offset": 344,
+      "name": "",
+      "comment": "a robot here"
+    },
+    {
+      "offset": 346,
+      "name": "",
+      "comment": "a building whose cell is HL?"
+    },
+    {
+      "offset": 349,
+      "name": "",
+      "comment": "a building here"
+    },
+    {
+      "offset": 351,
+      "name": "",
+      "comment": "the five shot records, 9 bytes each"
+    },
+    {
+      "offset": 355,
+      "name": "",
+      "comment": "5 records"
+    },
+    {
+      "offset": 357,
+      "name": "ShotSearchLoop",
+      "comment": "the shot's draw cell, the low byte"
+    },
+    {
+      "offset": 360,
+      "name": "",
+      "comment": "this cell?"
+    },
+    {
+      "offset": 361,
+      "name": "",
+      "comment": "no: the next shot"
+    },
+    {
+      "offset": 363,
+      "name": "",
+      "comment": "the high byte (0: a free record)"
+    },
+    {
+      "offset": 366,
+      "name": "",
+      "comment": "this cell?"
+    },
+    {
+      "offset": 367,
+      "name": "",
+      "comment": "a shot here"
+    },
+    {
+      "offset": 369,
+      "name": "ShotSearchNext",
+      "comment": ""
+    },
+    {
+      "offset": 370,
+      "name": "",
+      "comment": "the record size"
+    },
+    {
+      "offset": 373,
+      "name": "",
+      "comment": "IY = the next shot"
+    },
+    {
+      "offset": 375,
+      "name": "",
+      "comment": "DE back"
+    },
+    {
+      "offset": 376,
+      "name": "",
+      "comment": "the next shot"
+    },
+    {
+      "offset": 378,
+      "name": "",
+      "comment": "nothing found: nothing drawn"
+    },
+    {
+      "offset": 379,
+      "name": "DrawBuilding",
+      "comment": "building type C: sprite and height from the tables below"
+    },
+    {
+      "offset": 380,
+      "name": "",
+      "comment": "and the view position"
+    },
+    {
+      "offset": 381,
+      "name": "",
+      "comment": "the building's type, 0-8"
+    },
+    {
+      "offset": 384,
+      "name": "",
+      "comment": "kept in C"
+    },
+    {
+      "offset": 385,
+      "name": "",
+      "comment": "the height of the type"
+    },
+    {
+      "offset": 388,
+      "name": "",
+      "comment": "HL = BuildingHeights + the type"
+    },
+    {
+      "offset": 391,
+      "name": "",
+      "comment": "the type's height"
+    },
+    {
+      "offset": 392,
+      "name": "",
+      "comment": "into DrawSprite's operand"
+    },
+    {
+      "offset": 395,
+      "name": "",
+      "comment": "the type again"
+    },
+    {
+      "offset": 396,
+      "name": "",
+      "comment": "the sprite of the type"
+    },
+    {
+      "offset": 399,
+      "name": "",
+      "comment": "HL = BuildingSprites + the type"
+    },
+    {
+      "offset": 402,
+      "name": "",
+      "comment": "the type's sprite"
+    },
+    {
+      "offset": 403,
+      "name": "",
+      "comment": "draw it"
+    },
+    {
+      "offset": 406,
+      "name": "",
+      "comment": "the view position back"
+    },
+    {
+      "offset": 407,
+      "name": "",
+      "comment": "the cell back"
+    },
+    {
+      "offset": 408,
+      "name": "",
+      "comment": "back to DrawCell"
+    },
+    {
+      "offset": 409,
+      "name": "BuildingSprites",
+      "comment": "The sprite of each building type"
+    },
+    {
+      "offset": 409,
+      "name": "",
+      "comment": "by building type: 0 pad 44 (the warbase sign), factories 1 electronics 40, 2 nuclear 37, 3 phasers 35, 4 missiles 32, 5 cannon 29, 6 chassis 23, flags 7 ours 42, 8 the enemy's 43"
+    },
+    {
+      "offset": 418,
+      "name": "BuildingHeights",
+      "comment": "The height each building sprite is drawn at"
+    },
+    {
+      "offset": 418,
+      "name": "",
+      "comment": "type 0 the pad $13, factory signs 1-6 $0F (on the roof blocks), flags 7-8 $1A"
+    },
+    {
+      "offset": 427,
+      "name": "",
+      "comment": "keep the view position"
+    },
+    {
+      "offset": 428,
+      "name": "",
+      "comment": "this cell is the latest so far"
+    },
+    {
+      "offset": 429,
+      "name": "",
+      "comment": "(DE = HL)"
+    },
+    {
+      "offset": 430,
+      "name": "",
+      "comment": "a later block next to it?"
+    },
+    {
+      "offset": 433,
+      "name": "",
+      "comment": "the latest cell's high byte"
+    },
+    {
+      "offset": 434,
+      "name": "",
+      "comment": "this cell's?"
+    },
+    {
+      "offset": 435,
+      "name": "",
+      "comment": "another cell: defer"
+    },
+    {
+      "offset": 437,
+      "name": "",
+      "comment": "the low byte"
+    },
+    {
+      "offset": 438,
+      "name": "",
+      "comment": "this cell's?"
+    },
+    {
+      "offset": 439,
+      "name": "",
+      "comment": "no later block: draw here if it is the real cell"
+    },
+    {
+      "offset": 441,
+      "name": "MoverDefer",
+      "comment": "defer: mark the later cell and point the record at it"
+    },
+    {
+      "offset": 442,
+      "name": "",
+      "comment": "bit 6 on the later cell: the walk calls DrawCellObject there"
+    },
+    {
+      "offset": 444,
+      "name": "",
+      "comment": "the record's draw cell = the later cell, so FindRobot / the shot search find it there"
+    },
+    {
+      "offset": 447,
+      "name": "",
+      "comment": "(the high byte)"
+    },
+    {
+      "offset": 450,
+      "name": "",
+      "comment": "HL = this cell again"
+    },
+    {
+      "offset": 451,
+      "name": "",
+      "comment": "the view position back"
+    },
+    {
+      "offset": 452,
+      "name": "",
+      "comment": "nothing drawn yet"
+    },
+    {
+      "offset": 453,
+      "name": "MoverDeferred",
+      "comment": "reached: the real cell from +$02-$04"
+    },
+    {
+      "offset": 454,
+      "name": "",
+      "comment": "keep it again"
+    },
+    {
+      "offset": 455,
+      "name": "",
+      "comment": "DE = this cell"
+    },
+    {
+      "offset": 456,
+      "name": "",
+      "comment": "the real x, low byte (+$02)"
+    },
+    {
+      "offset": 459,
+      "name": "",
+      "comment": "the real x, high byte (+$03)"
+    },
+    {
+      "offset": 462,
+      "name": "",
+      "comment": "the real y (+$04)"
+    },
+    {
+      "offset": 465,
+      "name": "",
+      "comment": "HL = the real map cell"
+    },
+    {
+      "offset": 468,
+      "name": "",
+      "comment": "the real cell's high byte"
+    },
+    {
+      "offset": 469,
+      "name": "",
+      "comment": "this cell's?"
+    },
+    {
+      "offset": 470,
+      "name": "",
+      "comment": "no: the object was deferred here"
+    },
+    {
+      "offset": 472,
+      "name": "",
+      "comment": "the low byte"
+    },
+    {
+      "offset": 473,
+      "name": "",
+      "comment": "this cell's?"
+    },
+    {
+      "offset": 474,
+      "name": "",
+      "comment": "no: deferred here"
+    },
+    {
+      "offset": 476,
+      "name": "",
+      "comment": "this is the real cell: draw here"
+    },
+    {
+      "offset": 477,
+      "name": "",
+      "comment": "draw at this view position"
+    },
+    {
+      "offset": 479,
+      "name": "MoverRestore",
+      "comment": "back to the real cell; clear the deferred mark"
+    },
+    {
+      "offset": 482,
+      "name": "",
+      "comment": "(the high byte)"
+    },
+    {
+      "offset": 485,
+      "name": "",
+      "comment": "BC = the real cell"
+    },
+    {
+      "offset": 486,
+      "name": "",
+      "comment": "(C its column's low byte, B its row page)"
+    },
+    {
+      "offset": 487,
+      "name": "",
+      "comment": "HL = the deferred cell"
+    },
+    {
+      "offset": 488,
+      "name": "",
+      "comment": "DE = its view position"
+    },
+    {
+      "offset": 489,
+      "name": "",
+      "comment": "kept for the return"
+    },
+    {
+      "offset": 490,
+      "name": "",
+      "comment": "and the deferred cell"
+    },
+    {
+      "offset": 491,
+      "name": "",
+      "comment": "the deferral mark off the deferred cell"
+    },
+    {
+      "offset": 493,
+      "name": "",
+      "comment": "the view column: from the deferred column - 1 up to the real one"
+    },
+    {
+      "offset": 494,
+      "name": "",
+      "comment": "(one view column left too: the loop steps right again)"
+    },
+    {
+      "offset": 495,
+      "name": "MoverColumnLoop",
+      "comment": "the real column"
+    },
+    {
+      "offset": 496,
+      "name": "",
+      "comment": "reached?"
+    },
+    {
+      "offset": 497,
+      "name": "",
+      "comment": "yes: now the row"
+    },
+    {
+      "offset": 499,
+      "name": "",
+      "comment": "one column right"
+    },
+    {
+      "offset": 500,
+      "name": "",
+      "comment": "and in the view"
+    },
+    {
+      "offset": 501,
+      "name": "",
+      "comment": "again"
+    },
+    {
+      "offset": 503,
+      "name": "MoverRowLoop",
+      "comment": "the view row: up to the real row"
+    },
+    {
+      "offset": 504,
+      "name": "",
+      "comment": "reached?"
+    },
+    {
+      "offset": 505,
+      "name": "",
+      "comment": "yes: draw"
+    },
+    {
+      "offset": 507,
+      "name": "",
+      "comment": "(one map row up)"
+    },
+    {
+      "offset": 508,
+      "name": "",
+      "comment": "(the row's second half)"
+    },
+    {
+      "offset": 509,
+      "name": "",
+      "comment": "and in the view"
+    },
+    {
+      "offset": 510,
+      "name": "",
+      "comment": "again"
+    },
+    {
+      "offset": 512,
+      "name": "MoverDrawReal",
+      "comment": "draw at the real position"
+    },
+    {
+      "offset": 515,
+      "name": "",
+      "comment": "the deferred cell back"
+    },
+    {
+      "offset": 516,
+      "name": "",
+      "comment": "its view position back"
+    },
+    {
+      "offset": 517,
+      "name": "",
+      "comment": "back to the walk"
+    },
+    {
+      "offset": 518,
+      "name": "",
+      "comment": "IY's high byte tells robots from shots"
+    },
+    {
+      "offset": 520,
+      "name": "",
+      "comment": "BC = the record's address"
+    },
+    {
+      "offset": 521,
+      "name": "",
+      "comment": "its high byte"
+    },
+    {
+      "offset": 522,
+      "name": "",
+      "comment": "$D800 and up: the robots (from $DA00; the shots are at $D7D3"
+    },
+    {
+      "offset": 524,
+      "name": "",
+      "comment": "a robot: the stack of parts"
+    },
+    {
+      "offset": 527,
+      "name": "",
+      "comment": "keep the cell"
+    },
+    {
+      "offset": 528,
+      "name": "",
+      "comment": "and the view position"
+    },
+    {
+      "offset": 529,
+      "name": "",
+      "comment": "C = the weapon, +$07: 1 cannon, 2 missiles, 3 phasers"
+    },
+    {
+      "offset": 532,
+      "name": "",
+      "comment": "the direction +$05: 1 right, 2 left, 4 down, 8 up"
+    },
+    {
+      "offset": 535,
+      "name": "",
+      "comment": "carry for 1 / 2 (right / left; the CCF turns it round"
+    },
+    {
+      "offset": 537,
+      "name": "",
+      "comment": "carry: 4 / 8, down / up: the picture for that axis"
+    },
+    {
+      "offset": 538,
+      "name": "",
+      "comment": "C = 2 * weapon + axis"
+    },
+    {
+      "offset": 540,
+      "name": "",
+      "comment": "the shot's height"
+    },
+    {
+      "offset": 543,
+      "name": "",
+      "comment": "into DrawSprite's operand"
+    },
+    {
+      "offset": 546,
+      "name": "",
+      "comment": "the shot sprites $2D-$32 start at $2B + 2 * 1"
+    },
+    {
+      "offset": 548,
+      "name": "",
+      "comment": "+ 2 * weapon + axis"
+    },
+    {
+      "offset": 549,
+      "name": "",
+      "comment": "draw the shot"
+    },
+    {
+      "offset": 552,
+      "name": "",
+      "comment": "the view position back"
+    },
+    {
+      "offset": 553,
+      "name": "",
+      "comment": "the cell back"
+    },
+    {
+      "offset": 554,
+      "name": "",
+      "comment": "back to DrawMover"
+    },
+    {
+      "offset": 555,
+      "name": "",
+      "comment": "keep the cell"
+    },
+    {
+      "offset": 556,
+      "name": "",
+      "comment": "C = the parts mask +$07, bit 0 bipod... bit 7 electronics"
+    },
+    {
+      "offset": 559,
+      "name": "",
+      "comment": "8 parts"
+    },
+    {
+      "offset": 561,
+      "name": "",
+      "comment": "the base height"
+    },
+    {
+      "offset": 564,
+      "name": "",
+      "comment": "into DrawSprite's operand"
+    },
+    {
+      "offset": 567,
+      "name": "RobotPartLoop",
+      "comment": "the next part's bit, from bit 0, into the carry"
+    },
+    {
+      "offset": 569,
+      "name": "",
+      "comment": "this part fitted?"
+    },
+    {
+      "offset": 572,
+      "name": "",
+      "comment": "the next part"
+    },
+    {
+      "offset": 574,
+      "name": "",
+      "comment": "the cell back"
+    },
+    {
+      "offset": 575,
+      "name": "",
+      "comment": "back to DrawMoverSprite or ShowRobotDesign"
+    },
+    {
+      "offset": 576,
+      "name": "",
+      "comment": "keep the part count"
+    },
+    {
+      "offset": 577,
+      "name": "",
+      "comment": "and the view position"
+    },
+    {
+      "offset": 578,
+      "name": "",
+      "comment": "A = the part number"
+    },
+    {
+      "offset": 580,
+      "name": "",
+      "comment": "part = 8 - B: 0 bipod... 7 electronics"
+    },
+    {
+      "offset": 581,
+      "name": "",
+      "comment": "keep it for the height"
+    },
+    {
+      "offset": 582,
+      "name": "",
+      "comment": "C = the facing +$08: one bit of 1 right, 2 left, 4 down, 8 up (0 would loop forever)"
+    },
+    {
+      "offset": 585,
+      "name": "",
+      "comment": "B = the direction number"
+    },
+    {
+      "offset": 587,
+      "name": "DirectionLoop",
+      "comment": "count the bits..."
+    },
+    {
+      "offset": 588,
+      "name": "",
+      "comment": "... from bit 0..."
+    },
+    {
+      "offset": 590,
+      "name": "",
+      "comment": "... until the set one: B = 0 right, 1 left, 2 down, 3 up"
+    },
+    {
+      "offset": 592,
+      "name": "",
+      "comment": "4 directions a part"
+    },
+    {
+      "offset": 593,
+      "name": "",
+      "comment": "part * 4"
+    },
+    {
+      "offset": 594,
+      "name": "",
+      "comment": "+ direction"
+    },
+    {
+      "offset": 595,
+      "name": "",
+      "comment": "the parts' sprite table"
+    },
+    {
+      "offset": 598,
+      "name": "",
+      "comment": "HL = the entry"
+    },
+    {
+      "offset": 601,
+      "name": "",
+      "comment": "the part's sprite - $16"
+    },
+    {
+      "offset": 602,
+      "name": "",
+      "comment": "the part sprites start at $16"
+    },
+    {
+      "offset": 604,
+      "name": "",
+      "comment": "draw the part at the current height"
+    },
+    {
+      "offset": 607,
+      "name": "",
+      "comment": "A = the part again"
+    },
+    {
+      "offset": 608,
+      "name": "",
+      "comment": "the view position back"
+    },
+    {
+      "offset": 609,
+      "name": "",
+      "comment": "the part count back"
+    },
+    {
+      "offset": 610,
+      "name": "",
+      "comment": "the part's height"
+    },
+    {
+      "offset": 613,
+      "name": "",
+      "comment": "HL = PartHeights + part"
+    },
+    {
+      "offset": 616,
+      "name": "",
+      "comment": "the height this part stood at (the operand)"
+    },
+    {
+      "offset": 619,
+      "name": "",
+      "comment": "+ the part's own height"
+    },
+    {
+      "offset": 620,
+      "name": "",
+      "comment": "the next part stands on top of it"
+    },
+    {
+      "offset": 623,
+      "name": "",
+      "comment": "back to DrawRobot's loop"
+    },
+    {
+      "offset": 624,
+      "name": "",
+      "comment": "keep the sprite number"
+    },
+    {
+      "offset": 625,
+      "name": "",
+      "comment": "E * 2"
+    },
+    {
+      "offset": 627,
+      "name": "",
+      "comment": "2E"
+    },
+    {
+      "offset": 628,
+      "name": "",
+      "comment": "L = 2E + D - 24: the column in half bytes"
+    },
+    {
+      "offset": 629,
+      "name": "",
+      "comment": "- 24"
+    },
+    {
+      "offset": 631,
+      "name": "",
+      "comment": "L = the column in half bytes (may be negative)"
+    },
+    {
+      "offset": 632,
+      "name": "",
+      "comment": "E * 4"
+    },
+    {
+      "offset": 634,
+      "name": "",
+      "comment": "H = 8D + 100 - 4E - height"
+    },
+    {
+      "offset": 635,
+      "name": "",
+      "comment": "2D"
+    },
+    {
+      "offset": 636,
+      "name": "",
+      "comment": "4D"
+    },
+    {
+      "offset": 637,
+      "name": "",
+      "comment": "8D"
+    },
+    {
+      "offset": 638,
+      "name": "",
+      "comment": "+ 100"
+    },
+    {
+      "offset": 640,
+      "name": "",
+      "comment": "- 4E"
+    },
+    {
+      "offset": 641,
+      "name": "",
+      "comment": "the height: the operand $CF3F, written by the callers"
+    },
+    {
+      "offset": 643,
+      "name": "",
+      "comment": "H = the buffer line of the sprite's bottom line"
+    },
+    {
+      "offset": 644,
+      "name": "",
+      "comment": "the sprite number, 0-$3F"
+    },
+    {
+      "offset": 645,
+      "name": "",
+      "comment": "sprite numbers have 6 bits"
+    },
+    {
+      "offset": 647,
+      "name": "",
+      "comment": "byte column; carry = the odd half byte"
+    },
+    {
+      "offset": 649,
+      "name": "",
+      "comment": "two images a sprite: 0 aligned, 1 shifted by 4 pixels"
+    },
+    {
+      "offset": 650,
+      "name": "",
+      "comment": "keep L and H"
+    },
+    {
+      "offset": 651,
+      "name": "",
+      "comment": "the sprite pointers, two a sprite"
+    },
+    {
+      "offset": 654,
+      "name": "",
+      "comment": "HL = the sprite"
+    },
+    {
+      "offset": 657,
+      "name": "",
+      "comment": "C = rows, B = bytes a row"
+    },
+    {
+      "offset": 658,
+      "name": "",
+      "comment": "(B = the width)"
+    },
+    {
+      "offset": 659,
+      "name": "",
+      "comment": "B = bytes a row"
+    },
+    {
+      "offset": 660,
+      "name": "",
+      "comment": "HL = the first (mask, pixels) pair of the bottom row"
+    },
+    {
+      "offset": 661,
+      "name": "",
+      "comment": "DE = the sprite data"
+    },
+    {
+      "offset": 662,
+      "name": "",
+      "comment": "L = the byte column, H = the bottom line"
+    },
+    {
+      "offset": 663,
+      "name": "",
+      "comment": "no bytes clipped on the left yet"
+    },
+    {
+      "offset": 664,
+      "name": "",
+      "comment": "the operand $CFAF = 0"
+    },
+    {
+      "offset": 667,
+      "name": "",
+      "comment": "past the right edge?"
+    },
+    {
+      "offset": 668,
+      "name": "",
+      "comment": "column 20 or more (positive)?"
+    },
+    {
+      "offset": 670,
+      "name": "",
+      "comment": "right of the buffer: nothing"
+    },
+    {
+      "offset": 671,
+      "name": "",
+      "comment": "the bottom line below the buffer?"
+    },
+    {
+      "offset": 672,
+      "name": "",
+      "comment": "line 160 or more?"
+    },
+    {
+      "offset": 674,
+      "name": "",
+      "comment": "no: on to the left clip"
+    },
+    {
+      "offset": 676,
+      "name": "",
+      "comment": "entirely below"
+    },
+    {
+      "offset": 678,
+      "name": "",
+      "comment": "$E2 and up: no row reaches the buffer"
+    },
+    {
+      "offset": 679,
+      "name": "",
+      "comment": "rows below the buffer"
+    },
+    {
+      "offset": 681,
+      "name": "",
+      "comment": "minus the sprite's rows"
+    },
+    {
+      "offset": 682,
+      "name": "",
+      "comment": "every row below the buffer: nothing"
+    },
+    {
+      "offset": 683,
+      "name": "",
+      "comment": "C = the rows that remain"
+    },
+    {
+      "offset": 685,
+      "name": "",
+      "comment": "the rows that stay in the buffer"
+    },
+    {
+      "offset": 686,
+      "name": "ClipBottomLoop",
+      "comment": "skip a row of the sprite"
+    },
+    {
+      "offset": 687,
+      "name": "ClipBottomSkip",
+      "comment": ""
+    },
+    {
+      "offset": 688,
+      "name": "",
+      "comment": "(2 bytes a pair)"
+    },
+    {
+      "offset": 689,
+      "name": "",
+      "comment": "each pair of the row"
+    },
+    {
+      "offset": 691,
+      "name": "",
+      "comment": "the width back"
+    },
+    {
+      "offset": 692,
+      "name": "",
+      "comment": "the bottom line one up"
+    },
+    {
+      "offset": 693,
+      "name": "",
+      "comment": "up to the buffer's last line?"
+    },
+    {
+      "offset": 694,
+      "name": "",
+      "comment": "line 159"
+    },
+    {
+      "offset": 696,
+      "name": "",
+      "comment": "not yet: skip another row"
+    },
+    {
+      "offset": 698,
+      "name": "ClipLeft",
+      "comment": "the byte column"
+    },
+    {
+      "offset": 699,
+      "name": "",
+      "comment": "negative?"
+    },
+    {
+      "offset": 700,
+      "name": "",
+      "comment": "no: on to the right clip"
+    },
+    {
+      "offset": 703,
+      "name": "",
+      "comment": "bytes cut on the left"
+    },
+    {
+      "offset": 705,
+      "name": "",
+      "comment": "the bytes to skip each row: the operand $CFAF"
+    },
+    {
+      "offset": 708,
+      "name": "",
+      "comment": "draw from column 0"
+    },
+    {
+      "offset": 710,
+      "name": "",
+      "comment": "all the sprite's bytes cut?"
+    },
+    {
+      "offset": 711,
+      "name": "",
+      "comment": "yes: nothing left"
+    },
+    {
+      "offset": 712,
+      "name": "ClipRight",
+      "comment": "the start column"
+    },
+    {
+      "offset": 713,
+      "name": "",
+      "comment": "+ the width: the column past the sprite"
+    },
+    {
+      "offset": 714,
+      "name": "",
+      "comment": "20 or less: it fits"
+    },
+    {
+      "offset": 716,
+      "name": "",
+      "comment": "on to the drawing"
+    },
+    {
+      "offset": 718,
+      "name": "",
+      "comment": "bytes cut on the right"
+    },
+    {
+      "offset": 720,
+      "name": "",
+      "comment": "the same skip operand: with the source moved back, each row's skip eats the tail of the row before"
+    },
+    {
+      "offset": 723,
+      "name": "ClipRightLoop",
+      "comment": "start that many pairs earlier: each row then leaves out its last pairs"
+    },
+    {
+      "offset": 724,
+      "name": "",
+      "comment": "(one pair: 2 bytes)"
+    },
+    {
+      "offset": 725,
+      "name": "",
+      "comment": "one pair less to move"
+    },
+    {
+      "offset": 726,
+      "name": "",
+      "comment": "until all cut pairs"
+    },
+    {
+      "offset": 728,
+      "name": "BufferAddress",
+      "comment": "DE = $5B00 + 20*H + L"
+    },
+    {
+      "offset": 729,
+      "name": "",
+      "comment": "the byte column"
+    },
+    {
+      "offset": 730,
+      "name": "",
+      "comment": "kept"
+    },
+    {
+      "offset": 731,
+      "name": "",
+      "comment": "the line..."
+    },
+    {
+      "offset": 732,
+      "name": "",
+      "comment": "... into HL"
+    },
+    {
+      "offset": 734,
+      "name": "",
+      "comment": "2 x"
+    },
+    {
+      "offset": 735,
+      "name": "",
+      "comment": "4 x"
+    },
+    {
+      "offset": 736,
+      "name": "",
+      "comment": "DE = 4 x line"
+    },
+    {
+      "offset": 737,
+      "name": "",
+      "comment": "(the low byte)"
+    },
+    {
+      "offset": 738,
+      "name": "",
+      "comment": "8 x"
+    },
+    {
+      "offset": 739,
+      "name": "",
+      "comment": "16 x"
+    },
+    {
+      "offset": 740,
+      "name": "",
+      "comment": "20 x line"
+    },
+    {
+      "offset": 741,
+      "name": "",
+      "comment": "the column back"
+    },
+    {
+      "offset": 742,
+      "name": "",
+      "comment": "+ the column"
+    },
+    {
+      "offset": 745,
+      "name": "",
+      "comment": "the buffer's start"
+    },
+    {
+      "offset": 748,
+      "name": "",
+      "comment": "HL = the buffer byte of the bottom row"
+    },
+    {
+      "offset": 749,
+      "name": "",
+      "comment": "DE = the sprite data"
+    },
+    {
+      "offset": 750,
+      "name": "",
+      "comment": "now DE = the buffer, HL = the sprite"
+    },
+    {
+      "offset": 751,
+      "name": "SpriteRowLoop",
+      "comment": "keep the rows left and the width"
+    },
+    {
+      "offset": 752,
+      "name": "",
+      "comment": "and this row's buffer address"
+    },
+    {
+      "offset": 753,
+      "name": "",
+      "comment": "bytes to skip on the left: the operand $CFAF"
+    },
+    {
+      "offset": 755,
+      "name": "",
+      "comment": "any bytes to skip?"
+    },
+    {
+      "offset": 756,
+      "name": "",
+      "comment": "none"
+    },
+    {
+      "offset": 759,
+      "name": "SkipLeftLoop",
+      "comment": "skip a (mask, pixels) pair..."
+    },
+    {
+      "offset": 760,
+      "name": "",
+      "comment": "... both bytes"
+    },
+    {
+      "offset": 761,
+      "name": "",
+      "comment": "one byte fewer to draw"
+    },
+    {
+      "offset": 762,
+      "name": "",
+      "comment": "one skip less"
+    },
+    {
+      "offset": 763,
+      "name": "",
+      "comment": "until all skipped"
+    },
+    {
+      "offset": 766,
+      "name": "SpriteByteLoop",
+      "comment": "AND the mask, OR the pixels"
+    },
+    {
+      "offset": 767,
+      "name": "",
+      "comment": "the mask keeps the background outside the outline"
+    },
+    {
+      "offset": 768,
+      "name": "",
+      "comment": "to the pixels"
+    },
+    {
+      "offset": 769,
+      "name": "",
+      "comment": "the sprite's ink"
+    },
+    {
+      "offset": 770,
+      "name": "",
+      "comment": "into the buffer"
+    },
+    {
+      "offset": 771,
+      "name": "",
+      "comment": "the next pair"
+    },
+    {
+      "offset": 772,
+      "name": "",
+      "comment": "the next buffer byte"
+    },
+    {
+      "offset": 773,
+      "name": "",
+      "comment": "each byte of the row"
+    },
+    {
+      "offset": 775,
+      "name": "",
+      "comment": "the row's start"
+    },
+    {
+      "offset": 776,
+      "name": "",
+      "comment": "the rows and the width back"
+    },
+    {
+      "offset": 777,
+      "name": "",
+      "comment": "one buffer row up"
+    },
+    {
+      "offset": 779,
+      "name": "",
+      "comment": "(E - 20)"
+    },
+    {
+      "offset": 780,
+      "name": "",
+      "comment": "the low byte"
+    },
+    {
+      "offset": 781,
+      "name": "",
+      "comment": "no borrow: D stays"
+    },
+    {
+      "offset": 784,
+      "name": "",
+      "comment": "borrow from D"
+    },
+    {
+      "offset": 785,
+      "name": "",
+      "comment": "the high byte"
+    },
+    {
+      "offset": 786,
+      "name": "",
+      "comment": "above $5B00: stop"
+    },
+    {
+      "offset": 788,
+      "name": "",
+      "comment": "$5Axx: the top of the sprite is cut off"
+    },
+    {
+      "offset": 789,
+      "name": "SpriteRowNext",
+      "comment": ""
+    },
+    {
+      "offset": 790,
+      "name": "",
+      "comment": "more rows: the next one up"
+    },
+    {
+      "offset": 793,
+      "name": "",
+      "comment": "the sprite is drawn"
+    },
+    {
+      "offset": 794,
+      "name": "",
+      "comment": "all 3200 bytes to 0"
+    },
+    {
+      "offset": 797,
+      "name": "",
+      "comment": "the solid staircase of the top left corner"
+    },
+    {
+      "offset": 800,
+      "name": "",
+      "comment": "the edge, ink on the left"
+    },
+    {
+      "offset": 803,
+      "name": "",
+      "comment": "6 strips: the far left edge of the map"
+    },
+    {
+      "offset": 805,
+      "name": "",
+      "comment": "row 0, column 10"
+    },
+    {
+      "offset": 808,
+      "name": "",
+      "comment": "down and left from the top"
+    },
+    {
+      "offset": 811,
+      "name": "",
+      "comment": "the same edge"
+    },
+    {
+      "offset": 814,
+      "name": "",
+      "comment": "3 strips at the bottom"
+    },
+    {
+      "offset": 816,
+      "name": "",
+      "comment": "row 136, column 18"
+    },
+    {
+      "offset": 819,
+      "name": "",
+      "comment": "the lower part of the edge"
+    },
+    {
+      "offset": 822,
+      "name": "",
+      "comment": "the edge with the ink on the right"
+    },
+    {
+      "offset": 825,
+      "name": "",
+      "comment": "4 strips: the near right corner past the map's south edge"
+    },
+    {
+      "offset": 827,
+      "name": "",
+      "comment": "row 128, column 18"
+    },
+    {
+      "offset": 830,
+      "name": "",
+      "comment": "its RET ends DrawViewBackground"
+    },
+    {
+      "offset": 833,
+      "name": "",
+      "comment": "keep SP"
+    },
+    {
+      "offset": 837,
+      "name": "",
+      "comment": "the end of the buffer"
+    },
+    {
+      "offset": 840,
+      "name": "",
+      "comment": "198 x 8 words"
+    },
+    {
+      "offset": 842,
+      "name": "",
+      "comment": "the zeros to push"
+    },
+    {
+      "offset": 845,
+      "name": "ClearPushLoop",
+      "comment": "8 pushes: 16 bytes a pass, down from $6780 (an interrupt pushes into the part not yet cleared)"
+    },
+    {
+      "offset": 846,
+      "name": "",
+      "comment": "2"
+    },
+    {
+      "offset": 847,
+      "name": "",
+      "comment": "3"
+    },
+    {
+      "offset": 848,
+      "name": "",
+      "comment": "4"
+    },
+    {
+      "offset": 849,
+      "name": "",
+      "comment": "5"
+    },
+    {
+      "offset": 850,
+      "name": "",
+      "comment": "6"
+    },
+    {
+      "offset": 851,
+      "name": "",
+      "comment": "7"
+    },
+    {
+      "offset": 852,
+      "name": "",
+      "comment": "8"
+    },
+    {
+      "offset": 853,
+      "name": "",
+      "comment": "198 passes: down to $5B20"
+    },
+    {
+      "offset": 855,
+      "name": "",
+      "comment": "SP back"
+    },
+    {
+      "offset": 859,
+      "name": "",
+      "comment": "the 32 bytes left at the start"
+    },
+    {
+      "offset": 862,
+      "name": "",
+      "comment": "the LDIR copies the zero along"
+    },
+    {
+      "offset": 865,
+      "name": "",
+      "comment": "31 more bytes"
+    },
+    {
+      "offset": 868,
+      "name": "",
+      "comment": "the first zero"
+    },
+    {
+      "offset": 870,
+      "name": "",
+      "comment": "$5B00-$5B1F"
+    },
+    {
+      "offset": 872,
+      "name": "",
+      "comment": "the buffer is clear"
+    },
+    {
+      "offset": 873,
+      "name": "",
+      "comment": "10 for both counts"
+    },
+    {
+      "offset": 875,
+      "name": "",
+      "comment": "bytes filled a row"
+    },
+    {
+      "offset": 878,
+      "name": "",
+      "comment": "bytes skipped a row"
+    },
+    {
+      "offset": 881,
+      "name": "",
+      "comment": "from the buffer's top left corner"
+    },
+    {
+      "offset": 884,
+      "name": "",
+      "comment": "5 bands"
+    },
+    {
+      "offset": 886,
+      "name": "BandLoop",
+      "comment": "keep the band count"
+    },
+    {
+      "offset": 887,
+      "name": "",
+      "comment": "8 rows a band"
+    },
+    {
+      "offset": 889,
+      "name": "CornerRowLoop",
+      "comment": "keep the row count"
+    },
+    {
+      "offset": 890,
+      "name": "",
+      "comment": "the fill count: the operand $D038 (0 in the image: the value the last band left)"
+    },
+    {
+      "offset": 892,
+      "name": "",
+      "comment": "all ink"
+    },
+    {
+      "offset": 894,
+      "name": "CornerByteLoop",
+      "comment": "fill a byte"
+    },
+    {
+      "offset": 895,
+      "name": "",
+      "comment": "the next byte"
+    },
+    {
+      "offset": 896,
+      "name": "",
+      "comment": "the fill count"
+    },
+    {
+      "offset": 898,
+      "name": "",
+      "comment": "the row count back"
+    },
+    {
+      "offset": 899,
+      "name": "",
+      "comment": "the skip count: the operand $D041 (20 in the image: the value the last band left)"
+    },
+    {
+      "offset": 901,
+      "name": "",
+      "comment": "HL = the next row's start (fill + skip = 20)"
+    },
+    {
+      "offset": 904,
+      "name": "",
+      "comment": "the next row of the band"
+    },
+    {
+      "offset": 906,
+      "name": "",
+      "comment": "the band count back"
+    },
+    {
+      "offset": 907,
+      "name": "",
+      "comment": "keep the buffer address"
+    },
+    {
+      "offset": 908,
+      "name": "",
+      "comment": "2 bytes fewer, 2 more skipped"
+    },
+    {
+      "offset": 911,
+      "name": "",
+      "comment": "fill 2 bytes fewer..."
+    },
+    {
+      "offset": 912,
+      "name": "",
+      "comment": "... (10, 8, 6, 4, 2)"
+    },
+    {
+      "offset": 913,
+      "name": "",
+      "comment": "the skip count"
+    },
+    {
+      "offset": 916,
+      "name": "",
+      "comment": "skip 2 bytes more..."
+    },
+    {
+      "offset": 917,
+      "name": "",
+      "comment": "... (10, 12, 14, 16, 18)"
+    },
+    {
+      "offset": 918,
+      "name": "",
+      "comment": "the buffer address back"
+    },
+    {
+      "offset": 919,
+      "name": "",
+      "comment": "the next band"
+    },
+    {
+      "offset": 921,
+      "name": "",
+      "comment": "the corner is filled"
+    },
+    {
+      "offset": 922,
+      "name": "",
+      "comment": "keep the strip count"
+    },
+    {
+      "offset": 923,
+      "name": "",
+      "comment": "and the pattern"
+    },
+    {
+      "offset": 924,
+      "name": "",
+      "comment": "B = 8 rows; C = $FF: the 16 LDI decrement C only, B stays the DJNZ count"
+    },
+    {
+      "offset": 927,
+      "name": "StripRowLoop",
+      "comment": "the pattern's left byte"
+    },
+    {
+      "offset": 929,
+      "name": "",
+      "comment": "and its right byte"
+    },
+    {
+      "offset": 931,
+      "name": "",
+      "comment": "the next row: 20 bytes in all"
+    },
+    {
+      "offset": 933,
+      "name": "",
+      "comment": "+ 18: DE back to the strip's column, one row down"
+    },
+    {
+      "offset": 934,
+      "name": "",
+      "comment": "(the low byte)"
+    },
+    {
+      "offset": 935,
+      "name": "",
+      "comment": "the carry..."
+    },
+    {
+      "offset": 936,
+      "name": "",
+      "comment": "... into..."
+    },
+    {
+      "offset": 938,
+      "name": "",
+      "comment": "... D"
+    },
+    {
+      "offset": 939,
+      "name": "",
+      "comment": "the next row"
+    },
+    {
+      "offset": 941,
+      "name": "",
+      "comment": "the pattern again for the next strip"
+    },
+    {
+      "offset": 942,
+      "name": "",
+      "comment": "the strip count back"
+    },
+    {
+      "offset": 943,
+      "name": "",
+      "comment": "2 bytes left for the next strip"
+    },
+    {
+      "offset": 944,
+      "name": "",
+      "comment": "(DE is already 8 rows down)"
+    },
+    {
+      "offset": 945,
+      "name": "",
+      "comment": "the next strip"
+    },
+    {
+      "offset": 947,
+      "name": "",
+      "comment": "the edge is drawn"
+    },
+    {
+      "offset": 948,
+      "name": "",
+      "comment": "from the buffer's first line"
+    },
+    {
+      "offset": 951,
+      "name": "",
+      "comment": "the screen: line 0 of character row 1, column 1"
+    },
+    {
+      "offset": 954,
+      "name": "",
+      "comment": "20 character rows"
+    },
+    {
+      "offset": 956,
+      "name": "CopyCharRowLoop",
+      "comment": "8 pixel lines a character row"
+    },
+    {
+      "offset": 958,
+      "name": "CopyLineLoop",
+      "comment": "keep the counts (the LDIs change BC)"
+    },
+    {
+      "offset": 959,
+      "name": "",
+      "comment": "and the line's screen address"
+    },
+    {
+      "offset": 960,
+      "name": "",
+      "comment": "the 20 bytes of the line, unrolled: byte 1"
+    },
+    {
+      "offset": 962,
+      "name": "",
+      "comment": "2"
+    },
+    {
+      "offset": 964,
+      "name": "",
+      "comment": "3"
+    },
+    {
+      "offset": 966,
+      "name": "",
+      "comment": "4"
+    },
+    {
+      "offset": 968,
+      "name": "",
+      "comment": "5"
+    },
+    {
+      "offset": 970,
+      "name": "",
+      "comment": "6"
+    },
+    {
+      "offset": 972,
+      "name": "",
+      "comment": "7"
+    },
+    {
+      "offset": 974,
+      "name": "",
+      "comment": "8"
+    },
+    {
+      "offset": 976,
+      "name": "",
+      "comment": "9"
+    },
+    {
+      "offset": 978,
+      "name": "",
+      "comment": "10"
+    },
+    {
+      "offset": 980,
+      "name": "",
+      "comment": "11"
+    },
+    {
+      "offset": 982,
+      "name": "",
+      "comment": "12"
+    },
+    {
+      "offset": 984,
+      "name": "",
+      "comment": "13"
+    },
+    {
+      "offset": 986,
+      "name": "",
+      "comment": "14"
+    },
+    {
+      "offset": 988,
+      "name": "",
+      "comment": "15"
+    },
+    {
+      "offset": 990,
+      "name": "",
+      "comment": "16"
+    },
+    {
+      "offset": 992,
+      "name": "",
+      "comment": "17"
+    },
+    {
+      "offset": 994,
+      "name": "",
+      "comment": "18"
+    },
+    {
+      "offset": 996,
+      "name": "",
+      "comment": "19"
+    },
+    {
+      "offset": 998,
+      "name": "",
+      "comment": "20"
+    },
+    {
+      "offset": 1000,
+      "name": "",
+      "comment": "the line's start again"
+    },
+    {
+      "offset": 1001,
+      "name": "",
+      "comment": "the counts back"
+    },
+    {
+      "offset": 1002,
+      "name": "",
+      "comment": "the next pixel line"
+    },
+    {
+      "offset": 1003,
+      "name": "",
+      "comment": "the next pixel line of the character row"
+    },
+    {
+      "offset": 1005,
+      "name": "",
+      "comment": "the next character row"
+    },
+    {
+      "offset": 1006,
+      "name": "",
+      "comment": "+ 32: the next character row (the source HL runs on by itself)"
+    },
+    {
+      "offset": 1008,
+      "name": "",
+      "comment": "the low byte"
+    },
+    {
+      "offset": 1009,
+      "name": "",
+      "comment": "carry: into the next third, where D (+8 from the lines) already points"
+    },
+    {
+      "offset": 1011,
+      "name": "",
+      "comment": "inside the same third..."
+    },
+    {
+      "offset": 1012,
+      "name": "",
+      "comment": "... D back by the 8 lines"
+    },
+    {
+      "offset": 1014,
+      "name": "",
+      "comment": "(the character row's line 0)"
+    },
+    {
+      "offset": 1015,
+      "name": "CopyCharRowNext",
+      "comment": ""
+    },
+    {
+      "offset": 1016,
+      "name": "",
+      "comment": "the next of the 20 character rows"
+    },
+    {
+      "offset": 1019,
+      "name": "",
+      "comment": "the view is on the screen"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '98",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$CCBD",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/game99/view.asm",
+    "label": "DrawView"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

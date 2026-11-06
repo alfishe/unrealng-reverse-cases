@@ -1,0 +1,2596 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/game99-bases",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: bases",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "bases"
+  ],
+  "summary": "The bases: counts, owners, buildings, destruction and the new game's map.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 672,
+    "sha1": "b11c69fb9fa0a5abb8b5fc2b5bc1315314773352",
+    "masked_sha1": "bfafb5a63b1721baabf6cd1674a6d4ae11f8480d"
+  },
+  "origin": "$BB09",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerBuildings"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD73"
+    },
+    {
+      "offset": 26,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerBuildings"
+    },
+    {
+      "offset": 36,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyBuildings"
+    },
+    {
+      "offset": 45,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 56,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DA01"
+    },
+    {
+      "offset": 59,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 62,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlayerRobotCount"
+    },
+    {
+      "offset": 65,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 68,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyRobotCount"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD87"
+    },
+    {
+      "offset": 92,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 101,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 108,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 122,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 126,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD73"
+    },
+    {
+      "offset": 129,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 136,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 143,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 150,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 157,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 165,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 174,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 181,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 205,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MapCell"
+    },
+    {
+      "offset": 208,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD87"
+    },
+    {
+      "offset": 211,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 221,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 226,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 231,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 235,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShapeFactory"
+    },
+    {
+      "offset": 238,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 241,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD73"
+    },
+    {
+      "offset": 244,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 252,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 259,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 266,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 270,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShapeWarbase"
+    },
+    {
+      "offset": 273,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 280,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 291,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 298,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 310,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 315,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FF02"
+    },
+    {
+      "offset": 344,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FindBuilding"
+    },
+    {
+      "offset": 359,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Map"
+    },
+    {
+      "offset": 372,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RadarOwn"
+    },
+    {
+      "offset": 385,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryWest"
+    },
+    {
+      "offset": 390,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 393,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneryEast"
+    },
+    {
+      "offset": 398,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 402,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD7A"
+    },
+    {
+      "offset": 406,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Warbases"
+    },
+    {
+      "offset": 409,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BaseListWest"
+    },
+    {
+      "offset": 414,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 417,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BaseListEast"
+    },
+    {
+      "offset": 422,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 427,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 436,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 450,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 455,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RadarDirty"
+    },
+    {
+      "offset": 458,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PutShipOnMap"
+    },
+    {
+      "offset": 473,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Map"
+    },
+    {
+      "offset": 482,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 485,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 490,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 509,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Map"
+    },
+    {
+      "offset": 550,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 559,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 594,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 602,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShapeTable"
+    },
+    {
+      "offset": 607,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TableWord"
+    },
+    {
+      "offset": 614,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 626,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 637,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "CountBases",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Count each side's bases: warbases and the factories of each type"
+    },
+    {
+      "offset": 55,
+      "name": "CountRobots",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "PlayerRobots ($FD41) and EnemyRobots ($FD49): the live records of each side"
+    },
+    {
+      "offset": 71,
+      "name": "CountLiveRobots",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = the live records among 24 robot records from HL (+1 not 0); HL moves past them"
+    },
+    {
+      "offset": 88,
+      "name": "GiveFactory",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Factory A (0-23) changes hands: to the player (B = 0) or the enemy (B = 1); its flag moves"
+    },
+    {
+      "offset": 125,
+      "name": "GiveWarbase",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Warbase A (0-3) changes hands: to the player (B = 0) or the enemy (B = 1)"
+    },
+    {
+      "offset": 176,
+      "name": "SetBaseOwner",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Base record A (HL = the table's +3 bytes): owner = the player (B = 0) or the enemy; HL = its door cell"
+    },
+    {
+      "offset": 207,
+      "name": "DestroyFactory",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Factory A (0-23) destroyed by a nuclear blast: buildings removed, blocks turned to debris"
+    },
+    {
+      "offset": 240,
+      "name": "DestroyWarbase",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Warbase A (0-3) destroyed by a nuclear blast: buildings removed, blocks turned to debris"
+    },
+    {
+      "offset": 275,
+      "name": "MarkBaseDestroyed",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Base A of the table HL (+3 bytes): +3 = $80 (destroyed, no owner); HL = its door cell"
+    },
+    {
+      "offset": 314,
+      "name": "AddBuilding",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Add a building: map cell HL, type C (0 pad, 1-6 factory, 7 the player's flag, 8 the enemy's flag)"
+    },
+    {
+      "offset": 340,
+      "name": "RemoveBuilding",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Remove the building on map cell HL, if any: its record freed, bit 6 of the cell cleared"
+    },
+    {
+      "offset": 358,
+      "name": "BuildMap",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A new game's map: clear it, place the scenery and the bases of the level, give the warbases their owners"
+    },
+    {
+      "offset": 461,
+      "name": "PlaceScenery",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Place a scenery list at HL (3-byte records: tile or shape, x low, y; 0 ends), D = x high byte"
+    },
+    {
+      "offset": 496,
+      "name": "PlaceBases",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Place a bases list at HL (3-byte records: type, x low, y; $FF ends), D = x high byte"
+    },
+    {
+      "offset": 600,
+      "name": "DrawShape",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw shape A (bit 7 ignored, the index into ShapeTable) from map cell HL"
+    },
+    {
+      "offset": 630,
+      "name": "StepCell",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL += C columns (signed) and B rows (signed: H += 2 * B); DE kept"
+    },
+    {
+      "offset": 648,
+      "name": "PutBlock",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A 2 x 2 block of tile A with its bottom left at map cell HL"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "the player's counts"
+    },
+    {
+      "offset": 3,
+      "name": "",
+      "comment": "7 counts"
+    },
+    {
+      "offset": 5,
+      "name": "ClearPlayerCounts",
+      "comment": "count = 0"
+    },
+    {
+      "offset": 7,
+      "name": "",
+      "comment": "the next count"
+    },
+    {
+      "offset": 8,
+      "name": "",
+      "comment": "all 7"
+    },
+    {
+      "offset": 10,
+      "name": "",
+      "comment": "skip PlayerRobots ($FD41)"
+    },
+    {
+      "offset": 11,
+      "name": "",
+      "comment": "the enemy's 7 counts"
+    },
+    {
+      "offset": 13,
+      "name": "ClearEnemyCounts",
+      "comment": "count = 0"
+    },
+    {
+      "offset": 15,
+      "name": "",
+      "comment": "the next count"
+    },
+    {
+      "offset": 16,
+      "name": "",
+      "comment": "all 7"
+    },
+    {
+      "offset": 18,
+      "name": "",
+      "comment": "the +3 byte of base 0, 28 bases"
+    },
+    {
+      "offset": 21,
+      "name": "",
+      "comment": "the capture points: 2 in the image (the built-in level), the NELEV byte $1F3 after LOAD MAP"
+    },
+    {
+      "offset": 23,
+      "name": "CountBaseLoop",
+      "comment": "A = the base's owner and type"
+    },
+    {
+      "offset": 24,
+      "name": "",
+      "comment": "bit 7?"
+    },
+    {
+      "offset": 25,
+      "name": "",
+      "comment": "destroyed: not counted"
+    },
+    {
+      "offset": 28,
+      "name": "",
+      "comment": "the player's counts..."
+    },
+    {
+      "offset": 31,
+      "name": "",
+      "comment": "... if bit 6, ours"
+    },
+    {
+      "offset": 33,
+      "name": "",
+      "comment": "ours: count it"
+    },
+    {
+      "offset": 35,
+      "name": "",
+      "comment": "not the player's: the enemy's?"
+    },
+    {
+      "offset": 38,
+      "name": "",
+      "comment": "bit 5, the enemy's?"
+    },
+    {
+      "offset": 40,
+      "name": "",
+      "comment": "neutral: not counted"
+    },
+    {
+      "offset": 42,
+      "name": "CountBaseType",
+      "comment": "count[type] += 1"
+    },
+    {
+      "offset": 44,
+      "name": "",
+      "comment": "HL = the type's count"
+    },
+    {
+      "offset": 47,
+      "name": "",
+      "comment": "one more"
+    },
+    {
+      "offset": 48,
+      "name": "CountNextBase",
+      "comment": "the next record (all inside page $FD)"
+    },
+    {
+      "offset": 49,
+      "name": "",
+      "comment": "+ 5"
+    },
+    {
+      "offset": 51,
+      "name": "",
+      "comment": "DE = the next base's +3"
+    },
+    {
+      "offset": 52,
+      "name": "",
+      "comment": "all 28 bases"
+    },
+    {
+      "offset": 54,
+      "name": "",
+      "comment": "the counts are new"
+    },
+    {
+      "offset": 55,
+      "name": "",
+      "comment": "the +1 byte of slot 0"
+    },
+    {
+      "offset": 58,
+      "name": "",
+      "comment": "A = our live robots (slots 0-23), HL to slot 24"
+    },
+    {
+      "offset": 61,
+      "name": "",
+      "comment": "PlayerRobotCount = A"
+    },
+    {
+      "offset": 64,
+      "name": "",
+      "comment": "A = the enemy's (slots 24-47)"
+    },
+    {
+      "offset": 67,
+      "name": "",
+      "comment": "EnemyRobotCount = A"
+    },
+    {
+      "offset": 70,
+      "name": "",
+      "comment": "both counted"
+    },
+    {
+      "offset": 71,
+      "name": "",
+      "comment": "24 records"
+    },
+    {
+      "offset": 73,
+      "name": "",
+      "comment": "C = the live ones"
+    },
+    {
+      "offset": 75,
+      "name": "",
+      "comment": "16 bytes a record"
+    },
+    {
+      "offset": 78,
+      "name": "CountLiveLoop",
+      "comment": "+$01, the cell's high byte"
+    },
+    {
+      "offset": 79,
+      "name": "",
+      "comment": "0?"
+    },
+    {
+      "offset": 80,
+      "name": "",
+      "comment": "a free slot"
+    },
+    {
+      "offset": 82,
+      "name": "",
+      "comment": "one live robot more"
+    },
+    {
+      "offset": 83,
+      "name": "CountLiveNext",
+      "comment": "the next record's +$01"
+    },
+    {
+      "offset": 84,
+      "name": "",
+      "comment": "all 24"
+    },
+    {
+      "offset": 86,
+      "name": "",
+      "comment": "A = the count"
+    },
+    {
+      "offset": 87,
+      "name": "",
+      "comment": "HL past the 24 records"
+    },
+    {
+      "offset": 88,
+      "name": "",
+      "comment": "the factories' +3 bytes"
+    },
+    {
+      "offset": 91,
+      "name": "",
+      "comment": "the factory's owner bits; HL = its door cell"
+    },
+    {
+      "offset": 94,
+      "name": "",
+      "comment": "HL = the roof row y-2, x+2"
+    },
+    {
+      "offset": 95,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 96,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 97,
+      "name": "",
+      "comment": "... two rows up (4 pages): the roof row"
+    },
+    {
+      "offset": 98,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 99,
+      "name": "",
+      "comment": "... x+2, the enemy's flag place"
+    },
+    {
+      "offset": 100,
+      "name": "",
+      "comment": "no flag at x+2"
+    },
+    {
+      "offset": 103,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 104,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 105,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 106,
+      "name": "",
+      "comment": "... x-2, our flag place"
+    },
+    {
+      "offset": 107,
+      "name": "",
+      "comment": "no flag at x-2"
+    },
+    {
+      "offset": 110,
+      "name": "",
+      "comment": "the new owner:"
+    },
+    {
+      "offset": 111,
+      "name": "",
+      "comment": "0, the player?"
+    },
+    {
+      "offset": 112,
+      "name": "",
+      "comment": "the player's flag at x-2"
+    },
+    {
+      "offset": 114,
+      "name": "",
+      "comment": "the enemy's at x+2"
+    },
+    {
+      "offset": 115,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 116,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 117,
+      "name": "",
+      "comment": "... x+2"
+    },
+    {
+      "offset": 118,
+      "name": "GiveFactoryFlag",
+      "comment": "type 7 or 8"
+    },
+    {
+      "offset": 120,
+      "name": "",
+      "comment": "C = the flag's type"
+    },
+    {
+      "offset": 121,
+      "name": "",
+      "comment": "add the flag building"
+    },
+    {
+      "offset": 124,
+      "name": "",
+      "comment": "the factory flies its new flag"
+    },
+    {
+      "offset": 125,
+      "name": "",
+      "comment": "the warbases' +3 bytes"
+    },
+    {
+      "offset": 128,
+      "name": "",
+      "comment": "the warbase's owner bits; HL = its door cell"
+    },
+    {
+      "offset": 131,
+      "name": "",
+      "comment": "HL = the pad row y-4, column x"
+    },
+    {
+      "offset": 132,
+      "name": "",
+      "comment": "4 rows up (8 pages)"
+    },
+    {
+      "offset": 134,
+      "name": "",
+      "comment": "H = the pad row's page"
+    },
+    {
+      "offset": 135,
+      "name": "",
+      "comment": "the pad"
+    },
+    {
+      "offset": 138,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 139,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 140,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 141,
+      "name": "",
+      "comment": "... x-4 (only L: no warbase is near a 256-column border)"
+    },
+    {
+      "offset": 142,
+      "name": "",
+      "comment": "the player's flag place"
+    },
+    {
+      "offset": 145,
+      "name": "",
+      "comment": "the column..."
+    },
+    {
+      "offset": 146,
+      "name": "",
+      "comment": "... + 8: x+4"
+    },
+    {
+      "offset": 148,
+      "name": "",
+      "comment": "L = it"
+    },
+    {
+      "offset": 149,
+      "name": "",
+      "comment": "the enemy's flag place"
+    },
+    {
+      "offset": 152,
+      "name": "",
+      "comment": "C = 8, the enemy's flag"
+    },
+    {
+      "offset": 154,
+      "name": "",
+      "comment": "the new owner:"
+    },
+    {
+      "offset": 155,
+      "name": "",
+      "comment": "the enemy?"
+    },
+    {
+      "offset": 156,
+      "name": "",
+      "comment": "the enemy: its flag (type 8) at x+4"
+    },
+    {
+      "offset": 159,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 160,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 161,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 162,
+      "name": "",
+      "comment": "... back to x"
+    },
+    {
+      "offset": 163,
+      "name": "",
+      "comment": "the player: the pad (type 0) at x"
+    },
+    {
+      "offset": 164,
+      "name": "",
+      "comment": "add the pad"
+    },
+    {
+      "offset": 167,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 168,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 169,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 170,
+      "name": "",
+      "comment": "... x-4"
+    },
+    {
+      "offset": 171,
+      "name": "",
+      "comment": "and the flag (type 7) at x-4"
+    },
+    {
+      "offset": 173,
+      "name": "",
+      "comment": "add the flag, return from there"
+    },
+    {
+      "offset": 176,
+      "name": "",
+      "comment": "C = the index"
+    },
+    {
+      "offset": 177,
+      "name": "",
+      "comment": "* 2"
+    },
+    {
+      "offset": 178,
+      "name": "",
+      "comment": "* 4"
+    },
+    {
+      "offset": 179,
+      "name": "",
+      "comment": "* 5, a record's size"
+    },
+    {
+      "offset": 180,
+      "name": "",
+      "comment": "HL = the base's +3"
+    },
+    {
+      "offset": 183,
+      "name": "",
+      "comment": "the side:"
+    },
+    {
+      "offset": 184,
+      "name": "",
+      "comment": "0, the player?"
+    },
+    {
+      "offset": 185,
+      "name": "",
+      "comment": "the player's bit 6..."
+    },
+    {
+      "offset": 187,
+      "name": "",
+      "comment": "yes: $40"
+    },
+    {
+      "offset": 189,
+      "name": "",
+      "comment": "... or the enemy's bit 5"
+    },
+    {
+      "offset": 190,
+      "name": "SetBaseOwnerBits",
+      "comment": "keep the type, set the owner"
+    },
+    {
+      "offset": 191,
+      "name": "",
+      "comment": "the base's +3"
+    },
+    {
+      "offset": 192,
+      "name": "",
+      "comment": "the type bits 0-4 kept, owner and destroyed bits cleared"
+    },
+    {
+      "offset": 194,
+      "name": "",
+      "comment": "the new owner"
+    },
+    {
+      "offset": 195,
+      "name": "",
+      "comment": "store it"
+    },
+    {
+      "offset": 196,
+      "name": "BaseCell",
+      "comment": "HL at a base's +3: HL = the map cell of its x (+0/+1), y (+2)"
+    },
+    {
+      "offset": 197,
+      "name": "",
+      "comment": "C = the door's row (+2)"
+    },
+    {
+      "offset": 198,
+      "name": "",
+      "comment": "the column's high byte (+1)"
+    },
+    {
+      "offset": 199,
+      "name": "",
+      "comment": "A = it"
+    },
+    {
+      "offset": 200,
+      "name": "",
+      "comment": "the low byte (+0)"
+    },
+    {
+      "offset": 201,
+      "name": "",
+      "comment": "L = it"
+    },
+    {
+      "offset": 202,
+      "name": "",
+      "comment": "HL = the door's column"
+    },
+    {
+      "offset": 203,
+      "name": "",
+      "comment": "A = the row"
+    },
+    {
+      "offset": 204,
+      "name": "",
+      "comment": "HL = the door's map cell, return from there"
+    },
+    {
+      "offset": 207,
+      "name": "",
+      "comment": "the factories' +3 bytes"
+    },
+    {
+      "offset": 210,
+      "name": "",
+      "comment": "+3 = $80; HL = the door cell"
+    },
+    {
+      "offset": 213,
+      "name": "",
+      "comment": "keep the door cell"
+    },
+    {
+      "offset": 214,
+      "name": "",
+      "comment": "the roof row y-2, x+2"
+    },
+    {
+      "offset": 215,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 216,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 217,
+      "name": "",
+      "comment": "... two rows up: the roof row"
+    },
+    {
+      "offset": 218,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 219,
+      "name": "",
+      "comment": "... x+2"
+    },
+    {
+      "offset": 220,
+      "name": "",
+      "comment": "the enemy's flag, if any"
+    },
+    {
+      "offset": 223,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 224,
+      "name": "",
+      "comment": "... x"
+    },
+    {
+      "offset": 225,
+      "name": "",
+      "comment": "the factory's roof"
+    },
+    {
+      "offset": 228,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 229,
+      "name": "",
+      "comment": "... x-2"
+    },
+    {
+      "offset": 230,
+      "name": "",
+      "comment": "our flag, if any"
+    },
+    {
+      "offset": 233,
+      "name": "",
+      "comment": "the shape from the door"
+    },
+    {
+      "offset": 234,
+      "name": "",
+      "comment": "ShapeFactory"
+    },
+    {
+      "offset": 237,
+      "name": "",
+      "comment": "the factory's blocks as debris, return from there"
+    },
+    {
+      "offset": 240,
+      "name": "",
+      "comment": "the warbases' +3 bytes"
+    },
+    {
+      "offset": 243,
+      "name": "",
+      "comment": "+3 = $80; HL = the door cell"
+    },
+    {
+      "offset": 246,
+      "name": "",
+      "comment": "keep the door cell"
+    },
+    {
+      "offset": 247,
+      "name": "",
+      "comment": "the pad row y-4, x"
+    },
+    {
+      "offset": 248,
+      "name": "",
+      "comment": "4 rows up (8 pages)"
+    },
+    {
+      "offset": 250,
+      "name": "",
+      "comment": "H = the pad row's page"
+    },
+    {
+      "offset": 251,
+      "name": "",
+      "comment": "the pad, if any"
+    },
+    {
+      "offset": 254,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 255,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 256,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 257,
+      "name": "",
+      "comment": "... x-4"
+    },
+    {
+      "offset": 258,
+      "name": "",
+      "comment": "our flag, if any"
+    },
+    {
+      "offset": 261,
+      "name": "",
+      "comment": "the column..."
+    },
+    {
+      "offset": 262,
+      "name": "",
+      "comment": "... + 8: x+4"
+    },
+    {
+      "offset": 264,
+      "name": "",
+      "comment": "L = it"
+    },
+    {
+      "offset": 265,
+      "name": "",
+      "comment": "the enemy's flag, if any"
+    },
+    {
+      "offset": 268,
+      "name": "",
+      "comment": "HL = the door cell, where the shape starts"
+    },
+    {
+      "offset": 269,
+      "name": "",
+      "comment": "ShapeWarbase"
+    },
+    {
+      "offset": 272,
+      "name": "",
+      "comment": "the warbase's blocks as debris, return from there"
+    },
+    {
+      "offset": 275,
+      "name": "",
+      "comment": "C = the index"
+    },
+    {
+      "offset": 276,
+      "name": "",
+      "comment": "* 2"
+    },
+    {
+      "offset": 277,
+      "name": "",
+      "comment": "* 4"
+    },
+    {
+      "offset": 278,
+      "name": "",
+      "comment": "* 5, a record's size"
+    },
+    {
+      "offset": 279,
+      "name": "",
+      "comment": "HL = the base's +3"
+    },
+    {
+      "offset": 282,
+      "name": "",
+      "comment": "destroyed: no owner, no type"
+    },
+    {
+      "offset": 284,
+      "name": "",
+      "comment": "HL = its door cell, return from there"
+    },
+    {
+      "offset": 286,
+      "name": "DrawRuins",
+      "comment": "draw the shape DE at cell HL with every block a random debris tile (6 or 7)"
+    },
+    {
+      "offset": 287,
+      "name": "",
+      "comment": "the shape's tile: 0 = no block at this step"
+    },
+    {
+      "offset": 288,
+      "name": "",
+      "comment": "none: only the move"
+    },
+    {
+      "offset": 290,
+      "name": "",
+      "comment": "any tile: debris"
+    },
+    {
+      "offset": 293,
+      "name": "",
+      "comment": "0 or 1"
+    },
+    {
+      "offset": 295,
+      "name": "",
+      "comment": "tile 6 or 7"
+    },
+    {
+      "offset": 297,
+      "name": "",
+      "comment": "the 2 x 2 debris block (HL, DE kept)"
+    },
+    {
+      "offset": 300,
+      "name": "DrawRuinsStep",
+      "comment": "the shape's next step: columns C, rows B; (0,0) ends"
+    },
+    {
+      "offset": 301,
+      "name": "",
+      "comment": "the column step..."
+    },
+    {
+      "offset": 302,
+      "name": "",
+      "comment": "... to C"
+    },
+    {
+      "offset": 303,
+      "name": "",
+      "comment": "the row step..."
+    },
+    {
+      "offset": 304,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 305,
+      "name": "",
+      "comment": "... to B"
+    },
+    {
+      "offset": 306,
+      "name": "",
+      "comment": "DE = the next step's tile"
+    },
+    {
+      "offset": 307,
+      "name": "",
+      "comment": "the move (0,0)?"
+    },
+    {
+      "offset": 308,
+      "name": "",
+      "comment": "the shape ends"
+    },
+    {
+      "offset": 309,
+      "name": "",
+      "comment": "HL to the next block"
+    },
+    {
+      "offset": 312,
+      "name": "",
+      "comment": "its tile"
+    },
+    {
+      "offset": 314,
+      "name": "",
+      "comment": "the high bytes of the cells"
+    },
+    {
+      "offset": 317,
+      "name": "",
+      "comment": "56 records"
+    },
+    {
+      "offset": 319,
+      "name": "AddBuildingFind",
+      "comment": "the record's cell high byte"
+    },
+    {
+      "offset": 320,
+      "name": "",
+      "comment": "0: free"
+    },
+    {
+      "offset": 321,
+      "name": "",
+      "comment": "take it"
+    },
+    {
+      "offset": 323,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 324,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 325,
+      "name": "",
+      "comment": "... the next 3-byte record"
+    },
+    {
+      "offset": 326,
+      "name": "",
+      "comment": "all 56"
+    },
+    {
+      "offset": 328,
+      "name": "",
+      "comment": "all taken: no building"
+    },
+    {
+      "offset": 329,
+      "name": "AddBuildingStore",
+      "comment": "the cell's bit 6: something to find here"
+    },
+    {
+      "offset": 330,
+      "name": "",
+      "comment": "the map cell's anchor bit"
+    },
+    {
+      "offset": 332,
+      "name": "",
+      "comment": "HL = the record, DE = the cell"
+    },
+    {
+      "offset": 333,
+      "name": "",
+      "comment": "+0: the cell's low byte"
+    },
+    {
+      "offset": 334,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 335,
+      "name": "",
+      "comment": "+1: its high byte"
+    },
+    {
+      "offset": 336,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 337,
+      "name": "",
+      "comment": "+2: the type"
+    },
+    {
+      "offset": 338,
+      "name": "",
+      "comment": "HL = the map cell again"
+    },
+    {
+      "offset": 339,
+      "name": "",
+      "comment": "the building stands"
+    },
+    {
+      "offset": 340,
+      "name": "",
+      "comment": "keep the caller's IY..."
+    },
+    {
+      "offset": 342,
+      "name": "",
+      "comment": "... and BC"
+    },
+    {
+      "offset": 343,
+      "name": "",
+      "comment": "IY = the building record on cell HL, Z when there is one"
+    },
+    {
+      "offset": 346,
+      "name": "",
+      "comment": "none here: nothing to do"
+    },
+    {
+      "offset": 348,
+      "name": "",
+      "comment": "the record's high byte 0: free"
+    },
+    {
+      "offset": 352,
+      "name": "",
+      "comment": "the cell's anchor bit off"
+    },
+    {
+      "offset": 354,
+      "name": "RemoveBuildingDone",
+      "comment": ""
+    },
+    {
+      "offset": 355,
+      "name": "",
+      "comment": "IY back"
+    },
+    {
+      "offset": 357,
+      "name": "",
+      "comment": "the building is gone"
+    },
+    {
+      "offset": 358,
+      "name": "",
+      "comment": "the map: 16 rows of 512 cells"
+    },
+    {
+      "offset": 361,
+      "name": "",
+      "comment": "DE = HL + 1..."
+    },
+    {
+      "offset": 362,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 363,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 364,
+      "name": "",
+      "comment": "$2000 bytes in all, $DD00-$FCFF"
+    },
+    {
+      "offset": 367,
+      "name": "",
+      "comment": "the first 0..."
+    },
+    {
+      "offset": 369,
+      "name": "",
+      "comment": "... copied over the rest: an empty map, terrain type 0"
+    },
+    {
+      "offset": 371,
+      "name": "",
+      "comment": "the radar bitmap"
+    },
+    {
+      "offset": 374,
+      "name": "",
+      "comment": "DE = HL + 1..."
+    },
+    {
+      "offset": 375,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 376,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 377,
+      "name": "",
+      "comment": "256 bytes, $D800-$D8FF, the player's layer (BuildRadar redraws both later)"
+    },
+    {
+      "offset": 380,
+      "name": "",
+      "comment": "the first 0..."
+    },
+    {
+      "offset": 382,
+      "name": "",
+      "comment": "... copied over the rest"
+    },
+    {
+      "offset": 384,
+      "name": "",
+      "comment": "the scenery of columns 0-255: SceneryWest (NELEV $1F4)"
+    },
+    {
+      "offset": 387,
+      "name": "",
+      "comment": "the column's high byte 0"
+    },
+    {
+      "offset": 389,
+      "name": "",
+      "comment": "place the west scenery"
+    },
+    {
+      "offset": 392,
+      "name": "",
+      "comment": "the scenery of columns 256-511: SceneryEast (NELEV $1F6)"
+    },
+    {
+      "offset": 395,
+      "name": "",
+      "comment": "the column's high byte 1"
+    },
+    {
+      "offset": 397,
+      "name": "",
+      "comment": "place the east scenery"
+    },
+    {
+      "offset": 400,
+      "name": "",
+      "comment": "the first factory record: $FD70 + 5 x the warbases (NELEV $1FC)"
+    },
+    {
+      "offset": 404,
+      "name": "",
+      "comment": "IX = the warbases' records"
+    },
+    {
+      "offset": 408,
+      "name": "",
+      "comment": "the bases of columns 0-255: BaseListWest (NELEV $1F8)"
+    },
+    {
+      "offset": 411,
+      "name": "",
+      "comment": "the column's high byte 0"
+    },
+    {
+      "offset": 413,
+      "name": "",
+      "comment": "place them"
+    },
+    {
+      "offset": 416,
+      "name": "",
+      "comment": "the bases of columns 256-511: BaseListEast (NELEV $1FA)"
+    },
+    {
+      "offset": 419,
+      "name": "",
+      "comment": "the column's high byte 1"
+    },
+    {
+      "offset": 421,
+      "name": "",
+      "comment": "place them"
+    },
+    {
+      "offset": 424,
+      "name": "",
+      "comment": "warbase 0: the player's"
+    },
+    {
+      "offset": 425,
+      "name": "",
+      "comment": "B = 0: the player"
+    },
+    {
+      "offset": 426,
+      "name": "",
+      "comment": "warbase 0: its pad and our flag"
+    },
+    {
+      "offset": 429,
+      "name": "",
+      "comment": "B = the enemy's warbases: 1 in the image, NELEV $1FE after LOAD MAP"
+    },
+    {
+      "offset": 431,
+      "name": "BuildMapEnemyBase",
+      "comment": "keep the count"
+    },
+    {
+      "offset": 432,
+      "name": "",
+      "comment": "A = the warbase, from the last down to 1"
+    },
+    {
+      "offset": 433,
+      "name": "",
+      "comment": "B = 1: the enemy"
+    },
+    {
+      "offset": 435,
+      "name": "",
+      "comment": "its flag"
+    },
+    {
+      "offset": 438,
+      "name": "",
+      "comment": "the count back"
+    },
+    {
+      "offset": 439,
+      "name": "",
+      "comment": "every enemy warbase"
+    },
+    {
+      "offset": 441,
+      "name": "",
+      "comment": "eight NOPs"
+    },
+    {
+      "offset": 449,
+      "name": "",
+      "comment": "the first counts of both sides"
+    },
+    {
+      "offset": 452,
+      "name": "",
+      "comment": "rebuild the radar map"
+    },
+    {
+      "offset": 454,
+      "name": "",
+      "comment": "RadarDirty = 1"
+    },
+    {
+      "offset": 457,
+      "name": "",
+      "comment": "the ship's cell bit 7, the ship's radar dot"
+    },
+    {
+      "offset": 460,
+      "name": "",
+      "comment": "the map is ready"
+    },
+    {
+      "offset": 461,
+      "name": "",
+      "comment": "the record's tile or shape"
+    },
+    {
+      "offset": 462,
+      "name": "",
+      "comment": "0?"
+    },
+    {
+      "offset": 463,
+      "name": "",
+      "comment": "the end of the list"
+    },
+    {
+      "offset": 464,
+      "name": "",
+      "comment": "C = the tile or shape"
+    },
+    {
+      "offset": 465,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 466,
+      "name": "",
+      "comment": "E = the column's low byte (D the high byte from the caller)"
+    },
+    {
+      "offset": 467,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 468,
+      "name": "",
+      "comment": "A = the row"
+    },
+    {
+      "offset": 469,
+      "name": "",
+      "comment": "HL = the next record"
+    },
+    {
+      "offset": 470,
+      "name": "",
+      "comment": "keep the list pointer"
+    },
+    {
+      "offset": 471,
+      "name": "",
+      "comment": "keep D, the column's high byte"
+    },
+    {
+      "offset": 472,
+      "name": "",
+      "comment": "HL = the cell: $DD00 + 2 * y pages + DE"
+    },
+    {
+      "offset": 475,
+      "name": "",
+      "comment": "2 * y: a row is two pages"
+    },
+    {
+      "offset": 476,
+      "name": "",
+      "comment": "+ $DD"
+    },
+    {
+      "offset": 477,
+      "name": "",
+      "comment": "H = the row's page"
+    },
+    {
+      "offset": 478,
+      "name": "",
+      "comment": "+ the column"
+    },
+    {
+      "offset": 479,
+      "name": "",
+      "comment": "the tile or shape:"
+    },
+    {
+      "offset": 480,
+      "name": "",
+      "comment": "bit 7?"
+    },
+    {
+      "offset": 481,
+      "name": "",
+      "comment": "bit 7: a shape"
+    },
+    {
+      "offset": 484,
+      "name": "",
+      "comment": "a single block of tile A"
+    },
+    {
+      "offset": 487,
+      "name": "",
+      "comment": "next record"
+    },
+    {
+      "offset": 489,
+      "name": "PlaceSceneryShape",
+      "comment": "the shape A AND $7F from this cell"
+    },
+    {
+      "offset": 492,
+      "name": "PlaceSceneryNext",
+      "comment": "D back"
+    },
+    {
+      "offset": 493,
+      "name": "",
+      "comment": "the list pointer back"
+    },
+    {
+      "offset": 494,
+      "name": "",
+      "comment": "the next record"
+    },
+    {
+      "offset": 496,
+      "name": "",
+      "comment": "the record's type"
+    },
+    {
+      "offset": 497,
+      "name": "",
+      "comment": "$FF?"
+    },
+    {
+      "offset": 498,
+      "name": "",
+      "comment": "the end of the list"
+    },
+    {
+      "offset": 499,
+      "name": "",
+      "comment": "C = the type"
+    },
+    {
+      "offset": 500,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 501,
+      "name": "",
+      "comment": "E = the column's low byte (D the high byte from the caller)"
+    },
+    {
+      "offset": 502,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 503,
+      "name": "",
+      "comment": "the row"
+    },
+    {
+      "offset": 504,
+      "name": "",
+      "comment": "B = it"
+    },
+    {
+      "offset": 505,
+      "name": "",
+      "comment": "HL = the next record"
+    },
+    {
+      "offset": 506,
+      "name": "",
+      "comment": "keep the list pointer"
+    },
+    {
+      "offset": 507,
+      "name": "",
+      "comment": "keep D, the column's high byte"
+    },
+    {
+      "offset": 508,
+      "name": "",
+      "comment": "HL = the cell:"
+    },
+    {
+      "offset": 511,
+      "name": "",
+      "comment": "2 * y: a row is two pages"
+    },
+    {
+      "offset": 512,
+      "name": "",
+      "comment": "+ $DD"
+    },
+    {
+      "offset": 513,
+      "name": "",
+      "comment": "H = the row's page"
+    },
+    {
+      "offset": 514,
+      "name": "",
+      "comment": "+ the column"
+    },
+    {
+      "offset": 515,
+      "name": "",
+      "comment": "the type:"
+    },
+    {
+      "offset": 516,
+      "name": "",
+      "comment": "0?"
+    },
+    {
+      "offset": 517,
+      "name": "",
+      "comment": "type 0: a warbase"
+    },
+    {
+      "offset": 519,
+      "name": "",
+      "comment": "a factory's record"
+    },
+    {
+      "offset": 522,
+      "name": "",
+      "comment": "+1: the column's high byte"
+    },
+    {
+      "offset": 525,
+      "name": "",
+      "comment": "+2: the row"
+    },
+    {
+      "offset": 528,
+      "name": "",
+      "comment": "+3: the type, no owner yet"
+    },
+    {
+      "offset": 531,
+      "name": "",
+      "comment": "+4: the capture count 0"
+    },
+    {
+      "offset": 535,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 537,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 539,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 541,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 543,
+      "name": "",
+      "comment": "... IY + 5: the next factory record"
+    },
+    {
+      "offset": 545,
+      "name": "",
+      "comment": "keep the type C"
+    },
+    {
+      "offset": 546,
+      "name": "",
+      "comment": "keep the door cell"
+    },
+    {
+      "offset": 547,
+      "name": "",
+      "comment": "shape 1, ShapeFactory"
+    },
+    {
+      "offset": 549,
+      "name": "",
+      "comment": "the factory's blocks"
+    },
+    {
+      "offset": 552,
+      "name": "",
+      "comment": "HL = the door cell"
+    },
+    {
+      "offset": 553,
+      "name": "",
+      "comment": "C = the type"
+    },
+    {
+      "offset": 554,
+      "name": "",
+      "comment": "the factory's building at (x, y-2), its type"
+    },
+    {
+      "offset": 555,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 556,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 557,
+      "name": "",
+      "comment": "... two rows up: the roof row"
+    },
+    {
+      "offset": 558,
+      "name": "",
+      "comment": "the roof building of type C, its product"
+    },
+    {
+      "offset": 561,
+      "name": "",
+      "comment": "D back"
+    },
+    {
+      "offset": 562,
+      "name": "",
+      "comment": "the list pointer back"
+    },
+    {
+      "offset": 563,
+      "name": "",
+      "comment": "the next record"
+    },
+    {
+      "offset": 565,
+      "name": "PlaceWarbase",
+      "comment": "a warbase's record"
+    },
+    {
+      "offset": 568,
+      "name": "",
+      "comment": "+1: the column's high byte"
+    },
+    {
+      "offset": 571,
+      "name": "",
+      "comment": "+2: the row"
+    },
+    {
+      "offset": 574,
+      "name": "",
+      "comment": "+3: type 0, no owner yet"
+    },
+    {
+      "offset": 577,
+      "name": "",
+      "comment": "+4: the capture count 0"
+    },
+    {
+      "offset": 581,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 583,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 585,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 587,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 589,
+      "name": "",
+      "comment": "... IX + 5: the next warbase record"
+    },
+    {
+      "offset": 591,
+      "name": "",
+      "comment": "shape 0, ShapeWarbase"
+    },
+    {
+      "offset": 593,
+      "name": "",
+      "comment": "the warbase's blocks (its buildings come with GiveWarbase)"
+    },
+    {
+      "offset": 596,
+      "name": "",
+      "comment": "D back"
+    },
+    {
+      "offset": 597,
+      "name": "",
+      "comment": "the list pointer back"
+    },
+    {
+      "offset": 598,
+      "name": "",
+      "comment": "the next record"
+    },
+    {
+      "offset": 600,
+      "name": "",
+      "comment": "keep the cell"
+    },
+    {
+      "offset": 601,
+      "name": "",
+      "comment": "the shapes' address table"
+    },
+    {
+      "offset": 604,
+      "name": "",
+      "comment": "the index"
+    },
+    {
+      "offset": 606,
+      "name": "",
+      "comment": "HL = the shape's address"
+    },
+    {
+      "offset": 609,
+      "name": "",
+      "comment": "DE = the shape"
+    },
+    {
+      "offset": 610,
+      "name": "",
+      "comment": "HL = the cell"
+    },
+    {
+      "offset": 611,
+      "name": "DrawShapeStep",
+      "comment": "the step's tile"
+    },
+    {
+      "offset": 612,
+      "name": "",
+      "comment": "0: no block here"
+    },
+    {
+      "offset": 613,
+      "name": "",
+      "comment": "a 2 x 2 block of the tile"
+    },
+    {
+      "offset": 616,
+      "name": "",
+      "comment": "the step's move:"
+    },
+    {
+      "offset": 617,
+      "name": "",
+      "comment": "columns..."
+    },
+    {
+      "offset": 618,
+      "name": "",
+      "comment": "... to C"
+    },
+    {
+      "offset": 619,
+      "name": "",
+      "comment": "..."
+    },
+    {
+      "offset": 620,
+      "name": "",
+      "comment": "rows..."
+    },
+    {
+      "offset": 621,
+      "name": "",
+      "comment": "... to B"
+    },
+    {
+      "offset": 622,
+      "name": "",
+      "comment": "DE = the next step"
+    },
+    {
+      "offset": 623,
+      "name": "",
+      "comment": "both 0?"
+    },
+    {
+      "offset": 624,
+      "name": "",
+      "comment": "the move (0,0) ends the shape"
+    },
+    {
+      "offset": 625,
+      "name": "",
+      "comment": "HL to the next cell"
+    },
+    {
+      "offset": 628,
+      "name": "",
+      "comment": "its tile"
+    },
+    {
+      "offset": 630,
+      "name": "",
+      "comment": "keep DE"
+    },
+    {
+      "offset": 631,
+      "name": "",
+      "comment": "DE = C..."
+    },
+    {
+      "offset": 632,
+      "name": "",
+      "comment": "... as a positive 16-bit number"
+    },
+    {
+      "offset": 634,
+      "name": "",
+      "comment": "C:"
+    },
+    {
+      "offset": 635,
+      "name": "",
+      "comment": "negative?"
+    },
+    {
+      "offset": 636,
+      "name": "",
+      "comment": "no"
+    },
+    {
+      "offset": 639,
+      "name": "",
+      "comment": "yes: DE = C sign-extended"
+    },
+    {
+      "offset": 641,
+      "name": "StepCellAdd",
+      "comment": "HL + the columns"
+    },
+    {
+      "offset": 642,
+      "name": "",
+      "comment": "the page..."
+    },
+    {
+      "offset": 643,
+      "name": "",
+      "comment": "... + B..."
+    },
+    {
+      "offset": 644,
+      "name": "",
+      "comment": "... + B: the rows, 2 pages each"
+    },
+    {
+      "offset": 645,
+      "name": "",
+      "comment": "H = the new row's page"
+    },
+    {
+      "offset": 646,
+      "name": "",
+      "comment": "DE back"
+    },
+    {
+      "offset": 647,
+      "name": "",
+      "comment": "HL = the new cell"
+    },
+    {
+      "offset": 648,
+      "name": "",
+      "comment": "keep DE"
+    },
+    {
+      "offset": 649,
+      "name": "",
+      "comment": "E = the tile"
+    },
+    {
+      "offset": 650,
+      "name": "",
+      "comment": "2 rows of 2 cells"
+    },
+    {
+      "offset": 653,
+      "name": "",
+      "comment": "keep the anchor cell"
+    },
+    {
+      "offset": 654,
+      "name": "PutBlockRow",
+      "comment": "keep the counters"
+    },
+    {
+      "offset": 655,
+      "name": "",
+      "comment": "keep the row's first cell"
+    },
+    {
+      "offset": 656,
+      "name": "PutBlockCell",
+      "comment": "the first cell plain, the rest with bit 5"
+    },
+    {
+      "offset": 657,
+      "name": "",
+      "comment": "the following cells are the block's other parts"
+    },
+    {
+      "offset": 659,
+      "name": "",
+      "comment": "the next column"
+    },
+    {
+      "offset": 660,
+      "name": "",
+      "comment": "2 cells"
+    },
+    {
+      "offset": 662,
+      "name": "",
+      "comment": "HL = the row's first cell"
+    },
+    {
+      "offset": 663,
+      "name": "",
+      "comment": "the counters back"
+    },
+    {
+      "offset": 664,
+      "name": "",
+      "comment": "the row above"
+    },
+    {
+      "offset": 665,
+      "name": "",
+      "comment": "(a row is 2 pages)"
+    },
+    {
+      "offset": 666,
+      "name": "",
+      "comment": "one row less"
+    },
+    {
+      "offset": 667,
+      "name": "",
+      "comment": "2 rows"
+    },
+    {
+      "offset": 669,
+      "name": "",
+      "comment": "HL = the anchor cell"
+    },
+    {
+      "offset": 670,
+      "name": "",
+      "comment": "DE back"
+    },
+    {
+      "offset": 671,
+      "name": "",
+      "comment": "the block is written"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$BB09",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/game99/bases.asm",
+    "label": "CountBases"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

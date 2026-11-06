@@ -601,6 +601,816 @@
    "masked_sha1": "bb7a40583084dcad9af91ca9a4347fa2569f4435",
    "origin": "$8000"
   },
+  "programs/games/nether-earth-gs/boot-menu-menu": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth GS: the boot menu: menu",
+   "tags": [
+    "nether-earth-gs",
+    "game-module",
+    "menu"
+   ],
+   "found_in": 1,
+   "length": 1828,
+   "sha1": "3a088f4719daa3cf94e62cae23b7c341d7fd7b00",
+   "masked_sha1": "a6e5a3222312ea80bb9fd3499d253e5b00bb1a77",
+   "origin": "$61A8"
+  },
+  "programs/games/nether-earth-gs/boot-print64-print64": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth GS: the boot menu's 64-column print: print64",
+   "tags": [
+    "nether-earth-gs",
+    "game-module",
+    "print64"
+   ],
+   "found_in": 1,
+   "length": 2272,
+   "sha1": "a1bba4784e4d34d5b1008c5d1d2d9429f2ea4b3b",
+   "masked_sha1": "4e20fa56a722a1b8d41d42823cb432f8625ac688",
+   "origin": "$8156"
+  },
+  "programs/games/nether-earth-gs/construction": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth GS: construction",
+   "tags": [
+    "nether-earth-gs",
+    "game-module",
+    "construction"
+   ],
+   "found_in": 1,
+   "length": 1140,
+   "sha1": "c179e6f86b1b7767eb4d39530f76d6d2c244d40f",
+   "masked_sha1": "312e59b5f9dce2679d32c273b5546f62781ed424",
+   "origin": "$C849"
+  },
+  "programs/games/nether-earth-gs/enemy": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth GS: enemy",
+   "tags": [
+    "nether-earth-gs",
+    "game-module",
+    "enemy"
+   ],
+   "found_in": 1,
+   "length": 789,
+   "sha1": "2cdd914689e744195f346afc0179b96bbaa3d3c2",
+   "masked_sha1": "37259de79d295a76a543bdf58ce5696c8ec6b1ae",
+   "origin": "$B7F4"
+  },
+  "programs/games/nether-earth-gs/gssound": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth GS: gssound",
+   "tags": [
+    "nether-earth-gs",
+    "game-module",
+    "gssound"
+   ],
+   "found_in": 1,
+   "length": 151,
+   "sha1": "2884e92e92e9cb5d6f3d56924188b544c3f910f0",
+   "masked_sha1": "5b118fd7e1b10062b9fe82b6af290d2700b9c300",
+   "origin": "$A569"
+  },
+  "programs/games/nether-earth-gs/interrupts": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth GS: interrupts",
+   "tags": [
+    "nether-earth-gs",
+    "game-module",
+    "interrupts"
+   ],
+   "found_in": 1,
+   "length": 322,
+   "sha1": "25c8ff6f1cd4a2e5f1a786ce539e8c1bc129d83a",
+   "masked_sha1": "5b41ee634a0b8aa86ae74939fcd6e3e5b62963ce",
+   "origin": "$D566"
+  },
+  "programs/games/nether-earth-gs/music": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth GS: music",
+   "tags": [
+    "nether-earth-gs",
+    "game-module",
+    "music"
+   ],
+   "found_in": 1,
+   "length": 930,
+   "sha1": "2ca2040a0309017d8dc972545be8dbb96d5857e2",
+   "masked_sha1": "988a4f68ccf32eeffa32047dbc4dadd723a27ec8",
+   "origin": "$C4A7"
+  },
+  "programs/games/nether-earth-gs/sprites": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth GS: sprites",
+   "tags": [
+    "nether-earth-gs",
+    "game-module",
+    "sprites"
+   ],
+   "found_in": 1,
+   "length": 15337,
+   "sha1": "7fa083935b4cd31b0b7cea724bee28a213862982",
+   "masked_sha1": "7fa083935b4cd31b0b7cea724bee28a213862982",
+   "origin": "$6980"
+  },
+  "programs/games/nether-earth-gs/viewbuffer": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth GS: viewbuffer",
+   "tags": [
+    "nether-earth-gs",
+    "game-module",
+    "viewbuffer"
+   ],
+   "found_in": 1,
+   "length": 496,
+   "sha1": "fcc97dd6526410594fa79aea42ac62e1f72bdc4b",
+   "masked_sha1": "fcc97dd6526410594fa79aea42ac62e1f72bdc4b",
+   "origin": "$6590"
+  },
+  "programs/games/nether-earth-gs/workspace": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth GS: workspace",
+   "tags": [
+    "nether-earth-gs",
+    "game-module",
+    "workspace"
+   ],
+   "found_in": 1,
+   "length": 791,
+   "sha1": "6d42329f9ca63c3063cb7af0a305b8cf0e1ee5da",
+   "masked_sha1": "a6d34c93215d9612f6ab0521b6345da33bcf8e22",
+   "origin": "$FCE9"
+  },
+  "programs/games/nether-earth-zs-edition/game98-gameturn": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: gameturn",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "gameturn"
+   ],
+   "found_in": 1,
+   "length": 431,
+   "sha1": "759a6f94314d513489dbbf112b5c5368ddf9168a",
+   "masked_sha1": "41128d70289a81e02b7dc09bc1e925c1f8f42f7a",
+   "origin": "$AD62"
+  },
+  "programs/games/nether-earth-zs-edition/game98-level": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: level",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "level"
+   ],
+   "found_in": 1,
+   "length": 855,
+   "sha1": "d09c9c4c00158bbb452795f0dde4b0dab9ac587d",
+   "masked_sha1": "8f7f314b80eb49ff6d88da44355740a1d1a272e0",
+   "origin": "$BDA9"
+  },
+  "programs/games/nether-earth-zs-edition/game98-mainmenu": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: mainmenu",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "mainmenu"
+   ],
+   "found_in": 1,
+   "length": 935,
+   "sha1": "a82d0f5e0ce6861a5411fccd7dde74d65601f07e",
+   "masked_sha1": "3d3cb7dad486639dd60ad35204f8e0a5d4bcfe0f",
+   "origin": "$C100"
+  },
+  "programs/games/nether-earth-zs-edition/game98-music": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: music",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "music"
+   ],
+   "found_in": 1,
+   "length": 930,
+   "sha1": "73a5386fdeac64044b08ee78bb4bee140957330e",
+   "masked_sha1": "debc768871d61bab4b5817e2d957cecc49c99b06",
+   "origin": "$C4A7"
+  },
+  "programs/games/nether-earth-zs-edition/game98-robotmenu": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: robotmenu",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "robotmenu"
+   ],
+   "found_in": 1,
+   "length": 1602,
+   "sha1": "16ba00c68e86a64b3f0279f93218919c930f6d36",
+   "masked_sha1": "020c028ff09061a82b712e0752f4589087ebb73c",
+   "origin": "$A720"
+  },
+  "programs/games/nether-earth-zs-edition/game98-screen": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: screen",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "screen"
+   ],
+   "found_in": 1,
+   "length": 707,
+   "sha1": "70ddeeb4a948294a8251630be75098855706334f",
+   "masked_sha1": "5497468ab261dbf8a00c72b19868440094f6deae",
+   "origin": "$D0B9"
+  },
+  "programs/games/nether-earth-zs-edition/game98-sprites": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: sprites",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "sprites"
+   ],
+   "found_in": 1,
+   "length": 15446,
+   "sha1": "2834c9acc561e412cba90b02d619b778143bc926",
+   "masked_sha1": "2834c9acc561e412cba90b02d619b778143bc926",
+   "origin": "$6980"
+  },
+  "programs/games/nether-earth-zs-edition/game98-start": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: start",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "start"
+   ],
+   "found_in": 1,
+   "length": 288,
+   "sha1": "0e89a4abe91db87aa8fa31c8a48213f903f4e6e3",
+   "masked_sha1": "6fc50a13b08882dc83e7a66444d73aa7644d3f2e",
+   "origin": "$A600"
+  },
+  "programs/games/nether-earth-zs-edition/game98-zsenemy": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: zsenemy",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "zsenemy"
+   ],
+   "found_in": 1,
+   "length": 42,
+   "sha1": "6fddfd8c07c655527ca99e153635b3740df31c74",
+   "masked_sha1": "26aec42663e1733486c300957cf931a684e60c77",
+   "origin": "$A5D6"
+  },
+  "programs/games/nether-earth-zs-edition/game99-bases": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: bases",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "bases"
+   ],
+   "found_in": 1,
+   "length": 672,
+   "sha1": "b11c69fb9fa0a5abb8b5fc2b5bc1315314773352",
+   "masked_sha1": "bfafb5a63b1721baabf6cd1674a6d4ae11f8480d",
+   "origin": "$BB09"
+  },
+  "programs/games/nether-earth-zs-edition/game99-construction": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: construction",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "construction"
+   ],
+   "found_in": 1,
+   "length": 1140,
+   "sha1": "3d09342d69115c8ff91b4adcb318a2cbaa239e16",
+   "masked_sha1": "37c8e51577ce4f78e84794a57bb35b4f872deba4",
+   "origin": "$C849"
+  },
+  "programs/games/nether-earth-zs-edition/game99-difficulty": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: difficulty",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "difficulty"
+   ],
+   "found_in": 1,
+   "length": 150,
+   "sha1": "5b980ca1d63adcc8cfb69723d36a89affbf63868",
+   "masked_sha1": "3cdca94a543fa84fd346503de099f265292e2866",
+   "origin": "$A56A"
+  },
+  "programs/games/nether-earth-zs-edition/game99-font": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: font",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "font"
+   ],
+   "found_in": 1,
+   "length": 512,
+   "sha1": "33aa31f86678b1207dfe865844cc2a53be5f3b10",
+   "masked_sha1": "33aa31f86678b1207dfe865844cc2a53be5f3b10",
+   "origin": "$6780"
+  },
+  "programs/games/nether-earth-zs-edition/game99-gameturn": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: gameturn",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "gameturn"
+   ],
+   "found_in": 1,
+   "length": 431,
+   "sha1": "b009972c15fec528d4a1cf1714a5b470b3d7feb1",
+   "masked_sha1": "a63807a882bbedd16f11d266c6c99d1200ebf067",
+   "origin": "$AD62"
+  },
+  "programs/games/nether-earth-zs-edition/game99-level": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: level",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "level"
+   ],
+   "found_in": 1,
+   "length": 855,
+   "sha1": "49b1735730f21fe7c87ae0852ab96379da49a010",
+   "masked_sha1": "e8757f1165a547eb1e52c37a2cba772fd45ce597",
+   "origin": "$BDA9"
+  },
+  "programs/games/nether-earth-zs-edition/game99-mainmenu": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: mainmenu",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "mainmenu"
+   ],
+   "found_in": 1,
+   "length": 935,
+   "sha1": "5b6462cd42dcb31dbec81af2850b60b051741562",
+   "masked_sha1": "bfa04d35540478aa022f13b21d61078d6a1c64fd",
+   "origin": "$C100"
+  },
+  "programs/games/nether-earth-zs-edition/game99-music": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: music",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "music"
+   ],
+   "found_in": 1,
+   "length": 930,
+   "sha1": "5c4a256b080d5a73935557a3fa7fb48ecbd4bb77",
+   "masked_sha1": "3fc1cad02a64c84b7a3873afaae1a44809a0b080",
+   "origin": "$C4A7"
+  },
+  "programs/games/nether-earth-zs-edition/game99-robotmenu": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: robotmenu",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "robotmenu"
+   ],
+   "found_in": 1,
+   "length": 1602,
+   "sha1": "0d09b61ae99a4bd5a88cfe716ee701d5d4f3c798",
+   "masked_sha1": "31a07e0184279a53c1d3a63d57f1c1f97c06be4c",
+   "origin": "$A720"
+  },
+  "programs/games/nether-earth-zs-edition/game99-screen": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: screen",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "screen"
+   ],
+   "found_in": 1,
+   "length": 707,
+   "sha1": "4665ab6e06afcec51e483b0dcb5f7e09ce310c3b",
+   "masked_sha1": "f2511b41f099d3d312d0359566d74f2ba366d151",
+   "origin": "$D0B9"
+  },
+  "programs/games/nether-earth-zs-edition/game99-sprites": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: sprites",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "sprites"
+   ],
+   "found_in": 1,
+   "length": 15338,
+   "sha1": "b92c1ecb82b68b4d340a8a11c471b3305083533d",
+   "masked_sha1": "b92c1ecb82b68b4d340a8a11c471b3305083533d",
+   "origin": "$6980"
+  },
+  "programs/games/nether-earth-zs-edition/game99-start": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: start",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "start"
+   ],
+   "found_in": 1,
+   "length": 288,
+   "sha1": "91770167529a400ef4be6544b4046b7c9bcf5352",
+   "masked_sha1": "8228fb2dda18eb8e43771d34149050644193ccd3",
+   "origin": "$A600"
+  },
+  "programs/games/nether-earth-zs-edition/game99-view": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: view",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "view"
+   ],
+   "found_in": 1,
+   "length": 1020,
+   "sha1": "37d4fc8b9a35b94165ef1faa6e81e9df7abbb2d8",
+   "masked_sha1": "630feae71d94844c8c2e091378eb2fbf86ece3ea",
+   "origin": "$CCBD"
+  },
+  "programs/games/nether-earth-zs-edition/intro98-introfont": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: the intro: introfont",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "introfont"
+   ],
+   "found_in": 1,
+   "length": 820,
+   "sha1": "94f9eb380770648bc0aed0ed2387cec25023c40c",
+   "masked_sha1": "94f9eb380770648bc0aed0ed2387cec25023c40c",
+   "origin": "$E6CC"
+  },
+  "programs/games/nether-earth-zs-edition/intro98-intrologo": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: the intro: intrologo",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "intrologo"
+   ],
+   "found_in": 1,
+   "length": 69,
+   "sha1": "98a02c2938550d91f43bb910e3ddda2c34196812",
+   "masked_sha1": "98a02c2938550d91f43bb910e3ddda2c34196812",
+   "origin": "$E3B9"
+  },
+  "programs/games/nether-earth-zs-edition/intro98-intromain": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: the intro: intromain",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "intromain"
+   ],
+   "found_in": 1,
+   "length": 563,
+   "sha1": "93e294c5eeaf2991b06863f9459d19c938d8d30b",
+   "masked_sha1": "ce32297fba84a4b6eac0382acc80823818ca042c",
+   "origin": "$D88F"
+  },
+  "programs/games/nether-earth-zs-edition/intro98-introtext": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: the intro: introtext",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "introtext"
+   ],
+   "found_in": 1,
+   "length": 2295,
+   "sha1": "cec90b75704a0b57c247b9c46585bfa93fa4e9ec",
+   "masked_sha1": "cec90b75704a0b57c247b9c46585bfa93fa4e9ec",
+   "origin": "$DAC2"
+  },
+  "programs/games/nether-earth-zs-edition/intro98-pt3player": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: the intro: pt3player",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "pt3player"
+   ],
+   "found_in": 1,
+   "length": 3617,
+   "sha1": "d66099bad0d322529e0cf40884dc9714546bfdbb",
+   "masked_sha1": "4a4cf5610264b95dc3a9835fefd7c6f94f2d9452",
+   "origin": "$C000"
+  },
+  "programs/games/nether-earth-zs-edition/intro98-pt3tune": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: the intro: pt3tune",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "pt3tune"
+   ],
+   "found_in": 1,
+   "length": 2670,
+   "sha1": "34b4fe9b402f83db6d83bb7ea4e26bc380e14b0b",
+   "masked_sha1": "34b4fe9b402f83db6d83bb7ea4e26bc380e14b0b",
+   "origin": "$CE21"
+  },
+  "programs/games/nether-earth-zs-edition/intro98-robot": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '98: the intro: robot",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "robot"
+   ],
+   "found_in": 1,
+   "length": 718,
+   "sha1": "1893ec05ff6582c352cfdc06db0efcd20f698e4b",
+   "masked_sha1": "310934161ef9dc27dae790650b98288b581bab75",
+   "origin": "$E3FE"
+  },
+  "programs/games/nether-earth-zs-edition/menu99-menumain": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: the menu: menumain",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "menumain"
+   ],
+   "found_in": 1,
+   "length": 994,
+   "sha1": "03b031696b34dbeda5bbe599c942ffa132f39a96",
+   "masked_sha1": "9be0aba5d2ff4aebc723e6e578e96d849f5f9465",
+   "origin": "$D800"
+  },
+  "programs/games/nether-earth-zs-edition/menu99-menupointer": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: the menu: menupointer",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "menupointer"
+   ],
+   "found_in": 1,
+   "length": 2450,
+   "sha1": "ba895fe8f4bcd1293eebbe59aa4a8cff3225f862",
+   "masked_sha1": "178df408b45ceb2b1bbc4941ba095fcdd31d487d",
+   "origin": "$DD62"
+  },
+  "programs/games/nether-earth-zs-edition/menu99-menuviewer": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: the menu: menuviewer",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "menuviewer"
+   ],
+   "found_in": 1,
+   "length": 384,
+   "sha1": "f64b08ddcc41a1284153e538ccf4eb2855d73e81",
+   "masked_sha1": "8fb341ebcc23781e8033391a99c2f576e91dd17a",
+   "origin": "$DBE2"
+  },
+  "programs/games/nether-earth-zs-edition/music99-player": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: the music block: player",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "player"
+   ],
+   "found_in": 1,
+   "length": 3328,
+   "sha1": "cb598fc652e6c50c69852d0c261653ddce9a77d4",
+   "masked_sha1": "25472777a8d87a8676e9b729eb3ef06794127ece",
+   "origin": "$C000"
+  },
+  "programs/games/nether-earth-zs-edition/pictures99-decoder": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: the pictures block: decoder",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "decoder"
+   ],
+   "found_in": 1,
+   "length": 115,
+   "sha1": "a7230186a4090f8643cc80d1f8fcf227e84fe189",
+   "masked_sha1": "d56b16b4a1c6024f4e0a395bfbb390dde8009b0b",
+   "origin": "$7D87"
+  },
+  "programs/games/nether-earth-zs-edition/pictures99-picture": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: the pictures block: picture",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "picture"
+   ],
+   "found_in": 1,
+   "length": 3213,
+   "sha1": "9f4bd73a7fa4ad5749f06b56f71174fe1b814705",
+   "masked_sha1": "9f4bd73a7fa4ad5749f06b56f71174fe1b814705",
+   "origin": "$7DFA"
+  },
+  "programs/games/nether-earth-zs-edition/stage2-effects": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: stage 2: effects",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "effects"
+   ],
+   "found_in": 1,
+   "length": 443,
+   "sha1": "f8244db6542dbaa56c5b30ccfa29f94961a19af8",
+   "masked_sha1": "ca2d4b040b248e79415b76c6d53c188a484ae1bd",
+   "origin": "$628B"
+  },
+  "programs/games/nether-earth-zs-edition/stage2-interrupt": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: stage 2: interrupt",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "interrupt"
+   ],
+   "found_in": 1,
+   "length": 34,
+   "sha1": "e4ecd3a9bd7f3c86a9ac9c7802fafe8cbb7c37a1",
+   "masked_sha1": "3ab4a6d2ca48408da8d1538f8498aa80d69f139e",
+   "origin": "$6525"
+  },
+  "programs/games/nether-earth-zs-edition/stage2-loader": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: stage 2: loader",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "loader"
+   ],
+   "found_in": 1,
+   "length": 227,
+   "sha1": "b270fea1b9af53f96cad57f82b4d52ed55f42fc8",
+   "masked_sha1": "f6eca5617f5133c359b7602da04a325f0779fa9c",
+   "origin": "$61A8"
+  },
+  "programs/games/nether-earth-zs-edition/stage2-print": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: stage 2: print",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "print"
+   ],
+   "found_in": 1,
+   "length": 223,
+   "sha1": "9b9d655ab77640b62a0194cc692e190eead99b9a",
+   "masked_sha1": "56b94c940586949ed3247aaca942dfbbfcdc04ac",
+   "origin": "$6446"
+  },
+  "programs/games/nether-earth-zs-edition/stage2-texts": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: stage 2: texts",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "texts"
+   ],
+   "found_in": 1,
+   "length": 6208,
+   "sha1": "af602028fa22ff6077b8e059d90d632c49658a6c",
+   "masked_sha1": "af602028fa22ff6077b8e059d90d632c49658a6c",
+   "origin": "$6547"
+  },
+  "programs/games/nether-earth-zs-edition/stage3-s3data": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: stage 3: s3data",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "s3data"
+   ],
+   "found_in": 1,
+   "length": 441,
+   "sha1": "edf957720708f31f905c46b77a7ead54ee5e319a",
+   "masked_sha1": "edf957720708f31f905c46b77a7ead54ee5e319a",
+   "origin": "$6633"
+  },
+  "programs/games/nether-earth-zs-edition/stage3-s3main": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: stage 3: s3main",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "s3main"
+   ],
+   "found_in": 1,
+   "length": 633,
+   "sha1": "98b68fc7042f5d0166ed7042de36bfe60f839e46",
+   "masked_sha1": "8ea4e41949d95b06d0a01f92b1a526e2368a526a",
+   "origin": "$61A8"
+  },
+  "programs/games/nether-earth-zs-edition/stage3-s3memtest": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: stage 3: s3memtest",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "s3memtest"
+   ],
+   "found_in": 1,
+   "length": 440,
+   "sha1": "438455c6da96d2d6bcad3d1413d958d3e108fcc6",
+   "masked_sha1": "9f4530002e32945141eb908a9aa2be1c9d179bfc",
+   "origin": "$647B"
+  },
+  "programs/games/nether-earth-zs-edition/stage3-s3util": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Nether Earth ZS Edition '99: stage 3: s3util",
+   "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "s3util"
+   ],
+   "found_in": 1,
+   "length": 90,
+   "sha1": "bc1fe9c483a73fed93bcf5d196b841e435a65682",
+   "masked_sha1": "62ff87c85d254eacb57452342093506dcb3ff616",
+   "origin": "$6421"
+  },
   "programs/games/nether-earth/bases": {
    "kind": "code",
    "role": "game-module",
@@ -610,7 +1420,7 @@
     "game-module",
     "bases"
    ],
-   "found_in": 2,
+   "found_in": 4,
    "length": 672,
    "sha1": "e7e83331fef7e24ffe55db057b53f7e67c90a43a",
    "masked_sha1": "76423721220587c2a72ce4f7a6db5b124cd7a0d2",
@@ -640,7 +1450,7 @@
     "game-module",
     "controls"
    ],
-   "found_in": 2,
+   "found_in": 4,
    "length": 105,
    "sha1": "78cd7e753520f9b299aedadf95282e226085af19",
    "masked_sha1": "6c1272147e57e0e0710c7d25e91b008762609937",
@@ -655,7 +1465,7 @@
     "game-module",
     "enemy"
    ],
-   "found_in": 2,
+   "found_in": 3,
    "length": 789,
    "sha1": "d35a48d44f9b1225597fc7d969805d1778c9164c",
    "masked_sha1": "43d768bd366ad946f4fa3aebb516a64779efc717",
@@ -670,7 +1480,7 @@
     "game-module",
     "font"
    ],
-   "found_in": 1,
+   "found_in": 3,
    "length": 512,
    "sha1": "a00080362581f5259b1b72f7eafd12a9ae232466",
    "masked_sha1": "a00080362581f5259b1b72f7eafd12a9ae232466",
@@ -685,7 +1495,7 @@
     "game-module",
     "gameturn"
    ],
-   "found_in": 1,
+   "found_in": 2,
    "length": 431,
    "sha1": "df15060490e90ca2f8c307de4c769dfb3aab9f5a",
    "masked_sha1": "a2180d1ccd24054aed5550c3ad0e57b135d96928",
@@ -700,7 +1510,7 @@
     "game-module",
     "interrupts"
    ],
-   "found_in": 1,
+   "found_in": 2,
    "length": 322,
    "sha1": "38f5f0a3793574a5525e9553b42f8e62ba0f26bd",
    "masked_sha1": "0afdabb33870e3d185bfd7eef0fb43e96ed2ced0",
@@ -715,7 +1525,7 @@
     "game-module",
     "level"
    ],
-   "found_in": 2,
+   "found_in": 3,
    "length": 855,
    "sha1": "c7b766ec8e0f7085f3917fef7776d209df4715ba",
    "masked_sha1": "22e275777715e6398a40ee20eeb0e780245787ef",
@@ -730,7 +1540,7 @@
     "game-module",
     "mainmenu"
    ],
-   "found_in": 1,
+   "found_in": 2,
    "length": 935,
    "sha1": "28ff026832a0b38b76ab2bed2a93f2bf416ab848",
    "masked_sha1": "bc97ebeef6b7f9897cafbe73bf9bac4ae88ffe7a",
@@ -760,7 +1570,7 @@
     "game-module",
     "print"
    ],
-   "found_in": 2,
+   "found_in": 4,
    "length": 385,
    "sha1": "3a1f4725982e4f6b2a9c390657c0640fda3612df",
    "masked_sha1": "3adcb15883afe922a7ff30d6296a8ae0ab33d1a1",
@@ -775,7 +1585,7 @@
     "game-module",
     "robotmenu"
    ],
-   "found_in": 1,
+   "found_in": 2,
    "length": 1602,
    "sha1": "875c7fbb9f5e521c911ce5d82a3f53fe632e7a8d",
    "masked_sha1": "fbdbb5e59f67e5913f7194f78f996ec08da5e677",
@@ -790,7 +1600,7 @@
     "game-module",
     "screen"
    ],
-   "found_in": 1,
+   "found_in": 2,
    "length": 707,
    "sha1": "1cb801919a5789720f2ac0ff28a478b74efd4374",
    "masked_sha1": "f15d52223a4ff6329805479075be409330d3264a",
@@ -805,7 +1615,7 @@
     "game-module",
     "ship"
    ],
-   "found_in": 2,
+   "found_in": 4,
    "length": 441,
    "sha1": "3b416276166ed52335804c75a0c5dbf609b9a69e",
    "masked_sha1": "d52e223dca42356a074b505b94cfde39c2938c75",
@@ -835,7 +1645,7 @@
     "game-module",
     "start"
    ],
-   "found_in": 1,
+   "found_in": 2,
    "length": 288,
    "sha1": "d1bcdac30ad188141963a9d27f2e763aec456b84",
    "masked_sha1": "e781504770eb85f50a6800d2929a61d7395cef77",
@@ -850,7 +1660,7 @@
     "game-module",
     "tables"
    ],
-   "found_in": 2,
+   "found_in": 4,
    "length": 299,
    "sha1": "725df228788003e8540b7ad64f1ec531cf20f998",
    "masked_sha1": "725df228788003e8540b7ad64f1ec531cf20f998",
@@ -865,7 +1675,7 @@
     "game-module",
     "view"
    ],
-   "found_in": 2,
+   "found_in": 3,
    "length": 1020,
    "sha1": "b872775e816e43c63e36003367838fc84bb93a83",
    "masked_sha1": "1f0eb2f74042fafa3a8b2bbf4fe391229ccf47a3",
@@ -895,7 +1705,7 @@
     "game-module",
     "world"
    ],
-   "found_in": 2,
+   "found_in": 4,
    "length": 1834,
    "sha1": "68bb157c118e3c290ee933516d1e9ffc039ba84b",
    "masked_sha1": "7a3d4ff13cd7249237cf1ede8c068bfb44dce3cd",
@@ -2082,6 +2892,168 @@
   "6dec36ad620c046e31c431db16dee87c35144d80": [
    "programs/games/hate/titleplayer"
   ],
+  "3a088f4719daa3cf94e62cae23b7c341d7fd7b00": [
+   "programs/games/nether-earth-gs/boot-menu-menu"
+  ],
+  "a1bba4784e4d34d5b1008c5d1d2d9429f2ea4b3b": [
+   "programs/games/nether-earth-gs/boot-print64-print64"
+  ],
+  "c179e6f86b1b7767eb4d39530f76d6d2c244d40f": [
+   "programs/games/nether-earth-gs/construction"
+  ],
+  "2cdd914689e744195f346afc0179b96bbaa3d3c2": [
+   "programs/games/nether-earth-gs/enemy"
+  ],
+  "2884e92e92e9cb5d6f3d56924188b544c3f910f0": [
+   "programs/games/nether-earth-gs/gssound"
+  ],
+  "25c8ff6f1cd4a2e5f1a786ce539e8c1bc129d83a": [
+   "programs/games/nether-earth-gs/interrupts"
+  ],
+  "2ca2040a0309017d8dc972545be8dbb96d5857e2": [
+   "programs/games/nether-earth-gs/music"
+  ],
+  "7fa083935b4cd31b0b7cea724bee28a213862982": [
+   "programs/games/nether-earth-gs/sprites"
+  ],
+  "fcc97dd6526410594fa79aea42ac62e1f72bdc4b": [
+   "programs/games/nether-earth-gs/viewbuffer"
+  ],
+  "6d42329f9ca63c3063cb7af0a305b8cf0e1ee5da": [
+   "programs/games/nether-earth-gs/workspace"
+  ],
+  "759a6f94314d513489dbbf112b5c5368ddf9168a": [
+   "programs/games/nether-earth-zs-edition/game98-gameturn"
+  ],
+  "d09c9c4c00158bbb452795f0dde4b0dab9ac587d": [
+   "programs/games/nether-earth-zs-edition/game98-level"
+  ],
+  "a82d0f5e0ce6861a5411fccd7dde74d65601f07e": [
+   "programs/games/nether-earth-zs-edition/game98-mainmenu"
+  ],
+  "73a5386fdeac64044b08ee78bb4bee140957330e": [
+   "programs/games/nether-earth-zs-edition/game98-music"
+  ],
+  "16ba00c68e86a64b3f0279f93218919c930f6d36": [
+   "programs/games/nether-earth-zs-edition/game98-robotmenu"
+  ],
+  "70ddeeb4a948294a8251630be75098855706334f": [
+   "programs/games/nether-earth-zs-edition/game98-screen"
+  ],
+  "2834c9acc561e412cba90b02d619b778143bc926": [
+   "programs/games/nether-earth-zs-edition/game98-sprites"
+  ],
+  "0e89a4abe91db87aa8fa31c8a48213f903f4e6e3": [
+   "programs/games/nether-earth-zs-edition/game98-start"
+  ],
+  "6fddfd8c07c655527ca99e153635b3740df31c74": [
+   "programs/games/nether-earth-zs-edition/game98-zsenemy"
+  ],
+  "b11c69fb9fa0a5abb8b5fc2b5bc1315314773352": [
+   "programs/games/nether-earth-zs-edition/game99-bases"
+  ],
+  "3d09342d69115c8ff91b4adcb318a2cbaa239e16": [
+   "programs/games/nether-earth-zs-edition/game99-construction"
+  ],
+  "5b980ca1d63adcc8cfb69723d36a89affbf63868": [
+   "programs/games/nether-earth-zs-edition/game99-difficulty"
+  ],
+  "33aa31f86678b1207dfe865844cc2a53be5f3b10": [
+   "programs/games/nether-earth-zs-edition/game99-font"
+  ],
+  "b009972c15fec528d4a1cf1714a5b470b3d7feb1": [
+   "programs/games/nether-earth-zs-edition/game99-gameturn"
+  ],
+  "49b1735730f21fe7c87ae0852ab96379da49a010": [
+   "programs/games/nether-earth-zs-edition/game99-level"
+  ],
+  "5b6462cd42dcb31dbec81af2850b60b051741562": [
+   "programs/games/nether-earth-zs-edition/game99-mainmenu"
+  ],
+  "5c4a256b080d5a73935557a3fa7fb48ecbd4bb77": [
+   "programs/games/nether-earth-zs-edition/game99-music"
+  ],
+  "0d09b61ae99a4bd5a88cfe716ee701d5d4f3c798": [
+   "programs/games/nether-earth-zs-edition/game99-robotmenu"
+  ],
+  "4665ab6e06afcec51e483b0dcb5f7e09ce310c3b": [
+   "programs/games/nether-earth-zs-edition/game99-screen"
+  ],
+  "b92c1ecb82b68b4d340a8a11c471b3305083533d": [
+   "programs/games/nether-earth-zs-edition/game99-sprites"
+  ],
+  "91770167529a400ef4be6544b4046b7c9bcf5352": [
+   "programs/games/nether-earth-zs-edition/game99-start"
+  ],
+  "37d4fc8b9a35b94165ef1faa6e81e9df7abbb2d8": [
+   "programs/games/nether-earth-zs-edition/game99-view"
+  ],
+  "94f9eb380770648bc0aed0ed2387cec25023c40c": [
+   "programs/games/nether-earth-zs-edition/intro98-introfont"
+  ],
+  "98a02c2938550d91f43bb910e3ddda2c34196812": [
+   "programs/games/nether-earth-zs-edition/intro98-intrologo"
+  ],
+  "93e294c5eeaf2991b06863f9459d19c938d8d30b": [
+   "programs/games/nether-earth-zs-edition/intro98-intromain"
+  ],
+  "cec90b75704a0b57c247b9c46585bfa93fa4e9ec": [
+   "programs/games/nether-earth-zs-edition/intro98-introtext"
+  ],
+  "d66099bad0d322529e0cf40884dc9714546bfdbb": [
+   "programs/games/nether-earth-zs-edition/intro98-pt3player"
+  ],
+  "34b4fe9b402f83db6d83bb7ea4e26bc380e14b0b": [
+   "programs/games/nether-earth-zs-edition/intro98-pt3tune"
+  ],
+  "1893ec05ff6582c352cfdc06db0efcd20f698e4b": [
+   "programs/games/nether-earth-zs-edition/intro98-robot"
+  ],
+  "03b031696b34dbeda5bbe599c942ffa132f39a96": [
+   "programs/games/nether-earth-zs-edition/menu99-menumain"
+  ],
+  "ba895fe8f4bcd1293eebbe59aa4a8cff3225f862": [
+   "programs/games/nether-earth-zs-edition/menu99-menupointer"
+  ],
+  "f64b08ddcc41a1284153e538ccf4eb2855d73e81": [
+   "programs/games/nether-earth-zs-edition/menu99-menuviewer"
+  ],
+  "cb598fc652e6c50c69852d0c261653ddce9a77d4": [
+   "programs/games/nether-earth-zs-edition/music99-player"
+  ],
+  "a7230186a4090f8643cc80d1f8fcf227e84fe189": [
+   "programs/games/nether-earth-zs-edition/pictures99-decoder"
+  ],
+  "9f4bd73a7fa4ad5749f06b56f71174fe1b814705": [
+   "programs/games/nether-earth-zs-edition/pictures99-picture"
+  ],
+  "f8244db6542dbaa56c5b30ccfa29f94961a19af8": [
+   "programs/games/nether-earth-zs-edition/stage2-effects"
+  ],
+  "e4ecd3a9bd7f3c86a9ac9c7802fafe8cbb7c37a1": [
+   "programs/games/nether-earth-zs-edition/stage2-interrupt"
+  ],
+  "b270fea1b9af53f96cad57f82b4d52ed55f42fc8": [
+   "programs/games/nether-earth-zs-edition/stage2-loader"
+  ],
+  "9b9d655ab77640b62a0194cc692e190eead99b9a": [
+   "programs/games/nether-earth-zs-edition/stage2-print"
+  ],
+  "af602028fa22ff6077b8e059d90d632c49658a6c": [
+   "programs/games/nether-earth-zs-edition/stage2-texts"
+  ],
+  "edf957720708f31f905c46b77a7ead54ee5e319a": [
+   "programs/games/nether-earth-zs-edition/stage3-s3data"
+  ],
+  "98b68fc7042f5d0166ed7042de36bfe60f839e46": [
+   "programs/games/nether-earth-zs-edition/stage3-s3main"
+  ],
+  "438455c6da96d2d6bcad3d1413d958d3e108fcc6": [
+   "programs/games/nether-earth-zs-edition/stage3-s3memtest"
+  ],
+  "bc1fe9c483a73fed93bcf5d196b841e435a65682": [
+   "programs/games/nether-earth-zs-edition/stage3-s3util"
+  ],
   "e7e83331fef7e24ffe55db057b53f7e67c90a43a": [
    "programs/games/nether-earth/bases"
   ],
@@ -2467,6 +3439,168 @@
   ],
   "bb7a40583084dcad9af91ca9a4347fa2569f4435": [
    "programs/games/hate/titleplayer"
+  ],
+  "a6e5a3222312ea80bb9fd3499d253e5b00bb1a77": [
+   "programs/games/nether-earth-gs/boot-menu-menu"
+  ],
+  "4e20fa56a722a1b8d41d42823cb432f8625ac688": [
+   "programs/games/nether-earth-gs/boot-print64-print64"
+  ],
+  "312e59b5f9dce2679d32c273b5546f62781ed424": [
+   "programs/games/nether-earth-gs/construction"
+  ],
+  "37259de79d295a76a543bdf58ce5696c8ec6b1ae": [
+   "programs/games/nether-earth-gs/enemy"
+  ],
+  "5b118fd7e1b10062b9fe82b6af290d2700b9c300": [
+   "programs/games/nether-earth-gs/gssound"
+  ],
+  "5b41ee634a0b8aa86ae74939fcd6e3e5b62963ce": [
+   "programs/games/nether-earth-gs/interrupts"
+  ],
+  "988a4f68ccf32eeffa32047dbc4dadd723a27ec8": [
+   "programs/games/nether-earth-gs/music"
+  ],
+  "7fa083935b4cd31b0b7cea724bee28a213862982": [
+   "programs/games/nether-earth-gs/sprites"
+  ],
+  "fcc97dd6526410594fa79aea42ac62e1f72bdc4b": [
+   "programs/games/nether-earth-gs/viewbuffer"
+  ],
+  "a6d34c93215d9612f6ab0521b6345da33bcf8e22": [
+   "programs/games/nether-earth-gs/workspace"
+  ],
+  "41128d70289a81e02b7dc09bc1e925c1f8f42f7a": [
+   "programs/games/nether-earth-zs-edition/game98-gameturn"
+  ],
+  "8f7f314b80eb49ff6d88da44355740a1d1a272e0": [
+   "programs/games/nether-earth-zs-edition/game98-level"
+  ],
+  "3d3cb7dad486639dd60ad35204f8e0a5d4bcfe0f": [
+   "programs/games/nether-earth-zs-edition/game98-mainmenu"
+  ],
+  "debc768871d61bab4b5817e2d957cecc49c99b06": [
+   "programs/games/nether-earth-zs-edition/game98-music"
+  ],
+  "020c028ff09061a82b712e0752f4589087ebb73c": [
+   "programs/games/nether-earth-zs-edition/game98-robotmenu"
+  ],
+  "5497468ab261dbf8a00c72b19868440094f6deae": [
+   "programs/games/nether-earth-zs-edition/game98-screen"
+  ],
+  "2834c9acc561e412cba90b02d619b778143bc926": [
+   "programs/games/nether-earth-zs-edition/game98-sprites"
+  ],
+  "6fc50a13b08882dc83e7a66444d73aa7644d3f2e": [
+   "programs/games/nether-earth-zs-edition/game98-start"
+  ],
+  "26aec42663e1733486c300957cf931a684e60c77": [
+   "programs/games/nether-earth-zs-edition/game98-zsenemy"
+  ],
+  "bfafb5a63b1721baabf6cd1674a6d4ae11f8480d": [
+   "programs/games/nether-earth-zs-edition/game99-bases"
+  ],
+  "37c8e51577ce4f78e84794a57bb35b4f872deba4": [
+   "programs/games/nether-earth-zs-edition/game99-construction"
+  ],
+  "3cdca94a543fa84fd346503de099f265292e2866": [
+   "programs/games/nether-earth-zs-edition/game99-difficulty"
+  ],
+  "33aa31f86678b1207dfe865844cc2a53be5f3b10": [
+   "programs/games/nether-earth-zs-edition/game99-font"
+  ],
+  "a63807a882bbedd16f11d266c6c99d1200ebf067": [
+   "programs/games/nether-earth-zs-edition/game99-gameturn"
+  ],
+  "e8757f1165a547eb1e52c37a2cba772fd45ce597": [
+   "programs/games/nether-earth-zs-edition/game99-level"
+  ],
+  "bfa04d35540478aa022f13b21d61078d6a1c64fd": [
+   "programs/games/nether-earth-zs-edition/game99-mainmenu"
+  ],
+  "3fc1cad02a64c84b7a3873afaae1a44809a0b080": [
+   "programs/games/nether-earth-zs-edition/game99-music"
+  ],
+  "31a07e0184279a53c1d3a63d57f1c1f97c06be4c": [
+   "programs/games/nether-earth-zs-edition/game99-robotmenu"
+  ],
+  "f2511b41f099d3d312d0359566d74f2ba366d151": [
+   "programs/games/nether-earth-zs-edition/game99-screen"
+  ],
+  "b92c1ecb82b68b4d340a8a11c471b3305083533d": [
+   "programs/games/nether-earth-zs-edition/game99-sprites"
+  ],
+  "8228fb2dda18eb8e43771d34149050644193ccd3": [
+   "programs/games/nether-earth-zs-edition/game99-start"
+  ],
+  "630feae71d94844c8c2e091378eb2fbf86ece3ea": [
+   "programs/games/nether-earth-zs-edition/game99-view"
+  ],
+  "94f9eb380770648bc0aed0ed2387cec25023c40c": [
+   "programs/games/nether-earth-zs-edition/intro98-introfont"
+  ],
+  "98a02c2938550d91f43bb910e3ddda2c34196812": [
+   "programs/games/nether-earth-zs-edition/intro98-intrologo"
+  ],
+  "ce32297fba84a4b6eac0382acc80823818ca042c": [
+   "programs/games/nether-earth-zs-edition/intro98-intromain"
+  ],
+  "cec90b75704a0b57c247b9c46585bfa93fa4e9ec": [
+   "programs/games/nether-earth-zs-edition/intro98-introtext"
+  ],
+  "4a4cf5610264b95dc3a9835fefd7c6f94f2d9452": [
+   "programs/games/nether-earth-zs-edition/intro98-pt3player"
+  ],
+  "34b4fe9b402f83db6d83bb7ea4e26bc380e14b0b": [
+   "programs/games/nether-earth-zs-edition/intro98-pt3tune"
+  ],
+  "310934161ef9dc27dae790650b98288b581bab75": [
+   "programs/games/nether-earth-zs-edition/intro98-robot"
+  ],
+  "9be0aba5d2ff4aebc723e6e578e96d849f5f9465": [
+   "programs/games/nether-earth-zs-edition/menu99-menumain"
+  ],
+  "178df408b45ceb2b1bbc4941ba095fcdd31d487d": [
+   "programs/games/nether-earth-zs-edition/menu99-menupointer"
+  ],
+  "8fb341ebcc23781e8033391a99c2f576e91dd17a": [
+   "programs/games/nether-earth-zs-edition/menu99-menuviewer"
+  ],
+  "25472777a8d87a8676e9b729eb3ef06794127ece": [
+   "programs/games/nether-earth-zs-edition/music99-player"
+  ],
+  "d56b16b4a1c6024f4e0a395bfbb390dde8009b0b": [
+   "programs/games/nether-earth-zs-edition/pictures99-decoder"
+  ],
+  "9f4bd73a7fa4ad5749f06b56f71174fe1b814705": [
+   "programs/games/nether-earth-zs-edition/pictures99-picture"
+  ],
+  "ca2d4b040b248e79415b76c6d53c188a484ae1bd": [
+   "programs/games/nether-earth-zs-edition/stage2-effects"
+  ],
+  "3ab4a6d2ca48408da8d1538f8498aa80d69f139e": [
+   "programs/games/nether-earth-zs-edition/stage2-interrupt"
+  ],
+  "f6eca5617f5133c359b7602da04a325f0779fa9c": [
+   "programs/games/nether-earth-zs-edition/stage2-loader"
+  ],
+  "56b94c940586949ed3247aaca942dfbbfcdc04ac": [
+   "programs/games/nether-earth-zs-edition/stage2-print"
+  ],
+  "af602028fa22ff6077b8e059d90d632c49658a6c": [
+   "programs/games/nether-earth-zs-edition/stage2-texts"
+  ],
+  "edf957720708f31f905c46b77a7ead54ee5e319a": [
+   "programs/games/nether-earth-zs-edition/stage3-s3data"
+  ],
+  "8ea4e41949d95b06d0a01f92b1a526e2368a526a": [
+   "programs/games/nether-earth-zs-edition/stage3-s3main"
+  ],
+  "9f4530002e32945141eb908a9aa2be1c9d179bfc": [
+   "programs/games/nether-earth-zs-edition/stage3-s3memtest"
+  ],
+  "62ff87c85d254eacb57452342093506dcb3ff616": [
+   "programs/games/nether-earth-zs-edition/stage3-s3util"
   ],
   "76423721220587c2a72ce4f7a6db5b124cd7a0d2": [
    "programs/games/nether-earth/bases"
@@ -2998,6 +4132,10 @@
     4
    ],
    [
+    "programs/games/nether-earth-zs-edition/game99-construction",
+    4
+   ],
+   [
     "programs/games/nether-earth/construction",
     4
    ]
@@ -3020,6 +4158,14 @@
     494
    ],
    [
+    "programs/games/nether-earth-gs/construction",
+    494
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-construction",
+    494
+   ],
+   [
     "programs/games/nether-earth/construction",
     494
    ]
@@ -3027,6 +4173,14 @@
   "7e8077e57dd6076f46e17eb8": [
    [
     "programs/games/advanced-nether-earth/construction",
+    654
+   ],
+   [
+    "programs/games/nether-earth-gs/construction",
+    654
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-construction",
     654
    ],
    [
@@ -3040,6 +4194,14 @@
     867
    ],
    [
+    "programs/games/nether-earth-gs/construction",
+    867
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-construction",
+    867
+   ],
+   [
     "programs/games/nether-earth/construction",
     867
    ]
@@ -3050,6 +4212,14 @@
     988
    ],
    [
+    "programs/games/nether-earth-gs/construction",
+    988
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-construction",
+    988
+   ],
+   [
     "programs/games/nether-earth/construction",
     988
    ]
@@ -3057,6 +4227,10 @@
   "ee10d3fe10fec10d20f5c1c9": [
    [
     "programs/games/advanced-nether-earth/construction",
+    1128
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-construction",
     1128
    ],
    [
@@ -3136,6 +4310,10 @@
     586
    ],
    [
+    "programs/games/nether-earth-zs-edition/game99-font",
+    498
+   ],
+   [
     "programs/games/nether-earth/font",
     498
    ]
@@ -3143,6 +4321,14 @@
   "7ec60577fe3c201536002334": [
    [
     "programs/games/advanced-nether-earth/gameturn",
+    6
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-gameturn",
+    6
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-gameturn",
     6
    ],
    [
@@ -3159,6 +4345,10 @@
   "061c0e00fd6e00fd6601fd7e": [
    [
     "programs/games/advanced-nether-earth/gameturn",
+    81
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-gameturn",
     81
    ],
    [
@@ -3184,6 +4374,14 @@
     170
    ],
    [
+    "programs/games/nether-earth-zs-edition/game98-gameturn",
+    170
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-gameturn",
+    170
+   ],
+   [
     "programs/games/nether-earth/gameturn",
     170
    ]
@@ -3191,6 +4389,14 @@
   "10f7c986fe6438023e6377c9": [
    [
     "programs/games/advanced-nether-earth/gameturn",
+    253
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-gameturn",
+    253
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-gameturn",
     253
    ],
    [
@@ -3230,6 +4436,10 @@
     176
    ],
    [
+    "programs/games/nether-earth-gs/interrupts",
+    176
+   ],
+   [
     "programs/games/nether-earth/interrupts",
     176
    ]
@@ -3237,6 +4447,10 @@
   "7e0a07e60147fd7e0afe02c4": [
    [
     "programs/games/advanced-nether-earth/interrupts",
+    221
+   ],
+   [
+    "programs/games/nether-earth-gs/interrupts",
     221
    ],
    [
@@ -3250,6 +4464,10 @@
     266
    ],
    [
+    "programs/games/nether-earth-gs/interrupts",
+    266
+   ],
+   [
     "programs/games/nether-earth/interrupts",
     266
    ]
@@ -3257,6 +4475,10 @@
   "0707076faf371f10fdc9e1c9": [
    [
     "programs/games/advanced-nether-earth/interrupts",
+    310
+   ],
+   [
+    "programs/games/nether-earth-gs/interrupts",
     310
    ],
    [
@@ -3301,6 +4523,14 @@
   "010503040000cd8e027bb7f2": [
    [
     "programs/games/advanced-nether-earth/mainmenu",
+    612
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-mainmenu",
+    612
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-mainmenu",
     612
    ],
    [
@@ -3374,6 +4604,14 @@
     918
    ],
    [
+    "programs/games/nether-earth-zs-edition/game98-robotmenu",
+    918
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-robotmenu",
+    918
+   ],
+   [
     "programs/games/nether-earth/robotmenu",
     918
    ]
@@ -3393,6 +4631,14 @@
   "47d5e51160001910fd0608cd": [
    [
     "programs/games/advanced-nether-earth/robotmenu",
+    1564
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-robotmenu",
+    1564
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-robotmenu",
     1564
    ],
    [
@@ -3434,6 +4680,14 @@
     596
    ],
    [
+    "programs/games/nether-earth-zs-edition/game98-screen",
+    596
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-screen",
+    596
+   ],
+   [
     "programs/games/nether-earth/screen",
     596
    ]
@@ -3441,6 +4695,10 @@
   "cb162dcb162e007ee6036f32": [
    [
     "programs/games/advanced-nether-earth/screen",
+    690
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-screen",
     690
    ],
    [
@@ -3454,6 +4712,18 @@
     0
    ],
    [
+    "programs/games/nether-earth-gs/sprites",
+    0
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-sprites",
+    0
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-sprites",
+    0
+   ],
+   [
     "programs/games/nether-earth/sprites",
     0
    ]
@@ -3462,11 +4732,27 @@
    [
     "programs/games/advanced-nether-earth/sprites",
     2189
+   ],
+   [
+    "programs/games/nether-earth-gs/sprites",
+    2189
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-sprites",
+    2189
    ]
   ],
   "030f90e01200000f90c02400": [
    [
     "programs/games/advanced-nether-earth/sprites",
+    4379
+   ],
+   [
+    "programs/games/nether-earth-gs/sprites",
+    4379
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-sprites",
     4379
    ]
   ],
@@ -3474,11 +4760,23 @@
    [
     "programs/games/advanced-nether-earth/sprites",
     6568
+   ],
+   [
+    "programs/games/nether-earth-gs/sprites",
+    6568
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-sprites",
+    6568
    ]
   ],
   "7f80ff00fc03ff00ff00fc03": [
    [
     "programs/games/advanced-nether-earth/sprites",
+    8758
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-sprites",
     8758
    ]
   ],
@@ -3486,11 +4784,19 @@
    [
     "programs/games/advanced-nether-earth/sprites",
     10947
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-sprites",
+    10947
    ]
   ],
   "440708f80600ac00110708f0": [
    [
     "programs/games/advanced-nether-earth/sprites",
+    13137
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-sprites",
     13137
    ]
   ],
@@ -3498,12 +4804,24 @@
    [
     "programs/games/advanced-nether-earth/sprites",
     15326
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-sprites",
+    15326
    ]
   ],
   "fe0f2033fd6e00fd7e01c608": [
    [
     "programs/games/advanced-nether-earth/start",
     252
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-start",
+    214
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-start",
+    214
    ],
    [
     "programs/games/nether-earth/start",
@@ -3520,6 +4838,14 @@
    [
     "programs/games/advanced-nether-earth/start",
     290
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-start",
+    252
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-start",
+    252
    ],
    [
     "programs/games/nether-earth/start",
@@ -3572,6 +4898,10 @@
    [
     "programs/games/advanced-nether-earth/viewtail",
     67
+   ],
+   [
+    "programs/games/nether-earth-gs/viewbuffer",
+    484
    ],
    [
     "programs/games/nether-earth/viewbuffer",
@@ -4396,55 +5726,117 @@
     1306
    ]
   ],
-  "060736002310fb2306073600": [
+  "fbfdcb01aefdcb016e28fafd": [
    [
-    "programs/games/nether-earth/bases",
+    "programs/games/nether-earth-gs/boot-menu-menu",
+    96
+   ]
+  ],
+  "cb016e28fafd7ecef3fe07ca": [
+   [
+    "programs/games/nether-earth-gs/boot-menu-menu",
+    102
+   ]
+  ],
+  "060a3e45771120001910f9c9": [
+   [
+    "programs/games/nether-earth-gs/boot-menu-menu",
+    519
+   ]
+  ],
+  "0685dd7e00fe203829dd7e08": [
+   [
+    "programs/games/nether-earth-gs/boot-menu-menu",
+    801
+   ]
+  ],
+  "247cfe18200626003e0a856f": [
+   [
+    "programs/games/nether-earth-gs/boot-menu-menu",
+    1038
+   ]
+  ],
+  "4f2c50202020202020202020": [
+   [
+    "programs/games/nether-earth-gs/boot-menu-menu",
+    1293
+   ]
+  ],
+  "fe10280310ebc91e001405c3": [
+   [
+    "programs/games/nether-earth-gs/boot-menu-menu",
+    1544
+   ]
+  ],
+  "dde1f1c1c90000dd21c12fcd": [
+   [
+    "programs/games/nether-earth-gs/boot-menu-menu",
+    1731
+   ]
+  ],
+  "34cb76280436002334e1d1c1": [
+   [
+    "programs/games/nether-earth-gs/boot-print64-print64",
+    35
+   ]
+  ],
+  "a0eda07e121424eda8eda8ed": [
+   [
+    "programs/games/nether-earth-gs/boot-print64-print64",
+    323
+   ]
+  ],
+  "282ecb3ff526006f29292911": [
+   [
+    "programs/games/nether-earth-gs/boot-print64-print64",
+    643
+   ]
+  ],
+  "182814000000000000000000": [
+   [
+    "programs/games/nether-earth-gs/boot-print64-print64",
+    968
+   ]
+  ],
+  "920267059567002755552724": [
+   [
+    "programs/games/nether-earth-gs/boot-print64-print64",
+    1291
+   ]
+  ],
+  "84e600008682424222260000": [
+   [
+    "programs/games/nether-earth-gs/boot-print64-print64",
+    1614
+   ]
+  ],
+  "0000aaeaeeaaaa0000004caa": [
+   [
+    "programs/games/nether-earth-gs/boot-print64-print64",
+    1937
+   ]
+  ],
+  "acae00000000000060606000": [
+   [
+    "programs/games/nether-earth-gs/boot-print64-print64",
+    2259
+   ]
+  ],
+  "001110000618fd7e01b72805": [
+   [
+    "programs/games/nether-earth-gs/construction",
     3
    ]
   ],
-  "78b7280423232323c6074fcd": [
-   [
-    "programs/games/nether-earth/bases",
-    110
-   ]
-  ],
-  "0f4f7ee61fb1772b4e2b7e2b": [
-   [
-    "programs/games/nether-earth/bases",
-    189
-   ]
-  ],
-  "06381ab7280613131310f7c9": [
-   [
-    "programs/games/nether-earth/bases",
-    317
-   ]
-  ],
-  "06fd360100cbb6c1fde1c921": [
-   [
-    "programs/games/nether-earth/bases",
-    347
-   ]
-  ],
-  "7eb7c84f235e237e23e5d521": [
-   [
-    "programs/games/nether-earth/bases",
-    461
-   ]
-  ],
-  "7300dd7201dd7002dd7103dd": [
-   [
-    "programs/games/nether-earth/bases",
-    566
-   ]
-  ],
-  "10fae1c125250d20f1e1d1c9": [
-   [
-    "programs/games/nether-earth/bases",
-    660
-   ]
-  ],
   "4943530104154e55434c4541": [
+   [
+    "programs/games/nether-earth-gs/construction",
+    161
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-construction",
+    161
+   ],
    [
     "programs/games/nether-earth/construction",
     161
@@ -4452,8 +5844,1978 @@
   ],
   "494c41424c45202d2d024401": [
    [
+    "programs/games/nether-earth-gs/construction",
+    322
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-construction",
+    322
+   ],
+   [
     "programs/games/nether-earth/construction",
     322
+   ]
+  ],
+  "e1fd4e04fd7e0a07e60147c3": [
+   [
+    "programs/games/nether-earth-gs/construction",
+    1097
+   ]
+  ],
+  "e61ffe18d08787876f260029": [
+   [
+    "programs/games/nether-earth-gs/enemy",
+    3
+   ],
+   [
+    "programs/games/nether-earth/enemy",
+    3
+   ]
+  ],
+  "c0790f0f0fe60fc8fe0fc84f": [
+   [
+    "programs/games/nether-earth-gs/enemy",
+    111
+   ],
+   [
+    "programs/games/nether-earth/enemy",
+    111
+   ]
+  ],
+  "d9fd360504fd360804fd3606": [
+   [
+    "programs/games/nether-earth-gs/enemy",
+    232
+   ],
+   [
+    "programs/games/nether-earth/enemy",
+    232
+   ]
+  ],
+  "7ee6e0bb28152bfd7e049620": [
+   [
+    "programs/games/nether-earth-gs/enemy",
+    334
+   ],
+   [
+    "programs/games/nether-earth/enemy",
+    334
+   ]
+  ],
+  "fe04fd7e043002c6043c96f2": [
+   [
+    "programs/games/nether-earth-gs/enemy",
+    442
+   ],
+   [
+    "programs/games/nether-earth/enemy",
+    442
+   ]
+  ],
+  "280cfe02280bfe082807fe09": [
+   [
+    "programs/games/nether-earth-gs/enemy",
+    555
+   ],
+   [
+    "programs/games/nether-earth/enemy",
+    555
+   ]
+  ],
+  "011414c5eda00c10fb3e0ccd": [
+   [
+    "programs/games/nether-earth-gs/enemy",
+    665
+   ],
+   [
+    "programs/games/nether-earth/enemy",
+    665
+   ]
+  ],
+  "fe000000c10505050c0c0cc9": [
+   [
+    "programs/games/nether-earth-gs/enemy",
+    777
+   ]
+  ],
+  "fbc9f3e5d5c5f5dde5fde567": [
+   [
+    "programs/games/nether-earth-gs/gssound",
+    24
+   ]
+  ],
+  "ed79fde1dde1f1c1d1e1fbc9": [
+   [
+    "programs/games/nether-earth-gs/gssound",
+    52
+   ]
+  ],
+  "d1e1fbc90000000000000000": [
+   [
+    "programs/games/nether-earth-gs/gssound",
+    60
+   ]
+  ],
+  "e1fbc9000000000000000000": [
+   [
+    "programs/games/nether-earth-gs/gssound",
+    61
+   ]
+  ],
+  "2ee60610712310fcc9fe0220": [
+   [
+    "programs/games/nether-earth-gs/interrupts",
+    85
+   ]
+  ],
+  "712310fcc9fe02200b3e04cd": [
+   [
+    "programs/games/nether-earth-gs/interrupts",
+    89
+   ]
+  ],
+  "c9061ecd58d3e610d3fe10f7": [
+   [
+    "programs/games/nether-earth-gs/interrupts",
+    133
+   ]
+  ],
+  "3ee7dbfe2fe61f2004d9f1fb": [
+   [
+    "programs/games/nether-earth-gs/music",
+    103
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-music",
+    103
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-music",
+    103
+   ],
+   [
+    "programs/games/nether-earth/music",
+    103
+   ]
+  ],
+  "2fe61f2004d9f1fbc9f3ed7b": [
+   [
+    "programs/games/nether-earth-gs/music",
+    107
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-music",
+    107
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-music",
+    107
+   ],
+   [
+    "programs/games/nether-earth/music",
+    107
+   ]
+  ],
+  "e1237e23d96fd97e23d967d9": [
+   [
+    "programs/games/nether-earth-gs/music",
+    293
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-music",
+    293
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-music",
+    293
+   ],
+   [
+    "programs/games/nether-earth/music",
+    293
+   ]
+  ],
+  "673d20fd10ebe1c9e13e1832": [
+   [
+    "programs/games/nether-earth-gs/music",
+    390
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-music",
+    390
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-music",
+    390
+   ],
+   [
+    "programs/games/nether-earth/music",
+    390
+   ]
+  ],
+  "02ccc60365c60178c67c1005": [
+   [
+    "programs/games/nether-earth-gs/music",
+    525
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-music",
+    525
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-music",
+    525
+   ],
+   [
+    "programs/games/nether-earth/music",
+    525
+   ]
+  ],
+  "02c5c702d2c702c5c73e2037": [
+   [
+    "programs/games/nether-earth-gs/music",
+    656
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-music",
+    656
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-music",
+    656
+   ],
+   [
+    "programs/games/nether-earth/music",
+    656
+   ]
+  ],
+  "2e2029102e1034102e10063e": [
+   [
+    "programs/games/nether-earth-gs/music",
+    787
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game98-music",
+    787
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-music",
+    787
+   ],
+   [
+    "programs/games/nether-earth/music",
+    787
+   ]
+  ],
+  "01070cc5772310fc473e14cd": [
+   [
+    "programs/games/nether-earth-gs/music",
+    908
+   ],
+   [
+    "programs/games/nether-earth/music",
+    908
+   ]
+  ],
+  "017f80ff00fc03ff00ff00fc": [
+   [
+    "programs/games/nether-earth-gs/sprites",
+    8757
+   ]
+  ],
+  "f00000841f60f00a00831f80": [
+   [
+    "programs/games/nether-earth-gs/sprites",
+    10946
+   ]
+  ],
+  "00440708f80600ac00110708": [
+   [
+    "programs/games/nether-earth-gs/sprites",
+    13136
+   ]
+  ],
+  "00c738ff00ff00ff00f708ff": [
+   [
+    "programs/games/nether-earth-gs/sprites",
+    15325
+   ]
+  ],
+  "000000000000000000e05771": [
+   [
+    "programs/games/nether-earth-gs/viewbuffer",
+    409
+   ],
+   [
+    "programs/games/nether-earth/viewbuffer",
+    3113
+   ]
+  ],
+  "000000e057710e0001300ddb": [
+   [
+    "programs/games/nether-earth-gs/viewbuffer",
+    415
+   ]
+  ],
+  "15f33e0fd3fe2100a6e5dbfe": [
+   [
+    "programs/games/nether-earth-gs/workspace",
+    0
+   ]
+  ],
+  "1506b0d251fd7cad677ab320": [
+   [
+    "programs/games/nether-earth-gs/workspace",
+    111
+   ]
+  ],
+  "fe37c9000000000000000000": [
+   [
+    "programs/games/nether-earth-gs/workspace",
+    161
+   ]
+  ],
+  "000000000000000000f30dce": [
+   [
+    "programs/games/nether-earth-gs/workspace",
+    550
+   ]
+  ],
+  "000000f30dce0be350ce0be4": [
+   [
+    "programs/games/nether-earth-gs/workspace",
+    556
+   ]
+  ],
+  "404000003c42404e423c0000": [
+   [
+    "programs/games/nether-earth-gs/workspace",
+    668
+   ]
+  ],
+  "3505fdfde4c40200a1c12da6": [
+   [
+    "programs/games/nether-earth-gs/workspace",
+    779
+   ]
+  ],
+  "fe90382efd360400c5fde5cd": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-gameturn",
+    113
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-gameturn",
+    113
+   ],
+   [
+    "programs/games/nether-earth/gameturn",
+    113
+   ]
+  ],
+  "4241534553204c4546540342": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-gameturn",
+    299
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-gameturn",
+    299
+   ],
+   [
+    "programs/games/nether-earth/gameturn",
+    299
+   ]
+  ],
+  "41495420464f52202003204e": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-gameturn",
+    359
+   ]
+  ],
+  "4f4d205a53212020003efacd": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-gameturn",
+    383
+   ]
+  ],
+  "860c01860c09871c08873e02": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-level",
+    0
+   ]
+  ],
+  "83a40512b00812b20212b208": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-level",
+    120
+   ]
+  ],
+  "12120d12120f872808842c05": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-level",
+    241
+   ]
+  ],
+  "12da0d12dc0312dc0912de01": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-level",
+    361
+   ]
+  ],
+  "0d009c0e04b60305be0306c6": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-level",
+    482
+   ]
+  ],
+  "05020002020003fa02030200": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-level",
+    602
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-level",
+    602
+   ],
+   [
+    "programs/games/nether-earth/level",
+    602
+   ]
+  ],
+  "020011020011000011020012": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-level",
+    723
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-level",
+    723
+   ],
+   [
+    "programs/games/nether-earth/level",
+    723
+   ]
+  ],
+  "120200110000000000000000": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-level",
+    734
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-level",
+    734
+   ],
+   [
+    "programs/games/nether-earth/level",
+    734
+   ]
+  ],
+  "02460421010b08302e2e5354": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-mainmenu",
+    9
+   ],
+   [
+    "programs/games/nether-earth/mainmenu",
+    9
+   ]
+  ],
+  "4144204e4557204c4556454c": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-mainmenu",
+    132
+   ]
+  ],
+  "382000c90000000000000000": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-mainmenu",
+    249
+   ]
+  ],
+  "000000000000000000afdbfe": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-mainmenu",
+    540
+   ]
+  ],
+  "53204b455920464f52200245": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-mainmenu",
+    791
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-mainmenu",
+    791
+   ],
+   [
+    "programs/games/nether-earth/mainmenu",
+    791
+   ]
+  ],
+  "4341505320534800c9fe20c2": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-mainmenu",
+    911
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-mainmenu",
+    911
+   ],
+   [
+    "programs/games/nether-earth/mainmenu",
+    911
+   ]
+  ],
+  "01071fc5772310fc473e01cd": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-music",
+    908
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-music",
+    908
+   ]
+  ],
+  "010417024d44495245435420": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-robotmenu",
+    24
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-robotmenu",
+    24
+   ],
+   [
+    "programs/games/nether-earth/robotmenu",
+    24
+   ]
+  ],
+  "0116170246535452454e4754": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-robotmenu",
+    256
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-robotmenu",
+    256
+   ],
+   [
+    "programs/games/nether-earth/robotmenu",
+    256
+   ]
+  ],
+  "534553004341505455524520": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-robotmenu",
+    454
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-robotmenu",
+    454
+   ],
+   [
+    "programs/games/nether-earth/robotmenu",
+    454
+   ]
+  ],
+  "415243482026032044455354": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-robotmenu",
+    681
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-robotmenu",
+    681
+   ],
+   [
+    "programs/games/nether-earth/robotmenu",
+    681
+   ]
+  ],
+  "59530303454e454d59202020": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-robotmenu",
+    1136
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-robotmenu",
+    1136
+   ],
+   [
+    "programs/games/nether-earth/robotmenu",
+    1136
+   ]
+  ],
+  "20032020434f4d42415400cd": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-robotmenu",
+    1361
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-robotmenu",
+    1361
+   ],
+   [
+    "programs/games/nether-earth/robotmenu",
+    1361
+   ]
+  ],
+  "011414c536302310fbc13e0c": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-screen",
+    202
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-screen",
+    202
+   ]
+  ],
+  "010316020620205354415455": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-screen",
+    306
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-screen",
+    306
+   ]
+  ],
+  "424f5453010f170206524553": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-screen",
+    397
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-screen",
+    397
+   ]
+  ],
+  "4f4e0343484153534953003a": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-screen",
+    463
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-screen",
+    463
+   ],
+   [
+    "programs/games/nether-earth/screen",
+    463
+   ]
+  ],
+  "40fc0300c800613f40fc0200": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-sprites",
+    2205
+   ]
+  ],
+  "0ff0807100870f7080500065": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-sprites",
+    4410
+   ]
+  ],
+  "ff00ff00ff00ff00ff009f60": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-sprites",
+    6624
+   ]
+  ],
+  "00ff00ff00f906ff00ff00ff": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-sprites",
+    8819
+   ]
+  ],
+  "f8050304ff00f8040384ff00": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-sprites",
+    11024
+   ]
+  ],
+  "0a000000001f20f00a000000": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-sprites",
+    13229
+   ]
+  ],
+  "c738ff000000000000000000": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-sprites",
+    15326
+   ]
+  ],
+  "fd360504fd360605fd360b00": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-start",
+    243
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-start",
+    243
+   ],
+   [
+    "programs/games/nether-earth/start",
+    243
+   ]
+  ],
+  "fd7e07e678f684fd7707fd19": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-zsenemy",
+    11
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/game99-difficulty",
+    119
+   ]
+  ],
+  "07e678f684fd7707fd1910f2": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-zsenemy",
+    13
+   ]
+  ],
+  "84fd7707fd1910f2fde1c901": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-zsenemy",
+    17
+   ]
+  ],
+  "07fd1910f2fde1c901070021": [
+   [
+    "programs/games/nether-earth-zs-edition/game98-zsenemy",
+    20
+   ]
+  ],
+  "060736002310fb2306073600": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-bases",
+    3
+   ],
+   [
+    "programs/games/nether-earth/bases",
+    3
+   ]
+  ],
+  "78b7280423232323c6074fcd": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-bases",
+    110
+   ],
+   [
+    "programs/games/nether-earth/bases",
+    110
+   ]
+  ],
+  "0f4f7ee61fb1772b4e2b7e2b": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-bases",
+    189
+   ],
+   [
+    "programs/games/nether-earth/bases",
+    189
+   ]
+  ],
+  "06381ab7280613131310f7c9": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-bases",
+    317
+   ],
+   [
+    "programs/games/nether-earth/bases",
+    317
+   ]
+  ],
+  "06fd360100cbb6c1fde1c921": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-bases",
+    347
+   ],
+   [
+    "programs/games/nether-earth/bases",
+    347
+   ]
+  ],
+  "7eb7c84f235e237e23e5d521": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-bases",
+    461
+   ],
+   [
+    "programs/games/nether-earth/bases",
+    461
+   ]
+  ],
+  "7300dd7201dd7002dd7103dd": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-bases",
+    566
+   ],
+   [
+    "programs/games/nether-earth/bases",
+    566
+   ]
+  ],
+  "10fae1c125250d20f1e1d1c9": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-bases",
+    660
+   ],
+   [
+    "programs/games/nether-earth/bases",
+    660
+   ]
+  ],
+  "000000000000000000dd2165": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-difficulty",
+    37
+   ]
+  ],
+  "00000000000000dd21652f00": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-difficulty",
+    39
+   ]
+  ],
+  "21652f000000000000000000": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-difficulty",
+    47
+   ]
+  ],
+  "000000000000000000fde511": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-difficulty",
+    99
+   ]
+  ],
+  "84fd7707fd1910f2fde1c921": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-difficulty",
+    125
+   ]
+  ],
+  "00000000247e24247e240008": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-font",
+    21
+   ]
+  ],
+  "042010101010101020000014": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-font",
+    71
+   ]
+  ],
+  "00007e42027e607e00007c44": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-font",
+    143
+   ]
+  ],
+  "000000100000101020000004": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-font",
+    215
+   ]
+  ],
+  "7e00007e424262627e00007e": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-font",
+    286
+   ]
+  ],
+  "303e00007e4a4a6a6a6a0000": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-font",
+    357
+   ]
+  ],
+  "627e000062626266243c0000": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-font",
+    429
+   ]
+  ],
+  "06020e00fd6e00fd6601fd7e": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-gameturn",
+    81
+   ]
+  ],
+  "455354524f59454420032020": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-gameturn",
+    359
+   ],
+   [
+    "programs/games/nether-earth/gameturn",
+    359
+   ]
+  ],
+  "494f4e5321202020003efacd": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-gameturn",
+    383
+   ]
+  ],
+  "860c01860c09861801861809": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-level",
+    0
+   ]
+  ],
+  "12500912520712540b125805": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-level",
+    120
+   ]
+  ],
+  "f108ff000000000000000000": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-level",
+    184
+   ]
+  ],
+  "00fcfc1000fe1002050f00fe": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-level",
+    521
+   ]
+  ],
+  "010209024704215245444546": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-mainmenu",
+    592
+   ]
+  ],
+  "cb162dcb162e037ee6036f32": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-screen",
+    690
+   ]
+  ],
+  "242423141c7afe1030057bfe": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-view",
+    68
+   ],
+   [
+    "programs/games/nether-earth/view",
+    68
+   ]
+  ],
+  "e17abc20077bbd2003d11812": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-view",
+    166
+   ],
+   [
+    "programs/games/nether-earth/view",
+    166
+   ]
+  ],
+  "30fd7e00bd2005fd7e01bcc8": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-view",
+    288
+   ],
+   [
+    "programs/games/nether-earth/view",
+    288
+   ]
+  ],
+  "7abc20047bbd280cebcbf6fd": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-view",
+    433
+   ],
+   [
+    "programs/games/nether-earth/view",
+    433
+   ]
+  ],
+  "c5d53e0890f5fd4e0806ff04": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-view",
+    576
+   ],
+   [
+    "programs/games/nether-earth/view",
+    576
+   ]
+  ],
+  "1b1b3d20fbd57df56c260029": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-view",
+    723
+   ],
+   [
+    "programs/games/nether-earth/view",
+    723
+   ]
+  ],
+  "e5e5e5e5e5e5e5e510f6ed7b": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-view",
+    845
+   ],
+   [
+    "programs/games/nether-earth/view",
+    845
+   ]
+  ],
+  "7bc6205f38047ad608570dc2": [
+   [
+    "programs/games/nether-earth-zs-edition/game99-view",
+    1005
+   ],
+   [
+    "programs/games/nether-earth/view",
+    1005
+   ]
+  ],
+  "0010000024240000000000cc": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introfont",
+    13
+   ]
+  ],
+  "000018180000000204081020": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introfont",
+    115
+   ]
+  ],
+  "0000003e003e000000001008": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introfont",
+    232
+   ]
+  ],
+  "487048444200001e22222222": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introfont",
+    346
+   ]
+  ],
+  "7200003c421c02423c000082": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introfont",
+    462
+   ]
+  ],
+  "00221408142200000022262a": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introfont",
+    577
+   ]
+  ],
+  "2a2a0000003c223c223c0000": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introfont",
+    693
+   ]
+  ],
+  "000407000404201300000000": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introfont",
+    808
+   ]
+  ],
+  "000000010101010100000d10": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-intrologo",
+    54
+   ]
+  ],
+  "0000010101010100000d1006": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-intrologo",
+    55
+   ]
+  ],
+  "00010101010100000d100608": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-intrologo",
+    56
+   ]
+  ],
+  "010101010100000d10060806": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-intrologo",
+    57
+   ]
+  ],
+  "3e02ed79ed78e61ff6202659": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-intromain",
+    97
+   ]
+  ],
+  "78e61ff62026596f3620e5cd": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-intromain",
+    140
+   ]
+  ],
+  "10f606182310fd0d20ecc921": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-intromain",
+    232
+   ]
+  ],
+  "eb0e083e00f608471a0710fd": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-intromain",
+    315
+   ]
+  ],
+  "f108fde1dde1e1d1c1f1c338": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-intromain",
+    398
+   ]
+  ],
+  "afcd9b22cd6b0d3e02cd0116": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-intromain",
+    475
+   ]
+  ],
+  "cb3acb1d19570877e1c908c9": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-intromain",
+    551
+   ]
+  ],
+  "202020202020202020507269": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introtext",
+    9
+   ]
+  ],
+  "65206e6f7e616d692c207079": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introtext",
+    326
+   ]
+  ],
+  "51206e61757e696c7371206b": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introtext",
+    652
+   ]
+  ],
+  "656e656e6971206b61727479": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introtext",
+    978
+   ]
+  ],
+  "727369602e202020576f2d77": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introtext",
+    1305
+   ]
+  ],
+  "6f64696c206e612057617b75": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introtext",
+    1631
+   ]
+  ],
+  "6e65207a6e6165742e20486f": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introtext",
+    1957
+   ]
+  ],
+  "6e69627564782e2e2e0081e3": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-introtext",
+    2283
+   ]
+  ],
+  "205054203320506c61796572": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3player",
+    11
+   ],
+   [
+    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
+    11
+   ]
+  ],
+  "0e600d800cd80b280b880af0": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3player",
+    515
+   ],
+   [
+    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
+    515
+   ]
+  ],
+  "0000c13e006f3cb820017932": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3player",
+    1030
+   ],
+   [
+    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
+    1030
+   ]
+  ],
+  "073811673e0083cb6d280332": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3player",
+    1535
+   ],
+   [
+    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
+    1535
+   ]
+  ],
+  "87c6be6f26c27e2c666fe53a": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3player",
+    2048
+   ]
+  ],
+  "87c6d06f26c27e2c666fe53a": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3player",
+    2494
+   ]
+  ],
+  "8087c6e26f26c27e2c666fe5": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3player",
+    3274
+   ]
+  ],
+  "87c6e26f26c27e2c666fe53a": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3player",
+    3275
+   ]
+  ],
+  "50726f547261636b65722033": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3tune",
+    0
+   ]
+  ],
+  "70b10270727475b10470d4b1": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3tune",
+    380
+   ]
+  ],
+  "b10479b10177d777d675d777": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3tune",
+    759
+   ]
+  ],
+  "b10183858381b10381b10181": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3tune",
+    1139
+   ]
+  ],
+  "04008d0000008d0000008c00": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3tune",
+    1482
+   ]
+  ],
+  "0000008c0000008c00001920": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3tune",
+    1975
+   ]
+  ],
+  "8e0000008d0100008d010000": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3tune",
+    2276
+   ]
+  ],
+  "e80000f4ed00f4f400f4ed00": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-pt3tune",
+    2645
+   ]
+  ],
+  "eb21c80219ed426069300421": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-robot",
+    8
+   ]
+  ],
+  "fe583048aba1abd957d9abaa": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-robot",
+    101
+   ]
+  ],
+  "ffff8dc501c502e803030202": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-robot",
+    202
+   ]
+  ],
+  "c4ffff86fe40a0e0d0fcecea": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-robot",
+    303
+   ]
+  ],
+  "f00fe3c13750c4d0f0c083ff": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-robot",
+    403
+   ]
+  ],
+  "6090101030f0f0d070f0f0c0": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-robot",
+    504
+   ]
+  ],
+  "909020c080804040a0e0b0b0": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-robot",
+    605
+   ]
+  ],
+  "206090101020e020303010c0": [
+   [
+    "programs/games/nether-earth-zs-edition/intro98-robot",
+    706
+   ]
+  ],
+  "010103020404314e45544845": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menumain",
+    38
+   ]
+  ],
+  "524144494e473a0206010a0b": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menumain",
+    140
+   ]
+  ],
+  "011101020204215354415254": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menumain",
+    288
+   ]
+  ],
+  "cb53200678b728020514cb5b": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menumain",
+    440
+   ]
+  ],
+  "05280bfe062807fe472803c3": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menumain",
+    549
+   ]
+  ],
+  "c9214afdcdecd3cd2dd4214a": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menumain",
+    741
+   ]
+  ],
+  "4352495054494f4e00183021": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menumain",
+    836
+   ]
+  ],
+  "01040847524545545300189d": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menumain",
+    982
+   ]
+  ],
+  "c609471120001910fd060a36": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menupointer",
+    0
+   ]
+  ],
+  "00000000000000000055ffaa": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menupointer",
+    391
+   ]
+  ],
+  "000000000011222222774477": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menupointer",
+    697
+   ]
+  ],
+  "771155555533775555555555": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menupointer",
+    1045
+   ]
+  ],
+  "225577555555777766446611": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menupointer",
+    1393
+   ]
+  ],
+  "220044555544554444555522": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menupointer",
+    1741
+   ]
+  ],
+  "776666bb5533226633223377": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menupointer",
+    2090
+   ]
+  ],
+  "000000000000000077000d0a": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menupointer",
+    2438
+   ]
+  ],
+  "2b2b7e2bb728e9fe0a20f723": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menuviewer",
+    103
+   ]
+  ],
+  "2bb728e9fe0a20f7232310f1": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menuviewer",
+    106
+   ]
+  ],
+  "000817f1de78b10bc81a13cd": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menuviewer",
+    156
+   ]
+  ],
+  "1fb56fcb413e0f20023ef032": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menuviewer",
+    211
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/stage2-print",
+    50
+   ]
+  ],
+  "3dd818d7fe17200218d9c900": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menuviewer",
+    365
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/stage2-print",
+    204
+   ]
+  ],
+  "0218d9c90000000000f0003c": [
+   [
+    "programs/games/nether-earth-zs-edition/menu99-menuviewer",
+    372
+   ],
+   [
+    "programs/games/nether-earth-zs-edition/stage2-print",
+    211
+   ]
+  ],
+  "0b000e007e80818080101f18": [
+   [
+    "programs/games/nether-earth-zs-edition/music99-player",
+    0
+   ]
+  ],
+  "dd7701dd360000dd36072023": [
+   [
+    "programs/games/nether-earth-zs-edition/music99-player",
+    543
+   ]
+  ],
+  "c9a7ed52c9f80e100e600d80": [
+   [
+    "programs/games/nether-earth-zs-edition/music99-player",
+    947
+   ]
+  ],
+  "4fa0006ea0000ea0000d8000": [
+   [
+    "programs/games/nether-earth-zs-edition/music99-player",
+    1421
+   ]
+  ],
+  "060003000300070007000000": [
+   [
+    "programs/games/nether-earth-zs-edition/music99-player",
+    1840
+   ]
+  ],
+  "64710a627016637107627013": [
+   [
+    "programs/games/nether-earth-zs-edition/music99-player",
+    2369
+   ]
+  ],
+  "7b322e2ba82da16471212180": [
+   [
+    "programs/games/nether-earth-zs-edition/music99-player",
+    2842
+   ]
+  ],
+  "710962700915156471096270": [
+   [
+    "programs/games/nether-earth-zs-edition/music99-player",
+    3316
+   ]
+  ],
+  "f3cd92173b3be1116f0019e5": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-decoder",
+    0
+   ]
+  ],
+  "1620e51e03d5e50e08e50608": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-decoder",
+    20
+   ]
+  ],
+  "e50608d978fe00200c1afe9a": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-decoder",
+    29
+   ]
+  ],
+  "1a4f131a47130579d9772410": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-decoder",
+    44
+   ]
+  ],
+  "2000190d20dce111000819d1": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-decoder",
+    59
+   ]
+  ],
+  "0819d11d20cfe1231520c721": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-decoder",
+    68
+   ]
+  ],
+  "00200c1afe9a1320081a4f13": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-decoder",
+    88
+   ]
+  ],
+  "0579d977230b78b120e4fbc9": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-decoder",
+    103
+   ]
+  ],
+  "9a009901070f7df7ffdffffb": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-picture",
+    0
+   ]
+  ],
+  "200080000820008200200040": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-picture",
+    457
+   ]
+  ],
+  "0340bfd655ad7bacdb6dff57": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-picture",
+    915
+   ]
+  ],
+  "77fbaff56fb3adaa5556b54a": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-picture",
+    1372
+   ]
+  ],
+  "28c090c040a040008000809a": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-picture",
+    1829
+   ]
+  ],
+  "03ff00ff9a00109aff039a00": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-picture",
+    2286
+   ]
+  ],
+  "9a3f039a00039a3f159a001b": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-picture",
+    2744
+   ]
+  ],
+  "04289a000303f0003f003f00": [
+   [
+    "programs/games/nether-earth-zs-edition/pictures99-picture",
+    3201
+   ]
+  ],
+  "06207e773ce60728fb772310": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-effects",
+    3
+   ]
+  ],
+  "fbe11120001910ecc1c9d511": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-effects",
+    36
+   ]
+  ],
+  "e1f13cc110ecf13dc110d42a": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-effects",
+    121
+   ]
+  ],
+  "c5e5e50610afcb162b10fbe1": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-effects",
+    185
+   ]
+  ],
+  "5838f7d61867cb0110f0c921": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-effects",
+    245
+   ]
+  ],
+  "20f6237887087708ed523dcd": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-effects",
+    307
+   ]
+  ],
+  "6fc9dd4e00dd4603dd7e01cb": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-effects",
+    369
+   ]
+  ],
+  "13dd7e023dc84f0600edb0c9": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-effects",
+    431
+   ]
+  ],
+  "f5c5d5e5dde5fde5d9c5d5e5": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-interrupt",
+    0
+   ]
+  ],
+  "e5dde5fde5d9c5d5e508f5cd": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-interrupt",
+    3
+   ]
+  ],
+  "f108e1d1c1d9fde1dde1e1d1": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-interrupt",
+    17
+   ]
+  ],
+  "e1d1c1d9fde1dde1e1d1c1f1": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-interrupt",
+    19
+   ]
+  ],
+  "d9fde1dde1e1d1c1f1c33800": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-interrupt",
+    22
+   ]
+  ],
+  "01000136b1edb03eb0ed47ed": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-loader",
+    33
+   ]
+  ],
+  "b1edb03eb0ed47ed5e3ec332": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-loader",
+    37
+   ]
+  ],
+  "060a3e06d3fe763e00d3fe76": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-loader",
+    95
+   ]
+  ],
+  "06d3fe763e00d3fe7610f421": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-loader",
+    98
+   ]
+  ],
+  "763ebfdbfee6017628ec3e7f": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-loader",
+    159
+   ]
+  ],
+  "10ddd1c110cd18c3c1c1c1cd": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-loader",
+    178
+   ]
+  ],
+  "4f1fb56fcb413e0f20023ef0": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-print",
+    49
+   ]
+  ],
+  "10111006001620162022454e": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-texts",
+    0
+   ]
+  ],
+  "e3aae6a8a920202020afae0d": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-texts",
+    885
+   ]
+  ],
+  "a4a5e1efe2aaaea20d0aa4ae": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-texts",
+    1770
+   ]
+  ],
+  "0d0a8faee2aeac202020ada0": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-texts",
+    2655
+   ]
+  ],
+  "e5aee2a5abaee1ec2c202020": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-texts",
+    3541
+   ]
+  ],
+  "ff1155777722441122557733": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-texts",
+    4426
+   ]
+  ],
+  "557755554455447711777755": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-texts",
+    5311
+   ]
+  ],
+  "cc3300000000000000110000": [
+   [
+    "programs/games/nether-earth-zs-edition/stage2-texts",
+    6173
+   ]
+  ],
+  "ff00010304060708090a0b0c": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3data",
+    0
+   ]
+  ],
+  "3e3fff000000000000000000": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3data",
+    61
+   ]
+  ],
+  "000000000016000a10041100": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3data",
+    123
+   ]
+  ],
+  "6b696e672e2e2e0d436f6d70": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3data",
+    184
+   ]
+  ],
+  "16080110064c6f6164696e67": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3data",
+    245
+   ]
+  ],
+  "2d4469736b2e2e2e20ff1614": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3data",
+    306
+   ]
+  ],
+  "7374656d2048616c7465642e": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3data",
+    368
+   ]
+  ],
+  "4159ff537065637472756dff": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3data",
+    429
+   ]
+  ],
+  "01ff0217171777edb07676c1": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3main",
+    13
+   ]
+  ],
+  "7e773d2815c60406004fcb11": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3main",
+    89
+   ]
+  ],
+  "10cb11cb10cd2b2dcde32d11": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3main",
+    110
+   ]
+  ],
+  "017f00edb0c906004f097dfe": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3main",
+    414
+   ]
+  ],
+  "6f781f1f1f1fe60f8467c9cd": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3main",
+    431
+   ]
+  ],
+  "3e10ed79003a0800fec32004": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3memtest",
+    12
+   ]
+  ],
+  "cb76de185c21800011001001": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3memtest",
+    57
+   ]
+  ],
+  "7fed51007241ed6900067fed": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3memtest",
+    122
+   ]
+  ],
+  "fd7e77fe08380bfd7e76fe01": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3memtest",
+    183
+   ]
+  ],
+  "a7ed52e5c1d5e123edb0fd35": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3memtest",
+    259
+   ]
+  ],
+  "e1c1f3e5f5c5fdcb764e2047": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3memtest",
+    306
+   ]
+  ],
+  "f50f0f0fe607180ff547e608": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3memtest",
+    381
+   ]
+  ],
+  "f1e1c9dd21532adde5c32f3d": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3memtest",
+    428
+   ]
+  ],
+  "011000dd210d18dde5c32f3d": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3util",
+    6
+   ]
+  ],
+  "210d18dde5c32f3d0e05ed5b": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3util",
+    10
+   ]
+  ],
+  "37140815f33e0fd3fecd6205": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3util",
+    34
+   ]
+  ],
+  "0fd3fecd620520f23001c911": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3util",
+    40
+   ]
+  ],
+  "f3761a13feff20fa10f8c906": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3util",
+    57
+   ]
+  ],
+  "10f8c90600041730fcc9d501": [
+   [
+    "programs/games/nether-earth-zs-edition/stage3-s3util",
+    65
    ]
   ],
   "0e017e23dbfea6232320013f": [
@@ -4496,48 +7858,6 @@
    [
     "programs/games/nether-earth/controls",
     93
-   ]
-  ],
-  "e61ffe18d08787876f260029": [
-   [
-    "programs/games/nether-earth/enemy",
-    3
-   ]
-  ],
-  "c0790f0f0fe60fc8fe0fc84f": [
-   [
-    "programs/games/nether-earth/enemy",
-    111
-   ]
-  ],
-  "d9fd360504fd360804fd3606": [
-   [
-    "programs/games/nether-earth/enemy",
-    232
-   ]
-  ],
-  "7ee6e0bb28152bfd7e049620": [
-   [
-    "programs/games/nether-earth/enemy",
-    334
-   ]
-  ],
-  "fe04fd7e043002c6043c96f2": [
-   [
-    "programs/games/nether-earth/enemy",
-    442
-   ]
-  ],
-  "280cfe02280bfe082807fe09": [
-   [
-    "programs/games/nether-earth/enemy",
-    555
-   ]
-  ],
-  "011414c5eda00c10fb3e0ccd": [
-   [
-    "programs/games/nether-earth/enemy",
-    665
    ]
   ],
   "fbc110f1c10505050c0c0cc9": [
@@ -4588,24 +7908,6 @@
     429
    ]
   ],
-  "fe90382efd360400c5fde5cd": [
-   [
-    "programs/games/nether-earth/gameturn",
-    113
-   ]
-  ],
-  "4241534553204c4546540342": [
-   [
-    "programs/games/nether-earth/gameturn",
-    299
-   ]
-  ],
-  "455354524f59454420032020": [
-   [
-    "programs/games/nether-earth/gameturn",
-    359
-   ]
-  ],
   "4f4e202120202020003efacd": [
    [
     "programs/games/nether-earth/gameturn",
@@ -4642,30 +7944,6 @@
     482
    ]
   ],
-  "05020002020003fa02030200": [
-   [
-    "programs/games/nether-earth/level",
-    602
-   ]
-  ],
-  "020011020011000011020012": [
-   [
-    "programs/games/nether-earth/level",
-    723
-   ]
-  ],
-  "120200110000000000000000": [
-   [
-    "programs/games/nether-earth/level",
-    734
-   ]
-  ],
-  "02460421010b08302e2e5354": [
-   [
-    "programs/games/nether-earth/mainmenu",
-    9
-   ]
-  ],
   "41442053415645442047414d": [
    [
     "programs/games/nether-earth/mainmenu",
@@ -4682,66 +7960,6 @@
    [
     "programs/games/nether-earth/mainmenu",
     406
-   ]
-  ],
-  "53204b455920464f52200245": [
-   [
-    "programs/games/nether-earth/mainmenu",
-    791
-   ]
-  ],
-  "4341505320534800c9fe20c2": [
-   [
-    "programs/games/nether-earth/mainmenu",
-    911
-   ]
-  ],
-  "3ee7dbfe2fe61f2004d9f1fb": [
-   [
-    "programs/games/nether-earth/music",
-    103
-   ]
-  ],
-  "2fe61f2004d9f1fbc9f3ed7b": [
-   [
-    "programs/games/nether-earth/music",
-    107
-   ]
-  ],
-  "e1237e23d96fd97e23d967d9": [
-   [
-    "programs/games/nether-earth/music",
-    293
-   ]
-  ],
-  "673d20fd10ebe1c9e13e1832": [
-   [
-    "programs/games/nether-earth/music",
-    390
-   ]
-  ],
-  "02ccc60365c60178c67c1005": [
-   [
-    "programs/games/nether-earth/music",
-    525
-   ]
-  ],
-  "02c5c702d2c702c5c73e2037": [
-   [
-    "programs/games/nether-earth/music",
-    656
-   ]
-  ],
-  "2e2029102e1034102e10063e": [
-   [
-    "programs/games/nether-earth/music",
-    787
-   ]
-  ],
-  "01070cc5772310fc473e14cd": [
-   [
-    "programs/games/nether-earth/music",
-    908
    ]
   ],
   "6f26001e20181b6f26001e00": [
@@ -4792,42 +8010,6 @@
     367
    ]
   ],
-  "010417024d44495245435420": [
-   [
-    "programs/games/nether-earth/robotmenu",
-    24
-   ]
-  ],
-  "0116170246535452454e4754": [
-   [
-    "programs/games/nether-earth/robotmenu",
-    256
-   ]
-  ],
-  "534553004341505455524520": [
-   [
-    "programs/games/nether-earth/robotmenu",
-    454
-   ]
-  ],
-  "415243482026032044455354": [
-   [
-    "programs/games/nether-earth/robotmenu",
-    681
-   ]
-  ],
-  "59530303454e454d59202020": [
-   [
-    "programs/games/nether-earth/robotmenu",
-    1136
-   ]
-  ],
-  "20032020434f4d42415400cd": [
-   [
-    "programs/games/nether-earth/robotmenu",
-    1361
-   ]
-  ],
   "010316024620205354415455": [
    [
     "programs/games/nether-earth/screen",
@@ -4838,12 +8020,6 @@
    [
     "programs/games/nether-earth/screen",
     397
-   ]
-  ],
-  "4f4e0343484153534953003a": [
-   [
-    "programs/games/nether-earth/screen",
-    463
    ]
   ],
   "0f380c7cb720057dfe0e2838": [
@@ -4930,12 +8106,6 @@
     15334
    ]
   ],
-  "fd360504fd360605fd360b00": [
-   [
-    "programs/games/nether-earth/start",
-    243
-   ]
-  ],
   "fffffffcfff0ffc0ff00fc00": [
    [
     "programs/games/nether-earth/tables",
@@ -4984,54 +8154,6 @@
     287
    ]
   ],
-  "242423141c7afe1030057bfe": [
-   [
-    "programs/games/nether-earth/view",
-    68
-   ]
-  ],
-  "e17abc20077bbd2003d11812": [
-   [
-    "programs/games/nether-earth/view",
-    166
-   ]
-  ],
-  "30fd7e00bd2005fd7e01bcc8": [
-   [
-    "programs/games/nether-earth/view",
-    288
-   ]
-  ],
-  "7abc20047bbd280cebcbf6fd": [
-   [
-    "programs/games/nether-earth/view",
-    433
-   ]
-  ],
-  "c5d53e0890f5fd4e0806ff04": [
-   [
-    "programs/games/nether-earth/view",
-    576
-   ]
-  ],
-  "1b1b3d20fbd57df56c260029": [
-   [
-    "programs/games/nether-earth/view",
-    723
-   ]
-  ],
-  "e5e5e5e5e5e5e5e510f6ed7b": [
-   [
-    "programs/games/nether-earth/view",
-    845
-   ]
-  ],
-  "7bc6205f38047ad608570dc2": [
-   [
-    "programs/games/nether-earth/view",
-    1005
-   ]
-  ],
   "000000000000ff0000000d05": [
    [
     "programs/games/nether-earth/viewbuffer",
@@ -5048,12 +8170,6 @@
    [
     "programs/games/nether-earth/viewbuffer",
     523
-   ]
-  ],
-  "000000000000000000e05771": [
-   [
-    "programs/games/nether-earth/viewbuffer",
-    3113
    ]
   ],
   "110900fd19c110f0c9fd7e0c": [
@@ -7610,30 +10726,6 @@
     2615
    ]
   ],
-  "205054203320506c61796572": [
-   [
-    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
-    11
-   ]
-  ],
-  "0e600d800cd80b280b880af0": [
-   [
-    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
-    515
-   ]
-  ],
-  "0000c13e006f3cb820017932": [
-   [
-    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
-    1030
-   ]
-  ],
-  "073811673e0083cb6d280332": [
-   [
-    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
-    1535
-   ]
-  ],
   "0019f9e101000009ebe10922": [
    [
     "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
@@ -7947,6 +11039,60 @@
    "programs/games/hate/startup",
    "programs/games/hate/statics",
    "programs/games/hate/titleplayer",
+   "programs/games/nether-earth-gs/boot-menu-menu",
+   "programs/games/nether-earth-gs/boot-print64-print64",
+   "programs/games/nether-earth-gs/construction",
+   "programs/games/nether-earth-gs/enemy",
+   "programs/games/nether-earth-gs/gssound",
+   "programs/games/nether-earth-gs/interrupts",
+   "programs/games/nether-earth-gs/music",
+   "programs/games/nether-earth-gs/sprites",
+   "programs/games/nether-earth-gs/viewbuffer",
+   "programs/games/nether-earth-gs/workspace",
+   "programs/games/nether-earth-zs-edition/game98-gameturn",
+   "programs/games/nether-earth-zs-edition/game98-level",
+   "programs/games/nether-earth-zs-edition/game98-mainmenu",
+   "programs/games/nether-earth-zs-edition/game98-music",
+   "programs/games/nether-earth-zs-edition/game98-robotmenu",
+   "programs/games/nether-earth-zs-edition/game98-screen",
+   "programs/games/nether-earth-zs-edition/game98-sprites",
+   "programs/games/nether-earth-zs-edition/game98-start",
+   "programs/games/nether-earth-zs-edition/game98-zsenemy",
+   "programs/games/nether-earth-zs-edition/game99-bases",
+   "programs/games/nether-earth-zs-edition/game99-construction",
+   "programs/games/nether-earth-zs-edition/game99-difficulty",
+   "programs/games/nether-earth-zs-edition/game99-font",
+   "programs/games/nether-earth-zs-edition/game99-gameturn",
+   "programs/games/nether-earth-zs-edition/game99-level",
+   "programs/games/nether-earth-zs-edition/game99-mainmenu",
+   "programs/games/nether-earth-zs-edition/game99-music",
+   "programs/games/nether-earth-zs-edition/game99-robotmenu",
+   "programs/games/nether-earth-zs-edition/game99-screen",
+   "programs/games/nether-earth-zs-edition/game99-sprites",
+   "programs/games/nether-earth-zs-edition/game99-start",
+   "programs/games/nether-earth-zs-edition/game99-view",
+   "programs/games/nether-earth-zs-edition/intro98-introfont",
+   "programs/games/nether-earth-zs-edition/intro98-intrologo",
+   "programs/games/nether-earth-zs-edition/intro98-intromain",
+   "programs/games/nether-earth-zs-edition/intro98-introtext",
+   "programs/games/nether-earth-zs-edition/intro98-pt3player",
+   "programs/games/nether-earth-zs-edition/intro98-pt3tune",
+   "programs/games/nether-earth-zs-edition/intro98-robot",
+   "programs/games/nether-earth-zs-edition/menu99-menumain",
+   "programs/games/nether-earth-zs-edition/menu99-menupointer",
+   "programs/games/nether-earth-zs-edition/menu99-menuviewer",
+   "programs/games/nether-earth-zs-edition/music99-player",
+   "programs/games/nether-earth-zs-edition/pictures99-decoder",
+   "programs/games/nether-earth-zs-edition/pictures99-picture",
+   "programs/games/nether-earth-zs-edition/stage2-effects",
+   "programs/games/nether-earth-zs-edition/stage2-interrupt",
+   "programs/games/nether-earth-zs-edition/stage2-loader",
+   "programs/games/nether-earth-zs-edition/stage2-print",
+   "programs/games/nether-earth-zs-edition/stage2-texts",
+   "programs/games/nether-earth-zs-edition/stage3-s3data",
+   "programs/games/nether-earth-zs-edition/stage3-s3main",
+   "programs/games/nether-earth-zs-edition/stage3-s3memtest",
+   "programs/games/nether-earth-zs-edition/stage3-s3util",
    "programs/games/nether-earth/bases",
    "programs/games/nether-earth/construction",
    "programs/games/nether-earth/controls",
@@ -8081,6 +11227,9 @@
    "formats/music/pt2-module/main",
    "formats/music/pt3-module/main",
    "programs/games/advanced-nether-earth/music",
+   "programs/games/nether-earth-gs/music",
+   "programs/games/nether-earth-zs-edition/game98-music",
+   "programs/games/nether-earth-zs-edition/game99-music",
    "programs/games/nether-earth/music"
   ],
   "pt3": [
@@ -8117,6 +11266,8 @@
   "screen": [
    "packers/picy/seen-zynaps/depacker",
    "programs/games/advanced-nether-earth/screen",
+   "programs/games/nether-earth-zs-edition/game98-screen",
+   "programs/games/nether-earth-zs-edition/game99-screen",
    "programs/games/nether-earth/screen"
   ],
   "position-independent": [
@@ -8183,6 +11334,60 @@
    "programs/games/hate/startup",
    "programs/games/hate/statics",
    "programs/games/hate/titleplayer",
+   "programs/games/nether-earth-gs/boot-menu-menu",
+   "programs/games/nether-earth-gs/boot-print64-print64",
+   "programs/games/nether-earth-gs/construction",
+   "programs/games/nether-earth-gs/enemy",
+   "programs/games/nether-earth-gs/gssound",
+   "programs/games/nether-earth-gs/interrupts",
+   "programs/games/nether-earth-gs/music",
+   "programs/games/nether-earth-gs/sprites",
+   "programs/games/nether-earth-gs/viewbuffer",
+   "programs/games/nether-earth-gs/workspace",
+   "programs/games/nether-earth-zs-edition/game98-gameturn",
+   "programs/games/nether-earth-zs-edition/game98-level",
+   "programs/games/nether-earth-zs-edition/game98-mainmenu",
+   "programs/games/nether-earth-zs-edition/game98-music",
+   "programs/games/nether-earth-zs-edition/game98-robotmenu",
+   "programs/games/nether-earth-zs-edition/game98-screen",
+   "programs/games/nether-earth-zs-edition/game98-sprites",
+   "programs/games/nether-earth-zs-edition/game98-start",
+   "programs/games/nether-earth-zs-edition/game98-zsenemy",
+   "programs/games/nether-earth-zs-edition/game99-bases",
+   "programs/games/nether-earth-zs-edition/game99-construction",
+   "programs/games/nether-earth-zs-edition/game99-difficulty",
+   "programs/games/nether-earth-zs-edition/game99-font",
+   "programs/games/nether-earth-zs-edition/game99-gameturn",
+   "programs/games/nether-earth-zs-edition/game99-level",
+   "programs/games/nether-earth-zs-edition/game99-mainmenu",
+   "programs/games/nether-earth-zs-edition/game99-music",
+   "programs/games/nether-earth-zs-edition/game99-robotmenu",
+   "programs/games/nether-earth-zs-edition/game99-screen",
+   "programs/games/nether-earth-zs-edition/game99-sprites",
+   "programs/games/nether-earth-zs-edition/game99-start",
+   "programs/games/nether-earth-zs-edition/game99-view",
+   "programs/games/nether-earth-zs-edition/intro98-introfont",
+   "programs/games/nether-earth-zs-edition/intro98-intrologo",
+   "programs/games/nether-earth-zs-edition/intro98-intromain",
+   "programs/games/nether-earth-zs-edition/intro98-introtext",
+   "programs/games/nether-earth-zs-edition/intro98-pt3player",
+   "programs/games/nether-earth-zs-edition/intro98-pt3tune",
+   "programs/games/nether-earth-zs-edition/intro98-robot",
+   "programs/games/nether-earth-zs-edition/menu99-menumain",
+   "programs/games/nether-earth-zs-edition/menu99-menupointer",
+   "programs/games/nether-earth-zs-edition/menu99-menuviewer",
+   "programs/games/nether-earth-zs-edition/music99-player",
+   "programs/games/nether-earth-zs-edition/pictures99-decoder",
+   "programs/games/nether-earth-zs-edition/pictures99-picture",
+   "programs/games/nether-earth-zs-edition/stage2-effects",
+   "programs/games/nether-earth-zs-edition/stage2-interrupt",
+   "programs/games/nether-earth-zs-edition/stage2-loader",
+   "programs/games/nether-earth-zs-edition/stage2-print",
+   "programs/games/nether-earth-zs-edition/stage2-texts",
+   "programs/games/nether-earth-zs-edition/stage3-s3data",
+   "programs/games/nether-earth-zs-edition/stage3-s3main",
+   "programs/games/nether-earth-zs-edition/stage3-s3memtest",
+   "programs/games/nether-earth-zs-edition/stage3-s3util",
    "programs/games/nether-earth/bases",
    "programs/games/nether-earth/construction",
    "programs/games/nether-earth/controls",
@@ -8266,6 +11471,8 @@
   ],
   "construction": [
    "programs/games/advanced-nether-earth/construction",
+   "programs/games/nether-earth-gs/construction",
+   "programs/games/nether-earth-zs-edition/game99-construction",
    "programs/games/nether-earth/construction"
   ],
   "disk": [
@@ -8276,11 +11483,14 @@
   ],
   "font": [
    "programs/games/advanced-nether-earth/font",
+   "programs/games/nether-earth-zs-edition/game99-font",
    "programs/games/nether-earth/font",
    "programs/games/zynaps/font"
   ],
   "gameturn": [
    "programs/games/advanced-nether-earth/gameturn",
+   "programs/games/nether-earth-zs-edition/game98-gameturn",
+   "programs/games/nether-earth-zs-edition/game99-gameturn",
    "programs/games/nether-earth/gameturn"
   ],
   "im2": [
@@ -8288,26 +11498,36 @@
   ],
   "interrupts": [
    "programs/games/advanced-nether-earth/interrupts",
+   "programs/games/nether-earth-gs/interrupts",
    "programs/games/nether-earth/interrupts",
    "programs/games/zynaps-128/interrupts",
    "programs/games/zynaps/interrupts"
   ],
   "mainmenu": [
    "programs/games/advanced-nether-earth/mainmenu",
+   "programs/games/nether-earth-zs-edition/game98-mainmenu",
+   "programs/games/nether-earth-zs-edition/game99-mainmenu",
    "programs/games/nether-earth/mainmenu"
   ],
   "robotmenu": [
    "programs/games/advanced-nether-earth/robotmenu",
+   "programs/games/nether-earth-zs-edition/game98-robotmenu",
+   "programs/games/nether-earth-zs-edition/game99-robotmenu",
    "programs/games/nether-earth/robotmenu"
   ],
   "sprites": [
    "programs/games/advanced-nether-earth/sprites",
    "programs/games/hate/sprites",
+   "programs/games/nether-earth-gs/sprites",
+   "programs/games/nether-earth-zs-edition/game98-sprites",
+   "programs/games/nether-earth-zs-edition/game99-sprites",
    "programs/games/nether-earth/sprites",
    "programs/games/zynaps/sprites"
   ],
   "start": [
    "programs/games/advanced-nether-earth/start",
+   "programs/games/nether-earth-zs-edition/game98-start",
+   "programs/games/nether-earth-zs-edition/game99-start",
    "programs/games/nether-earth/start",
    "programs/games/zynaps/start"
   ],
@@ -8361,6 +11581,7 @@
   ],
   "menu": [
    "programs/games/hate/menu",
+   "programs/games/nether-earth-gs/boot-menu-menu",
    "programs/games/zynaps-128/menu",
    "programs/games/zynaps-gs/menu",
    "programs/games/zynaps/menu"
@@ -8373,6 +11594,7 @@
   ],
   "player": [
    "programs/games/hate/player",
+   "programs/games/nether-earth-zs-edition/music99-player",
    "programs/games/zynaps/player",
    "sound/ay-players/pro-tracker-2/phantom-family-2.40",
    "sound/ay-players/pro-tracker-3/nick-gdc-1.0",
@@ -8397,6 +11619,169 @@
   "titleplayer": [
    "programs/games/hate/titleplayer"
   ],
+  "nether-earth-gs": [
+   "programs/games/nether-earth-gs/boot-menu-menu",
+   "programs/games/nether-earth-gs/boot-print64-print64",
+   "programs/games/nether-earth-gs/construction",
+   "programs/games/nether-earth-gs/enemy",
+   "programs/games/nether-earth-gs/gssound",
+   "programs/games/nether-earth-gs/interrupts",
+   "programs/games/nether-earth-gs/music",
+   "programs/games/nether-earth-gs/sprites",
+   "programs/games/nether-earth-gs/viewbuffer",
+   "programs/games/nether-earth-gs/workspace"
+  ],
+  "print64": [
+   "programs/games/nether-earth-gs/boot-print64-print64"
+  ],
+  "enemy": [
+   "programs/games/nether-earth-gs/enemy",
+   "programs/games/nether-earth/enemy"
+  ],
+  "gssound": [
+   "programs/games/nether-earth-gs/gssound"
+  ],
+  "viewbuffer": [
+   "programs/games/nether-earth-gs/viewbuffer",
+   "programs/games/nether-earth/viewbuffer"
+  ],
+  "workspace": [
+   "programs/games/nether-earth-gs/workspace"
+  ],
+  "nether-earth-zs-edition": [
+   "programs/games/nether-earth-zs-edition/game98-gameturn",
+   "programs/games/nether-earth-zs-edition/game98-level",
+   "programs/games/nether-earth-zs-edition/game98-mainmenu",
+   "programs/games/nether-earth-zs-edition/game98-music",
+   "programs/games/nether-earth-zs-edition/game98-robotmenu",
+   "programs/games/nether-earth-zs-edition/game98-screen",
+   "programs/games/nether-earth-zs-edition/game98-sprites",
+   "programs/games/nether-earth-zs-edition/game98-start",
+   "programs/games/nether-earth-zs-edition/game98-zsenemy",
+   "programs/games/nether-earth-zs-edition/game99-bases",
+   "programs/games/nether-earth-zs-edition/game99-construction",
+   "programs/games/nether-earth-zs-edition/game99-difficulty",
+   "programs/games/nether-earth-zs-edition/game99-font",
+   "programs/games/nether-earth-zs-edition/game99-gameturn",
+   "programs/games/nether-earth-zs-edition/game99-level",
+   "programs/games/nether-earth-zs-edition/game99-mainmenu",
+   "programs/games/nether-earth-zs-edition/game99-music",
+   "programs/games/nether-earth-zs-edition/game99-robotmenu",
+   "programs/games/nether-earth-zs-edition/game99-screen",
+   "programs/games/nether-earth-zs-edition/game99-sprites",
+   "programs/games/nether-earth-zs-edition/game99-start",
+   "programs/games/nether-earth-zs-edition/game99-view",
+   "programs/games/nether-earth-zs-edition/intro98-introfont",
+   "programs/games/nether-earth-zs-edition/intro98-intrologo",
+   "programs/games/nether-earth-zs-edition/intro98-intromain",
+   "programs/games/nether-earth-zs-edition/intro98-introtext",
+   "programs/games/nether-earth-zs-edition/intro98-pt3player",
+   "programs/games/nether-earth-zs-edition/intro98-pt3tune",
+   "programs/games/nether-earth-zs-edition/intro98-robot",
+   "programs/games/nether-earth-zs-edition/menu99-menumain",
+   "programs/games/nether-earth-zs-edition/menu99-menupointer",
+   "programs/games/nether-earth-zs-edition/menu99-menuviewer",
+   "programs/games/nether-earth-zs-edition/music99-player",
+   "programs/games/nether-earth-zs-edition/pictures99-decoder",
+   "programs/games/nether-earth-zs-edition/pictures99-picture",
+   "programs/games/nether-earth-zs-edition/stage2-effects",
+   "programs/games/nether-earth-zs-edition/stage2-interrupt",
+   "programs/games/nether-earth-zs-edition/stage2-loader",
+   "programs/games/nether-earth-zs-edition/stage2-print",
+   "programs/games/nether-earth-zs-edition/stage2-texts",
+   "programs/games/nether-earth-zs-edition/stage3-s3data",
+   "programs/games/nether-earth-zs-edition/stage3-s3main",
+   "programs/games/nether-earth-zs-edition/stage3-s3memtest",
+   "programs/games/nether-earth-zs-edition/stage3-s3util"
+  ],
+  "level": [
+   "programs/games/nether-earth-zs-edition/game98-level",
+   "programs/games/nether-earth-zs-edition/game99-level",
+   "programs/games/nether-earth/level"
+  ],
+  "zsenemy": [
+   "programs/games/nether-earth-zs-edition/game98-zsenemy"
+  ],
+  "bases": [
+   "programs/games/nether-earth-zs-edition/game99-bases",
+   "programs/games/nether-earth/bases"
+  ],
+  "difficulty": [
+   "programs/games/nether-earth-zs-edition/game99-difficulty"
+  ],
+  "view": [
+   "programs/games/nether-earth-zs-edition/game99-view",
+   "programs/games/nether-earth/view"
+  ],
+  "introfont": [
+   "programs/games/nether-earth-zs-edition/intro98-introfont"
+  ],
+  "intrologo": [
+   "programs/games/nether-earth-zs-edition/intro98-intrologo"
+  ],
+  "intromain": [
+   "programs/games/nether-earth-zs-edition/intro98-intromain"
+  ],
+  "introtext": [
+   "programs/games/nether-earth-zs-edition/intro98-introtext"
+  ],
+  "pt3player": [
+   "programs/games/nether-earth-zs-edition/intro98-pt3player"
+  ],
+  "pt3tune": [
+   "programs/games/nether-earth-zs-edition/intro98-pt3tune"
+  ],
+  "robot": [
+   "programs/games/nether-earth-zs-edition/intro98-robot"
+  ],
+  "menumain": [
+   "programs/games/nether-earth-zs-edition/menu99-menumain"
+  ],
+  "menupointer": [
+   "programs/games/nether-earth-zs-edition/menu99-menupointer"
+  ],
+  "menuviewer": [
+   "programs/games/nether-earth-zs-edition/menu99-menuviewer"
+  ],
+  "decoder": [
+   "programs/games/nether-earth-zs-edition/pictures99-decoder"
+  ],
+  "picture": [
+   "programs/games/nether-earth-zs-edition/pictures99-picture"
+  ],
+  "effects": [
+   "programs/games/nether-earth-zs-edition/stage2-effects",
+   "programs/games/zynaps/effects"
+  ],
+  "interrupt": [
+   "programs/games/nether-earth-zs-edition/stage2-interrupt"
+  ],
+  "loader": [
+   "programs/games/nether-earth-zs-edition/stage2-loader",
+   "tape/loaders/hewson-countdown-2/decrypted"
+  ],
+  "print": [
+   "programs/games/nether-earth-zs-edition/stage2-print",
+   "programs/games/nether-earth/print",
+   "programs/games/zynaps/print"
+  ],
+  "texts": [
+   "programs/games/nether-earth-zs-edition/stage2-texts",
+   "programs/games/zynaps-gs/texts",
+   "programs/games/zynaps/texts"
+  ],
+  "s3data": [
+   "programs/games/nether-earth-zs-edition/stage3-s3data"
+  ],
+  "s3main": [
+   "programs/games/nether-earth-zs-edition/stage3-s3main"
+  ],
+  "s3memtest": [
+   "programs/games/nether-earth-zs-edition/stage3-s3memtest"
+  ],
+  "s3util": [
+   "programs/games/nether-earth-zs-edition/stage3-s3util"
+  ],
   "nether-earth": [
    "programs/games/nether-earth/bases",
    "programs/games/nether-earth/construction",
@@ -8419,21 +11804,8 @@
    "programs/games/nether-earth/viewbuffer",
    "programs/games/nether-earth/world"
   ],
-  "bases": [
-   "programs/games/nether-earth/bases"
-  ],
   "controls": [
    "programs/games/nether-earth/controls"
-  ],
-  "enemy": [
-   "programs/games/nether-earth/enemy"
-  ],
-  "level": [
-   "programs/games/nether-earth/level"
-  ],
-  "print": [
-   "programs/games/nether-earth/print",
-   "programs/games/zynaps/print"
   ],
   "ship": [
    "programs/games/nether-earth/ship"
@@ -8441,12 +11813,6 @@
   "tables": [
    "programs/games/nether-earth/tables",
    "programs/games/zynaps/tables"
-  ],
-  "view": [
-   "programs/games/nether-earth/view"
-  ],
-  "viewbuffer": [
-   "programs/games/nether-earth/viewbuffer"
   ],
   "world": [
    "programs/games/nether-earth/world"
@@ -8502,10 +11868,6 @@
   "general-sound": [
    "programs/games/zynaps-gs/installer",
    "sound/gs/zx-masters-zynaps-driver/seen-zynaps-gs"
-  ],
-  "texts": [
-   "programs/games/zynaps-gs/texts",
-   "programs/games/zynaps/texts"
   ],
   "tilecopy": [
    "programs/games/zynaps-gs/tilecopy"
@@ -8565,9 +11927,6 @@
   ],
   "effectdata": [
    "programs/games/zynaps/effectdata"
-  ],
-  "effects": [
-   "programs/games/zynaps/effects"
   ],
   "events": [
    "programs/games/zynaps/events"
@@ -8710,9 +12069,6 @@
    "system/input/kempston-mouse/seen-zynaps-128"
   ],
   "tape": [
-   "tape/loaders/hewson-countdown-2/decrypted"
-  ],
-  "loader": [
    "tape/loaders/hewson-countdown-2/decrypted"
   ],
   "ld-bytes": [

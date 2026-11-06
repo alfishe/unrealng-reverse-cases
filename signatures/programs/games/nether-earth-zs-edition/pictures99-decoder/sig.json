@@ -1,0 +1,206 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/pictures99-decoder",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: the pictures block: decoder",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "decoder"
+  ],
+  "summary": "The RLE screen decoder.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 115,
+    "sha1": "a7230186a4090f8643cc80d1f8fcf227e84fe189",
+    "masked_sha1": "d56b16b4a1c6024f4e0a395bfbb390dde8009b0b"
+  },
+  "origin": "$7D87",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 18,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Screen"
+    },
+    {
+      "offset": 80,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Attrs"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "DecodeScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Decode the RLE screen that follows the routine into the targets at DecodePixels+1 and DecodeAttrs+1"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 1,
+      "name": "",
+      "comment": "the return address ($7D8B) is left below SP ..."
+    },
+    {
+      "offset": 4,
+      "name": "DecodeReturn",
+      "comment": "... and taken back"
+    },
+    {
+      "offset": 7,
+      "name": "",
+      "comment": "+ $6F: the packed screen right after this routine"
+    },
+    {
+      "offset": 12,
+      "name": "",
+      "comment": "DE' = the stream, B' = 0: no run going"
+    },
+    {
+      "offset": 17,
+      "name": "DecodePixels",
+      "comment": "DecodePixels+1: the pixels' target ($4000; stage 2 writes $8A87 here)"
+    },
+    {
+      "offset": 20,
+      "name": "",
+      "comment": "32 columns"
+    },
+    {
+      "offset": 22,
+      "name": "DecodeColumn",
+      "comment": ""
+    },
+    {
+      "offset": 23,
+      "name": "",
+      "comment": "3 thirds"
+    },
+    {
+      "offset": 25,
+      "name": "DecodeThird",
+      "comment": ""
+    },
+    {
+      "offset": 27,
+      "name": "",
+      "comment": "8 character rows"
+    },
+    {
+      "offset": 29,
+      "name": "DecodeRow",
+      "comment": ""
+    },
+    {
+      "offset": 30,
+      "name": "",
+      "comment": "8 lines"
+    },
+    {
+      "offset": 32,
+      "name": "DecodeLine",
+      "comment": "the next byte of the stream into (HL)"
+    },
+    {
+      "offset": 33,
+      "name": "",
+      "comment": "a run going (B' > 0): its value again"
+    },
+    {
+      "offset": 38,
+      "name": "",
+      "comment": "a new byte: itself, or $9A V N"
+    },
+    {
+      "offset": 44,
+      "name": "",
+      "comment": "$9A: C' = the value, B' = the count"
+    },
+    {
+      "offset": 50,
+      "name": "DecodeRunByte",
+      "comment": ""
+    },
+    {
+      "offset": 52,
+      "name": "DecodeStore",
+      "comment": ""
+    },
+    {
+      "offset": 54,
+      "name": "",
+      "comment": "the next pixel line"
+    },
+    {
+      "offset": 58,
+      "name": "",
+      "comment": "the next character row"
+    },
+    {
+      "offset": 66,
+      "name": "",
+      "comment": "the next third"
+    },
+    {
+      "offset": 75,
+      "name": "",
+      "comment": "the next column"
+    },
+    {
+      "offset": 79,
+      "name": "DecodeAttrs",
+      "comment": "DecodeAttrs+1: the attributes' target ($5800; stage 2 writes $A287 here)"
+    },
+    {
+      "offset": 82,
+      "name": "",
+      "comment": "768 attributes in order, the same stream"
+    },
+    {
+      "offset": 85,
+      "name": "DecodeAttr",
+      "comment": ""
+    },
+    {
+      "offset": 103,
+      "name": "DecodeAttrRun",
+      "comment": ""
+    },
+    {
+      "offset": 105,
+      "name": "DecodeAttrStore",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99: the pictures block",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$7D87",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/pictures99/pictures/decoder.asm",
+    "label": "DecodeScreen"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

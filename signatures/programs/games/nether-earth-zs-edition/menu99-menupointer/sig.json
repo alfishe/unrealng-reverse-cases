@@ -1,0 +1,222 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/menu99-menupointer",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: the menu: menupointer",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "menupointer"
+  ],
+  "summary": "The pointer sprite, the marks, the keys.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 2450,
+    "sha1": "ba895fe8f4bcd1293eebbe59aa4a8cff3225f862",
+    "masked_sha1": "178df408b45ceb2b1bbc4941ba095fcdd31d487d"
+  },
+  "origin": "$DD62",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 21,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 44,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 87,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 92,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 122,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 131,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 139,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FBFE"
+    },
+    {
+      "offset": 150,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FDFE"
+    },
+    {
+      "offset": 162,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFE"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "PaintBar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Attribute $47 in 10 cells of row A + 9 from HL ($5800 + the column)"
+    },
+    {
+      "offset": 17,
+      "name": "DrawPointer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw the pointer sprite at the position (this LD BC's operand), shifted by x AND 7"
+    },
+    {
+      "offset": 117,
+      "name": "SavePointerBg",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The background under the pointer into PointerBg (NOPs into the copy loop)"
+    },
+    {
+      "offset": 118,
+      "name": "SetPointerBgWay",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A into BgSwap1 and BgSwap2, then PointerBgCopy"
+    },
+    {
+      "offset": 126,
+      "name": "RestorePointerBg",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "PointerBg back to the screen (EX DE,HL into the copy loop)"
+    },
+    {
+      "offset": 130,
+      "name": "ReadMenuKeys",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "E (and A) = the menu keys, 0 = pressed: bit 0 P, 1 O, 2 Q, 3 A, 4 SPACE"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 6,
+      "name": "PaintBarRow",
+      "comment": ""
+    },
+    {
+      "offset": 11,
+      "name": "PaintBarCell",
+      "comment": ""
+    },
+    {
+      "offset": 25,
+      "name": "DrawPointerRow",
+      "comment": ""
+    },
+    {
+      "offset": 51,
+      "name": "DrawPointerShift",
+      "comment": ""
+    },
+    {
+      "offset": 63,
+      "name": "DrawPointerPut",
+      "comment": ""
+    },
+    {
+      "offset": 85,
+      "name": "PointerBgCopy",
+      "comment": "16 bytes between the screen under the pointer and PointerBg, the way BgSwap1 / BgSwap2 say"
+    },
+    {
+      "offset": 94,
+      "name": "PointerBgRow",
+      "comment": ""
+    },
+    {
+      "offset": 100,
+      "name": "BgSwap1",
+      "comment": "NOP: screen -> PointerBg; EX DE,HL: PointerBg -> screen"
+    },
+    {
+      "offset": 109,
+      "name": "BgSwap2",
+      "comment": "the same, undone"
+    },
+    {
+      "offset": 175,
+      "name": "PointerSprite",
+      "comment": "8 rows of mask, pixels: the arrow (src/res/menu99/pointer.png)"
+    },
+    {
+      "offset": 191,
+      "name": "PointerBg",
+      "comment": "the 16 screen bytes under the pointer"
+    },
+    {
+      "offset": 207,
+      "name": "SavedAttrs",
+      "comment": "the attributes of rows 10-15 as MenuBottom found them (192 bytes)"
+    },
+    {
+      "offset": 399,
+      "name": "ViewerFont",
+      "comment": "the 64-column font, 8 planes of 256 (src/res/menu99/viewer-font.png)"
+    },
+    {
+      "offset": 2447,
+      "name": "TextStart",
+      "comment": "0, CR, LF: the stop in front of TextBuffer for the viewer's Q"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99: the menu",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$DD62",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/menu99/menupointer.asm",
+    "label": "PaintBar"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

@@ -1,0 +1,398 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/stage2-print",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: stage 2: print",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "print"
+  ],
+  "summary": "The 64-column print routine and its variables.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 223,
+    "sha1": "9b9d655ab77640b62a0194cc692e190eead99b9a",
+    "masked_sha1": "56b94c940586949ed3247aaca942dfbbfcdc04ac"
+  },
+  "origin": "$6446",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 12,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 15,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 21,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 36,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 47,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 62,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 70,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 75,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 93,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 99,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 102,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 106,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 111,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 118,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 121,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 128,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 138,
+      "length": 2,
+      "kind": "ext16",
+      "name": "IM2Handler"
+    },
+    {
+      "offset": 143,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 155,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 159,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 168,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 176,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 181,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 189,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 202,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "PrintChars",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print BC bytes from DE"
+    },
+    {
+      "offset": 11,
+      "name": "PrintChar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print the character or control code A at PrintCol, PrintRow"
+    },
+    {
+      "offset": 137,
+      "name": "PrintFontArgument",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "$17's bytes: low into PrintFont, high into PrintFont+1 (not reached: the text has no $17)"
+    },
+    {
+      "offset": 142,
+      "name": "PrintArgumentDone",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One argument byte less to come"
+    },
+    {
+      "offset": 150,
+      "name": "PrintControl",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A control code below $20: LF here, the others in PrintControlRest"
+    },
+    {
+      "offset": 154,
+      "name": "PrintNewRow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "LF: the next print row (also after column 63)"
+    },
+    {
+      "offset": 162,
+      "name": "PrintControlRest",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "CR, AT, TAB, back, $17; any other code is ignored"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 27,
+      "name": "",
+      "comment": "a glyph: HL' = PrintFont + the character"
+    },
+    {
+      "offset": 35,
+      "name": "",
+      "comment": "rows 24 and on are not drawn"
+    },
+    {
+      "offset": 43,
+      "name": "",
+      "comment": "HL = the row's screen address + column / 2"
+    },
+    {
+      "offset": 53,
+      "name": "",
+      "comment": "even column: the left nibble ($F0), odd: the right ($0F)"
+    },
+    {
+      "offset": 61,
+      "name": "PrintMaskSet",
+      "comment": ""
+    },
+    {
+      "offset": 67,
+      "name": "PrintGlyphRow",
+      "comment": "8 rows: the glyph's bits under the mask into the screen byte"
+    },
+    {
+      "offset": 85,
+      "name": "",
+      "comment": "the next column; at 64 the next row"
+    },
+    {
+      "offset": 108,
+      "name": "PrintCharDone",
+      "comment": ""
+    },
+    {
+      "offset": 110,
+      "name": "PrintArgument",
+      "comment": "a byte after a $16 or a $17: AT's column, row, or the font address"
+    },
+    {
+      "offset": 117,
+      "name": "",
+      "comment": "$16: the column into PrintCol, then the row into PrintRow"
+    },
+    {
+      "offset": 120,
+      "name": "PrintArgumentStore",
+      "comment": "HL = the slot: PrintArgsLeft bytes below HL"
+    },
+    {
+      "offset": 124,
+      "name": "PrintArgumentSlot",
+      "comment": ""
+    },
+    {
+      "offset": 133,
+      "name": "PrintArgumentFont",
+      "comment": "$17: the two bytes into PrintFont"
+    },
+    {
+      "offset": 162,
+      "name": "",
+      "comment": "CR: column 0"
+    },
+    {
+      "offset": 167,
+      "name": "PrintSetCol",
+      "comment": ""
+    },
+    {
+      "offset": 171,
+      "name": "PrintAt",
+      "comment": "$16 AT: two arguments to come"
+    },
+    {
+      "offset": 175,
+      "name": "PrintArgs",
+      "comment": ""
+    },
+    {
+      "offset": 184,
+      "name": "PrintTab",
+      "comment": "$09: the next multiple of 8"
+    },
+    {
+      "offset": 197,
+      "name": "PrintBack",
+      "comment": "$08: one column back"
+    },
+    {
+      "offset": 205,
+      "name": "",
+      "comment": "the carry is CP $08's (clear): never returns here"
+    },
+    {
+      "offset": 208,
+      "name": "PrintFontCode",
+      "comment": "$17: two arguments (the font address)"
+    },
+    {
+      "offset": 214,
+      "name": "PrintIgnore",
+      "comment": "any other code below $20"
+    },
+    {
+      "offset": 215,
+      "name": "PrintCol",
+      "comment": "The print column, 0-63"
+    },
+    {
+      "offset": 216,
+      "name": "PrintRow",
+      "comment": "the print row, 0-23 (more: not drawn)"
+    },
+    {
+      "offset": 217,
+      "name": "PrintArgsLeft",
+      "comment": "the argument bytes still to come after $16 or $17"
+    },
+    {
+      "offset": 218,
+      "name": "PrintCode",
+      "comment": "the control code waiting for its arguments ($16 or $17)"
+    },
+    {
+      "offset": 219,
+      "name": "PrintCurrent",
+      "comment": "the byte being printed"
+    },
+    {
+      "offset": 220,
+      "name": "PrintMask",
+      "comment": "$F0 (even column) or $0F (odd)"
+    },
+    {
+      "offset": 221,
+      "name": "PrintFont",
+      "comment": "The font: glyph row r of character c at PrintFont + c + 256 x r (Font64 once IntroMain set it; on the disk $3C00, the ROM's font, which is not in this layout)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99: stage 2",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$6446",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/stage2/stage2/print.asm",
+    "label": "PrintChars"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

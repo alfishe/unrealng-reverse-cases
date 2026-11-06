@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/intro98-pt3tune",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '98: the intro: pt3tune",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1998,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "pt3tune"
+  ],
+  "summary": "\"COOL WINTER\" by KLIM / OHG '97: the Pro Tracker 3.3 module.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 2670,
+    "sha1": "34b4fe9b402f83db6d83bb7ea4e26bc380e14b0b",
+    "masked_sha1": "34b4fe9b402f83db6d83bb7ea4e26bc380e14b0b"
+  },
+  "origin": "$CE21",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "Pt3Module",
+      "comment": "the module: src/res/intro98/cool-winter.pt3"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '98: the intro",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$CE21",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/intro98/pt3tune.asm",
+    "label": "Pt3Module"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

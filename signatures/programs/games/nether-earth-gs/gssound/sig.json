@@ -1,0 +1,214 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-gs/gssound",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth GS: gssound",
+  "authors": [
+    "Argus Press Software",
+    "Tron Z"
+  ],
+  "year": 2002,
+  "tags": [
+    "nether-earth-gs",
+    "game-module",
+    "gssound"
+  ],
+  "summary": "The bridge to the General Sound driver: page the driver in, call it, page bank 0 back.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 151,
+    "sha1": "2884e92e92e9cb5d6f3d56924188b544c3f910f0",
+    "masked_sha1": "5b118fd7e1b10062b9fe82b6af290d2700b9c300"
+  },
+  "origin": "$A569",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    },
+    {
+      "offset": 11,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C000"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Robots"
+    },
+    {
+      "offset": 39,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    },
+    {
+      "offset": 45,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C000"
+    },
+    {
+      "offset": 50,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "GsMenuSound",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Construction menu sound: GS id 3, then ConstructionMenu's first instruction LD IY,Robots"
+    },
+    {
+      "offset": 26,
+      "name": "GsSound",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Play game sound A through the GS driver; every register kept"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "no interrupt while the driver page is in"
+    },
+    {
+      "offset": 1,
+      "name": "",
+      "comment": "the driver's page at $C000, the 48 BASIC ROM"
+    },
+    {
+      "offset": 6,
+      "name": "",
+      "comment": "page it in"
+    },
+    {
+      "offset": 8,
+      "name": "",
+      "comment": "id 3: the construction menu opens"
+    },
+    {
+      "offset": 10,
+      "name": "",
+      "comment": "the driver (in the paged-in RAM page)"
+    },
+    {
+      "offset": 13,
+      "name": "",
+      "comment": "bank 0 back at $C000"
+    },
+    {
+      "offset": 18,
+      "name": "",
+      "comment": "the game's $C000-$FFFF again"
+    },
+    {
+      "offset": 20,
+      "name": "",
+      "comment": "ConstructionMenu's first instruction, moved here: IY = the first robot record"
+    },
+    {
+      "offset": 24,
+      "name": "",
+      "comment": "interrupts on"
+    },
+    {
+      "offset": 26,
+      "name": "",
+      "comment": "no interrupt while the driver page is in"
+    },
+    {
+      "offset": 27,
+      "name": "",
+      "comment": "keep every register the driver might change"
+    },
+    {
+      "offset": 35,
+      "name": "",
+      "comment": "the id"
+    },
+    {
+      "offset": 36,
+      "name": "",
+      "comment": "the driver's page at $C000, the 48 BASIC ROM"
+    },
+    {
+      "offset": 41,
+      "name": "",
+      "comment": "page it in"
+    },
+    {
+      "offset": 43,
+      "name": "",
+      "comment": "A = the id"
+    },
+    {
+      "offset": 44,
+      "name": "",
+      "comment": "the driver"
+    },
+    {
+      "offset": 47,
+      "name": "",
+      "comment": "bank 0 back at $C000"
+    },
+    {
+      "offset": 52,
+      "name": "",
+      "comment": "the game's $C000-$FFFF again"
+    },
+    {
+      "offset": 54,
+      "name": "",
+      "comment": "the registers back"
+    },
+    {
+      "offset": 62,
+      "name": "",
+      "comment": "interrupts on"
+    },
+    {
+      "offset": 64,
+      "name": "SpriteSpare",
+      "comment": "Free space up to Start (87 zero bytes)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth GS",
+      "case": "games/nether-earth-gs",
+      "address": "$A569",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-gs",
+    "file": "src/game/gssound.asm",
+    "label": "GsMenuSound"
+  },
+  "docs": [
+    "games/nether-earth-gs/docs/README.md"
+  ]
+}

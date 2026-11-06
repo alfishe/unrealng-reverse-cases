@@ -1,0 +1,295 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-gs/workspace",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth GS: workspace",
+  "authors": [
+    "Argus Press Software",
+    "Tron Z"
+  ],
+  "year": 2002,
+  "tags": [
+    "nether-earth-gs",
+    "game-module",
+    "workspace"
+  ],
+  "summary": "The work space $FCE9-$FFFF: the variables, the IM 2 vector and table, the buildings, as the file holds them.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 791,
+    "sha1": "6d42329f9ca63c3063cb7af0a305b8cf0e1ee5da",
+    "masked_sha1": "a6d34c93215d9612f6ab0521b6345da33bcf8e22"
+  },
+  "origin": "$FCE9",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 277,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuInterrupt"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 276,
+      "name": "ImJump",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The IM 2 vector: JP Handler, the interrupt handler of the moment"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "N1Leftover",
+      "comment": "Nether Earth's tape loader N1 from its 16th byte, as the memory dump kept it"
+    },
+    {
+      "offset": 23,
+      "name": "Variables",
+      "comment": "The game's variables $FD00-$FDFC (their names below); in the file N1's bytes and zeros"
+    },
+    {
+      "offset": 23,
+      "name": "RandomSeed",
+      "comment": "the shift register of Random, seeded $39,$30,$39,$30 by Start"
+    },
+    {
+      "offset": 27,
+      "name": "PrintAddr",
+      "comment": "the screen address of the next printed character"
+    },
+    {
+      "offset": 29,
+      "name": "MapView",
+      "comment": "the map byte at the view's left column: $DD00 + ViewX"
+    },
+    {
+      "offset": 31,
+      "name": "SavedSP",
+      "comment": "SP kept while ClearViewBuffer pushes and while the menu music runs"
+    },
+    {
+      "offset": 33,
+      "name": "ViewX",
+      "comment": "the map column at the view's left edge, follows ShipX"
+    },
+    {
+      "offset": 35,
+      "name": "Input",
+      "comment": "the controls read this game turn: bit 0 right, 1 left, 2 down, 3 up, 4 fire, 5 save, 6 abort, 7 pause"
+    },
+    {
+      "offset": 36,
+      "name": "ShipY",
+      "comment": "the ship's row, 1-15"
+    },
+    {
+      "offset": 37,
+      "name": "ShipX",
+      "comment": "the ship's column, $000E-$01F5"
+    },
+    {
+      "offset": 39,
+      "name": "Altitude",
+      "comment": "the ship's height: fire raises it by 2 to $30, released it sinks by 1 to what is under it"
+    },
+    {
+      "offset": 40,
+      "name": "ShipDrawPos",
+      "comment": "the ship's view position while its drawing is deferred (column, row); 0 = not deferred"
+    },
+    {
+      "offset": 42,
+      "name": "PrintAttr",
+      "comment": "the attribute of printed characters"
+    },
+    {
+      "offset": 43,
+      "name": "PrintAttrAddr",
+      "comment": "the attribute address of the next printed character"
+    },
+    {
+      "offset": 45,
+      "name": "PrintHeight",
+      "comment": "big characters: each font row printed this many times (PrintInline code 4, high nibble)"
+    },
+    {
+      "offset": 46,
+      "name": "PrintWidth",
+      "comment": "big characters: the width in bytes, 0 normal (PrintInline code 4, low nibble)"
+    },
+    {
+      "offset": 49,
+      "name": "RadarPhase",
+      "comment": "toggled each frame: 0 shows the player's radar layer, 1 the enemy's"
+    },
+    {
+      "offset": 50,
+      "name": "RadarLeft",
+      "comment": "the radar window's left edge in units of 8 map columns, 0-$30"
+    },
+    {
+      "offset": 51,
+      "name": "RadarColumn",
+      "comment": "RadarLeft x 8: the radar window's first map column"
+    },
+    {
+      "offset": 53,
+      "name": "RadarBlink",
+      "comment": "bit 0: the ship's radar blip is drawn"
+    },
+    {
+      "offset": 54,
+      "name": "MenuCursor",
+      "comment": "the construction menu: the column (0 EXIT MENU, 1 START ROBOT, 2 the parts), the part row; the robot menu: its last item"
+    },
+    {
+      "offset": 56,
+      "name": "MenuParts",
+      "comment": "the parts chosen, bit = part row; the new robot's +$07"
+    },
+    {
+      "offset": 57,
+      "name": "Resources",
+      "comment": "general, electronics, nuclear, phasers, missiles, cannon, chassis"
+    },
+    {
+      "offset": 64,
+      "name": "MenuResources",
+      "comment": "the copy the construction menu spends; back to Resources on START ROBOT"
+    },
+    {
+      "offset": 71,
+      "name": "ClimbTurns",
+      "comment": "game turns the ship still climbs by itself: 3 at a new game, 5 after a menu"
+    },
+    {
+      "offset": 72,
+      "name": "PrintColumn",
+      "comment": "the print position's column"
+    },
+    {
+      "offset": 73,
+      "name": "PrintRow",
+      "comment": "the print position's row"
+    },
+    {
+      "offset": 74,
+      "name": "TitleColourPhase",
+      "comment": "0-15, TitleColourCycle's frame counter"
+    },
+    {
+      "offset": 75,
+      "name": "TurnFrames",
+      "comment": "frames counted by PlayInterrupt; a game turn waits for 10"
+    },
+    {
+      "offset": 76,
+      "name": "Clock",
+      "comment": "minutes (by 5), hours, days (16 bits)"
+    },
+    {
+      "offset": 80,
+      "name": "PanelBusy",
+      "comment": "1 while a robot menu owns the right panel"
+    },
+    {
+      "offset": 81,
+      "name": "PlayerBuildings",
+      "comment": "the player's buildings by type: warbases, then factories in the Resources order"
+    },
+    {
+      "offset": 88,
+      "name": "PlayerRobotCount",
+      "comment": "live robots in slots 0-23"
+    },
+    {
+      "offset": 89,
+      "name": "EnemyBuildings",
+      "comment": "the enemy's buildings, the same order; no warbase left = the game is won"
+    },
+    {
+      "offset": 96,
+      "name": "EnemyRobotCount",
+      "comment": "live robots in slots 24-47"
+    },
+    {
+      "offset": 97,
+      "name": "EnemyResources",
+      "comment": "the enemy's resources, the order of Resources"
+    },
+    {
+      "offset": 104,
+      "name": "Side",
+      "comment": "the side being processed: 0 the player's, 1 the enemy's"
+    },
+    {
+      "offset": 105,
+      "name": "RadarDirty",
+      "comment": "1: rebuild the radar layers from the map at the next ship mark"
+    },
+    {
+      "offset": 106,
+      "name": "SoundFx",
+      "comment": "1-$7F a falling tone (fire), $FC a miss, $FA a hit, $C8 a robot destroyed; PlayInterrupt counts it on"
+    },
+    {
+      "offset": 107,
+      "name": "BassReturnPos",
+      "comment": "menu music: the bass track's return point"
+    },
+    {
+      "offset": 109,
+      "name": "LeadReturnPos",
+      "comment": "menu music: the lead track's return point"
+    },
+    {
+      "offset": 135,
+      "name": "Warbases",
+      "comment": "4 capture points of 5 bytes: X (2), Y, owner (bit 6 player, 5 enemy, 7 destroyed) + type, turns a robot has stood at the door (144 captures)"
+    },
+    {
+      "offset": 155,
+      "name": "Factories",
+      "comment": "24 capture points of 5 bytes, the same shape"
+    },
+    {
+      "offset": 279,
+      "name": "ImTable",
+      "comment": "The IM 2 vector table: 257 bytes of $FD"
+    },
+    {
+      "offset": 536,
+      "name": "Buildings",
+      "comment": "56 building records of 3 bytes: the map cell address, the type"
+    },
+    {
+      "offset": 704,
+      "name": "StackArea",
+      "comment": "The stack's bytes and other leftovers to $FFFF"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth GS",
+      "case": "games/nether-earth-gs",
+      "address": "$FCE9",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-gs",
+    "file": "src/game/workspace.asm",
+    "label": "N1Leftover"
+  },
+  "docs": [
+    "games/nether-earth-gs/docs/README.md"
+  ]
+}

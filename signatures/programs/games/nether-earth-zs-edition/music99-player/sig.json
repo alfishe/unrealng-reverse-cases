@@ -1,0 +1,1347 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/music99-player",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: the music block: player",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "player"
+  ],
+  "summary": "The Sound Tracker 1.x compiled player.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 3328,
+    "sha1": "cb598fc652e6c50c69852d0c261653ddce9a77d4",
+    "masked_sha1": "25472777a8d87a8676e9b729eb3ef06794127ece"
+  },
+  "origin": "$C000",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFD"
+    },
+    {
+      "offset": 87,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 90,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 93,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 96,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 101,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 104,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 108,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 114,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 118,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 121,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 125,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 129,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 139,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 143,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 146,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 149,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 152,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 155,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 169,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 173,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 176,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 179,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 184,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 191,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 194,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 197,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 268,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 276,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_EE43"
+    },
+    {
+      "offset": 297,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 305,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 338,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 342,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 346,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 352,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 360,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 367,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 371,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 377,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 381,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 385,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 388,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 392,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 395,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 399,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 414,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 418,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 421,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 424,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 427,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 431,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 434,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 437,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 440,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 445,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 448,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 451,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 454,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 458,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 461,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 464,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 467,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 470,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 473,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 477,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 480,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 483,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 486,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 489,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 492,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 495,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 501,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 506,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 511,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 514,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 519,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 524,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 529,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 541,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 563,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 566,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 578,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 596,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 599,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 615,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 620,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 626,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 638,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 641,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 652,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 690,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 711,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 727,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 734,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 738,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 745,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 748,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 752,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 756,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 759,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 765,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 769,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 776,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 779,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 782,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 785,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 788,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 792,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 796,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 799,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 806,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 810,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 814,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 817,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 820,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 825,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 828,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 832,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 835,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 838,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 841,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 845,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 849,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 852,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 859,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 863,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 867,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 870,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 873,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 882,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 885,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 889,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 892,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 895,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 898,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 902,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 905,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 931,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1145,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1170,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1185,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_BFFD"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 11,
+      "name": "Init",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Entry: set the module at Module up for playing from its first position"
+    },
+    {
+      "offset": 14,
+      "name": "Play",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Entry: one frame of the tune (called once an interrupt)"
+    },
+    {
+      "offset": 17,
+      "name": "Mute",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Entry: silence the AY"
+    },
+    {
+      "offset": 76,
+      "name": "MuteAY",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Silence the AY: register 12 stepped through 0-255, the mixer (register 7) set to $FF"
+    },
+    {
+      "offset": 89,
+      "name": "InitEntry",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Init's jump: HL = the module"
+    },
+    {
+      "offset": 95,
+      "name": "PlayEntry",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Play's jump: on to PlayFrame"
+    },
+    {
+      "offset": 98,
+      "name": "InitModule",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Set the player's variables up for the STC module at HL"
+    },
+    {
+      "offset": 264,
+      "name": "FindNumbered",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Find the record whose first byte is A"
+    },
+    {
+      "offset": 270,
+      "name": "ReadOffset",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Read a module offset at HL and make it an address"
+    },
+    {
+      "offset": 275,
+      "name": "ModuleOffset",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DE = HL + the module address (the operand patched by InitModule)"
+    },
+    {
+      "offset": 281,
+      "name": "SampleLine",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Decode one line of a sample"
+    },
+    {
+      "offset": 337,
+      "name": "NextPosition",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Move to the next position: the three pattern streams and the transposition"
+    },
+    {
+      "offset": 402,
+      "name": "RowCountdown",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Count a channel's rows down"
+    },
+    {
+      "offset": 413,
+      "name": "PlayFrame",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One frame of the tune: every Tempo frames a row of each channel, then the sound"
+    },
+    {
+      "offset": 497,
+      "name": "ReadRow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Read a channel's pattern stream up to its next note or rest"
+    },
+    {
+      "offset": 581,
+      "name": "ChannelOff",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The channel's sample counter to $FF: the channel is silent"
+    },
+    {
+      "offset": 586,
+      "name": "OrnamentZero",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Row byte $82: ornament 0, the envelope off"
+    },
+    {
+      "offset": 589,
+      "name": "SetOrnament",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Row byte $70-$7F: point the channel at ornament A - $70, the envelope off"
+    },
+    {
+      "offset": 617,
+      "name": "SetEnvelope",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Row bytes $83-$8E, period: the envelope shape and period, ornament 0"
+    },
+    {
+      "offset": 654,
+      "name": "SampleStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Advance a channel's sample by one line"
+    },
+    {
+      "offset": 706,
+      "name": "NoiseFromSample",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Register 6 = H when the noise is on (C = 0)"
+    },
+    {
+      "offset": 714,
+      "name": "EnvelopeFlag",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Set bit 4 of the volume at HL while the channel uses the envelope"
+    },
+    {
+      "offset": 743,
+      "name": "PlayFrameOut",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The frame's sound of the three channels into AYTone..AYVolume, then WriteAY"
+    },
+    {
+      "offset": 907,
+      "name": "TonePeriod",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The tone period of a channel's note, ornament and sample shift"
+    },
+    {
+      "offset": 1144,
+      "name": "WriteAY",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Write the AY registers from AYTone..AYEnvShape"
+    },
+    {
+      "offset": 1173,
+      "name": "MuteLoop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "MuteAY's loop: register 12 = A, A + 1, ... until A wraps to 0; then register 7 = $FF"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "CompileHeader",
+      "comment": "Eleven bytes the compiler leaves in front of the jumps"
+    },
+    {
+      "offset": 13,
+      "name": "InitPad",
+      "comment": "A padding byte after the JR (NOP)"
+    },
+    {
+      "offset": 16,
+      "name": "PlayPad",
+      "comment": "A padding byte after the JR (NOP)"
+    },
+    {
+      "offset": 19,
+      "name": "MutePad",
+      "comment": "A padding byte after the JR (NOP)"
+    },
+    {
+      "offset": 20,
+      "name": "CompileText",
+      "comment": "\"SOUND TRACKER COMPILATION OF NE___MUS   BY KSA SOFTWARE\" and the byte $7F"
+    },
+    {
+      "offset": 79,
+      "name": "",
+      "comment": "register 12, the envelope period's high byte, is selected"
+    },
+    {
+      "offset": 83,
+      "name": "",
+      "comment": "A = 0 to the data port first, then 1, 2 ... in MuteLoop"
+    },
+    {
+      "offset": 98,
+      "name": "",
+      "comment": "interrupts off while the variables are half set"
+    },
+    {
+      "offset": 99,
+      "name": "",
+      "comment": "the module's first byte: frames a row"
+    },
+    {
+      "offset": 103,
+      "name": "",
+      "comment": "the module address into ModuleOffset's operand"
+    },
+    {
+      "offset": 107,
+      "name": "",
+      "comment": "DE = the positions list ..."
+    },
+    {
+      "offset": 110,
+      "name": "",
+      "comment": "... its first byte: the last position's index"
+    },
+    {
+      "offset": 112,
+      "name": "",
+      "comment": "+ 1: the count of positions"
+    },
+    {
+      "offset": 120,
+      "name": "",
+      "comment": "DE = the ornaments"
+    },
+    {
+      "offset": 128,
+      "name": "",
+      "comment": "DE = the patterns"
+    },
+    {
+      "offset": 135,
+      "name": "",
+      "comment": "DE = the samples (module + 27)"
+    },
+    {
+      "offset": 145,
+      "name": "",
+      "comment": "channel A's stream at the $FF of PatternEnd"
+    },
+    {
+      "offset": 151,
+      "name": "",
+      "comment": "ChannelState..AYEnvShape cleared (45 bytes)"
+    },
+    {
+      "offset": 163,
+      "name": "",
+      "comment": "ornament 0: found in the ornament list"
+    },
+    {
+      "offset": 171,
+      "name": "",
+      "comment": "A = $FF: every channel's sample counter ..."
+    },
+    {
+      "offset": 181,
+      "name": "",
+      "comment": "... and the delay counter at 1: the next Play reads a row"
+    },
+    {
+      "offset": 186,
+      "name": "",
+      "comment": "every channel plays ornament 0 (its offsets, past the number byte)"
+    },
+    {
+      "offset": 196,
+      "name": "",
+      "comment": "the registers once"
+    },
+    {
+      "offset": 201,
+      "name": "PositionsAddr",
+      "comment": "The module's position list (past its count byte)"
+    },
+    {
+      "offset": 203,
+      "name": "OrnamentsAddr",
+      "comment": "the module's ornaments"
+    },
+    {
+      "offset": 205,
+      "name": "PatternsAddr",
+      "comment": "the module's pattern table"
+    },
+    {
+      "offset": 207,
+      "name": "SamplesAddr",
+      "comment": "the module's samples (module + 27)"
+    },
+    {
+      "offset": 209,
+      "name": "Tempo",
+      "comment": "Frames a row (the module's first byte)"
+    },
+    {
+      "offset": 210,
+      "name": "DelayCounter",
+      "comment": "frames left until the next row"
+    },
+    {
+      "offset": 211,
+      "name": "PositionCount",
+      "comment": "the number of positions (list byte + 1)"
+    },
+    {
+      "offset": 212,
+      "name": "PatternPtrA",
+      "comment": "Channel A's pattern stream: the next row's byte"
+    },
+    {
+      "offset": 214,
+      "name": "PatternPtrB",
+      "comment": "channel B's pattern stream"
+    },
+    {
+      "offset": 216,
+      "name": "PatternPtrC",
+      "comment": "channel C's pattern stream"
+    },
+    {
+      "offset": 218,
+      "name": "PatternEnd",
+      "comment": "$FF: channel A's stream points here after Init (an end of pattern: the first Play fetches a position)"
+    },
+    {
+      "offset": 219,
+      "name": "ChannelState",
+      "comment": "Channel A's 10 bytes; IX points at +2 (ChannelA)"
+    },
+    {
+      "offset": 221,
+      "name": "ChannelA",
+      "comment": "channel A: IX here"
+    },
+    {
+      "offset": 229,
+      "name": "ChannelStateB",
+      "comment": "channel B's 10 bytes"
+    },
+    {
+      "offset": 231,
+      "name": "ChannelB",
+      "comment": "channel B: IX here"
+    },
+    {
+      "offset": 239,
+      "name": "ChannelStateC",
+      "comment": "channel C's 10 bytes"
+    },
+    {
+      "offset": 241,
+      "name": "ChannelC",
+      "comment": "channel C: IX here"
+    },
+    {
+      "offset": 249,
+      "name": "PositionIndex",
+      "comment": "The next position to play"
+    },
+    {
+      "offset": 250,
+      "name": "AYTone",
+      "comment": "The AY registers 0-13 as WriteAY writes them (down from 13 or 10): tone A, B, C periods"
+    },
+    {
+      "offset": 256,
+      "name": "AYNoise",
+      "comment": "Register 6: the noise period"
+    },
+    {
+      "offset": 257,
+      "name": "AYMixer",
+      "comment": "register 7: the mixer"
+    },
+    {
+      "offset": 258,
+      "name": "AYVolume",
+      "comment": "registers 8-10: the volumes A, B, C (bit 4: the envelope)"
+    },
+    {
+      "offset": 261,
+      "name": "AYEnvPeriod",
+      "comment": "registers 11-12: the envelope period"
+    },
+    {
+      "offset": 263,
+      "name": "AYEnvShape",
+      "comment": "register 13: the envelope shape (0: not written this frame)"
+    },
+    {
+      "offset": 300,
+      "name": "SampleNoiseMask",
+      "comment": "bit 6: the noise mask"
+    },
+    {
+      "offset": 308,
+      "name": "SampleNoise",
+      "comment": "the noise period"
+    },
+    {
+      "offset": 329,
+      "name": "",
+      "comment": "bit 5: the shift is added"
+    },
+    {
+      "offset": 350,
+      "name": "NextPositionSet",
+      "comment": "the index after this one"
+    },
+    {
+      "offset": 456,
+      "name": "PlayChannelB",
+      "comment": "channel B"
+    },
+    {
+      "offset": 475,
+      "name": "PlayChannelC",
+      "comment": "channel C"
+    },
+    {
+      "offset": 543,
+      "name": "RowNote",
+      "comment": "a note"
+    },
+    {
+      "offset": 554,
+      "name": "RowEmpty",
+      "comment": "an empty row"
+    },
+    {
+      "offset": 556,
+      "name": "RowSample",
+      "comment": "a sample"
+    },
+    {
+      "offset": 580,
+      "name": "RowRest",
+      "comment": "a rest"
+    },
+    {
+      "offset": 591,
+      "name": "SetOrnamentA",
+      "comment": ""
+    },
+    {
+      "offset": 736,
+      "name": "EnvelopeOnce",
+      "comment": "the shape is written only on the first frame"
+    },
+    {
+      "offset": 740,
+      "name": "EnvelopeOn",
+      "comment": "the envelope on"
+    },
+    {
+      "offset": 787,
+      "name": "VolumeA",
+      "comment": "channel A's volume"
+    },
+    {
+      "offset": 794,
+      "name": "OutChannelB",
+      "comment": "channel B"
+    },
+    {
+      "offset": 840,
+      "name": "VolumeB",
+      "comment": "channel B's volume"
+    },
+    {
+      "offset": 847,
+      "name": "OutChannelC",
+      "comment": "channel C"
+    },
+    {
+      "offset": 897,
+      "name": "VolumeC",
+      "comment": "channel C's volume"
+    },
+    {
+      "offset": 916,
+      "name": "OrnamentLine",
+      "comment": "OrnamentLine+1: the sample line, patched by PlayFrameOut"
+    },
+    {
+      "offset": 924,
+      "name": "NoteTransposition",
+      "comment": "NoteTransposition+1: the position's transposition, patched by NextPosition"
+    },
+    {
+      "offset": 948,
+      "name": "ShiftDown",
+      "comment": "bit 4 clear: the shift is subtracted"
+    },
+    {
+      "offset": 952,
+      "name": "NoteTable",
+      "comment": "The 96 tone periods of the notes (8 octaves of 12, $0EF8 down to $000F)"
+    },
+    {
+      "offset": 1158,
+      "name": "WriteAYFrom",
+      "comment": "C = $FD: port $FFFD selects, $BFFD (B after OUTD's decrement: $BEFD, decoded the same) writes"
+    },
+    {
+      "offset": 1160,
+      "name": "WriteAYLoop",
+      "comment": "one register: select A, write (HL), down"
+    },
+    {
+      "offset": 1178,
+      "name": "",
+      "comment": "every tone and noise off"
+    },
+    {
+      "offset": 1192,
+      "name": "Module",
+      "comment": "The tune: an STC module (Sound Tracker compiled, 2023 bytes)"
+    },
+    {
+      "offset": 3215,
+      "name": "SectorSlack",
+      "comment": "The 113 bytes after the module to the end of the 13th sector: no code reads them"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99: the music block",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$C000",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/music99/music/player.asm",
+    "label": "CompileHeader"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

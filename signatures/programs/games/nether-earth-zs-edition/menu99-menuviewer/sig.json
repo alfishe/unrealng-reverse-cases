@@ -1,0 +1,553 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/menu99-menuviewer",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: the menu: menuviewer",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "menuviewer"
+  ],
+  "summary": "The text viewer: 64 columns, 16 lines a page, Q / A / SPACE.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 384,
+    "sha1": "f64b08ddcc41a1284153e538ccf4eb2855d73e81",
+    "masked_sha1": "8fb341ebcc23781e8033391a99c2f576e91dd17a"
+  },
+  "origin": "$DBE2",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 13,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5900"
+    },
+    {
+      "offset": 18,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5901"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4800"
+    },
+    {
+      "offset": 34,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4801"
+    },
+    {
+      "offset": 44,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextBuffer"
+    },
+    {
+      "offset": 47,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 59,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 69,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5900"
+    },
+    {
+      "offset": 76,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5901"
+    },
+    {
+      "offset": 88,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleColourCycle"
+    },
+    {
+      "offset": 92,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ReadMenuKeys"
+    },
+    {
+      "offset": 101,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 130,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 145,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 148,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 168,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 173,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 176,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 182,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 190,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 197,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 208,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 223,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 231,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 236,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 247,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 254,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 260,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 267,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 272,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 279,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 282,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 289,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 299,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PaintBar"
+    },
+    {
+      "offset": 304,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 308,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 316,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 320,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 329,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 337,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 342,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 350,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 363,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "TextViewer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print the header (row 8, the font), fade rows 8-23 out, clear them, print a page, fade in, keys"
+    },
+    {
+      "offset": 161,
+      "name": "PrintCount",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print BC bytes from DE through ViewerPutChar"
+    },
+    {
+      "offset": 172,
+      "name": "ViewerPutChar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One byte to the 64-column screen: a control, a parameter or a character"
+    },
+    {
+      "offset": 315,
+      "name": "ViewerNewLine",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The next row (the column is not changed)"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 9,
+      "name": "",
+      "comment": "fade out: attributes 7..1 over rows 8-23, one a frame"
+    },
+    {
+      "offset": 11,
+      "name": "FadeOutStep",
+      "comment": ""
+    },
+    {
+      "offset": 30,
+      "name": "",
+      "comment": "the pixels of rows 8-23 to 0"
+    },
+    {
+      "offset": 43,
+      "name": "ViewerTopLd",
+      "comment": "the first line shown: this operand is the viewer's position"
+    },
+    {
+      "offset": 46,
+      "name": "PrintPage",
+      "comment": "up to row 24 or the text's 0"
+    },
+    {
+      "offset": 65,
+      "name": "FadeIn",
+      "comment": "attributes 1..7"
+    },
+    {
+      "offset": 67,
+      "name": "FadeInStep",
+      "comment": ""
+    },
+    {
+      "offset": 87,
+      "name": "ViewerKeys",
+      "comment": "the title colours, a frame, the keys"
+    },
+    {
+      "offset": 98,
+      "name": "",
+      "comment": "Q: 16 lines back (a 0 before: the start, nothing)"
+    },
+    {
+      "offset": 103,
+      "name": "PageBackLine",
+      "comment": ""
+    },
+    {
+      "offset": 105,
+      "name": "PageBackScan",
+      "comment": ""
+    },
+    {
+      "offset": 123,
+      "name": "PageForward",
+      "comment": "A: 16 lines on (a 0 first: the end, nothing)"
+    },
+    {
+      "offset": 132,
+      "name": "PageForwardScan",
+      "comment": ""
+    },
+    {
+      "offset": 150,
+      "name": "ViewerSpace",
+      "comment": "SPACE: back to the menu"
+    },
+    {
+      "offset": 155,
+      "name": "ViewerHeader",
+      "comment": "AT 0,8 then the font: $16 0 8, $17 ViewerFont"
+    },
+    {
+      "offset": 188,
+      "name": "",
+      "comment": "HL = the font + the code"
+    },
+    {
+      "offset": 196,
+      "name": "",
+      "comment": "row 24 on: not drawn"
+    },
+    {
+      "offset": 204,
+      "name": "",
+      "comment": "HL = the row's pixel address + column / 2"
+    },
+    {
+      "offset": 214,
+      "name": "",
+      "comment": "the half: column even $F0, odd $0F"
+    },
+    {
+      "offset": 222,
+      "name": "SetViewerMask",
+      "comment": ""
+    },
+    {
+      "offset": 228,
+      "name": "PutCharRow",
+      "comment": "eight pixel rows, the font's planes 256 bytes apart"
+    },
+    {
+      "offset": 246,
+      "name": "",
+      "comment": "the next column; 64 = the next row"
+    },
+    {
+      "offset": 269,
+      "name": "PutCharDone",
+      "comment": ""
+    },
+    {
+      "offset": 271,
+      "name": "ViewerParam",
+      "comment": "a parameter of $16 or $17: stored backwards from ViewerParams (AT: column, row) or ViewerFontPtr + 2 (font)"
+    },
+    {
+      "offset": 281,
+      "name": "ViewerParamStore",
+      "comment": ""
+    },
+    {
+      "offset": 285,
+      "name": "ParamBack",
+      "comment": ""
+    },
+    {
+      "offset": 294,
+      "name": "ViewerParamFont",
+      "comment": ""
+    },
+    {
+      "offset": 303,
+      "name": "ViewerParamDone",
+      "comment": ""
+    },
+    {
+      "offset": 311,
+      "name": "ViewerControl",
+      "comment": "a control: $0A, $0D, $16, $09, $08, $17"
+    },
+    {
+      "offset": 323,
+      "name": "ViewerControlCr",
+      "comment": ""
+    },
+    {
+      "offset": 328,
+      "name": "ViewerSetCol",
+      "comment": ""
+    },
+    {
+      "offset": 332,
+      "name": "ViewerControlAt",
+      "comment": ""
+    },
+    {
+      "offset": 336,
+      "name": "ViewerTwoParams",
+      "comment": ""
+    },
+    {
+      "offset": 345,
+      "name": "ViewerControlTab",
+      "comment": ""
+    },
+    {
+      "offset": 358,
+      "name": "ViewerControlBack",
+      "comment": ""
+    },
+    {
+      "offset": 365,
+      "name": "",
+      "comment": "RET C never returns (DEC keeps the carry of CP $08, clear): at column 0 the column becomes $FF"
+    },
+    {
+      "offset": 369,
+      "name": "ViewerControlFont",
+      "comment": ""
+    },
+    {
+      "offset": 375,
+      "name": "ViewerIgnore",
+      "comment": ""
+    },
+    {
+      "offset": 376,
+      "name": "ViewerCol",
+      "comment": "the column 0-63"
+    },
+    {
+      "offset": 377,
+      "name": "ViewerRow",
+      "comment": "the row 0-23 (24: the page is full)"
+    },
+    {
+      "offset": 378,
+      "name": "ViewerParams",
+      "comment": "parameters still to come"
+    },
+    {
+      "offset": 379,
+      "name": "ViewerCode",
+      "comment": "the control they belong to"
+    },
+    {
+      "offset": 380,
+      "name": "ViewerChar",
+      "comment": "the byte being printed"
+    },
+    {
+      "offset": 381,
+      "name": "ViewerMask",
+      "comment": "the half of the cell: $F0 or $0F"
+    },
+    {
+      "offset": 382,
+      "name": "ViewerFontPtr",
+      "comment": "the font ($3C00 in the image; the header sets ViewerFont)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99: the menu",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$DBE2",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/menu99/menuviewer.asm",
+    "label": "TextViewer"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

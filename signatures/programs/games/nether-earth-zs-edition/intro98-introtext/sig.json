@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/intro98-introtext",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '98: the intro: introtext",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1998,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "introtext"
+  ],
+  "summary": "The scroller's text.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 2295,
+    "sha1": "cec90b75704a0b57c247b9c46585bfa93fa4e9ec",
+    "masked_sha1": "cec90b75704a0b57c247b9c46585bfa93fa4e9ec"
+  },
+  "origin": "$DAC2",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "ScrollText",
+      "comment": "the scroller text (src/res/intro98/scroll-text.txt)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '98: the intro",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$DAC2",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/intro98/introtext.asm",
+    "label": "ScrollText"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

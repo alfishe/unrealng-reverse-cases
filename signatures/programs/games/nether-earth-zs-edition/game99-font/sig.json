@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/game99-font",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: font",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "font"
+  ],
+  "summary": "The character set: 64 glyphs of 8 x 8 pixels, codes $20-$5F.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 512,
+    "sha1": "33aa31f86678b1207dfe865844cc2a53be5f3b10",
+    "masked_sha1": "33aa31f86678b1207dfe865844cc2a53be5f3b10"
+  },
+  "origin": "$6780",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "Font",
+      "comment": "Font: 64 glyphs of 8 bytes, codes $20-$5F"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$6780",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/game99/font.asm",
+    "label": "Font"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

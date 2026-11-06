@@ -1,0 +1,2151 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/game99-music",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: music",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "music"
+  ],
+  "summary": "The menu tune: a two-voice beeper loop, the drum and the note readers in the interrupt, the title colours.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 930,
+    "sha1": "5c4a256b080d5a73935557a3fa7fb48ecbd4bb77",
+    "masked_sha1": "3fc1cad02a64c84b7a3873afaae1a44809a0b080"
+  },
+  "origin": "$C4A7",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 3,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SavedSP"
+    },
+    {
+      "offset": 6,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 9,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Handler"
+    },
+    {
+      "offset": 12,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 15,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 30,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Input"
+    },
+    {
+      "offset": 33,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Input"
+    },
+    {
+      "offset": 38,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 50,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 55,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 59,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Input"
+    },
+    {
+      "offset": 62,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Input"
+    },
+    {
+      "offset": 67,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 79,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 84,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 94,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 98,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 101,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SavedSP"
+    },
+    {
+      "offset": 122,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StartInterrupt"
+    },
+    {
+      "offset": 125,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Handler"
+    },
+    {
+      "offset": 135,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 142,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 154,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 161,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 170,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 173,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DefineKeyDone"
+    },
+    {
+      "offset": 179,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 182,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 185,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 191,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 204,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DefineKeyDone"
+    },
+    {
+      "offset": 210,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 216,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 219,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 222,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 235,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BassReturnPos"
+    },
+    {
+      "offset": 240,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 248,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LeadReturnPos"
+    },
+    {
+      "offset": 254,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 274,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 278,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BassReturnPos"
+    },
+    {
+      "offset": 282,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 287,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LeadReturnPos"
+    },
+    {
+      "offset": 291,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 306,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 351,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 402,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 406,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 411,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 415,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 421,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 425,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 430,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 434,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 892,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5800"
+    },
+    {
+      "offset": 895,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleColourPhase"
+    },
+    {
+      "offset": 901,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleColourPhase"
+    },
+    {
+      "offset": 920,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "MenuMusic",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "play the menu tune until a number key is pressed"
+    },
+    {
+      "offset": 28,
+      "name": "BassIdlePad",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "tone loop: the time of a bass step without an edge"
+    },
+    {
+      "offset": 36,
+      "name": "LeadStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "tone loop: count the lead period down, at 0 a pulse"
+    },
+    {
+      "offset": 61,
+      "name": "LeadIdlePadTail",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the rest of the lead pad"
+    },
+    {
+      "offset": 65,
+      "name": "BassStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "tone loop: count the bass period down, at 0 a pulse"
+    },
+    {
+      "offset": 86,
+      "name": "MenuInterrupt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the interrupt handler of the menu"
+    },
+    {
+      "offset": 129,
+      "name": "BassNextEvent",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "read the bass voice's next event: a note, or a command"
+    },
+    {
+      "offset": 148,
+      "name": "LeadNextEvent",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "read the lead voice's next event: a note, or a command"
+    },
+    {
+      "offset": 178,
+      "name": "BassCmd2",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "bass command 2 (entry): JP BassCall"
+    },
+    {
+      "offset": 181,
+      "name": "BassCmd3",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "bass command 3 (entry): JP SetDrumTrack"
+    },
+    {
+      "offset": 184,
+      "name": "BassCmd4",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "bass command 4 (entry): JP BassOn"
+    },
+    {
+      "offset": 187,
+      "name": "BassCmd5",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "bass command 5 (entry): JP BassOff"
+    },
+    {
+      "offset": 190,
+      "name": "BassCmd6",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "bass command 6 (entry): JP BassReturn"
+    },
+    {
+      "offset": 199,
+      "name": "LeadCommand",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "command A of the lead track: jump to entry A of the table after the CALL"
+    },
+    {
+      "offset": 209,
+      "name": "LeadCmd2",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "lead command 2 (entry): JP LeadCall"
+    },
+    {
+      "offset": 215,
+      "name": "LeadCmd4",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "lead command 4 (entry): JP LeadOn"
+    },
+    {
+      "offset": 218,
+      "name": "LeadCmd5",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "lead command 5 (entry): JP LeadOff"
+    },
+    {
+      "offset": 221,
+      "name": "LeadCmd6",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "lead command 6 (entry): JP LeadReturn"
+    },
+    {
+      "offset": 230,
+      "name": "BassCall",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "bass command 2 aa: play the pattern at aa, then go on after the command"
+    },
+    {
+      "offset": 242,
+      "name": "LeadCall",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "lead command 2 aa: play the pattern at aa, then go on after the command"
+    },
+    {
+      "offset": 256,
+      "name": "BassGoto",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "bass command 1 aa: continue the track at aa (code: POP HL, read the word, JP BassNextEvent)"
+    },
+    {
+      "offset": 265,
+      "name": "LeadGoto",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "lead command 1 aa: continue the track at aa (code, run only when the tune loops)"
+    },
+    {
+      "offset": 276,
+      "name": "BassReturn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "bass command 6: back from the pattern to the bass track"
+    },
+    {
+      "offset": 284,
+      "name": "LeadReturn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "lead command 6: back from the pattern to the lead track"
+    },
+    {
+      "offset": 293,
+      "name": "SetDrumTrack",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "bass command 3 aa: the drum plays the track at aa from its next record"
+    },
+    {
+      "offset": 308,
+      "name": "DrumStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "play the next drum record (a short noise or sweep inside the interrupt)"
+    },
+    {
+      "offset": 398,
+      "name": "BassOn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "bass command 4: the bass pulses sound again"
+    },
+    {
+      "offset": 408,
+      "name": "BassOff",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "bass command 5: the bass pulses go silent (the notes still take their time)"
+    },
+    {
+      "offset": 417,
+      "name": "LeadOn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "lead command 4: the lead pulses sound again"
+    },
+    {
+      "offset": 427,
+      "name": "LeadOff",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "lead command 5: the lead pulses go silent"
+    },
+    {
+      "offset": 436,
+      "name": "MusicDispatch",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "jump to entry A of the 3-byte JP table that follows the caller's CALL"
+    },
+    {
+      "offset": 889,
+      "name": "TitleColourCycle",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "cycle the ink of the start-up menu's title rows 0-6, one colour every 2 frames"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "no interrupt while the state is set"
+    },
+    {
+      "offset": 1,
+      "name": "",
+      "comment": "the stack for the exit from MenuInterrupt"
+    },
+    {
+      "offset": 5,
+      "name": "",
+      "comment": "Handler: the IM 2 vector at $FDFD jumps to MenuInterrupt now"
+    },
+    {
+      "offset": 8,
+      "name": "",
+      "comment": "Handler = MenuInterrupt"
+    },
+    {
+      "offset": 11,
+      "name": "",
+      "comment": "HL' = the bass track"
+    },
+    {
+      "offset": 14,
+      "name": "",
+      "comment": "DE' = the lead track"
+    },
+    {
+      "offset": 17,
+      "name": "",
+      "comment": "B' = C' = 1: read both voices at the first interrupt"
+    },
+    {
+      "offset": 20,
+      "name": "",
+      "comment": "HL, DE, BC become HL', DE', BC'"
+    },
+    {
+      "offset": 21,
+      "name": "",
+      "comment": "HL = the drum track, C = 1: read it at the first interrupt"
+    },
+    {
+      "offset": 24,
+      "name": "",
+      "comment": "the interrupt may run (the HALT below waits for it)"
+    },
+    {
+      "offset": 25,
+      "name": "",
+      "comment": "C = 1: the drum's first record at the first interrupt"
+    },
+    {
+      "offset": 27,
+      "name": "",
+      "comment": "start on an interrupt"
+    },
+    {
+      "offset": 28,
+      "name": "",
+      "comment": "a pad: Input is written back unchanged, only the time counts"
+    },
+    {
+      "offset": 29,
+      "name": "",
+      "comment": "13 T: a read of Input..."
+    },
+    {
+      "offset": 32,
+      "name": "",
+      "comment": "... and the same value back, 13 T"
+    },
+    {
+      "offset": 35,
+      "name": "",
+      "comment": "A and the flags back: the pad leaves no trace"
+    },
+    {
+      "offset": 36,
+      "name": "",
+      "comment": "the lead counter"
+    },
+    {
+      "offset": 37,
+      "name": "",
+      "comment": "not run out: the pad, then the bass"
+    },
+    {
+      "offset": 40,
+      "name": "",
+      "comment": "reload: the note's period, written by LeadNextEvent ($C540); the image holds $29, the last note played before the block was saved"
+    },
+    {
+      "offset": 42,
+      "name": "",
+      "comment": "$18 voice on, 0 off: written by LeadOn / LeadOff"
+    },
+    {
+      "offset": 44,
+      "name": "",
+      "comment": "the pulse's leading edge"
+    },
+    {
+      "offset": 46,
+      "name": "",
+      "comment": "the pulse width: period / 4, written by $C547 ($0A in the image)"
+    },
+    {
+      "offset": 48,
+      "name": "LeadPulse",
+      "comment": "hold the pulse"
+    },
+    {
+      "offset": 49,
+      "name": "",
+      "comment": "until the width is used up"
+    },
+    {
+      "offset": 52,
+      "name": "",
+      "comment": "A = 0: the trailing edge"
+    },
+    {
+      "offset": 54,
+      "name": "",
+      "comment": "on to the bass voice"
+    },
+    {
+      "offset": 57,
+      "name": "LeadIdlePad",
+      "comment": "no edge: the same pad as BassIdlePad"
+    },
+    {
+      "offset": 58,
+      "name": "",
+      "comment": "13 T: Input read..."
+    },
+    {
+      "offset": 61,
+      "name": "",
+      "comment": "... and written back unchanged"
+    },
+    {
+      "offset": 64,
+      "name": "",
+      "comment": "A and the flags back"
+    },
+    {
+      "offset": 65,
+      "name": "",
+      "comment": "the bass counter"
+    },
+    {
+      "offset": 66,
+      "name": "",
+      "comment": "not run out: the pad, then the lead"
+    },
+    {
+      "offset": 69,
+      "name": "",
+      "comment": "reload: the note's period, written by BassNextEvent ($C52D); $7C in the image"
+    },
+    {
+      "offset": 71,
+      "name": "",
+      "comment": "$18 voice on, 0 off: written by BassOn / BassOff (0 in the image: the bass was off when the block was saved)"
+    },
+    {
+      "offset": 73,
+      "name": "",
+      "comment": "the pulse's leading edge"
+    },
+    {
+      "offset": 75,
+      "name": "",
+      "comment": "the pulse width: period / 4, written by $C534 ($1F in the image)"
+    },
+    {
+      "offset": 77,
+      "name": "BassPulse",
+      "comment": "hold the pulse"
+    },
+    {
+      "offset": 78,
+      "name": "",
+      "comment": "until the width is used up"
+    },
+    {
+      "offset": 81,
+      "name": "",
+      "comment": "A = 0: the trailing edge"
+    },
+    {
+      "offset": 83,
+      "name": "",
+      "comment": "next turn: the lead voice"
+    },
+    {
+      "offset": 86,
+      "name": "",
+      "comment": "the tone loop's A and flags"
+    },
+    {
+      "offset": 87,
+      "name": "",
+      "comment": "the drum's frames run out: play the next drum record (inside the interrupt, the tone loop waits)"
+    },
+    {
+      "offset": 88,
+      "name": "",
+      "comment": "DrumStep: one drum record, with the tone loop stopped"
+    },
+    {
+      "offset": 91,
+      "name": "",
+      "comment": "the voices' registers"
+    },
+    {
+      "offset": 92,
+      "name": "",
+      "comment": "the bass note's frames run out: the next bass event"
+    },
+    {
+      "offset": 93,
+      "name": "",
+      "comment": "BassNextEvent: the next note or commands of the bass"
+    },
+    {
+      "offset": 96,
+      "name": "",
+      "comment": "the lead note's frames run out: the next lead event"
+    },
+    {
+      "offset": 97,
+      "name": "",
+      "comment": "LeadNextEvent: the next note or commands of the lead"
+    },
+    {
+      "offset": 100,
+      "name": "",
+      "comment": "the title's colours"
+    },
+    {
+      "offset": 103,
+      "name": "",
+      "comment": "half-rows 1-5 and 6-0: a number key, any menu choice"
+    },
+    {
+      "offset": 105,
+      "name": "",
+      "comment": "IN from $E7FE: the half rows 1-5 and 6-0"
+    },
+    {
+      "offset": 107,
+      "name": "",
+      "comment": "a pressed key reads 0: invert"
+    },
+    {
+      "offset": 108,
+      "name": "",
+      "comment": "the five key bits"
+    },
+    {
+      "offset": 110,
+      "name": "",
+      "comment": "a number key is down"
+    },
+    {
+      "offset": 112,
+      "name": "",
+      "comment": "none: back to the tone loop"
+    },
+    {
+      "offset": 113,
+      "name": "",
+      "comment": "the tone loop's A and flags back"
+    },
+    {
+      "offset": 114,
+      "name": "",
+      "comment": "interrupts on for the next frame"
+    },
+    {
+      "offset": 115,
+      "name": "",
+      "comment": "into the tone loop where it was"
+    },
+    {
+      "offset": 116,
+      "name": "MenuMusicExit",
+      "comment": "a number key: drop the tone loop, return from MenuMusic to the menu"
+    },
+    {
+      "offset": 117,
+      "name": "",
+      "comment": "SP as MenuMusic left it: the next RET returns to $C1A1"
+    },
+    {
+      "offset": 121,
+      "name": "",
+      "comment": "Handler back to StartInterrupt (EI; RET)"
+    },
+    {
+      "offset": 124,
+      "name": "",
+      "comment": "nothing runs in the menu's HALTs now"
+    },
+    {
+      "offset": 127,
+      "name": "",
+      "comment": "interrupts on"
+    },
+    {
+      "offset": 128,
+      "name": "",
+      "comment": "returns from MenuMusic to the menu ($C1A1)"
+    },
+    {
+      "offset": 129,
+      "name": "",
+      "comment": "the event byte"
+    },
+    {
+      "offset": 130,
+      "name": "",
+      "comment": "a period is 9 or more"
+    },
+    {
+      "offset": 132,
+      "name": "",
+      "comment": "below 9: a command"
+    },
+    {
+      "offset": 134,
+      "name": "",
+      "comment": "the period into LD E,n"
+    },
+    {
+      "offset": 137,
+      "name": "",
+      "comment": "the pulse width: period / 4"
+    },
+    {
+      "offset": 138,
+      "name": "",
+      "comment": "A = period / 4..."
+    },
+    {
+      "offset": 139,
+      "name": "",
+      "comment": "0-63"
+    },
+    {
+      "offset": 141,
+      "name": "",
+      "comment": "into LD A,n of the bass pulse ($C4F3)"
+    },
+    {
+      "offset": 144,
+      "name": "",
+      "comment": "C' = the note's frames"
+    },
+    {
+      "offset": 145,
+      "name": "",
+      "comment": "C' = the note's frames"
+    },
+    {
+      "offset": 146,
+      "name": "",
+      "comment": "HL' = the next event"
+    },
+    {
+      "offset": 147,
+      "name": "",
+      "comment": "back into MenuInterrupt"
+    },
+    {
+      "offset": 148,
+      "name": "",
+      "comment": "the event byte"
+    },
+    {
+      "offset": 149,
+      "name": "",
+      "comment": "a period is 9 or more"
+    },
+    {
+      "offset": 151,
+      "name": "",
+      "comment": "below 9: a command"
+    },
+    {
+      "offset": 153,
+      "name": "",
+      "comment": "the period into LD D,n"
+    },
+    {
+      "offset": 156,
+      "name": "",
+      "comment": "the pulse width: period / 4"
+    },
+    {
+      "offset": 157,
+      "name": "",
+      "comment": "A = period / 4..."
+    },
+    {
+      "offset": 158,
+      "name": "",
+      "comment": "0-63"
+    },
+    {
+      "offset": 160,
+      "name": "",
+      "comment": "into LD A,n of the lead pulse ($C4D6)"
+    },
+    {
+      "offset": 163,
+      "name": "",
+      "comment": "the frames byte"
+    },
+    {
+      "offset": 164,
+      "name": "",
+      "comment": "B' = the note's frames"
+    },
+    {
+      "offset": 165,
+      "name": "",
+      "comment": "B' = the frames"
+    },
+    {
+      "offset": 166,
+      "name": "",
+      "comment": "DE' = the next event"
+    },
+    {
+      "offset": 167,
+      "name": "",
+      "comment": "back into MenuInterrupt"
+    },
+    {
+      "offset": 168,
+      "name": "BassCommand",
+      "comment": "command A of the bass track: jump to entry A of the table after the CALL"
+    },
+    {
+      "offset": 169,
+      "name": "",
+      "comment": "MusicDispatch pops the table address"
+    },
+    {
+      "offset": 172,
+      "name": "BassCommandTable",
+      "comment": "entry 0: JP $C4A6 (never used, it would RET into the pushed HL)"
+    },
+    {
+      "offset": 175,
+      "name": "BassCmd1",
+      "comment": "bass command 1: JP BassGoto ($C5A7), the 3-byte entry 1"
+    },
+    {
+      "offset": 175,
+      "name": "",
+      "comment": "entry 1: JP $C5A7 (BassGoto), the bass track's goto"
+    },
+    {
+      "offset": 178,
+      "name": "",
+      "comment": "entry 2: call a pattern"
+    },
+    {
+      "offset": 181,
+      "name": "",
+      "comment": "entry 3: start a drum track"
+    },
+    {
+      "offset": 184,
+      "name": "",
+      "comment": "entry 4: bass on"
+    },
+    {
+      "offset": 187,
+      "name": "",
+      "comment": "entry 5: bass off"
+    },
+    {
+      "offset": 190,
+      "name": "",
+      "comment": "entry 6: back from a pattern"
+    },
+    {
+      "offset": 193,
+      "name": "BassCmd7",
+      "comment": "bass commands 7 and 8: JP SetDrumTrack twice (unused, the same as command 3)"
+    },
+    {
+      "offset": 193,
+      "name": "",
+      "comment": "entry 7: JP $C5CC (SetDrumTrack), unused"
+    },
+    {
+      "offset": 196,
+      "name": "",
+      "comment": "entry 8: JP $C5CC (SetDrumTrack), unused"
+    },
+    {
+      "offset": 199,
+      "name": "",
+      "comment": "HL' (the bass position) kept for the handler to pop"
+    },
+    {
+      "offset": 200,
+      "name": "",
+      "comment": "MusicDispatch pops the table address"
+    },
+    {
+      "offset": 203,
+      "name": "LeadCommandTable",
+      "comment": "entry 0: JP $C4A6 (never used)"
+    },
+    {
+      "offset": 206,
+      "name": "LeadCmd1",
+      "comment": "lead command 1: JP LeadGoto ($C5B0)"
+    },
+    {
+      "offset": 206,
+      "name": "",
+      "comment": "entry 1: JP $C5B0 (LeadGoto), the lead track's goto"
+    },
+    {
+      "offset": 209,
+      "name": "",
+      "comment": "entry 2: call a pattern"
+    },
+    {
+      "offset": 212,
+      "name": "LeadCmd3",
+      "comment": "lead command 3: JP SetDrumTrack, a bass-only handler (it reads HL', the bass track): unusable from the lead track and unused"
+    },
+    {
+      "offset": 212,
+      "name": "",
+      "comment": "entry 3: JP $C5CC (SetDrumTrack), bass only, unused by the lead track"
+    },
+    {
+      "offset": 215,
+      "name": "",
+      "comment": "entry 4: lead on"
+    },
+    {
+      "offset": 218,
+      "name": "",
+      "comment": "entry 5: lead off"
+    },
+    {
+      "offset": 221,
+      "name": "",
+      "comment": "entry 6: back from a pattern"
+    },
+    {
+      "offset": 224,
+      "name": "LeadCmd7",
+      "comment": "lead commands 7 and 8: JP SetDrumTrack twice (unused)"
+    },
+    {
+      "offset": 224,
+      "name": "",
+      "comment": "entry 7: JP $C5CC (SetDrumTrack), unused"
+    },
+    {
+      "offset": 227,
+      "name": "",
+      "comment": "entry 8: JP $C5CC (SetDrumTrack), unused"
+    },
+    {
+      "offset": 230,
+      "name": "",
+      "comment": "HL' = the bass position again"
+    },
+    {
+      "offset": 231,
+      "name": "",
+      "comment": "on to the address operand's low byte"
+    },
+    {
+      "offset": 232,
+      "name": "",
+      "comment": "A = the pattern's low byte"
+    },
+    {
+      "offset": 233,
+      "name": "",
+      "comment": "HL' at the high byte"
+    },
+    {
+      "offset": 234,
+      "name": "",
+      "comment": "the return point"
+    },
+    {
+      "offset": 237,
+      "name": "",
+      "comment": "HL' = the pattern"
+    },
+    {
+      "offset": 238,
+      "name": "",
+      "comment": "HL' = the pattern"
+    },
+    {
+      "offset": 239,
+      "name": "",
+      "comment": "the pattern's first event, at once"
+    },
+    {
+      "offset": 242,
+      "name": "",
+      "comment": "HL' back (the bass position; DE' is the lead position"
+    },
+    {
+      "offset": 243,
+      "name": "",
+      "comment": "HL = the lead position (at the command byte)"
+    },
+    {
+      "offset": 244,
+      "name": "",
+      "comment": "the address operand's low byte"
+    },
+    {
+      "offset": 245,
+      "name": "",
+      "comment": "A = the pattern's low byte"
+    },
+    {
+      "offset": 246,
+      "name": "",
+      "comment": "at the high byte"
+    },
+    {
+      "offset": 247,
+      "name": "",
+      "comment": "the return point"
+    },
+    {
+      "offset": 250,
+      "name": "",
+      "comment": "H = the pattern's high byte"
+    },
+    {
+      "offset": 251,
+      "name": "",
+      "comment": "L = the low byte: HL = the pattern"
+    },
+    {
+      "offset": 252,
+      "name": "",
+      "comment": "DE' = the pattern"
+    },
+    {
+      "offset": 253,
+      "name": "",
+      "comment": "the pattern's first event, at once"
+    },
+    {
+      "offset": 256,
+      "name": "",
+      "comment": "HL' = the bass position (at the command byte)"
+    },
+    {
+      "offset": 257,
+      "name": "",
+      "comment": "the address operand"
+    },
+    {
+      "offset": 258,
+      "name": "",
+      "comment": "A = the target's low byte"
+    },
+    {
+      "offset": 259,
+      "name": "",
+      "comment": "at the high byte"
+    },
+    {
+      "offset": 260,
+      "name": "",
+      "comment": "HL' = the target"
+    },
+    {
+      "offset": 261,
+      "name": "",
+      "comment": "L = the low byte"
+    },
+    {
+      "offset": 262,
+      "name": "",
+      "comment": "its first event, at once"
+    },
+    {
+      "offset": 265,
+      "name": "",
+      "comment": "HL' back (the bass position)"
+    },
+    {
+      "offset": 266,
+      "name": "",
+      "comment": "HL = the lead position"
+    },
+    {
+      "offset": 267,
+      "name": "",
+      "comment": "the address operand"
+    },
+    {
+      "offset": 268,
+      "name": "",
+      "comment": "A = the target's low byte"
+    },
+    {
+      "offset": 269,
+      "name": "",
+      "comment": "at the high byte"
+    },
+    {
+      "offset": 270,
+      "name": "",
+      "comment": "HL = the target"
+    },
+    {
+      "offset": 271,
+      "name": "",
+      "comment": "L = the low byte"
+    },
+    {
+      "offset": 272,
+      "name": "",
+      "comment": "DE' = the target, HL' the bass position again"
+    },
+    {
+      "offset": 273,
+      "name": "",
+      "comment": "its first event, at once"
+    },
+    {
+      "offset": 276,
+      "name": "",
+      "comment": "drop the pushed position"
+    },
+    {
+      "offset": 277,
+      "name": "",
+      "comment": "one past the call's address operand"
+    },
+    {
+      "offset": 280,
+      "name": "",
+      "comment": "one past the address operand: the event after the call"
+    },
+    {
+      "offset": 281,
+      "name": "",
+      "comment": "the next event of the track, at once"
+    },
+    {
+      "offset": 284,
+      "name": "",
+      "comment": "HL' back (the bass position)"
+    },
+    {
+      "offset": 285,
+      "name": "",
+      "comment": "one past the call's address operand"
+    },
+    {
+      "offset": 289,
+      "name": "",
+      "comment": "one past the address operand: the event after the call"
+    },
+    {
+      "offset": 290,
+      "name": "",
+      "comment": "the next event of the track, at once"
+    },
+    {
+      "offset": 293,
+      "name": "",
+      "comment": "HL' = the bass position (at the command byte)"
+    },
+    {
+      "offset": 294,
+      "name": "",
+      "comment": "the address operand's low byte"
+    },
+    {
+      "offset": 295,
+      "name": "",
+      "comment": "A = the drum track's low byte"
+    },
+    {
+      "offset": 296,
+      "name": "",
+      "comment": "at the high byte"
+    },
+    {
+      "offset": 297,
+      "name": "",
+      "comment": "low byte into the drum's HL"
+    },
+    {
+      "offset": 298,
+      "name": "",
+      "comment": "the drum's L = the low byte"
+    },
+    {
+      "offset": 299,
+      "name": "",
+      "comment": "back to the voice set (HL' the bass position)"
+    },
+    {
+      "offset": 300,
+      "name": "",
+      "comment": "the high byte"
+    },
+    {
+      "offset": 301,
+      "name": "",
+      "comment": "HL' past the command"
+    },
+    {
+      "offset": 302,
+      "name": "",
+      "comment": "high byte into the drum's HL"
+    },
+    {
+      "offset": 303,
+      "name": "",
+      "comment": "the drum's H = the high byte: HL = the new drum track"
+    },
+    {
+      "offset": 304,
+      "name": "",
+      "comment": "back to the voice registers"
+    },
+    {
+      "offset": 305,
+      "name": "",
+      "comment": "the next bass event, at once"
+    },
+    {
+      "offset": 308,
+      "name": "",
+      "comment": "the frames, or 1"
+    },
+    {
+      "offset": 309,
+      "name": "",
+      "comment": "HL past the frames byte"
+    },
+    {
+      "offset": 310,
+      "name": "",
+      "comment": "1 aa: goto"
+    },
+    {
+      "offset": 312,
+      "name": "",
+      "comment": "1: the goto record"
+    },
+    {
+      "offset": 314,
+      "name": "",
+      "comment": "C = the frames to the next record"
+    },
+    {
+      "offset": 315,
+      "name": "",
+      "comment": "the kind"
+    },
+    {
+      "offset": 316,
+      "name": "",
+      "comment": "HL past the kind: the next record (or p of a sweep)"
+    },
+    {
+      "offset": 317,
+      "name": "",
+      "comment": "2: the sweep"
+    },
+    {
+      "offset": 319,
+      "name": "",
+      "comment": "kind 2"
+    },
+    {
+      "offset": 321,
+      "name": "",
+      "comment": "0: the hiss"
+    },
+    {
+      "offset": 322,
+      "name": "",
+      "comment": "kind 0"
+    },
+    {
+      "offset": 324,
+      "name": "DrumRasp",
+      "comment": "any other kind: 80 ROM bytes $00xx; the gap (~B & $3F) grows $2F-$3F, once 256, then 1-$3E"
+    },
+    {
+      "offset": 325,
+      "name": "",
+      "comment": "HL = $00xx: the ROM's first page, L = the position's low byte"
+    },
+    {
+      "offset": 327,
+      "name": "",
+      "comment": "80 beeper writes"
+    },
+    {
+      "offset": 329,
+      "name": "DrumRaspLoop",
+      "comment": "a ROM byte's EAR / MIC bits to the beeper"
+    },
+    {
+      "offset": 330,
+      "name": "",
+      "comment": "only bits 3-4, MIC and EAR"
+    },
+    {
+      "offset": 332,
+      "name": "",
+      "comment": "to the beeper (border black)"
+    },
+    {
+      "offset": 334,
+      "name": "",
+      "comment": "the gap from the count: ~B AND $3F"
+    },
+    {
+      "offset": 335,
+      "name": "",
+      "comment": "~B: grows as B counts down"
+    },
+    {
+      "offset": 336,
+      "name": "",
+      "comment": "the gap, 0-63 turns (0 waits 256)"
+    },
+    {
+      "offset": 338,
+      "name": "DrumRaspGap",
+      "comment": "wait (A = 0 waits 256 turns)"
+    },
+    {
+      "offset": 339,
+      "name": "",
+      "comment": "the gap"
+    },
+    {
+      "offset": 341,
+      "name": "",
+      "comment": "the next ROM byte"
+    },
+    {
+      "offset": 342,
+      "name": "",
+      "comment": "80 writes"
+    },
+    {
+      "offset": 344,
+      "name": "",
+      "comment": "HL = the drum position"
+    },
+    {
+      "offset": 345,
+      "name": "",
+      "comment": "back into MenuInterrupt"
+    },
+    {
+      "offset": 346,
+      "name": "DrumGoto",
+      "comment": "the record 1 aa: continue at aa"
+    },
+    {
+      "offset": 347,
+      "name": "",
+      "comment": "at the high byte"
+    },
+    {
+      "offset": 348,
+      "name": "",
+      "comment": "H = the high byte"
+    },
+    {
+      "offset": 349,
+      "name": "",
+      "comment": "HL = the target"
+    },
+    {
+      "offset": 350,
+      "name": "",
+      "comment": "its record at once"
+    },
+    {
+      "offset": 353,
+      "name": "DrumHiss",
+      "comment": "kind 0: meant as 96 ROM bytes $08xx to the beeper; one byte 96 times, in practice silence"
+    },
+    {
+      "offset": 354,
+      "name": "",
+      "comment": "HL = $08xx: ROM bytes as noise"
+    },
+    {
+      "offset": 356,
+      "name": "",
+      "comment": "96 beeper writes"
+    },
+    {
+      "offset": 358,
+      "name": "DrumHissLoop",
+      "comment": "the ROM byte at HL ($08 L: HL never moves, the bug that silences the hiss)..."
+    },
+    {
+      "offset": 359,
+      "name": "",
+      "comment": "bits 3-4 only"
+    },
+    {
+      "offset": 361,
+      "name": "",
+      "comment": "... to the beeper"
+    },
+    {
+      "offset": 363,
+      "name": "",
+      "comment": "96 writes of the same byte, as fast as DJNZ runs: no edge when its bits are 0"
+    },
+    {
+      "offset": 365,
+      "name": "",
+      "comment": "HL = the drum position"
+    },
+    {
+      "offset": 366,
+      "name": "",
+      "comment": "back into MenuInterrupt"
+    },
+    {
+      "offset": 367,
+      "name": "DrumSweep",
+      "comment": "kind 2 p: the falling tone"
+    },
+    {
+      "offset": 368,
+      "name": "",
+      "comment": "past p: the next record"
+    },
+    {
+      "offset": 369,
+      "name": "",
+      "comment": "the drum position kept"
+    },
+    {
+      "offset": 370,
+      "name": "",
+      "comment": "48 cycles"
+    },
+    {
+      "offset": 372,
+      "name": "",
+      "comment": "the low half"
+    },
+    {
+      "offset": 373,
+      "name": "",
+      "comment": "the high half: p / 2"
+    },
+    {
+      "offset": 374,
+      "name": "",
+      "comment": "H = p / 2 (RRCA of p)"
+    },
+    {
+      "offset": 375,
+      "name": "DrumSweepLoop",
+      "comment": "the low half, one shorter each cycle"
+    },
+    {
+      "offset": 376,
+      "name": "",
+      "comment": "beeper low"
+    },
+    {
+      "offset": 378,
+      "name": "",
+      "comment": "the low half one turn shorter each cycle"
+    },
+    {
+      "offset": 379,
+      "name": "",
+      "comment": "A = the low half's length"
+    },
+    {
+      "offset": 380,
+      "name": "DrumSweepLow",
+      "comment": "hold the low half"
+    },
+    {
+      "offset": 381,
+      "name": "",
+      "comment": "the low half"
+    },
+    {
+      "offset": 383,
+      "name": "",
+      "comment": "the high half, 4 longer each cycle"
+    },
+    {
+      "offset": 385,
+      "name": "",
+      "comment": "beeper high"
+    },
+    {
+      "offset": 387,
+      "name": "",
+      "comment": "the high half 4 turns longer each cycle"
+    },
+    {
+      "offset": 389,
+      "name": "",
+      "comment": "+ the last length"
+    },
+    {
+      "offset": 390,
+      "name": "",
+      "comment": "H = the new length"
+    },
+    {
+      "offset": 391,
+      "name": "DrumSweepHigh",
+      "comment": "hold the high half"
+    },
+    {
+      "offset": 392,
+      "name": "",
+      "comment": "the high half"
+    },
+    {
+      "offset": 394,
+      "name": "",
+      "comment": "the next cycle"
+    },
+    {
+      "offset": 396,
+      "name": "",
+      "comment": "HL = the drum position"
+    },
+    {
+      "offset": 397,
+      "name": "",
+      "comment": "back into MenuInterrupt"
+    },
+    {
+      "offset": 398,
+      "name": "",
+      "comment": "HL' = the bass position (at the command)"
+    },
+    {
+      "offset": 399,
+      "name": "",
+      "comment": "EAR and MIC into the bass pulse ($C4EF)"
+    },
+    {
+      "offset": 401,
+      "name": "",
+      "comment": "into LD A,n of BassStep: the bass sounds"
+    },
+    {
+      "offset": 404,
+      "name": "",
+      "comment": "past the 1-byte command"
+    },
+    {
+      "offset": 405,
+      "name": "",
+      "comment": "the next bass event, at once"
+    },
+    {
+      "offset": 408,
+      "name": "",
+      "comment": "HL' = the bass position"
+    },
+    {
+      "offset": 409,
+      "name": "",
+      "comment": "0: no edge, the bass rests"
+    },
+    {
+      "offset": 410,
+      "name": "",
+      "comment": "into the bass pulse ($C4EF)"
+    },
+    {
+      "offset": 413,
+      "name": "",
+      "comment": "past the command"
+    },
+    {
+      "offset": 414,
+      "name": "",
+      "comment": "the next bass event, at once"
+    },
+    {
+      "offset": 417,
+      "name": "",
+      "comment": "HL' back (the bass position)"
+    },
+    {
+      "offset": 418,
+      "name": "",
+      "comment": "EAR and MIC into the lead pulse ($C4D2)"
+    },
+    {
+      "offset": 420,
+      "name": "",
+      "comment": "into LD A,n of LeadStep: the lead sounds"
+    },
+    {
+      "offset": 423,
+      "name": "",
+      "comment": "DE' past the 1-byte command"
+    },
+    {
+      "offset": 424,
+      "name": "",
+      "comment": "the next lead event, at once"
+    },
+    {
+      "offset": 427,
+      "name": "",
+      "comment": "HL' back"
+    },
+    {
+      "offset": 428,
+      "name": "",
+      "comment": "0: no edge, the lead rests"
+    },
+    {
+      "offset": 429,
+      "name": "",
+      "comment": "into the lead pulse ($C4D2)"
+    },
+    {
+      "offset": 432,
+      "name": "",
+      "comment": "past the command"
+    },
+    {
+      "offset": 433,
+      "name": "",
+      "comment": "the next lead event, at once"
+    },
+    {
+      "offset": 436,
+      "name": "",
+      "comment": "L = the command"
+    },
+    {
+      "offset": 437,
+      "name": "",
+      "comment": "A = 2 x command"
+    },
+    {
+      "offset": 438,
+      "name": "",
+      "comment": "A = 3 x command: the entry's offset"
+    },
+    {
+      "offset": 439,
+      "name": "",
+      "comment": "the table, after the CALL"
+    },
+    {
+      "offset": 440,
+      "name": "",
+      "comment": "+ the table's low byte"
+    },
+    {
+      "offset": 441,
+      "name": "",
+      "comment": "L = the entry's low byte"
+    },
+    {
+      "offset": 442,
+      "name": "",
+      "comment": "no carry into H"
+    },
+    {
+      "offset": 444,
+      "name": "",
+      "comment": "carry into H"
+    },
+    {
+      "offset": 445,
+      "name": "MusicDispatchJump",
+      "comment": "to the command's JP"
+    },
+    {
+      "offset": 446,
+      "name": "DrumTrackSteady",
+      "comment": "drum track: a hiss every 32 frames (32 0, then 1 $C665)"
+    },
+    {
+      "offset": 451,
+      "name": "DrumTrackUnused",
+      "comment": "a hiss record (32 0) that no goto reaches"
+    },
+    {
+      "offset": 453,
+      "name": "DrumTrackBeat",
+      "comment": "drum track: rasp 16, hiss 8, hiss 8, sweep $30 for 32 frames (64 frames), loops"
+    },
+    {
+      "offset": 465,
+      "name": "BassTrack",
+      "comment": "the bass track: commands of 3 bytes (drums, pattern calls, the goto back)"
+    },
+    {
+      "offset": 534,
+      "name": "BassRiff",
+      "comment": "bass pattern: the 128-frame intro riff on $7C with rests, then $52"
+    },
+    {
+      "offset": 549,
+      "name": "BassWalk",
+      "comment": "bass pattern: $7C $6E $68 $5D twice, 64 frames each (512 frames)"
+    },
+    {
+      "offset": 566,
+      "name": "BassRun",
+      "comment": "bass pattern: $7C in eighths with rests, then the run $8B $93 $A5 $BA $A5 $93 $8B $7C $8B $93 $A5 (128 frames)"
+    },
+    {
+      "offset": 603,
+      "name": "LeadTrack",
+      "comment": "the lead track: pattern calls, two long notes, the goto back"
+    },
+    {
+      "offset": 738,
+      "name": "LeadRiff",
+      "comment": "lead pattern: $37 with rests, then trills $29 / $2E, $37, $3E (128 frames)"
+    },
+    {
+      "offset": 771,
+      "name": "LeadPhrase",
+      "comment": "lead pattern: the tune's phrase $29 $2E $31 $37 $3E $49 $3E $45 $2E $29 $2E $34 $2E (256 frames)"
+    },
+    {
+      "offset": 798,
+      "name": "LeadArpeggioA",
+      "comment": "lead pattern: $3E $52 $7C twice (64 frames)"
+    },
+    {
+      "offset": 811,
+      "name": "LeadArpeggioB",
+      "comment": "lead pattern: $45 $5D $8B twice (64 frames)"
+    },
+    {
+      "offset": 824,
+      "name": "LeadScale",
+      "comment": "lead pattern: the 16-note scale $29 up to $BA (high to low) twice, 4 frames a note (128 frames)"
+    },
+    {
+      "offset": 889,
+      "name": "",
+      "comment": "kept: from MenuInterrupt BC is the voices' frame counts (B' lead, C' bass)"
+    },
+    {
+      "offset": 890,
+      "name": "",
+      "comment": "kept: from MenuInterrupt HL is the bass position"
+    },
+    {
+      "offset": 891,
+      "name": "",
+      "comment": "row 0, column 0"
+    },
+    {
+      "offset": 894,
+      "name": "",
+      "comment": "the phase, 0-15"
+    },
+    {
+      "offset": 897,
+      "name": "",
+      "comment": "the next phase"
+    },
+    {
+      "offset": 898,
+      "name": "",
+      "comment": "0-15"
+    },
+    {
+      "offset": 900,
+      "name": "",
+      "comment": "TitleColourPhase = the new phase"
+    },
+    {
+      "offset": 903,
+      "name": "",
+      "comment": "odd: nothing this frame"
+    },
+    {
+      "offset": 904,
+      "name": "",
+      "comment": "odd phase: no paint this frame"
+    },
+    {
+      "offset": 906,
+      "name": "",
+      "comment": "BRIGHT, ink = phase / 2"
+    },
+    {
+      "offset": 908,
+      "name": "",
+      "comment": "31 columns, 7 rows"
+    },
+    {
+      "offset": 911,
+      "name": "TitleColourRow",
+      "comment": "the counts kept"
+    },
+    {
+      "offset": 912,
+      "name": "TitleColourCell",
+      "comment": "one attribute"
+    },
+    {
+      "offset": 913,
+      "name": "",
+      "comment": "the next cell"
+    },
+    {
+      "offset": 914,
+      "name": "",
+      "comment": "31 cells across"
+    },
+    {
+      "offset": 916,
+      "name": "",
+      "comment": "to the next row: 12 + 20"
+    },
+    {
+      "offset": 917,
+      "name": "",
+      "comment": "1: from column 31 to column 0 of the next row"
+    },
+    {
+      "offset": 919,
+      "name": "",
+      "comment": "HL += 20"
+    },
+    {
+      "offset": 922,
+      "name": "",
+      "comment": "A = the attribute again"
+    },
+    {
+      "offset": 923,
+      "name": "",
+      "comment": "B = 31 columns again, C the rows left"
+    },
+    {
+      "offset": 924,
+      "name": "",
+      "comment": "seven rows"
+    },
+    {
+      "offset": 925,
+      "name": "",
+      "comment": "the next row"
+    },
+    {
+      "offset": 927,
+      "name": "TitleColourDone",
+      "comment": "the caller's HL"
+    },
+    {
+      "offset": 928,
+      "name": "",
+      "comment": "the caller's BC"
+    },
+    {
+      "offset": 929,
+      "name": "",
+      "comment": "back to the menu loop or MenuInterrupt"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$C4A7",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/game99/music.asm",
+    "label": "MenuMusic"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

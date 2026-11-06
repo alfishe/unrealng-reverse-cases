@@ -1,0 +1,1661 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-gs/boot-menu-menu",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth GS: the boot menu: menu",
+  "authors": [
+    "Argus Press Software",
+    "Tron Z"
+  ],
+  "year": 2002,
+  "tags": [
+    "nether-earth-gs",
+    "game-module",
+    "menu"
+  ],
+  "summary": "Work Loader v1.2 (TRON 1999): the boot program's catalogue menu.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1828,
+    "sha1": "3a088f4719daa3cf94e62cae23b7c341d7fd7b00",
+    "masked_sha1": "a6e5a3222312ea80bb9fd3499d253e5b00bb1a77"
+  },
+  "origin": "$61A8",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 3,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BORDCR"
+    },
+    {
+      "offset": 6,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ATTR_P"
+    },
+    {
+      "offset": 11,
+      "length": 2,
+      "kind": "ext16",
+      "name": "REPDEL"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "ext16",
+      "name": "REPPER"
+    },
+    {
+      "offset": 27,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_68CC"
+    },
+    {
+      "offset": 30,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInit"
+    },
+    {
+      "offset": 40,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 46,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 49,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 52,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 55,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInit"
+    },
+    {
+      "offset": 58,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 61,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 64,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 67,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 71,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 74,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 82,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 85,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 88,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 91,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 94,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 114,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 129,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 134,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 139,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 144,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 149,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 154,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 159,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 164,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 169,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 174,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 179,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 184,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 189,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 194,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 199,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 204,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 209,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 214,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 219,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 224,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 229,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 234,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 239,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 242,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 245,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 251,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 255,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 259,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 266,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 269,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 272,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 278,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 282,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 286,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 290,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 293,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 296,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 299,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 305,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 312,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 315,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 320,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 323,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 326,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 329,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 335,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 342,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 345,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 350,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 353,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 356,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 361,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 369,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 372,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 375,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 388,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 395,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 403,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 406,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 409,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 412,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 415,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 418,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 422,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 426,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 433,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 438,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 446,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 457,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 460,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Catalogue"
+    },
+    {
+      "offset": 465,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SortedCatalogue"
+    },
+    {
+      "offset": 468,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 482,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 485,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RunName"
+    },
+    {
+      "offset": 496,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintColumn"
+    },
+    {
+      "offset": 500,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintRow"
+    },
+    {
+      "offset": 504,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Attrs"
+    },
+    {
+      "offset": 507,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5801"
+    },
+    {
+      "offset": 517,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Attrs"
+    },
+    {
+      "offset": 532,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Attrs"
+    },
+    {
+      "offset": 535,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5801"
+    },
+    {
+      "offset": 545,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A9F"
+    },
+    {
+      "offset": 548,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AA0"
+    },
+    {
+      "offset": 558,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AC0"
+    },
+    {
+      "offset": 561,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AC1"
+    },
+    {
+      "offset": 571,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AE0"
+    },
+    {
+      "offset": 574,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AE1"
+    },
+    {
+      "offset": 587,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_59EE"
+    },
+    {
+      "offset": 592,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 605,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 608,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 620,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 623,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 635,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 638,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 650,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 653,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 665,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 668,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 680,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 683,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 695,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 698,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 710,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 713,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 725,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 728,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 766,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AE0"
+    },
+    {
+      "offset": 769,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AE1"
+    },
+    {
+      "offset": 782,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 785,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 795,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Screen"
+    },
+    {
+      "offset": 799,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Catalogue"
+    },
+    {
+      "offset": 818,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 822,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 860,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SortedCatalogue"
+    },
+    {
+      "offset": 863,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C351"
+    },
+    {
+      "offset": 873,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Screen"
+    },
+    {
+      "offset": 876,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Catalogue"
+    },
+    {
+      "offset": 884,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Screen"
+    },
+    {
+      "offset": 887,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SortedCatalogue"
+    },
+    {
+      "offset": 896,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Screen"
+    },
+    {
+      "offset": 899,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4001"
+    },
+    {
+      "offset": 909,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Screen"
+    },
+    {
+      "offset": 914,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 917,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 921,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SortedCatalogue"
+    },
+    {
+      "offset": 929,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 968,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 972,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 979,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Screen"
+    },
+    {
+      "offset": 982,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SortedCatalogue"
+    },
+    {
+      "offset": 991,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 994,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1001,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Catalogue"
+    },
+    {
+      "offset": 1006,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SortedCatalogue"
+    },
+    {
+      "offset": 1009,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1022,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1066,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1083,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1087,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Attrs"
+    },
+    {
+      "offset": 1115,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1431,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Catalogue"
+    },
+    {
+      "offset": 1451,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1462,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1471,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1476,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1481,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1486,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1491,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1494,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1497,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1512,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1519,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1524,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1527,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1531,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1534,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1556,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1564,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1572,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1575,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1580,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1610,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1619,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1627,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1632,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1656,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1682,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1685,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearStackTop"
+    },
+    {
+      "offset": 1729,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1743,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1754,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1759,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TRDOS_5CD8"
+    },
+    {
+      "offset": 1764,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1770,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TRDOS_HOOK"
+    },
+    {
+      "offset": 1778,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1785,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1792,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1803,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1808,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TRDOS_HOOK"
+    },
+    {
+      "offset": 1811,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1814,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5CC3"
+    },
+    {
+      "offset": 1821,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "Start",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the entry: system variables, the printer copied and set up, the catalogue read and shown"
+    },
+    {
+      "offset": 244,
+      "name": "CursorUp",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "one row up (not past row 0)"
+    },
+    {
+      "offset": 271,
+      "name": "CursorDown",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "one row down (not past row 23)"
+    },
+    {
+      "offset": 298,
+      "name": "CursorRight",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "one column right (5 cells a column: column cells 0, 5, 10, ... 25), the index 24 on"
+    },
+    {
+      "offset": 328,
+      "name": "CursorLeft",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "one column left, the index 24 back"
+    },
+    {
+      "offset": 358,
+      "name": "NumberKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "key 0-9: the file of that number in the first column, then Run"
+    },
+    {
+      "offset": 374,
+      "name": "ToggleOrder",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "SS + CS: the catalogue's order <-> the sorted order; the cursor back to the first file"
+    },
+    {
+      "offset": 417,
+      "name": "Run",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the file under the cursor: its name to RunName, back to BASIC"
+    },
+    {
+      "offset": 494,
+      "name": "SetPrintPosition",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the printer's position: L = the column, H = the row"
+    },
+    {
+      "offset": 503,
+      "name": "HighlightRow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the attribute frame: the screen white on black ($47), the ten left cells of every row $45"
+    },
+    {
+      "offset": 531,
+      "name": "DrawFrame",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the screen's frame and texts: title, credit, status line and the key help"
+    },
+    {
+      "offset": 737,
+      "name": "FillAttr9",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A into 9 attribute cells from IX"
+    },
+    {
+      "offset": 765,
+      "name": "ShowSorting",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the status line: \"Сортировка каталога.\" on $42 (red on black, bright)"
+    },
+    {
+      "offset": 794,
+      "name": "CatalogueFilter",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the BASIC files (type B at +8) of Catalogue: their 8-byte names packed into Screen, the count to FileCount"
+    },
+    {
+      "offset": 859,
+      "name": "ClearBuffers",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "SortedCatalogue cleared ($3CAF + 1 bytes from $C350), then the names from Screen copied to Catalogue and SortedCatalogue"
+    },
+    {
+      "offset": 895,
+      "name": "SortCatalogue",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the names of SortedCatalogue sorted by their first character (32-254), through Screen"
+    },
+    {
+      "offset": 990,
+      "name": "ListFiles",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the digits 0-9, then every name of the order chosen, 24 rows a column, columns 10 cells apart"
+    },
+    {
+      "offset": 1055,
+      "name": "PrintDigits",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "\"0-\" to \"9-\" in the first column's ten rows"
+    },
+    {
+      "offset": 1082,
+      "name": "HighlightCursor",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the cursor bar: 4 cells of $71 at the cursor's row and column (+1)"
+    },
+    {
+      "offset": 1430,
+      "name": "ReadCatalogue",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "TR-DOS function 5: 9 sectors from track 0 sector 0 to Catalogue"
+    },
+    {
+      "offset": 1450,
+      "name": "FdcSectors",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "unused: B sectors between HL and the disk at track D, sector E+1, by the FDC's ports (through TRDOS_CALL)"
+    },
+    {
+      "offset": 1558,
+      "name": "FdcTransfer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "one sector: sector register, the command, then the ROM's read or write loop (IX)"
+    },
+    {
+      "offset": 1585,
+      "name": "FdcCommand",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A to the FDC's command register ($1F) through the TR-DOS ROM"
+    },
+    {
+      "offset": 1591,
+      "name": "FdcPortIY",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A to port C through the ROM routine IY"
+    },
+    {
+      "offset": 1596,
+      "name": "FdcRomCall",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the TR-DOS ROM routine IX"
+    },
+    {
+      "offset": 1601,
+      "name": "FdcWaitIntrq",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "wait for the end of the command (status bit 3? the ROM's $3C30): a 255-frame time-out"
+    },
+    {
+      "offset": 1646,
+      "name": "FdcWait",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "wait while the FDC is busy (status bit 0)"
+    },
+    {
+      "offset": 1673,
+      "name": "ClearScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the screen and attributes zeroed by PUSH from ClearStackTop down (216 x 16 x 2 = 6912 bytes); border black"
+    },
+    {
+      "offset": 1738,
+      "name": "DriveReset",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "after the catalogue read: the TR-DOS ROM's drive and controller reset, with TR-DOS's errors trapped"
+    },
+    {
+      "offset": 1796,
+      "name": "RomCall",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the TR-DOS ROM routine IX (PUSH IX: JP TRDOS_CALL1)"
+    },
+    {
+      "offset": 1801,
+      "name": "DriveCall",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "$2076 with TR-DOS's error hook set to JP DriveTrap: an error returns here with A = 0 instead of a BASIC report"
+    },
+    {
+      "offset": 1823,
+      "name": "DriveTrap",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "TR-DOS's error hook jumps here: the SP DriveCall saved (the operand), A = 0, RET to DriveReset"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 26,
+      "name": "",
+      "comment": "the 64-column printer to $8156 (its variables run on to $8DD8: past the copy)"
+    },
+    {
+      "offset": 37,
+      "name": "Restart",
+      "comment": "EDIT comes back here: clear, read the catalogue again"
+    },
+    {
+      "offset": 39,
+      "name": "",
+      "comment": "no files yet"
+    },
+    {
+      "offset": 45,
+      "name": "",
+      "comment": "the cursor at row 0, column 0"
+    },
+    {
+      "offset": 57,
+      "name": "",
+      "comment": "the frame, the titles and the help lines"
+    },
+    {
+      "offset": 63,
+      "name": "",
+      "comment": "track 0's 9 sectors to Catalogue"
+    },
+    {
+      "offset": 66,
+      "name": "",
+      "comment": "the drive's state after the read (DriveReset)"
+    },
+    {
+      "offset": 70,
+      "name": "",
+      "comment": "the BASIC files' names into Screen (the scratch buffer)"
+    },
+    {
+      "offset": 73,
+      "name": "",
+      "comment": "\"Сортировка каталога.\" on the status line"
+    },
+    {
+      "offset": 76,
+      "name": "",
+      "comment": "the sorted copy"
+    },
+    {
+      "offset": 79,
+      "name": "",
+      "comment": "the catalogue's order first"
+    },
+    {
+      "offset": 87,
+      "name": "",
+      "comment": "the file names, four columns of 24"
+    },
+    {
+      "offset": 93,
+      "name": "",
+      "comment": "the cursor"
+    },
+    {
+      "offset": 96,
+      "name": "KeyLoop",
+      "comment": "wait for a key (FLAGS bit 5: a new LAST_K), then dispatch it"
+    },
+    {
+      "offset": 97,
+      "name": "",
+      "comment": "FLAGS bit 5 is set by the ROM's key scan at the interrupt"
+    },
+    {
+      "offset": 107,
+      "name": "",
+      "comment": "LAST_K"
+    },
+    {
+      "offset": 111,
+      "name": "",
+      "comment": "EDIT: read the catalogue again"
+    },
+    {
+      "offset": 116,
+      "name": "",
+      "comment": "SS + CS (code 14): the other order"
+    },
+    {
+      "offset": 121,
+      "name": "",
+      "comment": "SPACE / ENTER: run the file under the cursor"
+    },
+    {
+      "offset": 131,
+      "name": "",
+      "comment": "0-9: a file by its number"
+    },
+    {
+      "offset": 181,
+      "name": "",
+      "comment": "Q, q, cursor up ($0B)"
+    },
+    {
+      "offset": 196,
+      "name": "",
+      "comment": "A, a, cursor down ($0A)"
+    },
+    {
+      "offset": 211,
+      "name": "",
+      "comment": "O, o, cursor left (8)"
+    },
+    {
+      "offset": 226,
+      "name": "",
+      "comment": "P, p, cursor right (9)"
+    },
+    {
+      "offset": 241,
+      "name": "",
+      "comment": "any other key: wait again"
+    },
+    {
+      "offset": 583,
+      "name": "",
+      "comment": "the key help's box: five rows of 9 attribute cells"
+    },
+    {
+      "offset": 1128,
+      "name": "Texts",
+      "comment": "the menu's texts, CP866: title, credit, status, help (src/res/text/trd-boot-menu.txt)"
+    },
+    {
+      "offset": 1128,
+      "name": "TextTitle",
+      "comment": "\"Work Loader v1.2\""
+    },
+    {
+      "offset": 1144,
+      "name": "TextCredit",
+      "comment": "\"Prepared by TRON 1999\""
+    },
+    {
+      "offset": 1166,
+      "name": "TextReading",
+      "comment": "\"Жди, читаю каталог!\" (\"Wait, reading the catalogue!\")"
+    },
+    {
+      "offset": 1185,
+      "name": "TextSorting",
+      "comment": "\"Сортировка каталога.\" (\"Sorting the catalogue.\")"
+    },
+    {
+      "offset": 1205,
+      "name": "TextHelp2",
+      "comment": "\"'0...9'\" (left: the run keys)"
+    },
+    {
+      "offset": 1247,
+      "name": "TextHelp3",
+      "comment": "\"Cursor keys 'ENTER'\""
+    },
+    {
+      "offset": 1289,
+      "name": "TextHelp4",
+      "comment": "\"Q,A,O,P 'SPACE'\""
+    },
+    {
+      "offset": 1331,
+      "name": "TextHelp1",
+      "comment": "\"Управление: Старт программы:\" (\"Control:\" / \"Program start:\")"
+    },
+    {
+      "offset": 1373,
+      "name": "TextEdit",
+      "comment": "\"'EDIT' читать каталог\" (\"'EDIT' read the catalogue\")"
+    },
+    {
+      "offset": 1394,
+      "name": "TextSsCs",
+      "comment": "\"'SS+CS' альтернативный каталог\" (\"'SS+CS' alternative catalogue\")"
+    },
+    {
+      "offset": 1424,
+      "name": "FileCount",
+      "comment": "the number of BASIC files listed"
+    },
+    {
+      "offset": 1425,
+      "name": "SortKey",
+      "comment": "SortCatalogue's current first character"
+    },
+    {
+      "offset": 1426,
+      "name": "CursorIndex",
+      "comment": "the file under the cursor: row + 24 * column"
+    },
+    {
+      "offset": 1427,
+      "name": "CatalogueOrder",
+      "comment": "0 the disk's order (Catalogue), 1 sorted (SortedCatalogue)"
+    },
+    {
+      "offset": 1428,
+      "name": "CursorColumn",
+      "comment": "the cursor's column cell (0, 5, ... 25) ..."
+    },
+    {
+      "offset": 1429,
+      "name": "CursorRow",
+      "comment": "... and row (0-23): read and written as one word with CursorColumn"
+    },
+    {
+      "offset": 1444,
+      "name": "SpareRets",
+      "comment": "six RET bytes: unused"
+    },
+    {
+      "offset": 1668,
+      "name": "FdcTimeout",
+      "comment": "the time-out counter"
+    },
+    {
+      "offset": 1669,
+      "name": "FdcSpare",
+      "comment": ""
+    },
+    {
+      "offset": 1671,
+      "name": "FdcSide",
+      "comment": "the side flag FdcSectors keeps (written, then added to the system register value $3C)"
+    },
+    {
+      "offset": 1672,
+      "name": "FdcCommandCode",
+      "comment": "the transfer's command ($80 read, $A0 write)"
+    },
+    {
+      "offset": 1736,
+      "name": "SavedSp",
+      "comment": "ClearScreen's SP while it pushes"
+    },
+    {
+      "offset": 1824,
+      "name": "SavedTrapSp",
+      "comment": "DriveCall writes its SP into this operand"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth GS: the boot menu",
+      "case": "games/nether-earth-gs",
+      "address": "$61A8",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-gs",
+    "file": "src/trd/boot/menu.asm",
+    "label": "Start"
+  },
+  "docs": [
+    "games/nether-earth-gs/docs/README.md"
+  ]
+}

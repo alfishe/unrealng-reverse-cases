@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/stage2-interrupt",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: stage 2: interrupt",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "interrupt"
+  ],
+  "summary": "The IM 2 handler: the tune each frame.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 34,
+    "sha1": "e4ecd3a9bd7f3c86a9ac9c7802fafe8cbb7c37a1",
+    "masked_sha1": "3ab4a6d2ca48408da8d1538f8498aa80d69f139e"
+  },
+  "origin": "$6525",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 15,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MusicPlay"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "IM2Handler",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The IM 2 handler: the tune's frame (MusicPlay), then the ROM's IM 1 handler"
+    }
+  ],
+  "labels": [],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99: stage 2",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$6525",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/stage2/stage2/interrupt.asm",
+    "label": "IM2Handler"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

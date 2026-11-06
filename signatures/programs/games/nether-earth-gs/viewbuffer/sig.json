@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-gs/viewbuffer",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Nether Earth GS: viewbuffer",
+  "authors": [
+    "Argus Press Software",
+    "Tron Z"
+  ],
+  "year": 2002,
+  "tags": [
+    "nether-earth-gs",
+    "game-module",
+    "viewbuffer"
+  ],
+  "summary": "The tail of the view's back buffer, $6590-$677F: the first bytes of the file.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 496,
+    "sha1": "fcc97dd6526410594fa79aea42ac62e1f72bdc4b",
+    "masked_sha1": "fcc97dd6526410594fa79aea42ac62e1f72bdc4b"
+  },
+  "origin": "$6590",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "ViewBufferTail",
+      "comment": "The view buffer's lines 135-159, the bytes the file holds"
+    },
+    {
+      "offset": 16,
+      "name": "",
+      "comment": "lines 136-143, screen row 18"
+    },
+    {
+      "offset": 176,
+      "name": "",
+      "comment": "lines 144-151, screen row 19"
+    },
+    {
+      "offset": 336,
+      "name": "",
+      "comment": "lines 152-159, screen row 20; $6732 on: leftovers of a tape load"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth GS",
+      "case": "games/nether-earth-gs",
+      "address": "$6590",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-gs",
+    "file": "src/game/viewbuffer.asm",
+    "label": "ViewBufferTail"
+  },
+  "docs": [
+    "games/nether-earth-gs/docs/README.md"
+  ]
+}

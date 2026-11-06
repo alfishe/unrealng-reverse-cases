@@ -1,0 +1,1205 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/game99-mainmenu",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: mainmenu",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "mainmenu"
+  ],
+  "summary": "The room of the main menu and LOAD MAP, the redefine-keys screen.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 935,
+    "sha1": "5b6462cd42dcb31dbec81af2850b60b051741562",
+    "masked_sha1": "bfa04d35540478aa022f13b21d61078d6a1c64fd"
+  },
+  "origin": "$C100",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 567,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Controls"
+    },
+    {
+      "offset": 573,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 580,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 587,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 590,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 624,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 627,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyTable"
+    },
+    {
+      "offset": 630,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3CD"
+    },
+    {
+      "offset": 640,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 649,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3DA"
+    },
+    {
+      "offset": 652,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 655,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 664,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3DD"
+    },
+    {
+      "offset": 667,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 670,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 679,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3E0"
+    },
+    {
+      "offset": 682,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 685,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 694,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3E3"
+    },
+    {
+      "offset": 697,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 700,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 709,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3D7"
+    },
+    {
+      "offset": 712,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 715,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNewline"
+    },
+    {
+      "offset": 718,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 727,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3CE"
+    },
+    {
+      "offset": 730,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 733,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 742,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3D1"
+    },
+    {
+      "offset": 745,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 748,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3D2"
+    },
+    {
+      "offset": 781,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 805,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 809,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 822,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 832,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D3CE"
+    },
+    {
+      "offset": 880,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 895,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 909,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 923,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCharKeep"
+    },
+    {
+      "offset": 926,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 566,
+      "name": "ControlsOptionAttr",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The attribute for menu option C: cyan ($45) when it is the current Controls, else yellow ($46)"
+    },
+    {
+      "offset": 578,
+      "name": "ControlsOptionPlain",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ControlsOptionAttr's return, the option not chosen"
+    },
+    {
+      "offset": 585,
+      "name": "ControlsOptionChosen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ControlsOptionAttr's return, the option chosen"
+    },
+    {
+      "offset": 586,
+      "name": "RedefineKeys",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Redefine the eight keys: UP, DOWN, LEFT, RIGHT, FIRE, PAUSE, ABORT, SAVE"
+    },
+    {
+      "offset": 618,
+      "name": "RedefineKeysBody",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Wait for no key, clear KeyTable, ask for UP"
+    },
+    {
+      "offset": 648,
+      "name": "ReadUpKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for UP (KeyTable record 4), then ask for DOWN"
+    },
+    {
+      "offset": 663,
+      "name": "ReadDownKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for DOWN (record 5), then ask for LEFT"
+    },
+    {
+      "offset": 678,
+      "name": "ReadLeftKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for LEFT (record 6), then ask for RIGHT"
+    },
+    {
+      "offset": 693,
+      "name": "ReadRightKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for RIGHT (record 7), then ask for FIRE"
+    },
+    {
+      "offset": 708,
+      "name": "ReadFireKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for FIRE (record 3), a blank line, then ask for PAUSE"
+    },
+    {
+      "offset": 726,
+      "name": "ReadPauseKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for PAUSE (record 0), then ask for ABORT"
+    },
+    {
+      "offset": 741,
+      "name": "ReadAbortKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The key for ABORT (record 1), then the fixed SAVE record, back to the caller of RedefineKeys"
+    },
+    {
+      "offset": 780,
+      "name": "PrintKeyPrompt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "\"PRESS KEY FOR \" and then the key's name that follows the caller's CALL"
+    },
+    {
+      "offset": 804,
+      "name": "PrintKeyPromptName",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "print the caller's inline key name and return past it"
+    },
+    {
+      "offset": 807,
+      "name": "DefineKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "wait for a free key, store its port, mask and code into a KeyTable entry, print its name"
+    },
+    {
+      "offset": 816,
+      "name": "DefineKeyScan",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "wait for a key that no entry holds yet"
+    },
+    {
+      "offset": 889,
+      "name": "KeyNameSymShiftEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "a RET ($C9): PrintInline returns here and the routine ends"
+    },
+    {
+      "offset": 890,
+      "name": "CheckEnterKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DefineKey: is the new key ENTER?"
+    },
+    {
+      "offset": 903,
+      "name": "KeyNameEnterEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "a RET ($C9) after the string"
+    },
+    {
+      "offset": 904,
+      "name": "CheckCapsShiftKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DefineKey: is the new key CAPS SHIFT?"
+    },
+    {
+      "offset": 919,
+      "name": "KeyNameCapsShiftEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "a RET ($C9) after the string"
+    },
+    {
+      "offset": 920,
+      "name": "CheckSpaceKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DefineKey: SPACE prints its name, any other key prints its own character"
+    },
+    {
+      "offset": 934,
+      "name": "DefineKeyDone",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "RET: the end of DefineKey; also the target of the music's command 0"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "MenuPieceRoom",
+      "comment": "Zero: stage 3 copies the start-up menu's piece here (menu128 or menu48)"
+    },
+    {
+      "offset": 127,
+      "name": "MainMenuSpare",
+      "comment": "Zero, never written: NE's main menu keys, title and load code were here"
+    },
+    {
+      "offset": 253,
+      "name": "LoadMapRoom",
+      "comment": "Zero: stage 3 copies LOAD MAP here (diskmap from disk, tapemap on the tape path)"
+    },
+    {
+      "offset": 563,
+      "name": "WaitAnyKeyEnd",
+      "comment": "Two zeros and $C9, the RET that ended NE's WaitAnyKey"
+    },
+    {
+      "offset": 566,
+      "name": "",
+      "comment": "A = Controls (1 keyboard, 2 Kempston, 3 Interface 2)"
+    },
+    {
+      "offset": 569,
+      "name": "",
+      "comment": "this option?"
+    },
+    {
+      "offset": 570,
+      "name": "",
+      "comment": "yes: the cyan attribute"
+    },
+    {
+      "offset": 572,
+      "name": "",
+      "comment": "no: the yellow attribute code"
+    },
+    {
+      "offset": 575,
+      "name": "OptionAttrPlain",
+      "comment": "PrintInline: attribute $46"
+    },
+    {
+      "offset": 575,
+      "name": "",
+      "comment": "attribute $46 (yellow): a control option not chosen"
+    },
+    {
+      "offset": 578,
+      "name": "",
+      "comment": "back to the option, which prints its text next"
+    },
+    {
+      "offset": 579,
+      "name": "ControlsOptionMarked",
+      "comment": "the option chosen"
+    },
+    {
+      "offset": 582,
+      "name": "OptionAttrChosen",
+      "comment": "PrintInline: attribute $45"
+    },
+    {
+      "offset": 582,
+      "name": "",
+      "comment": "attribute $45 (cyan): the control option chosen (Controls)"
+    },
+    {
+      "offset": 585,
+      "name": "",
+      "comment": "back to the option"
+    },
+    {
+      "offset": 586,
+      "name": "",
+      "comment": "a blank screen for the redefine screen"
+    },
+    {
+      "offset": 589,
+      "name": "",
+      "comment": "the heading and the first print position"
+    },
+    {
+      "offset": 592,
+      "name": "RedefineTitleText",
+      "comment": "\"REDEFINE KEYS\" at (2,9), white, double height, then position (5,3) and normal size"
+    },
+    {
+      "offset": 592,
+      "name": "",
+      "comment": "\"REDEFINE KEYS\" at (2,9) in $47 (white), tall (size $21)"
+    },
+    {
+      "offset": 612,
+      "name": "",
+      "comment": "then AT (5,3) and size 0: the first PRESS KEY FOR line goes two rows below"
+    },
+    {
+      "offset": 618,
+      "name": "",
+      "comment": "wait until no key is held"
+    },
+    {
+      "offset": 621,
+      "name": "",
+      "comment": "E bit 7 set: no key"
+    },
+    {
+      "offset": 622,
+      "name": "",
+      "comment": "sets S from bit 7"
+    },
+    {
+      "offset": 623,
+      "name": "",
+      "comment": "key 4 is still held: wait for its release"
+    },
+    {
+      "offset": 626,
+      "name": "",
+      "comment": "KeyTable: 24 bytes of 0"
+    },
+    {
+      "offset": 629,
+      "name": "",
+      "comment": "DE = HL + 1: the LDIR spreads the 0"
+    },
+    {
+      "offset": 632,
+      "name": "",
+      "comment": "23 more bytes: the whole table, 8 records of 3"
+    },
+    {
+      "offset": 635,
+      "name": "",
+      "comment": "the first byte 0"
+    },
+    {
+      "offset": 637,
+      "name": "",
+      "comment": "KeyTable all 0: no key is taken yet"
+    },
+    {
+      "offset": 639,
+      "name": "",
+      "comment": "\"PRESS KEY FOR\" and the name below"
+    },
+    {
+      "offset": 642,
+      "name": "KeyNameUp",
+      "comment": "\"   UP\""
+    },
+    {
+      "offset": 642,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: UP (Input bit 3, KeyTable record 4)"
+    },
+    {
+      "offset": 648,
+      "name": "",
+      "comment": "HL = the code byte of record 4 (Input bit 3, UP)"
+    },
+    {
+      "offset": 651,
+      "name": "",
+      "comment": "wait for a free key, fill the record, print its name"
+    },
+    {
+      "offset": 654,
+      "name": "",
+      "comment": "the next prompt"
+    },
+    {
+      "offset": 657,
+      "name": "KeyNameDown",
+      "comment": "\" DOWN\""
+    },
+    {
+      "offset": 657,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: DOWN (Input bit 2, KeyTable record 5)"
+    },
+    {
+      "offset": 663,
+      "name": "",
+      "comment": "record 5 (Input bit 2, DOWN)"
+    },
+    {
+      "offset": 666,
+      "name": "",
+      "comment": "wait for the DOWN key, fill record 5, print its name"
+    },
+    {
+      "offset": 669,
+      "name": "",
+      "comment": "the next prompt"
+    },
+    {
+      "offset": 672,
+      "name": "KeyNameLeft",
+      "comment": "\" LEFT\""
+    },
+    {
+      "offset": 672,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: LEFT (Input bit 1, KeyTable record 6)"
+    },
+    {
+      "offset": 678,
+      "name": "",
+      "comment": "record 6 (Input bit 1, LEFT)"
+    },
+    {
+      "offset": 681,
+      "name": "",
+      "comment": "the LEFT key into record 6"
+    },
+    {
+      "offset": 684,
+      "name": "",
+      "comment": "the next prompt"
+    },
+    {
+      "offset": 687,
+      "name": "KeyNameRight",
+      "comment": "\"RIGHT\""
+    },
+    {
+      "offset": 687,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: RIGHT (Input bit 0, KeyTable record 7)"
+    },
+    {
+      "offset": 693,
+      "name": "",
+      "comment": "record 7 (Input bit 0, RIGHT)"
+    },
+    {
+      "offset": 696,
+      "name": "",
+      "comment": "the RIGHT key into record 7"
+    },
+    {
+      "offset": 699,
+      "name": "",
+      "comment": "the next prompt"
+    },
+    {
+      "offset": 702,
+      "name": "KeyNameFire",
+      "comment": "\" FIRE\""
+    },
+    {
+      "offset": 702,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: FIRE (Input bit 4, KeyTable record 3)"
+    },
+    {
+      "offset": 708,
+      "name": "",
+      "comment": "record 3 (Input bit 4, FIRE)"
+    },
+    {
+      "offset": 711,
+      "name": "",
+      "comment": "the FIRE key into record 3"
+    },
+    {
+      "offset": 714,
+      "name": "",
+      "comment": "a blank row between the moves and the game keys"
+    },
+    {
+      "offset": 717,
+      "name": "",
+      "comment": "the next prompt"
+    },
+    {
+      "offset": 720,
+      "name": "KeyNamePause",
+      "comment": "\"PAUSE\""
+    },
+    {
+      "offset": 720,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: PAUSE (Input bit 7, KeyTable record 0)"
+    },
+    {
+      "offset": 726,
+      "name": "",
+      "comment": "record 0 (Input bit 7, PAUSE)"
+    },
+    {
+      "offset": 729,
+      "name": "",
+      "comment": "the PAUSE key into record 0"
+    },
+    {
+      "offset": 732,
+      "name": "",
+      "comment": "the next prompt"
+    },
+    {
+      "offset": 735,
+      "name": "KeyNameAbort",
+      "comment": "\"ABORT\""
+    },
+    {
+      "offset": 735,
+      "name": "",
+      "comment": "the action's name after PRESS KEY FOR: ABORT (Input bit 6, KeyTable record 1)"
+    },
+    {
+      "offset": 741,
+      "name": "",
+      "comment": "record 1 (Input bit 6, ABORT)"
+    },
+    {
+      "offset": 744,
+      "name": "",
+      "comment": "the ABORT key into record 1"
+    },
+    {
+      "offset": 747,
+      "name": "",
+      "comment": "record 2 (Input bit 5)"
+    },
+    {
+      "offset": 750,
+      "name": "",
+      "comment": "the port's high byte $BF: the half row H-ENTER"
+    },
+    {
+      "offset": 752,
+      "name": "",
+      "comment": "+0"
+    },
+    {
+      "offset": 754,
+      "name": "",
+      "comment": "bit 0 of the half row: ENTER"
+    },
+    {
+      "offset": 756,
+      "name": "",
+      "comment": "+1"
+    },
+    {
+      "offset": 758,
+      "name": "",
+      "comment": "the key code $0D, ENTER"
+    },
+    {
+      "offset": 760,
+      "name": "",
+      "comment": "+2"
+    },
+    {
+      "offset": 761,
+      "name": "",
+      "comment": "back to the start-up menu"
+    },
+    {
+      "offset": 762,
+      "name": "RedefineKeysSpare",
+      "comment": "Zero: 18 bytes up to PrintKeyPrompt"
+    },
+    {
+      "offset": 780,
+      "name": "",
+      "comment": "our own text first"
+    },
+    {
+      "offset": 783,
+      "name": "PressKeyForText",
+      "comment": "PrintInline text: new line, new line, attribute $46, \"PRESS KEY FOR \", attribute $45"
+    },
+    {
+      "offset": 783,
+      "name": "",
+      "comment": "two rows down, attribute $46 (yellow): \"PRESS KEY FOR \""
+    },
+    {
+      "offset": 801,
+      "name": "",
+      "comment": "attribute $45 (cyan) for the action's name that follows the CALL"
+    },
+    {
+      "offset": 804,
+      "name": "",
+      "comment": "the caller's string, and back past it"
+    },
+    {
+      "offset": 807,
+      "name": "",
+      "comment": "keep the entry's address"
+    },
+    {
+      "offset": 808,
+      "name": "",
+      "comment": "two spaces, then the attribute of the name"
+    },
+    {
+      "offset": 811,
+      "name": "DefineKeyBlank",
+      "comment": "PrintInline text: two spaces, attribute $46"
+    },
+    {
+      "offset": 811,
+      "name": "",
+      "comment": "two spaces after the name, then $46 (yellow) for the key chosen"
+    },
+    {
+      "offset": 816,
+      "name": "DefineKeyWait",
+      "comment": "ROM KEY-SCAN: E = the key value, $FF none"
+    },
+    {
+      "offset": 819,
+      "name": "",
+      "comment": "E bit 7 set: no key"
+    },
+    {
+      "offset": 820,
+      "name": "",
+      "comment": "sets S from bit 7"
+    },
+    {
+      "offset": 821,
+      "name": "",
+      "comment": "no key yet"
+    },
+    {
+      "offset": 824,
+      "name": "",
+      "comment": "the ROM's key table: E -> the key's code"
+    },
+    {
+      "offset": 827,
+      "name": "",
+      "comment": "$0205 + E (CAPS SHIFT alone, E = $27, reads $E3 just past the table)"
+    },
+    {
+      "offset": 828,
+      "name": "",
+      "comment": "L = $05 + E (no carry: E is at most $27)"
+    },
+    {
+      "offset": 829,
+      "name": "",
+      "comment": "A = the key's code (a character, $0D ENTER, $0E SYM SHIFT, $20 SPACE, $E3 CAPS SHIFT)"
+    },
+    {
+      "offset": 830,
+      "name": "",
+      "comment": "D = the code"
+    },
+    {
+      "offset": 831,
+      "name": "",
+      "comment": "the code bytes of the eight entries"
+    },
+    {
+      "offset": 834,
+      "name": "",
+      "comment": "eight records"
+    },
+    {
+      "offset": 836,
+      "name": "KeyTakenLoop",
+      "comment": "a code already used is refused: wait again"
+    },
+    {
+      "offset": 837,
+      "name": "",
+      "comment": "this code is taken: refused, scan again (the entry address stays pushed)"
+    },
+    {
+      "offset": 839,
+      "name": "",
+      "comment": "HL + 3..."
+    },
+    {
+      "offset": 840,
+      "name": "",
+      "comment": "(3 bytes a record)"
+    },
+    {
+      "offset": 841,
+      "name": "",
+      "comment": "... the next record's code byte"
+    },
+    {
+      "offset": 842,
+      "name": "",
+      "comment": "eight codes compared"
+    },
+    {
+      "offset": 844,
+      "name": "",
+      "comment": "HL = the entry's code byte"
+    },
+    {
+      "offset": 845,
+      "name": "",
+      "comment": "store the code"
+    },
+    {
+      "offset": 846,
+      "name": "",
+      "comment": "C = the row index (0 = port $7FFE... 7 = port $FEFE)"
+    },
+    {
+      "offset": 847,
+      "name": "",
+      "comment": "the row: bits 0-2 of E"
+    },
+    {
+      "offset": 849,
+      "name": "",
+      "comment": "C = the row index 0-7"
+    },
+    {
+      "offset": 850,
+      "name": "",
+      "comment": "E / 2: three shifts make E / 8, the key's place in its half-row from bit 4 down"
+    },
+    {
+      "offset": 852,
+      "name": "",
+      "comment": "E / 4"
+    },
+    {
+      "offset": 854,
+      "name": "",
+      "comment": "E / 8, 0-4"
+    },
+    {
+      "offset": 856,
+      "name": "",
+      "comment": "B = E/8 + 1 rotations"
+    },
+    {
+      "offset": 857,
+      "name": "",
+      "comment": "one more than the place"
+    },
+    {
+      "offset": 858,
+      "name": "",
+      "comment": "the mask: $20 rotated right E/8 + 1 times"
+    },
+    {
+      "offset": 860,
+      "name": "KeyMaskShift",
+      "comment": "one place right: bit 4 - E/8 is the key's bit"
+    },
+    {
+      "offset": 861,
+      "name": "",
+      "comment": "B rotations: $10 for E/8 = 0... $01 for E/8 = 4"
+    },
+    {
+      "offset": 863,
+      "name": "",
+      "comment": "the entry's mask byte"
+    },
+    {
+      "offset": 864,
+      "name": "",
+      "comment": "store the mask"
+    },
+    {
+      "offset": 865,
+      "name": "",
+      "comment": "the port high byte: row + 1 RRAs of $FF with the carry clear, the 0 walking right ($7F row 0... $FE row 7)"
+    },
+    {
+      "offset": 866,
+      "name": "",
+      "comment": "B = row + 1 rotations"
+    },
+    {
+      "offset": 867,
+      "name": "",
+      "comment": "A = 0, carry clear"
+    },
+    {
+      "offset": 868,
+      "name": "",
+      "comment": "A = $FF; DEC leaves the carry clear"
+    },
+    {
+      "offset": 869,
+      "name": "KeyPortShift",
+      "comment": "the one 0 bit walks right ($7F, $BF... $FE), ones come in from the carry"
+    },
+    {
+      "offset": 870,
+      "name": "",
+      "comment": "B rotations"
+    },
+    {
+      "offset": 872,
+      "name": "",
+      "comment": "the entry's port byte"
+    },
+    {
+      "offset": 873,
+      "name": "",
+      "comment": "store the port high byte: the record is complete"
+    },
+    {
+      "offset": 874,
+      "name": "",
+      "comment": "the code decides the name"
+    },
+    {
+      "offset": 875,
+      "name": "",
+      "comment": "SYMBOL SHIFT"
+    },
+    {
+      "offset": 877,
+      "name": "",
+      "comment": "not SYMBOL SHIFT"
+    },
+    {
+      "offset": 879,
+      "name": "",
+      "comment": "its name, and the RET after the string"
+    },
+    {
+      "offset": 882,
+      "name": "KeyNameSymShift",
+      "comment": "PrintInline text: \"SYM SH\""
+    },
+    {
+      "offset": 882,
+      "name": "",
+      "comment": "the name of key code $0E: SYMBOL SHIFT (the default KeyTable has $82 there)"
+    },
+    {
+      "offset": 889,
+      "name": "",
+      "comment": "the end of DefineKey"
+    },
+    {
+      "offset": 890,
+      "name": "",
+      "comment": "ENTER"
+    },
+    {
+      "offset": 892,
+      "name": "",
+      "comment": "not ENTER"
+    },
+    {
+      "offset": 894,
+      "name": "",
+      "comment": "its name, and the RET after the string"
+    },
+    {
+      "offset": 897,
+      "name": "KeyNameEnter",
+      "comment": "PrintInline text: \"ENTER\""
+    },
+    {
+      "offset": 897,
+      "name": "",
+      "comment": "the name of key code $0D: ENTER"
+    },
+    {
+      "offset": 903,
+      "name": "",
+      "comment": "the end of DefineKey"
+    },
+    {
+      "offset": 904,
+      "name": "",
+      "comment": "CAPS SHIFT"
+    },
+    {
+      "offset": 906,
+      "name": "",
+      "comment": "not CAPS SHIFT"
+    },
+    {
+      "offset": 908,
+      "name": "",
+      "comment": "its name, and the RET after the string"
+    },
+    {
+      "offset": 911,
+      "name": "KeyNameCapsShift",
+      "comment": "PrintInline text: \"CAPS SH\""
+    },
+    {
+      "offset": 911,
+      "name": "",
+      "comment": "the name of key code $E3: CAPS SHIFT (the byte past the ROM key table)"
+    },
+    {
+      "offset": 919,
+      "name": "",
+      "comment": "the end of DefineKey"
+    },
+    {
+      "offset": 920,
+      "name": "",
+      "comment": "SPACE"
+    },
+    {
+      "offset": 922,
+      "name": "",
+      "comment": "any other key: print its code as a character and return"
+    },
+    {
+      "offset": 925,
+      "name": "",
+      "comment": "\"SPACE\""
+    },
+    {
+      "offset": 928,
+      "name": "KeyNameSpace",
+      "comment": "PrintInline text: \"SPACE\""
+    },
+    {
+      "offset": 928,
+      "name": "",
+      "comment": "the name of key code $20: SPACE"
+    },
+    {
+      "offset": 934,
+      "name": "",
+      "comment": "the end of DefineKey for SPACE"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$C100",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/game99/mainmenu.asm",
+    "label": "MenuPieceRoom"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

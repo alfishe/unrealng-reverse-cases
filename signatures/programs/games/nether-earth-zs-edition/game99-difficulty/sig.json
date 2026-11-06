@@ -1,0 +1,185 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/game99-difficulty",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: difficulty",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "difficulty"
+  ],
+  "summary": "The room of the disk and paging pieces, the daily upgrade of the enemy's robots, the enemy's resources.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 150,
+    "sha1": "5b980ca1d63adcc8cfb69723d36a89affbf63868",
+    "masked_sha1": "3cdca94a543fa84fd346503de099f265292e2866"
+  },
+  "origin": "$A56A",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 117,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyRobots"
+    },
+    {
+      "offset": 137,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyResources"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyResources"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 108,
+      "name": "UpgradeEnemyRobots",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Every enemy robot's parts: (parts AND [$A5E5]) OR [$A5E7]; HARD and up, once a game day"
+    },
+    {
+      "offset": 136,
+      "name": "FillEnemyResources",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The enemy's resources = 99 each; HL = $FD4A"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "PieceRoomA56A",
+      "comment": "Zero: stage 3 copies paging128 or textload48 here ($A56A-$A597)"
+    },
+    {
+      "offset": 46,
+      "name": "DiskReadLeftover",
+      "comment": "The first 4 bytes of diskread: LD IX,$2F65 (DD 21 65 2F)"
+    },
+    {
+      "offset": 50,
+      "name": "PieceRoomA59C",
+      "comment": "Zero: the rest of the reader's room, up to $A5D5"
+    },
+    {
+      "offset": 108,
+      "name": "",
+      "comment": "IY kept for the caller"
+    },
+    {
+      "offset": 110,
+      "name": "",
+      "comment": "the record size"
+    },
+    {
+      "offset": 113,
+      "name": "",
+      "comment": "the enemy's 24 slots"
+    },
+    {
+      "offset": 115,
+      "name": "",
+      "comment": "IY = the first enemy record"
+    },
+    {
+      "offset": 119,
+      "name": "UpgradeEnemyRobot",
+      "comment": "the robot's parts"
+    },
+    {
+      "offset": 122,
+      "name": "",
+      "comment": "AND the mask: $78 keeps the weapons (CRITICAL 0)"
+    },
+    {
+      "offset": 124,
+      "name": "",
+      "comment": "OR the new parts: $84 electronics + anti-grav (CRITICAL $FC)"
+    },
+    {
+      "offset": 126,
+      "name": "",
+      "comment": "back into the record"
+    },
+    {
+      "offset": 129,
+      "name": "",
+      "comment": "the next slot"
+    },
+    {
+      "offset": 131,
+      "name": "",
+      "comment": "all 24"
+    },
+    {
+      "offset": 133,
+      "name": "",
+      "comment": "IY back"
+    },
+    {
+      "offset": 136,
+      "name": "",
+      "comment": "the enemy's resources"
+    },
+    {
+      "offset": 139,
+      "name": "",
+      "comment": "8 bytes (Side too)"
+    },
+    {
+      "offset": 141,
+      "name": "FillEnemyResource",
+      "comment": "99"
+    },
+    {
+      "offset": 143,
+      "name": "",
+      "comment": "the next"
+    },
+    {
+      "offset": 144,
+      "name": "",
+      "comment": "8 times"
+    },
+    {
+      "offset": 146,
+      "name": "",
+      "comment": "HL = $FD4A, as the LD HL it replaces"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$A56A",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/game99/difficulty.asm",
+    "label": "PieceRoomA56A"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

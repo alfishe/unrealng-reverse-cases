@@ -1,0 +1,821 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/intro98-intromain",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '98: the intro: intromain",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1998,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "intromain"
+  ],
+  "summary": "The intro: logo, robot, AY bars and the scroller over the tune.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 563,
+    "sha1": "93e294c5eeaf2991b06863f9459d19c938d8d30b",
+    "masked_sha1": "ce32297fba84a4b6eac0382acc80823818ca042c"
+  },
+  "origin": "$D88F",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Pt3Init"
+    },
+    {
+      "offset": 5,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8100"
+    },
+    {
+      "offset": 8,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8101"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8080"
+    },
+    {
+      "offset": 23,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 27,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8081"
+    },
+    {
+      "offset": 32,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFD"
+    },
+    {
+      "offset": 44,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 47,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 50,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A00"
+    },
+    {
+      "offset": 62,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AE0"
+    },
+    {
+      "offset": 65,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AC0"
+    },
+    {
+      "offset": 70,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AE1"
+    },
+    {
+      "offset": 73,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AC1"
+    },
+    {
+      "offset": 78,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AE2"
+    },
+    {
+      "offset": 81,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AC2"
+    },
+    {
+      "offset": 85,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5C08"
+    },
+    {
+      "offset": 88,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5C08"
+    },
+    {
+      "offset": 95,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFD"
+    },
+    {
+      "offset": 114,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFD"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFD"
+    },
+    {
+      "offset": 152,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 155,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 158,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 161,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5C78"
+    },
+    {
+      "offset": 166,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RobotFrame"
+    },
+    {
+      "offset": 169,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 172,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5C78"
+    },
+    {
+      "offset": 177,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 180,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Pt3StopEntry"
+    },
+    {
+      "offset": 205,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 209,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_580C"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 218,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LogoMask"
+    },
+    {
+      "offset": 244,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScrollText"
+    },
+    {
+      "offset": 247,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 253,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 281,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 286,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 289,
+      "length": 2,
+      "kind": "ext16",
+      "name": "IntroFont"
+    },
+    {
+      "offset": 313,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_487F"
+    },
+    {
+      "offset": 338,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_487F"
+    },
+    {
+      "offset": 360,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_57E0"
+    },
+    {
+      "offset": 363,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 368,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_57E1"
+    },
+    {
+      "offset": 371,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 376,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_57E2"
+    },
+    {
+      "offset": 379,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 393,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Pt3PlayEntry"
+    },
+    {
+      "offset": 396,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 412,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFD"
+    },
+    {
+      "offset": 473,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5C8D"
+    },
+    {
+      "offset": 491,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 509,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 541,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5800"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "IntroMain",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the intro: set up, the frame loop until a key, then IntroEnd"
+    },
+    {
+      "offset": 208,
+      "name": "LogoColour",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the ZS logo's cells in paper colour A (0-7)"
+    },
+    {
+      "offset": 243,
+      "name": "ScrollStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the scroller: one pixel further, a new glyph column at the right"
+    },
+    {
+      "offset": 357,
+      "name": "AyBars",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the three AY volume bars"
+    },
+    {
+      "offset": 382,
+      "name": "IntroInterrupt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the IM 2 handler: a frame of the tune and of the scroller, then the ROM's"
+    },
+    {
+      "offset": 411,
+      "name": "AyBar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "one volume bar: AY register A, its column from HL up"
+    },
+    {
+      "offset": 470,
+      "name": "ClearScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the screen cleared: white on black, the border black"
+    },
+    {
+      "offset": 488,
+      "name": "AttrWipe",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the diagonal fade: 128 frames of AttrDiagonal"
+    },
+    {
+      "offset": 501,
+      "name": "AttrDiagonal",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "the band of 8 attribute diagonals at column E of row 0"
+    },
+    {
+      "offset": 528,
+      "name": "AttrCell",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "attribute A at row D, column E (if on the screen)"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 1,
+      "name": "",
+      "comment": "the player set up: the module's pointers, the AY silent (Pt3Init leaves interrupts off)"
+    },
+    {
+      "offset": 4,
+      "name": "",
+      "comment": "the IM 2 table: $8100-$8200, 257 bytes of $80 ..."
+    },
+    {
+      "offset": 17,
+      "name": "",
+      "comment": "... so every vector is $8080, where a JP IntroInterrupt goes"
+    },
+    {
+      "offset": 29,
+      "name": "",
+      "comment": "$7FFD = $10: page 0 at $C000, the 48 K BASIC ROM, screen 5 (the loader's own state)"
+    },
+    {
+      "offset": 36,
+      "name": "",
+      "comment": "I = $81: the table above; IM 2 on"
+    },
+    {
+      "offset": 43,
+      "name": "",
+      "comment": "the loader's title text faded out (128 frames)"
+    },
+    {
+      "offset": 46,
+      "name": "",
+      "comment": "then the screen cleared, white on black, border black"
+    },
+    {
+      "offset": 49,
+      "name": "",
+      "comment": "the bottom third's attributes ($5A00-$5AFF): yellow ink on black (the robot's box, RobotHeader's colour)"
+    },
+    {
+      "offset": 54,
+      "name": "BottomAttrLoop",
+      "comment": ""
+    },
+    {
+      "offset": 59,
+      "name": "",
+      "comment": "the bars' cells, rows 23 and 22: column 0 red (channel A) ..."
+    },
+    {
+      "offset": 67,
+      "name": "",
+      "comment": "... column 1 yellow (B) ..."
+    },
+    {
+      "offset": 75,
+      "name": "",
+      "comment": "... column 2 green (C)"
+    },
+    {
+      "offset": 83,
+      "name": "",
+      "comment": "LAST_K = 0: the loop runs until the ROM's keyboard scan stores a key"
+    },
+    {
+      "offset": 87,
+      "name": "IntroLoop",
+      "comment": "a frame of the intro"
+    },
+    {
+      "offset": 93,
+      "name": "",
+      "comment": "wait for the frame (the interrupt has played the tune and moved the scroller)"
+    },
+    {
+      "offset": 94,
+      "name": "",
+      "comment": "AY register 2 (channel B's tone, low byte) ..."
+    },
+    {
+      "offset": 103,
+      "name": "",
+      "comment": "... its low 5 bits pick a cell of row 9 ($5920-$593F): paper red"
+    },
+    {
+      "offset": 112,
+      "name": "",
+      "comment": "the cell's address kept to clear it at the end of the frame"
+    },
+    {
+      "offset": 113,
+      "name": "",
+      "comment": "AY register 4 (channel C's tone, low byte): a cell of row 9 in yellow"
+    },
+    {
+      "offset": 132,
+      "name": "",
+      "comment": "AY register 6 (the noise period): a cell of row 9 in green"
+    },
+    {
+      "offset": 151,
+      "name": "",
+      "comment": "the bars, three times ..."
+    },
+    {
+      "offset": 160,
+      "name": "",
+      "comment": "every 32 frames (FRAMES' low byte & $1F = 0) the robot's next frame"
+    },
+    {
+      "offset": 168,
+      "name": "",
+      "comment": "the bars again ..."
+    },
+    {
+      "offset": 171,
+      "name": "",
+      "comment": "the logo in the colour FRAMES & 7"
+    },
+    {
+      "offset": 179,
+      "name": "",
+      "comment": "... and once more"
+    },
+    {
+      "offset": 182,
+      "name": "",
+      "comment": "the three cells of row 9 back to black: they show only while this frame is drawn"
+    },
+    {
+      "offset": 193,
+      "name": "IntroEnd",
+      "comment": "I = $3F (the ROM's value), IM 0: the bus reads $FF, so the interrupt is RST $38 as under IM 1"
+    },
+    {
+      "offset": 200,
+      "name": "",
+      "comment": "the AY silent"
+    },
+    {
+      "offset": 204,
+      "name": "",
+      "comment": "the screen faded out by the same diagonal sweep (128 frames)"
+    },
+    {
+      "offset": 211,
+      "name": "",
+      "comment": "A * 8: the paper colour ..."
+    },
+    {
+      "offset": 214,
+      "name": "",
+      "comment": "... into LogoInk's operand"
+    },
+    {
+      "offset": 217,
+      "name": "",
+      "comment": "the logo's 64 mask bytes, 8 rows of 8 cells"
+    },
+    {
+      "offset": 222,
+      "name": "LogoRow",
+      "comment": ""
+    },
+    {
+      "offset": 224,
+      "name": "LogoCell",
+      "comment": ""
+    },
+    {
+      "offset": 228,
+      "name": "LogoInk",
+      "comment": "the cell's attribute (operand: the colour * 8)"
+    },
+    {
+      "offset": 230,
+      "name": "LogoNextCell",
+      "comment": ""
+    },
+    {
+      "offset": 234,
+      "name": "",
+      "comment": "to the next row: 24 cells on"
+    },
+    {
+      "offset": 236,
+      "name": "LogoRowSkip",
+      "comment": ""
+    },
+    {
+      "offset": 243,
+      "name": "ScrollPtr",
+      "comment": "the text pointer (operand), ScrollText at first"
+    },
+    {
+      "offset": 246,
+      "name": "",
+      "comment": "the counter + 1, mod 8"
+    },
+    {
+      "offset": 255,
+      "name": "",
+      "comment": "counter not 0: the byte at the pointer, the pointer stays"
+    },
+    {
+      "offset": 258,
+      "name": "",
+      "comment": "counter 0: the next byte, the pointer moves on"
+    },
+    {
+      "offset": 263,
+      "name": "",
+      "comment": "$00: the text ends, the pointer from the word after it (ScrollTextLoop)"
+    },
+    {
+      "offset": 267,
+      "name": "",
+      "comment": "... and a space this time"
+    },
+    {
+      "offset": 271,
+      "name": "ScrollFontCode",
+      "comment": "$01 LO HI: the font from here on"
+    },
+    {
+      "offset": 283,
+      "name": "",
+      "comment": "... and a space this time"
+    },
+    {
+      "offset": 285,
+      "name": "ScrollKeep",
+      "comment": "the pointer kept"
+    },
+    {
+      "offset": 288,
+      "name": "ScrollFont",
+      "comment": "the font (operand): IntroFont, or $3D00 (the ROM's) after a switch"
+    },
+    {
+      "offset": 291,
+      "name": "",
+      "comment": "below $20: the font's address as it is (the space)"
+    },
+    {
+      "offset": 295,
+      "name": "",
+      "comment": "font - 256 + code * 8"
+    },
+    {
+      "offset": 312,
+      "name": "ScrollGlyph",
+      "comment": "DE = the scroller's right-hand byte on row 11's first line"
+    },
+    {
+      "offset": 318,
+      "name": "ScrollColumn",
+      "comment": "the column counter (operand, 0-7)"
+    },
+    {
+      "offset": 320,
+      "name": "",
+      "comment": "B = counter + 8: the byte rotated left counter - 1 times (mod 8), bit 0 taken"
+    },
+    {
+      "offset": 324,
+      "name": "ScrollBitRotate",
+      "comment": ""
+    },
+    {
+      "offset": 330,
+      "name": "",
+      "comment": "ORed into the screen byte"
+    },
+    {
+      "offset": 332,
+      "name": "",
+      "comment": "the next pixel line (INC H)"
+    },
+    {
+      "offset": 337,
+      "name": "",
+      "comment": "the 8 lines of row 11 shifted left one pixel, right to left"
+    },
+    {
+      "offset": 342,
+      "name": "ScrollShiftLine",
+      "comment": ""
+    },
+    {
+      "offset": 343,
+      "name": "",
+      "comment": "no carry into the right-hand byte"
+    },
+    {
+      "offset": 346,
+      "name": "ScrollShiftByte",
+      "comment": ""
+    },
+    {
+      "offset": 408,
+      "name": "",
+      "comment": "the ROM's handler does the EI / RET"
+    },
+    {
+      "offset": 414,
+      "name": "",
+      "comment": "register select, read back"
+    },
+    {
+      "offset": 418,
+      "name": "",
+      "comment": "E = the column"
+    },
+    {
+      "offset": 419,
+      "name": "",
+      "comment": "C = 15 - v: the clear lines ..."
+    },
+    {
+      "offset": 424,
+      "name": "",
+      "comment": "... B = v: the bar's lines"
+    },
+    {
+      "offset": 429,
+      "name": "AyBarUp",
+      "comment": "a line of the bar"
+    },
+    {
+      "offset": 434,
+      "name": "",
+      "comment": "above row 23: on at the bottom line of row 22"
+    },
+    {
+      "offset": 442,
+      "name": "AyBarPut",
+      "comment": "the bar's pattern"
+    },
+    {
+      "offset": 447,
+      "name": "AyBarClear",
+      "comment": "the rest up to 15 lines cleared"
+    },
+    {
+      "offset": 451,
+      "name": "AyBarClearLine",
+      "comment": ""
+    },
+    {
+      "offset": 464,
+      "name": "AyBarClearPut",
+      "comment": ""
+    },
+    {
+      "offset": 490,
+      "name": "AttrWipeFrame",
+      "comment": ""
+    },
+    {
+      "offset": 505,
+      "name": "AttrDiagonalRow",
+      "comment": ""
+    },
+    {
+      "offset": 508,
+      "name": "AttrDiagonalCell",
+      "comment": ""
+    },
+    {
+      "offset": 561,
+      "name": "AttrCellOff",
+      "comment": "off the screen"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '98: the intro",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$D88F",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/intro98/intromain.asm",
+    "label": "IntroMain"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

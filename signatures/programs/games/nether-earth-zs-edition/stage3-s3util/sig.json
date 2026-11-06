@@ -1,0 +1,162 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/stage3-s3util",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: stage 3: s3util",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "s3util"
+  ],
+  "summary": "TR-DOS and tape loading, the string helpers.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 90,
+    "sha1": "bc1fe9c483a73fed93bcf5d196b841e435a65682",
+    "masked_sha1": "62ff87c85d254eacb57452342093506dcb3ff616"
+  },
+  "origin": "$6421",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TrdosVersion"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TrdosNextSector"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "ext16",
+      "name": "OkText"
+    },
+    {
+      "offset": 32,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 52,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TapeErrorText"
+    },
+    {
+      "offset": 55,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "ReadTrdosVersion",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Copy the TR-DOS ROM's version text ($0365, 16 bytes) to TrdosVersion"
+    },
+    {
+      "offset": 18,
+      "name": "ReadSectors",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Read B sectors from TrdosNextSector to HL, then print \"O.k.\""
+    },
+    {
+      "offset": 27,
+      "name": "LoadOk",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Interrupts off again (TR-DOS turns them on) and print \"O.k.\" (OkText)"
+    },
+    {
+      "offset": 34,
+      "name": "LoadBlock",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Load a tape block: A = the flag, IX = the address, DE = the length; retry, or halt on an error"
+    },
+    {
+      "offset": 59,
+      "name": "SkipStrings",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DE past B strings that end in $FF"
+    },
+    {
+      "offset": 68,
+      "name": "FirstSetBit",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "B = the position of A's highest set bit, from the top (bit 7 gives 1)"
+    },
+    {
+      "offset": 75,
+      "name": "PrintFF",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print the string at DE up to its $FF (not printed) through the ROM's PR-STRING"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 51,
+      "name": "TapeHalt",
+      "comment": "the error: the message, then the machine stops"
+    },
+    {
+      "offset": 70,
+      "name": "FirstSetBitLoop",
+      "comment": ""
+    },
+    {
+      "offset": 79,
+      "name": "PrintFFCount",
+      "comment": "BC counts the bytes before the $FF"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99: stage 3",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$6421",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/stage3/s3util.asm",
+    "label": "ReadTrdosVersion"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

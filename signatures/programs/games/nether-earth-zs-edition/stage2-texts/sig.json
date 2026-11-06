@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/stage2-texts",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: stage 2: texts",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "texts"
+  ],
+  "summary": "The scroller's window, text and font.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 6208,
+    "sha1": "af602028fa22ff6077b8e059d90d632c49658a6c",
+    "masked_sha1": "af602028fa22ff6077b8e059d90d632c49658a6c"
+  },
+  "origin": "$6547",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "ScrollWindow",
+      "comment": "The scroller's window: column 16, row 17, 16 bytes wide, 6 rows high"
+    },
+    {
+      "offset": 4,
+      "name": "ScrollWindowPad",
+      "comment": "A byte no code reads ($00)"
+    },
+    {
+      "offset": 5,
+      "name": "ScrollText",
+      "comment": "The scroller's text: AT 32,22, then 157 lines of CP866 text, each ending CR LF"
+    },
+    {
+      "offset": 4160,
+      "name": "Font64",
+      "comment": "The 64-column font: 256 characters x 8 rows, row-major (row r of character c at Font64 + 256 x r + c)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99: stage 2",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$6547",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/stage2/stage2/texts.asm",
+    "label": "ScrollWindow"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/game98-level",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '98: level",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1998,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "level"
+  ],
+  "summary": "The level: the scenery and base lists, the shape table and the 11 shapes BuildMap turns into the map.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 855,
+    "sha1": "d09c9c4c00158bbb452795f0dde4b0dab9ac587d",
+    "masked_sha1": "8f7f314b80eb49ff6d88da44355740a1d1a272e0"
+  },
+  "origin": "$BDA9",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 499,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 501,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 503,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 505,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 507,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 509,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 511,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 513,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 515,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 517,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 519,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "SceneryWest",
+      "comment": "The scenery of columns 0-255: 66 records (tile or shape, x, y), the 0 that ends them, 9 zero bytes"
+    },
+    {
+      "offset": 208,
+      "name": "SceneryEast",
+      "comment": "The scenery of columns 256-511: 68 records and the 0 that ends them"
+    },
+    {
+      "offset": 413,
+      "name": "BaseListWest",
+      "comment": "The bases of columns 0-255: 13 records (type, x, y), $FF ends"
+    },
+    {
+      "offset": 453,
+      "name": "BaseListEast",
+      "comment": "The bases of columns 256-511: 15 records (type, x, y), $FF ends"
+    },
+    {
+      "offset": 499,
+      "name": "ShapeTable",
+      "comment": "The shapes' addresses, index 0-10 (DrawShape)"
+    },
+    {
+      "offset": 521,
+      "name": "ShapeWarbase",
+      "comment": "Shape 0: the warbase, 15 blocks of tiles $0F (height 7) and $10 (height 15) around the door"
+    },
+    {
+      "offset": 569,
+      "name": "ShapeFactory",
+      "comment": "Shape 1: the factory, tiles $0F at (x-2, y) and (x+2, y), $10 on the roof row y-2 at x-2, x, x+2"
+    },
+    {
+      "offset": 587,
+      "name": "ShapeLowTiles",
+      "comment": "Shape 2: 4 x 3 blocks of tiles $02-$05 (height 2)"
+    },
+    {
+      "offset": 623,
+      "name": "ShapeMidTiles",
+      "comment": "Shape 3: 4 x 3 blocks of tiles $08-$0B (height 6)"
+    },
+    {
+      "offset": 659,
+      "name": "ShapeTallWallV",
+      "comment": "Shape 4: four blocks of tile $12 (height 15) in a column"
+    },
+    {
+      "offset": 671,
+      "name": "ShapeTallWallH",
+      "comment": "Shape 5: four blocks of tile $12 in a row"
+    },
+    {
+      "offset": 683,
+      "name": "ShapeEdgeFence",
+      "comment": "Shape 6: four blocks of tile $15 (height 99, impassable) in a column: the fences at both ends of the map"
+    },
+    {
+      "offset": 695,
+      "name": "ShapeFlatLineV",
+      "comment": "Shape 7: tiles $0C, $0D, $0D, $0E (height 0) in a column"
+    },
+    {
+      "offset": 707,
+      "name": "ShapeFlatLineH",
+      "comment": "Shape 8: tiles $0C, $0D, $0D, $0E in a row"
+    },
+    {
+      "offset": 719,
+      "name": "ShapeLowWallH",
+      "comment": "Shape 9: four blocks of tile $11 (height 7) in a row"
+    },
+    {
+      "offset": 731,
+      "name": "ShapeMixedWallH",
+      "comment": "Shape 10: tiles $11, $12, $11 in a row"
+    },
+    {
+      "offset": 740,
+      "name": "MapTablesSpare",
+      "comment": "Unused: zero to $C0FF"
+    },
+    {
+      "offset": 740,
+      "name": "",
+      "comment": "115 zero bytes up to the main menu at $C100: room for a longer level, never read"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '98",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$BDA9",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/game98/level.asm",
+    "label": "SceneryWest"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

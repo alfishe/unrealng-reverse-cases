@@ -2576,6 +2576,15 @@
       "delta": "+$0000",
       "match": "exact",
       "commit": "c94d092"
+    },
+    {
+      "program": "Nether Earth ZS Edition '98",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$B7F4",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
     }
   ],
   "source": {

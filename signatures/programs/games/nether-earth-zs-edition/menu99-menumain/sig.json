@@ -1,0 +1,888 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/menu99-menumain",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: the menu: menumain",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "menumain"
+  ],
+  "summary": "The menu screen, the pointer loop, the choices, START and its level patches.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 994,
+    "sha1": "03b031696b34dbeda5bbe599c942ffa132f39a96",
+    "masked_sha1": "9be0aba5d2ff4aebc723e6e578e96d849f5f9465"
+  },
+  "origin": "$D800",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 9,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_677E"
+    },
+    {
+      "offset": 14,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 17,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuHook"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 23,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5800"
+    },
+    {
+      "offset": 26,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5801"
+    },
+    {
+      "offset": 36,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 275,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5940"
+    },
+    {
+      "offset": 278,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SavedAttrs"
+    },
+    {
+      "offset": 286,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 361,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5940"
+    },
+    {
+      "offset": 364,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SavedAttrs"
+    },
+    {
+      "offset": 372,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5817"
+    },
+    {
+      "offset": 375,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Controls"
+    },
+    {
+      "offset": 378,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PaintBar"
+    },
+    {
+      "offset": 381,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5800"
+    },
+    {
+      "offset": 386,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PaintBar"
+    },
+    {
+      "offset": 389,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyUpgrade"
+    },
+    {
+      "offset": 403,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_580B"
+    },
+    {
+      "offset": 406,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PaintBar"
+    },
+    {
+      "offset": 414,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SavePointerBg"
+    },
+    {
+      "offset": 417,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawPointer"
+    },
+    {
+      "offset": 420,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleColourCycle"
+    },
+    {
+      "offset": 432,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ReadMenuKeys"
+    },
+    {
+      "offset": 438,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DD74"
+    },
+    {
+      "offset": 492,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RestorePointerBg"
+    },
+    {
+      "offset": 497,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DD74"
+    },
+    {
+      "offset": 502,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RestorePointerBg"
+    },
+    {
+      "offset": 506,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DD74"
+    },
+    {
+      "offset": 561,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 572,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 575,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 590,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyUpgrade"
+    },
+    {
+      "offset": 603,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyPartsMask"
+    },
+    {
+      "offset": 606,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ReadMenuKeys"
+    },
+    {
+      "offset": 614,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 626,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Controls"
+    },
+    {
+      "offset": 629,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 632,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RedefineKeys"
+    },
+    {
+      "offset": 635,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 641,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 648,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 655,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 658,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpawnResources"
+    },
+    {
+      "offset": 666,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InsgRobotCount"
+    },
+    {
+      "offset": 674,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyProduce"
+    },
+    {
+      "offset": 682,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 690,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 693,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpawnResources"
+    },
+    {
+      "offset": 701,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InsgRobotCount"
+    },
+    {
+      "offset": 709,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 717,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyProduce"
+    },
+    {
+      "offset": 725,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 735,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyUpgrade"
+    },
+    {
+      "offset": 739,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyPartsMask"
+    },
+    {
+      "offset": 781,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LoadMap"
+    },
+    {
+      "offset": 784,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 789,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 794,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 797,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 800,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextBuffer"
+    },
+    {
+      "offset": 803,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LoadDescription"
+    },
+    {
+      "offset": 806,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 809,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 848,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextBuffer"
+    },
+    {
+      "offset": 851,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LoadAbout"
+    },
+    {
+      "offset": 854,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 857,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 896,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextBuffer"
+    },
+    {
+      "offset": 899,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DC0E"
+    },
+    {
+      "offset": 902,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextViewer"
+    },
+    {
+      "offset": 905,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 908,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextBuffer"
+    },
+    {
+      "offset": 911,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LoadAdvices"
+    },
+    {
+      "offset": 914,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 917,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 952,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextBuffer"
+    },
+    {
+      "offset": 955,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LoadGreets"
+    },
+    {
+      "offset": 958,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 961,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "MenuEntry",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "IM 0 with I = $3F, the stack at $677E, then the menu screen"
+    },
+    {
+      "offset": 19,
+      "name": "MenuScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Clear the screen, attributes 7, print the menu (MenuText)"
+    },
+    {
+      "offset": 274,
+      "name": "MenuBottom",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Save the attributes of rows 10-15, print START .. ABOUT ZS NE (MenuBottomText)"
+    },
+    {
+      "offset": 359,
+      "name": "MenuRedraw",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Restore rows 10-15, mark the control, the level and the parts on; then the pointer loop"
+    },
+    {
+      "offset": 778,
+      "name": "BottomColumn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Row 17 past START: LOAD MAP (columns 8-17) or DESCRIPTION; row 21: ADVICES, GREETS, ABOUT"
+    },
+    {
+      "offset": 845,
+      "name": "DescView",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "to TextShow"
+    },
+    {
+      "offset": 847,
+      "name": "ShowAbout",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The about text into TextBuffer (LoadAbout), the screen, its title, TextShow"
+    },
+    {
+      "offset": 895,
+      "name": "TextShow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The viewer from the start of TextBuffer, then the menu again"
+    },
+    {
+      "offset": 907,
+      "name": "ShowAdvices",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The advices text into TextBuffer (LoadAdvices), the screen, its title, TextShow"
+    },
+    {
+      "offset": 949,
+      "name": "AdvicesView",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "to TextShow"
+    },
+    {
+      "offset": 951,
+      "name": "ShowGreets",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The greets text into TextBuffer (LoadGreets), the screen, its title, TextShow"
+    },
+    {
+      "offset": 992,
+      "name": "GreetsView",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "to TextShow"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 7,
+      "name": "",
+      "comment": "the return address onto the new stack"
+    },
+    {
+      "offset": 13,
+      "name": "",
+      "comment": "MenuHook: never read"
+    },
+    {
+      "offset": 38,
+      "name": "MenuText",
+      "comment": "the menu's upper part through PrintInline (src/res/menu99/menu-strings.txt [menu])"
+    },
+    {
+      "offset": 288,
+      "name": "MenuBottomText",
+      "comment": "the six items of rows 17 and 21 (menu-strings.txt [bottom])"
+    },
+    {
+      "offset": 371,
+      "name": "",
+      "comment": "the control"
+    },
+    {
+      "offset": 380,
+      "name": "",
+      "comment": "the level"
+    },
+    {
+      "offset": 383,
+      "name": "LevelLd",
+      "comment": "the level 1-4: this operand is the menu's level variable (MenuSelect writes it, StartGame reads it)"
+    },
+    {
+      "offset": 388,
+      "name": "",
+      "comment": "the parts: bit 7 electronics (row 10) .. bit 2 anti-gravs (row 15)"
+    },
+    {
+      "offset": 396,
+      "name": "MarkPartsLoop",
+      "comment": ""
+    },
+    {
+      "offset": 410,
+      "name": "MarkPartsNext",
+      "comment": ""
+    },
+    {
+      "offset": 413,
+      "name": "PointerShow",
+      "comment": "save the background under the pointer, draw it"
+    },
+    {
+      "offset": 419,
+      "name": "MenuLoop",
+      "comment": "the title colours, a delay, the keys"
+    },
+    {
+      "offset": 424,
+      "name": "DelayOuter",
+      "comment": ""
+    },
+    {
+      "offset": 426,
+      "name": "DelayInner",
+      "comment": ""
+    },
+    {
+      "offset": 434,
+      "name": "",
+      "comment": "D counts the moves of this pass"
+    },
+    {
+      "offset": 440,
+      "name": "",
+      "comment": "Q: up (y 0 at least)"
+    },
+    {
+      "offset": 450,
+      "name": "KeyDown",
+      "comment": "A: down (y $B8 at most)"
+    },
+    {
+      "offset": 461,
+      "name": "KeyLeft",
+      "comment": "O: left"
+    },
+    {
+      "offset": 471,
+      "name": "KeyRight",
+      "comment": "P: right (x $F8 at most)"
+    },
+    {
+      "offset": 482,
+      "name": "KeySpace",
+      "comment": "SPACE: choose; no move: the next pass"
+    },
+    {
+      "offset": 490,
+      "name": "",
+      "comment": "moved: the old background back, the new position, draw again"
+    },
+    {
+      "offset": 501,
+      "name": "MenuSelect",
+      "comment": "SPACE: the cell under the pointer's corner, by row and column"
+    },
+    {
+      "offset": 518,
+      "name": "",
+      "comment": "rows 0-9: nothing"
+    },
+    {
+      "offset": 539,
+      "name": "CellRowLoop",
+      "comment": ""
+    },
+    {
+      "offset": 543,
+      "name": "",
+      "comment": "rows 17 on: the bottom items"
+    },
+    {
+      "offset": 547,
+      "name": "",
+      "comment": "an item colour: 5 (level, control), 6 (part), $47 (marked)"
+    },
+    {
+      "offset": 563,
+      "name": "SelectLevel",
+      "comment": "columns 0-10: the level = row - 9"
+    },
+    {
+      "offset": 577,
+      "name": "ToggleUpgrade",
+      "comment": "columns 11-22: the part of the row, XOR into EnemyUpgrade"
+    },
+    {
+      "offset": 584,
+      "name": "",
+      "comment": "A = $80 >> (row - 10): B = row - 8 RRAs of the carry"
+    },
+    {
+      "offset": 586,
+      "name": "PartMaskLoop",
+      "comment": ""
+    },
+    {
+      "offset": 594,
+      "name": "",
+      "comment": "any of bits 2-0 set: the mask $F8, else $FF"
+    },
+    {
+      "offset": 602,
+      "name": "SetPartsMask",
+      "comment": ""
+    },
+    {
+      "offset": 605,
+      "name": "WaitSpaceUp",
+      "comment": "wait until SPACE is released"
+    },
+    {
+      "offset": 616,
+      "name": "SelectControl",
+      "comment": "columns 23-31: rows 10-12 Controls = row - 9, row 13 REDEFINE"
+    },
+    {
+      "offset": 628,
+      "name": "SelectControlDone",
+      "comment": ""
+    },
+    {
+      "offset": 631,
+      "name": "RedefineItem",
+      "comment": "REDEFINE: the game's screen, then the menu again"
+    },
+    {
+      "offset": 637,
+      "name": "BottomItem",
+      "comment": "rows 17 on: attribute 2 needed; row 21 on: the second line"
+    },
+    {
+      "offset": 654,
+      "name": "StartGame",
+      "comment": "row 17, columns 0-7: the level's patches; RET to Start ($A603)"
+    },
+    {
+      "offset": 681,
+      "name": "",
+      "comment": "EASY ends here (A = 0)"
+    },
+    {
+      "offset": 689,
+      "name": "",
+      "comment": "MEDIUM and up: the enemy's resources 99, its robot count hidden"
+    },
+    {
+      "offset": 716,
+      "name": "",
+      "comment": "HARD and up: the enemy's production upgraded"
+    },
+    {
+      "offset": 732,
+      "name": "",
+      "comment": "CRITICAL: every part, mask 0"
+    },
+    {
+      "offset": 742,
+      "name": "LevelPatches",
+      "comment": "the bytes StartGame copies: EASY (the game's own), then MEDIUM and HARD"
+    },
+    {
+      "offset": 742,
+      "name": "PatchEasySpawn",
+      "comment": "LD HL,$FD4A"
+    },
+    {
+      "offset": 745,
+      "name": "PatchEasyInsg",
+      "comment": "CALL $D3EC (PrintNumber2Zero), CALL PrintInline"
+    },
+    {
+      "offset": 751,
+      "name": "PatchEasyProduce",
+      "comment": "LD HL,$FD4A, LD DE,$FD42, CALL $AE4E (ProduceSide)"
+    },
+    {
+      "offset": 760,
+      "name": "PatchSpawn99",
+      "comment": "CALL $A5F2: the enemy's resources 99 (game99's part)"
+    },
+    {
+      "offset": 763,
+      "name": "PatchInsgHidden",
+      "comment": "NOP, CALL PrintInline, \"??\" over the first two bytes of the game's inline text"
+    },
+    {
+      "offset": 769,
+      "name": "PatchProduceUpgrade",
+      "comment": "six NOPs, CALL $A5D6: EnemyUpgrade over the enemy robots (game99's part)"
+    },
+    {
+      "offset": 786,
+      "name": "BottomRow21",
+      "comment": "row 21: columns 0-9 ADVICES, 10-17 GREETS, 18-31 ABOUT"
+    },
+    {
+      "offset": 799,
+      "name": "ShowDescription",
+      "comment": "the description into TextBuffer, the screen, its title"
+    },
+    {
+      "offset": 811,
+      "name": "DescTitle",
+      "comment": "\"NETHER EARTH\" / \"DESCRIPTION\" (menu-strings.txt [description])"
+    },
+    {
+      "offset": 859,
+      "name": "AboutTitle",
+      "comment": "\"NETHER EARTH\" / \"ZS EDITION'99\" (menu-strings.txt [about])"
+    },
+    {
+      "offset": 898,
+      "name": "",
+      "comment": "the viewer's top line: the start"
+    },
+    {
+      "offset": 919,
+      "name": "AdvicesTitle",
+      "comment": "\"NETHER EARTH\" / \"ADVICES\" (menu-strings.txt [advices])"
+    },
+    {
+      "offset": 963,
+      "name": "GreetsTitle",
+      "comment": "\"NETHER EARTH\" / \"GREETS\" (menu-strings.txt [greets])"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99: the menu",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$D800",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/menu99/menumain.asm",
+    "label": "MenuEntry"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

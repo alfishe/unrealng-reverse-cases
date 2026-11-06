@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/pictures99-picture",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '99: the pictures block: picture",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1999,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "picture"
+  ],
+  "summary": "The packed intro screen.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 3213,
+    "sha1": "9f4bd73a7fa4ad5749f06b56f71174fe1b814705",
+    "masked_sha1": "9f4bd73a7fa4ad5749f06b56f71174fe1b814705"
+  },
+  "origin": "$7DFA",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "PackedScreen",
+      "comment": "The intro's screen, RLE-packed (3132 bytes): the author's photo, the logo, the bottom line"
+    },
+    {
+      "offset": 3132,
+      "name": "SectorSlack",
+      "comment": "The 81 bytes after the packed screen to the end of the 13th sector: no code reads them"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '99: the pictures block",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$7DFA",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/pictures99/pictures/picture.asm",
+    "label": "PackedScreen"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}

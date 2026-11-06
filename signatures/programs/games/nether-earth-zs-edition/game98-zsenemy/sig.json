@@ -1,0 +1,165 @@
+{
+  "schema": 1,
+  "id": "programs/games/nether-earth-zs-edition/game98-zsenemy",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Nether Earth ZS Edition '98: zsenemy",
+  "authors": [
+    "Argus Press Software",
+    "Sergey Zotov (ZS)"
+  ],
+  "year": 1998,
+  "tags": [
+    "nether-earth-zs-edition",
+    "game-module",
+    "zsenemy"
+  ],
+  "summary": "ZS's enemy helpers in the sprites' spare bytes: the daily robot upgrade and the enemy's 99s.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 42,
+    "sha1": "6fddfd8c07c655527ca99e153635b3740df31c74",
+    "masked_sha1": "26aec42663e1733486c300957cf931a684e60c77"
+  },
+  "origin": "$A5D6",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 9,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DB80"
+    },
+    {
+      "offset": 32,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnemyResources"
+    },
+    {
+      "offset": 35,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD4B"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "UpgradeEnemyRobots",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "every enemy record: +$07 = (+$07 AND $78) OR $84: anti-grav and electronics on, bipod and tracks off"
+    },
+    {
+      "offset": 28,
+      "name": "FillEnemyResources",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "EnemyResources ($FD4A-$FD50) = 99 each, and Side ($FD51) = 99 too"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "",
+      "comment": "IY is the caller's"
+    },
+    {
+      "offset": 2,
+      "name": "",
+      "comment": "DE = 16, the record size"
+    },
+    {
+      "offset": 5,
+      "name": "",
+      "comment": "B = 24 records"
+    },
+    {
+      "offset": 7,
+      "name": "",
+      "comment": "IY = EnemyRobots, slot 24"
+    },
+    {
+      "offset": 11,
+      "name": "UpgradeEnemyRobotsLoop",
+      "comment": "+$07 the parts"
+    },
+    {
+      "offset": 14,
+      "name": "",
+      "comment": "keep the weapons: cannon, missiles, phasers, nuclear"
+    },
+    {
+      "offset": 16,
+      "name": "",
+      "comment": "add electronics (bit 7) and anti-grav (bit 2)"
+    },
+    {
+      "offset": 18,
+      "name": "",
+      "comment": "store the new parts"
+    },
+    {
+      "offset": 21,
+      "name": "",
+      "comment": "the next record"
+    },
+    {
+      "offset": 23,
+      "name": "",
+      "comment": "24 times"
+    },
+    {
+      "offset": 25,
+      "name": "",
+      "comment": "IY back"
+    },
+    {
+      "offset": 28,
+      "name": "",
+      "comment": "7 bytes to copy"
+    },
+    {
+      "offset": 31,
+      "name": "",
+      "comment": "the first enemy resource"
+    },
+    {
+      "offset": 34,
+      "name": "",
+      "comment": "the next byte"
+    },
+    {
+      "offset": 37,
+      "name": "",
+      "comment": "99"
+    },
+    {
+      "offset": 39,
+      "name": "",
+      "comment": "spread it to $FD4B-$FD51 (Side included)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Nether Earth ZS Edition '98",
+      "case": "games/nether-earth-zs-edition",
+      "address": "$A5D6",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "da98700"
+    }
+  ],
+  "source": {
+    "case": "games/nether-earth-zs-edition",
+    "file": "src/game98/zsenemy.asm",
+    "label": "UpgradeEnemyRobots"
+  },
+  "docs": [
+    "games/nether-earth-zs-edition/docs/README.md"
+  ]
+}
