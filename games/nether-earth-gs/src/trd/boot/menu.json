@@ -1,0 +1,29 @@
+{
+  "about": "The boot menu's main part ($61A8-$68CB): python3 ../../kit/mkgame.py --part src/trd/boot/menu.json --install",
+  "image": "build/trd/obj/boot-menu.bin",
+  "org": "61A8",
+  "ann": "src/trd/boot/menu.ann",
+  "top": "boot-menu",
+  "dest": "src/trd/boot",
+  "res": "src/res/trd",
+  "device": "ZXSPECTRUM128",
+  "header": [
+    "; Nether Earth GS, TRD file boot: the boot menu's menu part"
+  ],
+  "mode": "blocks",
+  "pages": [
+    5,
+    2
+  ],
+  "l1": [
+    "work/stage2/trd/rA/l1.json"
+  ],
+  "data_entries": "stop",
+  "isub_as_written": true,
+  "drop_data_refs": true,
+  "built": {
+    "boot/texts.bin": "trd/text/trd-boot-menu.bin"
+  },
+  "save": "build/trd/obj/boot-menu.bin",
+  "work": "work/stage2/trd/mkasm/boot-menu"
+}

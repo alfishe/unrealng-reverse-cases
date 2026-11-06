@@ -13,7 +13,7 @@
 # time: build/.lock (a folder) is held while it runs.
 set -eu
 cd "$(dirname "$0")/.."
-SJASMPLUS=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+SJASMPLUS=$(python3 ../../kit/toolpaths.py sjasmplus "${1:-}") || exit 1
 TRD="Nether Earth (1987)(Argus Press Software Ltd)(EN)(GS)[h 2002 Tron Z].trd"
 TAP="Nether Earth (1987)(Argus Press Software Ltd)(EN)(GS)[h 2017 Hood, Tron Z].tap"
 # the media take the game and the TRD extras from build/ only

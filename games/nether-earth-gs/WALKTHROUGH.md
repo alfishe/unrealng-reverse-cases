@@ -19,7 +19,7 @@ Each agent's log is in `work/` (local): `work/stage1/NOTES.md`, `work/stage2/NOT
 
 `C` = this case, `R` = the repository, `U` = an unreal-ng checkout built with `tools/build/build.sh unreal-qt`
 (the stages ran a worktree detached at github/master `e3d341d38`; `tools/gs_session.py` takes the checkout from
-`UNREAL_NG`, default `/Volumes/TB4-4Tb/Projects/Test/unreal-ng`). Port base 12340 (WebAPI 12340, CLI 12440, MCP 12540, GDB 12640, DeZog 12740,
+`UNREAL_NG`, else what `kit/toolpaths.py` finds). Port base 12340 (WebAPI 12340, CLI 12440, MCP 12540, GDB 12640, DeZog 12740,
 ZRCP 12840): none of them hits 10000. Every instance muted at launch and stopped after use; audio only to files.
 
 Tools written for the case (all in `C/tools/`): `disk_files.py` (SCL / TRD catalogue and files), `basic_list.py`
@@ -113,7 +113,7 @@ The lead wrote the game image; three forks, each with its own files and ports, w
 | --- | --- | --- |
 | lead | `src/game/`, `src/res/game/`, `tools/game_*.py`, `tools/build_game.sh`, `tools/res_formats.py`, the integration, README, WALKTHROUGH, docs 08 and README | this file |
 | ld | `src/disk/`, `src/tape/`, `src/media/`, `src/res/{music,sfx,screen,text,media}/`, `tools/build_loaders.sh`, `build.sh`, `mk{scl,trd,tap}.py`, `res_media.py`, `basic_tok.py`, `docs/texts/{disk,tape,media}-*` | `work/stage2/NOTES-ld.md` |
-| trd | `src/trd/`, `src/res/trd/`, `tools/build_trd_extras.sh`, `hrum.py` (ANE's, copied), `trd_lz.py`, `trd_mkasm.py`, `trd_text.py`, `docs/texts/trd-*` | `work/stage2/NOTES-trd.md` |
+| trd | `src/trd/`, `src/res/trd/`, `tools/build_trd_extras.sh`, `hrum.py` (ANE's, copied), `trd_lz.py`, `src/trd/boot/*.json` (kit/mkgame.py part files), `trd_text.py`, `docs/texts/trd-*` | `work/stage2/NOTES-trd.md` |
 | shots | `tools/fig_capture.py`, `fig_screens.py`, `fig_compare.py`, `docs/img/`, docs 01, 05, 06 | `work/stage2/NOTES-shots.md` |
 
 ### 3.2 The game image (`neart001`)
@@ -128,9 +128,9 @@ annotations started from NE's text and every entry the conversion touched was wr
 | the seed | `python3 work/stage2/ann/seed_ann.py` | NE's `game.ann` without the entries below `$6590`, the four entries the conversion rewrote (`$A56A`, `$BAEE`, `$CCAC`, `$D5C4`) and two entries that existed only because NE's recordings started there (`$C4E4`, `$D0C7`, merged into their routines); NE's evidence re-attributed ("Nether Earth's deep recording", `nether-earth/docs/...`) |
 | the new entries | `work/stage2/ann/gs-additions.ann` appended | the module `gssound` (`GsMenuSound`, `GsSound`, `SpriteSpare`), `NuclearRumble`, `Beep` + `BeepFill`, `SoundEffect` + its fill and leftover, the module `workspace` (`$FCE9-$FFFF` is in the file here: `N1Leftover`, `Variables`, `ImJump`, `ImTable`, `Buildings`, `StackArea`), the `@isub`s that write `PageRom48`, `DriverBank`, `SaveBytesEntry`, `GsDriver` |
 | one source, two targets | `case.json` header: `IFDEF HOOD_TAPE` gives `DriverBank` 6 / 1 and `SaveBytesEntry` `$04C2` / `$04D0` | the 4 bytes of the tape's `neart001` come from the same source with `-DHOOD_TAPE` |
-| the wrapper | `python3 tools/game_mkgame.py` | `kit/mkgame.py` plus `# @bank` (the driver at `$C000` in another page: not walked, bank 0's `ShapeFactory` data there stays data), `# @var` (the work-space variables are inside the file: labels, `Name+k` operands), `# @alias` (`Handler` = `ImJump+1`); only `case.json` `read_builds` (`stage2/r1`) |
+| the bank directives | `kit/mkgame.py` (first a case wrapper, `tools/game_mkgame.py`, now in the kit) | `# @bank` (the driver at `$C000` in another page: not walked, bank 0's `ShapeFactory` data there stays data), `# @var` (the work-space variables are inside the file: labels, `Name+k` operands), `# @alias` (`Handler` = `ImJump+1`); only `case.json` `read_builds` (`stage2/r1`) |
 | the text review | `work/stage2/ann/gs_texts.py` and hand edits | every Nether Earth statement checked against this game: the entry from the loader's `JP $A600`; the silent menu loop (8 `OUT ($FE),A` -> `NOP NOP`); the GS ids of every `Beep` caller (`$FA` silent, the chirp's 11 middle ids silent); `SoundEffect` once per event; `NuclearFlash` with GS id 9 and a pause; the two `SaveBytesEntry` targets; the six-pixel mark on every dotted block (the `DI` of `GsMenuSound` at `$A569`); evidence of NE's recordings named as NE's |
-| the source | `python3 tools/game_mkgame.py --install` | 577 entries in 24 modules, 4941 instructions (3590 ran in `r1`), 69 operands as `Label+offset`, no `l_` / `sub_` / `data_` label left; "assembled: identical to the original image"; 121 resources into `src/res/game` (94 sources: PNG and text) |
+| the source | `python3 ../../kit/mkgame.py --install` | 577 entries in 24 modules, 4941 instructions (3590 ran in `r1`), 69 operands as `Label+offset`, no `l_` / `sub_` / `data_` label left; "assembled: identical to the original image"; 121 resources into `src/res/game` (94 sources: PNG and text) |
 | the build | `tools/build_game.sh` | `neart001-scl.bin` identical to the SCL's, `neart001-tap.bin` (`-DHOOD_TAPE`) identical to the tape's; they differ at `$A56B`, `$A58E`, `$C2F9`, `$C308` |
 | the resources | `python3 tools/res_formats.py check` | every source round-trips; the overlap byte `$A569` (`$F3`) is checked by the build. `r1` writes none of the 121 files |
 
@@ -259,6 +259,14 @@ Known only from the code (no recording reached it): the nuclear blast and effect
 save and load of a game, Kempston and Interface 2, a full robot table, a warbase changing hands, and the bugs of
 10.12.
 
+### 4.1 Signatures added
+
+`signatures/sources.json` has three `ann` rows for this case: the game (`build/game/game-scl.lst`) and the
+boot menu's two parts (`src/trd/boot/menu.json`, `print64.json`). Of the game's modules, the ones equal to Nether
+Earth's (`start`, `robotmenu`, `ship`, `view`, ...) became one more `found_in` of Nether Earth's entries; the
+changed ones (`gssound`, `enemy`, `music`, `construction`, `interrupts`, ...) are entries of their own under
+`programs/games/nether-earth-gs/`.
+
 ## 5. Tool gaps
 
 ### 5.1 Stage 1 (unreal-ng and the kit)
@@ -281,16 +289,18 @@ save and load of a game, Kempston and Interface 2, a full robot table, a warbase
 ### 5.2 Stage 2
 
 1. **`kit/mkgame.py` knows one RAM page at `$C000`.** The driver is in another page; the case's wrapper adds
-   `# @bank` (not walked, the disassembler's entry mark dropped) as ANE's did. A kit-level directive would serve both.
-2. **In-image variables.** `@equ` is for names outside the image; this file holds its work space, so the wrapper adds
-   `# @var` (labels plus `Name+k` operands) and `# @alias` (`Handler` = `ImJump+1`).
+   `# @bank` (not walked, the disassembler's entry mark dropped) as ANE's did. Now the kit's `@bank`
+   ([docs/ann-format.md](../../docs/ann-format.md) 5) serves both.
+2. **In-image variables.** `@equ` is for names outside the image; this file holds its work space, so the wrapper added
+   `# @var` (labels plus `Name+k` operands) and `# @alias` (`Handler` = `ImJump+1`), now kit directives.
 3. **One source, two targets.** mkgame assembles one image; the second target (`-DHOOD_TAPE`) is built and compared
    by `tools/build_game.sh`.
 4. **A resource that overlaps code** (`$A569`): `@res` cannot share a byte with an instruction, so the sprite's file
    stops one byte short and `res_formats.OVERLAP` checks the byte.
-5. **mkgame takes one image** and installs into `src/game`: `tools/trd_mkasm.py` wraps it for the boot menu.
+5. **mkgame takes one image** and installs into `src/game`: a copied wrapper (`tools/trd_mkasm.py`) did the boot
+   menu; now `kit/mkgame.py --part src/trd/boot/menu.json` does.
 6. **L1 reads polluted by a depacker** and **L1 instructions by address only**: a later program's code at the same
-   addresses leaks in; `trd_mkasm.py` takes a recording's instructions per whole basic block. A first / last frame per
+   addresses leaks in; the part file's `"mode": "blocks"` takes a recording's instructions per whole basic block. A first / last frame per
    block in L1 would let a tool cut a recording to one program.
 7. **No signature** for `Neart482`'s LZ or the self-extracting Hrust 1, and **no packer** for the latter.
 8. **`kit/tap.py`** is CLI only; `tools/mktap.py` imports its functions.

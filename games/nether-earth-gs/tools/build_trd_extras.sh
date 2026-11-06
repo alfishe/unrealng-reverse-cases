@@ -17,7 +17,7 @@
 # A lock (build/.lock-trd) keeps two runs apart. Prints "trd extras: identical" when all three match.
 set -eu
 cd "$(dirname "$0")/.."
-SJASMPLUS=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+SJASMPLUS=$(python3 ../../kit/toolpaths.py sjasmplus "${1:-}") || exit 1
 TRD="orig/Nether Earth (1987)(Argus Press Software Ltd)(EN)(GS)[h 2002 Tron Z].trd"
 
 mkdir -p build

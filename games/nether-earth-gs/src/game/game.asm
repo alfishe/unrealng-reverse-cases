@@ -19,10 +19,10 @@ PageRom48      EQU $10     ; port $7FFD: bit 4 the 48 BASIC ROM, bits 0-2 the RA
 ; The variables past the loaded image (game.ann @equ)
 ViewBuffer     EQU $5B00  ; the view's back buffer $5B00-$677F: its first 2704 bytes lie below the file (ViewBufferTail holds the rest); the loader neart022 at $61A8-$6508 is inside it and is wiped by the first ClearViewBuffer
 
-; Addresses in the RAM page the game pages at $C000 (game.ann # @bank)
-GsDriver       EQU $C000  ; page DriverBank: the GS driver: A = the game's sound id (src/disk/driver.asm, src/tape/driver.asm)
+; Addresses in other RAM banks (@bank)
+GsDriver       EQU $C000  ; bank DriverBank: the GS driver: A = the game's sound id (src/disk/driver.asm, src/tape/driver.asm)
 
-; Names that cannot be labels (game.ann # @alias)
+; Names that cannot be labels (@alias)
 Handler        EQU ImJump+1  ; the interrupt handler: the operand of the JP at $FDFD, the IM 2 vector
   ORG $6590
   INCLUDE "viewbuffer.asm"  ; The tail of the view's back buffer, $6590-$677F: the first bytes of the file

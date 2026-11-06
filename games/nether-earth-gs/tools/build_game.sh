@@ -1,5 +1,5 @@
 #!/bin/sh
-# The game image from source: the modules src/game/*.asm (written by tools/game_mkgame.py from src/game/game.ann)
+# The game image from source: the modules src/game/*.asm (written by kit/mkgame.py from src/game/game.ann)
 # and the resources src/res/game (tools/res_formats.py), assembled twice into build/game/ and each checked byte for
 # byte against the file neart001 of its medium (tools/game_image.py).
 #
@@ -14,7 +14,7 @@
 # SaveBytesEntry (the ROM entry of the game's tape save, $04D0 / $04C2): case.json header, docs/03 3.5.
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 b="$here/build/game"
 rm -rf "$b"
 mkdir -p "$b"

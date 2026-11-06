@@ -1,6 +1,6 @@
 # The annotations of the boot menu's second part: the 64-column printer the menu's Start copies from $68CC to $8156
 # ($8156-$8A35, the last 2272 bytes of what boot's HRUM block unpacks). The single source of src/trd/boot/print64*.asm
-# (tools/trd_mkasm.py). The menu uses PrintInit, the channel output ChannelOut (through the ROM's PR_STRING and RST
+# (kit/mkgame.py --part src/trd/boot/print64.json). The menu uses PrintInit, the channel output ChannelOut (through the ROM's PR_STRING and RST
 # $10), the print position and the font; the rest is library code no call reaches (the author's 64-column package:
 # scrolls, a line input with a cursor, inline and zero-ended strings), kept and named.
 

@@ -1,0 +1,26 @@
+{
+  "about": "The boot menu's 64-column printer ($8156): python3 ../../kit/mkgame.py --part src/trd/boot/print64.json --install",
+  "image": "build/trd/obj/boot-print64.bin",
+  "org": "8156",
+  "ann": "src/trd/boot/print64.ann",
+  "top": "boot-print64",
+  "dest": "src/trd/boot",
+  "res": "src/res/trd",
+  "device": "ZXSPECTRUM128",
+  "header": [
+    "; Nether Earth GS, TRD file boot: the boot menu's print64 part"
+  ],
+  "mode": "blocks",
+  "pages": [
+    5,
+    2
+  ],
+  "l1": [
+    "work/stage2/trd/rA/l1.json"
+  ],
+  "data_entries": "stop",
+  "isub_as_written": true,
+  "drop_data_refs": true,
+  "save": "build/trd/obj/boot-print64.bin",
+  "work": "work/stage2/trd/mkasm/boot-print64"
+}

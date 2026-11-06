@@ -13,7 +13,7 @@ under `build/game/res`, and `tools/build_game.sh` assembles `src/game/game.asm` 
 Hood's tape, each compared byte for byte with the original. Any edit shows at once as a difference.
 
 - **Where they come from.** An entry of `src/game/game.ann` followed by `@res FILE` is a resource: `kit/mkgame.py`
-  (through `tools/game_mkgame.py --install`) writes its bytes to `FILE` and its data lines in `src/game/*.asm`
+  (through `kit/mkgame.py --install`) writes its bytes to `FILE` and its data lines in `src/game/*.asm`
   become `INCBIN "res/FILE",offset,length` under the entry's label and description. Entries that name one file share
   it: a sprite's header and rows entries, the two view edges, the nine order names. The install goes through
   `res_formats.install`: every file here is an editable source, no `.bin` is kept. Edit the sources, not the `.asm`.

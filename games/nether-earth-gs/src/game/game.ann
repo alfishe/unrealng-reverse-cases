@@ -7075,7 +7075,7 @@ $D6A6 RadarDotOutside ; outside the window: return from ToggleRadarDot too
 @isub $D4E0 LD DE,Font-$100
 
 # ---- Nether Earth GS: the conversion's own entries (stage 2) ----
-# The GS driver's page and names that cannot be labels (tools/game_mkgame.py)
+# The GS driver's page and names that cannot be labels (kit/mkgame.py @bank, @alias)
 # @bank $C000 GsDriver DriverBank ; the GS driver: A = the game's sound id (src/disk/driver.asm, src/tape/driver.asm)
 # @alias Handler ImJump+1 ; the interrupt handler: the operand of the JP at $FDFD, the IM 2 vector
 @equ $5B00 ViewBuffer 2704 ; the view's back buffer $5B00-$677F: its first 2704 bytes lie below the file (ViewBufferTail holds the rest); the loader neart022 at $61A8-$6508 is inside it and is wiped by the first ClearViewBuffer

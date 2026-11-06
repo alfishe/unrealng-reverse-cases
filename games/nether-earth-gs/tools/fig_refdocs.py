@@ -17,11 +17,13 @@ import os
 import re
 import subprocess
 import sys
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import toolpaths  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CASE = os.path.dirname(HERE)
 KIT = os.path.join(CASE, '..', '..', 'kit')
-SJASMPLUS = '/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus'
+SJASMPLUS = toolpaths.sjasmplus(required=False) or 'sjasmplus'
 
 BUILDS = [
     ['gsB/rT', "Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, "

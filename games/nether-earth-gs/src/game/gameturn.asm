@@ -89,7 +89,7 @@ GameTurnEnd:
   LD HL,(Clock+$0002)     ; HL = the day count
   CALL PrintNumber5       ; days, five digits
   CALL PrintNewline       ; the next line
-  LD A,(Clock+1)            ; hours, two digits with zeros
+  LD A,(Clock+$0001)      ; hours, two digits with zeros
   CALL PrintNumber2Zero   ; "HH" with a leading zero
   LD A,$2E                ; "."
   CALL PrintCharKeep      ; print it, the registers kept

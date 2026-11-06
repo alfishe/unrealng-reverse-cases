@@ -35,9 +35,11 @@ sys.path.insert(0, KIT)
 sys.path.insert(0, HERE)
 import kitlib as K  # noqa: E402
 import play_gs  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import toolpaths  # noqa: E402
 bot = play_gs.bot
 
-UNREAL = os.environ.get('UNREAL_NG', '/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/wt-nezs-stage1')
+UNREAL = toolpaths.unreal_ng(required=False) or 'unreal-ng'
 BINARY = os.path.join(UNREAL, 'cmake-build-agent-release/bin/unreal-qt.app/Contents/MacOS/unreal-qt')
 WORK = os.path.join(CASE, 'work', 'gsA')
 START = os.path.join(WORK, 'deep', 'start.szx')

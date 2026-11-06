@@ -2,7 +2,7 @@
 """Editable sources for the game image's resources, src/res/game (src/res/game/README.md). Graphics are PNG, the
 level, the menu tune and the order names are text. They become the original `.bin` files at build time
 (tools/build_game.sh), and the build's byte-exact check against neart001 keeps them honest. kit/mkgame.py --install
-(through tools/game_mkgame.py) calls install(files) with the bytes of each @res entry.
+(through kit/mkgame.py --install) calls install(files) with the bytes of each @res entry.
 
 Copied from ../nether-earth/tools/res_formats.py (the formats are the same: the game's graphics, level, menu tune and
 order names are Nether Earth's bytes at Nether Earth's addresses). Changed here: the folder is src/res/game, the

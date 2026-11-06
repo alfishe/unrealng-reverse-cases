@@ -53,6 +53,7 @@ One build at a time: it holds `build/.lock` (a folder) while it runs. The parts,
 The game's source is written from its annotations:
 
 ```bash
-python3 tools/game_mkgame.py --install        # src/game/*.asm and src/res/game from src/game/game.ann
+python3 ../../kit/mkgame.py --install                               # src/game/*.asm and src/res/game from game.ann
+python3 ../../kit/mkgame.py --part src/trd/boot/menu.json --install  # the TRD boot menu (and print64.json)
 python3 ../../kit/check_docs.py --case .
 ```

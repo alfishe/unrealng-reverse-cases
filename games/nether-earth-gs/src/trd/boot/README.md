@@ -9,9 +9,9 @@ it reads the file's HRUM block to `$61A8` and calls it; the block unpacks TRON's
 | --- | --- |
 | `boot.asm` | the whole file, 13 sectors: the BASIC program (lines 1-3, the REM code `Boot`), the autostart mark, the sector's old tail, the HRUM block (`HRUM_SFX`), HRUM's credit, the `$CD` filler |
 | `hrum35.asm` | the HRUM 3.5 self-extractor (macro `HRUM_SFX`), copied from ../advanced-nether-earth/src/sfx/hrum35.asm |
-| `boot-menu.asm`, `menu.asm` | the menu's main part, `$61A8-$68CB` (written by `tools/trd_mkasm.py` from `menu.ann`) |
+| `boot-menu.asm`, `menu.asm` | the menu's main part, `$61A8-$68CB` (written by `kit/mkgame.py` from `menu.ann`) |
 | `boot-print64.asm`, `print64.asm` | the 64-column printer the menu copies to `$8156` (`$8156-$8A35`, from `print64.ann`) |
-| `menu.ann`, `print64.ann` | the annotations: the single source of the two parts' `.asm` (edit these, then run `trd_mkasm.py --install`) |
+| `menu.ann`, `print64.ann` | the annotations: the single source of the two parts' `.asm` (edit these, then run `kit/mkgame.py --part` on `menu.json` / `print64.json`) |
 
 The build (`tools/build_trd_extras.sh`): `boot-menu.asm` and `boot-print64.asm` assemble the two parts; joined they
 are the 4100 bytes the block unpacks (`build/trd/obj/menu.bin`); `tools/hrum.py pack --prefer 2348:264` packs them
@@ -34,15 +34,13 @@ reaches. **The printer** (`print64.asm`): 4-pixel characters through channel S (
 resource; scrolls, a line input and string printers of the same package no call reaches, and 59 bytes of an older
 layout (`LeftoverCode`).
 
-**Regenerating the menu sources** (skoolkit's venv, see `tools/trd_mkasm.py`):
+**Regenerating the menu sources** (SkoolKit's venv: `$SKOOLKIT_VENV` or what `kit/toolpaths.py` finds). The part
+files `menu.json` and `print64.json` name the image (the build's `build/trd/obj/boot-menu.bin`,
+`boot-print64.bin`), the recording, the resource folder and the text the build makes:
 
 ```sh
-python3 tools/trd_mkasm.py --image build/trd/obj/boot-menu.bin --org '$61A8' --ann src/trd/boot/menu.ann \
-  --top boot-menu --dest src/trd/boot --res src/res/trd --l1 work/stage2/trd/rA/l1.json \
-  --built boot/texts.bin=trd/text/trd-boot-menu.bin --save build/trd/obj/boot-menu.bin --install
-python3 tools/trd_mkasm.py --image build/trd/obj/boot-print64.bin --org '$8156' --ann src/trd/boot/print64.ann \
-  --top boot-print64 --dest src/trd/boot --res src/res/trd --l1 work/stage2/trd/rA/l1.json \
-  --save build/trd/obj/boot-print64.bin --install
+python3 ../../kit/mkgame.py --part src/trd/boot/menu.json --install
+python3 ../../kit/mkgame.py --part src/trd/boot/print64.json --install
 ```
 
 `work/stage2/trd/rA/l1.json` is the analysis recording of the menu (the menu shown, cursor keys, ENTER); without it

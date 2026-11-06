@@ -1,6 +1,6 @@
 # The annotations of the boot menu's main part ($61A8-$68CB, the first 1828 bytes of what boot's HRUM block unpacks):
-# the single source of src/trd/boot/menu*.asm (tools/trd_mkasm.py, kit/mkgame.py's pipeline). The format is
-# kit/mkgame.py's class Annotations, plus @const (see tools/trd_mkasm.py). The second part, the 64-column printer
+# the single source of src/trd/boot/menu*.asm (kit/mkgame.py --part src/trd/boot/menu.json). The
+# format is kit/mkgame.py's class Annotations with @const (docs/ann-format.md). The second part, the 64-column printer
 # copied to $8156, is src/trd/boot/print64.ann.
 #
 # The code is what the recording work/stage2/trd/rA ran (the menu shown, cursor keys, ENTER on Neart482), widened by

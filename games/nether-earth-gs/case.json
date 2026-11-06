@@ -6,6 +6,7 @@
   "device": "ZXSPECTRUM128",
   "bases": {"5": "4000", "2": "8000", "0": "C000"},
   "read_builds": ["stage2/r1"],
+  "work": "work/mkgame/main",
   "ref_builds": [["stage2/r1", "the SCL on Pentagon 128 + GS 512 KB, from the main menu: tools/play_gs.py builds 5 robots and gives their orders, 12073 frames"]],
   "driver_page": {"disk": {"bank": 1, "source": "src/disk/driver.asm", "file": "neart021 (SCL, TRD)"},
                   "tape": {"bank": 6, "source": "src/tape/driver.asm", "file": "neart021 (TAP)"}},

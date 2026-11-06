@@ -1,5 +1,5 @@
 ; Nether Earth GS, TRD file boot: the boot menu's print64 part
-; Written by tools/trd_mkasm.py from src/trd/boot/print64.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/trd/boot/print64.ann and the recordings; edit print64.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

@@ -9,7 +9,7 @@
 # build/orig/) and the TAP in orig/, cut by tools/disk_files.py and kit/tapblocks.py into build/orig/{scl,tap}/.
 set -eu
 cd "$(dirname "$0")/.."
-SJASMPLUS=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+SJASMPLUS=$(python3 ../../kit/toolpaths.py sjasmplus "${1:-}") || exit 1
 TAP="orig/Nether Earth (1987)(Argus Press Software Ltd)(EN)(GS)[h 2017 Hood, Tron Z].tap"
 KIT=../../kit
 
