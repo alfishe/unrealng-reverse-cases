@@ -6,6 +6,7 @@
   "device": "ZXSPECTRUM48",
   "bases": {"5": "4000", "2": "8000", "0": "C000"},
   "read_builds": ["game", "deep"],
+  "code_builds": ["load", "play"],
   "ref_builds": [["game", "the first recording's game window"], ["deep", "the bot's game: robots built, orders given, factories captured, fights"]],
   "header": ["; Nether Earth, Argus Press Software 1987: the game image as the loader N1 leaves it ($4000-$FCE8, entry $A600)."]
 }

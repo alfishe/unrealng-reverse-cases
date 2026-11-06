@@ -691,7 +691,7 @@ PartCellLoop:
   LD (IY+$07),A           ; the robot's parts
   LD DE,$0A07             ; row 10, column 7 of the view
   CALL DrawRobot          ; the parts from +$0D up, into the view buffer
-  LD A,($CF3F)            ; the stack's height after the last part
+  LD A,(DrawSprite+$0012) ; the stack's height after the last part
   LD (IY+$09),A           ; +$09: the robot's height (the landing test adds
                           ; +$0D)
   LD BC,$0448             ; 4 bytes, 72 lines

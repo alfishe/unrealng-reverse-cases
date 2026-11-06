@@ -38,9 +38,10 @@ R = os.path.abspath(os.path.join(CASE, '..', '..'))
 UNREAL = os.environ.get('UNREAL_NG', os.path.join(R, 'unreal-ng'))
 sys.path.insert(0, HERE)
 import bot  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import toolpaths  # noqa: E402
 
-BINARY = ('/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/wt-ane-stage1/cmake-build-agent-release/bin/'
-          'unreal-qt.app/Contents/MacOS/unreal-qt')
+BINARY = toolpaths.unreal_binary(required=False) or 'unreal-qt'
 START = os.path.join(CASE, 'work', 'play', 'start.szx')
 PLAY = os.path.join(CASE, 'work', 'ill1', 'snaps', 'deep-3000.szx')
 WORK = os.path.join(CASE, 'work', 'audio')

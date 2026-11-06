@@ -8,7 +8,7 @@
 # src/game/game.ann and the recordings). orig/NETHER.TZX holds the same five blocks as standard-speed TZX blocks.
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1  # $SJASMPLUS, PATH or a checkout
 mkdir -p "$here/build"
 cd "$here/build"
 if [ -f "$here/tools/res_formats.py" ]; then

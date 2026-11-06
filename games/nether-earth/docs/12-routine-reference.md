@@ -4,14 +4,14 @@ Every code entry of the game, in address order by module (`src/game/<module>.asm
 the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/game` (the first recording's game window), `work/deep` (the bot's game: robots built, orders given, factories captured, fights). They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
 of the recording. Memory ranges name the entries they cover. An entry no recording reached says so.
-Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --venv SKOOLKIT_VENV --sjasmplus SJASMPLUS --install`
+Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 
 | Module | Entries | Code entries |
 | --- | --- | --- |
-| [`viewbuffer`](#viewbuffer) | `$5B00`-`$677F` | 0 of 1 |
-| [`font`](#font) | `$6780`-`$697F` | 0 of 1 |
-| [`sprites`](#sprites) | `$6980`-`$A5FF` | 0 of 179 |
+| [`viewbuffer`](11-data-reference.md#viewbuffer) | `$5B00`-`$677F` | 0 of 1 |
+| [`font`](11-data-reference.md#font) | `$6780`-`$697F` | 0 of 1 |
+| [`sprites`](11-data-reference.md#sprites) | `$6980`-`$A5FF` | 0 of 179 |
 | [`start`](#start) | `$A600`-`$A71F` | 4 of 4 |
 | [`robotmenu`](#robotmenu) | `$A720`-`$AD61` | 26 of 48 |
 | [`gameturn`](#gameturn) | `$AD62`-`$AF10` | 11 of 14 |
@@ -19,7 +19,7 @@ Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py -
 | [`world`](#world) | `$B0CA`-`$B7F3` | 34 of 36 |
 | [`enemy`](#enemy) | `$B7F4`-`$BB08` | 4 of 4 |
 | [`bases`](#bases) | `$BB09`-`$BDA8` | 17 of 17 |
-| [`level`](#level) | `$BDA9`-`$C0FF` | 0 of 17 |
+| [`level`](11-data-reference.md#level) | `$BDA9`-`$C0FF` | 0 of 17 |
 | [`mainmenu`](#mainmenu) | `$C100`-`$C4A6` | 39 of 64 |
 | [`music`](#music) | `$C4A7`-`$C848` | 32 of 50 |
 | [`construction`](#construction) | `$C849`-`$CCBC` | 18 of 26 |
@@ -28,9 +28,9 @@ Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py -
 | [`controls`](#controls) | `$D37C`-`$D3E4` | 2 of 4 |
 | [`print`](#print) | `$D3E5`-`$D565` | 13 of 13 |
 | [`interrupts`](#interrupts) | `$D566`-`$D6A7` | 8 of 8 |
-| [`tables`](#tables) | `$D6A8`-`$D7D2` | 0 of 6 |
-| [`worldstate`](#worldstate) | `$D7D3`-`$DCFF` | 0 of 7 |
-| [`map`](#map) | `$DD00`-`$FCE8` | 0 of 2 |
+| [`tables`](11-data-reference.md#tables) | `$D6A8`-`$D7D2` | 0 of 6 |
+| [`worldstate`](11-data-reference.md#worldstate) | `$D7D3`-`$DCFF` | 0 of 7 |
+| [`map`](11-data-reference.md#map) | `$DD00`-`$FCE8` | 0 of 2 |
 
 ## start
 
