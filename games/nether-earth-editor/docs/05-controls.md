@@ -71,9 +71,9 @@ cell to the right and the two above (line 88), and the tile is printed with the 
 Blocks 12-18 have a second tile for odd map rows (Tiles + 224). A block goes only on four empty cells or over another
 block (a cell 2-18 but not a door 15 / 16): else a beep (line 87). `5` on a block clears its four cells (line 53).
 
-![Two blocks put](img/editor/map-blocks.png) ![Can not delete](img/editor/cannot-delete.png)
+![One block put](img/editor/map-put.png) ![Two blocks put](img/editor/map-blocks.png) ![Can not delete](img/editor/cannot-delete.png)
 
-`map-blocks.png`: frame 6370, after `0` at 5834 and 6220 (blocks 2 and 4). `cannot-delete.png`: frame 5040, `5` at
+`map-put.png`: one block put on map page 2 (MILE 13.5), the cursor moved off it. `map-blocks.png`: frame 6370, after `0` at 5834 and 6220 (blocks 2 and 4). `cannot-delete.png`: frame 5040, `5` at
 5014 on an empty cell: "Can not delete" in red, a beep, 50 frames, then SELECTED again.
 
 ### 5.3.2 Deleting a building

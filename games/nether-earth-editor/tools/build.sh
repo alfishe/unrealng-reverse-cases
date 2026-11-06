@@ -5,16 +5,21 @@
 #
 #   tools/build.sh [SJASMPLUS [PYTHON]]
 #
-# PYTHON must have SkoolKit (tools/zxbasic.py computes the ROM's inexact numbers with SkoolKit's simulator); the
-# 48K ROM comes from the unreal-ng submodule (ROM48 overrides it).
+# PYTHON must have SkoolKit (tools/zxbasic.py computes the ROM's inexact numbers with SkoolKit's simulator): by
+# default the Python of the SkoolKit venv kit/toolpaths.py finds ($SKOOLKIT_VENV first); SJASMPLUS defaults to
+# $SJASMPLUS or what kit/toolpaths.py finds. The 48K ROM comes from the unreal-ng submodule (ROM48 overrides it).
 #
 # The edition's image is Nether Earth's own source (../nether-earth/src, read only, assembled here into
 # build/edition/) plus src/edition/edition.asm; the saved games are src/res/levels/*.txt (tools/levels.py).
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
 ne=$(cd "$here/../nether-earth" && pwd)
-asm=${1:-${SJASMPLUS:-sjasmplus}}
-py=${2:-${PYTHON:-python3}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
+py=${2:-${PYTHON:-}}
+if [ -z "$py" ]; then
+    venv=$(python3 "$here/../../kit/toolpaths.py" venv) || exit 1
+    py="$venv/bin/python"
+fi
 rom=${ROM48:-$here/../../unreal-ng/data/rom/48.rom}
 out="$here/build/edition"
 mkdir -p "$out/levels" "$out/orig"

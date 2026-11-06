@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """nee.mix's resources as PNG (src/res/mix) and back to the bytes the source INCBINs.
 
-    python3 tools/mix_res.py export BINDIR          # BINDIR/mix/*.bin -> src/res/mix/*.png (tools/mkmix.sh)
+    python3 tools/mix_res.py export BINDIR          # BINDIR/mix/*.bin -> src/res/mix/*.png
     python3 tools/mix_res.py build OUTDIR           # src/res/mix/*.png -> OUTDIR/res/mix/*.bin
     python3 tools/mix_res.py check                  # every PNG built, exported, built again: the same bytes
     python3 tools/mix_res.py preview OUTDIR         # the three sheets x 3 with their numbers (docs/img/editor)
@@ -99,14 +99,20 @@ def preview(out, scale=3):
         sheet.save(os.path.join(out, 'mix-' + name + '.png'))
 
 
+def install(files):
+    """kit/mkgame.py --install (src/mix/case.json res_install): {'mix/NAME.bin': bytes} -> src/res/mix/NAME.png"""
+    os.makedirs(SRC, exist_ok=True)
+    for name, (cw, ch, per_row, length) in FORMATS.items():
+        data = files['mix/%s.bin' % name]
+        assert len(data) == length, name
+        to_png(data, cw, ch, per_row).save(os.path.join(SRC, name + '.png'))
+
+
 def main():
     cmd = sys.argv[1]
     if cmd == 'export':
-        os.makedirs(SRC, exist_ok=True)
-        for name, (cw, ch, per_row, length) in FORMATS.items():
-            data = open(os.path.join(sys.argv[2], 'mix', name + '.bin'), 'rb').read()
-            assert len(data) == length, name
-            to_png(data, cw, ch, per_row).save(os.path.join(SRC, name + '.png'))
+        install({'mix/%s.bin' % name: open(os.path.join(sys.argv[2], 'mix', name + '.bin'), 'rb').read()
+                 for name in FORMATS})
     elif cmd == 'build':
         build(sys.argv[2])
     elif cmd == 'check':

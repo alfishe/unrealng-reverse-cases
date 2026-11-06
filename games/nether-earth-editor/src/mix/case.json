@@ -5,7 +5,11 @@
   "hi": "CC14",
   "device": "ZXSPECTRUM48",
   "bases": {"5": "4000", "2": "8000", "0": "C000"},
-  "read_builds": ["tour-edit"],
+  "read_builds": ["edB/tour-edit"],
+  "code_builds": ["edB/tour"],
+  "dest": "src/mix",
+  "work": "work/mkmix/out",
+  "res_install": "tools/mix_res.py:install",
   "ref_builds": [["tour-edit", "edB's editor tour: the load, resources, map edits, a factory and a warbase placed and deleted, a save, a broken load"]],
   "header": ["; nee.mix, Nether Earth Editor (V.O.software 1996): the 2244 bytes the loader puts at $C350 (50000), called by nee.bas."]
 }

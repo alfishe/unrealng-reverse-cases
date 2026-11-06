@@ -1,5 +1,5 @@
 ; nee.mix, Nether Earth Editor (V.O.software 1996): the 2244 bytes the loader puts at $C350 (50000), called by nee.bas.
-; Written by kit/mkgame.py from src/game/game.ann and the recordings; edit game.ann, not the .asm.
+; Written by kit/mkgame.py from src/mix/mix.ann and the recordings; edit mix.ann, not the .asm.
 
   DEVICE ZXSPECTRUM48
 
