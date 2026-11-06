@@ -1,5 +1,5 @@
 ; Trush block 0's contents: the loading screen ($7F58-$9AFF)
-; Written by tools/part_mkasm.py from src/disk/screen.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/disk/screen.ann and the recordings; edit screen.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

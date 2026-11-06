@@ -1,5 +1,5 @@
 ; The boot code (disk sectors 1:1-1:2, run at $5D3B)
-; Written by tools/part_mkasm.py from src/disk/boot.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/disk/boot.ann and the recordings; edit boot.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

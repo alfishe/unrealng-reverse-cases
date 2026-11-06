@@ -1,5 +1,5 @@
 # The annotations of Trush block 0's contents ($7F58-$9AFF): the loading screen and the code that fades it in. The
-# single source of src/disk/screen/*.asm (tools/part_mkasm.py). Boot's Start runs block 0 at $7E2C (it unpacks
+# single source of src/disk/screen/*.asm (kit/mkgame.py --image). Boot's Start runs block 0 at $7E2C (it unpacks
 # these bytes and returns), copies the screen to bank 7 and calls ShowLoadingScreen.
 
 @equ $4000 Screen 6144 ; the screen's bitmap

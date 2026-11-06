@@ -9,7 +9,7 @@
 #   tools/sig_listings.sh [SJASMPLUS]
 set -eu
 cd "$(dirname "$0")/.."
-SJASMPLUS=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+SJASMPLUS=$(python3 ../../kit/toolpaths.py sjasmplus "${1:-}") || exit 1
 mkdir -p build/lst work/sig-lst
 len=$((0x10000 - 0x61A8))
 cp build/trush/blk04/stream.bin work/sig-lst/stream.bin

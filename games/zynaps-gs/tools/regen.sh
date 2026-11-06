@@ -4,21 +4,21 @@
 #   tools/regen.sh
 #
 # The game: kit/mkgame.py from src/game/game.ann (case.json: the image from tools/game_image.py, the recordings
-# work/z48c2 and work/z48r1). The disk parts: tools/part_mkasm.py from src/disk/*.ann over the original's bytes
+# work/z48c2 and work/z48r1). The disk parts: kit/mkgame.py --image from src/disk/*.ann over the original's bytes
 # (work/stage2/*.bin, cut from the TRD in stage 1; Trush block 0 from work/media/unpacked) with the recording
-# work/stage2/r1. Every part is assembled and compared with its image before it is installed.
+# work/stage2/r1 (--blocks: whole recorded basic blocks in the part's RAM page). Every part is assembled and compared with its image before it is installed.
 set -eu
 cd "$(dirname "$0")/.."
-VENV=${VENV:-/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/venv-skoolkit}
-SJASMPLUS=${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}
+VENV=$(python3 ../../kit/toolpaths.py venv "${SKOOLKIT_VENV:-${VENV:-}}")
+SJASMPLUS=$(python3 ../../kit/toolpaths.py sjasmplus "${SJASMPLUS:-}")
 export SJASMPLUS
 L1=work/stage2/r1/l1.json
 part() {  # IMAGE ORG PAGE ANN TOP DEST TITLE [ARGS...]
     image=$1 org=$2 page=$3 ann=$4 top=$5 dest=$6 title=$7
     shift 7
-    python3 tools/part_mkasm.py --image "$image" --org "$org" --page "$page" --ann "$ann" --top "$top" \
+    python3 ../../kit/mkgame.py --image "$image" --org "$org" --blocks --page "$page" --ann "$ann" --top "$top" \
         --dest "$dest" --res src/res --l1 "$L1" --title "$title" --venv "$VENV" --sjasmplus "$SJASMPLUS" \
-        --install "$@"
+        --out "work/stage2/mkasm/$top" --install "$@"
 }
 sh tools/build.sh "$SJASMPLUS"   # build/res and build/disk for the parts that INCBIN them
 part work/stage2/boot.bin 0x5d3b 5 src/disk/boot.ann boot-sectors src/disk/boot \

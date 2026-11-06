@@ -1,5 +1,5 @@
 ; The options menu (driver file $C8AD, run at $6D60)
-; Written by tools/part_mkasm.py from src/disk/menu.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/disk/menu.ann and the recordings; edit menu.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

@@ -1,7 +1,7 @@
 # The annotations of the options menu: the 1696 bytes at $C8AD of the GS driver file (MenuCopy in
 # src/disk/driver.ann). The boot calls it in place, at $6D60 inside Trush block 4, before the installer: its
 # writes go to the not yet installed code (the driver file at $64B3, the trampolines at $6451, the loader copy, the
-# Zynaps image). The single source of src/disk/menu/*.asm (tools/part_mkasm.py).
+# Zynaps image). The single source of src/disk/menu/*.asm (kit/mkgame.py --image).
 #
 # The code is what the recording work/stage2/r1 ran at $6D60 (the menu shown, key 1), widened by mkgame's walk.
 

@@ -33,6 +33,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CASE = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 import trush  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import toolpaths  # noqa: E402
 
 TRACKS = 160
 LOADER_ORG = 0x61A8
@@ -148,8 +150,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('layout')
     ap.add_argument('out')
-    ap.add_argument('--sjasmplus', default=os.environ.get(
-        'SJASMPLUS', '/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus'))
+    ap.add_argument('--sjasmplus', default=toolpaths.sjasmplus(required=False))
     ap.add_argument('--work', default=os.path.join(CASE, 'build', 'trush'))
     a = ap.parse_args()
     shutil.rmtree(a.work, ignore_errors=True)

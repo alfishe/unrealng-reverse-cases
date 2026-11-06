@@ -1,6 +1,6 @@
 # The annotations of the boot code: the disk's sectors 1:1 and 1:2, which basic.asm's BootLoader reads to $5D3B
-# (over the BASIC program) and returns into. The single source of src/disk/boot/*.asm (tools/part_mkasm.py,
-# kit/mkgame.py's pipeline). The format is kit/mkgame.py's class Annotations, plus @const (tools/part_mkasm.py).
+# (over the BASIC program) and returns into. The single source of src/disk/boot/*.asm (kit/mkgame.py
+# --image). The format is kit/mkgame.py's class Annotations with @const (docs/ann-format.md).
 #
 # The code is what the recording work/stage2/r1 ran (the boot, the menu, a game), widened by mkgame's walk.
 

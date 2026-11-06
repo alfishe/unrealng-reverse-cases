@@ -47,9 +47,11 @@ import shutil
 import sys
 import time
 import urllib.request
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import toolpaths  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-UNREAL = os.environ.get('UNREAL_NG', '/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/wt-zgs-stage1')
+UNREAL = toolpaths.unreal_ng(required=False) or 'unreal-ng'
 sys.path.insert(0, os.path.join(UNREAL, 'tools', 'verification', 'mcp'))
 sys.path.insert(0, os.path.join(UNREAL, 'tools', 'verification', 'analysis'))
 import mcplib  # noqa: E402

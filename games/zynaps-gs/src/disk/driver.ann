@@ -1,5 +1,5 @@
 # The annotations of the GS driver file: the $F4D bytes the installer copies from $64B3 (inside Trush block 4) to
-# bank 1 $C000, where they run. The single source of src/disk/driver/*.asm (tools/part_mkasm.py). The file also
+# bank 1 $C000, where they run. The single source of src/disk/driver/*.asm (kit/mkgame.py --image). The file also
 # carries the level loader's copy (src/disk/loader.ann, run at $61A8 after the driver swaps it in) and the options
 # menu (src/disk/menu.ann, run in place at $6D60 before the installer); both are built resources here.
 #

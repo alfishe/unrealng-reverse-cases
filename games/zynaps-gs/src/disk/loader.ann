@@ -1,6 +1,6 @@
 # The annotations of the level loader: the $419 bytes the driver keeps at bank 1 $C44A (LoaderCopy in
 # src/disk/driver.ann) and swaps to $61A8 for a load (LevelChange, SwapLoader). The single source of
-# src/disk/loader/*.asm (tools/part_mkasm.py). It runs with bank 1 paged at $C000, so it calls the driver directly.
+# src/disk/loader/*.asm (kit/mkgame.py --image). It runs with bank 1 paged at $C000, so it calls the driver directly.
 #
 # The code is what the recording work/stage2/r1 ran at $61A8 (the game start: the jingle and the FX; a level's
 # module), widened by mkgame's walk.

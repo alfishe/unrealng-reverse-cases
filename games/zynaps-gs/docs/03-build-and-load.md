@@ -282,7 +282,7 @@ all 655360 bytes. One build at a time: it holds `build/.lock` (a folder) while i
 ```mermaid
 flowchart LR
   ann["src/game/game.ann"] -- kit/mkgame.py --> gasm["src/game/*.asm (50 modules)"]
-  dann["src/disk/*.ann"] -- tools/part_mkasm.py --> dasm["src/disk/boot, screen, loader, menu, driver"]
+  dann["src/disk/*.ann"] -->|"kit/mkgame.py --image"| dasm["src/disk/boot, screen, loader, menu, driver"]
   res["src/res/ (PNG, text, MOD, WAV)"] -- res_formats.py, disk_media.py --> bres["build/res/"]
   gasm -- sjasmplus --> game["build/game.bin ($5C00-$FFFF)"]
   dasm -- sjasmplus --> parts["build/disk/*.bin"]
@@ -316,7 +316,7 @@ the title loop. `tools/game_image.py` unpacks the image from the original into `
 changes. The 31 installer patches are written at run time by `src/disk/install.asm`, so the game's source holds the
 bytes the block holds.
 
-**The disk parts.** `tools/part_mkasm.py` runs kit/mkgame.py's pipeline over the original's bytes of each part
+**The disk parts.** `kit/mkgame.py --image` runs the kit's pipeline over the original's bytes of each part
 (`work/stage2/*.bin`, Trush block 0 from `work/media/unpacked/`), with the code the recording `work/stage2/r1` ran,
 and writes the part's `.asm` from its `.ann` (boot, screen, loader, menu, driver: one module each). Each is
 assembled and compared before it is installed. `tools/regen.sh` writes every source again (the parts, then the game)

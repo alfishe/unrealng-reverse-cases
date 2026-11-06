@@ -1,5 +1,5 @@
 ; The level loader (bank 1 $C44A, run at $61A8)
-; Written by tools/part_mkasm.py from src/disk/loader.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/disk/loader.ann and the recordings; edit loader.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

@@ -54,7 +54,7 @@ LoadFx:
   LD A,(OptionSaturns)
   OR A
   JR NZ,l_61E8
-  LD A,($63C3)
+  LD A,(FxRecords+$000D)
   OR $80
   LD (FxRecords+$000D),A
 l_61E8:

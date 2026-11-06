@@ -36,7 +36,7 @@ The steps and what each proved: `work/stage1/NOTES.md`. In short:
 | Step | Result |
 | --- | --- |
 | the game image from block 4 (`tools/game_image.py`) and kit/mkgame.py over `src/game/game.ann` with the 48K recordings `work/z48c2`, `work/z48r1` and the GS run `work/stage2/r1` | 50 modules, 546 entries, `src/game/*.asm`; every routine named and described for this image; the GS changes annotated at their addresses (`GS:` notes) |
-| `tools/part_mkasm.py` over `src/disk/*.ann` (boot, screen block, loader, menu, driver) | the disk parts as annotated sources, each assembled and compared with the original's bytes before it is installed |
+| `kit/mkgame.py --image` over `src/disk/*.ann` (boot, screen block, loader, menu, driver) | the disk parts as annotated sources, each assembled and compared with the original's bytes before it is installed |
 | `src/disk/install.asm`, `src/disk/trush.asm`, `tools/trush.py` (the packer) | the installer and the Trush block format; the packing rule recovered (`tools/mkdisk.py`: a record is packed when its in-place depack is safe and it saves a sector) |
 | `src/res` and `tools/res_*.py`, `tools/disk_media.py` | the graphics, levels, fonts, texts, modules, FX and the loading screen as editable files, each with a README; `res_formats.py check` and `disk_media.py check` round-trip them |
 | `tools/build.sh` (with a lock), `tools/regen.sh` | the TRD rebuilt byte-identical; regen writes every `.asm` again from its annotations and builds |

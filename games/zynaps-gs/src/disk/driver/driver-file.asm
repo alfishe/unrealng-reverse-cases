@@ -1,5 +1,5 @@
 ; The GS driver file (bank 1 $C000-$CF4C)
-; Written by tools/part_mkasm.py from src/disk/driver.ann; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/disk/driver.ann and the recordings; edit driver.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 
