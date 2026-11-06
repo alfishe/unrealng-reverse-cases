@@ -7,8 +7,8 @@ image and the recordings' L1 builds, writes the `.asm`, assembles it with sjasmp
 bytes are the original's. **Edit the `.ann`, never the generated `.asm`.**
 
 This document describes the format as the code parses it: `kit/mkgame.py` (class `Annotations`, the reference
-parser), `kit/refdocs.py`, `kit/ann_names.py`, `kit/sig_add.py`, and the cases' own generators that extend it
-(section 5). Where the file lives in a case and what it produces is in [case-files.md](case-files.md). The steps are
+parser, the one generator of every case's parts), `kit/refdocs.py`, `kit/ann_names.py` and `kit/sig_add.py`
+(section 5: parts, banks and pieces). Where the file lives in a case and what it produces is in [case-files.md](case-files.md). The steps are
 in [recipe 05](../recipes/05-source.md).
 
 ## 1. Lines
@@ -18,8 +18,9 @@ The parser reads the file line by line. Leading and trailing spaces are dropped.
 | Line starts with | Is |
 | --- | --- |
 | empty | nothing |
-| `#` | a comment for the reader of the `.ann`. It is never written to the `.asm`. The case generators' extended directives (`# @bank`, `# @var`, ...) also live here, so `kit/mkgame.py` skips them (section 5) |
+| `#` | a comment for the reader of the `.ann`. It is never written to the `.asm`. The older form of the part directives (`# @bank`, `# @var`, ...) is read behind it too (section 5.1) |
 | `@module`, `@about`, `@res`, `@isub`, `@inline`, `@equ` | a directive (section 2) |
+| `@const`, `@bank`, `@var`, `@alias`, `@over`, `@piece` | a part directive (section 5.1) |
 | `>` | a description paragraph of the last entry |
 | `$ADDR` | an entry or an inner line (section 3) |
 | anything else | an error: `game.ann:N: cannot read: ...` |
@@ -112,36 +113,55 @@ refuses an entry address, a name already used and a non-PascalCase name. Then ru
 
 ### 3.4 What becomes `Label+offset`
 
-Inside an entry, an address operand of an `LD` (`LD HL,$xxxx`, `LD A,($xxxx)`, `LD ($xxxx),A`) that has no label of
-its own is written as `Label+offset`, using the nearest label at or below it in the same entry
-(`label_inner_addresses`). Other instructions (JP, CALL, JR) always target labels. A constant that only looks like
-an address needs `@isub`. An operand outside the image needs `@equ` (or `@const` / `# @bank`, section 5).
+An operand that is always an address and has no label of its own is written as `Label+offset`, using the nearest
+label at or below it in the same entry (`label_inner_addresses`):
+
+- an `LD` through memory, `(nn)` on either side with any register (`LD A,($xxxx)`, `LD ($xxxx),A`,
+  `LD BC,($xxxx)`);
+- the `LD` of an address register: `LD HL,$xxxx`, `DE`, `IX`, `IY`, `SP`;
+- a `JP`, `CALL`, `JR` or `DJNZ` target that is not an instruction start (a jump into another instruction's
+  operand, into a data entry); a target that is one has its own label.
+
+`LD BC,$xxxx` is a count as often as an address: part files with `"operands": "wide"` take it too. A constant that
+only looks like an address needs `@isub`. An operand outside the image needs `@equ` (or `@const` / `@bank`,
+section 5.1).
 
 ## 4. What the generator does
 
-`kit/mkgame.py --case C --venv VENV --sjasmplus BIN [--ann FILE] [--out DIR] [--install]` does the following:
+`kit/mkgame.py` is the one generator for every code image of every case. It has three forms:
+
+```bash
+python3 kit/mkgame.py [--case C] [--config FILE] [--ann FILE] [--out DIR] [--install]   # the case's game (case.json)
+python3 kit/mkgame.py [--case C] --part src/<part>/<name>.json [--install]               # a part file (section 5.2)
+python3 kit/mkgame.py [--case C] --image BIN --org ADDR --ann FILE --top NAME --dest DIR [--install]   # one image
+```
+
+`--case` defaults to the current folder. Every form takes `--venv` and `--sjasmplus`; without them it uses
+`$SKOOLKIT_VENV` and `$SJASMPLUS`, else what `kit/toolpaths.py` finds (docs/case-files.md 10). For the game:
 
 1. **Image.** Runs `case.json` `image_cmd` if given, then reads `image`, which must be a 64 K file. `lo`..`hi` are
    the game's bytes.
-2. **Code.** Every instruction start that the recordings ran with the image's bytes, taken from every
-   `work/*/l1.json` (instructions and routine entries). Only pages listed in `bases` count. Data reads count only
-   from the `read_builds`. Then a static walk follows the branches the recordings did not take, from the ran
-   instructions and the `c` entries. The walk stops at bytes read as data, at a call to an `@inline` routine, and
-   where it would cut into a ran instruction.
+2. **Code.** Every instruction start that the recordings ran with the image's bytes (instructions and routine
+   entries), from `work/<build>/l1.json` of the builds `case.json` names: `read_builds` (their data reads count
+   too) and `code_builds` (instructions only). No other recording is read; a named build that is missing is an
+   error. Only pages listed in `bases` count. Then a static walk follows the branches the recordings did not take,
+   from the ran instructions and the `c` entries. The walk stops at bytes read as data, at a call to an `@inline`
+   routine, at an `@over` target, at a call to an `@bank` address, and where it would cut into a ran instruction.
 3. **Control file.** Writes `work/mkgame/game.ctl` (SkoolKit): one block per entry (yours, or one the code/data
    boundary or a CALL target makes), the titles, the `D` descriptions, the data sub-blocks cut at the inner lines.
    `refdocs.py` reads this file later.
 4. **SkoolKit.** `sna2skool.py -H -c game.ctl`, then the `Label+offset` and `@isub` rewrites, then
-   `skool2asm.py -H`. After that: `IXl`/`IXh` are upper-cased, `@equ` names are applied, and the bare `;` SkoolKit
-   leaves on continued data lines is removed.
+   `skool2asm.py -H`. After that: `IXl`/`IXh` are upper-cased, `@equ` and `@var` names are applied, and the bare
+   `;` SkoolKit leaves on continued data lines is removed.
 5. **Resources and modules.** Writes the `@res` files with their `INCBIN`s, then splits the listing into one file per
-   `@module`, each with its header. `game.asm` = the `case.json` `header` lines, `DEVICE`, the `EQU`s, the head, one
-   `INCLUDE` per module, and `SAVEBIN "game.bin",lo,hi-lo`.
-6. **Check.** Runs `sjasmplus --nologo --msg=war game.asm` in `work/mkgame` and compares `game.bin` with the image.
+   `@module`, each with its header. `game.asm` = the `case.json` `header` lines, `DEVICE`, the `EQU`s (`@const`,
+   `@equ`, `@bank`, `@alias`), the head, one `INCLUDE` per module, and `SAVEBIN "game.bin",lo,hi-lo`.
+6. **Check.** Runs `sjasmplus --nologo --msg=war game.asm` in the work folder and compares `game.bin` with the image.
    It prints `assembled: identical to the original image` or the first differing address.
-7. **Install** (`--install`, only when identical). **Deletes every `src/game/*.asm`**, writes the modules and
-   `game.asm`, and installs the resources through `tools/res_formats.py install`, or as bytes when the case has no
-   such script.
+7. **Install** (`--install`, only when identical). Writes the modules and `game.asm` into `src/game` (`case.json`
+   `dest`), and the resources through `tools/res_formats.py install`, or `case.json` `res_install`, or as bytes
+   when the case has neither. It never deletes a file it does not write: only the modules the old `game.asm`
+   included and the `.ann` no longer has.
 
 `kit/refdocs.py --case C` then reads `work/mkgame/game.ctl` and the `.ann`, together with the `ref_builds` L1 files,
 and writes doc 11 (data: readers and writers) and doc 12 (routines: runs, own T-states, callers, callees, memory,
@@ -152,55 +172,109 @@ The entry name is `<program>: <module>`, its entries are the named `c` entries w
 data entries and inner names. `@equ` names name the external operands, and `@inline` routines stop its decoder. See
 [signature-format.md](signature-format.md).
 
-## 5. Extensions in the cases
+## 5. Parts, banks and pieces
 
-The kit's generator takes one 64 K image, all of `work/*/l1.json`, and installs into `src/game`. Images that do
-not fit that model (a part loaded elsewhere, several banks, pieces placed with `DISP`) have generators of their own
-in the case's `tools/`. These are copied from a sibling case, never imported (the cases stay apart). They all import
-`kit/mkgame.py`'s functions and add directives:
+The game is one part. Every other code image of a medium (a loader, a menu, a driver, a bank, a block of pieces
+copied to their run addresses) is a part too, written by the same `kit/mkgame.py` from a part file or the command
+line. One generator rather than one per case: the cases had nine copies and wrappers of the kit (a fork per need:
+pages, banks, pieces, segments, traces), each fixing the same things again and drifting apart. One parser and one
+pipeline keep every case on the same `.ann` format, and `kit/refdocs.py` and `kit/sig_add.py` read what it writes.
 
-| Directive | Grammar | Generators | Does |
-| --- | --- | --- | --- |
-| `@const` | `@const NAME VALUE [; comment]` (VALUE `$hex` or decimal) | `zynaps-128/tools/part_mkasm.py`, `zynaps-gs/tools/part_mkasm.py`, `nether-earth-gs/tools/trd_mkasm.py`, `advanced-nether-earth/tools/bootmenu_mkasm.py` | An `EQU` in the part's top file: ports, ROM entries, page values, addresses outside the part (`@const GS_CMD $BB ; ...`, `@const PAGE_BANK7 $17`). The line is blanked before `mkgame.Annotations` reads the file, so the kit never sees it |
-| `# @bank` | `# @bank $ADDR NAME BANK [; comment]` | `advanced-nether-earth/tools/game_mkgame.py`, `nether-earth-gs/tools/game_mkgame.py` | An address in another RAM bank paged at `$C000` (a player in bank 1, the disk module in bank 4). It becomes an `EQU`, the walk does not follow calls to it, and the entry mark on bank 0's byte there is dropped. The instructions name it through `@isub` (`@equ` cannot: the address may be inside the image, and one address can mean different things in different banks) |
-| `# @var` | `# @var $ADDR NAME [N] [; comment]` | `nether-earth-gs/tools/game_mkgame.py` | A variable inside the image's work space: a label in its data entries, with operands `ADDR+1..ADDR+N-1` written `NAME+k` |
-| `# @alias` | `# @alias NAME EXPR [; comment]` | the two `game_mkgame.py` | `NAME EQU EXPR` for a name that cannot be a label (the operand of a `JP` into a handler). The instructions name it through `@isub` |
-| `# @over` | `# @over $ADDR ; why` | `nether-earth-zs-edition/tools/menu99_mkgame.py` | A branch target that holds other bytes when the branch runs (code loaded over the caller's strings): the walk does not follow it |
-| `# @piece` | `# @piece NAME` | `nether-earth-zs-edition/tools/game99_mkgame.py` | Starts one piece of a patches block. Each piece is a separate kit run over its own run range, placed inside `DISP` in the top file. The lines before the first piece hold for every piece |
+### 5.1 The part directives
 
-Part-file generators describe an image of several segments in JSON instead of `case.json`.
-`advanced-nether-earth/tools/endings_mkgame.py` / `disk_mkgame.py` and `nether-earth-zs-edition/tools/front99_mkgame.py`
-take `--part src/<part>/<name>.json`:
+These are directives of the kit's parser (`mkgame.Annotations`), in any `.ann`:
 
-```text
-{"name", "image", "at", "out", "header", "l1": [...],
- "segments": [{"ann", "lo", "hi", "run", "bases", "read_builds", "title", "same_bytes", "data_entries", "load_label"},
-              {"lo", "hi", "lines": [...]}],          a piece another part's source gives, its lines as they are
- "external": [...]}                                    @equ names the included sources define
+| Directive | Grammar | Does |
+| --- | --- | --- |
+| `@const` | `@const NAME VALUE [; comment]` (VALUE `$hex` or decimal) | `NAME EQU VALUE` in the top file: a port, a ROM entry, a page value, an address in another program (`@const GS_CMD $BB ; ...`). The instructions use it through `@isub` |
+| `@bank` | `@bank $ADDR NAME BANK [; comment]` (BANK a number or a name: `1`, `DriverBank`) | An address in another RAM bank paged at `$C000` (a player in bank 1, the disk module in bank 4). It becomes `NAME EQU $ADDR ; bank BANK: comment`, sorted by bank and address. The walk does not follow the instructions whose `@isub` names it, and the entry mark the disassembler puts on this image's byte there is dropped. `@equ` cannot do it: the address may be inside the image, and one address can mean different things in different banks |
+| `@var` | `@var $ADDR NAME [N] [; comment]` | A variable inside the image's work space: a label in its data entry (the data line is cut there), and every instruction operand `ADDR+1..ADDR+N-1` written `NAME+k` |
+| `@alias` | `@alias NAME EXPR [; comment]` | `NAME EQU EXPR` for a name that cannot be a label (the operand of a `JP` into a handler: `@alias Handler ImJump+1`). The instructions name it through `@isub` |
+| `@over` | `@over $ADDR [; why]` | A branch target that holds other bytes when the branch runs (code loaded over the caller's strings): the walk does not follow it |
+| `@piece` | `@piece NAME` | The lines from here to the next `@piece` are the piece `NAME`. A part file's segment with `"piece": "NAME"` reads the lines before the first `@piece` (common to all pieces) and that piece's. An `@equ` of the common lines inside the piece's own range is dropped there (it is that piece's label) |
+
+The cases' first generators read `@bank`, `@var`, `@alias`, `@over` and `@piece` behind a `#` (`# @bank ...`);
+the kit reads that form too, so existing `.ann` files need no edit. Write new lines without the `#`.
+
+### 5.2 Part files
+
+A part file (`src/<part>/<name>.json`) says what the image is and how it is cut. `kit/mkgame.py --part FILE`
+runs it. One image with one `.ann` is the *single* layout (the top file is written like the game's):
+
+```json
+{"image": "build/trd/obj/boot-menu.bin", "org": "61A8",
+ "ann": "src/trd/boot/menu.ann", "top": "boot-menu", "dest": "src/trd/boot", "res": "src/res/trd",
+ "header": ["; Nether Earth GS, TRD file boot: the boot menu's menu part"],
+ "mode": "blocks", "pages": [5, 2], "l1": ["work/stage2/trd/rA/l1.json"],
+ "built": {"boot/texts.bin": "trd/text/trd-boot-menu.bin"}, "save": "build/trd/obj/boot-menu.bin"}
 ```
 
-- `run` is where the CPU runs the segment (`DISP` when it differs from `lo`).
-- `same_bytes: true` counts a recorded instruction only when all its bytes are the image's (code later overwritten
-  in the same window).
-- `data_entries: true` makes every annotated data entry a stop for the walk.
+An image of several segments (each with its own `.ann` or piece, run address and banks, or raw lines another part's
+source gives) is the *segments* layout: the top file sets `ORG` / `DISP` per segment and `INCLUDE`s
+`<top>/<module>.asm` (or `<module>.asm` with `"subdir": false`), then `SAVEBIN`s the whole image:
 
-`part_mkasm.py` / `trd_mkasm.py` take the part on the command line:
+```json
+{"name": "deadend", "image": "build/endings/deadend-c000-bank3.bin", "at": "C000", "out": "build/endings/deadend-c000-bank3.bin",
+ "dest": "src/endings", "l1": ["work/endings/de/l1.json"], "operands": "wide", "include": ["."],
+ "segments": [{"lo": "C000", "hi": "D2EF", "lines": ["  MODULE nst", "  INCLUDE \"src/music/stp-player.asm\"", "..."]},
+              {"ann": "src/endings/deadend.ann", "lo": "D2EF", "hi": "FE1F", "run": "D2EF",
+               "bases": {"3": "C000"}, "read_builds": ["de"]}],
+ "external": ["nst.Init", "nst.Play"]}
+```
+
+| Key | Meaning |
+| --- | --- |
+| `image`, `at` / `org` | the bytes and the address of byte 0 (a 64 K image needs neither). `image_cmd` (a command run in the case, every time; `"image_always": false`: only when the image is missing) makes it; `image_note` says what makes it when it is missing. A part may take its image from an earlier build step (`build/...`): the case's build checks that output against `orig/` |
+| `lo`, `hi` | single layout: only these addresses of the image (hex, `hi` exclusive) |
+| `ann`, `piece` | the annotations (and the piece of them) |
+| `top` / `name`, `dest`, `bin` / `out` | the top file `TOP.asm`, where `--install` writes it and the modules, the `SAVEBIN` name |
+| `header`, `written`, `device` | the top file's first comment lines, its "Written by" line (default: from the `.ann`), the sjasmplus `DEVICE` (`ZXSPECTRUM48`) |
+| `l1` | the recordings: `"PATH"` or `{"path", "reads", "lo", "hi", "roots", "format", "optional"}`. `reads`: its data reads count (not for a build over a depacker's input; default: the build's folder is in `read_builds`). `lo`/`hi`: only this window of addresses counts (the bytes that held this part while it ran). `roots: false`: a routine that is only the window's root (where the build began) is no entry. `format: "trace"`: a simulator's `{"starts": {ADDR: length}, "entries": [ADDR], "reads": {ADDR: count}}`. A path may be a glob. A segment's own `l1` replaces the part's |
+| `mode` | `"instructions"` (default: every recorded instruction whose opcode and length are the image's) or `"blocks"` (only whole recorded basic blocks whose every instruction has the image's bytes, no routine entries: a later program at the same addresses cannot make a lone byte look like code) |
+| `bases`, `pages`, `bank` | L1 page -> Z80 base (`{"5": "4000", "2": "8000", "0": "C000"}` by default); `pages` lists pages at their natural base (5 `$4000`, 2 `$8000`, any other `$C000`); `bank` N adds `SLOT 3` / `PAGE N` to the top file |
+| `same_bytes` | count a recorded instruction only when all its bytes are the image's (code overwritten later in the same window) |
+| `data_entries` | `"stop"` (or `true`): every annotated data entry, up to the next entry, is data the walk never enters; `"first"`: only the entry's first byte stops the walk |
+| `entries_in_code`, `no_entries` | keep only the recorded routine entries the walk made code / take none |
+| `overwritten` | `[[LO, HI], ...]`: ranges another block overwrites at run time; no recorded instruction there counts and the walk stops there |
+| `operands` | `"wide"`: `Label+offset` also for `LD BC,nn` (section 3.4) |
+| `drop_data_refs`, `isub_as_written` | drop sna2skool's reference marks inside data rows; write `@isub` numbers as the `.ann` does (decimal), not as skool2asm's hex |
+| `res`, `res_install`, `built`, `save` | the resources: as bytes into `res` (the `INCBIN`s name it relative to `dest`), or through a hook `tools/x.py[:function]` called with `{name: bytes}`; `built` `{NAME: PATH}` is a resource the build makes (not installed, `INCBIN "PATH"`); `save` is the installed top file's `SAVEBIN` path |
+| `segments` | the segments layout: `{"ann", "piece", "lo", "hi", "run", "bases", "read_builds", "title", "load_label", "l1", ...}` (any key above may be set per segment) or `{"lo", "hi", "lines": [...]}` |
+| `external`, `subdir`, `include`, `before_assemble` | names other included sources define (no `EQU` for them); modules in `dest/<top>/` (default) or `dest/`; `-I` folders for sjasmplus; a hook `tools/x.py:function` called with the work folder before sjasmplus |
+| `work`, `clean_work` | the work folder (default `work/mkpart/<top>`) |
+
+`case.json` takes the same keys for the game (`dest`, `work`, `res_install`, `operands`, `overwritten`, ...).
+
+### 5.3 One image on the command line
+
+`--image BIN --org ADDR` is the single layout without a file. It runs with `data_entries "stop"`,
+`drop_data_refs` and `isub_as_written` on, the defaults of the part generators it replaced:
 
 ```bash
-python3 tools/part_mkasm.py --image work/parts/loader-5d3b.bin --org '$5D3B' --ann src/loader/loader.ann \
-    --top zynapsb --dest src/loader --res src/res --l1 work/stage2/loader/l1.json \
-    --title 'Zynaps 2 in 1: ZYNAPS.B sector 0, the BASIC with the REM loader ($5D3B)' \
+python3 ../../kit/mkgame.py --image work/parts/loader-5d3b.bin --org '$5D3B' --ann src/loader/loader.ann \
+    --top zynapsb --dest src/loader --res src/res --l1 work/stage2/loader/l1.json --blocks \
+    --page 5 --page 2 --page 0 --page 4 --title 'Zynaps 2 in 1: ZYNAPS.B sector 0 ($5D3B)' \
     --save build/obj/zynapsb-basic.bin --install
 ```
 
-- Only whole basic blocks of the L1 build count, every instruction with the image's bytes. Another program that ran
-  at the same addresses later in the recording cannot make a lone byte look like code.
-- The `.ann`'s data entries stop the walk. The recording's data reads are not used.
-- `--built NAME=PATH` keeps a resource the build makes (a text from its UTF-8 source) out of the install.
-- `--page N` (zynaps-gs) restricts the code to one RAM page.
+`--l1` (instructions only), `--l1-reads` (instructions and data reads), `--blocks`, `--page N` (repeat), `--bank N`,
+`--range LO-HI`, `--built NAME=PATH`, `--save PATH`, `--res DIR`, `--wide` are the keys above.
 
-The case's script that runs every part in order is the one to call: `tools/mkasm_all.sh` (zynaps-128),
-`tools/regen.sh` (zynaps-gs), `tools/game99_mkgame.py all` (nether-earth-zs-edition).
+### 5.4 In the cases
+
+| Case | Parts | How |
+| --- | --- | --- |
+| nether-earth, zynaps, hate | the game | `kit/mkgame.py --install` (`case.json`) |
+| nether-earth-editor | `nee.mix` | `tools/mkmix.sh`: `--config src/mix/case.json` |
+| zynaps-128 | the game; boot, intro, loader, depacker, sound, stubs, glue, setup, mouse | `tools/mkgame.sh`; `tools/mkasm_all.sh` (`--image --blocks` per part) |
+| zynaps-gs | the game; `src/disk/{boot,screen,loader,menu,driver}` | `tools/regen.sh` (`--image --blocks --page N`) |
+| nether-earth-gs | the game (`@bank`, `@var`, `@alias`); the TRD boot menu | `kit/mkgame.py --install`; `--part src/trd/boot/{menu,print64}.json` |
+| nether-earth-zs-edition | nine parts: game99, patches99 (`@piece`, one segment a piece), game98, intro98, stage2, pictures99, music99, stage3, menu99 (`@over`) | `tools/regen.sh` (`--part src/<part>/<name>.json`) |
+| advanced-nether-earth | the game (`@bank`); the boot menu (simulator traces); the disk parts; the endings | `kit/mkgame.py --install`; `--part src/{bootmenu,disk,endings}/*.json`; the intro stays on `tools/intro_mkpart.py` |
+
+The intro of Advanced Nether Earth keeps its own generator: its code comes from `tools/intro_trace.py`'s phased
+simulator runs, each phase with its own bank map, and the runs that made the shipped sources are not recorded as
+commands, so a part file could not be checked to give the same sources.
 
 ## 6. Starting and growing a `.ann`
 
@@ -212,8 +286,19 @@ The case's script that runs every part in order is the one to call: `tools/mkasm
 2. **The analysis as input.** The L1 routines (entries, callers, profile), L2 region kinds (graphics, text, tables)
    and the review queue (recipe 04) say what each region is. `re_session.py export --work W` writes
    `W/draft/draft.ctl`, `draft.skool`, `draft.map.txt`, `draft.fields.json` and the findings register. These are
-   for reading; translate them into `.ann` lines by hand or with a small script in `work/`. No kit script converts
-   a draft into an `.ann`.
+   the start of the first `.ann`: `kit/ctl2ann.py` turns the draft's entries, kinds, titles, descriptions and the
+   names it gave from evidence into `.ann` lines, and with `--case` makes `c` every draft data entry that starts on
+   code the case's recordings ran (the draft is one build's, the case's code comes from all of them):
+
+   ```bash
+   cd games/hate        # tried on H.A.T.E.'s p2 draft: 682 entries, 162 code; assembles identical
+   python3 ../../kit/ctl2ann.py work/p2/draft --case . --out work/ann/draft.ann
+   python3 ../../kit/mkgame.py --ann work/ann/draft.ann --out work/ann/mk-draft
+   ```
+
+   The draft's generic names (`data_5B00`, `sub_8000`) are dropped (`--names pascal` keeps them as `Data5B00`), so
+   the generator names by address until a person names the entry. Every title and description is the draft's guess
+   until checked: rewrite them as the reverse proves each one.
 3. **Seed from a base case** (derived case, [recipe 10](../recipes/10-derived-case.md)). Take the base case's
    `.ann` without the entries outside the image, drop the entries the version rewrote, and re-attribute the evidence
    ("Nether Earth's deep recording"). nether-earth-gs: `work/stage2/ann/seed_ann.py`. advanced-nether-earth:

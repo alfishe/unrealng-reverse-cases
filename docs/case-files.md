@@ -52,11 +52,14 @@ The keys are in the [kit README](../kit/README.md#a-case) table. Defaults (from 
 - `image` lives under `work/`, so `image_cmd` must be able to make it from `orig/` on a fresh clone. The cases do
   this with a script such as `tools/image.py` (zynaps) or `tools/game_image.py` (nether-earth-gs).
 - `bases` maps L1 pages to the Z80 addresses that count. With the defaults, code that ran in another bank at
-  `$C000` does not count. A 128K game's other banks are handled outside the kit (`# @bank`, part generators:
-  [ann-format.md](ann-format.md#5-extensions-in-the-cases)).
-- A case whose parts are not one 64 K image has part files instead: JSON next to each `.ann`
-  (`src/endings/deadend.json`, `src/stage2/stage2.json`), `src/mix/case.json` (nether-earth-editor, which has no
-  root `case.json`), or the configuration inside the part's `tools/<part>_mkgame.py`.
+  `$C000` does not count. An address in another bank is an `@bank` line, and the other banks are parts
+  ([ann-format.md](ann-format.md#5-parts-banks-and-pieces)).
+- `read_builds` and `code_builds` are the only recordings mkgame reads: `work/<build>/l1.json` of each.
+  `read_builds` count with their data reads, `code_builds` with their instructions only (a build over a depacker's
+  input, where the game's code later lies).
+- The other code images are parts: a JSON part file next to each `.ann` (`src/endings/deadend.json`,
+  `src/stage2/stage2.json`, `src/mix/case.json` for nether-earth-editor, which has no root `case.json`), or one
+  `kit/mkgame.py --image` line in the case's `tools/regen.sh` / `mkasm_all.sh`.
 
 ## 4. `src/`
 
@@ -64,8 +67,8 @@ The keys are in the [kit README](../kit/README.md#a-case) table. Defaults (from 
 | --- | --- | --- | --- |
 | `src/game/game.ann` | the annotations of the game image | people (the annotators, the lead's merge) | yes |
 | `src/game/*.asm`, `game.asm` | one file per module, plus the top file | `$K/mkgame.py --install` (or the case's wrapper); **never edited** | yes |
-| `src/<part>/<part>.ann` + `.asm` | the other code images: loader, depacker, boot, menu, intro, sound engine, GS driver | `tools/part_mkasm.py`, `trd_mkasm.py`, `<part>_mkgame.py` ([ann-format.md](ann-format.md#5-extensions-in-the-cases)) | yes |
-| `src/<part>/<name>.json` | a part's segments (image, run addresses, banks, L1 windows) | people | yes |
+| `src/<part>/<part>.ann` + `.asm` | the other code images: loader, depacker, boot, menu, intro, sound engine, GS driver | `$K/mkgame.py --part src/<part>/<name>.json` or `--image` ([ann-format.md](ann-format.md#5-parts-banks-and-pieces)) | yes |
+| `src/<part>/<name>.json` | a part file: the image, its run addresses, banks, L1 windows, segments | people | yes |
 | `src/loader.asm`, `src/basic.asm`, `src/tape/*.asm` | the small stages written by hand from the blocks (BASIC, a loader in a REM, a header) | people | yes |
 | `src/res/` | every resource in its editable format (PNG, `.scr`, text) plus `README.md` listing each file: address, size, format, readers, preview | `mkgame.py --install` through `tools/res_formats.py install`, the case's `*_res.py` | yes |
 | `src/res/text/` | the texts as build input (a codec's text: `#codec cp866`, `\xNN` escapes) | `tools/trd_text.py`, `texts_build.py`, `res_text.py` | yes |
@@ -87,7 +90,8 @@ header names where it came from: the cases stay apart and never import each othe
 | `res_formats.py` | `install(files)` for mkgame; `check` (round trip), `export`, `build --out build/res` | every case |
 | `depack.py` / `pack.py`, `hrust1.py`, `hrum.py`, `zspack.py`, `picy.py`, `trush.py`, `ultraxor.py`, `xorchain.py` | each packer or cipher both ways, with `check` against the medium | per packer |
 | `image.py`, `game_image.py`, `parts.py` | cut the images the generators read out of `orig/` (into `work/`) | zynaps, GS, zynaps-128 |
-| `*_mkgame.py`, `part_mkasm.py`, `trd_mkasm.py`, `mkasm_all.sh`, `regen.sh` | regenerate the `.asm` from the `.ann` files | derived cases |
+| `regen.sh`, `mkasm_all.sh`, `mkmix.sh` | run `$K/mkgame.py` over every part file / image of the case | derived cases |
+| `*_res.py` (`install`, `install_game`) | a part's resources in their editable format, the `res_install` hook of its part file | derived cases |
 | `mkscl.py`, `mktrd.py`, `mkdisk.py`, `mktap.py`, `tzx.py` (and `$K/tap.py`) | write the medium from `src/media` | per medium |
 | `bot.py`, `autopilot.py`, `play_bot.py`, `play_live.py`, `drive.py`, `gs_session.py` | play the game over WebAPI / MCP and record it | per case |
 | `verify_*.py`, `check_load.py` | a resource or a load checked against a recording | hate, zynaps |
@@ -201,12 +205,19 @@ One row per addition to the signature base, replayed in order by `python3 $K/sig
 The rows are added when a case is finished ([recipe 10](../recipes/10-derived-case.md) for the order in a derived
 case). The format is in [signature-format.md](signature-format.md).
 
-## 10. The unreal-ng side
+## 10. The unreal-ng side and the tools
+
+No path of one machine is written in the kit or the cases. Set the three variables once
+(`export UNREAL_NG=... SJASMPLUS=... SKOOLKIT_VENV=...`, and `UNREAL_BINARY` for a binary outside `$UNREAL_NG`), or let `kit/toolpaths.py` find them;
+`python3 kit/toolpaths.py sjasmplus|venv|unreal|binary` prints what it finds. Shell scripts take the same through
+`SJASMPLUS=$(python3 ../../kit/toolpaths.py sjasmplus "$1")`.
 
 | What | Where |
 | --- | --- |
-| The checkout | the `unreal-ng/` submodule, `$UNREAL_NG`, `--unreal`, or a checkout next to this repository (the kit looks in that order). The cases ran from one worktree of the owner's checkout, `scratch/wt-<name>`, set as `UNREAL_NG` |
-| The binary | `$U/cmake-build-agent-release/bin/unreal-qt.app/Contents/MacOS/unreal-qt` (`corpus.DEFAULT_BINARY`; give another with `--binary`). It is built in the unreal-ng worktree with `tools/build/build.sh unreal-qt` |
+| The checkout | `--unreal`, `$UNREAL_NG`, the `unreal-ng/` submodule, or a checkout near this repository (the kit looks in that order, `kit/toolpaths.py`). The cases ran from one worktree of the owner's checkout, `scratch/wt-<name>`, set as `UNREAL_NG` |
+| sjasmplus | `--sjasmplus`, `$SJASMPLUS`, `sjasmplus` on `PATH`, or a `sjasmplus/build/release/sjasmplus` checkout near this repository |
+| SkoolKit | `--venv`, `$SKOOLKIT_VENV` (a virtualenv with `bin/sna2skool.py`), `$VIRTUAL_ENV`, `.venv` in this repository, `sna2skool.py` on `PATH`, or `$UNREAL_NG/scratch/venv-skoolkit` |
+| The binary | `$U/cmake-build-agent-release/bin/unreal-qt.app/Contents/MacOS/unreal-qt` (`corpus.DEFAULT_BINARY`; give another with `--binary`, or `$UNREAL_BINARY` for the case tools through `kit/toolpaths.py`). It is built in the unreal-ng worktree with `tools/build/build.sh unreal-qt` |
 | `re_session.py` | `$U/tools/verification/analysis/re_session.py`: `capture`, `open`, `build`, `stages`, `interrupts`, `call`, `export`, `check`, `stop` (its docstring is the reference). Beside it: `mm_session.py` (input scripts), `corpus.py` (the launcher and MCP client), `access_trace.py` (the trace reader the kit uses), `score_draft.py` |
 | The analysis layers | `$U/docs/emulator/analysis/analysis-layers.md`: L0 access facts, L1 routines and value flow, L2 region kinds, L3 findings, the access trace |
 | Recipes | `$U/.recipe/articles/game-reverse-case.md` (MCP for a case, without waste), `$U/.recipe/articles/game-reverse-pipeline.md`, `$U/.recipe/analysis/reverse-engineering.md`, `ttd-recording.md`, `ttd-write-journal.md`, `ttd-gameplay-automation.md`, `game-start-input.md`, `nonstandard-loader.md`, `port-trace.md` |

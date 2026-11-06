@@ -56,15 +56,9 @@ Six cases are derived:
    - Examples: nether-earth-gs `work/stage2/ann/seed_ann.py`, ANE `work/stage3/aneg/seed_ann.py`, zynaps-128
      `work/stage2/game128/mkann.py`.
    - Then **write again every entry the version touched**, and prove every name with this version's recordings.
-   - The other parts get their own `.ann` and a part generator ([ann-format.md](../docs/ann-format.md#5-extensions-in-the-cases)):
-
-   | Case | Parts | Generators |
-   | --- | --- | --- |
-   | nether-earth-gs | `src/game`, `src/trd/boot/{menu,print64}` | `tools/game_mkgame.py` (`# @bank`, `# @var`, `# @alias`), `tools/trd_mkasm.py` |
-   | zynaps-128 | boot, intro, loader, depacker, sound (starkos, engine), game + stubs, glue, setup, mouse | `tools/part_mkasm.py` per part, all in `tools/mkasm_all.sh` |
-   | zynaps-gs | `src/game` + `src/disk/{boot,screen,loader,menu,driver}` | `kit/mkgame.py` + `tools/part_mkasm.py --page N`, all in `tools/regen.sh` |
-   | ZS | intro98, game98, menu99, game99, patches99, music99, stage2, stage3, pictures99 | `tools/<part>_mkgame.py` each (`# @over`, `# @piece`) |
-   | ANE | game, bootmenu, disk ×4, endings ×4, intro ×4 | `game_mkgame.py`, `bootmenu_mkasm.py`, `disk_mkgame.py` / `endings_mkgame.py` (JSON part files), `intro_mkpart.py` |
+   - The other parts get their own `.ann` and a part file (or one `kit/mkgame.py --image` line); the table of which
+     case uses which directives and forms is [ann-format.md 5.4](../docs/ann-format.md#54-in-the-cases). Write no
+     generator of your own: a need the kit lacks goes into `kit/mkgame.py` for every case.
 
    One source can serve two targets through `IFDEF`. For example, nether-earth-gs assembles `src/game/game.asm`
    plain and with `-DHOOD_TAPE`.

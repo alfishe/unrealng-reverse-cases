@@ -9,17 +9,19 @@ The lead owns the plan, the briefs, the shared files (`README.md`, `docs/README.
 ## 1. The stages and their briefs
 
 Each brief is a file in the case's `work/`, which is git-ignored. Each agent gets its brief, plus a short prompt
-with its id, its port base and its share of the work. The briefs below are the templates. They exist only in the
-working copy where those cases were done, so the skeleton in section 5 repeats their structure.
+with its id, its port base and its share of the work. The templates are in
+[kit/case-template/briefs/](../kit/case-template/briefs/README.md), distilled from the briefs the nine cases ran
+with: the lead copies one into `work/`, fills in every `<...>` and adds the case's facts.
 
 | Stage | Brief (template) | Agents | Output |
 | --- | --- | --- | --- |
-| 1: the medium, the load, the images, a first play | `games/advanced-nether-earth/work/BRIEF.md` | 1 | `work/stage1/NOTES.md` (commands and what each proved), images, the memory map, the match against the base |
-| 2: the source, bit-exact | `games/advanced-nether-earth/work/stage2/BRIEF.md`; for parallel parts, `games/nether-earth-zs-edition/work/stage2/BRIEF.md` (a table of part, folders, bytes and owner; `STATE-<part>.md` per part) | 1, or 1 per part | `.ann` + generated `.asm`, `tools/build_<part>.sh`, `build.sh` identical |
-| 2 (one big image): annotation fragments | `games/nether-earth/work/ann/BRIEF.md` (waves 2-3: `BRIEF2.md`, `BRIEF3.md`) | 5-6, one per address range | `work/ann/NN-*.ann`, `NN-xref.txt`, `NN-notes.md` |
-| figures | `games/nether-earth/work/ann/BRIEF-FIG.md` (the figure rule every docs brief cites) | | |
-| docs 01-12 | `games/zynaps-gs/work/docs/BRIEF.md` (the most complete one; also `zynaps`, `zynaps-128`, `nether-earth-gs`, `nether-earth-zs-edition`, `advanced-nether-earth`) | 2 | the documents, `work/docs/<id>-index.md`, `<id>-NOTES.md`, `<id>-diff-notes.md` |
-| editor pass, doc 13 | the lead | 1 | `docs/README.md`, `.ann` comment fixes, doc 13 |
+| 1: the medium, the load, the images, a first play | [stage1.md](../kit/case-template/briefs/stage1.md) | 1 | `work/stage1/NOTES.md` (commands and what each proved), images, the memory map, the match against the base |
+| 2: the source, bit-exact | [stage2.md](../kit/case-template/briefs/stage2.md); for parallel parts, [stage2-parts.md](../kit/case-template/briefs/stage2-parts.md) (a table of part, folders, bytes and owner; `STATE-<part>.md` per part) | 1, or 1 per part | `.ann` + generated `.asm`, part files, `tools/build_<part>.sh`, `build.sh` identical |
+| 2 (one big image): annotation fragments | [ann-fragments.md](../kit/case-template/briefs/ann-fragments.md) (later waves: the same with the open entries) | 5-6, one per address range | `work/ann/NN-*.ann`, `NN-xref.txt`, `NN-notes.md` |
+| figures | [figures.md](../kit/case-template/briefs/figures.md) (the figure rule every docs brief cites) | | |
+| docs 01-12 | [docs.md](../kit/case-template/briefs/docs.md) | 2 | the documents, `work/docs/<id>-index.md`, `<id>-NOTES.md`, `<id>-diff-notes.md` |
+| editor pass | [editor.md](../kit/case-template/briefs/editor.md) | the lead, or 1 | `docs/README.md`, `.ann` comment fixes |
+| doc 13 (a derived case) | [doc13.md](../kit/case-template/briefs/doc13.md) | the lead, or 1 | `docs/13-differences-from-<base>.md`, `docs/img/diff/` |
 
 ## 2. The docs agents
 

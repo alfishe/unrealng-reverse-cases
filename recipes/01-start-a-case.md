@@ -9,6 +9,7 @@
    ```bash
    cp -R kit/case-template games/<game>          # README, WALKTHROUGH sections, docs stubs, case.json, game.ann,
                                                  # src/res/README.md, tools/build.sh, tools/res_formats.py
+   mkdir -p games/<game>/work && mv games/<game>/briefs games/<game>/work/   # the agents' brief templates
    cp ORIGINAL games/<game>/orig/                # unchanged: the tape / disk (a zip stays a zip) and its texts
    cd games/<game> && md5 orig/* && shasum orig/*
    ```
@@ -47,7 +48,7 @@
    - `header`
 
    The keys are in the [kit README](../kit/README.md#a-case). A 128K game keeps the default `bases`; its other
-   banks get a part generator later ([ann-format.md](../docs/ann-format.md#5-extensions-in-the-cases)).
+   banks become parts later, written by the same generator ([ann-format.md](../docs/ann-format.md#5-parts-banks-and-pieces)).
 
 6. **Scan for known pieces** (players, packers, loaders, the modules of earlier cases):
 

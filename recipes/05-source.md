@@ -44,19 +44,20 @@
    tools/build.sh $SJASMPLUS                                        # -> build: identical to orig/GAME.TAP
    ```
 
-   `--install` replaces every `src/game/*.asm`. Cases with several images have their own generator, which runs
-   every part:
-   - `python3 tools/game_mkgame.py --install` (nether-earth-gs, ANE)
-   - `python3 tools/game99_mkgame.py all --install` (ZS)
-   - `sh tools/mkasm_all.sh` (zynaps-128)
-   - `sh tools/regen.sh` (zynaps-gs)
-
-   To regenerate one part:
+   `--install` writes the modules `src/game/game.asm` includes; it deletes only the ones the `.ann` no longer has.
+   `--venv` and `--sjasmplus` may be left out when `$SKOOLKIT_VENV` and `$SJASMPLUS` are set. Every other code
+   image is a part, written by the same generator from a part file or one command line
+   ([ann-format.md](../docs/ann-format.md#5-parts-banks-and-pieces)):
 
    ```bash
-   python3 tools/part_mkasm.py --image work/parts/intro-6000.bin --org '$6000' --ann src/intro/intro.ann \
-       --top block1 --dest src/intro --res src/res --l1 work/stage2/intro/l1.json --save build/obj/block1.bin --install
+   python3 ../../kit/mkgame.py --part src/endings/deadend.json --install
+   python3 ../../kit/mkgame.py --image work/parts/intro-6000.bin --org '$6000' --ann src/intro/intro.ann \
+       --top block1 --dest src/intro --res src/res --l1 work/stage2/intro/l1.json --blocks \
+       --page 5 --page 2 --save build/obj/block1.bin --install
    ```
+
+   A case with many parts runs them all from one script: `tools/regen.sh` (zynaps-gs, ZS), `tools/mkasm_all.sh`
+   (zynaps-128), `tools/mkmix.sh` (nether-earth-editor).
 
 5. **Build one at a time.** `tools/build.sh` holds `build/.lock`, and each case has one builder. A 128K or disk
    build compares every part (`build/obj/*.bin` against `build/orig/parts/`), then the whole medium (`cmp`).

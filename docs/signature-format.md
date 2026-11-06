@@ -247,7 +247,7 @@ python3 kit/sig_index.py                       # the check, then index.json and 
 
 | Mode | Makes | From |
 | --- | --- | --- |
-| `ann` | one entry per module of a case's annotations, `programs/<family>/<case>/<module>`: the bytes from the case's image, the module's range as `kit/mkgame.py` cuts it, `entries` from the code entries, `labels` from the data entries and the inline names | `case.json`, the `.ann`, and the build's listing for the instruction starts (without it the code entries are decoded in a line) |
+| `ann` | one entry per module of a case's annotations, `programs/<family>/<case>/<module>`: the bytes from the case's image, the module's range as `kit/mkgame.py` cuts it, `entries` from the code entries, `labels` from the data entries and the inline names | `case.json`, the `.ann`, and the build's listing for the instruction starts (without it the code entries are decoded in a line). Another part of the case: `"part"` names its part file (`--segment N` one segment of it, at its run address) and `"prefix"` keeps the parts' module names apart (`programs/games/<case>/<prefix>-<module>`) |
 | `lst` | one entry from a sjasmplus listing, label to label (the nth time the first appears: a macro's expansions), with its metadata given in the addition | the listing; an image when the listing does not show every byte (an `INCBIN`) |
 
 The mask is made from the code: each instruction's 16-bit operand is `rel16` inside the piece, `ext16` outside it
