@@ -8,15 +8,15 @@ Each picture has three panels:
     trail of its colour, the rest is its value in grey. The routine's footprint builds up as it runs.
   - the view: what the routine draws, as it draws it. `screen` is the Spectrum screen (or `screen:C000` for a
     shadow screen), `buffer:ADDR:WxH` an off-screen bitmap of W bytes a row and H rows (`:columns` when it is stored
-    column by column, H bytes a column; `:columns-up` the same with each column's first byte at the bottom), `none`
-    leaves it out.
+    column by column, H bytes a column; `:columns-up` the same with each column's first byte at the bottom; `:screen` a back buffer laid out
+    like the screen's pixel lines), `none` leaves it out.
     Bytes written in the slice flash in the write colours.
   - the code: the listing round the instruction last executed, the lines run in the slice marked by how often, the
     registers, the moment and the routine's name.
 
     python3 routine_anim.py (--trace pass.uatr | --work W --window F:T-F:T)
            --listing build/game.lst --out docs/img/routines/DrawSprites.gif
-           [--view screen | screen:C000 | buffer:8000:32x256[:columns|:columns-up] | none] [--range 4000-FFFF] [--pictures 90]
+           [--view screen | screen:C000 | buffer:8000:32x256[:columns|:columns-up|:screen] | none] [--range 4000-FFFF] [--pictures 90]
            [--step TSTATES] [--pc EAE3-EBFF] [--title "DrawSprites $EAE3"] [--delay 80] [--unreal U]
 
 --pc names the routine's code: instructions outside it (an interrupt, a callee you do not want to watch) still
@@ -48,7 +48,7 @@ def parse_view(text):
         size, _, order = size.partition(':')
         width, _, height = size.lower().partition('x')
         return ('buffer', K.hex_address(address), int(width), int(height), order or 'rows')
-    raise SystemExit(f'--view {text}: screen[:ADDR], buffer:ADDR:WxH[:rows|columns|columns-up] or none')
+    raise SystemExit(f'--view {text}: screen[:ADDR], buffer:ADDR:WxH[:rows|columns|columns-up|screen] or none')
 
 
 class Ages:

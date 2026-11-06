@@ -204,10 +204,11 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
     return starts, entries, reads
 
 
-def walk(mem, starts, reads, seeds=(), inline=(), cut=None):
+def walk(mem, starts, reads, seeds=(), inline=(), cut=None, inline_len=None):
     """Code: the ran instructions and what their untaken branches reach, stopping at bytes read as data; seeds are
     entries the reverse knows as code that no recording ran (handlers reached through a table); a call to a routine in
-    inline reads its data after the CALL: the walk does not go on past it (where the code resumes, a recording says);
+    inline reads its data after the CALL: the walk does not go on past it (where the code resumes, a recording says)
+    unless inline_len gives the routine's fixed count of data bytes, after which the walk goes on;
     cut(address, targets) gives the targets of the instruction at address the walk follows (@over, @bank)"""
     code, targets, calls = {}, set(), set()
     # The ran instructions own their bytes first: a walked one never cuts into them
@@ -235,6 +236,10 @@ def walk(mem, starts, reads, seeds=(), inline=(), cut=None):
                     targets.add(t)
                     (calls if call else set()).add(t)
                     todo.append(t)
+            fixed = [inline_len[t] for t in tg if call and inline_len and t in inline_len]
+            if fixed:
+                a += n + fixed[0]
+                continue
             if not falls or (call and any(t in inline for t in tg)):
                 break
             a += n
@@ -267,9 +272,9 @@ class Annotations:
                                   data line that starts at ADDR (the entry's rows are cut there)
         @isub $ADDR INSTRUCTION   the instruction at ADDR written so (a constant the image's bytes cannot tell from an
                                   address: LD HL,-6, not a label + offset)
-        @inline $ADDR             a routine that reads data placed after its CALL (a print routine with the string
+        @inline $ADDR [N]         a routine that reads data placed after its CALL (a print routine with the string
                                   inline): no walk goes past a call to it, the bytes after it are data unless a
-                                  recording ran them
+                                  recording ran them; with N (a fixed count of data bytes) the walk goes on after them
         @equ $ADDR NAME [N] ; c   a variable outside the image (the work space the game keeps past its loaded bytes):
                                   NAME EQU $ADDR in the top file, and every instruction operand $ADDR..$ADDR+N-1
                                   written as NAME / NAME+k (N defaults to 1)
@@ -297,6 +302,7 @@ class Annotations:
         self.isub = {}  # instruction address: the instruction as the source writes it
         self.equ = {}  # address outside the image: (name, size, comment)
         self.inline_data = set()  # routines whose callers place data after the CALL
+        self.inline_len = {}  # of those, the ones that read a fixed count of bytes: the walk goes on after them
         self.consts = []  # (name, value, comment)
         self.banks = []  # (address, name, bank, comment)
         self.vars = []  # (address, name, size, comment)
@@ -383,9 +389,12 @@ class Annotations:
                 continue
             if text.startswith('@inline'):
                 parts = text.split(';')[0].split()
-                if len(parts) != 2 or not re.match(r'^\$[0-9A-Fa-f]{4}$', parts[1]):
+                if len(parts) not in (2, 3) or not re.match(r'^\$[0-9A-Fa-f]{4}$', parts[1]) or \
+                        (len(parts) == 3 and not parts[2].isdigit()):
                     sys.exit(f'{path}:{number}: cannot read: {line}')
                 self.inline_data.add(int(parts[1][1:], 16))
+                if len(parts) == 3:
+                    self.inline_len[int(parts[1][1:], 16)] = int(parts[2])
                 continue
             if text.startswith('@isub'):
                 parts = text.split(None, 2)
@@ -462,16 +471,31 @@ def write_ctl(mem, code, targets, calls, entries, ann, path):
     lines = ['@ $%04X start' % LO, '@ $%04X org' % LO]
     extents = {}  # data entry address: its length
     starts_entry = set(entries) | set(calls)
+    # the fixed data bytes after a CALL to an @inline routine with a count: a B sub-block of the calling entry
+    inline_bytes = {}
+    branched = set()  # the addresses an instruction names as its target
+    for c in code:
+        n, tg, falls, call = decode(mem, c)
+        branched.update(tg)
+        fixed = [ann.inline_len[t] for t in tg if call and t in ann.inline_len]
+        if fixed and c + n not in code and c + n not in ann.entries:
+            inline_bytes[c + n] = fixed[0]
+    # where the code resumes after those bytes: the routine returns there (a recorded jump), no label unless named
+    resumes = {c + n for c, n in inline_bytes.items()} - branched
     a = LO
     kind = None
     data_kind, data_width = 'b', None
     while a < HI:
+        if a in inline_bytes and kind == 'c':
+            lines.append('B $%04X,%d' % (a, inline_bytes[a]))
+            a += inline_bytes[a]
+            continue
         is_code = a in code
         known = ann.entries.get(a)
         if known and (known[0] == 'c') != is_code:
             sys.exit('game.ann: $%04X is %s, the recordings say %s' % (a, known[0], 'code' if is_code else 'data'))
         new_entry = (kind is None or is_code != (kind == 'c') or known is not None or
-                     (is_code and a in starts_entry) or (not is_code and kind == 'c'))
+                     (is_code and a in starts_entry and a not in resumes) or (not is_code and kind == 'c'))
         if new_entry:
             kind = 'c' if is_code else 'b'
             if known:
@@ -488,7 +512,7 @@ def write_ctl(mem, code, targets, calls, entries, ann, path):
                 # The data sub-block runs to the next entry: found below, written when it ends
                 data_at = a
                 lines.append(None)
-        elif is_code and (a in targets or ann.name(a)):
+        elif is_code and ((a in targets and a not in resumes) or ann.name(a)):
             lines.append('@ $%04X label=%s' % (a, ann.name(a) or 'l_%04X' % a))
         if is_code:
             if a in ann.inline and ann.inline[a][1] and not new_entry:
@@ -846,7 +870,7 @@ def generate(seg, mem, args, out, top):
     if seg.no_entries:
         entries = set()
     code, targets, calls = walk(mem, starts, reads, [a for a, e in ann.entries.items() if e[0] == 'c'],
-                                ann.inline_data, ann.cut())
+                                ann.inline_data, ann.cut(), ann.inline_len)
     if seg.entries_in_code:
         # a CALL a recording saw into code that is no longer this image's (copied over it later) is no entry
         entries = {a for a in entries if a in code}

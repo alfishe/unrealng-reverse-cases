@@ -61,7 +61,8 @@ def buffer_cells(base, width, height, order='rows'):
     """(row, column, address) of each byte of an off-screen bitmap of width bytes by height lines.
 
     order 'rows': row by row, a row of width bytes (a linear bitmap). 'columns': column by column, a column of height
-    bytes from the top (a strip buffer). 'columns-up': the same, each column from the bottom line up.
+    bytes from the top (a strip buffer). 'columns-up': the same, each column from the bottom line up. 'screen': laid
+    out like the Spectrum screen's pixel lines (a back buffer of whole thirds, width 32).
     """
     for row in range(height):
         for column in range(width):
@@ -71,8 +72,10 @@ def buffer_cells(base, width, height, order='rows'):
                 offset = column * height + row
             elif order == 'columns-up':
                 offset = column * height + (height - 1 - row)
+            elif order == 'screen':
+                offset = (row & 0xC0) << 5 | (row & 7) << 8 | (row & 0x38) << 2 | column
             else:
-                raise SystemExit(f'buffer order {order}: rows, columns or columns-up')
+                raise SystemExit(f'buffer order {order}: rows, columns, columns-up or screen')
             yield row, column, (base + offset) & 0xFFFF
 
 

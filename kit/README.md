@@ -104,7 +104,8 @@ python3 kit/routine_anim.py --work $C/work/p2 --window 1001:5336-1001:45336 --li
 
 A buffer view is `buffer:ADDR:WxH` (W bytes across, H lines) with its storage order: `:rows` (the default, a
 linear bitmap), `:columns` (column by column, H bytes a column, top first), `:columns-up` (the same, bottom first:
-the H.A.T.E. playfield's strips). The GIFs share one palette and store each picture as its changes, so a routine
+the H.A.T.E. playfield's strips), `:screen` (whole thirds laid out like the screen's pixel lines, W 32: a
+back buffer). The GIFs share one palette and store each picture as its changes, so a routine
 animation of 90 pictures stays near 1 MB.
 
 `--window F:T-F:T` is in TTD units, as `time_travel` gives them; the trace is kept in `W/traces/` and read from

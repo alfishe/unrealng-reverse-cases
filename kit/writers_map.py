@@ -15,7 +15,7 @@ byte grid, for one sprite or one character.
 
     python3 writers_map.py (--trace pass.uatr | --work W --window F:T-F:T)
            --listing build/game.lst --out docs/img/writers-pass.png
-           [--view screen | screen:C000 | buffer:8000:32x256[:columns|:columns-up]] [--by routine | pc] [--sources]
+           [--view screen | screen:C000 | buffer:8000:32x256[:columns|:columns-up|:screen]] [--by routine | pc] [--sources]
            [--zoom 96,64,48,32] [--title T] [--unreal U]
 
 --sources is a heuristic: it takes the data reads of the writing routine since its previous write, outside the

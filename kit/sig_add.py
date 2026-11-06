@@ -182,6 +182,10 @@ def add_ann(args):
                         starts.append(x - start)
                         n, targets, falls, call = mk.decode(mem, x)
                         x += n
+                        fixed = [ann.inline_len[t] for t in targets if call and t in ann.inline_len]
+                        if fixed:
+                            x += fixed[0]  # a fixed count of data bytes after the CALL, then code again
+                            continue
                         if call and any(t in ann.inline_data for t in targets):
                             break  # the bytes after a CALL to an inline-data routine are data
             elif kind == 'w':
