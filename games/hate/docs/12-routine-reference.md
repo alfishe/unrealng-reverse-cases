@@ -5,7 +5,7 @@ the description are the source's (`src/game/game.ann`); the rest is what the rec
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
 of the recording. Memory ranges name the entries they cover; in `$8000-$BFFF` the accesses of code outside it are
 the playfield buffer's, laid over the title player and the start-up. An entry no recording reached says so.
-Written by `tools/refdocs.py`; edit `src/game/game.ann`, then run `tools/mkgame.py --venv SKOOLKIT_VENV --sjasmplus SJASMPLUS --install`
+Written by `tools/refdocs.py`; edit `src/game/game.ann`, then run `python3 ../../kit/mkgame.py --install`
 (see [3. Build and load](03-build-and-load.md)) and `tools/refdocs.py`.
 
 | Module | Entries | Code entries |
@@ -14,7 +14,7 @@ Written by `tools/refdocs.py`; edit `src/game/game.ann`, then run `tools/mkgame.
 | [`titleplayer`](#titleplayer) | `$8000`-`$85FF` | 41 of 65 |
 | [`startup`](#startup) | `$8600`-`$BFFF` | 3 of 14 |
 | [`gamedata`](#gamedata) | `$C000`-`$C3FF` | 1 of 44 |
-| [`course`](#course) | `$C400`-`$CF31` | 0 of 21 |
+| [`course`](11-data-reference.md#course) | `$C400`-`$CF31` | 0 of 21 |
 | [`mainloop`](#mainloop) | `$CF32`-`$D0EE` | 2 of 2 |
 | [`roundsetup`](#roundsetup) | `$D0EF`-`$D35D` | 4 of 6 |
 | [`scroller`](#scroller) | `$D35E`-`$D9D5` | 6 of 39 |

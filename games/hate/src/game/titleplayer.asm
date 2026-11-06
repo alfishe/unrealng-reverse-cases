@@ -469,7 +469,7 @@ NoteABPeriods:
   LD A,$18
   LD (VoiceBPreDelay+$0003),A ; voice B on
   LD (VoiceAPreDelay+$0003),A ; voice A on
-  LD A,($82E0)            ; L = voice B's envelope time
+  LD A,(VoiceBEnvelope+$0005) ; L = voice B's envelope time
   LD L,A
   EX AF,AF'
   LD D,A
@@ -484,7 +484,7 @@ NoteABPeriods:
   LD (VoiceAStep+$0007),A ; voice A's pre-delay
   LD A,B
   LD (VoiceAPreDelay+$0007),A ; voice A's pulse width
-  LD A,($827E)            ; H = voice A's envelope time
+  LD A,(VoiceAEnvelope+$0005) ; H = voice A's envelope time
   LD H,A
   JP DrumTick
 
@@ -526,7 +526,7 @@ CmdNoteAPeriod:
   LD (VoiceAPreDelay+$0007),A ; voice A's pulse width
   LD A,$18
   LD (VoiceAPreDelay+$0003),A ; voice A on
-  LD A,($827E)
+  LD A,(VoiceAEnvelope+$0005)
   LD H,A
   JP DrumTick
 
@@ -557,7 +557,7 @@ NoteBPeriod:
   LD (VoiceBPreDelay+$0007),A ; voice B's pulse width
   LD A,$18
   LD (VoiceBPreDelay+$0003),A ; voice B on
-  LD A,($82E0)
+  LD A,(VoiceBEnvelope+$0005)
   LD L,A
 
 ; Title player: drum timer, then the voices
@@ -685,7 +685,7 @@ VoiceBEnvelope:
   AND A
   JR Z,VoiceBDecay        ; mode 0: decay
   DEC A
-  JR Z,$831F              ; mode 1: hold
+  JR Z,VoiceBOff+$000C    ; mode 1: hold
   DEC A
   JR Z,VoiceBModeOn       ; mode 2
   LD C,$02                ; mode 3: the voice off for one tick, then mode 2
@@ -699,7 +699,7 @@ VoiceBModeOn:
                           ; mode 3
   LD A,$18
   LD (VoiceBPreDelay+$0003),A
-  LD A,($832C)
+  LD A,(VoiceBStep+$0005)
   EXX
   LD E,A
   EXX

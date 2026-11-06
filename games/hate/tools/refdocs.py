@@ -3,7 +3,7 @@
 
     python3 tools/refdocs.py
 
-Every entry of the game (work/mkgame/game.ctl, written by tools/mkgame.py) with its name, title and description from
+Every entry of the game (work/mkgame/game.ctl, written by kit/mkgame.py) with its name, title and description from
 src/game/game.ann; for code, what the recordings saw it do (work/p2/l1.json, the bot's game; work/game/l1.json, the
 first recording from frame 2613 with the menu, the demo and a game): callers, callees, runs, own time, the memory it
 reads and writes, its ports. For data, the routines that read and write it.
@@ -16,8 +16,10 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(ROOT, '..', '..', 'kit'))
 import mkgame  # noqa: E402
+
+mkgame.load_case(ROOT)  # LO, HI of case.json: the game's range
 
 BUILDS = [('p2', 'the bot game'), ('game', "the L1 build of the first recording's game window")]
 LO, HI = mkgame.LO, mkgame.HI
@@ -84,7 +86,7 @@ def md(text):
 def main():
     ctl = os.path.join(ROOT, 'work', 'mkgame', 'game.ctl')
     if not os.path.exists(ctl):
-        sys.exit('run tools/mkgame.py first (it writes work/mkgame/game.ctl)')
+        sys.exit('run kit/mkgame.py first (it writes work/mkgame/game.ctl)')
     ann = mkgame.Annotations(os.path.join(ROOT, 'src', 'game', 'game.ann'))
     entries = entries_of(ctl)
     starts = [e[0] for e in entries]
@@ -190,14 +192,21 @@ def main():
            'Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share',
            'of the recording. Memory ranges name the entries they cover; in `$8000-$BFFF` the accesses of code outside it are',
            'the playfield buffer\'s, laid over the title player and the start-up. An entry no recording reached says so.',
-           'Written by `tools/refdocs.py`; edit `src/game/game.ann`, then run `tools/mkgame.py --venv SKOOLKIT_VENV --sjasmplus SJASMPLUS --install`',
+           'Written by `tools/refdocs.py`; edit `src/game/game.ann`, then run `python3 ../../kit/mkgame.py --install`',
            '(see [3. Build and load](03-build-and-load.md)) and `tools/refdocs.py`.', '']
     out.append('| Module | Entries | Code entries |')
     out.append('| --- | --- | --- |')
     for k, (start, name) in enumerate(modules):
         end = modules[k + 1][0] if k + 1 < len(modules) else HI
         inside = [e for e in entries if start <= e[0] < end]
-        out.append(f'| [`{name}`](#{name}) | `${start:04X}`-`${end - 1:04X}` | '
+        # a module with code has its heading here; one of data only, in doc 11 (GitHub's slug: lower case)
+        if any(e[1] == 'c' for e in inside):
+            link = f'[`{name}`](#{name.lower()})'
+        elif any(e[1] == 'b' for e in inside):
+            link = f'[`{name}`](11-data-reference.md#{name.lower()})'
+        else:
+            link = f'`{name}`'
+        out.append(f'| {link} | `${start:04X}`-`${end - 1:04X}` | '
                    f'{sum(1 for e in inside if e[1] == "c")} of {len(inside)} |')
     out.append('')
     current = None

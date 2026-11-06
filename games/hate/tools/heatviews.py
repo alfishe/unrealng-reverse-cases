@@ -181,9 +181,11 @@ def routines(l1, out, top):
 
 def module_ranges():
     """[(start, name)] of the @module lines of src/game/game.ann, in address order"""
+    case = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.insert(0, os.path.join(case, '..', '..', 'kit'))
     import mkgame
-    ann = mkgame.Annotations(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                                          'src', 'game', 'game.ann'))
+    mkgame.load_case(case)
+    ann = mkgame.Annotations(os.path.join(case, 'src', 'game', 'game.ann'))
     return sorted(ann.modules)
 
 

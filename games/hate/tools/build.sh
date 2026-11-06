@@ -3,13 +3,13 @@
 #
 #   tools/build.sh [SJASMPLUS]
 #
-# The game image is assembled from src/game (written by tools/mkgame.py from src/game/game.ann and the recordings;
+# The game image is assembled from src/game (written by kit/mkgame.py from src/game/game.ann and the recordings;
 # docs/03-build-and-load.md, 3.7), its resources from src/res (src/res/README.md): tools/res_formats.py builds them
 # into build/res, the PNG graphics and the tune text converted to the original bytes. Without src/game the image is
 # unpacked from the original tape.
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1  # $SJASMPLUS, PATH or a checkout
 mkdir -p "$here/build"
 cd "$here/build"
 "$asm" --nologo --msg=war "$here/src/loader.asm"

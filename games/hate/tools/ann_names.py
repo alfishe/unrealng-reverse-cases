@@ -5,7 +5,7 @@
 
 An address with a comment line ("$CF65 ; text") gets the name on that line; otherwise a line "$ADDR Name" goes in
 after the annotation line of the nearest address below it. A name already used, or an address that is an entry, is
-refused. Then run tools/mkgame.py --install (it checks the source still assembles to the original image).
+refused. Then run kit/mkgame.py --install (it checks the source still assembles to the original image).
 """
 import os
 import re

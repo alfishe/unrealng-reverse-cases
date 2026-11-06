@@ -252,7 +252,7 @@ NotTurnAtEdge:
   LD A,(PassCounter)
   AND $03
   JR NZ,HeightBehaviour
-  LD A,($C003)            ; the player's position across
+  LD A,(PlayerRecord+$0003) ; the player's position across
   LD B,A
   LD A,(MoverAcross)
   SUB B
@@ -311,7 +311,7 @@ HeightBehaviour:
   LD A,(PassCounter)
   BIT 0,A
   JR NZ,NoHeightBehaviour
-  LD A,($C004)
+  LD A,(PlayerRecord+$0004)
   LD B,A
   LD A,(IX+$04)
   CP B
@@ -640,7 +640,7 @@ PairByClass:
   AND $0F
   CP $02
   JR NC,PairScanNext
-  LD BC,($C2F0)           ; along, a box 23 wide
+  LD BC,(HitWindowAlong+$0004) ; along, a box 23 wide
   INC L
   LD E,(HL)
   INC L
@@ -655,7 +655,7 @@ PairByClass:
   LD A,E
   CP $17
   JP NC,PairScanNext
-  LD A,($C2F5)            ; across, 23 wide; no height test
+  LD A,(HitWindowAcross+$0002) ; across, 23 wide; no height test
   LD B,A
   INC L
   LD A,(HL)
@@ -664,7 +664,7 @@ PairByClass:
   JP NC,PairScanNext
   JP HitDispatch          ; a hit: the handler table
 PairWithBig:
-  LD BC,($C2F0)           ; the other is of types 0-3
+  LD BC,(HitWindowAlong+$0004) ; the other is of types 0-3
   INC L
   LD E,(HL)
   INC L
@@ -679,7 +679,7 @@ PairWithBig:
   LD A,E
   CP $17                  ; the width: self-modified, 2 x half + 9
   JP NC,PairScanNext
-  LD A,($C2F5)            ; across
+  LD A,(HitWindowAcross+$0002) ; across
   LD B,A
   INC L
   LD A,(HL)
@@ -694,7 +694,7 @@ PairWithBig:
   JP NC,PairScanNext
   JP HitDispatch
 PairWithMid:
-  LD BC,($C2EE)           ; the other is of types 4-10
+  LD BC,(HitWindowAlong+$0002) ; the other is of types 4-10
   INC L
   LD E,(HL)
   INC L
@@ -709,7 +709,7 @@ PairWithMid:
   LD A,E
   CP $13                  ; the width: self-modified, 2 x half + 5
   JP NC,PairScanNext
-  LD A,($C2F4)
+  LD A,(HitWindowAcross+$0001)
   LD B,A
   INC L
   LD A,(HL)
@@ -739,7 +739,7 @@ PairWithSmall:
   LD A,E
   CP $0F                  ; the width: self-modified, 2 x half + 1
   JP NC,PairScanNext
-  LD A,($C2F4)            ; across from $C2F4, not $C2F3
+  LD A,(HitWindowAcross+$0001) ; across from $C2F4, not $C2F3
   LD B,A
   INC L
   LD A,(HL)

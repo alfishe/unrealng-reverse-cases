@@ -1,5 +1,5 @@
 # H.A.T.E.: what the reverse knows about the game image $5FB4-$FFFF, one line an address.
-# tools/mkgame.py turns it with the recordings (work/*/l1.json) into src/game/*.asm; the format is in its
+# kit/mkgame.py turns it with the recordings (case.json read_builds, code_builds) into src/game/*.asm; the format is in its
 # Annotations class. Code entries must be code the recordings ran or code reached only through a table.
 
 @module buffers

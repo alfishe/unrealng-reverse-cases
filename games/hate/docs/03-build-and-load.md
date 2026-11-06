@@ -258,12 +258,12 @@ bytes) as the depacker leaves it at frame 2 613; `tools/pack.py` packs it into b
 | `menu` | `$F0DB`-`$F2FF` | the messages, the menu, the sound effects | 5, 8, 9 |
 | `coursedata` | `$F300`-`$FFFF` | the objects of every round, the saved strips `$F800`, the IM 2 jump `$FDFD` and table `$FE00` | 6, 7 |
 
-The `.asm` files are generated, not edited by hand: `tools/mkgame.py` builds them from what the reverse knows and from what the
+The `.asm` files are generated, not edited by hand: `kit/mkgame.py` builds them from what the reverse knows and from what the
 recordings saw, and refuses to install them unless sjasmplus gives the original bytes.
 
 ```mermaid
 flowchart LR
-    ann["src/game/game.ann<br/>names, shapes, comments"] --> mk["tools/mkgame.py"]
+    ann["src/game/game.ann<br/>names, shapes, comments"] --> mk["kit/mkgame.py"]
     l1["work/*/l1.json<br/>instructions run"] --> mk
     tap["orig/HATE.TAP<br/>block 5, unpacked"] --> mk
     mk --> ctl["control file"] --> sna["sna2skool.py"] --> skool["skool"] --> s2a["skool2asm.py"] --> asm["src/game/*.asm"]
@@ -310,7 +310,7 @@ flowchart LR
   packs it and the TAP is compared with `orig/HATE.TAP`.
 
 ```bash
-python3 tools/mkgame.py --venv SKOOLKIT_VENV --sjasmplus SJASMPLUS --install   # rewrite src/game from game.ann
+python3 ../../kit/mkgame.py --install   # rewrite src/game from game.ann
 python3 tools/refdocs.py                                                       # docs 11 and 12 from the same
 python3 tools/res_formats.py check                                             # the PNG / text sources round trip
 python3 tools/res_preview.py                                                   # docs/img/res, after build.sh

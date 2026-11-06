@@ -489,7 +489,7 @@ The game image now has a source: `src/game/*.asm`, 18 modules, assembled by sjas
 depacker leaves at frame 2 613, so `tools/build.sh` builds the whole tape from source and it is identical to
 `orig/HATE.TAP` (doc 3.7).
 
-The source is not typed by hand. `tools/mkgame.py` writes it from three inputs:
+The source is not typed by hand. `kit/mkgame.py` writes it from three inputs:
 
 1. the image, unpacked from the original tape's block 5;
 2. the instructions the recordings ran (`work/*/l1.json`, 4 568 instruction starts), widened by a walk along the
@@ -745,7 +745,7 @@ rebuilds identical.
 
 The source held the game's data as 3 250 lines of `DEFB`: the bytes were right, but a sprite, a course or the
 title tune was not a thing one could pick up. Now an entry of `game.ann` followed by `@res FILE` is a resource:
-`tools/mkgame.py` writes its bytes to `src/res/FILE` and its data lines become `INCBIN "res/FILE",offset,length`
+`kit/mkgame.py` writes its bytes to `src/res/FILE` and its data lines become `INCBIN "res/FILE",offset,length`
 under the entry's label and description (entries naming one file share it: the font's two halves, the game
 screen's pixels and attributes, the three tile sets). 66 entries, 62 files, 28 067 bytes: the font, 14 sprite
 blocks and 6 explosion frames by table slot, the tiles, the game screen as a `.scr`, the tile runs, the ground
@@ -914,7 +914,7 @@ recording? The reviewer had not seen the earlier rounds; each finding was checke
   `$5FB4-$6017`.
 - The depacker has no back-references: plain RLE, a token's value is in the stream. The real reason the builds over
   the load give no data reads is that it reads its packed input where the game's code later lies (doc 3.7,
-  `tools/mkgame.py`, 6.13 here).
+  `kit/mkgame.py`, 6.13 here).
 - Frame 2613, checked again on the first recording: the memory equals `tools/depack.py`'s image from the start of
   the frame to t 53 000 (the last writes put back bytes already there, input and output pointers meet), then the
   game writes 2, 4 and at the next frame 6 bytes.

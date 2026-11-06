@@ -5,13 +5,13 @@ graphics (PNG) and the title tune (text) are editable sources, converted back to
 `tools/res_formats.py` into `build/res`. `tools/build.sh` assembles `src/game/game.asm` with `INCBIN` from there
 (sjasmplus, `build` and `src/game` on the include path); the tape it writes is `orig/HATE.TAP` byte for byte.
 
-- **Where they come from.** `tools/mkgame.py` writes every file of the game image (all but the two marked
+- **Where they come from.** `kit/mkgame.py` writes every file of the game image (all but the two marked
   *by hand* below) from the pristine image: an entry of `src/game/game.ann` followed by `@res FILE` is a resource,
   its bytes go to `src/res/FILE` (for the graphics and the tune, the PNG or text source of FILE: see Editable
   sources) and its data lines in `src/game/*.asm` become `INCBIN "res/FILE",offset,length`
   under the entry's label and description. Entries that name one file share it (the file holds the bytes from the
   first entry to the end of the last). Edit `game.ann`, not the `.asm` files, and rerun
-  `tools/mkgame.py --venv VENV --install`; it installs only when the assembled image is the original's.
+  `python3 ../../kit/mkgame.py --install`; it installs only when the assembled image is the original's.
 - **What stays in the source.** Tables of addresses (`dw Label`: the sprite table `$C300`, the course table
   `$CF04`, the row lists `$C8EA`, the blit list `$D5B2`, the handler tables), records and variables, strings
   (`DEFM`, readable in place) and small tables the code reads field by field: they are part of the program's
@@ -36,7 +36,7 @@ graphics (PNG) and the title tune (text) are editable sources, converted back to
   give the original tape byte for byte, so an edit shows at once as a difference. The PNG and text formats are below.
   The font, the tiles, 14 sprite blocks and 6 explosion frames make 22 PNG files. The title's song, 5 patterns and 2
   drum patterns are in `music/title/tune.txt`. `res_formats.py export` writes the sources from `.bin` files, and
-  `tools/mkgame.py --install` uses it. `res_formats.py check` builds every source and writes it back out, and the
+  `kit/mkgame.py --install` uses it. `res_formats.py check` builds every source and writes it back out, and the
   bytes must come out the same. Courses, objects, tables and leftovers stay raw bytes: they are numbers already, and
   docs 6-7 and 11 explain them.
 

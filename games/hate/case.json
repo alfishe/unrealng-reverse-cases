@@ -18,6 +18,7 @@
     "game2",
     "p2"
   ],
+  "code_builds": ["c1", "c2", "m1", "p2-sav", "p2-rev2", "p2-rev3", "p2-rev4"],
   "header": [
     "; H.A.T.E. (Hostile All Terrain Encounter), Vortex Software 1989: the game image $5FB4-$FFFF as the depacker",
     "; leaves it. sjasmplus -I<build> -I<src/game> game.asm gives game.bin, byte for byte the original (tools/build.sh",

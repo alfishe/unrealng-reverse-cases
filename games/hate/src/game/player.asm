@@ -31,8 +31,8 @@ PrintAutoText:
   LD HL,SoundRequests     ; sound request bit 3: the AUTO beep
   SET 3,(HL)
   CALL ConvoyFollow       ; the followers copy the leader
-  LD A,($C003)            ; position across: 2 a pass toward the start
-                          ; position, $2C
+  LD A,(PlayerRecord+$0003) ; position across: 2 a pass toward the start
+                            ; position, $2C
   CP $2C
   JR Z,AutoStoreAcross
   JR C,AutoAcrossUp
@@ -44,7 +44,7 @@ AutoAcrossUp:
   INC A
 AutoStoreAcross:
   LD (PlayerRecord+$0003),A
-  LD A,($C004)            ; height - 1, but not below 2
+  LD A,(PlayerRecord+$0004) ; height - 1, but not below 2
   CP $03
   JR C,AutoStoreHeight
   DEC A
@@ -254,7 +254,7 @@ ConvoyLinkLoop:
   LD C,(HL)
   LD A,(BC)               ; across from the one in front
   LD (DE),A
-  LD A,($C006)            ; standing: the height is not copied
+  LD A,(PlayerRecord+$0006) ; standing: the height is not copied
   AND A
   JR Z,NextConvoyLink
   INC E
@@ -424,7 +424,7 @@ PlayerSteer:
   LD A,(PlayerRecord)     ; type 0 the aircraft, type 1 the ground vehicle
   BIT 0,A
   JR NZ,GroundVehicle
-  LD A,($C004)            ; the aircraft: height into $C2F6
+  LD A,(PlayerRecord+$0004) ; the aircraft: height into $C2F6
   LD (MoverHeight),A
   LD L,A
   XOR A
@@ -547,7 +547,7 @@ OrProfileLoop:
   AND A                   ; already beside that wall: only limited
   JR Z,SteerAcross
 WallCrash:
-  LD A,($C003)            ; past the limit: the player crashes into the wall
+  LD A,(PlayerRecord+$0003) ; past the limit: the player crashes into the wall
   CP E
   JR C,SteerAcross
   LD HL,PlayerRecord
@@ -613,7 +613,8 @@ StoreLeftCount:
   SRL A
   ADD A,A
   LD C,A
-  LD A,($C003)            ; left raises the position across, below the limit E
+  LD A,(PlayerRecord+$0003) ; left raises the position across, below the limit
+                            ; E
   ADD A,C
   CP E
   JR C,StoreLeftAcross
@@ -634,7 +635,7 @@ StoreRightCount:
   SRL A
   ADD A,A
   LD C,A
-  LD A,($C003)            ; right lowers it, not below 2
+  LD A,(PlayerRecord+$0003) ; right lowers it, not below 2
   SUB C
   CP $02
   JR C,AcrossFloor
