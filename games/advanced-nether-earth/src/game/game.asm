@@ -57,7 +57,7 @@ Warbases       EQU $FD70  ; 4 capture points of 5 bytes: X (2), Y, owner (bit 6 
 Factories      EQU $FD84  ; 24 capture points of 5 bytes, the same shape
 Buildings      EQU $FF01  ; 56 records of 3 bytes: the map cell address, the type (0 a warbase pad, 1-6 factories, 7 the player's flag, 8 the enemy's)
 
-; Addresses in the other banks the game pages at $C000 (game.ann # @bank)
+; Addresses in other RAM banks (@bank)
 PlayerInit     EQU $C000  ; bank 1: the SoundTrack player's start: the tune from its beginning
 PlayerFrame    EQU $C005  ; bank 1: the player's frame entry: one 50 Hz step of the tune
 MusicStart     EQU $D8E1  ; bank 1: bank 1's start-up code, run once by GameEntry

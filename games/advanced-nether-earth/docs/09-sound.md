@@ -279,7 +279,7 @@ How to read it:
 - Grey marks under a row: the frames where a channel mixes noise (A top, C bottom).
 - The title of a row gives its player and its cost a frame (min-max, median).
 - Drawn by:
-  - `/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/venv-skoolkit/bin/python tools/ay_play.py --load FILE@ADDR --init ADDR --play ADDR+5 --frames 25000 --out work/docR/ay/TUNE.json` for each tune (the files in the table below);
+  - `$SKOOLKIT_VENV/bin/python tools/ay_play.py --load FILE@ADDR --init ADDR --play ADDR+5 --frames 25000 --out work/docR/ay/TUNE.json` for each tune (the files in the table below);
   - `python3 tools/fig_tunes.py --ay work/docR/ay --frames 1500 --out-tunes docs/img/sound/tunes.png --out-cost docs/img/sound/player-cost.png`.
 
 | Tune | `ay_play.py --load` | Init, play | Loops |

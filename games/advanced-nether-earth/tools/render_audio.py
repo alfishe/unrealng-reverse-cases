@@ -50,9 +50,10 @@ sys.path.insert(0, os.path.join(UNREAL, 'tools', 'verification', 'analysis'))
 import mcplib  # noqa: E402
 import corpus  # noqa: E402
 import mm_session  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import toolpaths  # noqa: E402
 
-BINARY = ('/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/wt-ane-stage1/cmake-build-agent-release/bin/'
-          'unreal-qt.app/Contents/MacOS/unreal-qt')
+BINARY = toolpaths.unreal_binary(required=False) or 'unreal-qt'
 SCL = os.path.join(CASE, 'orig', 'Advanced Nether Earth (1998)(Eternity Industry)(128K)(RU).scl')
 S3 = os.path.join(CASE, 'work', 'stage3')
 WORK = os.path.join(CASE, 'work', 'audio')

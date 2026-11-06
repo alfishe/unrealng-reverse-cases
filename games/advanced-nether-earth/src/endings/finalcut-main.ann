@@ -1,4 +1,4 @@
-# Final Cut, the part in bank 5 ($6060-$70F4): the code, the scroll text and its font. tools/endings_mkgame.py turns
+# Final Cut, the part in bank 5 ($6060-$70F4): the code, the scroll text and its font. kit/mkgame.py --part turns
 # this file and the recording work/endings/fcw into src/endings/finalcut/fcmain.asm (src/endings/finalcut.json).
 
 @equ $DB00 Pt3Init ; the PT3 player's init in bank 7 (aneS's src/music/pt3-player.asm, assembled at $DB00)

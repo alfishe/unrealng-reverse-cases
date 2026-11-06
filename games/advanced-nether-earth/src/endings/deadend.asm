@@ -1,7 +1,6 @@
 ; Advanced Nether Earth (Eternity Industry, 1998): bank 3 as the game starter unpacks it ($C000-$FE1E):
 ; Dead End, the loss sequence, with its tune and player, and the game menu's picture routine.
-; Written by tools/endings_mkgame.py from the annotations (src/endings/deadend.ann) and the recordings; edit the annotations,
-; not the .asm.
+; Written by kit/mkgame.py from src/endings/deadend.ann and the recordings; edit deadend.ann, not the .asm.
 
   DEVICE ZXSPECTRUM48
 

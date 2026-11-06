@@ -1,4 +1,4 @@
-# The disk module: bank 4 $C065-$CD2B, copied to $4000 by the set-up and run there (tools/disk_mkgame.py --part
+# The disk module: bank 4 $C065-$CD2B, copied to $4000 by the set-up and run there (kit/mkgame.py --part
 # src/disk/diskio.json). Witnesses (work/stage3/aned, Pentagon 128 + TR-DOS 5.04T, recording frame = script frame +
 # 1602): recording a (the original SCL): the save screen 7652, "Saving..." 7947, back in play 8102; the load screen
 # 8932, "Loading..." 8990, the game loaded 9202; a load of "nofile": "File not found !" 10250. Recording b (the SCL

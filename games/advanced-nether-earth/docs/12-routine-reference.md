@@ -40,10 +40,10 @@ Written by `python3 tools/fig_routines.py` (through `kit/refdocs.py`); edit `src
 
 | Module | Entries | Code entries |
 | --- | --- | --- |
-| [`viewtail`](#viewtail) | `$6731`-`$677F` | 0 of 1 |
+| [`viewtail`](11-data-reference.md#viewtail-the-tail-of-the-view-buffer-the-game-block-loads-over) | `$6731`-`$677F` | 0 of 1 |
 | [`music`](#music) | `$6780`-`$67FF` | 4 of 6 |
 | [`im2`](#im2) | `$6800`-`$697F` | 2 of 7 |
-| [`sprites`](#sprites) | `$6980`-`$A569` | 0 of 178 |
+| [`sprites`](11-data-reference.md#sprites-the-89-sprite-blocks-the-ship-the-map-objects-the-robot-parts-the-buildings-signs-the-shots) | `$6980`-`$A569` | 0 of 178 |
 | [`disk`](#disk) | `$A56A`-`$A5D9` | 2 of 3 |
 | [`start`](#start) | `$A5DA`-`$A71F` | 6 of 6 |
 | [`robotmenu`](#robotmenu) | `$A720`-`$AD61` | 26 of 48 |
@@ -53,16 +53,16 @@ Written by `python3 tools/fig_routines.py` (through `kit/refdocs.py`); edit `src
 | [`world`](#world) | `$B0CA`-`$B7F3` | 34 of 36 |
 | [`enemy`](#enemy) | `$B7F4`-`$BB08` | 4 of 4 |
 | [`bases`](#bases) | `$BB09`-`$BDA8` | 17 of 17 |
-| [`level`](#level) | `$BDA9`-`$C0FF` | 0 of 17 |
+| [`level`](11-data-reference.md#level-the-level-the-scenery-and-base-lists-the-shape-table-and-the-11-shapes-buildmap-turns-into-the-map) | `$BDA9`-`$C0FF` | 0 of 17 |
 | [`mainmenu`](#mainmenu) | `$C100`-`$C4A7` | 44 of 69 |
-| [`font`](#font) | `$C4A8`-`$C848` | 0 of 3 |
+| [`font`](11-data-reference.md#font-the-games-cyrillic-font-and-the-free-bytes-round-it) | `$C4A8`-`$C848` | 0 of 3 |
 | [`construction`](#construction) | `$C849`-`$CCBC` | 18 of 26 |
 | [`view`](#view) | `$CCBD`-`$D0B8` | 20 of 22 |
 | [`screen`](#screen) | `$D0B9`-`$D37B` | 20 of 28 |
 | [`controls`](#controls) | `$D37C`-`$D3E4` | 2 of 4 |
 | [`print`](#print) | `$D3E5`-`$D565` | 13 of 13 |
 | [`interrupts`](#interrupts) | `$D566`-`$D6A7` | 9 of 9 |
-| [`tables`](#tables) | `$D6A8`-`$D7D2` | 0 of 6 |
+| [`tables`](11-data-reference.md#tables-lookup-tables-of-the-view-and-the-robots-view-edges-part-sprites-sprite-pointers-heights) | `$D6A8`-`$D7D2` | 0 of 6 |
 
 ## music
 

@@ -259,8 +259,23 @@ def main():
     body = text[text.index('| Module | Entries | Code entries |'):]
     body = re.sub(r'\n+$', '\n', body)
     body = tidy(body, ann)
+    body = data_anchors(body)
     open(args.out, 'w').write(HEADER + body + '\n' + OTHER_BANKS + '\n' + other_parts())
     print('written', os.path.relpath(args.out, CASE))
+
+
+def data_anchors(body):
+    """kit/refdocs.py links a data-only module to its own doc 11's `## module` heading; this case's doc 11
+    (tools/fig_dataref.py) titles the module's heading, so the link takes that heading's GitHub slug"""
+    sys.path.insert(0, KIT)
+    import check_docs
+    slugs = check_docs.anchors(os.path.join(CASE, 'docs', '11-data-reference.md'))
+
+    def fix(m):
+        name = m.group(1)
+        hits = sorted(s for s in slugs if s == name or s.startswith(name + '-'))
+        return '(11-data-reference.md#%s)' % (hits[0] if hits else name)
+    return re.sub(r'\(11-data-reference\.md#([\w-]+)\)', fix, body)
 
 
 if __name__ == '__main__':

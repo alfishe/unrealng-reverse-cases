@@ -1,5 +1,5 @@
 # Dead End: bank 3 from $D2EF. The player and the tune before it ($C000-$D2EE) are aneS's: src/music/stp-player.asm
-# and src/res/music/nether-earth-end.pt2, included by src/endings/deadend.json. tools/endings_mkgame.py turns this
+# and src/res/music/nether-earth-end.pt2, included by src/endings/deadend.json. kit/mkgame.py --part turns this
 # file and the recording work/endings/de into src/endings/deadend.asm and src/endings/deadend/*.asm.
 
 @equ $0052 RomRet ; a RET in the 48 BASIC ROM: CALL RomRet leaves the caller's address just under SP

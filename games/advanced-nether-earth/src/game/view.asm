@@ -601,7 +601,7 @@ DirectionLoop:
   POP BC                  ; the part count back
   LD HL,PartHeights       ; the part's height
   CALL AddAToHL           ; HL = PartHeights + part
-  LD A,($CF3F)            ; the height this part stood at (the operand)
+  LD A,(DrawSprite+$0012) ; the height this part stood at (the operand)
   ADD A,(HL)              ; + the part's own height
   LD (DrawSprite+$0012),A ; the next part stands on top of it
   RET                     ; back to DrawRobot's loop

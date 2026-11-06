@@ -5,7 +5,7 @@
     python3 tools/bootmenu_res.py check               every editable file encoded into a temporary folder
                                                       (tools/build_bootmenu.sh compares the assembled image)
 
-Four kinds, told by the INCBIN name (tools/bootmenu_mkasm.py --install writes them through install()):
+Four kinds, told by the INCBIN name (kit/mkgame.py --part src/bootmenu/bootmenu.json --install writes them through install()):
 
 | INCBIN name | Editable file | Format |
 | --- | --- | --- |

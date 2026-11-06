@@ -3,7 +3,7 @@
 
     python3 tools/endings_res.py build --out DIR     every resource -> DIR/res/<name> (the INCBIN names), the tune too
 
-tools/endings_mkgame.py --install writes the editable files through install(). The kinds, told by the INCBIN name:
+kit/mkgame.py --part src/endings/*.json --install writes the editable files through install(). The kinds, told by the INCBIN name:
 
 | INCBIN name | Editable file(s) | Format |
 | --- | --- | --- |

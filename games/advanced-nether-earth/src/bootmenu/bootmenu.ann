@@ -1,5 +1,5 @@
 # The annotations of the boot program ($6060-$F6D4: the boot menu and the help): the single source of truth for
-# src/bootmenu/*.asm (tools/bootmenu_mkasm.py, kit/mkgame.py's pipeline). The format is kit/mkgame.py's, class
+# src/bootmenu/*.asm (kit/mkgame.py --part src/bootmenu/bootmenu.json). The format is kit/mkgame.py's, class
 # Annotations, plus @const:
 #
 #   @module NAME ; title            the entries from here on go to NAME.asm, the title heads the file

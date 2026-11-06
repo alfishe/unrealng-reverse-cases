@@ -5,7 +5,7 @@
 #   tools/build_bootmenu.sh [SJASMPLUS]
 #
 #   build/bootmenu/d05-6060.bin   the image HRUM block 5 unpacks to $6060 (src/bootmenu/bootmenu.asm and its
-#                                 modules, written by tools/bootmenu_mkasm.py from src/bootmenu/bootmenu.ann)
+#                                 modules, written by kit/mkgame.py from src/bootmenu/bootmenu.ann)
 #                                                                      = src/res/img/d05-6060.bin
 #
 # The resources go first through tools/bootmenu_res.py into build/bootmenu/res, which the modules INCBIN as
@@ -13,7 +13,7 @@
 # the menu and the 28 help pages from UTF-8 text.
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 b="$here/build/bootmenu"
 rm -rf "$b"
 mkdir -p "$b/res"

@@ -4,7 +4,7 @@
 #   tools/build.sh [SJASMPLUS]
 #
 # 1-2. The game image $6731-$D7D7 (tools/build_game.sh: src/res/game, then src/game/game.asm, written by
-#    tools/game_mkgame.py from src/game/game.ann).
+#    kit/mkgame.py from src/game/game.ann).
 # 3. HRUM 3.5 (tools/hrum.py, the original streams byte for byte): the two blocks that sit inside other images first
 #    (src/sfx/blocks.asm with INNER), the two images that hold them (src/images.asm), then every other block.
 # 4. The loader (src/loader.asm, the intro's block inside it).
@@ -13,7 +13,7 @@
 #    original bytes (src/res/disk/README.md says why).
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 scl="$here/orig/Advanced Nether Earth (1998)(Eternity Industry)(128K)(RU).scl"
 b="$here/build"
 rm -rf "$b/pk" "$b/blk" "$b/img" "$b/boot"

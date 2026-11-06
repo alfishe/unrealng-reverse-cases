@@ -218,16 +218,16 @@ own `tools/` and the kit ones stay open for the lead.
 | The kit's key names `SS` / `CS` become `symbol_shift` / `caps_shift`, which `type_input` rejects | stage 1 | the input scripts write `ss` / `cs` | open |
 | `re_session.py capture --record-load` starts the script after 1500 idle frames and the recording at frame 102; the offset of 1602 is written nowhere | ane3 | measured on `r2`, stated in the notes and the docs | open |
 | `kit/screen_shot.py` reads `$4000` of the CPU view, not the screen shown: while a program shows screen 7, the shot is the wrong page | ane3, docR ([9.9](docs/09-sound.md)) | intro screens taken from the bank; docP sampled bank 5 and bank 7 (`tools/fig_programs.py`) | open |
-| mkgame takes one 64K image per case and its `work/*/l1.json` | stage 2, ane3, aneM, aneE, aneD | per-part wrappers over mkgame's functions: `tools/bootmenu_mkasm.py`, `disk_mkgame.py`, `endings_mkgame.py`, `intro_mkpart.py`, `game_mkgame.py` | open |
-| mkgame reads what ran only from L1 builds, not from a simulator trace | aneI, aneM | `tools/intro_trace.py` and `tools/bootmenu_sim.py` traces fed to the wrappers | open |
-| mkgame installs only into `src/game`, and its `--install` deletes every `src/game/*.asm` | aneM, aneG | the wrappers install into their own folders and delete nothing else | open |
-| No banks: an address in another bank inside the image's range (`$C000` is bank 0's level data and also entries in banks 1, 4, 6) cannot be an `@equ`; the walk follows the call into bank 0's bytes | aneG | `# @bank` lines, `@isub`, patched sna2skool output | open |
-| No constant for another bank's address | aneM | `@const`, an aneM extension read by its wrapper | open |
-| sna2skool's `*` reference marks land inside data rows | aneM | dropped by the wrapper | open |
-| `@isub` numbers come back in hex (skool2asm `-H`), not as the `.ann` writes them | aneM | the wrapper writes them in decimal | open |
-| One run address per part: no segments, no `DISP`, no other part's source included in place; the head's ORG repeats the top's | aneE, aneD | `endings_mkgame.py` segments with their own run address and bank, `lines` segments, `external` names; aneD added `same_bytes` and `data_entries` keys | open |
-| `label_inner_addresses` writes `Label+offset` only for `LD (nn),r` / `LD rr,nn`, not `LD A,(nn)` or `LD BC,nn` | aneE | in the `.ann` | open |
-| `load_l1` reads every `work/*/l1.json`, not only `case.json`'s `read_builds` | aneG | `game_mkgame.py` passes its builds | open |
+| mkgame takes one 64K image per case and its `work/*/l1.json` | stage 2, ane3, aneM, aneE, aneD | per-part wrappers over mkgame's functions: `tools/bootmenu_mkasm.py`, `disk_mkgame.py`, `endings_mkgame.py`, `intro_mkpart.py`, `game_mkgame.py` | closed: `kit/mkgame.py --part` / `--image` (part files `src/<part>/*.json`); `intro_mkpart.py` stays (phased traces with bank maps) |
+| mkgame reads what ran only from L1 builds, not from a simulator trace | aneI, aneM | `tools/intro_trace.py` and `tools/bootmenu_sim.py` traces fed to the wrappers | closed for the boot menu (`"format": "trace"` sources); the intro keeps `intro_mkpart.py` |
+| mkgame installs only into `src/game`, and its `--install` deletes every `src/game/*.asm` | aneM, aneG | the wrappers install into their own folders and delete nothing else | closed: a part's `dest`; install removes only the modules the old top file included |
+| No banks: an address in another bank inside the image's range (`$C000` is bank 0's level data and also entries in banks 1, 4, 6) cannot be an `@equ`; the walk follows the call into bank 0's bytes | aneG | `# @bank` lines, `@isub`, patched sna2skool output | closed: the kit's `@bank` |
+| No constant for another bank's address | aneM | `@const`, an aneM extension read by its wrapper | closed: the kit's `@const` |
+| sna2skool's `*` reference marks land inside data rows | aneM | dropped by the wrapper | closed: `"drop_data_refs"` |
+| `@isub` numbers come back in hex (skool2asm `-H`), not as the `.ann` writes them | aneM | the wrapper writes them in decimal | closed: `"isub_as_written"` |
+| One run address per part: no segments, no `DISP`, no other part's source included in place; the head's ORG repeats the top's | aneE, aneD | `endings_mkgame.py` segments with their own run address and bank, `lines` segments, `external` names; aneD added `same_bytes` and `data_entries` keys | closed: part files with `segments` |
+| `label_inner_addresses` writes `Label+offset` only for `LD (nn),r` / `LD rr,nn`, not `LD A,(nn)` or `LD BC,nn` | aneE | in the `.ann` | closed: `"operands": "wide"` |
+| `load_l1` reads every `work/*/l1.json`, not only `case.json`'s `read_builds` | aneG | `game_mkgame.py` passes its builds | closed: `read_builds` + `code_builds` |
 | sjasmplus has no file-size function | stage 2 | `tools/packall.py` writes `UN_NAME` / `PK_NAME` | worked around |
 | A CPU read of `$C000-$FFFF` on a paused instance sees whatever bank is paged; the pause often falls inside the music handler with bank 1 in: the first bot read `MenuCursor` as 0 for ever, the first pokes landed in bank 1 | docL | `Bank0Reader` (`memory_at` space `ram`, page 0) in `tools/ane_bot.py`; pokes step `run_scanlines 60` until page 0 is back, then write and verify | worked around |
 | `ane_sim.py` logs depacks and pages, not calls | stage 2 | stage 3's write trace (3.1) and aneS's reading of the intro (6.6) | closed |
@@ -265,12 +265,12 @@ first brief had asked for a comparison article, doc 13; that was dropped.
 ### 6.2 The game image (aneG)
 
 **Used:** `work/stage1/match.tsv`, NE's `game.ann` as a seed (`work/stage3/aneg/seed_ann.py`), the L1 builds of
-`work/game` and `work/game-r2` (from `r2`), `tools/game_mkgame.py`.
+`work/game` and `work/game-r2` (from `r2`), `tools/game_mkgame.py` (now `kit/mkgame.py`).
 
 - The seed kept NE's lines for the entries whose bytes ANE kept, dropped the 17 entries ANE replaced and NE's
   view-buffer, font, world-state, map and music modules, and kept only `$6731-$D7D2`. From there `game.ann` was
   rewritten by hand in nine revisions (`work/stage3/aneg/ann.v1` ... `v9`).
-- The result: `src/game/game.ann`, 526 entries, every one named and described; `game_mkgame.py --install` writes
+- The result: `src/game/game.ann`, 526 entries, every one named and described; `kit/mkgame.py --install` writes
   `game.asm` and 23 modules (start, music, im2, disk, endings, robotmenu, gameturn, world, enemy, bases, ...) and
   installs them only when they assemble to the SCL's game block (`tools/game_image.py`).
 - ANE's own modules: the music glue (`MusicInterrupt` `$6780`, `PlayMusic` `$67B1`, `SetGameBank` `$67DA`), the IM 2
@@ -286,7 +286,7 @@ first brief had asked for a comparison article, doc 13; that was dropped.
 ### 6.3 The boot menu and the help (aneM)
 
 **Used:** `tools/bootmenu_sim.py` (the boot program on SkoolKit's simulator: the traces `tour`, `extra`, `nofire` in
-`work/stage3/bootmenu/`), `r1`, `tools/bootmenu_mkasm.py`.
+`work/stage3/bootmenu/`), `r1`, `tools/bootmenu_mkasm.py` (now `kit/mkgame.py --part src/bootmenu/bootmenu.json`).
 
 - `src/bootmenu/bootmenu.ann`, 130 entries, 9 modules for `$6060-$F6D4`; 1167 of its 1175 instructions ran in the
   traces; the rest is mkgame's walk and the never-referenced ten-HALT `WaitFrames` `$AC3A`.
@@ -299,7 +299,7 @@ first brief had asked for a comparison article, doc 13; that was dropped.
 ### 6.4 The disk module, the starter, bank 7 (aneD)
 
 **Used:** its recordings `work/stage3/aned/a` and `b` (L1 windows `a-disk` 7600-11201, `a-start` 4550-5100),
-`tools/disk_mkgame.py`, `tools/disk_res.py`.
+`tools/disk_mkgame.py` (now `kit/mkgame.py --part src/disk/*.json`), `tools/disk_res.py`.
 
 - Three outputs, each `identical`: the disk module (`src/disk/diskio.asm`: a set-up `$C000-$C064` run in bank 4 and
   the module at `$C065-$CD2B` assembled for `$4000`), the game starter and title picture (`src/disk/starter.asm`,
@@ -351,7 +351,7 @@ ZXTune's `compiledpt2.cpp` signature, `tools/music_ptmodule.py`, `tools/build_mu
 
 ### 6.7 Dead End and Final Cut (aneE)
 
-**Used:** its recordings `work/endings/de` and `fc` (pokes by `tools/endings_poke.py`), `tools/endings_mkgame.py`,
+**Used:** its recordings `work/endings/de` and `fc` (pokes by `tools/endings_poke.py`), `tools/endings_mkgame.py` (now `kit/mkgame.py --part src/endings/*.json`),
 `tools/endings_res.py`.
 
 - `src/endings/deadend.ann` (bank 3: modules deadend, lzscreen, gameover, menupicture, im2) and

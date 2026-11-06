@@ -1,8 +1,7 @@
 ; Advanced Nether Earth (Eternity Industry, 1998): bank 7 as its HRUM block unpacks it at the boot ($C000-$FFFF).
 ; $C000-$CE08 is the game starter's own HRUM block (src/disk/starter.asm, packed by src/sfx/blocks.asm with
 ; INNER, put in by src/images.asm): zero here. $CE09-$FFFF is the boot menu's digitised sample.
-; Written by tools/disk_mkgame.py from the annotations (src/disk/bank7.ann) and the recordings; edit the annotations,
-; not the .asm.
+; Written by kit/mkgame.py from src/disk/bank7.ann and the recordings; edit bank7.ann, not the .asm.
 
   DEVICE ZXSPECTRUM48
 

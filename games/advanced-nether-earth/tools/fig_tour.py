@@ -30,10 +30,11 @@ CASE = os.path.abspath(os.path.join(HERE, '..'))
 R = os.path.abspath(os.path.join(CASE, '..', '..'))
 sys.path.insert(0, os.path.join(R, 'kit'))
 import kitlib as K  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import toolpaths  # noqa: E402
 
-UNREAL = '/Volumes/TB4-4Tb/Projects/Test/unreal-ng'
-BINARY = os.path.join(UNREAL, 'scratch/wt-ane-stage1/cmake-build-agent-release/bin/unreal-qt.app/Contents/MacOS/'
-                      'unreal-qt')
+UNREAL = toolpaths.unreal_ng(required=False) or 'unreal-ng'
+BINARY = toolpaths.unreal_binary(required=False) or 'unreal-qt'
 WORK = os.path.join(CASE, 'work', 'docP')
 MENU_SNAPSHOT = os.path.join(CASE, 'work', 'stage1', 'explore', 'gamemenu.szx')
 

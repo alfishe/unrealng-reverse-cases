@@ -1,6 +1,10 @@
 {
  "name": "diskio",
- "image": "src/res/img/disk-io-c000-bank4.bin",
+ "work": "work/stage3/aned/mk-diskio",
+ "dest": "src/disk",
+ "res_install": "tools/disk_res.py",
+ "image": "build/disk/disk-io-c000-bank4.bin",
+ "image_note": "tools/build_disk.sh writes it from src/disk (tools/build.sh checks the disk it is part of against orig/)",
  "at": "C000",
  "out": "build/disk/disk-io-c000-bank4.bin",
  "header": [

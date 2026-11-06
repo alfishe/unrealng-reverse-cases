@@ -1,12 +1,12 @@
 ; Advanced Nether Earth (Eternity Industry, 1998): the disk module, bank 4 $C000-$CD2B as the game starter
 ; unpacks it. The game's GameSave / GameLoad page bank 4 and jump to $C000 with IX = the entry: the set-up
 ; clears the screen, goes back to IM 1 and the ROM's state, copies $C065-$CD2B to $4000 and jumps to IX.
-; Written by tools/disk_mkgame.py from the annotations (src/disk/setup.ann, src/disk/module.ann) and the recordings; edit the annotations,
+; Written by kit/mkgame.py from the annotations (src/disk/setup.ann, src/disk/module.ann) and the recordings; edit the annotations,
 ; not the .asm.
 
   DEVICE ZXSPECTRUM48
 
-; Addresses outside this image (the annotations @equ lines): the ROMs, the system variables, the game
+; Addresses outside this image (@equ in the annotations)
 TrdosReadSector EQU $2090  ; TR-DOS ROM: READ SECTOR ($80) with the INI loop $3FE5 (B = 1: 256 bytes from $7F to HL), then the status and the sector list
 TrdosSectorStatus EQU $2099  ; TR-DOS ROM: the status after a sector command, then the sector list
 TrdosStatusSeek EQU $2740  ; TR-DOS ROM: IN A,($1F) to TrdosStatus, then a seek to track D

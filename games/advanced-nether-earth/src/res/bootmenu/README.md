@@ -1,7 +1,7 @@
 # The boot program's resources (the boot menu and the help, `$6060-$F6D4`)
 
 `tools/build_bootmenu.sh` turns each file back into the bytes `src/bootmenu/*.asm` INCBIN (`tools/bootmenu_res.py`
-has the formats; `python3 tools/bootmenu_res.py check` encodes them all). `tools/bootmenu_mkasm.py --install` writes
+has the formats; `python3 tools/bootmenu_res.py check` encodes them all). `kit/mkgame.py --part src/bootmenu/bootmenu.json --install` writes
 them from the image.
 
 | File | Bytes | Label | What |

@@ -1,0 +1,28 @@
+{
+  "about": "The boot program $6060-$F6D4 (the boot menu and the help): python3 ../../kit/mkgame.py --part src/bootmenu/bootmenu.json --install",
+  "image": "build/bootmenu/d05-6060.bin",
+  "at": "6060",
+  "image_note": "tools/build.sh writes it from src/bootmenu and checks the disk it is part of against orig/",
+  "ann": "src/bootmenu/bootmenu.ann",
+  "top": "bootmenu",
+  "bin": "d05-6060.bin",
+  "dest": "src/bootmenu",
+  "device": "ZXSPECTRUM128",
+  "header": [
+    "; Advanced Nether Earth (Eternity Industry 1998): the boot program $6060-$F6D4, the boot menu and the help,",
+    "; as its HRUM block unpacks it (src/sfx/blocks.asm, Block05; entry $61A8)."
+  ],
+  "l1_note": "the traces of tools/bootmenu_sim.py: instruction starts, CALL targets, data reads",
+  "l1": [
+    {
+      "path": "work/stage3/bootmenu/*/trace.json",
+      "format": "trace"
+    }
+  ],
+  "data_entries": "first",
+  "entries_in_code": true,
+  "drop_data_refs": true,
+  "isub_as_written": true,
+  "res_install": "tools/bootmenu_res.py",
+  "work": "work/stage3/bootmenu/mkasm"
+}

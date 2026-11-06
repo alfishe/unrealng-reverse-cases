@@ -8,7 +8,7 @@
 # which the sources INCBIN as "res/scroller/<file>".
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 b="$here/build/intro"
 mkdir -p "$b/res/scroller"
 python3 "$here/tools/intro_scroller.py" build --src "$here/src/res/intro/scroller" --out "$b/res/scroller"

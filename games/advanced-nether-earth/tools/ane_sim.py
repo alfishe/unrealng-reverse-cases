@@ -25,11 +25,13 @@ import sys
 from skoolkit.simulator import Simulator
 from skoolkit.pagingtracer import Memory
 from skoolkit import simutils as su
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import toolpaths  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CASE = os.path.dirname(HERE)
 SCL = os.path.join(CASE, 'orig', 'Advanced Nether Earth (1998)(Eternity Industry)(128K)(RU).scl')
-ROM_DIR = os.environ.get('UNREAL_ROMS', '/Volumes/TB4-4Tb/Projects/Test/unreal-ng/data/rom')
+ROM_DIR = os.environ.get('UNREAL_ROMS') or os.path.join(toolpaths.unreal_ng(required=False) or 'unreal-ng', 'data', 'rom')
 FRAME = 71680
 INT_LEN = 32
 KEYS = {  # half row (address line), bit

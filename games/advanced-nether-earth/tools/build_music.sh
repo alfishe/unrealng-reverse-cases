@@ -17,7 +17,7 @@
 # Pro Tracker 3 tunes are INCBINed as they are (the player relocates them at its init).
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 b="$here/build/music"
 rm -rf "$b"
 mkdir -p "$b/tunes"

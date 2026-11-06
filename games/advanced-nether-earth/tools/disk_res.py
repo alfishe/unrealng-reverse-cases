@@ -130,7 +130,7 @@ SOURCES = {  # resource (as the .asm INCBINs it, under build/disk/res) -> (sourc
 
 
 def install(files):
-    """The resources tools/disk_mkgame.py found, written as their sources (and checked to give the bytes back)"""
+    """The resources kit/mkgame.py --part src/disk/*.json found, written as their sources (and checked to give the bytes back)"""
     for name, data in files.items():
         if name not in SOURCES:
             sys.exit(f'disk_res: no source format for {name}')

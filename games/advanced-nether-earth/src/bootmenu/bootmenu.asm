@@ -1,10 +1,10 @@
 ; Advanced Nether Earth (Eternity Industry 1998): the boot program $6060-$F6D4, the boot menu and the help,
 ; as its HRUM block unpacks it (src/sfx/blocks.asm, Block05; entry $61A8).
-; Written by tools/bootmenu_mkasm.py from src/bootmenu/bootmenu.ann and the traces; edit the .ann, not the .asm.
+; Written by kit/mkgame.py from src/bootmenu/bootmenu.ann and the recordings; edit bootmenu.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 
-; Constants: addresses outside this image or in another bank (bootmenu.ann @const)
+; Constants: addresses outside this image, ROM entries, ports (@const)
 PAGE_PORT          EQU $7FFD  ; the 128's paging port
 AY_SELECT          EQU $FFFD  ; the AY's register select (its data port is $BFFD: B = $BF)
 ROM_RET            EQU $0052  ; a RET in the 48 BASIC ROM: CALL ROM_RET leaves the caller's address under SP

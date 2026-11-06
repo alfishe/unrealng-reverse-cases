@@ -1,6 +1,15 @@
 {
  "name": "deadend",
- "image": "src/res/img/dead-end-c000-bank3.bin",
+ "work": "work/endings/mk-deadend",
+ "dest": "src/endings",
+ "res_install": "tools/endings_res.py",
+ "operands": "wide",
+ "include": [
+  "."
+ ],
+ "before_assemble": "tools/endings_res.py:build_tunes",
+ "image": "build/endings/deadend-c000-bank3.bin",
+ "image_note": "tools/build_endings.sh writes it from src/endings (tools/build.sh checks the disk it is part of against orig/)",
  "at": "C000",
  "out": "build/endings/deadend-c000-bank3.bin",
  "header": [

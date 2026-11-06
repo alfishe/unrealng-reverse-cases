@@ -13,10 +13,11 @@
 # tune (src/res/music/nether-earth-end.pt2 compiled for $CA45) go to build/endings/res first (tools/endings_res.py).
 # The players are aneS's sources, included in place: src/music/stp-player.asm (module nst, Dead End $C000) and
 # src/music/pt3-player.asm (module pt3, Final Cut $DB00, with src/res/music/rem.pt3 as it is).
-# The sources are written by tools/endings_mkgame.py from src/endings/*.ann (edit those, then --install).
+# The sources are written by kit/mkgame.py --part src/endings/*.json from src/endings/*.ann (edit those, then
+# --install).
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 b="$here/build/endings"
 rm -rf "$b"
 mkdir -p "$b"

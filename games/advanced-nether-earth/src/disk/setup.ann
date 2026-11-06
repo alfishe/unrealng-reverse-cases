@@ -1,4 +1,4 @@
-# The disk module's set-up: bank 4 $C000-$C064, run where it lies (tools/disk_mkgame.py --part src/disk/diskio.json).
+# The disk module's set-up: bank 4 $C000-$C064, run where it lies (kit/mkgame.py --part src/disk/diskio.json).
 # Witness: work/stage3/aned/a (recording frames 7652 save, 8932 load, 10180 load of a missing file; L1 window
 # work/stage3/aned/a-disk).
 

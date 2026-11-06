@@ -44,9 +44,11 @@ CASE = os.path.dirname(HERE)
 NE = os.path.join(os.path.dirname(CASE), 'nether-earth')
 sys.path.insert(0, HERE)
 import game_text  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import toolpaths  # noqa: E402
 
-VENV_PYTHON = os.environ.get('SKOOLKIT_PYTHON',
-                             '/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/venv-skoolkit/bin/python')
+VENV_PYTHON = (os.environ.get('SKOOLKIT_PYTHON')
+               or toolpaths.skoolkit_python(toolpaths.skoolkit_venv(required=False) or ''))
 ENTRY = re.compile(r'^\$([0-9A-F]{4})\s+([cbwts])\b(?:\s+([A-Za-z_]\w*))?(?:\s+\d+)?\s*(?:;\s*(.*))?$')
 RES = re.compile(r'^@res\s+(\S+)')
 

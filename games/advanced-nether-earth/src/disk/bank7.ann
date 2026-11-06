@@ -1,4 +1,4 @@
-# Bank 7's last part, $CE09-$FFFF (tools/disk_mkgame.py --part src/disk/bank7.json). $C000-$CE08 is the slot of
+# Bank 7's last part, $CE09-$FFFF (kit/mkgame.py --part src/disk/bank7.json). $C000-$CE08 is the slot of
 # ane3's HRUM block d07 (the game starter, src/disk/starter.asm) and is zero in the raw file
 # src/res/img/d06-c000-bank7.bin; this source gives the same zeros.
 

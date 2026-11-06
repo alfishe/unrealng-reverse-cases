@@ -7,7 +7,7 @@
 # The frames' PNG (tools/intro_presents.py) -> build/intro/res/presents/frames.bin, which presentsmain.asm INCBINs.
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 b="$here/build/intro"
 mkdir -p "$b/res/presents"
 python3 "$here/tools/intro_presents.py" to-bin "$here/src/res/intro/presents/frames.png" "$b/res/presents/frames.bin"

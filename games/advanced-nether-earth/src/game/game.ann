@@ -6243,7 +6243,7 @@ $D6A6 RadarDotOutside ; outside the window: return from ToggleRadarDot too
 @equ $DB80 EnemyRobots 384 ; the enemy's robots: slots 24-47, the same records
 @equ $DD00 Map 8192 ; the map: 16 rows of 512 cells, cell = $DD00 + $200 x Y + X
 
-# Addresses in the other banks (tools/game_mkgame.py turns these into EQU lines; the instructions name them by @isub)
+# Addresses in the other banks (kit/mkgame.py turns these into EQU lines; the instructions name them by @isub)
 # @bank $C000 PlayerInit 1 ; the SoundTrack player's start: the tune from its beginning
 # @bank $C005 PlayerFrame 1 ; the player's frame entry: one 50 Hz step of the tune
 # @bank $D8E1 MusicStart 1 ; bank 1's start-up code, run once by GameEntry

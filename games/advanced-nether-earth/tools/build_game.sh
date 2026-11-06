@@ -1,5 +1,5 @@
 #!/bin/sh
-# The game image in play from source: the modules src/game/*.asm (written by tools/game_mkgame.py from
+# The game image in play from source: the modules src/game/*.asm (written by kit/mkgame.py from
 # src/game/game.ann) and the resources src/res/game (tools/game_res.py), into build/game/, checked byte for byte
 # against the game block the SCL holds.
 #
@@ -14,7 +14,7 @@
 # by the endings part (src/endings/deadend/menupicture.asm). Reads nothing outside this case.
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 b="$here/build/game"
 rm -rf "$b"
 mkdir -p "$b"

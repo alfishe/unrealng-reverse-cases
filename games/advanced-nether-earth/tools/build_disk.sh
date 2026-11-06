@@ -12,12 +12,12 @@
 #                                      starter), the boot menu's sample at $CE09 (src/disk/bank7.asm)
 #                                                                             = src/res/img/d06-c000-bank7.bin
 #
-# The sources are written by tools/disk_mkgame.py from src/disk/*.ann; the resources go first through
+# The sources are written by kit/mkgame.py --part src/disk/*.json from src/disk/*.ann; the resources go first through
 # tools/disk_res.py into build/disk/res, which the modules INCBIN as "res/diskmod/<file>": the module's font
 # (font.png), the title picture (title.png), the sample (sample.wav), all in src/res/diskmod.
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
-asm=${1:-${SJASMPLUS:-/Volumes/TB4-4Tb/Projects/emulators/github/sjasmplus/build/release/sjasmplus}}
+asm=$(python3 "$here/../../kit/toolpaths.py" sjasmplus "${1:-}") || exit 1
 b="$here/build/disk"
 rm -rf "$b"
 mkdir -p "$b/res"

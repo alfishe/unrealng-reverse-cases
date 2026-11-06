@@ -1,6 +1,6 @@
 ; Advanced Nether Earth (Eternity Industry, 1998): Final Cut, the win sequence, as HRUM unpacks it
 ; ($6060-$F76C; GameWon copies the packed block from bank 6 to $6060 and jumps there).
-; Written by tools/endings_mkgame.py from the annotations (src/endings/finalcut-main.ann, src/endings/finalcut-bank7.ann, src/endings/finalcut-screens.ann) and the recordings; edit the annotations,
+; Written by kit/mkgame.py from the annotations (src/endings/finalcut-main.ann, src/endings/finalcut-bank7.ann, src/endings/finalcut-screens.ann) and the recordings; edit the annotations,
 ; not the .asm.
 
   DEVICE ZXSPECTRUM48

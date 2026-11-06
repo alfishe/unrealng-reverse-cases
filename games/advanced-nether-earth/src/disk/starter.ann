@@ -1,4 +1,4 @@
-# The game starter, $9C40-$B78F (tools/disk_mkgame.py --part src/disk/starter.json): bank 7's first 6992 bytes
+# The game starter, $9C40-$B78F (kit/mkgame.py --part src/disk/starter.json): bank 7's first 6992 bytes
 # once ane3's HRUM block d07 is unpacked there. The boot program's key 1 ($61C4) copies bank 7 $C000 to $9C40 and
 # calls it before the game starts. Witness: L1 window work/stage3/aned/a-start (frames 4550-5100 of recording a).
 

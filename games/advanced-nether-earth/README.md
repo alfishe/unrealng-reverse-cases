@@ -46,6 +46,7 @@ Each part has its own source, resources and build script. `tools/build.sh` runs 
 Each part's build script header says how to write its source again from its annotations. For the game:
 
 ```bash
-python3 tools/game_mkgame.py --install        # src/game/*.asm from src/game/game.ann
+python3 ../../kit/mkgame.py --install                                   # src/game/*.asm from game.ann
+python3 ../../kit/mkgame.py --part src/bootmenu/bootmenu.json --install  # a part: its src/<part>/*.json
 python3 ../../kit/check_docs.py --case .
 ```

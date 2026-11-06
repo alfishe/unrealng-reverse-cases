@@ -25,9 +25,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CASE = os.path.abspath(os.path.join(HERE, '..'))
 sys.path.insert(0, os.path.join(CASE, '..', '..', 'kit'))
 import kitlib as K  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import toolpaths  # noqa: E402
 
-UNREAL = '/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/wt-ane-stage1'
-BINARY = os.path.join(UNREAL, 'cmake-build-agent-release/bin/unreal-qt.app/Contents/MacOS/unreal-qt')
+UNREAL = toolpaths.unreal_ng(required=False) or 'unreal-ng'
+BINARY = toolpaths.unreal_binary(required=False) or 'unreal-qt'
 WORK = os.path.join(CASE, 'work', 'docP')
 OUT = os.path.join(CASE, 'docs', 'img', 'boot')
 BG, FG, DIMC = K.BACKGROUND, K.TEXT, K.DIM

@@ -1,6 +1,15 @@
 {
  "name": "finalcut",
- "image": "src/res/img/final-cut-6060.bin",
+ "work": "work/endings/mk-finalcut",
+ "dest": "src/endings",
+ "res_install": "tools/endings_res.py",
+ "operands": "wide",
+ "include": [
+  "."
+ ],
+ "before_assemble": "tools/endings_res.py:build_tunes",
+ "image": "build/endings/finalcut-6060.bin",
+ "image_note": "tools/build_endings.sh writes it from src/endings (tools/build.sh checks the disk it is part of against orig/)",
  "at": "6060",
  "out": "build/endings/finalcut-6060.bin",
  "header": [

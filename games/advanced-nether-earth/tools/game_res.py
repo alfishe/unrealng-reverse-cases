@@ -2,7 +2,8 @@
 """Editable sources for the game image's resources, src/res/game (src/res/game/README.md). Graphics are PNG, the
 level, the order names and the texts are text; they become the `.bin` files src/game/*.asm INCBINs
 (tools/build_game.sh), and the build's byte-exact check against the original keeps them honest.
-tools/game_mkgame.py calls install(files) with the bytes of each @res entry (names under `game/`).
+kit/mkgame.py --install (case.json res_install) calls install_game(files) with the bytes of each @res entry (names
+under `game/`).
 
 | Source | Files built | Format |
 | --- | --- | --- |
@@ -711,6 +712,24 @@ def build(out, res=RES):
         os.makedirs(os.path.dirname(os.path.join(out, name)), exist_ok=True)
         open(os.path.join(out, name), 'wb').write(data)
     return files
+
+
+def order_of(name, ann):
+    """a resource's place: the address of the first entry that names it in game.ann"""
+    at, last = None, None
+    for line in open(ann, encoding='utf-8'):
+        m = re.match(r'^\$([0-9A-F]{4}) [bwts]\b', line)
+        if m:
+            last = int(m.group(1), 16)
+        elif line.startswith('@res ') and line.split()[1] == name and at is None:
+            at = last
+    return at if at is not None else 0x10000
+
+
+def install_game(files):
+    """kit/mkgame.py --install: the resources in the order game.ann first names them"""
+    ann = os.path.join(ROOT, 'src', 'game', 'game.ann')
+    install(dict(sorted(files.items(), key=lambda kv: order_of(kv[0], ann))))
 
 
 def install(files, res=RES):
