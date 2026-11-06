@@ -16,6 +16,10 @@ this game. The owner on the first kit charts: "a pile of vague lines: why? what 
 5. **The text next to it says how to read it** when the chart is not obvious (the axes, what one mark means), in a
    short list, with the claim the figure proves and the command that drew it.
 6. **It earns its place.** If a neighbour says it better, drop it (the file and the reference) or merge them.
+7. **It shows what a table cannot.** Bars of block sizes, file lengths or load durations repeat the directory
+   listing (the owner on Elite's tape bar chart: "we see the file size on disk anyway"): give those a line or a small
+   table. Draw what is visual: memory filling, real screen frames, bytes before and after a transform, control flow,
+   rendered resources, profiles with real structure.
 
 ## Model
 
