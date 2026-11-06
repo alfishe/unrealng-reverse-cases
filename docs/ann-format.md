@@ -11,6 +11,29 @@ parser, the one generator of every case's parts), `kit/refdocs.py`, `kit/ann_nam
 (section 5: parts, banks and pieces). Where the file lives in a case and what it produces is in [case-files.md](case-files.md). The steps are
 in [recipe 05](../recipes/05-source.md).
 
+## Why a format of its own, not a SkoolKit control file
+
+The `.ann` does not replace SkoolKit. It sits one level above it: `kit/mkgame.py` turns the `.ann` into a plain
+SkoolKit control file (`work/mkgame/game.ctl`, section 4 step 3) and runs `sna2skool.py` and `skool2asm.py` on it. So
+a case still has a standard control file, and any SkoolKit tool can read it. The `.ann` exists because a control
+file alone cannot hold what a case needs:
+
+| A case needs | In a control file | In the `.ann` |
+| --- | --- | --- |
+| Sources split into modules, each with a header (`render.asm`, `sound.asm`, ...) | one listing, no files | `@module`, `@about` (section 2) |
+| An sjasmplus build that is checked against the original bytes and installed only when they match | `skool2asm.py` writes a listing, with no build and no check | the generator assembles, compares and installs only when identical (section 4, steps 6-7) |
+| Only what the reverse knows: entries, names, titles | a block for every stretch of bytes, its kind given by hand, each time code and data meet | entries and names only. The code and data boundaries and the CALL targets come from the recordings' L1 builds and the static walk (section 4, step 2) |
+| Resources as files you can edit (pictures, fonts, texts) | inline `DEFB` lines | `@res`: the bytes go to `src/res/`, and the case's `res_formats.py` turns them into PNG or text |
+| Operands written as names: `Label+offset`, constants, variables past the image, strings after a `CALL`, code loaded over the caller | not as directives; you write it by hand in the skool file, or the listing shows bare numbers | section 3.4, `@isub`, `@equ`, `@inline`, `@over` |
+| 128K banks and parts: several images, banked addresses, pieces | one 64 K snapshot per control file | `@bank`, `@piece`, part files (section 5) |
+| Generated docs and signatures from the same names | no | `kit/refdocs.py` (docs 11, 12) and `kit/sig_add.py` read the `.ann` and the `.ctl` it produced |
+
+**The cost.** The format is the repository's own. A tool from outside reads `work/mkgame/game.ctl` (made on every
+`mkgame` run) or calls the reference parser (`kit/mkgame.py`, class `Annotations`); never write a second parser.
+The way back exists as well: `kit/ctl2ann.py` turns the `draft.ctl` of an unreal-ng `re_session` export into a
+first `.ann` (section 6). It reads the SkoolKit control syntax, so a third-party disassembly's `.ctl` is a candidate
+input too, but no case has run it on one yet.
+
 ## 1. Lines
 
 The parser reads the file line by line. Leading and trailing spaces are dropped.
