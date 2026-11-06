@@ -40,6 +40,14 @@ C/src or C/tools files you did not create; never B, R/kit or other cases.
   lines and glossary terms into C/work/docs/<id>-index.md.
 - `python3 R/kit/check_docs.py --case C` prints "docs: ok"; `tools/build.sh` stays identical.
 - English, hex in code spans, one idea per sentence, lists over long paragraphs.
+- Code snippets (the owner on a block mixing instructions, `DEC SP / DEC SP / POP BC` and ad hoc `HL += DE`:
+  "not very readable"):
+  - real code is the real listing as `src/` has it, one instruction a line, a short comment column, in an `asm` block,
+    cut to the lines that make the point (`; ...` marks a cut);
+  - the algorithm is a separate pseudocode block next to it, with named variables and real loops, no registers unless
+    the register is the point;
+  - constants are explained in the prose before the block, not in long trailing comments;
+  - a transform (decryptor, checksum, packer) gets a worked example: real input bytes, the key, the output.
 - Leave C/work/docs/<id>-NOTES.md (commands and what each proved). No commits.
 
 ## Report
