@@ -173,7 +173,10 @@ Lave's stock is not made by MakeMarket. NewGame `$D298` patches the stock's stor
 so the first market keeps the stock of the commander record (`$D09E` is part of the record, copied from
 DefaultCommander), and a loaded commander finds the stock as it was saved. The model would have given Lave 16
 food, 0 slaves and 54 narcotics; the record has 17, 14 and 0. Prices are rebuilt at every arrival with a new
-fluctuation; the stock changes only by trading and arrivals.
+fluctuation; the stock changes only by buying (BuyCheck takes from it; SellCheck does not give back: `t1` sold 2 t
+of food back and the stock stayed 12) and arrivals. The arrival's byte is never `$F9`: JumpHyperspace sends that
+StarSeed to witch space before NewMarket reads it (10.5). What the formula means for a trader, worked through
+every route and simulated from Lave: [the trading course](trading-guide.md).
 
 ## 10.4 Trading and equipping
 
@@ -190,7 +193,8 @@ back (RestoreTrade):
 | EquipAccept `$EB2D` | never | the item's own code refuses (ALL PRESENT, `<item>` PRESENT, CASH?) |
 
 Buying slaves or narcotics costs 4 on the legal status a unit, firearms 2, as scooping them does (AddCargo
-`$D190`). EQUIP SHIP lists tech level + 3 items (all 14 from tech level 9 on) from EquipPrices `$705F`:
+`$D190`). The cost is added once per check with the whole quantity (AddCargoContraband `$D1AD`), and the second
+digit's RestoreTrade does not undo the first digit's: typing 20 narcotics adds 8 + 80. EQUIP SHIP lists tech level + 3 items (all 14 from tech level 9 on) from EquipPrices `$705F`:
 
 | Item | Price | Item | Price |
 | --- | ---: | --- | ---: |
@@ -203,7 +207,10 @@ Buying slaves or narcotics costs 4 on the legal status a unit, firearms 2, as sc
 | 7 fuel scoops | 525 | 14 mining laser | 800 |
 
 A laser asks for its view (0-3) and pays back the one it replaces at its full price. The fuel's price is written by
-every jump (10.5): after `f1`'s jump to Diso `$7060` held `$30`, 4.8 Cr for 3.6 ly (70 - 34 + 2 x 6).
+every jump (10.5): after `f1`'s jump to Diso `$7060` held `$30`, 4.8 Cr for 3.6 ly (70 - 34 + 2 x 6). A galactic
+jump writes the number of the galaxy left instead (`gx`: `$01`, the fuel still 70), buying the fuel writes 0, and
+scooping (SetFuel from MessageScooping) leaves the price alone. Which goods and routes pay, scheme by scheme:
+[the trading course](trading-guide.md).
 
 ## 10.5 The jump
 

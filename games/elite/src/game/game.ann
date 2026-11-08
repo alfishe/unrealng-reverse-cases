@@ -1868,7 +1868,7 @@ $D183 c AddCargoSpecial ; $FF: the cloak ship's canister: the cloaking device (f
 $D190 c AddCargo ; One unit of commodity A into the hold (one less free space), the message, and the legal cost of the contraband
 > Firearms ($0A) cost 2, slaves (3) and narcotics (6) cost 4 on LegalStatus, up to $FF.
 $D1A3 AddCargoMessage
-$D1AD AddCargoContraband ; The legal cost of commodity A (BuyCheck enters here for each unit bought)
+$D1AD AddCargoContraband ; The legal cost of B units of commodity A (BuyCheck calls it once with the whole quantity; the scoop path above falls in with B = 1)
 $D1B8 AddCargoLegal4
 $D1BA AddCargoLegal
 $D1C5 AddCargoStore

@@ -21,6 +21,7 @@
 | [The scenes](scenes.md) | the gameplay recorded by the bot: docking, trading and saving, combat, the galactic hyperdrive, the missions, scooping, the joystick |
 | [The ships](ships.md) | the 19 blueprints one by one: each turning, drawn by the game's code, with its numbers, what spawns it, where it is met, and the BBC differences |
 | [Against the BBC](bbc-comparison.md) | the Spectrum game set against BBC Elite's source: the blueprints, the galaxy, the market, the arithmetic, the flight model, kills, missions; what is the same and what changed |
+| [The trading course](trading-guide.md) | trading as a get-rich-quick course with real numbers: the price formula worked out, why only the economies matter, five schemes (agricultural, minerals, high-tech, illegal, mix) with their best routes, a league of 1000 simulated commanders from Lave, the pirate risk of contraband, the market's quirks |
 | [Texts](texts/README.md) | the box's instructions, the manual and the Lenslok sheet as Markdown, checked against the code |
 
 ## Terms

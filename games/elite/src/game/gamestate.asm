@@ -503,8 +503,9 @@ AddCargoMessage:
 ;
 ; Used by the routine at BuyCheck.
 AddCargoContraband:
-  CP $0A                  ; The legal cost of commodity A (BuyCheck enters here
-                          ; for each unit bought)
+  CP $0A                  ; The legal cost of B units of commodity A (BuyCheck
+                          ; calls it once with the whole quantity; the scoop
+                          ; path above falls in with B = 1)
   JR Z,AddCargoLegal
   CP $03
   JR Z,AddCargoLegal4

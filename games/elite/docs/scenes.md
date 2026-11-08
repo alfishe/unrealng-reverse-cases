@@ -100,7 +100,8 @@ the docking computer's tunnel runs 20 frames after C with no station on the scre
 | 2830 | a key | Commander Saved |
 
 The buy and sell prices are the same number: the market page's price. The stock falls with each tonne bought and
-rises with each sold, and the price does not move until the next arrival rolls a new fluctuation
+does not rise with a sale (SellCheck `$E935` pays and leaves the stock alone: food stayed 12 after 2 t were sold
+back), and the price does not move until the next arrival rolls a new fluctuation
 ([10](10-gameplay-logic.md) 10.3-10.4). Figure: [the market before and after](img/design/market.png) (1.6 of
 [1](01-game-design.md)).
 

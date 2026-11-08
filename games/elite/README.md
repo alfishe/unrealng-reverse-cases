@@ -28,6 +28,7 @@ State: complete, 2026-11-07.
 | where the CPU time goes, frame by frame | [The runtime analysis](docs/runtime-analysis.md) |
 | what the Spectrum version changed from the BBC original | [Against BBC Elite](docs/bbc-comparison.md) |
 | trading, docking, combat, missions as recorded | [The scenes](docs/scenes.md) |
+| how to get rich trading, by the market's own code | [The trading course](docs/trading-guide.md) |
 | the tape, Softlock and how the source is built | [3. Build and load](docs/03-build-and-load.md) |
 | every document, the terms and the recordings | [docs/README.md](docs/README.md) |
 | how the reverse was done, step by step | [WALKTHROUGH.md](WALKTHROUGH.md) |
