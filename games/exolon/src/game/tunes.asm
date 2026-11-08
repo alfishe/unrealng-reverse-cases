@@ -107,8 +107,8 @@ JingleTune:
 ; The 48K title tune: 195 notes (length, note, note), lengths 18 to 90 in steps
 ; of 18, notes up to 50
 ;
-; PlayTune from MainMenu once per load on a 48K, any key cuts it. The note
-; numbers index the period table $8062 (53 entries).
+; PlayTune from MainMenu at the first menu after each entry to Start on a 48K,
+; any key cuts it. The note numbers index the period table $8062 (53 entries).
 TitleTune:
   DEFB $12,$13,$2B
   DEFB $12,$13,$26

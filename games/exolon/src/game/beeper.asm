@@ -36,8 +36,9 @@ BeeperNoiseWait:
 ; A falling beeper tone: 16 steps of 10 half-waves, the period from $30 to $3F
 ; loops (nothing on a 128K)
 ;
-; Called by $9942. Keeps every register. Ran only in the warp runs (460 calls),
-; never on a 128K path.
+; Called by Pods $9942 five times a pod (AmmoPodChirps $9996, GrenadePodChirps
+; $99EC). Keeps every register. Ran only in the warp runs (460 calls), never on
+; a 128K path.
 BeeperSweep:
   PUSH AF
   PUSH BC

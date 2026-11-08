@@ -189,3 +189,43 @@ instances and shown as spectrograms and timelines, never played.
   shell shot down.
 
 ## 7. Review
+
+### 7.1 Review round 1 (2026-11-08)
+
+Asked: two fresh reviewers (recipe 09, the brief `work/briefs/review.md`), who had not seen the case's work, each
+read one half of the documents against the listing, the image, the tools and `c1` (read-only `memory_at`): `rv1A`
+docs 01-05 and README, `rv1B` docs 06-10 and README. Their reports are `work/review/rv1A.md` (19 findings) and
+`work/review/rv1B.md` (28 findings, and two notes on `game.ann` comments).
+
+Found, by kind (47): 15 wrong numbers, 11 wrong mechanisms, 8 contradictions, 7 stale names, 3 missing evidence,
+3 figures. Each was checked again against the ground truth before the fix (`work/review/fix/`): 46 accepted, 1
+accepted in part, none rejected. The partial one, `rv1B` 24 (205 kills in 07 against 214 score rises in 10): both
+numbers are right; the `x2` L1 has 205 runs of KillAlien `$A62D` and 9 of GrenadeBlast's 150 points (`$942A`), so
+10's "every rise is an alien" was the error. The two `game.ann` notes were accepted too.
+
+What changed:
+
+- Numbers: MainLoop's 45 distinct routines; the pass count 3259 with one pass of 6 frames (416 959 T, `c1`
+  20184-20190, a turn and a beeper effect together; the game-gap filter of `fig_pass_lengths.py` is now 5 000 000 T)
+  and 20 turns; the decrypt table's last row; the chain's half frame; the unpack's 16.3 frames; the sprite line at
+  `$F18D`; ShotSound's 11 ticks; the tunes' frequencies; the alien path's 61 passes; the HUD's 8 glyphs; `7A F3`;
+  the grenade's extra steps from timer 18; the Delay of 0.4 s in 04 and 10.
+- Mechanisms: the title tune after every entry to Start, not once per load; the jingle on the beeper on 128K; which
+  routines test SoundIsAy; the stages three bytes shorter and LoadFile seven longer; the tables over the BASIC area;
+  the blast frames in time order; the puff's small sprites 3-5; the booth's UP; the 21 kind-carrying elements and
+  kind 15 on element 51; PrintCharAttr's real callers; DI throughout, so no interrupt time in the beeper step.
+- Names and records: SURYANI, IdleMissileStart / IdleMissileStep, the tile set `$DDD8`, SetPrinter, the PlaySfx*
+  starters, the cpc module's SfxNoChannel; README's rows for `d1` and `w030`, the `exA1` spelling, the bonus pointer,
+  CellTypes' kinds 3 and 13.
+- `game.ann` (FIXES in `work/lead/merge.py`, comments only): the title tune's count, BeeperSweep's callers,
+  AlienScreens' zone ends, PlotModes / SetPlotMode to Printers / SetPrinter. `src/tape/loader.asm`: Decrypt's range
+  `$FC13-$FEA2`.
+- Figures regenerated: `loop/pass-lengths.png`, `design/zones.png` (no colour claim on screen 75),
+  `objects/kinds.png` and `kinds-2.png` (14 of 21 elements).
+- Doc 03, asked by the owner in the same pass: the loading algorithm written out in full, self-contained: Decrypt's
+  flowchart and worked steps, 3.3.1 LoadFile (asm, flowchart, the headers in `c1`, what differs from the ROM, the
+  edge's T-states), 3.3.2 the countdown (CountSet, the odometer, a pseudocode and a flowchart, the counter read from
+  `c1` at nine frames), picy's header, the probe at `$4000`, the format's pseudocode, flowchart and a worked example
+  of the first 24 bytes, and 3.5's stage diagram with `c1`'s frames.
+
+Checks: `merge.py`, `mkgame.py --install` (identical), `refdocs.py`, `tools/build.sh` (identical), `check_docs.py`.

@@ -99,7 +99,7 @@ PrintString:
   CP $61
   JP NC,PrintStringMove
   CALL PrintChar          ; the plot mode's routine (operand $AF33 set by
-                          ; SetPlotMode)
+                          ; SetPrinter)
   INC E
   JP PrintString
 PrintStringMove:
@@ -134,7 +134,7 @@ four `CALL`s of PrintString, from Printers `$9A0F`:
 | Mode | Routine | What it does to the cell |
 | --- | --- | --- |
 | 0 | PrintChar `$ADE1` | glyph and attribute; writes CellTypes and OpenCells; skips columns 32-63 (off-screen parts of an element) |
-| 1 | PrintCharAttr `$AE26` | glyph and attribute, no maps, no clip (the HUD numbers) |
+| 1 | PrintCharAttr `$AE26` | glyph and attribute, no maps, no clip (the HUD numbers, the jets, the stars) |
 | 2 | XorCharAttr `$AE5D` | glyph XORed on, attribute set (the turrets' barrels) |
 | 3 | EraseBlockDebris `$AE95` | glyph XORed off, the cell made open and empty, two debris pieces started (scenery broken by a grenade) |
 | 4 | EraseBlock `$AEE4` | the same without debris (the pods taken) |
@@ -405,7 +405,7 @@ for each of the 768 lines (left, middle, right) at $EF80:
 playerFlipped = playerFlipped XOR 1
 ```
 
-**A worked example**: line 15 of frame 5 (standing), at `$EF80` + 5 x 96 + 15 x 3 = `$F00D`:
+**A worked example**: line 15 of frame 5 (standing), at `$EF80` + 5 x 96 + 15 x 3 = `$F18D`:
 
 | | Byte 0 | Byte 1 | Byte 2 | The 24 pixels |
 | --- | --- | --- | --- | --- |

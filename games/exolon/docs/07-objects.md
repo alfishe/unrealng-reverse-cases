@@ -118,9 +118,9 @@ HomingMissileStep tests the launcher's cell for 13 every pass: a grenade that bl
 
 ### The 16 kinds on their elements
 
-![The first 8 of the 14 elements that carry object kinds, each marked cell boxed and numbered with its kind](img/objects/kinds.png)
+![8 of the 21 elements that carry object kinds (14 shown, one or two for each kind), each marked cell boxed and numbered with its kind](img/objects/kinds.png)
 
-![The other 6 elements: ball marks, the trap mark, the gun, the exo booth, the missile launcher, the flicker pad and zone end](img/objects/kinds-2.png)
+![6 more elements: ball marks, the trap mark, the gun, the exo booth, the missile launcher, the flicker pad and zone end](img/objects/kinds-2.png)
 
 ```sh
 python3 tools/fig_objects.py kinds     # both figures
@@ -183,8 +183,8 @@ Every routine walks its list until the `$FF` after the last record.
 | Kind | List | Routine | What it does | Witness |
 | ---: | --- | --- | --- | --- |
 | 2 | FlameList `$8F89` | AnimateFlames `$8F54` | a jet of flame below the drop pod; three phases, glyphs `$15 + 2p` of the tile set `$DAB8` | screen 0 in `x1` |
-| 3 | TurretList `$9022` | AnimateTurrets `$8F95` | idle (state 1); fires with chance 6 in 256 a pass; a recoil runs states 9 down to 2 through TurretFrames `$9019`, drawn by XOR from the font `$DDD8` | `x1` frame 1500, `m1` 1000 |
-| 4 | `$9135` | ColourCycle `$9118` | a blinking light: its ink is PassCount AND 7, bright | every screen with a booth |
+| 3 | TurretList `$9022` | AnimateTurrets `$8F95` | idle (state 1); fires with chance 6 in 256 a pass; a recoil runs states 9 down to 2 through TurretFrames `$9019`, drawn by XOR from the tile set `$DDD8` | `x1` frame 1500, `m1` 1000 |
+| 4 | `$9135` | ColourCycle `$9118` | a blinking light: its ink is PassCount AND 7, bright | screen 0 in `c1` (the gantry); 50 screens (booths, gantries, gate posts) |
 | 5 | MineList `$91B0` | Mines `$9152` | armed (state 1): fires when the player's bottom line is the line just above it and his X is within E-7..E+2; a spent mine burns with glyphs `$1D-$20` | `w030` (1 mine fired), 23 warp runs |
 | 6 | `$9930` | Teleports `$98BA` | up pressed while standing in a booth: sparkles `$9ED9`, the AY pulse `$C162`, the player moved to the other booth | screens 2, 6, 8, 10, 12, 14, 17, 18 ... |
 | 7 | AmmoPod `$99F2` | Pods `$9942` | the ammunition pod: touching it sets ammunition to 99 | `x2` screen 2 (taken: `ff 09` at frame 1750); 53 taken in the warp runs |
@@ -192,10 +192,10 @@ Every routine walks its list until the `$FF` after the last record.
 | 9 | `$9B4B` | SpawnBalls `$9B07`, MoveBalls `$9A23` | a ball spawner: 8 balls, each a random walk; a shot ball is worth 50 points; a ball that touches the player kills both | `x2` screen 5, frames 3000 on |
 | 10 | TrapList `$9C70` | Traps `$9C15`, TrapContact `$9C8B` | a probe that rises out of the floor (7.3) | `t1` |
 | 11 | GunList `$9DC1` | Guns `$9D7F`, MoveGunShots `$9DD6` | fires with chance 9 in 256 a pass, only while the player is more than 32 X units (64 pixels) to its left; the shot can be shot (50 points) | `w/006` 250, `w/008` 1750, `w/009` 1000-1500 |
-| 12 | `$9F6E` | ExoSuitBooth `$9F2D` | the exoskeleton booth: entering toggles ExoSuit `$9ED8` between 0 and `$0C` (the player's frames shift by 12) | `w/108` frames 1750-2000, screens 109-110 |
+| 12 | `$9F6E` | ExoSuitBooth `$9F2D` | the exoskeleton booth: UP pressed (on its first pass) while standing in it toggles ExoSuit `$9ED8` between 0 and `$0C` (the player's frames shift by 12) | `w/108` frames 1750-2000, screens 109-110 |
 | 13 | `$A266` | HomingMissileStart `$A23A`, HomingMissileStep `$A26B` | the missile launcher (7.6) | `w/006` 1500-2000, `w/008` 250-500 |
 | 14 | PickupList `$A333` | PickupsVsPlayer `$A30B` | the two cells behind a gun's barrel: touching one pays 40 bonus ticks (1000 points) and plays the AY trill `$C12E` | code only |
-| 15 | `$A814` | FlickerPadStep `$A7D6` | the flickering pad between the two pillars of element 42 (sprites `$1C-$20`); decoration | screens with element 42 |
+| 15 | `$A814` | FlickerPadStep `$A7D6` | the flickering pad between the two pillars of element 42 or 51 (sprites `$1C-$20`); decoration | screens 24, 25, 49, 66, 74, 99, 124 |
 | 16 | `$AAEF` | ZoneEnd `$A817` | the zone's last screen: walking off its right edge ends the zone ([10.2](10-gameplay-logic.md#102-zones-of-25-screens)) | the warp runs on screens 24, 124 |
 | 17 | `$ABCC` | ForceFieldDraw `$AB97`, ForceFieldStep `$ABCF`, ForceFieldVsShots `$AC04` | a force field from the drop pod: a hum (`$C1A9`), death when the player's X + `$0C` reaches the field; 25 hits destroy it | screens with element 1; the 25-hit end never happened |
 
@@ -400,8 +400,8 @@ for alien in AlienList where alien.live:
 
 A worked example: path 4 (`$A4C5`) is `C4 28 FF 00 C4 64 FC 00 C3`.
 `$28` = 40 passes of (-1, 0) take the alien from X `$78` to `$50` at 2 pixels a pass.
-Then `$64` = 100 passes of (-4, 0) at 8 pixels a pass: X falls below 0 after 20 of them and wraps to `$FC`, which
-is `$80` or more, so the alien is freed. 40 + 20 = 60 passes in all.
+Then `$64` = 100 passes of (-4, 0) at 8 pixels a pass: X reaches 0 after 20 of them (still drawn) and the 21st wraps
+it to `$FC`, which is `$80` or more, so the alien is freed. 40 + 21 = 61 passes in all.
 
 ![The six alien paths integrated from X 120, Y 96, and the aliens measured in x2 on screen 5 against the model](img/objects/alien-paths.png)
 
@@ -424,7 +424,7 @@ What it shows:
   loop; path 4 creeps then dashes; path 5 rises, sinks and waits; path 6 zig-zags round a box.
 - Four paths (2, 4, 5, 6) end in 100 passes of (-4, 0): the alien crosses the rest of the screen at 8 pixels a pass.
 - The measured aliens follow the model's wave where they live; most tracks end early because `x2` shoots them (205
-  kills in the recording).
+  runs of KillAlien `$A62D` in the recording).
 - Path 4 is the most used (19 screens), path 5 the least (5 screens).
 
 AliensVsShots `$A5CA` tests the player's shots against each live alien: a hit kills it (KillAlien `$A62D`, a blast,
@@ -501,18 +501,18 @@ The idle missile:
 Blasts:
 
 - StartBlast `$9FA3` takes a record of BlastList `$A00C`. RunBlasts `$9FBD` draws it 11 passes; the frame comes from
-  BlastFrames `$A001` by the passes left: 9, 9, 8, 8, 7, 7, 6, 6, 5, 5, then 0 (erased), in a random bright ink
+  BlastFrames `$A001` by the passes left (11 first): in time order 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, then 0 (erased), in a random bright ink
   `$42-$45`.
 
 Debris and puffs:
 
 - Debris (`$95B6`, 100 records): small sprite 2, each with a random dX and a dY of twice a speed, never both 0. On
-  48K the debris routine crackles the beeper with an `OUT` at `$959D`.
+  48K the debris routine crackles the beeper with an `OUT ($FE)` at `$95A3`.
 - Puffs (`$9870`) are the smoke of a shot hitting scenery.
 
 ## 7.7 The pickup cells behind the guns
 
-Elements 26 and 45 (the guns) mark the two cells behind the barrel as kind 14.
+Element 26 marks the two cells behind its two barrels as kind 14, element 45 the three cells behind its one.
 PickupList `$A333` keeps them as three-byte records: column, row, live.
 ClearPickups `$A352` makes only the first 4 records live (`$01`).
 PickupsVsPlayer `$A30B` pays 40 bonus ticks (1000 points) and plays the AY trill `$C12E` when the player touches a
@@ -547,7 +547,7 @@ What it shows:
   animation counter AND 3.
 - Small sprite 6, which PadXorSprites `$9E85` draws to keep the pass time even, is all zeros: the padding draws
   nothing (the source's open question "whether sprite 6 is blank" is answered by its bytes).
-- Small sprites 3 and 5 and Sprites16 33-35 have no caller.
+- Small sprites 3-5 are the puff's frames, picked through PuffFrames `$9865`; Sprites16 33-35 have no caller.
 - The trap is a third set: PlayerFrames `$EF80` frame 24, 24 x 32, drawn by DrawBigSprite.
 
 ## 7.9 What no recording reached

@@ -24,20 +24,21 @@ Scope: when the effects are triggered in play is in [7. Objects](07-objects.md) 
 
 Start `$6D60` writes SoundIsAy `$6E16` once.
 It is 0 on a 48K and non-zero on a 128K (`$DE` in the 128K rig).
-Every sound routine but PlayTune tests it:
+The beeper routines (BeeperNoise, BeeperSweep, the debris crackle `$9597`) test it, and so do the callers of the
+two title tunes (MainMenu `$6DC5`, DrawSparkle `$6F23`); PlayTune, TuneTick and SoundEffectsTick do not:
 
 | Routine | Address | 48K | 128K |
 | --- | --- | --- | --- |
 | PlayTune (the beeper tunes) | `$7D17` | plays | plays (no test) |
 | BeeperNoise | `$7C26` | plays | returns at once |
 | BeeperSweep | `$7C3C` | plays | returns at once |
-| The beeper title tune in MainMenu | `$6DCB` | plays once per load | skipped (`c128`: `$6DCB` never ran) |
+| The beeper title tune in MainMenu | `$6DCB` | plays at the first menu after each entry to Start (`c1`: 4 times) | skipped (`c128`: `$6DCB` never ran) |
 | TuneTick (the AY title tune) | `$B767` | never called | every 4th star draw |
 | SoundEffectsTick (the AY effects) | `$BF7E` | runs, its `OUT`s reach nothing | plays |
 
 So the two machines hear different games:
 
-- the 48K hears a 40-second two-voice title tune once per load, and short noise bursts in play;
+- the 48K hears a 40-second two-voice title tune at the first menu after each load or GAME OVER, and short noise bursts in play;
 - the 128K hears an 84-second three-channel title tune in every menu, and 11 shaped effects in play;
 - both hear the jingle (GAME OVER, the ZORBA cheat): PlayTune has no SoundIsAy test.
 
@@ -98,8 +99,9 @@ for unit in 1..length:
 
 The step time: 96 T-states.
 The witness is the render: TitleTune's 195 notes sum to 5706 units; the speaker moves for 40.09 s.
-40.09 s x 3 500 000 / (5706 x 256) = 96.06 T a step (the interrupts stay on: their time is in the 0.06).
-The code sits at `$803D`-`$8061`, above `$8000`, so no contention stretches it.
+40.09 s x 3 500 000 / (5706 x 256) = 96.06 T a step. The game runs with interrupts off, so none of the 0.06 is
+interrupt time: it is PlayTune's work between the notes and, likely, the ULA's contention of the `OUT ($FE)`s.
+The code sits at `$803D`-`$8061`, above `$8000`, so no memory contention stretches it.
 
 A worked example, the first note of TitleTune (`$7DA3`: `12 13 2B`):
 
@@ -149,11 +151,12 @@ There are two tunes:
 
 | Tune | Address | Notes | Units | Length | Callers |
 | --- | --- | --- | --- | --- | --- |
-| TitleTune | `$7DA3` | 195 | 5706 | 40.07 s (model), 40.09 s (render) | MainMenu `$6DCB`, 48K only, once per load (TitleTunePending `$7D67`) |
+| TitleTune | `$7DA3` | 195 | 5706 | 40.07 s (model), 40.09 s (render) | MainMenu `$6DCB`, 48K only, once after each entry to Start (TitleTunePending `$7D67`) |
 | JingleTune | `$7D68` | 19 | 315 | 2.21 s (model and render) | ZorbaCheat `$7055`, GAME OVER `$A030`, both machines |
 
 TitleTune uses 19 note numbers, from 7 (106 Hz, G#2) to 50 (1302 Hz, E6).
-Voice 1 plays the bass (100-300 Hz), voice 2 the melody (500-1300 Hz).
+Voice 1 plays the bass (106-320 Hz), voice 2 the melody (mostly 500-1302 Hz; 16 of its 195 notes are lower,
+down to 212 Hz).
 
 ![The 48K tunes are two square waves at once: every model note lies on the rendered spectrum](img/sound/beeper-tunes.png)
 
@@ -173,7 +176,7 @@ What it shows:
 
 - Every model line sits on a bright band of the render: the note table and the wave formula are right.
 - The model's lengths end where the render goes quiet: the 96 T step holds over 40 s.
-- The jingle's two voices stay between about 600 and 1000 Hz; it sounds the same on both machines.
+- The jingle's voice 1 stays at 268-357 Hz, voice 2 at 536-1072 Hz; it sounds the same on both machines.
 
 The routine at work, eight frames of PlayTwoTones in `c1`:
 
@@ -244,7 +247,7 @@ The callers and their B:
 | PayBonusTick (one bonus tick paid) | `$9EC1` | `$28` | 40 | 4.3 ms |
 | RunBlasts (each blast, each pass) | `$9FBD` | random 1-32 | 1-32 | not rendered |
 | ZoneEndBravery (80 x 125 points) | `$A855` | `$3C`, 80 times | 80 x 60 | 974 ms (without AddScore's time) |
-| Pods | `$9996` | BeeperSweep | 16 x 10 half-waves | 43.0 ms |
+| Pods (a pod taken) | `$9996`, `$99EC` | BeeperSweep, 5 times | 5 x 16 x 10 half-waves | 43.0 ms one sweep (the render played one) |
 | NoiseShort | `$7C24` | `$37` | no caller | none |
 
 ![The 48K effects: BeeperNoise is B pulses of random level, each one loop shorter](img/sound/beeper-effects.png)
@@ -451,16 +454,17 @@ A worked example, ShotSound `$C5A1` (PlaySfxShot, slot 15):
 - tick 1: mixer mask 0 (tone and noise), volume 13, noise period 15 and note 15: period `$0647`, 69 Hz, 1 tick;
 - tick 2: `74 01`: note `$14` = 20, period `$04B4`, 92 Hz, length 1;
 - ticks 3-5: note 20 again at volumes 11, 9, 7;
-- ticks 6-8: volume 3, note 20 for 3 ticks; tick 9: volume 2; then `$FF`;
-- 9 ticks at three a pass is 3 passes, about 6 frames (0.12 s): a low thud in noise. The render is loud for 0.15 s.
+- ticks 6-8: volume 3, note 20 for 3 ticks; ticks 9-11: volume 2, note 20 (the length is still 3); then `$FF`;
+- 11 ticks at three a pass are about 3.7 passes, 7 frames (0.15 s): a low thud in noise. The render is loud for
+  0.15 s.
 
 The starters that ran and their triggers:
 
 | Starter | Address | Slot | Called by |
 | --- | --- | --- | --- |
 | PlaySfxShot | `$C177` | 15 | FirePress `$8372` (2625 calls) |
-| PlaySfxNoiseBurst | `$C0E7` | 13 | MoveShots `$8417` (419 calls) |
-| PlaySfxBlast | `$C148` | 6 | FireShell `$909F`, `$91A9`, GrenadeBlast `$9427` |
+| PlaySfxNoiseBurst | `$C0E7` | 13 | MoveShots `$8417` (419 calls), `$8408` (`c128`: 108 runs) |
+| PlaySfxBlast | `$C148` | 6 | FireShell `$909F`, `$91A9`, GrenadeBlast `$9427`; ForceFieldDestroy `$AC51` never ran |
 | PlaySfxExplosion | `$C155` | 8 | `$9B79`, `$9BD0`, `$9E5B`, `$9E7F`, `$A63C` (a thing shot) |
 | PlaySfxGrenade | `$C1BE` | 9, 15 | ThrowGrenade `$9254` |
 | PlaySfxNoiseSweep | `$C13B` | 7 | Guns `$9DBB` |
@@ -470,8 +474,8 @@ The starters that ran and their triggers:
 | PlaySfxPulse | `$C162` | 13 | Teleports `$98F3`, `$9928` (38 and 8 calls) |
 | PlaySfxHum | `$C1A9` | 1, 11 | ForceFieldStep `$ABD6` (9349 calls) |
 
-Six starters have no caller and never ran: JingleA `$C10E`, JingleB `$C116`, Wobble `$C126`, Rise `$C16F`, Chord
-`$C17F`, Fanfare `$C195`.
+Six starters have no caller and never ran: PlaySfxJingleA `$C10E`, PlaySfxJingleB `$C116`, PlaySfxWobble
+`$C126`, PlaySfxRise `$C16F`, PlaySfxChord `$C17F`, PlaySfxFanfare `$C195`.
 Their streams are the only ones with `$FD`.
 
 ![The 11 AY effects the game starts, rendered one by one, each with its caller](img/sound/ay-effects.png)

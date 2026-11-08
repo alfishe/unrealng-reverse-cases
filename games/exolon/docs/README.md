@@ -31,8 +31,10 @@ documents are frames of the named recording, counted from its own start. A clone
 | `x2` | clone: `tests/inputs/x2-imm-right.txt` on `entry-imm.z80` (the ZXDB POKEs) | screens 0-5, 14 grenades, aliens on screen 5, the idle missiles; 23 110 frames | 01, 07, 08, 10 |
 | `h1` | clone: `tests/inputs/h1-hall-of-fame.txt` on `entry-score.z80` (the score 009000) | GAME OVER, the Hall of Fame insert, the name entry, the table shown | 01, 04, 05, 07, 08, 10 |
 | `w/NNN` | clones: `entry-imm.z80` with the screen number set to NNN (`tools/warp_snapshot.py`), 97 runs | screen NNN at frame 250; `w/024` and `w/124` the zone end, `w/124` CONGRATULATIONS and the bonus screen | 01, 02, 04, 07, 08, 10 |
+| `w030` | clone: `entry-imm.z80` warped to screen 30 (`work/w030`) | screens 30-32: a mine fired, 8 grenades | 07, 10 |
 | `t1` | clone, the annotation agent C's (`work/ann/exC/t1`) | screen 14: the traps, the list records | 01, 04, 05, 07 |
-| `exA1` | clone, the annotation agent A's (`work/ann/exA`) | the ZORBA cheat turned on: ten deaths, no life lost | 10 |
+| `exA1` | clone, the annotation agent A's (`work/ann/exA/exa1`) | the ZORBA cheat turned on: ten deaths, no life lost; the pause | 05, 10 |
+| `d1` | clone, the annotation agent D's (`work/ann/exD/d1`, from `entry-score.z80`) | the pause, the name entry's delete | 04, 05 |
 | `i48`, `r128` | live 48K and 128K instances, the audio output captured to WAV through WebAPI (muted) | the beeper tunes and effects; the AY tune and the 17 AY effects | 09 |
 
 ## Terms
@@ -48,11 +50,11 @@ Each term once, here; the documents link to it.
 | Delay | `$B0B7`, an `LDIR` of BC bytes from `$0000` to `$0000`; with BC = 65 536 it takes 1 376 256 T, about 20 frames (0.4 s). The panels and GAME OVER wait on it |
 | screen | one of the 125 rooms, 0-124; the HUD's ZONES counter shows the screen number |
 | zone | 25 screens; a zone ends at the zone-end marker on screen 24, 49, 74, 99 or 124: lives x 1000, a bravery bonus of 10 000 without the exoskeleton, the bonus screen, the refill |
-| bonus screen | BonusScreen `$A8DB`: a `*` steps over eight lines until fire; the odd lines pay 1000-7000 |
+| bonus screen | BonusScreen `$A8DB`: a pointer (character `$2A`, an arrow in the game's font) steps over eight lines until fire; the odd lines pay 1000-7000 |
 | bonus tick | 25 points pending in BonusTicks `$9ED6`; PayBonusTick pays one a pass |
 | OpenCells | `$5B00`, a 32 x 24 map laid out like the attributes: 0 where the screen builder printed scenery, so that the sprite drawers mask the sprite out there |
 | AttrCopy | `$5E00`, a copy of the attributes after the build; a sprite colours only cells that are 0 here (black on black) |
-| CellTypes | `$6100`, the kind of each cell: 0 empty, 1 scenery, 2-17 an object kind while a screen is built; the movement and shot tests read it (BlockMapCell `$80C1`) |
+| CellTypes | `$6100`, the kind of each cell: 0 empty, 1 scenery, 2-17 an object kind while a screen is built (kinds 3, the turret, and 13, the missile launcher, stay after it); the movement and shot tests read it (BlockMapCell `$80C1`) |
 | object kind | the type 2-17 a cell gets in CellTypes while a screen is built; each kind has its list and its routine ([7.1](07-objects.md#71-three-cell-maps-and-the-build)) |
 | DeathTimer | `$9CE2`: 46 passes of the death leap; a life is lost at 0 |
 | ImmunityCount | `$768D`: 66 at a death, so 20 passes of safety after the restart |
@@ -61,5 +63,5 @@ Each term once, here; the documents link to it.
 | step (beeper) | one round of PlayTwoTones `$803D`: 96 T; a voice flips the speaker every (256 - reload) steps |
 | tick (AY) | one call of TuneTick `$B767`, every 4th DrawSparkle; about 1.54 a frame on the menu |
 | render (sound) | a capture of the emulator's audio output to a WAV file through WebAPI, with the instance muted; the documents show it as figures |
-| clone run | a recording made from a patched snapshot (a POKE or a warp): `h1`, `x2`, `w/NNN`, `t1`, `exA1`; exploration only, confirmed by the code |
+| clone run | a recording made from a patched snapshot (a POKE or a warp): `h1`, `x2`, `w/NNN`, `t1`, `exA1`, `d1`; exploration only, confirmed by the code |
 | Countdown II | the Hewson loader at `$FC00`: an XOR-chain encrypted copy of LD-BYTES with a counter at the bottom right |

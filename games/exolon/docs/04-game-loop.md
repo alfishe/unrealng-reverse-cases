@@ -3,10 +3,10 @@
 What this covers:
 
 - the state machine from the entry to play and back (4.1);
-- the main loop: one routine, 54 calls of 47 routines, no interrupt (4.2);
+- the main loop: one routine, 54 calls of 45 routines, no interrupt (4.2);
 - one pass against the frame and the beam (4.3);
 - the time pads that keep a pass steady (4.4);
-- the lengths of all 3258 complete passes of `c1`, and what makes a pass long (4.5);
+- the lengths of all 3259 complete passes of `c1`, and what makes a pass long (4.5);
 - the pause, the abort, a death and the end of a zone (4.6).
 
 The names are those of `src/game/game.ann` ([Terms](README.md#terms)). The recordings it rests on:
@@ -59,13 +59,12 @@ The menu is a loop too:
 - MenuLoop `$6DDD` counts down from `$09C4` (2500 passes).
 - Each pass runs one star step (MenuSparkles `$6EA9`) and one key read (ReadKey `$ACD1`).
 - Keys 1-5 act ([doc 5](05-controls.md), 5.3). Any other key does nothing.
-- On a 48K the beeper title tune plays once per load, before the loop (PlayTune `$7D17`, TitleTunePending
-  `$7D67`).
+- On a 48K the beeper title tune plays at the first menu after each entry to Start (the load, every GAME OVER, the
+  abort), not after define keys or a control change (PlayTune `$7D17`, TitleTunePending `$7D67`; `c1`: 4 times).
 
 GAME OVER is a loop of its own:
 
-- GameOver `$A02A` prints the band, plays the jingle, waits two Delays of 65 536 bytes. One such Delay is 65 536 x 21 = 1 376 256 T, about 20 frames or 0.4 s
-  (the routine's description in `game.ann` says 1.6 s; the arithmetic and `w/124` below say 0.4 s).
+- GameOver `$A02A` prints the band, plays the jingle, waits two Delays of 65 536 bytes. One such Delay is 65 536 x 21 = 1 376 256 T, about 20 frames or 0.4 s.
 - HallOfFameInsert `$A073` asks for a name when the score takes a place, and then never returns: it jumps to Start.
 - Otherwise 20 000 rounds of ReadKey: a key, or the end of the count, jumps to Start.
 
@@ -270,7 +269,7 @@ What follows:
 
 ## 4.5 Pass lengths
 
-![3258 passes: a quiet one about 2 frames (138 347 T the median); a turn about 4](img/loop/pass-lengths.png)
+![3259 passes: a quiet one about 2 frames (138 347 T the median); a turn about 4, the longest 6](img/loop/pass-lengths.png)
 
 How to read the figure:
 
@@ -280,9 +279,12 @@ How to read the figure:
   - a beeper effect ran (BeeperNoise `$7C26` or BeeperSweep `$7C3C`);
   - the player was redrawn (DrawBigSprite `$76DA`);
   - none of these.
-- **Red dashed lines** mark 2, 3 and 4 frames.
+- **Red dashed lines** mark 2, 3, 4 and 6 frames.
+- **The gaps between games** (over 5 000 000 T: the GAME OVER, the menu and the next start) are left out; every
+  other interval between two MainLoop starts is a pass.
 - **The point**: the pads keep a quiet pass within 132 005-154 115 T. The player's draw adds about 25 000 T. A
-  beeper effect or the mirror of 24 frames doubles a pass.
+  beeper effect or the mirror of 24 frames doubles a pass. The longest pass, 416 959 T (6 frames, `c1` 20184-20190),
+  is a turn and a beeper effect together.
 
 ```bash
 python3 tools/fig_pass_lengths.py --work work/docs/docA/c1 --from 12376 --to 28760 --out docs/img/loop/pass-lengths.png
@@ -295,10 +297,10 @@ The classes, from the same data:
 | quiet | 2234 | 138 347 T (1.98 frames) | 132 005-154 115 T |
 | the player drawn | 936 | 163 152 T (2.33 frames) | |
 | a beeper effect | 69 | 260 929 T (3.73 frames) | 48K only |
-| the player turns | 19 | about 300 000 T (4.3 frames) | 296 000-312 000 T |
+| the player turns | 20 | 300 140 T (4.29 frames) | 296 615-311 808 T; one of 416 959 T with a beeper effect |
 
 A beeper effect blocks the CPU while it plays: the CPU itself drives the speaker ([doc 9](09-sound.md)). On the
-128K the beeper routines return at once and the AY plays the effect (SoundIsAy `$6E16`). Those 128K passes should
+128K BeeperNoise and BeeperSweep return at once and the AY plays the effect (SoundIsAy `$6E16`). Those 128K passes should
 be shorter; `c128` was not measured here.
 
 The turn: FlipPlayerFrames `$7BAA` mirrors all 24 player frames in place (768 lines of 3 bytes through BitReverse

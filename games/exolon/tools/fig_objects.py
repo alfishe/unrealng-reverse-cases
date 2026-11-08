@@ -124,7 +124,7 @@ def kinds():
                       '$EB n: CellTypes n at the cursor,\n   nothing printed (traps, ball\n   marks, flicker pad, zone end)\n\n'
                       'IndexObjectCells $8E86 turns\neach marked cell into a record\nin the kind\'s list (KindTable\n'
                       '$8EF4), writes "map after" back.', va='top', fontsize=10.5, transform=last.transAxes)
-        B.suptitle(fig, f'Sixteen object kinds live in 14 scenery elements ({part} of 2): each marked cell becomes one '
+        B.suptitle(fig, f'Sixteen object kinds: 14 of the 21 scenery elements that carry them ({part} of 2); each marked cell becomes one '
                    'list record; the number is the kind (model of PrintString $AF2B on the image)')
         fig.tight_layout(rect=(0, 0, 1, 0.95 if part == 1 else 0.93), h_pad=3.5)
         B.save(fig, B.out('objects', out))

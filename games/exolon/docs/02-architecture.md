@@ -30,7 +30,8 @@ One image for two machines:
   at `$386E` (flag 0); the 128K's 48 BASIC ROM holds `$DD` (flag `$DE`). Witness: `c1` and `c128` (WALKTHROUGH 1).
 - **The flag picks the sound only**:
   - 48K: the beeper (BeeperNoise `$7C26`, BeeperSweep `$7C3C`, the tunes of `tunes.asm`);
-  - 128K: the AY title music (`music.asm`) and the AY effects (`sound.asm`); the beeper routines return at once.
+  - 128K: the AY title music (`music.asm`) and the AY effects (`sound.asm`); BeeperNoise and BeeperSweep return
+    at once, but the jingle (GAME OVER, the ZORBA cheat) still plays on the beeper (PlayTune `$7D17` has no test).
   - The AY code runs on the 48K too (SoundEffectsTick `$BF7E`, three calls a pass). Its `OUT ($FFFD)` and
     `OUT ($BFFD)` go nowhere there. Witness: AyWrite `$BF6D`, 17 of 17 bytes executed in `c1`.
 - **No paging**: no write to `$7FFD` anywhere in the image (`c128`, WALKTHROUGH 1). The 128K's extra RAM is unused.
@@ -43,7 +44,7 @@ The CPU:
   `$8000-$8100`) and StrayReti `$768E`, a lone `RETI`.
 - **The stack**: Start sets SP to `$0000`, so the stack grows down from `$FFFF`. In play it reaches `$FFDC`: `c1`
   frame 16200 differs from the image in `$FFDC-$FFFF` only, over LeftoverCode (`memory_at`). 36 bytes.
-- **The game never returns to BASIC**: it uses the printer buffer `$5B00` and the system variables up to `$687F` as
+- **The game never returns to BASIC**: it uses the printer buffer `$5B00`, the system variables and the BASIC area up to `$687F` as
   its cell maps and tables (2.2).
 
 Two pieces of foreign code are in the image:
@@ -94,7 +95,7 @@ What play writes above `$6D60` (`c1-play`'s L1 byte counts, runs of 16 bytes or 
 - WorkArea `$B181-$B6D0`: the sprite save buffers;
 - PlayerFrames `$EF80-$F87F`: the 24 frames, mirrored in place at every turn (FlipPlayerFrames `$7BAA`).
 
-`$6880-$6D5F` is neither read nor written in play: the first `$7D0` bytes of the code file, left behind by the move.
+`$6880-$6D5F` is neither read nor written in play: the tail of the code file's first `$7D0` bytes, left behind by the move (Start's tables cover the rest).
 
 ## 2.3 The stages from the tape to play
 
@@ -104,7 +105,7 @@ The load is [03](03-build-and-load.md). From the game's entry:
 flowchart TD
   A["MoveStub $5B00: the code file up by $7D0, JP $6D60 (c1 12376)"] --> B["Start $6D60: DI, SP $0000, the machine test, the line and bit-reverse tables, score 0, lives 9"]
   B --> C{"ShowHallOfFame $71F0"}
-  C -- "0" --> D["MainMenu $6DA1: the menu, the title tune once (48K), 2500 passes of stars and keys"]
+  C -- "0" --> D["MainMenu $6DA1: the menu, the title tune after each entry to Start (48K), 2500 passes of stars and keys"]
   C -- "set" --> H["ShowHallOfFameFirst $7145: the Hall of Fame"]
   H --> D
   D -- "2" --> E["DefineKeys $6FAB"]
@@ -127,7 +128,7 @@ the first GAME OVER at 18275.
 
 ## 2.4 The main loop's call graph
 
-MainLoop `$75BE` makes 54 calls of 47 routines in a fixed order every pass ([doc 4](04-game-loop.md),
+MainLoop `$75BE` makes 54 calls of 45 routines in a fixed order every pass ([doc 4](04-game-loop.md),
 4.2). Grouped by what they do:
 
 ```mermaid
@@ -136,7 +137,7 @@ flowchart LR
   ML --> IN["controls: ReadControls $7B72"]
   ML --> PL["player: MovePlayer $81A4, ScreenChangeCheck $8485, FireControl $8338, ThrowGrenade $9208, MoveGrenade $925F x1-3"]
   ML --> SH["shots: MoveShots $83DD x5"]
-  ML --> EN["enemies, hazards: MoveShells $90A2 x2, Mines $9152, MoveBalls $9A23, Traps $9C15, AnimateTurrets $8F95, Guns $9D7F, MoveGunShots $9DD6, AliensStep $A360, HomingMissileStep $A26B, ForceFieldStep $ABCF, IdleMissile $AC59 $AC7D"]
+  ML --> EN["enemies, hazards: MoveShells $90A2 x2, Mines $9152, MoveBalls $9A23, Traps $9C15, AnimateTurrets $8F95, Guns $9D7F, MoveGunShots $9DD6, AliensStep $A360, HomingMissileStep $A26B, ForceFieldStep $ABCF, IdleMissileStart $AC59, IdleMissileStep $AC7D"]
   ML --> FX["effects: AnimatePuffs $9835, ColourCycle $9118, MoveDebris $955D, AnimateFlames $8F54, RunSparkles $9EEE, RunBlasts $9FBD, FlickerPadStep $A7D6"]
   ML --> OB["objects: Pods $9942, Teleports $98BA, ExoSuitBooth $9F2D, PickupsVsPlayer $A30B, PayBonusTick $9EC1, AlienSpawn $A553, ZoneEnd $A817"]
   ML --> CT["contact tests: ShellsHitPlayer $90EA, BallsTouchPlayer $9BB4, TrapContact $9C8B, ShellsVsPlayer $9E64, AliensVsPlayer $A5F4, PlayerDeath $9CE3"]
@@ -242,10 +243,10 @@ python3 tools/fig_heatmap.py work/docs/docA/c1-play/l1.json docs/img/arch/heatma
 | `$B101` | `$B6D0` | workarea | 0 / 1 | the sprite save buffers |
 | `$B6D1` | `$BF6C` | music | 18 / 3 | the 128K title tune on the AY |
 | `$BF6D` | `$C7B4` | sound | 28 / 2 | the AY sound effects (silent on a 48K) |
-| `$C7B5` | `$C7F3` | cpc | 2 / 0 | the Amstrad CPC keyboard scan, never run on the Spectrum |
+| `$C7B5` | `$C7F3` | cpc | 2 / 0 | the Amstrad CPC keyboard scan (never run) and SfxNoChannel, the sound effects' empty channel |
 | `$C7F4` | `$D8DF` | layouts | 0 / 2 | the screen table and the 125 screen layouts |
 | `$D8E0` | `$FF17` | graphics | 0 / 6 | the font, the scenery glyphs, the sprites |
 | `$FF18` | `$FFFF` | leftover | 1 / 2 | what the development machine left: the BASIC stack, the UDGs, a serial downloader |
 
 The counts are the entry lines of `game.ann` (`c` routines, `b w t s` data) in each module's range, 473 in all.
-The code is one contiguous block, `$6D60-$B100`, plus the AY code `$B6D1-$C7B4`.
+The code is one contiguous block, `$6D60-$B100`, plus the AY code `$B6D1-$C7B4` and the `RET` at `$C7F3`.

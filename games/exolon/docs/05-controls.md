@@ -13,10 +13,10 @@ The names are those of `src/game/game.ann` ([Terms](README.md#terms)). The recor
 
 - `c1` (power-on, the load, 16 000 frames of seeded random play, 48K, WALKTHROUGH 1): the menu keys, the define keys
   screen (frames 14595-14996), Interface 2 and Kempston play. Its L1 gives the run counts.
-- `x1` and `m1` (no POKE, from the game's entry, WALKTHROUGH 6.0): the menu options 2, 3, 4, 5 and 1, each key held
-  30 frames.
+- `x1` and `m1` (no POKE, from the game's entry, WALKTHROUGH 6.0): `x1` the menu options 5 then 1, `m1` 2, 3, 4, 5
+  and 1, each key held 30 frames.
 - `h1` (a clone with the score POKEd, WALKTHROUGH 6.0): the name entry.
-- The annotation agents' own clone runs (WALKTHROUGH 6.1): `exa1` (the ZORBA cheat, the pause), exD's `d1` (the
+- The annotation agents' own clone runs (WALKTHROUGH 6.1): `exA1` (the ZORBA cheat, the pause), exD's `d1` (the
   pause, the name entry's delete), exC's `t1` (the abort keys).
 - The code of `src/game/input.asm`, `menu.asm`, `utils.asm`, `colour.asm`, `gameover.asm`, `pickups.asm`.
 
@@ -33,7 +33,9 @@ How to read the figure:
 - **Yellow**: the menu.
 - **Red**: in play, 3 alone pauses and 7 8 9 0 together abort.
 - **Violet**: the five defined keys typed as Z O R B A turn on the cheat.
-- **The point**: apart from the define keys, every key the game reads is on the top row.
+- **The point**: in play and on the menu, apart from the defined keys, every key the game reads is on the top row.
+  The figure shows those only: the name entry and the any-key waits read the whole keyboard (ENTER ends a name,
+  CAPS SHIFT deletes, 5.5).
 
 ```bash
 python3 tools/fig_keys.py --out docs/img/controls/keys.png
@@ -219,7 +221,7 @@ back to the menu
 
 **The cheat**: ZorbaCheat toggles the byte at `$9D1D`, the `DEC A` that takes a life, between `$3D` and `$00`
 (`NOP`): infinite lives, and back. Turning it on plays JingleTune `$7D68` on the beeper (on the 128K too). The keys
-stay defined as Z O R B A: left Z, right O, jump R, duck B, fire A. Witness: exA's clone run `exa1`: the five
+stay defined as Z O R B A: left Z, right O, jump R, duck B, fire A. Witness: exA's clone run `exA1`: the five
 compares passed, `$9D1D` became 0, and in play ten deaths took no life. No case recording typed ZORBA.
 
 ## 5.5 The other keys
@@ -262,7 +264,7 @@ Notes:
 What no case recording reached:
 
 - the keyboard reader in play (ReadKeyboard `$7AE9`): only patched by DefineKeys, never run;
-- CAPS SHIFT and SYMBOL SHIFT as defined keys (DefineKeyCapsShift: exA's `exa1` only);
+- CAPS SHIFT and SYMBOL SHIFT as defined keys (DefineKeyCapsShift: exA's `exA1` only);
 - the pause and the abort keys (exD's `d1` and exC's `t1` only);
-- the ZORBA cheat (exA's `exa1` only);
+- the ZORBA cheat (exA's `exA1` only);
 - the Amstrad CPC keyboard scan CpcReadKeyboard `$C7B5`: nothing calls it ([doc 2](02-architecture.md), 2.1).

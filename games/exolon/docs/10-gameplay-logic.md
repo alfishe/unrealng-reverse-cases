@@ -215,7 +215,7 @@ What it shows:
 
 The grenade's late flight is faster.
 The main loop calls MoveGrenade once more twice a pass while the timer is below `$13` (`$7609`, `$7620`): three
-steps a pass for the level part and the fall.
+steps a pass from timer 18 on, the last 17 level steps and the fall.
 
 ## 10.4 Deaths and lives
 
@@ -416,7 +416,8 @@ How to read:
 What it shows:
 
 - The script walks screens 0-5 by frame 2950 and then stands on screen 5 firing to the right.
-- Every rise of the score is 150: aliens shot (KillAlien). 214 rises in the samples take the score to 032100.
+- Every rise of the score is 150: 205 aliens shot (KillAlien `$A62D`, L1) and 9 scenery pieces blown up by
+  grenades (GrenadeBlast `$942A`). 214 rises in the samples take the score to 032100.
 - IdleTime drops to 0 at each new screen and climbs one a pass; on screen 5 it crosses 700 at frame 5170.
 - From then on the idle missiles come one after another (10.8).
 
@@ -489,7 +490,7 @@ The table HallOfFame `$71F1` holds 50 entries of 16 bytes and an end mark `$FF` 
 An entry is a name of 10 characters and the score in 6 ASCII digits (+10).
 The image holds 50 names (RAFFAELE, SURYANI, SCRAGGY, ... HUMPTY), all 001000.
 
-GameOver `$A02A` calls HallOfFameInsert `$A073` after the jingle and two delays (about 1.6 s each):
+GameOver `$A02A` calls HallOfFameInsert `$A073` after the jingle and two delays (about 0.4 s each):
 
 ```text
 for each entry from the top:

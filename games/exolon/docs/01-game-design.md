@@ -136,7 +136,7 @@ How to read the figure:
   screen number and what is new there.
 - **Rows** run through the five zones: each zone starts on screen 0, 25, 50, 75 or 100 and ends at a gate on screen
   24, 49, 74, 99 or 124.
-- **The colours change by zone**: the ground is red and magenta in zones 1-3 and green from screen 75.
+- **The colours**: the ground mixes red-magenta and green in zones 1-3; in zones 4 and 5 it is mostly cyan and green.
 - **The point**: the screens are built from a set of 62 scenery elements ([doc 6](06-rendering.md), 6.4), so the
   zones look alike; the hazards make each screen.
 
@@ -175,7 +175,7 @@ python3 tools/fig_sheet.py --columns 5 --scale 0.66 \
 - **The bonus screen** (screen 9 of the figure in 1.2): an arrow steps down eight lines, 00000 01000 00000 03000
   00000 05000 00000 07000; fire stops it. The pointer is never reset: it goes on from where it last stopped.
 - **The Hall of Fame** (HallOfFame `$71F1`): 50 entries of a name and a six-digit score. The image's table starts with
-  RAFFAELE, SURTANI, SCRAGGY, SABATTA!, PADDY, LOFTY, JIMBO, LEO, GLEN, MORANGE, all at 001000 (`x1`, `h1`). A score
+  RAFFAELE, SURYANI, SCRAGGY, SABATTA!, PADDY, LOFTY, JIMBO, LEO, GLEN, MORANGE, all at 001000 (`x1`, `h1`). A score
   that beats an entry asks for an 8-letter name and then shows the table ([doc 5](05-controls.md), 5.5).
 
 ## 1.8 Machines, the cheat, the difficulty
@@ -189,7 +189,7 @@ python3 tools/fig_sheet.py --columns 5 --scale 0.66 \
   the first round's. Whether any hazard reads a round count was not searched beyond those routines. The hazards'
   randomness comes from one generator, Random `$AD36`.
 - **The speed** is not fixed: a pass takes about 2 frames when quiet and up to 4 when the player turns or a beeper
-  effect plays ([doc 4](04-game-loop.md), 4.5). The game slows down when much happens.
+  effect plays, and 6 when both come in one pass ([doc 4](04-game-loop.md), 4.5). The game slows down when much happens.
 
 ## 1.9 What no recording reached
 

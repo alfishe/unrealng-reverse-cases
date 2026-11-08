@@ -21,10 +21,10 @@
 ; $EA). The sprite drawers read $5B00 ($777F, $79DD), the collision code $6100
 ; ($80D3).
 ;
-; Plot mode 0 of PlotModes $9A0F (set by SetPlotMode $99F8 into the four CALLs
-; of PrintString). Called also directly: the define keys ($6FE1), the HUD
-; ($917C, $9181), the name entry ($A0E2, $A125), the round end ($A837, $A84F),
-; the bonus screen ($A91A, $A92C), $ABB5. c1: 158 963 calls from PrintString's
+; Plot mode 0 of Printers $9A0F (set by SetPrinter $99F8 into the four CALLs of
+; PrintString). Called also directly: the define keys ($6FE1), the HUD ($917C,
+; $9181), the name entry ($A0E2, $A125), the round end ($A837, $A84F), the
+; bonus screen ($A91A, $A92C), $ABB5. c1: 158 963 calls from PrintString's
 ; $AF32 alone.
 PrintChar:
   BIT 5,E
@@ -91,7 +91,7 @@ PrintCharLine:
 ;
 ; As PrintChar without the column test and the map writes: A the code, D the
 ; row, E the column, C the attribute, the glyph from GlyphBase ($ADEF). Plot
-; mode 1 of PlotModes. Used for the HUD's numbers (PrintNumber3 $B0E0), $7578,
+; mode 1 of Printers. Used for the HUD's numbers (PrintNumber3 $B0E0), $7578,
 ; $8E49, $8E77, the score glyphs $8F7E/$8F83 (163 849 calls each in the runs),
 ; $A300.
 PrintCharAttr:
@@ -145,7 +145,7 @@ PrintCharAttrLine:
 ;
 ; A the code, D the row, E the column, C the attribute, the glyph from
 ; GlyphBase. The glyph is XORed onto the screen (drawn twice it is gone). Plot
-; mode 2 of PlotModes. Called from $8FC0-$9009 (AnimateTurrets, 8 sites, 3580
+; mode 2 of Printers. Called from $8FC0-$9009 (AnimateTurrets, 8 sites, 3580
 ; and 14 208 calls each in the runs), with GlyphBase $DDD8 set at $8F95.
 XorCharAttr:
   PUSH AF
@@ -206,10 +206,10 @@ XorCharAttrLine:
 ; each starts a debris particle there (a 6-byte record of the list at $95B6, a
 ; random direction from $AD36, small sprite 2 of SmallSprites drawn by $92FB).
 ;
-; Plot mode 3 of PlotModes, reached only through PrintString's CALLs ($AF32:
+; Plot mode 3 of Printers, reached only through PrintString's CALLs ($AF32:
 ; 2681 calls, $AFFD: 304, in the runs): the destructible scenery that a shot or
 ; a grenade breaks is erased by printing its object again in this mode. The
-; caller selects it by SetPlotMode $99F8 with A = 3 ($9418, $AC44 region).
+; caller selects it by SetPrinter $99F8 with A = 3 ($9418, $AC44 region).
 EraseBlockDebris:
   BIT 5,E
   RET NZ
@@ -274,7 +274,7 @@ EraseBlockLine:
 ;
 ; As EraseBlockDebris without the column test and without the particles: A the
 ; code, D the row, E the column; $5B00 = $FF, $5E00 = 0, $6100 = 0 for the
-; cell. Plot mode 4 of PlotModes, reached through PrintString's CALL at $AF32
+; cell. Plot mode 4 of Printers, reached through PrintString's CALL at $AF32
 ; (368 calls in the warp runs).
 EraseBlock:
   PUSH AF
@@ -335,7 +335,7 @@ EraseBlockLine2:
 ;
 ; HL the string, D the row, E the column, C the attribute. Each glyph is
 ; printed by the routine of the current plot mode (the CALLs at $AF32, $AFBF,
-; $AFD1, $AFFD, written by SetPlotMode $99F8 from PlotModes $9A0F: PrintChar,
+; $AFD1, $AFFD, written by SetPrinter $99F8 from Printers $9A0F: PrintChar,
 ; PrintCharAttr, XorCharAttr, EraseBlockDebris, EraseBlock); the codes:
 ;
 ; $00-$60 a glyph, then the column + 1. $61-$8F: row += code - $78 (-23..+23),
@@ -365,7 +365,7 @@ PrintString:
   CP $61
   JP NC,PrintStringMove
   CALL PrintChar          ; the plot mode's routine (operand $AF33 set by
-                          ; SetPlotMode)
+                          ; SetPrinter)
   INC E
   JP PrintString
 PrintStringMove:

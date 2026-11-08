@@ -68,7 +68,7 @@ $6DA1 c MainMenu ; The main menu: draws it, plays the title tune once on a 48K, 
 $6DB5 ; the current control type in bright white
 $6DB8 ; the AY title music's start ($B6EC)
 $6DC5 ; a 128K has its AY music: no beeper tune
-$6DCB ; the title tune on the beeper (c1: once per load)
+$6DCB ; the title tune on the beeper (c1: 4 times, once after each entry to Start)
 $6DD1 MenuReady ; the attribute copy $5E00, the save buffers and the sparkle slots cleared
 $6DDA ; the menu's timeout: 2500 passes
 $6DDD MenuLoop ; one sparkle step, one key read
@@ -417,7 +417,7 @@ $7C2B BeeperNoiseLoop
 $7C33 BeeperNoiseWait
 
 $7C3C c BeeperSweep ; A falling beeper tone: 16 steps of 10 half-waves, the period from $30 to $3F loops (nothing on a 128K)
-> Called by $9942. Keeps every register. Ran only in the warp runs (460 calls), never on a 128K path.
+> Called by Pods $9942 five times a pod (AmmoPodChirps $9996, GrenadePodChirps $99EC). Keeps every register. Ran only in the warp runs (460 calls), never on a 128K path.
 $7C4A BeeperSweepStep ; 10 half-waves of period E
 $7C4C BeeperSweepHalf
 $7C51 BeeperSweepWait
@@ -470,7 +470,7 @@ $7D68 b JingleTune 3 ; A short tune of 19 notes (length, note, note) and its end
 > Notes 18 x (15, n, m): falling arpeggios over the notes $1C-$17, then (45, $1C, $28); a length 0 ends. PlayTune from ZorbaCheat and $A030 (GAME OVER).
 $7DA1 ; the end, and a spare 0
 $7DA3 b TitleTune 3 ; The 48K title tune: 195 notes (length, note, note), lengths 18 to 90 in steps of 18, notes up to 50
-> PlayTune from MainMenu once per load on a 48K, any key cuts it. The note numbers index the period table $8062 (53 entries).
+> PlayTune from MainMenu at the first menu after each entry to Start on a 48K, any key cuts it. The note numbers index the period table $8062 (53 entries).
 $7FEC ; the end, and a spare 0
 $7FEE b TuneNoteLength ; The current note's length (PlayTune), passed in A to the tone routine
 $7FEF TunePointer ; the next note of the tune (PlayTune), a word
@@ -1534,7 +1534,7 @@ $A650 AliensSetUpLoop
 $A65E AliensSetUpFound
 $A676 b AliensHere 1 ; 1 when the current screen has aliens (AliensSetUp)
 $A677 b AlienScreens 5 ; The 70 screens with aliens: the screen, the path (word), the frame base, the delay; $FF ends
-> Screens 3-124 (none on 0-2, the zone ends 24, 49, 74, 99 or many others). The frame bases are $01, $10, $14, $18, $25 and $29 (six alien looks); the delays 8-40 passes. A screen's path and look are independent (e.g. screen 3: path $A406, frame $10, delay 20; screen 54: $A4E3, $29, 30). The full list is in exD.md.
+> Screens 3-124 (none on 0-2 or on screen 24 and many others; the zone ends 49, 74, 99 and 124 have aliens). The frame bases are $01, $10, $14, $18, $25 and $29 (six alien looks); the delays 8-40 passes. A screen's path and look are independent (e.g. screen 3: path $A406, frame $10, delay 20; screen 54: $A4E3, $29, 30). The full list is in exD.md.
 
 $A7D6 c FlickerPadStep ; The flickering pad of tile 15: two sprites side by side, random frames $1C-$1F and random colours
 > Main loop ($7641). When the screen has one (FlickerPadList), draws frame $1C + (Random AND 3) in the slot $B641 at the cell's pixels and the next frame in the slot $B671 16 pixels right, in a random bright ink $40-$47 ($7C8F both). Nothing else reads its cell: a decoration that is redrawn every pass (what it shows is an open question; exD.md).
@@ -1662,7 +1662,7 @@ $ADDF ; both: A = 1
 $ADE1 c PrintChar ; Print one 8x8 glyph at a character cell, set its attribute and its three cell maps
 > A the glyph code, D the row (0-23), E the column, C the attribute. Returns at once when bit 5 of E is set (a column 32-63 or a negative one from $E0 up: the screen layouts place objects from off the left edge, ScreenLayouts). The glyph is 8 bytes at GlyphBase + 8A, where GlyphBase is the operand of the LD BC at $ADEE (PrintString code $E6 and the callers write it: FontBase $D7E0, the tile sets from $DAB8 on). The 8 bytes go down the cell's pixel lines (INC D), then C to the cell's attribute.
 > Then the cell's entries of two maps parallel to the attributes: attribute + $0900 = the cell type map at $6100 gets the operand at $AE1B (PrintString code $E8 n; the screen builder sets 1 at $84FA, the score and text printers leave what was set), attribute + $0900 + $FA00 = the empty-cell map at $5B00 gets the operand at $AE21 (0 = a glyph is here, PrintString $E9; $FF = empty, $EA). The sprite drawers read $5B00 ($777F, $79DD), the collision code $6100 ($80D3).
-> Plot mode 0 of PlotModes $9A0F (set by SetPlotMode $99F8 into the four CALLs of PrintString). Called also directly: the define keys ($6FE1), the HUD ($917C, $9181), the name entry ($A0E2, $A125), the round end ($A837, $A84F), the bonus screen ($A91A, $A92C), $ABB5. c1: 158 963 calls from PrintString's $AF32 alone.
+> Plot mode 0 of Printers $9A0F (set by SetPrinter $99F8 into the four CALLs of PrintString). Called also directly: the define keys ($6FE1), the HUD ($917C, $9181), the name entry ($A0E2, $A125), the round end ($A837, $A84F), the bonus screen ($A91A, $A92C), $ABB5. c1: 158 963 calls from PrintString's $AF32 alone.
 $ADEE ; BC = GlyphBase: the operand ($ADEF) is written by PrintString $E6, $E7 and the callers ($715D, $8E1F, $8F95, $9152, $A2D5, $A8DB, $AB9F, $AC2B, $B0C8)
 $AE03 PrintCharLine ; 8 pixel lines down the cell
 $AE09 ; back to the cell's last line: its attribute address from H
@@ -1671,30 +1671,30 @@ $AE1C ; DE = $FA00 (-$0600): from the $6100 map to the $5B00 map
 $AE20 ; the empty-cell map ($5B00 + cell): the operand at $AE21, 0 ($E9) or $FF ($EA)
 
 $AE26 c PrintCharAttr ; Print one glyph and its attribute, no clipping and no cell maps
-> As PrintChar without the column test and the map writes: A the code, D the row, E the column, C the attribute, the glyph from GlyphBase ($ADEF). Plot mode 1 of PlotModes. Used for the HUD's numbers (PrintNumber3 $B0E0), $7578, $8E49, $8E77, the score glyphs $8F7E/$8F83 (163 849 calls each in the runs), $A300.
+> As PrintChar without the column test and the map writes: A the code, D the row, E the column, C the attribute, the glyph from GlyphBase ($ADEF). Plot mode 1 of Printers. Used for the HUD's numbers (PrintNumber3 $B0E0), $7578, $8E49, $8E77, the score glyphs $8F7E/$8F83 (163 849 calls each in the runs), $A300.
 $AE46 PrintCharAttrLine ; 8 pixel lines
 
 $AE5D c XorCharAttr ; XOR one glyph onto a cell and set its attribute
-> A the code, D the row, E the column, C the attribute, the glyph from GlyphBase. The glyph is XORed onto the screen (drawn twice it is gone). Plot mode 2 of PlotModes. Called from $8FC0-$9009 (AnimateTurrets, 8 sites, 3580 and 14 208 calls each in the runs), with GlyphBase $DDD8 set at $8F95.
+> A the code, D the row, E the column, C the attribute, the glyph from GlyphBase. The glyph is XORed onto the screen (drawn twice it is gone). Plot mode 2 of Printers. Called from $8FC0-$9009 (AnimateTurrets, 8 sites, 3580 and 14 208 calls each in the runs), with GlyphBase $DDD8 set at $8F95.
 $AE7D XorCharAttrLine ; XOR 8 pixel lines
 
 $AE95 c EraseBlockDebris ; XOR a glyph off a cell, mark the cell empty and throw two debris particles
 > A the code, D the row, E the column (clipped as in PrintChar: bit 5 of E set returns). The glyph is XORed onto the screen, which takes off the same glyph drawn there before; the attribute is left. Then the cell's maps: $5B00 = $FF (empty), $5E00 (the attribute copy CopyAttributes $8E11 made after the screen was built) = 0, $6100 (the cell type) = 0: the cell is no longer solid. At the end two calls of $94F9 (one CALL, one JP) with DE = the row and column: each starts a debris particle there (a 6-byte record of the list at $95B6, a random direction from $AD36, small sprite 2 of SmallSprites drawn by $92FB).
-> Plot mode 3 of PlotModes, reached only through PrintString's CALLs ($AF32: 2681 calls, $AFFD: 304, in the runs): the destructible scenery that a shot or a grenade breaks is erased by printing its object again in this mode. The caller selects it by SetPlotMode $99F8 with A = 3 ($9418, $AC44 region).
+> Plot mode 3 of Printers, reached only through PrintString's CALLs ($AF32: 2681 calls, $AFFD: 304, in the runs): the destructible scenery that a shot or a grenade breaks is erased by printing its object again in this mode. The caller selects it by SetPrinter $99F8 with A = 3 ($9418, $AC44 region).
 $AEB8 EraseBlockLine ; XOR 8 pixel lines
 $AEC2 ; the cell's offset (0-$2FF) from the last line's address
 $AEC8 ; the three cell maps: $5B00 empty, $5E00 colourless, $6100 not solid
 $AEDE ; a debris particle at D, E, then a second (JP)
 
 $AEE4 c EraseBlock ; XOR a glyph off a cell and mark the cell empty, no clipping and no debris
-> As EraseBlockDebris without the column test and without the particles: A the code, D the row, E the column; $5B00 = $FF, $5E00 = 0, $6100 = 0 for the cell. Plot mode 4 of PlotModes, reached through PrintString's CALL at $AF32 (368 calls in the warp runs).
+> As EraseBlockDebris without the column test and without the particles: A the code, D the row, E the column; $5B00 = $FF, $5E00 = 0, $6100 = 0 for the cell. Plot mode 4 of Printers, reached through PrintString's CALL at $AF32 (368 calls in the warp runs).
 $AF04 EraseBlockLine2 ; XOR 8 pixel lines
 
 $AF2B c PrintString ; Print a string of glyph codes and control codes up to an end code
-> HL the string, D the row, E the column, C the attribute. Each glyph is printed by the routine of the current plot mode (the CALLs at $AF32, $AFBF, $AFD1, $AFFD, written by SetPlotMode $99F8 from PlotModes $9A0F: PrintChar, PrintCharAttr, XorCharAttr, EraseBlockDebris, EraseBlock); the codes:
+> HL the string, D the row, E the column, C the attribute. Each glyph is printed by the routine of the current plot mode (the CALLs at $AF32, $AFBF, $AFD1, $AFFD, written by SetPrinter $99F8 from Printers $9A0F: PrintChar, PrintCharAttr, XorCharAttr, EraseBlockDebris, EraseBlock); the codes:
 > $00-$60 a glyph, then the column + 1. $61-$8F: row += code - $78 (-23..+23), then column += the next byte (a relative move). $90-$CE: the next row, column += code - $AF (-31..+31). $CF-$DE: the ink of C = code - $CF, 8-15 the bright inks 0-7 (C = C AND $38 OR ink, BRIGHT for 8-15, FLASH dropped). $DF r c: row and column absolute. $E0 a: the attribute. $E1 n: repeat the bytes up to the next $E2 n times (HL and BC pushed: the attribute comes back at every pass). $E2: the repeat's end. $E3 lo hi: print the string at hi lo here, then go on with the row, column and attribute as before (a subroutine; the objects of ObjectTable $852E share parts so). $E4 n g: glyph g n times to the right. $E5 n g: glyph g n times down. $E6 lo hi: GlyphBase = hi lo (the glyph set). $E7: a space of FontBase (the glyph set kept), column + 1. $E8 n: the cell type the next glyphs write ($AE1B). $E9: the next glyphs mark their cells drawn ($AE21 = 0). $EA: ... empty ($AE21 = $FF). $EB n: the current cell's type = n (only in plot mode 0). Any other code ($EC-$FF; the strings end with $FF) returns, HL past it.
 > Callers: the menu ($6DB2, $6E06), the define keys ($6FC3), $7023, the Hall of Fame ($7151), $7693, the screen builder ($8502: every object of a screen, 2547 calls), $91E6, $941D, $996C, $99C2, the Hall of Fame entry ($A02D, $A0D5), the round end ($A829, $A87D), the bonus screen ($A8FC), the HUD score ($AD7A: 5969 calls).
-$AF32 ; the plot mode's routine (operand $AF33 set by SetPlotMode)
+$AF32 ; the plot mode's routine (operand $AF33 set by SetPrinter)
 $AF39 PrintStringMove ; $61-$8F: a relative move, the row from the code, the column from the next byte
 $AF49 PrintStringNewLine ; $90-$CE: the next row, the column moved by code - $AF
 $AF56 PrintStringInk ; $CF-$DE: the ink (8-15 bright)

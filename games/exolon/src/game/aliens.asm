@@ -666,11 +666,11 @@ AliensHere:
 ; The 70 screens with aliens: the screen, the path (word), the frame base, the
 ; delay; $FF ends
 ;
-; Screens 3-124 (none on 0-2, the zone ends 24, 49, 74, 99 or many others). The
-; frame bases are $01, $10, $14, $18, $25 and $29 (six alien looks); the delays
-; 8-40 passes. A screen's path and look are independent (e.g. screen 3: path
-; $A406, frame $10, delay 20; screen 54: $A4E3, $29, 30). The full list is in
-; exD.md.
+; Screens 3-124 (none on 0-2 or on screen 24 and many others; the zone ends 49,
+; 74, 99 and 124 have aliens). The frame bases are $01, $10, $14, $18, $25 and
+; $29 (six alien looks); the delays 8-40 passes. A screen's path and look are
+; independent (e.g. screen 3: path $A406, frame $10, delay 20; screen 54:
+; $A4E3, $29, 30). The full list is in exD.md.
 AlienScreens:
   DEFB $03,$06,$A4,$10,$14
   DEFB $04,$06,$A4,$10,$14

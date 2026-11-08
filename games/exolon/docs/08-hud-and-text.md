@@ -84,7 +84,7 @@ What it shows:
 
 - PrintCharLine (red, the inner loop of PrintChar `$ADE1`, plot mode 0) writes the labels, the blanks of row 23 and
   the score: 504 bytes.
-- PrintCharAttrLine (blue) writes the four numbers AMMO, GRENADES, LIVES and ZONES: 72 bytes, 9 glyphs.
+- PrintCharAttrLine (blue) writes the four numbers AMMO, GRENADES, LIVES and ZONES: 72 bytes: 8 glyphs, 64 pixel bytes and 8 attributes.
 - ClearScreenAttr (green) writes the attributes of the playfield: the screen is cleared in the same frame, and the
   scenery comes later (BuildScreen).
 - The score is not a number printer's job: it is a string (8.5).
@@ -120,7 +120,7 @@ PrintString:
   CP $61
   JP NC,PrintStringMove
   CALL PrintChar          ; the plot mode's routine (operand $AF33 set by
-                          ; SetPlotMode)
+                          ; SetPrinter)
   INC E
   JP PrintString
 PrintStringMove:
@@ -169,9 +169,9 @@ loop:
     else: return
 ```
 
-A worked example from MenuText: after "DEFINE KEYS" the bytes are `7A F4 DA 33 DC 20 4B 45 59 42 ...`.
+A worked example from MenuText: after "DEFINE KEYS" the bytes are `7A F3 DA 33 DC 20 4B 45 59 42 ...`.
 
-- `$7A` is a move: the row + (`$7A` - `$78`) = 2; the next byte `$F4` = -12 moves the column back 12.
+- `$7A` is a move: the row + (`$7A` - `$78`) = 2; the next byte `$F3` = -13 moves the column back 13, to the column of the digit 2.
 - `$DA` sets ink `$DA` - `$CF` = 11: ink 3 bright, magenta.
 - `$33` prints the glyph "3". `$DC` sets ink 13: ink 5 bright, cyan.
 - `$20 4B 45 59 ...` print " KEYB...". So option 3 sits two rows under option 2, at the same column, its digit in
@@ -220,7 +220,7 @@ SetPrinter `$99F8` patches all four from Printers `$9A0F`:
 | Mode | Routine | What it does | Users |
 | ---: | --- | --- | --- |
 | 0 | PrintChar `$ADE1` | the glyph, its attribute, CellTypes and OpenCells written; columns with bit 5 set (32-63, or negative) are clipped | every string by default |
-| 1 | PrintCharAttr `$AE26` | the glyph and attribute only | the HUD numbers, name entry, bonus screen (called directly) |
+| 1 | PrintCharAttr `$AE26` | the glyph and attribute only | the HUD numbers, the flame jets, the stars (called directly; the name entry and the bonus screen go through PrintChar `$ADE1`) |
 | 2 | XorCharAttr `$AE5D` | the glyph by XOR | no string; AnimateTurrets calls it directly for the recoil frames |
 | 3 | EraseBlockDebris `$AE95` | XOR, the maps cleared, two debris pieces a glyph | MineBlast, GrenadeBlast |
 | 4 | EraseBlock `$AEE4` | XOR, the maps cleared | Pods (a taken pod erased by printing it again) |
@@ -254,7 +254,7 @@ What it shows:
   other text screens in 8.6 show the same logo.
 - The 62 elements print 483 of the 593 tile cells, through 22 glyph-set bases (`$DAB8` to `$EC48`). A base is not a
   separate table: elements open windows into one area, and windows overlap.
-- The grey cells are the logo, the turret's recoil frames (font `$DDD8`, mode 2), the frame pieces of the text
+- The grey cells are the logo, the turret's recoil frames (the tile set `$DDD8`, mode 2), the frame pieces of the text
   screens and the menu digits.
 
 ## 8.5 The score is a string

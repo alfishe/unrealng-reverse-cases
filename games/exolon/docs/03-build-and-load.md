@@ -116,8 +116,34 @@ for a = $FC13 to $FEA2:
     memory[a] = memory[a] XOR memory[a + 1]     ; memory[a + 1] is still the tape's byte
 ```
 
-The key of each byte is the next byte as the tape holds it, so the chain needs no key of its own. The first and
-the last bytes (`work/media/loader.bin`, the tape's block 4, and `loader1.bin`, the decrypted loader):
+The key of each byte is the next byte as the tape holds it, so the chain needs no key of its own.
+
+```mermaid
+flowchart TD
+  A["Decrypt $FC00: BC = $0290 (656), HL = $FC13, DE = $FC14"] --> B["A = the byte at DE, still as the tape holds it"]
+  B --> C["A = A XOR the byte at HL"]
+  C --> D["the byte at HL = A: one byte plain"]
+  D --> E["HL + 1, DE + 1, BC - 1"]
+  E --> F{"BC = 0?"}
+  F -- "no" --> B
+  F -- "yes: HL = $FEA3" --> G["run on into $FC13: JP Start $FE3A"]
+```
+
+A worked step, the first three bytes and the last, from the tape's block 4 (`work/media/loader.bin`):
+
+| Step | Before: HL, DE, BC | A = (DE) | XOR (HL) | Stored at HL | After: HL, DE, BC |
+| --- | --- | --- | --- | --- | --- |
+| 1 | `$FC13`, `$FC14`, `$0290` | `$B4` | `$77` | `$C3` (`JP`) | `$FC14`, `$FC15`, `$028F` |
+| 2 | `$FC14`, `$FC15`, `$028F` | `$8E` | `$B4` | `$3A` | `$FC15`, `$FC16`, `$028E` |
+| 3 | `$FC15`, `$FC16`, `$028E` | `$70` | `$8E` | `$FE`: `JP $FE3A` | `$FC16`, `$FC17`, `$028D` |
+| 656 | `$FEA2`, `$FEA3`, `$0001` | `$00` (plain) | `$C9` | `$C9` (`RET`) | `$FEA3`, `$FEA4`, `$0000`: the loop ends |
+
+Each step reads the key at DE before the step at DE writes it: DE runs one byte ahead of HL, so the key is always
+the tape's byte. The loop is nine instructions, 59 T-states a round, so 656 rounds take 38 699 T; `c1` measures
+39 570 T. Interrupts are still on (the `DI` comes at Start), so the rest is most likely the ROM's frame interrupt at
+the start of frame 251.
+
+The first and the last bytes (`work/media/loader.bin`, the tape's block 4, and `loader1.bin`, the decrypted loader):
 
 | Address | Tape byte | XOR the next tape byte | Plain byte | What |
 | --- | --- | --- | --- | --- |
@@ -125,7 +151,7 @@ the last bytes (`work/media/loader.bin`, the tape's block 4, and `loader1.bin`, 
 | `$FC14` | `$B4` | `$8E` | `$3A` | low byte of `$FE3A` |
 | `$FC15` | `$8E` | `$70` | `$FE` | high byte: `JP $FE3A`, Start |
 | `$FC16` | `$70` | `$38` | `$48` | CountDigits, the first digit (9 x 8) |
-| `$FEA2` | `$56` | `$AB` (`$FEA3`, plain) | `$FD` | the last byte of `LoadFile` |
+| `$FEA2` | `$C9` | `$00` (`$FEA3`, plain) | `$C9` | `RET`, the last byte of `LoadFile` |
 
 ![Decrypt: each byte XORed with the next, from FC13 up to FEA2 hex; the loader appears byte by byte](img/load/decrypt.gif)
 
@@ -145,7 +171,7 @@ How to read the animation:
 - **The numbers**: the chain runs from frame 250 T 34 709 to frame 251 T 4 391, about 39 600 T-states; 653 of the
   656 bytes change (three bytes meet a zero as their key).
 - **The point**: the protection is one forward pass of XOR with the next byte. A disassembler sees noise until the
-  chain has run; the emulator sees it run in one fifth of a frame.
+  chain has run; the emulator sees it run in a little over half a frame.
 
 ```bash
 python3 tools/fig_loader.py decrypt --work work/docs/docA/c1 --window 250:34000-251:6000 \
@@ -157,7 +183,8 @@ Against Zynaps' decrypted loader, 105 of the 768 bytes differ:
 - the countdown's screen addresses: the four digits at `$50FB-$50FE` (row 23, columns 27-30) and their attribute
   cells `$5AFB-$5AFE`, where Zynaps' were at columns 1-4: the counter is drawn into the strip of boxes at the
   bottom right of the loading screen;
-- the stages at `$FE3A` (below), four bytes longer;
+- the stages at `$FE3A` (below), three bytes shorter (no `LD SP`), and `LoadFile` seven bytes longer (the type
+  check below): the chain is four bytes longer, 656 bytes against 652;
 - `LoadFile` (`$FE71`), which now refuses a header whose first byte is not 42 (`$2A`) and waits for the next one.
 
 The stages, decoded from the plain loader:
@@ -176,7 +203,192 @@ FE3A  DI
 ```
 
 The game starts at `$6D60` with the stack below it; `$6590-$6D5F` keeps what the move left there (the first 2000
-bytes of the code file as loaded). `tools/image.py` writes the image as the move leaves it, `$6D60-$FFFF`.
+bytes of the code file as loaded) at the game's entry; Start then builds its tables over `$6590-$687F`, so only
+`$6880-$6D5F` stays. `tools/image.py` writes the image as the move leaves it, `$6D60-$FFFF`.
+
+The decrypted loader, part by part (`src/tape/loader.asm`):
+
+| Address | Name | What |
+| --- | --- | --- |
+| `$FC00` | `Decrypt` | the XOR chain above, plain on the tape |
+| `$FC13` | | `JP Start` |
+| `$FC16-$FC19` | `CountDigits` | the four counter digits, units first, each 8 x the digit + a sub-step 0-7 |
+| `$FC1A` | `CountOn` | 0 while a header loads, 1 while a data block loads |
+| `$FC1B` / `$FC1D` / `$FC1F` | `CountGlyph`, `CountScreen`, `CountTick` | the digit being drawn, its screen address, the edges until the next move |
+| `$FC21-$FC31` | `Header` | the 17 header bytes: type, name, length (`$FC2C`), start (`$FC2E`), a second parameter |
+| `$FC32-$FC89` | `DigitGlyphs` | 11 glyphs of 8 lines, 0-9 and 0 again, inverted |
+| `$FC8A` | `LdBytes` | the ROM's LD-BYTES (`$0556`), moved |
+| `$FD1C` / `$FD20` / `$FD23` | `LdEdge2` / `LdEdge1` / `LdSample` | the ROM's LD-EDGE-2, LD-EDGE-1 and its sampling loop; `LdEdge1` jumps to `CountStep` first |
+| `$FD3B` | `CountStep` | the countdown's work in the time of the ROM's delay loop (3.3.2) |
+| `$FDA2` | `CountAdvance` | the odometer one sub-step down |
+| `$FE0F` | `CountSet` | the start value: the header's length / 32 in four decimal digits |
+| `$FE3A` | `Start` | the stages (above and 3.5) |
+| `$FE5F` | `MoveStub` | 18 bytes copied to `$5B00` and run there |
+| `$FE71` | `LoadFile` | a header of type 42, then its data block (3.3.1) |
+| `$FEA3-$FEFF` | | plain, never run: 50 zeros, 20 bytes of leftover RAM, 23 bytes equal to the ROM's `$0652-$0668` |
+
+### 3.3.1 LoadFile
+
+Start calls LoadFile twice, once for each file. LoadFile loads a 17-byte header into `Header`, keeps it only if its
+type byte is 42 (`$2A`), and then loads the data block that follows at the header's start address and length:
+
+```asm
+LoadFile:                       ; $FE71
+  XOR A
+  LD (CountOn),A                ; no counter while the header loads
+  LD IX,Header                  ; $FC21
+  LD DE,17
+  XOR A                         ; flag 0: a header
+  SCF                           ; carry: load, not verify
+  CALL LdBytes
+  JR NC,LoadFile                ; a bad block: start again
+  LD A,(Header)
+  CP FileType                   ; 42
+  JR NZ,LoadFile                ; another type: wait for the next header
+  CALL CountSet                 ; the counter from the length
+  LD A,1
+  LD (CountOn),A
+  LD IX,(HeaderStart)           ; $FC2E
+  LD DE,(HeaderLength)          ; $FC2C
+  LD A,$FF                      ; flag $FF: data
+  SCF
+  CALL LdBytes
+  JR NC,LoadFile                ; a bad block: start again with a header
+  RET                           ; $FEA2
+```
+
+```mermaid
+flowchart TD
+  A["LoadFile $FE71: CountOn = 0"] --> B["LdBytes: 17 bytes, flag 0, into Header $FC21"]
+  B --> C{"carry set: loaded, checksum good?"}
+  C -- "no" --> A
+  C -- "yes" --> D{"the type byte = 42?"}
+  D -- "no: another file" --> A
+  D -- "yes" --> E["CountSet: length / 32 into CountDigits; CountOn = 1"]
+  E --> F["LdBytes: flag $FF, IX = the header's start, DE = its length"]
+  F --> G{"carry set?"}
+  G -- "no" --> A
+  G -- "yes" --> H["RET to Start"]
+```
+
+The two headers in `c1` (`memory_at` of `Header` at frames 600 and 2100), both named `exolon`:
+
+| File | Type | Length | Start | Parameter 2 |
+| --- | --- | --- | --- | --- |
+| the packed screen | 42 | 4096 (`$1000`) | `$8000` | `$4000` |
+| the code | 42 | 37 536 (`$92A0`) | `$6590` | `$6784` |
+
+LdBytes is the ROM's LD-BYTES (`$0556-$05E2`) in its structure: the leader (a wait of `$0415` rounds,
+then 256 pilot pulses), the two sync edges, the flag byte compared with A, the bytes loaded or verified with the XOR
+checksum in H, carry set on return when the checksum is 0. What differs:
+
+- **No return address is pushed**: the ROM pushes SA/LD-RET (`$053F`), which restores the border and tests BREAK.
+  LdBytes simply returns, carry clear on any error, and LoadFile starts again.
+- **The border**: `$0A` once at the start (`$FC92`); then every edge writes `$08` (`LD A,0 / LD A,$08` at `$FD33`,
+  the same length as the ROM's `AND 7 / OR 8`), black. The ROM's red and cyan stripes (`OR 2` at `$FC9B` is
+  `OR 0`, the `XOR 3` after the sync is gone) never appear.
+- **The counter switch**: C' is cleared at the start (`$FC8F`) and set from CountOn after the sync (`$FCD3-$FCDB`),
+  which also sets CountTick so that the counter moves on the first edge of the block.
+- **The edge routine**: `LdEdge1` (`$FD20`) is `JP CountStep` where the ROM has its delay loop (`LD A,$16` ...
+  `AND A`, 358 T). CountStep does the counter's work and jumps to LdSample (`$FD23`), the ROM's LD-SAMPLE.
+- **The type check** (`$FE83-$FE89`): the ROM's LOAD compares the header with the name asked for; LoadFile takes the
+  first header of type 42, whatever its name. The ROM's own files (types 0-3) are passed over: their data block
+  follows as a block with flag `$FF` that LoadFile, waiting for a header (flag 0), refuses at the flag test.
+
+The time of the hooked edge, counted from the listing with the Z80's T-states (the loader sits above `$8000`, no
+contention):
+
+| Path through CountStep | T-states before LdSample | The ROM's LD-EDGE-1 |
+| --- | ---: | ---: |
+| a header (C' = 0): `CountIdle`, `DJNZ` 23 times | 368 | 358 |
+| the colours (`CountAttrs`, then `DJNZ` 13 times) | 368 | 358 |
+| a digit drawn (8 lines) | 357 | 358 |
+| the odometer moved (`CountAdvance`, no borrow) | 369 | 358 |
+
+LdSample's loop is 59 T a round, and a bit is the count of rounds over two edges against a threshold (`LD B,$B0`
+and `CP B` with `$CB` at `$FD07`, the ROM's). The 10 or 11 T of difference is a fifth of one round: the loader reads
+a standard ROM-timed tape, and `c1` loads it at signal speed.
+
+### 3.3.2 The countdown
+
+While a data block loads, four digits at `$50FB-$50FE` (row 23, columns 27-30, the top line of the cells; the
+glyph's 8 lines go down by `INC H`) show the blocks of 32 bytes still to come, and run down to zero as the block
+arrives.
+
+CountSet (`$FE0F`) starts them from the header: the length shifted right five times (/ 32), then four digits by
+repeated subtraction of 1000 (the rest x 10 each time), stored as 8 x the digit, thousands at `$FC19` first. The
+packed screen starts at 4096 / 32 = 128, the code at 37 536 / 32 = 1173.
+
+Each digit byte is 8 x the digit + a sub-step: the glyph is drawn from `DigitGlyphs + byte`, eight lines from
+there. A sub-step of 0 is the digit's own glyph; 1-7 start 1-7 lines lower, so the cell shows the bottom of this
+glyph and the top of the next one up. Counting down from 7 to 0 the glyph slides from the digit + 1 to the digit:
+the digits roll like an odometer. The eleventh glyph (`$FC82`, a 0 again) is the one 9 rolls from.
+
+```text
+CountStep (every edge, in place of the ROM's delay):
+    if C' = 0: wait 368 T; sample                  ; a header: no counter
+    CountTick -= 1
+    if CountTick = 0: CountAdvance                 ; every 64 edges
+    elif CountTick < 5:                            ; ticks 4, 3, 2, 1
+        draw the next digit to the left: 8 bytes of DigitGlyphs[CountDigits[i]] down the cell at CountScreen - 1
+    else:
+        the four attributes $5AFB-$5AFE = $47       ; bright white ink, black paper
+    sample
+
+CountAdvance:
+    units -= 1; if units < 0: units = 79 (9, sub-step 7); tens -= 1     ; a borrow
+    else: for tens, hundreds, thousands in turn:
+        if the digit is mid-roll (byte AND 7 <> 0): byte -= 1
+        if it went below 0: byte = 79 and the next digit - 1, and the move ends
+    restart the drawing at the units ($50FE); CountTick = 64
+```
+
+```mermaid
+flowchart TD
+  A["LdEdge1: JP CountStep"] --> B{"C' = 0: a header?"}
+  B -- "yes" --> I["a delay loop: 368 T in all"]
+  B -- "no" --> C["CountTick - 1"]
+  C --> D{"CountTick"}
+  D -- "0" --> E["CountAdvance: the units one sub-step down, a borrow rolls the next digit; CountTick = 64"]
+  D -- "1 to 4" --> F["one digit drawn, 8 lines, right to left from $50FE"]
+  D -- "5 to 63" --> G["the cells $5AFB-$5AFE bright white"]
+  E --> S["LdSample $FD23: the ROM's sampling loop"]
+  F --> S
+  G --> S
+  I --> S
+```
+
+So one move comes every 64 edges: 32 bits, 4 bytes. Eight moves make one unit, 32 bytes. The counter runs only
+inside the bit loop and takes no time of its own.
+
+In `c1` (`memory_at` of `$FC16-$FC31`):
+
+| Frame | CountDigits (units first) | CountOn | The counter | What |
+| --- | --- | --- | --- | --- |
+| 400 | `48 48 48 48` | 0 | 9999 (the image's) | the first header loading |
+| 515 | | 1 | 0128 (CountSet) | the screen's header taken; its data block's leader |
+| 665 | | 1 | | the first move (the data's sync) |
+| 1000 | `46 40 00 00` | 1 | 0088 (units mid-roll) | the screen loading |
+| 1800 | `0A 00 00 00` | 1 | 0001 | |
+| 1830 | `4F FF 00 00` | 0 | | one move past zero: the units wrapped to 9, the tens to `$FF` |
+| 2081 | | 1 | 1173 | the code's header taken |
+| 6000 | `19 20 38 00` | 1 | 0743 | |
+| 12363 | `00 00 00 00` | 1 | 0000 | the last bytes of the code |
+
+The data block's first edge moves the counter at once (CountTick set to 1 after the sync), so a block of n bytes
+makes n / 4 + 1 moves: one more than the counter holds, which is why the state at frame 1830 is one past zero. At
+frame 1000 the four cells hold `$47` and the top line of each glyph, `$FE` (`memory_at` of `$5AFB` and `$50FB`).
+The rate: 1173 units over frames 2081-12364, about 8.8 frames for 32 bytes.
+
+The glyphs, inverted (a set bit is white paper, so the digit shows dark on a bright white cell):
+
+```text
+0 FE C6 BA BA BA BA C6 FE     5 FE 82 BE 86 FA BA C6 FE
+1 FE EE CE EE EE EE 82 FE     6 FE E6 DE 86 BA BA C6 FE
+2 FE C6 BA F6 EE DE 82 FE     7 FE 82 FA F6 F6 EE EE FE
+3 FE 82 F6 E6 FA BA C6 FE     8 FE C6 BA C6 BA BA C6 FE
+4 FE F6 E6 D6 B6 82 F6 FE     9 FE C6 BA BA C2 FA C6 FE
+```
 
 ## 3.4 The loading screen (TZX block 6)
 
@@ -187,6 +399,77 @@ marked as a repeat whenever it equals the byte before it: `python3 tools/picy.py
 again and gets the tape's three streams exactly (2850 literals, 844 masks, 108 flags). The unpacker is Zynaps' byte
 for byte: `src/tape/picy.asm`, Zynaps' source with only the padding changed, assembles to the tape's block (3.6).
 The streams are shorter than Zynaps', so 136 zero bytes fill the block's end where Zynaps' had 6.
+
+The block (`src/tape/picy.asm`):
+
+| Address | Bytes | What |
+| --- | --- | --- |
+| `$8000` | `00` | a zero byte before the entry |
+| `$8001` | `18 08` | `JR Unpack`: Start calls here |
+| `$8003` | `00` | unused |
+| `$8004` | `$009D` | the literals' offset from `$8001`: `$809E-$8BBF`, 2850 bytes (read as `IX+3`) |
+| `$8006` | `$0BBF` | the masks: `$8BC0-$8F0B`, 844 bytes (`IX+5`) |
+| `$8008` | `$0F0B` | the flags: `$8F0C-$8F77`, 108 bytes (`IX+7`) |
+| `$800A` | `$00` | the border colour (`IX+9`) |
+| `$800B` | | the unpacker, 147 bytes to `$809D` |
+| `$8F78` | 136 x `00` | to the block's 4096 bytes |
+
+**Where am I.** The unpacker does not trust its own address: it writes `E1 E9` (`POP HL`, `JP (HL)`) to `$4000`
+and calls it (`$8014-$801A`). The two bytes pop the return address, `$801D`, into HL and jump back there; less 28
+gives `$8001`, the header, into IX, and the stream offsets are added to it. Then the screen clear (`LDIR` of 6912
+zeros from `$4000`) wipes the probe. `c1` shows the probe as its own stage: code run at `$4000` at frame 1808
+T 61 434, 133 T after the entry (3.5).
+
+**The format.** The output is the 6912 screen bytes in address order from `$4000`: the bitmap in the Spectrum's
+screen order, then the attributes. The flag stream has one byte for each 64 output bytes (108 x 64 = 6912), one
+bit for each 8 of them, the lowest bit first: a set bit takes the next mask byte from the mask stream, a clear bit
+stands for a mask of 0. The mask has one bit for each output byte, again the lowest first: set repeats the last
+output byte, clear takes the next byte of the literal stream. The very first byte is always a literal (the carry
+kept in F' is set before the first byte and cleared after it).
+
+```text
+IX = $4000; IY = literals; HL = masks; DE = flags; first = true
+repeat 108 times:                          ; B = 108 groups
+    for flag bit C = 1, 2, 4 ... 128:
+        mask = (flags[DE] AND C) ? next byte at HL : 0
+        for mask bit B' = 1, 2, 4 ... 128:
+            if first or (mask AND B') = 0: (IX) = (IY); IY += 1       ; a literal, $8073
+            else:                          (IX) = (IX - 1)             ; a repeat, $8081
+            IX += 1; first = false
+    DE += 1
+```
+
+```mermaid
+flowchart TD
+  A["the next flag byte at DE"] --> B{"its next bit set?"}
+  B -- "yes" --> C["mask = the next byte at HL"]
+  B -- "no" --> D["mask = 0"]
+  C --> E{"the first byte, or the mask's next bit clear?"}
+  D --> E
+  E -- "yes" --> F["a literal: the byte at IY to IX; IY + 1"]
+  E -- "no" --> G["a repeat: the byte at IX - 1 to IX"]
+  F --> H["IX + 1"]
+  G --> H
+  H --> I{"8 mask bits done?"}
+  I -- "no" --> E
+  I -- "yes" --> J{"8 flag bits done?"}
+  J -- "no" --> B
+  J -- "yes" --> K{"108 flag bytes done?"}
+  K -- "no: DE + 1" --> A
+  K -- "yes" --> L["EI, RET to Start"]
+```
+
+A worked example, the first 24 output bytes, from the tape's streams: the flags begin `FF FB`, the masks
+`C8 FF F1`, the literals `00 76 00 08 00 03 B0 00`.
+
+| Output | Flag bit | Mask | Mask bits, lowest first | Bytes written |
+| --- | --- | --- | --- | --- |
+| `$4000-$4007` | flag 0 bit 0: set | `$C8` | 0 0 0 1 0 0 1 1 | `00 76 00` literals, `00` repeat, `08 00` literals, `00 00` repeats |
+| `$4008-$400F` | bit 1: set | `$FF` | 1 1 1 1 1 1 1 1 | eight repeats of `00` |
+| `$4010-$4017` | bit 2: set | `$F1` | 1 0 0 0 1 1 1 1 | `00` repeat, `03 B0 00` literals, four repeats of `00` |
+
+The result, `00 76 00 00 08 00 00 00 / 00 x 8 / 00 03 B0 00 00 00 00 00`, is the start of
+`src/res/screens/loading.scr` byte for byte: the start of the screen's top pixel line.
 
 The screen: the EXOLON logo in yellow among dithered planets on black, HEWSON at the bottom left, a strip of boxes
 at the bottom right that the countdown fills.
@@ -203,7 +486,7 @@ How to read the animation:
 - **The four bars** count the output bytes and how much of each stream is used: literals (`$809E`, IY), masks
   (`$8BC0`, HL), flags (`$8F0C`, DE); their totals are the tape's 2850, 844 and 108.
 - **The last pictures**: the attributes `$5800-$5AFF` arrive and the picture appears on the TV at once.
-- **The numbers**: the unpacker runs from frame 1808 T 61 301 to its `RET` at frame 1825 T 12 550, about 16.7
+- **The numbers**: the unpacker runs from frame 1808 T 61 301 to its `RET` at frame 1825 T 12 550, about 16.3
   frames; 2850 bytes come from the literal stream, the other 4062 are repeats.
 - **The point**: the screen is unpacked hidden and shown in one stroke, in its last 768 bytes. Exolon's picture
   has large flat areas (the black sky between the planets), so 59 % of its bytes are repeats.
@@ -214,6 +497,22 @@ python3 tools/fig_loader.py unpack --work work/docs/docA/c1 --window 1808:61000-
 ```
 
 ## 3.5 The stages in `c1`
+
+```mermaid
+flowchart TD
+  A["power-on, LOAD in the ROM: blocks 1-2, the BASIC line 10"] --> B["LOAD CODE: block 4, the loader at $FC00 (ROM LD-BYTES, fast in c1)"]
+  B -- "frame 250 T 34 665: RANDOMIZE USR 64512" --> C["Decrypt $FC00: the XOR chain over $FC13-$FEA2"]
+  C -- "frame 251 T 4 431" --> D["Start $FE3A: DI, the attributes black"]
+  D --> E["LoadFile: header 42 (taken by frame 515), then 4096 bytes at $8000"]
+  E -- "frame 1808 T 61 301: CALL $8001" --> F["picy: the probe at $4000, the screen cleared and unpacked"]
+  F -- "frame 1825 T 12 550: RET" --> G["LoadFile: header 42 (taken at frame 2080), then 37 536 bytes at $6590"]
+  G -- "frame 12 364 T 38 072: LDIR to $5B00, JP $5B00" --> H["MoveStub at $5B00: LDDR $F82F down to $6590 into $FFFF down to $6D60"]
+  H -- "frame 12 376 T 62 848: SP $6D5E, EI, JP $6D60" --> I["the game: Start $6D60"]
+```
+
+The counter runs during both data blocks: frames 665-1808 for the screen (128 units), 2081-12 364 for the code
+(1173). The `LDDR` of 37 536 bytes (21 T a byte, 788 256 T without contention) takes about 12 frames, the last stage
+before the game.
 
 `re_session.py stages --work work/c1` lists the code arrivals; each is a stage of 3.3:
 

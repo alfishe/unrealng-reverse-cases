@@ -34,7 +34,7 @@ BrightWhite EQU $47             ; bright white ink on black paper
 DigitCycle  EQU 79              ; 10 digits x 8 sub-steps, less one: a digit's byte runs 79 ... 0
 
 ; ----------------------------------------------------------------------------------------------------------------
-; Decrypt: the plain head. Makes $FC13-$FE9E plain, then runs into it.
+; Decrypt: the plain head. Makes $FC13-$FEA2 plain, then runs into it.
 Decrypt:
   LD BC,DecryptEnd-DecryptFrom  ; 656 bytes
   LD HL,DecryptFrom

@@ -3,7 +3,9 @@
 install(files) with the bytes of each @res entry.
 
     python3 tools/res_formats.py build --out build/res     # src/res -> the bytes the source INCBINs
-    python3 tools/res_formats.py check                     # every file round-trips to the original bytes
+    python3 tools/res_formats.py check                     # every file round-trips to the original bytes, and
+                                                           # src/res/maps (drawn from the image, not INCBINed) is
+                                                           # what tools/fig_map.py draws
 
 Start with every resource as bytes (the default here); give a kind its editable format (PNG for graphics, text for a
 tune or a level) one at a time, each with check proving it. H.A.T.E.'s tools/res_formats.py is a full example.
@@ -28,7 +30,9 @@ def install(files):
 
 
 def build(out):
-    for top, _dirs, names in os.walk(RES):
+    for top, dirs, names in os.walk(RES):
+        if top == RES and 'maps' in dirs:
+            dirs.remove('maps')                     # drawn from the image (tools/fig_map.py), not a source input
         for n in names:
             if n == 'README.md':
                 continue
@@ -47,6 +51,9 @@ def main():
         build(args.out)
     else:
         print('res: every file is its bytes (no editable formats yet)')
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import fig_map
+        return fig_map.cmd_check(args)
     return 0
 
 

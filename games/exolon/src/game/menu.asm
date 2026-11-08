@@ -97,7 +97,8 @@ MainMenu:
   LD A,(SoundIsAy)        ; a 128K has its AY music: no beeper tune
   OR A
   JR NZ,MenuReady
-  LD HL,TitleTune         ; the title tune on the beeper (c1: once per load)
+  LD HL,TitleTune         ; the title tune on the beeper (c1: 4 times, once
+                          ; after each entry to Start)
   CALL PlayTune
 MenuReady:
   CALL SaveAttributes     ; the attribute copy $5E00, the save buffers and the

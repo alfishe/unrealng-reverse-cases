@@ -5,8 +5,9 @@
         --out docs/img/loop/pass-lengths.png
 
 The passes are the starts of MainLoop `$75BE` (TTD find_event exec, the first start in each frame: a pass takes
-about two frames, so every start is one). A pass's length is the T-states to the next start; gaps over 400 000 T
-(the game over, the menu between games) end a game and are left out. Each pass is put in the first class whose
+about two frames, so every start is one). A pass's length is the T-states to the next start; gaps over 5 000 000 T
+(about 72 frames: the game over and the menu between games, each over 46 million T in c1) end a game and are left
+out. The longest real pass is 416 959 T (c1 20184-20190, a turn and a beeper effect together). Each pass is put in the first class whose
 routine started inside it (find_event exec on that routine, its first start in each frame):
 
     BuildScreen $8494 (a new screen), FlipPlayerFrames $7BAA (the player turns), BeeperNoise $7C26 or
@@ -43,6 +44,7 @@ def hits(s, work, addr, lo, hi):
     if os.path.isfile(cache):
         return [tuple(map(int, line.split())) for line in open(cache)]
     out, f = [], lo
+    s = s()  # the session only when the cache misses
     while f <= hi:
         r = s.call('time_travel', {'action': 'find_event', 'find': 'exec', 'addr': '0x' + addr, 'from_frame': f,
                                    'to_frame': hi, 'limit': 100}, ok=False)
@@ -65,7 +67,7 @@ def main():
     p.add_argument('--title', default='')
     p.add_argument('--out', required=True)
     args = p.parse_args()
-    s = exlib.session(args.work)
+    s = lambda: exlib.session(args.work)  # noqa: E731
     starts = [f * FRAME + t for f, t in hits(s, args.work, '75BE', args.lo, args.hi)]
     marks = {}
     for name, addrs, _ in CLASSES:
@@ -74,7 +76,7 @@ def main():
     passes = {name: [] for name, _, _ in CLASSES}
     for k in range(len(starts) - 1):
         a, b = starts[k], starts[k + 1]
-        if b - a > 400000:
+        if b - a > 5000000:
             continue
         for name, addrs, _ in CLASSES:
             m = marks[name]
@@ -90,21 +92,21 @@ def main():
     ax.tick_params(colors=dim, labelsize=10)
     for sp in ax.spines.values():
         sp.set_color('#444')
-    bins = list(range(130000, 322000, 2000))
+    bins = list(range(130000, 424000, 2000))
     shown = [c for c in CLASSES if passes[c[0]]]
     data = [[v / 1000 for v in passes[name]] for name, _, _ in shown]
     labels = [f'{name}: {len(passes[name])}'.replace('$', r'\$') for name, _, _ in shown]
     ax.hist(data, bins=[b / 1000 for b in bins], stacked=True, color=[c for _, _, c in shown], label=labels,
             edgecolor=panel, linewidth=0.3)
     ax.set_yscale('log')
-    for k, lab in ((2, '2 frames'), (3, '3 frames'), (4, '4 frames')):
+    for k, lab in ((2, '2 frames'), (3, '3 frames'), (4, '4 frames'), (6, '6 frames')):
         ax.axvline(k * FRAME / 1000, color='#e05050', lw=1, ls='--')
         ax.text(k * FRAME / 1000 + 1, 1500, lab, color='#e05050', fontsize=10)
     q = sorted(passes[CLASSES[-1][0]])
     ax.set_xlabel('pass length, thousands of T-states (2000 T a bin)', color=dim)
     ax.set_ylabel('passes (log scale)', color=dim)
     med = f'{q[len(q) // 2]:,}'.replace(',', ' ')
-    ax.set_title(args.title or f'{n} passes: a quiet one about 2 frames ({med} T the median); a turn about 4',
+    ax.set_title(args.title or f'{n} passes: a quiet one about 2 frames ({med} T the median); a turn about 4, the longest 6',
                  color=fg, fontsize=12, loc='left')
     ax.set_ylim(0.6, 3000)
     leg = ax.legend(facecolor=panel, edgecolor='#444', fontsize=9, loc='center right', bbox_to_anchor=(1.0, 0.6))
