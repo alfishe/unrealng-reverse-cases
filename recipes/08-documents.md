@@ -56,4 +56,6 @@
 - [ ] a pass and a frame are not confused (one pass can take two frames)
 - [ ] `tools/build.sh` still gives an identical build after the `.ann` description fixes
 
-**Done when:** `check_docs.py` prints `docs: ok` and every document's state in `docs/README.md` is "written".
+- [ ] every mechanism meets the bar of [AGENTS.md section 3](../AGENTS.md#3-the-mechanism-bar-what-explained-means) and each document covers its list in [section 4](../AGENTS.md#4-what-each-document-must-cover-the-subsystem-checklist)
+
+**Done when:** `check_docs.py` prints `docs: ok`, the completeness audit ([AGENTS.md section 5](../AGENTS.md#5-quality-gates-before-done)) finds no P1 or P2, and every document's state in `docs/README.md` is "written".

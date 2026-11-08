@@ -11,6 +11,9 @@ match their depth, tone, figure density and evidence.
 
 ## The standard
 
+- R/AGENTS.md sections 3-4: the mechanism bar (prose on its own, pseudocode, asm, mermaid for every branch, loop,
+  state machine or stage sequence, a worked example on real bytes, a witness, a figure, the point) and the list each
+  document must cover. A completeness audit checks it before the documents are accepted.
 - R/GUIDE.md sections 2-4: the fixed numbering 01-12 (01 game design, 02 architecture, 03 build and load, 04 game
   loop, 05 controls, 06 rendering, 07 objects, 08 HUD and text, 09 sound, 10 gameplay logic, 11 data reference,
   12 routine reference), the writing rules, the figure kinds and their density.

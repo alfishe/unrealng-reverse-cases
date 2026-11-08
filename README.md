@@ -50,6 +50,7 @@ The rest of the repository:
 
 | Path | What it holds |
 | --- | --- |
+| [AGENTS.md](AGENTS.md) | the rules for every agent: the method, the evidence, the mechanism bar, what each document must cover, the quality gates (a completeness audit next to the fact review) |
 | [GUIDE.md](GUIDE.md) | the case standard: deliverables, evidence, documents, figures, phases |
 | [recipes/](recipes/README.md) | the steps, phase by phase |
 | [kit/](kit/README.md) | the shared scripts: source generation, reference documents, routine animations, code vs screen maps, beam timelines |

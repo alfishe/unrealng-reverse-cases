@@ -1,6 +1,6 @@
 # Reversing a game: the case standard
 
-What a finished case in this repository is, and how to get there with unreal-ng. The steps are in
+What a finished case in this repository is, and how to get there with unreal-ng. The bar every mechanism must meet, the per-document checklist and the quality gates are in [AGENTS.md](AGENTS.md); where it is stricter, it wins. The steps are in
 [recipes/](recipes/README.md); the shared scripts are in [kit/](kit/README.md); how to drive the emulator over MCP
 without wasting time or tokens is unreal-ng's
 [game-reverse-case recipe](https://github.com/alfishe/unreal-ng/blob/master/.recipe/articles/game-reverse-case.md).
