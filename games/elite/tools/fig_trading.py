@@ -104,18 +104,16 @@ def recipe():
                     va='center', fontsize=9.5, color=P.BACKGROUND)
             left += product
         ax.barh(0.25, f, left=left, color=CYAN, height=0.4)
-        ax.text(left + f + top * 0.01, 0.62, '+ f %d' % f, ha='left' if sign > 0 else 'center', va='center',
-                fontsize=9.5, color=CYAN)
+        ax.text(left + f - top * 0.015, 0.62, '+ f %d' % f, ha='right', va='center', fontsize=9.5, color=CYAN)
         end = base + f + sign * product
         if sign < 0:
             ax.barh(-0.3, product, left=end, color='none', edgecolor=colour(i), hatch='///', height=0.4, lw=1.2)
             ax.text(end - top * 0.02, -0.3, '- economy %d x %d = %d' % (e, factor & 0x1F, product), ha='right',
                     va='center', fontsize=9.5, color=colour(i))
         ax.axvline(end, color=P.WRITE, lw=1.4)
-        ax.text(end - top * 0.02 if sign > 0 else top * 1.02, -0.3 if sign > 0 else -0.75,
-                '(%d) x 4 = %d tenths = %s Cr' % (end, price, cr(price)), color=P.WRITE, fontsize=10.5,
-                va='center', ha='right' if sign > 0 else 'right')
-        ax.set_xlim(0, top * 1.08)
+        ax.set_title('(%d) x 4 = %d tenths = %s Cr' % (end, price, cr(price)), color=P.WRITE, fontsize=10.5,
+                     loc='right')
+        ax.set_xlim(0, top * 1.1)
         ax.set_ylim(-1.0, 0.85)
         ax.set_yticks([])
         ax.tick_params(labelsize=8.5)
