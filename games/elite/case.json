@@ -1,0 +1,38 @@
+{
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/mkgame/original.bin || (mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin)"
+  ],
+  "image": "work/mkgame/original.bin",
+  "lo": "5B00",
+  "hi": "FFA8",
+  "device": "ZXSPECTRUM48",
+  "bases": {
+    "5": "4000",
+    "2": "8000",
+    "0": "C000"
+  },
+  "read_builds": [
+    "f1",
+    "w1",
+    "d1"
+  ],
+  "ref_builds": [
+    [
+      "d1",
+      "docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)"
+    ],
+    [
+      "f1",
+      "launch, flight, hyperspace to Diso, the laser"
+    ],
+    [
+      "w1",
+      "the witch-space trick: a jump into witch space and the Thargoids"
+    ]
+  ],
+  "header": [
+    "; Elite, Firebird / Torus 1985 (Side A, Krait): the game image as the Softlock loader and the kickoff at $D07F leave it ($5B00-$FFA7, entry $70E0)."
+  ]
+}

@@ -1,0 +1,897 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/tactics",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: tactics",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "tactics"
+  ],
+  "summary": "The title's ship and the ships' tactics: energy, launches, fleeing, the missile's homing, steering and firing.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1108,
+    "sha1": "9539b701943fcc24853bf919f2c01146cdfbba1a",
+    "masked_sha1": "fb0f5bf070e7e1237c9205d9edff2fa3746e4d54"
+  },
+  "origin": "$A28B",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Slot7"
+    },
+    {
+      "offset": 18,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TurnRates"
+    },
+    {
+      "offset": 23,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoveShip"
+    },
+    {
+      "offset": 26,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Orthogonalise"
+    },
+    {
+      "offset": 30,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6162"
+    },
+    {
+      "offset": 33,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TidyAxis"
+    },
+    {
+      "offset": 36,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TidyAxis"
+    },
+    {
+      "offset": 40,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Slot7"
+    },
+    {
+      "offset": 43,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawShip"
+    },
+    {
+      "offset": 73,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CloakOn"
+    },
+    {
+      "offset": 78,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionShip"
+    },
+    {
+      "offset": 138,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 145,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ECMActive"
+    },
+    {
+      "offset": 164,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 178,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0BF"
+    },
+    {
+      "offset": 185,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 223,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 236,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    },
+    {
+      "offset": 264,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 286,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionState"
+    },
+    {
+      "offset": 293,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionFlags"
+    },
+    {
+      "offset": 300,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ECMActive"
+    },
+    {
+      "offset": 306,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_617B"
+    },
+    {
+      "offset": 319,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 326,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ECMActive"
+    },
+    {
+      "offset": 335,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ActiveShips"
+    },
+    {
+      "offset": 341,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 353,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionState"
+    },
+    {
+      "offset": 362,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 381,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipAction"
+    },
+    {
+      "offset": 427,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CombatScore"
+    },
+    {
+      "offset": 441,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 454,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 464,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionState"
+    },
+    {
+      "offset": 471,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_606A"
+    },
+    {
+      "offset": 500,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 503,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 506,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 509,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 512,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 515,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 528,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 531,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 534,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 537,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 540,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 543,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 552,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 555,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ECMActive"
+    },
+    {
+      "offset": 579,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6021"
+    },
+    {
+      "offset": 597,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 600,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 603,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 606,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 609,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 612,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 619,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 624,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 627,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 632,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 635,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 646,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionState"
+    },
+    {
+      "offset": 659,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 662,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddCombatVector"
+    },
+    {
+      "offset": 682,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 723,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SubtractSigned"
+    },
+    {
+      "offset": 768,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 774,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 777,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Normalise"
+    },
+    {
+      "offset": 783,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 793,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 803,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 814,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 905,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 953,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D062"
+    },
+    {
+      "offset": 961,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 991,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 1002,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AftHits"
+    },
+    {
+      "offset": 1007,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AftHits"
+    },
+    {
+      "offset": 1011,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FrontHits"
+    },
+    {
+      "offset": 1016,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FrontHits"
+    },
+    {
+      "offset": 1052,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Multiply8High"
+    },
+    {
+      "offset": 1064,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1074,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1084,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1088,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddSignedBytes"
+    },
+    {
+      "offset": 1097,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddSignedBytes"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 2,
+      "name": "TurnTitleShip",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Turn the title's ship (slot 7) by fixed rates, tidy its roof and side axes and draw it"
+    },
+    {
+      "offset": 53,
+      "name": "Tactics",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Energy, launches, fleeing or bailing out, the station's traffic, then steering"
+    },
+    {
+      "offset": 376,
+      "name": "LaunchFromShip",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ShipAction A with IX and IY kept: a ship launched from this one"
+    },
+    {
+      "offset": 388,
+      "name": "NearBox",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Carry when |x| and |y| are below DE and |z| below DE + $200: the ship is near the player"
+    },
+    {
+      "offset": 420,
+      "name": "TacticsSteer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Choose the target: towards the player (hostile, not fleeing) or away from it, then TacticsAim"
+    },
+    {
+      "offset": 554,
+      "name": "MissileHoming",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The missile: an ECM destroys it; else it aims at its target and explodes when within $40 of it"
+    },
+    {
+      "offset": 684,
+      "name": "FarPart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "NZ when a part (HL, doubled) is $40 or more: not yet at the target"
+    },
+    {
+      "offset": 692,
+      "name": "RelativePart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One part of (target - missile) / 2, through SubtractSigned $AFC9"
+    },
+    {
+      "offset": 733,
+      "name": "AwayPart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One part of the ship's position, its sign flipped: the vector away from the player, halved"
+    },
+    {
+      "offset": 740,
+      "name": "TowardsPart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One part of the ship's position, halved, its sign in bit 7: the vector to steer along"
+    },
+    {
+      "offset": 764,
+      "name": "TacticsAim",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Normalise the target vector, the dot products with the nose, the roof and the side: the roll, the pitch, the speed, the laser"
+    },
+    {
+      "offset": 1042,
+      "name": "MultiplyHigh4",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL: H = the sign, A = -4 x A x B / 256 (the high bytes of two parts)"
+    },
+    {
+      "offset": 1057,
+      "name": "DotProduct",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = the dot product of the axis at IX and the target vector at IY from their high bytes, sign in bit 7"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "RateSpare",
+      "comment": "Two zero bytes no code reads (known from the code only)"
+    },
+    {
+      "offset": 45,
+      "name": "TargetVector",
+      "comment": "The vector to the target (three words), its length after Normalise ($A2BE)"
+    },
+    {
+      "offset": 67,
+      "name": "TacticsEnergyMax",
+      "comment": ""
+    },
+    {
+      "offset": 71,
+      "name": "TacticsEnergy",
+      "comment": ""
+    },
+    {
+      "offset": 91,
+      "name": "TacticsMission",
+      "comment": ""
+    },
+    {
+      "offset": 105,
+      "name": "TacticsMissionWeak",
+      "comment": ""
+    },
+    {
+      "offset": 108,
+      "name": "TacticsEnergyStore",
+      "comment": ""
+    },
+    {
+      "offset": 130,
+      "name": "TacticsLaunch",
+      "comment": ""
+    },
+    {
+      "offset": 159,
+      "name": "TacticsLaunchShip",
+      "comment": ""
+    },
+    {
+      "offset": 184,
+      "name": "TacticsWeak",
+      "comment": ""
+    },
+    {
+      "offset": 214,
+      "name": "TacticsDrop",
+      "comment": ""
+    },
+    {
+      "offset": 225,
+      "name": "TacticsHermit",
+      "comment": ""
+    },
+    {
+      "offset": 243,
+      "name": "TacticsHermitLoop",
+      "comment": ""
+    },
+    {
+      "offset": 258,
+      "name": "TacticsHermitNext",
+      "comment": ""
+    },
+    {
+      "offset": 261,
+      "name": "TacticsHermitDone",
+      "comment": ""
+    },
+    {
+      "offset": 279,
+      "name": "TacticsECM",
+      "comment": ""
+    },
+    {
+      "offset": 299,
+      "name": "TacticsGetECMActive",
+      "comment": ""
+    },
+    {
+      "offset": 323,
+      "name": "TacticsECMOn",
+      "comment": ""
+    },
+    {
+      "offset": 328,
+      "name": "TacticsStation",
+      "comment": ""
+    },
+    {
+      "offset": 371,
+      "name": "TacticsStationTraffic",
+      "comment": ""
+    },
+    {
+      "offset": 437,
+      "name": "TacticsSteerNear",
+      "comment": ""
+    },
+    {
+      "offset": 458,
+      "name": "TacticsSteerHostile",
+      "comment": ""
+    },
+    {
+      "offset": 484,
+      "name": "TacticsSteerFlee",
+      "comment": ""
+    },
+    {
+      "offset": 497,
+      "name": "TacticsSteerAway",
+      "comment": ""
+    },
+    {
+      "offset": 525,
+      "name": "TacticsSteerTowards",
+      "comment": ""
+    },
+    {
+      "offset": 551,
+      "name": "TacticsAimNow",
+      "comment": ""
+    },
+    {
+      "offset": 569,
+      "name": "MissileSeek",
+      "comment": ""
+    },
+    {
+      "offset": 588,
+      "name": "MissileSeekLoop",
+      "comment": ""
+    },
+    {
+      "offset": 668,
+      "name": "MissileHit",
+      "comment": ""
+    },
+    {
+      "offset": 672,
+      "name": "MissileExplode",
+      "comment": ""
+    },
+    {
+      "offset": 679,
+      "name": "MissileAim",
+      "comment": ""
+    },
+    {
+      "offset": 743,
+      "name": "TowardsPartNow",
+      "comment": ""
+    },
+    {
+      "offset": 826,
+      "name": "TacticsAimRoll",
+      "comment": ""
+    },
+    {
+      "offset": 844,
+      "name": "TacticsAimRollStore",
+      "comment": ""
+    },
+    {
+      "offset": 860,
+      "name": "TacticsAimPitch",
+      "comment": ""
+    },
+    {
+      "offset": 880,
+      "name": "TacticsAimPitchMax",
+      "comment": ""
+    },
+    {
+      "offset": 882,
+      "name": "TacticsAimPitchStore",
+      "comment": ""
+    },
+    {
+      "offset": 890,
+      "name": "TacticsAimSpeed",
+      "comment": ""
+    },
+    {
+      "offset": 899,
+      "name": "TacticsAimAccel",
+      "comment": ""
+    },
+    {
+      "offset": 922,
+      "name": "TacticsAimAhead",
+      "comment": ""
+    },
+    {
+      "offset": 932,
+      "name": "TacticsAimAccelStore",
+      "comment": ""
+    },
+    {
+      "offset": 935,
+      "name": "TacticsAimFire",
+      "comment": ""
+    },
+    {
+      "offset": 960,
+      "name": "TacticsAimFireRoll",
+      "comment": ""
+    },
+    {
+      "offset": 990,
+      "name": "TacticsAimHit",
+      "comment": ""
+    },
+    {
+      "offset": 1010,
+      "name": "TacticsAimHitFront",
+      "comment": ""
+    },
+    {
+      "offset": 1019,
+      "name": "TacticsAimBehind",
+      "comment": ""
+    },
+    {
+      "offset": 1029,
+      "name": "TacticsAimBrake",
+      "comment": ""
+    },
+    {
+      "offset": 1038,
+      "name": "TacticsAimBrakeStore",
+      "comment": ""
+    },
+    {
+      "offset": 1094,
+      "name": "DotProductSecond",
+      "comment": ""
+    },
+    {
+      "offset": 1103,
+      "name": "DotProductDone",
+      "comment": ""
+    },
+    {
+      "offset": 1107,
+      "name": "DotProductSpare",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$A28B",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/tactics.asm",
+    "label": "RateSpare"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

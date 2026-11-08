@@ -1,0 +1,3375 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/circles",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: circles",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "circles"
+  ],
+  "summary": "The circles: the sun filled, the planet outlined, the chart's range circle, the hit flashes.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 3187,
+    "sha1": "93ff49de56f91bcb7e26afbc7e68d3750ae526af",
+    "masked_sha1": "cc41ef044b1c87555b16eead03347ad83b2535b5"
+  },
+  "origin": "$8619",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 30,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 33,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 40,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 53,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 56,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 60,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 63,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 80,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 84,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 87,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 100,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 103,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 107,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 110,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 127,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 131,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 134,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 150,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 154,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 157,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 161,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 166,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 169,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 173,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 178,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 181,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 184,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 192,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 195,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 198,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 206,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 209,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 215,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 219,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 223,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 235,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 247,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 292,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 301,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 304,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 311,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 320,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 323,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 330,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 337,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 343,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 351,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 356,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 363,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 368,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 371,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 383,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 387,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 393,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 400,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 412,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 417,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 420,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 432,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 435,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 438,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 441,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 445,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 449,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 462,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 465,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 469,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 473,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 480,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 494,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 497,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 501,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 504,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 507,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 510,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 513,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 518,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 521,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 524,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 528,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 531,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 534,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 537,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 540,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 545,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 548,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 556,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 567,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 573,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 576,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 586,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 589,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 592,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 595,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 600,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 603,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 609,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 612,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 615,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 618,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 623,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 626,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 633,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 648,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 651,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 654,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 657,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 660,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 663,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 666,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 669,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 675,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 687,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 691,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 694,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 700,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 711,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 726,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 729,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 733,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 748,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 753,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 756,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 760,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 777,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 786,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 790,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 795,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 800,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 803,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 808,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 812,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 815,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 821,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 835,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 839,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 843,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 847,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 850,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 854,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 858,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 862,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 865,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 870,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 873,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 877,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 880,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 888,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 891,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 895,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 905,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 908,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 916,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 926,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 940,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 944,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 965,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 970,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 985,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1002,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1007,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1017,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1023,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1031,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1037,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1041,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1068,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 1072,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1104,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1143,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 1147,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1179,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1210,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1216,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1224,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1227,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1231,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1251,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1272,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1297,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1300,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1323,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1328,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1333,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1338,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1365,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1389,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1458,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1461,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1484,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1489,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1494,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1499,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1511,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1532,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1552,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1555,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1578,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1583,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1588,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1593,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1621,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1643,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1653,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1657,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1714,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1717,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1740,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1745,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1750,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1755,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1767,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1788,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1810,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1813,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1836,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1841,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1846,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1851,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1879,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1894,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1898,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1902,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1960,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1963,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1986,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1991,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1996,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2001,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2060,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2067,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossX"
+    },
+    {
+      "offset": 2082,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2085,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossY"
+    },
+    {
+      "offset": 2098,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2102,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2105,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartRadius"
+    },
+    {
+      "offset": 2108,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2113,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2116,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2119,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2122,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2132,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2136,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2141,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2144,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2147,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2150,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2160,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2228,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2230,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2232,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2234,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2236,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2238,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2240,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2242,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2244,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2246,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2248,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2250,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2252,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2254,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2256,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2258,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2260,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2262,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2264,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2266,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2268,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2270,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2272,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2274,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2276,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2278,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2280,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2282,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2284,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2286,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2288,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2290,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2293,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipsPresent"
+    },
+    {
+      "offset": 2300,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2305,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2310,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2318,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2322,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    },
+    {
+      "offset": 2340,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillAttrsVector"
+    },
+    {
+      "offset": 2349,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2358,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2364,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2368,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2373,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2381,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillAttrsVector"
+    },
+    {
+      "offset": 2398,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2403,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2408,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2411,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FCCB"
+    },
+    {
+      "offset": 2416,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2419,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2422,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2425,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2428,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2431,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2436,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2439,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2442,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2447,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2450,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2453,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2456,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2472,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2477,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2480,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2486,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2491,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2494,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2524,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2639,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2660,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2669,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2675,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2680,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2720,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2724,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2728,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2771,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2777,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2782,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2791,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2812,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2824,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2834,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2843,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2853,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2871,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2874,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2882,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2890,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2894,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2904,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2912,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2948,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2954,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2959,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2998,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3043,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3064,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3070,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3076,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3081,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3122,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3126,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3130,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3171,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3177,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3182,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 18,
+      "name": "OutlineRunUpRight",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Plot an outline run: up the screen, x growing (the alternate registers step it)"
+    },
+    {
+      "offset": 42,
+      "name": "OutlineRunUpLeft",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Plot an outline run: up the screen, x shrinking"
+    },
+    {
+      "offset": 65,
+      "name": "OutlineRunDownRight",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The same, down the screen, x growing (known from the code only)"
+    },
+    {
+      "offset": 89,
+      "name": "OutlineRunDownLeft",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The same, down the screen, x shrinking (known from the code only)"
+    },
+    {
+      "offset": 112,
+      "name": "ArcRunRight",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Plot one arc run of the outline, x growing (31504 instructions in the recordings)"
+    },
+    {
+      "offset": 136,
+      "name": "ArcRunLeft",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Plot one arc run, x shrinking"
+    },
+    {
+      "offset": 159,
+      "name": "OutlineEdgeUp",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Plot an edge run going up, filled or outlined by CircleMode"
+    },
+    {
+      "offset": 171,
+      "name": "OutlineEdgeDown",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Plot an edge run going down"
+    },
+    {
+      "offset": 183,
+      "name": "DrawCircleDI",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw a filled circle with interrupts off (the sun; known from the code only: no recording saw the sun)"
+    },
+    {
+      "offset": 197,
+      "name": "DrawCircle",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw an outlined circle (the planet), radius 9 or more"
+    },
+    {
+      "offset": 213,
+      "name": "DrawCircleShape",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw the circle CircleX, CircleY, CircleQuadrant, CircleRadius: sort it by the view's edges"
+    },
+    {
+      "offset": 422,
+      "name": "Square",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = A * A from the table of squares ($BE00 low bytes, $BF00 high bytes)"
+    },
+    {
+      "offset": 431,
+      "name": "CircleArcs",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A circle wholly inside the view: the four quarter arcs"
+    },
+    {
+      "offset": 443,
+      "name": "CircleArc",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One quarter arc from the circle's top or bottom row, by the screen address of its first point"
+    },
+    {
+      "offset": 485,
+      "name": "FillClipped",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A circle cut by the view's top or bottom: the rows inside, each from its half width"
+    },
+    {
+      "offset": 806,
+      "name": "FillCorner",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A circle cut by two edges"
+    },
+    {
+      "offset": 876,
+      "name": "SpanEndLeft",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One end of a row run, the left side (known from the code only)"
+    },
+    {
+      "offset": 904,
+      "name": "SpanEndRight",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The other end (known from the code only)"
+    },
+    {
+      "offset": 938,
+      "name": "ArcSeed",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The alternate registers for an arc: the Bresenham terms from the centre (known from the code only)"
+    },
+    {
+      "offset": 955,
+      "name": "PointLeft",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the back buffer address of point (C, A), C = the mask of its leftmost pixel"
+    },
+    {
+      "offset": 982,
+      "name": "PointRight",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the address of point (C, A), the mask of its rightmost pixel (B kept in CirclePointX)"
+    },
+    {
+      "offset": 1021,
+      "name": "SpanStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The run's Bresenham step from the half width at the row"
+    },
+    {
+      "offset": 1036,
+      "name": "SpanStart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The run's start address and mask (outline mode goes to OutlineSpanStart $8FF9)"
+    },
+    {
+      "offset": 1204,
+      "name": "HalfChord",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = sqrt(radius^2 - row^2): the half width of the circle at a row, by bisection over the squares"
+    },
+    {
+      "offset": 1306,
+      "name": "FillPushes1",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A chain of 16 PUSH AF: FillSpan1's patched JR enters it to write the run's whole bytes"
+    },
+    {
+      "offset": 1467,
+      "name": "FillPushes2",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The second chain of 16 PUSH AF"
+    },
+    {
+      "offset": 1503,
+      "name": "FillSpanTest2",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Test a filled run against the view, then fill it (the second engine)"
+    },
+    {
+      "offset": 1561,
+      "name": "FillPushes3",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The third chain"
+    },
+    {
+      "offset": 1723,
+      "name": "FillPushes4",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The fourth chain"
+    },
+    {
+      "offset": 1759,
+      "name": "FillSpanTest3",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Test a filled run against the view, then fill it (the third engine)"
+    },
+    {
+      "offset": 1819,
+      "name": "FillPushes5",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The fifth chain"
+    },
+    {
+      "offset": 1969,
+      "name": "FillPushes6",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The sixth chain"
+    },
+    {
+      "offset": 2005,
+      "name": "CircleLineUp",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL one pixel line up the back buffer (a character row boundary through CircleRowUp)"
+    },
+    {
+      "offset": 2010,
+      "name": "CircleRowUp",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DE one character row up"
+    },
+    {
+      "offset": 2031,
+      "name": "CircleLineDown",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL one pixel line down"
+    },
+    {
+      "offset": 2036,
+      "name": "CircleRowDown",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DE one character row down"
+    },
+    {
+      "offset": 2057,
+      "name": "CircleAbort",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Leave the circle code from inside a run: SP back from CircleSP"
+    },
+    {
+      "offset": 2064,
+      "name": "DrawChartCircle",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw the chart's range circle: the circle code patched for the screen, then back"
+    },
+    {
+      "offset": 2292,
+      "name": "HitFlash",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw the growing red circles of the ships just hit, on the screen (HitFlashes $9C96)"
+    },
+    {
+      "offset": 2415,
+      "name": "CircleBase",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Patch the circle code's screen base: HL and A the new page bytes"
+    },
+    {
+      "offset": 2463,
+      "name": "OutlineEdgeStart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The outline mode's edge set-up at a cell start (known from the code only)"
+    },
+    {
+      "offset": 2506,
+      "name": "MaskRight",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "B = the single pixel mask of column A (rotating right)"
+    },
+    {
+      "offset": 2516,
+      "name": "MaskLeft",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "C = the single pixel mask of column CirclePointX (rotating left)"
+    },
+    {
+      "offset": 2528,
+      "name": "OutlineSpanStart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The outline mode's run set-up"
+    },
+    {
+      "offset": 2539,
+      "name": "OutlineRunUp",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Plot an outline run going up (the stepping in the alternate registers)"
+    },
+    {
+      "offset": 2585,
+      "name": "OutlineRunDown",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Plot an outline run going down"
+    },
+    {
+      "offset": 2631,
+      "name": "OutlinePlotTop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Plot the outline from the top of the circle (the first engine)"
+    },
+    {
+      "offset": 2786,
+      "name": "OutlinePlotSide",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Plot the outline along a side (5730 runs)"
+    },
+    {
+      "offset": 2814,
+      "name": "OutlinePixel",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "OR the pixel C into (HL), step the row; the outline's inner loop (1787849 instructions)"
+    },
+    {
+      "offset": 2859,
+      "name": "OutlineStepX",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Rotate the mask: one pixel along x"
+    },
+    {
+      "offset": 2863,
+      "name": "OutlineStepY",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The Bresenham term for a step in y"
+    },
+    {
+      "offset": 2866,
+      "name": "OutlineStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The Bresenham decision: a step in x, y or both"
+    },
+    {
+      "offset": 2914,
+      "name": "OutlinePixels",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Plot the two mirrored pixels of a row and step (442222 instructions)"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "CircleZero",
+      "comment": "One byte no code reads (known from the code only)"
+    },
+    {
+      "offset": 1,
+      "name": "CircleY",
+      "comment": "The centre's offset from the view's centre, down or up by CircleQuadrant bit 1"
+    },
+    {
+      "offset": 2,
+      "name": "CircleX",
+      "comment": "The centre's offset across, by bit 0"
+    },
+    {
+      "offset": 3,
+      "name": "CircleQuadrant",
+      "comment": "Bit 0 x positive (right), bit 1 y positive (up), bits 2 and 3 the centre off the view across or down"
+    },
+    {
+      "offset": 4,
+      "name": "CircleRadius",
+      "comment": "The radius in pixels (9 and more drawn)"
+    },
+    {
+      "offset": 5,
+      "name": "CircleRowOffset",
+      "comment": "DrawCircleShape's working copy of CircleY, clipped to the edge it meets"
+    },
+    {
+      "offset": 6,
+      "name": "CircleColOffset",
+      "comment": "Its copy of CircleX"
+    },
+    {
+      "offset": 7,
+      "name": "CircleScreenY",
+      "comment": "The centre's row: 64 - or + CircleY"
+    },
+    {
+      "offset": 8,
+      "name": "CircleScreenX",
+      "comment": "The centre's column: 128 + or - CircleX"
+    },
+    {
+      "offset": 9,
+      "name": "ClipHalfWidth",
+      "comment": "The half width of the circle at the clipping row (HalfChord)"
+    },
+    {
+      "offset": 10,
+      "name": "CircleSP",
+      "comment": "The stack pointer saved while the fills PUSH and the chart patches POP"
+    },
+    {
+      "offset": 12,
+      "name": "HalfChordTarget",
+      "comment": "HalfChord's radius² - row²"
+    },
+    {
+      "offset": 14,
+      "name": "CirclePointX",
+      "comment": "PointRight's x"
+    },
+    {
+      "offset": 15,
+      "name": "RunRight",
+      "comment": "1 while the run being plotted grows x (the right half), 0 while it shrinks x; the fills read it to pick the edge test"
+    },
+    {
+      "offset": 16,
+      "name": "CircleMode",
+      "comment": "0 a filled circle (the sun), 1 an outline (the planet)"
+    },
+    {
+      "offset": 17,
+      "name": "ChartPatchCount",
+      "comment": "The 32 bytes DrawChartCircle patches and puts back"
+    },
+    {
+      "offset": 203,
+      "name": "DrawCircleOutline",
+      "comment": ""
+    },
+    {
+      "offset": 208,
+      "name": "DrawCircleNow",
+      "comment": ""
+    },
+    {
+      "offset": 233,
+      "name": "DrawCircleShapeIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 245,
+      "name": "DrawCircleShapeIfZero",
+      "comment": ""
+    },
+    {
+      "offset": 271,
+      "name": "DrawCircleShapeReturn",
+      "comment": ""
+    },
+    {
+      "offset": 274,
+      "name": "DrawCircleShapeReturn2",
+      "comment": ""
+    },
+    {
+      "offset": 275,
+      "name": "DrawCircleShapeIfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 282,
+      "name": "DrawCircleShapeReturn3",
+      "comment": ""
+    },
+    {
+      "offset": 285,
+      "name": "DrawCircleInside",
+      "comment": ""
+    },
+    {
+      "offset": 294,
+      "name": "DrawCircleShapeIfBelow",
+      "comment": ""
+    },
+    {
+      "offset": 300,
+      "name": "DrawCircleShapeIfBelow2",
+      "comment": ""
+    },
+    {
+      "offset": 306,
+      "name": "DrawCircleAbove",
+      "comment": ""
+    },
+    {
+      "offset": 325,
+      "name": "DrawCircleSide",
+      "comment": ""
+    },
+    {
+      "offset": 373,
+      "name": "DrawCircleCorner",
+      "comment": ""
+    },
+    {
+      "offset": 419,
+      "name": "DrawCircleShapeToFillSidesOtherTop",
+      "comment": ""
+    },
+    {
+      "offset": 475,
+      "name": "FillClippedTop",
+      "comment": ""
+    },
+    {
+      "offset": 489,
+      "name": "FillClippedJoin",
+      "comment": ""
+    },
+    {
+      "offset": 551,
+      "name": "FillClippedOtherTop",
+      "comment": ""
+    },
+    {
+      "offset": 561,
+      "name": "FillClippedOther",
+      "comment": ""
+    },
+    {
+      "offset": 564,
+      "name": "FillClippedJoin2",
+      "comment": ""
+    },
+    {
+      "offset": 606,
+      "name": "FillClippedIfZero",
+      "comment": ""
+    },
+    {
+      "offset": 629,
+      "name": "FillSidesTop",
+      "comment": ""
+    },
+    {
+      "offset": 639,
+      "name": "FillSides",
+      "comment": ""
+    },
+    {
+      "offset": 642,
+      "name": "FillClippedJoin3",
+      "comment": ""
+    },
+    {
+      "offset": 659,
+      "name": "FillClippedCallSpanEndRight",
+      "comment": ""
+    },
+    {
+      "offset": 671,
+      "name": "FillSidesOtherTop",
+      "comment": ""
+    },
+    {
+      "offset": 681,
+      "name": "FillSidesOther",
+      "comment": ""
+    },
+    {
+      "offset": 684,
+      "name": "FillClippedJoin4",
+      "comment": ""
+    },
+    {
+      "offset": 725,
+      "name": "FillClippedCallPointLeft",
+      "comment": ""
+    },
+    {
+      "offset": 759,
+      "name": "FillClippedGetClipHalfWidth",
+      "comment": ""
+    },
+    {
+      "offset": 776,
+      "name": "FillClippedCallPointRight",
+      "comment": ""
+    },
+    {
+      "offset": 834,
+      "name": "FillCornerSetCircleScreenY",
+      "comment": ""
+    },
+    {
+      "offset": 935,
+      "name": "SpanEndRightIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 975,
+      "name": "PointLeftLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1011,
+      "name": "PointRightLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1054,
+      "name": "FillRunUp",
+      "comment": ""
+    },
+    {
+      "offset": 1078,
+      "name": "SpanStartLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1100,
+      "name": "SpanStartLoop2",
+      "comment": ""
+    },
+    {
+      "offset": 1102,
+      "name": "SpanStartLoop3",
+      "comment": ""
+    },
+    {
+      "offset": 1110,
+      "name": "SpanStartIfZero",
+      "comment": ""
+    },
+    {
+      "offset": 1122,
+      "name": "SpanStartIfBelow",
+      "comment": ""
+    },
+    {
+      "offset": 1129,
+      "name": "FillRunDown",
+      "comment": ""
+    },
+    {
+      "offset": 1153,
+      "name": "SpanStartLoop4",
+      "comment": ""
+    },
+    {
+      "offset": 1175,
+      "name": "SpanStartLoop5",
+      "comment": ""
+    },
+    {
+      "offset": 1177,
+      "name": "SpanStartLoop6",
+      "comment": ""
+    },
+    {
+      "offset": 1185,
+      "name": "SpanStartIfZero2",
+      "comment": ""
+    },
+    {
+      "offset": 1197,
+      "name": "SpanStartIfBelow2",
+      "comment": ""
+    },
+    {
+      "offset": 1226,
+      "name": "HalfChordLoopGetHalfChordTarget",
+      "comment": ""
+    },
+    {
+      "offset": 1238,
+      "name": "HalfChordIfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 1246,
+      "name": "FillSpanTest1",
+      "comment": ""
+    },
+    {
+      "offset": 1263,
+      "name": "HalfChordIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 1268,
+      "name": "HalfChordJoin",
+      "comment": ""
+    },
+    {
+      "offset": 1270,
+      "name": "FillSpan1",
+      "comment": ""
+    },
+    {
+      "offset": 1274,
+      "name": "HalfChordIfNotZero2",
+      "comment": ""
+    },
+    {
+      "offset": 1292,
+      "name": "HalfChordIfNotBelow2",
+      "comment": ""
+    },
+    {
+      "offset": 1304,
+      "name": "HalfChordJoin2",
+      "comment": ""
+    },
+    {
+      "offset": 1337,
+      "name": "FillPushes1CallCircleLineDown",
+      "comment": ""
+    },
+    {
+      "offset": 1340,
+      "name": "FillPushes1Join",
+      "comment": ""
+    },
+    {
+      "offset": 1353,
+      "name": "FillPushes1Loop",
+      "comment": ""
+    },
+    {
+      "offset": 1357,
+      "name": "FillPushes1Loop2",
+      "comment": ""
+    },
+    {
+      "offset": 1360,
+      "name": "FillPushes1Join2",
+      "comment": ""
+    },
+    {
+      "offset": 1364,
+      "name": "FillPushes1IfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 1369,
+      "name": "FillPushes1IfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 1378,
+      "name": "FillPushes1IfNotBelow2",
+      "comment": ""
+    },
+    {
+      "offset": 1387,
+      "name": "FillPushes1Loop3",
+      "comment": ""
+    },
+    {
+      "offset": 1393,
+      "name": "FillSpanEdge1",
+      "comment": ""
+    },
+    {
+      "offset": 1402,
+      "name": "FillPushes1Loop4",
+      "comment": ""
+    },
+    {
+      "offset": 1411,
+      "name": "FillPushes1Loop5",
+      "comment": ""
+    },
+    {
+      "offset": 1415,
+      "name": "FillPushes1Join3",
+      "comment": ""
+    },
+    {
+      "offset": 1419,
+      "name": "FillPushes1Join4",
+      "comment": ""
+    },
+    {
+      "offset": 1424,
+      "name": "FillPushes1Join5",
+      "comment": ""
+    },
+    {
+      "offset": 1453,
+      "name": "FillPushes1IfNotBelow3",
+      "comment": ""
+    },
+    {
+      "offset": 1465,
+      "name": "FillPushes1Join6",
+      "comment": ""
+    },
+    {
+      "offset": 1498,
+      "name": "FillPushes2CallCircleLineDown",
+      "comment": ""
+    },
+    {
+      "offset": 1523,
+      "name": "FillSpanTest2IfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 1528,
+      "name": "FillSpanTest2Join",
+      "comment": ""
+    },
+    {
+      "offset": 1530,
+      "name": "FillSpan2",
+      "comment": ""
+    },
+    {
+      "offset": 1534,
+      "name": "FillSpanTest2IfNotZero2",
+      "comment": ""
+    },
+    {
+      "offset": 1547,
+      "name": "FillSpanTest2IfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 1559,
+      "name": "FillSpanTest2Join2",
+      "comment": ""
+    },
+    {
+      "offset": 1592,
+      "name": "FillPushes3CallCircleLineDown",
+      "comment": ""
+    },
+    {
+      "offset": 1595,
+      "name": "FillPushes3Join",
+      "comment": ""
+    },
+    {
+      "offset": 1608,
+      "name": "FillPushes3Loop",
+      "comment": ""
+    },
+    {
+      "offset": 1620,
+      "name": "FillPushes3IfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 1625,
+      "name": "FillPushes3IfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 1635,
+      "name": "FillPushes3IfZero",
+      "comment": ""
+    },
+    {
+      "offset": 1645,
+      "name": "FillPushes3Loop2",
+      "comment": ""
+    },
+    {
+      "offset": 1655,
+      "name": "FillPushes3Loop3",
+      "comment": ""
+    },
+    {
+      "offset": 1661,
+      "name": "FillSpanEdge2",
+      "comment": ""
+    },
+    {
+      "offset": 1671,
+      "name": "FillPushes3Loop4",
+      "comment": ""
+    },
+    {
+      "offset": 1675,
+      "name": "FillPushes3Join2",
+      "comment": ""
+    },
+    {
+      "offset": 1709,
+      "name": "FillPushes3IfNotBelow2",
+      "comment": ""
+    },
+    {
+      "offset": 1721,
+      "name": "FillPushes3Join3",
+      "comment": ""
+    },
+    {
+      "offset": 1754,
+      "name": "FillPushes4CallCircleLineDown",
+      "comment": ""
+    },
+    {
+      "offset": 1779,
+      "name": "FillSpanTest3IfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 1784,
+      "name": "FillSpanTest3Join",
+      "comment": ""
+    },
+    {
+      "offset": 1786,
+      "name": "FillSpan3",
+      "comment": ""
+    },
+    {
+      "offset": 1790,
+      "name": "FillSpanTest3IfNotZero2",
+      "comment": ""
+    },
+    {
+      "offset": 1805,
+      "name": "FillSpanTest3IfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 1817,
+      "name": "FillSpanTest3Join2",
+      "comment": ""
+    },
+    {
+      "offset": 1850,
+      "name": "FillPushes5CallCircleLineDown",
+      "comment": ""
+    },
+    {
+      "offset": 1853,
+      "name": "FillPushes5Join",
+      "comment": ""
+    },
+    {
+      "offset": 1866,
+      "name": "FillPushes5Loop",
+      "comment": ""
+    },
+    {
+      "offset": 1878,
+      "name": "FillPushes5IfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 1883,
+      "name": "FillPushes5IfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 1892,
+      "name": "FillPushes5IfZero",
+      "comment": ""
+    },
+    {
+      "offset": 1896,
+      "name": "FillPushes5Loop2",
+      "comment": ""
+    },
+    {
+      "offset": 1900,
+      "name": "FillPushes5Loop3",
+      "comment": ""
+    },
+    {
+      "offset": 1906,
+      "name": "FillSpanEdge3",
+      "comment": ""
+    },
+    {
+      "offset": 1915,
+      "name": "FillPushes5Loop4",
+      "comment": ""
+    },
+    {
+      "offset": 1919,
+      "name": "FillPushes5Join2",
+      "comment": ""
+    },
+    {
+      "offset": 1955,
+      "name": "FillPushes5IfNotBelow2",
+      "comment": ""
+    },
+    {
+      "offset": 1967,
+      "name": "FillPushes5Join3",
+      "comment": ""
+    },
+    {
+      "offset": 2000,
+      "name": "FillPushes6CallCircleLineDown",
+      "comment": ""
+    },
+    {
+      "offset": 2026,
+      "name": "CircleRowUpIfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 2052,
+      "name": "CircleRowDownIfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 2078,
+      "name": "DrawChartCircleIfBelow",
+      "comment": ""
+    },
+    {
+      "offset": 2081,
+      "name": "DrawChartCircleSetCircleX",
+      "comment": ""
+    },
+    {
+      "offset": 2097,
+      "name": "DrawChartCircleSetCircleY",
+      "comment": ""
+    },
+    {
+      "offset": 2124,
+      "name": "DrawChartCirclePatch",
+      "comment": ""
+    },
+    {
+      "offset": 2152,
+      "name": "DrawChartCircleRestore",
+      "comment": ""
+    },
+    {
+      "offset": 2164,
+      "name": "ChartPatch",
+      "comment": "The 32 code bytes for the chart screens"
+    },
+    {
+      "offset": 2196,
+      "name": "ViewPatch",
+      "comment": "The 32 code bytes for the 3D view"
+    },
+    {
+      "offset": 2228,
+      "name": "CirclePatchSites",
+      "comment": "The 32 code addresses DrawChartCircle patches"
+    },
+    {
+      "offset": 2326,
+      "name": "HitFlashSlot",
+      "comment": ""
+    },
+    {
+      "offset": 2362,
+      "name": "HitFlashGrow",
+      "comment": ""
+    },
+    {
+      "offset": 2387,
+      "name": "HitFlashNext",
+      "comment": ""
+    },
+    {
+      "offset": 2459,
+      "name": "CircleSpare",
+      "comment": "Two zeros"
+    },
+    {
+      "offset": 2461,
+      "name": "FillWord",
+      "comment": "$FFFF: AF for the PUSH chains"
+    },
+    {
+      "offset": 2483,
+      "name": "OutlineEdgeStartRight",
+      "comment": ""
+    },
+    {
+      "offset": 2497,
+      "name": "OutlinePointStart",
+      "comment": ""
+    },
+    {
+      "offset": 2509,
+      "name": "MaskRightLoop",
+      "comment": ""
+    },
+    {
+      "offset": 2518,
+      "name": "MaskLeftLoop",
+      "comment": ""
+    },
+    {
+      "offset": 2555,
+      "name": "OutlineRunUpLoop",
+      "comment": ""
+    },
+    {
+      "offset": 2561,
+      "name": "OutlineRunUpLoop2",
+      "comment": ""
+    },
+    {
+      "offset": 2563,
+      "name": "OutlineRunUpLoop3",
+      "comment": ""
+    },
+    {
+      "offset": 2566,
+      "name": "OutlineRunUpIfZero",
+      "comment": ""
+    },
+    {
+      "offset": 2578,
+      "name": "OutlineRunUpIfBelow",
+      "comment": ""
+    },
+    {
+      "offset": 2601,
+      "name": "OutlineRunDownLoop",
+      "comment": ""
+    },
+    {
+      "offset": 2607,
+      "name": "OutlineRunDownLoop2",
+      "comment": ""
+    },
+    {
+      "offset": 2609,
+      "name": "OutlineRunDownLoop3",
+      "comment": ""
+    },
+    {
+      "offset": 2612,
+      "name": "OutlineRunDownIfZero",
+      "comment": ""
+    },
+    {
+      "offset": 2624,
+      "name": "OutlineRunDownIfBelow",
+      "comment": ""
+    },
+    {
+      "offset": 2651,
+      "name": "OutlinePlotTopIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 2656,
+      "name": "OutlinePlotTopJoin",
+      "comment": ""
+    },
+    {
+      "offset": 2658,
+      "name": "OutlinePlotTopJoin2",
+      "comment": ""
+    },
+    {
+      "offset": 2662,
+      "name": "OutlinePlotTopLoop",
+      "comment": ""
+    },
+    {
+      "offset": 2679,
+      "name": "OutlinePlotTopCallCircleLineDown",
+      "comment": ""
+    },
+    {
+      "offset": 2682,
+      "name": "OutlinePlotTopJoin3",
+      "comment": ""
+    },
+    {
+      "offset": 2695,
+      "name": "OutlinePlotTopLoop2",
+      "comment": ""
+    },
+    {
+      "offset": 2711,
+      "name": "OutlinePlotTopIfBelow",
+      "comment": ""
+    },
+    {
+      "offset": 2718,
+      "name": "OutlinePlotTopIfZero",
+      "comment": ""
+    },
+    {
+      "offset": 2722,
+      "name": "OutlinePlotTopLoop3",
+      "comment": ""
+    },
+    {
+      "offset": 2726,
+      "name": "OutlinePlotTopLoop4",
+      "comment": ""
+    },
+    {
+      "offset": 2732,
+      "name": "OutlinePlotTopLoop5",
+      "comment": ""
+    },
+    {
+      "offset": 2739,
+      "name": "OutlinePlotTopLoop6",
+      "comment": ""
+    },
+    {
+      "offset": 2749,
+      "name": "OutlinePlotTopJoin4",
+      "comment": ""
+    },
+    {
+      "offset": 2781,
+      "name": "OutlinePlotTopCallCircleLineDown2",
+      "comment": ""
+    },
+    {
+      "offset": 2803,
+      "name": "OutlinePlotSideIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 2808,
+      "name": "OutlinePlotSideJoin",
+      "comment": ""
+    },
+    {
+      "offset": 2810,
+      "name": "OutlinePlotSideJoin2",
+      "comment": ""
+    },
+    {
+      "offset": 2838,
+      "name": "OutlinePixelIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 2845,
+      "name": "OutlinePixelJoin",
+      "comment": ""
+    },
+    {
+      "offset": 2876,
+      "name": "OutlineStepIfBelow",
+      "comment": ""
+    },
+    {
+      "offset": 2884,
+      "name": "OutlineStepIfBelow2",
+      "comment": ""
+    },
+    {
+      "offset": 2892,
+      "name": "OutlineStepJoin",
+      "comment": ""
+    },
+    {
+      "offset": 2898,
+      "name": "OutlineStepIfBelow3",
+      "comment": ""
+    },
+    {
+      "offset": 2906,
+      "name": "OutlineStepIfBelow4",
+      "comment": ""
+    },
+    {
+      "offset": 2927,
+      "name": "OutlinePixelsJoin",
+      "comment": ""
+    },
+    {
+      "offset": 2931,
+      "name": "OutlinePixelsJoin2",
+      "comment": ""
+    },
+    {
+      "offset": 2936,
+      "name": "OutlinePixelsLoop",
+      "comment": ""
+    },
+    {
+      "offset": 2958,
+      "name": "OutlinePixelsCallCircleLineDown",
+      "comment": ""
+    },
+    {
+      "offset": 2963,
+      "name": "OutlineFillRight",
+      "comment": ""
+    },
+    {
+      "offset": 2973,
+      "name": "OutlinePixelsLoop2",
+      "comment": ""
+    },
+    {
+      "offset": 2980,
+      "name": "OutlinePixelsIfBelow",
+      "comment": ""
+    },
+    {
+      "offset": 2983,
+      "name": "OutlineFillLeft",
+      "comment": ""
+    },
+    {
+      "offset": 2989,
+      "name": "OutlinePixelsLoop3",
+      "comment": ""
+    },
+    {
+      "offset": 2996,
+      "name": "OutlinePixelsJoin3",
+      "comment": ""
+    },
+    {
+      "offset": 2997,
+      "name": "OutlinePixelsLoop4",
+      "comment": ""
+    },
+    {
+      "offset": 3000,
+      "name": "OutlineFillBoth",
+      "comment": ""
+    },
+    {
+      "offset": 3008,
+      "name": "OutlinePixelsLoop5",
+      "comment": ""
+    },
+    {
+      "offset": 3015,
+      "name": "OutlinePixelsIfZero",
+      "comment": ""
+    },
+    {
+      "offset": 3017,
+      "name": "OutlinePixelsIfBelow2",
+      "comment": ""
+    },
+    {
+      "offset": 3025,
+      "name": "OutlinePixelsLoop6",
+      "comment": ""
+    },
+    {
+      "offset": 3032,
+      "name": "OutlinePixelsJoin4",
+      "comment": ""
+    },
+    {
+      "offset": 3035,
+      "name": "OutlinePlotSecond",
+      "comment": ""
+    },
+    {
+      "offset": 3055,
+      "name": "OutlinePixelsIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 3060,
+      "name": "OutlinePixelsJoin5",
+      "comment": ""
+    },
+    {
+      "offset": 3062,
+      "name": "OutlinePixelsJoin6",
+      "comment": ""
+    },
+    {
+      "offset": 3066,
+      "name": "OutlinePixelsLoop7",
+      "comment": ""
+    },
+    {
+      "offset": 3080,
+      "name": "OutlinePixelsCallCircleLineDown2",
+      "comment": ""
+    },
+    {
+      "offset": 3083,
+      "name": "OutlinePixelsJoin7",
+      "comment": ""
+    },
+    {
+      "offset": 3096,
+      "name": "OutlinePixelsLoop8",
+      "comment": ""
+    },
+    {
+      "offset": 3112,
+      "name": "OutlinePixelsIfBelow3",
+      "comment": ""
+    },
+    {
+      "offset": 3120,
+      "name": "OutlinePixelsIfZero2",
+      "comment": ""
+    },
+    {
+      "offset": 3124,
+      "name": "OutlinePixelsLoop9",
+      "comment": ""
+    },
+    {
+      "offset": 3128,
+      "name": "OutlinePixelsLoop10",
+      "comment": ""
+    },
+    {
+      "offset": 3134,
+      "name": "OutlinePixelsLoop11",
+      "comment": ""
+    },
+    {
+      "offset": 3142,
+      "name": "OutlinePixelsLoop12",
+      "comment": ""
+    },
+    {
+      "offset": 3149,
+      "name": "OutlinePixelsJoin8",
+      "comment": ""
+    },
+    {
+      "offset": 3181,
+      "name": "OutlinePixelsCallCircleLineDown3",
+      "comment": ""
+    },
+    {
+      "offset": 3186,
+      "name": "CircleUnused",
+      "comment": "One unused byte"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$8619",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/circles.asm",
+    "label": "CircleZero"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

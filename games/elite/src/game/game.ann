@@ -1,0 +1,2660 @@
+# The annotations of the game image: the single source of truth for src/game/*.asm (kit/mkgame.py).
+# The format is in kit/mkgame.py, class Annotations (docs/ann-format.md). One line an entry:
+#
+#   @module NAME ; title            the entries from here on go to NAME.asm, the title heads the file
+#   @about a paragraph              the module file's header text, one paragraph a line
+#   $ADDR c Name ; title            a routine
+#   > a description line
+#   $ADDR b Name ; title            data (w words, t text, s space; "b Name 8" rows of 8)
+#   @res graphics/NAME.bin          the entry is a resource: src/res/..., INCBIN
+#   $ADDR Name ; comment            a label and comment inside an entry
+#   @isub $ADDR LD HL,-6            the instruction written so
+#   @equ $ADDR Name [N] ; comment   a variable past the image: an EQU, its operands by name
+#   @inline $ADDR                   a routine that reads its data after the CALL
+#
+# Evidence: the recordings f1 (launch, flight, hyperspace), w1 (witch space, Thargoids), d1 (docked: the status,
+# market, data and chart screens, the launch); "ran" counts below are their L1 instruction counts. What no
+# recording reached is said to be known from the code only.
+
+
+# Constants the bytes cannot tell from addresses (each was written as a code label plus an offset)
+@isub $764A LD HL,$A000
+@isub $7659 LD HL,$A000
+@isub $7724 LD HL,$A000
+@isub $7733 LD HL,$A000
+@isub $8085 LD SP,BackBuffer+$1000
+@isub $808E LD IX,$FF*$100
+@isub $80A0 LD IX,$8000
+@isub $80BE LD IX,$FF*$100
+@isub $8142 LD SP,BackBuffer+$1000
+@isub $8F83 LD HL,$FCCB
+@isub $96AC LD DE,$C00C
+@isub $9F20 LD DE,$8000
+@isub $A4CC LD IY,ShipSlots-$27
+@isub $A1CB LD HL,$7FFF
+@isub $A1DB LD HL,$8000
+@isub $B621 LD IX,ShipSlots-$27
+@isub $B19C LD HL,$8040
+@isub $B237 LD HL,$8040
+@isub $B363 LD HL,$8040
+@isub $D123 LD DE,$DF1F
+@isub $D142 LD DE,$E017
+@isub $EB03 LD HL,LaserItems-1
+@isub $FE4B LD HL,$80FF
+@isub $FEB9 LD HL,$8066
+@module lowdata ; The low data: the scanner and dashboard save areas, the font, the ship slots and the ship blueprints
+@about $5B00-$6047 is TZX block 37 (03-build-and-load.md 3.7); $6048 on is the first decrypted chunk. Nothing here runs.
+@about The 3D view is the top two thirds of the screen, drawn into the back buffer at $C000 and copied to $4000 (CopyBackBuffer $7FBE); the dashboard is the bottom third. ScannerSave and DashAttrSave hold copies of dashboard parts the views paint over.
+
+$5B00 b ScannerSave 13 ; The scanner's background: 48 pixel lines of 13 bytes, $5049-$5055 on of the screen's bottom third
+> ScannerCopy $990C copies 13 bytes a line, 8 lines a row, 6 rows between the screen ($5049, the scanner ellipse of the dashboard) and here. ScannerSaveMode $98A2 patches it to save the screen here (EX DE,HL, PUSH HL / POP HL in place of NOP, PUSH DE / POP DE), ScannerClear $98CD back to restore it every frame (f1: 554 runs). DashboardSave $817E also copies the dashboard's attributes ($5A00-$5AFF) to $5B00, and DashboardRestore $8042 copies them back.
+> The image's bytes are what the last copy left: attribute bytes ($07, $17) in the first page, then the mastering machine's system variables (03 3.10) to $5D6F.
+$5C00 ; from here the bytes are TZX block 37's copy of the mastering machine's system variables (03-build-and-load.md 3.10)
+$5D70 b Font 8 ; The character set: 91 glyphs of 8 bytes for the codes $20-$7A, read by PrintChar $D499
+> Codes $20-$7A, 8 bytes a glyph top line first. Most are ASCII letters, digits and signs; the codes $21-$26, $2B and $3B-$3E (! " # and so on) are the dashboard's frame pieces (slants, corners, bars), drawn by the same printer.
+@res fonts/font.bin
+$6048 b ShipSlots 39 ; The 8 ship slots, 39 bytes each: the objects in space
+> Eight records of $27 bytes from $6048 (slot n at $6048 + 39 n), read and written by every ship routine (UpdateShips $9CBB walks them). The record: +$00-$08 the position x, y, z (3 bytes each, sign in bit 7 of the top byte), +$09-$1A the orientation vectors, +$1B the speed, +$20 / +$21 the flags, +$22 the energy, +$23 / +$24 the blueprint address, +$25 / +$26 the AI state (07-objects.md). The image's bytes are leftovers of a BASIC program in the developer's memory (" ***---", "3000"), overwritten when a game starts.
+$6159 b Slot7 39 ; Slot 7, the last of the eight: the player's missile in flight, the turning ship on the title. The code names it directly (TurnTitleShip, ActionTitleShip, the hostility test of UpdateSlot); it is no work copy: the ship routines work on each slot in place
+$6180 b Blueprints 4 ; The blueprint table: 19 entries of $C3, the blueprint address and its class
+> CreateShip $B898 reads entry A AND $3F (HL = $6180 + 4 A + 1): the word is the blueprint. The first byte of each is $C3 (a JP opcode; nothing jumps here). The last byte is the class the spawn code picks ships by: 0 the station and the missile, 1 debris (pod, plate, canister, splinter, asteroid), 2 traders (rock hermit, Viper, the trader Cobra and Python), 3 pirates and Thargoids, 4 the Sidewinder, Krait and Thargon (07-objects.md).
+$61CC b ShipAsp 23 ; blueprint 13: the header (19 vertices, 28 edges, 12 faces)
+@res ships/ships.bin
+$61E3 b ShipAspVertices 6 ; the 19 vertices of blueprint 13
+@res ships/ships.bin
+$6255 b ShipAspEdges 4 ; the 28 edges of blueprint 13
+@res ships/ships.bin
+$62C5 b ShipAspFaces 4 ; the 12 faces of blueprint 13
+@res ships/ships.bin
+$62F5 b ShipRockHermit 23 ; blueprint 7: the header (9 vertices, 21 edges, 14 faces)
+@res ships/ships.bin
+$630C b ShipAsteroid 23 ; blueprint 6: the header (9 vertices, 21 edges, 14 faces)
+@res ships/ships.bin
+$6323 b ShipAsteroidVertices 6 ; the 9 vertices of blueprint 6
+@res ships/ships.bin
+$6359 b ShipAsteroidEdges 4 ; the 21 edges of blueprint 6
+@res ships/ships.bin
+$63AD b ShipAsteroidFaces 4 ; the 14 faces of blueprint 6
+@res ships/ships.bin
+$63E5 b ShipCanister 23 ; blueprint 4: the header (10 vertices, 15 edges, 7 faces)
+@res ships/ships.bin
+$63FC b ShipCanisterVertices 6 ; the 10 vertices of blueprint 4
+@res ships/ships.bin
+$6438 b ShipCanisterEdges 4 ; the 15 edges of blueprint 4
+@res ships/ships.bin
+$6474 b ShipCanisterFaces 4 ; the 7 faces of blueprint 4
+@res ships/ships.bin
+$6490 b ShipCobraTrader 23 ; blueprint 9: the header (28 vertices, 38 edges, 13 faces)
+@res ships/ships.bin
+$64A7 b ShipCobraPirate 23 ; blueprint 12: the header (28 vertices, 38 edges, 13 faces)
+@res ships/ships.bin
+$64BE b ShipCobraVertices 6 ; the 28 vertices of both Cobra blueprints
+@res ships/ships.bin
+$6566 b ShipCobraEdges 4 ; the 38 edges of both Cobra blueprints
+@res ships/ships.bin
+$65FE b ShipCobraFaces 4 ; the 13 faces of both Cobra blueprints
+@res ships/ships.bin
+$6632 b ShipEscapePod 23 ; blueprint 2: the header (4 vertices, 6 edges, 4 faces)
+@res ships/ships.bin
+$6649 b ShipEscapePodVertices 6 ; the 4 vertices of blueprint 2
+@res ships/ships.bin
+$6661 b ShipEscapePodEdges 4 ; the 6 edges of blueprint 2
+@res ships/ships.bin
+$6679 b ShipEscapePodFaces 4 ; the 4 faces of blueprint 2
+@res ships/ships.bin
+$6689 b ShipFerDeLance 23 ; blueprint 14: the header (19 vertices, 27 edges, 10 faces)
+@res ships/ships.bin
+$66A0 b ShipFerDeLanceVertices 6 ; the 19 vertices of blueprint 14
+@res ships/ships.bin
+$6712 b ShipFerDeLanceEdges 4 ; the 27 edges of blueprint 14
+@res ships/ships.bin
+$677E b ShipFerDeLanceFaces 4 ; the 10 faces of blueprint 14
+@res ships/ships.bin
+$67A6 b ShipMissile 23 ; blueprint 1: the header (17 vertices, 24 edges, 9 faces)
+@res ships/ships.bin
+$67BD b ShipMissileVertices 6 ; the 17 vertices of blueprint 1
+@res ships/ships.bin
+$6823 b ShipMissileEdges 4 ; the 24 edges of blueprint 1
+@res ships/ships.bin
+$6883 b ShipMissileFaces 4 ; the 9 faces of blueprint 1
+@res ships/ships.bin
+$68A7 b ShipPlate 23 ; blueprint 3: the header (4 vertices, 4 edges, 0 faces)
+@res ships/ships.bin
+$68BE b ShipPlateVertices 6 ; the 4 vertices of blueprint 3
+@res ships/ships.bin
+$68D6 b ShipPlateEdges 4 ; the 4 edges of blueprint 3
+@res ships/ships.bin
+$68E6 b ShipPythonTrader 23 ; blueprint 10: the header (11 vertices, 26 edges, 13 faces)
+@res ships/ships.bin
+$68FD b ShipPythonPirate 23 ; blueprint 11: the header (11 vertices, 26 edges, 13 faces)
+@res ships/ships.bin
+$6914 b ShipPythonVertices 6 ; the 11 vertices of both Python blueprints
+@res ships/ships.bin
+$6956 b ShipPythonEdges 4 ; the 26 edges of both Python blueprints
+@res ships/ships.bin
+$69BE b ShipPythonFaces 4 ; the 13 faces of both Python blueprints
+@res ships/ships.bin
+$69F2 b ShipSidewinder 23 ; blueprint 16: the header (10 vertices, 15 edges, 7 faces)
+@res ships/ships.bin
+$6A09 b ShipSidewinderVertices 6 ; the 10 vertices of blueprint 16
+@res ships/ships.bin
+$6A45 b ShipSidewinderEdges 4 ; the 15 edges of blueprint 16
+@res ships/ships.bin
+$6A81 b ShipSidewinderFaces 4 ; the 7 faces of blueprint 16
+@res ships/ships.bin
+$6A9D b ShipCoriolis 23 ; blueprint 0: the header (16 vertices, 28 edges, 14 faces)
+@res ships/ships.bin
+$6AB4 b ShipCoriolisVertices 6 ; the 16 vertices of blueprint 0
+@res ships/ships.bin
+$6B14 b ShipCoriolisEdges 4 ; the 28 edges of blueprint 0
+@res ships/ships.bin
+$6B84 b ShipCoriolisFaces 4 ; the 14 faces of blueprint 0
+@res ships/ships.bin
+$6BBC b ShipSplinter 23 ; blueprint 5: the header (4 vertices, 6 edges, 4 faces)
+@res ships/ships.bin
+$6BD3 b ShipSplinterVertices 6 ; the 4 vertices of blueprint 5
+@res ships/ships.bin
+$6BEB b ShipSplinterEdges 4 ; the 6 edges of blueprint 5
+@res ships/ships.bin
+$6C03 b ShipSplinterFaces 4 ; the 4 faces of blueprint 5
+@res ships/ships.bin
+$6C13 b ShipThargoid 23 ; blueprint 15: the header (20 vertices, 26 edges, 10 faces)
+@res ships/ships.bin
+$6C2A b ShipThargoidVertices 6 ; the 20 vertices of blueprint 15
+@res ships/ships.bin
+$6CA2 b ShipThargoidEdges 4 ; the 26 edges of blueprint 15
+@res ships/ships.bin
+$6D0A b ShipThargoidFaces 4 ; the 10 faces of blueprint 15
+@res ships/ships.bin
+$6D32 b ShipKrait 23 ; blueprint 17: the header (17 vertices, 21 edges, 6 faces)
+@res ships/ships.bin
+$6D49 b ShipKraitVertices 6 ; the 17 vertices of blueprint 17
+@res ships/ships.bin
+$6DAF b ShipKraitEdges 4 ; the 21 edges of blueprint 17
+@res ships/ships.bin
+$6E03 b ShipKraitFaces 4 ; the 6 faces of blueprint 17
+@res ships/ships.bin
+$6E1B b ShipViper 23 ; blueprint 8: the header (15 vertices, 20 edges, 7 faces)
+@res ships/ships.bin
+$6E32 b ShipViperVertices 6 ; the 15 vertices of blueprint 8
+@res ships/ships.bin
+$6E8C b ShipViperEdges 4 ; the 20 edges of blueprint 8
+@res ships/ships.bin
+$6EDC b ShipViperFaces 4 ; the 7 faces of blueprint 8
+@res ships/ships.bin
+$6EF8 b ShipThargon 23 ; blueprint 18: the header (10 vertices, 15 edges, 7 faces)
+@res ships/ships.bin
+$6F0F b ShipThargonVertices 6 ; the 10 vertices of blueprint 18
+@res ships/ships.bin
+$6F4B b ShipThargonEdges 4 ; the 15 edges of blueprint 18
+@res ships/ships.bin
+$6F87 b ShipThargonFaces 4 ; the 7 faces of blueprint 18
+@res ships/ships.bin
+$6FA3 s BlueprintsSpare ; 79 zeros after the last blueprint
+@module startup ; The vectors, the flight variables, the start, the pause menu and the title
+@about The game's code starts at $6FF2 with a few jump vectors other parts call by address, the variables the flight loop shares (the view, the control rates, the dashboard bar values, the planet and the sun), the pause menu and the title screen. Start $70E0 is where the kickoff enters (JP $70E0, 03-build-and-load.md 3.7).
+
+$6FF2 c EnergyBombVector ; JP EnergyBomb (FlightLoop calls it every frame)
+$6FF5 c FlashVector ; JP FlashScreen (known from the code only: no caller ran)
+$6FF8 c FillAttrsVector ; JP FillAttrs
+$6FFB b ChartIcons 8 ; The four sizes of a system's dot on the local chart, 8x8 each
+> DrawChartIcon $ED27 picks one (DE = $6FFB + 8 n) and ORs it onto the chart.
+$701B b Commodities 4 ; The 17 commodities: 4 bytes each, the market generator's table
+> MakeMarket $E148 (d1: the Lave market) reads the 68 bytes from $701B: the base price, the economy factor (bit 7 its sign) with the unit in its top bits, the base quantity and the fluctuation mask (10-gameplay-logic.md). Firearms is entry 11: ZeroFirearms $B7AC zeroes its price when the special cargo mission needs it.
+$705F b EquipmentPrices 3 ; The prices of the equipment the Equip screen sells
+> Read by EquipShip $E973 through EquipPricePtr $EB2F (t1 bought a missile at frame 1474: EquipShip 1 run). The fuel price at $7060 is written by the hyperspace code ($DC66, $DCAA).
+$7089 c EnergyBomb ; Detonate the energy bomb when its key is down and one is fitted
+> Every frame (f1, w1, d1: 1076 runs) from FlightLoop through EnergyBombVector. KeyCombat $FC0B bit 5 is the bomb key; EnergyBombFitted $D08A non-zero is a bomb on board. The bomb is used up, BombKill $9C95 = 1 makes UpdateShips destroy what it can, sound 0 is requested and the screen flashes 24 times (FlashScreen). k2 fired one at frame 3304 (FlashScreen 24 runs; the Thargoids unhurt), m1 and m2 one each.
+$70A2 EnergyBombFlash
+$70A9 c FlashScreen ; One flash: the 3D view's attributes $28, then $0F
+$70B0 c FillAttrs ; Fill the 3D view's attributes ($5800-$59FF) with L after the next interrupt
+> L is the attribute; with CloakOn $D041 zero only its INK bits stay (AND 7). The entry FillAttrsTinted $70BA skips that step; with NovaMission $D081 set the attribute is ANDed with $3A. After a HALT the stack pointer is put at $59FF and 16 rows of 15 PUSHes write the 512 bytes; FillSP keeps the real SP.
+$70BA FillAttrsTinted
+$70C4 FillAttrsNow
+$70CF FillAttrsRow
+$70D1 FillAttrsPush
+$70DE w FillSP ; FillAttrs' saved stack pointer
+$70E0 c Start ; The game's entry from the kickoff: JP Title
+$70E3 b ViewIndex ; The view: 0-3 the space views (front, rear, left, right), 4 and up the screens
+> SelectView $80D3 sets it from the keys; below 4 the flight loop draws space, from 4 a status, market or chart screen is up (7 and 8 the charts: ChartCursorKeys $71F3).
+$70E4 b RollRate ; The roll rate this frame (bit 7 the sign), copied from the high byte of RollControl ($FF09)
+$70E5 b PitchRate ; The pitch rate this frame, from the high byte of PitchControl ($FF0B)
+$70E6 b SpeedRate ; The speed this frame, from the high byte of SpeedControl ($FF0D)
+$70E7 b BarDrawn ; The dashboard bars: 13 pairs of the length last drawn and the value, the fore shield first
+> DrawBars $84D9 compares each value with the byte before it and draws only a changed bar; a value is 0-$A0, a quarter of it the length in pixels. The first 11 are solid bars (the shields, the fuel, the cabin and laser temperatures, the altitude, the speed, the four energy banks), the last two the roll and pitch markers. ResetDashboard $9946 starts the shields, the altitude and the banks at $A0.
+$70E8 BarForeShield ; The fore shield
+$70E9 ; the aft shield's last length
+$70EA BarAftShield ; The aft shield
+$70EC BarFuel ; The fuel
+$70EE BarCabinTemp ; The cabin temperature (zero at a reset)
+$70F0 BarLaserTemp ; The laser temperature
+$70F2 BarAltitude ; The altitude above the planet
+$70F4 BarSpeed ; The speed: SpeedRate * 5 + 5
+$70F6 BarEnergy1 ; Energy bank 1
+$70F8 BarEnergy2 ; Energy bank 2
+$70FA BarEnergy3 ; Energy bank 3
+$70FC BarEnergy4 ; Energy bank 4
+$70FE BarRoll ; The roll marker: $15 +/- the roll rate
+$7100 BarPitch ; The pitch marker: $15 +/- the pitch rate
+$7101 ; spare
+$7103 b WitchSpace ; Non-zero in witch space after a misjump (the hyperspace arrival, JumpArrive): no sun, no planet, no station, four stars, Thargoids
+$7104 b Condition ; The condition light as an attribute: 0 docked, 4 green, 6 yellow, 2 red, $63 red flashing
+> ConditionLight $99A4 writes it to the dashboard's attributes ($5A28, $5A48) every frame and sets 4 again for the next: the distance code makes it 6 near the planet or the sun and $63 very near ($82D7), a shield at zero makes it 2, and $63 alternates between 0 and 2 (ConditionFlash $99A3).
+$7105 w StarSeed ; The stardust generator's seed (StarRandom $7E86)
+$7107 b SunPosition 3 ; The sun's position: x, y, z, 3 bytes each (sign in bit 7 of the top byte)
+> DashDistances $81A9 turns its distance into the cabin temperature (BarCabinTemp) and TooClose; DrawSunPlanet $7584 draws it first, as a filled circle.
+$7110 b PlanetPosition 3 ; The planet's position: x, y, z
+> DashDistances turns its distance into the altitude (BarAltitude, $A0 - distance) and the safe zone (SafeZone, all three coordinates below $0200).
+$7119 c DrawChartCircleVector ; JP DrawChartCircle
+$711C b SafeZone ; Non-zero inside the space station's safe zone: the planet's three coordinates below $0200
+$711D b StationLaunch ; Non-zero while slot 0, the station, flies in after a launch
+$711E b SunNear ; Non-zero when the sun's distance is below $2000 (DashDistances $81EC)
+$711F b TooClose ; Non-zero when the ship has hit the planet or the sun
+$7120 b SunLarge ; Non-zero when the sun's circle radius is $28 or more (DrawSunPlanet $75A8)
+$7121 c ConditionLightVector ; JP ConditionLight
+$7124 b HoldRates ; Non-zero: FlightLoop keeps the control rates of the frame before
+$7125 c SoundTickVector ; JP SoundTick (the interrupt handler calls it)
+$7128 b SoundRequests ; The sound requests: one bit a sound, set by the game, served by SoundTick
+$7129 b AutoDocked ; 1 when the docking computer docked the ship (DockKeys $71AE)
+$712A c AddDigitVector ; JP AddDigit (known from the code only, like the next two)
+$712D c AttrFillVector ; JP DashAttrs $9974
+$7130 c AddDigit ; (HL) = (HL) * 10 + B: one typed digit into a number
+$713C c CopyRates ; Copy the control rates the interrupt built to this frame's rates and the indicators
+> Every pass of FlightLoop (197283 runs over f1, w1, d1). The high bytes of RollControl, PitchControl and SpeedControl ($FF09, $FF0B, $FF0D) are what ReadControls $FE01 accumulated in the interrupt: copied to RollRate, PitchRate and SpeedRate; the roll and pitch indicators get $15 plus or minus the rate (a sign-magnitude byte), the speed indicator 5 * speed + 5.
+$714B CopyRatesRollNeg
+$7151 CopyRatesRollBar
+$7162 CopyRatesPitchNeg
+$7168 CopyRatesPitchBar
+$717B c DockKeys ; Dock: after the collision code docked the ship, or on the docking computer key in the safe zone
+> Docked $9C9A is set by the collision code when the ship enters the station ($B591) and by the arrival code ($9466): cleared, and the docking sequence runs. Otherwise KeyCombat $FC0B bit 7 (the docking computer key, cleared here) docks when the ship is in the safe zone, DockingComputer $D08C is fitted, Condition is not 0, $D03F is 0 and slot 0's flag bit 2 is clear; AutoDocked is set. Then the front view, the dashboard, CentreMarkers and the docking scene (SceneDock $93ED). f1 and w1: 863 runs, no dock.
+$7187 DockKeysComputer
+$71B3 DockKeysDock
+$71BA DockKeysCentre
+$71C0 c CentreMarkers ; Move the sun and the planet half way to slot 0's position (known from the code only)
+$71CE CentreMarker
+$71D6 CentreMarkerStore
+$71E4 c HalfDifference ; HL = half the difference between a marker coordinate (IY) and the slot's (IX)
+$71F3 c ChartCursorKeys ; On the charts (ViewIndex 7, 8): a cursor key moves the cursor through the chart vector
+$7210 ChartCursorBit
+$7221 b CloakKeyCount ; Counts the frames down to the next look at the cloak key (every second frame)
+$7222 c CloakKey ; Every second frame: Y (KeyScreens $FC08 bit 7) switches the cloaking device on or off once the mission has given it
+> The device is MissionFlags bit 6 (AddCargoSpecial, the mission ship's canister). On: CloakOn = 1 while energy bank 3 ($70FA) is $28 or more, the station's hostile bit cleared, AllHostile 0 and the view's attributes $0F (blue paper: FillAttrs keeps the paper while CloakOn is set); off: attributes 7. With bank 3 below $28 the decrement leaves CloakOn at $FF, on but untinted (known from the code only). 1076 runs, the key never pressed with the device (no recording earned it, CloakOn 0 runs): the rest is known from the code only.
+$7253 CloakTint
+$7257 CloakPlain
+$7259 CloakFill
+$725C c NovaTint ; After the dashboard is redrawn (ClearView): the nova's red tint (attributes 2) again while NovaMission is set
+$7260 NovaTintFill
+$7265 c CloakRestore ; After the dashboard is redrawn: the cloak's tint ($0F) again while CloakOn is set
+$726C c NovaSunGrows ; At the launch (SceneLaunch): in the nova's system the sun starts to grow (SunGrows 1) and the view turns red
+$7278 c ArrivalScreens ; At the dock: the mission page MissionState asks for: 1 or 2 the briefing (MissionQuestion), 5 the award (MissionDone), 6 SHIP BOARDED BY THARGONS and the title
+> No code sets state 6: the Thargon boarding is unreachable (known from the code only). The routine ran at each dock: dk 2, gx 1, m1 2, m2 1 (the briefing, MissionQuestion, at frame 2926).
+$727F ArrivalScreensFirst
+$728D c PirateStation ; At the dock: a station whose roll counter's bit 7 is clear is pirate-held: SHIP BOARDED BY PIRATES, THEY SHOW NO MERCY, the title
+> TitleNext sets bit 7 of slot 0's +$1D (the station's roll counter, bit 7 the direction); an arrival clears it with a chance that grows as the government falls (JumpArrive), so the station spins the other way: the only warning. Known from the code only.
+$7295 BackToTitleMessage
+$72A2 b ControlMethod ; The control method chosen on the title: 1 Kempston (left on port $1F, bit 5 clear), 2 Cursor (5 held), 3 Sinclair (6 held)
+$72A3 c PauseMenu ; The pause: hold the game while the key's bit is set and run the option keys
+> KeyViews $FC0A bit 7 is the pause key (the keyboard scan sets it). The game waits for the key to be released, then reads keys until SPACE (resume) or 1 (back to the title, carry set): B reverse the joystick, D keyboard damping, F the option bit 6, K keyboard / joystick, Q sound off, R recentring, S sound on, Y the Y axis reversed; an unknown key beeps (ErrorBeep). Each toggles a bit of Options $FC0E (HL = $FC0E). w1 paused once and pressed F and SPACE.
+$72AC PauseRelease
+$72B3 PauseKey
+$72F1 c ClearKeys ; Zero the five key bytes $FC08-$FC0C
+$72FF PauseQuit
+$7304 c OptionReverse ; Key B: Options bit 4
+$730A c OptionDamping ; Key D: Options bit 3
+$7310 c OptionBit6 ; Key F: Options bit 6
+$7316 c OptionSoundOff ; Key Q: Options bit 7 off
+$731C c OptionRecentre ; Key R: Options bit 2
+$7322 c OptionSoundOn ; Key S: Options bit 7 on, and the sound requests cleared
+$732B c OptionReverseY ; Key Y: Options bit 5
+$7331 c OptionKeyboard ; Key K: between the keyboard and the control method chosen on the title
+$733D OptionKeyboardSwap
+$7342 OptionKeyboardDone
+$7344 c ErrorBeep ; A short beep: 6 frames of 4 rising tones on the speaker
+$7348 ErrorBeepFrame
+$734C ErrorBeepTone
+$7356 ErrorBeepHigh
+$735D ErrorBeepLow
+$7366 c Title ; The title: the rotating ship, "Load new commander", then the control method
+> SP is kept in TitleSP $7578 for the game overs (PirateStation, ArrivalScreens). The ship action $79 (DoShipAction $9C9C) places the title Cobra; then the title loop draws it each frame (DrawTitleShip $9CAF) until a key: Y (KeyCode $FC0D + 1 = $5A) opens the commander load menu (CommanderMenuVector $D04E). The second loop shows "PRESS SPACE, COMMANDER" with the next title ship each pass (TitleShipCount) and reads a joystick held left (Kempston: port $1F bit 1 with bit 5 clear; Cursor: 5, KeyDigits bit 1; Sinclair: 6, KeyDigits bit 3) or SPACE (the keyboard); then the new game (NewGameVector $D033) and FlightLoop. c1, f1, w1 and d1 all start here (d1 at frame 784 of w1's title loop).
+$7370 TitleShip
+$7378 TitleLoad
+$7394 TitleIfNotZero
+$739E TitleNext
+$73BA TitleIfNotBelow
+$73C3 TitleLoop
+$73E2 TitleKeys
+$73F4 TitleKeyboard
+$73F7 TitleMethod
+$73FD TitleStart
+$7426 c TitleTextLoad ; The title text and "LOAD NEW COMMANDER (Y/N)?" (other token 6, row 14, column 1)
+$7430 c TitleTextPress ; The title text and "PRESS SPACE, COMMANDER" (other token 7, row 14, column 4)
+$7438 TitleTextPrint
+$7447 c TitleElite ; "---- E L I T E ----" (code $1D: token $8F) at row 1, column 5, in the title colours
+$7459 c PlainText ; Clear the title-colour bit the two title texts set
+$7461 c WhiteAttrs ; The attributes of the top two thirds: white INK on black
+$7467 c FillAttrPage ; 256 attributes $07 from HL
+$746B FillAttrPageLoop
+$7470 b TitleShipCount ; The title ship counter: the next title ship's blueprint
+@module flightloop ; The flight loop, the sun and the planet on screen, the division
+@about FlightLoop $7471 is the game's main loop from the title on: one pass every 5 to 6.5 frames in space, the same loop (with the screens) when docked or on a status screen. The sun and the planet are circles: their positions (SunPosition $7107, PlanetPosition $7110) are projected for the current view and drawn by the circle code (06-rendering.md).
+
+$7471 c FlightLoop ; The main loop: the controls, the view, the pause, the jump keys, the ships, the screen
+> A pass: CopyRates (unless HoldRates), SelectView, PauseMenu (1 there goes back to the title), JumpKeysVector $D042. Docked (Condition 0) it only reads the chart cursor and the menu key (KeySteer $FC09 bit 5: the commander load / save menu, CommanderMenuVector $D04E); in flight it runs DockKeys, the debug key ($7EDE), the sun and planet rotation, the station run-in, then for a space view: the dashboard, the 3D view cleared (ClearView $8080), the sun and the planet, the stardust, the screen texts, the ships (ShipsVector $9C80), the effects, the back buffer copied to the screen (CopyBackBuffer $7FBE), the debris, the bars, the flash, the dashboard keys and DashDistances. f1, w1, d1: 197283 passes. In space a pass takes 5.0 (no ships) to 6.5 frames (four Thargoids), its only wait the HALT in CloakKey every second pass; docked it spins with no HALT, about 91 passes a frame (d1 600-700: 9118 in 100 frames; runtime-analysis.md).
+> TooClose set (the ship hit the sun or the planet, or a fatal hit) ends the game: 30 frames of other token 9 over the stardust, 50 frames' pause, then the title ($739E).
+$747A FlightLoopView
+$748C FlightLoopJumps
+$74AA FlightLoopSpace
+$74BC FlightLoopViews
+$74D2 FlightLoopScreen
+$74DA FlightLoopScreenWait
+$74E4 FlightLoopDraw
+$750F FlightLoopEnd
+$7519 GameOver
+$753A GameOverFrame
+$756B GameOverWait
+$7578 w TitleSP ; The stack pointer the title was entered with (the game overs take it back: PirateStation)
+$757A b CircleVector 3 ; The position DrawSunPlanet projects: x, y, z, 3 bytes each
+$7583 b LastSunRadius ; The sun's radius the frame before (SunGrowth)
+$7584 c DrawSunPlanet ; Project and draw the sun and the planet for the view
+> Each position is copied to CircleVector and projected (ProjectCircle); the sun is drawn by DrawCircleDI $86D0 (a sun radius of $28 or more sets SunLarge), the planet by DrawCircle $86DE. f1, w1, d1: 895 runs.
+$75AD DrawPlanet
+$75C0 c SunGrowth ; With SunGrows $D0BA set the sun's circle grows by 2 a frame; past 255 TooClose ends the game
+> Known from the code only past the first test: SunGrows was 0 in every recording. NovaSunGrows $726C sets it when NovaMission $D081 is set.
+$75CE SunGrowthStep
+$75D4 SunGrowthEnd
+$75DA SunGrowthStore
+$75E1 c ProjectCircle ; Project CircleVector for the view: the centre, the quadrant bits and the radius, A = 1 if seen
+> The view picks the axes: front x/z and y/z, rear the same with z's sign flipped, left and right with x and z exchanged. Each screen coordinate is Divide24 of the coordinate by the depth; the quadrant bits go to CircleQuadrant $861C (bit 0 x positive, bit 1 y positive), the centre to CircleX $861B and CircleY $861A, the radius ($A000 / depth, DivideFraction) to CircleRadius $861D. A = 0 when the object is behind the view or too far (depth above $A000).
+$7612 ProjectCircleX
+$7634 ProjectCircleY
+$7659 ProjectCircleRadius
+$7674 ProjectCircleScale
+$767F ProjectCircleDivide
+$7688 ProjectCircleNear
+$7692 ProjectCircleDone
+$7695 ProjectCircleRear
+$76C0 ProjectCircleToProjectCircleX
+$76C3 ProjectCircleSide
+$76EC ProjectCircleSideY
+$770E ProjectCircleSideZ
+$7733 ProjectCircleSideRadius
+$774E ProjectCircleSideScale
+$775A ProjectCircleSideDivide
+$7763 ProjectCircleSideNear
+$776D ProjectCircleSideDone
+$7770 ProjectCircleRight
+$7790 ProjectCircleRightX
+$7793 ProjectCircleStore
+$7799 DivideShort
+$77A0 c Divide24 ; D = HL:C / DE:B as a fraction (24-bit numbers): the screen offset of a coordinate at a depth
+> Shift and subtract. The alternate C counts the two calls (one for x, one for y): the first sets bit 2 of the alternate B, the second bit 3 when the coordinate is smaller than the depth. The result is in D (and A).
+$77AD Divide24Big
+$77B4 Divide24Shift
+$77C4 Divide24Align
+$77C6 Divide24AlignHigh
+$77D2 Divide24AlignTop
+$77DD Divide24Equal
+$77E8 Divide24FirstSmall
+$77ED Divide24Small
+$77F3 Divide24SmallCount
+$77F8 Divide24SmallLoop
+$780A Divide24Over
+$7820 Divide24OverBit
+$7828 Divide24OverDone
+$782A ProjectCircleNone
+$782C Divide24Top
+$7831 Divide24SmallOver
+$7836 Divide24Finish
+$7839 Divide24Join
+$783B c DivideFraction ; D = A * 256 / B: an 8-bit fraction, B > A
+$783D DivideFractionE
+$783F DivideFractionLoop
+$784C DivideFractionSub
+$7853 c MoveSunPlanet ; Rotate the sun's and the planet's positions by this frame's roll, pitch and speed
+$7861 c StationRunIn ; After a launch: move slot 0 (the station) until it is behind the ship, then normal flight
+> StationLaunch $711D set: slot 0 is moved (MoveShipVector $9C83) each frame until all three coordinates' top bytes are 0 (the station is at the ship); then StationLaunch is cleared and its energy $F0. Without it, a slot 0 whose energy is 0 is moved once with StationLaunch set to $FF.
+$7874 StationRunInMove
+@module stardust ; The stardust: 16 moving dots in the space views, and the in-system jump
+@about Stardust $7898 runs once a pass in a space view (f1, w1, d1: 1248 runs), after ClearView has emptied the back buffer. The 16 dots of StarDots $7E8D (5 bytes each) move by the speed, the roll and the pitch; each dot's back buffer address and pixel mask go into the list StarList $7F82 (StarPlot), and when the last dot is done StarPlotAll $7C92 XORs every listed pixel into the buffer. Nothing is erased: ClearView has cleared the buffer, and the list is started again each pass. The front view moves the dots away from the centre, the rear view towards it, the side views sideways (StardustSide $7BFC). A dot off the screen is made again at random (StarRespawn $7D55).
+@about The J key's in-system jump (InSystemJump $7EDE) moves the sun, the planet and the station $2000 closer, and makes the next stardust frame draw two passes at speeds $1E and $10 (StarWarp $7EDD).
+
+$7898 c Stardust ; Move and draw the 16 dots for the view; after a J jump, two fast passes first
+$78B1 c StardustPass ; One pass: the rates into StarRoll and StarPitch, the speed halved + 1, then every dot
+> StarCount $7F7C counts the dots (16, or 4 in witch space: WitchSpace); a change of view (StarView $7F7B against ViewIndex) reshuffles the table (StarShuffle). Each dot's 5 bytes are unpacked into StarX, StarY (sign in bit 7, moved to StarSigns bits 7 and 6), StarZ, StarXFrac, StarYFrac; the roll and pitch signs go to StarSigns bits 4 and 3.
+$78D7 StardustPassGetStarView
+$78FD StardustPassSetStarX
+$790A StardustPassSetStarY
+$792A StardustPassGetStarPitch
+$7938 StardustPassIfBelow
+$7943 c StardustFront ; The front and rear views: a dot moves out by its depth, then by the roll and the pitch
+> X += X * speed / depth (MulBits, then DivideShifted or DivideFrac8), Y the same, the depth decreases by the speed (the rear view: the other way). Then the roll turns X into Y and the pitch moves Y (StarRollPitch); the dot's address and mask are added to StarList (StarPlot $7B5D).
+$7968 StardustFrontIfNotBelow
+$796D StardustFrontGetStarDepth
+$7980 StardustFrontJoin
+$7986 StardustFrontJoin2
+$7999 StardustFrontIfNotZero
+$79A0 StardustFrontSetStarXFrac
+$79CB StardustFrontGetStarDepth2
+$79DE StardustFrontJoin3
+$79E4 StardustFrontJoin4
+$79F7 StardustFrontToStarRespawn
+$79FA StardustFrontIfNotZero2
+$79FF StardustFrontSetStarYFrac
+$7A13 StardustFrontGetStarDepth3
+$7A17 StardustFrontJoin5
+$7A1E StardustFrontGetStarRoll
+$7A40 StardustFrontIfNotZero3
+$7A46 StardustFrontIfNotZero4
+$7A50 StardustFrontIfNotZero5
+$7A56 StardustFrontGetStarX
+$7A60 StardustFrontGetStarX2
+$7A67 StardustFrontSetStarX
+$7A6A StardustFrontGetStarRoll2
+$7A88 StardustFrontIfNotZero6
+$7A8E StardustFrontIfNotZero7
+$7A98 StardustFrontIfNotZero8
+$7A9C StardustFrontGetStarY
+$7AA5 c StarRollScale ; HL = the coordinate in A times the rate in C, 4 bits (MulBits), doubled and rounded
+$7AB0 StarRollScaleGetStarY
+$7AB9 StarRollScaleSetStarY
+$7ABC c StarRollPitch ; Apply the roll and the pitch to the dot being moved
+$7ADE StarRollPitchIfNotZero
+$7AE2 StarRollPitchJoin
+$7AE5 StarRollPitchJoin2
+$7AE8 StarRollPitchJoin3
+$7B2E StarRollPitchIfNotZero2
+$7B32 StarRollPitchIfNotZero3
+$7B39 StarRollPitchToStarRespawn
+$7B3C StarRollPitchJoin4
+$7B3E StarRollPitchJoin5
+$7B55 StarRollPitchIfNotZero4
+$7B5D c StarPlot ; Add the dot's back buffer address and mask (StarAddress) to StarList, or respawn it off the screen
+$7B6A StarPlotIfNotZero
+$7B84 StarPlotGetStarPointer
+$7B94 StarPlotIfZero
+$7B9F StarPlotIfZero2
+$7BB3 c StardustNext ; The next dot: its 5 bytes back into the table, then the next one in
+$7BD0 StardustNextSetStarX
+$7BDD StardustNextSetStarY
+$7BFC StardustSide
+$7C07 StardustNextToStardustFront
+$7C0A StardustNextIfNotZero
+$7C2D StardustNextGetStarSigns
+$7C47 StardustNextGetStarRoll
+$7C55 StardustNextGetStarDepth
+$7C5D StardustNextLoop
+$7C73 StardustNextIfNotZero2
+$7C75 StardustNextIfNotZero3
+$7C7B StardustNextGetStarX
+$7C84 StardustNextGetStarX2
+$7C8C StardustNextSetStarX2
+$7C92 c StarPlotAll ; Plot the dots of this pass: XOR each listed address with its mask (StardustNext jumps here after the last dot)
+$7C9B StarPlotAllLoop
+$7CA7 c NegateX ; A = -A and StarSigns bit 6 flipped (the dot crossed the axis)
+$7CB4 c NegateY ; A = -A and StarSigns bit 7 flipped
+$7CC1 c MulBits ; HL = A * C, the low B bits of C (shift and add)
+$7CC9 MulBitsLoop
+$7CCC MulBitsJoin
+$7CD2 MulBitsIfNotBelow
+$7CD5 c DivideShifted ; D = A:L shifted left twice divided by B (StardustFront's depth division)
+$7CE5 DivideShiftedLoop
+$7CF3 DivideShiftedJoin
+$7CF9 DivideShiftedIfNotBelow
+$7CFB c DivideFrac8 ; D = A * 256 / B for a small A
+$7CFD DivideFrac8Loop
+$7D08 DivideFrac8Join
+$7D0F c StarAddress ; DE = the back buffer address of the dot, C = its pixel mask
+> The centre is (128, 63): X added or subtracted by StarSigns bit 7, Y by bit 6 (bit 6 set: the lower half, D bit 3). D starts at $C0, the back buffer.
+$7D26 StarAddressIfNotZero
+$7D27 StarAddressJoin
+$7D32 StarAddressIfNotZero2
+$7D35 StarAddressJoin2
+$7D50 StarAddressLoop
+$7D55 c StarRespawn ; A dot left the screen: make it again at random for the view
+$7D68 StarRespawnFront
+$7D76 StarRespawnMake
+$7D8F StarRespawnIfNotZero
+$7DA7 StarRespawnIfNotZero2
+$7DAB StarRespawnToStarRespawnMake
+$7DAE StarRespawnIfNotZero3
+$7DD0 StarRespawnIfZero
+$7DD7 StarRespawnIfZero2
+$7DE5 StarRespawnGetJumpToggle
+$7DFE StarRespawnLoopCallStarRandom
+$7E03 StarRespawnLoop
+$7E11 StarRespawnCallStarRandom
+$7E23 StarRespawnGetStarPitch
+$7E2D StarRespawnLoop2
+$7E35 StarRespawnIfNotZero4
+$7E38 StarRespawnJoin
+$7E3E StarRespawnLoop3
+$7E49 StarRespawnIfNotZero5
+$7E69 StarRespawnIfZero3
+$7E6D c StarShuffle ; After a change of view: renumber the dot table (known from the code only)
+$7E74 StarShuffleLoop
+$7E82 StarShuffleIfNotBelow
+$7E86 c StarRandom ; A = the next random byte of the dot generator (HL the seed)
+$7E8D b StarDots 5 ; The 16 dots: X (bit 7 the sign), Y (bit 7 the sign), the depth, the X fraction, the Y fraction
+$7EDD b StarWarp ; 1: the next Stardust draws the jump's two fast passes
+$7EDE c InSystemJump ; The J key: move the sun, the planet and the station $2000 closer when nothing is near
+> KeyViews $FC0A bit 6 (cleared here). Refused while the sun or the planet is near (SunClose $81A4, PlanetClose $81A5), while another ship is about (ShipsAbout $9C94) or with StationLaunch clear. Then the ships of slots 1-6 are cleared (ClearShips $9509), every second jump a ship may follow (JumpEncounter $9C93), StarWarp is set and JumpCloser moves each of the three z coordinates. No recording pressed J.
+$7F18 InSystemJumpSetStarWarp
+$7F2D c JumpCloser ; The z coordinate at IX+6..8 moves $2000 towards the ship (a far one by $20 pages, a near one to $2000 on the other side)
+$7F42 JumpCloserIfNotZero
+$7F45 JumpCloserJoin
+$7F4C JumpCloserIfBelow
+$7F61 JumpCloserIfBelow2
+$7F6F b StarRoll ; The roll rate for the dots (bit 7 moved to StarSigns)
+$7F70 b StarPitch ; The pitch rate for the dots
+$7F71 b StarRollWork
+$7F72 b StarFlags
+$7F73 w StarPointer ; The dot being moved
+$7F75 b StarSpeed ; The speed for the dots: SpeedRate / 2 + 1
+$7F76 b StarXFrac
+$7F77 b StarX
+$7F78 b StarYFrac
+$7F79 b StarY
+$7F7A b StarDepth
+$7F7B b StarView ; The view the dots were made for
+$7F7C b StarCount ; Dots left in this pass
+$7F7D w StarListPointer ; The next free entry of StarList
+$7F7F b StarSigns ; Bit 7 X negative, bit 6 Y negative, bit 5 the rear view, bits 4 and 3 the roll and pitch signs
+$7F80 b StarListCount ; The number of dots StarList holds (0 at the start of each pass)
+$7F81 b JumpToggle ; Rotated by every J jump: every second one may bring a ship
+$7F82 b StarList 3 ; The dots of this pass: the back buffer address and the mask of each, 16 of 3 bytes
+@module backbuffer ; The back buffer, the dashboard save and restore, the choice of view or screen
+@about The 3D view (the top 128 lines) is drawn into the back buffer $C000-$CFFF, laid out like the screen's top two thirds, and copied to $4000-$4FFF once a frame (CopyBackBuffer). The dashboard (the bottom third and its attributes) is saved before a full-screen page and put back after (DashboardSave, DashboardRestore).
+@about The keys 1-4 and ENTER, L, K, P, O, I pick what is shown (SelectView): in flight 1-4 are the front, rear, left and right views; docked 1 launches and 2-4 are the buy, sell and equip screens; the six letters are the screens of the table at $D000 (ScreenTable).
+
+$7FBE c CopyBackBuffer ; Copy the back buffer $C000-$CFFF to the screen's top two thirds
+> Four CopyThird calls of 1024 bytes: the even pixel lines of the top third ($4000), the even lines of the middle third ($4800), then the odd lines of both ($4100, $4900). The buffer address is the screen address with bit 15 set. It runs 1830 times in f1, w1, d1.
+$7FE3 c CopyThird ; Copy every other pixel line of one third: 8 character rows of 4 lines of 32 LDI
+$7FE5 CopyThirdRow
+$7FEA CopyThirdLine
+$8042 c DashboardRestore ; Put the dashboard back if a full-screen page wiped it (the top-left byte reads $FF)
+> The screen byte $4000 is $FF only while a full page is up (ClearScreen draws the frame). Then: SoundOff $94FE, the page cleared (ClearScreenVector $D036), the side attributes of the top two thirds zeroed (columns 0 and 31), the dashboard's pixels from DashSave $C000 and its attributes from $5B00, the tints again, and the scanner put in save mode (ScannerSaveMode $98A2).
+$804B DashboardRestoreNow
+$8059 DashboardRestoreLoop
+$8080 c ClearView ; Clear the back buffer with the view's frame: lines 0 and 127 solid, a pixel at each side
+> With interrupts off and SP at $D000 it PUSHes 4096 bytes: the bottom line $FF, 126 lines of $01 ... $80 (the side pixels), the top line $FF. f1, w1, d1: 1827 runs.
+$8098 ClearViewBottom
+$80A6 ClearViewLine
+$80C5 ClearViewTop
+$80D1 w ClearViewSP ; ClearView's and CallScreen's saved stack pointer
+$80D3 c SelectView ; Change the view or the screen on the keys 1-4, ENTER, L, K, P, O, I
+> KeyViews $FC0A bits 0-3 are 1-4: in flight the views 0-3 (SetView); docked key 1 is the launch (SceneLaunch $93ED) and 2-4 the screens 4-6 (CallScreen). KeyScreens $FC08 bits 5 to 0 are I, O, P, K, L and ENTER: the screens 7-12. Nothing while TunnelLoop $D040 is set. The keys are cleared after (SelectViewDone).
+$80F0 SelectViewDocked
+$8104 SelectViewSet
+$8109 SelectViewKey1
+$8114 SelectViewFront
+$8119 SelectViewScreens
+$8124 SelectViewScreenBit
+$812A SelectViewScreen
+$8136 c SelectViewDone ; Clear the view keys
+$813E c CallScreen ; Call the routine A of ScreenTable $D000 with SP at $D000 and the sound off after
+> The CALL at $8153 is patched to $D000 + 3 A. The screens draw full pages; the dashboard comes back with DashboardRestore.
+$8150 CallScreenSetCallScreenCall1
+$8153 CallScreenCall
+$815D c SetView ; ViewIndex = C unless it is already (a screen 7 and up is drawn again)
+> A screen's key while that screen is up does nothing; $D03F set takes the other way ($819A: below 4 a view, else ViewIndex 0).
+$816C SetViewNew
+$8173 SetViewSetViewIndex
+$817E c DashboardSave ; Save the dashboard's pixels to DashSave $C000 and its attributes to $5B00
+$819A SetViewOverride
+@module dashboard ; The dashboard: the distances to the sun and the planet, the compass, the bars
+@about DashDistances $81A9 runs once a frame in flight: it measures the sun (the cabin temperature, TooClose), the planet (the altitude, the safe zone) and points the compass at the planet, or at the station inside the safe zone. DrawBars $84D9 redraws the 13 bars whose value changed.
+
+$81A3 b DashWork 6 ; DashDistances' results: SunClose, PlanetClose, the compass x and y offsets, the compass behind flag
+$81A4 SunClose ; 1 when the sun's coordinates are all below $0100 (its distance was measured)
+$81A5 PlanetClose ; 1 when the planet's are all below $0200
+$81A6 CompassX ; The compass dot's x offset (bit 7 the sign)
+$81A7 CompassY ; The compass dot's y offset
+$81A8 CompassBehind ; 1 when the target is behind (z negative): the hollow dot
+$81A9 c DashDistances ; The sun's and the planet's distances on the bars, the safe zone, the compass
+> The sun: with all three top bytes clear its distance (VectorLength) gives the cabin temperature (BarCabinTemp, through DistanceBand) and below $2000 SunNear; a distance below $4000 in the other test sets TooClose ($82D1). The planet: below $0200 on all axes its distance gives the altitude ($A0 minus it, below $4000 TooClose) and SafeZone. The compass points at the planet, or at slot 0 (the station) when SafeZone is set and StationLaunch is not $FF: each of x and y divided by the distance (CompassDivide) times 8, the sign kept; then DrawCompass. f1, w1, d1: 1076 runs.
+$81EC DashDistancesSetSunNear
+$81F7 DashPlanet
+$8246 DashSafe
+$825D DashCompassStation
+$8271 c CompassDivide ; A = the word at IX divided by DE, times 8, with the sign of IX+1
+$827A DashCompassFar
+$827E DashCompassPlanet
+$8288 DashCompassPlanetXY
+$829C DashCompassStore
+$82AA DashCompassSide
+$82B0 c CompassDivideSigned ; The same for a 3-byte coordinate at IX (the sign bit cleared first)
+$82BB CompassDivideScale
+$82D0 CompassDivideDone
+$82D1 c SetTooClose ; TooClose = 1
+$82D7 c DistanceBand ; HL = 1.5 * distance; set Condition yellow below $50 pages, red flashing from $78
+> Known from the code only: no recording came that close.
+$82E8 DistanceBandFar
+$82F4 DistanceBandRed
+$82F8 DistanceBandNear
+$82FE DistanceBandStore
+$8302 c LoadVector ; DE, BC, HL = the three top words of the 9-byte vector at IX
+$8315 c VectorLengthAbs ; VectorLength of the vector at IX with the three signs cleared
+$8322 c VectorLength ; HL = the length of the vector at IX: sqrt(x^2 + y^2 + z^2) on the top bytes
+> The three words are shifted left together until one would overflow (A counts the shifts), the top bytes squared from the table at $BE00 (Square $87BF) and summed, the square root taken (SqrtVector $9C86), and the result shifted back.
+$8327 VectorLengthShift
+$8338 VectorLengthX
+$833C VectorLengthY
+$8342 VectorLengthZ
+$8348 VectorLengthSquares
+$8359 VectorLengthZ2
+$8361 VectorLengthSum
+$8377 VectorLengthRoot
+$837B VectorLengthBack
+$8386 VectorLengthBig
+$838F VectorLengthDone
+$8390 c DrawCompass ; Draw the compass dial and its dot (the solid dot in front, the ring behind) in a space view
+$83A2 DrawCompassDot
+$83BA DrawCompassUp
+$83C5 DrawCompassDown
+$83C7 DrawCompassDownLoop
+$83D0 DrawCompassDial
+$83E5 DrawCompassRight
+$83EA DrawCompassLoop
+$83F5 DrawCompassPlot
+$83FF DrawCompassPlotLine
+$8415 DrawCompassLeft
+$841A DrawCompassLoop2
+$8425 DrawCompassPlotLeft
+$842F DrawCompassPlotLeftLine
+$8445 c NextLineDown ; HL = the next pixel line's row start when L passed a character row (the screen's layout)
+$844F c NextLineUp ; The same going up (known from the code only)
+$8459 c DrawCompassDialArt ; Copy the 24-line dial (CompassDial) to $5035
+$8462 DrawCompassDialLine
+$8477 w CompassAddress ; The screen address of the dot's top line
+$8479 b CompassDot 8 ; The dot being drawn: 4 lines of 2 bytes, shifted into place
+$8481 b CompassDotFront 8 ; The dot for a target in front (4 lines of 2 bytes)
+@res dashboard/compass.bin
+$8489 b CompassDotBehind 8 ; The dot for a target behind
+@res dashboard/compass.bin
+$8491 b CompassDial 3 ; The compass dial: 24 lines of 3 bytes
+@res dashboard/compass.bin
+$84D9 c DrawBars ; Redraw every dashboard bar whose value changed
+> 11 solid bars (DrawBar) then the roll and pitch markers (DrawMarker, with BarMarkerMode 1), each at its address of BarAddresses. f1, w1, d1: 1079 runs, 500 bars drawn.
+$84E3 DrawBarsNext
+$84F4 DrawBarsSkip
+$8507 DrawBarsMarker
+$8514 DrawBarsMarkerSkip
+$8523 b BarMarkerMode ; 1 while the two markers are drawn
+$8524 w BarAddresses ; The screen address of each bar's top line: 6 on the left, the speed, the 4 banks, the roll and the pitch
+$8540 c DrawMarker ; Draw a roll or pitch marker: a 3-pixel mark at the value
+$854F c DrawBar ; Draw a bar: 5 bytes wide, A pixels long, 3 pixel lines
+$855B DrawBarRows
+$8569 DrawBarLength
+$8579 DrawBarEdge
+$857A DrawBarEdgeBits
+$857E DrawBarEdgeDone
+$8582 DrawBarBytes
+$8594 DrawBarFull
+$8595 DrawBarLine
+$8598 DrawBarFill
+$85A4 DrawBarClear
+$85A5 DrawBarClearByte
+$85A9 DrawBarEnd
+$85B5 DrawBarWhole
+$85B7 DrawBarWholeLine
+$85BA DrawBarWholeByte
+$85CC DrawBarShort
+$85CE DrawBarShortLine
+$85E1 DrawBarEmpty
+$85E3 DrawBarEmptyLine
+$85F5 DrawMarkerBits
+$85FF DrawMarkerShift
+$8603 DrawMarkerDone
+$8606 c BarByte ; Write the bar's edge byte C; for a marker keep the frame pixel at the left
+$8614 BarByteFrame
+@module circles ; The circles: the sun filled, the planet outlined, the chart's range circle, the hit flashes
+@about One circle engine draws every circle: the centre in CircleX $861B and CircleY $861A (offsets from the view's centre, the signs in CircleQuadrant $861C bits 0 and 1), the radius in CircleRadius $861D. CircleMode $8629 is 0 for a filled circle (the sun: DrawCircleDI), 1 for an outline (the planet: DrawCircle). A radius below 9 is not drawn.
+@about DrawCircleShape $86EE turns the centre into screen coordinates and sorts the circle by how it meets the view's edges: wholly inside (four arcs, CircleArcs $87C8), or cut by the top, the bottom or the sides (the clipped fillers $87FE-$893F). Each row's half width comes from the table of squares at $BE00 (HalfChord $8ACD); the outline is stepped like a Bresenham circle in the alternate registers, the fill writes whole bytes by PUSHing $FFFF into the row (a JR patched into one of six chains of 16 PUSH AF, FillSpan1-6).
+@about The code draws into the back buffer: page $C0 and 128 lines. DrawChartCircle $8E29 patches 32 bytes of it (the addresses at CirclePatchSites) for the chart screens on $4000 and puts them back after; HitFlash $8F0D patches the base (CircleBase) to draw on the real screen too.
+
+$8619 b CircleZero ; One byte no code reads (known from the code only)
+$861A b CircleY ; The centre's offset from the view's centre, down or up by CircleQuadrant bit 1
+$861B b CircleX ; The centre's offset across, by bit 0
+$861C b CircleQuadrant ; Bit 0 x positive (right), bit 1 y positive (up), bits 2 and 3 the centre off the view across or down
+$861D b CircleRadius ; The radius in pixels (9 and more drawn)
+$861E b CircleRowOffset ; DrawCircleShape's working copy of CircleY, clipped to the edge it meets
+$861F b CircleColOffset ; Its copy of CircleX
+$8620 b CircleScreenY ; The centre's row: 64 - or + CircleY
+$8621 b CircleScreenX ; The centre's column: 128 + or - CircleX
+$8622 b ClipHalfWidth ; The half width of the circle at the clipping row (HalfChord)
+$8623 w CircleSP ; The stack pointer saved while the fills PUSH and the chart patches POP
+$8625 w HalfChordTarget ; HalfChord's radius² - row²
+$8627 b CirclePointX ; PointRight's x
+$8628 b RunRight ; 1 while the run being plotted grows x (the right half), 0 while it shrinks x; the fills read it to pick the edge test
+$8629 b CircleMode ; 0 a filled circle (the sun), 1 an outline (the planet)
+$862A b ChartPatchCount ; The 32 bytes DrawChartCircle patches and puts back
+
+$862B c OutlineRunUpRight ; Plot an outline run: up the screen, x growing (the alternate registers step it)
+$8643 c OutlineRunUpLeft ; Plot an outline run: up the screen, x shrinking
+$865A c OutlineRunDownRight ; The same, down the screen, x growing (known from the code only)
+$8672 c OutlineRunDownLeft ; The same, down the screen, x shrinking (known from the code only)
+$8689 c ArcRunRight ; Plot one arc run of the outline, x growing (31504 instructions in the recordings)
+$86A1 c ArcRunLeft ; Plot one arc run, x shrinking
+$86B8 c OutlineEdgeUp ; Plot an edge run going up, filled or outlined by CircleMode
+$86C4 c OutlineEdgeDown ; Plot an edge run going down
+$86D0 c DrawCircleDI ; Draw a filled circle with interrupts off (the sun and HitFlash: k2's explosion drew 45; no grabbed frame shows a sun's disc)
+$86DE c DrawCircle ; Draw an outlined circle (the planet), radius 9 or more
+> f1, w1, d1: 899 calls, 2697 instructions. CircleMode = 1, then DrawCircleShape.
+$86E4 DrawCircleOutline
+$86E9 DrawCircleNow
+$86EE c DrawCircleShape ; Draw the circle CircleX, CircleY, CircleQuadrant, CircleRadius: sort it by the view's edges
+> The screen centre is (128, 64): CircleScreenX $8621 = 128 +/- CircleX, CircleScreenY $8620 = 64 +/- CircleY by the quadrant bits; bits 2 and 3 of the quadrant (set by the projection) mark a centre off the view. From where the circle meets the edges (x against $78, y against $40) it goes to CircleArcs (all inside, 3028 of 3201 calls) or a clipped filler.
+$8702 DrawCircleShapeIfNotZero
+$870E DrawCircleShapeIfZero
+$8728 DrawCircleShapeReturn
+$872B DrawCircleShapeReturn2
+$872C DrawCircleShapeIfNotBelow
+$8733 DrawCircleShapeReturn3
+@isub $8719 CP $78
+$8736 DrawCircleInside
+$873F DrawCircleShapeIfBelow
+$8745 DrawCircleShapeIfBelow2
+$874B DrawCircleAbove
+$875E DrawCircleSide
+$878E DrawCircleCorner
+$87BC DrawCircleShapeToFillSidesOtherTop
+$87BF c Square ; HL = A * A from the table of squares ($BE00 low bytes, $BF00 high bytes)
+$87C8 c CircleArcs ; A circle wholly inside the view: the four quarter arcs
+$87D4 c CircleArc ; One quarter arc from the circle's top or bottom row, by the screen address of its first point
+$87F4 FillClippedTop
+$87FE c FillClipped ; A circle cut by the view's top or bottom: the rows inside, each from its half width
+$8802 FillClippedJoin
+$8840 FillClippedOtherTop
+$884A FillClippedOther
+$884D FillClippedJoin2
+$8877 FillClippedIfZero
+$888E FillSidesTop
+$8898 FillSides
+$889B FillClippedJoin3
+$88AC FillClippedCallSpanEndRight
+$88B8 FillSidesOtherTop
+$88C2 FillSidesOther
+$88C5 FillClippedJoin4
+$88EE FillClippedCallPointLeft
+$8910 FillClippedGetClipHalfWidth
+$8921 FillClippedCallPointRight
+$893F c FillCorner ; A circle cut by two edges
+$895B FillCornerSetCircleScreenY
+$8985 c SpanEndLeft ; One end of a row run, the left side (known from the code only)
+$89A1 c SpanEndRight ; The other end (known from the code only)
+$89C0 SpanEndRightIfNotZero
+$89C3 c ArcSeed ; The alternate registers for an arc: the Bresenham terms from the centre (known from the code only)
+$89D4 c PointLeft ; HL = the back buffer address of point (C, A), C = the mask of its leftmost pixel
+$89E8 PointLeftLoop
+$89EF c PointRight ; HL = the address of point (C, A), the mask of its rightmost pixel (B kept in CirclePointX)
+$8A0C PointRightLoop
+$8A16 c SpanStep ; The run's Bresenham step from the half width at the row
+$8A25 c SpanStart ; The run's start address and mask (outline mode goes to OutlineSpanStart $8FF9)
+$8A37 FillRunUp
+$8A4F SpanStartLoop
+$8A65 SpanStartLoop2
+$8A67 SpanStartLoop3
+$8A6F SpanStartIfZero
+$8A7B SpanStartIfBelow
+$8A82 FillRunDown
+$8A9A SpanStartLoop4
+$8AB0 SpanStartLoop5
+$8AB2 SpanStartLoop6
+$8ABA SpanStartIfZero2
+$8AC6 SpanStartIfBelow2
+$8ACD c HalfChord ; A = sqrt(radius^2 - row^2): the half width of the circle at a row, by bisection over the squares
+$8AE3 HalfChordLoopGetHalfChordTarget
+$8AEF HalfChordIfNotBelow
+$8AF7 FillSpanTest1
+$8B08 HalfChordIfNotZero
+$8B0D HalfChordJoin
+$8B0F FillSpan1
+$8B13 HalfChordIfNotZero2
+$8B25 HalfChordIfNotBelow2
+$8B31 HalfChordJoin2
+$8B33 c FillPushes1 ; A chain of 16 PUSH AF: FillSpan1's patched JR enters it to write the run's whole bytes
+> Known from the code only, like the five chains after it: the filled circle (the sun) was never drawn in a recording. The JR before each chain is patched with 16 minus the number of words; AF is $FFFF (FillWord $8FB6) and SP the run's end.
+$8B52 FillPushes1CallCircleLineDown
+$8B55 FillPushes1Join
+$8B62 FillPushes1Loop
+$8B66 FillPushes1Loop2
+$8B69 FillPushes1Join2
+$8B6D FillPushes1IfNotZero
+$8B72 FillPushes1IfNotBelow
+$8B7B FillPushes1IfNotBelow2
+$8B84 FillPushes1Loop3
+$8B8A FillSpanEdge1
+$8B93 FillPushes1Loop4
+$8B9C FillPushes1Loop5
+$8BA0 FillPushes1Join3
+$8BA4 FillPushes1Join4
+$8BA9 FillPushes1Join5
+$8BC6 FillPushes1IfNotBelow3
+$8BD2 FillPushes1Join6
+$8BD4 c FillPushes2 ; The second chain of 16 PUSH AF
+$8BF3 FillPushes2CallCircleLineDown
+$8BF8 c FillSpanTest2 ; Test a filled run against the view, then fill it (the second engine)
+$8C0C FillSpanTest2IfNotZero
+$8C11 FillSpanTest2Join
+$8C13 FillSpan2
+$8C17 FillSpanTest2IfNotZero2
+$8C24 FillSpanTest2IfNotBelow
+$8C30 FillSpanTest2Join2
+$8C32 c FillPushes3 ; The third chain
+$8C51 FillPushes3CallCircleLineDown
+$8C54 FillPushes3Join
+$8C61 FillPushes3Loop
+$8C6D FillPushes3IfNotZero
+$8C72 FillPushes3IfNotBelow
+$8C7C FillPushes3IfZero
+$8C86 FillPushes3Loop2
+$8C90 FillPushes3Loop3
+$8C96 FillSpanEdge2
+$8CA0 FillPushes3Loop4
+$8CA4 FillPushes3Join2
+$8CC6 FillPushes3IfNotBelow2
+$8CD2 FillPushes3Join3
+$8CD4 c FillPushes4 ; The fourth chain
+$8CF3 FillPushes4CallCircleLineDown
+$8CF8 c FillSpanTest3 ; Test a filled run against the view, then fill it (the third engine)
+$8D0C FillSpanTest3IfNotZero
+$8D11 FillSpanTest3Join
+$8D13 FillSpan3
+$8D17 FillSpanTest3IfNotZero2
+$8D26 FillSpanTest3IfNotBelow
+$8D32 FillSpanTest3Join2
+$8D34 c FillPushes5 ; The fifth chain
+$8D53 FillPushes5CallCircleLineDown
+$8D56 FillPushes5Join
+$8D63 FillPushes5Loop
+$8D6F FillPushes5IfNotZero
+$8D74 FillPushes5IfNotBelow
+$8D7D FillPushes5IfZero
+$8D81 FillPushes5Loop2
+$8D85 FillPushes5Loop3
+$8D8B FillSpanEdge3
+$8D94 FillPushes5Loop4
+$8D98 FillPushes5Join2
+$8DBC FillPushes5IfNotBelow2
+$8DC8 FillPushes5Join3
+$8DCA c FillPushes6 ; The sixth chain
+$8DE9 FillPushes6CallCircleLineDown
+$8DEE c CircleLineUp ; HL one pixel line up the back buffer (a character row boundary through CircleRowUp)
+$8DF3 c CircleRowUp ; DE one character row up
+$8E03 CircleRowUpIfNotBelow
+$8E08 c CircleLineDown ; HL one pixel line down
+$8E0D c CircleRowDown ; DE one character row down
+$8E1D CircleRowDownIfNotBelow
+$8E22 c CircleAbort ; Leave the circle code from inside a run: SP back from CircleSP
+$8E29 c DrawChartCircle ; Draw the chart's range circle: the circle code patched for the screen, then back
+> The centre is ChartCursorX / ChartCursorY ($D051, $D052) against the chart's centre (128, 96), the radius ChartRadius $D053. CirclePatchSites $8ECD lists 32 code bytes; ChartPatch $8E8D holds their values for the chart, ViewPatch $8EAD the values for the 3D view. d1: 4 runs (the charts).
+$8E37 DrawChartCircleIfBelow
+$8E3A DrawChartCircleSetCircleX
+$8E4A DrawChartCircleSetCircleY
+$8E65 DrawChartCirclePatch
+$8E81 DrawChartCircleRestore
+$8E8D b ChartPatch 8 ; The 32 code bytes for the chart screens
+$8EAD b ViewPatch 8 ; The 32 code bytes for the 3D view
+$8ECD w CirclePatchSites 8 ; The 32 code addresses DrawChartCircle patches
+$8F0D c HitFlash ; Draw the growing red circles of the ships just hit, on the screen (HitFlashes $9C96)
+> With HitFlashes set (the explosions; k2 frame 2572 on): the circle code is patched for the screen (CircleBase), and each slot whose flags (+$20) have bits 4 and 5 set gets 15 filled circles growing by 2 from its screen position (+$1C-+$1F) between two attribute fills (FillAttrsVector, L = $0A then $0F); then the base goes back to the back buffer.
+$8F2F HitFlashSlot
+$8F53 HitFlashGrow
+$8F6C HitFlashNext
+$8F88 c CircleBase ; Patch the circle code's screen base: HL and A the new page bytes
+$8FB4 b CircleSpare 2 ; Two zeros
+$8FB6 w FillWord ; $FFFF: AF for the PUSH chains
+$8FB8 c OutlineEdgeStart ; The outline mode's edge set-up at a cell start (known from the code only)
+$8FCC OutlineEdgeStartRight
+$8FDA OutlinePointStart
+$8FE3 c MaskRight ; B = the single pixel mask of column A (rotating right)
+$8FE6 MaskRightLoop
+$8FED c MaskLeft ; C = the single pixel mask of column CirclePointX (rotating left)
+$8FEF MaskLeftLoop
+$8FF9 c OutlineSpanStart ; The outline mode's run set-up
+$9004 c OutlineRunUp ; Plot an outline run going up (the stepping in the alternate registers)
+$9014 OutlineRunUpLoop
+$901A OutlineRunUpLoop2
+$901C OutlineRunUpLoop3
+$901F OutlineRunUpIfZero
+$902B OutlineRunUpIfBelow
+$9032 c OutlineRunDown ; Plot an outline run going down
+$9042 OutlineRunDownLoop
+$9048 OutlineRunDownLoop2
+$904A OutlineRunDownLoop3
+$904D OutlineRunDownIfZero
+$9059 OutlineRunDownIfBelow
+$9060 c OutlinePlotTop ; Plot the outline from the top of the circle (the first engine)
+$9074 OutlinePlotTopIfNotZero
+$9079 OutlinePlotTopJoin
+$907B OutlinePlotTopJoin2
+$907F OutlinePlotTopLoop
+$9090 OutlinePlotTopCallCircleLineDown
+$9093 OutlinePlotTopJoin3
+$90A0 OutlinePlotTopLoop2
+$90B0 OutlinePlotTopIfBelow
+$90B7 OutlinePlotTopIfZero
+$90BB OutlinePlotTopLoop3
+$90BF OutlinePlotTopLoop4
+$90C5 OutlinePlotTopLoop5
+$90CC OutlinePlotTopLoop6
+$90D6 OutlinePlotTopJoin4
+$90F6 OutlinePlotTopCallCircleLineDown2
+$90FB c OutlinePlotSide ; Plot the outline along a side (5730 runs)
+$910C OutlinePlotSideIfNotZero
+$9111 OutlinePlotSideJoin
+$9113 OutlinePlotSideJoin2
+$9117 c OutlinePixel ; OR the pixel C into (HL), step the row; the outline's inner loop (1787849 instructions)
+$912F OutlinePixelIfNotZero
+$9136 OutlinePixelJoin
+$9144 c OutlineStepX ; Rotate the mask: one pixel along x
+$9148 c OutlineStepY ; The Bresenham term for a step in y
+$914B c OutlineStep ; The Bresenham decision: a step in x, y or both
+$9155 OutlineStepIfBelow
+$915D OutlineStepIfBelow2
+$9165 OutlineStepJoin
+$916B OutlineStepIfBelow3
+$9173 OutlineStepIfBelow4
+$917B c OutlinePixels ; Plot the two mirrored pixels of a row and step (442222 instructions)
+$9188 OutlinePixelsJoin
+$918C OutlinePixelsJoin2
+$9191 OutlinePixelsLoop
+$91A7 OutlinePixelsCallCircleLineDown
+$91AC OutlineFillRight
+$91B6 OutlinePixelsLoop2
+$91BD OutlinePixelsIfBelow
+$91C0 OutlineFillLeft
+$91C6 OutlinePixelsLoop3
+$91CD OutlinePixelsJoin3
+$91CE OutlinePixelsLoop4
+$91D1 OutlineFillBoth
+$91D9 OutlinePixelsLoop5
+$91E0 OutlinePixelsIfZero
+$91E2 OutlinePixelsIfBelow2
+$91EA OutlinePixelsLoop6
+$91F1 OutlinePixelsJoin4
+$91F4 OutlinePlotSecond
+$9208 OutlinePixelsIfNotZero
+$920D OutlinePixelsJoin5
+$920F OutlinePixelsJoin6
+$9213 OutlinePixelsLoop7
+$9221 OutlinePixelsCallCircleLineDown2
+$9224 OutlinePixelsJoin7
+$9231 OutlinePixelsLoop8
+$9241 OutlinePixelsIfBelow3
+$9249 OutlinePixelsIfZero2
+$924D OutlinePixelsLoop9
+$9251 OutlinePixelsLoop10
+$9257 OutlinePixelsLoop11
+$925F OutlinePixelsLoop12
+$9266 OutlinePixelsJoin8
+$9286 OutlinePixelsCallCircleLineDown3
+$928B s CircleUnused ; One unused byte
+@module tunnel ; The ring tunnel of the launch, the dock and the hyperspace jump; the launch and dock sequences
+@about The tunnel is a row of concentric outlined circles at the view's centre ($0F, $0000 in the circle's variables). Each ring has a distance that one frame takes one from; its radius is 256 / distance (TunnelDivide) and only a ring of radius 4 or more is drawn, so the rings come out of the centre and grow to the edge. Two flags at $D03F: TunnelOn (a launch or dock tunnel is running) and TunnelLoop ($D040, the frames run inside one call). The launch, the dock and the jump patch three bytes of TunnelFrame for their shape: the jump of JR Z at $9317 (its own loop or one frame a call), the last frame (CP at $9325) and where the loop ends (JR C at $932A).
+
+$928C c TunnelFrameText ; The view's texts (ViewTexts), then a tunnel frame while TunnelOn is set
+> The flight loop's and the scenes' per-frame call. 1220 runs over f1, w1, d1.
+$9296 c TunnelStart ; Start the hyperspace tunnel when TunnelLoop is set: the controls and the ships reset, 16 rings
+> In witch space (WitchSpace non-zero) slot 0's energy is cleared and ship action 1 runs first. Then the view cleared, TunnelTop $42, the jump sound (SoundJump), the 16 rings of TunnelRings, the last frame at 1 and the end at TunnelStop: $42 frames in one call. 2 runs (the jumps of f1 and w1).
+$92B3 TunnelStartRings
+$92D6 c TunnelFrame ; Draw the tunnel: every ring one step nearer, then show the frame
+> With TunnelLoop set (the jump, the first frames of the launch and the dock) the frames loop here until TunnelTop passes the last frame; without it each call draws one frame and TunnelCount counts it.
+$92E3 TunnelFrameLoop
+$92E8 TunnelFrameRings
+$92F9 TunnelFrameStart ; the ring table (patched: TunnelRings or LaunchRings)
+$92FC TunnelFrameRing
+$9313 TunnelFrameNext ; the JR Z's offset at $9318 is patched: $05 the loop, $1E one frame a call
+$931E TunnelFrameShow ; the CP's value at $9326 (the last frame) and the JR C's offset at $932B (the end) are patched
+$9337 c TunnelCount ; One frame of a tunnel drawn a frame a call: TunnelEnd when TunnelTop reaches 0
+$9341 c TunnelStop ; The jump's tunnel over: both flags off, the 16 rings moved back by $BE, the view cleared and shown
+$934E TunnelStopRings
+$935E c TunnelOver ; The launch's first frames over: TunnelLoop off, the stardust made again
+$9364 c TunnelOff ; The dock's first frames over: TunnelLoop off (reached by a jump: dk, gx, m1, m2 docked)
+$9369 c TunnelEnd ; TunnelOn off and the 8 launch rings moved back by $C0 for the next time
+$9373 TunnelEndRings
+$937B c StarsRenew ; Make all 16 dots again ahead of the ship (StarRespawnFront patched for it), speed 7
+> StarRespawnFront's two range bytes become $83 (from $BF and $9F) and the RET at its tail ($7E0E) replaces the JP, so each call places one dot from StarSeed; the bytes go back after the 16 dots.
+$9395 StarsRenewDot
+$93AC c TunnelDivide ; C = A * 256 / B (A < B): a ring's radius from its distance
+> A restoring division, eight bits of quotient; C starts at $FE so the carry out of RL C after eight bits ends it. 3648 runs.
+$93AE TunnelDivideLoop
+$93B9 TunnelDivideSub
+$93C0 c TunnelDone ; After the jump: the attributes white unless in the nova system (NovaMission $D081), LastSunRadius 0, the arrival sound
+$93D0 b TunnelRingCount ; The number of rings (16 for the jump, 8 for the launch and the dock)
+$93D1 b TunnelRingsLeft
+$93D2 b TunnelTop ; The frames left
+$93D3 b TunnelRings 8 ; The 16 ring distances of the jump tunnel, 2.5 apart
+$93E3 b LaunchRings 8 ; The 8 ring distances of the launch and dock tunnel, and two spare bytes
+$93ED c SceneLaunch ; The launch from the station (Condition 0) or the dock (in flight), with the tunnel
+> Both: the 8 launch rings, TunnelTop $40, the last frame $30, TunnelOn and TunnelLoop set.
+> The launch (d1 at Lave, 3 runs over f1, w1, d1): Condition green, the views reset, the dashboard drawn and reset (ResetFlight $9946), the planet ahead ($80 at z+1 of PlanetPosition, the sun's sign flipped), slot 0 the station just behind the ship (z = -$F0, its three axes the unit ones, $7F) with energy $F0, the bars, 16 frames in the first call (TunnelOver), 36 frames of the tunnel over the stardust and 11 with the sun and the planet.
+> The dock (dk docked by hand at frame 2190 and by the computer at 3408; gx, m1, m2 docked too): speed $0C, no roll or pitch, the controls held, the first call's frames end at TunnelOff, then 47 frames, Condition docked, the dashboard saved, the controls cleared, the mission screens (ArrivalScreens), PirateStation and the status screen (CallScreen 7).
+$9413 SceneDock
+$9438 SceneDockFrame
+$945D SceneLaunchNow
+$94C8 SceneLaunchTunnel
+$94DA SceneLaunchFlight
+$94F4 c ResetControls ; The control accumulators $FF08-$FF0C zeroed, SpeedControl $0C00, then the keys
+$94FE c ClearKeyBytes ; Zero the five key bytes $FC08-$FC0C
+$9503 c ZeroBytes ; Zero B bytes from HL
+$9504 ZeroBytesLoop
+@module sound ; The beeper: the effects of the scenes, the background requests and the three generators
+@about The beeper is driven from the frame interrupt: IM2Handler calls SoundTick $9579 (through SoundTickVector $7125) once a frame (13398 runs), and each call plays one slice of the current effect inside the interrupt, so an effect sounds while the main loop waits; a long slice (the laser's sweep) holds the main loop for most of a frame (runtime-analysis.md 8). SoundRequests $7128 holds one bit per wanted effect (bit 0 the energy bomb, 1 the missile, 2 an explosion, 3 a ship hit by the laser, 4 the laser, 5 the ECM, 6 the player hit); SoundTick takes the lowest bit, arms its generator through SoundTable and clears the bit when the effect ends. SoundMode $9522 is the generator: 1 a sweep, 2 noise read from the ROM, 3 a pulse train; bit 7 adds a second phase. The three scene sounds (the launch, the jump, the arrival) instead play their whole effect at once with the interrupts off (SoundPlay); Game Over's (SoundGameOver) goes through SoundPlay with the interrupts on.
+@about Options bit 7 ($FC0E) is the sound switch: the pause menu's S turns it on (and clears the requests), Q off; every entry point returns at once when it is clear.
+
+$9509 c ClearShips ; The station not hostile (+$21 bit 2) and slots 1-7 free (energy +$22 zero), ShipCount 0
+> Run by the launch and the jump: no ship survives them.
+$951A ClearShipsLoop
+$9522 b SoundMode ; The generator playing: 0 none, 1 sweep, 2 noise, 3 pulses; bit 7 a second phase
+$9523 w SoundPitch ; E: the passes left, D: the pitch (the delay count)
+$9525 w SoundSource ; The pulse and noise generators read their levels from this address (the ROM)
+$9527 c SoundLaunch ; The launch's and the dock's whistle: a pulse train played at once
+> Called by the launch (SceneLaunchNow, as the tunnel starts), the dock (after SceneDock's frames) and GameOver: 4 runs, the launches of f1, w1 and d1 and the death of w1.
+$9532 c SoundArrive ; The arrival from the jump (TunnelDone): a pulse train played at once
+$953D c SoundJump ; The jump's start (TunnelStart): a pulse train played at once
+$9548 c SoundGameOver ; Game Over's sound: SoundSecond's 160-level phase, played by SoundPlay with the interrupts on (1 run, the death of w1)
+> The interrupt's SoundTick plays slices of the same effect while SoundPlay loops, and arms the explosion ShipsWreck requested in between. As SoundTick never set SoundBit for this effect, its SoundEnd flips the stale bit of the effect before (w1 frame 4308: the laser's bit 4 set again, SoundRequests $14); SoundPlay clears every request when it ends, so nothing is heard of it.
+$9551 c SoundPlay ; Play the armed effect to its end (the scene sounds have the interrupts off), then clear the requests and EI
+$955C SoundPlayDone
+$9561 c SoundBomb ; SoundTable, bit 0: the energy bomb, falling pulses
+> SoundTable is eight JPs, one per request bit; SoundTick computes the bit's number * 3. Bits 0, 1, 3 and 5 were set first in k2 (the bomb, the missile, a ship hit, the E.C.M.: SoundArmBomb, SoundArmMissile, SoundArmShipHit, SoundArmECM); bit 7 is never set and shares bit 6's code.
+$9564 c SoundMissile ; SoundTable, bit 1: the missile launch, pulses
+$9567 c SoundExplode ; SoundTable, bit 2: an explosion, two-phase pulses
+$956A c SoundShipHit ; SoundTable, bit 3: a ship hit, noise
+$956D c SoundLaser ; SoundTable, bit 4: the laser, a sweep
+$9570 c SoundECM ; SoundTable, bit 5: the ECM, a sweep
+$9573 c SoundHit ; SoundTable, bit 6: the player hit, noise
+$9576 c SoundSpare ; SoundTable, bit 7: as bit 6 (never requested)
+$9579 c SoundTick ; One slice of the effect playing, or arm the effect of the lowest request bit
+> Runs once a frame from IM2Handler; with SoundMode 0 and no request it returns at once. The jump to SoundTable is computed (bit number * 3 + $9561), so the static walk does not see it.
+$958C SoundTickBit
+$959E SoundTickJump
+$959F SoundTickMode
+$95A6 c SoundPulses ; The pulse generator: 64 beeper levels from SoundSource, each held D loops; the pitch steps per pass
+> The level is bit 3 or bit 4 of the ROM byte (the MIC and EAR bits of $FE), so the ROM's bytes give a rough waveform. The step added to D per pass is patched at $95BD and the 64 at $95AE. When E reaches 0: a second phase (bit 7, SoundSecond) or the end (SoundEnd).
+$95AD SoundPulsesNow
+$95AF SoundPulsesLoop
+$95B5 SoundPulsesDelay
+$95BB SoundPulsesPass
+$95CF c SoundSecond ; The second phase of a two-phase effect: 160 levels a pass, pitch $40, 2 passes
+$95E7 c SoundNoise ; The noise generator: 100 pulses whose length is a ROM byte / 4 (or / 2 + 8), D passes
+> SoundArmNoise patches the instruction at $95F2: SRL A ($CB $3F) for a ship hit, ADD A,$10 ($C6 $10) for the player hit, so the hit's pulses are longer. L steps through the ROM page in SoundSource.
+$95EE SoundNoiseNow
+$95F0 SoundNoiseLoop
+$95FC SoundNoiseHigh
+$9602 SoundNoiseLow
+$9607 c SoundPassEnd ; One pass done: D (or E) one less, the state saved, the end at 0
+$9610 c SoundEnd ; The effect over: SoundMode 0 and its request bit cleared
+$961B SoundEndBit
+$9624 c SoundSweep ; The sweep generator: 15 square cycles a pass, each pass's half period 2 E + the patched step
+$9628 SoundSweepNow
+$962F SoundSweepLoop
+$9634 SoundSweepHigh
+$963A SoundSweepLow
+$9641 c SoundArmLaser ; Arm the laser: a sweep of step $FD (falling), 2 passes
+$9648 c SoundArmECM ; Arm the ECM: a sweep of step $D3, 8 passes (k2: 10 runs from frame 2573)
+$964D c SoundArmSweep ; The step into SoundSweep, SoundMode 1, the first pass at once
+$9657 c SoundArmHit ; Arm the player hit: noise from the ROM at $1A1A, 1 pass
+$965E c SoundArmShipHit ; Arm a ship hit: noise from the ROM at $031A, 1 pass (k2: 15 runs from frame 3187)
+$9663 c SoundArmNoise ; The instruction patched in, SoundSource = A * 256 + $1A ($1A1A or $031A), SoundMode 2, the first pulses at once
+$9674 c SoundArmMissile ; Arm the missile's launch: pulses stepping by $E4 a pass (k2: 1 run, frame 2542)
+$9678 SoundArmBomb ; the energy bomb: pulses stepping by $FE
+$967A SoundArmPulses8
+$967F c SoundArmExplode ; The first phase of the explosion: 64 levels, pitch $40, 8 passes
+$9684 c SoundArmPulse ; Patch the level count (B) and the pitch step (C) into SoundPulses and play a pass
+$9692 c SoundArmTwoPhase ; Arm the explosion: SoundMode $83, the pitch step 2
+$969B c SoundArmLaunch ; Arm SoundLaunch: 80 levels, the step 2, pitch $40, $20 passes, the interrupts off
+$96A9 c SoundArmArrive ; Arm SoundArrive: 192 levels, the step $F0, pitch $C0, 12 passes
+$96AF SoundArmScene ; SoundMode 3 with the interrupts off
+$96B7 c SoundArmJump ; Arm SoundJump: 192 levels, the step $10, pitch $10, 10 passes
+$96BF b SoundBit ; The request bit playing; five spare bytes
+$96C5 c ShiftBC4 ; BC shifted right by 4 (ShiftBC3 by 3, ShiftBC2 by 2, ShiftBC1 by 1): the debris's scale
+$96C9 ShiftBC3
+$96CD ShiftBC2
+$96D1 ShiftBC1
+@module scanner ; The scanner, the condition light, the energy and the shields, the missile
+@about The scanner is the ellipse in the middle of the dashboard. Its background (13 bytes by 48 lines from $5049) is kept in ScannerSave $5B00 and copied back each frame before the ships are drawn (ScannerRestore). A ship within range ($40 in the high byte of each coordinate and x² + z² below $1600 in squares' units) is a dot of two or three pixels at (x * 3/16, z * 5/64) from the centre $558F, with a stalk of y * 5/64 lines up or down to it.
+@about The per-frame dashboard work (DashboardTick) prints the indicators, handles the missile keys and the damage, and recharges the energy banks. Condition $7104 is worked out again every frame: green by default, yellow while a ship other than the station is about (ConditionYellow), red with a shield down, flashing ($63) with the fourth energy bank not full; ConditionLight puts it on the two cells of the light and sets green for the next frame.
+
+$96D6 c ScannerNext ; The next slot
+$96D9 c DrawScanner ; Restore the scanner's background, then a dot and a stalk for each ship within range
+> Nothing is drawn while no slot is in use (ShipsPresent $9C96); a free slot has energy (+$22) 0; 553 of 1076 calls drew in f1, w1 and d1. The coordinates go through Divide16 with DE = $4000, so a high byte of $40 would be the scanner's edge.
+$96ED ScannerShip
+$9725 ScannerPlace
+$9745 DrawScannerSetSoundBit1
+$9765 DrawScannerSetSoundBit2
+$9785 DrawScannerSetSoundBit3
+$9788 ScannerScreen ; HL = the centre; x moves it by bytes and C gets the pixel
+$97A3 DrawScannerGetSoundBit1
+$97AA ScannerRight
+$97AD DrawScannerLoop
+$97B6 DrawScannerLoop2
+$97BB ScannerNearX
+$97C7 ScannerLeft
+$97CA DrawScannerIfNotZero
+$97D3 DrawScannerLoop3
+$97D6 ScannerDepth ; z moves HL by pixel lines
+$97E5 DrawScannerLoop4
+$97F0 ScannerDepthDown
+$97F9 ScannerStalk ; y draws the stalk from there
+$9807 DrawScannerLoop5
+$9815 ScannerStalkDown
+$9821 ScannerDot ; the dot: the stalk's pixel and its neighbours, across a byte edge at $9852 and $985E
+$982E ScannerSlotDone
+$983F ScannerTopClear ; the 13 bytes by 7 lines above the scanner cleared (the stalks that ran out of it)
+$9845 DrawScannerLoop6
+$9848 DrawScannerLoop7
+$9852 ScannerDotEdge1
+$985E ScannerDotEdge2
+$986A c ScannerLineDown ; Down a character row; leaving the dashboard ($58xx) abandons the ship's stalk
+$9877 ScannerLineDownThird
+$987C c ScannerLineUp ; Up a character row; above the scanner's first row abandons the ship's stalk
+$9885 ScannerLineUpRow
+$988E c ConditionYellow ; Yellow while a ship other than the station is about, unless the condition is red or flashing
+$98A2 c ScannerSaveOn ; Patch ScannerCopy to save the screen into ScannerSave, then copy it (known from the code only: 3 runs after a new dashboard)
+> The five patched bytes turn the copy around: EX DE,HL first, PUSH HL and POP HL in place of PUSH DE and POP DE, INC H for INC D. ScannerRestore puts the restore's bytes back.
+$98CD c ScannerRestore ; Once after a frame drew the scanner: clear the 11 x 8 bytes of the dashboard's middle and patch ScannerCopy back to a restore
+$98DB ScannerRestoreLine
+$98DE ScannerRestoreByte
+$990C c ScannerCopy ; Copy the scanner's 13 x 48 bytes between ScannerSave and the screen (patched for the direction)
+$9912 ScannerCopyFlip ; NOP or EX DE,HL
+$9915 ScannerCopyRow
+$991A ScannerCopyLine
+$9939 ScannerCopyFlipBack
+$9945 b ScannerSpare
+$9946 c ResetFlight ; The new flight's dashboard: the missiles, the indicators, the bars full or empty, the scanner's colours
+> The shields and the altitude full ($A0), the energy banks full, the cabin and laser temperatures 0, no missile armed, AutoDocked and ECMActive off. The two colour blocks either side of the scanner are 7 x 5 cells of $17 (red paper) or $1F (magenta) with the escape pod ($D089). 3 runs (the launches).
+$996F ResetFlightLoop
+$9974 ResetFlightJoin
+$997F ResetFlightColour
+$9989 ResetFlightBlocks
+$9995 c FillBlock ; Fill 7 rows of 5 attribute cells with C (DE = 27 the row's rest)
+$9997 FillBlockRow
+$999A FillBlockCell
+$99A3 b ConditionFlash ; The flashing's counter: bit 1 picks red or black
+$99A4 c ConditionLight ; Light the condition: red with a shield down, flashing every two frames, the colour on the two cells
+> In the menus and charts (views 4 and up) the condition is a text instead: tokens $21-$24 at row 1, column $1B (known from the code only). The missile's light at $5AE7 gets paper green when armed, red when locked.
+$99B6 ConditionRed
+$99BD ConditionColour
+$99CD ConditionRedPhase
+$99CF ConditionShow
+$99EF ConditionMissile
+$99F8 ConditionText
+$9A1D ConditionTextGreen
+$9A1F ConditionTextColour
+$9A23 ConditionTextOther
+$9A2F ConditionTextCells
+$9A3A c ConditionGreen ; Condition green for the next frame
+$9A40 c DashboardTick ; The flight views' dashboard: the indicators, the missile, the energy bomb, then the damage
+> The missile keys are cleared after use (KeyCombat AND $91 keeps A, E and C: T, F, U, W and Q are cleared).
+$9A59 c Damage ; Flashing with the fourth bank not full; the recharge; the shields take the hits, the banks what the shields cannot
+> Front hits ($9CA3) on the front shield, aft hits ($9CA4) on the aft one, the drain ($9CA2, one more with CloakOn $D041) on the energy banks. All four banks at 0 sets TooClose: the end (1 run, the death of d1).
+$9A6B DamageShields
+$9A8A DamageDrain
+$9A8D c DrainBanks ; Take C from each of B energy banks from E1 up; all empty ends the game
+$9A92 DrainBanksLoop
+$9AA3 DrainBanksNext
+$9AA7 c ShieldHit ; A shield (HL) loses 4 x the hit (C); past zero the banks lose the rest and the hit flash builds up
+> A hit of $46 or more, or a flash count past 12, calls DamageItem (DamageVector $D0F3): a random loss of fuel, equipment or cargo. No hit: the flash count ($9ADA) goes down by one.
+$9AB3 ShieldHitNow
+$9ABE ShieldHitStep
+$9AC6 ShieldDown
+$9ADA b HitCount ; The hits that went through the shields, +5 each, cooling by one a frame
+$9ADB c Recharge ; One recharge step, two with the energy unit ($D08B)
+$9AE2 c RechargeStep ; The topmost bank not full gains 1; all full, each shield gains 1
+$9AE7 RechargeBank
+$9AEE RechargeBankDown
+$9AFB c ShieldGain ; One more to a shield below $A0
+$9B01 c DrawIndicators ; The letters beside the bars and the two 2 x 2 indicators: E (ECM on) and S (the safe zone)
+> Printed through PrintCode with the back-buffer switch ($D04B's byte) off, at text positions (row, column) $1108, $1208, $1607 and $1615.
+$9B2A IndicatorNoECM
+$9B2D IndicatorECM
+$9B3E IndicatorNoSafe
+$9B41 IndicatorSafe
+$9B4A c PrintBlock ; Print two rows of two codes from DE at HL (row, column)
+$9B4D c PrintPair ; Print two codes at HL, then the next row
+$9B57 c PrintTwo ; Print the codes at DE and DE+1
+$9B5A c PrintNext ; Print the code at DE, DE+1
+$9B62 b IndicatorCodes 2 ; The bar letters ($26, $24) and the indicators: E on, E off, S on, S off (frame pieces when off)
+$9B74 c DrawMissiles ; The four missile cells at (row $17, column 2): a missile glyph ($25) for each left, a blank ($40) for the rest
+$9B86 DrawMissilesLeft
+$9B8F DrawMissilesGetMissiles
+$9B98 DrawMissilesEmpty
+$9BA7 c MissileKeys ; T arms the missile, U disarms it, F fires it at the locked target; an armed missile locks on the ship in the sights
+> MissileState $D047: 0 off, 1 armed, 2 locked on MissileTarget $D0E3. The lock beeps through the ROM's BEEPER ($03B5, HL $70, DE $60). A fired missile is a new ship (ShipAction $9C9C with the target in the high nibble and action 2); no free slot flashes the button ($D0BD bit 7). k2 armed one (T, frame 2485), locked it and fired it (F from 2519, launched at 2542); a Thargoid's E.C.M. destroyed it.
+$9BCF MissileKey
+$9BE5 MissileArm
+$9BF0 MissileDisarm
+$9BF3 MissileFire
+$9C0D MissileGone
+$9C1B b MissileLaunchFlag ; Cleared by ResetFlight; used by the next routine
+@module shipmotion ; The escape pod, the vectors, the ship loop and the motion: rotation, movement, tidying
+@about A ship slot is 39 bytes (ShipSlots $6048, slot 0 the station, slots 1-6 the other ships, slot 7 the player's missile and the title's ship). +$00, +$03, +$06: x, y, z, each three bytes (low, high, then the top bits with the sign in bit 7). +$09, +$0F, +$15: the three axes (nose, roof, side), three words each whose high byte is sign and magnitude, $7FFF one. +$1B speed, +$1C acceleration, +$1D and +$1E the roll and pitch counters (bits 0-3 the steps, bit 6 the direction, bit 7 for ever), +$20 the flags (bits 0-2 the ships it may launch, bit 3 fired, bits 4-5 the explosion, bit 6 tactics on, bit 7 an escape pod), +$21 the behaviour (bit 2 hostile, bits 5-6 protected), +$22 the energy (0 a free slot), +$23 the blueprint, +$25 the tactics state, +$26 the role (bit 0 a missile, 1 scoopable, 2 the station, 3 passive). The layout matches zx-elite's DATA-STRUCTURES; each field here is the one this code reads.
+@about The player never moves: every frame each ship is rotated about the origin by the player's roll and pitch and moved along z by the player's speed (MovePosition), then turned by its own counters (TurnShip) and moved along its own nose by its own speed (MoveShip). The axes drift from unit length and right angles and are tidied every frame (TidyAxis).
+
+$9C1C c EscapePod ; Q with an escape pod, not in witch space (WitchSpace): the pod is launched and the cargo, the pod and the legal status lost
+> Clears the cargo hold ($D06B, 17 bytes) and the fugitive bit of $D0B0, empties the hold to 20 tons free, 35 with the large cargo bay (FreeSpace $D07C), launches ship $17 (the pod as the player's ship) and counts 24 frames down to the arrival at the station (Arrived $71BA). m1 launched it at frame 2534 (Q), and m2 before its dock.
+$9C29 EscapePodKey
+$9C50 EscapePodCargo
+$9C68 EscapePodHold
+$9C7B b EscapePodSpare
+$9C80 c UpdateShipsVector ; The ship vectors: UpdateShips, MovePosition, SquareRoot, Divide16, DrawLine, Laser
+$9C83 c MovePositionVector
+$9C86 c SquareRootVector
+$9C89 c Divide16Vector
+$9C8C c DrawLineVector
+$9C8F c LaserVector
+$9C92 b ShipVarSpare
+$9C93 b JumpEncounter ; Counts down every pass (UpdateShips); at 0 (every 256 passes) a new ship may come (SpawnShip)
+$9C94 b ShipsAbout ; Non-zero while a ship that is not passive is about (refuses the in-system jump)
+$9C95 b BombKill ; Set by the energy bomb: UpdateShips destroys every ship but the station and Thargoids' motherships
+$9C96 b ShipsPresent ; Non-zero while any slot is in use (the scanner is drawn)
+$9C97 b SightTarget ; The slot in the gunsight (the missile's lock)
+$9C98 b ShipVarSpare2
+$9C99 b AllHostile ; Set when a protected ship turns hostile: every ship turns hostile while it (or the player's missile, slot 7) is about
+$9C9A b Docked ; Non-zero while docked
+$9C9B b ECMActive ; Non-zero while an ECM is on (the E indicator)
+$9C9C c ShipActionVector ; ShipAction: A = an action (low nibble) and its argument (high nibble)
+$9C9F c ResetShipsVector
+$9CA2 b EnergyDrain ; The energy taken from the banks this frame
+$9CA3 b FrontHits ; The hits on the front shield this frame
+$9CA4 b AftHits ; The hits on the aft shield this frame
+$9CA5 c HalveSignedVector ; Vectors (known from the code only: nothing calls them)
+$9CA8 c UpdateShipVector
+$9CAB c TitleShipVector
+$9CAE b NonStationPresent ; Non-zero while a ship other than the station is about (the condition yellow)
+$9CAF c DrawTitleShipVector ; The title's turning ship (TurnTitleShip $A28D)
+$9CB2 b MissionShip ; The cloak ship (an Asp, role bit 6, MissionFlags bit 1): 0 none, 1 about and cloaked (DrawShip draws only its laser), 2 hurt below $34 and seen, 3 destroyed with its canister out (scooped: the cloaking device)
+$9CB3 b ActiveShips ; The ships in slots 1-6 with tactics on
+$9CB4 b ShipLoopCount ; UpdateShips's slot counter (8 down to 1)
+$9CB5 c ShipsAndLaser ; UpdateShips, then the gunsight and the laser (Laser $B7B4)
+$9CBB c UpdateShips ; Every slot once a frame: spawn, count, tactics, move, tidy, collide, draw, explode
+> Before the loop: the station hostile in mission state 4 ($D0AF), the line drawing patched to OR ($B1) or XOR ($A9) by $7120, JumpEncounter counted, and a new ship tried when it reaches 0 outside the safe zone and with no jump running and fewer than 4 ships about. 1106 runs; 8848 slot passes, 1288 on a ship.
+$9CC7 UpdateShipsLines
+$9CD1 UpdateShipsPatch
+$9CFD UpdateShipsCount
+$9D1D UpdateShipsCountLoop
+$9D2C UpdateShipsCountNext
+$9D38 c UpdateSlot ; One slot: the flags, the bomb, the explosion's states, then tactics, moving, tidying, collisions and drawing
+> A destroyed ship (+$20 bits 4-5 = 01 or 11) skips the move; state 10 frees the slot, requests the explosion sound, ends the mission ship, pays the bounty (AddCash $D0E7 with the blueprint's +$08) and the combat score ($D0EA with half of +$15), and a protected ship makes the player a fugitive ($D05F bit 6). k2 destroyed its missile, a Thargoid and a Thargon (AddCash 3 runs from frame 2612; the score 196560 to 197858); a protected ship is known from the code only.
+$9D50 UpdateSlotJump
+$9D5F UpdateSlotBomb
+$9D76 UpdateSlotAngry
+$9D88 UpdateSlotHostile
+$9D94 UpdateSlotMakeHostile
+$9D98 UpdateSlotBlueprint
+$9DAD UpdateSlotExplode
+$9DD6 UpdateSlotMission
+$9DDD UpdateSlotMissionDone
+$9DE1 UpdateSlotFree
+$9E0F UpdateSlotAlive ; tactics every fourth frame per slot (missiles every frame), then the move
+$9E24 UpdateSlotTactics
+$9E29 UpdateSlotMove
+$9E41 UpdateSlotDraw
+$9E5C c UpdateSlotNext ; The next slot; after the last the bomb is off and the station's anger ends when no ship is about
+$9E73 c Normalise ; Make a position vector (IX) a unit one: its length (SquareRoot of the sum of squares) and each part divided by it
+$9E98 c SquareComponent ; The square of one 16-bit part (sign bit off) through the squares table: HL low, IX high, IX += 2
+> (256 b + c)² = 65536 b² + 512 b c + c²: b c by Multiply8 $AB34, b² and c² from the table at $BE00 (low bytes) and $BF00 (high bytes).
+$9EC7 SquareComponentDone
+$9ECF c DivideComponent ; One part divided by the length (DE), halved, its sign put back
+$9EE6 DivideComponentStore
+$9EF1 c SquareRoot ; HL = the square root of HL, scaled up or down to keep 12 bits of precision
+> Below $1000 the value is shifted up by 8 (or 4) and the root down by 4 (or 2). Two steps of Newton's iteration (SquareRootCore).
+$9EFB SquareRootLoop
+$9F0A SquareRootSmall
+$9F11 SquareRootShift
+$9F18 c SquareRootCore ; Two Newton steps from $8000: r = (r + n / r) / 2
+$9F2B c SquareRootStep
+$9F35 c SquareRootAdd
+$9F41 c TidyAxis ; Bring an axis back to unit length: each part times 1 - (x² + y² + z² - 1) / 2 from the high bytes
+> The correction is the sum of the three high bytes' squares (the table $BF00, index 2 x) / 4, negated with the sign in bit 7; TidyPart multiplies each high byte by it. 4650 runs: the three axes of each ship drawn.
+$9F68 c TidyPart ; One part times the correction (B), keeping its sign
+$9F80 b TurnRates ; The roll (low) and pitch (high) of the ship being turned
+$9F82 c UpdateShip ; Move one ship by the player, remove it when too far, turn it by its own counters and move it along its nose
+> Too far: a high byte of x, y or z past 0 (z past $60 for anything but the station) frees the slot quietly (RemoveShip $B5DF). Roll steps are angle $0C, pitch steps 8; the counters count down unless bit 7 is set.
+$9F90 UpdateShipFar
+$9F95 UpdateShipRemove
+$9F9C UpdateShipTurn
+$9FC8 UpdateShipRoll
+$9FD3 UpdateShipRollRate
+$9FDD UpdateShipPitch
+$9FF3 UpdateShipPitchRate
+$9FFD c MoveShip ; The ship's own speed along its nose axis (three parts), then its axes turned by its own rates
+$A01E MoveShipIfZero
+$A02B MoveShipIfZero2
+$A02F MoveShipJoin
+$A032 MoveShipIfZero3
+$A04B c MoveAlongAxis ; One position part plus speed x the axis part
+$A076 c MultiplySpeed ; DE = speed (D) x the axis part's high byte (C), sign in D bit 7
+$A083 MultiplySpeedLoop
+$A08C MultiplySpeedNext
+$A098 c AddSigned ; HL (a sign and magnitude part, the sign in B) plus DE (signed): the result's sign in B
+$A0A1 AddSignedSub
+$A0AB c TurnAxis ; Turn one axis by the player's roll and pitch: the four small-angle rotations y-z, x-y, y-x, z-y
+$A0FD c RotatePart ; A = D + B x C / 256, in sign and magnitude, clamped at $FF
+$A115 RotatePartAdd
+$A11C RotatePartSub
+$A123 RotatePartDone
+$A127 c TurnOwn ; Turn the ship's axes by its own roll and pitch (the nose and the side about the roof)
+$A173 c MovePosition ; Rotate a position about the origin by the player's roll and pitch, then move it along z by the player's speed
+> x, y, z each three bytes; the four rotations use full precision (CombineParts). The speed step is 2 x (SpeedRate + 1) on the low byte of z, the far value clamped at $7FFF / $8000.
+$A1C0 MovePositionAhead
+$A1D0 MovePositionBehind
+$A1DE MovePositionClamp
+$A1E3 MovePositionStore
+$A1E9 MovePositionReturn
+$A1EA c CombineParts ; part[HL] += part[DE] x rate (C), the 24-bit parts in sign and magnitude
+$A224 CombinePartsIfNotBelow
+$A252 CombinePartsIfNotZero
+$A259 CombinePartsIfNotBelow2
+$A26C CombinePartsIfNotBelow3
+$A273 CombinePartsJoin
+$A281 c RateBits ; The pitch rate's bits shuffled into C for CombineParts
+@module tactics ; The title's ship and the ships' tactics: energy, launches, fleeing, the missile's homing, steering and firing
+@about Tactics run for a ship with bit 6 of its flags set, every fourth frame per slot (UpdateSlotAlive); a missile homes every frame. Each pass the ship regains energy, may launch a ship of its own (a trader's escape pod, the station's traffic or a Thargoid's Thargons), may flee or bail out when weak, then steers: TacticsSteer takes the unit vector to its target (the player at the origin, or away from the player), its dot products with the ship's three axes give the roll, the pitch and the acceleration, and a hostile ship facing the player close enough fires its laser.
+@about Random $B799 gives the numbers: a 16-bit additive generator at RandomSeed $B7AA.
+
+$A28B b RateSpare 2 ; Two zero bytes no code reads (known from the code only)
+$A28D c TurnTitleShip ; Turn the title's ship (slot 7) by fixed rates, tidy its roof and side axes and draw it
+> Roll $94 (TurnRates) and pitch $8C (A) through MoveShip with the ship's own speed; 393 runs (the title of f1, w1, d1).
+$A2B8 b TargetVector 2 ; The vector to the target (three words), its length after Normalise ($A2BE)
+$A2C0 c Tactics ; Energy, launches, fleeing or bailing out, the station's traffic, then steering
+> Energy: one more a pass (four more above $F0 of the blueprint's maximum, +$07), up to it. A weak ship (energy x 2 below the maximum): with launches left (+$20 bits 0-2) and the random byte below $80 and no ECM it launches its payload: ship action 4 of the kind in the blueprint's +$0A high nibble (a Thargoid's Thargons, the station's ships), or a missile at the player (action 2) when the nibble is 0, a trader with a pod may bail out (action 7: the pod, then the ship becomes passive cargo), or cargo is dropped (action 6). The cloak ship (MissionShip $9CB2): 1 (cloaked) becomes 2 (seen) below $34 energy, 2 goes back to 1 at $50 and more. While the player is cloaked (CloakOn $D041) no ship runs its tactics. The station (role bit 2) launches a ship at random when fewer than 4 are active: a Viper ($14 hostile, the station angry) or traffic ($24 / $44).
+$A2CE TacticsEnergyMax
+$A2D2 TacticsEnergy
+$A2E6 TacticsMission
+$A2F4 TacticsMissionWeak
+$A2F7 TacticsEnergyStore
+$A30D TacticsLaunch
+$A32A TacticsLaunchShip
+$A343 TacticsWeak
+$A361 TacticsDrop
+$A36C TacticsHermit
+$A37E TacticsHermitLoop
+$A38D TacticsHermitNext
+$A390 TacticsHermitDone
+$A3A2 TacticsECM
+$A3B6 TacticsGetECMActive
+$A3CE TacticsECMOn
+$A3D3 TacticsStation
+$A3FE TacticsStationTraffic
+$A403 c LaunchFromShip ; ShipAction A with IX and IY kept: a ship launched from this one
+$A40F c NearBox ; Carry when |x| and |y| are below DE and |z| below DE + $200: the ship is near the player
+$A42F c TacticsSteer ; Choose the target: towards the player (hostile, not fleeing) or away from it, then TacticsAim
+> A legal-sensitive ship (+$21 bit 1) turns hostile when $D060 (the combat score's low byte, the record's +$0C) is $28 or more. Near the player (within $200, or $A00 with avoidance) a ship steers away; a hostile ship flees (+$25 bit 7) when its state is below 8 with no station about or in mission state 4.
+$A440 TacticsSteerNear
+$A455 TacticsSteerHostile
+$A46F TacticsSteerFlee
+$A47C TacticsSteerAway
+$A498 TacticsSteerTowards
+$A4B2 TacticsAimNow
+$A4B5 c MissileHoming ; The missile: an ECM destroys it; else it aims at its target and explodes when within $40 of it
+> The target is +$25 (0 the player, else 8 - slot). Hitting the station in mission state 4 ends the mission's station (role bit 7, $D0AF bit 3) and takes a large combat score. k2's missile ran here once (frame 2571) before a Thargoid's E.C.M. destroyed it; m2 and fs had missiles fired at the player (37 and 1926 runs). Hitting the station is known from the code only.
+$A4C4 MissileSeek
+$A4D7 MissileSeekLoop
+$A527 MissileHit
+$A52B MissileExplode
+$A532 MissileAim
+$A537 c FarPart ; NZ when a part (HL, doubled) is $40 or more: not yet at the target
+$A53F c RelativePart ; One part of (target - missile) / 2, through SubtractSigned $AFC9
+$A568 c AwayPart ; One part of the ship's position, its sign flipped: the vector away from the player, halved
+$A56F c TowardsPart ; One part of the ship's position, halved, its sign in bit 7: the vector to steer along
+$A572 TowardsPartNow
+$A587 c TacticsAim ; Normalise the target vector, the dot products with the nose, the roof and the side: the roll, the pitch, the speed, the laser
+> Roll from the side's product (up to 15 steps, its sign against the roof), pitch from the roof's when the roll is small, the acceleration 2 when fleeing. Ahead (the nose's product positive): accelerate when far (1 or 2), and a hostile ship facing the player (z and the nose's z of opposite signs) fires when a random byte is below its laser power (+$02 of the blueprint, halved while $D062, the combat score's high byte, is 0) and the product is above $0C: the player is hit on the front or aft shield (7 more), the laser sound requested. Behind: brake (-1 or -2).
+$A5C5 TacticsAimRoll
+$A5D7 TacticsAimRollStore
+$A5E7 TacticsAimPitch
+$A5FB TacticsAimPitchMax
+$A5FD TacticsAimPitchStore
+$A605 TacticsAimSpeed
+$A60E TacticsAimAccel
+$A625 TacticsAimAhead
+$A62F TacticsAimAccelStore
+$A632 TacticsAimFire
+$A64B TacticsAimFireRoll
+$A669 TacticsAimHit
+$A67D TacticsAimHitFront
+$A686 TacticsAimBehind
+$A690 TacticsAimBrake
+$A699 TacticsAimBrakeStore
+$A69D c MultiplyHigh4 ; HL: H = the sign, A = -4 x A x B / 256 (the high bytes of two parts)
+$A6AC c DotProduct ; A = the dot product of the axis at IX and the target vector at IY from their high bytes, sign in bit 7
+$A6D1 DotProductSecond
+$A6DA DotProductDone
+$A6DE b DotProductSpare
+@module drawships ; Drawing a ship: the view's axes, the dot of a far ship, the vertices projected, the visible edges, the laser beams
+@about A ship is drawn in the back buffer only in the four space views (ViewIndex 0-3). The view picks the depth axis: z for the front and rear views, x for the side views (bit 1), and the sign that is "ahead" (bit 0); a ship behind the view or past 256 in depth is not drawn. Its screen position is depth-divided (DividePoint $AC69: x / depth and y / depth as fractions) and must lie within 128 x 64 of the centre. Beyond the blueprint's dot distance (+$0B) it is four pixels; nearer, the full wireframe: the visible faces (FaceVisibility $BCD4) and the vertices whose faces are visible are rotated into the view (Project), their screen points kept in ProjectedPoints $A8FA, then each edge with a visible face is drawn (DrawEdges). The detail level is the distance too: a vertex or an edge whose visibility distance (the low 5 bits, $1F always) is below the ship's distance is skipped.
+@about The arithmetic is quarter squares: b x c = ((b + c) / 2)² - ((b - c) / 2)² from the squares table (n² for n = 0-255, the low bytes at $BE00 and the high at $BF00, built by the kickoff), so Multiply8 $AB34 is two table reads and a subtraction.
+
+$A6DF c DrawShip ; Draw one ship in the view: the depth, the screen position, the gunsight test, then the dot or the wireframe
+> 1681 runs. The ship in the gunsight is the one whose screen point is within its own size of the centre with depth below $2C00 (SightTarget $9C97); a hostile ship with tactics that nears the player ahead turns off its avoidance (+$26 bit 5). A destroyed ship (+$20 bit 4) is not drawn: its screen point and size go into +$1C-+$1F for the explosion (ExplosionPoint). The mission's Asp is not drawn while the mission state is 1.
+$A6F1 DrawShipDepth
+$A70F DrawShipNear
+$A73B DrawShipSide
+$A75E DrawShipQuadrant
+$A781 DrawShipX
+$A78D DrawShipSight
+$A7A3 DrawShipAvoid
+$A7C2 DrawShipAvoidTest
+$A7D2 DrawShipAlive
+$A7E6 DrawShipFar
+$A80D DrawShipDot
+$A818 DrawShipDotLeft
+$A81C DrawShipDotY
+$A826 DrawShipDotUp
+$A82A DrawShipDotPlot
+$A83C c PlotPixel ; XOR one pixel at (C, B) into the back buffer through the ROM's PIXEL-ADD ($22B1) with H's bit 7 set
+$A844 PlotPixelBit
+$A84D c DrawWireframe ; The wireframe: the view's rotation (ViewMatrix), the distance as the detail level, the faces, the vertices, the edges and the laser
+> The laser of a firing ship (+$20 bit 3) is a line from its gun vertex (+$14 of the blueprint) to a random point at the screen's edge, drawn with bit 7 of LineAddress's page byte ($B348) set, so into the back buffer whatever the page.
+$A861 DrawWireframeDistance
+$A867 DrawWireframeDetail
+$A884 DrawLaserBeam
+$A8AC c ExplosionPoint ; A destroyed ship: its screen point, its size and the quadrant into +$1C-+$1F, the state 11
+$A8CA ExplosionPointQuadrant
+$A8DE c DrawLaserOnly ; A firing ship that is not drawn still fires: the beam from its screen point
+$A8F7 DrawLaserOnlyQuadrant
+$A8FA b ProjectedPoints 3 ; The screen points of the vertices: x, y and the quadrant ($FF hidden), 3 bytes each
+$A984 b FaceVisible 16 ; One byte per face: non-zero visible (FaceVisibility)
+$A994 b ViewMatrix 6 ; The ship's axes in the view's order: three rows of three sign and magnitude words, then the vertex's rotated parts (+$12-+$17)
+$A9B8 b ShipDistance ; The depth's high byte (then the detail level)
+$A9B9 b ShipDistanceHigh
+$A9BA b PointOffset ; The current vertex's offset into ProjectedPoints
+$A9BB w VertexX ; The rotated vertex plus the ship's position
+$A9BD w VertexY
+$A9BF w VertexZ
+$A9C1 b ScreenX ; The ship's or the vertex's screen point and quadrant
+$A9C2 b ScreenY
+$A9C3 b ScreenQuadrant
+$A9C4 b VertexSignX
+$A9C5 b VertexSignY
+$A9C6 b VertexSignZ
+$A9C7 b VertexScale ; The shift that keeps the vertex's parts in 8 bits
+$A9C8 b VertexCached ; Zero when the vertex repeats the last one's magnitudes: the products are reused
+$A9C9 c ProjectVertices ; Each vertex whose visibility distance passes and one of whose faces is visible is rotated and projected
+$A9DE ProjectVertex
+$A9F7 ProjectVertexFaces
+$AA05 ProjectVerticesIfNotZero
+$AA08 ProjectVertexHidden
+$AA10 c EitherFace ; NZ when one of the two faces in A's nibbles is visible
+$AA20 c FaceIsVisible ; NZ when face A is visible
+$AA28 FaceIsVisibleNow
+$AA2B c RotateVertexScaled ; One rotated part of a scaled vertex: three products with a matrix row, summed; a repeat reuses the products with new signs
+$AA8B RotateVertexNew
+$AAE3 RotateVertexScale
+$AAEB RotateVertexShift
+$AAF5 RotateVertexSign
+$AAFB c AddSignedBytes ; A = L + E with the signs in H and D (bit 7), the sign out in H
+$AB03 AddSignedBytesSub
+$AB0B c Multiply8High ; A = B x C / 256 by quarter squares (the high bytes)
+$AB11 Multiply8HighNow
+$AB1E c MultiplyScaled ; B shifted up by VertexScale, times a matrix byte's magnitude
+$AB21 MultiplyScaledShift
+$AB34 c Multiply8 ; HL = B x C by quarter squares
+$AB3A Multiply8Now
+$AB4F c AddDoubled ; HL (sign B) plus 2 x DE (sign D): a vertex part added to the ship's position
+$AB5B AddDoubledSub
+$AB66 AddDoubledFlip
+$AB73 c RotateVertexSmall ; A vertex of small parts (no scale): the rotated parts from the face normals' routine, or reused
+$AB7D RotateVertexSmallSame
+$AB9F RotateVertexSmallNew
+$ABB3 RotateVertexSmallDone
+$ABC0 c RotateVertexReuse ; A repeat vertex: the last products with the new signs
+$AC01 c RotateNormal ; One rotated part: three high-byte products of the parts with a matrix row
+$AC69 c DividePoint ; C = the fraction (A H L) / (D E C'), DE scaled to 8 bits first: the perspective division
+> 128713 runs of the normalising loop. C = 256 x numerator / denominator, $FF when the numerator is not smaller.
+$AC6B DividePointNormalise
+$AC6C DividePointShift
+$AC80 DividePointRound
+$AC84 DividePointStart
+$AC8B c DividePointLoop
+$AC98 DividePointSub
+$AC9F b VertexHigh 3 ; The rotated vertex's top bytes
+$ACA2 c Project ; Rotate one vertex into the view (scaled, small or reused), add the ship's position and divide by the depth
+$ACB7 ProjectScale
+$ACDF c ProjectAdd ; The ship's position plus the rotated vertex, then the screen point by the view's axes, stored in ProjectedPoints
+$AD82 ProjectAddSide
+$ADB5 ProjectAddQuadrant
+$ADC5 ProjectAddStore
+$ADD4 ProjectAddIfNotBelow
+$ADEE ProjectAddDone
+$ADF2 c ProjectNext ; The next vertex
+$AE01 c DrawEdges ; Each edge with a visible face, its distance passing and both ends in front: a line between its two points
+$AE10 DrawEdgesLoop
+$AE1F DrawEdgesFaces
+$AE45 DrawEdgesNext
+$AE50 c PointOf ; D, E, A = the screen point of vertex A; NZ when it is hidden
+$AE58 PointOfOffset
+$AE5C PointOfAdd
+$AE61 PointOfRead
+$AE69 c Orthogonalise ; Make the roof axis square to the nose: roof -= nose x (roof . nose)
+$AE8A c OrthogonalisePart ; One part of it, clamped
+$AEB6 OrthogonalisePartSub
+$AEBD OrthogonalisePartStore
+$AECC c ViewMatrixSetup ; The side axis as the roof x nose cross product (three DifferenceOfProducts), and ViewMatrix filled from the three axes
+$AF22 c DifferenceOfProducts ; HL = B x C - D x E with the signs, halved: a part of a cross product
+$AF51 DifferenceOfProductsSub
+$AF5E DifferenceOfProductsDone
+$AF64 c MultiplyUnused ; A sum of three 8 x 16 products (known from the code only: nothing calls it)
+$AF88 MultiplyUnusedIfNotBelow
+$AF9B MultiplyUnusedIfNotBelow2
+$AFA8 c Divide16 ; BC = (H L A) / DE: a 16-bit quotient by shifts
+$AFAB Divide16Loop
+$AFBE Divide16Over
+$AFC1 Divide16One
+$AFC9 c SubtractSigned ; (HL - DE) / 2 in sign and magnitude
+$AFCD c AddSignedHalf ; (HL + DE) / 2 in sign and magnitude
+$AFDC AddSignedHalfSub
+$AFE6 AddSignedHalfDone
+$AFF0 b LineSteps 4 ; DrawLine's step table: per octant the screen moves
+@module linedraw ; Lines in the 3D view: clipping to the 256 x 128 window, the octant, and four patched Bresenham loops
+@about A line's ends come as offsets from the view's centre with their quadrant bits (C: bits 2-3 the first end's, D E, bits 0-1 the second's, H L; bit 0 below the centre, bit 1 left of it: the signs of y and x, as ProjectedPoints keeps them), each offset 0-$7F across and 0-$3F down. DrawLine gives each end an outcode (bit 0 past x $80, bit 1 past y $40); both outside on the same side, nothing is drawn (the table LineSteps $AFF0); one or both outside, ClipLine moves the far end to the window's edge along the slope. LineOctant works out the slope as an 8-bit fraction (LineFraction) and the octant; LineSetup patches the step direction (RLC C or RRC C for left or right, INC L or DEC L at a byte edge) into one of four loops, named by the way they go and the axis that steps on the carry: LineUpX and LineDownX y major (a row a step, x on the carry), LineUpY and LineDownY x major. The line is drawn from D E towards H L. Each loop ORs (or XORs, UpdateShips's patch at $B435, $B465, $B486, $B4B2 while the sun is large) a pixel per step and adds the fraction to E, stepping the minor axis on the carry.
+
+$B040 w ClipSave ; ClipLine's saved outcodes and slope
+$B042 w ClipSlope
+$B044 c DrawLine ; Draw a line between two points of the view (D E and H L, quadrants in C), clipped to the window
+> 14814 runs. $FF in both coordinates of an end (a hidden point) draws nothing.
+$B05A DrawLineEnd1Y
+$B061 DrawLineEnd2
+$B06E DrawLineEnd2Y
+$B075 DrawLineCodes
+$B083 DrawLineCode1
+$B092 DrawLineBoth
+$B0A1 DrawLineIfNotBelow
+$B0AB DrawLineEnd1In
+$B0BB DrawLineFirstIn
+$B0C3 DrawLineClipped
+$B0CD DrawLineInside
+$B0E0 c LineSetup ; Pick the loop by the octant and patch its direction bytes and the fraction, then jump into it
+$B0E7 LineSetupLength
+$B10A LineSetupUpRight
+$B116 LineSetupUpSteep
+$B124 LineSetupDownX
+$B12D LineSetupDown
+$B141 LineSetupDownRight
+$B14D LineSetupDownSteep
+$B15B LineSetupDownY
+$B164 LineSetupUpX
+$B16E LineSetupUpXGo
+$B177 LineSetupUpY
+$B181 LineSetupUpYGo
+$B18A c ClipLine ; One or both ends outside: the crossing with the window's edge from the slope, then the visible part
+> 10 runs over f1, w1, d1 (the station near the edge).
+$B1B8 ClipLineIfZero
+$B1C0 ClipLineIfZero2
+$B1C2 ClipLineJoin
+$B1C8 ClipLineOneY
+$B1D7 ClipLineBoth
+$B1FE ClipLineEdge
+$B22C ClipLineCorner
+$B232 ClipLineSlope
+$B253 ClipLineSide
+$B260 ClipLineSideX
+$B264 ClipLineSideTest
+$B268 ClipLineMiss
+$B26E ClipLineSideY
+$B272 ClipLineNone
+$B274 ClipLineAtY ; the crossing with y's edge: x moved by the slope
+$B284 ClipLineAtYSteep
+$B288 ClipLineAtYMove
+$B29D ClipLineAtYClamp
+$B2A6 ClipLineAtYDraw
+$B2AC ClipLineAtYAdd
+$B2B2 ClipLineAtX ; the crossing with x's edge: y moved by the slope
+$B2C2 ClipLineAtXSteep
+$B2C6 ClipLineAtXMove
+$B2DB ClipLineAtXClamp
+$B2E4 ClipLineAtXDraw
+$B2EA ClipLineAtXAdd
+$B2F0 c MultiplyRound ; C = A x C / 256, rounded
+$B2FE c LineFraction ; C = A x 256 / B (A below B): the slope
+$B308 c LineAddress ; The start point's back-buffer address (HL'), its pixel (C') and the pixels to the next character row (B'); the page byte at $B348 is $C0
+$B317 LineAddressLeft
+$B31A LineAddressY
+$B324 LineAddressUp
+$B327 LineAddressNow
+$B331 LineAddressBit
+$B35C LineAddressRows
+$B360 LineAddressDone
+$B362 c LineSkip ; The pixels of the line before the window: the start moved in by the slope
+$B381 LineSkipX
+$B391 LineSkipY
+$B39B LineSkipFraction
+$B3A0 LineSkipGo
+$B3A7 c LineOctant ; The differences, the octant (B's bits 4-7) and the slope as a fraction (C)
+$B3C2 LineOctantXAdd
+$B3C7 LineOctantXSub
+$B3D2 LineOctantXNeg
+$B3DA LineOctantXDone
+$B3DC LineOctantY
+$B3EA LineOctantYAdd
+$B3EF LineOctantYSub
+$B3FA LineOctantYNeg
+$B402 LineOctantYDone
+$B404 LineOctantMajor
+$B41C LineOctantSteep
+$B426 LineOctantShallow
+$B42A LineOctantSteepY
+$B42C LineOctantSlope
+$B433 c LineUpXRow ; The y-major loop going up: a row up a step, a pixel across on the fraction's carry
+$B434 LineUpX
+$B443 LineUpXNext
+$B458 LineUpXByte
+$B45C LineUpYByte
+$B460 LineUpYStep
+$B464 c LineUpY ; The x-major loop going up: a pixel across a step, a row up on the carry
+$B484 LineDownXRow
+$B485 c LineDownX ; The y-major loop going down
+$B494 LineDownXNext
+$B4A9 LineDownXByte
+$B4AD LineDownYStep
+$B4B1 c LineDownY ; The x-major loop going down
+$B4D1 LineDownYByte
+$B4D5 b LinesSpare
+@module combat ; Collisions and scooping, the player's laser and the gunsight, the ECM, the ship actions and spawning, face visibility
+@about ShipAction $B867 does every creation: A's low nibble is the action and the high nibble its argument C. 0 a new ship in the system (SpawnShip), 1 a group of Thargoids, 2 a missile (C = 0: from the ship at IX at the player; else the player's at slot C's ship), 3 nothing, 4 a ship launched from IX (C picks the kind), 5 alloy plates, 6 a cargo canister, 7 an escape pod (C = 1: the player's own Cobra flying off), 8 two splinters, 9 the title's ship C + 2 in slot 7. A new ship (CreateShip) is the 31-byte template ShipTemplate plus its blueprint's energy, behaviour, payload, half its top speed, the tactics state $7E and a random position near $3200 on each axis unless it is hostile.
+
+$B4D7 b LaserFired ; The laser fired last frame (LaserCooling); B4D6 the beam's random bits
+$B4D6 b LaserBeam
+$B4D8 c Collide ; A ship inside the player's box: scooped, docked, or both hit
+> The box is the blueprint's size (+$01; 180 for scoopables; z one more page for a missile with no target) on each axis, with z ahead only. Scoopable and below (y negative) with the fuel scoop ($D088): the slot is freed and the hold gains one of the cargo in the blueprint's +$00 high nibble (or a random 0-7, or the mission's item) through AddCargo $D0E4, if the hold has room ($D07C). The station: ahead, upright (its nose's z negative, the roof's within $3C) and not hostile docks (Docked = 1); else a crash costs the front shield $0C + 2 x speed. Anything else is destroyed and its size hits the front or aft shield. The sun or the planet too near (TooClose) skips this. dk docked at frame 2190, cs scooped a plate at 910 (AddCargo); a crash is known from the code only.
+$B4F0 CollideScoopable
+$B4F8 CollideBox
+$B51A CollideInside
+$B53A CollideScoopCargo
+$B548 CollideScoopMission
+$B555 CollideScoopRandom
+$B55A CollideScoopAdd
+$B55D CollideStation
+$B595 CollideStationCrash
+$B5A8 CollideShip
+$B5BF CollideShipSound
+$B5D3 CollideTooHard
+$B5D8 CollideShipFront
+$B5DF c RemoveShip ; A ship gone: every missile aimed at it explodes, and the player's missile loses its lock on it
+$B5EE RemoveShipLoop
+$B600 RemoveShipNext
+$B618 c ShipsWreck ; The player's death: the explosion's sound, the front view, every slot free, then a canister and two plates near (actions $16 and $15)
+$B62A ShipsWreckLoop
+$B63C c LaserCooling ; The laser temperature falls by 2 a frame; A (the fire key, KeyCombat bit 0) fires the view's laser below $90
+> LaserMounts $D07D (one byte per view): 1 pulse, 2 beam, 3 military, 4 mining (EquipLaser). A press fires at once; held, a pulse laser fires every other pass and a mining one every eighth (JumpEncounter's low bits, D = 1 or 7), a beam or military laser every pass. Each shot is drain 1, the laser sound and heat $08 (pulse, mining) or $0A (beam, military), capped at $A0. The power is $0F (pulse, beam), $17 (military), $32 (mining). A hit on SightTarget turns it hostile, its tactics state down by 14, and its energy down by the power; at 0 it is destroyed ($FF), and gives a canister of alloys (action 6), an asteroid splinters (5), the mining laser on a Rock Hermit or a boulder plates (8), or ends the mission ship (3). 30 recorded frames fired; none hit.
+$B64D LaserCool
+$B672 LaserKind
+$B678 LaserRate
+$B686 LaserShot
+$B69D LaserPowerBeam
+$B69F LaserPower
+$B6AE LaserHeat
+$B6C3 LaserTarget
+$B6CA LaserHit
+$B6EB LaserHitState
+$B701 LaserKill
+$B722 LaserKillDebris
+$B746 LaserKillAction
+$B749 c LaserBeams ; Two or four random lines from the bottom corners ($543F, $403F) towards the centre: the beam
+$B799 c Random ; A = a random byte: the seed's two bytes added with the carry
+$B7AA w RandomSeed
+$B7AC c ClearFirearmPrices ; Dead: two bytes of the market ($7043, $7044) zeroed
+$B7B4 c Gunsight ; The four lines of the cross when the view has a laser, the laser, then the ECM (E)
+> The ECM on (ECMActive, 10 frames): each frame drain 1 and the ECM sound; at 0 the ECM is off. E (KeyCombat bit 4) turns it on with an ECM system fitted ($D085, bit 7 its state). It is not offered in mission state 4 with the mission flag set ($D0B0 bit 7).
+$B7F4 GunsightECM
+$B801 GunsightECMKey
+$B819 GunsightECMOn
+$B82C GunsightECMOff
+$B83D b ShipTemplateSpare
+$B83E b ShipTemplate 9 ; The first 31 bytes of every new ship: the position $3200 on each axis, the unit axes, zeros
+$B85D b TitleShipAxes 9 ; The title ship's nine axis high bytes
+$B866 b FlipToggle ; FlipShip's two ways, in turn
+$B867 c ShipAction ; Do ship action A (low nibble) with argument C (high nibble)
+$B898 c CreateShip ; Fill slot IX for blueprint A (bits 0-5): the template, the blueprint's values, a random position unless hostile
+$B8A5 CreateShipBlueprint
+$B903 CreateShipPosition
+$B91E c LaunchShip ; Create blueprint A in a free slot at ship IX's position and axes (27 bytes copied); NZ when no slot is free
+$B936 c FreeSlot ; IX = the first free slot of 1-6 (Z), NZ when none
+$B93F FreeSlotLoop
+$B94A c CreateAtOrigin ; Create blueprint A in a free slot at the origin
+$B950 c CreateHere ; Create blueprint A in IX at the origin, its nose and side turned
+$B96B c ActionThargoids ; Action 1: three or four Thargoids with ECM, ahead at random
+$B973 ActionThargoidsLoop
+$B99F c ActionMissile ; Action 2: a missile. C = 0: from ship IX at the player; else the player's, slot 7, below the view aimed at target C
+$B9B6 ActionMissilePlayer
+$B9CF ActionMissileShip
+$B9DE ActionMissileTarget
+$B9E7 c ActionLaunch ; Action 4: a ship from IX; C 1 a Viper, 2 a trader (Cobra or Python), 3 a Thargon, 4 a Thargoid, 5 a Sidewinder or a Krait
+> The new ship is turned about (FlipShip) unless it leaves the station, and is hostile when its launcher is.
+$BA0D ActionLaunchNow
+$BA27 c FlipShip ; Turn a launched ship about one way or the other (in turn)
+$BA3F c SwapAxisPair ; One pair of nose and roof parts swapped, the side's sign flipped
+$BA58 FlipShipOther
+$BA83 c RandomRoll ; Random roll and pitch counters (bits 0-2 and 7)
+$BA94 c ActionPlates ; Action 5: two alloy plates; C bit 0 near the origin (PlateNear called, then fallen into), else from IX
+$BA9C c PlateNear ; A plate at a random place just ahead
+$BA9E c DebrisNear ; Debris A at a random place ahead ($10-$4F across, $19 deep), spinning, at a random speed
+$BAE8 ActionPlatesTwo
+$BAF2 c ActionCanister ; Action 6: a canister; C bit 0 near, else from IX
+$BAFA c ActionPod ; Action 7: the escape pod; C bit 0 the player's Cobra flying off in slot 6, else a pod from IX
+$BB2F ActionPodFromShip
+$BB4D c ActionSplinters ; Action 8: two splinters from IX
+$BB55 c DebrisFromShip ; Debris A from IX, turned, passive, spinning for ever
+$BB75 c ActionTitleShip ; Action 9: blueprint C + 2 in slot 7 for the title, its axes from TitleShipAxes, spinning
+$BBB3 ActionTitleShipAxes
+$BBBA c SpawnShip ; Action 0: maybe a new ship: the mission's Asp, an asteroid, pirates, traders, hunters or Thargoids
+> The danger C is (slaves + narcotics) x 2 + firearms in the hold ($D06E, $D071, $D075). A random byte below $1E with the mission's conditions ($D0B0 AND $42 = 2) brings the mission's Asp. Else a random byte less the danger: 80-89 an asteroid, 90 and up nothing; below 80, or below the danger (a borrow), SpawnDanger: a Thargoid in mission state 4, a Python in state 1, else by the government ($D09D: anarchies always) a lone pirate ($0B-$0F, the rarer the stronger, one in five with ECM), a trader or a Rock Hermit, or a group of two or three Sidewinders and Kraits.
+$BBF2 c SpawnMissionDone ; The Asp's own state after the mission spawn (m2 frame 7922: the cloak ship's Asp, MissionFlags $07)
+$BBFD SpawnRandom
+$BC21 SpawnDanger
+$BC40 SpawnGovernment
+$BC46 SpawnPirate
+$BC63 SpawnPirateKind
+$BC64 SpawnCreate
+$BC65 SpawnMissionDoneCallCreateShip
+$BC73 SpawnECM
+$BC78 SpawnMission
+$BC7F SpawnTrader
+$BCA3 SpawnTraderOther
+$BCAB SpawnGroup
+$BCB4 SpawnGroupLoop
+$BCC8 w FaceBlueprint ; FaceVisibility's work: the blueprint, the normals' scale, the rotated normal and its signs
+$BCCA b FaceScale
+$BCCB b FaceNormal 6
+$BCD1 b FaceSigns 3
+$BCD4 c FaceVisibility ; Each face: visible when its rotated normal points at the player (the dot product with the ship's position is negative)
+> A face whose visibility distance passes is tested; one that fails is hidden. A ship with no faces (+$05 = 0) shows everything. 608 runs.
+$BCFF FaceVisibilityLoop
+$BD15 FaceVisibilityTest
+$BD4F FaceVisibilityStore
+$BD5A FaceVisibilityDone
+$BD5F c FaceDot ; The dot product of the rotated normal and the position, three terms summed
+$BD91 FaceDotLast
+$BD95 c MultiplyWord ; A (sign and magnitude) times the word C E: two products summed
+$BDB4 c NormalPart ; One rotated part of the normal, scaled by the blueprint's +$13, the ship's position part added
+$BDD5 NormalPartScale
+$BDE5 NormalPartSub
+$BDF4 NormalPartDone
+@module squaretable ; The table of squares and the back buffer
+@about The kickoff builds the table of squares (n² for n = 0-255: the low bytes at $BE00, the high bytes at $BF00) where the tape carries zeros, and copies $C800-$CFFF over the Lenslok's code at $C000 (03-build-and-load.md 3.7). The game then uses $C000-$CFFF as the back buffer of the 3D view: the top two thirds of a screen in the screen's own layout, drawn there, copied to $4000 each frame. The bytes here are the image as the kickoff leaves it: the back buffer still holds what the loader put there.
+
+$BE00 b SquaresLow 16 ; n² AND $FF for n = 0-255 (Square, Multiply8, VectorLength, SquareRoot)
+> c1 reads the table back as n² for every n at frame 18018; f1, w1 and d1 read it in every multiplication.
+$BF00 b SquaresHigh 16 ; n² / 256 for n = 0-255
+$C000 b BackBuffer 32 ; The 3D view's back buffer ($C000-$CFFF, the layout of $4000-$4FFF): ClearView clears it, the lines and the circles draw into it, CopyBackBuffer copies it to the screen; docked, its last bytes are the screens' stack (CallScreen sets SP to $D000)
+@module gamestate ; The screen table and the vectors, the commander record, the dashboard messages, the full-page messages, cash, legal status and cargo
+@about The top part of the game is reached through the vectors at $D000-$D0F5: ScreenTable for the docked screens and the charts (CallScreen patches its CALL to $D000 + 3 x the screen), then the printer, the jump keys and the commander menu. The commander record $D054-$D0B9 (102 bytes, the block the tape saves and loads) is a copy of the default commander DefaultCommander $D232 after a new game; before that, at load time, its bytes are the kickoff code that started the game (docs/03-build-and-load.md 3.7). The fields: the name (10 letters), the legal status ($D05F), the combat score ($D060, three bytes), the galaxy, the cash, the cargo hold ($D06B, 17 commodities), the free space ($D07C), the lasers ($D07D, four views), the fuel ($D082), the missiles ($D083), the equipment flags ($D084-$D08D), the galaxy's and the system's seeds, the market's stock ($D09E), the mission state ($D0AF) and flags ($D0B0). The layout agrees with zx-elite's COMMANDER-STATE and DATA-STRUCTURES; the addresses here are this image's.
+@about The dashboard messages are ten slots at $D0BD (a byte with bit 7 the request, then an argument): the code sets a bit and ShowMessage prints it in the message line over a few frames.
+
+$D000 c ScreenBuy ; ScreenTable 0: buy cargo (the key 2 docked)
+$D003 c ScreenSell ; ScreenTable 1: sell cargo (3)
+$D006 c ScreenEquip ; ScreenTable 2: equip the ship (4)
+$D009 c ScreenGalaxy ; ScreenTable 3: the galactic chart (I)
+$D00C c ScreenLocal ; ScreenTable 4: the local chart (O)
+$D00F c ScreenData ; ScreenTable 5: the data on a system (P)
+$D012 c ScreenMarket ; ScreenTable 6: the market prices (K)
+$D015 c ScreenStatus ; ScreenTable 7: the commander's status (L), also after a dock
+$D018 c ScreenInventory ; ScreenTable 8: the inventory (ENTER)
+$D01B c CursorLeft ; ScreenTable 9-15: the chart keys (ChartCursorKeys): 9 left (N, KeySteer bit 0), the cursor one x less (ChartLeft)
+$D01E c CursorRight ; 10: right (M), ChartRight
+$D021 c CursorDown ; 11: down (X), two y more, ChartDown
+$D024 c CursorUp ; 12: up (S), ChartUp
+$D027 c CursorHome ; 13: B (KeyChart bit 4), the cursor back on the current system (ChartHome)
+$D02A c CursorDistance ; 14: D (KeyChart bit 5), the nearest system's name and distance (ShowSelected)
+$D02D c PlanetNameVector ; 15: R (KeyChart bit 6), PLANET NAME? (PlanetNamePrompt)
+$D030 c NextGalaxyVector ; ScreenTable 16: NextGalaxy: no key and no caller asks for 16 (CallScreen gets 0-15), so it is never reached
+$D033 c NewGameVector ; NewGame $D298
+$D036 c ClearScreenVector ; ClearScreen $D61D: the page cleared, its frame drawn
+$D039 c PrintOtherVector ; PrintOther $D45F: the other token set
+$D03C c ViewTextsVector ; ViewTexts $DA7A: the view's texts and the countdown
+$D03F b TunnelOn ; A launch or dock tunnel is running
+$D040 b TunnelLoop ; The tunnel's frames run inside one call; the views are locked meanwhile
+$D041 b CloakOn ; Non-zero while the cloaking device is on (CloakKey): the view tinted blue, the energy drain one more; ENERGY LOW turns it off
+$D042 c JumpKeysVector ; JumpKeys $DBA2: the hyperspace keys (in the interrupt)
+$D045 b TextColumn ; The print position: the column and the row
+$D046 b TextRow
+$D047 b MissileState ; 0 off, 1 armed, 2 locked
+$D048 c PrintCodeVector ; PrintCode $D425: the standard token set
+$D04B w PrintTarget ; The address of the printer's plot byte ($D548): $A9 (XOR C) mixes a glyph into the screen, $00 (NOP) writes it over (the dashboard's indicators)
+$D04D b PrintSpare
+$D04E c CommanderMenuVector ; CommanderMenu $D90A: load or save a commander
+$D051 b CrossX ; The chart's crosshair: x, y and the circle's radius
+$D052 b CrossY
+$D053 b ChartRadius
+$D054 t CommanderName ; The commander record: the name, 10 letters and a zero
+$D05F b LegalStatus ; 0 clean, up to 49 an offender, 50 or more a fugitive; bit 6 set by a protected kill
+$D060 b CombatScore 3 ; The combat score (the rating): the low byte, then two
+$D063 b CommanderRest 8 ; The jumps, the galaxy, the cash and the price fluctuation
+$D06B b CargoHold 17 ; The tons (or kg, g) of each commodity
+$D07C b FreeSpace ; The hold's free space in tons
+$D07D b LaserMounts 4 ; The laser of each view: 0 none, 1 pulse, 2 beam, 3 military, 4 mining
+$D081 b NovaMission ; The record's +$2D: 1 in the system whose sun goes nova (JumpArrive after 32 jumps), until the jump out; the red tint, the refugees' question (RefugeeQuestion)
+$D082 b Fuel ; The fuel in tenths of a light year
+$D083 b Missiles ; The missiles fitted (0-4)
+$D084 b Equipment 10 ; The equipment flags: the large cargo bay, ECM, two spare, the fuel scoop, the escape pod, the energy bomb, the energy unit, the docking computer, the galactic hyperdrive
+$D08E b Seeds 16 ; The spare bytes, the galaxy's three seeds, the system's three seeds
+$D09E b MarketStock 17 ; The station's stock of each commodity
+$D0AF b MissionState ; The Thargoid mission: 0 none, 1 the MAYDAY heard, 2 not yet answered, 3 accepted, 4 in the galaxy's first system (the station a Thargoid base), $0C its station destroyed, 5 rewarded at the next dock
+$D0B0 b MissionFlags ; Bit 0 the nova started (32 jumps), 1 the cloak ship due (128 jumps), 2 the Thargoid MAYDAY started (254 jumps), 3 the Thargoid mission done, 5 refugees aboard, 6 the cloaking device owned, 7 the Thargoid mission accepted (the ECM jammer)
+$D0B1 b RecordTail 9 ; The record's last nine bytes: the system docked at ($D0B2, $D0B3) and the sun's place
+$D0BA b SunGrows ; Past the record: the sun's growth
+$D0BB b ChartCursorX ; The chart cursor (galaxy coordinates)
+$D0BC b ChartCursorY
+$D0BD b Messages 2 ; Ten message slots (MessageTick): a column (bit 7 the request) and a standard code each
+> 0 MISSILE JAMMED, 1 INCOMING MISSILE, 2 TARGET LOST, 3 an item DESTROYED (DamageItem), 4 a bounty in CR (AddCash), 5 a scooped item's name (AddCargo writes the code), 6 RIGHT ON COMMANDER (a new rating), 9 FUEL LEAK (FuelLeak); slots 7 and 8 ($D0CB-$D0CE) are the number printer's work bytes and never requested.
+$D0D1 b PrintCase ; The printer's case state: the mode, the capital-next flags, the word buffering
+$D0D2 b PrintCapital
+$D0D3 b PrintCapitalNext
+$D0D4 b PrintBuffering
+$D0D5 w PrintPointer ; The printer's patched address
+$D0D7 c FullMessageVector ; Vectors: a full-page message, the dashboard keys off, the mission question
+$D0DA c ClearHighlightsVector
+$D0DD c MissionQuestionVector
+$D0E0 c TradeDoneVector
+$D0E3 b MissileTarget ; The slot the missile is locked on
+$D0E4 c AddCargoVector ; AddCargo $D190: a scooped item
+$D0E7 c AddCashVector ; AddCash $D1D9: a bounty
+$D0EA c AddCombatVector ; AddCombat $D1C7: the combat score
+$D0ED c MissionDoneVector ; MissionDone $D14D
+$D0F0 b VectorSpare
+$D0F3 c DamageVector ; DamageItem $D1E9: a hit that went through the shields
+$D0F6 c FullMessage ; A game over page: SHIP BOARDED BY (other $0B), other token A ($0D PIRATE, $D4 THARGON) and S, THEY SHOW NO MERCY... (other $FF), a click, a key, the page cleared
+$D114 FullMessageWait
+$D123 c MissionQuestion ; WANTED BY GALCOP: A BRAVE COMMANDER FOR A SPECIAL MISSION, ARE YOU INTERESTED (Y/N)? (other $DF); Y: state 3, flag bit 7 and the briefing (other $E0); any other key: state 0
+$D138 MissionAccept
+$D148 MissionText
+$D14D c MissionDone ; The Thargoid mission's award: the combat score's high byte one more, state 0, flag bit 3, IN APPRECIATION OF YOUR EXCEPTIONAL COURAGE ... (other $0A)
+$D162 c ColourPage ; Clear the page, other token $5C (a capital next), all 768 attributes E, the position HL, then other token D
+$D177 ColourPageFill
+$D183 c AddCargoSpecial ; $FF: the cloak ship's canister: the cloaking device (flag bit 6), the combat score's high byte one more, CLOAKING DEVICE on the message line
+$D190 c AddCargo ; One unit of commodity A into the hold (one less free space), the message, and the legal cost of the contraband
+> Firearms ($0A) cost 2, slaves (3) and narcotics (6) cost 4 on LegalStatus, up to $FF.
+$D1A3 AddCargoMessage
+$D1AD AddCargoContraband ; The legal cost of commodity A (BuyCheck enters here for each unit bought)
+$D1B8 AddCargoLegal4
+$D1BA AddCargoLegal
+$D1C5 AddCargoStore
+$D1C7 c AddCombat ; The combat score plus DE; a carry into the third byte flags the rating message ($D0C9)
+$D1D9 c AddCash ; The cash plus DE (a bounty) and the message ($D0C5)
+$D1E6 AddCashMessage
+$D1E9 c DamageItem ; A random loss: below 1 the fuel, 1-6 a piece of equipment, 7-16 a unit of cargo (StarSeed's bits)
+> 25 runs in f1 and w1 (the ships' lasers), none lost anything: every random pick was empty or 17 and above.
+$D209 DamageItemEquip
+$D20F DamageItemLost
+$D213 DamageItemMessage
+$D21F DamageItemCargo
+$D232 b DefaultCommander 8 ; The new game's commander: JAMESON, 100.0 Cr, 7.0 light years of fuel, a pulse laser, 3 missiles, galaxy 1 at Lave
+$D28F b DefaultSun 9 ; The new game's sun and planet place
+$D298 c NewGame ; The default commander copied in, the chart cursor on Lave, the prices made (MakeMarket with its stock store patched to a NOP: the stock is the record's), the sun placed
+@module textprint ; Numbers, cash, the two token sets, the character printer, rules and bars, the random synonyms
+@about Two interpreters print the game's texts (tools/tokens.py decodes both). PrintCode $D425, the standard set: below $0E a control code (TokenControl), $0E-$1F tokens $80-$91, $20-$5F characters, $60-$7F tokens 0-$1F, $80-$9F two-letter pairs ($FDB3), $A0 and up tokens 0-$5F; token n is the n-th zero-ended string of the table at TokenTable ($F11A). PrintOther $D45F, the other set (the table at $F11C): string n-1 for token n, its codes below $20 controls (OtherControl), up to $5A characters, $5B-$80 a random pick of one of five tokens (RandomToken, the synonym rows at $D5F5), $81-$D6 other tokens, $D7 and up pairs ($FD99). Both print through PrintChar, which keeps the case (capitals at a word's start, the rest small, by PrintCase) and either plots or buffers the letter for the justified text.
+@about A letter is plotted from the font at $5D70 into the screen at (TextColumn, TextRow) with XOR (or over, by the byte at $D548); the column wraps at 32.
+@inline $D421 1 ; PrintInline: the code byte after the CALL
+@inline $E2BC 1 ; ColumnInline: the column byte after the CALL
+
+$D2DC w NumberLeft ; The number being printed, less the digits printed so far
+$D2DE c PrintByteDot ; Print A as a number with one decimal place
+$D2E1 c PrintByte ; Print A as a number
+$D2E2 c PrintByteNow
+$D2E5 c PrintNumber ; Print HL in decimal (carry: the last digit after a point), padded to the width $D0CE
+> Five digits by repeated subtraction (PrintDigit) from 10000 down, the leading zeros left out ($D0CC on until a non-zero digit). 1512 runs: the status, the market and the charts' numbers.
+$D30B PrintNumberLast
+$D315 PrintNumberZero
+$D319 PrintNumberPoint
+$D31C b PointCode ; The "." printed by PrintNumberPoint's CALL PrintInline
+$D31D c PrintNumberUnits ; The last digit
+$D32D c PrintCash ; Print the cash: the thousands ($D066) and the rest ($D068, tenths), with the point
+$D334 c PrintCashNow
+$D34D PrintCashSmall
+$D352 PrintCashRest
+$D357 c PrintDigit ; One digit: how many DE fit in NumberLeft, printed unless a leading zero
+$D35C PrintDigitCount
+$D364 PrintDigitDone
+$D371 c PrintDigitChar ; Print digit A
+$D376 PrintDigitSkip
+$D37D c PadNumber ; Print the spaces (or zeros) that bring the number to the width
+$D38B PadNumberCount
+$D3AD PadNumber5
+$D3AE PadNumber4
+$D3AF PadNumber3
+$D3B0 PadNumber2
+$D3B8 PadNumberLoop
+$D3C5 PadNumberZero
+$D3C7 PadNumberChar
+$D3CE c AtLeast ; NC when HL is at least DE (HL kept)
+$D3D3 c AddCredits ; The cash's tenths plus DE, carrying 10000 into the thousands
+$D3E7 c AddThousands ; The thousands plus DE
+$D3EF c TakeThousands ; The thousands less DE; carry when not enough
+$D3FB TakeThousandsShort
+$D3FD c TakeCredits ; The cash less DE tenths, borrowing a thousand; carry when not enough
+$D41B TakeCreditsStore
+$D420 b OtherSetOn ; Zero: PrintOtherChar's codes go to the standard set
+$D421 c PrintInline ; Print the standard code in the byte after the CALL
+$D425 c PrintCode ; Print code A of the standard set: a control, a character, a pair or a token
+> 228436 runs over f1, w1, d1.
+$D441 PrintCodeLowToken
+$D443 PrintToken
+$D448 PrintTokenFind
+$D454 PrintTokenLoop
+$D45F c PrintOther ; Print other token A: skip A - 1 strings of the other table, then each code
+$D463 PrintOtherFind
+$D470 c PrintOtherChar ; One code of an other string: a control, a character, a random pick, a token or a pair
+$D48E PrintOtherLoop
+$D499 c PrintChar ; Print a character with the case rules, or buffer it for the justified text
+> PrintCase $D0D1: 0 the sentence case (a capital after a non-letter), 1 all capitals, 2 the next letter capital then small.
+$D4B8 PrintCharCase
+$D4CC PrintCharSmall
+$D4D2 PrintCharOther
+$D4D8 PrintCharOut
+$D4E1 c PlotChar ; Plot character A at the next column (wrapping to a new line past 31), XOR into the screen
+$D4F1 PlotCharGlyph
+$D51C PlotCharThird3
+$D526 PlotCharThird2
+$D52D PlotCharRow
+$D546 PlotCharLine
+$D54F c FillAttrRow ; 30 attributes of colour 5 from $5AA1 (the dashboard's message line)
+$D554 c FillAttrs30 ; B = 30 attributes of A from HL, then HL past the row's edge
+$D55C c HorizontalRule ; The heading's rule: 32 bytes $FF at $4340
+$D55F c FillRule ; 32 bytes of $FF from HL
+$D563 c FillBytes ; B bytes of A from HL
+$D568 c ColourBands ; The page's colour bands from the list at DE: a width in 8ths and a gap of rows each, colour 5; the two corner cells white
+> The status and the market pages call it with their lists ($FD8E and others).
+$D56B ColourBandsLoop
+$D581 ColourBandsRow
+$D588 ColourBandsGap
+$D58C ColourBandsEnd
+$D595 c PrintOtherPair ; Other pair A - $D7 from $FD99
+$D59C c PrintStdPair ; Standard pair A - $80 from $FDB3
+$D5A1 c PrintPairNow ; Two characters, the second left out when it is "?"
+$D5B4 c RandomToken ; A random one of the five tokens of row A - $5B of Synonyms, by the text generator's next byte
+$D5D9 RandomToken4
+$D5DA RandomToken3
+$D5DB RandomToken2
+$D5DC RandomToken1
+$D5E1 c TextRandom ; The text generator: the four bytes at $DECC shifted and added; A its next byte
+$D5F5 b Synonyms 8 ; The first other token of each row of five synonyms
+$D61B w ClearScreenSP
+$D61D c ClearScreen ; Clear the page by PUSHes: 768 attributes $07, 6144 pixel bytes 0; then the frame: both side columns, the top and bottom rules; print at row 1, column 0
+$D62A ClearScreenAttrRow
+$D62C ClearScreenAttrs
+$D638 ClearScreenPixelRow
+$D63A ClearScreenPixels
+$D646 c DrawFrame ; The page's frame: bit 7 of column 0 and bit 0 of column 31 on 192 lines, the top and bottom lines solid
+$D64E DrawFrameLeft
+$D65A DrawFrameRight
+$D675 b JustifyLine 8 ; The justified text's line (32 bytes), the next word ($D695, 31), the counts ($D6B3, $D6B4) and two pointers ($D6B5, $D6B7)
+$D6B9 c JustifyChar ; Buffer a character of the justified text; a full line is spread to 30 columns (spaces added between words) and printed
+> The other set's control codes 14 and 15 start and end it (the mission texts and the data screen's description). 1025 runs (the data on Lave of d1).
+$D6E2 JustifyCarry
+$D6EE JustifyNext
+$D703 JustifyClear
+$D707 JustifyClearLoop
+$D70C JustifySpread
+$D70F JustifySpreadLoop
+$D71A c JustifyPrint ; Print the 30 characters of the line, a new line, the capital off
+$D71F JustifyPrintLoop
+$D732 c JustifyNewLine ; The carried word becomes the start of the next line
+$D752 JustifyNewLineCopy
+$D75A c JustifyOn ; Other control 14: buffering on, the buffers blank
+$D766 JustifyOnBlank
+$D776 c JustifyOff ; Other control 15: buffering off, the last line printed as it is
+$D783 c JustifyBackWord ; Back to the space before the last word (or the line's start)
+$D788 JustifyBackWordLoop
+$D7A1 c JustifyAddSpace ; One more space at the pointer: the rest of the line moved right by one
+$D7A6 JustifyAddSpaceLoop
+$D7B0 c OtherControl ; Other control A through the table at $D7DF
+$D7B5 c TokenControl ; Standard control A through the table at $D7C3
+$D7B8 c JumpTable ; Jump to the A-th address of the table at HL
+$D7C3 w TokenControls 7 ; The standard set's 14 control codes: 0 nothing, 1 the galaxy's number, 2 the current system, 3 the selected system, 4 the commander, 5 the fuel, 6 capitals, 7 the cash, 8 sentence case, 9 a new line, 10 the other set on, 11 the galaxy's first system, 12 and 13 nothing
+$D7DF w OtherControls 8 ; The other set's 32: 0 nothing, 1 capitals, 2 sentence case, 3 the selected system, 4 the commander, 5 and 6 the other set on and off, 7 a beep, 8 tab, 9 a clear page, 10 the column 0, 11 the rule, 12 a new line, 13 capital then small, 14 and 15 the justified text, 16 the galaxy's first system, 17 the system's people (-ian), 18 a random name, 19 a capital next, 21 the text area cleared, 22 and 24 waits, 23 and 29 rows 10 and 6, 25 a wait
+$D81F c WaitControl ; Other control 25: wait 36 frames
+$D822 c ControlCash ; Standard 7: "CASH:" the cash and " CR", a new line
+$D82E c ControlCommander ; Standard 4: the commander's name
+$D833 c ControlSentence ; Standard 8: sentence case
+$D837 c ControlFuel ; Standard 5: "FUEL:" the fuel with its point, " LIGHT YEARS", a new line
+$D83F b FuelSpace ; The space after "FUEL:"
+$D840 c ControlFuelValue
+$D848 c PrintLine ; Print token A and a new line
+$D84B c ControlGalaxy ; Standard 1: the galaxy's number (1-8) in two places
+$D857 c ControlFirstSystem ; Standard 11: the name of the galaxy's first system (its seeds from the galaxy's)
+$D86A c ControlCurrent ; Standard 2: the current system's name
+$D872 c ControlSelected ; Standard 3: the selected system's name
+$D878 c PrintString ; Print the zero-ended string at HL
+$D87B c ControlTab ; Other 8: column 4
+$D87E b TabColumn
+$D87F c CapitalNext ; Other 19: the next letter a capital
+$D884 c ControlNone ; Nothing
+$D885 c ControlRandomName ; Other 18: a random name of one to four letter pairs (the pairs $FD9B on)
+$D88D ControlRandomNameLoop
+$D8A9 c ControlMixed ; Other 13: a capital, then small
+$D8AD b ControlSpare
+$D8AE c ControlCapitals ; Standard 6, other 1: capitals
+$D8B0 c SetCase ; PrintCase = A
+$D8B4 c ControlPeople ; Other 17: the system's name and "IAN", its last vowel dropped
+$D8C4 ControlPeopleLoop
+$D8CA ControlPeopleEnd
+$D8CF ControlPeopleVowel
+$D8DC t PeopleSuffix ; "IAN" and the vowels it replaces
+$D8E0 t Vowels
+$D8E5 c OtherOn ; Standard 10, other 5: the other set on (OtherSetOn 1)
+$D8E9 c OtherOff ; Other 6: off
+$D8EB c SetOtherSet
+$D8EF c ControlRow6 ; Other 29: row 6
+$D8F3 c ControlRow10 ; Other 23: row 10
+$D8F5 c ControlRow
+$D8F8 c PrintPairChar ; A pair's character unless "?"
+$D8FF b ControlData 3 ; Three bytes no code reads (known from the code only)
+@module commander ; The commander menu (load and save on tape, the security number), the view names and the message line
+@about CommanderMenu $D90A is the ACCESS MENU page (SYMBOL SHIFT docked, KeySteer bit 5 in FlightLoop, or Y on the title; other token 1): 1 loads a commander, 2 saves one, 3 leaves. A commander on tape is one headerless data block of the 102 bytes $D054-$D0B9, read and written by the ROM's LD-BYTES and SA-BYTES entered past their prologues. After a load or a save the record is also copied to DefaultCommander ($D232), the commander a new game (and the death) starts from. Neither tape path ran in the recordings (known from the code only).
+@about The bottom of the space view is the message line (row 14 of the screen above the dashboard): MessageTick keeps the ten message slots ($D0BD-$D0D0), shows one for 14 passes, and between messages raises the periodic ones (ENERGY LOW, FUEL SCOOPS ON, DOCKING COMPUTERS ON, the mission's MAYDAY texts).
+
+$D902 b MenuBands 5 ; The menu page's colour bands for ColourBands: one cell and a gap of 4 rows, two cells and 2 rows twice, two cells and 3 rows, sixteen cells and the end
+$D907 b TapeLoaded ; 1 once a commander has been loaded: CommanderMenu returns it
+$D908 w MenuStack ; SP at the menu's start: every pass and every error path starts again from it
+$D90A c CommanderMenu ; The ACCESS MENU: 1 load, 2 save, 3 leave; returns A = 1 (NZ) when a commander was loaded
+> The page is cleared, coloured (MenuBands, the message row, the top three attribute rows $0F and a rule at $4740 by MenuTop), and other token 1 prints the three choices. The keys are read by WaitKey; the stack is reset from MenuStack before each, so a BREAK or an error deep in the tape code just comes back here.
+$D927 CommanderMenuKey
+$D939 CommanderMenuExit
+$D946 c LoadCommander ; 1: the name to look for (empty: the first commander found), then blocks until the names agree
+> The ROM's LD-BYTES is entered at $0562, after its own INC D / EX AF,AF' / DEC D / DI (copied here before the CALL), so it returns to the game and not through SA/LD-RET. The record is loaded in place over $D054: a block whose name differs is simply followed by the next one. FOUND COMMANDER (other $D6) names each block read.
+$D94C LoadCommanderBlock
+$D965 LoadCommanderName
+$D972 LoadCommanderCompare
+$D980 c SaveCommander ; 2: the name into the record, the sun's place into its tail, START TAPE, SA-BYTES, then the security number
+> SA-BYTES is entered at $04C6, past the PUSH of SA/LD-RET, so it comes back here with the border as it left it (set black at once) and the interrupts off (EI here). The nine bytes of SunPosition go into the record's tail $D0B1 so a loaded commander gets its sun back.
+$D9AC c SecurityNumber ; Print "SECURITY NUMBER:" and two five-digit numbers made from the combat score, the galaxy, two mission flags and the cash
+> D takes the galaxy (bits 0-2) and the mission flags' bits 3 and 6, three places up, then the parities of E (the combat score's middle byte, doubled), H and L (the cash in thousands): Parity shifts each in from the top. The four bytes are then chained: D = L xor D + $3D, E = D xor E + $66, H = E xor H + $8F, L = H xor L + $C7, and DE and HL are printed. The game never reads the number back; a checker with the same chain can test a claimed rank and cash (inference: the code only prints it).
+$D9CB SecurityNumberIfZero
+$D9D1 SecurityNumberGetCommanderRest3
+$DA08 c KeepCommander ; The record becomes DefaultCommander (93 bytes), back to the menu
+$DA13 CommanderMenuAgain
+$DA16 c Parity ; The parity of A's eight bits into the top of D (C = the count of ones, its bit 0 shifted in)
+$DA1A ParityLoop
+$DA1E ParityNext
+$DA25 c LoadFailed ; One frame, then BREAK if SPACE is held (FC0D = $20), else TAPE LOADING ERROR and the record back from DefaultCommander
+$DA2D c TapeBreak ; The message lines cleared and BREAK
+$DA37 c TapeError
+$DA49 c TapeBlock ; IX = the record, DE = 102, A = $FF (a data block)
+$DA53 c ReadName ; Read a name of up to 10 letters into HL after COMMANDER'S NAME? (other 8)
+$DA5A c TapeMessage ; Other token A on the message row 22, after the row is cleared; a new line, a click
+$DA72 b MessageTimer ; Counts 70 passes between the periodic messages
+$DA73 b MessageShown ; The passes the message on the line has left (14 from MessageShow)
+$DA74 b MessagePass ; Toggled each pass: the slots are scanned on even passes, the periodic messages on odd ones
+$DA75 b MessageColumn ; The message's column on row 14
+$DA76 b MessageToken ; The message's standard code: $FD (token $5D, " DESTROYED") after MessageItem, $E2 (token $42, " CR") after MessageNumber, 0 none
+$DA77 w MessageNumber ; The bounty AddCash shows, in tenths
+$DA79 b MessageItem ; The item DamageItem destroyed, a standard code (equipment $6C on, cargo $CC on)
+$DA7A c ViewTexts ; The space view's name ("FRONT VIEW" and the like) into the back buffer, then MessageTick
+> Called each pass (1220 times in c1). The name is plotted with SET 7 at $D50A, so PlotChar writes into the back buffer at $C000 and the frame copy shows it on top of the stars. On the screens (view 4 and up) the plot byte $D548 is set to write over (NOP) while MessageTick runs and back to mixing (XOR C) after.
+$DA93 ViewTextsSpace
+$DAB4 c MessageTick ; The jump countdown, the condition light, then the message line: show, scan the slots, or raise a periodic message
+> The ten slots at $D0BD hold a column and a code each, bit 7 of the column a request (FullMessage and the market set them). On an even pass the first request found is taken (its bit cleared, a click) and shown for 14 passes. A shown message is plotted once a pass from its fourth pass on and only in the space views, so it blinks on as the screen copy overwrites it: XOR plotting twice would clear it.
+$DAC9 MessageScan
+$DACE MessageScanLoop
+$DAD7 MessageTake
+$DADC MessageTickJoin
+$DAE1 c MessageShow ; Show standard code B at column C for 14 passes
+$DAE6 c MessageSet ; Code B at column C, the count left as it is
+$DAEF MessagePrint
+$DB0D MessagePrintCode
+$DB13 MessageDestroyed ; $FD: the item's name (three columns on, except code $73) and DESTROYED
+$DB20 MessageDestroyedName
+$DB25 MessageBounty ; $E2: the bounty and CR
+$DB2E c MessagePeriodic ; Every 70 passes: ENERGY LOW, FUEL SCOOPS ON (and the fuel), DOCKING COMPUTERS ON, or the mission's MAYDAY
+> In this order: the fourth energy bank below $9F gives ENERGY LOW (code $64) at once each odd pass and turns the cloak off (CloakOn 0); the sun near with a fuel scoop fitted adds 0.1 light years (SetFuel) and shows FUEL SCOOPS ON (code $A0); the docking computer on shows DOCKING COMPUTERS ON (code $7B). Otherwise MessageTimer counts 70 odd passes, then the mission state 1 shows its MAYDAY (code $0F, token $81: "... INVADED") and NovaMission (the second mission) "MAYDAY CORIOLIS IN DANGER" (code $C2) unless the sun is already growing.
+$DB48 MessagePeriodicDue
+$DB60 MessagePeriodicCount
+$DB62 MessageInvaded
+$DB67 MessageDocking
+$DB6C MessageScooping
+$DB7D MessageEnergyLow
+$DB8E MessagePeriodicShow
+$DB91 c ClearMessages ; Every slot's request bit cleared and the line's code to 0
+$DB96 ClearMessagesLoop
+$DBA1 b JumpCountdown ; The hyperspace countdown (twice the seconds shown); 0 when no jump is pending
+@module hyperspace ; The jump keys, the countdown, the arrival in a new system or in witch space, the galactic jump, the three missions' triggers
+@about H starts a hyperspace jump to the selected system, H with G held a galactic one (with the galactic hyperdrive). A countdown of 10 shows at the top left; at 0 JumpArrive makes the selected system the current one, places the sun, the planet and the station from its seeds, builds the market and runs the tunnel (TunnelLoop). Witch space comes instead with one chance in 256 (StarSeed $F9) or always with option bit 6 of the pause menu (F): the ship stops half way, with no sun, planet or station, among Thargoids (WitchSpace).
+@about Outside galaxy 1 the jump count ($D063) starts the missions: at 32 jumps the sun goes nova (NovaMission, a FUEL LEAK), at 128 the cloak ship may come (MissionFlags bit 1), at 254 the Thargoid MAYDAY (MissionState 1). An arrival may also leave the station pirate-held (PirateStation). The recordings jumped twice (f1 to a system, w1 into witch space); the galactic jump and the missions are known from the code only.
+
+$DBA2 c JumpKeys ; H or G+H (KeyViews $FC0A bits 4, 5): a jump, unless one counts down; docked: DOCKED and the status screen
+> Called each pass through JumpKeysVector (197283 runs, 4 with a key). The keys are cleared at once. A hyperspace needs the distance to the selected system (FindNearest, JumpDistance) above 0, below 25.6 light years and within the fuel, else HYPERSPACE RANGE ? (code $C1); a galactic jump needs the galactic hyperdrive ($D08D). Then TunnelOn 1 (a jump) or 2 (galactic), the countdown 21 and HYPERSPACE -- <system> (code $C0) or GALACTIC HYPERSPACE (code $74) on the message line, a click, and the front view if a space view was on.
+$DBBD JumpGalactic
+$DBCF JumpHyper
+$DBE3 JumpStart
+$DBEB JumpCount
+$DC04 JumpOutOfRange
+$DC0A JumpDocked
+$DC29 c JumpTick ; Each MessageTick: the countdown (shown halved, two digits at 1,1), and at 0 the jump itself
+> 1220 runs in c1, f1 and w1; 42 counted, 2 jumped. The jump: the message slots cleared; a galactic jump (TunnelOn 2) or any jump out of the nova system goes to the next galaxy (GalaxyJump); a hyperspace takes the fuel (the distance), sets the fuel's refill price ($7060 = 70 - the fuel left + 2 x the economy), halves the legal status, and either misjumps (JumpWitch) or arrives (JumpArrive).
+$DC32 JumpTickShow
+$DC44 JumpNow
+$DC4E c GalaxyJump ; The next galaxy: the missions reset (the nova over, the Thargoids forgotten), the hyperdrive used up, the seeds twisted, the legal status clean, the system nearest the cursor
+> The fuel price $7060 gets the galaxy number (1-8) here. Each of the six seed bytes is rotated left one bit (TwistSeed) as BBC Elite does; the galaxy number wraps from 8 to 1.
+$DC5F GalaxyJumpNext
+$DC83 c TwistSeed ; The two bytes at HL rotated left one bit each, HL two on
+$DC8E JumpHyperspace
+$DCC0 c JumpWitch ; The misjump: WitchSpace on, the current system half way to the selected one, no safe zone, no system names
+> The current system's coordinates ($D099, $D097) and the cursor become the mid points; the names of the current and the selected system are emptied ($DEE4, $DEED), so the status page shows none. w1: F of the pause menu (option bit 6) forced it.
+$DCE9 c JumpArrive ; The arrival: the selected system becomes the current one; the sun, the planet and the station from its seeds; the market
+> The seeds ($DEBA) go to the current system ($D096), the selected name to the current name, the tech level and the government to $D09C and $D09D, NewMarket with a fresh fluctuation byte, the sun and the planet cleared, StationLaunch $FF. The coordinates' top bytes come from the seeds: the sun's x and y (s1, s2 high bytes AND $83 OR 1: within ±3 pages, never 0) and z (s1 high OR low, AND 7, + 4, negative: behind), the planet's x and y the same way from s0 and s1's low bytes and z (s0 high OR low, AND 7, + 3) ahead. The station starts at the planet (slot 0 copied from PlanetPosition) and is moved about a page off along z or x (a seed bit picks; the middle byte's bit 7 set, the top byte one nearer or further), its axes set from the side it was moved to. f1: 1 run.
+$DD18 JumpArriveLoop
+$DD6D JumpArriveStation
+$DD7D JumpArriveOffset
+$DD92 JumpArriveNear
+$DD93 JumpArriveStep
+$DD96 JumpArriveFar
+$DD97 JumpArriveSide
+$DDA5 JumpArriveLoop2
+$DDB7 JumpArriveX
+$DDCD JumpArriveXFlip
+$DDD0 JumpArriveZ
+$DDE3 MissionStationGone ; The Thargoid base was destroyed (the station's role bit 7): MissionState 5, the award at the next dock
+$DDE7 JumpArriveZPlus
+$DDE9 JumpArriveAxes
+$DDEB JumpArriveCursor
+$DDFD c MissionTriggers ; Outside galaxy 1: the Thargoid mission's stage, the jump count, the three triggers, the pirate station's chance
+> MissionState 1 becomes 2 (the MAYDAY left unanswered), 4 becomes 3 (left the base); arriving in the galaxy's first system (IsFirstSystem) with the mission on makes it 4. The jump count at 32 starts the nova (flag bit 0, NovaMission, the red tint, FuelLeak), at 128 the cloak ship (bit 1), at 254 the MAYDAY (bit 2, MissionState 1). With no trigger the station turns pirate-held when StarSeed is at most (7 - government) / 2: one chance in 256 for a corporate state, four for an anarchy.
+$DE13 MissionTriggersLeft
+$DE18 MissionTriggersBase
+$DE22 MissionTriggersSetMissionState
+$DE25 MissionTriggersCount
+$DE39 c PirateChance ; The station pirate-held (its roll counter's bit 7 cleared) with a chance by the government
+$DE4C c JumpEnd ; The tunnel next (TunnelLoop 1), the front view, the cabin temperature, SunNear, MissileState and MissionShip 0, the altitude $A0
+$DE67 c MissionNova ; 32 jumps: the sun goes nova: flag bit 0, NovaMission, the view red, a fuel leak
+$DE7E c MissionCloak ; 128 jumps: the cloak ship may come (flag bit 1)
+$DE88 c MissionThargoids ; 254 jumps: the Thargoid MAYDAY (flag bit 2, MissionState 1)
+$DE97 c FuelLeak ; All the fuel lost, FUEL LEAK on the message line (slot 9), when there was any
+$DEA2 c SetFuel ; The fuel = A, at most 70 (7.0 light years); the fuel bar 2.25 x A
+$DEA8 SetFuelStore
+@module galaxy ; The galaxy's 256 systems from three seed words: the twist, the nearest system, the distance, the names, the system data and the market
+@about Elite's galaxy is generated, never stored: a system is three 16-bit seeds (s0, s1, s2), and the next system's seeds are s1, s2 and s0 + s1 + s2 (Twist), four twists a system. The galaxy's first system has the galaxy's seeds ($D090); the next galaxy rotates each of the six bytes left one bit (GalaxyJump). From the seeds come the chart position (x = s1 high, y = s0 high), the economy, government, tech level, population and productivity (SystemData) and the name (SystemName: three or four letter pairs of StdPairs $FDB3 picked by s2's top bits), all as in BBC Elite (bbcelite.com's deep dives agree with every step here).
+@about The selected system (the cursor's, $DEBA) and the current one ($D096) are kept as seeds; the work copy at $DEC0 is the one twisted. A chart cursor move, a jump and a planet's name typed on the chart all end in FindNearest or FindSystem, which leave the selected system's data, name and distance here.
+
+$DEB9 b GalaxySpare ; One byte no code reads (known from the code only)
+$DEBA b SelectedSeeds 6 ; The selected system's seeds s0, s1, s2 (SystemData)
+$DEC0 b SystemSeeds 6 ; The seeds being twisted: the system the loops are at
+$DEC6 b BestSeeds 6 ; FindNearest's best system so far; FindSystem's place in the walk
+$DECC b TextSeeds 4 ; The four bytes TextRandom shifts for the planet's description (from s1 and s2)
+$DED0 t NameInput 11 ; The name typed: the commander's (JAMESON) or a planet's (FindSystem), zero-ended
+$DEDB t NameBuffer 9 ; The name SystemName builds (up to eight letters, zero-ended)
+$DEE4 t CurrentName 9 ; The current system's name (LAVE)
+$DEED t SelectedName 9 ; The selected system's name
+$DEF6 w JumpRange ; The distance to the selected system in 0.1 light years (FindNearest, JumpDistance)
+$DEF8 b Economy ; The selected system's economy, 0-7 (0 rich industrial, 7 poor agricultural)
+$DEF9 b Government ; Its government, 0-7 (0 anarchy, 7 corporate state)
+$DEFA b TechLevel ; Its tech level less one, 0-14
+$DEFB b Population ; Its population in 100 millions
+$DEFC w Productivity ; Its productivity in millions of credits
+$DEFE b SystemSpare 2 ; Two bytes no code reads (known from the code only)
+$DF00 b SystemCount ; FindSystem's count of the systems tried (256 then not found)
+$DF01 w NamePointer ; SystemName's next letter
+$DF03 c NextGalaxy ; Screen 16 of ScreenTable, which nothing asks for: the galaxy number one more (wrapping at 8) and the galaxy's seeds twisted (unreachable; GalaxyJump does the same in the game)
+$DF1A c TwistWord ; The two bytes at HL rotated left one bit each
+$DF24 c FindSystem ; The system named in NameInput: walk the galaxy's 256 systems comparing NameBuffer; carry when none
+> Found: the system becomes the selected one, the chart's cross is moved (EraseCross before and after SystemData), the name kept (KeepName) and the distance worked out (JumpDistanceNow). Called from the charts' PLANET NAME? prompt (PlanetNamePrompt), known from the code only.
+$DF2B FindSystemNext
+$DF37 FindSystemCompare
+$DF43 FindSystemMiss
+$DF4C FindSystemFound
+$DF5E w BestDistance ; FindNearest's smallest squared distance so far
+$DF60 c FindNearest ; The system nearest the chart cursor becomes the selected one, with the cross redrawn on the charts
+$DF74 c FindNearestNow ; Walk the 256 systems for the smallest dx^2 + (dy/2)^2 to the cursor ($D0BB, $D0BC), then its data, name and distance
+> 10 runs in f1 and d1 (a jump target and the charts). The y difference is halved because the charts are drawn half as tall as wide; the root of the best sum times 4 is the distance in 0.1 light years (JumpDistance), as the BBC's.
+$DF7F FindNearestLoop
+$DF9C FindNearestStep
+$DFB5 JumpDistanceNow
+$DFC4 c NextSystem ; Four twists: the next system's seeds
+$DFC6 NextSystemLoop
+$DFCE c SquaredDistance ; HL = (the cursor's x - B)^2 + ((the cursor's y - A) / 2)^2, B and A the system's x and y
+$DFEA c AbsDifference ; A = |A - B|
+$DFF0 AbsDifferenceStore
+$DFF2 c JumpDistance ; JumpRange = 4 x the root of HL ($FFFF on a carry)
+$DFF6 JumpDistanceFar
+$DFF9 JumpDistanceRoot
+$E005 JumpDistanceStore
+$E009 c MultiplyDA ; HL = D x A (shift and add, eight steps)
+$E010 MultiplyDALoop
+$E019 MultiplyDANext
+$E01C c SystemName ; The name of the system in SystemSeeds into NameBuffer: four pairs when bit 6 of s0's low byte is set, else three
+$E024 SystemNameLoop
+$E03D c NamePair ; One pair: s2's high byte AND $1F picks StdPairs entry (0: none), a "?" second letter left out; then a twist
+$E060 NamePairNext
+$E063 c Twist ; s0, s1, s2 = s1, s2, s0 + s1 + s2
+$E080 c KeepName ; NameBuffer becomes SelectedName
+$E08C c SystemData ; The selected system from SystemSeeds: its seeds, the cursor on it, the economy, government, tech level, population and productivity
+> As BBC Elite: the government is s1's bits 3-5, the economy s0's high bits 0-2 (bit 1 set for governments 0 and 1); the tech level (7 - economy) + (s1 high AND 3) + government / 2 rounded up; the population 4 x tech + economy + government + 1; the productivity ((7 - economy) + 3) x (government + 4) x population x 8. 10 runs.
+$E0BD SystemDataTech
+$E107 c PrintDistance ; DISTANCE: and the jump range with its point and LIGHT YEARS, then a new line (nothing at 0)
+$E123 PrintDistanceEnd
+$E126 c GalaxySeeds ; SystemSeeds = the galaxy's seeds: the walk starts at its first system
+$E12E c SaveSeeds ; BestSeeds = SystemSeeds
+$E136 c RestoreSeeds ; SystemSeeds = BestSeeds
+$E13C c CopySeeds ; Six bytes from HL to DE
+$E142 c NewMarket ; A new fluctuation byte ($D06A) from StarSeed, then MakeMarket
+$E148 c MakeMarket ; Each commodity's price ($E1BD) and the station's stock ($D09E) from Commodities, the economy and the fluctuation
+> For each of the 17 entries (base price, factor, base quantity, mask): the product = economy x (factor AND $1F); the stock = base quantity + (fluctuation AND mask) less the product and one for a positive factor (INC A / NEG), plus the product for a negative one, 0 when negative, AND $3F; the price = (base price + (fluctuation AND mask) plus or minus the product) x 4, in tenths of a credit. The last commodity's stock (alien items) is forced to 0. 4 runs (d1 and the arrivals); tools/galaxy.py --market reproduces Diso's 17 prices and stocks of f1 exactly. NewGame turns the stock's store ($E1AE, LD (HL),A) into a NOP for its call, so the first market keeps the stock of the commander record.
+$E154 MakeMarketLoop
+$E164 MakeMarketLoop2
+$E167 MakeMarketQuantity
+$E17B MakeMarketStock
+$E181 MakeMarketStockStore
+$E19A MakeMarketPositive
+$E19E MakeMarketPrice
+$E1BB b PriceBase 2 ; Two bytes before Prices: the market screens' pointers start here and step 2 first
+$E1BD w Prices 8 ; The 17 commodities' prices in tenths of a credit (MakeMarket)
+$E1DF b MarketItem ; The market screens' row: the commodity (0-16), which also picks the unit (t, kg, g)
+$E1E0 w HoldPointer ; The trading pages' pointer into the hold ($D06B on), stepped first
+$E1E2 w PricePointer ; Their pointer into Prices
+$E1E4 w StockPointer ; Their pointer into MarketStock (buying) or the hold, stepped first
+$E1E6 w SavedCursor ; The text position SaveCursor keeps
+@module menuhelpers ; The screens' helpers: the click, the key waits, the cursor moves, the market rows, the units, the line editor and the planet name prompt
+@about The docked screens are printed line by line with these: NewLine and SetRow keep the text position in range (row 24 wraps to row 1), ColumnInline sets the column from the byte after its CALL, PrintUnit adds t, kg, g or km, and the market rows step three pointers through Prices, MarketStock and the hold. ReadLine is the one line editor (the commander's name, a planet's name): digits and capitals, DELETE (CAPS SHIFT + 0) and ENTER.
+
+$E1E8 c Click ; With the sound on (Options bit 7) a short beep through the ROM's BEEPER (HL = $80, DE = $60)
+$E1F7 c WaitKey ; 20 frames, the key bytes cleared, then wait for a key: A = its code (KeyCode $FC0D)
+$E1FD WaitKeyLoop
+$E205 c ClearKeys4 ; The four key bytes $FC08-$FC0B zeroed with the interrupts off
+$E20B ClearKeys4Loop
+$E212 c MarketRow ; One commodity of the market: its name, the unit, the price (4 digits and the point), the stock and its unit; carry when the stock is 0 ("-")
+> MarketItem picks the name (standard code $D0 + item); the columns are 13, 15 and 23 (ColumnInline). The price comes through PricePointer, the stock through StockPointer, each stepped first.
+$E21E MarketRowUnit
+$E225 MarketRowPrice
+$E23E MarketRowStock
+$E24D MarketRowNone
+$E254 MarketRowCount
+$E268 c HoldRow ; One line of the hold: nothing (carry) for 0 units, else the name, column 13, the count (3 digits) and the unit
+$E290 HoldRowEmpty
+$E292 c PrintOtherColon ; Other token A and ":"
+$E297 c PrintCodeColon ; Standard code A and ":"
+$E29A PrintColon
+$E29E c PrintCodeSpace ; Standard code A and a space
+$E2A3 PrintCodeNow
+$E2A6 c PrintCodeLine ; Standard code A and a new line
+$E2A9 c NewLine ; Column 0 of the next row (a capital next)
+$E2B1 NewLineRow
+$E2B7 c ColumnZero ; Column 0
+$E2BC c ColumnInline ; The column from the byte after the CALL
+$E2C0 c SetColumn ; Column A; 32 and more is a new line
+$E2C8 c SetRow ; Row A; 24 and more is row 1, column 0
+$E2D5 c DeleteChar ; One letter back on row 21 or 22 (ReadLine's DELETE): the cell's eight pixel rows cleared
+> The screen address's low byte is written into the LD HL at $E2ED (the column - 1 plus $A1 or $C1): the line editor's rows are rows 5 and 6 of the screen's last third.
+$E2E0 DeleteCharColumn
+$E2F3 DeleteCharLoop
+$E2F8 c PrintCapitals ; Standard code A in capitals (control 6), then sentence case (control 8)
+$E306 c PageTitle ; A screen's title: code A in capitals, the condition light, and code $77 (three new lines)
+$E311 c PrintCodes ; The zero-ended standard codes at HL; carry at the end
+$E31E c PrintUnit ; The unit of MarketItem in small letters: t (0-12, 16), kg (13, 14), g (15), km (17: the data screen's radius)
+$E336 PrintUnitTonnes
+$E33A PrintUnitKilo
+$E33F PrintUnitGrams
+$E343 PrintUnitKm
+$E349 PrintUnitNow
+$E34C c IsTonnes ; Carry when MarketItem is sold in tonnes (0-12 and 16): BuyCheck and SellCheck count only those against the free space
+$E358 IsTonnesNo
+$E35A c Wait20 ; 20 frames
+$E35E c Wait36 ; 36 frames
+$E360 c WaitFrames ; B frames (HALT B times)
+$E364 c SaveCursor ; The text position into SavedCursor
+$E36B c ClearInputRows ; Rows 21 and 22 cleared, the position at row 21, column 0
+$E37A c ClearRow22 ; Row 22 (cells 1-30) cleared
+$E37D c ClearCells ; Eight pixel rows of 30 cells from HL set to A
+$E37F ClearCellsRow
+$E383 ClearCellsByte
+$E38D c RestoreCursor ; The text position from SavedCursor
+$E394 b InputLength ; ReadLine: the letters typed
+$E395 w InputPointer ; ReadLine: the next letter's place
+$E397 b InputKey ; ReadLine: the last key's code
+$E398 c PlanetNamePrompt ; PLANET NAME? (other $0E, 8 letters): the system found becomes the selected one, else "<name> NOT FOUND"
+$E3C2 PlanetNameFound
+$E3C9 b InputPrompt ; ReadLine's prompt (an other token)
+$E3CA w InputStart ; ReadLine's buffer
+$E3CC c ReadLine ; Read up to B letters into HL after the other token A on the cleared input rows; ENTER ends, DELETE takes one back
+> B is written into the CP at $E413 (the length check). Accepted: 0-9 and @, A-Z (codes $30-$39, $40-$5A); each is stored and printed. DELETE ($FE: CAPS SHIFT with 0, the keyboard scan's code) moves back one and clears the cell. ENTER or a full buffer ends the line with a zero; the editor waits for ENTER to be let go. Known from the code only (no recording typed a name).
+$E3ED ReadLineKey
+$E40E ReadLineLetter
+$E428 ReadLineDelete
+$E43E ReadLineDeleteWait
+$E446 ReadLineEnd
+$E451 ReadLineRelease
+$E45B c ShowSelected ; The system nearest the cursor: its name in capitals and its distance on the input rows, a click
+$E45E ShowSelectedNow
+@module chartcursor ; The charts' crosses: the cursor's cross placed and drawn with XOR, the cursor keys' moves
+@about A chart cross is two XOR lines through (CrossX, CrossY), CrossSize long, clipped to the chart (CrossTop to CrossBottom, and the screen's sides): drawing it twice takes it away, so every cursor move is erase, move, draw. The galactic chart's cursor cross is 10 pixels and sits at the cursor's chart point (x, y / 2 + 24); the short range chart's is 16, at 4 pixels a unit of x and 2 of y from the current system at the chart's centre (97, 96), and is not drawn off the chart.
+
+$E46F c ChartCross ; The cursor's cross on the chart that is up, by CrossSize: 10 the galactic chart, else the short range one (nothing when off it)
+> 36 runs (f1, d1: the charts and their cursor). The short range point: x = 97 + 4 (cursor x - current x), y = 96 + 2 (cursor y - current y), refused on any overflow and outside rows 25-166.
+$E48B ChartCrossLeft
+$E496 ChartCrossY
+$E4AC ChartCrossUp
+$E4B6 ChartCrossRows
+$E4C1 ChartCrossGalactic
+$E4D1 ChartCrossDraw
+$E4D4 c ChartUp ; S: the cursor two y up (stopping at 0)
+$E4E1 ChartUpStore
+$E4E6 c ChartDown ; X: two y down (stopping at 255)
+$E4F4 ChartDownStore
+$E4F9 c ChartLeft ; N: one x left (stopping at 1)
+$E503 ChartLeftStore
+$E506 ChartMoved ; The cross drawn again at the new place
+$E509 c ChartRight ; M: one x right (stopping at 254)
+$E515 ChartRightStore
+$E51A c ChartHome ; B: the cursor back on the current system
+$E52B b CrossSize ; The cross's length in pixels (16 or 24 for the current system's, 10 or 16 for the cursor's)
+$E52C b CrossTop ; The chart's first pixel row (24)
+$E52D b CrossBottom ; The chart's last pixel row (152 galactic, 167 short range)
+$E52E c DrawCross ; Two XOR lines through (CrossX, CrossY): the horizontal one cut at the screen's edges, the vertical one at CrossTop and CrossBottom
+> The horizontal line is drawn a byte at a time: a partial byte (a mask of the first bit on), whole bytes of $FF, a partial last byte; the three cases are the line inside the screen, cut at the left and cut at the right. The vertical line steps down the screen's pixel rows (NextRowDown) with one bit.
+$E551 DrawCrossRight
+$E561 DrawCrossBytes
+$E563 DrawCrossCount
+$E56F DrawCrossCutLeft
+$E586 DrawCrossCutLeftBits
+$E588 DrawCrossCutLeftCount
+$E594 DrawCrossCutRight
+$E5A6 DrawCrossCutRightBits
+$E5A8 DrawCrossCutRightCount
+$E5B4 DrawCrossShort
+$E5C0 DrawCrossShortLeft
+$E5C7 DrawCrossShortRight
+$E5CF DrawCrossLine
+$E5DA DrawCrossFull
+$E5E1 DrawCrossDone
+$E5E4 DrawCrossLineLeft
+$E5F0 DrawCrossFullLeft
+$E5F9 DrawCrossLineRight
+$E604 DrawCrossFullRight
+$E60B DrawCrossLastRight
+$E611 c MaskTop ; E = a byte with its top E bits set (the leftmost E pixels)
+$E612 MaskTopLoop
+$E619 c MaskLow ; D = a byte with its low D bits set (the rightmost D pixels)
+$E61A MaskLowLoop
+$E621 c PixelAddress ; HL = the screen address of x A, row C (the cross's own; the plots use the ROM's PIXEL-ADD)
+$E63F DrawCrossEnd
+$E644 DrawCrossEndRight
+$E647 DrawCrossVertical
+$E671 PixelAddressIfBelow
+$E674 DrawCrossVerticalTop
+$E683 DrawCrossVerticalBit
+$E690 DrawCrossVerticalShift
+$E695 DrawCrossVerticalNow
+$E696 DrawCrossVerticalLoop
+$E6A3 c NextRowDown ; HL one character row down when the pixel row wrapped past a cell
+$E6AD b CrossSpare ; One byte no code reads (known from the code only)
+@module market ; Buying and selling cargo and equipment: the quantity editor, the checks and the undo, the nova's refugees
+@about The three docked trading screens (keys 2, 3 and 4) walk the 17 commodities or the 14 equipment items with the pointers of MarketRow / HoldRow. For each row the player types a quantity (QuantityKeys: one or two digits, ENTER skips the row, another key leaves the page); every digit runs the screen's check (BuyCheck, SellCheck, EquipAccept) on a copy of the cash, the hold, the stock and the free space (SaveTrade), and a refusal (QUANTITY?, CASH?, CARGO?) puts the copy back (RestoreTrade). No recording traded: the module is known from the code only, except the pages' headings (d1).
+@about The nova mission's two pages live here too: docking in the nova's system asks THE SUN IS GOING NOVA, WILL YOU SAVE US (Y/N)?; Y fits a large cargo bay and fills the hold with refugees (MissionFlags bit 5); docking anywhere else with them aboard gives 100 units of gem-stones and the bay (35 tons) back.
+
+$E6AE c BuyCargo ; Key 2: the refugees' question in the nova's system, the inventory with refugees aboard, else the buy page
+$E6E9 BuyCargoLoop
+$E6F2 BuyCargoInventory
+$E6F8 b MarketBands 2 ; The trading pages' colour bands: 30 cells and a gap of a row, 30 cells
+$E6FA c FirearmsPrice ; The firearms' price back to 70.4 Cr ($02C0 tenths) when ZeroFirearms cleared it
+$E707 BuyCargoPage ; UNIT QUANTITY PRODUCT UNIT PRICE FOR SALE (code $FF), then each commodity in stock with its prompt
+$E728 BuyCargoRow
+$E737 BuyCargoAsk
+$E74C BuyCargoDone
+$E74F BuyCargoNext
+$E752 BuyCargoItem
+$E75B BuyCargoEnd
+$E75E c FillAllAttrs ; All 768 attributes set to A (no code calls it; known from the code only)
+$E767 c FillPage256 ; 256 bytes of A from HL
+$E769 FillPage256Loop
+$E76E c QuantityDelete ; DELETE after the first digit: the digit cleared, the trade undone, start again
+$E776 c QuantityKeys ; Read a quantity into Quantity, running the check at HL after each digit; carry: A = 1 again, 2 the next row, else leave
+> The first key: ENTER is "next row" (A = 2), 1-9 a digit, any other key but DELETE ends the page; the second: ENTER accepts, 0-9 makes Quantity ten times more plus the digit (AddDigit) after the trade is undone and checked again, DELETE starts again. The check returns carry to refuse.
+$E779 QuantityFirst
+$E77D QuantityFirstKey
+$E7A2 QuantitySecond
+$E7CB QuantitySkip
+$E7CD QuantityRefused
+$E7CF c ShowCash ; Column 3 on the input row: CASH: and the cash (standard control 7), a click and a wait
+$E7DA c CallCheck ; JP (HL): the quantity check
+$E7DB c BuyCheck ; Buy Quantity of MarketItem: the stock, the price Quantity times, the free space (tonnes only), the hold, the legal cost
+> Refused with QUANTITY? (more than the stock), CASH? (TakeCredits short) or CARGO? (no free space, or a hold count past 255). A unit of slaves, narcotics or firearms bought costs legal status as a scooped one does (AddCargo's tail at $D1AD).
+$E7EA BuyCheckPay
+$E808 BuyCheckHold
+$E818 c NoQuantity ; QUANTITY? (code $B0)
+$E81C c NoCash ; CASH? (code $C5)
+$E820 c NoRoom ; CARGO? (code $CE)
+$E822 RefuseTrade ; Column 3, the code and "?", the trade undone (RestoreTrade), a click, 36 frames, A = 1 with carry
+$E832 c ClickWait ; A click, 36 frames, A = 1 and carry (the row asked again)
+$E83C c SaveTrade ; The cash, the stock byte, the hold byte and the free space copied
+$E85D c RestoreTrade ; The copy put back
+$E87E c QuantityPrompt ; QUANTITY OF <name>/<unit> ? on the cleared input rows
+$E8A4 w SavedTenths ; SaveTrade's copy of the cash's tenths ($D068)
+$E8A6 w SavedThousands ; Its copy of the thousands ($D066)
+$E8A8 b SavedHold ; The hold byte
+$E8A9 b SavedStock ; The stock byte
+$E8AA b SavedSpace ; The free space
+$E8AB b Quantity ; The quantity typed (or the equipment item, the laser's view)
+$E8AC w QuantityCheck ; The check QuantityKeys runs (CallCheck)
+$E8AE c SellCargo ; Key 3: with refugees aboard outside the nova's system the reward, else the sell page
+> The reward: MissionFlags bit 5 cleared, the combat score's high byte one more, 100 units of gem-stones ($D07A) in the hold, the free space 35, YOU HAVE SAVED OUR LIVES! THANK YOU, COMMANDER... (other $0F) and the inventory.
+$E8D8 b SellBands ; 30 cells to the end
+$E8D9 c TradePage ; ClearPageText, SellBands and the message row's colour
+$E8E5 c ClearPageText ; Other $96: the page cleared, the rule, capitals, the tab
+$E8EA SellCargoPage ; SELL CARGO (codes $CD $CE), each commodity in the hold with its prompt
+$E8F9 SellCargoRow
+$E909 SellCargoAsk
+$E917 SellCargoDone
+$E91D SellCargoNext
+$E92C SellCargoKey
+$E932 SellCargoEnd
+$E935 c SellCheck ; Sell Quantity: the hold less it (QUANTITY? if short), the free space back (tonnes), the price paid Quantity times
+$E953 SellCheckLoop
+$E962 c TradePointers ; MarketItem 0, HoldPointer one before the hold, PricePointer at PriceBase
+$E973 c EquipShip ; Key 4: EQUIP SHIP, the items the tech level allows with their prices, the cash, then the item's number
+> The list has tech level + 3 items, all 14 from tech level 9 on (the count 12 or more becomes 14). EquipPrices $705F holds each item's price (a thousands byte, a tenths word): fuel (its price written by the jump), missile 30, large cargo bay 400, E.C.M. 600, pulse laser 400, beam laser 1000, fuel scoops 525, escape pod 1000, energy bomb 900, energy unit 1500, docking computers 1500, galactic hyperdrive 5000, military laser 6000, mining laser 800 Cr. The number typed picks the item (0 or past the list: the status page); the price is taken (CASH? when short).
+$E99B EquipShipSetEquipCount
+$E99F EquipShipRow
+$E9DF EquipShipAsk
+$EA05 EquipShipLeave
+$EA08 EquipShipPay
+$EA22 EquipShipPaid
+$EA2C EquipFuel ; 1: the tank filled (SetFuel 70), the fuel's price 0
+$EA3B EquipMissile ; 2: a missile, at most 4 (ALL PRESENT otherwise)
+$EA4C EquipCargoBay ; 3: the large cargo bay, 15 more tons of free space
+$EA60 EquipItem ; 4 and 7-12: the flag in the equipment bytes ($D081 + item) set to $FF, refused when already fitted
+$EA6C EquipShipCallEquipFlag
+$EA74 EquipItemFit
+$EA79 EquipDone
+$EA7F EquipLaser ; 5, 6, 13, 14: the laser kind (1 pulse, 2 beam, 3 military, 4 mining), then the view to mount it on
+> A page of the four views (0-3, tokens $60-$63 and VIEW), the key 0-3 picks the mount at LaserMounts $D07D; the laser that was there is paid back at its full price (LaserItems $FD89 gives its item). Another key: the trade undone and the status page.
+$EA90 EquipLaserKind
+$EAB6 EquipLaserView
+$EB1C EquipLaserDone
+$EB22 EquipLaserNone
+$EB27 EquipShipShort
+$EB2D c EquipAccept ; The equipment's quantity check: always accepted
+$EB2F c EquipPrice ; HL = EquipPrices + 3 (A - 1): item A's price
+$EB38 c EquipFlag ; HL = $D081 + Quantity: the item's equipment byte
+$EB3E c AddAToHL ; HL = HL + A
+$EB43 c EquipFull ; ALL PRESENT (missiles)
+$EB47 c EquipFitted ; <item> PRESENT
+$EB4E EquipRefused ; The code, a space and PRESENT (code $1E), a click, the trade undone, the status page
+$EB5B EquipToStatus
+$EB5E b EquipCount ; The items listed
+$EB5F b EquipRow ; The item being listed (or the view)
+$EB60 w EquipPointer ; The next price in EquipPrices
+$EB62 b FitLaserKind ; The laser being fitted
+$EB63 c ScreenHeading ; Column 6, the page title A (PageTitle), then MenuTop with $17
+$EB6C ScreenHeadingTop
+$EB6E c MenuTop ; The top three rows' attributes A and a rule at $4740
+@module dockedscreens ; The docked screens of ScreenTable: the galactic and the short range charts, the data on a system, the market prices, the status and the inventory
+@about The six letter keys draw these pages (SelectView through CallScreen): I the galactic chart, O the short range chart, P the data on the selected system, K the market prices, L the commander's status, ENTER the inventory. Each page is text through PrintCode / PrintOther with the colour bands of ColourBands; the two charts plot instead: the galactic chart a dot for each of the 256 systems (through the ROM's PIXEL-ADD $22AA and a SET patched to the dot's bit), the short range chart an icon for each system within 19 x and 34 y of the current one and its name on a free text row.
+@about Witnesses: the galactic chart 1 run, the short range chart 3, the data screen 1 (the data on Lave), the market prices 1, the status 3 (d1); the inventory 3 runs in t1, 1 in dk, 2 in m1.
+@inline $F068 1 ; PrintIfFitted: the code byte after the CALL
+
+$EB7C c GalacticChart ; Screen I: the 256 systems as dots, the current system's cross (16) and its fuel circle, the cursor's cross (10), GALACTIC CHART
+> The chart is the galaxy at half height: a system's dot is at (x, y / 2 + 24), x = s1 high, y = s0 high, so rows 24-151 hold it (CrossTop 24, CrossBottom 152). The fuel circle's radius is the fuel / 4 (7.0 light years = 70 tenths: 17 pixels). The text rows 0-2 and 19-23 are cleared (ClearBlock), the bottom five rows coloured $17 under a rule at $5060 for the cursor's name and distance. 1 run.
+$EBE3 GalacticChartLoop
+$EBEE c ClearBlock ; A x 32 bytes before HL cleared on each of the cell's eight pixel rows: SP at HL and PUSHes of zero, the interrupts off
+> HL = $4060, A = 3 clears the character rows 0-2; HL = $5100, A = 5 the rows 19-23. PUSH writes below SP, so HL is the block's end. 2 runs.
+$EBFB ClearBlockRow
+$EBFF ClearBlockCells
+$EC01 ClearBlockPush
+$EC11 b ClearBlockCount ; ClearBlock's A (the rows of 32 bytes)
+$EC12 w ClearBlockStack ; ClearBlock's saved SP
+$EC14 c PlotSystem ; The dot of the system in SystemSeeds at (x, y / 2 + 24): PIXEL-ADD $22AA, its bit patched into the SET at $EC35
+> PIXEL-ADD counts y from the bottom, so B = (y / 2 XOR 127) + 24 is 175 less the row. It returns the bit's place in the byte in A (0 the left); XOR 7, times 8, OR $C0 is the second byte of SET n,B, written into the instruction. 256 runs.
+$EC3B c ClampLow ; A = 0: the window's low edge when cx - 19 or cy - 34 went below 0
+$EC3D c ClampHigh ; A = 255: its high edge when cx + 19 or cy + 34 passed 255
+$EC40 b RowsUsed 24 ; The short range chart's text rows that hold a name (255), one byte a row
+$EC58 c ShortRangeChart ; Screen O: SHORT RANGE CHART, the systems near the current one as icons with their names, the current system's cross (24), the fuel circle, the cursor's cross (16)
+> The window is the current system's x ± 19 and y ± 34, written into the four CP operands of EachSystemInWindow ($ECDF, $ECE3, $ECEA, $ECEE). A system is 4 pixels a unit of x and 2 of y from the centre (97, 96); the fuel circle's radius is the fuel (70 pixels for 7.0 light years). Two walks: the icons (DrawSystemIcon) then the names (LabelSystem), so a name never lands under an icon drawn after it. 3 runs.
+$EC5E ShortRangeChartClear
+$ECD2 c EachSystemInWindow ; The 256 systems: those inside the window (x and y each low <= v < high) handed to the routine at HL (the CALL at $ECF1 patched)
+> 6 runs (two a chart), 60 systems handed on: 10 a chart around Lave.
+$ECDA EachSystemLoop
+$ECF1 EachSystemCall ; CALL patched to DrawSystemIcon or LabelSystem (they step to the next system themselves)
+$ECF6 EachSystemSkip
+$ECF9 EachSystemNext
+$ECFD c SystemPixel ; HL = the screen address of the system's icon (its top left at x 94 + 4 dx, row 93 + 2 dy from the current system), A its bit, B and C the coordinates
+> dx and dy are the system's x and y less the current system's; the icon is 8 x 8, so its centre is the cross's (97, 96) for dx = dy = 0. 60 runs.
+$ED27 c DrawSystemIcon ; One of the four ChartIcons (s2 high AND $18: 8 bytes each) XORed in at the system's place, shifted A bits across two bytes, then the next system
+> The shift A is written into the LD B at $ED47. The icon's eight rows step down the screen's thirds as NextRowDown does. 30 runs.
+$ED3A DrawSystemIconRows
+$ED3C DrawSystemIconRow
+$ED48 DrawSystemIconShift
+$ED4E DrawSystemIconXor
+$ED6D DrawSystemIconDown
+$ED6E DrawSystemIconNext
+$ED75 b LabelSpare 2 ; Two bytes no code reads (known from the code only)
+$ED77 b LabelLength ; LabelSystem writes 8 - the name's length here, and no code reads it (known from the code only)
+$ED78 c LabelSystem ; The system's name at the text cell right of its icon: its own row, else the row above (from row 3), else the row below (to row 22), else none
+> The column is the icon's x / 8 + 1, the row 22 less the icon's B / 8 rounded up. 30 runs: the ten names around Lave (Diso, Leesti, Orrere, Reorte, Riedquat, Uszaa, Zaonce, Tionisla, Orerve and Lave itself) on each of three charts.
+$EDA4 LabelSystemRow
+$EDBC LabelSystemBelow
+$EDC5 c PrintIfRowFree ; The name in NameBuffer at TextRow unless RowsUsed has it: the row marked and the name printed (carry), else no carry
+> 39 runs for 30 names: nine names took a second row.
+$EDDF c DataScreen ; Screen P: DATA ON <system> for the system nearest the cursor: the distance, the economy, government, tech level, population and species, productivity, radius, and its description
+> The species is in brackets after the population; the productivity has " M CR", the radius " km" (PrintUnit with MarketItem 17). The description is other token 5 (TextRandom from TextSeeds = s1, s2), or IS RESISTING A THARGON INVASION (other $DE) for the galaxy's first system while a Thargoid mission is on (MissionState not 0). 1 run (d1, the data on Lave: Rich Agricultural, Dictatorship, Tech.Level 5, Population 2.5 Billion (Human Colonials), Gross Productivity 7000 M CR, Average Radius 4116 km).
+$EE8C DataScreenDescription
+$EE9D c PrintCodeGap ; Standard code A, a new line and an empty line
+$EEA2 c NewLineGap ; A new line and an empty line
+$EEA5 NewLineGapSecond
+$EEA8 c PrintEconomy ; ECONOMY: and RICH / AVERAGE / POOR / MAINLY (codes $AA-$AD) and INDUSTRIAL or AGRICULTURAL (economy / 4: codes $A8, $A9)
+> Economy 0-3 take $AA + e, 5-7 $AA + e - 5, 4 MAINLY: 0 rich, 1 average, 2 poor, 3 mainly industrial, 4 mainly, 5 rich, 6 average, 7 poor agricultural, as the BBC's.
+$EEB8 PrintEconomyKind
+$EEBD PrintEconomyType
+$EEC8 PrintEconomyMainly
+$EECE c PrintSpecies ; The system's people: HUMAN COLONIALS (s2 low below $80), else up to three adjectives and the kind, as the BBC's
+> s2 high bits 2-4 below 3: LARGE, FIERCE, SMALL (codes $E3-$E5); bits 5-7 below 6: GREEN, RED, YELLOW, BLUE, BLACK, HARMLESS ($E6-$EB); (s0 high XOR s1 high) AND 7 below 6: SLIMY, BUG-EYED, HORNED, BONY, FAT, FURRY ($EC-$F1); the kind ((that + s2 high AND 3) AND 7): RODENTS to INSECTS ($F2-$F9). Lave's people: s2 low below $80.
+$EEDA PrintSpeciesAlien
+$EEEB PrintSpeciesColour
+$EEFB PrintSpeciesLook
+$EF11 PrintSpeciesKind
+$EF1E PrintSpeciesEnd
+$EF21 c PrintRadius ; The radius in km: ((s2 high AND 15) + 11) x 256 + s1 high, five digits
+$EF37 c IsFirstSystem ; No carry when the selected system is the galaxy's first (its six seeds the galaxy's)
+> m2 ran it once, from JumpTick through MissionTriggers at frame 5183: the jump to Ausis, galaxy 2's first system, made MissionState 3 into 4 (the Thargoid base).
+$EF3C IsFirstSystemLoop
+$EF46 IsFirstSystemNo
+$EF48 c MarketPrices ; Screen K: <system> MARKET PRICES, the heading line (code $FF) and the 17 commodities (MarketRow); in witch space only the heading
+> 1 run (the Lave market of d1).
+$EF79 MarketPricesLoop
+$EF86 b StatusLaserView ; The view the status page's laser line is at (0-3)
+$EF87 c StatusScreen ; Screen L: COMMANDER <name>, the present and the hyperspace systems, the fuel, the cash, the legal status, the rating, the equipment and the lasers
+> The legal status: CLEAN (0), OFFENDER (1-49), FUGITIVE (50 and more). The rating: while the combat score's top byte is 0 its middle byte against 8, 16, 32, 64, 128 (HARMLESS, MOSTLY HARMLESS, POOR, AVERAGE, ABOVE AVERAGE: the first threshold at or above it, COMPETENT past 128), else the top byte against 2, 10, 25 (COMPETENT, DANGEROUS, DEADLY), ELITE past 25 (RatingScores). The equipment lines: LARGE CARGO BAY, FUEL SCOOPS, the E.C.M. SYSTEM JAMMER (MissionFlags bit 7) or E.C.M. SYSTEM, ENERGY BOMB, ENERGY UNIT, DOCKING COMPUTERS, GALACTIC HYPERSPACE, the four lasers (FRONT PULSE LASER...), CLOAKING DEVICE (bit 6). The escape pod ($D089) has no line. 3 runs.
+$EFD2 StatusOffender
+$EFD3 StatusLegal
+$EFEF StatusRatingHigh
+$EFF4 StatusRatingLoop
+$EFFC StatusRating
+$F026 StatusEcm
+$F02D StatusBomb
+$F053 StatusLasersLoop
+$F065 StatusFrame
+$F068 c PrintIfFitted ; A not 0: the code byte after the CALL on its own line at column 5; the return past the byte either way
+> 21 runs: seven equipment lines a status page.
+$F072 c EquipmentLine ; A new line, column 5
+$F07A c PrintLaser ; The laser of the next view (StatusLaserView one more): FRONT / REAR / LEFT / RIGHT and PULSE / BEAM / MILITARY / MINING LASER; nothing for none
+> Codes $60 + view, then $66 + kind for 1-2 (PULSE LASER $67, BEAM LASER $68), $72 + kind for 3-4 (MILITARY $75, MINING $76). 12 runs: four a page.
+$F098 PrintLaserPulse
+$F09A PrintLaserName
+$F0A1 c StatusSystem ; Column 21, ":" and standard control A (2 the current system, 3 the selected one), a new line
+$F0AE b RatingScores 6 ; The rating's thresholds for the score's middle byte (8, 16, 32, 64, 128, end $FF)
+$F0B4 b RatingHigh 4 ; Those for its top byte (2, 10, 25, end $FF)
+$F0B8 c InventoryScreen ; Screen ENTER: INVENTORY, the fuel, the cash, LARGE CARGO BAY (its line coloured), REFUGEES (MissionFlags bit 5), the hold (HoldRow for each commodity)
+> t1 (3 runs from frame 848), dk and m1 showed it.
+$F0EB InventoryRefugees
+$F0FD InventoryHold
+$F107 InventoryHoldLoop
+@module keyboard ; The text tables, the key bytes, the keyboard scan, the joysticks, the steering accumulators and the IM2 interrupt
+@about Every frame the IM2 interrupt (IM2Handler, through the vector $FEFE that I = $FD and a floating bus byte $FF give) scans the eight keyboard half-rows (ScanKeyboard): each key down sets its bit in one of the key bytes $FC08-$FC0C or KeyDigits (KeyTable: an offset and a mask a key) and leaves its character in KeyCode. Then the joystick (Options bits 0-1: keyboard, Kempston, Cursor, Sinclair) replaces the four steering bits, Options bits 4 and 5 reverse both axes or the vertical one, and ReadControls turns the steering bits into the roll, pitch and speed accumulators the flight loop copies (CopyRates). The game code reads and clears the key bytes; nothing else polls the keyboard.
+@about The key bytes: KeyScreens $FC08 (ENTER, L, K, P, O, I, 0, Y), KeySteer $FC09 (N, M, X, S, SPACE, SYMBOL SHIFT), KeyViews $FC0A (1-4, H, G, J, CAPS SHIFT), KeyCombat $FC0B (A, T, F, U, E, W, Q, C), KeyChart $FC0C (B, D, R) and KeyDigits $FC0F (9, 5, 8, 6, 7). Z and V set no bit. All three recordings steered with the keyboard (Options $8C: sound, recentring and damping on): the joysticks are known from the code only.
+
+$F117 b TextSpare 3 ; Three bytes no code reads (known from the code only)
+$F11A w TokenTable ; The standard tokens' address ($F11E): PrintCode skips n zero-ended strings from it
+$F11C w OtherTable ; The other tokens' address ($F4F5): PrintOther skips n - 1
+$F11E b StdTokens ; The standard set's 149 strings (tools/tokens.py --set std), each ended by a zero
+@res text/tokens.bin
+$F4F5 b OtherTokens ; The other set's 263 strings (tools/tokens.py --set other): the missions, the planet descriptions, the commander menu
+@res text/tokens.bin
+$FC00 b TokensSpare 8 ; Eight zero bytes after the tables (known from the code only)
+$FC08 b KeyScreens ; Keys down: ENTER 1, L 2, K 4, P 8, O $10, I $20, 0 $40 (the joystick's fire), Y $80 (the cloak)
+$FC09 b KeySteer ; N 1 (roll left), M 2 (roll right), X 4 (climb), S 8 (dive), SPACE $10 (faster), SYMBOL SHIFT $20 (slower): the joystick's bits 0-3
+$FC0A b KeyViews ; 1-4 bits 0-3 (the views, docked the launch and the trading screens), H $10 (hyperspace), G $20 (galactic), J $40 (the jump drive), CAPS SHIFT $80 (pause)
+$FC0B b KeyCombat ; A 1 (fire), T 2 (target a missile), F 4 (fire the missile), U 8 (unarm), E $10 (E.C.M.), W $20 (energy bomb), Q $40 (escape pod), C $80 (docking computer)
+$FC0C b KeyChart ; B $10 (the cursor home), D $20 (the distance), R $40 (a planet's name)
+$FC0D b KeyCode ; The last key's character (KeyCodes); $FF none, $FE DELETE (CAPS SHIFT with 0)
+$FC0E b Options ; The pause menu's options: bits 0-1 the controls (0 keyboard, 1 Kempston, 2 Cursor, 3 Sinclair), 2 recentring (R), 3 damping (D), 4 both axes reversed, 5 the vertical axis reversed, 6 the misjump (F), 7 sound
+$FC0F b KeyDigits ; 9 1, 5 2, 8 4, 6 8, 7 $10: the Cursor and Sinclair joysticks' keys
+$FC10 c ScanJoystick ; ScanKeyboard's row loop end; after the last row the joystick's four bits replace KeySteer's, reversed as the options say
+> Kempston (port $1F): bit 4 the fire (KeyCombat bit 0), bits 0-3 the directions, the axes' reversal options inverted. Cursor: KeyDigits / 2 (5 left, 8 right, 6 down, 7 up). Sinclair: 6 left, 7 right, 8 down, 9 up. Both: the 0 key fires. Option bit 4 swaps left with right and down with up, bit 5 down with up. With the keyboard, a steering key held clears CAPS SHIFT, F and C (keys a matrix can ghost from N, M, X, S held together; the reason is not stated in the code). Finally 0 with CAPS SHIFT is DELETE ($FE in KeyCode). 13398 runs, the keyboard only.
+$FC22 ScanJoystickKempston
+$FC33 ScanJoystickKempstonBits
+$FC3D ScanJoystickDigits
+$FC57 ScanJoystickFire
+$FC63 ScanJoystickReverse
+$FC74 ScanJoystickVertical
+$FC89 ScanJoystickStore
+$FCA1 ScanJoystickSteer
+$FCBA c KeyPressed ; Key E (bit 5 - E) of row D (8 the CAPS SHIFT row): its character into KeyCode, its bit into its key byte
+> The index is bit x 8 + row - 1: KeyCodes gives the character, KeyTable two bytes (the offset from $FC08 and the mask). 1203 runs.
+$FCD1 KeyPressedCode
+$FCEA b VectorFiller 16 ; $FE bytes: what is left of a 257-byte IM2 table $FD00-$FE00 (the bytes past $FD00 still give $FEFE for a low bus byte)
+$FD41 t KeyCodes 8 ; Each key's character by the index: SPACE, ENTER, P, 0, 1, Q, A, CAPS SHIFT (0), then the next bit of each row
+$FD69 c ScanKeyboard ; The eight half-rows from $FEFE to $7FFE: every key down through KeyPressed; KeyDigits 0 and KeyCode $FF first
+> 13398 runs (every interrupt of c1, f1, w1 and d1); 1203 keys seen down.
+$FD76 ScanKeyboardRow
+$FD80 ScanKeyboardBit
+$FD8A b LaserItems 4 ; The equipment item of each laser kind 1-4 (5 pulse, 6 beam, 13 military, 14 mining): read at $FD89 + kind
+$FD8E b StatusBands 8 ; The status page's colour bands (ColourBands: cells x 8 + rows, a row 0 ends)
+$FD96 b InventoryBands 3 ; The inventory's
+$FD99 t OtherPairs 26 ; The other set's 13 two-letter pairs (codes $D7 on); ControlRandomName uses those from $FD9B
+$FDB3 t StdPairs 16 ; The standard set's 32 pairs (codes $80-$9F), also the system names' syllables: AL LE XE GE ZA CE BI SO US ES AR MA IN DI RE A? ER AT EN BE RA LA VE TI ED OR QU AN TE IS RI ON, as BBC Elite's
+$FDF3 b DataBands 8 ; The data screen's colour bands
+$FDFB b MarketBands2 3 ; The market prices' colour bands
+$FDFE b VectorByte ; $FE (the filler's last byte)
+$FDFF w IM2Vector ; $FEFE: the IM2 vector for the bus byte $FF (I = $FD), the handler's JR at $FEFE
+$FE01 c ReadControls ; In a space view: the steering bits into the accumulators RollControl (N, M), PitchControl (X, S), SpeedControl (SPACE, SYMBOL SHIFT); KeySteer cleared
+> The roll and the pitch are sign and magnitude words (bit 15 the sign): a key in the word's direction adds $FF (roll) or $66 (pitch) a frame up to a magnitude below $1000, a key against it takes as much off (with recentring, option bit 2: straight to 0), and with neither key the magnitude falls by $3C or $24 a frame (damping, option bit 3). The speed goes up $A0 a frame with SPACE (below $2000) and down with SYMBOL SHIFT (to 0). 13398 runs, 11035 in a space view.
+$FE2E ReadControlsRight
+$FE3A ReadControlsRightMore
+$FE41 ReadControlsLeft
+$FE51 ReadControlsLeftMore
+$FE55 ReadControlsRollUp
+$FE63 ReadControlsRollDown
+$FE6D ReadControlsRollLess
+$FE7A ReadControlsPitch
+$FE9C ReadControlsClimb
+$FEA8 ReadControlsClimbMore
+$FEAF ReadControlsDive
+$FEBF ReadControlsDiveMore
+$FEC3 ReadControlsPitchUp
+$FED1 ReadControlsPitchDown
+$FEDB ReadControlsPitchLess
+$FEE8 ReadControlsSpeed
+$FEFE c IM2Entry ; The address the vector gives: JR IM2Handler
+$FF00 ReadControlsFaster
+$FF08 w RollControl ; The roll accumulator (sign and magnitude): its high byte $FF09 is the roll rate CopyRates takes
+$FF0A w PitchControl ; The pitch accumulator, the rate in $FF0B
+$FF0C w SpeedControl ; The speed accumulator, the speed in $FF0D
+$FF0E ReadControlsSlower
+$FF16 ReadControlsFasterCap
+$FF1D ReadControlsDone
+$FF25 c IM2Handler ; The interrupt: its own stack below $FFBF, the registers saved, ScanKeyboard, ReadControls and the sound (SoundTickVector)
+> 13398 runs: one a frame. SP is kept in IM2SavedSP.
+$FF4C c IM2On ; I = $FD, IM 2 (known from the code only: it ran before the recordings started)
+$FF53 c IM1On ; IM 1 (for the tape routines in the ROM; known from the code only)
+$FF56 w IM2SavedSP ; The interrupted program's SP
+$FF58 b KeyTable 2 ; Each key's (offset from $FC08, mask) by the index; Z and V have the mask 0

@@ -1,0 +1,1117 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/hyperspace",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: hyperspace",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "hyperspace"
+  ],
+  "summary": "The jump keys, the countdown, the arrival in a new system or in witch space, the galactic jump, the three missions' triggers.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 791,
+    "sha1": "caaf625fa9c5c4a885e86bec78e091896ae8f807",
+    "masked_sha1": "737a072e7a783ba319a0cfbde0ed831647b795b4"
+  },
+  "origin": "$DBA2",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyViews"
+    },
+    {
+      "offset": 13,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpCountdown"
+    },
+    {
+      "offset": 18,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D08D"
+    },
+    {
+      "offset": 38,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelOn"
+    },
+    {
+      "offset": 41,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7406"
+    },
+    {
+      "offset": 46,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FindNearest"
+    },
+    {
+      "offset": 49,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpRange"
+    },
+    {
+      "offset": 60,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 68,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelOn"
+    },
+    {
+      "offset": 71,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C005"
+    },
+    {
+      "offset": 76,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpCountdown"
+    },
+    {
+      "offset": 79,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MessageShown"
+    },
+    {
+      "offset": 82,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MessageSet"
+    },
+    {
+      "offset": 85,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Click"
+    },
+    {
+      "offset": 88,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 95,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 99,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C106"
+    },
+    {
+      "offset": 102,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MessageTickJoin"
+    },
+    {
+      "offset": 105,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 111,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 116,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCase"
+    },
+    {
+      "offset": 121,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Click"
+    },
+    {
+      "offset": 127,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Wait36"
+    },
+    {
+      "offset": 130,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearKeys4"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StatusScreen"
+    },
+    {
+      "offset": 136,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpCountdown"
+    },
+    {
+      "offset": 148,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 154,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 160,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintByte"
+    },
+    {
+      "offset": 163,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearMessages"
+    },
+    {
+      "offset": 166,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelOn"
+    },
+    {
+      "offset": 174,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionState"
+    },
+    {
+      "offset": 177,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NovaMission"
+    },
+    {
+      "offset": 184,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NovaMission"
+    },
+    {
+      "offset": 187,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunGrows"
+    },
+    {
+      "offset": 190,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D08D"
+    },
+    {
+      "offset": 193,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D065"
+    },
+    {
+      "offset": 197,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7060"
+    },
+    {
+      "offset": 202,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D065"
+    },
+    {
+      "offset": 205,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D090"
+    },
+    {
+      "offset": 208,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 211,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 214,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 218,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LegalStatus"
+    },
+    {
+      "offset": 221,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FindNearest"
+    },
+    {
+      "offset": 237,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NovaMission"
+    },
+    {
+      "offset": 243,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpRange"
+    },
+    {
+      "offset": 247,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 252,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 259,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Economy"
+    },
+    {
+      "offset": 265,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7060"
+    },
+    {
+      "offset": 268,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LegalStatus"
+    },
+    {
+      "offset": 273,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Options"
+    },
+    {
+      "offset": 280,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StarSeed"
+    },
+    {
+      "offset": 288,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WitchSpace"
+    },
+    {
+      "offset": 291,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D099"
+    },
+    {
+      "offset": 294,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCursorX"
+    },
+    {
+      "offset": 303,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D097"
+    },
+    {
+      "offset": 306,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCursorY"
+    },
+    {
+      "offset": 316,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SafeZone"
+    },
+    {
+      "offset": 319,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CurrentName"
+    },
+    {
+      "offset": 322,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SelectedName"
+    },
+    {
+      "offset": 325,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 329,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WitchSpace"
+    },
+    {
+      "offset": 332,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SelectedSeeds"
+    },
+    {
+      "offset": 335,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D096"
+    },
+    {
+      "offset": 343,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SelectedName"
+    },
+    {
+      "offset": 346,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CurrentName"
+    },
+    {
+      "offset": 354,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TechLevel"
+    },
+    {
+      "offset": 357,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D09C"
+    },
+    {
+      "offset": 360,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Government"
+    },
+    {
+      "offset": 363,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D09D"
+    },
+    {
+      "offset": 366,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewMarket"
+    },
+    {
+      "offset": 372,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunPosition"
+    },
+    {
+      "offset": 381,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StationLaunch"
+    },
+    {
+      "offset": 384,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SelectedSeeds"
+    },
+    {
+      "offset": 388,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEBC"
+    },
+    {
+      "offset": 392,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEBE"
+    },
+    {
+      "offset": 400,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7109"
+    },
+    {
+      "offset": 408,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_710C"
+    },
+    {
+      "offset": 419,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_710F"
+    },
+    {
+      "offset": 427,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7112"
+    },
+    {
+      "offset": 435,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7115"
+    },
+    {
+      "offset": 444,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7118"
+    },
+    {
+      "offset": 451,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlanetPosition"
+    },
+    {
+      "offset": 454,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    },
+    {
+      "offset": 460,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7118"
+    },
+    {
+      "offset": 463,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_604F"
+    },
+    {
+      "offset": 470,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7112"
+    },
+    {
+      "offset": 473,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6049"
+    },
+    {
+      "offset": 511,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6051"
+    },
+    {
+      "offset": 520,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7117"
+    },
+    {
+      "offset": 523,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_604F"
+    },
+    {
+      "offset": 529,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_605A"
+    },
+    {
+      "offset": 534,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6062"
+    },
+    {
+      "offset": 537,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6052"
+    },
+    {
+      "offset": 542,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7112"
+    },
+    {
+      "offset": 545,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_604A"
+    },
+    {
+      "offset": 559,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_605E"
+    },
+    {
+      "offset": 562,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6056"
+    },
+    {
+      "offset": 565,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7118"
+    },
+    {
+      "offset": 568,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6050"
+    },
+    {
+      "offset": 586,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCursorX"
+    },
+    {
+      "offset": 589,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D099"
+    },
+    {
+      "offset": 592,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCursorY"
+    },
+    {
+      "offset": 595,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D097"
+    },
+    {
+      "offset": 598,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D065"
+    },
+    {
+      "offset": 604,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_606E"
+    },
+    {
+      "offset": 613,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionState"
+    },
+    {
+      "offset": 631,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D096"
+    },
+    {
+      "offset": 634,
+      "length": 2,
+      "kind": "ext16",
+      "name": "IsFirstSystem"
+    },
+    {
+      "offset": 641,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionState"
+    },
+    {
+      "offset": 644,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CommanderRest"
+    },
+    {
+      "offset": 648,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CommanderRest"
+    },
+    {
+      "offset": 651,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionFlags"
+    },
+    {
+      "offset": 664,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StarSeed"
+    },
+    {
+      "offset": 667,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D09D"
+    },
+    {
+      "offset": 678,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6065"
+    },
+    {
+      "offset": 685,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelLoop"
+    },
+    {
+      "offset": 689,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 692,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarCabinTemp"
+    },
+    {
+      "offset": 695,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunNear"
+    },
+    {
+      "offset": 698,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileState"
+    },
+    {
+      "offset": 701,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionShip"
+    },
+    {
+      "offset": 706,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarAltitude"
+    },
+    {
+      "offset": 720,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NovaMission"
+    },
+    {
+      "offset": 725,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillAttrsVector"
+    },
+    {
+      "offset": 728,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 753,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionState"
+    },
+    {
+      "offset": 758,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 763,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CF"
+    },
+    {
+      "offset": 775,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 788,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarFuel"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "JumpKeys",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "H or G+H (KeyViews $FC0A bits 4, 5): a jump, unless one counts down; docked: DOCKED and the status screen"
+    },
+    {
+      "offset": 135,
+      "name": "JumpTick",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Each MessageTick: the countdown (shown halved, two digits at 1,1), and at 0 the jump itself"
+    },
+    {
+      "offset": 172,
+      "name": "GalaxyJump",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The next galaxy: the missions reset (the nova over, the Thargoids forgotten), the hyperdrive used up, the seeds twisted, the legal status clean, the system nearest the cursor"
+    },
+    {
+      "offset": 225,
+      "name": "TwistSeed",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The two bytes at HL rotated left one bit each, HL two on"
+    },
+    {
+      "offset": 286,
+      "name": "JumpWitch",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The misjump: WitchSpace on, the current system half way to the selected one, no safe zone, no system names"
+    },
+    {
+      "offset": 327,
+      "name": "JumpArrive",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The arrival: the selected system becomes the current one; the sun, the planet and the station from its seeds; the market"
+    },
+    {
+      "offset": 603,
+      "name": "MissionTriggers",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Outside galaxy 1: the Thargoid mission's stage, the jump count, the three triggers, the pirate station's chance"
+    },
+    {
+      "offset": 663,
+      "name": "PirateChance",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The station pirate-held (its roll counter's bit 7 cleared) with a chance by the government"
+    },
+    {
+      "offset": 682,
+      "name": "JumpEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The tunnel next (TunnelLoop 1), the front view, the cabin temperature, SunNear, MissileState and MissionShip 0, the altitude $A0"
+    },
+    {
+      "offset": 709,
+      "name": "MissionNova",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "32 jumps: the sun goes nova: flag bit 0, NovaMission, the view red, a fuel leak"
+    },
+    {
+      "offset": 732,
+      "name": "MissionCloak",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "128 jumps: the cloak ship may come (flag bit 1)"
+    },
+    {
+      "offset": 742,
+      "name": "MissionThargoids",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "254 jumps: the Thargoid MAYDAY (flag bit 2, MissionState 1)"
+    },
+    {
+      "offset": 757,
+      "name": "FuelLeak",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "All the fuel lost, FUEL LEAK on the message line (slot 9), when there was any"
+    },
+    {
+      "offset": 768,
+      "name": "SetFuel",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The fuel = A, at most 70 (7.0 light years); the fuel bar 2.25 x A"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 27,
+      "name": "JumpGalactic",
+      "comment": ""
+    },
+    {
+      "offset": 45,
+      "name": "JumpHyper",
+      "comment": ""
+    },
+    {
+      "offset": 65,
+      "name": "JumpStart",
+      "comment": ""
+    },
+    {
+      "offset": 73,
+      "name": "JumpCount",
+      "comment": ""
+    },
+    {
+      "offset": 98,
+      "name": "JumpOutOfRange",
+      "comment": ""
+    },
+    {
+      "offset": 104,
+      "name": "JumpDocked",
+      "comment": ""
+    },
+    {
+      "offset": 144,
+      "name": "JumpTickShow",
+      "comment": ""
+    },
+    {
+      "offset": 162,
+      "name": "JumpNow",
+      "comment": ""
+    },
+    {
+      "offset": 189,
+      "name": "GalaxyJumpNext",
+      "comment": ""
+    },
+    {
+      "offset": 236,
+      "name": "JumpHyperspace",
+      "comment": ""
+    },
+    {
+      "offset": 374,
+      "name": "JumpArriveLoop",
+      "comment": ""
+    },
+    {
+      "offset": 459,
+      "name": "JumpArriveStation",
+      "comment": ""
+    },
+    {
+      "offset": 475,
+      "name": "JumpArriveOffset",
+      "comment": ""
+    },
+    {
+      "offset": 496,
+      "name": "JumpArriveNear",
+      "comment": ""
+    },
+    {
+      "offset": 497,
+      "name": "JumpArriveStep",
+      "comment": ""
+    },
+    {
+      "offset": 500,
+      "name": "JumpArriveFar",
+      "comment": ""
+    },
+    {
+      "offset": 501,
+      "name": "JumpArriveSide",
+      "comment": ""
+    },
+    {
+      "offset": 515,
+      "name": "JumpArriveLoop2",
+      "comment": ""
+    },
+    {
+      "offset": 533,
+      "name": "JumpArriveX",
+      "comment": ""
+    },
+    {
+      "offset": 555,
+      "name": "JumpArriveXFlip",
+      "comment": ""
+    },
+    {
+      "offset": 558,
+      "name": "JumpArriveZ",
+      "comment": ""
+    },
+    {
+      "offset": 577,
+      "name": "MissionStationGone",
+      "comment": "The Thargoid base was destroyed (the station's role bit 7): MissionState 5, the award at the next dock"
+    },
+    {
+      "offset": 581,
+      "name": "JumpArriveZPlus",
+      "comment": ""
+    },
+    {
+      "offset": 583,
+      "name": "JumpArriveAxes",
+      "comment": ""
+    },
+    {
+      "offset": 585,
+      "name": "JumpArriveCursor",
+      "comment": ""
+    },
+    {
+      "offset": 625,
+      "name": "MissionTriggersLeft",
+      "comment": ""
+    },
+    {
+      "offset": 630,
+      "name": "MissionTriggersBase",
+      "comment": ""
+    },
+    {
+      "offset": 640,
+      "name": "MissionTriggersSetMissionState",
+      "comment": ""
+    },
+    {
+      "offset": 643,
+      "name": "MissionTriggersCount",
+      "comment": ""
+    },
+    {
+      "offset": 774,
+      "name": "SetFuelStore",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$DBA2",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/hyperspace.asm",
+    "label": "JumpKeys"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

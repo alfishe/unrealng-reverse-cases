@@ -1,0 +1,1136 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/menuhelpers",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: menuhelpers",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "menuhelpers"
+  ],
+  "summary": "The screens' helpers: the click, the key waits, the cursor moves, the market rows, the units, the line editor and the planet name prompt.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 647,
+    "sha1": "4f7cad186756e672bfcd6d57cfb673cc7aa3ca61",
+    "masked_sha1": "539a35141bee811a2757d3ec9a9bca257e5a12e5"
+  },
+  "origin": "$E1E8",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Options"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyCode"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyScreens"
+    },
+    {
+      "offset": 43,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketItem"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 51,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 55,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 58,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 62,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PricePointer"
+    },
+    {
+      "offset": 67,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PricePointer"
+    },
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 80,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber"
+    },
+    {
+      "offset": 83,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 87,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StockPointer"
+    },
+    {
+      "offset": 92,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StockPointer"
+    },
+    {
+      "offset": 98,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 104,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 111,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 114,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StockPointer"
+    },
+    {
+      "offset": 118,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintByte"
+    },
+    {
+      "offset": 121,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 129,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldPointer"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldPointer"
+    },
+    {
+      "offset": 140,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketItem"
+    },
+    {
+      "offset": 145,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 148,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 154,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 157,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldPointer"
+    },
+    {
+      "offset": 161,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintByte"
+    },
+    {
+      "offset": 164,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 171,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 176,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 183,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 191,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 196,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCapital"
+    },
+    {
+      "offset": 199,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 202,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextRow"
+    },
+    {
+      "offset": 209,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 217,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 225,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextRow"
+    },
+    {
+      "offset": 233,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextRow"
+    },
+    {
+      "offset": 238,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextRow"
+    },
+    {
+      "offset": 249,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 255,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 259,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 262,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5000"
+    },
+    {
+      "offset": 274,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 279,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 284,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 287,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 290,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ConditionLightVector"
+    },
+    {
+      "offset": 295,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 305,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 313,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCapital"
+    },
+    {
+      "offset": 316,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketItem"
+    },
+    {
+      "offset": 341,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 348,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 354,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 357,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketItem"
+    },
+    {
+      "offset": 381,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 384,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SavedCursor"
+    },
+    {
+      "offset": 390,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 393,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 397,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_50A1"
+    },
+    {
+      "offset": 400,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 403,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_50C1"
+    },
+    {
+      "offset": 422,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SavedCursor"
+    },
+    {
+      "offset": 425,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 437,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NameInput"
+    },
+    {
+      "offset": 440,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 443,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 447,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 450,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FindSystem"
+    },
+    {
+      "offset": 455,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NameInput"
+    },
+    {
+      "offset": 458,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 461,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 465,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 469,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 472,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 475,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 479,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 485,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 489,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 492,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 495,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 498,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 502,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 505,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 508,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 512,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 515,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 518,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 521,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 532,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 552,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 560,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 564,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 569,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 572,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 577,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 584,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 587,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 591,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 594,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 602,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 607,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 612,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 615,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 618,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyCode"
+    },
+    {
+      "offset": 625,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 628,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FindNearest"
+    },
+    {
+      "offset": 631,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 636,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 639,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 642,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintDistance"
+    },
+    {
+      "offset": 645,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "Click",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "With the sound on (Options bit 7) a short beep through the ROM's BEEPER (HL = $80, DE = $60)"
+    },
+    {
+      "offset": 15,
+      "name": "WaitKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "20 frames, the key bytes cleared, then wait for a key: A = its code (KeyCode $FC0D)"
+    },
+    {
+      "offset": 29,
+      "name": "ClearKeys4",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The four key bytes $FC08-$FC0B zeroed with the interrupts off"
+    },
+    {
+      "offset": 42,
+      "name": "MarketRow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One commodity of the market: its name, the unit, the price (4 digits and the point), the stock and its unit; carry when the stock is 0 (\"-\")"
+    },
+    {
+      "offset": 128,
+      "name": "HoldRow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One line of the hold: nothing (carry) for 0 units, else the name, column 13, the count (3 digits) and the unit"
+    },
+    {
+      "offset": 170,
+      "name": "PrintOtherColon",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other token A and \":\""
+    },
+    {
+      "offset": 175,
+      "name": "PrintCodeColon",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard code A and \":\""
+    },
+    {
+      "offset": 182,
+      "name": "PrintCodeSpace",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard code A and a space"
+    },
+    {
+      "offset": 190,
+      "name": "PrintCodeLine",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard code A and a new line"
+    },
+    {
+      "offset": 193,
+      "name": "NewLine",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Column 0 of the next row (a capital next)"
+    },
+    {
+      "offset": 207,
+      "name": "ColumnZero",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Column 0"
+    },
+    {
+      "offset": 212,
+      "name": "ColumnInline",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The column from the byte after the CALL"
+    },
+    {
+      "offset": 216,
+      "name": "SetColumn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Column A; 32 and more is a new line"
+    },
+    {
+      "offset": 224,
+      "name": "SetRow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Row A; 24 and more is row 1, column 0"
+    },
+    {
+      "offset": 237,
+      "name": "DeleteChar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One letter back on row 21 or 22 (ReadLine's DELETE): the cell's eight pixel rows cleared"
+    },
+    {
+      "offset": 272,
+      "name": "PrintCapitals",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard code A in capitals (control 6), then sentence case (control 8)"
+    },
+    {
+      "offset": 286,
+      "name": "PageTitle",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A screen's title: code A in capitals, the condition light, and code $77 (three new lines)"
+    },
+    {
+      "offset": 297,
+      "name": "PrintCodes",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The zero-ended standard codes at HL; carry at the end"
+    },
+    {
+      "offset": 310,
+      "name": "PrintUnit",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The unit of MarketItem in small letters: t (0-12, 16), kg (13, 14), g (15), km (17: the data screen's radius)"
+    },
+    {
+      "offset": 356,
+      "name": "IsTonnes",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Carry when MarketItem is sold in tonnes (0-12 and 16): BuyCheck and SellCheck count only those against the free space"
+    },
+    {
+      "offset": 370,
+      "name": "Wait20",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "20 frames"
+    },
+    {
+      "offset": 374,
+      "name": "Wait36",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "36 frames"
+    },
+    {
+      "offset": 376,
+      "name": "WaitFrames",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "B frames (HALT B times)"
+    },
+    {
+      "offset": 380,
+      "name": "SaveCursor",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The text position into SavedCursor"
+    },
+    {
+      "offset": 387,
+      "name": "ClearInputRows",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Rows 21 and 22 cleared, the position at row 21, column 0"
+    },
+    {
+      "offset": 402,
+      "name": "ClearRow22",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Row 22 (cells 1-30) cleared"
+    },
+    {
+      "offset": 405,
+      "name": "ClearCells",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Eight pixel rows of 30 cells from HL set to A"
+    },
+    {
+      "offset": 421,
+      "name": "RestoreCursor",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The text position from SavedCursor"
+    },
+    {
+      "offset": 432,
+      "name": "PlanetNamePrompt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "PLANET NAME? (other $0E, 8 letters): the system found becomes the selected one, else \"<name> NOT FOUND\""
+    },
+    {
+      "offset": 484,
+      "name": "ReadLine",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Read up to B letters into HL after the other token A on the cleared input rows; ENTER ends, DELETE takes one back"
+    },
+    {
+      "offset": 627,
+      "name": "ShowSelected",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The system nearest the cursor: its name in capitals and its distance on the input rows, a click"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 21,
+      "name": "WaitKeyLoop",
+      "comment": ""
+    },
+    {
+      "offset": 35,
+      "name": "ClearKeys4Loop",
+      "comment": ""
+    },
+    {
+      "offset": 54,
+      "name": "MarketRowUnit",
+      "comment": ""
+    },
+    {
+      "offset": 61,
+      "name": "MarketRowPrice",
+      "comment": ""
+    },
+    {
+      "offset": 86,
+      "name": "MarketRowStock",
+      "comment": ""
+    },
+    {
+      "offset": 101,
+      "name": "MarketRowNone",
+      "comment": ""
+    },
+    {
+      "offset": 108,
+      "name": "MarketRowCount",
+      "comment": ""
+    },
+    {
+      "offset": 168,
+      "name": "HoldRowEmpty",
+      "comment": ""
+    },
+    {
+      "offset": 178,
+      "name": "PrintColon",
+      "comment": ""
+    },
+    {
+      "offset": 187,
+      "name": "PrintCodeNow",
+      "comment": ""
+    },
+    {
+      "offset": 201,
+      "name": "NewLineRow",
+      "comment": ""
+    },
+    {
+      "offset": 248,
+      "name": "DeleteCharColumn",
+      "comment": ""
+    },
+    {
+      "offset": 267,
+      "name": "DeleteCharLoop",
+      "comment": ""
+    },
+    {
+      "offset": 334,
+      "name": "PrintUnitTonnes",
+      "comment": ""
+    },
+    {
+      "offset": 338,
+      "name": "PrintUnitKilo",
+      "comment": ""
+    },
+    {
+      "offset": 343,
+      "name": "PrintUnitGrams",
+      "comment": ""
+    },
+    {
+      "offset": 347,
+      "name": "PrintUnitKm",
+      "comment": ""
+    },
+    {
+      "offset": 353,
+      "name": "PrintUnitNow",
+      "comment": ""
+    },
+    {
+      "offset": 368,
+      "name": "IsTonnesNo",
+      "comment": ""
+    },
+    {
+      "offset": 407,
+      "name": "ClearCellsRow",
+      "comment": ""
+    },
+    {
+      "offset": 411,
+      "name": "ClearCellsByte",
+      "comment": ""
+    },
+    {
+      "offset": 428,
+      "name": "InputLength",
+      "comment": "ReadLine: the letters typed"
+    },
+    {
+      "offset": 429,
+      "name": "InputPointer",
+      "comment": "ReadLine: the next letter's place"
+    },
+    {
+      "offset": 431,
+      "name": "InputKey",
+      "comment": "ReadLine: the last key's code"
+    },
+    {
+      "offset": 474,
+      "name": "PlanetNameFound",
+      "comment": ""
+    },
+    {
+      "offset": 481,
+      "name": "InputPrompt",
+      "comment": "ReadLine's prompt (an other token)"
+    },
+    {
+      "offset": 482,
+      "name": "InputStart",
+      "comment": "ReadLine's buffer"
+    },
+    {
+      "offset": 517,
+      "name": "ReadLineKey",
+      "comment": ""
+    },
+    {
+      "offset": 550,
+      "name": "ReadLineLetter",
+      "comment": ""
+    },
+    {
+      "offset": 576,
+      "name": "ReadLineDelete",
+      "comment": ""
+    },
+    {
+      "offset": 598,
+      "name": "ReadLineDeleteWait",
+      "comment": ""
+    },
+    {
+      "offset": 606,
+      "name": "ReadLineEnd",
+      "comment": ""
+    },
+    {
+      "offset": 617,
+      "name": "ReadLineRelease",
+      "comment": ""
+    },
+    {
+      "offset": 630,
+      "name": "ShowSelectedNow",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$E1E8",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/menuhelpers.asm",
+    "label": "Click"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

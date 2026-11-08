@@ -1,0 +1,13 @@
+# b1: power-on, Side B, the real-ROM load (fasttape off), then ENTER at the Lenslok's size screen. The two keys
+# typed after it were a code computed from a probe capture; the timeline of a capture is not repeatable (the seed at
+# $C2A0 differs): this capture asked "31" and the game refused the keys G, S. The Lenslok is passed live by
+# work/b1_live.py on the open capture: it branches at frame 15800, runs the game's own code from $C2A0 on that
+# memory (seed $E9EC, code "1Q") and types it (docs/03-build-and-load.md 3.12).
+0 -
++100 ENTER
++5 -
++200 G
++4 -
++6 S
++4 -
++2000 END

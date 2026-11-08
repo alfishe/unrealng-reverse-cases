@@ -1,0 +1,30 @@
+# f1 (from work/snaps/title-A.szx, the title of c1): no new commander, docked at Lave; the short range chart, the
+# cursor one step left (onto Diso), D to pick it; launch, speed up, hyperspace, arrive at Diso, fire, roll, climb
+0 -
++30 N
++30 -
++400 SPACE
++30 -
++200 O
++20 -
++60 N
++6 -
++60 D
++15 -
++100 1
++20 -
++700 SPACE
++40 -
++100 H
++15 -
++1500 SPACE
++30 -
++200 A
++60 -
++100 N
++40 -
++100 A
++60 -
++100 X
++40 -
++800 END

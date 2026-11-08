@@ -1,0 +1,716 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/keyboard",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: keyboard",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "keyboard"
+  ],
+  "summary": "The text tables, the key bytes, the keyboard scan, the joysticks, the steering accumulators and the IM2 interrupt.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 3729,
+    "sha1": "d9b8cf859bf28bfcfe16fb874cd6c16238aeca05",
+    "masked_sha1": "6b38fb784d1c935706478b259c2e5c22e0194ed1"
+  },
+  "origin": "$F117",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 3,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 5,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2811,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2814,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2820,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2831,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2840,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2852,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2856,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2881,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2888,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2931,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2934,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2960,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2968,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2976,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2996,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3005,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3008,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3017,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3156,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3160,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3163,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFE"
+    },
+    {
+      "offset": 3179,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3185,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3304,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3307,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 3313,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3317,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3321,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3349,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3361,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3368,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3381,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_80FF"
+    },
+    {
+      "offset": 3384,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3402,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3412,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3428,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3431,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3459,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3471,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3478,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3491,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8066"
+    },
+    {
+      "offset": 3494,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3512,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3522,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3538,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3541,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3567,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3581,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3591,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3595,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3601,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3604,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFBF"
+    },
+    {
+      "offset": 3615,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3618,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 3621,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundTickVector"
+    },
+    {
+      "offset": 3633,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 2809,
+      "name": "ScanJoystick",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ScanKeyboard's row loop end; after the last row the joystick's four bits replace KeySteer's, reversed as the options say"
+    },
+    {
+      "offset": 2979,
+      "name": "KeyPressed",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Key E (bit 5 - E) of row D (8 the CAPS SHIFT row): its character into KeyCode, its bit into its key byte"
+    },
+    {
+      "offset": 3154,
+      "name": "ScanKeyboard",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The eight half-rows from $FEFE to $7FFE: every key down through KeyPressed; KeyDigits 0 and KeyCode $FF first"
+    },
+    {
+      "offset": 3306,
+      "name": "ReadControls",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "In a space view: the steering bits into the accumulators RollControl (N, M), PitchControl (X, S), SpeedControl (SPACE, SYMBOL SHIFT); KeySteer cleared"
+    },
+    {
+      "offset": 3559,
+      "name": "IM2Entry",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The address the vector gives: JR IM2Handler"
+    },
+    {
+      "offset": 3598,
+      "name": "IM2Handler",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The interrupt: its own stack below $FFBF, the registers saved, ScanKeyboard, ReadControls and the sound (SoundTickVector)"
+    },
+    {
+      "offset": 3637,
+      "name": "IM2On",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "I = $FD, IM 2 (known from the code only: it ran before the recordings started)"
+    },
+    {
+      "offset": 3644,
+      "name": "IM1On",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "IM 1 (for the tape routines in the ROM; known from the code only)"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "TextSpare",
+      "comment": "Three bytes no code reads (known from the code only)"
+    },
+    {
+      "offset": 3,
+      "name": "TokenTable",
+      "comment": "The standard tokens' address ($F11E): PrintCode skips n zero-ended strings from it"
+    },
+    {
+      "offset": 5,
+      "name": "OtherTable",
+      "comment": "The other tokens' address ($F4F5): PrintOther skips n - 1"
+    },
+    {
+      "offset": 7,
+      "name": "StdTokens",
+      "comment": "The standard set's 149 strings (tools/tokens.py --set std), each ended by a zero"
+    },
+    {
+      "offset": 990,
+      "name": "OtherTokens",
+      "comment": "The other set's 263 strings (tools/tokens.py --set other): the missions, the planet descriptions, the commander menu"
+    },
+    {
+      "offset": 2793,
+      "name": "TokensSpare",
+      "comment": "Eight zero bytes after the tables (known from the code only)"
+    },
+    {
+      "offset": 2801,
+      "name": "KeyScreens",
+      "comment": "Keys down: ENTER 1, L 2, K 4, P 8, O $10, I $20, 0 $40 (the joystick's fire), Y $80 (the cloak)"
+    },
+    {
+      "offset": 2802,
+      "name": "KeySteer",
+      "comment": "N 1 (roll left), M 2 (roll right), X 4 (climb), S 8 (dive), SPACE $10 (faster), SYMBOL SHIFT $20 (slower): the joystick's bits 0-3"
+    },
+    {
+      "offset": 2803,
+      "name": "KeyViews",
+      "comment": "1-4 bits 0-3 (the views, docked the launch and the trading screens), H $10 (hyperspace), G $20 (galactic), J $40 (the jump drive), CAPS SHIFT $80 (pause)"
+    },
+    {
+      "offset": 2804,
+      "name": "KeyCombat",
+      "comment": "A 1 (fire), T 2 (target a missile), F 4 (fire the missile), U 8 (unarm), E $10 (E.C.M.), W $20 (energy bomb), Q $40 (escape pod), C $80 (docking computer)"
+    },
+    {
+      "offset": 2805,
+      "name": "KeyChart",
+      "comment": "B $10 (the cursor home), D $20 (the distance), R $40 (a planet's name)"
+    },
+    {
+      "offset": 2806,
+      "name": "KeyCode",
+      "comment": "The last key's character (KeyCodes); $FF none, $FE DELETE (CAPS SHIFT with 0)"
+    },
+    {
+      "offset": 2807,
+      "name": "Options",
+      "comment": "The pause menu's options: bits 0-1 the controls (0 keyboard, 1 Kempston, 2 Cursor, 3 Sinclair), 2 recentring (R), 3 damping (D), 4 both axes reversed, 5 the vertical axis reversed, 6 the misjump (F), 7 sound"
+    },
+    {
+      "offset": 2808,
+      "name": "KeyDigits",
+      "comment": "9 1, 5 2, 8 4, 6 8, 7 $10: the Cursor and Sinclair joysticks' keys"
+    },
+    {
+      "offset": 2827,
+      "name": "ScanJoystickKempston",
+      "comment": ""
+    },
+    {
+      "offset": 2844,
+      "name": "ScanJoystickKempstonBits",
+      "comment": ""
+    },
+    {
+      "offset": 2854,
+      "name": "ScanJoystickDigits",
+      "comment": ""
+    },
+    {
+      "offset": 2880,
+      "name": "ScanJoystickFire",
+      "comment": ""
+    },
+    {
+      "offset": 2892,
+      "name": "ScanJoystickReverse",
+      "comment": ""
+    },
+    {
+      "offset": 2909,
+      "name": "ScanJoystickVertical",
+      "comment": ""
+    },
+    {
+      "offset": 2930,
+      "name": "ScanJoystickStore",
+      "comment": ""
+    },
+    {
+      "offset": 2954,
+      "name": "ScanJoystickSteer",
+      "comment": ""
+    },
+    {
+      "offset": 3002,
+      "name": "KeyPressedCode",
+      "comment": ""
+    },
+    {
+      "offset": 3027,
+      "name": "VectorFiller",
+      "comment": "$FE bytes: what is left of a 257-byte IM2 table $FD00-$FE00 (the bytes past $FD00 still give $FEFE for a low bus byte)"
+    },
+    {
+      "offset": 3114,
+      "name": "KeyCodes",
+      "comment": "Each key's character by the index: SPACE, ENTER, P, 0, 1, Q, A, CAPS SHIFT (0), then the next bit of each row"
+    },
+    {
+      "offset": 3167,
+      "name": "ScanKeyboardRow",
+      "comment": ""
+    },
+    {
+      "offset": 3177,
+      "name": "ScanKeyboardBit",
+      "comment": ""
+    },
+    {
+      "offset": 3187,
+      "name": "LaserItems",
+      "comment": "The equipment item of each laser kind 1-4 (5 pulse, 6 beam, 13 military, 14 mining): read at $FD89 + kind"
+    },
+    {
+      "offset": 3191,
+      "name": "StatusBands",
+      "comment": "The status page's colour bands (ColourBands: cells x 8 + rows, a row 0 ends)"
+    },
+    {
+      "offset": 3199,
+      "name": "InventoryBands",
+      "comment": "The inventory's"
+    },
+    {
+      "offset": 3202,
+      "name": "OtherPairs",
+      "comment": "The other set's 13 two-letter pairs (codes $D7 on); ControlRandomName uses those from $FD9B"
+    },
+    {
+      "offset": 3228,
+      "name": "StdPairs",
+      "comment": "The standard set's 32 pairs (codes $80-$9F), also the system names' syllables: AL LE XE GE ZA CE BI SO US ES AR MA IN DI RE A? ER AT EN BE RA LA VE TI ED OR QU AN TE IS RI ON, as BBC Elite's"
+    },
+    {
+      "offset": 3292,
+      "name": "DataBands",
+      "comment": "The data screen's colour bands"
+    },
+    {
+      "offset": 3300,
+      "name": "MarketBands2",
+      "comment": "The market prices' colour bands"
+    },
+    {
+      "offset": 3303,
+      "name": "VectorByte",
+      "comment": "$FE (the filler's last byte)"
+    },
+    {
+      "offset": 3304,
+      "name": "IM2Vector",
+      "comment": "$FEFE: the IM2 vector for the bus byte $FF (I = $FD), the handler's JR at $FEFE"
+    },
+    {
+      "offset": 3351,
+      "name": "ReadControlsRight",
+      "comment": ""
+    },
+    {
+      "offset": 3363,
+      "name": "ReadControlsRightMore",
+      "comment": ""
+    },
+    {
+      "offset": 3370,
+      "name": "ReadControlsLeft",
+      "comment": ""
+    },
+    {
+      "offset": 3386,
+      "name": "ReadControlsLeftMore",
+      "comment": ""
+    },
+    {
+      "offset": 3390,
+      "name": "ReadControlsRollUp",
+      "comment": ""
+    },
+    {
+      "offset": 3404,
+      "name": "ReadControlsRollDown",
+      "comment": ""
+    },
+    {
+      "offset": 3414,
+      "name": "ReadControlsRollLess",
+      "comment": ""
+    },
+    {
+      "offset": 3427,
+      "name": "ReadControlsPitch",
+      "comment": ""
+    },
+    {
+      "offset": 3461,
+      "name": "ReadControlsClimb",
+      "comment": ""
+    },
+    {
+      "offset": 3473,
+      "name": "ReadControlsClimbMore",
+      "comment": ""
+    },
+    {
+      "offset": 3480,
+      "name": "ReadControlsDive",
+      "comment": ""
+    },
+    {
+      "offset": 3496,
+      "name": "ReadControlsDiveMore",
+      "comment": ""
+    },
+    {
+      "offset": 3500,
+      "name": "ReadControlsPitchUp",
+      "comment": ""
+    },
+    {
+      "offset": 3514,
+      "name": "ReadControlsPitchDown",
+      "comment": ""
+    },
+    {
+      "offset": 3524,
+      "name": "ReadControlsPitchLess",
+      "comment": ""
+    },
+    {
+      "offset": 3537,
+      "name": "ReadControlsSpeed",
+      "comment": ""
+    },
+    {
+      "offset": 3561,
+      "name": "ReadControlsFaster",
+      "comment": ""
+    },
+    {
+      "offset": 3569,
+      "name": "RollControl",
+      "comment": "The roll accumulator (sign and magnitude): its high byte $FF09 is the roll rate CopyRates takes"
+    },
+    {
+      "offset": 3571,
+      "name": "PitchControl",
+      "comment": "The pitch accumulator, the rate in $FF0B"
+    },
+    {
+      "offset": 3573,
+      "name": "SpeedControl",
+      "comment": "The speed accumulator, the speed in $FF0D"
+    },
+    {
+      "offset": 3575,
+      "name": "ReadControlsSlower",
+      "comment": ""
+    },
+    {
+      "offset": 3583,
+      "name": "ReadControlsFasterCap",
+      "comment": ""
+    },
+    {
+      "offset": 3590,
+      "name": "ReadControlsDone",
+      "comment": ""
+    },
+    {
+      "offset": 3647,
+      "name": "IM2SavedSP",
+      "comment": "The interrupted program's SP"
+    },
+    {
+      "offset": 3649,
+      "name": "KeyTable",
+      "comment": "Each key's (offset from $FC08, mask) by the index; Z and V have the mask 0"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$F117",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/keyboard.asm",
+    "label": "TextSpare"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/squaretable",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Elite: squaretable",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "squaretable"
+  ],
+  "summary": "The table of squares and the back buffer.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 4608,
+    "sha1": "c86926d8a0391b5862dbb72baf08c02ef79299ab",
+    "masked_sha1": "c86926d8a0391b5862dbb72baf08c02ef79299ab"
+  },
+  "origin": "$BE00",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "SquaresLow",
+      "comment": "n² AND $FF for n = 0-255 (Square, Multiply8, VectorLength, SquareRoot)"
+    },
+    {
+      "offset": 256,
+      "name": "SquaresHigh",
+      "comment": "n² / 256 for n = 0-255"
+    },
+    {
+      "offset": 512,
+      "name": "BackBuffer",
+      "comment": "The 3D view's back buffer ($C000-$CFFF, the layout of $4000-$4FFF): ClearView clears it, the lines and the circles draw into it, CopyBackBuffer copies it to the screen; docked, its last bytes are the screens' stack (CallScreen sets SP to $D000)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$BE00",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/squaretable.asm",
+    "label": "SquaresLow"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

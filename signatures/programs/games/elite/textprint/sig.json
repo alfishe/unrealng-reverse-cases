@@ -1,0 +1,2321 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/textprint",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: textprint",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "textprint"
+  ],
+  "summary": "Numbers, cash, the two token sets, the character printer, rules and bars, the random synonyms.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1574,
+    "sha1": "def18a72c45f281138cea9dd208805018a47ebb4",
+    "masked_sha1": "abc7a0476b8e4be4fb481873e88d5edce640f728"
+  },
+  "origin": "$D2DC",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 12,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 18,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CC"
+    },
+    {
+      "offset": 21,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 27,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 33,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 39,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 45,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 51,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CC"
+    },
+    {
+      "offset": 55,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 59,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 62,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 66,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 70,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 74,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 78,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CC"
+    },
+    {
+      "offset": 82,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D066"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D068"
+    },
+    {
+      "offset": 96,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 100,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 104,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CC"
+    },
+    {
+      "offset": 109,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 116,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 121,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 131,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 138,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 146,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CC"
+    },
+    {
+      "offset": 152,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 155,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CC"
+    },
+    {
+      "offset": 180,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 196,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 204,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 213,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 222,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CC"
+    },
+    {
+      "offset": 226,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 231,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 236,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 248,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D068"
+    },
+    {
+      "offset": 252,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D068"
+    },
+    {
+      "offset": 262,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D068"
+    },
+    {
+      "offset": 268,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D066"
+    },
+    {
+      "offset": 272,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D066"
+    },
+    {
+      "offset": 276,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D066"
+    },
+    {
+      "offset": 283,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D066"
+    },
+    {
+      "offset": 290,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D068"
+    },
+    {
+      "offset": 298,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D066"
+    },
+    {
+      "offset": 306,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D066"
+    },
+    {
+      "offset": 316,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D068"
+    },
+    {
+      "offset": 320,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D068"
+    },
+    {
+      "offset": 332,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 337,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 342,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 351,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 360,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TokenTable"
+    },
+    {
+      "offset": 366,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 369,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 381,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 388,
+      "length": 2,
+      "kind": "ext16",
+      "name": "OtherTable"
+    },
+    {
+      "offset": 395,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 402,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 406,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 416,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 425,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 432,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 439,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 455,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCase"
+    },
+    {
+      "offset": 462,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCapitalNext"
+    },
+    {
+      "offset": 469,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCapitalNext"
+    },
+    {
+      "offset": 472,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCapital"
+    },
+    {
+      "offset": 477,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCapital"
+    },
+    {
+      "offset": 485,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCapital"
+    },
+    {
+      "offset": 488,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCase"
+    },
+    {
+      "offset": 506,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCapital"
+    },
+    {
+      "offset": 509,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintBuffering"
+    },
+    {
+      "offset": 514,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 519,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 531,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLineRow"
+    },
+    {
+      "offset": 535,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Font"
+    },
+    {
+      "offset": 557,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 560,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextRow"
+    },
+    {
+      "offset": 565,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 570,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 574,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 584,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 611,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 628,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AA1"
+    },
+    {
+      "offset": 635,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 641,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4340"
+    },
+    {
+      "offset": 653,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5821"
+    },
+    {
+      "offset": 668,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 689,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5822"
+    },
+    {
+      "offset": 700,
+      "length": 2,
+      "kind": "ext16",
+      "name": "OtherPairs"
+    },
+    {
+      "offset": 707,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StdPairs"
+    },
+    {
+      "offset": 717,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 726,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 734,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 740,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 747,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 752,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 757,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 762,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 771,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 774,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextSeeds"
+    },
+    {
+      "offset": 780,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DECE"
+    },
+    {
+      "offset": 786,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextSeeds"
+    },
+    {
+      "offset": 790,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DECE"
+    },
+    {
+      "offset": 836,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 839,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScannerSave"
+    },
+    {
+      "offset": 853,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 867,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 871,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 880,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 892,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_401F"
+    },
+    {
+      "offset": 902,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 905,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 908,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_57E0"
+    },
+    {
+      "offset": 911,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 918,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 990,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 994,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1001,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1005,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1009,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1018,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1021,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1025,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1031,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1038,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1043,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1046,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1053,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1056,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1061,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1064,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1073,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1077,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1080,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1087,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1095,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1103,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLine"
+    },
+    {
+      "offset": 1108,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCapital"
+    },
+    {
+      "offset": 1111,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1114,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1117,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1120,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1123,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1126,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1130,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1137,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1140,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1153,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintBuffering"
+    },
+    {
+      "offset": 1160,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1167,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1170,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1174,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1181,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintBuffering"
+    },
+    {
+      "offset": 1184,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1188,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1192,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1204,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1207,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1214,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1217,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1224,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1237,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1242,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1255,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1257,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1259,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1261,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1263,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1265,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1267,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1269,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1271,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1275,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1277,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1279,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1281,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1283,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1285,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1287,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1289,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1291,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1293,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1295,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1299,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1301,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1305,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1309,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1311,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1313,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1315,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1317,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1319,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1321,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1323,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1329,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1333,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1335,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1337,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1339,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1341,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1343,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1345,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1348,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Wait36"
+    },
+    {
+      "offset": 1353,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeColon"
+    },
+    {
+      "offset": 1356,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1363,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CommanderName"
+    },
+    {
+      "offset": 1374,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeColon"
+    },
+    {
+      "offset": 1377,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1381,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 1384,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1389,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeLine"
+    },
+    {
+      "offset": 1394,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 1397,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D065"
+    },
+    {
+      "offset": 1401,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1404,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D090"
+    },
+    {
+      "offset": 1407,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SystemSeeds"
+    },
+    {
+      "offset": 1415,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SystemName"
+    },
+    {
+      "offset": 1418,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NameBuffer"
+    },
+    {
+      "offset": 1423,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1426,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CurrentName"
+    },
+    {
+      "offset": 1431,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1434,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SelectedName"
+    },
+    {
+      "offset": 1437,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodes"
+    },
+    {
+      "offset": 1440,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColumnInline"
+    },
+    {
+      "offset": 1446,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCapitalNext"
+    },
+    {
+      "offset": 1450,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1453,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1459,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1464,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD9B"
+    },
+    {
+      "offset": 1472,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1477,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1493,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCase"
+    },
+    {
+      "offset": 1497,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1500,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SelectedName"
+    },
+    {
+      "offset": 1503,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodes"
+    },
+    {
+      "offset": 1510,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1519,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1524,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1528,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1532,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1552,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1562,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetRow"
+    },
+    {
+      "offset": 1569,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 2,
+      "name": "PrintByteDot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print A as a number with one decimal place"
+    },
+    {
+      "offset": 5,
+      "name": "PrintByte",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print A as a number"
+    },
+    {
+      "offset": 6,
+      "name": "PrintByteNow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 9,
+      "name": "PrintNumber",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print HL in decimal (carry: the last digit after a point), padded to the width $D0CE"
+    },
+    {
+      "offset": 65,
+      "name": "PrintNumberUnits",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The last digit"
+    },
+    {
+      "offset": 81,
+      "name": "PrintCash",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print the cash: the thousands ($D066) and the rest ($D068, tenths), with the point"
+    },
+    {
+      "offset": 88,
+      "name": "PrintCashNow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 123,
+      "name": "PrintDigit",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One digit: how many DE fit in NumberLeft, printed unless a leading zero"
+    },
+    {
+      "offset": 149,
+      "name": "PrintDigitChar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print digit A"
+    },
+    {
+      "offset": 161,
+      "name": "PadNumber",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print the spaces (or zeros) that bring the number to the width"
+    },
+    {
+      "offset": 242,
+      "name": "AtLeast",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "NC when HL is at least DE (HL kept)"
+    },
+    {
+      "offset": 247,
+      "name": "AddCredits",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The cash's tenths plus DE, carrying 10000 into the thousands"
+    },
+    {
+      "offset": 267,
+      "name": "AddThousands",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The thousands plus DE"
+    },
+    {
+      "offset": 275,
+      "name": "TakeThousands",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The thousands less DE; carry when not enough"
+    },
+    {
+      "offset": 289,
+      "name": "TakeCredits",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The cash less DE tenths, borrowing a thousand; carry when not enough"
+    },
+    {
+      "offset": 325,
+      "name": "PrintInline",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print the standard code in the byte after the CALL"
+    },
+    {
+      "offset": 329,
+      "name": "PrintCode",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print code A of the standard set: a control, a character, a pair or a token"
+    },
+    {
+      "offset": 387,
+      "name": "PrintOther",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print other token A: skip A - 1 strings of the other table, then each code"
+    },
+    {
+      "offset": 404,
+      "name": "PrintOtherChar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One code of an other string: a control, a character, a random pick, a token or a pair"
+    },
+    {
+      "offset": 445,
+      "name": "PrintChar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print a character with the case rules, or buffer it for the justified text"
+    },
+    {
+      "offset": 517,
+      "name": "PlotChar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Plot character A at the next column (wrapping to a new line past 31), XOR into the screen"
+    },
+    {
+      "offset": 627,
+      "name": "FillAttrRow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "30 attributes of colour 5 from $5AA1 (the dashboard's message line)"
+    },
+    {
+      "offset": 632,
+      "name": "FillAttrs30",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "B = 30 attributes of A from HL, then HL past the row's edge"
+    },
+    {
+      "offset": 640,
+      "name": "HorizontalRule",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The heading's rule: 32 bytes $FF at $4340"
+    },
+    {
+      "offset": 643,
+      "name": "FillRule",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "32 bytes of $FF from HL"
+    },
+    {
+      "offset": 647,
+      "name": "FillBytes",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "B bytes of A from HL"
+    },
+    {
+      "offset": 652,
+      "name": "ColourBands",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The page's colour bands from the list at DE: a width in 8ths and a gap of rows each, colour 5; the two corner cells white"
+    },
+    {
+      "offset": 697,
+      "name": "PrintOtherPair",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other pair A - $D7 from $FD99"
+    },
+    {
+      "offset": 704,
+      "name": "PrintStdPair",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard pair A - $80 from $FDB3"
+    },
+    {
+      "offset": 709,
+      "name": "PrintPairNow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Two characters, the second left out when it is \"?\""
+    },
+    {
+      "offset": 728,
+      "name": "RandomToken",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A random one of the five tokens of row A - $5B of Synonyms, by the text generator's next byte"
+    },
+    {
+      "offset": 773,
+      "name": "TextRandom",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The text generator: the four bytes at $DECC shifted and added; A its next byte"
+    },
+    {
+      "offset": 833,
+      "name": "ClearScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Clear the page by PUSHes: 768 attributes $07, 6144 pixel bytes 0; then the frame: both side columns, the top and bottom rules; print at row 1, column 0"
+    },
+    {
+      "offset": 874,
+      "name": "DrawFrame",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The page's frame: bit 7 of column 0 and bit 0 of column 31 on 192 lines, the top and bottom lines solid"
+    },
+    {
+      "offset": 989,
+      "name": "JustifyChar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Buffer a character of the justified text; a full line is spread to 30 columns (spaces added between words) and printed"
+    },
+    {
+      "offset": 1086,
+      "name": "JustifyPrint",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print the 30 characters of the line, a new line, the capital off"
+    },
+    {
+      "offset": 1110,
+      "name": "JustifyNewLine",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The carried word becomes the start of the next line"
+    },
+    {
+      "offset": 1150,
+      "name": "JustifyOn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other control 14: buffering on, the buffers blank"
+    },
+    {
+      "offset": 1178,
+      "name": "JustifyOff",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other control 15: buffering off, the last line printed as it is"
+    },
+    {
+      "offset": 1191,
+      "name": "JustifyBackWord",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Back to the space before the last word (or the line's start)"
+    },
+    {
+      "offset": 1221,
+      "name": "JustifyAddSpace",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One more space at the pointer: the rest of the line moved right by one"
+    },
+    {
+      "offset": 1236,
+      "name": "OtherControl",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other control A through the table at $D7DF"
+    },
+    {
+      "offset": 1241,
+      "name": "TokenControl",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard control A through the table at $D7C3"
+    },
+    {
+      "offset": 1244,
+      "name": "JumpTable",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Jump to the A-th address of the table at HL"
+    },
+    {
+      "offset": 1347,
+      "name": "WaitControl",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other control 25: wait 36 frames"
+    },
+    {
+      "offset": 1350,
+      "name": "ControlCash",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard 7: \"CASH:\" the cash and \" CR\", a new line"
+    },
+    {
+      "offset": 1362,
+      "name": "ControlCommander",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard 4: the commander's name"
+    },
+    {
+      "offset": 1367,
+      "name": "ControlSentence",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard 8: sentence case"
+    },
+    {
+      "offset": 1371,
+      "name": "ControlFuel",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard 5: \"FUEL:\" the fuel with its point, \" LIGHT YEARS\", a new line"
+    },
+    {
+      "offset": 1380,
+      "name": "ControlFuelValue",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 1388,
+      "name": "PrintLine",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print token A and a new line"
+    },
+    {
+      "offset": 1391,
+      "name": "ControlGalaxy",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard 1: the galaxy's number (1-8) in two places"
+    },
+    {
+      "offset": 1403,
+      "name": "ControlFirstSystem",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard 11: the name of the galaxy's first system (its seeds from the galaxy's)"
+    },
+    {
+      "offset": 1422,
+      "name": "ControlCurrent",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard 2: the current system's name"
+    },
+    {
+      "offset": 1430,
+      "name": "ControlSelected",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard 3: the selected system's name"
+    },
+    {
+      "offset": 1436,
+      "name": "PrintString",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print the zero-ended string at HL"
+    },
+    {
+      "offset": 1439,
+      "name": "ControlTab",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other 8: column 4"
+    },
+    {
+      "offset": 1443,
+      "name": "CapitalNext",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other 19: the next letter a capital"
+    },
+    {
+      "offset": 1448,
+      "name": "ControlNone",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Nothing"
+    },
+    {
+      "offset": 1449,
+      "name": "ControlRandomName",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other 18: a random name of one to four letter pairs (the pairs $FD9B on)"
+    },
+    {
+      "offset": 1485,
+      "name": "ControlMixed",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other 13: a capital, then small"
+    },
+    {
+      "offset": 1490,
+      "name": "ControlCapitals",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard 6, other 1: capitals"
+    },
+    {
+      "offset": 1492,
+      "name": "SetCase",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "PrintCase = A"
+    },
+    {
+      "offset": 1496,
+      "name": "ControlPeople",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other 17: the system's name and \"IAN\", its last vowel dropped"
+    },
+    {
+      "offset": 1545,
+      "name": "OtherOn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard 10, other 5: the other set on (OtherSetOn 1)"
+    },
+    {
+      "offset": 1549,
+      "name": "OtherOff",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other 6: off"
+    },
+    {
+      "offset": 1551,
+      "name": "SetOtherSet",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 1555,
+      "name": "ControlRow6",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other 29: row 6"
+    },
+    {
+      "offset": 1559,
+      "name": "ControlRow10",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other 23: row 10"
+    },
+    {
+      "offset": 1561,
+      "name": "ControlRow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 1564,
+      "name": "PrintPairChar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A pair's character unless \"?\""
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "NumberLeft",
+      "comment": "The number being printed, less the digits printed so far"
+    },
+    {
+      "offset": 47,
+      "name": "PrintNumberLast",
+      "comment": ""
+    },
+    {
+      "offset": 57,
+      "name": "PrintNumberZero",
+      "comment": ""
+    },
+    {
+      "offset": 61,
+      "name": "PrintNumberPoint",
+      "comment": ""
+    },
+    {
+      "offset": 64,
+      "name": "PointCode",
+      "comment": "The \".\" printed by PrintNumberPoint's CALL PrintInline"
+    },
+    {
+      "offset": 113,
+      "name": "PrintCashSmall",
+      "comment": ""
+    },
+    {
+      "offset": 118,
+      "name": "PrintCashRest",
+      "comment": ""
+    },
+    {
+      "offset": 128,
+      "name": "PrintDigitCount",
+      "comment": ""
+    },
+    {
+      "offset": 136,
+      "name": "PrintDigitDone",
+      "comment": ""
+    },
+    {
+      "offset": 154,
+      "name": "PrintDigitSkip",
+      "comment": ""
+    },
+    {
+      "offset": 175,
+      "name": "PadNumberCount",
+      "comment": ""
+    },
+    {
+      "offset": 209,
+      "name": "PadNumber5",
+      "comment": ""
+    },
+    {
+      "offset": 210,
+      "name": "PadNumber4",
+      "comment": ""
+    },
+    {
+      "offset": 211,
+      "name": "PadNumber3",
+      "comment": ""
+    },
+    {
+      "offset": 212,
+      "name": "PadNumber2",
+      "comment": ""
+    },
+    {
+      "offset": 220,
+      "name": "PadNumberLoop",
+      "comment": ""
+    },
+    {
+      "offset": 233,
+      "name": "PadNumberZero",
+      "comment": ""
+    },
+    {
+      "offset": 235,
+      "name": "PadNumberChar",
+      "comment": ""
+    },
+    {
+      "offset": 287,
+      "name": "TakeThousandsShort",
+      "comment": ""
+    },
+    {
+      "offset": 319,
+      "name": "TakeCreditsStore",
+      "comment": ""
+    },
+    {
+      "offset": 324,
+      "name": "OtherSetOn",
+      "comment": "Zero: PrintOtherChar's codes go to the standard set"
+    },
+    {
+      "offset": 357,
+      "name": "PrintCodeLowToken",
+      "comment": ""
+    },
+    {
+      "offset": 359,
+      "name": "PrintToken",
+      "comment": ""
+    },
+    {
+      "offset": 364,
+      "name": "PrintTokenFind",
+      "comment": ""
+    },
+    {
+      "offset": 376,
+      "name": "PrintTokenLoop",
+      "comment": ""
+    },
+    {
+      "offset": 391,
+      "name": "PrintOtherFind",
+      "comment": ""
+    },
+    {
+      "offset": 434,
+      "name": "PrintOtherLoop",
+      "comment": ""
+    },
+    {
+      "offset": 476,
+      "name": "PrintCharCase",
+      "comment": ""
+    },
+    {
+      "offset": 496,
+      "name": "PrintCharSmall",
+      "comment": ""
+    },
+    {
+      "offset": 502,
+      "name": "PrintCharOther",
+      "comment": ""
+    },
+    {
+      "offset": 508,
+      "name": "PrintCharOut",
+      "comment": ""
+    },
+    {
+      "offset": 533,
+      "name": "PlotCharGlyph",
+      "comment": ""
+    },
+    {
+      "offset": 576,
+      "name": "PlotCharThird3",
+      "comment": ""
+    },
+    {
+      "offset": 586,
+      "name": "PlotCharThird2",
+      "comment": ""
+    },
+    {
+      "offset": 593,
+      "name": "PlotCharRow",
+      "comment": ""
+    },
+    {
+      "offset": 618,
+      "name": "PlotCharLine",
+      "comment": ""
+    },
+    {
+      "offset": 655,
+      "name": "ColourBandsLoop",
+      "comment": ""
+    },
+    {
+      "offset": 677,
+      "name": "ColourBandsRow",
+      "comment": ""
+    },
+    {
+      "offset": 684,
+      "name": "ColourBandsGap",
+      "comment": ""
+    },
+    {
+      "offset": 688,
+      "name": "ColourBandsEnd",
+      "comment": ""
+    },
+    {
+      "offset": 765,
+      "name": "RandomToken4",
+      "comment": ""
+    },
+    {
+      "offset": 766,
+      "name": "RandomToken3",
+      "comment": ""
+    },
+    {
+      "offset": 767,
+      "name": "RandomToken2",
+      "comment": ""
+    },
+    {
+      "offset": 768,
+      "name": "RandomToken1",
+      "comment": ""
+    },
+    {
+      "offset": 793,
+      "name": "Synonyms",
+      "comment": "The first other token of each row of five synonyms"
+    },
+    {
+      "offset": 831,
+      "name": "ClearScreenSP",
+      "comment": ""
+    },
+    {
+      "offset": 846,
+      "name": "ClearScreenAttrRow",
+      "comment": ""
+    },
+    {
+      "offset": 848,
+      "name": "ClearScreenAttrs",
+      "comment": ""
+    },
+    {
+      "offset": 860,
+      "name": "ClearScreenPixelRow",
+      "comment": ""
+    },
+    {
+      "offset": 862,
+      "name": "ClearScreenPixels",
+      "comment": ""
+    },
+    {
+      "offset": 882,
+      "name": "DrawFrameLeft",
+      "comment": ""
+    },
+    {
+      "offset": 894,
+      "name": "DrawFrameRight",
+      "comment": ""
+    },
+    {
+      "offset": 921,
+      "name": "JustifyLine",
+      "comment": "The justified text's line (32 bytes), the next word ($D695, 31), the counts ($D6B3, $D6B4) and two pointers ($D6B5, $D6B7)"
+    },
+    {
+      "offset": 1030,
+      "name": "JustifyCarry",
+      "comment": ""
+    },
+    {
+      "offset": 1042,
+      "name": "JustifyNext",
+      "comment": ""
+    },
+    {
+      "offset": 1063,
+      "name": "JustifyClear",
+      "comment": ""
+    },
+    {
+      "offset": 1067,
+      "name": "JustifyClearLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1072,
+      "name": "JustifySpread",
+      "comment": ""
+    },
+    {
+      "offset": 1075,
+      "name": "JustifySpreadLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1091,
+      "name": "JustifyPrintLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1142,
+      "name": "JustifyNewLineCopy",
+      "comment": ""
+    },
+    {
+      "offset": 1162,
+      "name": "JustifyOnBlank",
+      "comment": ""
+    },
+    {
+      "offset": 1196,
+      "name": "JustifyBackWordLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1226,
+      "name": "JustifyAddSpaceLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1255,
+      "name": "TokenControls",
+      "comment": "The standard set's 14 control codes: 0 nothing, 1 the galaxy's number, 2 the current system, 3 the selected system, 4 the commander, 5 the fuel, 6 capitals, 7 the cash, 8 sentence case, 9 a new line, 10 the other set on, 11 the galaxy's first system, 12 and 13 nothing"
+    },
+    {
+      "offset": 1283,
+      "name": "OtherControls",
+      "comment": "The other set's 32: 0 nothing, 1 capitals, 2 sentence case, 3 the selected system, 4 the commander, 5 and 6 the other set on and off, 7 a beep, 8 tab, 9 a clear page, 10 the column 0, 11 the rule, 12 a new line, 13 capital then small, 14 and 15 the justified text, 16 the galaxy's first system, 17 the system's people (-ian), 18 a random name, 19 a capital next, 21 the text area cleared, 22 and 24 waits, 23 and 29 rows 10 and 6, 25 a wait"
+    },
+    {
+      "offset": 1379,
+      "name": "FuelSpace",
+      "comment": "The space after \"FUEL:\""
+    },
+    {
+      "offset": 1442,
+      "name": "TabColumn",
+      "comment": ""
+    },
+    {
+      "offset": 1457,
+      "name": "ControlRandomNameLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1489,
+      "name": "ControlSpare",
+      "comment": ""
+    },
+    {
+      "offset": 1512,
+      "name": "ControlPeopleLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1518,
+      "name": "ControlPeopleEnd",
+      "comment": ""
+    },
+    {
+      "offset": 1523,
+      "name": "ControlPeopleVowel",
+      "comment": ""
+    },
+    {
+      "offset": 1536,
+      "name": "PeopleSuffix",
+      "comment": "\"IAN\" and the vowels it replaces"
+    },
+    {
+      "offset": 1540,
+      "name": "Vowels",
+      "comment": ""
+    },
+    {
+      "offset": 1571,
+      "name": "ControlData",
+      "comment": "Three bytes no code reads (known from the code only)"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$D2DC",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/textprint.asm",
+    "label": "NumberLeft"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

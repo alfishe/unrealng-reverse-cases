@@ -1,0 +1,1033 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/dashboard",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: dashboard",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "dashboard"
+  ],
+  "summary": "The dashboard: the distances to the sun and the planet, the compass, the bars.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1142,
+    "sha1": "f765ff798b062df3e4feed31cda7ae4cb61aa724",
+    "masked_sha1": "cd2bf0adc9091f2c3167103e23b80f70ed91a6a7"
+  },
+  "origin": "$81A3",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 8,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 12,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunPosition"
+    },
+    {
+      "offset": 36,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 45,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 55,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 61,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 74,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunNear"
+    },
+    {
+      "offset": 78,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 82,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarCabinTemp"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 90,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlanetPosition"
+    },
+    {
+      "offset": 126,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 131,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 145,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 151,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 155,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 161,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarAltitude"
+    },
+    {
+      "offset": 166,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SafeZone"
+    },
+    {
+      "offset": 169,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StationLaunch"
+    },
+    {
+      "offset": 174,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    },
+    {
+      "offset": 179,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 189,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 192,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 202,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 217,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SafeZone"
+    },
+    {
+      "offset": 222,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 234,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 237,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 247,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 250,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 264,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 267,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 281,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Divide16Vector"
+    },
+    {
+      "offset": 305,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TooClose"
+    },
+    {
+      "offset": 317,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 348,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 371,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 384,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 425,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Square"
+    },
+    {
+      "offset": 432,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Square"
+    },
+    {
+      "offset": 440,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Square"
+    },
+    {
+      "offset": 469,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SquareRootVector"
+    },
+    {
+      "offset": 481,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 484,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SquareRootVector"
+    },
+    {
+      "offset": 494,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 500,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 503,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 509,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 512,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 520,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5156"
+    },
+    {
+      "offset": 523,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 540,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 553,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 558,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 561,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 564,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 579,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 596,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 599,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 618,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 627,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 644,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 647,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 666,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 695,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5035"
+    },
+    {
+      "offset": 698,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 718,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 823,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 830,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarForeShield"
+    },
+    {
+      "offset": 845,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 862,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 877,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 893,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 928,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 931,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 936,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 944,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 947,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 950,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 964,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 976,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 980,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1018,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1054,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1121,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1125,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 6,
+      "name": "DashDistances",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The sun's and the planet's distances on the bars, the safe zone, the compass"
+    },
+    {
+      "offset": 206,
+      "name": "CompassDivide",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = the word at IX divided by DE, times 8, with the sign of IX+1"
+    },
+    {
+      "offset": 269,
+      "name": "CompassDivideSigned",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The same for a 3-byte coordinate at IX (the sign bit cleared first)"
+    },
+    {
+      "offset": 302,
+      "name": "SetTooClose",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "TooClose = 1"
+    },
+    {
+      "offset": 308,
+      "name": "DistanceBand",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = 1.5 * distance; set Condition yellow below $50 pages, red flashing from $78"
+    },
+    {
+      "offset": 351,
+      "name": "LoadVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DE, BC, HL = the three top words of the 9-byte vector at IX"
+    },
+    {
+      "offset": 370,
+      "name": "VectorLengthAbs",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "VectorLength of the vector at IX with the three signs cleared"
+    },
+    {
+      "offset": 383,
+      "name": "VectorLength",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the length of the vector at IX: sqrt(x^2 + y^2 + z^2) on the top bytes"
+    },
+    {
+      "offset": 493,
+      "name": "DrawCompass",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw the compass dial and its dot (the solid dot in front, the ring behind) in a space view"
+    },
+    {
+      "offset": 674,
+      "name": "NextLineDown",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the next pixel line's row start when L passed a character row (the screen's layout)"
+    },
+    {
+      "offset": 684,
+      "name": "NextLineUp",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The same going up (known from the code only)"
+    },
+    {
+      "offset": 694,
+      "name": "DrawCompassDialArt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Copy the 24-line dial (CompassDial) to $5035"
+    },
+    {
+      "offset": 822,
+      "name": "DrawBars",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Redraw every dashboard bar whose value changed"
+    },
+    {
+      "offset": 925,
+      "name": "DrawMarker",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw a roll or pitch marker: a 3-pixel mark at the value"
+    },
+    {
+      "offset": 940,
+      "name": "DrawBar",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw a bar: 5 bytes wide, A pixels long, 3 pixel lines"
+    },
+    {
+      "offset": 1123,
+      "name": "BarByte",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Write the bar's edge byte C; for a marker keep the frame pixel at the left"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "DashWork",
+      "comment": "DashDistances' results: SunClose, PlanetClose, the compass x and y offsets, the compass behind flag"
+    },
+    {
+      "offset": 1,
+      "name": "SunClose",
+      "comment": "1 when the sun's coordinates are all below $0100 (its distance was measured)"
+    },
+    {
+      "offset": 2,
+      "name": "PlanetClose",
+      "comment": "1 when the planet's are all below $0200"
+    },
+    {
+      "offset": 3,
+      "name": "CompassX",
+      "comment": "The compass dot's x offset (bit 7 the sign)"
+    },
+    {
+      "offset": 4,
+      "name": "CompassY",
+      "comment": "The compass dot's y offset"
+    },
+    {
+      "offset": 5,
+      "name": "CompassBehind",
+      "comment": "1 when the target is behind (z negative): the hollow dot"
+    },
+    {
+      "offset": 73,
+      "name": "DashDistancesSetSunNear",
+      "comment": ""
+    },
+    {
+      "offset": 84,
+      "name": "DashPlanet",
+      "comment": ""
+    },
+    {
+      "offset": 163,
+      "name": "DashSafe",
+      "comment": ""
+    },
+    {
+      "offset": 186,
+      "name": "DashCompassStation",
+      "comment": ""
+    },
+    {
+      "offset": 215,
+      "name": "DashCompassFar",
+      "comment": ""
+    },
+    {
+      "offset": 219,
+      "name": "DashCompassPlanet",
+      "comment": ""
+    },
+    {
+      "offset": 229,
+      "name": "DashCompassPlanetXY",
+      "comment": ""
+    },
+    {
+      "offset": 249,
+      "name": "DashCompassStore",
+      "comment": ""
+    },
+    {
+      "offset": 263,
+      "name": "DashCompassSide",
+      "comment": ""
+    },
+    {
+      "offset": 280,
+      "name": "CompassDivideScale",
+      "comment": ""
+    },
+    {
+      "offset": 301,
+      "name": "CompassDivideDone",
+      "comment": ""
+    },
+    {
+      "offset": 325,
+      "name": "DistanceBandFar",
+      "comment": ""
+    },
+    {
+      "offset": 337,
+      "name": "DistanceBandRed",
+      "comment": ""
+    },
+    {
+      "offset": 341,
+      "name": "DistanceBandNear",
+      "comment": ""
+    },
+    {
+      "offset": 347,
+      "name": "DistanceBandStore",
+      "comment": ""
+    },
+    {
+      "offset": 388,
+      "name": "VectorLengthShift",
+      "comment": ""
+    },
+    {
+      "offset": 405,
+      "name": "VectorLengthX",
+      "comment": ""
+    },
+    {
+      "offset": 409,
+      "name": "VectorLengthY",
+      "comment": ""
+    },
+    {
+      "offset": 415,
+      "name": "VectorLengthZ",
+      "comment": ""
+    },
+    {
+      "offset": 421,
+      "name": "VectorLengthSquares",
+      "comment": ""
+    },
+    {
+      "offset": 438,
+      "name": "VectorLengthZ2",
+      "comment": ""
+    },
+    {
+      "offset": 446,
+      "name": "VectorLengthSum",
+      "comment": ""
+    },
+    {
+      "offset": 468,
+      "name": "VectorLengthRoot",
+      "comment": ""
+    },
+    {
+      "offset": 472,
+      "name": "VectorLengthBack",
+      "comment": ""
+    },
+    {
+      "offset": 483,
+      "name": "VectorLengthBig",
+      "comment": ""
+    },
+    {
+      "offset": 492,
+      "name": "VectorLengthDone",
+      "comment": ""
+    },
+    {
+      "offset": 511,
+      "name": "DrawCompassDot",
+      "comment": ""
+    },
+    {
+      "offset": 535,
+      "name": "DrawCompassUp",
+      "comment": ""
+    },
+    {
+      "offset": 546,
+      "name": "DrawCompassDown",
+      "comment": ""
+    },
+    {
+      "offset": 548,
+      "name": "DrawCompassDownLoop",
+      "comment": ""
+    },
+    {
+      "offset": 557,
+      "name": "DrawCompassDial",
+      "comment": ""
+    },
+    {
+      "offset": 578,
+      "name": "DrawCompassRight",
+      "comment": ""
+    },
+    {
+      "offset": 583,
+      "name": "DrawCompassLoop",
+      "comment": ""
+    },
+    {
+      "offset": 594,
+      "name": "DrawCompassPlot",
+      "comment": ""
+    },
+    {
+      "offset": 604,
+      "name": "DrawCompassPlotLine",
+      "comment": ""
+    },
+    {
+      "offset": 626,
+      "name": "DrawCompassLeft",
+      "comment": ""
+    },
+    {
+      "offset": 631,
+      "name": "DrawCompassLoop2",
+      "comment": ""
+    },
+    {
+      "offset": 642,
+      "name": "DrawCompassPlotLeft",
+      "comment": ""
+    },
+    {
+      "offset": 652,
+      "name": "DrawCompassPlotLeftLine",
+      "comment": ""
+    },
+    {
+      "offset": 703,
+      "name": "DrawCompassDialLine",
+      "comment": ""
+    },
+    {
+      "offset": 724,
+      "name": "CompassAddress",
+      "comment": "The screen address of the dot's top line"
+    },
+    {
+      "offset": 726,
+      "name": "CompassDot",
+      "comment": "The dot being drawn: 4 lines of 2 bytes, shifted into place"
+    },
+    {
+      "offset": 734,
+      "name": "CompassDotFront",
+      "comment": "The dot for a target in front (4 lines of 2 bytes)"
+    },
+    {
+      "offset": 742,
+      "name": "CompassDotBehind",
+      "comment": "The dot for a target behind"
+    },
+    {
+      "offset": 750,
+      "name": "CompassDial",
+      "comment": "The compass dial: 24 lines of 3 bytes"
+    },
+    {
+      "offset": 832,
+      "name": "DrawBarsNext",
+      "comment": ""
+    },
+    {
+      "offset": 849,
+      "name": "DrawBarsSkip",
+      "comment": ""
+    },
+    {
+      "offset": 868,
+      "name": "DrawBarsMarker",
+      "comment": ""
+    },
+    {
+      "offset": 881,
+      "name": "DrawBarsMarkerSkip",
+      "comment": ""
+    },
+    {
+      "offset": 896,
+      "name": "BarMarkerMode",
+      "comment": "1 while the two markers are drawn"
+    },
+    {
+      "offset": 897,
+      "name": "BarAddresses",
+      "comment": "The screen address of each bar's top line: 6 on the left, the speed, the 4 banks, the roll and the pitch"
+    },
+    {
+      "offset": 952,
+      "name": "DrawBarRows",
+      "comment": ""
+    },
+    {
+      "offset": 966,
+      "name": "DrawBarLength",
+      "comment": ""
+    },
+    {
+      "offset": 982,
+      "name": "DrawBarEdge",
+      "comment": ""
+    },
+    {
+      "offset": 983,
+      "name": "DrawBarEdgeBits",
+      "comment": ""
+    },
+    {
+      "offset": 987,
+      "name": "DrawBarEdgeDone",
+      "comment": ""
+    },
+    {
+      "offset": 991,
+      "name": "DrawBarBytes",
+      "comment": ""
+    },
+    {
+      "offset": 1009,
+      "name": "DrawBarFull",
+      "comment": ""
+    },
+    {
+      "offset": 1010,
+      "name": "DrawBarLine",
+      "comment": ""
+    },
+    {
+      "offset": 1013,
+      "name": "DrawBarFill",
+      "comment": ""
+    },
+    {
+      "offset": 1025,
+      "name": "DrawBarClear",
+      "comment": ""
+    },
+    {
+      "offset": 1026,
+      "name": "DrawBarClearByte",
+      "comment": ""
+    },
+    {
+      "offset": 1030,
+      "name": "DrawBarEnd",
+      "comment": ""
+    },
+    {
+      "offset": 1042,
+      "name": "DrawBarWhole",
+      "comment": ""
+    },
+    {
+      "offset": 1044,
+      "name": "DrawBarWholeLine",
+      "comment": ""
+    },
+    {
+      "offset": 1047,
+      "name": "DrawBarWholeByte",
+      "comment": ""
+    },
+    {
+      "offset": 1065,
+      "name": "DrawBarShort",
+      "comment": ""
+    },
+    {
+      "offset": 1067,
+      "name": "DrawBarShortLine",
+      "comment": ""
+    },
+    {
+      "offset": 1086,
+      "name": "DrawBarEmpty",
+      "comment": ""
+    },
+    {
+      "offset": 1088,
+      "name": "DrawBarEmptyLine",
+      "comment": ""
+    },
+    {
+      "offset": 1106,
+      "name": "DrawMarkerBits",
+      "comment": ""
+    },
+    {
+      "offset": 1116,
+      "name": "DrawMarkerShift",
+      "comment": ""
+    },
+    {
+      "offset": 1120,
+      "name": "DrawMarkerDone",
+      "comment": ""
+    },
+    {
+      "offset": 1137,
+      "name": "BarByteFrame",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$81A3",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/dashboard.asm",
+    "label": "DashWork"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

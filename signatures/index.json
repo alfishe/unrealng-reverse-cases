@@ -331,6 +331,411 @@
    "masked_sha1": "cf9634f5dee253d87dcfe531c0e7527b717c0e66",
    "origin": "$6731"
   },
+  "programs/games/elite/backbuffer": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: backbuffer",
+   "tags": [
+    "elite",
+    "game-module",
+    "backbuffer"
+   ],
+   "found_in": 1,
+   "length": 485,
+   "sha1": "8c186ad7b54ede5d7aef1b4413a171496c7bd055",
+   "masked_sha1": "99af4806ed5e2d308a6822e14ea9e852e5fc3368",
+   "origin": "$7FBE"
+  },
+  "programs/games/elite/chartcursor": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: chartcursor",
+   "tags": [
+    "elite",
+    "game-module",
+    "chartcursor"
+   ],
+   "found_in": 1,
+   "length": 575,
+   "sha1": "bbd46e17a565a74b6043cdb5209198e842478747",
+   "masked_sha1": "eb19fd406bdabd175f4a772eee831964d711f813",
+   "origin": "$E46F"
+  },
+  "programs/games/elite/circles": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: circles",
+   "tags": [
+    "elite",
+    "game-module",
+    "circles"
+   ],
+   "found_in": 1,
+   "length": 3187,
+   "sha1": "93ff49de56f91bcb7e26afbc7e68d3750ae526af",
+   "masked_sha1": "cc41ef044b1c87555b16eead03347ad83b2535b5",
+   "origin": "$8619"
+  },
+  "programs/games/elite/combat": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: combat",
+   "tags": [
+    "elite",
+    "game-module",
+    "combat"
+   ],
+   "found_in": 1,
+   "length": 2345,
+   "sha1": "4b6b25cbee13e7ce17d55b54293308f889ef59dd",
+   "masked_sha1": "415813682037ed1c4048c107ea29222a32b009a5",
+   "origin": "$B4D7"
+  },
+  "programs/games/elite/commander": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: commander",
+   "tags": [
+    "elite",
+    "game-module",
+    "commander"
+   ],
+   "found_in": 1,
+   "length": 672,
+   "sha1": "33ca6e472e392ef002c31b05c7d1a23ecd3f98c5",
+   "masked_sha1": "b22befa5b4f06a9c0a0e857d0fb0446fb7eaa6ad",
+   "origin": "$D902"
+  },
+  "programs/games/elite/dashboard": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: dashboard",
+   "tags": [
+    "elite",
+    "game-module",
+    "dashboard"
+   ],
+   "found_in": 1,
+   "length": 1142,
+   "sha1": "f765ff798b062df3e4feed31cda7ae4cb61aa724",
+   "masked_sha1": "cd2bf0adc9091f2c3167103e23b80f70ed91a6a7",
+   "origin": "$81A3"
+  },
+  "programs/games/elite/dockedscreens": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: dockedscreens",
+   "tags": [
+    "elite",
+    "game-module",
+    "dockedscreens"
+   ],
+   "found_in": 1,
+   "length": 1435,
+   "sha1": "b0763a03b5f7a19cd7603aa198d7831841486dde",
+   "masked_sha1": "02c4ecfcae5662ecfc44f0228930a2ade4fa401f",
+   "origin": "$EB7C"
+  },
+  "programs/games/elite/drawships": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: drawships",
+   "tags": [
+    "elite",
+    "game-module",
+    "drawships"
+   ],
+   "found_in": 1,
+   "length": 2401,
+   "sha1": "d2770cc4cdc3ba6655c43c5c9455bbd83a16a76f",
+   "masked_sha1": "7fccf408b9427b4cebfeed16efdba741c5b28c6d",
+   "origin": "$A6DF"
+  },
+  "programs/games/elite/flightloop": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: flightloop",
+   "tags": [
+    "elite",
+    "game-module",
+    "flightloop"
+   ],
+   "found_in": 1,
+   "length": 1063,
+   "sha1": "75230195935f6b998e71267e5bd1ff450a03550e",
+   "masked_sha1": "0e335dd68695abca326f8e703a20e8c58992e612",
+   "origin": "$7471"
+  },
+  "programs/games/elite/galaxy": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: galaxy",
+   "tags": [
+    "elite",
+    "game-module",
+    "galaxy"
+   ],
+   "found_in": 1,
+   "length": 815,
+   "sha1": "67c997a44cd375fcda1e307c4f8d0ea6165973b6",
+   "masked_sha1": "c3bb497d6b5541c23ff5a75ebb21047624af3ce4",
+   "origin": "$DEB9"
+  },
+  "programs/games/elite/gamestate": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: gamestate",
+   "tags": [
+    "elite",
+    "game-module",
+    "gamestate"
+   ],
+   "found_in": 1,
+   "length": 732,
+   "sha1": "6752ad565530c547a2ef4a1d254630b304b7b40e",
+   "masked_sha1": "2f177da0fc0284e7b0ce528e7a31f2d4d8eb7be7",
+   "origin": "$D000"
+  },
+  "programs/games/elite/hyperspace": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: hyperspace",
+   "tags": [
+    "elite",
+    "game-module",
+    "hyperspace"
+   ],
+   "found_in": 1,
+   "length": 791,
+   "sha1": "caaf625fa9c5c4a885e86bec78e091896ae8f807",
+   "masked_sha1": "737a072e7a783ba319a0cfbde0ed831647b795b4",
+   "origin": "$DBA2"
+  },
+  "programs/games/elite/keyboard": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: keyboard",
+   "tags": [
+    "elite",
+    "game-module",
+    "keyboard"
+   ],
+   "found_in": 1,
+   "length": 3729,
+   "sha1": "d9b8cf859bf28bfcfe16fb874cd6c16238aeca05",
+   "masked_sha1": "6b38fb784d1c935706478b259c2e5c22e0194ed1",
+   "origin": "$F117"
+  },
+  "programs/games/elite/lenslok-check": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: the Lenslok check: check",
+   "tags": [
+    "elite",
+    "game-module",
+    "check"
+   ],
+   "found_in": 1,
+   "length": 2048,
+   "sha1": "bd4a6d6b571dd3cc04d8562718895bd06ce2ee4e",
+   "masked_sha1": "9f3895d0f48af351a4fb633455534ebe6b2178eb",
+   "origin": "$C000"
+  },
+  "programs/games/elite/linedraw": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: linedraw",
+   "tags": [
+    "elite",
+    "game-module",
+    "linedraw"
+   ],
+   "found_in": 1,
+   "length": 1175,
+   "sha1": "0436e745a2c92f3caa7adf0ac9680d51dd829168",
+   "masked_sha1": "481a7a0e59f40f40fd834b112de46407f7d80b4d",
+   "origin": "$B040"
+  },
+  "programs/games/elite/lowdata": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Elite: lowdata",
+   "tags": [
+    "elite",
+    "game-module",
+    "lowdata"
+   ],
+   "found_in": 1,
+   "length": 5362,
+   "sha1": "ce5c95a73c2356f1b87dc9ff0ed5fe00a0646f80",
+   "masked_sha1": "ce5c95a73c2356f1b87dc9ff0ed5fe00a0646f80",
+   "origin": "$5B00"
+  },
+  "programs/games/elite/market": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: market",
+   "tags": [
+    "elite",
+    "game-module",
+    "market"
+   ],
+   "found_in": 1,
+   "length": 1230,
+   "sha1": "d58ade186e5ffed5cc0cffcc8fd6ade39313895f",
+   "masked_sha1": "7e9e790243761668b50ed45e08854885294b622c",
+   "origin": "$E6AE"
+  },
+  "programs/games/elite/menuhelpers": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: menuhelpers",
+   "tags": [
+    "elite",
+    "game-module",
+    "menuhelpers"
+   ],
+   "found_in": 1,
+   "length": 647,
+   "sha1": "4f7cad186756e672bfcd6d57cfb673cc7aa3ca61",
+   "masked_sha1": "539a35141bee811a2757d3ec9a9bca257e5a12e5",
+   "origin": "$E1E8"
+  },
+  "programs/games/elite/scanner": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: scanner",
+   "tags": [
+    "elite",
+    "game-module",
+    "scanner"
+   ],
+   "found_in": 1,
+   "length": 1350,
+   "sha1": "5a004ed53f00c75ac20368cd6f033eb241f9e091",
+   "masked_sha1": "eff22dadf558d3beb6a0f3fab778206575c3df88",
+   "origin": "$96D6"
+  },
+  "programs/games/elite/shipmotion": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: shipmotion",
+   "tags": [
+    "elite",
+    "game-module",
+    "shipmotion"
+   ],
+   "found_in": 1,
+   "length": 1647,
+   "sha1": "4c684f5c4a62f0619a5c896a8aa50bacc764c304",
+   "masked_sha1": "0db7a385fcf7adfdd3c2e3f1c91b9b3776971ffb",
+   "origin": "$9C1C"
+  },
+  "programs/games/elite/sound": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: sound",
+   "tags": [
+    "elite",
+    "game-module",
+    "sound"
+   ],
+   "found_in": 1,
+   "length": 461,
+   "sha1": "cfa02fde9c4b993126d1aee8715c23b1d5984320",
+   "masked_sha1": "95fb170b5cb3c63ac32e76c5e82ea90eeb798572",
+   "origin": "$9509"
+  },
+  "programs/games/elite/squaretable": {
+   "kind": "data",
+   "role": "game-module",
+   "name": "Elite: squaretable",
+   "tags": [
+    "elite",
+    "game-module",
+    "squaretable"
+   ],
+   "found_in": 1,
+   "length": 4608,
+   "sha1": "c86926d8a0391b5862dbb72baf08c02ef79299ab",
+   "masked_sha1": "c86926d8a0391b5862dbb72baf08c02ef79299ab",
+   "origin": "$BE00"
+  },
+  "programs/games/elite/stardust": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: stardust",
+   "tags": [
+    "elite",
+    "game-module",
+    "stardust"
+   ],
+   "found_in": 1,
+   "length": 1830,
+   "sha1": "6d68147aea52f08605a6f2fb1d1173d4dc1ff82e",
+   "masked_sha1": "1ac690a1d1f83b6d8cb548c125d7c5482b803b72",
+   "origin": "$7898"
+  },
+  "programs/games/elite/startup": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: startup",
+   "tags": [
+    "elite",
+    "game-module",
+    "startup"
+   ],
+   "found_in": 1,
+   "length": 1151,
+   "sha1": "4d3adf83ebd3f906c8a4c53db66903daf3e4c1ad",
+   "masked_sha1": "591d29bcb57c1abf71decd82d542b7ac189bb59b",
+   "origin": "$6FF2"
+  },
+  "programs/games/elite/tactics": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: tactics",
+   "tags": [
+    "elite",
+    "game-module",
+    "tactics"
+   ],
+   "found_in": 1,
+   "length": 1108,
+   "sha1": "9539b701943fcc24853bf919f2c01146cdfbba1a",
+   "masked_sha1": "fb0f5bf070e7e1237c9205d9edff2fa3746e4d54",
+   "origin": "$A28B"
+  },
+  "programs/games/elite/textprint": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: textprint",
+   "tags": [
+    "elite",
+    "game-module",
+    "textprint"
+   ],
+   "found_in": 1,
+   "length": 1574,
+   "sha1": "def18a72c45f281138cea9dd208805018a47ebb4",
+   "masked_sha1": "abc7a0476b8e4be4fb481873e88d5edce640f728",
+   "origin": "$D2DC"
+  },
+  "programs/games/elite/tunnel": {
+   "kind": "code",
+   "role": "game-module",
+   "name": "Elite: tunnel",
+   "tags": [
+    "elite",
+    "game-module",
+    "tunnel"
+   ],
+   "found_in": 1,
+   "length": 637,
+   "sha1": "e718d163a8902232d8d1db240dcb0311e15fbfd7",
+   "masked_sha1": "5e5fbf15fe23dc420fc37974e01c3a21a439c2e1",
+   "origin": "$928C"
+  },
   "programs/games/hate/buffers": {
    "kind": "code",
    "role": "game-module",
@@ -2627,6 +3032,42 @@
    "masked_sha1": "055e729f1914108f0359f0f536a5cfbefb18cdf2",
    "origin": "$C350"
   },
+  "protection/softlock/seen-elite/decryptor": {
+   "kind": "code",
+   "role": "protection-layer",
+   "name": "Softlock in-place decryptor keyed on the screen and the ROM",
+   "tags": [
+    "tape",
+    "protection",
+    "softlock",
+    "decrypt",
+    "rom-key",
+    "screen-key",
+    "self-overwrite"
+   ],
+   "found_in": 1,
+   "length": 73,
+   "sha1": "57ff74e5d668ce859a96f292514350d0ce1680ec",
+   "masked_sha1": "99efe12ecf8b9cb5c506d61def3828a7ab9cfa23",
+   "origin": "$5B00"
+  },
+  "protection/softlock/seen-elite/stub": {
+   "kind": "code",
+   "role": "protection-layer",
+   "name": "Softlock stub: the screen sum and the self-decrypt",
+   "tags": [
+    "tape",
+    "protection",
+    "softlock",
+    "self-decrypt",
+    "screen-key"
+   ],
+   "found_in": 1,
+   "length": 61,
+   "sha1": "2719f2fb8c309450896a583e7483f6eb278ca3fe",
+   "masked_sha1": "2719f2fb8c309450896a583e7483f6eb278ca3fe",
+   "origin": "$5D93"
+  },
   "protection/ultraxor/1.2/head": {
    "kind": "code",
    "role": "protection-layer",
@@ -2837,6 +3278,87 @@
   ],
   "cf9634f5dee253d87dcfe531c0e7527b717c0e66": [
    "programs/games/advanced-nether-earth/viewtail"
+  ],
+  "8c186ad7b54ede5d7aef1b4413a171496c7bd055": [
+   "programs/games/elite/backbuffer"
+  ],
+  "bbd46e17a565a74b6043cdb5209198e842478747": [
+   "programs/games/elite/chartcursor"
+  ],
+  "93ff49de56f91bcb7e26afbc7e68d3750ae526af": [
+   "programs/games/elite/circles"
+  ],
+  "4b6b25cbee13e7ce17d55b54293308f889ef59dd": [
+   "programs/games/elite/combat"
+  ],
+  "33ca6e472e392ef002c31b05c7d1a23ecd3f98c5": [
+   "programs/games/elite/commander"
+  ],
+  "f765ff798b062df3e4feed31cda7ae4cb61aa724": [
+   "programs/games/elite/dashboard"
+  ],
+  "b0763a03b5f7a19cd7603aa198d7831841486dde": [
+   "programs/games/elite/dockedscreens"
+  ],
+  "d2770cc4cdc3ba6655c43c5c9455bbd83a16a76f": [
+   "programs/games/elite/drawships"
+  ],
+  "75230195935f6b998e71267e5bd1ff450a03550e": [
+   "programs/games/elite/flightloop"
+  ],
+  "67c997a44cd375fcda1e307c4f8d0ea6165973b6": [
+   "programs/games/elite/galaxy"
+  ],
+  "6752ad565530c547a2ef4a1d254630b304b7b40e": [
+   "programs/games/elite/gamestate"
+  ],
+  "caaf625fa9c5c4a885e86bec78e091896ae8f807": [
+   "programs/games/elite/hyperspace"
+  ],
+  "d9b8cf859bf28bfcfe16fb874cd6c16238aeca05": [
+   "programs/games/elite/keyboard"
+  ],
+  "bd4a6d6b571dd3cc04d8562718895bd06ce2ee4e": [
+   "programs/games/elite/lenslok-check"
+  ],
+  "0436e745a2c92f3caa7adf0ac9680d51dd829168": [
+   "programs/games/elite/linedraw"
+  ],
+  "ce5c95a73c2356f1b87dc9ff0ed5fe00a0646f80": [
+   "programs/games/elite/lowdata"
+  ],
+  "d58ade186e5ffed5cc0cffcc8fd6ade39313895f": [
+   "programs/games/elite/market"
+  ],
+  "4f7cad186756e672bfcd6d57cfb673cc7aa3ca61": [
+   "programs/games/elite/menuhelpers"
+  ],
+  "5a004ed53f00c75ac20368cd6f033eb241f9e091": [
+   "programs/games/elite/scanner"
+  ],
+  "4c684f5c4a62f0619a5c896a8aa50bacc764c304": [
+   "programs/games/elite/shipmotion"
+  ],
+  "cfa02fde9c4b993126d1aee8715c23b1d5984320": [
+   "programs/games/elite/sound"
+  ],
+  "c86926d8a0391b5862dbb72baf08c02ef79299ab": [
+   "programs/games/elite/squaretable"
+  ],
+  "6d68147aea52f08605a6f2fb1d1173d4dc1ff82e": [
+   "programs/games/elite/stardust"
+  ],
+  "4d3adf83ebd3f906c8a4c53db66903daf3e4c1ad": [
+   "programs/games/elite/startup"
+  ],
+  "9539b701943fcc24853bf919f2c01146cdfbba1a": [
+   "programs/games/elite/tactics"
+  ],
+  "def18a72c45f281138cea9dd208805018a47ebb4": [
+   "programs/games/elite/textprint"
+  ],
+  "e718d163a8902232d8d1db240dcb0311e15fbfd7": [
+   "programs/games/elite/tunnel"
   ],
   "d87fed60c6e5218163d9963f04bb38a53e6485fe": [
    "programs/games/hate/buffers"
@@ -3297,6 +3819,12 @@
   "f2575e4b85c775cb5edee37ce6924386750be40a": [
    "programs/utilities/nether-earth-editor/mix"
   ],
+  "57ff74e5d668ce859a96f292514350d0ce1680ec": [
+   "protection/softlock/seen-elite/decryptor"
+  ],
+  "2719f2fb8c309450896a583e7483f6eb278ca3fe": [
+   "protection/softlock/seen-elite/stub"
+  ],
   "62e0afa46f9e34a0334c3a83e4f160ffa2f5b1d6": [
    "protection/ultraxor/1.2/head"
   ],
@@ -3385,6 +3913,87 @@
   ],
   "cf9634f5dee253d87dcfe531c0e7527b717c0e66": [
    "programs/games/advanced-nether-earth/viewtail"
+  ],
+  "99af4806ed5e2d308a6822e14ea9e852e5fc3368": [
+   "programs/games/elite/backbuffer"
+  ],
+  "eb19fd406bdabd175f4a772eee831964d711f813": [
+   "programs/games/elite/chartcursor"
+  ],
+  "cc41ef044b1c87555b16eead03347ad83b2535b5": [
+   "programs/games/elite/circles"
+  ],
+  "415813682037ed1c4048c107ea29222a32b009a5": [
+   "programs/games/elite/combat"
+  ],
+  "b22befa5b4f06a9c0a0e857d0fb0446fb7eaa6ad": [
+   "programs/games/elite/commander"
+  ],
+  "cd2bf0adc9091f2c3167103e23b80f70ed91a6a7": [
+   "programs/games/elite/dashboard"
+  ],
+  "02c4ecfcae5662ecfc44f0228930a2ade4fa401f": [
+   "programs/games/elite/dockedscreens"
+  ],
+  "7fccf408b9427b4cebfeed16efdba741c5b28c6d": [
+   "programs/games/elite/drawships"
+  ],
+  "0e335dd68695abca326f8e703a20e8c58992e612": [
+   "programs/games/elite/flightloop"
+  ],
+  "c3bb497d6b5541c23ff5a75ebb21047624af3ce4": [
+   "programs/games/elite/galaxy"
+  ],
+  "2f177da0fc0284e7b0ce528e7a31f2d4d8eb7be7": [
+   "programs/games/elite/gamestate"
+  ],
+  "737a072e7a783ba319a0cfbde0ed831647b795b4": [
+   "programs/games/elite/hyperspace"
+  ],
+  "6b38fb784d1c935706478b259c2e5c22e0194ed1": [
+   "programs/games/elite/keyboard"
+  ],
+  "9f3895d0f48af351a4fb633455534ebe6b2178eb": [
+   "programs/games/elite/lenslok-check"
+  ],
+  "481a7a0e59f40f40fd834b112de46407f7d80b4d": [
+   "programs/games/elite/linedraw"
+  ],
+  "ce5c95a73c2356f1b87dc9ff0ed5fe00a0646f80": [
+   "programs/games/elite/lowdata"
+  ],
+  "7e9e790243761668b50ed45e08854885294b622c": [
+   "programs/games/elite/market"
+  ],
+  "539a35141bee811a2757d3ec9a9bca257e5a12e5": [
+   "programs/games/elite/menuhelpers"
+  ],
+  "eff22dadf558d3beb6a0f3fab778206575c3df88": [
+   "programs/games/elite/scanner"
+  ],
+  "0db7a385fcf7adfdd3c2e3f1c91b9b3776971ffb": [
+   "programs/games/elite/shipmotion"
+  ],
+  "95fb170b5cb3c63ac32e76c5e82ea90eeb798572": [
+   "programs/games/elite/sound"
+  ],
+  "c86926d8a0391b5862dbb72baf08c02ef79299ab": [
+   "programs/games/elite/squaretable"
+  ],
+  "1ac690a1d1f83b6d8cb548c125d7c5482b803b72": [
+   "programs/games/elite/stardust"
+  ],
+  "591d29bcb57c1abf71decd82d542b7ac189bb59b": [
+   "programs/games/elite/startup"
+  ],
+  "fb0f5bf070e7e1237c9205d9edff2fa3746e4d54": [
+   "programs/games/elite/tactics"
+  ],
+  "abc7a0476b8e4be4fb481873e88d5edce640f728": [
+   "programs/games/elite/textprint"
+  ],
+  "5e5fbf15fe23dc420fc37974e01c3a21a439c2e1": [
+   "programs/games/elite/tunnel"
   ],
   "7b1a5a2adb082b40b53a2a7d455e7a46836af6d1": [
    "programs/games/hate/buffers"
@@ -3844,6 +4453,12 @@
   ],
   "055e729f1914108f0359f0f536a5cfbefb18cdf2": [
    "programs/utilities/nether-earth-editor/mix"
+  ],
+  "99efe12ecf8b9cb5c506d61def3828a7ab9cfa23": [
+   "protection/softlock/seen-elite/decryptor"
+  ],
+  "2719f2fb8c309450896a583e7483f6eb278ca3fe": [
+   "protection/softlock/seen-elite/stub"
   ],
   "ef7aa33682af3ad7b978e3583798bb292dd5e820": [
    "protection/ultraxor/1.2/head"
@@ -4906,6 +5521,1200 @@
    [
     "programs/games/nether-earth/viewbuffer",
     3188
+   ]
+  ],
+  "c90608d50eff3e04d5eda0ed": [
+   [
+    "programs/games/elite/backbuffer",
+    36
+   ]
+  ],
+  "04d5eda0eda0eda0eda0eda0": [
+   [
+    "programs/games/elite/backbuffer",
+    43
+   ]
+  ],
+  "7bc6205f6f62cbfc10a4c911": [
+   [
+    "programs/games/elite/backbuffer",
+    121
+   ]
+  ],
+  "d53e0ec53d20fcdde51e01dd": [
+   [
+    "programs/games/elite/backbuffer",
+    215
+   ]
+  ],
+  "e60f283a0e00cb3f38240ccb": [
+   [
+    "programs/games/elite/backbuffer",
+    285
+   ]
+  ],
+  "e63f87c8870107068738030c": [
+   [
+    "programs/games/elite/backbuffer",
+    350
+   ]
+  ],
+  "47b9200879fe073803e118ca": [
+   [
+    "programs/games/elite/backbuffer",
+    418
+   ]
+  ],
+  "010001edb0c9fe0430d5af32": [
+   [
+    "programs/games/elite/backbuffer",
+    470
+   ]
+  ],
+  "90380b87d887d8473e6180d8": [
+   [
+    "programs/games/elite/chartcursor",
+    14
+   ]
+  ],
+  "473e6090d8fe19d8fea7d032": [
+   [
+    "programs/games/elite/chartcursor",
+    66
+   ]
+  ],
+  "934fe6072006160879921802": [
+   [
+    "programs/games/elite/chartcursor",
+    230
+   ]
+  ],
+  "025779e6f8284d1f1f1fe61f": [
+   [
+    "programs/games/elite/chartcursor",
+    241
+   ]
+  ],
+  "5779e6f8281b1f1f1fe61fc3": [
+   [
+    "programs/games/elite/chartcursor",
+    311
+   ]
+  ],
+  "0528077eeeff772310f97eee": [
+   [
+    "programs/games/elite/chartcursor",
+    402
+   ]
+  ],
+  "b467c97eab7718037eaa773a": [
+   [
+    "programs/games/elite/chartcursor",
+    461
+   ]
+  ],
+  "c97dc6206fd87cd60867c900": [
+   [
+    "programs/games/elite/chartcursor",
+    563
+   ]
+  ],
+  "00000000000000000020f5d9": [
+   [
+    "programs/games/elite/circles",
+    8
+   ]
+  ],
+  "af18043e88803c083e7880cd": [
+   [
+    "programs/games/elite/circles",
+    482
+   ]
+  ],
+  "a778200306ffc90680c9ed4b": [
+   [
+    "programs/games/elite/circles",
+    928
+   ]
+  ],
+  "182a1c7d93280d067f18e72d": [
+   [
+    "programs/games/elite/circles",
+    1367
+   ]
+  ],
+  "f1f918fef5f5f5f5f5f5f5f5": [
+   [
+    "programs/games/elite/circles",
+    1815
+   ]
+  ],
+  "f7cbfcd0cfbfbfcfcfbfd0bf": [
+   [
+    "programs/games/elite/circles",
+    2216
+   ]
+  ],
+  "f1c91c7d9338f5180a556b7e": [
+   [
+    "programs/games/elite/circles",
+    2730
+   ]
+  ],
+  "09cb7cd928e9d9191c19d93a": [
+   [
+    "programs/games/elite/circles",
+    3159
+   ]
+  ],
+  "a7c01600fd5e01ddcb264628": [
+   [
+    "programs/games/elite/combat",
+    4
+   ]
+  ],
+  "1127000608dd19dd772210f9": [
+   [
+    "programs/games/elite/combat",
+    334
+   ]
+  ],
+  "03f601d6015fd579f6034f21": [
+   [
+    "programs/games/elite/combat",
+    650
+   ]
+  ],
+  "07dd7722fd7e124fe66fdd77": [
+   [
+    "programs/games/elite/combat",
+    1000
+   ]
+  ],
+  "fdcb2156c8ddcb21d6afc93a": [
+   [
+    "programs/games/elite/combat",
+    1349
+   ]
+  ],
+  "3e0add7726ddcb20b6ddcb1d": [
+   [
+    "programs/games/elite/combat",
+    1677
+   ]
+  ],
+  "0918c17907e601c60718b9cd": [
+   [
+    "programs/games/elite/combat",
+    1993
+   ]
+  ],
+  "cb21cb1ccb1dd17bcb121fc9": [
+   [
+    "programs/games/elite/combat",
+    2333
+   ]
+  ],
+  "cb5e2802cbdfcb762802cbe7": [
+   [
+    "programs/games/elite/commander",
+    195
+   ]
+  ],
+  "30010c10facb19cb1ac9763a": [
+   [
+    "programs/games/elite/commander",
+    281
+   ]
+  ],
+  "cb7e2005232310f8c9cbbe4e": [
+   [
+    "programs/games/elite/commander",
+    460
+   ]
+  ],
+  "232310f8c9cbbe4e2346c5cd": [
+   [
+    "programs/games/elite/commander",
+    464
+   ]
+  ],
+  "dd7e02e67f203fdd7e05e67f": [
+   [
+    "programs/games/elite/dashboard",
+    14
+   ]
+  ],
+  "7cb5281aeb210000ed52eb21": [
+   [
+    "programs/games/elite/dashboard",
+    133
+   ]
+  ],
+  "3810fe78300878fe63c83e02": [
+   [
+    "programs/games/elite/dashboard",
+    323
+   ]
+  ],
+  "38cb1ccb1df1cb3f2810f5cd": [
+   [
+    "programs/games/elite/dashboard",
+    457
+   ]
+  ],
+  "01ff041ab612231d1ab612eb": [
+   [
+    "programs/games/elite/dashboard",
+    649
+   ]
+  ],
+  "418181107e01000001040001": [
+   [
+    "programs/games/elite/dashboard",
+    807
+   ]
+  ],
+  "af371f10fc4f7ac608e6f8cb": [
+   [
+    "programs/games/elite/dashboard",
+    982
+   ]
+  ],
+  "e6fefe802801c92d36012cc9": [
+   [
+    "programs/games/elite/dashboard",
+    1130
+   ]
+  ],
+  "0610d510fd3d20f8240d20f0": [
+   [
+    "programs/games/elite/dockedscreens",
+    131
+   ]
+  ],
+  "000000000000000000af0618": [
+   [
+    "programs/games/elite/dockedscreens",
+    211
+   ]
+  ],
+  "90cb27ed4482d60e47c5cdaa": [
+   [
+    "programs/games/elite/dockedscreens",
+    412
+   ]
+  ],
+  "cb3fcb3f30013ced44c61632": [
+   [
+    "programs/games/elite/dockedscreens",
+    545
+   ]
+  ],
+  "7dfe8030043ebc18447ccb3f": [
+   [
+    "programs/games/elite/dockedscreens",
+    853
+   ]
+  ],
+  "be2006132310f8a7c937c9cd": [
+   [
+    "programs/games/elite/dockedscreens",
+    961
+   ]
+  ],
+  "061a1abe3004041318f878cd": [
+   [
+    "programs/games/elite/dockedscreens",
+    1142
+   ]
+  ],
+  "10204080ff020a19ff3e0c32": [
+   [
+    "programs/games/elite/dockedscreens",
+    1331
+   ]
+  ],
+  "47fe04d0dde5e1cb4f200411": [
+   [
+    "programs/games/elite/drawships",
+    3
+   ]
+  ],
+  "78cdb12257143e010f1520fc": [
+   [
+    "programs/games/elite/drawships",
+    349
+   ]
+  ],
+  "0101010101010101017e3281": [
+   [
+    "programs/games/elite/drawships",
+    684
+   ]
+  ],
+  "47af4ccbbccb3ccb1d1f10f9": [
+   [
+    "programs/games/elite/drawships",
+    1031
+   ]
+  ],
+  "ae03e68067fd7514fd7415cd": [
+   [
+    "programs/games/elite/drawships",
+    1361
+   ]
+  ],
+  "30023eff77f1dde3010600dd": [
+   [
+    "programs/games/elite/drawships",
+    1803
+   ]
+  ],
+  "dd7416fd7401dd460efd7011": [
+   [
+    "programs/games/elite/drawships",
+    2048
+   ]
+  ],
+  "070000000201020000000000": [
+   [
+    "programs/games/elite/drawships",
+    2336
+   ]
+  ],
+  "4f7ccb7f2004d9cbc0d9e67f": [
+   [
+    "programs/games/elite/flightloop",
+    407
+   ]
+  ],
+  "cb7f2004d9cbc8d9e67f67cd": [
+   [
+    "programs/games/elite/flightloop",
+    443
+   ]
+  ],
+  "cb7f2807e67f67d9cbc0d9c3": [
+   [
+    "programs/games/elite/flightloop",
+    580
+   ]
+  ],
+  "1ea0cb21cb103806cb2317c3": [
+   [
+    "programs/games/elite/flightloop",
+    731
+   ]
+  ],
+  "3e17cb21ed6af5cb20cb13cb": [
+   [
+    "programs/games/elite/flightloop",
+    901
+   ]
+  ],
+  "7e08e67fc0ddcb267ec0af32": [
+   [
+    "programs/games/elite/flightloop",
+    1043
+   ]
+  ],
+  "0000000000000000004a414d": [
+   [
+    "programs/games/elite/galaxy",
+    14
+   ]
+  ],
+  "461ab82007a7280d231318f4": [
+   [
+    "programs/games/elite/galaxy",
+    126
+   ]
+  ],
+  "d119c9b8300348477990c938": [
+   [
+    "programs/games/elite/galaxy",
+    302
+   ]
+  ],
+  "3acb1bcb1730011910f5c921": [
+   [
+    "programs/games/elite/galaxy",
+    344
+   ]
+  ],
+  "23ebe17eebfe3f2802772322": [
+   [
+    "programs/games/elite/galaxy",
+    412
+   ]
+  ],
+  "0611c55e237e57d5e61f2809": [
+   [
+    "programs/games/elite/galaxy",
+    665
+   ]
+  ],
+  "a180477bcb7a20033ced4480": [
+   [
+    "programs/games/elite/galaxy",
+    695
+   ]
+  ],
+  "13781213f17723d9c1109e21": [
+   [
+    "programs/games/elite/galaxy",
+    754
+   ]
+  ],
+  "20202020202020202000dd21": [
+   [
+    "programs/games/elite/gamestate",
+    85
+   ]
+  ],
+  "ff37cd0208dd21005b114805": [
+   [
+    "programs/games/elite/gamestate",
+    103
+   ]
+  ],
+  "0100000a1f0001000008d5c3": [
+   [
+    "programs/games/elite/gamestate",
+    204
+   ]
+  ],
+  "cbde110f0a21000318e6e5d5": [
+   [
+    "programs/games/elite/gamestate",
+    344
+   ]
+  ],
+  "cbfe2377f10601fe0a2809fe": [
+   [
+    "programs/games/elite/gamestate",
+    422
+   ]
+  ],
+  "343ecc8318e14a414d45534f": [
+   [
+    "programs/games/elite/gamestate",
+    556
+   ]
+  ],
+  "00000000004a5a480253b738": [
+   [
+    "programs/games/elite/gamestate",
+    617
+   ]
+  ],
+  "00002708012a4d8ff28805cd": [
+   [
+    "programs/games/elite/gamestate",
+    653
+   ]
+  ],
+  "18665ecb03732356cb027223": [
+   [
+    "programs/games/elite/hyperspace",
+    223
+   ]
+  ],
+  "5ecb03732356cb027223c93a": [
+   [
+    "programs/games/elite/hyperspace",
+    225
+   ]
+  ],
+  "cbfe47e67fcb393810fe0120": [
+   [
+    "programs/games/elite/hyperspace",
+    475
+   ]
+  ],
+  "be3eff380312181e02181b01": [
+   [
+    "programs/games/elite/hyperspace",
+    547
+   ]
+  ],
+  "c97dfe2038cdebcbc63e0132": [
+   [
+    "programs/games/elite/hyperspace",
+    708
+   ]
+  ],
+  "c47dfefe38acebcbd63e0132": [
+   [
+    "programs/games/elite/hyperspace",
+    741
+   ]
+  ],
+  "6f10002043488a5400474f96": [
+   [
+    "programs/games/elite/keyboard",
+    7
+   ]
+  ],
+  "4255472d4559980048994e98": [
+   [
+    "programs/games/elite/keyboard",
+    531
+   ]
+  ],
+  "e04144c3f452fd00dac652db": [
+   [
+    "programs/games/elite/keyboard",
+    1062
+   ]
+  ],
+  "ee47e52042f9def453001200": [
+   [
+    "programs/games/elite/keyboard",
+    1593
+   ]
+  ],
+  "52494300f047f8f0fc007200": [
+   [
+    "programs/games/elite/keyboard",
+    2124
+   ]
+  ],
+  "f5004ddf4b455900474ff500": [
+   [
+    "programs/games/elite/keyboard",
+    2655
+   ]
+  ],
+  "05060d0ecb71892121613248": [
+   [
+    "programs/games/elite/keyboard",
+    3187
+   ]
+  ],
+  "008007080702030202203c00": [
+   [
+    "programs/games/elite/keyboard",
+    3717
+   ]
+  ],
+  "202057524f4e47202d205452": [
+   [
+    "programs/games/elite/lenslok-check",
+    563
+   ]
+  ],
+  "2020205e2100002b7cb520fb": [
+   [
+    "programs/games/elite/lenslok-check",
+    582
+   ]
+  ],
+  "28117bed445f7aed445793cd": [
+   [
+    "programs/games/elite/lenslok-check",
+    838
+   ]
+  ],
+  "05051806fe38201204047832": [
+   [
+    "programs/games/elite/lenslok-check",
+    1154
+   ]
+  ],
+  "f4772304f1cb57280e3e19cd": [
+   [
+    "programs/games/elite/lenslok-check",
+    1399
+   ]
+  ],
+  "010400edb0c9414f7e23b928": [
+   [
+    "programs/games/elite/lenslok-check",
+    1745
+   ]
+  ],
+  "090c0b000000000000000000": [
+   [
+    "programs/games/elite/lenslok-check",
+    2012
+   ]
+  ],
+  "000000007ca33cc87da23cc8": [
+   [
+    "programs/games/elite/linedraw",
+    0
+   ]
+  ],
+  "023d577b1e80d9477ad9e61c": [
+   [
+    "programs/games/elite/linedraw",
+    166
+   ]
+  ],
+  "3d2048cb4028357de60ccb3d": [
+   [
+    "programs/games/elite/linedraw",
+    332
+   ]
+  ],
+  "78fe022001247de60cb44721": [
+   [
+    "programs/games/elite/linedraw",
+    492
+   ]
+  ],
+  "0147167f7bfe4038021e3fcd": [
+   [
+    "programs/games/elite/linedraw",
+    665
+   ]
+  ],
+  "28020effcb62280c7b917cda": [
+   [
+    "programs/games/elite/linedraw",
+    829
+   ]
+  ],
+  "28074118067d4418027c45cd": [
+   [
+    "programs/games/elite/linedraw",
+    993
+   ]
+  ],
+  "10ee06087c90677dc6206fd2": [
+   [
+    "programs/games/elite/linedraw",
+    1149
+   ]
+  ],
+  "0707071717171717070700ff": [
+   [
+    "programs/games/elite/lowdata",
+    245
+   ]
+  ],
+  "08081c00007c023c40407e00": [
+   [
+    "programs/games/elite/lowdata",
+    764
+   ]
+  ],
+  "000000000000000000c39d6a": [
+   [
+    "programs/games/elite/lowdata",
+    1655
+   ]
+  ],
+  "8f000002001f001810001f10": [
+   [
+    "programs/games/elite/lowdata",
+    2293
+   ]
+  ],
+  "4b00001a0812090000100e04": [
+   [
+    "programs/games/elite/lowdata",
+    3057
+   ]
+  ],
+  "ff0000703f0041820a0f0725": [
+   [
+    "programs/games/elite/lowdata",
+    3821
+   ]
+  ],
+  "1f090a911f0a0b921f0b0c93": [
+   [
+    "programs/games/elite/lowdata",
+    4586
+   ]
+  ],
+  "071f2400001f000000000000": [
+   [
+    "programs/games/elite/lowdata",
+    5277
+   ]
+  ],
+  "300afe0128f1fe022805180f": [
+   [
+    "programs/games/elite/market",
+    146
+   ]
+  ],
+  "0afe0128f1fe022805180fcd": [
+   [
+    "programs/games/elite/market",
+    147
+   ]
+  ],
+  "a7c93eb018063ec518023ece": [
+   [
+    "programs/games/elite/market",
+    360
+   ]
+  ],
+  "3eb018063ec518023ecef5cd": [
+   [
+    "programs/games/elite/market",
+    362
+   ]
+  ],
+  "7ec60f771814fe042808fe07": [
+   [
+    "programs/games/elite/market",
+    940
+   ]
+  ],
+  "fe06280604fe0d2801047832": [
+   [
+    "programs/games/elite/market",
+    984
+   ]
+  ],
+  "005f19c93e7c18073e68473a": [
+   [
+    "programs/games/elite/market",
+    1169
+   ]
+  ],
+  "cb7fc8218000116000c3b503": [
+   [
+    "programs/games/elite/menuhelpers",
+    3
+   ]
+  ],
+  "7fc8218000116000c3b503cd": [
+   [
+    "programs/games/elite/menuhelpers",
+    4
+   ]
+  ],
+  "fe0d380cfe0f380c280ffe11": [
+   [
+    "programs/games/elite/menuhelpers",
+    318
+   ]
+  ],
+  "10200237c9a7c90614180206": [
+   [
+    "programs/games/elite/menuhelpers",
+    363
+   ]
+  ],
+  "e5772310fce124c110f3c92a": [
+   [
+    "programs/games/elite/menuhelpers",
+    410
+   ]
+  ],
+  "30e7fe3a3804fe4038df573a": [
+   [
+    "programs/games/elite/menuhelpers",
+    540
+   ]
+  ],
+  "dd7e22a728e3dd7e01fe4030": [
+   [
+    "programs/games/elite/scanner",
+    23
+   ]
+  ],
+  "1f1f1fe61f4779e6074f2801": [
+   [
+    "programs/games/elite/scanner",
+    192
+   ]
+  ],
+  "f603772c7ef6807718d02d7e": [
+   [
+    "programs/games/elite/scanner",
+    382
+   ]
+  ],
+  "3e06d506080effd5eda0eda0": [
+   [
+    "programs/games/elite/scanner",
+    573
+   ]
+  ],
+  "34cb4e2003af18023e02573a": [
+   [
+    "programs/games/elite/scanner",
+    751
+   ]
+  ],
+  "7e91300d360023231520f53e": [
+   [
+    "programs/games/elite/scanner",
+    956
+   ]
+  ],
+  "d113c926243b3c3d3e202040": [
+   [
+    "programs/games/elite/scanner",
+    1161
+   ]
+  ],
+  "3f380cc97efe02c83601af32": [
+   [
+    "programs/games/elite/scanner",
+    1291
+   ]
+  ],
+  "1127000606dd19dd7e22a728": [
+   [
+    "programs/games/elite/shipmotion",
+    252
+   ]
+  ],
+  "0d1807fd7e01fe1e2004af32": [
+   [
+    "programs/games/elite/shipmotion",
+    439
+   ]
+  ],
+  "cb38cb19e1cb7c2802cbf8dd": [
+   [
+    "programs/games/elite/shipmotion",
+    703
+   ]
+  ],
+  "1d47cb7f200be60f3e00280f": [
+   [
+    "programs/games/elite/shipmotion",
+    934
+   ]
+  ],
+  "ee80cb2fcbb74fdd4603dd56": [
+   [
+    "programs/games/elite/shipmotion",
+    1170
+   ]
+  ],
+  "3c8747dd6608dd6e07dd7e06": [
+   [
+    "programs/games/elite/shipmotion",
+    1428
+   ]
+  ],
+  "e1c94fcb111fcb1117cb19c9": [
+   [
+    "programs/games/elite/shipmotion",
+    1635
+   ]
+  ],
+  "1127000607dd19dd772210f9": [
+   [
+    "programs/games/elite/sound",
+    12
+   ]
+  ],
+  "dd772210f9c900000000003a": [
+   [
+    "programs/games/elite/sound",
+    19
+   ]
+  ],
+  "0e407ee618d3fe4210fe230d": [
+   [
+    "programs/games/elite/sound",
+    164
+   ]
+  ],
+  "fe230d20f47ac600571ded53": [
+   [
+    "programs/games/elite/sound",
+    173
+   ]
+  ],
+  "43afd3fe10fe0d20e915ed53": [
+   [
+    "programs/games/elite/sound",
+    245
+   ]
+  ],
+  "fd11000218053ed311000832": [
+   [
+    "programs/games/elite/sound",
+    313
+   ]
+  ],
+  "1018053e0321cb3f11000122": [
+   [
+    "programs/games/elite/sound",
+    338
+   ]
+  ],
+  "38cb19cb38cb19cb38cb19c9": [
+   [
+    "programs/games/elite/sound",
+    449
+   ]
+  ],
+  "000104091019243140516479": [
+   [
+    "programs/games/elite/squaretable",
+    0
+   ]
+  ],
+  "400000100001000100000000": [
+   [
+    "programs/games/elite/squaretable",
+    656
+   ]
+  ],
+  "bf39fffffffe011ff8000000": [
+   [
+    "programs/games/elite/squaretable",
+    1313
+   ]
+  ],
+  "000000080001ffffffffff07": [
+   [
+    "programs/games/elite/squaretable",
+    1970
+   ]
+  ],
+  "0100000000017ffe00000000": [
+   [
+    "programs/games/elite/squaretable",
+    2626
+   ]
+  ],
+  "0018000001ffffffffff0061": [
+   [
+    "programs/games/elite/squaretable",
+    3283
+   ]
+  ],
+  "fffffffffd00000000000010": [
+   [
+    "programs/games/elite/squaretable",
+    3939
+   ]
+  ],
+  "0f0000000001ffffffffffff": [
+   [
+    "programs/games/elite/squaretable",
+    4562
+   ]
+  ],
+  "2008097cfe7830601807a7ed": [
+   [
+    "programs/games/elite/stardust",
+    247
+   ]
+  ],
+  "30601807a7ed423859285722": [
+   [
+    "programs/games/elite/stardust",
+    253
+   ]
+  ],
+  "06cb67201a1804cb6728143a": [
+   [
+    "programs/games/elite/stardust",
+    505
+   ]
+  ],
+  "ee1047e610cb3f4f78e60887": [
+   [
+    "programs/games/elite/stardust",
+    894
+   ]
+  ],
+  "4e1aa9122310f5c9ed44473a": [
+   [
+    "programs/games/elite/stardust",
+    1031
+   ]
+  ],
+  "07483c473e010f10fd4fc92a": [
+   [
+    "programs/games/elite/stardust",
+    1202
+   ]
+  ],
+  "227810103264150212236379": [
+   [
+    "programs/games/elite/stardust",
+    1558
+   ]
+  ],
+  "7706c9000000000000000000": [
+   [
+    "programs/games/elite/stardust",
+    1748
+   ]
+  ],
+  "00387c7c7c380000387cfefe": [
+   [
+    "programs/games/elite/startup",
+    9
+   ]
+  ],
+  "881305000006000000401f3a": [
+   [
+    "programs/games/elite/startup",
+    140
+   ]
+  ],
+  "cb7f2004c6151806e67f4f3e": [
+   [
+    "programs/games/elite/startup",
+    337
+   ]
+  ],
+  "7501110300fd19dd19c9fd66": [
+   [
+    "programs/games/elite/startup",
+    488
+   ]
+  ],
+  "70b1c8060804cb3f30fb78cd": [
+   [
+    "programs/games/elite/startup",
+    537
+   ]
+  ],
+  "7eee0477afc97ef68077af32": [
+   [
+    "programs/games/elite/startup",
+    810
+   ]
+  ],
+  "063002c60a87878787c609cd": [
+   [
+    "programs/games/elite/startup",
+    963
+   ]
+  ],
+  "3e02cb4e200f3ccb5e200a3a": [
+   [
+    "programs/games/elite/startup",
+    1008
+   ]
+  ],
+  "dd6624dd6e23e5fde13e9432": [
+   [
+    "programs/games/elite/tactics",
+    6
+   ]
+  ],
+  "0ae6f02002f606ee0447c5cd": [
+   [
+    "programs/games/elite/tactics",
+    152
+   ]
+  ],
+  "ddcb1b3ec9ddcb2546282b3a": [
+   [
+    "programs/games/elite/tactics",
+    274
+   ]
+  ],
+  "a72808ddcb215e282b180ddd": [
+   [
+    "programs/games/elite/tactics",
+    473
+   ]
+  ],
+  "fdcb26fefdcb20e6fde1ddcb": [
+   [
+    "programs/games/elite/tactics",
+    664
+   ]
+  ],
+  "cb1d110300dd19c9fde5fd21": [
+   [
+    "programs/games/elite/tactics",
+    756
+   ]
+  ],
+  "c8dd7e08ddae0ee680c8fd46": [
+   [
+    "programs/games/elite/tactics",
+    939
+   ]
+  ],
+  "1cc94fa8ee80cb20cb21f5cd": [
+   [
+    "programs/games/elite/tactics",
+    1040
+   ]
+  ],
+  "0000371801a726006ff5e5cd": [
+   [
+    "programs/games/elite/textprint",
+    0
+   ]
+  ],
+  "0a00ed52e13824a7110a00cd": [
+   [
+    "programs/games/elite/textprint",
+    168
+   ]
+  ],
+  "18f5fe413835fe5b3031f53a": [
+   [
+    "programs/games/elite/textprint",
+    443
+   ]
+  ],
+  "e1f1e607280c473e20856f30": [
+   [
+    "programs/games/elite/textprint",
+    670
+   ]
+  ],
+  "1100000ec00610d510fd0dc2": [
+   [
+    "programs/games/elite/textprint",
+    855
+   ]
+  ],
+  "f1a7c83d18e43e021803c93e": [
+   [
+    "programs/games/elite/textprint",
+    1479
+   ]
+  ],
+  "4145494f553e0118023e0032": [
+   [
+    "programs/games/elite/textprint",
+    1540
+   ]
+  ],
+  "c90efe873808b83005cb21d0": [
+   [
+    "programs/games/elite/tunnel",
+    287
+   ]
+  ],
+  "44101010182028303800003a": [
+   [
+    "programs/games/elite/tunnel",
+    342
+   ]
+  ],
+  "3ef0dd77063e80dd77083ddd": [
+   [
+    "programs/games/elite/tunnel",
+    533
+   ]
+  ],
+  "77063e80dd77083ddd770edd": [
+   [
+    "programs/games/elite/tunnel",
+    536
+   ]
+  ],
+  "dd7712dd77163ef0dd7722cd": [
+   [
+    "programs/games/elite/tunnel",
+    547
    ]
   ],
   "3f003f803f801f800fc00f60": [
@@ -10630,6 +12439,84 @@
     2232
    ]
   ],
+  "3effed4f7edd9600fdad07fd": [
+   [
+    "protection/softlock/seen-elite/decryptor",
+    16
+   ]
+  ],
+  "ffed4f7edd9600fdad07fdac": [
+   [
+    "protection/softlock/seen-elite/decryptor",
+    17
+   ]
+  ],
+  "07fdac122b1b0bdd2bdd7cdd": [
+   [
+    "protection/softlock/seen-elite/decryptor",
+    26
+   ]
+  ],
+  "dd7cddb52003dd265a78b120": [
+   [
+    "protection/softlock/seen-elite/decryptor",
+    35
+   ]
+  ],
+  "ddb52003dd265a78b120e421": [
+   [
+    "protection/softlock/seen-elite/decryptor",
+    37
+   ]
+  ],
+  "fd6f3b3bc1210000e5dde13e": [
+   [
+    "protection/softlock/seen-elite/stub",
+    0
+   ]
+  ],
+  "00e5dde13e2edd2640cb27dd": [
+   [
+    "protection/softlock/seen-elite/stub",
+    7
+   ]
+  ],
+  "2640cb27dd5600dd5e01dd23": [
+   [
+    "protection/softlock/seen-elite/stub",
+    14
+   ]
+  ],
+  "dd5e01dd23dd2319ddbc20f1": [
+   [
+    "protection/softlock/seen-elite/stub",
+    21
+   ]
+  ],
+  "19ddbc20f1eb213d0009dd60": [
+   [
+    "protection/softlock/seen-elite/stub",
+    28
+   ]
+  ],
+  "3d0009dd60dd690e327eab81": [
+   [
+    "protection/softlock/seen-elite/stub",
+    35
+   ]
+  ],
+  "0e327eab81774f23137eaa81": [
+   [
+    "protection/softlock/seen-elite/stub",
+    42
+   ]
+  ],
+  "23137eaa81774f2313fe487f": [
+   [
+    "protection/softlock/seen-elite/stub",
+    49
+   ]
+  ],
   "181a556c747261584f522076": [
    [
     "protection/ultraxor/1.2/head",
@@ -11021,6 +12908,33 @@
    "programs/games/advanced-nether-earth/sprites",
    "programs/games/advanced-nether-earth/start",
    "programs/games/advanced-nether-earth/viewtail",
+   "programs/games/elite/backbuffer",
+   "programs/games/elite/chartcursor",
+   "programs/games/elite/circles",
+   "programs/games/elite/combat",
+   "programs/games/elite/commander",
+   "programs/games/elite/dashboard",
+   "programs/games/elite/dockedscreens",
+   "programs/games/elite/drawships",
+   "programs/games/elite/flightloop",
+   "programs/games/elite/galaxy",
+   "programs/games/elite/gamestate",
+   "programs/games/elite/hyperspace",
+   "programs/games/elite/keyboard",
+   "programs/games/elite/lenslok-check",
+   "programs/games/elite/linedraw",
+   "programs/games/elite/lowdata",
+   "programs/games/elite/market",
+   "programs/games/elite/menuhelpers",
+   "programs/games/elite/scanner",
+   "programs/games/elite/shipmotion",
+   "programs/games/elite/sound",
+   "programs/games/elite/squaretable",
+   "programs/games/elite/stardust",
+   "programs/games/elite/startup",
+   "programs/games/elite/tactics",
+   "programs/games/elite/textprint",
+   "programs/games/elite/tunnel",
    "programs/games/hate/buffers",
    "programs/games/hate/course",
    "programs/games/hate/coursedata",
@@ -11176,6 +13090,8 @@
    "programs/utilities/nether-earth-editor/mix"
   ],
   "protection-layer": [
+   "protection/softlock/seen-elite/decryptor",
+   "protection/softlock/seen-elite/stub",
    "protection/ultraxor/1.2/head"
   ],
   "player": [
@@ -11316,6 +13232,33 @@
    "programs/games/advanced-nether-earth/sprites",
    "programs/games/advanced-nether-earth/start",
    "programs/games/advanced-nether-earth/viewtail",
+   "programs/games/elite/backbuffer",
+   "programs/games/elite/chartcursor",
+   "programs/games/elite/circles",
+   "programs/games/elite/combat",
+   "programs/games/elite/commander",
+   "programs/games/elite/dashboard",
+   "programs/games/elite/dockedscreens",
+   "programs/games/elite/drawships",
+   "programs/games/elite/flightloop",
+   "programs/games/elite/galaxy",
+   "programs/games/elite/gamestate",
+   "programs/games/elite/hyperspace",
+   "programs/games/elite/keyboard",
+   "programs/games/elite/lenslok-check",
+   "programs/games/elite/linedraw",
+   "programs/games/elite/lowdata",
+   "programs/games/elite/market",
+   "programs/games/elite/menuhelpers",
+   "programs/games/elite/scanner",
+   "programs/games/elite/shipmotion",
+   "programs/games/elite/sound",
+   "programs/games/elite/squaretable",
+   "programs/games/elite/stardust",
+   "programs/games/elite/startup",
+   "programs/games/elite/tactics",
+   "programs/games/elite/textprint",
+   "programs/games/elite/tunnel",
    "programs/games/hate/buffers",
    "programs/games/hate/course",
    "programs/games/hate/coursedata",
@@ -11534,6 +13477,118 @@
   "viewtail": [
    "programs/games/advanced-nether-earth/viewtail"
   ],
+  "elite": [
+   "programs/games/elite/backbuffer",
+   "programs/games/elite/chartcursor",
+   "programs/games/elite/circles",
+   "programs/games/elite/combat",
+   "programs/games/elite/commander",
+   "programs/games/elite/dashboard",
+   "programs/games/elite/dockedscreens",
+   "programs/games/elite/drawships",
+   "programs/games/elite/flightloop",
+   "programs/games/elite/galaxy",
+   "programs/games/elite/gamestate",
+   "programs/games/elite/hyperspace",
+   "programs/games/elite/keyboard",
+   "programs/games/elite/lenslok-check",
+   "programs/games/elite/linedraw",
+   "programs/games/elite/lowdata",
+   "programs/games/elite/market",
+   "programs/games/elite/menuhelpers",
+   "programs/games/elite/scanner",
+   "programs/games/elite/shipmotion",
+   "programs/games/elite/sound",
+   "programs/games/elite/squaretable",
+   "programs/games/elite/stardust",
+   "programs/games/elite/startup",
+   "programs/games/elite/tactics",
+   "programs/games/elite/textprint",
+   "programs/games/elite/tunnel"
+  ],
+  "backbuffer": [
+   "programs/games/elite/backbuffer"
+  ],
+  "chartcursor": [
+   "programs/games/elite/chartcursor"
+  ],
+  "circles": [
+   "programs/games/elite/circles"
+  ],
+  "combat": [
+   "programs/games/elite/combat"
+  ],
+  "commander": [
+   "programs/games/elite/commander"
+  ],
+  "dashboard": [
+   "programs/games/elite/dashboard"
+  ],
+  "dockedscreens": [
+   "programs/games/elite/dockedscreens"
+  ],
+  "drawships": [
+   "programs/games/elite/drawships"
+  ],
+  "flightloop": [
+   "programs/games/elite/flightloop"
+  ],
+  "galaxy": [
+   "programs/games/elite/galaxy"
+  ],
+  "gamestate": [
+   "programs/games/elite/gamestate"
+  ],
+  "hyperspace": [
+   "programs/games/elite/hyperspace"
+  ],
+  "keyboard": [
+   "programs/games/elite/keyboard"
+  ],
+  "check": [
+   "programs/games/elite/lenslok-check"
+  ],
+  "linedraw": [
+   "programs/games/elite/linedraw"
+  ],
+  "lowdata": [
+   "programs/games/elite/lowdata"
+  ],
+  "market": [
+   "programs/games/elite/market"
+  ],
+  "menuhelpers": [
+   "programs/games/elite/menuhelpers"
+  ],
+  "scanner": [
+   "programs/games/elite/scanner"
+  ],
+  "shipmotion": [
+   "programs/games/elite/shipmotion"
+  ],
+  "sound": [
+   "programs/games/elite/sound",
+   "sound/gs/zx-masters-zynaps-driver/seen-zynaps-gs"
+  ],
+  "squaretable": [
+   "programs/games/elite/squaretable"
+  ],
+  "stardust": [
+   "programs/games/elite/stardust"
+  ],
+  "startup": [
+   "programs/games/elite/startup",
+   "programs/games/hate/startup"
+  ],
+  "tactics": [
+   "programs/games/elite/tactics"
+  ],
+  "textprint": [
+   "programs/games/elite/textprint"
+  ],
+  "tunnel": [
+   "programs/games/elite/tunnel"
+  ],
   "hate": [
    "programs/games/hate/buffers",
    "programs/games/hate/course",
@@ -11609,9 +13664,6 @@
   ],
   "shadows": [
    "programs/games/hate/shadows"
-  ],
-  "startup": [
-   "programs/games/hate/startup"
   ],
   "statics": [
    "programs/games/hate/statics"
@@ -12010,10 +14062,37 @@
   "mix": [
    "programs/utilities/nether-earth-editor/mix"
   ],
-  "ultraxor": [
-   "protection/ultraxor/1.2/head"
+  "tape": [
+   "protection/softlock/seen-elite/decryptor",
+   "protection/softlock/seen-elite/stub",
+   "tape/loaders/hewson-countdown-2/decrypted"
   ],
   "protection": [
+   "protection/softlock/seen-elite/decryptor",
+   "protection/softlock/seen-elite/stub",
+   "protection/ultraxor/1.2/head"
+  ],
+  "softlock": [
+   "protection/softlock/seen-elite/decryptor",
+   "protection/softlock/seen-elite/stub"
+  ],
+  "decrypt": [
+   "protection/softlock/seen-elite/decryptor"
+  ],
+  "rom-key": [
+   "protection/softlock/seen-elite/decryptor"
+  ],
+  "screen-key": [
+   "protection/softlock/seen-elite/decryptor",
+   "protection/softlock/seen-elite/stub"
+  ],
+  "self-overwrite": [
+   "protection/softlock/seen-elite/decryptor"
+  ],
+  "self-decrypt": [
+   "protection/softlock/seen-elite/stub"
+  ],
+  "ultraxor": [
    "protection/ultraxor/1.2/head"
   ],
   "xor": [
@@ -12056,9 +14135,6 @@
   "driver": [
    "sound/gs/zx-masters-zynaps-driver/seen-zynaps-gs"
   ],
-  "sound": [
-   "sound/gs/zx-masters-zynaps-driver/seen-zynaps-gs"
-  ],
   "zx-masters": [
    "sound/gs/zx-masters-zynaps-driver/seen-zynaps-gs"
   ],
@@ -12067,9 +14143,6 @@
   ],
   "mouse": [
    "system/input/kempston-mouse/seen-zynaps-128"
-  ],
-  "tape": [
-   "tape/loaders/hewson-countdown-2/decrypted"
   ],
   "ld-bytes": [
    "tape/loaders/hewson-countdown-2/decrypted"

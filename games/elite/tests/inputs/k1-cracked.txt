@@ -1,0 +1,5 @@
+# k1: the cracked ELITE48.TAP: ENTER on the size screen, then no code typed (three 12 s prompts run out)
+0 -
++100 ENTER
++10 -
++2400 END

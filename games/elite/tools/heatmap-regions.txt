@@ -1,0 +1,33 @@
+# Regions for tools/fig_heatmap.py on the flight recordings (docs/02): START END NAME, from src/game/game.ann's modules.
+4000 57FF the screen's pixels
+5800 5AFF the attributes
+5B00 5D6F ScannerSave (the scanner's background)
+5D70 6047 Font (91 glyphs)
+6048 617F ShipSlots, WorkShip
+6180 6FF1 Blueprints: the 19 ship shapes
+6FF2 7470 main: vectors, variables, the title
+7471 7897 flight: FlightLoop, the views
+7898 7FBD stardust
+7FBE 81A2 screen: CopyBackBuffer, ClearView
+81A3 8618 dashboard
+8619 928B circle: the sun, the planet, the charts
+928C 9508 tunnel
+9509 96D5 sound
+96D6 9C1B scanner
+9C1C A28A ships: move, turn, tidy
+A28B A6DE tactics
+A6DF B03F draw: project, faces, edges
+B040 B4D5 lines: DrawLine
+B4D6 BDFF actions, Random, the maths
+BE00 BFFF the squares table
+C000 CFFF BackBuffer (the 3D view)
+D000 D2DB state: vectors, the commander
+D2DC D901 text: PrintCode, PrintChar
+D902 DBA1 commander menu
+DBA2 DEB8 hyperspace
+DEB9 E1E7 galaxy: seeds, Twist
+E1E8 E6AD ui, the chart cross
+E6AE EB7B market
+EB7C F116 screens
+F117 FBFF the token tables
+FC00 FFFF keys, IM2, the interrupt

@@ -1,0 +1,1560 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/shipmotion",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: shipmotion",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "shipmotion"
+  ],
+  "summary": "The escape pod, the vectors, the ship loop and the motion: rotation, movement, tidying.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1647,
+    "sha1": "4c684f5c4a62f0619a5c896a8aa50bacc764c304",
+    "masked_sha1": "0db7a385fcf7adfdd3c2e3f1c91b9b3776971ffb"
+  },
+  "origin": "$9C1C",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileLaunchFlag"
+    },
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DockKeysCentre"
+    },
+    {
+      "offset": 14,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyCombat"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D089"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WitchSpace"
+    },
+    {
+      "offset": 32,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileLaunchFlag"
+    },
+    {
+      "offset": 38,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpeedControl"
+    },
+    {
+      "offset": 42,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LegalStatus"
+    },
+    {
+      "offset": 45,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D089"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CargoHold"
+    },
+    {
+      "offset": 57,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionFlags"
+    },
+    {
+      "offset": 64,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeSpace"
+    },
+    {
+      "offset": 67,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Equipment"
+    },
+    {
+      "offset": 80,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 83,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D099"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0B2"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D097"
+    },
+    {
+      "offset": 92,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0B3"
+    },
+    {
+      "offset": 101,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 104,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 107,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 110,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Divide16"
+    },
+    {
+      "offset": 113,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawLine"
+    },
+    {
+      "offset": 116,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Gunsight"
+    },
+    {
+      "offset": 129,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipAction"
+    },
+    {
+      "offset": 132,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipsWreck"
+    },
+    {
+      "offset": 138,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SubtractSigned"
+    },
+    {
+      "offset": 141,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 144,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TurnTitleShip"
+    },
+    {
+      "offset": 148,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TurnTitleShip"
+    },
+    {
+      "offset": 154,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 157,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Gunsight"
+    },
+    {
+      "offset": 160,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionState"
+    },
+    {
+      "offset": 167,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6069"
+    },
+    {
+      "offset": 172,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunLarge"
+    },
+    {
+      "offset": 182,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B435"
+    },
+    {
+      "offset": 185,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B465"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B4B2"
+    },
+    {
+      "offset": 191,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B486"
+    },
+    {
+      "offset": 194,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 198,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 202,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SafeZone"
+    },
+    {
+      "offset": 208,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WitchSpace"
+    },
+    {
+      "offset": 214,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 223,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipAction"
+    },
+    {
+      "offset": 227,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 230,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 233,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 236,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 239,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 242,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 245,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 250,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    },
+    {
+      "offset": 276,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 280,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    },
+    {
+      "offset": 287,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 294,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 297,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 306,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 309,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 321,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 324,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 362,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 365,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_617B"
+    },
+    {
+      "offset": 371,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 399,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 420,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 425,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 451,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 458,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RemoveShip"
+    },
+    {
+      "offset": 467,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddCashVector"
+    },
+    {
+      "offset": 480,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddCombatVector"
+    },
+    {
+      "offset": 490,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LegalStatus"
+    },
+    {
+      "offset": 495,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LegalStatus"
+    },
+    {
+      "offset": 516,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileHoming"
+    },
+    {
+      "offset": 523,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Tactics"
+    },
+    {
+      "offset": 526,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 529,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Orthogonalise"
+    },
+    {
+      "offset": 539,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 542,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 545,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 550,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Collide"
+    },
+    {
+      "offset": 553,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawShip"
+    },
+    {
+      "offset": 584,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 588,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 591,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 596,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 602,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 606,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 610,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 619,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 625,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 628,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 631,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 651,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Multiply8"
+    },
+    {
+      "offset": 701,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Divide16"
+    },
+    {
+      "offset": 739,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 753,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 773,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8000"
+    },
+    {
+      "offset": 776,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 780,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 795,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Divide16"
+    },
+    {
+      "offset": 835,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 838,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 841,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 850,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Multiply8"
+    },
+    {
+      "offset": 871,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 894,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RemoveShip"
+    },
+    {
+      "offset": 909,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RollRate"
+    },
+    {
+      "offset": 912,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 922,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 925,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 928,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 962,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 994,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 999,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1002,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1005,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1058,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1061,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1064,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1079,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1091,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1168,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1184,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1190,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1202,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1208,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1218,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1224,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1238,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1257,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Multiply8High"
+    },
+    {
+      "offset": 1292,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1305,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1311,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1324,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1330,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1340,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1346,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1357,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1368,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PitchRate"
+    },
+    {
+      "offset": 1380,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1383,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RollRate"
+    },
+    {
+      "offset": 1388,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1396,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1399,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RollRate"
+    },
+    {
+      "offset": 1402,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1410,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1413,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PitchRate"
+    },
+    {
+      "offset": 1423,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1426,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpeedRate"
+    },
+    {
+      "offset": 1456,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7FFF"
+    },
+    {
+      "offset": 1472,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8000"
+    },
+    {
+      "offset": 1517,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Multiply8"
+    },
+    {
+      "offset": 1524,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Multiply8"
+    },
+    {
+      "offset": 1537,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Multiply8High"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "EscapePod",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Q with an escape pod, not in witch space (WitchSpace): the pod is launched and the cargo, the pod and the legal status lost"
+    },
+    {
+      "offset": 100,
+      "name": "UpdateShipsVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The ship vectors: UpdateShips, MovePosition, SquareRoot, Divide16, DrawLine, Laser"
+    },
+    {
+      "offset": 103,
+      "name": "MovePositionVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 106,
+      "name": "SquareRootVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 109,
+      "name": "Divide16Vector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 112,
+      "name": "DrawLineVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 115,
+      "name": "LaserVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 128,
+      "name": "ShipActionVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ShipAction: A = an action (low nibble) and its argument (high nibble)"
+    },
+    {
+      "offset": 131,
+      "name": "ResetShipsVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 137,
+      "name": "HalveSignedVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Vectors (known from the code only: nothing calls them)"
+    },
+    {
+      "offset": 140,
+      "name": "UpdateShipVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 143,
+      "name": "TitleShipVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 147,
+      "name": "DrawTitleShipVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The title's turning ship (TurnTitleShip $A28D)"
+    },
+    {
+      "offset": 153,
+      "name": "ShipsAndLaser",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "UpdateShips, then the gunsight and the laser (Laser $B7B4)"
+    },
+    {
+      "offset": 159,
+      "name": "UpdateShips",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Every slot once a frame: spawn, count, tactics, move, tidy, collide, draw, explode"
+    },
+    {
+      "offset": 284,
+      "name": "UpdateSlot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One slot: the flags, the bomb, the explosion's states, then tactics, moving, tidying, collisions and drawing"
+    },
+    {
+      "offset": 576,
+      "name": "UpdateSlotNext",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The next slot; after the last the bomb is off and the station's anger ends when no ship is about"
+    },
+    {
+      "offset": 599,
+      "name": "Normalise",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Make a position vector (IX) a unit one: its length (SquareRoot of the sum of squares) and each part divided by it"
+    },
+    {
+      "offset": 636,
+      "name": "SquareComponent",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The square of one 16-bit part (sign bit off) through the squares table: HL low, IX high, IX += 2"
+    },
+    {
+      "offset": 691,
+      "name": "DivideComponent",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One part divided by the length (DE), halved, its sign put back"
+    },
+    {
+      "offset": 725,
+      "name": "SquareRoot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the square root of HL, scaled up or down to keep 12 bits of precision"
+    },
+    {
+      "offset": 764,
+      "name": "SquareRootCore",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Two Newton steps from $8000: r = (r + n / r) / 2"
+    },
+    {
+      "offset": 783,
+      "name": "SquareRootStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 793,
+      "name": "SquareRootAdd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 805,
+      "name": "TidyAxis",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Bring an axis back to unit length: each part times 1 - (x² + y² + z² - 1) / 2 from the high bytes"
+    },
+    {
+      "offset": 844,
+      "name": "TidyPart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One part times the correction (B), keeping its sign"
+    },
+    {
+      "offset": 870,
+      "name": "UpdateShip",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Move one ship by the player, remove it when too far, turn it by its own counters and move it along its nose"
+    },
+    {
+      "offset": 993,
+      "name": "MoveShip",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The ship's own speed along its nose axis (three parts), then its axes turned by its own rates"
+    },
+    {
+      "offset": 1071,
+      "name": "MoveAlongAxis",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One position part plus speed x the axis part"
+    },
+    {
+      "offset": 1114,
+      "name": "MultiplySpeed",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DE = speed (D) x the axis part's high byte (C), sign in D bit 7"
+    },
+    {
+      "offset": 1148,
+      "name": "AddSigned",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL (a sign and magnitude part, the sign in B) plus DE (signed): the result's sign in B"
+    },
+    {
+      "offset": 1167,
+      "name": "TurnAxis",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Turn one axis by the player's roll and pitch: the four small-angle rotations y-z, x-y, y-x, z-y"
+    },
+    {
+      "offset": 1249,
+      "name": "RotatePart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = D + B x C / 256, in sign and magnitude, clamped at $FF"
+    },
+    {
+      "offset": 1291,
+      "name": "TurnOwn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Turn the ship's axes by its own roll and pitch (the nose and the side about the roof)"
+    },
+    {
+      "offset": 1367,
+      "name": "MovePosition",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Rotate a position about the origin by the player's roll and pitch, then move it along z by the player's speed"
+    },
+    {
+      "offset": 1486,
+      "name": "CombineParts",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "part[HL] += part[DE] x rate (C), the 24-bit parts in sign and magnitude"
+    },
+    {
+      "offset": 1637,
+      "name": "RateBits",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The pitch rate's bits shuffled into C for CombineParts"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 13,
+      "name": "EscapePodKey",
+      "comment": ""
+    },
+    {
+      "offset": 52,
+      "name": "EscapePodCargo",
+      "comment": ""
+    },
+    {
+      "offset": 76,
+      "name": "EscapePodHold",
+      "comment": ""
+    },
+    {
+      "offset": 95,
+      "name": "EscapePodSpare",
+      "comment": ""
+    },
+    {
+      "offset": 118,
+      "name": "ShipVarSpare",
+      "comment": ""
+    },
+    {
+      "offset": 119,
+      "name": "JumpEncounter",
+      "comment": "Counts down every pass (UpdateShips); at 0 (every 256 passes) a new ship may come (SpawnShip)"
+    },
+    {
+      "offset": 120,
+      "name": "ShipsAbout",
+      "comment": "Non-zero while a ship that is not passive is about (refuses the in-system jump)"
+    },
+    {
+      "offset": 121,
+      "name": "BombKill",
+      "comment": "Set by the energy bomb: UpdateShips destroys every ship but the station and Thargoids' motherships"
+    },
+    {
+      "offset": 122,
+      "name": "ShipsPresent",
+      "comment": "Non-zero while any slot is in use (the scanner is drawn)"
+    },
+    {
+      "offset": 123,
+      "name": "SightTarget",
+      "comment": "The slot in the gunsight (the missile's lock)"
+    },
+    {
+      "offset": 124,
+      "name": "ShipVarSpare2",
+      "comment": ""
+    },
+    {
+      "offset": 125,
+      "name": "AllHostile",
+      "comment": "Set when a protected ship turns hostile: every ship turns hostile while it (or the player's missile, slot 7) is about"
+    },
+    {
+      "offset": 126,
+      "name": "Docked",
+      "comment": "Non-zero while docked"
+    },
+    {
+      "offset": 127,
+      "name": "ECMActive",
+      "comment": "Non-zero while an ECM is on (the E indicator)"
+    },
+    {
+      "offset": 134,
+      "name": "EnergyDrain",
+      "comment": "The energy taken from the banks this frame"
+    },
+    {
+      "offset": 135,
+      "name": "FrontHits",
+      "comment": "The hits on the front shield this frame"
+    },
+    {
+      "offset": 136,
+      "name": "AftHits",
+      "comment": "The hits on the aft shield this frame"
+    },
+    {
+      "offset": 146,
+      "name": "NonStationPresent",
+      "comment": "Non-zero while a ship other than the station is about (the condition yellow)"
+    },
+    {
+      "offset": 150,
+      "name": "MissionShip",
+      "comment": "The cloak ship (an Asp, role bit 6, MissionFlags bit 1): 0 none, 1 about and cloaked (DrawShip draws only its laser), 2 hurt below $34 and seen, 3 destroyed with its canister out (scooped: the cloaking device)"
+    },
+    {
+      "offset": 151,
+      "name": "ActiveShips",
+      "comment": "The ships in slots 1-6 with tactics on"
+    },
+    {
+      "offset": 152,
+      "name": "ShipLoopCount",
+      "comment": "UpdateShips's slot counter (8 down to 1)"
+    },
+    {
+      "offset": 171,
+      "name": "UpdateShipsLines",
+      "comment": ""
+    },
+    {
+      "offset": 181,
+      "name": "UpdateShipsPatch",
+      "comment": ""
+    },
+    {
+      "offset": 225,
+      "name": "UpdateShipsCount",
+      "comment": ""
+    },
+    {
+      "offset": 257,
+      "name": "UpdateShipsCountLoop",
+      "comment": ""
+    },
+    {
+      "offset": 272,
+      "name": "UpdateShipsCountNext",
+      "comment": ""
+    },
+    {
+      "offset": 308,
+      "name": "UpdateSlotJump",
+      "comment": ""
+    },
+    {
+      "offset": 323,
+      "name": "UpdateSlotBomb",
+      "comment": ""
+    },
+    {
+      "offset": 346,
+      "name": "UpdateSlotAngry",
+      "comment": ""
+    },
+    {
+      "offset": 364,
+      "name": "UpdateSlotHostile",
+      "comment": ""
+    },
+    {
+      "offset": 376,
+      "name": "UpdateSlotMakeHostile",
+      "comment": ""
+    },
+    {
+      "offset": 380,
+      "name": "UpdateSlotBlueprint",
+      "comment": ""
+    },
+    {
+      "offset": 401,
+      "name": "UpdateSlotExplode",
+      "comment": ""
+    },
+    {
+      "offset": 442,
+      "name": "UpdateSlotMission",
+      "comment": ""
+    },
+    {
+      "offset": 449,
+      "name": "UpdateSlotMissionDone",
+      "comment": ""
+    },
+    {
+      "offset": 453,
+      "name": "UpdateSlotFree",
+      "comment": ""
+    },
+    {
+      "offset": 499,
+      "name": "UpdateSlotAlive",
+      "comment": "tactics every fourth frame per slot (missiles every frame), then the move"
+    },
+    {
+      "offset": 520,
+      "name": "UpdateSlotTactics",
+      "comment": ""
+    },
+    {
+      "offset": 525,
+      "name": "UpdateSlotMove",
+      "comment": ""
+    },
+    {
+      "offset": 549,
+      "name": "UpdateSlotDraw",
+      "comment": ""
+    },
+    {
+      "offset": 683,
+      "name": "SquareComponentDone",
+      "comment": ""
+    },
+    {
+      "offset": 714,
+      "name": "DivideComponentStore",
+      "comment": ""
+    },
+    {
+      "offset": 735,
+      "name": "SquareRootLoop",
+      "comment": ""
+    },
+    {
+      "offset": 750,
+      "name": "SquareRootSmall",
+      "comment": ""
+    },
+    {
+      "offset": 757,
+      "name": "SquareRootShift",
+      "comment": ""
+    },
+    {
+      "offset": 868,
+      "name": "TurnRates",
+      "comment": "The roll (low) and pitch (high) of the ship being turned"
+    },
+    {
+      "offset": 884,
+      "name": "UpdateShipFar",
+      "comment": ""
+    },
+    {
+      "offset": 889,
+      "name": "UpdateShipRemove",
+      "comment": ""
+    },
+    {
+      "offset": 896,
+      "name": "UpdateShipTurn",
+      "comment": ""
+    },
+    {
+      "offset": 940,
+      "name": "UpdateShipRoll",
+      "comment": ""
+    },
+    {
+      "offset": 951,
+      "name": "UpdateShipRollRate",
+      "comment": ""
+    },
+    {
+      "offset": 961,
+      "name": "UpdateShipPitch",
+      "comment": ""
+    },
+    {
+      "offset": 983,
+      "name": "UpdateShipPitchRate",
+      "comment": ""
+    },
+    {
+      "offset": 1026,
+      "name": "MoveShipIfZero",
+      "comment": ""
+    },
+    {
+      "offset": 1039,
+      "name": "MoveShipIfZero2",
+      "comment": ""
+    },
+    {
+      "offset": 1043,
+      "name": "MoveShipJoin",
+      "comment": ""
+    },
+    {
+      "offset": 1046,
+      "name": "MoveShipIfZero3",
+      "comment": ""
+    },
+    {
+      "offset": 1127,
+      "name": "MultiplySpeedLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1136,
+      "name": "MultiplySpeedNext",
+      "comment": ""
+    },
+    {
+      "offset": 1157,
+      "name": "AddSignedSub",
+      "comment": ""
+    },
+    {
+      "offset": 1273,
+      "name": "RotatePartAdd",
+      "comment": ""
+    },
+    {
+      "offset": 1280,
+      "name": "RotatePartSub",
+      "comment": ""
+    },
+    {
+      "offset": 1287,
+      "name": "RotatePartDone",
+      "comment": ""
+    },
+    {
+      "offset": 1444,
+      "name": "MovePositionAhead",
+      "comment": ""
+    },
+    {
+      "offset": 1460,
+      "name": "MovePositionBehind",
+      "comment": ""
+    },
+    {
+      "offset": 1474,
+      "name": "MovePositionClamp",
+      "comment": ""
+    },
+    {
+      "offset": 1479,
+      "name": "MovePositionStore",
+      "comment": ""
+    },
+    {
+      "offset": 1485,
+      "name": "MovePositionReturn",
+      "comment": ""
+    },
+    {
+      "offset": 1544,
+      "name": "CombinePartsIfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 1590,
+      "name": "CombinePartsIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 1597,
+      "name": "CombinePartsIfNotBelow2",
+      "comment": ""
+    },
+    {
+      "offset": 1616,
+      "name": "CombinePartsIfNotBelow3",
+      "comment": ""
+    },
+    {
+      "offset": 1623,
+      "name": "CombinePartsJoin",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$9C1C",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/shipmotion.asm",
+    "label": "EscapePod"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

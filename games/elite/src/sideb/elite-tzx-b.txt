@@ -1,0 +1,44 @@
+# Side B of the Firebird release (orig/Elite.tzx.zip, "Elite - 48k - Side B.tzx"), block by block: tools/mktape.py
+# writes it from this list and the files the build makes; tools/build.sh compares the result byte for byte.
+# docs/03-build-and-load.md 3.1-3.7.
+#
+#   version MAJOR MINOR                          the TZX header
+#   text TEXT                                    a $30 text block
+#   header PAUSE program NAME LINE VARS FILE     a $10 ROM header for a program (length = FILE's length)
+#   data PAUSE FILE [LO HI]                      a $10 block: flag $FF, FILE (or its bytes LO-HI, hex addresses of
+#                                                game.bin, which starts at $5B00), the XOR checksum
+#   group NAME / group-end                       $21 / $22
+#   turbo PILOT SYNC1 SYNC2 ZERO ONE PULSES LAST PAUSE FILE...
+#                                                a $11 block: flag $FF, the files one after another, the checksum,
+#                                                every byte bit-reversed (the Softlock loader reads bit 0 first)
+#   chunk ZERO ONE LAST ADDRESS SOURCE           two $14 blocks with no pause: the 4-byte header (length, ADDRESS)
+#                                                and the data with its check byte (the XOR of the chunk is 0), all
+#                                                bit-reversed; SOURCE is a file, "zeros:N", "rom:LO:N", "tape:LO:HI"
+#                                                (the plain memory tools/mktape.py builds, encrypted where the
+#                                                decryptor works) or "filler:N:OFFSET:FILE" (N zeros, FILE at OFFSET)
+#   pure ZERO ONE LAST PAUSE HEX                 a $14 block of these bytes, bit-reversed
+version 1 0
+text With Adder ship
+text Created with Ramsoft MakeTZX
+header 973 program "E L I T E" 0 200 basic-plain.bin
+data 3978 basic-plain.bin
+group Softlock Group 
+turbo 2165 714 714 673 1346 8011 8 0 res/screens/loading.scr reader-page.bin
+chunk 673 1346 8 $DC00 zeros:6232
+chunk 673 1346 8 $EE48 zeros:2000
+chunk 673 1346 8 $FD84 zeros:400
+chunk 673 1346 8 $5B00 reader-page.bin:100
+chunk 673 1346 8 $FFAF rom:0000:48
+chunk 673 1346 8 $5B1C patch-up.bin
+chunk 673 1346 8 $9B00 tape:9C00:DC00
+chunk 673 1346 8 $5A1C patch-key.bin
+chunk 673 1346 8 $5B00 reader-page.bin
+chunk 673 1346 8 $F618 zeros:800
+chunk 673 1346 8 $FA00 rom:0000:1000
+chunk 673 1346 8 $5C00 tape:5C00:9C00
+chunk 673 1346 8 $5B1C patch-down.bin
+chunk 673 1346 8 $5C00 decrypt.bin
+pure 673 1346 8 5378 00
+group-end
+data 353 game.bin D0BA FFA8
+data 11610 game.bin 5B00 6048

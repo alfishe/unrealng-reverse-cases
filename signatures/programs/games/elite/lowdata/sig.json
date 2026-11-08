@@ -1,0 +1,414 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/lowdata",
+  "kind": "data",
+  "role": "game-module",
+  "name": "Elite: lowdata",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "lowdata"
+  ],
+  "summary": "The low data: the scanner and dashboard save areas, the font, the ship slots and the ship blueprints.",
+  "bytes": {
+    "file": "data.bin",
+    "length": 5362,
+    "sha1": "ce5c95a73c2356f1b87dc9ff0ed5fe00a0646f80",
+    "masked_sha1": "ce5c95a73c2356f1b87dc9ff0ed5fe00a0646f80"
+  },
+  "origin": "$5B00",
+  "relocatable": false,
+  "mask": [],
+  "entries": [],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "ScannerSave",
+      "comment": "The scanner's background: 48 pixel lines of 13 bytes, $5049-$5055 on of the screen's bottom third"
+    },
+    {
+      "offset": 256,
+      "name": "",
+      "comment": "from here the bytes are TZX block 37's copy of the mastering machine's system variables (03-build-and-load.md 3.10)"
+    },
+    {
+      "offset": 624,
+      "name": "Font",
+      "comment": "The character set: 91 glyphs of 8 bytes for the codes $20-$7A, read by PrintChar $D499"
+    },
+    {
+      "offset": 1352,
+      "name": "ShipSlots",
+      "comment": "The 8 ship slots, 39 bytes each: the objects in space"
+    },
+    {
+      "offset": 1625,
+      "name": "Slot7",
+      "comment": "Slot 7, the last of the eight: the player's missile in flight, the turning ship on the title. The code names it directly (TurnTitleShip, ActionTitleShip, the hostility test of UpdateSlot); it is no work copy: the ship routines work on each slot in place"
+    },
+    {
+      "offset": 1664,
+      "name": "Blueprints",
+      "comment": "The blueprint table: 19 entries of $C3, the blueprint address and its class"
+    },
+    {
+      "offset": 1740,
+      "name": "ShipAsp",
+      "comment": "blueprint 13: the header (19 vertices, 28 edges, 12 faces)"
+    },
+    {
+      "offset": 1763,
+      "name": "ShipAspVertices",
+      "comment": "the 19 vertices of blueprint 13"
+    },
+    {
+      "offset": 1877,
+      "name": "ShipAspEdges",
+      "comment": "the 28 edges of blueprint 13"
+    },
+    {
+      "offset": 1989,
+      "name": "ShipAspFaces",
+      "comment": "the 12 faces of blueprint 13"
+    },
+    {
+      "offset": 2037,
+      "name": "ShipRockHermit",
+      "comment": "blueprint 7: the header (9 vertices, 21 edges, 14 faces)"
+    },
+    {
+      "offset": 2060,
+      "name": "ShipAsteroid",
+      "comment": "blueprint 6: the header (9 vertices, 21 edges, 14 faces)"
+    },
+    {
+      "offset": 2083,
+      "name": "ShipAsteroidVertices",
+      "comment": "the 9 vertices of blueprint 6"
+    },
+    {
+      "offset": 2137,
+      "name": "ShipAsteroidEdges",
+      "comment": "the 21 edges of blueprint 6"
+    },
+    {
+      "offset": 2221,
+      "name": "ShipAsteroidFaces",
+      "comment": "the 14 faces of blueprint 6"
+    },
+    {
+      "offset": 2277,
+      "name": "ShipCanister",
+      "comment": "blueprint 4: the header (10 vertices, 15 edges, 7 faces)"
+    },
+    {
+      "offset": 2300,
+      "name": "ShipCanisterVertices",
+      "comment": "the 10 vertices of blueprint 4"
+    },
+    {
+      "offset": 2360,
+      "name": "ShipCanisterEdges",
+      "comment": "the 15 edges of blueprint 4"
+    },
+    {
+      "offset": 2420,
+      "name": "ShipCanisterFaces",
+      "comment": "the 7 faces of blueprint 4"
+    },
+    {
+      "offset": 2448,
+      "name": "ShipCobraTrader",
+      "comment": "blueprint 9: the header (28 vertices, 38 edges, 13 faces)"
+    },
+    {
+      "offset": 2471,
+      "name": "ShipCobraPirate",
+      "comment": "blueprint 12: the header (28 vertices, 38 edges, 13 faces)"
+    },
+    {
+      "offset": 2494,
+      "name": "ShipCobraVertices",
+      "comment": "the 28 vertices of both Cobra blueprints"
+    },
+    {
+      "offset": 2662,
+      "name": "ShipCobraEdges",
+      "comment": "the 38 edges of both Cobra blueprints"
+    },
+    {
+      "offset": 2814,
+      "name": "ShipCobraFaces",
+      "comment": "the 13 faces of both Cobra blueprints"
+    },
+    {
+      "offset": 2866,
+      "name": "ShipEscapePod",
+      "comment": "blueprint 2: the header (4 vertices, 6 edges, 4 faces)"
+    },
+    {
+      "offset": 2889,
+      "name": "ShipEscapePodVertices",
+      "comment": "the 4 vertices of blueprint 2"
+    },
+    {
+      "offset": 2913,
+      "name": "ShipEscapePodEdges",
+      "comment": "the 6 edges of blueprint 2"
+    },
+    {
+      "offset": 2937,
+      "name": "ShipEscapePodFaces",
+      "comment": "the 4 faces of blueprint 2"
+    },
+    {
+      "offset": 2953,
+      "name": "ShipFerDeLance",
+      "comment": "blueprint 14: the header (19 vertices, 27 edges, 10 faces)"
+    },
+    {
+      "offset": 2976,
+      "name": "ShipFerDeLanceVertices",
+      "comment": "the 19 vertices of blueprint 14"
+    },
+    {
+      "offset": 3090,
+      "name": "ShipFerDeLanceEdges",
+      "comment": "the 27 edges of blueprint 14"
+    },
+    {
+      "offset": 3198,
+      "name": "ShipFerDeLanceFaces",
+      "comment": "the 10 faces of blueprint 14"
+    },
+    {
+      "offset": 3238,
+      "name": "ShipMissile",
+      "comment": "blueprint 1: the header (17 vertices, 24 edges, 9 faces)"
+    },
+    {
+      "offset": 3261,
+      "name": "ShipMissileVertices",
+      "comment": "the 17 vertices of blueprint 1"
+    },
+    {
+      "offset": 3363,
+      "name": "ShipMissileEdges",
+      "comment": "the 24 edges of blueprint 1"
+    },
+    {
+      "offset": 3459,
+      "name": "ShipMissileFaces",
+      "comment": "the 9 faces of blueprint 1"
+    },
+    {
+      "offset": 3495,
+      "name": "ShipPlate",
+      "comment": "blueprint 3: the header (4 vertices, 4 edges, 0 faces)"
+    },
+    {
+      "offset": 3518,
+      "name": "ShipPlateVertices",
+      "comment": "the 4 vertices of blueprint 3"
+    },
+    {
+      "offset": 3542,
+      "name": "ShipPlateEdges",
+      "comment": "the 4 edges of blueprint 3"
+    },
+    {
+      "offset": 3558,
+      "name": "ShipPythonTrader",
+      "comment": "blueprint 10: the header (11 vertices, 26 edges, 13 faces)"
+    },
+    {
+      "offset": 3581,
+      "name": "ShipPythonPirate",
+      "comment": "blueprint 11: the header (11 vertices, 26 edges, 13 faces)"
+    },
+    {
+      "offset": 3604,
+      "name": "ShipPythonVertices",
+      "comment": "the 11 vertices of both Python blueprints"
+    },
+    {
+      "offset": 3670,
+      "name": "ShipPythonEdges",
+      "comment": "the 26 edges of both Python blueprints"
+    },
+    {
+      "offset": 3774,
+      "name": "ShipPythonFaces",
+      "comment": "the 13 faces of both Python blueprints"
+    },
+    {
+      "offset": 3826,
+      "name": "ShipSidewinder",
+      "comment": "blueprint 16: the header (10 vertices, 15 edges, 7 faces)"
+    },
+    {
+      "offset": 3849,
+      "name": "ShipSidewinderVertices",
+      "comment": "the 10 vertices of blueprint 16"
+    },
+    {
+      "offset": 3909,
+      "name": "ShipSidewinderEdges",
+      "comment": "the 15 edges of blueprint 16"
+    },
+    {
+      "offset": 3969,
+      "name": "ShipSidewinderFaces",
+      "comment": "the 7 faces of blueprint 16"
+    },
+    {
+      "offset": 3997,
+      "name": "ShipCoriolis",
+      "comment": "blueprint 0: the header (16 vertices, 28 edges, 14 faces)"
+    },
+    {
+      "offset": 4020,
+      "name": "ShipCoriolisVertices",
+      "comment": "the 16 vertices of blueprint 0"
+    },
+    {
+      "offset": 4116,
+      "name": "ShipCoriolisEdges",
+      "comment": "the 28 edges of blueprint 0"
+    },
+    {
+      "offset": 4228,
+      "name": "ShipCoriolisFaces",
+      "comment": "the 14 faces of blueprint 0"
+    },
+    {
+      "offset": 4284,
+      "name": "ShipSplinter",
+      "comment": "blueprint 5: the header (4 vertices, 6 edges, 4 faces)"
+    },
+    {
+      "offset": 4307,
+      "name": "ShipSplinterVertices",
+      "comment": "the 4 vertices of blueprint 5"
+    },
+    {
+      "offset": 4331,
+      "name": "ShipSplinterEdges",
+      "comment": "the 6 edges of blueprint 5"
+    },
+    {
+      "offset": 4355,
+      "name": "ShipSplinterFaces",
+      "comment": "the 4 faces of blueprint 5"
+    },
+    {
+      "offset": 4371,
+      "name": "ShipThargoid",
+      "comment": "blueprint 15: the header (20 vertices, 26 edges, 10 faces)"
+    },
+    {
+      "offset": 4394,
+      "name": "ShipThargoidVertices",
+      "comment": "the 20 vertices of blueprint 15"
+    },
+    {
+      "offset": 4514,
+      "name": "ShipThargoidEdges",
+      "comment": "the 26 edges of blueprint 15"
+    },
+    {
+      "offset": 4618,
+      "name": "ShipThargoidFaces",
+      "comment": "the 10 faces of blueprint 15"
+    },
+    {
+      "offset": 4658,
+      "name": "ShipKrait",
+      "comment": "blueprint 17: the header (17 vertices, 21 edges, 6 faces)"
+    },
+    {
+      "offset": 4681,
+      "name": "ShipKraitVertices",
+      "comment": "the 17 vertices of blueprint 17"
+    },
+    {
+      "offset": 4783,
+      "name": "ShipKraitEdges",
+      "comment": "the 21 edges of blueprint 17"
+    },
+    {
+      "offset": 4867,
+      "name": "ShipKraitFaces",
+      "comment": "the 6 faces of blueprint 17"
+    },
+    {
+      "offset": 4891,
+      "name": "ShipViper",
+      "comment": "blueprint 8: the header (15 vertices, 20 edges, 7 faces)"
+    },
+    {
+      "offset": 4914,
+      "name": "ShipViperVertices",
+      "comment": "the 15 vertices of blueprint 8"
+    },
+    {
+      "offset": 5004,
+      "name": "ShipViperEdges",
+      "comment": "the 20 edges of blueprint 8"
+    },
+    {
+      "offset": 5084,
+      "name": "ShipViperFaces",
+      "comment": "the 7 faces of blueprint 8"
+    },
+    {
+      "offset": 5112,
+      "name": "ShipThargon",
+      "comment": "blueprint 18: the header (10 vertices, 15 edges, 7 faces)"
+    },
+    {
+      "offset": 5135,
+      "name": "ShipThargonVertices",
+      "comment": "the 10 vertices of blueprint 18"
+    },
+    {
+      "offset": 5195,
+      "name": "ShipThargonEdges",
+      "comment": "the 15 edges of blueprint 18"
+    },
+    {
+      "offset": 5255,
+      "name": "ShipThargonFaces",
+      "comment": "the 7 faces of blueprint 18"
+    },
+    {
+      "offset": 5283,
+      "name": "BlueprintsSpare",
+      "comment": "79 zeros after the last blueprint"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$5B00",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/lowdata.asm",
+    "label": "ScannerSave"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "id": "protection/softlock/seen-elite/stub",
+  "kind": "code",
+  "role": "protection-layer",
+  "name": "Softlock stub: the screen sum and the self-decrypt",
+  "authors": [],
+  "year": 1984,
+  "tags": [
+    "tape",
+    "protection",
+    "softlock",
+    "self-decrypt",
+    "screen-key"
+  ],
+  "summary": "The clear head of the code a Softlock BASIC enters through VARS: it sums the screen $4000-$5BFF as 3584 big-endian words and decrypts its own tail from +$3D with that key (XOR with the key byte, plus the previous decrypted byte, the key counting up), stopping on the first pair whose second byte is $48. The tail then copies LD-BYTES from the ROM and patches it into the turbo loader.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 61,
+    "sha1": "2719f2fb8c309450896a583e7483f6eb278ca3fe",
+    "masked_sha1": "2719f2fb8c309450896a583e7483f6eb278ca3fe"
+  },
+  "origin": "$5D93",
+  "relocatable": false,
+  "mask": [],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "Stub",
+      "in": "USR from BASIC (BC = the entry)",
+      "out": null,
+      "clobbers": null,
+      "summary": "sum the screen, decrypt the tail, fall into it"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "Stub",
+      "comment": ""
+    },
+    {
+      "offset": 18,
+      "name": "StubSum",
+      "comment": ""
+    },
+    {
+      "offset": 44,
+      "name": "StubDecrypt",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite: the Softlock stub (TZX block 3)",
+      "case": "games/elite",
+      "address": "$5D93",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "2b2b61c"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/tape/basic.asm",
+    "label": "Stub"
+  },
+  "docs": [
+    "games/elite/docs/03-build-and-load.md"
+  ],
+  "notes": "The BASIC of the tape carries \"SOFTLOCKtm 1984\"; Elite (Firebird 1985) is the only Softlock tape reversed here, so the key constants (the screen key, IY = $2E6D, the range) are this tape's."
+}

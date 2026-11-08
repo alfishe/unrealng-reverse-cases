@@ -1,0 +1,577 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/backbuffer",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: backbuffer",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "backbuffer"
+  ],
+  "summary": "The back buffer, the dashboard save and restore, the choice of view or screen.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 485,
+    "sha1": "8c186ad7b54ede5d7aef1b4413a171496c7bd055",
+    "masked_sha1": "99af4806ed5e2d308a6822e14ea9e852e5fc3368"
+  },
+  "origin": "$7FBE",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BackBuffer"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4800"
+    },
+    {
+      "offset": 13,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C800"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4100"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C100"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 28,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4900"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C900"
+    },
+    {
+      "offset": 34,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 118,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 139,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearKeyBytes"
+    },
+    {
+      "offset": 142,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreenVector"
+    },
+    {
+      "offset": 152,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5800"
+    },
+    {
+      "offset": 164,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5000"
+    },
+    {
+      "offset": 167,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BackBuffer"
+    },
+    {
+      "offset": 175,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A00"
+    },
+    {
+      "offset": 178,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScannerSave"
+    },
+    {
+      "offset": 186,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NovaTint"
+    },
+    {
+      "offset": 189,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CloakRestore"
+    },
+    {
+      "offset": 192,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScannerSaveOn"
+    },
+    {
+      "offset": 197,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 200,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScreenBuy"
+    },
+    {
+      "offset": 210,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ReadControlsFaster"
+    },
+    {
+      "offset": 213,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 228,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 252,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ReadControlsFaster"
+    },
+    {
+      "offset": 271,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 278,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelLoop"
+    },
+    {
+      "offset": 283,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyViews"
+    },
+    {
+      "offset": 307,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 317,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 322,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 327,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 332,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 338,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneLaunch"
+    },
+    {
+      "offset": 343,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 348,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyScreens"
+    },
+    {
+      "offset": 365,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 374,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 378,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyViews"
+    },
+    {
+      "offset": 381,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyScreens"
+    },
+    {
+      "offset": 386,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 389,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScreenBuy"
+    },
+    {
+      "offset": 395,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScreenBuy"
+    },
+    {
+      "offset": 403,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 406,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 410,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 413,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearKeyBytes"
+    },
+    {
+      "offset": 416,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 431,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelOn"
+    },
+    {
+      "offset": 438,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 450,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScannerRestore"
+    },
+    {
+      "offset": 454,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BackBuffer"
+    },
+    {
+      "offset": 457,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5000"
+    },
+    {
+      "offset": 465,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScannerSave"
+    },
+    {
+      "offset": 468,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A00"
+    },
+    {
+      "offset": 482,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "CopyBackBuffer",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Copy the back buffer $C000-$CFFF to the screen's top two thirds"
+    },
+    {
+      "offset": 37,
+      "name": "CopyThird",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Copy every other pixel line of one third: 8 character rows of 4 lines of 32 LDI"
+    },
+    {
+      "offset": 132,
+      "name": "DashboardRestore",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Put the dashboard back if a full-screen page wiped it (the top-left byte reads $FF)"
+    },
+    {
+      "offset": 194,
+      "name": "ClearView",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Clear the back buffer with the view's frame: lines 0 and 127 solid, a pixel at each side"
+    },
+    {
+      "offset": 277,
+      "name": "SelectView",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Change the view or the screen on the keys 1-4, ENTER, L, K, P, O, I"
+    },
+    {
+      "offset": 376,
+      "name": "SelectViewDone",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Clear the view keys"
+    },
+    {
+      "offset": 384,
+      "name": "CallScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Call the routine A of ScreenTable $D000 with SP at $D000 and the sound off after"
+    },
+    {
+      "offset": 415,
+      "name": "SetView",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ViewIndex = C unless it is already (a screen 7 and up is drawn again)"
+    },
+    {
+      "offset": 448,
+      "name": "DashboardSave",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Save the dashboard's pixels to DashSave $C000 and its attributes to $5B00"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 39,
+      "name": "CopyThirdRow",
+      "comment": ""
+    },
+    {
+      "offset": 44,
+      "name": "CopyThirdLine",
+      "comment": ""
+    },
+    {
+      "offset": 141,
+      "name": "DashboardRestoreNow",
+      "comment": ""
+    },
+    {
+      "offset": 155,
+      "name": "DashboardRestoreLoop",
+      "comment": ""
+    },
+    {
+      "offset": 218,
+      "name": "ClearViewBottom",
+      "comment": ""
+    },
+    {
+      "offset": 232,
+      "name": "ClearViewLine",
+      "comment": ""
+    },
+    {
+      "offset": 263,
+      "name": "ClearViewTop",
+      "comment": ""
+    },
+    {
+      "offset": 275,
+      "name": "ClearViewSP",
+      "comment": "ClearView's and CallScreen's saved stack pointer"
+    },
+    {
+      "offset": 306,
+      "name": "SelectViewDocked",
+      "comment": ""
+    },
+    {
+      "offset": 326,
+      "name": "SelectViewSet",
+      "comment": ""
+    },
+    {
+      "offset": 331,
+      "name": "SelectViewKey1",
+      "comment": ""
+    },
+    {
+      "offset": 342,
+      "name": "SelectViewFront",
+      "comment": ""
+    },
+    {
+      "offset": 347,
+      "name": "SelectViewScreens",
+      "comment": ""
+    },
+    {
+      "offset": 358,
+      "name": "SelectViewScreenBit",
+      "comment": ""
+    },
+    {
+      "offset": 364,
+      "name": "SelectViewScreen",
+      "comment": ""
+    },
+    {
+      "offset": 402,
+      "name": "CallScreenSetCallScreenCall1",
+      "comment": ""
+    },
+    {
+      "offset": 405,
+      "name": "CallScreenCall",
+      "comment": ""
+    },
+    {
+      "offset": 430,
+      "name": "SetViewNew",
+      "comment": ""
+    },
+    {
+      "offset": 437,
+      "name": "SetViewSetViewIndex",
+      "comment": ""
+    },
+    {
+      "offset": 476,
+      "name": "SetViewOverride",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$7FBE",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/backbuffer.asm",
+    "label": "CopyBackBuffer"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "schema": 1,
+  "id": "protection/softlock/seen-elite/decryptor",
+  "kind": "code",
+  "role": "protection-layer",
+  "name": "Softlock in-place decryptor keyed on the screen and the ROM",
+  "authors": [],
+  "year": 1984,
+  "tags": [
+    "tape",
+    "protection",
+    "softlock",
+    "decrypt",
+    "rom-key",
+    "screen-key",
+    "self-overwrite"
+  ],
+  "summary": "Loaded by the last chunk over the chunk reader at $5B00: decrypts $6049-$D0A8 top down in place, each byte minus the key byte from $5AFF downwards (the loading screen, then the ROM), XOR IYL, RLCA, XOR IYH; sets R to $FF; then fills its own page with RET by an LDIR that overwrites itself and returns into the kickoff.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 73,
+    "sha1": "57ff74e5d668ce859a96f292514350d0ce1680ec",
+    "masked_sha1": "99efe12ecf8b9cb5c506d61def3828a7ab9cfa23"
+  },
+  "origin": "$5B00",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0A8"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0A8"
+    },
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7060"
+    },
+    {
+      "offset": 14,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AFF"
+    },
+    {
+      "offset": 49,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D05F"
+    },
+    {
+      "offset": 52,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 58,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 62,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5C3A"
+    },
+    {
+      "offset": 66,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "Decrypt",
+      "in": "IY = $2E6D (set by a chunk)",
+      "out": null,
+      "clobbers": null,
+      "summary": "decrypt the game, wipe the page, RET to the kickoff"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "Decrypt",
+      "comment": ""
+    },
+    {
+      "offset": 20,
+      "name": "DecryptLoop",
+      "comment": ""
+    },
+    {
+      "offset": 44,
+      "name": "DecryptNext",
+      "comment": ""
+    },
+    {
+      "offset": 71,
+      "name": "DecryptWipe",
+      "comment": ""
+    }
+  ],
+  "uses": {
+    "ports": [
+      "$FE w"
+    ]
+  },
+  "found_in": [
+    {
+      "program": "Elite: the Softlock decryptor (the last chunk)",
+      "case": "games/elite",
+      "address": "$5B00",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "2b2b61c"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/tape/softlock.asm",
+    "label": "Decrypt"
+  },
+  "docs": [
+    "games/elite/docs/03-build-and-load.md"
+  ],
+  "notes": "The BASIC of the tape carries \"SOFTLOCKtm 1984\"; Elite (Firebird 1985) is the only Softlock tape reversed here, so the key constants (the screen key, IY = $2E6D, the range) are this tape's."
+}

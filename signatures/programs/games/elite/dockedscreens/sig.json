@@ -1,0 +1,2023 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/dockedscreens",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: dockedscreens",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "dockedscreens"
+  ],
+  "summary": "The docked screens of ScreenTable: the galactic and the short range charts, the data on a system, the market prices, the status and the inventory.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1435,
+    "sha1": "b0763a03b5f7a19cd7603aa198d7831841486dde",
+    "masked_sha1": "02c4ecfcae5662ecfc44f0228930a2ade4fa401f"
+  },
+  "origin": "$EB7C",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 6,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossTop"
+    },
+    {
+      "offset": 11,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossBottom"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossSize"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D099"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossX"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D097"
+    },
+    {
+      "offset": 32,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossY"
+    },
+    {
+      "offset": 35,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawCross"
+    },
+    {
+      "offset": 38,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 45,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartRadius"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawChartCircleVector"
+    },
+    {
+      "offset": 51,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4060"
+    },
+    {
+      "offset": 56,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 59,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5100"
+    },
+    {
+      "offset": 64,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 67,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawFrame"
+    },
+    {
+      "offset": 72,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossSize"
+    },
+    {
+      "offset": 75,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCross"
+    },
+    {
+      "offset": 80,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScreenHeading"
+    },
+    {
+      "offset": 85,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A60"
+    },
+    {
+      "offset": 90,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillBytes"
+    },
+    {
+      "offset": 93,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5060"
+    },
+    {
+      "offset": 96,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillRule"
+    },
+    {
+      "offset": 99,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GalaxySeeds"
+    },
+    {
+      "offset": 105,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 108,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextSystem"
+    },
+    {
+      "offset": 117,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 120,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 129,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 145,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 153,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEC1"
+    },
+    {
+      "offset": 163,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEC3"
+    },
+    {
+      "offset": 180,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 224,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 231,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 236,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScreenHeading"
+    },
+    {
+      "offset": 239,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillAttrRow"
+    },
+    {
+      "offset": 242,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D099"
+    },
+    {
+      "offset": 247,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 250,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 253,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D099"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 261,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 264,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D097"
+    },
+    {
+      "offset": 269,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 272,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 275,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D097"
+    },
+    {
+      "offset": 280,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 283,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 288,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossTop"
+    },
+    {
+      "offset": 293,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossBottom"
+    },
+    {
+      "offset": 298,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossSize"
+    },
+    {
+      "offset": 303,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossX"
+    },
+    {
+      "offset": 308,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossY"
+    },
+    {
+      "offset": 311,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawCross"
+    },
+    {
+      "offset": 314,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 317,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 320,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 323,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 326,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 329,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartRadius"
+    },
+    {
+      "offset": 332,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawChartCircleVector"
+    },
+    {
+      "offset": 337,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossSize"
+    },
+    {
+      "offset": 340,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCross"
+    },
+    {
+      "offset": 343,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 346,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GalaxySeeds"
+    },
+    {
+      "offset": 352,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEC3"
+    },
+    {
+      "offset": 363,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEC1"
+    },
+    {
+      "offset": 374,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 379,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextSystem"
+    },
+    {
+      "offset": 388,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D099"
+    },
+    {
+      "offset": 392,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEC3"
+    },
+    {
+      "offset": 406,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D097"
+    },
+    {
+      "offset": 410,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEC1"
+    },
+    {
+      "offset": 428,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 431,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 434,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartIcons"
+    },
+    {
+      "offset": 437,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEC5"
+    },
+    {
+      "offset": 450,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 503,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextSystem"
+    },
+    {
+      "offset": 509,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 513,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SystemName"
+    },
+    {
+      "offset": 519,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NameBuffer"
+    },
+    {
+      "offset": 529,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 540,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 557,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextRow"
+    },
+    {
+      "offset": 560,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 564,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextRow"
+    },
+    {
+      "offset": 573,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 577,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextRow"
+    },
+    {
+      "offset": 586,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextRow"
+    },
+    {
+      "offset": 589,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 592,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 603,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCapital"
+    },
+    {
+      "offset": 606,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NameBuffer"
+    },
+    {
+      "offset": 609,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodes"
+    },
+    {
+      "offset": 612,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FindNearest"
+    },
+    {
+      "offset": 615,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearPageText"
+    },
+    {
+      "offset": 618,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DataBands"
+    },
+    {
+      "offset": 621,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColourBands"
+    },
+    {
+      "offset": 626,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PageTitle"
+    },
+    {
+      "offset": 631,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetRow"
+    },
+    {
+      "offset": 634,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintDistance"
+    },
+    {
+      "offset": 637,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLine"
+    },
+    {
+      "offset": 640,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 645,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeColon"
+    },
+    {
+      "offset": 651,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Government"
+    },
+    {
+      "offset": 655,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 660,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeColon"
+    },
+    {
+      "offset": 665,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 668,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TechLevel"
+    },
+    {
+      "offset": 672,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintByte"
+    },
+    {
+      "offset": 675,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 680,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOtherColon"
+    },
+    {
+      "offset": 683,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Population"
+    },
+    {
+      "offset": 686,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintByteDot"
+    },
+    {
+      "offset": 691,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 694,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 698,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 701,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 707,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 712,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOtherColon"
+    },
+    {
+      "offset": 715,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Productivity"
+    },
+    {
+      "offset": 720,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 724,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber"
+    },
+    {
+      "offset": 727,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 731,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 737,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCapitals"
+    },
+    {
+      "offset": 740,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 745,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeColon"
+    },
+    {
+      "offset": 748,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 751,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 757,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketItem"
+    },
+    {
+      "offset": 760,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintUnit"
+    },
+    {
+      "offset": 763,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 766,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionState"
+    },
+    {
+      "offset": 772,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SelectedSeeds"
+    },
+    {
+      "offset": 775,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 782,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 785,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEBC"
+    },
+    {
+      "offset": 788,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextSeeds"
+    },
+    {
+      "offset": 791,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEBE"
+    },
+    {
+      "offset": 794,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DECE"
+    },
+    {
+      "offset": 799,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 802,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeLine"
+    },
+    {
+      "offset": 807,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLine"
+    },
+    {
+      "offset": 810,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLine"
+    },
+    {
+      "offset": 815,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOtherColon"
+    },
+    {
+      "offset": 818,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Economy"
+    },
+    {
+      "offset": 831,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 834,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Economy"
+    },
+    {
+      "offset": 845,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 851,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEBE"
+    },
+    {
+      "offset": 877,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeSpace"
+    },
+    {
+      "offset": 893,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeSpace"
+    },
+    {
+      "offset": 896,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SelectedSeeds"
+    },
+    {
+      "offset": 901,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEBC"
+    },
+    {
+      "offset": 915,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeSpace"
+    },
+    {
+      "offset": 918,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEBE"
+    },
+    {
+      "offset": 931,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 934,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEBE"
+    },
+    {
+      "offset": 942,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DEBC"
+    },
+    {
+      "offset": 949,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 953,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber"
+    },
+    {
+      "offset": 956,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D090"
+    },
+    {
+      "offset": 973,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FirearmsPrice"
+    },
+    {
+      "offset": 976,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearPageText"
+    },
+    {
+      "offset": 981,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PageTitle"
+    },
+    {
+      "offset": 987,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 992,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeLine"
+    },
+    {
+      "offset": 995,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketBands2"
+    },
+    {
+      "offset": 998,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColourBands"
+    },
+    {
+      "offset": 1001,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WitchSpace"
+    },
+    {
+      "offset": 1007,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketItem"
+    },
+    {
+      "offset": 1010,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PriceBase"
+    },
+    {
+      "offset": 1013,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PricePointer"
+    },
+    {
+      "offset": 1016,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D09D"
+    },
+    {
+      "offset": 1019,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StockPointer"
+    },
+    {
+      "offset": 1022,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketRow"
+    },
+    {
+      "offset": 1025,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketItem"
+    },
+    {
+      "offset": 1038,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 1041,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearPageText"
+    },
+    {
+      "offset": 1044,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ConditionLightVector"
+    },
+    {
+      "offset": 1047,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StatusBands"
+    },
+    {
+      "offset": 1050,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColourBands"
+    },
+    {
+      "offset": 1053,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColumnInline"
+    },
+    {
+      "offset": 1057,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1063,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetRow"
+    },
+    {
+      "offset": 1068,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1073,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1078,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetRow"
+    },
+    {
+      "offset": 1081,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1085,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1091,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOtherColon"
+    },
+    {
+      "offset": 1094,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1100,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LegalStatus"
+    },
+    {
+      "offset": 1113,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeLine"
+    },
+    {
+      "offset": 1118,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOtherColon"
+    },
+    {
+      "offset": 1121,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1125,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D062"
+    },
+    {
+      "offset": 1133,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1140,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1154,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1157,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1161,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1164,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Equipment"
+    },
+    {
+      "offset": 1167,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1171,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D088"
+    },
+    {
+      "offset": 1174,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1178,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionFlags"
+    },
+    {
+      "offset": 1187,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 1190,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1195,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D085"
+    },
+    {
+      "offset": 1198,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1202,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D08A"
+    },
+    {
+      "offset": 1205,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1209,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D08B"
+    },
+    {
+      "offset": 1212,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1216,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D08C"
+    },
+    {
+      "offset": 1219,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1223,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D08D"
+    },
+    {
+      "offset": 1226,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1232,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1235,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaserMounts"
+    },
+    {
+      "offset": 1241,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1247,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionFlags"
+    },
+    {
+      "offset": 1254,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1258,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawFrame"
+    },
+    {
+      "offset": 1268,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 1271,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLine"
+    },
+    {
+      "offset": 1276,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetColumn"
+    },
+    {
+      "offset": 1279,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1283,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1292,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1297,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeSpace"
+    },
+    {
+      "offset": 1312,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 1319,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColumnInline"
+    },
+    {
+      "offset": 1323,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1328,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeLine"
+    },
+    {
+      "offset": 1343,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 1346,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearPageText"
+    },
+    {
+      "offset": 1351,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PageTitle"
+    },
+    {
+      "offset": 1354,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InventoryBands"
+    },
+    {
+      "offset": 1357,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColourBands"
+    },
+    {
+      "offset": 1362,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetRow"
+    },
+    {
+      "offset": 1365,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1371,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeLine"
+    },
+    {
+      "offset": 1374,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Equipment"
+    },
+    {
+      "offset": 1380,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_58C1"
+    },
+    {
+      "offset": 1385,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillAttrs30"
+    },
+    {
+      "offset": 1388,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1392,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLine"
+    },
+    {
+      "offset": 1395,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionFlags"
+    },
+    {
+      "offset": 1404,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 1407,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLine"
+    },
+    {
+      "offset": 1411,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketItem"
+    },
+    {
+      "offset": 1414,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D06A"
+    },
+    {
+      "offset": 1417,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldPointer"
+    },
+    {
+      "offset": 1420,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldRow"
+    },
+    {
+      "offset": 1423,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLine"
+    },
+    {
+      "offset": 1426,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketItem"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "GalacticChart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Screen I: the 256 systems as dots, the current system's cross (16) and its fuel circle, the cursor's cross (10), GALACTIC CHART"
+    },
+    {
+      "offset": 114,
+      "name": "ClearBlock",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A x 32 bytes before HL cleared on each of the cell's eight pixel rows: SP at HL and PUSHes of zero, the interrupts off"
+    },
+    {
+      "offset": 152,
+      "name": "PlotSystem",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The dot of the system in SystemSeeds at (x, y / 2 + 24): PIXEL-ADD $22AA, its bit patched into the SET at $EC35"
+    },
+    {
+      "offset": 191,
+      "name": "ClampLow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = 0: the window's low edge when cx - 19 or cy - 34 went below 0"
+    },
+    {
+      "offset": 193,
+      "name": "ClampHigh",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = 255: its high edge when cx + 19 or cy + 34 passed 255"
+    },
+    {
+      "offset": 220,
+      "name": "ShortRangeChart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Screen O: SHORT RANGE CHART, the systems near the current one as icons with their names, the current system's cross (24), the fuel circle, the cursor's cross (16)"
+    },
+    {
+      "offset": 342,
+      "name": "EachSystemInWindow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The 256 systems: those inside the window (x and y each low <= v < high) handed to the routine at HL (the CALL at $ECF1 patched)"
+    },
+    {
+      "offset": 385,
+      "name": "SystemPixel",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the screen address of the system's icon (its top left at x 94 + 4 dx, row 93 + 2 dy from the current system), A its bit, B and C the coordinates"
+    },
+    {
+      "offset": 427,
+      "name": "DrawSystemIcon",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One of the four ChartIcons (s2 high AND $18: 8 bytes each) XORed in at the system's place, shifted A bits across two bytes, then the next system"
+    },
+    {
+      "offset": 508,
+      "name": "LabelSystem",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The system's name at the text cell right of its icon: its own row, else the row above (from row 3), else the row below (to row 22), else none"
+    },
+    {
+      "offset": 585,
+      "name": "PrintIfRowFree",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The name in NameBuffer at TextRow unless RowsUsed has it: the row marked and the name printed (carry), else no carry"
+    },
+    {
+      "offset": 611,
+      "name": "DataScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Screen P: DATA ON <system> for the system nearest the cursor: the distance, the economy, government, tech level, population and species, productivity, radius, and its description"
+    },
+    {
+      "offset": 801,
+      "name": "PrintCodeGap",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Standard code A, a new line and an empty line"
+    },
+    {
+      "offset": 806,
+      "name": "NewLineGap",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A new line and an empty line"
+    },
+    {
+      "offset": 812,
+      "name": "PrintEconomy",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ECONOMY: and RICH / AVERAGE / POOR / MAINLY (codes $AA-$AD) and INDUSTRIAL or AGRICULTURAL (economy / 4: codes $A8, $A9)"
+    },
+    {
+      "offset": 850,
+      "name": "PrintSpecies",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The system's people: HUMAN COLONIALS (s2 low below $80), else up to three adjectives and the kind, as the BBC's"
+    },
+    {
+      "offset": 933,
+      "name": "PrintRadius",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The radius in km: ((s2 high AND 15) + 11) x 256 + s1 high, five digits"
+    },
+    {
+      "offset": 955,
+      "name": "IsFirstSystem",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "No carry when the selected system is the galaxy's first (its six seeds the galaxy's)"
+    },
+    {
+      "offset": 972,
+      "name": "MarketPrices",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Screen K: <system> MARKET PRICES, the heading line (code $FF) and the 17 commodities (MarketRow); in witch space only the heading"
+    },
+    {
+      "offset": 1035,
+      "name": "StatusScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Screen L: COMMANDER <name>, the present and the hyperspace systems, the fuel, the cash, the legal status, the rating, the equipment and the lasers"
+    },
+    {
+      "offset": 1260,
+      "name": "PrintIfFitted",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A not 0: the code byte after the CALL on its own line at column 5; the return past the byte either way"
+    },
+    {
+      "offset": 1270,
+      "name": "EquipmentLine",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A new line, column 5"
+    },
+    {
+      "offset": 1278,
+      "name": "PrintLaser",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The laser of the next view (StatusLaserView one more): FRONT / REAR / LEFT / RIGHT and PULSE / BEAM / MILITARY / MINING LASER; nothing for none"
+    },
+    {
+      "offset": 1317,
+      "name": "StatusSystem",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Column 21, \":\" and standard control A (2 the current system, 3 the selected one), a new line"
+    },
+    {
+      "offset": 1340,
+      "name": "InventoryScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Screen ENTER: INVENTORY, the fuel, the cash, LARGE CARGO BAY (its line coloured), REFUGEES (MissionFlags bit 5), the hold (HoldRow for each commodity)"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 103,
+      "name": "GalacticChartLoop",
+      "comment": ""
+    },
+    {
+      "offset": 127,
+      "name": "ClearBlockRow",
+      "comment": ""
+    },
+    {
+      "offset": 131,
+      "name": "ClearBlockCells",
+      "comment": ""
+    },
+    {
+      "offset": 133,
+      "name": "ClearBlockPush",
+      "comment": ""
+    },
+    {
+      "offset": 149,
+      "name": "ClearBlockCount",
+      "comment": "ClearBlock's A (the rows of 32 bytes)"
+    },
+    {
+      "offset": 150,
+      "name": "ClearBlockStack",
+      "comment": "ClearBlock's saved SP"
+    },
+    {
+      "offset": 196,
+      "name": "RowsUsed",
+      "comment": "The short range chart's text rows that hold a name (255), one byte a row"
+    },
+    {
+      "offset": 226,
+      "name": "ShortRangeChartClear",
+      "comment": ""
+    },
+    {
+      "offset": 350,
+      "name": "EachSystemLoop",
+      "comment": ""
+    },
+    {
+      "offset": 373,
+      "name": "EachSystemCall",
+      "comment": "CALL patched to DrawSystemIcon or LabelSystem (they step to the next system themselves)"
+    },
+    {
+      "offset": 378,
+      "name": "EachSystemSkip",
+      "comment": ""
+    },
+    {
+      "offset": 381,
+      "name": "EachSystemNext",
+      "comment": ""
+    },
+    {
+      "offset": 446,
+      "name": "DrawSystemIconRows",
+      "comment": ""
+    },
+    {
+      "offset": 448,
+      "name": "DrawSystemIconRow",
+      "comment": ""
+    },
+    {
+      "offset": 460,
+      "name": "DrawSystemIconShift",
+      "comment": ""
+    },
+    {
+      "offset": 466,
+      "name": "DrawSystemIconXor",
+      "comment": ""
+    },
+    {
+      "offset": 497,
+      "name": "DrawSystemIconDown",
+      "comment": ""
+    },
+    {
+      "offset": 498,
+      "name": "DrawSystemIconNext",
+      "comment": ""
+    },
+    {
+      "offset": 505,
+      "name": "LabelSpare",
+      "comment": "Two bytes no code reads (known from the code only)"
+    },
+    {
+      "offset": 507,
+      "name": "LabelLength",
+      "comment": "LabelSystem writes 8 - the name's length here, and no code reads it (known from the code only)"
+    },
+    {
+      "offset": 552,
+      "name": "LabelSystemRow",
+      "comment": ""
+    },
+    {
+      "offset": 576,
+      "name": "LabelSystemBelow",
+      "comment": ""
+    },
+    {
+      "offset": 784,
+      "name": "DataScreenDescription",
+      "comment": ""
+    },
+    {
+      "offset": 809,
+      "name": "NewLineGapSecond",
+      "comment": ""
+    },
+    {
+      "offset": 828,
+      "name": "PrintEconomyKind",
+      "comment": ""
+    },
+    {
+      "offset": 833,
+      "name": "PrintEconomyType",
+      "comment": ""
+    },
+    {
+      "offset": 844,
+      "name": "PrintEconomyMainly",
+      "comment": ""
+    },
+    {
+      "offset": 862,
+      "name": "PrintSpeciesAlien",
+      "comment": ""
+    },
+    {
+      "offset": 879,
+      "name": "PrintSpeciesColour",
+      "comment": ""
+    },
+    {
+      "offset": 895,
+      "name": "PrintSpeciesLook",
+      "comment": ""
+    },
+    {
+      "offset": 917,
+      "name": "PrintSpeciesKind",
+      "comment": ""
+    },
+    {
+      "offset": 930,
+      "name": "PrintSpeciesEnd",
+      "comment": ""
+    },
+    {
+      "offset": 960,
+      "name": "IsFirstSystemLoop",
+      "comment": ""
+    },
+    {
+      "offset": 970,
+      "name": "IsFirstSystemNo",
+      "comment": ""
+    },
+    {
+      "offset": 1021,
+      "name": "MarketPricesLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1034,
+      "name": "StatusLaserView",
+      "comment": "The view the status page's laser line is at (0-3)"
+    },
+    {
+      "offset": 1110,
+      "name": "StatusOffender",
+      "comment": ""
+    },
+    {
+      "offset": 1111,
+      "name": "StatusLegal",
+      "comment": ""
+    },
+    {
+      "offset": 1139,
+      "name": "StatusRatingHigh",
+      "comment": ""
+    },
+    {
+      "offset": 1144,
+      "name": "StatusRatingLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1152,
+      "name": "StatusRating",
+      "comment": ""
+    },
+    {
+      "offset": 1194,
+      "name": "StatusEcm",
+      "comment": ""
+    },
+    {
+      "offset": 1201,
+      "name": "StatusBomb",
+      "comment": ""
+    },
+    {
+      "offset": 1239,
+      "name": "StatusLasersLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1257,
+      "name": "StatusFrame",
+      "comment": ""
+    },
+    {
+      "offset": 1308,
+      "name": "PrintLaserPulse",
+      "comment": ""
+    },
+    {
+      "offset": 1310,
+      "name": "PrintLaserName",
+      "comment": ""
+    },
+    {
+      "offset": 1330,
+      "name": "RatingScores",
+      "comment": "The rating's thresholds for the score's middle byte (8, 16, 32, 64, 128, end $FF)"
+    },
+    {
+      "offset": 1336,
+      "name": "RatingHigh",
+      "comment": "Those for its top byte (2, 10, 25, end $FF)"
+    },
+    {
+      "offset": 1391,
+      "name": "InventoryRefugees",
+      "comment": ""
+    },
+    {
+      "offset": 1409,
+      "name": "InventoryHold",
+      "comment": ""
+    },
+    {
+      "offset": 1419,
+      "name": "InventoryHoldLoop",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$EB7C",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/dockedscreens.asm",
+    "label": "GalacticChart"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

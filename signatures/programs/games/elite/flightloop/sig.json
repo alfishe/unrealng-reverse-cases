@@ -1,0 +1,1398 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/flightloop",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: flightloop",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "flightloop"
+  ],
+  "summary": "The flight loop, the sun and the planet on screen, the division.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1063,
+    "sha1": "75230195935f6b998e71267e5bd1ff450a03550e",
+    "masked_sha1": "0e335dd68695abca326f8e703a20e8c58992e612"
+  },
+  "origin": "$7471",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldRates"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CopyRates"
+    },
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SelectView"
+    },
+    {
+      "offset": 13,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PauseMenu"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DashboardRestore"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleNext"
+    },
+    {
+      "offset": 28,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpKeysVector"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCursorKeys"
+    },
+    {
+      "offset": 40,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeySteer"
+    },
+    {
+      "offset": 47,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CommanderMenuVector"
+    },
+    {
+      "offset": 50,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleIfNotZero"
+    },
+    {
+      "offset": 53,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScreenStatus"
+    },
+    {
+      "offset": 58,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WitchSpace"
+    },
+    {
+      "offset": 64,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DockKeys"
+    },
+    {
+      "offset": 67,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InSystemJump"
+    },
+    {
+      "offset": 70,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 73,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 76,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 83,
+      "length": 2,
+      "kind": "ext16",
+      "name": "UpdateShipsVector"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 92,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ConditionYellow"
+    },
+    {
+      "offset": 95,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Damage"
+    },
+    {
+      "offset": 98,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 101,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewTextsVector"
+    },
+    {
+      "offset": 107,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCursorKeys"
+    },
+    {
+      "offset": 116,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DashboardRestore"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearView"
+    },
+    {
+      "offset": 122,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WitchSpace"
+    },
+    {
+      "offset": 126,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 129,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Stardust"
+    },
+    {
+      "offset": 132,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewTextsVector"
+    },
+    {
+      "offset": 135,
+      "length": 2,
+      "kind": "ext16",
+      "name": "UpdateShipsVector"
+    },
+    {
+      "offset": 138,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelStart"
+    },
+    {
+      "offset": 141,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HitFlash"
+    },
+    {
+      "offset": 144,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CopyBackBuffer"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawScanner"
+    },
+    {
+      "offset": 150,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawBars"
+    },
+    {
+      "offset": 153,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CloakKey"
+    },
+    {
+      "offset": 156,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DashboardTick"
+    },
+    {
+      "offset": 159,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DashDistances"
+    },
+    {
+      "offset": 162,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TooClose"
+    },
+    {
+      "offset": 166,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 170,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpeedRate"
+    },
+    {
+      "offset": 173,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunLarge"
+    },
+    {
+      "offset": 177,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldRates"
+    },
+    {
+      "offset": 182,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillAttrsVector"
+    },
+    {
+      "offset": 185,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScannerRestore"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ResetShipsVector"
+    },
+    {
+      "offset": 191,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundGameOver"
+    },
+    {
+      "offset": 194,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundLaunch"
+    },
+    {
+      "offset": 197,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DashboardRestore"
+    },
+    {
+      "offset": 203,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearView"
+    },
+    {
+      "offset": 206,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Stardust"
+    },
+    {
+      "offset": 209,
+      "length": 2,
+      "kind": "ext16",
+      "name": "UpdateShipsVector"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPointer"
+    },
+    {
+      "offset": 223,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 228,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOtherVector"
+    },
+    {
+      "offset": 234,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CopyBackBuffer"
+    },
+    {
+      "offset": 240,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearView"
+    },
+    {
+      "offset": 243,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CopyBackBuffer"
+    },
+    {
+      "offset": 246,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearShips"
+    },
+    {
+      "offset": 255,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldRates"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TooClose"
+    },
+    {
+      "offset": 261,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleNext"
+    },
+    {
+      "offset": 277,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunLarge"
+    },
+    {
+      "offset": 280,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunPosition"
+    },
+    {
+      "offset": 283,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 291,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 295,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 302,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawCircleDI"
+    },
+    {
+      "offset": 305,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CircleRadius"
+    },
+    {
+      "offset": 314,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunLarge"
+    },
+    {
+      "offset": 317,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlanetPosition"
+    },
+    {
+      "offset": 320,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 328,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 333,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawCircle"
+    },
+    {
+      "offset": 336,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunGrows"
+    },
+    {
+      "offset": 341,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 347,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CircleRadius"
+    },
+    {
+      "offset": 358,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TooClose"
+    },
+    {
+      "offset": 362,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CircleRadius"
+    },
+    {
+      "offset": 365,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 374,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 378,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 381,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 386,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 391,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 394,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 398,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 401,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 405,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 421,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 425,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CircleX"
+    },
+    {
+      "offset": 428,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 432,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 435,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 439,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 455,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 459,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CircleY"
+    },
+    {
+      "offset": 465,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CircleQuadrant"
+    },
+    {
+      "offset": 468,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 474,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_A000"
+    },
+    {
+      "offset": 478,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 489,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_A000"
+    },
+    {
+      "offset": 493,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 499,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 502,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 509,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 530,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 536,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 542,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 546,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 552,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 557,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 562,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 565,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 569,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 572,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 576,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 592,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 596,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 599,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 604,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 609,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 612,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 616,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 619,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 623,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 639,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 643,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CircleX"
+    },
+    {
+      "offset": 646,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 650,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 653,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 657,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 673,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 677,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CircleY"
+    },
+    {
+      "offset": 683,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CircleQuadrant"
+    },
+    {
+      "offset": 686,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 692,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_A000"
+    },
+    {
+      "offset": 696,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 707,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_A000"
+    },
+    {
+      "offset": 711,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 717,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 720,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 727,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 743,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 749,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 755,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 761,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 765,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 768,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 773,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 776,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 780,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 783,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 787,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 800,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 803,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CircleRadius"
+    },
+    {
+      "offset": 813,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 823,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 826,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 840,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 855,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 868,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 885,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 890,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 996,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunPosition"
+    },
+    {
+      "offset": 999,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MovePositionVector"
+    },
+    {
+      "offset": 1003,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlanetPosition"
+    },
+    {
+      "offset": 1006,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MovePositionVector"
+    },
+    {
+      "offset": 1009,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StationLaunch"
+    },
+    {
+      "offset": 1014,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    },
+    {
+      "offset": 1025,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StationLaunch"
+    },
+    {
+      "offset": 1028,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MovePositionVector"
+    },
+    {
+      "offset": 1055,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StationLaunch"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "FlightLoop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The main loop: the controls, the view, the pause, the jump keys, the ships, the screen"
+    },
+    {
+      "offset": 275,
+      "name": "DrawSunPlanet",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Project and draw the sun and the planet for the view"
+    },
+    {
+      "offset": 335,
+      "name": "SunGrowth",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "With SunGrows $D0BA set the sun's circle grows by 2 a frame; past 255 TooClose ends the game"
+    },
+    {
+      "offset": 368,
+      "name": "ProjectCircle",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Project CircleVector for the view: the centre, the quadrant bits and the radius, A = 1 if seen"
+    },
+    {
+      "offset": 815,
+      "name": "Divide24",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "D = HL:C / DE:B as a fraction (24-bit numbers): the screen offset of a coordinate at a depth"
+    },
+    {
+      "offset": 970,
+      "name": "DivideFraction",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "D = A * 256 / B: an 8-bit fraction, B > A"
+    },
+    {
+      "offset": 994,
+      "name": "MoveSunPlanet",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Rotate the sun's and the planet's positions by this frame's roll, pitch and speed"
+    },
+    {
+      "offset": 1008,
+      "name": "StationRunIn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "After a launch: move slot 0 (the station) until it is behind the ship, then normal flight"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 9,
+      "name": "FlightLoopView",
+      "comment": ""
+    },
+    {
+      "offset": 27,
+      "name": "FlightLoopJumps",
+      "comment": ""
+    },
+    {
+      "offset": 57,
+      "name": "FlightLoopSpace",
+      "comment": ""
+    },
+    {
+      "offset": 75,
+      "name": "FlightLoopViews",
+      "comment": ""
+    },
+    {
+      "offset": 97,
+      "name": "FlightLoopScreen",
+      "comment": ""
+    },
+    {
+      "offset": 105,
+      "name": "FlightLoopScreenWait",
+      "comment": ""
+    },
+    {
+      "offset": 115,
+      "name": "FlightLoopDraw",
+      "comment": ""
+    },
+    {
+      "offset": 158,
+      "name": "FlightLoopEnd",
+      "comment": ""
+    },
+    {
+      "offset": 168,
+      "name": "GameOver",
+      "comment": ""
+    },
+    {
+      "offset": 201,
+      "name": "GameOverFrame",
+      "comment": ""
+    },
+    {
+      "offset": 250,
+      "name": "GameOverWait",
+      "comment": ""
+    },
+    {
+      "offset": 263,
+      "name": "TitleSP",
+      "comment": "The stack pointer the title was entered with (the game overs take it back: PirateStation)"
+    },
+    {
+      "offset": 265,
+      "name": "CircleVector",
+      "comment": "The position DrawSunPlanet projects: x, y, z, 3 bytes each"
+    },
+    {
+      "offset": 274,
+      "name": "LastSunRadius",
+      "comment": "The sun's radius the frame before (SunGrowth)"
+    },
+    {
+      "offset": 316,
+      "name": "DrawPlanet",
+      "comment": ""
+    },
+    {
+      "offset": 349,
+      "name": "SunGrowthStep",
+      "comment": ""
+    },
+    {
+      "offset": 355,
+      "name": "SunGrowthEnd",
+      "comment": ""
+    },
+    {
+      "offset": 361,
+      "name": "SunGrowthStore",
+      "comment": ""
+    },
+    {
+      "offset": 417,
+      "name": "ProjectCircleX",
+      "comment": ""
+    },
+    {
+      "offset": 451,
+      "name": "ProjectCircleY",
+      "comment": ""
+    },
+    {
+      "offset": 488,
+      "name": "ProjectCircleRadius",
+      "comment": ""
+    },
+    {
+      "offset": 515,
+      "name": "ProjectCircleScale",
+      "comment": ""
+    },
+    {
+      "offset": 526,
+      "name": "ProjectCircleDivide",
+      "comment": ""
+    },
+    {
+      "offset": 535,
+      "name": "ProjectCircleNear",
+      "comment": ""
+    },
+    {
+      "offset": 545,
+      "name": "ProjectCircleDone",
+      "comment": ""
+    },
+    {
+      "offset": 548,
+      "name": "ProjectCircleRear",
+      "comment": ""
+    },
+    {
+      "offset": 591,
+      "name": "ProjectCircleToProjectCircleX",
+      "comment": ""
+    },
+    {
+      "offset": 594,
+      "name": "ProjectCircleSide",
+      "comment": ""
+    },
+    {
+      "offset": 635,
+      "name": "ProjectCircleSideY",
+      "comment": ""
+    },
+    {
+      "offset": 669,
+      "name": "ProjectCircleSideZ",
+      "comment": ""
+    },
+    {
+      "offset": 706,
+      "name": "ProjectCircleSideRadius",
+      "comment": ""
+    },
+    {
+      "offset": 733,
+      "name": "ProjectCircleSideScale",
+      "comment": ""
+    },
+    {
+      "offset": 745,
+      "name": "ProjectCircleSideDivide",
+      "comment": ""
+    },
+    {
+      "offset": 754,
+      "name": "ProjectCircleSideNear",
+      "comment": ""
+    },
+    {
+      "offset": 764,
+      "name": "ProjectCircleSideDone",
+      "comment": ""
+    },
+    {
+      "offset": 767,
+      "name": "ProjectCircleRight",
+      "comment": ""
+    },
+    {
+      "offset": 799,
+      "name": "ProjectCircleRightX",
+      "comment": ""
+    },
+    {
+      "offset": 802,
+      "name": "ProjectCircleStore",
+      "comment": ""
+    },
+    {
+      "offset": 808,
+      "name": "DivideShort",
+      "comment": ""
+    },
+    {
+      "offset": 828,
+      "name": "Divide24Big",
+      "comment": ""
+    },
+    {
+      "offset": 835,
+      "name": "Divide24Shift",
+      "comment": ""
+    },
+    {
+      "offset": 851,
+      "name": "Divide24Align",
+      "comment": ""
+    },
+    {
+      "offset": 853,
+      "name": "Divide24AlignHigh",
+      "comment": ""
+    },
+    {
+      "offset": 865,
+      "name": "Divide24AlignTop",
+      "comment": ""
+    },
+    {
+      "offset": 876,
+      "name": "Divide24Equal",
+      "comment": ""
+    },
+    {
+      "offset": 887,
+      "name": "Divide24FirstSmall",
+      "comment": ""
+    },
+    {
+      "offset": 892,
+      "name": "Divide24Small",
+      "comment": ""
+    },
+    {
+      "offset": 898,
+      "name": "Divide24SmallCount",
+      "comment": ""
+    },
+    {
+      "offset": 903,
+      "name": "Divide24SmallLoop",
+      "comment": ""
+    },
+    {
+      "offset": 921,
+      "name": "Divide24Over",
+      "comment": ""
+    },
+    {
+      "offset": 943,
+      "name": "Divide24OverBit",
+      "comment": ""
+    },
+    {
+      "offset": 951,
+      "name": "Divide24OverDone",
+      "comment": ""
+    },
+    {
+      "offset": 953,
+      "name": "ProjectCircleNone",
+      "comment": ""
+    },
+    {
+      "offset": 955,
+      "name": "Divide24Top",
+      "comment": ""
+    },
+    {
+      "offset": 960,
+      "name": "Divide24SmallOver",
+      "comment": ""
+    },
+    {
+      "offset": 965,
+      "name": "Divide24Finish",
+      "comment": ""
+    },
+    {
+      "offset": 968,
+      "name": "Divide24Join",
+      "comment": ""
+    },
+    {
+      "offset": 972,
+      "name": "DivideFractionE",
+      "comment": ""
+    },
+    {
+      "offset": 974,
+      "name": "DivideFractionLoop",
+      "comment": ""
+    },
+    {
+      "offset": 987,
+      "name": "DivideFractionSub",
+      "comment": ""
+    },
+    {
+      "offset": 1027,
+      "name": "StationRunInMove",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$7471",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/flightloop.asm",
+    "label": "FlightLoop"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

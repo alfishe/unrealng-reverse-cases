@@ -1,0 +1,803 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/sound",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: sound",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "sound"
+  ],
+  "summary": "The beeper: the effects of the scenes, the background requests and the three generators.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 461,
+    "sha1": "cfa02fde9c4b993126d1aee8715c23b1d5984320",
+    "masked_sha1": "95fb170b5cb3c63ac32e76c5e82ea90eeb798572"
+  },
+  "origin": "$9509",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 2,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    },
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AllHostile"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Options"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 42,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Options"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 53,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Options"
+    },
+    {
+      "offset": 59,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 64,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Options"
+    },
+    {
+      "offset": 70,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 73,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 79,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 84,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 92,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 95,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 98,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 101,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 104,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 107,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 110,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 113,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Options"
+    },
+    {
+      "offset": 119,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 125,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 137,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 142,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 152,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 158,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 162,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 185,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 192,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 206,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4002"
+    },
+    {
+      "offset": 216,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 219,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 223,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 227,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 257,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 260,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 265,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 268,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 278,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 285,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 325,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 330,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 350,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 358,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 361,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 372,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 377,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4008"
+    },
+    {
+      "offset": 384,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 388,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 391,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 396,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 405,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 409,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5002"
+    },
+    {
+      "offset": 412,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4020"
+    },
+    {
+      "offset": 417,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C0F0"
+    },
+    {
+      "offset": 420,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C00C"
+    },
+    {
+      "offset": 426,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 431,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C010"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "ClearShips",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The station not hostile (+$21 bit 2) and slots 1-7 free (energy +$22 zero), ShipCount 0"
+    },
+    {
+      "offset": 30,
+      "name": "SoundLaunch",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The launch's and the dock's whistle: a pulse train played at once"
+    },
+    {
+      "offset": 41,
+      "name": "SoundArrive",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The arrival from the jump (TunnelDone): a pulse train played at once"
+    },
+    {
+      "offset": 52,
+      "name": "SoundJump",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The jump's start (TunnelStart): a pulse train played at once"
+    },
+    {
+      "offset": 63,
+      "name": "SoundGameOver",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Game Over's sound: SoundSecond's 160-level phase, played by SoundPlay with the interrupts on (1 run, the death of w1)"
+    },
+    {
+      "offset": 72,
+      "name": "SoundPlay",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Play the armed effect to its end (the scene sounds have the interrupts off), then clear the requests and EI"
+    },
+    {
+      "offset": 88,
+      "name": "SoundBomb",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "SoundTable, bit 0: the energy bomb, falling pulses"
+    },
+    {
+      "offset": 91,
+      "name": "SoundMissile",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "SoundTable, bit 1: the missile launch, pulses"
+    },
+    {
+      "offset": 94,
+      "name": "SoundExplode",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "SoundTable, bit 2: an explosion, two-phase pulses"
+    },
+    {
+      "offset": 97,
+      "name": "SoundShipHit",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "SoundTable, bit 3: a ship hit, noise"
+    },
+    {
+      "offset": 100,
+      "name": "SoundLaser",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "SoundTable, bit 4: the laser, a sweep"
+    },
+    {
+      "offset": 103,
+      "name": "SoundECM",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "SoundTable, bit 5: the ECM, a sweep"
+    },
+    {
+      "offset": 106,
+      "name": "SoundHit",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "SoundTable, bit 6: the player hit, noise"
+    },
+    {
+      "offset": 109,
+      "name": "SoundSpare",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "SoundTable, bit 7: as bit 6 (never requested)"
+    },
+    {
+      "offset": 112,
+      "name": "SoundTick",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One slice of the effect playing, or arm the effect of the lowest request bit"
+    },
+    {
+      "offset": 157,
+      "name": "SoundPulses",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The pulse generator: 64 beeper levels from SoundSource, each held D loops; the pitch steps per pass"
+    },
+    {
+      "offset": 198,
+      "name": "SoundSecond",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The second phase of a two-phase effect: 160 levels a pass, pitch $40, 2 passes"
+    },
+    {
+      "offset": 222,
+      "name": "SoundNoise",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The noise generator: 100 pulses whose length is a ROM byte / 4 (or / 2 + 8), D passes"
+    },
+    {
+      "offset": 254,
+      "name": "SoundPassEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One pass done: D (or E) one less, the state saved, the end at 0"
+    },
+    {
+      "offset": 263,
+      "name": "SoundEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The effect over: SoundMode 0 and its request bit cleared"
+    },
+    {
+      "offset": 283,
+      "name": "SoundSweep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The sweep generator: 15 square cycles a pass, each pass's half period 2 E + the patched step"
+    },
+    {
+      "offset": 312,
+      "name": "SoundArmLaser",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Arm the laser: a sweep of step $FD (falling), 2 passes"
+    },
+    {
+      "offset": 319,
+      "name": "SoundArmECM",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Arm the ECM: a sweep of step $D3, 8 passes (known from the code only)"
+    },
+    {
+      "offset": 324,
+      "name": "SoundArmSweep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The step into SoundSweep, SoundMode 1, the first pass at once"
+    },
+    {
+      "offset": 334,
+      "name": "SoundArmHit",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Arm the player hit: noise from the ROM at $1A1A, 1 pass"
+    },
+    {
+      "offset": 341,
+      "name": "SoundArmShipHit",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Arm a ship hit: noise from the ROM at $031A, 1 pass (known from the code only)"
+    },
+    {
+      "offset": 346,
+      "name": "SoundArmNoise",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The instruction patched in, SoundSource = A * 256 + $1A ($1A1A or $031A), SoundMode 2, the first pulses at once"
+    },
+    {
+      "offset": 363,
+      "name": "SoundArmMissile",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Arm the missile's launch: pulses stepping by $E4 a pass (known from the code only)"
+    },
+    {
+      "offset": 374,
+      "name": "SoundArmExplode",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The first phase of the explosion: 64 levels, pitch $40, 8 passes"
+    },
+    {
+      "offset": 379,
+      "name": "SoundArmPulse",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Patch the level count (B) and the pitch step (C) into SoundPulses and play a pass"
+    },
+    {
+      "offset": 393,
+      "name": "SoundArmTwoPhase",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Arm the explosion: SoundMode $83, the pitch step 2"
+    },
+    {
+      "offset": 402,
+      "name": "SoundArmLaunch",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Arm SoundLaunch: 80 levels, the step 2, pitch $40, $20 passes, the interrupts off"
+    },
+    {
+      "offset": 416,
+      "name": "SoundArmArrive",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Arm SoundArrive: 192 levels, the step $F0, pitch $C0, 12 passes"
+    },
+    {
+      "offset": 430,
+      "name": "SoundArmJump",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Arm SoundJump: 192 levels, the step $10, pitch $10, 10 passes"
+    },
+    {
+      "offset": 444,
+      "name": "ShiftBC4",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "BC shifted right by 4 (ShiftBC3 by 3, ShiftBC2 by 2, ShiftBC1 by 1): the debris's scale"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 17,
+      "name": "ClearShipsLoop",
+      "comment": ""
+    },
+    {
+      "offset": 25,
+      "name": "SoundMode",
+      "comment": "The generator playing: 0 none, 1 sweep, 2 noise, 3 pulses; bit 7 a second phase"
+    },
+    {
+      "offset": 26,
+      "name": "SoundPitch",
+      "comment": "E: the passes left, D: the pitch (the delay count)"
+    },
+    {
+      "offset": 28,
+      "name": "SoundSource",
+      "comment": "The pulse and noise generators read their levels from this address (the ROM)"
+    },
+    {
+      "offset": 83,
+      "name": "SoundPlayDone",
+      "comment": ""
+    },
+    {
+      "offset": 131,
+      "name": "SoundTickBit",
+      "comment": ""
+    },
+    {
+      "offset": 149,
+      "name": "SoundTickJump",
+      "comment": ""
+    },
+    {
+      "offset": 150,
+      "name": "SoundTickMode",
+      "comment": ""
+    },
+    {
+      "offset": 164,
+      "name": "SoundPulsesNow",
+      "comment": ""
+    },
+    {
+      "offset": 166,
+      "name": "SoundPulsesLoop",
+      "comment": ""
+    },
+    {
+      "offset": 172,
+      "name": "SoundPulsesDelay",
+      "comment": ""
+    },
+    {
+      "offset": 178,
+      "name": "SoundPulsesPass",
+      "comment": ""
+    },
+    {
+      "offset": 229,
+      "name": "SoundNoiseNow",
+      "comment": ""
+    },
+    {
+      "offset": 231,
+      "name": "SoundNoiseLoop",
+      "comment": ""
+    },
+    {
+      "offset": 243,
+      "name": "SoundNoiseHigh",
+      "comment": ""
+    },
+    {
+      "offset": 249,
+      "name": "SoundNoiseLow",
+      "comment": ""
+    },
+    {
+      "offset": 274,
+      "name": "SoundEndBit",
+      "comment": ""
+    },
+    {
+      "offset": 287,
+      "name": "SoundSweepNow",
+      "comment": ""
+    },
+    {
+      "offset": 294,
+      "name": "SoundSweepLoop",
+      "comment": ""
+    },
+    {
+      "offset": 299,
+      "name": "SoundSweepHigh",
+      "comment": ""
+    },
+    {
+      "offset": 305,
+      "name": "SoundSweepLow",
+      "comment": ""
+    },
+    {
+      "offset": 367,
+      "name": "SoundArmBomb",
+      "comment": "the energy bomb: pulses stepping by $FE"
+    },
+    {
+      "offset": 369,
+      "name": "SoundArmPulses8",
+      "comment": ""
+    },
+    {
+      "offset": 422,
+      "name": "SoundArmScene",
+      "comment": "SoundMode 3 with the interrupts off"
+    },
+    {
+      "offset": 438,
+      "name": "SoundBit",
+      "comment": "The request bit playing; five spare bytes"
+    },
+    {
+      "offset": 448,
+      "name": "ShiftBC3",
+      "comment": ""
+    },
+    {
+      "offset": 452,
+      "name": "ShiftBC2",
+      "comment": ""
+    },
+    {
+      "offset": 456,
+      "name": "ShiftBC1",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$9509",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/sound.asm",
+    "label": "ClearShips"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

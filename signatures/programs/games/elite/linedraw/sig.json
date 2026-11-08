@@ -1,0 +1,1010 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/linedraw",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: linedraw",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "linedraw"
+  ],
+  "summary": "Lines in the 3D view: clipping to the 256 x 128 window, the octant, and four patched Bresenham loops.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1175,
+    "sha1": "0436e745a2c92f3caa7adf0ac9680d51dd829168",
+    "masked_sha1": "481a7a0e59f40f40fd834b112de46407f7d80b4d"
+  },
+  "origin": "$B040",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 54,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LineSteps"
+    },
+    {
+      "offset": 69,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LineSteps"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LineSteps"
+    },
+    {
+      "offset": 101,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 136,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 139,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 146,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 149,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 193,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 198,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 205,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 210,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 221,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 226,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 232,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 235,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 248,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 253,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 260,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 265,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 276,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 281,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 287,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 290,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 295,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 300,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 306,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 309,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 314,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 319,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 325,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 328,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 349,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8040"
+    },
+    {
+      "offset": 352,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 356,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 362,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 366,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 387,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 390,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 396,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 402,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 405,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 409,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 437,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 444,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 504,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8040"
+    },
+    {
+      "offset": 507,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 511,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 517,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 521,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 532,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 576,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 582,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 615,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 618,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 638,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 644,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 677,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 680,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 692,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Multiply8"
+    },
+    {
+      "offset": 708,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DividePointLoop"
+    },
+    {
+      "offset": 804,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_8040"
+    },
+    {
+      "offset": 822,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 841,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 844,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 853,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 856,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 865,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 869,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1005,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1040,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1046,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1050,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1054,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1084,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1090,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1121,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1127,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1131,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1161,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1167,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1171,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 4,
+      "name": "DrawLine",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw a line between two points of the view (D E and H L, quadrants in C), clipped to the window"
+    },
+    {
+      "offset": 160,
+      "name": "LineSetup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Pick the loop by the octant and patch its direction bytes and the fraction, then jump into it"
+    },
+    {
+      "offset": 330,
+      "name": "ClipLine",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One or both ends outside: the crossing with the window's edge from the slope, then the visible part"
+    },
+    {
+      "offset": 688,
+      "name": "MultiplyRound",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "C = A x C / 256, rounded"
+    },
+    {
+      "offset": 702,
+      "name": "LineFraction",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "C = A x 256 / B (A below B): the slope"
+    },
+    {
+      "offset": 712,
+      "name": "LineAddress",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The start point's back-buffer address (HL'), its pixel (C') and the pixels to the next character row (B'); the page byte at $B348 is $C0"
+    },
+    {
+      "offset": 802,
+      "name": "LineSkip",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The pixels of the line before the window: the start moved in by the slope"
+    },
+    {
+      "offset": 871,
+      "name": "LineOctant",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The differences, the octant (B's bits 4-7) and the slope as a fraction (C)"
+    },
+    {
+      "offset": 1011,
+      "name": "LineUpXRow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The x-major loop going up: a pixel a step, a row up on the fraction's carry"
+    },
+    {
+      "offset": 1060,
+      "name": "LineUpY",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The y-major loop going up: a row a step, a pixel across on the carry"
+    },
+    {
+      "offset": 1093,
+      "name": "LineDownX",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The x-major loop going down"
+    },
+    {
+      "offset": 1137,
+      "name": "LineDownY",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The y-major loop going down"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "ClipSave",
+      "comment": "ClipLine's saved outcodes and slope"
+    },
+    {
+      "offset": 2,
+      "name": "ClipSlope",
+      "comment": ""
+    },
+    {
+      "offset": 26,
+      "name": "DrawLineEnd1Y",
+      "comment": ""
+    },
+    {
+      "offset": 33,
+      "name": "DrawLineEnd2",
+      "comment": ""
+    },
+    {
+      "offset": 46,
+      "name": "DrawLineEnd2Y",
+      "comment": ""
+    },
+    {
+      "offset": 53,
+      "name": "DrawLineCodes",
+      "comment": ""
+    },
+    {
+      "offset": 67,
+      "name": "DrawLineCode1",
+      "comment": ""
+    },
+    {
+      "offset": 82,
+      "name": "DrawLineBoth",
+      "comment": ""
+    },
+    {
+      "offset": 97,
+      "name": "DrawLineIfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 107,
+      "name": "DrawLineEnd1In",
+      "comment": ""
+    },
+    {
+      "offset": 123,
+      "name": "DrawLineFirstIn",
+      "comment": ""
+    },
+    {
+      "offset": 131,
+      "name": "DrawLineClipped",
+      "comment": ""
+    },
+    {
+      "offset": 141,
+      "name": "DrawLineInside",
+      "comment": ""
+    },
+    {
+      "offset": 167,
+      "name": "LineSetupLength",
+      "comment": ""
+    },
+    {
+      "offset": 202,
+      "name": "LineSetupUpRight",
+      "comment": ""
+    },
+    {
+      "offset": 214,
+      "name": "LineSetupUpSteep",
+      "comment": ""
+    },
+    {
+      "offset": 228,
+      "name": "LineSetupDownX",
+      "comment": ""
+    },
+    {
+      "offset": 237,
+      "name": "LineSetupDown",
+      "comment": ""
+    },
+    {
+      "offset": 257,
+      "name": "LineSetupDownRight",
+      "comment": ""
+    },
+    {
+      "offset": 269,
+      "name": "LineSetupDownSteep",
+      "comment": ""
+    },
+    {
+      "offset": 283,
+      "name": "LineSetupDownY",
+      "comment": ""
+    },
+    {
+      "offset": 292,
+      "name": "LineSetupUpX",
+      "comment": ""
+    },
+    {
+      "offset": 302,
+      "name": "LineSetupUpXGo",
+      "comment": ""
+    },
+    {
+      "offset": 311,
+      "name": "LineSetupUpY",
+      "comment": ""
+    },
+    {
+      "offset": 321,
+      "name": "LineSetupUpYGo",
+      "comment": ""
+    },
+    {
+      "offset": 376,
+      "name": "ClipLineIfZero",
+      "comment": ""
+    },
+    {
+      "offset": 384,
+      "name": "ClipLineIfZero2",
+      "comment": ""
+    },
+    {
+      "offset": 386,
+      "name": "ClipLineJoin",
+      "comment": ""
+    },
+    {
+      "offset": 392,
+      "name": "ClipLineOneY",
+      "comment": ""
+    },
+    {
+      "offset": 407,
+      "name": "ClipLineBoth",
+      "comment": ""
+    },
+    {
+      "offset": 446,
+      "name": "ClipLineEdge",
+      "comment": ""
+    },
+    {
+      "offset": 492,
+      "name": "ClipLineCorner",
+      "comment": ""
+    },
+    {
+      "offset": 498,
+      "name": "ClipLineSlope",
+      "comment": ""
+    },
+    {
+      "offset": 531,
+      "name": "ClipLineSide",
+      "comment": ""
+    },
+    {
+      "offset": 544,
+      "name": "ClipLineSideX",
+      "comment": ""
+    },
+    {
+      "offset": 548,
+      "name": "ClipLineSideTest",
+      "comment": ""
+    },
+    {
+      "offset": 552,
+      "name": "ClipLineMiss",
+      "comment": ""
+    },
+    {
+      "offset": 558,
+      "name": "ClipLineSideY",
+      "comment": ""
+    },
+    {
+      "offset": 562,
+      "name": "ClipLineNone",
+      "comment": ""
+    },
+    {
+      "offset": 564,
+      "name": "ClipLineAtY",
+      "comment": "the crossing with y's edge: x moved by the slope"
+    },
+    {
+      "offset": 580,
+      "name": "ClipLineAtYSteep",
+      "comment": ""
+    },
+    {
+      "offset": 584,
+      "name": "ClipLineAtYMove",
+      "comment": ""
+    },
+    {
+      "offset": 605,
+      "name": "ClipLineAtYClamp",
+      "comment": ""
+    },
+    {
+      "offset": 614,
+      "name": "ClipLineAtYDraw",
+      "comment": ""
+    },
+    {
+      "offset": 620,
+      "name": "ClipLineAtYAdd",
+      "comment": ""
+    },
+    {
+      "offset": 626,
+      "name": "ClipLineAtX",
+      "comment": "the crossing with x's edge: y moved by the slope"
+    },
+    {
+      "offset": 642,
+      "name": "ClipLineAtXSteep",
+      "comment": ""
+    },
+    {
+      "offset": 646,
+      "name": "ClipLineAtXMove",
+      "comment": ""
+    },
+    {
+      "offset": 667,
+      "name": "ClipLineAtXClamp",
+      "comment": ""
+    },
+    {
+      "offset": 676,
+      "name": "ClipLineAtXDraw",
+      "comment": ""
+    },
+    {
+      "offset": 682,
+      "name": "ClipLineAtXAdd",
+      "comment": ""
+    },
+    {
+      "offset": 727,
+      "name": "LineAddressLeft",
+      "comment": ""
+    },
+    {
+      "offset": 730,
+      "name": "LineAddressY",
+      "comment": ""
+    },
+    {
+      "offset": 740,
+      "name": "LineAddressUp",
+      "comment": ""
+    },
+    {
+      "offset": 743,
+      "name": "LineAddressNow",
+      "comment": ""
+    },
+    {
+      "offset": 753,
+      "name": "LineAddressBit",
+      "comment": ""
+    },
+    {
+      "offset": 796,
+      "name": "LineAddressRows",
+      "comment": ""
+    },
+    {
+      "offset": 800,
+      "name": "LineAddressDone",
+      "comment": ""
+    },
+    {
+      "offset": 833,
+      "name": "LineSkipX",
+      "comment": ""
+    },
+    {
+      "offset": 849,
+      "name": "LineSkipY",
+      "comment": ""
+    },
+    {
+      "offset": 859,
+      "name": "LineSkipFraction",
+      "comment": ""
+    },
+    {
+      "offset": 864,
+      "name": "LineSkipGo",
+      "comment": ""
+    },
+    {
+      "offset": 898,
+      "name": "LineOctantXAdd",
+      "comment": ""
+    },
+    {
+      "offset": 903,
+      "name": "LineOctantXSub",
+      "comment": ""
+    },
+    {
+      "offset": 914,
+      "name": "LineOctantXNeg",
+      "comment": ""
+    },
+    {
+      "offset": 922,
+      "name": "LineOctantXDone",
+      "comment": ""
+    },
+    {
+      "offset": 924,
+      "name": "LineOctantY",
+      "comment": ""
+    },
+    {
+      "offset": 938,
+      "name": "LineOctantYAdd",
+      "comment": ""
+    },
+    {
+      "offset": 943,
+      "name": "LineOctantYSub",
+      "comment": ""
+    },
+    {
+      "offset": 954,
+      "name": "LineOctantYNeg",
+      "comment": ""
+    },
+    {
+      "offset": 962,
+      "name": "LineOctantYDone",
+      "comment": ""
+    },
+    {
+      "offset": 964,
+      "name": "LineOctantMajor",
+      "comment": ""
+    },
+    {
+      "offset": 988,
+      "name": "LineOctantSteep",
+      "comment": ""
+    },
+    {
+      "offset": 998,
+      "name": "LineOctantShallow",
+      "comment": ""
+    },
+    {
+      "offset": 1002,
+      "name": "LineOctantSteepY",
+      "comment": ""
+    },
+    {
+      "offset": 1004,
+      "name": "LineOctantSlope",
+      "comment": ""
+    },
+    {
+      "offset": 1012,
+      "name": "LineUpX",
+      "comment": ""
+    },
+    {
+      "offset": 1027,
+      "name": "LineUpXNext",
+      "comment": ""
+    },
+    {
+      "offset": 1048,
+      "name": "LineUpXByte",
+      "comment": ""
+    },
+    {
+      "offset": 1052,
+      "name": "LineUpYByte",
+      "comment": ""
+    },
+    {
+      "offset": 1056,
+      "name": "LineUpYStep",
+      "comment": ""
+    },
+    {
+      "offset": 1092,
+      "name": "LineDownXRow",
+      "comment": ""
+    },
+    {
+      "offset": 1108,
+      "name": "LineDownXNext",
+      "comment": ""
+    },
+    {
+      "offset": 1129,
+      "name": "LineDownXByte",
+      "comment": ""
+    },
+    {
+      "offset": 1133,
+      "name": "LineDownYStep",
+      "comment": ""
+    },
+    {
+      "offset": 1169,
+      "name": "LineDownYByte",
+      "comment": ""
+    },
+    {
+      "offset": 1173,
+      "name": "LinesSpare",
+      "comment": ""
+    },
+    {
+      "offset": 1174,
+      "name": "LaserBeam",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$B040",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/linedraw.asm",
+    "label": "ClipSave"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

@@ -1,0 +1,990 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/tunnel",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: tunnel",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "tunnel"
+  ],
+  "summary": "The ring tunnel of the launch, the dock and the hyperspace jump; the launch and dock sequences.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 637,
+    "sha1": "e718d163a8902232d8d1db240dcb0311e15fbfd7",
+    "masked_sha1": "5e5fbf15fe23dc420fc37974e01c3a21a439c2e1"
+  },
+  "origin": "$928C",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewTextsVector"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelOn"
+    },
+    {
+      "offset": 11,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelLoop"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearShips"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WitchSpace"
+    },
+    {
+      "offset": 29,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipActionVector"
+    },
+    {
+      "offset": 40,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearView"
+    },
+    {
+      "offset": 43,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CopyBackBuffer"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 51,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundJump"
+    },
+    {
+      "offset": 54,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 57,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 62,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 67,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 72,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 75,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelLoop"
+    },
+    {
+      "offset": 83,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 90,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 95,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CircleQuadrant"
+    },
+    {
+      "offset": 101,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CircleY"
+    },
+    {
+      "offset": 104,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 107,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 110,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 120,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 128,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CircleRadius"
+    },
+    {
+      "offset": 132,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawCircleOutline"
+    },
+    {
+      "offset": 136,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 142,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CopyBackBuffer"
+    },
+    {
+      "offset": 150,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 156,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 161,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 164,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 167,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearView"
+    },
+    {
+      "offset": 172,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 176,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 183,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelLoop"
+    },
+    {
+      "offset": 186,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelOn"
+    },
+    {
+      "offset": 192,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 202,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearView"
+    },
+    {
+      "offset": 205,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CopyBackBuffer"
+    },
+    {
+      "offset": 208,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 212,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelLoop"
+    },
+    {
+      "offset": 218,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelLoop"
+    },
+    {
+      "offset": 223,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelOn"
+    },
+    {
+      "offset": 229,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 242,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7D69"
+    },
+    {
+      "offset": 245,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7D6E"
+    },
+    {
+      "offset": 250,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7E0E"
+    },
+    {
+      "offset": 255,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpeedRate"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StarSeed"
+    },
+    {
+      "offset": 261,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StarDots"
+    },
+    {
+      "offset": 267,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StarRespawnFront"
+    },
+    {
+      "offset": 275,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7D69"
+    },
+    {
+      "offset": 280,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7D6E"
+    },
+    {
+      "offset": 285,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7E0E"
+    },
+    {
+      "offset": 309,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NovaMission"
+    },
+    {
+      "offset": 315,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillAttrsVector"
+    },
+    {
+      "offset": 319,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LastSunRadius"
+    },
+    {
+      "offset": 322,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundArrive"
+    },
+    {
+      "offset": 354,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WitchSpace"
+    },
+    {
+      "offset": 359,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 362,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 367,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 372,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 377,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 383,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelOn"
+    },
+    {
+      "offset": 386,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 394,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 399,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpeedRate"
+    },
+    {
+      "offset": 403,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PitchRate"
+    },
+    {
+      "offset": 406,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RollRate"
+    },
+    {
+      "offset": 409,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ECMActive"
+    },
+    {
+      "offset": 413,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldRates"
+    },
+    {
+      "offset": 416,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D085"
+    },
+    {
+      "offset": 421,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearView"
+    },
+    {
+      "offset": 424,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 430,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearView"
+    },
+    {
+      "offset": 433,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 436,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CopyBackBuffer"
+    },
+    {
+      "offset": 442,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundLaunch"
+    },
+    {
+      "offset": 446,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 449,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DashboardSave"
+    },
+    {
+      "offset": 452,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 455,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ArrivalScreens"
+    },
+    {
+      "offset": 458,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PirateStation"
+    },
+    {
+      "offset": 463,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CallScreen"
+    },
+    {
+      "offset": 468,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 471,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundLaunch"
+    },
+    {
+      "offset": 475,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Docked"
+    },
+    {
+      "offset": 478,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 481,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StationLaunch"
+    },
+    {
+      "offset": 484,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CloakOn"
+    },
+    {
+      "offset": 489,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 492,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DashboardRestore"
+    },
+    {
+      "offset": 495,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ResetFlight"
+    },
+    {
+      "offset": 498,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NovaSunGrows"
+    },
+    {
+      "offset": 501,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlanetPosition"
+    },
+    {
+      "offset": 506,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 514,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_710F"
+    },
+    {
+      "offset": 519,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_710F"
+    },
+    {
+      "offset": 522,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    },
+    {
+      "offset": 527,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 531,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    },
+    {
+      "offset": 559,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearShips"
+    },
+    {
+      "offset": 562,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawBars"
+    },
+    {
+      "offset": 565,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearView"
+    },
+    {
+      "offset": 568,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 574,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearView"
+    },
+    {
+      "offset": 577,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Stardust"
+    },
+    {
+      "offset": 580,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 583,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CopyBackBuffer"
+    },
+    {
+      "offset": 592,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearView"
+    },
+    {
+      "offset": 595,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MoveSunPlanet"
+    },
+    {
+      "offset": 598,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Stardust"
+    },
+    {
+      "offset": 601,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 604,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawSunPlanet"
+    },
+    {
+      "offset": 607,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CopyBackBuffer"
+    },
+    {
+      "offset": 614,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldRates"
+    },
+    {
+      "offset": 619,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RollControl"
+    },
+    {
+      "offset": 622,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 629,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyScreens"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "TunnelFrameText",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The view's texts (ViewTexts), then a tunnel frame while TunnelOn is set"
+    },
+    {
+      "offset": 10,
+      "name": "TunnelStart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Start the hyperspace tunnel when TunnelLoop is set: the controls and the ships reset, 16 rings"
+    },
+    {
+      "offset": 74,
+      "name": "TunnelFrame",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw the tunnel: every ring one step nearer, then show the frame"
+    },
+    {
+      "offset": 171,
+      "name": "TunnelCount",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One frame of a tunnel drawn a frame a call: TunnelEnd when TunnelTop reaches 0"
+    },
+    {
+      "offset": 181,
+      "name": "TunnelStop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The jump's tunnel over: both flags off, the 16 rings moved back by $BE, the view cleared and shown"
+    },
+    {
+      "offset": 210,
+      "name": "TunnelOver",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The launch's first frames over: TunnelLoop off, the stardust made again"
+    },
+    {
+      "offset": 216,
+      "name": "TunnelOff",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The dock's first frames over: TunnelLoop off (known from the code only: no recording docked)"
+    },
+    {
+      "offset": 221,
+      "name": "TunnelEnd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "TunnelOn off and the 8 launch rings moved back by $C0 for the next time"
+    },
+    {
+      "offset": 239,
+      "name": "StarsRenew",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Make all 16 dots again ahead of the ship (StarRespawnFront patched for it), speed 7"
+    },
+    {
+      "offset": 288,
+      "name": "TunnelDivide",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "C = A * 256 / B (A < B): a ring's radius from its distance"
+    },
+    {
+      "offset": 308,
+      "name": "TunnelDone",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "After the jump: the attributes white unless in the nova system (NovaMission $D081), LastSunRadius 0, the arrival sound"
+    },
+    {
+      "offset": 353,
+      "name": "SceneLaunch",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The launch from the station (Condition 0) or the dock (in flight), with the tunnel"
+    },
+    {
+      "offset": 616,
+      "name": "ResetControls",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The control accumulators $FF08-$FF0C zeroed, SpeedControl $0C00, then the keys"
+    },
+    {
+      "offset": 626,
+      "name": "ClearKeyBytes",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Zero the five key bytes $FC08-$FC0C"
+    },
+    {
+      "offset": 631,
+      "name": "ZeroBytes",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Zero B bytes from HL"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 39,
+      "name": "TunnelStartRings",
+      "comment": ""
+    },
+    {
+      "offset": 87,
+      "name": "TunnelFrameLoop",
+      "comment": ""
+    },
+    {
+      "offset": 92,
+      "name": "TunnelFrameRings",
+      "comment": ""
+    },
+    {
+      "offset": 109,
+      "name": "TunnelFrameStart",
+      "comment": "the ring table (patched: TunnelRings or LaunchRings)"
+    },
+    {
+      "offset": 112,
+      "name": "TunnelFrameRing",
+      "comment": ""
+    },
+    {
+      "offset": 135,
+      "name": "TunnelFrameNext",
+      "comment": "the JR Z's offset at $9318 is patched: $05 the loop, $1E one frame a call"
+    },
+    {
+      "offset": 146,
+      "name": "TunnelFrameShow",
+      "comment": "the CP's value at $9326 (the last frame) and the JR C's offset at $932B (the end) are patched"
+    },
+    {
+      "offset": 194,
+      "name": "TunnelStopRings",
+      "comment": ""
+    },
+    {
+      "offset": 231,
+      "name": "TunnelEndRings",
+      "comment": ""
+    },
+    {
+      "offset": 265,
+      "name": "StarsRenewDot",
+      "comment": ""
+    },
+    {
+      "offset": 290,
+      "name": "TunnelDivideLoop",
+      "comment": ""
+    },
+    {
+      "offset": 301,
+      "name": "TunnelDivideSub",
+      "comment": ""
+    },
+    {
+      "offset": 324,
+      "name": "TunnelRingCount",
+      "comment": "The number of rings (16 for the jump, 8 for the launch and the dock)"
+    },
+    {
+      "offset": 325,
+      "name": "TunnelRingsLeft",
+      "comment": ""
+    },
+    {
+      "offset": 326,
+      "name": "TunnelTop",
+      "comment": "The frames left"
+    },
+    {
+      "offset": 327,
+      "name": "TunnelRings",
+      "comment": "The 16 ring distances of the jump tunnel, 2.5 apart"
+    },
+    {
+      "offset": 343,
+      "name": "LaunchRings",
+      "comment": "The 8 ring distances of the launch and dock tunnel, and two spare bytes"
+    },
+    {
+      "offset": 391,
+      "name": "SceneDock",
+      "comment": ""
+    },
+    {
+      "offset": 428,
+      "name": "SceneDockFrame",
+      "comment": ""
+    },
+    {
+      "offset": 465,
+      "name": "SceneLaunchNow",
+      "comment": ""
+    },
+    {
+      "offset": 572,
+      "name": "SceneLaunchTunnel",
+      "comment": ""
+    },
+    {
+      "offset": 590,
+      "name": "SceneLaunchFlight",
+      "comment": ""
+    },
+    {
+      "offset": 632,
+      "name": "ZeroBytesLoop",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$928C",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/tunnel.asm",
+    "label": "TunnelFrameText"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

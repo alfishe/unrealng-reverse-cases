@@ -1,0 +1,410 @@
+# The two token tables of $F11E-$FBFF (TokenTable, OtherTable). One string a line, its ending zero left
+# out; {xx} is a byte that is no plain character (a control, a token or a pair code). Decoded text:
+# python3 tools/tokens.py (docs/08-hud-and-text.md). The standard strings are numbered from 0, the other
+# strings from 1 (PrintOther skips n - 1). "tail" is what follows the last string.
+std 0: o{10}
+std 1:  CH{8A}T
+std 2: GO{96}RNM{92}T
+std 3: {06}D{91}A{10}{03}{08}
+std 4: {06}{8C}{96}NT{99}Y{08}
+std 5: SYS{9C}M
+std 6: P{9E}{85}
+std 7: {02} {8B}RKET {A6}S
+std 8: {8C}D{88}T{9E}{80}
+std 9: AG{9E}CULTU{94}L
+std 10: {9E}CH 
+std 11: A{96}{94}{83} 
+std 12: PO{99} 
+std 13: {8B}{8C}LY 
+std 14: UNIT
+std 15:  VIEW 
+std 16: {9A}{9B}{97}TY
+std 17: {9B}{8A}CHY
+std 18: FEUD{80}
+std 19: MUL{97}-{A2}
+std 20: {8D}CT{91}{99}{B9}
+std 21: {FB}MUN{9D}T
+std 22: C{9F}F{98}{90}ACY
+std 23: DEMOC{94}CY
+std 24: C{99}P{99}{91}E {CB}{91}E
+std 25: SHIP
+std 26: P{FE}DUCT
+std 27:  {95}S{90}
+std 28: HUM{9B} COL{9F}I{80}
+std 29: HYP{90}SPA{85}
+std 30: {06}SH{99}T {CA}{A1}{08}
+std 31: {8D}{CB}{9B}{85}
+std 32: {BD} -- {03}
+std 33: {BD} {CA} ?
+std 34: {06}MAYDAY{08}* C{99}IOLIS {8C} DAN{83}R*
+std 35:  LIGHT YE{8A}S
+std 36: {9C}CH.{81}{96}L
+std 37: CASH
+std 38:  {86}{0E}I{9F}
+std 39: {06}z{A1}{08}{01}
+std 40: T{8A}{83}T LO{CB}
+std 41: j JAMM{98}
+std 42: R{9B}{83}
+std 43: ST
+std 44: {B0} OF 
+std 45: SE{0E}
+std 46:  C{8A}GO
+std 47: E{9A}IP
+std 48: FOOD
+std 49: {9C}X{97}L{89}
+std 50: {94}{8D}OAC{97}{96}S
+std 51: S{95}{96}S
+std 52: LI{9A}{99}/W{8C}{89}
+std 53: LUXU{9E}{89}
+std 54: N{8A}CO{97}CS
+std 55: {FB}PUT{90}S
+std 56: {8B}CH{8C}{90}Y
+std 57: ALLOYS
+std 58: FI{8E}{8A}MS
+std 59: FURS
+std 60: M{8C}{90}{80}S
+std 61: GOLD
+std 62: PL{91}{8C}UM
+std 63: {83}M-{CB}{9F}{89}
+std 64: {80}I{92} {7F}S
+std 65:  NOT FOUND
+std 66:  CR
+std 67: L{8A}{83}
+std 68: FI{90}{85}
+std 69: S{8B}{0E}
+std 70: G{8E}{92}
+std 71: R{98}
+std 72: YE{0E}OW
+std 73: BLUE
+std 74: B{95}CK
+std 75: {15}
+std 76: SLIMY
+std 77: BUG-EY{98}
+std 78: H{99}N{98}
+std 79: B{9F}Y
+std 80: F{91}
+std 81: FURRY
+std 82: {FE}D{92}T
+std 83: F{FE}G
+std 84: LI{84}RD
+std 85: LOB{CB}{90}
+std 86: {86}RD
+std 87: HUM{9B}OID
+std 88: FEL{8C}E
+std 89: {8C}SECT
+std 90: {AB}{94}{8D}{88}
+std 91: COM
+std 92: {FB}M{9B}D{90}
+std 93:  D{89}T{FE}Y{98}
+std 94: RO
+std 95: {06}{AE}  {B0}{09}{BA}    {AE} {A6} F{99} SA{81}{08}{09}
+std 96: FR{9F}T
+std 97: {8E}{8A}
+std 98: {81}FT
+std 99: {9E}GHT
+std 100: yLOW
+std 101: c{10}{FC}*
+std 102: EXT{94} 
+std 103: PULSE{BB}
+std 104: {93}AM{BB}
+std 105: FUEL
+std 106: M{9D}SI{81}
+std 107: {E3}{CE} BAY
+std 108: E.C.M.{A5}
+std 109: fgS
+std 110: fhS
+std 111: i SCOOPS
+std 112: {89}CAPE POD
+std 113: yBOMB
+std 114: y{AE}
+std 115: DOCK{8C}G {D7}
+std 116: z {BD}
+std 117: MILIT{8A}Y{BB}
+std 118: M{8C}{8C}G{BB}
+std 119: {09}{09}{09}
+std 120: {8C}{FB}{8C}G j
+std 121: {92}{90}GY 
+std 122: GA{95}C{97}C
+std 123: s ON
+std 124: A{0E}
+std 125: CLOAK{8C}G DEVI{85}
+std 126: {06}{FC} {04}{08}wP{8E}S{92}T {A5}{09}{BD} {A5}{09}
+std 127: I{9C}M
+std 128: LL
+std 129: {06}MAYDAY{08}* {0B} {8C}VAD{98}*
+std 130:  {9F} 
+std 131: {06}{CF}M{92}T{08}:
+std 132: C{81}{9B}
+std 133: OFF{92}D{90}
+std 134: FUGI{97}{96}
+std 135: H{8A}M{81}SS
+std 136: MO{CB}LY {15}
+std 137: {AC}
+std 138: {AB}
+std 139: ABO{96} {AB}
+std 140: {FB}PET{92}T
+std 141: D{9B}{83}{FE}{88}
+std 142: DEADLY
+std 143: ---- E L I T E ----
+std 144: P{8E}S{92}T
+std 145: i {81}AK*
+std 146: 
+std 147: 
+std 148: 
+std tail: 
+other 1: {01}{08}  AC{E9}SS ME{E1}{02}{0C}{0C}{0C}{0C} 1 {95}{0C}{0C} 2{CB} {9A} {01}{04}{02}{0C}{0C} 3 EX{DB}
+other 2: {DE}{EE}T TAPE, {E2}{F6} P{F2}SS {FF}Y KEY
+other 3: TAPE {E0}AD{C3}{F4}R{FD}
+other 4: {DA}{C6}R{DB}Y {E1}MB{F4}: 
+other 5: {B0}m{CA}n{B1}
+other 6:   {95}{CE}
+other 7: P{F2}SS {D1}A{E9}, {9A}
+other 8: {9A}'S {C8}
+other 9:  GAME O{FA}R
+other 10: {B0}{F0} APP{F2}CIA{FB}{DF} OF {B3}R {A6} C{D9}{F8}GE {93} {C1}S OF {10} AW{EE}D {B3} {E2}EIR HIGHE{DE} H{DF}{D9}R - {93}{12}-{12}{B1}{D3}{01}LI{FA} {E0}NG{B2}PRO{D1}{F4}*{02}
+other 11: {02}SHIP BO{EE}D{C4}BY{01}
+other 12: {F2}FU{E7}{ED}
+other 13:  PIR{F5}E
+other 14: {15}{91} {C8}{1A}
+other 15: {02}{B3} HA{FA}{CB}D {D9}R LI{FA}S*{D3}{18}{18}{E2}{FF}K {B3}, {9A}...
+other 16: F{D8}{E5}D
+other 17: {E3}T{D8}{E5}
+other 18: WELL K{E3}WN
+other 19: FAMO{EC}
+other 20: {E3}T{FC}
+other 21: {FA}RY
+other 22: M{DC}DLY
+other 23: MO{DE}
+other 24: {F2}AS{DF}{D8}LY
+other 25: 
+other 26: {A5}
+other 27: r
+other 28: G{F2}{F5}
+other 29: VA{DE}
+other 30: P{F0}K
+other 31: {02}w v{0D} {B9}A{FB}{DF}S
+other 32: {9C}S
+other 33: u
+other 34: {80} F{FD}{ED}TS
+other 35: O{E9}{FF}S
+other 36: SHYN{ED}S
+other 37: S{DC}L{F0}{ED}S
+other 38: {EF}T{C3}T{F8}{F1}{FB}{DF}S
+other 39: {E0}{F5}H{C3}OF d
+other 40: {E0}{FA} F{FD} d
+other 41: FOOD B{E5}ND{F4}S
+other 42: T{D9}RI{DE}S
+other 43: PO{DD}RY
+other 44: {F1}SCOS
+other 45: l
+other 46: W{E4}K{C3}{9E}
+other 47: C{F8}B
+other 48: B{F5}
+other 49: {E0}B{DE}
+other 50: {12}
+other 51: {F7}S{DD}
+other 52: P{F9}GU{FC}
+other 53: {F8}VAG{FC}
+other 54: {C6}RS{FC}
+other 55: SC{D9}RG{FC}
+other 56: q CIV{DC} W{EE}
+other 57: h _ `S
+other 58: A h {F1}{DA}A{DA}
+other 59: q E{EE}{E2}{FE}AK{ED}
+other 60: q {EB}{F9}R AC{FB}V{DB}Y
+other 61: {AF}] ^
+other 62: {93}{11} _ `
+other 63: {AF}{C1}S' b c
+other 64: {02}z{0D}
+other 65: {AF}k l
+other 66: JUI{E9}
+other 67: B{F8}NDY
+other 68: W{F5}{F4}
+other 69: B{F2}W
+other 70: G{EE}G{E5} B{F9}{DE}{F4}S
+other 71: {12}
+other 72: {11} `
+other 73: {11} {12}
+other 74: {11} h
+other 75: h {12}
+other 76: F{D8}U{E0}{EC}
+other 77: EXO{FB}C
+other 78: HOOPY
+other 79: U{E1}SU{E4}
+other 80: EXC{DB}{F0}G
+other 81: {C6}{98}{F0}E
+other 82: NIGHT LIFE
+other 83: CASI{E3}S
+other 84: S{DB} COMS
+other 85: {02}z{0D}
+other 86: {03}
+other 87: {93}{91} {03}
+other 88: {93}{92} {03}
+other 89: {94}{91}
+other 90: {94}{92}
+other 91: {02}{93}SUN{CA}GO{C3}{E3}VA*{D3} W{DC}L {B3}{CB} {EC} {CE}
+other 92: {13}
+other 93: S{02}*{18}{18}
+other 94: 
+other 95: 
+other 96: N UN{F2}{EF}RK{D8}{E5}
+other 97:  B{FD}{F0}G
+other 98:  DULL
+other 99:  TE{F1}O{EC}
+other 100:  {F2}VOLT{F0}G
+other 101: {91}
+other 102: {92}
+other 103: P{F9}{E9}
+other 104: L{DB}T{E5} {91}
+other 105: DUMP
+other 106: 
+other 107: 
+other 108: 
+other 109: 
+other 110: 
+other 111: GROSS {06}{BA}{0A}IV{DB}Y
+other 112: ECO{E3}MY
+other 113: {E5}G{E4} {DE}{F5}{EC}
+other 114: {F8}{FB}NG
+other 115: WA{D1}
+other 116: MO{E2}
+other 117: W{EE}{E2}OG
+other 118: {FF}T
+other 119: {12}
+other 120: PO{DD}
+other 121: A{DE}ROPHYSICI{DE}
+other 122: YAK
+other 123: SNA{DC}
+other 124: SLUG
+other 125: TROPIC{E4}
+other 126: D{F6}{DA}
+other 127: {F8}{F0}
+other 128: IMP{F6}{DD}{F8}B{E5}
+other 129: EXU{F7}{F8}NT
+other 130: FUNNY
+other 131: WEIRD
+other 132: U{E1}SU{E4}
+other 133: {DE}{F8}N{E7}
+other 134: PE{C6}LI{EE}
+other 135: F{F2}{FE}{F6}T
+other 136: OCCASI{DF}{E4}
+other 137: UNP{F2}{F1}CT{D8}{E5}
+other 138: D{F2}ADFUL
+other 139: {AB}
+other 140: \ [ F{FD} e
+other 141: {8C}{B2}e
+other 142: f BY g
+other 143: {8C} BUT {8E}
+other 144:  Ao p
+other 145: PL{FF}{DD}
+other 146: W{FD}LD
+other 147: {E2}E 
+other 148: {E2}{98} 
+other 149: {E0}AD{D2}{9A}
+other 150: {09}{0B}{01}{08}
+other 151: {9A}{CB}D
+other 152: IS
+other 153: I{FF}
+other 154: {13}COMM{FF}D{F4}
+other 155: h
+other 156: M{D9}NTA{F0}
+other 157: {FC}IB{E5}
+other 158: T{F2}E
+other 159: {D1}OTT{FC}
+other 160: x
+other 161: y
+other 162: aOID
+other 163: {7F}
+other 164: ~
+other 165: {FF}CI{F6}T
+other 166: EX{E9}P{FB}{DF}{E4}
+other 167: EC{E9}NTRIC
+other 168: {F0}G{F8}{F0}{FC}
+other 169: r
+other 170: K{DC}L{F4}
+other 171: DEADLY
+other 172: EV{DC}
+other 173: {E5}{E2}{E4}
+other 174: VICIO{EC}
+other 175: {DB}S 
+other 176: {0D}{0E}{13}
+other 177: .{0C}{0F}
+other 178:  {FF}D 
+other 179: Y{D9}
+other 180: P{EE}K{C3}M{DD}{F4}S
+other 181: D{EC}T C{E0}UDS
+other 182: I{E9} {F7}RGS
+other 183: RO{D5} F{FD}{EF}{FB}{DF}S
+other 184: VOLCA{E3}{ED}
+other 185: PL{FF}T
+other 186: TULIP
+other 187: B{FF}{FF}A
+other 188: C{FD}N
+other 189: {12}WE{FC}
+other 190: {12}
+other 191: {11} {12}
+other 192: {11} h
+other 193: {F0}HA{EA}T{FF}T
+other 194: {BF}
+other 195: {F0}G 
+other 196: {FC} 
+other 197:  M{98}SI{DF}
+other 198: CU
+other 199: B{F2}AK
+other 200: NAME? 
+other 201:  TO 
+other 202:  {98} 
+other 203:  SA{FA}
+other 204: .{0C} {13}
+other 205: DO{D5}{FC}
+other 206:  {01}(Y/N)?{02}
+other 207: {02}{06}l{0A} JAMM{F4}
+other 208:  A 
+other 209: SP
+other 210:  NEW 
+other 211: {0C}{0C}
+other 212:  {13}{E2}{EE}G{DF}
+other 213: CK
+other 214: F{D9}ND {9A} {04}
+other 215: POPUL{F5}I{DF}
+other 216: 
+other 217:   
+other 218: @@
+other 219:  _
+other 220: @+
+other 221: 
+other 222: {B0}{01}{03}{CA}{F2}SI{DE}{C3}A{D4} {F0}VASI{DF}*{02}{0F}
+other 223: {01}W{FF}T{C4}BY G{E4}COP:{0C}{D3}    {D0}B{F8}{FA} {9A} {D3}   F{FD}{D0}{D1}ECI{E4}{C5}{02}{D3}{D3}{0D} {13}A{F2} {B3} {F0}TE{F2}{DE}{C4}{CE}
+other 224: {B0}{93}{D4}S {EE}E {EC}{C3}{93}{D1}A{E9} {DE}{F5}I{DF} {F5} {13}{10} AS{D0}BA{DA} F{FD} {E2}EIR {F0}VASI{DF} F{FD}{E9}{C9}{F5}TA{D5} {93}{91} SURFA{E9}{B1}{0C}{02}{B3}R{C5}:{D3}{01}{C9}DE{DE}ROY {93}{D1}A{E9} {DE}{F5}I{DF}{D3} {F5} {10}{CC}{D3}{0D}TAKE {94}{CF}{D3}({0D}{13}{B3} W{DC}L NE{C4}{DB}*){0A}{0A} {01}GOOD LU{D5}{02}*
+other 225: SH{F2}W
+other 226: {F7}A{DE}
+other 227: {EA}S{DF}
+other 228: SNAKE
+other 229: WOLF
+other 230: {E5}OP{EE}D
+other 231: C{F5}
+other 232: M{DF}KEY
+other 233: GO{F5}
+other 234: F{98}H
+other 235: j i
+other 236: {11} x {7B}
+other 237: {AF}k y {7B}
+other 238: | {7D}
+other 239: j i
+other 240: ME{F5}
+other 241: {C6}TL{DD}
+other 242: {DE}EAK
+other 243: BURG{F4}S
+other 244: {EB}UP
+other 245: I{E9}
+other 246: MUD
+other 247: Z{F4}O-{13}G
+other 248: VA{C6}UM
+other 249: {11} ULT{F8}
+other 250: HO{D5}EY
+other 251: CRI{D5}{DD}
+other 252: K{EE}{F5}E
+other 253: PO{E0}
+other 254: T{F6}N{98}
+other 255: {E2}EY SHOW {E3} M{F4}CY...
+other tail: 

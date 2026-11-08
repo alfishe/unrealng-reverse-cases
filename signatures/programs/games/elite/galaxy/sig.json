@@ -1,0 +1,1114 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/galaxy",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: galaxy",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "galaxy"
+  ],
+  "summary": "The galaxy's 256 systems from three seed words: the twist, the nearest system, the distance, the names, the system data and the market.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 815,
+    "sha1": "67c997a44cd375fcda1e307c4f8d0ea6165973b6",
+    "masked_sha1": "c3bb497d6b5541c23ff5a75ebb21047624af3ce4"
+  },
+  "origin": "$DEB9",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 75,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D065"
+    },
+    {
+      "offset": 83,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D090"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 89,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D092"
+    },
+    {
+      "offset": 92,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 95,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D094"
+    },
+    {
+      "offset": 108,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 112,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 115,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 118,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 121,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 124,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 139,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 143,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 148,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 151,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCross"
+    },
+    {
+      "offset": 154,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 157,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCross"
+    },
+    {
+      "offset": 160,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 163,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 168,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 179,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCross"
+    },
+    {
+      "offset": 182,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 185,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCross"
+    },
+    {
+      "offset": 188,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 191,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 194,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 200,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 204,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 207,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 213,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 222,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 225,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 228,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 234,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 238,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 241,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 244,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 247,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 250,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 253,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D099"
+    },
+    {
+      "offset": 257,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D097"
+    },
+    {
+      "offset": 260,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 271,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 279,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCursorX"
+    },
+    {
+      "offset": 282,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 286,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 291,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCursorY"
+    },
+    {
+      "offset": 294,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 300,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 318,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 325,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SquareRootVector"
+    },
+    {
+      "offset": 333,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 356,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 359,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 369,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 377,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 380,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 383,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 389,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 398,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StdPairs"
+    },
+    {
+      "offset": 409,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 424,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 427,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 431,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 436,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 439,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 442,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 445,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 448,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 452,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 459,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 462,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 468,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 471,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 475,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCursorY"
+    },
+    {
+      "offset": 480,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 483,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 486,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 490,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartCursorX"
+    },
+    {
+      "offset": 502,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 509,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 514,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 517,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 529,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 535,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 541,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 545,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 552,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 555,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 563,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 568,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 571,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 575,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 581,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 584,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 587,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 591,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 600,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeColon"
+    },
+    {
+      "offset": 605,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 608,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 612,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber"
+    },
+    {
+      "offset": 615,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 619,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLine"
+    },
+    {
+      "offset": 622,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D090"
+    },
+    {
+      "offset": 625,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 630,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 633,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 638,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 641,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 650,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StarSeed"
+    },
+    {
+      "offset": 653,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D06A"
+    },
+    {
+      "offset": 656,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketStock"
+    },
+    {
+      "offset": 659,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 663,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Commodities"
+    },
+    {
+      "offset": 679,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 693,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D06A"
+    },
+    {
+      "offset": 718,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D06A"
+    },
+    {
+      "offset": 766,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0AE"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 74,
+      "name": "NextGalaxy",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Screen 16 of ScreenTable, which nothing asks for: the galaxy number one more (wrapping at 8) and the galaxy's seeds twisted (unreachable; GalaxyJump does the same in the game)"
+    },
+    {
+      "offset": 97,
+      "name": "TwistWord",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The two bytes at HL rotated left one bit each"
+    },
+    {
+      "offset": 107,
+      "name": "FindSystem",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The system named in NameInput: walk the galaxy's 256 systems comparing NameBuffer; carry when none"
+    },
+    {
+      "offset": 167,
+      "name": "FindNearest",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The system nearest the chart cursor becomes the selected one, with the cross redrawn on the charts"
+    },
+    {
+      "offset": 187,
+      "name": "FindNearestNow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Walk the 256 systems for the smallest dx^2 + (dy/2)^2 to the cursor ($D0BB, $D0BC), then its data, name and distance"
+    },
+    {
+      "offset": 267,
+      "name": "NextSystem",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Four twists: the next system's seeds"
+    },
+    {
+      "offset": 277,
+      "name": "SquaredDistance",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = (the cursor's x - B)^2 + ((the cursor's y - A) / 2)^2, B and A the system's x and y"
+    },
+    {
+      "offset": 305,
+      "name": "AbsDifference",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = |A - B|"
+    },
+    {
+      "offset": 313,
+      "name": "JumpDistance",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "JumpRange = 4 x the root of HL ($FFFF on a carry)"
+    },
+    {
+      "offset": 336,
+      "name": "MultiplyDA",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = D x A (shift and add, eight steps)"
+    },
+    {
+      "offset": 355,
+      "name": "SystemName",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The name of the system in SystemSeeds into NameBuffer: four pairs when bit 6 of s0's low byte is set, else three"
+    },
+    {
+      "offset": 388,
+      "name": "NamePair",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One pair: s2's high byte AND $1F picks StdPairs entry (0: none), a \"?\" second letter left out; then a twist"
+    },
+    {
+      "offset": 426,
+      "name": "Twist",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "s0, s1, s2 = s1, s2, s0 + s1 + s2"
+    },
+    {
+      "offset": 455,
+      "name": "KeepName",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "NameBuffer becomes SelectedName"
+    },
+    {
+      "offset": 467,
+      "name": "SystemData",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The selected system from SystemSeeds: its seeds, the cursor on it, the economy, government, tech level, population and productivity"
+    },
+    {
+      "offset": 590,
+      "name": "PrintDistance",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DISTANCE: and the jump range with its point and LIGHT YEARS, then a new line (nothing at 0)"
+    },
+    {
+      "offset": 621,
+      "name": "GalaxySeeds",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "SystemSeeds = the galaxy's seeds: the walk starts at its first system"
+    },
+    {
+      "offset": 629,
+      "name": "SaveSeeds",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "BestSeeds = SystemSeeds"
+    },
+    {
+      "offset": 637,
+      "name": "RestoreSeeds",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "SystemSeeds = BestSeeds"
+    },
+    {
+      "offset": 643,
+      "name": "CopySeeds",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Six bytes from HL to DE"
+    },
+    {
+      "offset": 649,
+      "name": "NewMarket",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A new fluctuation byte ($D06A) from StarSeed, then MakeMarket"
+    },
+    {
+      "offset": 655,
+      "name": "MakeMarket",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Each commodity's price ($E1BD) and the station's stock ($D09E) from Commodities, the economy and the fluctuation"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "GalaxySpare",
+      "comment": "One byte no code reads (known from the code only)"
+    },
+    {
+      "offset": 1,
+      "name": "SelectedSeeds",
+      "comment": "The selected system's seeds s0, s1, s2 (SystemData)"
+    },
+    {
+      "offset": 7,
+      "name": "SystemSeeds",
+      "comment": "The seeds being twisted: the system the loops are at"
+    },
+    {
+      "offset": 13,
+      "name": "BestSeeds",
+      "comment": "FindNearest's best system so far; FindSystem's place in the walk"
+    },
+    {
+      "offset": 19,
+      "name": "TextSeeds",
+      "comment": "The four bytes TextRandom shifts for the planet's description (from s1 and s2)"
+    },
+    {
+      "offset": 23,
+      "name": "NameInput",
+      "comment": "The name typed: the commander's (JAMESON) or a planet's (FindSystem), zero-ended"
+    },
+    {
+      "offset": 34,
+      "name": "NameBuffer",
+      "comment": "The name SystemName builds (up to eight letters, zero-ended)"
+    },
+    {
+      "offset": 43,
+      "name": "CurrentName",
+      "comment": "The current system's name (LAVE)"
+    },
+    {
+      "offset": 52,
+      "name": "SelectedName",
+      "comment": "The selected system's name"
+    },
+    {
+      "offset": 61,
+      "name": "JumpRange",
+      "comment": "The distance to the selected system in 0.1 light years (FindNearest, JumpDistance)"
+    },
+    {
+      "offset": 63,
+      "name": "Economy",
+      "comment": "The selected system's economy, 0-7 (0 rich industrial, 7 poor agricultural)"
+    },
+    {
+      "offset": 64,
+      "name": "Government",
+      "comment": "Its government, 0-7 (0 anarchy, 7 corporate state)"
+    },
+    {
+      "offset": 65,
+      "name": "TechLevel",
+      "comment": "Its tech level less one, 0-14"
+    },
+    {
+      "offset": 66,
+      "name": "Population",
+      "comment": "Its population in 100 millions"
+    },
+    {
+      "offset": 67,
+      "name": "Productivity",
+      "comment": "Its productivity in millions of credits"
+    },
+    {
+      "offset": 69,
+      "name": "SystemSpare",
+      "comment": "Two bytes no code reads (known from the code only)"
+    },
+    {
+      "offset": 71,
+      "name": "SystemCount",
+      "comment": "FindSystem's count of the systems tried (256 then not found)"
+    },
+    {
+      "offset": 72,
+      "name": "NamePointer",
+      "comment": "SystemName's next letter"
+    },
+    {
+      "offset": 114,
+      "name": "FindSystemNext",
+      "comment": ""
+    },
+    {
+      "offset": 126,
+      "name": "FindSystemCompare",
+      "comment": ""
+    },
+    {
+      "offset": 138,
+      "name": "FindSystemMiss",
+      "comment": ""
+    },
+    {
+      "offset": 147,
+      "name": "FindSystemFound",
+      "comment": ""
+    },
+    {
+      "offset": 165,
+      "name": "BestDistance",
+      "comment": "FindNearest's smallest squared distance so far"
+    },
+    {
+      "offset": 198,
+      "name": "FindNearestLoop",
+      "comment": ""
+    },
+    {
+      "offset": 227,
+      "name": "FindNearestStep",
+      "comment": ""
+    },
+    {
+      "offset": 252,
+      "name": "JumpDistanceNow",
+      "comment": ""
+    },
+    {
+      "offset": 269,
+      "name": "NextSystemLoop",
+      "comment": ""
+    },
+    {
+      "offset": 311,
+      "name": "AbsDifferenceStore",
+      "comment": ""
+    },
+    {
+      "offset": 317,
+      "name": "JumpDistanceFar",
+      "comment": ""
+    },
+    {
+      "offset": 320,
+      "name": "JumpDistanceRoot",
+      "comment": ""
+    },
+    {
+      "offset": 332,
+      "name": "JumpDistanceStore",
+      "comment": ""
+    },
+    {
+      "offset": 343,
+      "name": "MultiplyDALoop",
+      "comment": ""
+    },
+    {
+      "offset": 352,
+      "name": "MultiplyDANext",
+      "comment": ""
+    },
+    {
+      "offset": 363,
+      "name": "SystemNameLoop",
+      "comment": ""
+    },
+    {
+      "offset": 423,
+      "name": "NamePairNext",
+      "comment": ""
+    },
+    {
+      "offset": 516,
+      "name": "SystemDataTech",
+      "comment": ""
+    },
+    {
+      "offset": 618,
+      "name": "PrintDistanceEnd",
+      "comment": ""
+    },
+    {
+      "offset": 667,
+      "name": "MakeMarketLoop",
+      "comment": ""
+    },
+    {
+      "offset": 683,
+      "name": "MakeMarketLoop2",
+      "comment": ""
+    },
+    {
+      "offset": 686,
+      "name": "MakeMarketQuantity",
+      "comment": ""
+    },
+    {
+      "offset": 706,
+      "name": "MakeMarketStock",
+      "comment": ""
+    },
+    {
+      "offset": 712,
+      "name": "MakeMarketStockStore",
+      "comment": ""
+    },
+    {
+      "offset": 737,
+      "name": "MakeMarketPositive",
+      "comment": ""
+    },
+    {
+      "offset": 741,
+      "name": "MakeMarketPrice",
+      "comment": ""
+    },
+    {
+      "offset": 770,
+      "name": "PriceBase",
+      "comment": "Two bytes before Prices: the market screens' pointers start here and step 2 first"
+    },
+    {
+      "offset": 772,
+      "name": "Prices",
+      "comment": "The 17 commodities' prices in tenths of a credit (MakeMarket)"
+    },
+    {
+      "offset": 806,
+      "name": "MarketItem",
+      "comment": "The market screens' row: the commodity (0-16), which also picks the unit (t, kg, g)"
+    },
+    {
+      "offset": 807,
+      "name": "HoldPointer",
+      "comment": "The trading pages' pointer into the hold ($D06B on), stepped first"
+    },
+    {
+      "offset": 809,
+      "name": "PricePointer",
+      "comment": "Their pointer into Prices"
+    },
+    {
+      "offset": 811,
+      "name": "StockPointer",
+      "comment": "Their pointer into MarketStock (buying) or the hold, stepped first"
+    },
+    {
+      "offset": 813,
+      "name": "SavedCursor",
+      "comment": "The text position SaveCursor keeps"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$DEB9",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/galaxy.asm",
+    "label": "GalaxySpare"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

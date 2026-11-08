@@ -1,0 +1,1604 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/startup",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: startup",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "startup"
+  ],
+  "summary": "The vectors, the flight variables, the start, the pause menu and the title.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1151,
+    "sha1": "4d3adf83ebd3f906c8a4c53db66903daf3e4c1ad",
+    "masked_sha1": "591d29bcb57c1abf71decd82d542b7ac189bb59b"
+  },
+  "origin": "$6FF2",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 152,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyCombat"
+    },
+    {
+      "offset": 158,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D08A"
+    },
+    {
+      "offset": 167,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BombKill"
+    },
+    {
+      "offset": 170,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 177,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 186,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 191,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CloakOn"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NovaMission"
+    },
+    {
+      "offset": 213,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 217,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_59FF"
+    },
+    {
+      "offset": 233,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 239,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 296,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawChartCircle"
+    },
+    {
+      "offset": 304,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ConditionLight"
+    },
+    {
+      "offset": 308,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundTick"
+    },
+    {
+      "offset": 313,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 316,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ResetFlightJoin"
+    },
+    {
+      "offset": 328,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeVector"
+    },
+    {
+      "offset": 331,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FF09"
+    },
+    {
+      "offset": 335,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 352,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 358,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 375,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 381,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 390,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 394,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Docked"
+    },
+    {
+      "offset": 401,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Docked"
+    },
+    {
+      "offset": 406,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyCombat"
+    },
+    {
+      "offset": 415,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyCombat"
+    },
+    {
+      "offset": 419,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 424,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D08C"
+    },
+    {
+      "offset": 429,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 434,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelOn"
+    },
+    {
+      "offset": 439,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6069"
+    },
+    {
+      "offset": 447,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 451,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 454,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DashboardRestore"
+    },
+    {
+      "offset": 457,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 460,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SceneLaunch"
+    },
+    {
+      "offset": 464,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 468,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    },
+    {
+      "offset": 471,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 474,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 477,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 511,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HalveSignedVector"
+    },
+    {
+      "offset": 514,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 523,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TunnelOn"
+    },
+    {
+      "offset": 528,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeySteer"
+    },
+    {
+      "offset": 534,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyChart"
+    },
+    {
+      "offset": 549,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CallScreen"
+    },
+    {
+      "offset": 553,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyChart"
+    },
+    {
+      "offset": 556,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeySteer"
+    },
+    {
+      "offset": 561,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 565,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyScreens"
+    },
+    {
+      "offset": 573,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 580,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionFlags"
+    },
+    {
+      "offset": 586,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CloakOn"
+    },
+    {
+      "offset": 592,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 601,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6069"
+    },
+    {
+      "offset": 607,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AllHostile"
+    },
+    {
+      "offset": 616,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 619,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NovaMission"
+    },
+    {
+      "offset": 628,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CloakOn"
+    },
+    {
+      "offset": 635,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NovaMission"
+    },
+    {
+      "offset": 642,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunGrows"
+    },
+    {
+      "offset": 647,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionState"
+    },
+    {
+      "offset": 654,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionQuestionVector"
+    },
+    {
+      "offset": 659,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionDoneVector"
+    },
+    {
+      "offset": 668,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6065"
+    },
+    {
+      "offset": 676,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FullMessageVector"
+    },
+    {
+      "offset": 679,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DashboardRestore"
+    },
+    {
+      "offset": 683,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleSP"
+    },
+    {
+      "offset": 686,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 690,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyViews"
+    },
+    {
+      "offset": 696,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Options"
+    },
+    {
+      "offset": 700,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyCode"
+    },
+    {
+      "offset": 707,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyCode"
+    },
+    {
+      "offset": 716,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 721,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 726,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 731,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 736,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 741,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 746,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 751,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 763,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 768,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyScreens"
+    },
+    {
+      "offset": 782,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 822,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 836,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 844,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 886,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TitleSP"
+    },
+    {
+      "offset": 889,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ResetControls"
+    },
+    {
+      "offset": 892,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DashboardRestoreNow"
+    },
+    {
+      "offset": 897,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipActionVector"
+    },
+    {
+      "offset": 900,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 903,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearView"
+    },
+    {
+      "offset": 906,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 909,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawTitleShipVector"
+    },
+    {
+      "offset": 912,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CopyBackBuffer"
+    },
+    {
+      "offset": 915,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyCode"
+    },
+    {
+      "offset": 925,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DashboardSave"
+    },
+    {
+      "offset": 928,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CommanderMenuVector"
+    },
+    {
+      "offset": 932,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 935,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreenVector"
+    },
+    {
+      "offset": 938,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DashboardRestore"
+    },
+    {
+      "offset": 941,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_6065"
+    },
+    {
+      "offset": 946,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 949,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyCode"
+    },
+    {
+      "offset": 955,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 975,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipActionVector"
+    },
+    {
+      "offset": 978,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearView"
+    },
+    {
+      "offset": 981,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 984,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawTitleShipVector"
+    },
+    {
+      "offset": 987,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CopyBackBuffer"
+    },
+    {
+      "offset": 990,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FF1F"
+    },
+    {
+      "offset": 993,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyDigits"
+    },
+    {
+      "offset": 1020,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyCode"
+    },
+    {
+      "offset": 1030,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1036,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Options"
+    },
+    {
+      "offset": 1044,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewGameVector"
+    },
+    {
+      "offset": 1048,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1051,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1054,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunGrows"
+    },
+    {
+      "offset": 1057,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1060,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CloakOn"
+    },
+    {
+      "offset": 1063,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LastSunRadius"
+    },
+    {
+      "offset": 1066,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DashboardSave"
+    },
+    {
+      "offset": 1069,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScreenStatus"
+    },
+    {
+      "offset": 1072,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ResetControls"
+    },
+    {
+      "offset": 1077,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1087,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1095,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 1098,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPointer"
+    },
+    {
+      "offset": 1105,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOtherVector"
+    },
+    {
+      "offset": 1113,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 1118,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPointer"
+    },
+    {
+      "offset": 1125,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeVector"
+    },
+    {
+      "offset": 1128,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintPointer"
+    },
+    {
+      "offset": 1136,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5800"
+    },
+    {
+      "offset": 1139,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "EnergyBombVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "JP EnergyBomb (FlightLoop calls it every frame)"
+    },
+    {
+      "offset": 3,
+      "name": "FlashVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "JP FlashScreen (known from the code only: no caller ran)"
+    },
+    {
+      "offset": 6,
+      "name": "FillAttrsVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "JP FillAttrs"
+    },
+    {
+      "offset": 151,
+      "name": "EnergyBomb",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Detonate the energy bomb when its key is down and one is fitted"
+    },
+    {
+      "offset": 183,
+      "name": "FlashScreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One flash: the 3D view's attributes $28, then $0F"
+    },
+    {
+      "offset": 190,
+      "name": "FillAttrs",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Fill the 3D view's attributes ($5800-$59FF) with L after the next interrupt"
+    },
+    {
+      "offset": 238,
+      "name": "Start",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The game's entry from the kickoff: JP Title"
+    },
+    {
+      "offset": 295,
+      "name": "DrawChartCircleVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "JP DrawChartCircle"
+    },
+    {
+      "offset": 303,
+      "name": "ConditionLightVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "JP ConditionLight"
+    },
+    {
+      "offset": 307,
+      "name": "SoundTickVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "JP SoundTick (the interrupt handler calls it)"
+    },
+    {
+      "offset": 312,
+      "name": "AddDigitVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "JP AddDigit (known from the code only, like the next two)"
+    },
+    {
+      "offset": 315,
+      "name": "AttrFillVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "JP DashAttrs $9974"
+    },
+    {
+      "offset": 318,
+      "name": "AddDigit",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "(HL) = (HL) * 10 + B: one typed digit into a number"
+    },
+    {
+      "offset": 330,
+      "name": "CopyRates",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Copy the control rates the interrupt built to this frame's rates and the indicators"
+    },
+    {
+      "offset": 393,
+      "name": "DockKeys",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Dock: after the collision code docked the ship, or on the docking computer key in the safe zone"
+    },
+    {
+      "offset": 462,
+      "name": "CentreMarkers",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Move the sun and the planet half way to slot 0's position (known from the code only)"
+    },
+    {
+      "offset": 498,
+      "name": "HalfDifference",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = half the difference between a marker coordinate (IY) and the slot's (IX)"
+    },
+    {
+      "offset": 513,
+      "name": "ChartCursorKeys",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "On the charts (ViewIndex 7, 8): a cursor key moves the cursor through the chart vector"
+    },
+    {
+      "offset": 560,
+      "name": "CloakKey",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Every second frame: Y (KeyScreens $FC08 bit 7) switches the cloaking device on or off once the mission has given it"
+    },
+    {
+      "offset": 618,
+      "name": "NovaTint",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "After the dashboard is redrawn (ClearView): the nova's red tint (attributes 2) again while NovaMission is set"
+    },
+    {
+      "offset": 627,
+      "name": "CloakRestore",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "After the dashboard is redrawn: the cloak's tint ($0F) again while CloakOn is set"
+    },
+    {
+      "offset": 634,
+      "name": "NovaSunGrows",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "At the launch (SceneLaunch): in the nova's system the sun starts to grow (SunGrows 1) and the view turns red"
+    },
+    {
+      "offset": 646,
+      "name": "ArrivalScreens",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "At the dock: the mission page MissionState asks for: 1 or 2 the briefing (MissionQuestion), 5 the award (MissionDone), 6 SHIP BOARDED BY THARGONS and the title"
+    },
+    {
+      "offset": 667,
+      "name": "PirateStation",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "At the dock: a station whose roll counter's bit 7 is clear is pirate-held: SHIP BOARDED BY PIRATES, THEY SHOW NO MERCY, the title"
+    },
+    {
+      "offset": 689,
+      "name": "PauseMenu",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The pause: hold the game while the key's bit is set and run the option keys"
+    },
+    {
+      "offset": 767,
+      "name": "ClearKeys",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Zero the five key bytes $FC08-$FC0C"
+    },
+    {
+      "offset": 786,
+      "name": "OptionReverse",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Key B: Options bit 4"
+    },
+    {
+      "offset": 792,
+      "name": "OptionDamping",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Key D: Options bit 3"
+    },
+    {
+      "offset": 798,
+      "name": "OptionBit6",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Key F: Options bit 6"
+    },
+    {
+      "offset": 804,
+      "name": "OptionSoundOff",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Key Q: Options bit 7 off"
+    },
+    {
+      "offset": 810,
+      "name": "OptionRecentre",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Key R: Options bit 2"
+    },
+    {
+      "offset": 816,
+      "name": "OptionSoundOn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Key S: Options bit 7 on, and the sound requests cleared"
+    },
+    {
+      "offset": 825,
+      "name": "OptionReverseY",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Key Y: Options bit 5"
+    },
+    {
+      "offset": 831,
+      "name": "OptionKeyboard",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Key K: between the keyboard and the control method chosen on the title"
+    },
+    {
+      "offset": 850,
+      "name": "ErrorBeep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A short beep: 6 frames of 4 rising tones on the speaker"
+    },
+    {
+      "offset": 884,
+      "name": "Title",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The title: the rotating ship, \"Load new commander\", then the control method"
+    },
+    {
+      "offset": 1076,
+      "name": "TitleTextLoad",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The title text and \"LOAD NEW COMMANDER (Y/N)?\" (other token 6, row 14, column 1)"
+    },
+    {
+      "offset": 1086,
+      "name": "TitleTextPress",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The title text and \"PRESS SPACE, COMMANDER\" (other token 7, row 14, column 4)"
+    },
+    {
+      "offset": 1109,
+      "name": "TitleElite",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "\"---- E L I T E ----\" (code $1D: token $8F) at row 1, column 5, in the title colours"
+    },
+    {
+      "offset": 1127,
+      "name": "PlainText",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Clear the title-colour bit the two title texts set"
+    },
+    {
+      "offset": 1135,
+      "name": "WhiteAttrs",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The attributes of the top two thirds: white INK on black"
+    },
+    {
+      "offset": 1141,
+      "name": "FillAttrPage",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "256 attributes $07 from HL"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 9,
+      "name": "ChartIcons",
+      "comment": "The four sizes of a system's dot on the local chart, 8x8 each"
+    },
+    {
+      "offset": 41,
+      "name": "Commodities",
+      "comment": "The 17 commodities: 4 bytes each, the market generator's table"
+    },
+    {
+      "offset": 109,
+      "name": "EquipmentPrices",
+      "comment": "The prices of the equipment the Equip screen sells"
+    },
+    {
+      "offset": 176,
+      "name": "EnergyBombFlash",
+      "comment": ""
+    },
+    {
+      "offset": 200,
+      "name": "FillAttrsTinted",
+      "comment": ""
+    },
+    {
+      "offset": 210,
+      "name": "FillAttrsNow",
+      "comment": ""
+    },
+    {
+      "offset": 221,
+      "name": "FillAttrsRow",
+      "comment": ""
+    },
+    {
+      "offset": 223,
+      "name": "FillAttrsPush",
+      "comment": ""
+    },
+    {
+      "offset": 236,
+      "name": "FillSP",
+      "comment": "FillAttrs' saved stack pointer"
+    },
+    {
+      "offset": 241,
+      "name": "ViewIndex",
+      "comment": "The view: 0-3 the space views (front, rear, left, right), 4 and up the screens"
+    },
+    {
+      "offset": 242,
+      "name": "RollRate",
+      "comment": "The roll rate this frame (bit 7 the sign), copied from the high byte of RollControl ($FF09)"
+    },
+    {
+      "offset": 243,
+      "name": "PitchRate",
+      "comment": "The pitch rate this frame, from the high byte of PitchControl ($FF0B)"
+    },
+    {
+      "offset": 244,
+      "name": "SpeedRate",
+      "comment": "The speed this frame, from the high byte of SpeedControl ($FF0D)"
+    },
+    {
+      "offset": 245,
+      "name": "BarDrawn",
+      "comment": "The dashboard bars: 13 pairs of the length last drawn and the value, the fore shield first"
+    },
+    {
+      "offset": 246,
+      "name": "BarForeShield",
+      "comment": "The fore shield"
+    },
+    {
+      "offset": 247,
+      "name": "",
+      "comment": "the aft shield's last length"
+    },
+    {
+      "offset": 248,
+      "name": "BarAftShield",
+      "comment": "The aft shield"
+    },
+    {
+      "offset": 250,
+      "name": "BarFuel",
+      "comment": "The fuel"
+    },
+    {
+      "offset": 252,
+      "name": "BarCabinTemp",
+      "comment": "The cabin temperature (zero at a reset)"
+    },
+    {
+      "offset": 254,
+      "name": "BarLaserTemp",
+      "comment": "The laser temperature"
+    },
+    {
+      "offset": 256,
+      "name": "BarAltitude",
+      "comment": "The altitude above the planet"
+    },
+    {
+      "offset": 258,
+      "name": "BarSpeed",
+      "comment": "The speed: SpeedRate * 5 + 5"
+    },
+    {
+      "offset": 260,
+      "name": "BarEnergy1",
+      "comment": "Energy bank 1"
+    },
+    {
+      "offset": 262,
+      "name": "BarEnergy2",
+      "comment": "Energy bank 2"
+    },
+    {
+      "offset": 264,
+      "name": "BarEnergy3",
+      "comment": "Energy bank 3"
+    },
+    {
+      "offset": 266,
+      "name": "BarEnergy4",
+      "comment": "Energy bank 4"
+    },
+    {
+      "offset": 268,
+      "name": "BarRoll",
+      "comment": "The roll marker: $15 +/- the roll rate"
+    },
+    {
+      "offset": 270,
+      "name": "BarPitch",
+      "comment": "The pitch marker: $15 +/- the pitch rate"
+    },
+    {
+      "offset": 271,
+      "name": "",
+      "comment": "spare"
+    },
+    {
+      "offset": 273,
+      "name": "WitchSpace",
+      "comment": "Non-zero in witch space after a misjump (the hyperspace arrival, JumpArrive): no sun, no planet, no station, four stars, Thargoids"
+    },
+    {
+      "offset": 274,
+      "name": "Condition",
+      "comment": "The condition light as an attribute: 0 docked, 4 green, 6 yellow, 2 red, $63 red flashing"
+    },
+    {
+      "offset": 275,
+      "name": "StarSeed",
+      "comment": "The stardust generator's seed (StarRandom $7E86)"
+    },
+    {
+      "offset": 277,
+      "name": "SunPosition",
+      "comment": "The sun's position: x, y, z, 3 bytes each (sign in bit 7 of the top byte)"
+    },
+    {
+      "offset": 286,
+      "name": "PlanetPosition",
+      "comment": "The planet's position: x, y, z"
+    },
+    {
+      "offset": 298,
+      "name": "SafeZone",
+      "comment": "Non-zero inside the space station's safe zone: the planet's three coordinates below $0200"
+    },
+    {
+      "offset": 299,
+      "name": "StationLaunch",
+      "comment": "Non-zero while slot 0, the station, flies in after a launch"
+    },
+    {
+      "offset": 300,
+      "name": "SunNear",
+      "comment": "Non-zero when the sun's distance is below $2000 (DashDistances $81EC)"
+    },
+    {
+      "offset": 301,
+      "name": "TooClose",
+      "comment": "Non-zero when the ship has hit the planet or the sun"
+    },
+    {
+      "offset": 302,
+      "name": "SunLarge",
+      "comment": "Non-zero when the sun's circle radius is $28 or more (DrawSunPlanet $75A8)"
+    },
+    {
+      "offset": 306,
+      "name": "HoldRates",
+      "comment": "Non-zero: FlightLoop keeps the control rates of the frame before"
+    },
+    {
+      "offset": 310,
+      "name": "SoundRequests",
+      "comment": "The sound requests: one bit a sound, set by the game, served by SoundTick"
+    },
+    {
+      "offset": 311,
+      "name": "AutoDocked",
+      "comment": "1 when the docking computer docked the ship (DockKeys $71AE)"
+    },
+    {
+      "offset": 345,
+      "name": "CopyRatesRollNeg",
+      "comment": ""
+    },
+    {
+      "offset": 351,
+      "name": "CopyRatesRollBar",
+      "comment": ""
+    },
+    {
+      "offset": 368,
+      "name": "CopyRatesPitchNeg",
+      "comment": ""
+    },
+    {
+      "offset": 374,
+      "name": "CopyRatesPitchBar",
+      "comment": ""
+    },
+    {
+      "offset": 405,
+      "name": "DockKeysComputer",
+      "comment": ""
+    },
+    {
+      "offset": 449,
+      "name": "DockKeysDock",
+      "comment": ""
+    },
+    {
+      "offset": 456,
+      "name": "DockKeysCentre",
+      "comment": ""
+    },
+    {
+      "offset": 476,
+      "name": "CentreMarker",
+      "comment": ""
+    },
+    {
+      "offset": 484,
+      "name": "CentreMarkerStore",
+      "comment": ""
+    },
+    {
+      "offset": 542,
+      "name": "ChartCursorBit",
+      "comment": ""
+    },
+    {
+      "offset": 559,
+      "name": "CloakKeyCount",
+      "comment": "Counts the frames down to the next look at the cloak key (every second frame)"
+    },
+    {
+      "offset": 609,
+      "name": "CloakTint",
+      "comment": ""
+    },
+    {
+      "offset": 613,
+      "name": "CloakPlain",
+      "comment": ""
+    },
+    {
+      "offset": 615,
+      "name": "CloakFill",
+      "comment": ""
+    },
+    {
+      "offset": 622,
+      "name": "NovaTintFill",
+      "comment": ""
+    },
+    {
+      "offset": 653,
+      "name": "ArrivalScreensFirst",
+      "comment": ""
+    },
+    {
+      "offset": 675,
+      "name": "BackToTitleMessage",
+      "comment": ""
+    },
+    {
+      "offset": 688,
+      "name": "ControlMethod",
+      "comment": "The control method chosen on the title: 1 Kempston (left on port $1F, bit 5 clear), 2 Cursor (5 held), 3 Sinclair (6 held)"
+    },
+    {
+      "offset": 698,
+      "name": "PauseRelease",
+      "comment": ""
+    },
+    {
+      "offset": 705,
+      "name": "PauseKey",
+      "comment": ""
+    },
+    {
+      "offset": 781,
+      "name": "PauseQuit",
+      "comment": ""
+    },
+    {
+      "offset": 843,
+      "name": "OptionKeyboardSwap",
+      "comment": ""
+    },
+    {
+      "offset": 848,
+      "name": "OptionKeyboardDone",
+      "comment": ""
+    },
+    {
+      "offset": 854,
+      "name": "ErrorBeepFrame",
+      "comment": ""
+    },
+    {
+      "offset": 858,
+      "name": "ErrorBeepTone",
+      "comment": ""
+    },
+    {
+      "offset": 868,
+      "name": "ErrorBeepHigh",
+      "comment": ""
+    },
+    {
+      "offset": 875,
+      "name": "ErrorBeepLow",
+      "comment": ""
+    },
+    {
+      "offset": 894,
+      "name": "TitleShip",
+      "comment": ""
+    },
+    {
+      "offset": 902,
+      "name": "TitleLoad",
+      "comment": ""
+    },
+    {
+      "offset": 930,
+      "name": "TitleIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 940,
+      "name": "TitleNext",
+      "comment": ""
+    },
+    {
+      "offset": 968,
+      "name": "TitleIfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 977,
+      "name": "TitleLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1008,
+      "name": "TitleKeys",
+      "comment": ""
+    },
+    {
+      "offset": 1026,
+      "name": "TitleKeyboard",
+      "comment": ""
+    },
+    {
+      "offset": 1029,
+      "name": "TitleMethod",
+      "comment": ""
+    },
+    {
+      "offset": 1035,
+      "name": "TitleStart",
+      "comment": ""
+    },
+    {
+      "offset": 1094,
+      "name": "TitleTextPrint",
+      "comment": ""
+    },
+    {
+      "offset": 1145,
+      "name": "FillAttrPageLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1150,
+      "name": "TitleShipCount",
+      "comment": "The title ship counter: the next title ship's blueprint"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$6FF2",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/startup.asm",
+    "label": "EnergyBombVector"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

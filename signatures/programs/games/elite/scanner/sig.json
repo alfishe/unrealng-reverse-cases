@@ -1,0 +1,1578 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/scanner",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: scanner",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "scanner"
+  ],
+  "summary": "The scanner, the condition light, the energy and the shields, the missile.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1350,
+    "sha1": "5a004ed53f00c75ac20368cd6f033eb241f9e091",
+    "masked_sha1": "eff22dadf558d3beb6a0f3fab778206575c3df88"
+  },
+  "origin": "$96D6",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipsPresent"
+    },
+    {
+      "offset": 12,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 17,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_96C3"
+    },
+    {
+      "offset": 21,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    },
+    {
+      "offset": 54,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Square"
+    },
+    {
+      "offset": 61,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Square"
+    },
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_96C4"
+    },
+    {
+      "offset": 80,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 90,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Divide16Vector"
+    },
+    {
+      "offset": 93,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShiftBC3"
+    },
+    {
+      "offset": 98,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShiftBC1"
+    },
+    {
+      "offset": 112,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_96C0"
+    },
+    {
+      "offset": 122,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Divide16Vector"
+    },
+    {
+      "offset": 125,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShiftBC4"
+    },
+    {
+      "offset": 130,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShiftBC2"
+    },
+    {
+      "offset": 144,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_96C1"
+    },
+    {
+      "offset": 154,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Divide16Vector"
+    },
+    {
+      "offset": 157,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShiftBC4"
+    },
+    {
+      "offset": 162,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShiftBC2"
+    },
+    {
+      "offset": 176,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_96C2"
+    },
+    {
+      "offset": 179,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_558F"
+    },
+    {
+      "offset": 182,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_96C0"
+    },
+    {
+      "offset": 190,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 206,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_96C0"
+    },
+    {
+      "offset": 233,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_96C0"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_96C2"
+    },
+    {
+      "offset": 276,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextLineUp"
+    },
+    {
+      "offset": 287,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextLineDown"
+    },
+    {
+      "offset": 292,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_96C1"
+    },
+    {
+      "offset": 313,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 327,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 345,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_96C3"
+    },
+    {
+      "offset": 351,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_96C3"
+    },
+    {
+      "offset": 359,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 365,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5009"
+    },
+    {
+      "offset": 429,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 441,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NonStationPresent"
+    },
+    {
+      "offset": 446,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 457,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 461,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 469,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 475,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 483,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 492,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 498,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 504,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_96C4"
+    },
+    {
+      "offset": 509,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_96C4"
+    },
+    {
+      "offset": 515,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_502A"
+    },
+    {
+      "offset": 534,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 540,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 548,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 558,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 563,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 567,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5049"
+    },
+    {
+      "offset": 570,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ScannerSave"
+    },
+    {
+      "offset": 625,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 628,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearHighlightsVector"
+    },
+    {
+      "offset": 632,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileState"
+    },
+    {
+      "offset": 635,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarLaserTemp"
+    },
+    {
+      "offset": 638,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarCabinTemp"
+    },
+    {
+      "offset": 641,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AutoDocked"
+    },
+    {
+      "offset": 644,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ECMActive"
+    },
+    {
+      "offset": 647,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 652,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarForeShield"
+    },
+    {
+      "offset": 655,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarAftShield"
+    },
+    {
+      "offset": 658,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarAltitude"
+    },
+    {
+      "offset": 661,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarEnergy1"
+    },
+    {
+      "offset": 671,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A23"
+    },
+    {
+      "offset": 674,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 684,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D089"
+    },
+    {
+      "offset": 696,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 719,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 725,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarForeShield"
+    },
+    {
+      "offset": 731,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarAftShield"
+    },
+    {
+      "offset": 749,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 763,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 770,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A28"
+    },
+    {
+      "offset": 776,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5A48"
+    },
+    {
+      "offset": 782,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 785,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileState"
+    },
+    {
+      "offset": 799,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5AE7"
+    },
+    {
+      "offset": 803,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintTarget"
+    },
+    {
+      "offset": 811,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 828,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeVector"
+    },
+    {
+      "offset": 833,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeVector"
+    },
+    {
+      "offset": 849,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeVector"
+    },
+    {
+      "offset": 854,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeVector"
+    },
+    {
+      "offset": 858,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_583C"
+    },
+    {
+      "offset": 864,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintTarget"
+    },
+    {
+      "offset": 871,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 875,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 881,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 884,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 887,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EscapePod"
+    },
+    {
+      "offset": 890,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnergyBombVector"
+    },
+    {
+      "offset": 893,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyCombat"
+    },
+    {
+      "offset": 900,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 906,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarEnergy4"
+    },
+    {
+      "offset": 915,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Condition"
+    },
+    {
+      "offset": 918,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 921,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarForeShield"
+    },
+    {
+      "offset": 924,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FrontHits"
+    },
+    {
+      "offset": 927,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 930,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarAftShield"
+    },
+    {
+      "offset": 933,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AftHits"
+    },
+    {
+      "offset": 936,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 939,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CloakOn"
+    },
+    {
+      "offset": 943,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EnergyDrain"
+    },
+    {
+      "offset": 952,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarEnergy1"
+    },
+    {
+      "offset": 970,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TooClose"
+    },
+    {
+      "offset": 982,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 994,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DamageVector"
+    },
+    {
+      "offset": 1013,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1016,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1026,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DamageVector"
+    },
+    {
+      "offset": 1030,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D08B"
+    },
+    {
+      "offset": 1034,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1037,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarEnergy4"
+    },
+    {
+      "offset": 1053,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarForeShield"
+    },
+    {
+      "offset": 1056,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1059,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarAftShield"
+    },
+    {
+      "offset": 1068,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintTarget"
+    },
+    {
+      "offset": 1076,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 1081,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeVector"
+    },
+    {
+      "offset": 1087,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 1092,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeVector"
+    },
+    {
+      "offset": 1098,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ECMActive"
+    },
+    {
+      "offset": 1104,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1109,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1112,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1118,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SafeZone"
+    },
+    {
+      "offset": 1124,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1129,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1132,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1135,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintTarget"
+    },
+    {
+      "offset": 1141,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1144,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 1148,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1154,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1159,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeVector"
+    },
+    {
+      "offset": 1186,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 1189,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintTarget"
+    },
+    {
+      "offset": 1194,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Missiles"
+    },
+    {
+      "offset": 1204,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeVector"
+    },
+    {
+      "offset": 1210,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Missiles"
+    },
+    {
+      "offset": 1222,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeVector"
+    },
+    {
+      "offset": 1228,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintTarget"
+    },
+    {
+      "offset": 1234,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Missiles"
+    },
+    {
+      "offset": 1239,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileState"
+    },
+    {
+      "offset": 1246,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileTarget"
+    },
+    {
+      "offset": 1253,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SightTarget"
+    },
+    {
+      "offset": 1260,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileState"
+    },
+    {
+      "offset": 1274,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyCombat"
+    },
+    {
+      "offset": 1278,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileState"
+    },
+    {
+      "offset": 1303,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileTarget"
+    },
+    {
+      "offset": 1314,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissileTarget"
+    },
+    {
+      "offset": 1324,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipActionVector"
+    },
+    {
+      "offset": 1330,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Messages"
+    },
+    {
+      "offset": 1338,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SoundRequests"
+    },
+    {
+      "offset": 1343,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Missiles"
+    },
+    {
+      "offset": 1347,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "ScannerNext",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The next slot"
+    },
+    {
+      "offset": 3,
+      "name": "DrawScanner",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Restore the scanner's background, then a dot and a stalk for each ship within range"
+    },
+    {
+      "offset": 404,
+      "name": "ScannerLineDown",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Down a character row; leaving the dashboard ($58xx) abandons the ship's stalk"
+    },
+    {
+      "offset": 422,
+      "name": "ScannerLineUp",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Up a character row; above the scanner's first row abandons the ship's stalk"
+    },
+    {
+      "offset": 440,
+      "name": "ConditionYellow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Yellow while a ship other than the station is about, unless the condition is red or flashing"
+    },
+    {
+      "offset": 460,
+      "name": "ScannerSaveOn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Patch ScannerCopy to save the screen into ScannerSave, then copy it (known from the code only: 3 runs after a new dashboard)"
+    },
+    {
+      "offset": 503,
+      "name": "ScannerRestore",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Once after a frame drew the scanner: clear the 11 x 8 bytes of the dashboard's middle and patch ScannerCopy back to a restore"
+    },
+    {
+      "offset": 566,
+      "name": "ScannerCopy",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Copy the scanner's 13 x 48 bytes between ScannerSave and the screen (patched for the direction)"
+    },
+    {
+      "offset": 624,
+      "name": "ResetFlight",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The new flight's dashboard: the missiles, the indicators, the bars full or empty, the scanner's colours"
+    },
+    {
+      "offset": 703,
+      "name": "FillBlock",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Fill 7 rows of 5 attribute cells with C (DE = 27 the row's rest)"
+    },
+    {
+      "offset": 718,
+      "name": "ConditionLight",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Light the condition: red with a shield down, flashing every two frames, the colour on the two cells"
+    },
+    {
+      "offset": 868,
+      "name": "ConditionGreen",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Condition green for the next frame"
+    },
+    {
+      "offset": 874,
+      "name": "DashboardTick",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The flight views' dashboard: the indicators, the missile, the energy bomb, then the damage"
+    },
+    {
+      "offset": 899,
+      "name": "Damage",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Flashing with the fourth bank not full; the recharge; the shields take the hits, the banks what the shields cannot"
+    },
+    {
+      "offset": 951,
+      "name": "DrainBanks",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Take C from each of B energy banks from E1 up; all empty ends the game"
+    },
+    {
+      "offset": 977,
+      "name": "ShieldHit",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A shield (HL) loses 4 x the hit (C); past zero the banks lose the rest and the hit flash builds up"
+    },
+    {
+      "offset": 1029,
+      "name": "Recharge",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One recharge step, two with the energy unit ($D08B)"
+    },
+    {
+      "offset": 1036,
+      "name": "RechargeStep",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The topmost bank not full gains 1; all full, each shield gains 1"
+    },
+    {
+      "offset": 1061,
+      "name": "ShieldGain",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One more to a shield below $A0"
+    },
+    {
+      "offset": 1067,
+      "name": "DrawIndicators",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The letters beside the bars and the two 2 x 2 indicators: E (ECM on) and S (the safe zone)"
+    },
+    {
+      "offset": 1140,
+      "name": "PrintBlock",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print two rows of two codes from DE at HL (row, column)"
+    },
+    {
+      "offset": 1143,
+      "name": "PrintPair",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print two codes at HL, then the next row"
+    },
+    {
+      "offset": 1153,
+      "name": "PrintTwo",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print the codes at DE and DE+1"
+    },
+    {
+      "offset": 1156,
+      "name": "PrintNext",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print the code at DE, DE+1"
+    },
+    {
+      "offset": 1182,
+      "name": "DrawMissiles",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The four missile cells at (row $17, column 2): a missile glyph ($25) for each left, a blank ($40) for the rest"
+    },
+    {
+      "offset": 1233,
+      "name": "MissileKeys",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "T arms the missile, U disarms it, F fires it at the locked target; an armed missile locks on the ship in the sights"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 23,
+      "name": "ScannerShip",
+      "comment": ""
+    },
+    {
+      "offset": 79,
+      "name": "ScannerPlace",
+      "comment": ""
+    },
+    {
+      "offset": 111,
+      "name": "DrawScannerSetSoundBit1",
+      "comment": ""
+    },
+    {
+      "offset": 143,
+      "name": "DrawScannerSetSoundBit2",
+      "comment": ""
+    },
+    {
+      "offset": 175,
+      "name": "DrawScannerSetSoundBit3",
+      "comment": ""
+    },
+    {
+      "offset": 178,
+      "name": "ScannerScreen",
+      "comment": "HL = the centre; x moves it by bytes and C gets the pixel"
+    },
+    {
+      "offset": 205,
+      "name": "DrawScannerGetSoundBit1",
+      "comment": ""
+    },
+    {
+      "offset": 212,
+      "name": "ScannerRight",
+      "comment": ""
+    },
+    {
+      "offset": 215,
+      "name": "DrawScannerLoop",
+      "comment": ""
+    },
+    {
+      "offset": 224,
+      "name": "DrawScannerLoop2",
+      "comment": ""
+    },
+    {
+      "offset": 229,
+      "name": "ScannerNearX",
+      "comment": ""
+    },
+    {
+      "offset": 241,
+      "name": "ScannerLeft",
+      "comment": ""
+    },
+    {
+      "offset": 244,
+      "name": "DrawScannerIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 253,
+      "name": "DrawScannerLoop3",
+      "comment": ""
+    },
+    {
+      "offset": 256,
+      "name": "ScannerDepth",
+      "comment": "z moves HL by pixel lines"
+    },
+    {
+      "offset": 271,
+      "name": "DrawScannerLoop4",
+      "comment": ""
+    },
+    {
+      "offset": 282,
+      "name": "ScannerDepthDown",
+      "comment": ""
+    },
+    {
+      "offset": 291,
+      "name": "ScannerStalk",
+      "comment": "y draws the stalk from there"
+    },
+    {
+      "offset": 305,
+      "name": "DrawScannerLoop5",
+      "comment": ""
+    },
+    {
+      "offset": 319,
+      "name": "ScannerStalkDown",
+      "comment": ""
+    },
+    {
+      "offset": 331,
+      "name": "ScannerDot",
+      "comment": "the dot: the stalk's pixel and its neighbours, across a byte edge at $9852 and $985E"
+    },
+    {
+      "offset": 344,
+      "name": "ScannerSlotDone",
+      "comment": ""
+    },
+    {
+      "offset": 361,
+      "name": "ScannerTopClear",
+      "comment": "the 13 bytes by 7 lines above the scanner cleared (the stalks that ran out of it)"
+    },
+    {
+      "offset": 367,
+      "name": "DrawScannerLoop6",
+      "comment": ""
+    },
+    {
+      "offset": 370,
+      "name": "DrawScannerLoop7",
+      "comment": ""
+    },
+    {
+      "offset": 380,
+      "name": "ScannerDotEdge1",
+      "comment": ""
+    },
+    {
+      "offset": 392,
+      "name": "ScannerDotEdge2",
+      "comment": ""
+    },
+    {
+      "offset": 417,
+      "name": "ScannerLineDownThird",
+      "comment": ""
+    },
+    {
+      "offset": 431,
+      "name": "ScannerLineUpRow",
+      "comment": ""
+    },
+    {
+      "offset": 517,
+      "name": "ScannerRestoreLine",
+      "comment": ""
+    },
+    {
+      "offset": 520,
+      "name": "ScannerRestoreByte",
+      "comment": ""
+    },
+    {
+      "offset": 572,
+      "name": "ScannerCopyFlip",
+      "comment": "NOP or EX DE,HL"
+    },
+    {
+      "offset": 575,
+      "name": "ScannerCopyRow",
+      "comment": ""
+    },
+    {
+      "offset": 580,
+      "name": "ScannerCopyLine",
+      "comment": ""
+    },
+    {
+      "offset": 611,
+      "name": "ScannerCopyFlipBack",
+      "comment": ""
+    },
+    {
+      "offset": 623,
+      "name": "ScannerSpare",
+      "comment": ""
+    },
+    {
+      "offset": 665,
+      "name": "ResetFlightLoop",
+      "comment": ""
+    },
+    {
+      "offset": 670,
+      "name": "ResetFlightJoin",
+      "comment": ""
+    },
+    {
+      "offset": 681,
+      "name": "ResetFlightColour",
+      "comment": ""
+    },
+    {
+      "offset": 691,
+      "name": "ResetFlightBlocks",
+      "comment": ""
+    },
+    {
+      "offset": 705,
+      "name": "FillBlockRow",
+      "comment": ""
+    },
+    {
+      "offset": 708,
+      "name": "FillBlockCell",
+      "comment": ""
+    },
+    {
+      "offset": 717,
+      "name": "ConditionFlash",
+      "comment": "The flashing's counter: bit 1 picks red or black"
+    },
+    {
+      "offset": 736,
+      "name": "ConditionRed",
+      "comment": ""
+    },
+    {
+      "offset": 743,
+      "name": "ConditionColour",
+      "comment": ""
+    },
+    {
+      "offset": 759,
+      "name": "ConditionRedPhase",
+      "comment": ""
+    },
+    {
+      "offset": 761,
+      "name": "ConditionShow",
+      "comment": ""
+    },
+    {
+      "offset": 793,
+      "name": "ConditionMissile",
+      "comment": ""
+    },
+    {
+      "offset": 802,
+      "name": "ConditionText",
+      "comment": ""
+    },
+    {
+      "offset": 839,
+      "name": "ConditionTextGreen",
+      "comment": ""
+    },
+    {
+      "offset": 841,
+      "name": "ConditionTextColour",
+      "comment": ""
+    },
+    {
+      "offset": 845,
+      "name": "ConditionTextOther",
+      "comment": ""
+    },
+    {
+      "offset": 857,
+      "name": "ConditionTextCells",
+      "comment": ""
+    },
+    {
+      "offset": 917,
+      "name": "DamageShields",
+      "comment": ""
+    },
+    {
+      "offset": 948,
+      "name": "DamageDrain",
+      "comment": ""
+    },
+    {
+      "offset": 956,
+      "name": "DrainBanksLoop",
+      "comment": ""
+    },
+    {
+      "offset": 973,
+      "name": "DrainBanksNext",
+      "comment": ""
+    },
+    {
+      "offset": 989,
+      "name": "ShieldHitNow",
+      "comment": ""
+    },
+    {
+      "offset": 1000,
+      "name": "ShieldHitStep",
+      "comment": ""
+    },
+    {
+      "offset": 1008,
+      "name": "ShieldDown",
+      "comment": ""
+    },
+    {
+      "offset": 1028,
+      "name": "HitCount",
+      "comment": "The hits that went through the shields, +5 each, cooling by one a frame"
+    },
+    {
+      "offset": 1041,
+      "name": "RechargeBank",
+      "comment": ""
+    },
+    {
+      "offset": 1048,
+      "name": "RechargeBankDown",
+      "comment": ""
+    },
+    {
+      "offset": 1108,
+      "name": "IndicatorNoECM",
+      "comment": ""
+    },
+    {
+      "offset": 1111,
+      "name": "IndicatorECM",
+      "comment": ""
+    },
+    {
+      "offset": 1128,
+      "name": "IndicatorNoSafe",
+      "comment": ""
+    },
+    {
+      "offset": 1131,
+      "name": "IndicatorSafe",
+      "comment": ""
+    },
+    {
+      "offset": 1164,
+      "name": "IndicatorCodes",
+      "comment": "The bar letters ($26, $24) and the indicators: E on, E off, S on, S off (frame pieces when off)"
+    },
+    {
+      "offset": 1200,
+      "name": "DrawMissilesLeft",
+      "comment": ""
+    },
+    {
+      "offset": 1209,
+      "name": "DrawMissilesGetMissiles",
+      "comment": ""
+    },
+    {
+      "offset": 1218,
+      "name": "DrawMissilesEmpty",
+      "comment": ""
+    },
+    {
+      "offset": 1273,
+      "name": "MissileKey",
+      "comment": ""
+    },
+    {
+      "offset": 1295,
+      "name": "MissileArm",
+      "comment": ""
+    },
+    {
+      "offset": 1306,
+      "name": "MissileDisarm",
+      "comment": ""
+    },
+    {
+      "offset": 1309,
+      "name": "MissileFire",
+      "comment": ""
+    },
+    {
+      "offset": 1335,
+      "name": "MissileGone",
+      "comment": ""
+    },
+    {
+      "offset": 1349,
+      "name": "MissileLaunchFlag",
+      "comment": "Cleared by ResetFlight; used by the next routine"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$96D6",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/scanner.asm",
+    "label": "ScannerNext"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

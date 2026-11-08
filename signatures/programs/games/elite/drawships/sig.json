@@ -1,0 +1,1739 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/drawships",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: drawships",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "drawships"
+  ],
+  "summary": "Drawing a ship: the view's axes, the dot of a far ship, the vertices projected, the visible edges, the laser beams.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 2401,
+    "sha1": "d2770cc4cdc3ba6655c43c5c9455bbd83a16a76f",
+    "masked_sha1": "7fccf408b9427b4cebfeed16efdba741c5b28c6d"
+  },
+  "origin": "$A6DF",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 33,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 64,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 68,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 80,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 84,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 90,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 102,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 106,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 118,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 122,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 135,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 142,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DotProductSpare"
+    },
+    {
+      "offset": 151,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 160,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 163,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 172,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 194,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SightTarget"
+    },
+    {
+      "offset": 209,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 248,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 251,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionShip"
+    },
+    {
+      "offset": 261,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 264,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 273,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 278,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 282,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 287,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 291,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 296,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 332,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 336,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 340,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 344,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 347,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 369,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 374,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 393,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 398,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 401,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FaceVisibility"
+    },
+    {
+      "offset": 404,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 407,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 418,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 422,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Random"
+    },
+    {
+      "offset": 441,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B348"
+    },
+    {
+      "offset": 447,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B348"
+    },
+    {
+      "offset": 450,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawLine"
+    },
+    {
+      "offset": 454,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_B348"
+    },
+    {
+      "offset": 462,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 468,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 474,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DotProductSpare"
+    },
+    {
+      "offset": 480,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 485,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 517,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 521,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 525,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 530,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 765,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 769,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 774,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 787,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 796,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 804,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 807,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 811,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 815,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 829,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 834,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 845,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 911,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 930,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 944,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 970,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 989,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1001,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1021,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1029,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1088,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1102,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1173,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1197,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1200,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1203,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1206,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1209,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1212,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1219,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1222,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1225,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1228,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1231,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1234,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1238,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1241,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1244,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1247,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1286,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1305,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1323,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1352,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1373,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1387,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1409,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1478,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1483,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1503,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1507,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1510,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1513,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1516,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1519,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1522,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1525,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1528,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1531,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1534,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1538,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1557,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1560,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1565,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1568,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1571,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1575,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1588,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1591,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1596,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1599,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1602,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1606,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1619,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1622,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1627,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1630,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1633,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1637,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1640,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 1648,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1651,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1655,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1658,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1662,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1666,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1669,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1672,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1676,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1679,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1683,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1686,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1692,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1701,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1704,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1708,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1711,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1715,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1719,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1722,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1725,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1729,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1732,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1736,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1739,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1745,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1751,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1757,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 1769,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1772,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1775,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1783,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1788,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1793,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 1801,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1819,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1851,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1860,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1868,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1878,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1892,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawLine"
+    },
+    {
+      "offset": 1908,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1946,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DotProduct"
+    },
+    {
+      "offset": 1950,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1953,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1956,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1972,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2005,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2031,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2046,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2076,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2106,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2141,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2146,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2158,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFF"
+    },
+    {
+      "offset": 2196,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2205,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2222,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2242,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 2250,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FFFE"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "DrawShip",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Draw one ship in the view: the depth, the screen position, the gunsight test, then the dot or the wireframe"
+    },
+    {
+      "offset": 349,
+      "name": "PlotPixel",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "XOR one pixel at (C, B) into the back buffer through the ROM's PIXEL-ADD ($22B1) with H's bit 7 set"
+    },
+    {
+      "offset": 366,
+      "name": "DrawWireframe",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The wireframe: the view's rotation (ViewMatrix), the distance as the detail level, the faces, the vertices, the edges and the laser"
+    },
+    {
+      "offset": 461,
+      "name": "ExplosionPoint",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A destroyed ship: its screen point, its size and the quadrant into +$1C-+$1F, the state 11"
+    },
+    {
+      "offset": 511,
+      "name": "DrawLaserOnly",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A firing ship that is not drawn still fires: the beam from its screen point"
+    },
+    {
+      "offset": 746,
+      "name": "ProjectVertices",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Each vertex whose visibility distance passes and one of whose faces is visible is rotated and projected"
+    },
+    {
+      "offset": 817,
+      "name": "EitherFace",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "NZ when one of the two faces in A's nibbles is visible"
+    },
+    {
+      "offset": 833,
+      "name": "FaceIsVisible",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "NZ when face A is visible"
+    },
+    {
+      "offset": 844,
+      "name": "RotateVertexScaled",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One rotated part of a scaled vertex: three products with a matrix row, summed; a repeat reuses the products with new signs"
+    },
+    {
+      "offset": 1052,
+      "name": "AddSignedBytes",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = L + E with the signs in H and D (bit 7), the sign out in H"
+    },
+    {
+      "offset": 1068,
+      "name": "Multiply8High",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = B x C / 256 by quarter squares (the high bytes)"
+    },
+    {
+      "offset": 1087,
+      "name": "MultiplyScaled",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "B shifted up by VertexScale, times a matrix byte's magnitude"
+    },
+    {
+      "offset": 1109,
+      "name": "Multiply8",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = B x C by quarter squares"
+    },
+    {
+      "offset": 1136,
+      "name": "AddDoubled",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL (sign B) plus 2 x DE (sign D): a vertex part added to the ship's position"
+    },
+    {
+      "offset": 1172,
+      "name": "RotateVertexSmall",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A vertex of small parts (no scale): the rotated parts from the face normals' routine, or reused"
+    },
+    {
+      "offset": 1249,
+      "name": "RotateVertexReuse",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A repeat vertex: the last products with the new signs"
+    },
+    {
+      "offset": 1314,
+      "name": "RotateNormal",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One rotated part: three high-byte products of the parts with a matrix row"
+    },
+    {
+      "offset": 1418,
+      "name": "DividePoint",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "C = the fraction (A H L) / (D E C'), DE scaled to 8 bits first: the perspective division"
+    },
+    {
+      "offset": 1452,
+      "name": "DividePointLoop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 1475,
+      "name": "Project",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Rotate one vertex into the view (scaled, small or reused), add the ship's position and divide by the depth"
+    },
+    {
+      "offset": 1536,
+      "name": "ProjectAdd",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The ship's position plus the rotated vertex, then the screen point by the view's axes, stored in ProjectedPoints"
+    },
+    {
+      "offset": 1811,
+      "name": "ProjectNext",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The next vertex"
+    },
+    {
+      "offset": 1826,
+      "name": "DrawEdges",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Each edge with a visible face, its distance passing and both ends in front: a line between its two points"
+    },
+    {
+      "offset": 1905,
+      "name": "PointOf",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "D, E, A = the screen point of vertex A; NZ when it is hidden"
+    },
+    {
+      "offset": 1930,
+      "name": "Orthogonalise",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Make the roof axis square to the nose: roof -= nose x (roof . nose)"
+    },
+    {
+      "offset": 1963,
+      "name": "OrthogonalisePart",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One part of it, clamped"
+    },
+    {
+      "offset": 2029,
+      "name": "ViewMatrixSetup",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The side axis as the roof x nose cross product (three DifferenceOfProducts), and ViewMatrix filled from the three axes"
+    },
+    {
+      "offset": 2115,
+      "name": "DifferenceOfProducts",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = B x C - D x E with the signs, halved: a part of a cross product"
+    },
+    {
+      "offset": 2181,
+      "name": "MultiplyUnused",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A sum of three 8 x 16 products (known from the code only: nothing calls it)"
+    },
+    {
+      "offset": 2249,
+      "name": "Divide16",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "BC = (H L A) / DE: a 16-bit quotient by shifts"
+    },
+    {
+      "offset": 2282,
+      "name": "SubtractSigned",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "(HL - DE) / 2 in sign and magnitude"
+    },
+    {
+      "offset": 2286,
+      "name": "AddSignedHalf",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "(HL + DE) / 2 in sign and magnitude"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 18,
+      "name": "DrawShipDepth",
+      "comment": ""
+    },
+    {
+      "offset": 48,
+      "name": "DrawShipNear",
+      "comment": ""
+    },
+    {
+      "offset": 92,
+      "name": "DrawShipSide",
+      "comment": ""
+    },
+    {
+      "offset": 127,
+      "name": "DrawShipQuadrant",
+      "comment": ""
+    },
+    {
+      "offset": 162,
+      "name": "DrawShipX",
+      "comment": ""
+    },
+    {
+      "offset": 174,
+      "name": "DrawShipSight",
+      "comment": ""
+    },
+    {
+      "offset": 196,
+      "name": "DrawShipAvoid",
+      "comment": ""
+    },
+    {
+      "offset": 227,
+      "name": "DrawShipAvoidTest",
+      "comment": ""
+    },
+    {
+      "offset": 243,
+      "name": "DrawShipAlive",
+      "comment": ""
+    },
+    {
+      "offset": 263,
+      "name": "DrawShipFar",
+      "comment": ""
+    },
+    {
+      "offset": 302,
+      "name": "DrawShipDot",
+      "comment": ""
+    },
+    {
+      "offset": 313,
+      "name": "DrawShipDotLeft",
+      "comment": ""
+    },
+    {
+      "offset": 317,
+      "name": "DrawShipDotY",
+      "comment": ""
+    },
+    {
+      "offset": 327,
+      "name": "DrawShipDotUp",
+      "comment": ""
+    },
+    {
+      "offset": 331,
+      "name": "DrawShipDotPlot",
+      "comment": ""
+    },
+    {
+      "offset": 357,
+      "name": "PlotPixelBit",
+      "comment": ""
+    },
+    {
+      "offset": 386,
+      "name": "DrawWireframeDistance",
+      "comment": ""
+    },
+    {
+      "offset": 392,
+      "name": "DrawWireframeDetail",
+      "comment": ""
+    },
+    {
+      "offset": 421,
+      "name": "DrawLaserBeam",
+      "comment": ""
+    },
+    {
+      "offset": 491,
+      "name": "ExplosionPointQuadrant",
+      "comment": ""
+    },
+    {
+      "offset": 536,
+      "name": "DrawLaserOnlyQuadrant",
+      "comment": ""
+    },
+    {
+      "offset": 539,
+      "name": "ProjectedPoints",
+      "comment": "The screen points of the vertices: x, y and the quadrant ($FF hidden), 3 bytes each"
+    },
+    {
+      "offset": 677,
+      "name": "FaceVisible",
+      "comment": "One byte per face: non-zero visible (FaceVisibility)"
+    },
+    {
+      "offset": 693,
+      "name": "ViewMatrix",
+      "comment": "The ship's axes in the view's order: three rows of three sign and magnitude words, then the vertex's rotated parts (+$12-+$17)"
+    },
+    {
+      "offset": 729,
+      "name": "ShipDistance",
+      "comment": "The depth's high byte (then the detail level)"
+    },
+    {
+      "offset": 730,
+      "name": "ShipDistanceHigh",
+      "comment": ""
+    },
+    {
+      "offset": 731,
+      "name": "PointOffset",
+      "comment": "The current vertex's offset into ProjectedPoints"
+    },
+    {
+      "offset": 732,
+      "name": "VertexX",
+      "comment": "The rotated vertex plus the ship's position"
+    },
+    {
+      "offset": 734,
+      "name": "VertexY",
+      "comment": ""
+    },
+    {
+      "offset": 736,
+      "name": "VertexZ",
+      "comment": ""
+    },
+    {
+      "offset": 738,
+      "name": "ScreenX",
+      "comment": "The ship's or the vertex's screen point and quadrant"
+    },
+    {
+      "offset": 739,
+      "name": "ScreenY",
+      "comment": ""
+    },
+    {
+      "offset": 740,
+      "name": "ScreenQuadrant",
+      "comment": ""
+    },
+    {
+      "offset": 741,
+      "name": "VertexSignX",
+      "comment": ""
+    },
+    {
+      "offset": 742,
+      "name": "VertexSignY",
+      "comment": ""
+    },
+    {
+      "offset": 743,
+      "name": "VertexSignZ",
+      "comment": ""
+    },
+    {
+      "offset": 744,
+      "name": "VertexScale",
+      "comment": "The shift that keeps the vertex's parts in 8 bits"
+    },
+    {
+      "offset": 745,
+      "name": "VertexCached",
+      "comment": "Zero when the vertex repeats the last one's magnitudes: the products are reused"
+    },
+    {
+      "offset": 767,
+      "name": "ProjectVertex",
+      "comment": ""
+    },
+    {
+      "offset": 792,
+      "name": "ProjectVertexFaces",
+      "comment": ""
+    },
+    {
+      "offset": 806,
+      "name": "ProjectVerticesIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 809,
+      "name": "ProjectVertexHidden",
+      "comment": ""
+    },
+    {
+      "offset": 841,
+      "name": "FaceIsVisibleNow",
+      "comment": ""
+    },
+    {
+      "offset": 940,
+      "name": "RotateVertexNew",
+      "comment": ""
+    },
+    {
+      "offset": 1028,
+      "name": "RotateVertexScale",
+      "comment": ""
+    },
+    {
+      "offset": 1036,
+      "name": "RotateVertexShift",
+      "comment": ""
+    },
+    {
+      "offset": 1046,
+      "name": "RotateVertexSign",
+      "comment": ""
+    },
+    {
+      "offset": 1060,
+      "name": "AddSignedBytesSub",
+      "comment": ""
+    },
+    {
+      "offset": 1074,
+      "name": "Multiply8HighNow",
+      "comment": ""
+    },
+    {
+      "offset": 1090,
+      "name": "MultiplyScaledShift",
+      "comment": ""
+    },
+    {
+      "offset": 1115,
+      "name": "Multiply8Now",
+      "comment": ""
+    },
+    {
+      "offset": 1148,
+      "name": "AddDoubledSub",
+      "comment": ""
+    },
+    {
+      "offset": 1159,
+      "name": "AddDoubledFlip",
+      "comment": ""
+    },
+    {
+      "offset": 1182,
+      "name": "RotateVertexSmallSame",
+      "comment": ""
+    },
+    {
+      "offset": 1216,
+      "name": "RotateVertexSmallNew",
+      "comment": ""
+    },
+    {
+      "offset": 1236,
+      "name": "RotateVertexSmallDone",
+      "comment": ""
+    },
+    {
+      "offset": 1420,
+      "name": "DividePointNormalise",
+      "comment": ""
+    },
+    {
+      "offset": 1421,
+      "name": "DividePointShift",
+      "comment": ""
+    },
+    {
+      "offset": 1441,
+      "name": "DividePointRound",
+      "comment": ""
+    },
+    {
+      "offset": 1445,
+      "name": "DividePointStart",
+      "comment": ""
+    },
+    {
+      "offset": 1465,
+      "name": "DividePointSub",
+      "comment": ""
+    },
+    {
+      "offset": 1472,
+      "name": "VertexHigh",
+      "comment": "The rotated vertex's top bytes"
+    },
+    {
+      "offset": 1496,
+      "name": "ProjectScale",
+      "comment": ""
+    },
+    {
+      "offset": 1699,
+      "name": "ProjectAddSide",
+      "comment": ""
+    },
+    {
+      "offset": 1750,
+      "name": "ProjectAddQuadrant",
+      "comment": ""
+    },
+    {
+      "offset": 1766,
+      "name": "ProjectAddStore",
+      "comment": ""
+    },
+    {
+      "offset": 1781,
+      "name": "ProjectAddIfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 1807,
+      "name": "ProjectAddDone",
+      "comment": ""
+    },
+    {
+      "offset": 1841,
+      "name": "DrawEdgesLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1856,
+      "name": "DrawEdgesFaces",
+      "comment": ""
+    },
+    {
+      "offset": 1894,
+      "name": "DrawEdgesNext",
+      "comment": ""
+    },
+    {
+      "offset": 1913,
+      "name": "PointOfOffset",
+      "comment": ""
+    },
+    {
+      "offset": 1917,
+      "name": "PointOfAdd",
+      "comment": ""
+    },
+    {
+      "offset": 1922,
+      "name": "PointOfRead",
+      "comment": ""
+    },
+    {
+      "offset": 2007,
+      "name": "OrthogonalisePartSub",
+      "comment": ""
+    },
+    {
+      "offset": 2014,
+      "name": "OrthogonalisePartStore",
+      "comment": ""
+    },
+    {
+      "offset": 2162,
+      "name": "DifferenceOfProductsSub",
+      "comment": ""
+    },
+    {
+      "offset": 2175,
+      "name": "DifferenceOfProductsDone",
+      "comment": ""
+    },
+    {
+      "offset": 2217,
+      "name": "MultiplyUnusedIfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 2236,
+      "name": "MultiplyUnusedIfNotBelow2",
+      "comment": ""
+    },
+    {
+      "offset": 2252,
+      "name": "Divide16Loop",
+      "comment": ""
+    },
+    {
+      "offset": 2271,
+      "name": "Divide16Over",
+      "comment": ""
+    },
+    {
+      "offset": 2274,
+      "name": "Divide16One",
+      "comment": ""
+    },
+    {
+      "offset": 2301,
+      "name": "AddSignedHalfSub",
+      "comment": ""
+    },
+    {
+      "offset": 2311,
+      "name": "AddSignedHalfDone",
+      "comment": ""
+    },
+    {
+      "offset": 2321,
+      "name": "LineSteps",
+      "comment": "DrawLine's step table: per octant the screen moves"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$A6DF",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/drawships.asm",
+    "label": "DrawShip"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

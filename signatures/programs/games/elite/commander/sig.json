@@ -1,0 +1,1041 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/commander",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: commander",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "commander"
+  ],
+  "summary": "The commander menu (load and save on tape, the security number), the view names and the message line.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 672,
+    "sha1": "33ca6e472e392ef002c31b05c7d1a23ecd3f98c5",
+    "masked_sha1": "b22befa5b4f06a9c0a0e857d0fb0446fb7eaa6ad"
+  },
+  "origin": "$D902",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 9,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 12,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 15,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColourBands"
+    },
+    {
+      "offset": 18,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillAttrRow"
+    },
+    {
+      "offset": 23,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MenuTop"
+    },
+    {
+      "offset": 27,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 35,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 39,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 42,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 50,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 56,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClickWait"
+    },
+    {
+      "offset": 59,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearKeys4"
+    },
+    {
+      "offset": 62,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 69,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NameInput"
+    },
+    {
+      "offset": 72,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 75,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 87,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 92,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 97,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 100,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NameInput"
+    },
+    {
+      "offset": 103,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CommanderName"
+    },
+    {
+      "offset": 108,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 118,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 127,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CommanderName"
+    },
+    {
+      "offset": 130,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunPosition"
+    },
+    {
+      "offset": 136,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RecordTail"
+    },
+    {
+      "offset": 146,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 149,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 152,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 163,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 168,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 174,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 179,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 182,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D061"
+    },
+    {
+      "offset": 190,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D065"
+    },
+    {
+      "offset": 193,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionFlags"
+    },
+    {
+      "offset": 208,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D066"
+    },
+    {
+      "offset": 216,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 220,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 224,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 246,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber"
+    },
+    {
+      "offset": 251,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 255,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CC"
+    },
+    {
+      "offset": 260,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber"
+    },
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CommanderName"
+    },
+    {
+      "offset": 266,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DefaultCommander"
+    },
+    {
+      "offset": 274,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 293,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyCode"
+    },
+    {
+      "offset": 300,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearInputRows"
+    },
+    {
+      "offset": 305,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 312,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 315,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DefaultCommander"
+    },
+    {
+      "offset": 318,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CommanderName"
+    },
+    {
+      "offset": 329,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CommanderName"
+    },
+    {
+      "offset": 342,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ReadLine"
+    },
+    {
+      "offset": 347,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCase"
+    },
+    {
+      "offset": 353,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 356,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearRow22"
+    },
+    {
+      "offset": 360,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 363,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLine"
+    },
+    {
+      "offset": 366,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Click"
+    },
+    {
+      "offset": 378,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCase"
+    },
+    {
+      "offset": 381,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 388,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D548"
+    },
+    {
+      "offset": 393,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 396,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D548"
+    },
+    {
+      "offset": 402,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D50A"
+    },
+    {
+      "offset": 410,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 413,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 418,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 423,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeLine"
+    },
+    {
+      "offset": 426,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 429,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D50A"
+    },
+    {
+      "offset": 435,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpTick"
+    },
+    {
+      "offset": 438,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ConditionLightVector"
+    },
+    {
+      "offset": 441,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 448,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 458,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Messages"
+    },
+    {
+      "offset": 476,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Click"
+    },
+    {
+      "offset": 482,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 486,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 490,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 498,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 504,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 510,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 513,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 524,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 527,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeLine"
+    },
+    {
+      "offset": 530,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 537,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TextColumn"
+    },
+    {
+      "offset": 543,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 548,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 552,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintNumber"
+    },
+    {
+      "offset": 557,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BarEnergy4"
+    },
+    {
+      "offset": 564,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunNear"
+    },
+    {
+      "offset": 570,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AutoDocked"
+    },
+    {
+      "offset": 576,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 586,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionState"
+    },
+    {
+      "offset": 592,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NovaMission"
+    },
+    {
+      "offset": 597,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunGrows"
+    },
+    {
+      "offset": 602,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_C202"
+    },
+    {
+      "offset": 614,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7B05"
+    },
+    {
+      "offset": 619,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D088"
+    },
+    {
+      "offset": 624,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Fuel"
+    },
+    {
+      "offset": 628,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetFuel"
+    },
+    {
+      "offset": 631,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_A008"
+    },
+    {
+      "offset": 637,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CloakOn"
+    },
+    {
+      "offset": 642,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 647,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillAttrsVector"
+    },
+    {
+      "offset": 650,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_640A"
+    },
+    {
+      "offset": 653,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 658,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Messages"
+    },
+    {
+      "offset": 668,
+      "length": 2,
+      "kind": "rel16"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 8,
+      "name": "CommanderMenu",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The ACCESS MENU: 1 load, 2 save, 3 leave; returns A = 1 (NZ) when a commander was loaded"
+    },
+    {
+      "offset": 68,
+      "name": "LoadCommander",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "1: the name to look for (empty: the first commander found), then blocks until the names agree"
+    },
+    {
+      "offset": 126,
+      "name": "SaveCommander",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "2: the name into the record, the sun's place into its tail, START TAPE, SA-BYTES, then the security number"
+    },
+    {
+      "offset": 170,
+      "name": "SecurityNumber",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Print \"SECURITY NUMBER:\" and two five-digit numbers made from the combat score, the galaxy, two mission flags and the cash"
+    },
+    {
+      "offset": 262,
+      "name": "KeepCommander",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The record becomes DefaultCommander (93 bytes), back to the menu"
+    },
+    {
+      "offset": 276,
+      "name": "Parity",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The parity of A's eight bits into the top of D (C = the count of ones, its bit 0 shifted in)"
+    },
+    {
+      "offset": 291,
+      "name": "LoadFailed",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One frame, then BREAK if SPACE is held (FC0D = $20), else TAPE LOADING ERROR and the record back from DefaultCommander"
+    },
+    {
+      "offset": 299,
+      "name": "TapeBreak",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The message lines cleared and BREAK"
+    },
+    {
+      "offset": 309,
+      "name": "TapeError",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 327,
+      "name": "TapeBlock",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "IX = the record, DE = 102, A = $FF (a data block)"
+    },
+    {
+      "offset": 337,
+      "name": "ReadName",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Read a name of up to 10 letters into HL after COMMANDER'S NAME? (other 8)"
+    },
+    {
+      "offset": 344,
+      "name": "TapeMessage",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other token A on the message row 22, after the row is cleared; a new line, a click"
+    },
+    {
+      "offset": 376,
+      "name": "ViewTexts",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The space view's name (\"FRONT VIEW\" and the like) into the back buffer, then MessageTick"
+    },
+    {
+      "offset": 434,
+      "name": "MessageTick",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The jump countdown, the condition light, then the message line: show, scan the slots, or raise a periodic message"
+    },
+    {
+      "offset": 479,
+      "name": "MessageShow",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Show standard code B at column C for 14 passes"
+    },
+    {
+      "offset": 484,
+      "name": "MessageSet",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Code B at column C, the count left as it is"
+    },
+    {
+      "offset": 556,
+      "name": "MessagePeriodic",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Every 70 passes: ENERGY LOW, FUEL SCOOPS ON (and the fuel), DOCKING COMPUTERS ON, or the mission's MAYDAY"
+    },
+    {
+      "offset": 655,
+      "name": "ClearMessages",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Every slot's request bit cleared and the line's code to 0"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 0,
+      "name": "MenuBands",
+      "comment": "The menu page's colour bands for ColourBands: one cell and a gap of 4 rows, two cells and 2 rows twice, two cells and 3 rows, sixteen cells and the end"
+    },
+    {
+      "offset": 5,
+      "name": "TapeLoaded",
+      "comment": "1 once a commander has been loaded: CommanderMenu returns it"
+    },
+    {
+      "offset": 6,
+      "name": "MenuStack",
+      "comment": "SP at the menu's start: every pass and every error path starts again from it"
+    },
+    {
+      "offset": 37,
+      "name": "CommanderMenuKey",
+      "comment": ""
+    },
+    {
+      "offset": 55,
+      "name": "CommanderMenuExit",
+      "comment": ""
+    },
+    {
+      "offset": 74,
+      "name": "LoadCommanderBlock",
+      "comment": ""
+    },
+    {
+      "offset": 99,
+      "name": "LoadCommanderName",
+      "comment": ""
+    },
+    {
+      "offset": 112,
+      "name": "LoadCommanderCompare",
+      "comment": ""
+    },
+    {
+      "offset": 201,
+      "name": "SecurityNumberIfZero",
+      "comment": ""
+    },
+    {
+      "offset": 207,
+      "name": "SecurityNumberGetCommanderRest3",
+      "comment": ""
+    },
+    {
+      "offset": 273,
+      "name": "CommanderMenuAgain",
+      "comment": ""
+    },
+    {
+      "offset": 280,
+      "name": "ParityLoop",
+      "comment": ""
+    },
+    {
+      "offset": 284,
+      "name": "ParityNext",
+      "comment": ""
+    },
+    {
+      "offset": 368,
+      "name": "MessageTimer",
+      "comment": "Counts 70 passes between the periodic messages"
+    },
+    {
+      "offset": 369,
+      "name": "MessageShown",
+      "comment": "The passes the message on the line has left (14 from MessageShow)"
+    },
+    {
+      "offset": 370,
+      "name": "MessagePass",
+      "comment": "Toggled each pass: the slots are scanned on even passes, the periodic messages on odd ones"
+    },
+    {
+      "offset": 371,
+      "name": "MessageColumn",
+      "comment": "The message's column on row 14"
+    },
+    {
+      "offset": 372,
+      "name": "MessageToken",
+      "comment": "The message's standard code: $FD (token $5D, \" DESTROYED\") after MessageItem, $E2 (token $42, \" CR\") after MessageNumber, 0 none"
+    },
+    {
+      "offset": 373,
+      "name": "MessageNumber",
+      "comment": "The bounty AddCash shows, in tenths"
+    },
+    {
+      "offset": 375,
+      "name": "MessageItem",
+      "comment": "The item DamageItem destroyed, a standard code (equipment $6C on, cargo $CC on)"
+    },
+    {
+      "offset": 401,
+      "name": "ViewTextsSpace",
+      "comment": ""
+    },
+    {
+      "offset": 455,
+      "name": "MessageScan",
+      "comment": ""
+    },
+    {
+      "offset": 460,
+      "name": "MessageScanLoop",
+      "comment": ""
+    },
+    {
+      "offset": 469,
+      "name": "MessageTake",
+      "comment": ""
+    },
+    {
+      "offset": 474,
+      "name": "MessageTickJoin",
+      "comment": ""
+    },
+    {
+      "offset": 493,
+      "name": "MessagePrint",
+      "comment": ""
+    },
+    {
+      "offset": 523,
+      "name": "MessagePrintCode",
+      "comment": ""
+    },
+    {
+      "offset": 529,
+      "name": "MessageDestroyed",
+      "comment": "$FD: the item's name (three columns on, except code $73) and DESTROYED"
+    },
+    {
+      "offset": 542,
+      "name": "MessageDestroyedName",
+      "comment": ""
+    },
+    {
+      "offset": 547,
+      "name": "MessageBounty",
+      "comment": "$E2: the bounty and CR"
+    },
+    {
+      "offset": 582,
+      "name": "MessagePeriodicDue",
+      "comment": ""
+    },
+    {
+      "offset": 606,
+      "name": "MessagePeriodicCount",
+      "comment": ""
+    },
+    {
+      "offset": 608,
+      "name": "MessageInvaded",
+      "comment": ""
+    },
+    {
+      "offset": 613,
+      "name": "MessageDocking",
+      "comment": ""
+    },
+    {
+      "offset": 618,
+      "name": "MessageScooping",
+      "comment": ""
+    },
+    {
+      "offset": 635,
+      "name": "MessageEnergyLow",
+      "comment": ""
+    },
+    {
+      "offset": 652,
+      "name": "MessagePeriodicShow",
+      "comment": ""
+    },
+    {
+      "offset": 660,
+      "name": "ClearMessagesLoop",
+      "comment": ""
+    },
+    {
+      "offset": 671,
+      "name": "JumpCountdown",
+      "comment": "The hyperspace countdown (twice the seconds shown); 0 when no jump is pending"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$D902",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/commander.asm",
+    "label": "MenuBands"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

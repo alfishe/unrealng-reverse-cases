@@ -1,0 +1,2024 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/market",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: market",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "market"
+  ],
+  "summary": "Buying and selling cargo and equipment: the quantity editor, the checks and the undo, the nova's refugees.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1230,
+    "sha1": "d58ade186e5ffed5cc0cffcc8fd6ade39313895f",
+    "masked_sha1": "7e9e790243761668b50ed45e08854885294b622c"
+  },
+  "origin": "$E6AE",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionFlags"
+    },
+    {
+      "offset": 8,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NovaMission"
+    },
+    {
+      "offset": 14,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5B17"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColourPage"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossX"
+    },
+    {
+      "offset": 30,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CrossY"
+    },
+    {
+      "offset": 35,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartRadius"
+    },
+    {
+      "offset": 38,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DrawChartCircleVector"
+    },
+    {
+      "offset": 41,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 48,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Equipment"
+    },
+    {
+      "offset": 52,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeSpace"
+    },
+    {
+      "offset": 55,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CargoHold"
+    },
+    {
+      "offset": 64,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionFlags"
+    },
+    {
+      "offset": 69,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Wait36"
+    },
+    {
+      "offset": 72,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InventoryScreen"
+    },
+    {
+      "offset": 77,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_E1D2"
+    },
+    {
+      "offset": 90,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 93,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 96,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColumnInline"
+    },
+    {
+      "offset": 102,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeLine"
+    },
+    {
+      "offset": 105,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 108,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColourBands"
+    },
+    {
+      "offset": 111,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillAttrRow"
+    },
+    {
+      "offset": 114,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 117,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D09D"
+    },
+    {
+      "offset": 120,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StockPointer"
+    },
+    {
+      "offset": 123,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldPointer"
+    },
+    {
+      "offset": 127,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldPointer"
+    },
+    {
+      "offset": 130,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketRow"
+    },
+    {
+      "offset": 135,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SaveCursor"
+    },
+    {
+      "offset": 138,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 141,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 144,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 159,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 162,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RestoreCursor"
+    },
+    {
+      "offset": 165,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketItem"
+    },
+    {
+      "offset": 174,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InventoryScreen"
+    },
+    {
+      "offset": 177,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5800"
+    },
+    {
+      "offset": 180,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 183,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 193,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DeleteChar"
+    },
+    {
+      "offset": 196,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 201,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 205,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 208,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 230,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 234,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 237,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 240,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 245,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 267,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 270,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddDigitVector"
+    },
+    {
+      "offset": 273,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 276,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 279,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 290,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColumnInline"
+    },
+    {
+      "offset": 294,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 298,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 302,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 305,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 309,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StockPointer"
+    },
+    {
+      "offset": 317,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PricePointer"
+    },
+    {
+      "offset": 323,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TakeCredits"
+    },
+    {
+      "offset": 330,
+      "length": 2,
+      "kind": "ext16",
+      "name": "IsTonnes"
+    },
+    {
+      "offset": 333,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 339,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeSpace"
+    },
+    {
+      "offset": 347,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldPointer"
+    },
+    {
+      "offset": 355,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketItem"
+    },
+    {
+      "offset": 358,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddCargoContraband"
+    },
+    {
+      "offset": 374,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColumnInline"
+    },
+    {
+      "offset": 379,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 382,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 386,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 389,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Click"
+    },
+    {
+      "offset": 392,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Wait36"
+    },
+    {
+      "offset": 399,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D066"
+    },
+    {
+      "offset": 402,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 405,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D068"
+    },
+    {
+      "offset": 408,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 411,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StockPointer"
+    },
+    {
+      "offset": 415,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 418,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldPointer"
+    },
+    {
+      "offset": 422,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 425,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeSpace"
+    },
+    {
+      "offset": 428,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 432,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 435,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D066"
+    },
+    {
+      "offset": 438,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 441,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D068"
+    },
+    {
+      "offset": 444,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StockPointer"
+    },
+    {
+      "offset": 447,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 451,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldPointer"
+    },
+    {
+      "offset": 454,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 458,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 461,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeSpace"
+    },
+    {
+      "offset": 465,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearInputRows"
+    },
+    {
+      "offset": 470,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCapital"
+    },
+    {
+      "offset": 473,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 480,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketItem"
+    },
+    {
+      "offset": 484,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 487,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 491,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintUnit"
+    },
+    {
+      "offset": 494,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 500,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeLine"
+    },
+    {
+      "offset": 513,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NovaMission"
+    },
+    {
+      "offset": 519,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionFlags"
+    },
+    {
+      "offset": 529,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D062"
+    },
+    {
+      "offset": 535,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D07A"
+    },
+    {
+      "offset": 540,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeSpace"
+    },
+    {
+      "offset": 549,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionText"
+    },
+    {
+      "offset": 552,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InventoryScreen"
+    },
+    {
+      "offset": 556,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 559,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 562,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColourBands"
+    },
+    {
+      "offset": 565,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillAttrRow"
+    },
+    {
+      "offset": 570,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 573,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 576,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 582,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PageTitle"
+    },
+    {
+      "offset": 585,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 588,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PricePointer"
+    },
+    {
+      "offset": 593,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PricePointer"
+    },
+    {
+      "offset": 596,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldRow"
+    },
+    {
+      "offset": 601,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SaveCursor"
+    },
+    {
+      "offset": 604,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 607,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 610,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 615,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 618,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RestoreCursor"
+    },
+    {
+      "offset": 621,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLine"
+    },
+    {
+      "offset": 624,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketItem"
+    },
+    {
+      "offset": 631,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 634,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Wait36"
+    },
+    {
+      "offset": 645,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InventoryScreen"
+    },
+    {
+      "offset": 648,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 651,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 655,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldPointer"
+    },
+    {
+      "offset": 660,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 665,
+      "length": 2,
+      "kind": "ext16",
+      "name": "IsTonnes"
+    },
+    {
+      "offset": 671,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeSpace"
+    },
+    {
+      "offset": 675,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeSpace"
+    },
+    {
+      "offset": 679,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PricePointer"
+    },
+    {
+      "offset": 685,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddCredits"
+    },
+    {
+      "offset": 693,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D06A"
+    },
+    {
+      "offset": 696,
+      "length": 2,
+      "kind": "ext16",
+      "name": "HoldPointer"
+    },
+    {
+      "offset": 699,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PriceBase"
+    },
+    {
+      "offset": 702,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PricePointer"
+    },
+    {
+      "offset": 706,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketItem"
+    },
+    {
+      "offset": 710,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 713,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 719,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeSpace"
+    },
+    {
+      "offset": 722,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 726,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 730,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLineGap"
+    },
+    {
+      "offset": 733,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EquipmentPrices"
+    },
+    {
+      "offset": 736,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 739,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D09C"
+    },
+    {
+      "offset": 750,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 754,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 759,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_D0CE"
+    },
+    {
+      "offset": 762,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 766,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintByte"
+    },
+    {
+      "offset": 769,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColumnInline"
+    },
+    {
+      "offset": 775,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 779,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 782,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColumnInline"
+    },
+    {
+      "offset": 786,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 795,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 801,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCashNow"
+    },
+    {
+      "offset": 804,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLine"
+    },
+    {
+      "offset": 807,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 811,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 818,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearInputRows"
+    },
+    {
+      "offset": 821,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 827,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeSpace"
+    },
+    {
+      "offset": 830,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 833,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 836,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 841,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NewLine"
+    },
+    {
+      "offset": 844,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 848,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StatusScreen"
+    },
+    {
+      "offset": 852,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 856,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StatusScreen"
+    },
+    {
+      "offset": 859,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 862,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 865,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 872,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TakeThousands"
+    },
+    {
+      "offset": 882,
+      "length": 2,
+      "kind": "ext16",
+      "name": "TakeCredits"
+    },
+    {
+      "offset": 885,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 888,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 896,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_7060"
+    },
+    {
+      "offset": 899,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 904,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetFuel"
+    },
+    {
+      "offset": 907,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 914,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Missiles"
+    },
+    {
+      "offset": 920,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 931,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Equipment"
+    },
+    {
+      "offset": 935,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 938,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FreeSpace"
+    },
+    {
+      "offset": 959,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 964,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 967,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 972,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 975,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 996,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1000,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 1003,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillAttrRow"
+    },
+    {
+      "offset": 1010,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetColumn"
+    },
+    {
+      "offset": 1015,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetRow"
+    },
+    {
+      "offset": 1018,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1024,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 1029,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SetRow"
+    },
+    {
+      "offset": 1033,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1036,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColumnInline"
+    },
+    {
+      "offset": 1040,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1045,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeSpace"
+    },
+    {
+      "offset": 1048,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1053,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeLine"
+    },
+    {
+      "offset": 1056,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1064,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearInputRows"
+    },
+    {
+      "offset": 1067,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1071,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1075,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 1080,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1085,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1089,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeLine"
+    },
+    {
+      "offset": 1095,
+      "length": 2,
+      "kind": "ext16",
+      "name": "LaserMounts"
+    },
+    {
+      "offset": 1098,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1102,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1110,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_FD89"
+    },
+    {
+      "offset": 1113,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1117,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1124,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddThousands"
+    },
+    {
+      "offset": 1132,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddCredits"
+    },
+    {
+      "offset": 1135,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1138,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1141,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1146,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1149,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1158,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EquipmentPrices"
+    },
+    {
+      "offset": 1163,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NovaMission"
+    },
+    {
+      "offset": 1166,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1181,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1185,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCodeSpace"
+    },
+    {
+      "offset": 1188,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintInline"
+    },
+    {
+      "offset": 1192,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1195,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1198,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StatusScreen"
+    },
+    {
+      "offset": 1207,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ColumnInline"
+    },
+    {
+      "offset": 1212,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PageTitle"
+    },
+    {
+      "offset": 1217,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5800"
+    },
+    {
+      "offset": 1222,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillBytes"
+    },
+    {
+      "offset": 1225,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4740"
+    },
+    {
+      "offset": 1228,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FillRule"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "BuyCargo",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Key 2: the refugees' question in the nova's system, the inventory with refugees aboard, else the buy page"
+    },
+    {
+      "offset": 76,
+      "name": "FirearmsPrice",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The firearms' price back to 70.4 Cr ($02C0 tenths) when ZeroFirearms cleared it"
+    },
+    {
+      "offset": 176,
+      "name": "FillAllAttrs",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "All 768 attributes set to A (no code calls it; known from the code only)"
+    },
+    {
+      "offset": 185,
+      "name": "FillPage256",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "256 bytes of A from HL"
+    },
+    {
+      "offset": 192,
+      "name": "QuantityDelete",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DELETE after the first digit: the digit cleared, the trade undone, start again"
+    },
+    {
+      "offset": 200,
+      "name": "QuantityKeys",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Read a quantity into Quantity, running the check at HL after each digit; carry: A = 1 again, 2 the next row, else leave"
+    },
+    {
+      "offset": 289,
+      "name": "ShowCash",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Column 3 on the input row: CASH: and the cash (standard control 7), a click and a wait"
+    },
+    {
+      "offset": 300,
+      "name": "CallCheck",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "JP (HL): the quantity check"
+    },
+    {
+      "offset": 301,
+      "name": "BuyCheck",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Buy Quantity of MarketItem: the stock, the price Quantity times, the free space (tonnes only), the hold, the legal cost"
+    },
+    {
+      "offset": 362,
+      "name": "NoQuantity",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "QUANTITY? (code $B0)"
+    },
+    {
+      "offset": 366,
+      "name": "NoCash",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "CASH? (code $C5)"
+    },
+    {
+      "offset": 370,
+      "name": "NoRoom",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "CARGO? (code $CE)"
+    },
+    {
+      "offset": 388,
+      "name": "ClickWait",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A click, 36 frames, A = 1 and carry (the row asked again)"
+    },
+    {
+      "offset": 398,
+      "name": "SaveTrade",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The cash, the stock byte, the hold byte and the free space copied"
+    },
+    {
+      "offset": 431,
+      "name": "RestoreTrade",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The copy put back"
+    },
+    {
+      "offset": 464,
+      "name": "QuantityPrompt",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "QUANTITY OF <name>/<unit> ? on the cleared input rows"
+    },
+    {
+      "offset": 512,
+      "name": "SellCargo",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Key 3: with refugees aboard outside the nova's system the reward, else the sell page"
+    },
+    {
+      "offset": 555,
+      "name": "TradePage",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ClearPageText, SellBands and the message row's colour"
+    },
+    {
+      "offset": 567,
+      "name": "ClearPageText",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Other $96: the page cleared, the rule, capitals, the tab"
+    },
+    {
+      "offset": 647,
+      "name": "SellCheck",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Sell Quantity: the hold less it (QUANTITY? if short), the free space back (tonnes), the price paid Quantity times"
+    },
+    {
+      "offset": 692,
+      "name": "TradePointers",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "MarketItem 0, HoldPointer one before the hold, PricePointer at PriceBase"
+    },
+    {
+      "offset": 709,
+      "name": "EquipShip",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Key 4: EQUIP SHIP, the items the tech level allows with their prices, the cash, then the item's number"
+    },
+    {
+      "offset": 1151,
+      "name": "EquipAccept",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The equipment's quantity check: always accepted"
+    },
+    {
+      "offset": 1153,
+      "name": "EquipPrice",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = EquipPrices + 3 (A - 1): item A's price"
+    },
+    {
+      "offset": 1162,
+      "name": "EquipFlag",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = $D081 + Quantity: the item's equipment byte"
+    },
+    {
+      "offset": 1168,
+      "name": "AddAToHL",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = HL + A"
+    },
+    {
+      "offset": 1173,
+      "name": "EquipFull",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ALL PRESENT (missiles)"
+    },
+    {
+      "offset": 1177,
+      "name": "EquipFitted",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "<item> PRESENT"
+    },
+    {
+      "offset": 1205,
+      "name": "ScreenHeading",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Column 6, the page title A (PageTitle), then MenuTop with $17"
+    },
+    {
+      "offset": 1216,
+      "name": "MenuTop",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The top three rows' attributes A and a rule at $4740"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 59,
+      "name": "BuyCargoLoop",
+      "comment": ""
+    },
+    {
+      "offset": 68,
+      "name": "BuyCargoInventory",
+      "comment": ""
+    },
+    {
+      "offset": 74,
+      "name": "MarketBands",
+      "comment": "The trading pages' colour bands: 30 cells and a gap of a row, 30 cells"
+    },
+    {
+      "offset": 89,
+      "name": "BuyCargoPage",
+      "comment": "UNIT QUANTITY PRODUCT UNIT PRICE FOR SALE (code $FF), then each commodity in stock with its prompt"
+    },
+    {
+      "offset": 122,
+      "name": "BuyCargoRow",
+      "comment": ""
+    },
+    {
+      "offset": 137,
+      "name": "BuyCargoAsk",
+      "comment": ""
+    },
+    {
+      "offset": 158,
+      "name": "BuyCargoDone",
+      "comment": ""
+    },
+    {
+      "offset": 161,
+      "name": "BuyCargoNext",
+      "comment": ""
+    },
+    {
+      "offset": 164,
+      "name": "BuyCargoItem",
+      "comment": ""
+    },
+    {
+      "offset": 173,
+      "name": "BuyCargoEnd",
+      "comment": ""
+    },
+    {
+      "offset": 187,
+      "name": "FillPage256Loop",
+      "comment": ""
+    },
+    {
+      "offset": 203,
+      "name": "QuantityFirst",
+      "comment": ""
+    },
+    {
+      "offset": 207,
+      "name": "QuantityFirstKey",
+      "comment": ""
+    },
+    {
+      "offset": 244,
+      "name": "QuantitySecond",
+      "comment": ""
+    },
+    {
+      "offset": 285,
+      "name": "QuantitySkip",
+      "comment": ""
+    },
+    {
+      "offset": 287,
+      "name": "QuantityRefused",
+      "comment": ""
+    },
+    {
+      "offset": 316,
+      "name": "BuyCheckPay",
+      "comment": ""
+    },
+    {
+      "offset": 346,
+      "name": "BuyCheckHold",
+      "comment": ""
+    },
+    {
+      "offset": 372,
+      "name": "RefuseTrade",
+      "comment": "Column 3, the code and \"?\", the trade undone (RestoreTrade), a click, 36 frames, A = 1 with carry"
+    },
+    {
+      "offset": 502,
+      "name": "SavedTenths",
+      "comment": "SaveTrade's copy of the cash's tenths ($D068)"
+    },
+    {
+      "offset": 504,
+      "name": "SavedThousands",
+      "comment": "Its copy of the thousands ($D066)"
+    },
+    {
+      "offset": 506,
+      "name": "SavedHold",
+      "comment": "The hold byte"
+    },
+    {
+      "offset": 507,
+      "name": "SavedStock",
+      "comment": "The stock byte"
+    },
+    {
+      "offset": 508,
+      "name": "SavedSpace",
+      "comment": "The free space"
+    },
+    {
+      "offset": 509,
+      "name": "Quantity",
+      "comment": "The quantity typed (or the equipment item, the laser's view)"
+    },
+    {
+      "offset": 510,
+      "name": "QuantityCheck",
+      "comment": "The check QuantityKeys runs (CallCheck)"
+    },
+    {
+      "offset": 554,
+      "name": "SellBands",
+      "comment": "30 cells to the end"
+    },
+    {
+      "offset": 572,
+      "name": "SellCargoPage",
+      "comment": "SELL CARGO (codes $CD $CE), each commodity in the hold with its prompt"
+    },
+    {
+      "offset": 587,
+      "name": "SellCargoRow",
+      "comment": ""
+    },
+    {
+      "offset": 603,
+      "name": "SellCargoAsk",
+      "comment": ""
+    },
+    {
+      "offset": 617,
+      "name": "SellCargoDone",
+      "comment": ""
+    },
+    {
+      "offset": 623,
+      "name": "SellCargoNext",
+      "comment": ""
+    },
+    {
+      "offset": 638,
+      "name": "SellCargoKey",
+      "comment": ""
+    },
+    {
+      "offset": 644,
+      "name": "SellCargoEnd",
+      "comment": ""
+    },
+    {
+      "offset": 677,
+      "name": "SellCheckLoop",
+      "comment": ""
+    },
+    {
+      "offset": 749,
+      "name": "EquipShipSetEquipCount",
+      "comment": ""
+    },
+    {
+      "offset": 753,
+      "name": "EquipShipRow",
+      "comment": ""
+    },
+    {
+      "offset": 817,
+      "name": "EquipShipAsk",
+      "comment": ""
+    },
+    {
+      "offset": 855,
+      "name": "EquipShipLeave",
+      "comment": ""
+    },
+    {
+      "offset": 858,
+      "name": "EquipShipPay",
+      "comment": ""
+    },
+    {
+      "offset": 884,
+      "name": "EquipShipPaid",
+      "comment": ""
+    },
+    {
+      "offset": 894,
+      "name": "EquipFuel",
+      "comment": "1: the tank filled (SetFuel 70), the fuel's price 0"
+    },
+    {
+      "offset": 909,
+      "name": "EquipMissile",
+      "comment": "2: a missile, at most 4 (ALL PRESENT otherwise)"
+    },
+    {
+      "offset": 926,
+      "name": "EquipCargoBay",
+      "comment": "3: the large cargo bay, 15 more tons of free space"
+    },
+    {
+      "offset": 946,
+      "name": "EquipItem",
+      "comment": "4 and 7-12: the flag in the equipment bytes ($D081 + item) set to $FF, refused when already fitted"
+    },
+    {
+      "offset": 958,
+      "name": "EquipShipCallEquipFlag",
+      "comment": ""
+    },
+    {
+      "offset": 966,
+      "name": "EquipItemFit",
+      "comment": ""
+    },
+    {
+      "offset": 971,
+      "name": "EquipDone",
+      "comment": ""
+    },
+    {
+      "offset": 977,
+      "name": "EquipLaser",
+      "comment": "5, 6, 13, 14: the laser kind (1 pulse, 2 beam, 3 military, 4 mining), then the view to mount it on"
+    },
+    {
+      "offset": 994,
+      "name": "EquipLaserKind",
+      "comment": ""
+    },
+    {
+      "offset": 1032,
+      "name": "EquipLaserView",
+      "comment": ""
+    },
+    {
+      "offset": 1134,
+      "name": "EquipLaserDone",
+      "comment": ""
+    },
+    {
+      "offset": 1140,
+      "name": "EquipLaserNone",
+      "comment": ""
+    },
+    {
+      "offset": 1145,
+      "name": "EquipShipShort",
+      "comment": ""
+    },
+    {
+      "offset": 1184,
+      "name": "EquipRefused",
+      "comment": "The code, a space and PRESENT (code $1E), a click, the trade undone, the status page"
+    },
+    {
+      "offset": 1197,
+      "name": "EquipToStatus",
+      "comment": ""
+    },
+    {
+      "offset": 1200,
+      "name": "EquipCount",
+      "comment": "The items listed"
+    },
+    {
+      "offset": 1201,
+      "name": "EquipRow",
+      "comment": "The item being listed (or the view)"
+    },
+    {
+      "offset": 1202,
+      "name": "EquipPointer",
+      "comment": "The next price in EquipPrices"
+    },
+    {
+      "offset": 1204,
+      "name": "FitLaserKind",
+      "comment": "The laser being fitted"
+    },
+    {
+      "offset": 1214,
+      "name": "ScreenHeadingTop",
+      "comment": ""
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$E6AE",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/market.asm",
+    "label": "BuyCargo"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

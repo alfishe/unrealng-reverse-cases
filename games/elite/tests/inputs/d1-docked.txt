@@ -1,0 +1,20 @@
+# d1 (from work/snaps/title-A.szx, the title of c1): no new commander, docked: status L, market K, data P, the
+# galactic chart I, the short range chart O, the launch 1
+0 -
++30 N
++30 -
++400 SPACE
++30 -
++300 L
++20 -
++200 K
++20 -
++200 P
++20 -
++200 I
++20 -
++200 O
++20 -
++200 1
++20 -
++800 END

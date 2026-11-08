@@ -1,0 +1,1202 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/gamestate",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: gamestate",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "gamestate"
+  ],
+  "summary": "The screen table and the vectors, the commander record, the dashboard messages, the full-page messages, cash, legal status and cargo.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 732,
+    "sha1": "6752ad565530c547a2ef4a1d254630b304b7b40e",
+    "masked_sha1": "2f177da0fc0284e7b0ce528e7a31f2d4d8eb7be7"
+  },
+  "origin": "$D000",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "ext16",
+      "name": "BuyCargo"
+    },
+    {
+      "offset": 4,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SellCargo"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "ext16",
+      "name": "EquipShip"
+    },
+    {
+      "offset": 10,
+      "length": 2,
+      "kind": "ext16",
+      "name": "GalacticChart"
+    },
+    {
+      "offset": 13,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShortRangeChart"
+    },
+    {
+      "offset": 16,
+      "length": 2,
+      "kind": "ext16",
+      "name": "DataScreen"
+    },
+    {
+      "offset": 19,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MarketPrices"
+    },
+    {
+      "offset": 22,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StatusScreen"
+    },
+    {
+      "offset": 25,
+      "length": 2,
+      "kind": "ext16",
+      "name": "InventoryScreen"
+    },
+    {
+      "offset": 28,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartLeft"
+    },
+    {
+      "offset": 31,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartRight"
+    },
+    {
+      "offset": 34,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartDown"
+    },
+    {
+      "offset": 37,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartUp"
+    },
+    {
+      "offset": 40,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ChartHome"
+    },
+    {
+      "offset": 43,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShowSelected"
+    },
+    {
+      "offset": 46,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlanetNamePrompt"
+    },
+    {
+      "offset": 49,
+      "length": 2,
+      "kind": "ext16",
+      "name": "NextGalaxy"
+    },
+    {
+      "offset": 52,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 55,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 58,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 61,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewTexts"
+    },
+    {
+      "offset": 67,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpKeys"
+    },
+    {
+      "offset": 73,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintCode"
+    },
+    {
+      "offset": 79,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CommanderMenu"
+    },
+    {
+      "offset": 216,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 219,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearMessages"
+    },
+    {
+      "offset": 222,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 225,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FuelLeak"
+    },
+    {
+      "offset": 229,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 232,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 235,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 238,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 244,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 254,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 258,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 263,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 269,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 274,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 277,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Click"
+    },
+    {
+      "offset": 280,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 283,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 286,
+      "length": 2,
+      "kind": "ext16",
+      "name": "Wait36"
+    },
+    {
+      "offset": 289,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearKeys4"
+    },
+    {
+      "offset": 292,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_DF1F"
+    },
+    {
+      "offset": 298,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 301,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WaitKey"
+    },
+    {
+      "offset": 309,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 313,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 320,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 323,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_E017"
+    },
+    {
+      "offset": 329,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 334,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 339,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 342,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 357,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearScreen"
+    },
+    {
+      "offset": 362,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 367,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 370,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_5800"
+    },
+    {
+      "offset": 385,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PrintOther"
+    },
+    {
+      "offset": 388,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 393,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 406,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 413,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 420,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 445,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 456,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 469,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 478,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MessageNumber"
+    },
+    {
+      "offset": 481,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddCredits"
+    },
+    {
+      "offset": 484,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 490,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MessageToken"
+    },
+    {
+      "offset": 496,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StarSeed"
+    },
+    {
+      "offset": 503,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FuelLeak"
+    },
+    {
+      "offset": 514,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 522,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 532,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MessageItem"
+    },
+    {
+      "offset": 535,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AttrFillVector"
+    },
+    {
+      "offset": 538,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 544,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 547,
+      "length": 2,
+      "kind": "ext16",
+      "name": "AddAToHL"
+    },
+    {
+      "offset": 554,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 665,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearMessages"
+    },
+    {
+      "offset": 668,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 671,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 679,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 682,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 685,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 688,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 691,
+      "length": 2,
+      "kind": "ext16",
+      "name": "FindNearestNow"
+    },
+    {
+      "offset": 694,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_E1B0"
+    },
+    {
+      "offset": 700,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MakeMarket"
+    },
+    {
+      "offset": 706,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SelectedName"
+    },
+    {
+      "offset": 709,
+      "length": 2,
+      "kind": "ext16",
+      "name": "CurrentName"
+    },
+    {
+      "offset": 717,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 720,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunPosition"
+    },
+    {
+      "offset": 729,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpCountdown"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "ScreenBuy",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ScreenTable 0: buy cargo (the key 2 docked)"
+    },
+    {
+      "offset": 3,
+      "name": "ScreenSell",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ScreenTable 1: sell cargo (3)"
+    },
+    {
+      "offset": 6,
+      "name": "ScreenEquip",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ScreenTable 2: equip the ship (4)"
+    },
+    {
+      "offset": 9,
+      "name": "ScreenGalaxy",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ScreenTable 3: the galactic chart (I)"
+    },
+    {
+      "offset": 12,
+      "name": "ScreenLocal",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ScreenTable 4: the local chart (O)"
+    },
+    {
+      "offset": 15,
+      "name": "ScreenData",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ScreenTable 5: the data on a system (P)"
+    },
+    {
+      "offset": 18,
+      "name": "ScreenMarket",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ScreenTable 6: the market prices (K)"
+    },
+    {
+      "offset": 21,
+      "name": "ScreenStatus",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ScreenTable 7: the commander's status (L), also after a dock"
+    },
+    {
+      "offset": 24,
+      "name": "ScreenInventory",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ScreenTable 8: the inventory (ENTER)"
+    },
+    {
+      "offset": 27,
+      "name": "CursorLeft",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ScreenTable 9-15: the chart keys (ChartCursorKeys): 9 left (N, KeySteer bit 0), the cursor one x less (ChartLeft)"
+    },
+    {
+      "offset": 30,
+      "name": "CursorRight",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "10: right (M), ChartRight"
+    },
+    {
+      "offset": 33,
+      "name": "CursorDown",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "11: down (X), two y more, ChartDown"
+    },
+    {
+      "offset": 36,
+      "name": "CursorUp",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "12: up (S), ChartUp"
+    },
+    {
+      "offset": 39,
+      "name": "CursorHome",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "13: B (KeyChart bit 4), the cursor back on the current system (ChartHome)"
+    },
+    {
+      "offset": 42,
+      "name": "CursorDistance",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "14: D (KeyChart bit 5), the nearest system's name and distance (ShowSelected)"
+    },
+    {
+      "offset": 45,
+      "name": "PlanetNameVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "15: R (KeyChart bit 6), PLANET NAME? (PlanetNamePrompt)"
+    },
+    {
+      "offset": 48,
+      "name": "NextGalaxyVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ScreenTable 16: NextGalaxy: no key and no caller asks for 16 (CallScreen gets 0-15), so it is never reached"
+    },
+    {
+      "offset": 51,
+      "name": "NewGameVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "NewGame $D298"
+    },
+    {
+      "offset": 54,
+      "name": "ClearScreenVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ClearScreen $D61D: the page cleared, its frame drawn"
+    },
+    {
+      "offset": 57,
+      "name": "PrintOtherVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "PrintOther $D45F: the other token set"
+    },
+    {
+      "offset": 60,
+      "name": "ViewTextsVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "ViewTexts $DA7A: the view's texts and the countdown"
+    },
+    {
+      "offset": 66,
+      "name": "JumpKeysVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "JumpKeys $DBA2: the hyperspace keys (in the interrupt)"
+    },
+    {
+      "offset": 72,
+      "name": "PrintCodeVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "PrintCode $D425: the standard token set"
+    },
+    {
+      "offset": 78,
+      "name": "CommanderMenuVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "CommanderMenu $D90A: load or save a commander"
+    },
+    {
+      "offset": 215,
+      "name": "FullMessageVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Vectors: a full-page message, the dashboard keys off, the mission question"
+    },
+    {
+      "offset": 218,
+      "name": "ClearHighlightsVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 221,
+      "name": "MissionQuestionVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 224,
+      "name": "TradeDoneVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": ""
+    },
+    {
+      "offset": 228,
+      "name": "AddCargoVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AddCargo $D190: a scooped item"
+    },
+    {
+      "offset": 231,
+      "name": "AddCashVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AddCash $D1D9: a bounty"
+    },
+    {
+      "offset": 234,
+      "name": "AddCombatVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "AddCombat $D1C7: the combat score"
+    },
+    {
+      "offset": 237,
+      "name": "MissionDoneVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "MissionDone $D14D"
+    },
+    {
+      "offset": 243,
+      "name": "DamageVector",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DamageItem $D1E9: a hit that went through the shields"
+    },
+    {
+      "offset": 246,
+      "name": "FullMessage",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A game over page: SHIP BOARDED BY (other $0B), other token A ($0D PIRATE, $D4 THARGON) and S, THEY SHOW NO MERCY... (other $FF), a click, a key, the page cleared"
+    },
+    {
+      "offset": 291,
+      "name": "MissionQuestion",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "WANTED BY GALCOP: A BRAVE COMMANDER FOR A SPECIAL MISSION, ARE YOU INTERESTED (Y/N)? (other $DF); Y: state 3, flag bit 7 and the briefing (other $E0); any other key: state 0"
+    },
+    {
+      "offset": 333,
+      "name": "MissionDone",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The Thargoid mission's award: the combat score's high byte one more, state 0, flag bit 3, IN APPRECIATION OF YOUR EXCEPTIONAL COURAGE ... (other $0A)"
+    },
+    {
+      "offset": 354,
+      "name": "ColourPage",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Clear the page, other token $5C (a capital next), all 768 attributes E, the position HL, then other token D"
+    },
+    {
+      "offset": 387,
+      "name": "AddCargoSpecial",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "$FF: the cloak ship's canister: the cloaking device (flag bit 6), the combat score's high byte one more, CLOAKING DEVICE on the message line"
+    },
+    {
+      "offset": 400,
+      "name": "AddCargo",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One unit of commodity A into the hold (one less free space), the message, and the legal cost of the contraband"
+    },
+    {
+      "offset": 455,
+      "name": "AddCombat",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The combat score plus DE; a carry into the third byte flags the rating message ($D0C9)"
+    },
+    {
+      "offset": 473,
+      "name": "AddCash",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The cash plus DE (a bounty) and the message ($D0C5)"
+    },
+    {
+      "offset": 489,
+      "name": "DamageItem",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A random loss: below 1 the fuel, 1-6 a piece of equipment, 7-16 a unit of cargo (StarSeed's bits)"
+    },
+    {
+      "offset": 664,
+      "name": "NewGame",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The default commander copied in, the chart cursor on Lave, the prices made (MakeMarket with its stock store patched to a NOP: the stock is the record's), the sun placed"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 63,
+      "name": "TunnelOn",
+      "comment": "A launch or dock tunnel is running"
+    },
+    {
+      "offset": 64,
+      "name": "TunnelLoop",
+      "comment": "The tunnel's frames run inside one call; the views are locked meanwhile"
+    },
+    {
+      "offset": 65,
+      "name": "CloakOn",
+      "comment": "Non-zero while the cloaking device is on (CloakKey): the view tinted blue, the energy drain one more; ENERGY LOW turns it off"
+    },
+    {
+      "offset": 69,
+      "name": "TextColumn",
+      "comment": "The print position: the column and the row"
+    },
+    {
+      "offset": 70,
+      "name": "TextRow",
+      "comment": ""
+    },
+    {
+      "offset": 71,
+      "name": "MissileState",
+      "comment": "0 off, 1 armed, 2 locked"
+    },
+    {
+      "offset": 75,
+      "name": "PrintTarget",
+      "comment": "The address of the printer's plot byte ($D548): $A9 (XOR C) mixes a glyph into the screen, $00 (NOP) writes it over (the dashboard's indicators)"
+    },
+    {
+      "offset": 77,
+      "name": "PrintSpare",
+      "comment": ""
+    },
+    {
+      "offset": 81,
+      "name": "CrossX",
+      "comment": "The chart's crosshair: x, y and the circle's radius"
+    },
+    {
+      "offset": 82,
+      "name": "CrossY",
+      "comment": ""
+    },
+    {
+      "offset": 83,
+      "name": "ChartRadius",
+      "comment": ""
+    },
+    {
+      "offset": 84,
+      "name": "CommanderName",
+      "comment": "The commander record: the name, 10 letters and a zero"
+    },
+    {
+      "offset": 95,
+      "name": "LegalStatus",
+      "comment": "0 clean, up to 49 an offender, 50 or more a fugitive; bit 6 set by a protected kill"
+    },
+    {
+      "offset": 96,
+      "name": "CombatScore",
+      "comment": "The combat score (the rating): the low byte, then two"
+    },
+    {
+      "offset": 99,
+      "name": "CommanderRest",
+      "comment": "The jumps, the galaxy, the cash and the price fluctuation"
+    },
+    {
+      "offset": 107,
+      "name": "CargoHold",
+      "comment": "The tons (or kg, g) of each commodity"
+    },
+    {
+      "offset": 124,
+      "name": "FreeSpace",
+      "comment": "The hold's free space in tons"
+    },
+    {
+      "offset": 125,
+      "name": "LaserMounts",
+      "comment": "The laser of each view: 0 none, 1 pulse, 2 beam, 3 military, 4 mining"
+    },
+    {
+      "offset": 129,
+      "name": "NovaMission",
+      "comment": "The record's +$2D: 1 in the system whose sun goes nova (JumpArrive after 32 jumps), until the jump out; the red tint, the refugees' question (RefugeeQuestion)"
+    },
+    {
+      "offset": 130,
+      "name": "Fuel",
+      "comment": "The fuel in tenths of a light year"
+    },
+    {
+      "offset": 131,
+      "name": "Missiles",
+      "comment": "The missiles fitted (0-4)"
+    },
+    {
+      "offset": 132,
+      "name": "Equipment",
+      "comment": "The equipment flags: the large cargo bay, ECM, two spare, the fuel scoop, the escape pod, the energy bomb, the energy unit, the docking computer, the galactic hyperdrive"
+    },
+    {
+      "offset": 142,
+      "name": "Seeds",
+      "comment": "The spare bytes, the galaxy's three seeds, the system's three seeds"
+    },
+    {
+      "offset": 158,
+      "name": "MarketStock",
+      "comment": "The station's stock of each commodity"
+    },
+    {
+      "offset": 175,
+      "name": "MissionState",
+      "comment": "The Thargoid mission: 0 none, 1 the MAYDAY heard, 2 not yet answered, 3 accepted, 4 in the galaxy's first system (the station a Thargoid base), $0C its station destroyed, 5 rewarded at the next dock"
+    },
+    {
+      "offset": 176,
+      "name": "MissionFlags",
+      "comment": "Bit 0 the nova started (32 jumps), 1 the cloak ship due (128 jumps), 2 the Thargoid MAYDAY started (254 jumps), 3 the Thargoid mission done, 5 refugees aboard, 6 the cloaking device owned, 7 the Thargoid mission accepted (the ECM jammer)"
+    },
+    {
+      "offset": 177,
+      "name": "RecordTail",
+      "comment": "The record's last nine bytes: the system docked at ($D0B2, $D0B3) and the sun's place"
+    },
+    {
+      "offset": 186,
+      "name": "SunGrows",
+      "comment": "Past the record: the sun's growth"
+    },
+    {
+      "offset": 187,
+      "name": "ChartCursorX",
+      "comment": "The chart cursor (galaxy coordinates)"
+    },
+    {
+      "offset": 188,
+      "name": "ChartCursorY",
+      "comment": ""
+    },
+    {
+      "offset": 189,
+      "name": "Messages",
+      "comment": "Ten message slots (MessageTick): a column (bit 7 the request) and a standard code each"
+    },
+    {
+      "offset": 209,
+      "name": "PrintCase",
+      "comment": "The printer's case state: the mode, the capital-next flags, the word buffering"
+    },
+    {
+      "offset": 210,
+      "name": "PrintCapital",
+      "comment": ""
+    },
+    {
+      "offset": 211,
+      "name": "PrintCapitalNext",
+      "comment": ""
+    },
+    {
+      "offset": 212,
+      "name": "PrintBuffering",
+      "comment": ""
+    },
+    {
+      "offset": 213,
+      "name": "PrintPointer",
+      "comment": "The printer's patched address"
+    },
+    {
+      "offset": 227,
+      "name": "MissileTarget",
+      "comment": "The slot the missile is locked on"
+    },
+    {
+      "offset": 240,
+      "name": "VectorSpare",
+      "comment": ""
+    },
+    {
+      "offset": 276,
+      "name": "FullMessageWait",
+      "comment": ""
+    },
+    {
+      "offset": 312,
+      "name": "MissionAccept",
+      "comment": ""
+    },
+    {
+      "offset": 328,
+      "name": "MissionText",
+      "comment": ""
+    },
+    {
+      "offset": 375,
+      "name": "ColourPageFill",
+      "comment": ""
+    },
+    {
+      "offset": 419,
+      "name": "AddCargoMessage",
+      "comment": ""
+    },
+    {
+      "offset": 429,
+      "name": "AddCargoContraband",
+      "comment": "The legal cost of commodity A (BuyCheck enters here for each unit bought)"
+    },
+    {
+      "offset": 440,
+      "name": "AddCargoLegal4",
+      "comment": ""
+    },
+    {
+      "offset": 442,
+      "name": "AddCargoLegal",
+      "comment": ""
+    },
+    {
+      "offset": 453,
+      "name": "AddCargoStore",
+      "comment": ""
+    },
+    {
+      "offset": 486,
+      "name": "AddCashMessage",
+      "comment": ""
+    },
+    {
+      "offset": 521,
+      "name": "DamageItemEquip",
+      "comment": ""
+    },
+    {
+      "offset": 527,
+      "name": "DamageItemLost",
+      "comment": ""
+    },
+    {
+      "offset": 531,
+      "name": "DamageItemMessage",
+      "comment": ""
+    },
+    {
+      "offset": 543,
+      "name": "DamageItemCargo",
+      "comment": ""
+    },
+    {
+      "offset": 562,
+      "name": "DefaultCommander",
+      "comment": "The new game's commander: JAMESON, 100.0 Cr, 7.0 light years of fuel, a pulse laser, 3 missiles, galaxy 1 at Lave"
+    },
+    {
+      "offset": 655,
+      "name": "DefaultSun",
+      "comment": "The new game's sun and planet place"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$D000",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/gamestate.asm",
+    "label": "ScreenBuy"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

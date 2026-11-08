@@ -1,0 +1,2017 @@
+{
+  "schema": 1,
+  "id": "programs/games/elite/stardust",
+  "kind": "code",
+  "role": "game-module",
+  "name": "Elite: stardust",
+  "authors": [
+    "Ian Bell and David Braben",
+    "Torus"
+  ],
+  "year": 1985,
+  "tags": [
+    "elite",
+    "game-module",
+    "stardust"
+  ],
+  "summary": "The stardust: 16 moving dots in the space views, and the in-system jump.",
+  "bytes": {
+    "file": "code.bin",
+    "length": 1830,
+    "sha1": "6d68147aea52f08605a6f2fb1d1173d4dc1ff82e",
+    "masked_sha1": "1ac690a1d1f83b6d8cb548c125d7c5482b803b72"
+  },
+  "origin": "$7898",
+  "relocatable": false,
+  "mask": [
+    {
+      "offset": 1,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 7,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 12,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpeedRate"
+    },
+    {
+      "offset": 15,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 20,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpeedRate"
+    },
+    {
+      "offset": 23,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 27,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 30,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 33,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SpeedRate"
+    },
+    {
+      "offset": 39,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 42,
+      "length": 2,
+      "kind": "ext16",
+      "name": "RollRate"
+    },
+    {
+      "offset": 45,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 50,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 53,
+      "length": 2,
+      "kind": "ext16",
+      "name": "WitchSpace"
+    },
+    {
+      "offset": 61,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 64,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 68,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 72,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 75,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 78,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 81,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 86,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 90,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 102,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 115,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 120,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 125,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 130,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 133,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 144,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 147,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 158,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 162,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 165,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 169,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 172,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 176,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 181,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 185,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 189,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 194,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 198,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 202,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 214,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 226,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 235,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 240,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 245,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 265,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 268,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 272,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 277,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 281,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 285,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 290,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 294,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 298,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 308,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 320,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 329,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 334,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 339,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 352,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 360,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 363,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 367,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 374,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 380,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 388,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 391,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 395,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 399,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 402,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 408,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 447,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 457,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 461,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 464,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 467,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 471,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 474,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 480,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 517,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 521,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 528,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 537,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 543,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 546,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 549,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 553,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 557,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 563,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 567,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ext_4000"
+    },
+    {
+      "offset": 570,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 595,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 598,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 605,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 616,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 619,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 623,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 628,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 639,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 642,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 646,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 650,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 669,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 674,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 682,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 687,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 694,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 699,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 707,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 710,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 714,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 727,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 730,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 739,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 742,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 746,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 749,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 752,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 756,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 767,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 778,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 783,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 788,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 793,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 796,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 800,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 803,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 806,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 813,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 825,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 838,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 843,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 848,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 853,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 857,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 860,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 864,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 872,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 877,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 880,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 886,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 892,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 913,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 918,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 941,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 944,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 948,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 951,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 955,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 958,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 962,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 966,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 969,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 975,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 996,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1000,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1005,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1013,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1016,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1019,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1022,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1043,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1048,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1056,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1061,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1146,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1150,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1154,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1176,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1214,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StarSeed"
+    },
+    {
+      "offset": 1218,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1221,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ViewIndex"
+    },
+    {
+      "offset": 1227,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1235,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1240,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1244,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1247,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1254,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1263,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1274,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1279,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1282,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1291,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1297,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1300,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1305,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1308,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1316,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1319,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1327,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1332,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1339,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1346,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1351,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1355,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1358,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1362,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1367,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1376,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1383,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1393,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1396,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StarSeed"
+    },
+    {
+      "offset": 1399,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1402,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1409,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1420,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1427,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1442,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1449,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1460,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1463,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1467,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1472,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1479,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1494,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1498,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1607,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyViews"
+    },
+    {
+      "offset": 1615,
+      "length": 2,
+      "kind": "ext16",
+      "name": "KeyViews"
+    },
+    {
+      "offset": 1620,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunClose"
+    },
+    {
+      "offset": 1625,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlanetClose"
+    },
+    {
+      "offset": 1630,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipsAbout"
+    },
+    {
+      "offset": 1635,
+      "length": 2,
+      "kind": "ext16",
+      "name": "StationLaunch"
+    },
+    {
+      "offset": 1641,
+      "length": 2,
+      "kind": "ext16",
+      "name": "MissionShip"
+    },
+    {
+      "offset": 1645,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    },
+    {
+      "offset": 1648,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ClearShips"
+    },
+    {
+      "offset": 1651,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1655,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1662,
+      "length": 2,
+      "kind": "ext16",
+      "name": "JumpEncounter"
+    },
+    {
+      "offset": 1665,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1669,
+      "length": 2,
+      "kind": "ext16",
+      "name": "SunPosition"
+    },
+    {
+      "offset": 1672,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1676,
+      "length": 2,
+      "kind": "ext16",
+      "name": "PlanetPosition"
+    },
+    {
+      "offset": 1679,
+      "length": 2,
+      "kind": "rel16"
+    },
+    {
+      "offset": 1683,
+      "length": 2,
+      "kind": "ext16",
+      "name": "ShipSlots"
+    }
+  ],
+  "entries": [
+    {
+      "offset": 0,
+      "name": "Stardust",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Move and draw the 16 dots for the view; after a J jump, two fast passes first"
+    },
+    {
+      "offset": 25,
+      "name": "StardustPass",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "One pass: the rates into StarRoll and StarPitch, the speed halved + 1, then every dot"
+    },
+    {
+      "offset": 171,
+      "name": "StardustFront",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The front and rear views: a dot moves out by its depth, then by the roll and the pitch"
+    },
+    {
+      "offset": 525,
+      "name": "StarRollScale",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = the coordinate in A times the rate in C, 4 bits (MulBits), doubled and rounded"
+    },
+    {
+      "offset": 548,
+      "name": "StarRollPitch",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Apply the roll and the pitch to the dot being moved"
+    },
+    {
+      "offset": 709,
+      "name": "StarPlot",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Add the dot's back buffer address and mask (StarAddress) to StarList, or respawn it off the screen"
+    },
+    {
+      "offset": 795,
+      "name": "StardustNext",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The next dot: its 5 bytes back into the table, then the next one in"
+    },
+    {
+      "offset": 1018,
+      "name": "StarPlotAll",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "Plot the dots of this pass: XOR each listed address with its mask (StardustNext jumps here after the last dot)"
+    },
+    {
+      "offset": 1039,
+      "name": "NegateX",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = -A and StarSigns bit 6 flipped (the dot crossed the axis)"
+    },
+    {
+      "offset": 1052,
+      "name": "NegateY",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = -A and StarSigns bit 7 flipped"
+    },
+    {
+      "offset": 1065,
+      "name": "MulBits",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "HL = A * C, the low B bits of C (shift and add)"
+    },
+    {
+      "offset": 1085,
+      "name": "DivideShifted",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "D = A:L shifted left twice divided by B (StardustFront's depth division)"
+    },
+    {
+      "offset": 1123,
+      "name": "DivideFrac8",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "D = A * 256 / B for a small A"
+    },
+    {
+      "offset": 1143,
+      "name": "StarAddress",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "DE = the back buffer address of the dot, C = its pixel mask"
+    },
+    {
+      "offset": 1213,
+      "name": "StarRespawn",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A dot left the screen: make it again at random for the view"
+    },
+    {
+      "offset": 1493,
+      "name": "StarShuffle",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "After a change of view: renumber the dot table (known from the code only)"
+    },
+    {
+      "offset": 1518,
+      "name": "StarRandom",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "A = the next random byte of the dot generator (HL the seed)"
+    },
+    {
+      "offset": 1606,
+      "name": "InSystemJump",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The J key: move the sun, the planet and the station $2000 closer when nothing is near"
+    },
+    {
+      "offset": 1685,
+      "name": "JumpCloser",
+      "in": null,
+      "out": null,
+      "clobbers": null,
+      "summary": "The z coordinate at IX+6..8 moves $2000 towards the ship (a far one by $20 pages, a near one to $2000 on the other side)"
+    }
+  ],
+  "labels": [
+    {
+      "offset": 63,
+      "name": "StardustPassGetStarView",
+      "comment": ""
+    },
+    {
+      "offset": 101,
+      "name": "StardustPassSetStarX",
+      "comment": ""
+    },
+    {
+      "offset": 114,
+      "name": "StardustPassSetStarY",
+      "comment": ""
+    },
+    {
+      "offset": 146,
+      "name": "StardustPassGetStarPitch",
+      "comment": ""
+    },
+    {
+      "offset": 160,
+      "name": "StardustPassIfBelow",
+      "comment": ""
+    },
+    {
+      "offset": 208,
+      "name": "StardustFrontIfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 213,
+      "name": "StardustFrontGetStarDepth",
+      "comment": ""
+    },
+    {
+      "offset": 232,
+      "name": "StardustFrontJoin",
+      "comment": ""
+    },
+    {
+      "offset": 238,
+      "name": "StardustFrontJoin2",
+      "comment": ""
+    },
+    {
+      "offset": 257,
+      "name": "StardustFrontIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 264,
+      "name": "StardustFrontSetStarXFrac",
+      "comment": ""
+    },
+    {
+      "offset": 307,
+      "name": "StardustFrontGetStarDepth2",
+      "comment": ""
+    },
+    {
+      "offset": 326,
+      "name": "StardustFrontJoin3",
+      "comment": ""
+    },
+    {
+      "offset": 332,
+      "name": "StardustFrontJoin4",
+      "comment": ""
+    },
+    {
+      "offset": 351,
+      "name": "StardustFrontToStarRespawn",
+      "comment": ""
+    },
+    {
+      "offset": 354,
+      "name": "StardustFrontIfNotZero2",
+      "comment": ""
+    },
+    {
+      "offset": 359,
+      "name": "StardustFrontSetStarYFrac",
+      "comment": ""
+    },
+    {
+      "offset": 379,
+      "name": "StardustFrontGetStarDepth3",
+      "comment": ""
+    },
+    {
+      "offset": 383,
+      "name": "StardustFrontJoin5",
+      "comment": ""
+    },
+    {
+      "offset": 390,
+      "name": "StardustFrontGetStarRoll",
+      "comment": ""
+    },
+    {
+      "offset": 424,
+      "name": "StardustFrontIfNotZero3",
+      "comment": ""
+    },
+    {
+      "offset": 430,
+      "name": "StardustFrontIfNotZero4",
+      "comment": ""
+    },
+    {
+      "offset": 440,
+      "name": "StardustFrontIfNotZero5",
+      "comment": ""
+    },
+    {
+      "offset": 446,
+      "name": "StardustFrontGetStarX",
+      "comment": ""
+    },
+    {
+      "offset": 456,
+      "name": "StardustFrontGetStarX2",
+      "comment": ""
+    },
+    {
+      "offset": 463,
+      "name": "StardustFrontSetStarX",
+      "comment": ""
+    },
+    {
+      "offset": 466,
+      "name": "StardustFrontGetStarRoll2",
+      "comment": ""
+    },
+    {
+      "offset": 496,
+      "name": "StardustFrontIfNotZero6",
+      "comment": ""
+    },
+    {
+      "offset": 502,
+      "name": "StardustFrontIfNotZero7",
+      "comment": ""
+    },
+    {
+      "offset": 512,
+      "name": "StardustFrontIfNotZero8",
+      "comment": ""
+    },
+    {
+      "offset": 516,
+      "name": "StardustFrontGetStarY",
+      "comment": ""
+    },
+    {
+      "offset": 536,
+      "name": "StarRollScaleGetStarY",
+      "comment": ""
+    },
+    {
+      "offset": 545,
+      "name": "StarRollScaleSetStarY",
+      "comment": ""
+    },
+    {
+      "offset": 582,
+      "name": "StarRollPitchIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 586,
+      "name": "StarRollPitchJoin",
+      "comment": ""
+    },
+    {
+      "offset": 589,
+      "name": "StarRollPitchJoin2",
+      "comment": ""
+    },
+    {
+      "offset": 592,
+      "name": "StarRollPitchJoin3",
+      "comment": ""
+    },
+    {
+      "offset": 662,
+      "name": "StarRollPitchIfNotZero2",
+      "comment": ""
+    },
+    {
+      "offset": 666,
+      "name": "StarRollPitchIfNotZero3",
+      "comment": ""
+    },
+    {
+      "offset": 673,
+      "name": "StarRollPitchToStarRespawn",
+      "comment": ""
+    },
+    {
+      "offset": 676,
+      "name": "StarRollPitchJoin4",
+      "comment": ""
+    },
+    {
+      "offset": 678,
+      "name": "StarRollPitchJoin5",
+      "comment": ""
+    },
+    {
+      "offset": 701,
+      "name": "StarRollPitchIfNotZero4",
+      "comment": ""
+    },
+    {
+      "offset": 722,
+      "name": "StarPlotIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 748,
+      "name": "StarPlotGetStarPointer",
+      "comment": ""
+    },
+    {
+      "offset": 764,
+      "name": "StarPlotIfZero",
+      "comment": ""
+    },
+    {
+      "offset": 775,
+      "name": "StarPlotIfZero2",
+      "comment": ""
+    },
+    {
+      "offset": 824,
+      "name": "StardustNextSetStarX",
+      "comment": ""
+    },
+    {
+      "offset": 837,
+      "name": "StardustNextSetStarY",
+      "comment": ""
+    },
+    {
+      "offset": 868,
+      "name": "StardustSide",
+      "comment": ""
+    },
+    {
+      "offset": 879,
+      "name": "StardustNextToStardustFront",
+      "comment": ""
+    },
+    {
+      "offset": 882,
+      "name": "StardustNextIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 917,
+      "name": "StardustNextGetStarSigns",
+      "comment": ""
+    },
+    {
+      "offset": 943,
+      "name": "StardustNextGetStarRoll",
+      "comment": ""
+    },
+    {
+      "offset": 957,
+      "name": "StardustNextGetStarDepth",
+      "comment": ""
+    },
+    {
+      "offset": 965,
+      "name": "StardustNextLoop",
+      "comment": ""
+    },
+    {
+      "offset": 987,
+      "name": "StardustNextIfNotZero2",
+      "comment": ""
+    },
+    {
+      "offset": 989,
+      "name": "StardustNextIfNotZero3",
+      "comment": ""
+    },
+    {
+      "offset": 995,
+      "name": "StardustNextGetStarX",
+      "comment": ""
+    },
+    {
+      "offset": 1004,
+      "name": "StardustNextGetStarX2",
+      "comment": ""
+    },
+    {
+      "offset": 1012,
+      "name": "StardustNextSetStarX2",
+      "comment": ""
+    },
+    {
+      "offset": 1027,
+      "name": "StarPlotAllLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1073,
+      "name": "MulBitsLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1076,
+      "name": "MulBitsJoin",
+      "comment": ""
+    },
+    {
+      "offset": 1082,
+      "name": "MulBitsIfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 1101,
+      "name": "DivideShiftedLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1115,
+      "name": "DivideShiftedJoin",
+      "comment": ""
+    },
+    {
+      "offset": 1121,
+      "name": "DivideShiftedIfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 1125,
+      "name": "DivideFrac8Loop",
+      "comment": ""
+    },
+    {
+      "offset": 1136,
+      "name": "DivideFrac8Join",
+      "comment": ""
+    },
+    {
+      "offset": 1166,
+      "name": "StarAddressIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 1167,
+      "name": "StarAddressJoin",
+      "comment": ""
+    },
+    {
+      "offset": 1178,
+      "name": "StarAddressIfNotZero2",
+      "comment": ""
+    },
+    {
+      "offset": 1181,
+      "name": "StarAddressJoin2",
+      "comment": ""
+    },
+    {
+      "offset": 1208,
+      "name": "StarAddressLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1232,
+      "name": "StarRespawnFront",
+      "comment": ""
+    },
+    {
+      "offset": 1246,
+      "name": "StarRespawnMake",
+      "comment": ""
+    },
+    {
+      "offset": 1271,
+      "name": "StarRespawnIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 1295,
+      "name": "StarRespawnIfNotZero2",
+      "comment": ""
+    },
+    {
+      "offset": 1299,
+      "name": "StarRespawnToStarRespawnMake",
+      "comment": ""
+    },
+    {
+      "offset": 1302,
+      "name": "StarRespawnIfNotZero3",
+      "comment": ""
+    },
+    {
+      "offset": 1336,
+      "name": "StarRespawnIfZero",
+      "comment": ""
+    },
+    {
+      "offset": 1343,
+      "name": "StarRespawnIfZero2",
+      "comment": ""
+    },
+    {
+      "offset": 1357,
+      "name": "StarRespawnGetJumpToggle",
+      "comment": ""
+    },
+    {
+      "offset": 1382,
+      "name": "StarRespawnLoopCallStarRandom",
+      "comment": ""
+    },
+    {
+      "offset": 1387,
+      "name": "StarRespawnLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1401,
+      "name": "StarRespawnCallStarRandom",
+      "comment": ""
+    },
+    {
+      "offset": 1419,
+      "name": "StarRespawnGetStarPitch",
+      "comment": ""
+    },
+    {
+      "offset": 1429,
+      "name": "StarRespawnLoop2",
+      "comment": ""
+    },
+    {
+      "offset": 1437,
+      "name": "StarRespawnIfNotZero4",
+      "comment": ""
+    },
+    {
+      "offset": 1440,
+      "name": "StarRespawnJoin",
+      "comment": ""
+    },
+    {
+      "offset": 1446,
+      "name": "StarRespawnLoop3",
+      "comment": ""
+    },
+    {
+      "offset": 1457,
+      "name": "StarRespawnIfNotZero5",
+      "comment": ""
+    },
+    {
+      "offset": 1489,
+      "name": "StarRespawnIfZero3",
+      "comment": ""
+    },
+    {
+      "offset": 1500,
+      "name": "StarShuffleLoop",
+      "comment": ""
+    },
+    {
+      "offset": 1514,
+      "name": "StarShuffleIfNotBelow",
+      "comment": ""
+    },
+    {
+      "offset": 1525,
+      "name": "StarDots",
+      "comment": "The 16 dots: X (bit 7 the sign), Y (bit 7 the sign), the depth, the X fraction, the Y fraction"
+    },
+    {
+      "offset": 1605,
+      "name": "StarWarp",
+      "comment": "1: the next Stardust draws the jump's two fast passes"
+    },
+    {
+      "offset": 1664,
+      "name": "InSystemJumpSetStarWarp",
+      "comment": ""
+    },
+    {
+      "offset": 1706,
+      "name": "JumpCloserIfNotZero",
+      "comment": ""
+    },
+    {
+      "offset": 1709,
+      "name": "JumpCloserJoin",
+      "comment": ""
+    },
+    {
+      "offset": 1716,
+      "name": "JumpCloserIfBelow",
+      "comment": ""
+    },
+    {
+      "offset": 1737,
+      "name": "JumpCloserIfBelow2",
+      "comment": ""
+    },
+    {
+      "offset": 1751,
+      "name": "StarRoll",
+      "comment": "The roll rate for the dots (bit 7 moved to StarSigns)"
+    },
+    {
+      "offset": 1752,
+      "name": "StarPitch",
+      "comment": "The pitch rate for the dots"
+    },
+    {
+      "offset": 1753,
+      "name": "StarRollWork",
+      "comment": ""
+    },
+    {
+      "offset": 1754,
+      "name": "StarFlags",
+      "comment": ""
+    },
+    {
+      "offset": 1755,
+      "name": "StarPointer",
+      "comment": "The dot being moved"
+    },
+    {
+      "offset": 1757,
+      "name": "StarSpeed",
+      "comment": "The speed for the dots: SpeedRate / 2 + 1"
+    },
+    {
+      "offset": 1758,
+      "name": "StarXFrac",
+      "comment": ""
+    },
+    {
+      "offset": 1759,
+      "name": "StarX",
+      "comment": ""
+    },
+    {
+      "offset": 1760,
+      "name": "StarYFrac",
+      "comment": ""
+    },
+    {
+      "offset": 1761,
+      "name": "StarY",
+      "comment": ""
+    },
+    {
+      "offset": 1762,
+      "name": "StarDepth",
+      "comment": ""
+    },
+    {
+      "offset": 1763,
+      "name": "StarView",
+      "comment": "The view the dots were made for"
+    },
+    {
+      "offset": 1764,
+      "name": "StarCount",
+      "comment": "Dots left in this pass"
+    },
+    {
+      "offset": 1765,
+      "name": "StarListPointer",
+      "comment": "The next free entry of StarList"
+    },
+    {
+      "offset": 1767,
+      "name": "StarSigns",
+      "comment": "Bit 7 X negative, bit 6 Y negative, bit 5 the rear view, bits 4 and 3 the roll and pitch signs"
+    },
+    {
+      "offset": 1768,
+      "name": "StarListCount",
+      "comment": "The number of dots StarList holds (0 at the start of each pass)"
+    },
+    {
+      "offset": 1769,
+      "name": "JumpToggle",
+      "comment": "Rotated by every J jump: every second one may bring a ship"
+    },
+    {
+      "offset": 1770,
+      "name": "StarList",
+      "comment": "The dots of this pass: the back buffer address and the mask of each, 16 of 3 bytes"
+    }
+  ],
+  "found_in": [
+    {
+      "program": "Elite",
+      "case": "games/elite",
+      "address": "$7898",
+      "bank": null,
+      "delta": "+$0000",
+      "match": "exact",
+      "commit": "540daae"
+    }
+  ],
+  "source": {
+    "case": "games/elite",
+    "file": "src/game/stardust.asm",
+    "label": "Stardust"
+  },
+  "docs": [
+    "games/elite/docs/README.md"
+  ]
+}

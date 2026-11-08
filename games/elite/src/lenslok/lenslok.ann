@@ -1,0 +1,213 @@
+# The annotations of the Lenslok check ($C000-$C7FF before the kickoff): the source of src/lenslok/*.asm
+# (kit/mkgame.py --part src/lenslok/lenslok.json). The article: docs/lenslok.md. Evidence: c1 (ROM-speed load,
+# ENTER on the size screen at frame 15866, the code "si" accepted at 16075) and the simulator runs of
+# tools/lenslok_sim.py, which execute these bytes.
+
+@inline $C727
+
+@module check ; The Lenslok check: the size screen, the scrambled code, the answer
+@about Entered from the kickoff with CALL $C213 after the two ROM blocks; it returns only when the code is typed right, after at most two rounds of three attempts, and resets the machine otherwise. The kickoff then copies the game's $C800-$CFFF over this page.
+@about The picture is drawn with the ROM's PLOT ($22DF), the text with RST $10 on channel 2. All numbers are integers: the width the player sets on the size screen is divided by 11 into the scale at LensTable, and each slice of the picture is a range of tenths of the scale (docs/lenslok.md 3, 4).
+
+$C000 s LensUnused ; Zeros up to the code (the page the kickoff later fills with the game)
+
+$C213 c Lenslok ; The Lenslok check: rounds of a size screen and three attempts; returns on success, resets after two failed rounds
+> IX = LensTable for the whole check, IY = ERR_NR for the ROM. Opens channel 2 and clears the screen, runs LensRound, and tests LensPassed bit 0 with RR A / JR C. The JR C at $C22E is the byte ELITE48.TAP makes a JR (docs/lenslok.md 7).
+> On failure it prints "WRONG - TRY AGAIN", waits 65536 loops, counts LensRounds down and starts again; LensRounds is never set again, so the second failure reaches RST 0. c1 passes in the first round: LensPassed = 1 at frame 16075.
+$C22E LensPassedTest ; JR C: the only test of the result (ELITE48.TAP writes $18 here)
+$C233 t WrongText ; "  WRONG - TRY AGAIN   ", for PrintInline
+$C24A c LensFailedRound ; After a failed round: wait 65536 loops, count LensRounds down, start again or reset
+$C24D LensDelay
+$C25B LensReset ; RST 0: two failed rounds
+$C25C LensDone
+
+$C25D c LensRound ; One round: the size screen, the scale, then up to three attempts; LensPassed = 1 or 0
+> Runs SizeScreen with BORDCR = $23 (lower screen white on magenta), divides the width it returns by 11 into the scale (IX+0), widens the outer slices (LensEdgesWiden) and turns caps lock on (FLAGS2 bit 3) so letters arrive in upper case.
+> Each attempt: LensClear, Bracket, the seed from R read twice into LensSeed ($C297-$C29D; bit 7 of R is 1 since the decryptor's LD R,$FF), SetMarks, PickCode, DrawCode, AskCode. LensAttempts starts at 4 and is counted down before each attempt: three attempts.
+$C288 LensAttempt
+$C297 LensSeedRead ; LD A,R twice: the seed of the generator
+$C2A0 LensChallenge ; SetMarks, PickCode, DrawCode: the challenge from the seed (tools/lenslok_sim.py runs $C2A0-$C2A8)
+$C2A9 LensAsk
+$C2B5 LensFailed
+$C2B9 LensRoundEnd
+
+$C2BA c LensClear ; Clear the screen's pixels ($4000-$57FF), leaving the attributes
+> Byte by byte, 6144 bytes with a 16-bit count: 18 432 instructions a call in c1.
+$C2C0 LensClearLoop
+
+$C2C9 c DrawCode ; Draw the centre line and the 8 rows of the scrambled code in LensCode
+> The centre line: PlotColumn from (128, 88) and (127, 88), 2 x 2 points. Then for each of the 8 rows (B = 8 down to 1, C = 8): GlyphRow (the row of both characters into RowBits), Scramble (the 14 slots), DrawRow (the slices). c1 draws "si" at frames 15866-15891.
+$C2DB DrawCodeRow
+
+$C2EB c PlotRow ; Plot A points to the right from (x C, y B) with the ROM's PLOT
+> A horizontal run: C is incremented after each point. Used for the bracket's bar and, through FillBlock, the slices.
+
+$C2F7 c PlotColumn ; Plot A points upwards from (x C, y B) with the ROM's PLOT
+> A vertical run: B is incremented after each point. The bracket's posts and the centre line.
+
+$C303 c DrawRow ; Draw one row of the scrambled code: 14 slices from SlotBits, each a block of lines
+> D, E = the row's band (from DrawCode's B, C): the band's height in pixels is 20 x scale / 100 (LensRowHeight), its bottom row 120 minus its offset. Copies SlotBits to RowBits and walks the 14 slots: for each, PermIndex reads the slice's two edges from LensEdges (signed tenths), SliceSpan scales them, and when the slot's bit (shifted out of RowBits) is 1, FillBlock fills the slice for the band.
+> The edges are scaled one by one with the remainder dropped, which leaves the dark gaps between some slices (docs/lenslok.md 4.4).
+$C33A DrawRowSlice
+$C359 DrawRowRight
+$C361 DrawRowBit
+
+$C374 c PermIndex ; A = (IX + n), n the displacement at $C376, then n + 1
+> A self-modifying table reader: DrawRow sets the displacement to 1 (LensEdges), Scramble to $1D (LensPerm), and each call reads the next byte.
+
+$C37C c SetMarks ; The two mark bytes: Rand(128) with bit 0 cleared, into LensMark1 and LensMark2
+> The marks fill the two outer slots of each row (Scramble shifts one bit of each out per row). In c1 with the seed $FE81: $32 and $62.
+
+$C391 c LensEdgesWiden ; Widen the outer slices: edges 1 and 2 from edge 3 (minus 5), edges 27 and 28 from edge 26 (plus 5)
+> Run once a round after the scale is set.
+
+$C3A8 c AtRow20 ; Print position: AT 20,2 (the prompt line)
+$C3AE c AtColumn5 ; Print position: AT B,5
+$C3B0 AtPrint
+
+$C3B8 c SliceSpan ; Scale a slice's edges: LensSliceStart = (A x scale) / 10, BC = (D x scale) / 10; A = $80
+$C3DF c FillBlock ; Fill one slice of one row: LensRowHeight horizontal runs of the slice's width, one row up each time
+$C3E3 FillBlockLoop
+
+$C3F3 c LensMul ; BC = BC x DE by repeated addition (BC = 0 when DE = 0)
+$C3FB LensMulStart
+$C3FD LensMulLoop
+$C405 LensMulDone
+$C408 c LensDiv ; BC = BC / DE by repeated subtraction (the remainder dropped)
+$C40D LensDivLoop
+
+$C414 c SizeScreen ; The size screen: the bracket, the test code "OK", keys 5 / 8 change the width, ENTER returns it in A
+> LensWidth starts at $90 (144). Each pass clears the screen, prints the two hint lines, sets the scale (width / 11), draws "OK" with ShowOK and the bracket (OVER 1), and waits for a key: "5" narrows by 2, "8" widens by 2 (never below $50), ENTER ($0D) returns. c1 presses ENTER at frame 15866 with the width 144 unchanged.
+$C419 SizeScreenDraw
+$C422 t SizeHintText ; "<(5) DECREASE - INCREASE (8)>", for PrintInline
+$C440 c SizeScreenText ; The size screen, continued after its hint line: the bracket, "OK" and the keys
+$C475 SizeScreenKey
+$C486 SizeScreenWider
+$C48C SizeScreenSet
+$C496 SizeScreenStore
+$C49C SizeScreenEnter
+
+$C4B0 c BlankLine ; Print 24 spaces at AT B,5
+$C4B6 t SpacesText ; 24 spaces, for PrintInline
+$C4CF c BlankLineEnd ; The return after the spaces
+
+$C4D0 c Bracket ; Draw the bracket: two posts of 40 points and the bar between them at row 120
+> The posts stand at x = LensBracketX - 1 and LensBracketX + LensWidth from y = LensPostY (100); the bar runs LensWidth points at y = LensBarY (120). The player sets the lens on the posts.
+
+$C4FF c ShowOK ; Put "OK" into LensCode and draw it (the size screen's test code)
+> Before the first attempt LensCode still holds "OK", which keeps O and K out of the first code (PickCode).
+
+$C50B c OverOn ; OVER 1 (P_FLAG bit 1), so the bracket can be drawn and wiped by plotting twice
+$C511 c OverOff ; OVER 0 (P_FLAG bits 0 and 1)
+
+$C519 c IsExcluded ; Z if A is in LensExcluded (up to "^"); A kept
+$C51F IsExcludedLoop
+$C52A IsExcludedNo
+$C52B IsExcludedYes
+
+$C52F c PressEnterText ; Print "PRESS ENTER WHEN READY"
+$C532 t PressEnterString ; "PRESS ENTER WHEN READY ", for PrintInline
+$C54A c PressEnterEnd ; The return after the string
+
+$C54B c PickChar ; One character: a digit, an upper- and a lower-case candidate, then one of them by Rand(3)
+> Each candidate is drawn again while IsExcluded finds it: Rand(9) + "0", Rand(25) + "A", Rand(25) + "a" into LensCandidates; then Rand(B) + 1 picks the candidate (docs/lenslok.md 4.2, worked for the seed $FE81).
+$C557 PickDigit
+$C566 PickCharUpper
+$C56C PickUpper
+$C57B PickCharLower
+$C580 PickLower
+$C58E PickNth
+$C597 PickNthLoop
+
+$C59C c Scramble ; One row's 14 slots: mark 1's bit, the 12 glyph columns in LensPerm order, mark 2's bit, into SlotBits
+> For slot k (1-12) it finds the column c with LensPerm[c] = k and copies column c's bit of RowCopy into SlotBits. The marks are shifted right one bit a row, so each row gets the next bit of each mark.
+$C5A9 ScrambleSlot
+$C5BE ScrambleFind
+$C5C7 ScrambleCopy
+
+$C5EC c SlotShift1 ; Shift SlotBits ($C796-$C798) left by one bit
+$C5F5 c ShiftLeft3 ; Shift the 3 bytes ending at HL left by A bits (carry in from the previous instruction's flags)
+$C5F6 ShiftLeft3Bit
+$C5FB ShiftLeft3Byte
+
+$C608 c AskCode ; "ENTER CODE:", then up to two keys or a timeout of 600 frames; NC when they match LensCode
+> Waits with HALT, LensTimeout = 12 x 50 frames, for keys from the ROM's interrupt scan (FLAGS bit 5, LAST_K), echoes each with RST $10 and stores it in LensTyped. A timeout returns C (a wrong answer). CheckCode then compares each typed key with the code, and again plus $20, so the case does not matter. With the interrupts off (the fast-load trap, docs/03-build-and-load.md 3.9) no key arrives and the HALT never returns.
+$C618 t EnterCodeText ; "ENTER CODE:", for PrintInline
+$C624 c AskCodeWait ; AskCode, continued after its prompt: 600 frames for two keys
+$C632 AskCodeFrame
+$C645 AskCodeKey
+$C662 AskCodeTimeout
+$C664 CheckCode ; compare LensTyped with LensCode: NC right, C wrong
+$C66C CheckNext
+$C676 CheckOK
+$C67B CheckBad
+
+$C67D c WaitKey ; Wait for a key from the ROM's scan (FLAGS bit 5), clear the flag and return LAST_K in A
+> The size screen's key loop: 123 342 calls of KeyReady in c1 while the size screen waits for ENTER.
+$C688 c KeyReady ; NZ when FLAGS bit 5 says a new key is in LAST_K
+
+$C68E c Rand ; The generator: low byte of LensSeed + $31, returned mod A
+> One byte of state: each call adds 49 and returns the new value mod A by repeated subtraction. The seed's high byte is set to 0 by the first call.
+$C69F RandMod
+
+$C6A6 c PickCode ; Two new characters into LensCode, none in LensPrevious or already in LensCode; then LensPrevious = LensCode
+> Before the first attempt LensCode holds "OK" (ShowOK), afterwards the code shown before.
+$C6AC PickCodeChar
+$C6AE PickCodeRetry
+
+$C6D7 c InList ; C (carry) if A is one of the B bytes at HL; A kept
+$C6D9 InListLoop
+$C6E3 InListYes
+$C6E4 InListDone
+
+$C6E6 c GlyphRow ; Row C - B of both characters of LensCode: GlyphGather, then 6 columns of each into RowBits
+> The two font bytes (shifted right once, so the glyph's columns 1-6 fill the six slots of a half) are shifted bit by bit into the 24-bit RowBits.
+$C6F5 GlyphRowChar
+
+$C703 c ShiftInRow ; Shift the 6 low bits of A into RowBits ($C790-$C792), one bit at a time
+$C708 ShiftInRowBit
+$C70F ShiftInRowByte
+
+$C71C c ClearRowBits ; Zero the 4 bytes at RowBits
+$C721 ClearRowBitsLoop
+
+$C727 c PrintInline ; Print the string after the CALL up to "^" with RST $10, then continue after it
+$C728 PrintInlineLoop
+$C731 PrintInlineEnd
+
+$C733 c GlyphGather ; Row r of the characters at LensCode onwards from the ROM font into LensGlyphs: B = 8 - r bytes
+> r = C - B (stored in LensTemp); the font is CHARS + 256. The loop count is the row loop's B, so row r copies 8 - r bytes where 4 were meant: past the code and the previous code they run over the first four bytes of LensExcluded. Their last values are font bytes of the codes drawn last, which changes the excluded set from attempt to attempt; on row 7 only one byte is copied, so the second character's row 7 repeats its row 6 ("Sg" and "Sq" draw the same pixels). docs/lenslok.md 4.4 and 5.
+$C749 GlyphGatherLoop
+
+$C774 b LensVars 2 ; The Lenslok's variables and its table
+$C776 LensBarY ; the bracket's bar: row 120
+$C777 LensPostY ; the posts' bottom: row 100
+$C778 LensSpare
+$C779 LensTemp ; AskCode's key count; GlyphGather's row
+$C77A LensBracketX ; the left post: (255 - LensWidth) / 2
+$C77B LensWidthNew ; the width the keys asked for, before the minimum (written only)
+$C77C LensRowHeight ; a band's height in pixels: 20 x scale / 100
+$C77D LensWidth ; the bracket's width, $90 at the start; 5 / 8 change it by 2, never below $50
+$C77E LensAttempts ; 4, counted down before each attempt
+$C77F LensMark1 ; the left mark, shifted out one bit a row
+$C780 LensMark2 ; the right mark
+$C781 LensPassed ; 1 when the code was right: the check's only result
+$C782 LensSliceStart ; SliceSpan's scaled start (word)
+$C784 LensSeed ; the generator: R read twice at the start of an attempt; only the low byte is stepped
+$C786 LensTypedPtr ; where AskCode stores the next key
+$C788 LensGatherPtr ; where GlyphGather stores the next font byte
+$C78A LensRounds ; 2 rounds, never reset
+$C78B LensTimeout ; AskCode's frame count (word)
+$C78D LensCandidates ; PickChar's three candidates
+$C790 RowBits ; the 12 bits of a glyph row (3 bytes), and the slot bits DrawRow shifts out
+$C793 RowCopy ; RowBits copied before the scramble
+$C796 SlotBits ; the 14 scrambled bits
+$C799 LensCode ; the code: 2 characters and two zeros ("OK" on the size screen)
+$C79D LensPrevious ; the code shown before
+$C7A1 LensTyped ; the 2 keys typed
+$C7A5 LensGlyphs ; GlyphGather's 4 font bytes, which run on into LensExcluded
+$C7A9 LensExcluded ; "TLWMIYfmwtzl^": the characters kept out of a code (the first four overwritten from the first drawing on)
+$C7B6 LensTable ; IX: the scale, the 28 slice edges, the permutation
+$C7B7 LensEdges ; 14 slices, each two signed edges in tenths of the scale from the centre line
+$C7D3 LensPerm ; the slot each of the 12 glyph columns goes to
+$C7DF LensTail ; zeros to the end of the page

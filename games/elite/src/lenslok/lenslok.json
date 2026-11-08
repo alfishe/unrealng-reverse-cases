@@ -1,0 +1,8 @@
+{"image": "work/images/prekick.bin", "image_cmd": ["python3", "tools/image.py", "work/images/prekick.bin", "--stage", "prekick"],
+ "lo": "C000", "hi": "C800",
+ "ann": "src/lenslok/lenslok.ann", "top": "lenslok", "dest": "src/lenslok", "res": "src/res",
+ "header": ["; Elite, Firebird / Torus 1985: the Lenslok check, $C000-$C7FF as the decryptor leaves it (the kickoff copies the game over it after the check; docs/lenslok.md)"],
+ "mode": "blocks", "pages": [5, 2, 0],
+ "l1": [{"path": "work/c1/l1.json", "lo": "C000", "hi": "C800"}],
+ "data_entries": "stop",
+ "save": "lenslok.bin"}
