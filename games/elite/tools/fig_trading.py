@@ -356,15 +356,7 @@ def stonks(runs):
     for n in list(range(0, 121, 2)):
         pics.append(to_image(frame(n)))
         durs.append(90)
-    durs[-1] = 2500
-    # the punch line: the meme's card, its board made of the same medians
-    import fig_stonks_card as SC
-    cells = []
-    for s in T.SCHEMES:
-        cells += [('%d' % curves[s][0][-1], True), ('x%d' % (curves[s][0][-1] / curves[s][0][0]), True)]
-    w, h = pics[-1].size
-    pics.append(SC.card(cells, SC.CAPTION).resize((w, h)))
-    durs.append(4000)
+    durs[-1] = 4000
     K.save_gif(os.path.join(P.CASE, OUT, 'stonks.gif'), pics, durs)
     print('wrote', os.path.join(OUT, 'stonks.gif'), len(pics), 'pictures')
     for s in T.SCHEMES:

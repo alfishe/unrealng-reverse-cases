@@ -4,8 +4,9 @@ src/res/fonts/font.png), the font that writes RIGHT ON COMMANDER on the message 
 
     python3 tools/fig_stonks_commander.py       # -> docs/img/trading/stonks-commander.png
 
-The arrow and the man are those of tools/fig_stonks_card.py.
+The man is the meme's own Meme Man, cut out by tools/fig_mememan.py.
 """
+import math
 import os
 import sys
 
@@ -14,13 +15,14 @@ from PIL import Image, ImageDraw, ImageFilter
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, '..', '..', '..', 'kit'))
-import fig_stonks_card as SC  # noqa: E402
 import res_formats as R  # noqa: E402
 import zxscreen as Z  # noqa: E402
 
-CASE = SC.CASE
-W, H, S = SC.W, SC.H, SC.S
+CASE = os.path.dirname(HERE)
+W, H = 900, 600
+S = 3  # drawn at 3x, then scaled down: smooth edges
 SCREEN = os.path.join(CASE, 'work', 't1', 'frames', '001000.scr')
+MAN = os.path.join(HERE, 'data', 'mememan.png')
 FONT = os.path.join(CASE, 'src', 'res', 'fonts', 'font.png')
 
 
@@ -39,6 +41,36 @@ def board():
     # the market's price columns sit on the left: shift the crop so the numbers fill the card behind the man
     cx, cy = big.width // 2 - 40 * S, big.height // 2 - 10 * S
     return big.crop((cx - W * S // 2, cy - H * S // 2, cx + W * S // 2, cy + H * S // 2))
+
+
+def arrow(img):
+    """the glowing arrow: a zigzag rising to the right, orange to yellow, a red glow under it"""
+    pts = [(590, 610), (690, 400), (725, 425), (815, 175)]
+    pts = [(x * S, y * S) for x, y in pts]
+    tip = (850 * S, 85 * S)
+    glow = Image.new('RGBA', img.size, (0, 0, 0, 0))
+    g = ImageDraw.Draw(glow)
+    g.line(pts + [tip], fill=(255, 40, 30, 255), width=60 * S, joint='curve')
+    glow = glow.filter(ImageFilter.GaussianBlur(18 * S))
+    img.alpha_composite(glow)
+    body = Image.new('RGBA', img.size, (0, 0, 0, 0))
+    b = ImageDraw.Draw(body)
+    full = pts + [tip]
+    for i in range(len(full) - 1):  # each segment its own shade, orange at the foot, yellow at the head
+        t = i / (len(full) - 1)
+        c = (255, int(120 + 110 * t), int(20 + 40 * t), 255)
+        b.line([full[i], full[i + 1]], fill=c, width=34 * S)
+        b.ellipse([full[i][0] - 17 * S, full[i][1] - 17 * S, full[i][0] + 17 * S, full[i][1] + 17 * S], fill=c)
+    # the head: a triangle along the last segment
+    (x0, y0), (x1, y1) = full[-2], full[-1]
+    a = math.atan2(y1 - y0, x1 - x0)
+    L, Wd = 95 * S, 62 * S
+    tipx, tipy = x1 + math.cos(a) * 55 * S, y1 + math.sin(a) * 55 * S
+    bx, by = tipx - math.cos(a) * L, tipy - math.sin(a) * L
+    px, py = math.cos(a + math.pi / 2) * Wd, math.sin(a + math.pi / 2) * Wd
+    head = [(tipx, tipy), (bx + px, by + py), (bx - px, by - py)]
+    b.polygon(head, fill=(255, 235, 90, 255))
+    img.alpha_composite(body)
 
 
 def spectrum_text(text, px):
@@ -73,14 +105,13 @@ def words(img, text, centre, px):
 
 def main():
     img = board().convert('RGBA')
-    SC.arrow(img)
-    SC.man(img)
+    arrow(img)
+    man = Image.open(MAN).convert('RGBA')
+    h = 470 * S
+    man = man.resize((man.width * h // man.height, h), Image.LANCZOS)
+    img.alpha_composite(man, (-10 * S, H * S - h))
     words(img, 'Stonks,', (615 * S, 420 * S), 9 * S)
     words(img, 'Commander', (640 * S, 500 * S), 5 * S)
-    d = ImageDraw.Draw(img)
-    d.rectangle([0, (H - 34) * S, W * S, H * S], fill=(8, 12, 30, 230))
-    d.text((12 * S, (H - 17) * S), "the board: Lave's market screen (t1 frame 1000); the words in the game's own font "
-           "($5D70)", font=SC.font('small', 17 * S), fill=(230, 235, 245), anchor='lm')
     out = os.path.join(CASE, 'docs', 'img', 'trading', 'stonks-commander.png')
     img.resize((W, H), Image.LANCZOS).convert('RGB').save(out)
     print('wrote', os.path.relpath(out, CASE))

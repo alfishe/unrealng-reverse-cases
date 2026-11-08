@@ -7,11 +7,7 @@
 > <sub>* the median of 200 simulated commanders on the "mix" scheme, galaxy 1, run by the game's own market code.
 > Pirates not included. Past fluctuations are no guarantee of future fluctuations.</sub>
 
-![stonks: the meme's card, drawn for this course; the board's numbers are the league's medians](img/trading/stonks-card.png)
-
-**How to read it.** The meme's layout, drawn from scratch: the man in the suit, the arrow, the word. The board's
-cells are real: each scheme's median worth after 120 jumps from 100 Cr, and how many times over that is (x1235 is
-the mix). Drawn by `python3 tools/fig_stonks_card.py`.
+![Stonks, Commander](img/trading/stonks-commander.png)
 
 This is a get-rich-quick course with a twist: every number in it is real. Each "scheme" is pitched like a guru's
 lesson and then checked in a box called **What the code says**, with the mechanism, the numbers and the addresses.
@@ -36,8 +32,7 @@ Contents:
 4. [The league table](#the-league-table)
 5. [Lesson 2: the risk my competitors hide from you](#lesson-2-the-risk-my-competitors-hide-from-you)
 6. [Bonus tips for premium students](#bonus-tips-for-premium-students)
-7. [Graduation](#graduation)
-8. [Small print: how the numbers were made](#small-print-how-the-numbers-were-made)
+7. [Small print: how the numbers were made](#small-print-how-the-numbers-were-made)
 
 ## Lesson 0: the secret formula
 
@@ -317,8 +312,8 @@ the best load the cash allows, and flies where the expected profit, the fuel pai
 **How to read it.** The x axis is the jump, the y axis the worth on a log scale. The line is the median
 commander of each scheme, the band its 10 % to 90 % range. The dashed yellow line is the mix played "never sell
 below cost". The ticks on the right are the prices of the large cargo bay, the docking computers, the galactic
-hyperdrive and the whole equipment shop. The animation adds 2 jumps a picture and ends on the stonks card, whose
-board shows the same medians. Drawn by `python3 tools/fig_trading.py stonks` (one minute: 1200 commanders).
+hyperdrive and the whole equipment shop. The animation adds 2 jumps a picture. Drawn by
+`python3 tools/fig_trading.py stonks` (one minute: 1200 commanders).
 
 | Scheme | Worth at jump 120, median (10-90 %) | 400 Cr (bay) | 1500 Cr (docking computers) | 5000 Cr (hyperdrive) | 6000 Cr (military laser) | 10 000 Cr | 17 055 Cr (full shop) | danger a jump |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -559,16 +554,6 @@ BuyCheckHold:
 
 The stock falls by the quantity, the cash by the price Quantity times, the free space only for tonnes, and the
 hold byte refuses past 255. The price word is never written.
-
-## Graduation
-
-*"Congratulations. You are now a certified space trader. Frame this certificate."*
-
-![Stonks, Commander: the meme made of Elite, Lave's market screen as the stock board](img/trading/stonks-commander.png)
-
-**How to read it.** The stonks card again, now built from the game: the stock board is Lave's real market screen
-as `t1` saw it (frame 1000), tilted and tinted blue; the words are set in the game's own font at `$5D70`, the one
-that prints RIGHT ON COMMANDER when the rating goes up ([10](10-gameplay-logic.md) 10.6). Drawn by `python3 tools/fig_stonks_commander.py`.
 
 ## Small print: how the numbers were made
 
