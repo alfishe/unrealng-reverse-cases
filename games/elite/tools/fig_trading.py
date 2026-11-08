@@ -320,16 +320,16 @@ def stonks(runs):
     marks = [(400, 'large cargo bay 400'), (1500, 'docking computers 1500'), (5000, 'galactic hyperdrive 5000'),
              (17055, 'the full shop 17 055')]
 
-    def frame(n, meme):
+    def frame(n):
         fig, ax = P.figure(9.6, 6.4)
         ax.set_yscale('log')
         ax.set_xlim(0, 120)
-        ax.set_ylim(50, 4e5)
+        ax.set_ylim(50, 3e5)
         for y, lab in marks:
             ax.axhline(y, color=P.DIM, lw=0.7, ls=':')
         rx = ax.twinx()
         rx.set_yscale('log')
-        rx.set_ylim(50, 4e5)
+        rx.set_ylim(50, 3e5)
         rx.set_yticks([y for y, _ in marks])
         rx.set_yticklabels([lab.replace(' 17', '\n17').replace(' 1500', '\n1500').replace(' 5000', '\n5000')
                             .replace(' 400', '\n400') for _, lab in marks], fontsize=9, color=P.DIM)
@@ -346,12 +346,6 @@ def stonks(runs):
         ax.set_xlabel('jumps from Lave')
         ax.set_ylabel('worth: cash + cargo at the arrival prices (Cr, log scale)')
         ax.grid(True, which='major', lw=0.4)
-        if meme:
-            # the meme in the empty top-left corner, above every curve
-            ax.text(3, 1.25e5, 'STONKS', fontsize=30, fontweight='bold', color=(1.0, 0.55, 0.15), alpha=0.95)
-            ax.annotate('', xy=(52, 2.9e5), xytext=(36, 1.15e5),
-                        arrowprops={'arrowstyle': 'simple,head_width=1.2,head_length=1.2,tail_width=0.45',
-                                    'color': (1.0, 0.55, 0.15), 'alpha': 0.95})
         ax.set_title('jump %d' % n, loc='right', fontsize=10, color=P.WRITE)
         fig.suptitle('Credits over jumps from Lave (100 Cr, 20 t), 200 commanders a scheme:\nthe mix leads, '
                      'contraband second, minerals last (lines: the median; bands: 10-90 %)', fontsize=12)
@@ -360,11 +354,17 @@ def stonks(runs):
 
     pics, durs = [], []
     for n in list(range(0, 121, 2)):
-        pics.append(to_image(frame(n, False)))
+        pics.append(to_image(frame(n)))
         durs.append(90)
-    for _ in range(1):
-        pics.append(to_image(frame(120, True)))
-        durs.append(4000)
+    durs[-1] = 2500
+    # the punch line: the meme's card, its board made of the same medians
+    import fig_stonks_card as SC
+    cells = []
+    for s in T.SCHEMES:
+        cells += [('%d' % curves[s][0][-1], True), ('x%d' % (curves[s][0][-1] / curves[s][0][0]), True)]
+    w, h = pics[-1].size
+    pics.append(SC.card(cells, SC.CAPTION).resize((w, h)))
+    durs.append(4000)
     K.save_gif(os.path.join(P.CASE, OUT, 'stonks.gif'), pics, durs)
     print('wrote', os.path.join(OUT, 'stonks.gif'), len(pics), 'pictures')
     for s in T.SCHEMES:

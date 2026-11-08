@@ -7,6 +7,12 @@
 > <sub>* the median of 200 simulated commanders on the "mix" scheme, galaxy 1, run by the game's own market code.
 > Pirates not included. Past fluctuations are no guarantee of future fluctuations.</sub>
 
+![stonks: the meme's card, drawn for this course; the board's numbers are the league's medians](img/trading/stonks-card.png)
+
+**How to read it.** The meme's layout, drawn from scratch: the man in the suit, the arrow, the word. The board's
+cells are real: each scheme's median worth after 120 jumps from 100 Cr, and how many times over that is (x1235 is
+the mix). Drawn by `python3 tools/fig_stonks_card.py`.
+
 This is a get-rich-quick course with a twist: every number in it is real. Each "scheme" is pitched like a guru's
 lesson and then checked in a box called **What the code says**, with the mechanism, the numbers and the addresses.
 The numbers come from `tools/trade.py`, which runs the market of the 48K game rule for rule:
@@ -310,8 +316,8 @@ the best load the cash allows, and flies where the expected profit, the fuel pai
 **How to read it.** The x axis is the jump, the y axis the worth on a log scale. The line is the median
 commander of each scheme, the band its 10 % to 90 % range. The dashed yellow line is the mix played "never sell
 below cost". The ticks on the right are the prices of the large cargo bay, the docking computers, the galactic
-hyperdrive and the whole equipment shop. The animation adds 2 jumps a picture. Drawn by
-`python3 tools/fig_trading.py stonks` (one minute: 1200 commanders).
+hyperdrive and the whole equipment shop. The animation adds 2 jumps a picture and ends on the stonks card, whose
+board shows the same medians. Drawn by `python3 tools/fig_trading.py stonks` (one minute: 1200 commanders).
 
 | Scheme | Worth at jump 120, median (10-90 %) | 400 Cr (bay) | 1500 Cr (docking computers) | 5000 Cr (hyperdrive) | 6000 Cr (military laser) | 10 000 Cr | 17 055 Cr (full shop) | danger a jump |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
