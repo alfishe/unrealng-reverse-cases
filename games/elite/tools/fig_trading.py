@@ -259,34 +259,47 @@ def map_():
 
 
 def swing():
-    """each commodity's profit a unit at the full gap over every pair of bytes (buy, sell)"""
-    fig, ax = P.figure(9.6, 7.0)
-    order = sorted(range(16), key=lambda i: abs(T.FACTOR[i]) * 7 * 4)
-    for r, i in enumerate(order):
+    """each commodity's profit a unit at the full gap over every pair of bytes (buy, sell): the whole range, the
+    middle half and the mean, as a range bar a row"""
+    fig, ax = P.figure(9.6, 6.6)
+    rows = []
+    for i in range(16):
         ea, eb = (0, 7) if T.FACTOR[i] > 0 else (7, 0)
         buy = np.array([T.market(ea, f)[i][0] for f in T.FLS])
         sell = np.array([T.market(eb, f)[i][0] for f in T.FLS])
         prof = (sell[None, :] - buy[:, None]).ravel() / 10
-        vals, counts = np.unique(prof, return_counts=True)
-        w = counts / counts.max() * 0.42
+        rows.append((prof.mean(), i, prof))
+    rows.sort(key=lambda r: r[0])
+    ax.axvspan(-15, 0, color=P.HOT, alpha=0.10, lw=0)
+    ax.text(-7.5, len(rows) - 0.4, 'loss', ha='center', va='center', fontsize=9, color=P.HOT)
+    for r, (m, i, prof) in enumerate(rows):
         c = colour(i)
-        step = min(np.diff(vals)) if len(vals) > 1 else 0.4
-        for v, h in zip(vals, w):
-            ax.add_patch(plt.Rectangle((v - step / 2, r - h), step, 2 * h, color=c, lw=0))
-        m = prof.mean()
-        ax.plot([m, m], [r - 0.45, r + 0.45], color='white', lw=1.4)
-        ax.text(prof.max() + 4, r, '%s to %s, mean %.1f' % (cr(prof.min() * 10), cr(prof.max() * 10), m),
-                va='center', fontsize=8.5, color=P.TEXT)
+        lo, hi = prof.min(), prof.max()
+        q1, q3 = np.percentile(prof, [25, 75])
+        ax.plot([lo, hi], [r, r], color=c, lw=2.0, alpha=0.45, solid_capstyle='round')
+        ax.plot([q1, q3], [r, r], color=c, lw=7.0, solid_capstyle='round')
+        if lo < 0:
+            ax.plot([lo, 0], [r, r], color=P.HOT, lw=2.0, solid_capstyle='round')
+        ax.plot([m], [r], 'o', ms=6.5, mfc='white', mec=c, mew=1.6, zorder=5)
+        ax.text(hi + 3, r, '%s to %s' % (cr(lo * 10), cr(hi * 10)), va='center', fontsize=9, color=P.TEXT)
     ax.axvline(0, color=P.HOT, lw=1)
-    ax.set_yticks(range(16))
-    ax.set_yticklabels(['%s (%s)' % (T.GOODS[i], 'agr. > ind.' if T.FACTOR[i] < 0 else 'ind. > agr.')
-                        for i in order], fontsize=9)
+    ax.set_yticks(range(len(rows)))
+    ax.set_yticklabels(['%s  %s' % (T.GOODS[i], 'agr. > ind.' if T.FACTOR[i] < 0 else 'ind. > agr.')
+                        for _, i, _ in rows], fontsize=9.5)
     for k, lab in enumerate(ax.get_yticklabels()):
-        lab.set_color(colour(order[k]))
-    ax.set_xlim(-15, 185)
-    ax.set_xlabel('profit a unit (Cr), economy 0 to 7 or back; the height: how many byte pairs (buy, sell) give it')
+        lab.set_color(colour(rows[k][1]))
+    ax.set_ylim(-0.7, len(rows) - 0.3)
+    ax.set_xlim(-15, 175)
+    ax.set_xlabel('profit of one unit (Cr), bought at one end of the full economy gap and sold at the other')
     ax.grid(True, axis='x', lw=0.4)
-    fig.suptitle('At the full gap the economy fixes the sign: only alloys, platinum and gem-stones can lose; '
+    for sp in ('top', 'right'):
+        ax.spines[sp].set_visible(False)
+    from matplotlib.lines import Line2D
+    ax.legend(handles=[Line2D([], [], color=P.TEXT, lw=2, alpha=0.45, label='every pair of bytes (min to max)'),
+                       Line2D([], [], color=P.TEXT, lw=7, label='the middle half of the pairs'),
+                       Line2D([], [], marker='o', ls='', ms=6.5, mfc='white', mec=P.TEXT, label='the mean')],
+              loc='lower right', fontsize=9, frameon=False)
+    fig.suptitle('At the full gap the economy fixes the sign: only alloys, platinum and gem-stones can lose;\n'
                  'narcotics swing 33 to 129 Cr a tonne, computers 38 to 40', fontsize=12)
     P.save(fig, os.path.join(OUT, 'swing.png'))
 

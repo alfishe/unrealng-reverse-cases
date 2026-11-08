@@ -208,9 +208,9 @@ platinum, gem-stones; **high-tech** luxuries, computers, machinery; **illegal** 
 *Only alloys, platinum and gem-stones can lose money at the full gap; narcotics earns 33 to 129 Cr a tonne.*
 
 **How to read it.** One row a commodity, coloured by scheme, sorted by the mean, with the direction that pays
-(ind. > agr. or back). Each shape is the spread of the profit of one unit over all 255 x 255 pairs of the buying
-and the selling byte: its height is how many pairs give that profit, the white tick is the mean. The range and the
-mean are written at the right. Anything left of the red zero line is a loss. Drawn by `python3 tools/fig_trading.py swing`.
+(ind. > agr. or back). The thin line runs from the worst to the best profit of one unit over all 255 x 255 pairs of
+the buying and the selling byte; the thick part holds the middle half of those pairs; the white dot is the mean. The
+range is written at the right. A part left of the zero line, in the shaded loss zone, is drawn red. Drawn by `python3 tools/fig_trading.py swing`.
 
 ### Scheme 1: the honest farmer (agricultural)
 
