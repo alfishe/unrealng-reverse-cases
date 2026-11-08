@@ -313,12 +313,12 @@ def stonks(runs):
         fig, ax = P.figure(9.6, 6.4)
         ax.set_yscale('log')
         ax.set_xlim(0, 120)
-        ax.set_ylim(50, 3e5)
+        ax.set_ylim(50, 4e5)
         for y, lab in marks:
             ax.axhline(y, color=P.DIM, lw=0.7, ls=':')
         rx = ax.twinx()
         rx.set_yscale('log')
-        rx.set_ylim(50, 3e5)
+        rx.set_ylim(50, 4e5)
         rx.set_yticks([y for y, _ in marks])
         rx.set_yticklabels([lab.replace(' 17', '\n17').replace(' 1500', '\n1500').replace(' 5000', '\n5000')
                             .replace(' 400', '\n400') for _, lab in marks], fontsize=9, color=P.DIM)
@@ -336,11 +336,11 @@ def stonks(runs):
         ax.set_ylabel('worth: cash + cargo at the arrival prices (Cr, log scale)')
         ax.grid(True, which='major', lw=0.4)
         if meme:
-            ax.annotate('', xy=(116, curves['mix'][0][-1] * 1.3), xytext=(62, 260),
-                        arrowprops={'arrowstyle': 'simple,head_width=1.6,head_length=1.6,tail_width=0.6',
-                                    'color': (1.0, 0.55, 0.15), 'alpha': 0.85})
-            ax.text(68, 700, 'STONKS', fontsize=34, fontweight='bold', color=(1.0, 0.55, 0.15), alpha=0.9,
-                    rotation=27)
+            # the meme in the empty top-left corner, above every curve
+            ax.text(3, 1.25e5, 'STONKS', fontsize=30, fontweight='bold', color=(1.0, 0.55, 0.15), alpha=0.95)
+            ax.annotate('', xy=(52, 2.9e5), xytext=(36, 1.15e5),
+                        arrowprops={'arrowstyle': 'simple,head_width=1.2,head_length=1.2,tail_width=0.45',
+                                    'color': (1.0, 0.55, 0.15), 'alpha': 0.95})
         ax.set_title('jump %d' % n, loc='right', fontsize=10, color=P.WRITE)
         fig.suptitle('Credits over jumps from Lave (100 Cr, 20 t), 200 commanders a scheme:\nthe mix leads, '
                      'contraband second, minerals last (lines: the median; bands: 10-90 %)', fontsize=12)
