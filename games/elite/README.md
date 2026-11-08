@@ -22,19 +22,22 @@ State: complete, 2026-11-07.
 | --- | --- |
 | the game as a player meets it, in pictures | [1. Game design](docs/01-game-design.md) |
 | every ship turning, with its numbers | [The ships](docs/ships.md) |
+| how to get rich trading: five schemes run on the market's own code, stonks included | [The trading course](docs/trading-guide.md) |
 | how the lens protection works, and every code it can ask | [The Lenslok](docs/lenslok.md), [all its codes](docs/lenslok-codes.md) |
 | how 2048 planets come out of six bytes | [The galaxy generator](docs/galaxy.md) |
 | how a wireframe ship gets onto the screen | [The 3D engine](docs/3d-engine.md), [6. Rendering](docs/06-rendering.md) |
 | where the CPU time goes, frame by frame | [The runtime analysis](docs/runtime-analysis.md) |
 | what the Spectrum version changed from the BBC original | [Against BBC Elite](docs/bbc-comparison.md) |
 | trading, docking, combat, missions as recorded | [The scenes](docs/scenes.md) |
-| how to get rich trading, by the market's own code | [The trading course](docs/trading-guide.md) |
 | the tape, Softlock and how the source is built | [3. Build and load](docs/03-build-and-load.md) |
 | every document, the terms and the recordings | [docs/README.md](docs/README.md) |
 | how the reverse was done, step by step | [WALKTHROUGH.md](WALKTHROUGH.md) |
 
 ## Things found on the way
 
+- **A price depends only on the system's economy and one random byte**, so the map matters only for the fuel. Run on
+  the game's own market code, the best scheme turns 100 Cr into about 123 500 Cr in 120 jumps; contraband brings no
+  police, only about half as many pirates again ([the trading course](docs/trading-guide.md)).
 - **The Lenslok has no list of codes.** Each code is made from the Z80's R register when ENTER is pressed; the
   game's own code, run over every state, gives 475 possible codes, 96 of them on a first attempt. A bug in the
   original makes "g" and "q" look the same through the lens in 10 of them ([lenslok.md](docs/lenslok.md) 4.4, 5).
