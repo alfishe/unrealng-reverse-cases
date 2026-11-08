@@ -138,9 +138,35 @@ clone with POKEs is exploration only, named as such; no claim about the game res
   top. On ENTER `$A13A` sets `$71F0` to 1 and jumps to the entry `$6D60`, which then goes straight to `$7145`:
   the flag cleared, the Hall of Fame shown (the same display the menu's timeout reaches at `$7149`).
 - `python3 tools/coverage.py <work folders>` counts the game bytes the recordings executed (the L1 blocks, each
-  to the end of its last instruction). `c1`, `c128`, `x1`, `x2`, `w030` and the 97 warp runs: 10 963 of the
-  37 536 bytes. `m1` and `h1` add 148 (`$7145-$7148`, `$A095-$A101`, `$A122-$A144`: the table insert and the
+  to its last byte). `c1`, `c128`, `x1`, `x2`, `w030` and the 97 warp runs: 10 960 of the
+  37 536 bytes (10 963 before a fix to the tool: it counted past each block's last byte). `m1` and `h1` add 148 (`$7145-$7148`, `$A095-$A101`, `$A122-$A144`: the table insert and the
   name entry). Not executed in any run: the CAPS delete of the name entry (`$A102-$A121`), the Amstrad keyboard
   code at `$C7B5`, and the data.
+
+### 6.1 The annotation, five agents (2026-11-08)
+
+Recipe 11: the image cut into five ranges (`$6D60-$802C`, `$802D-$910A`, `$910B-$9E36`, `$9E37-$ADE0`,
+`$ADE1-$FFFF`), one agent each with the brief `work/briefs/ann-fragments.md`, own port bases (24000, 24600, 25200,
+25800, 26400), each fragment checked alone with `kit/mkgame.py` ("assembled: identical") before the merge.
+
+- `case.json` read builds: the first two agents found that no `c` entry on code that never ran was accepted ("the
+  recordings say data"). `c1`'s L1 counts every byte of the image as read: the loader's move reads the code file,
+  and `Delay` (`$B0B7`) is an `LDIR` from `$0000` to `$0000` of BC bytes, which reads every byte up to BC. The
+  read builds are now `m1` and `x1` (no POKE, both from the game's entry); `c1` (`game`) counts for its
+  instructions only. With that the never-run code is `c` entries: `$7014`, `$7046`, `$7BDB`, `$7FF1`, the CAPS
+  delete in `$A095`, `$AC2B` (the force field destroyed), `$AD2A` (the pause), `$C7B5` (the Amstrad keyboard
+  scan), `$FF78` (a serial downloader), and others, each description saying why it never ran.
+- The agents' own runs (exploration on clones, `work/ann/<id>/`): exA's `exa1` (define keys with ZORBA: the cheat
+  toggles the lives' `DEC A` at `$9D1D` to `NOP`; ten deaths, no life lost), exC's `t1` / `t2` (screen 14 with
+  only the lives and immunity POKEs, so the traps run: 1047 passes of the trap body), exD's `d1` (the pause, and
+  the CAPS delete: the table read back `EOLONABD  009000`, as the code predicts).
+- The merge, `work/lead/merge.py`: the fragments in address order, six names two agents gave to different
+  routines renamed (`ClearMenuStars`, `WaitKeyOrFire`, `WaitKeyOrFireKey`, `BeeperTuneNote`, `AyTuneNote`,
+  `HudDigit`), 15 jump targets named by the lead (`work/lead/names.ann`), the mechanical names in comments
+  replaced by the entries' names, seven `@equ` (the cell maps `$5B00`, `$5E00`, `$6100`, the tables `$6400`,
+  `$6500`, `$6600`, `$6700`), 15 `@isub`, and 34 modules cut by address. Result: 484 entries, 11 278 code bytes,
+  "assembled: identical", `tools/build.sh` identical, docs 11 and 12 regenerated (287 routines, 197 data
+  entries).
+- `tools/coverage.py` fixed (exC): the L1 block's `end` is its last byte; the tool had added an instruction length.
 
 ## 7. Review
