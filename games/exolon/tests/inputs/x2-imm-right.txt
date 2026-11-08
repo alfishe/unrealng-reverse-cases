@@ -1,0 +1,907 @@
+# x2: from work/snaps/entry-imm.z80 (ZXDB POKEs: lives, ammo, grenades, immunity, mines, traps): the menu (5, 1), then right; fire held 40 frames (a grenade), a jump, a shot
+0 -
++100 5
++30 -
++50 1
++30 -
++100 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 END

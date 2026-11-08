@@ -1,0 +1,32 @@
+# The TZX of the Hewson release (orig/Exolon.tzx.zip), block by block: tools/tzx.py writes it from this file and the
+# files the build assembles; tools/build.sh compares the result with the original byte for byte.
+#
+#   version MAJOR.MINOR                         the TZX header
+#   info ID TEXT                                one string of the $32 archive-info block (ID in hex)
+#   header PAUSE program NAME LINE FILE         a $10 block: a ROM header for a BASIC program (length and
+#                                               parameter 2 = FILE's length); PAUSE in ms after it
+#   header PAUSE bytes NAME START PARAM2 FILE   a $10 block: a ROM header for CODE (length = FILE's length)
+#   header PAUSE type T NAME START PARAM2 FILE  the same with the type byte T: 42 for the files only the Hewson
+#                                               loader takes (docs/03-build-and-load.md 3.3)
+#   data PAUSE FILE                             a $10 block: flag $FF, FILE, the XOR checksum
+#
+# Every block is standard speed. The two type-42 headers' parameter 2 ($4000, $6784) is read by nothing.
+version 1.10
+info 00 Exolon
+info 01 Hewson Consultants
+info 02 Raffaele Cecco
+info 03 1987
+info 04 English
+info 05 Arcade
+info 06 7.95
+info 07 Hewson II
+info 08 Perfect TZX sampled from the original cassette by Church of the Latter-Day Speccy
+info FF CRASH #43; "A well-presented traditional shoot-'em-up with plenty to do and look at" 90% SMASH
+header 1007 program exolon 0 basic.bin
+data 999 basic.bin
+header 1003 bytes exolon 64512 64512 loader.bin
+data 1008 loader.bin
+header 1008 type 42 exolon 32768 16384 picy.bin
+data 1011 picy.bin
+header 1003 type 42 exolon 26000 26500 game.bin
+data 0 game.bin

@@ -1,0 +1,79 @@
+# w: from a warp snapshot: the menu, then x2's pattern for about 1800 frames
+0 -
++100 5
++30 -
++50 1
++30 -
++100 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 KF
++40 KR
++40 KR KU
++16 KR
++30 KR KF
++6 KR
++20 END

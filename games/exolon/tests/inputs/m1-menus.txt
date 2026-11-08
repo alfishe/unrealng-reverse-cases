@@ -1,0 +1,268 @@
+# m1: from work/snaps/entry.z80, no POKE: the menu: 2 (define keys: P O Q A M, then SPACE for the last prompts), 3 (keyboard), 4 (Interface 2), 5 (Kempston), 1 (start); the first screen kills the player nine times, GAME OVER, the menu again
+0 -
++100 2
++30 -
++60 P
++20 -
++40 O
++20 -
++40 Q
++20 -
++40 A
++20 -
++40 M
++20 -
++40 SPACE
++20 -
++40 ENTER
++20 -
++100 3
++30 -
++60 4
++30 -
++60 5
++30 -
++60 1
++30 -
++100 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 KR
++60 KR KF
++6 KR
++30 KU
++10 -
++1500 END

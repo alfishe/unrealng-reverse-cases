@@ -1,0 +1,203 @@
+# h1: from work/snaps/entry-score.z80 (a clone: the score digits $AD8A set to 009000 and the reset at $6D88-$6D94 made NOPs): the menu (5, 1), the first screen kills the player nine times, then the Hall of Fame entry: E X O L O N, ENTER
+0 -
++100 5
++30 -
++50 1
++30 -
++100 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 KR
++60 KR KF
++6 KR
++30 -
++300 E
++20 -
++20 X
++20 -
++20 O
++20 -
++20 L
++20 -
++20 O
++20 -
++20 N
++20 -
++20 -
++30 ENTER
++20 -
++1500 END

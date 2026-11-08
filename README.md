@@ -32,6 +32,7 @@ Each case is a full reverse of one game:
 | [Zynaps 2 in 1](games/zynaps-128/README.md) | goodboy and tiboh, 2018 | 128K, TR-DOS | done | Zynaps with the Amstrad CPC version's AY music and effects, a mouse option, a 48K branch; doc 13 the differences |
 | [Zynaps GS](games/zynaps-gs/README.md) | ZX-Masters, 1997 | 128K + General Sound, TR-DOS | documents stage, 01-13 written | Zynaps patched for General Sound: 13 MOD tunes and 22 effects, a Trush-packed disk, an installer; doc 13 the differences |
 | [Elite](games/elite/README.md) | Firebird (Torus), 1985 | 48K, tape | complete 2026-11-07 | the space trading game: Softlock and the Lenslok answered by computing them, a generated galaxy, a wireframe 3D engine, a runtime analysis and a trading course run on the game's own market code |
+| [Exolon](games/exolon/README.md) | Hewson Consultants, 1987 | 48K / 128K, tape | in progress | Raffaele Cecco's run-and-gun shoot-'em-up, on Zynaps' Countdown II loader |
 
 Every case is one folder in `games/`:
 

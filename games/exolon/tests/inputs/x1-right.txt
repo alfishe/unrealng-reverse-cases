@@ -1,0 +1,248 @@
+# x1: from work/snaps/entry.z80: the menu, 5 (Kempston), 1 (start), then right + fire, up (jump) now and then
+0 -
++100 5
++30 -
++50 1
++30 -
++200 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++40 KR KF
++4 KR
++20 KR KU
++6 KR
++100 END
