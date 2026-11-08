@@ -36,7 +36,8 @@ Contents:
 4. [The league table](#the-league-table)
 5. [Lesson 2: the risk my competitors hide from you](#lesson-2-the-risk-my-competitors-hide-from-you)
 6. [Bonus tips for premium students](#bonus-tips-for-premium-students)
-7. [Small print: how the numbers were made](#small-print-how-the-numbers-were-made)
+7. [Graduation](#graduation)
+8. [Small print: how the numbers were made](#small-print-how-the-numbers-were-made)
 
 ## Lesson 0: the secret formula
 
@@ -558,6 +559,16 @@ BuyCheckHold:
 
 The stock falls by the quantity, the cash by the price Quantity times, the free space only for tonnes, and the
 hold byte refuses past 255. The price word is never written.
+
+## Graduation
+
+*"Congratulations. You are now a certified space trader. Frame this certificate."*
+
+![Stonks, Commander: the meme made of Elite, Lave's market screen as the stock board](img/trading/stonks-commander.png)
+
+**How to read it.** The stonks card again, now built from the game: the stock board is Lave's real market screen
+as `t1` saw it (frame 1000), tilted and tinted blue; the words are set in the game's own font at `$5D70`, the one
+that prints RIGHT ON COMMANDER when the rating goes up ([10](10-gameplay-logic.md) 10.6). Drawn by `python3 tools/fig_stonks_commander.py`.
 
 ## Small print: how the numbers were made
 
