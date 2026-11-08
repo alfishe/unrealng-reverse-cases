@@ -127,13 +127,14 @@ ZoneRefillFind:
 ; The bonus screen: a "*" steps down eight lines until fire; the odd lines pay
 ; 1000, 3000, 5000, 7000
 ;
-; Six DelayBC of 65 536 (the zone's panel stays about 10 s), ClearScreen,
-; BonusScreenText, WaitNoKey, a delay; then each round BonusPointer + 1, "*"
-; ($2A, white) at row 13 + (BonusPointer AND 7), column 22, a space over the
-; line before, ReadControls $7B72, DelayBC 6000; fire ($7B96) stops it.
-; BonusPointer AND 7 odd: that many x 1000 points (the lines read 00000, 01000,
-; 00000, 03000, ...: the odd ones are what they say). BonusPointer is never
-; reset: the pointer goes on from where it stopped. 9 warp runs.
+; Six DelayBC of 65 536 (about 2.4 s; the zone's panel stays up 133 frames in
+; w/124, from RoundEnd to BonusScreen), ClearScreen, BonusScreenText,
+; WaitNoKey, a delay; then each round BonusPointer + 1, "*" ($2A, white) at row
+; 13 + (BonusPointer AND 7), column 22, a space over the line before,
+; ReadControls $7B72, DelayBC 6000; fire ($7B96) stops it. BonusPointer AND 7
+; odd: that many x 1000 points (the lines read 00000, 01000, 00000, 03000, ...:
+; the odd ones are what they say). BonusPointer is never reset: the pointer
+; goes on from where it stopped. 9 warp runs.
 BonusScreen:
   LD HL,FontBase
   LD (PrintChar+$000E),HL
@@ -241,7 +242,8 @@ ZoneEndList:
   DEFB $00,$00,$FF
 
 ; The zone end panel: a frame of font $EAB0, BRAVERY BONUS 00000, LIVES BONUS X
-; 1000, PRESS FIRE TO RESUME PLAY
+; 1000, PRESS FIRE TO RESUME PLAY (no code reads fire there: the panel ends
+; with its Delays)
 ;
 ; At 3,7: a box 17 wide and 15 high of yellow pieces (font $EAB0), cleared
 ; inside with spaces of font $D7E0, then the texts (bright magenta, white,

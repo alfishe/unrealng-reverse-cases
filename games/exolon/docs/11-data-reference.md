@@ -285,7 +285,7 @@ Written by `kit/refdocs.py`.
 | `$AA3F` | `CongratulationsText` | 161 | The end of the game's 125 screens: CONGRATULATIONS! YOU HAVE PROVEN YOUR COMBAT ABILITIES TO THE FULL. RoundEnd prints it on screen 124's end, then the game goes on from screen 0 (no ending beyond it). The same frame; then PRESS FIRE TO RESUME PLAY (the code waits with 4 DelayBC, not for fire). | `Delay` | `Delay` |
 | `$AAE0` | `ZoneStarts` | 15 | The start of each zone: the screen, the player's X, Y (screens 0, 25, 50, 75, 100). ZoneRefill looks the new screen up (no end mark: a screen not in the table would loop for ever; only these five follow a zone's end). The entry `$6D60` starts a game at `$10`, `$70` itself (the first record's values). | `Delay` | `Delay` |
 | `$AAEF` | `ZoneEndList` | 3 | The zone end marker's cell (column, row) from the builder (tile 16), `$FF` at `$AAF1` | `Delay`, `ZoneEnd` | `Delay`, `IndexObjectCells` |
-| `$AAF2` | `ZoneBonusText` | 162 | The zone end panel: a frame of font `$EAB0`, BRAVERY BONUS 00000, LIVES BONUS X 1000, PRESS FIRE TO RESUME PLAY. At 3,7: a box 17 wide and 15 high of yellow pieces (font `$EAB0`), cleared inside with spaces of font `$D7E0`, then the texts (bright magenta, white, green, yellow, cyan). | `Delay` | `Delay`, `IndexObjectCells` |
+| `$AAF2` | `ZoneBonusText` | 162 | The zone end panel: a frame of font `$EAB0`, BRAVERY BONUS 00000, LIVES BONUS X 1000, PRESS FIRE TO RESUME PLAY (no code reads fire there: the panel ends with its Delays). At 3,7: a box 17 wide and 15 high of yellow pieces (font `$EAB0`), cleared inside with spaces of font `$D7E0`, then the texts (bright magenta, white, green, yellow, cyan). | `Delay` | `Delay`, `IndexObjectCells` |
 
 ## forcefield
 

@@ -169,4 +169,23 @@ Recipe 11: the image cut into five ranges (`$6D60-$802C`, `$802D-$910A`, `$910B-
   entries).
 - `tools/coverage.py` fixed (exC): the L1 block's `end` is its last byte; the tool had added an instruction length.
 
+### 6.2 The documents, two agents (2026-11-08)
+
+Recipe 11 §2-3: docs 01-06 by one agent (port base 27000), docs 07-10 by another (27600), the brief
+`work/briefs/docs.md`; each wrote its docs, `docs/img/<topic>/`, its own `tools/fig_*.py` and `work/docs/<id>-*.md`
+(the commands and what each proved: `docA-NOTES.md`, `docB-NOTES.md`). Sound was rendered to WAV files from muted
+instances and shown as spectrograms and timelines, never played.
+
+- The lead's review of every figure at 900 px: three clipped labels in docs 02-03's figures fixed; docs 07-10's
+  first figures were drawn 1500-1800 px with small fonts and were redrawn at 1050 px with fonts of 10 pt or more
+  (`tools/fig_docb.py`), five crowded ones split in two. 43 figures (PNG and GIF) and 5 mermaid diagrams in docs 01-10.
+- Corrections to `src/game/game.ann` found by the docs pass, applied by `work/lead/merge.py` (FIXES): one `Delay`
+  of 65 536 is 1 376 256 T, about 20 frames (0.4 s), not 1.6 s; the zone-end panel's six Delays last 133 frames in
+  `w/124` (RoundEnd to BonusScreen), not 10 s; "PRESS FIRE TO RESUME PLAY" reads no fire.
+- `docs/README.md`: the index, the recordings table and the terms merged from `work/docs/docA-index.md` and
+  `docB-index.md`; "Used in" from a grep of the documents.
+- Settled while writing: the HUD's ZONES shows the screen number 0-124, not a zone; RoundEnd runs at every zone
+  end, only screen 124 adds CONGRATULATIONS and the screen number `$FF`; the 50 points are for a ball and for a gun
+  shell shot down.
+
 ## 7. Review

@@ -1395,7 +1395,7 @@ $A01C c ClearBlasts ; Frees the 5 blast records (15 zeros), at every screen set-
 
 @module gameover ; GAME OVER and the Hall of Fame name entry
 $A02A c GameOver ; GAME OVER: the text and tune, a pause, the Hall of Fame test, then a key or a timeout restarts
-> Reached by the JP Z at $9D38 when the last life is lost. Prints GameOverText (a bright red-on-cyan band, rows 10-12 from column 10), plays the tune $7D68 through $7D17, waits two DelayBC of 65 536 rounds (the delay copies BC bytes from $0000 to $0000; about 1.6 s each), then HallOfFameInsert: a score that enters the table asks for the name, and that path never comes back (it jumps to the entry). Else WaitNoKey, and up to 20 000 rounds of ReadKey: any key, or the count's end, jumps to the entry $6D60 (the menu). c1: 3 game overs, c128: 1, x1, m1, h1: 1 each.
+> Reached by the JP Z at $9D38 when the last life is lost. Prints GameOverText (a bright red-on-cyan band, rows 10-12 from column 10), plays the tune $7D68 through $7D17, waits two DelayBC of 65 536 rounds (the delay copies BC bytes from $0000 to $0000: 65 536 x 21 T = 1 376 256 T, about 20 frames or 0.4 s each), then HallOfFameInsert: a score that enters the table asks for the name, and that path never comes back (it jumps to the entry). Else WaitNoKey, and up to 20 000 rounds of ReadKey: any key, or the count's end, jumps to the entry $6D60 (the menu). c1: 3 game overs, c128: 1, x1, m1, h1: 1 each.
 $A048 GameOverWait ; any key: the menu at once
 $A057 t GameOverText ; GAME OVER: at 9,10, font $D7E0, attribute $56, a row of 11 spaces, " GAME OVER ", 11 spaces
 > The print codes of PrintString $AF2B: $DF row col, $E6 the font, $E0 the attribute, $E4 n c (n times c), $90-$CE a new line at the column + (code - $AF), $FF the end. Rows 9-11, columns 10-20.
@@ -1558,7 +1558,7 @@ $A8A5 c ZoneRefill ; The next zone: the suit off, 99 ammunition, 10 grenades, th
 > ExoSuit = 0, $8E5A = 99, $8E66 = 10; $8253 with A = $88 (the player's Y $88 for now, the screen number + 1: 25, 50, 75, 100, or 0 after RoundEnd's $FF), $8485 builds it, $7690 the HUD; $82F7 = 0; ZoneStarts gives the start X, Y of the new screen into $82F5 (the player) and $82F3 (the restart point).
 $A8C9 ZoneRefillFind
 $A8DB c BonusScreen ; The bonus screen: a "*" steps down eight lines until fire; the odd lines pay 1000, 3000, 5000, 7000
-> Six DelayBC of 65 536 (the zone's panel stays about 10 s), ClearScreen, BonusScreenText, WaitNoKey, a delay; then each round BonusPointer + 1, "*" ($2A, white) at row 13 + (BonusPointer AND 7), column 22, a space over the line before, ReadControls $7B72, DelayBC 6000; fire ($7B96) stops it. BonusPointer AND 7 odd: that many x 1000 points (the lines read 00000, 01000, 00000, 03000, ...: the odd ones are what they say). BonusPointer is never reset: the pointer goes on from where it stopped. 9 warp runs.
+> Six DelayBC of 65 536 (about 2.4 s; the zone's panel stays up 133 frames in w/124, from RoundEnd to BonusScreen), ClearScreen, BonusScreenText, WaitNoKey, a delay; then each round BonusPointer + 1, "*" ($2A, white) at row 13 + (BonusPointer AND 7), column 22, a space over the line before, ReadControls $7B72, DelayBC 6000; fire ($7B96) stops it. BonusPointer AND 7 odd: that many x 1000 points (the lines read 00000, 01000, 00000, 03000, ...: the odd ones are what they say). BonusPointer is never reset: the pointer goes on from where it stopped. 9 warp runs.
 $A908 BonusScreenStep
 $A93F BonusScreenStopped
 $A957 ; Points1000
@@ -1572,7 +1572,7 @@ $AA71 ; the texts in font $D7E0
 $AAE0 b ZoneStarts 3 ; The start of each zone: the screen, the player's X, Y (screens 0, 25, 50, 75, 100)
 > ZoneRefill looks the new screen up (no end mark: a screen not in the table would loop for ever; only these five follow a zone's end). The entry $6D60 starts a game at $10, $70 itself (the first record's values).
 $AAEF b ZoneEndList 3 ; The zone end marker's cell (column, row) from the builder (tile 16), $FF at $AAF1
-$AAF2 t ZoneBonusText ; The zone end panel: a frame of font $EAB0, BRAVERY BONUS 00000, LIVES BONUS X 1000, PRESS FIRE TO RESUME PLAY
+$AAF2 t ZoneBonusText ; The zone end panel: a frame of font $EAB0, BRAVERY BONUS 00000, LIVES BONUS X 1000, PRESS FIRE TO RESUME PLAY (no code reads fire there: the panel ends with its Delays)
 > At 3,7: a box 17 wide and 15 high of yellow pieces (font $EAB0), cleared inside with spaces of font $D7E0, then the texts (bright magenta, white, green, yellow, cyan).
 $AB94 c DeadNextLineCall ; CALL NextPixelLine $B099 that no jump or call reaches (never ran)
 > Never ran in any recording, and cannot: a CALL of NextPixelLine $B099 between ZoneBonusText's $FF and ForceFieldDraw; nothing in the image jumps to $AB94. A leftover.

@@ -771,6 +771,8 @@ Waits for no key, keeps the pointer in TunePointer `$7FEF`. Each note: a key dow
 
 Callers: MainMenu (TitleTune, 48K only), ZorbaCheat (JingleTune), GAME OVER `$A02A` (JingleTune). c1: 7 calls (the title tune at each load, GAME OVER).
 
+[Animation: `PlayTune` at work](img/routines/PlayTune.gif)
+
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 7 calls, 38,808,955 t-states own (1.93 %) |
@@ -2127,6 +2129,8 @@ At t = 0: the player's frames turned back to face right (`$7BDA` set: `$7BAA` mi
 
 x1: 9 deaths, the ninth to GAME OVER.
 
+[Animation: `PlayerDeath` at work](img/routines/PlayerDeath.gif)
+
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,263 calls, 288,695 t-states own (0.01 %) |
@@ -2417,7 +2421,7 @@ Called by the screen set-up `$8494` (c1: 4, warps: 223).
 
 **GAME OVER: the text and tune, a pause, the Hall of Fame test, then a key or a timeout restarts**
 
-Reached by the JP Z at `$9D38` when the last life is lost. Prints GameOverText (a bright red-on-cyan band, rows 10-12 from column 10), plays the tune `$7D68` through `$7D17`, waits two DelayBC of 65 536 rounds (the delay copies BC bytes from `$0000` to `$0000`; about 1.6 s each), then HallOfFameInsert: a score that enters the table asks for the name, and that path never comes back (it jumps to the entry). Else WaitNoKey, and up to 20 000 rounds of ReadKey: any key, or the count's end, jumps to the entry `$6D60` (the menu). c1: 3 game overs, c128: 1, x1, m1, h1: 1 each.
+Reached by the JP Z at `$9D38` when the last life is lost. Prints GameOverText (a bright red-on-cyan band, rows 10-12 from column 10), plays the tune `$7D68` through `$7D17`, waits two DelayBC of 65 536 rounds (the delay copies BC bytes from `$0000` to `$0000`: 65 536 x 21 T = 1 376 256 T, about 20 frames or 0.4 s each), then HallOfFameInsert: a score that enters the table asks for the name, and that path never comes back (it jumps to the entry). Else WaitNoKey, and up to 20 000 rounds of ReadKey: any key, or the count's end, jumps to the entry `$6D60` (the menu). c1: 3 game overs, c128: 1, x1, m1, h1: 1 each.
 
 | | |
 | --- | --- |
@@ -2569,6 +2573,8 @@ The builder then overwrites the column and row of the records it fills and puts 
 **Moves each live alien along its path and draws it**
 
 Main loop (`$763E`; c1: 3260, AliensStepLoop 22 820). Alien n uses the slot `$B521` + `$30` n (6 aliens). A record of AlienList: +0 X, +1 Y, +2 live, +3/+4 the path's start, +5/+6 the path pointer, +7 the hold count, +8 the animation counter, +9 the colour. The path (AlienPaths): a pair dX, dY (signed) moves one pass; `$C4` n then a pair holds that move n passes; `$C3` starts the path again. Off the playfield (X >= `$80` or Y >= `$B0`): the alien dies and its slot is cleared. Frame = AlienFrame (patched per screen) + (animation AND 3), ink +9 (`$7C8F`).
+
+[Animation: `AliensStep` at work](img/routines/AliensStep.gif)
 
 | | |
 | --- | --- |
@@ -2722,7 +2728,7 @@ ExoSuit = 0, `$8E5A` = 99, `$8E66` = 10; `$8253` with A = `$88` (the player's Y 
 
 **The bonus screen: a "*" steps down eight lines until fire; the odd lines pay 1000, 3000, 5000, 7000**
 
-Six DelayBC of 65 536 (the zone's panel stays about 10 s), ClearScreen, BonusScreenText, WaitNoKey, a delay; then each round BonusPointer + 1, "*" (`$2A`, white) at row 13 + (BonusPointer AND 7), column 22, a space over the line before, ReadControls `$7B72`, DelayBC 6000; fire (`$7B96`) stops it. BonusPointer AND 7 odd: that many x 1000 points (the lines read 00000, 01000, 00000, 03000, ...: the odd ones are what they say). BonusPointer is never reset: the pointer goes on from where it stopped. 9 warp runs.
+Six DelayBC of 65 536 (about 2.4 s; the zone's panel stays up 133 frames in w/124, from RoundEnd to BonusScreen), ClearScreen, BonusScreenText, WaitNoKey, a delay; then each round BonusPointer + 1, "*" (`$2A`, white) at row 13 + (BonusPointer AND 7), column 22, a space over the line before, ReadControls `$7B72`, DelayBC 6000; fire (`$7B96`) stops it. BonusPointer AND 7 odd: that many x 1000 points (the lines read 00000, 01000, 00000, 03000, ...: the odd ones are what they say). BonusPointer is never reset: the pointer goes on from where it stopped. 9 warp runs.
 
 | | |
 | --- | --- |

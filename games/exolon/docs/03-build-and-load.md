@@ -11,11 +11,6 @@ place, and the source build. It rests on the static decode of the tape (`tools/t
 `python3 tools/check_load.py --work work/c1` reads `c1`'s memory at each stage's entry and compares it with the
 static decode (3.5).
 
-<!-- Figures this document needs (GUIDE.md 4.2), remove each line when it is in: -->
-<!-- - the tape as a picture (blocks, times) -->
-<!-- - an animation of the loader's decryption and of the screen unpack (`kit/memanim.py`) -->
-<!-- - the build (mermaid) -->
-
 ## 3.1 The tape
 
 The reference medium is the "perfect TZX" of the Hewson release (`orig/Exolon.tzx.zip`; the TZX md5
@@ -44,6 +39,31 @@ of the Latter-Day Speccy".
   the 42 (3.3). The second word of each header (the ROM's "param 2") holds `$4000` and `$6784`; the loader does
   not read it.
 
+![Exolon.tzx: 13270 frames of signal; the picture done at 1825, the game at 12376 (c1)](img/load/tape.png)
+
+How to read the figure:
+
+- **The top bar** is the TZX played at ROM speed, in frames from the start of the tape (50 a second): each block a
+  box (grey: headers; blue: the BASIC; orange: the loader; violet: picy; green: the game), the pauses dark between.
+- **The middle bar** is what `c1` did with it: the two ROM files taken by the emulator's fast LD-BYTES trap (the
+  loader entered at frame 250), the picy file until its unpacker runs at frame 1808, the code file until MoveStub
+  at frame 12364, the move until the game's entry at frame 12376.
+- **The five screens** are `c1`'s screen at the end of the frame the yellow dot marks (TTD `memory_at`):
+  - frame 200: the ROM's own screen, while the fast load takes the BASIC and the loader;
+  - frame 1818: black, though picy is writing the bitmap: the loader cleared the attributes to 0 (3.3, 3.4);
+  - frame 1826: the attributes are written and the whole picture is there at once;
+  - frame 12300: the same picture for 10 500 frames, the counter in the boxes at the bottom right;
+  - frame 12500: the game's menu.
+- **The point**: the two ROM files cost nothing in `c1`, the two Hewson files play at the signal's own speed. The
+  player sees the picture after about 36 s and then waits about 3.5 minutes with only the counter moving.
+
+```bash
+python3 tools/fig_load_tape.py --work work/docs/docA/c1 --out docs/img/load/tape.png
+```
+
+`work/docs/docA/c1` is `c1` opened read-only on an own instance (`re_session.py open --work work/docs/docA/c1
+--ttd work/c1/session.ttd --port-base 27000`); the traces below are kept in its `traces/`.
+
 `orig/Exolon.tap.zip` holds a modified copy, not the release. Its blocks 4-8 are those of the TZX except the
 loader, which is stored already decrypted (equal byte for byte to the output of 3.3). Its BASIC (two lines, 457
 bytes) clears like the original, loads the loader, then `POKE 64659,0`, `POKE 65105-65107` (`JP $FC99`), POKEs 28
@@ -69,6 +89,68 @@ The loader is Zynaps' Countdown II (Zynaps [3.3](../../zynaps/docs/03-build-and-
 19 plain bytes that decrypt the rest with one forward XOR chain, each byte XORed with the next as the tape holds
 it. Here the chain is 656 bytes long (`LD BC,$0290`), `$FC13-$FEA2`; Zynaps' was 652. `tools/xorchain.py` writes
 the plain loader; its first instruction at `$FC13` is `JP $FE3A`.
+
+The plain head, as `src/tape/loader.asm` has it (`DecryptEnd` is `$FEA3`, the first plain byte after the chain):
+
+```asm
+Decrypt:
+  LD BC,DecryptEnd-DecryptFrom  ; 656 bytes
+  LD HL,DecryptFrom
+  LD DE,DecryptFrom+1
+DecryptLoop:
+  LD A,(DE)                     ; the next byte, still as the tape holds it
+  XOR (HL)
+  LD (HL),A
+  INC HL
+  INC DE
+  DEC BC
+  LD A,B
+  OR C
+  JR NZ,DecryptLoop
+DecryptFrom:
+  JP Start
+```
+
+```text
+for a = $FC13 to $FEA2:
+    memory[a] = memory[a] XOR memory[a + 1]     ; memory[a + 1] is still the tape's byte
+```
+
+The key of each byte is the next byte as the tape holds it, so the chain needs no key of its own. The first and
+the last bytes (`work/media/loader.bin`, the tape's block 4, and `loader1.bin`, the decrypted loader):
+
+| Address | Tape byte | XOR the next tape byte | Plain byte | What |
+| --- | --- | --- | --- | --- |
+| `$FC13` | `$77` | `$B4` | `$C3` | `JP` |
+| `$FC14` | `$B4` | `$8E` | `$3A` | low byte of `$FE3A` |
+| `$FC15` | `$8E` | `$70` | `$FE` | high byte: `JP $FE3A`, Start |
+| `$FC16` | `$70` | `$38` | `$48` | CountDigits, the first digit (9 x 8) |
+| `$FEA2` | `$56` | `$AB` (`$FEA3`, plain) | `$FD` | the last byte of `LoadFile` |
+
+![Decrypt: each byte XORed with the next, from FC13 up to FEA2 hex; the loader appears byte by byte](img/load/decrypt.gif)
+
+How to read the animation:
+
+- **The grid** is the loader's 768 bytes `$FC00-$FEFF`, 32 a row, each cell with its value at that moment of `c1`.
+- **The colours**:
+  - grey: plain on the tape (Decrypt itself and the tail `$FEA3-$FEFF`);
+  - red: still as the tape holds it;
+  - green: decrypted;
+  - yellow: decrypted in this step of the animation; the white box is the byte HL points at.
+- **The subtitle** gives the frame, the T-state, the count of decrypted bytes and HL.
+- **The last picture** names the parts of the decrypted loader (white bars at the starts) with their ranges.
+- **What it shows**: the green front moves forward one byte at a time. A byte becomes code or data only when the
+  chain has passed it: `JP Start` at `$FC13`, the digit glyphs at `$FC32` (the regular `C6 FE FE ...` rows), the
+  moved LD-BYTES.
+- **The numbers**: the chain runs from frame 250 T 34 709 to frame 251 T 4 391, about 39 600 T-states; 653 of the
+  656 bytes change (three bytes meet a zero as their key).
+- **The point**: the protection is one forward pass of XOR with the next byte. A disassembler sees noise until the
+  chain has run; the emulator sees it run in one fifth of a frame.
+
+```bash
+python3 tools/fig_loader.py decrypt --work work/docs/docA/c1 --window 250:34000-251:6000 \
+    --out docs/img/load/decrypt.gif
+```
 
 Against Zynaps' decrypted loader, 105 of the 768 bytes differ:
 
@@ -109,6 +191,28 @@ The streams are shorter than Zynaps', so 136 zero bytes fill the block's end whe
 The screen: the EXOLON logo in yellow among dithered planets on black, HEWSON at the bottom left, a strip of boxes
 at the bottom right that the countdown fills.
 
+![picy: 6912 bytes in screen order; the picture shows only when the attributes come last](img/load/picy-unpack.gif)
+
+How to read the animation:
+
+- **Left, "what the TV shows"**: the screen as the TV draws it at that moment. It stays black: Start cleared the
+  attributes to 0, black ink on black paper.
+- **Right, "the bitmap as written"**: the same bytes drawn white on dark, so the bitmap can be seen. It fills in the
+  Spectrum's screen order: line 0 of every character row of the first third, then line 1, and so on. New bytes are
+  coloured: yellow a literal from the stream, cyan a repeat of the byte before.
+- **The four bars** count the output bytes and how much of each stream is used: literals (`$809E`, IY), masks
+  (`$8BC0`, HL), flags (`$8F0C`, DE); their totals are the tape's 2850, 844 and 108.
+- **The last pictures**: the attributes `$5800-$5AFF` arrive and the picture appears on the TV at once.
+- **The numbers**: the unpacker runs from frame 1808 T 61 301 to its `RET` at frame 1825 T 12 550, about 16.7
+  frames; 2850 bytes come from the literal stream, the other 4062 are repeats.
+- **The point**: the screen is unpacked hidden and shown in one stroke, in its last 768 bytes. Exolon's picture
+  has large flat areas (the black sky between the planets), so 59 % of its bytes are repeats.
+
+```bash
+python3 tools/fig_loader.py unpack --work work/docs/docA/c1 --window 1808:61000-1826:0 \
+    --out docs/img/load/picy-unpack.gif
+```
+
 ## 3.5 The stages in `c1`
 
 `re_session.py stages --work work/c1` lists the code arrivals; each is a stage of 3.3:
@@ -138,6 +242,32 @@ frame 1808, so the picture stands for about 10 568 frames, the code file's load.
 ## 3.6 The build
 
 `tools/build.sh` writes `build/Exolon.tzx` from the sources and compares it with the TZX in `orig/Exolon.tzx.zip`:
+
+```mermaid
+flowchart LR
+  ANN["src/game/game.ann"] -->|kit/mkgame.py| GASM["src/game/*.asm"]
+  RES["src/res/"] -->|res_formats.py build| BRES["build/res/"]
+  BRES -->|INCBIN| GASM
+  GASM -->|sjasmplus| GAME["game.bin: $6D60-$FFFF"]
+  LASM["src/tape/loader.asm"] -->|sjasmplus| PLAIN["loader-plain.bin"]
+  PLAIN -->|xorchain.py encrypt| LOADER["loader.bin"]
+  BRES -->|"picy.py pack loading.scr"| STREAMS["the three streams"]
+  STREAMS --> PASM["src/tape/picy.asm"]
+  PASM -->|sjasmplus| PICY["picy.bin"]
+  BAS["src/tape/basic.asm"] -->|sjasmplus| BASIC["basic.bin"]
+  TXT["src/tape/exolon-tzx.txt"] --> TZX["tools/tzx.py: build/Exolon.tzx"]
+  BASIC --> TZX
+  LOADER --> TZX
+  PICY --> TZX
+  GAME --> TZX
+  TZX -->|cmp| ORIG["orig/Exolon.tzx.zip"]
+```
+
+- **A box** is a file, **an arrow** the tool that makes the next file (the steps of `tools/build.sh` in order).
+- `kit/mkgame.py` runs before the build, not inside it: it writes `src/game/*.asm` from the annotations and installs
+  them only when sjasmplus gives the original image.
+- The two transforms of the tape are reversed in the build: the XOR chain (`xorchain.py encrypt`) and the picy
+  packer (`picy.py pack`, Zynaps' repeat rule).
 
 | TZX block | Source | Tool |
 | --- | --- | --- |

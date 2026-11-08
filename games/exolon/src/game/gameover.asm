@@ -8,11 +8,11 @@
 ; Reached by the JP Z at $9D38 when the last life is lost. Prints GameOverText
 ; (a bright red-on-cyan band, rows 10-12 from column 10), plays the tune $7D68
 ; through $7D17, waits two DelayBC of 65 536 rounds (the delay copies BC bytes
-; from $0000 to $0000; about 1.6 s each), then HallOfFameInsert: a score that
-; enters the table asks for the name, and that path never comes back (it jumps
-; to the entry). Else WaitNoKey, and up to 20 000 rounds of ReadKey: any key,
-; or the count's end, jumps to the entry $6D60 (the menu). c1: 3 game overs,
-; c128: 1, x1, m1, h1: 1 each.
+; from $0000 to $0000: 65 536 x 21 T = 1 376 256 T, about 20 frames or 0.4 s
+; each), then HallOfFameInsert: a score that enters the table asks for the
+; name, and that path never comes back (it jumps to the entry). Else WaitNoKey,
+; and up to 20 000 rounds of ReadKey: any key, or the count's end, jumps to the
+; entry $6D60 (the menu). c1: 3 game overs, c128: 1, x1, m1, h1: 1 each.
 GameOver:
   LD HL,GameOverText
   CALL PrintString
