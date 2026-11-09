@@ -203,8 +203,9 @@ Every run has D = y, E = x, B = length:
 
 - the frame: the top line y 48 and the bottom line y 183 (two runs of 128 each), the left and right edges (134 runs
   of one pixel each);
-- the four long cushions, 9 lines each, sloped at 45 degrees on their pocket side: each line starts one pixel later
-  and is one shorter;
+- the four long cushions, 9 lines each, sloped at 45 degrees at the corner pocket and straight at the middle pocket:
+  on the left cushions each line starts one pixel later and is one shorter (the end fixed at x 114 large / 117
+  small), on the right ones each line is one shorter from the same start (x 141 / 138);
 - the two side cushions, at x 1-9 and x 246-254: 9 sloped lines in, the straight lines, 9 sloped lines out.
 
 Pockets `$B8BC`, the menu's L or S, moves the ends of the cushions:
@@ -454,7 +455,8 @@ is `$48A4` (row 13, column 4), plus 4 lines: `$4CA4`. Part 1 is 8 - 4 = 4 lines,
 part 3 is 4 - 1 = 3 lines at `$48E4`. 15 lines, x 32-55.
 
 Witness: DrawBall ran 1827 times in `game`, 15 290 in `w1`, 4407 in `f1`, 10 210 in `p2`, 7119 in `v1`, 3193 in
-`m1`; XorSpriteLines 230 986 times in `w1`.
+`m1`; XorSpriteLines' loop 230 986 passes in `w1` (the label is also the `DJNZ` target at `$95B0`, so one pass per
+sprite line, about 15 a draw; the calls are two or three a draw).
 
 The point: the balls are drawn by the cheapest method there is, a 3-byte XOR a line from a pre-shifted copy. The
 price is memory, 2688 bytes, and the XOR's look where two balls touch.
@@ -576,11 +578,169 @@ The point: the redraw is safe in every recording because it is first, it is top 
 are not table. No back buffer is needed for the loads the recordings reached; with seven balls moving the redraw
 could fall behind the beam (known only from the code).
 
-**Clearing blocks.** Two routines clear whole areas instead of XORing: ClearTableForTurn `$947D` clears the middle
-of the table (x 16-239, y 64-167) before a turn passes, after XORing off the balls outside it (`p2` once, frame
-1778). ClearMessageRows `$94EB` clears rows 2-4 and sets their attributes to `$39` before each message (`w1` 43
-times). The caller redraws the potted row after it. No figure: they write zeros, which the screens of doc 01 show
-as the empty message rows.
+**Clearing blocks.** Two routines clear whole areas instead of XORing:
+
+- **ClearTableForTurn `$947D`**, called by TurnSwap `$9C15` when the turn passes (two players only), wipes the
+  table's middle: x 16-239, y 64-167, 13 character rows of 28 bytes, pixels only (the attributes stay). Before that
+  it XORs off, with DrawBall at the ball's +`$0A`, +`$0B`, every ball the block would not wipe whole: a ball in the
+  potted row (bit 7 of +`$0D` clear) and a ball on the table whose sprite position is outside x 16-223, y 64-150
+  (its sprite would stick out of the block). The cue ball is skipped when it is off the table.
+- **ClearMessageRows `$94EB`**, called by MessagesTask (steps 1 and `$4E`) and ScoreTally, clears character rows 2-4
+  (y 16-39): attributes `$39` (blue ink on white), then 8 lines of 32 zero bytes a row. The potted row lies in these
+  rows, so the callers redraw it after (DrawPottedRow `$9AB5`).
+
+```text
+ClearTableForTurn:                                   ; $947D
+    for ball in 0..6:
+        if ball == 0 and not ball.on_table: continue     ; the cue ball off the table has no image
+        if ball.on_table and 16 <= ball.x < 224 and 64 <= ball.y < 151: continue   ; the block wipes it
+        DrawBall(ball, ball.x, ball.y)                   ; XOR: the image goes
+    for row in 0..12:                                    ; y 64 + 8 row
+        for line in 0..7: screen[y 64 + 8 row + line][bytes 2..29] = 0      ; one LDIR of 27 after a zero
+
+ClearMessageRows:                                    ; $94EB
+    for row in 2..4:
+        attributes[row][0..31] = $39
+        for line in 0..7: screen[8 row + line][0..31] = 0
+```
+
+```text
+947D  DD 21 88 8A  LD IX,BallRecords   ; ClearTableForTurn
+9481  06 00        LD B,$00
+9483  DD CB 0D 7E  BIT 7,(IX+$0D)      ; the cue ball off the table: skip it
+9487  28 31        JR Z,ClearTurnNext
+9489  DD CB 0D 7E  BIT 7,(IX+$0D)      ; ClearTurnBall
+948D  28 18        JR Z,ClearTurnErase ; potted: XOR it off in the potted row
+948F  DD 7E 0A     LD A,(IX+$0A)       ; x
+9492  FE 10        CP $10
+9494  38 11        JR C,ClearTurnErase
+9496  FE E0        CP $E0
+9498  30 0D        JR NC,ClearTurnErase
+949A  DD 7E 0B     LD A,(IX+$0B)       ; y
+949D  FE 40        CP $40
+949F  38 06        JR C,ClearTurnErase
+94A1  FE 97        CP $97
+94A3  30 02        JR NC,ClearTurnErase
+94A5  18 13        JR ClearTurnNext    ; inside: the block wipes it
+94A7  DD 6E 0A     LD L,(IX+$0A)       ; ClearTurnErase
+94AA  DD 66 0B     LD H,(IX+$0B)
+94AD  22 D8 95     LD (SpritePos),HL
+94B0  DD E5        PUSH IX
+94B2  C5           PUSH BC
+94B3  78           LD A,B
+94B4  CD 48 95     CALL DrawBall       ; XOR the ball's sprite off
+94B7  C1           POP BC
+94B8  DD E1        POP IX
+94BA  11 0E 00     LD DE,$000E         ; ClearTurnNext: the next record
+94BD  DD 19        ADD IX,DE
+94BF  04           INC B
+94C0  78           LD A,B
+94C1  FE 07        CP $07
+94C3  20 C4        JR NZ,ClearTurnBall
+94C5  21 10 40     LD HL,$4010         ; y 64, x 16 (a y/x pair for ScreenCell)
+94C8  06 0D        LD B,$0D            ; 13 rows
+94CA  C5           PUSH BC             ; ClearTurnRow
+94CB  E5           PUSH HL
+94CC  CD B3 95     CALL ScreenCell
+94CF  06 08        LD B,$08            ; 8 lines
+94D1  C5           PUSH BC             ; ClearTurnLine
+94D2  E5           PUSH HL
+94D3  54           LD D,H
+94D4  5D           LD E,L
+94D5  13           INC DE
+94D6  01 1B 00     LD BC,$001B         ; 1 + 27 = 28 bytes
+94D9  36 00        LD (HL),$00
+94DB  ED B0        LDIR
+94DD  E1           POP HL
+94DE  24           INC H               ; the next pixel line
+94DF  C1           POP BC
+94E0  10 EF        DJNZ ClearTurnLine
+94E2  E1           POP HL
+94E3  3E 08        LD A,$08
+94E5  84           ADD A,H             ; y + 8: the next character row
+94E6  67           LD H,A
+94E7  C1           POP BC
+94E8  10 E0        DJNZ ClearTurnRow
+94EA  C9           RET
+94EB  21 00 10     LD HL,$1000         ; ClearMessageRows: y 16, x 0
+94EE  06 03        LD B,$03            ; rows 2-4
+94F0  C5           PUSH BC             ; ClearMessageRow
+94F1  E5           PUSH HL
+94F2  CD B3 95     CALL ScreenCell
+94F5  E5           PUSH HL
+94F6  CD CD 95     CALL AttrFromScreen
+94F9  54           LD D,H
+94FA  5D           LD E,L
+94FB  13           INC DE
+94FC  01 1F 00     LD BC,$001F
+94FF  36 39        LD (HL),$39         ; 32 attributes $39
+9501  ED B0        LDIR
+9503  E1           POP HL
+9504  06 08        LD B,$08
+9506  C5           PUSH BC             ; ClearMessageLine: 32 zero bytes
+9507  E5           PUSH HL
+9508  54           LD D,H
+9509  5D           LD E,L
+950A  13           INC DE
+950B  01 1F 00     LD BC,$001F
+950E  36 00        LD (HL),$00
+9510  ED B0        LDIR
+9512  E1           POP HL
+9513  24           INC H
+9514  C1           POP BC
+9515  10 EF        DJNZ ClearMessageLine
+9517  E1           POP HL
+9518  3E 08        LD A,$08
+951A  84           ADD A,H             ; the next character row
+951B  67           LD H,A
+951C  C1           POP BC
+951D  10 D1        DJNZ ClearMessageRow
+951F  C9           RET
+```
+
+```mermaid
+flowchart TD
+    B["ball 0..6, record at IX"] --> C0{"bit 7 of +$0D set? on the table"}
+    C0 -->|"no, cue ball"| N["next ball"]
+    C0 -->|"no, ball 1-6: potted"| X["DrawBall at +$0A, +$0B: XOR off"]
+    C0 -->|yes| Z{"x 16-223 and y 64-150?"}
+    Z -->|yes| N
+    Z -->|no| X
+    X --> N
+    N --> B
+    N -->|after ball 6| L["13 rows x 8 lines: 28 zero bytes from x 16"]
+```
+
+![ClearTableForTurn in p2 frame 1778: the screen before and after, the block it zeroes, the balls it XORs off first](img/render/clears.png)
+
+How to read the figure:
+
+- **Left** is the screen at the start of `p2` frame 1778, when TurnSwap calls ClearTableForTurn after its 40
+  `HALT`s; **right** is the start of frame 1780, the clear done (it runs over 1778-1779).
+- **The red box** is the block zeroed, x 16-239, y 64-167. **The thin green box** is the zone the sprite position of
+  a ball must lie in for the block to wipe it.
+- **Each ball** has a box: green, left to the block; orange, XORed off first.
+- **The point**: the block clear is fast, but a ball that sticks out of it would leave a fragment, so those balls go
+  first by the same XOR that drew them.
+
+```bash
+python3 tools/fig_render.py clears --work work/review/fix2B/p2 --at 1778 --out docs/img/render/clears.png
+```
+
+Worked example: at the start of `p2` frame 1778 the records hold the cue ball at (185, 145), balls 1, 3 and 5 at
+(131, 70), (193, 73), (214, 108), all inside the zone, so they are left. Ball 2 at (62, 159) and ball 6 at
+(147, 155) are on the table with y >= 151 (`$97`): their sprites reach y 173 and 169, below the block's last line
+167, so both are XORed off. Ball 4 is potted (+`$0D` `$00`, at (72, 20) in the potted row): XORed off too. So
+ClearTurnErase `$94A7` runs 3 times, then the 13 rows x 8 lines of 28 bytes (2912 bytes) are zeroed. On the right
+the table is empty; the lives in the potted row went by DrawLives, TurnSwap's next call (an XOR, before the player
+changes).
+
+The message clear is drawn in [section 8.6](08-hud-and-text.md) (the strips of rows 2-4 over a foul message): step 1
+turns the potted row to white, step `$4E` the message.
+
+Witness (`tools/l1sum.py 947D 94A7 94C5`): ClearTableForTurn ran once, in `p2` (frames 1778-1779), its erase three
+times; no other recording passed a turn. ClearMessageRows ran 8 times in `game`, 43 in `w1`, 9 in `f1`, 6 in `p2`,
+15 in `v1`.
 
 ## 6.6 Code vs screen: who wrote the play screen
 
@@ -747,11 +907,11 @@ How to read the figure:
 python3 tools/fig_render.py pen --work work/docs/vpB/m1 --at 900 --out docs/img/render/pen.png
 ```
 
-![The pen writing "written by" and "James Hutchby" in m1 frames 650-1230](img/routines/SignatureWrite.gif)
+![The pen writing "written by" and "James Hutchby" in m1 frames 650-1230](img/play/m1-0650-signature.gif)
 
-*The screen animation of SignatureWrite in `m1` frames 650-1230, one picture every 4 frames. Command: `python3
-../../kit/screen_anim.py --work work/docs/vpB/m1 --from 650 --to 1230 --step 4 --scale 2 --delay 60 --hold 2000
-docs/img/routines/SignatureWrite.gif`.*
+*A screen capture of play (not a routine animation; the routine animation of the pen is the next one): SignatureWrite's
+pen in `m1` frames 650-1230, one picture every 4 frames. Command: `python3 ../../kit/screen_anim.py --work
+work/docs/vpB/m1 --from 650 --to 1230 --step 4 --scale 2 --delay 60 --hold 2000 docs/img/play/m1-0650-signature.gif`.*
 
 ![PenErase and PenDraw at work in m1 frame 900: the code patched, the pen erased and drawn one pixel on](img/routines/PenRender.gif)
 

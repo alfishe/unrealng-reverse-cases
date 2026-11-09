@@ -316,7 +316,7 @@ and the replays by the case's `tools/fig_*.py` (each command under its figure).
 
 ### 6.2 The animations
 
-Every animation of the documents (20 GIFs), the recording it shows and its frames. The routine animations
+Every animation of the documents (22 GIFs), the recording it shows and its frames. The routine animations
 (`docs/img/routines/`) are also linked from doc 12, the screen captures of play (`docs/img/play/`) are not; each
 document gives the full command under its animation.
 
@@ -327,16 +327,18 @@ document gives the full command under its animation.
 | `docs/img/routines/Im2Handler.gif` | 4.8 | `w1` stage-1 trace, cut to one interrupt | 4373 T 0 to 4374 T 6000 |
 | `docs/img/routines/AimCursorDraw.gif` | 5.5 | `w1` replay (`work/docs/vpB/w1`) | 884-926 |
 | `docs/img/routines/AimPower.gif` | 5.6 | `w1` replay (`work/docs/vpB/w1`) | 1038-1082 |
-| `docs/img/routines/NameEntry.gif` | 5.7 | `w1` replay (`work/docs/vpB/w1`) | 13 090-13 372, every 2 frames |
+| `docs/img/play/w1-13090-name-entry.gif` | 5.7 | `w1` replay (`work/docs/vpB/w1`) | 13 090-13 366, every 2 frames |
 | `docs/img/routines/DrawTable.gif` | 6.3 | `w1` replay (`work/docs/vpB/w1`) | 626-627 |
 | `docs/img/routines/DrawBall.gif` | 6.5 | `w1` replay (`work/docs/vpB/w1`) | 1090 |
-| `docs/img/routines/SignatureWrite.gif` | 6.7 (the pen) | `m1` replay (`work/docs/vpB/m1`) | 650-1230, every 4 frames |
+| `docs/img/play/m1-0650-signature.gif` | 6.7 (the pen) | `m1` replay (`work/docs/vpB/m1`) | 650-1230, every 4 frames |
 | `docs/img/routines/PenRender.gif` | 6.7 (the pen) | `m1` replay (`work/docs/vpB/m1`) | 900 |
 | `docs/img/routines/RackStep.gif` | 7.4 | `w1` replay (`work/docs/vpC/w1`) | 793-800 |
 | `docs/img/play/w1-0700-rack-in.gif` | 7.4 | `w1` replay (`work/docs/vpC/w1`) | 700-880, every 2 frames |
 | `docs/img/routines/MoveBall.gif` | 7.5 | `w1` replay (`work/docs/vpC/w1`) | 1112-1119 |
 | `docs/img/routines/PrintText.gif` | 8.1 | `w1` replay (`work/docs/vpB/w1`) | 624-625 |
 | `docs/img/routines/ScoreTally.gif` | 8.5 | `w1` replay (`work/docs/vpB/w1`) | 1262-1352 |
+| `docs/img/routines/ShowAndSlideDown.gif` | 8.8 | `w1` replay (`work/review/fix2B/w1`, the same inputs) | 13 424-13 556, a picture every 2 frames |
+| `docs/img/routines/SlideFlagsUp.gif` | 8.8 | `w1` replay (`work/review/fix2B/w1`, the same inputs) | 13 552-13 736, a picture every 2 frames |
 | `docs/img/routines/SoundLoop.gif` | 9.2 | `w1` replay (`work/docs/vpD/w1`) | 1200 T 50 000 to 1204 T 0 |
 | `docs/img/routines/PocketOrCushion.gif` | 10.4 | `w1` replay (`work/docs/vpC/w1`) | 1196-1201 |
 | `docs/img/routines/BallContacts.gif` | 10.5 | `w1` replay (`work/docs/vpC/w1`) | 1117 |

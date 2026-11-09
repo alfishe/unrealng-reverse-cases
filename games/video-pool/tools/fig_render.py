@@ -6,8 +6,9 @@
     python3 tools/fig_render.py split   --work W1 --at 1060 --out docs/img/render/ball-split.png
     python3 tools/fig_render.py tables  --work W1 --at 1060 --out docs/img/render/tables.png
     python3 tools/fig_render.py pen     --work M1 --at 900 --out docs/img/render/pen.png
+    python3 tools/fig_render.py clears  --work P2 --at 1778 --out docs/img/render/clears.png
 
-W1 / M1 are work folders whose instance holds the recording (re_session.py session.json): w1 or m1 replayed from
+W1 / M1 / P2 are work folders whose instance holds the recording (re_session.py session.json): w1 or m1 replayed from
 work/snaps/entry.z80 with tests/inputs/<name>.txt (work/docs/vpB/replay.py). The image is work/mkgame/original.bin
 (64 KB, the address is the offset). The small-pockets table is docs/img/play/m1-7998-small-pockets.png.
 """
@@ -348,15 +349,71 @@ def fig_pen(a):
     img.save(a.out)
 
 
+def fig_clears(a):
+    """ClearTableForTurn $947D in p2: the screen before (start of a.at) and after (start of a.at + 2), the balls it
+    XORs off and the block it zeroes"""
+    f, fs, ft = fonts()
+    s = vplib.session(a.work)
+    before = vplib.read(s, a.at, 0x4000, 6912, tinframe=0)
+    after = vplib.read(s, a.at + 2, 0x4000, 6912, tinframe=0)
+    balls = vplib.read(s, a.at, 0x8A88, 98, tinframe=0)
+    SC = 2
+    img = Image.new('RGB', (W, 820), BG)
+    d = ImageDraw.Draw(img)
+    header(d, 'ClearTableForTurn $947D: XOR off some balls, then zero a block',
+           f'p2 frame {a.at} (start, left) and {a.at + 2} (start, right), {SC} x; the turn passes to player 2', f, ft)
+    X1, X2, Y0 = 10, 528, 80
+    img.paste(K.render_screen(before, 0).resize((256 * SC, 192 * SC), Image.NEAREST), (X1, Y0))
+    img.paste(K.render_screen(after, 0).resize((256 * SC, 192 * SC), Image.NEAREST), (X2, Y0))
+    for X in (X1, X2):
+        d.rectangle([X + 16 * SC, Y0 + 64 * SC, X + 240 * SC - 1, Y0 + 168 * SC - 1], outline=COLS[0], width=2)
+    # the zone a ball's sprite position must lie in to be left to the block clear
+    d.rectangle([X1 + 16 * SC, Y0 + 64 * SC, X1 + 224 * SC - 1, Y0 + 151 * SC - 1], outline=COLS[2], width=1)
+    lines = []
+    for k in range(7):
+        r = balls[k * 14:(k + 1) * 14]
+        x, y, fl = r[10], r[11], r[13]
+        on = bool(fl & 0x80)
+        inside = on and 16 <= x < 0xE0 and 0x40 <= y < 0x97
+        if k == 0 and not on:
+            what = 'off the table: skipped'
+        elif inside:
+            what = 'in the zone: left to the block'
+        elif not on:
+            what = 'potted (bit 7 clear): XORed off in the potted row'
+        else:
+            what = 'on the table, below y 151: XORed off'
+        col = COLS[2] if inside else COLS[4]
+        d.rectangle([X1 + x * SC - 2, Y0 + y * SC - 2, X1 + (x + 16) * SC + 1, Y0 + (y + 15) * SC + 1], outline=col,
+                    width=2)
+        d.text((X1 + (x + 17) * SC, Y0 + y * SC - 4), str(k), font=f, fill=col)
+        lines.append((f'ball {k}: x {x}, y {y}, +$0D ${fl:02X}: {what}', col))
+    y = Y0 + 192 * SC + 14
+    for i, (txt, col) in enumerate(lines):
+        d.text((20, y + i * 20), txt, font=fs, fill=col)
+    notes = ['How to read: red, the block ClearTableForTurn zeroes (x 16-239, y 64-167: 13 character rows of 28 bytes, '
+             'pixels only).',
+             'Green, the zone (x 16-223, y 64-150) a ball\'s sprite position must lie in for the block to wipe the whole '
+             'sprite; a green box',
+             'is a ball left to the block clear, an orange one a ball XORed off first (DrawBall $9548 at +$0A, +$0B). '
+             'Right: the table after;',
+             'the lives are gone too, XORed off by DrawLives (TurnSwap\'s call after the clear); PLAYER 2 is the next '
+             'step\'s banner.',
+             f'python3 tools/fig_render.py clears --work work/review/fix2B/p2 --at {a.at} --out docs/img/render/clears.png']
+    for i, t in enumerate(notes):
+        d.text((20, y + 150 + i * 22), t, font=fs, fill=DIM if t.startswith('python3') else FG)
+    img.save(a.out)
+
+
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('figure', choices=['layout', 'sprites', 'split', 'tables', 'pen'])
+    p.add_argument('figure', choices=['layout', 'sprites', 'split', 'tables', 'pen', 'clears'])
     p.add_argument('--out', required=True)
     p.add_argument('--work')
     p.add_argument('--at', type=int, default=1060)
     a = p.parse_args()
-    {'layout': fig_layout, 'sprites': fig_sprites, 'split': fig_split, 'tables': fig_tables, 'pen': fig_pen}[
-        a.figure](a)
+    {'layout': fig_layout, 'sprites': fig_sprites, 'split': fig_split, 'tables': fig_tables, 'pen': fig_pen,
+     'clears': fig_clears}[a.figure](a)
     print(a.out)
 
 

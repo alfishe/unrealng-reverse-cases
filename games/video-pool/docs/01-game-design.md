@@ -83,15 +83,15 @@ The screens and their routines:
 | Screen | Routine | When it comes | How it ends | Witness |
 | --- | --- | --- | --- | --- |
 | the presents page and attract sequence | PresentsPage `$B8C5` | the game's entry; 1500 video frames (30 s) idle on a menu page | any key | `m1` frames 0-4500, `w1` 15 741 |
-| the main menu | MainMenu `$B22E` | a key on the attract sequence, BREAK, the end of a game | B (or fire on a joystick) begins; V, E, R go to their pages | every recording |
+| the main menu | MainMenu `$B22E` | a key on the attract sequence, BREAK, the end of a game | B (or fire on a Kempston joystick; MenuKeyLoop reads InputState only when Control = 2, the other sticks' fire is a key) begins; V, E, R go to their pages | every recording |
 | the variations page | VariationsPage `$B67E` | V | B begins, M back to the menu | `v1` 622, `m1` 5102 |
 | redefine keys | RedefineKeys `$B3D2` | R | three keys pressed: back to the menu | `m1` 5462-5860 |
 | the table editor | EditorStart `$C042` | E | BREAK to the menu; "play" plays the edited table | `m1` 6262, `e1` 620 |
 | "FRAME n" and the rack | Rack `$9F69` | a new game, a cleared frame, the second player's first turn | the six balls in their triangle | `w1` 630-10 196 |
 | play | StartAim `$8425`, the tasks | after the rack | the last life lost, or BREAK | `w1` 877-11 615 |
-| GAME OVER | GameOver `$97A2` | the last life lost | 250 video frames or a key | `w1` 11 768, `f1` 4445 |
+| GAME OVER | GameOver `$97A2` | the last life lost | 250 video frames or a key; with two players and the other one alive, "PLAYER n", 125 video frames and the other's turn (`$97CA`, known only from the code) | `w1` 11 768, `f1` 4445 |
 | the name entry | NameEntryPage `$ACEF` | GAME OVER with a score that beats a flag | "end" picked | `w1` 12 018-13 368 |
-| the hall of fame | ShowHallOfFame `$A8FD` | after the name entry | 500 video frames or a key | `w1` 13 368-14 232 |
+| the hall of fame | ShowHallOfFame `$A8FD` | after the name entry | 500 video frames or a key (GameOverWaitAfter `$9860`, after GameOverHallOfFame `$A702` returns) | `w1` 13 368-14 232 |
 
 The flow between them:
 
@@ -107,12 +107,13 @@ stateDiagram-v2
     Redefine --> Menu: three keys
     Menu --> Editor: E
     Editor --> Menu: BREAK, or every object ball down after play
-    Menu --> Rack: B or joystick fire
+    Menu --> Rack: B, or Kempston fire
     Variations --> Rack: B
     Rack --> Play: six balls in the triangle
     Play --> Rack: frame cleared, or the second player's first turn
     Play --> GameOver: the last life lost
     Play --> Menu: BREAK
+    GameOver --> Play: two players, the other still alive: PLAYER n, 125 video frames, NextTurn (known only from the code)
     GameOver --> NameEntry: the score beats a flag
     GameOver --> Menu: 250 + 500 video frames, or keys
     NameEntry --> HallOfFame: end
@@ -123,7 +124,8 @@ The attract sequence is the game's own advertisement. PresentsPage `$B8C5` rolls
 (BannerRollIn `$B96C`, 417 video frames), prints "presents" for 75 video frames, turns the letters O C P into P O O L
 (LogoFlip `$BB13`), slides "video" in above (VideoSlideIn `$BC9E`), lets a drawn pen write "written by" and James
 Hutchby's signature from a pen script (SignatureWrite `$BD0C`, SignatureScript `$DA80`), and waits 500 video frames on
-"press any key to continue.". Then it starts again. `m1` watched two whole loops of 1738 video frames and part of a third
+"press any key to continue.". Then, the first time, it starts again; after a menu timeout it shows the hall of fame
+and waits 500 more video frames first (`$B906`, PresentsDone `$BD0B` set; known only from the code). `m1` watched two whole loops of 1738 video frames and part of a third
 (frames 0-4500: the third from 3476, ended by the key at 4500 before the signature was done; BannerRollIn ran three times,
 the 25-frame wait after the signature twice). Every wait is one
 HALT and a key test (PresentsFrame `$B91B`), so a key ends the sequence at once, at any depth ([doc 6](06-rendering.md)
@@ -231,7 +233,10 @@ How to read the figure (vpC's, for [doc 7](07-objects.md)):
 python3 tools/fig_objects.py racks     # vpC's tool, from work/mkgame/original.bin
 ```
 
-The scripts and their interpreter are in [doc 7](07-objects.md).
+The scripts and their interpreter are in [doc 7](07-objects.md). The sheet is rendered from the image's own data
+(RackSets `$A0C4` in `src/game/rackscripts.asm`, decoded by `tools/fig_objects.py`); the rack scripts are code-side
+data and have no separate file under `src/res/`. No published map or rack diagram was found: ZXDB 5566
+(Spectrum Computing) lists inlays, instructions, a POKE file and a running screen, no map.
 
 The point: every frame starts from the same position. What changes from frame to frame is the shots allowed and the
 pocket multipliers, not the layout.
@@ -280,7 +285,7 @@ ShotsForFrame `$9BE6`); missing with the last shot is a foul like hitting nothin
 
 ## 1.7 The key moments
 
-![Twelve key moments: the start, the rack, the first aim, the break, a pot, a cleared frame, the cue ball potted, the respot, the last shot, a foul, GAME OVER](img/design/moments.png)
+![Twelve key moments: the start, the rack, the first aim, the break, the pack spreads, a pot scored, a cleared frame, the cue ball heads for a pocket, a life lost, the last shot, no pot in time, the end](img/design/moments.png)
 
 How to read the figure, moment by moment (the routines that make each one):
 
@@ -297,7 +302,7 @@ How to read the figure, moment by moment (the routines that make each one):
 | 9 | a life lost | `f1` 1200 | the foul jingle, one life ball gone, the cue ball back at (40, 115) | LoseLife `$9754`, RespotCueBall `$93FF` |
 | 10 | the last shot | `f1` 2940 | "last" and "shot" blink in place of "shots", a beep every half second | ShotsBlinkTask `$970E`, LastShotBeepTask `$9CA7` |
 | 11 | no pot in time | `f1` 3050 | "FOUL SHOT!", a life lost | MessagesTask `$9CB7` |
-| 12 | the end | `w1` 11 800 | GAME OVER in double-width letters over the table | GameOver `$97A2` (frame 11 768) |
+| 12 | the end | `w1` 11 800 | the fourth loss (no life ball left): GAME OVER in double-width letters over the table | GameOver `$97A2` (frame 11 768) |
 
 - The first pot of `w1` is counted from video frame 1329 (AddScoreStep `$99C1`); game frames 2, 3 and 4 start at
   video frames 4023, 7140 and 10 196 (NextFrame `$9BB8`, `python3 tools/l1sum.py --builds runs/w1 9BB8`).
@@ -332,7 +337,7 @@ python3 tools/fig_design.py moments
 | variation 1: a ball potted out of order | WRONG ORDER! | PocketOrderTest `$8C4B` | `v1` 1250 |
 | variation 2: a ball in a pocket that is not its own | WRONG POCKET! | `$8C37` in PocketOrCushion `$8B4E` | `v1` 3100 |
 
-- A loss plays the foul jingle (FoulJingle `$9780`: two low notes of about 52 Hz and 41 Hz, 1.1 s) and erases the
+- A loss plays the foul jingle (FoulJingle `$9780`: two low notes of about 52 Hz and 41 Hz, 1.1 s of sound, 1.4 s with the waits) and erases the
   leftmost life ball. After a potted cue ball the cue ball comes back at (40, 115), or to its right until no ball is
   within 16 pixels (RespotCueBall `$93FF`).
 - **A wrongly potted ball still scores.** In `v1` ball 4 went in out of order: the tally counted 1x4x3x10 = 120 into

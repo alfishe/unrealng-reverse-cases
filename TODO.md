@@ -7,8 +7,8 @@ done is in [AGENTS.md](AGENTS.md); this file says only what is next.
 
 | # | Game | Notes |
 | --- | --- | --- |
-| 1 | OCP Video Pool | next; a port to the UKNC is planned (below), so the case gets doc 14 |
-| 2 | Chuckie Egg | |
+| 1 | OCP Video Pool | complete 2026-11-09 ([case](games/video-pool/README.md), doc 14 the UKNC port) |
+| 2 | Chuckie Egg | next |
 | 3 | Tujad | |
 | 4 | SimCity | |
 | 5 | Earth Shaker | our own reverse; Bedazzle's disassembly (github.com/Bedazzle/Earth-shaker) is not a source of names, compare with it at the end at most |
@@ -26,7 +26,7 @@ The porting document follows AGENTS.md section 4.0 "By port target". What it mus
 | --- | --- |
 | UKNC (Elektronika MS-0511) | the PDP-11 central CPU (K1801VM2) and the peripheral CPU that owns the video and sound; the three-plane video memory in the peripheral CPU's space, written through its ports or by a peripheral-CPU program; the channels between the two CPUs; which work runs on which CPU, and how they sync per frame |
 | BK-0010 / BK-0011M | the K1801VM1 at 3-4 MHz, no multiply; the 256x256 two-bit or 512x256 one-bit screen in main memory; the 32K or paged 128K budget; the beeper or AY add-on; the timer |
-| Soyuz-Neon (PK-11/16) | the CPU (to verify: this lead said K1801VM3 class with multiply; Video Pool's doc 14.9 found Cyclowiki, "Союз-Неон ПК-11/16" <https://cyclowiki.org/wiki/%D0%A1%D0%BE%D1%8E%D0%B7-%D0%9D%D0%B5%D0%BE%D0%BD_%D0%9F%D0%9A-11/16>, giving N1801VM2 / N1806VM2 class processors at 8 MHz, 1-4 MB of RAM; a second source decides) and the larger memory; its video modes and palette; what of the BK or UKNC plan carries over |
+| Soyuz-Neon (PK-11/16) | the CPU: N1806VM2, the CMOS version of the K1801VM2, functionally equivalent (not the K1801VM3 this lead first said; Wikipedia "1801 series CPU" <https://en.wikipedia.org/wiki/1801_series_CPU> and Cyclowiki "Союз-Неон ПК-11/16" <https://cyclowiki.org/wiki/%D0%A1%D0%BE%D1%8E%D0%B7-%D0%9D%D0%B5%D0%BE%D0%BD_%D0%9F%D0%9A-11/16>, Video Pool doc 14.9), so the UKNC's VM2 timings apply; the clock to verify (Cyclowiki 8 MHz, Wikipedia 5 MHz nominal); 1-4 MB of RAM; its video modes and palette; what of the BK or UKNC plan carries over |
 
 ## Kit gaps
 

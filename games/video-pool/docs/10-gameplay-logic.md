@@ -67,8 +67,9 @@ the tick ran in the video frame before, which is the frame the traces and animat
 Worked example: the break of `w1` is released at video frame 1079. AimShot holds that interrupt until frame 1085 (doc
 4, 4.7), and physics tick 1 runs at its end, after AimShot, in the same interrupt (`tools/task_costs.py --per-irq` on
 `work/runs/w1/traces/1070_0-1100_0.uatr`: AimPower 470 382 T, PhysicsTask 9969 T, the interrupt 483 665 T). Ticks 2-159
-run in the interrupts from 1086; the last ball stops in tick 159, run in frame 1252 (sample 1253). That is 168 video
-frames (1085-1252) for 159 ticks, 3.4 seconds. Nine interrupts are lost: video frames 1155, 1157, ..., 1171, so the
+run in the interrupts from 1086; the last ball stops in tick 159, run in frame 1252 (sample 1253). That is 159 ticks
+of motion in 168 video frames (1085-1252), 3.4 seconds, plus the final pass of tick 160 in 1253 that redraws the last
+stop (ball 4: `$90` in sample 1253, `$80` in 1254; 10.6). Nine interrupts are lost: video frames 1155, 1157, ..., 1171, so the
 samples 1156, 1158, ..., 1172 repeat the one before. Physics tick 68 (ball 5 meets ball 2, 10.6) sets the seventh ball
 rolling, and ball 1 stops in tick 78; the passes of ticks 70-78, with all seven balls moving, are longer than a video
 frame, so each runs past the next INT and that interrupt is lost. The losses alternate because the pass after a lost
@@ -329,7 +330,7 @@ The tests, in order:
 flowchart TD
     A[PocketOrCushion] --> B{centre inside x 8..247, y 56..175?}
     B -- no --> P[PocketSnap: snap into the box, pocket number, flags B0, sound 3, variation fouls]
-    B -- yes --> C{x beyond the long cushions' ends?}
+    B -- yes --> C{x beyond the end cushions, x < 17 or x >= 239?}
     C -- yes --> D{in a corner zone?}
     D -- yes --> J[DiagonalJaw on the channel line]
     D -- no --> X[end cushion: step back to x 17 or 238, ReflectX]
@@ -727,7 +728,10 @@ flowchart TD
 ```
 
 Worked example (`w1` physics ticks 103-108, samples 1197-1202): ball 5 leaves the jaw at (240.0, 57.0) with v (291, -107).
-Each tick it moves about 1.1 pixels right and 0.4 up: (241.996, 56.996), (243.113, 56.586), (244.211, 56.184). In tick
+From (240.0, 57.0) the tick-104 move gives (241.137, 56.582); pixel (241, 56) lies in the top-right jaw band, so
+JawContact `$8CA2` runs, and with the larger component in x JawAway `$8CED` writes the complements of the jaw point
+into both fractions, here `$FF`: (241.996, 56.996), the jaw's clamp, not a plain move (sample 1198: `FF F1 FF 38`).
+Then it moves on about 1.1 pixels right and 0.4 up: (243.113, 56.586), (244.211, 56.184). In tick
 107 the move takes y to 55.79: pixel 55, outside. The column is 3 (x 245 ≥ 192), the row is the top: pocket 3. The ball
 is snapped to (245, 56) with flags `$B0`. In tick 108 RedrawBall erases it and parks it at (103, 27), flags 0.
 
@@ -947,7 +951,8 @@ lives 3 → 2 at frame 3375. The samples `work/docs/vpC/v1-course.jsonl` and `v1
 
 How to read the figure:
 
-- Four rows share the `w1` frame axis, from the first rack (frame 630) to game over (11 770), every 5th video frame.
+- Four rows share the `w1` frame axis; it spans video frames 600-12 100, every 5th video frame: the first rack is at
+  630, game over at 11 770.
 - Score: each step is one ScoreTally; its count-up takes at least 45 video frames. 18 pots bring 2700.
 - Frame: 1 to 4. Frames 1-3 were cleared at frames 4025, 6875 and 10 200 (to the 5-frame step of the samples).
 - Shots left: 5 for frames 1-2, 4 for frames 3-4. It never fell: every shot of `w1` either potted (a refill) or
@@ -1113,8 +1118,39 @@ Each would be reached by a longer or a different game; none is unused.
   475 frames of the `w1` break exactly (10.6).
 - **The self-patching jaw.** DiagonalJaw rewrites its own exit after a deep step and is reset by its caller each move;
   the band operands are patched by the pocket-size routine (10.4).
-- **One store, two meanings.** ContactFound is the high byte of the collision record pointer (10.11).
+- **One store, two meanings.** ContactFound is the high byte of the collision record pointer (10.11). BallContacts
+  clears it, the contact found stores the record pointer over it, and the end of the loop reads it as the flag (the
+  records lie at `$DE3A` up, so a found contact always leaves a non-zero high byte):
+
+  ```text
+  $87F2  LD (ContactFound),A        ; A = 0: no contact yet
+  $8879  LD (ContactRecordPtr),HL   ; $89B7 = record low byte, $89B8 = ContactFound = record high byte ($DE)
+  $8895  LD A,(ContactFound)        ; OR A / JP Z,ContactDone: zero = no contact
+  ```
+
+  Witness (trace `work/runs/w1/traces/1090_0-1130_0.uatr`, `work/review/fix2C/writes.py`): every tick `$87F2` writes
+  `$00` to `$89B8`; in video frame 1116 (sample 1117, the ball-1 contact of 10.11) `$8879` writes `$9A` to `$89B7`
+  and `$DE` to `$89B8`: the record `$DE9A`, ring 17.
 - **Round-robin friction.** One ball a tick gets new friction steps, so seven balls cost one look-up a tick (10.3).
+  PhysicsTask advances the turn after the ball loop, and MoveBall recomputes the steps of the ball whose turn it is:
+
+  ```text
+  $86EA  LD A,(FrictionTurn)   ; $8B4C
+  $86ED  INC A
+  $86EE  CP $07
+  $86F0  JR NZ,PhysicsTurnStore
+  $86F2  XOR A
+  $86F3  LD (FrictionTurn),A   ; FrictionTurn = (FrictionTurn + 1) mod 7
+  ...
+  $8705  LD A,(FrictionTurn)   ; MoveBall, B = 7 - the ball number
+  $8708  DEC B
+  $8709  CP B
+  $870A  CALL Z,FrictionSteps  ; only the ball with 6 - number = FrictionTurn
+  ```
+
+  Witness (same trace and script): while only the cue ball rolls, its fx / fy bytes (`$8A90`, `$8A91`) are written by
+  FrictionSteps (`$9134`, `$9146`) in video frames 1091, 1098, 1105 and 1112, every seventh tick, each time in the
+  tick after `$86F3` stored FrictionTurn 6; `$86F3` writes 0, 1, ..., 6 in turn in the frames between.
 - **Equal-mass elastic collisions with a 15² denominator.** Up to 11 % more or 3.5 % less of the projected velocity
   per contact (10.5, 10.11).
 - **A foul pot still scores.** The score is paid before the life is taken (10.9).

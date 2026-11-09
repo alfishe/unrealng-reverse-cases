@@ -10,10 +10,10 @@
 ; At GAME OVER ($9857) GameOverHallOfFame $A702 counts the slots a score beats (CountBeaten $A7EB, ties do not
 ; qualify). If it beats none, nothing happens (game and f1). Otherwise the name page and name entry run ($ACEF, module
 ; nameentry), then the hall of fame is drawn (ShowHallOfFame $A8FD: poles, flags, scores), the flags that lose their
-; place slide down off the screen (SlideFlagsDown $A86D), the new entry is inserted (InsertEntry $A817) and the flags
-; slide back up to their poles with the new names (SlideFlagsUp $A8C7). w1 ran it all at frames 12018-13732 with the
-; name "vp" (screens w1 frames 12500, 13300, 14000). The attract sequence also shows the table through ShowHallOfFame
-; ($B906, when $BD0B is set).
+; place slide down off the screen (ShowAndSlideDown $A86D), the new entry is inserted (InsertEntry $A817) and the
+; flags slide back up to their poles with the new names (SlideFlagsUp $A8C7). w1 ran it all at frames 12018-13732 with
+; the name "vp" (screens w1 frames 12500, 13300, 14000). The attract sequence also shows the table through
+; ShowHallOfFame ($B906, when $BD0B is set).
 ;
 ; The two-player path ($A745-$A7E8) enters a name for each qualifying player ("congratulations! player 1 / 2", $9B30 =
 ; 1 / 2) and inserts both; no recording ran it (p2 ended by BREAK): known only from the code.

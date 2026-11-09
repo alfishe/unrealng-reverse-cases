@@ -46,8 +46,10 @@ CallTask:
 
 ; Put routine HL with period C into the first free slot
 ;
-; Countdown 0, so it first runs at the next interrupt. No free slot: nothing
-; (25 are never all used). w1: 252 calls.
+; Countdown 0, so it first runs at the scheduler's next visit of its slot: in
+; the same tick when the slot comes after the caller's (the release:
+; MovingTasks in slots 1-3 run in AimPower's tick), otherwise at the next tick.
+; No free slot: nothing (25 are never all used). w1: 252 calls.
 AddTask:
   LD IX,TaskSlots
   LD B,$19

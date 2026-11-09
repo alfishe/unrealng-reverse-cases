@@ -9,7 +9,7 @@ What this covers:
 - one aiming interrupt, against the beam, and its animation (4.5);
 - one ball and six balls: the interrupt length, and the interrupts that are lost (4.6);
 - the shot set-up: AimShot's 455 000 T, an interrupt of 484 000 T (4.7);
-- the heaviest pass, against the beam, and its animation (4.8);
+- the heaviest traced pass, against the beam, and its animation (4.8);
 - the long sequences with the tasks stopped, and the video-frame waits (4.9);
 - the foreground and its time budget (4.10);
 - the delays, in video frames, ticks and seconds (4.11).
@@ -75,6 +75,7 @@ stateDiagram-v2
     ShotEnd --> Aim: StartAim
     ShotEnd --> Rack: frame cleared, or the second player's first turn
     ShotEnd --> GameOver: a life lost with none left
+    GameOver --> Aim: two players, the other still alive: PLAYER n, 125 video frames, NextTurn 97CD (known only from the code)
     GameOver --> Menu: 250 video frames, hall of fame, 500 video frames, then BreakRestart
     Aim --> Menu: BREAK, SoundLoop to BreakRestart 80B0
     Rolling --> Menu: BREAK
@@ -154,8 +155,9 @@ Im2Handler:
   RET
 ```
 
-- The `EI` at `$FCFC` is followed at once by `DI`; an interrupt cannot come between them, because the Z80 takes no
-  interrupt right after `EI`.
+- The `EI` at `$FCFC` protects only the `JP` after it (the Z80 takes no interrupt for one instruction after `EI`).
+  By the time the `JP` ends, T 1848 of the video frame (4.6), the ULA's INT pulse (about 32 T from T 1812) is over,
+  so no second interrupt is taken before the `DI` at `$80F0`.
 - The tasks run with interrupts off. A task that calls the ROM's BEEPER must close them again: BEEPER ends with `EI`,
   and LastShotBeepTask `$9CA7` follows it with `DI`.
 - No `RETI`: nothing on the bus needs it.
@@ -245,7 +247,7 @@ The routines that change the slots:
 
 | Routine | Does | Calls in `w1` |
 | --- | --- | ---: |
-| AddTask `$9188` | routine HL, period C into the first free slot, countdown 0 (it runs at the next interrupt) | 252 |
+| AddTask `$9188` | routine HL, period C into the first free slot, countdown 0: it runs at the scheduler's next visit of its slot, in the same tick when the slot comes later than the caller's (the release, below), otherwise at the next tick | 252 |
 | RemoveTask `$91AD` | frees the first slot holding routine HL | 252 |
 | ClearTasks `$91CF` | zeros all 100 bytes, with DI | at each BREAK |
 | InstallTasks `$80B9` | AddTask for each (period, routine) of a list, `$FF` ends | |
@@ -356,7 +358,9 @@ How to read the figure:
   rolling alone at 20k T, then from window frame 28 (4358) the pack breaks. With six balls moving a tick takes
   53-74k T.
 - **The point**: with six balls rolling a tick takes nearly the whole video frame. When it takes more, the next interrupt is
-  lost and the game runs slower than real time.
+  lost and the game runs slower than real time. With all seven balls moving it happens again and again: nine
+  interrupts lost (video frames 1155-1171, every second one) while all seven balls move in the `w1` break: each such
+  pass is longer than a video frame (bounds 69 880-76 032 T from `work/docs/vpD/w1-sound.json`; not traced).
 
 ```bash
 python3 tools/fig_loop.py irqs --trace work/runs/w1/traces/1070_0-1100_0.uatr \
@@ -372,7 +376,7 @@ The costs per tick (`tools/task_costs.py --per-irq`, saved in `work/docs/vpA/cos
 | aiming (1070) | 15 237 | | | | 22 % |
 | one ball rolling (1086) | 19 932 | 6649 | 9969 | 1 | 29 % |
 | six balls rolling, typical (4375) | 62 248 | 33 442 | 25 492 | 6 | 89 % |
-| six balls, the heaviest (4373) | 73 768 | 33 429 | 37 025 | 6 | 106 % |
+| six balls, the heaviest traced (4373) | 73 768 | 33 429 | 37 025 | 6 | 106 % |
 
 Inside PhysicsTask the cost is MoveBall `$8701` (one call per moving ball, 3356 T on average, 14 242 at most) and
 BallContacts `$87EF` (1884 T on average, 12 895 at most). Inside BallRedraw it is DrawBall `$9548`, 2497 T a sprite,
@@ -402,7 +406,23 @@ The consequences:
 - Physics, redraw and every periodic task run once per tick. The window has 60 ticks in 70 video frames
   (`interrupt entries 60`): six video frames lost to the shot set-up, four to six-ball ticks; from the break on, 38
   ticks in 42 video frames. The balls slow down on the screen when the pack breaks.
-- `w1` as a whole: 15 877 video frames from 501 to 16 377, 15 385 interrupts taken; about 490 video frames had none.
+- `w1` as a whole: 15 877 video frames from 501 to 16 377, 15 385 interrupts taken; 492 video frames had none. Each
+  run of them, matched against the BEEPER calls of `work/docs/vpD/w1-sound.json` (`irq`, `beeper`):
+
+| Cause | Video frames lost | Runs |
+| --- | ---: | --- |
+| the 21 shot set-ups (4.7) | 137 | 10 lose six (1080-1085, 4336-4341, ...), 11 lose seven (1721-1727, 2859-2865, ...) |
+| the foul jingle's two BEEPER notes (`$9791`, `$979F`) | 216 | 4 jingles x (25 + 29), from 10 557 |
+| the name entry's BEEPER clicks (`$AF12`, `$AF35`) | 111 | 54 runs of 2 or 3, 12 932-13 368 |
+| passes longer than a video frame | 14 | nine in 1155-1171 (all seven balls), four in 4363-4374 (six balls), one at 1751 |
+| the tally's first beep (`$99EF`, S >= 10) | 12 | 1330, 2522, ..., 10 145 |
+| the menu's click (`$B2CD`) | 2 | 621-622 |
+| sum | 492 | |
+
+  A run of seven is a set-up interrupt that is still running at the seventh INT: entered at about T 1834, the 483 665 T
+  of 1079 end at T 66 171 of the sixth video frame after, and only a set-up of about 489 200 T or more (some 5 500 T
+  longer) reaches past T 1844 of the seventh. The calculator's time depends on dx, dy and the power; the eleven longer
+  set-ups were not traced, so their exact length is open.
 
 ## 4.7 The shot set-up: AimShot's 455 000 T in an interrupt of 484 000 T
 
@@ -438,23 +458,25 @@ literal `$8A35`, is 387 321 T: 85 % of AimShot (89 % of the calculator part).
   multiplications, 2 divisions and 59 additions (28 and 58 of them in the calculator part); the series are where the
   multiplications go.
 - The whole set-up holds the interrupt for 6.92 video frames. Six interrupts are lost (1080-1085); the next tick is
-  at 1086. At the release of 4335 the same: 483 595 T, the next tick at 4342.
+  at 1086. At the release of 4335 the same: 483 595 T, the next tick at 4342. Of `w1`'s 21 set-ups, 10 lose six
+  interrupts and 11 lose seven (4.6, the table of the lost interrupts).
 - On the screen the cursor and the power bar freeze for 0.14 s, and then the cue ball starts.
 
 The point: the game's slowest moment is one square root. A table or an integer root would have taken a few hundred
 T; the author used the ROM, which is accurate and short to write.
 
-## 4.8 The heaviest pass
+## 4.8 The heaviest traced pass
 
-![Frames 4373-4375 of w1 against the beam: the longest tick of the window draws six balls top to bottom ahead of the beam, runs over into frame 4374, and the interrupt of 4374 is lost](img/loop/beam-six.png)
+![Frames 4373-4375 of w1 against the beam: the longest traced tick draws six balls top to bottom ahead of the beam, runs over into frame 4374, and the interrupt of 4374 is lost](img/loop/beam-six.png)
 
 How to read the figure:
 
 - **Three panels**, video frames 4373, 4374 and 4375.
 - **The dots** are the writes of XorSpriteLines, the balls' XOR sprites: each short slanted run is one ball erased or
   drawn, 15 lines. 1092 writes in the two ticks, all before the beam.
-- **Frame 4373**: the tick starts at the INT and runs the whole video frame (73 768 T): the strip is in the game's code to
-  the right edge.
+- **Frame 4373**: the tick starts at the INT and runs the whole video frame (73 768 T, the heaviest of the two traced
+  windows; the seven-ball passes of 1154-1170 were longer, 4.6, but no trace covers them): the strip is in the game's
+  code to the right edge.
 - **Frame 4374** has no tick. Its strip starts with the end of the last tick, then SoundDelayLoop (green): the
   foreground plays a click.
 - **Frame 4375**: the next tick. The balls are drawn in the same order, from the top of the table down.
@@ -506,6 +528,32 @@ WaitFrameNoTasks:
   LD (Im2Jump+1),A        ; $FCFD = JP: the scheduler runs again
   RET
 ```
+
+Pseudocode:
+
+```text
+WaitFrameNoTasks(HL = the sequence):          ; called inside a task, interrupts off
+    byte at $FCFD = RET                        ; an interrupt is now EI; RET: not a tick
+    EI
+    call HL                                    ; the sequence: prints, beeps, HALT n times
+    HALT                                       ; one more interrupt (EI; RET)
+    DI
+    byte at $FCFD = JP                         ; the next interrupt runs RunTasks again
+    return to the task
+```
+
+Worked example: `w1`'s first tally, one ball potted with ShotScore S = 15 (canon of the tally, doc 8).
+
+| Step | `w1` video frame | Why |
+| --- | --- | --- |
+| ShotEnd's tick calls ScoreShot `$98F9`, which jumps into WaitFrameNoTasks with HL = ScoreTally | 1254 | the tick of 1254 (`python3 tools/l1sum.py --builds runs/w1 98FF`) |
+| the first ball's TallyPause and the term's three factors and pause | 1254 + 15 + 60 = 1329 | 75 `HALT`s, each ended by an `EI; RET` interrupt |
+| the count-up: the first beep runs past the next INT, then 45 `HALT`s in all | 1329 + 45 + 1 = 1375 | the interrupt of 1330 lost (doc 9, 9.4) |
+| DrawPottedRow, TallyEndWait `$99BD`'s 5 `HALT`s | 1380 | ScoreTally returns: 125 `HALT`s + 1 lost = 126 video frames |
+| WaitFrameNoTasks's own `HALT`, then `DI` and `JP` back at `$FCFD` | 1381 | the scheduler runs again from the next interrupt |
+
+During those 127 video frames no task runs: the blinks, the cursor and the physics are all frozen, and SoundLoop is
+frozen too (4.10).
 
 ```mermaid
 sequenceDiagram
@@ -579,7 +627,29 @@ SoundCycle:
   JR SoundLoop
 ```
 
-A pass of SoundDelay's loop is 37 T (`LD A,(nn)` 13, `OR A` 4, `JR Z` 7, `DJNZ` 13). The interrupt stays on, so each
+```mermaid
+flowchart TD
+    L[SoundLoop 8069] --> K{InputState bit 5, BREAK?}
+    K -- yes --> BR[BreakRestart 80B0]
+    K -- no --> Q{SoundRequest 827D = 0?}
+    Q -- yes --> L
+    Q -- 1, 2, 3 --> P[B, C = 20, 20 or 30, 12 or 250, 6]
+    P --> ON[OUT FE = 17: speaker on]
+    ON --> D1[SoundDelay 809D: B passes]
+    D1 --> OFF[OUT FE = 07: speaker off]
+    OFF --> D2[SoundDelay: B passes]
+    D2 --> C{C - 1 = 0?}
+    C -- no --> ON
+    C -- yes --> E[SoundRequest = 0 at 8098, the tone's end]
+    E --> L
+    D1 -- SoundRequest cleared by a task --> AB[SoundAbort 80A8: speaker off]
+    D2 -- SoundRequest cleared by a task --> AB
+    AB --> L
+```
+
+SoundDelay `$809D` reads SoundRequest on every pass: a task that writes 0 (StopShotTasks, ShotReset) ends the tone at
+once through SoundAbort; a new non-zero request written meanwhile changes nothing until the tone's end clears it
+(doc 9 has the request's rules). A pass of SoundDelay's loop is 37 T (`LD A,(nn)` 13, `OR A` 4, `JR Z` 7, `DJNZ` 13). The interrupt stays on, so each
 half period also holds the time of any tick that comes in it.
 
 Worked example: a cushion knock (request 2, B = 30, C = 12).
@@ -614,14 +684,14 @@ the code; "ticks" are scheduler runs, which lost interrupts stretch (4.4).
 | a foul message held | 75 steps, one a tick while rolling, one a video frame after | 1.5 | MessagesTask `$9CB7` (MessageStep 3-`$4D`) | `w1` 4 messages |
 | before each printed factor and term of the tally | 15 video frames each | 0.3 | TallyPause `$9B07` | `w1` 89 calls from 1254 |
 | the tally's count-up | at least 45 video frames; n when the steps are more (up to 127, known only from the code); + 1 lost interrupt when S >= 10 | 0.9 and more | ScoreTally `$98FF` | `w1` 17 count-ups, the first from 1329 |
-| after the count-up | 5 video frames | 0.1 | TallyEndWait `$99BB` | `w1` 17 runs |
-| the foul jingle | 10 video frames, a note (DE 26, 27 cycles at about 52 Hz), 5 video frames, a note (DE 23, 24 cycles at about 41 Hz) | 1.4 in all, the notes 1.1 | FoulJingle `$9786`, `$9794` | `p2` 1668, `f1` 4 runs |
+| after the count-up | 5 video frames | 0.1 | ScoreTally `$99BB` (TallyEndWait `$99BD`) | `w1` 17 runs |
+| the foul jingle | 10 video frames, a note (DE 26, 27 cycles at about 52 Hz), 5 video frames, a note (DE 23, 24 cycles at about 41 Hz) | 1.4 in all, the notes 1.1 | FoulJingle `$9780`, its notes in FoulJingleNotes `$9786`, `$9794` | `p2` 1668, `f1` 4 runs |
 | the turn change (two players) | 40 video frames | 0.8 | TurnSwap `$9C15` | `p2` 1738 |
 | GAME OVER, or a key | 250 video frames | 5.0 | GameOverWait `$9857` | `w1` 11 768, `f1` 4445 |
 | after the hall of fame (or none entered), or a key | 500 video frames | 10.0 | GameOverWaitAfter `$9860` | `w1` 13 732-14 232, `f1` 4695-5196 |
 | the other player's turn after GAME OVER | 125 video frames | 2.5 | GameOver `$97CA`, WaitFramesBStopped `$9886` | known only from the code |
 | a resumed turn | 100 video frames | 2.0 | NextTurnResume `$9803`, WaitFramesBStopped | known only from the code |
-| the end of an edited shot, every object ball down | 150 video frames, or a key | 3.0 | EditorShotEndWait `$C486` | known only from the code |
+| the end of an edited shot, every object ball down | 150 video frames, or a key | 3.0 | EditorShotEndWait `$C488` (B = 150 at `$C486`) | known only from the code |
 | the cursor's acceleration | +1 every 10 ticks | 0.2 | AimCursorAccel `$85AD` | `w1` 4311 runs |
 | 1up blink | every 21 ticks | 0.4 | UpBlinkTask `$96E6` | `w1` 377 runs, 878-11 615 |
 | "last shot" blink and beep | every 26 ticks | 0.5 | ShotsBlinkTask, LastShotBeepTask | `f1` 2940 |

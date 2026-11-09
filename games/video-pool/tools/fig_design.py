@@ -54,7 +54,7 @@ SHEETS = {
         ('f1-1200-cue-respotted', '9. a life lost, the cue respotted', 'f1 1200'),
         ('f1-2940-last-shot', '10. the last shot: "last shot"', 'f1 2940'),
         ('f1-3050-shots-out', '11. no pot in time: FOUL SHOT!', 'f1 3050'),
-        ('w1-11800-game-over', '12. the third life gone: GAME OVER', 'w1 11800'),
+        ('w1-11800-game-over', '12. the fourth loss: GAME OVER', 'w1 11800'),
     ]),
     'variations': ('The three rule variations: what each one punishes', [
         ('v1-0700-variations', '1. the variations page', 'v1 700'),

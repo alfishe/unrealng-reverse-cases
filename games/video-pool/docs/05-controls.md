@@ -755,7 +755,7 @@ flowchart LR
     IS --> CM["AimCursorMove $8546: key to +1 or -1 by cushion, accelerate to 6"]
     CM --> SP["CursorSpeed $86BC"]
     SP --> CD["AimCursorDraw $85EB: p = perimeter, p + speed mod 756"]
-    CD --> XY["CursorX, CursorY $86BA"]
+    CD --> XY["CursorX $86BA, CursorY $86BB"]
     XY --> DC["DrawCursor $9371: XOR cross"]
     XY --> SH["AimShot $8A02: the shot aims at the cursor"]
 ```
@@ -921,8 +921,8 @@ Worked example: SPACE goes down at frame 1040 and up at 1078. ReadInput is the l
 ticks of 1040-1077, and AimPower counts each read one tick later, in 1041-1078: 38 ticks of fire, 2 each. The
 samples (each the memory at the start of its frame) show fire from 1041 to 1078 and Power `$4C`, 76, at 1079, with
 InputState `$00` (ReadInput read fire up in the tick of 1078). In the tick of 1079 AimPower sees fire up and runs
-AimShoot. AimShot holds that interrupt for 6.92 video frames, so the interrupts of 1080-1085 are lost and the next
-tick is 1086 (doc 4, 4.7). The cue ball leaves at 4.75 pixels a tick.
+AimShoot. AimShot (about 455 000 T) runs in that interrupt, which lasts about 484 000 T, 6.92 video frames, so the
+interrupts of 1080-1085 are lost and the next tick is 1086 (doc 4, 4.7). The cue ball leaves at 4.75 pixels a tick.
 
 Witness: AimPower ran 4425 times in `w1`, its AimShoot branch 3459 times (each pass with fire up, most with Power 0).
 
@@ -942,8 +942,9 @@ a grid of 42 cells, CharacterGrid `$B167`, three rows of 14:
 
 The player moves a box over the grid with the four directions and picks with fire. Right and down step forward;
 left and up step back. The steps wrap from the last cell to the first. NameCursorForward `$AFFE` and
-NameCursorBack `$B023` move the box. XorCursorBox `$B047` draws it at x 16 E + 20, y 16 D + 112, 12 pixels wide (28
-for rub and end).
+NameCursorBack `$B023` move the box. XorCursorBox `$B047` draws it round the cell at (16 E + 20, 16 D + 112): its top
+line from x 16 E + 18 at y 16 D + 109 (`$B067-$B06B`: `DEC D` three times, `DEC E` twice), 12 pixels wide (28 for
+rub and end).
 
 The loop, NameEntryLoop `$AEB3`, waits one frame, calls ReadInput and acts:
 
@@ -1081,14 +1082,16 @@ How to read the figure:
 python3 tools/fig_controls.py namegrid --work work/docs/vpB/w1 --at 13360 --out docs/img/controls/namegrid.png
 ```
 
-![The name entry in w1 frames 13090-13372: the box stepping over the grid and the letters of the name appearing](img/routines/NameEntry.gif)
+![The name entry in w1 frames 13090-13366: the box stepping over the grid and the letters of the name appearing](img/play/w1-13090-name-entry.gif)
 
-*The screen animation of the name entry in `w1` frames 13 090-13 372, one picture every 2 frames. Command:
-`python3 ../../kit/screen_anim.py --work work/docs/vpB/w1 --from 13090 --to 13372 --step 2 --scale 2 --delay 60
---hold 2000 docs/img/routines/NameEntry.gif`.*
+*A screen capture of play (not a routine animation): the name entry in `w1` frames 13 090-13 366, one picture every 2
+frames, the last held 2 s. Command: `python3 ../../kit/screen_anim.py --work work/docs/vpB/w1 --from 13090 --to 13366
+--step 2 --scale 2 --delay 60 --hold 2000 docs/img/play/w1-13090-name-entry.gif`.*
 
 How to read the animation: the box moves one cell per tap of SYMBOL SHIFT (right). A letter appears in the name at
-each pick. The box goes back with taps of M (left), and at the end it sits on "end".
+each pick. The box goes back with taps of M (left), and at the end it sits on "end" (frame 13 366, held). The pick of
+"end" leaves NameEntryLoop in frame 13 368, and the next frames wipe the page for the hall of fame
+([section 8.8](08-hud-and-text.md)).
 
 Worked example: the `w1` bot taps SYMBOL SHIFT for 3 frames at a time. The first frame of a tap takes RepeatDelay
 from `$70` to `$6F`: a step, and `$66` stored. The next two frames take it to `$64`. The tap ends, InputState is 0,
@@ -1140,7 +1143,7 @@ The editor reads the same byte with its own loop (EditorLoop, `src/game/editor.a
 table, not on the cushions. Its speed grows from 1 to 5, one step every 16 frames (EditorCursorSpeed). With the
 keyboard chosen, EditorStart `$C042` switches Control to 3, the cursor keys, and EditorExit puts it back. Its "play"
 button runs the aim on EditorAimTasks `$C518`: the same PowerBarTask, AimCursorMove, AimCursorDraw and ReadInput,
-with EditorPower in place of AimPower. The editor itself is in doc 10.
+with EditorPower in place of AimPower. The editor itself is in [doc 1, 1.11](01-game-design.md).
 
 Worked example: in `e1` the editor runs on the cursor keys from frame 632, and its "play" starts the aim at frame
 840. EditorAimTasks were read from 844 to 1054, and the shot left at 908.

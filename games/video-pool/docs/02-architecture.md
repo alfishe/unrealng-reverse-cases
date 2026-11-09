@@ -25,9 +25,9 @@ has the table):
   loop; `$95E9`, `$A915`, `$AD07`, `$B246`, `$B97B`, `$C060` elsewhere). BEEPER `$03B5` (twelve calls and one jump)
   plays the short notes. A byte search of the image (`tools/image.py`); WALKTHROUGH 1.
 - **The keys, two ways.** The game reads the keyboard itself with `IN A,(C)` on port `$FE`: the defined keys
-  (KeyRead, from ReadKeyboard `$8123`), BREAK (ReadBreak `$8216`, at `$8219` and `$8222`), Interface 2's two rows
-  (ReadInterface2, `$8151`), the menu's hidden key test (TestCheatKeys `$B3B8`, at `$B3BB`), and `$8250`. Kempston
-  is `IN A,($1F)` at `$81A0` (ReadKempston). The menus and the name entry also use the ROM's KEY-SCAN `$028E` and
+  (KeyRead `$8250`, from ReadKeyboard `$8123`), BREAK (ReadBreak `$8216`, at `$8219` and `$8222`), Interface 2's
+  two rows (ReadInterface2 `$8151`, at `$8154` and `$817C`), the menu's hidden key test (TestCheatKeys `$B3B8`, four
+  rows at `$B3BB`, `$B3C0`, `$B3C6`, `$B3CC`). Kempston is `IN A,($1F)` at `$81A0` (ReadKempston). The menus and the name entry also use the ROM's KEY-SCAN `$028E` and
   K-TEST `$031E` (nine calls each), to take any key. Stage 1 said there was no `IN` from port `$FE`; that was wrong
   (doc 5 has the reads).
 - **IM 2 from the first key on.** The entry `$8000` runs the "presents" page in IM 1 with interrupts on (the ROM's
@@ -51,7 +51,8 @@ has the table):
 *The memory map from the union of the L1 builds of `c1`'s game part (`work/game/l1.json`) and the play recordings
 `w1`, `f1`, `p2`, `v1`, `m1`, `j1`, `e1` (WALKTHROUGH 6.0; the builds `read_builds` of `case.json` names). One row
 is 256 bytes; green executed, blue read as data, orange written and read, yellow written only, red executed and
-written, dark untouched.*
+written, dark untouched. The stack's yellow is an artefact: the builds miss its reads and part of its writes
+(2.3).*
 
 How to read it: the code is one block `$8000-$C5FF` (green with blue tables and text inside), the data one block
 `$D000-$E013` (blue), and the rest of RAM above `$C600` is empty but for the stack under `$D000`, the loader at
@@ -63,8 +64,9 @@ python3 tools/regcounts.py work/game/l1.json work/runs/{w1,f1,p2,v1,m1,j1,e1}/l1
 ```
 
 The regions (`tools/memmap-regions.txt`, the figure's brackets; the routine and data names of stage 2 are in
-[doc 11](11-data-reference.md) and [doc 12](12-routine-reference.md)). X executed, R read only, W written, -
-untouched, in bytes:
+[doc 11](11-data-reference.md) and [doc 12](12-routine-reference.md)). X executed (not written), R read only, W
+written (including the executed-and-written bytes, red in the figure: `$FCFC-$FCFF` and the patched bytes of the
+next notes), - untouched, in bytes:
 
 | Range | Bytes | X | R | W | - | What | Witness |
 | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |
@@ -79,7 +81,7 @@ untouched, in bytes:
 | `$8B4E-$90F4` | 1447 | 1332 | 0 | 5 | 110 | the cushions and pockets, from PocketOrCushion `$8B4E` | `$8B4E` |
 | `$90F5-$9242` | 334 | 232 | 0 | 100 | 2 | the friction lookup, the scheduler and its slots | `$90F5`, `$9155`, `$91DF` |
 | `$9243-$9F68` | 3366 | 2907 | 244 | 53 | 162 | drawing, the power bar, the HUD, the score, the print routine | `$934D`, `$9548`, `$9E7C` |
-| `$9F69-$A161` | 505 | 343 | 150 | 0 | 12 | the racking, its set table RackSets `$A0C4` and set 0's scripts `$A0D0` | `$9F69` |
+| `$9F69-$A161` | 505 | 343 | 150 | 0 | 12 | the racking, its set table RackSets `$A0C4`, set 0's script pointers RackScripts0 `$A0D0` and scripts `$A0DC-$A161` | `$9F69` |
 | `$A162-$A1E3` | 130 | 0 | 130 | 0 | 0 | the rack scripts of set 1 (frames 3-4), RackSet1 | read by `w1` only, frames 3 and 4 |
 | `$A1E4-$A701` | 1310 | 0 | 0 | 0 | 1310 | the rack scripts of sets 2-5 (frames 5-12), never read by a recording | doc 7; `w1` reached frame 4 |
 | `$A702-$AC07` | 1286 | 1020 | 73 | 2 | 191 | the hall of fame and name entry | `w1` frames 12 500-14 000 |
@@ -89,7 +91,7 @@ untouched, in bytes:
 | `$B8C5-$BD0B` | 1095 | 720 | 363 | 3 | 9 | the "presents" page, the attract sequence | `$BD0B`, `$BD14` |
 | `$BD0C-$C5FF` | 2292 | 1556 | 198 | 14 | 524 | the signature's pen, the editor; `$C591-$C5FF` a stale copy of `$C34C-$C3BA` | the editor loop `$C116`, its task list `$C518` |
 | `$C600-$CFBF` | 2496 | 0 | 0 | 0 | 2496 | free, zero | (2.3) |
-| `$CFC0-$CFFF` | 64 | 0 | 0 | 44 | 20 | the stack, low mark `$CFC4` | `LD SP,$D000` |
+| `$CFC0-$CFFF` | 64 | 0 | 0 | 44 | 20 | the stack, low mark `$CFC4` (the builds undercount it: 2.3) | `LD SP,$D000` |
 | `$D000-$DA7F` | 2688 | 0 | 2688 | 0 | 0 | the ball sprites, 56 x 48 bytes | XORed by `$959F` |
 | `$DA80-$DBF9` | 378 | 0 | 378 | 0 | 0 | the pen script of "written by" and the signature, SignatureScript | read by `$BD14` |
 | `$DBFA-$DCF9` | 256 | 0 | 160 | 0 | 96 | the contact table, 16 x 16 by \|dx\|, \|dy\| | the physics |
@@ -116,18 +118,23 @@ Notes:
   an off-table ball (EditorPlaceBall `$C288` and its overlap loop, `$C273-$C2F3`), the ball moved right, up or down
   (`$C3F2-$C400`), the end of an edited shot with every object ball down (`$C47F-$C4A8`), the stale copy
   `$C591-$C5FF` and the pen's never-run band and shaft paths (`$BDA2-$BDF6`, `$BF03-$BF32`); WALKTHROUGH 6.0.
-- **The red bytes inside the code** are operands patched at run time, not code that changes: the jaw band
-  `$8C8B` / `$8C8F` (the operands of JawDepthTest `$8C8A` in DiagonalJaw, 2 / 3 or 6 / 7, written by CushionsSmall
-  `$8E81` / CushionsLarge `$8FBB` for the pocket size) and the pen's span operations `$BF93`, `$BFA1`, `$BFAE`
-  (PenSpanOp1 and its two siblings: `NOP` in the image, `OR (HL)` or `XOR (HL)` while the pen draws; docs 6 and 10).
+- **The red bytes inside the code** are patched at run time (the union of the eight builds has nine executed and
+  written bytes below `$FCFC`), operands and opcodes both:
+  - operands: the jaw band `$8C8B` / `$8C8F` (the operands of JawDepthTest `$8C8A` in DiagonalJaw, 2 / 3 or 6 / 7,
+    written by CushionsSmall `$8E81` / CushionsLarge `$8FBB` for the pocket size), and the JR displacements `$BEDD`
+    and `$BF02` of the pen's shaft (PenShaftBlock `$BEDC`, draw or erase; PenShaftJump `$BF01`, the bytes to copy);
+  - opcodes: JawShallowExit `$8C92-$8C93`, `RET C; NOP` in the image, patched to `JR C,JawContact` at `$8C96` /
+    `$8C9B` after a step back and restored by PocketOrCushion `$8B51` / `$8B55` ([doc 10](10-gameplay-logic.md),
+    10.4), and the pen's span operations `$BF93`, `$BFA1`, `$BFAE` (PenSpanOp1 and its two siblings: `NOP` in the
+    image, `OR (HL)` or `XOR (HL)` while the pen draws; [doc 6](06-rendering.md)).
 - **The sprites.** The first sprite sheet, the 56 pre-shifted ball sprites (one row per shift 0-7, cue ball and
   balls 1-6) and the font, drawn from the image by `tools/fig_sprites.py`:
 
 ![The 56 ball sprites by shift and ball, and the 36 font glyphs, each with its address](img/sprites/balls-and-font.png)
 
 *Balls: 24 x 16 pixels (3 bytes x 16 lines, 48 bytes), index = shift x 7 + ball, XORed onto the screen by `$959F`
-(called from the sprite draw `$9548`). Font: 8 x 8, printed by `$9E7C`. The aiming cursor (`$85EB`, `$9371` in the
-editor) and the table (cushions, pockets, the power box) are drawn by code, one XOR line at a time (XorLine `$93B3`),
+(called from the sprite draw `$9548`). Font: 8 x 8, printed by `$9E7C`. The aiming cursor (DrawCursor `$9371`,
+called by AimCursorDraw `$85EB` in play; the editor uses the same routine) and the table (cushions, pockets, the power box) are drawn by code, one XOR line at a time (XorLine `$93B3`),
 not from data.*
 
 The modules: the 32 source files that `src/game/game.asm` includes, in address order (the `INCLUDE` lines of
@@ -206,14 +213,38 @@ What changes:
 | `$9B8E-$9B98` | 2 | the "FRAME n" message: its position byte and the digit |
 | `$B8C1` | 2 | the menu's timeout, 1500 at the menu (`$B293`, `$B6A2`) and counted down: at zero the attract sequence runs (`w1` 15 741) |
 | `$827C` | 1 | InputState (fire held: the aim is under way) |
-| `$9B30-$9B31`, `$95D8-$95D9`, `$BD09-$BD0B` | 7 | `$9B30` = 1 (`$8050`) and UpBlink `$9B31`, the sprite's screen address `$95D8`, a saved stack pointer `$CFFE` and the presents-done flag `$BD0B` = `$FF` (`$800E`) |
+| `$9B30-$9B31`, `$95D8-$95D9`, `$BD09-$BD0B` | 7 | `$9B30` = 1 (`$8050`) and UpBlink `$9B31`, the sprite's screen address `$95D8`, PresentsSP `$BD09` = `$CFFE` (the stack pointer saved by PresentsPage) and the presents-done flag `$BD0B` = `$FF` (`$800E`) |
 | `$B668-$B67D` | 8 | the key names of the menu's last line ("left='m' right=s/s fire=' '"), filled at the menu |
 | `$CFDC-$CFFF` | 35 | the stack |
 | `$5C04-$5C79` | 8 | the ROM's keyboard variables and FRAMES (KEY-SCAN is called, the ROM's IM 1 handler ran until frame 6061) |
 
-- **The stack** starts at `$D000` and its lowest non-zero byte at the end of `w1` (16 370 frames: three frames won,
-  GAME OVER, the hall of fame, the attract sequence) is `$CFC4`, 60 bytes down. `$C600-$CFBF` is zero in the image
-  and stays untouched in every recording, 2496 free bytes above the stack's floor.
+- **The stack** starts at `$D000` and its lowest non-zero byte at `w1` video frame 16 370, near its end (16 378 video
+  frames: three game frames won, GAME OVER, the hall of fame, the attract sequence), is `$CFC4`, 60 bytes down.
+  `$C600-$CFBF` is zero in the image and stays untouched in every recording, 2496 free bytes above the stack's floor.
+- **The L1 builds undercount the stack.** A stack that reached `$CFC4` wrote every byte from there up and read them
+  back with every `POP` and `RET`, but the union of the builds records no read of `$CFC0-$CFFF` and leaves
+  `$CFC0-$CFCF`, `$CFD4-$CFD5` and `$CFF2-$CFF3` unwritten. `$CFF2-$CFF3` is where Im2Handler's `PUSH IY` lands when
+  the interrupt comes in SoundLoop with SP `$D000` (the CPU's push of PC at `$CFFE`, then AF, BC, DE, HL, IX, IY down
+  to `$CFF2`), which happens thousands of times in `w1`. So the region table's W 44 and 20 untouched bytes, and the
+  figure's yellow, are artefacts of the recording (which stack accesses it drops, the CPU's interrupt pushes, the
+  prefixed pushes or the pops, is not settled); the low mark `$CFC4`, read from memory with TTD `memory_at`
+  (`work/stage1/stacklow.py`), is the real depth.
+
+![The three images of 4000-FFFF hex side by side: as loaded, at the entry and in play, with the bytes that changed from one to the next marked](img/arch/stages.png)
+
+How to read the figure:
+
+- **Three columns**, each `$4000-$FFFF` at one pixel a byte, one row of 256 bytes: the image as loaded, at the entry
+  and in play (`w1` 1060). Grey a non-zero byte, dark a zero; the screen is tinted blue and not compared.
+- **Orange** (at the entry): the 373 bytes from `$5B00` up that differ from the tape image, all the ROM's (the
+  system variables at `$5C00`, the BASIC's stack under `$8000`, `$FF18-$FFFE`); none in the game or the loader.
+- **Red** (in play): the 444 bytes that differ from the entry, the 18 runs of the table above, labelled on the right.
+- **The point**: the code and the tables never change between the stages; play is a few hundred bytes of state
+  scattered through the code block, the stack and the IM 2 table.
+
+```bash
+python3 tools/fig_memmap.py stages
+```
 
 ## 2.4 The task scheduler and the foreground loop
 
@@ -223,7 +254,8 @@ the interrupt plays the sound and watches for BREAK.
 - **The scheduler** `$9155`, called by the handler `$80F0` on each interrupt, walks 25 slots of 4 bytes at `$91DF`:
   the routine's address (a slot with a zero high byte is free), the reload period and the countdown. Each pass
   decrements the countdown; when it goes below zero the routine is called (`$9170 CALL $9187`, `JP (HL)`) and the
-  countdown reloaded. A period of 0 runs the task on every interrupt.
+  countdown reloaded. A period of 0 runs the task on every tick ([Terms](README.md#terms): an interrupt with the
+  tasks stopped is not a tick).
 - **The task calls**: AddTask `$9188` (HL the routine, C the period), RemoveTask `$91AD` (by address), ClearTasks
   `$91CF`. A task list is a run of (period, address) triples ending in `$FF`, installed by `$80B9` and removed by
   `$80CC`.
@@ -239,8 +271,8 @@ the interrupt plays the sound and watches for BREAK.
 - **The foreground loop** `$8069-$809B` waits for bit 5 of `$827C` (BREAK: `$80B0` reloads SP and restarts at
   `$8013`) or a sound request in `$827D`, and plays the request as speaker toggles through `OUT ($FE)` (`$17` /
   `$07`, `$8088`, `$808F`) to its end: a request written meanwhile is lost, because the end of the tone clears
-  SoundRequest (`$8098`); a task writing 0 stops the tone at once (SoundAbort `$80A8`; StopShotTasks `$84A6`,
-  ShotReset `$84D1`).
+  SoundRequest (`$8098`); a task writing 0 stops the tone at once (SoundAbort `$80A8`; StopShotTasks `$8483` at
+  `$84A6`, ShotReset `$84C7` at `$84D1`).
 - **Wait one video frame** `$80DE`: it writes `RET` at `$FCFD` (the interrupt is then `EI; RET`: the tasks stop), calls
   the routine in HL, `HALT`s, and puts the `JP` back. The racking `$9F69`, the tally `$98F9`, the messages `$8451` and
   the foul jingle `$9780` run this way: the first rack of a game from GameRestart (`$805E`, in the foreground),
@@ -281,7 +313,7 @@ flowchart TD
         MB --> PC[PocketOrCushion 8B4E]
         RT --> SE[ShotEnd 8357]
         SE --> WF[WaitFrameNoTasks 80DE]
-        WF --> TL[ScoreTally 98FF, FoulJingle 9780, RackBalls 9F6F]
+        WF --> TL[ScoreTally 98FF, FoulJingleNotes 9786, RackBalls 9F6F]
         SE --> LL[LoseLife 9754]
         LL --> GO[GameOver 97A2]
         GO --> HF[GameOverHallOfFame A702]
@@ -301,7 +333,7 @@ The split, from the module heatmap of 2.6 (`w1`, 16 378 frames):
 | HALT, waiting for an interrupt | 45.5 % | the presents page, the menu, the rack, the tally, the banners, the hall of fame |
 | SoundLoop, the foreground of play | 32.9 % | waiting for a sound request, playing it |
 | the interrupt's tasks and their callees | 15.0 % | drawing 5.7 %, play 5.0 % (the shot 2.8 %, input 1.8 %), the handler and scheduler 2.6 %, physics 1.7 % |
-| the pages, in the foreground | 2.2 % | presents, attract, menu, hall of fame, name entry |
+| the pages, in the foreground | 2.2 % | presents, attract, signature, menu, hall of fame, name entry, editor (`w1` ran only presents, attract, menu, hall of fame and name entry) |
 | the ROM | 4.5 % | the calculator in AimShot, BEEPER, KEY-SCAN |
 
 - Everything of play is in the interrupt. Outside it there are only the pages (presents, menu, editor) and SoundLoop.
@@ -350,8 +382,9 @@ How to read the figure:
 - **Each segment** is a group of modules, its T-states over the recording divided by its video frames; the number is
   thousands of T a video frame.
 - **The point**: an average video frame holds about 3-7k T of drawing and 1-3k T of physics. The average hides the peaks:
-  a six-ball tick takes 62k T, and the shot set-up holds the interrupt 484k T, 6.92 video frames (AimShot 455k T
-  of it; doc 4, 4.6 and 4.7).
+  the heaviest traced six-ball pass takes 62k T; while all seven balls move a pass can be longer than a video frame
+  (nine interrupts lost in `w1` 1155-1171, every second one); and the shot set-up holds the interrupt 484k T, 6.92
+  video frames (AimShot 455k T of it; doc 4, 4.6 and 4.7).
 
 ```bash
 python3 tools/fig_arch.py budget
@@ -368,7 +401,7 @@ Worked example, `w1`'s average video frame:
 | the ROM | 3 100 | 4.5 % |
 | the interrupt (main, scheduler, Im2Jump) | 1 800 | 2.6 % |
 | physics (physics, cushions, friction, shotsetup) | 1 200 | 1.7 % |
-| the pages (presents, attract, menu, hall of fame, name entry) | 1 500 | 2.1 % |
+| the pages (presents, attract, signature, menu, hall of fame, name entry, editor) | 1 500 | 2.2 % |
 | sum | about 69 900 | 100 % |
 
 `kit/fig_budget.py work/runs/w1/l1.json OUT --by module` gives the same sums per module (main 33.06 % there is

@@ -20,11 +20,11 @@
 ; $60 (the table: bright green paper, black ink), row 23 $38 (the bottom pocket
 ; marks).
 ;
-; Prints the HUD words (HudOneUp ... HudShots), zeroes the scores ($9F45,
-; $9F47) and the pocket turns (PlayerVars $9F43 / $9F44), frames $9F4B / $9F4C
-; = 1, lives $9F4E / $9F4F = 3, Player2Racked $9B33 = 0; prints the three
-; scores (PrintHudNumber 0, 1, 2), the power box, power $86BF / $86C0 = 0, the
-; table; ParkBalls $967B for both ball sets ($8A88 and $8AEA).
+; Prints the HUD words (HudTexts $969D "1up" ... HudShots), zeroes the scores
+; ($9F45, $9F47) and the pocket turns (PlayerVars $9F43 / $9F44), frames $9F4B
+; / $9F4C = 1, lives $9F4E / $9F4F = 3, Player2Racked $9B33 = 0; prints the
+; three scores (PrintHudNumber 0, 1, 2), the power box, power $86BF / $86C0 =
+; 0, the table; ParkBalls $967B for both ball sets ($8A88 and $8AEA).
 NewGameScreen:
   LD HL,Screen
   LD DE,Screen+1
@@ -145,9 +145,9 @@ HudShots:
 ;
 ; A task added by StartAim $8425 with period 20 (every 21 interrupts) and
 ; removed by $8483 when the shot starts, which first prints it with UpBlink =
-; $FF (shown). CurrentPlayer $9B30 = 1 picks HudOneUp / HudOneUpBlank, 2
-; HudTwoUp / HudTwoUpBlank; UpBlink 0 prints the blank. game 88 runs, w1 377,
-; p2 130.
+; $FF (shown). CurrentPlayer $9B30 = 1 picks HudTexts ("1up", $969D) /
+; HudOneUpBlank, 2 HudTwoUp / HudTwoUpBlank; UpBlink 0 prints the blank. game
+; 88 runs, w1 377, p2 130.
 UpBlinkTask:
   LD A,(CurrentPlayer)
   DEC A

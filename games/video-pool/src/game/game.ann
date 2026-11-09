@@ -597,7 +597,7 @@ $917C RunTasksNext ; 4 bytes a slot
 $9187 c CallTask ; JP (HL)
 
 $9188 c AddTask ; Put routine HL with period C into the first free slot
-> Countdown 0, so it first runs at the next interrupt. No free slot: nothing (25 are never all used). w1: 252 calls.
+> Countdown 0, so it first runs at the scheduler's next visit of its slot: in the same tick when the slot comes after the caller's (the release: MovingTasks in slots 1-3 run in AimPower's tick), otherwise at the next tick. No free slot: nothing (25 are never all used). w1: 252 calls.
 $918E AddTaskLoop
 $919F AddTaskFree ; the free slot
 
@@ -704,14 +704,14 @@ $95D8 b SpritePos 2 ; The sprite's screen position for DrawBall $9548: +0 x, +1 
 @about The HUD, rows 0 and 1, attribute $38 for the words and $3A for the numbers: "1up" col 0 and the player 1 score cols 3-8, "hi" col 12 and the hi score cols 14-19, "2up" col 23 and the player 2 score cols 26-31; row 1: the power box (cols 0-16), "frame" col 17 and the frame number cols 22-23, "shots" col 26 and the shots left col 31. Scores print as five digits plus a fixed "0" (the score x 10).
 $95DA c NewGameScreen ; Start a game: clear the screen, colours, HUD, scores, frames, lives, the table, the power box; park all balls
 > Called once by the game start $8013 (game frame 6182, w1 622, v1 twice: 772, 2603). Clears the display, border 7 (white; BORDCR $38), attributes: rows 0-4 $39 (the HUD and message rows), row 5 $38 (the top pocket marks), rows 6-22 $60 (the table: bright green paper, black ink), row 23 $38 (the bottom pocket marks).
-> Prints the HUD words (HudOneUp ... HudShots), zeroes the scores ($9F45, $9F47) and the pocket turns (PlayerVars $9F43 / $9F44), frames $9F4B / $9F4C = 1, lives $9F4E / $9F4F = 3, Player2Racked $9B33 = 0; prints the three scores (PrintHudNumber 0, 1, 2), the power box, power $86BF / $86C0 = 0, the table; ParkBalls $967B for both ball sets ($8A88 and $8AEA).
+> Prints the HUD words (HudTexts $969D "1up" ... HudShots), zeroes the scores ($9F45, $9F47) and the pocket turns (PlayerVars $9F43 / $9F44), frames $9F4B / $9F4C = 1, lives $9F4E / $9F4F = 3, Player2Racked $9B33 = 0; prints the three scores (PrintHudNumber 0, 1, 2), the power box, power $86BF / $86C0 = 0, the table; ParkBalls $967B for both ball sets ($8A88 and $8AEA).
 $967B c ParkBalls ; Take the set at IX off the table: cue ball and balls 1-6 bit 7 of +13 clear, balls 1-6 to the potted row (x 0, 24, ... 120; y 20)
 > Input IX = a set of 7 records (14 bytes each). Only +10/+11 (the sprite's place) and bit 7 of +13 are set; nothing is drawn. Called twice by NewGameScreen (game 2, frame 6190): $8A88 the current player's set, $8AEA the other player's (the set TurnSwap $9C15 exchanges).
 $9684 ; y 20, x 0: the potted row's first place
 $968A ParkBallsLoop
 $969D b HudTexts 16 ; The HUD's text records (PrintText format: row, column, attribute, length, text)
 > All read: NewGameScreen prints $969D, $96AB, $96B9, $96BF, $96D4, $96DD; UpBlinkTask $96E6 alternates $969D / $96A4 and $96AB / $96B2; ShotsBlinkTask $970E reprints $96DD.
-$969D HudOneUp ; row 0, col 0, attr $38, 3: "1up"
+$969D HudTexts ; row 0, col 0, attr $38, 3: "1up"
 $96A1 ; "1up"
 $96A4 HudOneUpBlank ; row 0, col 0, attr $39, 3: "   "
 $96A8 ; "   "
@@ -729,7 +729,7 @@ $96DD HudShots ; row 1, col 26, attr $38, 5: "shots"
 $96E1 ; "shots"
 @res text/HudTexts.bin
 $96E6 c UpBlinkTask ; Blink the current player's "1up" / "2up": print it or its blank by UpBlink $9B31, then flip UpBlink
-> A task added by StartAim $8425 with period 20 (every 21 interrupts) and removed by $8483 when the shot starts, which first prints it with UpBlink = $FF (shown). CurrentPlayer $9B30 = 1 picks HudOneUp / HudOneUpBlank, 2 HudTwoUp / HudTwoUpBlank; UpBlink 0 prints the blank. game 88 runs, w1 377, p2 130.
+> A task added by StartAim $8425 with period 20 (every 21 interrupts) and removed by $8483 when the shot starts, which first prints it with UpBlink = $FF (shown). CurrentPlayer $9B30 = 1 picks HudTexts ("1up", $969D) / HudOneUpBlank, 2 HudTwoUp / HudTwoUpBlank; UpBlink 0 prints the blank. game 88 runs, w1 377, p2 130.
 $96F8 UpBlinkPrint1
 $96FA UpBlinkPlayer2
 $9703 UpBlinkPrint
@@ -1472,7 +1472,7 @@ $A701 ; end
 
 @module halloffame ; The hall of fame: the qualifying test, the flags on their poles, the slide of the flags, the table
 @about The hall of fame is three slots of 71 bytes at HofTable $AC08, fixed on screen: slot 1 (centre, the highest pole, yellow), slot 2 (left, magenta), slot 3 (right, green). A slot holds the score (a word, shown x 10), the name (7 characters), the flag's current position, the pole's position, the flag's attribute, a "moves" flag and the name rendered as a 7 x 8-byte bitmap (inverted glyphs: the flag is solid ink, the letters paper). The ranking moves the score and name only (9 bytes); the positions and colours stay with the slot.
-@about At GAME OVER ($9857) GameOverHallOfFame $A702 counts the slots a score beats (CountBeaten $A7EB, ties do not qualify). If it beats none, nothing happens (game and f1). Otherwise the name page and name entry run ($ACEF, module nameentry), then the hall of fame is drawn (ShowHallOfFame $A8FD: poles, flags, scores), the flags that lose their place slide down off the screen (SlideFlagsDown $A86D), the new entry is inserted (InsertEntry $A817) and the flags slide back up to their poles with the new names (SlideFlagsUp $A8C7). w1 ran it all at frames 12018-13732 with the name "vp" (screens w1 frames 12500, 13300, 14000). The attract sequence also shows the table through ShowHallOfFame ($B906, when $BD0B is set).
+@about At GAME OVER ($9857) GameOverHallOfFame $A702 counts the slots a score beats (CountBeaten $A7EB, ties do not qualify). If it beats none, nothing happens (game and f1). Otherwise the name page and name entry run ($ACEF, module nameentry), then the hall of fame is drawn (ShowHallOfFame $A8FD: poles, flags, scores), the flags that lose their place slide down off the screen (ShowAndSlideDown $A86D), the new entry is inserted (InsertEntry $A817) and the flags slide back up to their poles with the new names (SlideFlagsUp $A8C7). w1 ran it all at frames 12018-13732 with the name "vp" (screens w1 frames 12500, 13300, 14000). The attract sequence also shows the table through ShowHallOfFame ($B906, when $BD0B is set).
 @about The two-player path ($A745-$A7E8) enters a name for each qualifying player ("congratulations! player 1 / 2", $9B30 = 1 / 2) and inserts both; no recording ran it (p2 ended by BREAK): known only from the code.
 $A702 c GameOverHallOfFame ; At GAME OVER: enter the hall of fame if the score qualifies
 > Called once by $985D (the GAME OVER path $9857). Clears the "moves" flag (+$0E) of the three slots. One player (Players $B8BB = 1): copies the score $9F45 to NewEntry1 $ACDD, counts the slots it beats (CountBeaten $A7EB) and returns if none; else runs the name page and entry (NameEntryPage $ACEF), copies NameBuffer $B227 to NewEntryName1 $ACDF, then ShowAndSlideDown $A86D, InsertEntry $A817 for NewEntry1 and SlideFlagsUp $A8C7 (a jump: its RET returns to $9860).

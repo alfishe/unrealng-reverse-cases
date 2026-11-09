@@ -27,6 +27,7 @@ Costs on the target are estimates from instruction timings, not measurements.
 | [HWY] | Highway Encounter for the UKNC, <https://github.com/nzeemin/uknc-highwayencounter>: `HWYENC.MAC` | a ZX Spectrum game ported to the UKNC: CPU-only drawing through the plane window 176640/176642, pre-shifted sprites, the sound left as a stub |
 | [BK] | Wikipedia, "Electronika BK", <https://en.wikipedia.org/wiki/Electronika_BK> | the BK-0010 / 0011M (14.9) |
 | [NEON] | Cyclowiki, "Союз-Неон ПК-11/16", <https://cyclowiki.org/wiki/%D0%A1%D0%BE%D1%8E%D0%B7-%D0%9D%D0%B5%D0%BE%D0%BD_%D0%9F%D0%9A-11/16> | the Soyuz-Neon (14.9) |
+| [1801] | Wikipedia, "1801 series CPU", <https://en.wikipedia.org/wiki/1801_series_CPU> | the second source on the Soyuz-Neon's processor: the N1806VM2 is the CMOS 1806VM2, functionally equivalent to the K1801VM2 (rated 5 MHz); the PC-11/16 listed with the N1806VM2; the K1801VM3 is a different chip (MMU, 22-bit bus, DVK computers) (14.9) |
 
 Spectrum numbers are hex with `$`; UKNC addresses and words are octal, as in the PDP-11 sources (`177010`).
 
@@ -528,7 +529,7 @@ AimShotInt(dx, dy, P):                     ; dx, dy whole pixels, P = power, at 
 ```
 
 ```python
-def aim_int(dx, dy, p):                    # checked against Model.shot: 392 448 inputs, 0 differences
+def aim_int(dx, dy, p):                    # checked against Model.shot: 12 329 856 inputs, 0 differences
     r2 = dx * dx + dy * dy
     out = []
     for d in (dy, dx):
@@ -565,8 +566,10 @@ Newton steps of about 220 cycles), for each of vx and vy: about 10 000 cycles, 1
 160 000-cycle frame), against 130 ms on the Spectrum. The shot starts in the same tick as the release; the six lost interrupts of the original are gone
 (14.7 says why that does not change the game).
 
-The integer method agrees with the Python model on every input tried (dx -255..255, every second dy -191..191, P 1,
-17, 76, 126: `python3 tools/uknc_aimcheck.py`, "392448 inputs, 0 differences"). The model is the game's on the 475 frames of doc 10, 10.6, but those are one shot: whether the ROM's
+The integer method agrees with the Python model on every input the game can give: dx -255..255, dy -191..191 and the
+63 powers 2, 4, ..., 126 (the power is always even, doc 10, 10.2; P 0 does not move the ball):
+`python3 tools/uknc_aimcheck.py --dy-step 1 --powers "$(python3 -c "print(','.join(map(str, range(2, 127, 2))))")"`,
+"12329856 inputs, 0 differences" (30 s). The model is the game's on the 475 frames of doc 10, 10.6, but those are one shot: whether the ROM's
 SQR, which is exp (0.5 ln x) with series, ever rounds a near-tie differently is still to be checked against the ROM
 itself (14.7, 14.8 risk 1).
 
@@ -655,7 +658,8 @@ sequenceDiagram
 
 Both players become one: the PPU timer interrupt (vector 304) toggles bit 7 of 177716 every half period, counting
 down the cycles; the CPU puts a sound number in the mailbox, the PPU starts it. Krakout plays its effects this way:
-177712 = the count, 177710 = interrupt enable, start and the rate [KRK appu.mac]. The half periods of doc 9, 9.6:
+177712 = the count, 177710 = interrupt enable, start and the rate [KRK appu.mac]. The timer count is 12 bits, at most 4095 [BTL Board.cpp: `m_timer &= 07777; // 12 bit only`]. The half periods of
+doc 9, 9.6:
 
 | Sound | Half period on the Spectrum | µs | Timer count at 4 µs | at 2 µs | Cycles |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -694,7 +698,7 @@ original's sound adds the gaps on purpose.
 | Must stay | Why it can change | How the port keeps it |
 | --- | --- | --- |
 | the physics, byte for byte | 16-bit arithmetic rewritten; the tables moved | the same 8.8 words, carries and clamps (14.6.1); tables unchanged; the y-minus clamp's missing carry test kept |
-| the shot | AimShot without the ROM | the exact integer rounding (14.6.3), checked against the model and the ROM |
+| the shot | AimShot without the ROM | the exact integer rounding (14.6.3), checked against the model (14.6.3); the ROM check is planned in 14.8 (risk 1) |
 | the random start | the R register does not exist on the PDP-11 | the two reads (`$A026` in RackBalls, `$85D4` in AimCursorReset, doc 7, 7.8) take R from a counter that advances like the Z80's R between the same events, or from a table recorded per rack |
 | the tick | the UKNC has time to spare | the game advances one tick per EVNT, as on the Spectrum; inputs are read once per tick |
 | the frame rate | the Spectrum loses interrupts (six at each shot, about 490 frames in `w1`) | not kept: the port never loses one, so it runs at the speed the game was meant to have. The ticks are the same; only their spacing in real time differs |
@@ -783,14 +787,17 @@ exists), a timer.
 
 **Soyuz-Neon PK-11/16** [NEON]: Cyclowiki gives N1801VM2 / N1806VM2 class processors at 8 MHz with 1-4 MB of RAM, a
 16 KB ROM, and a screen built from a table of video lines (16-128 words each, anywhere in RAM) with 16 video modes.
-TODO.md's lead says a K1801VM3 class CPU: the source read does not confirm it, so the processor needs a second
-source before the plan relies on it.
+The processor is settled by a second source [1801]: the PC-11/16 uses the N1806VM2, the CMOS version of the K1801VM2
+and functionally equivalent to it, so the VM2 instruction timings of 14.2 apply. TODO.md's lead, which says a K1801VM3
+class CPU, is wrong: the VM3 is another chip (with an MMU, used in the DVK computers). The clock stays open: Cyclowiki
+says 8 MHz, while [1801] rates the 1806VM2 at 5 MHz; the estimate below takes 8 MHz, and at 5 MHz every share grows
+by 8 / 5.
 
 - What carries over from the UKNC plan: all of the CPU side (the PDP-11 physics of 14.6.1-14.6.3), the tables, the
   integer AimShot, the tick check of 14.7.
 - What changes: one processor instead of two, so the drawing joins the logic (about 70 % of a frame at the heaviest
-  tick by the factors of 14.2: 46 % logic, and the drawing's 31 % of a 6.25 MHz PPU frame is 24 % at 8 MHz; before
-  wait states); the screen is in main memory, so DrawBall XORs RAM directly; the
+  tick by the factors of 14.2, with VM2 timings at 8 MHz: 46 % logic, and the drawing's 31 % of a 6.25 MHz PPU frame
+  is 24 % at 8 MHz; before wait states; at 5 MHz the same work is about 112 % of a frame and would not fit); the screen is in main memory, so DrawBall XORs RAM directly; the
   line table gives the same per-line palette trick.
 
 ```mermaid
@@ -801,4 +808,4 @@ flowchart LR
     N --> N2
 ```
 
-Witness: [BK] and [NEON] as cited; no BK or Neon emulator was run for this document.
+Witness: [BK], [NEON] and [1801] as cited; no BK or Neon emulator was run for this document.

@@ -9,7 +9,7 @@ The recordings it rests on:
 - `w1`: a one-player game on the keyboard, through GAME OVER to the name entry and the hall of fame. It was replayed
   for these documents from `work/snaps/entry.z80` with `tests/inputs/w1.txt` and TTD on, 13 800 frames
   (`work/docs/vpB/replay.py`; [section 5](05-controls.md) lists the checks). The HUD is printed in frame 625. The
-  first pot is tallied in frames 1254-1352. The name "vp" enters the hall of fame in frame 13 553.
+  first pot is tallied in frames 1254-1380. The name "vp" enters the hall of fame in frame 13 553.
 - `game`, `f1`, `p2`, `v1`, `m1`, `j1`, `e1`: the counts of runs and their frames are from the L1 builds
   (`tools/l1sum.py`). `v1` holds the only WRONG ORDER! and WRONG POCKET! messages. `f1` holds the only "last shot"
   blink.
@@ -96,8 +96,8 @@ flowchart TD
 ![PrintText at work in w1 frame 625: the code of the print routines on the left, the top 16 rows of the screen on the right](img/routines/PrintText.gif)
 
 *The routine animation of the print routines (`$9E13-$9F2D`: PrintNumber, PrintDigit, PrintText, PrintChar,
-PrintCharWide, CellAddress, CellAttr) in `w1` frames 624-625, one picture each 1500 instructions, 54 pictures over
-8101 instructions. The view is the top 16 character rows of the screen. Command:
+PrintCharWide, CellAddress, CellAttr) in `w1` frames 624-625, one picture each 1500 T, 54 pictures over 79 776 T
+(8101 instructions of the print routines). The view is the top 16 character rows of the screen. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/vpB/w1 --window 624:60000-626:0 --listing build/game.lst --out
 docs/img/routines/PrintText.gif --pc 9E13-9F2D --view buffer:4000:32x16:screen --range 8000-FFFF --step 1500
 --delay 120`.*
@@ -535,6 +535,24 @@ Worked example: in `w1` the first aim starts at frame 877 with UpBlink = 0. The 
 three spaces; the next, 21 ticks later, prints "1up" again. UpBlinkTask ran 377 times in `w1` over 21 shots, about
 18 calls a shot, so the label flashed about 9 times in each aim and run.
 
+The last shot, as `f1` shows it: the shots field of row 1 from the aim before to the eighth blink.
+
+![The last shot in f1: the shots field turning from "shots 2" into "last" and "shot" every 26 ticks](img/text/blink.png)
+
+How to read the figure:
+
+- **Each strip** is rows 0-1, columns 16-31, at the start of the first frame after the shots field (the red box, row
+  1, columns 26-31) changed; the number under the frame is the gap in video frames.
+- **The first strip** is the aim before, "shots 2". From frame 2640 ShotsLeft `$9F4D` is 1, and ShotsBlinkTask prints
+  "last  " and "  shot" in turn, each over the whole field.
+- **The gaps** are 26 video frames, one task period, except the first, 27: the interrupt of frame 2641 is lost
+  ([section 9.4](09-sound.md), the last-shot beep on the same period).
+- **The point**: the field is never redrawn between two prints; the two 6-character records cover it completely.
+
+```bash
+python3 tools/fig_text.py blink --work work/review/fix2B/f1 --at 2640 --out docs/img/text/blink.png
+```
+
 Witness: UpBlinkTask ran 377 times in `w1`, 88 in `game` and 145 in `f1`. ShotsBlinkTask ran 308 times in `w1`, but
 it printed the "last shot" records only in `f1` (15 times, `$9723`). `f1` is the one recording that reached a last
 shot with the tasks running.
@@ -563,7 +581,7 @@ number x pocket multiplier. The tally prints the terms in the message rows, one 
    count takes at least 45 frames; the rest is waited out. More than 45 steps needs ShotScore 46 or more (at most
    127 steps, from ShotScore 8255); then `JP M` skips the wait. No recording got there: the largest ShotScore was 36.
 4. Then the message rows are cleared, the potted row is redrawn, the shots for the frame are reset, and the tally
-   waits 5 more frames (TallyEndWait `$99BB`) before it returns.
+   waits 5 more frames (`LD B,5` at `$99BB`, TallyEndWait `$99BD`) before it returns.
 
 For k potted balls the tally takes 20 + 60 k + max(steps, 45) frames: 15 for the first ball's pause, 60 for each
 term (three factors and one pause of 15), the count, and 5 at the end. The count's first beep can lose an interrupt
@@ -587,7 +605,7 @@ ScoreTally:
     AddScoreStep(ShotScore)                ; the remainder, maybe 0
     if frames > 0: HALT frames times       ; skipped past 45 steps (JP M)
     clear the message rows; DrawPottedRow; ShotsLeft = ShotsForFrame()
-    HALT 5 times                           ; TallyEndWait $99BB
+    HALT 5 times                           ; TallyEndWait $99BD
 
 AddTerm(ball):
     ShotScore += FrameNumber * ball * ((PocketTurn + pocket - 1) mod 6 + 1)
@@ -681,7 +699,7 @@ flowchart TD
     L -->|no| LS["AddScoreStep with the remainder"]
     LS --> WT["wait out the 45 frames (no wait past 45 steps)"]
     WT --> CL["clear the rows, the potted row, the shots"]
-    CL --> EW["TallyEndWait $99BB: 5 frames"]
+    CL --> EW["TallyEndWait $99BD: 5 frames"]
 ```
 
 ![ScoreTally at work in w1 frames 1262-1352: the code on the left, rows 0-4 of the screen on the right with the term and the counting score](img/routines/ScoreTally.gif)
@@ -819,6 +837,22 @@ Worked example: every foul of `w1` is a FOUL SHOT! (FoulCode 1). Step 1 clears r
 `03 06 B8 0A "FOUL SHOT!"`: row 3, columns 6-25, black ink on white, wide. 75 frames later, step `$4E` clears the
 rows, and step `$4F` redraws the potted balls.
 
+![A FOUL SHOT! of w1 in frames 10466-10545: rows 2-4 at the moments the message is cleared, printed, held, cleared and the potted row redrawn](img/text/messages.png)
+
+How to read the figure:
+
+- **Each strip** is rows 2-4 at the start of a frame, with MessageStep read in the same sample. A sample shows what
+  the task did in the tick before.
+- **10466** (step 1, FoulCode just seen): the potted row is still there. **10467**: step 1 cleared the rows.
+  **10468**: step 2 printed FOUL SHOT!. **10505** (step `$28`) and **10543** (step `$4E`): nothing changes for 75
+  ticks. **10544**: step `$4E` cleared the rows. **10545**: step `$4F` redrew the potted balls, and MessageStep stays
+  `$50`.
+- **The point**: the whole cycle, 80 ticks, is one counter in a task; the balls run on underneath.
+
+```bash
+python3 tools/fig_text.py messages --work work/docs/vpB/w1 --at 10466 --out docs/img/text/messages.png
+```
+
 Witness: MessagePrint ran 4 times in `w1` and in `game`, 3 times in `f1` and in `v1`. Only `v1` reached the other
 texts: WRONG POCKET! twice (`$9CDB`) and WRONG ORDER! once. ShowFrameBanner ran 4 times in `w1` (frames 630-10 271),
 once per frame of the game. PlayerBanner ran in every game but returned at once, with one player. GameOver ran once
@@ -830,9 +864,9 @@ The point: one counter in a frame task shows, holds and removes a message, so th
 
 Six marks beside the pockets show each pocket's multiplier: an "x" from the ROM and a digit 1-6 from FontDigits.
 DrawPocketMarks `$9D6B` copies them straight to the screen with CopyGlyph `$9DB4`, not through PrintChar. The digit
-for each pocket is PocketTurn `$9F43` + 1, and PocketTurn steps (mod 6) after each mark. So six marks bring
-PocketTurn back to where it started. Each new frame (NextFrame) decrements PocketTurn before the redraw, so the
-multipliers move one pocket on.
+for each pocket is the pocket turn (PlayerVars `$9F43`, its first byte; PocketTurn below) + 1, and the pocket turn
+steps (mod 6) after each mark. So six marks bring PocketTurn back to where it started. Each new frame (NextFrame)
+decrements PocketTurn before the redraw, so the multipliers move one pocket on.
 
 | Pocket | Screen | Cell |
 | ---: | --- | --- |
@@ -916,8 +950,23 @@ flowchart LR
     T1 --> NF["NextFrame: T - 1, each digit moves one pocket on"]
 ```
 
-The HUD figure of section 8.4 shows the top three marks at frame 1060: x1, x2 and x3 at columns 0, 15 and 30 of row
-5.
+![The six pocket marks of w1 frame 1060 at 12 x: the top three as printed, the bottom three one pixel line lower in their cells](img/text/marks.png)
+
+How to read the figure:
+
+- **Each picture** is the two cells of one mark at 12 x, its pixel grid, the dark lines the cell edges. Top row
+  (red): pockets 1-3 in row 5. Bottom row (blue): pockets 6, 5, 4 in row 23, in screen order.
+- **Under each picture**: the 8 screen bytes of each cell, lines 0-7, next to the 8 bytes of the glyph copied
+  (the ROM's "x" at `$3FC0`, the digit in FontDigits).
+- **Top**: the cell bytes equal the glyph bytes. **Bottom**: the cell bytes are the glyph bytes moved one line down,
+  line 0 the byte before the glyph (a zero here) and the glyph's last line dropped (a zero too for "x" and the
+  digits, so nothing is lost).
+- **The point**: one `DEC DE` at `$9DB9`, taken for every address from `$4800` up, puts the bottom marks one line
+  lower than the top ones; the figure shows the screen bytes, not a drawing made from the code.
+
+```bash
+python3 tools/fig_text.py marks --work work/docs/vpB/w1 --at 1060 --out docs/img/text/marks.png
+```
 
 Worked example: on frame 1 PocketTurn is 0, so the marks read x1 x2 x3 along the top, and x4 x5 x6 from the bottom
 right to the bottom left. On frame 2 NextFrame sets PocketTurn to 5. Then pocket 1 reads x6, pocket 2 x1 and pocket
@@ -974,6 +1023,10 @@ InsertEntry(entry):                   ; entry = score and name, 9 bytes
     slot(4 - n)[0..8] = entry
     RenderName(slot1); RenderName(slot2); RenderName(slot3)
 ```
+
+n is 1-3 here: GameOverHallOfFame returns at `$A72A` when CountBeaten gives 0, so InsertEntry never sees it. With 0
+the asm would not stop: `DEC A` gives `$FF` (not zero) at each test, so it would copy slot 2 to 3 and slot 1 to 2 and
+store the entry in slot 1.
 
 ```text
 A7EB  AF           XOR A               ; CountBeaten
@@ -1074,6 +1127,195 @@ qualified: CountBeaten ran twice (frames 12 018 and 13 553), ShowHallOfFame once
 The point: three slots in fixed screen places. Ranking a new score is a 9-byte shuffle, and the table is lost at
 every load.
 
+### The flags and the names
+
+Each slot is drawn as a flag on a pole, the name written into the flag. A new entry is shown by sliding the flags of
+the beaten slots down off the screen, ranking, and sliding them back up with their new names. Four routines do it:
+
+- **DrawFlag `$AB7B`** puts the flag at rest: the position (+9 x, +`$0A` y) = (pole x + 8, pole y + 1); RenderName
+  for the slot; the attribute +`$0D` on 9 cells a row from the flag's character row to the bottom of the screen (so
+  the flag keeps its colour all the way down); a solid field of 24 lines of 48 pixels by XorLine `$93B3`; the ragged
+  tail at x + 48 (DrawFlagTail `$A9CC`, FlagTail `$AB41`, 29 lines); and the name bitmap copied at (x, y + 8)
+  (DrawNameBitmap `$AA74`, 8 lines of 7 bytes, plain `LDIR` copies, not XOR).
+- **RenderName `$AADF`** turns the 7 characters of the name (+2) into the 56-byte bitmap (+`$0F`): RenderChar
+  `$AB04` takes the glyph from the same three fonts as the print routine (digits FontDigits `$DFC4`, a-z Font
+  `$DEF4`, anything else the ROM's CHAR_SET `$3D00`), complements each of its 8 bytes (`CPL`) and stores them 7
+  bytes apart, one column of the bitmap. Ink becomes paper: the flag is solid ink with the letters cut out.
+- **ShowAndSlideDown `$A86D`**: ShowHallOfFame `$A8FD` (blue screen, poles, flags, scores), 50 `HALT`s, BlankScore
+  `$AA4B` (six spaces) over the score of each slot with +`$0E` set, then SlideDownLoop `$A896`: a `HALT`, then
+  SlideFlagDown `$A95A` on slots 1, 2, 3, until no slot has +`$0E` bit 0 set.
+- **SlideFlagsUp `$A8C7`**, after InsertEntry: 50 `HALT`s, then SlideUpLoop `$A8CC`: a `HALT`, SlideFlagUp `$A990`
+  on the three slots, until none moves.
+
+One step of SlideFlagDown moves a flag one pixel line down without redrawing it: the top line of the field is
+XORed off, a line under the field XORed on, the tail XORed off and on one line lower, and the name copied one line
+lower. The copy leaves the old top line of the name behind, so RestoreFlagLine `$AABD` first fills it with a solid
+line (SolidLine `$AAD8`, seven `$FF`). Everything is clipped at y 192 (`$C0`). When y reaches 192 the flag has left
+the screen, and the next call clears +`$0E` bit 0. SlideFlagUp is the mirror: a line on above, the bottom line off,
+the solid line under the name (y + 15), the name one line higher; it stops at rest, when y - 2 < the pole's y, and
+prints the score (PrintScore `$AA23`).
+
+```text
+DrawFlag(slot):                                     ; $AB7B
+    slot.x, slot.y = slot.pole_x + 8, slot.pole_y + 1
+    RenderName(slot)
+    for each character row from slot.y / 8 to 23: 9 attribute cells from slot.x / 8 = slot.colour
+    for line in 0..23: XorLine(slot.x, slot.y + line, 48)
+    DrawFlagTail(slot.x + 48, slot.y)               ; 29 lines, clipped at 192
+    DrawNameBitmap(slot)                            ; 8 lines of 7 bytes at (x, y + 8), clipped
+
+RenderName(slot):                                   ; $AADF
+    for col in 0..6:
+        glyph = font_of(slot.name[col])             ; FontDigits, Font or CHAR_SET, as PrintChar
+        for line in 0..7: slot.bitmap[7 * line + col] = NOT glyph[line]
+
+SlideFlagDown(slot):                                ; $A95A, once a frame per slot
+    if not slot.moves: return
+    if slot.y >= 192: slot.moves = 0; return
+    XorLine(slot.x, slot.y, 48)                     ; the top line off
+    if slot.y + 24 < 192: XorLine(slot.x, slot.y + 24, 48)   ; a new bottom line on
+    SolidLine at (slot.x, slot.y + 8)               ; RestoreFlagLine A = 8, clipped
+    DrawFlagTail(slot); slot.y += 1; DrawFlagTail(slot)      ; the tail XORed off, then on one line lower
+    DrawNameBitmap(slot)                            ; the name at y + 8
+
+SlideFlagUp(slot):                                  ; $A990
+    if not slot.moves: return
+    if slot.y - 2 < slot.pole_y: slot.moves = 0; PrintScore(slot); return
+    XorLine(slot.x, slot.y - 1, 48)                 ; a new top line on
+    if slot.y + 23 < 192: XorLine(slot.x, slot.y + 23, 48)   ; the bottom line off
+    SolidLine at (slot.x, slot.y + 15)              ; RestoreFlagLine A = $0F
+    DrawFlagTail(slot); slot.y -= 1; DrawFlagTail(slot)
+    DrawNameBitmap(slot)
+```
+
+```text
+A95A  DD CB 0E 46  BIT 0,(IX+$0E)      ; SlideFlagDown: only a flagged slot
+A95E  C8           RET Z
+A95F  DD 7E 0A     LD A,(IX+$0A)       ; y
+A962  FE C0        CP $C0
+A964  38 05        JR C,SlideFlagDownMove
+A966  DD CB 0E 86  RES 0,(IX+$0E)      ; off the screen: stop
+A96A  C9           RET
+A96B  DD 5E 09     LD E,(IX+$09)       ; SlideFlagDownMove: E = x
+A96E  DD 56 0A     LD D,(IX+$0A)       ; D = y
+A971  06 30        LD B,$30            ; 48 pixels
+A973  CD B3 93     CALL XorLine        ; the top line off
+A976  7A           LD A,D
+A977  C6 18        ADD A,$18           ; y + 24
+A979  57           LD D,A
+A97A  FE C0        CP $C0
+A97C  DC B3 93     CALL C,XorLine      ; the new bottom line, if on the screen
+A97F  3E 08        LD A,$08
+A981  CD BD AA     CALL RestoreFlagLine ; a solid line at y + 8, where the name was
+A984  CD CC A9     CALL DrawFlagTail   ; the tail off
+A987  DD 34 0A     INC (IX+$0A)        ; y + 1
+A98A  CD CC A9     CALL DrawFlagTail   ; the tail on, one line lower
+A98D  C3 74 AA     JP DrawNameBitmap   ; the name at the new y + 8
+A990  DD CB 0E 46  BIT 0,(IX+$0E)      ; SlideFlagUp
+A994  C8           RET Z
+A995  DD 7E 0A     LD A,(IX+$0A)
+A998  D6 02        SUB $02
+A99A  DD BE 0C     CP (IX+$0C)         ; y - 2 against the pole's y
+A99D  30 07        JR NC,SlideFlagUpMove
+A99F  DD CB 0E 86  RES 0,(IX+$0E)      ; at rest: stop
+A9A3  C3 23 AA     JP PrintScore       ; and print the score above the pole
+AB28  87           ADD A,A             ; RenderCharCopy: DE = font + 8 x index
+AB29  26 00        LD H,$00
+AB2B  6F           LD L,A
+AB2C  29           ADD HL,HL
+AB2D  29           ADD HL,HL
+AB2E  19           ADD HL,DE
+AB2F  EB           EX DE,HL
+AB30  E1           POP HL              ; HL = the bitmap column
+AB31  06 08        LD B,$08
+AB33  1A           LD A,(DE)           ; RenderCharLoop
+AB34  2F           CPL                 ; ink to paper
+AB35  77           LD (HL),A
+AB36  23           INC HL              ; seven INC HL: the next line of the bitmap
+AB37  23           INC HL
+AB38  23           INC HL
+AB39  23           INC HL
+AB3A  23           INC HL
+AB3B  23           INC HL
+AB3C  23           INC HL
+AB3D  13           INC DE
+AB3E  10 F3        DJNZ RenderCharLoop
+AB40  C9           RET
+```
+
+```mermaid
+flowchart TD
+    S["ShowHallOfFame $A8FD: poles, DrawFlag x 3, scores"] --> W1["50 HALTs"]
+    W1 --> B["BlankScore $AA4B over each flagged slot"]
+    B --> D["SlideDownLoop $A896: HALT, SlideFlagDown x 3"]
+    D --> DQ{"a slot still flagged?"}
+    DQ -->|yes, y below 192: one line down| D
+    DQ -->|no: every beaten flag at y 192| I["InsertEntry $A817, RenderName x 3: the new names"]
+    I --> W2["50 HALTs"]
+    W2 --> U["SlideUpLoop $A8CC: HALT, SlideFlagUp x 3"]
+    U --> UQ{"a slot still flagged?"}
+    UQ -->|yes: one line up| U
+    UQ -->|"no: each at pole y + 1, its score printed"| R["return to GAME OVER $9860"]
+```
+
+![ShowAndSlideDown at work in w1 frames 13424-13556: the code on the left, the screen with the flags of slots 2 and 3 sliding down off the screen](img/routines/ShowAndSlideDown.gif)
+
+*The routine animation of ShowAndSlideDown and the flag routines (`$A86D-$AB40`) in `w1` frames 13 424-13 556, one
+picture every 2 frames, 66 pictures; `work/review/fix2B/w1` is the `w1` replay of `work/docs/vpB/replay.py` on
+port base 36100. Command below.*
+
+```bash
+python3 ../../kit/routine_anim.py --work work/review/fix2B/w1 --window 13424:0-13556:0 --listing build/game.lst --out docs/img/routines/ShowAndSlideDown.gif --pc A86D-AB40 --view screen --range 8000-FFFF --step 139776 --delay 100 --title 'ShowAndSlideDown $A86D'
+```
+
+![SlideFlagsUp at work in w1 frames 13552-13736: the flags of slots 2 and 3 coming back up with "vp" and "francis"](img/routines/SlideFlagsUp.gif)
+
+*The routine animation of InsertEntry, SlideFlagsUp and the flag routines (`$A817-$AB40`) in `w1` frames
+13 552-13 736, one picture every 2 frames, 92 pictures. Command below.*
+
+```bash
+python3 ../../kit/routine_anim.py --work work/review/fix2B/w1 --window 13552:0-13736:0 --listing build/game.lst --out docs/img/routines/SlideFlagsUp.gif --pc A817-AB40 --view screen --range 8000-FFFF --step 139776 --delay 100 --title 'SlideFlagsUp $A8C7'
+```
+
+How to read the animations: the right panel is the screen. In the first, the scores above poles 2 and 3 are blanked,
+then both flags move down a line a frame; the right one (slot 3, "bill", from y 104) leaves the screen first, the
+left one (slot 2, "francis", from y 64) 40 frames later. Slot 1 ("james", not beaten) never moves. In the second,
+the code panel first lights InsertEntry and RenderName, then only the `HALT` of PauseUp for 50 frames; then the two
+flags rise with their new names, "francis" on the right stops at its pole 40 frames before "vp" on the left, and
+each score appears when its flag stops. The colours stay with the columns: the attributes DrawFlag set down to the
+bottom of the screen are never changed by the slide.
+
+Worked example (`w1`, slot memory at the start of each frame, `work/review/fix2B/hof_samples.py`):
+
+| Frame | Slot 2 (pole 0, 63) | Slot 3 (pole 176, 103) | What ran in the frame before |
+| ---: | --- | --- | --- |
+| 13 372 | x, y 0, 0, "francis" | 0, 0, " bill  " | ShowHallOfFame: poles (13 371) |
+| 13 374 | 8, 64 | 184, 104 | DrawFlag x 3 (13 372-13 373): pole + (8, 1) |
+| 13 426 | 8, 65 | 184, 105 | the first SlideFlagDown moves (13 425), after the 50 `HALT`s and BlankScore (13 424) |
+| 13 513 | 8, 152 | 184, 192 | slot 3's 88th move (13 512): 104 + 88 = 192 |
+| 13 514 | 8, 153 | 184, 192, moves 0 | slot 3 at 192: its flag cleared (13 513) |
+| 13 553 | 8, 192 | 184, 192 | slot 2's 128th move (13 552) |
+| 13 554 | 8, 192, "  vp   " 270 | 184, 192, "francis" 200 | slot 2 cleared, the loop ends, InsertEntry and RenderName x 3 (13 553) |
+| 13 605 | 8, 191 | 184, 191 | the first SlideFlagUp moves (13 604), after 50 `HALT`s (13 554-13 603) |
+| 13 692 | 8, 104 | 184, 104 | slot 3 back at rest: 192 - 88 |
+| 13 693 | 8, 103 | 184, 104, moves 0 | slot 3: 104 - 2 < 103, cleared, "002000" printed (13 692) |
+| 13 733 | 8, 64, moves 0 | 184, 104 | slot 2: 64 - 2 < 63, cleared, "002700" printed (13 732); the loop ends |
+
+So each loop runs 129 frames: 128 moves for the flag from y 64 (64 + 128 = 192) and the frame that sees it at 192
+or at rest. RenderName for "  vp   " fills column 2 with the complement of Font's "v" (`00 00 44 44 44 28 10 00`
+gives `FF FF BB BB BB D7 EF FF`) and column 3 with "p" (`00 00 7C 44 44 7C 40 40` gives `FF FF 83 BB BB 83 BF BF`);
+the spaces come from CHAR_SET (`$3D00`, eight zeros) and give `FF`. Read at frame 13 554, slot 2's bitmap is exactly
+that: lines 2-4 `FF FF BB 83 FF FF FF`, `FF FF BB BB FF FF FF`, `FF FF BB BB FF FF FF`, line 5 `FF FF D7 83 FF FF
+FF`, line 6 `FF FF EF BF FF FF FF`, line 7 `FF FF FF BF FF FF FF`, lines 0-1 all `FF`.
+
+Witness (`tools/l1sum.py`, `w1` only): SlideFlagDown 387 calls (129 frames x 3 slots, 13 425-13 553) and 216 moves
+(`$A96B`: 128 + 88); SlideFlagUp 387 calls (13 604-13 732), 216 moves (`$A9A6`); RenderName 6 (3 from DrawFlag at
+13 372, 3 from InsertEntry at 13 553); DrawNameBitmap 435 (2 x 216 + 3); DrawFlagTail 867 (4 x 216 + 3). The
+attract sequence's call of ShowHallOfFame (`$B906`) ran in no recording.
+
+The point: the slide is cheap. A flag is never redrawn: each frame two XorLine lines, two tail passes and one 56-byte
+copy move it a line, and the names are rebuilt only once, off the screen, between the two slides.
+
 ## 8.9 Every string: the data sheet of the print records
 
 The 75 records of the game, in address order. An attribute of `$80` and up is the wide print. The texts of spaces
@@ -1157,8 +1399,9 @@ are blanks that erase a field.
 | `$C56D` | 0, 11 | `$39` | (10 spaces) | the table editor |
 | `$C57B` | 0, 18 | `$39` | (14 spaces) | the table editor |
 
-The records live in `src/res/text/` as binary files (`src/res/text/README.md`). The list was decoded from the image
-by `tools/fig_text.py`: `records()` over the address ranges of `RECORD_FILES`.
+The records live in `src/res/text/` as text, one record a line (`src/res/text/README.md`); the build writes the
+binary records to `build/res/text/`. The list was decoded from the image by
+`tools/fig_text.py`: `records()` over the address ranges of `RECORD_FILES`.
 
 ```mermaid
 pie title The 75 print records by screen

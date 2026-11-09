@@ -841,7 +841,7 @@ Called by Im2Handler on every interrupt (w1 9536 entries). Each of the 25 slots 
 
 **Put routine HL with period C into the first free slot**
 
-Countdown 0, so it first runs at the next interrupt. No free slot: nothing (25 are never all used). w1: 252 calls.
+Countdown 0, so it first runs at the scheduler's next visit of its slot: in the same tick when the slot comes after the caller's (the release: MovingTasks in slots 1-3 run in AimPower's tick), otherwise at the next tick. No free slot: nothing (25 are never all used). w1: 252 calls.
 
 | | |
 | --- | --- |
@@ -1084,7 +1084,7 @@ H = `$58` + (H - `$40`) / 8. Used by ClearMessageRows `$94EB` only (game 24 call
 
 Called once by the game start `$8013` (game frame 6182, w1 622, v1 twice: 772, 2603). Clears the display, border 7 (white; BORDCR `$38`), attributes: rows 0-4 `$39` (the HUD and message rows), row 5 `$38` (the top pocket marks), rows 6-22 `$60` (the table: bright green paper, black ink), row 23 `$38` (the bottom pocket marks).
 
-Prints the HUD words (HudOneUp ... HudShots), zeroes the scores (`$9F45`, `$9F47`) and the pocket turns (PlayerVars `$9F43` / `$9F44`), frames `$9F4B` / `$9F4C` = 1, lives `$9F4E` / `$9F4F` = 3, Player2Racked `$9B33` = 0; prints the three scores (PrintHudNumber 0, 1, 2), the power box, power `$86BF` / `$86C0` = 0, the table; ParkBalls `$967B` for both ball sets (`$8A88` and `$8AEA`).
+Prints the HUD words (HudTexts `$969D` "1up" ... HudShots), zeroes the scores (`$9F45`, `$9F47`) and the pocket turns (PlayerVars `$9F43` / `$9F44`), frames `$9F4B` / `$9F4C` = 1, lives `$9F4E` / `$9F4F` = 3, Player2Racked `$9B33` = 0; prints the three scores (PrintHudNumber 0, 1, 2), the power box, power `$86BF` / `$86C0` = 0, the table; ParkBalls `$967B` for both ball sets (`$8A88` and `$8AEA`).
 
 | | |
 | --- | --- |
@@ -1112,7 +1112,7 @@ Input IX = a set of 7 records (14 bytes each). Only +10/+11 (the sprite's place)
 
 **Blink the current player's "1up" / "2up": print it or its blank by UpBlink `$9B31`, then flip UpBlink**
 
-A task added by StartAim `$8425` with period 20 (every 21 interrupts) and removed by `$8483` when the shot starts, which first prints it with UpBlink = `$FF` (shown). CurrentPlayer `$9B30` = 1 picks HudOneUp / HudOneUpBlank, 2 HudTwoUp / HudTwoUpBlank; UpBlink 0 prints the blank. game 88 runs, w1 377, p2 130.
+A task added by StartAim `$8425` with period 20 (every 21 interrupts) and removed by `$8483` when the shot starts, which first prints it with UpBlink = `$FF` (shown). CurrentPlayer `$9B30` = 1 picks HudTexts ("1up", `$969D`) / HudOneUpBlank, 2 HudTwoUp / HudTwoUpBlank; UpBlink 0 prints the blank. game 88 runs, w1 377, p2 130.
 
 | | |
 | --- | --- |
@@ -1791,6 +1791,8 @@ ShowHallOfFame `$A8FD`, 50 frames' pause (HALTs), BlankScore `$AA4B` over each f
 
 Witness: w1 1, frames 13368-13553 (`$A896` 129 frames).
 
+[Animation: `ShowAndSlideDown` at work](img/routines/ShowAndSlideDown.gif)
+
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
@@ -1800,6 +1802,8 @@ Witness: w1 1, frames 13368-13553 (`$A896` 129 frames).
 **After the insert: slide the flagged flags up to their poles, then print their scores**
 
 50 frames' pause, then one pixel a frame SlideFlagUp `$A990` on each slot until no flag moves. Returns to GameOverHallOfFame's caller. Witness: w1 1, frames 13553-13732 (`$A8CC` 129 frames).
+
+[Animation: `SlideFlagsUp` at work](img/routines/SlideFlagsUp.gif)
 
 | | |
 | --- | --- |
@@ -1982,8 +1986,6 @@ Witness: w1 1, frames 12018-12023 (the title HofTitle; HofTitleP1/P2 read by no 
 DrawCharacterGrid `$B0C7`, NameBuffer `$B227` = seven "_" (`$5F`), the cursor at row 0 column 0 (D, E; XorCursorBox `$B047`), RepeatDelay `$B226` = `$70`, HL = the name cursor = NameBuffer, DrawName `$B0A8`. Then the loop NameEntryLoop `$AEB3`, a frame each: HALT, `$8106`, with `$AEB3` pushed as the return address of every branch. Nothing held: RepeatDelay = `$70`. Fire: PickCell. A direction: auto-repeat, click, NameCursorForward `$AFFE` or NameCursorBack `$B023`.
 
 Witness: w1 1 (frame 12023); NameEntryLoop 1230 frames, 12025-13368; 51 cursor steps (`$AF00`), 3 picks (`$AF26`: v, p, end).
-
-[Animation: `NameEntry` at work](img/routines/NameEntry.gif)
 
 | | |
 | --- | --- |
@@ -2391,8 +2393,6 @@ Witness (l1sum.py BC9E BCA0): w1 once (16 323-16 347), m1 three times (581-4079)
 Pen up (PenIsDown `$C03F` = 0), PenBand `$C03E` = 0, IX = SignatureScript `$DA80`, the pen at x 16, y 128 (DE = `$8010`), PenDraw `$BE2F`, then SignatureCommand `$BD23` until the end command, which drops this loop's return address and leaves through PenErase `$BE40` back to PresentsPage `$B8C5`.
 
 Witness (l1sum.py BD0C BD23 BE05): m1 only, 3 runs (655-4498), 828 commands and 1484 steps: two whole scripts (312 commands, 557 steps each, by the decoder in 05-editor-notes.md) and a third cut by the SPACE at 4500. WALKTHROUGH 6.1: m1 frame 900 (the pen after "written by"), 1500 (the signature done).
-
-[Animation: `SignatureWrite` at work](img/routines/SignatureWrite.gif)
 
 | | |
 | --- | --- |

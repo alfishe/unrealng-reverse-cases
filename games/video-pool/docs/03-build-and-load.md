@@ -103,7 +103,8 @@ TurboLdBytes:                                ; the ROM's LD-BYTES, three constan
     count 256 pilot pulses; any too short: start again
     wait for the short sync pulse
     for the flag byte, then each byte:
-        B = $C6 for the first bit, $C4 for the marker and the rest
+        B = $C4 for the flag byte's first bit (after the sync) and for every later bit; $C6 for the first bit
+            of each byte after the flag (TurboCount $F0AE)
         8 times: two edges (TurboEdge2), bit = (B passed $D5), B = $C4
         flag byte: must equal $FF; later bytes: stored at IX, IX + 1
         H = H XOR byte                       ; the checksum

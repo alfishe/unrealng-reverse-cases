@@ -63,7 +63,7 @@ def cmd_slots(a):
     img = Image.new('RGB', (WIDTH, 120 + 330 * len(panels)), K.BACKGROUND)
     d = ImageDraw.Draw(img)
     text(d, (20, 10), 'TaskSlots 91DF hex: the 25 slots of the IM 2 scheduler, as the memory holds them', 16)
-    text(d, (20, 34), 'Each cell: the slot number, the routine, its period p (runs every p + 1 interrupts) and its '
+    text(d, (20, 34), 'Each cell: the slot number, the routine, its period p (runs every p + 1 ticks) and its '
          'countdown now. Grey: free.', 13, K.DIM)
     cw, ch = 198, 58
     for pi, (path, frame) in enumerate(panels):

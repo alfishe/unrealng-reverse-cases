@@ -79,8 +79,9 @@ The flags byte +13 is the whole state of a ball. These values appear in the reco
 | +13 | State | Seen in |
 | --- | --- | --- |
 | `$80` | at rest on the table | every recording, between shots |
-| `$90` | on the table, to be redrawn (the rack-in, a re-spot) | `w1` frames 708-875 (the rack) |
+| `$90` | on the table, to be redrawn (the rack-in, a re-spot); also the tick a ball stops (bit 6 cleared, the last redraw still due) | `w1` frames 708-875 (the rack); `w1` 1201 (cue ball), 1253 (ball 4) |
 | `$D0` | rolling (moving, redrawn every tick) | every shot |
+| `$C0` | moving, set rolling by another ball's exchange this tick after its own turn in the tick's loop: no redraw yet, drawn from the next tick | `w1` 1150 (ball 5), 1152 (ball 3), 1153 (ball 2), 1197 (ball 1) |
 | `$B0` | potted: bit 7 still set, moving cleared, waiting for the redraw | one tick at each pot |
 | `$00` | off the table (in the row of potted balls, or the cue ball gone) | `v1` frame 3045 on: ball 5 |
 
@@ -332,8 +333,8 @@ Each script ends on a place command at its ball's start position from `StartPosi
 ![RackStep in RackBalls, w1 frames 793-800: six scripts stepped a frame each, the balls advancing two pixels](img/routines/RackStep.gif)
 
 Steps in a recording: `w1` frames 793-800, one RackBalls loop a video frame. Left: the memory `$8A00-$A1FF`; middle:
-the screen, balls 3 to 6 run along the middle line while balls 2 and 1 come down their diagonals (ball 2 joins the line
-at 799); right: the listing at the PC. Each picture shows the state after one more RackStep.
+the screen, balls 3 to 6 run along the middle line while balls 2 and 1 run along their diagonals (ball 2 reaches the line
+in 798); right: the listing at the PC. Each picture shows the state after one more RackStep.
 
 ```bash
 python3 ../../kit/routine_anim.py --work work/docs/vpC/w1 --window 793:0-801:0 --listing build/game.lst --view screen \
@@ -357,8 +358,9 @@ python3 ../../kit/screen_anim.py --work work/docs/vpC/w1 --from 700 --to 880 --s
 How to read the figure:
 
 - One table a set, set 0 at the top left. The background is the empty table of `w1` frame 707.
-- One script step a video frame; a move command adds its (dx, dy) once a step: 2 pixels in most scripts, 1 in a few
-  (set 4: `$A3A7` (+0, -1), `$A3B7` (+1, +0)).
+- One script step a video frame; a move command adds its (dx, dy) once a step: 2 pixels a step on each moving axis in
+  most moves; 1-pixel components occur in sets 3, 4 and 5 (for example set 3 `$A2C5` 17 x (+2, +1), set 4 `$A3BD`
+  27 x (+1, +0) and `$A427` 45 x (-1, +0), set 5 (+1, +1) from `$A547` on).
 - Each ball's path is a line in the ball's colour. A ring marks each place command: the start, a jump (set 5 drops
   balls into pockets and brings them back elsewhere), and the final place on the triangle.
 - Under each table, two rows: the first wait of each ball in video frames, and the step on which each ball's script

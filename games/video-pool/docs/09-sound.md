@@ -35,8 +35,8 @@ python3 tools/fig_sound.py table      # every sound instance measured (the numbe
 
 ## 9.1 The engine
 
-- **The beeper only.** Every sound goes through bit 4 of port `$FE`, the 48K speaker. There is no AY code and no
-  `IN` from port `$FE` (doc 2, 2.1).
+- **The beeper only.** Every sound goes through bit 4 of port `$FE`, the 48K speaker. There is no AY code, and nothing
+  reads the EAR bit: the only `IN` from port `$FE` are the keyboard reads of doc 5 (doc 2, 2.1).
 - **Two players.**
   - The **foreground loop** SoundLoop `$8069` plays three short tones that the physics asks for through
     SoundRequest `$827D`: 1 a ball against a ball, 2 a cushion, 3 a pocket. It runs outside the interrupt, in the
@@ -291,7 +291,7 @@ writers all run inside the interrupt, in PhysicsTask's calls:
 
 | Writer | Value | When | `w1` writes |
 | --- | ---: | --- | ---: |
-| ExchangeOtherVyStore `$8993` | 1 ball | two balls exchange velocity (BallCollide's end; it also sets BallHitFlag `$89BB`) | 71 |
+| ExchangeOtherVyStore `$8993` | 1 ball | two balls exchange velocity (the end of the exchange, ExchangeVx `$8912` to ExchangeOtherVyStore `$8984`, in BallContacts `$87EF`; it also sets BallHitFlag `$89BB`) | 71 |
 | ReflectXFrac `$8DF4` | 2 cushion | a ball bounces off a vertical cushion | 31 |
 | ReflectYFrac `$8E28` | 2 cushion | off a horizontal cushion | 48 |
 | ReflectDiagonalStore `$8DC0` | 2 cushion | off a pocket's slanted jaw | 10 |
@@ -302,7 +302,7 @@ writers all run inside the interrupt, in PhysicsTask's calls:
 | GameRestart `$8065`, EditorPlay `$C467` | 0 | start of a game, the editor's play | 1, 0 (`e1` 1) |
 
 ```asm
-ExchangeOtherVyStore:           ; BallCollide's last store: the other ball's vy
+ExchangeOtherVyStore:           ; the exchange's last store (BallContacts): the other ball's vy
 $8984  LD (IY+$06),L
 $8987  LD (IY+$07),H
 $898A  SET 6,(IY+$0D)           ; the other ball moves
@@ -360,8 +360,8 @@ How to read the figure:
   first speaker write to its last.
 - A filled triangle got its tone. A hollow triangle was written while a tone played and was lost. A cross was
   replaced by a later write before SoundLoop took it.
-- The ticks at the top are the interrupt entries: their gap after frame 1155 is the six balls running the tick over
-  the frame (doc 4, 4.6).
+- The ticks at the top are the interrupt entries: their gaps in 1155-1171 (every second frame) are the passes with
+  all seven balls moving, each longer than a video frame, so the next interrupt is lost (nine in all; doc 4, 4.6).
 
 **The point**: the sound follows the physics only roughly. In this break 14 requests gave 10 tones: two ball
 contacts came during a ball tone and were lost, two were replaced in their own tick. The longest ball bar (from
@@ -458,9 +458,10 @@ score in steps, one step a video frame, each with a tick (TallyCount `$9975`, Ad
 - then the count waits out the rest of 45 video frames (B = 45, counted down by every step). More than 45 steps
   needs ShotScore 46 or more (460 points in one shot); then `JP M` skips the wait (B is negative for 46-173 steps).
   No recording reached it: the largest ShotScore was 36 (`w1` 8456, 37 beeps);
-- then ClearMessageRows, DrawPottedRow `$9AB5`, ShotsLeft = ShotsForFrame `$9BE6`, and 5 more frames (TallyEndWait
-  `$99BB`). With the term printing (15 frames for the first ball, 60 for each ball's factors and pause), the whole
-  tally is 20 + 60 k + max(steps, 45) frames for k balls, plus the interrupt the first beep can lose (below):
+- then ClearMessageRows, DrawPottedRow `$9AB5`, ShotsLeft = ShotsForFrame `$9BE6`, and 5 more frames (`LD B,5` at
+  `$99BB`, TallyEndWait `$99BD`). With the term printing (15 frames for the first ball, 60 for each ball's
+  factors and pause), the whole tally is 20 + 60 k + max(steps, 45) frames for k balls, plus the interrupt the
+  first beep can lose (below):
   `w1`'s first, one ball and 15 steps, runs from frame 1254 to 1380.
 
 The tick's cycles are not a constant: DE = 6000 / HL, counted by repeated subtraction. As the length of a note is
@@ -468,7 +469,7 @@ The tick's cycles are not a constant: DE = 6000 / HL, counted by repeated subtra
 of the division makes the steps: HL 1010 gives DE 5 and 13.1 ms, HL 1000 DE 6 and 15.3 ms).
 
 ```text
-TallyCount:                                  ; $9975, with the tasks stopped (WaitFrame)
+TallyCount:                                  ; $9975, with the tasks stopped (WaitFrameNoTasks $80DE)
     TallyPitch = 1200
     step = (ShotScore >> 7) + bit 6 of ShotScore + 1   ; round(ShotScore / 128) + 1
     frames = 45
@@ -478,7 +479,7 @@ TallyCount:                                  ; $9975, with the tasks stopped (Wa
     AddScoreStep(ShotScore)                  ; the rest, maybe 0: still a beep
     if frames > 0: HALT frames times         ; skipped past 45 steps (JP M)
     ClearMessageRows(); DrawPottedRow(); ShotsLeft = ShotsForFrame()
-    HALT 5 times                             ; TallyEndWait $99BB
+    HALT 5 times                             ; TallyEndWait $99BD
 
 AddScoreStep(points):                        ; $99C1
     score of the current player += points; print it
@@ -566,7 +567,7 @@ flowchart TD
     J -->|yes| K[HALT B times]
     J -->|"0, or negative: more than 45 steps"| L[clear the messages, the potted row, the shots]
     K --> L
-    L --> W[TallyEndWait 99BB: HALT 5 times]
+    L --> W[TallyEndWait 99BD: HALT 5 times]
 ```
 
 #### Worked example: the first tick
@@ -640,7 +641,8 @@ $9CB6  RET
   cycles, 44 530 T, 12.7 ms. `f1` measured 825.7 Hz and 12.7 ms (22 writes).
 - The `DI` matters: BEEPER's `EI` would let the next interrupt nest inside the handler.
 - `w1` ran the task 179 times and never beeped: no aim of `w1` had only one shot left. In `f1`, 13 beeps, every
-  26 frames from 2640 to 2953. Twelve started at T 13 171-18 100 and lost nothing. The first, at 2640, started at
+  26 ticks from 2640 to 2953 (every 26 video frames from 2667; the first gap is 27, the interrupt of 2641 being
+  lost). Twelve started at T 13 171-18 100 and lost nothing. The first, at 2640, started at
   T 26 694 in a busier interrupt; it ended before the next one, but the tasks after it ran past it, so `f1` has no
   interrupt in frame 2641.
 

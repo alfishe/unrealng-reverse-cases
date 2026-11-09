@@ -57,7 +57,7 @@ def main():
     bl = blocks(a.tzx)
     img = Image.new('RGB', (WIDTH, 730), K.BACKGROUND)
     d = ImageDraw.Draw(img)
-    text(d, (LEFT, 10), 'Video Pool.tzx: five data blocks, 125 s of signal, the game in one turbo block', 16)
+    text(d, (LEFT, 10), 'Video Pool.tzx: five data blocks, 121 s of signal, 125 s with the pauses, the game in one turbo block', 16)
 
     # Panel A: the time line, the last pause cut (it is silence after the game)
     y0 = 80

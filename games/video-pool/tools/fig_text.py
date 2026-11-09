@@ -5,6 +5,12 @@
     python3 tools/fig_text.py records --work W1            --out docs/img/text/records.png
     python3 tools/fig_text.py font    --work W1            --out docs/img/text/font.png
     python3 tools/fig_text.py hof     --work W1 --at 13790 --out docs/img/text/hof.png
+    python3 tools/fig_text.py marks   --work W1 --at 1060  --out docs/img/text/marks.png
+    python3 tools/fig_text.py messages --work W1 --at 10466 --out docs/img/text/messages.png
+    python3 tools/fig_text.py blink   --work F1 --at 2640  --out docs/img/text/blink.png
+
+F1 is the same for f1 (tests/inputs/f1.txt). marks, messages and blink read the screen at the start of each frame
+(tinframe 0), the samples of the documents.
 
 W1 is a work folder whose instance holds w1 (re_session.py session.json), replayed from work/snaps/entry.z80 with
 tests/inputs/w1.txt (work/docs/vpB/replay.py). The ROM's character set ($3D00) is read from the recording; the game's
@@ -102,7 +108,7 @@ def fig_hud(a):
         d.line([(X0 + c * C, Y0), (X0 + c * C, Y0 + 192)], fill=(150, 150, 150))
     for r in range(7):
         d.line([(X0, Y0 + r * C), (X0 + 1024, Y0 + r * C)], fill=(150, 150, 150))
-    fields_top = [(0, 0, 3, '1up', 'HudOneUp $969D, $38', 0), (0, 3, 9, 'score 1', 'PrintHudNumber 0, $3A', 1),
+    fields_top = [(0, 0, 3, '1up', 'HudTexts $969D, $38', 0), (0, 3, 9, 'score 1', 'PrintHudNumber 0, $3A', 1),
                   (0, 12, 14, 'hi', 'HudHi $96B9, $38', 0), (0, 14, 20, 'hi score', 'PrintHudNumber 2', 1),
                   (0, 23, 26, '2up', 'HudTwoUp $96AB', 0), (0, 26, 32, 'score 2', 'PrintHudNumber 1', 1)]
     fields_bot = [(1, 0, 17, 'power box', 'DrawPowerBox $9395 + bar', 2, 200, 360),
@@ -303,14 +309,169 @@ def fig_hof(a):
     img.save(a.out)
 
 
+# ---------------------------------------------------------------------------------------------------------------
+def screen_at(s, frame):
+    """the 6912 screen bytes at the start of a frame"""
+    return vplib.read(s, frame, 0x4000, 6912, tinframe=0)
+
+
+def crop(shot, x, y, w, h, sc):
+    return K.render_screen(shot, 0).crop((x, y, x + w, y + h)).resize((w * sc, h * sc), Image.NEAREST)
+
+
+def pixel_grid(d, x0, y0, w, h, sc, cell_rows=(), colour=(170, 170, 175)):
+    for i in range(w + 1):
+        d.line([(x0 + i * sc, y0), (x0 + i * sc, y0 + h * sc)], fill=colour if i % 8 else (60, 60, 60))
+    for j in range(h + 1):
+        d.line([(x0, y0 + j * sc), (x0 + w * sc, y0 + j * sc)], fill=colour if j % 8 else (60, 60, 60))
+
+
+def fig_marks(a):
+    f, fs, ft = fonts()
+    s = vplib.session(a.work)
+    shot = screen_at(s, a.at)
+    mem = with_rom(a, image())
+    SC = 12
+    img = Image.new('RGB', (W, 760), BG)
+    d = ImageDraw.Draw(img)
+    d.text((13, 12), 'The pocket marks: the bottom ones are one pixel line lower in their cells', font=ft, fill=FG)
+    d.text((13, 40), f'w1 frame {a.at} (game frame 1, PocketTurn 0), the six marks at {SC} x, each 2 cells of 8 x 8 '
+           'pixels', font=f, fill=DIM)
+    marks = [(1, 5, 0, '$40A0'), (2, 5, 15, '$40AF'), (3, 5, 30, '$40BE'),
+             (6, 23, 0, '$50E0'), (5, 23, 15, '$50EF'), (4, 23, 30, '$50FE')]
+    for i, (pocket, row, col, addr) in enumerate(marks):
+        x0 = 30 + (i % 3) * 340
+        y0 = 110 + (i // 3) * 270
+        d.text((x0, y0 - 40), f'pocket {pocket}: row {row}, column {col} ({addr})', font=f, fill=COLS[0 if row == 5 else 1])
+        img.paste(crop(shot, col * 8, row * 8, 16, 8, SC), (x0, y0))
+        pixel_grid(d, x0, y0, 16, 8, SC)
+        d.rectangle([x0 - 2, y0 - 2, x0 + 16 * SC + 2, y0 + 8 * SC + 2], outline=COLS[0 if row == 5 else 1], width=2)
+        # the bytes on the screen next to the glyph bytes
+        digit = mem[DIGITS + 8 * pocket:DIGITS + 8 * pocket + 8]
+        xg = mem[0x3FC0:0x3FC8]
+        for line in range(8):
+            yy = y0 + line * SC
+            d.text((x0 + 16 * SC + 8, yy - 1), f'{line}', font=K.font(10), fill=DIM)
+        rows = []
+        for line in range(8):
+            off = (row * 8 + line)
+            sa = ((off & 0xC0) << 5) | ((off & 7) << 8) | ((off & 0x38) << 2)
+            rows.append((shot[sa + col], shot[sa + col + 1]))
+        ty = y0 + 8 * SC + 10
+        d.text((x0, ty), 'cell 1:   ' + ' '.join(f'{b:02X}' for b, _ in rows), font=K.font(11), fill=FG)
+        d.text((x0, ty + 16), '"x" $3FC0: ' + ' '.join(f'{b:02X}' for b in xg), font=K.font(11), fill=DIM)
+        d.text((x0, ty + 32), 'cell 2:   ' + ' '.join(f'{b[1]:02X}' for b in rows), font=K.font(11), fill=FG)
+        d.text((x0, ty + 48), f'"{pocket}" ${DIGITS + 8 * pocket:04X}: ' + ' '.join(f'{b:02X}' for b in digit),
+               font=K.font(11), fill=DIM)
+    notes = ['How to read: each mark is the ROM\'s "x" and a FontDigits digit, copied by CopyGlyph $9DB4 one byte a '
+             'pixel line.',
+             'Top row (red, screen $40xx, below $4800): the 8 glyph bytes go to lines 0-7 of the cell, as printed.',
+             'Bottom row (blue, $50xx, from $4800 up): DEC DE at $9DB9 starts one byte early, so line 0 gets the byte '
+             'before the glyph',
+             '(here a zero: the last line of "w" or of the digit before) and the glyph\'s last line is not copied: '
+             'the mark sits one line lower.',
+             'Under each picture: the 8 screen bytes of each cell (lines 0-7) next to the glyph\'s 8 bytes. Dark lines: '
+             'the cell edges.',
+             f'python3 tools/fig_text.py marks --work work/docs/vpB/w1 --at {a.at} --out docs/img/text/marks.png']
+    for i, t in enumerate(notes):
+        d.text((13, 610 + i * 22), t, font=fs, fill=DIM if t.startswith('python3') else FG)
+    img.save(a.out)
+
+
+def fig_messages(a):
+    f, fs, ft = fonts()
+    s = vplib.session(a.work)
+    F = a.at
+    steps = [(F, 1, 'MessageStep 1 (FoulCode set in the tick before): the potted row still shown'),
+             (F + 1, 2, 'after step 1: ClearMessageRows $94EB, rows 2-4 zero, attributes $39'),
+             (F + 2, 3, 'after step 2: PrintText of FOUL SHOT! (row 3; record attribute $B8: bit 7 wide)'),
+             (F + 39, 0x28, 'step $28 (40): steps 3-$4D do nothing, the message stays'),
+             (F + 77, 0x4E, f'step $4E: the last sample with the message (printed in tick {F + 1}, 75 idle ticks)'),
+             (F + 78, 0x4F, 'after step $4E: ClearMessageRows again'),
+             (F + 79, 0x50, 'after step $4F: DrawPottedRow $9AB5; MessageStep stays $50')]
+    SC = 3
+    H = 80 + len(steps) * 112 + 100
+    img = Image.new('RGB', (W, H), BG)
+    d = ImageDraw.Draw(img)
+    d.text((13, 12), 'A foul message: show, hold and clear by one counter in MessagesTask', font=ft, fill=FG)
+    d.text((13, 40), f'w1 frames {F}-{F + 79}, rows 2-4 (y 16-39) at {SC} x, each at the start of its frame, with '
+           'MessageStep $9F50', font=f, fill=DIM)
+    y = 80
+    for frame, expect, what in steps:
+        shot = screen_at(s, frame)
+        step = vplib.read(s, frame, 0x9F50, 1, tinframe=0)[0]
+        d.text((13, y), f'frame {frame}: MessageStep ${step:02X}', font=f, fill=COLS[0] if step != expect else FG)
+        d.text((300, y + 1), what, font=fs, fill=FG)
+        img.paste(crop(shot, 0, 16, 256, 24, SC), (13, y + 22))
+        d.rectangle([12, y + 21, 13 + 256 * SC, y + 22 + 24 * SC], outline=GRID)
+        y += 112
+    notes = ['How to read: one strip per moment; the sample at the start of a frame shows what the task did in the '
+             'tick before.',
+             'The cycle is 80 ticks: step 1 clears, step 2 prints, 75 frames of nothing, $4E clears, $4F redraws the '
+             'potted balls.',
+             'The balls keep running under the message: MessagesTask is one of the moving tasks, once a tick.',
+             f'python3 tools/fig_text.py messages --work work/docs/vpB/w1 --at {F} --out docs/img/text/messages.png']
+    for i, t in enumerate(notes):
+        d.text((13, y + 10 + i * 22), t, font=fs, fill=DIM if t.startswith('python3') else FG)
+    img.save(a.out)
+
+
+def fig_blink(a):
+    f, fs, ft = fonts()
+    s = vplib.session(a.work)
+    # the frames where the shots field (row 1, columns 22-31) changes, from a.at on
+    def field(shot):
+        out = bytearray()
+        for line in range(8, 16):
+            sa = ((line & 0xC0) << 5) | ((line & 7) << 8) | ((line & 0x38) << 2)
+            out += shot[sa + 22:sa + 32]
+        return bytes(out) + shot[0x1800 + 32 + 22:0x1800 + 32 + 32]
+    changes, prev, frame = [], None, a.at - 30
+    while len(changes) < 9 and frame < a.at + 400:
+        shot = screen_at(s, frame)
+        v = field(shot)
+        if v != prev:
+            changes.append((frame, shot))
+            prev = v
+        frame += 1
+    SC = 4
+    img = Image.new('RGB', (W, 120 + len(changes) * 84 + 140), BG)
+    d = ImageDraw.Draw(img)
+    d.text((13, 12), 'The last shot: ShotsBlinkTask alternates "last  " and "  shot" in the shots field', font=ft,
+           fill=FG)
+    d.text((13, 40), f'f1, rows 0-1, columns 16-31 at {SC} x: each picture is the first frame (start of frame) after '
+           'the field changed', font=f, fill=DIM)
+    y = 80
+    for i, (fr, shot) in enumerate(changes):
+        gap = '' if i == 0 else f'(+{fr - changes[i - 1][0]})'
+        d.text((13, y + 20), f'frame {fr}', font=f, fill=FG)
+        d.text((13, y + 40), gap, font=fs, fill=DIM)
+        img.paste(crop(shot, 128, 0, 128, 16, SC), (150, y))
+        d.rectangle([149 + (26 - 16) * 8 * SC, y + 8 * SC - 1, 151 + 128 * SC, y + 16 * SC + 1], outline=COLS[0],
+                    width=2)
+        y += 84
+    notes = ['How to read: the red box is row 1, columns 26-31: "shots" and its number (the first picture, the aim '
+             'before), then the two records',
+             '"last  " $9740 and "  shot" $974A of the last shot (ShotsLeft $9F4D = 1 from frame 2640), each '
+             'printed over the whole field.',
+             'ShotsBlinkTask $970E runs every 26 ticks (period 25) and prints only while ShotsLeft is 1; the gaps '
+             'are in video frames, so a lost',
+             'interrupt shows as 27. LastShotBeepTask beeps on the same period (doc 9, 9.4).',
+             f'python3 tools/fig_text.py blink --work work/review/fix2B/f1 --at {a.at} --out docs/img/text/blink.png']
+    for i, t in enumerate(notes):
+        d.text((13, y + 10 + i * 22), t, font=fs, fill=DIM if t.startswith('python3') else FG)
+    img.save(a.out)
+
+
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('figure', choices=['hud', 'records', 'font', 'hof'])
+    p.add_argument('figure', choices=['hud', 'records', 'font', 'hof', 'marks', 'messages', 'blink'])
     p.add_argument('--out', required=True)
     p.add_argument('--work', required=True)
     p.add_argument('--at', type=int, default=1060)
     a = p.parse_args()
-    {'hud': fig_hud, 'records': fig_records, 'font': fig_font, 'hof': fig_hof}[a.figure](a)
+    {'hud': fig_hud, 'records': fig_records, 'font': fig_font, 'hof': fig_hof, 'marks': fig_marks,
+     'messages': fig_messages, 'blink': fig_blink}[a.figure](a)
     print(a.out)
 
 
