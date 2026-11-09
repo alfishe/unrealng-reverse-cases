@@ -1,6 +1,6 @@
 # Exolon (Hewson Consultants, 1987)
 
-State: complete 2026-11-08: the tape rebuilt bit for bit from the annotated source, the resources and the full map in `src/res`, docs 01-12 (56 mermaid diagrams, 97 figures, 29 MP3), a completeness pass against AGENTS.md and two review rounds (47 and 33 findings) worked.
+State: complete 2026-11-08: the tape rebuilt bit for bit from the annotated source, the resources and the full map in `src/res`, docs 01-12 (57 mermaid diagrams, 97 figures, 29 MP3), a completeness pass against AGENTS.md and two review rounds (47 and 33 findings) worked.
 
 | | |
 | --- | --- |
