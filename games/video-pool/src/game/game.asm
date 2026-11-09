@@ -21,6 +21,7 @@ Im2Table       EQU $FE00  ; the IM 2 vector table, all $FC (I = $FE)
 
 ; Names that cannot be labels (@alias)
 StackTop       EQU StackSpace+$40  ; the top of the machine stack, $D000 (the first byte above it is BallSprites)
+PocketTurn     EQU PlayerVars  ; the first field of PlayerVars $9F43, the current player's pocket mark turn (the entry's label wins at $9F43)
   ORG $8000
   INCLUDE "main.asm"  ; The entry, the restart, the foreground sound loop, task lists, the frame wait, the interrupt handler
   INCLUDE "input.asm"  ; The controls: keyboard, Interface 2, Kempston, cursor; the key table; BREAK

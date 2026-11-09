@@ -1,0 +1,9 @@
+# The hall of fame as the game starts: one slot a line (slot 1 the centre pole, 2 the left, 3 the right):
+#   slot SCORE "NAME" pole X Y attr $AT flag X Y moves M
+# SCORE the score / 10 (shown x 10), NAME 7 characters (padded with spaces), pole the pole's pixel position,
+# attr the flag's attribute, flag its position (0 0: set by DrawFlag), moves bit 0 the flag moves. The 56-byte
+# name bitmap (+$0F, rendered by RenderName at the first draw) is zero in the image; a non-zero one follows
+# its slot as "bitmap HEX".
+slot 300 " james " pole 88 23 attr $0E flag 0 0 moves 0
+slot 200 "francis" pole 0 63 attr $0B flag 0 0 moves 0
+slot 100 " bill  " pole 176 103 attr $0C flag 0 0 moves 0

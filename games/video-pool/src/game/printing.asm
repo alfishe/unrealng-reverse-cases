@@ -39,7 +39,7 @@ PrintPocketMark:
   CALL CopyGlyph
   POP HL
   INC L
-  LD A,(PlayerVars)
+  LD A,(PocketTurn)
   INC A
   ADD A,A
   ADD A,A
@@ -51,7 +51,7 @@ PrintPocketMark:
   INC D
 PocketMarkDigit:
   CALL CopyGlyph
-  LD A,(PlayerVars)
+  LD A,(PocketTurn)
   INC A
   CP $06
   JR C,PocketMarkStore
@@ -373,4 +373,4 @@ CellAttr:
 ; Read by PrintChar's $7F branch ($9E96: game 2, m1 4; the menu's copyright
 ; line).
 CopyrightGlyph:
-  DEFB $7E,$81,$BD,$A1,$A1,$BD,$81,$7E
+  INCBIN "res/fonts/CopyrightGlyph.bin",$0000,8

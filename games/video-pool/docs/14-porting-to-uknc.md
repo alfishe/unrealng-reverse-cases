@@ -226,11 +226,11 @@ may add wait states the emulator does not model; the factors are a lower bound o
 | Scheduler | IM 2, 25 task slots, periods (4.4) | CPU EVNT handler at vector 100 runs the same slot table | the slot table, periods, task order | the handler, `WaitFrameNoTasks` as a flag instead of patching `$FCFD` | |
 | Physics | PhysicsTask, MoveBall, BallContacts, cushions, pockets, friction (7, 10) | CPU, 8.8 words in registers | every rule, every constant, every table, the order of the tests (7.6) | the arithmetic in PDP-11 words, `MUL` for ScaleVelocity (14.6.1-2) | the four tables, byte for byte (`uknc_convert.py`) |
 | Shot set-up | AimShot through the ROM calculator (4.7) | CPU, integers | the formula v = 16 P d / r and its rounding | an integer square root and `DIV` (14.6.3) | a check table against the ROM (14.7) |
-| Rules, scores, HUD texts | the end-of-shot sequences, ScoreTally, fouls (4.9, 10) | CPU | the logic, the texts | the HALT waits as frame waits on the CPU | the 14 text files as they are; no tool yet: `uknc_convert.py` does not write them (their print records name Spectrum screen positions, which the port's PrintChar must map) |
+| Rules, scores, HUD texts | the end-of-shot sequences, ScoreTally, fouls (4.9, 10) | CPU | the logic, the texts | the HALT waits as frame waits on the CPU | `texts`: the 75 print records of the 14 text files, 1537 bytes, each character as its index in `glyphs` (`uknc_convert.py`); row, column and attribute stay the Spectrum's cells, which the port's PrintChar maps |
 | Ball drawing | 56 pre-shifted sprites, XOR, no mask, sorted by y (6.4, 6.5) | PPU, XOR of words in plane 0 | the XOR method, the draw order | DrawBall for words and 16 shifts (14.6.4) | `balls16`: 112 copies, 6720 bytes |
 | Table and screen | XorLine, the cushions, pockets, attributes (6.2, 6.3) | PPU: the table drawn once into plane 0; colours from the line table's palettes | the line primitive, the coordinates | the attribute bands as palette records per line | |
-| Font and text | PrintChar, own a-z 0-9 and the ROM's CHAR_SET (8) | PPU | the print records | PrintChar for the plane layout | `font`: 36 glyphs bit-reversed; the ROM glyphs the game uses have no tool: they are not in `src/res` and have to be cut from a Spectrum ROM image (14.8, risk 6) |
-| Sound | SoundLoop tones in the foreground, BEEPER notes (9) | PPU timer interrupt toggling 177716 bit 7 | the pitches and lengths of 9.6 | both players as one timer player (14.6.6) | the data sheet of 9.6 as half-period counts (14.6.6); no tool yet: `uknc_convert.py` does not write them |
+| Font and text | PrintChar, own a-z 0-9 and the ROM's CHAR_SET (8) | PPU | the print records | PrintChar for the plane layout | `font`: 36 glyphs bit-reversed; `glyphs`: the same 36, the 34 ROM glyphs the game prints (cut from a Spectrum 48K ROM image, `--rom`) and the copyright glyph, 71 glyphs, 568 bytes (`uknc_convert.py`) |
+| Sound | SoundLoop tones in the foreground, BEEPER notes (9) | PPU timer interrupt toggling 177716 bit 7 | the pitches and lengths of 9.6 | both players as one timer player (14.6.6) | `sounds`: the nine fixed sounds of the 14.6.6 table (the eight of 9.6 and the first count-up tick) as half-period counts at 4 µs and cycles, read from the code's operands in `build/game.bin` (`uknc_convert.py`) |
 | Input | the keyboard matrix, Kempston, the redefinable keys (5) | PPU keyboard interrupt, a key-state word in the mailbox | the mapping of keys to actions | the reader | |
 | Random | the R register at the rack and the cursor reset (7.8) | CPU: a counter that reproduces the Spectrum's R at those two moments | where R is read | R itself (14.7) | |
 | Loading | tape, BASIC loader (3) | RT-11 `.SAV` on the CPU; the PPU program sent over channel 2 | | the loader [KRK bmain.mac] | |
@@ -254,6 +254,9 @@ flowchart TB
         C1[balls16: 16 shifts x 7 balls]
         C2[font: bit-reversed]
         C3[tables: same bytes, MACRO-11 include]
+        C4[glyphs: font + ROM glyphs + copyright]
+        C5[texts: print records, glyph indexes]
+        C6[sounds: timer counts and cycles]
     end
     Moves --> CPU[CPU program]
     R1 --> CPU
@@ -264,6 +267,9 @@ flowchart TB
     C1 --> PPU
     C2 --> PPU
     C3 --> CPU
+    C4 --> PPU
+    C5 --> PPU
+    C6 --> PPU
     R6 --> CPU
 ```
 
@@ -298,8 +304,10 @@ python3 tools/uknc_convert.py && python3 tools/fig_uknc.py anim   # docs/img/ukn
 ## 14.5 The data conversion
 
 `tools/uknc_convert.py` reads `src/res` through the case's own `tools/res_formats.py` (the PNG sheets and CSV tables
-build back to the bytes the game INCBINs) and writes each resource as a raw binary and as a MACRO-11 include of
-octal `.WORD` or `.BYTE` lines, into `work/docs/vpD/uknc` by default (`--out` for the port's tree).
+build back to the bytes the game INCBINs), plus a Spectrum 48K ROM image for the ROM glyphs and the built game
+`build/game.bin` for the sound operands (the code holds them, no resource does), and writes each output as a raw
+binary and as a MACRO-11 include of octal `.WORD` or `.BYTE` lines, into `work/docs/vpD/uknc` by default (`--out` for
+the port's tree).
 
 | Output | Bytes | From | Conversion |
 | --- | ---: | --- | --- |
@@ -309,6 +317,9 @@ octal `.WORD` or `.BYTE` lines, into `work/docs/vpD/uknc` by default (`--out` fo
 | `Table8x8` (`JAWTAB`) | 64 | `tables/Table8x8.csv` | none |
 | `FrictionTable` (`FRICTB`) | 256 | `tables/FrictionTable.csv` | none |
 | `CollisionRecords` (`COLREC`) | 186 | `tables/CollisionRecords.csv` | none: the PDP-11 is little-endian like the Z80, so the 8.8 words keep their bytes |
+| `glyphs` (`GLYPHS`) | 568 | `fonts/Font.png`, the ROM's CHAR_SET `$3D00` (`--rom`, default `data/rom/48.rom` of the unreal-ng checkout), `fonts/CopyrightGlyph.png` | 71 glyphs, each byte bit-reversed: 0-25 a-z, 26-35 0-9, 36-69 the ROM's ``space ! ' ( ) , - . / : = ? A C D E F G H K L M N O P R S T U V W Y _ x`` (every character of the texts that is not the game's font, and the code's own: the name entry's `_`, the key names' `'` and `/`, the pocket marks' `x`), 70 the copyright sign |
+| `texts` (`TEXTS`, a label a file: `HUDTXT` ... `EDITXT`) | 1537 | `text/*.txt` (the 14 print-record files) | each record row, column, attribute, length as on the Spectrum, then each character as its index in `glyphs` |
+| `sounds` (`SOUNDS`) | 36 | the immediate operands of `build/game.bin` (`--image`): `$8077`, `$807D`, `$8083`, `$AF0C`, `$AF2F`, `$9975` with `$99DC`, `$9CAC`, `$978B`, `$9799` | two words a sound, the timer count at 4 µs and the cycles, in the order of the 14.6.6 table (ball, cushion, pocket, click, name pick, first count-up tick, last-shot beep, foul notes 1 and 2) |
 
 ```text
 balls16(shift, ball, line) = two words at (shift x 7 + ball) x 60 + line x 4
@@ -355,10 +366,16 @@ the PPU's 32 KB with the screen and its program.
 
 ```bash
 python3 tools/uknc_convert.py --check
-#   balls16: 6720 bytes ... CollisionRecords: 186 bytes
+#   balls16: 6720 bytes ... CollisionRecords: 186 bytes, glyphs: 568 bytes, texts: 1537 bytes, sounds: 36 bytes
 #   check: shifts 0-7 of 7 balls against the Spectrum sheet, 4 tables: OK
+#   check: 75 text records of 14 files back to src/res/text, 34 ROM glyphs, 9 sounds: OK
 python3 tools/fig_uknc.py balls    # docs/img/uknc/balls-uknc.png
 ```
+
+The second check line: the texts turned back through `glyphs` give the bytes of `src/res/text` and no character
+lacks a glyph; the 34 ROM glyphs are the ROM's own bytes (the ROM's "A" proves a 48K character set); each sound's
+operand sits behind its opcode in the image, and each count is within half a count of the Spectrum's half period
+(SoundLoop's mean of 37 B + 61 and 37 B + 77 T, BEEPER's 4 (HL + 30.125) T) and fits the timer's 12 bits.
 
 ### Worked example: ball 1, shift 5, line 7
 
@@ -569,7 +586,8 @@ Newton steps of about 220 cycles), for each of vx and vy: about 10 000 cycles, 1
 The integer method agrees with the Python model on every input the game can give: dx -255..255, dy -191..191 and the
 63 powers 2, 4, ..., 126 (the power is always even, doc 10, 10.2; P 0 does not move the ball):
 `python3 tools/uknc_aimcheck.py --dy-step 1 --powers "$(python3 -c "print(','.join(map(str, range(2, 127, 2))))")"`,
-"12329856 inputs, 0 differences" (30 s). The model is the game's on the 475 frames of doc 10, 10.6, but those are one shot: whether the ROM's
+"12329856 inputs, 0 differences" (30 s; these are the tool's defaults, so `python3 tools/uknc_aimcheck.py` runs the
+same check). The model is the game's on the 475 frames of doc 10, 10.6, but those are one shot: whether the ROM's
 SQR, which is exp (0.5 ln x) with series, ever rounds a near-tie differently is still to be checked against the ROM
 itself (14.7, 14.8 risk 1).
 
@@ -750,7 +768,7 @@ flowchart LR
 | 3 | CPU memory wait states | the CPU's RAM is in the planes the video reads; UKNCBTL does not model the waits; the CPU factor 0.8 may be optimistic | measure on a real machine; the budget has more than half a frame to spare |
 | 4 | Plane 0's high half as PPU RAM (177054 bits 4-7) replaces the PPU ROM in that window | the firmware's handlers there are gone while the game runs | own every PPU vector; or draw through 177010/177012 at about twice the cost |
 | 5 | Tearing | the PPU draws while the beam scans | draw in y order at EVNT (14.6.4); or flip two copies of the table in the line table, each kept by XOR of its own old positions |
-| 6 | The ROM glyphs | the game prints the ROM's CHAR_SET for every character but a-z, 0-9 (`src/res/fonts/README.md`) | cut the glyphs the texts use from a ROM image into the port's font (`src/res` lacks them) |
+| 6 | The ROM glyphs | the game prints the ROM's CHAR_SET for every character but a-z, 0-9 (`src/res/fonts/README.md`) | `uknc_convert.py` cuts the 34 the game uses from a ROM image into `glyphs` (14.5); `src/res` holds no ROM, so the port's build needs a 48K ROM image (or redrawn glyphs) |
 | 7 | The K1801VM2 timings | the tables are UKNCBTL's reading of the processor's description | measure the two hot loops on a real machine |
 | 8 | Keyboard ghosting and the redefinable keys | the MS-7007 gives scan codes, not a matrix | map scan codes to the game's actions; two keys at once (fire and a direction) must work |
 

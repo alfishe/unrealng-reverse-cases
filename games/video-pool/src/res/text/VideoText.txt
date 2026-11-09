@@ -1,0 +1,2 @@
+# The characters as one quoted string: a-z the game font; \xNN any other byte, \" and \\ escaped.
+"video"

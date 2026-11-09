@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 """Figures of docs/07-objects.md: the 30 + 6 rack-in scripts as maps, and the ball block as a data sheet.
 
-    python3 tools/fig_objects.py racks  --image work/mkgame/original.bin --table work/docs/vpC/shots/t707.png \
-        --out docs/img/maps/racks.png
+    python3 tools/fig_objects.py racks  [--racks src/res/racks/RackScripts.txt] [--maps src/res/maps] \
+        --table work/docs/vpC/shots/t707.png --out docs/img/maps/racks.png
     python3 tools/fig_objects.py record --samples work/docs/vpC/w1-break.jsonl --frame 1117 \
         --out docs/img/objects/ball-record.png
 
-`racks` decodes RackSets $A0C4 from the image (the six sets, six scripts each, the format of RackStep $A05E) and draws
-every ball's path on the empty table of w1 frame 707 (kit/screen_shot.py, scale 2). `record` draws the 98-byte ball
+`racks` builds the rack-in scripts from their resource src/res/racks/RackScripts.txt (tools/res_formats.py: RackSets
+$A0C4, the six sets, six scripts each, the format of RackStep $A05E) and draws every ball's path on the empty table of
+w1 frame 707 (kit/screen_shot.py, scale 2): all six sets in --out, and each set alone as src/res/maps/RackSetN.png
+(--maps). `record` draws the 98-byte ball
 block $8A88 and the two counters after it as read with TTD memory_at at one frame (work/docs/vpC/sample.py).
 """
 import argparse
 import json
 import math
 import os
+import sys
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -89,8 +92,23 @@ def arrow(d, p, q, colour, width=3):
                (mx - s * math.cos(ang + a), my - s * math.sin(ang + a))], fill=colour)
 
 
+HERE = os.path.dirname(os.path.abspath(__file__))
+CASE = os.path.dirname(HERE)
+
+
+def rack_memory(path):
+    """64 K with the rack-in scripts of the resource at their address (RackSets $A0C4 on)"""
+    sys.path.insert(0, HERE)
+    import res_formats as R  # noqa: E402
+    data = R.racks_in(open(path, 'rb').read())
+    m = bytearray(0x10000)
+    m[R.RACKS_ORG:R.RACKS_ORG + len(data)] = data
+    return m
+
+
 def racks(args):
-    m = open(args.image, 'rb').read()
+    src = args.racks or os.path.join(CASE, 'src', 'res', 'racks', 'RackScripts.txt')
+    m = rack_memory(src)
     table = Image.open(args.table).convert('RGB').crop((0, 96, 512, 368))   # screen rows 48-183 at scale 2
     sets = [word(m, 0xA0C4 + 2 * i) for i in range(6)]
     pw, ph = 512, 272
@@ -108,12 +126,14 @@ def racks(args):
            'disc = the rack', font=fs, fill=DIM)
     d.text((gap, 76), 'place; the paths of one set are drawn 2 px apart per ball so that shared lines stay visible', font=fs, fill=DIM)
     reached = {0: 'w1 frames 707-877 (frame 1)', 1: 'w1 frames 3 and 4'}
+    boxes = []
     for si, sp in enumerate(sets):
         col, row = si % 2, si // 2
         ox = gap + col * (pw + gap)
         oy = top + row * (ph + cap + 34)
         frames = f'frames {2 * si + 1}-{2 * si + 2}, {2 * si + 13}-{2 * si + 14}, ...'
         seen = reached.get(si, 'from the code: no recording reached it')
+        boxes.append((ox, oy, ox + pw, oy + 40 + ph + 44))
         d.text((ox, oy), f'set {si} at ${sp:04X}: {frames}', font=f, fill=TEXT)
         d.text((ox, oy + 18), seen, font=fs, fill=(120, 230, 120) if si in reached else (250, 170, 90))
         oy += 40
@@ -168,10 +188,20 @@ def racks(args):
         d.ellipse([x, y + 1, x + 16, y + 17], fill=BALL_COLOURS[b], outline=(200, 200, 200))
         d.text((x + 22, y), str(b), font=f, fill=TEXT)
         x += 60
-    d.text((x + 10, y), 'python3 tools/fig_objects.py racks (image work/mkgame/original.bin)', font=fs, fill=DIM)
+    d.text((x + 10, y), 'python3 tools/fig_objects.py racks (src/res/racks/RackScripts.txt)', font=fs, fill=DIM)
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     img.save(args.out)
     print(args.out, img.size)
+    maps = args.maps or os.path.join(CASE, 'src', 'res', 'maps')
+    os.makedirs(maps, exist_ok=True)
+    for si, box in enumerate(boxes):
+        one = Image.new('RGB', (pw + 2 * gap, box[3] - box[1] + 2 * gap + 22), BG)
+        one.paste(img.crop(box), (gap, gap))
+        ImageDraw.Draw(one).text((gap, one.size[1] - gap - 18), 'fig_objects.py racks, from '
+                                 'racks/RackScripts.txt', font=fs, fill=DIM)
+        path = os.path.join(maps, f'RackSet{si}.png')
+        one.save(path)
+        print(path, one.size)
 
 
 FIELDS = [(0, 2, 'x 8.8', (60, 120, 200)), (2, 2, 'y 8.8', (60, 120, 200)), (4, 2, 'vx 8.8', (200, 120, 40)),
@@ -267,7 +297,8 @@ def record(args):
 def main():
     p = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     p.add_argument('what', choices=['racks', 'record'])
-    p.add_argument('--image')
+    p.add_argument('--racks', help='the rack-in scripts (default src/res/racks/RackScripts.txt)')
+    p.add_argument('--maps', help='where each set goes alone (default src/res/maps)')
     p.add_argument('--table')
     p.add_argument('--samples')
     p.add_argument('--frame', type=int)

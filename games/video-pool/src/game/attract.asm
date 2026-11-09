@@ -101,52 +101,13 @@ FlipLetter:
 ; by FlipLetter $BB74: all 121 bytes in w1 and m1 (game, f1, p2, v1 stop at the
 ; key during the narrowing, so the L is never read there).
 FlipLetterO:
-  DEFB $00,$00,$00
-  DEFB $01,$00,$02
-  DEFB $00,$08,$08
-  DEFB $01,$08,$0A
-  DEFB $00,$10,$08
-  DEFB $01,$10,$0A
-  DEFB $00,$18,$08
-  DEFB $01,$18,$0A
-  DEFB $00,$20,$08
-  DEFB $01,$20,$0A
-  DEFB $00,$28,$00
-  DEFB $01,$28,$02
-  DEFB $FF                ; end of O
+  INCBIN "res/graphics/FlipLetters.bin",$0000,37
 FlipLetterC:
-  DEFB $00,$00,$00        ; The letter C: 10 records, $FF
-  DEFB $01,$00,$02
-  DEFB $00,$08,$08
-  DEFB $01,$08,$0A
-  DEFB $00,$10,$08
-  DEFB $00,$18,$08
-  DEFB $00,$20,$08
-  DEFB $01,$20,$0A
-  DEFB $00,$28,$00
-  DEFB $01,$28,$02
-  DEFB $FF                ; end of C
+  INCBIN "res/graphics/FlipLetters.bin",$0025,31
 FlipLetterP:
-  DEFB $00,$00,$04        ; The letter P: 10 records, $FF
-  DEFB $01,$00,$02
-  DEFB $00,$08,$08
-  DEFB $01,$08,$0A
-  DEFB $00,$10,$08
-  DEFB $01,$10,$0A
-  DEFB $00,$18,$04
-  DEFB $01,$18,$02
-  DEFB $00,$20,$08
-  DEFB $00,$28,$08
-  DEFB $FF                ; end of P
+  INCBIN "res/graphics/FlipLetters.bin",$0044,31
 FlipLetterL:
-  DEFB $00,$00,$08        ; The letter L: 7 records, $FF
-  DEFB $00,$08,$08
-  DEFB $00,$10,$08
-  DEFB $00,$18,$08
-  DEFB $00,$20,$08
-  DEFB $00,$28,$04
-  DEFB $01,$28,$02
-  DEFB $FF                ; end of L
+  INCBIN "res/graphics/FlipLetters.bin",$0063,22
 
 ; XOR the strip an edge moves by between step C and the next on four lines
 ; (D-2, D-1, D+2, D+3)
@@ -240,13 +201,9 @@ FlipEdgeBoth:
 ; degrees a step (16 cos 45 = 11.3, entry 10 = 11). Read by FlipEdge $BC11; all
 ; in w1 and m1.
 FlipWidths16:
-  DEFB $10,$10,$10,$10,$0F,$0F,$0E
-  DEFB $0E,$0D,$0C,$0B,$0A,$09,$08
-  DEFB $07,$06,$05,$04,$03,$01,$00
+  INCBIN "res/tables/FlipWidths.bin",$0000,21
 FlipWidths24:
-  DEFB $18,$18,$18,$17,$17,$16,$15 ; the same for 24 pixels: 24 cos(4.5 k), 24
-  DEFB $14,$13,$12,$11,$10,$0E,$0D ; ... 2, 0
-  DEFB $0B,$09,$07,$06,$04,$02,$00
+  INCBIN "res/tables/FlipWidths.bin",$0015,21
 
 ; Print "video" above the banner, letters 16 pixels wide sliding into their
 ; cells 2 pixels a step
@@ -335,14 +292,16 @@ VideoStore:
   JP P,VideoStepLoop
   RET
 
-; "video" (VideoSlideIn), then the saved SP and the presents-done flag
+; "video", the five letters of VideoSlideIn
 ;
-; "video" is read by VideoSlideIn $BC9E (w1, m1).
+; Read by VideoSlideIn $BC9E (w1, m1).
 VideoText:
-  DEFB $76,$69,$64,$65,$6F
+  INCBIN "res/text/VideoText.bin",$0000,5
+
+; SP at PresentsPage's entry: PresentsAbort $B931 reloads it (written and read
+; once in every build)
 PresentsSP:
-  DEFB $00,$00            ; SP at PresentsPage's entry: PresentsAbort $B931
-                          ; reloads it (written and read once in every build)
+  DEFB $00,$00
 PresentsDone:
   DEFB $00                ; 0 while GameStart $8000's first presents page runs
                           ; ($8006), $FF after it ($800E): PresentsPage then

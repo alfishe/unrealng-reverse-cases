@@ -85,12 +85,12 @@ NextFrameStore:
   LD (FrameNumber),A
   LD A,$04
   CALL PrintHudNumber
-  LD A,(PlayerVars)
+  LD A,(PocketTurn)
   DEC A
   JP P,NextFrameTurn
   LD A,$05
 NextFrameTurn:
-  LD (PlayerVars),A
+  LD (PocketTurn),A
   CALL DrawPocketMarks
   CALL ShotsForFrame
   LD (ShotsLeft),A
@@ -133,7 +133,7 @@ ShotsVariation:
 ; Read by ShotsForFrame $9BE6 (index frame - 1). Frames 1-4 read (w1 reached
 ; frame 4); $9C0A-$9C0E (frames 5-9) read by no build.
 ShotsPerFrame:
-  DEFB $05,$05,$04,$04,$04,$03,$03,$03,$03
+  INCBIN "res/tables/ShotsPerFrame.bin",$0000,9
 
 ; Run TurnSwap with the tasks stopped (WaitFrame $80DE)
 ;
@@ -173,11 +173,11 @@ TurnSwapWait:
   AND $01
   INC A
   LD (CurrentPlayer),A
-  LD HL,(PlayerVars)
+  LD HL,(PocketTurn)
   LD A,H
   LD H,L
   LD L,A
-  LD (PlayerVars),HL
+  LD (PocketTurn),HL
   LD HL,(LivesLeft)
   LD A,H
   LD H,L
@@ -350,10 +350,4 @@ ResetBallLoop:
 ; 132): a triangle of six with its point at ball 1. Read by ResetBallPositions;
 ; the rack scripts end on the same points (RackScripts0).
 StartPositions:
-  DEFB $28,$73
-  DEFB $BE,$73
-  DEFB $CD,$6A
-  DEFB $CD,$7C
-  DEFB $DD,$62
-  DEFB $DD,$73
-  DEFB $DD,$84
+  INCBIN "res/tables/StartPositions.bin",$0000,14

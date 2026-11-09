@@ -1,0 +1,11 @@
+# the shots of a frame, by the frame 1-9 (ShotsForFrame $9BE6 reads frame - 1; frame 10 on: 2, LD L,$02 at $9BED)
+frame,shots
+1,5
+2,5
+3,4
+4,4
+5,4
+6,3
+7,3
+8,3
+9,3

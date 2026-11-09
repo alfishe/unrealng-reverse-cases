@@ -58,7 +58,7 @@ TallyFirstBall:
   POP AF
   PUSH AF
   LD (PotBall),A
-  LD A,(PlayerVars)
+  LD A,(PocketTurn)
   ADD A,(IX+$0C)
   CP $07
   JR C,TallyFirstMultiplier
@@ -91,7 +91,7 @@ TallyMoreBalls:
   POP AF
   PUSH AF
   LD (PotBall),A
-  LD A,(PlayerVars)
+  LD A,(PocketTurn)
   ADD A,(IX+$0C)
   CP $07
   JR C,TallyMoreMultiplier

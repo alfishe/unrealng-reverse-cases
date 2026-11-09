@@ -1,0 +1,10 @@
+# the rack: the pixel position (x, y) of the ball centre, the cue ball then balls 1-6
+# (ResetBallPositions; the rack scripts of src/res/racks end on the same points)
+ball,x,y
+cue,40,115
+ball1,190,115
+ball2,205,106
+ball3,205,124
+ball4,221,98
+ball5,221,115
+ball6,221,132

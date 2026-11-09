@@ -303,14 +303,7 @@ KeyRead:
 ; (P O I U Y), $BFFE (ENTER L K J H), $7FFE (SPACE SYMBOL M N B). Stage 1's
 ; signature candidate at $8240 was this table.
 KeyTable:
-  DEFB $27,$5A,$58,$43,$56
-  DEFB $41,$53,$44,$46,$47
-  DEFB $51,$57,$45,$52,$54
-  DEFB $31,$32,$33,$34,$35
-  DEFB $30,$39,$38,$37,$36
-  DEFB $50,$4F,$49,$55,$59
-  DEFB $0D,$4C,$4B,$4A,$48
-  DEFB $20,$18,$4D,$4E,$42
+  INCBIN "res/tables/KeyTable.bin",$0000,40
 
 ; The controls this interrupt: bit 0 right, 1 left, 2 up, 3 down, 4 fire, 5
 ; BREAK

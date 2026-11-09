@@ -168,7 +168,7 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$B936` | `PresentsTexts` | 54 | The page's texts in the print format of `$9E65`: row, column, attribute, length, characters. Three records for the print routine `$9E65` (row, column, attribute, length, then the characters): "presents" (row 16, column 12, attribute `$38`), eight spaces over it, and "press any key to continue." (row 23, column 3, attribute `$38`, 26 characters). Read by PresentsPage `$B8C5`; the first 24 bytes in every build, the last record only in m1 (the only build that reached the end of the sequence). | `PrintText` | - |
-| `$BA86` | `BannerData` | 141 | The OCP banner: 36 rows of run lengths, 240 pixels each (bit 7 ink, bits 0-6 half the length). One byte a run: bit 7 set = magenta ink, clear = paper; bits 0-6 = half the run's length in pixels. A row ends when its runs add up to 240 pixels: `$F8` alone is a full ink row, `$78` a full paper row. The letters O, C and P are the paper gaps in the ink stripes (WALKTHROUGH 6.1, m1 frame 300). Read by BannerRowEdges `$BA0A` (and BannerRollIn `$B96C`, BannerDrawRows `$B9E0` to skip rows); all 141 bytes in every build. | `BannerRollIn`, `BannerRowEdges` | - |
+| `$BA86` | `BannerData` | 141 | The OCP banner: 37 rows of run lengths, 240 pixels each (bit 7 ink, bits 0-6 half the length). One byte a run: bit 7 set = magenta ink, clear = paper; bits 0-6 = half the run's length in pixels. A row ends when its runs add up to 240 pixels: `$F8` alone is a full ink row, `$78` a full paper row. The letters O, C and P are the paper gaps in the ink stripes (WALKTHROUGH 6.1, m1 frame 300). Read by BannerRowEdges `$BA0A` (and BannerRollIn `$B96C`, BannerDrawRows `$B9E0` to skip rows); all 141 bytes in every build. | `BannerRollIn`, `BannerRowEdges` | - |
 
 ## attract
 
@@ -176,7 +176,8 @@ Written by `kit/refdocs.py`.
 | --- | --- | --- | --- | --- | --- |
 | `$BB98` | `FlipLetterO` | 121 | The letter O: 12 edge records (dx, dy, kind), `$FF`. Each letter: per stripe row (dy 0, 8, ... 40, the six stripe pairs) a record for the left edge (dx 0) and one for the right edge (dx 1, kind bit 1 set). Kind: bit 1 = the right edge, bit 2 = the 24-pixel width table, bit 3 = both tables (two edges drawn, 16 and 24); bit 0 is the phase LogoFlip adds. Read by FlipLetter `$BB74`: all 121 bytes in w1 and m1 (game, f1, p2, v1 stop at the key during the narrowing, so the L is never read there). | `FlipLetter` | - |
 | `$BC74` | `FlipWidths16` | 42 | Half-widths of a turning letter: 16 cos(4.5 k) for k = 0..20 (16 ... 1, 0). 21 bytes 16, 16, 16, 16, 15, 15, 14, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 1, 0: the projected half-width of a 16-pixel half letter turned by 4.5 degrees a step (16 cos 45 = 11.3, entry 10 = 11). Read by FlipEdge `$BC11`; all in w1 and m1. | `FlipEdge` | - |
-| `$BD04` | `VideoText` | 8 | "video" (VideoSlideIn), then the saved SP and the presents-done flag. "video" is read by VideoSlideIn `$BC9E` (w1, m1). | `PresentsFrame` | `GameStart`, `PresentsPage` |
+| `$BD04` | `VideoText` | 5 | "video", the five letters of VideoSlideIn. Read by VideoSlideIn `$BC9E` (w1, m1). | - | - |
+| `$BD09` | `PresentsSP` | 3 | SP at PresentsPage's entry: PresentsAbort `$B931` reloads it (written and read once in every build) | `PresentsFrame` | `GameStart`, `PresentsPage` |
 
 ## signature
 

@@ -657,7 +657,7 @@ RestoreFlagLine:
 ;
 ; Read by RestoreFlagLine through CopyNameLines (w1 2688 reads).
 SolidLine:
-  DEFB $FF,$FF,$FF,$FF,$FF,$FF,$FF
+  INCBIN "res/graphics/SolidLine.bin",$0000,7
 
 ; Render slot IX's name (+2, 7 characters) into its bitmap (+$0F), inverted
 ;
@@ -754,35 +754,7 @@ RenderCharLoop:
 ; $7E $7F repeating (the ragged edge, two notches and a part); lines 24-28
 ; ($AB71-$AB7A): the curled bottom corner below the 24-line field.
 FlagTail:
-  DEFB $00,$FF
-  DEFB $00,$FF
-  DEFB $00,$FF
-  DEFB $00,$FF
-  DEFB $00,$FF
-  DEFB $7F,$FF
-  DEFB $7E,$FF
-  DEFB $7C,$FF
-  DEFB $78,$FF
-  DEFB $78,$FF
-  DEFB $7C,$FF
-  DEFB $7E,$FF
-  DEFB $7F,$FF
-  DEFB $7F,$FF
-  DEFB $7E,$FF
-  DEFB $7C,$FF
-  DEFB $78,$FF
-  DEFB $78,$FF
-  DEFB $7C,$FF
-  DEFB $7E,$FF
-  DEFB $7F,$FF
-  DEFB $7F,$FF
-  DEFB $7E,$FF
-  DEFB $7C,$FF
-  DEFB $78,$01
-  DEFB $F8,$FE
-  DEFB $FC,$F1
-  DEFB $FE,$8F
-  DEFB $FF,$7F
+  INCBIN "res/graphics/FlagTail.bin",$0000,58
 
 ; Draw slot IX's flag at its pole: attributes, the solid field, the tail, the
 ; name
@@ -898,42 +870,11 @@ AttrOfScreen:
 ; w1 wrote "vp" with 270 into slot 2 (screen w1 frame 14000: james 003000
 ; centre, vp 002700 left, francis 002000 right).
 HofTable:
-  DEFB $2C,$01
-  DEFB $20,$6A,$61,$6D,$65,$73,$20 ; +2..+8 the name " james "
-  DEFB $00,$00            ; +9/+$0A the flag's position (x, y)
-  DEFB $58,$17,$0E,$00    ; +$0B/+$0C the pole (88, 23), +$0D attribute $0E
-                          ; (yellow on blue), +$0E moves
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; +$0F..+$46 the name bitmap, 7 bytes x
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; 8 lines
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
+  INCBIN "res/text/HofTable.bin",$0000,71
 HofSlot2:
-  DEFB $C8,$00            ; slot 2: score 200, "francis"
-  DEFB $66,$72,$61,$6E,$63,$69,$73 ; the name
-  DEFB $00,$00,$00,$3F,$0B,$00 ; the flag's position, the pole (0, 63),
-                               ; attribute $0B (magenta on blue), moves
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; the name bitmap
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
+  INCBIN "res/text/HofTable.bin",$0047,71
 HofSlot3:
-  DEFB $64,$00            ; slot 3: score 100, " bill  "
-  DEFB $20,$62,$69,$6C,$6C,$20,$20 ; the name
-  DEFB $00,$00,$B0,$67,$0C,$00 ; the flag's position, the pole (176, 103),
-                               ; attribute $0C (green on blue), moves
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; the name bitmap
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
+  INCBIN "res/text/HofTable.bin",$008E,71
 
 ; The new entries: player 1's score and name, then player 2's (9 bytes each,
 ; the format of a slot's first 9)

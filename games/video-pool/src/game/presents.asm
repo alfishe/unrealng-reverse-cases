@@ -390,7 +390,7 @@ PresentsPixelAddress:
   LD H,A
   RET
 
-; The OCP banner: 36 rows of run lengths, 240 pixels each (bit 7 ink, bits 0-6
+; The OCP banner: 37 rows of run lengths, 240 pixels each (bit 7 ink, bits 0-6
 ; half the length)
 ;
 ; One byte a run: bit 7 set = magenta ink, clear = paper; bits 0-6 = half the
@@ -400,12 +400,4 @@ PresentsPixelAddress:
 ; BannerRowEdges $BA0A (and BannerRollIn $B96C, BannerDrawRows $B9E0 to skip
 ; rows); all 141 bytes in every build.
 BannerData:
-  DEFB $F8,$F8,$F8,$F8,$78,$F8,$F8,$94,$10,$90,$10,$8C,$14,$94,$78,$94
-  DEFB $10,$90,$10,$8C,$14,$94,$F8,$90,$04,$90,$04,$88,$04,$90,$04,$88
-  DEFB $04,$90,$04,$90,$78,$90,$04,$90,$04,$88,$04,$90,$04,$88,$04,$90
-  DEFB $04,$90,$F8,$90,$04,$90,$04,$88,$04,$9C,$04,$90,$04,$90,$78,$90
-  DEFB $04,$90,$04,$88,$04,$9C,$04,$90,$04,$90,$F8,$90,$04,$90,$04,$88
-  DEFB $04,$9C,$14,$94,$78,$90,$04,$90,$04,$88,$04,$9C,$14,$94,$F8,$90
-  DEFB $04,$90,$04,$88,$04,$90,$04,$88,$04,$A4,$78,$90,$04,$90,$04,$88
-  DEFB $04,$90,$04,$88,$04,$A4,$F8,$94,$10,$90,$10,$8C,$04,$A4,$78,$94
-  DEFB $10,$90,$10,$8C,$04,$A4,$F8,$F8,$78,$F8,$F8,$F8,$F8
+  INCBIN "res/graphics/BannerData.bin",$0000,141

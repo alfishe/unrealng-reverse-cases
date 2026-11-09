@@ -230,12 +230,13 @@ How to read the figure (vpC's, for [doc 7](07-objects.md)):
   before the first aim of a game.
 
 ```bash
-python3 tools/fig_objects.py racks     # vpC's tool, from work/mkgame/original.bin
+python3 tools/fig_objects.py racks --table work/docs/vpC/shots/t707.png --out docs/img/maps/racks.png   # from src/res/racks
 ```
 
-The scripts and their interpreter are in [doc 7](07-objects.md). The sheet is rendered from the image's own data
-(RackSets `$A0C4` in `src/game/rackscripts.asm`, decoded by `tools/fig_objects.py`); the rack scripts are code-side
-data and have no separate file under `src/res/`. No published map or rack diagram was found: ZXDB 5566
+The scripts and their interpreter are in [doc 7](07-objects.md). The sheet is rendered from the game's own data:
+the rack-in scripts are the resource `src/res/racks/RackScripts.txt` (RackSets `$A0C4` to `$A701`, one command a
+line, built back to the bytes the source INCBINs), run by `tools/fig_objects.py` with RackStep's rules; each set
+alone is in `src/res/maps/` (`RackSet0.png` ... `RackSet5.png`). No published map or rack diagram was found: ZXDB 5566
 (Spectrum Computing) lists inlays, instructions, a POKE file and a running screen, no map.
 
 The point: every frame starts from the same position. What changes from frame to frame is the shots allowed and the

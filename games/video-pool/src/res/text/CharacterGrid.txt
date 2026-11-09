@@ -1,0 +1,5 @@
+# The name-entry grid of DrawCharacterGrid / PickCell, one row of 14 cells a line: each cell the character
+# the cell enters; \x0c is "rub" and \x0d "end" (two cells each, drawn by RubLines / EndLines).
+"abcdefghijklmn"
+"opqrstuvwxyz ."
+"0123456789\x0c\x0c\x0d\x0d"

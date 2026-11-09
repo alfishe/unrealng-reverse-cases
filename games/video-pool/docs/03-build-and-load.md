@@ -337,7 +337,7 @@ for byte:
 ```mermaid
 flowchart TD
     ANN[src/game/game.ann] -- kit/mkgame.py --> ASM[src/game/*.asm, 33 files]
-    RES[src/res: fonts, graphics, tables, text] -- tools/res_formats.py build --> BRES[build/res: binary resources]
+    RES[src/res: fonts, graphics, racks, tables, text] -- tools/res_formats.py build --> BRES[build/res: binary resources]
     ASM --> SJ1[sjasmplus game.asm]
     BRES --> SJ1
     SJ1 --> GB[build/game.bin, 8000-E1A7, 25000 bytes]
@@ -358,7 +358,7 @@ The inputs:
 | Input | Becomes | Tool |
 | --- | --- | --- |
 | `src/game/game.ann` | `src/game/*.asm` (the game, 33 files) | `kit/mkgame.py` |
-| `src/res/fonts`, `graphics`, `tables`, `text` | `build/res/*/*.bin`: 21 binary resources, read by 86 `INCBIN` lines | `tools/res_formats.py build` |
+| `src/res/fonts`, `graphics`, `racks`, `tables`, `text` | `build/res/*/*.bin`: 39 binary resources, read by 152 `INCBIN` lines (`src/res/maps` holds the rendered rack maps, built from `racks`, not INCBINned) | `tools/res_formats.py build` |
 | `src/game/game.asm` | `build/game.bin`, `build/game.lst` | sjasmplus |
 | `src/turbo/turbo.ann`, `turbo.json` | `src/turbo/turbo.asm`, `loader.asm` | `kit/mkgame.py --part` |
 | `src/turbo/turbo.asm` | `build/turbo.bin`, `build/turbo.lst` | sjasmplus |

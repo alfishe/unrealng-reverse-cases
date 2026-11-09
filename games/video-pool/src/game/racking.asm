@@ -310,11 +310,11 @@ RackStepWait:
 ; 5-12) read by no build. Set 1 $A162 and sets 2-5 ($A1E4, $A29C, $A38E, $A4F8)
 ; are past this fragment.
 RackSets:
-  DEFW RackScripts0,RackSet1,RackSet2,RackSet3,RackSet4,RackSet5
+  INCBIN "res/racks/RackScripts.bin",$0000,12
 
 ; Set 0 (frames 1-2): the scripts of balls 1-6
 RackScripts0:
-  DEFW RackScript0Ball1,RackScript0Ball2,RackScript0Ball3,RackScript0Ball4,RackScript0Ball5,RackScript0Ball6
+  INCBIN "res/racks/RackScripts.bin",$000C,12
 
 ; Ball 1: wait 75; at (7, 175); 30 x (+2, -2); 61 x (+2, 0); at (190, 115); end
 ;
@@ -322,66 +322,14 @@ RackScripts0:
 ; run diagonally to y 115, along the middle line, turn into their place and end
 ; exactly on StartPositions. Waits 75, 60, 45, 30, 15, 0: ball 6 rolls first.
 RackScript0Ball1:
-  DEFB $03,$4B,$01,$07,$AF,$02,$1E,$02,$FE,$02,$3D,$02,$00,$01,$BE,$73
-  DEFB $00
+  INCBIN "res/racks/RackScripts.bin",$0018,17
 RackScript0Ball2:
-  DEFB $03,$3C,$01,$07,$37,$02,$1E,$02,$02,$02,$3D,$02,$00,$02,$04,$02 ; Ball 2:
-  DEFB $FE,$02,$03,$02,$00,$01,$CD,$6A,$00                             ; wait 60;
-                                                                       ; at (7,
-                                                                       ; 55); 30 x
-                                                                       ; (+2, +2);
-                                                                       ; 61 x (+2,
-                                                                       ; 0); 4 x
-                                                                       ; (+2, -2);
-                                                                       ; 3 x (+2,
-                                                                       ; 0); at
-                                                                       ; (205,
-                                                                       ; 106); end
+  INCBIN "res/racks/RackScripts.bin",$0029,25
 RackScript0Ball3:
-  DEFB $03,$2D,$01,$07,$AF,$02,$1E,$02,$FE,$02,$3D,$02,$00,$02,$04,$02 ; Ball 3:
-  DEFB $02,$02,$03,$02,$00,$01,$CD,$7C,$00                             ; wait 45;
-                                                                       ; at (7,
-                                                                       ; 175); 30 x
-                                                                       ; (+2, -2);
-                                                                       ; 61 x (+2,
-                                                                       ; 0); 4 x
-                                                                       ; (+2, +2);
-                                                                       ; 3 x (+2,
-                                                                       ; 0); at
-                                                                       ; (205,
-                                                                       ; 124); end
+  INCBIN "res/racks/RackScripts.bin",$0042,25
 RackScript0Ball4:
-  DEFB $03,$1E,$01,$07,$37,$02,$1E,$02,$02,$02,$3D,$02,$00,$02,$08,$02 ; Ball 4:
-  DEFB $FE,$02,$07,$02,$00,$01,$DD,$62,$00                             ; wait 30;
-                                                                       ; at (7,
-                                                                       ; 55); 30 x
-                                                                       ; (+2, +2);
-                                                                       ; 61 x (+2,
-                                                                       ; 0); 8 x
-                                                                       ; (+2, -2);
-                                                                       ; 7 x (+2,
-                                                                       ; 0); at
-                                                                       ; (221, 98);
-                                                                       ; end
+  INCBIN "res/racks/RackScripts.bin",$005B,25
 RackScript0Ball5:
-  DEFB $03,$0F,$01,$07,$AF,$02,$1E,$02,$FE,$02,$4D,$02,$00,$01,$DD,$73 ; Ball 5:
-  DEFB $00                                                             ; wait 15;
-                                                                       ; at (7,
-                                                                       ; 175); 30 x
-                                                                       ; (+2, -2);
-                                                                       ; 77 x (+2,
-                                                                       ; 0); at
-                                                                       ; (221,
-                                                                       ; 115); end
+  INCBIN "res/racks/RackScripts.bin",$0074,17
 RackScript0Ball6:
-  DEFB $03,$00,$01,$07,$37,$02,$1E,$02,$02,$02,$3D,$02,$00,$02,$08,$02 ; Ball 6:
-  DEFB $02,$02,$07,$02,$00,$01,$DD,$84,$00                             ; wait 0; at
-                                                                       ; (7, 55);
-                                                                       ; 30 x (+2,
-                                                                       ; +2); 61 x
-                                                                       ; (+2, 0); 8
-                                                                       ; x (+2,
-                                                                       ; +2); 7 x
-                                                                       ; (+2, 0);
-                                                                       ; at (221,
-                                                                       ; 132); end
+  INCBIN "res/racks/RackScripts.bin",$0085,25

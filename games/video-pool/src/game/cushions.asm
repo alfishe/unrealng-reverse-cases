@@ -181,7 +181,7 @@ PocketMark:
   RET Z
   DEC A
   JR Z,PocketOrderTest
-  LD A,(PlayerVars)       ; variation 2: the pocket + $9F43 wrapped to 1-6 must
+  LD A,(PocketTurn)       ; variation 2: the pocket + $9F43 wrapped to 1-6 must
                           ; be the ball
   ADD A,(IX+$0C)
   CP $07

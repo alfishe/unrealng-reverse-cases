@@ -1,0 +1,560 @@
+# The rack-in scripts: how the six object balls roll into the rack before a frame of the game (RackBalls $9F6F, one
+# step a video frame of RackStep $A05E for each ball). One item a line, in the order of the bytes from org on:
+#   org $A0C4            the address of the first byte (RackSets), for the pointers
+#   sets S0 ... S5       RackSets: six words, the set of frames 1-2, 3-4, ... 11-12 (set ((frame - 1) / 2) mod 6)
+#   NAME: B1 ... B6      a set: six words, the scripts of balls 1-6
+#   NAME:                a script starts; its commands follow, one a line:
+#     wait N             3 N: wait N video frames
+#     place X Y          1 X Y: put the ball at pixel (X, Y)
+#     move N DX DY       2 N DX DY: move by (DX, DY) on each of the next N video frames (DX, DY signed)
+#     end                0: the ball is in place (the racking ends when all six are)
+# Every script ends with a place on its ball's rack position (StartPositions $9D5D, tables/StartPositions.csv).
+
+org $A0C4
+sets set0 set1 set2 set3 set4 set5
+
+set0: set0.ball1 set0.ball2 set0.ball3 set0.ball4 set0.ball5 set0.ball6
+
+set0.ball1:
+  wait 75
+  place 7 175
+  move 30 +2 -2
+  move 61 +2 +0
+  place 190 115
+  end
+
+set0.ball2:
+  wait 60
+  place 7 55
+  move 30 +2 +2
+  move 61 +2 +0
+  move 4 +2 -2
+  move 3 +2 +0
+  place 205 106
+  end
+
+set0.ball3:
+  wait 45
+  place 7 175
+  move 30 +2 -2
+  move 61 +2 +0
+  move 4 +2 +2
+  move 3 +2 +0
+  place 205 124
+  end
+
+set0.ball4:
+  wait 30
+  place 7 55
+  move 30 +2 +2
+  move 61 +2 +0
+  move 8 +2 -2
+  move 7 +2 +0
+  place 221 98
+  end
+
+set0.ball5:
+  wait 15
+  place 7 175
+  move 30 +2 -2
+  move 77 +2 +0
+  place 221 115
+  end
+
+set0.ball6:
+  wait 0
+  place 7 55
+  move 30 +2 +2
+  move 61 +2 +0
+  move 8 +2 +2
+  move 7 +2 +0
+  place 221 132
+  end
+
+set1: set1.ball1 set1.ball2 set1.ball3 set1.ball4 set1.ball5 set1.ball6
+
+set1.ball1:
+  wait 15
+  place 7 55
+  move 30 +2 +2
+  move 61 +2 +0
+  place 190 115
+  end
+
+set1.ball2:
+  wait 62
+  place 128 55
+  move 10 +0 +2
+  move 23 +2 +0
+  move 15 +2 +2
+  place 205 106
+  end
+
+set1.ball3:
+  wait 62
+  place 128 176
+  move 11 +0 -2
+  move 23 +2 +0
+  move 15 +2 -2
+  place 205 124
+  end
+
+set1.ball4:
+  wait 90
+  place 248 55
+  move 6 -2 +2
+  move 8 +0 +2
+  move 6 -2 +2
+  place 221 98
+  end
+
+set1.ball5:
+  wait 0
+  place 7 175
+  move 30 +2 -2
+  move 77 +2 +0
+  place 221 115
+  end
+
+set1.ball6:
+  wait 90
+  place 248 176
+  move 6 -2 -2
+  move 9 +0 -2
+  move 6 -2 -2
+  place 221 132
+  end
+
+set2: set2.ball1 set2.ball2 set2.ball3 set2.ball4 set2.ball5 set2.ball6
+
+set2.ball1:
+  wait 190
+  place 7 55
+  move 10 +2 +2
+  move 20 +0 +2
+  place 27 115
+  wait 0
+  move 81 +2 +0
+  place 190 115
+  end
+
+set2.ball2:
+  wait 111
+  place 128 55
+  move 10 +0 +2
+  move 50 -2 +0
+  move 15 +0 +2
+  place 27 106
+  wait 0
+  move 89 +2 +0
+  place 205 106
+  end
+
+set2.ball3:
+  wait 46
+  place 248 55
+  move 10 -2 +2
+  move 100 -2 +0
+  move 24 +0 +2
+  place 27 124
+  wait 6
+  move 89 +2 +0
+  place 205 124
+  end
+
+set2.ball4:
+  wait 0
+  place 248 176
+  move 10 -2 -2
+  move 100 -2 +0
+  move 29 +0 -2
+  place 27 98
+  wait 13
+  move 97 +2 +0
+  place 221 98
+  end
+
+set2.ball5:
+  wait 65
+  place 128 176
+  move 10 +0 -2
+  move 50 -2 +0
+  move 20 +0 -2
+  place 27 115
+  wait 7
+  move 97 +2 +0
+  place 221 115
+  end
+
+set2.ball6:
+  wait 130
+  place 7 176
+  move 10 +2 -2
+  move 12 +0 -2
+  place 27 132
+  wait 0
+  move 97 +2 +0
+  place 221 132
+  end
+
+set3: set3.ball1 set3.ball2 set3.ball3 set3.ball4 set3.ball5 set3.ball6
+
+set3.ball6:
+  wait 0
+  place 248 175
+  move 34 -2 -2
+  move 59 -2 +0
+  move 13 -2 +2
+  move 4 -2 +0
+  move 9 +0 -2
+  move 72 +2 +0
+  move 17 +2 +1
+  move 8 +2 +0
+  place 221 132
+  end
+
+set3.ball4:
+  wait 22
+  place 248 175
+  move 34 -2 -2
+  move 37 -2 +0
+  move 13 -2 +2
+  move 26 -2 +0
+  move 9 +0 -2
+  move 50 +2 +0
+  move 17 +2 -1
+  move 30 +2 +0
+  place 221 98
+  end
+
+set3.ball2:
+  wait 44
+  place 248 175
+  move 34 -2 -2
+  move 15 -2 +0
+  move 13 -2 +2
+  move 48 -2 +0
+  move 9 +0 -2
+  move 20 +2 +0
+  move 9 +2 -1
+  move 60 +2 +0
+  place 205 106
+  end
+
+set3.ball5:
+  wait 11
+  place 248 55
+  move 34 -2 +2
+  move 48 -2 +0
+  move 13 -2 -2
+  move 15 -2 +0
+  move 9 +0 +2
+  move 97 +2 +0
+  place 221 115
+  end
+
+set3.ball3:
+  wait 33
+  place 248 55
+  move 34 -2 +2
+  move 26 -2 +0
+  move 13 -2 -2
+  move 37 -2 +0
+  move 9 +0 +2
+  move 31 +2 +0
+  move 9 +2 +1
+  move 49 +2 +0
+  place 205 124
+  end
+
+set3.ball1:
+  wait 55
+  place 248 55
+  move 34 -2 +2
+  move 4 -2 +0
+  move 13 -2 -2
+  move 59 -2 +0
+  move 9 +0 +2
+  move 81 +2 +0
+  place 190 115
+  end
+
+set4: set4.ball1 set4.ball2 set4.ball3 set4.ball4 set4.ball5 set4.ball6
+
+set4.ball5:
+  wait 0
+  place 248 175
+  move 8 -2 -2
+  move 44 +0 -2
+  move 1 +0 -1
+  move 103 -2 +0
+  move 9 +0 +2
+  move 51 +2 +0
+  move 1 +1 +0
+  wait 90
+  move 27 +1 +0
+  move 27 +0 +1
+  wait 18
+  wait 44
+  move 33 +2 +0
+  place 221 115
+  end
+
+set4.ball2:
+  wait 18
+  place 7 55
+  move 9 +2 +2
+  move 25 +0 +2
+  move 1 +0 +1
+  move 103 +2 +0
+  move 9 +0 -2
+  move 51 -2 +0
+  wait 144
+  move 9 -1 +0
+  move 9 +0 +1
+  wait 79
+  move 9 +0 -1
+  move 9 -1 +0
+  move 47 +2 +0
+  place 205 106
+  end
+
+set4.ball1:
+  wait 36
+  place 7 55
+  move 9 +2 +2
+  move 7 +0 +2
+  move 1 +0 +1
+  move 103 +2 +0
+  move 9 +0 -2
+  move 51 -2 +0
+  move 45 -1 +0
+  move 45 +0 +1
+  wait 72
+  wait 145
+  move 53 +2 +0
+  place 190 115
+  end
+
+set4.ball3:
+  wait 0
+  place 7 55
+  move 9 +2 +2
+  move 43 +0 +2
+  move 1 +0 +1
+  move 103 +2 +0
+  move 9 +0 -2
+  move 51 -2 +0
+  wait 90
+  move 27 -1 +0
+  move 27 +0 -1
+  wait 18
+  wait 78
+  move 9 +0 +1
+  move 9 +1 +0
+  move 1 +1 +0
+  move 46 +2 +0
+  place 205 124
+  end
+
+set4.ball6:
+  wait 18
+  place 248 175
+  move 8 -2 -2
+  move 26 +0 -2
+  move 1 +0 -1
+  move 103 -2 +0
+  move 9 +0 +2
+  move 51 +2 +0
+  move 1 +1 +0
+  wait 144
+  move 9 +1 +0
+  move 9 +0 -1
+  wait 10
+  move 17 +0 +1
+  move 18 +1 +0
+  move 1 +1 +0
+  move 32 +2 +0
+  place 221 132
+  end
+
+set4.ball4:
+  wait 36
+  place 248 175
+  move 8 -2 -2
+  move 8 +0 -2
+  move 1 +0 -1
+  move 103 -2 +0
+  move 9 +0 +2
+  move 51 +2 +0
+  move 1 +1 +0
+  move 45 +1 +0
+  move 45 +0 -1
+  wait 72
+  wait 10
+  move 17 +0 -1
+  move 18 -1 +0
+  move 33 +2 +0
+  place 221 98
+  end
+
+set5: set5.ball1 set5.ball2 set5.ball3 set5.ball4 set5.ball5 set5.ball6
+
+set5.ball1:
+  wait 55
+  place 8 56
+  move 29 +2 +2
+  move 60 +2 +0
+  move 30 +2 +2
+  place 247 175
+  place 128 56
+  move 29 +0 +2
+  move 30 +2 +0
+  move 1 +1 +0
+  move 28 +2 -2
+  place 247 56
+  place 8 175
+  move 30 +2 -2
+  move 30 +2 +0
+  move 30 +0 +2
+  place 128 175
+  place 8 56
+  move 29 +2 +2
+  move 1 +1 +1
+  move 61 +2 +0
+  place 190 115
+  end
+
+set5.ball2:
+  wait 44
+  place 8 56
+  move 29 +2 +2
+  move 60 +2 +0
+  move 30 +2 +2
+  place 247 175
+  place 128 56
+  move 29 +0 +2
+  move 30 +2 +0
+  move 1 +1 +0
+  move 28 +2 -2
+  place 247 56
+  place 8 175
+  move 30 +2 -2
+  move 30 +2 +0
+  move 30 +0 +2
+  place 128 175
+  place 8 56
+  move 29 +2 +2
+  move 1 +1 +1
+  move 61 +2 +0
+  move 4 +2 -2
+  move 3 +2 +0
+  place 205 106
+  end
+
+set5.ball3:
+  wait 33
+  place 8 56
+  move 29 +2 +2
+  move 60 +2 +0
+  move 30 +2 +2
+  place 247 175
+  place 128 56
+  move 29 +0 +2
+  move 30 +2 +0
+  move 1 +1 +0
+  move 28 +2 -2
+  place 247 56
+  place 8 175
+  move 30 +2 -2
+  move 30 +2 +0
+  move 30 +0 +2
+  place 128 175
+  place 8 56
+  move 29 +2 +2
+  move 1 +1 +1
+  move 61 +2 +0
+  move 4 +2 +2
+  move 3 +2 +0
+  place 205 124
+  end
+
+set5.ball4:
+  wait 22
+  place 8 56
+  move 29 +2 +2
+  move 60 +2 +0
+  move 30 +2 +2
+  place 247 175
+  place 128 56
+  move 29 +0 +2
+  move 30 +2 +0
+  move 1 +1 +0
+  move 28 +2 -2
+  place 247 56
+  place 8 175
+  move 30 +2 -2
+  move 30 +2 +0
+  move 30 +0 +2
+  place 128 175
+  place 8 56
+  move 29 +2 +2
+  move 1 +1 +1
+  move 61 +2 +0
+  move 8 +2 -2
+  move 7 +2 +0
+  place 221 98
+  end
+
+set5.ball5:
+  wait 11
+  place 8 56
+  move 29 +2 +2
+  move 60 +2 +0
+  move 30 +2 +2
+  place 247 175
+  place 128 56
+  move 29 +0 +2
+  move 30 +2 +0
+  move 1 +1 +0
+  move 28 +2 -2
+  place 247 56
+  place 8 175
+  move 30 +2 -2
+  move 30 +2 +0
+  move 30 +0 +2
+  place 128 175
+  place 8 56
+  move 29 +2 +2
+  move 1 +1 +1
+  move 61 +2 +0
+  move 15 +2 +0
+  place 221 115
+  end
+
+set5.ball6:
+  wait 0
+  place 8 56
+  move 29 +2 +2
+  move 60 +2 +0
+  move 30 +2 +2
+  place 247 175
+  place 128 56
+  move 29 +0 +2
+  move 30 +2 +0
+  move 1 +1 +0
+  move 28 +2 -2
+  place 247 56
+  place 8 175
+  move 30 +2 -2
+  move 30 +2 +0
+  move 30 +0 +2
+  place 128 175
+  place 8 56
+  move 29 +2 +2
+  move 1 +1 +1
+  move 61 +2 +0
+  move 8 +2 +2
+  move 7 +2 +0
+  place 221 132
+  end

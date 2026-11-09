@@ -1,0 +1,11 @@
+# A list of horizontal spans, one a line, from the origin the code gives:
+#   span DX DY LENGTH   LENGTH pixels from (x + DX, y + DY), DX and DY unsigned bytes ($00 DX DY LENGTH)
+#   end                 the end of the list ($FF)
+# The pen's end cap (PenSpans $BE79, after the shaft).
+  span 49 54 11
+  span 50 55 9
+  span 51 56 7
+  span 52 57 5
+  span 53 58 3
+  span 54 59 1
+end

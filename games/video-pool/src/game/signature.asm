@@ -644,29 +644,13 @@ PenPixelAddress:
 ; (0,0,2) (0,1,4) (1,2,5) (1,3,7) (2,4,8) (2,5,10) (3,6,10) (3,7,11) (4,8,11)
 ; (4,9,12): a wedge 10 lines high. Read by PenSpans $BE79 (m1, all 31 bytes).
 PenNib:
-  DEFB $00,$00,$02
-  DEFB $00,$01,$04
-  DEFB $01,$02,$05
-  DEFB $01,$03,$07
-  DEFB $02,$04,$08
-  DEFB $02,$05,$0A
-  DEFB $03,$06,$0A
-  DEFB $03,$07,$0B
-  DEFB $04,$08,$0B
-  DEFB $04,$09,$0C
-  DEFB $FF                ; end
+  INCBIN "res/graphics/PenNib.bin",$0000,31
 
 ; The pen's end cap: six spans at (49..54, 54..59), lengths 11 down to 1, $FF
 ;
 ; Read by PenSpans $BE79 after the shaft (m1, all 19 bytes).
 PenCap:
-  DEFB $31,$36,$0B
-  DEFB $32,$37,$09
-  DEFB $33,$38,$07
-  DEFB $34,$39,$05
-  DEFB $35,$3A,$03
-  DEFB $36,$3B,$01
-  DEFB $FF                ; end
+  INCBIN "res/graphics/PenCap.bin",$0000,19
 
 ; The shaft: 16 rows of 4 bytes, a 12-pixel bar moving one pixel right a row
 ;
@@ -674,22 +658,7 @@ PenCap:
 ; $BEDC starts at row x AND 7 and takes one row a line. Read by PenShaftCopy4
 ; $BF33 (m1, 60 of 64 bytes: rows 15's last bytes never).
 PenShaftImage:
-  DEFB $FF,$F0,$00,$00
-  DEFB $7F,$F8,$00,$00
-  DEFB $3F,$FC,$00,$00
-  DEFB $1F,$FE,$00,$00
-  DEFB $0F,$FF,$00,$00
-  DEFB $07,$FF,$80,$00
-  DEFB $03,$FF,$C0,$00
-  DEFB $01,$FF,$E0,$00
-  DEFB $00,$FF,$F0,$00
-  DEFB $00,$7F,$F8,$00
-  DEFB $00,$3F,$FC,$00
-  DEFB $00,$1F,$FE,$00
-  DEFB $00,$0F,$FF,$00
-  DEFB $00,$07,$FF,$80
-  DEFB $00,$03,$FF,$C0
-  DEFB $00,$01,$FF,$E0
+  INCBIN "res/graphics/PenShaftImage.bin",$0000,64
 
 ; The pen's state: the band flag (0; 1 / 2 only on the band paths, never run),
 ; pen down, the shaft position

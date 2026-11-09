@@ -34,7 +34,7 @@
 ; (frames 3 and 4 of its game; l1sum.py --reads A162-A1E3: w1 only, 1562
 ; reads). No other recording reached frame 3.
 RackSet1:
-  DEFW Rack1Ball1,Rack1Ball2,Rack1Ball3,Rack1Ball4,Rack1Ball5,Rack1Ball6
+  INCBIN "res/racks/RackScripts.bin",$009E,12
 
 ; The scripts of rack-in set 1, ball 1 first
 ;
@@ -42,51 +42,17 @@ RackSet1:
 ; frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking
 ; step $A05E.
 Rack1Ball1:
-  DEFB $03,$0F            ; ball 1: wait 15 frames
-  DEFB $01,$07,$37        ; place at (7, 55)
-  DEFB $02,$1E,$02,$02    ; move 30 frames by (+2, +2)
-  DEFB $02,$3D,$02,$00    ; move 61 frames by (+2, +0)
-  DEFB $01,$BE,$73        ; place at (190, 115)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$00AA,17
 Rack1Ball2:
-  DEFB $03,$3E            ; ball 2: wait 62 frames
-  DEFB $01,$80,$37        ; place at (128, 55)
-  DEFB $02,$0A,$00,$02    ; move 10 frames by (+0, +2)
-  DEFB $02,$17,$02,$00    ; move 23 frames by (+2, +0)
-  DEFB $02,$0F,$02,$02    ; move 15 frames by (+2, +2)
-  DEFB $01,$CD,$6A        ; place at (205, 106)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$00BB,21
 Rack1Ball3:
-  DEFB $03,$3E            ; ball 3: wait 62 frames
-  DEFB $01,$80,$B0        ; place at (128, 176)
-  DEFB $02,$0B,$00,$FE    ; move 11 frames by (+0, -2)
-  DEFB $02,$17,$02,$00    ; move 23 frames by (+2, +0)
-  DEFB $02,$0F,$02,$FE    ; move 15 frames by (+2, -2)
-  DEFB $01,$CD,$7C        ; place at (205, 124)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$00D0,21
 Rack1Ball4:
-  DEFB $03,$5A            ; ball 4: wait 90 frames
-  DEFB $01,$F8,$37        ; place at (248, 55)
-  DEFB $02,$06,$FE,$02    ; move 6 frames by (-2, +2)
-  DEFB $02,$08,$00,$02    ; move 8 frames by (+0, +2)
-  DEFB $02,$06,$FE,$02    ; move 6 frames by (-2, +2)
-  DEFB $01,$DD,$62        ; place at (221, 98)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$00E5,21
 Rack1Ball5:
-  DEFB $03,$00            ; ball 5: wait 0 frames
-  DEFB $01,$07,$AF        ; place at (7, 175)
-  DEFB $02,$1E,$02,$FE    ; move 30 frames by (+2, -2)
-  DEFB $02,$4D,$02,$00    ; move 77 frames by (+2, +0)
-  DEFB $01,$DD,$73        ; place at (221, 115)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$00FA,17
 Rack1Ball6:
-  DEFB $03,$5A            ; ball 6: wait 90 frames
-  DEFB $01,$F8,$B0        ; place at (248, 176)
-  DEFB $02,$06,$FE,$FE    ; move 6 frames by (-2, -2)
-  DEFB $02,$09,$00,$FE    ; move 9 frames by (+0, -2)
-  DEFB $02,$06,$FE,$FE    ; move 6 frames by (-2, -2)
-  DEFB $01,$DD,$84        ; place at (221, 132)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$010B,21
 
 ; Rack-in set 2: the script of each object ball 1-6, the frames 5-6 rack
 ;
@@ -97,7 +63,7 @@ Rack1Ball6:
 ; decodes cleanly and ends on its ball's rack position ($9D5D)
 ; (work/stage2/ann/04-scratch/racks.py).
 RackSet2:
-  DEFW Rack2Ball1,Rack2Ball2,Rack2Ball3,Rack2Ball4,Rack2Ball5,Rack2Ball6
+  INCBIN "res/racks/RackScripts.bin",$0120,12
 
 ; The scripts of rack-in set 2, ball 1 first
 ;
@@ -105,69 +71,17 @@ RackSet2:
 ; frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking
 ; step $A05E.
 Rack2Ball1:
-  DEFB $03,$BE            ; ball 1: wait 190 frames
-  DEFB $01,$07,$37        ; place at (7, 55)
-  DEFB $02,$0A,$02,$02    ; move 10 frames by (+2, +2)
-  DEFB $02,$14,$00,$02    ; move 20 frames by (+0, +2)
-  DEFB $01,$1B,$73        ; place at (27, 115)
-  DEFB $03,$00            ; wait 0 frames
-  DEFB $02,$51,$02,$00    ; move 81 frames by (+2, +0)
-  DEFB $01,$BE,$73        ; place at (190, 115)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$012C,26
 Rack2Ball2:
-  DEFB $03,$6F            ; ball 2: wait 111 frames
-  DEFB $01,$80,$37        ; place at (128, 55)
-  DEFB $02,$0A,$00,$02    ; move 10 frames by (+0, +2)
-  DEFB $02,$32,$FE,$00    ; move 50 frames by (-2, +0)
-  DEFB $02,$0F,$00,$02    ; move 15 frames by (+0, +2)
-  DEFB $01,$1B,$6A        ; place at (27, 106)
-  DEFB $03,$00            ; wait 0 frames
-  DEFB $02,$59,$02,$00    ; move 89 frames by (+2, +0)
-  DEFB $01,$CD,$6A        ; place at (205, 106)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$0146,30
 Rack2Ball3:
-  DEFB $03,$2E            ; ball 3: wait 46 frames
-  DEFB $01,$F8,$37        ; place at (248, 55)
-  DEFB $02,$0A,$FE,$02    ; move 10 frames by (-2, +2)
-  DEFB $02,$64,$FE,$00    ; move 100 frames by (-2, +0)
-  DEFB $02,$18,$00,$02    ; move 24 frames by (+0, +2)
-  DEFB $01,$1B,$7C        ; place at (27, 124)
-  DEFB $03,$06            ; wait 6 frames
-  DEFB $02,$59,$02,$00    ; move 89 frames by (+2, +0)
-  DEFB $01,$CD,$7C        ; place at (205, 124)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$0164,30
 Rack2Ball4:
-  DEFB $03,$00            ; ball 4: wait 0 frames
-  DEFB $01,$F8,$B0        ; place at (248, 176)
-  DEFB $02,$0A,$FE,$FE    ; move 10 frames by (-2, -2)
-  DEFB $02,$64,$FE,$00    ; move 100 frames by (-2, +0)
-  DEFB $02,$1D,$00,$FE    ; move 29 frames by (+0, -2)
-  DEFB $01,$1B,$62        ; place at (27, 98)
-  DEFB $03,$0D            ; wait 13 frames
-  DEFB $02,$61,$02,$00    ; move 97 frames by (+2, +0)
-  DEFB $01,$DD,$62        ; place at (221, 98)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$0182,30
 Rack2Ball5:
-  DEFB $03,$41            ; ball 5: wait 65 frames
-  DEFB $01,$80,$B0        ; place at (128, 176)
-  DEFB $02,$0A,$00,$FE    ; move 10 frames by (+0, -2)
-  DEFB $02,$32,$FE,$00    ; move 50 frames by (-2, +0)
-  DEFB $02,$14,$00,$FE    ; move 20 frames by (+0, -2)
-  DEFB $01,$1B,$73        ; place at (27, 115)
-  DEFB $03,$07            ; wait 7 frames
-  DEFB $02,$61,$02,$00    ; move 97 frames by (+2, +0)
-  DEFB $01,$DD,$73        ; place at (221, 115)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$01A0,30
 Rack2Ball6:
-  DEFB $03,$82            ; ball 6: wait 130 frames
-  DEFB $01,$07,$B0        ; place at (7, 176)
-  DEFB $02,$0A,$02,$FE    ; move 10 frames by (+2, -2)
-  DEFB $02,$0C,$00,$FE    ; move 12 frames by (+0, -2)
-  DEFB $01,$1B,$84        ; place at (27, 132)
-  DEFB $03,$00            ; wait 0 frames
-  DEFB $02,$61,$02,$00    ; move 97 frames by (+2, +0)
-  DEFB $01,$DD,$84        ; place at (221, 132)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$01BE,26
 
 ; Rack-in set 3: the script of each object ball 1-6, the frames 7-8 rack
 ;
@@ -178,7 +92,7 @@ Rack2Ball6:
 ; decodes cleanly and ends on its ball's rack position ($9D5D)
 ; (work/stage2/ann/04-scratch/racks.py).
 RackSet3:
-  DEFW Rack3Ball1,Rack3Ball2,Rack3Ball3,Rack3Ball4,Rack3Ball5,Rack3Ball6
+  INCBIN "res/racks/RackScripts.bin",$01D8,12
 
 ; The scripts of rack-in set 3, ball 6 first
 ;
@@ -186,79 +100,17 @@ RackSet3:
 ; frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking
 ; step $A05E.
 Rack3Ball6:
-  DEFB $03,$00            ; ball 6: wait 0 frames
-  DEFB $01,$F8,$AF        ; place at (248, 175)
-  DEFB $02,$22,$FE,$FE    ; move 34 frames by (-2, -2)
-  DEFB $02,$3B,$FE,$00    ; move 59 frames by (-2, +0)
-  DEFB $02,$0D,$FE,$02    ; move 13 frames by (-2, +2)
-  DEFB $02,$04,$FE,$00    ; move 4 frames by (-2, +0)
-  DEFB $02,$09,$00,$FE    ; move 9 frames by (+0, -2)
-  DEFB $02,$48,$02,$00    ; move 72 frames by (+2, +0)
-  DEFB $02,$11,$02,$01    ; move 17 frames by (+2, +1)
-  DEFB $02,$08,$02,$00    ; move 8 frames by (+2, +0)
-  DEFB $01,$DD,$84        ; place at (221, 132)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$01E4,41
 Rack3Ball4:
-  DEFB $03,$16            ; ball 4: wait 22 frames
-  DEFB $01,$F8,$AF        ; place at (248, 175)
-  DEFB $02,$22,$FE,$FE    ; move 34 frames by (-2, -2)
-  DEFB $02,$25,$FE,$00    ; move 37 frames by (-2, +0)
-  DEFB $02,$0D,$FE,$02    ; move 13 frames by (-2, +2)
-  DEFB $02,$1A,$FE,$00    ; move 26 frames by (-2, +0)
-  DEFB $02,$09,$00,$FE    ; move 9 frames by (+0, -2)
-  DEFB $02,$32,$02,$00    ; move 50 frames by (+2, +0)
-  DEFB $02,$11,$02,$FF    ; move 17 frames by (+2, -1)
-  DEFB $02,$1E,$02,$00    ; move 30 frames by (+2, +0)
-  DEFB $01,$DD,$62        ; place at (221, 98)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$020D,41
 Rack3Ball2:
-  DEFB $03,$2C            ; ball 2: wait 44 frames
-  DEFB $01,$F8,$AF        ; place at (248, 175)
-  DEFB $02,$22,$FE,$FE    ; move 34 frames by (-2, -2)
-  DEFB $02,$0F,$FE,$00    ; move 15 frames by (-2, +0)
-  DEFB $02,$0D,$FE,$02    ; move 13 frames by (-2, +2)
-  DEFB $02,$30,$FE,$00    ; move 48 frames by (-2, +0)
-  DEFB $02,$09,$00,$FE    ; move 9 frames by (+0, -2)
-  DEFB $02,$14,$02,$00    ; move 20 frames by (+2, +0)
-  DEFB $02,$09,$02,$FF    ; move 9 frames by (+2, -1)
-  DEFB $02,$3C,$02,$00    ; move 60 frames by (+2, +0)
-  DEFB $01,$CD,$6A        ; place at (205, 106)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$0236,41
 Rack3Ball5:
-  DEFB $03,$0B            ; ball 5: wait 11 frames
-  DEFB $01,$F8,$37        ; place at (248, 55)
-  DEFB $02,$22,$FE,$02    ; move 34 frames by (-2, +2)
-  DEFB $02,$30,$FE,$00    ; move 48 frames by (-2, +0)
-  DEFB $02,$0D,$FE,$FE    ; move 13 frames by (-2, -2)
-  DEFB $02,$0F,$FE,$00    ; move 15 frames by (-2, +0)
-  DEFB $02,$09,$00,$02    ; move 9 frames by (+0, +2)
-  DEFB $02,$61,$02,$00    ; move 97 frames by (+2, +0)
-  DEFB $01,$DD,$73        ; place at (221, 115)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$025F,33
 Rack3Ball3:
-  DEFB $03,$21            ; ball 3: wait 33 frames
-  DEFB $01,$F8,$37        ; place at (248, 55)
-  DEFB $02,$22,$FE,$02    ; move 34 frames by (-2, +2)
-  DEFB $02,$1A,$FE,$00    ; move 26 frames by (-2, +0)
-  DEFB $02,$0D,$FE,$FE    ; move 13 frames by (-2, -2)
-  DEFB $02,$25,$FE,$00    ; move 37 frames by (-2, +0)
-  DEFB $02,$09,$00,$02    ; move 9 frames by (+0, +2)
-  DEFB $02,$1F,$02,$00    ; move 31 frames by (+2, +0)
-  DEFB $02,$09,$02,$01    ; move 9 frames by (+2, +1)
-  DEFB $02,$31,$02,$00    ; move 49 frames by (+2, +0)
-  DEFB $01,$CD,$7C        ; place at (205, 124)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$0280,41
 Rack3Ball1:
-  DEFB $03,$37            ; ball 1: wait 55 frames
-  DEFB $01,$F8,$37        ; place at (248, 55)
-  DEFB $02,$22,$FE,$02    ; move 34 frames by (-2, +2)
-  DEFB $02,$04,$FE,$00    ; move 4 frames by (-2, +0)
-  DEFB $02,$0D,$FE,$FE    ; move 13 frames by (-2, -2)
-  DEFB $02,$3B,$FE,$00    ; move 59 frames by (-2, +0)
-  DEFB $02,$09,$00,$02    ; move 9 frames by (+0, +2)
-  DEFB $02,$51,$02,$00    ; move 81 frames by (+2, +0)
-  DEFB $01,$BE,$73        ; place at (190, 115)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$02A9,33
 
 ; Rack-in set 4: the script of each object ball 1-6, the frames 9-10 rack
 ;
@@ -269,7 +121,7 @@ Rack3Ball1:
 ; decodes cleanly and ends on its ball's rack position ($9D5D)
 ; (work/stage2/ann/04-scratch/racks.py).
 RackSet4:
-  DEFW Rack4Ball1,Rack4Ball2,Rack4Ball3,Rack4Ball4,Rack4Ball5,Rack4Ball6
+  INCBIN "res/racks/RackScripts.bin",$02CA,12
 
 ; The scripts of rack-in set 4, ball 5 first
 ;
@@ -277,116 +129,17 @@ RackSet4:
 ; frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking
 ; step $A05E.
 Rack4Ball5:
-  DEFB $03,$00            ; ball 5: wait 0 frames
-  DEFB $01,$F8,$AF        ; place at (248, 175)
-  DEFB $02,$08,$FE,$FE    ; move 8 frames by (-2, -2)
-  DEFB $02,$2C,$00,$FE    ; move 44 frames by (+0, -2)
-  DEFB $02,$01,$00,$FF    ; move 1 frames by (+0, -1)
-  DEFB $02,$67,$FE,$00    ; move 103 frames by (-2, +0)
-  DEFB $02,$09,$00,$02    ; move 9 frames by (+0, +2)
-  DEFB $02,$33,$02,$00    ; move 51 frames by (+2, +0)
-  DEFB $02,$01,$01,$00    ; move 1 frames by (+1, +0)
-  DEFB $03,$5A            ; wait 90 frames
-  DEFB $02,$1B,$01,$00    ; move 27 frames by (+1, +0)
-  DEFB $02,$1B,$00,$01    ; move 27 frames by (+0, +1)
-  DEFB $03,$12            ; wait 18 frames
-  DEFB $03,$2C            ; wait 44 frames
-  DEFB $02,$21,$02,$00    ; move 33 frames by (+2, +0)
-  DEFB $01,$DD,$73        ; place at (221, 115)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$02D6,55
 Rack4Ball2:
-  DEFB $03,$12            ; ball 2: wait 18 frames
-  DEFB $01,$07,$37        ; place at (7, 55)
-  DEFB $02,$09,$02,$02    ; move 9 frames by (+2, +2)
-  DEFB $02,$19,$00,$02    ; move 25 frames by (+0, +2)
-  DEFB $02,$01,$00,$01    ; move 1 frames by (+0, +1)
-  DEFB $02,$67,$02,$00    ; move 103 frames by (+2, +0)
-  DEFB $02,$09,$00,$FE    ; move 9 frames by (+0, -2)
-  DEFB $02,$33,$FE,$00    ; move 51 frames by (-2, +0)
-  DEFB $03,$90            ; wait 144 frames
-  DEFB $02,$09,$FF,$00    ; move 9 frames by (-1, +0)
-  DEFB $02,$09,$00,$01    ; move 9 frames by (+0, +1)
-  DEFB $03,$4F            ; wait 79 frames
-  DEFB $02,$09,$00,$FF    ; move 9 frames by (+0, -1)
-  DEFB $02,$09,$FF,$00    ; move 9 frames by (-1, +0)
-  DEFB $02,$2F,$02,$00    ; move 47 frames by (+2, +0)
-  DEFB $01,$CD,$6A        ; place at (205, 106)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$030D,57
 Rack4Ball1:
-  DEFB $03,$24            ; ball 1: wait 36 frames
-  DEFB $01,$07,$37        ; place at (7, 55)
-  DEFB $02,$09,$02,$02    ; move 9 frames by (+2, +2)
-  DEFB $02,$07,$00,$02    ; move 7 frames by (+0, +2)
-  DEFB $02,$01,$00,$01    ; move 1 frames by (+0, +1)
-  DEFB $02,$67,$02,$00    ; move 103 frames by (+2, +0)
-  DEFB $02,$09,$00,$FE    ; move 9 frames by (+0, -2)
-  DEFB $02,$33,$FE,$00    ; move 51 frames by (-2, +0)
-  DEFB $02,$2D,$FF,$00    ; move 45 frames by (-1, +0)
-  DEFB $02,$2D,$00,$01    ; move 45 frames by (+0, +1)
-  DEFB $03,$48            ; wait 72 frames
-  DEFB $03,$91            ; wait 145 frames
-  DEFB $02,$35,$02,$00    ; move 53 frames by (+2, +0)
-  DEFB $01,$BE,$73        ; place at (190, 115)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$0346,49
 Rack4Ball3:
-  DEFB $03,$00            ; ball 3: wait 0 frames
-  DEFB $01,$07,$37        ; place at (7, 55)
-  DEFB $02,$09,$02,$02    ; move 9 frames by (+2, +2)
-  DEFB $02,$2B,$00,$02    ; move 43 frames by (+0, +2)
-  DEFB $02,$01,$00,$01    ; move 1 frames by (+0, +1)
-  DEFB $02,$67,$02,$00    ; move 103 frames by (+2, +0)
-  DEFB $02,$09,$00,$FE    ; move 9 frames by (+0, -2)
-  DEFB $02,$33,$FE,$00    ; move 51 frames by (-2, +0)
-  DEFB $03,$5A            ; wait 90 frames
-  DEFB $02,$1B,$FF,$00    ; move 27 frames by (-1, +0)
-  DEFB $02,$1B,$00,$FF    ; move 27 frames by (+0, -1)
-  DEFB $03,$12            ; wait 18 frames
-  DEFB $03,$4E            ; wait 78 frames
-  DEFB $02,$09,$00,$01    ; move 9 frames by (+0, +1)
-  DEFB $02,$09,$01,$00    ; move 9 frames by (+1, +0)
-  DEFB $02,$01,$01,$00    ; move 1 frames by (+1, +0)
-  DEFB $02,$2E,$02,$00    ; move 46 frames by (+2, +0)
-  DEFB $01,$CD,$7C        ; place at (205, 124)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$0377,63
 Rack4Ball6:
-  DEFB $03,$12            ; ball 6: wait 18 frames
-  DEFB $01,$F8,$AF        ; place at (248, 175)
-  DEFB $02,$08,$FE,$FE    ; move 8 frames by (-2, -2)
-  DEFB $02,$1A,$00,$FE    ; move 26 frames by (+0, -2)
-  DEFB $02,$01,$00,$FF    ; move 1 frames by (+0, -1)
-  DEFB $02,$67,$FE,$00    ; move 103 frames by (-2, +0)
-  DEFB $02,$09,$00,$02    ; move 9 frames by (+0, +2)
-  DEFB $02,$33,$02,$00    ; move 51 frames by (+2, +0)
-  DEFB $02,$01,$01,$00    ; move 1 frames by (+1, +0)
-  DEFB $03,$90            ; wait 144 frames
-  DEFB $02,$09,$01,$00    ; move 9 frames by (+1, +0)
-  DEFB $02,$09,$00,$FF    ; move 9 frames by (+0, -1)
-  DEFB $03,$0A            ; wait 10 frames
-  DEFB $02,$11,$00,$01    ; move 17 frames by (+0, +1)
-  DEFB $02,$12,$01,$00    ; move 18 frames by (+1, +0)
-  DEFB $02,$01,$01,$00    ; move 1 frames by (+1, +0)
-  DEFB $02,$20,$02,$00    ; move 32 frames by (+2, +0)
-  DEFB $01,$DD,$84        ; place at (221, 132)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$03B6,65
 Rack4Ball4:
-  DEFB $03,$24            ; ball 4: wait 36 frames
-  DEFB $01,$F8,$AF        ; place at (248, 175)
-  DEFB $02,$08,$FE,$FE    ; move 8 frames by (-2, -2)
-  DEFB $02,$08,$00,$FE    ; move 8 frames by (+0, -2)
-  DEFB $02,$01,$00,$FF    ; move 1 frames by (+0, -1)
-  DEFB $02,$67,$FE,$00    ; move 103 frames by (-2, +0)
-  DEFB $02,$09,$00,$02    ; move 9 frames by (+0, +2)
-  DEFB $02,$33,$02,$00    ; move 51 frames by (+2, +0)
-  DEFB $02,$01,$01,$00    ; move 1 frames by (+1, +0)
-  DEFB $02,$2D,$01,$00    ; move 45 frames by (+1, +0)
-  DEFB $02,$2D,$00,$FF    ; move 45 frames by (+0, -1)
-  DEFB $03,$48            ; wait 72 frames
-  DEFB $03,$0A            ; wait 10 frames
-  DEFB $02,$11,$00,$FF    ; move 17 frames by (+0, -1)
-  DEFB $02,$12,$FF,$00    ; move 18 frames by (-1, +0)
-  DEFB $02,$21,$02,$00    ; move 33 frames by (+2, +0)
-  DEFB $01,$DD,$62        ; place at (221, 98)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$03F7,61
 
 ; Rack-in set 5: the script of each object ball 1-6, the frames 11-12 rack
 ;
@@ -397,7 +150,7 @@ Rack4Ball4:
 ; decodes cleanly and ends on its ball's rack position ($9D5D)
 ; (work/stage2/ann/04-scratch/racks.py).
 RackSet5:
-  DEFW Rack5Ball1,Rack5Ball2,Rack5Ball3,Rack5Ball4,Rack5Ball5,Rack5Ball6
+  INCBIN "res/racks/RackScripts.bin",$0434,12
 
 ; The scripts of rack-in set 5, ball 1 first
 ;
@@ -405,155 +158,14 @@ RackSet5:
 ; frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking
 ; step $A05E.
 Rack5Ball1:
-  DEFB $03,$37            ; ball 1: wait 55 frames
-  DEFB $01,$08,$38        ; place at (8, 56)
-  DEFB $02,$1D,$02,$02    ; move 29 frames by (+2, +2)
-  DEFB $02,$3C,$02,$00    ; move 60 frames by (+2, +0)
-  DEFB $02,$1E,$02,$02    ; move 30 frames by (+2, +2)
-  DEFB $01,$F7,$AF        ; place at (247, 175)
-  DEFB $01,$80,$38        ; place at (128, 56)
-  DEFB $02,$1D,$00,$02    ; move 29 frames by (+0, +2)
-  DEFB $02,$1E,$02,$00    ; move 30 frames by (+2, +0)
-  DEFB $02,$01,$01,$00    ; move 1 frames by (+1, +0)
-  DEFB $02,$1C,$02,$FE    ; move 28 frames by (+2, -2)
-  DEFB $01,$F7,$38        ; place at (247, 56)
-  DEFB $01,$08,$AF        ; place at (8, 175)
-  DEFB $02,$1E,$02,$FE    ; move 30 frames by (+2, -2)
-  DEFB $02,$1E,$02,$00    ; move 30 frames by (+2, +0)
-  DEFB $02,$1E,$00,$02    ; move 30 frames by (+0, +2)
-  DEFB $01,$80,$AF        ; place at (128, 175)
-  DEFB $01,$08,$38        ; place at (8, 56)
-  DEFB $02,$1D,$02,$02    ; move 29 frames by (+2, +2)
-  DEFB $02,$01,$01,$01    ; move 1 frames by (+1, +1)
-  DEFB $02,$3D,$02,$00    ; move 61 frames by (+2, +0)
-  DEFB $01,$BE,$73        ; place at (190, 115)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$0440,79
 Rack5Ball2:
-  DEFB $03,$2C            ; ball 2: wait 44 frames
-  DEFB $01,$08,$38        ; place at (8, 56)
-  DEFB $02,$1D,$02,$02    ; move 29 frames by (+2, +2)
-  DEFB $02,$3C,$02,$00    ; move 60 frames by (+2, +0)
-  DEFB $02,$1E,$02,$02    ; move 30 frames by (+2, +2)
-  DEFB $01,$F7,$AF        ; place at (247, 175)
-  DEFB $01,$80,$38        ; place at (128, 56)
-  DEFB $02,$1D,$00,$02    ; move 29 frames by (+0, +2)
-  DEFB $02,$1E,$02,$00    ; move 30 frames by (+2, +0)
-  DEFB $02,$01,$01,$00    ; move 1 frames by (+1, +0)
-  DEFB $02,$1C,$02,$FE    ; move 28 frames by (+2, -2)
-  DEFB $01,$F7,$38        ; place at (247, 56)
-  DEFB $01,$08,$AF        ; place at (8, 175)
-  DEFB $02,$1E,$02,$FE    ; move 30 frames by (+2, -2)
-  DEFB $02,$1E,$02,$00    ; move 30 frames by (+2, +0)
-  DEFB $02,$1E,$00,$02    ; move 30 frames by (+0, +2)
-  DEFB $01,$80,$AF        ; place at (128, 175)
-  DEFB $01,$08,$38        ; place at (8, 56)
-  DEFB $02,$1D,$02,$02    ; move 29 frames by (+2, +2)
-  DEFB $02,$01,$01,$01    ; move 1 frames by (+1, +1)
-  DEFB $02,$3D,$02,$00    ; move 61 frames by (+2, +0)
-  DEFB $02,$04,$02,$FE    ; move 4 frames by (+2, -2)
-  DEFB $02,$03,$02,$00    ; move 3 frames by (+2, +0)
-  DEFB $01,$CD,$6A        ; place at (205, 106)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$048F,87
 Rack5Ball3:
-  DEFB $03,$21            ; ball 3: wait 33 frames
-  DEFB $01,$08,$38        ; place at (8, 56)
-  DEFB $02,$1D,$02,$02    ; move 29 frames by (+2, +2)
-  DEFB $02,$3C,$02,$00    ; move 60 frames by (+2, +0)
-  DEFB $02,$1E,$02,$02    ; move 30 frames by (+2, +2)
-  DEFB $01,$F7,$AF        ; place at (247, 175)
-  DEFB $01,$80,$38        ; place at (128, 56)
-  DEFB $02,$1D,$00,$02    ; move 29 frames by (+0, +2)
-  DEFB $02,$1E,$02,$00    ; move 30 frames by (+2, +0)
-  DEFB $02,$01,$01,$00    ; move 1 frames by (+1, +0)
-  DEFB $02,$1C,$02,$FE    ; move 28 frames by (+2, -2)
-  DEFB $01,$F7,$38        ; place at (247, 56)
-  DEFB $01,$08,$AF        ; place at (8, 175)
-  DEFB $02,$1E,$02,$FE    ; move 30 frames by (+2, -2)
-  DEFB $02,$1E,$02,$00    ; move 30 frames by (+2, +0)
-  DEFB $02,$1E,$00,$02    ; move 30 frames by (+0, +2)
-  DEFB $01,$80,$AF        ; place at (128, 175)
-  DEFB $01,$08,$38        ; place at (8, 56)
-  DEFB $02,$1D,$02,$02    ; move 29 frames by (+2, +2)
-  DEFB $02,$01,$01,$01    ; move 1 frames by (+1, +1)
-  DEFB $02,$3D,$02,$00    ; move 61 frames by (+2, +0)
-  DEFB $02,$04,$02,$02    ; move 4 frames by (+2, +2)
-  DEFB $02,$03,$02,$00    ; move 3 frames by (+2, +0)
-  DEFB $01,$CD,$7C        ; place at (205, 124)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$04E6,87
 Rack5Ball4:
-  DEFB $03,$16            ; ball 4: wait 22 frames
-  DEFB $01,$08,$38        ; place at (8, 56)
-  DEFB $02,$1D,$02,$02    ; move 29 frames by (+2, +2)
-  DEFB $02,$3C,$02,$00    ; move 60 frames by (+2, +0)
-  DEFB $02,$1E,$02,$02    ; move 30 frames by (+2, +2)
-  DEFB $01,$F7,$AF        ; place at (247, 175)
-  DEFB $01,$80,$38        ; place at (128, 56)
-  DEFB $02,$1D,$00,$02    ; move 29 frames by (+0, +2)
-  DEFB $02,$1E,$02,$00    ; move 30 frames by (+2, +0)
-  DEFB $02,$01,$01,$00    ; move 1 frames by (+1, +0)
-  DEFB $02,$1C,$02,$FE    ; move 28 frames by (+2, -2)
-  DEFB $01,$F7,$38        ; place at (247, 56)
-  DEFB $01,$08,$AF        ; place at (8, 175)
-  DEFB $02,$1E,$02,$FE    ; move 30 frames by (+2, -2)
-  DEFB $02,$1E,$02,$00    ; move 30 frames by (+2, +0)
-  DEFB $02,$1E,$00,$02    ; move 30 frames by (+0, +2)
-  DEFB $01,$80,$AF        ; place at (128, 175)
-  DEFB $01,$08,$38        ; place at (8, 56)
-  DEFB $02,$1D,$02,$02    ; move 29 frames by (+2, +2)
-  DEFB $02,$01,$01,$01    ; move 1 frames by (+1, +1)
-  DEFB $02,$3D,$02,$00    ; move 61 frames by (+2, +0)
-  DEFB $02,$08,$02,$FE    ; move 8 frames by (+2, -2)
-  DEFB $02,$07,$02,$00    ; move 7 frames by (+2, +0)
-  DEFB $01,$DD,$62        ; place at (221, 98)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$053D,87
 Rack5Ball5:
-  DEFB $03,$0B            ; ball 5: wait 11 frames
-  DEFB $01,$08,$38        ; place at (8, 56)
-  DEFB $02,$1D,$02,$02    ; move 29 frames by (+2, +2)
-  DEFB $02,$3C,$02,$00    ; move 60 frames by (+2, +0)
-  DEFB $02,$1E,$02,$02    ; move 30 frames by (+2, +2)
-  DEFB $01,$F7,$AF        ; place at (247, 175)
-  DEFB $01,$80,$38        ; place at (128, 56)
-  DEFB $02,$1D,$00,$02    ; move 29 frames by (+0, +2)
-  DEFB $02,$1E,$02,$00    ; move 30 frames by (+2, +0)
-  DEFB $02,$01,$01,$00    ; move 1 frames by (+1, +0)
-  DEFB $02,$1C,$02,$FE    ; move 28 frames by (+2, -2)
-  DEFB $01,$F7,$38        ; place at (247, 56)
-  DEFB $01,$08,$AF        ; place at (8, 175)
-  DEFB $02,$1E,$02,$FE    ; move 30 frames by (+2, -2)
-  DEFB $02,$1E,$02,$00    ; move 30 frames by (+2, +0)
-  DEFB $02,$1E,$00,$02    ; move 30 frames by (+0, +2)
-  DEFB $01,$80,$AF        ; place at (128, 175)
-  DEFB $01,$08,$38        ; place at (8, 56)
-  DEFB $02,$1D,$02,$02    ; move 29 frames by (+2, +2)
-  DEFB $02,$01,$01,$01    ; move 1 frames by (+1, +1)
-  DEFB $02,$3D,$02,$00    ; move 61 frames by (+2, +0)
-  DEFB $02,$0F,$02,$00    ; move 15 frames by (+2, +0)
-  DEFB $01,$DD,$73        ; place at (221, 115)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$0594,83
 Rack5Ball6:
-  DEFB $03,$00            ; ball 6: wait 0 frames
-  DEFB $01,$08,$38        ; place at (8, 56)
-  DEFB $02,$1D,$02,$02    ; move 29 frames by (+2, +2)
-  DEFB $02,$3C,$02,$00    ; move 60 frames by (+2, +0)
-  DEFB $02,$1E,$02,$02    ; move 30 frames by (+2, +2)
-  DEFB $01,$F7,$AF        ; place at (247, 175)
-  DEFB $01,$80,$38        ; place at (128, 56)
-  DEFB $02,$1D,$00,$02    ; move 29 frames by (+0, +2)
-  DEFB $02,$1E,$02,$00    ; move 30 frames by (+2, +0)
-  DEFB $02,$01,$01,$00    ; move 1 frames by (+1, +0)
-  DEFB $02,$1C,$02,$FE    ; move 28 frames by (+2, -2)
-  DEFB $01,$F7,$38        ; place at (247, 56)
-  DEFB $01,$08,$AF        ; place at (8, 175)
-  DEFB $02,$1E,$02,$FE    ; move 30 frames by (+2, -2)
-  DEFB $02,$1E,$02,$00    ; move 30 frames by (+2, +0)
-  DEFB $02,$1E,$00,$02    ; move 30 frames by (+0, +2)
-  DEFB $01,$80,$AF        ; place at (128, 175)
-  DEFB $01,$08,$38        ; place at (8, 56)
-  DEFB $02,$1D,$02,$02    ; move 29 frames by (+2, +2)
-  DEFB $02,$01,$01,$01    ; move 1 frames by (+1, +1)
-  DEFB $02,$3D,$02,$00    ; move 61 frames by (+2, +0)
-  DEFB $02,$08,$02,$02    ; move 8 frames by (+2, +2)
-  DEFB $02,$07,$02,$00    ; move 7 frames by (+2, +0)
-  DEFB $01,$DD,$84        ; place at (221, 132)
-  DEFB $00                ; end
+  INCBIN "res/racks/RackScripts.bin",$05E7,87

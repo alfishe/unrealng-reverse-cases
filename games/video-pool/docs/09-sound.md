@@ -30,6 +30,11 @@ the audio files are drawn from those events by `tools/fig_sound.py`. No sound wa
 . work/env.sh
 python3 work/docs/vpD/replay.py --inputs tests/inputs/w1.txt --frames 16378 --work work/docs/vpD/w1 --port-base 35100
 python3 tools/sound_events.py --work work/docs/vpD/w1 --frames 0-16378 --out work/docs/vpD/w1-sound.json
+# f1 from its TTD recording (an instance with the session loaded, muted), with the SoundRequest writes
+python3 $RS open --work work/sources/f1 --ttd work/docs/vpD/f1/session.ttd --model 48K \
+    --ranges 4000-FFFF --port-base 36810 --binary $BIN
+python3 tools/sound_events.py --work work/sources/f1 --frames 0-6108 --out work/docs/vpD/f1-sound.json
+python3 $RS stop --work work/sources/f1
 python3 tools/fig_sound.py table      # every sound instance measured (the numbers of this document)
 ```
 
@@ -282,24 +287,25 @@ python3 ../../kit/routine_anim.py --work work/docs/vpD/w1 --window 1200:50000-12
 ```
 
 Witness: `w1`: 141 requests taken at `$8077` (48 of 1, 76 of 2, 17 of 3); 1962 speaker-on `OUT` at `$8088` and 1960
-off at `$808F`; SoundAbort `$80A8` 4 times (frames 3044, 4269, 7064, 10387).
+off at `$808F`; SoundAbort `$80A8` 4 times (frames 3044, 4269, 7064, 10387). `f1`: 51 taken (25 of 1, 23 of 2, 3 of
+3), no SoundAbort.
 
 ## 9.3 The requests
 
 The physics asks for a tone by writing its number to SoundRequest `$827D`; SoundLoop takes it in the foreground. The
 writers all run inside the interrupt, in PhysicsTask's calls:
 
-| Writer | Value | When | `w1` writes |
-| --- | ---: | --- | ---: |
-| ExchangeOtherVyStore `$8993` | 1 ball | two balls exchange velocity (the end of the exchange, ExchangeVx `$8912` to ExchangeOtherVyStore `$8984`, in BallContacts `$87EF`; it also sets BallHitFlag `$89BB`) | 71 |
-| ReflectXFrac `$8DF4` | 2 cushion | a ball bounces off a vertical cushion | 31 |
-| ReflectYFrac `$8E28` | 2 cushion | off a horizontal cushion | 48 |
-| ReflectDiagonalStore `$8DC0` | 2 cushion | off a pocket's slanted jaw | 10 |
-| PocketMark `$8C17` | 3 pocket | a ball drops into a pocket | 18 |
-| SoundCycle's end `$8098` | 0 | the tone is done | 137 |
-| StopShotTasks `$84A6` | 0 | the shot ends: the moving tasks removed | 21 |
-| ShotReset `$84D1` | 0 | a new shot is set up | 21 |
-| GameRestart `$8065`, EditorPlay `$C467` | 0 | start of a game, the editor's play | 1, 0 (`e1` 1) |
+| Writer | Value | When | `w1` writes | `f1` writes |
+| --- | ---: | --- | ---: | ---: |
+| ExchangeOtherVyStore `$8993` | 1 ball | two balls exchange velocity (the end of the exchange, ExchangeVx `$8912` to ExchangeOtherVyStore `$8984`, in BallContacts `$87EF`; it also sets BallHitFlag `$89BB`) | 71 | 28 |
+| ReflectXFrac `$8DF4` | 2 cushion | a ball bounces off a vertical cushion | 31 | 11 |
+| ReflectYFrac `$8E28` | 2 cushion | off a horizontal cushion | 48 | 9 |
+| ReflectDiagonalStore `$8DC0` | 2 cushion | off a pocket's slanted jaw | 10 | 7 |
+| PocketMark `$8C17` | 3 pocket | a ball drops into a pocket | 18 | 3 |
+| SoundCycle's end `$8098` | 0 | the tone is done | 137 | 51 |
+| StopShotTasks `$84A6` | 0 | the shot ends: the moving tasks removed | 21 | 9 |
+| ShotReset `$84D1` | 0 | a new shot is set up | 21 | 9 |
+| GameRestart `$8065`, EditorPlay `$C467` | 0 | start of a game, the editor's play | 1, 0 (`e1` 1) | 1, 0 |
 
 ```asm
 ExchangeOtherVyStore:           ; the exchange's last store (BallContacts): the other ball's vy
@@ -395,8 +401,9 @@ The writes of `w1` in the break (frame, T, value, writer) and their fate, as `to
 | 1200 | PocketMark | 3 | taken: the first pot |
 
 The whole of `w1`: 178 requests, 141 taken (48 ball, 76 cushion, 17 pocket), 21 lost under a playing tone (10 ball,
-10 cushion, 1 pocket at frame 4470), 16 replaced in their tick (13 ball, 3 cushion). `e1`: 9 requests, 8 taken,
-1 replaced.
+10 cushion, 1 pocket at frame 4470), 16 replaced in their tick (13 ball, 3 cushion). `f1`: 58 requests, 51 taken (25 ball, 23 cushion,
+3 pocket), 4 lost (1 ball, 3 cushion: frames 1014, 3437, 3460, 3490), 3 replaced (2 ball, 1 cushion); none of its
+9 StopShotTasks clears came while a tone played. `e1`: 9 requests, 8 taken, 1 replaced.
 
 ### The frozen pocket tone
 

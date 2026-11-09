@@ -367,14 +367,15 @@ How to read the figure:
   ends (the largest is the rack's length: 170 for set 0).
 - Sets 0 and 1 are labelled with the `w1` frames that ran them. Sets 2-5 are labelled "from the code": no recording
   reached frame 5.
-- Built by running RackStep's rules on the script bytes of the image `work/mkgame/original.bin`. The `w1` rack of set
-  0 matches the per-frame sample step for step (the worked example above).
+- Built by running RackStep's rules on the scripts of the resource `src/res/racks/RackScripts.txt` (the bytes
+  `$A0C4-$A701` the build INCBINs, identical to the image's). The `w1` rack of set 0 matches the per-frame sample
+  step for step (the worked example above). Each set alone is `src/res/maps/RackSet0.png` ... `RackSet5.png`.
 
 **The point**: the rack is an animation, not physics: 36 byte programs, six per set. The six sets give each pair of
 frames its own entrance. A player sees only the first one or two unless he clears four frames.
 
 ```bash
-python3 tools/fig_objects.py racks --image work/mkgame/original.bin --table work/docs/vpC/shots/t707.png --out docs/img/maps/racks.png
+python3 tools/fig_objects.py racks --table work/docs/vpC/shots/t707.png --out docs/img/maps/racks.png   # and src/res/maps/RackSet*.png
 ```
 
 The image holds 6 sets of 6 scripts, not 30 racks. Frames 13 and later reuse the sets in turn (the mod 6 of

@@ -54,6 +54,17 @@
 @isub $BD18 LD DE,$8010
 @isub $BDE9 LD BC,300
 @isub $BE25 LD BC,900
+@alias PocketTurn PlayerVars ; the first field of PlayerVars $9F43, the current player's pocket mark turn (the entry's label wins at $9F43)
+@isub $8C37 LD A,(PocketTurn)
+@isub $9641 LD (PocketTurn),HL
+@isub $9923 LD A,(PocketTurn)
+@isub $9964 LD A,(PocketTurn)
+@isub $9BC9 LD A,(PocketTurn)
+@isub $9BD2 LD (PocketTurn),A
+@isub $9C37 LD HL,(PocketTurn)
+@isub $9C3D LD (PocketTurn),HL
+@isub $9D95 LD A,(PocketTurn)
+@isub $9DA7 LD A,(PocketTurn)
 
 # Fragment 01 (vp2): $8000-$86C0 (the entry, the sound loop, the interrupt, the input, the shot and aim tasks) and
 # $9155-$9242 (the task scheduler). Counts: python3 tools/l1sum.py ADDR (builds game, w1, f1, p2, v1, m1).
@@ -187,6 +198,7 @@ $8250 KeyRead ; read the half row
 
 $8254 b KeyTable 5 ; The 40 keys by half row, from the outer key in: the character each one stands for
 > Read by KeyDown (CPIR) and by the menu's key-name code. Characters: CAPS SHIFT = $27, ENTER = $0D, SPACE = $20, SYMBOL SHIFT = $18, else the key's capital letter or digit. The rows are the ports $FEFE (CAPS Z X C V), $FDFE (A S D F G), $FBFE (Q W E R T), $F7FE (1 2 3 4 5), $EFFE (0 9 8 7 6), $DFFE (P O I U Y), $BFFE (ENTER L K J H), $7FFE (SPACE SYMBOL M N B). Stage 1's signature candidate at $8240 was this table.
+@res tables/KeyTable.bin
 
 $827C b InputState ; The controls this interrupt: bit 0 right, 1 left, 2 up, 3 down, 4 fire, 5 BREAK
 > Written by ReadBreak (every pass of ReadInput), cleared by AimCursorReset $85C8 and the editor ($C504). Read by SoundLoop (BREAK), AimPower $8506 (fire), AimCursorMove $8546, the hall-of-fame entry ($AEBF...), the menu ($B2A7...) and the editor ($C11E...).
@@ -882,6 +894,7 @@ $9BF9 ShotsTableRead
 $9BFA ShotsVariation
 $9C06 b ShotsPerFrame 9 ; The shots of frames 1-9: 5, 5, 4, 4, 4, 3, 3, 3, 3
 > Read by ShotsForFrame $9BE6 (index frame - 1). Frames 1-4 read (w1 reached frame 4); $9C0A-$9C0E (frames 5-9) read by no build.
+@res tables/ShotsPerFrame.bin
 $9C0F c TurnSwapStart ; Run TurnSwap with the tasks stopped (WaitFrame $80DE)
 $9C15 c TurnSwap ; After a life lost: with two players and the other still alive, swap everything to the other player; then the frame, shots, pocket marks, PLAYER n
 > Run by TurnSwapStart (game 3, w1 3, f1 3, p2 1 at frame 1738, v1 3). Two players (p2 only): wait 40 frames, ClearTableForTurn $947D, DrawLives (XOR: erases the lives), then unless the other's lives $9F4F are negative: CurrentPlayer 1 <-> 2, and the pairs pocket turn (PlayerVars $9F43) / $9F44, LivesLeft $9F4E / $9F4F, FrameNumber $9F4B / $9F4C swapped, the 98-byte ball sets $8A88 / $8AEA exchanged byte by byte.
@@ -921,6 +934,7 @@ $9D2C c ResetBallPositions ; Put the seven balls of the current set at their rac
 $9D38 ResetBallLoop
 $9D5D b StartPositions 2 ; The rack: x, y of the cue ball and balls 1-6
 > (40, 115), (190, 115), (205, 106), (205, 124), (221, 98), (221, 115), (221, 132): a triangle of six with its point at ball 1. Read by ResetBallPositions; the rack scripts end on the same points (RackScripts0).
+@res tables/StartPositions.bin
 
 @module printing ; The pocket multiplier marks, the number printer, the text printer and its glyph lookup
 @about PrintChar $9E7C prints character A at row H, column L with attribute C. C bit 7 = double width: the attribute (C AND $7F) goes into two cells and the glyph is widened (PrintCharWide); the string and number printers then step two columns. Glyphs: $61-$7A (a-z) Font $DEF4, $30-$39 (0-9) Font+208, $7F the copyright sign CopyrightGlyph $9F2E, every other code CHAR_SET + 8 (code - $20) (upper case, space, punctuation from the ROM).
@@ -970,6 +984,7 @@ $9F14 c CellAddress ; HL = the display address of row H (0-23), column L (0-31),
 $9F23 c CellAttr ; HL = the attribute address of the display cell address HL
 $9F2E b CopyrightGlyph 8 ; The glyph of character $7F, the copyright sign (a C in a ring)
 > Read by PrintChar's $7F branch ($9E96: game 2, m1 4; the menu's copyright line).
+@res fonts/CopyrightGlyph.bin
 
 @module racking ; The player variables, the rack scripts and their interpreter
 $9F36 c SpriteFromBall ; HL = the sprite place of record IX: L = x - 7, H = y - 7 (whole parts +1, +3)
@@ -1018,14 +1033,17 @@ $A0B1 RackStepRun ; command 2
 $A0BB RackStepWait ; command 3
 $A0C4 w RackSets 6 ; The six rack sets: pointers to six script pointers each (balls 1-6)
 > Read by RackBalls ($9F83): sets 0 and 1 read; $A0C8-$A0CF (sets 2-5, frames 5-12) read by no build. Set 1 $A162 and sets 2-5 ($A1E4, $A29C, $A38E, $A4F8) are past this fragment.
+@res racks/RackScripts.bin
 $A0D0 w RackScripts0 6 ; Set 0 (frames 1-2): the scripts of balls 1-6
+@res racks/RackScripts.bin
 $A0DC b RackScript0Ball1 16 ; Ball 1: wait 75; at (7, 175); 30 x (+2, -2); 61 x (+2, 0); at (190, 115); end
 > The scripts of set 0 all start at a left corner pocket, (7, 175) or (7, 55), run diagonally to y 115, along the middle line, turn into their place and end exactly on StartPositions. Waits 75, 60, 45, 30, 15, 0: ball 6 rolls first.
-$A0ED RackScript0Ball2 ; Ball 2: wait 60; at (7, 55); 30 x (+2, +2); 61 x (+2, 0); 4 x (+2, -2); 3 x (+2, 0); at (205, 106); end
-$A106 RackScript0Ball3 ; Ball 3: wait 45; at (7, 175); 30 x (+2, -2); 61 x (+2, 0); 4 x (+2, +2); 3 x (+2, 0); at (205, 124); end
-$A11F RackScript0Ball4 ; Ball 4: wait 30; at (7, 55); 30 x (+2, +2); 61 x (+2, 0); 8 x (+2, -2); 7 x (+2, 0); at (221, 98); end
-$A138 RackScript0Ball5 ; Ball 5: wait 15; at (7, 175); 30 x (+2, -2); 77 x (+2, 0); at (221, 115); end
-$A149 RackScript0Ball6 ; Ball 6: wait 0; at (7, 55); 30 x (+2, +2); 61 x (+2, 0); 8 x (+2, +2); 7 x (+2, 0); at (221, 132); end
+@res racks/RackScripts.bin
+$A0ED RackScript0Ball2 ; ball 2: set0.ball2
+$A106 RackScript0Ball3 ; ball 3: set0.ball3
+$A11F RackScript0Ball4 ; ball 4: set0.ball4
+$A138 RackScript0Ball5 ; ball 5: set0.ball5
+$A149 RackScript0Ball6 ; ball 6: set0.ball6
 
 @module rackscripts ; The rack-in scripts of sets 1-5: how the six object balls roll onto the table before frames 3-12
 @about The racking $9F6F (the lead's range) animates the six object balls into the rack before each frame. It picks a set from the table $A0C4 by the frame number $9F4B: set ((frame - 1) / 2) mod 6, so frames 1-2 use set 0 ($A0D0, the lead's range), 3-4 set 1, 5-6 set 2, 7-8 set 3, 9-10 set 4, 11-12 set 5, and from frame 13 on the sets repeat. A set is six words, the script of ball 1 to ball 6, then the scripts.
@@ -1033,8 +1051,10 @@ $A149 RackScript0Ball6 ; Ball 6: wait 0; at (7, 55); 30 x (+2, +2); 61 x (+2, 0)
 @about Set 1 ($A162-$A1E3) is read in w1 at frames 3 and 4. Sets 2-5, the 1310 bytes $A1E4-$A701, are read by no recording: no game reached frame 5 (w1 won frames 1-3). The only words in the image that point into $A1E4-$A701 are the four set pointers $A0C8-$A0CE and the sets' own script pointers (a byte search of work/mkgame/original.bin; other matches are instruction bytes). The scripts decode cleanly and each ends on its ball's rack position (work/stage2/ann/04-scratch/racks.py): they are the racks of frames 5-12, not leftover data. The paths (from the decoded scripts, not seen on screen): set 1 starts the balls from the four corners and the middles of the top and bottom cushions; set 2 runs them along the cushions to x 27 and then right along their rack rows; set 3 brings them from the right corners across to the left cushion and back; set 4 sends three from the top left and three from the bottom right round the cushions with pauses and short side steps; set 5 sends all six along one path, in at (8, 56), each dropping into a pocket and reappearing at another (place commands at the pocket positions (247, 175), (128, 56), (247, 56), (8, 175), (128, 175), (8, 56)).
 $A162 w RackSet1 6 ; Rack-in set 1: the script of each object ball 1-6, the frames 3-4 rack (stage-1 w1 racked frames 3 and 4 with it)
 > Read through the set table at $A0C4 by the racking $9F6F (index ((frame - 1) / 2) mod 6, the frame from $9F4B): w1 read every byte of this set twice (frames 3 and 4 of its game; l1sum.py --reads A162-A1E3: w1 only, 1562 reads). No other recording reached frame 3.
+@res racks/RackScripts.bin
 $A16E b Rack1Ball1 4 ; The scripts of rack-in set 1, ball 1 first
 > The six scripts of set 1 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step $A05E.
+@res racks/RackScripts.bin
 $A16E ; ball 1: wait 15 frames
 $A170 ; place at (7, 55)
 $A173 ; move 30 frames by (+2, +2)
@@ -1077,8 +1097,10 @@ $A1E0 ; place at (221, 132)
 $A1E3 ; end
 $A1E4 w RackSet2 6 ; Rack-in set 2: the script of each object ball 1-6, the frames 5-6 rack
 > Reached only through the set table $A0C4 (the word at $A0C8) when the racking $9F6F racks frame 5 or 6 (or 17-18 after the wrap). No recording read a byte (l1sum.py --reads A1E4-A701: game, w1, f1, p2, v1, m1 all zero; w1, the longest game, reached frame 4). Known only from the code; every script decodes cleanly and ends on its ball's rack position ($9D5D) (work/stage2/ann/04-scratch/racks.py).
+@res racks/RackScripts.bin
 $A1F0 b Rack2Ball1 4 ; The scripts of rack-in set 2, ball 1 first
 > The six scripts of set 2 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step $A05E.
+@res racks/RackScripts.bin
 $A1F0 ; ball 1: wait 190 frames
 $A1F2 ; place at (7, 55)
 $A1F5 ; move 10 frames by (+2, +2)
@@ -1139,8 +1161,10 @@ $A298 ; place at (221, 132)
 $A29B ; end
 $A29C w RackSet3 6 ; Rack-in set 3: the script of each object ball 1-6, the frames 7-8 rack
 > Reached only through the set table $A0C4 (the word at $A0CA) when the racking $9F6F racks frame 7 or 8 (or 19-20 after the wrap). No recording read a byte (l1sum.py --reads A1E4-A701: game, w1, f1, p2, v1, m1 all zero; w1, the longest game, reached frame 4). Known only from the code; every script decodes cleanly and ends on its ball's rack position ($9D5D) (work/stage2/ann/04-scratch/racks.py).
+@res racks/RackScripts.bin
 $A2A8 b Rack3Ball6 4 ; The scripts of rack-in set 3, ball 6 first
 > The six scripts of set 3 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step $A05E.
+@res racks/RackScripts.bin
 $A2A8 ; ball 6: wait 0 frames
 $A2AA ; place at (248, 175)
 $A2AD ; move 34 frames by (-2, -2)
@@ -1211,8 +1235,10 @@ $A38A ; place at (190, 115)
 $A38D ; end
 $A38E w RackSet4 6 ; Rack-in set 4: the script of each object ball 1-6, the frames 9-10 rack
 > Reached only through the set table $A0C4 (the word at $A0CC) when the racking $9F6F racks frame 9 or 10 (or 21-22 after the wrap). No recording read a byte (l1sum.py --reads A1E4-A701: game, w1, f1, p2, v1, m1 all zero; w1, the longest game, reached frame 4). Known only from the code; every script decodes cleanly and ends on its ball's rack position ($9D5D) (work/stage2/ann/04-scratch/racks.py).
+@res racks/RackScripts.bin
 $A39A b Rack4Ball5 4 ; The scripts of rack-in set 4, ball 5 first
 > The six scripts of set 4 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step $A05E.
+@res racks/RackScripts.bin
 $A39A ; ball 5: wait 0 frames
 $A39C ; place at (248, 175)
 $A39F ; move 8 frames by (-2, -2)
@@ -1320,8 +1346,10 @@ $A4F4 ; place at (221, 98)
 $A4F7 ; end
 $A4F8 w RackSet5 6 ; Rack-in set 5: the script of each object ball 1-6, the frames 11-12 rack
 > Reached only through the set table $A0C4 (the word at $A0CE) when the racking $9F6F racks frame 11 or 12 (or 23-24 after the wrap). No recording read a byte (l1sum.py --reads A1E4-A701: game, w1, f1, p2, v1, m1 all zero; w1, the longest game, reached frame 4). Known only from the code; every script decodes cleanly and ends on its ball's rack position ($9D5D) (work/stage2/ann/04-scratch/racks.py).
+@res racks/RackScripts.bin
 $A504 b Rack5Ball1 4 ; The scripts of rack-in set 5, ball 1 first
 > The six scripts of set 5 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step $A05E.
+@res racks/RackScripts.bin
 $A504 ; ball 1: wait 55 frames
 $A506 ; place at (8, 56)
 $A509 ; move 29 frames by (+2, +2)
@@ -1542,6 +1570,7 @@ $AABD c RestoreFlagLine ; Copy one solid line (SolidLine $AAD8) at slot IX's fla
 > A = 8 (sliding down: the line above the name) or $0F (sliding up: the line under it). Nothing at y + A >= $C0. Witness: w1 432, frames 13425-13731.
 $AAD8 b SolidLine ; Seven $FF bytes: a solid 56-pixel line of a flag
 > Read by RestoreFlagLine through CopyNameLines (w1 2688 reads).
+@res graphics/SolidLine.bin
 $AADF c RenderName ; Render slot IX's name (+2, 7 characters) into its bitmap (+$0F), inverted
 > RenderChar $AB04 for each character, into the bitmap with a stride of 7. Called by InsertEntry (the three slots) and DrawFlag. Witness: w1 6, frames 13372-13553.
 $AAE9 RenderNameSource
@@ -1555,6 +1584,7 @@ $AB28 RenderCharCopy
 $AB33 RenderCharLoop
 $AB41 b FlagTail 2 ; The flag's ragged tail: 29 lines of 2 bytes (right byte, left byte), XORed at x + 48
 > Read by XorTailLines (w1 43558 reads). Lines 0-4: right $00, left $FF (the flag goes on 8 pixels); lines 5-23: left $FF, right $7F $7E $7C $78 $78 $7C $7E $7F repeating (the ragged edge, two notches and a part); lines 24-28 ($AB71-$AB7A): the curled bottom corner below the 24-line field.
+@res graphics/FlagTail.bin
 $AB7B c DrawFlag ; Draw slot IX's flag at its pole: attributes, the solid field, the tail, the name
 > Sets the flag position to (x + 8, y + 1) of the pole, renders the name (RenderName), fills 9 attribute cells a row with +$0D from the flag's row to the bottom of the screen, XORs a 48 x 24 solid field (XorLine $93B3), the tail (DrawFlagTail) and the name (DrawNameBitmap). Witness: w1 3, frames 13372-13373.
 $AB93 FlagAttrRows
@@ -1569,17 +1599,18 @@ $ABFD c AttrOfScreen ; HL = the attribute address of the screen address HL (H's 
 $AC08 b HofTable 8 ; The hall of fame: 3 slots of 71 bytes; slot 1 centre top (james 300), slot 2 left (francis 200), slot 3 right (bill 100)
 > Read by CountBeaten (the scores: game and f1 read only slot 3's score), InsertEntry, ShowHallOfFame and the slide routines; written by InsertEntry, RenderName (the bitmaps) and the slide routines (+9/+$0A, +$0E). In the image: +0/+1 score, +2..+8 the name (padded with spaces), +9/+$0A the flag's x / y (set by DrawFlag), +$0B/+$0C the pole's x / y in pixels, +$0D the flag's attribute, +$0E bit 0 = the flag moves, +$0F..+$46 the name bitmap (56 bytes, rendered at the first draw).
 > w1 wrote "vp" with 270 into slot 2 (screen w1 frame 14000: james 003000 centre, vp 002700 left, francis 002000 right).
+@res text/HofTable.bin
 $AC0A ; +2..+8 the name " james "
 $AC11 ; +9/+$0A the flag's position (x, y)
-$AC13 ; +$0B/+$0C the pole (88, 23), +$0D attribute $0E (yellow on blue), +$0E moves
-$AC17 ; +$0F..+$46 the name bitmap, 7 bytes x 8 lines
+$AC13 ; the pole (88, 23), attribute $0E, moves
+$AC17 ; +$0F..+$46 the name bitmap
 $AC4F HofSlot2 ; slot 2: score 200, "francis"
 $AC51 ; the name
-$AC58 ; the flag's position, the pole (0, 63), attribute $0B (magenta on blue), moves
+$AC58 ; the pole (0, 63), attribute $0B, moves
 $AC5E ; the name bitmap
 $AC96 HofSlot3 ; slot 3: score 100, " bill  "
 $AC98 ; the name
-$AC9F ; the flag's position, the pole (176, 103), attribute $0C (green on blue), moves
+$AC9F ; the pole (176, 103), attribute $0C, moves
 $ACA5 ; the name bitmap
 $ACDD b NewEntry1 9 ; The new entries: player 1's score and name, then player 2's (9 bytes each, the format of a slot's first 9)
 > Written by GameOverHallOfFame (the score from $9F45 / $9F47, the name from NameBuffer $B227), read by InsertEntry. w1 wrote and read NewEntry1 (11 reads); NewEntry2 is read and written only on the two-player path, which no recording ran.
@@ -1666,10 +1697,13 @@ $B141 DrawCharGlyph
 $B150 DrawCharLines
 $B167 b CharacterGrid 14 ; The name-entry grid: 3 rows of 14 cells
 > Read by DrawCharacterGrid and PickCell (w1 45 reads). Row 0 a-n, row 1 o-z, space, "."; row 2 0-9, $0C $0C ("rub", two cells), $0D $0D ("end").
+@res text/CharacterGrid.bin
 $B191 b RubLines 3 ; The word "rub": lines (dx, dy, length) from (x $B7, y $90), $FF ends
 > Read by DrawLineList (w1 97 reads).
+@res graphics/RubLines.bin
 $B1DA b EndLines 3 ; The word "end": lines (dx, dy, length) from (x $D7, y $90), $FF ends
 > Read by DrawLineList (w1 102 reads).
+@res graphics/EndLines.bin
 $B226 b RepeatDelay ; The name entry's auto-repeat counter: two nibbles, high = the delay, low = the countdown ($70 at rest)
 > Written and read by NameEntry (w1 103 reads).
 $B227 t NameBuffer ; The name being typed: 7 characters ("_" = empty)
@@ -1852,8 +1886,9 @@ $BA54 c BannerXorBlock ; XOR 4 pixels (a nibble) at x E, line D: B = 0 draws not
 $BA69 BannerXorNibble
 $BA6C c PresentsPixelAddress ; HL = the display-file address of pixel line H, x L (the byte; the caller adds the line within the cell)
 > H = y, L = x in: L = (y AND $38) * 4 + x / 8, H = $40 + (y AND $C0) / 8. The caller adds y AND 7 to H. Used by BannerXorBlock $BA54 and VideoSlideIn $BC9E. game 9808 calls; the same code as PenPixelAddress $BFB2.
-$BA86 b BannerData 16 ; The OCP banner: 36 rows of run lengths, 240 pixels each (bit 7 ink, bits 0-6 half the length)
+$BA86 b BannerData 16 ; The OCP banner: 37 rows of run lengths, 240 pixels each (bit 7 ink, bits 0-6 half the length)
 > One byte a run: bit 7 set = magenta ink, clear = paper; bits 0-6 = half the run's length in pixels. A row ends when its runs add up to 240 pixels: $F8 alone is a full ink row, $78 a full paper row. The letters O, C and P are the paper gaps in the ink stripes (WALKTHROUGH 6.1, m1 frame 300). Read by BannerRowEdges $BA0A (and BannerRollIn $B96C, BannerDrawRows $B9E0 to skip rows); all 141 bytes in every build.
+@res graphics/BannerData.bin
 
 @module attract ; The attract sequence's letters: OCP turning into POOL, "video" sliding in
 @about LogoFlip $BB13 turns the banner's letters about their vertical axes: in 20 steps the O, C and P (gaps in the magenta stripes) narrow to nothing, then in 20 steps P, O, O, L widen in their place. Each letter is a list of edges per stripe row (FlipLetterO $BB98 and the next three); FlipEdge $BC11 XORs only the strip between an edge's width at this step and at the next one, taken from the cosine tables FlipWidths16 $BC74 / FlipWidths24 $BC89.
@@ -1867,6 +1902,7 @@ $BB74 c FlipLetter ; One step of one letter: FlipEdge for each edge record of th
 > IX = a letter's list of 3-byte records (dx, dy, kind) ending $FF; B = the phase (0 narrowing, 1 widening), C = the step. For each record: E + dx, D + dy and kind + phase go to FlipEdge $BC11. Registers kept but IX. game 210 records, m1 4800.
 $BB98 b FlipLetterO 3 ; The letter O: 12 edge records (dx, dy, kind), $FF
 > Each letter: per stripe row (dy 0, 8, ... 40, the six stripe pairs) a record for the left edge (dx 0) and one for the right edge (dx 1, kind bit 1 set). Kind: bit 1 = the right edge, bit 2 = the 24-pixel width table, bit 3 = both tables (two edges drawn, 16 and 24); bit 0 is the phase LogoFlip adds. Read by FlipLetter $BB74: all 121 bytes in w1 and m1 (game, f1, p2, v1 stop at the key during the narrowing, so the L is never read there).
+@res graphics/FlipLetters.bin
 $BBBC ; end of O
 $BBBD FlipLetterC ; The letter C: 10 records, $FF
 $BBDB ; end of C
@@ -1888,6 +1924,7 @@ $BC4C FlipEdgeXor
 $BC63 FlipEdgeBoth ; bit 3: both tables
 $BC74 b FlipWidths16 7 ; Half-widths of a turning letter: 16 cos(4.5 k) for k = 0..20 (16 ... 1, 0)
 > 21 bytes 16, 16, 16, 16, 15, 15, 14, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 1, 0: the projected half-width of a 16-pixel half letter turned by 4.5 degrees a step (16 cos 45 = 11.3, entry 10 = 11). Read by FlipEdge $BC11; all in w1 and m1.
+@res tables/FlipWidths.bin
 $BC89 FlipWidths24 ; the same for 24 pixels: 24 cos(4.5 k), 24 ... 2, 0
 $BC9E c VideoSlideIn ; Print "video" above the banner, letters 16 pixels wide sliding into their cells 2 pixels a step
 > Eight steps C = 7..0, three frames each (PresentsFrame $B91B). Each step prints the five letters of VideoText $BD04 at line 24 ($18), x 8 + 24 i: each font row (Font $DEF4, letter - 'a') doubled to 16 bits, shifted left by 2 C bits, written as two screen bytes over the old ones (no XOR), so each letter enters its cell from the right.
@@ -1899,9 +1936,10 @@ $BCC8 VideoLineLoop ; eight lines
 $BCD0 VideoDoubleLoop ; each bit twice
 $BCE2 VideoShiftLoop ; shift left 2 C bits
 $BCEC VideoStore
-$BD04 b VideoText 5 ; "video" (VideoSlideIn), then the saved SP and the presents-done flag
-> "video" is read by VideoSlideIn $BC9E (w1, m1).
-$BD09 PresentsSP ; SP at PresentsPage's entry: PresentsAbort $B931 reloads it (written and read once in every build)
+$BD04 b VideoText 5 ; "video", the five letters of VideoSlideIn
+> Read by VideoSlideIn $BC9E (w1, m1).
+@res text/VideoText.bin
+$BD09 b PresentsSP ; SP at PresentsPage's entry: PresentsAbort $B931 reloads it (written and read once in every build)
 $BD0B PresentsDone ; 0 while GameStart $8000's first presents page runs ($8006), $FF after it ($800E): PresentsPage then also calls $A8FD (read twice in m1, both 0)
 
 @module signature ; The pen that writes "written by" and the signature
@@ -1994,12 +2032,15 @@ $BFB2 c PenPixelAddress ; HL = the display-file address of line H, x L (the same
 > m1 60 112 calls (PenShaft, PenSpan).
 $BFCC b PenNib 3 ; The pen's nib: ten spans (dx, dy, length) from the pen point down-right, $FF
 > (0,0,2) (0,1,4) (1,2,5) (1,3,7) (2,4,8) (2,5,10) (3,6,10) (3,7,11) (4,8,11) (4,9,12): a wedge 10 lines high. Read by PenSpans $BE79 (m1, all 31 bytes).
+@res graphics/PenNib.bin
 $BFEA ; end
 $BFEB b PenCap 3 ; The pen's end cap: six spans at (49..54, 54..59), lengths 11 down to 1, $FF
 > Read by PenSpans $BE79 after the shaft (m1, all 19 bytes).
+@res graphics/PenCap.bin
 $BFFD ; end
 $BFFE b PenShaftImage 4 ; The shaft: 16 rows of 4 bytes, a 12-pixel bar moving one pixel right a row
 > Row r = the bar's 12 pixels starting at pixel r of the 32: PenShaftBlock $BEDC starts at row x AND 7 and takes one row a line. Read by PenShaftCopy4 $BF33 (m1, 60 of 64 bytes: rows 15's last bytes never).
+@res graphics/PenShaftImage.bin
 $C03E b PenBand ; The pen's state: the band flag (0; 1 / 2 only on the band paths, never run), pen down, the shaft position
 > PenBand $C03E: zeroed by SignatureWrite $BD0C, read by SigMove $BD65 (m1 582 reads, always 0).
 $C03F PenIsDown ; 0 pen up, 1 pen down (SignatureCommand commands 1 / 2; read by PenStep, m1 1484 reads)

@@ -37,3 +37,4 @@ Found by the cases, worked around there, not yet fixed in `kit/`:
 | `game_part` does not pass `no_entries` | Video Pool stage 2 | the turbo part uses `"mode": "blocks"` |
 | a data-line comment inside `@res` that wraps to its own line breaks the INCBIN substitution, the image shifts | Video Pool stage 2 | shorter comments |
 | `@equ` with a size is applied after `@isub` and rewrites its operands | Video Pool stage 2 | none needed yet; watch for it |
+| a field label on a data entry's first address (`PocketTurn` on `PlayerVars $9F43`) never reaches an operand: the entry's label wins | Video Pool sources | `@alias PocketTurn PlayerVars` and one `@isub` per instruction (ten) |

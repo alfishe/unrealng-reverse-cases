@@ -1,0 +1,30 @@
+# A list of horizontal spans, one a line, from the origin the code gives:
+#   span DX DY LENGTH   LENGTH pixels from (x + DX, y + DY), DX and DY unsigned bytes ($00 DX DY LENGTH)
+#   end                 the end of the list ($FF)
+# The word "end" of the name-entry grid, from (x $D7, y $90): XorLine for each.
+  span 0 2 5
+  span 0 3 1
+  span 4 3 1
+  span 0 4 5
+  span 0 5 1
+  span 0 6 5
+  span 6 2 5
+  span 6 3 1
+  span 10 3 1
+  span 6 4 1
+  span 10 4 1
+  span 6 5 1
+  span 10 5 1
+  span 6 6 1
+  span 10 6 1
+  span 16 0 1
+  span 16 1 1
+  span 12 2 5
+  span 12 3 1
+  span 16 3 1
+  span 12 4 1
+  span 16 4 1
+  span 12 5 1
+  span 16 5 1
+  span 12 6 5
+end

@@ -653,70 +653,19 @@ DrawCharLines:
 ; Read by DrawCharacterGrid and PickCell (w1 45 reads). Row 0 a-n, row 1 o-z,
 ; space, "."; row 2 0-9, $0C $0C ("rub", two cells), $0D $0D ("end").
 CharacterGrid:
-  DEFB $61,$62,$63,$64,$65,$66,$67,$68,$69,$6A,$6B,$6C,$6D,$6E
-  DEFB $6F,$70,$71,$72,$73,$74,$75,$76,$77,$78,$79,$7A,$20,$2E
-  DEFB $30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$0C,$0C,$0D,$0D
+  INCBIN "res/text/CharacterGrid.bin",$0000,42
 
 ; The word "rub": lines (dx, dy, length) from (x $B7, y $90), $FF ends
 ;
 ; Read by DrawLineList (w1 97 reads).
 RubLines:
-  DEFB $00,$02,$05
-  DEFB $00,$03,$01
-  DEFB $00,$04,$01
-  DEFB $00,$05,$01
-  DEFB $00,$06,$01
-  DEFB $06,$02,$01
-  DEFB $0A,$02,$01
-  DEFB $06,$03,$01
-  DEFB $0A,$03,$01
-  DEFB $06,$04,$01
-  DEFB $0A,$04,$01
-  DEFB $06,$05,$01
-  DEFB $0A,$05,$01
-  DEFB $06,$06,$05
-  DEFB $0C,$00,$01
-  DEFB $0C,$01,$01
-  DEFB $0C,$02,$05
-  DEFB $0C,$03,$01
-  DEFB $10,$03,$01
-  DEFB $0C,$04,$01
-  DEFB $10,$04,$01
-  DEFB $0C,$05,$01
-  DEFB $10,$05,$01
-  DEFB $0C,$06,$05
-  DEFB $FF
+  INCBIN "res/graphics/RubLines.bin",$0000,73
 
 ; The word "end": lines (dx, dy, length) from (x $D7, y $90), $FF ends
 ;
 ; Read by DrawLineList (w1 102 reads).
 EndLines:
-  DEFB $00,$02,$05
-  DEFB $00,$03,$01
-  DEFB $04,$03,$01
-  DEFB $00,$04,$05
-  DEFB $00,$05,$01
-  DEFB $00,$06,$05
-  DEFB $06,$02,$05
-  DEFB $06,$03,$01
-  DEFB $0A,$03,$01
-  DEFB $06,$04,$01
-  DEFB $0A,$04,$01
-  DEFB $06,$05,$01
-  DEFB $0A,$05,$01
-  DEFB $06,$06,$01
-  DEFB $0A,$06,$01
-  DEFB $10,$00,$01
-  DEFB $10,$01,$01
-  DEFB $0C,$02,$05
-  DEFB $0C,$03,$01
-  DEFB $10,$03,$01
-  DEFB $0C,$04,$01
-  DEFB $10,$04,$01
-  DEFB $0C,$05,$01
-  DEFB $10,$05,$01
-  DEFB $0C,$06,$05
-  DEFB $FF
+  INCBIN "res/graphics/EndLines.bin",$0000,76
 
 ; The name entry's auto-repeat counter: two nibbles, high = the delay, low =
 ; the countdown ($70 at rest)

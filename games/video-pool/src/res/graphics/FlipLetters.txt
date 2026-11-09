@@ -1,0 +1,52 @@
+# The edges of the attract sequence's turning letters O, C, P, L (FlipLetter $BB74), one a line:
+#   letter NAME         the next list (the name for the reader; the label is the source's)
+#   edge DX DY KIND     DX 0 the left edge, 1 the right; DY the stripe line (0, 8, ... 40); KIND bit 1
+#                       the right edge, bit 2 the 24-pixel width table, bit 3 both tables
+#   end                 the end of the letter ($FF)
+letter O
+  edge 0 0 $00
+  edge 1 0 $02
+  edge 0 8 $08
+  edge 1 8 $0A
+  edge 0 16 $08
+  edge 1 16 $0A
+  edge 0 24 $08
+  edge 1 24 $0A
+  edge 0 32 $08
+  edge 1 32 $0A
+  edge 0 40 $00
+  edge 1 40 $02
+end
+letter C
+  edge 0 0 $00
+  edge 1 0 $02
+  edge 0 8 $08
+  edge 1 8 $0A
+  edge 0 16 $08
+  edge 0 24 $08
+  edge 0 32 $08
+  edge 1 32 $0A
+  edge 0 40 $00
+  edge 1 40 $02
+end
+letter P
+  edge 0 0 $04
+  edge 1 0 $02
+  edge 0 8 $08
+  edge 1 8 $0A
+  edge 0 16 $08
+  edge 1 16 $0A
+  edge 0 24 $04
+  edge 1 24 $02
+  edge 0 32 $08
+  edge 0 40 $08
+end
+letter L
+  edge 0 0 $08
+  edge 0 8 $08
+  edge 0 16 $08
+  edge 0 24 $08
+  edge 0 32 $08
+  edge 0 40 $04
+  edge 1 40 $02
+end

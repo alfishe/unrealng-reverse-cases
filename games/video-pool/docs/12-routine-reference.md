@@ -32,7 +32,7 @@ Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py -
 | [`nameentry`](#nameentry) | `$ACEF`-`$B22D` | 10 of 17 |
 | [`menu`](#menu) | `$B22E`-`$B8C4` | 10 of 17 |
 | [`presents`](#presents) | `$B8C5`-`$BB12` | 9 of 11 |
-| [`attract`](#attract) | `$BB13`-`$BD0B` | 4 of 7 |
+| [`attract`](#attract) | `$BB13`-`$BD0B` | 4 of 8 |
 | [`signature`](#signature) | `$BD0C`-`$C041` | 17 of 24 |
 | [`editor`](#editor) | `$C042`-`$C5FF` | 19 of 23 |
 | [`workspace`](11-data-reference.md#workspace) | `$C600`-`$CFFF` | 0 of 2 |
@@ -56,7 +56,7 @@ Entered once by the turbo loader's JP `$8000` (every build: game frame 5556, eac
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 85 t-states own (0.00 %) |
 | Calls | `GameRestart`, `ResetBallPositions`, `PresentsPage` |
-| Writes | `$BD0B` (`VideoText`) |
+| Writes | `$BD0B` (`PresentsSP`) |
 
 ### `GameRestart` (`$8013`)
 
@@ -2218,7 +2218,7 @@ Called by GameStart `$8000` (`$800B`) and by the menu (`$B293` after its timeout
 | Runs (the first recording's game window) | 1 call, 2,360 t-states own (0.00 %) |
 | Called from | `GameStart` |
 | Calls | `PrintText`, `PresentsFrame`, `BannerRollIn`, `LogoFlip` |
-| Writes | `$BD09`-`$BD0A` (`VideoText`) |
+| Writes | `$BD09`-`$BD0A` (`PresentsSP`) |
 
 ### `PresentsLongWait` (`$B90F`)
 
@@ -2242,7 +2242,7 @@ Witness: game 499 calls 5559-6060, w1 1084, m1 4353 (2-4500); the abort Presents
 | --- | --- |
 | Runs (the first recording's game window) | 499 calls, 25,191,067 t-states own (8.47 %) |
 | Called from | `PresentsPage`, `BannerRollIn`, `LogoFlip` |
-| Reads | `$B91C` (`PresentsFrame`); `$BD09`-`$BD0A` (`VideoText`) |
+| Reads | `$B91C` (`PresentsFrame`); `$BD09`-`$BD0A` (`PresentsSP`) |
 | Writes | `$CFF8`-`$CFFB` (`StackSpace`) |
 
 ### `BannerRollIn` (`$B96C`)

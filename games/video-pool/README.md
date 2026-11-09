@@ -1,7 +1,7 @@
 # Video Pool (Oxford Computer Publishing, 1985)
 
 State: complete (2026-11-09), after two review rounds: the tape's data blocks rebuilt byte for byte from the annotated
-source, 21 editable resources in `src/res`, docs 01-12 and 14 (13 documents, 77 mermaid diagrams, 52 figures, 56
+source, 39 editable resources in `src/res` (and the six rack maps in `src/res/maps`), docs 01-12 and 14 (13 documents, 77 mermaid diagrams, 52 figures, 56
 screenshots, 22 GIFs: 17 routine animations and 5 screen captures, 8 sound files), counted by:
 
 ```bash

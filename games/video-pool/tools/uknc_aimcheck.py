@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """The UKNC port's integer AimShot (doc 14, 14.6.3) against the physics model's (tools/physics_model.py, Model.shot).
 
-    python3 tools/uknc_aimcheck.py [--dy-step 2] [--powers 1,17,76,126]
+    python3 tools/uknc_aimcheck.py [--dy-step 1] [--powers 2,4,...,126]
 
-Prints the number of inputs tried and every difference (none expected). The model rounds 16 P d / r as FP-TO-BC
+The defaults are every input the game can give (doc 14, 14.6.3): dx -255..255, every dy -191..191 and the 63 even
+powers 2..126 (the power is always even; P 0 does not move the ball): 12 329 856 inputs, about 30 s. Prints the number
+of inputs tried and every difference (none expected). The model rounds 16 P d / r as FP-TO-BC
 does; whether the ROM's SQR agrees with it at every near-tie is a separate check (doc 14, 14.7).
 """
 import argparse
@@ -31,8 +33,8 @@ def aim_model(dx, dy, p):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
-    ap.add_argument('--dy-step', type=int, default=2)
-    ap.add_argument('--powers', default='1,17,76,126')
+    ap.add_argument('--dy-step', type=int, default=1)
+    ap.add_argument('--powers', default=','.join(str(p) for p in range(2, 127, 2)))
     a = ap.parse_args()
     powers = [int(v) for v in a.powers.split(',')]
     n, bad = 0, []

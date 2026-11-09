@@ -1,0 +1,12 @@
+# one half row of the keyboard a line, its port, then its five keys from the outer key in (bit 0
+# first); each cell the character KeyDown $822E looks up: a letter or digit, or caps ($27),
+# enter ($0D), space ($20), symbol ($18)
+port,bit0,bit1,bit2,bit3,bit4
+$FEFE,caps,Z,X,C,V
+$FDFE,A,S,D,F,G
+$FBFE,Q,W,E,R,T
+$F7FE,1,2,3,4,5
+$EFFE,0,9,8,7,6
+$DFFE,P,O,I,U,Y
+$BFFE,enter,L,K,J,H
+$7FFE,space,symbol,M,N,B

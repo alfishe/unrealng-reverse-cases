@@ -70,7 +70,7 @@ NewGameScreen:
   LD HL,$0000
   LD (ScorePlayer1),HL
   LD (ScorePlayer2),HL
-  LD (PlayerVars),HL
+  LD (PocketTurn),HL
   LD HL,$0101
   LD (FrameNumber),HL
   LD HL,$0303

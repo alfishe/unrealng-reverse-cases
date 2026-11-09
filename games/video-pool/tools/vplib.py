@@ -22,7 +22,8 @@ def call(s, tool, args):
 
 
 def read(s, frame, lo, n, tinframe=None):
-    """n bytes from lo at the end of a frame, or at (frame, tinframe)"""
+    """n bytes from lo at the start of a video frame (memory_at: the memory as the frame begins, before its first
+    instruction), or at (frame, tinframe)"""
     out = bytearray()
     for a in range(lo, lo + n, 0x4000):
         args = {'action': 'memory_at', 'space': 'cpu', 'frame': frame, 'offset': a,
