@@ -41,7 +41,7 @@ python3 tools/fig_sound.py table      # every sound instance measured (the numbe
   - The **foreground loop** SoundLoop `$8069` plays three short tones that the physics asks for through
     SoundRequest `$827D`: 1 a ball against a ball, 2 a cushion, 3 a pocket. It runs outside the interrupt, in the
     time the interrupt's tasks leave (9.2, 9.3).
-  - The ROM's **BEEPER** `$03B5` (HL the period, DE the cycles) plays everything else: the key clicks of the menu,
+  - The ROM's **BEEPER** `$03B5` (HL the period, DE + 1 the cycles) plays everything else: the key clicks of the menu,
     the variations page, the name entry and the editor; the score count-up; the last-shot beep; the two notes of the
     foul jingle (9.4). Twelve `CALL BEEPER` and one `JP BEEPER` in the image.
 - **The other `OUT ($FE)` are silent.** Six more `OUT ($FE),A` set the border after a page is cleared: `$95E9` (7),
@@ -90,14 +90,16 @@ How to read the figure:
 
 - One bar a sound: its pitch (y, log) and its length (x, log), as the code sets them.
 - Red bars are the three SoundLoop tones, modelled from the instruction timings with no interrupt in them (9.2).
-- Blue bars are BEEPER notes, each from its HL and DE: pitch 437 500 / (HL + 30.125) Hz, length DE cycles. The
-  recordings measured every one of them within 0.2 Hz of this (9.4).
-- The green fan is the score count-up: the 37 ticks of the longest count-up in `w1`, each about 14 ms, rising from
+- Blue bars are BEEPER notes, each from its HL and DE: pitch 437 500 / (HL + 30.125) Hz; length from the first
+  speaker write to the last, DE + 1/2 cycles (BEEPER plays DE + 1 cycles, 9.4). The recordings measured every one of
+  them within 0.42 Hz of this (9.4).
+- The green fan is the score count-up: the 37 beeps of the longest count-up in `w1`, each 13-15.5 ms, rising from
   356 to 503 Hz.
-- Grey: the last-shot beep, reached by no recording (known only from the code).
+- The last-shot beep is blue like the other notes: `f1` played it 13 times (9.4).
 
-**The point**: the game has ten distinct sounds, all short; the two longest (half a second each) are the foul
-jingle's low notes. The table sounds are tiny tones of 8 to 32 ms, high for a contact and a cushion, low for a
+**The point**: the game has nine distinct sounds, all short: the three SoundLoop tones and six BEEPER notes (the click,
+the pick, the count-up tick, the last-shot beep and the jingle's two notes); the two longest (half a second each) are
+the foul jingle's low notes. The table sounds are tiny tones of 8 to 32 ms, high for a contact and a cushion, low for a
 pocket.
 
 ```bash
@@ -116,8 +118,9 @@ the interrupt as tasks (doc 2, 2.4; [doc 4](04-game-loop.md)). The loop does two
 - it waits for SoundRequest `$827D` to be non-zero and plays that tone on the speaker.
 
 A tone is C full cycles. Each cycle is the speaker on (`OUT` `$17`: bit 4 set, border 7), a delay of B passes, the
-speaker off (`OUT` `$07`), the same delay. The delay loop SoundDelay reads SoundRequest on every pass: a task that
-clears the request (9.3) stops the tone at once. At the end the loop clears the request itself.
+speaker off (`OUT` `$07`), the same delay. The delay loop SoundDelay reads SoundRequest on every pass: a cleared request
+(9.3) stops the tone at the next delay pass the foreground runs, at once when the task that cleared it returns, 128-375
+frames later for the frozen pocket tone (9.3). At the end the loop clears the request itself.
 
 Why the authors did it this way: the interrupt is busy with the physics, the drawing and the HUD, and a beeper tone
 needs the CPU for its whole length. The foreground is otherwise idle, so the tone costs the game nothing: it is
@@ -143,7 +146,7 @@ SoundLoop:                                   ; $8069, the foreground, interrupts
 SoundDelay(delay):                           ; $809D
     repeat delay times:                      ; 37 T a pass
         if SoundRequest == 0:                ; a task stopped the tone
-            drop the two return addresses; OUT($FE, $07); goto SoundLoop.loop
+            drop the saved BC and SoundCycle's return address; OUT($FE, $07); goto SoundLoop.loop
 ```
 
 ```asm
@@ -417,56 +420,70 @@ played; aborts at 3044 T 25 053, 4269 T 18 580, 7064 T 18 555, 10 387 T 18 544.
 ## 9.4 The BEEPER notes
 
 Everything that is not a table sound is a call of the 48K ROM's BEEPER `$03B5`. BEEPER takes HL (the period) and DE
-(the number of full cycles), disables the interrupts, toggles the speaker DE times at one cycle every
-8 x (HL + 30.125) T-states, and ends with `EI`. So a note has
+(the cycle count), disables the interrupts, toggles the speaker at one cycle every 8 x (HL + 30.125) T-states, and
+ends with `EI`. It tests DE for zero only after a full cycle, so it plays DE + 1 cycles: 2 DE + 2 speaker writes, the
+first about 230 T after the call (every call in the recordings has exactly 2 DE + 2 writes at `$03E1`). So a note has
 
 - pitch = 3 500 000 / (8 x (HL + 30.125)) = 437 500 / (HL + 30.125) Hz;
-- length = DE cycles, DE x 8 x (HL + 30.125) T-states, all of it with the interrupts off.
+- length, from the first write to the last, 2 DE + 1 half cycles: (DE + 1/2) x 8 x (HL + 30.125) T-states, all of
+  it with the interrupts off.
 
 The ROM formula is checked by the recordings: every note's pitch measured from the speaker writes at `$03E1` (the
-ROM's toggling `OUT`) is within 0.4 Hz of it (`tools/fig_sound.py table`).
+ROM's toggling `OUT`) is within 0.42 Hz of it, and every length within 0.1 ms (`tools/fig_sound.py table`).
 
 | Sound | Caller | HL | DE | Pitch | Length | Measured | Recordings |
 | --- | --- | ---: | ---: | ---: | ---: | --- | --- |
-| key click | MenuKey `$B2CD`, VariationsKey `$B6DE` | 1000 | 20 | 424.7 Hz | 47.1 ms | 424.8 Hz | `w1`, `f1`, `e1` (menu) |
-| name step | NameEntry `$AF12` | 1000 | 20 | 424.7 Hz | 47.1 ms | 424.9 Hz | `w1` 51 |
-| name pick | NameEntryFire `$AF35` | 1200 | 22 | 355.7 Hz | 61.9 ms | 355.8 Hz | `w1` 3 |
-| editor beep | `$C264`, `$C3B7`, `$C3D4`, `$C423`, `$C538` | 1000 | 20 | 424.7 Hz | 47.1 ms | 424.8 Hz | `e1` 3: `$C264` frame 700, `$C3D4` 760, `$C423` 840 |
-| count-up tick | AddScoreStep `$99EF` | TallyPitch: 1200, 1190, ... | 6000 / HL | 355.7 Hz up | about 14 ms | 355.8 Hz (first) | `w1` 287, `f1` 27 |
-| last shot | LastShotBeepTask `$9CB2` | 500 | 10 | 825.3 Hz | 12.1 ms | 825.6 Hz | `f1` 13 |
-| foul, note 1 | FoulJingleNotes `$9791` | 8350 | 26 | 52.2 Hz | 498 ms | 52.2 Hz | `w1` 4, `f1` 4 |
-| foul, note 2 | FoulJingleNotes `$979F` (`JP`) | 10750 | 23 | 40.6 Hz | 567 ms | 40.6 Hz | `w1` 4, `f1` 4 |
+| key click | MenuKey `$B2CD`, VariationsKey `$B6DE` | 1000 | 20 | 424.7 Hz | 48.3 ms | 424.8 Hz | `w1`, `f1`, `e1` (menu) |
+| name step | NameEntryStep `$AF12` | 1000 | 20 | 424.7 Hz | 48.3 ms | 424.9 Hz | `w1` 51 |
+| name pick | NameEntryFire `$AF35` | 1200 | 22 | 355.7 Hz | 63.3 ms | 355.8 Hz | `w1` 3 |
+| editor beep | `$C264`, `$C3B7`, `$C3D4`, `$C423`, `$C538` | 1000 | 20 | 424.7 Hz | 48.3 ms | 424.8 Hz | `e1` 3: `$C264` frame 700, `$C3D4` 760, `$C423` 840 |
+| count-up tick | AddScoreStep `$99EF` | TallyPitch: 1200, 1190, ... | 6000 / HL | 355.7 Hz up | 13.1-15.5 ms | 355.8 Hz (first) | `w1` 287, `f1` 27 |
+| last shot | LastShotBeepTask `$9CB2` | 500 | 10 | 825.3 Hz | 12.7 ms | 825.7 Hz | `f1` 13 |
+| foul, note 1 | FoulJingleNotes `$9791` | 8350 | 26 | 52.2 Hz | 507.6 ms | 52.2 Hz | `w1` 4, `f1` 4 |
+| foul, note 2 | FoulJingleNotes `$979F` (`JP`) | 10750 | 23 | 40.6 Hz | 579.0 ms | 40.6 Hz | `w1` 4, `f1` 4 |
 
 ### The score count-up
 
 After a shot that potted, ScoreTally `$98FF` prints each ball's term and counts the shot's score into the player's
-score in steps, one step a frame, each with a tick (TallyCount `$9975`, AddScoreStep `$99C1`):
+score in steps, one step a video frame, each with a tick (TallyCount `$9975`, AddScoreStep `$99C1`):
 
 - TallyPitch `$9B34` starts at 1200 for every count;
-- the step is DE = ShotScore / 64 + 1 (the score times 4, its high byte, plus 1 and the carry of the next bit);
+- the step is DE = round(ShotScore / 128) + 1: `SLA L` / `RL H` doubles the score, its high byte is
+  ShotScore >> 7, and the second `SLA L` carries bit 6 into `ADC A,$01`; so ShotScore 0-63 counts in steps of 1,
+  64-191 in steps of 2, 192-319 in steps of 3 (not ShotScore / 64 + 1, which agrees only below 128);
 - each step moves DE points from ShotScore into the player's score, prints it, ticks at TallyPitch, and lowers
   TallyPitch by 10: the pitch rises a little with every step;
-- the steps go on while at least DE points are left (up to 63 steps for a big score); the rest goes in one last step;
-  then the count waits out the remainder of 45 frames (B = 45, counted down by every step).
+- the steps go on while at least DE points are left: floor(ShotScore / DE) steps, at most 127 (ShotScore 8255 and
+  above); the rest, 0 included, goes in one last step, so a count-up has one beep more than steps;
+- then the count waits out the rest of 45 video frames (B = 45, counted down by every step). More than 45 steps
+  needs ShotScore 46 or more (460 points in one shot); then `JP M` skips the wait (B is negative for 46-173 steps).
+  No recording reached it: the largest ShotScore was 36 (`w1` 8456, 37 beeps);
+- then ClearMessageRows, DrawPottedRow `$9AB5`, ShotsLeft = ShotsForFrame `$9BE6`, and 5 more frames (TallyEndWait
+  `$99BB`). With the term printing (15 frames for the first ball, 60 for each ball's factors and pause), the whole
+  tally is 20 + 60 k + max(steps, 45) frames for k balls, plus the interrupt the first beep can lose (below):
+  `w1`'s first, one ball and 15 steps, runs from frame 1254 to 1380.
 
 The tick's cycles are not a constant: DE = 6000 / HL, counted by repeated subtraction. As the length of a note is
-DE x 8 x (HL + 30.125) T, this keeps every tick near 14 ms whatever its pitch.
+(DE + 1/2) x 8 x (HL + 30.125) T, this keeps every tick between 13.1 and 15.5 ms whatever its pitch (the whole part
+of the division makes the steps: HL 1010 gives DE 5 and 13.1 ms, HL 1000 DE 6 and 15.3 ms).
 
 ```text
 TallyCount:                                  ; $9975, with the tasks stopped (WaitFrame)
     TallyPitch = 1200
-    step = ShotScore / 64 + 1
+    step = (ShotScore >> 7) + bit 6 of ShotScore + 1   ; round(ShotScore / 128) + 1
     frames = 45
     while ShotScore >= step:
         ShotScore -= step
         AddScoreStep(step); HALT; frames -= 1
-    AddScoreStep(ShotScore)                  ; the rest
-    wait frames frames if frames > 0
+    AddScoreStep(ShotScore)                  ; the rest, maybe 0: still a beep
+    if frames > 0: HALT frames times         ; skipped past 45 steps (JP M)
+    ClearMessageRows(); DrawPottedRow(); ShotsLeft = ShotsForFrame()
+    HALT 5 times                             ; TallyEndWait $99BB
 
 AddScoreStep(points):                        ; $99C1
     score of the current player += points; print it
-    cycles = 6000 / TallyPitch                ; whole part, by subtraction
-    BEEPER(TallyPitch, cycles)
+    DE = 6000 / TallyPitch                    ; whole part, by subtraction
+    BEEPER(TallyPitch, DE)                    ; DE + 1 cycles
     if TallyPitch >= 10: TallyPitch -= 10
 ```
 
@@ -474,7 +491,7 @@ AddScoreStep(points):                        ; $99C1
 TallyCount:
 $9975  LD HL,$04B0             ; TallyPitch = 1200
 $9978  LD (TallyPitch),HL
-$997B  LD HL,(ShotScore)       ; step = ShotScore x 4, high byte, + 1 + carry
+$997B  LD HL,(ShotScore)       ; step = high byte of 2 x ShotScore + bit 6 + 1
 $997E  SLA L
 $9980  RL H
 $9982  LD A,H
@@ -493,6 +510,26 @@ $9997  CALL AddScoreStep
 $999A  HALT                    ; one step a frame
 $999B  DEC B
 $999C  JR TallyCountStep
+TallyCountLast:
+$999E  LD DE,(ShotScore)       ; the rest, maybe 0
+$99A2  CALL AddScoreStep
+$99A5  LD A,B
+$99A6  OR A
+$99A7  JR Z,TallyDone
+$99A9  JP M,TallyDone          ; more than 45 steps: no wait
+TallyWaitRest:
+$99AC  HALT
+$99AD  DJNZ TallyWaitRest
+TallyDone:
+$99AF  CALL ClearMessageRows
+$99B2  CALL DrawPottedRow
+$99B5  CALL ShotsForFrame
+$99B8  LD (ShotsLeft),A
+$99BB  LD B,$05                ; 5 frames more
+TallyEndWait:
+$99BD  HALT
+$99BE  DJNZ TallyEndWait
+$99C0  RET
 ...
 AddScorePrint:
 $99D7  PUSH BC
@@ -517,18 +554,19 @@ $99FB  LD (TallyPitch),HL
 
 ```mermaid
 flowchart TD
-    A[TallyCount 9975: TallyPitch = 1200, step = ShotScore / 64 + 1, B = 45] --> B{ShotScore at least step?}
+    A[TallyCount 9975: TallyPitch = 1200, step = round of ShotScore / 128, + 1, B = 45] --> B{ShotScore at least step?}
     B -->|yes| C[ShotScore -= step]
     C --> D[AddScoreStep: score += step, print]
-    D --> E[cycles = 6000 / TallyPitch by subtraction]
-    E --> F[BEEPER TallyPitch, cycles]
+    D --> E[DE = 6000 / TallyPitch by subtraction]
+    E --> F[BEEPER TallyPitch, DE: DE + 1 cycles]
     F --> G[TallyPitch -= 10]
     G --> H[HALT: next frame, B - 1] --> B
     B -->|no| I[AddScoreStep with the rest]
     I --> J{B above 0?}
     J -->|yes| K[HALT B times]
-    J -->|no| L[clear the messages, the potted row, the shots]
+    J -->|"0, or negative: more than 45 steps"| L[clear the messages, the potted row, the shots]
     K --> L
+    L --> W[TallyEndWait 99BB: HALT 5 times]
 ```
 
 #### Worked example: the first tick
@@ -544,36 +582,47 @@ flowchart TD
 | 5 | 4 | 0 | no |
 | 6 | 5 | -1200 | yes: out |
 
-BEEPER(1200, 5): 437 500 / 1230.125 = 355.7 Hz, 5 cycles of 9841 T = 49 205 T, 14.1 ms. The recording: BEEPER entered
-at frame 1329, T 19 304 with HL = 1200, DE = 5; 10 speaker writes at `$03E1`, measured 355.8 Hz. TallyPitch becomes
-1190; the next tick (frame 1331, T 8215) is BEEPER(1190, 5), 357.6 Hz.
+BEEPER(1200, 5): 437 500 / 1230.125 = 355.7 Hz, DE + 1 = 6 cycles of 9841 T. The recording: BEEPER entered at
+frame 1329, T 19 304 with HL = 1200, DE = 5; 12 speaker writes at `$03E1`, the first at T 19 537, the last at frame
+1330, T 3753: 11 half cycles, 54 104 T (model 11 x 4920.5 = 54 126 T), 15.5 ms, measured 355.8 Hz. The beep came
+straight after the printing of "=150" and the score, late in the frame, so it ran past frame 1330's interrupt
+(entered at about T 1830 of each frame) with the interrupts off: `w1` has no interrupt in frame 1330. TallyPitch
+becomes 1190; the next tick comes after the HALT, at frame 1331, T 8215: BEEPER(1190, 5), 358.6 Hz.
 
 ![One score count-up of w1, step by step](img/sound/tally.png)
 
 How to read the figure:
 
-- Top: each tick of the longest count-up of `w1` (frames 8456-8493, 37 steps) at its frame. Green: the pitch from the
-  ROM formula; black crosses: the pitch measured from the recorded speaker writes. HL and DE are written over every
-  sixth tick: DE grows from 5 to 7 as HL falls, which keeps the ticks equal in length.
-- Bottom: where each tick sits in its frame, from its first speaker write to its last (T-states from the frame's
-  interrupt). The red line is the next interrupt.
+- Top: each beep of the longest count-up of `w1` (frames 8456-8493, 37 beeps: 36 steps and the rest 0) at its frame.
+  Green: the pitch from the ROM formula; black crosses: the pitch measured from the recorded speaker writes. HL and DE
+  are written over every sixth tick: DE grows from 5 to 7 as HL falls, which keeps the ticks equal in length.
+- Bottom: where each beep sits in its frame, from its first speaker write to its last (T-states of the recording's
+  frame; the interrupt is entered at about T 1830 of each frame). The red line is the next frame's interrupt: the
+  first beep, at frame 8456, crosses it and that interrupt is lost (8457); the others end below it.
 
-**The point**: the count-up is a rising scale of 14 ms ticks, one a frame, each placed after the frame's start and
-finished 15 000 T or more before the next interrupt: although BEEPER runs with the interrupts off, the count-up
-loses no interrupt. Its pitch keeps rising for big scores (37 steps: 356 to 503 Hz).
+**The point**: the count-up is a rising scale of 13-15.5 ms beeps, one a video frame. The later beeps start after
+the HALT, at T 8171-8667, and end before the next interrupt. The first starts only after the total is printed: at
+T 19 296-19 781 when the total has three digits (100 points or more) it runs past the next interrupt, and as BEEPER
+has the interrupts off, that interrupt is lost (12 of 17 count-ups in `w1`, 1 of 1 in `f1`); the five two-digit
+totals started at T 16 877-17 325 and lost none. The tasks are stopped for the tally anyway, so the loss only makes
+the count-up one frame longer. Its pitch keeps rising for big scores (37 beeps: 356 to 503 Hz).
 
 ```bash
 python3 tools/fig_sound.py tally   # docs/img/sound/tally.png
 ```
 
 Witness: AddScoreStep's BEEPER `$99EF`: `w1` 287 calls, HL from 1200 down to 840, DE 5 to 7; `f1` 27 calls, HL 1200
-to 940. No interrupt lost in either recording (the frame of the first and last speaker write equal for every tick).
+to 940. Interrupts lost (no `irq` entry in the frame after the beep's call): `w1` 12, at frames 1330, 2522, 3972,
+4709, 5065, 5616, 6366, 6822, 7455, 8457, 9082 and 10 145, each under the first beep of a count-up of 100 points or
+more; `f1` 1, at 3705. None under the other beeps. `tools/l1sum.py 98FF 9AB5`: `w1`'s first ScoreTally at 1254, its
+DrawPottedRow at 1375.
 
 ### The last-shot beep
 
-LastShotBeepTask `$9CA7` is a task StartAim `$8425` installs (at `$844B`) with period 25 for every aim; AimPower
-`$8506` removes it (at `$8526`, past its label AimShoot `$851B`) when the shot is played. It runs in the interrupt about twice a second and beeps only
-when ShotsLeft `$9F4D` is 1: a warning that this is the last shot of the frame.
+LastShotBeepTask `$9CA7` is a task StartAim `$8425` installs (at `$844B`) with period 25 (every 26 ticks) for every aim;
+AimPower `$8506` removes it (at `$8526`, past its label AimShoot `$851B`) when the shot is played. It runs in the
+interrupt about twice a second and beeps only when ShotsLeft `$9F4D` is 1: a warning that this is the last shot of the
+frame.
 
 ```asm
 LastShotBeepTask:
@@ -581,22 +630,26 @@ $9CA7  LD A,(ShotsLeft)
 $9CAA  DEC A
 $9CAB  RET NZ                  ; more than one shot left: silent
 $9CAC  LD HL,$01F4             ; 500
-$9CAF  LD DE,$000A             ; 10 cycles
+$9CAF  LD DE,$000A             ; DE 10: 11 cycles
 $9CB2  CALL BEEPER
 $9CB5  DI                      ; BEEPER ends with EI: closed again, this is the interrupt
 $9CB6  RET
 ```
 
-- BEEPER(500, 10): 437 500 / 530.125 = 825.3 Hz, 10 cycles of 4241 T = 42 410 T, 12.1 ms. `f1` measured 825.6 Hz,
-  11.5 ms from the first write to the last (the last half cycle has no closing write).
+- BEEPER(500, 10): 437 500 / 530.125 = 825.3 Hz, 11 cycles of 4241 T; from the first write to the last 21 half
+  cycles, 44 530 T, 12.7 ms. `f1` measured 825.7 Hz and 12.7 ms (22 writes).
 - The `DI` matters: BEEPER's `EI` would let the next interrupt nest inside the handler.
-- `w1` ran the task 179 times and never beeped: no aim of `w1` had only one shot left. In `f1`, 13 beeps.
+- `w1` ran the task 179 times and never beeped: no aim of `w1` had only one shot left. In `f1`, 13 beeps, every
+  26 frames from 2640 to 2953. Twelve started at T 13 171-18 100 and lost nothing. The first, at 2640, started at
+  T 26 694 in a busier interrupt; it ended before the next one, but the tasks after it ran past it, so `f1` has no
+  interrupt in frame 2641.
 
 ### The foul jingle
 
 A lost life plays two low notes. LoseLife `$9754` is called by the end-of-shot task `$8357` on a foul (the foul code
-`$8E80` set, the cue ball off the table) or when the last shot potted nothing. It calls FoulJingle `$9780`, which runs FoulJingleNotes `$9786` through WaitFrameNoTasks `$80DE`, so the interrupt is a bare `EI; RET` and no
-task runs while it plays.
+`$8E80` set, the cue ball off the table) or when the last shot potted nothing. It calls FoulJingle `$9780`, which runs
+FoulJingleNotes `$9786` through WaitFrameNoTasks `$80DE`, so the interrupt is a bare `EI; RET` and no task runs while it
+plays.
 
 ```asm
 FoulJingleNotes:
@@ -605,14 +658,14 @@ JingleWaitOne:
 $9788  HALT
 $9789  DJNZ JingleWaitOne
 $978B  LD HL,$209E             ; 8350: 52.2 Hz
-$978E  LD DE,$001A             ; 26 cycles: 0.50 s
+$978E  LD DE,$001A             ; DE 26: 27 cycles, 0.51 s
 $9791  CALL BEEPER
 $9794  LD B,$05                ; 5 frames of silence
 JingleWaitTwo:
 $9796  HALT
 $9797  DJNZ JingleWaitTwo
 $9799  LD HL,$29FE             ; 10750: 40.6 Hz
-$979C  LD DE,$0017             ; 23 cycles: 0.57 s
+$979C  LD DE,$0017             ; DE 23: 24 cycles, 0.58 s
 $979F  JP BEEPER               ; returns to FoulJingleNotes' caller
 ```
 
@@ -626,18 +679,22 @@ sequenceDiagram
     W->>W: RET over the JP at FCFD: no tasks
     W->>N: CALL
     N->>N: HALT x 10 (0.2 s)
-    N->>B: HL 8350, DE 26 (52 Hz, 0.50 s, interrupts off)
+    N->>B: HL 8350, DE 26 (27 cycles, 52 Hz, 0.51 s, interrupts off)
     N->>N: HALT x 5 (0.1 s)
-    N->>B: JP: HL 10750, DE 23 (41 Hz, 0.57 s)
+    N->>B: JP: HL 10750, DE 23 (24 cycles, 41 Hz, 0.58 s)
     B-->>W: RET
     W->>W: HALT, the JP put back
 ```
 
-- The two notes fall by a little more than a major third (52.2 to 40.6 Hz, ratio 1.29). They take 25 and 28 frames
-  with the interrupts off; with the waits the jingle holds the game 1.4 s.
+- The two notes fall by a little more than a major third (52.2 to 40.6 Hz, ratio 1.29). They take 507.6 and
+  579.0 ms, 25.4 and 29.0 video frames, with the interrupts off: 25 and 29 interrupts lost. With the waits the
+  jingle holds the game 1.4 s.
 - `w1` played it four times (first notes at frames 10 556, 10 944, 11 325, 11 708, the second note 30 frames later
   each time), `f1` four times (frames 1112, 3126, 3993, 4385).
-- With the menu toggle `$B8C4` set LoseLife skips the jingle and the life loss (known only from the code).
+- With InfiniteLives `$B8C4` set (the four-key cheat, doc 10.10) LoseLife skips the jingle and the life loss: its one
+  branch, `JP NZ,NextTurn` at `$9758`, jumps over `CALL FoulJingle` and the decrement. The `f1c` experiment
+  (doc 10.10) takes it: the lives stay 3 through the fouls where `f1` loses them. `f1c` has no sound event file, so
+  the silence follows from the branch, not from a measure.
 
 Witness for this section: the BEEPER calls of `w1`, `f1`, `e1` (`work/docs/vpD/*-sound.json`): 350, 49 and 4 calls,
 each with its HL, DE and caller as in the table.
@@ -655,30 +712,31 @@ The two players cost the game in opposite ways.
   it pauses: a lost interrupt is one tick of the game that happens one frame later.
 
 ```text
-lost interrupts of a BEEPER note = frame starts between its first and its last speaker write
+lost interrupts of a BEEPER note = interrupt times (about T 1830 of each frame) between its call and its last
+                                   speaker write
                                  = about length / 69 888 T, if the note starts right after an interrupt
 a note never loses an interrupt if it starts after the interrupt and ends before the next one:
-    start + DE x 8 x (HL + 30.125) < 69 888
+    start + 230 + (DE + 1/2) x 8 x (HL + 30.125) < 69 888 + 1830
 ```
 
 ```mermaid
 flowchart LR
-    I[interrupt at T 0: tasks run] --> H[HALT or loop ends]
-    H --> B[BEEPER: DI, DE cycles]
+    I[interrupt: tasks run] --> H[HALT or loop ends]
+    H --> B[BEEPER: DI, DE + 1 cycles]
     B --> Q{a frame start under DI?}
-    Q -->|no: count-up tick, last-shot beep| E[EI: next interrupt on time]
-    Q -->|yes: click 47 ms, foul notes 0.5 s| L[the interrupt is lost: no tasks this frame]
+    Q -->|no: later count-up ticks, last-shot beep| E[EI: next interrupt on time]
+    Q -->|yes: first tick after a long print, click 48 ms, foul notes 0.5 s| L[the interrupt is lost: no tasks this frame]
     L --> E2[EI: the game resumes one or more frames later]
 ```
 
 | Sound | Length | Lost per note | Where | What waits |
 | --- | ---: | ---: | --- | --- |
-| count-up tick | 14 ms | 0 | after HALT, about T 8000-20 000 | nothing: every tick ends 15 000 T or more before the next interrupt |
-| last-shot beep | 12 ms | 0 | inside the interrupt, after the earlier tasks | the later tasks of that interrupt by 12 ms; the `DI` keeps the next interrupt out |
-| click, name step | 47 ms | 2 | key handlers | the name entry: 51 steps lost 102 interrupts in `w1` (2 s of game time) |
-| name pick | 62 ms | 3 | NameEntryFire | 9 interrupts for 3 picks |
-| editor beep | 47 ms | 2 | editor keys | 6 in `e1` |
-| foul notes | 0.50 + 0.57 s | 24 + 27 | FoulJingleNotes, tasks already stopped | nothing more: the tasks are stopped for the jingle anyway |
+| count-up tick | 13-15.5 ms | 1 on the first of a count-up of 100 points or more, else 0 | the first after the printed total, T 16 877-19 781; the rest after HALT, T 8171-8667 | the count-up, one frame longer (the tasks are stopped for the tally anyway) |
+| last-shot beep | 12.7 ms | 0 | inside the interrupt, after the earlier tasks | the later tasks of that interrupt by 12.7 ms; the `DI` keeps the next interrupt out |
+| click, name step | 48 ms | 2 | key handlers | the name entry: 51 steps lost 102 interrupts in `w1` (2 s of game time) |
+| name pick | 63 ms | 3 | NameEntryFire | 9 interrupts for 3 picks |
+| editor beep | 48 ms | 2 | editor keys | 6 in `e1` |
+| foul notes | 0.51 + 0.58 s | 25 + 29 | FoulJingleNotes, tasks already stopped | nothing more: the tasks are stopped for the jingle anyway |
 
 ![What the sounds cost: interrupts lost per BEEPER sound, tones stretched by the interrupts](img/sound/cost.png)
 
@@ -691,7 +749,8 @@ How to read the figure:
 
 **The point**: the only sounds that hold the game are the ones the player hears when nothing moves: the clicks, the
 name entry and the foul jingle. The sounds of play cost nothing: the table tones live in the foreground and the
-count-up ticks fit between two interrupts. The price of the table tones is their sound: in `w1` two of three ball tones, one
+count-up ticks fit between two interrupts, but for the first tick of a count-up of 100 points or more, which loses one
+while the tasks are stopped anyway. The price of the table tones is their sound: in `w1` two of three ball tones, one
 of three cushion tones and every pocket tone were stretched; a stretched ball tone mostly to 2-2.5 times its length,
 a few to nine times.
 
@@ -699,9 +758,10 @@ a few to nine times.
 python3 tools/fig_sound.py cost   # docs/img/sound/cost.png
 ```
 
-Witness: `tools/fig_sound.py table` for `w1`, `f1`, `e1`: "lost interrupts" per BEEPER caller: tally 0 (287 and 27
-notes), last shot 0 (13), name step 102 (51), menu click 2, pick 9 (3), editor 6 (3), foul 96 + 108 in each of `w1`
-and `f1`.
+Witness: `tools/fig_sound.py table` for `w1`, `f1`, `e1`: "lost interrupts" per BEEPER caller: tally 12 and 1 (287 and
+27 notes), last shot 0 (13; the interrupt lost at `f1` 2641 is the handler's, after the beep), name step 102 (51), menu
+click 2, pick 9 (3), editor 6 (3), foul 100 + 116 in each of `w1` and `f1`. A lost interrupt here is a frame with no
+interrupt entry whose interrupt time falls between the call and the last speaker write.
 
 ## 9.6 The data sheet
 
@@ -718,22 +778,22 @@ memory order:
 | `$80AA` | `3E 07` | `LD A,$07` | speaker off after an abort |
 | `$9786` | `06 0A` | `LD B,$0A` | foul jingle: 10 frames of silence first |
 | `$978B` | `21 9E 20` | `LD HL,$209E` | foul note 1: HL = 8350, 52.2 Hz |
-| `$978E` | `11 1A 00` | `LD DE,$001A` | 26 cycles |
+| `$978E` | `11 1A 00` | `LD DE,$001A` | DE 26: 27 cycles |
 | `$9794` | `06 05` | `LD B,$05` | 5 frames between the notes |
 | `$9799` | `21 FE 29` | `LD HL,$29FE` | foul note 2: HL = 10750, 40.6 Hz |
-| `$979C` | `11 17 00` | `LD DE,$0017` | 23 cycles |
+| `$979C` | `11 17 00` | `LD DE,$0017` | DE 23: 24 cycles |
 | `$9975` | `21 B0 04` | `LD HL,$04B0` | count-up: TallyPitch starts at 1200, 355.7 Hz |
 | `$998A` | `06 2D` | `LD B,$2D` | count-up: 45 frames at least |
-| `$99DC` | `21 70 17` | `LD HL,$1770` | 6000: cycles = 6000 / TallyPitch, ticks about 14 ms |
+| `$99DC` | `21 70 17` | `LD HL,$1770` | 6000: DE = 6000 / TallyPitch, ticks 13.1-15.5 ms |
 | `$99F5` | `11 F6 FF` | `LD DE,$FFF6` | TallyPitch - 10 a tick |
 | `$9CAC` | `21 F4 01` | `LD HL,$01F4` | last-shot beep: HL = 500, 825.3 Hz |
-| `$9CAF` | `11 0A 00` | `LD DE,$000A` | 10 cycles |
+| `$9CAF` | `11 0A 00` | `LD DE,$000A` | DE 10: 11 cycles |
 | `$AF0C` | `21 E8 03` | `LD HL,$03E8` | name step click: HL = 1000, 424.7 Hz |
-| `$AF0F` | `11 14 00` | `LD DE,$0014` | 20 cycles |
+| `$AF0F` | `11 14 00` | `LD DE,$0014` | DE 20: 21 cycles |
 | `$AF2F` | `21 B0 04` | `LD HL,$04B0` | name pick: HL = 1200, 355.7 Hz |
-| `$AF32` | `11 16 00` | `LD DE,$0016` | 22 cycles |
+| `$AF32` | `11 16 00` | `LD DE,$0016` | DE 22: 23 cycles |
 | `$B2C7`, `$B6D8`, `$C25E`, `$C3B1`, `$C3CE`, `$C41D`, `$C532` | `21 E8 03` | `LD HL,$03E8` | the menu, variation and editor clicks: HL = 1000 |
-| `$B2CA`, `$B6DB`, `$C261`, `$C3B4`, `$C3D1`, `$C420`, `$C535` | `11 14 00` | `LD DE,$0014` | 20 cycles each |
+| `$B2CA`, `$B6DB`, `$C261`, `$C3B4`, `$C3D1`, `$C420`, `$C535` | `11 14 00` | `LD DE,$0014` | DE 20: 21 cycles each |
 
 The requests are the values written to SoundRequest `$827D` (9.3): 1 ball, 2 cushion, 3 pocket, 0 none.
 
@@ -742,7 +802,7 @@ flowchart TD
     subgraph Foreground[SoundLoop 8069: B and C per request]
         R1[8077: 20 x 20] --- R2[807D: 30 x 12] --- R3[8083: 250 x 6]
     end
-    subgraph ROM[ROM BEEPER 03B5: HL period, DE cycles]
+    subgraph ROM[ROM BEEPER 03B5: HL period, DE + 1 cycles]
         T[count-up 9975, 99DC, 99F5]
         S[last shot 9CAC]
         F[foul 978B, 9799]
@@ -765,11 +825,11 @@ What the files hold is therefore what the 48K played in the recording, interrupt
 | [`ball.wav`](img/sound/ball.wav) | ball tone, 20 cycles at 2163 Hz (half periods 801 and 817 T) | `w1`, the first ball tone without an interrupt | 9.3 ms |
 | [`cushion.wav`](img/sound/cushion.wav) | cushion tone, 12 cycles at 1484 Hz | `w1`, the first cushion tone without an interrupt | 8.1 ms |
 | [`pocket.wav`](img/sound/pocket.wav) | pocket tone, 6 cycles at 188 Hz, as played: no pocket tone of any recording escaped an interrupt | `w1`, the first complete pocket tone | 75 ms (32 ms without the gaps) |
-| [`last-shot.wav`](img/sound/last-shot.wav) | last-shot beep, BEEPER(500, 10) | `f1` | 12 ms |
-| [`click.wav`](img/sound/click.wav) | key click, BEEPER(1000, 20) | `w1`, the menu key | 47 ms |
-| [`pick.wav`](img/sound/pick.wav) | name pick, BEEPER(1200, 22) | `w1` | 62 ms |
+| [`last-shot.wav`](img/sound/last-shot.wav) | last-shot beep, BEEPER(500, 10) | `f1` | 12.7 ms |
+| [`click.wav`](img/sound/click.wav) | key click, BEEPER(1000, 20) | `w1`, the menu key | 48 ms |
+| [`pick.wav`](img/sound/pick.wav) | name pick, BEEPER(1200, 22) | `w1` | 63 ms |
 | [`tally.wav`](img/sound/tally.wav) | the longest score count-up, 37 ticks rising 356 to 503 Hz | `w1` frames 8456-8493 | 0.75 s |
-| [`foul.wav`](img/sound/foul.wav) | the foul jingle, both notes and the 5-frame gap between them | `w1`, the first jingle | 1.17 s |
+| [`foul.wav`](img/sound/foul.wav) | the foul jingle, both notes and the 5-frame gap between them | `w1`, the first jingle | 1.18 s |
 
 ```text
 render(edges):                                ; tools/fig_sound.py render()
@@ -813,4 +873,5 @@ python3 tools/fig_sound.py waves   # docs/img/sound/waves.png
   editor and never chose reset. Same parameters as every click (known only from the code).
 - **A request above 3**: SoundLoop plays any value above 2 as the pocket tone (`$8083` is reached by falling
   through). No writer stores such a value (the stores are 0, 1, 2, 3; 9.3), so it never happens.
-- **LoseLife without the jingle** (the menu toggle `$B8C4` set): known only from the code (9.4).
+- **LoseLife without the jingle** (InfiniteLives `$B8C4` set): reached only by the `f1c` experiment (doc 10.10),
+  which has no sound events; the silence follows from the branch at `$9758` (9.4).

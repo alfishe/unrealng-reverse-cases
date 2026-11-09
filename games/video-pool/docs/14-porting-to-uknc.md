@@ -36,14 +36,14 @@ Spectrum numbers are hex with `$`; UKNC addresses and words are octal, as in the
 | --- | --- | --- |
 | CPU | one Z80 at 3.5 MHz, 69 888 T a frame | two K1801VM2 (PDP-11 instruction set with `MUL`, `DIV`, `ASH`, `ASHC`, `XOR`, `SOB`): the CPU at 8 MHz and the PPU at 6.25 MHz, 160 000 and 125 000 clock cycles a 20 ms frame [BTL Board.cpp] |
 | Word | 8-bit with 16-bit pairs; little-endian | 16-bit, little-endian; byte and word instructions; eight registers (R6 = SP, R7 = PC) |
-| Instruction timing | 4-23 T; `ADD HL,DE` 11, `LD A,(HL)` 7, `DJNZ` 13 | 11-270 clock cycles: `MOV R,R` 11, `MOV (R)+,R` 32, `XOR R,(R)+` 43, `MUL R` 96, `DIV R` 128, branch taken 37, `SOB` 45 [BTL Processor.cpp] (14.3) |
+| Instruction timing | 4-23 T; `ADD HL,DE` 11, `LD A,(HL)` 7, `DJNZ` 13 | 11-269 clock cycles: `MOV R,R` 11, `MOV (R)+,R` 32, `XOR R,(R)+` 43, `MUL R` 96, `DIV R` 128, branch taken 37, `SOB` 45 [BTL Processor.cpp] (14.3) |
 | Memory | 64 KB: 16 KB ROM, 48 KB RAM, the screen in it | three planes of 64 KB. The CPU sees 56 KB of RAM: a word at address A is byte A/2 of plane 1 (low) and plane 2 (high). The PPU sees plane 0's low 32 KB as its RAM and the rest through ports [BTL Memory.cpp, DOC] |
 | Video memory | `$4000-$5AFF`: 256 x 192 pixels, 1 bit, attributes per 8 x 8 cell | the planes' high halves (plane addresses 100000-177777, 3 x 32 KB = 96 KB [WIKI]): 3 bits a pixel, the same byte offset in planes 0, 1, 2. Bit 0 of a byte is the leftmost pixel [BTL Emulator.cpp] |
 | Video modes | one | a chain of line records from PPU address 000270: each line has its own address in the planes; 4-word records change the palette or the scale (640, 320, 160 or 80 pixels a line); 288 visible lines [BTL Emulator.cpp] |
 | Colour | 15 colours; ink and paper per 8 x 8 cell; Video Pool uses BRIGHT green paper with black ink for the table | 16 YRGB colours; 8 a line through the palette of a record, any line can change it [BTL Emulator.cpp, WIKI] |
 | Sound | the beeper: port `$FE` bit 4, toggled by the CPU (doc 9) | bit 7 of the PPU's system register 177716 drives the speaker directly; the PPU timer 177710-177714 (12-bit, 2-16 µs steps, interrupt vector 304) can toggle it [DOC uknc-ports.md, KRK appu.mac] |
 | Input | the keyboard matrix through port `$FE`, Kempston and others (doc 5) | the 88-key MS-7007 keyboard [WIKI] on the PPU: scan code at 177702, interrupt vector 300 [DOC, BTL Board.cpp]; no standard joystick |
-| Interrupts and timers | IM 2 at 50 Hz (the ULA's INT), nothing else | the 50 Hz EVNT interrupt (vector 100) on both processors, each enabled by a bit of 177054 (bit 8 PPU, bit 9 CPU) [BTL Board.cpp, KRK]; the PPU timer |
+| Interrupts and timers | IM 2 at 50 Hz (the ULA's INT), nothing else | the 50 Hz EVNT interrupt (vector 100) on both processors, each masked by a bit of 177054 (bit 8 PPU, bit 9 CPU; 0 = enabled) [BTL Board.cpp, KRK]; the PPU timer |
 | Between processors | | three channels: the CPU writes 176674/176676 (channel 2) and 177564/177566 (channel 0), the PPU reads 177060-177064 and answers on 177070/177072; the PPU can read and write CPU RAM through 177010/177014 [DOC] |
 | Storage | tape (doc 3) | floppy disks under RT-11; a program is a `.SAV` file loaded by the CPU, the PPU part sent over channel 2 [KRK bmain.mac] |
 
@@ -111,11 +111,13 @@ Spectrum, measured (doc 4, 4.6, `tools/task_costs.py --per-irq` on `w1`):
 | one ball rolling (1086) | 19 932 | 6649 | 9969 | 3314 | 29 % |
 | six balls, typical (4375) | 62 248 | 33 442 | 25 492 | 3314 | 89 % |
 | six balls, the heaviest (4373) | 73 768 | 33 429 | 37 025 | 3314 | 106 % |
-| the shot set-up (1079) | 483 665 | | AimShot 437 092 (ROM calculator) | | 692 % |
+| the shot set-up (1079) | 483 665 | | AimShot 454 950 (in the ROM 453 853) | | 692 % |
 
-Two moments lose interrupts on the Spectrum: the shot set-up (six lost, doc 4, 4.7) and a heavy six-ball tick (about
-490 frames of `w1` had no interrupt). Between shots the game runs its sequences inside one interrupt with the tasks
-stopped (doc 4, 4.9), and the BEEPER notes lose interrupts by themselves (doc 9, 9.5).
+Interrupts are lost on the Spectrum at the shot set-up (six each, doc 4, 4.7), on heavy six- and seven-ball ticks
+(the heaviest six-ball pass above is 73 768 T; in the `w1` break every pass with all seven balls rolling ran past the
+next INT, nine lost in video frames 1155-1171, doc 10, 10.1), and in the BEEPER notes (doc 9, 9.5): about 490 video
+frames of `w1` in all had none (doc 4, 4.6). Between shots the game runs its sequences inside one interrupt with the
+tasks stopped (doc 4, 4.9).
 
 On the UKNC the work splits in two: the CPU runs the logic, the PPU draws. The cost on each is the Z80 time times a
 factor from the instruction timings of 14.3: 0.8 for the logic on the CPU, 0.65 for the drawing on the PPU.
@@ -124,7 +126,7 @@ factor from the instruction timings of 14.3: 0.8 for the logic on the CPU, 0.65 
 CPU share of a frame = (physics + rest) / 3 500 000 x 0.8 x 50
 PPU share of a frame = redraw            / 3 500 000 x 0.65 x 50
 the heaviest tick:  CPU (37 025 + 3314) x 0.8 / 70 000 = 46 %,  PPU 33 429 x 0.65 / 70 000 = 31 %
-the shot set-up:    AimShot rewritten in integers (14.6.3): under 1 % instead of 692 %
+the shot set-up:    AimShot rewritten in integers (14.6.3): about 6 % of a frame (estimate) instead of 692 %
 ```
 
 ![One tick of the game: measured on the Spectrum, estimated on the UKNC's two processors](img/uknc/budget.png)
@@ -223,11 +225,11 @@ may add wait states the emulator does not model; the factors are a lower bound o
 | Scheduler | IM 2, 25 task slots, periods (4.4) | CPU EVNT handler at vector 100 runs the same slot table | the slot table, periods, task order | the handler, `WaitFrameNoTasks` as a flag instead of patching `$FCFD` | |
 | Physics | PhysicsTask, MoveBall, BallContacts, cushions, pockets, friction (7, 10) | CPU, 8.8 words in registers | every rule, every constant, every table, the order of the tests (7.6) | the arithmetic in PDP-11 words, `MUL` for ScaleVelocity (14.6.1-2) | the four tables, byte for byte (`uknc_convert.py`) |
 | Shot set-up | AimShot through the ROM calculator (4.7) | CPU, integers | the formula v = 16 P d / r and its rounding | an integer square root and `DIV` (14.6.3) | a check table against the ROM (14.7) |
-| Rules, scores, HUD texts | the end-of-shot sequences, ScoreTally, fouls (4.9, 10) | CPU | the logic, the texts | the HALT waits as frame waits on the CPU | the 14 text files as they are |
+| Rules, scores, HUD texts | the end-of-shot sequences, ScoreTally, fouls (4.9, 10) | CPU | the logic, the texts | the HALT waits as frame waits on the CPU | the 14 text files as they are; no tool yet: `uknc_convert.py` does not write them (their print records name Spectrum screen positions, which the port's PrintChar must map) |
 | Ball drawing | 56 pre-shifted sprites, XOR, no mask, sorted by y (6.4, 6.5) | PPU, XOR of words in plane 0 | the XOR method, the draw order | DrawBall for words and 16 shifts (14.6.4) | `balls16`: 112 copies, 6720 bytes |
 | Table and screen | XorLine, the cushions, pockets, attributes (6.2, 6.3) | PPU: the table drawn once into plane 0; colours from the line table's palettes | the line primitive, the coordinates | the attribute bands as palette records per line | |
-| Font and text | PrintChar, own a-z 0-9 and the ROM's CHAR_SET (8) | PPU | the print records | PrintChar for the plane layout | `font`: 36 glyphs bit-reversed; the ROM glyphs the game uses have to be cut from a Spectrum ROM image (not in `src/res`) |
-| Sound | SoundLoop tones in the foreground, BEEPER notes (9) | PPU timer interrupt toggling 177716 bit 7 | the pitches and lengths of 9.6 | both players as one timer player (14.6.6) | the data sheet of 9.6 as half-period counts |
+| Font and text | PrintChar, own a-z 0-9 and the ROM's CHAR_SET (8) | PPU | the print records | PrintChar for the plane layout | `font`: 36 glyphs bit-reversed; the ROM glyphs the game uses have no tool: they are not in `src/res` and have to be cut from a Spectrum ROM image (14.8, risk 6) |
+| Sound | SoundLoop tones in the foreground, BEEPER notes (9) | PPU timer interrupt toggling 177716 bit 7 | the pitches and lengths of 9.6 | both players as one timer player (14.6.6) | the data sheet of 9.6 as half-period counts (14.6.6); no tool yet: `uknc_convert.py` does not write them |
 | Input | the keyboard matrix, Kempston, the redefinable keys (5) | PPU keyboard interrupt, a key-state word in the mailbox | the mapping of keys to actions | the reader | |
 | Random | the R register at the rack and the cursor reset (7.8) | CPU: a counter that reproduces the Spectrum's R at those two moments | where R is read | R itself (14.7) | |
 | Loading | tape, BASIC loader (3) | RT-11 `.SAV` on the CPU; the PPU program sent over channel 2 | | the loader [KRK bmain.mac] | |
@@ -497,19 +499,18 @@ SCALEV: MOV     R1,R3
         SWAB    R3              ; (f x lo + 128) / 256
         CLRB    R1
         SWAB    R1              ; hi
-        MOV     R1,R5
-        MUL     R2,R5           ; R5 = f x hi
-        ADD     R3,R5
-        MOV     R5,R4
+        MUL     R2,R1           ; R1 = f x hi (odd register: the low word only)
+        ADD     R3,R1
+        MOV     R1,R4           ; R5, the ball record of the other sketches, is not touched
 ```
 
-ScaleVelocity runs four times a contact (284 calls in `w1`, doc 7); with `MUL` it is about 30 instructions instead of
+ScaleVelocity runs four times a contact (284 calls in `w1`, doc 10, 10.5); with `MUL` it is about 30 instructions instead of
 two eight-step loops.
 
 ### 14.6.3 The shot set-up without the ROM calculator
 
-AimShot `$8A02` computes v = 16 P d / r with the ROM's floating point: 437 092 T, 89 % of it in SQR (doc 4, 4.7;
-doc 10, 10.2). A negative product gets 65 536 added before FP-TO-BC rounds it, so v = floor(16 P d / r + 0.5) as
+AimShot `$8A02` computes v = 16 P d / r with the ROM's floating point: about 455 000 T (454 950 at `w1` 1079), 85 % of
+it in the ROM's SQR (doc 4, 4.7; doc 10, 10.2). A negative product gets 65 536 added before FP-TO-BC rounds it, so v = floor(16 P d / r + 0.5) as
 a 16-bit word (`Model.shot`). Doc 10's break: dx 212, dy 15, P 76 give vx `$04BD`, vy `$0056`. In integers:
 
 Rounding to the nearest is a question about squares, which integers answer exactly: q = floor(x + 0.5) for
@@ -560,8 +561,8 @@ ISQRT:  MOV     #4096.,R2       ; above every root (at most 4032)
 ```
 
 The cost: four `MUL` for the squares, the long division (24 steps of about 100 cycles), the root (at most about 12
-Newton steps of about 220 cycles), for each of vx and vy: about 10 000 cycles, 1.3 ms on the CPU, against 125 ms on
-the Spectrum. The shot starts in the same tick as the release; the six lost interrupts of the original are gone
+Newton steps of about 220 cycles), for each of vx and vy: about 10 000 cycles, 1.3 ms on the CPU (6 % of the
+160 000-cycle frame), against 130 ms on the Spectrum. The shot starts in the same tick as the release; the six lost interrupts of the original are gone
 (14.7 says why that does not change the game).
 
 The integer method agrees with the Python model on every input tried (dx -255..255, every second dy -191..191, P 1,
@@ -661,16 +662,16 @@ down the cycles; the CPU puts a sound number in the mailbox, the PPU starts it. 
 | ball tone | 801 / 817 T | 229 / 233 | 58 | 116 | 20 |
 | cushion tone | 1171 / 1187 T | 335 / 339 | 84 | 168 | 12 |
 | pocket tone | 9311 / 9327 T | 2660 / 2665 | 666 | 1331 | 6 |
-| key click | 4 x (1000 + 30.125) T | 1177 | 294 | 589 | 20 |
-| name pick, first count-up tick | 4 x (1200 + 30.125) T | 1406 | 351 | 703 | 22, 5 |
-| last-shot beep | 4 x (500 + 30.125) T | 606 | 151 | 303 | 10 |
-| foul note 1 | 4 x (8350 + 30.125) T | 9577 | 2394 | (over 4095) | 26 |
-| foul note 2 | 4 x (10750 + 30.125) T | 12 320 | 3080 | (over 4095) | 23 |
+| key click | 4 x (1000 + 30.125) T | 1177 | 294 | 589 | 21 |
+| name pick, first count-up tick | 4 x (1200 + 30.125) T | 1406 | 351 | 703 | 23, 6 |
+| last-shot beep | 4 x (500 + 30.125) T | 606 | 151 | 303 | 11 |
+| foul note 1 | 4 x (8350 + 30.125) T | 9577 | 2394 | (over 4095) | 27 |
+| foul note 2 | 4 x (10750 + 30.125) T | 12 320 | 3080 | (over 4095) | 24 |
 
 ```text
 PlaySound(n):  half, cycles, rate = SOUNDS[n]; edges = 2 x cycles; 177712 = half; 177710 = start | rate | interrupt
 TimerIRQ:      177716 ^= 200 (bit 7); edges -= 1; if edges = 0: 177710 = 0 (stop)
-count-up tick: half = 4 x (TallyPitch + 30.125) / 3.5 / 4 µs, cycles = 6000 / TallyPitch, as AddScoreStep
+count-up tick: half = 4 x (TallyPitch + 30.125) / 3.5 / 4 µs, cycles = 6000 / TallyPitch + 1, as AddScoreStep and BEEPER
 ```
 
 ```asm
@@ -694,7 +695,7 @@ original's sound adds the gaps on purpose.
 | --- | --- | --- |
 | the physics, byte for byte | 16-bit arithmetic rewritten; the tables moved | the same 8.8 words, carries and clamps (14.6.1); tables unchanged; the y-minus clamp's missing carry test kept |
 | the shot | AimShot without the ROM | the exact integer rounding (14.6.3), checked against the model and the ROM |
-| the random start | the R register does not exist on the PDP-11 | the two reads (RackBalls `$A026`, AimCursorReset `$85C8`, doc 7, 7.8) take R from a counter that advances like the Z80's R between the same events, or from a table recorded per rack |
+| the random start | the R register does not exist on the PDP-11 | the two reads (`$A026` in RackBalls, `$85D4` in AimCursorReset, doc 7, 7.8) take R from a counter that advances like the Z80's R between the same events, or from a table recorded per rack |
 | the tick | the UKNC has time to spare | the game advances one tick per EVNT, as on the Spectrum; inputs are read once per tick |
 | the frame rate | the Spectrum loses interrupts (six at each shot, about 490 frames in `w1`) | not kept: the port never loses one, so it runs at the speed the game was meant to have. The ticks are the same; only their spacing in real time differs |
 | the look | 320-pixel mode, palette bands | the same pixels in the same places, XOR overlap kept |
@@ -728,10 +729,11 @@ flowchart LR
 
 - **Three references, one answer.** The recording, `tools/physics_model.py` (475 frames equal, doc 10, 10.6) and the
   port must agree; the model lets the port be checked on shots no recording made.
-- **The ROM check** needs every (dx, dy, P) run through the ROM's calculator once: 511 x 383 x 126 inputs, at about
-  0.13 s of Spectrum time each, 37 days in all; the signs give the same magnitudes (the tie rule aside), which cuts
-  it by four, and an emulator at a hundred times speed runs the rest in about two days. It turns risk 1 into a
-  table.
+- **The ROM check** needs every (dx, dy, P) run through the ROM's calculator once: 511 x 383 x 126 = 24 659 838
+  inputs, at about 0.13 s of Spectrum time each, 37 days in all. The signs give the same magnitudes (the tie rule
+  aside), which cuts it by four, and the power is always even (doc 10, 10.2), so 63 values of P instead of 126 halve
+  it again: about 4.6 days of Spectrum time, which an emulator at a hundred times speed runs in about an hour. It
+  turns risk 1 into a table.
 - **The input timing**: the Spectrum samples the keys inside the tick (doc 5); the port must hand the CPU the key
   state the PPU saw before the EVNT, never mid-tick.
 
@@ -786,8 +788,9 @@ source before the plan relies on it.
 
 - What carries over from the UKNC plan: all of the CPU side (the PDP-11 physics of 14.6.1-14.6.3), the tables, the
   integer AimShot, the tick check of 14.7.
-- What changes: one processor instead of two, so the drawing joins the logic (about 77 % of a frame at the heaviest
-  tick by the factors of 14.2, before wait states); the screen is in main memory, so DrawBall XORs RAM directly; the
+- What changes: one processor instead of two, so the drawing joins the logic (about 70 % of a frame at the heaviest
+  tick by the factors of 14.2: 46 % logic, and the drawing's 31 % of a 6.25 MHz PPU frame is 24 % at 8 MHz; before
+  wait states); the screen is in main memory, so DrawBall XORs RAM directly; the
   line table gives the same per-line palette trick.
 
 ```mermaid

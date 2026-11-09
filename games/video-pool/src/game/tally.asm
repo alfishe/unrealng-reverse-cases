@@ -2,7 +2,7 @@
 ; tally.asm: The score of a shot: frame x ball x pocket multiplier x 10, printed term by term and counted up into the score
 ;
 ; Score of one potted ball = frame number x ball number x the pocket's multiplier (PocketMultiplierCells), shown as
-; "FxBxMx10" and stored without the x 10; a shot's terms are added and counted into the player's score with a falling
+; "FxBxMx10" and stored without the x 10; a shot's terms are added and counted into the player's score with a rising
 ; beep (v1: "1x5x3x10=150").
 ; --------------------------------------------------------------------------------------------------------------------
 
@@ -18,20 +18,21 @@ ScoreShot:
 ; total, count it into the score, refill the shots
 ;
 ; ShotScore $9B2C = 0. Ball 1-6 with a pocket number in +12: the first sets
-; PotBall $9B2F and PotMultiplier $9B2E (PocketTurn $9F43 + pocket, 7..12 minus
-; 6), waits 15 frames and clears the message rows (unless MessageStep is $4F);
-; every further one first prints the pending term with "+" (TallyTermPlus
-; $9A01), waits, clears, takes its own ball and multiplier. The last term is
-; printed with "=" and the total (TallyTermTotal $9A1A).
+; PotBall $9B2F and PotMultiplier $9B2E (the pocket turn (PlayerVars $9F43) +
+; pocket, 7..12 minus 6), waits 15 frames and clears the message rows (unless
+; MessageStep is $4F); every further one first prints the pending term with "+"
+; (TallyTermPlus $9A01), waits, clears, takes its own ball and multiplier. The
+; last term is printed with "=" and the total (TallyTermTotal $9A1A).
 ;
-; The count: TallyPitch $9B34 = 1200, step DE = ShotScore / 64 + 1 (ShotScore x
-; 4, high byte, plus 1 with the carry); one step a frame moves DE from
-; ShotScore into the player's score (AddScoreStep $99C1, printed with a beep)
-; while at least DE is left (up to 63 steps; B = 45 is only counted down, never
-; tested in the loop), then the remainder in one go, then the rest of the 45
-; frames waited if any (w1's longest: 37 steps, frames 8456-8493). Then
-; ClearMessageRows, DrawPottedRow $9AB5, ShotsLeft = ShotsForFrame $9BE6, wait
-; 5 frames.
+; The count: TallyPitch $9B34 = 1200, step DE = round(ShotScore / 128) + 1 (the
+; high byte of 2 x ShotScore, plus bit 6 as the carry, plus 1); one step a
+; frame moves DE from ShotScore into the player's score (AddScoreStep $99C1,
+; printed with a beep) while at least DE is left (at most 127 steps; B = 45 is
+; only counted down, never tested in the loop), then the remainder in one go (a
+; beep even for 0), then the rest of the 45 frames waited if any; past 45 steps
+; (ShotScore 46 or more, in no recording) JP M skips the wait (w1's longest: 36
+; steps and the remainder, 37 beeps, frames 8456-8493). Then ClearMessageRows,
+; DrawPottedRow $9AB5, ShotsLeft = ShotsForFrame $9BE6, wait 5 frames.
 ;
 ; Returns at once when nothing was potted. Witness: AddScoreStep w1 287 calls
 ; (frames 1329-10175), p2 38, v1 72; TallyTermPlus (a double pot) w1, f1, v1
@@ -145,13 +146,16 @@ TallyEndWait:
 ; the pitch by 10
 ;
 ; CurrentPlayer 1: ScorePlayer1 $9F45, 2: ScorePlayer2 $9F47; PrintHudNumber 0
-; / 1. The beep: BEEPER with HL = TallyPitch, DE = 6000 / TallyPitch cycles
-; (1200: about 356 Hz, 5 cycles, 14 ms), a tick that rises in pitch step by
+; / 1. The beep: BEEPER with HL = TallyPitch, DE = 6000 / TallyPitch (1200:
+; about 356 Hz, DE 5, so 6 cycles, 15.5 ms), a tick that rises in pitch step by
 ; step; TallyPitch - 10 unless it would go below zero. w1 287 runs.
 ;
-; The tick's cycles are 6000 / TallyPitch (by subtraction), so every tick lasts
-; about 14 ms whatever its pitch; it starts after the frame's HALT and ends
-; before the next interrupt: no interrupt lost (w1 287 ticks, f1 27; docs 9.4).
+; DE = 6000 / TallyPitch (by subtraction) and BEEPER plays DE + 1 cycles, so
+; every tick lasts 13.1-15.5 ms whatever its pitch. A tick after the frame's
+; HALT ends before the next interrupt; the first tick of a count-up of 100
+; points or more comes straight after the printed total (T 19 296-19 781) and
+; runs past the next interrupt, which is lost (w1 12 of 17 count-ups, f1 1 of
+; 1; docs 9.4).
 AddScoreStep:
   LD A,(CurrentPlayer)
   DEC A

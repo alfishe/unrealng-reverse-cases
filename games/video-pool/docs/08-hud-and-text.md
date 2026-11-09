@@ -250,7 +250,8 @@ How to read the figure:
 - **The blue cells** are the ROM glyphs that the 75 records use: space, punctuation and capitals, from `$3D00`.
 - **The middle row** shows the copyright glyph, and the letter f printed wide from both fonts. The game's square
   lower case stands beside the ROM's capital.
-- **The point**: the game carries only 36 glyphs of its own. It borrows every capital and sign from the ROM.
+- **The point**: the game carries only 37 glyphs of its own: 26 letters and 10 digits at `$DEF4-$E013` and the
+  copyright sign at `$9F2E`. It borrows every capital and sign from the ROM.
 
 ```bash
 python3 tools/fig_text.py font --work work/docs/vpB/w1 --out docs/img/text/font.png
@@ -451,23 +452,25 @@ python3 ../../kit/writers_map.py --work work/docs/vpB/w1 --window 600:0-700:0 --
 ```
 
 Two HUD fields blink while a shot is aimed and while the balls run. StartAim adds, among its periodic tasks in the
-scheduler ([section 4.4](04-game-loop.md)), UpBlinkTask `$96E6` every 20 frames and ShotsBlinkTask `$970E` every 25
-frames.
+scheduler ([section 4.4](04-game-loop.md)), UpBlinkTask `$96E6` with period 20 and ShotsBlinkTask `$970E` with period
+25. A task of period p runs every p + 1 ticks (RunTasks `$9155`, [Terms](README.md#terms)), so they run every 21 and
+every 26 ticks: `f1`'s last-shot beeps, from LastShotBeepTask with the same period 25, come every 26 frames (2667, 2693,
+2719, ...).
 
 - **UpBlinkTask** prints "1up" (or "2up") or three spaces, by the flag UpBlink `$9B31`, then inverts the flag. So
-  the current player's label flashes with a period of 40 frames.
+  the current player's label flashes with a period of 42 ticks.
 - **ShotsBlinkTask** does nothing unless ShotsLeft is 1. On the last shot it alternates the records "last  " `$9740`
   and "  shot" `$974A` over "shots n" (row 1, columns 26-31).
 - **StopShotTasks** removes both tasks at the end of a shot. It runs each once more with its flag at `$FF`: "1up" is
   shown, and "shots" with its number is restored.
 
 ```text
-UpBlinkTask:                          ; every 20 frames
+UpBlinkTask:                          ; period 20: every 21 ticks
     record = (UpBlink != 0) ? "1up" : "   "    ; "2up" / "   " for player 2
     PrintText(record)
     UpBlink = NOT UpBlink
 
-ShotsBlinkTask:                       ; every 25 frames
+ShotsBlinkTask:                       ; period 25: every 26 ticks
     if ShotsLeft != 1: return
     if LastShotBlink == $FF: PrintText("shots"); PrintHudNumber(3); LastShotBlink = 0; return
     PrintText(LastShotBlink == 0 ? "last  " : "  shot")
@@ -520,7 +523,7 @@ ShotsBlinkTask:                       ; every 25 frames
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Shown: StartAim, UpBlink = 0, a task every 20 frames
+    [*] --> Shown: StartAim, UpBlink = 0, a task every 21 ticks
     Shown --> Blank: UpBlinkTask prints three spaces
     Blank --> Shown: UpBlinkTask prints 1up
     Shown --> Stopped: StopShotTasks, UpBlink = $FF
@@ -529,7 +532,7 @@ stateDiagram-v2
 ```
 
 Worked example: in `w1` the first aim starts at frame 877 with UpBlink = 0. The first UpBlinkTask call prints the
-three spaces; the next, 20 frames later, prints "1up" again. UpBlinkTask ran 377 times in `w1` over 21 shots, about
+three spaces; the next, 21 ticks later, prints "1up" again. UpBlinkTask ran 377 times in `w1` over 21 shots, about
 18 calls a shot, so the label flashed about 9 times in each aim and run.
 
 Witness: UpBlinkTask ran 377 times in `w1`, 88 in `game` and 145 in `f1`. ShotsBlinkTask ran 308 times in `w1`, but
@@ -541,41 +544,58 @@ The point: the HUD is static text plus two scheduler tasks that blink it. Nothin
 ## 8.5 The tally: the score of a shot, term by term
 
 After each shot with a pot, ScoreTally `$98FF` scores it. Each potted ball gives one term: frame number x ball
-number x pocket multiplier. The tally prints the terms in the message rows, one factor every 15 frames (TallyPause
-`$9B07`). Then it counts the sum into the player's score with a falling beep.
+number x pocket multiplier. The tally prints the terms in the message rows, one factor every 15 video frames (TallyPause
+`$9B07`). Then it counts the sum into the player's score with a rising beep.
 
 1. For each ball record with a pocket (+`$0C` not 0), the term is FrameNumber x PotBall x PotMultiplier (AddTerm
-   `$9A67`, MultiplyTerm `$9B0D`, an 8-bit shift-and-add). The multiplier is PocketTurn + pocket, wrapped to 1-6
-   (section 8.7). The sum goes into ShotScore `$9B2C`.
+   `$9A67`, MultiplyTerm `$9B0D`, a 16 x 8-bit shift-and-add). The multiplier is PocketTurn + pocket, wrapped to
+   1-6 (section 8.7). The sum goes into ShotScore `$9B2C`. Before anything is printed, the first potted ball found
+   waits 15 frames (TallyPause) and clears the message rows (ClearMessageRows `$94EB`, unless MessagesTask is at
+   step `$4F`). Each further ball first prints the term before it with "+" (TallyTermPlus `$9A01`), waits 15 frames
+   and clears the rows again.
 2. PrintTerm `$9A87` prints each term as "f x b x m x 10", wide, attribute `$B8`, with a TallyPause after each
    factor. With more than one ball, "+" goes between the terms (TallyTermPlus `$9A01`). After the last comes "=" and
    the sum with its fixed "0" (TallyTermTotal `$9A1A`), centred by the number of digits.
-3. TallyCount `$9975` sets TallyPitch to 1200 (`$04B0`). The step is ShotScore / 64 + 1. Each step subtracts it
-   from ShotScore, adds it to the score (AddScoreStep `$99C1`), prints the score, beeps, and waits a frame. The pitch
-   value falls by 10 each step. The count takes at least 45 frames; the rest is waited out.
-4. Then the message rows are cleared, the potted row is redrawn, and the shots for the frame are reset.
+3. TallyCount `$9975` sets TallyPitch to 1200 (`$04B0`). The step is round(ShotScore / 128) + 1: the high byte of
+   2 x ShotScore, plus bit 6 as the carry, plus 1 (step 1 for ShotScore 0-63, 2 for 64-191, 3 for 192-319). Each
+   step subtracts it from ShotScore, adds it to the score (AddScoreStep `$99C1`), prints the score, beeps, and waits
+   a frame. The pitch value falls by 10 each step. The rest, 0 included, goes in one more step with its beep. The
+   count takes at least 45 frames; the rest is waited out. More than 45 steps needs ShotScore 46 or more (at most
+   127 steps, from ShotScore 8255); then `JP M` skips the wait. No recording got there: the largest ShotScore was 36.
+4. Then the message rows are cleared, the potted row is redrawn, the shots for the frame are reset, and the tally
+   waits 5 more frames (TallyEndWait `$99BB`) before it returns.
+
+For k potted balls the tally takes 20 + 60 k + max(steps, 45) frames: 15 for the first ball's pause, 60 for each
+term (three factors and one pause of 15), the count, and 5 at the end. The count's first beep can lose an interrupt
+and add a frame ([section 9.4](09-sound.md)): `w1`'s first tally runs from frame 1254 to 1380, 126 frames.
 
 ```text
 ScoreTally:
     ShotScore = 0
-    for ball in 1..6 with a pocket:
-        term = FrameNumber * ball * ((PocketTurn + pocket - 1) mod 6 + 1)
-        ShotScore += term
-        print the term factor by factor, 15 frames each; "+" or "=" after it
-    print ShotScore and "0"
+    if no ball 1..6 has a pocket: return
+    HALT 15 times; ClearMessageRows() unless MessageStep == $4F    ; the first ball's TallyPause
+    for each further ball with a pocket:                           ; TallyTermPlus
+        AddTerm(the ball before); print its term, 15 frames a factor; print "+"
+        HALT 15 times; ClearMessageRows()
+    AddTerm(the last ball); print its term, 15 frames a factor     ; TallyTermTotal
+    HALT 15 times; print "=", ShotScore and "0"
     TallyPitch = 1200
-    step = ShotScore / 64 + 1
+    step = (ShotScore >> 7) + bit 6 of ShotScore + 1                ; round(ShotScore / 128) + 1
     frames = 45
     while ShotScore >= step:
         ShotScore -= step; AddScoreStep(step); HALT; frames -= 1
     AddScoreStep(ShotScore)                ; the remainder, maybe 0
-    wait out the remaining frames, if any
+    if frames > 0: HALT frames times       ; skipped past 45 steps (JP M)
     clear the message rows; DrawPottedRow; ShotsLeft = ShotsForFrame()
+    HALT 5 times                           ; TallyEndWait $99BB
+
+AddTerm(ball):
+    ShotScore += FrameNumber * ball * ((PocketTurn + pocket - 1) mod 6 + 1)
 
 AddScoreStep(n):
     score[current player] += n
     PrintHudNumber(current player - 1)
-    BEEPER(pitch = TallyPitch, cycles = 6000 / TallyPitch)   ; a short beep of constant length
+    BEEPER(pitch = TallyPitch, DE = 6000 / TallyPitch)       ; DE + 1 cycles: a beep of 13.1-15.5 ms
     TallyPitch -= 10
 ```
 
@@ -587,7 +607,7 @@ AddScoreStep(n):
 9980  CB 14        RL H
 9982  7C           LD A,H              ; A = ShotScore * 2 / 256
 9983  CB 25        SLA L
-9985  CE 01        ADC A,$01           ; step = ShotScore / 64 + 1
+9985  CE 01        ADC A,$01           ; + bit 6 (the carry) + 1: round(ShotScore / 128) + 1
 9987  16 00        LD D,$00
 9989  5F           LD E,A
 998A  06 2D        LD B,$2D            ; 45 frames
@@ -608,6 +628,14 @@ AddScoreStep(n):
 99A9  FA AF 99     JP M,TallyDone      ; the count took longer than 45 frames
 99AC  76           HALT                ; TallyWaitRest
 99AD  10 FD        DJNZ TallyWaitRest
+99AF  CD EB 94     CALL ClearMessageRows ; TallyDone
+99B2  CD B5 9A     CALL DrawPottedRow
+99B5  CD E6 9B     CALL ShotsForFrame
+99B8  32 4D 9F     LD (ShotsLeft),A
+99BB  06 05        LD B,$05            ; 5 frames more
+99BD  76           HALT                ; TallyEndWait
+99BE  10 FD        DJNZ TallyEndWait
+99C0  C9           RET
 
 99C1  3A 30 9B     LD A,(CurrentPlayer) ; AddScoreStep
 99C4  3D           DEC A
@@ -638,21 +666,22 @@ AddScoreStep(n):
 
 ```mermaid
 flowchart TD
-    S["ScoreTally $98FF"] --> F{"a potted ball left?"}
-    F -->|yes| T["term = frame x ball x multiplier, AddTerm $9A67"]
-    T --> P["print the factors, 15 frames each"]
-    P --> M{"another potted ball?"}
-    M -->|yes| PL["print +, TallyTermPlus $9A01"]
-    PL --> F
-    M -->|no| EQ["print = and the sum with its 0, TallyTermTotal $9A1A"]
+    S["ScoreTally $98FF"] --> F{"a potted ball?"}
     F -->|"none at all"| R["return"]
-    EQ --> C["TallyCount $9975: pitch 1200, step = sum / 64 + 1"]
+    F -->|yes| W1["TallyPause: 15 frames, clear the rows"]
+    W1 --> M{"another potted ball?"}
+    M -->|yes| PL["the term before it: AddTerm $9A67, its factors 15 frames each, +; 15 frames, clear the rows (TallyTermPlus $9A01)"]
+    PL --> M
+    M -->|no| EQ["the last term: AddTerm, its factors 15 frames each; 15 frames; = and the sum with its 0 (TallyTermTotal $9A1A)"]
+    EQ --> C["TallyCount $9975: pitch 1200, step = round of sum / 128, + 1"]
     C --> ST["AddScoreStep $99C1: score + step, print, beep, pitch - 10"]
     ST --> H["HALT"]
     H --> L{"at least one step left?"}
     L -->|yes| ST
     L -->|no| LS["AddScoreStep with the remainder"]
-    LS --> WT["wait out the 45 frames, clear the rows, the potted row"]
+    LS --> WT["wait out the 45 frames (no wait past 45 steps)"]
+    WT --> CL["clear the rows, the potted row, the shots"]
+    CL --> EW["TallyEndWait $99BB: 5 frames"]
 ```
 
 ![ScoreTally at work in w1 frames 1262-1352: the code on the left, rows 0-4 of the screen on the right with the term and the counting score](img/routines/ScoreTally.gif)
@@ -663,14 +692,18 @@ flowchart TD
 docs/img/routines/ScoreTally.gif --pc 98FF-9B33 --view buffer:4000:32x40:screen --range 8000-FFFF --step 69888
 --delay 100`.*
 
-How to read the animation: the highlighted lines are the instructions run in each frame. For about 60 frames only
-TallyPause's HALT loop is lit, while "1x", "5x", "3x" and "10" appear one by one in row 3. Then "=150" appears. The
+How to read the animation: the highlighted lines are the instructions run in each frame. For the first 67 frames
+only TallyPause's HALT loop is lit (75 from the tally's start at 1254: 15 for the first ball, then 15 after each of
+"1", "5", "3" and "10"), while "1x", "5x", "3x" and "10" appear one by one in row 3. Then "=150" appears. The
 count loop lights up while the score field in row 0 counts from `000000` to `000150`.
 
-Worked example: the first pot of `w1` is ball 5 in pocket 3 on frame 1, with PocketTurn 0, so the multiplier is 3.
-The term is 1 x 5 x 3 = 15. ShotScore becomes 15 at frame 1272 (`work/docs/vpB/w1-tally.json`). The screen shows
-"1x5x3x10=150". The step is 15 / 64 + 1 = 1. Fifteen steps of 1 take ShotScore to 0, then the remainder step adds 0:
-16 calls of AddScoreStep, 16 beeps. The samples:
+Worked example: the first pot of `w1` is ball 5 in pocket 3 on frame 1, with PocketTurn 0, so the multiplier is 3. The
+term is 1 x 5 x 3 = 15. AddTerm runs at frame 1269, after the first ball's 15 frames from 1254; ShotScore is 15 in the
+sample of 1272 (`work/docs/vpB/w1-tally.json`, one sample every 4 frames, each the memory at the start of its frame).
+The screen shows "1x5x3x10=150". The step is round(15 / 128) + 1 = 1 (15 >> 7 is 0, bit 6 is clear). Fifteen steps of 1
+take ShotScore to 0, then the remainder step adds 0: 16 calls of AddScoreStep, 16 beeps, from frame 1329; the first
+loses the interrupt of 1330 (section 9.4), so the 45 frames of the count end at 1375, where DrawPottedRow runs, and the
+tally returns at 1380. The samples:
 
 | Frame | ScorePlayer1 | ShotScore | TallyPitch |
 | ---: | ---: | ---: | ---: |
@@ -810,7 +843,8 @@ multipliers move one pocket on.
 | 5 | `$50EF` | row 23, column 15 |
 | 6 | `$50E0` | row 23, column 0 |
 
-From `$4800` up, CopyGlyph starts one byte early (DEC DE). So the bottom marks are raised one pixel line.
+From `$4800` up, CopyGlyph starts one byte early (DEC DE). So the bottom marks are lowered one pixel line: the
+cell's top line gets the byte before the glyph, and the glyph's last line is not copied.
 
 ```text
 DrawPocketMarks:

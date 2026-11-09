@@ -285,12 +285,15 @@ then the left edge and the side cushions crawl down one pixel row at a time. The
 most of the time goes. The table takes more than one frame: the interrupt tasks run in between.
 
 Worked example: with large pockets, line 3 of the top left cushion is XorLine(x 22, y 52, 93): x 22-114. With
-small pockets it is XorLine(18, 52, 100): x 18-117. The four pixels at each end are the blue of the figure.
+small pockets it is XorLine(18, 52, 100): x 18-117. The four pixels at the outer end (x 18-21) and the three at the
+inner end (x 115-117) are the blue of the figure.
 
 Witness: DrawTable ran once in `game` (frame 6186), once in `w1` (626), twice in `v1` and `m1`. Small pockets: `m1`
 from frame 7110 (the S key).
 
-The point: the table costs no data at all. Its 400-odd runs are computed from a start, a length and a slope.
+The point: the table costs no data at all. Its runs, 504 with large pockets and 520 with small (4 frame lines,
+36 cushion lines, 268 edge pixels and 196 or 212 side cushion lines), are computed from a start, a length and a
+slope.
 
 ## 6.4 The ball sprites: pre-shifted, XORed, no mask
 
@@ -566,10 +569,12 @@ on line 150. The beam reaches line 150 at T 16 152 + 150 x 224 = 49 752, more th
 
 Witness: BallRedraw ran 2839 times in `w1` (frames 1086-11 615), RedrawBall 19 873 times, BuildDrawList 3451 times.
 The worst case, all seven balls moving with the lowest near the top, is not in the recordings: its timing is known
-only from the code. Seven pairs at about 2750 T a draw would end near T 40 500, line 108.
+only from the code. Seven pairs at about 2750 T a draw would end near T 40 500, when the beam is already at line 108:
+balls above that line, drawn last, could be passed by the beam half drawn.
 
-The point: the redraw is safe because it is first, it is top down, and the screen's top 48 lines are not table. No
-back buffer is needed.
+The point: the redraw is safe in every recording because it is first, it is top down, and the screen's top 48 lines
+are not table. No back buffer is needed for the loads the recordings reached; with seven balls moving the redraw
+could fall behind the beam (known only from the code).
 
 **Clearing blocks.** Two routines clear whole areas instead of XORing: ClearTableForTurn `$947D` clears the middle
 of the table (x 16-239, y 64-167) before a turn passes, after XORing off the balls outside it (`p2` once, frame
@@ -764,9 +769,10 @@ complement -1), dx = 0, 4 steps: the pen goes up 4 pixels, plotting each. `$44` 
 `$13` is dy 0, dx +1, 3 steps right. Together they draw the first stroke of the "w".
 
 Witness: SignatureWrite ran only in `m1`, 3 times (frames 655-4498): two whole scripts of 312 commands and 557 steps
-each, and a third cut by SPACE at frame 4500. PenDraw ran 1487 times and PenErase 1486. Only PenShaftCopy4 ran: the
-pen never came near the right edge. The band paths (SigBandBelow to SigBandSlow, PenDelay) slow the pen for y 40-95.
-The script keeps the pen at y 121-147, so they are not executed in any recording: known only from the code.
+each, and a third cut by SPACE at frame 4500. PenDraw ran 1487 times and PenErase 1486. Only PenShaftCopy4 ran: the pen
+never came near the right edge. The band paths (SigBandBelow to SigBandSlow, PenDelay) slow the pen for y below 96: y
+40-95 through PenDraw, PenDelay and PenErase, y below 40 through SigBandSlow. The script keeps the pen at y 121-147, so
+they are not executed in any recording: known only from the code.
 
 The point: the signature is a tiny vector animation, 378 bytes for 11 seconds of writing. One draw routine draws and
 erases the pen, switched by four patched bytes.

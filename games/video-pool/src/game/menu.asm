@@ -176,8 +176,8 @@ MenuControlKeys:
   JR Z,MenuControl
   JR MenuOtherKeys
 MenuControl:
-  LD A,(Control)          ; J: Control = 2, $8106, anything read: Control back
-                          ; to the old value
+  LD A,(Control)          ; J: Control = 2, $8106; InputState not 0 (port bits
+                          ; 0-4, or BREAK): Control back to the old value
   LD C,A
   CP B
   JP Z,MenuKeys

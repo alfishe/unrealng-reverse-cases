@@ -114,7 +114,7 @@ Produced:
 | Phase | Interrupt length, T | Tasks |
 | --- | ---: | --- |
 | aiming (the cursor, the power bar) | 15 100-22 600 | `$934D` power bar 8300-13 200, `$8106` input 3300, `$8546` cursor 119, `$85EB` 49, `$8506` 110 |
-| the shot's release | 483 600 (6.9 frames) | `$8506` calls `$8A02`: 454 950 T in the ROM's calculator, interrupts off |
+| the shot's release | 483 595-483 665 (6.92 video frames, the shot set-up's interrupt) | `$8506` calls AimShot `$8A02`: 454 950 T, 99.8 % of it in the ROM's calculator, interrupts off |
 | one ball moving | 19 930 | `$86C1` physics 9970, `$827E` redraw 6650 |
 | four balls moving | 45 400-50 700 | physics 22 000-28 000, redraw 17 200-22 800 |
 | six balls moving | 58 400-73 800 | physics about 27 100, redraw about 33 300 (12 sprite draws) |
@@ -134,11 +134,13 @@ Produced:
 - **Six balls overrun the frame.** With six balls moving an interrupt takes 62 000 T on average and up to 73 768 T,
   more than the 69 888 T of a frame: in `w1` 4330-4400 the interrupts of frames 33, 40, 42 and 44 of the window are
   lost, so the balls slow down on screen while many move. Sixty entries in 70 frames.
-- **For doc 14 (UKNC port), per interrupt in T of the 3.5 MHz Z80:** physics 7250 + 3400 per moving ball; drawing
-  5500 per moving ball (two XOR draws plus the list); collision tests within physics about 1450-1930 per moving
-  ball, more on contact; the power bar 8300-13 200 while aiming; the shot's set-up 455 000 once (the ROM's
-  floating point: the port needs its own); the sound runs outside the interrupt in the foreground loop
-  (`OUT ($FE)`, `$8088` / `$808F`) and the ROM's BEEPER `$03B5`, in the time the interrupt leaves.
+- **For doc 14 (UKNC port), per interrupt in T of the 3.5 MHz Z80:** physics 7250 + 3400 per moving ball; drawing 5500
+  per moving ball (two XOR draws plus the list); collision tests within physics about 1450-1930 per moving ball, more on
+  contact; the power bar 8300-13 200 while aiming; the shot's set-up once: AimShot 454 950 (437 092 its calculator part,
+  up to `$8A47`; the ROM's SQR is 85 % of AimShot), the shot set-up's interrupt 483 665 = 6.92 video frames (w1 frame
+  1079; the ROM's floating point: the port needs its own; doc 04 4.7 names each measure); the sound runs outside the
+  interrupt in the foreground loop (`OUT ($FE)`, `$8088` / `$808F`) and the ROM's BEEPER `$03B5`, in the time the
+  interrupt leaves.
 
 ## 2. Static pass over the medium
 
@@ -314,8 +316,9 @@ and the replays by the case's `tools/fig_*.py` (each command under its figure).
 
 ### 6.2 The animations
 
-Every animation of the documents (20 GIFs), the recording it shows and its frames. The routine animations are also
-linked from doc 12; each document gives the full command under its animation.
+Every animation of the documents (20 GIFs), the recording it shows and its frames. The routine animations
+(`docs/img/routines/`) are also linked from doc 12, the screen captures of play (`docs/img/play/`) are not; each
+document gives the full command under its animation.
 
 | File | Document | Recording | Frames |
 | --- | --- | --- | --- |
@@ -330,14 +333,14 @@ linked from doc 12; each document gives the full command under its animation.
 | `docs/img/routines/SignatureWrite.gif` | 6.7 (the pen) | `m1` replay (`work/docs/vpB/m1`) | 650-1230, every 4 frames |
 | `docs/img/routines/PenRender.gif` | 6.7 (the pen) | `m1` replay (`work/docs/vpB/m1`) | 900 |
 | `docs/img/routines/RackStep.gif` | 7.4 | `w1` replay (`work/docs/vpC/w1`) | 793-800 |
-| `docs/img/routines/RackBalls.gif` | 7.4 | `w1` replay (`work/docs/vpC/w1`) | 700-880, every 2 frames |
+| `docs/img/play/w1-0700-rack-in.gif` | 7.4 | `w1` replay (`work/docs/vpC/w1`) | 700-880, every 2 frames |
 | `docs/img/routines/MoveBall.gif` | 7.5 | `w1` replay (`work/docs/vpC/w1`) | 1112-1119 |
 | `docs/img/routines/PrintText.gif` | 8.1 | `w1` replay (`work/docs/vpB/w1`) | 624-625 |
 | `docs/img/routines/ScoreTally.gif` | 8.5 | `w1` replay (`work/docs/vpB/w1`) | 1262-1352 |
 | `docs/img/routines/SoundLoop.gif` | 9.2 | `w1` replay (`work/docs/vpD/w1`) | 1200 T 50 000 to 1204 T 0 |
 | `docs/img/routines/PocketOrCushion.gif` | 10.4 | `w1` replay (`work/docs/vpC/w1`) | 1196-1201 |
 | `docs/img/routines/BallContacts.gif` | 10.5 | `w1` replay (`work/docs/vpC/w1`) | 1117 |
-| `docs/img/routines/PhysicsTask.gif` | 10.7 | `w1` replay (`work/docs/vpC/w1`) | 1084-1256 |
+| `docs/img/play/w1-1084-break.gif` | 10.7 | `w1` replay (`work/docs/vpC/w1`) | 1084-1256 |
 | `docs/img/uknc/ball-xor.gif` | 14.4 | none: drawn from `src/res` by `tools/fig_uknc.py anim` | one ball moved pixel by pixel |
 
 ## 7. Review

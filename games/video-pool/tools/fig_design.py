@@ -82,7 +82,7 @@ SHEETS = {
         ('w1-13300-name-vp', '3. "vp" typed, the cursor on "end"', 'w1 13300'),
         ('w1-14000-hall-of-fame', '4. the flags: vp second, bill out', 'w1 14000'),
         ('f1-4700-game-over', '5. f1: GAME OVER below the table', 'f1 4700'),
-        ('f1-5500-menu', '6. f1: straight back to the menu', 'f1 5500'),
+        ('f1-5500-menu', '6. f1: the menu after 250 + 500 frames', 'f1 5500'),
         ('w1-15000-menu', '7. w1: the menu again', 'w1 15000'),
         ('w1-16300-attract', '8. 30 s idle: the attract sequence', 'w1 16300'),
     ]),

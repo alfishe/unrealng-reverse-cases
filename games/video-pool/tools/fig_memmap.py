@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """The memory map of doc 02 as one figure: $4000-$FFFF, one row per 256 bytes (192 rows), each byte a square
-coloured by what the stage-1 recordings did with it (union of their L1 builds): executed green, read as data blue,
+coloured by what the recordings did with it (union of their L1 builds): executed green, read as data blue,
 written yellow, written and read orange, untouched dark. The regions of tools/memmap-regions.txt as labelled
 brackets on the right.
 
@@ -44,7 +44,7 @@ def main():
     img = Image.new('RGB', (W, H), (16, 16, 20))
     d = ImageDraw.Draw(img)
     f, fb, fs = font(15), font(18), font(13)
-    d.text((10, 10), 'Video Pool: what the stage-1 recordings did with each byte of $4000-$FFFF', font=fb,
+    d.text((10, 10), 'Video Pool: what the recordings did with each byte of $4000-$FFFF', font=fb,
            fill=(240, 240, 240))
     for r in range(rows):
         for col in range(256):

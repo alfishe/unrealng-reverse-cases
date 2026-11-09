@@ -11,7 +11,7 @@ The recordings it rests on (WALKTHROUGH 6.0), all loaded from `work/snaps/entry.
   The ball block `$8A88-$8B4D` was sampled with `work/docs/vpC/sample.py` at every frame 600-900 (the rack) and
   1075-1560 (the break).
 - `v1` (the variations), replayed the same way to frame 3400 (`--work work/docs/vpC/v1`); the ball block and the
-  player variables sampled every 5 frames 2850-3400.
+  player variables sampled every 5 video frames 2850-3400.
 - `p2` (two players: the swap of the ball sets) and the counts over `game`, `w1`, `f1`, `p2`, `v1`, `m1` from the
   stage-2 notes (`work/stage2/NOTES.md`, `work/stage2/ann/02-physics-notes.md`).
 
@@ -24,9 +24,14 @@ The game keeps the seven balls of the player at the table in `BallRecords $8A88`
 14 bytes each. The block ends at `$8AE9`. The next 98 bytes, `OtherPlayerBalls $8AEA-$8B4B`, hold the other player's
 seven balls in the same format. Two counters of the physics task follow: `FrictionTurn $8B4C` and `EventCount $8B4D`.
 
-A position is 8.8 fixed point in screen pixels, the fraction byte first, and names the centre of the ball. A velocity
-is 8.8 two's complement in pixels a tick. A tick is one interrupt, one PhysicsTask pass (doc 10.1). The friction steps
-are signed bytes in 1/256 pixel a tick, recomputed every seventh tick (doc 10.3).
+A position is 8.8 fixed point in screen pixels, the fraction byte first, and names the centre of the ball. A velocity is
+8.8 two's complement in pixels a tick. Tick is the word of the [Terms](README.md#terms); while the balls move
+PhysicsTask runs once a tick, and "physics tick n" is its n-th run since the shot (doc 10.1). The friction steps are
+signed bytes in 1/256 pixel a tick, recomputed every seventh tick (doc 10.3).
+
+A sample of a recording (`w1-break.jsonl` and the others, TTD `memory_at`) is the memory at the start of its video
+frame. "The block in `w1` frame 1117" is therefore the state after the physics tick that ran in video frame 1116; the
+animations, which are traces, show that tick in frame 1116 (doc 10.1).
 
 | Offset | Size | Field | Written by | Read by |
 | --- | --- | --- | --- | --- |
@@ -39,12 +44,12 @@ are signed bytes in 1/256 pixel a tick, recomputed every seventh tick (doc 10.3)
 | +12 | byte | pocket 1-6 (TL, TM, TR, BR, BM, BL), 0 none | PocketStore `$8BE3`; cleared each shot by ShotReset `$84C7` | ShotEnd `$8357`, ScoreTally |
 | +13 | byte | flags: bit 7 on the table, 6 moving, 5 potted, 4 redraw | see 7.2 | everything |
 
-![The ball block in w1 frame 1117, the tick after the cue ball met ball 1](img/objects/ball-record.png)
+![The ball block in w1 frame 1117, right after the tick in which the cue ball met ball 1](img/objects/ball-record.png)
 
 How to read the figure:
 
-- One row a ball record of the block at `$8A88`, one box a byte, in `w1` frame 1117 (the break, the tick after the
-  contact). The column heads name the fields; the right column gives the position and the state.
+- One row a ball record of the block at `$8A88`, one box a byte, in the sample of `w1` frame 1117 (the break, right
+  after physics tick 32, in which the cue ball met ball 1). The column heads name the fields; the right column gives the position and the state.
 - The cue ball and ball 1 roll (`D0`); balls 2-6 are still at rest on the triangle (`80`).
 - The cue ball is decoded below the rows: `80 B4` is x = `$B480` = 180.50 pixels, `75 02` is vx = `$0275` = 629/256 =
   2.457 pixels a tick.
@@ -61,8 +66,8 @@ python3 tools/fig_objects.py record --samples work/docs/vpC/w1-break.jsonl --fra
 
 Worked example (the same frame): the cue ball record reads `80 B4 80 7E 75 02 2A 02 FC FD AB 76 00 D0`. That is x
 180.50, y 126.50, vx +2.457, vy +2.164 pixels a tick, friction steps -4/-3, last drawn at (171, 118), no pocket, and the
-flags on the table + moving + redraw. The sprite corner (171, 118) is (x - 7, y - 7) of the frame before, (178.35,
-125.96): in each tick the redraw runs before the physics (doc 10.1).
+flags on the table + moving + redraw. The sprite corner (171, 118) is (x - 7, y - 7) of the sample before (1116),
+(178.35, 125.96): in each tick the redraw runs before the physics (doc 10.1).
 
 Witness: the cue ball's x byte `$8A89` is the most read byte of the block (`w1` 28 930 reads). `FrictionTurn` is read
 `w1` 8504 times. `EventCount` never reached 7 in a recording (the stage-2 counts).
@@ -140,13 +145,14 @@ Witness: RedrawPotted runs `w1` 18 times, one a pot. The rack's `$90` and the ro
 ## 7.3 The draw list
 
 Each tick the redraw task BallRedraw `$827E` erases and draws the balls in the order of `DrawList $869E`. The list has
-7 entries of 4 bytes (ball number, y, record address). BuildDrawList `$8304` sorts it by y with a bubble sort of 6
-passes. The balls are drawn from the top of the screen down. The sprite routine and the XOR drawing are doc 06; here
-only the order matters.
+7 entries of 4 bytes (ball number, y, record address). BuildDrawList `$8304` sorts it by y with an exchange sort: pass
+k (6 passes) compares entry k with each later entry and swaps the two when entry k's y is not smaller, so after pass k
+the k-th smallest y is in place (equal y swap too). The balls are drawn from the top of the screen down. The sprite
+routine and the XOR drawing are doc 06; here only the order matters.
 
 ```mermaid
 flowchart TD
-    A[BuildDrawList: 7 entries number, y, address] --> B[6 passes: swap neighbours when the upper y is larger]
+    A[BuildDrawList: 7 entries number, y, address] --> B[pass k of 6: entry k against each later entry, swap when y of k is not smaller]
     B --> C[BallRedraw: next entry, top to bottom]
     C --> D{bit 7 and bit 4 set?}
     D -- no --> C
@@ -159,12 +165,46 @@ flowchart TD
 ```
 
 ```text
+BuildDrawList:
+    for k in 0..5:                       ; DE on entry k for the whole pass
+        for j in k+1..6:                 ; HL walks the later entries
+            if DrawList[k].y >= DrawList[j].y: swap the 4-byte entries k and j
+BallRedraw:
 for e in DrawList:                       ; sorted by y
     ball = e.record
     if ball.flags & $80 and ball.flags & $10:
         XOR the sprite at ball.corner      ; erase
         if ball.flags & $20: park(ball)    ; 7.2
         else: ball.corner = (x - 7, y - 7); XOR the sprite there; ball.flags &= ~$10
+```
+
+The asm of the sort, one pass and its compare:
+
+```text
+$8324  LD DE,DrawList
+$8327  LD B,$06            ; 6 passes
+DrawListSortPass:
+$8329  PUSH BC
+$832A  LD H,D              ; HL = DE + 4: the entry after k
+$832B  LD L,E
+$832C  INC HL              ; (four INC HL, $832C-$832F)
+DrawListSortStep:
+$8330  PUSH BC             ; the inner count is the outer B: 6, 5, ... 1
+$8331  INC HL
+$8332  INC DE
+$8333  LD A,(DE)           ; y of entry k
+$8334  CP (HL)             ; against y of the later entry
+$8335  DEC HL
+$8336  DEC DE
+$8337  JR C,DrawListSortNext   ; k's y smaller: keep; equal or larger: swap
+$8339  ...                 ; swap the two 4-byte entries ($833D-$8344)
+DrawListSortNext:
+$8348  INC HL              ; (four INC HL): the next later entry
+$834C  POP BC
+$834D  DJNZ DrawListSortStep
+$834F  INC DE              ; (four INC DE): k + 1
+$8353  POP BC
+$8354  DJNZ DrawListSortPass
 ```
 
 Worked example: at `w1` frame 1117 the y bytes are cue 126, ball 1 113, ball 2 106, ball 3 124, ball 4 98, ball 5 115,
@@ -178,7 +218,7 @@ Witness: BallRedraw `w1` 2839 runs (frames 1086-11 615); RedrawBall `w1` 19 873 
 ## 7.4 The rack scripts and their interpreter
 
 Before each frame the six object balls roll onto the table from the pockets and stop on the triangle. The motion is
-not physics: each ball runs a small byte program, one step a frame. RackBalls `$9F6F` picks a set of six scripts by
+not physics: each ball runs a small byte program, one step a video frame (one `HALT`, `$9FD2`). RackBalls `$9F6F` picks a set of six scripts by
 the frame number, set ((frame - 1) / 2) mod 6, from `RackSets $A0C4`:
 
 | Set | Address | Frames | Seen |
@@ -197,8 +237,8 @@ and a move count.
 | --- | --- | --- |
 | `00` | end | the ball is done; B counts the ended scripts; the pointer stays, so each later step ends again |
 | `01 x y` | place | the ball's whole x and y bytes set, bit 4 of +13 set |
-| `02 n dx dy` | move | n frames of x += dx, y += dy (signed whole pixels), the first at once |
-| `03 n` | wait | n more frames with nothing done |
+| `02 n dx dy` | move | n video frames of x += dx, y += dy (signed whole pixels), the first at once |
+| `03 n` | wait | n more video frames with nothing done |
 
 ```mermaid
 flowchart TD
@@ -270,7 +310,7 @@ $A088  RET
 
 Ball 1's script at `$A0DC` is `03 4B 01 07 AF 02 1E 02 FE 02 3D 02 00 01 BE 73 00`:
 
-| Step (frame) | Command | Ball 1 after it |
+| Step (video frame) | Command | Ball 1 after it |
 | --- | --- | --- |
 | 1 (707) | `03 4B`: wait 75 | still at (190, 115) from the last game, flags `$80` |
 | 2-76 (708-782) | the wait counts down | unchanged |
@@ -291,9 +331,9 @@ Each script ends on a place command at its ball's start position from `StartPosi
 
 ![RackStep in RackBalls, w1 frames 793-800: six scripts stepped a frame each, the balls advancing two pixels](img/routines/RackStep.gif)
 
-Steps in a recording: `w1` frames 793-800, one RackBalls loop a frame. The left panel is the listing at the PC. The
-right panel is the screen: balls 6 to 2 run along the middle line and ball 1 comes down its diagonal. Each picture
-shows the state after one more RackStep.
+Steps in a recording: `w1` frames 793-800, one RackBalls loop a video frame. Left: the memory `$8A00-$A1FF`; middle:
+the screen, balls 3 to 6 run along the middle line while balls 2 and 1 come down their diagonals (ball 2 joins the line
+at 799); right: the listing at the PC. Each picture shows the state after one more RackStep.
 
 ```bash
 python3 ../../kit/routine_anim.py --work work/docs/vpC/w1 --window 793:0-801:0 --listing build/game.lst --view screen \
@@ -301,13 +341,13 @@ python3 ../../kit/routine_anim.py --work work/docs/vpC/w1 --window 793:0-801:0 -
     --title 'RackStep $A05E in RackBalls $9F6F: w1 frames 793-800, the frame-1 rack-in (set 0)' --out docs/img/routines/RackStep.gif
 ```
 
-![The whole frame-1 rack-in of w1, frames 700-880, every second frame](img/routines/RackBalls.gif)
+![The whole frame-1 rack-in of w1, frames 700-880, every second frame](img/play/w1-0700-rack-in.gif)
 
 The screen of `w1` from the FRAME banner (frame 700) to the cue ball's appearance (877). The six balls come out of the
 two left corner pockets, run along the middle line and turn into the triangle.
 
 ```bash
-python3 ../../kit/screen_anim.py --work work/docs/vpC/w1 --from 700 --to 880 --step 2 --scale 2 --delay 40 --hold 1500 docs/img/routines/RackBalls.gif
+python3 ../../kit/screen_anim.py --work work/docs/vpC/w1 --from 700 --to 880 --step 2 --scale 2 --delay 40 --hold 1500 docs/img/play/w1-0700-rack-in.gif
 ```
 
 ### The racks as a map
@@ -317,10 +357,12 @@ python3 ../../kit/screen_anim.py --work work/docs/vpC/w1 --from 700 --to 880 --s
 How to read the figure:
 
 - One table a set, set 0 at the top left. The background is the empty table of `w1` frame 707.
+- One script step a video frame; a move command adds its (dx, dy) once a step: 2 pixels in most scripts, 1 in a few
+  (set 4: `$A3A7` (+0, -1), `$A3B7` (+1, +0)).
 - Each ball's path is a line in the ball's colour. A ring marks each place command: the start, a jump (set 5 drops
   balls into pockets and brings them back elsewhere), and the final place on the triangle.
-- The number by the first ring is the first wait in frames. The number under each set's title is the step on which
-  the last script ends.
+- Under each table, two rows: the first wait of each ball in video frames, and the step on which each ball's script
+  ends (the largest is the rack's length: 170 for set 0).
 - Sets 0 and 1 are labelled with the `w1` frames that ran them. Sets 2-5 are labelled "from the code": no recording
   reached frame 5.
 - Built by running RackStep's rules on the script bytes of the image `work/mkgame/original.bin`. The `w1` rack of set
@@ -381,8 +423,10 @@ MoveBall(ball):
 
 ![MoveBall in w1 frames 1112-1119: the cue ball rolls into ball 1, then both move](img/routines/MoveBall.gif)
 
-Steps in a recording: `w1` frames 1112-1119. Up to frame 1116 MoveBall runs once a tick for the cue ball only. From
-1117 it runs for the cue ball and ball 1, and from 1118 for balls 2 and 4 too. The right panel is the screen. The
+Steps in a recording: `w1` video frames 1112-1119 (a trace, so the frame a tick runs in, one before its sample). Up to
+frame 1115 MoveBall runs once a tick for the cue ball only. In 1116 (physics tick 32) the cue ball meets ball 1, which
+moves in the same tick; ball 2 joins in 1117 and ball 4 in 1118 (MoveBall's entry runs 1, 2, 3, 4 times a frame:
+`work/review/fixC/pcframes.py` on the trace `work/docs/vpC/w1/traces/1112_0-1120_0.uatr`). The right panel is the screen. The
 listing shows the add and clamp of x and y and the calls to the two tests.
 
 ```bash
@@ -391,14 +435,20 @@ python3 ../../kit/routine_anim.py --work work/docs/vpC/w1 --window 1112:0-1120:0
     --title 'MoveBall $8701: w1 frames 1112-1119, the cue ball rolls into ball 1, then both move' --out docs/img/routines/MoveBall.gif
 ```
 
-Worked example (`w1` frame 1085, the break shot): the cue ball at (40.547, 115.547) gets v = (1213, 86)/256 pixels a
-tick from AimShot. The first MoveBall adds them: x = `$288C` + `$04BD` = `$2D49` (45.29), y = `$738C` + `$0056` =
-`$73E2` (115.88). The whole break is in doc 10.6, where a Python model of MoveBall reproduces 475 frames byte for byte.
+Worked example (`w1`, the break): the shot is released at video frame 1079; AimShot runs in that interrupt, which
+lasts until frame 1085 (doc 4, 4.7). The cue ball at (40.547, 115.547) gets v = (1213, 86)/256 pixels a tick. The
+first MoveBall (physics tick 1, still in the same interrupt, after AimShot) adds them: x = `$288C` + `$04BD` = `$2D49`
+(45.29), y = `$738C` + `$0056` = `$73E2` (115.88); the sample of frame 1086 holds these bytes and v (1208, 86) after
+the first friction add. The whole break is in doc 10.6, where a Python model of MoveBall reproduces 475 samples byte
+for byte.
 
 **The point**: a ball moves by one fixed-point add a tick and stops only through friction or a pot. There is no speed
 limit other than the shot's top speed of 7.875 pixels a tick (doc 10.2).
 
-Witness: PhysicsTask runs once an interrupt during a shot (`w1` 2839 passes, frames 1086-11 615).
+Witness: PhysicsTask runs once a tick during a shot (`w1` 2860 runs, frames 1085-11 615). BallRedraw runs 2839 times
+(frames 1086-11 615): 21 fewer, one a shot, because the first physics tick of each of the 21 shots runs inside the shot
+set-up's interrupt, where BallRedraw is not called (`tools/task_costs.py --per-irq` on
+`work/runs/w1/traces/1070_0-1100_0.uatr`: AimPower 470 382 T, then PhysicsTask 9969 T).
 
 ## 7.6 The order of the collision tests
 
@@ -407,14 +457,22 @@ tests themselves are doc 10.4 and 10.5; this is the order and what each may chan
 
 ```mermaid
 flowchart TD
-    A[MoveBall: ball moved] --> B[BallContacts at 87EF: every other ball on the table]
-    B --> C{cell of the offset in ContactTable}
-    C -- 80 overlap --> D[StepBack: back up the mover until on the ring]
-    D --> C
-    C -- ring 1-31 --> E[exchange velocities if approaching, EventCount + 2]
-    C -- 0 apart --> F[next ball]
-    E --> F
-    F --> G[PocketOrCushion at 8B4E]
+    A[MoveBall: ball moved] --> B[BallContacts at 87EF: next other ball on the table]
+    B --> C{first look: cell of the offset in ContactTable}
+    C -- 0 apart, or a ring 1-31 --> N[next ball]
+    C -- 80 overlap --> D[StepBack: back up the mover]
+    D --> D2{cell still 80?}
+    D2 -- yes --> D
+    D2 -- no --> R[remember the ring record and this ball]
+    R --> N
+    N --> B
+    N -- all seen --> E{a contact remembered?}
+    E -- no --> G
+    E -- yes --> X{mover approaches the last remembered ball in x or y?}
+    X -- yes --> Y[one exchange with it, EventCount + 2]
+    X -- no --> Z
+    Y --> Z[mover fractions = 80]
+    Z --> G[PocketOrCushion at 8B4E]
     G --> H{outside the playing area?}
     H -- yes --> I[PocketSnap: snap, pocket number, flags B0, variation fouls]
     H -- no --> J[cushion lines, corner diagonals, jaws: reflect, EventCount + 1]
@@ -425,17 +483,45 @@ flowchart TD
 ```text
 MoveBall(ball):
     ...
+    found = none
     for other in balls, other != ball, other on the table:     ; BallContacts
-        while cell(other - ball) == $80: StepBack(ball)
-        if cell is a ring and ball approaches other:
-            exchange (doc 10.5); BallHitFlag = 1; other.flags |= $40
+        if cell(other - ball) != $80: continue                  ; a ring or 0 at the first look: next ball
+        repeat StepBack(ball) until cell(other - ball) != $80
+        found = (other, ring record)                            ; the last one wins
+    if found:
+        if ball approaches found.other in x or in y:
+            exchange (doc 10.5); BallHitFlag = 1; found.other.flags |= $40; EventCount += 2
+        ball.x.frac = ball.y.frac = $80
     if ball outside the playing area: PocketSnap(ball)         ; PocketOrCushion
     else: test cushions, corner diagonals, jaws and reflect
 ```
 
-Worked example (`w1` tick 32 of the break, frame 1117): BallContacts finds ball 1 on the ring at offset (-10, 11)
-after three StepBack halvings of (132, 10)/256. The exchange gives the cue ball (629, 554) and ball 1 (422, -467). Only
-then is PocketOrCushion asked, and it finds nothing. Doc 10.5 works the same contact through in full.
+The asm of the first look and of what is remembered after the step-backs:
+
+```text
+$882F  ADD HL,DE                 ; HL = ContactTable + 16 |dy| + |dx|
+$8830  LD A,(HL)
+$8831  OR A
+$8832  RET P                     ; 0 or a ring: back to ContactNext, the next ball
+ContactBackOff:                  ; only $80 (overlap) gets here
+$8833  CALL StepBack
+       ...                       ; dx, dy, the signs again; the cell again
+$886A  LD A,(HL)
+$886B  OR A
+$886C  JP M,ContactBackOff       ; still $80: step back again
+$886F  LD HL,CollisionRecords    ; record = CollisionRecords + 6 (n - 1)
+       ...
+$8879  LD (ContactRecordPtr),HL  ; remembered, not used yet
+$887C  LD (ContactOther),IY
+$8886  RET                       ; to ContactNext: the scan goes on
+```
+
+Worked example (`w1` physics tick 32 of the break, run in video frame 1116, sample 1117): BallContacts finds ball 1
+overlapping at offset (-8, 11), backs the cue ball off with three StepBack calls, each subtracting v / 8 = (132,
+10)/256, and lands on ring 17 at (-10, 11). After the scan, the one exchange gives the cue ball (633, 557) and ball 1
+(425, -471). Only then is PocketOrCushion asked, and it finds nothing. After the friction adds of the same tick (the
+cue ball's now, ball 1's when it is moved next) the records hold (629, 554) and (422, -467). Doc 10.5 works the same
+contact through in full.
 
 **The point**: one ball is moved and tested at a time, cue ball first. A ball later in the order sees the others
 already moved this tick. The model of doc 10.6 has to run the balls in the same order to stay byte-exact.
@@ -445,22 +531,34 @@ Witness: contact found and exchanged `w1` 71 times, `f1` 28, `p2` 49, `v1` 31-32
 ## 7.7 The two players' sets
 
 In a two-player game each player has his own table: his own seven balls, his frame, lives and pocket turn. On the turn
-change TurnSwap `$9C15` (run by TurnSwapStart `$9C0F`) exchanges the 98 bytes of `BallRecords` with
-`OtherPlayerBalls`, byte by byte. It swaps the pairs of player variables (`$9F43/$9F44`, `$9F4B/$9F4C`,
-`$9F4E/$9F4F`) too. The scores stay by player.
+change TurnSwap `$9C15` (run by TurnSwapStart `$9C0F`) flips CurrentPlayer `$9B30` (1 <-> 2), swaps the pairs of
+player variables (`$9F43/$9F44`, `$9F4E/$9F4F`, `$9F4B/$9F4C`) and exchanges the 98 bytes of `BallRecords` with
+`OtherPlayerBalls`, byte by byte. The scores stay by player. When the other player has no lives left (his byte
+`$9F4F` negative) nothing is swapped: the same player goes on with his own balls.
 
 ```mermaid
 flowchart TD
     A[LoseLife or GameOver: NextTurn] --> B{two players?}
     B -- no --> Z[return to ShotEnd]
-    B -- yes --> C[wait 40 frames, clear the table, swap lives and frames]
-    C --> D[TurnSwapBalls: exchange 98 bytes of 8A88 and 8AEA]
-    D --> E{new player has no object ball on the table?}
+    B -- yes --> C[wait 40 video frames, clear the table, DrawLives]
+    C --> L{other player's lives negative?}
+    L -- yes --> E
+    L -- no --> D[CurrentPlayer 1 to 2 or 2 to 1, swap the pairs, TurnSwapBalls: exchange 98 bytes of 8A88 and 8AEA]
+    D --> E{player now at the table has no object ball on it?}
     E -- yes --> F[NextFrame if player 2 racked before, Rack, StartAim]
-    E -- no --> G[NextTurnResume: wait 100 frames, redraw all balls, StartAim]
+    E -- no --> G[NextTurnResume: wait 100 video frames, redraw all balls, StartAim]
 ```
 
 ```text
+$9C26  LD HL,(LivesLeft)               ; L = this player's lives, H = the other's ($9F4F)
+$9C29  LD A,H
+$9C2A  OR A
+$9C2B  JP M,TurnSwapHud                ; the other is out: no swap, the same player goes on
+$9C2E  LD A,(CurrentPlayer)
+$9C31  AND $01
+$9C33  INC A                           ; 1 -> 2, 2 -> 1
+$9C34  LD (CurrentPlayer),A
+       ...                             ; swap $9F43/$9F44, $9F4E/$9F4F, $9F4B/$9F4C
 TurnSwapBalls:                         ; HL = $8AEA, DE = $8A88, C = 98
 $9C5B  LD B,(HL)
 $9C5C  LD A,(DE)
@@ -481,7 +579,8 @@ rack-in at frame 1780.
 parked in memory. All the physics and drawing code knows one table.
 
 Witness: the swap runs `p2` once (frame 1738, 98 bytes). The path "the new player still has balls" (NextTurnResume
-`$9801`) is known only from the code: `p2` stopped before player 2 lost a life.
+`$9801`) is known only from the code: `p2` stopped before player 2 lost a life. The no-swap path is known only from
+the code too: `$9C26` and `$9C2E` both ran once in `p2` (`l1sum.py 9C26 9C2E`), so the `JP M` was never taken.
 
 ## 7.8 Random numbers
 
@@ -494,7 +593,30 @@ Video Pool has no random number generator. Two places read the Z80's R register,
 
 ```text
 RackBalls end:  cue.x = 40 + (R * 2) / 256;  cue.y = 115 + (R * 2) / 256
-AimCursorReset: cursor place from R                      ; doc 05
+AimCursorReset: CursorX = 252
+                CursorY = 115 if R bit 6 = 0, else 116 if R bit 0 = 1, else 114     ; doc 05
+```
+
+The asm of the two reads:
+
+```text
+$A026  LD A,R              ; RackBalls, after x = 40, y = 115
+$A028  ADD A,A             ; R x 2
+$A029  LD (IX+$00),A       ; x fraction
+$A02C  LD (IX+$02),A       ; y fraction, the same byte
+
+$85D0  LD H,$73            ; AimCursorReset: y 115
+$85D2  LD L,$FC            ; x 252
+$85D4  LD A,R
+$85D6  BIT 6,A
+$85D8  JR Z,CursorResetStore
+$85DA  DEC H               ; y 114
+$85DB  BIT 0,A
+$85DD  JR Z,CursorResetStore
+$85DF  INC H
+$85E0  INC H               ; y 116
+CursorResetStore:
+$85E1  LD (CursorX),HL     ; CursorX = L, CursorY = H
 ```
 
 ```mermaid
@@ -521,6 +643,7 @@ Witness: `$8C` read at frame 877 in `work/docs/vpC/w1-rack.jsonl`; the w1 replay
 | --- | --- | --- |
 | rack sets 2-5 (frames 5-12) | `$A1E4-$A701` | the code; drawn in 7.4 by the decoder |
 | the second player keeping his balls after a life (NextTurnResume) | `$9801` | the code |
+| no turn swap because the other player is out of lives | `$9C2B` | the code |
 | EventCount reaching 7 (the repeated physics pass) | `$86FB` | the code; never taken |
 | frame 10 and later (two shots a frame) | ShotsForFrame `$9BE6` | the code (doc 10.9) |
 

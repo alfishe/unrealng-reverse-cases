@@ -52,11 +52,12 @@ SignatureLoop:
 ; down, then x + dx, y + dy), PenDraw.
 ;
 ; The band test: with the pen's y at 96 or more (the whole script keeps the pen
-; at y 121-147) the step is plain. For y 40-95 ($28-$5F) other paths slow the
-; pen down (PenDelay $BE24) and PenBand $C03E records the pen leaving the band
-; (1 above, 2 below) for a pause (SigBandExitAbove, a 300-loop wait) on the
-; next move: no build ran any of them (SigBandBelow .. SigBandSlow, l1sum.py:
-; not executed); known only from the code.
+; at y 121-147) the step is plain. For y below 96 other paths slow the pen
+; down: y 40-95 ($28-$5F) through PenDraw, PenDelay $BE24 and PenErase, y below
+; 40 through SigBandSlow (PenDelay) and PenBand $C03E records the pen leaving
+; the band (1 above, 2 below) for a pause (SigBandExitAbove, a 300-loop wait)
+; on the next move: no build ran any of them (SigBandBelow .. SigBandSlow,
+; l1sum.py: not executed); known only from the code.
 ;
 ; Witness: m1 828 calls (655-4499) = two whole scripts of 312 commands (218
 ; moves, 30 pen up, 30 pen down, 33 dots, the end) and 204 of the third, cut by

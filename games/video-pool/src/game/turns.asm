@@ -72,9 +72,9 @@ FrameBannerBlank:
 ;
 ; From the end-of-shot task $8357 and NextTurn $97CD: w1 3 times (frames
 ; 4023-10196, frames 2, 3 and 4). Frame $9F4B + 1, printed (PrintHudNumber 4);
-; PocketTurn $9F43 - 1 (0 wraps to 5), the marks redrawn (DrawPocketMarks
-; $9D6B); ShotsLeft = ShotsForFrame, printed (PrintHudNumber 3); tail call
-; $8539 (erase the power bar, power 0).
+; the pocket turn (PlayerVars $9F43) - 1 (0 wraps to 5), the marks redrawn
+; (DrawPocketMarks $9D6B); ShotsLeft = ShotsForFrame, printed (PrintHudNumber
+; 3); tail call $8539 (erase the power bar, power 0).
 NextFrame:
   LD A,(FrameNumber)
   INC A
@@ -148,9 +148,9 @@ TurnSwapStart:
 ; Run by TurnSwapStart (game 3, w1 3, f1 3, p2 1 at frame 1738, v1 3). Two
 ; players (p2 only): wait 40 frames, ClearTableForTurn $947D, DrawLives (XOR:
 ; erases the lives), then unless the other's lives $9F4F are negative:
-; CurrentPlayer 1 <-> 2, and the pairs PocketTurn $9F43 / $9F44, LivesLeft
-; $9F4E / $9F4F, FrameNumber $9F4B / $9F4C swapped, the 98-byte ball sets $8A88
-; / $8AEA exchanged byte by byte.
+; CurrentPlayer 1 <-> 2, and the pairs pocket turn (PlayerVars $9F43) / $9F44,
+; LivesLeft $9F4E / $9F4F, FrameNumber $9F4B / $9F4C swapped, the 98-byte ball
+; sets $8A88 / $8AEA exchanged byte by byte.
 ;
 ; Then for one and two players: $8539 (power 0), PrintHudNumber 4 (frame),
 ; ShotsLeft = ShotsForFrame, PrintHudNumber 3, DrawPocketMarks, and falls into
@@ -237,9 +237,9 @@ PlayerBannerTexts:
 PlayerBanner2:
   INCBIN "res/text/PlayerBannerTexts.bin",$000C,12
 
-; With one shot left: a short beep (BEEPER HL 500, DE 10: 825 Hz, 12 ms; f1
-; measured 825.6 Hz, 13 beeps, docs/09-sound.md 9.4), then DI (it runs in the
-; interrupt)
+; With one shot left: a short beep (BEEPER HL 500, DE 10, so 11 cycles: 825 Hz,
+; 12.7 ms; f1 measured 825.7 Hz, 13 beeps, docs/09-sound.md 9.4), then DI (it
+; runs in the interrupt)
 ;
 ; A task added by StartAim $8425 with period 25, removed by $8506 at the shot.
 ; 58 runs in game, w1 179 (none beeped: no aim of w1 had one shot left), f1 13

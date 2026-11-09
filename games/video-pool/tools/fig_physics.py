@@ -93,7 +93,7 @@ def fig_friction(args):
     t0, v0 = fr[k], sp[k]
     line = [v0 - 5 / 256 * (f - t0) - 0.25 for f in fr[k:k + 31]]
     b.plot(fr[k:k + 31], line, ':', color='#000000', lw=1.5, label='slope 5/256 a tick (shifted down 0.25)')
-    b.set_xlabel('w1 frame (one tick a frame)')
+    b.set_xlabel('w1 video frame (the sample at its start)')
     b.set_ylabel('pixels a tick')
     b.set_title('The break: the cue ball slows by friction')
     b.legend(loc='lower left', fontsize=10)

@@ -8,7 +8,7 @@
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; Print "xN" at the six pockets, clockwise from the top left, N = 1-6 turned by
-; PocketTurn $9F43
+; the pocket turn (PlayerVars $9F43)
 ;
 ; Cells: top row 5 (y 40) cols 0, 15, 30 then bottom row 23 (y 184) cols 30,
 ; 15, 0, each a ROM "x" and a digit. The k-th mark (k = 0..5) shows

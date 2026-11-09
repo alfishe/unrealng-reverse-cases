@@ -6,7 +6,7 @@
 ; The variables past the loaded image (game.ann @equ)
 KEY_SCAN       EQU $028E  ; the ROM's KEY-SCAN: DE = the key values ($FF none), NZ for more than two keys
 K_TEST         EQU $031E  ; the ROM's K-TEST: E = KEY-SCAN's value, A = the character ($FF none)
-BEEPER         EQU $03B5  ; the ROM's BEEPER: HL = the period, DE = the cycles
+BEEPER         EQU $03B5  ; the ROM's BEEPER: HL = the period, DE = the cycles less one (it plays DE + 1 cycles, 2 DE + 2 speaker writes)
 SET_MIN        EQU $16B0  ; the ROM's SET-MIN: clears the editing area and the calculator stack
 STACK_A        EQU $2D28  ; the ROM's STACK-A: A onto the calculator stack
 STACK_BC       EQU $2D2B  ; the ROM's STACK-BC: BC onto the calculator stack

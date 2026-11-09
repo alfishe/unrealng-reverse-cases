@@ -7,11 +7,11 @@
 ;
 ; Called by the end-of-shot task $8357 when the foul code $8E80 is set or the
 ; cue ball is off the table (game 4 at frames 6543-8811, w1 4, f1 4, p2 1, v1
-; 3). With $B8C4 <> 0 (the menu toggle $B3A1) it goes straight to NextTurn
-; $97CD: no jingle, no life lost. No recording of the case set it; the
-; experiment f1c (f1 with CAPS SHIFT + SPACE + 1 + 0 held at frame 500,
-; docs/10-gameplay-logic.md 10.10) flips it at frame 510 and keeps 3 lives
-; through two fouls.
+; 3). With InfiniteLives $B8C4 <> 0 (the four-key cheat, flipped at $B3A1 in
+; WaitNoKeyHeld) it goes straight to NextTurn $97CD: no jingle, no life lost.
+; No recording of the case set it; the experiment f1c (f1 with CAPS SHIFT +
+; SPACE + 1 + 0 held at frame 500, docs/10-gameplay-logic.md 10.10) flips it at
+; frame 510 and keeps 3 lives through two fouls.
 ;
 ; Lives $9F4E - 1; negative: GameOver $97A2. Else the leftmost life ball is
 ; XORed off: a cue ball sprite at x = $E8 - 24 n (n = the lives before the
@@ -53,8 +53,8 @@ FoulJingle:
 ; Wait 10 frames, BEEPER HL $209E DE 26, wait 5 frames, BEEPER HL $29FE DE 23
 ;
 ; Two low notes: the ROM's BEEPER pitch 437500 / (HL + 30.125): about 52 Hz for
-; 26 cycles (0.5 s), then about 41 Hz for 23 cycles (0.57 s). Run by FoulJingle
-; through $80DE (game 4).
+; DE 26, 27 cycles (0.51 s), then about 41 Hz for DE 23, 24 cycles (0.58 s).
+; Run by FoulJingle through $80DE (game 4).
 FoulJingleNotes:
   LD B,$0A
 JingleWaitOne:
@@ -106,10 +106,12 @@ GameOverPlayer:
 ;
 ; From LoseLife and GameOver (game 3, w1 3, f1 3, p2 1 at frame 1738, v1 3).
 ; TurnSwapStart $9C0F; one player: RET (back to $8357, which racks or aims).
-; Two players: drops the return; when the new player has no object ball on the
-; table (his set never racked): DrawAllBalls $9520 (XOR: erases the parked
-; row), DrawLives $9AD9, NextFrame $9BB8 if Player2Racked $9B33 is set,
-; Player2Racked = 1, Rack $9F69, StartAim $8425 (p2 frame 1780).
+; Two players: drops the return; when the player now at the table (the other
+; one after a swap, the same one when TurnSwap found the other out of lives,
+; $9C2B) has no object ball on the table (his set never racked): DrawAllBalls
+; $9520 (XOR: erases the parked row), DrawLives $9AD9, NextFrame $9BB8 if
+; Player2Racked $9B33 is set, Player2Racked = 1, Rack $9F69, StartAim $8425 (p2
+; frame 1780).
 ;
 ; Else (NextTurnResume $9801, known only from the code): wait 100 frames, blank
 ; row 9 (FrameBannerBlank), DrawAllBalls, DrawLives, RespotCueBall if the cue

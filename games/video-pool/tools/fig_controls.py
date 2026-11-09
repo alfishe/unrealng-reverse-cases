@@ -205,8 +205,8 @@ def perimeter(args):
     img.paste(scr, (left, top))
     d = ImageDraw.Draw(img)
     d.text((20, 12), 'The aiming cursor runs on one coordinate round the cushion line, modulo 756', font=ft, fill=FG)
-    d.text((20, 40), f'w1 frames {args.lo}-{args.hi} (left key M held): CursorX/Y $86BA/$86BB at the end of each '
-                     f'frame, on the screen of frame {args.base_frame}', font=fs, fill=DIM)
+    d.text((20, 40), f'w1 frames {args.lo}-{args.hi} (left key M held): CursorX/Y $86BA/$86BB at the start of each '
+                     f'frame (TTD memory_at), on the screen of frame {args.base_frame}', font=fs, fill=DIM)
 
     def P(x, y):
         return left + x * sc + sc // 2, top + y * sc + sc // 2
@@ -269,7 +269,7 @@ def power(args):
     d = ImageDraw.Draw(img)
     d.text((20, 12), 'The power: +2 an interrupt while fire is held, the shot on the release', font=ft, fill=FG)
     d.text((20, 40), f'w1 frames {args.lo}-{args.hi}: InputState $827C bit 4, Power $86BF and the bar drawn last '
-                     '($86C0) at the end of each frame', font=fs, fill=DIM)
+                     '($86C0) at the start of each frame (TTD memory_at)', font=fs, fill=DIM)
     x0, y0, pw, ph = 90, 90, 600, 330
     d.rectangle([x0, y0, x0 + pw, y0 + ph], outline=FG)
     n = len(rows)

@@ -32,7 +32,8 @@ E014 E1A7 leftovers
 E1A8 EFFF free
 F000 F0FF loader
 F100 FCFB free
-FCFC FCFE IM 2 jump
-FCFF FDFF free
+FCFC FCFF IM 2 jump
+FD00 FDFF free
 FE00 FF00 vector table
-FF01 FFFF ROM's UDGs
+FF01 FF57 free
+FF58 FFFF ROM's UDGs

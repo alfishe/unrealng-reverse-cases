@@ -5,11 +5,11 @@
 | [1. Game design](01-game-design.md) | every screen and the flow between them, the play screen part by part, the controls and the hidden infinite-lives keys, the rack, a shot, twelve key moments, the rules and the score with a worked tally, the three variations, two players, the editor, the hall of fame, the difficulty by frame |
 | [2. Architecture](02-architecture.md) | the machine budget, the memory map, the three images, the scheduler and the foreground, the call graph split into interrupt and loop, the module heatmap and the frame budget |
 | [3. Build and load](03-build-and-load.md) | the tape as a picture, the BASIC, the turbo loader (the ROM's LD-BYTES with three constants changed, and why they fit), the 16-bit sum, the load in `c1` with its animation, the build |
-| [4. Game loop](04-game-loop.md) | no main loop; the program state machine; the IM 2 vector; the 25-slot scheduler; an aiming tick and the heaviest pass against the beam; the lost interrupts; the 437 000 T shot set-up (89 % of it the ROM's SQR); the sequences with the tasks stopped; the foreground's sound budget; the delays |
+| [4. Game loop](04-game-loop.md) | no main loop; the program state machine; the IM 2 vector; the 25-slot scheduler; an aiming tick and the heaviest pass against the beam; the lost interrupts; the shot set-up (AimShot 455 000 T, 85 % of it the ROM's SQR, in an interrupt of 484 000 T); the sequences with the tasks stopped; the foreground's sound budget; the delays |
 | [5. Controls](05-controls.md) | one input byte and its four readers (keyboard with KeyDown and the bit-ordered KeyTable, Interface 2, Kempston, cursor joystick), BREAK and the hidden toggle, the menu keys and the redefinition, the aiming cursor on a 756-step cushion perimeter, the power bar (+2 a frame, wrapping at `$86`) and the release, the name entry with its repeat, and the input one frame late against the interrupt |
 | [6. Rendering](06-rendering.md) | the screen layout and attributes, XorLine (every vector line, its own eraser), the table drawing for large and small pockets, the pre-shifted XOR ball sprites drawn in three parts, the ball redraw against the beam (flicker-free in the recordings), code vs screen of the play screen, the pen signature script `$DA80` |
 | [7. Objects](07-objects.md) | the seven 14-byte ball records, the ball state machine, the draw list, the rack scripts and their interpreter (six sets mapped, four known only from the code), the movers, the order of the collision tests, the two players' sets, the R register as the only randomness |
-| [8. HUD and text](08-hud-and-text.md) | the print record and its one print routine, the two fonts (36 glyphs of the game, the rest from the ROM) and the wide print, the number printer with the position on the stack, the HUD and its two blinks, the score tally term by term with its falling beep, the messages and banners, the pocket marks, the hall of fame table, and a data sheet of all 75 records |
+| [8. HUD and text](08-hud-and-text.md) | the print record and its one print routine, the two fonts (36 glyphs of the game, the rest from the ROM) and the wide print, the number printer with the position on the stack, the HUD and its two blinks, the score tally term by term with its rising beep, the messages and banners, the pocket marks, the hall of fame table, and a data sheet of all 75 records |
 | [9. Sound](09-sound.md) | the beeper only, two players: the foreground SoundLoop `$8069` (ball, cushion, pocket tones; its timing, why the interrupt stretches it, the sound loop at work as an animation) and the ROM's BEEPER (clicks, the score count-up, the last-shot beep, the foul jingle), each decoded and measured; the request byte and its rules (last write wins, writes under a tone lost, the frozen pocket tone); what each sound costs in lost interrupts; the data sheet; every sound rendered to WAV |
 | [10. Gameplay logic](10-gameplay-logic.md) | the physics profile (8.8 numbers, the shot through the ROM calculator, the friction table, cushions and self-patching jaws, the table-driven ball-ball exchange, a Python model equal to 475 frames of the `w1` break), the aiming aid and the absence of a computer player, the three variations, fouls, scoring, lives and frames, the infinite-lives keys (CAPS SHIFT + SPACE + 1 + 0, shown by an experiment), bugs, notable features |
 | [11. Data reference](11-data-reference.md) | every data entry of the image (90), with its readers and writers in the recordings (generated: `kit/refdocs.py --case .`) |
@@ -23,14 +23,16 @@ There is no document 13 (no other version of the game is compared); 14 is the po
 
 Each term once, here; the documents link to it. The words of time are kept apart: a **video frame** (the machine's
 1/50 s), an **interrupt** (the handler entered in it), a **tick** (an interrupt that ran the scheduler) and its
-**pass** (the work of that tick); a **frame** without "video" is the game's rack.
+**pass** (the work of that tick); a **frame** without "video" is the game's rack. A recording position (`w1` 1079,
+`w1` frame 1079) is always a video frame; where both meanings are near, the documents write "game frame" and "video
+frame". The documents do not define these words again.
 
 | Term | Meaning |
 | --- | --- |
 | 8.8 | a 16-bit fixed-point number, whole pixels in the high byte, 1/256 in the low byte (stored first) (doc 10.1) |
 | ball sprite | 48 bytes at BallSprites `$D000`, index 7 x shift + ball, XORed with no mask (doc 6) |
 | balls16 | the UKNC port's 112 word-aligned ball copies (7 balls x 16 shifts), made by `tools/uknc_convert.py` (doc 14) |
-| BEEPER | the 48K ROM routine `$03B5`: HL the period, DE the cycles, interrupts off; every sound that is not a tone (doc 9) |
+| BEEPER | the 48K ROM routine `$03B5`: HL the period, DE the cycles less one (it plays DE + 1), interrupts off; every sound that is not a tone (doc 9) |
 | collision record | one of 31 sets of three 0.8 coefficients at `$DE3A` (dx², dy², \|dx dy\| over 225) (doc 10.5) |
 | contact ring | the cells of ContactTable `$DBFA` with 218 <= d² <= 250, numbered 1-31; a ball is stepped back onto it before the exchange (doc 10.5) |
 | cushion coordinate | the aiming cursor's position on the perimeter of the cushions, 0-755 (doc 5) |
@@ -49,16 +51,16 @@ Each term once, here; the documents link to it. The words of time are kept apart
 | plane | one of the UKNC's three 64 KB memories; a pixel is one bit from each, at the same address (doc 14) |
 | pocket box | the small rectangle a potted ball's centre is snapped into (PocketSnap `$8B71`) (doc 10.7) |
 | pocket mark | "x1"-"x6" at a pocket, its score multiplier (doc 8) |
-| pocket turn | `$9F43`, 0-5, the rotation of the pocket marks, one place each game frame (PocketTurn; doc 10.9) |
+| pocket turn | `$9F43`, 0-5, the rotation of the pocket marks, one place each game frame (the first byte of PlayerVars, the current player's; the other player's is PocketTurnOther `$9F44`; doc 10.9) |
 | PPU | the UKNC's peripheral processor (K1801VM2, 6.25 MHz) that owns the video, the speaker and the keyboard (doc 14) |
 | print record | row, column, attribute, length, then the characters; attribute bit 7 means double width (doc 8) |
 | rack script | the byte program (0 end, 1 place, 2 move, 3 wait) that rolls one object ball into place (doc 7.4) |
 | rack set | one of six groups of six rack scripts at `$A0C4`, chosen by ((frame - 1) / 2) mod 6 (doc 7.4) |
-| shot set-up | AimShot `$8A02`, the cue ball's velocity by the ROM's calculator: 437 092 T measured at `w1` frame 1079, the interrupt held 6.9 video frames (doc 4) |
+| shot set-up | AimShot `$8A02`, the cue ball's velocity by the ROM's calculator, run once a shot in the AimPower task: AimShot 454 950 T at `w1` 1079 (454 880 T at 4335; "about 455 000 T"), its calculator part up to `$8A47` 437 092 T, the AimPower task 470 382 T, the interrupt that holds it 483 665 T = 6.92 video frames, so six interrupts are lost (doc 4, 4.7) |
 | SoundLoop | the foreground loop at `$8069`: waits for SoundRequest and plays its tone; the interrupt freezes it (doc 9) |
 | SoundRequest | the byte `$827D`: 1 ball, 2 cushion, 3 pocket, 0 none; written by the physics, cleared by the tone's end or by a task (doc 9) |
 | step back | StepBack `$8E33`, moving a ball back along its velocity by less than a pixel (docs 10.4, 10.5) |
-| tally | ScoreTally `$98FF`, the score of a shot printed term by term (frame x ball x multiplier x 10) and counted into the score with a falling beep (doc 8) |
+| tally | ScoreTally `$98FF`, the score of a shot printed term by term (frame x ball x multiplier x 10) and counted into the score with a rising beep: TallyPitch, the period, falls by 10 a step (doc 8) |
 | TallyPitch | `$9B34`, the count-up's tick period, 1200 at the start, 10 less each step (doc 9) |
 | task | a routine in one of the 25 slots of TaskSlots `$91DF`, with a period p: it runs every p + 1 ticks (doc 4) |
 | task list | (period, routine) triples ending in `$FF` (AimTasks `$84AA`, MovingTasks `$84BA`), installed and removed as a whole (doc 4) |

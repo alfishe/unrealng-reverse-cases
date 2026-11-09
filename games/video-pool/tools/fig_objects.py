@@ -102,8 +102,8 @@ def racks(args):
     fb, f, fs = font(20), font(15), font(14)
     d.text((gap, 8), 'Video Pool: the rack-in scripts of all six sets (RackSets $A0C4, RackStep $A05E)',
            font=fb, fill=TEXT)
-    d.text((gap, 36), 'set = ((frame - 1) / 2) mod 6; each ball rolls 2 px a frame along its script and ends on its '
-           'rack place', font=fs, fill=DIM)
+    d.text((gap, 36), 'set = ((frame - 1) / 2) mod 6; one script step a video frame: each move command adds its (dx, dy) once a '
+           'video frame', font=fs, fill=DIM)
     d.text((gap, 56), 'ring = a "place" (the start, or where a ball comes out of a pocket), arrow = a run of moves, '
            'disc = the rack', font=fs, fill=DIM)
     d.text((gap, 76), 'place; the paths of one set are drawn 2 px apart per ball so that shared lines stay visible', font=fs, fill=DIM)
@@ -153,10 +153,10 @@ def racks(args):
             pd.text((c[0] - 4, c[1] - 8), str(b + 1), font=fs, fill=(0, 0, 0) if b + 1 in (0,) else
                     ((255, 255, 255) if b + 1 != 4 else (0, 0, 0)))
         img.paste(panel, (ox, oy))
-        leg = '  '.join(f'{b}:{w}' for b, w, e in lengths)
-        leg2 = '  '.join(f'{b}:{e}' for b, w, e in lengths)
-        d.text((ox, oy + ph + 4), 'first wait (frames)  ' + leg, font=fs, fill=DIM)
-        d.text((ox, oy + ph + 22), 'script ends at frame ' + leg2, font=fs, fill=DIM)
+        leg = ' '.join(f'{b}:{w}' for b, w, e in lengths)
+        leg2 = ' '.join(f'{b}:{e}' for b, w, e in lengths)
+        d.text((ox, oy + ph + 4), 'first wait (video frames)  ' + leg, font=fs, fill=DIM)
+        d.text((ox, oy + ph + 22), 'script ends at step  ' + leg2, font=fs, fill=DIM)
         for b in range(6):
             d.rectangle([ox + 470 + 0, oy + ph + 46 + 0, ox + 470, oy + ph + 46], fill=BG)
     # legend strip

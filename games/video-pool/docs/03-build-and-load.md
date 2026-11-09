@@ -98,7 +98,7 @@ TurboStart:
     jump $8000
 
 TurboLdBytes:                                ; the ROM's LD-BYTES, three constants changed
-    DI, border 15, return through the ROM's SA/LD-RET ($053F)
+    DI, border white ($0F: colour 7 with the MIC bit), return through the ROM's SA/LD-RET ($053F)
     wait for an edge, about 1 s of DJNZ, another edge
     count 256 pilot pulses; any too short: start again
     wait for the short sync pulse
@@ -249,9 +249,13 @@ How to read the animation:
 
 - **Left**: the memory from `$5B00` to `$FFFF`, one pixel a byte, 256 bytes a row. A row label every `$1000`.
 - **Yellow** bytes were written since the last picture, **fading red** earlier ones; grey bytes hold their value.
-- **Right**: the Spectrum screen. It shows "Bytes: VIDEO POOL", the ROM's message for block 3, all through the turbo
-  load, because the turbo block has no header.
+- **Right**: the Spectrum screen. During the turbo load it shows "Bytes: VIDEO POOL", the ROM's message for block 3,
+  because the turbo block has no header.
 - A picture every 60 frames (4 193 280 T), 92 pictures from frame 200 to frame 5640 of `c1`.
+- **The range**: the first picture (frame 200) is before the load, with the ROM's "(c) 1982 Sinclair Research Ltd"
+  still on the screen (block 5 starts at 300); the last (frame 5640) is 84 frames into the game, the presents
+  banner on the screen and its 12 yellow bytes the game's own writes. From frame 300 to 5529 the screen shows
+  "Bytes: VIDEO POOL" and only `$8000-$E1A7` changes.
 - **The point**: the game fills `$8000` upwards in one sweep, about five bytes a frame, and nothing else in memory
   changes. The loader at `$F000` stays as it is.
 
@@ -288,16 +292,36 @@ flowchart LR
 
 Between frame 5529 and 5556 the loader runs the ROM's SA/LD-RET and the sum. One pass of TurboSumLoop is 73 T (7 + 19
 + 11 + 10 + 6 + 4 + 4 + 12), so 25 000 passes take 1 825 000 T, 26.1 frames. The recording shows 1 849 388 T, 26.5 frames, from the
-last byte to `$8000`: the sum is nearly all of the gap.
+last byte to `$8000`: the sum is nearly all of the gap. The sum has no picture of its own: those 26.5 frames change
+no byte of memory and nothing on the screen (the border stays as SA/LD-RET left it), so the animation above would
+show 26 still frames between 5529 and 5556.
+
+The static image against the recording, at the game's entry (`c1` frame 5556, `work/snaps/entry.z80`):
+
+| Range | Static (`tools/image.py`, `work/mkgame/original.bin`) | `c1` at the entry | Bytes that differ |
+| --- | --- | --- | ---: |
+| `$8000-$E1A7` | the turbo block's 25 000 bytes | the same bytes | 0 |
+| `$F000-$F0FF` | the loader, block 4 | the same bytes | 0 |
+| the 16-bit sum of `$8000-$E1A7` | `$2E3F` | `$2E3F` (TurboSumLoop's HL, equal to GameSum, so `JP $8000` ran) | |
+| the XOR of the flag and the 25 000 bytes | `$E6` | `$E6` (the block's last byte; H = 0 at TurboLoadDone) | |
+
+```bash
+python3 tools/szxmem.py diff work/mkgame/original.bin work/snaps/entry.z80 --from 8000 --to E1A7   # 0 bytes
+python3 tools/szxmem.py diff work/mkgame/original.bin work/snaps/entry.z80 --from F000 --to F0FF   # 0 bytes
+```
 
 ## 3.6 The conversion, for comparison
 
 `VIDPOOL.TAP` in `orig/VideoPool.tap.zip` is not the original:
 
 - It holds a 162-byte BASIC ("Modify by JANSOFT 1985", `CLEAR 32767`, `LOAD "" CODE`, `RANDOMIZE USR 32768`).
-- The 25 000 bytes are a standard block at `$8000`: 149.1 s at ROM speed, 7467 frames.
-- Against the original turbo block 207 bytes differ, in 25 runs. Every one is a byte the original holds as zero, or
-  a table the game fills at run time (`$869E-$86C0`, `$8A89-$8AE9`, `$9F4B-$9F66`, `$CFC0-$CFFF` and smaller ones).
+- The 25 000 bytes are a standard block at `$8000`: 136.1 s at ROM speed (the whole TAP 149.1 s, 7467 frames).
+- Against the original turbo block 207 bytes differ, in 76 runs (26 when gaps of up to 8 bytes are merged). Every one
+  is a byte the game writes at run time: state and tables (`$869E-$86C0`, `$8A89-$8AE9`, `$9F4B-$9F66`, the key names
+  at `$B668`), the stack (`$CFC0-$CFFF`), and self-patched operands: `$8C8B` / `$8C8F` hold 2 / 3 in the original and
+  6 / 7 in the TAP (JawDepthTest, written by CushionsSmall `$8E81` / CushionsLarge `$8FBB`), and the pen's
+  `$BF93` / `$BFA1` / `$BFAE` are `NOP` in the original and `$AE` (`XOR (HL)`) in the TAP. 194 of the 207 are zero in
+  the original.
 - The key names at `$B668` read `'z' right='x' fire=' '` where the original has blanks.
 - So the TAP's code was saved from a game that had run.
 
@@ -333,7 +357,7 @@ The inputs:
 | Input | Becomes | Tool |
 | --- | --- | --- |
 | `src/game/game.ann` | `src/game/*.asm` (the game, 33 files) | `kit/mkgame.py` |
-| `src/res/fonts`, `graphics`, `tables`, `text` | `build/res/*.bin`, the `INCBIN` resources (86 of them) | `tools/res_formats.py build` |
+| `src/res/fonts`, `graphics`, `tables`, `text` | `build/res/*/*.bin`: 21 binary resources, read by 86 `INCBIN` lines | `tools/res_formats.py build` |
 | `src/game/game.asm` | `build/game.bin`, `build/game.lst` | sjasmplus |
 | `src/turbo/turbo.ann`, `turbo.json` | `src/turbo/turbo.asm`, `loader.asm` | `kit/mkgame.py --part` |
 | `src/turbo/turbo.asm` | `build/turbo.bin`, `build/turbo.lst` | sjasmplus |

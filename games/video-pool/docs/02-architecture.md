@@ -7,7 +7,7 @@ What this covers:
 - the three images, as loaded, at the entry and in play, and what changes between them (2.3);
 - the interrupt's task scheduler and the foreground loop (2.4);
 - the call graph: what runs in the interrupt and what outside it (2.5);
-- where the time goes: the module heatmap and the frame budget (2.6).
+- where the time goes: the module heatmap and the video-frame budget (2.6).
 
 The recordings it rests on ([Terms](README.md#terms)), all on the 48K, each with an input script (WALKTHROUGH 6.0
 has the table):
@@ -19,7 +19,9 @@ has the table):
 
 ## 2.1 The machine budget
 
-- **The 48K, the beeper.** The only `OUT` instructions are to port `$FE` (`$8088`, `$808F`, `$80AC` in the sound
+- **The 48K only.** The game does not test the model and has no paging or AY code: no `OUT` to `$7FFD`, `$FFFD` or
+  `$BFFD` (the list below is every `OUT`), so on a 128K it runs as on a 48K, in the 48K ROM's memory map.
+- **The beeper.** The only `OUT` instructions are to port `$FE` (`$8088`, `$808F`, `$80AC` in the sound
   loop; `$95E9`, `$A915`, `$AD07`, `$B246`, `$B97B`, `$C060` elsewhere). BEEPER `$03B5` (twelve calls and one jump)
   plays the short notes. A byte search of the image (`tools/image.py`); WALKTHROUGH 1.
 - **The keys, two ways.** The game reads the keyboard itself with `IN A,(C)` on port `$FE`: the defined keys
@@ -99,20 +101,25 @@ untouched, in bytes:
 | `$E1A8-$EFFF` | 3672 | 0 | 0 | 0 | 3672 | free | |
 | `$F000-$F0FF` | 256 | 0 | 0 | 0 | 256 | the turbo loader (untouched here: the builds start after the load) | doc 3 |
 | `$F100-$FCFB` | 3068 | 0 | 0 | 0 | 3068 | free | |
-| `$FCFC-$FCFE` | 3 | 0 | 0 | 3 | 0 | `EI`, `JP $80F0` (`$FCFD` patched to `RET` by `$80DE`) | 2.4 |
-| `$FCFF-$FDFF` | 257 | 0 | 0 | 1 | 256 | free | |
+| `$FCFC-$FCFF` | 4 | 0 | 0 | 4 | 0 | `EI`, `JP $80F0` (`$FCFD` patched to `RET` by `$80DE`) | 2.4 |
+| `$FD00-$FDFF` | 256 | 0 | 0 | 0 | 256 | free | |
 | `$FE00-$FF00` | 257 | 0 | 0 | 257 | 0 | the IM 2 vector table, all `$FC` | `$8013` |
-| `$FF01-$FFFF` | 255 | 0 | 0 | 0 | 255 | the ROM's UDGs, unused | |
+| `$FF01-$FF57` | 87 | 0 | 0 | 0 | 87 | free | |
+| `$FF58-$FFFF` | 168 | 0 | 0 | 0 | 168 | the ROM's UDGs, unused | |
 
 Notes:
 
-- **About 9.5 KB is free** (`$C600-$CFBF`, `$E1A8-$EFFF`, `$F100-$FCFB`, `$FCFF-$FDFF`), and the 1.3 KB of rack
+- **About 9.5 KB is free** (`$C600-$CFBF`, `$E1A8-$EFFF`, `$F100-$FCFB`, `$FD00-$FDFF`, `$FF01-$FF57`), and the 1.3 KB of rack
   scripts at `$A1E4` is only read from frame 5 on, which no recording reached.
 - **The editor** keeps 524 bytes untouched: `m1` only entered it and moved its cursor; `e1` picks a ball, moves it
   left, drops it, hits "play" and plays the shot, so what is left is "reset" (EditorReset `$C532-$C54D`), placing
   an off-table ball (EditorPlaceBall `$C288` and its overlap loop, `$C273-$C2F3`), the ball moved right, up or down
   (`$C3F2-$C400`), the end of an edited shot with every object ball down (`$C47F-$C4A8`), the stale copy
   `$C591-$C5FF` and the pen's never-run band and shaft paths (`$BDA2-$BDF6`, `$BF03-$BF32`); WALKTHROUGH 6.0.
+- **The red bytes inside the code** are operands patched at run time, not code that changes: the jaw band
+  `$8C8B` / `$8C8F` (the operands of JawDepthTest `$8C8A` in DiagonalJaw, 2 / 3 or 6 / 7, written by CushionsSmall
+  `$8E81` / CushionsLarge `$8FBB` for the pocket size) and the pen's span operations `$BF93`, `$BFA1`, `$BFAE`
+  (PenSpanOp1 and its two siblings: `NOP` in the image, `OR (HL)` or `XOR (HL)` while the pen draws; docs 6 and 10).
 - **The sprites.** The first sprite sheet, the 56 pre-shifted ball sprites (one row per shift 0-7, cue ball and
   balls 1-6) and the font, drawn from the image by `tools/fig_sprites.py`:
 
@@ -122,6 +129,45 @@ Notes:
 (called from the sprite draw `$9548`). Font: 8 x 8, printed by `$9E7C`. The aiming cursor (`$85EB`, `$9371` in the
 editor) and the table (cushions, pockets, the power box) are drawn by code, one XOR line at a time (XorLine `$93B3`),
 not from data.*
+
+The modules: the 32 source files that `src/game/game.asm` includes, in address order (the `INCLUDE` lines of
+`build/game.lst`; each range runs to the next module's start, the last to `$E1A7`). The heatmap of 2.6 uses these
+names.
+
+| Module | Range | Bytes | Role |
+| --- | --- | ---: | --- |
+| `main.asm` | `$8000-$8105` | 262 | the entry, the restart, the foreground sound loop, task lists, the frame wait, the interrupt handler |
+| `input.asm` | `$8106-$827D` | 376 | the controls: keyboard, Interface 2, Kempston, cursor; the key table; BREAK |
+| `shot.asm` | `$827E-$8505` | 648 | the balls in motion: the redraw task, the draw list, the end of a shot, the start of the aim |
+| `aim.asm` | `$8506-$86C0` | 443 | the aim: the power while fire is held, the cursor that runs round the cushions, their variables |
+| `physics.asm` | `$86C1-$8A01` | 833 | the physics task: the motion step, rolling friction, ball against ball |
+| `shotsetup.asm` | `$8A02-$8A87` | 134 | the shot: direction and speed through the ROM calculator |
+| `balls.asm` | `$8A88-$8B4D` | 198 | the ball records, the other player's records, the physics counters |
+| `cushions.asm` | `$8B4E-$90F4` | 1447 | the cushions and the pockets |
+| `friction.asm` | `$90F5-$9154` | 96 | the rolling friction: the steps from the direction of motion |
+| `scheduler.asm` | `$9155-$9242` | 238 | the task scheduler of the interrupt: 25 slots, add, remove, clear |
+| `tabledraw.asm` | `$9243-$93FE` | 444 | the table, the power bar and its box, the aiming cursor, the XOR line |
+| `balldraw.asm` | `$93FF-$95D9` | 475 | the ball sprites: the draw, the 3 x 16 XOR, the screen address, the cue ball's respot, clearing for a turn |
+| `hud.asm` | `$95DA-$9753` | 378 | the new game's screen, the HUD texts, the 1up / 2up blink, the "last shot" blink |
+| `gameover.asm` | `$9754-$98F8` | 421 | a life lost, the foul jingle, GAME OVER, the hi score and the hall of fame hand-over |
+| `tally.asm` | `$98F9-$9B35` | 573 | the score of a shot: frame x ball x pocket multiplier x 10, printed term by term and counted up into the score |
+| `turns.asm` | `$9B36-$9D6A` | 565 | the FRAME banner, the next frame, the shots per frame, the turn swap, the last-shot beep, the messages task |
+| `printing.asm` | `$9D6B-$9F35` | 459 | the pocket multiplier marks, the number printer, the text printer and its glyph lookup |
+| `racking.asm` | `$9F36-$A161` | 556 | the player variables, the rack scripts and their interpreter |
+| `rackscripts.asm` | `$A162-$A701` | 1440 | the rack-in scripts of sets 1-5: how the six object balls roll onto the table before frames 3-12 |
+| `halloffame.asm` | `$A702-$ACEE` | 1517 | the hall of fame: the qualifying test, the flags on their poles, the slide of the flags, the table |
+| `nameentry.asm` | `$ACEF-$B22D` | 1343 | the name entry: the "congratulations" page, the character grid, the cursor, the 7-character name |
+| `menu.asm` | `$B22E-$B8C4` | 1687 | the main menu, the variations page, redefine keys, the settings and the menu's timeout |
+| `presents.asm` | `$B8C5-$BB12` | 590 | the presents page: the OCP banner rolling in, "presents", the attract loop |
+| `attract.asm` | `$BB13-$BD0B` | 505 | the attract sequence's letters: OCP turning into POOL, "video" sliding in |
+| `signature.asm` | `$BD0C-$C041` | 822 | the pen that writes "written by" and the signature |
+| `editor.asm` | `$C042-$C5FF` | 1470 | the table editor: place the balls with a cursor, then play the table |
+| `workspace.asm` | `$C600-$CFFF` | 2560 | the free space and the machine stack below the sprites |
+| `sprites.asm` | `$D000-$DA7F` | 2688 | the 56 pre-shifted ball sprites |
+| `penscript.asm` | `$DA80-$DBF9` | 378 | the pen script: "written by" and the signature, as pen moves |
+| `physicstables.asm` | `$DBFA-$DEF3` | 762 | the physics tables: contact, jaw radius, friction, collision records |
+| `font.asm` | `$DEF4-$E013` | 288 | the game's own font: a-z and 0-9 |
+| `devleftover.asm` | `$E014-$E1A7` | 404 | code of the development system left in the image: never run, never read |
 
 ## 2.3 The three images
 
@@ -145,7 +191,8 @@ What changes:
 - **loaded to entry: nothing** in `$8000-$E1A7` and `$F000-$F0FF`: the loader stores the block as it comes and the
   sum `$2E3F` checks it (doc 3, 3.1). The BASIC, the system variables and the ROM's UDGs at `$FF58` are the ROM's.
 - **entry to play: 444 bytes outside the screen, all state.** No code changes and no table is built but the
-  interrupt's:
+  interrupt's (the self-patched operands of the next note come later, at the first draw of the table and the
+  signature):
 
 | Range | Bytes changed | What |
 | --- | ---: | --- |
@@ -157,8 +204,9 @@ What changes:
 | `$91DF-$91FE` | 22 | the task slots (the aim list `$84AA` installed) |
 | `$9F4B-$9F66` | 17 | the frame of each player (`$9F4B` / `$9F4C` = 1), the shots left `$9F4D` = 5, the lives (`$9F4E` / `$9F4F` = 3), then six pointers into `$A0EC-$A161` |
 | `$9B8E-$9B98` | 2 | the "FRAME n" message: its position byte and the digit |
-| `$B8C1` | 2 | the menu's timeout, 1500 at the menu (`$B6A2`) and counted down: at zero the attract sequence runs (`w1` frame 16 300) |
-| `$9B30`, `$95D8`, `$BD09-$BD0B` | 7 | `$9B30` = 1 (`$8050`), the sprite's screen address `$95D8`, a saved stack pointer `$CFFE` and the presents-done flag `$BD0B` = `$FF` (`$800E`) |
+| `$B8C1` | 2 | the menu's timeout, 1500 at the menu (`$B293`, `$B6A2`) and counted down: at zero the attract sequence runs (`w1` 15 741) |
+| `$827C` | 1 | InputState (fire held: the aim is under way) |
+| `$9B30-$9B31`, `$95D8-$95D9`, `$BD09-$BD0B` | 7 | `$9B30` = 1 (`$8050`) and UpBlink `$9B31`, the sprite's screen address `$95D8`, a saved stack pointer `$CFFE` and the presents-done flag `$BD0B` = `$FF` (`$800E`) |
 | `$B668-$B67D` | 8 | the key names of the menu's last line ("left='m' right=s/s fire=' '"), filled at the menu |
 | `$CFDC-$CFFF` | 35 | the stack |
 | `$5C04-$5C79` | 8 | the ROM's keyboard variables and FRAMES (KEY-SCAN is called, the ROM's IM 1 handler ran until frame 6061) |
@@ -183,16 +231,21 @@ the interrupt plays the sound and watches for BREAK.
 
 | List | Tasks | When |
 | --- | --- | --- |
-| `$84AA` | `$8506` the power (2 a frame while fire is held, wrapping from `$86` to 0), `$934D` the power bar, `$8546` the cursor move, `$85EB` the cursor draw, `$8106` the input dispatcher (by `$B8BD`: keyboard, Interface 2, Kempston, cursor) | the aim |
+| `$84AA` | `$8506` the power (2 a tick while fire is held, wrapping from `$86` to 0), `$934D` the power bar, `$8546` the cursor move, `$85EB` the cursor draw, `$8106` the input dispatcher (by `$B8BD`: keyboard, Interface 2, Kempston, cursor) | the aim |
 | `$84BA` | `$827E` the ball redraw (the list at `$869E`), `$86C1` the physics, `$8357` the end of the shot (and of the frame when no object ball is left), `$9CB7` the messages | the balls moving |
 
-- The editor's list `$C518` reuses both: `$C4D6`, `$934D`, `$8546`, `$85EB`, `$8106`, `$827E`, `$86C1`, `$C46E`.
+- The editor has its own two lists: EditorAimTasks `$C518` (`$C4D6`, `$934D`, `$8546`, `$85EB`, `$8106`) and
+  EditorRollTasks `$C528` (`$827E`, `$86C1`, `$C46E`), each ending in `$FF`.
 - **The foreground loop** `$8069-$809B` waits for bit 5 of `$827C` (BREAK: `$80B0` reloads SP and restarts at
   `$8013`) or a sound request in `$827D`, and plays the request as speaker toggles through `OUT ($FE)` (`$17` /
-  `$07`, `$8088`, `$808F`), dropping it when a new one arrives.
-- **Wait one frame** `$80DE`: it writes `RET` at `$FCFD` (the interrupt is then `EI; RET`: the tasks stop), calls
+  `$07`, `$8088`, `$808F`) to its end: a request written meanwhile is lost, because the end of the tone clears
+  SoundRequest (`$8098`); a task writing 0 stops the tone at once (SoundAbort `$80A8`; StopShotTasks `$84A6`,
+  ShotReset `$84D1`).
+- **Wait one video frame** `$80DE`: it writes `RET` at `$FCFD` (the interrupt is then `EI; RET`: the tasks stop), calls
   the routine in HL, `HALT`s, and puts the `JP` back. The racking `$9F69`, the tally `$98F9`, the messages `$8451` and
-  the foul jingle `$9780` run this way, all from inside the end-of-shot task ([doc 4](04-game-loop.md), 4.9).
+  the foul jingle `$9780` run this way: the first rack of a game from GameRestart (`$805E`, in the foreground),
+  everything else from inside the end-of-shot task, as do TurnSwapStart `$9C0F`, the GAME OVER wait `$9851` and
+  WaitFramesBStopped `$9886` ([doc 4](04-game-loop.md), 4.9).
 
 The scheduler's slots, the per-interrupt costs and the lost interrupts are in [doc 4](04-game-loop.md).
 
@@ -213,7 +266,7 @@ flowchart TD
         SL -- BREAK --> BR[BreakRestart 80B0]
         BR --> GR
     end
-    subgraph IRQ[the interrupt, every frame]
+    subgraph IRQ[the interrupt, every tick]
         IH[Im2Handler 80F0] --> RT[RunTasks 9155]
         RT --> AP[AimPower 8506]
         AP --> AS[AimShot 8A02: the ROM's calculator]
@@ -237,7 +290,7 @@ flowchart TD
         RT --> HT[UpBlinkTask 96E6, ShotsBlinkTask 970E, LastShotBeepTask 9CA7]
     end
     SA -. AddTask .-> RT
-    AP -. SoundRequest .-> SL
+    AP -. clears SoundRequest .-> SL
     PT -. SoundRequest .-> SL
 ```
 
@@ -252,10 +305,11 @@ The split, from the module heatmap of 2.6 (`w1`, 16 378 frames):
 | the ROM | 4.5 % | the calculator in AimShot, BEEPER, KEY-SCAN |
 
 - Everything of play is in the interrupt. Outside it there are only the pages (presents, menu, editor) and SoundLoop.
-- The ROM's 4.5 % is mostly the 21 shot set-ups: 21 x 437 000 T = 9.2 million T, 0.8 % of the recording; the rest is
-  BEEPER (the tally and the jingles) and KEY-SCAN on the pages.
+- Of the ROM's 4.5 %, the 21 shot set-ups are 0.8 %: 21 x AimShot's 455 000 T = 9.6 million T (99.8 % of AimShot is
+  in the ROM); the rest, about 3.7 %, is BEEPER (the tally, the jingles, the menu clicks) and KEY-SCAN / K-TEST on
+  the pages.
 
-The point: the game is idle most of the time. Half the frames wait on HALT and a third spin in SoundLoop; the work is
+The point: the game is idle most of the time. Half the time waits on HALT and a third spin in SoundLoop; the work is
 short bursts in the interrupt, with long ones only when six balls roll (doc 4).
 
 ## 2.6 Where the time goes
@@ -267,7 +321,7 @@ How to read the figure:
 - **One column a recording**, its L1 build from `work/game` (`c1` from the entry) and `work/runs/NAME`, with its frames.
 - **One row a module** of `src/game` that ran in some build, in address order. The four rows on top are the HALT
   instructions (the CPU waiting), SoundLoop `$8069-$80AF` (taken out of main), the ROM, and the jump at `$FCFC`.
-- **A cell** is the module's T-states over the recording's frames x 69 888 T, as a per cent, coloured on a log scale.
+- **A cell** is the module's T-states over the recording's video frames x 69 888 T, as a per cent, coloured on a log scale.
   Dark grey: not executed.
 - **The point**: every recording spends three quarters of its time waiting, on HALT or in SoundLoop. The work is
   spread thin: balldraw (up to 8.2 % in `p2`), physics (3.5 %), shot and the scheduler (2-4 %). The signature's pen
@@ -279,31 +333,33 @@ python3 tools/fig_arch.py modules
 
 Each recording's column tells what it did:
 
-- `m1` is 70 % HALT: the attract sequence and the menus wait a frame at a time. It is the only build with the
-  signature (9.8 %) and the editor's entry.
+- `m1` is 70 % HALT: the attract sequence and the menus wait a video frame at a time. It is the only build with the
+  signature (9.8 %); the editor ran in `m1` (entered, the cursor moved: 0.07 %) and in `e1` (0.34 %: a ball moved
+  and a shot played).
 - `p2` has the most drawing and physics (balldraw 8.2 %, physics 3.5 %): two players, so two breaks of a full rack.
 - `w1` is the only build with the name entry, and the one with the most hall of fame (0.36 %).
 - `e1` has 9.4 % in presents: it waits on the presents page before the editor.
 - Modules that never ran in any build hold only data: balls, rackscripts, workspace, sprites, penscript,
   physicstables, font, and devleftover, the never-run code at `$E014`.
 
-![The frame budget: one average frame of each recording split into HALT, SoundLoop, drawing, physics, the interrupt, play, the pages and the ROM](img/arch/budget.png)
+![The video-frame budget: one average video frame of each recording split into HALT, SoundLoop, drawing, physics, the interrupt, play, the pages and the ROM](img/arch/budget.png)
 
 How to read the figure:
 
-- **One bar a recording**, the whole width is one frame, 69 888 T.
-- **Each segment** is a group of modules, its T-states over the recording divided by its frames; the number is
-  thousands of T a frame.
-- **The point**: an average frame holds about 3-7k T of drawing and 1-3k T of physics. The average hides the peaks:
-  a six-ball tick takes 62k T, a shot set-up 455k T (doc 4, 4.6 and 4.7).
+- **One bar a recording**, the whole width is one video frame, 69 888 T.
+- **Each segment** is a group of modules, its T-states over the recording divided by its video frames; the number is
+  thousands of T a video frame.
+- **The point**: an average video frame holds about 3-7k T of drawing and 1-3k T of physics. The average hides the peaks:
+  a six-ball tick takes 62k T, and the shot set-up holds the interrupt 484k T, 6.92 video frames (AimShot 455k T
+  of it; doc 4, 4.6 and 4.7).
 
 ```bash
 python3 tools/fig_arch.py budget
 ```
 
-Worked example, `w1`'s average frame:
+Worked example, `w1`'s average video frame:
 
-| Group | T a frame | Share |
+| Group | T a video frame | Share |
 | --- | ---: | ---: |
 | HALT | 31 800 | 45.5 % |
 | SoundLoop | 23 000 | 32.9 % |

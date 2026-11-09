@@ -83,6 +83,8 @@ def load(events_dir, name):
     d['name'] = name
     d['edges'] = sorted((f * FT + t, v, pc) for f, t, v, pc in d['out'])
     d['irqs'] = sorted(f * FT + t for f, t, _ in d['irq'])
+    d['irq_frames'] = set(f for f, _, _ in d['irq'])
+    d['int_t'] = min(t for _, t, _ in d['irq'])   # the interrupt's entry T in a frame (about 1825)
     return d
 
 
@@ -126,13 +128,17 @@ def beeps(d):
         start = f * FT + t
         i = bisect.bisect_left(keys, start)
         edges = []
-        while i < len(keys) and len(edges) < 2 * de:
+        # the ROM's BEEPER plays DE + 1 cycles: 2 DE + 2 writes, the first about 230 T after the call
+        while i < len(keys) and len(edges) < 2 * de + 2:
             if d['edges'][i][2] == BEEPER_OUT:
                 edges.append(d['edges'][i])
             i += 1
         name, site = CALLERS.get(caller, (f'? {caller:04X}', '?'))
         end = edges[-1][0] if edges else start
-        lost = (end // FT) - (start // FT)   # frame starts passed while BEEPER held DI
+        # lost: a frame with no accepted interrupt whose INT (at the earliest accepted entry T of the recording)
+        # falls between the call and the last write, with BEEPER's DI
+        lost = sum(1 for g in range(start // FT, end // FT + 1)
+                   if g not in d['irq_frames'] and start <= g * FT + d['int_t'] <= end)
         out.append(dict(kind=name, site=site, caller=caller, hl=hl, de=de, frame=f, t=t, start=start, edges=edges,
                         lost=lost))
     return out
@@ -264,10 +270,12 @@ def cmd_roll(runs):
             label = {'click': 'BEEPER click: HL 1000, DE 20 (menu, variations, name entry, editor)',
                      'pick': 'BEEPER pick: HL 1200, DE 22 (name entry fire)'}.get(
                          x['kind'], f'BEEPER {x["kind"]}: HL {x["hl"]}, DE {x["de"]}')
-            rows.append((label, 0, x['de'] * 1000.0 / hz, hz, '#3060c0'))
+            if x['kind'] == 'last shot':
+                label = f'BEEPER last shot: HL 500, DE 10 ({d["name"]}, LastShotBeepTask)'
+            rows.append((label, 0, (x['de'] + 0.5) * 1000.0 / hz, hz, '#3060c0'))   # first to last write
     if (500, 10) not in seen:
         hz = beeper_hz(500)
-        rows.append(('BEEPER last shot: HL 500, DE 10 (from the code)', 0, 10 * 1000.0 / hz, hz, '#909090'))
+        rows.append(('BEEPER last shot: HL 500, DE 10 (from the code)', 0, 10.5 * 1000.0 / hz, hz, '#909090'))
     fig, ax = plt.subplots(figsize=(WIDTH, 6.2))
     for label, a, b, hz, col in rows:
         ax.plot([a, b], [hz, hz], color=col, lw=6, solid_capstyle='butt')
@@ -285,12 +293,12 @@ def cmd_roll(runs):
     first = max(groups, key=len)
     for x in first:
         hz = beeper_hz(x['hl'])
-        d = x['de'] * 1000.0 / hz
+        d = (x['de'] + 0.5) * 1000.0 / hz
         ax.plot([0, d], [hz, hz], color='#30a050', lw=1.5)
     top = beeper_hz(first[-1]['hl'])
-    ax.annotate(f'BEEPER tally: HL 1200 down by 10 a step, DE = 6000 / HL\n({len(first)} steps of the longest '
-                f'count-up in w1, {beeper_hz(1200):.0f} to {top:.0f} Hz, each about 14 ms)',
-                xy=(13.5, top), xytext=(80, 900), fontsize=10, color='#207040',
+    ax.annotate(f'BEEPER tally: HL 1200 down by 10 a step, DE = 6000 / HL\n({len(first)} beeps of the longest '
+                f'count-up in w1, {beeper_hz(1200):.0f} to {top:.0f} Hz, each 13-15.5 ms)',
+                xy=(12, 352), xytext=(30, 120), fontsize=10, color='#207040', va='center',
                 arrowprops=dict(arrowstyle='->', color='#207040'))
     ax.set_xscale('log')
     ax.set_yscale('log')
@@ -400,15 +408,23 @@ def cmd_tally(runs):
         a = x['edges'][0][0] % FT
         b = a + x['edges'][-1][0] - x['edges'][0][0]
         a2.plot([x['frame'], x['frame']], [a, b], color='#3060c0', lw=5, solid_capstyle='butt')
-    a2.axhline(FT, color='#c03030', ls='--', lw=1)
-    a2.text(fr[0], FT * 0.93, 'the next interrupt (T 69 888)', color='#c03030', fontsize=10, va='top')
-    a2.set_ylim(0, FT * 1.05)
+    nxt = FT + w1['int_t']
+    a2.axhline(nxt, color='#c03030', ls='--', lw=1)
+    a2.text(fr[-1], nxt * 0.985, f'the next interrupt (next frame T {w1["int_t"]})', color='#c03030',
+            fontsize=10, va='top', ha='right', bbox=dict(facecolor='white', edgecolor='none', pad=1))
+    for x in g:
+        if x['lost']:
+            a2.annotate(f'frame {x["frame"]}: the first beep starts at T {x["t"]}, after the printed total, and runs '
+                        f'past the next interrupt: {x["lost"]} lost', (x['frame'], x['edges'][-1][0] % FT + FT),
+                        textcoords='offset points', xytext=(30, 6), fontsize=10, color='#c03030', va='bottom',
+                        arrowprops=dict(arrowstyle='->', color='#c03030'))
+    a2.set_ylim(0, FT * 1.42)
     a2.set_ylabel('T in the frame')
-    a2.set_title('where each tick sits in its frame: from the first OUT to the last, interrupts off (BEEPER)',
+    a2.set_title('where each beep sits in its frame: from the first OUT to the last, interrupts off (BEEPER)',
                  fontsize=11, loc='left')
     a2.set_xlabel('frame (w1)')
-    a1.set_title(f'One score count-up of w1 (frames {fr[0]}-{fr[-1]}, {len(g)} steps): the pitch rises 10 HL units a '
-                 f'step, each tick ~14 ms', fontsize=12, loc='left')
+    a1.set_title(f'One score count-up of w1 (frames {fr[0]}-{fr[-1]}, {len(g)} beeps): the pitch rises 10 HL units a '
+                 f'beep, each 13-15.5 ms', fontsize=12, loc='left')
     fig.tight_layout()
     save(fig, 'tally.png')
 

@@ -101,9 +101,12 @@ RedrawPottedDraw:
 ; DrawList from the ball records, sorted by y
 ;
 ; Writes the 7 entries of DrawList: the ball's number, its y (record +3, the
-; integer byte), the record's address; then a bubble sort (6 passes) by y, so
-; BallRedraw draws the balls from the top of the screen down. Called by
-; ShotReset (w1 3451 calls also from the physics, frames 706-11 615).
+; integer byte), the record's address; then an exchange sort by y: pass k (6
+; passes) compares entry k with each later entry and swaps the two when entry
+; k's y is not smaller ($8334 CP (HL), $8337 JR C), so after pass k the k-th
+; smallest y is in place (equal y swap too); BallRedraw draws the balls from
+; the top of the screen down. Called by ShotReset (w1 3451 calls also from the
+; physics, frames 706-11 615).
 BuildDrawList:
   LD HL,DrawList
   LD IX,BallRecords
@@ -128,7 +131,8 @@ DrawListFill:
   LD DE,DrawList
   LD B,$06
 DrawListSortPass:
-  PUSH BC                 ; the sort: swap neighbours with the larger y first
+  PUSH BC                 ; the sort: DE stays on entry k, HL walks the later
+                          ; entries; swap when k's y is not smaller
   LD H,D
   LD L,E
   INC HL

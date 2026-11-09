@@ -205,7 +205,7 @@ def fig_font(a):
     rom = sorted(c for c in used if not (0x61 <= c <= 0x7A or 0x30 <= c <= 0x39 or c == 0x7F) and 0x20 <= c < 0x80)
     img = Image.new('RGB', (W, 700), BG)
     d = ImageDraw.Draw(img)
-    d.text((13, 12), 'Two fonts in one print routine: the game\'s 36 glyphs and the ROM\'s for the rest', font=ft,
+    d.text((13, 12), 'Two fonts in one print routine: the game\'s 37 glyphs and the ROM\'s for the rest', font=ft,
            fill=FG)
     d.text((13, 40), 'PrintChar $9E7C: a-z Font $DEF4, 0-9 FontDigits $DFC4, $7F CopyrightGlyph $9F2E, others '
            'CHAR_SET + 8 (c - $20)', font=f, fill=DIM)

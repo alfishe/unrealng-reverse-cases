@@ -306,7 +306,7 @@ A potted ball (bit 5; RedrawPotted, w1 18 times): +13 = 0 (off the table); the c
 
 **DrawList from the ball records, sorted by y**
 
-Writes the 7 entries of DrawList: the ball's number, its y (record +3, the integer byte), the record's address; then a bubble sort (6 passes) by y, so BallRedraw draws the balls from the top of the screen down. Called by ShotReset (w1 3451 calls also from the physics, frames 706-11 615).
+Writes the 7 entries of DrawList: the ball's number, its y (record +3, the integer byte), the record's address; then an exchange sort by y: pass k (6 passes) compares entry k with each later entry and swaps the two when entry k's y is not smaller (`$8334` CP (HL), `$8337` JR C), so after pass k the k-th smallest y is in place (equal y swap too); BallRedraw draws the balls from the top of the screen down. Called by ShotReset (w1 3451 calls also from the physics, frames 706-11 615).
 
 | | |
 | --- | --- |
@@ -491,9 +491,7 @@ Clears EventCount `$8B4D`, then for each of the seven records (IX from BallRecor
 
 Then advances FrictionTurn `$8B4C` (0..6, wrapping: `$86F2` ran 41 of 290 times in game, 398 of 2860 in w1), so each ball gets its friction steps recomputed once in seven ticks. If EventCount reached 7 the whole pass runs again (`$86FB`); no recording took that jump (the counts of `$86C1` and `$86FD` are equal in every build). Ends with CALL `$8304`.
 
-In w1 the break (frames 1085-1254) has 159 ticks for 168 interrupts: no tick in every second frame 1156-1172, after the contacts of frames 1150-1153 (tools/physics_model.py, docs 10.1).
-
-[Animation: `PhysicsTask` at work](img/routines/PhysicsTask.gif)
+In w1 the break has 159 physics ticks in the 168 video frames 1085-1252: tick 1 runs at the end of the shot set-up's interrupt (entered at 1079, ends in 1085); nine interrupts are lost, video frames 1155, 1157, ..., 1171, while all seven balls roll (ticks 70-78): each such pass runs past the next INT (work/docs/vpD/w1-sound.json irq; docs 10.1). The samples 1156, 1158, ..., 1172 repeat the one before (tools/physics_model.py).
 
 | | |
 | --- | --- |
@@ -1086,7 +1084,7 @@ H = `$58` + (H - `$40`) / 8. Used by ClearMessageRows `$94EB` only (game 24 call
 
 Called once by the game start `$8013` (game frame 6182, w1 622, v1 twice: 772, 2603). Clears the display, border 7 (white; BORDCR `$38`), attributes: rows 0-4 `$39` (the HUD and message rows), row 5 `$38` (the top pocket marks), rows 6-22 `$60` (the table: bright green paper, black ink), row 23 `$38` (the bottom pocket marks).
 
-Prints the HUD words (HudOneUp ... HudShots), zeroes the scores (`$9F45`, `$9F47`) and PocketTurn `$9F43` / `$9F44`, frames `$9F4B` / `$9F4C` = 1, lives `$9F4E` / `$9F4F` = 3, Player2Racked `$9B33` = 0; prints the three scores (PrintHudNumber 0, 1, 2), the power box, power `$86BF` / `$86C0` = 0, the table; ParkBalls `$967B` for both ball sets (`$8A88` and `$8AEA`).
+Prints the HUD words (HudOneUp ... HudShots), zeroes the scores (`$9F45`, `$9F47`) and the pocket turns (PlayerVars `$9F43` / `$9F44`), frames `$9F4B` / `$9F4C` = 1, lives `$9F4E` / `$9F4F` = 3, Player2Racked `$9B33` = 0; prints the three scores (PrintHudNumber 0, 1, 2), the power box, power `$86BF` / `$86C0` = 0, the table; ParkBalls `$967B` for both ball sets (`$8A88` and `$8AEA`).
 
 | | |
 | --- | --- |
@@ -1144,7 +1142,7 @@ A task added by StartAim `$8425` with period 25, removed by `$8483`, which calls
 
 **A foul or no ball potted with the last shot: the foul jingle, one life less, erase one life ball; at none left GAME OVER**
 
-Called by the end-of-shot task `$8357` when the foul code `$8E80` is set or the cue ball is off the table (game 4 at frames 6543-8811, w1 4, f1 4, p2 1, v1 3). With `$B8C4` <> 0 (the menu toggle `$B3A1`) it goes straight to NextTurn `$97CD`: no jingle, no life lost. No recording of the case set it; the experiment f1c (f1 with CAPS SHIFT + SPACE + 1 + 0 held at frame 500, docs/10-gameplay-logic.md 10.10) flips it at frame 510 and keeps 3 lives through two fouls.
+Called by the end-of-shot task `$8357` when the foul code `$8E80` is set or the cue ball is off the table (game 4 at frames 6543-8811, w1 4, f1 4, p2 1, v1 3). With InfiniteLives `$B8C4` <> 0 (the four-key cheat, flipped at `$B3A1` in WaitNoKeyHeld) it goes straight to NextTurn `$97CD`: no jingle, no life lost. No recording of the case set it; the experiment f1c (f1 with CAPS SHIFT + SPACE + 1 + 0 held at frame 500, docs/10-gameplay-logic.md 10.10) flips it at frame 510 and keeps 3 lives through two fouls.
 
 Lives `$9F4E` - 1; negative: GameOver `$97A2`. Else the leftmost life ball is XORed off: a cue ball sprite at x = `$E8` - 24 n (n = the lives before the loss: 3 -> x 160), y 20; then NextTurn.
 
@@ -1172,7 +1170,7 @@ LoseLife `$9754` only (game 4, w1 4, f1 4, p2 1 at frame 1668, v1 3).
 
 **Wait 10 frames, BEEPER HL `$209E` DE 26, wait 5 frames, BEEPER HL `$29FE` DE 23**
 
-Two low notes: the ROM's BEEPER pitch 437500 / (HL + 30.125): about 52 Hz for 26 cycles (0.5 s), then about 41 Hz for 23 cycles (0.57 s). Run by FoulJingle through `$80DE` (game 4).
+Two low notes: the ROM's BEEPER pitch 437500 / (HL + 30.125): about 52 Hz for DE 26, 27 cycles (0.51 s), then about 41 Hz for DE 23, 24 cycles (0.58 s). Run by FoulJingle through `$80DE` (game 4).
 
 | | |
 | --- | --- |
@@ -1198,7 +1196,7 @@ From LoseLife `$9754` (game 1 at frame 8811, w1 11768, f1 4445). EraseBallsUnder
 
 **After a life lost: the turn swap; with two players, rack or go on for the new player**
 
-From LoseLife and GameOver (game 3, w1 3, f1 3, p2 1 at frame 1738, v1 3). TurnSwapStart `$9C0F`; one player: RET (back to `$8357`, which racks or aims). Two players: drops the return; when the new player has no object ball on the table (his set never racked): DrawAllBalls `$9520` (XOR: erases the parked row), DrawLives `$9AD9`, NextFrame `$9BB8` if Player2Racked `$9B33` is set, Player2Racked = 1, Rack `$9F69`, StartAim `$8425` (p2 frame 1780).
+From LoseLife and GameOver (game 3, w1 3, f1 3, p2 1 at frame 1738, v1 3). TurnSwapStart `$9C0F`; one player: RET (back to `$8357`, which racks or aims). Two players: drops the return; when the player now at the table (the other one after a swap, the same one when TurnSwap found the other out of lives, `$9C2B`) has no object ball on the table (his set never racked): DrawAllBalls `$9520` (XOR: erases the parked row), DrawLives `$9AD9`, NextFrame `$9BB8` if Player2Racked `$9B33` is set, Player2Racked = 1, Rack `$9F69`, StartAim `$8425` (p2 frame 1780).
 
 Else (NextTurnResume `$9801`, known only from the code): wait 100 frames, blank row 9 (FrameBannerBlank), DrawAllBalls, DrawLives, RespotCueBall if the cue ball is off, StartAim.
 
@@ -1287,9 +1285,9 @@ From the end-of-shot task `$8357` twice per shot end (game 4, w1 21, f1 9, p2 6,
 
 **Score the balls potted in the last shot (+12 <> 0): print each term, the total, count it into the score, refill the shots**
 
-ShotScore `$9B2C` = 0. Ball 1-6 with a pocket number in +12: the first sets PotBall `$9B2F` and PotMultiplier `$9B2E` (PocketTurn `$9F43` + pocket, 7..12 minus 6), waits 15 frames and clears the message rows (unless MessageStep is `$4F`); every further one first prints the pending term with "+" (TallyTermPlus `$9A01`), waits, clears, takes its own ball and multiplier. The last term is printed with "=" and the total (TallyTermTotal `$9A1A`).
+ShotScore `$9B2C` = 0. Ball 1-6 with a pocket number in +12: the first sets PotBall `$9B2F` and PotMultiplier `$9B2E` (the pocket turn (PlayerVars `$9F43`) + pocket, 7..12 minus 6), waits 15 frames and clears the message rows (unless MessageStep is `$4F`); every further one first prints the pending term with "+" (TallyTermPlus `$9A01`), waits, clears, takes its own ball and multiplier. The last term is printed with "=" and the total (TallyTermTotal `$9A1A`).
 
-The count: TallyPitch `$9B34` = 1200, step DE = ShotScore / 64 + 1 (ShotScore x 4, high byte, plus 1 with the carry); one step a frame moves DE from ShotScore into the player's score (AddScoreStep `$99C1`, printed with a beep) while at least DE is left (up to 63 steps; B = 45 is only counted down, never tested in the loop), then the remainder in one go, then the rest of the 45 frames waited if any (w1's longest: 37 steps, frames 8456-8493). Then ClearMessageRows, DrawPottedRow `$9AB5`, ShotsLeft = ShotsForFrame `$9BE6`, wait 5 frames.
+The count: TallyPitch `$9B34` = 1200, step DE = round(ShotScore / 128) + 1 (the high byte of 2 x ShotScore, plus bit 6 as the carry, plus 1); one step a frame moves DE from ShotScore into the player's score (AddScoreStep `$99C1`, printed with a beep) while at least DE is left (at most 127 steps; B = 45 is only counted down, never tested in the loop), then the remainder in one go (a beep even for 0), then the rest of the 45 frames waited if any; past 45 steps (ShotScore 46 or more, in no recording) JP M skips the wait (w1's longest: 36 steps and the remainder, 37 beeps, frames 8456-8493). Then ClearMessageRows, DrawPottedRow `$9AB5`, ShotsLeft = ShotsForFrame `$9BE6`, wait 5 frames.
 
 Returns at once when nothing was potted. Witness: AddScoreStep w1 287 calls (frames 1329-10175), p2 38, v1 72; TallyTermPlus (a double pot) w1, f1, v1 once each.
 
@@ -1306,9 +1304,9 @@ Returns at once when nothing was potted. Witness: AddScoreStep w1 287 calls (fra
 
 **Add DE to the current player's score, print it, beep at TallyPitch and lower the pitch by 10**
 
-CurrentPlayer 1: ScorePlayer1 `$9F45`, 2: ScorePlayer2 `$9F47`; PrintHudNumber 0 / 1. The beep: BEEPER with HL = TallyPitch, DE = 6000 / TallyPitch cycles (1200: about 356 Hz, 5 cycles, 14 ms), a tick that rises in pitch step by step; TallyPitch - 10 unless it would go below zero. w1 287 runs.
+CurrentPlayer 1: ScorePlayer1 `$9F45`, 2: ScorePlayer2 `$9F47`; PrintHudNumber 0 / 1. The beep: BEEPER with HL = TallyPitch, DE = 6000 / TallyPitch (1200: about 356 Hz, DE 5, so 6 cycles, 15.5 ms), a tick that rises in pitch step by step; TallyPitch - 10 unless it would go below zero. w1 287 runs.
 
-The tick's cycles are 6000 / TallyPitch (by subtraction), so every tick lasts about 14 ms whatever its pitch; it starts after the frame's HALT and ends before the next interrupt: no interrupt lost (w1 287 ticks, f1 27; docs 9.4).
+DE = 6000 / TallyPitch (by subtraction) and BEEPER plays DE + 1 cycles, so every tick lasts 13.1-15.5 ms whatever its pitch. A tick after the frame's HALT ends before the next interrupt; the first tick of a count-up of 100 points or more comes straight after the printed total (T 19 296-19 781) and runs past the next interrupt, which is lost (w1 12 of 17 count-ups, f1 1 of 1; docs 9.4).
 
 | | |
 | --- | --- |
@@ -1423,7 +1421,7 @@ Called by Rack `$9F6F` at each rack (game 1 at frame 6190, w1 4, p2 2). Two play
 
 **Frame cleared: frame + 1 (up to 99), the pocket multipliers turn one place, the shots refilled, power reset**
 
-From the end-of-shot task `$8357` and NextTurn `$97CD`: w1 3 times (frames 4023-10196, frames 2, 3 and 4). Frame `$9F4B` + 1, printed (PrintHudNumber 4); PocketTurn `$9F43` - 1 (0 wraps to 5), the marks redrawn (DrawPocketMarks `$9D6B`); ShotsLeft = ShotsForFrame, printed (PrintHudNumber 3); tail call `$8539` (erase the power bar, power 0).
+From the end-of-shot task `$8357` and NextTurn `$97CD`: w1 3 times (frames 4023-10196, frames 2, 3 and 4). Frame `$9F4B` + 1, printed (PrintHudNumber 4); the pocket turn (PlayerVars `$9F43`) - 1 (0 wraps to 5), the marks redrawn (DrawPocketMarks `$9D6B`); ShotsLeft = ShotsForFrame, printed (PrintHudNumber 3); tail call `$8539` (erase the power bar, power 0).
 
 | | |
 | --- | --- |
@@ -1455,7 +1453,7 @@ Frame `$9F4B`; the variation `$B8C3` (0 standard, 1 numeric order, 2 own pockets
 
 **After a life lost: with two players and the other still alive, swap everything to the other player; then the frame, shots, pocket marks, PLAYER n**
 
-Run by TurnSwapStart (game 3, w1 3, f1 3, p2 1 at frame 1738, v1 3). Two players (p2 only): wait 40 frames, ClearTableForTurn `$947D`, DrawLives (XOR: erases the lives), then unless the other's lives `$9F4F` are negative: CurrentPlayer 1 <-> 2, and the pairs PocketTurn `$9F43` / `$9F44`, LivesLeft `$9F4E` / `$9F4F`, FrameNumber `$9F4B` / `$9F4C` swapped, the 98-byte ball sets `$8A88` / `$8AEA` exchanged byte by byte.
+Run by TurnSwapStart (game 3, w1 3, f1 3, p2 1 at frame 1738, v1 3). Two players (p2 only): wait 40 frames, ClearTableForTurn `$947D`, DrawLives (XOR: erases the lives), then unless the other's lives `$9F4F` are negative: CurrentPlayer 1 <-> 2, and the pairs pocket turn (PlayerVars `$9F43`) / `$9F44`, LivesLeft `$9F4E` / `$9F4F`, FrameNumber `$9F4B` / `$9F4C` swapped, the 98-byte ball sets `$8A88` / `$8AEA` exchanged byte by byte.
 
 Then for one and two players: `$8539` (power 0), PrintHudNumber 4 (frame), ShotsLeft = ShotsForFrame, PrintHudNumber 3, DrawPocketMarks, and falls into PlayerBanner.
 
@@ -1481,7 +1479,7 @@ From TurnSwap and the game start `$8013`. Returns at once with one player (`$B8B
 
 ### `LastShotBeepTask` (`$9CA7`)
 
-**With one shot left: a short beep (BEEPER HL 500, DE 10: 825 Hz, 12 ms; f1 measured 825.6 Hz, 13 beeps, docs/09-sound.md 9.4), then DI (it runs in the interrupt)**
+**With one shot left: a short beep (BEEPER HL 500, DE 10, so 11 cycles: 825 Hz, 12.7 ms; f1 measured 825.7 Hz, 13 beeps, docs/09-sound.md 9.4), then DI (it runs in the interrupt)**
 
 A task added by StartAim `$8425` with period 25, removed by `$8506` at the shot. 58 runs in game, w1 179 (none beeped: no aim of w1 had one shot left), f1 13 beeps. BEEPER ends with EI; the DI keeps the interrupt handler closed.
 
@@ -1524,7 +1522,7 @@ x / y whole parts from StartPositions, fractions 0, +10/+11 = x - 7 / y - 7, fla
 
 ### `DrawPocketMarks` (`$9D6B`)
 
-**Print "xN" at the six pockets, clockwise from the top left, N = 1-6 turned by PocketTurn `$9F43`**
+**Print "xN" at the six pockets, clockwise from the top left, N = 1-6 turned by the pocket turn (PlayerVars `$9F43`)**
 
 Cells: top row 5 (y 40) cols 0, 15, 30 then bottom row 23 (y 184) cols 30, 15, 0, each a ROM "x" and a digit. The k-th mark (k = 0..5) shows ((PocketTurn + k) mod 6) + 1; PocketTurn ends where it started (six increments). The scoring and the own-pocket rule use PocketTurn + the pocket number the same way (`$9923`, `$8C37`), so pocket 1 is the top left mark (known only from the code). game 4 (frame 6190 on), w1 7, v1 5.
 
@@ -1691,8 +1689,6 @@ ShowFrameBanner `$9B36`; the rack set = RackSets[((frame - 1) / 2) mod 6] (frame
 Each step: RackStep `$A05E` for balls 1-6 (B counts the scripts ended), the draw list `$869E` rebuilt (`$8304`), HALT, and every ball of the list with bit 4 of +13 set (it moved) erased at +10/+11, placed at SpriteFromBall, drawn, bit 4 cleared (the list's cue entry, ball 0, is skipped). Until all six scripts ended: game 170 steps (frames 6266-6435).
 
 The cue ball: ClearBallMotion, x 40 / y 115 with a random fraction (R x 2 into both), drawn (no erase before it).
-
-[Animation: `RackBalls` at work](img/routines/RackBalls.gif)
 
 | | |
 | --- | --- |
@@ -2408,7 +2404,7 @@ Witness (l1sum.py BD0C BD23 BE05): m1 only, 3 runs (655-4498), 828 commands and 
 
 Byte b at IX. High nibble zero, a command (IX + 1): 0 end (pops the caller's return, JP PenErase `$BE40`), 1 pen up (PenIsDown `$C03F` = 0), 2 pen down (= 1), 3 dot: the next two bytes dx, dy (signed) are added to the pen point for one PenPlot `$BF59` (the dot of an i, a full stop), the point does not move; 4-15 do nothing (SigCmdOther, never run). High nibble not zero, a move (IX + 1): bits 7-6 dy, bits 5-4 dx (each 0, +1, -2, -1 by sign extension; the script uses 0, +1, -1), bits 3-0 n steps. Each step: one frame (PresentsFrame `$B91B`, a key aborts), PenErase, PenStep `$BE05` (plot at (x, y - 1) if the pen is down, then x + dx, y + dy), PenDraw.
 
-The band test: with the pen's y at 96 or more (the whole script keeps the pen at y 121-147) the step is plain. For y 40-95 (`$28-$5F`) other paths slow the pen down (PenDelay `$BE24`) and PenBand `$C03E` records the pen leaving the band (1 above, 2 below) for a pause (SigBandExitAbove, a 300-loop wait) on the next move: no build ran any of them (SigBandBelow .. SigBandSlow, l1sum.py: not executed); known only from the code.
+The band test: with the pen's y at 96 or more (the whole script keeps the pen at y 121-147) the step is plain. For y below 96 other paths slow the pen down: y 40-95 (`$28-$5F`) through PenDraw, PenDelay `$BE24` and PenErase, y below 40 through SigBandSlow (PenDelay) and PenBand `$C03E` records the pen leaving the band (1 above, 2 below) for a pause (SigBandExitAbove, a 300-loop wait) on the next move: no build ran any of them (SigBandBelow .. SigBandSlow, l1sum.py: not executed); known only from the code.
 
 Witness: m1 828 calls (655-4499) = two whole scripts of 312 commands (218 moves, 30 pen up, 30 pen down, 33 dots, the end) and 204 of the third, cut by a key; 582 moves (SigMove), 1485 step frames.
 

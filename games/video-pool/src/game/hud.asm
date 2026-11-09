@@ -21,10 +21,10 @@
 ; marks).
 ;
 ; Prints the HUD words (HudOneUp ... HudShots), zeroes the scores ($9F45,
-; $9F47) and PocketTurn $9F43 / $9F44, frames $9F4B / $9F4C = 1, lives $9F4E /
-; $9F4F = 3, Player2Racked $9B33 = 0; prints the three scores (PrintHudNumber
-; 0, 1, 2), the power box, power $86BF / $86C0 = 0, the table; ParkBalls $967B
-; for both ball sets ($8A88 and $8AEA).
+; $9F47) and the pocket turns (PlayerVars $9F43 / $9F44), frames $9F4B / $9F4C
+; = 1, lives $9F4E / $9F4F = 3, Player2Racked $9B33 = 0; prints the three
+; scores (PrintHudNumber 0, 1, 2), the power box, power $86BF / $86C0 = 0, the
+; table; ParkBalls $967B for both ball sets ($8A88 and $8AEA).
 NewGameScreen:
   LD HL,Screen
   LD DE,Screen+1

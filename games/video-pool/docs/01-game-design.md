@@ -31,9 +31,10 @@ The recordings it rests on, all on the 48K, each with an input script (WALKTHROU
   (`p2`), the variations (`v1`), the attract sequence and every menu option (`m1`), the joysticks (`j1`), the editor
   (`e1`).
 
-A frame is 1/50 s of the machine. The game has no main loop: its work runs as tasks of the interrupt, so "a tick"
-below is one interrupt ([doc 4](04-game-loop.md)). Every screenshot is the Spectrum screen at the start of the named
-frame, taken with `kit/screen_shot.py` (WALKTHROUGH 6.1).
+The words of time (video frame, interrupt, tick, pass, and frame for the game's rack 1-99) are those of the
+[Terms](README.md#terms). A recording position (`w1` 1079, `w1` frame 1079) is always a video frame. The game has no
+main loop: its work runs as tasks of the interrupt ([doc 4](04-game-loop.md)). Every screenshot is the Spectrum screen
+at the start of the named video frame, taken with `kit/screen_shot.py` (WALKTHROUGH 6.1).
 
 ## 1.1 The game
 
@@ -81,16 +82,16 @@ The screens and their routines:
 
 | Screen | Routine | When it comes | How it ends | Witness |
 | --- | --- | --- | --- | --- |
-| the presents page and attract sequence | PresentsPage `$B8C5` | the game's entry; 1500 frames (30 s) idle on a menu page | any key | `m1` frames 0-4129, `w1` 16 160 |
+| the presents page and attract sequence | PresentsPage `$B8C5` | the game's entry; 1500 video frames (30 s) idle on a menu page | any key | `m1` frames 0-4500, `w1` 15 741 |
 | the main menu | MainMenu `$B22E` | a key on the attract sequence, BREAK, the end of a game | B (or fire on a joystick) begins; V, E, R go to their pages | every recording |
 | the variations page | VariationsPage `$B67E` | V | B begins, M back to the menu | `v1` 622, `m1` 5102 |
 | redefine keys | RedefineKeys `$B3D2` | R | three keys pressed: back to the menu | `m1` 5462-5860 |
 | the table editor | EditorStart `$C042` | E | BREAK to the menu; "play" plays the edited table | `m1` 6262, `e1` 620 |
 | "FRAME n" and the rack | Rack `$9F69` | a new game, a cleared frame, the second player's first turn | the six balls in their triangle | `w1` 630-10 196 |
 | play | StartAim `$8425`, the tasks | after the rack | the last life lost, or BREAK | `w1` 877-11 615 |
-| GAME OVER | GameOver `$97A2` | the last life lost | 250 frames or a key | `w1` 11 768, `f1` 4445 |
+| GAME OVER | GameOver `$97A2` | the last life lost | 250 video frames or a key | `w1` 11 768, `f1` 4445 |
 | the name entry | NameEntryPage `$ACEF` | GAME OVER with a score that beats a flag | "end" picked | `w1` 12 018-13 368 |
-| the hall of fame | ShowHallOfFame `$A8FD` | after the name entry | 500 frames or a key | `w1` 13 368-14 232 |
+| the hall of fame | ShowHallOfFame `$A8FD` | after the name entry | 500 video frames or a key | `w1` 13 368-14 232 |
 
 The flow between them:
 
@@ -98,10 +99,10 @@ The flow between them:
 stateDiagram-v2
     [*] --> Presents: GameStart, frame 0 after the load
     Presents --> Menu: any key
-    Menu --> Presents: 1500 frames with no key
+    Menu --> Presents: 1500 video frames with no key
     Menu --> Variations: V
     Variations --> Menu: M
-    Variations --> Presents: 1500 frames with no key
+    Variations --> Presents: 1500 video frames with no key
     Menu --> Redefine: R
     Redefine --> Menu: three keys
     Menu --> Editor: E
@@ -113,16 +114,18 @@ stateDiagram-v2
     Play --> GameOver: the last life lost
     Play --> Menu: BREAK
     GameOver --> NameEntry: the score beats a flag
-    GameOver --> Menu: 250 + 500 frames, or keys
+    GameOver --> Menu: 250 + 500 video frames, or keys
     NameEntry --> HallOfFame: end
-    HallOfFame --> Menu: 500 frames or a key
+    HallOfFame --> Menu: 500 video frames or a key
 ```
 
 The attract sequence is the game's own advertisement. PresentsPage `$B8C5` rolls in the magenta OCP banner row by row
-(BannerRollIn `$B96C`, 417 frames), prints "presents" for 75 frames, turns the letters O C P into P O O L
+(BannerRollIn `$B96C`, 417 video frames), prints "presents" for 75 video frames, turns the letters O C P into P O O L
 (LogoFlip `$BB13`), slides "video" in above (VideoSlideIn `$BC9E`), lets a drawn pen write "written by" and James
-Hutchby's signature from a pen script (SignatureWrite `$BD0C`, SignatureScript `$DA80`), and waits 500 frames on
-"press any key to continue.". Then it starts again. `m1` watched two whole loops (frames 0-4129). Every wait is one
+Hutchby's signature from a pen script (SignatureWrite `$BD0C`, SignatureScript `$DA80`), and waits 500 video frames on
+"press any key to continue.". Then it starts again. `m1` watched two whole loops of 1738 video frames and part of a third
+(frames 0-4500: the third from 3476, ended by the key at 4500 before the signature was done; BannerRollIn ran three times,
+the 25-frame wait after the signature twice). Every wait is one
 HALT and a key test (PresentsFrame `$B91B`), so a key ends the sequence at once, at any depth ([doc 6](06-rendering.md)
 draws the banner and the pen).
 
@@ -180,8 +183,9 @@ Hidden keys:
 
 - **Infinite lives.** On the menu, hold CAPS SHIFT, SPACE, 1 and 0 together: WaitNoKey `$B38E` flips InfiniteLives
   `$B8C4`, and LoseLife `$9754` then skips the loss of a life (no jingle, no life ball erased). Holding them again
-  flips it back. Nothing on the screen shows the toggle. Known only from the code: no recording held the four keys
-  (TestCheatKeys `$B3B8` was asked 176 times in `m1`, the flip `$B3A1` never ran).
+  flips it back. Nothing on the screen shows the toggle. No play recording held the four keys (TestCheatKeys `$B3B8`
+  was asked 176 times in `m1`); the experiment `f1c` ([doc 10](10-gameplay-logic.md), 10.10) did: it held them at
+  frame 500, the flag flipped at 510, and the lives stayed 3 through the fouls.
 - **BREAK is also a menu key in the editor**: fire with BREAK held leaves it (EditorExit `$C414`, `m1` frame 6830).
 
 The point: the whole game is played with three keys. Left and right relative to the half of the table, not to the
@@ -206,20 +210,21 @@ screen, is the one thing a new player must learn.
 | y | 115 | 115 | 106 | 124 | 98 | 115 | 132 |
 
 - **The balls roll into the rack.** Before each frame the six object balls do not appear in place. Each waits its
-  own number of frames, comes out of a pocket and rolls 2 pixels a frame along its own rack script to its place
+  own number of video frames, comes out of a pocket and rolls 2 pixels a video frame along its own rack script to its place
   (RackBalls `$9F6F`, RackStep `$A05E`; `p2` frame 1950, screen 2 of 1.7).
-- **Six sets of scripts.** The set changes every two frames: frames 1-2 set 0, 3-4 set 1, ... 11-12 set 5, then set
+- **Six sets of scripts.** The set changes every two game frames: game frames 1-2 set 0, 3-4 set 1, ... 11-12 set 5, then set
   0 again (RackSets `$A0C4`). Every script ends on the same triangle, so the sets change the show, not the table.
 
 ![The rack-in scripts of all six sets: each ball's path from its pocket to its place, with its wait and the frame its script ends](img/maps/racks.png)
 
 How to read the figure (vpC's, for [doc 7](07-objects.md)):
 
-- **One panel a set**, with the frames that use it. Sets 0 and 1 were seen in `w1`; sets 2-5 are drawn from the code.
+- **One panel a set**, with the game frames that use it. Sets 0 and 1 were seen in `w1`; sets 2-5 are drawn from the code.
 - **A ring** is where a ball comes out of a pocket; **an arrow** is a run of moves; **a disc** is the ball's place in
   the rack.
-- **Under each panel**: each ball's first wait in frames, and the frame its script ends.
-- **The point**: the rack is a show of 115-582 frames (the last ball of the set) that ends in the same triangle. Set 0 takes 170 frames, 3.4 s,
+- **Under each panel**: each ball's first wait in video frames, and the video frame its script ends.
+- **The point**: the rack is a show of 115-582 video frames (the last ball of the set) that ends in the same triangle. Set 0 takes
+  170 video frames, 3.4 s,
   before the first aim of a game.
 
 ```bash
@@ -241,8 +246,10 @@ A shot as the player meets it:
 2. **The power.** Holding fire grows the power bar by 2 pixels a tick. At 134 (`$86`) it falls back to 0 and grows
    again (AimPower `$8506`), so a player who holds too long gets a weak shot.
 3. **The release.** The cue ball gets a speed of power / 16 pixels a tick towards the cursor: at most 7.9 pixels a
-   tick (AimShot `$8A02`). The game freezes for 0.14 s while the ROM's calculator works out the direction (6.9 frames,
-   `w1` frame 1079; [doc 4](04-game-loop.md)).
+   tick (AimShot `$8A02`). ScaleByPower `$8A5D-$8A64` takes any power of `$80` and more as `$7E`, so the last three
+   steps of the bar (128, 130, 132) add nothing: powers 126-132 all give the same shot. The game freezes for 0.14 s
+   while the ROM's calculator works out the direction: AimShot costs about 455 000 T and the interrupt that holds it
+   6.92 video frames (`w1` 1079; [doc 4](04-game-loop.md), 4.7).
 4. **The roll.** The balls slow down by friction, bounce off the cushions and each other, and drop into pockets. Each
    contact clicks, each cushion knocks, each pot plays a low tone (SoundLoop `$8069`).
 5. **The outcome**, once every ball is still (ShotEnd `$8357`):
@@ -250,19 +257,23 @@ A shot as the player meets it:
 ```mermaid
 flowchart TD
     A[all balls still] --> B{object balls left on the table?}
-    B -- none --> C[score the shot, a foul costs a life, next frame: rack, FRAME n+1]
-    B -- some --> D{cue ball potted?}
-    D -- yes --> L[the foul jingle, a life lost, the cue ball respotted]
+    B -- none --> C[score the shot; a foul or a potted cue ball costs a life; next frame: rack, FRAME n+1]
+    B -- some --> V{variation foul set while rolling?}
+    V -- yes --> W[WRONG ORDER! or WRONG POCKET!: the pots scored, then a life lost]
+    V -- no --> D{cue ball potted?}
+    D -- yes --> L[the pots of the shot scored, then the foul jingle, a life lost, the cue ball respotted]
     D -- no --> E{any ball touched?}
     E -- no --> F[FOUL SHOT!: a life lost]
     E -- yes --> G{a ball potted?}
-    G -- yes --> H{variation rule broken?}
-    H -- no --> S[the tally: the score counted up, shots refilled for the next ball]
-    H -- yes --> W[WRONG ORDER! or WRONG POCKET!: scored, then a life lost]
+    G -- yes --> S[the tally: the score counted up, shots refilled for the next ball]
     G -- no --> K{shots left after this one?}
     K -- yes --> N[one shot fewer, aim again]
     K -- no --> F
 ```
+
+The order is ShotEnd's own (`$8357-$83F7`): FoulCode `$8E80` first (a variation foul is set while the balls roll),
+then the cue ball, then BallHitFlag `$89BB`, then the pots. Every branch goes through ShotEndScore `$83F7` before
+LoseLife `$9754`, so the balls potted in a shot are scored even when the shot costs a life.
 
 The point: the shot count is per ball. Potting any ball refills it (ScoreTally `$98FF` sets ShotsLeft from
 ShotsForFrame `$9BE6`); missing with the last shot is a foul like hitting nothing.
@@ -273,10 +284,10 @@ ShotsForFrame `$9BE6`); missing with the last shot is a foul like hitting nothin
 
 How to read the figure, moment by moment (the routines that make each one):
 
-| # | Moment | Recording, frame | What happens | Routine |
+| # | Moment | Recording, video frame | What happens | Routine |
 | ---: | --- | --- | --- | --- |
-| 1 | the start | `w1` 660 | "FRAME 1" for 75 frames over the empty table; balls 1-6 wait in the potted row | ShowFrameBanner `$9B36` |
-| 2 | the rack | `p2` 1950 | the balls roll in one step a frame (170 steps in `c1`) | RackBalls `$9F6F` |
+| 1 | the start | `w1` 660 | "FRAME 1" for 75 video frames over the empty table; balls 1-6 wait in the potted row | ShowFrameBanner `$9B36` |
+| 2 | the rack | `p2` 1950 | the balls roll in one step a video frame (170 steps in `c1`) | RackBalls `$9F6F` |
 | 3 | the first aim | `w1` 1060 | the cursor moved, the power bar growing | AimPower `$8506` |
 | 4 | the break | `w1` 1122 | the cue ball reaches ball 1 | BallContacts `$87EF` |
 | 5 | the pack spreads | `w1` 1140 | six balls moving at once | PhysicsTask `$86C1` |
@@ -288,10 +299,11 @@ How to read the figure, moment by moment (the routines that make each one):
 | 11 | no pot in time | `f1` 3050 | "FOUL SHOT!", a life lost | MessagesTask `$9CB7` |
 | 12 | the end | `w1` 11 800 | GAME OVER in double-width letters over the table | GameOver `$97A2` (frame 11 768) |
 
-- The first pot of `w1` is counted from frame 1329 (AddScoreStep `$99C1`); frames 2, 3 and 4 start at 4023, 7140
-  and 10 196 (NextFrame `$9BB8`, `python3 tools/l1sum.py --builds runs/w1 9BB8`).
+- The first pot of `w1` is counted from video frame 1329 (AddScoreStep `$99C1`); game frames 2, 3 and 4 start at
+  video frames 4023, 7140 and 10 196 (NextFrame `$9BB8`, `python3 tools/l1sum.py --builds runs/w1 9BB8`).
 - **The point**: a game is a loop of the same three moments, aim, roll, outcome, punctuated by the rack between
-  frames. Nothing new appears after frame 1 but the shot count.
+  frames. Nothing new appears after frame 1: the shot count falls, the pocket multipliers turn and the rack-in show
+  changes every two frames; the table stays the same.
 
 ```bash
 python3 tools/fig_design.py moments
@@ -318,7 +330,7 @@ python3 tools/fig_design.py moments
 | the last shot pots nothing | FOUL SHOT! | ShotEnd, ShotsLeft at 0 | `f1` 3050 |
 | the cue ball is potted | none, the jingle only | ShotEnd, the cue ball off the table | `f1` 1000-1200 |
 | variation 1: a ball potted out of order | WRONG ORDER! | PocketOrderTest `$8C4B` | `v1` 1250 |
-| variation 2: a ball in a pocket that is not its own | WRONG POCKET! | PocketOrCushion `$8C37` | `v1` 3100 |
+| variation 2: a ball in a pocket that is not its own | WRONG POCKET! | `$8C37` in PocketOrCushion `$8B4E` | `v1` 3100 |
 
 - A loss plays the foul jingle (FoulJingle `$9780`: two low notes of about 52 Hz and 41 Hz, 1.1 s) and erases the
   leftmost life ball. After a potted cue ball the cue ball comes back at (40, 115), or to its right until no ball is
@@ -351,16 +363,20 @@ Worked example, `v1` frame 3250 (variation 2, frame 1; the pot was a WRONG POCKE
 | the frame | 1 | FrameNumber `$9F4B` |
 | the ball | 5 | PotBall `$9B2F` |
 | the pocket | 3, the top right (+12 of ball 5's record) | PocketMark `$8C06` |
-| the multiplier | PocketTurn 0 + pocket 3 = 3, the mark "x3" | PotMultiplier `$9B2E` |
+| the multiplier | the pocket turn 0 (PlayerVars `$9F43`) + pocket 3 = 3, the mark "x3" | PotMultiplier `$9B2E` |
 | the term | 1 x 5 x 3 = 15 | AddTerm `$9A67` |
 | shown | "1x5x3x10=150" | TallyTermTotal `$9A1A`, screen 7 of the figure in 1.9 |
-| counted | ShotScore 15 in steps of 15 / 64 + 1 = 1, one a frame with a rising beep | ScoreTally `$98FF`, AddScoreStep `$99C1` |
+| counted | ShotScore 15 in steps of round (15 / 128) + 1 = 1, one a video frame with a rising beep: 15 steps and the remainder 0 (16 beeps), padded to 45 `HALT`s; the first beep loses an interrupt, so 46 video frames | ScoreTally `$98FF`, AddScoreStep `$99C1` |
 
 - The score is stored divided by ten (ScorePlayer1 `$9F45`, a word); the HUD prints it with a "0" after it.
 - The best single ball in frame 1 is ball 6 in the "x6" pocket: 1 x 6 x 6 x 10 = 360. In frame 10 the same ball
   scores 3600.
-- The tally counts the shot's points into the score one step a frame for up to 45 frames, each step a short beep
-  that rises in pitch (TallyPitch `$9B34`, from 1200 down by 10).
+- The tally's count-up moves the shot's points (ShotScore S, the points / 10) into the score one step a video frame, in
+  steps of round (S / 128) + 1, each step a short beep that rises in pitch (TallyPitch `$9B34`, the period, from 1200
+  down by 10). It lasts at least 45 `HALT`s: after the last step it waits out the rest of 45; from S 10 up the first
+  beep also loses an interrupt (doc 9, 9.4), one video frame more. With more than 45 steps (S of 46 or more, a shot of
+  460 points) it lasts one `HALT` a step, up to 127; that case is known only from the code (the largest S in a recording
+  is 36, `w1` 8456).
 
 The point: the frame number multiplies everything. A player who survives to the later frames scores ten times more
 per ball, with two shots per ball instead of five.
@@ -378,7 +394,7 @@ How to read the figure:
   (`v1` 1250). Ball 4 stays in the potted row (`v1` 1350); its tally comes next and the life goes after it (1.8).
 - **6-7**: variation 2, own pockets: ball 5 dropped into the pocket marked "x3" gives "WRONG POCKET!" (`v1` 3100).
   The same ball is then scored with that mark, 1x5x3x10 = 150 (`v1` 3250), and a life is lost after the tally. The
-  pocket's number is its mark, PocketTurn + pocket, the same sum for the rule and for the score (the rule's code in
+  pocket's number is its mark, the pocket turn (`$9F43`) + pocket, the same sum for the rule and for the score (the rule's code in
   [doc 10](10-gameplay-logic.md)).
 - **8**: the menu shows the variation chosen: "b..begin game (variation 1)" (`v1` 2443).
 - **The point**: the variations change one test at the moment a ball drops, and add shots to pay for it. Everything
@@ -388,7 +404,7 @@ How to read the figure:
 | --- | --- | ---: | ---: | --- | --- |
 | standard (`Variation` `$B8C3` = 0) | any ball in any pocket | 0 | | | `w1` |
 | 1, numeric order | a ball potted while a lower-numbered ball is on the table is a foul | 2 | 2 | PocketOrderTest `$8C4B` | `v1` 1250 (2 runs) |
-| 2, own pockets | a ball potted where (pocket + PocketTurn) wrapped to 1-6 is not its number is a foul | 3 | 3 | `$8C37` in PocketOrCushion | `v1` 3100 (2 runs) |
+| 2, own pockets | a ball potted where (pocket + the pocket turn) wrapped to 1-6 is not its number is a foul | 3 | 3 | `$8C37` in PocketOrCushion | `v1` 3100 (2 runs) |
 
 ```mermaid
 flowchart TD
@@ -397,7 +413,7 @@ flowchart TD
     V -- 1 --> O{a ball with a lower number still on the table?}
     O -- yes --> F2[FoulCode = 2, WRONG ORDER!]
     O -- no --> OK
-    V -- 2 --> Q{p + PocketTurn, wrapped to 1-6, equals the ball's number?}
+    V -- 2 --> Q{p + the pocket turn, wrapped to 1-6, equals the ball's number?}
     Q -- yes --> OK
     Q -- no --> F3[FoulCode = 3, WRONG POCKET!]
 ```
@@ -419,7 +435,7 @@ python3 tools/fig_design.py variations
   blinking (UpBlinkTask `$96E6`).
 - The second player's first turn racks his set (NextTurn `$97CD`, `p2` frame 1780: "PLAYER 2 FRAME 1", then the
   rack).
-- `p2`: player 1 pots four balls, misses and loses a life at frame 1738, player 2 plays frame 1 and scores 240
+- `p2`: player 1 pots four balls, misses and loses a life at video frame 1668 (the foul jingle), the turn passes at 1738 (TurnSwap), player 2 plays frame 1 and scores 240
   (screens of 1.2 and WALKTHROUGH 6.1); BREAK at 4239.
 - A player whose lives are gone sits out; the game ends when both are out (GameOver `$97A2`). Known only from the
   code: `p2` ended by BREAK, so the turn that resumes a racked set (NextTurnResume `$9801`) and the two-player hall
@@ -483,9 +499,11 @@ How to read the figure:
   place slide down off the screen, the new name is inserted, and the flags slide back up with the new names
   (ShowAndSlideDown `$A86D`, InsertEntry `$A817`, SlideFlagsUp `$A8C7`). "vp" with 2700 took the second place: james
   stays first, francis moves to third, bill drops out (`w1` frame 13 553).
-- **5-6**: `f1` ended with a score below every flag: GAME OVER, then straight back to the menu (GameOverHallOfFame
-  `$A702` returned at once, frame 4695).
-- **7-8**: back at the menu (`w1` 15 000); 30 s later the attract sequence (`w1` 16 300).
+- **5-6**: `f1` ended with a score below every flag: GAME OVER for 250 video frames, GameOverHallOfFame `$A702`
+  returns at once (frame 4695), and GAME OVER stays another 500 video frames (GameOverWaitAfter `$9860`) before the
+  menu (frame 5196).
+- **7-8**: back at the menu (`w1` 15 000); 1500 video frames (30 s) after the menu was drawn the attract sequence
+  starts (`w1` 15 741; the picture at 16 300).
 - **The point**: the hall of fame keeps three scores, and a score must beat a flag strictly to enter (CountBeaten
   `$A7EB`). It lives in memory only: it is lost when the machine is switched off (no save routine in the code).
 
@@ -508,7 +526,7 @@ python3 tools/fig_design.py halloffame
 
 What gets harder, frame by frame, all from the code (ShotsForFrame `$9BE6`, NextFrame `$9BB8`):
 
-| Frames | Shots per ball (standard / var. 1 / var. 2) | Ball 6 in "x6" scores | Rack set |
+| Game frames | Shots per ball (standard / var. 1 / var. 2) | Ball 6 in "x6" scores | Rack set |
 | --- | --- | ---: | ---: |
 | 1-2 | 5 / 7 / 8 | 360, 720 | 0 |
 | 3-4 | 4 / 6 / 7 | 1080, 1440 | 1 |
@@ -533,13 +551,14 @@ every shot.
 
 Every item is known only from the code, at the address named:
 
-- the infinite-lives toggle (`$B3A1`, 1.4);
 - a two-player game over with the other player still alive, the resumed turn and the two-player hall of fame
   (`$97CA`, NextTurnResume `$9801`, `$A745`; 1.10);
 - frames 5 onward and rack sets 2-5 (ShotsPerFrame `$9C06` bytes 5-9 at `$9C0A`-`$9C0E`, the scripts at `$A1E4`-`$A701`; 1.13);
 - the editor's "reset", its ball pushes right, up and down, the pick of a ball from the potted row and its return to
   the menu (`$C532`, `$C3F2`-`$C3FD`, `$C288`, `$C488`; 1.11);
-- the attract sequence's later loops with the hall of fame between them (`$B906`, 1.2): `w1` ended 218 frames into
-  its second attract sequence.
+- the attract sequence's later loops with the hall of fame between them (`$B906`, 1.2): `w1` ended 637 video frames
+  into its second attract sequence (entered at 15 741, the banner rolled in by 16 160).
+
+The infinite-lives toggle (`$B3A1`, 1.4) ran in no play recording, only in the experiment `f1c` (doc 10.10).
 
 The recordings checked: `c1` (from the entry), `w1`, `f1`, `p2`, `v1`, `m1`, `j1`, `e1` (`tools/l1sum.py`).

@@ -120,8 +120,10 @@ How to read the figure:
 python3 tools/fig_controls.py devices --out docs/img/controls/devices.png   # from the code of $8106-$822D
 ```
 
-Worked example: in `w1` frame 881 the player holds M, the default left key. ReadKeyboard returns `$02`. ReadBreak
-finds CAPS SHIFT up and stores `$02`. The sample of `$827C` at the end of frame 881 is `02`.
+Worked example: in `w1` the player presses M, the default left key, at frame 880. In that frame's tick
+ReadKeyboard returns `$02`, ReadBreak finds CAPS SHIFT up and stores `$02`. The sample of `$827C` at frame 881 is
+`02` (a sample is the memory at the start of its frame, TTD `memory_at`: it shows what the tick of the frame before
+did).
 
 Witness: ReadInput runs in every recording: `game` 1725 times, `w1` 6407, `f1` 2793, `p2` 1375, `v1` 850, `m1` 927,
 `j1` 1923, `e1` 641. BREAK's `OR $20` at `$8228` ran in `p2` once, `v1` once, `m1` twice, `j1` twice.
@@ -217,8 +219,8 @@ Worked example: M is `$4D`. CPIR finds it at index 37 and leaves C = 2. C is und
 `$7FFE`. D is `$10` shifted twice, `$04`: bit 2 of the row SPACE, SYMBOL SHIFT, M, N, B. In `w1` M is held from frame
 880 to 1033, and `$827C` reads `02` throughout.
 
-Witness: ReadKeyboard ran 6407 times in `w1`, 317 in `m1`, 378 in `e1` (before the editor switches to the cursor
-keys). KeyDown ran 19 221 times in `w1`, three calls a pass.
+Witness: ReadKeyboard ran 6407 times in `w1`, 317 in `m1`, 378 in `e1` (after the editor's cursor-key part, in its
+play, frames 845-1367). KeyDown ran 19 221 times in `w1`, three calls a pass.
 
 ### Interface 2
 
@@ -440,12 +442,13 @@ flowchart TD
     Q -->|no| J["FoulJingle, a life off"]
 ```
 
-The four keys include BREAK. In the menu that does no harm. With the keyboard chosen, the menu does not call
-ReadInput, so SoundLoop never sees bit 5.
+The four keys include BREAK (CAPS SHIFT and SPACE). In the menu that does no harm: whatever the control, StartAim's
+AimCursorReset `$85C8` clears InputState before SoundLoop first reads it, so SoundLoop never sees a menu BREAK.
 
-Worked example: `m1` sits in the menu with keys going down and up. WaitNoKey ran 202 times and TestCheatKeys 176
-times. TestCheatKeys never found the four keys, so `$B3A1` is not executed in any recording. The toggle is known only
-from the code. No figure: the toggle draws nothing.
+Worked example: `m1` sits in the menu with keys going down and up. WaitNoKey ran 202 times and TestCheatKeys 176 times.
+TestCheatKeys never found the four keys, so `$B3A1` ran in no original recording. The `f1c` experiment (doc 10.10, `f1`
+with the four keys held at frame 500) shows it: InfiniteLives `$B8C4` goes from 0 to `$FF` at frame 510
+(`work/docs/vpC/f1c-flag.jsonl`). No figure: the toggle draws nothing.
 
 The point: the only hidden key is a four-key chord in the menu, and it lasts until it is pressed again. The game has
 no pause key: no code waits on a key during play.
@@ -471,8 +474,10 @@ MenuTimeout `$B8C1` to 1500 frames and calls WaitNoKey. MenuKeyLoop `$B29C` then
 | R | redefine the keys | RedefineKeys `$B3D2` |
 | any other | with a joystick chosen: fire begins | ReadInput, bit 4 |
 
-Choosing J probes for a Kempston. Control is set to 2 and ReadInput is called. If the port reads anything but 0,
-the game takes it for no interface, and Control goes back. An unconnected port usually reads `$FF`.
+Choosing J probes for a Kempston. Control is set to 2 and ReadInput is called. If InputState is not 0, that is if
+any of the port's bits 0-4 is set (ReadKempston keeps only those) or BREAK is held, the game takes it for no
+interface, and Control goes back. An unconnected port usually reads `$FF`; a port reading `$E0` would pass as a
+Kempston.
 
 ```text
 MenuKeyLoop:
@@ -613,7 +618,7 @@ the perimeter coordinate p, 0 at the top left and growing clockwise:
 | top | y = 51 | x - 3, 0-249 |
 | right | x = 252 | 249 + (y - 51), 249-378 |
 | bottom | y = 180 | 378 + (252 - x), 378-627 |
-| left | x = 3 | 627 + (180 - y), 627-756 |
+| left | x = 3 | 627 + (180 - y), 627-755 (756 is the corner, p 0) |
 
 The speed CursorSpeed `$86BC` is added to p, modulo 756 (`$2F4`). Then p is turned back into a place.
 
@@ -627,8 +632,10 @@ key points the way the player expects on screen:
 | up | x < 128, on the left half | x >= 128 |
 | down | x >= 128 | x < 128 |
 
-**The acceleration.** The speed changes only when the input byte changes. A new key starts the speed at +1 or -1
-and the countdown CursorAccel `$86BD` at 10. While the same input is held, the countdown runs. At 0 it is reset to
+**The acceleration.** The speed restarts only when the direction changes. When the input byte changes,
+AimCursorMove maps it to +1 or -1; if the cursor stands, or the new direction is against the speed's sign, the speed
+starts at +1 or -1 and the countdown CursorAccel `$86BD` at 10. A new input in the same direction keeps the speed and
+goes on counting. While the same input is held, the countdown runs. At 0 it is reset to
 10, and the speed grows by one, up to 6 pixels a frame. An input of 0, or fire alone, stops the cursor (speed 0).
 CursorLastInput `$86BE` holds the input seen last.
 
@@ -758,7 +765,7 @@ flowchart LR
 How to read the figure:
 
 - **The table** is the screen of `w1` frame 880, three times enlarged.
-- **Each dot** is the cursor's place at the end of one frame from 880 to 1033. The colour is the speed, 1 to 6.
+- **Each dot** is the cursor's place at the start of one video frame (its sample) from 880 to 1033. The colour is the speed, 1 to 6.
 - **The corner labels** are the p values: 0 at the top left, 249 top right, 378 bottom right, 627 bottom left.
 - **The dots spread** as the speed grows. Near the start they touch; on the bottom cushion they are 6 pixels apart.
 - **The point**: holding one key drives the cursor round all four cushions, the key's meaning changing at each
@@ -780,19 +787,20 @@ How to read the animation: the highlighted lines are the instructions run in tha
 right cushion, and its steps grow from 1 to 2 pixels from frame 892. The branches taken in AimCursorDraw are the
 right cushion's (`CursorOnRight` and `CursorToRight`).
 
-Worked example, from the `w1` samples (`work/docs/vpB/w1-aim.json`, `$827C` and `$86BA-$86C0`):
+Worked example, from the `w1` samples (`work/docs/vpB/w1-aim.json`, `$827C` and `$86BA-$86C0`; each sample is the
+memory at the start of its frame, after the tick of the frame before):
 
 | Frame | InputState | x | y | speed | countdown | What |
 | ---: | --- | ---: | ---: | ---: | ---: | --- |
 | 880 | `00` | 252 | 115 | 0 | 0 | the aim starts |
-| 881 | `02` | 252 | 115 | 0 | 0 | M is read last in the frame |
-| 882 | `02` | 252 | 116 | 1 | 10 | the move starts: left with y >= 114 is +1 |
+| 881 | `02` | 252 | 115 | 0 | 0 | M, pressed at 880, read last in that frame's tick |
+| 882 | `02` | 252 | 116 | 1 | 10 | the tick of 881 starts the move: left with y >= 114 is +1 |
 | 890 | `02` | 252 | 124 | 1 | 2 | 1 pixel a frame, down the right cushion |
 | 900 | `02` | 252 | 143 | 2 | 2 | the speed has grown once |
 | 935 | `02` | 143 | 180 | 6 | 7 | the bottom cushion at 6 pixels a frame |
 | 936 | `02` | 137 | 180 | 6 | 6 | one more step |
 | 1033 | `02` | 252 | 121 | 6 | 9 | the lap is done |
-| 1034 | `00` | 252 | 127 | 6 | 8 | M up; this frame still moves on the old input |
+| 1034 | `00` | 252 | 127 | 6 | 8 | M up, read in the tick of 1033, which still moved on the old input |
 | 1040 | `00` | 252 | 130 | 1 | 10 | after short taps |
 
 At frame 935 the cursor is at (143, 180). p is 378 + (252 - 143) = 487. The speed is +6, so p becomes 493. The place
@@ -885,9 +893,12 @@ stateDiagram-v2
 
 How to read the figure:
 
-- **The upper chart** is Power `$86BF` at the end of each frame. It climbs by 2 a frame from frame 1041.
-- **The lower strip** is fire, bit 4 of InputState, read from 1041 to 1078.
-- **The release** at 1079 is marked: Power 76, the shot speed 76 / 16 = 4.75 pixels a tick.
+- **The upper chart** is Power `$86BF` at the start of each frame (after the tick of the frame before). It climbs
+  by 2 a frame from the sample of 1042.
+- **The lower strip** is fire, bit 4 of InputState, in the samples 1041 to 1078: ReadInput read it in the ticks of
+  1040-1077 (SPACE is held from 1040 to 1077 in the input script).
+- **The release** at 1079 is marked: Power 76, the shot speed 76 / 16 = 4.75 pixels a tick. AimShot runs in the
+  tick of 1079.
 - **The panel on the right** gives the rules: + 2 a frame, wrap at 134, shoot on release.
 - **The point**: the power is a held time, 2 units a frame. The player sees it as the bar and must let go within
   67 frames, 1.34 seconds, or the bar empties.
@@ -906,9 +917,12 @@ work/docs/vpB/w1 --window 1038:0-1082:0 --listing build/game.lst --out docs/img/
 How to read the animation: while fire is held only the lines of the growing branch light up, and the bar grows 2
 pixels a frame. In the frame of the release the AimShoot branch runs, the cursor goes, and the bar stays at 76.
 
-Worked example: fire is read from frame 1041 to 1078. The sample at 1078 shows Power `$4A`, 74. ReadInput is the
-last task, so the fire read in frame 1078 is counted by AimPower at 1079, where Power is `$4C`, 76: 38 frames of
-fire, 2 each. In frame 1080 AimPower sees fire up and runs AimShoot, and the cue ball leaves at 4.75 pixels a tick.
+Worked example: SPACE goes down at frame 1040 and up at 1078. ReadInput is the last task, so it reads fire in the
+ticks of 1040-1077, and AimPower counts each read one tick later, in 1041-1078: 38 ticks of fire, 2 each. The
+samples (each the memory at the start of its frame) show fire from 1041 to 1078 and Power `$4C`, 76, at 1079, with
+InputState `$00` (ReadInput read fire up in the tick of 1078). In the tick of 1079 AimPower sees fire up and runs
+AimShoot. AimShot holds that interrupt for 6.92 video frames, so the interrupts of 1080-1085 are lost and the next
+tick is 1086 (doc 4, 4.7). The cue ball leaves at 4.75 pixels a tick.
 
 Witness: AimPower ran 4425 times in `w1`, its AimShoot branch 3459 times (each pass with fire up, most with Power 0).
 
@@ -1100,11 +1114,12 @@ All aiming input is read by tasks of the interrupt, once a frame. The order of A
 | AimCursorDraw `$85EB` | CursorSpeed | the cursor |
 | ReadInput `$8106` | the ports | InputState for the next frame |
 
-So a key pressed in a frame acts one frame later. The `w1` samples show it: M is read at 881 and the cursor first
-moves at 882 (section 5.5).
+So a key pressed in a frame acts one frame later. The `w1` samples show it: M, pressed at 880, is read in the tick
+of 880 (the sample of 881) and the cursor first moves in the tick of 881 (the sample of 882, section 5.5).
 
 The release is the one long moment. AimShot `$8A02` runs inside the interrupt task and uses the ROM's calculator,
-about 455 000 T, six or seven frames. The interrupts of those frames are lost. InputState is not read again until
+about 455 000 T; the interrupt holding it lasts about 484 000 T, 6.92 video frames (`w1` 1079: 483 665 T). The
+six interrupts after it are lost (1080-1085). InputState is not read again until
 the next aim. The menus, the editor and the name entry work another way: they are foreground loops with one HALT a
 pass, and they call ReadInput themselves.
 

@@ -11,9 +11,9 @@ The recordings it rests on (WALKTHROUGH 6.0), all loaded from `work/snaps/entry.
 - `w1`: one player, frames 1-3 cleared, game over. Replayed with the TTD recording on, on an own instance
   (`python3 work/docs/vpC/replay.py --inputs tests/inputs/w1.txt --work work/docs/vpC/w1 --port-base 34925 --to 12100`).
   Sampled with `work/docs/vpC/sample.py`: the ball block `$8A88-$8B4D` at every frame 1075-1560 (the break,
-  `w1-break.jsonl`), the player variables `$9F43-$9F50` every 5 frames 600-12100 (`w1-course.jsonl`).
+  `w1-break.jsonl`), the player variables `$9F43-$9F50` every 5 video frames 600-12100 (`w1-course.jsonl`).
 - `v1`: the variations, replayed the same way to frame 3400; the ball block, `FoulCode $8E80` and the player variables
-  every 5 frames 2850-3400 (`v1-balls.jsonl`, `v1-foul.jsonl`, `v1-course.jsonl`).
+  every 5 video frames 2850-3400 (`v1-balls.jsonl`, `v1-foul.jsonl`, `v1-course.jsonl`).
 - `f1c`: an experiment, `f1` with the four cheat keys held at frame 500 (10.10).
 - `f1`, `p2`, `m1`, `game`: the stage-2 counts (`work/stage2/NOTES.md`, `work/stage2/ann/02-physics-notes.md`) and the
   screenshots of WALKTHROUGH 6.1.
@@ -29,9 +29,10 @@ Every quantity of the physics is an integer. Four formats cover all of them:
 | friction step | signed byte | 1/256 pixel a tick, per tick | `FC` = -4 |
 | collision coefficient | 0.8, `$0100` = 1.0 | 1/256 | `$0071` = 0.441 |
 
-A tick is one run of PhysicsTask `$86C1`. It is a period-0 task of `MovingTasks $84BA`, so it runs once an interrupt:
-50 ticks a second while the balls move. In each interrupt the redraw task BallRedraw `$827E` runs first, then
-PhysicsTask, then ShotEnd `$8357` (doc 04). The screen therefore shows the positions of the tick before.
+Tick, video frame and pass are the words of the [Terms](README.md#terms). PhysicsTask `$86C1` is a period-0 task of
+`MovingTasks $84BA`, so it runs once a tick: 50 a second while the balls move, fewer when interrupts are lost. "Physics
+tick n" is its n-th run since the shot; `tools/physics_model.py` counts these. In each interrupt the redraw task
+BallRedraw `$827E` runs first, then PhysicsTask, then ShotEnd `$8357` (doc 04). The screen therefore shows the positions of the tick before.
 
 ```mermaid
 flowchart LR
@@ -59,10 +60,31 @@ $84C3  DEFB $00,$B7,$9C    ; period 0, MessagesTask $9CB7
 $84C6  DEFB $FF            ; the end
 ```
 
-Worked example: the break of `w1` is played at frame 1085. The first tick runs in frame 1086, and the last ball stops
-in tick 159, frame 1253. That is 168 interrupts for 159 ticks, 3.4 seconds. Nine interrupts pass with no tick: every
-second frame from 1156 to 1172, the stretch after the contacts of frames 1150-1153 (10.6). The model finds them because
-those frames repeat the block of the frame before.
+A sample (`work/docs/vpC/*.jsonl`, TTD `memory_at`) is the memory at the start of its video frame, so it shows the
+ticks run up to the frame before. A frame number given with a physics tick below is the sample that first shows it;
+the tick ran in the video frame before, which is the frame the traces and animations show.
+
+Worked example: the break of `w1` is released at video frame 1079. AimShot holds that interrupt until frame 1085 (doc
+4, 4.7), and physics tick 1 runs at its end, after AimShot, in the same interrupt (`tools/task_costs.py --per-irq` on
+`work/runs/w1/traces/1070_0-1100_0.uatr`: AimPower 470 382 T, PhysicsTask 9969 T, the interrupt 483 665 T). Ticks 2-159
+run in the interrupts from 1086; the last ball stops in tick 159, run in frame 1252 (sample 1253). That is 168 video
+frames (1085-1252) for 159 ticks, 3.4 seconds. Nine interrupts are lost: video frames 1155, 1157, ..., 1171, so the
+samples 1156, 1158, ..., 1172 repeat the one before. Physics tick 68 (ball 5 meets ball 2, 10.6) sets the seventh ball
+rolling, and ball 1 stops in tick 78; the passes of ticks 70-78, with all seven balls moving, are longer than a video
+frame, so each runs past the next INT and that interrupt is lost. The losses alternate because the pass after a lost
+interrupt starts one INT later.
+
+The evidence, from the `w1` event file `work/docs/vpD/w1-sound.json` (no new run):
+
+- `irq`: an interrupt is accepted in every video frame 1086-1252 at T 1831-1843, except 1155, 1157, ..., 1171.
+- The pass entered at 1154 T 1836 is still running at the INT of 1155 and has returned when SoundLoop, the main loop,
+  writes the speaker at 1155 T 3499: it lasts between about 69 880 and 71 551 T. The pass entered at 1160 T 1833 writes
+  SoundRequest 2 at 1160 T 58 437 (`$8E28` in ReflectY: ball 4 off a cushion, tick 73) and has returned when
+  SoundLoop takes the request at 1161 T 7977: less than 76 032 T.
+- Not a sound: `beeper` has no ROM BEEPER call between 620 and 1329, and SoundLoop runs with the interrupts enabled,
+  only between passes.
+
+The exact length of each long pass needs a trace of frames 1150-1175, which was not made.
 
 **The point**: the whole simulation is integer arithmetic at a fixed rate. Nothing depends on the time a tick takes,
 so a replay is exact (doc 07.8).
@@ -79,8 +101,8 @@ cursor and the power into the cue ball's velocity with the Spectrum ROM's floati
   `$8A89`, `$8A8B`); the fractions are not used.
 - r = SQR (dx² + dy²).
 - vy = 16 P · dy / r and vx = 16 P · dx / r, converted by FP-TO-BC into a 16-bit word.
-- P = `Power $86BF`. Values of `$80` or more are taken as `$7E`, so P is at most 126 and the top speed is 126 / 16 =
-  7.875 pixels a tick.
+- P = `Power $86BF`. Values of `$80` or more are taken as `$7E`; the power is always even (it grows by 2 from 0, doc
+  05), so P is at most 126 and the top speed is 126 / 16 = 7.875 pixels a tick.
 - A negative product gets 65536 added before FP-TO-BC, which yields its two's complement.
 
 ```mermaid
@@ -145,10 +167,13 @@ At `w1` frame 1085 the cursor bytes `$86BA`/`$86BB` read `FC 82`, so the cursor 
 | vx | 1216 × 212 / 212.530 = 1212.97, so 1213 = `$04BD` |
 | speed | 1215.99 / 256 = 4.75 pixels a tick, P / 16 |
 
-The sample of frame 1086 holds exactly `BD 04 56 00` in the cue ball's +4..+7.
+The sample of frame 1086 holds `B8 04 56 00` in the cue ball's +4..+7: 1213 less the friction step -5 of physics tick
+1, which runs in the same interrupt (10.1, 10.3); `physics_model.py` reproduces it from 1213.
 
-The calculator is slow: AimShot costs 454 880 T-states, about 6.5 frames, with the interrupts off. In `w1` frame 4335
-six interrupts are lost to it (stage-2 notes).
+The calculator is slow: AimShot costs about 455 000 T-states (454 950 at `w1` 1079, 454 880 at 4335; 6.5 video frames),
+99.8 % of it in the ROM, 85 % in the ROM's SQR. The interrupt that runs it, the shot set-up, lasts 483 665 T (6.92 video
+frames) with the interrupts off: the interrupts of the six video frames after the release are lost (1080-1085, doc 4,
+4.7).
 
 **The point**: the only square root and the only division of the game are the ROM's, used once a shot. Everything
 that runs every tick (10.3-10.5) uses tables instead.
@@ -239,12 +264,15 @@ $9134  LD (IX+$08),A
 How to read the figure:
 
 - Left: one arrow a cell of `FrictionTable $DD3A`, at (nx, ny). The arrow is the step (x, y) before the sign is put
-  in. All arrows have length 5 within rounding; cell (0, 0) is empty (a ball at rest).
-- Right: the cue ball's speed in pixels a tick at each frame of `w1` 1075-1200, from the samples.
+  in. All arrows have length 5 within rounding except cell (0, 0), which holds `$44`: a step of (4, 4), used for a
+  velocity below 8/256 in both components after the eight shifts, or for v = (0, 0); it then does not point along the
+  motion (harmless: the add clamps a crossing to 0).
+- Right: the cue ball's speed in pixels a tick in each sample of `w1` 1075-1200 (the x axis: the video frame whose
+  start the sample is).
 - The dotted line has the slope 5/256 a tick, shifted down to sit beside the curve. The curve runs parallel to it
   until the contact at frame 1117.
 - The drops at 1117 and 1150 are the contacts with ball 1 and ball 6 (10.5), not friction. The flatter part
-  1156-1172 is the stretch where only every second frame has a tick (10.1).
+  1156-1172 is the stretch where every second interrupt is lost (10.1): the samples step two at a time.
 
 **The point**: the friction is a constant deceleration along the motion, found by a table look-up on the shifted
 velocity. The balls slow linearly and stop at a finite time; they do not decay exponentially.
@@ -307,7 +335,9 @@ flowchart TD
     D -- no --> X[end cushion: step back to x 17 or 238, ReflectX]
     C -- no --> E{beyond y 65 or 166?}
     E -- no --> F[free: no test]
-    E -- yes --> G{x in the middle channel 122..133?}
+    E -- yes --> Q{x below 23 or 232 and above?}
+    Q -- yes --> D
+    Q -- no --> G{x in the middle channel 122..133?}
     G -- yes --> F
     G -- no --> H{x in a jaw zone 115..121 or 134..140?}
     H -- yes --> K[PointJaw at the jaw point, channel walls]
@@ -327,7 +357,9 @@ ReflectDiagonal(ball, B, C):  (vx, vy, fx, fy) = (vy, vx, fy, fx), all negated w
 ### The jaw that patches itself
 
 DiagonalJaw `$8C7E` tests the signed distance A of the ball from a corner channel's line. A distance in the band
-(6-7 large, 2-3 small) is a contact: JawContact bounces the ball. Less is inside the channel: no bounce. More means the
+(6-7 large, 2-3 small) is a contact: JawContact reflects the ball (ReflectDiagonal) if it moves into the jaw, in both
+components or in the larger one; otherwise JawAway only sets the fractions and the ball goes on. Less is inside the
+channel: no bounce. More means the
 ball went too deep in one tick. Then the routine patches its own exit: `JawShallowExit $8C92` holds `RET C / NOP`,
 and the deep case writes `JR C,JawContact` there. It then steps the ball back with StepBack `$8E33`, with the cushion
 test pushed as the return address, so the test repeats until the ball is in the band. With the patch in place, a ball
@@ -353,6 +385,30 @@ $8C9E  PUSH HL             ; the test to repeat
 $8C9F  JP StepBack
 ```
 
+JawContact, the test that decides between a bounce and none (C, B: the normal's sign bytes):
+
+```text
+$8CA2  LD A,C
+$8CA3  XOR (IX+$05)        ; L bit 7: moving into the jaw in x
+$8CA6  LD L,A
+$8CA7  LD A,B
+$8CA8  XOR (IX+$07)        ; H bit 7: moving into the jaw in y
+$8CAB  LD H,A
+$8CAC  OR L
+$8CAD  JP P,JawAway        ; away in both: no bounce
+$8CB0  LD A,H
+$8CB1  AND L
+$8CB2  JP M,JawReflect     ; into the jaw in both: bounce
+       ...                 ; one of each: |vx| against |vy|, the larger decides
+$8CE2  JR C,JawAway
+JawReflect:
+$8CE4  LD (IX+$00),C       ; fractions = C, B
+$8CE7  LD (IX+$02),B
+$8CEA  JP ReflectDiagonal
+JawAway:
+$8CED  ...                 ; fractions = the complements of C and B, RET
+```
+
 ```mermaid
 stateDiagram-v2
     [*] --> Clean: PocketOrCushion writes RET C, NOP
@@ -361,7 +417,10 @@ stateDiagram-v2
     Clean --> Patched: offset above the band
     Patched --> Patched: StepBack, test again, still too deep
     Patched --> Contact: in the band, or below it, JR C taken
-    Contact --> [*]: JawContact, ReflectDiagonal
+    Contact --> Reflect: moving into the jaw, both components or the larger one
+    Contact --> Away: moving away, JawAway sets the fractions
+    Reflect --> [*]: ReflectDiagonal
+    Away --> [*]: no bounce
     Inside --> [*]: no bounce
 ```
 
@@ -384,8 +443,10 @@ Witness: CushionsLarge ran `w1` 5626, `game` 286, `f1` 1571, `p2` 3848, `v1` 229
 
 ![PocketOrCushion in w1 frames 1196-1201: ball 5 off the top right jaw and into pocket 3](img/routines/PocketOrCushion.gif)
 
-Steps in a recording: `w1` frames 1196-1201. The listing follows PocketOrCushion and CushionsLarge for each moving
-ball; in frame 1197 it reaches DiagonalJaw and ReflectDiagonal for ball 5, and in frame 1201 PocketSnap. The right
+Steps in a recording: `w1` video frames 1196-1201 (a trace: each tick in the frame it runs in, one before its
+sample). The listing follows PocketOrCushion and CushionsLarge for each moving ball; in frame 1196 (physics tick 103,
+sample 1197) it reaches DiagonalJaw, JawContact and ReflectDiagonal for ball 5, and in frame 1200 (tick 107)
+PocketSnap (`work/review/fixC/pcframes.py` on `work/docs/vpC/w1/traces/1196_0-1202_0.uatr`). The right
 panel is the screen.
 
 ```bash
@@ -404,8 +465,9 @@ no square root:
    contact: a ball that lands exactly on the ring without overlapping is passed over.
 2. On overlap, StepBack `$8E33` moves IX back along its own velocity by less than a pixel (the velocity halved until
    below 1), and the table is read again. This repeats until the cell is no longer `$80`.
-3. The ring number n selects a record of `CollisionRecords $DE3A + 6 (n - 1)`: three 0.8 coefficients w0 = 256 dx² /
-   225, w1 = 256 dy² / 225, w2 = 256 |dx dy| / 225 for that cell.
+3. The ring number n selects a record of `CollisionRecords $DE3A + 6 (n - 1)`: three 0.8 coefficients w0 =
+   floor(256 dx² / 225), w1 = floor(256 dy² / 225), w2 = floor(256 |dx dy| / 225) for that cell (rings 8 and 24 hold
+   41 for the small one, one above the floor 40).
 4. The exchange runs only if IX moves towards IY in x or in y. With dv = v(IY) - v(IX): A = w0 dvx, B = w2 dvy,
    C = w2 dvx, D = w1 dvy (ScaleVelocity `$89C4` with MulByte `$89F5`). The cross terms are added when dx and dy have
    the same sign (ContactSigns 0 or 3), subtracted otherwise.
@@ -421,11 +483,12 @@ flowchart TD
     A[BallContacts for ball IX] --> B[next ball IY on the table]
     B --> C{dx, dy below 16 and not both 0?}
     C -- no --> N
-    C -- yes --> D{ContactTable cell}
+    C -- yes --> D{first look: ContactTable cell}
     D -- 80 --> E[StepBack IX, recompute dx, dy, signs]
-    E --> D
-    D -- ring n --> F[remember record n and IY]
-    D -- 0 --> N
+    E --> D2{cell still 80?}
+    D2 -- yes --> E
+    D2 -- no --> F[remember record n and IY]
+    D -- ring or 0 --> N
     F --> N{more balls?}
     N -- yes --> B
     N -- no --> G{a contact found?}
@@ -495,8 +558,9 @@ How to read the figure:
   ring number, grey cells are apart. The black frame is the cell of the worked example below.
 - Right: the three coefficients of each ring record, and their sum w0 + w1. An exact projection would have w0 + w1 =
   1.0 on every ring.
-- The sum is d² / 225, because the records divide by 15² and not by the cell's own d². It runs from 0.965 to 1.109;
-  ring 16 (11, 11), the 45-degree contact, has 242 / 225 = 1.075.
+- The sum is d² / 225 truncated, because the records divide by 15² and not by the cell's own d². It runs from 0.965
+  (ring 10, d² 218) to 1.109 (ring 26, d² 250); ring 16 (11, 11), the 45-degree contact, has 274 / 256 = 1.070 (242 /
+  225 = 1.075 before the truncation).
 - Built from the image `work/mkgame/original.bin`; no recording.
 
 **The point**: a collision costs two table reads and four 8 × 16-bit multiplications. The price is accuracy: a contact
@@ -506,9 +570,9 @@ may hand out up to 11 % more or 3.5 % less of the relative velocity than it shou
 python3 tools/fig_physics.py contact --image work/mkgame/original.bin --out docs/img/physics/contact.png
 ```
 
-### Worked example: the cue ball meets ball 1 (w1 tick 32, frame 1117)
+### Worked example: the cue ball meets ball 1 (w1 physics tick 32, run in video frame 1116, sample 1117)
 
-Before the tick (frame 1116): the cue ball at (178.35, 125.96) = (`$B25A`, `$7DF6`) with v (1058, 86); ball 1 at rest at
+Before the tick (sample 1116): the cue ball at (178.35, 125.96) = (`$B25A`, `$7DF6`) with v (1058, 86); ball 1 at rest at
 (190, 115).
 
 | Step | Cue ball | Test |
@@ -537,15 +601,18 @@ moved later in the same tick (it is next in the order) and ends at (191.66, 113.
 the sample holds exactly these bytes (the record of doc 07.1). The energy is kept within 1.2 %: 1 126 760 before,
 1 113 404 after, in (1/256 pixel a tick)².
 
-![BallContacts in w1 frame 1117: the cue ball meets ball 1](img/routines/BallContacts.gif)
+![BallContacts in w1 frame 1116: the cue ball meets ball 1](img/routines/BallContacts.gif)
 
-Steps in a recording: `w1` frame 1117, the whole interrupt. The listing shows BallContacts scanning the seven records,
+Steps in a recording: `w1` video frame 1116, the whole frame (physics tick 32 runs in its interrupt; its sample is
+1117). The listing shows BallContacts scanning the seven records,
 the three passes through StepBack and the four ScaleVelocity calls of the exchange. The right panel is the screen.
 
 ```bash
-python3 ../../kit/routine_anim.py --work work/docs/vpC/w1 --window 1117:0-1118:0 --listing build/game.lst --view screen \
+python3 work/docs/vpA/slice_trace.py work/docs/vpC/w1/traces/1112_0-1120_0.uatr 1116 1117 work/review/fixC/1116_0-1117_0.uatr
+python3 ../../kit/routine_anim.py --trace work/review/fixC/1116_0-1117_0.uatr --listing build/game.lst --view screen \
     --range 8000-DFFF --pc 87EF-89FF --pictures 80 \
-    --title 'BallContacts $87EF: w1 frame 1117, the break, cue ball meets ball 1' --out docs/img/routines/BallContacts.gif
+    --title 'BallContacts $87EF: w1 frame 1116, the break, physics tick 32: the cue ball meets ball 1' \
+    --out docs/img/routines/BallContacts.gif
 ```
 
 Witness: a contact found and exchanged `w1` 71, `f1` 28, `p2` 49, `v1` 31-32, `m1` 17 times; the overlap path `w1`
@@ -564,8 +631,8 @@ python3 tools/physics_model.py --image work/mkgame/original.bin --samples work/d
 ```
 
 Result: "475 frames equal to a model tick byte for byte (98 bytes); last frame 1560, tick 160". Every sampled frame of
-the break, from the shot to long after the last ball stopped, equals one model tick. A frame with no tick (the nine
-frames of 10.1) equals the tick before. Tick 160 is the last redraw after the last stop.
+the break, from the shot to long after the last ball stopped, equals one model tick. A sample after a lost interrupt
+(the nine of 10.1) equals the one before. Tick 160 is the last redraw after the last stop.
 
 ```mermaid
 flowchart LR
@@ -590,7 +657,7 @@ for each later sample:
 How to read the figure:
 
 - The background is the empty table of `w1` frame 707. Each ball has its colour (legend).
-- A line is the model's path, one point a tick. A dot is the recorded position of a moving ball in every third frame
+- A line is the model's path, one point a tick. A dot is the recorded position of a moving ball in every third sample
   of `w1` 1085-1560.
 - Yellow stars are the model's ball-ball exchanges; cyan diamonds its cushion and jaw bounces; the magenta cross the
   pot of ball 5 into pocket 3 at frame 1201.
@@ -604,20 +671,30 @@ python3 tools/fig_physics.py trajectory --image work/mkgame/original.bin --sampl
     --table work/docs/vpC/shots/t707.png --shot 1085,252,130,76 --out docs/img/physics/trajectory.png
 ```
 
-Worked example: the model's events of the break, with the frame of the sample each falls in.
+Worked example: every event the model prints for the break (`--events`), with the sample that first shows it and the
+video frame the tick ran in.
 
-| Tick | Frame | Event |
-| --- | --- | --- |
-| 32 | 1117 | cue ball meets ball 1 (ring 17, three step-backs) |
-| 33 | 1118 | ball 1 meets ball 2 (ring 9) |
-| 34 | 1119 | ball 2 meets ball 4 |
-| 41 | 1126 | ball 4 off the right cushion (ReflectX) |
-| 52 | 1137 | cue ball off the bottom cushion (ReflectY) |
-| 59 | 1144 | cue ball off the right cushion |
-| 65-68 | 1150-1153 | the cue ball, ball 6 and ball 5 in contact |
-| 103 | 1197 | ball 5 off the top right jaw (ReflectDiagonal) |
-| 107 | 1201 | ball 5 potted, pocket 3 |
-| 159 | 1253 | ball 4 stops: the last |
+| Tick | Sample | Runs in | Event |
+| --- | --- | --- | --- |
+| 32 | 1117 | 1116 | cue ball meets ball 1 (ring 17, three step-backs) |
+| 33 | 1118 | 1117 | ball 1 meets ball 2 (ring 9) |
+| 34 | 1119 | 1118 | ball 2 meets ball 4 (ring 8) |
+| 41 | 1126 | 1125 | ball 4 off the right cushion (ReflectX) |
+| 42 | 1127 | 1126 | ball 2 stops |
+| 52 | 1137 | 1136 | cue ball off the bottom cushion (ReflectY) |
+| 59 | 1144 | 1143 | cue ball off the right cushion |
+| 65 | 1150 | 1149 | cue ball meets ball 6; ball 6 meets ball 5 |
+| 67 | 1152 | 1151 | ball 6 meets ball 3 |
+| 68 | 1153 | 1152 | ball 5 meets ball 2: all seven balls roll |
+| 73 | 1161 | 1160 | ball 4 off a long cushion (ReflectY); interrupts lost in 1155-1171 (10.1) |
+| 78 | 1171 | 1170 | ball 1 stops |
+| 87 | 1181 | 1180 | ball 6 stops |
+| 94 | 1188 | 1187 | ball 2 stops |
+| 103 | 1197 | 1196 | ball 3 meets ball 1 (ring 31); ball 5 off the top right jaw (ReflectDiagonal) |
+| 107 | 1201 | 1200 | cue ball stops; ball 5 potted, pocket 3 |
+| 114 | 1208 | 1207 | ball 1 stops |
+| 124 | 1218 | 1217 | ball 3 stops |
+| 159 | 1253 | 1252 | ball 4 stops: the last |
 
 Witness: the samples are TTD `memory_at` reads of the own `w1` replay; the comparison is printed by the command above.
 
@@ -649,18 +726,18 @@ flowchart TD
     G --> H[ShotEnd: +12 non-zero, ScoreTally pays it]
 ```
 
-Worked example (`w1` ticks 103-108, frames 1197-1202): ball 5 leaves the jaw at (240.0, 57.0) with v (291, -107).
+Worked example (`w1` physics ticks 103-108, samples 1197-1202): ball 5 leaves the jaw at (240.0, 57.0) with v (291, -107).
 Each tick it moves about 1.1 pixels right and 0.4 up: (241.996, 56.996), (243.113, 56.586), (244.211, 56.184). In tick
 107 the move takes y to 55.79: pixel 55, outside. The column is 3 (x 245 ≥ 192), the row is the top: pocket 3. The ball
 is snapped to (245, 56) with flags `$B0`. In tick 108 RedrawBall erases it and parks it at (103, 27), flags 0.
 
-![PhysicsTask on the screen: the break of w1, frames 1084-1256](img/routines/PhysicsTask.gif)
+![PhysicsTask on the screen: the break of w1, frames 1084-1256](img/play/w1-1084-break.gif)
 
 The screen of `w1` from the frame before the shot (1084) to the frame after the last ball stopped (1256), every frame.
 Ball 5 drops into the top right pocket at frame 1201 and appears in the row above the table.
 
 ```bash
-python3 ../../kit/screen_anim.py --work work/docs/vpC/w1 --from 1084 --to 1256 --step 1 --scale 2 --delay 40 --hold 2000 docs/img/routines/PhysicsTask.gif
+python3 ../../kit/screen_anim.py --work work/docs/vpC/w1 --from 1084 --to 1256 --step 1 --scale 2 --delay 40 --hold 2000 docs/img/play/w1-1084-break.gif
 ```
 
 **The point**: a pocket is a box outside the playing rectangle. The ball is never "in a hole": it crosses a line and is
@@ -672,21 +749,52 @@ Witness: PocketSnap ran `w1` 18, `f1` 3, `p2` 2, `v1` 5 times; never in `game` o
 
 There is no aiming line, no ghost ball and no predicted path. The only aid is the cursor: a small cross that runs round
 the cushion line (x 3..252, y 51..180, the orange track of the geometry figure) on a perimeter coordinate of 756
-places (AimCursorMove `$8546`, modulo `$2F4`). The cue ball is shot straight at the cursor (10.2). The cursor's
+places: AimCursorMove `$8546` turns the input into CursorSpeed `$86BC` (±1, accelerated to 6), and AimCursorDraw `$85EB`
+turns CursorX, CursorY into the perimeter coordinate, adds the speed modulo `$2F4` (CursorAddSpeed `$863B`) and turns it
+back into x, y (CursorToLeft `$8657` and the next tests). The cue ball is shot straight at the cursor (10.2). The cursor's
 movement and the power bar are doc 05.
 
 ```mermaid
 flowchart LR
-    K[keys or joystick] --> M[AimCursorMove: perimeter coordinate + speed, mod 756]
-    M --> X[CursorX, CursorY]
+    K[keys or joystick] --> M[AimCursorMove: CursorSpeed, plus or minus 1 to 6]
+    M --> D[AimCursorDraw: perimeter coordinate + speed, mod 756]
+    D --> X[CursorX, CursorY]
     F[fire held] --> P[AimPower: power + 2 a step]
     X --> S[AimShot]
     P --> S
 ```
 
 ```text
-AimCursorMove: h = perimeter(CursorX, CursorY); h = (h + speed) mod 756; (CursorX, CursorY) = point(h)
+AimCursorMove: speed = from InputState, ±1, accelerated up to ±6
+AimCursorDraw: if speed == 0: return
+               h = perimeter(CursorX, CursorY)        ; top x - 3, right 249 + (y - 51),
+                                                     ; bottom 378 + (252 - x), left 627 + (180 - y)
+               h = (h + speed) mod 756; (CursorX, CursorY) = point(h)
 AimShot:       direction = (CursorX - cue.px, CursorY - cue.py)        ; 10.2
+```
+
+The asm of the step along the perimeter, in AimCursorDraw:
+
+```text
+CursorAddSpeed:
+$863B  LD A,(CursorSpeed)   ; + the speed, signed
+$863E  LD E,A
+$863F  LD D,$00
+$8641  OR A
+$8642  JP P,CursorSpeedSigned
+$8645  DEC D
+CursorSpeedSigned:
+$8646  ADD HL,DE            ; HL = the perimeter coordinate
+$8647  LD DE,$02F4          ; 756
+$864A  BIT 7,H
+$864C  JR Z,CursorWrapHigh
+$864E  ADD HL,DE            ; below 0: + 756
+$864F  JR CursorToLeft
+CursorWrapHigh:
+$8651  XOR A
+$8652  SBC HL,DE            ; 756 or more: - 756
+$8654  JR NC,CursorToLeft
+$8656  ADD HL,DE
 ```
 
 Is there a computer opponent? No. The evidence:
@@ -730,8 +838,9 @@ The three variations (menu, `Variation $B8C3`):
 | 2, own pockets | ball n into the pocket marked × n | (pocket + PocketTurn) wrapped into 1-6 ≠ the ball | `$8C37`, FoulCode 3 |
 
 The pocket multipliers are the "×1" ... "×6" marks round the table (DrawPocketMarks `$9D6B`). Pocket p pays ((PocketTurn
-+ p - 1) mod 6) + 1, with `PocketTurn $9F43` 0..5. NextFrame lowers PocketTurn by one each frame (0 wraps to 5), so the
-marks turn one place a frame.
++ p - 1) mod 6) + 1, where PocketTurn, 0..5, is the first byte of `PlayerVars $9F43` (the label covers the pair
+`$9F43/$9F44` of the two players). NextFrame lowers PocketTurn by one each frame (0 wraps to 5), so the marks turn one
+place a frame.
 
 The end of a shot, ShotEnd `$8357`:
 
@@ -838,8 +947,8 @@ lives 3 → 2 at frame 3375. The samples `work/docs/vpC/v1-course.jsonl` and `v1
 
 How to read the figure:
 
-- Four rows share the `w1` frame axis, from the first rack (frame 630) to game over (11 770), every 5th frame.
-- Score: each step is one ScoreTally, counted up over a few frames. 18 pots bring 2700.
+- Four rows share the `w1` frame axis, from the first rack (frame 630) to game over (11 770), every 5th video frame.
+- Score: each step is one ScoreTally; its count-up takes at least 45 video frames. 18 pots bring 2700.
 - Frame: 1 to 4. Frames 1-3 were cleared at frames 4025, 6875 and 10 200 (to the 5-frame step of the samples).
 - Shots left: 5 for frames 1-2, 4 for frames 3-4. It never fell: every shot of `w1` either potted (a refill) or
   touched nothing (a foul).
@@ -942,13 +1051,13 @@ Witness: `work/docs/vpC/f1c-flag.jsonl` (the flag at frames 490-530) and `f1c-co
 
 | What | Where | Effect | Seen |
 | --- | --- | --- | --- |
-| the collision coefficients divide by 15², not by d² | `CollisionRecords $DE3A` | a contact hands out 0.965-1.109 times the relative velocity's projection; 1.075 at 45 degrees | every contact (10.5) |
-| the redraw test compares x with x - 7 | MoveBall `$87DB`, RedrawSet `$87EA` | never matches: every rolling ball is redrawn every tick | `$87EA` = `$87DB` in every build |
+| the collision coefficients divide by 15², not by d² | `CollisionRecords $DE3A` | a contact hands out 0.965-1.109 times the relative velocity's projection; 1.070 at 45 degrees (274/256) | every contact (10.5) |
+| the redraw test compares x with x - 7 | `$87DB` in MoveBall, RedrawSet `$87EA` | never matches: every rolling ball is redrawn every tick | `$87EA` = `$87DB` in every build |
 | the y clamp's low side has no carry test | MoveYClamp `$8768` | harmless: y never goes below 0 inside a tick | clamps fired `w1` 9 times |
 | a foul pot still scores | ShotEndScore `$83F7` | ScoreTally runs before LoseLife | `v1` frames 3045-3375 (10.9) |
-| EventCount 7 repeats the pass | PhysicsTask `$86FB` | meant for crowded contacts; never reached | never taken |
+| EventCount 7 repeats the pass | `$86FB` in PhysicsTask | meant for crowded contacts; never reached | never taken |
 | ContactFound is the high byte of the record pointer | `$89B8` | cleared before the scan; the pointer's `$DE` makes it non-zero: one store, two meanings | every contact |
-| WaitFramesB lives inside the GAME OVER text | `$988C` | the bytes `76 10 FD C9` (HALT, DJNZ, RET) between texts | not executed in any recording |
+| WaitFramesB sits right before the GAME OVER texts | `$988C` | the bytes `76 10 FD C9` (HALT, DJNZ, RET) between the code WaitFramesBStopped `$9886` and GameOverTexts `$9890` | not executed in any recording |
 
 None of these changes the play much. The gain of up to 11 % is the one a player could feel: a thin cut sends the object
 ball a little faster than it should.
@@ -958,13 +1067,14 @@ flowchart LR
     A[ring cell dx, dy] --> B[coefficients dx², dy², dx dy over 225]
     B --> C{d² of the cell}
     C -- 218..224 --> D[sum below 1: a little lost]
-    C -- 225 --> E[exact]
+    C -- 225 --> E[within 1/256: 255/256]
     C -- 226..250 --> F[sum above 1: a little gained]
 ```
 
 ```text
-w0 + w1 = (dx² + dy²) / 225 = d² / 225         ; the ring holds 218 <= d² <= 250
-ring 16 (11, 11): 242 / 225 = 1.075
+w0 + w1 = floor(256 dx² / 225) + floor(256 dy² / 225), about 256 d² / 225   ; the ring holds 218 <= d² <= 250
+ring 16 (11, 11): 137 + 137 = 274 = 1.070 x 256    (242 / 225 = 1.075 before the truncation)
+rings 13, 19 (d² 225): 163 + 92 = 255; only rings 1 and 31 sum to 256
 ```
 
 Worked example: the contact of 10.5 uses ring 17, (10, 11), d² = 221: w0 + w1 = 0.977, so the cue ball keeps a little
@@ -979,11 +1089,12 @@ stage-2 counts.
 
 | What | Where | Known from |
 | --- | --- | --- |
-| frames 5-12: shots 4, 3, 3, 3, 3 and racks 2-5 | `$9C0A-$9C0E`, `$A1E4-$A701` | the code (doc 07.4) |
+| frames 5-9: shots 4, 3, 3, 3, 3 | `$9C0A-$9C0E` | the code |
+| frames 5-12: racks 2-5 | `$A1E4-$A701` | the code (doc 07.4) |
 | frame 10 and later: two shots | ShotsForFrame `$9BE6` | the code |
 | two players, one out of lives while the other plays on | GameOver `$97A2`, WaitFramesB `$988C` | the code |
 | the second player's turn with his balls still on the table | NextTurnResume `$9801` | the code |
-| a zero velocity component from AimShot (cursor on the cue ball's row or column) | ScaleByPower `$8A7A` | the ROM's code |
+| a zero velocity component from AimShot (cursor on the cue ball's row or column) | `$8A7A` in ScaleByPower | the ROM's code |
 | the infinite-lives flip in an original recording | `$B3A1` | the `f1c` experiment only (10.10) |
 | EventCount reaching 7 | `$86FB` | the code |
 
@@ -994,8 +1105,10 @@ Each would be reached by a longer or a different game; none is unused.
 - **Tables instead of trigonometry.** Friction (`$DD3A`), contact (`$DBFA`), collision coefficients (`$DE3A`) and the
   jaw radius (`$DCFA`) are all look-ups on whole-pixel offsets. The only square root and division are the ROM
   calculator's, once a shot (10.2-10.5).
-- **The shot through the ROM calculator.** Four bytes of calculator literals do the vector arithmetic, at the cost of
-  454 880 T-states with the interrupts off; the game simply loses six interrupts each shot (10.2).
+- **The shot through the ROM calculator.** 34 bytes of calculator code (`$8A1A-$8A1E`, `$8A2D-$8A3C`, `$8A45-$8A46`
+  and ScaleByPower's `$8A7A-$8A84`) do the vector arithmetic. AimShot costs about 455 000 T-states; the shot set-up's
+  interrupt holds the interrupts off for 483 665 T, 6.92 video frames, and the game simply loses six interrupts each
+  shot (10.2).
 - **A model that matches byte for byte.** The physics is deterministic integer code; `tools/physics_model.py` reproduces
   475 frames of the `w1` break exactly (10.6).
 - **The self-patching jaw.** DiagonalJaw rewrites its own exit after a deep step and is reset by its caller each move;
@@ -1005,12 +1118,17 @@ Each would be reached by a longer or a different game; none is unused.
 - **Equal-mass elastic collisions with a 15² denominator.** Up to 11 % more or 3.5 % less of the projected velocity
   per contact (10.5, 10.11).
 - **A foul pot still scores.** The score is paid before the life is taken (10.9).
-- **The marks turn.** The pocket multipliers rotate one place a frame, so the best pocket changes (10.9).
+- **The marks turn.** The pocket multipliers rotate one place a frame, so the best pocket changes (10.9). NextFrame:
+  `$9BC9 LD A,(PlayerVars)` / `DEC A` / `JP P,NextFrameTurn` / `LD A,$05` / `$9BD2 LD (PlayerVars),A` /
+  `CALL DrawPocketMarks`. Witness: `w1-course.jsonl` reads the pocket turn 0, then 5 from frame 4025, 4 from 6875, 3
+  from 10 200: one step at each frame cleared.
 - **The rack is an animation.** Six sets of byte scripts; four of them seen by no recording (doc 07.4).
 - **No random numbers but R.** The cue ball's fraction after the rack and the cursor start come from the R register;
   a replay is exact (doc 07.8).
 - **A hidden switch.** CAPS SHIFT + SPACE + 1 + 0 at the menu gives infinite lives, shown nowhere (10.10).
 - **No computer player.** Every shot comes from a human's cursor (10.8).
-- **Development leftovers.** `$E014-$E0FF` is code for another memory layout that no build runs; `$C591` a stale copy
-  in the editor; the turbo loader keeps "*TES*RESU*" (USER and SET backwards); the hall of fame starts with james,
-  francis and bill (doc 11).
+- **Development leftovers.** `$E014-$E0FF` is code for another memory layout that no build runs or reads
+  (`l1sum.py --range E014-E0FF` and `--reads E014-E0FF` print no count; its parser `$E0B8` starts `INC HL` / `LD A,(HL)`
+  / `CP $0D` / `RET Z`); `$C591` a stale copy of `$C34C-$C3BA` in the editor, read by no build (`l1sum.py --reads
+  C591-C5FF`); the turbo loader keeps "*TES*RESU*" (USER and SET backwards); the hall of fame starts with james,
+  francis and bill (doc 11, `HofTable $AC08`).

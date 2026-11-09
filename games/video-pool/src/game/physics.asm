@@ -38,9 +38,12 @@
 ; ($86FB); no recording took that jump (the counts of $86C1 and $86FD are equal
 ; in every build). Ends with CALL $8304.
 ;
-; In w1 the break (frames 1085-1254) has 159 ticks for 168 interrupts: no tick
-; in every second frame 1156-1172, after the contacts of frames 1150-1153
-; (tools/physics_model.py, docs 10.1).
+; In w1 the break has 159 physics ticks in the 168 video frames 1085-1252: tick
+; 1 runs at the end of the shot set-up's interrupt (entered at 1079, ends in
+; 1085); nine interrupts are lost, video frames 1155, 1157, ..., 1171, while
+; all seven balls roll (ticks 70-78): each such pass runs past the next INT
+; (work/docs/vpD/w1-sound.json irq; docs 10.1). The samples 1156, 1158, ...,
+; 1172 repeat the one before (tools/physics_model.py).
 PhysicsTask:
   XOR A
   LD (EventCount),A
