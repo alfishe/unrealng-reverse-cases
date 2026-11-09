@@ -2,7 +2,7 @@
   "image_cmd": [
     "sh",
     "-c",
-    "mkdir -p work/mkgame && unzip -o -q orig/MoonPatrol.tap.zip -d work/media/tap && python3 ../../kit/tapblocks.py 'work/media/tap/Moon Patrol.tap' 3 work/mkgame/original.bin"
+    "test -f work/mkgame/original.bin || (mkdir -p work/mkgame && unzip -o -q orig/MoonPatrol.tap.zip -d work/media/tap && python3 ../../kit/tapblocks.py 'work/media/tap/Moon Patrol.tap' 3 work/mkgame/block3.bin && python3 -c \"import sys; b=open(sys.argv[1],'rb').read(); open(sys.argv[2],'wb').write(bytes(0x60F8)+b)\" work/mkgame/block3.bin work/mkgame/original.bin)"
   ],
   "image": "work/mkgame/original.bin",
   "lo": "60F8",
@@ -14,7 +14,12 @@
     "0": "C000"
   },
   "read_builds": [
-    "game"
+    "game",
+    "runs/a1",
+    "runs/g1",
+    "runs/t1",
+    "runs/p2",
+    "runs/h1"
   ],
   "ref_builds": [
     [
@@ -24,5 +29,10 @@
   ],
   "header": [
     "; Moon Patrol, Atarisoft (UK) 1984 (never released, recovered): the game image $60F8-$FFFF as the tape loads it."
+  ],
+  "code_builds": [
+    "runs/i1",
+    "runs/i2",
+    "runs/h2"
   ]
 }

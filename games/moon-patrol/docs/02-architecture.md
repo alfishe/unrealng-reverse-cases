@@ -49,7 +49,7 @@ How to read the figure:
 - **The colour** is what the eight recordings together did with the byte (the union of their L1 builds): green
   executed, blue read as data, orange written and read, yellow written only, dark never touched.
 - **The brackets** on the right are the regions of the table below.
-- **The point**: the image is compact and static. Code fills `$7F14-$B211` and `$FD80-$FFFF`, graphics and fonts
+- **The point**: the image is compact and static. Code fills `$7F14-$B211` and `$FD80-$FFFF`, graphics, fonts and plot tables
   fill both ends, and play writes only the screen, the printer buffer, the variables at `$B212`, the object list at
   `$BEF8` and the stack. Nothing is built at run time: the image runs as loaded.
 
@@ -85,8 +85,8 @@ written (with or without reads), - never touched.
 | `$C2FC-$C34F` | 84 | the stack: the game's `$C2FC-$C337`, the BASIC's from `$C338` | | | 40 | 44 | 2.3 |
 | `$C350-$EFFF` | 11440 | graphics B; the rows of 128 bytes at `$C3D0-$D5AF` are read in part | | 9931 | 5 | 1504 | |
 | `$F000-$F0EF` | 240 | the print variables (`$F0A2` set to 8 at `$8000`) | | 41 | 43 | 156 | |
-| `$F0F0-$F9FF` | 2320 | a small routine `$F0F0-$F0FC`, then a second font, read in part | 13 | 841 | | 1466 | |
-| `$FA00-$FD7F` | 896 | the font | | 896 | | | |
+| `$F0F0-$F9FF` | 2320 | a small routine `$F0F0-$F0FC`, then three fonts (FontSmall `$F100`, FontBold `$F400`, FontPlain `$F700`), read in part | 13 | 841 | | 1466 | |
+| `$FA00-$FD7F` | 896 | the plot tables: PixelTable `$FA00` (column and mask of each x), ScreenLineTable `$FC00` (address of each pixel line) | | 896 | | | |
 | `$FD80-$FFFF` | 640 | the print code (`$FFD0` prints a text), the IM 2 jump `$FFF4`, the vector byte `$FFFF` | 568 | | | 72 | |
 
 Notes on the table:

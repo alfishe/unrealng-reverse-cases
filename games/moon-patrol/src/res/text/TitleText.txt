@@ -1,0 +1,1 @@
+{PAPER 0}{MARGIN 16}{LIMIT 240}{FONT 1}{INK 5}{BRIGHT 1}{AT 17,88}C 1984 Atari Inc. All Rights Reserved.{BRIGHT 0}{AT 77,104}Press S to start.{INK 3}{AT 48,120}Press H for Hi-score table.{BRIGHT 1}{AT 66,128}Press L to Load table.{INK 1}{AT 66,136}Press J to Save table.{INK 2}{AT 60,144}Press G to Verify table.{INK 2}{AT 26,160}Hit any other key for options page.{END}

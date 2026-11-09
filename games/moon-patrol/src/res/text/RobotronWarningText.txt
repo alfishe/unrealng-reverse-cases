@@ -1,0 +1,1 @@
+{INK 7}{PAPER 0}{BRIGHT 1}{AT 19,80}{MARGIN 19}{FONT 1}WARNING-{INK 4}You have attempted to load an {TAB 28}Atarisoft Robotron hi-score table.{TAB 72}Please try again!!!{MARGIN 16}{END}

@@ -1,0 +1,1 @@
+{INK 4}{PAPER 0}{BRIGHT 1}{AT 56,92}{FONT 1}Tape error - hit any key.{END}

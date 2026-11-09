@@ -18,6 +18,6 @@ C195 C2FB free
 C2FC C34F stack
 C350 EFFF graphics B
 F000 F0EF print variables
-F0F0 F9FF small font
-FA00 FD7F font
+F0F0 F9FF fonts 0-2
+FA00 FD7F plot tables
 FD80 FFFF print code, IM 2 jump

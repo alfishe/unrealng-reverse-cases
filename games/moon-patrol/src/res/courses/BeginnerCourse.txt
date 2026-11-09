@@ -1,0 +1,250 @@
+# segment 1
+Wait 127
+Craters 20 80
+Rocks 50 110
+End
+
+# segment 2
+Wait 127
+Point 63 1    # point A
+Lights 31:1
+UfosA 80 80
+UfosB 64 64
+End
+
+# segment 3
+Wait 127
+Point 63 2    # point B
+Lights 31:1
+UfosA 64 64
+Craters 106
+Rocks 85
+End
+
+# segment 4
+Wait 127
+Point 63 3    # point C
+Lights 31:1
+UfosLeave 64
+UfosB 96 96 96
+Rocks 90 100
+Craters 110
+End
+
+# segment 5
+Wait 127
+Point 63 4    # point D
+Lights 31:2
+Spinners 64 64
+Rocks 110
+Craters 120
+End
+
+# segment 6
+Wait 63
+Point 62 5    # point E
+Lights 31:0
+UfosLeave 0
+End
+
+# segment 7
+SectorEnd $0120 $10 $FF $0999
+
+# segment 8
+Wait 127
+Rocks 20 80
+Craters 50 110
+End
+
+# segment 9
+Wait 127
+Point 63 6    # point F
+Lights 56:1
+Craters 20
+Rocks 50 80
+UfosA 88 88
+UfosB 88 88
+End
+
+# segment 10
+Wait 127
+Point 63 7    # point G
+Lights 31:1
+UfosA 64 64 64 64
+Rocks 110
+Craters 121
+End
+
+# segment 11
+Wait 127
+Point 63 8    # point H
+Lights 32:2
+UfosLeave 0
+UfosA 96 96 96
+Spinners 64 64 64
+End
+
+# segment 12
+Wait 127
+Point 63 9    # point I
+Lights 96:0
+UfosLeave 64
+Rocks 10 50 110
+Craters 30 70 90 121
+End
+
+# segment 13
+Wait 63
+Point 62 10    # point J
+End
+
+# segment 14
+SectorEnd $0120 $10 $00 $0999
+
+# segment 15
+Wait 127
+Mines 20 152 50 70 218 222
+End
+
+# segment 16
+Wait 127
+Point 63 11    # point K
+Mines 10 168 70 228 110
+End
+
+# segment 17
+Wait 127
+Point 63 12    # point L
+Mines 148 152 50 80 223 243 120
+End
+
+# segment 18
+Wait 127
+Point 63 13    # point M
+Lights 32:1 80:2
+UfosA 64 64 64 64
+UfosB 80 80 80
+Spinners 112 112 112
+End
+
+# segment 19
+Wait 127
+Point 63 14    # point N
+Lights 32:1
+UfosB 64 64 64
+End
+
+# segment 20
+Wait 64
+Point 62 15    # point P
+Lights 0:0
+UfosLeave 0
+End
+
+# segment 21
+SectorEnd $0125 $10 $FF $0999
+
+# segment 22
+Wait 127
+Craters 32 64 96
+Rocks 40 104
+End
+
+# segment 23
+Wait 127
+Point 63 16    # point Q
+Lights 63:1
+Craters 0 32 121
+Rocks 32 63
+UfosA 96 96
+UfosB 96 96
+End
+
+# segment 24
+Wait 127
+Point 63 17    # point R
+Lights 0:1
+UfosB 64 64 64 64
+Craters 72 104 118
+Rocks 118 126
+End
+
+# segment 25
+Wait 127
+Point 63 18    # point S
+Lights 0:1
+UfosA 63 63 100 100
+UfosB 63 63
+End
+
+# segment 26
+Wait 127
+Point 63 19    # point T
+Lights 0:1 31:2
+Spinners 64 64 64
+End
+
+# segment 27
+Wait 63
+Point 62 20    # point U
+Lights 31:0
+UfosLeave 0
+End
+
+# segment 28
+SectorEnd $0125 $10 $00 $0999
+
+# segment 29
+Wait 127
+Lights 88:2
+Craters 32 90 110
+Rocks 64 80 97
+Tanks 120
+End
+
+# segment 30
+Wait 127
+Point 63 21    # point V
+Craters 30 50 70
+Tanks 90 110
+End
+
+# segment 31
+Wait 127
+Point 63 22    # point W
+Craters 20 120
+Tanks 35 65 95
+End
+
+# segment 32
+Wait 127
+Point 63 23    # point X
+Lights 31:2
+Spinners 63 63 63
+Craters 30 50 73
+Rocks 73 100
+End
+
+# segment 33
+Wait 127
+Point 63 24    # point Y
+Lights 0:1 88:3
+UfosLeave 0
+Craters 10 30 96 113
+Tanks 50 93 123
+UfosA 32 32 32 32
+UfosB 64 64 64 64
+Spinners 126 126 126 120
+End
+
+# segment 34
+Wait 63
+Point 62 25    # point Z
+UfosLeave 31
+End
+
+# segment 35
+SectorEnd $0140 $20 $00 $0999
+
+# segment 36
+Word $BB07
