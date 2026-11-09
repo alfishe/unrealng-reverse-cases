@@ -25,11 +25,13 @@ ScoreShot:
 ; printed with "=" and the total (TallyTermTotal $9A1A).
 ;
 ; The count: TallyPitch $9B34 = 1200, step DE = ShotScore / 64 + 1 (ShotScore x
-; 4, high byte, plus 1 with the carry); up to 45 frames each moves one step
-; from ShotScore into the player's score (AddScoreStep $99C1, printed with a
-; beep), then the remainder in one go and the rest of the 45 frames waited.
-; Then ClearMessageRows, DrawPottedRow $9AB5, ShotsLeft = ShotsForFrame $9BE6,
-; wait 5 frames.
+; 4, high byte, plus 1 with the carry); one step a frame moves DE from
+; ShotScore into the player's score (AddScoreStep $99C1, printed with a beep)
+; while at least DE is left (up to 63 steps; B = 45 is only counted down, never
+; tested in the loop), then the remainder in one go, then the rest of the 45
+; frames waited if any (w1's longest: 37 steps, frames 8456-8493). Then
+; ClearMessageRows, DrawPottedRow $9AB5, ShotsLeft = ShotsForFrame $9BE6, wait
+; 5 frames.
 ;
 ; Returns at once when nothing was potted. Witness: AddScoreStep w1 287 calls
 ; (frames 1329-10175), p2 38, v1 72; TallyTermPlus (a double pot) w1, f1, v1
@@ -146,6 +148,10 @@ TallyEndWait:
 ; / 1. The beep: BEEPER with HL = TallyPitch, DE = 6000 / TallyPitch cycles
 ; (1200: about 356 Hz, 5 cycles, 14 ms), a tick that rises in pitch step by
 ; step; TallyPitch - 10 unless it would go below zero. w1 287 runs.
+;
+; The tick's cycles are 6000 / TallyPitch (by subtraction), so every tick lasts
+; about 14 ms whatever its pitch; it starts after the frame's HALT and ends
+; before the next interrupt: no interrupt lost (w1 287 ticks, f1 27; docs 9.4).
 AddScoreStep:
   LD A,(CurrentPlayer)
   DEC A

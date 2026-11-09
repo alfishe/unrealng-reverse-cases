@@ -37,6 +37,10 @@
 ; once in seven ticks. If EventCount reached 7 the whole pass runs again
 ; ($86FB); no recording took that jump (the counts of $86C1 and $86FD are equal
 ; in every build). Ends with CALL $8304.
+;
+; In w1 the break (frames 1085-1254) has 159 ticks for 168 interrupts: no tick
+; in every second frame 1156-1172, after the contacts of frames 1150-1153
+; (tools/physics_model.py, docs 10.1).
 PhysicsTask:
   XOR A
   LD (EventCount),A

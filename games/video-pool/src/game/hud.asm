@@ -172,7 +172,8 @@ UpBlinkPrint:
   RET
 
 ; With one shot left: alternate "last  " / "  shot" in place of "shots"; at the
-; shot's start put "shots" and the count back
+; shot's end (StopShotTasks, LastShotBlink = $FF) put "shots" and the count
+; back
 ;
 ; A task added by StartAim $8425 with period 25, removed by $8483, which calls
 ; it once with LastShotBlink $9B32 = $FF. Returns at once unless ShotsLeft

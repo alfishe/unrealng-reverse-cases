@@ -176,8 +176,9 @@ python3 tools/shot_bot.py --plan tests/plans/w1.txt --work work/runs/w1     # th
 python3 $RS build --work work/runs/w1                                         # L1 of the recording
 ```
 
-Found: six recordings; every play recording ends with "replay matches the searched line" (the bot's log
-`work/stage1/lab/NAME.out`) and its input script is in `tests/inputs/`. The exploration labs `x2`-`x6`
+Found: six recordings in stage 1 (`c1` and the play recordings `w1`, `f1`, `p2`, `v1`, `m1`), two more in stage 2
+(`j1`, `e1`) and one experiment of the writers (`f1c`); every bot recording ends with "replay matches the searched
+line" (the bot's log `work/stage1/lab/NAME.out`) and its input script is in `tests/inputs/`. The exploration labs `x2`-`x6`
 (`tests/plans/x*.txt`, `work/lab/`) found the keys and the bot's method; they are labs, not recordings.
 
 | Recording | Frames | Input | Reaches |
@@ -190,6 +191,27 @@ Found: six recordings; every play recording ends with "replay matches the search
 | `m1` | 8368 | `tests/inputs/m1.txt` | the attract sequence (logo, the signature written, "press any key"), every menu option but `i` / `j`: cursor joystick, the variations page, redefine keys (Q / W / P) and back, the editor (entered, cursor moves, fire, BREAK), small pockets and a shot on them, BREAK to the menu |
 | `j1` | 3850 | `tests/inputs/j1.txt` | stage 2: menu J (Kempston), the stick left and fire, a shot; BREAK; menu I (Interface 2), keys 6 and 0, the same shot; BREAK (no `ready` step: its probe holds SPACE, not fire with a joystick) |
 | `e1` | 1368 | `tests/inputs/e1.txt` | stage 2: the editor (menu E at 620): the cursor right onto ball 1, fire picks it, left 20 frames, fire puts it down at x 170, the cursor up onto "play", fire, the shot with SPACE (keyboard again) |
+| `f1c` | 4600 (replayed) | `work/docs/vpC/f1-cheat.txt` | the experiment of doc 10.10 (vpC, not a bot recording): `f1`'s script with CAPS SHIFT + SPACE + 1 + 0 held at frame 500; InfiniteLives `$B8C4` flips at frame 510 and the lives stay 3 through the cue-ball pot and the shots running out (LoseLife `$9754` goes straight to NextTurn) |
+
+The recordings' files. Only `c1` has a TTD recording (`work/stage1/c1/session.ttd`). The stage-1 bot recordings
+(`w1`, `f1`, `p2`, `v1`, `m1`) and stage 2's `j1` and `e1` were kept as their input scripts, their L1 builds
+(`work/runs/NAME/l1.json`, read by `case.json`'s `read_builds`) and a few 200-frame traces (`work/runs/w1/traces`);
+`work/runs/NAME` has no `session.ttd`. The writers rebuilt what they needed: each replayed an input script from
+`work/snaps/entry.z80` on its own muted instance with the TTD recording on (the replays are deterministic: `w1`
+ends with "vp 002700" in the hall of fame and matches the stage-1 screenshots pixel for pixel at frames 1060, 3990,
+12 500 and 13 300, and the stage-1 trace of frames 1070-1100), read it, and stopped the instance:
+
+```bash
+. work/env.sh
+python3 work/docs/vpA/replay.py --inputs tests/inputs/w1.txt --work work/docs/vpA/w1 --port-base 34500    # docs 01-04: w1, v1
+python3 work/docs/vpB/replay.py --inputs tests/inputs/w1.txt --work work/docs/vpB/w1 --port-base 34750 --frames 13800   # docs 05, 06, 08: w1, m1
+python3 work/docs/vpC/replay.py --inputs tests/inputs/w1.txt --work work/docs/vpC/w1 --port-base 34925 --to 12100      # docs 07, 10: w1, v1, f1c
+python3 work/docs/vpD/replay.py --inputs tests/inputs/w1.txt --work work/docs/vpD/w1 --port-base 35100                 # docs 09, 14: w1, f1, e1
+```
+
+Doc 04's single interrupts were cut offline from the stage-1 traces (`work/docs/vpA/slice_trace.py`), so no
+recording was needed there. The replays' recordings are gigabytes and were not kept; each work folder keeps its
+`session.json` and the traces cut from it.
 
 Every shot, foul, pot and message plays its sound through the foreground loop `$8069` or BEEPER (section 1), so
 each play recording holds the game's sounds; none was played aloud.
@@ -286,5 +308,36 @@ The variations (`v1`):
 ![v1 frame 2550: variation 2 chosen](docs/img/play/v1-2550-variation2.png)
 ![v1 frame 3100: variation 2, a wrong pocket](docs/img/play/v1-3100-wrong-pocket.png)
 ![v1 frame 3250: the score 1x5x3x10=150](docs/img/play/v1-3250-score-150.png)
+
+All 56 files of `docs/img/play` are above. The documents' other pictures are figures drawn from these recordings
+and the replays by the case's `tools/fig_*.py` (each command under its figure).
+
+### 6.2 The animations
+
+Every animation of the documents (20 GIFs), the recording it shows and its frames. The routine animations are also
+linked from doc 12; each document gives the full command under its animation.
+
+| File | Document | Recording | Frames |
+| --- | --- | --- | --- |
+| `docs/img/routines/TurboLdBytes.gif` | 3.5 | `c1` (`work/docs/vpA/c1`) | 200-5640, a picture every 60 frames |
+| `docs/img/routines/RunTasks.gif` | 4.5 | `w1` stage-1 trace, cut to one interrupt | 1070, T 0-18 500 |
+| `docs/img/routines/Im2Handler.gif` | 4.8 | `w1` stage-1 trace, cut to one interrupt | 4373 T 0 to 4374 T 6000 |
+| `docs/img/routines/AimCursorDraw.gif` | 5.5 | `w1` replay (`work/docs/vpB/w1`) | 884-926 |
+| `docs/img/routines/AimPower.gif` | 5.6 | `w1` replay (`work/docs/vpB/w1`) | 1038-1082 |
+| `docs/img/routines/NameEntry.gif` | 5.7 | `w1` replay (`work/docs/vpB/w1`) | 13 090-13 372, every 2 frames |
+| `docs/img/routines/DrawTable.gif` | 6.3 | `w1` replay (`work/docs/vpB/w1`) | 626-627 |
+| `docs/img/routines/DrawBall.gif` | 6.5 | `w1` replay (`work/docs/vpB/w1`) | 1090 |
+| `docs/img/routines/SignatureWrite.gif` | 6.7 (the pen) | `m1` replay (`work/docs/vpB/m1`) | 650-1230, every 4 frames |
+| `docs/img/routines/PenRender.gif` | 6.7 (the pen) | `m1` replay (`work/docs/vpB/m1`) | 900 |
+| `docs/img/routines/RackStep.gif` | 7.4 | `w1` replay (`work/docs/vpC/w1`) | 793-800 |
+| `docs/img/routines/RackBalls.gif` | 7.4 | `w1` replay (`work/docs/vpC/w1`) | 700-880, every 2 frames |
+| `docs/img/routines/MoveBall.gif` | 7.5 | `w1` replay (`work/docs/vpC/w1`) | 1112-1119 |
+| `docs/img/routines/PrintText.gif` | 8.1 | `w1` replay (`work/docs/vpB/w1`) | 624-625 |
+| `docs/img/routines/ScoreTally.gif` | 8.5 | `w1` replay (`work/docs/vpB/w1`) | 1262-1352 |
+| `docs/img/routines/SoundLoop.gif` | 9.2 | `w1` replay (`work/docs/vpD/w1`) | 1200 T 50 000 to 1204 T 0 |
+| `docs/img/routines/PocketOrCushion.gif` | 10.4 | `w1` replay (`work/docs/vpC/w1`) | 1196-1201 |
+| `docs/img/routines/BallContacts.gif` | 10.5 | `w1` replay (`work/docs/vpC/w1`) | 1117 |
+| `docs/img/routines/PhysicsTask.gif` | 10.7 | `w1` replay (`work/docs/vpC/w1`) | 1084-1256 |
+| `docs/img/uknc/ball-xor.gif` | 14.4 | none: drawn from `src/res` by `tools/fig_uknc.py anim` | one ball moved pixel by pixel |
 
 ## 7. Review

@@ -7,9 +7,11 @@
 ;
 ; Called by the end-of-shot task $8357 when the foul code $8E80 is set or the
 ; cue ball is off the table (game 4 at frames 6543-8811, w1 4, f1 4, p2 1, v1
-; 3). With $B8C4 <> 0 (a menu toggle, $B3A1) it goes straight to NextTurn
-; $97CD: no jingle, no life lost (known only from the code; no recording set
-; it).
+; 3). With $B8C4 <> 0 (the menu toggle $B3A1) it goes straight to NextTurn
+; $97CD: no jingle, no life lost. No recording of the case set it; the
+; experiment f1c (f1 with CAPS SHIFT + SPACE + 1 + 0 held at frame 500,
+; docs/10-gameplay-logic.md 10.10) flips it at frame 510 and keeps 3 lives
+; through two fouls.
 ;
 ; Lives $9F4E - 1; negative: GameOver $97A2. Else the leftmost life ball is
 ; XORed off: a cue ball sprite at x = $E8 - 24 n (n = the lives before the

@@ -6,12 +6,13 @@
 827E 86C0 shot and aim tasks
 86C1 8A87 physics, collisions
 8A88 8AE9 ball records
-8AEA 90F4 cushions, pockets
+8AEA 8B4D other player's balls
+8B4E 90F4 cushions, pockets
 90F5 9242 friction, scheduler
 9243 9F68 drawing, HUD, score
 9F69 A161 racking, messages
-A162 A1E3 data, read
-A1E4 A701 data, never read
+A162 A1E3 rack set 1
+A1E4 A701 rack sets 2-5
 A702 AC07 hall of fame code
 AC08 ACDC hall-of-fame table
 ACDD B22D hall-of-fame texts

@@ -1,11 +1,19 @@
 # Video Pool (Oxford Computer Publishing, 1985)
 
-State: in progress (phase 0 and stage 1).
+State: docs written, in review (2026-11-09): the tape's data blocks rebuilt byte for byte from the annotated
+source, 21 editable resources in `src/res`, docs 01-12 and 14 (13 documents, 74 mermaid diagrams, 47 figures, 56
+screenshots, 20 animations, 8 sound files), counted by:
+
+```bash
+ls docs/[0-9][0-9]-*.md | wc -l; cat docs/[0-9][0-9]-*.md | grep -c '^```mermaid'
+find docs/img -name '*.png' -not -path 'docs/img/play/*' | wc -l; find docs/img/play -name '*.png' | wc -l
+find docs/img -name '*.gif' | wc -l; find docs -name '*.wav' | wc -l
+```
 
 | | |
 | --- | --- |
 | Machine | 48K |
-| Profile (AGENTS.md 4.0) | sports and physics simulation (pool: ball motion and friction, collisions, cushions and pockets, the aiming cursor and the power bar, three rule variations, a table editor, a hall of fame); sprites over a static table (the balls "flicker-free": the erase strategy is for stage 2); a turbo loader with a checksum (no cipher, no packer found so far); sound and the engine's details as stages 1 and 2 find them; port target UKNC (doc 14, [TODO.md](../../TODO.md)) |
+| Profile (AGENTS.md 4.0) | sports and physics simulation: pool on a 48K with the beeper, no main loop (a 25-slot scheduler in the IM 2 interrupt, the foreground only plays the ball, cushion and pocket tones; doc 4); the balls drawn with XOR from 8 pre-shifted copies of each, no mask, over a table of XOR lines (doc 6); the physics in 8.8 fixed point with a friction table, self-patching jaws and a table-driven ball-ball exchange, matched byte for byte by a Python model over 475 frames of the `w1` break (doc 10.6); each shot set up through the ROM's calculator (SQR, about 437 000 T, six interrupts lost; doc 4); no computer player and no randomness but the R register (docs 7, 10); three rule variations, two players, a table editor, a hall of fame, hidden infinite-lives keys (doc 10.10); a turbo loader with a 16-bit sum, no cipher, no packer (doc 3); the port to the UKNC planned in [doc 14](docs/14-porting-to-uknc.md) ([TODO.md](../../TODO.md)) |
 | Authors | James Hutchby (the menu: "ocp 1984, written by j.hutchby"; ZXDB 5566 dates the release 1985) |
 | Release | ZXDB 5566. `orig/VideoPool.tzx.zip` is the original release (the TZX's archive info: "Original", "TZXed by Andrew Barker For Tony Barnett"): a BASIC loader, a 256-byte turbo loader at `$F000` and the game, 25 000 bytes at `$8000`, in a turbo block |
 | Original | `orig/VideoPool.tzx.zip` (md5 `90b667ceb1cc91c7b6d798b3d5d6cf79`, SHA-1 `849f27bd3f53af04656738d839470cf4a1d59b34`): `Video Pool.tzx` (md5 `01b54459c0217da4df7c2b21529f9931`, SHA-1 `43213180b893b96a5ee103db027c8b9985325130`) |

@@ -88,6 +88,7 @@ $8061 ; the aim tasks, the cursor and the power bar
 $8069 c SoundLoop ; The foreground: wait for BREAK or a sound request, play it on the beeper
 > The whole foreground of play (w1 6 290 430 passes, frames 877-11 615). Loops reading InputState $827C (bit 5 BREAK: BreakRestart) and SoundRequest $827D (0: none). A request 1, 2 or 3 picks B = the half period in passes of SoundDelay (37 T a pass) and C = the number of cycles: 1 = 20 / 20 (a ball against a ball, written at $8993), 2 = 30 / 12 (a cushion, $8DC0 / $8DF4 / $8E28), 3 = 250 / 6 (a pocket, $8C17). Each cycle is OUT ($FE) $17 (speaker bit 4 on, border 7), the delay, OUT $07 (off), the delay. At the end it clears SoundRequest itself.
 > The tone stops at once when a task sets SoundRequest to 0 while it plays (SoundAbort: border back to 7): StopShotTasks $8483 and ShotReset $84C7 clear it. A new non-zero request during a tone does not restart it; the tone runs on and its final clear drops the new request. The interrupt stays on while it plays, so each half period also holds the time of any task run in it. w1: 1962 cycles played; SoundAbort taken 4 times.
+> A request written while a tone plays is lost (SoundDelay tests only for zero; the tone's end clears it); of two writes in one tick the last wins. w1: 178 requests, 141 tones, 21 lost, 16 replaced (docs 9.3).
 $806C SoundTestBreak ; BREAK?
 $8071 SoundWait ; no request: loop
 $8077 ; request 1: B = 20, C = 20
@@ -216,6 +217,7 @@ $8348 DrawListSortNext
 $8357 c ShotEnd ; The end-of-shot task: frame cleared, or all balls still: foul, shots, next aim
 > Task of MovingTasks (w1 2860 runs). If no object ball is on the table (record +13 bit 7 clear for balls 1-6): StopShotTasks, WaitMessages, the score $98F9, $9754 when the foul flag $8E80 is set or the cue ball is off; erase the cue ball; $9BB8, the racking $9F69 and StartAim (the next frame; witness w1 frames 1-3 won).
 > Otherwise (ShotEndStill) it returns while any ball has a bit of $70 in +13 (moving, moved or potted). When all are still: StopShotTasks and WaitMessages; then, if no foul and the cue ball is on the table: no ball touched ($89BB = 0) is a foul ($8E80 = 1, ShotFoul); a ball touched but none potted (record +12 = 0 for all six) costs a shot ($9F4D - 1; at 0 the same foul flag). Then the score $98F9, the foul / life code $9754 if $8E80 or the cue ball is off, $93FF (put the cue ball back) when the cue ball is off and lives $9F4E are left, $9DC3 with A = 3, and StartAim.
+> ScoreTally runs before LoseLife, so a foul pot still scores: v1 frames 3045-3375, ball 5 into pocket 3 in variation 2, 150 paid, then a life lost (docs 10.9).
 $8362 ShotEndBallsLeft ; any object ball left on the table?
 $8385 ShotEndFoul ; a foul or the cue ball potted
 $8388 ShotEndCueOff ; the cue ball off the screen
@@ -244,6 +246,7 @@ $847D WaitMessagesHalt ; one frame, one step of the message
 
 $8483 c StopShotTasks ; Remove MovingTasks and the two HUD tasks, silence the sound
 > RemoveTasks MovingTasks; RemoveTask $96E6 and $970E, each run once more with $9B31 / $9B32 = $FF (their final state); SoundRequest = 0. w1 21 calls.
+> The clear ($84A6): 4 of its 21 clears in w1 come while a pocket tone plays (frames 2917, 3895, 6745, 10068): the tone is frozen with the foreground until the end-of-shot sequence returns, then aborted ($80A8; docs 9.3).
 
 $84AA b AimTasks 3 ; The aim's tasks, period 0 each: power, power bar, cursor move, cursor draw, input
 > (period, routine) triples, $FF ends. Installed by StartAim, removed by AimPower when the shot is played. AimPower $8506, the power bar $934D, AimCursorMove $8546, AimCursorDraw $85EB, ReadInput $8106.
@@ -319,6 +322,7 @@ $86C1 c PhysicsTask ; The physics task: move every rolling ball one tick
 > A task of the list $84BA (the balls moving, period 0) and of the editor's list $C518, reached through the scheduler's JP (HL), so no CALL counts it: the first instruction ran game 290, w1 2860, f1 742, p2 1180, v1 822, m1 313 times (frames game 6447-8658, w1 1085-11615).
 > Clears EventCount $8B4D, then for each of the seven records (IX from BallRecords $8A88, 14 bytes a step, B = 7..1) calls MoveBall $8701 when +13 has bit 7 (on the table) and bit 6 (moving) set and bit 5 (potted) clear: 2030 records looked at and 286 moves in game, 20020 / 5644 in w1.
 > Then advances FrictionTurn $8B4C (0..6, wrapping: $86F2 ran 41 of 290 times in game, 398 of 2860 in w1), so each ball gets its friction steps recomputed once in seven ticks. If EventCount reached 7 the whole pass runs again ($86FB); no recording took that jump (the counts of $86C1 and $86FD are equal in every build). Ends with CALL $8304.
+> In w1 the break (frames 1085-1254) has 159 ticks for 168 interrupts: no tick in every second frame 1156-1172, after the contacts of frames 1150-1153 (tools/physics_model.py, docs 10.1).
 $86CB PhysicsBallLoop ; IX = the record, B = 7 - the ball number
 $86E3 PhysicsNextBall
 $86F3 PhysicsTurnStore ; FrictionTurn = (FrictionTurn + 1) mod 7
@@ -729,7 +733,7 @@ $96E6 c UpBlinkTask ; Blink the current player's "1up" / "2up": print it or its 
 $96F8 UpBlinkPrint1
 $96FA UpBlinkPlayer2
 $9703 UpBlinkPrint
-$970E c ShotsBlinkTask ; With one shot left: alternate "last  " / "  shot" in place of "shots"; at the shot's start put "shots" and the count back
+$970E c ShotsBlinkTask ; With one shot left: alternate "last  " / "  shot" in place of "shots"; at the shot's end (StopShotTasks, LastShotBlink = $FF) put "shots" and the count back
 > A task added by StartAim $8425 with period 25, removed by $8483, which calls it once with LastShotBlink $9B32 = $FF. Returns at once unless ShotsLeft $9F4D = 1. LastShotBlink 0 prints HudLast $9740, 1 HudShot $974A, then flips 0 / 1; $FF prints HudShots and the count (PrintHudNumber 3) and sets 0. game 72 runs, w1 308; the $FF branch only in f1 (once).
 $9723 ShotsBlinkPrint
 $9730 ShotsBlinkRestore
@@ -743,7 +747,7 @@ $974E ; "  shot"
 
 @module gameover ; A life lost, the foul jingle, GAME OVER, the hi score and the hall of fame hand-over
 $9754 c LoseLife ; A foul or no ball potted with the last shot: the foul jingle, one life less, erase one life ball; at none left GAME OVER
-> Called by the end-of-shot task $8357 when the foul code $8E80 is set or the cue ball is off the table (game 4 at frames 6543-8811, w1 4, f1 4, p2 1, v1 3). With $B8C4 <> 0 (a menu toggle, $B3A1) it goes straight to NextTurn $97CD: no jingle, no life lost (known only from the code; no recording set it).
+> Called by the end-of-shot task $8357 when the foul code $8E80 is set or the cue ball is off the table (game 4 at frames 6543-8811, w1 4, f1 4, p2 1, v1 3). With $B8C4 <> 0 (the menu toggle $B3A1) it goes straight to NextTurn $97CD: no jingle, no life lost. No recording of the case set it; the experiment f1c (f1 with CAPS SHIFT + SPACE + 1 + 0 held at frame 500, docs/10-gameplay-logic.md 10.10) flips it at frame 510 and keeps 3 lives through two fouls.
 > Lives $9F4E - 1; negative: GameOver $97A2. Else the leftmost life ball is XORed off: a cue ball sprite at x = $E8 - 24 n (n = the lives before the loss: 3 -> x 160), y 20; then NextTurn.
 $9780 c FoulJingle ; Play the foul jingle with the tasks stopped (WaitFrame $80DE with FoulJingleNotes)
 > LoseLife $9754 only (game 4, w1 4, f1 4, p2 1 at frame 1668, v1 3).
@@ -793,7 +797,7 @@ $98F9 c ScoreShot ; Run ScoreTally with the tasks stopped (WaitFrame $80DE)
 > From the end-of-shot task $8357 twice per shot end (game 4, w1 21, f1 9, p2 6, v1 4, m1 1).
 $98FF c ScoreTally ; Score the balls potted in the last shot (+12 <> 0): print each term, the total, count it into the score, refill the shots
 > ShotScore $9B2C = 0. Ball 1-6 with a pocket number in +12: the first sets PotBall $9B2F and PotMultiplier $9B2E (PocketTurn $9F43 + pocket, 7..12 minus 6), waits 15 frames and clears the message rows (unless MessageStep is $4F); every further one first prints the pending term with "+" (TallyTermPlus $9A01), waits, clears, takes its own ball and multiplier. The last term is printed with "=" and the total (TallyTermTotal $9A1A).
-> The count: TallyPitch $9B34 = 1200, step DE = ShotScore / 64 + 1 (ShotScore x 4, high byte, plus 1 with the carry); up to 45 frames each moves one step from ShotScore into the player's score (AddScoreStep $99C1, printed with a beep), then the remainder in one go and the rest of the 45 frames waited. Then ClearMessageRows, DrawPottedRow $9AB5, ShotsLeft = ShotsForFrame $9BE6, wait 5 frames.
+> The count: TallyPitch $9B34 = 1200, step DE = ShotScore / 64 + 1 (ShotScore x 4, high byte, plus 1 with the carry); one step a frame moves DE from ShotScore into the player's score (AddScoreStep $99C1, printed with a beep) while at least DE is left (up to 63 steps; B = 45 is only counted down, never tested in the loop), then the remainder in one go, then the rest of the 45 frames waited if any (w1's longest: 37 steps, frames 8456-8493). Then ClearMessageRows, DrawPottedRow $9AB5, ShotsLeft = ShotsForFrame $9BE6, wait 5 frames.
 > Returns at once when nothing was potted. Witness: AddScoreStep w1 287 calls (frames 1329-10175), p2 38, v1 72; TallyTermPlus (a double pot) w1, f1, v1 once each.
 $990B TallyFindFirst
 $991E TallyFirstBall
@@ -810,6 +814,7 @@ $99AF TallyDone
 $99BD TallyEndWait
 $99C1 c AddScoreStep ; Add DE to the current player's score, print it, beep at TallyPitch and lower the pitch by 10
 > CurrentPlayer 1: ScorePlayer1 $9F45, 2: ScorePlayer2 $9F47; PrintHudNumber 0 / 1. The beep: BEEPER with HL = TallyPitch, DE = 6000 / TallyPitch cycles (1200: about 356 Hz, 5 cycles, 14 ms), a tick that rises in pitch step by step; TallyPitch - 10 unless it would go below zero. w1 287 runs.
+> The tick's cycles are 6000 / TallyPitch (by subtraction), so every tick lasts about 14 ms whatever its pitch; it starts after the frame's HALT and ends before the next interrupt: no interrupt lost (w1 287 ticks, f1 27; docs 9.4).
 $99D0 AddScorePlayer2
 $99D7 AddScorePrint
 $99E6 AddScoreCycles
@@ -894,8 +899,8 @@ $9C93 ; "PLAYER 1"
 $9C9B PlayerBanner2 ; row 9, col 8, attr $E0, 8: "PLAYER 2"
 $9C9F ; "PLAYER 2"
 @res text/PlayerBannerTexts.bin
-$9CA7 c LastShotBeepTask ; With one shot left: a short beep (BEEPER HL 500, DE 10: about 413 Hz, 24 ms), then DI (it runs in the interrupt)
-> A task added by StartAim $8425 with period 25, removed by $8506 at the shot. 58 runs in game, w1 179 (only the runs with ShotsLeft = 1 beep). BEEPER ends with EI; the DI keeps the interrupt handler closed.
+$9CA7 c LastShotBeepTask ; With one shot left: a short beep (BEEPER HL 500, DE 10: 825 Hz, 12 ms; f1 measured 825.6 Hz, 13 beeps, docs/09-sound.md 9.4), then DI (it runs in the interrupt)
+> A task added by StartAim $8425 with period 25, removed by $8506 at the shot. 58 runs in game, w1 179 (none beeped: no aim of w1 had one shot left), f1 13 beeps. BEEPER ends with EI; the DI keeps the interrupt handler closed.
 $9CB7 c MessagesTask ; Step through the foul message: clear, print, hold about 75 steps, clear, redraw the potted row
 > MessageStep $9F50: 0: start (step 1) only when the foul code $8E80 is set; 1: ClearMessageRows; 2: the text by $8E80 (1 FOUL SHOT!, 2 WRONG ORDER!, 3 WRONG POCKET!); 3-$4D: wait; $4E: ClearMessageRows; $4F: DrawPottedRow; $50: stays. Each step but the last adds 1 (MessageNextStep pushed as the return address). A task of the balls-moving list $84BA (period 0) and called by $8457 once a frame after the balls stop until step $50. game 606 runs (320 steps); the texts: game 4, w1 4, f1 3, p2 1, v1 3 (WRONG ORDER / WRONG POCKET in v1 at frames 1471 / 3100).
 $9CDE MessagePrint
@@ -1695,11 +1700,11 @@ $B357 MenuControlSet
 $B36A MenuOtherKeys ; "B" begin, "V" variations, "E" the editor, "R" redefine; another key: with a joystick, $8106 fire begins
 $B38E c WaitNoKey ; Wait until no key is held; flip InfiniteLives if CAPS SHIFT, SPACE, 1 and 0 are held
 > A frame each: KEY-SCAN, K-TEST; returns when no key. While a key is held TestCheatKeys $B3B8 is asked: all four held complements InfiniteLives $B8C4 and waits for the release ($B3A8).
-> Witness: game 73, w1 14, f1 14, p2 24, v1 36, m1 202 calls; $B3B8 asked game 70, m1 176 times; the flip ($B3A1) never.
+> Witness: game 73, w1 14, f1 14, p2 24, v1 36, m1 202 calls; $B3B8 asked game 70, m1 176 times; the flip ($B3A1) never in the case's recordings; in the experiment f1c at frame 510 (docs 10.10).
 $B39C WaitNoKeyHeld
 $B3A8 WaitNoKeyRelease
 $B3B8 c TestCheatKeys ; Z when CAPS SHIFT, SPACE, 1 and 0 are all held
-> ORs bit 0 of the half-rows $FEFE (CAPS SHIFT), $7FFE (SPACE), $F7FE (1) and $EFFE (0) through IN A,(C): an IN from port $FE (doc 2.1 says there is none: wrong, see also $8216 and $822E). Witness: game 70, w1 12, f1 12, p2 21, v1 30, m1 176.
+> ORs bit 0 of the half-rows $FEFE (CAPS SHIFT), $7FFE (SPACE), $F7FE (1) and $EFFE (0) through IN A,(C): an IN from port $FE (see also $8216 and $822E; doc 2.1 lists the reads). Witness: game 70, w1 12, f1 12, p2 21, v1 30, m1 176.
 $B3D2 c RedefineKeys ; "R": ask for the left, right and fire keys, store their K-TEST codes
 > RedefinePrompt $B3F3 with PromptLeft $B407, PromptRight $B426, PromptFire $B445 into LeftKey $B8BE, RightKey $B8BF, FireKey $B8C0; ShowKeys; back to MenuKeys. Witness: m1 2 (frames 5462-5860, Q W P, then M, SYMBOL SHIFT, SPACE again; screens m1 frames 5550, 5860).
 $B3F3 c RedefinePrompt ; Print the prompt at HL, wait for no key, then for a key: A = its K-TEST code

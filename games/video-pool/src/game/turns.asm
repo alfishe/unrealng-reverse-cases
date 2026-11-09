@@ -237,12 +237,13 @@ PlayerBannerTexts:
 PlayerBanner2:
   INCBIN "res/text/PlayerBannerTexts.bin",$000C,12
 
-; With one shot left: a short beep (BEEPER HL 500, DE 10: about 413 Hz, 24 ms),
-; then DI (it runs in the interrupt)
+; With one shot left: a short beep (BEEPER HL 500, DE 10: 825 Hz, 12 ms; f1
+; measured 825.6 Hz, 13 beeps, docs/09-sound.md 9.4), then DI (it runs in the
+; interrupt)
 ;
 ; A task added by StartAim $8425 with period 25, removed by $8506 at the shot.
-; 58 runs in game, w1 179 (only the runs with ShotsLeft = 1 beep). BEEPER ends
-; with EI; the DI keeps the interrupt handler closed.
+; 58 runs in game, w1 179 (none beeped: no aim of w1 had one shot left), f1 13
+; beeps. BEEPER ends with EI; the DI keeps the interrupt handler closed.
 LastShotBeepTask:
   LD A,(ShotsLeft)
   DEC A

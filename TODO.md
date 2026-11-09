@@ -26,7 +26,7 @@ The porting document follows AGENTS.md section 4.0 "By port target". What it mus
 | --- | --- |
 | UKNC (Elektronika MS-0511) | the PDP-11 central CPU (K1801VM2) and the peripheral CPU that owns the video and sound; the three-plane video memory in the peripheral CPU's space, written through its ports or by a peripheral-CPU program; the channels between the two CPUs; which work runs on which CPU, and how they sync per frame |
 | BK-0010 / BK-0011M | the K1801VM1 at 3-4 MHz, no multiply; the 256x256 two-bit or 512x256 one-bit screen in main memory; the 32K or paged 128K budget; the beeper or AY add-on; the timer |
-| Soyuz-Neon (PK-11/16) | the K1801VM3 class CPU with multiply and the larger memory; its video modes and palette; what of the BK or UKNC plan carries over |
+| Soyuz-Neon (PK-11/16) | the CPU (to verify: this lead said K1801VM3 class with multiply; Video Pool's doc 14.9 found Cyclowiki, "Союз-Неон ПК-11/16" <https://cyclowiki.org/wiki/%D0%A1%D0%BE%D1%8E%D0%B7-%D0%9D%D0%B5%D0%BE%D0%BD_%D0%9F%D0%9A-11/16>, giving N1801VM2 / N1806VM2 class processors at 8 MHz, 1-4 MB of RAM; a second source decides) and the larger memory; its video modes and palette; what of the BK or UKNC plan carries over |
 
 ## Kit gaps
 

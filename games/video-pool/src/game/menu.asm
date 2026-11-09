@@ -232,7 +232,8 @@ MenuOtherKeys:
 ; and waits for the release ($B3A8).
 ;
 ; Witness: game 73, w1 14, f1 14, p2 24, v1 36, m1 202 calls; $B3B8 asked game
-; 70, m1 176 times; the flip ($B3A1) never.
+; 70, m1 176 times; the flip ($B3A1) never in the case's recordings; in the
+; experiment f1c at frame 510 (docs 10.10).
 WaitNoKey:
   HALT
   CALL KEY_SCAN
@@ -260,9 +261,9 @@ WaitNoKeyRelease:
 ; Z when CAPS SHIFT, SPACE, 1 and 0 are all held
 ;
 ; ORs bit 0 of the half-rows $FEFE (CAPS SHIFT), $7FFE (SPACE), $F7FE (1) and
-; $EFFE (0) through IN A,(C): an IN from port $FE (doc 2.1 says there is none:
-; wrong, see also $8216 and $822E). Witness: game 70, w1 12, f1 12, p2 21, v1
-; 30, m1 176.
+; $EFFE (0) through IN A,(C): an IN from port $FE (see also $8216 and $822E;
+; doc 2.1 lists the reads). Witness: game 70, w1 12, f1 12, p2 21, v1 30, m1
+; 176.
 TestCheatKeys:
   LD BC,$FEFE
   IN A,(C)

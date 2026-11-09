@@ -95,6 +95,10 @@ GameRestart:
 ; on and its final clear drops the new request. The interrupt stays on while it
 ; plays, so each half period also holds the time of any task run in it. w1:
 ; 1962 cycles played; SoundAbort taken 4 times.
+;
+; A request written while a tone plays is lost (SoundDelay tests only for zero;
+; the tone's end clears it); of two writes in one tick the last wins. w1: 178
+; requests, 141 tones, 21 lost, 16 replaced (docs 9.3).
 SoundLoop:
   LD A,(InputState)
 SoundTestBreak:

@@ -190,6 +190,10 @@ DrawListSortNext:
 ; foul flag). Then the score $98F9, the foul / life code $9754 if $8E80 or the
 ; cue ball is off, $93FF (put the cue ball back) when the cue ball is off and
 ; lives $9F4E are left, $9DC3 with A = 3, and StartAim.
+;
+; ScoreTally runs before LoseLife, so a foul pot still scores: v1 frames
+; 3045-3375, ball 5 into pocket 3 in variation 2, 150 paid, then a life lost
+; (docs 10.9).
 ShotEnd:
   LD IX,BallRecords
   LD DE,$000E
@@ -353,6 +357,10 @@ WaitMessagesHalt:
 ;
 ; RemoveTasks MovingTasks; RemoveTask $96E6 and $970E, each run once more with
 ; $9B31 / $9B32 = $FF (their final state); SoundRequest = 0. w1 21 calls.
+;
+; The clear ($84A6): 4 of its 21 clears in w1 come while a pocket tone plays
+; (frames 2917, 3895, 6745, 10068): the tone is frozen with the foreground
+; until the end-of-shot sequence returns, then aborted ($80A8; docs 9.3).
 StopShotTasks:
   LD DE,MovingTasks
   CALL RemoveTasks
