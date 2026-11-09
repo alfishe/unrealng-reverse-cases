@@ -355,7 +355,9 @@ case is done. There is no third round: the yield falls fast and the cost does no
 - One phase follows the next without a pause: when the source is identical, the writers start the same hour. Ask the
   owner only for real decisions, never "shall I go on".
 - Before launching writers, check that their port bases are free (`lsof -iTCP -sTCP:LISTEN`). A writer without an
-  emulator cannot draw animations.
+  emulator cannot draw animations. One instance takes six ports, B, B+100, ..., B+500 (WebAPI, CLI, MCP, GDB, DeZog,
+  ZRCP), so bases 200 apart collide: give the agents of one phase bases 10 apart in the same hundred (34500, 34510,
+  34520, ...) or at least 600 apart, and check all six ports of each.
 - Every writer brief lists, per document: the section 4 items, the profile items (section 4.0) and the animations
   (section 4). It says: each section lands with its figure, diagram and animation; no ASCII art; no link to an image
   that does not exist yet.
@@ -400,6 +402,8 @@ case is done. There is no third round: the yield falls fast and the cost does no
 | Moon Patrol: documents left as stubs for hours after the source was identical, then a question to the owner before starting them | the documents start the moment the source is identical; a stage boundary is no reason to stop |
 | Moon Patrol: writers told "prose first, figures after" wrote 2 700 lines with no picture and dangling image links | each section lands with its figure, diagram and animation in the same step |
 | Moon Patrol: a sprite drawn in `#` and `.` in a text block | pixels are pictures; no ASCII art anywhere |
+| Video Pool: the bot's recordings kept no `session.ttd`, the writers had to replay the input scripts to reopen them | every recording keeps its `session.ttd` (or one command that rebuilds it, named in WALKTHROUGH 6.0); stage 1 is not done without it |
+| Video Pool: writer port bases 200 apart (34500, 34700, 34900) overlapped, one instance takes B..B+500 | bases 10 apart in one hundred, or 600 apart (section 7) |
 | Moon Patrol: no animation at all, because a writer's ports were held by a foreign instance | the lead checks the port bases are free before launch; the animation minimum (section 4) is a gate |
 | Moon Patrol: figures in `docs/img/build/` were silently not committed (`**/build/` in `.gitignore`) | never name a folder `build`, `work` or `output` inside `docs/`; check `git status` shows every new image |
 | Moon Patrol: 8.4 frames a pass (with the bonus screens) reused as the play pass; numbers derived from it everywhere | a derived number carries its measure; recompute all of them when it changes |
