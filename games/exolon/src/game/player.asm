@@ -419,8 +419,9 @@ DrawPlayerSprite:
 ; 1, PlayerFrameShown = $FF (redraw). The round end $A8A5 calls it too, taking
 ; ScreenNumber from $FF to 0.
 ;
-; x2 (WALKTHROUGH 6.0): ScreenNumber 0 -> 5 at frames 751, 1481, 1771, 2421,
-; 2951, each when the player left the screen on the right.
+; x2 (WALKTHROUGH 6.0): NextScreen runs at frames 743, 1471, 1770, 2419 and
+; 2944 (ScreenNumber 0 -> 5), each when the player left the screen on the
+; right; the builds end about 9 frames later (751, 1481, 1771, 2421, 2951).
 NextScreen:
   LD (PlayerY),A
   LD (RestartY),A
@@ -651,10 +652,12 @@ XorShotDone:
 ; Once a pass from the main loop. SkipIfDying $9D78. X >= $76 (no room for a
 ; shot on the right): clears $7B98 (a byte past the inputs nobody reads) and
 ; returns. Fire ($7B96) up: FireHeld = 0. Fire held: FireHeld + 1, stopping at
-; $FF (the grenade $9208 throws at 15). A new press: FireHeld = 1; with
-; ammunition left: a beep ($7C26, B = $3C), Ammo - 1 (the ZXDB POKE 33646 at
-; $836E), the AY effect $C177, the HUD ($8E4F) and SpawnShot. In the
-; exoskeleton (SuitFrames $9ED8 not 0) a second shot 6 pixels lower.
+; $FF (the grenade $9208 throws at 15; FireHeld stays 15 or more while fire is
+; held, so ThrowGrenade throws again each time GrenadeTimer is 0). A new press:
+; FireHeld = 1; with ammunition left: a beep ($7C26, B = $3C), Ammo - 1 (the
+; ZXDB POKE 33646 at $836E), the AY effect $C177, the HUD ($8E4F) and
+; SpawnShot. In the exoskeleton (SuitFrames $9ED8 not 0) a second shot 6 pixels
+; lower.
 FireControl:
   CALL AbortIfDying
   LD A,(PlayerX)
@@ -778,7 +781,7 @@ FireHeld:
 ; one's); otherwise X + direction and redrawn.
 MoveShots:
   CALL ShotsHitBalls
-  CALL ShellsVsShots
+  CALL GunShotsVsShots
   CALL AliensVsShots
   CALL ForceFieldVsShots
   LD HL,ShotList

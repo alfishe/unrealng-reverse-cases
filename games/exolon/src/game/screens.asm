@@ -48,7 +48,7 @@ BuildScreen:
   CALL FillOpenMap
   CALL ClearBlockMap
   CALL ClearShots
-  CALL ClearMissileList
+  CALL ClearShellList
   CALL ArmMines
   CALL ClearDebris
   CALL ResetTurretList

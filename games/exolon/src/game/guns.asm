@@ -162,21 +162,21 @@ GunShots:
   DEFB $00,$00,$00
   DEFB $FF                ; the end mark
 
-; Tests every gun shell against the player's shots; a hit shell is destroyed
+; Tests every gun shot against the player's shots; a hit gun shot is destroyed
 ;
 ; Called by the shot step $83DD each pass (c1: 16 303 entries, five a main loop
 ; pass with its four other calls). Walks the shell list $9E18 (3 bytes a shell:
 ; X, Y, the step; $FF ends; a step of 0 is a free record), skips the free ones,
 ; and asks $9B82 whether one of the player's shots ($845F) overlaps the shell
-; (A not 0: hit, the shot removed); then DestroyShell. Ends when E (the X byte)
-; has bit 7 set, the list's $FF.
+; (A not 0: hit, the shot removed); then DestroyGunShot. Ends when E (the X
+; byte) has bit 7 set, the list's $FF.
 ;
 ; The shells are launched by the guns of tile 11 ($9D7F) and moved left by
-; $9DD6 (not in this range). Warp runs: DestroyShell 174 times in 27 runs, none
-; in c1 (the random play never shot one).
-ShellsVsShots:
+; $9DD6 (not in this range). Warp runs: DestroyGunShot 174 times in 27 runs,
+; none in c1 (the random play never shot one).
+GunShotsVsShots:
   LD HL,GunShots
-ShellsVsShotsLoop:
+GunShotsVsShotsLoop:
   LD E,(HL)               ; E = X; bit 7: the list's end
   BIT 7,E
   RET NZ
@@ -186,20 +186,21 @@ ShellsVsShotsLoop:
   LD A,(HL)
   INC HL
   OR A                    ; the step 0: a free record
-  JR Z,ShellsVsShotsLoop
+  JR Z,GunShotsVsShotsLoop
   CALL BallShot           ; A = 1: a shot of $845F hit (X, Y) = DE
   OR A
-  CALL NZ,DestroyShell
-  JR ShellsVsShotsLoop
+  CALL NZ,DestroyGunShot
+  JR GunShotsVsShotsLoop
 
-; Removes the shell at DE: XOR-erased, its record freed, an explosion there,
+; Removes the gun shot at DE: XOR-erased, its record freed, an explosion there,
 ; sound 8, 50 points
 ;
 ; In: DE = the shell's X, Y; HL = the record's next byte (the shell's step +
 ; 1). XorSprite $92FB draws sprite 8 (the shell) over itself, the step byte
 ; goes to 0, $981D starts an explosion at DE, $C155 asks the AY for effect 8,
-; and AddScore adds Points50 (50). Callers: ShellsVsShots, ShellsVsPlayer.
-DestroyShell:
+; and AddScore adds Points50 (50). Callers: GunShotsVsShots, GunShotsVsPlayer:
+; a gun shot that hits the player pays 50 too (w/006 frame 243 to 244).
+DestroyGunShot:
   LD A,$08
   CALL DrawSmallSprite
   DEC HL                  ; the shell's step byte: 0 frees the record
@@ -210,16 +211,16 @@ DestroyShell:
   LD DE,Points50+$0005    ; the 6 digits ending at $AD9C: 000050
   JP AddScore
 
-; Tests every gun shell against the player: a shell that touches him is
+; Tests every gun shot against the player: a gun shot that touches him is
 ; destroyed and kills him
 ;
-; Main loop (c1: 3260 entries, one a pass). The same walk as ShellsVsShots;
+; Main loop (c1: 3260 entries, one a pass). The same walk as GunShotsVsShots;
 ; $9BD6 with B = 8, C = 4 (the shell's size) answers 1 when the shell overlaps
-; the player ($82F5, $82F6). Then DestroyShell, sound 8 again and KillPlayer
+; the player ($82F5, $82F6). Then DestroyGunShot, sound 8 again and KillPlayer
 ; $9CAF (which does nothing while the player is dying or immune: $9CE2, $768D).
-ShellsVsPlayer:
+GunShotsVsPlayer:
   LD HL,GunShots
-ShellsVsPlayerLoop:
+GunShotsVsPlayerLoop:
   LD E,(HL)
   BIT 7,E
   RET NZ
@@ -229,12 +230,12 @@ ShellsVsPlayerLoop:
   LD A,(HL)
   INC HL
   OR A
-  JR Z,ShellsVsPlayerLoop
+  JR Z,GunShotsVsPlayerLoop
   LD BC,$0804             ; the shell is 4 wide and 8 high in the units of
                           ; $9BD6
   CALL PlayerContact
   OR A
-  JR Z,ShellsVsPlayerLoop
-  CALL DestroyShell
+  JR Z,GunShotsVsPlayerLoop
+  CALL DestroyGunShot
   CALL PlaySfxExplosion
   JP KillPlayer

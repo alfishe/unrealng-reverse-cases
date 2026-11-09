@@ -105,7 +105,7 @@ MainLoop:
   CALL ShellsHitPlayer
   CALL BallsTouchPlayer
   CALL TrapContact
-  CALL ShellsVsPlayer
+  CALL GunShotsVsPlayer
   CALL AliensVsPlayer
   CALL PauseKey           ; the pause key 3 ($AD21, PauseKey)
   CALL AbortKeys

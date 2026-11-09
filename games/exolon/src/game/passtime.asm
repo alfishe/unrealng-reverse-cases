@@ -111,9 +111,9 @@ ExoSuit:
 
 ; Puts a sparkle of 20 passes at DE into the first free record of SparkleList
 ;
-; In: DE = X, Y (pixels). Called four times by the teleport $98BA: at both
-; booths, when the player leaves one and when he arrives at the other. Full
-; list: nothing. x2: 2 entries, warps: 72 in 30 runs.
+; In: DE = X, Y (pixels). Called twice by the teleport $98BA: one sparkle at
+; the pad left, one at the pad reached. Full list: nothing. x2: 2 entries,
+; warps: 72 in 30 runs.
 StartSparkle:
   LD HL,SparkleList
 StartSparkleLoop:

@@ -35,7 +35,8 @@ python3 work/docs/docB/read_series.py work/docs/docB/i48 work/x2/session.ttd wor
 
 The warp-run states (score, screen, lives every 250 frames) come from `work/docs/docB/scan.py` (`scan.txt`).
 
-Scope: the controls and the player's moves are in [5. Controls](05-controls.md); the objects and their routines in
+Scope: the keys are in [5. Controls](05-controls.md); the hero's moves and shots are here (10.11, 10.12); the objects
+and their routines are in
 [7. Objects](07-objects.md); the HUD's printers in [8. HUD and text](08-hud-and-text.md); the sounds in
 [9. Sound](09-sound.md).
 
@@ -53,6 +54,11 @@ Scope: the controls and the player's moves are in [5. Controls](05-controls.md);
 | Standing still | a missile after 700 passes on one screen | IdleMissileStart `$AC59` |
 | The score | 6 ASCII digits, wraps at 1 000 000 | AddScore `$AD53`, Score `$AD8A` |
 | The Hall of Fame | 50 entries | HallOfFame `$71F1` |
+| The walk | 1 unit (2 pixels) a pass; a turn costs one pass | Walk `$8295` (10.11) |
+| The jump | 18 pixels up, 22 passes, not steerable | MovePlayer `$81A4`, JumpSteps `$826A` (10.11) |
+| Shots | one a press, 8 on screen, 10 pixels a pass, 52 units of range | FireControl `$8338`, ShotList `$845F` (10.12) |
+| The exoskeleton | a second shot, safe from mines and traps, no bravery bonus, off at a zone's end | ExoSuitBooth `$9F2D`, ExoSuit `$9ED8` (10.11) |
+| Pods | ammunition to 99 or grenades to 10 | Pods `$9942` ([7.5](07-objects.md#75-balls-mines-pods-and-teleports)) |
 
 The lives are set by Start, the game's entry, not by StartGame.
 GAME OVER jumps back to the entry (`JP $6D60`), so each new game starts with 9.
@@ -124,17 +130,85 @@ when the player's X reaches the marker:
     ZoneRefill: suit off, 99 ammunition, 10 grenades, the next screen, the player at its start
 ```
 
+The marker is not the right edge.
+On screens 24, 74 and 99 it is the cell of the sector gate at column 15 (row 13, row 14 on screen 74), so the zone
+ends at X `$3C`, the middle of the screen. On screens 49 and 124 it is column 20, X `$50`.
+The `CP E` / `RET C` above is the whole trigger: the first pass with PlayerX at or past the marker's X ends the zone.
+
+```mermaid
+flowchart TD
+    A[ZoneEnd, every pass] --> B{marker on this screen?}
+    B -- no --> Z[return]
+    B -- yes --> C{PlayerX at least 4 x column?}
+    C -- no --> Z
+    C -- yes --> D[panel: BRAVERY BONUS, LIVES BONUS]
+    D --> E[score + lives x 1000]
+    E --> F{ExoSuit?}
+    F -- no --> G[score + 80 x 125, one click a step]
+    F -- yes --> H
+    G --> H{screen 124?}
+    H -- yes --> I[CONGRATULATIONS, screen = $FF]
+    H -- no --> J
+    I --> J[BonusScreen]
+    J --> K{lives below 9?}
+    K -- yes --> L[lives + 1]
+    K -- no --> M
+    L --> M[ZoneRefill: suit off, 99 and 10, next screen, ZoneStarts place]
+```
+
 The start positions come from ZoneStarts `$AAE0`, three bytes a zone (screen, X, Y): `00 10 70`, `19 00 78`,
 `32 00 20`, `4B 28 80`, `64 10 70`.
 
-The witness is `w/024` (a clone on screen 24, nine lives):
+The witness is `w/024` (a clone on screen 24, nine lives), read every frame from 300 to 1000:
 
-- frame 500: score 000000, screen 24;
-- frame 750: score 019000 = 9 lives x 1000 + 10 000 bravery (no suit);
-- frame 1000: screen 25, the next zone.
+- frames 300-516: the hero walks (and jumps) from X `$10`; ZoneEndList `$AAEF` reads `0F 0D FF` (column 15, row
+  13);
+- frame 516: X `$3C` = 4 x 15; he moves no more;
+- frames 517-521: the panel is printed, the score still 000000;
+- frame 522: the score is 009125: the 9000 of the lives went in at once, the first bravery click is in;
+- frames 522-577: the score climbs to 019000, 80 clicks of 125 in 56 frames (each click waits on a beep);
+- frame 806: screen 25 (`$19`), X 0, Y `$88`: ZoneRefill's NextScreen; at frame 819 the hero stands at Y `$78`.
+
+```sh
+python3 work/docs/fillO/reads.py work/docs/fillO/i work/w/024/session.ttd work/docs/fillO/d/w024-zoneend.json \
+    300 1000 1 82F5:2 8523:1 AD8A:6 AAEF:3 9ED8:1
+```
+
+The hero never reaches the right edge on these screens: the zone ends at the gate in the middle.
 
 After screen 124 the game goes on from screen 0 with the score and lives kept.
 `w/124` shows it: screen 124, then `$FF` (frames 750-1000, CONGRATULATIONS), then screen 0 at frame 1250.
+
+What else crosses the loop: BonusPointer (never reset), the Hall of Fame table (it lives in RAM), and the ZORBA patch.
+What is reset: the suit, the ammunition and the grenades (ZoneRefill), and everything a screen build clears.
+Nothing gets harder on the second loop: the image has no counter of rounds and no table indexed by one. RoundEnd
+sets ScreenNumber to `$FF` and NextScreen makes it 0; that byte is all the loop is.
+
+### No difficulty level, but a curve in the tables
+
+The difficulty is in the layouts, not in a variable. The counts per zone, from the model of the screen builder
+(`work/docs/docB/kinds-per-screen.txt`) and AlienScreens `$A677`:
+
+| Zone | Screens | Turrets | Mines | Ball spawners | Traps | Gun cells | Launchers | Force fields | Alien screens | Mean alien delay (passes) |
+| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 0 | 0-24 | 8 | 6 | 7 | 11 | 11 | 3 | 0 | 12 | 22.2 |
+| 1 | 25-49 | 9 | 10 | 13 | 10 | 12 | 1 | 3 | 14 | 14.6 |
+| 2 | 50-74 | 6 | 9 | 10 | 9 | 9 | 4 | 3 | 14 | 17.0 |
+| 3 | 75-99 | 5 | 18 | 7 | 6 | 12 | 4 | 1 | 16 | 14.5 |
+| 4 | 100-124 | 9 | 10 | 13 | 10 | 12 | 1 | 3 | 14 | 9.9 |
+
+```sh
+python3 work/docs/fillO/zones.py
+```
+
+What it shows:
+
+- Zone 0 has no force field and the slowest aliens (a new alien every 22 passes on average).
+- Zone 4 has exactly zone 1's object counts, with the aliens coming half again as often (9.9 passes against 14.6).
+  Screen n + 75 against screen n shows it: screen 104 has a delay of 10 where screen 29 has 25, screen 108 10 where
+  screen 33 has 20; no zone 4 screen is slower than its zone 1 partner.
+- Zone 3 doubles the mines (18).
+- So the difficulty rises mostly through AlienScreens' delays and the mines, not through a counter.
 
 ### The bonus screen
 
@@ -173,6 +247,17 @@ repeat: pointer += 1; draw "*" on line (pointer mod 8); wait 6000 delay rounds
 until fire
 line = pointer mod 8
 if line is odd: score += line x 1000           (1000, 3000, 5000 or 7000)
+```
+
+```mermaid
+flowchart TD
+    A[BonusScreen] --> B[pointer + 1, star on line pointer mod 8]
+    B --> C[ReadControls, Delay $1770]
+    C --> D{fire?}
+    D -- no --> B
+    D -- yes --> E{line odd?}
+    E -- no --> F[nothing]
+    E -- yes --> G[score + line x 1000]
 ```
 
 The lines read 00000, 01000, 00000, 03000, 00000, 05000, 00000, 07000: the odd ones are what they say.
@@ -265,19 +350,33 @@ each pass while DeathTimer > 0:
           else the player at the restart point (the screen's entry), dropped to a floor
 ```
 
-What kills, and through which door:
+```mermaid
+stateDiagram-v2
+    [*] --> Alive
+    Alive --> Alive: KillPlayer while ImmunityCount or DeathTimer is not 0
+    Alive --> Leaping: KillPlayer (DeathTimer 46, ImmunityCount 66)
+    Leaping --> Leaping: DeathTimer - 1, a DeathLeap step
+    Leaping --> GameOver: DeathTimer 0 and lives 0
+    Leaping --> Safe: DeathTimer 0, lives left: the restart point
+    Safe --> Alive: ImmunityCount reaches 0 (20 passes) or a screen change
+    GameOver --> [*]
+```
 
-| Killer | Caller | Door |
-| --- | --- | --- |
-| A turret's shell | ShellsHitPlayer `$90EA` (`objects.asm`) | KillPlayer |
-| A gun's shot | ShellsVsPlayer `$9E64` (`guns.asm`) | KillPlayer |
-| A ball | BallsTouchPlayer `$9BB4` | KillPlayer |
-| An alien | AliensVsPlayer `$A5F4` | KillPlayer |
-| The homing missile | HomingMissileStep `$A26B` | KillPlayer |
-| The idle missile | IdleMissileStep `$AC7D` | KillPlayer |
-| The force field | ForceFieldStep `$ABCF` (`forcefield.asm`) | KillPlayer |
-| A mine | MineFires `$91A0` (`mines.asm`) | ShieldedKill `$9CAA`: nothing while suited |
-| A trap | TrapContact `$9C8B` (`death.asm`) | ShieldedKill `$9CAA`: nothing while suited |
+What kills, through which door, and with which box.
+The box is PlayerContact `$9BD6`'s B (height) and C (width) around the killer's place; the hero's own box is 12 units
+by 32 lines, 26 crouched ([7.11](07-objects.md#711-collision)).
+
+| Killer | Caller | Door | Box B, C |
+| --- | --- | --- | --- |
+| A turret's shell | ShellsHitPlayer `$90EA` (`objects.asm`) | KillPlayer | 0, 0: a point |
+| A gun's shot | GunShotsVsPlayer `$9E64` (`guns.asm`) | KillPlayer | 8, 4 |
+| A ball | BallsTouchPlayer `$9BB4` | KillPlayer | 8, 4 |
+| An alien | AliensVsPlayer `$A5F4` | KillPlayer | 8, 4 at X + 2, Y + 4 |
+| The homing missile | HomingMissileStep `$A26B` | KillPlayer | 16, 8 |
+| The idle missile | IdleMissileStep `$AC7D` | KillPlayer | 16, 8 |
+| The force field | ForceFieldStep `$ABCF` (`forcefield.asm`) | KillPlayer | no box: PlayerX + `$0C` = the field's X |
+| A mine | MineFires `$91A0` (`mines.asm`) | ShieldedKill `$9CAA`: nothing while suited | no box: the feet on the line above it, X within -7..+2 |
+| A trap | TrapContact `$9C8B` (`death.asm`) | ShieldedKill `$9CAA`: nothing while suited | 32, 12 |
 
 The exoskeleton protects only from mines and traps.
 
@@ -319,6 +418,40 @@ What it shows:
 - PlayerDeath itself is 19 instructions (T 51 853-51 999 of frame 452): a decrement, a table read, a move.
 - The work is the redraw: PlayerFrame draws frame `$0B` 4 lines higher (PlayerY `$70` to `$6C` between frames 452
   and 454).
+
+### The restart point
+
+- RestartX `$82F3` is `$10` at the game's start and 0 on every new screen (ScreenChangeCheck).
+- RestartY `$82F4` is `$70` at the start and the Y the hero entered the screen at (NextScreen).
+- At a zone's end both come from ZoneStarts.
+- When DeathTimer reaches 0 with lives left, DeathOver turns the frames back to face right (Facing 1), puts the hero
+  at (RestartX, RestartY) and drops him: while TestBelow finds no ground, DeathDropToFloor adds 1 to Y.
+- No recording ran DeathDropToFloor's loop: every restart point was already on the ground.
+
+The witness is `x1`'s nine deaths, read every 2nd frame (75 s):
+
+```sh
+python3 work/docs/fillO/reads.py work/docs/fillO/i work/x1/session.ttd work/docs/fillO/d/x1-deaths.json \
+    0 4710 2 82F3:4 8E7A:1 9CE2:1 768D:1 8523:1
+```
+
+A kill is the first frame with DeathTimer `$9CE2` not 0; a restart is the frame Lives `$8E7A` drops.
+
+| Kill (frame) | at X, Y | Restart (frame) | at X, Y | Lives after |
+| ---: | --- | ---: | --- | ---: |
+| 452 | `$21`, `$70` | 550 | `$10`, `$70` | 8 |
+| 986 | `$44`, `$5C` | 1088 | `$10`, `$70` | 7 |
+| 1180 | `$34`, `$68` | 1278 | `$10`, `$70` | 6 |
+| 1366 | `$32`, `$64` | 1468 | `$10`, `$70` | 5 |
+| 1532 | `$28`, `$68` | 1632 | `$10`, `$70` | 4 |
+| 1750 | `$3F`, `$60` | 1850 | `$10`, `$70` | 3 |
+| 1958 | `$3A`, `$60` | 2056 | `$10`, `$70` | 2 |
+| 2260 | `$44`, `$60` | 2362 | `$10`, `$70` | 1 |
+| 2528 | `$44`, `$5C` | 2632, GAME OVER | | 0 |
+
+`x1` never leaves screen 0, so every restart is the game's start place.
+At frame 1630 the read catches the pass between the decrement and the move (lives 4, X still `$28`); frame 1632 has
+X `$10`.
 
 ## 10.5 Scoring
 
@@ -383,7 +516,9 @@ The points:
 | --- | --- | --- | --- |
 | 25 a tick | PointValues `$AD91` | a pending bonus, paid one tick a pass | PayBonusTick `$9EC1` |
 | 50 | Points50 | a ball shot | `$9B7C` (`balls.asm`) |
-| 50 | Points50 | a gun's shot shot down | DestroyShell `$9E4F` (`guns.asm`) |
+| 50 | Points50 | a gun's shot shot down | DestroyGunShot `$9E4F` (`guns.asm`) |
+| 50 | Points50 | a gun's shot that touches the hero (it kills him as well) | DestroyGunShot from GunShotsVsPlayer `$9E64` |
+| 50 | Points50 | a ball that touches the hero (it kills him as well) | BallHit from BallsTouchPlayer `$9BB4` |
 | 150 | Points150 | an alien shot | KillAlien `$A62D` |
 | 150 | Points150 | a destructible scenery piece blown up by a grenade | GrenadeBlast `$93E2` |
 | 850 (34 ticks) | bonus ticks | a missile launcher destroyed while its missile flies | HomingMissileStep `$A2AE` |
@@ -426,6 +561,11 @@ What it shows:
 ThrowGrenade `$9208` throws when fire has been held 15 passes (FireHeld `$83DC` counts them).
 No throw at X `$76` or more, with no grenades left, or with a grenade in the air.
 
+FireHeld goes on counting while fire stays down and stops at 255: FireControl's `INC A` / `RET Z` never stores the
+wrap to 0. So a held button keeps FireHeld at 15 or above, and ThrowGrenade's only remaining test is GrenadeTimer: the
+next grenade leaves in the first pass after the previous one lands. The fire button's state machine (one shot a press,
+the hold, the throw) is in [5.6](05-controls.md#56-the-fire-button-a-shot-and-a-grenade).
+
 The throw:
 
 - GrenadeTimer `$925A` = `$20`, the position player X + 4 and his Y (6 lower when crouching, ThrowFromCrouch `$9233`);
@@ -436,6 +576,70 @@ MoveGrenade `$925F` ends the flight at the screen's edges (X `$7C` or 0), at a w
 it (when the step is not -1), or at Y `$A8` (the play area's bottom).
 GrenadeBlast `$93E2` then destroys the first destructible piece whose box holds the end cell (150 points); a grenade
 that hits none ends silently.
+
+The end tests in MoveGrenade:
+
+```asm
+GrenadeErase:
+  LD DE,(GrenadeX)        ; the old position, erased
+  LD A,(GrenadeFrame)
+  CALL DrawSmallSprite
+  LD A,E                  ; at the right edge
+  CP $7C
+  JR Z,GrenadeEnd
+  OR A                    ; at the left edge
+  JR Z,GrenadeEnd
+  ; ...                   ; ProbeLeft or ProbeRight by the direction: a wall ends it
+GrenadeAdvance:
+  LD A,B                  ; X + direction
+  ADD A,E
+  LD E,A
+  LD (GrenadeX),A
+  LD A,(GrenadeY)
+  LD D,A
+  LD A,(HL)               ; a step of -1 skips the floor test
+  CP $FF
+  JR NC,GrenadeFall
+  CALL ProbeBelow
+  JR NZ,GrenadeEnd
+GrenadeFall:
+  LD A,(HL)               ; Y + the step
+  ADD A,D
+  LD D,A
+  CP $A8                  ; below the play area: the end
+  JR NC,GrenadeEnd
+  ; ...                   ; drawn; a puff 4 units behind while the timer is $13 or more
+GrenadeEnd:
+  XOR A
+  LD (GrenadeTimer),A
+  JP GrenadeBlast
+```
+
+```mermaid
+flowchart TD
+    A[MoveGrenade step] --> B{X = $7C or 0?}
+    B -- yes --> E[GrenadeEnd]
+    B -- no --> C{wall on its side?}
+    C -- yes --> E
+    C -- no --> D[X + direction]
+    D --> F{step not -1 and floor below?}
+    F -- yes --> E
+    F -- no --> G{Y + step at least $A8?}
+    G -- yes --> E
+    G -- no --> H[draw, puff]
+    E --> I[GrenadeBlast: the first live record whose box holds the end cell]
+    I --> J{found?}
+    J -- yes --> K[print it again with printer 3, mark $80, blast sound, 150 points]
+    J -- no --> L[nothing]
+```
+
+A worked example, `x2` frame 410: the grenade ends at X `$4C`, Y `$77`.
+GrenadeBlast turns that into column `$4C` / 4 = 19 and row `$77` / 8 = 14.
+Screen 0's second record is `13 1B 0C 11 14 0E 05`: columns 19-26, rows 12-16, the turret at column 20, row 14.
+19 is in 19..26 and 14 in 12..16, so the turret is printed again (erased) and its record becomes `80 1B ...` at
+frame 412; the turret's state goes to 0 in the same pass (7.2).
+The next grenade ends at X `$6C`, Y `$71` (frame 566): column 27, row 14, inside the spire's box `1A 1F 08 12`.
+The before and after pictures are in [7.10](07-objects.md#710-destructible-scenery-and-the-grenade-blast).
 
 `x2` threw 14 grenades, `c128` 3, `w030` 8, and 78 warp clones threw.
 
@@ -500,6 +704,37 @@ for each entry from the top:
 the end mark: the score does not enter
 ```
 
+```asm
+HallOfFameInsert:
+  LD HL,TuneSetMaxVolumes
+  LD IX,HallOfFame
+HofEntryLoop:
+  BIT 7,(IX+$00)
+  RET NZ                  ; the end mark: the score does not enter
+  PUSH IX
+  LD DE,$000A             ; IX = the entry's score digits
+  ADD IX,DE
+  LD HL,Score
+  LD B,$06
+HofDigitLoop:
+  LD A,(IX+$00)
+  CP (HL)                 ; the entry's digit against the score's
+  JP Z,HofNextDigit
+  JP NC,HofNextEntry      ; the entry is higher: the next one
+  ; ...                   ; the score is higher: HofMakeRoom
+```
+
+```mermaid
+flowchart TD
+    A[entry = the first] --> B{end mark?}
+    B -- yes --> Z[not entered]
+    B -- no --> C[compare the 6 digits from the first]
+    C --> D{score higher?}
+    D -- no --> E[next entry] --> B
+    D -- yes --> F[LDDR: entries down 16, the end mark again at $7511]
+    F --> G[score into +10, the name entry: 8 characters]
+```
+
 Making room moves every byte from the entry to the end mark down 16 (LDDR from `$7510` to `$7520`).
 The last entry falls past the end, and the end mark is written again at `$7511` over its first byte.
 
@@ -562,7 +797,667 @@ No case recording spelled ZORBA.
 exA's capture `exA1` (2, Z, O, R, B, A from `entry.z80`, exploration) is the witness: the five compares passed,
 `$9D1D` became 0, the jingle played, and in play the NOP at `$9D1D` ran 10 times: ten deaths, no life lost.
 
-## 10.11 What is known only from the code
+## 10.11 The hero
+
+The hero is one sprite of 24 x 32 pixels: three cells across, four down.
+His place is PlayerX `$82F5` and PlayerY `$82F6`, the top left corner.
+X counts 2-pixel units, so a cell is 4 units wide; Y counts pixels.
+X `$80` is one unit past the right edge: reaching it is how a screen is left.
+
+MovePlayer `$81A4` moves him once a pass, and a pass is about two frames ([4. Game loop](04-game-loop.md)).
+It reads the controls that ReadControls `$7B72` left at `$7B92-$7B96`: left, right, up, down, fire.
+Up is the jump key; down is the crouch.
+
+The state lives in a row of bytes after the code:
+
+| Byte | Address | Values |
+| --- | --- | --- |
+| ScreenChanged | `$82F2` | not 0 in the pass the hero left the screen |
+| RestartX, RestartY | `$82F3`, `$82F4` | where a death puts him back (10.4) |
+| PlayerX, PlayerY | `$82F5`, `$82F6` | the place, `$10`, `$70` at the start |
+| JumpStep | `$82F7` | 22 down to 1 in a jump, 0 on the ground |
+| MoveDir | `$82F8` | the horizontal move of the last walk: 0, 1 or `$FF` |
+| WalkPhase | `$82F9` | the walk frame 0-9 |
+| Facing | `$82FA` | 1 right, `$FF` left; the shots go this way |
+| CrouchOffset | `$82FB` | `$FA` while crouching, else 0 |
+| FallFlag | `$8294` | 9 while falling, else 0 |
+| PlayerFrameShown | `$8269` | the frame last drawn; `$FF` forces a redraw |
+| ExoSuit | `$9ED8` | 0, or `$0C` in the exoskeleton |
+
+### The five states
+
+```mermaid
+stateDiagram-v2
+    [*] --> Ground
+    Ground --> Crouch: down held
+    Crouch --> Ground: down released
+    Ground --> Turn: left or right against Facing
+    Turn --> Ground: next pass
+    Ground --> Jump: up held, ground under the feet
+    Jump --> Jump: JumpStep 22 down to 1, X + MoveDir
+    Jump --> Fall: head or feet blocked
+    Jump --> Ground: JumpStep 0 and ground
+    Ground --> Fall: no ground under the feet
+    Fall --> Fall: Y + 4 a pass, no steering
+    Fall --> Ground: ground under the feet
+    Ground --> Dying: KillPlayer
+    Jump --> Dying: KillPlayer
+    Fall --> Dying: KillPlayer
+    Dying --> Ground: 46 passes, the restart point
+```
+
+- **Ground.** Left or right moves him one unit (2 pixels) a pass, about 50 pixels a second. Neither key, or both,
+  stands him still.
+- **Turn.** A key against Facing first mirrors his 24 frames (FlipPlayerFrames `$7BAA`) and draws the standing frame.
+  That pass does not move him: a turn costs one pass.
+- **Crouch.** Down held on the ground: frame `$0A`, CrouchOffset `$FA`, and no walk. His shots leave 5 pixels lower
+  and his contact box is 6 lines shorter (10.12, [7.11](07-objects.md#711-collision)).
+- **Jump.** Up held on the ground starts JumpStep at 22. Each pass reads one byte of JumpSteps `$826A` and moves Y by
+  it: 18 pixels up in 9 passes, 4 passes level, 9 passes down (the table is in 10.3). X moves by MoveDir, the
+  direction of the walk before the take-off: the jump cannot be steered.
+- **Fall.** No ground under the feet: Y + 4 a pass, frame 9, and nothing else. No walk, no jump, no crouch until he
+  lands.
+
+### MovePlayer, step by step
+
+```text
+MovePlayer:
+    if dying: return                              # AbortIfDying $9D78
+    ScreenChanged = 0
+    if FallFlag:            goto Fall
+    if JumpStep:            goto JumpStep(JumpStep)
+    if not ground below:    goto Fall
+    CrouchOffset = $FA
+    if down:                draw frame $0A; return
+    CrouchOffset = 0
+    if not up:              goto Fall             # Fall finds the ground and walks
+    JumpStep(22)
+
+JumpStep(a):
+    JumpStep = a - 1
+    dy = JumpSteps[a - 1]                          # read at $8269 + a
+    if dy != 0:
+        blocked = TestBelow if dy < $0A else TestAbove
+        if blocked: JumpStep = 0; goto Fall
+        Y += dy
+    if MoveDir != 0 and not (TestRight if MoveDir = 1 else TestLeft): X += MoveDir
+    draw frame 3
+
+Fall:
+    FallFlag = 0
+    if ground below: goto Walk
+    Y += 4; FallFlag = 9; draw frame 9
+
+Walk:
+    MoveDir = left XOR right
+    if MoveDir = 0: draw frame 5; return
+    Facing = MoveDir
+    if the frames face the other way: flip them; PlayerFrameShown = $FF; draw frame 5; return
+    if blocked on that side: draw frame 5; return
+    X += MoveDir
+    draw frame WalkPhase; WalkPhase = (WalkPhase + 1) mod 10
+```
+
+The code of the take-off and the jump step:
+
+```asm
+MovePlayer:
+  CALL AbortIfDying
+  XOR A
+  LD (ScreenChanged),A
+  LD DE,(PlayerX)
+  LD A,(FallFlag)
+  OR A
+  JP NZ,Fall
+  LD A,(JumpStep)
+  OR A
+  JR NZ,JumpStepNext
+  CALL TestBelow
+  JP Z,Fall
+  LD A,$FA
+  LD (CrouchOffset),A
+  LD A,(ControlDuck)
+  OR A
+  LD A,$0A
+  JP NZ,PlayerFrame       ; crouching: frame $0A, no walk
+  XOR A
+  LD (CrouchOffset),A
+  LD A,(ControlJump)
+  OR A
+  JP Z,Fall               ; no jump: Fall, which walks on the ground
+  CALL TestBelow
+  JP Z,Fall
+  LD A,$16                ; the take-off: step 22
+JumpStepNext:
+  LD HL,PlayerFrameShown  ; JumpSteps[A - 1] is the byte at $8269 + A
+  LD C,A
+  LD B,$00
+  DEC A
+  LD (JumpStep),A
+  ADD HL,BC
+  LD A,(HL)
+  OR A
+  JR Z,JumpMoveX          ; a level step: X only
+  CP $0A
+  JR NC,JumpTestUp
+  CALL TestBelow          ; a falling step: the feet
+  JR JumpTested
+JumpTestUp:
+  CALL TestAbove          ; a rising step: the head
+JumpTested:
+  JR Z,JumpMoveY
+  XOR A                   ; blocked: the jump ends, the player falls
+  LD (JumpStep),A
+  JP Fall
+JumpMoveY:
+  LD A,(HL)               ; Y + dy
+  ADD A,D
+  LD D,A
+JumpMoveX:
+  LD A,(MoveDir)          ; the walk direction of the last walking pass
+  ; ...                   ; TestRight or TestLeft, then X + MoveDir
+JumpFrame:
+  LD A,$03                ; frame 3: in the air
+```
+
+The walk and the turn:
+
+```asm
+Walk:
+  LD HL,(ControlLeft)     ; L = left, H = right
+  LD A,H
+  XOR L
+  LD (MoveDir),A
+  LD A,$05
+  JP Z,PlayerFrame        ; neither or both: standing
+  LD A,$01
+  LD (Facing),A
+  BIT 0,L
+  JR Z,WalkRight
+  LD A,$FF
+  LD (MoveDir),A
+  LD (Facing),A
+  LD A,(PlayerFlipped)
+  OR A
+  CALL Z,FlipPlayerFrames ; the frames faced right: mirror them
+  JR Z,TurnAround
+  CALL TestLeft
+  JR WalkTested
+WalkRight:
+  ; ...                   ; the same for right
+WalkTested:
+  LD A,$05                ; blocked: standing frame
+  JP NZ,PlayerFrame
+  LD A,(MoveDir)
+  ADD A,E
+  LD E,A
+  ; ...                   ; WalkPhase 0-9 is the frame
+TurnAround:
+  LD A,$FF                ; the frames were just mirrored: redraw, standing
+  LD (PlayerFrameShown),A
+  LD A,$05
+  JP PlayerFrame
+```
+
+### The four cell tests
+
+Four routines ask the block map whether the hero may move: TestRight `$80F3`, TestLeft `$8122`, TestBelow `$814E`
+and TestAbove `$8179`.
+BlockMapCell `$80C1` turns X, Y into an address in CellTypes `$6100` ([7.1](07-objects.md#71-three-cell-maps-and-the-build)).
+Each test ORs the map bytes it looks at: any value but 0 blocks.
+After a build the map holds 0 and 1, plus 3 under a turret and 13 under a missile launcher; a force field's cells are
+written as 1. So scenery, turrets, launchers and force fields all stop the hero.
+
+| Test | Asked when | Cells | Never blocked | Always blocked |
+| --- | --- | --- | --- | --- |
+| TestRight | walking or jumping right | column X/4 + 3, rows Y/8 to Y/8 + 3 (+ 4 when Y AND 7 is not 0) | X AND 3 not 0; X `$74` or more | |
+| TestLeft | walking or jumping left | column X/4 - 1, the same rows | X AND 3 not 0 | X = 0 |
+| TestBelow | standing, jumping down, falling | row Y/8 + 4, columns X/4 to X/4 + 2 (+ 3 when X AND 3 is not 0) | Y AND 7 not 0 | |
+| TestAbove | jumping up | row Y/8 - 1, the same columns | Y AND 7 not 0 | |
+
+Three rules fall out of the table:
+
+- A wall is met only on a cell boundary: between boundaries the hero walks freely, and a step of one unit cannot skip
+  a boundary.
+- TestBelow says "no ground" whenever Y is not a multiple of 8. A jump step of 1 or 2 pixels lands him between rows,
+  so the next steps keep going until Y is on a row again.
+- X = 0 is a wall: there is no way back to the previous screen. X `$74` or more is never blocked on the right: the
+  hero walks into X `$80`, and DrawPlayer turns that into the next screen.
+
+A worked example: the hero stands at X `$10`, Y `$70` on screen 0.
+TestBelow looks at row `$70`/8 + 4 = 18, columns 4, 5, 6 (X AND 3 is 0, so no fourth column).
+CellTypes `$6100 + 18 * 32 + 4` = `$6344` and the next two bytes are the floor: 1, so he stands.
+After one step right X is `$11`: X AND 3 = 1, so TestRight answers "free" without reading the map, and TestBelow reads
+four columns, 4 to 7.
+
+### The frames and the redraw
+
+PlayerFrames `$EF80` holds 25 frames of 96 bytes (3 bytes by 32 lines).
+PlayerFrame `$8224` adds ExoSuit to the frame number, so the suit's frames are the same roles 12 higher.
+
+![PlayerFrames at EF80: the 25 frames by role, 0-11 without the suit, 12-23 in the suit, 24 the trap](img/hero/frames.png)
+
+```sh
+python3 tools/fig_hero.py sheet
+```
+
+How to read:
+
+- One frame a panel, drawn from the image's bytes at `$EF80 + 96 n`, white pixels on black.
+- Above each panel the frame number in decimal and hex; under it the role, from the callers that pass that number.
+- Row one: ExoSuit 0. Row two: ExoSuit `$0C`, and frame 24, the trap, which Traps `$9C15` draws (in green).
+
+What it shows:
+
+- Ten walk frames, 0-9. Three of them have a second role: 3 is the jump and every step in the air, 5 is the standing
+  frame, 9 is the fall.
+- Frame `$0A` crouches and frame `$0B` is the death leap's falling man.
+- The suit doubles the set: the hero in the exoskeleton is a bulkier figure on the same roles.
+
+DrawPlayer `$8229` draws the frame:
+
+```asm
+DrawPlayer:
+  EX AF,AF'
+  LD A,E
+  CP $80
+  LD A,D
+  JR Z,NextScreen         ; X = $80: off the right edge
+  LD C,$47
+  EX AF,AF'
+  CALL ColourBigSprite    ; the black cells under him become white on black
+  LD BC,(PlayerX)
+  LD (PlayerX),DE
+  LD HL,(PlayerFrameShown)
+  CP L
+  JR NZ,DrawPlayerSprite  ; a new frame: draw
+  LD H,B
+  LD L,C
+  AND A
+  SBC HL,DE
+  RET Z                   ; same frame, same place: nothing to draw
+DrawPlayerSprite:
+  LD (PlayerFrameShown),A
+  LD HL,WorkArea
+  JP DrawBigSprite
+```
+
+The redraw rule: the sprite is drawn only when the frame or the place changed.
+A hero standing still costs one ColourBigSprite a pass and no sprite draw.
+A turn mirrors the frame bytes without moving him, and the rule would skip the redraw when frame 5 was already shown.
+That is why TurnAround writes `$FF` into PlayerFrameShown first.
+
+NextScreen `$8253` handles X = `$80`.
+It sets PlayerY, RestartY and ScreenChanged to the hero's Y, raises ScreenNumber `$8523`, and writes `$FF` into
+PlayerFrameShown.
+ScreenChangeCheck `$8485` then sees ScreenChanged, sets X and RestartX to 0, prints the screen number and builds the
+next screen.
+The hero keeps his Y and his jump: a jump that leaves one screen lands on the next.
+
+### Witness: walking and jumping in x2
+
+![x2 frames 380-1000: PlayerX, PlayerY, JumpStep and the frame drawn, read every frame](img/hero/moves.png)
+
+```sh
+python3 work/docs/fillO/reads.py work/docs/fillO/i work/x2/session.ttd work/docs/fillO/d/x2-hero.json 0 3000 1 \
+    7B92:5 8269:147 845F:25 8523:1 768C:1 8E5A:1 9ED8:1 925A:5 9437:80 9F13:12 9022:13
+python3 tools/fig_hero.py moves
+```
+
+How to read:
+
+- `x2` frames 380-1000, read at the end of every frame on my instance (TTD `memory_at`). The bytes `$8269-$82FB`
+  hold PlayerFrameShown, JumpSteps and the state row; ScreenNumber is the dotted line.
+- Top: PlayerX. Second: PlayerY, drawn downwards like the screen. Third: JumpStep. Bottom: the frame last drawn
+  (gaps are `$FF`, the forced redraw).
+
+What it shows:
+
+- The walk: X + 1 a pass. Frames 380-389 read X `$1C`, `$1D`, `$1E`, `$1F` at frames 381, 384, 387, 389: one unit
+  every 2-3 frames, which is one a pass.
+- The jumps: JumpStep jumps to 21 (the take-off pass already used step 22) and counts down by one a pass. Y climbs
+  `$70` to `$5E` (18 pixels) and comes back.
+- X keeps rising through every jump: the take-off direction is kept. At frames 919-929 right is no longer held
+  (the control byte reads 0) and X still goes `$22`, `$23`, `$24`, `$25`.
+- The third jump leaves screen 0 in the air. Frame 741: X `$7F`, JumpStep 2. Frame 744: X 0, screen 1,
+  PlayerFrameShown `$FF`, JumpStep 1: the jump ends on the new screen.
+- The frame panel: 0-9 while walking, 3 in the air, 5 when standing.
+
+### Witness: crouch, both keys, the turn
+
+![c1 frames 16180-16450: the controls, the frame, Facing, CrouchOffset, X and Y](img/hero/turn.png)
+
+```sh
+python3 work/docs/fillO/c1read.py work/docs/fillO/d/c1-turn.json 16150 16450 1 82F3:9 8269:1 8294:1 7BDA:1 7B92:5 \
+    8523:1 768C:1
+python3 tools/fig_hero.py moves     # draws turn.png too
+```
+
+How to read:
+
+- The live `c1` instance read with `time_travel memory_at` only (read-only); one read a frame.
+- Top: the four direction keys as ReadControls left them. Middle: the frame, CrouchOffset and Facing. Bottom: X on
+  the left axis, Y on the right axis.
+
+What it shows:
+
+- 16189-16229: down held (with left): CrouchOffset `$FA`, frame `$0A`, and X stays `$10`. Crouching stops the walk
+  even with a direction held.
+- 16231: left and right together: frame 5, no move. MoveDir is left XOR right, which is 0.
+- 16337: left alone: Facing becomes `$FF` and PlayerFlipped `$7BDA` 1. Frame 16339 shows frame 5 at X `$10`: the
+  turn pass. The steps follow: X `$0F` at 16341 (frame 0), `$0E` at 16344, `$0D` at 16346.
+- 16417: killed; frame `$0B` and Y rises from `$70` (the death leap of 10.4).
+
+The point: the hero is a small machine of five states, and most of his feel comes from three choices in it. A turn
+costs a pass, the jump cannot be steered, and a fall cannot be steered either. The cell tests look only at cell
+boundaries, so a wall is met exactly when the sprite's edge reaches a cell's edge.
+
+### The exoskeleton
+
+The exoskeleton is a state of the hero, not an object.
+ExoSuit `$9ED8` holds 0 or `$0C`; ExoSuitBooth `$9F2D` flips it ([7.2](07-objects.md#72-what-each-kind-does)).
+Everything it changes:
+
+| Effect | Where | How |
+| --- | --- | --- |
+| The frames | PlayerFrame `$8224` | frame + `$0C`: frames 12-23 |
+| A second shot | FireControl `$8338` (`$837B`) | SpawnShot again with PlayerY + 6, for the same one ammunition |
+| Safe from mines and traps | ShieldedKill `$9CAA` | returns while ExoSuit is not 0 |
+| Not safe from anything else | KillPlayer `$9CAF` | shells, gun shots, balls, aliens, missiles and the force field still kill |
+| No bravery bonus | ZoneEnd `$A817` | the 10 000 points are skipped while suited |
+| Taken off | ZoneRefill `$A8A5` | ExoSuit = 0 at every zone's end |
+
+A death does not take it off: DeathOver `$9D0E` leaves ExoSuit alone.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Plain
+    Plain --> Suited: up pressed in the booth
+    Suited --> Plain: up pressed in the booth again
+    Suited --> Plain: zone end (ZoneRefill)
+    Suited --> Suited: death (kept)
+```
+
+The witness is `w/108` (a warp clone on screen 108; exploration only):
+
+- frame 1600: ExoSuit 0, X `$39`, Y `$18`, frame 8 shown;
+- frame 1613: up pressed, X `$3C`, Y `$18`: ExoSuit `$0C`, BoothUpLatch 1, the frame shown `$11` = 5 + 12;
+- frames 1629-2080: the suit stays on through screen 109 and into 110; the latch goes back to 0 each time up is
+  released.
+
+A worked example of the booth test at frame 1613: ExoBoothList `$9F6E` reads `0E 02`, column 14, row 2.
+The test wants PlayerY = 8 x (2 + 1) = `$18`: true.
+It wants PlayerX - 4 x 14 = `$3C` - `$38` = 4 within -12..+8: true. The suit goes on.
+
+Command: `python3 work/docs/fillO/reads.py work/docs/fillO/i work/w/108/session.ttd work/docs/fillO/d/w108-suit.json 1600 2134 1 7B92:5 8269:147 845F:25 8523:1 9ED8:1 9F6D:4`.
+
+The point: the suit is a trade. It doubles the fire and shrugs off the floor's dangers, but it costs the 10 000-point
+bravery bonus at the zone's end.
+
+## 10.12 The player's shots
+
+The hero's gun fires one shot a press of fire.
+A shot is a dash of 8 pixels on one line, drawn by XOR (XorShot `$82FC`, the pattern `$BD`).
+ShotList `$845F` holds 8 shots of three bytes: X, Y, direction (1 right, `$FF` left, 0 free), and `$FF` after the
+last.
+
+The rules:
+
+- one shot a press: holding fire does not repeat;
+- no shot at X `$76` or more (no room on the right), and none with no ammunition;
+- one ammunition a press; in the exoskeleton the press fires two shots, the second 6 pixels lower;
+- at most 8 shots on the screen: a press with all 8 slots busy spends the ammunition and fires nothing;
+- a shot moves 1 unit a call and MoveShots runs 5 times a pass: 5 units, 10 pixels a pass;
+- it ends at a wall, at X `$7C` (the right edge) or 1, or 52 units right of the hero (48 to the left).
+
+```mermaid
+flowchart TD
+    A[FireControl, once a pass] --> B{dying or X at least $76?}
+    B -- yes --> Z[no shot]
+    B -- no --> C{fire held?}
+    C -- no --> D[FireHeld = 0]
+    C -- yes --> E{FireHeld = 0?}
+    E -- no --> F[FireHeld + 1, up to $FF; 15 throws a grenade]
+    E -- yes --> G[FireHeld = 1]
+    G --> H{Ammo = 0?}
+    H -- yes --> Z
+    H -- no --> I[beep, Ammo - 1, AY effect, HUD]
+    I --> J[SpawnShot]
+    J --> K{ExoSuit?}
+    K -- yes --> L[SpawnShot at PlayerY + 6]
+    K -- no --> M[done]
+```
+
+### FireControl and SpawnShot
+
+```asm
+FirePress:
+  INC A                   ; a new press
+  LD (FireHeld),A
+  LD A,(Ammo)
+  OR A
+  RET Z
+  LD B,$3C
+  CALL BeeperNoise
+  LD A,(Ammo)
+  DEC A                   ; the ammunition POKE (ZXDB 33646) at $836E
+  LD (Ammo),A
+  CALL PlaySfxShot
+  CALL PrintAmmo
+  CALL SpawnShot
+  LD A,(ExoSuit)
+  OR A
+  RET Z
+  LD A,(PlayerY)          ; the suit: a second shot 6 pixels lower
+  PUSH AF
+  ADD A,$06
+  LD (PlayerY),A
+  CALL SpawnShot
+  POP AF
+  LD (PlayerY),A
+  RET
+SpawnShot:
+  LD HL,ShotList
+SpawnShotFind:
+  BIT 7,(HL)
+  RET NZ                  ; all 8 busy: nothing
+  ; ...                   ; the first slot with direction 0
+  LD A,(Facing)
+  LD (HL),A
+  LD DE,(PlayerX)
+  LD A,(CrouchOffset)
+  OR A
+  LD A,$0E                ; Y + $0E standing
+  JR Z,SpawnShotY
+  LD A,$13                ; Y + $13 crouching
+SpawnShotY:
+  ; ...
+  LD A,(Facing)
+  INC A
+  OR A
+  LD A,$FC                ; facing left: X - 4
+  JR Z,SpawnShotX
+  LD A,$0C                ; facing right: X + $0C
+SpawnShotX:
+  ADD A,E
+  LD E,A
+  CP $78
+  JR NC,SpawnShotCancel
+  CP $04
+  JR C,SpawnShotCancel
+  LD (HL),E
+  PUSH HL
+  CALL BlockMapCell       ; scenery in the cell or the next one: no shot
+  LD A,(HL)
+  INC L
+  OR (HL)
+  POP HL
+  JP Z,XorShot
+SpawnShotCancel:
+  ; ...                   ; the slot freed again
+```
+
+```text
+on a new press of fire, X < $76, Ammo > 0:
+    Ammo -= 1
+    spawn(PlayerY)
+    if suited: spawn(PlayerY + 6)
+
+spawn(y):
+    slot = the first of 8 with direction 0, else return
+    slot.dir = Facing
+    slot.y = y + ($13 if crouching else $0E)
+    slot.x = PlayerX + $0C if Facing = 1 else PlayerX - 4
+    if slot.x >= $78 or slot.x < 4 or scenery at (slot.x, slot.y) or the cell right of it: slot.dir = 0
+    else draw it
+```
+
+### MoveShots
+
+MoveShots `$83DD` first runs the four tests of the things a shot can hit, then moves the shots.
+The order matters: a shot that hits a ball is gone before the alien test sees it.
+
+1. ShotsHitBalls `$9B52`: the balls ([7.5](07-objects.md#75-balls-mines-pods-and-teleports)).
+2. GunShotsVsShots `$9E37`: the gun shots (7.2).
+3. AliensVsShots `$A5CA`: the aliens (7.4).
+4. ForceFieldVsShots `$AC04`: the force field's hit count (7.2).
+
+Then each live shot:
+
+```asm
+MoveShotsNext:
+  ; ...                   ; E = X, D = Y, A = direction
+  CALL XorShot            ; erase
+  ; ...
+  INC A
+  JR NZ,MoveShotRight
+  CALL ProbeLeft          ; going left: the cell on the left
+  CALL NZ,PlaySfxNoiseBurst
+  JR NZ,ShotHitWall
+  JR MoveShotRange
+MoveShotRight:
+  LD A,E
+  CP $7C
+  JR Z,ShotEnd
+  CALL ProbeRight         ; going right: the cell on the right
+  CALL NZ,PlaySfxNoiseBurst
+  JR NZ,ShotHitWall
+MoveShotRange:
+  LD D,C
+  LD A,E
+  CP $7C                  ; the edges
+  JR Z,ShotEnd
+  CP $01
+  JR Z,ShotEnd
+  LD A,(PlayerX)          ; the range: 52 units right of a right shot's start
+  ADD A,$40
+  CP E
+  JR Z,ShotEnd
+  LD A,(PlayerX)          ; 48 units left of a left shot's start
+  SUB $34
+  CP E
+  JR Z,ShotEnd
+  LD A,B                  ; X + direction, redrawn
+  ADD A,E
+  LD E,A
+  ; ...
+  CALL XorShot
+  JR MoveShotsNext
+ShotHitWall:
+  DEC HL                  ; freed, a puff at the shot, 20 noise bursts
+  LD (HL),$00
+  INC HL
+  LD D,C
+  CALL AddPuff
+  LD B,$14
+  ; ...
+```
+
+The range is measured from the hero's X as it is now, not from where the shot started.
+A right shot starts at PlayerX + `$0C` and ends at PlayerX + `$40`: 52 units if the hero stands still.
+The test is an equality, so it holds only because the shot gains 5 units a pass while the hero moves at most 1: the
+gap closes one unit at a time and cannot jump over 0.
+A teleport moves the hero many units at once and can carry the range end past a shot; that shot then flies on to
+the edge (known only from the code).
+
+A shot is not drawn white unless it needs to be: XorShot paints the two cells' attributes `$47` only where AttrCopy
+`$5E00` is 0, that is on black cells. Over coloured scenery the shot takes the scenery's ink.
+
+A worked example, `x2` frame 439: the hero is at X 47, Y 97 (jumping), facing right, and fire goes down (FireHeld
+1).
+SpawnShot puts the shot at X 47 + 12 = 59, Y 97 + 14 = 111.
+At the end of frame 440 the slot reads X 61, Y 111, direction 1: two of the pass's five MoveShots calls have run.
+By frame 468 the shot is at X 106, nine passes later (PassCount `$6C` to `$75`): 45 units, 5 a pass.
+At X 108 ProbeRight sees column 28, the rock spire: the slot is freed and a puff starts.
+Its range end, PlayerX + `$40` = 54 + 64 = 118, was never reached.
+
+### Witness
+
+![x2: ShotList read every frame; two shots end at the spire, one at the right edge](img/hero/shots.png)
+
+```sh
+python3 tools/fig_hero.py shots     # from work/docs/fillO/d/x2-hero.json (the read of 10.11)
+```
+
+How to read:
+
+- `x2` screen 0, every frame. Left: frames 436-492, two shots. Right: frames 586-630, two shots fired from further
+  right.
+- The white step line is PlayerX; dotted, PlayerX + `$0C` (where a shot starts); dashed, PlayerX + `$40` (where it
+  would run out). The yellow line is the wall that ended the shots. Thin vertical lines mark each new pass.
+- Each dot is one shot's X at the end of a frame.
+
+What it shows:
+
+- Each shot starts 12-14 units right of the hero (the start plus the moves already made in that pass) and climbs 5
+  units a pass.
+- Left: both shots stop at X 106-107, short of the range end: the spire's cell stops them.
+- Right: the hero stands at X 85-92, so PlayerX + `$40` is past the edge; the shots stop at X `$7C`.
+- `x2` carries the ammunition POKE, so Ammo `$8E5A` stays 99 here; the decrement is the `DEC A` at `$836E`.
+
+The point: a shot is fast (10 pixels a pass against the hero's 2) and short-ranged (about 100 pixels). The range
+rides with the hero, so walking behind a shot stretches it, and walking away shortens it.
+
+## 10.13 Bugs and oddities
+
+Each item says what the code does, why it is odd, and what shows it: a recording and frame, the image's bytes (a
+model), or "known only from the code".
+
+| # | Oddity | Where | Witness |
+| ---: | --- | --- | --- |
+| 1 | Touching a ball or a gun's shot pays 50 points while it kills: BallsTouchPlayer and GunShotsVsPlayer go through BallHit / DestroyGunShot, which add Points50 | `$9BB4`, `$9E64` | `w/006` frames 243-244: the gun shot at X `$1C`, Y `$90` meets the hero at X `$10`, Y `$80` with no player shot live; its record is freed and the score goes from 000000 to 000050. No death follows in the clone. The ball touch: code only |
+| 2 | A turret shell that meets the hero is spent even when KillPlayer refuses the kill (dying or immune) | ShellsHitPlayer `$90EA` | `x1` frames 1238, 1442, 1588: the shell is freed at X `$3E` / `$34` while DeathTimer runs (7.2 figure) |
+| 3 | Two destructible pieces of row 1 can never be blown up: dy -2 gives y0 = `$FF`, and the unsigned row test never passes | AddDestructible `$9487`, GrenadeBlast `$93E2` | model and RAM: `w/023` frame 250 holds `12 18 FF 07 14 01 10`, `w/053` frame 250 two records with y0 `$FF` (7.10) |
+| 4 | Guns: a gun that wins its 9-in-256 roll while the player is not far enough left ends the loop with `RET NC`, so the guns after it skip the pass | Guns `$9D7F` | code only |
+| 5 | Guns: a full GunShots list (GunShotsFull `$9DA6`) also ends the pass for the remaining guns | `$9DA6` | code only: no recording used more than 5 of the 10 records (`w/009`, 7.2) |
+| 6 | Pickup cells 5 and 6 are never live: ClearPickups arms only the first 4 records, and screens 46, 97 and 121 have 6 pickup cells | ClearPickups `$A352` | model (7.7) |
+| 7 | The homing missile is an endless stream: a flight that ends at X 0, on the hero or by the launcher's loss starts the next one in the same pass | HomingMissileStep `$A26B` | `w/006` frames 1561-1562 and 1822-1823 (7.6) |
+| 8 | The idle missile never resets IdleTime: past 700 passes the missiles follow one another | IdleMissileStart `$AC59` | `x2`, 121 launches after frame 5170 (10.8) |
+| 9 | A screen change zeroes ImmunityCount: the 20 safe passes after a death end if the hero walks off the screen | BuildScreen `$8494` | code only |
+| 10 | The jump takes MoveDir from the last walking pass, not from the keys held at take-off: up + right pressed together from a standstill jumps straight up | JumpMoveX `$820A` | code only; `x2` frames 919-929 show the other half (the direction kept after right is released) |
+| 11 | BonusPointer is never reset: each bonus screen's pointer starts where the last one stopped | `$A960` | code only (10.2) |
+| 12 | SlotSpriteCount is never raised, so PadSlotSprites always draws 6 blank sprites | `$9EAE` | code only ([4. Game loop](04-game-loop.md)) |
+| 13 | FlameList has room for 5 jets; a sixth would overwrite FlamePhase `$8F94`. Screens 27, 50 and 102 have exactly 5 | `$8F89` | model |
+| 14 | BoxOverlap is never called | `$ADCD` | the image: no CALL or JP to `$ADCD` |
+| 15 | Four routine names in the annotation name the wrong list: ClearShellList clears ShellList; GunShotsVsShots, DestroyGunShot and GunShotsVsPlayer act on the gun shots | `$910B`, `$9E37-$9E64` | the code (7.2) |
+| 16 | Two random sources: most users call Random `$AD36`, but BeeperNoise `$7C2B` and the puffs' ink read the R register | `$7C2B`, AnimatePuffs `$9835` | code (7.12) |
+| 17 | The exoskeleton's second shot costs no extra ammunition | FireControl `$837B` | code only |
+| 18 | A grenade's rising steps of -2 and -4 test the floor below; only the -1 steps skip it | MoveGrenade `$925F` | code only |
+
+One more is in another document and is only pointed at here: SetupIm2's table over live code
+([4.3](04-game-loop.md#43-interrupts-and-one-pass-against-the-frame)).
+
+The worked example of item 3, from the image: element `$10` (the decorative missile) has DestructibleKinds `FE 06 FE
+08`.
+On screen 23 it stands at column 20, row 1.
+x0 = 20 - 2 = 18, x1 = 24, y0 = 1 - 2 = `$FF`, y1 = `$FF` + 8 = 7.
+GrenadeBlast asks `row >= y0` with an unsigned compare: no row 0-21 is `$FF` or more, so the record never matches.
+The same holds for the two mushrooms (element `$2E`, dy -2) at row 1 of screen 53.
+
+The point: none of these breaks the game; most are economies (a RET for a loop exit, a shared routine for a kill and a
+shot). Items 3, 6 and 7 change what a player can score or survive on particular screens.
+
+## 10.14 What is known only from the code
 
 - ZoneAddLife (one more life at a zone's end below nine): every warp run that reached a zone's end had nine lives.
 - The bonus screen's pay-out on an odd line: `w/024` stopped on an even line (the score stays 019000 from frame 750 to
@@ -570,3 +1465,8 @@ exA's capture `exA1` (2, Z, O, R, B, A from `entry.z80`, exploration) is the wit
 - The five unused addends (100, 200, 250, 300, 350).
 - A grenade thrown to the left (GrenadeLeftWall): every script faced right.
 - The score's wrap at 1 000 000.
+- DeathDropToFloor's loop: every restart point was on the ground.
+- A vertical jump from a standstill with up and right pressed together (10.13 item 10).
+- A screen change ending the safe passes after a death (10.13 item 9).
+- A shot whose range end a teleport carried past it (10.12).
+- The exoskeleton's second shot (10.12): no recording fired in the suit while the shots were read.

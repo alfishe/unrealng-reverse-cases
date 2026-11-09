@@ -43,7 +43,7 @@ GROUPS = [
      'ForceFieldStep IdleMissileStart IdleMissileStep FlickerPadStep'),
     ('effects: puffs, debris, flames, colours', (200, 110, 230),
      'AnimatePuffs ColourCycle MoveDebris AnimateFlames RunSparkles RunBlasts PayBonusTick'),
-    ('contact tests', (250, 150, 60), 'ShellsHitPlayer BallsTouchPlayer TrapContact ShellsVsPlayer AliensVsPlayer '
+    ('contact tests', (250, 150, 60), 'ShellsHitPlayer BallsTouchPlayer TrapContact GunShotsVsPlayer AliensVsPlayer '
                                       'PickupsVsPlayer'),
     ('fixed delay (Delay, BC = 500)', (110, 110, 70), 'Delay'),
     ('time pads: blank sprite draws', (240, 120, 180), 'PadXorSprites PadSlotSprites'),

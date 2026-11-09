@@ -576,7 +576,7 @@ $824A DrawPlayerSprite ; remember the frame, draw it through $76DA
 
 $8253 c NextScreen ; The player walked off the right edge: raise the screen number, ask for the new screen
 > A the player's Y. PlayerY and RestartY = Y, ScreenChanged = Y (not 0: ScreenChangeCheck $8485 builds the next screen in this pass), ScreenNumber + 1, PlayerFrameShown = $FF (redraw). The round end $A8A5 calls it too, taking ScreenNumber from $FF to 0.
-> x2 (WALKTHROUGH 6.0): ScreenNumber 0 -> 5 at frames 751, 1481, 1771, 2421, 2951, each when the player left the screen on the right.
+> x2 (WALKTHROUGH 6.0): NextScreen runs at frames 743, 1471, 1770, 2419 and 2944 (ScreenNumber 0 -> 5), each when the player left the screen on the right; the builds end about 9 frames later (751, 1481, 1771, 2421, 2951).
 
 $8269 b PlayerFrameShown 1 ; The frame number last drawn; $FF forces a redraw (also JumpSteps' unused entry 0)
 > Written by DrawPlayer, set to $FF by the game start $7593, NextScreen, the turn ($82E8) and the pod pick-ups $9989 / $99DF. MovePlayer reads the jump table from $8269 + JumpStep with JumpStep 1-22, so this byte is never a jump step.
@@ -616,7 +616,7 @@ $830A XorShotShift
 $8333 XorShotDone
 
 $8338 c FireControl ; The fire button: one shot a press (two in the exoskeleton), and the hold count for the grenade
-> Once a pass from the main loop. SkipIfDying $9D78. X >= $76 (no room for a shot on the right): clears $7B98 (a byte past the inputs nobody reads) and returns. Fire ($7B96) up: FireHeld = 0. Fire held: FireHeld + 1, stopping at $FF (the grenade $9208 throws at 15). A new press: FireHeld = 1; with ammunition left: a beep ($7C26, B = $3C), Ammo - 1 (the ZXDB POKE 33646 at $836E), the AY effect $C177, the HUD ($8E4F) and SpawnShot. In the exoskeleton (SuitFrames $9ED8 not 0) a second shot 6 pixels lower.
+> Once a pass from the main loop. SkipIfDying $9D78. X >= $76 (no room for a shot on the right): clears $7B98 (a byte past the inputs nobody reads) and returns. Fire ($7B96) up: FireHeld = 0. Fire held: FireHeld + 1, stopping at $FF (the grenade $9208 throws at 15; FireHeld stays 15 or more while fire is held, so ThrowGrenade throws again each time GrenadeTimer is 0). A new press: FireHeld = 1; with ammunition left: a beep ($7C26, B = $3C), Ammo - 1 (the ZXDB POKE 33646 at $836E), the AY effect $C177, the HUD ($8E4F) and SpawnShot. In the exoskeleton (SuitFrames $9ED8 not 0) a second shot 6 pixels lower.
 $8347 FireTestButton
 $8351 FireHeldCount ; held: count the passes, no new shot
 $835D FirePress ; a new press
@@ -801,7 +801,7 @@ $8F93 ; $FF: the end mark when the list is full
 $8F94 b FlamePhase 1 ; The jets' animation frame 0-2
 
 $8F95 c AnimateTurrets ; The gun turrets (kind 3): fire at random, animate the barrel, notice a destroyed one
-> Once a pass, font $DDD8. For each turret with a state (1-9; 0 = gone): its block map cell is no longer 3 (the turret was destroyed; the code that clears the cell is past exB's range): state 0 and the barrel XORed away (its frame, then the $12/$13 pair, in attribute 0). State 1 is idle: 6 times in 256 (Random >= $FA) the turret fires (FireShell to the left, C = $FF) and its state becomes 9. States 9 to 2 count down one a pass: the frame of the old state is XORed off and the new one on (attributes $46 and $06), through the glyph pairs $10, $1E, $1C, ... $12, $10 of TurretFrames.
+> Once a pass, font $DDD8. For each turret with a state (1-9; 0 = gone): its block map cell is no longer 3 (the turret was destroyed: GrenadeBlast $93E2 prints element 5, a destructible, again with printer 3, and this branch XORs off the barrel and the $12/$13 pair): state 0 and the barrel XORed away (its frame, then the $12/$13 pair, in attribute 0). State 1 is idle: 6 times in 256 (Random >= $FA) the turret fires (FireShell to the left, C = $FF) and its state becomes 9. States 9 to 2 count down one a pass: the frame of the old state is XORed off and the new one on (attributes $46 and $06), through the glyph pairs $10, $1E, $1C, ... $12, $10 of TurretFrames.
 $8F9E AnimateTurretsNext
 $8FD5 TurretIdle ; state 1: fire at random
 $8FEC TurretRecoil ; states 2-9: one frame of the barrel's animation
@@ -847,7 +847,7 @@ $90ED ShellsHitPlayerNext
 # 14 with only the lives and immunity POKEs, so the trap code and the kill test $9CAA run; a crouched throw; keys 7 8
 # 9 0). Counts are L1 block executions.
 
-$910B c ClearMissileList ; Empty the missile list $90CB (10 records of 3 bytes)
+$910B c ClearShellList ; Empty the turrets' shell list ShellList $90CB (10 records of 3 bytes)
 > Called by the screen builder $8494 before it builds the object lists. Writes 30 zeros to $90CB-$90E8; $90E9 keeps its $FF end mark. The list belongs to $9071 (a missile fired, its record X, Y, speed), $90A2 (moves them right) and $90EA (kills the player on contact).
 > c1: 4 runs (one per screen build).
 $9114 ; B = 0: the fill byte
@@ -963,7 +963,7 @@ $92F6 ; timer 28-30: -2; 31-32: -4
 @module effects ; The small XOR sprites and their wall probes, the grenade blast, the debris, the puffs
 $92FB c DrawSmallSprite ; XOR an 8 x 8 sprite, pre-shifted, at a pixel position
 > In: A = the frame, E = X in 2-pixel units (0-127), D = Y in pixels. Every register is kept. The frame is 64 bytes at $ED40 + 64 A: four copies shifted by 0, 2, 4 and 6 pixels (E AND 3), 16 bytes each, 2 bytes a pixel line, 8 lines. $B088 gives the screen address of the line; the bytes are read with POP (SP saved at $78DA), two lines per loop, the screen address moved down a line in the Spectrum layout (C = 7 the line mask).
-> Each call adds 1 to $9E98, the sprites drawn this pass ($9E85 pads the pass with more draws, the main loop clears it). Frames seen in the code: 0 / 1 the grenade facing right / left, 2 a debris piece, 3-5 the puff, 6 blank, 7 the ball, 8 the gun's shot (the frames themselves are built at run time; w030's start.bin shows them).
+> Each call adds 1 to $9E98, the sprites drawn this pass ($9E85 pads the pass with more draws, the main loop clears it). Frames seen in the code: 0 / 1 the grenade facing right / left, 2 a debris piece, 3-5 the puff, 6 blank, 7 the ball, 8 the gun's shot (the frames are SmallSprites $ED40 in the image: 24 sprites of 4 pre-shifted 16-byte copies, up to $EF7F).
 > c1: 52 160 calls, the most called routine of this range.
 $931C ; SP = the frame's bytes
 $9322 ; B = 4 pairs of lines, C = 7
@@ -1008,7 +1008,7 @@ $9437 b DestructibleList 7 ; The grenade-destructible scenery pieces of the scre
 
 $9487 c AddDestructible ; A scenery element of a destructible kind gets a box in DestructibleList
 > Called by the screen builder ($84EF) for each element of the screen with A = the element, E = its column, D = its row, IX = the next free record. A kind found in DestructibleKinds writes the record (the box from the kind's offsets and sizes) and moves IX on by 7. AF, BC, HL kept.
-> c1: 36 elements on screen 0, 8 of them destructible.
+> c1: 36 elements over its 4 builds of screen 0 (9 a build), 8 destructible (2 a build: the turret and the spire).
 $948D AddDestructibleLoop ; bit 7: the table's end
 $949A AddDestructibleDone
 $949E AddDestructibleRecord ; a destructible kind: the record
@@ -1317,19 +1317,19 @@ $9E36 ; the end mark
 # Evidence: entry counts from the L1 of c1 (work/game), c128, x1, x2, m1, h1 and the 97 warp runs (exD/l1sum.py),
 # exD's own capture work/ann/exD/d1 (the pause and the CAPS delete), the code reading.
 
-$9E37 c ShellsVsShots ; Tests every gun shell against the player's shots; a hit shell is destroyed
-> Called by the shot step $83DD each pass (c1: 16 303 entries, five a main loop pass with its four other calls). Walks the shell list $9E18 (3 bytes a shell: X, Y, the step; $FF ends; a step of 0 is a free record), skips the free ones, and asks $9B82 whether one of the player's shots ($845F) overlaps the shell (A not 0: hit, the shot removed); then DestroyShell. Ends when E (the X byte) has bit 7 set, the list's $FF.
-> The shells are launched by the guns of tile 11 ($9D7F) and moved left by $9DD6 (not in this range). Warp runs: DestroyShell 174 times in 27 runs, none in c1 (the random play never shot one).
-$9E3A ShellsVsShotsLoop ; E = X; bit 7: the list's end
+$9E37 c GunShotsVsShots ; Tests every gun shot against the player's shots; a hit gun shot is destroyed
+> Called by the shot step $83DD each pass (c1: 16 303 entries, five a main loop pass with its four other calls). Walks the shell list $9E18 (3 bytes a shell: X, Y, the step; $FF ends; a step of 0 is a free record), skips the free ones, and asks $9B82 whether one of the player's shots ($845F) overlaps the shell (A not 0: hit, the shot removed); then DestroyGunShot. Ends when E (the X byte) has bit 7 set, the list's $FF.
+> The shells are launched by the guns of tile 11 ($9D7F) and moved left by $9DD6 (not in this range). Warp runs: DestroyGunShot 174 times in 27 runs, none in c1 (the random play never shot one).
+$9E3A GunShotsVsShotsLoop ; E = X; bit 7: the list's end
 $9E43 ; the step 0: a free record
 $9E46 ; A = 1: a shot of $845F hit (X, Y) = DE
-$9E4F c DestroyShell ; Removes the shell at DE: XOR-erased, its record freed, an explosion there, sound 8, 50 points
-> In: DE = the shell's X, Y; HL = the record's next byte (the shell's step + 1). XorSprite $92FB draws sprite 8 (the shell) over itself, the step byte goes to 0, $981D starts an explosion at DE, $C155 asks the AY for effect 8, and AddScore adds Points50 (50). Callers: ShellsVsShots, ShellsVsPlayer.
+$9E4F c DestroyGunShot ; Removes the gun shot at DE: XOR-erased, its record freed, an explosion there, sound 8, 50 points
+> In: DE = the shell's X, Y; HL = the record's next byte (the shell's step + 1). XorSprite $92FB draws sprite 8 (the shell) over itself, the step byte goes to 0, $981D starts an explosion at DE, $C155 asks the AY for effect 8, and AddScore adds Points50 (50). Callers: GunShotsVsShots, GunShotsVsPlayer: a gun shot that hits the player pays 50 too (w/006 frame 243 to 244).
 $9E54 ; the shell's step byte: 0 frees the record
 $9E5E ; the 6 digits ending at $AD9C: 000050
-$9E64 c ShellsVsPlayer ; Tests every gun shell against the player: a shell that touches him is destroyed and kills him
-> Main loop (c1: 3260 entries, one a pass). The same walk as ShellsVsShots; $9BD6 with B = 8, C = 4 (the shell's size) answers 1 when the shell overlaps the player ($82F5, $82F6). Then DestroyShell, sound 8 again and KillPlayer $9CAF (which does nothing while the player is dying or immune: $9CE2, $768D).
-$9E67 ShellsVsPlayerLoop
+$9E64 c GunShotsVsPlayer ; Tests every gun shot against the player: a gun shot that touches him is destroyed and kills him
+> Main loop (c1: 3260 entries, one a pass). The same walk as GunShotsVsShots; $9BD6 with B = 8, C = 4 (the shell's size) answers 1 when the shell overlaps the player ($82F5, $82F6). Then DestroyGunShot, sound 8 again and KillPlayer $9CAF (which does nothing while the player is dying or immune: $9CE2, $768D).
+$9E67 GunShotsVsPlayerLoop
 $9E73 ; the shell is 4 wide and 8 high in the units of $9BD6
 
 @module passtime ; The pass time pads, the bonus ticks, the teleport sparkles, the exoskeleton booth
@@ -1350,7 +1350,7 @@ $9ED6 w BonusTicks 1 ; The pending bonus in ticks of 25 points (AddBonusTicks, P
 $9ED8 b ExoSuit 1 ; $0C while the player wears the exoskeleton, 0 without: the frame offset of his sprites
 > Toggled by ExoSuitBooth (XOR $0C), cleared at a new game ($6D72) and at a zone's end (ZoneRefill $A8A5). $8224 adds it to every player frame number (the suited frames are $0C on). Read by the fire ($837B: a second shot 6 lower while suited), by $9CAA (the mines and traps of the ZXDB POKEs $9CAE: the suit protects) and by ZoneBonus (no bravery bonus while suited).
 $9ED9 c StartSparkle ; Puts a sparkle of 20 passes at DE into the first free record of SparkleList
-> In: DE = X, Y (pixels). Called four times by the teleport $98BA: at both booths, when the player leaves one and when he arrives at the other. Full list: nothing. x2: 2 entries, warps: 72 in 30 runs.
+> In: DE = X, Y (pixels). Called twice by the teleport $98BA: one sparkle at the pad left, one at the pad reached. Full list: nothing. x2: 2 entries, warps: 72 in 30 runs.
 $9EDC StartSparkleLoop
 $9EE7 ; 20 passes of sparkle
 $9EEE c RunSparkles ; Each pass, one explosion at a random point of each live sparkle's 4 x 16 box
@@ -1395,7 +1395,7 @@ $A01C c ClearBlasts ; Frees the 5 blast records (15 zeros), at every screen set-
 
 @module gameover ; GAME OVER and the Hall of Fame name entry
 $A02A c GameOver ; GAME OVER: the text and tune, a pause, the Hall of Fame test, then a key or a timeout restarts
-> Reached by the JP Z at $9D38 when the last life is lost. Prints GameOverText (a bright red-on-cyan band, rows 10-12 from column 10), plays the tune $7D68 through $7D17, waits two DelayBC of 65 536 rounds (the delay copies BC bytes from $0000 to $0000: 65 536 x 21 T = 1 376 256 T, about 20 frames or 0.4 s each), then HallOfFameInsert: a score that enters the table asks for the name, and that path never comes back (it jumps to the entry). Else WaitNoKey, and up to 20 000 rounds of ReadKey: any key, or the count's end, jumps to the entry $6D60 (the menu). c1: 3 game overs, c128: 1, x1, m1, h1: 1 each.
+> Reached by the JP Z at $9D38 when the last life is lost. Prints GameOverText (a bright yellow-on-red band, attribute $56, rows 9-11, columns 10-20), plays the tune $7D68 through $7D17, waits two DelayBC of 65 536 rounds (the delay copies BC bytes from $0000 to $0000: 65 536 x 21 T = 1 376 256 T, about 20 frames or 0.4 s each), then HallOfFameInsert: a score that enters the table asks for the name, and that path never comes back (it jumps to the entry). Else WaitNoKey, and up to 20 000 rounds of ReadKey: any key, or the count's end, jumps to the entry $6D60 (the menu). c1: 3 game overs, c128: 1, x1, m1, h1: 1 each.
 $A048 GameOverWait ; any key: the menu at once
 $A057 t GameOverText ; GAME OVER: at 9,10, font $D7E0, attribute $56, a row of 11 spaces, " GAME OVER ", 11 spaces
 > The print codes of PrintString $AF2B: $DF row col, $E6 the font, $E0 the attribute, $E4 n c (n times c), $90-$CE a new line at the column + (code - $AF), $FF the end. Rows 9-11, columns 10-20.
@@ -1473,7 +1473,7 @@ $A2B6 HomingMissileRemove ; the slot cleared (frame 0), MissileLive 0, a new lau
 $A2C4 HomingMissileDraw
 
 $A2D5 c DrawStars ; The star field: 3 tries a row on rows 0-21, a star (character 3 of font $E840) where the cell is empty
-> Called by the screen set-up $8494. For rows 21 down to 0, three random columns (Random AND $1F): when the map $5E00 holds 0 there (no scenery), PrintCharPlain $AE26 draws character 3 of the font $E840 in a random bright ink $42-$47. So up to 66 stars, new each time a screen is built.
+> Called by the screen set-up $8494. For rows 21 down to 0, three random columns (Random AND $1F): when the map $5E00 holds 0 there (no scenery), PrintCharAttr $AE26 draws glyph 3 of TileSetE840 (one pixel, line 4) in a random bright ink $42-$47. So up to 66 stars, new each time a screen is built.
 $A2DD DrawStarsRow
 $A2E0 DrawStarsTry
 $A303 DrawStarsNext

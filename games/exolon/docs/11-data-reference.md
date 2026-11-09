@@ -173,7 +173,7 @@ Written by `kit/refdocs.py`.
 | `$8F94` | `FlamePhase` | 1 | The jets' animation frame 0-2 | `AnimateFlames`, `Delay` | `AnimateFlames`, `Delay`, `IndexObjectCells` |
 | `$9019` | `TurretFrames` | 9 | The barrel's first glyph for the states 1-9 (the second is the next glyph) | `AnimateTurrets`, `Delay`, `TurretFrame` | `Delay`, `IndexObjectCells` |
 | `$9022` | `TurretList` | 13 | The turrets: up to 4 of column, row, state (2 after a screen is built); `$FF` ends (at most 2 on a screen: 7). ResetTurretList fills the state bytes with 2 before IndexObjectCells writes the columns and rows. | `AnimateTurrets`, `Delay`, `ResetTurretList` | `AddObjectCell`, `AnimateTurrets`, `Delay`, `IndexObjectCells`, `ResetTurretList` |
-| `$90CB` | `ShellList` | 31 | The turrets' shells: 10 slots of X, Y, direction (0 free); `$FF` ends | `ClearMissileList`, `Delay`, `FireShell`, `MoveShells`, `ShellsHitPlayer` | `ClearMissileList`, `Delay`, `FireShell`, `IndexObjectCells`, `MoveShells` +1 |
+| `$90CB` | `ShellList` | 31 | The turrets' shells: 10 slots of X, Y, direction (0 free); `$FF` ends | `ClearShellList`, `Delay`, `FireShell`, `MoveShells`, `ShellsHitPlayer` | `ClearShellList`, `Delay`, `FireShell`, `IndexObjectCells`, `MoveShells` +1 |
 | `$9135` | `ColourCycleList` | 29 | Up to 14 cells (column, row) of the colour cycle; `$FF` after the last. Filled by `$8E86` / `$8EAD` from the map (map value 4), emptied (`$FF` in the first byte) by `$8E86` at each screen build. The ROM image holds zeros. | `ColourCycle`, `Delay` | `AddObjectCell`, `Delay`, `IndexObjectCells` |
 
 ## mines
@@ -230,7 +230,7 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$9DC1` | `GunList` | 21 | Up to 10 guns (column, row); `$FF` after the last (map value 11) | `Delay`, `Guns` | `Delay`, `IndexObjectCells` |
-| `$9E18` | `GunShots` | 31 | Up to 10 gun shots (X, Y, dx); `$FF` after the last. The shots hit by the player's shots (`$9E37` / `$9E4F`) and the player (`$9E64`) are tested past this range. | `ClearGunShots`, `Delay`, `MoveGunShots`, `ShellsVsPlayer`, `ShellsVsShots` | `ClearGunShots`, `Delay` |
+| `$9E18` | `GunShots` | 31 | Up to 10 gun shots (X, Y, dx); `$FF` after the last. The shots hit by the player's shots (`$9E37` / `$9E4F`) and the player (`$9E64`) are tested past this range. | `ClearGunShots`, `Delay`, `GunShotsVsPlayer`, `GunShotsVsShots`, `MoveGunShots` | `ClearGunShots`, `Delay` |
 
 ## passtime
 

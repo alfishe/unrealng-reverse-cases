@@ -263,7 +263,7 @@ At the end of a pass: ImmunityCount `$768D` down by one while non-zero, PassCoun
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 4,664,603 t-states own (0.23 %) |
 | Called from | `MainMenu` (tail) |
-| Calls | `DrawHud`, `ReadControls`, `MovePlayer`, `FireControl`, `MoveShots`, `ScreenChangeCheck`, `BuildScreen`, `AnimateFlames`, `AnimateTurrets`, `MoveShells`, `ShellsHitPlayer`, `ColourCycle`, `Mines`, `ThrowGrenade`, `MoveGrenade`, `MoveDebris`, `AnimatePuffs`, `Teleports`, `Pods`, `AbortKeys`, `MoveBalls`, `BallsTouchPlayer`, `Traps`, `TrapContact`, `PlayerDeath`, `Guns`, `MoveGunShots`, `ShellsVsPlayer`, `PadXorSprites`, `PadSlotSprites`, `PayBonusTick`, `RunSparkles`, `ExoSuitBooth`, `RunBlasts`, `HomingMissileStep`, `PickupsVsPlayer`, `AliensStep`, `AlienSpawn`, `AliensVsPlayer`, `FlickerPadStep`, `ZoneEnd`, `ForceFieldStep`, `IdleMissileStart`, `IdleMissileStep`, `PauseKey`, `ClearScreen`, `Delay`, `AySilence`, `SoundEffectsTick` |
+| Calls | `DrawHud`, `ReadControls`, `MovePlayer`, `FireControl`, `MoveShots`, `ScreenChangeCheck`, `BuildScreen`, `AnimateFlames`, `AnimateTurrets`, `MoveShells`, `ShellsHitPlayer`, `ColourCycle`, `Mines`, `ThrowGrenade`, `MoveGrenade`, `MoveDebris`, `AnimatePuffs`, `Teleports`, `Pods`, `AbortKeys`, `MoveBalls`, `BallsTouchPlayer`, `Traps`, `TrapContact`, `PlayerDeath`, `Guns`, `MoveGunShots`, `GunShotsVsPlayer`, `PadXorSprites`, `PadSlotSprites`, `PayBonusTick`, `RunSparkles`, `ExoSuitBooth`, `RunBlasts`, `HomingMissileStep`, `PickupsVsPlayer`, `AliensStep`, `AlienSpawn`, `AliensVsPlayer`, `FlickerPadStep`, `ZoneEnd`, `ForceFieldStep`, `IdleMissileStart`, `IdleMissileStep`, `PauseKey`, `ClearScreen`, `Delay`, `AySilence`, `SoundEffectsTick` |
 | Reads | `$768C`-`$768D` (`PassCount`); `$7BDA` (`PlayerFlipped`); `$925A` (`GrenadeTimer`); `$AC7B`-`$AC7C` (`IdleTime`) |
 | Writes | `$768C`-`$768D` (`PassCount`); `$8269` (`PlayerFrameShown`); `$82F3`-`$82FA` (`RestartX`, `RestartY`, `PlayerX`, `PlayerY` and 4 more); `$8E5A`-`$8E66` (`Ammo`, `PrintGrenades`, `Grenades`); `$9E98` (`XorSpriteCount`); `$9EAE` (`SlotSpriteCount`); 1 more ranges |
 
@@ -1090,7 +1090,7 @@ A the frame with the suit base (PickUpPods `$9942` enters here with the frame it
 
 A the player's Y. PlayerY and RestartY = Y, ScreenChanged = Y (not 0: ScreenChangeCheck `$8485` builds the next screen in this pass), ScreenNumber + 1, PlayerFrameShown = `$FF` (redraw). The round end `$A8A5` calls it too, taking ScreenNumber from `$FF` to 0.
 
-x2 (WALKTHROUGH 6.0): ScreenNumber 0 -> 5 at frames 751, 1481, 1771, 2421, 2951, each when the player left the screen on the right.
+x2 (WALKTHROUGH 6.0): NextScreen runs at frames 743, 1471, 1770, 2419 and 2944 (ScreenNumber 0 -> 5), each when the player left the screen on the right; the builds end about 9 frames later (751, 1481, 1771, 2421, 2951).
 
 | | |
 | --- | --- |
@@ -1140,7 +1140,7 @@ AF, BC, DE, HL kept. Called by SpawnShot, MoveShots and the shot tests `$9B82`, 
 
 **The fire button: one shot a press (two in the exoskeleton), and the hold count for the grenade**
 
-Once a pass from the main loop. SkipIfDying `$9D78`. X >= `$76` (no room for a shot on the right): clears `$7B98` (a byte past the inputs nobody reads) and returns. Fire (`$7B96`) up: FireHeld = 0. Fire held: FireHeld + 1, stopping at `$FF` (the grenade `$9208` throws at 15). A new press: FireHeld = 1; with ammunition left: a beep (`$7C26`, B = `$3C`), Ammo - 1 (the ZXDB POKE 33646 at `$836E`), the AY effect `$C177`, the HUD (`$8E4F`) and SpawnShot. In the exoskeleton (SuitFrames `$9ED8` not 0) a second shot 6 pixels lower.
+Once a pass from the main loop. SkipIfDying `$9D78`. X >= `$76` (no room for a shot on the right): clears `$7B98` (a byte past the inputs nobody reads) and returns. Fire (`$7B96`) up: FireHeld = 0. Fire held: FireHeld + 1, stopping at `$FF` (the grenade `$9208` throws at 15; FireHeld stays 15 or more while fire is held, so ThrowGrenade throws again each time GrenadeTimer is 0). A new press: FireHeld = 1; with ammunition left: a beep (`$7C26`, B = `$3C`), Ammo - 1 (the ZXDB POKE 33646 at `$836E`), the AY effect `$C177`, the HUD (`$8E4F`) and SpawnShot. In the exoskeleton (SuitFrames `$9ED8` not 0) a second shot 6 pixels lower.
 
 | | |
 | --- | --- |
@@ -1174,7 +1174,7 @@ Called 5 times a main loop pass (so a shot moves 10 pixels a pass). First the hi
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 16,303 calls, 10,687,520 t-states own (0.53 %) |
 | Called from | `StartGame` |
-| Calls | `XorShot`, `ProbeRight`, `ShotsHitBalls`, `ShellsVsShots`, `AliensVsShots`, `ForceFieldVsShots` |
+| Calls | `XorShot`, `ProbeRight`, `ShotsHitBalls`, `GunShotsVsShots`, `AliensVsShots`, `ForceFieldVsShots` |
 | Reads | `$82F5` (`PlayerX`); `$845F`-`$8477` (`ShotList`) |
 | Writes | `$845F`-`$8461` (`ShotList`) |
 
@@ -1219,7 +1219,7 @@ At the end: IX's list closed, SaveAttributes, `$A2D5`, IndexObjectCells (the obj
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 9,116 t-states own (0.00 %) |
 | Called from | `StartGame` |
-| Calls | `ClearShots`, `TableWord`, `ClearBlockMap`, `FillOpenMap`, `SaveAttributes`, `IndexObjectCells`, `ResetTurretList`, `ClearMissileList`, `ArmMines`, `AddDestructible`, `ClearDebris`, `ClearPuffs`, `ClearBalls`, `SpawnBalls`, `ClearTraps`, `ClearGunShots`, `ClearSparkles`, `ClearBlasts`, `HomingMissileStart`, `DrawStars`, `ClearPickups`, `ClearAliens`, `AliensSetUp`, `ForceFieldDraw` (tail), `PrintString`, `ClearPlayArea`, `ClearWorkArea` |
+| Calls | `ClearShots`, `TableWord`, `ClearBlockMap`, `FillOpenMap`, `SaveAttributes`, `IndexObjectCells`, `ResetTurretList`, `ClearShellList`, `ArmMines`, `AddDestructible`, `ClearDebris`, `ClearPuffs`, `ClearBalls`, `SpawnBalls`, `ClearTraps`, `ClearGunShots`, `ClearSparkles`, `ClearBlasts`, `HomingMissileStart`, `DrawStars`, `ClearPickups`, `ClearAliens`, `AliensSetUp`, `ForceFieldDraw` (tail), `PrintString`, `ClearPlayArea`, `ClearWorkArea` |
 | Reads | `$8523` (`ScreenNumber`); `$C8EE`-`$C909` (`Screen000Layout`) |
 | Writes | `$768D` (`PassCount`); `$925A` (`GrenadeTimer`); `$9445` (`DestructibleList`); `$AC78`-`$AC7C` (`IdleMissileLive`, `IdleMissilePosition`, `IdleTime`); `$AE1B`-`$AE21` (`PrintChar`) |
 
@@ -1401,7 +1401,7 @@ Once a pass. FlamePhase steps 0, 1, 2; the glyphs `$15` + 2 phase and `$16` + 2 
 
 **The gun turrets (kind 3): fire at random, animate the barrel, notice a destroyed one**
 
-Once a pass, font `$DDD8`. For each turret with a state (1-9; 0 = gone): its block map cell is no longer 3 (the turret was destroyed; the code that clears the cell is past exB's range): state 0 and the barrel XORed away (its frame, then the `$12`/`$13` pair, in attribute 0). State 1 is idle: 6 times in 256 (Random >= `$FA`) the turret fires (FireShell to the left, C = `$FF`) and its state becomes 9. States 9 to 2 count down one a pass: the frame of the old state is XORed off and the new one on (attributes `$46` and `$06`), through the glyph pairs `$10`, `$1E`, `$1C`, ... `$12`, `$10` of TurretFrames.
+Once a pass, font `$DDD8`. For each turret with a state (1-9; 0 = gone): its block map cell is no longer 3 (the turret was destroyed: GrenadeBlast `$93E2` prints element 5, a destructible, again with printer 3, and this branch XORs off the barrel and the `$12`/`$13` pair): state 0 and the barrel XORed away (its frame, then the `$12`/`$13` pair, in attribute 0). State 1 is idle: 6 times in 256 (Random >= `$FA`) the turret fires (FireShell to the left, C = `$FF`) and its state becomes 9. States 9 to 2 count down one a pass: the frame of the old state is XORed off and the new one on (attributes `$46` and `$06`), through the glyph pairs `$10`, `$1E`, `$1C`, ... `$12`, `$10` of TurretFrames.
 
 | | |
 | --- | --- |
@@ -1490,9 +1490,9 @@ For each live shell the box test `$9BD6` (BC = 0) against the player; a hit free
 | Reads | `$90CB`-`$90E9` (`ShellList`) |
 | Writes | `$90CD`-`$90D3` (`ShellList`) |
 
-### `ClearMissileList` (`$910B`)
+### `ClearShellList` (`$910B`)
 
-**Empty the missile list `$90CB` (10 records of 3 bytes)**
+**Empty the turrets' shell list ShellList `$90CB` (10 records of 3 bytes)**
 
 Called by the screen builder `$8494` before it builds the object lists. Writes 30 zeros to `$90CB-$90E8`; `$90E9` keeps its `$FF` end mark. The list belongs to `$9071` (a missile fired, its record X, Y, speed), `$90A2` (moves them right) and `$90EA` (kills the player on contact).
 
@@ -1656,7 +1656,7 @@ ProbeRight; a wall ends the flight (GrenadeEnd). Then the rest of MoveGrenade's 
 
 In: A = the frame, E = X in 2-pixel units (0-127), D = Y in pixels. Every register is kept. The frame is 64 bytes at `$ED40` + 64 A: four copies shifted by 0, 2, 4 and 6 pixels (E AND 3), 16 bytes each, 2 bytes a pixel line, 8 lines. `$B088` gives the screen address of the line; the bytes are read with POP (SP saved at `$78DA`), two lines per loop, the screen address moved down a line in the Spectrum layout (C = 7 the line mask).
 
-Each call adds 1 to `$9E98`, the sprites drawn this pass (`$9E85` pads the pass with more draws, the main loop clears it). Frames seen in the code: 0 / 1 the grenade facing right / left, 2 a debris piece, 3-5 the puff, 6 blank, 7 the ball, 8 the gun's shot (the frames themselves are built at run time; w030's start.bin shows them).
+Each call adds 1 to `$9E98`, the sprites drawn this pass (`$9E85` pads the pass with more draws, the main loop clears it). Frames seen in the code: 0 / 1 the grenade facing right / left, 2 a debris piece, 3-5 the puff, 6 blank, 7 the ball, 8 the gun's shot (the frames are SmallSprites `$ED40` in the image: 24 sprites of 4 pre-shifted 16-byte copies, up to `$EF7F`).
 
 c1: 52 160 calls, the most called routine of this range.
 
@@ -1729,7 +1729,7 @@ A grenade that hits no such box ends silently. c128: 3 ends, x2 9 hits over 14 t
 
 Called by the screen builder (`$84EF`) for each element of the screen with A = the element, E = its column, D = its row, IX = the next free record. A kind found in DestructibleKinds writes the record (the box from the kind's offsets and sizes) and moves IX on by 7. AF, BC, HL kept.
 
-c1: 36 elements on screen 0, 8 of them destructible.
+c1: 36 elements over its 4 builds of screen 0 (9 a build), 8 destructible (2 a build: the turret and the spire).
 
 | | |
 | --- | --- |
@@ -2226,13 +2226,13 @@ Called by the screen builder `$8494`.
 | Reads | `$9E18`-`$9E34` (`GunShots`) |
 | Writes | `$9E18`-`$9E35` (`GunShots`) |
 
-### `ShellsVsShots` (`$9E37`)
+### `GunShotsVsShots` (`$9E37`)
 
-**Tests every gun shell against the player's shots; a hit shell is destroyed**
+**Tests every gun shot against the player's shots; a hit gun shot is destroyed**
 
-Called by the shot step `$83DD` each pass (c1: 16 303 entries, five a main loop pass with its four other calls). Walks the shell list `$9E18` (3 bytes a shell: X, Y, the step; `$FF` ends; a step of 0 is a free record), skips the free ones, and asks `$9B82` whether one of the player's shots (`$845F`) overlaps the shell (A not 0: hit, the shot removed); then DestroyShell. Ends when E (the X byte) has bit 7 set, the list's `$FF`.
+Called by the shot step `$83DD` each pass (c1: 16 303 entries, five a main loop pass with its four other calls). Walks the shell list `$9E18` (3 bytes a shell: X, Y, the step; `$FF` ends; a step of 0 is a free record), skips the free ones, and asks `$9B82` whether one of the player's shots (`$845F`) overlaps the shell (A not 0: hit, the shot removed); then DestroyGunShot. Ends when E (the X byte) has bit 7 set, the list's `$FF`.
 
-The shells are launched by the guns of tile 11 (`$9D7F`) and moved left by `$9DD6` (not in this range). Warp runs: DestroyShell 174 times in 27 runs, none in c1 (the random play never shot one).
+The shells are launched by the guns of tile 11 (`$9D7F`) and moved left by `$9DD6` (not in this range). Warp runs: DestroyGunShot 174 times in 27 runs, none in c1 (the random play never shot one).
 
 | | |
 | --- | --- |
@@ -2240,21 +2240,21 @@ The shells are launched by the guns of tile 11 (`$9D7F`) and moved left by `$9DD
 | Called from | `MoveShots` |
 | Reads | `$9E18`-`$9E36` (`GunShots`) |
 
-### `DestroyShell` (`$9E4F`)
+### `DestroyGunShot` (`$9E4F`)
 
-**Removes the shell at DE: XOR-erased, its record freed, an explosion there, sound 8, 50 points**
+**Removes the gun shot at DE: XOR-erased, its record freed, an explosion there, sound 8, 50 points**
 
-In: DE = the shell's X, Y; HL = the record's next byte (the shell's step + 1). XorSprite `$92FB` draws sprite 8 (the shell) over itself, the step byte goes to 0, `$981D` starts an explosion at DE, `$C155` asks the AY for effect 8, and AddScore adds Points50 (50). Callers: ShellsVsShots, ShellsVsPlayer.
+In: DE = the shell's X, Y; HL = the record's next byte (the shell's step + 1). XorSprite `$92FB` draws sprite 8 (the shell) over itself, the step byte goes to 0, `$981D` starts an explosion at DE, `$C155` asks the AY for effect 8, and AddScore adds Points50 (50). Callers: GunShotsVsShots, GunShotsVsPlayer: a gun shot that hits the player pays 50 too (w/006 frame 243 to 244).
 
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
 
-### `ShellsVsPlayer` (`$9E64`)
+### `GunShotsVsPlayer` (`$9E64`)
 
-**Tests every gun shell against the player: a shell that touches him is destroyed and kills him**
+**Tests every gun shot against the player: a gun shot that touches him is destroyed and kills him**
 
-Main loop (c1: 3260 entries, one a pass). The same walk as ShellsVsShots; `$9BD6` with B = 8, C = 4 (the shell's size) answers 1 when the shell overlaps the player (`$82F5`, `$82F6`). Then DestroyShell, sound 8 again and KillPlayer `$9CAF` (which does nothing while the player is dying or immune: `$9CE2`, `$768D`).
+Main loop (c1: 3260 entries, one a pass). The same walk as GunShotsVsShots; `$9BD6` with B = 8, C = 4 (the shell's size) answers 1 when the shell overlaps the player (`$82F5`, `$82F6`). Then DestroyGunShot, sound 8 again and KillPlayer `$9CAF` (which does nothing while the player is dying or immune: `$9CE2`, `$768D`).
 
 | | |
 | --- | --- |
@@ -2318,7 +2318,7 @@ Main loop (`$7629`). While BonusTicks is not 0: BonusTicks - 1, AddScore Points2
 
 **Puts a sparkle of 20 passes at DE into the first free record of SparkleList**
 
-In: DE = X, Y (pixels). Called four times by the teleport `$98BA`: at both booths, when the player leaves one and when he arrives at the other. Full list: nothing. x2: 2 entries, warps: 72 in 30 runs.
+In: DE = X, Y (pixels). Called twice by the teleport `$98BA`: one sparkle at the pad left, one at the pad reached. Full list: nothing. x2: 2 entries, warps: 72 in 30 runs.
 
 | | |
 | --- | --- |
@@ -2421,7 +2421,7 @@ Called by the screen set-up `$8494` (c1: 4, warps: 223).
 
 **GAME OVER: the text and tune, a pause, the Hall of Fame test, then a key or a timeout restarts**
 
-Reached by the JP Z at `$9D38` when the last life is lost. Prints GameOverText (a bright red-on-cyan band, rows 10-12 from column 10), plays the tune `$7D68` through `$7D17`, waits two DelayBC of 65 536 rounds (the delay copies BC bytes from `$0000` to `$0000`: 65 536 x 21 T = 1 376 256 T, about 20 frames or 0.4 s each), then HallOfFameInsert: a score that enters the table asks for the name, and that path never comes back (it jumps to the entry). Else WaitNoKey, and up to 20 000 rounds of ReadKey: any key, or the count's end, jumps to the entry `$6D60` (the menu). c1: 3 game overs, c128: 1, x1, m1, h1: 1 each.
+Reached by the JP Z at `$9D38` when the last life is lost. Prints GameOverText (a bright yellow-on-red band, attribute `$56`, rows 9-11, columns 10-20), plays the tune `$7D68` through `$7D17`, waits two DelayBC of 65 536 rounds (the delay copies BC bytes from `$0000` to `$0000`: 65 536 x 21 T = 1 376 256 T, about 20 frames or 0.4 s each), then HallOfFameInsert: a score that enters the table asks for the name, and that path never comes back (it jumps to the entry). Else WaitNoKey, and up to 20 000 rounds of ReadKey: any key, or the count's end, jumps to the entry `$6D60` (the menu). c1: 3 game overs, c128: 1, x1, m1, h1: 1 each.
 
 | | |
 | --- | --- |
@@ -2533,7 +2533,7 @@ Main loop (`$7638`; c1: 3260). No missile: HomingMissileStart. The launcher gone
 
 **The star field: 3 tries a row on rows 0-21, a star (character 3 of font `$E840`) where the cell is empty**
 
-Called by the screen set-up `$8494`. For rows 21 down to 0, three random columns (Random AND `$1F`): when the map `$5E00` holds 0 there (no scenery), PrintCharPlain `$AE26` draws character 3 of the font `$E840` in a random bright ink `$42-$47`. So up to 66 stars, new each time a screen is built.
+Called by the screen set-up `$8494`. For rows 21 down to 0, three random columns (Random AND `$1F`): when the map `$5E00` holds 0 there (no scenery), PrintCharAttr `$AE26` draws glyph 3 of TileSetE840 (one pixel, line 4) in a random bright ink `$42-$47`. So up to 66 stars, new each time a screen is built.
 
 | | |
 | --- | --- |

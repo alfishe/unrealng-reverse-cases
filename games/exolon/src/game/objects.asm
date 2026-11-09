@@ -197,10 +197,11 @@ FlamePhase:
 ; destroyed one
 ;
 ; Once a pass, font $DDD8. For each turret with a state (1-9; 0 = gone): its
-; block map cell is no longer 3 (the turret was destroyed; the code that clears
-; the cell is past exB's range): state 0 and the barrel XORed away (its frame,
-; then the $12/$13 pair, in attribute 0). State 1 is idle: 6 times in 256
-; (Random >= $FA) the turret fires (FireShell to the left, C = $FF) and its
+; block map cell is no longer 3 (the turret was destroyed: GrenadeBlast $93E2
+; prints element 5, a destructible, again with printer 3, and this branch XORs
+; off the barrel and the $12/$13 pair): state 0 and the barrel XORed away (its
+; frame, then the $12/$13 pair, in attribute 0). State 1 is idle: 6 times in
+; 256 (Random >= $FA) the turret fires (FireShell to the left, C = $FF) and its
 ; state becomes 9. States 9 to 2 count down one a pass: the frame of the old
 ; state is XORed off and the new one on (attributes $46 and $06), through the
 ; glyph pairs $10, $1E, $1C, ... $12, $10 of TurretFrames.
@@ -489,7 +490,7 @@ ShellsHitPlayerNext:
   LD (HL),$00
   JP KillPlayer
 
-; Empty the missile list $90CB (10 records of 3 bytes)
+; Empty the turrets' shell list ShellList $90CB (10 records of 3 bytes)
 ;
 ; Called by the screen builder $8494 before it builds the object lists. Writes
 ; 30 zeros to $90CB-$90E8; $90E9 keeps its $FF end mark. The list belongs to
@@ -497,7 +498,7 @@ ShellsHitPlayerNext:
 ; $90EA (kills the player on contact).
 ;
 ; c1: 4 runs (one per screen build).
-ClearMissileList:
+ClearShellList:
   LD HL,ShellList
   LD DE,ShellList+$0001
   LD BC,$001D

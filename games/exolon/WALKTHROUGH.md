@@ -229,3 +229,41 @@ What changed:
   of the first 24 bytes, and 3.5's stage diagram with `c1`'s frames.
 
 Checks: `merge.py`, `mkgame.py --install` (identical), `refdocs.py`, `tools/build.sh` (identical), `check_docs.py`.
+
+### 7.2 The completeness pass (2026-11-08)
+
+Asked: the owner judged the documents incomplete ("неполные и халтурные"): doc 03 explained the loader by "as in
+Zynaps", four subsystem documents had no diagram. The bar was written down as the repository's `AGENTS.md`
+(section 3, the eight elements every mechanism needs; section 4, what each document must cover; section 5, a
+completeness audit as a gate next to the fact review).
+
+Used:
+
+- Two fresh auditors, read-only, mapped every routine of the `.ann` to the section that explains it and checked each
+  mechanism against the bar and against Zynaps and Nether Earth: `work/review/cmpA.md` (docs 01-05: 18 P1, 32 P2,
+  20 P3) and `work/review/cmpB.md` (docs 06-10 and README: 43 P1, 40 P2, 18 P3).
+- Five writers (brief `work/briefs/fill.md`), one per document group, own instances on their own port bases: fillP
+  01 and 05, fillL 02-04, fillR 06 and 08, fillO 07 and 10, fillS 09. Each left `work/docs/<id>-NOTES.md` (commands
+  and what each proved), `-index.md` and `-ann-fixes.md`.
+- A map agent drew the 125 screens from the image (`tools/fig_map.py`), checked every screen against the game at
+  three moments of BuildScreen (125 of 125 identical) and compared them with the published maps (doc 01 1.7.1).
+
+Produced:
+
+- Every P1 and P2 closed except the few each writer named (a load film, a UDG sheet, a jump GIF, a jets strip, a
+  boxes-over-screen figure: drawings left out to keep to the budget; the facts are in tables and worked examples).
+- Docs 01-10 grew from 4 156 to 11 775 lines (after round 1, `abfc714`); mermaid diagrams from 10 to 56; figure
+  references from 43 to 96 (97 files in `docs/img`), plus 29 MP3 renders. New models with zero mismatches against traces: `tools/aymodel.py` (4150 AY writes), the map (125
+  screens).
+- Corrections found on the way: the homing missile starts at the right edge (X `$78`, Y `$20` + Random AND `$7F`),
+  not at the launcher; AttrCopy is only tested for 0, never copied back; a gun shot that hits the player pays 50;
+  the CAPS delete ran in `d1`; the GAME OVER band is yellow on red; two destructibles a build of screen 0, not 8;
+  two teleport sparkles, not four; the trill's call at `$9EB1`.
+- `game.ann` (FIXES and RENAME_ALL in `work/lead/merge.py`, comments and names only): NextScreen's frames,
+  SmallSprites in the image, GameOver's colours, DrawStars' printer and tile set, AddDestructible's count,
+  StartSparkle's callers, AnimateTurrets' destroyed branch, the FireHeld repeat, DestroyGunShot's player case; the
+  gun-shot routines renamed from "shell" (they walk GunShots `$9E18`; the turrets' shells are ShellList `$90CB`):
+  ClearShellList, GunShotsVsShots, DestroyGunShot, GunShotsVsPlayer.
+
+Checks: `merge.py`, `mkgame.py --install` (identical), `refdocs.py`, `tools/build.sh` (identical),
+`res_formats.py check` (the map pixel for pixel), `check_docs.py` (docs: ok), no unlinked figure in `docs/img/*/`.

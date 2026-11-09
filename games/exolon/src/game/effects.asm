@@ -14,8 +14,8 @@
 ; Each call adds 1 to $9E98, the sprites drawn this pass ($9E85 pads the pass
 ; with more draws, the main loop clears it). Frames seen in the code: 0 / 1 the
 ; grenade facing right / left, 2 a debris piece, 3-5 the puff, 6 blank, 7 the
-; ball, 8 the gun's shot (the frames themselves are built at run time; w030's
-; start.bin shows them).
+; ball, 8 the gun's shot (the frames are SmallSprites $ED40 in the image: 24
+; sprites of 4 pre-shifted 16-byte copies, up to $EF7F).
 ;
 ; c1: 52 160 calls, the most called routine of this range.
 DrawSmallSprite:
@@ -321,7 +321,8 @@ DestructibleList:
 ; found in DestructibleKinds writes the record (the box from the kind's offsets
 ; and sizes) and moves IX on by 7. AF, BC, HL kept.
 ;
-; c1: 36 elements on screen 0, 8 of them destructible.
+; c1: 36 elements over its 4 builds of screen 0 (9 a build), 8 destructible (2
+; a build: the turret and the spire).
 AddDestructible:
   PUSH AF
   PUSH BC

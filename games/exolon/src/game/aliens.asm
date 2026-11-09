@@ -124,8 +124,9 @@ HomingMissileDraw:
 ;
 ; Called by the screen set-up $8494. For rows 21 down to 0, three random
 ; columns (Random AND $1F): when the map $5E00 holds 0 there (no scenery),
-; PrintCharPlain $AE26 draws character 3 of the font $E840 in a random bright
-; ink $42-$47. So up to 66 stars, new each time a screen is built.
+; PrintCharAttr $AE26 draws glyph 3 of TileSetE840 (one pixel, line 4) in a
+; random bright ink $42-$47. So up to 66 stars, new each time a screen is
+; built.
 DrawStars:
   LD HL,TileSetE840
   LD (PrintChar+$000E),HL
