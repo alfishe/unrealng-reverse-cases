@@ -145,7 +145,7 @@ meets it first.
 | Multi-load, 128K paging | each load or page as a stage, what stays resident, the memory map per stage |
 | Copy protection, cipher, packer | section 3's full transform set; the animation of the real run |
 
-**By port target.** When the owner plans a port of the game to another machine, the case gets its own document
+**By port target.** When [TODO.md](TODO.md) lists a port of the game to another machine, the case gets its own document
 `docs/14-porting-to-<target>.md` (13 stays for a derived case's differences). It is written after 01-10, from them
 and the recordings, and must have:
 
@@ -164,11 +164,7 @@ and the recordings, and must have:
   port is checked against the original (the same input script, the same positions at the same frames);
 - the risks and open questions, ranked.
 
-| Target | What the document must address |
-| --- | --- |
-| UKNC (Elektronika MS-0511) | the PDP-11 central CPU (K1801VM2) and the peripheral CPU that owns the video and sound; the three-plane video memory in the peripheral CPU's space, written through its ports or by a peripheral-CPU program; the channels between the two CPUs; which work runs on which CPU, and how they sync per frame |
-| BK-0010 / BK-0011M | the K1801VM1 at 3-4 MHz, no multiply; the 256x256 two-bit or 512x256 one-bit screen in main memory; the 32K or paged 128K budget; the beeper or AY add-on; the timer |
-| Soyuz-Neon (PK-11/16) | the K1801VM3 class CPU with multiply and the larger memory; its video modes and palette; what of the BK or UKNC plan carries over |
+The planned ports, their targets and what each target's document must address are in [TODO.md](TODO.md).
 
 **By sound**
 
