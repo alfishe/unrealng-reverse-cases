@@ -1,0 +1,23 @@
+4000 5AFF screen
+5B00 5B74 printer buffer
+5B75 60F7 BASIC, sysvars
+60F8 6131 leftovers
+6132 7F00 graphics A
+7F14 7FBE IM 2 handler
+8000 8F0F menus, hi-scores
+8F10 9695 game start, HUD
+9696 A4ED course, objects
+A4EE A7CA sector bonus
+A7CB B211 play code
+B212 B2C1 variables
+B2C2 B7E7 tables, tune
+B7E8 BB23 Beginner course
+BB24 BEF7 Champion course
+BEF8 C194 object list
+C195 C2FB free
+C2FC C34F stack
+C350 EFFF graphics B
+F000 F0EF print variables
+F0F0 F9FF small font
+FA00 FD7F font
+FD80 FFFF print code, IM 2 jump

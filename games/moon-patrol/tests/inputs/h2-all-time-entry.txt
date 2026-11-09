@@ -1,0 +1,24 @@
+# h2: from work/snaps/g1-3700-score60000.z80 (a clone: g1 at frame 3700, the last life, with the score $B272 = 00 06 00 00, above the all-time best 50000): GAME OVER, the all-time entry (20 letters): STAGE ONE, ENTER, and the attract cycle
+0 -
++600 S
++20 -
++40 T
++20 -
++40 A
++20 -
++40 G
++20 -
++40 E
++20 -
++40 SPACE
++20 -
++40 O
++20 -
++40 N
++20 -
++40 E
++20 -
++40 ENTER
++20 -
++40 -
++3000 END

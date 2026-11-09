@@ -1,0 +1,18 @@
+# t1: from work/snaps/entry.z80, no tape: J (save the hi-score table: the ROM SA-BYTES), then L (load: LD-BYTES with no tape, SPACE breaks it: the tape error), then G (verify, SPACE: the tape error)
+0 -
++150 J
++20 -
++900 L
++20 -
++300 SPACE
++20 -
++200 M
++20 -
++100 -
++600 G
++20 -
++300 SPACE
++20 -
++200 M
++20 -
++600 END
