@@ -9,19 +9,23 @@ the standard in [GUIDE.md](GUIDE.md), the steps phase by phase in [recipes/](rec
 > described the decryption without a single diagram, explained the loader and the picture unpacker only by "as in
 > Zynaps", and four subsystem documents had no diagram at all. A fact review had passed them. Facts being true is
 > not enough: a document is done when it **explains** every mechanism it owns, completely, on its own.
+>
+> **And on 2026-11-09** Moon Patrol's documents stayed empty stubs for hours while the capture and the source were
+> done, then came back as 2 700 lines with no picture, dangling image links and a sprite drawn in `#` and `.`, and
+> with no animation at all. The rules in section 7 (the order of work) and section 4.0 (the game's profile) come from
+> that.
 
 ## 1. The method in one page
 
 | Phase | What you do | Done when | Recipe |
 | --- | --- | --- | --- |
-| 0. Start | Put the original in `orig/` with its hashes. List the medium block by block. Write the case README. | every block named, with its size, address and time | [01](recipes/01-start-a-case.md) |
+| 0. Start | Put the original in `orig/` with its hashes. List the medium block by block. Write the case README. Pick the game's profile (section 4.0). | every block named, with its size, address and time; the profile in the README | [01](recipes/01-start-a-case.md) |
 | 1. Capture | Record from power-on with the load. Take a start image. Make recordings that reach every part of the game: a bot, input scripts, warp clones. | every zone, level and mode reached by a recording, or listed as reached only from the code | [02](recipes/02-capture.md) |
 | 2. Stages and packers | Name every code arrival with its window. Reimplement every packer and cipher in both directions. | each stage proved against the recording byte for byte | [03](recipes/03-stages-and-packers.md) |
 | 3. Analysis | Build L1 / L2 per stage window. Work down the review queue. | no unknown left outside the ROM, or each one explained | [04](recipes/04-analysis.md) |
 | 4. Source | Write `game.ann` and generate the `.asm` from it with `kit/mkgame.py`. | `tools/build.sh` prints identical | [05](recipes/05-source.md) |
 | 5. Resources | Extract every graphic, font, map, level, tune, text and table into an editable format that builds back. | `res_formats.py check` passes and the build is identical | [06](recipes/06-resources.md) |
-| 6. Figures | Make the figures of GUIDE section 4 and section 4 below. | the figure checklist is met, each figure viewed at 900 px | [07](recipes/07-figures.md) |
-| 7. Documents | Write docs 01-10 by hand; docs 11-12 are generated. | `check_docs.py` prints docs: ok **and** the completeness audit (section 5) finds no P1 or P2 | [08](recipes/08-documents.md) |
+| 6-7. Documents with their figures | Write docs 01-10 by hand, each section with its diagram, figure and animation in the same step; docs 11-12 are generated. Starts the moment the source is identical. | `check_docs.py` prints docs: ok, the animation minimum (section 4) and the profile items (section 4.0) are met, **and** the completeness audit (section 5) finds no P1 or P2 | [07](recipes/07-figures.md), [08](recipes/08-documents.md) |
 | 8. Review | Run two rounds by fresh agents: facts plus completeness, then both again with the halves swapped. | round 2's findings fixed and committed | [09](recipes/09-review.md) |
 
 Write as you go: a finding counts only when it is in the documents or the WALKTHROUGH. A finding left in a chat or
@@ -43,6 +47,14 @@ in `work/` does not count.
   are often wrong: in Zynaps the "engine hum" was the explosion noise, and the "life lost" effect was the laser.
 - **A frame is not a pass.** A frame is 1/50 s of the machine; a pass is one turn of the main loop. Measure which
   one you mean, and define both in the glossary.
+- **A number derived from a measure carries the measure.** Say the window it was measured over and what it includes
+  (Moon Patrol: 8.4 frames a pass was the whole recording with the bonus screens; play alone is 7.05). Every number
+  computed from it is recomputed when the measure changes.
+- **A number the screen shows is checked against the screenshot.** Moon Patrol's first bonus was derived as 24 s;
+  the bonus screen of the same recording says 98 s of 120, so 22 s.
+- **Names are checked against the picture, not only the code.** A routine, its buffer, its counter and the data it
+  reads must agree with each other and with what is on the screen (Moon Patrol: ScrollMountains scrolled the strip
+  labelled HillsStrip; renamed by screen band).
 - **Never "dead code".** Write "not executed in any recording", and say which recordings were checked.
 - **Hardware claims** are checked against the ROM, the schematic or a second emulator. Never against a comment or
   an older document.
@@ -62,7 +74,7 @@ says why:
 | 4 | **A mermaid diagram** | required for any branching, any loop with exits, any state machine, any sequence of stages, any data flow between three or more parties | a decrypt loop or a loader with no diagram |
 | 5 | **A worked example** | real bytes or values from the image or a recording, stepped through: input, key or state, output | "it XORs each byte with the next" without three bytes shown |
 | 6 | **A witness** | the recording and frame where it was seen, or "known only from the code" | "the countdown ticks per byte" with no frame |
-| 7 | **A figure or animation** | wherever something changes in time or space: a routine animation, code vs screen, a beam timeline, a stage animation, a data sheet | a sprite format given as a table with no drawn sprite |
+| 7 | **A figure or animation** | wherever something changes in time or space: a routine animation, code vs screen, a beam timeline, a stage animation, a data sheet. Pixels are always a picture; flows are always mermaid | a sprite format given as a table with no drawn sprite; a sprite drawn in `#` and `.`; a link to an image not yet drawn |
 | 8 | **The point** | one or two sentences on what the reader should take away, after every figure and every table | a table with no explanation |
 
 A transform (a cipher, a checksum, a packer or unpacker, a compressor) always gets the full set: the format drawn
@@ -73,6 +85,98 @@ animation of the real run.
 
 The numbering is fixed; a subsystem the game lacks keeps its number, with one line saying so and the evidence. The
 lists below are minimums. Each item is a mechanism under section 3.
+
+**Animations are a minimum, not a decoration.** Each animation is a GIF drawn by `kit/routine_anim.py` (or
+`kit/writers_map.py`) from a real trace of a recording, stored as `docs/img/routines/<Label>.gif` so doc 12 links it,
+embedded in the section that explains the routine, with the recording, frames and command in its caption. At least:
+
+| Document | Animations |
+| --- | --- |
+| 03 | every unpacker and decryptor at work (or one line: there is none) |
+| 04 | the interrupt handler or the heaviest pass; any screen that holds the loop (bonus, level end) |
+| 05 | the input path into the hero, or the name entry |
+| 06 | every draw path: the hero, sprites, each scroller or the screen build, effects |
+| 07 | the spawner and at least two object kinds at work |
+| 08 | the print routine and the score update |
+| 10 | the hero's movement (jump, fall, climb) and the death |
+
+A case with fewer than ten animations is not done. One dropped after two unreadable tries is named in the
+WALKTHROUGH with the reason.
+
+### 4.0 The game's profile: genre, rendering, engine
+
+The document lists below (01-10) are the same for every game. What a reader needs on top depends on the kind of game. In phase 0
+the lead picks every profile row that applies (a game often has several: Moon Patrol is a scrolling arcade game with
+a beeper tune in the interrupt), writes them in the case README, and puts their items into the writers' briefs. The
+completeness audit checks them like the rest of section 4. A row not in this table is added here by the case that
+meets it first.
+
+**By genre: what the reader expects to find**
+
+| Genre | Must have | Where |
+| --- | --- | --- |
+| Arcade, platform, flip-screen | the full map of every level or room rendered from the image's data, the room graph, every item and enemy placed on it, the route through it | 01, 07, `src/res/maps` |
+| Scrolling arcade or shooter | each course or level drawn as a strip from its script (segments, what spawns where), the attack waves on a timeline, each enemy's pattern drawn as a path, the boss patterns | 01, 07, 10 |
+| Racing, driving | every track drawn as a map with curves, slopes and hazards; the speed and steering model with its numbers; the expected techniques (braking points, racing line, shortcuts, tricks the code allows) with a recording of each; the opponents' AI | 01, 07, 10 |
+| Maze, puzzle | every level rendered, the level format with a byte-to-picture example, a solution for each level checked by a recording, the rules of every tile | 01, 06, 10 |
+| Adventure, RPG | the world map, the room and object graph, the parser's vocabulary and grammar, every script or event, the full walkthrough proved by an input script, every text with translation where not English | 01, 07, 08, 10 |
+| Strategy, simulation | the model as equations with its tables (economy, growth, combat), the AI's decision rules, charts of the model over a played game, the balance a player can exploit | 07, 10 |
+| 3D (vector, filled, voxel) | the projection math worked through on one object, the clipping, the line or polygon fill, every model drawn from its data, the camera, the frame rate against scene load | 06, 07 |
+| Sports, fighting | the rules as code, the physics of the ball or the bodies, the move list with frames and hit boxes, the AI players | 07, 10 |
+| Physics simulation (billiards, pinball, ball games) | the number formats (fixed point, tables), the motion and friction model, the collision detection and response worked through on one real shot, the trajectory drawn from a recording against the model, the aiming aids and the AI's shot choice | 07, 10 |
+
+**By rendering**
+
+| Rendering | Must have |
+| --- | --- |
+| Flip-screen | the screen build from level data worked through one screen byte to picture; all screens as one map |
+| Scrolling (pixel, character, attribute) | each layer with its speed, feed and buffer drawn; the scroll against the beam; the parallax bands on a real screenshot |
+| Sprites over a background | the erase strategy (XOR, mask, back buffer, restore) drawn on one frame; the pre-shifted copies drawn; the draw order against the beam (tearing or none) |
+| Attribute-only or attribute-heavy | the attribute grid as a figure; how clash is avoided or accepted |
+| Pseudo-3D road | the road table, the curve and hill model, the sprite scaling, one frame built line by line |
+| Isometric | the depth sort, the masks, one room built object by object |
+
+**By engine**
+
+| Engine | Must have |
+| --- | --- |
+| Script or bytecode interpreter (course scripts, AI scripts, level programs) | the full opcode table, a decoder in `tools/` that prints every script as text in `src/res`, one script traced against its recording |
+| Compiled or interpreted BASIC | the BASIC listing, what the compiler or the runtime adds, the hot lines measured |
+| Multi-load, 128K paging | each load or page as a stage, what stays resident, the memory map per stage |
+| Copy protection, cipher, packer | section 3's full transform set; the animation of the real run |
+
+**By port target.** When the owner plans a port of the game to another machine, the case gets its own document
+`docs/14-porting-to-<target>.md` (13 stays for a derived case's differences). It is written after 01-10, from them
+and the recordings, and must have:
+
+- the two machines side by side: CPU and its instruction timings, memory map, video memory layout and modes, colour
+  model, sound device, input, interrupts and timers, storage;
+- the game's time budget per subsystem measured on the original (from the heatmap and the frame budget), and what
+  each costs on the target, estimated from the target's instruction timings on the hot loops;
+- each subsystem's porting plan: what moves as is (logic, tables, scripts), what is rewritten (rendering, sound,
+  input, loading), and the data conversions (graphics to the target's pixel format and palette, fonts, maps, tunes),
+  each with a tool in `tools/` that converts the case's `src/res` files;
+- the hot routines re-thought for the target, each with pseudocode and target-assembly sketches: the number
+  formats (the target's word size, multiply and divide or their absence, tables), sprite drawing for the target's
+  video memory (pre-shifted copies or shifts, masks, planes), screen updates (dirty rectangles, double buffering if
+  the target can), and what the target does better (a second CPU, wider words, more memory);
+- what the player must not notice: the frame rate, the physics and the random sequence kept identical, and how the
+  port is checked against the original (the same input script, the same positions at the same frames);
+- the risks and open questions, ranked.
+
+| Target | What the document must address |
+| --- | --- |
+| UKNC (Elektronika MS-0511) | the PDP-11 central CPU (K1801VM2) and the peripheral CPU that owns the video and sound; the three-plane video memory in the peripheral CPU's space, written through its ports or by a peripheral-CPU program; the channels between the two CPUs; which work runs on which CPU, and how they sync per frame |
+| BK-0010 / BK-0011M | the K1801VM1 at 3-4 MHz, no multiply; the 256x256 two-bit or 512x256 one-bit screen in main memory; the 32K or paged 128K budget; the beeper or AY add-on; the timer |
+| Soyuz-Neon (PK-11/16) | the K1801VM3 class CPU with multiply and the larger memory; its video modes and palette; what of the BK or UKNC plan carries over |
+
+**By sound**
+
+| Sound | Must have |
+| --- | --- |
+| Beeper in the interrupt or blocking | the cost per frame measured, what the game loses while it plays (lost interrupts, a held loop), the tune format decoded and rendered |
+| AY tracker (STC, PT3, own) | the format, the player, the register chart, every tune exported in an editable format |
+| Speech or sampled sound | the sample format, the playback loop timing, the samples exported |
 
 ### 01. Game design: the game as a player meets it
 
@@ -229,6 +333,19 @@ case is done. There is no third round: the yield falls fast and the cost does no
 
 ## 7. Working as an agent
 
+**The order of work (the lead).**
+
+- One phase follows the next without a pause: when the source is identical, the writers start the same hour. Ask the
+  owner only for real decisions, never "shall I go on".
+- Before launching writers, check that their port bases are free (`lsof -iTCP -sTCP:LISTEN`). A writer without an
+  emulator cannot draw animations.
+- Every writer brief lists, per document: the section 4 items, the profile items (section 4.0) and the animations
+  (section 4). It says: each section lands with its figure, diagram and animation; no ASCII art; no link to an image
+  that does not exist yet.
+- Measure progress every 20 minutes by `wc -l docs/*.md`, the image links and the files under `docs/img/`. A
+  document that does not grow, or grows without pictures, is stopped and corrected at once.
+- Before each commit, `git status` shows every new image and GIF (none swallowed by `.gitignore`).
+
 - **Your brief is your scope.** Edit only the files it assigns you. Shared files belong to the lead:
   - `docs/README.md`, the case README and `case.json`;
   - the merge of `.ann` fragments;
@@ -263,3 +380,10 @@ case is done. There is no third round: the yield falls fast and the cost does no
 | The same frames given three ways in three documents | numbers from scripts, one commit changes them everywhere |
 | Stage comments that read well and were wrong | a run checks a name before it goes into a description |
 | A derived case written as patches on the base | a full own reverse; differences only in doc 13 ([recipe 10](recipes/10-derived-case.md)) |
+| Moon Patrol: documents left as stubs for hours after the source was identical, then a question to the owner before starting them | the documents start the moment the source is identical; a stage boundary is no reason to stop |
+| Moon Patrol: writers told "prose first, figures after" wrote 2 700 lines with no picture and dangling image links | each section lands with its figure, diagram and animation in the same step |
+| Moon Patrol: a sprite drawn in `#` and `.` in a text block | pixels are pictures; no ASCII art anywhere |
+| Moon Patrol: no animation at all, because a writer's ports were held by a foreign instance | the lead checks the port bases are free before launch; the animation minimum (section 4) is a gate |
+| Moon Patrol: figures in `docs/img/build/` were silently not committed (`**/build/` in `.gitignore`) | never name a folder `build`, `work` or `output` inside `docs/`; check `git status` shows every new image |
+| Moon Patrol: 8.4 frames a pass (with the bonus screens) reused as the play pass; numbers derived from it everywhere | a derived number carries its measure; recompute all of them when it changes |
+| Moon Patrol: ScrollMountains scrolled the strip labelled HillsStrip | names checked against each other and against the screen |

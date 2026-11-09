@@ -34,6 +34,16 @@ C/README.md, C/WALKTHROUGH.md, the current C/docs (facts and figures to keep and
 names and descriptions are the ground truth), C/src/res, C/tools, C/work/stage* notes and recordings. Do not edit
 C/src or C/tools files you did not create; never B, R/kit or other cases.
 
+## Your profile items and animations
+
+- The case README names the game's profile (R/AGENTS.md section 4.0). Your documents must carry these items:
+  <the lead lists them per document>.
+- Your animations (R/AGENTS.md section 4, `kit/routine_anim.py` from real traces, `docs/img/routines/<Label>.gif`):
+  <the lead lists them per document>. Your port base is free; check it once with `lsof -iTCP -sTCP:LISTEN`.
+- Each section lands complete in one step: prose, pseudocode, asm, mermaid, its figure and its animation. No ASCII
+  art (pixels are pictures, flows are mermaid). No link to an image that does not exist yet. The lead measures your
+  progress by the documents and their pictures every 20 minutes.
+
 ## Rules
 
 - Own emulator instances on your port base (your prompt), muted, stopped when done; never pids or ports not yours

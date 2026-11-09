@@ -59,7 +59,10 @@
 
    The scan saves time in stage 1. Its hits are a lead to follow up, not evidence.
 
-7. **Add the case to the repository README's table**, with the state "in progress".
+7. **Pick the game's profile** (AGENTS.md section 4.0): genre, rendering, engine, sound, and the port target if the
+   owner plans a port. Write it as the Profile row of the case README; the writers' briefs carry its items.
+
+8. **Add the case to the repository README's table**, with the state "in progress".
 
 **Done when:** the hashes and the block table are written, `case.json` names the image, and the skeleton is
 committed.
