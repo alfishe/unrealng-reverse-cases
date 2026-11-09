@@ -1,0 +1,7 @@
+# The print records of PrintText $9E65, one a line: row column attribute "characters".
+# Attribute bit 7: double width. Characters: a-z and 0-9 the game font, © is $7F (the copyright
+# glyph), other ASCII the ROM font; \xNN any other byte, \" and \\ escaped. The length byte is the
+# count of the characters.
+3 6 $B8 "FOUL SHOT!"
+3 4 $B8 "WRONG ORDER!"
+3 3 $B8 "WRONG POCKET!"

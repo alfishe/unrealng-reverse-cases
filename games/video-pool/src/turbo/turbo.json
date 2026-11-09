@@ -1,0 +1,18 @@
+{
+  "about": "The turbo loader $F000-$F0FF, tape block 4: python3 ../../kit/mkgame.py --part src/turbo/turbo.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/mkgame/original.bin || (mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin)"],
+  "image": "work/mkgame/original.bin",
+  "lo": "F000",
+  "hi": "F100",
+  "ann": "src/turbo/turbo.ann",
+  "top": "turbo",
+  "bin": "turbo.bin",
+  "dest": "src/turbo",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; Video Pool, Oxford Computer Publishing 1985 (James Hutchby): the turbo loader $F000-$F0FF, tape block 4",
+    "; (Bytes \"VIDEO POOL\" 61440, 256 bytes), run by the BASIC's RANDOMIZE USR 61440."
+  ],
+  "l1": [{"path": "work/stage1/c1/l1.json", "reads": false, "lo": "F000", "hi": "F100"}],
+  "work": "work/stage2/mkturbo"
+}

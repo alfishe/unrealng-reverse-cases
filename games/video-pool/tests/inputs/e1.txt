@@ -1,0 +1,20 @@
+# shot_bot.py --plan tests/plans/e1.txt: from entry.z80
+500 SPACE
+520 -
+620 E
+630 -
+650 8
+686 -
+700 M
+704 -
+720 5
+740 -
+760 M
+764 -
+780 7
+824 -
+840 M
+844 -
+878 SPACE
+908 -
+1368 END

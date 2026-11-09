@@ -1,0 +1,22 @@
+# The print records of PrintText $9E65, one a line: row column attribute "characters".
+# Attribute bit 7: double width. Characters: a-z and 0-9 the game font, © is $7F (the copyright
+# glyph), other ASCII the ROM font; \xNN any other byte, \" and \\ escaped. The length byte is the
+# count of the characters.
+0 9 $0F "- video pool -"
+2 0 $0F "select options:-"
+4 2 $0F "1..one player game"
+5 2 $0F "2..two player game"
+7 2 $0F "s..small pockets"
+8 2 $0F "l..large pockets"
+10 2 $0F "k..keyboard"
+11 2 $0F "i..interface two joystick"
+12 2 $0F "j..kempston joystick"
+13 2 $0F "c..cursor joystick"
+15 2 $0F "b..begin game"
+17 2 $0F "v..game variations"
+18 2 $0F "e..edit table"
+19 2 $0F "r..reconfigure keys used"
+23 0 $0F "© ocp 1984, written by j.hutchby"
+15 16 $0F "(standard game)"
+15 16 $0F "(variation 1)"
+15 16 $0F "(variation 2)"

@@ -188,18 +188,22 @@ Found: six recordings; every play recording ends with "replay matches the search
 | `p2` | 4549 | `tests/inputs/p2.txt` | two players: player 1 pots four, a miss costs a life, "PLAYER 2 FRAME 1", the racking, player 2 scores 240, BREAK to the menu |
 | `v1` | 4227 | `tests/inputs/v1.txt` | the variations page; variation 1 (numeric order): a wrong-order pot costs a life, a pot of ball 1; BREAK; variation 2 (own pockets, 8 shots): a wrong-pocket pot, the score "1x5x3x10=150", a double pot |
 | `m1` | 8368 | `tests/inputs/m1.txt` | the attract sequence (logo, the signature written, "press any key"), every menu option but `i` / `j`: cursor joystick, the variations page, redefine keys (Q / W / P) and back, the editor (entered, cursor moves, fire, BREAK), small pockets and a shot on them, BREAK to the menu |
+| `j1` | 3850 | `tests/inputs/j1.txt` | stage 2: menu J (Kempston), the stick left and fire, a shot; BREAK; menu I (Interface 2), keys 6 and 0, the same shot; BREAK (no `ready` step: its probe holds SPACE, not fire with a joystick) |
+| `e1` | 1368 | `tests/inputs/e1.txt` | stage 2: the editor (menu E at 620): the cursor right onto ball 1, fire picks it, left 20 frames, fire puts it down at x 170, the cursor up onto "play", fire, the shot with SPACE (keyboard again) |
 
 Every shot, foul, pot and message plays its sound through the foreground loop `$8069` or BEEPER (section 1), so
 each play recording holds the game's sounds; none was played aloud.
 
 Not reached:
 
-- **The editor's work.** In `m1` the editor's move routines ran (`$C196`, `$C1A1`, `$C1AC`, `$C1B5`, 30 times each)
-  and its fire test 110 times (`$C20B`), but no ball lay within 5 pixels of the cursor (`$C227-$C255`: no pick) and
-  the "play" / "reset" boxes (`$C41D`, `$C532`) were never hit, so `$C258-$C54D` is untouched (doc 02, 2.2). The
-  editor's screenshots at frames 6420-6830 are identical: the cursor shows at its start each time; why is open.
-  Stage 2 records a pick, a drop and "play".
-- **Interface 2 and Kempston play**: the menu options `i` and `j` were not chosen.
+- **The editor's work**: not reached in stage 1. In `m1` the cursor did move, but the plan held 5, 6, 7 and 8 for
+  30 frames each (left, down, up, right), so it came back to its start and the screenshots at 6420-6830 are the
+  same; no ball lay within 5 pixels of it and the "play" / "reset" boxes were never hit. Stage 2's `e1` picks a ball
+  (EditorPickBall `$C258` entered at 702), moves it (`$C3EB` 20 times, frames 720-739), drops it (`$C3CC`), hits "play"
+  (`$C41D` at 840) and plays the shot (the aim task `$C4D6` from 845, the editor's roll task `$C46E` frames 915-1054).
+  "reset" (`$C532`) is still known only from the code.
+- **Interface 2 and Kempston play**: not chosen in stage 1; stage 2's `j1` plays a shot with each
+  (ReadKempston `$81A0` 1087 runs, frames 622-2185; ReadInterface2 `$8151` 836 runs, frames 2503-3540).
 
 ### 6.1 The screens
 
@@ -255,6 +259,23 @@ Two players (`p2`):
 ![p2 frame 1950: the racking animation](docs/img/play/p2-1950-racking.png)
 ![p2 frame 3500: both scores](docs/img/play/p2-3500-two-scores.png)
 ![p2 frame 4300: BREAK back to the menu](docs/img/play/p2-4300-break-menu.png)
+
+The table editor (`e1`, stage 2):
+
+![e1 frame 650: the editor, the cursor at its start (128, 115)](docs/img/play/e1-0650-editor.png)
+![e1 frame 700: the cursor moved right onto ball 1 of the rack](docs/img/play/e1-0700-cursor-on-ball1.png)
+![e1 frame 720: fire held: ball 1 picked, the cursor hidden](docs/img/play/e1-0720-ball1-picked.png)
+![e1 frame 760: ball 1 moved left to x 170](docs/img/play/e1-0760-ball1-moved.png)
+![e1 frame 840: ball 1 put down, the cursor up on "play"](docs/img/play/e1-0840-cursor-on-play.png)
+![e1 frame 878: "play": the editor's texts gone, the power box, the aiming cursor at the right cushion](docs/img/play/e1-0878-play.png)
+![e1 frame 1318: after the shot from the edited table](docs/img/play/e1-1318-shot-done.png)
+
+The joysticks (`j1`, stage 2):
+
+![j1 frame 1075: Kempston chosen, the cursor moved by the stick, the power bar after fire](docs/img/play/j1-1075-kempston-aim.png)
+![j1 frame 1975: the Kempston shot played](docs/img/play/j1-1975-kempston-shot.png)
+![j1 frame 2245: the menu with Interface 2 ticked](docs/img/play/j1-2245-menu-interface2.png)
+![j1 frame 3540: the same shot played with Interface 2 (keys 6 and 0)](docs/img/play/j1-3540-interface2-shot.png)
 
 The variations (`v1`):
 

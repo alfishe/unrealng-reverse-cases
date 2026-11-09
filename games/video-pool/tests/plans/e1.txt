@@ -1,0 +1,25 @@
+# e1: the table editor (open point 1), stage 1 never got past its first frame: menu E, the cursor right onto ball 1,
+# fire picks it, left 20 frames moves it, fire puts it down, the cursor up onto "play", fire, then the shot with
+# SPACE (keyboard mode again). Key sequence from the code (work/stage2/ann/05-editor-notes.md, the editor script).
+run 500
+key SPACE 20 100
+screen menu
+key E 10 20
+screen editor
+key 8 36 14
+screen cursor-on-ball1
+key M 4 16
+screen ball1-picked
+key 5 20 20
+screen ball1-moved
+key M 4 16
+screen ball1-dropped
+key 7 44 16
+screen cursor-on-play
+key M 4 34
+screen play
+key SPACE 30 0
+screen shot-release
+run 410
+screen shot-done
+run 50

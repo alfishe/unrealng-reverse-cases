@@ -1,0 +1,17 @@
+# The print records of PrintText $9E65, one a line: row column attribute "characters".
+# Attribute bit 7: double width. Characters: a-z and 0-9 the game font, © is $7F (the copyright
+# glyph), other ASCII the ROM font; \xNN any other byte, \" and \\ escaped. The length byte is the
+# count of the characters.
+0 6 $0F "- game variations -"
+2 0 $0F "select options:-"
+4 2 $0F "s..pot the balls in any order"
+5 5 $0F "in any of the pockets."
+7 2 $0F "1..pot the balls in numeric"
+8 5 $0F "order, the '1' ball first,"
+9 5 $0F "in any of the pockets."
+11 2 $0F "2..pot the balls in their"
+12 5 $0F "respective pockets but in"
+13 5 $0F "any order.  e.g. the '6'"
+14 5 $0F "ball in the '6' pocket."
+17 2 $0F "b..begin game"
+19 2 $0F "m..main menu"

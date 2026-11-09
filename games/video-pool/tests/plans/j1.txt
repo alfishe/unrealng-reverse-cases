@@ -1,0 +1,25 @@
+# j1: the two joystick paths stage 1 never drove: Kempston (menu J) with the stick left and fire, a shot; BREAK; then
+# Interface 2 (menu I) with key 6 (joystick 1 left) and key 0 (fire), a shot; BREAK back to the menu. No `ready` step: its probe holds SPACE, which is not fire with a joystick chosen; fixed waits instead
+run 500
+key SPACE 20 100
+key J 10 50
+screen menu-kempston
+key B 20 0
+run 300
+key KL 40 5
+key KF 30 0
+screen kempston-aim
+run 900
+screen kempston-shot
+key CS+SPACE 10 200
+key I 10 50
+screen menu-if2
+key B 20 0
+run 300
+key 6 40 5
+key 0 30 0
+screen if2-aim
+run 900
+screen if2-shot
+key CS+SPACE 10 200
+run 100

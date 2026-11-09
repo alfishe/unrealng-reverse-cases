@@ -27,3 +27,13 @@ The porting document follows AGENTS.md section 4.0 "By port target". What it mus
 | UKNC (Elektronika MS-0511) | the PDP-11 central CPU (K1801VM2) and the peripheral CPU that owns the video and sound; the three-plane video memory in the peripheral CPU's space, written through its ports or by a peripheral-CPU program; the channels between the two CPUs; which work runs on which CPU, and how they sync per frame |
 | BK-0010 / BK-0011M | the K1801VM1 at 3-4 MHz, no multiply; the 256x256 two-bit or 512x256 one-bit screen in main memory; the 32K or paged 128K budget; the beeper or AY add-on; the timer |
 | Soyuz-Neon (PK-11/16) | the K1801VM3 class CPU with multiply and the larger memory; its video modes and palette; what of the BK or UKNC plan carries over |
+
+## Kit gaps
+
+Found by the cases, worked around there, not yet fixed in `kit/`:
+
+| Gap | Found by | Workaround |
+| --- | --- | --- |
+| `game_part` does not pass `no_entries` | Video Pool stage 2 | the turbo part uses `"mode": "blocks"` |
+| a data-line comment inside `@res` that wraps to its own line breaks the INCBIN substitution, the image shifts | Video Pool stage 2 | shorter comments |
+| `@equ` with a size is applied after `@isub` and rewrites its operands | Video Pool stage 2 | none needed yet; watch for it |

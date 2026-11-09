@@ -1,0 +1,15 @@
+# The print records of PrintText $9E65, one a line: row column attribute "characters".
+# Attribute bit 7: double width. Characters: a-z and 0-9 the game font, © is $7F (the copyright
+# glyph), other ASCII the ROM font; \xNN any other byte, \" and \\ escaped. The length byte is the
+# count of the characters.
+0 8 $30 "congratulations!"
+0 3 $30 "congratulations!  player 1"
+0 3 $30 "congratulations!  player 2"
+2 0 $30 "  your score has qualified to be"
+3 0 $30 "included in the o.c.p. hall of"
+4 0 $30 "fame."
+6 0 $30 "  enter your name using the left"
+7 0 $30 "and right keys (or joystick) to"
+8 0 $30 "move the cursor to the required"
+9 0 $30 "character, then press fire to"
+10 0 $30 "select the character."

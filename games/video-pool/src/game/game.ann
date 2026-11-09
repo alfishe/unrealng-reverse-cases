@@ -12,3 +12,2217 @@
 #   @isub $ADDR LD HL,-6            the instruction written so
 #   @equ $ADDR Name [N] ; comment    a variable past the image: an EQU, its operands by name
 #   @inline $ADDR                   a routine that reads its data after the CALL
+# The ROM, the system variables, the screen and the RAM past the loaded image ($E1A8-$FFFF)
+# The data regions past the code, entries for the operands (step 3 shapes them)
+
+@equ $028E KEY_SCAN ; the ROM's KEY-SCAN: DE = the key values ($FF none), NZ for more than two keys
+@equ $031E K_TEST ; the ROM's K-TEST: E = KEY-SCAN's value, A = the character ($FF none)
+@equ $03B5 BEEPER ; the ROM's BEEPER: HL = the period, DE = the cycles
+@equ $16B0 SET_MIN ; the ROM's SET-MIN: clears the editing area and the calculator stack
+@equ $2D28 STACK_A ; the ROM's STACK-A: A onto the calculator stack
+@equ $2D2B STACK_BC ; the ROM's STACK-BC: BC onto the calculator stack
+@equ $2DA2 FP_TO_BC ; the ROM's FP-TO-BC: the last value off the calculator stack into BC (rounded)
+@equ $3D00 CHAR_SET ; the ROM's character set, glyphs $20-$7F, 8 bytes each (upper case, digits, punctuation for the print routine)
+@equ $4000 Screen 6144 ; the display file
+@equ $5800 Attributes 768 ; the attributes
+@equ $5C3A ERR_NR ; the ROM's IY base (ERR_NR): IY must hold it while the ROM runs
+@equ $5C48 BORDCR ; the ROM's border colour, bits 3-5
+@equ $FCFC Im2Jump 3 ; the IM 2 target: EI; JP Im2Handler (written by the entry); $FCFD patched to RET by the frame wait
+@equ $FE00 Im2Table ; the IM 2 vector table, all $FC (I = $FE)
+
+@alias StackTop StackSpace+$40 ; the top of the machine stack, $D000 (the first byte above it is BallSprites)
+@isub $8000 LD SP,StackTop
+@isub $80B3 LD SP,StackTop
+@isub $8216 LD BC,$FEFE
+@isub $801D LD DE,Im2Table+1
+@isub $8750 LD DE,$B000
+@isub $8F1F LD DE,$82FF
+@isub $8F79 LD DE,$82FF
+@isub $9059 LD DE,$85FF
+@isub $90B3 LD DE,$85FF
+@isub $9282 LD DE,$B700
+@isub $928E LD DE,$B60F
+@isub $92A8 LD DE,$B68A
+@isub $94C5 LD HL,$4010
+@isub $9684 LD HL,$1400
+@isub $9BF1 LD HL,ShotsPerFrame-1
+@isub $9D8C LD DE,CHAR_SET+704
+@isub $B90F LD BC,500
+@isub $B993 LD HL,-240
+@isub $B9C2 LD BC,-20
+@isub $B9EA LD BC,-20
+@isub $BD18 LD DE,$8010
+@isub $BDE9 LD BC,300
+@isub $BE25 LD BC,900
+
+# Fragment 01 (vp2): $8000-$86C0 (the entry, the sound loop, the interrupt, the input, the shot and aim tasks) and
+# $9155-$9242 (the task scheduler). Counts: python3 tools/l1sum.py ADDR (builds game, w1, f1, p2, v1, m1).
+
+# Video Pool stage 2, fragment 02 (physics): $86C1-$9154 and the physics tables $DBFA-$DEF3.
+# Witnesses: tools/l1sum.py over game (c1 from the entry), w1, f1, p2, v1, m1; details in 02-physics-notes.md.
+
+# Fragment 03 (annotator 03): $9243-$A161, drawing, HUD, scoring, turns, printing, racking.
+# Coordinates: in DE / HL pairs the high byte is the pixel row y (0-191), the low byte the pixel column x (0-255),
+# unless a comment says "row, column" (character cells).
+
+# Annotator 04: $A162-$B8C4, the rack-in scripts of sets 1-5, the hall of fame and name entry, the menu.
+
+# Annotator 05: the presents page and attract sequence $B8C5-$C041, the table editor $C042-$C5FF, the pen script
+# $DA80-$DBF9 (the header's "logo data") and the development leftover $E014-$E1A7. Notes: 05-editor-notes.md.
+
+# vp2: the data regions past the code that no other fragment owns: the free space and the stack, the ball sprites, the font.
+
+@module main ; The entry, the restart, the foreground sound loop, task lists, the frame wait, the interrupt handler
+@about The game is entered at GameStart $8000 (the turbo loader's JP). After the presents page it builds the IM 2 table and the jump at $FCFC, runs the menu, sets up a game and the aim, and falls into the foreground loop SoundLoop: from then on all the work of play runs in the interrupt as tasks (scheduler $9155); the foreground only plays the beeper sound a task requests in SoundRequest $827D and watches for BREAK in InputState $827C.
+@about BREAK (CAPS SHIFT + SPACE, InputState bit 5) goes to BreakRestart: the tasks are cleared, the stack reset and the game restarts at the menu (GameRestart). The game never returns to BASIC.
+$8000 c GameStart ; The game's entry: the stack, the ball records, the presents page
+> Entered once by the turbo loader's JP $8000 (every build: game frame 5556, each play recording at its start). LD SP,$D000 (the stack below BallSprites), $9D2C resets the ball records, EI (still IM 1, the ROM's handler), $BD0B = 0, the presents page and attract sequence $B8C5 (returns on a key), $BD0B = $FF (so a later attract run is shorter), then falls into GameRestart.
+$8008 ; the presents-done flag $BD0B = 0: the first presents page plays in full
+$8010 ; $BD0B = $FF after it
+
+$8013 c GameRestart ; IM 2 on, the menu, a new game, the first aim; falls into SoundLoop
+> Entered from GameStart and from BreakRestart (game 2 entries at frames 6060 and 9091; w1 2; m1 3). DI, I = $FE, IM 2; fills Im2Table $FE00-$FF00 with $FC and writes EI, JP Im2Handler at Im2Jump $FCFC, so every interrupt runs Im2Handler whatever the data bus holds (c1 stage 6, frame 6061). EI, then the menu $B22E (returns when "begin" is chosen), the table $95DA, A = 4 / 3 for $9DC3, the shots left $9F4D from $9BE6, $9D6B, $9B30 = 1, $9520, $9AD9, $9C7B, the racking $9F69 and the first aim StartAim. Then SoundRequest = 0 and EI, into SoundLoop.
+$8037 ; the menu, until "begin"
+$8061 ; the aim tasks, the cursor and the power bar
+
+$8069 c SoundLoop ; The foreground: wait for BREAK or a sound request, play it on the beeper
+> The whole foreground of play (w1 6 290 430 passes, frames 877-11 615). Loops reading InputState $827C (bit 5 BREAK: BreakRestart) and SoundRequest $827D (0: none). A request 1, 2 or 3 picks B = the half period in passes of SoundDelay (37 T a pass) and C = the number of cycles: 1 = 20 / 20 (a ball against a ball, written at $8993), 2 = 30 / 12 (a cushion, $8DC0 / $8DF4 / $8E28), 3 = 250 / 6 (a pocket, $8C17). Each cycle is OUT ($FE) $17 (speaker bit 4 on, border 7), the delay, OUT $07 (off), the delay. At the end it clears SoundRequest itself.
+> The tone stops at once when a task sets SoundRequest to 0 while it plays (SoundAbort: border back to 7): StopShotTasks $8483 and ShotReset $84C7 clear it. A new non-zero request during a tone does not restart it; the tone runs on and its final clear drops the new request. The interrupt stays on while it plays, so each half period also holds the time of any task run in it. w1: 1962 cycles played; SoundAbort taken 4 times.
+$806C SoundTestBreak ; BREAK?
+$8071 SoundWait ; no request: loop
+$8077 ; request 1: B = 20, C = 20
+$807D ; request 2: B = 30, C = 12
+$8083 ; request 3: B = 250, C = 6
+$8086 SoundCycle ; one cycle: speaker on, delay, off, delay
+$8098 ; the tone is done: clear the request
+
+$809D c SoundDelay ; Half a period: B passes of 37 T, aborted when the request goes to 0
+> Input B (saved). Each pass reads SoundRequest; at 0 it drops its own return address and SoundLoop's (POP BC twice), sets the border/speaker to $07 and jumps back to SoundLoop. w1: 3922 calls (two per cycle).
+$809E SoundDelayLoop
+$80A8 SoundAbort ; the request was cleared: speaker off, back to the loop
+
+$80B0 c BreakRestart ; BREAK: clear the tasks, reset the stack, back to the menu
+> Jumped to from SoundLoop when InputState bit 5 is set (game frame 9091, w1 14 233, f1 5196, p2 4239, v1 2133; m1 at 6830 and 7998). ClearTasks $91CF, SP = $D000, JP GameRestart.
+
+$80B9 c InstallTasks ; Add every task of a list: (period, routine) triples, $FF ends
+> DE = the list (AimTasks $84AA, MovingTasks $84BA, the editor's $C518). For each triple: C = the period, HL = the routine, AddTask $9188. Returns at the $FF. w1: 42 lists installed (231 triples read).
+
+$80CC c RemoveTasks ; Remove every task of a list by its routine's address
+> DE = the list as for InstallTasks; RemoveTask $91AD for each routine (the period is skipped). w1: 42 lists removed.
+
+$80DE c WaitFrameNoTasks ; Run HL with the tasks stopped, then wait for one interrupt
+> Writes RET ($C9) over the JP at Im2Jump+1 ($FCFD): the interrupt is then EI; RET, so the scheduler does not run. EI, calls the routine in HL (WaitFrameCall), HALTs for the next interrupt, DI and puts the JP ($C3) back. Callers: the shot end WaitMessages $8451 and $9C0F, the racking $9F69 (w1 58 calls). The routine may HALT by itself (WaitMessagesLoop does, once a frame): every interrupt it waits for is a plain EI; RET. That is why Im2Jump ran 3503 times in c1 against 2577 for Im2Handler (stage 1).
+$80E7 ; one more interrupt, then the JP back
+
+$80EF c WaitFrameCall ; JP (HL)
+> The CALL target of WaitFrameNoTasks: jumps to the routine in HL, which returns to $80E7.
+
+$80F0 c Im2Handler ; The interrupt: save every register, run the scheduler
+> Reached through Im2Jump $FCFC (EI; JP Im2Handler) on every interrupt while the JP is in place (w1 9536 entries, frames 501-16 377). DI, pushes AF, BC, DE, HL, IX, IY, calls the scheduler $9155, pops them, EI, RET. The alternate registers are not saved: no task uses them.
+$80FC ; back from the tasks
+
+@module input ; The controls: keyboard, Interface 2, Kempston, cursor; the key table; BREAK
+@about ReadInput $8106 runs as a task of the aim (AimTasks $84AA) and of the editor ($C518), once an interrupt. It calls one of four readers by the control choice $B8BD (0 keyboard, 1 Interface 2, 2 Kempston, 3 cursor joystick; set by the menu), each returning A with bit 0 right, bit 1 left, bit 2 up, bit 3 down, bit 4 fire; then ReadBreak adds bit 5 for CAPS SHIFT + SPACE and stores the byte in InputState $827C, which the aim tasks, the editor and SoundLoop read.
+@about The game never reads port $FE for the keys directly but in KeyDown $822E (one key by its character, through the key table) and ReadBreak; the cursor joystick also uses the ROM's KEY-SCAN and K-TEST for "any other key is fire".
+$8106 c ReadInput ; The input task: A = the directions and fire of the chosen control, into InputState
+> Pushes ReadBreak as the return, then jumps through InputHandlers by the control choice $B8BD (0-3). Output: InputState $827C (bits 0 right, 1 left, 2 up, 3 down, 4 fire, 5 BREAK). Witness: w1 6407 calls (keyboard only), m1 927 (keyboard 317, Kempston 51 at frames 4922-4980, cursor 559 at frames 6272-6830), j1 (Kempston 1087 at frames 622-2185, Interface 2 836 at frames 2503-3540, a shot played with each).
+$8116 InputHandlerGot ; HL = InputHandlers[choice]
+
+$811B w InputHandlers 1 ; The four readers by the control choice $B8BD
+> Read by ReadInput: $811B/$811C in every build, $811D/$811E in j1, $811F/$8120 in m1 and j1, $8121/$8122 in m1.
+$811B ; 0: the keyboard, the three keys of the menu
+$811D ; 1: Interface 2
+$811F ; 2: Kempston
+$8121 ; 3: the cursor joystick (keys 5-8, any other key fire)
+
+$8123 c ReadKeyboard ; The keyboard: the three defined keys, left, right, fire
+> The keys are the characters at $B8BE (left), $B8BF (right) and $B8C0 (fire), set by "reconfigure keys" (default m, symbol shift, space: the menu's last line). KeyDown for each: left gives bit 1, right bit 0, fire bit 4; there is no up and down on the keyboard (the cursor runs round the cushions with left and right alone, AimCursorMove $8546). w1: 6407 calls.
+$8132 KeyboardRight
+$8140 KeyboardFire
+$814F KeyboardDone
+
+$8151 c ReadInterface2 ; Interface 2: both joysticks, keys 6-0 and 1-5
+> j1 (menu I): 836 calls at frames 2503-3540; key 6 held 40 frames from 2565 moved the cursor, key 0 held 30 frames from 2610 played the shot at 2640. Reads port $EFFE (keys 6-0, Interface 2's joystick 1: 6 left, 7 right, 8 down, 9 up, 0 fire) and port $F7FE (keys 1-5, joystick 2: 1 left, 2 right, 3 down, 4 up, 5 fire), each inverted with CPL, and ORs both into the result bits (fire $10, right $01, left $02, up $04, down $08), so either joystick works.
+$8157 ; the 6-0 half row, inverted: a bit set = pressed
+$8160 If2Right
+$8166 If2Left
+$816C If2Down
+$8172 If2Up
+$8178 If2Stick2 ; the 1-5 half row
+$8180 ; the first half row's bits back in A
+$8187 If2Stick2Right
+$818D If2Stick2Left
+$8193 If2Stick2Down
+$8199 If2Stick2Up
+$819F If2Done
+
+$81A0 c ReadKempston ; Kempston: IN ($1F), active high
+> IN A,($1F): bit 0 right, 1 left, 2 down, 3 up, 4 fire, moved to the game's bits (down to bit 3, up to bit 2). m1: 51 calls at frames 4922-4980 (option j on the menu, no stick held); j1 (menu J): 1087 calls at frames 622-2185, the stick left 40 frames from 1000 moved the cursor, fire 30 frames from 1045 played the shot at 1075.
+$81AB KempstonRight
+$81B1 KempstonLeft
+$81B7 KempstonDown
+$81BD KempstonUp
+$81C3 KempstonDone
+
+$81C4 c ReadCursorKeys ; The cursor joystick: 8 right, 5 left, 7 up, 6 down, any other key fire
+> KeyDown for '8', '5', '6', '7'; when none is down, the ROM's KEY_SCAN and K_TEST: any other key (not 5-8) gives fire ($10). m1: 559 calls at frames 6272-6830, 328 with no key ($8213).
+$81D1 CursorKeyLeft
+$81DC CursorKeyDown
+$81E7 CursorKeyUp
+$81F2 CursorKeyDirs ; a direction is down: done
+$8210 ; another key: fire
+$8213 CursorNoKey ; no key: 0
+
+$8216 c ReadBreak ; BREAK into bit 5, then the result into InputState
+> The return of every reader (pushed by ReadInput). CAPS SHIFT (port $FEFE bit 0) and SPACE (port $7FFE bit 0) both down add bit 5 ($20). Stores A into InputState. Taken (bit 5 set): p2 1, v1 1, m1 2 (the BREAKs of those recordings).
+$822A StoreInput ; store the input byte
+
+$822E c KeyDown ; Is the key with character A down? Z = down
+> Looks A up in KeyTable with CPIR (40 bytes), turns the position into the half row's port high byte (B = $FE, $FD, ... $7F) and the bit (D = $10 down to $01: KeyTable runs from the outer key inwards), reads the port and ANDs the bit: Z when the key is down (the port bit is 0). NZ when the character is not in the table. w1: 19 221 calls.
+$823A KeyRowLoop ; five keys a half row: B rotates one row on
+$8243 KeyBit ; the key's bit in D
+$8249 KeyBitLoop
+$8250 KeyRead ; read the half row
+
+$8254 b KeyTable 5 ; The 40 keys by half row, from the outer key in: the character each one stands for
+> Read by KeyDown (CPIR) and by the menu's key-name code. Characters: CAPS SHIFT = $27, ENTER = $0D, SPACE = $20, SYMBOL SHIFT = $18, else the key's capital letter or digit. The rows are the ports $FEFE (CAPS Z X C V), $FDFE (A S D F G), $FBFE (Q W E R T), $F7FE (1 2 3 4 5), $EFFE (0 9 8 7 6), $DFFE (P O I U Y), $BFFE (ENTER L K J H), $7FFE (SPACE SYMBOL M N B). Stage 1's signature candidate at $8240 was this table.
+
+$827C b InputState ; The controls this interrupt: bit 0 right, 1 left, 2 up, 3 down, 4 fire, 5 BREAK
+> Written by ReadBreak (every pass of ReadInput), cleared by AimCursorReset $85C8 and the editor ($C504). Read by SoundLoop (BREAK), AimPower $8506 (fire), AimCursorMove $8546, the hall-of-fame entry ($AEBF...), the menu ($B2A7...) and the editor ($C11E...).
+
+$827D b SoundRequest ; The sound SoundLoop plays: 0 none, 1 ball, 2 cushion, 3 pocket
+> Written by the physics ($8993 = 1, $8DC0 / $8DF4 / $8E28 = 2, $8C17 = 3), cleared by GameRestart, SoundLoop, StopShotTasks, ShotReset and the editor ($C467). See SoundLoop.
+
+@module shot ; The balls in motion: the redraw task, the draw list, the end of a shot, the start of the aim
+@about When the shot is played (AimPower $8506 on the release of fire) the aim tasks go and MovingTasks $84BA come in: BallRedraw $827E, the physics $86C1, ShotEnd $8357 and the message task $9CB7, every interrupt. ShotEnd waits until no ball moves, then scores the shot, ends the frame or the life, and starts the next aim with StartAim $8425.
+$827E c BallRedraw ; The redraw task: each ball of DrawList, top to bottom, erased and drawn again where it moved
+> Task of MovingTasks (period 0; w1 2839 runs, frames 1086-11 615). For the 7 entries of DrawList $869E (sorted by y by BuildDrawList): A = the ball's number (0 = the cue ball), IX = its record, RedrawBall.
+$8283 BallRedrawLoop ; the next entry: number, (y), record address
+
+$8297 c RedrawBall ; Erase and redraw one ball if it moved; a potted ball goes to the row at the top
+> IX = the ball record ($8A88 + 14n), A = n. Only for a ball with record +13 bit 7 (on the table) and bit 4 (moved): erases the sprite at its old screen position (+10/+11 into $95D8, XOR draw $9548), then, unless bit 5 (potted) is set, computes the new sprite position from x and y ($9F36), stores it in +10/+11 and $95D8, clears bit 4 and draws it again ($9548 XOR). w1 19 873 calls.
+> A potted ball (bit 5; RedrawPotted, w1 18 times): +13 = 0 (off the table); the cue ball (n = 0) stays off; ball n >= 1 is put at x = 24(n-1) + 7, y = 27 (integer bytes, fractions 0: the row of potted balls above the table) and drawn there when the message counter $9F50 is 0 or $50.
+$82CC RedrawPotted ; potted: off the table; balls 1-6 to the top row
+$8300 RedrawPottedDraw
+
+$8304 c BuildDrawList ; DrawList from the ball records, sorted by y
+> Writes the 7 entries of DrawList: the ball's number, its y (record +3, the integer byte), the record's address; then a bubble sort (6 passes) by y, so BallRedraw draws the balls from the top of the screen down. Called by ShotReset (w1 3451 calls also from the physics, frames 706-11 615).
+$830F DrawListFill ; one entry a ball: number, y, address
+$8329 DrawListSortPass ; the sort: swap neighbours with the larger y first
+$8330 DrawListSortStep
+$833D DrawListSwap ; swap two 4-byte entries
+$8348 DrawListSortNext
+
+$8357 c ShotEnd ; The end-of-shot task: frame cleared, or all balls still: foul, shots, next aim
+> Task of MovingTasks (w1 2860 runs). If no object ball is on the table (record +13 bit 7 clear for balls 1-6): StopShotTasks, WaitMessages, the score $98F9, $9754 when the foul flag $8E80 is set or the cue ball is off; erase the cue ball; $9BB8, the racking $9F69 and StartAim (the next frame; witness w1 frames 1-3 won).
+> Otherwise (ShotEndStill) it returns while any ball has a bit of $70 in +13 (moving, moved or potted). When all are still: StopShotTasks and WaitMessages; then, if no foul and the cue ball is on the table: no ball touched ($89BB = 0) is a foul ($8E80 = 1, ShotFoul); a ball touched but none potted (record +12 = 0 for all six) costs a shot ($9F4D - 1; at 0 the same foul flag). Then the score $98F9, the foul / life code $9754 if $8E80 or the cue ball is off, $93FF (put the cue ball back) when the cue ball is off and lives $9F4E are left, $9DC3 with A = 3, and StartAim.
+$8362 ShotEndBallsLeft ; any object ball left on the table?
+$8385 ShotEndFoul ; a foul or the cue ball potted
+$8388 ShotEndCueOff ; the cue ball off the screen
+$839F ShotEndNextFrame ; the next frame: rack and aim
+$83A7 ShotEndStill ; any ball still moving: wait
+$83AD ShotEndMovingTest
+$83DC ShotEndPottedTest ; was a ball potted this shot?
+$83E6 ; one shot fewer
+$83EF ShotFoul ; the foul flag $8E80 = 1
+$83F7 ShotEndScore ; the score of the shot
+$840A ShotEndFoulStill
+$840D ShotEndCueBack ; the cue ball off: put it back if a life is left
+$841E ShotEndAim ; back to the aim
+
+$8425 c StartAim ; The aim: cursor and power reset, AimTasks in, the three periodic HUD tasks
+> AimCursorReset, AimPowerReset, InstallTasks AimTasks, then AddTask $96E6 period 20, $970E period 25 and $9CA7 period 25 (with $9B31 / $9B32 = 0). Called at the game's start, after each shot and each frame (w1 21 times, frames 877-11 386).
+
+$8451 c WaitMessages ; Wait with the tasks stopped until the message on show is done
+> WaitFrameNoTasks with WaitMessagesLoop. Called by ShotEnd twice and ShotFoul (w1 25 calls).
+
+$8457 c WaitMessagesLoop ; Run the message task once a frame until the message counter allows play
+> With the tasks stopped (WaitFrameNoTasks): while the message counter $9F50 is 1-$4E, or is $4F and no ball was potted, or is 0 with the foul flag $8E80 set: HALT, the message task $9CB7, again. Returns when $9F50 >= $50, or 0 with no foul. w1: 345 passes (320 HALTs).
+$846D WaitMessagesPotted
+$8478 WaitMessagesFoul ; no message: wait only for a foul
+$847D WaitMessagesHalt ; one frame, one step of the message
+
+$8483 c StopShotTasks ; Remove MovingTasks and the two HUD tasks, silence the sound
+> RemoveTasks MovingTasks; RemoveTask $96E6 and $970E, each run once more with $9B31 / $9B32 = $FF (their final state); SoundRequest = 0. w1 21 calls.
+
+$84AA b AimTasks 3 ; The aim's tasks, period 0 each: power, power bar, cursor move, cursor draw, input
+> (period, routine) triples, $FF ends. Installed by StartAim, removed by AimPower when the shot is played. AimPower $8506, the power bar $934D, AimCursorMove $8546, AimCursorDraw $85EB, ReadInput $8106.
+$84B9 ; the end
+
+$84BA b MovingTasks 3 ; The tasks of the balls in motion, period 0 each: redraw, physics, shot end, messages
+> Installed by AimPower ($8532), removed by StopShotTasks. BallRedraw $827E, the physics $86C1, ShotEnd $8357, the message task $9CB7.
+$84C6 ; the end
+
+$84C7 c ShotReset ; Before a shot: clear the shot's flags, the velocities and friction steps of the 7 balls
+> Called by AimPower on the release of fire (w1 21). Clears $89BB (a ball was touched), the foul flag $8E80, the message counter $9F50, SoundRequest and $8B4C; for each ball record +4..+9 (velocities and friction steps) and +12, and +13 down to bit 7; then BuildDrawList.
+$84E1 ShotResetBall
+
+@module aim ; The aim: the power while fire is held, the cursor that runs round the cushions, their variables
+@about The cursor is a point on the cushion line: CursorX $86BA 3..252 and CursorY $86BB 51..180. AimCursorDraw turns it into one coordinate round the rectangle (0 at the top left, clockwise: top 0-249, right 249-378, bottom 378-627, left 627-756), adds the signed speed CursorSpeed and turns it back, so left and right alone (or the four directions) run it round the table. The speed grows by one every 10 interrupts while a direction is held, up to 6.
+$8506 c AimPower ; The power task: +2 a tick while fire is held; on the release, play the shot
+> Task of AimTasks (w1 4425 runs). Fire held (InputState bit 4): Power + 2, back to 0 when it reaches $86 (the bar fills and starts again). Fire up with Power 0: nothing. Fire up with Power > 0 (AimShoot): erase the cursor ($9371), RemoveTasks AimTasks, RemoveTask $9CA7, ShotReset, the shot's velocity from the cursor and the power ($8A02, the ROM calculator) and InstallTasks MovingTasks. w1: 21 shots.
+$8517 AimPowerStore
+$851B AimShoot ; fire released: shoot if there is power
+$8532 ; the balls move
+
+$8539 c AimPowerReset ; Power = 0 and the bar erased
+> B = the old Power for $935C (the bar), Power and PowerHigh = 0. Called by StartAim (w1 27).
+
+$8546 c AimCursorMove ; The cursor task: the direction and speed from the controls
+> Task of AimTasks and of the editor (w1 4404 runs). When InputState changed since CursorLastInput: right (bit 0) gives +1 on the upper half (CursorY < $72) and -1 on the lower; left the opposite; up (bit 2) +1 on the left half (CursorX < $80), down +1 on the right half; no direction: speed 0. A new direction against the current sign restarts at +-1; the same one keeps accelerating (AimCursorAccel): every 10 counts of CursorAccel, |speed| + 1 up to 6.
+$8565 CursorMoveLeft ; left
+$8573 CursorMoveUp ; up
+$8581 CursorMoveDown ; down
+$858F CursorMoveStop ; nothing held: stop
+$8592 CursorForward ; along the cushion's coordinate: +1 (or accelerate)
+$859D CursorBack ; -1 (or accelerate)
+$85A8 CursorNewDirection ; a new direction: speed +-1, countdown 10
+$85AD AimCursorAccel ; held: count down, then |speed| + 1 up to 6
+$85BD CursorAccelLimit
+$85C6 CursorAccelDown
+
+$85C8 c AimCursorReset ; The cursor back to the right cushion, a little at random, and drawn
+> InputState and CursorLastInput = 0; CursorX = 252, CursorY = 115, or 114 / 116 by bits 6 and 0 of the R register; speed 0; draws the cursor ($9371 XOR). Called by StartAim (w1 21).
+$85E1 CursorResetStore
+
+$85EB c AimCursorDraw ; The cursor draw task: move the cursor round the cushions by its speed
+> Task of AimTasks and the editor (w1 4424 runs). Speed 0: nothing. Else erases the cursor ($9371), turns (CursorX, CursorY) into the perimeter coordinate HL, adds the signed speed modulo 756 ($2F4) and turns HL back; the return goes to $9371, which draws it at the new place.
+$8609 CursorOnBottom ; on the bottom cushion: 378 + (252 - x)
+$8617 CursorOnRight ; on the right cushion: 249 + (y - 51)
+$8627 CursorOnLeft ; on the left cushion: 627 + (180 - y)
+$862F CursorAddOffset
+$8636 CursorOnTop ; on the top cushion: x - 3
+$863B CursorAddSpeed ; + the speed, modulo 756
+$8646 CursorSpeedSigned
+$8651 CursorWrapHigh
+$8657 CursorToLeft ; back to x, y: the left cushion?
+$866A CursorToBottom ; the bottom?
+$867E CursorToRight ; the right?
+$8692 CursorToTop ; the top
+
+$869E b DrawList 4 ; The draw list: 7 entries of 4 bytes, then the cursor and the power
+> Written by BuildDrawList, read by BallRedraw: the ball's number, its y (the integer byte, the sort key), the record's address (2 bytes). Stage 1's "5 bytes an entry" was wrong: 7 x 4 = 28 bytes, $869E-$86B9.
+$86BA CursorX ; the cursor's x on the cushion line, 3..252 (read with CursorY as a word)
+$86BB CursorY ; the cursor's y, 51..180
+$86BC CursorSpeed ; the signed speed round the cushions, -6..6 (0 at rest)
+$86BD CursorAccel ; the countdown to the next +1 of the speed (10)
+$86BE CursorLastInput ; InputState at the cursor task's last change
+$86BF Power ; the shot's power, 0..$84 in steps of 2 (read with PowerHigh as the word HL)
+$86C0 PowerHigh ; 0: the high byte of the power word
+
+@module physics ; The physics task: the motion step, rolling friction, ball against ball
+@about The task PhysicsTask $86C1 (list $84BA, period 0: once an interrupt while the balls move) walks the seven ball records BallRecords $8A88 and calls MoveBall $8701 for every ball that is on the table, moving and not potted (+13 bits 7 and 6 set, bit 5 clear).
+@about Numbers: a position is 8.8 fixed point in screen pixels (+0 the fraction, +1 the pixel), a velocity 8.8 two's complement in pixels a tick (+4/+5 vx, +6/+7 vy), a friction step a signed byte in 1/256 pixel a tick, added to the velocity every tick (+8 x, +9 y). One tick = one run of the task = one interrupt.
+@about MoveBall adds the velocity to the position, clamps it to x 7..248, y 55..176, runs the ball-ball test BallContacts $87EF and the cushion and pocket test PocketOrCushion $8B4E, then applies the friction steps; a component whose sign the step would flip becomes 0, and a ball with both components 0 stops (bit 6 cleared).
+@about Ball against ball uses no trigonometry: the whole-pixel |dx|, |dy| of two balls index ContactTable $DBFA (inside / contact ring / apart), the ball is stepped back along its velocity until it lies on the ring, and the ring cell picks one of 31 CollisionRecords $DE3A: three coefficients nx^2, ny^2, |nx ny| (0.8 fixed point, 1.0 = $0100) by which ScaleVelocity $89C4 projects the relative velocity onto the line of centres. The projection is added to one ball and taken from the other: an equal-mass elastic collision.
+$86C1 c PhysicsTask ; The physics task: move every rolling ball one tick
+> A task of the list $84BA (the balls moving, period 0) and of the editor's list $C518, reached through the scheduler's JP (HL), so no CALL counts it: the first instruction ran game 290, w1 2860, f1 742, p2 1180, v1 822, m1 313 times (frames game 6447-8658, w1 1085-11615).
+> Clears EventCount $8B4D, then for each of the seven records (IX from BallRecords $8A88, 14 bytes a step, B = 7..1) calls MoveBall $8701 when +13 has bit 7 (on the table) and bit 6 (moving) set and bit 5 (potted) clear: 2030 records looked at and 286 moves in game, 20020 / 5644 in w1.
+> Then advances FrictionTurn $8B4C (0..6, wrapping: $86F2 ran 41 of 290 times in game, 398 of 2860 in w1), so each ball gets its friction steps recomputed once in seven ticks. If EventCount reached 7 the whole pass runs again ($86FB); no recording took that jump (the counts of $86C1 and $86FD are equal in every build). Ends with CALL $8304.
+$86CB PhysicsBallLoop ; IX = the record, B = 7 - the ball number
+$86E3 PhysicsNextBall
+$86F3 PhysicsTurnStore ; FrictionTurn = (FrictionTurn + 1) mod 7
+$86FB ; EventCount >= 7: one more pass (never taken in any recording)
+$8701 c MoveBall ; One tick of one ball: move, collide, pocket or bounce, friction, redraw flag
+> Input IX = the ball's record, B = 7 - the ball number (0 cue, 1-6); called by PhysicsTask $86C1 (and from the editor $C20B, a path m1 never took). Runs game 286, w1 5644, f1 1574, p2 3850, v1 2299, m1 970 times.
+> 1. When FrictionTurn $8B4C = B - 1 the friction steps are recomputed first (FrictionSteps $90F5): one ball a tick in turn.
+> 2. x += vx, y += vy (16-bit 8.8 adds). x is clamped to $0700..$F800 (7.0..248.0) with the carry of the add caught (a wrap past 0 or $FFFF goes to the limit); y to $3700..$B000 (55.0..176.0), the low side without the carry test. The clamps fired w1 7 / 9, f1 1 / 2, p2 2 / 0, v1 2 / 2 times ($8738 / $8768); the limits lie past the pocket line, so a clamped ball is potted in the same move.
+> 3. Clears +13 bit 4, then BallContacts $87EF (ball against ball) and PocketOrCushion $8B4E (A = the ball number).
+> 4. Friction: vx += the sign-extended +8, vy += +9; if the sum crosses zero the component becomes 0 ($8795: w1 61, $87B9: w1 58 times). Both components 0: +13 bit 6 cleared, the ball stops ($87D2: game 4, w1 53).
+> 5. Redraw flag: +13 bit 4 is set unless the pixel x, y equal +10, +11. Those hold the sprite's corner (x - 7, y - 7), so the test can only match after a 7-pixel jump; in every build $87EA (set) ran exactly as often as $87DB (the test reached), so every moving ball is redrawn every tick.
+$872B MoveXLeft ; vx negative: low clamp $0700
+$8738 MoveXClamp ; x = the limit in DE
+$8739 MoveXStore
+$875D MoveYUp ; vy negative: low clamp $3700, no carry test
+$8768 MoveYClamp
+$8769 MoveYStore
+$8787 FrictionVx ; DE = the step, sign-extended
+$8793 FrictionVxCheck ; carry here = vx crossed zero
+$8798 FrictionVxStore
+$879E FrictionVy
+$87AB FrictionVyAdd
+$87B7 FrictionVyCheck
+$87BC FrictionVyStore
+$87C2 StopTest ; vx = vy = 0: RES 6, the ball stops
+$87D6 RedrawTest ; compares +1 with +10 and +3 with +11 (the sprite corner, x - 7): never equal in practice
+$87EA RedrawSet
+$87EF c BallContacts ; Ball against ball: find a touching ball, step back onto the contact ring, exchange velocities
+> Input IX = the moving ball. Runs as often as MoveBall (game 286, w1 5644). For every record IY on the table (7 looked at, the ball itself included; it and any ball on the same pixel are skipped by dx = dy = 0): whole-pixel |dx|, |dy| (the +1, +3 bytes) both below 16, then ContactTable $DBFA[16 |dy| + |dx|]. A negative entry ($80) means overlap (w1 201, f1 55, p2 124, v1 80, m1 47 times, $8833); 0 (apart) and a ring entry without overlap are no contact (RET P).
+> On overlap: StepBack $8E33 moves IX back along its own velocity by less than a pixel and the table is read again until the entry is no longer negative; ContactSigns $89B5 = 2 (dx < 0) + (dy < 0) with dx = IX - IY. The entry n (1..31) selects CollisionRecords $DE3A + 6 (n - 1), kept in ContactRecordPtr $89B7 with IY in ContactOther $89B9; the loop goes on, so the last touching ball wins. The ring entry was found w1 71, f1 28, p2 49, v1 32, m1 17 times; game (c1, a game of fouls) never had a ball hit.
+> The exchange ($889C) runs if the ball moves towards the other in x or y (sign of dx against the sign of vx, the same for y); it always did when a contact was found (the JP P to $89AA never taken). With dv = v(IY) - v(IX) and the record's w0 = nx^2, w1 = ny^2, w2 = |nx ny|: A = w0 dvx, B = w2 dvy, C = w2 dvx, D = w1 dvy (ScaleVelocity $89C4, 4 calls a contact). The sign s of nx ny is + when dx and dy have the same sign (ContactSigns 0 or 3), - otherwise. IX.v += (A + sB, D + sC); IY.v -= the same. The other ball is set moving (+13 bit 6), BallHitFlag $89BB = 1, the sound request $827D = 1, EventCount += 2, and both balls get new friction steps (FrictionSteps $90F5 twice).
+> Finally the moving ball's fractions are set to $80 (the centre of its pixel), also when it was moving away.
+$87FB ContactLoop ; PUSH ContactNext as the return address of every test below
+$880F ContactDy
+$881D ContactLookup ; A = 16 |dy| + |dx|
+$8833 ContactBackOff ; step back, recompute signed dx, dy and the signs
+$8849 ContactBackDy
+$885E ContactBackLookup ; still negative: step back again
+$886F ; the ring entry n: record = CollisionRecords + 6 (n - 1)
+$8887 ContactNext ; the next IY (reached by RET from the tests)
+$8891 ; all seen: ContactFound zero = no contact
+$889C ; moving towards the other ball in x or in y: exchange
+$8912 ExchangeVx ; A = 0: same-sign quadrant (add the cross terms), else subtract
+$8928 ExchangeVxAdd
+$8929 ExchangeVxStore
+$8945 ExchangeVyAdd
+$8946 ExchangeVyStore
+$8964 ExchangeOtherVxAdd
+$8965 ExchangeOtherVxStore
+$8983 ExchangeOtherVyAdd
+$8984 ExchangeOtherVyStore
+$89AA ContactCentre ; fractions of x and y = $80
+$89B2 ContactDone
+$89B5 b ContactVars ; The ball-contact work variables
+> Written and read by BallContacts $87EF (w1 18 997 reads over the block). BallHitFlag $89BB is cleared at the shot's start ($84C8) and read by the end-of-shot task ($83CD) to tell whether any ball was hit.
+$89B5 ContactSigns ; 2 (dx < 0) + (dy < 0), dx = mover - other, recomputed on each back-off step
+$89B6 ContactSignsFound ; the signs at the contact found
+$89B7 ContactRecordPtr ; the low byte of the CollisionRecords pointer
+$89B8 ContactFound ; the pointer's high byte ($DE), cleared before the scan: non-zero = a contact found
+$89B9 ContactOther ; the other ball's record (IY), a word
+$89BB BallHitFlag ; 1 = a ball was hit during this shot
+$89BC ExchangeA ; w0 dvx, 8.8 signed
+$89BE ExchangeB ; w2 dvy
+$89C0 ExchangeC ; w2 dvx
+$89C2 ExchangeD ; w1 dvy
+$89C4 c ScaleVelocity ; HL = DE x the coefficient HL (0.8 fixed point, $0100 = 1.0), signed
+> Input HL = a coefficient of a collision record (H = 1: exactly 1.0, else 0 and L the fraction), DE = a signed 8.8 velocity; output HL = the product, 8.8 signed; uses A, BC, DE. Coefficient 1.0 returns DE at once ($89C7: 24 of 284 calls in w1). Otherwise |DE| is formed, the fraction times the low byte (MulByte $89F5) rounded to its high byte, plus the fraction times the high byte, and the sign put back. Runs only on contacts: w1 284, f1 112, p2 196, v1 124, m1 68 calls (4 a contact), never in game.
+$89D5 ScaleFrac ; fraction x the low byte, rounded
+$89E2 ScaleInt ; + fraction x the integer byte
+$89F5 c MulByte ; HL += A x DE, 8 bits of A from bit 0
+> Shift-and-add: eight steps, A rotated right, DE added when the bit is set, DE doubled each step. Called twice by ScaleVelocity $89C4 (w1 520 calls).
+$89F7 MulByteLoop
+$89FB MulByteShift
+
+@module shotsetup ; The shot: direction and speed through the ROM calculator
+@about AimShot $8A02 turns the aim cursor and the power into the cue ball's velocity with the ROM's floating-point calculator (RST $28): dx = cursor x - cue x, dy = cursor y - cue y, r = SQR (dx*dx + dy*dy), then vy = 16 P dy / r and vx = 16 P dx / r with P the power (at most 126), so the speed is P / 16 pixels a tick (at most 7.9) towards the cursor. The ROM needs IY = ERR_NR and the I register's ROM value $3F while it runs; the routine puts I = $FE back.
+$8A02 c AimShot ; The shot: the cue ball's velocity from the cursor, the cue ball and the power
+> Called by the power task $8506 when the shot is played: game 4, w1 21, f1 9, p2 6, v1 4, m1 1 times (one a shot; frames game 6441-8491, w1 1079-11557). IY = $5C3A, I = $3F, SET-MIN clears the calculator stack. Stacks the cursor x CursorX $86BA and the cue ball's pixel x $8A89 (STACK-A, whole pixels: the fractions are not used) and runs AimCalcDx $8A1A.
+$8A1A b AimCalcDx ; RST $28 literals: dx and dx*dx
+> Read by the ROM's calculator after the RST $28 at $8A19 (5 bytes, game 20 reads = 4 shots). Stack in: cursor x, cue x. Out: dx, dx*dx.
+$8A1A ; $03 subtract: dx = cursor x - cue x
+$8A1B ; $31 duplicate, $31 duplicate
+$8A1D ; $04 multiply: dx, dx*dx
+$8A1E ; $38 end-calc
+$8A1F c AimStackDy ; Stack the cursor y and the cue ball's y, then r and dy / r
+> The calculator returns here. Stacks CursorY $86BB and the cue ball's pixel y $8A8B, runs AimCalcDyOverR $8A2D.
+$8A2D b AimCalcDyOverR ; RST $28 literals: dy, r = SQR (dx*dx + dy*dy), dy / r
+> 16 bytes read once a shot (game 64 reads). Stack in: dx, dx*dx, cursor y, cue y. Out: dx, r, dy / r. Memory 0 of the calculator holds dy.
+$8A2D ; $03 subtract: dy; $C0 st-mem-0 (dy); $01 exchange: dx, dy, dx*dx
+$8A30 ; $E0 get-mem-0, $31 duplicate, $04 multiply, $0F addition: dx, dy, dx*dx + dy*dy
+$8A34 ; $28 sqr: dx, dy, r
+$8A35 ; $01 exchange, $C0 st-mem-0 (dy), $02 delete: dx, r
+$8A38 ; $31 duplicate, $E0 get-mem-0, $01 exchange: dx, r, dy, r
+$8A3B ; $05 division: dx, r, dy / r; $38 end-calc
+$8A3D c AimStoreVy ; vy = ScaleByPower (dy / r), then dx / r
+> Stores BC from ScaleByPower $8A5D in the cue ball's vy $8A8E, then runs AimCalcDxOverR $8A45.
+$8A45 b AimCalcDxOverR ; RST $28 literals: $05 division (dx / r), $38 end-calc
+$8A47 c AimStoreVx ; vx = ScaleByPower (dx / r); the cue ball moves
+> Stores BC in the cue ball's vx $8A8C, sets its +13 bit 6 (moving), I = $FE (the game's IM 2 table again), and jumps to FrictionSteps $90F5 with IX = the cue ball.
+$8A5D c ScaleByPower ; BC = 16 P x the top of the calculator stack, as a 16-bit two's complement 8.8
+> P = Power $86BF, values of $80 and more taken as $7E (the power only grows in steps of 2, so at most 126); BC = 16 P (2 P shifted 3 times) stacked by STACK-BC, then ScaleByPowerCalc $8A7A, then FP-TO-BC through ScaleToBC $8A85. Runs twice a shot (game 8, w1 42).
+$8A66 ScalePowerOk
+$8A7A b ScaleByPowerCalc ; RST $28 literals: multiply, and add 65536 to a value that is not positive
+> 11 bytes; the jump-true skips the stk-data and the addition for a positive product. A negative x + 65536 is its 16-bit two's complement, which FP-TO-BC returns in BC. A product of exactly 0 (the cursor on the cue ball's row or column) also gets 65536 added; FP-TO-BC then reads the float's bytes as an integer, BC = 0 with the carry set, so the component is 0 after all (known only from the ROM's code, see the notes).
+$8A7A ; $04 multiply: 16 P x (d / r); $31 duplicate; $37 greater-0
+$8A7D ; $00 jump-true, offset 6: to the end-calc at $8A84 when positive
+$8A7F ; $34 stk-data: $00 (one mantissa byte, exponent next), $41 (+$50 = $91), $00: 65536
+$8A83 ; $0F addition; $38 end-calc
+$8A85 c ScaleToBC ; JP FP-TO-BC: the value off the calculator stack into BC
+> Jumps to the ROM's FP-TO-BC $2DA2, which returns to AimStoreVy $8A3D or AimStoreVx $8A47.
+
+@module balls ; The ball records, the other player's records, the physics counters
+@about Fourteen 14-byte records: the seven balls of the player at the table (cue ball first, then balls 1-6) and the same seven of the other player in a two-player game, swapped as one 98-byte block on the turn change (the swap loop $9C5B in $9C0F, p2 98 bytes once). Then two counters of the physics task.
+$8A88 b BallRecords 14 ; The seven ball records of the player at the table: cue ball, balls 1-6
+> 14 bytes a ball: +0/+1 x and +2/+3 y, 8.8 fixed point in screen pixels, fraction first, the centre of the ball; +4/+5 vx and +6/+7 vy, 8.8 two's complement in pixels a tick; +8 / +9 the friction steps x / y, signed bytes in 1/256 pixel a tick (FrictionSteps $90F5, negated by the bounces $8DCB / $8DFF, swapped by $8D7D); +10/+11 the screen x / y of the sprite as last drawn (x - 7, y - 7: the corner of the 16 x 16 ball); +12 the pocket the ball fell into (1 top left, 2 top middle, 3 top right, 4 bottom right, 5 bottom middle, 6 bottom left, written by PocketStore $8BE3, 0 = none, cleared at each shot by $84C7); +13 flags.
+> +13: bit 7 on the table, bit 6 moving, bit 5 potted (fallen, waiting for the redraw $8297 to move it to the row of potted balls and clear the byte), bit 4 to be redrawn. $80 at rest, $D0 rolling (moving and redrawn), $90 = on the table and to be redrawn.
+> Positions from $9D5D by $9D2C. Read by every build; the cue ball's x pixel $8A89 most (w1 28 930 reads). +12 of balls 1-6 read 29-42 times in w1 (the end-of-shot test $83DC and the wrong-pocket test $8C37), +12 of the cue ball once in p2 (the turn swap).
+$8A88 BallCue ; the cue ball: +0/+1 x
+$8A8A ; +2/+3 y
+$8A8C ; +4/+5 vx
+$8A8E ; +6/+7 vy
+$8A90 ; +8 / +9 friction step x / y
+$8A92 ; +10 / +11 sprite screen x / y
+$8A94 ; +12 pocket, +13 flags
+$8A96 BallOne ; ball 1
+$8AA4 BallTwo ; ball 2
+$8AB2 BallThree ; ball 3
+$8AC0 BallFour ; ball 4
+$8ACE BallFive ; ball 5
+$8ADC BallSix ; ball 6
+$8AEA b OtherPlayerBalls 14 ; The other player's seven ball records, same format, swapped with BallRecords on the turn change
+> Zero in the image. Every byte read once in p2 only (the swap $9C0F at frame 1738, two players), and +13 of each of the seven read once in every build (game, w1, f1, p2, v1, m1; reader not identified, see the notes). At w1 frame 1060 balls 1-6 here have +10 = 0, 24, ... 120 and +11 = 20: the sprite corners of the row of potted balls ($82CC puts a potted ball at x 24 (n - 1) + 7, y 27). Stage 1 read this as the potted row itself: it is the second player's set.
+$8B4C b FrictionTurn ; The ball whose friction steps are recomputed this tick, 0..6
+> Advanced mod 7 by PhysicsTask $86C1, compared by MoveBall $8701 with B - 1 (6 - the ball number), cleared at the shot's start ($84C7). Read game 576, w1 8504.
+$8B4D b EventCount ; Bounces and contacts in this pass of PhysicsTask: cushion +1, ball +2; 7 or more repeats the pass
+> Cleared by PhysicsTask $86C1, raised by ReflectDiagonal $8D7D, ReflectX $8DCB, ReflectY $8DFF (+1) and BallContacts $87EF (+2). Never reached 7 in a recording (the repeat at $86FB not taken).
+
+@module cushions ; The cushions and the pockets
+@about Coordinates are the ball centre's whole pixels. The table: cushion lines x = 17 and 238 (left, right), y = 65 and 166 (top, bottom): a ball past one is stepped back along its velocity (StepBack $8E33, less than a pixel a step) until it is on the line, then that velocity component is reversed (ReflectX $8DCB, ReflectY $8DFF). The cushion faces, 7 pixels further out, are at y 58 / 173.
+@about Six pockets. The corner pockets are 45-degree channels along y - x = 48 (top left), x + y = 183 (bottom left), x + y = 303 (top right), x - y = 72 (bottom right); a ball in a corner zone with |the offset from that diagonal| of 6 or 7 (large pockets) or 2 or 3 (small) hits the jaw: the bounce on a 45-degree wall swaps vx and vy (ReflectDiagonal $8D7D). The middle pockets are channels between x = 122 and 134 (large) or 125 and 131 (small), with jaw points at x 115 / 140 (large) or 118 / 137 (small) on the cushion faces y 58 and 173, tested with the radius table Table8x8 $DCFA (PointJaw $8CF8).
+@about A ball whose centre leaves x 8..247 or y 56..175 is potted: PocketOrCushion $8B4E puts it into its pocket's box, marks it, requests the sound and checks the variations' fouls. The pocket size is the menu option $B8BC (1 large, the image's value; 0 small): CushionsLarge $8FBB or CushionsSmall $8E81, which also patch the depth test of DiagonalJaw $8C7E.
+$8B4E c PocketOrCushion ; Pot a ball that left the playing area, else the cushion tests for the pocket size
+> Input IX = the ball, A = the ball number (0 cue, 1-6); runs once a move (game 286, w1 5644). Restores DiagonalJaw's shallow exit ($8C92 = RET C, NOP). Inside x 8..247, y 56..175 ($08 <= x < $F8, $38 <= y < $B0): CushionsBySize $8C74.
+> Outside, the ball is potted ($8B71: w1 18, f1 3, p2 2, v1 5, never in game or m1): x and y are clamped into the pocket's box, by the column (x < 64, < 192, else) and the row (y < 115 top, else bottom): large boxes x 8-15, 122-133, 240-247 and y 56-63, 168-175; small x 8-11, 125-130, 244-247 and y 56-59, 172-175; fractions 0. +12 = the pocket number (columns 1-3 on the top row, 7 minus that on the bottom: 4 right, 5 middle, 6 left), +13 bits 5 and 4 set and 6 cleared, the sound request $827D = 3.
+> Fouls of the variations (an object ball, FoulCode $8E80 still 0, the cue ball on the table, variation $B8C3 not 0): variation 1 ($8C4B) sets FoulCode = 2 if a lower-numbered ball is still on the table (v1, 2 times); variation 2 sets FoulCode = 3 unless the pocket + $9F43 (mod 6, 1-6) is the ball's number ($8C43, v1 2 times).
+$8B71 PocketSnap ; outside the playing area: potted
+$8B94 PocketLeftColumn ; x < 64: boxes x 8..11 or 8..15
+$8B9E PocketRightColumn ; x >= 192: x 244..247 or 240..247
+$8BA8 PocketClampX ; C = x clamped to L..H (reached by RET)
+$8BAD PocketClampXHigh
+$8BB2 PocketClampXKeep
+$8BB4 PocketRowSelect ; y < 115: boxes y 56..59 or 56..63
+$8BCD PocketBottomRow ; y 172..175 or 168..175
+$8BD7 PocketClampY ; B = y clamped
+$8BDC PocketClampYHigh
+$8BE1 PocketClampYKeep
+$8BE3 PocketStore ; the ball in the box; C = the column 1-3
+$8BFE PocketNumberBottom ; y >= 128: pocket = 7 - column
+$8C06 PocketMark ; +12 = the pocket, +13: potted, redraw, stopped; sound 3
+$8C1D ; the foul tests of the variations (object ball, no foul yet, cue on the table, variation set)
+$8C37 ; variation 2: the pocket + $9F43 wrapped to 1-6 must be the ball
+$8C43 PocketWrongTest
+$8C4B PocketOrderTest ; variation 1: a lower ball still on the table is a foul
+$8C56 PocketOrderLoop
+$8C6C PocketOrderNext
+$8C74 c CushionsBySize ; The cushion tests of the pocket size: $B8BC = 0 small, else large
+> Runs on every move inside the playing area: CushionsLarge $8FBB in game 286, w1 5626, f1 1571, p2 3848, v1 2294 (the image's $B8BC = 1); CushionsSmall $8E81 only in m1 (970, the small-pockets option).
+$8C7E c DiagonalJaw ; A corner pocket's 45-degree jaw: A = the offset from the diagonal (carry = negative), BC = the wall's normal signs
+> Entered by JP from the corner tests of CushionsSmall $8E81 / CushionsLarge $8FBB with A = the signed offset of the ball from the pocket's diagonal (carry set when negative), C / B = $00 or $FF for the x / y sign of the wall's normal, HL = the test to repeat. A negative offset is negated and B, C complemented. Offset 2-3 (small) or 6-7 (large): JawContact. Less: inside the channel, no bounce (RET C at $8C92). More: the ball went too deep: $8C92 is patched to JR C,JawContact and StepBack $8E33 runs with HL pushed as its return, so the test repeats from the cushion test until the offset is within the band. Entered w1 43, f1 46, p2 20, v1 31 times; the deep case $8C94 w1 7, f1 4, v1 6.
+> JawContact: if the ball moves into the wall in x and in y ($8CE4), or in the one axis whose speed is the larger (|vx| against |vy|, $8CB5), the fractions are set to C, B and ReflectDiagonal $8D7D swaps the components; else ($8CED) the fractions are set to the complements and no bounce.
+$8C80 ; negative offset: negate, complement the signs
+$8C8A JawDepthTest ; CP 2 / CP 6 here and CP 3 / CP 7 at $8C8E: the operands patched by $8E81 / $8FBB
+$8C92 JawShallowExit ; RET C / NOP, patched to JR C,JawContact after a step back
+$8C94 ; too deep: patch, step back, repeat the test at HL
+$8CA2 JawContact ; L = C xor vx, H = B xor vy: bit 7 = moving into the wall
+$8CC9 JawAbsVy
+$8CDA JawCompare ; the larger component decides
+$8CDF JawCompareSub
+$8CE4 JawReflect
+$8CED JawAway ; no bounce: fractions = the complements of C, B
+$8CF8 c PointJaw ; A middle pocket's jaw point (C, B): the radius test of Table8x8, step back, bounce
+> Input IX, C / B = the jaw point's x / y ($73 or $76, $8C or $89; $3A or $AD); entered from the middle-cushion tests. |dx| < 8 and |dy| < 8, and not |dx| = |dy| >= 5, else no contact; then Table8x8 $DCFA[8 |dy| + |dx|]: 0 apart, $80 overlap (StepBack $8E33 and look again, $8D26: w1 1, v1 9), 1 touching. Entered w1 7, v1 3, m1 8 times.
+> The bounce uses bit 7 of the point's coordinates in place of the normal's signs (C xor vx, B xor vy, as DiagonalJaw does with its signs): moving into the point in both axes, the fractions set from the position's sign and ReflectDiagonal $8D7D; in x only, ReflectX $8DCB; in y only, ReflectY $8DFF; moving away, nothing.
+$8D00 PointJawDy
+$8D0C PointJawDyAbs ; |dx| = |dy| >= 5: outside the radius
+$8D15 PointJawLookup
+$8D26 PointJawBackOff
+$8D31 PointJawBackDy
+$8D3A PointJawBackLookup
+$8D4A PointJawReflect
+$8D63 PointJawCorner ; moving into it in both axes
+$8D6D PointJawFracY
+$8D7A PointJawSetFracY
+$8D7D c ReflectDiagonal ; The bounce off a 45-degree wall: swap vx and vy (and the friction steps), negated when B xor C is positive
+> Ran w1 10, f1 7, p2 1, v1 5, m1 2 times. (vx, vy, step x, step y) become (vy, vx, step y, step x), all four negated when the normal's signs B and C are equal ($8D95: w1 4, v1 5, m1 1). Sound request $827D = 2, EventCount $8B4D + 1.
+$8DAB ReflectDiagonalStore
+$8DCB c ReflectX ; The bounce off a side cushion: vx and the x friction step negated
+> vx = -vx (NEG / CPL with the carry: a 16-bit negate), +8 negated, the x fraction set to $00 or $FF by the sign of the x pixel byte (bit 7: right half $FF); sound request $827D = 2, EventCount $8B4D + 1. Ran game 1, w1 31, f1 11, p2 24, v1 14, m1 7 times.
+$8DEF ReflectXFrac
+$8DFF c ReflectY ; The bounce off a top or bottom cushion: vy and the y friction step negated
+> As ReflectX $8DCB for y: vy, +9 negated, the y fraction $00 or $FF by bit 7 of the y pixel; sound 2, EventCount + 1. Ran game 1, w1 48, f1 9, p2 39, v1 19, m1 8 times.
+$8E23 ReflectYFrac
+$8E33 c StepBack ; Move the ball back along its velocity by less than one pixel
+> Input IX. Copies vx, vy, halves both (arithmetic shifts) until each lies in -255..255 / 256 (high byte 0, or $FF with a non-zero low byte), then subtracts them from x and y. Called by BallContacts $87EF, DiagonalJaw $8C7E, PointJaw $8CF8 and the cushion tests: game 2, w1 401, f1 106, p2 281, v1 173, m1 79 calls.
+$8E40 StepBackNormalise
+$8E4B StepBackCheckVy
+$8E56 StepBackHalve
+$8E60 StepBackApply
+$8E80 b FoulCode ; The shot's foul from the variations: 0 none, 2 wrong order, 3 wrong pocket
+> Written by PocketOrCushion $8B4E ($8C47 = 3, $8C68 = 2: v1 only), cleared at the shot's start ($84CB); read by the end-of-shot code ($8375, $83BD, $83F1, $83FA, $8478) and $8C1D: game 310, w1 2929 reads.
+$8E81 c CushionsSmall ; The cushions and the pocket mouths for small pockets
+> Patches DiagonalJaw's depth band to 2-3 ($8C8B = 2, $8C8F = 3), then by x: x >= 239 the right end, x < 17 the left end, else the long cushions. Ends: the straight cushion (y 67..163) reflects vx once x is back within 17..238; above y 67 / below y 164 a corner pocket: DiagonalJaw on y - x = 48 / x + y = 183 (left) or x + y = 303 / x - y = 72 (right). Long cushions: y < 65 the top, y >= 167 the bottom, else free. On those: x < 19 or x >= 236 back to the ends; x 125..130 the pocket channel (no test); x 118..124 and 131..137 the jaw zone: PointJaw at (118 or 137, 58 / 173) until the ball is past the face, then x = 125.0 / 130.996 and ReflectX (the channel walls); elsewhere the straight cushion: step back to y = 65 / 166 and ReflectY. Only m1 (small pockets) ran it: 970 times, frames 7430-7745.
+$8E8B SmallCushionTest ; the test repeated after each step back (HL)
+$8E97 SmallLeftEnd
+$8EB4 SmallTopLeftJaw ; offset = y - 48 - x
+$8EBE SmallBottomLeftJaw ; offset = 183 - y - x
+$8EC8 SmallRightEnd
+$8EE5 SmallTopRightJaw ; offset = y - 47 + x, mod 256
+$8EF1 SmallBottomRightJaw ; offset = 184 - y + x, mod 256
+$8EFD SmallLongCushions
+$8F07 SmallBottomCushion
+$8F28 SmallBottomLeftOfPocket ; jaw x 118, channel wall 125.0
+$8F33 SmallBottomStraight ; y >= 174 here: the ball put on the jaw point
+$8F43 SmallBottomChannel ; past the face: on the channel wall, ReflectX
+$8F54 SmallBottomLine ; step back to y 166, ReflectY
+$8F61 SmallTopCushion
+$8F82 SmallTopLeftOfPocket
+$8F8D SmallTopStraight
+$8F9D SmallTopChannel
+$8FAE SmallTopLine ; step back to y 65, ReflectY
+$8FBB c CushionsLarge ; The cushions and the pocket mouths for large pockets (the default)
+> As CushionsSmall $8E81 with the large geometry: the band 6-7 ($8C8B = 6, $8C8F = 7), the corner zones above y 71 and below y 160, the long cushions' ends at x 23 / 232, the middle channel x 122..133 with the walls 122.0 / 133.996, the jaw zones x 115..121 and 134..140 with the jaw points (115 or 140, 58 / 173). The same cushion lines x 17 / 238, y 65 / 166. Ran game 286, w1 5626, f1 1571, p2 3848, v1 2294 times; the straight-cushion bounces are the bulk of ReflectX / ReflectY.
+$8FC5 LargeCushionTest ; the test repeated after each step back (HL)
+$8FD1 LargeLeftEnd
+$8FEE LargeTopLeftJaw ; offset = y - 48 - x
+$8FF8 LargeBottomLeftJaw ; offset = 183 - y - x
+$9002 LargeRightEnd
+$901F LargeTopRightJaw ; offset = y - 47 + x, mod 256
+$902B LargeBottomRightJaw ; offset = 184 - y + x, mod 256
+$9037 LargeLongCushions ; y < 65 top, y >= 167 bottom, else free
+$9041 LargeBottomCushion
+$9062 LargeBottomLeftOfPocket ; jaw x 115, channel wall 122.0
+$906D LargeBottomStraight ; y >= 174: the ball put on the jaw point (never run)
+$907D LargeBottomChannel ; past the face: on the channel wall, ReflectX
+$908E LargeBottomLine ; step back to y 166, ReflectY
+$909B LargeTopCushion
+$90BC LargeTopLeftOfPocket
+$90C7 LargeTopStraight
+$90D7 LargeTopChannel
+$90E8 LargeTopLine ; step back to y 65, ReflectY
+
+@module friction ; The rolling friction: the steps from the direction of motion
+@about FrictionSteps $90F5 turns a ball's velocity direction into two friction steps from FrictionTable $DD3A: a deceleration of about 5/256 pixel a tick per tick against the motion, split between x and y by the direction, rounded to whole steps.
+$90F5 c FrictionSteps ; The friction steps +8 / +9 of the ball IX from the direction of its velocity
+> |vx| and |vy| (AbsHL $914A) are shifted left together, at most 8 times, until bit 3 of either high byte is set: two 4-bit numbers in the ratio of the components (high nibbles of the 8.8 values after normalising; small speeds use the shifted-up low bytes). FrictionTable $DD3A[16 ny + nx]: the low nibble is the x step, the high nibble the y step, each negated when its velocity component is positive, so the step opposes the motion (0 for a zero component). Speeds over 15 pixels a tick would lose their top bits; the shot gives at most 7.9.
+> Called by MoveBall $8701 (one ball a tick in turn), BallContacts $87EF (both balls after a contact) and AimStoreVx $8A47 (the shot): game 42, w1 960, f1 284, p2 655, v1 392, m1 174 calls, frames game 6447-8651.
+$910A FrictionNormalise
+$911C FrictionLookup ; A = 16 ny + nx
+$9134 FrictionStoreX ; +8
+$9146 FrictionStoreY ; +9
+$914A c AbsHL ; HL = |HL|
+> Two's complement negate when bit 7 of H is set. Called twice by FrictionSteps $90F5 (game 84, w1 1920).
+
+@module scheduler ; The task scheduler of the interrupt: 25 slots, add, remove, clear
+@about A task is a routine with a period: the scheduler calls it when its countdown goes below zero and reloads the countdown with the period, so a period p runs it every p + 1 interrupts (0: every one). A slot whose high byte is 0 is free.
+$9155 c RunTasks ; The scheduler: count each slot down, call the routines whose time has come
+> Called by Im2Handler on every interrupt (w1 9536 entries). Each of the 25 slots of TaskSlots: skip if free; count +3 down; at -1 call the routine (CallTask, JP (HL)) and reload +3 from +2. Tasks run in slot order (the order they were added). w1: 34 301 task calls.
+$915B RunTasksLoop ; the next slot
+$9173 ; reload the countdown
+$917C RunTasksNext ; 4 bytes a slot
+
+$9187 c CallTask ; JP (HL)
+
+$9188 c AddTask ; Put routine HL with period C into the first free slot
+> Countdown 0, so it first runs at the next interrupt. No free slot: nothing (25 are never all used). w1: 252 calls.
+$918E AddTaskLoop
+$919F AddTaskFree ; the free slot
+
+$91AD c RemoveTask ; Free the slot of routine HL
+> The first slot whose address is HL gets high byte 0. w1: 252 calls.
+$91B3 RemoveTaskLoop
+$91C4 RemoveTaskNext ; the next slot
+
+$91CF c ClearTasks ; Free all 25 slots (DI while it clears)
+> Called by BreakRestart (one a BREAK) and by the editor. Zeros the 100 bytes of TaskSlots.
+
+$91DF b TaskSlots 4 ; 25 task slots: the routine (0 high byte = free), the period, the countdown
+> Written by AddTask, RemoveTask, ClearTasks; read by RunTasks every interrupt.
+
+@module tabledraw ; The table, the power bar and its box, the aiming cursor, the XOR line
+@about Everything here is drawn with one primitive, XorLine $93B3: a horizontal run of B pixels from (x E, y D), XORed onto the screen, so drawing a figure twice erases it. The power bar and the cursor are redrawn every frame by the aim list's tasks; the table and the power box once per game (NewGameScreen $95DA) and once per editor visit ($C042).
+@about No aim line exists: the aim is the cursor itself, a 5 x 5 cross that runs round the cushion line (x 3..252, y 51..180); the cue ball and the object balls are sprites (balldraw).
+$9243 c DrawTable ; Draw the table: the outer frame and the six cushions, with gaps for the six pockets
+> Called by NewGameScreen $95DA and the editor $C042, once each (game 1 at frame 6186, w1 1 at 626, v1 2, m1 2). Every run is a call of XorLine $93B3 with D = y, E = x, B = length.
+> The frame: the top line y 48 and the bottom line y 183, x 0-255 (two runs of 128 each); the left edge x 0 and the right edge x 255, y 49-182 (134 one-pixel runs each).
+> The four long cushions, 9 lines each, sloped at 45 degrees on their pocket side: top left y 49-57 from x 15+i to 117, top right from x 138 to 240-i (i = 0..8 the line); bottom left and bottom right the same mirrored, y 182 up to 174. The two side cushions: x 1-9 at the left and x 246-254 at the right, a 9-line slope in (y 63-71, run 1..9), 88 straight lines (y 72-159), a 9-line slope out (y 160-168).
+> Large pockets ($B8BC <> 0, the menu's L key; the default in the image): the long cushions start 4 pixels later and run 96 pixels (x 19+i..114, 141..236-i), the side cushions start at y 67 and run 80 straight lines. Small pockets ($B8BC = 0, the S key, m1 frame 7110): the numbers above. The gaps left are the pockets: the four corners and the middle of the top and bottom (x 118-137 small, 115-140 large).
+$9260 TableTopLeft ; top left cushion: x+1, y+1, length-1 a line
+$927A TableTopRight ; top right cushion: y+1, length-1
+$9282 ; y 183, x 0: the bottom line (a y/x pair, not an address)
+$928E ; y 182, x 15: the bottom left cushion, going up
+$929F TableBottomLeft ; bottom left cushion: y-1, x+1, length-1
+$92A8 ; y 182, x 138: the bottom right cushion, going up
+$92B9 TableBottomRight ; bottom right cushion: y-1, length-1
+$92C8 TableLeftEdge ; the left edge, x 0, y 49-182
+$92CF ; y 63, x 1
+$92DE TableLeftSlopeIn ; left cushion: run 1..9 from x 1, y 63 (67 large)
+$92F2 TableLeftStraight ; 88 lines (80 large) of 9 pixels
+$92FD TableLeftSlopeOut ; run 9..1
+$930C TableRightEdge ; the right edge, x 255
+$9313 ; y 63, x 254
+$9322 TableRightSlopeIn ; right cushion: x-1, run+1 from x 254
+$9338 TableRightStraight ; 88 / 80 lines of x 246-254
+$9343 TableRightSlopeOut ; x+1, run-1
+$934D c PowerBarTask ; The aim list's power bar task: erase the bar drawn last frame, draw the bar for the power now
+> A task of the aim list $84AA, period 0 (every interrupt while aiming): game 1443 runs, w1 4404, f1 2035, p2 1369, v1 846, m1 316 (also the editor's list $C518). $86BF is the power (grown by $8506 while fire is held), $86C0 the length drawn last time: DrawPowerBar $935C with B = $86C0 (XOR: erases), then with B = $86BF (draws), then $86C0 = $86BF. A power of 0 draws nothing (XorLine returns on B = 0).
+$935C c DrawPowerBar ; XOR the power bar: 4 lines of B pixels (capped at 126) from x 4, y 10-13
+> Input B = the length. Lengths of 128 and more are drawn as 126 (the power runs 0..$84, so the last three steps $80, $82, $84 look full). The bar lies inside PowerBox $9395 (x 2-131, y 8-15). Called by PowerBarTask $934D twice a frame (game 2893) and by $8539, which erases the bar and zeroes the power at each new aim.
+$9368 PowerBarLength
+$9369 PowerBarLine
+$9371 c DrawCursor ; XOR the aiming cursor at ($86BA x, $86BB y): a cross of four 2-pixel arms, the centre left clear
+> Pixels: (x+1, x+2 at y), (x-2, x-1 at y), (x at y-2, y-1, y+1, y+2); the centre (x, y) is never set, so the point aimed at stays visible. Drawn twice it erases: the cursor tasks $85EB (draw, move, draw), $8506 (erase on the shot), $85C8 (first draw at a new aim, x 252, y 114-116 at random) and the editor ($C042, $C116, $C20B, $C414, $C502, $C532). Counts: game 388, w1 1930, f1 122, p2 43, v1 46, m1 244.
+$9395 c DrawPowerBox ; Draw the power bar's box: a rectangle x 2-131, y 8-15
+> The top y 8 and the bottom y 15, 130 pixels from x 2; the sides one pixel at x 2 and x 131 for y 9-14. Once a game (NewGameScreen $95DA, game 1 at frame 6185) and in the editor ($C414, v1 2).
+$93A0 PowerBoxSides
+$93B3 c XorLine ; XOR a horizontal run of B pixels starting at (x E, y D) onto the screen; B = 0 draws nothing
+> Inputs D = y, E = x, B = length in pixels (up to 255). Keeps BC, DE; HL and A spoiled. The address: ScreenCell $95B3 of (y, x) plus y AND 7 in the high byte. The first byte's mask: B ones from bit 7 (or $FF when B >= 8), shifted right by x AND 7, the bits shifted out counted back into B; then whole bytes XOR $FF while 8 or more remain, then a last mask of the remaining B bits from the left. The run must not cross a byte column 31 boundary (INC HL).
+> The busiest drawing routine: game 14976 calls, w1 57235, f1 17840, p2 12040, v1 8432, m1 28297; callers also outside this range ($A95A, $A990, $AB7B hall of fame, $B047, $B101, $B89C menu, $BC11 attract, $C1BE editor).
+$93C8 XorLineShortMask ; B < 8: C = B ones from the left
+$93CF XorLineFullMask ; B >= 8: C = $FF, B = the pixels after it
+$93D2 XorLineShift
+$93D7 XorLineShiftLoop ; shift the mask right by x AND 7, counting the lost bits back into B
+$93DC XorLineShiftNext
+$93DF XorLineFirst ; XOR the first byte
+$93E3 XorLineBytes ; whole bytes
+$93F3 XorLineLast ; the last partial byte
+$93F5 XorLineLastMask
+$93FD XorLineDone
+
+@module balldraw ; The ball sprites: the draw, the 3 x 16 XOR, the screen address, the cue ball's respot, clearing for a turn
+@about Every ball is a 15 x 15 sprite pre-shifted 8 times in BallSprites $D000: 56 sprites of 48 bytes (3 bytes x 16 lines, the 16th line empty), index = shift x 7 + ball, shift = x AND 7, ball 0 the cue ball, 1-6 the numbered balls. DrawBall $9548 XORs one at the screen position in SpritePos $95D8 (x, y of the sprite's top left, the ball's centre minus 7); drawing it again at the same place erases it, so every move is an erase at the old +10/+11 and a draw at the new.
+$93FF c RespotCueBall ; Put the cue ball back at (40, 115), or right of it until no ball is within 16 pixels, and draw it
+> Called by the end-of-shot task $8357 when the cue ball was potted, by NextTurn $97CD ($981F) and by the editor $C042. f1 ran it once (frame 1173, after the cue ball went down). Zeroes the cue ball's velocity and friction steps (+4..+9), flags +13 = $80 (on the table), x = 40 / y = 115 with zero fractions. For each object ball on the table with |dx| < 16 and |dy| < 16 it moves x one pixel right and starts again, up to x 200. Then SpritePos = (x-7, y-7) (also +10/+11) and DrawBall ball 0.
+$941E RespotTry
+$9445 RespotCheckBall
+$9455 RespotDy
+$9461 RespotNear
+$946C RespotNextBall
+$947D c ClearTableForTurn ; Before the turn passes: XOR off every ball outside the middle of the table, then clear the middle (x 16-239, y 64-167)
+> Called by TurnSwap $9C15 (p2 once, frame 1778). Ball 0..6: a ball whose sprite lies inside x 16-223, y 64-150 (+10, +11) is left (the block clear wipes it); every other ball is XOR-erased at its +10/+11: the balls near the cushions and the potted row (bit 7 of +13 clear). The cue ball is skipped when it is off the table (it has no image then). Then 13 character rows x 28 bytes from (y 64, x 16) are zeroed (pixels only; the attributes stay).
+$9489 ClearTurnBall
+$94A7 ClearTurnErase
+$94BA ClearTurnNext
+$94C5 ; y 64, x 16: a y/x pair for ScreenCell, not a screen address
+$94CA ClearTurnRow
+$94D1 ClearTurnLine
+$94EB c ClearMessageRows ; Clear character rows 2-4 (y 16-39): pixels zero, attributes $39
+> The message area under the HUD: the foul texts and the score tally print at row 3, and the potted row (balls at y 20-34) lies here too, so the caller redraws it after (DrawPottedRow $9AB5). Called by MessagesTask $9CB7 (steps 1 and $4E) and ScoreTally $98FF: game 8, w1 43, f1 9, p2 6, v1 15.
+$94F0 ClearMessageRow
+$9506 ClearMessageLine
+$9520 c DrawAllBalls ; XOR every numbered ball at its +10/+11 and the cue ball when it is on the table
+> Balls 1-6 are drawn whatever their flags (on the table, or in the potted row); the cue ball only with bit 7 of +13 set. Called at a new game ($8013), by NextTurn $97CD and the editor ($C042, $C532): game 1 at frame 6190, p2 2 (690, 1780).
+$952B DrawAllBallsLoop
+$953D DrawAllBallsNext
+$9548 c DrawBall ; XOR ball A's sprite (0 cue, 1-6) at SpritePos $95D8 (x, y of the sprite's top left)
+> Input A = the ball 0-6, SpritePos = (x, y). Source = BallSprites $D000 + 48 x (7 x (x AND 7) + A): BC = 48A, HL = 336 (x AND 7), the sum plus $D000 into DE. Target: ScreenCell $95B3 of (y, x) plus y AND 7 lines. A screen character row holds 8 lines, so the 16 lines go in three parts through XorSpriteLines $959F: 8 - (y AND 7) lines, then 8 lines from the next character row (y + 8), then (y AND 7) - 1 lines from the row after (y + 16): 16 lines when y AND 7 = 0, else 15; the 16th line of every sprite is zero, so nothing is lost and a second draw always erases exactly.
+> 1827 calls in game, w1 15290, f1 4407, p2 10210, v1 7119, m1 3193; callers: the ball redraw task $8297, $8357, RespotCueBall $93FF, ClearTableForTurn $947D, DrawAllBalls $9520, LoseLife $9754, EraseBallsUnderBanner $98B5, DrawPottedRow $9AB5, DrawLives $9AD9, Rack $9F6F, the editor $C20B.
+$959F c XorSpriteLines ; XOR B lines of 3 bytes from DE onto the screen at HL (INC H a line: within one character row)
+> DE advances 3 bytes a line (the sprite is stored line by line, 3 bytes each); L goes +1, +1, -2, H + 1. 27602 calls in game (5230 DrawBall calls), w1 230986.
+$95B3 c ScreenCell ; HL = the display address of the character cell holding pixel (x L, y H): line 0 of that cell
+> H = $40 + 8 x (y / 64), L = 32 x ((y / 8) AND 7) + x / 8. The caller adds y AND 7 to H for the exact line. Used by XorLine, DrawBall, ClearTableForTurn, ClearMessageRows and the hall of fame ($A9CC, $AA74, $AABD, $AB7B, $ABC3) and $B118: game 9793 calls.
+$95CD c AttrFromScreen ; HL = the attribute address of the display cell address HL (line 0 of the cell)
+> H = $58 + (H - $40) / 8. Used by ClearMessageRows $94EB only (game 24 calls).
+$95D8 b SpritePos 2 ; The sprite's screen position for DrawBall $9548: +0 x, +1 y of the top left (the ball's centre minus 7)
+> Written before every DrawBall (from a record's +10/+11, from $9F36, or computed for the potted row and the lives); read by DrawBall at $9555 / $956A / $957F / $958E and by DrawLives $9AFA.
+
+@module hud ; The new game's screen, the HUD texts, the 1up / 2up blink, the "last shot" blink
+@about Text records for PrintText $9E65: row, column, attribute (bit 7 = double width), length, then the characters (no end marker). Lower case and digits come from the game's font $DEF4, everything else from the ROM's character set (printing module).
+@about The HUD, rows 0 and 1, attribute $38 for the words and $3A for the numbers: "1up" col 0 and the player 1 score cols 3-8, "hi" col 12 and the hi score cols 14-19, "2up" col 23 and the player 2 score cols 26-31; row 1: the power box (cols 0-16), "frame" col 17 and the frame number cols 22-23, "shots" col 26 and the shots left col 31. Scores print as five digits plus a fixed "0" (the score x 10).
+$95DA c NewGameScreen ; Start a game: clear the screen, colours, HUD, scores, frames, lives, the table, the power box; park all balls
+> Called once by the game start $8013 (game frame 6182, w1 622, v1 twice: 772, 2603). Clears the display, border 7 (white; BORDCR $38), attributes: rows 0-4 $39 (the HUD and message rows), row 5 $38 (the top pocket marks), rows 6-22 $60 (the table: bright green paper, black ink), row 23 $38 (the bottom pocket marks).
+> Prints the HUD words (HudOneUp ... HudShots), zeroes the scores ($9F45, $9F47) and PocketTurn $9F43 / $9F44, frames $9F4B / $9F4C = 1, lives $9F4E / $9F4F = 3, Player2Racked $9B33 = 0; prints the three scores (PrintHudNumber 0, 1, 2), the power box, power $86BF / $86C0 = 0, the table; ParkBalls $967B for both ball sets ($8A88 and $8AEA).
+$967B c ParkBalls ; Take the set at IX off the table: cue ball and balls 1-6 bit 7 of +13 clear, balls 1-6 to the potted row (x 0, 24, ... 120; y 20)
+> Input IX = a set of 7 records (14 bytes each). Only +10/+11 (the sprite's place) and bit 7 of +13 are set; nothing is drawn. Called twice by NewGameScreen (game 2, frame 6190): $8A88 the current player's set, $8AEA the other player's (the set TurnSwap $9C15 exchanges).
+$9684 ; y 20, x 0: the potted row's first place
+$968A ParkBallsLoop
+$969D b HudTexts 16 ; The HUD's text records (PrintText format: row, column, attribute, length, text)
+> All read: NewGameScreen prints $969D, $96AB, $96B9, $96BF, $96D4, $96DD; UpBlinkTask $96E6 alternates $969D / $96A4 and $96AB / $96B2; ShotsBlinkTask $970E reprints $96DD.
+$969D HudOneUp ; row 0, col 0, attr $38, 3: "1up"
+$96A1 ; "1up"
+$96A4 HudOneUpBlank ; row 0, col 0, attr $39, 3: "   "
+$96A8 ; "   "
+$96AB HudTwoUp ; row 0, col 23, attr $38, 3: "2up"
+$96AF ; "2up"
+$96B2 HudTwoUpBlank ; row 0, col 23, attr $39, 3: "   "
+$96B6 ; "   "
+$96B9 HudHi ; row 0, col 12, attr $38, 2: "hi"
+$96BD ; "hi"
+$96BF HudRowOneBlank ; 17 spaces at (1, 0), attr $39: the power box
+$96C3 ; 17 spaces
+$96D4 HudFrame ; row 1, col 17, attr $38, 5: "frame"
+$96D8 ; "frame"
+$96DD HudShots ; row 1, col 26, attr $38, 5: "shots"
+$96E1 ; "shots"
+@res text/HudTexts.bin
+$96E6 c UpBlinkTask ; Blink the current player's "1up" / "2up": print it or its blank by UpBlink $9B31, then flip UpBlink
+> A task added by StartAim $8425 with period 20 (every 21 interrupts) and removed by $8483 when the shot starts, which first prints it with UpBlink = $FF (shown). CurrentPlayer $9B30 = 1 picks HudOneUp / HudOneUpBlank, 2 HudTwoUp / HudTwoUpBlank; UpBlink 0 prints the blank. game 88 runs, w1 377, p2 130.
+$96F8 UpBlinkPrint1
+$96FA UpBlinkPlayer2
+$9703 UpBlinkPrint
+$970E c ShotsBlinkTask ; With one shot left: alternate "last  " / "  shot" in place of "shots"; at the shot's start put "shots" and the count back
+> A task added by StartAim $8425 with period 25, removed by $8483, which calls it once with LastShotBlink $9B32 = $FF. Returns at once unless ShotsLeft $9F4D = 1. LastShotBlink 0 prints HudLast $9740, 1 HudShot $974A, then flips 0 / 1; $FF prints HudShots and the count (PrintHudNumber 3) and sets 0. game 72 runs, w1 308; the $FF branch only in f1 (once).
+$9723 ShotsBlinkPrint
+$9730 ShotsBlinkRestore
+$9740 b HudLastShot 10 ; The two halves of the "last shot" blink (PrintText records at row 1, col 26, attr $38, 6 characters)
+> Printed by ShotsBlinkTask $970E; both read in game, w1, f1.
+$9740 HudLast ; row 1, col 26, attr $38, 6: "last  "
+$9744 ; "last  "
+$974A HudShot ; row 1, col 26, attr $38, 6: "  shot"
+$974E ; "  shot"
+@res text/HudLastShot.bin
+
+@module gameover ; A life lost, the foul jingle, GAME OVER, the hi score and the hall of fame hand-over
+$9754 c LoseLife ; A foul or no ball potted with the last shot: the foul jingle, one life less, erase one life ball; at none left GAME OVER
+> Called by the end-of-shot task $8357 when the foul code $8E80 is set or the cue ball is off the table (game 4 at frames 6543-8811, w1 4, f1 4, p2 1, v1 3). With $B8C4 <> 0 (a menu toggle, $B3A1) it goes straight to NextTurn $97CD: no jingle, no life lost (known only from the code; no recording set it).
+> Lives $9F4E - 1; negative: GameOver $97A2. Else the leftmost life ball is XORed off: a cue ball sprite at x = $E8 - 24 n (n = the lives before the loss: 3 -> x 160), y 20; then NextTurn.
+$9780 c FoulJingle ; Play the foul jingle with the tasks stopped (WaitFrame $80DE with FoulJingleNotes)
+> LoseLife $9754 only (game 4, w1 4, f1 4, p2 1 at frame 1668, v1 3).
+$9786 c FoulJingleNotes ; Wait 10 frames, BEEPER HL $209E DE 26, wait 5 frames, BEEPER HL $29FE DE 23
+> Two low notes: the ROM's BEEPER pitch 437500 / (HL + 30.125): about 52 Hz for 26 cycles (0.5 s), then about 41 Hz for 23 cycles (0.57 s). Run by FoulJingle through $80DE (game 4).
+$9788 JingleWaitOne
+$9796 JingleWaitTwo
+$97A2 c GameOver ; No life left: erase the balls under the banner, print GAME OVER (and PLAYER n), then the other player's turn or the end
+> From LoseLife $9754 (game 1 at frame 8811, w1 11768, f1 4445). EraseBallsUnderBanner $98B5, GameOverText at row 9. One player: GameOverEnd $9825. Two players: "PLAYER 1" / "PLAYER 2" at row 11 by CurrentPlayer; the other player's lives ($9F4F) negative too: GameOverEnd; else wait 125 frames (WaitFramesB $988C through $9886) and NextTurn $97CD (known only from the code: p2 never ran out of lives).
+$97BD GameOverPlayer
+$97CD c NextTurn ; After a life lost: the turn swap; with two players, rack or go on for the new player
+> From LoseLife and GameOver (game 3, w1 3, f1 3, p2 1 at frame 1738, v1 3). TurnSwapStart $9C0F; one player: RET (back to $8357, which racks or aims). Two players: drops the return; when the new player has no object ball on the table (his set never racked): DrawAllBalls $9520 (XOR: erases the parked row), DrawLives $9AD9, NextFrame $9BB8 if Player2Racked $9B33 is set, Player2Racked = 1, Rack $9F69, StartAim $8425 (p2 frame 1780).
+> Else (NextTurnResume $9801, known only from the code): wait 100 frames, blank row 9 (FrameBannerBlank), DrawAllBalls, DrawLives, RespotCueBall if the cue ball is off, StartAim.
+$97DF NextTurnCheckBalls
+$9801 NextTurnResume ; not executed in any build
+$9825 GameOverEnd ; the hi score = the larger of it and both scores, printed; then the hall of fame
+$9837 GameOverScore2
+$9849 GameOverScore ; PrintHudNumber 2, then GameOverWait through $80DE
+$9854 GameOverRestart ; back to the menu ($80B0)
+$9857 c GameOverWait ; Wait 250 frames or a key, the hall of fame $A702, wait 500 frames or a key
+> Run through WaitFrame $80DE by GameOverEnd (game 1 at frame 8811-9061, w1 11768-14232, f1 4445-5195). The second wait is the tail call into WaitFramesOrKey from $9860.
+$9860 GameOverWaitAfter ; BC = 500 frames
+$9865 c WaitFramesOrKey ; Wait up to BC frames; stop early on fire ($827C bit 4 after $8106) or any key (KEY_SCAN, K_TEST)
+> game 279 frames over 2 calls (8811-9090), w1 750, f1 750.
+$9884 WaitFramesOrKeyDone
+$9886 c WaitFramesBStopped ; Wait B frames with the tasks stopped: WaitFrame $80DE with WaitFramesB
+> From GameOver $97CA (B 125) and NextTurnResume $9801 (B 100): not executed in any build.
+$988C c WaitFramesB ; HALT B times
+> Code inside the text block (bytes $76 $10 $FD $C9). Not executed in any build (no two-player game over with the other player alive, no turn change to a racked set).
+$9890 b GameOverTexts 16 ; GAME OVER and the losing player (PrintText records, double width, attr $60)
+> GameOverText read by game, w1, f1; the two player lines are not read in any build (the recordings' games over were one-player or ended by BREAK).
+$9890 GameOverText ; row 9, col 7, attr $E0, 9: "GAME OVER"
+$9894 ; "GAME OVER"
+$989D GameOverPlayer1 ; row 11, col 8, attr $E0, 8: "PLAYER 1"
+$98A1 ; "PLAYER 1"
+$98A9 GameOverPlayer2 ; row 11, col 8, attr $E0, 8: "PLAYER 2"
+$98AD ; "PLAYER 2"
+@res text/GameOverTexts.bin
+$98B5 c EraseBallsUnderBanner ; Erase the balls on the table that the GAME OVER banner covers and take them off the table
+> GameOver $97A2 (game, w1, f1 once each). A ball with bit 7 of +13 set and its sprite at x 41-199, y 57 up to 88 (one player) or 104 (two) is XORed off and its bit 7 cleared. The erase branch ran in no build (no ball sat there at the game overs).
+$98BA EraseBannerLoop
+$98ED EraseBannerNext
+
+@module tally ; The score of a shot: frame x ball x pocket multiplier x 10, printed term by term and counted up into the score
+@about Score of one potted ball = frame number x ball number x the pocket's multiplier (PocketMultiplierCells), shown as "FxBxMx10" and stored without the x 10; a shot's terms are added and counted into the player's score with a falling beep (v1: "1x5x3x10=150").
+$98F9 c ScoreShot ; Run ScoreTally with the tasks stopped (WaitFrame $80DE)
+> From the end-of-shot task $8357 twice per shot end (game 4, w1 21, f1 9, p2 6, v1 4, m1 1).
+$98FF c ScoreTally ; Score the balls potted in the last shot (+12 <> 0): print each term, the total, count it into the score, refill the shots
+> ShotScore $9B2C = 0. Ball 1-6 with a pocket number in +12: the first sets PotBall $9B2F and PotMultiplier $9B2E (PocketTurn $9F43 + pocket, 7..12 minus 6), waits 15 frames and clears the message rows (unless MessageStep is $4F); every further one first prints the pending term with "+" (TallyTermPlus $9A01), waits, clears, takes its own ball and multiplier. The last term is printed with "=" and the total (TallyTermTotal $9A1A).
+> The count: TallyPitch $9B34 = 1200, step DE = ShotScore / 64 + 1 (ShotScore x 4, high byte, plus 1 with the carry); up to 45 frames each moves one step from ShotScore into the player's score (AddScoreStep $99C1, printed with a beep), then the remainder in one go and the rest of the 45 frames waited. Then ClearMessageRows, DrawPottedRow $9AB5, ShotsLeft = ShotsForFrame $9BE6, wait 5 frames.
+> Returns at once when nothing was potted. Witness: AddScoreStep w1 287 calls (frames 1329-10175), p2 38, v1 72; TallyTermPlus (a double pot) w1, f1, v1 once each.
+$990B TallyFindFirst
+$991E TallyFirstBall
+$992F TallyFirstMultiplier
+$993F TallyFindNext
+$994B TallyNextBall
+$9956 TallyMoreBalls
+$9970 TallyMoreMultiplier
+$9975 TallyCount
+$998C TallyCountStep
+$999E TallyCountLast
+$99AC TallyWaitRest
+$99AF TallyDone
+$99BD TallyEndWait
+$99C1 c AddScoreStep ; Add DE to the current player's score, print it, beep at TallyPitch and lower the pitch by 10
+> CurrentPlayer 1: ScorePlayer1 $9F45, 2: ScorePlayer2 $9F47; PrintHudNumber 0 / 1. The beep: BEEPER with HL = TallyPitch, DE = 6000 / TallyPitch cycles (1200: about 356 Hz, 5 cycles, 14 ms), a tick that rises in pitch step by step; TallyPitch - 10 unless it would go below zero. w1 287 runs.
+$99D0 AddScorePlayer2
+$99D7 AddScorePrint
+$99E6 AddScoreCycles
+$99FE AddScoreDone
+$9A01 c TallyTermPlus ; Add the pending term to ShotScore and print "FxBxMx10+" at row 3 (col 6, 7 for a one-digit frame)
+> Double-width text, attr $38 (C = $B8). w1, f1, v1 once each (the double pots).
+$9A0F TallyTermPlusPrint
+$9A1A c TallyTermTotal ; Add the last term and print "FxBxMx10=" and ShotScore x 10, centred on row 3
+> The column starts at 1, plus one each for a frame < 10 and a total < 1000, < 100, < 10. Each term waits 15 frames (TallyPause $9B07) before its "x". w1 17, f1 1, p2 2, v1 4.
+$9A28 TallyCentre1000
+$9A34 TallyCentre100
+$9A3E TallyCentre10
+$9A48 TallyTotalPrint
+$9A67 c AddTerm ; ShotScore += frame x PotBall x PotMultiplier (ScoreTerm $9B2A as the product)
+$9A87 c PrintTerm ; Print frame, "x", ball, "x", multiplier, "x", "10" at DE (double width, attr $38)
+$9AA2 c PrintTermFactor ; Print HL as a number at DE, wait 15 frames, then "x"; DE past it
+$9AB5 c DrawPottedRow ; XOR the potted balls (bit 7 of +13 clear) at their place in the potted row, then the lives
+> After ClearMessageRows wiped rows 2-4: ScoreTally and MessagesTask step $4F. game 4, w1 21, f1 4, p2 3, v1 7. Falls into DrawLives.
+$9ABB PottedRowLoop
+$9AD4 PottedRowNext
+$9AD9 c DrawLives ; XOR one cue ball per life (LivesLeft $9F4E, 1-3) in the potted row at x 160, 184, 208 (right-aligned to 208), y 20
+> The first x = $88 + 24 (4 - lives). Lives 0 or negative: nothing. Called by DrawPottedRow, NextTurn, TurnSwap and the game start $8013: game 5, w1 22, p2 6.
+$9AEA LivesFirstX
+$9AF4 LivesLoop
+$9B07 c TallyPause ; Wait 15 frames (HALT)
+$9B09 TallyPauseLoop
+$9B0D c MultiplyTerm ; ScoreTerm $9B2A = ScoreTerm x A (16 x 8 bits, shift and add)
+$9B19 MultiplyLoop
+$9B1D MultiplyShift
+$9B2A b ScoreVars 12 ; The tally's and the turns' variables
+> Readers and writers: the tally routines; CurrentPlayer by the game start $8052, TurnSwap $9C34 and the hall of fame $A79C / $A7C2 / $AD1C; UpBlink by StartAim $8432 / $8483; LastShotBlink $843E / $849F.
+$9B2A ScoreTerm ; word: the product of one term (frame x ball x multiplier)
+$9B2C ShotScore ; word: the shot's score (without the x 10), counted down into the player's score
+$9B2E PotMultiplier ; the pending term's pocket multiplier 1-6
+$9B2F PotBall ; the pending term's ball number 1-6
+$9B30 CurrentPlayer ; 1 or 2
+$9B31 UpBlink ; 0 = print the 1up / 2up blank next, else the word
+$9B32 LastShotBlink ; 0 "last", 1 "shot", $FF restore "shots"
+$9B33 Player2Racked ; 0 until the second player's set was racked once (two players)
+$9B34 TallyPitch ; word: the count-up beep's BEEPER period, 1200 down by 10 a step
+
+@module turns ; The FRAME banner, the next frame, the shots per frame, the turn swap, the last-shot beep, the messages task
+$9B36 c ShowFrameBanner ; Print "FRAME n" double width at row 9 (row 11 under a PLAYER n banner), wait 75 frames, blank rows 9 and 11
+> Called by Rack $9F6F at each rack (game 1 at frame 6190, w1 4, p2 2). Two players: the cell row 9, col 8 is tested for pixels (PlayerBanner printed): then row 11. The column: 9, 8 for a frame >= 10. FrameBanner $9B8E is patched (row, column), printed, the number after it (PrintNumber $9E13, attr $E0); then FrameBannerBlank $9B98 printed at row 9 and row 11 (its row byte patched).
+$9B47 FrameBannerTestCell
+$9B50 FrameBannerRow
+$9B5E FrameBannerColumn
+$9B75 FrameBannerWait
+$9B8E b FrameBanner 16 ; The FRAME banner and the blank line that wipes it (PrintText records; the row and column bytes are patched)
+> Written by ShowFrameBanner ($9B51, $9B5E, $9B7A, $9B85) and NextTurn ($9808); read by PrintText. In the image $9B8E = row 11, col 9.
+$9B8E FrameBannerRowByte ; row (9 or 11, patched)
+$9B8F ; column 9 (8 from frame 10), attr $E0, 6
+$9B92 ; "FRAME "
+$9B98 FrameBannerBlank ; row (patched 9 / 11), col 2, attr $60, 28 spaces
+$9B9C ; 28 spaces
+@res text/FrameBanner.bin
+$9BB8 c NextFrame ; Frame cleared: frame + 1 (up to 99), the pocket multipliers turn one place, the shots refilled, power reset
+> From the end-of-shot task $8357 and NextTurn $97CD: w1 3 times (frames 4023-10196, frames 2, 3 and 4). Frame $9F4B + 1, printed (PrintHudNumber 4); PocketTurn $9F43 - 1 (0 wraps to 5), the marks redrawn (DrawPocketMarks $9D6B); ShotsLeft = ShotsForFrame, printed (PrintHudNumber 3); tail call $8539 (erase the power bar, power 0).
+$9BC1 NextFrameStore
+$9BD2 NextFrameTurn
+$9BE6 c ShotsForFrame ; A = the shots for this frame: ShotsPerFrame[frame], 2 from frame 10; plus variation + 1 in a variation
+> Frame $9F4B; the variation $B8C3 (0 standard, 1 numeric order, 2 own pockets; the menu). Standard: frames 1-2 five shots, 3-5 four, 6-9 three, then two. Variation 2 on frame 1: 5 + 3 = 8 (v1, WALKTHROUGH 6.0). game 4, w1 24.
+$9BF1 ShotsFromTable
+$9BF9 ShotsTableRead
+$9BFA ShotsVariation
+$9C06 b ShotsPerFrame 9 ; The shots of frames 1-9: 5, 5, 4, 4, 4, 3, 3, 3, 3
+> Read by ShotsForFrame $9BE6 (index frame - 1). Frames 1-4 read (w1 reached frame 4); $9C0A-$9C0E (frames 5-9) read by no build.
+$9C0F c TurnSwapStart ; Run TurnSwap with the tasks stopped (WaitFrame $80DE)
+$9C15 c TurnSwap ; After a life lost: with two players and the other still alive, swap everything to the other player; then the frame, shots, pocket marks, PLAYER n
+> Run by TurnSwapStart (game 3, w1 3, f1 3, p2 1 at frame 1738, v1 3). Two players (p2 only): wait 40 frames, ClearTableForTurn $947D, DrawLives (XOR: erases the lives), then unless the other's lives $9F4F are negative: CurrentPlayer 1 <-> 2, and the pairs PocketTurn $9F43 / $9F44, LivesLeft $9F4E / $9F4F, FrameNumber $9F4B / $9F4C swapped, the 98-byte ball sets $8A88 / $8AEA exchanged byte by byte.
+> Then for one and two players: $8539 (power 0), PrintHudNumber 4 (frame), ShotsLeft = ShotsForFrame, PrintHudNumber 3, DrawPocketMarks, and falls into PlayerBanner.
+$9C1D TurnSwapWait
+$9C5B TurnSwapBalls ; exchange 98 bytes: $8A88-$8AE9 with $8AEA-$8B4B
+$9C65 TurnSwapHud
+$9C7B c PlayerBanner ; Two players: print "PLAYER 1" / "PLAYER 2" double width at row 9, col 8
+> From TurnSwap and the game start $8013. Returns at once with one player ($B8BB = 1). p2 2, v1 5 (entries).
+$9C8C PlayerBannerPrint
+$9C8F b PlayerBannerTexts 12 ; PLAYER 1 / PLAYER 2 (PrintText records)
+> Read by PlayerBanner (p2). Wiped by ShowFrameBanner's blank of row 9.
+$9C8F PlayerBanner1 ; row 9, col 8, attr $E0, 8: "PLAYER 1"
+$9C93 ; "PLAYER 1"
+$9C9B PlayerBanner2 ; row 9, col 8, attr $E0, 8: "PLAYER 2"
+$9C9F ; "PLAYER 2"
+@res text/PlayerBannerTexts.bin
+$9CA7 c LastShotBeepTask ; With one shot left: a short beep (BEEPER HL 500, DE 10: about 413 Hz, 24 ms), then DI (it runs in the interrupt)
+> A task added by StartAim $8425 with period 25, removed by $8506 at the shot. 58 runs in game, w1 179 (only the runs with ShotsLeft = 1 beep). BEEPER ends with EI; the DI keeps the interrupt handler closed.
+$9CB7 c MessagesTask ; Step through the foul message: clear, print, hold about 75 steps, clear, redraw the potted row
+> MessageStep $9F50: 0: start (step 1) only when the foul code $8E80 is set; 1: ClearMessageRows; 2: the text by $8E80 (1 FOUL SHOT!, 2 WRONG ORDER!, 3 WRONG POCKET!); 3-$4D: wait; $4E: ClearMessageRows; $4F: DrawPottedRow; $50: stays. Each step but the last adds 1 (MessageNextStep pushed as the return address). A task of the balls-moving list $84BA (period 0) and called by $8457 once a frame after the balls stop until step $50. game 606 runs (320 steps); the texts: game 4, w1 4, f1 3, p2 1, v1 3 (WRONG ORDER / WRONG POCKET in v1 at frames 1471 / 3100).
+$9CDE MessagePrint
+$9CE1 MessageLaterSteps
+$9CF0 MessageIdle
+$9CF5 MessageNextStep ; MessageStep + 1
+$9CFD b FoulTexts 16 ; The three foul messages (PrintText records, double width, attr $38, row 3, centred)
+> Read by MessagesTask $9CB7 step 2.
+$9CFD FoulShotText ; row 3, col 6, attr $B8, 10: "FOUL SHOT!"
+$9D01 ; "FOUL SHOT!"
+$9D0B WrongOrderText ; row 3, col 4, attr $B8, 12: "WRONG ORDER!"
+$9D0F ; "WRONG ORDER!"
+$9D1B WrongPocketText ; row 3, col 3, attr $B8, 13: "WRONG POCKET!"
+$9D1F ; "WRONG POCKET!"
+@res text/FoulTexts.bin
+$9D2C c ResetBallPositions ; Put the seven balls of the current set at their rack positions (StartPositions), on the table
+> x / y whole parts from StartPositions, fractions 0, +10/+11 = x - 7 / y - 7, flags +13 = $80; velocities untouched; nothing drawn. Called by the entry $8000 (every build, frame 0 / 5556) and the editor ($C042, $C532).
+$9D38 ResetBallLoop
+$9D5D b StartPositions 2 ; The rack: x, y of the cue ball and balls 1-6
+> (40, 115), (190, 115), (205, 106), (205, 124), (221, 98), (221, 115), (221, 132): a triangle of six with its point at ball 1. Read by ResetBallPositions; the rack scripts end on the same points (RackScripts0).
+
+@module printing ; The pocket multiplier marks, the number printer, the text printer and its glyph lookup
+@about PrintChar $9E7C prints character A at row H, column L with attribute C. C bit 7 = double width: the attribute (C AND $7F) goes into two cells and the glyph is widened (PrintCharWide); the string and number printers then step two columns. Glyphs: $61-$7A (a-z) Font $DEF4, $30-$39 (0-9) Font+208, $7F the copyright sign CopyrightGlyph $9F2E, every other code CHAR_SET + 8 (code - $20) (upper case, space, punctuation from the ROM).
+$9D6B c DrawPocketMarks ; Print "xN" at the six pockets, clockwise from the top left, N = 1-6 turned by PocketTurn $9F43
+> Cells: top row 5 (y 40) cols 0, 15, 30 then bottom row 23 (y 184) cols 30, 15, 0, each a ROM "x" and a digit. The k-th mark (k = 0..5) shows ((PocketTurn + k) mod 6) + 1; PocketTurn ends where it started (six increments). The scoring and the own-pocket rule use PocketTurn + the pocket number the same way ($9923, $8C37), so pocket 1 is the top left mark (known only from the code). game 4 (frame 6190 on), w1 7, v1 5.
+$9D8C c PrintPocketMark ; At screen address HL: the ROM's "x" glyph, then the digit PocketTurn + 1; PocketTurn + 1 mod 6
+$9D8C ; CHAR_SET+704: the ROM's "x"
+$9DA4 PocketMarkDigit
+$9DB0 PocketMarkStore
+$9DB4 c CopyGlyph ; Copy 8 bytes from DE down the cell at HL; in the bottom two thirds one byte earlier (the glyph one pixel lower)
+$9DBA CopyGlyphStart
+$9DBC CopyGlyphLoop
+$9DC3 c PrintHudNumber ; Print HUD number A: 0 score 1, 1 score 2, 2 hi score (five digits and a "0"), 3 shots left, 4 frame (and a space)
+> Positions (row, column): score 1 (0, 3), score 2 (0, 26), hi (0, 14), shots (1, 31), frame (1, 22); attr $3A. The scores print with leading zeros (B = $80), shots and frame without. game 15, w1 322, v1 92.
+$9DD5 HudNumberScore2
+$9DE3 HudNumberHi
+$9DEF HudNumberTimesTen ; the fixed "0" after a score
+$9DF5 HudNumberSmall
+$9E13 c PrintNumber ; Print HL (0-65535) in decimal at row D, column E, attr C; B bit 7 = keep leading zeros. DE out: past the number
+> Five digits by subtraction (10000, 1000, 100, 10, 1, PrintDigit $9E40); without B bit 7 the zeros before the first other digit are skipped and 0 prints as "0". Callers: the HUD, the tally, the FRAME banner, the hall of fame $AA23. game 16, w1 420.
+$9E20 PrintNumberDigits
+$9E38 PrintNumberUnits
+$9E40 c PrintDigit ; One digit: A = HL / DE (repeated subtraction), print it at the position kept on the stack, step the column
+> Swaps its return address and the position kept on the stack by the caller (EX (SP),HL) so the five calls share the position.
+$9E41 PrintDigitCount
+$9E49 PrintDigitShow
+$9E54 PrintDigitPrint
+$9E61 PrintDigitDone
+$9E65 c PrintText ; Print the text record at HL: row, column, attribute (bit 7 double width), length N, then N characters
+> No end marker: the length byte counts. Out: HL = row (H), column (L) after the text (callers print a number there); DE past the record. game 138 calls, w1 449; callers in the HUD, the tally, the hall of fame ($AA4B, $ACEF), the menu ($B22E, $B3F3, $B605, $B67E), the presents page $B8C5 and the editor ($C042, $C414).
+$9E6E PrintTextLoop
+$9E78 PrintTextNext
+$9E7C c PrintChar ; Print character A at row H (0-23), column L (0-31), attribute C (bit 7: double width); keeps all registers
+> Writes the attribute first (one or two cells), then the glyph (see the module text). game 1094 calls, w1 4388, m1 2143.
+$9E92 PrintCharCopyright
+$9E9D PrintCharDigit
+$9EAC PrintCharLower
+$9EBB PrintCharRom ; any other code: CHAR_SET + 8 (A - $20)
+$9EC0 PrintCharGlyph
+$9ED2 PrintCharNarrow
+$9ED4 PrintCharNarrowLoop
+$9EDA PrintCharDone
+$9EDE c PrintCharWide ; Copy glyph DE to cells HL and HL+1 with every pixel doubled across (16 pixels a line)
+> Each glyph byte's low four bits go, doubled, to the right byte, the high four to the left. game 56, w1 285.
+$9EE0 PrintCharWideLoop
+$9F14 c CellAddress ; HL = the display address of row H (0-23), column L (0-31), line 0
+$9F23 c CellAttr ; HL = the attribute address of the display cell address HL
+$9F2E b CopyrightGlyph 8 ; The glyph of character $7F, the copyright sign (a C in a ring)
+> Read by PrintChar's $7F branch ($9E96: game 2, m1 4; the menu's copyright line).
+
+@module racking ; The player variables, the rack scripts and their interpreter
+$9F36 c SpriteFromBall ; HL = the sprite place of record IX: L = x - 7, H = y - 7 (whole parts +1, +3)
+> Called by the ball redraw task $8297 and Rack $9F6F: game 905, w1 7580.
+$9F43 b PlayerVars 8 ; The players' scores, frames, shots, lives, the message step and the six rack script states
+> The pairs "current, other" ($9F43 / $9F44, $9F4B / $9F4C, $9F4E / $9F4F) are swapped by TurnSwap $9C15; the scores stay by player. Set by NewGameScreen $95DA; the hi score is 300 (shown 3000) in the image, kept across games.
+$9F43 PocketTurn ; the current player's pocket mark turn 0-5 (NextFrame - 1, DrawPocketMarks)
+$9F44 PocketTurnOther ; the other player's
+$9F45 ScorePlayer1 ; word, score / 10
+$9F47 ScorePlayer2 ; word
+$9F49 HiScore ; word, 300 in the image
+$9F4B FrameNumber ; the current player's frame 1-99
+$9F4C FrameOther ; the other player's frame
+$9F4D ShotsLeft ; set by ShotsForFrame; lowered by the end-of-shot task $83EA
+$9F4E LivesLeft ; 3 at the start; negative = out
+$9F4F LivesOther ; the other player's lives
+$9F50 MessageStep ; MessagesTask step 0-$50 (zeroed at each shot by $84CE)
+$9F51 RackScriptState ; 6 x 4 bytes, balls 1-6: script pointer (word), wait count, move count
+$9F55 ; ball 2
+$9F59 ; ball 3
+$9F5D ; ball 4
+$9F61 ; ball 5
+$9F65 ; ball 6
+$9F69 c Rack ; Rack the balls with the tasks stopped (WaitFrame $80DE with RackBalls)
+> From the game start $8013, the end-of-shot task $8357 and NextTurn $97CD: game 1 (frame 6190), w1 4 (frames 630-10196), p2 2.
+$9F6F c RackBalls ; FRAME banner, then roll balls 1-6 into the triangle by their scripts, one step a frame; then the cue ball to (40, 115)
+> ShowFrameBanner $9B36; the rack set = RackSets[((frame - 1) / 2) mod 6] (frames 1-2 set 0, 3-4 set 1, ...); each ball's RackScriptState = (its script, 0, 0) and its record cleared (ClearBallMotion $A040).
+> Each step: RackStep $A05E for balls 1-6 (B counts the scripts ended), the draw list $869E rebuilt ($8304), HALT, and every ball of the list with bit 4 of +13 set (it moved) erased at +10/+11, placed at SpriteFromBall, drawn, bit 4 cleared (the list's cue entry, ball 0, is skipped). Until all six scripts ended: game 170 steps (frames 6266-6435).
+> The cue ball: ClearBallMotion, x 40 / y 115 with a random fraction (R x 2 into both), drawn (no erase before it).
+$9F78 RackSetMod
+$9F80 RackSetPick
+$9F94 RackInitBall
+$9FAE RackStepAll
+$9FB9 RackStepBall
+$9FD8 RackRedraw
+$A00E RackRedrawNext
+$A040 c ClearBallMotion ; Zero record IX's fractions (+0, +2), velocities (+4..+7), friction steps (+8, +9); flags +13 = $80
+$A05E c RackStep ; One frame of the rack script of ball IX, state at HL: a wait, a repeated move, or the next command
+> State: +0/+1 the script pointer, +2 the wait, +3 the moves left. A wait above 0: one less, return. Moves left: x + dx, y + dy (the pair at the pointer, whole pixels), bit 4 of +13 set; the pointer passes the pair when the count ends. Else the next command: 0 end (B + 1, the pointer stays: every later step ends again), 1 x y (put the ball at x, y), 2 n dx dy (move n times by dx, dy, one a frame; starts at once), 3 n (wait n frames).
+> game 1040 calls (frames 6266-6435); command 1: 12, command 2: 20, command 3: 6.
+$A068 RackStepMove
+$A089 RackStepCommand
+$A09B RackStepEnd ; command 0
+$A09D RackStepPlace ; command 1
+$A0B1 RackStepRun ; command 2
+$A0BB RackStepWait ; command 3
+$A0C4 w RackSets 6 ; The six rack sets: pointers to six script pointers each (balls 1-6)
+> Read by RackBalls ($9F83): sets 0 and 1 read; $A0C8-$A0CF (sets 2-5, frames 5-12) read by no build. Set 1 $A162 and sets 2-5 ($A1E4, $A29C, $A38E, $A4F8) are past this fragment.
+$A0D0 w RackScripts0 6 ; Set 0 (frames 1-2): the scripts of balls 1-6
+$A0DC b RackScript0Ball1 16 ; Ball 1: wait 75; at (7, 175); 30 x (+2, -2); 61 x (+2, 0); at (190, 115); end
+> The scripts of set 0 all start at a left corner pocket, (7, 175) or (7, 55), run diagonally to y 115, along the middle line, turn into their place and end exactly on StartPositions. Waits 75, 60, 45, 30, 15, 0: ball 6 rolls first.
+$A0ED RackScript0Ball2 ; Ball 2: wait 60; at (7, 55); 30 x (+2, +2); 61 x (+2, 0); 4 x (+2, -2); 3 x (+2, 0); at (205, 106); end
+$A106 RackScript0Ball3 ; Ball 3: wait 45; at (7, 175); 30 x (+2, -2); 61 x (+2, 0); 4 x (+2, +2); 3 x (+2, 0); at (205, 124); end
+$A11F RackScript0Ball4 ; Ball 4: wait 30; at (7, 55); 30 x (+2, +2); 61 x (+2, 0); 8 x (+2, -2); 7 x (+2, 0); at (221, 98); end
+$A138 RackScript0Ball5 ; Ball 5: wait 15; at (7, 175); 30 x (+2, -2); 77 x (+2, 0); at (221, 115); end
+$A149 RackScript0Ball6 ; Ball 6: wait 0; at (7, 55); 30 x (+2, +2); 61 x (+2, 0); 8 x (+2, +2); 7 x (+2, 0); at (221, 132); end
+
+@module rackscripts ; The rack-in scripts of sets 1-5: how the six object balls roll onto the table before frames 3-12
+@about The racking $9F6F (the lead's range) animates the six object balls into the rack before each frame. It picks a set from the table $A0C4 by the frame number $9F4B: set ((frame - 1) / 2) mod 6, so frames 1-2 use set 0 ($A0D0, the lead's range), 3-4 set 1, 5-6 set 2, 7-8 set 3, 9-10 set 4, 11-12 set 5, and from frame 13 on the sets repeat. A set is six words, the script of ball 1 to ball 6, then the scripts.
+@about A script is a byte program run one step a frame by $A05E for its ball, in a 4-byte slot at $9F51 (script pointer, wait count, move count): 0 = the end (the ball is done; the racking ends when all six are), 1 x y = place the ball at pixel (x, y) (+1 / +3 of its record), 2 n dx dy = move by (dx, dy) on each of the next n frames (signed bytes, mostly 2 pixels a frame), 3 n = wait n frames. Every script ends with a place command on the ball's rack position of $9D5D ((190, 115), (205, 106), (205, 124), (221, 98), (221, 115), (221, 132)), so a step count off by one does not matter.
+@about Set 1 ($A162-$A1E3) is read in w1 at frames 3 and 4. Sets 2-5, the 1310 bytes $A1E4-$A701, are read by no recording: no game reached frame 5 (w1 won frames 1-3). The only words in the image that point into $A1E4-$A701 are the four set pointers $A0C8-$A0CE and the sets' own script pointers (a byte search of work/mkgame/original.bin; other matches are instruction bytes). The scripts decode cleanly and each ends on its ball's rack position (work/stage2/ann/04-scratch/racks.py): they are the racks of frames 5-12, not leftover data. The paths (from the decoded scripts, not seen on screen): set 1 starts the balls from the four corners and the middles of the top and bottom cushions; set 2 runs them along the cushions to x 27 and then right along their rack rows; set 3 brings them from the right corners across to the left cushion and back; set 4 sends three from the top left and three from the bottom right round the cushions with pauses and short side steps; set 5 sends all six along one path, in at (8, 56), each dropping into a pocket and reappearing at another (place commands at the pocket positions (247, 175), (128, 56), (247, 56), (8, 175), (128, 175), (8, 56)).
+$A162 w RackSet1 6 ; Rack-in set 1: the script of each object ball 1-6, the frames 3-4 rack (stage-1 w1 racked frames 3 and 4 with it)
+> Read through the set table at $A0C4 by the racking $9F6F (index ((frame - 1) / 2) mod 6, the frame from $9F4B): w1 read every byte of this set twice (frames 3 and 4 of its game; l1sum.py --reads A162-A1E3: w1 only, 1562 reads). No other recording reached frame 3.
+$A16E b Rack1Ball1 4 ; The scripts of rack-in set 1, ball 1 first
+> The six scripts of set 1 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step $A05E.
+$A16E ; ball 1: wait 15 frames
+$A170 ; place at (7, 55)
+$A173 ; move 30 frames by (+2, +2)
+$A177 ; move 61 frames by (+2, +0)
+$A17B ; place at (190, 115)
+$A17E ; end
+$A17F Rack1Ball2 ; ball 2: wait 62 frames
+$A181 ; place at (128, 55)
+$A184 ; move 10 frames by (+0, +2)
+$A188 ; move 23 frames by (+2, +0)
+$A18C ; move 15 frames by (+2, +2)
+$A190 ; place at (205, 106)
+$A193 ; end
+$A194 Rack1Ball3 ; ball 3: wait 62 frames
+$A196 ; place at (128, 176)
+$A199 ; move 11 frames by (+0, -2)
+$A19D ; move 23 frames by (+2, +0)
+$A1A1 ; move 15 frames by (+2, -2)
+$A1A5 ; place at (205, 124)
+$A1A8 ; end
+$A1A9 Rack1Ball4 ; ball 4: wait 90 frames
+$A1AB ; place at (248, 55)
+$A1AE ; move 6 frames by (-2, +2)
+$A1B2 ; move 8 frames by (+0, +2)
+$A1B6 ; move 6 frames by (-2, +2)
+$A1BA ; place at (221, 98)
+$A1BD ; end
+$A1BE Rack1Ball5 ; ball 5: wait 0 frames
+$A1C0 ; place at (7, 175)
+$A1C3 ; move 30 frames by (+2, -2)
+$A1C7 ; move 77 frames by (+2, +0)
+$A1CB ; place at (221, 115)
+$A1CE ; end
+$A1CF Rack1Ball6 ; ball 6: wait 90 frames
+$A1D1 ; place at (248, 176)
+$A1D4 ; move 6 frames by (-2, -2)
+$A1D8 ; move 9 frames by (+0, -2)
+$A1DC ; move 6 frames by (-2, -2)
+$A1E0 ; place at (221, 132)
+$A1E3 ; end
+$A1E4 w RackSet2 6 ; Rack-in set 2: the script of each object ball 1-6, the frames 5-6 rack
+> Reached only through the set table $A0C4 (the word at $A0C8) when the racking $9F6F racks frame 5 or 6 (or 17-18 after the wrap). No recording read a byte (l1sum.py --reads A1E4-A701: game, w1, f1, p2, v1, m1 all zero; w1, the longest game, reached frame 4). Known only from the code; every script decodes cleanly and ends on its ball's rack position ($9D5D) (work/stage2/ann/04-scratch/racks.py).
+$A1F0 b Rack2Ball1 4 ; The scripts of rack-in set 2, ball 1 first
+> The six scripts of set 2 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step $A05E.
+$A1F0 ; ball 1: wait 190 frames
+$A1F2 ; place at (7, 55)
+$A1F5 ; move 10 frames by (+2, +2)
+$A1F9 ; move 20 frames by (+0, +2)
+$A1FD ; place at (27, 115)
+$A200 ; wait 0 frames
+$A202 ; move 81 frames by (+2, +0)
+$A206 ; place at (190, 115)
+$A209 ; end
+$A20A Rack2Ball2 ; ball 2: wait 111 frames
+$A20C ; place at (128, 55)
+$A20F ; move 10 frames by (+0, +2)
+$A213 ; move 50 frames by (-2, +0)
+$A217 ; move 15 frames by (+0, +2)
+$A21B ; place at (27, 106)
+$A21E ; wait 0 frames
+$A220 ; move 89 frames by (+2, +0)
+$A224 ; place at (205, 106)
+$A227 ; end
+$A228 Rack2Ball3 ; ball 3: wait 46 frames
+$A22A ; place at (248, 55)
+$A22D ; move 10 frames by (-2, +2)
+$A231 ; move 100 frames by (-2, +0)
+$A235 ; move 24 frames by (+0, +2)
+$A239 ; place at (27, 124)
+$A23C ; wait 6 frames
+$A23E ; move 89 frames by (+2, +0)
+$A242 ; place at (205, 124)
+$A245 ; end
+$A246 Rack2Ball4 ; ball 4: wait 0 frames
+$A248 ; place at (248, 176)
+$A24B ; move 10 frames by (-2, -2)
+$A24F ; move 100 frames by (-2, +0)
+$A253 ; move 29 frames by (+0, -2)
+$A257 ; place at (27, 98)
+$A25A ; wait 13 frames
+$A25C ; move 97 frames by (+2, +0)
+$A260 ; place at (221, 98)
+$A263 ; end
+$A264 Rack2Ball5 ; ball 5: wait 65 frames
+$A266 ; place at (128, 176)
+$A269 ; move 10 frames by (+0, -2)
+$A26D ; move 50 frames by (-2, +0)
+$A271 ; move 20 frames by (+0, -2)
+$A275 ; place at (27, 115)
+$A278 ; wait 7 frames
+$A27A ; move 97 frames by (+2, +0)
+$A27E ; place at (221, 115)
+$A281 ; end
+$A282 Rack2Ball6 ; ball 6: wait 130 frames
+$A284 ; place at (7, 176)
+$A287 ; move 10 frames by (+2, -2)
+$A28B ; move 12 frames by (+0, -2)
+$A28F ; place at (27, 132)
+$A292 ; wait 0 frames
+$A294 ; move 97 frames by (+2, +0)
+$A298 ; place at (221, 132)
+$A29B ; end
+$A29C w RackSet3 6 ; Rack-in set 3: the script of each object ball 1-6, the frames 7-8 rack
+> Reached only through the set table $A0C4 (the word at $A0CA) when the racking $9F6F racks frame 7 or 8 (or 19-20 after the wrap). No recording read a byte (l1sum.py --reads A1E4-A701: game, w1, f1, p2, v1, m1 all zero; w1, the longest game, reached frame 4). Known only from the code; every script decodes cleanly and ends on its ball's rack position ($9D5D) (work/stage2/ann/04-scratch/racks.py).
+$A2A8 b Rack3Ball6 4 ; The scripts of rack-in set 3, ball 6 first
+> The six scripts of set 3 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step $A05E.
+$A2A8 ; ball 6: wait 0 frames
+$A2AA ; place at (248, 175)
+$A2AD ; move 34 frames by (-2, -2)
+$A2B1 ; move 59 frames by (-2, +0)
+$A2B5 ; move 13 frames by (-2, +2)
+$A2B9 ; move 4 frames by (-2, +0)
+$A2BD ; move 9 frames by (+0, -2)
+$A2C1 ; move 72 frames by (+2, +0)
+$A2C5 ; move 17 frames by (+2, +1)
+$A2C9 ; move 8 frames by (+2, +0)
+$A2CD ; place at (221, 132)
+$A2D0 ; end
+$A2D1 Rack3Ball4 ; ball 4: wait 22 frames
+$A2D3 ; place at (248, 175)
+$A2D6 ; move 34 frames by (-2, -2)
+$A2DA ; move 37 frames by (-2, +0)
+$A2DE ; move 13 frames by (-2, +2)
+$A2E2 ; move 26 frames by (-2, +0)
+$A2E6 ; move 9 frames by (+0, -2)
+$A2EA ; move 50 frames by (+2, +0)
+$A2EE ; move 17 frames by (+2, -1)
+$A2F2 ; move 30 frames by (+2, +0)
+$A2F6 ; place at (221, 98)
+$A2F9 ; end
+$A2FA Rack3Ball2 ; ball 2: wait 44 frames
+$A2FC ; place at (248, 175)
+$A2FF ; move 34 frames by (-2, -2)
+$A303 ; move 15 frames by (-2, +0)
+$A307 ; move 13 frames by (-2, +2)
+$A30B ; move 48 frames by (-2, +0)
+$A30F ; move 9 frames by (+0, -2)
+$A313 ; move 20 frames by (+2, +0)
+$A317 ; move 9 frames by (+2, -1)
+$A31B ; move 60 frames by (+2, +0)
+$A31F ; place at (205, 106)
+$A322 ; end
+$A323 Rack3Ball5 ; ball 5: wait 11 frames
+$A325 ; place at (248, 55)
+$A328 ; move 34 frames by (-2, +2)
+$A32C ; move 48 frames by (-2, +0)
+$A330 ; move 13 frames by (-2, -2)
+$A334 ; move 15 frames by (-2, +0)
+$A338 ; move 9 frames by (+0, +2)
+$A33C ; move 97 frames by (+2, +0)
+$A340 ; place at (221, 115)
+$A343 ; end
+$A344 Rack3Ball3 ; ball 3: wait 33 frames
+$A346 ; place at (248, 55)
+$A349 ; move 34 frames by (-2, +2)
+$A34D ; move 26 frames by (-2, +0)
+$A351 ; move 13 frames by (-2, -2)
+$A355 ; move 37 frames by (-2, +0)
+$A359 ; move 9 frames by (+0, +2)
+$A35D ; move 31 frames by (+2, +0)
+$A361 ; move 9 frames by (+2, +1)
+$A365 ; move 49 frames by (+2, +0)
+$A369 ; place at (205, 124)
+$A36C ; end
+$A36D Rack3Ball1 ; ball 1: wait 55 frames
+$A36F ; place at (248, 55)
+$A372 ; move 34 frames by (-2, +2)
+$A376 ; move 4 frames by (-2, +0)
+$A37A ; move 13 frames by (-2, -2)
+$A37E ; move 59 frames by (-2, +0)
+$A382 ; move 9 frames by (+0, +2)
+$A386 ; move 81 frames by (+2, +0)
+$A38A ; place at (190, 115)
+$A38D ; end
+$A38E w RackSet4 6 ; Rack-in set 4: the script of each object ball 1-6, the frames 9-10 rack
+> Reached only through the set table $A0C4 (the word at $A0CC) when the racking $9F6F racks frame 9 or 10 (or 21-22 after the wrap). No recording read a byte (l1sum.py --reads A1E4-A701: game, w1, f1, p2, v1, m1 all zero; w1, the longest game, reached frame 4). Known only from the code; every script decodes cleanly and ends on its ball's rack position ($9D5D) (work/stage2/ann/04-scratch/racks.py).
+$A39A b Rack4Ball5 4 ; The scripts of rack-in set 4, ball 5 first
+> The six scripts of set 4 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step $A05E.
+$A39A ; ball 5: wait 0 frames
+$A39C ; place at (248, 175)
+$A39F ; move 8 frames by (-2, -2)
+$A3A3 ; move 44 frames by (+0, -2)
+$A3A7 ; move 1 frames by (+0, -1)
+$A3AB ; move 103 frames by (-2, +0)
+$A3AF ; move 9 frames by (+0, +2)
+$A3B3 ; move 51 frames by (+2, +0)
+$A3B7 ; move 1 frames by (+1, +0)
+$A3BB ; wait 90 frames
+$A3BD ; move 27 frames by (+1, +0)
+$A3C1 ; move 27 frames by (+0, +1)
+$A3C5 ; wait 18 frames
+$A3C7 ; wait 44 frames
+$A3C9 ; move 33 frames by (+2, +0)
+$A3CD ; place at (221, 115)
+$A3D0 ; end
+$A3D1 Rack4Ball2 ; ball 2: wait 18 frames
+$A3D3 ; place at (7, 55)
+$A3D6 ; move 9 frames by (+2, +2)
+$A3DA ; move 25 frames by (+0, +2)
+$A3DE ; move 1 frames by (+0, +1)
+$A3E2 ; move 103 frames by (+2, +0)
+$A3E6 ; move 9 frames by (+0, -2)
+$A3EA ; move 51 frames by (-2, +0)
+$A3EE ; wait 144 frames
+$A3F0 ; move 9 frames by (-1, +0)
+$A3F4 ; move 9 frames by (+0, +1)
+$A3F8 ; wait 79 frames
+$A3FA ; move 9 frames by (+0, -1)
+$A3FE ; move 9 frames by (-1, +0)
+$A402 ; move 47 frames by (+2, +0)
+$A406 ; place at (205, 106)
+$A409 ; end
+$A40A Rack4Ball1 ; ball 1: wait 36 frames
+$A40C ; place at (7, 55)
+$A40F ; move 9 frames by (+2, +2)
+$A413 ; move 7 frames by (+0, +2)
+$A417 ; move 1 frames by (+0, +1)
+$A41B ; move 103 frames by (+2, +0)
+$A41F ; move 9 frames by (+0, -2)
+$A423 ; move 51 frames by (-2, +0)
+$A427 ; move 45 frames by (-1, +0)
+$A42B ; move 45 frames by (+0, +1)
+$A42F ; wait 72 frames
+$A431 ; wait 145 frames
+$A433 ; move 53 frames by (+2, +0)
+$A437 ; place at (190, 115)
+$A43A ; end
+$A43B Rack4Ball3 ; ball 3: wait 0 frames
+$A43D ; place at (7, 55)
+$A440 ; move 9 frames by (+2, +2)
+$A444 ; move 43 frames by (+0, +2)
+$A448 ; move 1 frames by (+0, +1)
+$A44C ; move 103 frames by (+2, +0)
+$A450 ; move 9 frames by (+0, -2)
+$A454 ; move 51 frames by (-2, +0)
+$A458 ; wait 90 frames
+$A45A ; move 27 frames by (-1, +0)
+$A45E ; move 27 frames by (+0, -1)
+$A462 ; wait 18 frames
+$A464 ; wait 78 frames
+$A466 ; move 9 frames by (+0, +1)
+$A46A ; move 9 frames by (+1, +0)
+$A46E ; move 1 frames by (+1, +0)
+$A472 ; move 46 frames by (+2, +0)
+$A476 ; place at (205, 124)
+$A479 ; end
+$A47A Rack4Ball6 ; ball 6: wait 18 frames
+$A47C ; place at (248, 175)
+$A47F ; move 8 frames by (-2, -2)
+$A483 ; move 26 frames by (+0, -2)
+$A487 ; move 1 frames by (+0, -1)
+$A48B ; move 103 frames by (-2, +0)
+$A48F ; move 9 frames by (+0, +2)
+$A493 ; move 51 frames by (+2, +0)
+$A497 ; move 1 frames by (+1, +0)
+$A49B ; wait 144 frames
+$A49D ; move 9 frames by (+1, +0)
+$A4A1 ; move 9 frames by (+0, -1)
+$A4A5 ; wait 10 frames
+$A4A7 ; move 17 frames by (+0, +1)
+$A4AB ; move 18 frames by (+1, +0)
+$A4AF ; move 1 frames by (+1, +0)
+$A4B3 ; move 32 frames by (+2, +0)
+$A4B7 ; place at (221, 132)
+$A4BA ; end
+$A4BB Rack4Ball4 ; ball 4: wait 36 frames
+$A4BD ; place at (248, 175)
+$A4C0 ; move 8 frames by (-2, -2)
+$A4C4 ; move 8 frames by (+0, -2)
+$A4C8 ; move 1 frames by (+0, -1)
+$A4CC ; move 103 frames by (-2, +0)
+$A4D0 ; move 9 frames by (+0, +2)
+$A4D4 ; move 51 frames by (+2, +0)
+$A4D8 ; move 1 frames by (+1, +0)
+$A4DC ; move 45 frames by (+1, +0)
+$A4E0 ; move 45 frames by (+0, -1)
+$A4E4 ; wait 72 frames
+$A4E6 ; wait 10 frames
+$A4E8 ; move 17 frames by (+0, -1)
+$A4EC ; move 18 frames by (-1, +0)
+$A4F0 ; move 33 frames by (+2, +0)
+$A4F4 ; place at (221, 98)
+$A4F7 ; end
+$A4F8 w RackSet5 6 ; Rack-in set 5: the script of each object ball 1-6, the frames 11-12 rack
+> Reached only through the set table $A0C4 (the word at $A0CE) when the racking $9F6F racks frame 11 or 12 (or 23-24 after the wrap). No recording read a byte (l1sum.py --reads A1E4-A701: game, w1, f1, p2, v1, m1 all zero; w1, the longest game, reached frame 4). Known only from the code; every script decodes cleanly and ends on its ball's rack position ($9D5D) (work/stage2/ann/04-scratch/racks.py).
+$A504 b Rack5Ball1 4 ; The scripts of rack-in set 5, ball 1 first
+> The six scripts of set 5 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step $A05E.
+$A504 ; ball 1: wait 55 frames
+$A506 ; place at (8, 56)
+$A509 ; move 29 frames by (+2, +2)
+$A50D ; move 60 frames by (+2, +0)
+$A511 ; move 30 frames by (+2, +2)
+$A515 ; place at (247, 175)
+$A518 ; place at (128, 56)
+$A51B ; move 29 frames by (+0, +2)
+$A51F ; move 30 frames by (+2, +0)
+$A523 ; move 1 frames by (+1, +0)
+$A527 ; move 28 frames by (+2, -2)
+$A52B ; place at (247, 56)
+$A52E ; place at (8, 175)
+$A531 ; move 30 frames by (+2, -2)
+$A535 ; move 30 frames by (+2, +0)
+$A539 ; move 30 frames by (+0, +2)
+$A53D ; place at (128, 175)
+$A540 ; place at (8, 56)
+$A543 ; move 29 frames by (+2, +2)
+$A547 ; move 1 frames by (+1, +1)
+$A54B ; move 61 frames by (+2, +0)
+$A54F ; place at (190, 115)
+$A552 ; end
+$A553 Rack5Ball2 ; ball 2: wait 44 frames
+$A555 ; place at (8, 56)
+$A558 ; move 29 frames by (+2, +2)
+$A55C ; move 60 frames by (+2, +0)
+$A560 ; move 30 frames by (+2, +2)
+$A564 ; place at (247, 175)
+$A567 ; place at (128, 56)
+$A56A ; move 29 frames by (+0, +2)
+$A56E ; move 30 frames by (+2, +0)
+$A572 ; move 1 frames by (+1, +0)
+$A576 ; move 28 frames by (+2, -2)
+$A57A ; place at (247, 56)
+$A57D ; place at (8, 175)
+$A580 ; move 30 frames by (+2, -2)
+$A584 ; move 30 frames by (+2, +0)
+$A588 ; move 30 frames by (+0, +2)
+$A58C ; place at (128, 175)
+$A58F ; place at (8, 56)
+$A592 ; move 29 frames by (+2, +2)
+$A596 ; move 1 frames by (+1, +1)
+$A59A ; move 61 frames by (+2, +0)
+$A59E ; move 4 frames by (+2, -2)
+$A5A2 ; move 3 frames by (+2, +0)
+$A5A6 ; place at (205, 106)
+$A5A9 ; end
+$A5AA Rack5Ball3 ; ball 3: wait 33 frames
+$A5AC ; place at (8, 56)
+$A5AF ; move 29 frames by (+2, +2)
+$A5B3 ; move 60 frames by (+2, +0)
+$A5B7 ; move 30 frames by (+2, +2)
+$A5BB ; place at (247, 175)
+$A5BE ; place at (128, 56)
+$A5C1 ; move 29 frames by (+0, +2)
+$A5C5 ; move 30 frames by (+2, +0)
+$A5C9 ; move 1 frames by (+1, +0)
+$A5CD ; move 28 frames by (+2, -2)
+$A5D1 ; place at (247, 56)
+$A5D4 ; place at (8, 175)
+$A5D7 ; move 30 frames by (+2, -2)
+$A5DB ; move 30 frames by (+2, +0)
+$A5DF ; move 30 frames by (+0, +2)
+$A5E3 ; place at (128, 175)
+$A5E6 ; place at (8, 56)
+$A5E9 ; move 29 frames by (+2, +2)
+$A5ED ; move 1 frames by (+1, +1)
+$A5F1 ; move 61 frames by (+2, +0)
+$A5F5 ; move 4 frames by (+2, +2)
+$A5F9 ; move 3 frames by (+2, +0)
+$A5FD ; place at (205, 124)
+$A600 ; end
+$A601 Rack5Ball4 ; ball 4: wait 22 frames
+$A603 ; place at (8, 56)
+$A606 ; move 29 frames by (+2, +2)
+$A60A ; move 60 frames by (+2, +0)
+$A60E ; move 30 frames by (+2, +2)
+$A612 ; place at (247, 175)
+$A615 ; place at (128, 56)
+$A618 ; move 29 frames by (+0, +2)
+$A61C ; move 30 frames by (+2, +0)
+$A620 ; move 1 frames by (+1, +0)
+$A624 ; move 28 frames by (+2, -2)
+$A628 ; place at (247, 56)
+$A62B ; place at (8, 175)
+$A62E ; move 30 frames by (+2, -2)
+$A632 ; move 30 frames by (+2, +0)
+$A636 ; move 30 frames by (+0, +2)
+$A63A ; place at (128, 175)
+$A63D ; place at (8, 56)
+$A640 ; move 29 frames by (+2, +2)
+$A644 ; move 1 frames by (+1, +1)
+$A648 ; move 61 frames by (+2, +0)
+$A64C ; move 8 frames by (+2, -2)
+$A650 ; move 7 frames by (+2, +0)
+$A654 ; place at (221, 98)
+$A657 ; end
+$A658 Rack5Ball5 ; ball 5: wait 11 frames
+$A65A ; place at (8, 56)
+$A65D ; move 29 frames by (+2, +2)
+$A661 ; move 60 frames by (+2, +0)
+$A665 ; move 30 frames by (+2, +2)
+$A669 ; place at (247, 175)
+$A66C ; place at (128, 56)
+$A66F ; move 29 frames by (+0, +2)
+$A673 ; move 30 frames by (+2, +0)
+$A677 ; move 1 frames by (+1, +0)
+$A67B ; move 28 frames by (+2, -2)
+$A67F ; place at (247, 56)
+$A682 ; place at (8, 175)
+$A685 ; move 30 frames by (+2, -2)
+$A689 ; move 30 frames by (+2, +0)
+$A68D ; move 30 frames by (+0, +2)
+$A691 ; place at (128, 175)
+$A694 ; place at (8, 56)
+$A697 ; move 29 frames by (+2, +2)
+$A69B ; move 1 frames by (+1, +1)
+$A69F ; move 61 frames by (+2, +0)
+$A6A3 ; move 15 frames by (+2, +0)
+$A6A7 ; place at (221, 115)
+$A6AA ; end
+$A6AB Rack5Ball6 ; ball 6: wait 0 frames
+$A6AD ; place at (8, 56)
+$A6B0 ; move 29 frames by (+2, +2)
+$A6B4 ; move 60 frames by (+2, +0)
+$A6B8 ; move 30 frames by (+2, +2)
+$A6BC ; place at (247, 175)
+$A6BF ; place at (128, 56)
+$A6C2 ; move 29 frames by (+0, +2)
+$A6C6 ; move 30 frames by (+2, +0)
+$A6CA ; move 1 frames by (+1, +0)
+$A6CE ; move 28 frames by (+2, -2)
+$A6D2 ; place at (247, 56)
+$A6D5 ; place at (8, 175)
+$A6D8 ; move 30 frames by (+2, -2)
+$A6DC ; move 30 frames by (+2, +0)
+$A6E0 ; move 30 frames by (+0, +2)
+$A6E4 ; place at (128, 175)
+$A6E7 ; place at (8, 56)
+$A6EA ; move 29 frames by (+2, +2)
+$A6EE ; move 1 frames by (+1, +1)
+$A6F2 ; move 61 frames by (+2, +0)
+$A6F6 ; move 8 frames by (+2, +2)
+$A6FA ; move 7 frames by (+2, +0)
+$A6FE ; place at (221, 132)
+$A701 ; end
+
+@module halloffame ; The hall of fame: the qualifying test, the flags on their poles, the slide of the flags, the table
+@about The hall of fame is three slots of 71 bytes at HofTable $AC08, fixed on screen: slot 1 (centre, the highest pole, yellow), slot 2 (left, magenta), slot 3 (right, green). A slot holds the score (a word, shown x 10), the name (7 characters), the flag's current position, the pole's position, the flag's attribute, a "moves" flag and the name rendered as a 7 x 8-byte bitmap (inverted glyphs: the flag is solid ink, the letters paper). The ranking moves the score and name only (9 bytes); the positions and colours stay with the slot.
+@about At GAME OVER ($9857) GameOverHallOfFame $A702 counts the slots a score beats (CountBeaten $A7EB, ties do not qualify). If it beats none, nothing happens (game and f1). Otherwise the name page and name entry run ($ACEF, module nameentry), then the hall of fame is drawn (ShowHallOfFame $A8FD: poles, flags, scores), the flags that lose their place slide down off the screen (SlideFlagsDown $A86D), the new entry is inserted (InsertEntry $A817) and the flags slide back up to their poles with the new names (SlideFlagsUp $A8C7). w1 ran it all at frames 12018-13732 with the name "vp" (screens w1 frames 12500, 13300, 14000). The attract sequence also shows the table through ShowHallOfFame ($B906, when $BD0B is set).
+@about The two-player path ($A745-$A7E8) enters a name for each qualifying player ("congratulations! player 1 / 2", $9B30 = 1 / 2) and inserts both; no recording ran it (p2 ended by BREAK): known only from the code.
+$A702 c GameOverHallOfFame ; At GAME OVER: enter the hall of fame if the score qualifies
+> Called once by $985D (the GAME OVER path $9857). Clears the "moves" flag (+$0E) of the three slots. One player (Players $B8BB = 1): copies the score $9F45 to NewEntry1 $ACDD, counts the slots it beats (CountBeaten $A7EB) and returns if none; else runs the name page and entry (NameEntryPage $ACEF), copies NameBuffer $B227 to NewEntryName1 $ACDF, then ShowAndSlideDown $A86D, InsertEntry $A817 for NewEntry1 and SlideFlagsUp $A8C7 (a jump: its RET returns to $9860).
+> Witness: game 1 (frame 9061) and f1 1 (frame 4695) returned at $A72A (score below every slot); w1 1 (frame 12018) went on to the name entry; $A72E w1 1, frames 13368-13553.
+$A72E OnePlayerQualified ; store the name typed and show the hall of fame
+$A745 TwoPlayers ; B = the slots player 1 beats, C = player 2's
+$A767 TwoPlayersOneLast ; one of them beats only slot 3 and the other more: the one with 1 is dropped
+$A771 TwoPlayersBothLast ; both beat only slot 3: the lower score is dropped (a tie keeps player 1)
+$A780 TwoPlayersDropFirst ; player 1's score is lower: B = 0
+$A781 TwoPlayersRanked
+$A783 TwoPlayersDropOne ; drop the one whose count is 1
+$A78B TwoPlayersDropSecond
+$A78D TwoPlayersFirst ; player 1 does not qualify: NewEntry1's score word = 0
+$A799 TwoPlayersNameFirst ; name entry with $9B30 = 1, the record at NewEntry1
+$A7B4 TwoPlayersSecond ; player 2 does not qualify: NewEntry2's score word = 0
+$A7C0 TwoPlayersNameSecond ; name entry with $9B30 = 2, the record at NewEntry2
+$A7D9 TwoPlayersShow ; show, slide down, insert both records, slide up
+$A7EB c CountBeaten ; A = how many hall-of-fame slots the score HL beats, flagging them
+> Input HL: the score. Tests slot 3, slot 2, slot 1 in that order with TestSlot $A802; each slot whose score is below HL (strictly) gets +$0E = 1 (its flag will move) and adds 1 to A; the first slot not beaten ends the count (TestSlot drops CountBeaten's frame and returns to the caller). Output A = 0-3, Z when 0.
+> Witness: game 1, f1 1 (both A = 0), w1 2 (frames 12018 and 13553, from $A702 and InsertEntry).
+$A802 c TestSlot ; Beaten-slot test for CountBeaten: score HL against slot IX
+> IX: the slot. If HL > the slot's score (+0/+1): A + 1, +$0E = 1, return to CountBeaten. Else POP the return address and RET to CountBeaten's caller with the count so far. Witness: game 1, w1 6, f1 1; $A811 (beaten) w1 4.
+$A811 SlotBeaten
+$A817 c InsertEntry ; Insert the 9-byte record at DE (score, name) into the table and render the three names again
+> DE: a new-entry record (NewEntry1 $ACDD or NewEntry2 $ACE6). A zero score returns at once (a player who did not qualify). Ranks the score with CountBeaten (which flags the slots that will change), moves slot 2 to slot 3 (rank 2 or 3) and slot 1 to slot 2 (rank 3), 9 bytes each, copies the record into the freed slot, then RenderName $AADF for all three slots.
+> Witness: w1 1 at frame 13553 ("vp", 270, into slot 2: james stays first, francis moves to slot 3, bill drops out; screen w1 frame 14000).
+$A841 InsertCopy ; DE = the slot the rank frees
+$A851 InsertStore
+$A86D c ShowAndSlideDown ; Show the hall of fame, then slide the flags that lose their place down off the screen
+> ShowHallOfFame $A8FD, 50 frames' pause (HALTs), BlankScore $AA4B over each flagged slot's score, then one pixel a frame SlideFlagDown $A95A on each slot until no slot has +$0E bit 0 set (each clears it when its flag has left the screen at y $C0).
+> Witness: w1 1, frames 13368-13553 ($A896 129 frames).
+$A872 PauseDown
+$A896 SlideDownLoop
+$A8C7 c SlideFlagsUp ; After the insert: slide the flagged flags up to their poles, then print their scores
+> 50 frames' pause, then one pixel a frame SlideFlagUp $A990 on each slot until no flag moves. Returns to GameOverHallOfFame's caller. Witness: w1 1, frames 13553-13732 ($A8CC 129 frames).
+$A8C9 PauseUp
+$A8CC SlideUpLoop
+$A8FD c ShowHallOfFame ; Draw the hall of fame: blue screen, three poles, the flags with their names, the scores
+> Clears the pixels, attributes $0F (white on blue), border 1 (blue). Then a frame each: DrawPole $ABC3, DrawFlag $AB7B and PrintScore $AA23 for slots 1, 2, 3. Called by ShowAndSlideDown and by the attract sequence ($B906).
+> Witness: w1 1, frames 13368-13374. The attract call: no recording ran $B906 (l1sum.py B906) (known only from the code).
+$A95A c SlideFlagDown ; Move slot IX's flag one pixel down (if it is flagged and still on the screen)
+> Returns at once unless +$0E bit 0. At y (+$0A) >= $C0 clears the flag. Else XORs the flag's top line off and a line under it on (XorLine $93B3, 48 pixels), fills the line the name leaves (RestoreFlagLine $AABD, A = 8), moves the tail (DrawFlagTail $A9CC at y and y + 1) and draws the name one line lower (DrawNameBitmap $AA74).
+> Witness: w1 387 calls, 216 moves, frames 13425-13553.
+$A96B SlideFlagDownMove
+$A990 c SlideFlagUp ; Move slot IX's flag one pixel up until it is back at its pole
+> Returns unless +$0E bit 0. When y - 2 < the pole's y (+$0C) clears the flag and prints the score (PrintScore $AA23, a jump). Else the mirror of SlideFlagDown (RestoreFlagLine with A = $0F). Witness: w1 387 calls, 216 moves, frames 13604-13732.
+$A9A6 SlideFlagUpMove
+$A9CC c DrawFlagTail ; XOR the flag's ragged tail (FlagTail $AB41, 29 lines) at x + 48 of slot IX's flag
+> From the flag position (+9 x, +$0A y); nothing when y >= $C0. Draws the lines of the first character row, then whole rows of 8 (clipped at the screen's bottom), through XorTailLines $AA12. Witness: w1 867 calls, frames 13372-13731.
+$A9F2 TailRowLoop
+$AA0E TailLastRow ; the last part row, then falls into XorTailLines
+$AA12 c XorTailLines ; XOR B lines of the tail (2 bytes a line, the right byte first) at HL; C counts the lines left
+> DE: the tail data, HL: the screen. Called by DrawFlagTail and fallen into from $AA0E. Witness: w1 3372 entries, 21779 lines.
+$AA23 c PrintScore ; Print slot IX's score x 10 above its pole: five digits with leading zeros and a "0"
+> At character column x/8 (+$0B) and row y/8 - 1 (+$0C), attribute $0F: $9E13 with B = $80 (leading zeros printed), then the character "0" through $9E7C. The 003000 / 002700 of w1 frame 14000. Witness: w1 5, frames 13374-13732.
+$AA4B c BlankScore ; Print six spaces over slot IX's score (before its flag slides away)
+> Patches the row and column of the text record ScoreBlank $AA6A and prints it ($9E65). Witness: w1 2 (the two flagged slots), frame 13424.
+$AA6A t ScoreBlank ; A text record: row, column (both patched by BlankScore), attribute $0F, 6 spaces
+> Read by $9E65 from BlankScore only (w1 20 reads). The text record format: see MenuTexts $B464.
+@res text/ScoreBlank.bin
+$AA74 c DrawNameBitmap ; Copy slot IX's name bitmap (+$0F, 7 bytes x 8 lines) to the flag at (x, y + 8)
+> Clipped at y $C0, split over two character rows when y + 8 is not a multiple of 8, through CopyNameLines $AAAF. Reached by a jump from SlideFlagDown, SlideFlagUp and DrawFlag. Witness: w1 435, frames 13372-13731.
+$AA8B NameBitmapRows
+$AAAF c CopyNameLines ; Copy A lines of 7 bytes from DE to the screen at HL (down one pixel line each)
+> Witness: w1 1107 entries, 3480 lines (from DrawNameBitmap and RestoreFlagLine).
+$AABD c RestoreFlagLine ; Copy one solid line (SolidLine $AAD8) at slot IX's flag x, line y + A
+> A = 8 (sliding down: the line above the name) or $0F (sliding up: the line under it). Nothing at y + A >= $C0. Witness: w1 432, frames 13425-13731.
+$AAD8 b SolidLine ; Seven $FF bytes: a solid 56-pixel line of a flag
+> Read by RestoreFlagLine through CopyNameLines (w1 2688 reads).
+$AADF c RenderName ; Render slot IX's name (+2, 7 characters) into its bitmap (+$0F), inverted
+> RenderChar $AB04 for each character, into the bitmap with a stride of 7. Called by InsertEntry (the three slots) and DrawFlag. Witness: w1 6, frames 13372-13553.
+$AAE9 RenderNameSource
+$AAF3 RenderNameLoop
+$AAF5 RenderNameNext
+$AB04 c RenderChar ; One character A as 8 inverted bytes, every 7th byte from HL
+> Digits from Font+$D0 ($DFC4), a-z from Font $DEF4, anything else from CHAR_SET $3D00 (space). Same lookup as the print routine $9E7C. Witness: w1 42 (6 names x 7), $AB23 (the ROM's glyphs, spaces) 12.
+$AB14 RenderCharLetter
+$AB23 RenderCharRom
+$AB28 RenderCharCopy
+$AB33 RenderCharLoop
+$AB41 b FlagTail 2 ; The flag's ragged tail: 29 lines of 2 bytes (right byte, left byte), XORed at x + 48
+> Read by XorTailLines (w1 43558 reads). Lines 0-4: right $00, left $FF (the flag goes on 8 pixels); lines 5-23: left $FF, right $7F $7E $7C $78 $78 $7C $7E $7F repeating (the ragged edge, two notches and a part); lines 24-28 ($AB71-$AB7A): the curled bottom corner below the 24-line field.
+$AB7B c DrawFlag ; Draw slot IX's flag at its pole: attributes, the solid field, the tail, the name
+> Sets the flag position to (x + 8, y + 1) of the pole, renders the name (RenderName), fills 9 attribute cells a row with +$0D from the flag's row to the bottom of the screen, XORs a 48 x 24 solid field (XorLine $93B3), the tail (DrawFlagTail) and the name (DrawNameBitmap). Witness: w1 3, frames 13372-13373.
+$AB93 FlagAttrRows
+$AB9C FlagAttrCells
+$ABB6 FlagFieldLines
+$ABC3 c DrawPole ; Draw slot IX's pole from (x, y) to the bottom of the screen
+> At the pole's top line + 7: the cap ($FF $E0, 11 pixels) with attribute $0F on its two cells; then each character row down to the bottom: attribute $0F and 8 lines of $1F (a 5-pixel pole). Witness: w1 3, frame 13371.
+$ABE1 PoleRows
+$ABEE PoleLines
+$ABFD c AttrOfScreen ; HL = the attribute address of the screen address HL (H's character row)
+> Witness: w1 99, frames 13371-13373 (DrawPole, DrawFlag).
+$AC08 b HofTable 8 ; The hall of fame: 3 slots of 71 bytes; slot 1 centre top (james 300), slot 2 left (francis 200), slot 3 right (bill 100)
+> Read by CountBeaten (the scores: game and f1 read only slot 3's score), InsertEntry, ShowHallOfFame and the slide routines; written by InsertEntry, RenderName (the bitmaps) and the slide routines (+9/+$0A, +$0E). In the image: +0/+1 score, +2..+8 the name (padded with spaces), +9/+$0A the flag's x / y (set by DrawFlag), +$0B/+$0C the pole's x / y in pixels, +$0D the flag's attribute, +$0E bit 0 = the flag moves, +$0F..+$46 the name bitmap (56 bytes, rendered at the first draw).
+> w1 wrote "vp" with 270 into slot 2 (screen w1 frame 14000: james 003000 centre, vp 002700 left, francis 002000 right).
+$AC0A ; +2..+8 the name " james "
+$AC11 ; +9/+$0A the flag's position (x, y)
+$AC13 ; +$0B/+$0C the pole (88, 23), +$0D attribute $0E (yellow on blue), +$0E moves
+$AC17 ; +$0F..+$46 the name bitmap, 7 bytes x 8 lines
+$AC4F HofSlot2 ; slot 2: score 200, "francis"
+$AC51 ; the name
+$AC58 ; the flag's position, the pole (0, 63), attribute $0B (magenta on blue), moves
+$AC5E ; the name bitmap
+$AC96 HofSlot3 ; slot 3: score 100, " bill  "
+$AC98 ; the name
+$AC9F ; the flag's position, the pole (176, 103), attribute $0C (green on blue), moves
+$ACA5 ; the name bitmap
+$ACDD b NewEntry1 9 ; The new entries: player 1's score and name, then player 2's (9 bytes each, the format of a slot's first 9)
+> Written by GameOverHallOfFame (the score from $9F45 / $9F47, the name from NameBuffer $B227), read by InsertEntry. w1 wrote and read NewEntry1 (11 reads); NewEntry2 is read and written only on the two-player path, which no recording ran.
+$ACDF NewEntryName1 ; player 1's name
+$ACE6 NewEntry2 ; player 2's score
+$ACE8 NewEntryName2 ; player 2's name
+
+@module nameentry ; The name entry: the "congratulations" page, the character grid, the cursor, the 7-character name
+@about NameEntryPage $ACEF clears the screen to black on yellow, prints the title ("congratulations!", or with "player 1" / "player 2" in a two-player game, by $9B30) and the eight lines of HofTextList $AD3D, then NameEntry $AE92 draws the grid CharacterGrid $B167 (a-n, o-z space ".", 0-9 "rub" "end": 3 rows of 14 cells, 16 pixels apart), the name line of seven "_" and the cursor box, and polls the input dispatcher $8106 once a frame (screen w1 frame 12500).
+@about Input bits of $827C ($8106): right ($01) or down ($08) moves the cursor forward, left ($02) or up ($04) back, with auto-repeat (RepeatDelay $B226: the first step at once, then after 7, 6, 5, 4, 3 and 2 frames, then every 2 frames); fire ($10) picks the cell: a character is stored at the name cursor (the 7th cell is overwritten while the name is full), "rub" steps back and writes "_", "end" turns the "_" into spaces, centres the name in its 7 characters and returns from the page to GameOverHallOfFame. Each step clicks (BEEPER, HL $03E8 DE $14), each pick a lower click (HL $04B0, DE $16). w1 typed "vp" and "end" (frames 12025-13368).
+$ACEF c NameEntryPage ; The "congratulations" page, then the name entry
+> Clears the pixels, attributes $30 (black on yellow), border 6 and BORDCR $30. The title: HofTitle $AD4F when Players $B8BB = 1, else HofTitleP1 $AD63 or HofTitleP2 $AD81 by $9B30; then each text record of HofTextList $AD3D ($9E65), then a jump to NameEntry $AE92 (its RET goes back to GameOverHallOfFame).
+> Witness: w1 1, frames 12018-12023 (the title HofTitle; HofTitleP1/P2 read by no recording, l1sum.py --reads AD63-AD9E).
+$AD25 PrintHofTexts
+$AD2B PrintHofTextLoop
+$AD3D w HofTextList 9 ; The eight text records of the name page, then a zero word
+> Read by NameEntryPage (w1 18 reads).
+$AD4F t HofTitle ; "congratulations!" (row 0, column 8, attribute $30, 16 characters)
+> The text records of the page (format: MenuTexts $B464), all attribute $30, read by NameEntryPage in w1 (the "player" titles by none).
+$AD63 HofTitleP1 ; at (0, 3), 26 chars
+$AD81 HofTitleP2 ; at (0, 3), 26 chars
+$AD9F HofText1 ; at (2, 0), 32 chars
+$ADC3 HofText2 ; at (3, 0), 30 chars
+$ADE5 HofText3 ; at (4, 0), 5 chars
+$ADEE HofText4 ; at (6, 0), 32 chars
+$AE12 HofText5 ; at (7, 0), 31 chars
+$AE35 HofText6 ; at (8, 0), 31 chars
+$AE58 HofText7 ; at (9, 0), 29 chars
+$AE79 HofText8 ; at (10, 0), 21 chars
+@res text/HofTitle.bin
+$AE92 c NameEntry ; Draw the grid and the empty name, then move the cursor and pick characters until "end"
+> DrawCharacterGrid $B0C7, NameBuffer $B227 = seven "_" ($5F), the cursor at row 0 column 0 (D, E; XorCursorBox $B047), RepeatDelay $B226 = $70, HL = the name cursor = NameBuffer, DrawName $B0A8. Then the loop NameEntryLoop $AEB3, a frame each: HALT, $8106, with $AEB3 pushed as the return address of every branch. Nothing held: RepeatDelay = $70. Fire: PickCell. A direction: auto-repeat, click, NameCursorForward $AFFE or NameCursorBack $B023.
+> Witness: w1 1 (frame 12023); NameEntryLoop 1230 frames, 12025-13368; 51 cursor steps ($AF00), 3 picks ($AF26: v, p, end).
+$AEB3 NameEntryLoop ; HL = the name cursor, D/E = the cursor's row/column
+$AECC NameEntryDirection
+$AEE8 NameEntryRepeat ; RepeatDelay - 1; a step only when its low nibble wraps to $F
+$AF00 NameEntryStep ; the next delay: high nibble - 1 (at least 1) in both nibbles; click; $01/$08 forward, else back
+$AF26 NameEntryFire ; fire: a lower click, PickCell, then wait until no input
+$AF3E NameEntryRelease
+$AF4E c PickCell ; Fire on the cell at row D column E: store the character, rub out, or end
+> The cell's byte is CharacterGrid[14 D + E]. A character: stored at HL (at the 7th position the last character is overwritten), HL + 1, DrawName (a jump). $0C "rub": HL - 1 (not before the start), "_" there, DrawName. $0D "end": drops the two return addresses (NameEntryFire's and $AEB3) so its RET leaves the name entry; turns "_" into spaces, counts the leading (D) and trailing (E) spaces and shifts the name by (D - E) / 2 to centre it.
+> Witness: w1 3 (frames 13102-13368): two characters ($AF76 2), one "end" ($AF8C 1, shifted right: $AFDE). Rub ($AF7B) and the left shift ($AFD1) were not run.
+$AF5E PickCellByte
+$AF76 PickStore
+$AF7B PickRub
+$AF87 PickRubMark
+$AF8C PickEnd
+$AF93 EndBlankLoop
+$AF9A EndBlankNext
+$AFA4 CountLeadLoop
+$AFAD CountTrail
+$AFB4 CountTrailLoop
+$AFBD CentreName
+$AFD1 CentreLeft ; more leading spaces: copy the name left
+$AFD9 CentreLeftFill
+$AFDE CentreRight ; more trailing spaces: copy it right (LDDR)
+$AFF1 CentreRightCopy
+$AFF9 CentreRightFill
+$AFFE c NameCursorForward ; Move the cursor box one cell forward (row 2: column 10 "rub" to 12 "end", 12 back to the start)
+> XorCursorBox off, the next cell (column 14 wraps to the next row), XorCursorBox on (a jump). Columns 11 and 13 of row 2 are never reached (the rub and end cells are two wide). Witness: w1 45, frames 12933-13359.
+$B00F ForwardFromRub
+$B018 ForwardNext
+$B023 c NameCursorBack ; Move the cursor box one cell back (row 2: 12 to 10; before row 0 column 0: "end")
+> Witness: w1 6, frames 13114-13154.
+$B034 BackPrevious
+$B047 c XorCursorBox ; XOR the cursor box round the cell at row D, column E
+> Cell (D, E) at pixel x = 16 E + $14, y = 16 D + $70; a box 12 pixels wide (28 for rub and end: row 2, column >= 10), its corners drawn as XorLine $93B3 lines. Drawing twice erases. Witness: w1 103, frames 12024-13359.
+$B057 CursorBoxDraw
+$B0A8 c DrawName ; Draw NameBuffer's 7 characters at y $B0, x $48 + 16 n
+> DrawCharAt $B118 for each. Witness: w1 3, frames 12024-13163.
+$B0B3 DrawNameLoop
+$B0C7 c DrawCharacterGrid ; Draw the 42 cells of CharacterGrid (3 rows of 14 at x $10 + 16 n, y $70 + 16 row), then "rub" and "end"
+> The $0C / $0D cells print as spaces; the words "rub" and "end" are drawn as line lists (DrawLineList $B101 with RubLines $B191 at x $B7, y $90 and EndLines $B1DA at x $D7, y $90). Witness: w1 1, frame 12023.
+$B0CF GridRowLoop
+$B0D3 GridCellLoop
+$B101 c DrawLineList ; XOR a list of horizontal lines (dx, dy, length; $FF ends) from the origin E = x, D = y
+> Witness: w1 2 entries (rub, end), 51 lines.
+$B118 c DrawCharAt ; Draw character A at pixel (L, H) with a 4-pixel offset (two half bytes a line)
+> Below $20: a space. a-z from Font, digits from Font+$D0, others from CHAR_SET. Writes (not XOR) the glyph's left and right nibbles into two bytes, so a cell 16 pixels wide shows the glyph centred. Witness: w1 63, frames 12023-13163.
+$B11E DrawCharLetter
+$B12D DrawCharDigit
+$B13C DrawCharRom
+$B141 DrawCharGlyph
+$B150 DrawCharLines
+$B167 b CharacterGrid 14 ; The name-entry grid: 3 rows of 14 cells
+> Read by DrawCharacterGrid and PickCell (w1 45 reads). Row 0 a-n, row 1 o-z, space, "."; row 2 0-9, $0C $0C ("rub", two cells), $0D $0D ("end").
+$B191 b RubLines 3 ; The word "rub": lines (dx, dy, length) from (x $B7, y $90), $FF ends
+> Read by DrawLineList (w1 97 reads).
+$B1DA b EndLines 3 ; The word "end": lines (dx, dy, length) from (x $D7, y $90), $FF ends
+> Read by DrawLineList (w1 102 reads).
+$B226 b RepeatDelay ; The name entry's auto-repeat counter: two nibbles, high = the delay, low = the countdown ($70 at rest)
+> Written and read by NameEntry (w1 103 reads).
+$B227 t NameBuffer ; The name being typed: 7 characters ("_" = empty)
+> Written by NameEntry and PickCell, read by DrawName and copied to NewEntryName1 / NewEntryName2 by GameOverHallOfFame (w1 53 reads).
+
+@module menu ; The main menu, the variations page, redefine keys, the settings and the menu's timeout
+@about MainMenu $B22E (called from $8037 after every restart) draws the options page (MenuTexts $B464, white on blue), the current variation line, the key names and a tick at the chosen players, pockets and control, then reads keys through the ROM (KEY-SCAN, K-TEST): 1 / 2 players, S / L pockets, K / I / J / C the control (keyboard, Interface 2, Kempston, cursor), B begins the game (MainMenu returns), V the variations page, E the editor ($C042), R redefine keys. 1500 frames without a key (MenuTimeout $B8C1, 30 s) run the attract sequence $B8C5 and then the menu again (w1 frame 16300). Each key clicks (BEEPER, HL $03E8, DE $14).
+@about With a joystick chosen, its fire also begins the game: Kempston is polled every frame; for Interface 2 and cursor (whose fire is a key) $8106 is asked when a key the menu does not know is pressed. Choosing J probes the Kempston port: if $8106 reads anything while J is set, the old choice stays (no interface, a floating bus).
+@about A hidden toggle: WaitNoKey $B38E, run at every menu redraw and after every key, flips InfiniteLives $B8C4 when CAPS SHIFT, SPACE, 1 and 0 are held together (TestCheatKeys $B3B8); $9754 then skips the loss of a life. No recording flipped it (known only from the code; $B3A1 never ran).
+@about The text records here and everywhere the print routine $9E65 is used: row, column, attribute (bit 7 = double width: every character two cells), length, then the characters, no end marker. The characters are ASCII: a-z from Font $DEF4, 0-9 from Font+$D0, $7F the copyright sign at $9F2E, anything else (space, punctuation) from CHAR_SET $3D00 ($9E7C).
+$B22E c MainMenu ; The main menu: draw the page, then take keys until B (or joystick fire) begins the game
+> Clears the pixels, attributes $0F, border 1, BORDCR $08. Prints the records of MenuTexts $B464, the variation line (VariationStandard $B5D0 / Variation1Line $B5E3 / Variation2Line $B5F4 by Variation $B8C3), the key line (ShowKeys $B605), and XorTick $B89C at rows Players + 3, Pockets + 7 and Control + 10. Then MenuKeys $B293.
+> Callers: $8037 (every restart from $8013), the ends of the timeout ($B2C3, $B6D4) and M on the variations page ($B6F7). Returns (to $803A, the game) on B, or on fire. Witness: game 2 (frames 6060, 9809), w1 2, f1 2, p2 2, v1 2, m1 4.
+$B252 MenuTextLoop
+$B263 MenuVariationLine
+$B275 MenuDrawSettings
+$B293 MenuKeys ; MenuTimeout = 1500 ($05DC), wait until no key, then a key a frame
+$B29C MenuKeyLoop ; Kempston: $8106 every frame, fire begins
+$B2AD MenuReadKey ; no key: MenuTimeout - 1; at 0 the attract sequence, then MainMenu again
+$B2C6 MenuKey ; click; "1" / "2" players
+$B2D9 MenuPlayers ; XorTick off at the old row, on at the new
+$B2F5 MenuPocketKeys ; "S" small (0) / "L" large (1)
+$B2FD MenuPockets
+$B303 MenuPocketsSet
+$B31D MenuControlKeys ; "K" 0, "I" 1, "J" 2, "C" 3
+$B334 MenuControl ; J: Control = 2, $8106, anything read: Control back to the old value
+$B357 MenuControlSet
+$B36A MenuOtherKeys ; "B" begin, "V" variations, "E" the editor, "R" redefine; another key: with a joystick, $8106 fire begins
+$B38E c WaitNoKey ; Wait until no key is held; flip InfiniteLives if CAPS SHIFT, SPACE, 1 and 0 are held
+> A frame each: KEY-SCAN, K-TEST; returns when no key. While a key is held TestCheatKeys $B3B8 is asked: all four held complements InfiniteLives $B8C4 and waits for the release ($B3A8).
+> Witness: game 73, w1 14, f1 14, p2 24, v1 36, m1 202 calls; $B3B8 asked game 70, m1 176 times; the flip ($B3A1) never.
+$B39C WaitNoKeyHeld
+$B3A8 WaitNoKeyRelease
+$B3B8 c TestCheatKeys ; Z when CAPS SHIFT, SPACE, 1 and 0 are all held
+> ORs bit 0 of the half-rows $FEFE (CAPS SHIFT), $7FFE (SPACE), $F7FE (1) and $EFFE (0) through IN A,(C): an IN from port $FE (doc 2.1 says there is none: wrong, see also $8216 and $822E). Witness: game 70, w1 12, f1 12, p2 21, v1 30, m1 176.
+$B3D2 c RedefineKeys ; "R": ask for the left, right and fire keys, store their K-TEST codes
+> RedefinePrompt $B3F3 with PromptLeft $B407, PromptRight $B426, PromptFire $B445 into LeftKey $B8BE, RightKey $B8BF, FireKey $B8C0; ShowKeys; back to MenuKeys. Witness: m1 2 (frames 5462-5860, Q W P, then M, SYMBOL SHIFT, SPACE again; screens m1 frames 5550, 5860).
+$B3F3 c RedefinePrompt ; Print the prompt at HL, wait for no key, then for a key: A = its K-TEST code
+> Any key is taken, CAPS SHIFT alone ($27) and SYMBOL SHIFT alone ($18) too. Witness: m1 6, frames 5462-6090.
+$B3F9 RedefineWaitKey
+$B407 t PromptLeft ; "select key for left ?" (row 21, column 2, attribute $0F, 27 characters, space-padded)
+> The three prompts, read by RedefinePrompt (m1 186 reads); each covers the key line at row 21.
+$B426 PromptRight ; "select key for right ?"
+$B445 PromptFire ; "select key for fire ?"
+@res text/PromptLeft.bin
+$B464 w MenuTexts 2 ; The menu page's 15 text records, then a zero word
+> Read by MainMenu (every recording, m1 128 reads).
+$B484 t MenuTitle ; row 0 column 9, 14: "- video pool -"
+> The records of MenuTexts, all attribute $0F (screen m1 frame 4620); read by MainMenu in every recording.
+$B496 MenuSelect ; at (2, 0), 16 chars
+$B4AA MenuOnePlayer ; at (4, 2), 18 chars
+$B4C0 MenuTwoPlayers ; at (5, 2), 18 chars
+$B4D6 MenuSmallPockets ; at (7, 2), 16 chars
+$B4EA MenuLargePockets ; at (8, 2), 16 chars
+$B4FE MenuKeyboard ; at (10, 2), 11 chars
+$B50D MenuInterface2 ; at (11, 2), 25 chars
+$B52A MenuKempston ; at (12, 2), 20 chars
+$B542 MenuCursor ; at (13, 2), 18 chars
+$B558 MenuBegin ; at (15, 2), 13 chars
+$B569 MenuVariations ; at (17, 2), 18 chars
+$B57F MenuEdit ; at (18, 2), 13 chars
+$B590 MenuRedefine ; at (19, 2), 24 chars
+$B5AC MenuCopyright ; (23, 0), 32
+$B5D0 VariationStandard ; (15, 16), 15
+$B5E3 Variation1Line ; (15, 16), 13
+$B5F4 Variation2Line ; (15, 16), 13; no build reads it
+@res text/MenuTitle.bin
+$B605 c ShowKeys ; Fill the key names into KeysLine and print it
+> KeyName $B626 for LeftKey to $B668, RightKey to $B672, FireKey to $B67B, then KeysLine $B65F through $9E65 (a jump). The default line: "left='m' right=s/s fire=' '". Witness: game 2, w1 2, f1 2, p2 2, v1 2, m1 6 (frames 4506-8004).
+$B626 c KeyName ; Three characters at HL naming the K-TEST code A
+> $0D "ent", $18 "s/s" (SYMBOL SHIFT), $27 "c/s" (CAPS SHIFT), else the character in quotes, letters lower-cased (+$20). Witness: game 6 ($B63C 4 quoted, $B64D 2 s/s); m1 18; "ent" and "c/s" by no recording.
+$B63C KeyNameQuoted
+$B644 KeyNameEnter
+$B64D KeyNameSymbol
+$B656 KeyNameCaps
+$B65F t KeysLine ; "left=    right=    fire=   " (row 21, column 2, attribute $0F, 27 characters); the names filled in
+> Written by ShowKeys, read by $9E65 (every recording).
+$B668 KeysLineLeft ; the left key's name (3 characters)
+$B66B ; " right="
+$B672 KeysLineRight ; the right key's name
+$B675 ; " fire="
+$B67B KeysLineFire ; the fire key's name
+@res text/KeysLine.bin
+$B67E c VariationsPage ; "V": the variations page; S / 1 / 2 choose, B begins, M back to the menu
+> Clears the pixels (the attributes stay), prints VariationTexts $B731, ticks the variation (TickVariation $B71E), then like MenuKeys: MenuTimeout 1500, Kempston fire polled, a key a frame: S Variation 0, 1 variation 1, 2 variation 2 (ticks moved), B returns (the game begins), M MainMenu; another key with a joystick asks $8106 for fire. Note $B6BC loops while KEY-SCAN reports more than two keys.
+> Witness: v1 2 (frames 622-2595), m1 1 (5102-5372); screens m1 frame 5190, v1 frame 700.
+$B68E VariationsTextLoop
+$B69F VariationsTick
+$B6A2 VariationsKeys
+$B6AB VariationsKeyLoop
+$B6BC VariationsReadKey
+$B6D7 VariationsKey
+$B70B VariationsSet
+$B71E c TickVariation ; XorTick at the row of Variation: 4 (standard), 7 (1), 11 (2)
+> Witness: v1 6, m1 7.
+$B72D TickVariationRow
+$B731 w VariationTexts 2 ; The variations page's 13 text records, then a zero word
+> Read by VariationsPage (v1 56, m1 28 reads).
+$B74D t VariationsTitle ; row 0 column 6, 19: "- game variations -"
+> The records of VariationTexts, attribute $0F, read by VariationsPage in v1 and m1.
+$B764 VariationsSelect ; at (2, 0), 16 chars
+$B778 VariationsS1 ; at (4, 2), 29 chars
+$B799 VariationsS2 ; at (5, 5), 22 chars
+$B7B3 Variations11 ; at (7, 2), 27 chars
+$B7D2 Variations12 ; at (8, 5), 26 chars
+$B7F0 Variations13 ; at (9, 5), 22 chars
+$B80A Variations21 ; at (11, 2), 25 chars
+$B827 Variations22 ; at (12, 5), 25 chars
+$B844 Variations23 ; at (13, 5), 24 chars
+$B860 Variations24 ; at (14, 5), 23 chars
+$B87B VariationsBegin ; at (17, 2), 13 chars
+$B88C VariationsMenu ; at (19, 2), 12 chars
+@res text/VariationsTitle.bin
+$B89C c XorTick ; XOR a tick at the left of text row A (x 5, y 8 A + 4)
+> Two one-pixel steps down-right, then seven up-right (XorLine $93B3, length 1). Drawing twice erases: the menus move a tick by drawing it at the old row and the new. Witness: game 6, w1 6, f1 6, p2 8, v1 12, m1 39.
+$B8A8 TickDown
+$B8B2 TickUp
+$B8BB b Players ; The menu's settings: first the players, 1 or 2 (keys 1 / 2), then pockets, control, the three keys, the timeout, the variation, the cheat
+> One byte each (MenuTimeout a word). Readers and writers in the comments. The defaults in the image: one player, large pockets, keyboard, keys M / SYMBOL SHIFT / SPACE, standard game.
+> Players is read by GameOverHallOfFame, NameEntryPage and the play code ($97AB, $97D0, $98D5, $9B36, $9C15, $9C7B)
+$B8BC Pockets ; 0 small, 1 large (keys S / L); read by the table drawing and the pocket tests ($8B71, $8C74, $9256-$9330)
+$B8BD Control ; 0 keyboard, 1 Interface 2, 2 Kempston, 3 cursor (keys K / I / J / C); the handler index of $8106; the editor sets 3 while it runs if it is 0 ($C042, $C417, $C44E)
+$B8BE LeftKey ; K-TEST codes of the keyboard control's keys, read by $8123; set by RedefineKeys
+$B8BF RightKey
+$B8C0 FireKey
+$B8C1 MenuTimeout ; frames left before the attract sequence (1500 at each key)
+$B8C3 Variation ; 0 standard, 1 numeric order, 2 own pockets; read by $8C2F, $9BFA, $9C00
+$B8C4 InfiniteLives ; non-zero: no life is lost ($9754); flipped by WaitNoKey
+
+@module presents ; The presents page: the OCP banner rolling in, "presents", the attract loop
+@about PresentsPage $B8C5 is the game's first screen (called by GameStart $8000 before IM 2 is set up) and the attract sequence the menu falls into after its timeout ($B293, $B67E). It runs BannerRollIn $B96C (the magenta OCP banner slides in row by row), prints "presents", flips the banner's letters from OCP to POOL (LogoFlip $BB13), slides in "video" (VideoSlideIn $BC9E), lets a pen write "written by" and James Hutchby's signature (SignatureWrite $BD0C), prints "press any key to continue." and starts again. Every wait goes through PresentsFrame $B91B: one HALT and a key test; a key reloads the stack pointer saved at entry and returns from PresentsPage to its caller, whatever depth the sequence was at.
+@about The banner's drawing has its own pixel-address routine and 4-pixel XOR blocks: a row moves right 4 pixels a frame by XORing one block at the start and one past the end of each ink run (BannerRowEdges $BA0A), so a row costs two blocks per run, not a redraw.
+$B8C5 c PresentsPage ; The presents page and the attract loop: banner, "presents", OCP to POOL, "video", the signature, "press any key"
+> Saves SP in PresentsSP $BD09 (the abort target of PresentsFrame $B91B), draws the banner (BannerRollIn $B96C), prints "presents" (PresentsTexts $B936, row 16 column 12) for 75 frames, blanks it, flips the letters (LogoFlip $BB13), slides in "video" (VideoSlideIn $BC9E), waits 50 frames, runs the pen (SignatureWrite $BD0C), waits 25 frames, prints "press any key to continue." (row 23) and waits 500 frames (PresentsLongWait $B90F). Then, if PresentsDone $BD0B is zero (the first call, from GameStart $8000, which sets it to $FF only after the return), it starts again at once; otherwise it calls $A8FD, waits 500 frames more and starts again.
+> Called by GameStart $8000 ($800B) and by the menu ($B293 after its timeout, $B67E). Returns only through a key (PresentsAbort $B931). Witness (l1sum.py B8C5): entered in every build; game 5556-6051 (a key on "presents" at 6051), f1 / p2 / v1 0-494, w1 twice (0-494 and the attract after the menu's timeout at 16 160-16 377), m1 0-4129 with two complete loops (the 500-frame wait PresentsLongWait ran at 1237 and 3474, then JP back, since PresentsDone was 0); the $A8FD branch ($B906) ran in no build.
+$B8D4 PresentsHold1 ; 75 frames with "presents" up
+$B8E7 PresentsHold2 ; 50 frames after "video"
+$B8F1 PresentsHold3 ; 25 frames after the signature
+$B90F c PresentsLongWait ; Wait 500 frames, a key aborts
+> 500 calls of PresentsFrame $B91B (BC = 500). m1 ran it twice (frames 1237 and 3474, 1000 loop passes); no other build reached the end of the sequence.
+$B912 PresentsLongWaitLoop
+$B91B c PresentsFrame ; Wait one frame (HALT); a key returns from PresentsPage to its caller
+> HALT, then the ROM's KEY-SCAN $028E and K-TEST $031E: no key (Z and K-TEST $FF) returns with all registers kept; a key (or more than two keys, NZ from KEY-SCAN) reloads SP from PresentsSP $BD09 and RETs, which returns from PresentsPage $B8C5 to the caller that saved it. Used by every wait of the attract sequence (BannerRollIn, LogoFlip, VideoSlideIn and the pen's steps in SignatureCommand $BD23).
+> Witness: game 499 calls 5559-6060, w1 1084, m1 4353 (2-4500); the abort PresentsAbort ran once in every build (game 6051 / 6060, w1, f1, p2, v1 at 494-500, m1 at 4500, the SPACE of tests/inputs/m1.txt).
+$B931 PresentsAbort ; a key: back to PresentsPage's caller
+$B936 b PresentsTexts 12 ; The page's texts in the print format of $9E65: row, column, attribute, length, characters
+> Three records for the print routine $9E65 (row, column, attribute, length, then the characters): "presents" (row 16, column 12, attribute $38), eight spaces over it, and "press any key to continue." (row 23, column 3, attribute $38, 26 characters). Read by PresentsPage $B8C5; the first 24 bytes in every build, the last record only in m1 (the only build that reached the end of the sequence).
+$B942 PresentsBlank ; eight spaces
+$B94E PressAnyKey ; "press any key to continue."
+@res text/PresentsTexts.bin
+$B96C c BannerRollIn ; Clear the screen and roll the magenta OCP banner in from the left, row by row (417 frames)
+> Clears the display file, border white (OUT $07), attributes $38 (black on white), rows 4-12 $3B (magenta ink). Then the banner: HL is the x of the moving row as a signed 16-bit number, starting at -240 off the left edge; B is the pixel line of the top moving row (from 32), DE the run-length row of BannerData $BA86. Each frame (PresentsFrame $B91B) it calls BannerDrawRows $B9E0 and moves x 4 pixels right; when the top row reaches x 8 its line is done: B goes one line down, every second line DE moves to the next data row (each data row is two pixel lines), and x goes back 20 pixels for the row below. It ends at line 104 ($68), 72 lines (36 data rows), and sets the attribute $7B (bright) on rows 4-12, columns 1-30.
+> Witness (l1sum.py B96C B9E0): 1 call per presents page, game 5556-5976; BannerDrawRows 417 calls each (game 5560-5976). WALKTHROUGH 6.1 m1 frame 300 shows the staircase of rows half way in.
+$B99B BannerFrameLoop ; one frame: draw, x + 4
+$B9B8 BannerSkipRow ; DE past one data row (runs summing to 240 pixels)
+$B9C1 BannerNextRow ; the next line's x: 20 pixels behind
+$B9D3 BannerBrightRows ; attribute $7B on rows 4-12, columns 1-30
+$B9D7 BannerBrightLoop
+$B9E0 c BannerDrawRows ; Move every row from line B downwards that is on screen: 4 pixels right
+> For the line B and each line below (x 20 pixels further left each, DE advancing every second line as in BannerRollIn $B96C): BannerRowEdges $BA0A, while the row's x is within -256..255 (H = 0 or $FF) and the line is above 104. Registers kept. game 417 calls, 4748 rows (BannerRowEdges).
+$B9E3 BannerRowLoop
+$B9F8 BannerSameRow ; odd line: the same data row again
+$B9F9 BannerRowClip ; stop when x is past -256..255 or the line reaches 104
+$BA01 BannerRowNext
+$BA06 BannerRowsDone
+$BA0A c BannerRowEdges ; One banner row 4 pixels right: XOR a block at the start and one at the end of each ink run
+> DE = the row's runs in BannerData $BA86, HL = x, B = the line. For each run byte (bit 7 = ink, bits 0-6 = half the length): an ink run gets BannerEdgeBlock $BA31 at x and at x + length, which clears the 4 pixels the run leaves and sets the 4 it enters (the row was drawn 4 pixels to the left on the frame before). Runs until the lengths add up to 240 pixels (C counts down from $F0). game 4748 calls, 18 476 runs.
+$BA0C BannerRunLoop
+$BA1C BannerRunEnd ; the block at the run's end
+$BA20 BannerRunSkip ; x + length
+$BA27 BannerRunNext
+$BA31 c BannerEdgeBlock ; XOR the 4-pixel block at x (HL signed) on line B, if x is on screen
+> HL = x (signed), B = the line. x 0-255: BannerXorBlock $BA54 at x; x -4..-1: the block is drawn as far as it reaches onto the screen (x + 4 with B = that count). Registers kept. game 21 112 calls.
+$BA3E BannerEdgeRight ; x negative: try x + 4
+$BA45 BannerEdgeCheck
+$BA4D BannerEdgeXor
+$BA50 BannerEdgeDone
+$BA54 c BannerXorBlock ; XOR 4 pixels (a nibble) at x E, line D: B = 0 draws nothing
+> The screen byte from PresentsPixelAddress $BA6C, XORed with $F0 when x AND 7 is 0 and $0F otherwise (the banner's x is always a multiple of 4). game 10 127 calls.
+$BA69 BannerXorNibble
+$BA6C c PresentsPixelAddress ; HL = the display-file address of pixel line H, x L (the byte; the caller adds the line within the cell)
+> H = y, L = x in: L = (y AND $38) * 4 + x / 8, H = $40 + (y AND $C0) / 8. The caller adds y AND 7 to H. Used by BannerXorBlock $BA54 and VideoSlideIn $BC9E. game 9808 calls; the same code as PenPixelAddress $BFB2.
+$BA86 b BannerData 16 ; The OCP banner: 36 rows of run lengths, 240 pixels each (bit 7 ink, bits 0-6 half the length)
+> One byte a run: bit 7 set = magenta ink, clear = paper; bits 0-6 = half the run's length in pixels. A row ends when its runs add up to 240 pixels: $F8 alone is a full ink row, $78 a full paper row. The letters O, C and P are the paper gaps in the ink stripes (WALKTHROUGH 6.1, m1 frame 300). Read by BannerRowEdges $BA0A (and BannerRollIn $B96C, BannerDrawRows $B9E0 to skip rows); all 141 bytes in every build.
+
+@module attract ; The attract sequence's letters: OCP turning into POOL, "video" sliding in
+@about LogoFlip $BB13 turns the banner's letters about their vertical axes: in 20 steps the O, C and P (gaps in the magenta stripes) narrow to nothing, then in 20 steps P, O, O, L widen in their place. Each letter is a list of edges per stripe row (FlipLetterO $BB98 and the next three); FlipEdge $BC11 XORs only the strip between an edge's width at this step and at the next one, taken from the cosine tables FlipWidths16 $BC74 / FlipWidths24 $BC89.
+@about VideoSlideIn $BC9E prints "video" above the banner with the font $DEF4 doubled in width (16 pixels a letter), each letter scrolling into its cell 2 pixels a step.
+$BB13 c LogoFlip ; Turn the banner's OCP into POOL: 20 steps narrowing O, C, P, then 20 steps widening P, O, O, L
+> Step C 0-19 with B = 0: FlipLetter $BB74 for O at x 63, C at x 127, P at x 191 (line 47, DE = $2F3F / $2F7F / $2FBF), one frame each (PresentsFrame $B91B). Then C 20 down to 1 with B = 1 (widening): P at x 41, O at 101, O at 161, L at 221.
+> Witness (l1sum.py BB13 BB17 BB42): once per presents page; game 6051-6059 (7 narrowing steps, then the key), w1 2 runs (494- and 16 323), m1 3 runs of 20 + 20 steps (494-4055). WALKTHROUGH 6.1: m1 frame 300 shows OCP, frame 900 POOL.
+$BB17 FlipNarrowLoop ; O C P narrowing, C = 0..19
+$BB42 FlipWidenLoop ; P O O L widening, C = 20..1
+$BB74 c FlipLetter ; One step of one letter: FlipEdge for each edge record of the list at IX, relative to D (line), E (x centre)
+> IX = a letter's list of 3-byte records (dx, dy, kind) ending $FF; B = the phase (0 narrowing, 1 widening), C = the step. For each record: E + dx, D + dy and kind + phase go to FlipEdge $BC11. Registers kept but IX. game 210 records, m1 4800.
+$BB98 b FlipLetterO 3 ; The letter O: 12 edge records (dx, dy, kind), $FF
+> Each letter: per stripe row (dy 0, 8, ... 40, the six stripe pairs) a record for the left edge (dx 0) and one for the right edge (dx 1, kind bit 1 set). Kind: bit 1 = the right edge, bit 2 = the 24-pixel width table, bit 3 = both tables (two edges drawn, 16 and 24); bit 0 is the phase LogoFlip adds. Read by FlipLetter $BB74: all 121 bytes in w1 and m1 (game, f1, p2, v1 stop at the key during the narrowing, so the L is never read there).
+$BBBC ; end of O
+$BBBD FlipLetterC ; The letter C: 10 records, $FF
+$BBDB ; end of C
+$BBDC FlipLetterP ; The letter P: 10 records, $FF
+$BBFA ; end of P
+$BBFB FlipLetterL ; The letter L: 7 records, $FF
+$BC10 ; end of L
+$BC11 c FlipEdge ; XOR the strip an edge moves by between step C and the next on four lines (D-2, D-1, D+2, D+3)
+> E = the letter's centre x, D = the stripe line, B = kind + phase, C = the step. Bit 3 of B: both widths (FlipEdge again with bit 2 set, then clear). Otherwise the width w = FlipWidths16 $BC74 [C] (or FlipWidths24 $BC89 with bit 2), compared with the entry after it (phase 0) or before it (phase 1); no change, nothing drawn. The strip of |difference| pixels is placed left (bit 1 clear) or right of the centre at the edge's position and XORed by the span routine $93B3 (B = length) on the lines D-2, D-1, D+2 and D+3: the two two-line stripes of one letter row.
+> Witness: game 432 calls, w1 3628, m1 10 020 (6052-4055).
+$BC1E FlipEdgeWide ; bit 2: the 24-pixel table
+$BC21 FlipEdgeStep
+$BC2E FlipEdgeWiden ; phase 1: compare with the entry before
+$BC2F FlipEdgeCompare
+$BC37 FlipEdgeWidth
+$BC43 FlipEdgeLeft
+$BC47 FlipEdgeRight
+$BC4C FlipEdgeXor
+$BC63 FlipEdgeBoth ; bit 3: both tables
+$BC74 b FlipWidths16 7 ; Half-widths of a turning letter: 16 cos(4.5 k) for k = 0..20 (16 ... 1, 0)
+> 21 bytes 16, 16, 16, 16, 15, 15, 14, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 1, 0: the projected half-width of a 16-pixel half letter turned by 4.5 degrees a step (16 cos 45 = 11.3, entry 10 = 11). Read by FlipEdge $BC11; all in w1 and m1.
+$BC89 FlipWidths24 ; the same for 24 pixels: 24 cos(4.5 k), 24 ... 2, 0
+$BC9E c VideoSlideIn ; Print "video" above the banner, letters 16 pixels wide sliding into their cells 2 pixels a step
+> Eight steps C = 7..0, three frames each (PresentsFrame $B91B). Each step prints the five letters of VideoText $BD04 at line 24 ($18), x 8 + 24 i: each font row (Font $DEF4, letter - 'a') doubled to 16 bits, shifted left by 2 C bits, written as two screen bytes over the old ones (no XOR), so each letter enters its cell from the right.
+> Witness (l1sum.py BC9E BCA0): w1 once (16 323-16 347), m1 three times (581-4079); in game, f1, p2, v1 a key came first.
+$BCA0 VideoStepLoop ; C = 7..0
+$BCA2 VideoStepWait ; three frames
+$BCB3 VideoCharLoop ; five letters
+$BCC8 VideoLineLoop ; eight lines
+$BCD0 VideoDoubleLoop ; each bit twice
+$BCE2 VideoShiftLoop ; shift left 2 C bits
+$BCEC VideoStore
+$BD04 b VideoText 5 ; "video" (VideoSlideIn), then the saved SP and the presents-done flag
+> "video" is read by VideoSlideIn $BC9E (w1, m1).
+$BD09 PresentsSP ; SP at PresentsPage's entry: PresentsAbort $B931 reloads it (written and read once in every build)
+$BD0B PresentsDone ; 0 while GameStart $8000's first presents page runs ($8006), $FF after it ($800E): PresentsPage then also calls $A8FD (read twice in m1, both 0)
+
+@module signature ; The pen that writes "written by" and the signature
+@about SignatureWrite $BD0C runs the pen script SignatureScript $DA80: one command a byte, a pen step a frame. The pen is a sprite of three parts drawn relative to its point (x E, y D): a nib of ten spans (PenNib $BFCC), a 45-degree shaft 44 lines long copied from PenShaftImage $BFFE, and an end cap of six spans (PenCap $BFEB). Each step erases the pen (PenErase $BE40), plots the ink pixel at (x, y - 1) when the pen is down, moves one pixel and draws the pen again (PenDraw $BE2F).
+@about The span drawer PenSpan $BF66 and the shaft routine PenShaftBlock $BEDC are self-modifying: PenDraw writes OR (HL) into the three NOPs of PenSpan and a JR 0 into PenShaftBlock (copy the shaft bytes); PenErase writes XOR (HL) and a JR to PenShaftClear $BF41 (zero the shaft bytes). The shaft copy jumps into one of four 16-byte-aligned copy loops (1-4 bytes a line, PenShaftCopy1 $BF03 .. PenShaftCopy4 $BF33) by the bytes left to the screen's right edge.
+$BD0C c SignatureWrite ; Run the pen script SignatureScript: "written by" and James Hutchby's signature, one pen step a frame
+> Pen up (PenIsDown $C03F = 0), PenBand $C03E = 0, IX = SignatureScript $DA80, the pen at x 16, y 128 (DE = $8010), PenDraw $BE2F, then SignatureCommand $BD23 until the end command, which drops this loop's return address and leaves through PenErase $BE40 back to PresentsPage $B8C5.
+> Witness (l1sum.py BD0C BD23 BE05): m1 only, 3 runs (655-4498), 828 commands and 1484 steps: two whole scripts (312 commands, 557 steps each, by the decoder in 05-editor-notes.md) and a third cut by the SPACE at 4500. WALKTHROUGH 6.1: m1 frame 900 (the pen after "written by"), 1500 (the signature done).
+$BD1E SignatureLoop
+$BD23 c SignatureCommand ; One command of the pen script at IX: end, pen up, pen down, dot, or a move of n steps
+> Byte b at IX. High nibble zero, a command (IX + 1): 0 end (pops the caller's return, JP PenErase $BE40), 1 pen up (PenIsDown $C03F = 0), 2 pen down (= 1), 3 dot: the next two bytes dx, dy (signed) are added to the pen point for one PenPlot $BF59 (the dot of an i, a full stop), the point does not move; 4-15 do nothing (SigCmdOther, never run). High nibble not zero, a move (IX + 1): bits 7-6 dy, bits 5-4 dx (each 0, +1, -2, -1 by sign extension; the script uses 0, +1, -1), bits 3-0 n steps. Each step: one frame (PresentsFrame $B91B, a key aborts), PenErase, PenStep $BE05 (plot at (x, y - 1) if the pen is down, then x + dx, y + dy), PenDraw.
+> The band test: with the pen's y at 96 or more (the whole script keeps the pen at y 121-147) the step is plain. For y 40-95 ($28-$5F) other paths slow the pen down (PenDelay $BE24) and PenBand $C03E records the pen leaving the band (1 above, 2 below) for a pause (SigBandExitAbove, a 300-loop wait) on the next move: no build ran any of them (SigBandBelow .. SigBandSlow, l1sum.py: not executed); known only from the code.
+> Witness: m1 828 calls (655-4499) = two whole scripts of 312 commands (218 moves, 30 pen up, 30 pen down, 33 dots, the end) and 204 of the third, cut by a key; 582 moves (SigMove), 1485 step frames.
+$BD39 SigCmdPenUp
+$BD42 SigCmdPenDown
+$BD4C SigCmdDot ; dx, dy: one pixel, the point stays
+$BD64 SigCmdOther ; commands 4-15: nothing (never run)
+$BD65 SigMove ; H = dy, L = dx from bits 7-6 / 5-4, C = n from bits 3-0
+$BD9A SigMoveStep ; one frame a step
+$BDC1 SigBandBelow ; never run: y left the band downwards
+$BDCA SigBandCheck ; never run
+$BDD5 SigBandExitBelow ; never run
+$BDDE SigBandExitAbove ; never run: a pause of 300 loops
+$BDEC SigBandPause
+$BDF4 SigBandSlow ; never run: the step delayed by PenDelay
+$BDF7 SigStepDraw ; erase the pen, step, draw it
+$BDFD SigStepNext
+$BE05 c PenStep ; One step of the pen: plot (E, D - 1) if the pen is down, then D + H, E + L; C - 1
+> C = the steps left, H / L = dy / dx. With PenIsDown $C03F set, PenPlot $BF59 at (x, y - 1), the pixel just above the nib's tip. B = 1: one step per call. m1 1484 calls.
+$BE0A PenStepLoop
+$BE18 PenStepMove
+$BE24 c PenDelay ; A busy wait of 900 loops (the band's slow step; never run)
+> Called from SigBandSlow $BDF4 only; no build ran it.
+$BE28 PenDelayLoop
+$BE2F c PenDraw ; Draw the pen at (E, D): spans OR, shaft copied
+> Writes JR 0 at PenShaftBlock $BEDC (copy path) and OR (HL) ($B6) into PenSpanOp1-3 ($BF93, $BFA1, $BFAE), then PenRender $BE50. m1 1487 calls.
+$BE40 c PenErase ; Erase the pen at (E, D): spans XOR, shaft cleared
+> Writes JR $63 at PenShaftBlock $BEDC (to PenShaftClear $BF41) and XOR (HL) ($AE) into PenSpanOp1-3, then PenRender: PenShape $BE5A with HL, BC, DE kept. m1 1486 calls.
+$BE50 PenRender ; PenShape with HL, BC, DE kept (PenDraw jumps here)
+$BE5A c PenShape ; The pen's three parts at (E, D): nib spans, shaft from (E + 5, D + 10), cap spans
+> PenSpans $BE79 with PenNib $BFCC; returns at once if x + 5 passes 255 or y + 10 reaches 192; PenShaftPos $C040 = (x + 5, y + 10), PenShaft $BE9F; then PenSpans with PenCap $BFEB. m1 2973 calls.
+$BE79 c PenSpans ; Draw the span list at HL relative to (E, D): records dx, dy, length, $FF end; clipped right and bottom
+> Each record: the span at (x + dx, y + dy) of the given length by PenSpan $BF66 (OR or XOR as set), the length cut at the right edge; a span past the bottom (y 192) or past x 255 ends the list. m1 5946 calls, 40 732 spans.
+$BE96 PenSpansDraw
+$BE9D PenSpansClip
+$BE9F c PenShaft ; The pen's shaft: 44 lines down-right from PenShaftPos, in blocks that end on character-cell lines
+> From PenShaftPos $C040: blocks of up to 8 lines (the first to the end of its character row), each by PenShaftBlock $BEDC; x and y both advance by the block's lines (45 degrees); stops at the bottom of the screen or when x wraps. 44 lines in all ($2C). m1 2973 calls.
+$BEB6 PenShaftLoop
+$BED9 PenShaftLast
+$BEDC c PenShaftBlock ; B lines of the shaft at PenShaftPos: copy from PenShaftImage (draw) or zero them (erase), self-modified
+> The JR at $BEDC is the switch: displacement 0 (PenDraw) runs the copy, $63 (PenErase) jumps to PenShaftClear $BF41. Copy: HL = PenShaftImage $BFFE + 4 (x AND 7), DE the screen; the bytes to copy are 1-4 (fewer at columns 29-31: the bytes left to the right edge, at most 3, plus one), written as 16 times (that count - 1) into the displacement of the JR at PenShaftJump $BF01, which lands on PenShaftCopy1-4 ($BF03, $BF13, $BF23, $BF33). Each line takes the next 4-byte row of the image (the shaft moves one pixel right a line). m1 18 215 calls; only PenShaftCopy4 ran (the pen never came near the right edge).
+$BEDE PenShaftCopyPath
+$BEED PenShaftWidth ; bytes to the right edge, at most 3
+$BEFA PenShaftBytes ; x 16 into the JR below
+$BF01 PenShaftJump ; JR to PenShaftCopy1 + 16 (bytes - 1)
+$BF03 PenShaftCopy1 ; one byte a line (never run)
+$BF0D b PenShaftPad1 ; Six zero bytes that align PenShaftCopy2 at PenShaftCopy1 + 16
+> Never read or executed (l1sum.py --reads BF0D-BF32: no build).
+$BF13 c PenShaftCopy2 ; The shaft copy, two bytes a line (a target of PenShaftJump; never run)
+> LDI twice, DE back, the next screen line, the next image row; DJNZ. No build ran it.
+$BF1F b PenShaftPad2 ; Four zero bytes of alignment
+$BF23 c PenShaftCopy3 ; The shaft copy, three bytes a line (never run)
+> As PenShaftCopy2 $BF13 with three LDIs. No build ran it.
+$BF31 b PenShaftPad3 ; Two zero bytes of alignment
+$BF33 c PenShaftCopy4 ; The shaft copy, four bytes a line
+> PUSH DE, four LDIs, POP DE, INC D; DJNZ. m1 64 168 lines.
+$BF41 c PenShaftClear ; Erase B lines of the shaft: zero the bytes up to the right edge (1-4)
+> The target of PenShaftBlock's JR $63 when PenErase set it. m1 9105 calls, 64 128 lines.
+$BF4B PenClearBytes
+$BF4C PenClearLine
+$BF4E PenClearByte
+$BF59 c PenPlot ; Plot one pixel at (E, D) with OR (sets PenSpan's mode to OR, B = 1)
+> Writes OR (HL) into PenSpanOp1-3 and falls into PenSpan $BF66 with one pixel. Called by PenStep $BE05 and the dot command SigCmdDot $BD4C; m1 1105 calls.
+$BF66 c PenSpan ; A horizontal span of B pixels at (E, D), ORed or XORed by the self-modified PenSpanOp1-3
+> Builds the left partial byte, the full bytes and the right partial byte; the NOPs at PenSpanOp1 $BF93, PenSpanOp2 $BFA1 and PenSpanOp3 $BFAE hold OR (HL) or XOR (HL) (PenDraw / PenErase / PenPlot). m1 41 837 calls.
+$BF7B PenSpanShort ; under 8 pixels: the mask
+$BF82 PenSpanLong
+$BF85 PenSpanShift ; shift the mask by x AND 7
+$BF8A PenSpanShiftLoop
+$BF8F PenSpanShiftNext
+$BF92 PenSpanFirst
+$BF93 PenSpanOp1 ; NOP / OR (HL) / XOR (HL)
+$BF96 PenSpanMiddle
+$BFA1 PenSpanOp2 ; NOP / OR (HL) / XOR (HL)
+$BFA6 PenSpanTail
+$BFA8 PenSpanTailLoop
+$BFAE PenSpanOp3 ; NOP / OR (HL) / XOR (HL)
+$BFB0 PenSpanDone
+$BFB2 c PenPixelAddress ; HL = the display-file address of line H, x L (the same code as PresentsPixelAddress $BA6C)
+> m1 60 112 calls (PenShaft, PenSpan).
+$BFCC b PenNib 3 ; The pen's nib: ten spans (dx, dy, length) from the pen point down-right, $FF
+> (0,0,2) (0,1,4) (1,2,5) (1,3,7) (2,4,8) (2,5,10) (3,6,10) (3,7,11) (4,8,11) (4,9,12): a wedge 10 lines high. Read by PenSpans $BE79 (m1, all 31 bytes).
+$BFEA ; end
+$BFEB b PenCap 3 ; The pen's end cap: six spans at (49..54, 54..59), lengths 11 down to 1, $FF
+> Read by PenSpans $BE79 after the shaft (m1, all 19 bytes).
+$BFFD ; end
+$BFFE b PenShaftImage 4 ; The shaft: 16 rows of 4 bytes, a 12-pixel bar moving one pixel right a row
+> Row r = the bar's 12 pixels starting at pixel r of the 32: PenShaftBlock $BEDC starts at row x AND 7 and takes one row a line. Read by PenShaftCopy4 $BF33 (m1, 60 of 64 bytes: rows 15's last bytes never).
+$C03E b PenBand ; The pen's state: the band flag (0; 1 / 2 only on the band paths, never run), pen down, the shaft position
+> PenBand $C03E: zeroed by SignatureWrite $BD0C, read by SigMove $BD65 (m1 582 reads, always 0).
+$C03F PenIsDown ; 0 pen up, 1 pen down (SignatureCommand commands 1 / 2; read by PenStep, m1 1484 reads)
+$C040 PenShaftPos ; the shaft's start: x (+0), y (+1) (PenShape, PenShaft)
+
+@module editor ; The table editor: place the balls with a cursor, then play the table
+@about The menu's "e" (tests/inputs/m1.txt frame 6260) enters EditorStart $C042: the table with "- editor -", two boxed buttons "play" and "reset" above it, the balls where the last game left them (or the rack), a cross cursor at (128, 115). With the keyboard chosen, the input is switched to the cursor keys for the editor: 5 left, 8 right, 7 up, 6 down, any other key fire (ReadCursorKeys $81C4); CAPS SHIFT + SPACE (BREAK) leaves to the menu.
+@about Fire on a ball (within 4 pixels in x and y) picks it up; the same keys then push it through the physics step $8701 (cushions and pockets act on it) and fire puts it down. Fire on "reset" racks the balls; fire on "play" starts a game on the edited table with the game's own aim, power and ball tasks (EditorAimTasks $C518, EditorRollTasks $C528) but no score; when every object ball is down it returns to the menu.
+$C042 c EditorStart ; The editor's screen and its cursor loop: move the cursor, fire on a ball or a button
+> Entered from the menu ($B293, through a JP after a CALL: the POP HL drops that return). Keeps the input mode $B8BD in EditorSavedMode $C590 and sets mode 3 (cursor keys) when it was 0 (keyboard). Clears the screen (border white, BORDCR $38; attributes $39 on rows 0-5 and 23, $60 on rows 6-22), draws the table ($9243), blanks rows 2-5 columns 18-31, prints "- editor -", "play", "reset" (EditorTexts $C54E) and boxes the two buttons (EditorBox $C1BE: x 148-187 and 204-251, lines 20-35). With no object ball on the table the balls are racked ($9D2C); the balls are drawn ($9520); with the cue ball off the table it is respotted ($9F4E = $FFFF, $93FF). The cursor goes to (128, 115) (EditorCursorHome) and is drawn ($9371).
+> The loop (EditorLoop, one HALT a pass): ReadInput $8106; fire with BREAK leaves (EditorExit $C414); fire goes to EditorFire $C20B; a direction moves the cursor by the speed in EditorCursorSpeed $C58D (EditorCursorLeft / Right / Up / Down: x 3..252, y 18..180). The speed: 1 pixel a frame for 15 frames, then one more every 16 frames up to 5; it starts again at 1 when the input changes, is released or the cursor does not move.
+> Witness (l1sum.py C042 C116 C196 C20B C414): m1 only: entered at 6262, the loop 6271-6830, 30 passes each of left (6600-6629), down (6640-6669), up (6680-6709), right (6720-6749), fire 110 passes (6420-6769, no ball in reach), BREAK at 6830 (EditorExit).
+$C04E EditorKeepMode
+$C0DF EditorAnyBall ; is an object ball on the table?
+$C0EC EditorDrawBalls
+$C102 EditorCursorHome ; the cursor at (128, 115) (also EditorReset's way back)
+$C109 EditorCursorShow ; draw the cursor, previous input 0 (EditorFire's way back)
+$C111 EditorSpeedReset ; speed 1
+$C116 EditorLoop ; one HALT a pass
+$C12C EditorKeys
+$C151 EditorSpeedUp
+$C156 EditorMoveCursor ; erase, move by the speed, draw
+$C196 c EditorCursorLeft ; Cursor x - speed, not under 3
+> L = x, B = the speed. m1 30 calls (6600-6629).
+$C19E EditorLeftEdge
+$C1A1 c EditorCursorRight ; Cursor x + speed, not over 252
+> m1 30 calls (6720-6749).
+$C1A9 EditorRightEdge
+$C1AC c EditorCursorUp ; Cursor y - speed, not under 18 (the buttons' line is reachable, the cushion is at 51)
+> m1 30 calls (6680-6709).
+$C1B5 c EditorCursorDown ; Cursor y + speed, not over 180
+> m1 30 calls (6640-6669).
+$C1BE c EditorBox ; XOR a rectangle's outline: E, D = left, top; L, H = right, bottom
+> Four span calls ($93B3). EditorStart draws the button frames with it: play x 148-187, lines 20-35; reset x 204-251. m1 2 calls (6270).
+$C1DD EditorBoxLeft
+$C1E9 EditorBoxRight
+$C1F1 c EditorInBox ; Z if the cursor is strictly inside the box E, D - L, H (E < x < L, D < y < H)
+> The cursor: x $86BA, y $86BB. Play box: x 149-186, y 21-34; reset box: x 205-250, y 21-34. m1 220 calls (two per fire pass), never inside.
+$C207 EditorOutsideBox
+$C20B c EditorFire ; Fire: "play" or "reset" when the cursor is on them, else pick up the ball under the cursor and move it
+> Play box (EditorPlay $C41D), reset box (EditorReset $C532), else the first ball record in order cue, 1-6 (data at $8A88, 14 bytes each) with |x - cursor x| < 5 and |y - cursor y| < 5 on the whole-pixel bytes +1 / +3, on the table or not (a potted ball sits at y 27, x 7 + 24 n: in the cursor's reach). No ball: back to the loop.
+> EditorPickBall: EditorPickedBall $C58F = the ball, a beep (BEEPER 1000, 20), the cursor erased. A ball off the table is erased from the potted row, put at (128, 115) and shifted sideways (129, 126, 131, 124 ...) while a ball on the table is closer than 16 pixels in x and in y, then flagged on the table (+13 = $80) and drawn. EditorWaitRelease $C401 waits for fire to go up.
+> EditorBallLoop (one HALT a pass): fire puts the ball down (EditorDropBall: a beep, the cursor at the ball, wait for fire up, back to the cursor loop); a direction sets the ball's velocity high bytes (+5 x, +7 y) to +/- the speed in EditorBallSpeed $C58E (the same acceleration as the cursor), fractions and the other velocity zero, and runs one physics step $8701 for it (B holds the speed there, not the ball counter of the physics loop), clears $9F50, keeps the cue ball out of the potted path (+13 bit 5 cleared), moves the cursor with it and redraws it ($8297). When the step took the ball off the table (potted): a beep and back to the cursor loop.
+> Witness: m1 110 calls (6420-6769), every one without a ball in reach. e1 (stage 2, the editor recording): 2 calls (frames 700 and 840); at 700 EditorPickBall picks ball 1 of the rack (EditorFindBall twice: the cue ball, then ball 1), EditorHoldBall $C2F4 entered at 702, EditorBallLoop 57 passes, EditorBallMove 20 (frames 720-739), EditorDropBall once; at 840 the play box. The off-table placement EditorPlaceBall $C288 and EditorOverlapLoop ran in no build (known only from the code).
+$C233 EditorFindBall
+$C23B EditorBallDx
+$C247 EditorBallDy
+$C24D EditorNextBall
+$C258 EditorPickBall ; e1 once, frame 700 (ball 1)
+$C288 EditorPlaceBall ; an off-table ball: at (128, 115), shifted while it overlaps
+$C2AF EditorOverlapLoop
+$C2BD EditorOverlapDx
+$C2C9 EditorOverlapDy
+$C2D5 EditorShiftRight
+$C2D6 EditorShiftApply
+$C2DB EditorOverlapNext
+$C2F4 EditorHoldBall ; wait for fire up, then move the ball
+$C2FC EditorBallSpeedReset
+$C301 EditorBallLoop ; one HALT a pass
+$C317 EditorBallKeys
+$C33C EditorBallSpeedUp
+$C341 EditorBallMove
+$C396 EditorBallRedraw
+$C3BD EditorBallMoved
+$C3CC EditorDropBall ; fire: put the ball down
+$C3EB c EditorBallLeft ; Ball x velocity -speed (+5)
+> e1: 20 runs, frames 720-739 (key 5 held 20 frames: ball 1 from x 190 to 170).
+$C3F2 c EditorBallRight ; Ball x velocity +speed
+> No build runs it (known only from the code, the twin of EditorBallLeft).
+$C3F6 c EditorBallUp ; Ball y velocity -speed (+7)
+> No build runs it (known only from the code).
+$C3FD c EditorBallDown ; Ball y velocity +speed
+> No build runs it (known only from the code).
+$C401 c EditorWaitRelease ; Wait until fire is up (ReadInput in a loop); BREAK leaves the editor
+> BREAK (bit 5 of InputState $827C) drops the return and goes to EditorExit $C414. e1: 3 entries (frames 702-844), 60 passes; its BREAK exit ran in no build.
+$C413 EditorBreakOut
+$C414 c EditorExit ; Leave the editor: the saved input mode back, restart at the menu ($80B0)
+> $B8BD = EditorSavedMode $C590, JP $80B0 (BreakRestart). m1 once, frame 6830 (CAPS SHIFT + SPACE).
+$C41D c EditorPlay ; "play": blank the editor's texts, restore the input mode, start the aim on the edited table
+> A beep, DI, the cursor erased, "- editor -" blanked (EditorTitleBlank $C56D), rows 2-4 columns 18-31 blanked, wait for fire up; $B8BD = EditorSavedMode; $9395, the power word $86BF = 0, EditorAimReset $C502, $8539; installs EditorAimTasks $C518, SoundRequest $827D = 0, EI and JP $8069 (the foreground sound loop): the editor's game runs on tasks from here. e1: once, frame 840 (the screen at 878: texts gone, power box, cursor at (252, 115)).
+$C46E c EditorShotEnd ; Task of the rolling list: all object balls down = back to the menu; all balls stopped = aim again
+> With no object ball on the table: ClearTasks $91CF, then up to 150 frames (HALT, ReadInput) until fire or any key, then $80B0 (the menu). Otherwise, when no ball moves (+13 AND $70 zero for all seven): removes EditorRollTasks $C528, respots the cue ball when it is off the table ($93FF), EditorAimReset $C502, $8539, installs EditorAimTasks $C518. e1: 140 runs, frames 915-1054; the balls stopped at 1054 and the aim came back (EditorAimReset's second entry); the all-potted way to the menu (EditorShotEndWait $C488) ran in no build (known only from the code; its address is in EditorRollTasks).
+$C479 EditorShotEndBalls ; any of balls 1-6 on the table?
+$C488 EditorShotEndWait ; 150 frames, fire or a key: the menu
+$C4A9 EditorShotEndMoving
+$C4AF EditorShotEndMovingLoop ; +13 AND $70: still moving
+$C4D6 c EditorPower ; Task of the aim list: fire held grows the power by 2 (wrap at $86); released with power: shoot
+> Power $86BF + 2 per frame while fire is held, back to 0 at $86 (as AimPower $8506). Released with power not 0: the cursor erased, EditorAimTasks removed, $84C7, the aim $8A02 (the shot's velocity), EditorRollTasks installed. e1: 378 runs, frames 845-1367 (the shot released at 908, a second aim from 1054).
+$C4E7 EditorPowerStore
+$C4EB EditorPowerRelease ; fire up: shoot if there is power
+$C502 c EditorAimReset ; Input state 0, the cursor at (252, 115) and drawn
+> $827C and $86BE = 0, CursorX/Y $86BA = (252, 115), $86BC = 0, JP $9371. e1: 2 entries, frames 844 and 1054.
+$C518 b EditorAimTasks 3 ; The editor's aim task list (period, address): EditorPower, $934D, $8546, $85EB, ReadInput, $FF
+> Installed by EditorPlay $C41D and EditorShotEnd $C46E, removed by EditorPower $C4D6. All periods 0. Read in e1 (each byte 3 times, frames 844-1054).
+$C527 ; end
+$C528 EditorRollTasks ; the rolling list: $827E (ball redraw), $86C1 (physics), EditorShotEnd, $FF
+$C531 ; end
+$C532 c EditorReset ; "reset": rack the balls (the start positions $9D5D) and put the cursor home
+> A beep, the cursor erased, HALT, the balls erased ($9520), racked ($9D2C), drawn ($9520), wait for fire up, JP EditorCursorHome $C102. No build runs it (known only from the code: e1 hit play, not reset).
+$C54E b EditorTexts 4 ; The editor's texts for $9E65 (row, column, attribute, length, characters)
+> "- editor -" (row 0, column 11), "play" (row 3, column 19, attribute $39), "reset" (row 3, column 26), then two blanks: 10 spaces over the title and 14 spaces at column 18 whose row byte EditorStart / EditorPlay patch to 2, 3, 4 (and 5). The first three read once in m1 (6262); EditorButtonsBlank 4 times; EditorTitleBlank once, in e1 (EditorPlay, frame 840).
+$C552 ; "- editor -"
+$C55C EditorPlayText ; "play"
+$C564 EditorResetText ; "reset"
+$C56D EditorTitleBlank ; ten spaces over "- editor -"
+$C57B EditorButtonsBlank ; row patched: 14 spaces at column 18
+@res text/EditorTexts.bin
+$C58D b EditorCursorSpeed ; The cursor's step counter: high nibble frames left, low nibble the speed (1-5), $F1 at a start
+> Read and written by EditorStart's loop (m1 240 reads).
+$C58E EditorBallSpeed ; the same for the moved ball (never used in a recording)
+$C58F EditorPickedBall ; the picked ball, 0 cue .. 6
+$C590 EditorSavedMode ; the input mode $B8BD at entry (m1: written at 6262, read at 6830)
+$C591 b EditorStaleCopy 16 ; 111 bytes equal to $C34C-$C3BA (inside EditorBallMove): a stale copy, never read
+> Byte for byte the code from the middle of LD (IX+4),A at $C34A ($C34C) to the opcode of the JP at $C3BA: the copy is cut by the block's end at $C600 before the JP's operand. A leftover of an earlier assembly in which this code sat higher. No build reads it (l1sum.py --reads C591-C5FF).
+
+@module workspace ; The free space and the machine stack below the sprites
+@about $C600-$CFFF: 2496 zero bytes no recording reads or writes, then the 64 bytes the machine stack runs in (LD SP,StackTop at GameStart $8000 and BreakRestart $80B0, StackTop = $D000).
+
+$C600 s FreeSpace ; Zeros up to the stack: never read or written in any recording
+> 2496 bytes of zeros. tools/l1sum.py --reads C600-CFBF: no read in game, w1, f1, p2, v1, m1, j1. The loader's sum covers them (they are on the tape), nothing else touches them.
+$CFC0 s StackSpace ; The machine stack, 64 bytes below $D000
+> The stack pointer is set to StackTop ($D000) by GameStart and BreakRestart. The loaded bytes here are zeros; no recording reads a byte before writing it (l1sum.py --reads CFC0-CFFF: none), the lowest byte w1 uses is $CFC4.
+
+@module sprites ; The 56 pre-shifted ball sprites
+@about The sprite of ball b (0 the cue ball, 1-6 the object balls) drawn at a screen x is number 7 * (x AND 7) + b, 48 bytes at $D000 + 48 * number (DrawBall $9548): 16 lines of 3 bytes, the left byte first, the 16th line zero, no mask; drawn with XOR so a second draw erases it. Each ball is a 15 x 15 disc with its centre at (7, 7) of the sprite, the object balls with their number cut out. The editable source is src/res/graphics/BallSprites.png, one row a shift, the seven balls left to right.
+
+$D000 b BallSprites 3 ; The 56 ball sprites: 3 bytes x 16 lines, 7 balls x 8 shifts
+> Read by DrawBall $9548 (through the XOR drawer): every byte read in game, w1, f1, p2, v1, m1, j1 (l1sum.py --reads D000-DA7F: 2688 of 2688 bytes).
+@res graphics/BallSprites.bin
+
+@module penscript ; The pen script: "written by" and the signature, as pen moves
+@about SignatureScript $DA80 is the pen's script for SignatureWrite $BD0C: 378 bytes, 312 commands, 557 steps; the pen starts at (16, 128). Byte b: high nibble 0 = command b (0 end, 1 pen up, 2 pen down, 3 dot dx dy with two signed bytes following); otherwise a move of b AND 15 steps by dy = bits 7-6, dx = bits 5-4 (2-bit two's complement: 0, 1, -2, -1), one pixel and one frame a step, plotting (x, y - 1) before each step while the pen is down. The text form for editing is in work/stage2/ann/05-editor-notes.md.
+$DA80 b SignatureScript 16 ; The pen script of "written by" (x 16-64) and "James Hutchby" (x 75-184), y 120-146
+> Read only by SignatureCommand $BD23 (m1, all 378 bytes, 1830 reads: two whole runs and one cut by a key). Stage 1 called it the logo's data; it is the pen's path. $DBF9 is the end command.
+@res text/SignatureScript.bin
+
+@module physicstables ; The physics tables: contact, jaw radius, friction, collision records
+@about Four tables of the physics, all read only: ContactTable $DBFA (ball against ball), Table8x8 $DCFA (ball against a jaw point), FrictionTable $DD3A, CollisionRecords $DE3A. Their values fit a construction by d = SQR (dx*dx + dy*dy), see each entry and the notes.
+$DBFA b ContactTable 16 ; Ball against ball by |dx| (column) and |dy| (row), whole pixels: $80 overlap, 1-31 the contact ring, 0 apart
+> Read by BallContacts $87EF at 16 |dy| + |dx| (|dx|, |dy| < 16): 157 of 256 bytes read (w1, f1, p2, v1, m1; never in game). $80 for every cell with dx*dx + dy*dy <= 212, a record number 1-31 for the 31 cells with 218..250 (d from 14.8 to 15.8: two balls of 15 pixels touching), 0 for 260 and more. The ring numbers run by angle from the x axis: 1 = (15, 0), 16 = (11, 11), 31 = (0, 15); the cell (dx, dy) and (dy, dx) have n and 32 - n.
+$DBFA ; |dy| = 0
+$DC0A ; |dy| = 1
+$DC1A ; |dy| = 2
+$DC2A ; |dy| = 3
+$DC3A ; |dy| = 4
+$DC4A ; |dy| = 5
+$DC5A ; |dy| = 6
+$DC6A ; |dy| = 7
+$DC7A ; |dy| = 8
+$DC8A ; |dy| = 9
+$DC9A ; |dy| = 10
+$DCAA ; |dy| = 11
+$DCBA ; |dy| = 12
+$DCCA ; |dy| = 13
+$DCDA ; |dy| = 14
+$DCEA ; |dy| = 15
+@res tables/ContactTable.bin
+$DCFA b Table8x8 8 ; Ball against a jaw point by |dx| (column) and |dy| (row): $80 overlap, 1 touching, 0 apart
+> Read by PointJaw $8CF8 at 8 |dy| + |dx| (twice: $8D1C and the back-off loop $8D41): 16 of 64 bytes read (w1, v1, m1). $80 for dx*dx + dy*dy <= 37, 1 for 40..53 (d 6.3 to 7.3: the ball's radius about 7), 0 for 58 and more. PointJaw also rejects |dx| = |dy| >= 5 before the read, so the cell (5, 5) = 1 is never used.
+$DCFA ; |dy| = 0
+$DD02 ; |dy| = 1
+$DD0A ; |dy| = 2
+$DD12 ; |dy| = 3
+$DD1A ; |dy| = 4
+$DD22 ; |dy| = 5
+$DD2A ; |dy| = 6
+$DD32 ; |dy| = 7
+@res tables/Table8x8.bin
+$DD3A b FrictionTable 16 ; Friction steps by the direction: row = |vy| nibble, column = |vx| nibble; high nibble y step, low nibble x step
+> Read by FrictionSteps $90F5 at 16 ny + nx: 211 of 256 bytes read in all builds (the unread are mostly small-speed cells; (0, 0), a stopped ball, never). Every entry but (0, 0) = $44 is (round (5 ny / n), round (5 nx / n)) with n = SQR (nx*nx + ny*ny) within 0.5 (row 0: $05, column 0: $50, the diagonal $44): a deceleration of 4.5 to 5.7, about 5, in 1/256 pixel a tick per tick, along the motion.
+$DD3A ; ny = 0
+$DD4A ; ny = 1
+$DD5A ; ny = 2
+$DD6A ; ny = 3
+$DD7A ; ny = 4
+$DD8A ; ny = 5
+$DD9A ; ny = 6
+$DDAA ; ny = 7
+$DDBA ; ny = 8
+$DDCA ; ny = 9
+$DDDA ; ny = 10
+$DDEA ; ny = 11
+$DDFA ; ny = 12
+$DE0A ; ny = 13
+$DE1A ; ny = 14
+$DE2A ; ny = 15
+@res tables/FrictionTable.bin
+$DE3A w CollisionRecords 3 ; 31 records of three words: nx^2, ny^2, |nx ny| for one contact-ring cell (0.8, $0100 = 1.0)
+> Record n is ContactTable's ring cell n (dx, dy): w0 = 256 dx*dx / 225, w1 = 256 dy*dy / 225, w2 = 256 dx dy / 225, truncated (29 of 31; records 8 and 24 have 41 for 40.96): the line of centres taken as if the distance were always 15. So w0 + w1 is 1.0 on the axes and 1.075 at 45 degrees (record 16: $89, $89, $89): a diagonal hit gives back up to 7.5 % more than an exact projection. Read by BallContacts $87EF through ContactRecordPtr $89B7 (ScaleVelocity $89C4): 27 of the 31 read (w1, f1, p2, v1, m1); 6, 16, 18, 26 not hit in any recording.
+@res tables/CollisionRecords.bin
+
+@module font ; The game's own font: a-z and 0-9
+@about The 36 glyphs of 8 x 8 pixels the print routine PrintChar $9E7C takes for the codes $61-$7A (a-z, Font + 8 (code - $61)) and $30-$39 (0-9, Font+208 + 8 (code - $30)); every other code comes from the ROM's CHAR_SET $3D00, $7F from CopyrightGlyph $9F2E. The editable source is src/res/fonts/Font.png, twelve glyphs a row.
+
+$DEF4 b Font 8 ; The font: 26 letters a-z, then 10 digits 0-9, 8 bytes each
+> Read by PrintChar $9E7C and the hall of fame's name printers: every byte read in w1 (l1sum.py --reads DEF4-E013: 288 of 288 bytes; game, f1, p2, v1, m1, j1 read the glyphs of their texts).
+$DFC4 FontDigits ; the digits 0-9 (Font+208)
+@res fonts/Font.bin
+
+@module devleftover ; Code of the development system left in the image: never run, never read
+@about $E014-$E0FF is Z80 code that no build executes or reads, followed by zeros to the block's end $E1A7. Its CALLs and data addresses ($44C1, $4200, $506B, $507E, $50A4, $50B2, $5100, $51CC) point into the 48K's display file, so it was assembled for another memory layout. Two pieces: $E014-$E052 counts the zero bits of a bitmap (a free-space count, the shape of a disk's allocation map), and from $E056 an assembler-style text scanner: a case-folding compare, an is-alphanumeric test, a lookup of a name in a table of 8-byte entries (6 characters and a word) and a parser of a parenthesised list of names. With the CALL targets taken as $8FBF bytes below the code ($50A4 = DevIsAlnum $E063, $50B2 = DevLookup $E071) the second piece fits its own calls.
+$E014 c DevFreeCount ; Development leftover: count the zero bits of the bitmap at $5100 ($51CC + 35 bytes), store (n + 2) / 4
+> Starts mid-routine (BIT 5,(IY+4), POP BC without a PUSH). DE = the number of 0 bits in ($51CC) + 35 bytes from $5100 (SCF / RRA until $FF); then CALL $44C1 and the count + 2, divided by 4, stored at (HL). Never executed or read in any build (l1sum.py --reads E014-E1A7).
+$E01B DevFreeCountBody
+$E02D DevFreeByteLoop
+$E02E DevFreeBitLoop
+$E033 DevFreeBitNext
+$E053 b DevFragment ; Three bytes ($50, $13, $18) and an endless JR -2 ($FE): no routine start found
+$E056 c DevCompareChar ; Development leftover: compare A with (HL), letters case-folded (RES 5 from "A" up)
+> Never executed.
+$E05C DevCompareFolded
+$E05E c DevResultC ; Development leftover: A = C with Z set (LD A,0; OR A; LD A,C)
+> Never executed.
+$E063 c DevIsAlnum ; Development leftover: carry clear for 0-9, A-Z (the $50A4 of the second piece)
+> Never executed.
+$E06F DevIsAlnumEnd
+$E071 c DevLookup ; Development leftover: find the name at DE in the table at BC (8-byte entries, 0 end); C = index, DE = the word at +6
+> Compares the first character, then DevMatchName $E088 for five more (a name ends at CR, $03 or a non-alphanumeric character, padded with spaces). Never executed.
+$E076 DevLookupLoop
+$E07A DevLookupNext
+$E088 c DevMatchName ; Development leftover: the rest of a table name (5 characters); found: DE = the entry's word, Z
+> Never executed.
+$E08C DevMatchLoop
+$E09C DevMatchFound
+$E0AA DevMatchDiffer
+$E0AF DevMatchEnd
+$E0B4 DevMatchFail
+$E0B8 b DevParseList 8 ; Development leftover, kept as bytes: skip spaces; "(" name [, name] ")" with each name looked up ($50B2) in the table at DE
+> Code, never executed, kept as bytes because its last instruction (XOR A at $E0FF) runs on into the zeros at $E100 and a branch (JR Z at $E0E7) jumps to $E101: the piece is cut off there. Disassembled: $E0B8 INC HL; LD A,(HL); CP $0D; RET Z; CP " "; JR Z,$E0B8; CP "("; JR NZ,$E0FF. $E0C5 PUSH DE; LD B,6; LD DE,$4200; INC HL; CALL $506B (read a name of up to six characters into $4200); DEC HL; POP DE; RET NZ; CP $0D; JR NZ,$E0D7; INC HL. $E0D7 PUSH DE; LD B,D; LD C,E; LD DE,$4200; CALL $50B2 (DevLookup's address in the piece's own layout); JR Z,$E0E4; POP DE; RET. $E0E4 LD A,(HL); CP "="; JR Z,$E101; LD BC,$FFFF; LD (DE),C; INC DE; LD (DE),B (stored through DE as two LD (DE),A); POP DE; LD A,(HL); CP ","; JR Z,$E0C5; CP $0D; JR Z,$E0FF; CP ")"; RET NZ; INC HL. $E0FF XOR A, then the zeros.
+$E100 s DevZeros ; Zeros to the end of the loaded block ($E1A7)
+

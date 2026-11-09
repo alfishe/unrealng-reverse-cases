@@ -1,0 +1,24 @@
+# shot_bot.py --plan tests/plans/j1.txt: from entry.z80
+500 SPACE
+520 -
+620 J
+630 -
+680 B
+700 -
+1000 KL
+1040 -
+1045 KF
+1075 -
+1975 CS SPACE
+1985 -
+2185 I
+2195 -
+2245 B
+2265 -
+2565 6
+2605 -
+2610 0
+2640 -
+3540 CS SPACE
+3550 -
+3850 END
