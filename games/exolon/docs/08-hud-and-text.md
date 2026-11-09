@@ -415,6 +415,9 @@ PrintChar(code, row, col, attr):
     mem[cell + $0900 - $0600] = OpenOperand    # $5B00 + 32 row + col
 ```
 
+CellTypeOperand and OpenOperand are the operands of the two self-modified `LD (HL),n` at `$AE1A` and `$AE20`
+(bytes `$AE1B` and `$AE21`), written by PrintString's codes `$E8` n and `$E9` / `$EA`.
+
 **A worked example**: the "A" of AMMO, code `$41` at row 22, column 0, with the font (GlyphBase `$D7E0`) and the
 attribute `$45`.
 
@@ -489,7 +492,7 @@ The name entry's frame is made of two small strings, called with `$E3`:
   on the left, cyan on the right.
 - **PanelBar** `$A210` (24 bytes): `$E3 28 A2` (a corner), `$DC`, `$78 02` (column + 2), `$E1 0E 08 09 $E2`
   (14 times glyphs 8, 9: the bar's top half), `$93` (the next row, column - 28), `$D4`, `$E1 0E 0A 0B $E2` (the bottom
-  half), `$77 00` (back up a row), `$E3 28 A2` (the other corner), `$FF`. A 2 x 32 bar of 54 cells.
+  half), `$77 00` (back up a row), `$E3 28 A2` (the other corner), `$FF`. A 2 x 32 bar of 64 cells.
 
 HofEntryText prints PanelBar at rows 0-1 and again at rows 22-23, and between them repeats a 2 x 2 side piece 10 times down columns 0-1 and 30-31 (`$E1 0A ... $E2`), in glyph set `$ECE0` ([8.9](#89-the-name-entry)).
 
@@ -657,8 +660,9 @@ flowchart TD
   G -- yes --> H["HallOfFameRoll"]
 ```
 
-**The timeout**: a pass with 12 live stars costs about 123 000 T (`h1` frames 108-128: 11 passes in 20 frames,
-`find_event` on `$6DDD`), so 2500 passes are about 4400 frames, 88 seconds on a 48K. `c128` measured it: MenuLoop
+**The timeout**: a pass with 12 live stars costs about 128 000 T (`h1` frames 108-128: 11 passes in 20 frames,
+`find_event` on `$6DDD`; `c1`'s passes of 127 298-129 408 T in [4.8](04-game-loop.md)), so 2500 passes are about
+4600 frames, 92 seconds on a 48K. `c128` measured it: MenuLoop
 starts at frame 14507 + 33 241 and HallOfFameRoll at 18784 + 22 311, 4277 frames, 85.5 seconds. (`c128` then pressed
 a key in the roll's first steps and was back in the menu at frame 18791.) No 48K recording waited that long.
 
@@ -912,8 +916,8 @@ HallOfFameRoll `$7149` clears the attributes to `$44`, prints HallOfFameScreen `
 round the edges, and 19 rows of 8 spaces at column 16 in `$43`), then runs 960 steps (`$03C0`):
 
 - a step whose count is a multiple of 16 calls PrintNextHallEntry `$7568`: the next entry's 16 characters at row 23,
-  column 8, through PrintCharAttr, then Delay `$028E`;
-- the other steps Delay `$0400`;
+  column 8, through PrintCharAttr, then Delay with BC = `$028E`;
+- the other steps Delay with BC = `$0400`;
 - every step calls ScrollHallOfFame `$7522`, which moves the window up one pixel line;
 - a key ends the roll: '1' goes to StartGame, any other key to MainMenu. The end of the count goes to MainMenu.
 
@@ -923,8 +927,8 @@ only waits.
 ```mermaid
 flowchart TD
   A["clear to 44, HallOfFameScreen, pointer = HallOfFame, BC = 960"] --> B{"C AND 0F = 0?"}
-  B -- yes --> P["PrintNextHallEntry: 16 chars at 23, 8, then Delay 028E"]
-  B -- no --> D["Delay 0400"]
+  B -- yes --> P["PrintNextHallEntry: 16 chars at 23, 8, then Delay, BC = 028E"]
+  B -- no --> D["Delay, BC = 0400"]
   P --> S["ScrollHallOfFame: up one line"]
   D --> S
   S --> C{"BC - 1 = 0?"}
@@ -1060,7 +1064,7 @@ How to read the animation:
 - The panels are those of [6.4](06-rendering.md#64-the-screen-builder).
 - **What happens**: the line table at `$6700` is read (blue, by `POP`), and the screen rows of the table are written
   from the top down (yellow), 14 bytes a line; the last picture clears the bottom line.
-- **The point**: one step is 57 852 T (`h1` 6669 T 63 067 to 6670 T 50 919), a whole frame's worth of `LDI`. With
+- **The point**: one step is 57 740 T (`h1` 6669 T 63 067 to 6670 T 50 919), a whole frame's worth of `LDI`. With
   the delays, a step takes about 81 900 T: the 960 steps ran from frame 6661 to 7786, 1125 frames, 22.5 seconds.
 
 ```bash

@@ -14,7 +14,7 @@
 ; Each call adds 1 to $9E98, the sprites drawn this pass ($9E85 pads the pass
 ; with more draws, the main loop clears it). Frames seen in the code: 0 / 1 the
 ; grenade facing right / left, 2 a debris piece, 3-5 the puff, 6 blank, 7 the
-; ball, 8 the gun's shot (the frames are SmallSprites $ED40 in the image: 24
+; ball, 8 the gun's shot (the frames are SmallSprites $ED40 in the image: 9
 ; sprites of 4 pre-shifted 16-byte copies, up to $EF7F).
 ;
 ; c1: 52 160 calls, the most called routine of this range.
@@ -229,7 +229,7 @@ ProbeAboveDone:
 ; = Y / 8) and walks DestructibleList: the first record whose box holds the
 ; cell (x0 <= column < x1, y0 <= row < y1) and is not destroyed ($80) is: its
 ; element (the scenery string of $852E, the element number at +6) printed again
-; at its place with printer 3 (XorDebrisPrinter: XOR erases it, every character
+; at its place with printer 3 (EraseBlockDebris: XOR erases it, every character
 ; throws two debris pieces and clears its cells in the maps), the record marked
 ; $80, the explosion sound $C148, 150 points ($ADA9: "000150", AddScore $AD53).
 ;
@@ -386,7 +386,7 @@ DestructibleKinds:
 
 ; Start one debris piece flying from a character cell
 ;
-; Called twice per character by XorDebrisPrinter $AE95 (printer 3: the mine
+; Called twice per character by EraseBlockDebris $AE95 (printer 3: the mine
 ; blast, the grenade blast). In: D = row, E = column, C = the attribute (the
 ; printer's colour). Takes the first free record of DebrisList (state 0; none
 ; free: nothing): state 1, X = 4 column, Y = 8 row, dx and dy from DebrisSpeeds

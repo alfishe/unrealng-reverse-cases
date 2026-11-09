@@ -131,7 +131,7 @@ or the keys he defines), a Sinclair Interface 2 joystick, or a Kempston joystick
 | left and right together | stands still: the two bytes are XORed, so both is the same as neither | Walk |
 | up, on the ground | jumps; the direction held at take-off carries him | MovePlayer `$81A4` |
 | up, standing in a teleport or the exoskeleton booth | uses it, and does not jump: the booth's roof stops the jump | Teleports `$98BA`, ExoSuitBooth `$9F2D` |
-| down, on the ground | crouches; his shots and grenades leave 6 pixels lower; he cannot walk | MovePlayer |
+| down, on the ground | crouches; his shots leave 5 pixels lower (SpawnShot `$83AB`), his grenades 6 (ThrowFromCrouch `$9233`); he cannot walk | MovePlayer |
 | fire, tapped | one shot, one round of ammunition | FireControl `$8338` |
 | fire, held 15 passes | a grenade as well, when one is left and none is flying | ThrowGrenade `$9208` |
 | fire, held longer | no more shots (no autofire); another grenade each time the one in flight ends, while grenades last | FireHeld `$83DC` |
@@ -146,8 +146,8 @@ A tap and a hold, measured in `x2` (Kempston fire held from frame 312):
 - frame 341: FireHeld reaches 15 and a grenade leaves (GrenadeTimer `$20`);
 - frame 351: fire released, FireHeld 0 at frame 352.
 
-So a grenade always comes after a shot: the press already fired one. Nothing in the controls lets a player throw
-without shooting first. FireHeld stays at 15 or more while fire is held (it stops at 255), so a held button throws
+So with ammunition a grenade comes after a shot: the press already fired one. FirePress `$835D` counts FireHeld
+before its `Ammo == 0` test (`$8365`), so with no ammunition a held button still throws a grenade, with no shot. FireHeld stays at 15 or more while fire is held (it stops at 255), so a held button throws
 again as soon as the grenade in flight ends: known only from the code (`x2` released fire before its grenade landed). The mechanism, with its asm and a chart, is in [doc 5](05-controls.md).
 
 During a death nothing answers: MovePlayer, FireControl and ThrowGrenade start with AbortIfDying `$9D78`.
@@ -181,7 +181,7 @@ Weapons and equipment:
 - **Teleports** (Teleports `$98BA`): up in one booth moves him to the other pad of the screen (key moment 9; `w/036`
   frame 1762 to 1763: X, Y from `$0C`, `$20` to `$11`, `$70` on screen 38).
 - **The exoskeleton** (ExoSuitBooth `$9F2D`): up in an exoskeleton booth (screens 9, 34, 60, 90, 109) puts it on or
-  takes it off (key moment 16; `w/108` frame 1610 up, ExoSuit `$9ED8` from 0 to `$0C` at 1614). Worn, mines and
+  takes it off (key moment 16; `w/108` frame 1610 up, ExoSuit `$9ED8` from 0 to `$0C` at 1613). Worn, mines and
   traps cannot kill him (ShieldedKill `$9CAA`) and he fires a second shot 6 pixels lower. It costs the bravery bonus
   at the zone's end.
 - **Pick-ups** (PickupsVsPlayer `$A30B`): the two cells behind a gun's barrel pay 1000 points when he touches them
@@ -291,9 +291,11 @@ How to read the figure:
   with one seed, RandomSeed `$AD51` as loaded (0), carried through the screens in order. It is one possible sky.
 - **The point**:
   - each screen has its own list (125 lists at 125 addresses), but the pixels give 121 layouts;
-  - four pairs differ only in their colours: 28 and 103, 40 and 115, 46 and 121, 47 and 122;
-  - zone 5 follows zone 2: 91 % of the pixel bytes are equal screen for screen, against 64-69 % between the
-    other pairs of zones.
+  - four pairs are the same screen stored twice (byte-identical lists at two ScreenTable addresses): 28 and 103,
+    40 and 115, 46 and 121, 47 and 122; only the stars differ, and in play the alien delay of 28 / 103 (`$10`
+    against `$0A` in AlienScreens);
+  - zone 5 follows zone 2: 90.5 % of the play area's pixel bytes (no stars) are equal screen for screen, against
+    60.9-66.1 % between the other pairs of zones (`python3 tools/fig_map.py stats`).
 
 ![Screens 0-3 at 1x](img/design/map-start.png)
 
@@ -350,7 +352,7 @@ How to read the figure:
 
 - **The strip**: one box a screen, five rows for the zones. The colour counts the 8 x 8 cells where Pavero's map
   shows something other than the build: green for none, orange for the most (74). The stars are left out (a
-  cell holding exactly the star glyph of `$E840` counts as sky).
+  cell holding exactly the star glyph, glyph 3 of TileSetE840 at `$E858`, counts as sky).
 - **Blue frames**: screens 15-27. Pavero's tiles of these screens sit two pixel lines lower than his others (an
   offset in his assembly), so their bottom line of cells is cut. The comparison uses the shifted position for them.
 - **The pairs**: screens 14 and 41, ours on the left at 2x and his on the right. Blue boxes are scenery cells in
@@ -425,7 +427,7 @@ The moments and what the code does at each:
 | 13 | a pick-up | `w/006` 511 | PickupsVsPlayer `$A30B` | two pick-ups at 510 and 513: 80 ticks |
 | 14 | a mine | `w/006` 967 | Mines `$9152`, MineBlast `$91CF` | the blast at frame 966, screen 7 |
 | 15 | the homing missile | `w/006` 1890 | HomingMissileStep `$A26B` | screen 8 |
-| 16 | the exoskeleton | `w/108` 1614 | ExoSuitBooth `$9F2D` | up at 1610, ExoSuit 0 to `$0C` at 1614 |
+| 16 | the exoskeleton | `w/108` 1613 | ExoSuitBooth `$9F2D` | up at 1610, ExoSuit 0 to `$0C` at 1613 |
 | 17 | a force field | `w/035` 250 | ForceFieldDraw `$AB97` | screen 35, the first with one |
 | 18 | the idle missile | `x2` 5172 | IdleMissileStart `$AC59` | launched at frame 5170 |
 | 19 | a zone end | `w/024` 540 | ZoneEnd `$A817` | the panel at frame 515; step by step in 1.10 |
@@ -506,7 +508,7 @@ The score is six ASCII digits at Score `$AD8A`, added to by AddScore `$AD53`
 | a gun's shot destroyed | 50 | DestroyGunShot `$9E4F` | `w/006` frame 243 to 244: 000000 to 000050 (the shot hit the player, see below) |
 | an alien shot | 150 | KillAlien `$A62D` | `x2` 2125 |
 | a destructible piece blown up by a grenade | 150 | GrenadeBlast `$942A` | `x2` frame 411 to 412: 000000 to 000150 |
-| a missile launcher destroyed while its missile flies | 850 (34 ticks) | HomingMissileStep `$A2AE` | `w/013` ran it (the warp-run scan) |
+| a missile launcher destroyed while its missile flies | 850 (34 ticks) | HomingMissileStep `$A2AE` | `w/013` frame 1886: BonusTicks 0 to 34 (7.6) |
 | a pick-up | 1000 (40 ticks) | PickupsVsPlayer `$A330` | `w/006` 510 and 513: 2000 points in ticks |
 | the force field destroyed | 1000 (40 ticks) | ForceFieldDestroy `$AC2B` (`$AC54`) | never ran |
 | the zone's end: LIVES BONUS | 1000 a life | ZoneEnd `$A83D` | `w/024` frame 521 to 522: 000000 to 009000 |
@@ -557,12 +559,12 @@ flowchart TD
     J -- no --> I
     J -- yes --> K{odd line}
     K -- yes --> L[line x 1000]
-    K -- no --> M[ZoneRefill]
-    L --> M
-    M --> N{Lives below 9}
+    K -- no --> N{Lives below 9}
+    L --> N
     N -- yes --> O[one life more]
-    N -- no --> P[the next screen: 25, 50, 75, 100 or 0]
-    O --> P
+    N -- no --> M[ZoneRefill]
+    O --> M
+    M --> P[the next screen: 25, 50, 75, 100 or 0]
 ```
 
 The asm of the two bonuses (`zones.asm`):
@@ -609,7 +611,9 @@ And the round's end, `w/124`:
 | ---: | --- | --- |
 | 608 | the marker of screen 124; 9 x 1000 | 001050 to 010050 |
 | 664 | the bravery paid; RoundEnd | 020050 |
-| 797 | CONGRATULATIONS shown; ScreenNumber `$FF`; BonusScreen | 020050 |
+| 708-714 | two Delays after RoundEnd: the screen cleared, CONGRATULATIONS printed, ScreenNumber `$FF` | 020050 |
+| 797 | four Delays later: BonusScreen entered (`find_event` exec `$A8DB`) | 020050 |
+| 923-932 | six more Delays: the bonus screen cleared and printed | 020050 |
 | 1016 | the pointer stopped on line 1: +1000; ZoneRefill | 021050 |
 | 1017 | screen 0 again, the score kept | 021050 |
 
@@ -690,8 +694,8 @@ the code for the second round: no recording played one (1.13).
 
 - **No way back.** TestLeft blocks X = 0, so a screen once left is gone. A death restarts the screen, not the zone:
   the cost of a death is small, the cost of a mistake is the screen's hazards again.
-- **The fire button does two jobs.** One button gives a shot and, held, a grenade. There is no grenade key, so every
-  grenade costs a round as well (1.4).
+- **The fire button does two jobs.** One button gives a shot and, held, a grenade. There is no grenade key, so with
+  ammunition every grenade costs a round as well (1.4).
 - **Booths and teleports use up.** Up is the jump key, and the booth's roof stops the jump, so the same key works the
   booth without a jump. The player never needs a sixth control.
 - **The exoskeleton is a trade.** Worn, it saves him from mines and traps and doubles his shots, but it costs the

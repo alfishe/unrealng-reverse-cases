@@ -1548,7 +1548,7 @@ w030: 1 mine fired; 23 warp clones fired one each.
 
 **Throw the debris of a fired mine: ten blank XOR characters, each spawning two debris pieces**
 
-In: D = the row above the mine, E = its column. Selects printer 3 (XorDebrisPrinter `$AE95`, SetPrinter), takes the attribute of the cell two rows down (the floor under the mine) into the colour byte of MineBlastText, prints the text at (D, E), then selects printer 0 again.
+In: D = the row above the mine, E = its column. Selects printer 3 (EraseBlockDebris `$AE95`, SetPrinter), takes the attribute of the cell two rows down (the floor under the mine) into the colour byte of MineBlastText, prints the text at (D, E), then selects printer 0 again.
 
 The text prints two spaces five times at the same place: each character XORed on the screen (a blank glyph: no change), its cell marked in the maps `$5B00` / `$5E00` / `$6100`, and AddDebris called twice for it: 20 debris pieces in the colour of the floor.
 
@@ -1656,7 +1656,7 @@ ProbeRight; a wall ends the flight (GrenadeEnd). Then the rest of MoveGrenade's 
 
 In: A = the frame, E = X in 2-pixel units (0-127), D = Y in pixels. Every register is kept. The frame is 64 bytes at `$ED40` + 64 A: four copies shifted by 0, 2, 4 and 6 pixels (E AND 3), 16 bytes each, 2 bytes a pixel line, 8 lines. `$B088` gives the screen address of the line; the bytes are read with POP (SP saved at `$78DA`), two lines per loop, the screen address moved down a line in the Spectrum layout (C = 7 the line mask).
 
-Each call adds 1 to `$9E98`, the sprites drawn this pass (`$9E85` pads the pass with more draws, the main loop clears it). Frames seen in the code: 0 / 1 the grenade facing right / left, 2 a debris piece, 3-5 the puff, 6 blank, 7 the ball, 8 the gun's shot (the frames are SmallSprites `$ED40` in the image: 24 sprites of 4 pre-shifted 16-byte copies, up to `$EF7F`).
+Each call adds 1 to `$9E98`, the sprites drawn this pass (`$9E85` pads the pass with more draws, the main loop clears it). Frames seen in the code: 0 / 1 the grenade facing right / left, 2 a debris piece, 3-5 the puff, 6 blank, 7 the ball, 8 the gun's shot (the frames are SmallSprites `$ED40` in the image: 9 sprites of 4 pre-shifted 16-byte copies, up to `$EF7F`).
 
 c1: 52 160 calls, the most called routine of this range.
 
@@ -1715,7 +1715,7 @@ As ProbeBelow one row up (HL - 32). Caller: MoveBalls (a ball going up).
 
 **The grenade's end: destroy the destructible scenery piece it is in**
 
-In: E = X, D = Y of the grenade. Turns them into a cell (column = X / 4, row = Y / 8) and walks DestructibleList: the first record whose box holds the cell (x0 <= column < x1, y0 <= row < y1) and is not destroyed (`$80`) is: its element (the scenery string of `$852E`, the element number at +6) printed again at its place with printer 3 (XorDebrisPrinter: XOR erases it, every character throws two debris pieces and clears its cells in the maps), the record marked `$80`, the explosion sound `$C148`, 150 points (`$ADA9`: "000150", AddScore `$AD53`).
+In: E = X, D = Y of the grenade. Turns them into a cell (column = X / 4, row = Y / 8) and walks DestructibleList: the first record whose box holds the cell (x0 <= column < x1, y0 <= row < y1) and is not destroyed (`$80`) is: its element (the scenery string of `$852E`, the element number at +6) printed again at its place with printer 3 (EraseBlockDebris: XOR erases it, every character throws two debris pieces and clears its cells in the maps), the record marked `$80`, the explosion sound `$C148`, 150 points (`$ADA9`: "000150", AddScore `$AD53`).
 
 A grenade that hits no such box ends silently. c128: 3 ends, x2 9 hits over 14 throws, 55 warp clones destroyed one.
 
@@ -1742,7 +1742,7 @@ c1: 36 elements over its 4 builds of screen 0 (9 a build), 8 destructible (2 a b
 
 **Start one debris piece flying from a character cell**
 
-Called twice per character by XorDebrisPrinter `$AE95` (printer 3: the mine blast, the grenade blast). In: D = row, E = column, C = the attribute (the printer's colour). Takes the first free record of DebrisList (state 0; none free: nothing): state 1, X = 4 column, Y = 8 row, dx and dy from DebrisSpeeds by random numbers (dy doubled; drawn again until not both 0), draws frame 2 there, colour C AND `$47`.
+Called twice per character by EraseBlockDebris `$AE95` (printer 3: the mine blast, the grenade blast). In: D = row, E = column, C = the attribute (the printer's colour). Takes the first free record of DebrisList (state 0; none free: nothing): state 1, X = 4 column, Y = 8 row, dx and dy from DebrisSpeeds by random numbers (dy doubled; drawn again until not both 0), draws frame 2 there, colour C AND `$47`.
 
 c128: 98 pieces, x2 370.
 
@@ -2533,7 +2533,7 @@ Main loop (`$7638`; c1: 3260). No missile: HomingMissileStart. The launcher gone
 
 **The star field: 3 tries a row on rows 0-21, a star (character 3 of font `$E840`) where the cell is empty**
 
-Called by the screen set-up `$8494`. For rows 21 down to 0, three random columns (Random AND `$1F`): when the map `$5E00` holds 0 there (no scenery), PrintCharAttr `$AE26` draws glyph 3 of TileSetE840 (one pixel, line 4) in a random bright ink `$42-$47`. So up to 66 stars, new each time a screen is built.
+Called by the screen set-up `$8494`. For rows 21 down to 0, three random columns (Random AND `$1F`): when the map `$5E00` holds 0 there (no scenery), PrintCharAttr `$AE26` draws glyph 3 of TileSetE840 (one pixel, line 4) in a random bright ink `$42`, `$43`, `$46` or `$47` (Random AND 7 OR `$42`). So up to 66 stars, new each time a screen is built.
 
 | | |
 | --- | --- |
@@ -2788,7 +2788,7 @@ Called by the shot step `$83DD`. A live shot of `$845F` whose X equals the field
 
 **The force field's 25th hit: erased cell by cell, removed, AY effect 6, 1000 points**
 
-Font `$DAB8`; for the ForceFieldHeight cells from under the field's cell, XorChar `$AE95` draws character `$25` again in a random bright ink `$42-$47` (XOR: the field disappears, its cells' marks cleared and their kinds 0); ForceFieldList = `$FF`; AY effect 6 (`$C148`); JP AddBonusTicks with A = `$28` (40 ticks, 1000 points). Never ran in any recording: no run put 25 shots into one force field (ForceFieldHits is reset with each screen).
+Font `$DAB8`; for the ForceFieldHeight cells from under the field's cell, EraseBlockDebris `$AE95` draws character `$25` again in a random bright ink `$42`, `$43`, `$46` or `$47` (XOR: the field disappears, its cells' marks cleared and their kinds 0); ForceFieldList = `$FF`; AY effect 6 (`$C148`); JP AddBonusTicks with A = `$28` (40 ticks, 1000 points). Never ran in any recording: no run put 25 shots into one force field (ForceFieldHits is reset with each screen).
 
 | | |
 | --- | --- |

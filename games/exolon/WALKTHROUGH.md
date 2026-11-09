@@ -267,3 +267,46 @@ Produced:
 
 Checks: `merge.py`, `mkgame.py --install` (identical), `refdocs.py`, `tools/build.sh` (identical),
 `res_formats.py check` (the map pixel for pixel), `check_docs.py` (docs: ok), no unlinked figure in `docs/img/*/`.
+
+### 7.3 Review round 2 (2026-11-08)
+
+Asked: two fresh reviewers, read-only, each on the half the first round's reviewer had not read: `rv2A` docs 06-10
+and README (`work/review/rv2A.md`, 19 findings), `rv2B` docs 01-05 and README (`work/review/rv2B.md`, 14 findings).
+The owner made this the last round: verified findings fixed with the smallest edit, no new figure but `missile.png`.
+
+Found, by kind (33): 13 wrong numbers, 6 wrong mechanisms, 5 contradictions, 4 stale names, 1 figure, 4
+completeness items (P2). Each was checked again (`work/review/fix2/`: `l1scan.py` over every run's L1, `rd.py`,
+`scr.py` and `q.py` on an own muted instance, port base 34600 because 32600 was taken, stopped after; `fig_map.py
+stats`; the listing):
+
+- `rv2A`: 16 accepted, 2 in part, 1 rejected. Rejected: 7 (debris "37th move"): the record
+  `01 14 8C 00 FC 42` starts at Y `$8C` = 140, not 144, so the 36th move wraps, as written. In part: 18 (the
+  pseudocode names are kept, with the note that they are the operands of two `LD (HL),n`, not of a `CP`); 19 (the
+  pick-up got its asm, pseudocode, flowchart and witness, the idle missile its kill box and launch rule,
+  ForceFieldDestroy went into 10.14; the sparkles' asm and a ColourCells figure were left out).
+- `rv2B`: 12 accepted, 2 deferred: 10 (the picy packer's pseudocode and worked example) and 11 (an odometer
+  figure), both new work the last round does not take; the countdown is explained by its table, pseudocode and
+  flowchart. 12 was settled as both right: the header's bytes are in at frame 2080 (`HeaderLength` `$92A0`), CountSet
+  sets 1173 at 2081.
+
+What changed:
+
+- Witnesses found where 07 said "known only from the code": the pick-up (`w/006` frames 511 and 514, BonusTicks 40
+  then 79, the score 000200 to 002200 by 746; `$A328` in 30 runs) and the launcher lost under its missile (`w/013`
+  frame 1886, screen 15, BonusTicks 0 to `$22`; `$A2AE` in 8 runs). ForceFieldDestroy `$AC2B` is in no L1: 10.14.
+- Numbers: SmallSprites 9 sprites; the star and burn inks `$42`, `$43`, `$46`, `$47`; a screen change about 5
+  passes; NextPixelLine `$B099`; BallTopRow `$9A7E`; PanelBar 64 cells; ScrollHallOfFame's step 57 740 T; the menu
+  pass 128 000 T and 92 s on the 48K (08, README); three speaker writers; crouched shots 5 px lower; the booth's
+  ExoSuit at 1613 (01, 05, 07); the w/124 zone end (CONGRATULATIONS 708-714, BonusScreen 797, the bonus screen
+  923-932); the zone similarity 90.5 % against 60.9-66.1 % (`fig_map.py stats`, new); pass 1's pads half of it.
+- Mechanisms: the four screen pairs are one list stored twice; the zone-end diagram's order (BonusScreen, life,
+  ZoneRefill); a held fire with no ammunition throws a grenade without a shot; the grenade timer held at 1; XorShot
+  whitens only when both cells are black.
+- Names: EraseBlockDebris, AyWrite, Delay with BC, the star glyph at `$E858`.
+- `game.ann` (FIXES and RENAME_ALL in `work/lead/merge.py`): DrawSmallSprite's "24 sprites" to 9, the inks of
+  DrawStars and ForceFieldDestroy, XorDebrisPrinter / XorChar to EraseBlockDebris.
+- Figures: `kinds/missile.png` (X and Y on their own panels, distinct colours and dashes, flight 1's square marked as
+  the window's start), `loop/pass.png` (its note: half, not 40 %), both viewed at full size and 900 px.
+
+Checks: `merge.py`; `mkgame.py --install` (identical); `refdocs.py`; `tools/build.sh` (identical); `res_formats.py
+check` (passes); `check_docs.py` (docs: ok).

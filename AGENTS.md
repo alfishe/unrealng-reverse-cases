@@ -22,7 +22,7 @@ the standard in [GUIDE.md](GUIDE.md), the steps phase by phase in [recipes/](rec
 | 5. Resources | Extract every graphic, font, map, level, tune, text and table into an editable format that builds back. | `res_formats.py check` passes and the build is identical | [06](recipes/06-resources.md) |
 | 6. Figures | Make the figures of GUIDE section 4 and section 4 below. | the figure checklist is met, each figure viewed at 900 px | [07](recipes/07-figures.md) |
 | 7. Documents | Write docs 01-10 by hand; docs 11-12 are generated. | `check_docs.py` prints docs: ok **and** the completeness audit (section 5) finds no P1 or P2 | [08](recipes/08-documents.md) |
-| 8. Review | Run fact rounds and completeness rounds by fresh agents. | a round finds nothing factual and nothing missing | [09](recipes/09-review.md) |
+| 8. Review | Run two rounds by fresh agents: facts plus completeness, then both again with the halves swapped. | round 2's findings fixed and committed | [09](recipes/09-review.md) |
 
 Write as you go: a finding counts only when it is in the documents or the WALKTHROUGH. A finding left in a chat or
 in `work/` does not count.
@@ -204,8 +204,9 @@ A document or a case is not done until it passes all of these. The lead runs the
    reference case. A subsystem document with no diagram is suspect until the audit clears it.
 5. **The build and checks**: `tools/build.sh` prints identical and `kit/check_docs.py` prints docs: ok.
 
-Rounds go on until a fact round and a completeness round both find nothing. The second round of each kind reads
-what the first did not.
+Two rounds, then the case closes. Round 1 is the fact review plus the completeness audit. Round 2 is one pass that
+checks facts and completeness together, with the halves swapped. Its findings are fixed and committed, and then the
+case is done. There is no third round: the yield falls fast and the cost does not (Exolon: 47 findings, then 33).
 
 ## 6. Writing rules
 

@@ -78,8 +78,9 @@ HL   = high * 256 + low
 - `$1F` AND `$7C` = `$1C`; `$1C` / 4 = 7, the column.
 - HL = `$48C0` + 7 = `$48C7`. X AND 3 = 3 is left for the drawer: a shift of (2 x `$1F`) AND 7 = 6 pixels.
 
-**The point**: a table read replaces the Spectrum's bit shuffling of Y. The drawers step down a line with
-NextPixelLine `$B097` or an inline `INC H` and fix-up.
+**The point**: a table read replaces the Spectrum's bit shuffling of Y. The sprite drawers step down a line with
+an inline `INC H` and its fix-up; NextPixelLine `$B099` does the same step for BuildLineTables `$7BEF` and
+ClearPlayArea `$B061`.
 
 ## 6.2 The cell maps
 
@@ -478,7 +479,7 @@ DrawStars `$A2D5` runs once per build, after SaveAttributes:
 - a try picks a column with Random AND `$1F`;
 - the star is printed only where AttrCopy is 0, a black and empty cell;
 - the star is glyph 3 of TileSetE840 (`00 00 00 00 10 00 00 00`, one pixel on line 4), in ink Random AND 7 OR `$42`
-  (bright, ink 2-7: never black or blue on black);
+  (bright, bit 1 of the ink always set: ink 2, 3, 6 or 7, red, magenta, yellow or white; never green or cyan);
 - it prints through PrintCharAttr: no CellTypes or OpenCells write, so a star is neither solid nor in front.
 
 ```asm
@@ -897,7 +898,7 @@ python3 ../../kit/routine_anim.py --trace work/docs/fillR/x2/traces/1781_33000-1
 
 DrawSmallSprite `$92FB` has no shift code, no mask and no buffer. Its frames are stored shifted:
 
-- SmallSprites `$ED40` holds 24 sprites of 64 bytes; each is 4 copies of 16 bytes, shifted 0, 2, 4 and 6 pixels;
+- SmallSprites `$ED40` holds 9 sprites of 64 bytes; each is 4 copies of 16 bytes, shifted 0, 2, 4 and 6 pixels;
 - a copy is 8 lines of 2 bytes;
 - the address is `$ED40` + 64 A + 16 (E AND 3);
 - the loop reads with `POP`, two lines a pass, 4 passes (BC = `$0407`: B the passes, C the line mask 7);
@@ -1060,8 +1061,8 @@ for r in 0..h-1:
 so 4 rows), C = `$47`. AttrCopy over rows 14-16 reads `00 44 04 00` and over row 17 `44 44 04 04`. 6 of the 16 cells
 are 0 and turn bright white; the 10 others keep the gantry's green and the floor's colours.
 
-The shots: XorShot `$82FC` XORs one pixel line of 8 pixels, `$BD` = `10111101`. The cells a shot crosses turn bright
-white where AttrCopy is 0.
+The shots: XorShot `$82FC` XORs one pixel line of 8 pixels, `$BD` = `10111101`. The two cells a shot crosses turn bright
+white only when both are 0 in AttrCopy; one coloured cell keeps both as they are (`$8325`-`$8328`).
 
 ### The shell dot
 
@@ -1405,5 +1406,5 @@ frame (4.5), so some draws can cross the beam and show a split player for one fr
 | BuildScreen, screen 1 | about 631 500 | `x2` 743-752 |
 | BuildScreen, screen 0 | about 700 000 | `c1` 16129-16139 |
 
-**The point**: the player is the costliest thing in a pass, and a screen change costs as much as 25 passes; the
+**The point**: the player is the costliest thing in a pass, and a screen change costs as much as about 5 passes (9-10 frames); the
 game hides neither.

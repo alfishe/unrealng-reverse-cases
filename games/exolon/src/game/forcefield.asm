@@ -113,11 +113,11 @@ ForceFieldVsShotsLoop:
 ; points
 ;
 ; Font $DAB8; for the ForceFieldHeight cells from under the field's cell,
-; XorChar $AE95 draws character $25 again in a random bright ink $42-$47 (XOR:
-; the field disappears, its cells' marks cleared and their kinds 0);
-; ForceFieldList = $FF; AY effect 6 ($C148); JP AddBonusTicks with A = $28 (40
-; ticks, 1000 points). Never ran in any recording: no run put 25 shots into one
-; force field (ForceFieldHits is reset with each screen).
+; EraseBlockDebris $AE95 draws character $25 again in a random bright ink $42,
+; $43, $46 or $47 (XOR: the field disappears, its cells' marks cleared and
+; their kinds 0); ForceFieldList = $FF; AY effect 6 ($C148); JP AddBonusTicks
+; with A = $28 (40 ticks, 1000 points). Never ran in any recording: no run put
+; 25 shots into one force field (ForceFieldHits is reset with each screen).
 ForceFieldDestroy:
   LD HL,TileGlyphs
   LD (PrintChar+$000E),HL ; font $DAB8
@@ -131,7 +131,7 @@ ForceFieldErase:
   OR $42
   LD C,A
   LD A,$25
-  CALL EraseBlockDebris   ; XorChar: character $25 erased
+  CALL EraseBlockDebris   ; EraseBlockDebris: character $25 erased
   INC D
   DJNZ ForceFieldErase
   LD A,$FF                ; the field gone

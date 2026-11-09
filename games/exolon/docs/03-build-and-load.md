@@ -507,7 +507,7 @@ In `c1` (`memory_at` of `$FC16-$FC31`):
 | 1000 | `46 40 00 00` | 1 | 0088 (units mid-roll) | the screen loading |
 | 1800 | `0A 00 00 00` | 1 | 0001 | |
 | 1830 | `4F FF 00 00` | 0 | | one move past zero: the units wrapped to 9, the tens to `$FF` |
-| 2081 | | 1 | 1173 | the code's header taken |
+| 2081 | `18 38 08 08` | 1 | 1173 | CountSet from the code's header (taken at frame 2080) |
 | 6000 | `19 20 38 00` | 1 | 0743 | |
 | 12363 | `00 00 00 00` | 1 | 0000 | the last bytes of the code |
 

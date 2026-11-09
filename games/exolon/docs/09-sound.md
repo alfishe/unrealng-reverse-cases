@@ -66,8 +66,8 @@ own; 9.7 and 9.8 name the traces):
 
 | Player | Window | T a frame | Share of the frame | T a tick |
 | --- | --- | ---: | ---: | ---: |
-| TuneTick with its AyWrites (`$B6D1`-`$BA00`, `$BF6D`-`$BF7D`) | `c128` menu, frames 12 150-12 400, 360 ticks | 4045 | 5.7 % | 2810 |
-| SoundEffectsTick with its AyWrites (`$BF7E`-`$C0E6`, `$BF6D`-`$BF7D`) | `c128` play, frames 20 000-20 100, 139 ticks | 5500 | 7.8 % | 3957 |
+| TuneTick and the music module (`$B6D1`-`$BA00`) with AyWrite (`$BF6D`-`$BF7D`) | `c128` menu, frames 12 150-12 400, 360 ticks | 4045 | 5.7 % | 2810 |
+| SoundEffectsTick (`$BF7E`-`$C0E6`) with AyWrite (`$BF6D`-`$BF7D`) | `c128` play, frames 20 000-20 100, 139 ticks | 5500 | 7.8 % | 3957 |
 | BeeperNoise on a 128K (the test and the RET) | the same | 12 | 0.02 % | |
 
 The effects tick costs the same on a 48K: it runs and writes AY ports there too.
@@ -398,7 +398,7 @@ The routines themselves are the game's.
 
 In play nothing drives the speaker in the background: there is no interrupt sound.
 Every sound is the CPU writing port `$FE` in the main loop, and the pass waits while it does.
-Five places write the speaker in play:
+Three routines write the speaker in play, at four `OUT`s (the tune player's `OUT`s at `$8032`-`$8057` run only for the menu tune and the jingle):
 
 | Writer | `OUT` at | Called from | What it writes | Witness |
 | --- | --- | --- | --- | --- |
@@ -1111,7 +1111,7 @@ of the three traced windows); three ticks make a pass, about two frames.
 | explosion | PlaySfxExplosion `$C155` | 8 | `$C33E` | `$9B79`, `$9BD0`, `$9E5B`, `$9E7F`, `$A63C` | noise and notes 50 down to 36 | 9 | `x2` 2125 | `ay-explosion.mp3` |
 | grenade | PlaySfxGrenade `$C1BE` | 9, 15 | `$C366`, `$C3D8` | ThrowGrenade `$9254` | two sweeps a fifth apart, volume up then down | 68 | `c128` 20 053 | `ay-grenade.mp3` |
 | noise sweep | PlaySfxNoiseSweep `$C13B` | 7 | `$C2C7` | Guns, `$9DBB` | noise only, its period rising in steps of 2 | 32 | known from the code | `ay-noise-sweep.mp3` |
-| trill | PlaySfxTrill `$C12E` | 5 | `$C280` | AddBonusTicks `$9EB1`, PickupsVsPlayer `$A32B` (156) | note 60 and silence (note 0) by turns, about 33 times | 201 | known from the code | `ay-trill.mp3` |
+| trill | PlaySfxTrill `$C12E` | 5 | `$C280` | AddBonusTicks `$9EB1`, PickupsVsPlayer `$A32B` (156 calls in all) | note 60 and silence (note 0) by turns, about 33 times | 201 | `w/006` 511 and 514 (pick-ups, 7.7) | `ay-trill.mp3` |
 | ammo refill | PlaySfxAmmoRefill `$C0F4` | 2 | `$C218` | `$9980`, `$9F65` | arpeggio 79-71-63-55, volume 13 down to 3 | 72 | `x2` 1656 | `ay-ammo-refill.mp3` |
 | grenade refill | PlaySfxGrenadeRefill `$C101` | 2 | `$C23E` | `$99D6` | arpeggio 84-76-68-60 | 72 | `x2` 2141 | `ay-grenade-refill.mp3` |
 | pulse | PlaySfxPulse `$C162` | 13 | `$C462` | Teleports, `$98F3` and `$9928` (38, 8) | note 60 with a tremolo, 15 down to 4 | 73 | `x2` 1609 | `ay-pulse.mp3` |

@@ -263,8 +263,10 @@ How to read the table:
   running when the recording ended.
 - **The conditional calls 22 and 28** were taken in every pass of `c1`: MoveGrenade's 9780 runs are exactly
   3 x 3260. No grenade flew in `c1`, GrenadeTimer stayed 0, and 0 is below `$13`; MoveGrenade then returns at once
-  (45-65 T). With a grenade in flight GrenadeTimer counts down from `$20`: the first 13 steps run once a pass, the
-  last 18 (timer `$12` to 1) three times a pass.
+  (45-65 T). With a grenade in flight GrenadeTimer counts down from `$20`: the first 13 steps (timer `$20` to `$14`) run
+  once a pass; from the pass that starts at `$13` three a pass (calls 22 and 28 test the timer below `$13`). The
+  steps from `$13` take it to 1, where it stays (`$926B` `DEC A / JR Z` never stores 0), and the grenade goes on
+  three steps a pass until a wall, the floor or an edge ends it (GrenadeEnd `$92D4`).
 - **The quiet pass** spends 58 % of its time in the Delay and the two pads (calls 51, 53, 54: 79 423 T). The
   rest, about 58 000 T with the three sound ticks, is the game's own work.
 - **The heaviest pass** has two long calls: MovePlayer (call 3) turned the player (FlipPlayerFrames, about
@@ -439,7 +441,7 @@ How to read the figure:
   write to the screen, at its line (vertical) and its time (horizontal).
 - **The red cross** marks T 1812, where the frame interrupt would be taken. It never is (`DI`).
 - **White ticks** mark the start of a pass (MainLoop `$75BE`), with its length.
-- **Pass 1** (137 525 T, 1.97 frames): nothing moves. 40 % of it draws blank sprites (pink: the time pads).
+- **Pass 1** (137 525 T, 1.97 frames): nothing moves. Half of it (68 818 of 137 525 T) draws blank sprites (pink: the time pads).
 - **Pass 2** (158 532 T, 2.27 frames): the player walks one step and is redrawn (dark green: DrawBigSprite `$76DA`,
   about 21 000 T).
 - **The point**: a pass starts wherever the last one ended. These two start at T 56 450 of frame 16186 and T 54 199
@@ -448,7 +450,7 @@ How to read the figure:
 ```bash
 python3 tools/fig_pass.py --work work/docs/docA/c1 --window 16186:50000-16191:10000 --rows 16186-16190 \
     --title 'Two passes of c1: no interrupt, no frame sync; drawing the player adds 21 000 T' \
-    --note 'pass 1: nothing moves (40 % of it draws blank sprites); pass 2: the player walks a step and is redrawn (dark green)' \
+    --note 'pass 1: nothing moves (half of it draws blank sprites); pass 2: the player walks a step and is redrawn (dark green)' \
     --out docs/img/loop/pass.png
 ```
 

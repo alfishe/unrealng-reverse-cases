@@ -521,9 +521,9 @@ The points:
 | 50 | Points50 | a ball that touches the hero (it kills him as well) | BallHit from BallsTouchPlayer `$9BB4` |
 | 150 | Points150 | an alien shot | KillAlien `$A62D` |
 | 150 | Points150 | a destructible scenery piece blown up by a grenade | GrenadeBlast `$93E2` |
-| 850 (34 ticks) | bonus ticks | a missile launcher destroyed while its missile flies | HomingMissileStep `$A2AE` |
-| 1000 (40 ticks) | bonus ticks | a pick-up collected | PickupsVsPlayer `$A330` |
-| 1000 (40 ticks) | bonus ticks | the force field's end | `$AC54` |
+| 850 (34 ticks) | bonus ticks | a missile launcher destroyed while its missile flies (`w/013` frame 1886, 7.6) | HomingMissileStep `$A2AE` |
+| 1000 (40 ticks) | bonus ticks | a pick-up collected (`w/006` frames 511 and 514, 7.7) | PickupsVsPlayer `$A330` |
+| 1000 (40 ticks) | bonus ticks | the force field's end (no recording) | `$AC54` |
 | lives x 1000 | Points1000 | the zone's end | ZoneEnd `$A817` |
 | 10 000 (80 x 125) | Points125 | the zone's end without the exoskeleton | ZoneEndBravery `$A855` |
 | 1000-7000 | Points1000 | the bonus screen's odd lines | BonusScreen `$A8DB` |
@@ -1380,8 +1380,8 @@ gap closes one unit at a time and cannot jump over 0.
 A teleport moves the hero many units at once and can carry the range end past a shot; that shot then flies on to
 the edge (known only from the code).
 
-A shot is not drawn white unless it needs to be: XorShot paints the two cells' attributes `$47` only where AttrCopy
-`$5E00` is 0, that is on black cells. Over coloured scenery the shot takes the scenery's ink.
+A shot is not drawn white unless it needs to be: XorShot paints the two cells' attributes `$47` only when both
+are 0 in AttrCopy `$5E00`, that is when both are black. Over coloured scenery the shot takes the scenery's ink.
 
 A worked example, `x2` frame 439: the hero is at X 47, Y 97 (jumping), facing right, and fire goes down (FireHeld
 1).
@@ -1463,6 +1463,8 @@ shot). Items 3, 6 and 7 change what a player can score or survive on particular 
 - The bonus screen's pay-out on an odd line: `w/024` stopped on an even line (the score stays 019000 from frame 750 to
   1000); `w/124`'s samples do not separate the bonus screen's points from the play's.
 - The five unused addends (100, 200, 250, 300, 350).
+- ForceFieldDestroy `$AC2B` (25 hits end a force field, 1000 points): no L1 of the warp runs, `x2` or `w030` holds
+  `$AC2B`.
 - A grenade thrown to the left (GrenadeLeftWall): every script faced right.
 - The score's wrap at 1 000 000.
 - DeathDropToFloor's loop: every restart point was on the ground.

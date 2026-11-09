@@ -42,7 +42,8 @@
 
 **Completeness rounds** run next to the fact rounds ([AGENTS.md section 5](../AGENTS.md#5-quality-gates-before-done)): a fresh agent maps every routine of the `.ann` to the section that explains it, checks each mechanism against the bar (prose, pseudocode, asm, mermaid, worked example, witness, figure, the point) and against the reference cases, and writes P1/P2/P3 gaps to `work/review/cmp<id>.md`.
 
-**Rounds:** at least two of each kind, the second on what the first did not read. After the last round, go through the figure
+**Rounds:** two. The second checks facts and completeness together, on the halves the first did not read. Then fix,
+commit and close; no third round ([AGENTS.md section 5](../AGENTS.md#5-quality-gates-before-done)). After the last round, go through the figure
 checklist again.
 
-**Done when:** a fact round finds nothing factual, a completeness round finds no P1 or P2, and the case README's state says so.
+**Done when:** round 2's findings are fixed and committed, and the case README's state says so.

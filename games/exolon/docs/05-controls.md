@@ -428,8 +428,8 @@ ExoSuitBoothPressed:
   LD (BoothUpLatch),A
 ```
 
-Witness: `w/108`, screen 109. Up pressed from frame 1609: Y stays `$18` and JumpStep stays 0 over frames 1609-1616
-while ControlJump = 1. ExoSuit `$9ED8` goes from 0 to `$0C` at frame 1614. Holding up longer did nothing more: the
+Witness: `w/108`, screen 109. Up pressed from frame 1610 (ControlJump = 1): Y stays `$18` and JumpStep stays 0 over frames
+1610-1616. BoothUpLatch `$9F6D` = 1 and ExoSuit `$9ED8` from 0 to `$0C` at frame 1613. Holding up longer did nothing more: the
 latch held.
 
 ### AbortIfDying: the death barrier

@@ -102,7 +102,7 @@ MineList:
 ; debris pieces
 ;
 ; In: D = the row above the mine, E = its column. Selects printer 3
-; (XorDebrisPrinter $AE95, SetPrinter), takes the attribute of the cell two
+; (EraseBlockDebris $AE95, SetPrinter), takes the attribute of the cell two
 ; rows down (the floor under the mine) into the colour byte of MineBlastText,
 ; prints the text at (D, E), then selects printer 0 again.
 ;

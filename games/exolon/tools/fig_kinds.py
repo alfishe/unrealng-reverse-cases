@@ -150,40 +150,50 @@ def missile():
     PX = np.array([bytes.fromhex(v[1])[0] for _, v in fr])
     PY = np.array([bytes.fromhex(v[1])[1] for _, v in fr])
     B.style()
-    fig, axs = plt.subplots(1, 2, figsize=(B.WIDTH, 6.2), gridspec_kw={'width_ratios': [1.35, 1]})
-    ax = axs[0]
+    fig = plt.figure(figsize=(B.WIDTH, 7.4))
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.35, 1])
+    ax = fig.add_subplot(gs[0, 0])
     ax.step(F, MX, where='post', color=B.COLOURS[0], label='missile X $A268')
-    ax.step(F, PX, where='post', color=B.TEXT, label='PlayerX')
-    ax.step(F, MY, where='post', color=B.COLOURS[2], label='missile Y $A269')
-    ax.step(F, PY, where='post', color=B.DIM, label='PlayerY')
-    ax.axhline(0x46, color=B.COLOURS[3], ls=':', lw=1)
-    ax.text(F[0] + 3, 0x46 + 2, 'X $46: two units a pass below it', fontsize=10, color=B.COLOURS[3])
-    for f, t in ((1562, 'relaunch\nX $78, Y $45'), (1823, 'relaunch\nX $78, Y $23')):
+    ax.step(F, PX, where='post', color=B.COLOURS[3], ls='--', label='PlayerX')
+    ax.axhline(0x46, color=B.COLOURS[5], ls=':', lw=1)
+    ax.text(1575, 0x46 - 10, 'X $46: two units a pass below it', fontsize=10, color=B.COLOURS[5])
+    for f, t in ((1562, 'relaunch'), (1823, 'relaunch')):
         ax.axvline(f, color=B.DIM, lw=0.8, ls='--')
         ax.text(f + 4, 128, t, fontsize=10, va='top')
     ax.set_ylim(0, 135)
+    ax.set_ylabel('X (2 px a unit)')
+    ax.legend(loc='lower right', fontsize=9.5)
+    ax.set_title('X per frame', fontsize=10.5)
+    ax = fig.add_subplot(gs[1, 0], sharex=ax)
+    ax.step(F, MY, where='post', color=B.COLOURS[2], label='missile Y $A269')
+    ax.step(F, PY, where='post', color=B.COLOURS[1], ls='--', label='PlayerY')
+    for f, t in ((1562, 'Y $45'), (1823, 'Y $23')):
+        ax.axvline(f, color=B.DIM, lw=0.8, ls='--')
+        ax.text(f + 4, 8, t, fontsize=10, va='top')
+    ax.set_ylim(176, 0)
+    ax.set_ylabel('Y (pixels)')
     ax.set_xlabel('frame of w/006 (screen 8, the launcher at column 20, row 11)')
-    ax.set_ylabel('X (2 px a unit) / Y (pixels)')
-    h, lab = ax.get_legend_handles_labels()
-    fig.legend(h, lab, loc='lower left', fontsize=10, ncol=2, bbox_to_anchor=(0.04, 0.0))
-    ax = axs[1]
+    ax.legend(loc='lower right', fontsize=9.5)
+    ax.set_title('Y per frame', fontsize=10.5)
+    ax = fig.add_subplot(gs[:, 1])
     seg = np.split(np.arange(len(F)), np.where(np.diff(MX.astype(int)) > 50)[0] + 1)
     for i, s in enumerate(seg):
-        ax.plot(MX[s] * 2, MY[s], '-', color=B.COLOURS[i % 6], lw=1.5, label=f'flight {i + 1}')
-        ax.plot(MX[s][0] * 2, MY[s][0], 'o', color=B.COLOURS[i % 6])
+        c = B.COLOURS[[0, 3, 4][i % 3]]
+        ax.plot(MX[s] * 2, MY[s], '-', color=c, lw=1.5, label=f'flight {i + 1}')
+        ax.plot(MX[s][0] * 2, MY[s][0], 'o' if i else 's', color=c)
     ax.plot(PX * 2 + 12, PY + 16, '.', ms=1.5, color=B.DIM, label='the player\'s centre')
     ax.set_xlim(0, 256)
     ax.set_ylim(176, 0)
     ax.set_aspect('equal')
     ax.set_xlabel('screen x (pixels)')
     ax.set_ylabel('screen y (pixels)')
-    h, lab = ax.get_legend_handles_labels()
-    fig.legend(h, lab, loc='lower right', fontsize=10, ncol=2, bbox_to_anchor=(0.99, 0.0))
-    ax.set_title('the tracks on the screen (a dot: the launch)', fontsize=10.5)
+    ax.legend(loc='lower left', fontsize=9.5)
+    ax.set_title('the tracks on the screen\ndot: a launch; square: flight 1 at\nframe 1400 (launched before the window)',
+                 fontsize=10.5)
     B.suptitle(fig, 'The homing missile in w/006 frames 1400-2045: each flight starts at the right edge (X $78) at a '
                     'random height and turns one pixel a pass toward the player\'s Y; X 0 ends it and the next starts '
                     'in the same pass')
-    fig.tight_layout(rect=(0, 0.12, 1, 0.9))
+    fig.tight_layout(rect=(0, 0, 1, 0.9))
     B.save(fig, B.out('kinds', 'missile.png'))
 
 

@@ -209,7 +209,7 @@ Every routine walks its list until the `$FF` after the last record.
 | 11 | GunList `$9DC1` | Guns `$9D7F`, MoveGunShots `$9DD6` | fires with chance 9 in 256 a pass, only while the player is more than 32 X units (64 pixels) to its left; the shot can be shot (50 points) | `w/006` 250, `w/008` 1750, `w/009` 1000-1500 |
 | 12 | `$9F6E` | ExoSuitBooth `$9F2D` | the exoskeleton booth: UP pressed (on its first pass) while standing in it toggles ExoSuit `$9ED8` between 0 and `$0C` (the player's frames shift by 12) | `w/108` frame 1613, screen 109 |
 | 13 | `$A266` | HomingMissileStart `$A23A`, HomingMissileStep `$A26B` | the missile launcher; the missile comes in from the right edge (7.6) | `w/006` 1500-2000, `w/008` 250-500 |
-| 14 | PickupList `$A333` | PickupsVsPlayer `$A30B` | the two cells behind a gun's barrel: touching one pays 40 bonus ticks (1000 points) and plays the AY trill `$C12E` | code only |
+| 14 | PickupList `$A333` | PickupsVsPlayer `$A30B` | the two cells behind a gun's barrel: touching one pays 40 bonus ticks (1000 points) and plays the AY trill `$C12E` | `w/006` frames 510-511 and 513-514 (7.7) |
 | 15 | `$A814` | FlickerPadStep `$A7D6` | the flickering pad between the two pillars of element 42 or 51 (sprites `$1C-$20`); decoration | `w/024` frame 500, screen 24 (below) |
 | 16 | `$AAEF` | ZoneEnd `$A817` | the zone's last screen: the zone ends when PlayerX reaches the marker's column, X `$3C` or `$50`, mid-screen ([10.2](10-gameplay-logic.md#102-zones-of-25-screens)) | `w/024` frames 516-806 |
 | 17 | `$ABCC` | ForceFieldDraw `$AB97`, ForceFieldStep `$ABCF`, ForceFieldVsShots `$AC04` | a force field from the drop pod: a hum (`$C1A9`), death when the player's X + `$0C` reaches the field; 25 hits destroy it | `w/035` frame 500, screen 35 (below); the 25-hit end: code only |
@@ -579,7 +579,7 @@ How to read: three crops of screen 109 (columns 10-21, rows 0-7), with ExoSuit a
 What it shows:
 
 - At frame 1612 the hero stands in the booth without the suit (X `$3C`, Y `$18`).
-- At frame 1613 up is down: ExoSuit reads `$0C` and the hero is drawn with frame `$11`, the suit's standing frame.
+- At frame 1613 (up held since 1610): ExoSuit reads `$0C` and the hero is drawn with frame `$11`, the suit's standing frame.
 - At frame 1614 he walks out (X `$3D`) in the suit. The worked example of the test is in 10.11.
 
 ### The force field
@@ -1025,7 +1025,7 @@ MoveBalls `$9A23`, every pass, for each live ball:
 - dx reversed at X 0 or `$7B`, at random (Random `$DC` or more, 36 in 256), or when ProbeLeft / ProbeRight finds a
   wall on its side;
 - a vertical step of +1 or -1 from Random AND 1, made 0 when ProbeBelow / ProbeAbove finds a wall that way;
-- Y 0 becomes 1 (BallTopRow `$9A6E`; no recording reached it);
+- Y 0 becomes 1 (BallTopRow `$9A7E`; no recording reached it);
 - sprite 7 drawn at the new place, the cell painted bright red `$42`.
 
 ```asm
@@ -1138,7 +1138,7 @@ Mines `$9152`, every pass, for each mine:
 
 - armed (state 1): it fires when the hero's bottom line (Y + 31) is the line just above the mine, and his X is within
   E - 7..E + 2 of the mine's X = 4 x column;
-- spent (state 0): it burns: glyph `$1D` or `$1F` (and the next) in a random bright red-ish ink `$42-$47`, the two
+- spent (state 0): it burns: glyph `$1D` or `$1F` (and the next) in a random bright ink `$42`, `$43`, `$46` or `$47` (Random AND 7 OR `$42`), the two
   alternating each pass.
 
 MineFires:
@@ -1455,7 +1455,7 @@ A worked example, `w/006` screen 8 (the launcher at column 20, row 11):
 - The second relaunch, at frame 1823, starts at Y `$23`.
 - At frame 2046 the hero reaches screen 9, which has no launcher: no missile.
 
-![The homing missile in w/006 frames 1400-2045: X, Y and PlayerY, and the tracks on the screen](img/kinds/missile.png)
+![The homing missile in w/006 frames 1400-2045: X and PlayerX, Y and PlayerY, and the tracks on the screen](img/kinds/missile.png)
 
 ```sh
 python3 work/docs/fillO/reads.py work/docs/fillO/i work/w/006/session.ttd work/docs/fillO/d/w006-missile.json \
@@ -1465,10 +1465,11 @@ python3 tools/fig_kinds.py missile
 
 How to read:
 
-- Left: the missile's X (red) and Y (blue), PlayerX (white) and PlayerY (grey) per frame. The dotted line is X `$46`,
-  where the missile speeds up. The dashed lines mark the relaunches.
-- Right: the three flights drawn on the screen (X in pixels), each from its launch dot, with the hero's centre (grey
-  dots).
+- Top left: the missile's X (red) and PlayerX (yellow, dashed) per frame. The dotted line is X `$46`, where the
+  missile speeds up. The grey dashed lines mark the relaunches.
+- Bottom left: the missile's Y (blue) and PlayerY (green, dashed), with Y growing downwards as on the screen.
+- Right: the three flights drawn on the screen (X in pixels), flights 2 and 3 from their launch dots; flight 1 was
+  launched before frame 1400, so its square is only the window's start. The grey dots are the hero's centre.
 
 What it shows:
 
@@ -1476,12 +1477,16 @@ What it shows:
 - X falls one unit a pass, then two below `$46`: the slope of the red line doubles.
 - Y bends toward PlayerY one pixel a pass and flattens when they match.
 
-The launcher destroyed while its missile flies, and the 850 points it pays, are known only from the code.
+The launcher destroyed while its missile flies ran in `w/013`, 014, 015, 070, 080, 085, 089 and 090 (HomingMissileLauncherGone
+`$A2AE` in their L1). In `w/013`, screen 15 (the launcher at column 24, row 11), a grenade blows the launcher away
+(the score 004400 to 004550 by frame 1884), and in the next pass the missile at X `$53`, Y `$4E` finds the cell gone:
+BonusTicks `$9ED6` goes from 0 to `$22` (34 ticks, 850 points) at frame 1886.
 
 ### The idle missile
 
 IdleMissileStart `$AC59` and IdleMissileStep `$AC7D` send a missile (sprite `$24`) at the player's Y after IdleTime
-`$AC7B` passes 700 on one screen ([10.8](10-gameplay-logic.md#108-the-idle-missile)).
+`$AC7B` passes 700 on one screen ([10.8](10-gameplay-logic.md#108-the-idle-missile)). It starts at X 120 at the
+player's Y, moves 2 units a pass, and kills on PlayerContact with B 16, C 8; X 0 or a touch ends it in a blast.
 
 ### Blasts
 
@@ -1526,7 +1531,7 @@ RunBlastsLoop:
 
 ### Debris
 
-Printer 3 (XorDebrisPrinter `$AE95`) calls AddDebris `$94F9` twice for every character it prints. Its users are the
+Printer 3 (EraseBlockDebris `$AE95`) calls AddDebris `$94F9` twice for every character it prints. Its users are the
 mine blast (7.5) and the grenade blast (7.10).
 
 AddDebris takes the first free record of DebrisList `$95B6` (100 records of state, X, Y, dx, dy, colour):
@@ -1650,8 +1655,51 @@ ClearPickups `$A352` makes only the first 4 records live (`$01`).
 PickupsVsPlayer `$A30B` pays 40 bonus ticks (1000 points) and plays the AY trill `$C12E` when the player touches a
 live one, then clears its live byte.
 
-This is known only from the code. No recording shows a touch: the gun cells sit in front of the pickup cells, so the
-player has to get past a live gun.
+```asm
+PickupsVsPlayerLoop:      ; HL walks PickupList: column, row, live
+  ...
+  OR A
+  JR Z,PickupsVsPlayerLoop ; $A318: not live
+  PUSH DE
+  CALL CellToPixels       ; $A31B: the cell to X, Y
+  LD BC,$0804
+  CALL PlayerContact      ; $A321: a box of 8 x 4 at the cell
+  POP DE
+  OR A
+  JR Z,PickupsVsPlayerLoop
+  DEC HL                  ; $A328: collected, live = 0
+  LD (HL),$00
+  CALL PlaySfxTrill
+  LD A,$28                ; 40 ticks
+  JP AddBonusTicks
+```
+
+```text
+each pass: for each record of PickupList until $FF:
+    if live and PlayerContact(CellToPixels(column, row), B 8, C 4):
+        live = 0; trill; BonusTicks += 40; return    # one pick-up a pass
+```
+
+```mermaid
+flowchart TD
+  A["next PickupList record"] --> B{"FF?"}
+  B -- yes --> R["return"]
+  B -- no --> C{"live?"}
+  C -- no --> A
+  C -- yes --> D{"PlayerContact B 8, C 4"}
+  D -- no --> A
+  D -- yes --> E["live 0, trill, 40 bonus ticks"]
+  E --> R
+```
+
+The witness, `w/006` (TTD `memory_at`, `work/review/fix2/rd.py`): PickupList `$A333` reads `13 11 01 13 12 01 FF`
+from frame 195, two live cells at column 19, rows 17 and 18. At frame 511 the first record's live byte is 0 and
+BonusTicks is 40 (`$28`); at frame 514 the second is 0 and BonusTicks 79 (one tick already paid). The ticks are paid
+25 points a pass: the score goes from 000200 to 002200 by frame 746. The pick-up ran in 30 warp runs (`$A328` in
+their L1: `w/006`, 008, 013, 023 and 26 more).
+
+The point: the pick-up is a reward for getting past a gun: its cells sit behind the barrel, and the pay goes through
+the slow bonus ticks.
 
 ## 7.8 The two sprite sets
 
@@ -1685,10 +1733,9 @@ What it shows:
 ## 7.9 What no recording reached
 
 - A mine killing the player: every clone that reaches a mine carries the mine POKE.
-- A pickup cell touched (7.7), and a force field destroyed by 25 hits.
+- A force field destroyed by 25 hits.
 - All 10 gun shot records in use.
 - The traps run only in `t1`, an exploration clone; no plain recording leaves screen 0.
-- A launcher destroyed while its missile flies (the 850 points, 7.6).
 - A ball reaching the top line (BallTopRow), and GunShotsFull: no list of gun shots was ever full.
 - The flicker pad has no rule to reach: it is decoration (7.2).
 - A grenade thrown to the left: every throw in the recordings went right (10.7).
