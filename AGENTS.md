@@ -371,6 +371,16 @@ case is done. There is no third round: the yield falls fast and the cost does no
 - Measure progress every 20 minutes by `wc -l docs/*.md`, the image links and the files under `docs/img/`. A
   document that does not grow, or grows without pictures, is stopped and corrected at once.
 - Before each commit, `git status` shows every new image and GIF (none swallowed by `.gitignore`).
+- **A scope limit never leaves a change undone.** When a brief keeps an agent out of `src/`, `tools/` or a shared
+  file, everything it could not change ("not my zone", "for the lead", "left") is the lead's to apply in the same
+  phase. Before a case is closed, the lead reads every NOTES, fixes and review file, applies each deferred change to
+  the sources (resources, annotations, tools, generated files), re-runs the build, the resource check, the case's
+  tools and `check_docs.py`, and lists the items in `work/review/sources-audit.md`. A case with a deferred source
+  change is not complete.
+- **Every human-editable data kind is a resource.** Graphics, fonts, texts, tables, scripts (rack-in, attack waves,
+  level layouts), maps and note tables live in `src/res/` in an editable format and are built back; what stays bytes
+  in the `.ann` is listed in `src/res/README.md` with the reason. The map figure is drawn from `src/res`, not from the
+  image.
 
 - **Your brief is your scope.** Edit only the files it assigns you. Shared files belong to the lead:
   - `docs/README.md`, the case README and `case.json`;
@@ -409,6 +419,7 @@ case is done. There is no third round: the yield falls fast and the cost does no
 | Moon Patrol: documents left as stubs for hours after the source was identical, then a question to the owner before starting them | the documents start the moment the source is identical; a stage boundary is no reason to stop |
 | Moon Patrol: writers told "prose first, figures after" wrote 2 700 lines with no picture and dangling image links | each section lands with its figure, diagram and animation in the same step |
 | Moon Patrol: a sprite drawn in `#` and `.` in a text block | pixels are pictures; no ASCII art anywhere |
+| Video Pool: closed with the rack-in scripts as raw bytes and no `src/res/maps`, because the fixers' brief kept them out of `src/` and the lead did not apply what they deferred | the lead applies every deferred source change before closing; every editable data kind is a resource (section 7) |
 | Video Pool: the bot's recordings kept no `session.ttd`, the writers had to replay the input scripts to reopen them | every recording keeps its `session.ttd` (or one command that rebuilds it, named in WALKTHROUGH 6.0); stage 1 is not done without it |
 | Video Pool: writer port bases 200 apart (34500, 34700, 34900) overlapped, one instance takes B..B+500 | bases 10 apart in one hundred, or 600 apart (section 7) |
 | Moon Patrol: no animation at all, because a writer's ports were held by a foreign instance | the lead checks the port bases are free before launch; the animation minimum (section 4) is a gate |
