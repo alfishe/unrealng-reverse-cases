@@ -528,7 +528,7 @@ UfoCraterTestLow:
   PUSH HL
   LD E,$10                ; 16 pixels of the ground's top row cleared, the
                           ; crater sprite $10 drawn
-  CALL PlotRun
+  CALL UnplotRun
   POP HL
   LD A,$10
   CALL DrawSprite

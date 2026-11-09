@@ -9,7 +9,7 @@ back into its bytes (the layout is in the PNG's text chunk `mp-sheet` and in `SH
   the sheet is one slot: rows top first, bit 7 leftmost.
 - The title logo is copied, not XORed, by BlitRows `$AFAB`.
 - The scenery strips are stored column by column (34 columns of 8 pixels, 32 lines each, top first); ScenerySetup `$9541` draws
-  them, the band scrollers (ScrollMountains `$A846`, ScrollHills `$A89A`) take new columns from them.
+  them, the band scrollers (ScrollFarBand `$A846`, ScrollMiddleBand `$A89A`) take new columns from them.
 - Bytes inside these ranges that no recording read are kept in the sheets as they are.
 
 | File | Address | Bytes | Format | Readers | What |
@@ -43,4 +43,4 @@ back into its bytes (the layout is in the PNG's text chunk `mp-sheet` and in `SH
 | `Buggy.png` | `$E140-$E33F` | 512 | 5 bytes across, 128-byte frames | DrawSprite40x23 (sprites `$00`) | The moon buggy (sprite `$00`): 5x23 bytes, 4 shift slots of 128 |
 | `MountainsStrip.png` | `$E340-$E77F` | 1088 | 34 bytes across, 1088-byte frames, column by column | ScenerySetup | The mountains, the middle scenery layer (lines 96-127) when the scenery byte is 0: 34 columns of 8 pixels x 32 lines |
 | `MoonBaseStrip.png` | `$E780-$EBBF` | 1088 | 34 bytes across, 1088-byte frames, column by column | ScenerySetup | The moon base city, the middle layer when the scenery byte is `$FF`: 34 columns x 32 lines |
-| `HillsStrip.png` | `$EBC0-$EFFF` | 1088 | 34 bytes across, 1088-byte frames, column by column | ScenerySetup, ScrollMountains `$A846` (the column pointer wraps at `HillsStrip+$0440`, `$A858`) | The craggy hills, the back layer (lines 64-95), always: 34 columns x 32 lines |
+| `HillsStrip.png` | `$EBC0-$EFFF` | 1088 | 34 bytes across, 1088-byte frames, column by column | ScenerySetup, ScrollFarBand `$A846` (the column pointer wraps at `HillsStrip+$0440`, `$A858`) | The craggy hills, the back layer (lines 64-95), always: 34 columns x 32 lines |

@@ -75,10 +75,11 @@ WreckPiece2:
 WreckPiece3:
   DEFW $0000
 
-; $FF from the buggy's death to the next life start, 0 while it lives
+; $FF after a crater fall until the next life start, 0 otherwise
 ;
-; Set by the buggy routine at $AAA1, cleared at the life start ($90F7). While 0
-; the shots move with the ground ($AD72, $ADC3 read it).
+; Set only by the crater fall at $AAA1 (the shots use it to tell a crater death
+; from an object kill), cleared at the life start ($90F7). While 0 the shots
+; move with the ground ($AD72, $ADC3 read it).
 DeadFlag:
   DEFB $00
 
@@ -95,11 +96,12 @@ JumpArc:
 JumpStep:
   DEFB $00
 
-; Passes left to the next 1-pixel scroll of the hills layer
+; Passes left to the next column fed into FeedFarBand (the far band rolls 1
+; pixel every pass)
 ;
-; Set at $9568 and $A873, counted at $A84B by the hills scroller at $A846 (one
-; scroll every 8 passes).
-HillsCountdown:
+; Set at $9568 and $A873, counted at $A84B by the far-band scroller at $A846 (a
+; new column every 8 passes).
+FarCountdown:
   DEFB $00
 
 ; The hills layer's step, 1; never written
@@ -112,7 +114,7 @@ HillsSpeed:
 ;
 ; Set at $956E; read and moved by the scroller at $A851/$A865, wrapping from
 ; $F000 to $EBC0.
-HillsColumn:
+FarColumn:
   DEFW $0000
 
 ; Passes left to the next 2-pixel scroll of the middle layer (mountains or
@@ -231,8 +233,8 @@ TunePointer:
 TuneDivider:
   DEFB $00
 
-; The sector's par time, 2 BCD digits big-endian (minutes digits), from the
-; SectorEnd command
+; The sector's par time, a big-endian BCD word of seconds ($0120 = 120 s; the
+; clock never wraps at 60), from the SectorEnd command
 ;
 ; Set at $A4F2; read at $A531 and $A584.
 SectorTime:

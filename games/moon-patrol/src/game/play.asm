@@ -78,18 +78,18 @@ BuggyKill:
   POP HL
   RET
 
-; Plots E points left to right from (H = x, L = y) through $FD99
+; Clears E points left to right from (H = x, L = y) through UnplotPixel $FD99
 ;
-; E = the count. Calls $FD99 (the print code's plot) for x, x + 1, ...; keeps
-; L. Callers: $8064 (the options page), the mine $9AEB, the bomb $9CE0, the
-; plant $A2C6. Witness: a1 60 entries (frames 1218-18835), t1 3, i1 33, i2 63.
-PlotRun:
+; E = the count. Calls UnplotPixel $FD99 for x, x + 1, ...; keeps L. Callers:
+; $8064 (the options page), the mine $9AEB, the bomb $9CE0, the plant $A2C6.
+; Witness: a1 60 entries (frames 1218-18835), t1 3, i1 33, i2 63.
+UnplotRun:
   PUSH HL
   CALL UnplotPixel
   POP HL
   INC H
   DEC E
-  JR NZ,PlotRun
+  JR NZ,UnplotRun
   RET
 
 ; Do two boxes overlap? HL and HL' point at y, x, height, width; NC when they
@@ -183,23 +183,23 @@ DrawSpriteDone:
   POP BC
   RET
 
-; The far band (lines 64-95): one pixel left a pass, 8 new columns from the
-; mountains every 8 passes
+; The far band (lines 64-95): one pixel left a pass, 8 new columns from
+; HillsStrip $EBC0 every 8 passes
 ;
 ; Only while the buggy is alive ($B216 = $FF). The counter $B224 runs 8 passes;
 ; at 0 the next 32 bytes of the mountains graphic ($B226 + $20, from $EBC0 up
-; to $F000 and round) go to FeedMountains $5B00. Each pass every line of 64-95
+; to $F000 and round) go to FeedFarBand $5B00. Each pass every line of 64-95
 ; (the line table at $FC80) rolls left one pixel through its 32 bytes, the new
-; bit from the line's FeedMountains byte. Witness: game 1576, a1 292, g1 493,
-; p2 664, h1 493, i1 3601, i2 3935, h2 40 entries: once a main-loop pass.
-ScrollMountains:
+; bit from the line's FeedFarBand byte. Witness: game 1576, a1 292, g1 493, p2
+; 664, h1 493, i1 3601, i2 3935, h2 40 entries: once a main-loop pass.
+ScrollFarBand:
   LD A,(DeathStep)
   INC A
   RET NZ
-  LD A,(HillsCountdown)
+  LD A,(FarCountdown)
   AND A
-  JR NZ,MountainsRoll
-  LD HL,(HillsColumn)
+  JR NZ,FarRoll
+  LD HL,(FarColumn)
   LD DE,$0020
   ADD HL,DE
   LD DE,HillsStrip+$0440
@@ -207,18 +207,18 @@ ScrollMountains:
   AND A
   SBC HL,DE
   POP HL
-  JR NZ,MountainsFeedSet
+  JR NZ,FarFeedSet
   LD HL,HillsStrip
-MountainsFeedSet:
-  LD (HillsColumn),HL     ; the next strip into FeedMountains, 8 passes
-  LD DE,FeedMountains
+FarFeedSet:
+  LD (FarColumn),HL       ; the next strip into FeedFarBand, 8 passes
+  LD DE,FeedFarBand
   LD BC,$0020
   LDIR
   LD A,$08
-MountainsRoll:
+FarRoll:
   DEC A                   ; the 32 lines from the line table at $FC80 (line 64)
-  LD (HillsCountdown),A
-  LD IX,FeedMountains
+  LD (FarCountdown),A
+  LD IX,FeedFarBand
   LD C,$20
   LD HL,ScreenLineTable+$0080
 MountainsLine:
@@ -244,19 +244,19 @@ MountainsByte:
   RET
 
 ; The middle band (lines 96-127): two pixels left a pass, 8 new columns from
-; the hills every 4 passes
+; MountainsStrip or MoonBaseStrip every 4 passes
 ;
-; As ScrollMountains with the counter $B228 (4 passes), the source $B22A going
+; As ScrollFarBand with the counter $B228 (4 passes), the source $B22A going
 ; from $B22C to $B22E and round (set at the life start by $95B0 from the
-; scenery flag $B27D), the feed FeedHills $5B20 and the lines 96-127 ($FCC0).
-; Witness: the same counts as ScrollMountains (i1 3600).
-ScrollHills:
+; scenery flag $B27D), the feed FeedMiddleBand $5B20 and the lines 96-127
+; ($FCC0). Witness: the same counts as ScrollFarBand (i1 3600).
+ScrollMiddleBand:
   LD A,(DeathStep)
   INC A
   RET NZ
   LD A,(MiddleCountdown)
   AND A
-  JR NZ,HillsRoll
+  JR NZ,MiddleRoll
   LD HL,(MiddleColumn)
   LD DE,$0020
   ADD HL,DE
@@ -265,18 +265,18 @@ ScrollHills:
   AND A
   SBC HL,DE
   POP HL
-  JR NZ,HillsFeedSet
+  JR NZ,MiddleFeedSet
   LD HL,(MiddleStart)
-HillsFeedSet:
-  LD (MiddleColumn),HL    ; the next strip into FeedHills, 4 passes
-  LD DE,FeedHills
+MiddleFeedSet:
+  LD (MiddleColumn),HL    ; the next strip into FeedMiddleBand, 4 passes
+  LD DE,FeedMiddleBand
   LD BC,$0020
   LDIR
   LD A,$04
-HillsRoll:
+MiddleRoll:
   DEC A                   ; the 32 lines from the line table at $FCC0 (line 96)
   LD (MiddleCountdown),A
-  LD IX,FeedHills
+  LD IX,FeedMiddleBand
   LD C,$20
   LD HL,ScreenLineTable+$00C0
 HillsLine:
@@ -317,7 +317,7 @@ HillsByte:
 ; $FD00 (line 128) roll two pixels left with zero bits coming in; on the ground
 ; the delay $A929 ($0AF5 loops) instead, so the pass takes about as long.
 ; ScrollAdjustX moves what is drawn in this band by 2 to match (it holds the
-; buggy: drawn at y - 9 = $89). Witness: same counts as ScrollMountains; the
+; buggy: drawn at y - 9 = $89). Witness: same counts as ScrollFarBand; the
 ; delay ran game 1114, i1 1524 of 3600 passes.
 ScrollNearBand:
   LD A,(DeathStep)
@@ -372,7 +372,7 @@ NearBandDelayLoop:
 ; $B288 bit 3 is set, which it clears) are ORed into $509F, the last byte of
 ; line 160: the road's broken top edge.
 ;
-; Witness: same counts as ScrollMountains (i1 3600). The h2 snapshot was taken
+; Witness: same counts as ScrollFarBand (i1 3600). The h2 snapshot was taken
 ; inside it (PC $A981), which is why the cut had entries at $A957 / $A977 /
 ; $A981.
 ScrollRoad:

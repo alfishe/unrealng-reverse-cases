@@ -111,7 +111,7 @@ MainLoopCalls:
   CALL BreakKeyTest
   CALL FireShots
   CALL HudPrintTime
-  CALL ScrollMountains
+  CALL ScrollFarBand
   CALL BuggyErase
   CALL BuggyUpdate
   CALL WheelsFly
@@ -120,7 +120,7 @@ MainLoopCalls:
   CALL SceneryColoursRepaint
   CALL WheelsFly
   CALL ScrollNearBand
-  CALL ScrollHills
+  CALL ScrollMiddleBand
   CALL WheelsFly
   CALL SpeedGovernor
   CALL ScrollRoad
@@ -1152,7 +1152,7 @@ ObjMineEnter:
                           ; 3
   LD HL,$F6A0
   LD E,$0A
-  CALL PlotRun
+  CALL UnplotRun
   LD HL,PlayerFlags
   SET 3,(HL)
   POP HL

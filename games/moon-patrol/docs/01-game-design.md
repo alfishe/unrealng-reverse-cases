@@ -142,9 +142,9 @@ flag, so successive demos alternate the mountains and the city.
   buggy icons, the course map E J P U Z with the progress dots under it, TIME (seconds), POINT (the last point
   passed), BEGINNER or CHAMPION, and the three warning lamps on the right.
 - **Rows 3-7**: the black sky where the UFOs fly.
-- **Rows 8-11**: the mountains, or the moon base in the city sectors, scrolling one pixel a pass (ScrollMountains
+- **Rows 8-11**: the mountains, or the moon base in the city sectors, scrolling one pixel a pass (ScrollFarBand
   `$A846`).
-- **Rows 12-15**: the hills, two pixels a pass (ScrollHills `$A89A`).
+- **Rows 12-15**: the hills, two pixels a pass (ScrollMiddleBand `$A89A`).
 - **Rows 16-19**: the buggy's band. It scrolls two pixels a pass, but only while the buggy is in the air
   (ScrollNearBand `$A8FD`).
 - **Rows 20-23**: the road, four pixels a pass (ScrollRoad `$A932`), with the craters cut into its top line.

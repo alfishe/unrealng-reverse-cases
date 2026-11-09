@@ -217,7 +217,7 @@ def editable(name):
 #   Lights D:S ...         $97AD, (delay, lamp state) pairs, ended by $FF
 #   Rocks / Craters / Mines / UfosA / UfosB / Spinners / UfosLeave / Tanks / LowFlyers / BouldersSmall /
 #   BouldersMedium / BouldersLarge / Plants D ...   a list of bytes ended by $FF, one object each
-#   SectorEnd P B S T      $A4EE: par time P (BCD word, $0120 = 1 min 20 s), bonus B (BCD hundreds, $10 = 1000),
+#   SectorEnd P B S T      $A4EE: par time P (BCD word of seconds, $0120 = 120 s), bonus B (BCD hundreds, $10 = 1000),
 #                          scenery S ($FF the city, $00 the mountains), best time T (BCD word, $0999 in the image)
 #   End                    $9760: the end of a segment
 #   Word $XXXX             any other word (the jump to the course switch after the last sector end)

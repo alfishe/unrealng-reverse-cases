@@ -1092,9 +1092,9 @@ SceneryStore:
   LD (MiddleColumn),HL
   XOR A
   LD (MiddleCountdown),A
-  LD (HillsCountdown),A
+  LD (FarCountdown),A
   LD HL,HillsStrip+$03E0
-  LD (HillsColumn),HL
+  LD (FarColumn),HL
   LD DE,HillsStrip
   LD HL,Screen+2048
   CALL SceneryDrawRows

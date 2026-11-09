@@ -552,7 +552,7 @@ MainLoopCalls `$96FA` is a list of twenty calls:
 | 2 | BreakKeyTest `$9737` | the '0' key, result ignored | 44 |
 | 3 | FireShots `$ACF1` | fire: new shots | 149 |
 | 4 | HudPrintTime `$922A` | the time, once a second | 46 |
-| 5 | ScrollMountains `$A846` | the far band, 1 pixel | 40 354 |
+| 5 | ScrollFarBand `$A846` | the far band, 1 pixel | 40 354 |
 | 6 | BuggyErase `$AAD3` | the buggy off (XOR) | 110 |
 | 7 | BuggyUpdate `$AA0F` | the controls, the jump, the probe, the buggy on; the abort keys | 485 |
 | 8 | WheelsFly `$AB37` | the wheels at a death | 28 |
@@ -561,7 +561,7 @@ MainLoopCalls `$96FA` is a list of twenty calls:
 | 11 | SceneryColoursRepaint `$95F2` | rows 8-11 and 22-23 recoloured | 5348 |
 | 12 | WheelsFly | | 28 |
 | 13 | ScrollNearBand `$A8FD` | the buggy's band, or a delay | 74 972 |
-| 14 | ScrollHills `$A89A` | the middle band, 2 pixels | 78 923 |
+| 14 | ScrollMiddleBand `$A89A` | the middle band, 2 pixels | 78 923 |
 | 15 | WheelsFly | | 28 |
 | 16 | SpeedGovernor `$AF31` | the pace delay | 638 |
 | 17 | ScrollRoad `$A932` | the road, 4 pixels | 131 611 |

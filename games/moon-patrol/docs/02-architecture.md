@@ -278,7 +278,7 @@ flowchart LR
     ML --> MC[MainLoopCalls 96FA: one pass]
     MC --> K[the keys: TuneToggleCheck AF15, BreakKeyTest 9737, HoldCheck AECE]
     MC --> SH[the shots: FireShots ACF1, ShotsMove AD61]
-    MC --> BG[the bands: ScrollMountains A846, ScrollNearBand A8FD, ScrollHills A89A, ScrollRoad A932]
+    MC --> BG[the bands: ScrollFarBand A846, ScrollNearBand A8FD, ScrollMiddleBand A89A, ScrollRoad A932]
     MC --> BU[the buggy: BuggyErase AAD3, BuggyUpdate AA0F, WheelsFly AB37 x4]
     MC --> OB[ObjectListRun 9745: every object's handler]
     MC --> PA[SpeedGovernor AF31 x2: the pace delay]

@@ -230,13 +230,13 @@ ScoreAdvancePage:
   LD (PlayerScenery),A
   LD HL,$22A0             ; three gaps in the ground line, row $A0
   LD E,$14
-  CALL PlotRun
+  CALL UnplotRun
   LD HL,$3FA0
   LD E,$0A
-  CALL PlotRun
+  CALL UnplotRun
   LD HL,UfoB
   LD E,$1C
-  CALL PlotRun
+  CALL UnplotRun
   EXX
   LD E,$07                ; E' = 7
   EXX

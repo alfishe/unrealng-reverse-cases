@@ -931,7 +931,7 @@ PlantFirst:
                           ; cleared
   LD HL,$E4A0
   LD E,$1C
-  CALL PlotRun
+  CALL UnplotRun
   LD HL,PlayerFlags
   SET 3,(HL)
   POP HL

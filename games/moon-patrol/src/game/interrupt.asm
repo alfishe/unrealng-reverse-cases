@@ -101,7 +101,7 @@ Im2HandlerSteps:
 ;
 ; A note: HL = word - 1 (BEEPER's period), DE = the cycles: the smallest n with
 ; n x H >= 16 (H the period's high byte), so every note lasts about the same: 8
-; n (HL + 30) T. Over the tune's 15 periods ($0230-$06CD) that is 35 700-50 400
+; n (HL + 30) T. Over the tune's 16 periods ($0230-$06CD) that is 35 700-50 400
 ; T, so a note started by an entry at the frame interrupt ends well inside that
 ; frame, never across the next interrupt. A rest is a delay loop of $05C0
 ; passes (about 38 000 T). After BEEPER (which ends EI) a DI at $7F8D before

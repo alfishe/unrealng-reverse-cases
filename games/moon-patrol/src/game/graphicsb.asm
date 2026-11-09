@@ -163,8 +163,9 @@ MoonBaseStrip:
 
 ; The craggy hills, the back layer (lines 64-95), always: 34 columns x 32 lines
 ;
-; Same format; drawn at the life start by $9590 and scrolled by the hills
-; scroller at $A846, 1 pixel every 8 passes, the column pointer HillsColumn
-; wrapping at $F000 back to $EBC0 ($A858, $A862). Read in every build.
+; Same format; drawn at the life start by $9590 and scrolled by the far-band
+; scroller at $A846, 1 pixel every pass and a new column every 8 passes, the
+; column pointer FarColumn wrapping at $F000 back to $EBC0 ($A858, $A862). Read
+; in every build.
 HillsStrip:
   INCBIN "res/graphics/HillsStrip.bin",$0000,1088

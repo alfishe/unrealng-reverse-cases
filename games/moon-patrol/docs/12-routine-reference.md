@@ -59,7 +59,7 @@ Witness: game 11 644 entries (frames 1560-16 759), a1 2090, g1 3351, p2 4612, h1
 
 `$B240` counts the handler's entries 0-2; on the third it goes back to 0 and one tune word is taken from the pointer `$B23E` (then pointer + 2): 0 is a rest, `$FFFF` sends the pointer back to `$B4E6` and takes the first word again, anything else is BEEPER's period + 1. With `$B288` bit 7 set (the tune off: the T key, `$AF15`) a note is a rest too, so the tune keeps its place while silent.
 
-A note: HL = word - 1 (BEEPER's period), DE = the cycles: the smallest n with n x H >= 16 (H the period's high byte), so every note lasts about the same: 8 n (HL + 30) T. Over the tune's 15 periods (`$0230-$06CD`) that is 35 700-50 400 T, so a note started by an entry at the frame interrupt ends well inside that frame, never across the next interrupt. A rest is a delay loop of `$05C0` passes (about 38 000 T). After BEEPER (which ends EI) a DI at `$7F8D` before returning into the handler.
+A note: HL = word - 1 (BEEPER's period), DE = the cycles: the smallest n with n x H >= 16 (H the period's high byte), so every note lasts about the same: 8 n (HL + 30) T. Over the tune's 16 periods (`$0230-$06CD`) that is 35 700-50 400 T, so a note started by an entry at the frame interrupt ends well inside that frame, never across the next interrupt. A rest is a delay loop of `$05C0` passes (about 38 000 T). After BEEPER (which ends EI) a DI at `$7F8D` before returning into the handler.
 
 Witness: entered once per handler entry (i1 25 747); a word taken i1 8600 times, a note i1 7793 (BEEPER called from `$7F8A`), a rest i1 787; the tune wrapped at `$7F6D` i1 20 times, i2 22. a1: notes 341 of 626 words (the tune off 2540-2740).
 
@@ -976,7 +976,7 @@ Called by LifeStart and the title `$8064` (with `$B27D` = `$FF`). Witness: game 
 | Called from | `LifeStart` |
 | Calls | `SceneryDrawRows` |
 | Reads | `$B22C`-`$B22D` (`MiddleStart`); `$B27D` (`Player`) |
-| Writes | `$5080`-`$509F` (screen); `$B224`-`$B22F` (`HillsCountdown`, `HillsSpeed`, `HillsColumn`, `MiddleCountdown` and 4 more) |
+| Writes | `$5080`-`$509F` (screen); `$B224`-`$B22F` (`FarCountdown`, `HillsSpeed`, `FarColumn`, `MiddleCountdown` and 4 more) |
 
 ### `SceneryDrawRows` (`$9590`)
 
@@ -1061,7 +1061,7 @@ Called by MainLoopPass and the title's demo `$8064`. Witness: game 1576 runs (15
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 551,634 t-states own (0.05 %) |
 | Called from | `MainLoop` |
-| Calls | `HudPrintTime`, `SceneryColoursRepaint`, `BreakKeyTest`, `ObjectListRun`, `ScrollMountains`, `ScrollHills`, `ScrollNearBand`, `ScrollRoad`, `BuggyUpdate`, `BuggyErase`, `WheelsFly`, `FireShots`, `ShotsMove`, `HoldCheck`, `TuneToggleCheck`, `SpeedGovernor`, `Im2Vector` |
+| Calls | `HudPrintTime`, `SceneryColoursRepaint`, `BreakKeyTest`, `ObjectListRun`, `ScrollFarBand`, `ScrollMiddleBand`, `ScrollNearBand`, `ScrollRoad`, `BuggyUpdate`, `BuggyErase`, `WheelsFly`, `FireShots`, `ShotsMove`, `HoldCheck`, `TuneToggleCheck`, `SpeedGovernor`, `Im2Vector` |
 
 ### `BreakKeyTest` (`$9737`)
 
@@ -1943,11 +1943,11 @@ The crater and mine handlers (`$9A92`, `$9AEB`) and the UFO saucers (`$9B6B`) ne
 | Reads | `$B216` (`DeathStep`) |
 | Writes | `$B216`-`$B217` (`DeathStep`, `WreckStep`) |
 
-### `PlotRun` (`$A7F4`)
+### `UnplotRun` (`$A7F4`)
 
-**Plots E points left to right from (H = x, L = y) through `$FD99`**
+**Clears E points left to right from (H = x, L = y) through UnplotPixel `$FD99`**
 
-E = the count. Calls `$FD99` (the print code's plot) for x, x + 1, ...; keeps L. Callers: `$8064` (the options page), the mine `$9AEB`, the bomb `$9CE0`, the plant `$A2C6`. Witness: a1 60 entries (frames 1218-18835), t1 3, i1 33, i2 63.
+E = the count. Calls UnplotPixel `$FD99` for x, x + 1, ...; keeps L. Callers: `$8064` (the options page), the mine `$9AEB`, the bomb `$9CE0`, the plant `$A2C6`. Witness: a1 60 entries (frames 1218-18835), t1 3, i1 33, i2 63.
 
 | | |
 | --- | --- |
@@ -1991,11 +1991,11 @@ The table `$B2D6` holds 4 bytes a sprite: the drawer (one of the sprites module'
 | Called from | `DrawSprite16x9`, `DrawSprite24x12`, `DrawSprite40x23` |
 | Calls | `Im2Vector` |
 
-### `ScrollMountains` (`$A846`)
+### `ScrollFarBand` (`$A846`)
 
-**The far band (lines 64-95): one pixel left a pass, 8 new columns from the mountains every 8 passes**
+**The far band (lines 64-95): one pixel left a pass, 8 new columns from HillsStrip `$EBC0` every 8 passes**
 
-Only while the buggy is alive (`$B216` = `$FF`). The counter `$B224` runs 8 passes; at 0 the next 32 bytes of the mountains graphic (`$B226` + `$20`, from `$EBC0` up to `$F000` and round) go to FeedMountains `$5B00`. Each pass every line of 64-95 (the line table at `$FC80`) rolls left one pixel through its 32 bytes, the new bit from the line's FeedMountains byte. Witness: game 1576, a1 292, g1 493, p2 664, h1 493, i1 3601, i2 3935, h2 40 entries: once a main-loop pass.
+Only while the buggy is alive (`$B216` = `$FF`). The counter `$B224` runs 8 passes; at 0 the next 32 bytes of the mountains graphic (`$B226` + `$20`, from `$EBC0` up to `$F000` and round) go to FeedFarBand `$5B00`. Each pass every line of 64-95 (the line table at `$FC80`) rolls left one pixel through its 32 bytes, the new bit from the line's FeedFarBand byte. Witness: game 1576, a1 292, g1 493, p2 664, h1 493, i1 3601, i2 3935, h2 40 entries: once a main-loop pass.
 
 | | |
 | --- | --- |
@@ -2005,11 +2005,11 @@ Only while the buggy is alive (`$B216` = `$FF`). The counter `$B224` runs 8 pass
 | Reads | `$4800`-`$497F` (screen); `$4A00`-`$4A7F` (screen); `$4B00`-`$4B7F` (screen); `$4C00`-`$4C7F` (screen); `$4D00`-`$4D7F` (screen); `$4E00`-`$4E7F` (screen); 6 more ranges |
 | Writes | `$4800`-`$497F` (screen); `$4A00`-`$4A7F` (screen); `$4B00`-`$4B7F` (screen); `$4C00`-`$4C7F` (screen); `$4D00`-`$4D7F` (screen); `$4E00`-`$4E7F` (screen); 4 more ranges |
 
-### `ScrollHills` (`$A89A`)
+### `ScrollMiddleBand` (`$A89A`)
 
-**The middle band (lines 96-127): two pixels left a pass, 8 new columns from the hills every 4 passes**
+**The middle band (lines 96-127): two pixels left a pass, 8 new columns from MountainsStrip or MoonBaseStrip every 4 passes**
 
-As ScrollMountains with the counter `$B228` (4 passes), the source `$B22A` going from `$B22C` to `$B22E` and round (set at the life start by `$95B0` from the scenery flag `$B27D`), the feed FeedHills `$5B20` and the lines 96-127 (`$FCC0`). Witness: the same counts as ScrollMountains (i1 3600).
+As ScrollFarBand with the counter `$B228` (4 passes), the source `$B22A` going from `$B22C` to `$B22E` and round (set at the life start by `$95B0` from the scenery flag `$B27D`), the feed FeedMiddleBand `$5B20` and the lines 96-127 (`$FCC0`). Witness: the same counts as ScrollFarBand (i1 3600).
 
 | | |
 | --- | --- |
@@ -2023,7 +2023,7 @@ As ScrollMountains with the counter `$B228` (4 passes), the source `$B22A` going
 
 **The band of lines 128-159: two pixels left while the buggy is in the air, else the same time in a delay**
 
-Only while alive. BuggyAirborne `$AFA5` (buggy y < `$89`): the 32 lines from `$FD00` (line 128) roll two pixels left with zero bits coming in; on the ground the delay `$A929` (`$0AF5` loops) instead, so the pass takes about as long. ScrollAdjustX moves what is drawn in this band by 2 to match (it holds the buggy: drawn at y - 9 = `$89`). Witness: same counts as ScrollMountains; the delay ran game 1114, i1 1524 of 3600 passes.
+Only while alive. BuggyAirborne `$AFA5` (buggy y < `$89`): the 32 lines from `$FD00` (line 128) roll two pixels left with zero bits coming in; on the ground the delay `$A929` (`$0AF5` loops) instead, so the pass takes about as long. ScrollAdjustX moves what is drawn in this band by 2 to match (it holds the buggy: drawn at y - 9 = `$89`). Witness: same counts as ScrollFarBand; the delay ran game 1114, i1 1524 of 3600 passes.
 
 | | |
 | --- | --- |
@@ -2039,7 +2039,7 @@ Only while alive. BuggyAirborne `$AFA5` (buggy y < `$89`): the 32 lines from `$F
 
 Only while alive. The counter `$B234` runs 2 passes; at 0 the 32 bytes at `$B232` (RoadFeed `$A9AF`, its crater edge strips set by the crater handler `$9A92`) go to FeedRoad `$5B40`. Each pass the 32 lines from `$FD40` (line 160) roll four pixels left. Then random bits (FRAMES xor R, AND `$0F`, or AND `$03` once when `$B288` bit 3 is set, which it clears) are ORed into `$509F`, the last byte of line 160: the road's broken top edge.
 
-Witness: same counts as ScrollMountains (i1 3600). The h2 snapshot was taken inside it (PC `$A981`), which is why the cut had entries at `$A957` / `$A977` / `$A981`.
+Witness: same counts as ScrollFarBand (i1 3600). The h2 snapshot was taken inside it (PC `$A981`), which is why the cut had entries at `$A957` / `$A977` / `$A981`.
 
 | | |
 | --- | --- |
@@ -2410,7 +2410,7 @@ L = y: below `$40` nothing; `$40-$5F` the mountains' step `$B225` (1); `$60-$7F`
 | Runs (the first recording's game window) | 3,022 calls, 279,757 t-states own (0.02 %) |
 | Called from | `BuggyErase`, `ScrollAdjustIfAlive` |
 | Calls | `BuggyAirborne`, `Im2Vector` |
-| Reads | `$B212` (`BuggyY`); `$B225`-`$B229` (`HillsSpeed`, `HillsColumn`, `MiddleCountdown`, `MiddleSpeed`) |
+| Reads | `$B212` (`BuggyY`); `$B225`-`$B229` (`HillsSpeed`, `FarColumn`, `MiddleCountdown`, `MiddleSpeed`) |
 | Writes | `$C326`-`$C32D` (`Stack`) |
 
 ### `BuggyAirborne` (`$AFA5`)
