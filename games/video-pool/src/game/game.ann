@@ -54,17 +54,6 @@
 @isub $BD18 LD DE,$8010
 @isub $BDE9 LD BC,300
 @isub $BE25 LD BC,900
-@alias PocketTurn PlayerVars ; the first field of PlayerVars $9F43, the current player's pocket mark turn (the entry's label wins at $9F43)
-@isub $8C37 LD A,(PocketTurn)
-@isub $9641 LD (PocketTurn),HL
-@isub $9923 LD A,(PocketTurn)
-@isub $9964 LD A,(PocketTurn)
-@isub $9BC9 LD A,(PocketTurn)
-@isub $9BD2 LD (PocketTurn),A
-@isub $9C37 LD HL,(PocketTurn)
-@isub $9C3D LD (PocketTurn),HL
-@isub $9D95 LD A,(PocketTurn)
-@isub $9DA7 LD A,(PocketTurn)
 
 # Fragment 01 (vp2): $8000-$86C0 (the entry, the sound loop, the interrupt, the input, the shot and aim tasks) and
 # $9155-$9242 (the task scheduler). Counts: python3 tools/l1sum.py ADDR (builds game, w1, f1, p2, v1, m1).

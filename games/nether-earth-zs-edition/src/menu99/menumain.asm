@@ -318,6 +318,7 @@ StartGame:
 ; Six pieces copied in order: 3 bytes to SpawnResources, 6 to InsgRobotCount, 9
 ; to EnemyProduce (EASY), then 3 and 6 (MEDIUM up) and 9 (HARD up).
 LevelPatches:
+PatchEasySpawn:
   DEFB $21,$4A,$FD        ; LD HL,$FD4A
 PatchEasyInsg:
   DEFB $CD,$EC,$D3        ; CALL $D3EC (PrintNumber2Zero), CALL PrintInline

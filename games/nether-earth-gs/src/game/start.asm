@@ -54,7 +54,7 @@ FillVectorTable:
   EI                      ; interrupts on from here
   LD HL,$3039             ; the random seed $FD00-$FD03 = $39,$30,$39,$30
                           ; (12345 twice)
-  LD (Variables),HL       ; $FD00-$FD01 = $39,$30
+  LD (RandomSeed),HL      ; $FD00-$FD01 = $39,$30
   LD (Variables+$0002),HL ; $FD02-$FD03 = $39,$30: the same seed at every
                           ; start, so each game begins the same
   CALL MainMenu           ; the title menu: Z = START GAME, NZ = a saved game

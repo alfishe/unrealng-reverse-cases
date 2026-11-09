@@ -28,7 +28,7 @@ FrameBannerTestCell:
   LD C,$09
 FrameBannerRow:
   LD A,C
-  LD (FrameBanner),A
+  LD (FrameBannerRowByte),A
   LD A,(FrameNumber)
   CP $0A
   LD A,$09
@@ -63,6 +63,7 @@ FrameBannerWait:
 ; Written by ShowFrameBanner ($9B51, $9B5E, $9B7A, $9B85) and NextTurn ($9808);
 ; read by PrintText. In the image $9B8E = row 11, col 9.
 FrameBanner:
+FrameBannerRowByte:
   INCBIN "res/text/FrameBanner.bin",$0000,10
 FrameBannerBlank:
   INCBIN "res/text/FrameBanner.bin",$000A,32
@@ -233,6 +234,7 @@ PlayerBannerPrint:
 ;
 ; Read by PlayerBanner (p2). Wiped by ShowFrameBanner's blank of row 9.
 PlayerBannerTexts:
+PlayerBanner1:
   INCBIN "res/text/PlayerBannerTexts.bin",$0000,12
 PlayerBanner2:
   INCBIN "res/text/PlayerBannerTexts.bin",$000C,12
@@ -309,6 +311,7 @@ MessageNextStep:
 ;
 ; Read by MessagesTask $9CB7 step 2.
 FoulTexts:
+FoulShotText:
   INCBIN "res/text/FoulTexts.bin",$0000,14
 WrongOrderText:
   INCBIN "res/text/FoulTexts.bin",$000E,16

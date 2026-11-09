@@ -318,7 +318,7 @@ ContactBackOff:
   LD A,$00
   RLA
   RLA
-  LD (ContactVars),A
+  LD (ContactSigns),A
   POP AF
   JR NC,ContactBackDy
   NEG
@@ -327,9 +327,9 @@ ContactBackDy:
   LD A,(IX+$03)
   SUB (IY+$03)
   PUSH AF
-  LD A,(ContactVars)
+  LD A,(ContactSigns)
   ADC A,$00
-  LD (ContactVars),A
+  LD (ContactSigns),A
   POP AF
   JR NC,ContactBackLookup
   NEG
@@ -357,7 +357,7 @@ ContactBackLookup:
   ADD HL,DE
   LD (ContactRecordPtr),HL
   LD (ContactOther),IY
-  LD A,(ContactVars)
+  LD A,(ContactSigns)
   LD (ContactSignsFound),A
   RET
 ContactNext:
@@ -521,6 +521,7 @@ ContactDone:
 ; BallHitFlag $89BB is cleared at the shot's start ($84C8) and read by the
 ; end-of-shot task ($83CD) to tell whether any ball was hit.
 ContactVars:
+ContactSigns:
   DEFB $00                ; 2 (dx < 0) + (dy < 0), dx = mover - other,
                           ; recomputed on each back-off step
 ContactSignsFound:

@@ -705,6 +705,7 @@ TileSetEC48:
 ; Drawn twice it is gone. Each copy is shifted 2 pixels right of the one before
 ; (bitmap.py).
 SmallSprites:
+SmallSprite0:
   DEFB $C0,$00            ; an arrowhead pointing right
   DEFB $E0,$00
   DEFB $14,$00

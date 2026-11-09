@@ -28,6 +28,7 @@
 ; end-of-shot test $83DC and the wrong-pocket test $8C37), +12 of the cue ball
 ; once in p2 (the turn swap).
 BallRecords:
+BallCue:
   DEFB $00,$00            ; the cue ball: +0/+1 x
   DEFB $00,$00            ; +2/+3 y
   DEFB $00,$00            ; +4/+5 vx

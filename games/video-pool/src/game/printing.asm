@@ -57,7 +57,7 @@ PocketMarkDigit:
   JR C,PocketMarkStore
   XOR A
 PocketMarkStore:
-  LD (PlayerVars),A
+  LD (PocketTurn),A
   RET
 
 ; Copy 8 bytes from DE down the cell at HL; in the bottom two thirds one byte

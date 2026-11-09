@@ -449,6 +449,12 @@ class Annotations:
             return self.inline[a][0]
         return None
 
+    def fields(self):
+        """{address: name} of the inner names on the first address of a data entry that has a name of its own (a
+        record's first field): a second label there, the name of the LDs through memory at that address"""
+        return {a: self.inline[a][0] for a, (kind, name, _, _) in self.entries.items()
+                if kind != 'c' and LO <= a < HI and name and self.inline.get(a, (None,))[0] not in (None, name)}
+
     def cut(self):
         """the walk's filter of branch targets: none into @over addresses, and none into an @bank address from an
         instruction whose @isub names a bank (it would read this image's bytes there as code); None when neither"""
@@ -561,6 +567,8 @@ def data_blocks(lo, hi, kind, width, ann):
 
 DATA_LINE = re.compile(r'^  DEF[BWMS] ')
 LABEL_LINE = re.compile(r'^([A-Za-z_]\w*):$')
+# the rest of a data line's comment that skool2asm wraps onto lines of their own (only spaces before the ';')
+COMMENT_LINE = re.compile(r'^ +;')
 
 
 def write_resources(text, mem, extents, ann, out):
@@ -584,10 +592,11 @@ def write_resources(text, mem, extents, ann, out):
         at = lines.index(label + ':')
         end = at + 1
         cuts = []  # (address, label) of the labels inside the entry
-        while end < len(lines) and (DATA_LINE.match(lines[end]) or LABEL_LINE.match(lines[end])):
+        while end < len(lines) and (DATA_LINE.match(lines[end]) or LABEL_LINE.match(lines[end]) or
+                                    COMMENT_LINE.match(lines[end])):
             m = LABEL_LINE.match(lines[end])
             if m:
-                if m.group(1) not in inner or not a < inner[m.group(1)] < a + extents[a]:
+                if m.group(1) not in inner or not a <= inner[m.group(1)] < a + extents[a]:
                     sys.exit('game.ann: %s inside the resource %s has no address in it' % (m.group(1), name))
                 cuts.append((inner[m.group(1)], m.group(1)))
             end += 1
@@ -648,9 +657,10 @@ ADDRESS_OPERAND_WIDE = re.compile(r'^(LD (?:\((?=\$)|(?:A|BC|HL|DE|IX|IY|SP),\((
                                   r'|(?:JP|CALL|JR|DJNZ) (?:(?:NZ|Z|NC|C|PO|PE|P|M),)?)\$([0-9A-F]{4})(\)?.*)$')
 
 
-def label_inner_addresses(skool, written=None, wide=False):
+def label_inner_addresses(skool, written=None, wide=False, fields=None):
     """An address operand inside an entry (a field of a record, a byte of a table) as Label+offset: @isub lines for
-    skool2asm, which only replaces the addresses that have a label of their own"""
+    skool2asm, which only replaces the addresses that have a label of their own. fields: {address: name} of the
+    field names on data entries' first addresses: an LD through memory there names the field, not the entry"""
     pattern = ADDRESS_OPERAND_WIDE if wide else ADDRESS_OPERAND
     lines = skool.splitlines()
     labels, entry_of, entry = {}, {}, None
@@ -693,7 +703,10 @@ def label_inner_addresses(skool, written=None, wide=False):
                 op = None  # a branch to a line start: skool2asm gives it a label of its own
             if op:
                 target = int(op.group(2), 16)
-                name = resolve(target) if LO <= target < HI else None
+                if fields and target in fields and '(' in op.group(1):
+                    name = fields[target]
+                else:
+                    name = resolve(target) if LO <= target < HI else None
                 if name:
                     out.append('@isub=%s%s%s' % (op.group(1), name, op.group(3)))
                     count += 1
@@ -701,9 +714,28 @@ def label_inner_addresses(skool, written=None, wide=False):
     return '\n'.join(out) + '\n', count
 
 
-def name_variables(text, equ, inner=None):
+SKOOL_INSTRUCTION = re.compile(r'^[ c*]\$([0-9A-F]{4}) (?!DEF[BWMS] )\S')
+ASM_INSTRUCTION = re.compile(r'^  (?!DEF[BWMS]|ORG )[A-Z]')
+
+
+def isub_lines(skool, isubs):
+    """The ordinals (among the instruction lines, in the order skool2asm writes them) of the instructions an @isub
+    writes: name_variables leaves them as the .ann wrote them"""
+    if not isubs:
+        return None
+    keep, n = set(), 0
+    for line in skool.splitlines():
+        m = SKOOL_INSTRUCTION.match(line)
+        if m:
+            if int(m.group(1), 16) in isubs:
+                keep.add(n)
+            n += 1
+    return (keep, n)
+
+
+def name_variables(text, equ, inner=None, keep=None):
     """Every instruction operand that is a variable's address (@equ; inner: {address: NAME+k} of the @var lines),
-    written as the variable's name"""
+    written as the variable's name; keep (isub_lines): the instructions an @isub writes, left as written"""
     names = {}
     for address, (name, size, _) in equ.items():
         for k in range(size):
@@ -711,15 +743,27 @@ def name_variables(text, equ, inner=None):
     passes = [p for p in (names, inner or {}) if p]
     if not passes:
         return text
+    lines = text.splitlines(True)
+    if keep:
+        keep, count = keep
+        found = sum(1 for line in lines if ASM_INSTRUCTION.match(line.partition(';')[0]))
+        if found != count:  # the skool's instructions are not the listing's one for one: name every one
+            print(f'warning: {count} instructions in the skool file, {found} in the listing: '
+                  '@isub operands may be renamed by @equ / @var')
+            keep = set()
+    else:
+        keep = set()
     for table in passes:
-        out = []
-        for line in text.splitlines(True):
+        out, n = [], 0
+        for line in lines:
             code, semi, comment = line.partition(';')
             if re.match(r'^  [A-Z]', code) and not re.match(r'^  DEF[BWMS]', code):
-                code = re.sub(r'\$([0-9A-F]{4})\b', lambda m: table.get(int(m.group(1), 16), m.group(0)), code)
+                if n not in keep:
+                    code = re.sub(r'\$([0-9A-F]{4})\b', lambda m: table.get(int(m.group(1), 16), m.group(0)), code)
+                n += not code.startswith('  ORG ')
             out.append(code + semi + comment)
-        text = ''.join(out)
-    return text
+        lines = out
+    return ''.join(lines)
 
 
 def equates(equ, title='; The variables past the loaded image (game.ann @equ)'):
@@ -891,7 +935,8 @@ def generate(seg, mem, args, out, top):
         marks = '|'.join('%04X' % a for a, _, _, _ in ann.banks)
         sk = re.sub(r'^\*\$(%s) ' % marks, r' $\1 ', sk, flags=re.M)
     written = dict(ann.isub)
-    sk, inner = label_inner_addresses(sk, written, seg.wide)
+    fields = ann.fields()
+    sk, inner = label_inner_addresses(sk, written, seg.wide, fields)
     if written:
         sys.exit('%s: @isub on no instruction: %s' % (os.path.relpath(seg.ann, ROOT),
                                                       ', '.join('$%04X' % a for a in sorted(written))))
@@ -900,8 +945,10 @@ def generate(seg, mem, args, out, top):
     text = run([py, os.path.join(args.venv, 'bin', 'skool2asm.py'), '-H', skool]).stdout
     for half in ('IXl', 'IXh', 'IYl', 'IYh'):
         text = text.replace(half, half.upper())
+    for a, field in sorted(fields.items()):  # a field on an entry's first address: a second label there
+        text = re.sub(r'^(%s:\n)' % re.escape(ann.name(a)), r'\g<1>%s:\n' % field, text, count=1, flags=re.M)
     var_names = {a + k: '%s+%d' % (name, k) for a, name, size, _ in ann.vars for k in range(1, size)}
-    text = name_variables(text, ann.equ, var_names)
+    text = name_variables(text, ann.equ, var_names, isub_lines(sk, ann.isub))
     if seg.isub_as_written:
         text = decimal_isubs(text, ann.isub.values())
     # a commented data sub-block of several lines: SkoolKit leaves a bare ';' on the lines after the first
@@ -1218,8 +1265,7 @@ def game_part(config, ann):
     if config.get('image_cmd'):
         part['image_cmd'] = config['image_cmd']
     for key in ('work', 'operands', 'res_install', 'mode', 'same_bytes', 'data_entries', 'overwritten',
-                'isub_as_written',
-                'drop_data_refs'):
+                'isub_as_written', 'drop_data_refs', 'no_entries', 'entries_in_code'):
         if key in config:
             part[key] = config[key]
     return part

@@ -242,6 +242,7 @@ WaitFramesB:
 ; GameOverText read by game, w1, f1; the two player lines are not read in any
 ; build (the recordings' games over were one-player or ended by BREAK).
 GameOverTexts:
+GameOverText:
   INCBIN "res/text/GameOverTexts.bin",$0000,13
 GameOverPlayer1:
   INCBIN "res/text/GameOverTexts.bin",$000D,12

@@ -29,6 +29,7 @@ N1Leftover:
 ; bytes to $FD8D (its edge and byte loops) and zeros. NewGameSetup clears
 ; $FD04-$FDFC and Start writes the seed before any read.
 Variables:
+RandomSeed:
   DEFB $39,$30,$39,$30    ; the shift register of Random, seeded
                           ; $39,$30,$39,$30 by Start
 PrintAddr:

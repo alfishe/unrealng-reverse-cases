@@ -17,10 +17,12 @@ Each picture has three panels:
     python3 routine_anim.py (--trace pass.uatr | --work W --window F:T-F:T)
            --listing build/game.lst --out docs/img/routines/DrawSprites.gif
            [--view screen | screen:C000 | buffer:8000:32x256[:columns|:columns-up|:screen] | none] [--range 4000-FFFF] [--pictures 90]
-           [--step TSTATES] [--pc EAE3-EBFF] [--title "DrawSprites $EAE3"] [--delay 80] [--unreal U]
+           [--step TSTATES] [--pc EAE3-EBFF[,EC40-EC9F] ...] [--title "DrawSprites $EAE3"] [--delay 80]
+           [--unreal U]
 
 --pc names the routine's code: instructions outside it (an interrupt, a callee you do not want to watch) still
-change memory but are counted as "other" in the code panel. GUIDE.md 4.1 says where these figures go.
+change memory but are counted as "other" in the code panel. Several ranges (comma-separated, or --pc repeated)
+take a routine together with the routines it calls elsewhere in memory. GUIDE.md 4.1 says where these figures go.
 """
 import argparse
 import os
@@ -141,7 +143,9 @@ def main():
     p.add_argument('--range', default='0000-FFFF', help='the memory grid, whole 256-byte rows')
     p.add_argument('--pictures', type=int, default=90)
     p.add_argument('--step', type=int, help='T-states a picture (instead of --pictures)')
-    p.add_argument('--pc', help='the routine\'s code range; the rest is "other"')
+    p.add_argument('--pc', action='append',
+                   help='the routine\'s code range LO-HI (several: comma-separated or repeated); the rest is '
+                        '"other"')
     p.add_argument('--title')
     p.add_argument('--delay', type=int, default=80, help='ms a picture')
     p.add_argument('--hold', type=int, default=1500, help='ms on the last picture')
@@ -156,7 +160,8 @@ def main():
     step = args.step or max(1, -(-total // max(1, args.pictures)))
     lo, hi = K.hex_range(args.range)
     lo, hi = lo & 0xFF00, hi | 0xFF
-    pc_lo, pc_hi = K.hex_range(args.pc) if args.pc else (0, 0xFFFF)
+    pc_ranges = [K.hex_range(r) for arg in args.pc for r in arg.split(',') if r.strip()] if args.pc \
+        else [(0, 0xFFFF)]
     view = parse_view(args.view)
     small, normal = K.font(11), K.font(12)
     title = args.title or (lst.name(trace.instructions[0].pc) if args.listing else os.path.basename(args.trace or args.window))
@@ -172,7 +177,7 @@ def main():
         last = trace.instructions[index]
         while index < n and times[index] < end:
             x = trace.instructions[index]
-            mine = pc_lo <= x.pc <= pc_hi
+            mine = any(lo_ <= x.pc <= hi_ for lo_, hi_ in pc_ranges)
             if mine:
                 run_here[x.pc] = run_here.get(x.pc, 0) + 1
                 last = x

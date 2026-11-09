@@ -1155,7 +1155,7 @@ Each would be reached by a longer or a different game; none is unused.
   per contact (10.5, 10.11).
 - **A foul pot still scores.** The score is paid before the life is taken (10.9).
 - **The marks turn.** The pocket multipliers rotate one place a frame, so the best pocket changes (10.9). NextFrame:
-  `$9BC9 LD A,(PlayerVars)` / `DEC A` / `JP P,NextFrameTurn` / `LD A,$05` / `$9BD2 LD (PlayerVars),A` /
+  `$9BC9 LD A,(PocketTurn)` / `DEC A` / `JP P,NextFrameTurn` / `LD A,$05` / `$9BD2 LD (PocketTurn),A` /
   `CALL DrawPocketMarks`. Witness: `w1-course.jsonl` reads the pocket turn 0, then 5 from frame 4025, 4 from 6875, 3
   from 10 200: one step at each frame cleared.
 - **The rack is an animation.** Six sets of byte scripts; four of them seen by no recording (doc 07.4).

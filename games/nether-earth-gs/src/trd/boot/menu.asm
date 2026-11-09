@@ -673,6 +673,7 @@ l_6607:
 ; PR_STRING prints them with counted lengths (BC), so no terminators: 16, 22,
 ; 19, 20 bytes, four 42-byte help lines, then 21 and 30.
 Texts:
+TextTitle:
   INCBIN "trd/text/trd-boot-menu.bin",$0000,16
 TextCredit:
   INCBIN "trd/text/trd-boot-menu.bin",$0010,22

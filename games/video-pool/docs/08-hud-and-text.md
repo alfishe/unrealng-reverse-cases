@@ -907,7 +907,7 @@ multiplier(pocket) = PocketTurn + pocket, minus 6 when above 6      ; in ScoreTa
 9D90  CD B4 9D     CALL CopyGlyph
 9D93  E1           POP HL
 9D94  2C           INC L
-9D95  3A 43 9F     LD A,(PlayerVars)   ; PocketTurn
+9D95  3A 43 9F     LD A,(PocketTurn)
 9D98  3C           INC A
 9D99  87           ADD A,A
 9D9A  87           ADD A,A
@@ -918,12 +918,12 @@ multiplier(pocket) = PocketTurn + pocket, minus 6 when above 6      ; in ScoreTa
 9DA1  30 01        JR NC,PocketMarkDigit
 9DA3  14           INC D
 9DA4  CD B4 9D     CALL CopyGlyph      ; PocketMarkDigit
-9DA7  3A 43 9F     LD A,(PlayerVars)
+9DA7  3A 43 9F     LD A,(PocketTurn)
 9DAA  3C           INC A
 9DAB  FE 06        CP $06
 9DAD  38 01        JR C,PocketMarkStore
 9DAF  AF           XOR A
-9DB0  32 43 9F     LD (PlayerVars),A   ; PocketMarkStore
+9DB0  32 43 9F     LD (PocketTurn),A   ; PocketMarkStore
 9DB3  C9           RET
 9DB4  7C           LD A,H              ; CopyGlyph
 9DB5  FE 48        CP $48

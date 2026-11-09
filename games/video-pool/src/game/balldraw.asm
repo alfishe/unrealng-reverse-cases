@@ -125,7 +125,7 @@ ClearTurnNext:
   LD A,B
   CP $07
   JR NZ,ClearTurnBall
-  LD HL,Screen+16             ; y 64, x 16: a y/x pair for ScreenCell, not a screen
+  LD HL,$4010             ; y 64, x 16: a y/x pair for ScreenCell, not a screen
                           ; address
   LD B,$0D
 ClearTurnRow:

@@ -267,13 +267,13 @@ TallyTotalPrint:
 AddTerm:
   LD HL,(FrameNumber)
   LD H,$00
-  LD (ScoreVars),HL
+  LD (ScoreTerm),HL
   LD A,(PotBall)
   CALL MultiplyTerm
   LD A,(PotMultiplier)
   CALL MultiplyTerm
   LD HL,(ShotScore)
-  LD BC,(ScoreVars)
+  LD BC,(ScoreTerm)
   ADD HL,BC
   LD (ShotScore),HL
   RET
@@ -386,7 +386,7 @@ MultiplyTerm:
   PUSH DE
   PUSH HL
   LD HL,$0000
-  LD DE,(ScoreVars)
+  LD DE,(ScoreTerm)
   LD B,$08
 MultiplyLoop:
   RRA
@@ -396,7 +396,7 @@ MultiplyShift:
   SLA E
   RL D
   DJNZ MultiplyLoop
-  LD (ScoreVars),HL
+  LD (ScoreTerm),HL
   POP HL
   POP DE
   POP BC
@@ -408,6 +408,7 @@ MultiplyShift:
 ; $8052, TurnSwap $9C34 and the hall of fame $A79C / $A7C2 / $AD1C; UpBlink by
 ; StartAim $8432 / $8483; LastShotBlink $843E / $849F.
 ScoreVars:
+ScoreTerm:
   DEFB $00,$00            ; word: the product of one term (frame x ball x
                           ; multiplier)
 ShotScore:

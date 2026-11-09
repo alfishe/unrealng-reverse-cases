@@ -21,6 +21,7 @@ SpriteFromBall:
 ; swapped by TurnSwap $9C15; the scores stay by player. Set by NewGameScreen
 ; $95DA; the hi score is 300 (shown 3000) in the image, kept across games.
 PlayerVars:
+PocketTurn:
   DEFB $00                ; the current player's pocket mark turn 0-5
                           ; (NextFrame - 1, DrawPocketMarks)
 PocketTurnOther:

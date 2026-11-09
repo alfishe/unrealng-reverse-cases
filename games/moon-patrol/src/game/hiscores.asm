@@ -736,7 +736,6 @@ GreatestAtText:
   INCBIN "res/text/HiScoreTexts.bin",$008F,4
 InitialsAtText:
   INCBIN "res/text/HiScoreTexts.bin",$0093,10
-                          ; here)
 
 ; A score over THE GREATEST's: the name (20 letters, over the old one), the
 ; initials, the all-time table shifted down

@@ -25,7 +25,8 @@ Do not make a figure that says nothing.
    ```
 
    - The script traces the window once with unreal-ng's `analysis trace` and keeps the trace in `W/traces/`.
-   - `--pc LO-HI` gives the routine's code; everything else counts as "other".
+   - `--pc LO-HI` gives the routine's code; everything else counts as "other". Several ranges (`--pc A-B,C-D` or
+     `--pc` repeated) take the routines it calls elsewhere in memory too.
    - `--range` limits the memory map.
    - `--view buffer:ADDR:WxH[:rows|:columns|:columns-up]` or `--view screen` sets what is drawn.
    - `--pictures` or `--step` sets how many pictures.

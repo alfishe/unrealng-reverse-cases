@@ -212,6 +212,7 @@ ShotsBlinkRestore:
 ;
 ; Printed by ShotsBlinkTask $970E; both read in game, w1, f1.
 HudLastShot:
+HudLast:
   INCBIN "res/text/HudLastShot.bin",$0000,10
 HudShot:
   INCBIN "res/text/HudLastShot.bin",$000A,10

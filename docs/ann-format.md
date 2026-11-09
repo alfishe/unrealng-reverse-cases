@@ -57,10 +57,10 @@ lines, but `kit/ann_names.py` only matches upper case, so write upper case.
 | --- | --- | --- |
 | `@module` | `@module NAME [; title]` | The entries from the next entry line on go to `NAME.asm`. The title heads that file and the `INCLUDE` line in `game.asm`. The module starts at its first entry, which must have a name, or `split_modules` fails. `@module game` is refused because `game.asm` is the top file that includes the modules. A module with no entry fails |
 | `@about` | `@about text` | One paragraph of the current module's file header (wrapped at 116 columns between two rule lines). It is an error before any `@module` |
-| `@res` | `@res KIND/NAME.bin` | The last entry, which must be a data entry, is a resource. Its bytes go to `src/res/KIND/NAME.bin` and its data lines become `INCBIN "res/KIND/NAME.bin",offset,length`. Several entries naming one file share it: the file holds the bytes from the first entry to the end of the last. The case's `tools/res_formats.py install(files)` turns the bytes into the editable source (PNG, text) at `--install` |
-| `@isub` | `@isub $ADDR INSTRUCTION` | The instruction at `ADDR` is written exactly so. Use it for a constant the bytes cannot tell from an address (`LD HL,-6`, `LD SP,$FFFF`) and for an operand that needs a name the kit cannot work out (`LD HL,LevelTable-8`). An `@isub` on an address that is no instruction fails: `@isub on no instruction: $XXXX` |
+| `@res` | `@res KIND/NAME.bin` | The last entry, which must be a data entry, is a resource. Its bytes go to `src/res/KIND/NAME.bin` and its data lines become `INCBIN "res/KIND/NAME.bin",offset,length` (their comments go with them, the lines a long comment wraps onto too). Several entries naming one file share it: the file holds the bytes from the first entry to the end of the last. The case's `tools/res_formats.py install(files)` turns the bytes into the editable source (PNG, text) at `--install` |
+| `@isub` | `@isub $ADDR INSTRUCTION` | The instruction at `ADDR` is written exactly so: no `Label+offset`, `@equ` or `@var` name rewrites it. Use it for a constant the bytes cannot tell from an address (`LD HL,-6`, `LD SP,$FFFF`) and for an operand that needs a name the kit cannot work out (`LD HL,LevelTable-8`). An `@isub` on an address that is no instruction fails: `@isub on no instruction: $XXXX` |
 | `@inline` | `@inline $ADDR [N]` | The routine at `ADDR` reads data placed after its `CALL` (a print routine with an inline string). The static walk stops at every call to it, so a string no recording printed is not taken for code. With `N`, the routine reads exactly `N` bytes (a one-byte code, a column): the walk goes on after them, and only those bytes are data |
-| `@equ` | `@equ $ADDR NAME [N] [; comment]` | A variable outside the image (the work space past the loaded bytes). The top file gets `NAME EQU $ADDR`, and every instruction operand in `ADDR..ADDR+N-1` is written `NAME` / `NAME+k`. N defaults to 1. An address inside the image is refused: name it as a label instead |
+| `@equ` | `@equ $ADDR NAME [N] [; comment]` | A variable outside the image (the work space past the loaded bytes). The top file gets `NAME EQU $ADDR`, and every instruction operand in `ADDR..ADDR+N-1` is written `NAME` / `NAME+k` (not in an `@isub`'s instruction: `@isub $94C5 LD HL,$4010` stays a number inside `@equ $4000 Screen 6144`). N defaults to 1. An address inside the image is refused: name it as a label instead |
 
 Real lines (Zynaps, `src/game/game.ann`):
 
@@ -122,6 +122,9 @@ Without KIND the line names or comments an address **inside** an entry.
   becomes a label on it. This is how a field of a table gets its own name and comment.
 - Two lines for one address merge (a name on one, a comment on the other). Two different names for one address
   fail.
+- On a data entry's first address, a name other than the entry's is the record's **first field**: a second label
+  after the entry's (`PlayerVars:` then `PocketTurn:`). An `LD` through memory at that address (`LD A,($9F43)`,
+  `LD ($9F43),HL`) is written with the field's name, every other operand (`LD HL,$9F43`) with the entry's.
 - Inside an `@res` entry an inner label splits the `INCBIN` there. The label must lie inside the entry, or the
   generator fails with `... inside the resource ... has no address in it`.
 
@@ -173,9 +176,10 @@ python3 kit/mkgame.py [--case C] --image BIN --org ADDR --ann FILE --top NAME --
 3. **Control file.** Writes `work/mkgame/game.ctl` (SkoolKit): one block per entry (yours, or one the code/data
    boundary or a CALL target makes), the titles, the `D` descriptions, the data sub-blocks cut at the inner lines.
    `refdocs.py` reads this file later.
-4. **SkoolKit.** `sna2skool.py -H -c game.ctl`, then the `Label+offset` and `@isub` rewrites, then
-   `skool2asm.py -H`. After that: `IXl`/`IXh` are upper-cased, `@equ` and `@var` names are applied, and the bare
-   `;` SkoolKit leaves on continued data lines is removed.
+4. **SkoolKit.** `sna2skool.py -H -c game.ctl`, then the `Label+offset` (and first field, section 3.3) and
+   `@isub` rewrites, then `skool2asm.py -H`. After that: `IXl`/`IXh` are upper-cased, the first fields get their
+   labels, `@equ` and `@var` names are applied (to every instruction but the `@isub` ones), and the bare `;`
+   SkoolKit leaves on continued data lines is removed.
 5. **Resources and modules.** Writes the `@res` files with their `INCBIN`s, then splits the listing into one file per
    `@module`, each with its header. `game.asm` = the `case.json` `header` lines, `DEVICE`, the `EQU`s (`@const`,
    `@equ`, `@bank`, `@alias`), the head, one `INCLUDE` per module, and `SAVEBIN "game.bin",lo,hi-lo`.
@@ -266,7 +270,8 @@ source gives) is the *segments* layout: the top file sets `ORG` / `DISP` per seg
 | `external`, `subdir`, `include`, `before_assemble` | names other included sources define (no `EQU` for them); modules in `dest/<top>/` (default) or `dest/`; `-I` folders for sjasmplus; a hook `tools/x.py:function` called with the work folder before sjasmplus |
 | `work`, `clean_work` | the work folder (default `work/mkpart/<top>`) |
 
-`case.json` takes the same keys for the game (`dest`, `work`, `res_install`, `operands`, `overwritten`, ...).
+`case.json` takes the same keys for the game (`dest`, `work`, `res_install`, `operands`, `mode`, `no_entries`,
+`entries_in_code`, `overwritten`, ...).
 
 ### 5.3 One image on the command line
 

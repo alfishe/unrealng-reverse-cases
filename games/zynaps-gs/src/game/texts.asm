@@ -19,4 +19,3 @@ Messages:
   INCBIN "res/text/messages.bin",$0000,461
 PlayerDigit:
   INCBIN "res/text/messages.bin",$01CD,91
-                                                                       ; $B034

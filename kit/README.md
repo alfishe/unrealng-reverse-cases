@@ -50,7 +50,7 @@ what the generator does with it, the part files); every file of a case and the c
 | `bases` | L1 page -> Z80 base of each bank of the image |
 | `read_builds` | the `work/<build>` whose instructions and data reads count; the only recordings mkgame reads with `code_builds` |
 | `code_builds` | the `work/<build>` whose instructions count but not the reads (over a depacker's input), optional |
-| `dest`, `work`, `res_install`, `operands`, ... | any key of a part file ([ann-format.md 5.2](../docs/ann-format.md#52-part-files)), optional |
+| `dest`, `work`, `res_install`, `operands`, `no_entries`, ... | any key of a part file ([ann-format.md 5.2](../docs/ann-format.md#52-part-files)), optional |
 | `ref_builds` | `[key, text]` of the builds docs 11 and 12 report |
 | `overlay` | a buffer laid over code once play starts (`lo`, `hi`, `name`, `why`), optional |
 | `header`, `data_note` | the first comment lines of `game.asm`; a sentence for doc 11, optional |
@@ -107,6 +107,9 @@ linear bitmap), `:columns` (column by column, H bytes a column, top first), `:co
 the H.A.T.E. playfield's strips), `:screen` (whole thirds laid out like the screen's pixel lines, W 32: a
 back buffer). The GIFs share one palette and store each picture as its changes, so a routine
 animation of 90 pictures stays near 1 MB.
+
+`--pc LO-HI` is the routine's code, the rest counts as "other"; several ranges (`--pc EAE3-EBA9,EC40-EC9F`, or
+`--pc` repeated) follow a routine and the routines it calls elsewhere in memory.
 
 `--window F:T-F:T` is in TTD units, as `time_travel` gives them; the trace is kept in `W/traces/` and read from
 there the next time.

@@ -30,11 +30,12 @@ The porting document follows AGENTS.md section 4.0 "By port target". What it mus
 
 ## Kit gaps
 
-Found by the cases, worked around there, not yet fixed in `kit/`:
+Found by the cases and worked around there; the status says whether `kit/` fixes it now:
 
-| Gap | Found by | Workaround |
-| --- | --- | --- |
-| `game_part` does not pass `no_entries` | Video Pool stage 2 | the turbo part uses `"mode": "blocks"` |
-| a data-line comment inside `@res` that wraps to its own line breaks the INCBIN substitution, the image shifts | Video Pool stage 2 | shorter comments |
-| `@equ` with a size is applied after `@isub` and rewrites its operands | Video Pool stage 2 | none needed yet; watch for it |
-| a field label on a data entry's first address (`PocketTurn` on `PlayerVars $9F43`) never reaches an operand: the entry's label wins | Video Pool sources | `@alias PocketTurn PlayerVars` and one `@isub` per instruction (ten) |
+| Gap | Found by | Workaround | Status |
+| --- | --- | --- | --- |
+| `game_part` does not pass `no_entries` | Video Pool stage 2 | the game's `case.json` used `"mode": "blocks"` | fixed: `case.json` takes `no_entries` and `entries_in_code`; Video Pool's `case.json` says `"no_entries": true` (the same sources) |
+| a data-line comment inside `@res` that wraps to its own line breaks the INCBIN substitution, the image shifts | Video Pool stage 2 | shorter comments | fixed: the wrapped lines go with the data lines. The shortened Video Pool comments are not recorded anywhere, so none was lengthened again; the stray wrapped tails in Moon Patrol (`hiscores.asm`) and the three Zynaps cases (`texts.asm`) are gone |
+| `@equ` with a size is applied after `@isub` and rewrites its operands | Video Pool stage 2 | none needed yet; watch for it | fixed: `@equ` and `@var` names skip the `@isub` instructions. It had struck: Video Pool `@isub $94C5 LD HL,$4010` was written `Screen+16`, now `$4010` |
+| a field label on a data entry's first address (`PocketTurn` on `PlayerVars $9F43`) never reaches an operand: the entry's label wins | Video Pool sources | `@alias PocketTurn PlayerVars` and one `@isub` per instruction (ten) | fixed: a second label after the entry's, and the `LD`s through memory at that address name the field (docs/ann-format.md 3.3); the workaround removed (it had missed an eleventh, `$9DB0`). New first-field labels in Exolon, Nether Earth GS, NE ZS Edition (`menu99`) and eight more in Video Pool |
+| `kit/routine_anim.py --pc` takes one range: an animation cannot follow a routine and its callees elsewhere | Video Pool DrawBall | the callees left out (BallRedraw) | fixed: several ranges (`--pc A-B,C-D` or repeated); Video Pool's DrawBall animation redrawn with BallRedraw and RedrawBall |

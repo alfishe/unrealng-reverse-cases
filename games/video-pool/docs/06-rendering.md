@@ -555,16 +555,19 @@ How to read the figure:
 python3 ../../kit/beam_timeline.py --work work/docs/vpB/w1 --window 1124:0-1127:0 --listing build/game.lst --out docs/img/render/beam-break.png --frames 3 --pc 8000-FFFF
 ```
 
-![DrawBall at work in w1 frame 1090: the cue ball after the break XORed off and on again a few pixels on](img/routines/DrawBall.gif)
+![BallRedraw and DrawBall at work in w1 frame 1090: the cue ball after the break XORed off and on again a few pixels on](img/routines/DrawBall.gif)
 
-*The routine animation of DrawBall and XorSpriteLines (`$9548-$95D9`) in `w1` frame 1090, one picture each 1500 T,
-7457 instructions. Command: `python3 ../../kit/routine_anim.py --work work/docs/vpB/w1 --window 1090:0-1091:0
---listing build/game.lst --out docs/img/routines/DrawBall.gif --pc 9548-95D9 --view screen --range 8000-FFFF --step
-1500 --delay 120`.*
+*The routine animation of the redraw task with the routines it calls: BallRedraw and RedrawBall (`$827E-$8303`),
+DrawBall and XorSpriteLines (`$9548-$95D9`), in `w1` frame 1090, one picture each 1500 T, 7457 instructions in the
+window (the interrupt and the other tasks count as "other"). Command: `python3 ../../kit/routine_anim.py --work
+work/docs/vpB/w1 --window 1090:0-1091:0 --listing build/game.lst --out docs/img/routines/DrawBall.gif --pc
+827E-8303,9548-95D9 --title 'BallRedraw, RedrawBall, DrawBall' --view screen --range 8000-FFFF
+--step 1500 --delay 120`.*
 
-How to read the animation: early in the frame the cue ball is XORed off line by line, then drawn a few pixels on.
-In the middle pictures it is half drawn: the screen shows it so only for those T-states, above the beam. Then the
-physics and the sound loop run, and the screen does not change.
+How to read the animation: the code panel first shows BallRedraw walking DrawList and RedrawBall testing each ball's
+record (+`$0D`); only the moved ball reaches DrawBall. Early in the frame the cue ball is XORed off line by line,
+then drawn a few pixels on. In the middle pictures it is half drawn: the screen shows it so only for those T-states,
+above the beam. Then the physics and the sound loop run, and the screen does not change.
 
 Worked example: in frame 1125, 8 sprite draws run (4 moved balls, off and on). The last write is at about T 24 000,
 on line 150. The beam reaches line 150 at T 16 152 + 150 x 224 = 49 752, more than 25 000 T later.
