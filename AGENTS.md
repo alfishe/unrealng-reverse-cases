@@ -52,6 +52,13 @@ in `work/` does not count.
   computed from it is recomputed when the measure changes.
 - **A number the screen shows is checked against the screenshot.** Moon Patrol's first bonus was derived as 24 s;
   the bonus screen of the same recording says 98 s of 120, so 22 s.
+- **Say when in the frame a value was taken.** A memory sample of frame N is the state at the frame's start, so it
+  shows what the interrupt of frame N-1 did; a trace puts an instruction in the frame where it ran. Mixing the two
+  shifts every event by one frame (Video Pool: an animation captioned "the cue ball hits ball 1" showed the next
+  contact). Write the convention once in the document that uses both, and give both frame numbers in event tables.
+- **Count what the ROM really does.** A ROM routine's loop bounds come from its listing, not its comment (Video Pool:
+  BEEPER plays DE+1 cycles, so a script that stopped at DE missed the last half-period and every lost interrupt it
+  caused).
 - **Names are checked against the picture, not only the code.** A routine, its buffer, its counter and the data it
   reads must agree with each other and with what is on the screen (Moon Patrol: ScrollMountains scrolled the strip
   labelled HillsStrip; renamed by screen band).
