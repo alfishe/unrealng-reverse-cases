@@ -56,7 +56,7 @@ def tune_note(w):
     """A tune word -> (period HL, cycles n) or None for a rest ($7F7C-$7F88)."""
     if w == 0:
         return None
-    hl = w - 1
+    hl = w                  # INC HL at $7F68, DEC HL at $7F7C: the period is the word
     h = hl >> 8
     n = 1
     while n * h < 16:

@@ -30,7 +30,7 @@ everything.
 | 3 | the game | 40 712 | `$60F8-$FFFF` | 214.2 s | 5712 ms |
 
 At ROM speed the tape lasts 227.3 s (11 383 frames of the 48K) without the pauses. With the TZX's pauses it lasts
-237.3 s (11 864 frames).
+237.3 s (11 883 frames: 227.3 s and the pauses of 1.0, 2.2, 1.1 and 5.7 s).
 
 ![The four blocks in time and where they land](img/load/tape.png)
 
@@ -104,7 +104,7 @@ Worked example, the two RAMTOPs:
 - `CLEAR 24823` sets RAMTOP to 24 823 = `$60F7`, one byte below the code's load address `$60F8`. The BASIC's machine
   stack and GO SUB stack now sit under the code, so the load cannot overwrite them.
 - `CLEAR 49999` sets RAMTOP to 49 999 = `$C34F`, inside the loaded image. The new stack grows down from `$C34F`, over
-  the loaded bytes `$C312-$C34F`. `objectlist.asm` names that area `Stack`.
+  the loaded bytes `$C2FC-$C34F` (the deepest SP of play, doc 02 2.3). `objectlist.asm` names that area `Stack`.
 
 Witness: in `c1`, the image after the load (frame 252) equals block 3 byte for byte at `$60F8-$FFFF`. The image at
 the entry (frame 256, T 58 497) differs from block 3 in 26 bytes, all at `$C330-$C34F`. Those bytes are the stack of
@@ -119,10 +119,10 @@ sequenceDiagram
     participant ROM
     participant BASIC
     participant Game
-    ROM->>ROM: power-on, the copyright screen
-    ROM->>BASIC: LOAD: headers 0 and 2, blocks 1 and 3 by LD-BYTES
-    BASIC->>BASIC: lines 20 and 30, RAMTOP $60F7 then $C34F
-    BASIC->>Game: RANDOMIZE USR 32768, SP $C338
+    ROM->>ROM: frame 0: power-on, the copyright screen
+    ROM->>BASIC: frames 0-252: LOAD, headers 0 and 2, blocks 1 and 3 by LD-BYTES (fast load)
+    BASIC->>BASIC: frames 252-256: lines 20 and 30, RAMTOP $60F7 then $C34F
+    BASIC->>Game: frame 256, T 58 497: RANDOMIZE USR 32768, SP $C338
     Game->>Game: MenuEntry $8000 saves SP in BasicStack
     Game->>Game: TitlePage $8004 reloads SP, draws the title
 ```
@@ -235,10 +235,11 @@ flowchart TD
     E -->|yes| V["LD-BYTES: verify against $88AC"]
     E -->|"no: J"| S["SA-BYTES: $88AC, $12E bytes, flag $6C"]
     S --> X["the old word back at ERR_SP, RET"]
-    L --> Y{"carry set?"}
-    V --> Y
+    L --> W["the old word back at ERR_SP ($82AD-$82B5)"]
+    V --> W
+    W --> Y{"carry set?"}
     Y -->|"yes, after L"| CP["copy $BEF8 to $88AC, JP HeroesPage"]
-    Y -->|"yes, after G"| X
+    Y -->|"yes, after G"| RT["RET"]
     Y -->|"no, flag $6B"| RW["RobotronWarningText $873B"]
     Y -->|"no, other"| TE["TapeErrorText $8716"]
     C -.->|"a ROM report: BREAK"| H["TapeErrorHandler: wait for CAPS and SPACE up, RET to the page"]

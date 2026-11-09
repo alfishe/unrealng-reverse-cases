@@ -234,7 +234,7 @@ ScoreAdvancePage:
   LD HL,$3FA0
   LD E,$0A
   CALL UnplotRun
-  LD HL,UfoB
+  LD HL,$DE*$0100+$A0
   LD E,$1C
   CALL UnplotRun
   EXX

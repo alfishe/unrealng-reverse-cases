@@ -3,8 +3,8 @@
 ;
 ; The IM 2 vector is the ROM word at $3AFF ($FFFF); the byte $18 at $FFFF and the ROM's $F3 make JR $FFF4, and JP
 ; $7F14 there enters Im2Handler. IM 2 is set only in play (SetIm2 $A7D4 at each life start); the menus run in IM 1
-; with the ROM's handler, so none of this runs on the menu pages (t1, the tape recording that never starts a game, has
-; no entry at all).
+; with the ROM's handler, so none of this runs on the menu pages except the demo (DemoPage calls LifeStart at $8196:
+; IM 2, with the tune off by $819B) (t1, the tape recording that never starts a game, has no entry at all).
 ;
 ; One entry per accepted frame interrupt: FRAMES + 1, TunePlayer (a note through the ROM's BEEPER every third entry),
 ; Im2Clock (the play time in BCD seconds every 50 entries). i1: 25 747 entries in 30 440 frames.
@@ -96,16 +96,18 @@ Im2HandlerSteps:
 ; $B240 counts the handler's entries 0-2; on the third it goes back to 0 and
 ; one tune word is taken from the pointer $B23E (then pointer + 2): 0 is a
 ; rest, $FFFF sends the pointer back to $B4E6 and takes the first word again,
-; anything else is BEEPER's period + 1. With $B288 bit 7 set (the tune off: the
-; T key, $AF15) a note is a rest too, so the tune keeps its place while silent.
+; anything else is BEEPER's period itself. With $B288 bit 7 set (the tune off:
+; the T key, $AF15) a note is a rest too, so the tune keeps its place while
+; silent.
 ;
-; A note: HL = word - 1 (BEEPER's period), DE = the cycles: the smallest n with
-; n x H >= 16 (H the period's high byte), so every note lasts about the same: 8
-; n (HL + 30) T. Over the tune's 16 periods ($0230-$06CD) that is 35 700-50 400
-; T, so a note started by an entry at the frame interrupt ends well inside that
-; frame, never across the next interrupt. A rest is a delay loop of $05C0
-; passes (about 38 000 T). After BEEPER (which ends EI) a DI at $7F8D before
-; returning into the handler.
+; A note: HL = the word, BEEPER's period (INC HL at $7F68 for the end test, DEC
+; HL at $7F7C back), DE = the cycles: the smallest n with n x H >= 16 (H the
+; period's high byte), so every note lasts about the same: 8 n (HL + 30) T.
+; Over the tune's 16 periods ($0231-$06CE) that is 35 700-50 500 T, so a note
+; started by an entry at the frame interrupt ends well inside that frame, never
+; across the next interrupt. A rest is a delay loop of $05C0 passes (about 38
+; 000 T). After BEEPER (which ends EI) a DI at $7F8D before returning into the
+; handler.
 ;
 ; Witness: entered once per handler entry (i1 25 747); a word taken i1 8600
 ; times, a note i1 7793 (BEEPER called from $7F8A), a rest i1 787; the tune

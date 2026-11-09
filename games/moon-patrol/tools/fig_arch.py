@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-"""The stages figure of doc 02 (architecture), 1050 pixels wide, into docs/img/arch/.
+"""The figures of doc 02 (architecture), 1050 pixels wide, into docs/img/arch/.
 
+    python3 tools/fig_arch.py images   # the three images of c1 (loaded 252, entry 256, play 8000) side by side,
+                                       # over the four windows where they differ (work/images/, tools/images.py)
     python3 tools/fig_arch.py stages   # the program's states from the entry to the hi-score entry, from the
                                        # screenshots of docs/img/play/, each with its routine and interrupt mode
 
@@ -61,5 +63,61 @@ def stages():
     print(out, img.size)
 
 
+# the windows of the image where the three images differ (work/stage1/images-diff.txt), 16 bytes a row
+WINDOWS = [(0xB210, 12, 'game variables, player records'), (0xBEF0, 3, 'the object list'),
+           (0xC2F0, 6, 'the stack'), (0xF000, 3, 'print variables'), (0xF0A0, 1, '')]
+IMAGES = [('loaded-252-0.bin', 'loaded: c1 frame 252, T 0'), ('entry-256-58497.bin', 'entry: c1 256, T 58 497'),
+          ('play-8000-0.bin', 'play: c1 frame 8000')]
+CHG = [None, (255, 214, 102), (250, 160, 90)]
+
+
+def images():
+    mem = [open(os.path.join(CASE, 'work', 'images', f), 'rb').read() for f, _ in IMAGES]
+    cw, rh, adw, gap = 19, 17, 52, 14
+    pw = 16 * cw
+    left = (WIDTH - adw - 3 * pw - 2 * gap) // 2
+    top = 74
+    rows = sum(n for _, n, _ in WINDOWS) + len(WINDOWS)
+    img = Image.new('RGB', (WIDTH, top + rows * rh + 60), BG)
+    d = ImageDraw.Draw(img)
+    d.text((left, 8), 'The three images of c1 side by side: only the stack, the variables, the first objects and '
+           'the print state change', font=F14B, fill=INK)
+    d.rectangle((left, 32, left + 14, 46), fill=CHG[1])
+    d.text((left + 20, 32), 'changed from loaded to entry (the BASIC\'s stack)', font=F13, fill=INK)
+    d.rectangle((left + 450, 32, left + 464, 46), fill=CHG[2])
+    d.text((left + 470, 32), 'changed from entry to play', font=F13, fill=INK)
+    counts = [0, 0, 0]
+    for k, (_, title) in enumerate(IMAGES):
+        d.text((left + adw + k * (pw + gap), 54), title, font=F14B, fill=INK)
+    y = top
+    for base, n, label in WINDOWS:
+        d.text((left, y + 2), label, font=F13, fill=GREY)
+        y += rh
+        for r in range(n):
+            a0 = base + 16 * r
+            d.text((left, y + 2), '$%04X' % a0, font=F13, fill=GREY)
+            for k in range(3):
+                x0 = left + adw + k * (pw + gap)
+                for c in range(16):
+                    a = a0 + c
+                    v = mem[k][a]
+                    x = x0 + c * cw
+                    if k and v != mem[k - 1][a]:
+                        d.rectangle((x, y, x + cw - 2, y + rh - 2), fill=CHG[k])
+                        counts[k] += 1
+                    d.text((x + 1, y + 2), '%02X' % v, font=F13, fill=INK if v else GREY)
+            y += rh
+    d.text((left, y + 8), 'changed bytes in the windows: %d loaded to entry, %d entry to play (all of the image\'s '
+           '26 and 174)' % (counts[1], counts[2]), font=F13, fill=INK)
+    d.text((left, y + 28), 'python3 tools/fig_arch.py images     (work/images/*.bin from tools/images.py)',
+           font=F13, fill=GREY)
+    os.makedirs(OUT, exist_ok=True)
+    out = os.path.join(OUT, 'images.png')
+    img.save(out)
+    print(out, img.size, counts)
+
+
 if __name__ == '__main__':
-    stages()
+    figs = {'stages': stages, 'images': images}
+    for name in (sys.argv[1:] or ['stages']):
+        figs[name]()

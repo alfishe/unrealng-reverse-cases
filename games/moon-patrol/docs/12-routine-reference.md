@@ -57,9 +57,9 @@ Witness: game 11 644 entries (frames 1560-16 759), a1 2090, g1 3351, p2 4612, h1
 
 **One step of the tune: every third entry the next word of the tune at `$B4E6`, a note through BEEPER or a rest**
 
-`$B240` counts the handler's entries 0-2; on the third it goes back to 0 and one tune word is taken from the pointer `$B23E` (then pointer + 2): 0 is a rest, `$FFFF` sends the pointer back to `$B4E6` and takes the first word again, anything else is BEEPER's period + 1. With `$B288` bit 7 set (the tune off: the T key, `$AF15`) a note is a rest too, so the tune keeps its place while silent.
+`$B240` counts the handler's entries 0-2; on the third it goes back to 0 and one tune word is taken from the pointer `$B23E` (then pointer + 2): 0 is a rest, `$FFFF` sends the pointer back to `$B4E6` and takes the first word again, anything else is BEEPER's period itself. With `$B288` bit 7 set (the tune off: the T key, `$AF15`) a note is a rest too, so the tune keeps its place while silent.
 
-A note: HL = word - 1 (BEEPER's period), DE = the cycles: the smallest n with n x H >= 16 (H the period's high byte), so every note lasts about the same: 8 n (HL + 30) T. Over the tune's 16 periods (`$0230-$06CD`) that is 35 700-50 400 T, so a note started by an entry at the frame interrupt ends well inside that frame, never across the next interrupt. A rest is a delay loop of `$05C0` passes (about 38 000 T). After BEEPER (which ends EI) a DI at `$7F8D` before returning into the handler.
+A note: HL = the word, BEEPER's period (INC HL at `$7F68` for the end test, DEC HL at `$7F7C` back), DE = the cycles: the smallest n with n x H >= 16 (H the period's high byte), so every note lasts about the same: 8 n (HL + 30) T. Over the tune's 16 periods (`$0231-$06CE`) that is 35 700-50 500 T, so a note started by an entry at the frame interrupt ends well inside that frame, never across the next interrupt. A rest is a delay loop of `$05C0` passes (about 38 000 T). After BEEPER (which ends EI) a DI at `$7F8D` before returning into the handler.
 
 Witness: entered once per handler entry (i1 25 747); a word taken i1 8600 times, a note i1 7793 (BEEPER called from `$7F8A`), a rest i1 787; the tune wrapped at `$7F6D` i1 20 times, i2 22. a1: notes 341 of 626 words (the tune off 2540-2740).
 
@@ -1933,7 +1933,7 @@ Does nothing unless the buggy state `$B216` is `$FF` (alive). Else `$B216` = 0 (
 
 The immune clones (i1, i2) patch the first byte to RET. Callers, one a death cause each (l1sum of the CALL): the rock `$99F9` in `$99C3` (command `$97C5`; game 1, a1 1, g1 4, p2 4, h1 4, i1 17, i2 27, h2 1), the UFO bomb `$9E28` in `$9CE0` (dropped by the UFO handler `$9B6B` through `$9E81`; i1 16, i2 17), the tank `$9EF3` in `$9EBD` (command `$98BE`; i2 6), the tank shell `$9FD3` in `$9F8F` (installed by `$A022`; i1 6, i2 19), the low flyer `$A0C4` in `$A03B` (command `$98F3`; i2 4), the boulders `$A1CD` in `$A196` (commands `$9917` / `$991C` / `$9921`; i2 22), the green plant `$A358` in `$A2C6` (command `$9955`; i2 8), and the crater `$AA9C` in BuggyUpdate (the ground probe; game 18, a1 1, p2 4, i1 69, i2 67). The rock, bomb, tank, shell, flyer, boulder and plant handlers test their box against the buggy's with BoxOverlap `$A7FE` first.
 
-The crater and mine handlers (`$9A92`, `$9AEB`) and the UFO saucers (`$9B6B`) never call it: a crater kills through the ground probe; how a mine kills (the probe or not at all) needs a run. Witness of the deaths that counted (not immune): game 19 = 1 rock + 18 craters, a1 2 = 1 + 1, g1 4 rocks, p2 8 = 4 + 4, h1 4 rocks, h2 1 rock (l1sum `$A7DD` entries: game frames 2029-16149).
+The crater and mine handlers (`$9A92`, `$9AEB`) and the UFO saucers (`$9B6B`) never call it: a crater kills through the ground probe, and so does a mine: drawn at y `$A0`, its ink is on line 162, and the probe's 5-pixel steps cannot miss its 8-pixel width (known only from the code; no recording shows a mine death). Witness of the deaths that counted (not immune): game 19 = 1 rock + 18 craters, a1 2 = 1 + 1, g1 4 rocks, p2 8 = 4 + 4, h1 4 rocks, h2 1 rock (l1sum `$A7DD` entries: game frames 2029-16149).
 
 | | |
 | --- | --- |
@@ -1947,7 +1947,7 @@ The crater and mine handlers (`$9A92`, `$9AEB`) and the UFO saucers (`$9B6B`) ne
 
 **Clears E points left to right from (H = x, L = y) through UnplotPixel `$FD99`**
 
-E = the count. Calls UnplotPixel `$FD99` for x, x + 1, ...; keeps L. Callers: `$8064` (the options page), the mine `$9AEB`, the bomb `$9CE0`, the plant `$A2C6`. Witness: a1 60 entries (frames 1218-18835), t1 3, i1 33, i2 63.
+E = the count. Calls UnplotPixel `$FD99` for x, x + 1, ...; keeps L. Callers: `$8118` (the score advance page, `$8133` / `$813B` / `$8143`), the mine `$9AEB`, the bomb `$9CE0`, the plant `$A2C6`. Witness: a1 60 entries (frames 1218-18835), t1 3, i1 33, i2 63.
 
 | | |
 | --- | --- |
@@ -1995,7 +1995,7 @@ The table `$B2D6` holds 4 bytes a sprite: the drawer (one of the sprites module'
 
 **The far band (lines 64-95): one pixel left a pass, 8 new columns from HillsStrip `$EBC0` every 8 passes**
 
-Only while the buggy is alive (`$B216` = `$FF`). The counter `$B224` runs 8 passes; at 0 the next 32 bytes of the mountains graphic (`$B226` + `$20`, from `$EBC0` up to `$F000` and round) go to FeedFarBand `$5B00`. Each pass every line of 64-95 (the line table at `$FC80`) rolls left one pixel through its 32 bytes, the new bit from the line's FeedFarBand byte. Witness: game 1576, a1 292, g1 493, p2 664, h1 493, i1 3601, i2 3935, h2 40 entries: once a main-loop pass.
+Only while the buggy is alive (`$B216` = `$FF`). The counter `$B224` runs 8 passes; at 0 the next 32 bytes of HillsStrip (`$B226` + `$20`, from `$EBC0` up to `$F000` and round) go to FeedFarBand `$5B00`. Each pass every line of 64-95 (the line table at `$FC80`) rolls left one pixel through its 32 bytes, the new bit from the line's FeedFarBand byte. Witness: game 1576, a1 292, g1 493, p2 664, h1 493, i1 3601, i2 3935, h2 40 entries: once a main-loop pass.
 
 | | |
 | --- | --- |
@@ -2085,7 +2085,7 @@ Then the draw at (x, y - 9) through ScrollAdjustIfAlive: sprite 0 alive, else th
 
 Last the BREAK test: CAPS SHIFT (port `$FEFE` bit 0) and SPACE (port `$7FFE` bit 0) both down: SetIm1 and a jump to `$8004`, the title (a1 frame 3174, `$AACD` 1 time). The test runs in play and during the death frames.
 
-Witness: game 1576, a1 292, g1 493, p2 664, h1 493, i1 3601, i2 3935, h2 40 entries (i1 frames 263-30438); jump started (AA2A) game 463, i1 3249 steps; the probe hits `$AA9C` game 18, a1 1, p2 4, i1 69, i2 67.
+Witness: game 1576, a1 292, g1 493, p2 664, h1 493, i1 3601, i2 3935, h2 40 entries (i1 frames 263-30438); jump steps (AA2A, one a pass of a jump) game 463, i1 3249; the jump key down (`$AA24`) game 75 passes; the probe hits `$AA9C` game 18, a1 1, p2 4, i1 69, i2 67.
 
 | | |
 | --- | --- |
@@ -2403,7 +2403,7 @@ Witness: game 3474, a1 716, g1 2054, p2 2534, h1 2054, i1 19 540, i2 25 107, h2 
 
 **Adds the scroll step of y's band to x (H): what is drawn there moves with its band**
 
-L = y: below `$40` nothing; `$40-$5F` the mountains' step `$B225` (1); `$60-$7F` the hills' `$B229` (2); `$80-$9F` the hills' step only while BuggyAirborne (the near band scrolls then); `$A0` and down the road's `$B235` (4). Returns through BuggyAirborne. Witness: game 3022, a1 672, g1 1932, p2 2277, h1 1932, h2 78 entries (falls in from ScrollAdjustIfAlive in i1 / i2, so no entries there).
+L = y: below `$40` nothing; `$40-$5F` the far band's step HillsSpeed `$B225` (1); `$60-$7F` the middle band's MiddleSpeed `$B229` (2); `$80-$9F` MiddleSpeed only while BuggyAirborne (the near band scrolls then); `$A0` and down the road's `$B235` (4). Returns through BuggyAirborne. Witness: game 3022, a1 672, g1 1932, p2 2277, h1 1932, h2 78 entries (falls in from ScrollAdjustIfAlive in i1 / i2, so no entries there).
 
 | | |
 | --- | --- |

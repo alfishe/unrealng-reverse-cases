@@ -48,7 +48,7 @@ stateDiagram-v2
     Options --> Tape: L J G
     Tape --> Options: a tape error, then any key
     Tape --> Heroes: a good load L
-    Tape --> Title: SPACE, report D, back to the page
+    Tape --> Title: SPACE, report D, back to the calling page (any menu page)
     Title --> GameStart: S or fire
     Options --> GameStart: S or fire
     GameStart --> Banner
@@ -102,14 +102,15 @@ pointers and reloads one of them before each jump:
   `$8000`. Every menu exit (MenuCheckStart, MenuCheckHeroes, MenuCheckAnyKey, TitlePage itself) reloads it, so each
   page starts on an empty stack.
 - **LoopStack `$B25F`**: the SP at the entry of MainLoop `$9696`, saved there each time. The bonus screen and the
-  two course switches are reached from inside the course interpreter, three calls deep; they reload LoopStack and
+  two course switches are reached from inside the course interpreter, two words deep (`$96B4`, the return of
+  MainLoopSegment's `CALL CourseRun`, and `$9751`, pushed by CourseRun `$9758` before its `JP (IX)`); they reload LoopStack and
   jump to MainLoop, which drops those frames.
 
 ```text
 MenuEntry:          BasicStack = SP                     ; once, at USR
 any menu exit:      SP = BasicStack; jump to the page or to GameStart
 MainLoop:           LoopStack = SP                      ; each life start, each sector, each course switch
-SectorBonus end:    SP = LoopStack; jump to MainLoop    ; from CourseRun's JP (IX), 3 calls deep
+SectorBonus end:    SP = LoopStack; jump to MainLoop    ; from CourseRun's JP (IX), 2 words deep
 course switch:      SP = LoopStack; jump to MainLoop
 ```
 
@@ -335,7 +336,7 @@ Worked example, the first tune word (`src/res/tune/Tune.txt`, line 1):
 | the pitch, 437 500 / (period + 30) | 437 500 / 1772 = 247 Hz |
 
 The cycle count makes every note about the same length whatever its pitch: a high byte of 2 gives 8 cycles, of 6
-gives 3. Over the tune's 15 periods the notes last 35 700 to 50 400 T, always less than a frame. A note starts
+gives 3. Over the tune's 16 periods the notes last 35 700 to 50 500 T, always less than a frame. A note starts
 about 300 T after the interrupt, so it ends well before the next one, and the window in which BEEPER's closing `EI`
 could let an interrupt nest before the `DI` at `$7F8D` is never open (stage 2 settled it: no interrupt in any L1 build interrupted
 the handler, the tune player or BEEPER; `work/stage2/NOTES.md`).
@@ -390,6 +391,16 @@ Im2Clock:
 7FBE  C9           RET
 ```
 
+```mermaid
+flowchart TD
+    A["Im2Clock: PlayerFrames + 1"] --> B{"PlayerFrames = 50?"}
+    B -->|no| R["RET"]
+    B -->|yes| C{"TuneDivider = 3?"}
+    C -->|"yes: never, TunePlayer keeps it 0-2"| D["PlayerFrames = 49, RET"]
+    C -->|no| E["PlayerFrames = 0, TimeShown = 0"]
+    E --> F["PlayerTime + 1 in BCD, RET"]
+```
+
 - It counts accepted interrupts, not frames: a frame whose interrupt is lost (4.4) does not count. In play no
   interrupt is lost (4.7), so the clock is right: `i1` reached sector end E at frame 5176 after the life start at
   263, 4913 frames = 98.3 s, and the bonus screen printed 98.
@@ -409,7 +420,7 @@ the L1 builds, WALKTHROUGH 1):
 | Where | From | To | How long | Why |
 | --- | --- | --- | --- | --- |
 | the handler | `$7F14` DI | `$7F45` EI | 369 T, plus a note | not re-entrant: it calls BEEPER |
-| BEEPER, in the tune | the ROM's DI | its EI, then `$7F8D` DI | the note, 35 700-50 400 T | the ROM's BEEPER times its loop with interrupts off |
+| BEEPER, in the tune | the ROM's DI | its EI, then `$7F8D` DI | the note, 35 700-50 500 T | the ROM's BEEPER times its loop with interrupts off |
 | SetIm1, SetIm2 | `$A7CB` / `$A7D4` | `$A7D2` / `$A7DB` | a few T | changing `I` and the mode |
 | the bonus tune | BEEPER, 22 notes | | 186 frames in `i1` sector E | the fanfare |
 | the bonus beeps | BEEPER, BonusBeep `$A690` | | 2 x 9 frames | the time bonus fanfare |
@@ -447,7 +458,7 @@ The blip: 15 half-cycles; each waits A x 148 T with A the next byte of the ROM a
 bit. The 15 bytes add up to 1891, so the blip is about 1891 x 148 + 15 x 3700 = 335 000 T: 4.8 frames, which matches
 the five frames lost.
 
-So the 0.85 interrupts a frame of `i1` (25 747 IM 2 and 3004 IM 1 entries in 30 440 frames) is the bonus screens,
+So the 0.94 interrupts a frame of `i1` (25 747 IM 2 and 3004 IM 1 entries in 30 440 frames) is the bonus screens,
 not play: about 1690 frames lost, five bonus screens of about 300 each with the blips varying with the bonus. The
 clock is stopped there anyway (SectorBonus runs in IM 1).
 
@@ -584,7 +595,7 @@ What the order says:
   (2805 x 26 = 72 930 T) instead of the scroll: a pass keeps its length whether the buggy jumps or not, so a jump
   does not speed the game up.
 - **WheelsFly runs four times a pass**: the wheels fly four steps for one of the buggy's explosion frames.
-- **SpeedGovernor runs twice**, after the hills and after the road, so the pace delay is split.
+- **SpeedGovernor runs twice**, after the middle band and after the road, so the pace delay is split.
 - **The keys are read once a pass**: a press shorter than a pass (about 140 ms) can be missed by FireShots, HoldCheck
   and TuneToggleCheck ([doc 5](05-controls.md)).
 
@@ -599,10 +610,14 @@ How to read the figure:
 - **The diagonal** is the beam. A dot is a screen write at its time and line, in its routine's colour: left of the
   diagonal it shows in this frame, right of it only in the next.
 - **The strip above** each panel is the routine the CPU is in.
-- **What it shows**: the call list in its order (4.6). MountainsByte (purple, lines 60-75) ends the frame before; in
-  1206 come the buggy (DrawSprite40x23Rows, cyan), the shots, the colours (SceneryColoursRepaint, orange squares),
-  then the near band (NearBandByte, red, lines 128-140) runs into 1207; the hills (HillsByte, green, lines 80-130)
-  fill the rest of 1207 to the middle of 1209; the road (RoadByte, yellow, lines 145-190) runs to the end of 1211.
+- **What it shows**: the call list in its order (4.6). the far band (FarByte, purple) began in frame 1204, before
+  the recorded window (lines 64-76 are not drawn): line 77 at the start of 1205, then the interrupt's note, then
+  lines 79-95 to the end of 1205; in 1206 come the buggy (DrawSprite40x23Rows, cyan), the shots, the colours (SceneryColoursRepaint,
+  orange squares), then the near band (NearBandByte, red, lines 128-159) runs into 1207; the middle band (MiddleByte,
+  green, lines 96-127) fills the rest of 1207 to the middle of 1209; the road (RoadByteBits, yellow, over RoadByte,
+  lines 160-191) runs to the end of 1211. Each band is the 32 lines its scroller takes from ScreenLineTable: + `$80`
+  for the far band (`$A87C`), + `$100` for the near (`$A909`), + `$C0` for the middle (`$A8D1`), + `$140` for the
+  road (`$A954`).
 - **The band writes are long flat lines**: each band is rewritten row by row over a frame or more, so the beam
   crosses it mid-way. 9068 screen writes in the pass, 3657 of them after the beam: the bands tear, and the game does
   not try to avoid it. Each band is moved by one routine in one sweep, so the tear is a line across a band, never a
@@ -667,7 +682,7 @@ segment's 127 passes) is a speed in passes. The arcade's smooth scroll became a 
 | a segment | SegmentLength `$976C` | 127 passes in 50 segments, 63 in 9, 64 in 1 | about 18 s at 7 passes a second |
 | a point's delay | CmdPoint `$9775` | 63 passes in 40 points, 62 in 10 | about 9 s |
 | an object's delay | every spawn command | its first byte, in passes | |
-| the death | BuggyUpdate | 8 passes, the scrollers stopped | |
+| the death | BuggyUpdate, SpeedGovernor `$AF3A` | 8 passes, the scrollers stopped, + `$1800` loops in each governor call (319 488 T a pass) | about a living pass each: 4.6 frames of delay for the 4.2 of scrolling skipped (from the code) |
 | the hold, after H | HoldCheck `$AEEA` | the release, then 5 `HALT`s | 0.1 s |
 | the hold, leaving with H | HoldCheck `$AF09` | 5 `HALT`s | 0.1 s |
 | the bonus tune | SectorBonus `$A569` | 22 BEEPER notes, interrupts off | 3.7 s (`i1` 5189-5374) |
@@ -676,7 +691,7 @@ segment's 127 passes) is a speed in passes. The arcade's smooth scroll became a 
 | after the fanfare | SectorBonus `$A5AD` | 50 `HALT`s | 1 s |
 | a second of time bonus | TimeBonusLoop `$A5B9` | the blip (4.8 frames, interrupts off) and 4 `HALT`s | 0.18 s |
 | after the time bonus | Wait100Frames | 100 `HALT`s | 2 s |
-| the bonus flash | BonusFlash `$A664` | 25 passes (50 after a best time) of MenuDelay C = `$AF` | 25 x 8.4 frames = 4.2 s |
+| the bonus flash | BonusFlash `$A664` | 25 passes (50 after beating a recorded best time) of MenuDelay C = `$AF` | 25 x 8.4 frames (175 x 3339 T a flash pass) = 4.2 s |
 | the whole bonus screen of sector E | SectorBonus | | 848 frames, 17 s (`i1`, from the pass before to the pass after) |
 | a tune step | TunePlayer | every third interrupt | 0.06 s |
 | a tune rest | TuneRest `$7F8F` | `$05C0` turns of a 26 T loop | 38 000 T |

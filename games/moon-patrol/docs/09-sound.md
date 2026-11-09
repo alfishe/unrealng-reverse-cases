@@ -32,6 +32,8 @@ emulator and were not played while writing this.
   call plays one note. No shot, jump, explosion or death makes a sound: no game routine of the play reaches BEEPER or
   `OUT ($FE)` except the tune player.
 - **The menus are silent.** The attract cycle runs in IM 1 (the ROM's interrupt), which does not call TunePlayer.
+  The demo runs in IM 2 (LifeStart `$8196`) but sets the tune-off bit 7 of PlayerFlags `$B288` (`$819B`), so
+  TunePlayer plays rests.
 
 | Site | What | Called from | Mode |
 | --- | --- | --- | --- |
@@ -72,31 +74,31 @@ The tune is a list of 16-bit words at Tune `$B4E6-$B7E7` (770 bytes, 384 words a
 | --- | --- |
 | `$0000` | a rest: one note's time of silence |
 | `$FFFF` | the end: the pointer goes back to `$B4E6` and the first word is taken at once |
-| any other | a note: BEEPER's period + 1 |
+| any other | a note: the word is BEEPER's period HL |
 
 There is no length field: every word is one step of 3 interrupts (60 ms). A longer note is the same word repeated,
-and each repeat is a new attack (a beep of 10-15 ms and silence), so the tune is staccato throughout.
+and each repeat is a new attack (a beep of 10-14 ms and silence), so the tune is staccato throughout.
 
 The 16 periods the tune uses (word, cycles n, pitch, sound time):
 
 | Word | n | Hz | Pitch | T-states |
 | --- | ---: | ---: | --- | ---: |
-| `$06CE` | 3 | 247 | B3 | 42 507 |
-| `$05B4` | 4 | 294 | D4 | 47 652 |
-| `$0560` | 4 | 311 | D#4 | 44 964 |
-| `$0511` | 4 | 330 | E4 | 42 436 |
-| `$04C7` | 4 | 349 | F4 | 40 068 |
-| `$0480` | 4 | 370 | F#4 | 37 796 |
-| `$043E` | 4 | 392 | G4 | 35 684 |
-| `$03C4` | 6 | 441 | A4 | 47 670 |
-| `$038C` | 6 | 467 | A#4 | 44 982 |
-| `$0358` | 6 | 494 | B4 | 42 486 |
-| `$02F7` | 8 | 555 | C#5 | 50 440 |
-| `$02CB` | 8 | 588 | D5 | 47 624 |
-| `$02A1` | 8 | 623 | D#5 | 44 936 |
-| `$027A` | 8 | 660 | E5 | 42 440 |
-| `$0254` | 8 | 700 | F5 | 40 008 |
-| `$0231` | 8 | 741 | F#5 | 37 768 |
+| `$06CE` | 3 | 247 | B3 | 42 531 |
+| `$05B4` | 4 | 294 | D4 | 47 684 |
+| `$0560` | 4 | 311 | D#4 | 44 996 |
+| `$0511` | 4 | 330 | E4 | 42 468 |
+| `$04C7` | 4 | 349 | F4 | 40 100 |
+| `$0480` | 4 | 370 | F#4 | 37 828 |
+| `$043E` | 4 | 392 | G4 | 35 716 |
+| `$03C4` | 6 | 440 | A4 | 47 718 |
+| `$038C` | 6 | 466 | A#4 | 45 030 |
+| `$0358` | 6 | 494 | B4 | 42 534 |
+| `$02F7` | 8 | 554 | C#5 | 50 504 |
+| `$02CB` | 8 | 587 | D5 | 47 688 |
+| `$02A1` | 8 | 622 | D#5 | 45 000 |
+| `$027A` | 8 | 659 | E5 | 42 504 |
+| `$0254` | 8 | 699 | F5 | 40 072 |
+| `$0231` | 8 | 740 | F#5 | 37 832 |
 
 ![The in-game tune as a piano roll](img/sound/tune.png)
 
@@ -124,9 +126,9 @@ $B4EE  CE 06  CE 06  CE 06  CE 06    B3 B3 B3 B3
 $B4F6  58 03  58 03  58 03  00 00    B4 B4 B4 rest
 ```
 
-1. `$06CE`: not 0, not `$FFFF`; HL = `$06CD` (1741). H = 6.
+1. `$06CE`: not 0, not `$FFFF`; HL = `$06CE` (1742: `INC HL` for the end test, `DEC HL` back). H = 6.
 2. The cycles: n = 1 gives 6, n = 2 gives 12, n = 3 gives 18 >= 16: DE = 3.
-3. BEEPER sounds 3 cycles of 8 x (1741 + 30.125) = 14 169 T: 42 507 T, 12.1 ms, 247 Hz.
+3. BEEPER sounds 3 cycles of 8 x (1742 + 30.125) = 14 177 T: 42 531 T, 12.2 ms, 247 Hz.
 4. The fourth word is `$0000`: a rest of 38 272 T, so the three B3s and the four that follow are heard as two groups.
 
 ## 9.3 The player and its timing
@@ -141,7 +143,7 @@ again:
     if w == 0: goto rest
     if w == $FFFF: TunePointer = $B4E6; goto again
     if PlayerFlags bit 7: goto rest          ; the tune off (9.4)
-    HL = w - 1; DE = smallest n with n x H >= 16
+    HL = w; DE = smallest n with n x H >= 16    ; INC HL $7F68, DEC HL $7F7C
     BEEPER(HL, DE); DI; return
 rest:
     loop $05C0 times                          ; 38 272 T of silence
@@ -211,19 +213,19 @@ flowchart TD
     D -->|FFFF| E[pointer = B4E6] --> C
     D -->|note| F{B288 bit 7?}
     F -->|set| R
-    F -->|clear| G[HL = w - 1; DE = n with n x H at least 16]
+    F -->|clear| G[HL = w; DE = n with n x H at least 16]
     G --> H[BEEPER] --> I[DI, return]
     R --> Z
 ```
 
-- **Even note lengths.** n grows as the period's high byte falls, so n x (HL + 30) stays between 35 700 and 50 400
+- **Even note lengths.** n grows as the period's high byte falls, so n x (HL + 30) stays between 35 700 and 50 500
   T-states for every period: each note is 10-14 ms whatever its pitch.
 - **No note crosses an interrupt.** A note starts about 300 T after the frame interrupt and ends at most 51 000 T into
   that frame, 19 000 T or more before the next one. The handler cannot nest (the only window is BEEPER's `EI` before
   its `RET`, at `$7F8D`), and no recording shows a nested entry.
-- **The tempo is the interrupt's.** The main loop has no frame sync and a pass takes about 8.4 frames
-  ([doc 4](04-game-loop.md)); the tune does not care: one word every 3 interrupts, 16.7 words a second.
-- **The cost.** Every third frame the handler holds the CPU for one note or rest: 35 700-50 400 T of 209 664, 17-24 %
+- **The tempo is the interrupt's.** The main loop has no frame sync and a pass takes 6 to 8 frames
+  ([doc 4](04-game-loop.md), 4.7); the tune does not care: one word every 3 interrupts, 16.7 words a second.
+- **The cost.** Every third frame the handler holds the CPU for one note or rest: 35 700-50 500 T of 209 664, 17-24 %
   of the machine. In `i1` the handler averages about 16 600 T an entry ([doc 12](12-routine-reference.md)). A rest
   costs as much as a note.
 - **A life restarts the tune.** LifeStart writes `$B4E6` to TunePointer (`$9117`), so the tune starts from the top at

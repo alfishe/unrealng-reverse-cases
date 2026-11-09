@@ -31,7 +31,7 @@ WreckStep `$B217`, the wheels, DeadFlag `$B220`, the jump arc `$B221` and the ju
 | --- | --- | --- | --- |
 | on the ground | `$FF` | `$FF` | controls: jump, slow, fast; drift back to x `$38`; the crater probe |
 | in the air | `$FF` | 0 ... arc length | one arc step a pass; no left / right, no probe |
-| dying | 1 ... 8 | any | the death frames, the wheels fly; the scrollers stop |
+| dying | 0 ... 8 | any | the death frames, the wheels fly; the scrollers stop |
 | life over | 8 | any | MainLoopPass erases the last frame and returns |
 
 ```mermaid
@@ -109,9 +109,9 @@ Witness: BuggyUpdate entries `i1` 3601 (frames 263-30 438), `game` 1576; jump st
 The buggy's x does two things at once:
 
 - **Speed.** SpeedGovernor `$AF31` runs twice a pass and burns a delay loop chosen by x: forward (x > `$38`) 1 loop,
-  centre `$02EE`, back (x < `$38`) `$05DC`, plus `$1800` while dying. A loop is 26 T, so forward saves about 39 000 T
-  a call against the centre and back costs about 39 000 T more. The road moves 4 px a pass in every case: the
-  buggy goes faster by making the pass shorter (about +7 % forward, -6 % back, [doc 6.11](06-rendering.md#611-the-pass-against-time)).
+  centre `$02EE`, back (x < `$38`) `$05DC`, plus `$1800` while dying. A loop is 26 T, so forward saves about 19 500 T
+  a call against the centre, 39 000 T a pass from the two calls (`$9727`, `$9733`), and back costs as much more. The road moves 4 px a pass in every case: the
+  buggy goes faster by making the pass shorter (about +8 % forward, -7 % back against a centre pass of about 7.6 frames, [doc 6.11](06-rendering.md#611-the-pass-against-time)).
 - **The jump arc.** The same call stores one of three arcs in JumpArc `$B221` (JumpSpeeds `$AF68`): back `$AAF0`,
   centre `$AAFD`, forward `$AB16`. Each is a list of signed y steps ending in `$80`, summing to 0.
 
@@ -178,8 +178,8 @@ How to read the figure:
 - Height above the ground (`$92` - y) up the side, passes since the jump key along the bottom, one dot a pass.
 - The dashed yellow line is 12 lines: the buggy's box clears a rock's box (y `$94`) only at y <= `$86`
   ([doc 7.4](07-objects.md#74-collision-boxoverlap-and-the-jump-score)).
-- The yellow frame is the 11 passes a rock overlaps the buggy's x range (x `$54` down to `$2C`), drawn at the
-  earliest start the centre arc allows.
+- The yellow frame is the 11 passes a rock overlaps the buggy's x range (x `$54` down to `$2C`), drawn for the
+  latest jump the centre arc allows (contact from pass 5).
 - A model from the arc bytes of the image; no recording.
 
 **The point**: the back arc never rises 12 lines, so a jump from the back position cannot clear a rock; it clears a
@@ -193,8 +193,8 @@ python3 tools/fig_gameplay.py jumps   # docs/img/gameplay/jumps.png
 
 With the buggy at x `$38` the centre arc is high enough in its passes 5-19. A rock touches the buggy's box in 11
 consecutive passes, from x `$54` (pass p) to `$2C` (pass p + 10). The jump must start at a pass s with s + 5 <= p and
-s + 19 >= p + 10: s from p - 9 to p - 5, five possible passes, about 42 frames (0.84 s) of the pass length of 8.4
-frames. With the forward arc s runs from p - 15 to p - 7: nine passes. With the back arc there is no s. During the
+s + 19 >= p + 10: s from p - 9 to p - 5, five possible passes, about 38 frames (0.76 s) at the centre pass of about 7.6
+frames (doc 6.11). With the forward arc s runs from p - 15 to p - 7: nine passes. With the back arc there is no s. During the
 11 passes the rock passes x `$38` once and the jump pays 80 ([doc 7.3](07-objects.md#73-the-rock-the-pattern-of-every-ground-handler)).
 
 Known only from the code: the back arc's failure over rocks. In `g1` and `h1` the 4 rock deaths were not checked for
@@ -215,8 +215,9 @@ There is no damage: one touch kills. Every death goes through BuggyKill `$A7DD`,
 | `$A1CD` BoulderHandler | a boulder | BoxOverlap | none (`i2` 22) |
 | `$A358` PlantHandler | the green plant | BoxOverlap | none (`i2` 8) |
 
-BuggyKill returns unless the buggy is alive; it sets DeathStep and WreckStep to 0 and adds 25 points. From the next
-pass:
+BuggyKill returns unless the buggy is alive; it sets DeathStep and WreckStep to 0 and adds 25 points. In the same
+pass for a crater (the probe kills inside BuggyUpdate, `$AA9C`, which falls into its draw), in the next for an
+object (ObjectListRun runs at `$9715`, after BuggyUpdate at `$970C`):
 
 1. BuggyUpdate draws the death frame `$1E` + DeathStep after adding 1 to it: `$1F` ... `$26`, one a pass.
 2. WheelsFly runs four times a pass: the three wheels fly 32 steps along WheelPaths `$AC31`.
@@ -292,8 +293,9 @@ or a crater (`$AA9C`).
 - **Time.** The play time `$B285` counts on through deaths; only the bonus screen zeroes it. A death costs time
   bonus.
 - **Game over.** GameAfterLife `$8F9F`: with lives left the turn passes to the other player if that player is still
-  in; with none, GAME OVER (or GAME OVER PLAYER n), the hi-score entry ([doc 8.8](08-hud-and-text.md#88-the-hi-score-tables))
-  and the heroes page.
+  in. A player with no lives left gets GAME OVER (or GAME OVER PLAYER n) at once, held 200 frames; then, if the
+  other player is still in, that player's next life is played (`$8FFD`). Only when both are out come the hi-score
+  entries ([doc 8.8](08-hud-and-text.md#88-the-hi-score-tables)) and the heroes page.
 
 ```mermaid
 stateDiagram-v2
@@ -301,8 +303,9 @@ stateDiagram-v2
     GameStart --> Life: GameStartLife, lives - 1, PLAYER n
     Life --> AfterLife: the buggy died, DeathStep 8
     AfterLife --> Life: lives left, the other player if in the game
-    AfterLife --> GameOver: no lives left for anyone
-    GameOver --> HiScore: HiScoreEntry
+    AfterLife --> GameOver: this player has no lives
+    GameOver --> Life: the other player still in
+    GameOver --> HiScore: both out, HiScoreEntry
     HiScore --> Heroes
     Heroes --> [*]
 ```
@@ -315,6 +318,29 @@ GameAfterLife:                    ; $8F9F
     if lives and other player in the game: PlayerSwap
     if no lives: in_game = 0; print GAME OVER; if both out: HiScoreEntry, heroes
     goto GameStartLife
+```
+
+The turn and the end, at the top of GameAfterLife and in its hold:
+
+```asm
+GameAfterLife:
+$8F9F  LD A,(PlayerLives)
+$8FA2  AND A
+$8FA3  JR Z,GameOverPlayer     ; no lives: GAME OVER for this player
+$8FA5  CALL PlayerSwap         ; lives left: the other player's record, if in
+$8FA8  LD A,(PlayerActive)
+$8FAB  AND A
+$8FAC  JR NZ,GameStartLife
+$8FAE  JR GameStartNextPlayer
+...
+GameOverHold:
+$8FF0  CALL Wait100Frames      ; 200 frames of GAME OVER
+$8FF3  CALL Wait100Frames
+$8FF6  CALL PlayerSwap
+$8FF9  LD A,(PlayerActive)
+$8FFC  AND A
+$8FFD  JP NZ,GameStartLife     ; the other player still in: his next life
+$9000  LD A,(Players)          ; both out: the entries, then HeroesPage
 ```
 
 The figure of the lives in reserve is the progress figure of 10.5 (the red numbers).
@@ -331,7 +357,8 @@ go 3, 4 (frame 11 820, after 10 000), 5 (29 680, after 30 000); in `i2` 3, 4, 5,
   is a record ObjPoint in the object list; when it runs out it sets the point `$B27C`, the restart point, the HUD
   letter and the progress bar.
 - **Sectors.** The last segment of a sector holds a sector-end record: the word `$A4EE` (SectorBonus) and six bytes:
-  `01`, the time required (BCD word), the sector bonus (BCD byte), the scenery flag, the best time (BCD word).
+  the time required (BCD word, high byte first: `01 20` = 120 s), the sector bonus (BCD byte, hundreds), the scenery
+  flag for the next sector, the best time (BCD word).
 - **The bonus screen** `$A4EE` (IM 1, the game stopped) shows the time taken, the time required and the best time,
   adds the sector bonus, then 100 points a second under the required time; a new best time is written back into
   the script. Then LifeStart and MainLoop at the next sector.
@@ -364,13 +391,37 @@ flowchart LR
 
 ```text
 SectorBonus:                                     ; $A4EE, from the course interpreter
-    read TimeRequired, SectorBonus, scenery, BestTime; IM 1; clear screen
-    print the three times; score += SectorBonus x 100; BonusTune
-    d = TimeRequired - time (BCD)
+    read SectorTime $B241, SectorBonusPoints $B245, scenery, BestTime $B243; IM 1; clear screen
+    print the three times; score += SectorBonusPoints x 100; BonusTune
+    d = SectorTime - time (BCD)
     if d > 0: fanfare; repeat low byte of d: score += 100, blip, 4 frames
     else: SORRY NO TIME BONUS
     if time < BestTime: write time over the record's BestTime (AWESOME text unless BestTime was $09xx)
     time = 0; LifeStart; MainLoop at the next sector
+```
+
+The time bonus: the BCD difference, then only its low byte counted (bug 4 of 10.8):
+
+```asm
+$A584  LD HL,(SectorTime)      ; the record's time: L the hundreds, H the tens and units
+$A587  LD DE,(PlayerTime)
+$A58B  LD A,H
+$A58C  SUB D                   ; low BCD byte first
+$A58D  DAA
+$A58E  LD H,A
+$A58F  LD A,L
+$A590  SBC A,E                 ; high BCD byte, with the borrow
+$A591  DAA
+$A592  LD L,A
+$A593  BIT 7,A                 ; negative: no time bonus
+$A595  JP NZ,NoTimeBonus
+$A598  OR H                    ; zero: no time bonus
+$A599  JP Z,NoTimeBonus
+...
+$A5B2  LD A,H                  ; the seconds to count: the low BCD byte only, L is dropped
+$A5B3  LD HL,$0000
+$A5B6  LD (SectorBonusPoints),HL
+TimeBonusLoop:                 ; $A5B9: + 100 points, the blip, 4 HALTs, A - 1 in BCD
 ```
 
 ![Progress through the courses: score against frames, i1 and i2](img/gameplay/progress.png)
@@ -422,6 +473,33 @@ flowchart TD
     X -->|yes| L[lives + 1]
 ```
 
+The two fixed awards, the death's 25 and the sector bonus (ScoreAdd `$92D3` takes the BCD score in DE:BC, hundreds
+in B):
+
+```asm
+$A7E9  LD DE,$0000             ; BuggyKill: 25 points
+$A7EC  LD BC,$0025
+$A7EF  CALL ScoreAdd
+...
+$A55B  LD A,(SectorBonusPoints) ; SectorBonus: the record's byte, $10 = 1000
+$A55E  LD DE,$0000
+$A561  LD B,A
+$A562  LD C,E
+$A563  CALL ScoreAdd
+```
+
+```text
+award(points):                     ; ScoreAdd $92D3
+    score += points (BCD)          ; ScoreAddBcd $9344
+    if score passed the extra-life threshold and threshold < 60 000: lives += 1; threshold += 20 000
+```
+
+Worked example: the sector bonus `$10` of `i1`'s first sector gives BC = `$1000`, 1000 points; with the 24 seconds
+of time bonus (24 x 100) that is the 3400 of the first bonus screen (10.5).
+
+Witness: BuggyKill entries (each a 25) `game` 19, `p2` 8 (10.3); SectorBonus `i1` 5, `i2` 5; the extra lives in
+`i1` at frames 11 820 and 29 680 (10.4); the object scores in [doc 7.9](07-objects.md#79-scores-and-what-no-recording-reached).
+
 The figure of the score over a course is the one of 10.5.
 
 **The point**: the score rewards speed: a sector finished early pays 100 a second, more than most objects.
@@ -452,6 +530,10 @@ The figure of the difference is the progress figure of 10.5: Champion's slope is
 **The point**: the game is a fixed course; what changes between plays is the player's timing and, through R, the
 UFOs.
 
+Witness: the absence of adaptive difficulty is known only from the code (no read of the score, the lives or the
+time outside the HUD, ScoreAddBcd and SectorBonus); the two courses differ in `i1` (Beginner) and `i2` (Champion),
+the progress figure of 10.5.
+
 ## 10.8 Bugs and oddities
 
 | # | What | Witness |
@@ -464,7 +546,7 @@ UFOs.
 | 6 | The back jump cannot clear a rock (peak 10 lines, 12 needed) | code only (10.2) |
 | 7 | SceneryColoursRepaint writes 65 cells, the last at `$5B00` (FeedFarBand byte 0) | [doc 6.8](06-rendering.md#68-the-scenery-at-a-life-start) |
 | 8 | The four build-date strings start with the end code `$1F`: printed as nothing at every life start | `$7F00`, `$90B8`, `$A182`, `$B2C2`, [doc 8.6](08-hud-and-text.md#86-every-string) |
-| 9 | MenuBreakTest `$8215` is called on every page, its result never tested; BreakToBasic is never called | code (`$8222`, `$9740`) |
+| 9 | MenuBreakTest `$8215` is called on every menu page but the title (`$80A8`, `$8166`, `$81AE`, `$81E4`, `$82D7`), its result never tested; the two stubs MenuBreakToBasic `$8222` and CourseBreakToBasic `$9740` are never called | code |
 | 10 | Two wreck graphics pointers point into other data (`$3C` at the title, `$1F` at stripes) | [doc 6.12](06-rendering.md#612-oddities) |
 
 ```mermaid

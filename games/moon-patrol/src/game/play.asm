@@ -61,10 +61,12 @@ SetIm2:
 ; against the buggy's with BoxOverlap $A7FE first.
 ;
 ; The crater and mine handlers ($9A92, $9AEB) and the UFO saucers ($9B6B) never
-; call it: a crater kills through the ground probe; how a mine kills (the probe
-; or not at all) needs a run. Witness of the deaths that counted (not immune):
-; game 19 = 1 rock + 18 craters, a1 2 = 1 + 1, g1 4 rocks, p2 8 = 4 + 4, h1 4
-; rocks, h2 1 rock (l1sum $A7DD entries: game frames 2029-16149).
+; call it: a crater kills through the ground probe, and so does a mine: drawn
+; at y $A0, its ink is on line 162, and the probe's 5-pixel steps cannot miss
+; its 8-pixel width (known only from the code; no recording shows a mine
+; death). Witness of the deaths that counted (not immune): game 19 = 1 rock +
+; 18 craters, a1 2 = 1 + 1, g1 4 rocks, p2 8 = 4 + 4, h1 4 rocks, h2 1 rock
+; (l1sum $A7DD entries: game frames 2029-16149).
 BuggyKill:
   LD A,(DeathStep)
   INC A
@@ -81,8 +83,9 @@ BuggyKill:
 ; Clears E points left to right from (H = x, L = y) through UnplotPixel $FD99
 ;
 ; E = the count. Calls UnplotPixel $FD99 for x, x + 1, ...; keeps L. Callers:
-; $8064 (the options page), the mine $9AEB, the bomb $9CE0, the plant $A2C6.
-; Witness: a1 60 entries (frames 1218-18835), t1 3, i1 33, i2 63.
+; $8118 (the score advance page, $8133 / $813B / $8143), the mine $9AEB, the
+; bomb $9CE0, the plant $A2C6. Witness: a1 60 entries (frames 1218-18835), t1
+; 3, i1 33, i2 63.
 UnplotRun:
   PUSH HL
   CALL UnplotPixel
@@ -187,11 +190,11 @@ DrawSpriteDone:
 ; HillsStrip $EBC0 every 8 passes
 ;
 ; Only while the buggy is alive ($B216 = $FF). The counter $B224 runs 8 passes;
-; at 0 the next 32 bytes of the mountains graphic ($B226 + $20, from $EBC0 up
-; to $F000 and round) go to FeedFarBand $5B00. Each pass every line of 64-95
-; (the line table at $FC80) rolls left one pixel through its 32 bytes, the new
-; bit from the line's FeedFarBand byte. Witness: game 1576, a1 292, g1 493, p2
-; 664, h1 493, i1 3601, i2 3935, h2 40 entries: once a main-loop pass.
+; at 0 the next 32 bytes of HillsStrip ($B226 + $20, from $EBC0 up to $F000 and
+; round) go to FeedFarBand $5B00. Each pass every line of 64-95 (the line table
+; at $FC80) rolls left one pixel through its 32 bytes, the new bit from the
+; line's FeedFarBand byte. Witness: game 1576, a1 292, g1 493, p2 664, h1 493,
+; i1 3601, i2 3935, h2 40 entries: once a main-loop pass.
 ScrollFarBand:
   LD A,(DeathStep)
   INC A
@@ -221,7 +224,7 @@ FarRoll:
   LD IX,FeedFarBand
   LD C,$20
   LD HL,ScreenLineTable+$0080
-MountainsLine:
+FarLine:
   LD E,(HL)               ; HL = the line's last byte, one bit from the feed
                           ; byte
   INC HL
@@ -233,14 +236,14 @@ MountainsLine:
   LD L,A
   RLC (IX+$00)
   LD B,$20
-MountainsByte:
+FarByte:
   RL (HL)
   DEC HL
-  DJNZ MountainsByte
+  DJNZ FarByte
   EX DE,HL
   INC IX
   DEC C
-  JR NZ,MountainsLine
+  JR NZ,FarLine
   RET
 
 ; The middle band (lines 96-127): two pixels left a pass, 8 new columns from
@@ -279,7 +282,7 @@ MiddleRoll:
   LD IX,FeedMiddleBand
   LD C,$20
   LD HL,ScreenLineTable+$00C0
-HillsLine:
+MiddleLine:
   LD E,(HL)               ; two bits from the feed byte
   INC HL
   LD D,(HL)
@@ -294,7 +297,7 @@ HillsLine:
   RLC (IX+$00)
   RLA
   LD B,$20
-HillsByte:
+MiddleByte:
   RRCA
   RRCA
   RLA
@@ -303,11 +306,11 @@ HillsByte:
   RL (HL)
   RLA
   DEC HL
-  DJNZ HillsByte
+  DJNZ MiddleByte
   EX DE,HL
   INC IX
   DEC C
-  JR NZ,HillsLine
+  JR NZ,MiddleLine
   RET
 
 ; The band of lines 128-159: two pixels left while the buggy is in the air,
@@ -518,8 +521,9 @@ RoadFeedWallB:
 ; time). The test runs in play and during the death frames.
 ;
 ; Witness: game 1576, a1 292, g1 493, p2 664, h1 493, i1 3601, i2 3935, h2 40
-; entries (i1 frames 263-30438); jump started (AA2A) game 463, i1 3249 steps;
-; the probe hits $AA9C game 18, a1 1, p2 4, i1 69, i2 67.
+; entries (i1 frames 263-30438); jump steps (AA2A, one a pass of a jump) game
+; 463, i1 3249; the jump key down ($AA24) game 75 passes; the probe hits $AA9C
+; game 18, a1 1, p2 4, i1 69, i2 67.
 BuggyUpdate:
   LD A,(DeathStep)
   CP $FF
@@ -1497,20 +1501,21 @@ ScrollAdjustIfAlive:
 ; Adds the scroll step of y's band to x (H): what is drawn there moves with its
 ; band
 ;
-; L = y: below $40 nothing; $40-$5F the mountains' step $B225 (1); $60-$7F the
-; hills' $B229 (2); $80-$9F the hills' step only while BuggyAirborne (the near
-; band scrolls then); $A0 and down the road's $B235 (4). Returns through
-; BuggyAirborne. Witness: game 3022, a1 672, g1 1932, p2 2277, h1 1932, h2 78
-; entries (falls in from ScrollAdjustIfAlive in i1 / i2, so no entries there).
+; L = y: below $40 nothing; $40-$5F the far band's step HillsSpeed $B225 (1);
+; $60-$7F the middle band's MiddleSpeed $B229 (2); $80-$9F MiddleSpeed only
+; while BuggyAirborne (the near band scrolls then); $A0 and down the road's
+; $B235 (4). Returns through BuggyAirborne. Witness: game 3022, a1 672, g1
+; 1932, p2 2277, h1 1932, h2 78 entries (falls in from ScrollAdjustIfAlive in
+; i1 / i2, so no entries there).
 ScrollAdjustX:
   LD A,L
   CP $40
   JR C,BuggyAirborne
   CP $60
-  JR NC,ScrollAdjustHills
+  JR NC,ScrollAdjustMiddle
   LD A,(HillsSpeed)
   JR ScrollAdjustAdd
-ScrollAdjustHills:
+ScrollAdjustMiddle:
   CP $80
   JR NC,ScrollAdjustNear
   LD A,(MiddleSpeed)

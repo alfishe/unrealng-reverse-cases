@@ -127,13 +127,15 @@ course, Z X C V B K the controls (OptionsSelect `$8360`); the chosen line of eac
 The demo is not a recorded game. DemoPage starts a life (LifeStart `$90D3`) and runs 100 passes of the main loop's
 call list `$96FA` with the object list off (ObjectsOff `$B238` = `$80`) and the tune off: the buggy drives on its own
 over the bare ground (`a1` frame 20 800, "DEMO" flashing). Any key leaves the demo for the options page
-(MenuCheckAnyKey `$8321` reads every half-row), so the keys cannot steer it; a joystick's directions would, since
-BuggyUpdate reads the chosen control in the demo too (known only from the code). Each demo complements the scenery
+(MenuCheckAnyKey `$8321` reads every half-row), so the keys cannot steer it. The Sinclair and cursor joysticks are
+keys too (half-rows `$EFFE` and `$F7FE`): any of their directions ends the demo. Only a Kempston (port `$1F`) or
+Fuller (port `$7F`) stick's directions would steer it, since BuggyUpdate reads the chosen control in the demo too;
+fire on any device starts a game (MenuCheckStart `$81B1`). Known only from the code. Each demo complements the scenery
 flag, so successive demos alternate the mountains and the city.
 
 ## 1.3 The play screen
 
-![Play on the Beginner course: the HUD on rows 0-2, the sky, the mountains, the hills, the buggy's band and the road](img/play/a1-play-beginner.png)
+![Play on the Beginner course: the HUD on rows 0-2, the sky, the hills, the mountains, the buggy's band and the road](img/play/a1-play-beginner.png)
 
 `a1` frame 1700, the first seconds of play. Top to bottom:
 
@@ -142,11 +144,13 @@ flag, so successive demos alternate the mountains and the city.
   buggy icons, the course map E J P U Z with the progress dots under it, TIME (seconds), POINT (the last point
   passed), BEGINNER or CHAMPION, and the three warning lamps on the right.
 - **Rows 3-7**: the black sky where the UFOs fly.
-- **Rows 8-11**: the mountains, or the moon base in the city sectors, scrolling one pixel a pass (ScrollFarBand
+- **Rows 8-11**: the far band, the craggy hills (HillsStrip `$EBC0`), scrolling one pixel a pass (ScrollFarBand
   `$A846`).
-- **Rows 12-15**: the hills, two pixels a pass (ScrollMiddleBand `$A89A`).
-- **Rows 16-19**: the buggy's band. It scrolls two pixels a pass, but only while the buggy is in the air
-  (ScrollNearBand `$A8FD`).
+- **Rows 12-15**: the middle band, the mountains, or the moon base in the city sectors (MountainsStrip `$E340`,
+  MoonBaseStrip `$E780`), two pixels a pass (ScrollMiddleBand `$A89A`).
+- **Rows 16-19**: the buggy's band. It scrolls two pixels a pass, but only while the buggy is at least 10 pixels up
+  (BuggyY under `$89`, BuggyAirborne `$AFA5`; ScrollNearBand `$A8FD`). The back jump, which peaks at 10, scrolls it only in its 3 top
+  passes.
 - **Rows 20-23**: the road, four pixels a pass (ScrollRoad `$A932`), with the craters cut into its top line.
 - **The bottom right cell** shows the letter of the coming point in inverse (CmdPoint `$9775`) until the point is
   passed.
@@ -195,7 +199,7 @@ The keys of the game itself:
 | H | play | the hold: the game stops; H again, S or fire goes on (`a1` frames 2060-2220) | HoldCheck `$AECE` |
 | T | play | the tune on or off (`a1` frames 2540 and 2740) | TuneToggleCheck `$AF15` |
 | CAPS SHIFT and SPACE | play | the abort: back to the title (`a1` frame 3174) | BuggyUpdate `$AABF` |
-| CAPS SHIFT and SPACE | the menus | nothing: the test runs and its result is never used | MenuBreakTest `$8215` |
+| CAPS SHIFT and SPACE | the menus but the title | nothing: the test runs and its result is never used | MenuBreakTest `$8215` |
 | 0 | play | nothing: the test runs and its result is never used (`a1` pressed it) | BreakKeyTest `$9737` |
 
 The two dead tests are the remains of a development exit to BASIC. Each is followed in the image by a stub that
@@ -231,7 +235,8 @@ passes a second the game makes. Forward is fast, back is slow: the arcade's spee
 of the arc to the buggy's y until the end mark `$80`. The bytes of each arc add up to 0: the buggy lands where it
 left. The arc is the one SpeedGovernor chose from x, and x does not change in the air. So a forward jump is long
 (32 passes x 4 pixels of road = 128 pixels of ground) and a back jump short (48 pixels). Witness: `c1`'s random
-play started 463 jumps (BuggyUpdate `$AA2A`), `i1` ran 3249 jump steps. The arcs as data are in
+play ran 463 jump steps (BuggyJumpStep `$AA2A`, one a pass of a jump), `i1` 3249; the jump key was down in 75 passes
+in `c1` (`$AA24`). The arcs as data are in
 [doc 10](10-gameplay-logic.md).
 
 **Shooting.** Each new press of fire sends a forward shot along the ground, if the one before has ended, and an
@@ -475,7 +480,10 @@ What the player sees, pass by pass:
    DeathStep from 0 to 8).
 2. The three wheels fly off along WheelPaths, the front one left, the back one right, four steps a pass
    (WheelsFly, four calls a pass).
-3. The scenery stops: the scrollers run only while DeathStep is `$FF`.
+3. The scenery stops: the scrollers run only while DeathStep is `$FF`. SpeedGovernor adds `$1800` loops to each of
+   its two delays while DeathStep is not `$FF` (`$AF3A`): 319 488 T, about 4.6 frames a pass, for the 4.2 frames of
+   scrolling skipped. So a death pass lasts about as long as a living one, and the explosion plays at the game's
+   usual pace (known only from the code).
 4. At step 8 the main loop erases the last frame, puts the course pointer back to the restart point and returns:
    the life is over (MainLoopPass `$96BB`).
 5. The banner "PLAYER n" for 100 frames, then the next life from the restart point.
@@ -578,7 +586,7 @@ At GAME OVER, HiScoreEntry `$8B8F` asks for the initials when the score beats th
 hero; three letters, typed with the ROM's keyboard scan, ENTER to finish ([screenshot](img/play/h1-initials.png),
 `h1` frame 4500). A score over THE GREATEST's asks first for a 20-letter name typed over the old one: a shorter name
 keeps the old tail (`h2` typed STAGE ONE over SPIKE NOTWELL and got STAGE ONEWELL,
-[screenshot](img/play/h2-greatest-name.png)). Equal scores do not enter: the older record stays above. The tables
+[screenshot](img/play/h2-greatest-name.png)). A score equal to the last place does not enter; one that enters goes above older equal scores. The tables
 as code are in [doc 8](08-hud-and-text.md).
 
 The tape warning "You have attempted to load an Atarisoft Robotron hi-score table" (RobotronWarningText `$873B`)
@@ -599,8 +607,8 @@ T on the options page chooses two players (`p2`). The players take turns, a life
   ([screenshot](img/play/p2-two-player-hud.png), `p2` frame 1050).
 - The banner holds 300 frames instead of 100, so the players can hand over the controls.
 - A player who loses his last life gets "GAME OVER PLAYER n" for 200 frames; the other plays on alone
-  ([screenshot](img/play/p2-game-over-player2.png), `p2` 7700). At the end each player gets his own hi-score entry,
-  player 1 first.
+  ([screenshot](img/play/p2-game-over-player2.png), `p2` 7700). At the end each player gets his own hi-score entry:
+  first the player who went out first, then the last one (`$9006-$900F`).
 
 Witness: `p2` swapped the records 30 times; player 2's banner at frame 1150; GAME OVER PLAYER twice. The second
 player's hi-score entry (`$9009-$900F`) is known only from the code: `p2` stopped in the first.

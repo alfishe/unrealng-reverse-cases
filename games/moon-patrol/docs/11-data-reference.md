@@ -148,7 +148,7 @@ Written by `kit/refdocs.py`.
 | `$B221` | `JumpArc` | 2 | Pointer into the jump arc table at `$AF68` during a jump. Set at `$AF5E` when the jump starts; read each pass by `$AA2E`. | `BuggyUpdate` | `SpeedGovernor` |
 | `$B223` | `JumpStep` | 1 | The jump's step, `$FF` on the ground. Set at the life start (`$90E2`); read and written by the buggy routine at `$AA0F` (`$AA1F-$AA49`). | `BuggyUpdate` | `BuggyUpdate`, `LifeStart` |
 | `$B224` | `FarCountdown` | 1 | Passes left to the next column fed into FeedFarBand (the far band rolls 1 pixel every pass). Set at `$9568` and `$A873`, counted at `$A84B` by the far-band scroller at `$A846` (a new column every 8 passes). | `ScrollFarBand` | `ScenerySetup`, `ScrollFarBand` |
-| `$B225` | `HillsSpeed` | 1 | The hills layer's step, 1; never written. Read by `$AF82` (the shots' drift). | `ScrollAdjustX` | - |
+| `$B225` | `HillsSpeed` | 1 | The far band's (HillsStrip's) step, 1; never written. Read by `$AF82` (the shots' drift). | `ScrollAdjustX` | - |
 | `$B226` | `FarColumn` | 2 | Pointer to the next column of HillsStrip `$EBC0` to feed in. Set at `$956E`; read and moved by the scroller at `$A851`/`$A865`, wrapping from `$F000` to `$EBC0`. | `ScrollFarBand` | `ScenerySetup`, `ScrollFarBand` |
 | `$B228` | `MiddleCountdown` | 1 | Passes left to the next 2-pixel scroll of the middle layer (mountains or city). Set at `$9565` and `$A8C8`, counted at `$A89F` by the scroller at `$A89A` (one scroll every 4 passes). | `ScrollMiddleBand` | `ScenerySetup`, `ScrollMiddleBand` |
 | `$B229` | `MiddleSpeed` | 1 | The middle layer's step, 2; never written. Read by `$AF8B` and `$AFA0`. | `ScrollAdjustX` | - |
@@ -230,8 +230,8 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$BEF8` | `ObjectList` | 669 | The live objects: one record per object, written by the course commands, run each pass. Each record starts with the handler's address (a word) and the handler's own bytes; the first of them is the countdown before the object appears. The script commands write records at ObjectWrite `$B261` (from `$96A1`: LD HL,`$BEF8`); the main loop runs the list through `$9745` (`$974A` LD HL,`$BEF8`) and the interpreter at `$9751`, which stops at the end word `$975E`. The tape menu also clears it (`$8288` LD IX,`$BEF8`, `$830F`). The record sizes the commands write: 20 bytes for a UFO (`$9B6B`), 14 a tank (`$9EBD`), 9 a low flyer (`$A03B`), 8 a boulder (`$A196`) or a plant (`$A2C6`). `$BEF8-$C194` is written in the runs. | `BoxOverlap`, `CourseRun`, `ObjCrater`, `ObjLamps`, `ObjPoint` +3 | `CmdCraters`, `CmdLamps`, `CmdPoint`, `CmdRocks`, `CmdUfos` +8 |
-| `$C195` | `FreeSpace` | 381 | Never written in the runs: free space between the object list and the stack, zero in the image | - | - |
-| `$C312` | `Stack` | 62 | The machine stack below BASIC's RAMTOP: the game keeps BASIC's stack (BasicStack `$B25D`), written from `$C312` to `$C34F` in the runs | - | `AllTimePrintRow`, `BlitRows`, `BoxOverlap`, `BreakKeyTest`, `BuggyAirborne` +58 |
+| `$C195` | `FreeSpace` | 359 | Never written in the runs: free space between the object list and the stack (`$C195-$C2FB`), zero in the image | - | - |
+| `$C2FC` | `Stack` | 84 | The machine stack below BASIC's RAMTOP: the game keeps BASIC's stack (BasicStack `$B25D`); written from `$C2FC` to `$C34F` in the runs (`$C2FC-$C311` by the IM 2 handler, its pushes and BEEPER's, which the L1 counters miss; `$C312-$C337` seen by them) | - | `AllTimePrintRow`, `BlitRows`, `BoxOverlap`, `BreakKeyTest`, `BuggyAirborne` +58 |
 
 ## graphicsb
 

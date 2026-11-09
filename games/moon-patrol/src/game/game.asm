@@ -15,7 +15,7 @@ ScreenRow159   EQU $5760  ; the screen line of pixel row 159 (the row over the g
 Attributes     EQU $5800  ; the screen attributes
 AttrRow18      EQU $5A40  ; the attribute line of character row 18 (the green plant's head)
 AttrRow20      EQU $5A80  ; the attribute line of character row 20
-FeedFarBand    EQU $5B00  ; printer buffer: the next 8 columns of the mountains, one byte a line (lines 64-95)
+FeedFarBand    EQU $5B00  ; printer buffer: the next 8 columns of the far band (HillsStrip), one byte a line (lines 64-95)
 FeedMiddleBand EQU $5B20  ; printer buffer: the next 8 columns of the hills, one byte a line (lines 96-127)
 FeedRoad       EQU $5B40  ; printer buffer: the next 8 columns of the road, one byte a line (lines 160-191)
 ShotForward    EQU $5B60  ; printer buffer: the forward shot: y ($FF free), x, height (3; $FF = hit), width, end x

@@ -104,7 +104,7 @@ JumpStep:
 FarCountdown:
   DEFB $00
 
-; The hills layer's step, 1; never written
+; The far band's (HillsStrip's) step, 1; never written
 ;
 ; Read by $AF82 (the shots' drift).
 HillsSpeed:

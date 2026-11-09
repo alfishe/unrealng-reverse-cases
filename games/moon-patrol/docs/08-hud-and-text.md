@@ -190,7 +190,7 @@ PrintCharNormal sorts the code:
 | `$80-$FF` | prints `!` | - |
 | `$0D` | new line: x to the margin `$F005`, y + the line step (past 184 wraps to the top) | - |
 | `$10` INK, `$11` PAPER, `$12` FLASH, `$13` BRIGHT | set the attribute PrintAttr `$F004` | n |
-| `$14`, `$15` | print `?` (no handler of their own) | - |
+| `$14`, `$15` | PrintSwallow `$FE23` takes the next byte: it is not printed, a `?` is printed in its place (never used by the texts) | 1 |
 | `$16` AT | the position in pixels, x first | x, y |
 | `$17` TAB | to pixel x; a new line if left of the cursor | x |
 | `$18` MARGIN | the left margin | n |
@@ -430,10 +430,11 @@ The strings on screen are in the figures of 8.7 and 8.8.
 
 ## 8.7 The menu pages
 
-The attract cycle runs in IM 1 (the ROM's interrupt): TitlePage (100 passes), OptionsPage (100), ScoreAdvancePage
+The attract cycle runs in IM 1 (the ROM's interrupt), except the demo, which runs the game's IM 2 (LifeStart
+`$8196`) with the tune off: TitlePage (100 passes), OptionsPage (100), ScoreAdvancePage
 (200), DemoPage (100 main-loop passes of the game with no objects), HeroesPage (200), and back to the title. Every
-page pass checks the keys: S or fire starts the game (`$8F10`), H jumps to the heroes, L / J / G the tape (on the
-heroes page), any key on the title goes to the options. A check that fires jumps straight to its page with SP
+page pass checks the keys: S or fire starts the game (`$8F10`), H jumps to the heroes, L / J / G the tape (on every
+page), any other key goes to the options (not on the options page itself). A check that fires jumps straight to its page with SP
 reloaded from `$B25D`.
 
 Each page draws a pixel frame whose attribute rings change colour every pass (CycleFrameColours), and every text
@@ -451,6 +452,7 @@ stateDiagram-v2
     Title --> Game: S or fire
     Options --> Game: S or fire
     ScoreAdvance --> Game: S or fire
+    ScoreAdvance --> Options: any other key
     Heroes --> Tape: L, J, G
     Tape --> Heroes: done or BREAK
     Title --> Heroes: H
@@ -498,9 +500,10 @@ not saved.
   GREATEST's goes to GreatestEntry `$8E4E`; any other asks for 3 initials (EntryFieldEdit into `$B289`).
 - **The field editor.** EntryFieldEdit uses the ROM keyboard (IM 1 and LAST_K, CAPS LOCK on): `$20-$5E` are stored at
   the cursor, ENTER ends; 8, 9 and 12 move left, right and delete. Typing over a longer old text keeps its tail.
-- **Sorting is insertion.** HiScoreFindSlot walks the table from the top with ScoreCompare (byte by byte, highest
-  first) and stops at the first record with a higher score; the place is the one below it. The records below shift
-  down 7 bytes (LDDR) and the last falls off. Equal scores do not pass: the older record stays above.
+- **Sorting is insertion.** HiScoreFindSlot `$8EE3` walks up from the last record with ScoreCompare (byte by byte, highest
+  first, carry when the new score is lower) and stops below the first record with a higher score. An equal score
+  passes, so the new record goes above an older equal one; a score equal to the last does not enter at all (the
+  strict test of HiScoreEntry). The records below shift down 7 bytes (LDDR) and the last falls off.
 - **THE GREATEST.** The all-time records 2-39 shift down one place (the 40th is lost), the old greatest's initials and
   score become number 2, but its name is not kept: the new name is typed over the old one in place.
 - **Saving.** On the heroes page L loads into the buffer `$BEF8` and copies it over `$88AC` on success, J saves
@@ -551,9 +554,10 @@ python3 tools/fig_hud.py entry     # docs/img/hud/entry.png
 ### Worked example: h1's 1260 points
 
 The heroes in the image: MIK `00 00 12 00` (1200) first, PAH `00 00 10 80` (1080) second, and so on. h1 ends with
-1260. 1260 > the tenth hero, so the prompt runs; the initials MPA are typed. FindSlot over the heroes: ScoreCompare of
-`00 00 12 60` with MIK's `00 00 12 00` finds the third byte equal and the fourth `$60` > `$00`: MIK is not higher, so
-the walk stops at once and MPA goes to place 1; the nine below shift down and the tenth is lost. In the all-time table
+1260. 1260 > the tenth hero, so the prompt runs; the initials MPA are typed. FindSlot over the heroes (`$8C63`, B = 10)
+starts at the tenth record and walks up: no record is higher than 1260, so no ScoreCompare gives carry. The last is
+MIK's: `00 00 12 60` against `00 00 12 00`, the third byte equal, the fourth `$60` > `$00`, no carry. The 10 steps
+run out above MIK, `$8F01` adds 7 back, and MPA goes to place 1; the nine below shift down and the tenth is lost. In the all-time table
 1260 only beats the last record, so it goes to place 40.
 
 Witness: HiScoreEntry entries `game` 4, `g1` 1, `p2` 1, `h1` 1, `h2` 1; `h1` placed all-time (`$8C1D`, place 40) and

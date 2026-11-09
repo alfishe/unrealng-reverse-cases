@@ -16,12 +16,14 @@
 ObjectList:
   DEFS $029D
 
-; Never written in the runs: free space between the object list and the stack,
-; zero in the image
+; Never written in the runs: free space between the object list and the stack
+; ($C195-$C2FB), zero in the image
 FreeSpace:
-  DEFS $017D
+  DEFS $0167
 
 ; The machine stack below BASIC's RAMTOP: the game keeps BASIC's stack
-; (BasicStack $B25D), written from $C312 to $C34F in the runs
+; (BasicStack $B25D); written from $C2FC to $C34F in the runs ($C2FC-$C311 by
+; the IM 2 handler, its pushes and BEEPER's, which the L1 counters miss;
+; $C312-$C337 seen by them)
 Stack:
-  DEFS $3E
+  DEFS $54

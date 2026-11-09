@@ -422,7 +422,7 @@ AAD0  C3 04 80     JP TitlePage
 
 Two tests run, and their result is dropped:
 
-- **MenuBreakTest `$8215`** runs on every menu pass. It tests CAPS SHIFT and SPACE, the same test as the abort, and
+- **MenuBreakTest `$8215`** runs on every menu pass but the title's. It tests CAPS SHIFT and SPACE, the same test as the abort, and
   its caller ignores the flags (`a1` 2424 calls).
 - **BreakKeyTest `$9737`** runs once a pass in play. It tests the key 0 (`$EFFE` bit 0) and returns Z when it is
   down. MainLoopCalls ignores it (`i1` 3601 calls).
@@ -539,7 +539,10 @@ Witness:
 
 ## 5.5 The menu keys and the options page
 
-Each menu page calls the same five tests on every pass (doc 1, 1.2):
+Each menu page calls up to five tests on every pass (doc 1, 1.2): MenuBreakTest on all but the title,
+MenuCheckStart and MenuCheckTape on all, MenuCheckHeroes on all but the hi-score page, MenuCheckAnyKey on all but
+the options page (TitleLoop `$8048`, OptionsLoop `$80A7`, ScoreTableLoop `$8165`, DemoLoop `$81AA`, HeroesPageLoop
+`$81E3`, TapeMessageLoop `$82D7`):
 
 | Test | Keys | Port, mask | Then | Witness |
 | --- | --- | --- | --- | --- |
@@ -551,17 +554,16 @@ Each menu page calls the same five tests on every pass (doc 1, 1.2):
 
 ```mermaid
 flowchart TD
-    P[a menu pass] --> B[MenuBreakTest: result dropped]
+    P[a menu pass] --> B[MenuBreakTest, not on the title: result dropped]
     B --> S{S alone, or fire alone on a joystick?}
     S -->|yes| GS[GameStart 8F10]
-    S -->|no| H{H alone?}
+    S -->|no| H{H alone? not on the hi-score page}
     H -->|yes| HP[HeroesPage 81D0]
     H -->|no| T{L, J or G?}
     T -->|yes| TP[the tape]
-    T -->|no| PG[the page's own work]
-    PG --> A{any key? not on the options page}
+    T -->|no| A{any key? not on the options page}
     A -->|yes| OP[OptionsPage 8064]
-    A -->|no| D[MenuDelay, next pass]
+    A -->|no| PG[the page's own work, MenuDelay, next pass]
 ```
 
 ```asm
@@ -589,6 +591,9 @@ flowchart TD
   through to the options page.
 
 ### The options page
+
+There is no key redefinition. The keyboard is fixed to Q A O P and the other keys of 5.3 (KeysQAOP `$AEB2`); the
+options page only picks the device, the players and the course.
 
 The options page reads keys the ROM's way. Each pass it calls KEY_SCAN `$028E`, which returns one key's code in E
 (`$FF` for none, NZ for two keys at once). It offers the code to three small tables in turn:
@@ -679,6 +684,51 @@ flowchart TD
     E -->|20 to 5E| C[store, cursor right] --> W
     E -->|other| W
 ```
+
+The wait and the dispatch (EntryCursor `$B254`, EntryLength `$B24B`, EntryBuffer `$B24C` hold the field's record):
+
+```asm
+EditWaitKey:
+$8D23  LD HL,LAST_K           ; LAST_K = 0, wait for a key
+$8D26  XOR A
+$8D27  LD (HL),A
+EditWaitLoop:
+$8D28  CP (HL)                ; the ROM's IM 1 scan writes the next key code here
+$8D29  JR Z,EditWaitLoop
+$8D2B  LD A,(HL)
+$8D2C  CP $0D                 ; ENTER: done
+$8D2E  RET Z
+$8D2F  CP $08
+$8D31  JP Z,EditCursorLeft
+$8D34  CP $09
+$8D36  JP Z,EditCursorRight
+$8D39  CP $0C                 ; DELETE
+$8D3B  JP Z,EditDelete
+$8D3E  CP $20                 ; below space: ignored
+$8D40  JR C,EditWaitKey
+$8D42  CP $5F                 ; above $5E: ignored
+$8D44  JR NC,EditWaitKey
+$8D46  LD D,A                 ; a character into the buffer at the cursor
+$8D47  CALL EditCursorAddress  ; HL = EntryBuffer + EntryCursor
+$8D4A  LD (HL),D
+$8D4B  JP EditCursorRight      ; cursor + 1 unless it would reach EntryLength
+```
+
+Worked example, `h2` typing STAGE ONE over THE GREATEST's name. GreatestNameField `$8D53` is `14 AD 88 7C 44`:
+20 characters, the buffer `$88AD`, its place on the screen. The buffer holds SPIKE NOTWELL and spaces (doc 1, 1.11).
+
+| Key | LAST_K | Stored at | Cursor after | Buffer |
+| --- | --- | --- | ---: | --- |
+| (start) | | | 0 | `SPIKE NOTWELL` |
+| S | `$53` | `$88AD` | 1 | `SPIKE NOTWELL` |
+| T | `$54` | `$88AE` | 2 | `STIKE NOTWELL` |
+| A, G, E | `$41`, `$47`, `$45` | `$88AF-$88B1` | 5 | `STAGE NOTWELL` |
+| SPACE | `$20` | `$88B2` | 6 | `STAGE NOTWELL` |
+| O, N, E | `$4F`, `$4E`, `$45` | `$88B3-$88B5` | 9 | `STAGE ONEWELL` |
+| ENTER | `$0D` | | | `STAGE ONEWELL`: returned |
+
+Nothing clears the field first, so the old tail WELL stays: the name saved is STAGE ONEWELL, as `h2`'s screenshot
+shows (doc 1, 1.11). With caps lock set (FLAGS2 bit 3) the ROM's scan gives the capitals `$41-$5A` directly.
 
 - **The fields**: three letters for a hero (InitialsField `$8D4E`) and twenty characters for THE GREATEST's name
   (GreatestNameField `$8D53`). A field record gives its length, its buffer and its place on the screen.

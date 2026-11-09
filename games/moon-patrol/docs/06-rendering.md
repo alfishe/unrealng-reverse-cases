@@ -31,8 +31,8 @@ WALKTHROUGH 6.0 lists how each was made):
 ## 6.1 The screen
 
 - **One buffer.** Everything is drawn straight into the Spectrum's screen at `$4000`. There is no back buffer, no
-  copy and no frame sync ([doc 4](04-game-loop.md)). A pass of the main loop takes about 8.4 frames (`i1`: 3601
-  passes in about 30 175 frames of play, WALKTHROUGH 1). Every routine writes the screen when its turn in the pass
+  copy and no frame sync ([doc 4](04-game-loop.md)). A pass of the main loop takes 6 to 8 frames in play, 7.05 on average
+  (`i1` frames 300-4700, the buggy held forward; [doc 4](04-game-loop.md), 4.7). Every routine writes the screen when its turn in the pass
   comes.
 - **Six bands.** The screen is cut into horizontal bands of whole character rows. Each has one job and one colour:
 
@@ -42,12 +42,12 @@ WALKTHROUGH 6.0 lists how each was made):
 | 3-7 | 24-63 | the sky: UFOs, the spinner, bombs, upward shots | the object handlers | none | +0 |
 | 8-11 | 64-95 | the far band: hills | ScrollFarBand `$A846` | 1 pixel | +1, repainted every pass |
 | 12-15 | 96-127 | the middle band: mountains or the moon base city | ScrollMiddleBand `$A89A` | 2 pixels | +2 |
-| 16-19 | 128-159 | the near band: the buggy, rocks, the tank, boulders, the plant | the buggy and the object handlers | 2 pixels, only while the buggy is in the air | +3 |
+| 16-19 | 128-159 | the near band: the buggy, rocks, the tank, boulders, the plant | the buggy and the object handlers | 2 pixels, only while the buggy is at least 10 pixels up (y < `$89`) | +3 |
 | 20-23 | 160-191 | the road | ScrollRoad `$A932` | 4 pixels | +4 |
 
 - **The colours are the band's.** SceneryColours `$95B0` paints rows 3-23 from one of two colour sets of five bytes,
   chosen by the scenery flag PlayerScenery `$B27D`. The set's address stays in `$B230` for the routines that need a
-  band colour later (the low flyer's ink, the plant's head).
+  band colour later (the low flyer's burst, the plant's head).
 
 | Set | Address | +0 rows 3-7 | +1 rows 8-11 | +2 rows 12-15 | +3 rows 16-19 | +4 rows 20-23 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -280,7 +280,8 @@ picked by x:
 - 4 slots, one per two pixels (x AND 6), for the sprites whose x stays even. Everything that moves with the scroll
   moves by 1, 2 or 4 pixels a pass, so the 4-slot sheets suffice for most of the game and halve the memory.
 
-Each slot is W x (H + 1) bytes wide: the frame plus one spare byte a line on the right for the bits shifted out.
+Each slot is W x H bytes, W counting the spare byte on the right of every line for the bits shifted out (a 16 x 4
+sprite has 8-byte slots; the 40 x 23 buggy 115 bytes in a 128-byte stride).
 There is no mask: the XOR draws, the same XOR erases (6.5).
 
 | Drawer | Address | W x H bytes | Slots | Slot size | Sprites | Runs `i1` / `i2` |
@@ -438,8 +439,9 @@ SceneryColoursRepaint repaints every pass (6.1).
   `$50`, `$AA60`), so it is always even (BuggyUpdate `$AA0F`, [doc 10](10-gameplay-logic.md)). The 4-slot drawer is
   exactly enough.
 
-**A second worked example: the rock, 24 x 12.** The rock is spawned at x `$F4` and moves left 4 a pass (6.5), so its
-x AND 6 is 4, then 0, then 4 ...: slots 2 and 0 by turns. Slot 0 starts `02 00 00 07 00 00` (the tip, one pixel
+**A second worked example: the rock, 24 x 12.** The rock is spawned at x `$F4` and moves left 4 a pass (6.5), so on the
+ground its x AND 6 is 4, then 0, then 4 ...: slots 2 and 0 by turns. While the buggy is high in a jump (BuggyAirborne `$AFA5`) ScrollAdjustX
+adds the near band's 2 (6.6), so x + 2 picks slots 3 and 1. Slot 0 starts `02 00 00 07 00 00` (the tip, one pixel
 in byte 0, then three), slot 1 (`$DB10` + 36 = `$DB34`) `00 80 00 01 C0 00`: the tip has moved from bit 1 of byte 0
 to bit 7 of byte 1, two pixels right.
 
@@ -504,10 +506,10 @@ $AF79  LD A,L
 $AF7A  CP $40
 $AF7C  JR C,BuggyAirborne     ; above line 64: no band, x unchanged
 $AF7E  CP $60
-$AF80  JR NC,ScrollAdjustHills
+$AF80  JR NC,ScrollAdjustMiddle
 $AF82  LD A,(HillsSpeed)      ; lines 64-95: the far band, 1
 $AF85  JR ScrollAdjustAdd
-ScrollAdjustHills:
+ScrollAdjustMiddle:
 $AF87  CP $80
 $AF89  JR NC,ScrollAdjustNear
 $AF8B  LD A,(MiddleSpeed)     ; lines 96-127: the middle band, 2
@@ -518,7 +520,7 @@ $AF92  JR C,ScrollAdjustNearBand
 $AF94  LD A,(GroundSpeed)     ; line 160 and down: the road, 4
 $AF97  JR ScrollAdjustAdd
 ScrollAdjustNearBand:
-$AF99  LD A,(BuggyY)          ; lines 128-159: only while the buggy is in the air
+$AF99  LD A,(BuggyY)          ; lines 128-159: only while the buggy is 10 or more pixels up
 $AF9C  CP $89
 $AF9E  JR NC,BuggyAirborne
 ...                           ; ScrollAdjustAdd: H = H + A
@@ -642,7 +644,7 @@ come from a **feed**: one byte a line in the printer buffer, refilled from a str
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | ScrollFarBand | `$A846` | 64-95 | `$FC80` | 1 | FeedFarBand `$5B00` | every 8 passes | HillsStrip `$EBC0`, column pointer FarColumn `$B226` | FarCountdown `$B224` |
 | ScrollMiddleBand | `$A89A` | 96-127 | `$FCC0` | 2 | FeedMiddleBand `$5B20` | every 4 | MountainsStrip `$E340` or MoonBaseStrip `$E780`, MiddleColumn `$B22A` | MiddleCountdown `$B228` |
-| ScrollNearBand | `$A8FD` | 128-159 | `$FD00` | 2, in the air only | none: zeros come in | - | - | - |
+| ScrollNearBand | `$A8FD` | 128-159 | `$FD00` | 2, only with y < `$89` | none: zeros come in | - | - | - |
 | ScrollRoad | `$A932` | 160-191 | `$FD40` | 4 | FeedRoad `$5B40` | every 2 | the 32 bytes at GroundProfile `$B232` | GroundCountdown `$B234` |
 
 Every refill copies 32 bytes, one 8-pixel column of the strip: so a step of s pixels a pass empties a feed byte in
@@ -686,7 +688,7 @@ $A873  LD (FarCountdown),A  ; 8 passes to the next refill
 $A876  LD IX,FeedFarBand
 $A87A  LD C,$20               ; 32 lines
 $A87C  LD HL,ScreenLineTable+$0080
-MountainsLine:
+FarLine:
 $A87F  LD E,(HL)
 $A880  INC HL
 $A881  LD D,(HL)
@@ -697,14 +699,14 @@ $A885  ADD A,$1F
 $A887  LD L,A                 ; HL = the line's last byte
 $A888  RLC (IX+$00)           ; the feed's top bit into the carry (and back to its bottom)
 $A88C  LD B,$20
-MountainsByte:
+FarByte:
 $A88E  RL (HL)                ; carry in on the right, out on the left
 $A890  DEC HL
-$A891  DJNZ MountainsByte
+$A891  DJNZ FarByte
 $A893  EX DE,HL
 $A894  INC IX
 $A896  DEC C
-$A897  JR NZ,MountainsLine
+$A897  JR NZ,FarLine
 $A899  RET
 ```
 
@@ -750,8 +752,8 @@ flowchart TD
 ```
 
 **The near band.** Lines 128-159 hold no scenery: ScenerySetup draws rows 8-15 only, and this band is the green
-floor in front of the hills (attribute `$20`, paper only). Its pixels are the sprites standing in it: the buggy, the
-rocks, the boulders. ScrollNearBand rolls it two pixels only when BuggyAirborne `$AFA5` says the buggy's y is below `$89`, that is in the air; on the ground it burns a delay instead:
+floor in front of the hills (attribute `$20` in the mountain sectors, `$30` black on yellow in the city). Its pixels are the sprites standing in it: the buggy, the
+rocks, the boulders. ScrollNearBand rolls it two pixels only when BuggyAirborne `$AFA5` says the buggy's y is below `$89`, that is at least 10 pixels up; on the ground it burns a delay instead:
 
 ```asm
 ScrollNearBand:
@@ -807,7 +809,8 @@ How to read the figure:
 - **Blue frame**: columns 0-31, what ScenerySetup draws at the life start. **Yellow frame**: column 32, the first column
   the scroller feeds; then 33, then 0 again.
 - **Bottom**: the road's three feed columns, lines 160-175 (lines 176-191 are zero in all three), 8 screen pixels a
-  Spectrum pixel, and WallA and WallB side by side, the V they make.
+  Spectrum pixel, and RoadFeedWallA and RoadFeedWallB (WallA and WallB in the rest of this section) side by side,
+  the V they make.
 - From the image: the strips never change.
 - **The point**: each strip is a little wider than the screen and wraps, so the band never shows a seam; the road has
   no strip at all, only three 8-pixel columns.
@@ -816,8 +819,8 @@ How to read the figure:
 python3 tools/fig_rendering.py scroll    # docs/img/rendering/scroll.png
 ```
 
-So the far band is a loop of 34 x 8 = 272 pixels and comes round every 272 passes, about 2300 frames or 46 seconds
-at 8.4 frames a pass. The middle strip loops in 136 passes, the road's 8-pixel pattern in 2.
+So the far band is a loop of 34 x 8 = 272 pixels and comes round every 272 passes, about 1900 frames or 38 seconds
+at 7.05 frames a pass. The middle strip loops in 136 passes, the road's 8-pixel pattern in 2.
 
 Witness: ScrollFarBand runs `i1` 3601, `game` 1576 times, once a pass; the bands in `i1-sector-f-city.png` and
 `i1-crater.png` are whole, with no seam where the strips wrap.
@@ -962,7 +965,7 @@ $A7FD  RET
 | a mine, first pass `$9AEB` | x `$F6`, 10 pixels | `$B288` bit 3 set: the next texture only 2 pixels |
 | the spinner's bomb landing `$9CE0` | 16 pixels at the bomb's x | the crater sprite `$10` drawn below |
 | the green plant, first pass `$A2C6` | x `$E4`, 28 pixels | `$B288` bit 3 set |
-| the score advance page `$8064` | x `$22` 20, x `$3F` 10, x `$DE` 28 | the page's sprites |
+| the score advance page `$8118` (`$8133`, `$813B`, `$8143`) | x `$22` 20, x `$3F` 10, x `$DE` 28 | the page's sprites |
 
 The cut makes room: a mine or a plant stands in the edge without the green line running through it. The cut then
 scrolls away with the road. Witness: UnplotRun `a1` 60 entries, `i1` 33, `i2` 63; the mines with their gaps are in
@@ -1463,8 +1466,8 @@ Witness: BlitRows entries `game` 23, `a1` 8, `i1` 14 (`a1` frames 20-20424): twi
 | 19 | WheelsFly | | |
 | 20 | SpeedGovernor | nothing: a delay | as 16 |
 
-The pass never waits for the beam. It takes about 8.4 frames (`i1`: 3601 passes in about 30 175 frames of play), so
-each band is rolled once every 8.4 frames, at whatever point of the frame its turn comes; a frame interrupt lands
+The pass never waits for the beam. It takes 6 to 8 frames in play (7.05 on average in `i1`, [doc 4](04-game-loop.md),
+4.7), so each band is rolled once every 7 frames or so, at whatever point of the frame its turn comes; a frame interrupt lands
 somewhere inside most routines. The picture is never torn in a way the eye catches because nothing moves more than 4
 pixels between two rolls, and each band is rolled in one go, top line to bottom line, in about one frame or less.
 
@@ -1503,12 +1506,14 @@ $AF67  RET
 
 | Buggy x | Loops a call (JumpSpeeds `$AF68`) | Two calls | Pass, against the centre | Road speed |
 | --- | --- | --- | --- | --- |
-| > `$38` (fast) | 1 | about 0 T | 39 000 T shorter, about 0.56 frame | about 7 % faster |
+| > `$38` (fast) | 1 | about 0 T | 39 000 T shorter, about 0.56 frame | about 8 % faster |
 | = `$38` | `$02EE` = 750 | 39 000 T | - | - |
-| < `$38` (slow) | `$05DC` = 1500 | 78 000 T | 39 000 T longer | about 6 % slower |
+| < `$38` (slow) | `$05DC` = 1500 | 78 000 T | 39 000 T longer | about 7 % slower |
 | dying | + `$1800` = 6144 | + 319 500 T | 4.6 frames more delay, 4.2 frames less scrolling | (nothing scrolls) |
 
-(The percentages take the centre pass as `i1`'s 8.4 frames: 4 pixels in 8.4 frames against 7.84 and 8.96.) So
+(The percentages rest on `i1`'s measured pass, 7.05 frames, which is a forward pass: `i1` held the buggy forward in
+7056 of its 7200 SpeedGovernor calls, JumpSpeeds `$AF68`. The centre pass is then 7.05 + 0.56 = 7.61 frames and the
+back 8.17: 4 pixels in 7.05 frames against 7.61 is 8 % faster, in 8.17 against 7.61 7 % slower.) So
 "faster" and "slower" are the same world drawn with less or more idle time per pass: the buggy's own 2-pixel step a
 pass adds to the feeling. The same table hands BuggyUpdate the jump arc: forward the long flat arc, back the short
 one ([doc 10](10-gameplay-logic.md)). While the buggy dies the scrollers return at once (6.6), which takes
@@ -1540,7 +1545,7 @@ How to read the figure:
   call (doc 12, the `work/game` window); the grey blocks are the two SpeedGovernor delays.
 - **Ticks**: frames of 69 888 T from the start of the pass.
 - **Not drawn**: the frame interrupt (about 16 600 T a frame in `i1`, the tune's BEEPER notes included, about 2 frames
-  a pass) and whatever else separates the bars' 4.4-5.5 frames from the measured 8.4 (not split here; the scrollers'
+  a pass) and whatever else separates the bars' 4.4-5.5 frames from the measured 7.05 of a forward pass (not split here; the scrollers'
   writes to contended screen memory are a candidate, not measured).
 - **The point**: four scrollers are three quarters of the drawn bar; the objects, the buggy and the shots are a sliver.
   The governor's grey blocks are the only part that changes with the buggy's place, and they change the pass by about
@@ -1586,9 +1591,10 @@ draw wheel 1 at x:
     source = $6350 + 18 * slot      # slots 0..2 and the first 4 bytes of 3: TitlePatrol $6350-$6389
 ```
 
-Worked example: a death with the buggy at x `$38`. Step 0: the left wheel at x `$39`, x AND 7 = 1, source `$6362`:
-logo bytes. Step 1: x `$36`, AND 7 = 6, `$63BC`: a wheel. Step 2: `$33`, 3: `$6386`, two lines of logo then the wheel.
-Step 3: `$30`, 0: `$6350`, logo.
+Worked example: a death with the buggy at x `$38`. The left wheel starts at x `$39`, but WheelsFly adds the step's
+dx (-3, WheelPaths `$AC31`) before it draws (`$AB82-$AB8E`), so `$39` is never drawn. Step 0: x `$36`, AND 7 = 6,
+`$63BC`: a wheel. Step 1: `$33`, 3: `$6386`, two lines of logo then the wheel. Step 2: `$30`, 0: `$6350`, logo.
+Step 3: `$2D`, 5: `$63AA`, a wheel.
 
 ![Wreck piece 1's slots and explosion frame 1's first slots](img/rendering/odd.png)
 

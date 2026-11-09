@@ -21,11 +21,11 @@ Each term once, here; the documents link to it.
 
 | Term | Meaning |
 | --- | --- |
-| pass | one run of the main loop (MainLoop `$9696`, the 20 calls once); no frame sync, about 8.4 frames on average in `i1`; PassCount `$B23B` counts them |
+| pass | one run of the main loop (MainLoop `$9696`, the 20 calls once); no frame sync; 6 to 8 frames in play, 7.05 on average (`i1` frames 300-4700, the buggy held forward; 8.4 over the whole of `i1` with the bonus screens held inside single passes); PassCount `$B23B` counts them |
 | frame | one 50 Hz television frame of the 48K, 69 888 T; the unit of every recording |
 | segment | one piece of a course script, from one End word `$9760` to the next; it waits SegmentWait `$B23C` passes |
 | point | one of the 25 course checkpoints A-Z without O, set by the Point command `$9775`; the restart place after a death |
-| sector | five points (A-E, F-J, K-P, Q-U, V-Z) ended by the SectorEnd command `$A4EE` and the bonus screen |
+| sector | five points (A-E, F-J, K-P, Q-U, V-Z) ended by the sector-end record (SectorBonus `$A4EE`, `SectorEnd` in the course text) and the bonus screen |
 | BasicStack | `$B25D`, the SP the BASIC's USR gave the game (`$C338`); every menu page reloads it |
 | LoopStack | the SP saved at each main loop start; the bonus screen and the course switch jump back through it |
 | ERR_SP trap | the tape code puts its handler `$82F3` at ERR_SP so a BREAK returns to the menu, not to BASIC |
@@ -39,4 +39,4 @@ Each term once, here; the documents link to it.
 | box | four bytes y, x, height, width that BoxOverlap `$A7FE` compares |
 | probe | BuggyUpdate's test of five pixels of line 162 under the buggy: a set one is a crater wall or a mine |
 | immune clone | a recording with BuggyKill patched to `RET` (`i1`, `i2`), for coverage only |
-| tune word | one 16-bit entry of Tune `$B4E6`: BEEPER period + 1, 0 a rest, `$FFFF` the loop |
+| tune word | one 16-bit entry of Tune `$B4E6`: the BEEPER period itself (HL), 0 a rest, `$FFFF` the loop |

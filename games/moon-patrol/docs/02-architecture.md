@@ -114,6 +114,25 @@ Notes on the table:
 python3 tools/images.py     # the diff ranges are kept in work/stage1/images-diff.txt
 ```
 
+![The three images of c1 side by side over the windows where they differ: the BASIC's stack at the entry, the variables, objects, stack and print state in play](img/arch/images.png)
+
+How to read the figure:
+
+- **Three columns**, the images of `c1` at frame 252 (loaded), at the entry (frame 256, T 58 497) and at frame 8000
+  (play); each row is 16 bytes from the address on the left.
+- **Only the windows where they differ** are drawn: `$B210-$B2CF`, `$BEF0-$BF1F`, `$C2F0-$C34F`, `$F000-$F02F` and
+  `$F0A0-$F0AF`. Everywhere else the three images are equal.
+- **Yellow**: a byte changed from loaded to entry (26, all in `$C330-$C34F`). **Orange**: changed from entry to play
+  (174). Zero bytes are grey.
+
+```bash
+python3 tools/fig_arch.py images   # docs/img/arch/images.png, from work/images/*.bin
+```
+
+**The point**: the game builds nothing at start. Between the load and play only state moves: the variables and player
+records, the first object records, the stack (the handler's return words `$7F8D` and `$7F37` from `$C302` on) and
+the print engine's variables.
+
 What changes inside the image `$60F8-$FFFF`:
 
 - **loaded to entry**: 26 bytes in `$C330-$C34F`, the BASIC's stack (the return of `USR` and the calculator's
@@ -145,7 +164,8 @@ the stack's low mark (`work/stage1/stacklow.py`, `memory_at`):
 | `c1` | 8000 (`play-8000-0.bin`) | `$C302` |
 
 - The stack reaches `$C2FC`, 60 bytes below the entry SP `$C338`. The bytes below `$C312` are the handler's: the
-  return addresses `$7F37` (the handler's call of the tune player) and `$7F8D` (the tune player's call of BEEPER) and
+  return addresses `$7F37` (the handler's call of Im2Clock, written over the slot of its call of the tune player) and
+  `$7F8D` (the tune player's call of BEEPER) and
   `$5C3A`, the IY it pushes (`i1` frame 10000, `$C2FC-$C311`). The L1 counters miss these writes: they are the
   interrupt's own push of the PC and the ROM's BEEPER's. Interrupts never nest: the note ends long before the next
   interrupt and the `DI` at `$7F8D` closes BEEPER's `EI` at once ([doc 4](04-game-loop.md), 4.3).
@@ -192,14 +212,15 @@ flowchart LR
 | the menu pages | TitlePage `$8004` and the four others | IM 1 | MenuEntry, any page's end, a menu key | MenuDelay `$820D`, 4.8 frames a pass |
 | the banner | GameStart `$8F10`, GameStartLife `$8F71` | IM 1 | S or fire on a menu page | Wait100Frames `$903D`: 100 HALTs (300 for two players) |
 | play | LifeStart `$90D3`, MainLoop `$9696` | IM 2 | the banner, the bonus screen, the end of the hold | none: no HALT in play |
-| the demo | DemoPage `$8180` | IM 2 | the score table's end | MenuDelay |
+| the demo | DemoPage `$8180` | IM 2 | the score table's end | none: the main loop's own delays (SpeedGovernor, the near band's delay) |
 | the bonus screen | SectorBonus `$A4EE` | IM 1 | a sector-end record in the course script | HALT runs, BEEPER, MenuDelay |
 | the hold | HoldCheck `$AECE` | IM 1 | H in play | a polling loop |
 | a death, GAME OVER | GameAfterLife `$8F9F` | IM 1 | DeathStep 8 at the end of a pass | 200 HALTs for GAME OVER |
 | the hi-score entry | HiScoreEntry `$8B8F` | IM 1 | the last player out with a score in the tables | LAST_K |
 
 - **IM 1 keeps the ROM's work.** The ROM's handler at `$0038` counts FRAMES and scans the keyboard into LAST_K.
-  The hi-score entry needs LAST_K ([doc 5](05-controls.md), 5.6), and KEY_SCAN on the options page works the same way.
+  The hi-score entry needs LAST_K ([doc 5](05-controls.md), 5.6). The options page calls KEY_SCAN `$028E` itself
+  (`$80C4`) and would work in either mode.
 - **IM 2 drops the keyboard scan and adds the tune and the clock** ([doc 4](04-game-loop.md), 4.3). The clock must
   count only play: it stops in every IM 1 state, so neither the bonus screen nor the hold counts against the par.
 - **The demo runs in IM 2** because it is play: LifeStart sets the mode. It leaves through MenuCheckAnyKey or its
@@ -248,7 +269,8 @@ How to read the figure:
     played inside the interrupts.
   - The menus spend 81 % in two routines: MenuDelay, a delay loop, and CycleScreenColours, which steps every
     attribute of the screen through its colour cycle once a pass.
-  - The objects, the enemies and the course interpreter, the "game logic", cost under 2 % together.
+  - The objects, the enemies and the course interpreter, the "game logic", cost under 2 % together in their own
+    time (course 0.6, objects 0.7, enemies 0.0); with the sprites they draw, about 7 % of a pass (below).
 
 ```bash
 python3 ../../kit/fig_budget.py work/runs/i1/l1.json docs/img/arch/budget.png \
@@ -265,7 +287,7 @@ What the budget says about the design:
 - **The tune is the second cost.** 21 % of `i1` is BEEPER inside the interrupt. The tune stops the CPU for most of
   a frame on every third interrupt, and a rest stops it as long (doc 4, 4.3).
 - **The game logic is cheap.** The interpreter and every object handler together run in about 34 000 T a pass, 7 %
-  of it.
+  of it, DrawSprite and BoxOverlap included (ObjectListRun inclusive, doc 4, 4.6); their own code is under 2 %.
 
 ## 2.6 The main loop's call graph
 
@@ -302,7 +324,7 @@ sequenceDiagram
     Note over L,I: every frame, the interrupt (IM 2)
     I->>I: FRAMES + 1
     I->>I: TunePlayer: 2 entries in 3 return at once
-    I->>R: every third entry: one note, 35 700-50 400 T, interrupts off
+    I->>R: every third entry: one note, 35 700-50 500 T, interrupts off
     R-->>I: EI, then DI at 7F8D
     I->>I: Im2Clock: every 50th entry, one second
     I-->>L: EI, RET into the pass
@@ -317,7 +339,7 @@ sequenceDiagram
   register, never touches the screen and never reads a key. The loop never waits for it: an interrupt simply makes
   the pass longer, by 369 T or by a whole note.
 
-Witness: the call counts in `i1` are 3601 for MainLoopCalls, 3600 for each scroller, 14 401 for WheelsFly and 7200
+Witness: the call counts in `i1` are 3601 for MainLoopCalls, 3601 for ScrollFarBand and 3600 for the other scrollers (the recording stops inside the last pass), 14 401 for WheelsFly and 7200
 for SpeedGovernor (four and two a pass), and 25 747 for Im2Handler (`work/docs/mpA-budget.py work/runs/i1`).
 
 ## 2.7 48K only
@@ -325,7 +347,7 @@ for SpeedGovernor (four and two a pass), and 25 747 for Im2Handler (`work/docs/m
 - **Only port `$FE` is written.** The two `OUT` instructions write `$FE` (`$906B`, the border; `$A60A`, the time
   bonus blip). Nothing writes `$7FFD` (the 128K's paging) or `$FFFD` / `$BFFD` (the AY).
 - **Only the beeper plays.** The tune and the bonus tune go through the ROM's BEEPER `$03B5`, and the blip toggles
-  bit 4 of `$FE` by hand (doc 4, 4.4).
+  bits 3 and 4 of `$FE` (MIC and speaker, `$A608 XOR $18`) by hand (doc 4, 4.4).
 - **The ports read** are `$FE` (the keyboard), `$1F` (Kempston) and `$7F` (Fuller) ([doc 5](05-controls.md)).
 - **The ROM is the 48K's.** The game calls BEEPER, KEY_SCAN `$028E`, LD-BYTES `$0556` and SA-BYTES `$04C2`, and its
   interrupt vector relies on the bytes `FF FF` at `$3AFF` and `F3` at `$0000` of the 48K ROM (doc 4, 4.3).

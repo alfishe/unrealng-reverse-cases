@@ -120,10 +120,10 @@ $B7EC  E8 97 14 50 FF             CmdCraters $97E8: delays $14, $50
 $B7F1  C5 97 32 6E FF             CmdRocks $97C5: delays $32, $6E
 $B7F6  60 97                      SegmentEnd $9760
 $B7F8  6C 97 7F 00                SegmentLength: 127 passes
-$B7FC  75 97 3F 01                CmdPoint $9775: delay $3F, point byte 1 (B)
+$B7FC  75 97 3F 01                CmdPoint $9775: delay $3F, point byte 1 (A)
 $B800  AD 97 1F 01 FF             CmdLamps $97AD: delay $1F, lamp value 1
 $B805  21 98 50 50 FF             CmdUfos1 $9821: two saucers A, delays $50
-$B80A  27 98 40 40 FF             CmdUfos2 $9827: two saucers B, delays $40
+$B80A  27 98 40 40 FF             CmdUfos5 $9827: two saucers B, delays $40
 $B80F  60 97                      SegmentEnd
 ```
 
@@ -153,7 +153,7 @@ height, width that BoxOverlap compares (7.4). Sprite numbers index the sprite ta
 | mine | CmdMines `$97FF` | ObjMine `$9AEB` | 6 | +3 bit 7 blink phase, bits 0-6 sprite `$11` / `$12`; +4 y `$A0`; +5 x `$F8` | `$9B5A` (+4) |
 | point | CmdPoint `$9775` | ObjPoint `$9978` | 4 | +3 point byte (bits 0-4 the point, bit 5 Champion) | `$99A0` (+2) |
 | lamps | CmdLamps `$97AD` | ObjLamps `$99A3` | 4 | +3 lamp value 0-3 | `$99C0` (+2) |
-| UFO | CmdUfos1 / 2 / 3 `$9821` / `$9827` / `$982D` | UfoHandler `$9B6B` | 20 | +3 sprite (1, 5, `$0B`); +4 turn timer (`$FF` not on screen); +5 dy; +6 dx; box +7 y (random `$18-$37`), +8 x (0 or `$F0`), +9 h (8 or 16), +10 w `$0F`; +11 bomb wait (random `$10-$2F`); +12 bomb sprite `$1D`; +13 bomb timer (`$FF` not dropped); +14 dy, +15 dx (4, 4); box +16 y, +17 x, +18 h 5, +19 w 5 | UfoRecordSkip |
+| UFO | CmdUfos1 / CmdUfos5 / CmdUfos11 `$9821` / `$9827` / `$982D` | UfoHandler `$9B6B` | 20 | +3 sprite (1, 5, `$0B`); +4 turn timer (`$FF` not on screen); +5 dy; +6 dx; box +7 y (random `$18-$37`), +8 x (0 or `$F0`), +9 h (8 or 16), +10 w `$0F`; +11 bomb wait (random `$10-$2F`); +12 bomb sprite `$1D`; +13 bomb timer (`$FF` not dropped); +14 dy, +15 dx (4, 4); box +16 y, +17 x, +18 h 5, +19 w 5 | UfoRecordSkip |
 | UFO retreat | CmdUfosLeave `$98AA` | UfoRetreatTimer `$9EA5` | 3 | none | `$9EBB` (+1) |
 | tank | CmdTanks `$98BE` | TankHandler `$9EBD` | 14 | +3 sprite `$13`; box +4 y `$8F`, +5 x `$E7`, +6 h `$11`, +7 w `$14`; shell: +8 wait 8, +9 sprite 0 then `$3B`, box +10 y `$93`, +11 x `$C1`, +12 h 3, +13 w 7 | TankRecordSkip |
 | low flyer | CmdFlyers `$98F3` | LowFlyerHandler `$A03B` | 9 | +3 sprite `$14`; +4 pause count; box +5 y `$91`, +6 x 0, +7 h 8, +8 w `$0C` | LowFlyerRecordSkip |
@@ -199,7 +199,8 @@ steps with their own fields.
 8. **Draw** at x + the band's step (ScrollAdjustIfAlive `$AF74`): the road is scrolled later in the same pass, so the
    rock is drawn where the road will be ([doc 6.5](06-rendering.md#65-erasing-on-a-scrolling-screen)).
 
-The explosion handler steps the sprite `$2A`, `$2B` ... and finishes when it reaches `$2F`: five frames, one a pass,
+The explosion handler steps the sprite from `$2A` and finishes when it reaches `$2F`: `$2A` is never drawn (`$9A57`
+skips the erase on the first pass), so four frames `$2B-$2E` are drawn over five passes, one a pass,
 moving with the road.
 
 ```text
@@ -271,7 +272,7 @@ How to read the figure:
 - The rock (orange) and the tank (green) move with the road, 4 a pass; the shell (red) 6 a pass, 2 faster than the
   road; the low flyer (blue) comes from the left edge, creeps 1 a pass to `$10`, waits, runs at 4 a pass, waits at
   `$8C`, then leaves on the right. Its two waits are random (16-23 and 4-11 passes); 20 and 8 are drawn.
-- A model of the handlers' rules, no recording; one pass is about 8.4 frames (`i1`), so 60 passes are about 10 s.
+- A model of the handlers' rules, no recording; one pass is about 7 frames (7.05 in `i1`, doc 4, 4.7), so 60 passes are about 8.5 s.
 
 **The point**: everything on the ground is fixed to the road and comes at the buggy at the road's speed; only the
 shell is faster and only the low flyer moves on its own, from behind.
@@ -486,11 +487,11 @@ green), saucer B (`$9827`, sprites 5-10, yellow) and the spinner (`$982D`, sprit
   random y (`$18-$37`, capped at `$30` for the spinner). A new UFO clears the retreat flag `$B237`.
 - **Flying.** Each pass the turn timer counts down. At 0 it reloads with 16-72 from R; a UFO moving across starts
   moving up or down by 2, one moving up or down starts moving across by 2, the sign from bit 6 of R. x stays below
-  `$F1`; y stays in `$18-$37` (saucer) or `$18-$2F` (spinner).
+  `$F1`; y stays in `$18-$38` (saucer) or `$18-$30` (spinner): the clamp at `$9C0E-$9C19` turns only when y passes the limit.
 - **Retreat.** When UfoRetreatTimer `$9EA5` has set `$B237`, the UFO moves 4 a pass to the nearer side and is gone
   past it; its bomb part goes on.
 - **Shot.** The four upward shots are tested against its box. A hit spends the shot, sets sprite `$26` (saucer) or
-  `$2E` (spinner) and UfoExplodeHandler `$9CA5`: five frames in place, then the record runs as UfoBombHandler only.
+  `$2E` (spinner) and UfoExplodeHandler `$9CA5`: four frames in place (`$27-$2A` or `$2F-$32`; gone at `$2B` / `$33`), then the record runs as UfoBombHandler only.
   100 for a saucer, 200 for the spinner. A UFO never touches the buggy: it has no buggy test.
 - **The bomb.** Its wait (16-47 from R) counts down; then it drops from under the UFO (y + 8 or + 16, x + 16),
   sprite `$1D`, moving 4 down and 4 across for 8 passes, then straight down with sprite `$1E`. At the ground
@@ -563,7 +564,7 @@ Champion. All follow the rock's order of 7.3.
 | --- | --- | --- | ---: | --- |
 | tank `$9EBD` | with the road, 4 a pass, from x `$E7` | 250 | 200 | jump test: buggy x AND `$FC`, less 1, = tank x (the tank's x is odd); fires one shell 8 passes after it appears |
 | shell `$9F8F` | 2 + the road's step = 6 a pass, from x `$C1` | 20 | 15 | same "less 1" jump test; ends past the left side |
-| low flyer `$A03B` | from the left: +1 to `$10`, wait 16-23, +4, wait 4-11 at `$8C`, +4 to `$F0` | 300 / 500 / 800 at random | 125 | drawn in the colour set's ink; moves with the scroll while the buggy is dying |
+| low flyer `$A03B` | from the left: +1 to `$10`, wait 16-23, +4, wait 4-11 at `$8C`, +4 to `$F0` | 300 / 500 / 800 at random | 125 | the flyer (DrawSprite24x8) takes the cells' colours, its burst `$37-$3A` (DrawSprite24x8Attr) the colour set's +3 attribute; moves with the scroll while the buggy is dying |
 | boulder `$A196` | with the road; rolls: small `$40-$43`, medium `$44-$4B`, large `$4C-$57` | 100 / 150 / 200 | 50 / 100 / 150 | size 8, 12, 16; y = `$A0` - size, so it sits on the road |
 | green plant `$A2C6` | with the road | 500 | 200 | 15-frame grow cycle; the head (frames 5-11) colours rows 18-19; the first pass cuts 28 pixels of line 160 and sets `$B288` bit 3 |
 
