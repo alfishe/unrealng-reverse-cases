@@ -20,7 +20,7 @@ done is in [AGENTS.md](AGENTS.md); this file says only what is next.
 | --- | --- | --- |
 | OCP Video Pool | UKNC; possibly BK-0010 / BK-0011M and Soyuz-Neon | `games/<case>/docs/14-porting-to-uknc.md` |
 
-The porting document follows AGENTS.md section 4.0 "By port target". What it must address for each target:
+The porting document follows AGENTS.md section 4.0 "By port target". What it must address for each target (the machine facts here are leads from memory; the document checks each one against the machine's documentation or an emulator before it relies on it):
 
 | Target | What the document must address |
 | --- | --- |
