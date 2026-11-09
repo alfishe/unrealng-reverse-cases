@@ -24,7 +24,7 @@ WALKTHROUGH 6.0 lists how each was made):
 
 ## 8.1 The HUD panel
 
-The HUD is character rows 0-2 (lines 0-23). HudDraw `$9136` draws all of it at each life start; during play only five
+The HUD is character rows 0-2 (lines 0-23). HudDraw `$9136` draws all of it at each life start; during play only six
 routines touch it, each when its value changes.
 
 ![The HUD, rows 0-2, i1 frame 1200](img/hud/panel.png)
@@ -52,7 +52,7 @@ python3 tools/fig_hud.py panel     # docs/img/hud/panel.png
 | 4 | score | PlayerScore `$B272` | 4 BCD bytes, "-", point letter `$B27C` | HudPrintScore `$92DA` | ScoreAdd `$92D3`, each score |
 | 5 | lives | PlayerLives `$B284` | up to 4 icons shown by attribute `$1F` (others `$1B`, ink = paper) | HudLives `$9263` | the extra life `$9352` |
 | 6 | course marks | - | the letters E J P U Z, part of the panel | BlitRows from HudPanel `$9481` | - |
-| 7 | progress | `$B27C` point | a dot every 2 px from x `$57` to 2 x point + `$56`, y `$13` | HudProgress `$92AA` | ObjPoint `$9978`, each point |
+| 7 | progress | `$B27C` point | a solid bar, one 2 x 2 block a point (the blocks touch), from x `$57` to 2 x point + `$56`, y `$13-$14` | HudProgress `$92AA` | ObjPoint `$9978`, each point |
 | 8 | time | PlayerTime `$B285-$B286` | 4 BCD digits at x `$B3`, y 1 | HudPrintTime `$922A` | each main-loop pass, prints only when the clock marked it stale |
 | 9 | point | `$B27C` | one letter at x `$C2`, y 9 | HudPrintPoint `$9247` | ObjPoint, each point |
 | 10 | course | `$B27C` bit 5 | BEGINNER / CHAMPION at x `$9B`, y `$11` | HudCourseName `$9215` | - (redrawn at the next life start) |
@@ -168,6 +168,19 @@ The score is `00 00 03 00` (300). The rock jump passes BC = `$0080`. `$00` + `$8
 **The point**: BCD makes the print trivial (one nibble a digit) and the add exact; there is no binary score anywhere.
 
 The figure of the score field is the one of 8.1 (field 4).
+
+![ScoreAdd at work in i1 frames 4903-4904: a rock jumped, 1360 + 80, the score reprinted](img/routines/ScoreAdd.gif)
+
+The same add in a recording: `i1` frames 4903-4904 (4903:55 900-4904:57 800), a rock jumped (ObjRock calls ScoreAdd
+with BC = `$0080`). The right panel is screen bytes 2-9 of lines 0-63 (monochrome): the hi-score `50000-Y` on top,
+the player's score below. PrintBcd blanks the leading zeros and draws `1440` digit by digit through PrintGlyph's
+shifts (the frame interrupt in the middle), then "-" and the point letter D; the last picture is back in ObjRock.
+
+```bash
+python3 ../../kit/routine_anim.py --work work/anim/i1 --window 4903:55900-4904:57800 --listing build/game.lst \
+    --out docs/img/routines/ScoreAdd.gif --pc 92D3-FFFF --view buffer:4002:8x64:screen --range 4000-FFFF \
+    --pictures 60 --delay 120 --title "ScoreAdd \$92D3: 80 points added, the HUD score reprinted digit by digit (i1 frames 4903-4904)"
+```
 
 Witness: ScoreAdd is called by every score site of [doc 7.9](07-objects.md#79-scores-and-what-no-recording-reached);
 ScoreAddBcd runs `game` 25, `i1` 291, `i2` 424 times; the extra life `$9344-$935D` `i1` 2, `i2` 3 (at 10 000 and 30 000;
@@ -285,6 +298,19 @@ $909A  1F           end
 
 Witness: PrintChar runs `game` 13 526 times, PrintCharNormal 8169; TextGameOver is read in `g1` (screenshot
 `docs/img/play/g1-game-over.png`, frame 3950).
+
+![PrintText at work in h1 frame 3944: TextGameOver's control codes, then GAME OVER letter by letter](img/routines/PrintText.gif)
+
+The same string in a recording: `h1` frame 3944, T 8 700-43 200, after the last life. The first pictures run only
+the control codes (INK, PAPER, BRIGHT, AT, FONT: PrintChar swaps PrintState, nothing is drawn); then each letter
+lights up as PrintGlyph shifts its rows by 101 AND 7 = 5 pixels and ORs them on, 6 pixels further each time. The
+right panel is screen bytes 12-19 of lines 64-191 (monochrome); the last picture is PrintText's `RET Z` on `$1F`.
+
+```bash
+python3 ../../kit/routine_anim.py --work work/anim/h1 --window 3944:8700-3944:43200 --listing build/game.lst \
+    --out docs/img/routines/PrintText.gif --pc FDCC-FFFF --view buffer:480C:8x128:screen --range 4000-FFFF \
+    --pictures 60 --delay 130 --title "PrintText \$FFD0: TextGameOver, the control codes then GAME OVER in FontBold (h1 frame 3944)"
+```
 
 **The point**: the print code is a small terminal with pixel positioning and proportional widths; the strings carry
 their own position, colour and font, so the callers only pass an address.
@@ -430,7 +456,7 @@ The strings on screen are in the figures of 8.7 and 8.8.
 
 ## 8.7 The menu pages
 
-The attract cycle runs in IM 1 (the ROM's interrupt), except the demo, which runs the game's IM 2 (LifeStart
+The attract cycle runs in IM 1 (the ROM's interrupt), except the demo, which runs the game's IM 2 (the call to LifeStart at
 `$8196`) with the tune off: TitlePage (100 passes), OptionsPage (100), ScoreAdvancePage
 (200), DemoPage (100 main-loop passes of the game with no objects), HeroesPage (200), and back to the title. Every
 page pass checks the keys: S or fire starts the game (`$8F10`), H jumps to the heroes, L / J / G the tape (on every
@@ -452,10 +478,24 @@ stateDiagram-v2
     Title --> Game: S or fire
     Options --> Game: S or fire
     ScoreAdvance --> Game: S or fire
-    ScoreAdvance --> Options: any other key
-    Heroes --> Tape: L, J, G
-    Tape --> Heroes: done or BREAK
+    Demo --> Game: S or fire
+    Heroes --> Game: S or fire
     Title --> Heroes: H
+    Options --> Heroes: H
+    ScoreAdvance --> Heroes: H
+    Demo --> Heroes: H
+    Title --> Options: any other key
+    ScoreAdvance --> Options: any other key
+    Demo --> Options: any other key
+    Heroes --> Options: any other key
+    state "the calling page (any of the five, or Message)" as Any
+    Any --> Tape: L, J, G
+    Tape --> Any: BREAK, a save, a good verify
+    Tape --> Heroes: a good load (8309)
+    Tape --> Message: load or verify error
+    Message --> Options: any other key
+    Message --> Game: S or fire
+    Message --> Heroes: H
     Game --> Heroes: game over, after the entry
 ```
 
@@ -506,8 +546,10 @@ not saved.
   strict test of HiScoreEntry). The records below shift down 7 bytes (LDDR) and the last falls off.
 - **THE GREATEST.** The all-time records 2-39 shift down one place (the 40th is lost), the old greatest's initials and
   score become number 2, but its name is not kept: the new name is typed over the old one in place.
-- **Saving.** On the heroes page L loads into the buffer `$BEF8` and copies it over `$88AC` on success, J saves
-  `$88AC`, G verifies. A block with flag `$6B` is reported as an Atarisoft Robotron table.
+- **Saving.** On any menu page and on the tape message page (MenuCheckTape `$825A`), L loads into the buffer
+  `$BEF8` and copies it over `$88AC` on success, then jumps to the heroes page (`$831E`); J saves `$88AC`, G
+  verifies. BREAK (TapeErrorHandler `$82F3`), a save (`$82A8`) and a good verify (`$830E`) return to the calling
+  page; a failed load or verify shows the tape message page, which leaves through the usual menu keys. A block with flag `$6B` is reported as an Atarisoft Robotron table.
 
 ```text
 HiScoreEntry(score):                                ; $8B8F

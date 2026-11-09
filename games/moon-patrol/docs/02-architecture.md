@@ -66,8 +66,8 @@ written (with or without reads), - never touched.
 | `$5B00-$5B74` | 117 | the printer buffer; 21 bytes of `$9681` copied to `$5B60` at each life start | | | 117 | | `$90D3` |
 | `$5B75-$60F7` | 1411 | the system variables and the BASIC; FRAMES `$5C78` counted by the handler | | 8 | 24 | 1379 | `$7F14` |
 | `$60F8-$6131` | 58 | leftovers of the build: a copy of the tape header "MOON" at `$611F` | | | | 58 | |
-| `$6132-$7F00` | 7631 | graphics A; the rows of 128 bytes at `$6500-$7572` are read in part | | 6902 | 15 | 714 | |
-| `$7F01-$7F13` | 19 | the build date `03:35 30/10/84` at `$7F05` | | | | 19 | |
+| `$6132-$7EFF` | 7630 | graphics A; the rows of 128 bytes at `$6500-$7572` are read in part | | 6901 | 15 | 714 | |
+| `$7F00-$7F13` | 20 | the print string BuildDate0335: `$1F` (read at each life start, it ends the string at once), then the date `03:35 30/10/84` at `$7F05`, never read | | 1 | | 19 | `$911A` |
 | `$7F14-$7FBE` | 171 | the interrupt handler `$7F14`, the tune player `$7F47`, the clock `$7F98` | 164 | | | 7 | 25 747 entries in `i1` |
 | `$7FBF-$7FFF` | 65 | Atari's copyright text | | | | 65 | |
 | `$8000-$8F0F` | 3856 | the entry, the title, the options, the score table, the demo, the hi-scores, the tape code | 1974 | 1171 | 357 | 354 | `a1`, `t1`, `h1`, `h2` |
@@ -185,7 +185,7 @@ How to read the figure:
 - **The band under each screen** is the interrupt mode: blue for IM 1 (the ROM's handler), green for IM 2 (the
   game's handler `$7F14`).
 - **Under the band**: the state's routine, how it is entered or left, and the recording and frame.
-- **The point**: only play runs in IM 2. The menus, the banner, the bonus screen, the hold, GAME OVER and the
+- **The point**: only play (and the demo, which is play) runs in IM 2. The menus, the banner, the bonus screen, the hold, GAME OVER and the
   hi-score entry all run in IM 1. Play is the only state that needs the tune and the clock, and the only one that
   does not need the ROM's keyboard scan.
 
@@ -223,8 +223,9 @@ flowchart LR
   (`$80C4`) and would work in either mode.
 - **IM 2 drops the keyboard scan and adds the tune and the clock** ([doc 4](04-game-loop.md), 4.3). The clock must
   count only play: it stops in every IM 1 state, so neither the bonus screen nor the hold counts against the par.
-- **The demo runs in IM 2** because it is play: LifeStart sets the mode. It leaves through MenuCheckAnyKey or its
-  100 passes, both with SetIm1.
+- **The demo runs in IM 2** because it is play: LifeStart sets the mode. It leaves through S or fire, H, any other key
+  or its 100 passes, each with SetIm1; the tape keys alone (MenuCheckTape `$81B7`) keep IM 2, and a save, a verify or
+  BREAK returns to the demo still in IM 2.
 
 Witness: SetIm2 `$A7D4` ran 6 times in `i1` (the first life and five sectors) and 5 in `a1`; SetIm1 `$A7CB` ran 6
 times in `i1` and 28 in `a1` (`python3 tools/l1sum.py A7CB A7D4`). The IM 2 handler ran 25 747 times in `i1`, the
@@ -337,7 +338,8 @@ sequenceDiagram
   the only way to die.
 - **The interrupt and the loop share nothing but FRAMES, the tune state and the clock.** The handler saves every
   register, never touches the screen and never reads a key. The loop never waits for it: an interrupt simply makes
-  the pass longer, by 369 T or by a whole note.
+  the pass longer, by about 485 T (the acknowledge, the two vector jumps, the handler and the two quick returns)
+  or by a whole note.
 
 Witness: the call counts in `i1` are 3601 for MainLoopCalls, 3601 for ScrollFarBand and 3600 for the other scrollers (the recording stops inside the last pass), 14 401 for WheelsFly and 7200
 for SpeedGovernor (four and two a pass), and 25 747 for Im2Handler (`work/docs/mpA-budget.py work/runs/i1`).

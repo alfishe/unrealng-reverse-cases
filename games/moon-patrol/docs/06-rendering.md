@@ -104,6 +104,23 @@ Every routine indexes them the same way, by doubling a page number:
 - H = `$7E`, L = y, then `SLA L` / `RL H` gives `$FC00` + 2y;
 - B = `$7D`, C = x, then `SLA C` / `RL B` gives `$FA00` + 2x.
 
+The first bytes of each, from the image (`work/mkgame/original.bin`):
+
+```text
+PixelTable       $FA00  00 80 00 40 00 20 00 10 00 08 00 04 00 02 00 01    x 0-7: column 0, masks $80 ... $01
+                 $FA10  01 80 01 40 01 20 01 10 01 08 01 04 01 02 01 01    x 8-15: column 1
+ScreenLineTable  $FC00  00 40 00 41 00 42 00 43 00 44 00 45 00 46 00 47    lines 0-7: $4000, $4100 ... $4700
+                 $FC10  20 40 20 41 20 42 20 43 20 44 20 45 20 46 20 47    lines 8-15: $4020 ... $4720
+                 $FC20  40 40 40 41 40 42 40 43 40 44 40 45 40 46 40 47    lines 16-23: $4040 ... $4740
+                 $FD00  00 50 00 51 00 52 00 53 00 54 00 55 00 56 00 57    lines 128-135: $5000 ... $5700 (third 2)
+```
+
+How to read it: a PixelTable entry is (column, mask), so the mask walks right one bit a pixel and the column steps
+every 8 entries. A ScreenLineTable entry is an address, low byte first: inside a character row the high byte grows by
+1 a line (`$4000`, `$4100` ...); each new character row adds `$20` to the low byte; each third (line 64, 128) adds
+`$08` to the high byte. One lookup: line 9 is the entry at `$FC00` + 2 x 9 = `$FC12`, `20 41`, the address `$4120`.
+**The point**: the table spells out the Spectrum's interleaved layout once, so no routine shuffles the bits of y.
+
 The tables are data in the image, not built at run time. Doc 2's "the font" at `$FA00-$FD7F` is these two tables
 (annotator 05's correction, `work/stage2/ann/05-data-notes.md`).
 
@@ -143,7 +160,7 @@ loop, so no flowchart. The users:
 
 | Routine | Operation | Users | Runs |
 | --- | --- | --- | --- |
-| PlotPixel `$FD80` | OR | the menu frame (`$87AE`, `$87B9`), the entry cursor `$8CF3`, the HUD progress dots `$92CE` | `game` 61 349 |
+| PlotPixel `$FD80` | OR | the menu frame (`$87AE`, `$87B9`), the entry cursor `$8CF3`, the HUD progress bar `$92CE` | `game` 61 349 |
 | UnplotPixel `$FD99` | AND NOT | UnplotRun `$A7F4`: the ground cuts of the score page (`$8133-$8143`), a mine, a bomb crater (`$9DCD`), the plant (`$A305`) | `a1` 1160, `i1` 420, `i2` 942 |
 | FlipPixel `$FDB3` | XOR | ShotPlot `$AE11`: every shot pixel | `i1` 97 928 |
 
@@ -418,6 +435,19 @@ How to read the figure:
 
 ```bash
 python3 tools/fig_rendering.py drawer    # docs/img/rendering/drawer.png
+```
+
+![DrawSprite40x23 at work in i1 frame 1083: the buggy erased at line 137, then drawn at line 139](img/routines/DrawSprite40x23.gif)
+
+The same loop in a recording: `i1` frame 1083, T 57 200-69 300 (one pass of a jump's descent). Watch the right panel
+(screen bytes 8-15 of lines 64-191, monochrome): the first call XORs the buggy away line by line, the second XORs it
+back two lines lower; the source bytes at `$E140` light up blue in the memory map as each line is read. `work/anim/i1`
+is an instance opened on `work/runs/i1/session.ttd` (`re_session.py open`).
+
+```bash
+python3 ../../kit/routine_anim.py --work work/anim/i1 --window 1083:57200-1083:69300 --listing build/game.lst \
+    --out docs/img/routines/DrawSprite40x23.gif --pc AA0F-B215 --view buffer:4808:8x128:screen --range 4000-FFFF \
+    --pictures 40 --delay 150 --title "DrawSprite40x23 \$B1C8: the buggy erased at line \$89, drawn at \$8B (i1 frame 1083)"
 ```
 
 **The colour drawers.** DrawSprite24x8Attr and DrawSprite24x16Attr take the attribute address from the first line's
@@ -710,12 +740,37 @@ $A897  JR NZ,FarLine
 $A899  RET
 ```
 
+![ScrollFarBand at work in i1 frame 1023: the feed refilled, then lines 64-95 rolled one pixel](img/routines/ScrollFarBand.gif)
+
+`i1` frame 1023, T 14 700-57 400: a pass whose FarCountdown is 0, so the routine first copies the next HillsStrip
+column into FeedFarBand (the `$5B00` row of the memory map lights up), then rolls the 32 lines one by one. The right
+panel is screen bytes 28-31 of lines 64-127 (monochrome): each line turns yellow as `RL (HL)` walks it from byte 31
+to byte 0, and a new pixel enters at the right edge.
+
+```bash
+python3 ../../kit/routine_anim.py --work work/anim/i1 --window 1023:14700-1023:57400 --listing build/game.lst \
+    --out docs/img/routines/ScrollFarBand.gif --pc A846-A899 --view buffer:481C:4x64:screen --range 4000-FFFF \
+    --pictures 50 --delay 120 --title "ScrollFarBand \$A846: lines 64-95 one pixel left, 8 new columns fed (i1 frame 1023)"
+```
+
 **Two and four pixels a pass.** `RL (HL)` moves one bit. For two bits a byte ScrollMiddleBand keeps the two carry bits in
 A between bytes: before a line it rotates the feed byte twice into A's bottom two bits; for each byte, `RRCA / RRCA`
 puts them at A's top, then `RLA / RL (HL)` twice shifts one bit at a time out of A into the byte and the byte's two
 top bits back into A, and a last `RLA` brings them to A's bottom for the next byte. ScrollRoad does the same with
 four bits (`RRCA` x 4, then four `RLA / RL (HL)` pairs). ScrollNearBand is ScrollMiddleBand with A starting at 0 and no
 feed: zeros come in on the right, which is where the band is empty.
+
+![ScrollMiddleBand at work in i1 frames 1026-1027: the feed refilled, then lines 96-127 rolled two pixels](img/routines/ScrollMiddleBand.gif)
+
+`i1` frames 1026-1027 (1026:12 600-1027:23 100): MiddleCountdown is 0, so the next mountain column is copied into
+FeedMiddleBand `$5B20` before the roll. The lower half of the right panel is the middle band (bytes 28-31): the same
+line-by-line sweep as the far band, at about twice the cost a line (the `RRCA / RLA / RL (HL)` dance of two bits).
+
+```bash
+python3 ../../kit/routine_anim.py --work work/anim/i1 --window 1026:12600-1027:23100 --listing build/game.lst \
+    --out docs/img/routines/ScrollMiddleBand.gif --pc A89A-A8FC --view buffer:481C:4x64:screen --range 4000-FFFF \
+    --pictures 60 --delay 120 --title "ScrollMiddleBand \$A89A: lines 96-127 two pixels left, 8 new columns fed (i1 frames 1026-1027)"
+```
 
 ```text
 scroll(band_lines, step, feed, strip, counter, period):
@@ -919,6 +974,19 @@ How to read the figure:
 python3 tools/fig_rendering.py crater    # docs/img/rendering/crater.png
 ```
 
+![ScrollRoad at work in i1 frames 420-422: the road band rolled four pixels, the crater's V at the right edge](img/routines/ScrollRoad.gif)
+
+`i1` frames 420-422 (420:26 000-422:64 000, the frame interrupt's tune note in the middle), the second crater of
+the course (GroundProfile at the wall columns from frame 404 to 431). The right panel is screen bytes 28-31 of lines 128-191 (monochrome; the near band above, the road
+below): the 32 road lines are rolled one by one, each one flashing as `RL (HL)` walks it, and the V's ink moves four
+pixels left while the feed's bits enter at the right; the last picture shows the random texture ORed into line 160.
+
+```bash
+python3 ../../kit/routine_anim.py --work work/anim/i1 --window 420:26000-422:64000 --listing build/game.lst \
+    --out docs/img/routines/ScrollRoad.gif --pc A932-A9AE --view buffer:501C:4x64:screen --range 4000-FFFF \
+    --pictures 80 --delay 120 --title "ScrollRoad \$A932: lines 160-191 four pixels left, a crater wall coming in (i1 frames 420-422)"
+```
+
 **The edge.** Line 160 starts as 32 bytes of the ROM: ScenerySetup copies `$2000-$201F` (`0D CD 79 1C CD C3 1F CD 07 23 ...`,
 Z80 code of the 48K ROM) to `$5080`, the first pixel line of row 20. The bytes are any 256
 pixels with no pattern, a cheap rough edge. Then each pass, after the roll, ScrollRoad ORs fresh random bits into the
@@ -944,6 +1012,22 @@ $A9AB  LD ($509F),A
 $A9AE  RET
 ```
 
+```text
+RoadTexture:                                     ; $A991, the end of ScrollRoad
+    if PlayerFlags bit 3:                        ; a mine or plant cut the edge this pass
+        clear PlayerFlags bit 3; keep = $03      ; only the 2 newest pixels
+    else:
+        keep = $0F                               ; the 4 new pixels
+    bits = (R XOR low byte of FRAMES) AND keep
+    screen[$509F] = screen[$509F] OR bits        ; line 160, byte 31: x 252-255
+```
+
+**A worked byte.** Say FRAMES is `$3A` and R is `$5D` at `$A99E-$A9A2` (values chosen to show the arithmetic, as in
+[doc 7.8](07-objects.md#78-the-random-numbers)). `$5D` XOR `$3A` = `$67`; AND `$0F` = `$07`. On the plain road the
+four new pixels come in clear (the feed's line 0 is `00`), so the low nibble of `$509F` becomes `7`: x 253-255
+inked, x 252 clear. After a
+mine's cut (C = `$03`) the same R and FRAMES give `$03`: only x 254-255.
+
 The feed's line 0 is `00` for the plain road and `FF` for the crater walls, so on the plain road the edge's ink comes
 only from these random bits, about half of the four new pixels a pass: the broken line in every play screenshot.
 
@@ -960,11 +1044,11 @@ $A7FB  JR NZ,UnplotRun
 $A7FD  RET
 ```
 
-| Caller | Cut on line 160 | Then |
+| Caller: routine (the CALL UnplotRun) | Cut on line 160 | Then |
 | --- | --- | --- |
-| a mine, first pass `$9AEB` | x `$F6`, 10 pixels | `$B288` bit 3 set: the next texture only 2 pixels |
-| the spinner's bomb landing `$9CE0` | 16 pixels at the bomb's x | the crater sprite `$10` drawn below |
-| the green plant, first pass `$A2C6` | x `$E4`, 28 pixels | `$B288` bit 3 set |
+| a mine `$9AEB`, first pass (`$9B0F`) | x `$F6`, 10 pixels | `$B288` bit 3 set: the next texture only 2 pixels |
+| the spinner's bomb `$9CE0`, landing (`$9DCD`) | 16 pixels at the bomb's x | the crater sprite `$10` drawn below |
+| the green plant `$A2C6`, first pass (`$A305`) | x `$E4`, 28 pixels | `$B288` bit 3 set |
 | the score advance page `$8118` (`$8133`, `$813B`, `$8143`) | x `$22` 20, x `$3F` 10, x `$DE` 28 | the page's sprites |
 
 The cut makes room: a mine or a plant stands in the edge without the green line running through it. The cut then
@@ -1116,6 +1200,18 @@ $9614  LDIR
 $9616  RET
 ```
 
+```text
+SceneryColoursRepaint:                           ; $95F2, once a pass
+    set = ColourScheme                           ; $B230: SceneryColourSets $9617 or $961C (6.1)
+    for cell in $5900 .. $597F:                  ; rows 8-11, 128 cells
+        attribute[cell] = set[1]                 ; the far band: $02 (red ink on black)
+    for cell in $5AC0 .. $5B00:                  ; rows 22-23, 64 cells, plus one past the end
+        attribute[cell] = set[4] AND $F8         ; the road's paper, black ink: $30 mountains, $20 city
+```
+
+Worked for the mountains: set[1] = `$02`, set[4] = `$34` AND `$F8` = `$30` (yellow paper, black ink); for the city
+`$26` AND `$F8` = `$20` (green paper, black ink).
+
 Rows 8-11 get their colour back after any UFO that dipped into them (6.1). Rows 22-23 get the road's paper with black
 ink. The black ink is for the **point letter**: CmdPoint `$9775` prints the coming point's
 letter at the right edge of row 22 (TextPointAt `$97A7`, font 2) and inverts its cell (`$50DF`), and ScrollRoad then
@@ -1137,7 +1233,7 @@ broom that sweeps up after the UFOs.
 
 ## 6.9 Shots and flying wheels
 
-**The shots are pixels, not sprites.** The fire button makes two shots at once (FireShots `$ACF1`, [doc 10](10-gameplay-logic.md)): a
+**The shots are pixels, not sprites.** The fire button makes two shots at once (FireShots `$ACF1`, [doc 5, 5.4](05-controls.md#54-from-the-control-byte-to-the-buggy)): a
 **forward shot**, a horizontal dash of 6 pixels that flies right, and an **upward shot**, a vertical dash of 4 pixels
 that climbs. Neither has graphics: each is drawn pixel by pixel with FlipPixel `$FDB3`, the XOR twin of PlotPixel
 (6.2), through the helper ShotPlot `$AE11`.
@@ -1254,6 +1350,61 @@ flowchart TD
   I -- "no" --> J["draw at x + step of line y + 1"]
 ```
 
+The three routines as pseudocode; the forward shot's record at ShotForward `$5B60` is y, x, height, width, end x;
+an upward shot's (ShotsUp `$5B65`, four of 4 bytes) is y, x, height, width:
+
+```text
+FireNewPress(buggy):                             ; $AD06, fire down and not down last pass
+    if forward.y == $FF:                         ; free
+        forward.y = buggy.y + 1
+        forward.x = buggy.x + $20                ; 32 pixels ahead
+        forward.end = forward.x + $60            ; 96 pixels of range
+        DrawShotForward(forward)
+    for each up in ShotsUp:                      ; $AD2E: the refusal rule
+        if up.y + 2 >= $6F: return               ; one still at y $6D or lower: no new upward shot
+    up = the first free (y == $FF) of ShotsUp, else return
+    up.y = (buggy.y - 12) AND $FC
+    up.x = buggy.x + 8
+    DrawShotUp(up)
+
+ShotForwardMove:                                 ; $AD68
+    if forward.y == $FF: return
+    if DeathStep == 1 and not DeadFlag: forward.x += band step   ; killed this pass, not by a crater
+    DrawShotForward(forward)                     ; XOR: erase
+    if forward.height == $FF: forward.y = $FF; return            ; an object hit it
+    forward.height = 3
+    forward.x += 6
+    if forward.x >= forward.end: forward.y = $FF; return
+    DrawShotForward(forward at x + band step)
+
+ShotUpMove(up):                                  ; $ADBF, for each up in use
+    (same death fix, erase)
+    if up.height == $FF: up.y = $FF; return
+    up.height = 4
+    up.y -= 4
+    if up.y < $18: up.y = $FF; return            ; off the top of the sky
+    DrawShotUp(up at x + band step)
+```
+
+```asm
+FireUpCheckLoop:               ; the refusal rule
+$AD33  LD A,(HL)              ; an upward shot's y ($FF free)
+$AD34  ADD A,$02
+$AD36  CP $6F
+$AD38  RET NC                 ; y + 2 >= $6F: refuse
+...
+ShotUpStep:
+$ADDF  LD A,(HL)
+$ADE0  SUB $04                ; 4 lines up
+$ADE2  CP $18
+$ADE4  JR NC,ShotUpDraw
+$ADE6  LD (HL),$FF            ; above line $18: free
+$ADE8  RET
+```
+
+A free slot (`$FF` + 2 = `$01`) passes the refusal test, so only a climbing shot still low on the screen blocks a new
+one.
+
 **A worked example: a shot from the start position.** The buggy stands at y `$92`, x `$38`. A new press of fire
 (`$AD06`): the forward shot gets y `$93`, x `$38` + `$20` = `$58`, end x `$58` + `$60` = `$B8`, and is drawn at once:
 6 pixels from x `$58` on line `$94` (148).
@@ -1263,7 +1414,8 @@ flowchart TD
   `0B 20`, `0B 10`, `0B 08`, `0B 04`.
 - The six XORs set bits 7-2 of `$544B`: the byte becomes `$FC` on a clear background.
 - Each pass after that the dash moves 6 pixels: x `$5E`, `$64`, ... the 16th move reaches `$B8` and frees the slot.
-  The dash flies 96 pixels in 16 passes, about 134 frames or 2.7 seconds; one forward shot at a time.
+  The dash flies 96 pixels in 16 passes, about 113 frames or 2.3 seconds (7.05 frames a forward pass); one forward
+  shot at a time.
 
 ![One press of fire: the forward and upward shots pass by pass](img/rendering/shots.png)
 
@@ -1273,11 +1425,11 @@ How to read the figure:
   the start position (slot 0, x `$38`, line `$89`).
 - **Horizontal dashes**: the forward shot every second pass after the press (the number), from x `$58` to the last
   place before x `$B8`; the colour fades with age.
-- **Vertical dashes**: the upward shot, one a pass, 4 lines up each time.
+- **Vertical dashes**: the upward shot at every second pass (4 lines a pass, so 8 lines between dashes).
 - A model from the code's numbers (FireNewPress `$AD06`, ShotForwardMove `$AD68`, ShotUpMove `$ADBF`), drawn on a clear
   screen; the real shots fly over the scenery, as in `i1-rock-point-a.png`.
 - **The point**: the forward dash covers 96 pixels in 16 passes, the reach of the gun; the upward dash rises 4 lines a
-  pass, so a UFO 80 lines up is reached in about 20 passes, near 3.4 seconds.
+  pass, so a UFO 80 lines up is reached in about 20 passes, about 141 frames or 2.8 seconds.
 
 The upward shot of the same press starts at y (`$92` - 12) AND `$FC` = `$84`, x `$38` + 8 = `$40` and is drawn at
 x `$41`, lines `$84-$87`. A new upward shot needs every used upward shot above line `$6D` (`$AD2E`), so up to four
@@ -1415,7 +1567,7 @@ flowchart TD
 | Caller | Source | Lines | BlitX (byte) | Width |
 | --- | --- | --- | --- | --- |
 | TitlePage `$8018` | TitleMoon `$6132` | 24-48 | `$58` (11) | 10 |
-| TitlePage `$8036` | TitlePatrol `$622C` | 55-79 | `$48` (9) | 14 |
+| TitlePage `$802A` | TitlePatrol `$622C` | 55-79 | `$48` (9) | 14 |
 | HudDraw `$9154` | HudPanel `$9481` | 0-23 | `$50` (10) | 8 |
 
 **A worked example: the first row of "Moon".** TitlePage sets BlitTop/BlitBottom with `LD HL,$3118` (24, 49) and

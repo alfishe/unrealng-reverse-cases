@@ -130,7 +130,8 @@ over the bare ground (`a1` frame 20 800, "DEMO" flashing). Any key leaves the de
 (MenuCheckAnyKey `$8321` reads every half-row), so the keys cannot steer it. The Sinclair and cursor joysticks are
 keys too (half-rows `$EFFE` and `$F7FE`): any of their directions ends the demo. Only a Kempston (port `$1F`) or
 Fuller (port `$7F`) stick's directions would steer it, since BuggyUpdate reads the chosen control in the demo too;
-fire on any device starts a game (MenuCheckStart `$81B1`). Known only from the code. Each demo complements the scenery
+fire alone (no direction) on the chosen joystick starts a game (MenuCheckStart `$8227`, called at `$81B1`); with the
+keyboard chosen only S does. Known only from the code. Each demo complements the scenery
 flag, so successive demos alternate the mountains and the city.
 
 ## 1.3 The play screen
@@ -141,7 +142,7 @@ flag, so successive demos alternate the mountains and the city.
 
 - **Rows 0-2, the HUD** (HudDraw `$9136`): the player icon and 1P / 2P labels, the hi-score `50000-Y` (THE
   GREATEST's score and the point he reached), the player's score and the point letter he reached, the lives as
-  buggy icons, the course map E J P U Z with the progress dots under it, TIME (seconds), POINT (the last point
+  buggy icons, the course map E J P U Z with the progress bar under it, TIME (seconds), POINT (the last point
   passed), BEGINNER or CHAMPION, and the three warning lamps on the right.
 - **Rows 3-7**: the black sky where the UFOs fly.
 - **Rows 8-11**: the far band, the craggy hills (HillsStrip `$EBC0`), scrolling one pixel a pass (ScrollFarBand
@@ -164,7 +165,7 @@ The HUD's fields:
 | lives in reserve | PlayerLives `$B284` | buggy icons, up to 4 | HudLives `$9263` | 3 |
 | TIME | PlayerTime `$B285-$B286` | 4 BCD digits, seconds | HudPrintTime `$922A` | 0 |
 | POINT | PlayerPoint | a letter | HudPrintPoint `$9247` | `@` |
-| progress bar | PlayerPoint | a dot every 2 pixels | HudProgress `$92AA` | empty |
+| progress bar | PlayerPoint | a solid bar 2 pixels high, 2 pixels longer each point | HudProgress `$92AA` | empty |
 | lamps | PlayerLights `$B27E` | 0-3 | HudLamps `$927E` | green |
 | hi-score | GreatestScore `$88C2` | 8 BCD digits | HudDraw | 50000 |
 
@@ -208,7 +209,8 @@ CourseBreakToBasic `$9740`. No cheat key and no POKE-like option exist in the co
 above.
 
 Holding the keys: fire acts once per press (FireShots keeps the last state in PlayerFlags `$B288` bit 1), the jump
-starts on the press and then runs its arc to the end with the key up or down, and Q and A act every pass they are
+starts when the key is down and runs its arc to the end with the key up or down (held down, the buggy jumps again
+as soon as it lands), and Q and A act every pass they are
 held, on the ground only.
 
 ## 1.5 The buggy
@@ -240,8 +242,8 @@ in `c1` (`$AA24`). The arcs as data are in
 [doc 10](10-gameplay-logic.md).
 
 **Shooting.** Each new press of fire sends a forward shot along the ground, if the one before has ended, and an
-upward shot, if no upward shot is still below line `$6D` (FireShots `$ACF1`). The forward shot flies 6 pixels a pass
-for `$80` pixels; up to four upward shots climb 4 pixels a pass to line `$18` (ShotForwardMove `$AD68`, ShotUpMove
+upward shot, if no upward shot is still below line `$6D` (FireShots `$ACF1`). The forward shot starts 32 pixels ahead of
+the buggy and flies 6 pixels a pass for `$60` (96) pixels, 16 passes; up to four upward shots climb 4 pixels a pass to line `$18` (ShotForwardMove `$AD68`, ShotUpMove
 `$ADBF`). A shot that hits something ends at once. New presses: `i1` 332, `i2` 367.
 
 ## 1.6 The enemies and hazards
@@ -333,7 +335,7 @@ place. The scripts are `src/res/courses/BeginnerCourse.txt` (`$B7E8-$BB06`) and 
 
 - **a segment** is a wait (127 passes, 63 or 64 in the last point before a sector end) and a list of spawn
   commands, each with a delay an object;
-- **a point segment** announces its point: the letter shows inverse at the bottom right, and after 63 passes the
+- **a point segment** announces its point: the letter shows inverse at the bottom right, and after 63 passes (62 in the short point before a sector end) the
   point object (ObjPoint `$9978`) marks it passed: the HUD letter, the progress bar, and the restart point;
 - **a sector end** is one record: the par time, the bonus, the scenery of the next sector, and the best time so far.
 
@@ -486,7 +488,7 @@ What the player sees, pass by pass:
    usual pace (known only from the code).
 4. At step 8 the main loop erases the last frame, puts the course pointer back to the restart point and returns:
    the life is over (MainLoopPass `$96BB`).
-5. The banner "PLAYER n" for 100 frames, then the next life from the restart point.
+5. The banner "PLAYER n" for 100 frames (300 with two players), then the next life from the restart point.
 
 ```mermaid
 flowchart TD
@@ -555,8 +557,8 @@ ScoreAdd.
 
 ![The bonus screen of sector E: 98 seconds taken, 120 required, the best time 999, the sector bonus 1000](img/play/i1-bonus-e.png)
 
-1. The record of the sector end, at `$B87C` in the Beginner script: `01 20` (par 120 s), `10` (bonus 1000), `FF`
-   (the city next), `09 99` (the best time, the image's placeholder 999).
+1. The record of the sector end, at `$B87E` in the Beginner script: the word `$A4EE` (SectorBonus), then `01 20` (par 120 s), `10` (bonus 1000), `FF`
+   (the city next), `09 99` (the best time, the image's placeholder 999), `$B87E-$B885`.
 2. SectorBonus switches to IM 1 (the game's clock stops), clears the screen and prints the three times: taken 98,
    required 120, best 999.
 3. SECTOR BONUS = 1000: ScoreAdd with BC = `$1000`.
@@ -599,7 +601,7 @@ T on the options page chooses two players (`p2`). The players take turns, a life
 
 - GameStart fills both records, player 2's first, then plays player 1. The current player's record is at
   Player `$B271` (27 bytes: the number, the score, the extra-life score, the course pointer, the point, the
-  scenery, the lamps, the restart and segment pointers, the active flag, the lives, the time, the flags); the
+  scenery, the lamps, the restart and segment pointers, the active flag, the lives, the time, the clock's frame count, the flags, the initials); the
   other's waits at `$B28C`. PlayerSwap `$9022` exchanges them through `$B2A7`.
 - After each life the turn passes to the other player if he is still in the game (PlayerActive `$B283`), else the
   same player goes on. Each player keeps his own course, point, time and tune flag.

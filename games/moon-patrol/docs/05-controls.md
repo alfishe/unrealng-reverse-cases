@@ -237,6 +237,25 @@ AE4E  C9           RET
 - With two players, player 1 (Player `$B271` = 1) reads only the row 6-0.
 - Player 2 reads only the row 1-5 (E = `$FF`, then the shared code at `$AE3F`).
 
+```asm
+AE4F  3A 57 B2     LD A,(Players)         ; JoySinclair2
+AE52  3D           DEC A
+AE53  28 E5        JR Z,JoySinclair1      ; one player: both joysticks
+AE55  3A 71 B2     LD A,(Player)
+AE58  3D           DEC A
+AE59  1E FF        LD E,$FF               ; player 2: no row 6-0 ...
+AE5B  20 E2        JR NZ,JoySinclairKeys1To5   ; ... only the row 1-5, reversed
+AE5D  3E EF        LD A,$EF               ; player 1: the row 6-0 alone
+AE5F  DB FE        IN A,($FE)
+AE61  F6 E0        OR $E0
+AE63  C9           RET
+```
+
+Worked example, two players, player 2 holding 4 (his jump; from the code): E = `$FF`; the row 1-5 reads `$F7` (bit 3
+low); the reverse loop moves bits 0-4 of `$F7` into C mirrored, so key 4 (bit 3) lands on bit 1: C's low five bits
+are `11101`; AND `$FF`, OR `$E0` = `$FD`; the `CPL` gives `$02`: jump. The row 6-0 (player 1's joystick) is not
+read in player 2's turn.
+
 The players take turns, so the two joysticks never act at once, and each player keeps his own.
 
 **JoyCursor `$AE7E`** (3, C) reads the cursor keys: 5 left, 6 down, 7 up, 8 right, 0 fire. It makes four reads of
@@ -247,12 +266,62 @@ the two half-rows. Each read is masked to one or two keys and rotated into place
 - 8 goes to bit 3, by one `RLCA`;
 - 5 is already on bit 4.
 
+```asm
+AE7E  01 FE F7     LD BC,$F7FE            ; JoyCursor: the row 1-5
+AE81  ED 78        IN A,(C)
+AE83  F6 EF        OR $EF                 ; keep 5 (bit 4): slow
+AE85  5F           LD E,A
+AE86  06 EF        LD B,$EF               ; the row 0-6
+AE88  ED 78        IN A,(C)
+AE8A  F6 FE        OR $FE                 ; keep 0 (bit 0): fire
+AE8C  A3           AND E
+AE8D  5F           LD E,A
+AE8E  ED 78        IN A,(C)
+AE90  F6 E7        OR $E7                 ; keep 7 and 6 (bits 3, 4)
+AE92  0F           RRCA
+AE93  0F           RRCA                   ; to bits 1 (jump) and 2
+AE94  A3           AND E
+AE95  5F           LD E,A
+AE96  ED 78        IN A,(C)
+AE98  F6 FB        OR $FB                 ; keep 8 (bit 2)
+AE9A  07           RLCA                   ; to bit 3: fast
+AE9B  A3           AND E
+AE9C  C9           RET                    ; ControlsReadDone: CPL
+```
+
+Worked example, 7 (up) held: the row 0-6 reads `$F7` (bit 3 low), the row 1-5 `$FF`. E = `$FF`; the fire read gives
+`$FF`; `$F7` OR `$E7` = `$F7`, two `RRCA` give `$FD`, AND E = `$FD`; the 8 read gives `$FF`. ControlsReadDone's
+`CPL` turns `$FD` into `$02`: jump.
+
 **JoyFuller `$AE9D`** (4, V) reads the "old-type Fuller box" on port `$7F`. Its bits are active low: up, down, left
 and right on bits 0-3, fire on bit 7. The handler moves them like this:
 
 - one `RLCA` brings fire to bit 0, and up and down to bits 1 and 2;
 - right stays on bit 3;
 - left goes to bit 4, with two more `RLCA`.
+
+```asm
+AE9D  DB 7F        IN A,($7F)             ; JoyFuller: up 0, down 1, left 2, right 3, fire 7
+AE9F  F6 70        OR $70
+AEA1  47           LD B,A
+AEA2  07           RLCA                   ; fire to bit 0, up to 1, down to 2
+AEA3  F6 F8        OR $F8                 ; keep bits 0-2
+AEA5  4F           LD C,A
+AEA6  78           LD A,B
+AEA7  F6 F7        OR $F7                 ; keep right (bit 3): fast
+AEA9  A1           AND C
+AEAA  4F           LD C,A
+AEAB  78           LD A,B
+AEAC  F6 FB        OR $FB                 ; keep left (bit 2)
+AEAE  07           RLCA
+AEAF  07           RLCA                   ; to bit 4: slow
+AEB0  A1           AND C
+AEB1  C9           RET                    ; ControlsReadDone: CPL
+```
+
+Worked example, up held: `IN A,($7F)` = `$FE` (bit 0 low). B = `$FE`; `RLCA` = `$FD`, OR `$F8` = `$FD`; B OR `$F7` =
+`$FF`, AND = `$FD`; B OR `$FB` = `$FF`, rotated `$FF`, AND = `$FD`. The `CPL` gives `$02`: jump. With fire held too
+(`$7E`) the result is `$03`.
 
 Witness:
 
@@ -424,8 +493,8 @@ Two tests run, and their result is dropped:
 
 - **MenuBreakTest `$8215`** runs on every menu pass but the title's. It tests CAPS SHIFT and SPACE, the same test as the abort, and
   its caller ignores the flags (`a1` 2424 calls).
-- **BreakKeyTest `$9737`** runs once a pass in play. It tests the key 0 (`$EFFE` bit 0) and returns Z when it is
-  down. MainLoopCalls ignores it (`i1` 3601 calls).
+- **BreakKeyTest `$9737`** runs once a pass in play. It tests the key 0 (`$EFFE` bit 0) and returns NZ when it is
+  down (Z when up). MainLoopCalls ignores it (`i1` 3601 calls).
 - **A stub nothing calls** follows each: MenuBreakToBasic `$8222` and CourseBreakToBasic `$9740`. Both are
   `CALL SetIm1`, `RST 8`, report `$14` ("L BREAK into program"). They never ran in any recording.
 
@@ -714,6 +783,68 @@ $8D4A  LD (HL),D
 $8D4B  JP EditCursorRight      ; cursor + 1 unless it would reach EntryLength
 ```
 
+![EntryFieldEdit at work in h1 frames 4330-4530: M, P and A typed, the field redrawn after each key](img/routines/EntryFieldEdit.gif)
+
+The loop in a recording: `h1` frames 4330-4530, one picture every 4 frames (279 552 T). The right panel is screen
+bytes 13-20 of lines 64-191 (monochrome): the prompt above, the field at line `$7C` below it. Most pictures sit in
+EditWaitLoop (`CP (HL)` on LAST_K); around frames 4345, 4405 and 4465 a key arrives, the letter is stored at the cursor
+and EntryFieldDraw clears and redraws the field with the cursor line under the next place (it stays on the third).
+
+```bash
+python3 ../../kit/routine_anim.py --work work/anim/h1 --window 4330:0-4530:0 --listing build/game.lst \
+    --out docs/img/routines/EntryFieldEdit.gif --pc 8C9C-8DAF --view buffer:480D:8x128:screen --range 4000-FFFF \
+    --step 279552 --delay 150 --title "EntryFieldEdit \$8D0D: the initials M, P, A typed, the field redrawn after each key (h1 frames 4330-4530)"
+```
+
+The cursor keys and DELETE:
+
+```asm
+EditCursorLeft:
+$8D5D  LD A,(EntryCursor)
+$8D60  AND A
+$8D61  JP Z,EditRedraw        ; at 0: stays
+$8D64  DEC A
+$8D65  LD (EntryCursor),A
+$8D68  JP EditRedraw
+EditCursorRight:
+$8D6B  LD A,(EntryCursor)
+$8D6E  INC A
+$8D6F  LD HL,EntryLength
+$8D72  CP (HL)
+$8D73  JP Z,EditRedraw        ; would reach the length: stays
+$8D76  LD (EntryCursor),A
+$8D79  JP EditRedraw
+EditDelete:
+$8D7C  LD A,(EntryCursor)     ; DE = buffer + cursor
+...
+$8D87  LD HL,(EntryBuffer)
+$8D8A  LD A,(EntryLength)
+...
+$8D90  ADD HL,BC
+$8D91  DEC HL                 ; HL = the last place
+$8D92  PUSH HL
+$8D93  AND A
+$8D94  SBC HL,DE              ; BC = the characters after the cursor
+$8D96  LD A,H
+$8D97  OR L
+$8D98  JR Z,EditDeleteTail    ; the cursor on the last place: nothing to move
+$8D9A  LD B,H
+$8D9B  LD C,L
+$8D9C  LD H,D
+$8D9D  LD L,E
+$8D9E  INC HL
+$8D9F  LDIR                   ; the tail one place left, over the cursor's character
+EditDeleteTail:
+$8DA1  POP HL
+$8DA2  LD (HL),$20            ; a space on the last place
+$8DA4  JR EditCursorLeft
+```
+
+Worked example, DELETE in a 3-letter field holding `MPA` with the cursor at 1 (from the code): DE = buffer + 1, the
+last place buffer + 2, BC = 1. The `LDIR` copies `A` over `P`: `MAA`. The space on the last place gives `MA `, and
+the cursor moves left to 0. So DELETE removes the character under the cursor, not the one before it, and then steps
+left.
+
 Worked example, `h2` typing STAGE ONE over THE GREATEST's name. GreatestNameField `$8D53` is `14 AD 88 7C 44`:
 20 characters, the buffer `$88AD`, its place on the screen. The buffer holds SPIKE NOTWELL and spaces (doc 1, 1.11).
 
@@ -749,8 +880,8 @@ Witness:
   than that can fall between two reads and be lost. A fire tap must span one read with the button down.
 - **The reads are instants.** `IN` sees the key's state at that T-state. There is no latch, and no interrupt-driven
   scan in play: the IM 2 handler does not scan the keyboard.
-- **On the menus**, a pass is MenuDelay (4.8 frames) plus the page's work. So a menu key must be held for about
-  100 ms.
+- **On the menus**, a pass is MenuDelay (4.8 frames) plus the page's work. So a menu key must be held for up to
+  about 150 ms (a pass of 4.8 to 7.7 frames, the hi-score page the longest).
 - **On the hold**, the loop polls about 176 times a frame, so the restart is immediate.
 - **In the hi-score entry**, the ROM's scan runs every frame, and LAST_K keeps the key until the game reads it. No
   key is lost.

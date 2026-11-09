@@ -76,7 +76,7 @@ Each transition, with its code:
 | From | To | Trigger | Code |
 | --- | --- | --- | --- |
 | BASIC | the title | `RANDOMIZE USR 32768` | MenuEntry `$8000` saves SP at BasicStack `$B25D` |
-| a page | the next page | its pass counter runs out | `DJNZ` at the end of each page loop (`$8061`, `$8116`), `DEC BC` in the demo (`$81C8`) |
+| a page | the next page | its pass counter runs out | `DJNZ` at the end of each page loop (`$8061`, `$8116`, `$817E`, `$81FC`), `DEC BC` in the demo (`$81C8`) |
 | a page | the options page | any key (all half-rows) | MenuCheckAnyKey `$8321`: SetIm1, SP = BasicStack, JP OptionsPage |
 | a page | the hi-score page | H | MenuCheckHeroes `$8247` |
 | a page | the game | S alone, or fire on a joystick | MenuCheckStart `$8227`: SetIm1, SP = BasicStack, JP GameStart `$8F10` |
@@ -99,11 +99,11 @@ The program moves between states by jumps, not by returns. To keep the stack fro
 pointers and reloads one of them before each jump:
 
 - **BasicStack `$B25D`**: the SP that BASIC's `USR` gave the game (`$C338` in `c1`), saved once by MenuEntry
-  `$8000`. Every menu exit (MenuCheckStart, MenuCheckHeroes, MenuCheckAnyKey, TitlePage itself) reloads it, so each
+  `$8000`. Every menu exit (MenuCheckStart, MenuCheckHeroes, MenuCheckAnyKey, TapeLoadDone `$831A`, TitlePage itself) reloads it, so each
   page starts on an empty stack.
 - **LoopStack `$B25F`**: the SP at the entry of MainLoop `$9696`, saved there each time. The bonus screen and the
   two course switches are reached from inside the course interpreter, two words deep (`$96B4`, the return of
-  MainLoopSegment's `CALL CourseRun`, and `$9751`, pushed by CourseRun `$9758` before its `JP (IX)`); they reload LoopStack and
+  MainLoopSegment's `CALL CourseRun`, and `$9751`, pushed by CourseRun `$975B` before its `JP (IX)`); they reload LoopStack and
   jump to MainLoop, which drops those frames.
 
 ```text
@@ -124,8 +124,8 @@ A689  ED 7B 5F B2  LD SP,(LoopStack)      ; SectorBonus: back to the loop's own 
 A68D  C3 96 96     JP MainLoop
 ```
 
-The point: a state change never leaks stack. That is why the deepest stack in every recording is the same 60 bytes
-under `$C338` (doc 2, 2.3), whatever the player did.
+The point: a state change never leaks stack. That is why the stack never goes deeper than 60 bytes under `$C338` in any
+recording (doc 2, 2.3), whatever the player did.
 
 ## 4.3 Interrupts
 
@@ -347,7 +347,8 @@ the same with and without music. The sound itself is [doc 9](09-sound.md)'s.
 
 Witness (`python3 tools/l1sum.py --range 7F47-7F97`): in `i1` a tune step 8580 times in 25 747 entries, 8600 words
 read (20 wraps at `$7F6D`), 7793 notes through BEEPER at `$7F8A` and 787 rests. In `a1`, 626 note words but only 341
-played: the other 285 were silenced by the tune key ([doc 5](05-controls.md)).
+played: the other 285 were rests, about 67 while the tune key had the tune off (frames 2540-2740,
+[doc 5](05-controls.md)) and the rest in the demo, which sets the tune-off flag (`$8199`).
 
 ### The clock step
 
@@ -419,12 +420,13 @@ the L1 builds, WALKTHROUGH 1):
 
 | Where | From | To | How long | Why |
 | --- | --- | --- | --- | --- |
-| the handler | `$7F14` DI | `$7F45` EI | 369 T, plus a note | not re-entrant: it calls BEEPER |
+| the handler | `$7F14` DI | `$7F45` EI | about 430 T, plus a note | not re-entrant: it calls BEEPER |
 | BEEPER, in the tune | the ROM's DI | its EI, then `$7F8D` DI | the note, 35 700-50 500 T | the ROM's BEEPER times its loop with interrupts off |
 | SetIm1, SetIm2 | `$A7CB` / `$A7D4` | `$A7D2` / `$A7DB` | a few T | changing `I` and the mode |
 | the bonus tune | BEEPER, 22 notes | | 186 frames in `i1` sector E | the fanfare |
 | the bonus beeps | BEEPER, BonusBeep `$A690` | | 2 x 9 frames | the time bonus fanfare |
 | the time bonus blip | `$A5E5` DI | `$A610` EI | 5 frames a second of bonus | a blip timed by delay loops |
+| the tape | SA-BYTES `$04C2` (`$8299`), LD-BYTES `$0556` (`$82A9`): the ROM's DI | their own `EI` on return | 3.5 s for a save of the table; a load with no tape until BREAK (`t1`) | the ROM times the bits by loops |
 
 **The frames that lose their interrupt.** The Spectrum's interrupt lasts 32 T at the start of each frame; a frame
 that runs with interrupts off the whole time loses it, and FRAMES does not move. Read with `memory_at` at the end
@@ -451,6 +453,18 @@ How to read the figure:
 
 ```bash
 python3 tools/fig_loop.py bonus     # from work/docs/mpA-i1-bonusE.tsv
+```
+
+![SectorBonus at work in i1 frames 5490-5702: the 22 seconds of time bonus counted, 100 points each](img/routines/SectorBonus.gif)
+
+The 22 beats in a recording: `i1` frames 5490-5702, one picture every 4 frames (279 552 T). Each second
+TimeBonusLoop `$A5B9` adds 100 to the counter after TIME BONUS and to the score in the HUD (2640 to 4840), both
+flashing as PrintBcd rewrites them; the code panel stops in the blip (`OUT ($FE),A`) or the 4 `HALT`s of BonusWait3.
+
+```bash
+python3 ../../kit/routine_anim.py --work work/anim/i1 --window 5490:0-5702:0 --listing build/game.lst \
+    --out docs/img/routines/SectorBonus.gif --pc A5B9-A68F --view screen --range 4000-FFFF \
+    --step 279552 --delay 120 --title "SectorBonus \$A4EE: the time bonus counted, 100 points a second (i1 frames 5490-5702, a picture every 4 frames)"
 ```
 
 The blip: 15 half-cycles; each waits A x 148 T with A the next byte of the ROM at `$0B16` (RomBlipLengths: `4B 8A 5C 2A 86`
@@ -622,8 +636,8 @@ How to read the figure:
   crosses it mid-way. 9068 screen writes in the pass, 3657 of them after the beam: the bands tear, and the game does
   not try to avoid it. Each band is moved by one routine in one sweep, so the tear is a line across a band, never a
   half-drawn sprite: the buggy's 230 writes all land before the beam.
-- **The strips of frames 1208-1211** are mostly `$03D6`/`$03D7`: BEEPER's loop, the tune's notes inside the
-  interrupts. They push the road's sweep out to the last frame.
+- **The strips of frames 1208 and 1211 (and the gap in 1205)** are mostly `$03D6`/`$03D7`: BEEPER's loop, one note
+  every third interrupt (`$7F4D`). They push the road's sweep out to the last frame.
 
 ```bash
 python3 ../../kit/beam_timeline.py --work work/docs/mpA-i1 --window 1205:0-1212:0 --frames 7 \
@@ -663,7 +677,7 @@ python3 tools/fig_loop.py passes    # from work/docs/mpA-i1-passes.tsv
 - Over the whole of `i1`, bonus screens included, 3601 passes in about 30 175 frames: 8.4 frames a pass
   (WALKTHROUGH 1).
 - What varies from pass to pass: the buggy's place (back costs SpeedGovernor 2 x 39 000 T more), the objects on the
-  road (ObjectListRun), and how many of the pass's interrupts carried a note (16 540 T) or a rest (38 000 T) or
+  road (ObjectListRun), and how many of the pass's interrupts carried a note (35 700-50 500 T) or a rest (38 000 T) or
   nothing (two in three entries return at once).
 
 The point: the game runs at about 7 passes a second, and every speed in it (the road's 4 pixels, a jump's steps, a

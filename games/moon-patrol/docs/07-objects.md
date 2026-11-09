@@ -134,11 +134,25 @@ $B80F  60 97                      SegmentEnd
 4. The second segment's CmdPoint overwrites `$BF10` with `78 99 3F 01`, CmdLamps adds `A3 99 1F 01` at `$BF14`, and
    the four UFO records of 20 bytes fill `$BF18-$BF67`. The new end word lands at `$BF68`.
 5. In the first pass of the list the first crater sees delay `$14` and writes `$13`; it reaches 0 after 20 passes
-   (about 170 frames). The first rock waits 50 passes.
+   (about 141 frames at forward speed). The first rock waits 50 passes.
 
 Witness: CourseRun runs `game` 8038, `i1` 89 827, `i2` 123 263 times; ListStop `game` 1598, `i1` 3631, `i2` 3968
 (once a list pass, plus SegmentEnd's jump). The first crater and rock records start at `i1` frame 263; the crater is
 on screen at `i1` 450 (`docs/img/play/i1-crater.png`), the rock at `i1` 1200 (`i1-rock-point-a.png`).
+
+![CourseRun at work in i1 frame 1123: the second Beginner segment appends its records at the write pointer](img/routines/CourseRun.gif)
+
+Step 4 in a recording: `i1` frame 1123, T 52 000-60 400, the pass in which SegmentWait runs out. The right panel is
+the object list from `$BEF8`, 4 bytes a row (one bit a pixel, so a crater record is one row, a rock two, a UFO five):
+CmdPoint writes row 7 (rows counted from 1; over the old end word) and inverts the point letter it prints at the
+bottom right, CmdLamps row 8, the two UFO commands rows 9-28, and SegmentEnd the end word `5E 97` in row 29
+(`$BF68`, DE in the last picture).
+
+```bash
+python3 ../../kit/routine_anim.py --work work/anim/i1 --window 1123:52000-1123:60400 --listing build/game.lst \
+    --out docs/img/routines/CourseRun.gif --pc 9696-9977 --view buffer:BEF8:4x64 --range 4000-FFFF \
+    --pictures 50 --delay 150 --title "CourseRun \$9751: the second Beginner segment appends six records to the object list (i1 frame 1123)"
+```
 
 ## 7.2 The record data sheet
 
@@ -373,7 +387,8 @@ How to read the figure:
 - Each panel shows lines 120-163 and x 32-111, 4 screen pixels a Spectrum pixel. Grey: the sprites as drawn.
   Blue frame: the buggy's box, red frame: the rock's box, yellow line: line 160, the road's top.
 - The yellow text above each panel is BoxOverlap's result and what the handler does with it.
-- The buggy's box covers its body, not the antenna or the wheels' bottom: 29 x 13 pixels at x `$38`.
+- The buggy's box covers its body, not the antenna or the wheels' bottom: 30 x 14 pixels at x `$38` (`$38-$55`, lines `$92-$9F`: BoxOverlap counts a touching edge
+  as overlap).
 - A model from the image's sprites and the box bytes; no recording.
 
 **The point**: the boxes are smaller than the sprites, so a rock may touch the wheels' pixels without a kill; and the
@@ -393,7 +408,7 @@ w `$1D`.
 2. x: `$38` + `$1D` = `$55`. The rock is left of the buggy's right edge when its x <= `$55`. `x + $0C` >= `$38` when
    x >= `$2C`. So a rock at x `$2C-$55` touches.
 3. The rock's x starts at `$F4` and steps by 4: `$F0`, `$EC` ... The first touching x is `$54` (the panel
-   "touching"), the last `$2C`: 11 passes, about 92 frames.
+   "touching"), the last `$2C`: 11 passes, about 78 frames.
 4. To clear it the buggy's y + `$0D` must be below `$94`: y <= `$86`, 12 lines above the ground, for all 11 passes.
 5. In one of those passes x = `$38` = `$38` AND `$FC`: the 80 points (`$9A37`, panel "over it"). With the buggy at
    x `$3A`, `$3A` AND `$FC` = `$38` as well.
@@ -415,7 +430,9 @@ ground probe reads five pixels of line 162 under its wheels and dies on the firs
   scrolls with it. After that the handler only counts down x for the jump score (100 when x = buggy x AND `$FC`).
 - **The mine is a sprite on a cut.** Its first pass (x `$F8`) clears 10 pixels of line 160 at x `$F6-$FF` (UnplotRun
   `$A7F4`) and sets bit 3 of PlayerFlags `$B288`, which ScrollRoad reads to feed a broken top edge. Then it moves
-  with the road and blinks: bit 2 of PassCount `$B23B` picks sprite `$11` or `$12`. 50 points when jumped.
+  with the road and blinks: bit 2 of PassCount `$B23B`, XOR the mine's phase bit 7
+  (`$9B42-$9B53`; CmdMines `$9812` copies it from the script byte, `$00` or `$80` per mine), picks sprite `$11` or
+  `$12`, so mines of opposite phase blink in turn. 50 points when jumped.
 - **The bomb crater** is a crater record that the spinner's bomb appends to the list (7.6).
 
 ```text
@@ -483,13 +500,13 @@ y `$A0`, that line is line 162. No recording shows a mine death outside the immu
 One 20-byte record holds a UFO and its bomb. Three spawners make three types: saucer A (`$9821`, sprites 1-4,
 green), saucer B (`$9827`, sprites 5-10, yellow) and the spinner (`$982D`, sprites `$0B-$0E`, cyan, 16 lines high).
 
-- **Entering.** The first pass after the delay sets the turn timer; the UFO starts at x 0 or `$F0` (random) and a
+- **Entering.** The first pass after the delay sets the turn timer to 16-40 passes (R AND `$18` + `$10`, `$9B8E`); the UFO starts at x 0 or `$F0` (random) and a
   random y (`$18-$37`, capped at `$30` for the spinner). A new UFO clears the retreat flag `$B237`.
 - **Flying.** Each pass the turn timer counts down. At 0 it reloads with 16-72 from R; a UFO moving across starts
   moving up or down by 2, one moving up or down starts moving across by 2, the sign from bit 6 of R. x stays below
   `$F1`; y stays in `$18-$38` (saucer) or `$18-$30` (spinner): the clamp at `$9C0E-$9C19` turns only when y passes the limit.
 - **Retreat.** When UfoRetreatTimer `$9EA5` has set `$B237`, the UFO moves 4 a pass to the nearer side and is gone
-  past it; its bomb part goes on.
+  past it; its bomb part goes on. Each retreating pass sets the turn timer to `$FE` (`$9BFF`), so it no longer turns.
 - **Shot.** The four upward shots are tested against its box. A hit spends the shot, sets sprite `$26` (saucer) or
   `$2E` (spinner) and UfoExplodeHandler `$9CA5`: four frames in place (`$27-$2A` or `$2F-$32`; gone at `$2B` / `$33`), then the record runs as UfoBombHandler only.
   100 for a saucer, 200 for the spinner. A UFO never touches the buggy: it has no buggy test.
@@ -504,12 +521,17 @@ green), saucer B (`$9827`, sprites 5-10, yellow) and the spinner (`$982D`, sprit
 UfoHandler(rec):                           ; $9B6B
     if rec.delay: rec.delay -= 1; skip
     spinner = rec.h == 16
-    if rec.turn == $FF: enter (x 0 or $F0); retreat = 0
+    if rec.turn == $FF:                    ; the first pass
+        rec.turn = (R AND $18) + $10       ; $9B8E: the entry turn timer, 16-40 passes
+        retreat = 0                        ; enters at x 0 or $F0, set by CmdUfos
     else erase
-    if retreat: x += 4 toward the nearer side; if off: rec.handler = UfoBombHandler
+    rec.turn -= 1
+    if rec.turn == 0: rec.turn = (R AND $38) + $10   ; $9BBF: 16-72 in steps of 8
+                      swap across <-> up/down, sign from R bit 6
+    if retreat:
+        x += 4 toward the nearer side; if off: rec.handler = UfoBombHandler
+        rec.turn = $FE                     ; $9BFF: the timer never reaches 0 again
     else:
-        rec.turn -= 1
-        if rec.turn == 0: rec.turn = random 16..72; swap across <-> up/down, sign from R bit 6
         x += dx; y += dy; turn at the edges
     for each upward shot: if overlap: shot spent; rec.sprite = $26 or $2E;
                                       rec.handler = UfoExplodeHandler; score += 100 (200 spinner)
@@ -520,9 +542,10 @@ UfoHandler(rec):                           ; $9B6B
 ```mermaid
 stateDiagram-v2
     [*] --> Waiting
-    Waiting --> Flying: delay 0, enters at x 0 or F0
-    Flying --> Flying: turn timer, across or up and down by 2
+    Waiting --> Flying: delay 0, enters at x 0 or F0, turn timer 16 to 40
+    Flying --> Flying: turn timer 0, reload 16 to 72, across or up and down by 2
     Flying --> Retreating: B237 set
+    Retreating --> Retreating: 4 a pass to the nearer side, turn timer FE
     Retreating --> BombOnly: past the side
     Flying --> Exploding: an upward shot hits, 100 or 200
     Exploding --> BombOnly: sprite past 2A or 32
@@ -637,11 +660,33 @@ stateDiagram-v2
 
 The plant's hit box comes from PlantHitBoxes `$A4B2`, one row a frame. The handler loads four bytes of the row but
 stores only the first two, as both the offset and the size: y + dy, x + dx, dy, dx. The rows read like (dy, dx,
-height, width) with dy + height = 16, so the box the game tests is smaller than the table intends (known only from
-the code; the effect on play not measured).
+height, width) with dy + height = 16. The box the game tests (`$A33D-$A347`) differs from the table's row by row:
+
+| Frames | Row | Tested box (h x w at y + dy, x + dx) | Table's intent (h x w) | Effect |
+| --- | --- | --- | --- | --- |
+| 1-4, 12-15 | `10 00 00 00` | 16 x 0 at y + 16 | none | a column from line `$A0` down, below the buggy's box: never hits |
+| 5, 11 | `0C 08 04 08` | 12 x 8 | 4 x 8 | taller |
+| 6, 10 | `08 05 08 0E` | 8 x 5 | 8 x 14 | narrower |
+| 7, 9 | `04 01 0C 16` | 4 x 1 | 12 x 22 | much smaller |
+| 8 | `03 02 0D 14` | 3 x 2 | 13 x 20 | much smaller |
+
+Known only from the code; the effect on play is not measured (`i2`'s 8 plant kills were all touches).
 
 The sprites of all four kinds are in the figure of 7.2; the tank's, shell's and low flyer's paths are in the figure
 of 7.3. On screen: `docs/img/play/i2-tank.png`, `i2-low-flyer.png`, `i2-boulders.png`, `i2-green-plant.png`.
+
+![TankShellHandler at work in i1 frames 24504-24660: the tank's shell fired and flying left, a picture a pass](img/routines/TankShellHandler.gif)
+
+A tank at point U in a recording: `i1` frames 24504-24660, one picture a pass (482 000 T). The shell is fired at
+frame 24531 (`$9FB1`) as a short dash at the tank's barrel and moves left 6 pixels a pass while the tank rolls 4
+with the road; the buggy is in a jump the whole time. The screen is shown in the write colours because the bands and
+the sprites are rewritten every pass; a picture ends wherever the pass is, so a sprite can be caught half redrawn.
+
+```bash
+python3 ../../kit/routine_anim.py --work work/anim/i1 --window 24504:0-24660:0 --listing build/game.lst \
+    --out docs/img/routines/TankShellHandler.gif --pc 9F8F-A021 --view screen --range 4000-FFFF \
+    --step 482000 --delay 200 --title "TankShellHandler \$9F8F: the tank fires, the shell flies left (i1 frames 24504-24660, a picture a pass)"
+```
 
 **The point**: Champion adds no new mechanism, only new records for the same pattern; the difficulty is the number
 of objects and the low flyer, the one enemy that comes from behind.
@@ -653,17 +698,20 @@ TankShellHandler fired `$9FB1` `i1` 7, `i2` 24; jumped `$A000` `i1` 1, `i2` 4. L
 
 ## 7.8 The random numbers
 
-There is no generator and no seed. Every random choice reads the refresh register R and XORs it with the low byte
-of the ROM frame counter FRAMES `$5C78`, then masks:
+There is no generator and no seed. Every random choice reads the refresh register R, then masks. Some sites first
+XOR R with the low byte of the frame counter FRAMES `$5C78` (counted by Im2Handler at `$7F23` in play): the UFO
+start (y and side, `$9851`), the low flyer's pauses and score, and the road texture. The UFO timers (entry `$9B8E`,
+turn `$9BBF`), the turn sign (`$9BCC`, `$9BDB`) and the bomb waits (`$988B`, `$9E64`) use R alone:
 
-| Use | Code | Range |
-| --- | --- | --- |
-| UFO start side and height | CmdUfos `$9832` | x 0 or `$F0`; y `$18-$37` |
-| UFO bomb wait | CmdUfos, UfoBombHandler | `$10-$2F` passes |
-| UFO turn timer and direction | UfoHandler `$9BB2` | 16-72 passes; sign from bit 6 |
-| low flyer's pauses | `$A067`, `$A086` | AND 7 + `$10`; AND 7 + 4 |
-| low flyer's score | `$A0E9` | AND 3, not 0: 300 / 500 / 800 |
-| road texture | ScrollRoad `$A932` | AND `$0F` ([doc 6.7](06-rendering.md#67-the-road-its-edge-and-the-craters)) |
+| Use | Code | Source | Range |
+| --- | --- | --- | --- |
+| UFO start side and height | CmdUfos `$9851` | R XOR FRAMES | x 0 or `$F0` (bit 6); y `$18-$37` |
+| UFO bomb wait | CmdUfos `$988B`, UfoBombReload `$9E64` | R | AND `$1F` + `$10`: `$10-$2F` passes |
+| UFO entry turn timer | UfoHandler `$9B8E` (first pass) | R | AND `$18` + `$10`: 16-40 passes |
+| UFO turn timer and direction | UfoHandler `$9BBF`, `$9BCC` / `$9BDB` | R | AND `$38` + `$10`: 16-72 passes in steps of 8; sign from bit 6 |
+| low flyer's pauses | `$A067`, `$A086` | R XOR FRAMES | AND 7 + `$10`; AND 7 + 4 |
+| low flyer's score | `$A0E9` | R XOR FRAMES | AND 3, not 0: 300 / 500 / 800 |
+| road texture | ScrollRoad `$A99E` | R XOR FRAMES | AND `$0F` ([doc 6.7](06-rendering.md#67-the-road-its-edge-and-the-craters)) |
 
 ```asm
 LowFlyerPace:
@@ -678,14 +726,15 @@ $A070  ADD A,$10               ; a pause of 16-23 passes
 ```mermaid
 flowchart LR
     R[R: counts every M1 cycle, 7 bits] --> X[XOR]
-    F[FRAMES 5C78: the ROM interrupt counts it] --> X
-    X --> M[AND mask, add base] --> U[side, height, wait, turn, pause, score]
+    F[FRAMES 5C78: Im2Handler counts it, 7F23] --> X
+    X --> M[AND mask, add base] --> U[UFO side and height, flyer pause and score, road texture]
+    R --> N[AND mask, add base] --> V[UFO entry and turn timers, turn sign, bomb waits]
 ```
 
 R advances by one every instruction fetch, so its value depends on exactly how many instructions ran since the last
 load of R. The game runs the same code for the same input, so with the same inputs from the same snapshot the same
-"random" values come back: this is why the recordings replay exactly. FRAMES adds the interrupt count; it changes the
-result when a pass ends at a different frame.
+"random" values come back: this is why the recordings replay exactly. Where FRAMES is mixed in, it adds the interrupt
+count; it changes the result when a pass ends at a different frame.
 
 ### Worked example: one low flyer pause
 
@@ -701,19 +750,19 @@ UFO fields of the Beginner course.
 
 ## 7.9 Scores and what no recording reached
 
-| Object | Shot | Jumped | Touched (immune runs only) | Address |
+| Object | Shot | Jumped | Touched (immune runs only) | CALL ScoreAdd (shot or touched, jumped) |
 | --- | ---: | ---: | --- | --- |
 | rock | 100 | 80 | 100 + 25 | `$9A24`, `$9A3E` |
 | crater | - | 100 | - | `$9AD8` |
 | mine | - | 50 | - | `$9B36` |
-| saucer / spinner | 100 / 200 | - | - | `$9C66` |
-| saucer bomb / spinner bomb | 5 / 10 | - | kill | `$9E05` |
-| tank | 250 | 200 | 250 + 25 | `$9F1B`, `$9F35` |
-| shell | 20 | 15 | 20 + 25 | `$9FED`, `$A003` |
-| low flyer | 300 / 500 / 800 | 125 | same + 25 | `$A0E9`, `$A119` |
-| boulder small / medium / large | 100 / 150 / 200 | 50 / 100 / 150 | same + 25 | `$A1EC`, `$A227` |
-| green plant | 500 | 200 | 500 + 25 | `$A389`, `$A3AB` |
-| the kill | - | - | 25 | `$A7DD` |
+| saucer / spinner | 100 / 200 | - | - | `$9C70` |
+| saucer bomb / spinner bomb | 5 / 10 | - | kill | `$9E0C` |
+| tank | 250 | 200 | 250 + 25 | `$9F1E`, `$9F39` |
+| shell | 20 | 15 | 20 + 25 | `$9FF0`, `$A007` |
+| low flyer | 300 / 500 / 800 | 125 | same + 25 | `$A103`, `$A11D` |
+| boulder small / medium / large | 100 / 150 / 200 | 50 / 100 / 150 | same + 25 | `$A20F`, `$A23B` |
+| green plant | 500 | 200 | 500 + 25 | `$A38C`, `$A3AF` |
+| the kill | - | - | 25 | `$A7EF` (in BuggyKill `$A7DD`) |
 
 ```mermaid
 flowchart TD
@@ -744,6 +793,6 @@ Known only from the code:
 - the touch scores (the object's shot score after the kill's 25) in normal play: the normal runs die on rocks and
   craters only;
 - the mine's kill through its sprite's ink on line 162;
-- the plant's shrunken hit box;
+- the plant's hit box, narrower than intended in frames 6-10 and taller in frames 5 and 11;
 - the bytes `$B267`, `$B26A`, `$B26C`, `$B26D`, `$B26E`, `$B26F`, `$B270`, cleared by the hits and first appearances
   and never read in any recording.

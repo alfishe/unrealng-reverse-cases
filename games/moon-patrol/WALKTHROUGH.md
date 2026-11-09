@@ -166,3 +166,10 @@ Each screenshot was taken with `../../kit/screen_shot.py` at the start of the na
 | `i2` | [champion-ufos](docs/img/play/i2-champion-ufos.png) 1480, [tank](docs/img/play/i2-tank.png) 2400, [boulders](docs/img/play/i2-boulders.png) 3300, [green-plant](docs/img/play/i2-green-plant.png) 4200, [mines](docs/img/play/i2-mines.png) 12 950, [low-flyer](docs/img/play/i2-low-flyer.png) 29 300, [bonus-z](docs/img/play/i2-bonus-z.png) 30 000, [loop-to-beginner](docs/img/play/i2-loop-to-beginner.png) 31 000 |
 
 ## 7. Review
+
+- Round 1 (facts and completeness, two reviewers on halves 01-05 / 06-10): 58 findings, 52 accepted, 5 in part,
+  1 rejected (`work/review/rvA.md`, `rvB.md`, dispositions in `round1-fixes.md`).
+- Round 2 (halves swapped, one pass): 49 findings, 46 accepted, 3 in part (`rv2A.md`, `rv2B.md`, `round2-fixes.md`).
+- The routine animations were added between the rounds: 12 GIFs from traces of `i1` and `h1`
+  (`docs/img/routines/`); the UFO bomb was dropped after two unreadable tries.
+- Two rounds, then the case closes (R/AGENTS.md section 5).

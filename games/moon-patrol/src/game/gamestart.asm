@@ -688,8 +688,8 @@ HudLampsCell:
   EXX
   RET
 
-; Plots the course progress bar: a 2x2 dot every 2 pixels from x $57 to 2 x
-; point + $56, y $13
+; Plots the course progress bar: a solid bar of 2x2 blocks that touch, one a
+; point, from x $57 to 2 x point + $56, y $13-$14
 ;
 ; Nothing at point 0. Uses HudPlot $92CD (the OR plot $FD80, H = x, L = y).
 ; Called by HudDraw and when a point is passed (ObjPoint). Witness: game 21

@@ -575,6 +575,8 @@ Cursor 0, FLAGS bit 3 and FLAGS2 bit 3 (CAPS LOCK: capitals) set, MODE 0. Draws 
 
 Witness: entries g1 1 (4172, never left: no ENTER), p2 1 (7859, never left), h1 1 (4172-4524), h2 2 (517-1141 the name, then the initials, not finished), game 1. Characters typed: g1 120, p2 614, h1 3, h2 9. The keys 8, 9 and 12 never came (`$8D5D`, `$8D7C` and the direct jump to `$8D6B` never ran in any recording: known only from the code).
 
+[Animation: `EntryFieldEdit` at work](img/routines/EntryFieldEdit.gif)
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 2,195,655 t-states own (0.19 %) |
@@ -850,7 +852,7 @@ The pattern is HudLampColours + 15 x (`$B27E` AND 3): column 27 the lamp, column
 
 ### `HudProgress` (`$92AA`)
 
-**Plots the course progress bar: a 2x2 dot every 2 pixels from x `$57` to 2 x point + `$56`, y `$13`**
+**Plots the course progress bar: a solid bar of 2x2 blocks that touch, one a point, from x `$57` to 2 x point + `$56`, y `$13-$14`**
 
 Nothing at point 0. Uses HudPlot `$92CD` (the OR plot `$FD80`, H = x, L = y). Called by HudDraw and when a point is passed (ObjPoint). Witness: game 21 runs, i1 37, i2 39; the dots (`$92CD`) i1 1900.
 
@@ -877,6 +879,8 @@ Witness: i1 1900 runs, i2 1912 (only from HudProgress, no dots at point 0).
 ScoreAddBcd `$9311`, then HudPrintScore `$92DA`. The values the callers pass (BC, DE = 0): 100 the rock shot or hit (ObjRock `$9A21`), 80 the rock jumped (`$9A3E`), 100 the crater jumped (`$9AD8`), 50 the mine jumped (`$9B36`), 25 the kill `$A7DD`; the other handlers from `$9B6B` on (annotator 03) and the bonus `$A4EE` pass their own.
 
 Witness: game 25 runs (2029-16149), a1 4, g1 16, p2 16, h1 16, i1 291, i2 424, h2 3.
+
+[Animation: `ScoreAdd` at work](img/routines/ScoreAdd.gif)
 
 | | |
 | --- | --- |
@@ -1098,6 +1102,8 @@ IN of port `$EFFE`, OR `$FE`, INC A: Z when '0' is up. MainLoopCalls never tests
 IX = the word, HL += 2, CourseRun pushed as the return address, JP (IX). Each routine leaves HL past its data and returns into CourseRun, which runs the next word; the end word `$975E` (ListStop) pops that return and RETs to CourseRun's caller. Called by MainLoop (the script: DE = the object list write pointer, HL = the course pointer) and ObjectListRun (HL = `$BEF8`).
 
 Witness: game 8038 runs, a1 967, g1 2799, p2 3352, h1 2799, i1 89827, i2 123263, h2 200.
+
+[Animation: `CourseRun` at work](img/routines/CourseRun.gif)
 
 | | |
 | --- | --- |
@@ -1665,6 +1671,8 @@ Tests: the buggy (the kill) or the forward shot (spent): 20 points (`$0020`), th
 
 Witness: i1 2961 runs (as the record's handler from frame 24 476), i2 5612. Fired i1 7, i2 24 (`$9FB1`); on the buggy i1 6, i2 19 (`$9FD3`; every 20 of the runs came from a touch: the shot path `$9FE7` was not executed in any recording); jumped i1 1, i2 4 (`$A000`).
 
+[Animation: `TankShellHandler` at work](img/routines/TankShellHandler.gif)
+
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
@@ -1885,6 +1893,8 @@ Last: BonusFlash 25 or 50 passes of `$8349` (the attribute cycle of the menu, he
 
 Witness: i1 5 and i2 5 runs (l1sum `$A4EE`, i1 frames 5176-29659, i2 5357-30694, the five sector ends of NOTES); TimeBonusLoop i1 134 seconds, i2 172; the blip OUT `$A60A` i1 2010 = 134 x 15; BestTimeWrite `$A659` i1 5, i2 5; the reads of `$B884` (i1 1). NoTimeBonus `$A620` and the AWESOME text `$A651` were not executed in any recording (game, a1, g1, t1, p2, h1, i1, i2, h2): known only from the code (both runs finished every sector in time, and no sector was finished twice).
 
+[Animation: `SectorBonus` at work](img/routines/SectorBonus.gif)
+
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
@@ -1934,6 +1944,8 @@ Does nothing unless the buggy state `$B216` is `$FF` (alive). Else `$B216` = 0 (
 The immune clones (i1, i2) patch the first byte to RET. Callers, one a death cause each (l1sum of the CALL): the rock `$99F9` in `$99C3` (command `$97C5`; game 1, a1 1, g1 4, p2 4, h1 4, i1 17, i2 27, h2 1), the UFO bomb `$9E28` in `$9CE0` (dropped by the UFO handler `$9B6B` through `$9E81`; i1 16, i2 17), the tank `$9EF3` in `$9EBD` (command `$98BE`; i2 6), the tank shell `$9FD3` in `$9F8F` (installed by `$A022`; i1 6, i2 19), the low flyer `$A0C4` in `$A03B` (command `$98F3`; i2 4), the boulders `$A1CD` in `$A196` (commands `$9917` / `$991C` / `$9921`; i2 22), the green plant `$A358` in `$A2C6` (command `$9955`; i2 8), and the crater `$AA9C` in BuggyUpdate (the ground probe; game 18, a1 1, p2 4, i1 69, i2 67). The rock, bomb, tank, shell, flyer, boulder and plant handlers test their box against the buggy's with BoxOverlap `$A7FE` first.
 
 The crater and mine handlers (`$9A92`, `$9AEB`) and the UFO saucers (`$9B6B`) never call it: a crater kills through the ground probe, and so does a mine: drawn at y `$A0`, its ink is on line 162, and the probe's 5-pixel steps cannot miss its 8-pixel width (known only from the code; no recording shows a mine death). Witness of the deaths that counted (not immune): game 19 = 1 rock + 18 craters, a1 2 = 1 + 1, g1 4 rocks, p2 8 = 4 + 4, h1 4 rocks, h2 1 rock (l1sum `$A7DD` entries: game frames 2029-16149).
+
+[Animation: `BuggyKill` at work](img/routines/BuggyKill.gif)
 
 | | |
 | --- | --- |
@@ -1997,6 +2009,8 @@ The table `$B2D6` holds 4 bytes a sprite: the drawer (one of the sprites module'
 
 Only while the buggy is alive (`$B216` = `$FF`). The counter `$B224` runs 8 passes; at 0 the next 32 bytes of HillsStrip (`$B226` + `$20`, from `$EBC0` up to `$F000` and round) go to FeedFarBand `$5B00`. Each pass every line of 64-95 (the line table at `$FC80`) rolls left one pixel through its 32 bytes, the new bit from the line's FeedFarBand byte. Witness: game 1576, a1 292, g1 493, p2 664, h1 493, i1 3601, i2 3935, h2 40 entries: once a main-loop pass.
 
+[Animation: `ScrollFarBand` at work](img/routines/ScrollFarBand.gif)
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 58,305,283 t-states own (5.05 %) |
@@ -2010,6 +2024,8 @@ Only while the buggy is alive (`$B216` = `$FF`). The counter `$B224` runs 8 pass
 **The middle band (lines 96-127): two pixels left a pass, 8 new columns from MountainsStrip or MoonBaseStrip every 4 passes**
 
 As ScrollFarBand with the counter `$B228` (4 passes), the source `$B22A` going from `$B22C` to `$B22E` and round (set at the life start by `$95B0` from the scenery flag `$B27D`), the feed FeedMiddleBand `$5B20` and the lines 96-127 (`$FCC0`). Witness: the same counts as ScrollFarBand (i1 3600).
+
+[Animation: `ScrollMiddleBand` at work](img/routines/ScrollMiddleBand.gif)
 
 | | |
 | --- | --- |
@@ -2040,6 +2056,8 @@ Only while alive. BuggyAirborne `$AFA5` (buggy y < `$89`): the 32 lines from `$F
 Only while alive. The counter `$B234` runs 2 passes; at 0 the 32 bytes at `$B232` (RoadFeed `$A9AF`, its crater edge strips set by the crater handler `$9A92`) go to FeedRoad `$5B40`. Each pass the 32 lines from `$FD40` (line 160) roll four pixels left. Then random bits (FRAMES xor R, AND `$0F`, or AND `$03` once when `$B288` bit 3 is set, which it clears) are ORed into `$509F`, the last byte of line 160: the road's broken top edge.
 
 Witness: same counts as ScrollFarBand (i1 3600). The h2 snapshot was taken inside it (PC `$A981`), which is why the cut had entries at `$A957` / `$A977` / `$A981`.
+
+[Animation: `ScrollRoad` at work](img/routines/ScrollRoad.gif)
 
 | | |
 | --- | --- |
@@ -2086,6 +2104,8 @@ Then the draw at (x, y - 9) through ScrollAdjustIfAlive: sprite 0 alive, else th
 Last the BREAK test: CAPS SHIFT (port `$FEFE` bit 0) and SPACE (port `$7FFE` bit 0) both down: SetIm1 and a jump to `$8004`, the title (a1 frame 3174, `$AACD` 1 time). The test runs in play and during the death frames.
 
 Witness: game 1576, a1 292, g1 493, p2 664, h1 493, i1 3601, i2 3935, h2 40 entries (i1 frames 263-30438); jump steps (AA2A, one a pass of a jump) game 463, i1 3249; the jump key down (`$AA24`) game 75 passes; the probe hits `$AA9C` game 18, a1 1, p2 4, i1 69, i2 67.
+
+[Animation: `BuggyUpdate` at work](img/routines/BuggyUpdate.gif)
 
 | | |
 | --- | --- |
@@ -2578,6 +2598,8 @@ No sprite of `$00-$45` uses it. Witness: a1 20, t1 1, i2 1524 runs.
 
 Sprite 0 (the buggy, `$E140`), `$13`, the death frames `$1F-$26` and `$33-$36`. Witness: game 3191, a1 610, g1 994, t1 1, p2 1344, h1 994, i1 7524, i2 9168, h2 81 runs.
 
+[Animation: `DrawSprite40x23` at work](img/routines/DrawSprite40x23.gif)
+
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 17,464,226 t-states own (1.51 %) |
@@ -2906,6 +2928,8 @@ Run 5268 times in game.
 **Print the string at HL up to its `$1F`**
 
 Run 4004 times in game. The build-date strings start with `$1F` and print nothing (BuildDate0335 `$7F00`).
+
+[Animation: `PrintText` at work](img/routines/PrintText.gif)
 
 | | |
 | --- | --- |

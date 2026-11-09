@@ -109,7 +109,7 @@ def fig_bands():
              (3, 8, 'sky', 'rows 3-7, lines 24-63', 'no scroll', '+0 = $07'),
              (8, 12, 'far band', 'rows 8-11, lines 64-95', 'ScrollFarBand: 1 px', '+1 = $02, every pass'),
              (12, 16, 'middle band', 'rows 12-15, lines 96-127', 'ScrollMiddleBand: 2 px', '+2 = $14'),
-             (16, 20, 'near band', 'rows 16-19, lines 128-159', 'ScrollNearBand: 2 px', '+3 = $20; rolls in the air only'),
+             (16, 20, 'near band', 'rows 16-19, lines 128-159', 'ScrollNearBand: 2 px', '+3 = $20; y < $89 only'),
              (20, 24, 'road', 'rows 20-23, lines 160-191', 'ScrollRoad: 4 px', '+4 = $34')]
     px = 3  # screen pixels a Spectrum pixel line
     x0 = 16 + sw + 10
@@ -481,13 +481,24 @@ PASS = [('TuneToggle..HudPrintTime', 400), ('ScrollFarBand', 36996), ('BuggyEras
 
 
 def fig_pass():
-    im, d = canvas(520)
+    im, d = canvas(580)
     title(d, 'One main-loop pass in T-states, routines in call order, at the three governor delays',
           'Own T a call from doc 12 (work/game window); interrupts and contention not included; ticks every 69 888 T')
     cols = {'ScrollFarBand': (230, 80, 80), 'ScrollMiddleBand': (90, 210, 90), 'ScrollNearBand': (60, 160, 90),
             'ScrollRoad': (230, 210, 60), 'SpeedGovernor': (150, 150, 170), 'SceneryColoursRepaint': (200, 110, 230)}
-    scale = (W - 60) / 520000
-    y = 90
+    scale = (W - 120) / 400000
+    y = 84
+    lx = 16
+    for name in ('ScrollFarBand', 'SceneryColoursRepaint', 'ScrollNearBand', 'ScrollMiddleBand', 'ScrollRoad',
+                 'SpeedGovernor'):
+        if lx + 20 + FS.getlength(name) > W - 16:
+            lx, y = 16, y + 22
+        d.rectangle([lx, y + 3, lx + 14, y + 17], fill=cols[name])
+        d.text((lx + 20, y), name, font=FS, fill=K.TEXT)
+        lx += 20 + int(FS.getlength(name)) + 18
+    d.rectangle([lx, y + 3, lx + 14, y + 17], fill=(90, 150, 250))
+    d.text((lx + 20, y), 'the other routines', font=FS, fill=K.TEXT)
+    y += 50
     for label, loops in (('forward (x > $38): 1 loop', 1), ('centre (x = $38): $02EE loops', 0x2EE),
                          ('back (x < $38): $05DC loops', 0x5DC)):
         d.text((16, y), label, font=F, fill=K.TEXT)
@@ -500,21 +511,25 @@ def fig_pass():
             w = t * scale
             c = cols.get(name, (90, 150, 250))
             d.rectangle([x, y, x + max(w, 1) - 1, y + 34], fill=c)
-            if w > 70:
-                d.text((x + 4, y + 8), name.replace('Scroll', 'S.') if w < 110 else name, font=FS, fill=(0, 0, 0))
+            if w > FS.getlength(name) + 8:
+                d.text((x + 4, y + 8), name, font=FS, fill=(0, 0, 0))
             x += w
             tot += t
         d.text((x + 6, y + 8), '%d T' % tot, font=FS, fill=K.TEXT)
         for f in range(0, 8):
             tx = 30 + f * 69888 * scale
+            if tx > W - 30:
+                break
             d.line([tx, y + 36, tx, y + 44], fill=K.DIM)
             d.text((tx + 2, y + 44), '%d' % f, font=FS, fill=K.DIM)
         y += 90
     d.text((16, y), 'Numbers under the bars: frames of 69 888 T. Not drawn: the interrupt, about 16 600 T', font=FS,
            fill=K.DIM)
-    d.text((16, y + 22), 'a frame in i1 with the tune notes, and whatever else makes the measured 8.4 frames a pass.',
+    d.text((16, y + 22), 'a frame in i1 with the tune notes, and whatever else makes the measured 7.05 frames a pass',
            font=FS, fill=K.DIM)
-    save(im.crop((0, 0, W, y + 52)), 'pass.png')
+    d.text((16, y + 44), '(forward; i1 frames 300-4700, frames between two PassCount steps; centre 7.61, back 8.17).',
+           font=FS, fill=K.DIM)
+    save(im.crop((0, 0, W, y + 74)), 'pass.png')
 
 
 def fig_odd():

@@ -1,6 +1,8 @@
 # Moon Patrol (Atarisoft (UK), 1984)
 
-State: in progress.
+State: complete 2026-11-09: the tape rebuilt bit for bit from the annotated source (BASIC loader, 19 modules), 67
+editable resources in `src/res`, docs 01-12 (63 mermaid diagrams, 66 figures, 12 routine animations, 5 sound files),
+two review rounds (58 and 49 findings) worked.
 
 | | |
 | --- | --- |

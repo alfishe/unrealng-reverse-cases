@@ -32,7 +32,7 @@ emulator and were not played while writing this.
   call plays one note. No shot, jump, explosion or death makes a sound: no game routine of the play reaches BEEPER or
   `OUT ($FE)` except the tune player.
 - **The menus are silent.** The attract cycle runs in IM 1 (the ROM's interrupt), which does not call TunePlayer.
-  The demo runs in IM 2 (LifeStart `$8196`) but sets the tune-off bit 7 of PlayerFlags `$B288` (`$819B`), so
+  The demo runs in IM 2 (the call to LifeStart at `$8196`) but sets the tune-off bit 7 of PlayerFlags `$B288` (`$819B`), so
   TunePlayer plays rests.
 
 | Site | What | Called from | Mode |
@@ -287,7 +287,7 @@ stateDiagram-v2
 ```
 
 With the tune off a note word is played as a rest: the pointer moves on, so the tune comes back where it would have
-been, and the cost stays. The key is read once a pass, about 6 times a second, so a short tap between two reads is
+been, and the cost stays. The key is read once a pass, about 7 times a second, so a short tap between two reads is
 missed.
 
 Witness: `a1` switched the tune off at frame 2540 and on at 2740: 341 notes of 626 words.

@@ -128,7 +128,7 @@ sequenceDiagram
 ```
 
 The game's first instruction saves the stack pointer that the USR gave it. Every menu page reloads it, so no page
-leaks stack (doc 02 2.4).
+leaks stack (doc 04, 4.2).
 
 ```asm
 MenuEntry:

@@ -189,6 +189,19 @@ crater only because the probe is off while airborne. The forward arc gives the w
 python3 tools/fig_gameplay.py jumps   # docs/img/gameplay/jumps.png
 ```
 
+![BuggyUpdate at work in i1 frames 898-1124: one forward-arc jump, a picture a pass](img/routines/BuggyUpdate.gif)
+
+The forward arc in a recording: `i1` frames 898-1124, the buggy at x `$4C`, one picture a pass (468 000 T, the
+average pass of this stretch). Watch the right panel (screen bytes 9-14 of lines 64-191, monochrome; every byte there
+is rewritten each pass, so all of it shows in the write colours): the buggy rises 20 lines from y `$92` to `$7E` and
+comes down in 32 steps. The code panel stops on `$AA4D` each pass: L in HL is the new y, D the arc's step just added.
+
+```bash
+python3 ../../kit/routine_anim.py --work work/anim/i1 --window 898:0-1124:0 --listing build/game.lst \
+    --out docs/img/routines/BuggyUpdate.gif --pc AA0F-AA4D --view buffer:4809:6x128:screen --range 4000-FFFF \
+    --step 468000 --delay 180 --title "BuggyUpdate \$AA0F: one jump along the arc, JumpStep 0 to \$1F (i1 frames 898-1124, a picture a pass)"
+```
+
 ### Worked example: when to press jump before a rock
 
 With the buggy at x `$38` the centre arc is high enough in its passes 5-19. A rock touches the buggy's box in 11
@@ -275,6 +288,19 @@ then the life restarts at the last point passed.
 
 ```bash
 python3 tools/fig_gameplay.py death   # docs/img/gameplay/death.png
+```
+
+![BuggyKill at work in h1 frames 849-916: a rock hits the landing buggy, the eight frames and the flying wheels](img/routines/BuggyKill.gif)
+
+The same death in a recording: `h1` frames 848-916 (848:60 000-916:0), the first of `h1`'s four, three pictures a
+pass (172 000 T). ObjRock calls BuggyKill at frame 849 (from `$99F7`) as the buggy lands from a jump. The right
+panel is screen bytes 4-15 of lines 64-191 (monochrome): the scrollers have stopped, so only the sprites flash; the
+explosion frames replace the buggy one a pass while WheelsFly moves the three wheels up and away three times a pass.
+
+```bash
+python3 ../../kit/routine_anim.py --work work/anim/h1 --window 848:60000-916:0 --listing build/game.lst \
+    --out docs/img/routines/BuggyKill.gif --pc A7DD-AD60 --view buffer:4804:12x128:screen --range 4000-FFFF \
+    --step 172000 --delay 200 --title "BuggyKill \$A7DD: a rock hits the landing buggy; explosion frames 1-8 and the wheels fly (h1 frames 849-916)"
 ```
 
 Witness: the deaths `$96C5` `game` 19, `a1` 2, `g1` 4, `p2` 8, `h1` 4, `h2` 1; every one of them is a rock (`$99F9`)
@@ -436,7 +462,7 @@ How to read the figure:
   scores. The runs are immune, so every object that touched the buggy also scored.
 
 **The point**: a course is about 28 000 frames (9 minutes) of play; the bonuses are a large part of the score (in
-`i1` the first bonus screen pays about 3400 points, against 1360 for all the objects of sector A-E).
+`i1` the first bonus screen pays 3200 points, against 1360 for all the objects of sector A-E).
 
 ```bash
 python3 tools/fig_gameplay.py progress   # docs/img/gameplay/progress.png
@@ -446,8 +472,8 @@ python3 tools/fig_gameplay.py progress   # docs/img/gameplay/progress.png
 
 `i1-segments.txt`: score 1360 at the sector end (frame 4760), 4840 at F (frame 6020): 3480 points from the bonus
 screen. The record `$B87E` is `01 20 10 FF 09 99`: 120 s required, bonus `$10` = 1000 points, the city scenery
-(`$FF`), best time 999. 3480 - 1000 = 2480 = 24 x 100 + 80: 24 seconds of time bonus (so about 96 s taken) and 80
-points of objects between the two samples. The best time 999 is beaten, so the time is written over `$B882-$B883`;
+(`$FF`), best time 999. The screen shows 98 s taken (`docs/img/play/i1-bonus-e.png`), so 120 - 98 = 22 seconds of time bonus, 2200 points;
+3480 - 1000 - 2200 = 280 points of objects between the two samples. The best time 999 is beaten, so the time is written over `$B882-$B883`;
 because the old best was the placeholder `$09xx` the AWESOME text is not shown.
 
 Witness: SectorBonus `i1` 5, `i2` 5; BestTimeWrite `$A659` `i1` 5, `i2` 5; BeginnerToChampion once in `i1` (frames
@@ -494,8 +520,8 @@ award(points):                     ; ScoreAdd $92D3
     if score passed the extra-life threshold and threshold < 60 000: lives += 1; threshold += 20 000
 ```
 
-Worked example: the sector bonus `$10` of `i1`'s first sector gives BC = `$1000`, 1000 points; with the 24 seconds
-of time bonus (24 x 100) that is the 3400 of the first bonus screen (10.5).
+Worked example: the sector bonus `$10` of `i1`'s first sector gives BC = `$1000`, 1000 points; with the 22 seconds
+of time bonus (22 x 100) that is the 3200 of the first bonus screen (10.5).
 
 Witness: BuggyKill entries (each a 25) `game` 19, `p2` 8 (10.3); SectorBonus `i1` 5, `i2` 5; the extra lives in
 `i1` at frames 11 820 and 29 680 (10.4); the object scores in [doc 7.9](07-objects.md#79-scores-and-what-no-recording-reached).
@@ -521,7 +547,8 @@ flowchart LR
     S[course script] --> O[objects and their delays]
     S --> L[lamps]
     S --> T[time required]
-    R[R XOR FRAMES] --> U[UFO paths, bombs, flyer pauses]
+    RF[R XOR FRAMES] --> U[UFO start side and height, flyer pauses, road texture]
+    RA[R alone] --> W[UFO turns, bomb waits]
     X[buggy x] --> P[pass length and jump arc]
 ```
 
@@ -539,7 +566,7 @@ the progress figure of 10.5.
 | # | What | Witness |
 | ---: | --- | --- |
 | 1 | The green plant's jump pays 200; the SCORE ADVANCE TABLE prints 250 | `$A3AB` `LD BC,$0200`, executed 4 times in `i2`; `docs/img/play/a1-score-advance-table.png` |
-| 2 | The plant's hit box uses two bytes of each PlantHitBoxes row as both offset and size: smaller than the table | code only (`$A326`), [doc 7.7](07-objects.md#77-the-champion-objects) |
+| 2 | The plant's hit box uses two bytes of each PlantHitBoxes row as both offset and size: narrower than the table in frames 6-10, taller in frames 5 and 11, harmless in frames 1-4 and 12-15 | code only (`$A326`), [doc 7.7](07-objects.md#77-the-champion-objects) |
 | 3 | A rock that kills also explodes and pays 100 (the kill's 25 on top) | `$99F9` then `$9A10`; `game` 1 rock death, score not checked in a timeline |
 | 4 | The time bonus counts only the low BCD byte of the difference: 100 s or more early would lose the hundreds | code only; it needs a sector finished 100 s early, under 20-50 s for times of 120-150 s; no recording did |
 | 5 | THE GREATEST's new name is typed over the old one: the untyped tail stays | `h2`: STAGE ONE over SPIKE NOTWELL gives "STAGE ONEWELL" |
