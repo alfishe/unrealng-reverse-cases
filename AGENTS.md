@@ -103,6 +103,27 @@ embedded in the section that explains the routine, with the recording, frames an
 A case with fewer than ten animations is not done. One dropped after two unreadable tries is named in the
 WALKTHROUGH with the reason.
 
+**The figure minimum.** Besides the animations, every case has at least these, each drawn by a script from the image
+or a recording and viewed by the lead at 900 px:
+
+| Figure | What it shows | Document |
+| --- | --- | --- |
+| Screenshots | every screen and mode, and every key moment of section 01, at named frames | 01, WALKTHROUGH 6.1 |
+| The memory heatmap | every byte of the address space coloured by executed, read, written, from L1 of all recordings | 02 |
+| The module heatmap and the frame budget | where the CPU time goes, per module and per pass | 02, 04 |
+| The sprite sheets | every sprite, frame, font and tile of the image drawn as a sheet, each labelled with its address, size and the routine that draws it; pre-shifted copies and masks shown | 06, `src/res` |
+| The map | every level, room, course or table rendered from the image's data (section 4.0 says what "map" means for the genre) | 01, `src/res/maps` |
+| Code vs screen | which routine wrote which pixels of a real frame | 06 |
+| The beam timeline | a typical pass and the heaviest pass against the raster | 04 |
+| The state machines | the program, the hero, each object kind (mermaid) | 04, 07, 10 |
+| Data sheets | every record, table and format byte by byte | 07, 08, 09 |
+
+**The notable features.** Each case ends doc 10 with a section on what is special in this game's code: the tricks
+worth learning (a fast multiply, a clever erase, self-modifying code, a table that replaces a computation, a timing
+trick), the bugs and oddities, and what the authors left (build dates, names, unused graphics and texts). Each item
+with the asm, a witness and, where it shows on screen, a figure. A reader of the case should find at once what makes
+this game different from the others in the repository.
+
 ### 4.0 The game's profile: genre, rendering, engine
 
 The document lists below (01-10) are the same for every game. What a reader needs on top depends on the kind of game. In phase 0
