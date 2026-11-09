@@ -1,0 +1,66 @@
+# exploration: the hall-of-fame name entry from x4's g1450 (left M, right SS, fire SPACE: the defaults at $B8BE)
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+screen at-v
+key SPACE 3 10
+screen picked-v
+key M 3 5
+key M 3 5
+key M 3 5
+key M 3 5
+key M 3 5
+key M 3 5
+key SPACE 3 10
+screen picked-p
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+screen at-end
+key SPACE 3 50
+screen e50
+run 300
+screen e350
+run 700
+screen e1050
+run 1500
+screen e2550
+snap e2550.szx

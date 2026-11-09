@@ -1,0 +1,17 @@
+# exploration: from the start of frame 4 of x1 (score 004300, above the hall of fame's 003000): three fouls to
+# game over, then the hall of fame's name entry
+shot miss 3
+screen over0
+run 200
+screen over200
+run 400
+screen over600
+snap over600.szx
+key V 4 20
+key P 4 20
+key ENTER 4 100
+screen name1
+run 500
+screen name2
+run 1500
+screen after

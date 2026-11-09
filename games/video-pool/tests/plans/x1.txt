@@ -1,0 +1,21 @@
+# x1 (exploration): three frames potted, then three misses: game over and what follows
+run 500
+key SPACE 20 100
+key B 20 0
+shots pot frame
+shots pot frame
+shots pot frame
+screen frame4
+ready
+snap frame4.szx
+shot miss 3
+screen over0
+run 200
+screen over200
+run 400
+screen over600
+snap over600.szx
+run 1000
+screen over1600
+run 1500
+screen over3100

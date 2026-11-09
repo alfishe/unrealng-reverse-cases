@@ -1,0 +1,71 @@
+# m1: the attract sequence with no key (logo, "written by", the hall of fame), then every menu option: players,
+# pockets, input, the variations page, the key redefinition (q / w / p, then back to m / s/s / space), the editor
+# (cursor, pick and drop a ball, play, reset), BREAK, a small-pockets game with one shot, BREAK
+run 300
+screen a0300
+run 600
+screen a0900
+run 600
+screen a1500
+run 600
+screen a2100
+run 900
+screen a3000
+run 1500
+screen a4500
+key SPACE 20 100
+screen menu
+key 2 10 50
+key 1 10 50
+key S 10 50
+key L 10 50
+key I 10 50
+key J 10 50
+key C 10 50
+screen cursor
+key K 10 50
+key V 10 80
+screen variations
+key 1 10 50
+key 2 10 50
+key S 10 50
+key M 10 80
+key R 10 80
+screen redefine0
+key Q 10 60
+key W 10 60
+key P 10 60
+run 100
+screen redefined
+key R 10 80
+key M 10 60
+key SS 10 60
+key SPACE 10 60
+run 100
+screen restored
+key E 10 150
+screen editor
+key M 30 10
+screen editor-m
+key SS 60 10
+screen editor-ss
+key SPACE 10 60
+screen editor-fire
+key 5 30 10
+key 6 30 10
+key 7 30 10
+key 8 30 10
+screen editor-5678
+key SPACE 10 60
+screen editor-fire2
+key CS+SPACE 10 200
+screen editor-break
+key S 10 50
+key B 20 0
+shot any 1
+screen small-shot
+ready
+key CS+SPACE 10 200
+screen game-break
+key L 10 50
+run 100

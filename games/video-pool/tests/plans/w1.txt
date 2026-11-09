@@ -1,0 +1,65 @@
+# w1: a one-player game won frame by frame: frames 1-3 cleared by pots (a positional shot when none is found), then fouls until the lives run out, GAME OVER,
+# the hall-of-fame name entry ("vp": right SS, left M, fire SPACE, the defaults), the hall of fame, the menu
+run 500
+key SPACE 20 100
+key B 20 0
+shots pot frame
+shots pot frame
+shots pot frame
+shots miss over
+run 1000
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SPACE 3 10
+key M 3 5
+key M 3 5
+key M 3 5
+key M 3 5
+key M 3 5
+key M 3 5
+key SPACE 3 10
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SS 3 5
+key SPACE 3 10
+run 3000

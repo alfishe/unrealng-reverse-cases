@@ -1,0 +1,59 @@
+# x2 (exploration): the attract sequence with no key, then every menu option, the variations page, the key
+# redefinition, the editor
+run 300
+screen a0300
+run 600
+screen a0900
+run 600
+screen a1500
+run 600
+screen a2100
+run 900
+screen a3000
+key SPACE 20 100
+screen menu
+key 2 10 50
+key 1 10 50
+key S 10 50
+screen small
+key L 10 50
+key I 10 50
+key J 10 50
+key C 10 50
+screen cursor
+key K 10 50
+key V 10 80
+screen variations
+key 1 10 50
+screen var1
+key 2 10 50
+key S 10 50
+key M 10 80
+key R 10 80
+screen redefine0
+key Q 10 60
+screen redefine1
+key W 10 60
+key P 10 60
+screen redefine3
+run 100
+screen redefined
+key R 10 80
+key M 10 60
+key SS 10 60
+key SPACE 10 60
+run 100
+screen restored
+key E 10 150
+screen editor
+key 8 40 10
+screen editor-right
+key 6 40 10
+screen editor-down
+key 0 10 50
+screen editor-pick
+key 7 30 10
+screen editor-move
+key 0 10 50
+screen editor-drop
+snap editor.szx

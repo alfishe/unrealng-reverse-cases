@@ -1,0 +1,15 @@
+# exploration: from x5 (name "v", the cursor on rub): end
+key SS 3 5
+screen at-end
+key SPACE 3 50
+screen f50
+run 300
+screen f350
+run 700
+screen f1050
+run 1500
+screen f2550
+run 2000
+screen f4550
+key SPACE 3 100
+screen k100

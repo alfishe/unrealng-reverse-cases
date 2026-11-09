@@ -1,0 +1,18 @@
+# exploration: from x3's over600 (lives 0, score 004420): the fourth foul ends the game; what follows
+shot last 1
+screen g0
+run 150
+screen g150
+run 300
+screen g450
+run 400
+screen g850
+run 600
+screen g1450
+snap g1450.szx
+key V 4 30
+key P 4 30
+key ENTER 4 200
+screen n1
+run 1000
+screen n2

@@ -1,0 +1,181 @@
+VIDEO POOL
+==========
+
+A highly sophisticated simulation of the game of pool guaranteed 
+to test your skill and judgement to the limit. The smooth, flicker 
+free movement of the balls and accurate calculation of the angles 
+and speed make this the best version of pool available for the 
+Spectrum.
+
+
+LOADING
+
+Insert the supplied cassette tape into your tape player, enter 
+LOAD "" and press play. The program will take about 2 minutes to 
+load and will auto-start.
+
+
+INTRODUCTION
+
+Welcome to VIDEO POOL a realistic simulation of the popular full 
+size game, which you can play easily in your own lounge. Features 
+of the game include flicker-free movement of the balls and true 
+playing angles.
+
+To win the game you must pot the five numbered balls on the table, 
+without losing lives. Playing is easy. A cross wire cursor can be 
+moved around the cushion bordering the table and the cue ball is 
+automatically directed towards it when a player takes a shot.
+
+Points are scored for each ball potted (except of course the cue 
+ball, which counts as a foul). The points for a ball are calculated 
+as a multiple of the frame number, the ball number, and the pocket
+number, times ten.
+
+A ball must be potted before the shot count (shown top right on 
+screen) reaches zero. A warning bleep sounds before the last shot. 
+Failure to pot a ball after five shots results in the loss of one 
+of your three lives.
+
+Fewer shots are available to pot a ball as the game progresses to 
+higher and more skilful frames. Failure to strike any ball or 
+potting the cue ball are fouls and are penalised by the loss of 
+a life.
+
+OCP hope you enjoy VIDEO POOL, but the company cannot take any 
+responsibility for injuries sustained as a result of 'hustling' 
+other players!!!
+
+To begin a game, press 'B' from the main menu.
+
+
+CONTROLS
+
+After loading, controls are the three keys at the bottom right-hand 
+corner of the Spectrum keyboard, namely 'M', SYMBOL SHIFT 
+(abbreviated as 's/s') and SPACE. The 'M' key moves the cross-wire
+cursor to the left, the SYMBOL SHIFT key moves the cursor to the 
+right, and the SPACE key acts as a fire button.
+
+The left and right keys move tne cursor to the left or right as 
+stated, but they move it BY THE SHORTEST ROUTE - in other words, 
+clockwise or anti-clockwise around the table depending on its 
+position. This may seem confusing at first, but a little 
+experimentation with the keys will soon clarify things. With a 
+joystick selected (see below), it is much easier to move the 
+cursor, as it responds to all four positions of the stick.
+
+After moving the cursor to the required position, HOLD DOWN the 
+fire key, and a power bar at the top of the screen starts growing. 
+The point at which you release the fire key then determines the 
+strength of shot. Release the fire key when the power bar is short, 
+and you get a weak shot. Release the fire key when the power bar is 
+long, and you get a strong shot. Note that the cue ball moves 
+TOWARDS the cursor when the fire key is released, and not away 
+from it.
+
+The BREAK key (CAPS SHIFT + SPACE) aborts a game and returns you 
+to the main menu.
+
+VIDEO POOL can be re-configured for any combination of keys on the 
+keyboard - simply press 'R' from the main menu and follow the 
+on-screen prompts. The program supports Sinclair Interface II 
+joysticks (left and right sockets), Kempston Interface joysticks 
+and Cursor joysticks. Cursor joysticks use the arrow keys 
+(unshifted 5 to 8) and any other key to fire. To select a joystick, 
+press 'I', 'J' or 'C' from the main menu. To reselect the keyboard, 
+press 'K'.
+
+
+TWO PLAYERS
+
+For a two player game, press '2' from the main menu, and then 'B' 
+to begin. Note that each player plays with his, or her, own set 
+of balls. To reselect the one player game, press '1' from the main 
+menu.
+
+
+VARIATIONS
+
+Three game variations and two pocket sizes are available:
+
+Standard game - This is the easiest game and is the one selected 
+when VIDEO POOL is first loaded. In this game you can pot the 
+balls in any order and in any of the pockets.
+
+Variation 1 - This game is a little harder (although you are 
+allowed an extra two shots per ball). You must pot the balls in 
+numeric order, the '1' ball first, then the '2' ball, and so on, 
+finishing with the '6' ball. Pot a ball out of sequence however, 
+and you lose one of your lives.
+
+Variation 2 - This is the hardest of the three. You must pot the 
+balls in their own pockets, the '1' ball in the '1' pocket, the 
+'2' ball in the '2' pocket, and so on, but in any order. You have 
+an extra three shots per ball to do this, but note that the 
+numbers on the pockets move around each frame. If you pot a ball 
+in the wrong pocket, you lose a life.
+
+To select a game variation, press 'V' on the main menu to bring 
+up a subsiduary menu, and then press 'S', '1' or '2'. To select 
+small or large pockets, press 'S' or 'L' as appropriate from 
+the main menu.
+
+
+TABLE EDITOR
+
+VIDEO POOL features a unique facility whereby you can alter or 
+'edit' the positions of the balls on the table. This editor can 
+be used, for example, for practice play, or for setting up trick 
+shots.
+
+Press 'E' from the main menu to select the editor. You can then 
+use your joystick to move a cross-wire cursor in eight directions 
+around the screen. (If you haven't selected a joystick from the 
+main menu, you must use the cursor keys.) Move the cursor onto a 
+ball, and press fire to 'pick' it up. The cursor will disappear, 
+and you can then move the ball around the table with your joystick. 
+Move the ball to wherever you want it to be, and then press fire
+again to 'drop' it. To remove a ball from the table (but not the 
+cue ball), simply push it down a pocket. To reselect an off-table 
+ball, move the cursor onto it, press fire, and the ball will 
+reappear on the centre of the table.
+
+Moving the cursor to the box marked 'reset', and pressing fire, 
+resets the ball in their triangle positions. Moving the cursor 
+to the box marked 'play', and pressing fire, starts the game. 
+Play as normal but without the complications of points, lives 
+etc. Tha BREAK key (CAPS SHIFT + SPACE) can be used to get back 
+to the main menu.
+
+
+WARNING
+
+Other than back-up copies for personal use all rights herein 
+belong to OCP. This nanual and the accompanying computer program 
+are copyrighted by OCP. No part of this manual or the accompanying 
+computer program may be reproduced, copied or transmitted by any 
+means whatsoever without prior written consent of the publishers.
+
+
+TRADEMARKS
+
+OCP is a trademark of Oxford Computer Publishing Ltd. Sinclair, 
+ZX, ZX SPECTRUM and ZX MICRODRIVE are all trademarks of Sinclair 
+Research Ltd.
+
+
+DISCLAIMER OF WARRANTY
+
+OCP makes no representations or warranties either express or 
+implied, with respect to this manual and accompanying software 
+and specifically disclaims any implied warranties of 
+merchantability or fitness for any particular purpose. OCP 
+shall in no event be liable for any, indirect, incidental or 
+consequential damages resulting from use of the manual or 
+software.
+
+
+Written by James Hutchby
+
+© Oxford Computer Publishing Ltd. 1984 Made in England

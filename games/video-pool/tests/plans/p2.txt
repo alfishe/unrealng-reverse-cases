@@ -1,0 +1,15 @@
+# p2: a two-player game: the turns pass between player 1 and player 2 (HUD 1up / 2up), pots and misses for both
+run 500
+key SPACE 20 100
+key 2 10 50
+key B 20 0
+shot pot 1
+screen p1-pot
+shot nopot 1
+screen turn2
+shot pot 1
+shot nopot 1
+shot any 2
+screen later
+key CS+SPACE 10 300
+screen break

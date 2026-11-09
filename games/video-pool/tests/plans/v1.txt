@@ -1,0 +1,21 @@
+# v1: the game variations: variation 1 (numeric order) with a wrong-order pot, BREAK to the menu, then variation 2
+# (each ball in its own pocket) with a wrong-pocket pot
+run 500
+key SPACE 20 100
+key V 10 80
+screen variations
+key 1 10 50
+key B 20 0
+shot wrong 1
+screen wrong-order
+shot pot 1
+ready
+key CS+SPACE 10 300
+screen break
+key V 10 80
+key 2 10 50
+key B 20 0
+shot wrong 1
+screen wrong-pocket
+shot any 1
+run 300

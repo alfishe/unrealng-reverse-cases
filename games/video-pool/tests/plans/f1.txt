@@ -1,0 +1,12 @@
+# f1: a one-player game of faults: the cue ball potted, four shots that pot nothing and a fifth that runs the shots
+# out (a life lost, the warning bleep before it), a pot, then fouls until GAME OVER with a score below the hall of
+# fame (straight back to the menu)
+run 500
+key SPACE 20 100
+key B 20 0
+shot cue 1
+shot nopot 4
+shot out 1
+shot pot 1
+shots miss over
+run 1500

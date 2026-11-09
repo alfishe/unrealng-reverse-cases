@@ -1,0 +1,26 @@
+# c1: after the tape ends (record-load from power-on): the "presents" page for 300 frames, SPACE continues to the menu, B begins a one-player game, then
+# shots: SPACE held (power), released, the balls left to stop; M / SS move the cursor between shots
+0 -
++300 SPACE
++20 -
++100 B
++20 -
++200 SPACE
++40 -
++500 M
++30 -
++50 SPACE
++15 -
++500 SS
++60 -
++50 SPACE
++70 -
++600 M
++100 -
++50 SPACE
++25 -
++600 SS
++20 -
++50 SPACE
++50 -
++600 END
