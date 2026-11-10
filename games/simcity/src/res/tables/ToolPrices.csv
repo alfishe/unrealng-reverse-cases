@@ -1,0 +1,16 @@
+# ToolPrices $6E1E: the price of each tool (ToolPrice, GreyUnaffordable, SelectTool)
+tool (label),price
+bulldozer,1
+road,10
+power line,5
+rail,20
+park,10
+residential,100
+commercial,100
+industrial,100
+police,500
+fire,500
+stadium,3000
+power station,4000
+seaport,5000
+airport,10000

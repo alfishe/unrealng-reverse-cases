@@ -1,0 +1,14 @@
+# BuildingValues $7682: by building routine, the kind a trip looks for (9 R, 10 C, 11 I; BuildingValue)
+routine (label),value
+police,0
+fire,1
+church,2
+hospital,3
+stadium,9
+coal,11
+nuclear,11
+seaport,11
+airport,10
+R block,9
+C building,10
+I building,11

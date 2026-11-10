@@ -1,0 +1,8 @@
+# TrafficKernel $7C9B: the 6 x 6 kernel of the traffic's pollution
+column 0,column 1,column 2,column 3,column 4,column 5
+9,9,9,9,9,9
+9,9,5,5,9,9
+9,5,1,1,5,9
+9,5,1,1,5,9
+9,9,5,5,9,9
+9,9,9,9,9,9

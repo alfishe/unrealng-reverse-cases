@@ -1,0 +1,19 @@
+{
+  "about": "Tape block 4, the loader \"loader\" $FE00-$FFFF (512 bytes) in its plain form: python3 ../../kit/mkgame.py --part src/loader/loader.json --install",
+  "image_cmd": ["python3", "tools/image.py", "--part", "loader", "work/stage2/parts/loader.bin"],
+  "image": "work/stage2/parts/loader.bin",
+  "org": "FE00",
+  "ann": "src/loader/loader.ann",
+  "top": "loader",
+  "bin": "loader.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "header": [
+    "; SimCity, Infogrames 1990: tape block 4, the loader \"loader\" (512 bytes at $FE00), as it stands after its own",
+    "; R-register decryption of $FE80-$FFFF (tools/tape.py encrypts the tail back for the tape)."
+  ],
+  "l1": [{"path": "work/stage1/c1/l1.json", "lo": "FE00", "hi": "FFFF"}],
+  "data_entries": "stop",
+  "work": "work/stage2/mkloader"
+}

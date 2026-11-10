@@ -1,0 +1,64 @@
+# The annotations of tape block 4, the loader "loader" $FE00-$FFFF (512 bytes), in its plain form: the source of
+# src/loader/loader.asm and src/loader/loader/*.asm (../../kit/mkgame.py --part src/loader/loader.json). Format:
+# ../../../../docs/ann-format.md. The tape holds $FE80-$FFFF XORed with the R register's value, (2 + 8 k) AND $7F for
+# the byte at $FE80 + k; tools/tape.py applies that to the assembled bytes, the way the master tape was made.
+# Witness: c1 (work/stage1/c1: power-on, the original TZX at signal speed), "L1 N" its run counts
+# (work/stage2/counts.json, work/stage2/l1count.py).
+
+@equ $4000 Screen 6144 ; the display file: the loading screen's block and code2 load here
+@equ $5800 Attributes 768 ; the attributes, cleared before code2 loads into the pixels
+@equ $5000 Mover ; code2's last 32 bytes once loaded: the mover (src/mover)
+@equ $6B00 Code1 ; code1, the game from $6B00 to $FE00 (src/game)
+@equ $61A7 LoaderStack ; the loader's stack top, in RAM code2's copy fills only later
+
+@module loader ; The loader: the R decryption of its own tail, three encrypted blocks through a changed LD-BYTES
+@about The ROM loads this block at $FE00 (BASIC line 20, LOAD "" CODE 65024) and line 30 calls it. LoaderStart decrypts $FE80-$FFFF with the R register and jumps to LoadGame, which loads the three headerless blocks 5-7 with LoadBlock, a copy of the ROM's LD-BYTES ($0556) that stores every byte XORed with a running key and the count, and jumps to the mover at $5000.
+@about c1: $FE00 is entered at frame 1258, T 65 246; $FE80 at frame 1259; the mover at frame 16 279 (docs/03-build-and-load.md 3.5).
+
+$FE00 c LoaderStart ; Decrypt $FE80-$FFFF with the R register, then run it
+> R is set to 0, then each byte from $FE80 to $FFFF is XORed with the value LD A,R reads just before it. The loop takes eight M1 cycles a byte (LD A,R two, the other six one each) and R counts M1 cycles in its low seven bits, so the key of the byte at $FE80 + k is (2 + 8 k) AND $7F: it depends on the instruction timing, not on any byte. Interrupts are off (DI), so no interrupt acknowledge adds to R.
+> Input: none (called from BASIC). Output: $FE80-$FFFF in clear. c1: L1 1 at $FE00, 384 runs of DecryptLoop, $FE80 entered at frame 1259. tools/decrypt_tape.py check: the decryption applied twice gives the tape's bytes back.
+$FE07 DecryptLoop ; A = R, the key; XOR it into (HL), up to $FFFF
+
+$FE14 b LoaderPadding 16 ; Padding up to $FE80: the bytes $14-$7F in order
+> No code reads these 108 bytes (c1: no L1 read). A leftover of the mastering, kept as bytes: each byte is its own address's low byte, so the clear part ends at $FE13 and the encrypted part starts at a round $FE80.
+
+$FE80 c LoadGame ; Clear the screen, load blocks 5, 6 and 7, jump to the mover
+> Sets SP to LoaderStack $61A7, zeroes the display file and attributes ($4000-$5AFF), then calls LoadBlock three times: block 5 to $4000, 6912 bytes (the loading screen, its attributes last, so the picture appears as the attributes come in); block 6 to Code1 $6B00, 37 633 bytes up to $FE00 inclusive (the game's code1, its last byte over LoaderStart's DI, which has long run); the attributes zeroed again; block 7 to $4000, 4128 bytes (code2 and the mover, invisible under the black attributes). Then JP Mover $5000.
+> The carry LoadBlock returns is never tested here: a failed block does not come back (LoadExit). c1: L1 1; the three blocks start at frames 1259, 3862 and 15 077 (docs/03 3.5).
+
+$FEBD c LoadBlock ; LD-BYTES changed: load DE bytes with flag $00 to IX, each stored as received XOR key XOR E
+> A copy of the ROM's LD-BYTES ($0556-$05E2, with LD-EDGE-1 and LD-EDGE-2) moved to RAM, so the ROM's tape trap never fires. Input: IX the destination, DE the length; the flag byte must be $00 (A' = 0, carry set: LOAD, not VERIFY). Output: carry set when the parity came out right. It returns through LoadExit $FF9A, the address it pushes first (the ROM pushes SA/LD-RET $053F).
+> The changes against the ROM: the border is black with MIC (LD A,$08, not $0F) and the colour bits OR $00, not $02; LdSync XORs C with $00 (the ROM $03); the stripe colour comes from an operand that counts up (LdBorderXor's $FF83, OR $F8 keeps its high bits set) instead of CPL; during the pilot two self-modified bytes keep the border still (LdStripe's OUT turned into LD A,n, LdColourStep's INC A into NOP) and LdSync turns them back; the store in LdLoop has no VERIFY branch: it counts key += 3 in the operand of LdKey ($FF32, zeroed per call), XORs it with E (the low byte of the count still to load) and L (the received byte), and stores at (IX+0).
+> c1: L1 3 (three blocks); LdLoop 48 676 runs (6913 + 37 634 + 4129 bytes, flags included). tools/decrypt_tape.py check reproduces the stored bytes of the three blocks and encrypts them back identical.
+$FEE5 LdBreak ; RET NZ: the ROM's LD-BREAK, here only a return
+$FEE6 LdStart ; the ROM's LD-START: wait for an edge, then test for about 1 s of silence
+$FEEE LdWait ; the ROM's LD-WAIT
+$FEFA LdLeader ; the ROM's LD-LEADER: 256 pilot pulses of the right length
+$FF09 LdSync ; the ROM's LD-SYNC: the short sync pulse, then the stripes switched on
+$FF2D LdLoop ; the ROM's LD-LOOP: the flag byte first (Z' set), then the data bytes
+$FF31 LdKey ; LD A,key: the byte key, +3 a byte; its operand $FF32 is written here and zeroed per call
+$FF40 LdFlag ; the ROM's LD-FLAG: the flag must equal A' ($00), else return with carry clear
+$FF4A LdNext ; the ROM's LD-NEXT: INC IX
+$FF4C LdDec ; the ROM's LD-DEC: one byte less to load
+$FF50 LdMarker ; the ROM's LD-MARKER: L = 1, the bit marker
+$FF52 Ld8Bits ; the ROM's LD-8-BITS: eight edge pairs make a byte in L; H the running parity
+
+$FF6B c LdEdge2 ; The ROM's LD-EDGE-2: two edges
+> Input: B the timing count, C the last edge's level and border colour. Output: carry set when both edges came before B overflowed. c1: L1 runs every bit of the three blocks.
+
+$FF6F c LdEdge1 ; The ROM's LD-EDGE-1: wait 358 T, then sample the EAR bit until it changes; stripe the border
+> As the ROM's but for the border: the colour is C XOR the stripe colour (the ROM's CPL) AND 7, and after the OUT the stripe colour ($FF83, LdBorderXor's operand) is counted up, then the border goes back to black (LdStripe). During the pilot LdStripe holds LD A,$FE (byte $3E) and LdColourStep a NOP, set by LoadBlock's start; LdSync writes OUT ($FE),A ($D3) and INC A ($3C) back, so the stripes run only over the data.
+$FF71 LdDelay ; the ROM's LD-DELAY
+$FF75 LdSample ; the ROM's LD-SAMPLE: B counts up, EAR read through port $7FFE
+$FF82 LdBorderXor ; XOR n: the edge's colour; the operand $FF83 is the stripe colour, counted at LdColourStep
+$FF8E LdColourStep ; INC A (during the pilot a NOP): the next stripe colour
+$FF96 LdStripe ; OUT ($FE),A, black after each edge (during the pilot LD A,$FE)
+
+$FF9A c LoadExit ; LoadBlock's return: black border; on carry return to LoadGame, else cycle the border for ever
+> Reached by the RET of LoadBlock through the address it pushed (LD HL,LoadExit; PUSH HL). With carry set (the parity right) it returns to LoadGame. With carry clear (a parity error, a wrong flag, a break) it falls into LoadFailed, a loop that writes the border colours 1, 2, 3 ... with no exit: a bad load hangs with a striped border.
+> c1: L1 3 at $FF9A and at the RET C; LoadFailed not executed in c1, the only recording that loads the tape (stage 1's docs/03 3.3 said a failed block runs on into what was loaded: the code says it hangs).
+$FFA0 LoadFailed ; INC A; OUT ($FE),A; loop: the endless striped border of a failed load
+
+$FFA5 b LoaderFontLeftover 8 ; Leftover: 91 bytes of the 48K ROM's font, $3E55-$3EAF ("J" from its sixth row to "U")
+> No code reads them (c1: no L1 read). They equal the ROM's $3E55-$3EAF byte for byte (checked against data/rom/48.rom of unreal-ng): the master tape was saved from memory that held a copy of the font here. Kept as bytes, listed in src/res/README.md.

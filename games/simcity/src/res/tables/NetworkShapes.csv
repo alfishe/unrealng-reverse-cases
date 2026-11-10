@@ -1,0 +1,18 @@
+# NetworkShapes $6ED3: the cell offset from the network kind by the neighbour mask (bits up, left, right, down; FixNetworkCell)
+mask (label),offset
+0000,0
+0001,1
+0010,0
+0011,2
+0100,0
+0101,3
+0110,0
+0111,6
+1000,1
+1001,1
+1010,4
+1011,9
+1100,5
+1101,8
+1110,7
+1111,10

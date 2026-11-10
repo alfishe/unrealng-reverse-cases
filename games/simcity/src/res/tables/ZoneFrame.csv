@@ -1,0 +1,10 @@
+# ZoneFrame $8A08: the eight cells round a zone centre and their empty frame cell (PickFrameCell)
+cell (label),row step,column step,frame cell
+0,-1,-1,$49
+1,-1,0,$4A
+2,-1,1,$4B
+3,0,-1,$50
+4,0,1,$4C
+5,1,-1,$4F
+6,1,0,$4E
+7,1,1,$4D

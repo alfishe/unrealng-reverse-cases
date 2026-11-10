@@ -1,0 +1,13 @@
+# PrintInline codes (PrintInline $5DEF) and letters; line breaks are ignored:
+#   {at R C} code $FF (row, column)   {attr $XX} $FB   {box R C W H} $FD (a frame)   {num N} $FC   {end} $FE
+#   any other byte below $20 or above $7E, and { } ", as {xx} in hex
+{attr $45}{box 0 0 8 9}{box 3 2 5 5}{box 17 0 8 7}{attr $42}
+{at 1 2}MAPS{attr $44}
+{at 9 0}CITY
+{at 10 0}POLLUTN
+{at 11 0}POLICE
+{at 12 0}FIREDEP
+{at 13 0}TRAFFIC
+{at 14 0}POWER
+{at 15 0}TRANSPT
+{at 16 0}CRIME{end}

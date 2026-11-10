@@ -1,0 +1,20 @@
+{
+  "about": "Tape block 5, the loading screen $4000-$5AFF (6912 bytes), in its plain form: python3 ../../kit/mkgame.py --part src/screen/screen.json --install",
+  "image_cmd": ["python3", "tools/image.py", "--part", "screen", "work/stage2/parts/screen.bin"],
+  "image": "work/stage2/parts/screen.bin",
+  "org": "4000",
+  "ann": "src/screen/screen.ann",
+  "top": "screen",
+  "bin": "screen.bin",
+  "dest": "src/screen",
+  "res_install": "tools/res_formats.py:install",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "header": [
+    "; SimCity, Infogrames 1990: tape block 5, the loading screen (6912 bytes at $4000), as LoadBlock stores it;",
+    "; tools/tape.py encrypts it for the tape. The picture is src/res/screen/LoadingScreen.png."
+  ],
+  "l1": [],
+  "data_entries": "stop",
+  "work": "work/stage2/mkscreen"
+}

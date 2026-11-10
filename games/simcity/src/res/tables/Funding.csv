@@ -1,0 +1,18 @@
+# Funding $950A: by the share granted (funded / (cost / 8)) the roads' and rails' decay mask (DecayMasks) and the police and fire strength (StrengthLevels; ApplyFunding)
+share (label),decay mask,strength
+0,$0F,0
+1,$1F,3
+2,$1F,6
+3,$3F,7
+4,$3F,8
+5,$7F,10
+6,$7F,12
+7,$FF,15
+8,$FF,15
+9,$FF,15
+10,$FF,15
+11,$FF,15
+12,$FF,15
+13,$FF,15
+14,$FF,15
+15,$FF,15

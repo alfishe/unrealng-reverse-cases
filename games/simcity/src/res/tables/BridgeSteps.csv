@@ -1,0 +1,7 @@
+# BridgeSteps $720F: per direction the row step, the column step and the bridge cell offset from the kind (Bridge)
+direction (label),row step,column step,offset
+0,0,0,0
+1,0,-1,12
+2,-1,0,11
+3,1,0,11
+4,0,1,12

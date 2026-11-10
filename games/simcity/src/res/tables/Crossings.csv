@@ -1,0 +1,20 @@
+# Crossings $7062: a network laid over another: the cell crossed and the crossing cell (CrossNetwork)
+network (label),cell,crossing
+power over,$07,$31
+power over,$08,$30
+power over,$14,$32
+power over,$15,$33
+power over,$38,$21
+power over,$39,$22
+road over,$14,$2E
+road over,$15,$2F
+road over,$21,$30
+road over,$22,$31
+road over,$38,$07
+road over,$39,$08
+rail over,$07,$2F
+rail over,$08,$2E
+rail over,$21,$33
+rail over,$22,$32
+rail over,$38,$14
+rail over,$39,$15

@@ -1,0 +1,6 @@
+# SpeedTable $8F6C: per speed the growth tries, the I and C chance masks (Random AND mask = 0 builds), a value no code reads, the month mask (SimPass AND mask = 0 ends a month)
+speed (label),tries,I mask,C mask,unread,month mask
+fast,8,$01,$0F,$01,$00
+normal,4,$03,$1F,$03,$01
+slow,3,$07,$3F,$07,$03
+paused,255,$FF,$FF,$FF,$FF

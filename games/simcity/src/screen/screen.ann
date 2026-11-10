@@ -1,0 +1,11 @@
+# The annotations of tape block 5, the loading screen $4000-$5AFF: the source of src/screen/screen.asm
+# (../../kit/mkgame.py --part src/screen/screen.json). Format: ../../../../docs/ann-format.md. The block holds no
+# code; LoadGame (src/loader) loads it first, pixels then attributes, into a screen it has zeroed.
+# Witness: c1 (work/stage1/c1), the screen's last attribute stored at frame 3561 (docs/03-build-and-load.md 3.5).
+
+@module screen ; The loading screen: the Probe / Infogrames title picture by Simon Butler
+@about One resource, src/res/screen/LoadingScreen.png (tools/res_formats.py: the 256 x 192 picture in the Spectrum's colours, ink and paper kept apart). The game never reads it: code2 loads over its pixels ($4000-$501F) and the game's first drawing clears the rest.
+
+$4000 b LoadingScreen 32 ; The loading screen: 6144 bytes of pixels, then 768 attributes
+> The Probe / Infogrames title picture, signed "SIMON" (Simon Butler). c1: LoadBlock stores it at frames 1259-3561; the stored bytes equal tools/decrypt_tape.py's decryption of tape block 5 (docs/03 3.3).
+@res screen/LoadingScreen.bin

@@ -1,0 +1,16 @@
+# ToolSizes $6DAF: the map box of each tool (ShowTool, CheckSite, PutBuilding)
+tool (label),width,height
+bulldozer,1,1
+road,1,1
+power line,1,1
+rail,1,1
+park,1,1
+residential,3,3
+commercial,3,3
+industrial,3,3
+police,3,3
+fire,3,3
+stadium,4,4
+power station,4,4
+seaport,4,4
+airport,6,6

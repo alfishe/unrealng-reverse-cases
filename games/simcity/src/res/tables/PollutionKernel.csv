@@ -1,0 +1,8 @@
+# PollutionKernel $7C77: the 6 x 6 kernel of a source's pollution
+column 0,column 1,column 2,column 3,column 4,column 5
+9,4,4,4,4,9
+4,3,2,2,3,4
+4,2,1,1,2,4
+4,2,1,1,2,4
+4,3,2,2,3,4
+9,4,4,4,4,9

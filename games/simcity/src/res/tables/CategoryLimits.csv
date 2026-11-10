@@ -1,0 +1,7 @@
+# CategoryLimits $9750: the population (last year end) from which each category starts (CategoryOf; below 2000 VILLAGE)
+category (label),population
+TOWN,2000
+CITY,10000
+CAPITAL,50000
+METROPOLIS,100000
+MEGALOPOLIS,500000

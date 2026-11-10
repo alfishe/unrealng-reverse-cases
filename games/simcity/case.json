@@ -33,6 +33,9 @@
   ],
   "header": [
     "; SimCity, Infogrames 1990 (Probe Software: A. R. Lill, S. Butler; a licence of Maxis' SimCity):",
-    "; the game image at the entry `$5B1B`, as the tape's loader leaves it (tools/image.py)."
-  ]
+    "; the game image $5B00-$FE00 at the entry `$5B1B`, as the tape's loader leaves it (tools/image.py): code2 $5B00-$6AFF",
+    "; (tape block 7, moved from $4000 by src/mover) and code1 $6B00-$FE00 (tape block 6)."
+  ],
+  "no_entries": true,
+  "res_install": "tools/res_formats.py:install"
 }

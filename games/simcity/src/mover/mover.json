@@ -1,0 +1,19 @@
+{
+  "about": "Tape block 7's last 32 bytes, the mover $5000-$501F: python3 ../../kit/mkgame.py --part src/mover/mover.json --install",
+  "image_cmd": ["python3", "tools/image.py", "--part", "mover", "work/stage2/parts/mover.bin"],
+  "image": "work/stage2/parts/mover.bin",
+  "org": "5000",
+  "ann": "src/mover/mover.ann",
+  "top": "mover",
+  "bin": "mover.bin",
+  "dest": "src/mover",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "header": [
+    "; SimCity, Infogrames 1990: the mover, the last 32 bytes of tape block 7 (code2, loaded to $4000-$501F):",
+    "; it copies code2's 4096 bytes from $4000 to $5B00 and enters the game. tools/tape.py appends it to code2."
+  ],
+  "l1": [{"path": "work/stage1/c1/l1.json", "lo": "5000", "hi": "5020"}],
+  "data_entries": "stop",
+  "work": "work/stage2/mkmover"
+}

@@ -1,14 +1,1889 @@
-# The annotations of the game image: the single source of truth for src/game/*.asm (kit/mkgame.py).
-# The format is in kit/mkgame.py, class Annotations. One line an entry:
+# The annotations of the game image $5B00-$FE00 (code2 $5B00-$6AFF, tape block 7 moved by the mover; code1
+# $6B00-$FE00, tape block 6): the single source of truth for src/game/*.asm (kit/mkgame.py --case .). Format:
+# ../../../../docs/ann-format.md.
 #
-#   @module NAME ; title            the entries from here on go to NAME.asm, the title heads the file
-#   @about a paragraph              the module file's header text, one paragraph a line
-#   $ADDR c Name ; title            a routine
-#   > a description line
-#   $ADDR b Name ; title            data (w words, t text, s space; "b Name 8" rows of 8)
-#   @res graphics/NAME.bin          the entry is a resource: src/res/..., INCBIN
-#   $ADDR Name ; comment            a label and comment inside an entry: on an instruction, or on the data line
-#                                   that starts at ADDR (a data entry's rows are cut there)
-#   @isub $ADDR LD HL,-6            the instruction written so
-#   @equ $ADDR Name [N] ; comment    a variable past the image: an EQU, its operands by name
-#   @inline $ADDR                   a routine that reads its data after the CALL
+# Witness: "L1 N" is the number of runs of an instruction summed over c1 (power-on with the tape) and the ten bot
+# recordings of work/stage1/rec (tools, ports, menus, growth, city, city2, metro, disasters, levels, bankrupt), from
+# work/stage2/counts.json (work/stage2/l1count.py); data reads and writes are the ten bot builds' sums
+# (work/stage2/rw.py). "L1 -" or "known only from the code" marks what no build ran.
+# Coordinates: the map is 96 x 96 cells, cell (column x, row y) at CityMap + 96 y + x; the view shows 32 x 16 cells
+# from column ViewCol, row ViewRow on the screen's rows 8-23. The pointer moves in half-character steps across
+# (PointerX 0-62) and in pixel pairs down (PointerY 0-184).
+#
+# The two tasks: the UI task runs MainMenu / UiLoop ($8FA0, $8FDA) on the stack from $F6C2, the simulation task
+# SimLoop ($835F) on its own; the interrupt (Interrupt $F70B) swaps them every frame unless NoSwitch $F705 is set.
+
+@equ $4000 Screen 6144 ; the display file
+@equ $5800 Attributes 768 ; the attributes
+@equ $0562 RomLdBytesIn ; the ROM's LD-BYTES after its border set-up (LD-BYTES + 12), used by the save and load
+@equ $04C6 RomSaBytesOut ; the ROM's SA-BYTES after its header choice (the pilot, $04C6), used by the save
+@const RomFont $3C00 ; the ROM's character set less 256 (character n at RomFont + 8 n)
+
+@isub $F75A LD BC,RomFont
+
+@inline $5DEF
+@inline $6704
+
+
+@module entry ; The keyboard rows and the entry
+@about The first bytes of code2: the eight keyboard half rows the interrupt reads every frame (ReadInput $F781) and the joysticks fold into, then the entry the mover jumps to: the stack, the Kempston test, IM 2 with I = $FD (the vector table $FD00, the task switcher Interrupt $F70B), the start menu.
+$5B00 b KeyRows 8 ; The keyboard's eight half rows, as IN read them in the last interrupt (0 = pressed, bits 0-4)
+> ReadInput $F781 writes them every frame from ports $FEFE, $FDFE, $FBFE, $F7FE, $EFFE, $DFFE, $BFFE, $7FFE (in that order), then ReadKempston $7A01 and ReadSinclair $7A32 clear the Q, A, O, P and SPACE bits when a joystick is pushed, so every reader sees one keyboard. Row 0 bit 0 CAPS SHIFT, row 1 bit 0 A (down), row 2 bit 0 Q (up), row 5 bit 0 P (right) and bit 1 O (left), row 7 bit 0 SPACE (fire) and bit 1 SYMBOL SHIFT. L1: 3 264 254 writes (8 a frame), 5 764 078 reads with KeyNone and BitMasks.
+$5B01 KeyRowA ; $FDFE: A S D F G
+$5B02 KeyRowQ ; $FBFE: Q W E R T
+$5B03 KeyRow1 ; $F7FE: 1 2 3 4 5
+$5B04 KeyRow0 ; $EFFE: 0 9 8 7 6
+$5B05 KeyRowP ; $DFFE: P O I U Y
+$5B06 KeyRowEnter ; $BFFE: ENTER L K J H
+$5B07 KeyRowSpace ; $7FFE: SPACE SYMBOL SHIFT M N B
+$5B08 KeyNone ; a ninth row, always $FF: ScanKey reads nine rows
+$5B09 PortHighs ; leftover: the eight port high bytes $FE-$7F; no code reads them (L1: 0 reads)
+$5B11 BitMasks ; $80, $40, ... $01: the bit of a column, read by the drawing of bars and graphs (L1: 1 415 565 reads)
+$5B19 EntryJump ; JR $5B1B, two bytes no code runs (L1: never executed): the entry is reached by JP $5B1B
+
+$5B1B c Entry ; The game's entry: stack, black border, the Kempston test, IM 2 with I = $FD, then MainMenu
+> MoveCode2 $5000 jumps here. SP = $F6C2 (the UI task's stack), the border black, NoSwitch $F705 = 1 (no task switch until the simulation task is set up), then the Kempston test: port $1F is read up to 32 768 times; a value $1F or more (a floating bus gives $FF) means no interface, otherwise KempstonFound = 1. Then I = $FD (the vector table ImTable $FD00, every vector $FCFC), IM 2, EI and JP MainMenu $8FA0.
+> c1: L1 1 at frame 16 280; the loop ran 32 768 times (no Kempston in c1's setup); the ports recording sets KempstonFound (stage 1). No other code changes I or the mode.
+$5B2E KempstonTest ; IN A,($1F): below $1F an interface answers
+$5B3E SetIm2 ; I = $FD, IM 2, EI, JP MainMenu
+
+@module beeper ; The two beeper routines: the disaster noise and the refusal tone
+@about NoiseBurst (the disasters, through FireNoise, FloodNoise, CrashNoise and the earthquake) and ToneBeep (the two refusals of the tools, Refuse $71E4). Both write the speaker bit of port $FE directly; both run with interrupts on, so the tasks keep switching while they sound.
+$5B48 c NoiseBurst ; The disaster noise: 200 loops of the beeper from Random, gated by the SOUND option
+> Input: E the pitch mask (each loop sends a new random speaker bit when D AND E is 0: E = 0 every loop, 1 every second ...). Interrupts are off while it plays (DI ... EI), so the frame's interrupt is held and the task switch waits. Returns at once when SoundOn ($A32D) is 0. Callers: the disasters (Disaster $78BD, the fire and flood spread $9108, $9116).
+> L1 764 (the disasters recording: 127-255 calls a disaster), 30 406 random bits sent.
+$5B53 NoiseLoop ; INC D; D AND E = 0: a new random bit to the speaker
+$5B5F NoiseNext ; 200 iterations
+
+$5B66 c ToneBeep ; The refusal tone: 500 cycles of the speaker, 48 + 16 DJNZ loops a cycle (the beep of a refused tool)
+> No inputs. The speaker on with L = $30 DJNZ loops, off with H = $10, 500 times (DE = $01F4); about 40 ms. It is not gated by SoundOn. Called by PlaceTool $71E4 when a placement is refused. L1 3 (the tools recording's refusals: no funds, no room).
+$5B6C ToneCycle ; speaker on for L loops
+$5B71 ToneHigh ; DJNZ: the high half
+$5B77 ToneLow ; DJNZ: the low half
+
+@module input ; The Kempston flag and the key scans
+@about ReadPort1F, the key characters and ScanKey, KeyToChar and AnyKey: the typed input (the name and gene editor), the map keys and the "any key" waits.
+$5B7F b KempstonFound 1 ; 1 when Entry found a Kempston interface (port $1F reads below $1F), else 0
+> Read by ReadPort1F $5B80 every frame (L1 413 183 reads).
+
+$5B80 c ReadPort1F ; A = the Kempston port's bits inverted, or $FF when no interface
+> Output: A = NOT IN ($1F) when KempstonFound, else $FF (CPL of 0). Called by ReadKempston $7A01 from the interrupt (L1 413 183, one a frame).
+$5B88 ReadPort1FDone ; CPL
+
+$5B8A b KeyChars 41 ; The character of each key, five a half row in ScanKey's order (CAPS SHIFT first), then the key found
+> Row $FEFE from bit 0: $03 (CAPS SHIFT), Z X C V; $FDFE A S D F G; $FBFE Q W E R T; $F7FE 1-5; $EFFE 0 9 8 7 6; $DFFE P O I U Y; $BFFE $08 (ENTER as delete), L K J H; $7FFE SPACE, ".", M N B (SYMBOL SHIFT reads as "."). KeyFound at $5BB2 is ScanKey's result: the key's index, or $FF for none. Read by KeyToChar $5BDF (L1 1193 reads).
+$5BB2 KeyFound ; ScanKey's result: the index into KeyChars of the first key down, $FF for none
+
+$5BB3 c ScanKey ; Find the first key down in the nine rows: KeyFound = its index (carry clear), or $FF (carry set)
+> Reads KeyRows $5B00-$5B08; CAPS SHIFT is ignored in the first row (D = $FE masks it). Output: carry set and KeyFound = $FF when no key is down, else carry clear and KeyFound = 5 row + column. L1 5451.
+$5BBB ScanRow ; the row's five bits, without CAPS SHIFT in the first
+$5BD2 ScanBit ; find the bit
+$5BDB ScanNextBit ; one column on
+
+$5BDE b ScanSpare 1 ; One byte no code reads (L1: 0 reads); kept as bytes
+
+$5BDF c KeyToChar ; A = the character of the key down (KeyChars), carry set when none
+> Used by the typed input: the city name (EditCityName), the gene digits and the tool shortcut keys (ToolKeys $6D2D). L1 5451, 1193 with a key.
+
+$5BEF c AnyKey ; Z clear when any key of the nine rows is down
+> Output: A = the first row's bits inverted (NZ) or 0 with Z. L1 2523 (the menus' key repeat, NumberRepeat $6A31).
+$5BF4 AnyKeyRow ; the next row
+
+@module screen ; Screen addresses, icon drawing and clearing
+@about ScreenAddr and AttrAddr, the next pixel line, DrawIcon from IconTiles and IconAttrs, and the clears of the top third, the view area and the maps window.
+$5BFE c ScreenAddr ; HL = the display file address of character row B (0-23), column C (0-31)
+> No other register changes but A. L1 451 620: every print and drawing routine calls it.
+$5BFF ScreenAddrThird ; the third: B AND $18 OR $40
+$5C01 ScreenAddrHigh
+$5C03 ScreenAddrH
+$5C04 ScreenAddrRow ; the row in the third: (B AND 7) x 32
+$5C05 ScreenAddrRowBits
+$5C07 ScreenAddrRot1
+$5C08 ScreenAddrRot2
+$5C09 ScreenAddrRot3
+$5C0A ScreenAddrCol ; OR C
+$5C0B ScreenAddrL
+
+$5C0D c AttrAddr ; HL = the attribute address of row B, column C (C kept, B = $58)
+> L1 1024 (the menu highlight HighlightLine $6933 and the graph windows).
+
+$5C19 c NextPixelLine ; HL = the display file address one pixel line down
+> The usual three cases: inside the character (INC H), into the next character row (L + 32, H - 8), into the next third (L + 32 with carry). L1 3 121 944.
+
+$5C28 c DrawIcon ; Draw icon tile A (8 bytes at IconTiles + 8 A) at row B, column C, with its attribute from IconAttrs
+> Sets PrintAddr to the cell, copies the eight bytes down the cell and the attribute IconAttrs + A ($F4F8 + A) through PutAttr $F774. Used for the tool palette, the box frames and the window graphics. L1 36 344.
+$5C43 DrawIconLoop
+
+$5C57 c DrawIconHere ; Draw icon tile A at PrintAddr with the current PrintAttr (no position, no own attribute)
+> Then JP PrintAttrHere $F76E (PrintAttr $FF leaves the attribute). L1 27 668 (the box frames of DrawBoxRow).
+$5C67 DrawIconHereLoop
+
+$5C70 c ClearTopBlack ; Clear the top third ($4000-$47FF) and give it attribute $38
+> A = $38 (white paper, black ink) into $5800-$58FF. L1 40.
+$5C74 c ClearTopWhite ; Clear the top third with attribute $07 (black paper, white ink)
+> L1 28.
+$5C76 ClearTopA ; the pixels zeroed, then the attributes A
+
+$5C8F c ClearViewArea ; Clear the screen's rows 8-23 ($4800-$57FF), attribute $47 (bright white on black)
+> The map view's area, cleared before a window or a dialog is drawn over it. L1 223.
+
+$5CAA c ClearForMaps ; Clear the top third black on white, then every attribute row: 8 columns $07, 24 columns $21
+> Called by the maps window ($7A9E) before it draws a map: the left 8 columns keep a black key, the 24 on the right are blue on red ($21). L1 5.
+$5CB2 MapsAttrRow
+$5CB4 MapsAttrKey
+$5CBB MapsAttrMap
+
+@module random ; The random generator
+@about Random: a Lehmer generator modulo 65 537 on RandomSeed, which NewLandscape sets from the gene; every random choice of the landscape, the growth, the trips and the disasters comes from it (the tornado sprite alone uses LD A,R).
+$5CC4 w RandomSeed 1 ; The random seed, 16 bits; NewLandscape sets it to the gene (Gene $6A8C)
+
+$5CC6 c Random ; The generator: seed = (254 (seed + 1) - 1) mod 65537; A = the seed's low byte
+> RandomSeed $5CC4 holds the seed. The arithmetic: H = the seed's low byte, L = $FD, so A:HL = 256 seed + 253; two SBC HL,DE take 2 seed off (254 seed + 253 in 24 bits), then the high byte is subtracted from the low 16 bits, which is mod 65537 because 65536 = -1; a borrow adds 1. Registers but A are kept. L1 343 327: the noise, the landscape, the simulation's random choices, the disasters.
+$5CE1 RandomStore
+
+@module cursor ; The pointer and the map box
+@about The arrow pointer drawn over the screen with its saved background, the box of the tool's size it shows over the view, and the tool palette's icons.
+$5CEC b PointerShape 8 ; The pointer: an arrow, 8 pixel rows ORed over the screen (src/res/graphics/Pointer.png)
+> Read by DrawPointer $5CFE (L1 156 303 reads of each byte).
+@res graphics/Pointer.bin
+$5CF4 PointerMask ; the mask ANDed with the screen before the arrow is ORed in
+$5CFC b PointerX 1 ; the pointer's column in half characters, 0-62 (stage 1's "cursor")
+$5CFD PointerY ; the pointer's row in pixels, 0-184 in steps of 2
+
+$5CFE c DrawPointer ; Draw the pointer at its character cell: save the 8 bytes under it, AND the mask, OR the arrow
+> The cell is row PointerY / 8, column PointerX / 2: the pointer moves on the character grid (no shift), though its coordinates are finer. The saved bytes go to PointerSave $5D34, the address to PointerAt $5D3C. Called by the UI loop every pass with ErasePointer after the pass's drawing (L1 158 080).
+$5D1D DrawPointerLoop
+
+$5D34 b PointerSave 8 ; The 8 screen bytes under the pointer, and their address
+$5D3C PointerAt ; the display file address of the pointer's cell
+
+$5D3E c ErasePointer ; Put the 8 saved bytes back at PointerAt
+> L1 158 076.
+$5D46 ErasePointerLoop
+
+$5D4F b BoxSize 2 ; The map cursor's box: width and height in cells (the tool's size, ToolSizes)
+> Written by ShowTool $6D90; read by TrackBox (L1 81 184 reads).
+$5D51 BoxCell ; the pointer's cell in the view: column (0-31) and row (0-15)
+$5D53 PointerInView ; nonzero when the pointer is on the map view (PointerY $40 or more)
+$5D54 BoxShown ; 1 when the box is drawn (it fits on the view)
+
+$5D55 c TrackBox ; Work out the pointer's view cell; when the tool's box fits on the view, invert it there
+> Output: PointerInView, BoxCell, BoxShown; the box is the BoxSize cells from the pointer's cell, inverted by InvertBox (twice a pass: on, then off once drawn). L1 316 156, 40 592 on the view.
+
+$5D8F c InvertBox ; Invert (XOR $FF) the BoxSize box at row B, column C of the screen
+> The tool palette's highlight (ShowTool) and the map cursor (TrackBox). L1 41 241.
+$5DA0 InvertBoxLine
+$5DA4 InvertBoxByte
+
+$5DB3 c DrawIcon2x2 ; Draw icon tiles A, A+1 (row B) and A+2, A+3 (row B+1) at columns C, C+1
+> L1 9086.
+
+$5DD2 c DrawToolIcons ; The tool palette: 14 icons of 2 x 2 tiles at row 1, columns 2-28, tiles 0, 4, 8 ...
+> L1 649 (each tool change redraws it).
+$5DD9 DrawToolIconsLoop
+
+@module print ; Printing: characters, inline codes, numbers, frames, the status panel and the texts
+@about PrintInline and its codes (FF row column, FB attribute, FD box, FC number, FE end), the decimal printers, DrawBox, the status panel (menu bar, city name, funds, date, tool), MonthNames and GameTexts with FindText and PrintPadded.
+$5DEB c PrintChar ; Print character A at PrintAddr (JP to PrintGlyph $F754)
+> L1 163 852.
+
+$5DEF c PrintInline ; Print the codes that follow the CALL, up to $FE, then return after them
+> The codes: $FF row column (position), $FB attribute (PrintAttr), $FD row column width height (a box, DrawBox), $FC number (printed as up to 3 digits; not used in any recording), $FE the end (JP to the byte after it); any other byte a character. PrintCol counts up. Used for every fixed text and window frame (L1 371 calls).
+$5DF0 PrintInlineNext
+$5E0F PrintInlineSkip
+$5E1E PrintInlineAttr ; $FB n: PrintAttr = n
+$5E25 PrintInlineNumber ; $FC n: n in 3 digits (L1 -)
+$5E78 PrintInlineEnd ; $FE: return after the codes
+$5E7A PrintInlineAt ; $FF row column
+$5E88 PrintInlineBox ; $FD row column width height
+
+$5E12 c NextColumn ; PrintAddr and PrintCol one column on
+> L1 450 406.
+
+$5E31 b PrintSpare 4 ; Four bytes no code reads (LD ($F751),BC: a cut instruction of the source); kept as bytes
+
+$5E35 c PrintNumberAt ; HL in 5 digits at PrintCol, PrintRow
+> L1 2 (the gene's 5 digits).
+$5E41 c Print5Digits ; HL in 5 digits, leading zeros printed
+> L1 4.
+$5E47 c Print4Digits ; HL in 4 digits (the year)
+> L1 9921.
+$5E4D c Print3Digits ; HL in 3 digits (menus' numbers, the tax rate)
+> L1 11 961.
+$5E5E c PrintDigitOf ; One digit: count how often DE (a negative power of ten) goes into HL, then print it
+$5E5F DigitCount
+$5E66 c PrintDigit ; Print the digit A (0-9) at PrintAddr and step on
+> L1 45 808.
+
+$5E95 b BoxDims 2 ; DrawBox's box: width and height in characters
+
+$5E97 c DrawBox ; Draw a window frame from icon tiles $38-$3F: row, column, width, height at (HL)
+> The corners and edges are icon tiles: top $38 $39 $3A, sides $3F $3B, bottom $3E $3D $3C; the inside is left alone. Sets PrintCol/PrintRow at the corner. L1 193.
+$5EBB DrawBoxSides
+
+$5ED2 b BoxSpare 1 ; One byte no code reads; kept as bytes
+
+$5ED3 c DrawBoxRow ; One row of a frame: tile A, BoxDims-2 tiles B (a space: skipped), tile C, then PrintRow + 1
+> The three tiles are written into the operands of the three LD A,n below (self-modified, $5EE9, $5EF9, $5F07). L1 3154.
+$5EE8 BoxRowLeft ; LD A,left
+$5EF3 BoxRowMiddle
+$5EF8 BoxRowFill ; LD A,middle: $20 is left out (the box's inside)
+$5F06 BoxRowRight ; LD A,right
+
+$5F13 c DrawStatusPanel ; Draw the menu bar, the status box, the city name, funds, tool palette, tool name and date
+> The menu bar "SYSTEM OPTIONS DISASTERS WINDOWS" at row 0 (attribute 7), the box rows 3-7, then DrawNameFunds, DrawToolIcons, ShowTool, PrintToolName, PrintDate, PrintFunds. L1 34 (the first draw and after each window).
+$5F16 b StatusBarText 8 ; PrintInline codes: the menu bar (SYSTEM OPTIONS DISASTERS WINDOWS)
+@res text/inline/StatusBar.bin
+$5F40 c DrawStatusBox ; The status box: rows 3-7 of the top third (attribute $38), then the name, the tools, the date, the funds
+$5F43 b StatusBoxText 10 ; PrintInline codes: the status box
+$5F4D c DrawStatusItems ; The name, the funds, the tool palette, the tool name and the date
+$5F60 c DrawNameFunds ; Print the city name (12 letters, CityName $5F68) at row 5, column 1, and "FUNDS $" at row 5, column 17
+> CityName lies inside the inline text: typing a name writes these bytes (EditCityName), so the text prints the current name. L1 35.
+$5F63 b CityNameAt 5 ; PrintInline codes: attribute $39, row 5, column 1 (the name follows)
+$5F68 CityName ; the city's name, 12 letters, "HERESVILLE  " in the image
+$5F7F c DrawNameFundsEnd ; RET
+
+$5F80 c PrintFunds ; Print Funds ($8F97, 24 bits) at row 5, column 24
+> L1 9918: every month and every purchase.
+
+$5F8A t MonthNames ; The twelve months, three letters each, bit 7 on the last
+@res text/MonthNames.bin
+
+$5FAE c PrintDate ; Print the month (MonthNames by Month $8F9B) at row 4, column 23 and the year ($8F9C) after it
+> L1 9917.
+
+$5FC6 t GameTexts ; The tool names with prices, the levels, the six city classes, the 27 advice and disaster messages
+> 50 strings, bit 7 on each last letter, found by FindText $6317 by index: 0-13 the tools ("BULLDOZE $1" ... "AIRPORT $10000"), 14-16 the levels (EASY, MEDIUM, HARD), 17-22 the classes (VILLAGE ... MEGALOPOLIS), 23 a space, 24-49 the advice and disasters ("MORE RESIDENTIAL ZONES NEEDED" ... "TORNADO DETECTED"). Read by PrintToolName, the level name, the class name and the advice (L1 1 602 984 reads, every byte).
+@res text/GameTexts.bin
+
+$6305 c PrintToolName ; Print the current tool's name and price (GameTexts by CurrentTool) at row 4, column 1, padded to 19
+> L1 99.
+
+$6317 c FindText ; HL = the A-th (from 0) bit-7-ended string of the table at HL
+> L1 14 996.
+$631C FindTextLoop
+$6327 FindTextNext
+
+$632A c PrintPadded ; Print the string at HL at row B, column C, then spaces up to A characters
+> L1 14 996.
+$6335 PrintPaddedLoop
+$634A PrintPaddedPad
+$634F PrintPaddedSpace
+
+@module clicks ; The pointer's movement and the clicks
+@about MovePointer by the keys (and so the joysticks), Click on SPACE: the palette, the scroll corner, the map (MapClick) or the menu bar (OpenMenuAt).
+$635C c MovePointer ; Move the pointer by the keys: O left, P right, Q up, A down (the joysticks come in as these)
+> One step a pass for each key held. L1 158 076.
+
+$637D c PointerRight ; PointerX + 1 up to 62
+> L1 1895.
+$638A c PointerLeft ; PointerX - 1 down to 0
+> L1 2044.
+$6397 c PointerUp ; PointerY - 2 down to 0
+> The test of key 6 on the view (KeyRow0 bit 4) leads to a branch no recording ran (PointerUpStop, L1 -), which stops at row $40.
+$63A6 PointerUpMove
+$63AE PointerUpStop
+$63B8 c PointerDown ; PointerY + 2 up to 184
+$63C4 PointerDownStop
+
+$63C9 b ClickCell 2 ; The pointer's character cell when SPACE was pressed: column (0-31), row (0-23)
+$63CB ClickSpare ; two bytes no code reads
+
+$63CD c Click ; SPACE pressed: take the pointer's cell, then the tool palette, the scroll arrows, the menu bar, the map
+> With NoSwitch set (no task switch while the UI changes the screen and the map): ToolClick $6D51, ScrollClick $6CBF, MenuClick $6401, MapClick $7012. L1 609 (the presses of the recordings).
+
+$63F9 c WaitSpaceUp ; Wait until SPACE is released
+> L1 709 255 loop runs, 196 calls.
+
+$6401 c MenuClick ; On row 0, open the menu under the pointer and wait for SPACE up
+> L1 609, 69 on row 0.
+
+$640E c OpenMenuAt ; The menu by the pointer's column: SYSTEM (below 14), OPTIONS (below 30), DISASTERS (below 48), WINDOWS
+> IX = SystemMenu $A02B, OptionsMenu $A32F, DisastersMenu $A43E or WindowsMenu $A4C2, then ShowMenu $66F2. L1 69.
+
+@module renderer ; The map view renderer
+@about The view: 32 x 16 cells from ViewCol, ViewRow, one row per UI pass (DrawViewRowPass) or all at once (DrawView). A map byte below $80 is a cell tile (CellTiles $EA68, CellAttrs $F530); $80 and up starts a building row whose tiles come from BuildingTiles $ED58 and BuildingAttrs $F58E. Unpowered zone centres blink, roads show their traffic.
+$6433 b Blink 1 ; Pass bit 4 at the start of the view row's draw: the blink phase
+
+$6434 c DrawViewRowPass ; Draw one of the view's 16 rows, the one PassCount AND 15 picks
+> So the view is redrawn every 16 passes of the UI loop, a row a pass, and the blinking cells change with PassCount bits 4 and 5. L1 158 073.
+
+$6462 w TileIndex 1 ; The tile number being drawn
+
+$6464 c DrawBlankCell ; Draw cell tile $3B (blank land) instead: a blinking cell in its off phase
+$6468 c DrawCell ; Draw one view cell: map byte in A (or the building row in progress), tile and attribute
+> A map byte below $80 is a cell tile at CellTiles $EA68 + 8 n with its attribute at CellAttrs $F530 + n; inside a building row (BuildingLeft not 0) the next building tile is drawn instead (DrawBuildingTile). Cells $54-$56 blink (BlinkCell); roads 7 and 8 show their traffic (RoadTraffic). The tile goes to ViewAt ($6482), the attribute through PutAttr. L1 5 379 061.
+$6475 DrawCellTile
+$6481 DrawTileAt ; LD DE,n: the screen address of the cell (operand $6482, ViewAt)
+$6486 DrawTileLoop
+
+$6499 c BlinkCell ; Cells $54-$56 (the unpowered zone centres) blink: with PassCount bit 5 set they show tile $3B
+> L1 4 249 059, 11 661 blanked.
+
+$64A9 c RoadTraffic ; Road cells 7 and 8: heavy traffic shows tile $34 / $36, medium blinks to $35 / $37
+> Reads the traffic map at the cell (MapToTraffic $7635, $7581): $DC or more heavy, $96-$DB medium (the second tile when Blink is set). L1 668 762.
+$64B5 RoadTrafficLook
+$64D3 RoadTrafficTile
+
+$64D5 b BuildingDummy 1 ; A byte IX points at while a building row is drawn (no reader of its value)
+
+$64D6 c DrawBuildingTile ; The next tile of the building row in progress: BuildingTiles $ED58 + 8 n, attribute $F58E + n
+> With PassCount bit 5 a building whose first byte is $A0-$AF (a zone without power) blinks to the blank tile. L1 1 130 002.
+$64EF DrawBuildingAttr
+
+$6505 w CellAttrPtr 1 ; The attribute table of the cell being drawn (CellAttrs or BuildingAttrs)
+$6507 ViewCol ; the view's left column on the map, 0-64
+$6508 ViewRow ; the view's top row, 0-80
+$6509 ViewCellPtr ; the map address of the cell being drawn
+
+$650B c DrawView ; Draw the whole view: 16 rows of 32 cells from the map at ViewCol, ViewRow
+> L1 627 (after every scroll, window and dialog).
+$651D DrawViewRow
+$651F DrawViewCell
+$652B DrawViewCellTile
+$6541 DrawViewNext
+
+$6558 b BuildingLeft 1 ; The cells left in the building row being drawn
+$6559 BuildingTile ; the tile number n of the next building cell (16 bits)
+
+$655B c StartBuilding ; A map byte $80 or more: work out the building's tile number and the cells left
+> From a $C0-$FF byte it steps back to the row's first byte (FindBuildingStart). Width = first AND 7, n = (second AND $3F) x 8 + (third AND 7) + the cells stepped back. L1 356 616.
+
+$6592 b BuildingBack 1 ; FindBuildingStart's count
+
+$6593 c FindBuildingStart ; Step IX back over the $C0-$FF bytes to the row's $80-$BF byte, counting them
+> L1 34 254 (the buildings cut by the view's left edge).
+$6596 FindBuildingStartLoop
+
+@module arith ; The number printers and the arithmetic
+@about Signed 24-bit printing, Sub24, Add24, Mul16 (a 24-bit product), Div24By8 and Div16.
+$65A3 w NumberEnd 1 ; PrintAddr after the last number printed
+
+$65A5 c PrintNumberHL ; HL (C = 0) in up to 7 digits at row B, column C
+$65B3 c PrintNumberVar ; The 24-bit number at (HL) (low, middle, high) at row B, column C
+$65C1 c PrintNumber24 ; CHL as a signed decimal, leading zeros left out and made up as trailing spaces
+> Powers of ten from 1 000 000 down, each a 24-bit subtraction loop (Digit24). Used by every money and population figure. L1 28 400.
+$661F PrintNumberPad
+
+$662C c PrintSign ; A negative CHL (bit 7 of C): print "-" and negate it
+> L1 7 (the budget's negative balances).
+
+$664D b NumberFlags 2 ; A digit printed already; the leading zeros left out
+
+$664F c Digit24 ; B = how often B'DE' (a negative power of ten) goes into C'HL'; print it unless a leading zero
+$6651 Digit24Loop
+$666F c PrintDigitB ; Print the digit B
+$667B LeadingZero
+
+$6680 c Sub24 ; CHL = CHL - BDE (24 bits); carry and sign as the high byte left them
+> The one 24-bit subtraction: prices against Funds and the city class's thresholds both use it (stage 1: the POKE file's NOP NOP at $6681 breaks both). L1 25 262.
+$6687 c Add24 ; CHL = CHL + BDE (24 bits)
+> L1 39 110.
+
+$668C c Mul16 ; CHL = HL x DE (24-bit product), shift and add
+> L1 16 721.
+$6698 Mul16Loop
+$66AD Mul16Next
+
+$66B6 c Div24By8 ; CHL = CHL / A, remainder in A
+> L1 5831.
+$66BB Div24Loop
+$66C4 Div24Sub
+$66CC Div24Next
+
+$66D0 c Div16 ; HL = HL / DE; HL = 0 when DE is 0
+> L1 5092.
+$66DB Div16Loop
+$66E8 Div16Next
+$66EE Div16ByZero
+
+@module menus ; The menus and dialogs engine
+@about ShowMenu and the inline windows: a description of items (text, toggle, action, number field, separator, end) is drawn, the highlight moved with Q / A, SPACE runs the item; number fields are edited in place inside the description. MenuHook lets the budget and evaluation windows recompute while they are open.
+$66F2 c ShowMenu ; A pull-down menu at IX: the window area cleared, the items drawn, run, then the view redrawn
+> L1 76.
+
+$6704 c ShowInlineWindow ; A window whose description follows the CALL (POP IX), then ShowWindow
+$6706 c ShowWindow ; Draw the window at IX: a menu-sized one (first byte 8 or more) over the view, else full screen
+> L1 54.
+$6719 ShowFullWindow ; a full-screen frame (attribute $47), then the items and the menu bar again
+$671F b FullFrameText 8 ; PrintInline codes: a 32 x 24 frame, attribute $47
+$6727 c ShowFullWindowItems
+
+$6738 c ClearWindowArea ; Clear rows 8-23 and frame them (attribute $44, a 32 x 16 box at row 8)
+> L1 116.
+$673E b WindowAreaText 8 ; PrintInline codes: a 32 x 16 frame at row 8, attribute $44
+$6746 c ClearWindowAreaEnd ; RET
+
+$6747 b MenuState 2 ; The menu being shown: IX of its description, then its line counter and the item table
+> MenuItems ($674A, 3 bytes an item: the line, the item's address) up to $6779, MenuValues $677A (3 bytes a line: the column and the address of a number field), MenuCount $67C2. L1 6776 reads, 5161 writes.
+$6749 MenuLine ; the line being drawn
+$674A MenuItems ; the selectable items: line, address
+$677A MenuValues ; per line: the column of a number field and its address
+$67C2 MenuCount ; the number of selectable items
+
+$67C3 c DrawMenu ; Draw the items of the menu at IX, line by line, and collect the selectable ones
+> Item kinds (first byte): 0 a text line, 1 a toggle (a flag address, then ON or OFF), 2 an action (an address to run), 3 a separator line (tiles $40-$42), 4 the end, 8 a number field (selectable). L1 143.
+$67D7 DrawMenuItem
+$67FC DrawMenuNumber
+$6801 DrawMenuEnd ; the item table closed with $FF
+$681F DrawMenuAction
+$6826 DrawMenuText
+$682F DrawMenuSeparator
+
+$6806 c AddMenuItem ; Put the line and IX into the next MenuItems slot
+$684B b ToggleValue 1 ; The toggle's flag value while it is printed
+$684C c DrawMenuToggle ; A toggle item: its text, then ON or OFF by its flag
+$686E b OnText 3 ; "ON" for a toggle
+@res text/inline/On.bin
+$6871 c DrawMenuToggleOn
+$6876 DrawMenuToggleOff
+$6879 b OffText 4 ; "OFF"
+@res text/inline/Off.bin
+$687D c DrawMenuToggleNext
+
+$6882 c PrintMenuText ; The item's text at its line, column 1: bit 7 ends it; codes $21 (to column 24), 5, 6, 7 (numbers)
+> Codes: $21 moves to column 24 (MenuTab), 6 a 16-bit number (5 digits) at an address, 7 an 8-bit one (3 digits), 5 a 24-bit one; a nonzero byte after the code registers the field for editing (MenuField). L1 1677.
+$688E MenuTextLoop
+$689D MenuTextCode
+$68B7 MenuTextTab
+$68BE MenuText16
+$68D5 MenuText8
+$68EB MenuText24
+
+$6905 c MenuValueSlot ; HL = MenuValues + 3 A
+$6910 c MenuField ; Remember the column and the address of the number field on this line
+$6922 c MenuTab ; PrintCol 24 on this line
+
+$6933 c HighlightLine ; XOR $46 into the attributes of row B, columns 1-30: the menu bar's highlight
+$693A HighlightLoop
+
+$6942 w MenuHook 1 ; A routine the menu loop calls every pass (0: none): the graph windows' live drawing
+
+$6944 c RunMenu ; Move the highlight with Q / A every 8 frames (HALT), SPACE selects: run, toggle or edit the item
+> L1 132. The UI task halts here, so the simulation runs on through the switch while a menu is open.
+$6950 RunMenuShow
+$6953 RunMenuWait
+$6955 RunMenuHalt
+$6971 RunMenuRelease
+
+$6990 b EditMax 1 ; The number field being edited: the largest value, its address, its position, the key repeat
+$6991 EditPtr
+$6993 EditPos
+$6995 EditRepeat
+
+$6996 c EditNumber ; Q / A count the field up and down (to EditMax), with a key repeat; SPACE ends
+> L1 5 (the tax rate and the budget windows).
+$69C0 EditNumberLoop
+$69E7 EditNumberHalt
+$69EC c EditUp
+$69FA c EditDown
+$6A04 EditNumberDone
+
+$6A16 c PrintEditField ; Print the field's value in 3 digits at its position
+
+$6A2A c CallMenuHook ; JP (MenuHook) unless 0
+
+$6A31 c NumberRepeat ; The key repeat: no key, delay 10; a key held, count it down
+$6A3E NumberRepeatReset
+$6A44 MenuToggle ; flip the flag (XOR 1)
+$6A4E MenuAction ; JP to the action
+
+$6A54 c MenuUp ; The highlight one item up
+$6A60 c ToggleMenuLine ; XOR the highlight of the selected item's line
+$6A6C c MenuDown ; The highlight one item down
+
+$6A7D b MenuSelected 1 ; The selected item
+
+$6A7E c SelectedItem ; HL = MenuItems + 3 MenuSelected
+
+@module landscape ; The landscape generator
+@about NewLandscape from the five-digit gene: the map all water, land discs at random centres and radii, tree discs on land, then the coast from the eight-neighbour patterns. MapAddr and MapAddrChecked, the map's address arithmetic, live here.
+$6A8C w Gene 1 ; The landscape's gene, the seed of the generator (3 in the image: "00003")
+
+$6A8E c NewLandscape ; Make the landscape from Gene: the map all water, 128 land discs, the coasts, 32 tree discs
+> Resets the simulation (StartSimulation $830C), clears CityMap $C450 to 0 (water), shows "CREATING LANDSCAPE" ($A6A4), seeds Random with Gene, draws 128 discs of land ($02) with radius 2-7 at x, y 16-79 (Disc), cuts the coast (MakeCoast), then 32 discs of trees ($06) of radius 2-3 drawn only over land. L1 12 (the menus recording's genes 12345 and 00003, the level starts).
+
+$6AD3 b DiscShapes 2 ; Four pairs of shifts (4, 4), (5, 3), (3, 5), (4, 4): the disc's two axes (round, flat, tall)
+@res tables/DiscShapes.bin
+
+$6ADB c Discs ; B discs of cell C, radius 2 to E (random), centre 16-79, each with a random shape from DiscShapes
+$6AE3 DiscsLoop
+$6AEF DiscsRadius
+
+$6B21 b CoastPatterns 33 ; The coast: 66 masks of the eight land neighbours, then the 66 cell codes put on such water
+> Read by MakeCoast with CPIR (L1 426 157 compares).
+@res tables/Coast.bin
+$6B63 CoastCells ; the cell code for each pattern
+
+$6BA5 c MakeCoast ; Every water cell next to land whose neighbour mask is in CoastPatterns becomes its coast cell
+$6BA7 MakeCoastRow
+$6BA9 MakeCoastCell
+$6BD3 MakeCoastNext
+
+$6BDA b MapEdge 1 ; Set to 0 when MapAddrChecked was given a cell off the map
+
+$6BDB c MapAddrChecked ; HL = CityMap + 96 B + C for row B, column C below 96 (carry set); else carry clear
+> L1 2 928 251.
+$6BE6 c MapAddr ; HL = CityMap + 96 B + C
+> L1 3 488 641.
+$6BFD MapAddrOff
+
+$6C02 b DiscVars 7 ; The disc being drawn: centre x, y, radius, cell, the cell it may replace (0 any), the two shifts
+$6C03 DiscY
+$6C04 DiscRadius
+$6C05 DiscCell
+$6C06 DiscOver
+$6C07 DiscShift
+
+$6C09 c Disc ; Draw a disc of DiscCell: 49 steps of a shift-based circle, each a horizontal run across it
+> The run's ends come from the circle drawing x -= y >> s1, y += x >> s2 (the two shifts of DiscShapes), in 8.8 fixed point from (radius, 0): an ellipse when the shifts differ. L1 1920.
+$6C18 DiscStep
+$6C19 DiscX1 ; LD HL,n: the first coordinate (operand $6C1A)
+$6C1C DiscY1 ; LD DE,n: the second coordinate (operand $6C1D)
+$6C24 DiscShift1
+$6C35 DiscShift2
+$6C57 DiscRun
+$6C69 DiscPut
+$6C6D DiscRunNext
+
+$6C75 c IsLand ; Carry set when the cell at row B, column C is on the map and holds land ($02)
+$6C82 IsLandYes
+
+$6C84 c LandNeighbours ; D = the land bits of the eight neighbours of (B, C), the row above first
+> L1 54 876.
+
+@module tools ; The tools: palette, prices, sites, networks, bridges, the bulldozer and the buildings
+@about The 14 tools: the palette and its keys, the prices and Spend, CheckSite and the two refusals, roads, rails and power lines with their crossings and bridges, the bulldozer and the rubble, the zones and buildings with their map patterns.
+$6CBF c ScrollClick ; A click on row 2, column 0: scroll the view with the keys until SPACE (not run in any recording)
+> ScrollMode: O, P, Q, A scroll by a cell a frame, the view redrawn each time, until SPACE. No recording clicked there (L1 - from $6CCA; the scroll of the recordings goes through the pointer at the view's edge, ScrollByPointer).
+$6CCD ScrollModeLoop
+
+$6D05 c ScrollLeft ; ViewCol - 1 down to 0
+$6D0F c ScrollRight ; ViewCol + 1 up to 63
+$6D19 c ScrollUp ; ViewRow - 1 down to 0
+$6D23 c ScrollDown ; ViewRow + 1 up to 79
+
+$6D2D c ToolKeys ; SYMBOL SHIFT with a digit picks a tool: 1-9 tools 0-8, 0 tool 9
+> L1 158 072; 30 with SYMBOL SHIFT (the tools recording's shortcuts).
+$6D45 ToolKeysDigit
+
+$6D50 b CurrentTool 1 ; The tool: 0 bulldozer, 1 road, 2 power line, 3 rail, 4 park, 5-7 R C I, 8 police, 9 fire, 10 stadium, 11 power station, 12 seaport, 13 airport
+
+$6D51 c ToolClick ; A click on the palette (rows 1-2, columns 2-29) picks tool (column - 2) / 2
+$6D6D SelectTool ; refused when Funds would go below 0; redraw the palette and the name
+
+$6D90 c ShowTool ; Highlight the current tool's icon and set the map box to its size (ToolSizes)
+> L1 649.
+
+$6DAF b ToolSizes 2 ; The 14 tools' box sizes, width and height: 1 x 1 for tools 0-4, 3 x 3 for 5-9, 4 x 4 for 10-12, 6 x 6 the airport
+@res tables/ToolSizes.bin
+
+$6DCB c ToolSize ; DE = ToolSizes[CurrentTool]
+
+$6DDA c GreyUnaffordable ; Grey the palette icon of every tool whose price is more than Funds
+> For the 14 tools: Funds - ToolPrice < 0 (Sub24) greys the icon (GreyIcon). Input: none. Side effect: the palette's pixels. L1 649.
+$6DDD GreyUnaffordableLoop
+$6DF8 GreyUnaffordableNext
+
+$6DFD c GreyIcon ; AND a checker ($AA / $55) into the 2 x 2 icon of tool C (row 1, column 2 + 2 C)
+> L1 196.
+$6E0A GreyIconLine
+$6E0D GreyIconByte
+
+$6E1E w ToolPrices 7 ; The 14 tools' prices: 1, 10, 5, 20, 10, 100, 100, 100, 500, 500, 3000, 4000, 5000, 10 000
+@res tables/ToolPrices.bin
+
+$6E3A c ToolPrice ; DE = ToolPrices[A]
+> L1 9176 (GreyUnaffordable and SelectTool).
+
+$6E46 c Spend ; Funds = Funds - DE, unless that goes below 0: then carry set and Funds kept
+> Every tool pays through here. Input: DE the price. Output: carry set when refused (nothing paid). L1 693.
+$6E5C SpendStore
+
+$6E67 w ClickMapCell 1 ; The map cell of the last tool click: column, row
+$6E69 MapCoordsGiven ; 1 while FixNetworkAt runs: ClickToMapBC takes BC as a map cell already
+
+$6E6A c ClickMapAddr ; BC = the clicked map cell (ClickToMap), kept in ClickMapCell; HL = its map address
+> L1 1713.
+$6E74 c ClickToMap ; BC = the map cell under ClickCell: column + ViewCol, row - 8 + ViewRow
+$6E78 c ClickToMapBC ; BC (a view cell, screen row) to the map cell, unless MapCoordsGiven
+> L1 3978.
+
+$6E8A c FixNetworkAt ; FixNetwork round map cell BC (MapCoordsGiven set while it runs)
+> Used by the bridge (L1 - : no recording built a bridge).
+$6E97 c FixNetworkClick ; FixNetwork round the clicked cell
+$6E9B c FixNetwork ; Re-shape the network cells of kind NetworkKind at BC and its four neighbours
+> A road, rail or power line cell takes the shape (kind + NetworkShapes[mask]) of the neighbours of its own kind (the 4-bit mask of NeighbourMask). Input: BC, NetworkKind. Side effect: the map. L1 324.
+
+$6EBE c NetworkBit ; A = the CellFlags bit that marks the kind as crossable: road (7) 4, rail ($14) 2, power ($21) 8
+$6ECC NetworkBitRoad
+$6ECF NetworkBitRail
+
+$6ED2 b NetworkKind 1 ; The network being laid: 7 road, $14 rail, $21 power line ($30 in the image)
+$6ED3 b NetworkShapes 16 ; the shape offset by the 4-bit neighbour mask (up, left, right, down)
+@res tables/NetworkShapes.bin
+
+$6EE3 c FixNetworkCell ; The cell at BC: when it is of NetworkKind, make it kind + its shape (not when CellFlags bit 0 keeps it)
+> L1 1620.
+$6F0E FixNetworkCellEnd
+
+$6F10 b NetworkFlag 1 ; NetworkBit's result for this FixNetwork
+$6F11 BridgeMode ; 1 while Bridge looks for the network to continue: only the kind's own cells count
+
+$6F12 c IsNetwork ; Carry set when the cell at BC is of NetworkKind (kind to kind + 10) or (not BridgeMode) crossable by its flags
+> L1 4200.
+$6F28 IsNetworkYes
+$6F2A IsNetworkFlags
+$6F3A IsNetworkNo
+
+$6F3C c NeighbourMask ; D = 4 bits: IsNetwork of the cells up, left, right, down of BC
+> L1 645.
+
+$6F5C w BridgeEnd 1 ; The last water cell the bridge line covered
+$6F5E BridgeCell ; the cell the bridge line writes (0 for the dry run)
+
+$6F5F c BridgeLine ; From the click, step (D, E) over water writing BridgeCell, each cell paid at BridgePrice
+> Stops with carry clear on a cell of BulldozeKeep (a coast or bridge end); carry set on anything else not water (the bridge refused). The first pass (BridgeCell 0) only tests; the second writes. L1 - (no recording built a bridge): known only from the code.
+$6F62 BridgeLineStep
+$6F7D BridgeLineWater
+$6F8E BridgeLineNext
+$6F9A BridgeLineEnd
+
+$6F9C b CellFlags 16 ; The flags of the cells 0-$59: bit 0 not reshaped, 1 rail, 2 road, 3 conducts power, 4 zone, 6 developed, 7 flammable
+> Read by CellFlagsOf ($7599; L1 11 343 551). Buildings ($80 and up) give $99 there. The bit meanings follow from the readers: bit 0 FixNetworkCell, bit 1 the train ($77DC) and the rail count ($8898), bit 2 the road count, bits 1-2 the traffic route ($856A), bit 3 the power flood ($819A), bits 4 and 6 BuildingValue and the pollution ($7DEA), bit 7 the fire ($89BB, $79DE).
+@res tables/CellFlags.bin
+
+$6FF6 w ToolHandlers 7 ; The 14 tools' click routines (MapClick calls ToolHandlers[CurrentTool])
+
+$7012 c MapClick ; A click on the view with the box shown: the crossing, the site check, the tool's routine
+> Only for ClickCell rows 8 and up with BoxShown. A road, rail or power line over another network goes to CrossNetwork; else CheckSite refuses (Refuse) or the tool's handler from ToolHandlers runs (a CALL whose operand ToolCall is written). Then it waits for SPACE up, unless a direction key is held: the drag that lays a road cell by cell. L1 607.
+$702D MapClickTool
+$703F ToolCall ; CALL n: the handler (operand $7040)
+$7042 MapClickWait
+
+$7062 b Crossings 6 ; Three pairs of 6 bytes: the cells a network may cross, then the crossing cell for each
+> $7062 power over road or rail; $706E road over power or rail; $707A rail over road or power. Read by CrossNetwork (CPIR, the result 6 bytes on).
+@res tables/Crossings.bin
+
+$7086 c CrossNetwork ; A road, rail or power line clicked on another network: pay, write the crossing cell, reshape; carry set when done
+> Road 10, rail 20, power 5. L1 470; the crossings themselves L1 47 ($70E3, power).
+$709C CrossNetworkNone
+$709E CrossRoad
+$70B2 CrossNetworkPay
+$70CC CrossRail
+$70E3 CrossPower
+
+$70FA b FreeCells 2 ; The cells a building site takes at no cost: 2 land, 0 water
+$70FC SiteCells ; the cells a site may hold (cleared at $1 each): 2, 3, 1, 5, 4, 6, then $7102
+$7102 SiteWater ; the seventh: 0 (water) for the networks, 2 for the other tools; written by CheckSite
+
+$7103 c CheckSite ; Carry set when the tool's box at the click may not be built; clears trees at $1 a cell
+> On water, or with AutoBulldoze ($A32B) on: every cell of the box must be in SiteCells (water only for road, rail and power); each cell not in FreeCells costs 1 and becomes land 2. With AutoBulldoze off on land: StrictSite, every cell must be land 2. The bulldozer passes always. L1 464.
+$7113 CheckSiteLoose
+$7129 CheckSiteBox
+$7135 CheckSiteRow
+$7138 CheckSiteCell
+$714B CheckSiteClear
+$7165 CheckSiteNext
+$7171 CheckSiteOk
+$7173 StrictSite ; every cell of the box must be land (2), else carry
+$717F StrictSiteRow
+$7182 StrictSiteCell
+$718A StrictSiteNext
+
+$7197 c PutBuilding ; Copy the building pattern at IX (ToolSize width x height) into the map at the click
+> L1 145.
+$719F PutBuildingSize
+$71A3 PutBuildingRow
+$71A6 PutBuildingCell
+
+$71B8 w NetPrice 1 ; PlaceNetwork's price per cell on land
+$71BA BridgePrice ; and per cell of bridge
+
+$71BC c PlaceNetwork ; Lay one cell of road, rail or power: HL the price, DE the bridge price, A the kind
+> On water the Bridge; on land (2) pay, write the kind, FixNetwork, redraw; on anything else Refuse. L1 312.
+
+$71E4 c Refuse ; The refusal: ToneBeep, but only when no direction key (A, Q, P, O) is held
+> The two refusals that beep are CheckSite's (the site) and PlaceNetwork's (a network on a building or a zone); while the pointer is dragged with a key held the beep is left out. L1 3; ToneBeep L1 3 in the tools recording.
+
+$71FF b BridgeDirs 16 ; By the neighbour mask: the bridge direction (1-4; 0 none)
+@res tables/BridgeDirs.bin
+$720F b BridgeSteps 3 ; per direction 0-4: the row step, the column step, the bridge cell offset
+@res tables/BridgeSteps.bin
+
+$721E c Bridge ; A network clicked on water: find the direction from the network next to it, test the line, then build it
+> The cost is BridgePrice a cell (road 50, rail 100, power 25). Two BridgeLine passes: a dry run, then with kind + offset. L1 - : known only from the code.
+$7256 BridgeOffset ; ADD A,n: the bridge cell offset from the kind (operand $7257)
+
+$726B b BulldozeKeep 8 ; The bridge and coast-end cells: the bulldozer turns them back to water
+$7273 BulldozeNothing ; 0, 2, $59: nothing to clear (water, land, rubble ash)
+
+$7276 c Bulldoze ; Tool 0: clear the clicked cell
+> A building goes to BulldozeBuilding, a zone centre ($51-$56) to BulldozeZone, a bridge to water ($72CA), cells $3C-$50 through the flags to rubble or land, the rest to land 2 at $1, then the networks round it are reshaped. L1 2.
+$7288 BulldozeCell
+$72A3 BulldozeToLand
+$72AF BulldozeReshape
+$72CA BulldozeBridge
+$72D8 BulldozeMarked
+
+$72ED c ConfirmHold ; With ZONE DEMOLISH WAIT ($A32E, on in the image): Z only when SPACE is held through 40 000 loops; NZ at once when it is up
+> Clearing a building or a zone needs SPACE held about a second; with the option off it goes at once. L1 - (no recording bulldozed a building or zone): known only from the code.
+$72F5 ConfirmHoldLoop
+
+$7301 b BulldozeCosts 7 ; By the building's size: the price of clearing it, size squared (0, 1, 4, 9, 16, 25, 36)
+@res tables/BulldozeCosts.bin
+
+$7308 c BulldozeBuilding ; Clear a whole building: find its top row, pay size squared, fill it with rubble $46, animate
+> L1 - (no recording bulldozed a building): known only from the code.
+$7315 BulldozeFindTop
+$731F BulldozeTop
+$7337 BulldozeFill
+$733B BulldozeFillRow
+$733F BulldozeFillCell
+$7367 c BulldozeZone ; a zone: 9, its 3 x 3 from the cell up and left
+
+$737D b RubbleSteps 6 ; The rubble's three steps: $46 -> $47 -> $48 -> 2 (land)
+
+$7383 c RubbleStep ; Advance every rubble cell of the 12 rows round the click one step (RubbleSteps)
+$7395 RubbleStepCell
+$73AA RubbleStepNext
+
+$73B2 c RoadTool ; Tool 1: PlaceNetwork with 10, bridge 50, cell 7
+> L1 at the click only (no entry count kept: reached through ToolHandlers).
+$73BD c RailTool ; Tool 3: 20, bridge 100, cell $14
+$73C8 c PowerLineTool ; Tool 2: 5, bridge 25, cell $21
+$73D3 b ToolSpare 1 ; One byte no code reads
+
+$73D4 c ParkTool ; Tool 4: 10, a park $38 (one in eight $39); refused (Refuse) when the map column is 2
+> The CP $02 tests A, which ClickMapAddr leaves as the column (MapAddr's LD A,C), not the cell: a park on map column 2 always beeps, any other site takes the park (CheckSite has cleared it already). Known only from the code; L1 1.
+$73ED ParkPut
+
+$73F1 b ResidentialZone 9 ; The 3 x 3 zone cells: the frame $49-$50 round the centre $54 (residential, unpowered)
+$73FA c ResidentialTool ; Tool 5: 100, the zone at the click
+> L1 77.
+$740B b CommercialZone 9 ; ... centre $55
+$7414 c CommercialTool ; Tool 6: 100
+$7425 b IndustrialZone 9 ; ... centre $56
+$742E c IndustrialTool ; Tool 7: 100
+$743F b PoliceBuilding 9 ; The police station, 3 x 3: building rows ($A3 top, $83) with tile numbers $C0+
+$7448 c PoliceTool ; Tool 8: 500
+$7459 b FireBuilding 9 ; The fire station, 3 x 3
+$7462 c FireTool ; Tool 9: 500
+$7473 b StadiumBuilding 16 ; The stadium, 4 x 4
+$7483 c StadiumTool ; Tool 10: 3000
+$7494 b CoalPlant 16 ; The coal power station, 4 x 4
+$74A4 NuclearPlant ; the nuclear one
+$74B4 c PowerPlantTool ; Tool 11: with 3000 or more, the menu $9F41 asks coal (3000) or nuclear (5000)
+> L1 8.
+$74DC PowerPlantPay
+$74E6 b SeaportBuilding 16 ; The seaport, 4 x 4
+$74F6 c SeaportTool ; Tool 12: 5000
+$7507 b AirportBuilding 36 ; The airport, 6 x 6
+$752B c AirportTool ; Tool 13: 10 000
+
+@module cityaccess ; The city's arrays and cell helpers
+@about Grid48 and Grid24 over the coverage, pollution and traffic arrays, CellFlagsOf, the building writers, the power bitmap, MapToRowCol, Div8, BuildingValue, the directions and the cell stack, NextMonth.
+$753C w GridBase 1 ; The array Grid48 and Grid24 read
+
+$753E c Grid48 ; A = GridBase[48 (B / 2) + C / 2]: a 48 x 48 array over 2 x 2 cells
+> HL its address. L1 763 487.
+$755A c Grid24 ; A = GridBase[24 (B / 4) + C / 4]: a 24 x 24 array over 4 x 4 cells
+> L1 40 571.
+$7579 c PollutionAt ; Grid48 of Pollution $ADD0
+$7581 c TrafficAt ; Grid48 of Traffic $B6D0
+$7589 c PoliceAt ; Grid24 of PoliceCover $AB90
+$7591 c FireAt ; Grid24 of FireCover $A950
+
+$7599 c CellFlagsOf ; A = CellFlags[A] for a cell below $80, $99 for a building byte
+> L1 11 343 551, the most run routine.
+$75A4 CellFlagsLook
+$75AC CellFlagsEnd
+
+$75B0 c PutZoneBuilding ; Write a 3 x 3 building of tile base DE + 9 A at the map address HL's cell: rows $B3, $83, $83
+> The zones' growth writes its buildings here. L1 3235.
+$75CD c WriteBuildingRow ; One row: A, then the three tile bytes $C0 | (n >> 3) and $C0 | (n AND 7) pairs; HL the next row
+> L1 9705.
+$75EF b PutBuildingSpare 2 ; Two bytes no code reads
+
+$75F1 c PowerBit ; HL = the byte of the power bitmap PowerMap ($BFD0, 12 bytes a row) for cell (B, C); E its bit, D its mask
+> L1 1 380 041.
+$7615 c PowerBitAt ; The same for a map address in HL
+$7635 c MapToRowCol ; B = row, C = column of the map address HL
+> L1 669 924.
+$763D MapToRowColLoop
+
+$7647 c Div8 ; HL = HL / A, remainder in A
+> L1 16 469.
+$764B Div8Loop
+$7652 Div8Sub
+$7654 Div8Next
+$7657 b DivLeftover 17 ; Leftover: an older copy of a divide (LD C,L ... RET), no code runs it
+
+$7668 c Max2x2 ; A = the largest of the 2 x 2 bytes of a 48-wide array at HL
+> L1 27 088.
+$766C Max2x2Row
+$766F Max2x2Cell
+$7674 Max2x2Next
+
+$7682 b BuildingValues 12 ; By building routine (BuildingKinds' second byte): the class TripArrived matches against TripTargets (9 R, 10 C, 11 I; police 0, fire 1, church 2, hospital 3)
+@res tables/BuildingValues.bin
+
+$768E c BuildingValue ; A = the value of the cell at HL for its neighbours: a building's kind class, 9 for a developed zone cell; carry for nothing
+> L1 191 120.
+$769D BuildingValueTop
+$76A7 BuildingValueKind
+$76B3 BuildingValueLook
+$76BD BuildingValueFound
+$76C9 BuildingValueCell
+$76D9 BuildingValueNone
+
+$76DC b Directions 8 ; The four steps (column, row): up, right, down, left
+$76E4 c NeighbourAddr ; HL = the map address of the neighbour A of BC (BC moved)
+$76ED c StepDir ; BC = BC + Directions[A]
+> L1 392 992.
+
+$76FD b CellStackCount 1 ; The cells on CellStack (at $801D)
+$76FE c PushCell ; Put BC on CellStack
+$7709 c PopCell ; Take BC from CellStack
+$7714 c CellStackTop ; HL = the free slot of CellStack
+
+$7720 c NextMonth ; Month + 1; after December the year + 1
+> L1 934 in c1's simulation. Month $8F9B, Year $8F9C.
+$772B NextYear
+
+@module movers ; The moving objects: the train, the plane, the tornado; the meltdown
+@about The sprites over the view, the train on the rails, the plane and its crash, the tornado that walks to the centre, the meltdown of a nuclear station.
+$7735 c DrawMover ; Draw the 16 x 16 sprite A (MoverSprites $A884) at map cell (B, C), if it is in the view and its row is drawn this pass
+> The sprite is ORed in with a one-pixel outline cut from the screen. L1 2297.
+$776C DrawMoverLine
+
+$778F c DrawMovers ; Each pass: the train (not under a rail bridge), the plane and the tornado, if they are out
+> The plane is sprite 0, the train 3 or 4 (by its direction), the tornado 1 or 2 at random (LD A,R). L1 158 076.
+$77B3 DrawMoversPlane
+
+$77D3 b TrainCell 2 ; The train ($77D3-$77DB): its cell (column, row), sprite, out flag, the way it came, turn, tries, steps
+$77D5 TrainSprite
+$77D6 TrainOut
+$77D7 TrainBack
+$77D8 TrainTurn
+$77D9 TrainDir
+$77DA TrainTries
+$77DB TrainSteps
+
+$77DC c MoveTrain ; Move the train one cell along the rails (CellFlags bit 1), never straight back; gone when it finds none
+> Called by the UI task each pass (L1 9884); it moved in c1 (L1 442 at MoveTrainTry).
+$77F5 MoveTrainStart
+$7806 MoveTrainTry
+$7822 MoveTrainNext
+$783D MoveTrainStep
+$7858 MoveTrainSprite
+
+$785D c StartTrain ; From a rail cell (RailCell $8903): when no train is out, 1 in 64 starts one there
+> The $9312 compare's result is lost (AND A follows): a dead test. L1 134.
+
+$7879 b PlaneOut 1 ; The plane: out flag, cell (column, row), the column it crashes at, the crash timer
+$787A PlaneCell
+$787C PlaneTarget
+$787D PlaneTimer
+
+$787E c MovePlane ; Fly the plane a column left; when the timer runs out, crash: burn a 2 x 2 (CrashCell) and the noise (CrashNoise)
+> L1 9884; the crash L1 0 in the disaster recording? see NOTES.
+$78AF PlaneDone
+$78B4 c CrashCell ; BurnCell ($90C4) at BC
+$78BD c CrashNoise ; 255 NoiseBurst calls with a rising gate: the disaster noise
+$78C1 CrashNoiseLoop
+$78CA c StartPlane ; With no plane out, 1 in 4: a plane from the airport's row at the right edge (column $60) or at the airport
+$78EA StartPlaneSet
+$78F0 StartPlaneHere
+$78FE c AirCrash ; The AIR CRASH disaster: with an airport ($849E), message $19 (AIR CRASH !!!) and a crash timer of 7-22
+$7913 c NuclearMeltdown ; With a nuclear plant ($84A0): message $12 (NUCLEAR MELTDOWN), MeltdownPending, the noise
+
+$7924 b MeltdownPending 1 ; Set by NuclearMeltdown; Meltdown runs at the next pass
+
+$7925 c Meltdown ; The plant catches fire (cell $45 over it all) and 1 in 16 of the 45 x 45 cells round it turn to radiation $59
+> L1 890 (the test).
+$7946 MeltdownRow
+$7949 MeltdownCell
+$795E c Irradiate ; A non-water cell below $80 at BC becomes $59
+$796C c StartTornado ; The TORNADO disaster: message $1A, the tornado on a random land cell of rows and columns 16-79
+$7976 StartTornadoFind
+
+$7995 b TornadoCell 2 ; The tornado: cell (column, row), out flag
+$7997 TornadoOut
+
+$7998 c MoveTornado ; Move the tornado: 1 in 8 toward the city centre ($84A2), else a random step; off when Random gives 0
+> The cell down and right of it is hit: a building burns (BurnBuilding), a flammable cell (CellFlags bit 7) becomes $3A. It stops at water. L1 9884; the work L1 27.
+$79A7 MoveTornadoStep
+$79BE MoveTornadoRow
+$79C7 MoveTornadoCheck
+$79D4 MoveTornadoHit
+$79EA MoveTornadoRandom
+
+@module joysticks ; The Kempston and Sinclair joysticks, the shift scroll
+@about ReadKempston and ReadSinclair fold the joysticks into KeyRows every interrupt (P O A Q SPACE); ShiftScroll moves the view with CAPS SHIFT and 5-8.
+$7A01 c ReadKempston ; Fold the Kempston bits into KeyRows: right -> P, left -> O, down -> A, up -> Q, fire -> SPACE
+> Called by ReadInput ($F792) every interrupt; KempstonFound decides its use. L1 413 183.
+$7A0E KempLeft
+$7A17 KempDown
+$7A20 KempUp
+$7A29 KempFire
+$7A32 c ReadSinclair ; With SYMBOL SHIFT and CAPS SHIFT up: keys 7 -> P, 6 -> O, 8 -> A, 9 -> Q, 0 -> SPACE
+> The Sinclair (Interface 2, port 2) joystick on keys 6-0: 6 left, 7 right, 8 down, 9 up, 0 fire. Run every interrupt (L1 413 183); with a shift down it is skipped, so SYMBOL SHIFT + digit stays the tool keys. Open point 2.
+$7A4B SincLeft
+$7A54 SincDown
+$7A5D SincUp
+$7A66 SincFire
+$7A6F c ShiftScroll ; CAPS SHIFT with 5, 6, 7, 8: scroll the view a cell left, down, up, right, then redraw
+> L1 158 073.
+
+@module maps ; The maps window
+@about The MAPS item: the frame and legend, the layer and area keys, the overview drawn by DrawOverview ($9C57).
+$7A9E c DrawMapsFrame ; The maps window: clear, the frame, the legend and the keys 1-9 (inline texts)
+> L1 5.
+$7AA4 b MapsFrameText 16 ; PrintInline codes of the frame and legend
+@res text/inline/MapsFrame.bin
+$7B09 c DrawMapsKeys
+$7B0C b MapsKeysText 16 ; PrintInline codes: the nine map choices
+@res text/inline/MapsKeys.bin
+$7B4F c DrawMapsEnd ; RET
+$7B50 b MapsCounter 1 ; Counts the passes of the maps window
+
+$7B51 c MapsWindow ; The MAPS menu item: show the overview map, pick a layer with the digit keys, until SPACE
+> L1 5. The overview draws through $9B60, $9B76 and $9C57.
+$7B58 MapsWindowLoop
+$7B7D MapsWindowEnd
+
+@module simulation ; The simulation task: power, coverage, pollution, traffic, land value, crime, demand and the growth of every zone
+@about SimTask runs a pass over the city for ever: PowerFlood from the stations, ScanCity (zones and buildings, the plain cells: fire, flood, radiation, road and rail upkeep), the coverage of police and fire stations, pollution and traffic decay, the demands, the city value, the advice; a month every SpeedMask passes, the budget at the year's end.
+$7B86 c FillBuilding ; Fill the whole building at HL with the cell FillCellCode ($8998)
+> L1 8.
+$7B8F FillBuildingTop
+$7B99 FillBuildingSize
+$7BA2 FillBuildingRow
+$7BA6 FillBuildingCell
+$7BBB c BurnBuilding ; Fill the whole building at HL with the fire cell $3A (L1 -)
+$7BC4 BurnBuildingTop
+$7BCE BurnBuildingSize
+$7BD7 BurnBuildingRow
+$7BDB BurnBuildingCell
+
+$7BEF b CoverKernel 25 ; The 5 x 5 coverage kernel: the shift count of each cell (9: none)
+@res tables/CoverKernel.bin
+$7C08 b FireStrength 1 ; the fire station's strength, 0-15 ($0F in the image; set by ApplyFunding)
+
+$7C09 c StampFire ; Add the fire station's coverage (FireStrength through CoverKernel) into FireCover round the cell
+> L1 228.
+$7C1C StampFireRow
+$7C1F StampFireCell
+$7C31 b PoliceStrength 1 ; The police station's strength, $0F
+$7C32 c StampPolice ; Add the police coverage into PoliceCover
+> L1 233.
+$7C45 StampPoliceRow
+$7C48 StampPoliceCell
+$7C5A c AddPolice ; One cell: A = strength >> (kernel - 1), added and clamped to 15
+$7C5F c AddFire
+$7C62 AddCover
+$7C68 AddCoverShift
+$7C6C AddCoverAdd
+$7C75 AddCoverStore
+
+$7C77 b PollutionKernel 6 ; The 6 x 6 kernel of the sources' pollution: the shift count of each cell (9: none)
+@res tables/PollutionKernel.bin
+$7C9B b TrafficKernel 6 ; The 6 x 6 kernel of the traffic's pollution
+@res tables/TrafficKernel.bin
+$7CBF b PollutionStrength 1 ; the source's strength
+
+$7CC0 c StampPollution ; Add PollutionStrength through the kernel at IX into Pollution round the current cell
+> L1 8425.
+$7CC8 c StampPollutionIX
+> L1 30 375.
+$7CD3 StampPollutionRow
+$7CD6 StampPollutionCell
+$7CE8 c AddPollutionCell ; One cell: A = PollutionStrength >> (kernel - 1), added, clamped to $FF
+$7CF1 AddPollutionShift
+$7CF5 AddPollutionAdd
+$7CFC AddPollutionStore
+
+$7CFE c ZonePollution ; ZonePollutionMax = the largest Pollution of the 2 x 2 at the current cell; summed into PollutionSum ($847A, $847C)
+> L1 24 645.
+$7D1D c ZoneTraffic ; ZoneTrafficMax = the largest Traffic of the 2 x 2 at the current cell
+> L1 2443.
+
+$7D2B w RouteStart 1 ; The road or rail cell next to the zone a trip starts from ($FFFF: none)
+$7D2D RingSize ; the zone's size: width, height (3 x 3, or 4 x 4 and 6 x 6 for the big buildings)
+
+$7D2F c ScanRingSize ; ScanRing for a building of size HL
+$7D34 c ScanRing ; Look at the ring of cells round the zone at BC (3 x 3) and its inside
+> The ring (ScanRingCell): roads and rails count in RingTransport (one of them becomes RouteStart at random), parks ($38, $39) in RingParks, water in RingWater, trees in RingTrees, each adding to RingAmenity (12 for transport, 14 a park, 16 water or trees), capped at $7F. The inside (ScanInsideCell) adds the developed cells' density (cell - $3B) to Density $8869. L1 32 092 + 623.
+$7D3A ScanRingStart
+$7D56 ScanRingTop
+$7D63 ScanRingSides
+$7D6C ScanRingInside
+$7D80 ScanRingBottom
+$7D88 c ScanRingCell ; One ring cell: count it by kind into the Ring counters
+> L1 395 063.
+$7DB2 RingAddAmenity
+$7DBC RingAmenityStore
+$7DC0 RingIsWater
+$7DC8 RingIsPark
+$7DD0 RingIsTrees
+$7DD8 c PickRouteStart ; The first transport cell, then each next one with 1 in 2, becomes RouteStart
+$7DE5 PickRouteStartSet
+$7DEA c ScanInsideCell ; A developed cell (CellFlags bit 6) inside the zone adds cell - $3B to Density
+
+$7E03 c CentreDistance ; A = |CityCentre column - B| + |CityCentre row - C|
+> L1 27 944.
+$7E0D CentreDistanceRow
+$7E15 CentreDistanceSum
+
+$7E17 b RingParks 1 ; ScanRing's counts: parks, water, trees, transport, the amenity
+$7E18 RingWater
+$7E19 RingTrees
+$7E1A RingTransport
+$7E1B RingAmenity
+$7E1C LandValue ; the zone's land value, LandValueOf's result
+
+$7E1D c LandValueOf ; LandValue = 127 - CentreDistance + RingAmenity, for a powered zone with transport and a trip (or traffic 50+); else 0
+> Summed into LandValueSum ($8472, count $8474). L1 33 251.
+$7E36 LandValueScore
+$7E4C LandValueTally
+$7E54 LandValueNone
+$7E5A c CentreCloseness ; A = 127 - CentreDistance, 0 when farther
+$7E68 b CrimeSpare 1 ; One byte no code reads
+$7E69 Crime ; the zone's crime, CrimeOf's result
+
+$7E6A c CrimeOf ; Crime = (255 - LandValue) / 16 - PoliceCover here, not below 0; summed into CrimeSum ($846E, $8470)
+> L1 33 251.
+$7E84 CrimeStore
+
+$7E9A b TaxPenalty 1 ; TaxPenaltyOf's result
+$7E9B c TaxPenaltyOf ; TaxPenalty = 8 x TaxRate ($91E4), plus TaxRate on medium, 2 TaxRate on hard ($A518)
+> L1 33 251.
+
+$7EBF b ZonePollutionMax 1 ; The 2 x 2 maximum of Pollution at the zone
+$7EC0 ZoneTrafficMax ; ... of Traffic
+$7EC1 ZoneScore ; ZoneScoreOf's result, 0-255
+$7EC2 ZoneDemand ; the zone kind's demand (16 bits, signed), added to the score
+
+$7EC4 c ZoneScoreOf ; ZoneScore = LandValue - Pollution - Crime - TaxPenalty + ZoneDemand, clamped 0-255; 0 with pollution 28+ or no land value
+> The heart of the growth: a zone grows when its score is high. L1 33 251.
+$7EE1 ZoneScoreCrime
+$7EE8 ZoneScoreTax
+$7EEF ZoneScoreDemand
+$7EFF ZoneScoreZero
+$7F04 c Clamp8 ; L = HL clamped to 0-255 (negative 0, above 255 255)
+$7F0D Clamp8High
+
+$7F10 b ResLevel 1 ; ResidentialScore's results: the level 0-7 and the building tile base
+$7F11 ResTile
+
+$7F12 c ResidentialScore ; ResLevel = (ZoneScore - 128) / 16 (0 below 128... $0F), ResTile = ZoneScore / 2, or 16 ResLevel + $50 from 128 up
+> L1 17 800.
+$7F26 ResidentialScoreLevel
+$7F43 b ComLevel 1 ; CommercialScore's results: ZoneScore / 25 and 4 times it
+$7F44 ComTile
+$7F45 c CommercialScore
+> L1 6845.
+$7F5D b IndLevel 1 ; IndustrialScore's results: ZoneScore / 31 and 8 times it
+$7F5E IndTile
+$7F5F c IndustrialScore
+> L1 7446.
+
+$7F78 w PowerPlants 16 ; The map addresses of the power stations found (FindPlants), 0 ended
+
+$7F98 c FindPlants ; Scan the map for 4 x 4 building tops ($B4) of type 6 (coal) or 8 (nuclear) into PowerPlants
+> L1 1101 (once a simulation pass).
+$7FA2 FindPlantsLoop
+$7FBE FindPlantsFound
+
+$7FCC b Brownout 1 ; Counts the power stations that ran out of capacity this pass (BROWNOUTS DETECTED)
+
+$7FCD c PowerFlood ; Clear PowerMap, then flood the power from each station over conducting cells: nuclear 1350 cells, coal 450
+> L1 1101. Every powered cell costs one of the station's budget; a station that runs out stops its flood (Brownout + 1).
+$7FE5 PowerFloodPlant
+$7FFD PowerFloodBudget
+
+$8015 b FloodAbove 1 ; The flood's span flags: the row above and below already queued
+$8016 FloodBelow
+$8017 FloodStart ; the station's cell (column, row)
+$8019 FloodBudget ; the cells it may still power
+$801B FloodSP ; SP saved, to leave the flood at once
+$801D CellStack ; 128 cell pairs: the flood's spans; also PushCell's stack
+$811D c FloodFill ; A scan-line flood fill from FloodStart over IsConductive cells, each made powered (PowerCell)
+> L1 1162.
+$8136 FloodFillPop
+$813D FloodFillLeft
+$8145 FloodFillSpan
+$8152 FloodFillRun
+$816D c FloodMark ; Queue the cell above or below once per run of conducting cells (flag at HL)
+$8177 c FloodPush ; Push BC on the span stack, unless it is full ($811D)
+$818C FloodMarkClear
+$818F c FloodPop ; BC from the span stack
+$819A c IsConductive ; Z set when the cell at BC is on the map, not powered yet and a building or CellFlags bit 3
+> L1 1 057 667.
+$81B8 IsConductiveYes
+$81BC IsConductiveNo
+$81C2 c PowerCell ; Set the cell's bit in PowerMap and count FloodBudget down; at 0 leave the flood (SP back) with Brownout + 1
+
+$81DD b CityValue 3 ; The city's assessed value (24 bits) and the last pass's ($81E0)
+$81E0 CityValueLast
+
+$81E3 c AssessCity ; CityValue = rails x 5 + roads x 10 + police x 1000 + fire x 1000 + hospitals x 400 + stadiums x 3000 + seaports x 5000 + airports x 10 000 + coal x 3000 + nuclear x 6000
+> L1 1089.
+$824F c AddValue ; CityValue = CityValue + HL x DE
+
+$8265 w PopBalance 1 ; 4 (R - C - I): read by the evaluation
+
+$8267 c PopBalanceOf
+$827C w ResDemand 1 ; The three demands (signed), read as ZoneDemand: R, C, I
+$827E ComDemand
+$8280 IndDemand
+
+$8282 c DemandOf ; R = 8 (C + I - R) + 4 stadiums - 26; C = 8 ((R + I) / 2 - C) + 4 airports - 30; I = 8 ((R + C) / 2 - I) + 4 seaports - 30
+> R, C, I are the populations ResPop $8446, ComPop $8448, IndPop $844A. L1 1089.
+
+$82EE c AddPopulation ; Population ($8443, 24 bits) = Population + 16 DE
+
+$830C c StartSimulation ; Make the simulation task (entry SimTask, SP $F6EE), the date January 1902, Funds by the level: 20 000, 10 000, 5000
+> L1 13.
+
+$835D b SimPaused 1 ; Nonzero: the zones are scanned but do not grow (the pause)
+$835E SimPass ; the simulation pass counter
+
+$835F c SimTask ; The simulation task: init, then for ever one pass over the city; a month every SpeedMask + 1 passes
+> A pass: ClearCounters, SetSpeed, PowerFlood, ScanCity (the growth), CoverStations (every 4th), DecayPollution, DecayTraffic, DemandOf, Averages2, AssessCity, PopBalanceOf, ServiceNeeds, Advise ($99AD), Averages; when SimPass AND MonthMask is 0, MonthEnd ($8E94) and NextMonth. c1: L1 12 entries, 1089 passes.
+$8362 SimTaskPass
+$839B SimTaskNext
+
+$83A1 c InitSimulation ; Clear the arrays $A950-$C44F, the counters and the disasters; city centre 32, 32; strengths $0F
+> L1 25.
+
+$8443 b Population 3 ; The pass's counters, cleared by ClearCounters ($8443-$847F)
+$8446 ResPop ; (16 bits each from here) residential population
+$8448 ComPop
+$844A IndPop
+$844C PoliceCount
+$844E FireCount
+$8450 ChurchCount
+$8452 HospitalCount
+$8454 NuclearCount
+$8456 CoalCount
+$8458 StadiumCount
+$845A AirportCount
+$845C SeaportCount
+$845E UnpoweredZones
+$8460 PoweredZones
+$8462 BuildingCount
+$8464 TransportUpkeep
+$8466 Count8466
+$8468 Count8468
+$846A RoadCount
+$846C RailCount
+$846E CrimeSum
+$8470 CrimeCount
+$8472 LandValueSum
+$8474 LandValueCount
+$8476 TrafficSum
+$8478 TrafficCount
+$847A PollutionSum
+$847C PollutionCount
+$847E FireCells
+
+$8480 c ClearCounters ; Zero $8443-$847F; the city's extent to empty (min $FF, max 0)
+
+$849C w LastFireCells 1 ; Copies of the last pass for the disasters: fires, airports, nuclear plants; the city centre
+$849E LastAirports
+$84A0 LastNuclear
+$84A2 CityCentre ; column, row
+
+$84A4 c Averages ; CityCentre = the middle of the extent; the last-pass copies; AvgPollution = PollutionSum / count
+> L1 1089.
+$84DD b AvgPollution 1 ; Pollution's average
+
+$84DE c DecayPollution ; Every second pass: each Pollution byte - 64? ($4000: D 64, floor E 0); AvgPollution = average / 4
+> L1 1089 (542 decays).
+$84ED DecayPollutionLoop
+$84F2 DecayPollutionStore
+
+$850C c ClearCover ; Zero FireCover and PoliceCover ($A950-$ADCF)
+$851A b AvgTraffic 1 ; Traffic's average / 4
+
+$851B c DecayTraffic ; Sum the traffic, then each Traffic byte: below 24 to 0, 200 and up - 34, else - 24
+> L1 1089.
+$8521 DecayTrafficLoop
+$8539 DecayTrafficCell
+$8548 DecayTrafficSlow
+$854D DecayTrafficZero
+$854F DecayTrafficNext
+
+$8568 b TripMade 1 ; 1 when the zone's trip reached its destination
+$8569 TripMask ; the CellFlags bits the trip may travel (road 4, rail 2), from RouteStart's cell
+
+$856A c MakeTrip ; From RouteStart walk the roads or rails (TripWalk) to a zone of the wanted kind; on success the path gets traffic
+> L1 9735.
+$8599 c AddTripTraffic ; A road trip: each cell of the path + 20 Traffic (to $F0) and pollution (strength 5, TrafficKernel)
+> L1 7281.
+$859F AddTripTrafficLoop
+$85B3 AddTripTrafficCap
+$85B5 AddTripTrafficStore
+$85C4 b TripLeftover 16 ; Leftover code no one calls (XOR A; LD ($8568),A; LD HL,($8462); INC HL ...)
+$85D4 TripBack ; the direction the walk came from
+$85D5 TripSteps
+
+$85D6 c TripWalk ; Up to 30 steps of TripStep, each checked for arrival (TripArrived); carry when lost
+> L1 9735.
+$85DF TripWalkLoop
+$85EA TripWalkBack
+$85F6 TripWalkStep
+$85FD TripWalkCount
+$8604 TripWalkLost
+
+$8606 b TripTurn 1 ; TripStep's turn, direction and tries
+$8607 TripDir
+$8608 TripTries
+
+$8609 c TripStep ; One step: from a random direction try the four, not back, onto a cell with TripMask; every second step pushed
+> L1 67 734.
+$8616 TripStepTry
+$8638 TripStepNext
+$8644 TripStepGo
+
+$865E b TripTargets 2 ; The two BuildingValue kinds a trip may end at
+
+$8660 c TripArrived ; Carry clear when a neighbour's BuildingValue is one of TripTargets
+$8662 TripArrivedLoop
+$8677 TripArrivedNext
+$867D TripArrivedYes
+
+$8680 c CoverStations ; Every 4th pass: ClearCover, then each powered 3 x 3 top ($B3: police type 0, fire type 1) stamps its coverage
+> L1 1090 (273 stamping).
+$8690 CoverStationsRow
+$8694 CoverStationsCell
+$86AE CoverStationsNext
+$86B7 c CoverPolice
+$86BF c CoverFire
+
+$86C5 b ZonePowered 1 ; ScanCity's state of the current cell: powered, kind (1 building, 2 zone), building type, zone centre
+$86C6 CellKind
+$86C7 BuildingType
+$86C8 ZoneCentre
+
+$86C9 c ScanCity ; Every map cell: buildings' power (BuildingPower), zones' power (ZonePower), then their step (ZoneStep) and the plain cells (CellStep)
+> L1 1101; 10 084 466 cells.
+$86D0 ScanCityRow
+$86D4 ScanCityCell
+$86F3 ScanCityStep
+$8703 ScanCityNext
+
+$870C c BuildingPower ; A building's top-left byte: bit 4 = powered (PowerMap); BuildingType; stations count as powered
+$8739 BuildingPowerEnd
+$873B b ZoneCentreCell 1 ; ZonePower's new centre cell
+
+$873C c ZonePower ; A zone centre: $51-$53 when powered, $54-$56 (blinking) when not
+$8760 ZonePowerKind
+$8779 ZonePowerStore
+
+$8785 w CurCell 1 ; The cell ScanCity is at: column, row; then its map address
+$8787 CurAddr
+
+$8789 c ZoneStep ; A zone or building: count it powered or not, widen the extent, then the zone's growth or the building's routine
+> L1 36 698.
+$87AA c CountPowered ; PoweredZones or UnpoweredZones + 1
+$87BB CountPoweredEnd
+$87BC CountUnpowered
+$87C7 CountUnpoweredEnd
+$87C8 b ExtentCols 2 ; The city's extent: least and greatest column, then row
+$87CA ExtentRows
+$87CC c WidenExtent ; ExtentCols and ExtentRows take in CurCell
+$87DB c MinMax ; (HL) = min, (HL+1) = max with A
+$87DF MinMaxHigh
+$87E4 c ZoneByKind ; Density 0; the R, C or I zone's growth
+
+$87FB w BuildingRoutines 12 ; The routines of the building kinds (BuildingKinds' second byte)
+$8813 b BuildingKinds 4 ; Per building type: type, routine (BuildingRoutines), level, density; $FF $FF ended
+@res tables/BuildingKinds.bin
+$8869 b Density 1 ; the current zone's density (ScanInsideCell) or the building's (BuildingKinds)
+$886A BuildingLevel ; the building's level (BuildingKinds' third byte)
+
+$886B c BuildingStep ; Look up the building's type in BuildingKinds and jump to its routine
+$8875 BuildingStepLook
+$887F BuildingStepFound
+
+$8898 c CellStep ; A plain cell: fire $45, flood $44, radiation $59; roads and rails counted and decayed
+> L1 10 084 463.
+$88C3 CellStepEnd
+$88C5 b RoadDecay 1 ; The mask of the roads' decay (Random AND it = 0 crumbles a cell); $FF none
+$88C6 c RoadCell ; Count the road (RoadCount, upkeep + 1, a bridge + 3); with RoadDecay it may crumble to $3A
+$88D4 RoadCellCount
+$88DF RoadCellUpkeep
+$88EA RoadCellBridge
+$88F5 RoadBridgeUpkeep
+$8901 RoadCellEnd
+$8902 b RailDecay 1 ; The same for the rails
+$8903 c RailCell ; Count the rail (RailCount, upkeep + 4, a bridge + 6), StartTrain; with RailDecay it may crumble
+$8910 RailCellCount
+$891B RailCellUpkeep
+$8927 RailCellTrain
+$8935 RailBridgeUpkeep
+$8941 RailCellEnd
+$8942 c RadiationCell ; $59: with 1 in 4096 rubble, else pollution $40 round it
+$8956 c ToRubble ; the cell becomes $3A
+$895C c ToLand ; the cell becomes land 2
+$8962 c FireCell ; $45: FireCells + 1; put out with a chance of (FireCover + 1) / 16, else Spread
+$896D FireCellCover
+$8985 b FloodLeft 1 ; The flood's spreads left (50)
+$8986 c FloodCell ; $44: while FloodLeft, spread the water; then the cell dries to land
+$8998 b SpreadCode 1 ; Spread's cell ($45 fire, $44 flood), its kind (0 fire) and its neighbour count
+$8999 SpreadFlood
+$899A SpreadCount
+$899B c Spread ; Each of the four neighbours that burns (flags bit 7, a building) or floods: 1 in 8 catches; a fire with nothing round dies with 1 in 4
+$89A1 SpreadLoop
+$89C2 SpreadNear
+$89D3 SpreadNext
+$89EA c SpreadTo ; The neighbour at HL takes SpreadCode: a whole building (FillBuilding), else the cell (not the bridges, not water for floods)
+$89F3 SpreadToCell
+
+$8A08 b ZoneFrame 3 ; The eight cells round a zone centre: row step, column step, the empty frame cell ($49-$50)
+@res tables/ZoneFrame.bin
+
+$8A20 c PickFrameCell ; BC = a random one of the eight frame cells round CurCell; IX its ZoneFrame row
+> L1 51 171.
+$8A40 c GrowZone ; GrowTries ($8F67) times: a frame cell one house up (GrowCell); stop at the first that grows
+$8A47 GrowZoneLoop
+$8A53 c GrowCell ; A frame cell (CellFlags bit 4): the empty frame becomes house $3C, a house $3C-$42 one more; $43 full (carry)
+> L1 6862.
+$8A66 GrowCellUp
+$8A70 c DeclineZone ; GrowTries times: a frame cell one house down (DeclineCell)
+$8A77 DeclineZoneLoop
+$8A83 c DeclineCell ; A house one down; $3C goes back to the empty frame cell; an empty frame cell does not decline (carry)
+> L1 44 309.
+$8AA0 DeclineCellStore
+
+$8AA3 c ResidentialStep ; The R zone: ResPop + 1, Population + 16 Density, a trip to C or I (when Random AND 63 < Density), the score; grow or decline
+> Grows while Density < ResTile (ZoneScore / 2), else declines; a full zone (Density 63+) becomes a 3 x 3 building: a ChurchNeed or HospitalNeed building first ($1B, $12), else the residential block (tile $88). L1 17 802.
+$8AB7 ResidentialPop
+$8ADA ResidentialScoreIt
+$8AED ResidentialGrow
+$8AFE ResidentialBuild
+$8B17 ResidentialBuildHospital
+$8B27 ResidentialBuildChurch
+
+$8B37 c ResBuildingStep ; A residential block (types $11-$14): count, the trip, the score; with the growth chance a block of level ResLevel / 2, or back to a full zone
+> Below score 128 (ResLevel $0F) the block goes back to the houses zone ResRevertZone. Not run in any recording (no block grew there): known only from the code.
+$8B42 ResBuildingPop
+$8B6C ResBuildingScore
+$8B89 ResBuildingLevel ; JR NC: ResLevel 8 and up, back to the houses
+$8B97 b ResRevertZone 9 ; The full R zone a block falls back to: houses $40-$43 round the powered centre $51
+$8BA0 ResEmptyZone 9 ; the empty R zone, centre $51: a hospital or church falls back to it
+$8BA9 c ResRevert ; Put ResRevertZone (or, from $8BAD, the pattern at IX) at the building
+$8BAD ResRevertAt
+$8BBA b ComBuildings 10 ; By ComLevel - 1: the commercial building variant (0-3)
+@res tables/ComBuildings.bin
+
+$8BC4 c CommercialStep ; The C zone: ComPop + 1; powered: ring, a trip to R or I (1 in 32 - Density), the score; with the C chance a building of its level, or back to an empty zone
+> L1 2575.
+$8BCF CommercialPowered
+$8BE0 c ComBuildingStep ; a commercial building (types $15-$18): the same from the building's corner
+$8BEB CommercialRing
+$8C0C CommercialScoreIt
+$8C41 b ComEmptyZone 9 ; The empty C zone, centre $52 (powered)
+$8C4A c ComRevert ; Put ComEmptyZone at the zone
+> L1 126.
+
+$8C5B c IndustrialStep ; The I zone: IndPop + 1; powered: ring, a trip to R, the score (pollution not counted); with the I chance a building of its level, or back; pollution 4 x IndLevel
+> L1 1795.
+$8C66 IndustrialPowered
+$8C77 c IndBuildingStep ; an industrial building (types $1A-$1D)
+$8C82 IndustrialRing
+$8CA3 IndustrialScoreIt
+$8CD5 IndustrialPollute
+
+$8CE0 c NoGrowthAlone ; A = 0 when last month's population (LastPop) was 0, else A kept: a city of nobody falls back
+$8CEE NoGrowthAloneZero
+$8CF1 b IndEmptyZone 9 ; The empty I zone, centre $53 (powered)
+$8CFA c IndRevert ; Put IndEmptyZone at the zone
+> L1 719.
+
+$8D0B c CoalStep ; A coal station: CoalCount + 1, pollution $FF round it
+$8D16 CoalPollute
+$8D2F c NuclearStep ; A nuclear station: NuclearCount + 1, Meltdown (when pending), pollution $30
+$8D3A NuclearPollute
+$8D56 c PoliceStep ; A police station: PoliceCost ($8466) + 100; powered, PoliceCount + 1
+$8D62 PolicePowered
+$8D72 PoliceStepEnd
+$8D73 c FireStep ; A fire station: FireCost ($8468) + 100; powered, FireCount + 1
+$8D7F FirePowered
+$8D8F FireStepEnd
+$8D90 c ChurchStep ; Type 2: ChurchCount + 1; unpowered, with the R chance back to an empty R zone (not run in the recordings)
+$8D9B ChurchCounted
+$8DB4 ChurchEnd
+$8DB5 c HospitalStep ; Type 3: HospitalCount + 1; the same
+$8DC0 HospitalCounted
+$8DD9 HospitalEnd
+
+$8DDA c StadiumStep ; A powered stadium with transport: 1 in 32 a trip to R; when it arrives StadiumCount + 1
+> L1 648.
+$8E0F StadiumStepEnd
+$8E10 c SeaportStep ; A powered seaport with water and transport round it: 1 in 32 a trip to I; SeaportCount + 1; pollution $60
+$8E4A SeaportPollute
+$8E52 c AirportStep ; A powered airport (6 x 6): 1 in 32 a trip to C; AirportCount + 1; StartPlane
+$8E87 AirportPlane
+
+$8E8A b LastPop 3 ; The population at the last month's end; at the year's ends ($8E8D two years back, $8E90 last year)
+$8E8D PopYearBefore
+$8E90 PopLastYear
+$8E93 BudgetDue ; 1 while the UI task shows the budget (the year's end without the auto budget)
+
+$8E94 c MonthEnd ; LastPop; in December: the year's populations, the costs to the budget ($9311-$9315), the budget (shown, or auto), Funds, the evaluation
+> L1 934; the December branch L1 77.
+$8EE1 MonthEndWait ; wait for the UI task's budget window to clear BudgetDue
+$8EE9 MonthEndAuto
+$8EEF MonthEndFunds
+
+$8F01 b AvgCrime 1 ; Averages2's results: 2 x the crime average, the land value average / 8, the building count
+$8F02 AvgLandValue
+$8F03 LastBuildings
+
+$8F05 c Averages2 ; AvgCrime, AvgLandValue, LastBuildings
+$8F2F b HospitalNeed 1 ; ServiceNeeds' results: ResPop / 18 - HospitalCount and ResPop / 20 - ChurchCount (0 when not positive)
+$8F30 ChurchNeed
+$8F31 c ServiceNeeds
+$8F4C ServiceNeedsChurch
+
+$8F67 b GrowTries 1 ; The speed's five values, copied from SpeedTable by SetSpeed: the growth tries, the I chance mask, the C chance mask, a fourth (no reader), the month mask
+$8F68 IndChance
+$8F69 ComChance
+$8F6A SpeedSpare
+$8F6B MonthMask
+$8F6C b SpeedTable 5 ; four speeds of five: fast (8, 1, 15, 1, 0), normal (4, 3, 31, 3, 1), slow (3, 7, 63, 7, 3), paused (all $FF)
+@res tables/SpeedTable.bin
+
+$8F80 c SetSpeed ; Copy SpeedTable[Speed $A3AB] to GrowTries-MonthMask
+> L1 1101.
+
+@module uitask ; The UI task
+@about Funds, the date, PassCount; UiTask builds the screen and loops: the pointer, the click, one view row, the periodic work (funds, date, tile animation, disasters, advice), the budget window when due, ENTER for the maps.
+$8F97 b Funds 3 ; The money (24 bits): 20 000 in the image
+$8F9A FundsSpare
+$8F9B Month ; 0-11
+$8F9C Year ; 16 bits, 1902 in the image
+$8F9E PassSpare
+$8F9F PassCount ; the UI task's pass counter
+
+$8FA0 c UiTask ; The UI task's start: the simulation task made, the status panel, the start menu (A51C), the landscape, the view; then the UI loop
+> L1 1 (after the mover).
+$8FCC UiLoop ; draw the pointer, wait (2000 loops), move it, the movers, the click, one view row, the periodic work, ENTER for the maps
+$8FD5 UiDelay
+$8FDA UiPass
+
+$901D c Periodic ; By PassCount: the advice every 32, the movers every 16, and in the 16-pass cycle Funds, the date, two tile animations, a disaster, the disaster draw
+> L1 158 073.
+$904D c MoveDisasters ; The plane, the tornado, the train
+$9056 w LastFunds 1 ; Funds' low 16 bits as last shown
+$9058 c FundsChanged ; When Funds changed: redraw the palette and the tool
+$906D c AnimateFire ; Tile $45 (fire, $EC90) from one of two frames ($ED38, $ED40) by PassCount bit 4 and Random
+$9084 AnimateFireCopy
+$908A c AnimateFlood ; Tile $44 (flood, $EC88) from $ED48 or $ED50
+$90A1 AnimateFloodCopy
+@module disasters ; The disasters
+@about Fire, flood, earthquake (both, with a long noise), the air crash, the tornado and the meltdown: RandomDisaster draws one with 1 in 2048 every 16 UI passes unless DISABLE ALL; the DISASTERS menu sets DisasterDue directly.
+$90A7 c FireDisaster ; message $16 (FIRES HAVE BEEN DETECTED), the noise, Ignite 1 in 128 cells
+$90AF c StartFires ; Every map cell: 1 in 128 Ignite
+$90B5 StartFiresLoop
+$90C4 c Ignite ; A flammable cell (flags bit 7) but trees: fire $45
+$90D5 c FloodDisaster ; message $17 (COASTAL FLOODING DETECTED), the noise, the coast floods
+$90DD c StartFlood ; Every coast cell (1-5): 1 in 32 flood $44; FloodLeft = 50
+$90E3 StartFloodLoop
+$90FC StartFloodNext
+$9108 c FireNoise ; 127 NoiseBursts, gate falling
+$910A FireNoiseLoop
+$9116 c FloodNoise ; 127 NoiseBursts, gate rising
+$9118 FloodNoiseLoop
+$9125 c Earthquake ; message $18 (MAJOR EARTHQUAKE DETECTED), a long noise, fires and the flood
+$912E EarthquakeNoise
+$9144 c RandomDisaster ; Unless disasters are off ($A43D): with 1 in 2048 a disaster 1-6 (the meltdown with 1 in 8 of its draws)
+$9169 RandomDisasterSet
+$916D b DisasterDue 1 ; The disaster RunDisaster starts (0 none)
+$916E c RunDisaster ; 1 fire, 2 flood, 3 earthquake, 4 air crash, 5 tornado, 6 meltdown
+@module budget ; The budget
+@about The year's budget: the tax income from last year's population and the tax rate, the three requests (transport, police, fire) funded by percent and capped by the money, the window, and ApplyFunding which turns the shares into the roads' decay and the stations' strength.
+$9194 c BudgetWindow ; The year's budget window (the UI task, when BudgetDue): BudgetFigures, the window $91BC with the hook $9346; then the view
+> L1 9.
+$91BC b BudgetWindowText 16 ; The budget window's menu description: FISCAL BUDGET, the tax rate, the three fundings, the cash lines, GO WITH THESE FIGURES
+> The numbers live inside the text (menu codes 5, 6, 7, section DrawMenu): TaxRate and the three funding percentages are the bytes the player edits.
+@res text/menus/Budget.bin
+$91E4 TaxRate ; the tax rate, 0-20 (7 in the image): code 7's value byte
+$9256 TransportPercent ; the transport funding, 0-100 %
+$926F PolicePercent
+$9288 FirePercent
+$930E b TaxIncome 3 ; 24 bits: last year's population / 100 x TaxRate
+$9311 TransportCost ; the year's requests (16 bits each): transport upkeep, police, fire
+$9313 PoliceCost
+$9315 FireCost
+$9317 TransportFunded ; what is granted: the request x percent / 100, capped by the money
+$9319 PoliceFunded
+$931B FireFunded
+$931D FundedTotal ; 24 bits
+$9320 CashFlow ; 24 bits: TaxIncome - FundedTotal
+$9323 FundsBefore ; 24 bits
+$9326 FundsAfter ; 24 bits: the new Funds
+
+$9329 c TaxIncomeOf ; TaxIncome = PopLastYear / 100 x TaxRate
+> L1 77.
+$9346 c BudgetHook ; The budget window's menu hook: recompute and print the figures while the player edits them
+$9357 b HookSpare 1 ; One byte no code reads
+$9358 c BudgetFigures ; FundsBefore, the three fundings (request x percent), each capped so the money does not go below 0, the totals
+> L1 1918.
+$937C c FundTransport
+$9389 c FundPolice
+$9396 c FundFire
+$93A3 c BudgetTotals ; FundedTotal, CashFlow, FundsAfter = Funds - FundedTotal + TaxIncome
+$93F6 b CapWork 3 ; 24 bits: the money left for a funding
+$93F9 c CapTransport ; TransportFunded at most FundsBefore + TaxIncome
+$9429 c CapPolice ; PoliceFunded at most what is left after the transport
+$9462 c CapFire ; FireFunded at most what is left after both
+$94A4 c PrintBudget ; Print the figures into the budget window
+> L1 1841.
+$94FF c Percent ; HL = HL x A / 100
+$950A b DecayMasks 16 ; By funded / (cost / 8), 0-15: the roads' and rails' decay mask ($0F crumbles most, $FF none)
+@res tables/Funding.bin
+$951A StrengthLevels ; and the police and fire strength (0-15)
+
+$952A c ApplyFunding ; The year's fundings to the city: RoadDecay and RailDecay, PoliceStrength, FireStrength by the share granted
+> A request below 20 counts as fully paid. The fire branch tests TransportCost against 20, not FireCost (a slip: with transport costs below 20 the fire is always fully strong). L1 74.
+$9555 ApplyPolice
+$9586 ApplyFire
+$95B4 ApplyFireStore
+@module evaluation ; The evaluation and the advice
+@about The EVALUATION window: the category (from 2000, 10 000, 50 000, 100 000, 500 000 people), the problems, the score and the poll; Advise picks the advice line every pass.
+$95B8 c EvaluationWindow ; The WINDOWS menu's EVALUATION: the window $95D7 with the hook Evaluate
+$95D7 b EvaluationText 16 ; The evaluation window: the poll, the worst problems, population, migration, value, category, level, score
+@res text/menus/Evaluation.bin
+
+$9737 c Evaluate ; The evaluation hook: the category, the figures; with a population, the problems, the score and the poll
+> L1 18.
+$9750 b CategoryLimits 3 ; The five population limits (24 bits): 2000, 10 000, 50 000, 100 000, 500 000
+@res tables/CategoryLimits.bin
+$975F b Category 1 ; 0 VILLAGE, 1 TOWN, 2 CITY, 3 CAPITAL, 4 METROPOLIS, 5 MEGALOPOLIS
+
+$9760 c CategoryOf ; Category = how many CategoryLimits PopLastYear reaches (not below)
+> Only the evaluation window computes it, from the population at the last year's end: the category changes nothing in the game. L1 18.
+$976A CategoryLoop
+$978F b Migration 3 ; PopLastYear - PopYearBefore (24 bits)
+$9792 c PrintEvalFigures ; The level, the category, the population, the migration, the assessed value, then 00 after the score
+$97F8 c PrintZero ; Print "0" and step on
+$9801 b ProblemSum 2 ; The problems added up
+
+$9803 c Problems ; Each problem 0-100 printed (red from 20): traffic AvgTraffic / 2, pollution / 2, crime / 4, fire 5 FireCells, taxes 4 (rate - 3), house prices AvgLandValue, unemployment PopBalance; plus UnpoweredZones / 4 and 4 for an advice
+> L1 18.
+$98DC ProblemsEnd
+$98E4 c Clamp100 ; HL to 0-100
+$98EE Clamp100Low
+$98F2 Clamp100High
+$98F6 Clamp100Zero
+$98FA w CityScore 1 ; 0-1000
+$98FC c ScoreOf ; CityScore = 4 (250 - 3 ProblemSum), 0-1000
+$9919 c Clamp1000
+$9922 Clamp1000Pos
+$992D Clamp1000End
+$992F b PollYes 1 ; The poll: of 100 Random draws (0-1023), how many are below CityScore (YES) and not (NO)
+$9930 PollNo
+$9931 c Poll
+$9939 PollLoop
+$9951 PollNo1
+$9954 PollCount
+$9970 c PrintProblem ; HL in 3 digits at BC, attribute $42 (red) from 20
+$997B PrintProblemAt
+$998B c PrintPercent ; HL in 3 digits at BC
+$9996 b Advice 1 ; The advice shown (0 none, 1-$15): GameTexts 23 + Advice
+
+$9997 c ShowAdvice ; Print GameTexts[23 + Advice] at row 6, column 1, padded to 29
+> L1 4944.
+$99AA b AdviceSpare 1 ; One byte no code reads
+$99AB AllZones ; ResPop + ComPop + IndPop (16 bits)
+
+$99AD c Advise ; The advice: the first rule that fires sets Advice (the later ones may overwrite, CALL NC)
+> In order: R at most a quarter of all zones (1), C at most an eighth (2), I (3); then, with people: roads fewer than zones from 10 zones (4), rails from 50 (5), no power station from 10 (6), no stadium from 20 R (7), no seaport from 30 I (8), no airport from 30 C (9), no fire station from 30 zones (10), no police from 25 (11), tax 12+ (12), transport underfunded (13), fire (14), police (15), 10+ unpowered zones (16), a brownout (17), pollution 60+ (19), crime 20+ (20), traffic 60+ (21). L1 1089.
+$9A3A AdviseRails
+$9A54 AdvisePower
+$9A6E AdviseStadium
+$9A82 AdviseSeaport
+$9A96 AdviseAirport
+$9AAA AdviseFire
+$9ABE AdvisePolice
+$9AD2 AdviseTax
+$9AF2 AdviseFireFunds
+$9B03 AdvisePoliceFunds
+$9B14 AdviseUnpowered
+$9B4A c SetAdvice ; Advice = A (the disasters' messages too)
+
+@module overview ; The maps window's overview
+@about The overview of a 48 x 48 area at 4 x 4 pixels a cell, coloured by the chosen layer.
+$9B4E b MapKeyCells 2 ; The nine map keys' screen cells (row, column): the keys 1-9 of the maps window
+$9B60 c HighlightMapKey ; Flip the bright bit of the current key's attribute
+$9B76 c HighlightLayer ; XOR $46 over the current layer's row of the legend
+$9B83 HighlightLayerLoop
+$9B8B c MapsKeys ; Every 4th pass: Q / A change the layer; a digit 1-9 the map area
+$9BA3 MapsKeysDigit
+$9BB7 MapsLayerUp
+$9BBD MapsLayerDown
+$9BC3 c OverviewCell ; Draw one cell as 4 x 4 pixels: every second pixel of every second line of its tile (or the building tile)
+$9BD6 OverviewAt ; LD DE,n: the screen address (operand $9BD7)
+$9BE8 OverviewBuilding
+$9BF8 b OverviewSpare 1
+$9BF9 c ShrinkLine ; One tile line pair to 4 pixels: bits 7, 5, 3, 1, into the left or right nibble
+$9C24 ShrinkLineStore
+$9C2B b MapArea 1 ; The map area shown, 0-8 (the digit - 1)
+$9C2C OverviewSpare2
+$9C2E OverviewOrigin ; the area's top-left cell (column, row)
+$9C30 RightNibble ; 1 when the cell goes in the right half of the byte
+$9C31 OverviewCellAt ; the cell drawn (column, row)
+$9C33 MapAreaAddrs ; the nine areas' map addresses (48 x 48 cells, 24 apart)
+$9C45 MapAreaCells ; their top-left (row, column)
+$9C57 c DrawOverview ; Draw the 48 x 48 cells of MapArea at 4 x 4 pixels, coloured by the layer; stop at a key
+> L1 105.
+$9C86 DrawOverviewRow
+$9C93 DrawOverviewCell
+$9C9F DrawOverviewDraw
+$9CBE DrawOverviewNext
+$9CFA b LayerColours 8 ; The attribute of each layer level 1-7 (paper colours)
+$9D02 c LayerColour ; The attribute LayerColours[A] (0: none) for the cell
+$9D0C c PutLayerAttr ; The attribute C at the overview cell's attribute address
+$9D1A PatternMark ; a 4 x 4 dot pattern over the cell (the power and transport layers)
+$9D2C PatternMarkAt
+$9D43 b MapLayer 1 ; The layer: 0 city, 1 pollution, 2 police, 3 fire, 4 traffic, 5 power, 6 transport, 7 crime (6 in the image)
+$9D44 c LayerOf ; The overlay of the layer for the overview cell
+> L1 32 928.
+$9D76 LayerEnd ; the return: GridBase back, the switch allowed
+$9D7F LayerCrime ; a zone: 15 - (32 - distance) / 2 - police, halved
+$9D96 LayerCrimeNear
+$9D9D LayerCrimePolice
+$9DB1 LayerCrimeColour
+$9DB7 LayerPower ; a powered cell: the dot pattern
+$9DC4 LayerTransport ; a road or rail cell: the pattern
+$9DD3 LayerTraffic
+$9DD8 LayerPollution
+$9DDB LayerGrid48
+$9DF2 LayerFire
+$9DF7 LayerPolice
+$9DFA LayerGrid24
+
+@module saveload ; Save and load
+@about SAVE TO TAPE and LOAD FROM TAPE: a 31-byte header and the 9216-byte map, both with flag $FF, through the ROM.
+$9E09 c SaveCity ; SAVE TO TAPE: the name, START TAPE, then a 31-byte header (flag $FF) and the 9216-byte map (flag $FF)
+> The header SaveHeader: the 12-letter file name, Funds, its spare byte, Month, Year (7 bytes), a spare byte, the city name (12). Nothing else is saved: not the tax, the fundings, the options or the arrays. Known only from the code (stage 1's save recording ran it: L1 at $9E09 none, as the save was reached through the menu action; see NOTES).
+$9E5A c LoadCity ; LOAD FROM TAPE: the name, START TAPE, SEARCHING; headers until the name matches (any with a blank name), then the map
+$9E77 b SearchingText 18 ; PrintInline codes: a box, SEARCHING
+@res text/inline/Searching.bin
+$9E89 c LoadHeader
+$9EA0 LoadHeaderBlank
+$9EAA LoadHeaderCompare
+$9EB3 LoadHeaderLoop
+$9EBE LoadHeaderMatch
+$9EC1 b LoadingText 11 ; PrintInline: LOADING
+@res text/inline/Loading.bin
+$9ECC c LoadMap ; The map; on success Funds, the date and the name from the header
+$9EFC LoadMapFailed ; a bad map: the error window, then a new city
+$9F0C LoadHeaderFailed
+$9F1A c PrintFound ; FOUND :- and the header's name
+$9F1D b FoundText 13
+@res text/inline/Found.bin
+$9F2A c PrintFileName ; The 12 letters at SaveName
+$9F2F PrintFileNameLoop
+
+@module dialogs ; The menus' descriptions and actions, the line editor
+@about The SYSTEM, OPTIONS, DISASTERS and WINDOWS menus, the dialogs (confirm, about, load, save, file name, tape, speed, level, old landscape) and their actions; the options' flags; the name and gene editor.
+$9F40 b PlantChoice 1 ; The power station menu's answer: 0 none, 1 nuclear, 2 coal
+$9F41 b PlantMenu 16 ; the menu: SELECT TYPE, NUCLEAR POWER STATION $5000, COAL POWER STATION $3000, NONE
+@res text/menus/Plant.bin
+$9FBE c NoPlant ; NONE: PlantChoice 0 (not run in the recordings)
+$9FC4 c ChooseNuclear ; PlantChoice 1
+> L1 3.
+$9FCA ChooseCoal ; PlantChoice 2
+$9FD0 c Confirm ; ARE YOU SURE ?: carry set for YES
+> L1 5.
+$9FD3 b ConfirmMenu 16
+@res text/menus/Confirm.bin
+$A027 c ConfirmNo ; OR A
+$A029 ConfirmYes ; SCF
+$A02B b SystemMenu 16 ; SYSTEM: about, start new city, use old landscape, load, save, exit
+@res text/menus/System.bin
+$A0B1 c ExitSimCity ; EXIT SIMCITY: confirmed, a new city with a new landscape
+$A0B7 NewCityItem ; START NEW CITY: confirmed, the gene from the random seed, then NewCity
+$A0C1 NewCity ; the difficulty menu, then NewLandscape
+$A0C7 c AboutWindow ; ABOUT SIM CITY
+$A0CA b AboutText 16
+@res text/menus/About.bin
+$A1F3 c LoadMenu ; LOADING MENU
+$A1F6 b LoadMenuText 16
+@res text/menus/Load.bin
+$A247 c SaveMenu ; SAVING MENU
+$A24A b SaveMenuText 16
+@res text/menus/Save.bin
+$A29A c FileNameWindow ; TYPE FILE NAME, THEN PRESS ENTER
+$A29D b FileNameText 16
+@res text/menus/FileName.bin
+$A2DC c LoadErrorWindow ; TAPE LOADING ERROR
+$A2DF b LoadErrorText 16
+@res text/menus/LoadError.bin
+$A2FE c WaitTapeStart ; START TAPE AND PRESS SPACE: wait for SPACE
+$A301 WaitTapeLoop
+$A303 WaitTapeIn
+$A305 WaitTapeTest
+$A307 WaitTapeAgain
+$A309 c TapeWindow
+$A30C b TapeText 16
+@res text/menus/Tape.bin
+$A32B b AutoBulldoze 1 ; the options (toggles): AUTO-BULLDOZE 1, AUTO-BUDGET 0, SOUND 1, ZONE DEMOLISH WAIT 1
+$A32C AutoBudget
+$A32D SoundOn
+$A32E DemolishWait
+$A32F b OptionsMenu 16 ; OPTIONS: the four toggles, SIMULATION SPEED, EXIT MENU
+@res text/menus/Options.bin
+$A3AB b Speed 1 ; 0 fast, 1 normal, 2 slow, 3 paused
+$A3AC c SpeedMenu ; SIMULATION SPEED
+$A3AF b SpeedMenuText 16
+@res text/menus/Speed.bin
+$A3D0 SpeedMarkFast ; the asterisk places of the four items
+$A3DB SpeedMarkNormal
+$A3E8 SpeedMarkSlow
+$A3F3 SpeedMarkPaused
+$A40D c SetSpeedItem ; Speed = A; the asterisk moved to (HL)
+$A421 SpeedFast
+$A428 SpeedNormal
+$A42F SpeedSlow
+$A436 SpeedPaused
+$A43D b DisastersOff 1 ; DISABLE ALL (a toggle): no random disasters
+$A43E b DisasterMenu 16 ; DISASTERS: fire, flood, earthquake, air crash, tornado, nuclear meltdown
+@res text/menus/Disasters.bin
+$A4BA c PickDisaster ; DisasterDue = the item + 1
+> L1 6.
+$A4C2 b WindowsMenu 16 ; WINDOWS: maps, budget, evaluation
+@res text/menus/Windows.bin
+$A511 b MapsDue 1 ; set by MAPS: the UI task opens the maps window
+$A512 c MapsItem
+$A518 b Level 1 ; 0 easy, 1 medium, 2 difficult
+$A519 c LevelMenu ; SELECT DIFFICULTY LEVEL
+$A51C b LevelMenuText 16
+@res text/menus/Level.bin
+$A5A9 c SetLevel ; Level = the item
+> L1 12.
+$A5B0 InputCityName ; INPUT NEW CITY NAME: edit CityName at row 5
+$A5DC UseOldLandscape ; USE OLD LANDSCAPE: the gene into the menu's number, the menu
+$A5E5 b OldLandscapeMenu 16
+@res text/menus/OldLandscape.bin
+$A61B GeneShown ; the gene in the menu (code 6's value)
+$A672 c InputGene ; INPUT NEW GENE: 5 digits at row 11, column 25
+$A68C InputGeneShow
+$A6A4 b CreatingText 16 ; CREATING LANDSCAPE, PLEASE WAIT
+@res text/menus/Creating.bin
+$A6D8 b InputAt 2 ; the line editor: row, column, the buffer, the cursor, the digits flag, the length, a buffer of 12, the key delay
+$A6DA InputBuffer
+$A6DC InputCursor
+$A6DD InputDigits
+$A6DE InputLength
+$A6DF InputText
+$A6EF InputDelay
+
+$A6F9 c InputName ; Edit a 12-letter text at InputAt (letters, digits, space; CAPS SHIFT 5 / 8 cursor, 0 delete)
+$A6FF c InputLine ; The line editor; with InputDigits a number (5 digits, carry when too large)
+> L1 5.
+$A70A InputLoop
+$A725 InputKey
+$A742 InputChar
+$A751 InputPrintable
+$A756 InputDrop
+$A757 InputNoKey
+$A75D InputShow
+$A762 InputRepeat
+$A76D InputPut
+$A77D InputDelete
+$A786 c InputBlank ; A space at the cursor
+$A793 c CursorLeft
+$A799 CursorRight
+$A7A3 c ShowInput ; The text at InputAt, the cursor's letter inverse ($C7)
+$A7B6 ShowInputLoop
+$A7C2 ShowInputChar
+$A7D4 c NumberToInput ; The 16-bit number at (InputBuffer) as digits into InputText
+$A7EB w NumberAt 1
+$A7ED c NumberDigits
+$A81E c NumberDigit
+$A823 NumberDigitLoop
+$A82A c PutDigit
+$A834 NumberDigitSkip
+$A836 InputEnter ; ENTER: a number is converted and stored (carry: none or too large)
+$A849 c DigitValue ; A = E - '0', carry when E is not a digit
+$A854 c InputToNumber ; HL = the decimal digits of InputText, carry on overflow
+$A85B InputToNumberLoop
+$A882 InputToNumberOver
+
+@module workspace ; The movers' sprites and the work space
+@about The five 16 x 16 sprites, the save header, and the arrays built at run time: the fire and police coverage, pollution, traffic, the power bitmap and the 96 x 96 city map.
+$A884 b MoverSprites 2 ; The movers' 16 x 16 sprites, 32 bytes each: the plane, two tornado frames, the train across and down
+@res graphics/Movers.bin
+$A924 t SaveName 12 ; The name typed for LOAD and SAVE
+$A930 SaveHeader ; the tape header (31 bytes): file name 12, Funds 3, a spare, Month, Year 2, a spare, the city name 11 (SaveCityName $A944-$A94E)
+$A93C SaveFunds
+$A944 SaveCityName
+$A94F b SaveSpare 1
+$A950 s FireCover 576 ; The 24 x 24 fire coverage, 0-15 (zero in the image: built at run time)
+$AB90 PoliceCover 576 ; the police coverage
+$ADD0 Pollution 2304 ; the 48 x 48 pollution
+$B6D0 Traffic 2304 ; the 48 x 48 traffic
+$BFD0 PowerMap 1152 ; the powered bit of each map cell, 12 bytes a row
+$C450 CityMap 9216 ; the 96 x 96 map, all land (2) in the image: NewLandscape makes it
+
+@module graphics ; The tiles and their attributes
+@about IconTiles, CellTiles and BuildingTiles (8 bytes a tile) and their attribute tables.
+$E850 b IconTiles 8 ; The 67 icon and frame tiles, 8 bytes each: the tool palette (2 x 2 each), the frames $38-$3F, the separators $40-$42
+@res graphics/IconTiles.bin
+$EA68 b CellTiles 8 ; The 94 cell tiles of the map (cells 0-$5D; $5A-$5D the fire and flood frames AnimateFire and AnimateFlood copy)
+@res graphics/CellTiles.bin
+$ED58 b BuildingTiles 8 ; The 244 building tiles (a building row's tile numbers n, n + 1, ...)
+@res graphics/BuildingTiles.bin
+$F4F8 b IconAttrs 8 ; The attributes of icons 0-55 (DrawIcon reads IconAttrs + A; the frame tiles use PrintAttr)
+@res graphics/IconAttrs.bin
+$F530 b CellAttrs 8 ; The cells' attributes
+@res graphics/CellAttrs.bin
+$F58E b BuildingAttrs 8 ; The building tiles' attributes
+@res graphics/BuildingAttrs.bin
+@module tasks ; The task switcher
+@about The two tasks' stacks and frame, the switch state (TaskNow, SwitchOff) and Interrupt, the IM 2 handler. The vector table $FD00 and the jump $FCFC are at the end of the system module (a module is one stretch of addresses).
+$F682 s SimStack 108 ; The simulation task's stack (zeros)
+$F6EE b SimFrame 20 ; The simulation task's first frame: 20 bytes of registers, then the entry
+$F702 w SimEntry 1 ; SimTask: the first switch returns into it
+$F704 b TaskNow 1 ; 0 the UI task runs, 1 the simulation
+$F705 SwitchOff ; nonzero: the interrupt does not switch tasks (the UI's critical parts)
+$F706 SwitchSpare
+$F707 w UiSP 1 ; the stacks of the two tasks while the other runs
+$F709 SimSP
+
+$F70B c Interrupt ; IM 2: save all registers, ReadInput, then (unless SwitchOff) swap the stack with the other task's
+> Each interrupt, 50 a second, gives the other task the CPU: the UI and the simulation run turn by turn, one frame each. c1: L1 407 762, 128 197 / 256 388 switches.
+$F733 InterruptToSim
+$F73B InterruptFlip
+$F73E InterruptReturn
+@module system ; Printing glyphs, the input read, the tape, the UI stack and the IM 2 vector
+@about PrintGlyph with the print state, ReadInput (keys and joysticks every interrupt), TapeLoad, TapeSave, TapePause, the UI task's stack, InterruptJump $FCFC and the vector table $FD00.
+$F74E b PrintCharCode 1 ; The print state: the character, the screen address, the column and row, the attribute
+$F74F PrintAddr
+$F751 PrintCol
+$F752 PrintRow
+$F753 PrintAttr
+$F754 c PrintGlyph ; Character A from the ROM font, made bold (byte OR byte >> 1), at PrintAddr, with PrintAttr unless $FF
+> L1 496 214.
+$F764 PrintGlyphLine
+$F76E PrintGlyphAttr
+$F774 PutAttr
+$F781 c ReadInput ; Read the eight half rows into KeyRows, then the Kempston and Sinclair joysticks into them
+> L1 413 183.
+$F789 ReadInputRow
+$F798 b ReadInputLeftover 7 ; Leftover: RET, JP $FE0F, JP $FE0F (no code runs them)
+$F79F c TapeLoad ; LD-BYTES through the ROM (border $0F): IX, DE, A flag, carry set
+$F7AA c TapeSave ; SA-BYTES through the ROM
+$F7AD c TapePause ; B x 5000 loops
+$F7B1 TapePauseLoop
+$F7BB s UiStack 1345 ; The UI task's stack, filled with $E5
+$FCFC c InterruptJump ; JP Interrupt: the IM 2 vector $FCFC
+$FCFF b InterruptSpare 1
+$FD00 VectorTable ; 257 bytes $FC: with I = $FD any vector reads $FCFC

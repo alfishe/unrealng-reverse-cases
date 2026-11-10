@@ -1,0 +1,49 @@
+# The annotations of tape block 2, the BASIC program "Simcity" at PROG $5CCB-$5D5A (144 bytes): the source of
+# src/tape/basic.asm and src/tape/basic-module.asm (../../kit/mkgame.py --part src/tape/basic.json). Format:
+# ../../../../docs/ann-format.md. Witness: c1 (work/stage1/c1: power-on, the tape at signal speed), whose ROM loads
+# this block and runs it from its first line (the header's LINE 0); tools/basic_list.py work/stage1/blocks/basic.bin
+# lists it (docs/03-build-and-load.md 3.2). Every number is its digits, then the number marker $0E and the five-byte
+# small-integer form the ROM reads (0, sign, low, high, 0).
+
+@module basic ; The BASIC: a black screen, CLEAR 32767, load the loader at $FE00 and call it; three mastering lines
+@about Tape block 2 holds the program "Simcity" (header: LINE 0, program length 144, no variables). The ROM runs line 10 at once (LINE 0 starts at the first line), line 20 loads blocks 3 and 4, line 30 enters the loader (src/loader) and never returns, so lines 40-60 never run: they are the authors' mastering lines, the program saved itself with line 50 and went on to the next file of the master tape.
+@about c1: the ROM loads the block at signal speed; the loader $FE00 is entered at frame 1258, T 65 246 (docs/03 3.5).
+
+$5CCB b BasicLine10 ; Line 10: PAPER 0: INK 0: BORDER 0: CLEAR 32767
+> Black on black and a black border, so the loading screen shows only as LoadBlock stores its attributes; CLEAR 32767 puts RAMTOP at $7FFF, below the loader's $FE00.
+$5CCD ; the line's length, 40
+$5CCF ; PAPER ($DA) "0" and its number
+$5CD7 ; ":" INK ($D9) "0" and its number
+$5CE0 ; ":" BORDER ($E7) "0" and its number
+$5CE9 ; ":" CLEAR ($FD) "32767" and $0E, 32767 = $7FFF
+$5CF6 ; ENTER
+
+$5CF7 b BasicLine20 ; Line 20: LOAD "" CODE 65024
+> Loads the next file, blocks 3 and 4: the 512-byte "loader" at $FE00 (its header's own start is 65024 as well).
+$5CF9 ; the line's length, 16
+$5CFB ; LOAD ($EF) "" CODE ($AF) "65024" and $0E, 65024 = $FE00
+$5D0A ; ENTER
+
+$5D0B b BasicLine30 ; Line 30: RANDOMIZE USR 65024
+> Calls LoaderStart $FE00 (src/loader), which never returns.
+$5D0D ; the line's length, 14
+$5D0F ; RANDOMIZE ($F9) USR ($C0) "65024" and $0E, 65024 = $FE00
+$5D1C ; ENTER
+
+$5D1D b BasicLine40 ; Line 40, never reached: POKE 23418,84
+> 23418 = $5B7A, in the printer buffer, where code2 later lands: the game's image holds $7A there (LD A,D in the tone ToneBeep at $5B66), and 84 ($54) would be LD D,H. A leftover of the mastering, known only from the code: no recording runs it (c1 leaves BASIC at line 30).
+$5D1F ; the line's length, 22
+$5D21 ; POKE ($F4) "23418" and $0E, 23418 = $5B7A, "," "84" and $0E, 84
+$5D36 ; ENTER
+
+$5D37 b BasicLine50 ; Line 50, never reached: SAVE "Simcity" LINE 0
+> The line that wrote blocks 1 and 2 of the master tape: a program saved with LINE 0 autostarts at its first line.
+$5D39 ; the line's length, 19
+$5D3B ; SAVE ($F8) "Simcity" LINE ($CA) "0" and $0E, 0
+$5D4D ; ENTER
+
+$5D4E b BasicLine60 ; Line 60, never reached: LOAD "mast0"
+> The next file of the authors' mastering tape.
+$5D50 ; the line's length, 9
+$5D52 ; LOAD ($EF) "mast0"
+$5D5A ; ENTER

@@ -1,0 +1,13 @@
+# MonthNames $5F8A (PrintDate): the twelve months: one string a line, bit 7 set on its last letter by the build ({xx}: a byte in hex)
+JAN
+FEB
+MAR
+APR
+MAY
+JUN
+JUL
+AUG
+SEP
+OCT
+NOV
+DEC

@@ -1,0 +1,21 @@
+# A menu description (DrawMenu $67C3): 'header N' (the first line's number), then one item a line:
+#   text "..."  (kind 0)      number "..."  (kind 8, a selectable line with a number field)
+#   action $ADDR "..."  (2)   toggle $FLAG "..."  (1, ON / OFF after it)   separator  (3)   end  (4)
+# In the text: {tab} code $21 (to column 24); {byte F V M} code 7: field flag F, value V, maximum M (the value the
+# player edits lives here); {word F V M} code 6 (16 bits); {long F V} code 5 (24 bits); bit 7 ends the text.
+header 8
+text "            SYSTEM"
+separator
+action $A0C7 "ABOUT SIM CITY"
+action $A0B7 "START NEW CITY"
+action $A5DC "USE OLD LANDSCAPE"
+separator
+action $A1F3 "LOAD CITY"
+action $A247 "SAVE CITY"
+separator
+action $A0B1 "EXIT SIMCITY"
+text " "
+text " "
+separator
+action $6703 "EXIT MENU"
+end

@@ -1,0 +1,29 @@
+# A menu description (DrawMenu $67C3): 'header N' (the first line's number), then one item a line:
+#   text "..."  (kind 0)      number "..."  (kind 8, a selectable line with a number field)
+#   action $ADDR "..."  (2)   toggle $FLAG "..."  (1, ON / OFF after it)   separator  (3)   end  (4)
+# In the text: {tab} code $21 (to column 24); {byte F V M} code 7: field flag F, value V, maximum M (the value the
+# player edits lives here); {word F V M} code 6 (16 bits); {long F V} code 5 (24 bits); bit 7 ends the text.
+header 0
+text "          EVALUATION"
+separator
+text "IS THE MAYOR DOING A GOOD JOB?"
+text " "
+text "           000% Yes"
+text "           000% No"
+separator
+text "WHAT ARE THE WORST PROBLEMS?"
+text " "
+text "Traffic 000%    Pollution 000%"
+text "  Crime 000%         Fire 000%"
+text "  Taxes 000% House prices 000%"
+text "             Unemployment 000%"
+separator
+text "POPULATION"
+text "MIGRATION"
+text "ASSESSED VALUE    $"
+separator
+text "CATAGORY   :-"
+text "GAME LEVEL :-"
+text "CITY SCORE :- 500"
+action $6703 "{tab}     OK"
+end

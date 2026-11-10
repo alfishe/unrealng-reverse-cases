@@ -6,6 +6,11 @@ code1 (37633 bytes) to `$6B00-$FE00`, code2 (4128 bytes) to `$4000-$501F` after 
 `$5000` moves `$4000-$4FFF` to `$5B00-$6AFF` and jumps to `$5B1B`. The ROM area `$0000-$3FFF` is left zero.
 
     python3 tools/image.py OUT.bin [--orig orig/SimCity.tzx.zip]
+    python3 tools/image.py --part NAME OUT.bin [--orig ...]   # one tape part's plain bytes (PARTS below)
+
+The parts are the plain bytes of the tape's other sources, as the kit's part files (src/*/NAME.json) read them:
+basic (block 2, 144 bytes at PROG `$5CCB`), loader (block 4 with its tail decrypted, 512 bytes at `$FE00`), screen
+(block 5 decrypted, 6912 bytes at `$4000`) and mover (block 7 decrypted, its last 32 bytes, at `$5000`).
 """
 import io
 import os
@@ -38,9 +43,27 @@ def image(orig):
     return bytes(mem)
 
 
+def part(name, orig):
+    b = blocks(orig)
+    if name == 'basic':
+        return b[1][1:-1]
+    if name == 'loader':
+        return decrypt_tape.loader_r(b[3][1:-1])
+    if name == 'screen':
+        return decrypt_tape.decrypt(b[4])
+    if name == 'mover':
+        return decrypt_tape.decrypt(b[6])[0x1000:]
+    sys.exit('image: no part ' + name)
+
+
 def main():
-    out = sys.argv[1]
     orig = sys.argv[sys.argv.index('--orig') + 1] if '--orig' in sys.argv else 'orig/SimCity.tzx.zip'
+    if sys.argv[1] == '--part':
+        out = sys.argv[3]
+        os.makedirs(os.path.dirname(out) or '.', exist_ok=True)
+        open(out, 'wb').write(part(sys.argv[2], orig))
+        return
+    out = sys.argv[1]
     os.makedirs(os.path.dirname(out) or '.', exist_ok=True)
     open(out, 'wb').write(image(orig))
 
