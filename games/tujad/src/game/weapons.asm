@@ -1,10 +1,10 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; weapons.asm: The shot of each weapon, and firing
 ;
-; One shot is in flight at a time (Shot: 0 none; bit 0 going left, bit 4 exploding, bit 5 the first pass, bit 6 a new
-; shot, bit 7 hit). Weapon 0 is a dash that kills by collision only (the interrupt's XOR sets bit 7 of Shot, its flag
-; byte); weapons 1-3 mark the cells they cross (ShotMark $40, $20, $10 with bit 0) and an object whose kill mark is
-; that weapon's dies (MoveObject $809D). Weapons 1-3 cost one unit of ammunition a shot.
+; One shot is in flight at a time (Shot: 0 none; bit 0 going left, bit 4 exploding, bit 5 the first pass, bit 6 a shot
+; in flight, bit 7 hit). Weapon 0 is a dash that kills by collision only (the interrupt's XOR sets bit 7 of Shot, its
+; flag byte); weapons 1-3 mark the cells they cross (ShotMark $40, $20, $10 with bit 0) and an object whose kill mark
+; is that weapon's dies (MoveObject $809D). Weapons 1-3 cost one unit of ammunition a shot.
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; Move the shot of the weapon in use

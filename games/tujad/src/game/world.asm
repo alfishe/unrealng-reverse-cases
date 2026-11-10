@@ -24,7 +24,10 @@ RoomRecord:
 ; whose kind has bit 6 clear (GEN 19, energy, an ED piece; not a weapon) swaps
 ; with B. Each call moves every such item to the next room that holds one:
 ; NewGame calls it 1-31 times (Random), so the pieces' rooms change from game
-; to game. The authors' scram. L1 34 calls.
+; to game. Room 123 has only item 1, the last non-weapon slot, so each call
+; rotates the 64 non-weapon kinds by exactly one slot; NewGame's 1-31 calls
+; give 31 possible deals. The RZX game: 27 (at001000.szx against the image).
+; The authors' scram. L1 34 calls.
 ScrambleRooms:
   LD C,$7B
   CALL RoomRecord

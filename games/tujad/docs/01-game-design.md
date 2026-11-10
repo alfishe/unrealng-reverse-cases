@@ -228,8 +228,8 @@ much energy is left.*
 
 - Only one shot is in flight at a time, and the weapon can be changed only between shots.
 - A weapon pickup adds one shot to that weapon: WEAPON LOCATED AND STORED.
-- Weapon 3 is fired in only three RZX chunks (`rzx-040000`, `rzx-052000`, `rzx-070000`); its steering is known only from
-  the code.
+- Weapon 3 is fired in only three RZX chunks (`rzx-040000`, `rzx-052000`, `rzx-070000`); its steering is seen in the
+  recording `probe-shield`, made for doc 5 ([doc 5.8](05-controls.md#58-the-probe-under-fire-held)).
 
 **The point**: energy is a clock that enemies speed up, lives are bought back with GEN 19, and a wrong weapon leaves an
 object in the way.
@@ -326,6 +326,7 @@ over.
 
 - **The 26 empty slots** in normal play: the RZX's complete game never enters them; `room-tour` draws 12 of them, empty,
   by POKEing the room.
-- **Weapon 3's steering** while fire is held (CellSolidColumn `$7D24`, CellSolidRow `$7D50`): known only from the code.
+- **Weapon 3's steering** while fire is held (CellSolidColumn `$7D24`, CellSolidRow `$7D50`): no RZX chunk steers it;
+  the recording `probe-shield` does ([doc 5.8](05-controls.md#58-the-probe-under-fire-held)).
 - **A difficulty setting or levels**: the game has none; the enemies' kinds cycle and their spawn points and timers are
   random, seeded by how long the player waits in the menu.

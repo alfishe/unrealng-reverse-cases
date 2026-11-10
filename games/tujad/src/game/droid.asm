@@ -9,21 +9,26 @@
 ; One step of the droid: the teleporter, the fall, the controls, the exits, the
 ; sprites, the touch test, the pickups
 ;
-; While moving down a step (DroidFlags bit 2) it waits MoveDelay passes (L1 6
-; 522 waits). A droid on a teleporter's $FF $FF cells with TeleportLatch 0
-; teleports (MoveDroidTeleport: L1 8 teleports). The cell under its feet (the
-; cell 5 rows below, $A0 on) decides a fall: when it and the next one or two
-; are not walls the droid starts down (bit 2), else it stands (L1 15 289). The
-; old image goes to the sprite list (DroidSave, flag pointer 0). Then, unless
-; it is turning round (bit 1: TurnRound $7866), fire calls Fire $861C, and the
-; directions move it: right (bit 0) and left (bit 1) a column a few frames
-; apart through the walk frames 0-7 (DroidFrame 3, 4, 7, 8 step the x;
-; StepBlockedLeft $76A1 / StepBlockedRight $76D1 undo a step into a wall); up
-; and down two pixel rows (bit 3 up, bit 2 down, CellBlockedRow $7CF2 tests the
-; wall). A direction against the facing starts the turn-round (frame 8). The
-; exits: x = $1D east (Room + 1, x = 0: L1 87), x = 0 west (Room - 1, x = $1D:
-; 32), y = $98 south (Room + 8, y = $32: 26), y = $30 north (Room - 8, y = $96:
-; 26); each saves the objects and calls DrawRoom with A = 0. Then the new frame
+; On the floor it acts every second pass (MoveDelay reloads 2); in the air
+; (DroidFlags bit 2: no wall under the feet; the droid hovers and moves
+; vertically only with up or down) every pass (L1 6 522 waits). A droid on a
+; teleporter's $FF $FF cells with TeleportLatch 0 teleports (MoveDroidTeleport:
+; L1 8 teleports). The cell under its feet (the cell 5 rows below, $A0 on)
+; decides a fall: when it and the next one or two are not walls the droid is in
+; the air (bit 2), else it stands (L1 15 289). The old image goes to the sprite
+; list (DroidSave, flag pointer 0). Then, unless it is turning round (bit 1:
+; TurnRound $7866), fire calls Fire $861C, and the directions move it: right
+; (bit 0) and left (bit 1) a column a few frames apart through the walk frames
+; 0-7 (DroidFrame 3, 4, 7, 8 step the x; StepBlockedLeft $76A1 /
+; StepBlockedRight $76D1 undo a step into a wall); up and down two pixel rows
+; (bit 3 up, bit 2 down, CellBlockedRow $7CF2 tests the wall). A direction
+; against the facing starts the turn-round (frame 8). Down held alone while
+; standing raises the shield (DroidFlags bit 4, FlagPointer $0000 so the touch
+; test sees nothing, EnergyReload and EnergyTimer $0A); no control or another
+; one lowers it (FlagPointer = DroidFlags again, the reload 250). The exits: x
+; = $1D east (Room + 1, x = 0: L1 87), x = 0 west (Room - 1, x = $1D: 32), y =
+; $98 south (Room + 8, y = $32: 26), y = $30 north (Room - 8, y = $96: 26);
+; each saves the objects and calls DrawRoom with A = 0. Then the new frame
 ; (DroidFrames, DroidWidths) goes to the sprite list with FlagPointer, and the
 ; attributes under it are set to $45 where the cell is not a wall and holds no
 ; item. The touch test: when the interrupt found the droid's sprite on ink (bit

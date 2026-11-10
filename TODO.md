@@ -49,6 +49,10 @@ Found by the cases and worked around there; the status says whether `kit/` fixes
 | port constants inside an `@equ` range (`LD BC,$FEFE` became `Im2Table+254`) | Tujad stage 2 | `at` lists | open: warn when an `@equ` matches an `LD rr,nn` later used by `IN`/`OUT` |
 | `mkgame --install` leaves a resource's stale `.bin` when the case's res_formats writes the editable form | Tujad stage 2 | the case's `install()` removes it | open |
 | a `w` entry inside a shared `@res` loses its DEFW labels | Tujad stage 2 | none needed (relative offsets) | open |
+| `kit/writers_map.py` and `kit/beam_timeline.py` have no width option: two panels give 1060 px, a beam timeline 1064 px (the `--zoom` inset of writers_map 2620 px) | Tujad docs (tjA, tjB) | the empty right margin cropped to 1050 px (`docs/img/render/writers-room92.png`, `beam-enemies.png`); the inset left out | open |
+| `kit/memanim.py --layout wide` makes 1102 px pictures | Tujad docs (tjA) | the default compact layout (load-c1.gif, 574 x 848) | open |
+| `re_session.py` is not in `kit/`: the docs call unreal-ng's `tools/verification/analysis/re_session.py` as `$RS` from `work/env.sh` | Tujad docs (tjA) | `$RS` | open |
+| an `@isub` that writes a number equal to an image label's address (`LD BC,$7EFE`, a port, = ShiftGraphic4) is still renamed to the label by skool2asm | Tujad integration (`$797F`) | `@const KeysSpaceToB $7EFE` and `@isub $797F LD BC,KeysSpaceToB` | open |
 
 ## For unreal-ng
 

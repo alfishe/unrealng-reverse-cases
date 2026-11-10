@@ -39,10 +39,13 @@ FallSweepDelay:
   EI
   RET
 
-; The droid's hum: two beeper toggles each pass, a pitch from a running sum
+; The pass tick: two beeper writes each pass, a 4206 T low pulse
 ;
-; Called by MainLoop once a pass (L1 18 554): two toggles with a delay worked
-; out from H; BorderSound starts at 0.
+; Called by MainLoop once a pass (L1 18 554). BorderSound = 0, then two writes:
+; 0, and $10 4206 T later; the speaker stays high to the next pass, so each
+; pass (2 frames) gives one 1.2 ms low pulse, a 25 Hz tick. The delay is worked
+; out from H, but LD H,$00 at the entry resets H every call, so it is always
+; $FD (then 8): a constant.
 PassTick:
   LD BC,$0002
   XOR A

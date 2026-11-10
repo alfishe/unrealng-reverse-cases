@@ -112,8 +112,10 @@ Materialise4:
 ; FireWeapon3 ($861C) and MoveShot3Frame ($8298 on) point the shot at frame
 ; (ShotFrame AND 3): 0, 1, 2, 3, then back down. L1: only the recordings
 ; rzx-040000, rzx-052000 and rzx-070000 fire weapon 3; they read frames 2 and 3
-; ($AFB6-$B017, 291 reads), so frames 1 and 4 are known only from the code. No
-; write: the shift was 0 each time.
+; ($AFB6-$B017, 291 reads), so frames 1 and 4 are known only from the code
+; there. The recording probe-shield (tjB, doc 05 5.8) shows frames 2 and 4 too
+; (rows at $AFB7 and $B019, counting from 1 as above), so only frame 1 is known
+; only from the code. No write: the shift was 0 each time.
 ProbeGraphics:
   INCBIN "res/sprites/Probe.bin",$0000,49
 Probe2:

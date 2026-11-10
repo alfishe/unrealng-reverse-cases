@@ -7,3 +7,7 @@
 
 The world map from these: tools/fig_roommap.py (docs/img/play/world-map-rooms.png); the stage 1 map from
 screenshots: tools/fig_worldmap.py (docs/img/play/world-map.png).
+
+The items: 51 ED items for 50 pieces. The kind `$84` (ed3, ED piece 3) is in rooms 41 and 42 (`item1 ed3` in both
+sections of `Rooms.txt`); one is a spare. ScrambleRooms `$7BA0` moves the spare with the other non-weapon items, so
+both copies change rooms from game to game.

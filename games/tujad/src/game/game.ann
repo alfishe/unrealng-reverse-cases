@@ -14,6 +14,7 @@
 @equ $5B5B ImJump 3 ; the JP Interrupt the IM 2 table's vector $5B5B jumps through (SetupIM2 writes it)
 @equ $FE00 Im2Table 257 at $9584 ; the IM 2 vector table: 257 bytes of $5B (SetupIM2), so every vector is $5B5B
 @equ $FF01 SpriteList 255 at $6B22,$7778,$7780,$77D9,$781A,$7965,$796F,$8F53,$958F ; the sprite list: 8-byte records (graphic, flag pointer, width, rows, screen address), a zero word ends it
+@const KeysSpaceToB $7EFE ; the keyboard half row SPACE, SYMBOL SHIFT, M, N, B (IN A,(C) bit 0 SPACE): a port, equal to ShiftGraphic4's address by chance
 
 @isub $6CC9 LD HL,TileGraphics-2
 @isub $6E65 LD HL,WeaponColours-1
@@ -25,6 +26,7 @@
 @isub $9699 LD DE,Font-257
 @isub $6E34 LD HL,EdPieces-352
 @isub $6CBD LD HL,TileAttrs-2
+@isub $797F LD BC,KeysSpaceToB
 
 @module cells ; The cell table: one byte for each character cell of the play area
 @about The cell table mirrors the attribute file: the cell of screen character (row, column) is $6000 + 32 x row + column, so its attribute address is the cell address with H XOR $38. Rows 0-5 ($6000-$60BF) lie under the BASIC program and are never play cells; the image holds rows 6-23 ($60C0-$62FF). DrawRoom $6B22 rebuilds it for every room (1 where the attribute is not 0: a wall), then puts the room's items and teleporter in; the movers mark the cells they stand on (bit 1 an enemy, bit 2 an object, bit 3 a patroller) and the shots the cells they pass (bits 4-6).
@@ -40,13 +42,13 @@ $6300 c Start ; The game's entry: JP Setup
 > The stub at $5B00 jumps here after the load (c1: L1 1).
 
 $6303 b Enemies 9 ; The four enemy records of 9 bytes
-> Record k (k = 0-3) at $6303 + 9k: +0 the timer (passes to the next step), +1 the state (bits 0-1 the direction 0 right, 1 down, 2 left, 3 up; bit 6 materialising; bit 7 hit, the explosion; $40 with +0 = 1 or 2 a spawn waiting), +2 x (column), +3 y (pixels), +4/+5 the graphic pointer, +6 the frame, +7 the frames, +8 the attribute. DrawRoom $6B40 zeroes byte 0 of each and, by the bits of the room's enemy mask, sets +0 to 1 or 2, +1 to $40 and the graphic to BlankGraphic $6609. MainLoop calls MoveEnemy $90E7 with each record (L1 18 579 passes).
+> Record k (k = 0-3) at $6303 + 9k: +0 the timer (passes to the next step), +1 the state (bits 0-1 the direction 0 right, 1 down, 2 left, 3 up; bit 6 materialising; bit 7 hit, the explosion; $40 with +0 = 1 or 2 a spawn waiting), +2 x in pixels (up to $F0; a spawn writes Random OR $20 AND $F8, $20-$D0), +3 y in pixels (up to $B0), +4/+5 the graphic pointer, +6 the frame, +7 the frames, +8 the attribute. DrawRoom $6B40 zeroes byte 0 of each and, by the bits of the room's enemy mask, sets +0 to 1 or 2, +1 to $40 and the graphic to BlankGraphic $6609. MainLoop calls MoveEnemy $90E7 with each record (L1 18 579 passes).
 $630C Enemy2
 $6315 Enemy3
 $631E Enemy4
 
 $6327 b Objects 10 ; The room's two object records of 10 bytes
-> Object 1 at $6327, object 2 at $6331: +0 the kind (bits 4-7, ObjectKind) and a 2-pass move timer (bits 0-1; 0: no object), +1 the state (bits 0-1 the direction, bit 4 still, bit 5 stopped by the wrong weapon, bit 6 just entered, bit 7 dying), +2 x (pixels), +3 y, +4/+5 the graphic, +6 the frame, +7 the frames, +8 the weapon mark it dies to, +9 the attribute. DrawRoom copies the room's records from the alien map into these (LDIR at $6C2B), SaveRoomObjects $6ADC writes them back when the droid leaves the room, so an object keeps its place and its life. MainLoop calls MoveObject $809D for each (L1 18 579).
+> Object 1 at $6327, object 2 at $6331: +0 the kind (bits 4-7, ObjectKind) and a 2-pass move timer (bits 0-1; 0: no object), +1 the state (bits 0-1 the direction, bit 4 dead (MoveObject returns at once), bit 5 stopped by another weapon (cleared again when its own weapon kills it: MoveObjectDying RES 5), bit 6 just entered, bit 7 dying), +2 x (pixels), +3 y, +4/+5 the graphic, +6 the frame, +7 the frames, +8 the weapon mark it dies to, +9 the attribute. DrawRoom copies the room's records from the alien map into these (LDIR at $6C2B), SaveRoomObjects $6ADC writes them back when the droid leaves the room, so an object keeps its place and its life. MainLoop calls MoveObject $809D for each (L1 18 579).
 $6328 Object1Flags
 $6331 Object2
 $6332 Object2Flags
@@ -58,10 +60,10 @@ $634B Patroller3
 $6353 PatrollerPtrs ; the addresses of the three records, read by MovePatrollers
 
 $6359 b DroidVars 8 ; The droid, the shot, the room and the energy counters
-> x (column 0-$1D), y (pixel row $30-$98 in steps of 2), the flags (bit 0 facing left, bit 1 turning, bit 2 down a step, bit 3 moving, bit 4 the touch test on, bit 6 the step frame, bit 7 the sprite list's collision bit), the frame 0-13, the width in bytes. The image's bytes from $6359 are Leftover text (the authors' source): PlaceDroid $7A6D and NewGame $7A2F write every byte before play.
+> x (column 0-$1D), y (pixel row $30-$98 in steps of 2), the flags (bit 0 facing left, bit 1 turning, bit 2 in the air (no wall under the feet), bit 3 moving, bit 4 the shield (down held alone: FlagPointer $0000, EnergyReload 10, HazardFlash), bit 6 the step frame, bit 7 the sprite list's collision bit), the frame 0-13, the width in bytes. The image's bytes from $6359 are Leftover text (the authors' source): PlaceDroid $7A6D and NewGame $7A2F write every byte before play.
 @res leftover/Source1.bin
 $635A DroidY
-$635B DroidFlags ; bit 0 left, 1 turning round, 2 stepping down, 3 moving, 4 touching an enemy, 6 the walk frame flag, 7 collided (the interrupt's XOR found ink)
+$635B DroidFlags ; bit 0 left, 1 turning round, 2 in the air, 3 moving, 4 the shield (DOWN alone while standing), 6 the walk frame flag, 7 collided (the interrupt's XOR found ink)
 $635C DroidFrame ; the frame 0-13 (DroidFrames $6888)
 $635D DroidWidth ; the frame's width in bytes (DroidWidths $68A4)
 $635E Shot ; the shot: 0 none, else the weapon's state; then x, y and the graphic (Fire $861C, MoveShot $8298)
@@ -72,14 +74,14 @@ $6364 ControlsLatch ; the controls as MoveDroid last took them
 $6366 EnergyTimer ; interrupts to the next energy step (EnergyTick $7AB6)
 $6367 EnemyKindTurn ; the enemy kind cycle (EnemyKind $90C8)
 $6368 Weapons ; the weapon in use: bit 7 weapon 0 (unlimited), bits 6, 5, 4 weapons 1-3
-$6369 KeyLatches ; bit 0 SPACE released, bit 1 ENTER released, bit 6 fire released, bit 7 no fire
+$6369 KeyLatches ; bit 0 SPACE released, bit 1 ENTER released, bit 6 set: fire must be released before the next shot, bit 7 no fire
 $636A Ammo ; ammunition of weapons 1-3 (BCD)
 $636D Lives ; lives (BCD, 3 at the start)
 $636E Energy ; energy (BCD, 99 at the start and after a life)
 $636F MoveDelay ; the passes to the droid's next step
 $6370 DeathColour ; the colour step of the death flash (HazardFlash $699B)
 $6373 PatrollerTurn ; the patroller MovePatrollers moves next 0-2
-$6374 EnergyReload ; the energy timer's reload: $FA, $0A while an enemy is touched
+$6374 EnergyReload ; the energy timer's reload: $FA, $0A under the shield or after an enemy's touch
 $6375 BorderSound ; the last value sent to port $FE (the beeper bit toggles)
 $6376 TeleportLatch ; 1 while the droid stands on a teleporter it came through
 $6377 TouchTimer ; interrupts the fast drain lasts (50 after a touch, DrainTimer $7906)
@@ -210,33 +212,34 @@ $68C1 w EnemyGraphics 9 ; The graphics of the nine enemy kinds ($A74E-$AEC4)
 $68D3 w ExplosionFrames 4 ; The four frames of an enemy's explosion
 $68DB w MaterialiseFrames 4 ; The four frames of an enemy's materialising
 $68E3 w ObjectDeathFrames 4 ; The four frames of an object's death
+> The first word (ObjectDeath $B6BA) is never read: the dying states (state AND $0C = $04, $08, $0C) select offsets 2, 4, 6; $00 ends the death first (MoveObjectDying $8236).
 $68EB w Weapon3Frames 4 ; The four frames of weapon 3's shot
 
 @module main ; The start, the main loop, the hazard, the win and the life lost
-@about Setup puts the stack under the game block, selects the keyboard and installs the IM 2 handler. Restart shows the menu and starts a game. MainLoop is one pass of the game with two HALTs (WaitFrame $795D): the droid and its exhaust between the first and the second, the objects, enemies and patrollers after the second. The interrupt handler $95D0 draws the sprite list each frame, so a pass takes two frames when its work fits (and a third when it does not).
+@about Setup puts the stack under the game block, selects the keyboard and installs the IM 2 handler. Restart shows the menu and starts a game. MainLoop is one pass of the game with two HALTs (WaitFrame $795D): the droid and its exhaust between the first and the second, the objects, enemies and patrollers after the second. The interrupt handler $95D0 draws the sprite list at each interrupt, so a pass holds two interrupts when its work fits (and three when the work, run with interrupts off, overruns one).
 
 $68F3 c Setup ; Power-on setup: the stack, the keyboard, the IM 2 handler
 > DI; SP = $60C0 (the stack grows down under the cell table, in the BASIC area); Controls = $80 (the keyboard); SetupIM2 $9584. Runs once (c1 L1 1).
 
 $6900 c Restart ; The menu, then a new game
-> ClearScreen $7A9F, Menu $8854 (waits for 1-4 / ENTER), NewGame $7A2F, the message TUJAD FROM ORPHEUS, EI, then MainLoop. Entered at the start and after a win ($6A2D) or a game over ($6AAA). L1 4 (c1 and the menu builds).
+> ClearScreen $7A9F, Menu $8854 (1, 2, 3 choose the controls, 0 starts), NewGame $7A2F, the message TUJAD FROM ORPHEUS, EI, then MainLoop. Entered at the start and after a win ($6A2D) or a game over ($6AAA). L1 4 (c1 and the menu builds).
 
-$6911 c MainLoop ; One pass of the game: two frames
+$6911 c MainLoop ; One pass of the game: two interrupts (three when the work overruns)
 > WaitFrame (the sprites of the last half pass are drawn), PassTick $7F6D (a sound tick), DroidExhaust $8DD2 (erase), MoveDroid $7208, ExhaustStep $8E7E, DroidExhaust (draw), HazardFlash $699B, MoveShot $8298; WaitFrame; MoveObject $809D for both objects; MoveEnemy $90E7 for the four enemies, each with its pair of EnemyBuffers; MovePatrollers $6AAD; MoveShot again; Pause $793A (ENTER); EnergyOut $6A30; WinTest $69E3; again.
-> Witness: L1 18 585 passes. Most passes take exactly two frames (the two HALTs); a pass whose work between the HALTs runs past the next interrupt misses it and waits for the one after, so it takes three. The rare one-frame pass is a WaitFrame whose HALT is entered just before an interrupt that the last half pass left pending (Open point 3 in work/stage2/NOTES.md).
+> Witness: L1 18 585 passes. Most passes hold exactly two interrupts (the two HALTs); a pass whose work between the HALTs runs past the next interrupt misses it (the work runs with interrupts off) and waits for the one after, so it holds three. Counted by the interrupts inside it, a pass holds 2 (183 of 200 from rzx/at050000.szx) or 3 (17: one INT lost while the work ran with interrupts off); never 1. The "1-frame" passes of a count by frame number are passes that start before T 1812, where unreal-ng's 48K INT falls (doc 4.7).
 $6929 MainLoopSecondHalf ; the second WaitFrame: the objects, the enemies and the patrollers follow
 
 $6992 c HazardDeath ; A touched hazard: the life ends unless the droid is turning round
 > Reached from MoveDroid's touch test ($75E1) when a cell under the droid has a mark other than an enemy's (a patroller or an object: bits 2-6). DroidFlags bit 1 (turning) protects; otherwise LoseLife. L1 53.
 
-$699B c HazardFlash ; While touching an enemy: flash the droid's attributes and click the beeper
-> Only while DroidFlags bit 4 (an enemy touched, the energy drains fast) is set: fills the droid's 5 attribute rows with DeathColour (2-7, cycling) + FLASH, toggling the beeper bit (port $FE) each row. L1 18 574 calls, 104 flashes.
+$699B c HazardFlash ; While the shield is up: flash the droid's attributes and click the beeper
+> Only while DroidFlags bit 4 (the shield, down held alone; the energy drains fast, EnergyReload 10) is set: fills the droid's 5 attribute rows with DeathColour (2-7, cycling) + BRIGHT (OR $40), toggling the beeper bit (port $FE) each row. L1 18 574 calls, 104 flashes.
 $69C3 HazardFlashColour
 $69CA HazardFlashRow
 $69CD HazardFlashCell
 
 $69E3 c WinTest ; Every ED piece taken: EDS COMPLETED; back in room $54: the end
-> All ten EdFlags bytes $1F (L1 18 581 tests): the eleventh byte (EdFlagsEnd) is set to $1F once and the message EDS COMPLETED queued. Then in room $54 (the control room, where the game starts): the scroller's row is cleared, CONGRATULATIONS queued, EnergyTimer and ScrollPriority zeroed, a delay (WinDelay, BC = $FDE8), ProgressScreen with A = 0 (the whole picture), 512 HALTs (WinWait: B = 0, C = 2; about 10 s) and Restart. Witness: the RZX log (work/stage1/rzx/frames.bin) queues EDS COMPLETED at RZX frame 71 845 in room 28 (ScrollNext $63E8, priority 10), enters room 84 at 79 916 and runs WinTestRoom at 79 947 (ScrollNext $64C7, priority 20, EnergyTimer 0); the win recording starts inside WinWait ($6A26: 495 HALTs, then Restart, Menu at its frame 497). $69FF-$6A25 ran only in the RZX playback, which no L1 build holds.
+> All ten EdFlags bytes $1F (L1 18 581 tests): the eleventh byte (EdFlagsEnd) is set to $1F once and the message EDS COMPLETED queued. Then in room $54 (the control room, where the game starts): the attributes $5885-$5889 (row 4, columns 5-9) set to 0, which hides the lives and energy digits, CONGRATULATIONS queued, EnergyTimer and ScrollPriority zeroed, a delay (WinDelay, BC = $FDE8), ProgressScreen with A = 0 (the whole picture), 512 HALTs (WinWait: B = 0, C = 2; about 10 s) and Restart. Witness: the RZX log (work/stage1/rzx/frames.bin) queues EDS COMPLETED at RZX frame 71 845 in room 28 (ScrollNext $63E8, priority 10), enters room 84 at 79 916 and runs WinTestRoom at 79 947 (ScrollNext $64C7, priority 20, EnergyTimer 0); the win recording starts inside WinWait ($6A26: 495 HALTs, then Restart, Menu at its frame 497). $69FF-$6A25 ran only in the RZX playback, which no L1 build holds.
 $69EA WinTestLoop
 $69F9 WinTestRoom
 $6A04 WinClearRow
@@ -271,7 +274,7 @@ $6B12 SaveObjectsNoObject1
 $6B13 SaveObjectsObject2
 
 $6B22 c DrawRoom ; Enter the room: reset the movers, read the alien record, wipe and draw the room, build the cells
-> In: A = 0 a scroll wipe (an exit), A not 0 a clear (a life lost, a teleport, a new game); Room. The sprite list is emptied; the patrollers marked not drawn; the four enemy records and the two objects zeroed. From the room's alien record (AlienMap + AlienMap[2 x Room]): Item1Pos / Item1Kind, Item2Pos / Item2Kind, TeleportPos / TeleportRoom; the enemy mask (bit k: enemy k waits to spawn, timer 1 or 2, state $40, BlankGraphic); the two object records copied into Objects. The play area's attributes keep ink, paper... AND $47 (no bright, no flash); then the wipe: DrawRoomScroll shifts every line of the play area one pixel out, odd lines left and even lines right, eight times with a delay (L1 171 scrolls), or ClearPlayArea $7917 (110). The attributes are zeroed, then the layout (RoomLayouts + RoomLayouts[2 x Room]) is drawn tile by tile: (column, row, tile) triples until a column byte with bit 7. Each tile's pixels come from TileGraphics[tile] (width, height, rows) and its colours from TileAttrs[tile] (a fill byte with bit 7, or one attribute a cell), all clipped to the play area. Then the cell table (1 where the attribute is not 0), the items (ItemCell $6E88, DrawItem $6E0D for a kind with bit 7) and the teleporter ($FF $FF, TeleportColumn / TeleportRow). Shot = 0; DI.
+> In: A = 0 a scroll wipe (an exit), A not 0 a clear (a life lost, a teleport, a new game); Room. The sprite list is emptied; the patrollers marked not drawn; the four enemy records and the two objects zeroed. From the room's alien record (AlienMap + AlienMap[2 x Room]): Item1Pos / Item1Kind, Item2Pos / Item2Kind, TeleportPos / TeleportRoom; the enemy mask (bit k: enemy k waits to spawn, timer 1 or 2, state $40, BlankGraphic); the two object records copied into Objects. The play area's attributes keep BRIGHT and INK (AND $47: paper and FLASH cleared); then the wipe: DrawRoomScroll shifts every line of the play area one pixel out, odd lines left and even lines right, eight times with a delay (L1 171 scrolls), or ClearPlayArea $7917 (110). The attributes are zeroed, then the layout (RoomLayouts + RoomLayouts[2 x Room]) is drawn tile by tile: (column, row, tile) triples until a column byte with bit 7. Each tile's pixels come from TileGraphics[tile] (width, height, rows) and its colours from TileAttrs[tile] (a fill byte with bit 7, or one attribute a cell), all clipped to the play area. Then the cell table (1 where the attribute is not 0), the items (ItemCell $6E88, DrawItem $6E0D for a kind with bit 7) and the teleporter ($FF $FF, TeleportColumn / TeleportRow). Shot = 0; DI.
 > Witness: L1 279 rooms drawn; 6 458 tiles; the attributes' loop 161 103 cells.
 $6B48 DrawRoomClearEnemies
 $6B52 DrawRoomClearObjects
@@ -372,7 +375,7 @@ $7202 ReadCursor0
 @about MoveDroid runs once a pass between MainLoop's two HALTs. It takes Controls, moves the droid by a column or two pixel rows, leaves the room at an edge, queues the old and new images for the interrupt's XOR, and tests what the droid's cells hold. The droid graphic is 3 bytes wide (2 for the front frames) and 40 rows high.
 
 $7208 c MoveDroid ; One step of the droid: the teleporter, the fall, the controls, the exits, the sprites, the touch test, the pickups
-> While moving down a step (DroidFlags bit 2) it waits MoveDelay passes (L1 6 522 waits). A droid on a teleporter's $FF $FF cells with TeleportLatch 0 teleports (MoveDroidTeleport: L1 8 teleports). The cell under its feet (the cell 5 rows below, $A0 on) decides a fall: when it and the next one or two are not walls the droid starts down (bit 2), else it stands (L1 15 289). The old image goes to the sprite list (DroidSave, flag pointer 0). Then, unless it is turning round (bit 1: TurnRound $7866), fire calls Fire $861C, and the directions move it: right (bit 0) and left (bit 1) a column a few frames apart through the walk frames 0-7 (DroidFrame 3, 4, 7, 8 step the x; StepBlockedLeft $76A1 / StepBlockedRight $76D1 undo a step into a wall); up and down two pixel rows (bit 3 up, bit 2 down, CellBlockedRow $7CF2 tests the wall). A direction against the facing starts the turn-round (frame 8). The exits: x = $1D east (Room + 1, x = 0: L1 87), x = 0 west (Room - 1, x = $1D: 32), y = $98 south (Room + 8, y = $32: 26), y = $30 north (Room - 8, y = $96: 26); each saves the objects and calls DrawRoom with A = 0. Then the new frame (DroidFrames, DroidWidths) goes to the sprite list with FlagPointer, and the attributes under it are set to $45 where the cell is not a wall and holds no item. The touch test: when the interrupt found the droid's sprite on ink (bit 7 of DroidFlags), the cells under it are ORed (OrCells $7DAE into TouchBits): an enemy (bit 1) starts the fast drain (EnergyReload $0A, TouchTimer 50: L1 222); any other mark kills (HazardDeath: 309 tests reach it). Last the item test (FoundItem).
+> On the floor it acts every second pass (MoveDelay reloads 2); in the air (DroidFlags bit 2: no wall under the feet; the droid hovers and moves vertically only with up or down) every pass (L1 6 522 waits). A droid on a teleporter's $FF $FF cells with TeleportLatch 0 teleports (MoveDroidTeleport: L1 8 teleports). The cell under its feet (the cell 5 rows below, $A0 on) decides a fall: when it and the next one or two are not walls the droid is in the air (bit 2), else it stands (L1 15 289). The old image goes to the sprite list (DroidSave, flag pointer 0). Then, unless it is turning round (bit 1: TurnRound $7866), fire calls Fire $861C, and the directions move it: right (bit 0) and left (bit 1) a column a few frames apart through the walk frames 0-7 (DroidFrame 3, 4, 7, 8 step the x; StepBlockedLeft $76A1 / StepBlockedRight $76D1 undo a step into a wall); up and down two pixel rows (bit 3 up, bit 2 down, CellBlockedRow $7CF2 tests the wall). A direction against the facing starts the turn-round (frame 8). Down held alone while standing raises the shield (DroidFlags bit 4, FlagPointer $0000 so the touch test sees nothing, EnergyReload and EnergyTimer $0A); no control or another one lowers it (FlagPointer = DroidFlags again, the reload 250). The exits: x = $1D east (Room + 1, x = 0: L1 87), x = 0 west (Room - 1, x = $1D: 32), y = $98 south (Room + 8, y = $32: 26), y = $30 north (Room - 8, y = $96: 26); each saves the objects and calls DrawRoom with A = 0. Then the new frame (DroidFrames, DroidWidths) goes to the sprite list with FlagPointer, and the attributes under it are set to $45 where the cell is not a wall and holds no item. The touch test: when the interrupt found the droid's sprite on ink (bit 7 of DroidFlags), the cells under it are ORed (OrCells $7DAE into TouchBits): an enemy (bit 1) starts the fast drain (EnergyReload $0A, TouchTimer 50: L1 222); any other mark kills (HazardDeath: 309 tests reach it). Last the item test (FoundItem).
 > Witness: L1 18 557 calls.
 $7216 MoveDroidCell
 $7238 MoveDroidNoTeleport
@@ -489,7 +492,7 @@ $7920 ClearPlayAreaByte
 $7936 ClearPlayAreaNext
 
 $793A c Pause ; ENTER pauses and resumes
-> ENTER pressed after a release (KeyLatches bit 1) toggles Controls bit 5; the routine loops while bit 5 is set, the interrupts going on: the scroller runs and, known only from the code, EnergyTick keeps counting the energy down. L1 18 582 calls, 2 toggles (c1).
+> ENTER pressed after a release (KeyLatches bit 1) toggles Controls bit 5; the routine loops while bit 5 is set. MainLoop calls it after WaitFrame's DI and PauseLoop never enables interrupts, so while paused no interrupt is taken: no sprite is drawn, the scroller stops and EnergyTick does not count. Witness: c1, ENTER held at 15240-15250 and 15350-15360 (exec $7949); no exec of Interrupt $95D0 or EnergyTick $7AB6 in 15241-15359; EnergyTimer $64 and Energy $97 at the start of 15241, 15300 and 15359. L1 18 582 calls, 2 toggles (c1).
 $7940 PauseLoop
 $7956 PauseReleased
 
@@ -526,7 +529,7 @@ $7A9F c ClearScreen ; Clear the pixels, the attributes to 7 (white ink on black)
 > L1 8.
 
 $7AB6 c EnergyTick ; Count the energy down one every EnergyTimer interrupts
-> Every interrupt (L1 54 825). When EnergyTimer reaches 0 it reloads from EnergyReload ($FA: 5 s a step; $0A while an enemy is touched: 0.2 s), Energy - 1 (BCD) printed at $4088; at 11 the message WARNING ENERGY LOW. EnergyTimer 0 stops it (the win and the game over set it to 0). L1 378 steps.
+> Every interrupt (L1 54 825). When EnergyTimer reaches 0 it reloads from EnergyReload ($FA: 5 s a step; $0A under the shield or after an enemy's touch: 0.2 s), Energy - 1 (BCD) printed at $4088; at 11 the message WARNING ENERGY LOW. EnergyTimer 0 stops it (the win and the game over set it to 0). L1 378 steps.
 $7AD2 EnergyTickStep
 
 $7ADF c DeathEffect ; The droid shaken apart: its image shifted out a pixel a line, eight times, with a falling sweep
@@ -538,8 +541,8 @@ $7B10 DeathEffectLeftLine
 $7B12 DeathEffectLeft
 $7B28 DeathEffectNext
 
-$7B3F c PrintBcd ; Print a BCD byte as two digits with a click each
-> In: A the byte, HL the screen address. A leading 0 is a space (ROM font $3D00); the digits come from Font (Font - $100 + 8 x code); each is preceded by a 50-toggle click (port $FE). Print8 $8A79 prints. L1 549.
+$7B3F c PrintBcd ; Print a BCD byte as two digits, after one click
+> In: A the byte, HL the screen address. A leading 0 is a space (ROM font $3D00); the digits come from Font (Font - $100 + 8 x code). Before the first digit only, a click of 50 passes (OUT, XOR $10, OUT: 50 speaker edges 42 T apart, 41.7 kHz, 2100 T); the second digit has none. Print8 $8A79 prints. L1 549.
 $7B65 PrintBcdClick
 $7B68 PrintBcdClickLoop
 
@@ -548,7 +551,7 @@ $7B8F c RoomRecord ; HL = the alien record of room C
 > AlienMap + AlienMap[2 x C] (the authors' lookup). L1 4 746.
 
 $7BA0 c ScrambleRooms ; Move the non-weapon items one step round the rooms
-> B = the item of room $7B; then for rooms 0-$7B in turn, each present item whose kind has bit 6 clear (GEN 19, energy, an ED piece; not a weapon) swaps with B. Each call moves every such item to the next room that holds one: NewGame calls it 1-31 times (Random), so the pieces' rooms change from game to game. The authors' scram. L1 34 calls.
+> B = the item of room $7B; then for rooms 0-$7B in turn, each present item whose kind has bit 6 clear (GEN 19, energy, an ED piece; not a weapon) swaps with B. Each call moves every such item to the next room that holds one: NewGame calls it 1-31 times (Random), so the pieces' rooms change from game to game. Room 123 has only item 1, the last non-weapon slot, so each call rotates the 64 non-weapon kinds by exactly one slot; NewGame's 1-31 calls give 31 possible deals. The RZX game: 27 (at001000.szx against the image). The authors' scram. L1 34 calls.
 $7BA9 ScrambleRoomsLoop
 $7BB8 ScrambleRoomsItem2
 $7BC5 ScrambleRoomsNext
@@ -680,8 +683,8 @@ $7F5D c FallSweep ; A falling sweep: 256 toggles, each longer
 $7F61 FallSweepLoop
 $7F66 FallSweepDelay
 
-$7F6D c PassTick ; The droid's hum: two beeper toggles each pass, a pitch from a running sum
-> Called by MainLoop once a pass (L1 18 554): two toggles with a delay worked out from H; BorderSound starts at 0.
+$7F6D c PassTick ; The pass tick: two beeper writes each pass, a 4206 T low pulse
+> Called by MainLoop once a pass (L1 18 554). BorderSound = 0, then two writes: 0, and $10 4206 T later; the speaker stays high to the next pass, so each pass (2 frames) gives one 1.2 ms low pulse, a 25 Hz tick. The delay is worked out from H, but LD H,$00 at the entry resets H every call, so it is always $FD (then 8): a constant.
 $7F76 PassTickLoop
 $7F92 PassTickDelaySet
 $7F93 PassTickDelay
@@ -715,7 +718,7 @@ $8085 TeleportFlashCellSet
 
 @module objects ; The room's objects
 $809D c MoveObject ; Move and draw one object; a shot of the right weapon kills it
-> In: HL the record (Objects or Object2). Every other call (the timer in bits 0-1 of +0) the object moves: on its first pass in the room (state bit 6) it is only drawn; otherwise the old image goes to the sprite list (graphic + 1, 4 bytes x 3 character rows), its mark 4 is XORed out of its cells and the cells under it are ORed into ObjectBits. A shot's mark there (bit 0): the cells zeroed; the weapon is the one bit of $70 set (two or three bits: $60 AND, none: $10); the object's mark (+8) equal: it dies (state bit 7); else it stops (bit 5). A live object steps in its direction (StepRight, StepDown, StepLeft, StepUp: 3 x 3 cells, x up to $E8, y up to $A8) and turns at a wall: right to down, down to left, left to right... (direction + 2 or + 3, AND 3). The next frame (97 bytes on, back to the first after the last) is shifted to x AND 7 (ShiftGraphic4) and queued, the mark 4 XORed in, the attributes set. A dying object steps through ObjectDeathFrames, 4 passes a frame, then it is gone (BlankGraphic).
+> In: HL the record (Objects or Object2). Every other call (the timer in bits 0-1 of +0) the object moves: on its first pass in the room (state bit 6) it is only drawn; otherwise the old image goes to the sprite list (graphic + 1, 4 bytes x 3 character rows), its mark 4 is XORed out of its cells and the cells under it are ORed into ObjectBits. A shot's mark there (bit 0): the cells zeroed; the weapon from AND $70, JP PO: one bit or all three kept as they are (three never match a kill mark: stopped), two bits ANDed with $60, 0 becomes $10; the object's mark (+8) equal: it dies (state bit 7); else it stops (bit 5). A live object steps in its direction (StepRight, StepDown, StepLeft, StepUp: 3 x 3 cells, x up to $E8, y up to $A8) and reverses at a wall: state AND $FC + 2 after right (left), + 3 after down (up), + 0 after left (right), + 1 after up (down). The next frame (97 bytes on, back to the first after the last) is shifted to x AND 7 (ShiftGraphic4) and queued, the mark 4 XORed in, the attributes set. A dying object steps through ObjectDeathFrames, 4 passes a frame, then it is gone (BlankGraphic).
 > Witness: L1 37 158 calls (2 for each of 18 579 passes), 1 777 moves, 13 hits, 11 kills.
 $80DA MoveObjectErase
 $810D MoveObjectEraseCols
@@ -738,7 +741,7 @@ $8258 MoveObjectDeathFrame
 $8276 MoveObjectDeathDraw
 
 @module weapons ; The shot of each weapon, and firing
-@about One shot is in flight at a time (Shot: 0 none; bit 0 going left, bit 4 exploding, bit 5 the first pass, bit 6 a new shot, bit 7 hit). Weapon 0 is a dash that kills by collision only (the interrupt's XOR sets bit 7 of Shot, its flag byte); weapons 1-3 mark the cells they cross (ShotMark $40, $20, $10 with bit 0) and an object whose kill mark is that weapon's dies (MoveObject $809D). Weapons 1-3 cost one unit of ammunition a shot.
+@about One shot is in flight at a time (Shot: 0 none; bit 0 going left, bit 4 exploding, bit 5 the first pass, bit 6 a shot in flight, bit 7 hit). Weapon 0 is a dash that kills by collision only (the interrupt's XOR sets bit 7 of Shot, its flag byte); weapons 1-3 mark the cells they cross (ShotMark $40, $20, $10 with bit 0) and an object whose kill mark is that weapon's dies (MoveObject $809D). Weapons 1-3 cost one unit of ammunition a shot.
 
 $8298 c MoveShot ; Move the shot of the weapon in use
 > By Weapons: bit 7 MoveShot0 $877E; bits 6 and 5 MoveShotStraight $84CC; bit 4 (weapon 3) the probe here. MainLoop calls it twice a pass (L1 37 157). Weapon 3's shot (graphic Weapon3Graphics $AF85, 3 bytes x 2 rows, attribute $46, mark $10): erased and its mark XORed out, then while fire is held it is steered by the directions (MoveShot3Steer, CellSolidColumn / CellSolidRow: no build steered one, L1 -), else it explodes over four passes (Weapon3Frames) and marks the cells of an object under it with $11.
@@ -1150,7 +1153,7 @@ $AF25 Materialise3
 $AF55 Materialise4
 @res sprites/Materialise.bin
 $AF85 b ProbeGraphics 49 ; Weapon 3's probe: 4 frames of 49 bytes (shift byte, 16 rows of 3)
-> FireWeapon3 ($861C) and MoveShot3Frame ($8298 on) point the shot at frame (ShotFrame AND 3): 0, 1, 2, 3, then back down. L1: only the recordings rzx-040000, rzx-052000 and rzx-070000 fire weapon 3; they read frames 2 and 3 ($AFB6-$B017, 291 reads), so frames 1 and 4 are known only from the code. No write: the shift was 0 each time.
+> FireWeapon3 ($861C) and MoveShot3Frame ($8298 on) point the shot at frame (ShotFrame AND 3): 0, 1, 2, 3, then back down. L1: only the recordings rzx-040000, rzx-052000 and rzx-070000 fire weapon 3; they read frames 2 and 3 ($AFB6-$B017, 291 reads), so frames 1 and 4 are known only from the code there. The recording probe-shield (tjB, doc 05 5.8) shows frames 2 and 4 too (rows at $AFB7 and $B019, counting from 1 as above), so only frame 1 is known only from the code. No write: the shift was 0 each time.
 $AFB6 Probe2
 $AFE7 Probe3
 $B018 Probe4
@@ -1161,7 +1164,7 @@ $B16C ObjectKind5
 $B2F0 ObjectKind6
 $B413 ObjectKind7
 $B597 ObjectKindNone
-$B6BA ObjectDeath ; the four frames of an object's death (ObjectDeathFrames $68E3); L1 reads frames 2-4 only (8 679 reads)
+$B6BA ObjectDeath ; the four frames of an object's death (ObjectDeathFrames $68E3); L1 reads frames 2-4 only (8 679 reads): frame 1 is never read (MoveObjectDying)
 $B71B ObjectDeath2
 $B77C ObjectDeath3
 $B7DD ObjectDeath4

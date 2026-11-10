@@ -54,9 +54,13 @@ ClearPlayAreaNext:
 ; ENTER pauses and resumes
 ;
 ; ENTER pressed after a release (KeyLatches bit 1) toggles Controls bit 5; the
-; routine loops while bit 5 is set, the interrupts going on: the scroller runs
-; and, known only from the code, EnergyTick keeps counting the energy down. L1
-; 18 582 calls, 2 toggles (c1).
+; routine loops while bit 5 is set. MainLoop calls it after WaitFrame's DI and
+; PauseLoop never enables interrupts, so while paused no interrupt is taken: no
+; sprite is drawn, the scroller stops and EnergyTick does not count. Witness:
+; c1, ENTER held at 15240-15250 and 15350-15360 (exec $7949); no exec of
+; Interrupt $95D0 or EnergyTick $7AB6 in 15241-15359; EnergyTimer $64 and
+; Energy $97 at the start of 15241, 15300 and 15359. L1 18 582 calls, 2 toggles
+; (c1).
 Pause:
   LD HL,KeyLatches
   LD BC,$BFFE
@@ -108,7 +112,7 @@ WeaponSelect:
   CP $00
   RET NZ
   LD HL,KeyLatches
-  LD BC,ShiftGraphic4
+  LD BC,KeysSpaceToB
   IN A,(C)
   BIT 0,A
   JR NZ,WeaponSelectReleased
@@ -302,9 +306,10 @@ ClearScreen:
 ; Count the energy down one every EnergyTimer interrupts
 ;
 ; Every interrupt (L1 54 825). When EnergyTimer reaches 0 it reloads from
-; EnergyReload ($FA: 5 s a step; $0A while an enemy is touched: 0.2 s), Energy
-; - 1 (BCD) printed at $4088; at 11 the message WARNING ENERGY LOW. EnergyTimer
-; 0 stops it (the win and the game over set it to 0). L1 378 steps.
+; EnergyReload ($FA: 5 s a step; $0A under the shield or after an enemy's
+; touch: 0.2 s), Energy - 1 (BCD) printed at $4088; at 11 the message WARNING
+; ENERGY LOW. EnergyTimer 0 stops it (the win and the game over set it to 0).
+; L1 378 steps.
 EnergyTick:
   XOR A
   LD HL,EnergyTimer
@@ -400,11 +405,13 @@ DeathEffectNext:
   RES 7,(HL)
   RET
 
-; Print a BCD byte as two digits with a click each
+; Print a BCD byte as two digits, after one click
 ;
 ; In: A the byte, HL the screen address. A leading 0 is a space (ROM font
-; $3D00); the digits come from Font (Font - $100 + 8 x code); each is preceded
-; by a 50-toggle click (port $FE). Print8 $8A79 prints. L1 549.
+; $3D00); the digits come from Font (Font - $100 + 8 x code). Before the first
+; digit only, a click of 50 passes (OUT, XOR $10, OUT: 50 speaker edges 42 T
+; apart, 41.7 kHz, 2100 T); the second digit has none. Print8 $8A79 prints. L1
+; 549.
 PrintBcd:
   PUSH AF
   AND $F0

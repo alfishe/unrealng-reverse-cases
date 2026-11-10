@@ -4,7 +4,8 @@
 ; Setup puts the stack under the game block, selects the keyboard and installs the IM 2 handler. Restart shows the
 ; menu and starts a game. MainLoop is one pass of the game with two HALTs (WaitFrame $795D): the droid and its exhaust
 ; between the first and the second, the objects, enemies and patrollers after the second. The interrupt handler $95D0
-; draws the sprite list each frame, so a pass takes two frames when its work fits (and a third when it does not).
+; draws the sprite list at each interrupt, so a pass holds two interrupts when its work fits (and three when the work,
+; run with interrupts off, overruns one).
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; Power-on setup: the stack, the keyboard, the IM 2 handler
@@ -21,9 +22,10 @@ Setup:
 
 ; The menu, then a new game
 ;
-; ClearScreen $7A9F, Menu $8854 (waits for 1-4 / ENTER), NewGame $7A2F, the
-; message TUJAD FROM ORPHEUS, EI, then MainLoop. Entered at the start and after
-; a win ($6A2D) or a game over ($6AAA). L1 4 (c1 and the menu builds).
+; ClearScreen $7A9F, Menu $8854 (1, 2, 3 choose the controls, 0 starts),
+; NewGame $7A2F, the message TUJAD FROM ORPHEUS, EI, then MainLoop. Entered at
+; the start and after a win ($6A2D) or a game over ($6AAA). L1 4 (c1 and the
+; menu builds).
 Restart:
   DI
   CALL ClearScreen
@@ -33,7 +35,7 @@ Restart:
   CALL QueueMessage
   EI
 
-; One pass of the game: two frames
+; One pass of the game: two interrupts (three when the work overruns)
 ;
 ; WaitFrame (the sprites of the last half pass are drawn), PassTick $7F6D (a
 ; sound tick), DroidExhaust $8DD2 (erase), MoveDroid $7208, ExhaustStep $8E7E,
@@ -42,11 +44,13 @@ Restart:
 ; pair of EnemyBuffers; MovePatrollers $6AAD; MoveShot again; Pause $793A
 ; (ENTER); EnergyOut $6A30; WinTest $69E3; again.
 ;
-; Witness: L1 18 585 passes. Most passes take exactly two frames (the two
+; Witness: L1 18 585 passes. Most passes hold exactly two interrupts (the two
 ; HALTs); a pass whose work between the HALTs runs past the next interrupt
-; misses it and waits for the one after, so it takes three. The rare one-frame
-; pass is a WaitFrame whose HALT is entered just before an interrupt that the
-; last half pass left pending (Open point 3 in work/stage2/NOTES.md).
+; misses it (the work runs with interrupts off) and waits for the one after, so
+; it holds three. Counted by the interrupts inside it, a pass holds 2 (183 of
+; 200 from rzx/at050000.szx) or 3 (17: one INT lost while the work ran with
+; interrupts off); never 1. The "1-frame" passes of a count by frame number are
+; passes that start before T 1812, where unreal-ng's 48K INT falls (doc 4.7).
 MainLoop:
   CALL WaitFrame
   CALL PassTick
@@ -105,12 +109,12 @@ HazardDeath:
   RET NZ
   JP LoseLife
 
-; While touching an enemy: flash the droid's attributes and click the beeper
+; While the shield is up: flash the droid's attributes and click the beeper
 ;
-; Only while DroidFlags bit 4 (an enemy touched, the energy drains fast) is
-; set: fills the droid's 5 attribute rows with DeathColour (2-7, cycling) +
-; FLASH, toggling the beeper bit (port $FE) each row. L1 18 574 calls, 104
-; flashes.
+; Only while DroidFlags bit 4 (the shield, down held alone; the energy drains
+; fast, EnergyReload 10) is set: fills the droid's 5 attribute rows with
+; DeathColour (2-7, cycling) + BRIGHT (OR $40), toggling the beeper bit (port
+; $FE) each row. L1 18 574 calls, 104 flashes.
 HazardFlash:
   LD HL,DroidFlags
   BIT 4,(HL)
@@ -161,7 +165,8 @@ HazardFlashCell:
 ;
 ; All ten EdFlags bytes $1F (L1 18 581 tests): the eleventh byte (EdFlagsEnd)
 ; is set to $1F once and the message EDS COMPLETED queued. Then in room $54
-; (the control room, where the game starts): the scroller's row is cleared,
+; (the control room, where the game starts): the attributes $5885-$5889 (row 4,
+; columns 5-9) set to 0, which hides the lives and energy digits,
 ; CONGRATULATIONS queued, EnergyTimer and ScrollPriority zeroed, a delay
 ; (WinDelay, BC = $FDE8), ProgressScreen with A = 0 (the whole picture), 512
 ; HALTs (WinWait: B = 0, C = 2; about 10 s) and Restart. Witness: the RZX log

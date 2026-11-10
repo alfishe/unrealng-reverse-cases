@@ -18,7 +18,8 @@ Start:
 ; Record k (k = 0-3) at $6303 + 9k: +0 the timer (passes to the next step), +1
 ; the state (bits 0-1 the direction 0 right, 1 down, 2 left, 3 up; bit 6
 ; materialising; bit 7 hit, the explosion; $40 with +0 = 1 or 2 a spawn
-; waiting), +2 x (column), +3 y (pixels), +4/+5 the graphic pointer, +6 the
+; waiting), +2 x in pixels (up to $F0; a spawn writes Random OR $20 AND $F8,
+; $20-$D0), +3 y in pixels (up to $B0), +4/+5 the graphic pointer, +6 the
 ; frame, +7 the frames, +8 the attribute. DrawRoom $6B40 zeroes byte 0 of each
 ; and, by the bits of the room's enemy mask, sets +0 to 1 or 2, +1 to $40 and
 ; the graphic to BlankGraphic $6609. MainLoop calls MoveEnemy $90E7 with each
@@ -36,13 +37,14 @@ Enemy4:
 ;
 ; Object 1 at $6327, object 2 at $6331: +0 the kind (bits 4-7, ObjectKind) and
 ; a 2-pass move timer (bits 0-1; 0: no object), +1 the state (bits 0-1 the
-; direction, bit 4 still, bit 5 stopped by the wrong weapon, bit 6 just
-; entered, bit 7 dying), +2 x (pixels), +3 y, +4/+5 the graphic, +6 the frame,
-; +7 the frames, +8 the weapon mark it dies to, +9 the attribute. DrawRoom
-; copies the room's records from the alien map into these (LDIR at $6C2B),
-; SaveRoomObjects $6ADC writes them back when the droid leaves the room, so an
-; object keeps its place and its life. MainLoop calls MoveObject $809D for each
-; (L1 18 579).
+; direction, bit 4 dead (MoveObject returns at once), bit 5 stopped by another
+; weapon (cleared again when its own weapon kills it: MoveObjectDying RES 5),
+; bit 6 just entered, bit 7 dying), +2 x (pixels), +3 y, +4/+5 the graphic, +6
+; the frame, +7 the frames, +8 the weapon mark it dies to, +9 the attribute.
+; DrawRoom copies the room's records from the alien map into these (LDIR at
+; $6C2B), SaveRoomObjects $6ADC writes them back when the droid leaves the
+; room, so an object keeps its place and its life. MainLoop calls MoveObject
+; $809D for each (L1 18 579).
 Objects:
   DEFB $00
 Object1Flags:
@@ -73,11 +75,12 @@ PatrollerPtrs:
 ; The droid, the shot, the room and the energy counters
 ;
 ; x (column 0-$1D), y (pixel row $30-$98 in steps of 2), the flags (bit 0
-; facing left, bit 1 turning, bit 2 down a step, bit 3 moving, bit 4 the touch
-; test on, bit 6 the step frame, bit 7 the sprite list's collision bit), the
-; frame 0-13, the width in bytes. The image's bytes from $6359 are Leftover
-; text (the authors' source): PlaceDroid $7A6D and NewGame $7A2F write every
-; byte before play.
+; facing left, bit 1 turning, bit 2 in the air (no wall under the feet), bit 3
+; moving, bit 4 the shield (down held alone: FlagPointer $0000, EnergyReload
+; 10, HazardFlash), bit 6 the step frame, bit 7 the sprite list's collision
+; bit), the frame 0-13, the width in bytes. The image's bytes from $6359 are
+; Leftover text (the authors' source): PlaceDroid $7A6D and NewGame $7A2F write
+; every byte before play.
 DroidVars:
   INCBIN "res/leftover/Source1.bin",$0000,1
 DroidY:

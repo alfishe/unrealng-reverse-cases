@@ -9,15 +9,16 @@
 ; is only drawn; otherwise the old image goes to the sprite list (graphic + 1,
 ; 4 bytes x 3 character rows), its mark 4 is XORed out of its cells and the
 ; cells under it are ORed into ObjectBits. A shot's mark there (bit 0): the
-; cells zeroed; the weapon is the one bit of $70 set (two or three bits: $60
-; AND, none: $10); the object's mark (+8) equal: it dies (state bit 7); else it
+; cells zeroed; the weapon from AND $70, JP PO: one bit or all three kept as
+; they are (three never match a kill mark: stopped), two bits ANDed with $60, 0
+; becomes $10; the object's mark (+8) equal: it dies (state bit 7); else it
 ; stops (bit 5). A live object steps in its direction (StepRight, StepDown,
-; StepLeft, StepUp: 3 x 3 cells, x up to $E8, y up to $A8) and turns at a wall:
-; right to down, down to left, left to right... (direction + 2 or + 3, AND 3).
-; The next frame (97 bytes on, back to the first after the last) is shifted to
-; x AND 7 (ShiftGraphic4) and queued, the mark 4 XORed in, the attributes set.
-; A dying object steps through ObjectDeathFrames, 4 passes a frame, then it is
-; gone (BlankGraphic).
+; StepLeft, StepUp: 3 x 3 cells, x up to $E8, y up to $A8) and reverses at a
+; wall: state AND $FC + 2 after right (left), + 3 after down (up), + 0 after
+; left (right), + 1 after up (down). The next frame (97 bytes on, back to the
+; first after the last) is shifted to x AND 7 (ShiftGraphic4) and queued, the
+; mark 4 XORed in, the attributes set. A dying object steps through
+; ObjectDeathFrames, 4 passes a frame, then it is gone (BlankGraphic).
 ;
 ; Witness: L1 37 158 calls (2 for each of 18 579 passes), 1 777 moves, 13 hits,
 ; 11 kills.

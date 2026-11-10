@@ -68,7 +68,7 @@ ExitToBasic `$95C1` holds a tenth `OUT ($FE)` (`LD A,7; OUT ($FE),A`: a white bo
 ```mermaid
 flowchart TD
     ML["MainLoop $6911, a pass of 2 frames"] --> PT["PassTick: a 1.2 ms low pulse"]
-    ML --> HF{"DroidFlags bit 4: enemy touched?"}
+    ML --> HF{"DroidFlags bit 4: the shield up?"}
     HF -->|yes| HB["HazardFlash: 5 edges"]
     MD["MoveDroid: an item taken"] --> PE["PickupErase"] --> PTN["PickupTone: 256 edges"]
     PR["PrintBcd: HUD digits"] --> CL["the click: 50 edges, 42 T apart"]
@@ -273,9 +273,9 @@ The point: every HUD number announces itself with a click, but the click is one 
 
 ## 9.5 HazardFlash: the hazard buzz
 
-While DroidFlags bit 4 is set (an enemy touched, the energy draining fast), MainLoop's HazardFlash `$699B` repaints the
+While DroidFlags bit 4 is set (the shield: down held alone, the energy draining fast; [doc 5.9](05-controls.md#59-the-shield-down-alone)), MainLoop's HazardFlash `$699B` repaints the
 droid's 5 attribute rows with DeathColour (2 to 7, cycling) plus BRIGHT. After each row it toggles the speaker. So each
-pass gives 5 edges, about 178 T apart: a 9.8 kHz burst of 0.2 ms, once a pass. With PassTick's pulse, a touched droid
+pass gives 5 edges, about 178 T apart: a 9.8 kHz burst of 0.2 ms, once a pass. With PassTick's pulse, a shielded droid
 sounds as a rough buzz at 25 Hz.
 
 ```text

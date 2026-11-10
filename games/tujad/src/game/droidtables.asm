@@ -46,6 +46,10 @@ MaterialiseFrames:
   DEFW MaterialiseGraphics,Materialise2,Materialise3,Materialise4
 
 ; The four frames of an object's death
+;
+; The first word (ObjectDeath $B6BA) is never read: the dying states (state AND
+; $0C = $04, $08, $0C) select offsets 2, 4, 6; $00 ends the death first
+; (MoveObjectDying $8236).
 ObjectDeathFrames:
   DEFW ObjectDeath,ObjectDeath2,ObjectDeath3,ObjectDeath4
 

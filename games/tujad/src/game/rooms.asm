@@ -74,9 +74,9 @@ SaveObjectsObject2:
 ; alien record (AlienMap + AlienMap[2 x Room]): Item1Pos / Item1Kind, Item2Pos
 ; / Item2Kind, TeleportPos / TeleportRoom; the enemy mask (bit k: enemy k waits
 ; to spawn, timer 1 or 2, state $40, BlankGraphic); the two object records
-; copied into Objects. The play area's attributes keep ink, paper... AND $47
-; (no bright, no flash); then the wipe: DrawRoomScroll shifts every line of the
-; play area one pixel out, odd lines left and even lines right, eight times
+; copied into Objects. The play area's attributes keep BRIGHT and INK (AND $47:
+; paper and FLASH cleared); then the wipe: DrawRoomScroll shifts every line of
+; the play area one pixel out, odd lines left and even lines right, eight times
 ; with a delay (L1 171 scrolls), or ClearPlayArea $7917 (110). The attributes
 ; are zeroed, then the layout (RoomLayouts + RoomLayouts[2 x Room]) is drawn
 ; tile by tile: (column, row, tile) triples until a column byte with bit 7.

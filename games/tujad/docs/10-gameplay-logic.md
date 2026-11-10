@@ -883,7 +883,7 @@ no execution of `$95D0` or `EnergyTick $7AB6`; EnergyTimer `$64` and Energy `$97
   a turn of five frames takes about 12 passes, long enough for EnergyTick to step 0 to `$99` (SUB 1, DAA). The droid would then keep the
   life with energy 99. No recording turns at energy 0.
 - **99 lives plus GEN 19** gives `$00` (ADD 1, DAA). Only three GEN 19 exist, so the counter never gets near.
-- **The probe's steering.** No recording steers weapon 3 (doc 05.8).
+- **The probe's steering.** No RZX chunk steers weapon 3; the recording `probe-shield`, made for doc 05, does (doc 05.8).
 - **The patroller touch.** The droid shared a room with a patroller in 5 378 RZX frames and never touched one.
 - **The game over's percentage.** The `game-over` recording shows the screen; the RZX game never lost its last life.
 - **The spare ED piece.** No recording took both copies of piece 3 in one game; the code sets the same bit twice.

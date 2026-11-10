@@ -492,7 +492,7 @@ shifting a graphic (ShiftGraphic3LeftBit, lilac) and an attribute fill (FillAttr
 ![The heaviest pass against the beam](img/loop/beam-heaviest.png)
 
 *`room-102` frames 239-242, the pass 239:50162-242:37892 (197 394 T, 3 INTs, one lost), the heaviest of the 200.
-Frame 240: the first handler XORs the enemies (red), then steps the scroller (green, the panel at lines 4-35) to about
+Frame 240: the first handler XORs the enemies (red), then steps the scroller (green, the panel at lines 8-39) to about
 T 47 000; the droid half follows (PassTick's delay, the exhaust, the droid's attributes) and runs into frame 241. The
 INT at 241:1812 falls while it runs with interrupts off and is lost. The second HALT starts at 241:7070 and waits the
 rest of the frame (cyan). Frame 242: the droid's list. Made with `python3 ../../kit/beam_timeline.py --work
@@ -535,7 +535,7 @@ python3 work/docs/tjA/passparts.py --work work/docs/tjA/r102 --window 239:50000-
 - The droid's 2 x 40 lines are always written before the beam reaches them (624 sprite writes before the beam and 0
   after, over the four frames). The handler starts at T 1841 and the droid stands below line 90, so the XOR wins the
   race and the droid never tears.
-- The scroller's 589 writes all land after the beam has passed the panel (lines 4-35). So the panel's new line shows,
+- The scroller's 589 writes all land after the beam has passed the panel (lines 8-39). So the panel's new line shows,
   whole, one frame later.
 
 **The point**: the heaviest pass is 2.8 frames long by T but holds only 1.6 frames of work; the lost INT makes it
