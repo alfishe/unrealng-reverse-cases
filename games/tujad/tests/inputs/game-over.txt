@@ -1,0 +1,10 @@
+# game-over: from work/stage1/menu.szx (the menu, c1 frame 13700): 1 (keyboard), 0 (start), then no key. POKE (record.py
+# --poke 200,0x636D,0 --poke 200,0x636E,1): lives 0 and energy 01 at frame 200, so the next energy step loses the last
+# life: the game-over message, the completed percentage, the menu
+0 -
++50 1
++10 -
++50 0
++10 -
++3000 -
++1 END

@@ -1,0 +1,101 @@
+# rzx-free-32000: from work/stage1/rzx/at032000.szx, the RZX playthrough's keys (tools/rzx_keys.py script --from 32000),
+# the first 1000 frames, unchecked: the game parts from the RZX (WALKTHROUGH 5) but still reaches the rooms named in 6.0
+0 -
+12 KL
+40 KL KF
+44 KL
+51 KL KF
+56 KL
+58 -
+62 KF
+66 -
+70 KF
+74 -
+78 KF
+83 -
+88 KL
+106 KL KU
+136 KU
+149 KR KU
+228 KR
+244 KR KU
+249 -
+255 KR KU
+262 KU
+265 -
+267 KU
+273 KR KU
+293 KU KF
+294 KU
+298 -
+302 KF
+308 -
+312 KR
+320 -
+324 KD
+326 KD KF
+331 KR KD
+332 KR
+338 KR KF
+342 KR
+343 -
+348 KU
+350 KU KF
+356 KU
+371 KU KF
+376 KR KU
+380 KU
+442 -
+474 KU
+481 KU KF
+488 KL KU
+510 KU
+512 KU KF
+516 KU
+529 KU KF
+534 KU
+546 KU KF
+551 KU
+561 KU KF
+566 KU
+576 KU KF
+581 KU
+590 KU KF
+592 KF
+593 -
+598 KF
+604 -
+607 KF
+614 -
+622 KU
+647 -
+678 KU
+688 -
+695 KL
+711 KL KU
+712 KU
+716 KR KU
+762 KR
+778 -
+817 KF
+823 -
+827 KF
+832 -
+836 KF
+837 KD KF
+842 -
+845 KR
+850 KR KF
+854 KR
+856 KR KD
+871 KD KF
+876 KD
+881 KD KF
+885 KD
+890 KD KF
+896 KD
+918 -
+953 KR
+999 KR KD
+1000 -
+1001 END

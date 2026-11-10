@@ -1,0 +1,28 @@
+{
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/mkgame/original.bin || (mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin)"
+  ],
+  "image": "work/mkgame/original.bin",
+  "lo": "60C0",
+  "hi": "FE00",
+  "device": "ZXSPECTRUM48",
+  "bases": {
+    "5": "4000",
+    "2": "8000",
+    "0": "C000"
+  },
+  "read_builds": [
+    "game"
+  ],
+  "ref_builds": [
+    [
+      "game",
+      "the first recording's game window"
+    ]
+  ],
+  "header": [
+    "; Tujad, Orpheus Ltd / Ariolasoft UK 1986 (Andy Green, Jeff Philips, Stuart J. Ruecroft): the game image $60C0-$FDFF as the stub at $5B00 leaves it."
+  ]
+}

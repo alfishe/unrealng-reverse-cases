@@ -9,7 +9,7 @@ done is in [AGENTS.md](AGENTS.md); this file says only what is next.
 | --- | --- | --- |
 | 1 | OCP Video Pool | complete 2026-11-09 ([case](games/video-pool/README.md), doc 14 the UKNC port) |
 | 2 | Chuckie Egg | complete 2026-11-10 ([case](games/chuckie-egg/README.md)) |
-| 3 | Tujad | stage 1 |
+| 3 | Tujad | stage 2 ([case](games/tujad/README.md)); ZXDB 33911 (the POKE file's 5448 is another id) |
 | 4 | SimCity | |
 | 5 | Earth Shaker | our own reverse; Bedazzle's disassembly (github.com/Bedazzle/Earth-shaker) is not a source of names, compare with it at the end at most |
 | 6 | Battle Command | ZXDB 451 |
@@ -49,3 +49,4 @@ Found by the cases and worked around there; the status says whether `kit/` fixes
 ## For unreal-ng
 
 - Chuckie Egg: the game's state after K frames depends on how they are split into `control_execution run_frames` calls (two faults, reproduced with probes): [docs/unreal-ng-run-frames-faults.md](docs/unreal-ng-run-frames-faults.md) (the probe scripts stay in the case's untracked `work/stage2/`).
+- Tujad: a TTD session cannot record an RZX playback, and an RZX's inputs replayed from its saved state drift from the game within frames (timing, the counter `$6366`, the random number): the stage-1 walkthrough was cut into 59 checked pieces (games/tujad/WALKTHROUGH.md section 5).

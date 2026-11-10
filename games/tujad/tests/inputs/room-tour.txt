@@ -1,0 +1,6 @@
+# room-tour: from work/stage1/rec/menu-cursor/end.szx (in play, room 84, the cursor keys chosen), 8 (right) held
+# throughout; the POKEs in room-tour.pokes put the player at the right edge of room r - 1 every 60 frames, so the
+# game's own room change ($7403) moves him into room r and draws it, r = 0..127
+0 8
+7680 -
+7681 END

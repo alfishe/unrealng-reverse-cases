@@ -1,0 +1,24 @@
+# rzx-035000: the keys of zxdb/tujad.rzx ("Recorded by Rafal") from its sample 35000 (work/stage1/rzx/at035000.szx) to 35772, aligned to unreal-ng frames by tools/rzx_align.py
+0 KR
+3 -
+66 KF
+71 -
+83 KF
+89 -
+99 KR
+108 KR KF
+110 KF
+113 -
+140 KR
+147 -
+185 KR
+189 KD
+224 -
+387 KL
+446 -
+718 KU
+729 -
+744 KL
+759 -
+772 -
+773 END

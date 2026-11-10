@@ -1,0 +1,29 @@
+# menu-cursor: from c1's start.szx (the menu, c1 frame 13700): 2 (cursor joystick), 0 (start), then play with the
+# cursor keys: 8 right, 5 left, 7 up, 6 down, 0 fire; SPACE weapon
+0 -
++50 2
++10 -
++50 0
++10 -
++100 8
++120 -
++20 7
++40 -
++20 0
++10 -
++20 5
++60 -
++20 6
++40 -
++20 8
++200 -
++20 0
++10 -
++20 SPACE
++10 -
++20 0
++10 -
++20 8
++200 -
++100 -
++1 END

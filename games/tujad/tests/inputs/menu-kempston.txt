@@ -1,0 +1,29 @@
+# menu-kempston: from c1's start.szx (the menu, c1 frame 13700): 3 (Kempston joystick), 0 (start), then play with the
+# Kempston stick: KR right, KL left, KU up, KD down, KF fire; SPACE weapon
+0 -
++50 3
++10 -
++50 0
++10 -
++100 KR
++120 -
++20 KU
++40 -
++20 KF
++10 -
++20 KL
++60 -
++20 KD
++40 -
++20 KR
++200 -
++20 KF
++10 -
++20 SPACE
++10 -
++20 KF
++10 -
++20 KR
++200 -
++100 -
++1 END

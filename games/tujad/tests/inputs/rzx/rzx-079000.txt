@@ -1,0 +1,9 @@
+# rzx-079000: the keys of zxdb/tujad.rzx ("Recorded by Rafal") from its sample 79000 (work/stage1/rzx/at079000.szx) to 79188, aligned to unreal-ng frames by tools/rzx_align.py
+0 KU
+61 KU KF
+65 KU
+76 KU KF
+82 KU
+138 -
+188 -
+189 END

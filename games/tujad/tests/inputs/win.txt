@@ -1,0 +1,5 @@
+# win: from work/stage1/rzx/at080000.szx (the RZX playthrough after 80 000 of its frames: every ED complete, the
+# player back in the control room 84), no key: the congratulations, the circuit-board picture, then the menu
+0 -
+1500 -
+1501 END

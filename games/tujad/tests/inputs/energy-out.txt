@@ -1,0 +1,5 @@
+# energy-out: from work/stage1/rzx/at047000.szx (the RZX playthrough after 47 000 of its frames: room 76, energy 18,
+# lives 5), no key: the energy runs down to 0 and a life is lost ($6A30)
+0 -
+5000 -
+5001 END

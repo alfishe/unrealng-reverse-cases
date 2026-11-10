@@ -36,6 +36,7 @@ Each case is a full reverse of one game:
 | [Moon Patrol](games/moon-patrol/README.md) | Atarisoft (UK), 1984 (never released, recovered) | 48K, tape | complete 2026-11-09 | the arcade game's licensed port: a scrolling moon buggy, two courses, a hi-score table saved to tape |
 | [Video Pool](games/video-pool/README.md) | Oxford Computer Publishing, 1985 | 48K, tape | complete 2026-11-09 | James Hutchby's pool simulation: "flicker-free" balls, three rule variations, a table editor, a turbo loader with a checksum; a UKNC port planned (doc 14) |
 | [Chuckie Egg](games/chuckie-egg/README.md) | A'n'F Software, 1983 | 48K, tape | complete 2026-11-10 | Nigel Alderton's platform game: Hen-House Harry collects a dozen eggs on each of eight levels that repeat with changes, hens on the ladders, a caged duck; a two-byte tape block in ERR_SP as the protection |
+| [Tujad](games/tujad/README.md) | Ariolasoft UK (Orpheus), 1986 | 48K, tape | in progress | Orpheus' flip-screen maze shooter: a droid in a circuit-board world, an IM 2 handler that reads the controls and draws the sprites, a plain ROM-speed tape |
 
 Every case is one folder in `games/`:
 
