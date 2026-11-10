@@ -340,7 +340,7 @@ InputDelay:
 
 ; Edit an 11-letter text at InputAt (InputLength = 11: CityName's twelfth
 ; letter cannot be typed) (letters, digits, space; CAPS SHIFT 5 / 8 cursor, 0
-; delete)
+; blanks the cursor cell and the one before it)
 ;
 ; Used by the routines at SaveCity, LoadCity and SetLevel.
 InputName:

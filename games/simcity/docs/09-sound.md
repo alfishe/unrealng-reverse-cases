@@ -134,9 +134,11 @@ flowchart TD
 ```
 
 Worked example: a loop that sends a bit costs `INC D` 4, `LD A,D` 4, `AND E` 4, `JR NZ` not taken 7, `CALL` 17,
-Random 225, `AND` 7, `OUT` 11, `DEC BC` 6, `LD A,B` 4, `OR C` 4, `JR NZ` 12: 305 T, a sample rate of 11.5 kHz. A loop
-that sends nothing costs 50 T. A burst with n bits sent therefore takes 10 000 + 255 n T uncontended: E = 0 is
-61 000 T, almost a frame; E = 15 (12 bits) is 13 060 T. The bits a burst sends are the D in 1..200 with D AND E = 0.
+Random 225 (226 when the borrow adds 1), `AND` 7, `OUT` 11, `DEC BC` 6, `LD A,B` 4, `OR C` 4, `JR NZ` 12: 305 T, a
+sample rate of 11.5 kHz. A loop that sends nothing costs 50 T, so with E = 2^k - 1 a new bit comes every 305 + 50 E T:
+9.9 kHz at E = 1, 3.3 kHz at E = 15 (1055 T uncontended; the witness below measures 1520 T, contended). A burst with
+n bits sent therefore takes 10 000 + 255 n T uncontended: E = 0 is 61 000 T, almost a frame; E = 15 (12 bits) is
+13 060 T. The bits a burst sends are the D in 1..200 with D AND E = 0.
 Summed over each disaster's E schedule (9.3), that count predicts the speaker writes exactly: 4542 for the fire, 3764
 for the flood, 16 276 for the earthquake, 5824 for the meltdown, each equal to the writes traced.
 
@@ -274,9 +276,11 @@ Refuse `$71E4` is its one caller, by `JP` at `$71FC`. Refuse beeps only when no 
 are read from KeyRows `$5B00`, and any of them held returns at once. So a road dragged across a building with a key
 held is silent. Three places call Refuse:
 
-- MapClick `$7012`, when CheckSite `$7103` refuses the tool's box (a cell that may not be built on);
-- PlaceNetwork `$71BC`, when a road, rail or power line lands on anything but land or water;
-- ParkTool `$73D4`, when the map column is 2 (a bug, 9.9).
+- MapClick `$7012`, when CheckSite `$7103` refuses the tool's box (a cell that may not be built on); all three
+  beeps the recordings made come from here (9.9);
+- PlaceNetwork `$71BC`, when a road, rail or power line lands on anything but land or water (known only from the
+  code);
+- ParkTool `$73D4`, when the map column is 2 (a bug, 9.9; known only from the code).
 
 ```text
 Refuse:
@@ -384,7 +388,7 @@ city: no random number, no variable.
 
 NoiseBurst holds the interrupts off for all its 200 loops. Between two bursts the caller runs `EI`, `RET`, `POP BC`,
 its E computation, `DJNZ`, `PUSH BC` and `CALL NoiseBurst`. The window from the end of the `RET` to the next `DI` is
-55 T in CrashNoise, 66 T in FireNoise and FloodNoise and 91 T in the earthquake. An interrupt is taken only when that
+55 T in CrashNoise, 66 T in FireNoise, 70 T in FloodNoise (its `CPL` adds 4) and 91 T in the earthquake. An interrupt is taken only when that
 window meets the interrupt pulse at a frame's start. So while a noise plays, almost every frame's interrupt is lost.
 With it go the key read (ReadInput) and the switch to the simulation task: the city stands still and the keys are not
 seen.
@@ -443,7 +447,8 @@ for good: the date and the city simply resume, but a key pressed in the meantime
 ## 9.6 SOUND off: the interrupts never come back
 
 NoiseBurst's first instruction is `DI`, and the SOUND test comes after it. When SoundOn `$A32D` is 0 (OPTIONS, SOUND
-toggled off) the routine returns at `RET Z`, before its `EI`. Nothing in the UI task enables the interrupts again: the
+toggled off) the routine returns at `RET Z`, before its `EI`. Nothing the UI loop can still reach enables the
+interrupts again (the `EI`s at the ends of save and load, `$9E58`, `$9EF1`, `$9EFC`, `$9F0C`, need a key): the
 handler's own `EI` at `$F74C` is never reached, because no interrupt is taken. So the first disaster noise with SOUND
 off leaves the game without interrupts:
 
@@ -486,7 +491,8 @@ How to read the figure:
   runs) but reads no key and runs no simulation.
 
 Known only from the code: a `HALT` reached in this state would never return. The menus and the number fields wait
-with `HALT` (RunMenu `$6944`, EditNumber `$6996`, [8.9](08-hud-and-text.md#89-menus-and-dialogs)). The keys are dead
+with `HALT` (RunMenu `$6955`, EditNumber `$69E7`, [8.9](08-hud-and-text.md#89-menus-and-dialogs)), and so does
+ScrollClick's scroll mode (`$6CED`); these are the listing's only three `HALT`s. The keys are dead
 before a menu can be opened, so no recording can reach it.
 
 The second effect of SOUND, also known only from the code: the noise draws Random once for each bit it sends (4542
@@ -502,7 +508,7 @@ Pitches from the opcode model, uncontended. Brackets give what was measured.
 
 | Routine | Address | Writes a call | Period or sample, T | Pitch | Length a call | Interrupts | Callers |
 | --- | --- | ---: | --- | --- | --- | --- | --- |
-| NoiseBurst | `$5B48` | the D in 1..200 with D AND E = 0 | 305 a bit sent, 50 a loop without | noise at 11.5 kHz / (E + 1) for E = 2^k - 1 | 10 000 + 255 x bits T (E = 0: 61 000; 73 000-74 400 measured) | `DI` ... `EI`; off for good with SOUND off | the four below |
+| NoiseBurst | `$5B48` | the D in 1..200 with D AND E = 0 | 305 a bit sent, 50 a loop without | a new bit every 305 + 50 E T for E = 2^k - 1: 11.5 kHz at E = 0, 9.9 kHz at E = 1, 3.3 kHz at E = 15 | 10 000 + 255 x bits T (E = 0: 61 000; 73 000-74 400 measured) | `DI` ... `EI`; off for good with SOUND off | the four below |
 | FireNoise | `$9108` | 4542 | E = B AND `$3F`, B 127..1 | two swelling hisses | 42.8 frames | off | FireDisaster `$90AC` |
 | FloodNoise | `$9116` | 3764 | E = NOT B AND `$7F` | a hiss thinning out | 40.4 frames | off | FloodDisaster `$90DA` |
 | the earthquake's loop | `$912E` | 16 276 | E = C >> 4, C 0..254 | a long hiss, lowering | 119.4 frames | off | Earthquake `$9125` |
@@ -552,9 +558,12 @@ The point: the five files are every sound the game makes; the plane crash would 
   noise came in frames 6560-7500. The sound would be the meltdown's: the same CrashNoise.
 - **The tornado** makes no sound: StartTornado `$796C` calls no sound routine, and frames 8800-8900 of `disasters`
   have no speaker write.
-- **The other refusals.** L1 counts 3 ToneBeep calls: 2 in `tools`, 1 in `bankrupt`. One (`tools` 13434) was traced. The seaport refusal the
-  WALKTHROUGH names was not found in frames 12496-12530 and 12628-12668. ParkTool's refusal on map column 2 (it tests
-  the column left in A by ClickMapAddr, not the cell) is known only from the code.
+- **The other refusals.** L1 counts 3 ToneBeep calls, all from MapClick after CheckSite (`CALL Refuse` at `$7027`:
+  2 in `tools`, 1 in `bankrupt`; Refuse `$71E4` ran exactly as often). One (`tools` 13434) was traced.
+  PlaceNetwork's refusal (`JR NZ,Refuse` at `$71D0`, run 7-104 times per recording, never taken) and ParkTool's
+  refusal on map column 2 (it tests the column left in A by ClickMapAddr, not the cell; `$73D9` ran once in `tools`
+  and fell through) are known only from the code. The seaport refusal the WALKTHROUGH names was not found in frames
+  12496-12530 and 12628-12668.
 - **SOUND off** (9.6): the hang was shown on a clone; no stage-1 recording turns SOUND off before a disaster. The
   effect on the random sequence is known only from the code.
 - **A HALT with interrupts off** (9.6) is known only from the code.

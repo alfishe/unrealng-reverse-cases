@@ -12,10 +12,13 @@ table are in [doc 04](04-game-loop.md).
 The recordings and states it rests on (WALKTHROUGH 6.0), opened on own instances (port base 37070) after
 `source work/env.sh`:
 
-- `growth`: a village with a coal plant at FAST, 51 985 frames, in `work/docs/scC/growth`. Map and variables every
+- `growth`: a village with a coal plant, 51 985 frames, at NORMAL speed until about frame 11 000 (simulation pass
+  36) and FAST after (the speed bytes `$8F67`: `04 03 1F 03 01` until the sample of frame 11 000, `08 01 0F 01 00`
+  from 11 100), in `work/docs/scC/growth`. Map and variables every
   100 frames (`work/docs/scC/growth-vars.jsonl`), arrays every 1 000 (`growth-arrays.jsonl`). Traces: frames
   4528-4531 (a zone step), 19242-19266 (the power flood), and memory over frames 19232-19532 (pass 65, a month).
-- `city`: 18 R, 8 C, 8 I zones, a nuclear plant, police, fire and a stadium, 77 592 frames, in
+- `city`: 17 R, 8 C, 8 I zones (the bot laid 18 R; the one centred at row 45, column 35 was refused for a water cell
+  in its box, [doc 07](07-objects.md)), a nuclear plant, police, fire and a stadium, 77 592 frames, in
   `work/docs/scC/city`; every 250 frames (`city-vars.jsonl`), with the budget variables.
 - `disasters`: city2's town and each DISASTERS item with 2 000 frames after it, 13 050 frames, in
   `work/docs/scC/dis`; every 50 frames (`dis-vars.jsonl`).
@@ -94,18 +97,26 @@ Worked example, `growth` pass 65 (FAST, so one month). The pass starts in frame 
 ScanCity takes most of the rest. At the pass's start the memory already holds Month 11 (December 1905), while the
 screen still shows NOV 1905 until the UI task's next date print.
 
-![SimTask at work: one simulation pass of city2, frames 65719-66141](img/routines/SimTask.gif)
+![SimTask at work: growth pass 65, frames 19232-19532](img/routines/SimTask-growth.gif)
 
-How to read the animation (the file doc 04 shows, [4.6](04-game-loop.md#46-the-simulation-tasks-pass)):
+How to read the animation (the pass of the worked example; doc 04 shows a pass of the bigger `city2` in
+[4.6](04-game-loop.md#46-the-simulation-tasks-pass)):
 
-- `city2` pass 176, frames 65 719-66 141, one picture every 5 frames, 86 pictures; the memory `$A900-$F7FF` on top,
-  one row a 256-byte page: the side arrays (`$A950-$C44F`), then the map (`$C450-$E84F`); the screen below.
-- Each picture colours the bytes written since the previous one, yellow fading through red: the side arrays and the
-  map change a few bytes at a time as ScanCity walks them, while the UI goes on redrawing the window.
-- Command: `python3 ../../kit/memanim.py --work work/docs/scA/city2 --from 65719:0 --to 66141:0 --step 349440
-  --from-address 0xA900 --to-address 0xF7FF --screen --delay 120 --hold 2500 --width 1050
-  docs/img/routines/SimTask.gif`. (A `growth` version of frames 19 232-19 532 was made under the same name and
-  overwritten by this one.)
+- `growth` frames 19 232-19 532, one picture every 5 frames, 61 pictures. On top the memory `$A900-$E8FF` at 3
+  pixels a byte, one row a 256-byte page: the side arrays (`$A950-$C44F`), then the map (`$C450-$E84F`). The screen
+  is below.
+- Each picture colours the bytes written since the previous one, yellow fading through red. Only bytes whose value
+  changed show, so a byte rewritten with the same value stays grey.
+- Frames 19 242-19 267: PowerFlood rewrites the PowerMap (`$BFD0-$C44F`), 69 bytes in all.
+- Frames 19 272-19 347: nothing is written while ScanCity walks the empty rows above the town.
+- Frames 19 352-19 402: the town's zones step. They stamp Pollution and Traffic and change 17 map bytes, among them
+  the I zone at rows 42-44, columns 48-50, which becomes an I building (top byte `$B3`) in frame 19 387.
+- About frame 19 512: DecayPollution (pass 65 is odd) changes 74 Pollution bytes, then DecayTraffic 9 Traffic bytes.
+- By frame 19 527 SimPass is 66 and Month 0 (JAN 1906). The screen's date turns from NOV to DEC 1905 meanwhile.
+- Command: `python3 ../../kit/memanim.py --work work/docs/scC/growth --from 19232:0 --to 19532:0 --step 349440
+  --from-address 0xA900 --to-address 0xE8FF --screen --cell 3 --delay 120 --hold 2500 --width 1050 --label 'growth
+  pass 65 (FAST, DEC 1905): side arrays A950-C44F, map C450-E84F' docs/img/routines/SimTask-growth.gif`. The counts
+  above are from `work/review/fixC/simtask_diff.py`.
 
 **The point**: the simulation is a sweep, not an event system. Every rule is applied once per pass to every byte, in
 map order, and a month is a whole number of passes, so a bigger city has longer months in wall time.
@@ -287,14 +298,16 @@ flowchart TD
 Worked example, `growth` frame 9 000 (the sample's variables belong to the last zone ScanCity stepped before the
 frame started): LV 151, pollution 9, crime (255 - 151) >> 4 = 6 with no police there, tax 8 x 7 = 56 (easy),
 demand -26. Score = 151 - 9 - 6 - 56 - 26 = 54, the stored ZoneScore, and ResTile = 27. The other two zones of the
-figure work the same way: `city` frame 15 750 gives 150 - 7 - 6 - 56 - 34 = 47, and `growth` frame 8 100 (a C zone,
-no pollution term) 191 - 0 - 4 - 56 - 22 = 109.
+figure work the same way: `city` frame 15 750 gives 150 - 7 - 6 - 56 - 34 = 47, and `growth` frame 8 100 gives
+191 - 0 - 4 - 56 - 22 = 109. That one is an I zone, whose step zeroes the pollution term. ResTile is 0, so it is not
+an R zone, and IndLevel was rewritten in frame 8 097 as the scan stepped the I zones centred on row 43. ComDemand and
+IndDemand are both -22 there, so the demand alone cannot tell C from I.
 
 ![The zone score of three sampled zones, term by term](img/sim/score.png)
 
 How to read the figure:
 
-- Three sampled zones: `growth` frame 9 000 (R), `city` frame 15 750 (R), `growth` frame 8 100 (C).
+- Three sampled zones: `growth` frame 9 000 (R), `city` frame 15 750 (R), `growth` frame 8 100 (I).
 - Green bars add, red bars subtract, blue is the score that ZoneScoreOf stored in the same sample.
 - The dotted line at 128 is where an R zone's ResLevel stops being `$0F` ([10.4](#104-the-growth-rules-of-r-c-and-i)).
 - Command: `python3 tools/fig_sim.py score --out docs/img/sim/score.png` (the terms read from the samples
@@ -343,15 +356,17 @@ scores like a zone, then with the IndChance mask: ResLevel 8 or more (a score be
 (ResRevertZone, Density 56); else the block of level ResLevel / 2. It copies only the low byte of ResDemand into
 ZoneDemand (`LD A,(ResDemand)`), so the high byte left by the previous zone decides the demand's sign.
 
-**Commercial** (CommercialStep `$8BC4`, ComBuildingStep `$8BE0`): ComPop + 1; an empty zone returns if unpowered.
+**Commercial** (CommercialStep `$8BC4`, ComBuildingStep `$8BE0`): ComPop + 1; an empty zone returns if unpowered (a
+C building steps without a power test).
 A trip if (Random AND 31) < Density, toward I or R (targets 11, 9). Score with ComDemand; ComLevel = score / 25
 (0-10). On the ComChance mask: level 0, or LastPop 0 (NoGrowthAlone), puts the empty zone back (ComRevert);
 else the building variant ComBuildings[level - 1] (0-3).
 
-**Industrial** (IndustrialStep `$8C5B`, IndBuildingStep `$8C77`): IndPop + 1; an empty zone returns if unpowered.
-A trip if (Random AND 63) < Density, toward R only (targets 9, 9). Pollution does not count (ZonePollutionMax = 0).
-IndLevel = score / 31 (0-8). On the IndChance mask: level 0 or LastPop 0 reverts, else the building
-(IndLevel - 1) / 2. Every pass it stamps pollution of strength 4 x IndLevel.
+**Industrial** (IndustrialStep `$8C5B`, IndBuildingStep `$8C77`): IndPop + 1; an empty zone returns if unpowered (an
+I building steps without a power test). A trip if (Random AND 63) < Density, toward R only (targets 9, 9). Pollution
+does not count (ZonePollutionMax = 0). IndLevel = score / 31 (0-8). On the IndChance mask: level 0 or LastPop 0
+reverts (IndRevert ends in `JP PutBuildingSize`, no stamp), else the building (IndLevel - 1) / 2 and a pollution stamp
+of strength 4 x IndLevel. Off the mask it only stamps. So every pass but a revert stamps.
 
 ```mermaid
 flowchart TD
@@ -362,7 +377,9 @@ flowchart TD
     R3 -- no --> R5{Density below ResTile?}
     R5 -- yes --> GZ[GrowZone]
     R5 -- no --> DZ[DeclineZone]
-    Z -- C --> C1{powered?}
+    Z -- C --> CE{empty zone?}
+    CE -- yes --> C1{powered?}
+    CE -- no, a building --> C2
     C1 -- no --> X[nothing]
     C1 -- yes --> C2[ring, trip to I or R, ComLevel = score / 25]
     C2 --> C3{ComChance mask 0?}
@@ -370,16 +387,17 @@ flowchart TD
     C3 -- yes --> C4{level 0 or LastPop 0?}
     C4 -- yes --> CR[empty zone]
     C4 -- no --> CB[C building of the level]
-    Z -- I --> I1{powered?}
+    Z -- I --> IE{empty zone?}
+    IE -- yes --> I1{powered?}
+    IE -- no, a building --> I2
     I1 -- no --> X
     I1 -- yes --> I2[ring, trip to R, IndLevel = score / 31]
     I2 --> I3{IndChance mask 0?}
     I3 -- yes --> I4{level 0 or LastPop 0?}
-    I4 -- yes --> IR[empty zone]
+    I4 -- yes --> IR[empty zone, no stamp]
     I4 -- no --> IB[I building of the level]
     I3 -- no --> IP
     IB --> IP[pollution 4 x IndLevel]
-    IR --> IP
 ```
 
 The chance masks are the speed's ([doc 04](04-game-loop.md)): at FAST industry acts 1 time in 2, commerce 1 in 16.
@@ -389,8 +407,10 @@ Worked example, the city district of the animation below (the `city` samples, on
 appear unpowered (`$54`) from frame 9 250 and are all powered (`$51`) by frame 16 000; ResPop counts 17 of them.
 Population is 1 344 at frame 16 000, 4 976 at 25 000 and 5 600-5 800 at 72 500-75 000. That is 16 x the sum of
 densities, so the 17 zones average a density of about 21, a target ResTile of about 21 and a score of about 42. The C
-zones become buildings of types `$15`/`$16` (levels 0 and 1) and the I zones `$1A`/`$1B`. No higher level appears in
-any sample, so C scores stay below 50 and I scores below 62.
+zones become buildings of types `$15`/`$16` (variants 0 and 1) and the I zones `$1A`/`$1B`. ComBuildings maps
+ComLevel 1-2 to variant 0 and 3-5 to variant 1, so `$16` means a score of 75-149 when the chance mask fired; for I
+the variant is (IndLevel - 1) / 2, so `$1B` means IndLevel 3-4, a score of 93-154. No higher variant appears in any
+sample, so at those moments C scores stayed below 150 and I scores below 155.
 
 ![The growth of a district: city frames 16400-46400, every 600th frame](img/play/city-district-growth.gif)
 
@@ -480,7 +500,8 @@ the residential score loses 26 points, and the cure in the code is a stadium, wo
 A zone with transport in its ring tries a trip on a random draw (10.4). MakeTrip `$856A` walks from RouteStart, the
 transport cell ScanRing picked, along cells of the same network:
 
-1. TripMask = the start cell's flags AND 6: a road trip stays on roads, a rail trip on rails.
+1. TripMask = the start cell's flags AND 6: a road trip stays on roads, a rail trip on rails. A start on a road and
+   rail crossing (`$2E`/`$2F`, flags `%10000111`) gives TripMask 6, and that trip may use both networks.
 2. TripWalk `$85D6`: up to 30 steps. TripStep `$8609` tries the four directions from a random one, never back,
    never onto a building, only onto a cell with TripMask. Every second step pushes the cell.
 3. After each step TripArrived `$8660` looks at the four neighbours: a building or a house whose BuildingValue is one
@@ -534,8 +555,9 @@ flowchart TD
 A lost trip matters: TripMade is one of the two ways to land value (10.3), and the other is traffic 50 or more. A
 zone whose trips fail and whose roads are empty has LV 0 and declines.
 
-DecayTraffic `$851B` then lowers every Traffic byte each pass: below 24 to 0, 200 or more by 34, else by 24;
-AvgTraffic is the mean / 4. A trip path therefore keeps its traffic only while trips keep using it.
+DecayTraffic `$851B` then lowers every Traffic byte each pass: below 24 to 0, 200 or more by 34, else by 24.
+Before each byte's decay it adds the nonzero ones into TrafficSum and TrafficCount, so AvgTraffic is the mean of the
+nonzero cells only, / 4 (a sum past 65 535 stops adding). A trip path therefore keeps its traffic only while trips keep using it.
 
 Worked example, `metro` end: the Traffic panel of the [doc 07.4](07-objects.md#74-the-side-arrays) figure shows
 where road trips ran in the last passes; rail cells hold no traffic, because AddTripTraffic runs for road trips
@@ -562,9 +584,15 @@ strength >> (k - 1), and k = 9 adds nothing.
 | StampPolice `$7C32` | CoverKernel | Grid24 | grid cell - 50 (2 rows, 2 cells) | PoliceStrength 0-15 |
 
 Pollution adds up to `$FF`; coverage adds up to 15. CoverStations `$8680` runs every 4th pass (SimPass AND 3 = 0):
-it clears both covers, then stamps for every top row byte AND `$F0` = `$B0` (a powered 3 x 3 top) of type 0 (police)
-or 1 (fire). An unpowered station covers nothing. DecayPollution `$84DE` (odd passes) takes 64 from every Pollution
-byte, at least 0; AvgPollution is the average / 4.
+it clears both covers, then stamps for every top row byte AND `$F0` = `$B0` (a powered top row, any width) of type
+0 (police) or 1 (fire). An unpowered station covers nothing. DecayPollution `$84DE` (odd passes) takes 64 from every
+Pollution byte, at least 0.
+
+AvgPollution has two writers, and neither averages the array. Both divide PollutionSum by PollutionCount, the sum
+and count of ZonePollutionMax over the R zones, R blocks and C zones stepped this pass (ZonePollution adds them;
+the I zones skip it). DecayPollution, on odd passes, stores that mean / 4;
+Averages, the last step of every pass, stores it unscaled. Advise runs between the two, so it sees the / 4 value on
+odd passes and the previous pass's unscaled value on even ones.
 
 ```asm
 AddCover:
@@ -600,8 +628,11 @@ chance to go out is (FireAt + 1) / 16 (10.12).
 Worked example, the CoverKernel at FireStrength 15: the centre and its four neighbours get 15 (k = 1), the next
 diamond of 8 cells 7 (k = 2), the corners nothing. A Grid24 cell is 4 x 4 map cells, so one station covers a diamond
 about 20 map cells across. A coal plant's 6 x 6 pollution square (Grid48, 2 x 2 map cells a cell) adds 255 in its
-centre 2 x 2, 127 or 63 in the next ring and 31 at the rim, all of it 28 or more. The plant stamps every pass and the
-decay takes only 64 every second pass, so the square stays near the cap.
+centre 2 x 2, 127 or 63 in the next ring and 31 at the rim, the corners nothing. The plant stamps every pass and the
+decay takes 64 every second pass. The inner 4 x 4 gains at least 126 between decays, so it saturates at 255 (191 just
+after a decay). The rim gains only 62 between decays, less than the 64 taken, so it cycles 0, 31, 62 and never builds
+up. The `growth` samples show exactly this round its coal plant: the core at 255 (191 at frame 50 000, sampled just
+after a decay) and the rim at 62 (frames 48 000, 51 000) or 31 (49 000).
 
 ![The three stamp kernels with the values they add](img/sim/kernels.png)
 
@@ -614,14 +645,15 @@ How to read the figure:
 - Command: `python3 tools/fig_sim.py kernels --out docs/img/sim/kernels.png`.
 
 **The point**: pollution and coverage are the same mechanism with different kernels. A coal plant zeroes the score
-of every zone in about 12 x 12 map cells round it (pollution 28 or more), while traffic's own smog barely registers.
+of every zone in the 8 x 8 map cells of its saturated core (pollution 28 or more) and, in the passes when its rim
+holds 31 or 62, of the 12 x 12 round it. Traffic's own smog barely registers.
 
 ## 10.8 Funding, the budget and taxes
 
 At the end of December MonthEnd `$8E94` copies the year's figures:
 
 1. PopYearBefore = PopLastYear, PopLastYear = Population.
-2. TransportCost = TransportUpkeep, PoliceCost = Count8466, FireCost = Count8468: the counters of that one pass
+2. TransportCost = TransportUpkeep, PoliceCost = PoliceUpkeep, FireCost = FireUpkeep: the counters of that one pass
    (road 1, rail 4, bridges more; 100 per police or fire station, powered or not).
 3. With AutoBudget, the figures are computed at once; else BudgetDue = 1 and the UI task shows the budget window
    ([doc 08](08-hud-and-text.md)) and waits.
@@ -718,7 +750,7 @@ The special buildings work through BuildingKinds' routines:
 
 | Building | Step | What it does |
 | --- | --- | --- |
-| Police, fire | PoliceStep, FireStep | upkeep +100 (Count8466 / Count8468), powered: PoliceCount / FireCount + 1; the cover comes from CoverStations |
+| Police, fire | PoliceStep, FireStep | upkeep +100 (PoliceUpkeep `$8466` / FireUpkeep `$8468`), powered: PoliceCount / FireCount + 1; the cover comes from CoverStations |
 | Coal plant | CoalStep | CoalCount + 1, pollution `$FF` |
 | Nuclear plant | NuclearStep | NuclearCount + 1, the meltdown check (10.12), pollution `$30` |
 | Church, hospital | ChurchStep, HospitalStep | count; unpowered, on the IndChance mask, back to an empty R zone |
@@ -759,11 +791,20 @@ AirportStep:
 AssessCity `$81E3` sums the city's value: rails x 5 + roads x 10 + police x 1000 + fire x 1000 + hospitals x 400 +
 stadiums x 3000 + seaports x 5000 + airports x 10 000 + coal x 3000 + nuclear x 6000 (the evaluation shows it).
 
-Advise `$99AD` chooses the advice line each pass, the first rule that fires: R below a quarter of all zones (1), C
-or I below an eighth (2, 3); with people: roads fewer than the zones (4), rails (5), no plant with 10 zones (6), no
-stadium with 20 R zones (7), no seaport with 30 I (8), no airport with 30 C (9), no fire station with 30 zones (10),
-no police with 25 (11), tax 12 % or more (12), roads crumbling (13), fire or police strength below 15 (14, 15), 10
-unpowered zones (16), a brownout (17), then pollution, crime and traffic averages (19-21).
+Advise `$99AD` clears Advice to 0 each pass, then tests its rules in order. Most return on the first hit (`JP
+...,SetAdvice`); rules 4, 5 and 19-21 use `CALL NC,SetAdvice` and go on, so a later rule overrides them, and among
+19-21 the last that fires wins. The rules, with all zones Z = ResPop + ComPop + IndPop:
+
+- R at most a quarter of Z (1; with no zones at all, 0 - 0 gives advice 1), C at most an eighth (2), I at most an
+  eighth (3).
+- Then only with people (LastPop not 0): with 10 or more zones, roads not more than Z (4, goes on); with 50 or more
+  zones, rails not more than Z (5, goes on); with 10 or more zones, no plant (6).
+- No stadium with 20 R zones (7), no seaport with 30 I (8), no airport with 30 C (9), no fire station with 30 zones
+  (10), no police with 25 (11), tax 12 % or more (12).
+- With any road or rail, RoadDecay not `$FF`, the transport underfunded (13); with a fire station, FireStrength
+  below 15 (14); with a police station, PoliceStrength below 15 (15).
+- 10 or more unpowered zones (16; every power plant counts as one, [doc 07.2](07-objects.md#72-buildings-runs-of-bytes-in-the-map)), a brownout (17).
+- AvgPollution 60 or more (19), AvgCrime 20 or more (20), AvgTraffic 60 or more (21), each going on.
 
 ```mermaid
 flowchart TD
@@ -778,8 +819,15 @@ flowchart TD
 ```
 
 Worked example, `city` recording: the stadium (type 4) stands on the map from frame 16 000, but StadiumCount is 0
-in all 311 samples. ResDemand only takes values 8k - 26, so the stadium never adds its 4 points. One of StadiumStep's
-tests fails each pass (no power, no transport in its 4 x 4 ring, or every trip lost); the samples do not tell which.
+in all 311 samples. ResDemand only takes values 8k - 26, so the stadium never adds its 4 points. The transport test
+fails. The stadium's top row at row 41, column 58 is `$B4`, powered, at frames 17 500, 37 500 and 77 500. Its ring
+holds no road or rail:
+
+- row 40, columns 58-61: the nuclear plant's bottom row;
+- column 57, rows 41-44: an I building and a house;
+- column 62: land; row 45: land and trees.
+
+The road on row 40 ends at column 57, the ring's corner, which the ring skips.
 AirportCount and SeaportCount stay 0 too. Advise never asks for ports, because ComPop and IndPop stay below 30.
 
 ![The counts of the special buildings in the city recording, under the demand](img/sim/demand.png)
@@ -792,8 +840,9 @@ and only if it is powered and reached; a police or fire station costs 100 a year
 
 ## 10.10 The category and the growth ceiling
 
-CategoryOf `$9760` compares PopLastYear with CategoryLimits `$9750`: 2000 TOWN, 10 000 CITY, 50 000 CAPITAL, 100 000
-METROPOLIS, 500 000 MEGALOPOLIS, below 2000 VILLAGE. It runs only when the evaluation opens, and only the evaluation window
+CategoryOf `$9760` counts the CategoryLimits `$9750` that PopLastYear exceeds: above 2000 TOWN, above 10 000 CITY,
+above 50 000 CAPITAL, above 100 000 METROPOLIS, above 500 000 MEGALOPOLIS, else VILLAGE. A limit counts only when
+limit - PopLastYear is negative (`RET P` on 0), so exactly 2000 is still VILLAGE. It runs only when the evaluation opens, and only the evaluation window
 reads Category (to print the title): the title changes no rule.
 
 What holds a city back is the R score. A zone settles at Density = ResTile = score / 2. The bot cities' scores are
@@ -802,7 +851,8 @@ densities of about 20-30, 320-480 people each. A CITY needs 16 x the sum of dens
 such zones, all connected and powered. The metro city has 35 R zones, but 9 of them are empty and many far from the
 centre: PopLastYear is 9 248 at its end.
 
-At tax 0 the score rises by 56, so the target of a good zone rises by 28 houses, and R blocks become possible.
+At tax 0 the score rises by 56, so the target of a good zone rises by 28 density steps, and R blocks become
+possible.
 
 ```mermaid
 flowchart LR
@@ -887,10 +937,53 @@ island, and the reimplementation reproduces it cell for cell.
 
 ## 10.12 Disasters
 
-A disaster starts from the DISASTERS menu or at random. RandomDisaster `$9144` runs from the UI task (every 16 of its
-passes): unless DisastersOff `$A43D`, when the seed AND `$07FF` is 0 (1 in 2048), Random AND 7 picks one: 1 fire, 2
-flood, 3 earthquake, 4 air crash, 5 tornado, 6 meltdown (6 only on a further 1 in 8); 0 and 7 give nothing.
-RunDisaster `$916E` starts it.
+A disaster starts from the DISASTERS menu or, in principle, at random. RandomDisaster `$9144` runs from the UI task
+(every 16 of its passes). Unless DisastersOff `$A43D`, it draws Random and goes on only when the new seed AND `$07FF`
+is 0 (1 in 2048). Then Random AND 7 picks one: 1 fire, 2 flood, 3 earthquake, 4 air crash, 5 tornado, 6 meltdown (6
+only on a further 1 in 8); 0 and 7 give nothing. RunDisaster `$916E` starts it.
+
+```asm
+RandomDisaster:
+  LD A,(DisastersOff)
+  AND A
+  RET NZ
+  CALL Random
+  LD HL,(RandomSeed)
+  LD A,H
+  AND $07
+  OR L
+  RET NZ                     ; seed AND $07FF not 0
+  CALL Random                ; the next draw is fixed by the seed
+  AND $07
+  RET Z
+  CP $07
+  RET Z
+  CP $06
+  JR NZ,RandomDisasterSet
+  CALL Random
+  AND $07
+  RET NZ                     ; meltdown: a further 1 in 8
+  LD A,$06
+RandomDisasterSet:
+  LD (DisasterDue),A
+  RET
+```
+
+The draws are not independent: Random is a fixed map of the seed ([doc 07.8](07-objects.md#78-random)). The gate
+passes only on the 32 seeds `$0000`, `$0800`, ... `$F800`. From `$0000` the next draw gives 5, a tornado. From the
+other 31 it gives 7 (nothing) or 6, and every 6 then fails the meltdown's 1 in 8. So the random disaster is always a
+TORNADO, after the seed `$0000` only: about 1 try in 65 536. A task switch between the draws could change that.
+Known only from the code, with the generator's formula run over all 32 seeds.
+
+```mermaid
+flowchart TD
+    T[UI pass, PassCount AND 15 = 5] --> OFF{DisastersOff?}
+    OFF -- yes --> N[nothing]
+    OFF -- no --> G{seed after Random AND 07FF = 0?}
+    G -- no, 65 504 of 65 536 --> N
+    G -- seed 0000 --> TOR[next draw 5: TORNADO]
+    G -- the other 31 --> N2[next draw 7, or 6 then not 0: nothing]
+```
 
 | Disaster | Start | Spread | Damage |
 | --- | --- | --- | --- |
@@ -1085,15 +1178,19 @@ and a column test standing in for a cell test show a program assembled under tim
 - **One spread rule for fire and flood**, and a flood fills a building and leaves land (10.12).
 - **Trips are random walks** of 30 steps; a dead end loses every trip that enters it (10.6).
 - **The category is decoration**: computed and read only by the evaluation window (10.10).
-- **A stadium can stand uncounted.** The city recording's stadium never adds its demand points (10.9).
+- **A stadium can stand uncounted.** The city recording's stadium never adds its demand points: its ring misses
+  the road end by one corner cell (10.9).
+- **A random disaster is always a tornado.** The 1 in 2048 gate and the 1 in 8 pick are draws from one generator,
+  so only the seed `$0000` passes both, to a tornado (10.12).
 - **A power plant is found only by its powered top byte.** FindPlants looks for `$B4` (top row, powered, width 4),
-  the byte the plant prefabs carry from the start (10.2).
+  the byte the plant prefabs carry from the start: BuildingPower never rewrites a plant's top byte (10.2,
+  [doc 07.2](07-objects.md#72-buildings-runs-of-bytes-in-the-map)).
 
 ## 10.15 Known only from the code
 
 - TaxPenaltyOf: 8 x the rate on easy, 10 x on medium, 9 x on difficult.
 - The `CP $10` / `JR C,ResidentialGrow` at `$8AE9-$8AEB` jumps to the next instruction: a no-op.
-- ResBuildingStep `$8B6F` copies only the low byte of ResDemand into ZoneDemand.
+- ResBuildingStep `$8B37` copies only the low byte of ResDemand into ZoneDemand (the `LD A,(ResDemand)` at `$8B6F`).
 - ResBuildingStep, ChurchStep and HospitalStep act on the IndChance mask, not their own.
 - FloodPush drops spans silently when CellStack is full; a plant whose cell an earlier flood reached adds no budget.
 - PowerPlantTool tests only the low 16 bits of Funds.
@@ -1102,6 +1199,7 @@ and a column test standing in for a cell test show a program assembled under tim
   is in the table, so the path is never taken.
 - A fire with full cover (15) always goes out in its first pass: (Random AND 15) < 16.
 - At pause the MonthMask is `$FF`, so a month would end every 256 passes ([doc 04](04-game-loop.md)).
+- The random disaster is always a tornado, about 1 in 65 536 tries (10.12).
 - When CheckSite cannot pay 1 for clearing a cell, it leaves the cell and passes the site.
 - No recording placed a seaport or an airport with a working ring, so the port and airport counts and StartPlane's
   flights are known from the code.

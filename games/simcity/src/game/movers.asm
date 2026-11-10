@@ -143,8 +143,10 @@ TrainSteps:
 ; Move the train one cell along the rails (CellFlags bit 1), never straight
 ; back; gone when it finds none
 ;
-; Called by the UI task each pass (L1 9884); it moved in c1 (L1 442 at
-; MoveTrainTry).
+; Called through MoveDisasters by Periodic on every 16th UI pass (PassCount AND
+; $0F = 0; L1 9884 against 158 073 UI passes); it moved in c1 (L1 442 at
+; MoveTrainTry). A stuck move adds 1 to TrainSteps, a good one does not clear
+; it: every fifth stuck move sets TrainBack 5 so the train may reverse.
 MoveTrain:
   LD A,(TrainOut)
   AND A
@@ -302,8 +304,8 @@ CrashNoiseLoop:
   DJNZ CrashNoiseLoop
   RET
 
-; With no plane out, 1 in 4: a plane from the airport's row at the right edge
-; (column $60) or at the airport
+; With no plane out, 1 in 2 (Random AND 1): a plane from the airport's row at
+; the right edge (column $60) or at the airport
 ;
 ; Used by the routine at AirportStep.
 StartPlane:

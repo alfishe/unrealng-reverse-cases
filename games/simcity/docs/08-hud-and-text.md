@@ -488,9 +488,11 @@ flowchart TD
     U --> SP["print one space per leading zero"]
 ```
 
-Worked example: the funds of the HUD figure, `$19797` at `tools` frame 6332, Funds = `55 4D 00`. 1 000 000 and
+Worked example: the funds of the HUD figure, 19 797 dollars (`FUNDS $19797` on the screen) at `tools` frame 6332,
+Funds = `55 4D 00`. 1 000 000 and
 100 000 go in 0 times: two leading zeros, counted. 10 000 goes in once: "1", 9797 left. Then 9, 7, 9 and the units 7:
-"19797", then 2 spaces. The field at row 5, column 24 takes 7 columns, 24-30, whatever the number.
+"19797", then 2 spaces. The field at row 5, column 24 takes 7 columns, 24-30, for any positive number. A negative
+one takes 8: PrintSign's minus comes before the digits, and the padding counts only the digits.
 
 Witness: PrintFunds `$5F80` runs at `menus` frame 20116 as the budget window closes (8.7); L1 counts 9918 of its calls
 and 28 400 of PrintNumber24.
@@ -585,7 +587,7 @@ columns exactly.
 Cost: 42 T a byte walked (61 at an end), uncontended. "TORNADO DETECTED" (string 49) walks 815 bytes: about 35 000 T,
 half a frame, before its first letter is printed.
 
-Witness: `tools` frame 6332, the HUD figure: "COMMERCIAL `$100`" is string 6 at `$600B`, "MORE COMMERCIAL ZONES
+Witness: `tools` frame 6332, the HUD figure: `COMMERCIAL $100` is string 6 at `$600B`, "MORE COMMERCIAL ZONES
 NEEDED" is string 25 at `$60DF`. L1 reads every byte of GameTexts (1 602 984 reads in all).
 
 The point: bit 7 as the end mark costs no byte and lets PrintPadded find the end and print in one pass; the price is
@@ -663,10 +665,20 @@ How to read the figure:
   writers; the palette (purple, DrawIconLoop) from a third, which writes its icons' attributes itself; PutAttr (cyan) writes
   the text's.
 
-Worked example: the tool palette at `tools` frame 6332 (the HUD figure), Funds `$19797`. The dearest tool, the
-AIRPORT, costs `$10000`, so every tool is affordable and no icon is greyed. At `menus` frame 20111 (Funds `$14325`)
-the same holds. Below `$10000` the AIRPORT icon would be greyed. Below `$5000` the POWER STATION and SEAPORT would
-follow, below `$3000` the STADIUM (8.14).
+Worked example: the tool palette at `tools` frame 6332 (the HUD figure), Funds 19 797. GreyUnaffordable compares
+Funds with ToolPrices `$6E1E` (1, 10, 5, 20, 10, 100, 100, 100, 500, 500, 3000, 4000, 5000, 10 000 dollars). The
+dearest tool, the AIRPORT, costs 10 000, so every tool is affordable and no icon is greyed. At `menus` frame 20111
+(Funds 14 325) the same holds. Below 10 000 the AIRPORT icon is greyed, below 5000 the SEAPORT, below 4000 the POWER
+STATION (its palette text says 5000, 8.13), below 3000 the STADIUM, below 500 the police and fire stations.
+
+Witness: `tools` frame 13 857, Funds 386: the police, fire, stadium, power station, seaport and airport icons are
+dotted grey (`work/stage1/rec/tools/screens/013857-shortcut-ss0.png`, below). L1 counts GreyIcon `$6DF5` 92 times in
+`bankrupt`, 72 in `tools`, 17 in `ports`, 14 in `menus` and once in `levels`.
+
+![Six greyed icons at Funds 386](img/play/tools-013857-shortcut-ss0.png)
+
+*`tools` frame 13 857, Funds 386 (`FUNDS $386`): the six icons from POLICE to AIRPORT dotted grey, the first eight
+in colour. Screenshot of the recording, `work/stage1/rec/tools/screens/013857-shortcut-ss0.png`.*
 
 Witness: `menus` frames 20111-20117 (the probe of `work/docs/scD/probe.py`): ClearTopBlack at 20111, DrawStatusPanel
 at 20113 T53100, DrawToolIcons at 20115, PrintFunds at 20116. 6912 bytes written in the window.
@@ -1017,8 +1029,8 @@ BudgetFigures reads the costs and percentages at `$9256-$931B` and writes the gr
 window's rows 5-20. After the last, EditNumber goes back to its `HALT`s.
 
 Worked example: `menus` frame 19940. PopLastYear is 656, so TaxIncome = 656 / 100 = 6, x 20 = 120 (TAX COLLECTED
-`$120`). TransportCost is 35 at 100 %, so TransportFunded is 35; police and fire request 0. FundedTotal is 35,
-CashFlow 120 - 35 = 85, FundsBefore `$14325`, FundsAfter `$14325` - 35 + 120 = `$14410`.
+120 dollars). TransportCost is 35 at 100 %, so TransportFunded is 35; police and fire request 0. FundedTotal is 35,
+CashFlow 120 - 35 = 85, FundsBefore 14 325, FundsAfter 14 325 - 35 + 120 = 14 410 (dollars, decimal).
 
 Witness: `menus` frames 19866-19968. PrintBudget runs at 19940, 19950 and 19961: with no key down the edit loop waits
 10 frames a pass. TaxRate reads 20 throughout: Q at its maximum changes nothing.
@@ -1096,9 +1108,9 @@ How to read the figure:
   up 100 random numbers each time.
 
 Worked example: `menus` frame 20323. LastPop is 16, PopLastYear 656, PopYearBefore 0: POPULATION 16, MIGRATION 656.
-CityValueLast is 3460, printed `$3460` and then "000": `$3460000`. ProblemSum is 115, so the score is 4 x (250 - 345)
-= -380, clamped to 0. With CityScore 0 no draw is below it: 0 % YES, 100 % NO. The category is VILLAGE (GameTexts 17)
-and the level EASY (GameTexts 14).
+CityValueLast is 3460, printed "3460" and then "000": the screen reads 3460000 after the dollar sign, 3 460 000
+dollars. ProblemSum is 115, so the score is 4 x (250 - 345) = -380, clamped to 0. With CityScore 0 no draw is below
+it: 0 % YES, 100 % NO. The category is VILLAGE (GameTexts 17) and the level EASY (GameTexts 14).
 
 Witness: `menus` frame 20323, memory at the frame's start: CityValueLast = 3460, LastPop = 16, PopLastYear = 656,
 CityScore = 0, PollYes = 0, PollNo = 100 (`tools/ttdmem.py`).
@@ -1112,7 +1124,8 @@ the level menu offers DIFFICULT.
 InputLine `$A6FF` edits a text in place: the city name (INPUT NEW CITY NAME on the level menu), the file name of save
 and load, and the gene of USE OLD LANDSCAPE (as digits). It does not wait on the interrupt: it calls ReadInput and
 KeyToChar `$5BDF` itself, in a loop. A letter, digit or space is written at the cursor and the cursor moves right.
-CAPS SHIFT with 8, 5 or 0 moves the cursor right, left or deletes. ENTER ends. ShowInput `$A7A3` reprints the whole
+CAPS SHIFT with 8 or 5 moves the cursor right or left; CAPS SHIFT with 0 (InputDelete `$A77D`) blanks the character
+at the cursor and the one before it and moves the cursor left. ENTER ends. ShowInput `$A7A3` reprints the whole
 line on every pass, the cursor's letter flashing.
 
 The key repeat counts passes, not frames: after a key, the same key is taken again only after InputDelay `$A6EF` =
@@ -1132,7 +1145,7 @@ InputLine(buffer, at, length):
         elif key == ENTER: return
         elif delay > 0: delay -= 1               ; the same key held
         else:
-            if CAPS SHIFT and key in 8, 5, 0: cursor right / left / delete
+            if CAPS SHIFT and key in 8, 5, 0: cursor right / left / (blank at cursor, cursor left, blank)
             elif printable (digits only for a number): buffer[cursor] = key; cursor right (to length - 1)
             delay = 1000
         ShowInput()                              ; the line, the cursor's letter flashing
@@ -1179,7 +1192,7 @@ flowchart TD
     K -->|yes| D{"delay > 0?"}
     D -->|yes| DD["delay - 1"]
     D -->|no| CS{"CAPS SHIFT + 8 / 5 / 0?"}
-    CS -->|yes| CU["cursor right / left / delete"]
+    CS -->|yes| CU["cursor right / left; 0 blanks the cursor cell and the one before"]
     CS -->|no| PR{"printable? (digits for a number)"}
     PR -->|yes| PU["buffer[cursor] = key, cursor right"]
     PR -->|no| ND
@@ -1224,20 +1237,20 @@ Every string of the game, with its address. The resources are in `src/res/text` 
 
 | # | Address | Text | # | Address | Text |
 | ---: | --- | --- | ---: | --- | --- |
-| 0 | `$5FC6` | BULLDOZE `$1` | 25 | `$60DF` | MORE COMMERCIAL ZONES NEEDED |
-| 1 | `$5FD1` | ROAD `$10` | 26 | `$60FB` | MORE INDUSTRIAL ZONES NEEDED |
-| 2 | `$5FD9` | POWER LINES `$5` | 27 | `$6117` | NEED BIGGER ROAD NETWORK |
-| 3 | `$5FE7` | RAILROAD `$20` | 28 | `$612F` | NEED LARGER RAIL SYSTEM |
-| 4 | `$5FF3` | PARK `$10` | 29 | `$6146` | NEED A POWER PLANT |
-| 5 | `$5FFB` | RESIDENTIAL `$100` | 30 | `$6158` | THE PEOPLE WANT A STADIUM |
-| 6 | `$600B` | COMMERCIAL `$100` | 31 | `$6171` | INDUSTRY NEEDS A SEA PORT |
-| 7 | `$601A` | INDUSTRIAL `$100` | 32 | `$618A` | COMMERCE NEEDS AN AIRPORT |
-| 8 | `$6029` | POLICE STATION `$500` | 33 | `$61A3` | PEOPLE DEMAND FIRE DEPT |
-| 9 | `$603C` | FIRE STATION `$500` | 34 | `$61BA` | PEOPLE DEMAND POLICE DEPT |
-| 10 | `$604D` | STADIUM `$3000` | 35 | `$61D3` | CITIZENS UPSET,TAXES TOO HIGH |
-| 11 | `$605A` | POWER STATION `$5000` | 36 | `$61F0` | TRANSPORT SYSTEM FALLING APART |
-| 12 | `$606D` | SEAPORT `$5000` | 37 | `$620E` | FIRE DEPT NEEDS FUNDS |
-| 13 | `$607A` | AIRPORT `$10000` | 38 | `$6223` | THE POLICE NEED FUNDS |
+| 0 | `$5FC6` | `BULLDOZE $1` | 25 | `$60DF` | MORE COMMERCIAL ZONES NEEDED |
+| 1 | `$5FD1` | `ROAD $10` | 26 | `$60FB` | MORE INDUSTRIAL ZONES NEEDED |
+| 2 | `$5FD9` | `POWER LINES $5` | 27 | `$6117` | NEED BIGGER ROAD NETWORK |
+| 3 | `$5FE7` | `RAILROAD $20` | 28 | `$612F` | NEED LARGER RAIL SYSTEM |
+| 4 | `$5FF3` | `PARK $10` | 29 | `$6146` | NEED A POWER PLANT |
+| 5 | `$5FFB` | `RESIDENTIAL $100` | 30 | `$6158` | THE PEOPLE WANT A STADIUM |
+| 6 | `$600B` | `COMMERCIAL $100` | 31 | `$6171` | INDUSTRY NEEDS A SEA PORT |
+| 7 | `$601A` | `INDUSTRIAL $100` | 32 | `$618A` | COMMERCE NEEDS AN AIRPORT |
+| 8 | `$6029` | `POLICE STATION $500` | 33 | `$61A3` | PEOPLE DEMAND FIRE DEPT |
+| 9 | `$603C` | `FIRE STATION $500` | 34 | `$61BA` | PEOPLE DEMAND POLICE DEPT |
+| 10 | `$604D` | `STADIUM $3000` | 35 | `$61D3` | CITIZENS UPSET,TAXES TOO HIGH |
+| 11 | `$605A` | `POWER STATION $5000` | 36 | `$61F0` | TRANSPORT SYSTEM FALLING APART |
+| 12 | `$606D` | `SEAPORT $5000` | 37 | `$620E` | FIRE DEPT NEEDS FUNDS |
+| 13 | `$607A` | `AIRPORT $10000` | 38 | `$6223` | THE POLICE NEED FUNDS |
 | 14 | `$6088` | EASY | 39 | `$6238` | ZONES NEED POWER |
 | 15 | `$608C` | MEDIUM | 40 | `$6248` | BROWNOUTS DETECTED |
 | 16 | `$6092` | HARD | 41 | `$625A` | NUCLEAR MELTDOWN |
@@ -1249,6 +1262,10 @@ Every string of the game, with its address. The resources are in `src/res/text` 
 | 22 | `$60B6` | MEGALOPOLIS | 47 | `$62CF` | MAJOR EARTHQUAKE DETECTED |
 | 23 | `$60C1` | (a space) | 48 | `$62E8` | AIR CRASH !!! |
 | 24 | `$60C2` | MORE RESIDENTIAL ZONES NEEDED | 49 | `$62F5` | TORNADO DETECTED |
+
+The prices in the tool names are texts of the image. One differs from what the game charges: POWER STATION says 5000,
+but ToolPrices `$6E1E` holds 4000 (the palette greys the icon below 4000, 8.7), and PowerPlantTool charges 3000 for
+coal and 5000 for nuclear ([doc 10.13](10-gameplay-logic.md#1013-the-tools-placement-and-refusals)).
 
 **MonthNames `$5F8A`**: JAN `$5F8A`, FEB `$5F8D`, MAR `$5F90`, APR `$5F93`, MAY `$5F96`, JUN `$5F99`, JUL `$5F9C`,
 AUG `$5F9F`, SEP `$5FA2`, OCT `$5FA5`, NOV `$5FA8`, DEC `$5FAB` (PrintDate by Month).
@@ -1280,11 +1297,12 @@ inline codes for the fixed screens, and the menu descriptions for everything the
 
 - **The `$FC` inline code** (a number in 3 digits) is handled by PrintInline but used by no text of the image.
 - **TAPE LOADING ERROR** (LoadErrorWindow `$A2DC`) needs a failed load; the `menus` recording's load succeeded.
-- **A greyed palette icon** needs Funds below a price. No screenshot used here shows one; GreyUnaffordable's effect is
-  shown by its code, not by a figure.
+- **A greyed palette icon**: reached, not only in the code. `tools` frame 13 857 (Funds 386) shows six icons greyed
+  (8.7, `work/stage1/rec/tools/screens/013857-shortcut-ss0.png`); L1 counts GreyIcon `$6DF5` 92 times in
+  `bankrupt` and 72 in `tools`.
 - **The eleven-letter limit** of the city name (8.12) is known only from the code: METRO did not reach it.
 - **TAX COLLECTED not following the rate** (8.10) is known only from the code: the recording's rate stayed at 20.
-- **A negative figure** (PrintSign's minus) was not printed in any recording: the `bankrupt` recording's funds were not
-  traced for this document.
+- **A negative figure**: PrintSign's minus (`$662F`) ran 7 times by L1 (4 in `city2`, 2 in `growth`, 1 in `metro`,
+  the budget's negative balances); no frame of it is traced here.
 - **Corrected against the `.ann`**: the "00" after the score of PrintEvalFigures is "000" after the assessed value
   (three zeros, the third from a fall-through), sent as a source change.

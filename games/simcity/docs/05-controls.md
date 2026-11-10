@@ -28,8 +28,9 @@ The recordings it rests on (WALKTHROUGH [6.0](../WALKTHROUGH.md#60-the-recording
   - The WINDOWS menu opens at 18 929, MAPS is chosen at 18 965.
   - In the maps window: A at 19 003, 19 047, ... 19 267 (44 frames apart), then CAPS SHIFT + 1 ... 9 at 19 311 ...
     19 615, SPACE at 19 653, ENTER at 19 691.
-  - The budget: SPACE at 19 768, A at 19 804, SPACE at 19 828 and 19 866, Q at 19 904 and 19 936, A at 20 006,
-    20 030, 20 054 and 20 078.
+  - The WINDOWS menu again: SPACE at 19 768 (it opens), A at 19 804, SPACE at 19 828 (BUDGET).
+  - The budget: SPACE at 19 866 (edit the tax rate), Q at 19 904 and 19 936, SPACE at 19 968 (end of the edit), A at
+    20 006, 20 030, 20 054 and 20 078.
   - The landscape number 12345 typed into USE OLD LANDSCAPE.
 - `levels`: the city name typed in the level menu.
 
@@ -87,7 +88,7 @@ Interrupt:                                    ; $F70B, every frame (IM 2)
     if SwitchOff = 0:                         ; the tasks may switch
         swap SP between UiSP and SimSP        ; TaskNow tells which one is running
         TaskNow = TaskNow XOR 1
-    pop every register; EI; RETI
+    pop every register; EI; RET
 
 ReadInput:                                    ; $F781
     for row = 0 to 7:                         ; port high byte $FE, $FD, $FB ... $7F
@@ -123,7 +124,7 @@ flowchart TD
     SB --> W{"SwitchOff?"}
     W -- "0" --> SW["swap SP: the other task runs"]
     W -- "1" --> RT["the same task runs on"]
-    SW --> X["pop all, RETI"]
+    SW --> X["pop all, EI, RET"]
     RT --> X
 ```
 
@@ -223,7 +224,8 @@ Witness:
 - `ports`, frames 957-993: the pointer moves one step right and one step down every pass, with no key in the script
   (5.3).
 - The measured cost in `ports` (trace from frame 958): the interrupt with no task switch takes 952-1062 T; ReadInput
-  800 T of it, ReadKempston 209 T, ReadSinclair 166 T.
+  800 T of it, ReadKempston 209 T, ReadSinclair 166 T. So the handler with the input read costs about 1000-1100 T a
+  frame, 1.5 % of it; the 780 T of the L1 self-times of Interrupt and ReadInput leave out the callees.
 - The Sinclair path is known only from the code: no recording presses 6-0 alone (WALKTHROUGH 6.0, "not reached").
 - The memory samples of `$F704-$F705` show the tasks: `0000` and `0100` in turn while they alternate, `0001` while
   the switch is held off.
@@ -573,7 +575,8 @@ Worked example: the WINDOWS menu opened in `menus` at frame 18 929.
    `018965-windows-menu.png` shows it.
 
 Witness: `menus`, every menu of the bar opened in turn (screenshots `013854-about.png` to `020528-system-menu.png`);
-`$F705` reads 1 at every frame sampled from 19 770 to 19 978, while the budget window from the WINDOWS menu is up.
+`$F705` reads 1 at every frame sampled from 19 770 to 19 978, while the WINDOWS menu (to 19 828) and then the budget
+window are up.
 
 ![The four click regions over a real screen](img/controls/click-zones.png)
 
@@ -682,15 +685,16 @@ flowchart LR
 6D85  C8           RET Z
 ```
 
-Worked example: SYMBOL SHIFT + 1 ... 0 in `tools`, frames 13 617-13 841, with Funds `$386`.
+Worked example: SYMBOL SHIFT + 1 ... 0 in `tools`, frames 13 617-13 841, with Funds 386 (dollars, decimal; the
+screen shows `FUNDS $386`).
 
-| Key | Frame | Tool | Price | The status box, 24 frames later |
+| Key | Frame | Tool | Price (dollars) | The status box, 24 frames later |
 | --- | ---: | --- | ---: | --- |
-| SS + 1 | 13 617 | 0 bulldozer | `$1` | BULLDOZE `$1` |
-| SS + 5 | 13 713 | 4 park | `$10` | PARK `$10` |
-| SS + 8 | 13 785 | 7 industrial | `$100` | INDUSTRIAL `$100` |
-| SS + 9 | 13 809 | 8 police | `$500` | still INDUSTRIAL: `$386` - `$500` is negative, refused |
-| SS + 0 | 13 833 | 9 fire | `$500` | still INDUSTRIAL: refused |
+| SS + 1 | 13 617 | 0 bulldozer | 1 | `BULLDOZE $1` |
+| SS + 5 | 13 713 | 4 park | 10 | `PARK $10` |
+| SS + 8 | 13 785 | 7 industrial | 100 | `INDUSTRIAL $100` |
+| SS + 9 | 13 809 | 8 police | 500 | still INDUSTRIAL: 386 - 500 is negative, refused |
+| SS + 0 | 13 833 | 9 fire | 500 | still INDUSTRIAL: refused |
 
 Witness: the screenshots `013641-shortcut-ss1.png` to `013857-shortcut-ss0.png` of `tools`. The last two show the
 refusal: the shortcut for a tool the funds cannot pay is silently ignored.
@@ -710,9 +714,11 @@ The view shows 32 x 16 of the 96 x 96 map. Its top-left map cell is ViewCol `$65
 (0-79). Two inputs move it.
 
 ShiftScroll `$7A6F` runs once a pass, with SwitchOff held at 1. With CAPS SHIFT down it tests the cursor keys of the
-Spectrum: 8 right, 5 left, 7 up, 6 down. Each moves ViewCol or ViewRow by one cell, within the map. If anything
-moved, it jumps to DrawView, which draws the whole view again (doc 06, 6.4). A step is one pass, and a pass with
-DrawView in it takes about 10 frames, so the view moves about five cells a second.
+Spectrum: 8 right, 5 left, 7 up, 6 down. Each moves ViewCol or ViewRow by one cell, within the map. If any of the
+four keys was down, it jumps to DrawView, which draws the whole view again (doc 06, 6.4). The test is HL <> 0, and
+every Scroll routine loads HL with the address of ViewCol or ViewRow before its edge test, so a key held at the edge
+redraws the view without moving it. A step is one pass, and a pass with DrawView in it takes about 10 frames, so the
+view moves about five cells a second.
 
 The scroll corner is the "+" at row 2, column 0. A click there runs the scroll mode inside ScrollClick:
 
@@ -725,12 +731,12 @@ No recording clicked the corner.
 ```text
 ShiftScroll:                                  ; $7A6F, once a UI pass (SwitchOff = 1)
     if CAPS SHIFT up: return
-    moved = false
+    HL = 0
     if 8 down: ScrollRight()                  ; ViewCol + 1, up to 63
     if 5 down: ScrollLeft()                   ; ViewCol - 1, down to 0
     if 7 down: ScrollUp()                     ; ViewRow - 1, down to 0
     if 6 down: ScrollDown()                   ; ViewRow + 1, up to 79
-    if moved: DrawView()
+    if HL <> 0: DrawView()                  ; any scroll key, moved or not: HL = ViewCol / ViewRow
 
 ScrollClick:                                  ; $6CBF, from Click
     if ClickCell <> (column 0, row 2): return
@@ -749,7 +755,7 @@ flowchart TD
     P["UI pass"] --> CS{"CAPS SHIFT down?"}
     CS -- "no" --> N["no scroll"]
     CS -- "yes" --> K["8 right, 5 left, 7 up, 6 down: ViewCol, ViewRow"]
-    K --> M{"moved?"}
+    K --> M{"HL not 0: a scroll key down, moved or at the edge?"}
     M -- "no" --> N
     M -- "yes" --> DV["DrawView 650B: 512 cells, about 8 frames"]
     C["SPACE on the + corner"] --> SM["scroll mode: O P Q A"]
@@ -763,7 +769,7 @@ flowchart TD
 7A6F  3A 00 5B     LD A,(KeyRows)         ; ShiftScroll
 7A72  E6 01        AND $01
 7A74  C0           RET NZ                 ; CAPS SHIFT up
-7A75  21 00 00     LD HL,$0000            ; HL <> 0 after a move
+7A75  21 00 00     LD HL,$0000            ; HL <> 0 after any scroll key
 7A78  3A 04 5B     LD A,(KeyRow0)
 7A7B  E6 04        AND $04                ; 8
 7A7D  CC 0F 6D     CALL Z,ScrollRight
@@ -967,8 +973,9 @@ EditNumber `$6996` edits a number field in place (the tax rate and the three fun
 - Q adds 1 up to the field's maximum, A takes 1 down to 0.
 - The field is printed in attribute `$45` while it is edited, then `$47`.
 - The key repeats with a delay that shrinks. NumberRepeat `$6A31` counts EditRepeat `$6995` down by one on each
-  loop while any key is held, and resets it to 10 when no key is down. Each loop waits EditRepeat frames. So a held
-  key repeats after 10 frames, then 9, 8 ... and from the eleventh step on at every loop.
+  loop while any key is held, and resets it to 10 when no key is down. Each loop waits EditRepeat frames, counted
+  after the decrement. So a held key repeats after 9 frames, then 8, 7 ... 1, and from the tenth step on at every
+  loop.
 - SPACE ends the edit and goes back to the menu.
 
 This shrinking delay is the only acceleration in the game's controls.
@@ -987,7 +994,7 @@ RunMenu:                                      ; $6944
             wait for SPACE up
             item = SelectedItem()
             if item.kind = 2: jump item.routine          ; action
-            if item.kind = 1: item.flag XOR= 1; redraw   ; toggle
+            if item.kind = 1: item.flag XOR= 1; return   ; toggle: the menu closes
             if item.kind = 8: EditNumber(item)           ; number
             return
 
@@ -1014,7 +1021,7 @@ stateDiagram-v2
     Release --> Action: kind 2, JP to the item
     Release --> Toggle: kind 1, flag XOR 1
     Release --> Edit: kind 8, EditNumber 6996
-    Toggle --> Lit
+    Toggle --> [*]: RET, the menu closes
     Edit --> Edit: Q or A, then EditRepeat HALTs
     Edit --> Lit: SPACE
     Action --> [*]
@@ -1064,15 +1071,17 @@ stateDiagram-v2
 6A43  C9           RET
 ```
 
-Worked example 1: A in the budget window (`menus`, frame 19 804).
+Worked example 1: A in the WINDOWS menu (`menus`, frame 19 804).
 
-1. The budget is up; MenuSelected `$6A7D` is 0 (the tax rate line). `$F705` is 1 at every sampled frame from
-   19 770 to 19 978.
+1. The WINDOWS menu is up: MenuHook `$6942` is 0 and MenuCount is 4 (MAPS, BUDGET, EVALUATION, EXIT MENU) from
+   19 770 to 19 836. MenuSelected `$6A7D` is 0 (MAPS). `$F705` is 1 at every sampled frame from 19 770 to 19 978.
 2. The script presses A at 19 804 for 8 frames.
 3. RunMenu is inside its 8 HALTs. When they end, KeyRowA bit 0 is 0: MenuDown XORs `$46` over line 0, makes
    MenuSelected 1, and XORs the next line.
-4. The sample at 19 812 shows MenuSelected 1: the press took effect 8 frames after it began.
-5. SPACE at 19 866, back on line 0, opens the tax rate's edit: EditRepeat becomes 10 at 19 876.
+4. The sample at 19 812 shows MenuSelected 1 (BUDGET): the press took effect 8 frames after it began.
+5. SPACE at 19 828 opens the budget window: MenuHook becomes BudgetHook `$9346`, MenuCount 5, MenuSelected 0 by
+   19 850. SPACE at 19 866, on line 0, opens the tax rate's edit: EditRepeat becomes 10 at 19 876 (screenshot
+   `019866-budget.png`, TAX RATE lit).
 
 Worked example 2: Q on the tax rate, already at its maximum (`menus`, frame 19 904).
 
@@ -1088,7 +1097,7 @@ key long in a number field.
 
 ![RunMenu at work: the bar moved by one line](img/routines/RunMenu.gif)
 
-*RunMenu in the budget window. How to read: left, the screen; right, the listing (RunMenu, HighlightLine, ScreenAddr)
+*RunMenu in the WINDOWS menu: A moves the bar from MAPS to BUDGET. How to read: left, the screen; right, the listing (RunMenu, HighlightLine, ScreenAddr)
 and the bytes `$6600-$6AFF` (MenuSelected, EditRepeat, the menu description pointers). Recording `menus`, window
 19 802:0-19 816:0, A pressed at 19 804. `python3 ../../kit/routine_anim.py --work work/docs/scB/menus --window
 19802:0-19816:0 --listing build/game.lst --view screen --pc 6944-6A8F,6933-6943,5BFE-5C27 --range 6600-6AFF
@@ -1101,13 +1110,15 @@ player the whole time a menu is open.
 ## 5.9 The text line: names and numbers
 
 Three dialogs ask for text: the city name (the level menu, INPUT NEW CITY NAME), the landscape number (USE OLD
-LANDSCAPE) and the tape file name. They all use InputLine `$A6FF`. InputName `$A6F9` enters it with InputDigits set
-to `$0B00`.
+LANDSCAPE) and the tape file name. They all use InputLine `$A6FF`. InputName `$A6F9` enters it with InputDigits = 0
+(text) and InputLength = 11, one word store of `$0B00`.
 
 InputLine does not wait for the UI loop: it calls ReadInput itself, then KeyToChar, in a tight loop.
 
 - ENTER (KeyChars code `$08`) ends the line.
-- With CAPS SHIFT down: 8 moves the cursor right, 5 left, 0 deletes the character before it.
+- With CAPS SHIFT down: 8 moves the cursor right, 5 left. 0 (InputDelete `$A77D`) blanks the character at the
+  cursor and the one before it, and leaves the cursor on the latter: InputBlank, CursorLeft, then a fall into
+  InputBlank again.
 - In number mode, only the digits 0-9 are taken; otherwise any character from space up.
 - A character is written at the cursor, and the cursor moves right (it stops at the line's length).
 - The repeat: after a key is taken, InputDelay `$A6EF` is set to 1000. While the key stays down, each loop counts it
@@ -1127,7 +1138,7 @@ InputLine:                                    ; $A6FF
         else:
             if CAPS SHIFT down and c = "8": cursor right
             elif CAPS SHIFT down and c = "5": cursor left
-            elif CAPS SHIFT down and c = "0": blank, cursor left
+            elif CAPS SHIFT down and c = "0": blank at cursor; cursor left; blank at cursor
             elif digits only and c is not a digit: drop it
             elif c >= " ": line[cursor] = c; cursor right
             InputDelay = 1000
@@ -1142,7 +1153,7 @@ flowchart TD
     K -- "yes" --> D{"InputDelay above 0?"}
     D -- "yes" --> DD["InputDelay - 1"]
     D -- "no" --> CS{"CAPS SHIFT?"}
-    CS -- "8, 5, 0" --> CU["cursor right, left, delete"]
+    CS -- "8, 5, 0" --> CU["cursor right, left; 0 blanks two cells, cursor left"]
     CS -- "no" --> CH["put the character, cursor right"]
     CU --> R["InputDelay = 1000"]
     CH --> R
@@ -1201,7 +1212,8 @@ recording held a key in a text line.
 ![The keys InputLine reads](img/controls/keys.png)
 
 *The keys of the text line are KeyChars: any key, with CAPS SHIFT 5, 8 and 0 as left, right and delete (the orange
-CS labels). `python3 tools/fig_controls.py keys docs/img/controls/keys.png`.*
+CS labels; the "delete" blanks the cell at the cursor and the one before it). `python3 tools/fig_controls.py keys
+docs/img/controls/keys.png`.*
 
 The point: the text line reads the keyboard itself, so it works the same whether or not the interrupt switches tasks.
 Its repeat is counted in loops, not frames, so its speed depends on how long ShowInput takes to print the line.
@@ -1209,7 +1221,9 @@ Its repeat is counted in loops, not frames, so its speed depends on how long Sho
 ## 5.10 The maps window: layers and areas
 
 The maps window (WINDOWS, MAPS, or ENTER on the map) shows one 48 x 48 cell area of the map at a quarter size,
-coloured by a layer (doc 06, 6.11). MapsWindow `$7B51` loops:
+coloured by a layer (doc 06, 6.11). The UI loop calls MapsWindow `$7B51` itself (when MapsDue `$A511` is set or
+ENTER is down), after it has cleared SwitchOff: the simulation goes on while the window is open, stopped only inside
+each cell's LayerOf `$9D44`, which sets SwitchOff and clears it again. MapsWindow loops:
 
 1. Highlight the area key and the layer name, draw the overview, highlight them back.
 2. Leave on SPACE (or when the budget falls due).
@@ -1350,7 +1364,7 @@ shows why a pass is two to three frames long. Recording `tools`, frames 780-865.
 speed work/docs/scB/pointer-tools-780.csv docs/img/controls/pointer-speed.png`.*
 
 The point: the simulation never reads a key. Every control acts in the UI task, and every one that changes the map,
-a menu or the view stops the simulation while it acts.
+a menu or the view stops the simulation while it acts, except the maps window (5.10), which leaves it running.
 
 ## 5.12 What is known only from the code
 
@@ -1361,8 +1375,8 @@ a menu or the view stops the simulation while it acts.
 - The number field's shrinking repeat (EditRepeat below 9).
 - The text line's repeat after 1000 loops.
 - The maps window's area keys (SYMBOL SHIFT + 1-9).
-- What happens when the Kempston test sees a stick pushed in all four directions at start-up (`$1F` or more): the
-  game would decide there is no interface.
+- What happens when the Kempston port reads `$1F` or more at start-up (all four directions and fire held, or a
+  floating bus): the game decides there is no interface. The four directions alone read `$0F` and pass.
 
 The hidden keys, all of them, for the player:
 

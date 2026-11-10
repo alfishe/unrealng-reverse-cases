@@ -10,12 +10,15 @@ rules that change all this are in [doc 10](10-gameplay-logic.md); the drawing is
 The recordings and states it rests on (WALKTHROUGH 6.0), each opened on an own instance (port base 37070) after
 `source work/env.sh`:
 
-- `growth` (51 985 frames, FAST, a village with a coal plant), opened into `work/docs/scC/growth`. The map and the
+- `growth` (51 985 frames, NORMAL speed until about frame 11 000, simulation pass 36, then FAST; a village with a
+  coal plant), opened into `work/docs/scC/growth`. The map and the
   variables were sampled every 100 frames (`work/docs/scC/growth-vars.jsonl`), the side arrays every 1 000 frames
   (`growth-arrays.jsonl`), with `work/docs/scC/sample.py`. Traces: frames 4528-4531 (a residential zone step) and
   19242-19266 (the power flood).
-- `city` (77 592 frames, a city of 18 R, 8 C and 8 I zones with a nuclear plant), opened into `work/docs/scC/city`;
-  sampled every 250 frames (`city-vars.jsonl`).
+- `city` (77 592 frames, a city of 17 R, 8 C and 8 I zones with a nuclear plant), opened into `work/docs/scC/city`;
+  sampled every 250 frames (`city-vars.jsonl`). The bot laid 18 R zones; the one centred at row 45, column 35 never
+  appears in any sample (at most 17 R centres, from frame 10 750 on): its box holds the water cell at row 44, column
+  34, so CheckSite refused it.
 - `disasters` (13 050 frames), opened into `work/docs/scC/dis`; sampled every 50 frames (`dis-vars.jsonl`).
 - The end states `work/stage1/rec/metro/end.szx` (frame 96 503 of `metro`) and `work/stage2/ceiling-end.szx` (frame
   80 000 of the stage 2 ceiling run, the only state with a residential block), and the save `menus/town.tap`.
@@ -75,7 +78,7 @@ A byte below `$80` is a cell. Its tile is CellTiles `$EA68` + 8 n and its colour
 | 2 | road | CellStep (RoadCell), ScanRing (transport), TripStep |
 | 3 | conducts power | IsConductive (PowerFlood) |
 | 4 | zone cell (frame, house, centre) | GrowCell, DeclineCell |
-| 5 | unused | - |
+| 5 | set on the R, C and I zone centres `$51-$56` only | no code reads it |
 | 6 | developed: a house, counted into Density | ScanInsideCell `$7DEA` |
 | 7 | flammable | Ignite, Spread, MoveTornado |
 
@@ -96,12 +99,12 @@ The codes in groups:
 | `$2E-$33` | crossings: road and rail, road and power, rail and power (`Crossings $7062`) |
 | `$34-$37` | road with traffic: drawn only (RoadTraffic), never stored by the simulation |
 | `$38`, `$39` | park (`$39` 1 in 8, ParkTool) |
-| `$3A` | rubble; `$3B` blank |
+| `$3A` | rubble; `$3B` the no-power lightning tile (BlinkCell shows it for a blinking centre; no code stores it) |
 | `$3C-$43` | houses, worth 1-8 each (the code minus `$3B`) |
 | `$44` | flood; `$45` fire; `$46-$48` the bulldozer's rubble animation |
 | `$49-$50` | the eight empty zone frame cells, one per position round the centre (`ZoneFrame $8A08`) |
 | `$51-$53` | R, C, I zone centre, powered; `$54-$56` the same unpowered (they blink) |
-| `$57`, `$58` | road-bridge-like cells no code places (no literal `$57` or `$58` in the program) |
+| `$57`, `$58` | road-bridge-like cells no code writes to the map (`$57` appears only as a range bound, `CP $57`) |
 | `$59` | radiation |
 
 The bridge codes are the network kind plus 11 or 12 (`BridgeSteps $720F`): road 7 gives `$12`/`$13`, rail `$14`
@@ -124,8 +127,8 @@ flowchart TD
 ```
 
 Worked example, the R zone at map rows 44-46, columns 31-33 in `ceiling-end.szx`
-([7.3](#73-zones-the-map-is-the-record)). The centre byte is `$51`, flags `%10111001`: flammable, zone, conducts,
-not reshaped, and no developed bit. A house byte `$43` has `%11011001`: developed is set, so it counts 8 into
+([7.3](#73-zones-the-map-is-the-record)). The centre byte is `$51`, flags `%10111001`: flammable, bit 5 (the
+centres' unread bit), zone, conducts, not reshaped, and no developed bit. A house byte `$43` has `%11011001`: developed is set, so it counts 8 into
 Density. The frame cell `$49` has `%10011001`: a zone cell that counts nothing.
 
 ![The 90 cell codes with their tiles and flag bits](img/sim/cells.png)
@@ -134,8 +137,8 @@ How to read the figure:
 
 - One box per code `$00-$59`: the code, its tile from src/res/graphics/Cells.png (the sheet CellTiles and CellAttrs
   are built from) and a short name.
-- The seven squares under each tile are the CellFlags bits 0, 1, 2, 3, 4, 6, 7, coloured when set (legend at the
-  bottom). Bit 5 is never set.
+- The eight squares under each tile are the CellFlags bits 0-7, coloured when set (legend at the bottom). Bit 5
+  (light blue) is set only on the six zone centres `$51-$56`, and no code reads it.
 - Command: `python3 tools/fig_sim.py cells --out docs/img/sim/cells.png` (from src/res only, no recording).
 
 Witness: tools/fig_city.py draws whole maps from these tiles and codes, and its drawing of the stage-1 memory image
@@ -151,7 +154,7 @@ bytes, then `$C0` fillers:
 
 | Byte of the row | Value | Meaning |
 | --- | --- | --- |
-| 0 | `$80-$BF` | bit 5: the building's top row; bit 4: powered (BuildingPower writes it each pass); bits 0-2: the width |
+| 0 | `$80-$BF` | bit 5: the building's top row; bit 4: powered (BuildingPower writes it each pass, except on the power plants, types 6 and 8, which keep their prefab's set bit); bits 0-2: the width |
 | 1 | `$C0` OR (n >> 3) | the high part of this row's first tile number n |
 | 2 | `$C0` OR (n AND 7) | the low part of n |
 | 3 ... | `$C0` | fillers: cell k of the row shows building tile n + k |
@@ -172,7 +175,9 @@ and a density:
 A type missing from the table gets no step.
 
 How the scan finds a building: ScanCity `$86C9` walks every byte. A byte with AND `$E0` = `$A0` (a top row byte)
-goes to BuildingPower `$870C`, which reads the PowerMap bit of the cell and sets or clears bit 4. Then ZoneStep
+goes to BuildingPower `$870C`, which reads the PowerMap bit of the cell and sets or clears bit 4. The two power
+plants (types 6 and 8) jump past it: their top byte keeps the prefab's `$B4`, and ZonePowered stays 0, so CountPowered
+adds every plant to UnpoweredZones (which Advise rule 16 reads). Then ZoneStep
 `$8789` calls BuildingStep `$886B`:
 
 ```asm
@@ -320,7 +325,8 @@ DeclineCellStore:
 ```
 
 GrowZone `$8A40` and DeclineZone `$8A70` try GrowTries times (8 at FAST, 4 NORMAL, 3 SLOW; `$FF`, paused, returns at
-once) and stop at the first cell that changed. PickFrameCell `$8A20` chooses the position with Random AND 7.
+once) and stop at the first cell that changed, or at a picked frame cell that is not a zone cell (rubble, a road):
+GrowCell and DeclineCell return with carry clear there too. PickFrameCell `$8A20` chooses the position with Random AND 7.
 
 ```mermaid
 stateDiagram-v2
@@ -350,7 +356,8 @@ stateDiagram-v2
 
 Worked example, the zone of the figure below (city recording, centre at row 45, column 32):
 
-- In the samples of frames 0-15 500 the centre is `$54`: the zone is unpowered and Density stays 0.
+- Up to the sample of frame 9 000 the cell is land, water or coast. From 9 250 to 15 500 the centre is `$54`: the
+  zone is laid but unpowered, and Density stays 0.
 - The sample of frame 15 750 shows `$51`.
 - From there the houses come one cell step at a time: Density 2 at frame 16 250, 5 at 18 000, 10 at 20 000, 18 at
   23 000, 25 at 27 000, 31 at 35 000.
@@ -373,7 +380,7 @@ The zone at work, one ResidentialStep:
 
 How to read the animation:
 
-- `growth` frames 4528:0-4531:0 (pass 14, AUG 1902, NORMAL speed), 80 pictures; the grid is `$C400-$E8FF`, the map.
+- `growth` frames 4528:0-4531:0 (pass 14, AUG 1902, NORMAL speed: the recording runs at NORMAL until pass 36), 80 pictures; the grid is `$C400-$E8FF`, the map.
 - Coloured: the bytes ScanRing reads round the zone, then the frame cell GrowCell writes.
 - The zone has Density 3, score 21, ResTile 10. Density is below ResTile, so it grows by one house.
 - Command: `python3 ../../kit/routine_anim.py --work work/docs/scC/growth --window 4528:0-4531:0 --listing build/game.lst --range C400-E8FF --pc 7D2F-7F78,8A20-8B37,856A-8680 --out docs/img/routines/ResidentialStep.gif`.
@@ -434,7 +441,10 @@ How to read the figure:
 - Command: `python3 tools/fig_sim.py arrays --state work/stage1/rec/metro/end.szx --label 'metro end.szx, frame 96 503' --out docs/img/sim/arrays.png`.
 
 Witness: the samples of `growth` every 1 000 frames (`growth-arrays.jsonl`) show the same structure for the village:
-one coal plant's 6 x 6 square at 255 and a single fire and police diamond.
+a single fire and police diamond, and the coal plant's pollution square. Its inner 4 x 4 grid cells hold 255 (191 in
+a sample taken just after a decay, as at frame 50 000). Its rim gains 31 a pass, 62 over the two passes between
+decays, less than the decay's 64, so it cycles 0, 31, 62 and never builds up (62 at frames 48 000 and 51 000, 31 at
+49 000). The kernel's corners add nothing and stay 0.
 
 **The point**: the simulation sees the city through blurred copies. A station covers about 20 x 20 map cells, a
 pollution or traffic cell is 2 x 2, and only power is exact to the cell.
@@ -451,7 +461,8 @@ pollution or traffic cell is 2 x 2, and only power is exact to the cell.
 | `$8450`-`$845C` | Church, Hospital, Nuclear, Coal, Stadium, Airport, Seaport counts | buildings |
 | `$845E`, `$8460` | UnpoweredZones, PoweredZones | zones and buildings |
 | `$8464` | TransportUpkeep | road 1, rail 4, road bridge +3, rail bridge +6 a cell |
-| `$8466`, `$8468` | Count8466, Count8468 | +100 per police / fire station: their upkeep |
+| `$8462` | BuildingCount | cleared and copied to LastBuildings by Averages2, but never counted (always 0; the one `INC` is in the dead TripLeftover `$85C4`) |
+| `$8466`, `$8468` | PoliceUpkeep, FireUpkeep | +100 per police / fire station: their upkeep |
 | `$846A`, `$846C` | RoadCount, RailCount | cells |
 | `$846E`-`$847C` | crime, land value, traffic, pollution sums and counts | for the averages |
 | `$847E` | FireCells | `$45` cells |
@@ -476,7 +487,7 @@ The variables that outlive a pass:
 | `$9996` | Advice | 1 | the message index Advise `$99AD` or a disaster chose |
 | `$84A2` | CityCentre | 2 | column, row: the centre the land value and the tornado use |
 | `$835E` | SimPass | 1 | pass counter |
-| `$835D` | SimPaused | 1 | skip zones and cells |
+| `$835D` | SimPaused | 1 | skip zones and cells; only InitSimulation writes it, with 0, so the skip is dead |
 | `$A518` | Level | 1 | 0 easy, 1 medium, 2 difficult |
 | `$8F67-$8F6B` | GrowTries, IndChance, ComChance, SpeedSpare, MonthMask | 5 | SetSpeed copies the SpeedTable row each pass |
 
@@ -522,8 +533,10 @@ date, the two population snapshots and the demand. The year-end snapshot PopLast
 
 ## 7.6 The movers: train, plane, tornado
 
-Three movers have fixed records, one of each at most. The UI task moves them each pass (MoveTrain, MovePlane,
-MoveTornado) and draws them as 16 x 16 sprites (DrawMovers, [doc 06](06-rendering.md)).
+Three movers have fixed records, one of each at most. The UI task moves them on every 16th of its own passes:
+Periodic `$901D` calls MoveDisasters (MovePlane, MoveTornado, MoveTrain) when PassCount AND `$0F` is 0 (L1 9 884
+moves against 158 073 UI passes). So in this section a "move" is one such call, not a simulation pass. DrawMovers
+draws them as 16 x 16 sprites ([doc 06](06-rendering.md)).
 
 | Record | Address | Bytes |
 | --- | --- | --- |
@@ -533,8 +546,10 @@ MoveTornado) and draws them as 16 x 16 sprites (DrawMovers, [doc 06](06-renderin
 
 **The train.** RailCell calls StartTrain `$785D` for every rail cell: with no train out, 1 in 64 starts one there.
 MoveTrain `$77DC` picks a random first direction and tries four, never TrainBack (the way it came). A rail
-neighbour (flags bit 1) takes it; TrainBack becomes the opposite direction and the sprite 3 or 4 by the axis. After
-five passes with no way on, TrainBack is set to 5, which matches no direction, so the train may reverse. It vanishes
+neighbour (flags bit 1) takes it; TrainBack becomes the opposite direction and the sprite 3 or 4 by the axis. A move
+with no way on adds 1 to TrainSteps; a good step does not clear it. On every fifth stuck move, counted since the last
+reset and not necessarily in a row, TrainSteps goes back to 0 and TrainBack is set to 5, which matches no direction,
+so the train may reverse. It vanishes
 when its cell is no longer a rail. StartTrain begins with `LD A,(TransportCost+$0001)` and `CP $08`, whose flags the
 `AND A` after the next load overwrites: a dead test.
 
@@ -558,7 +573,7 @@ MoveTrainNext:
   LD HL,TrainTries
   DEC (HL)
   JR NZ,MoveTrainTry
-  LD HL,TrainSteps           ; stuck: after 5 passes allow the way back
+  LD HL,TrainSteps           ; stuck: every 5th stuck move allows the way back
   LD A,(HL)
   INC A
   LD (HL),A
@@ -573,13 +588,13 @@ MoveTrainNext:
 **The plane.** AirportStep calls StartPlane `$78CA` each pass the airport is powered and reached by transport,
 unless an attempted trip failed. With no plane out, 1 in 2 starts one: either at the airport's row, column `$60` (the
 right edge), flying to the airport's column, or at the airport, flying to column 0. MovePlane `$787E` moves it one
-column left a pass until PlaneCell reaches PlaneTarget. The crash is not the plane's own. The AIR CRASH disaster
+column left per move until PlaneCell reaches PlaneTarget. The crash is not the plane's own. The AIR CRASH disaster
 (AirCrash `$78FE`, only with an airport) sets PlaneTimer to 7-22. MovePlane counts it down only while a plane is out;
 at 0 it ignites the 2 x 2 cells under the plane (CrashCell, Ignite) and plays CrashNoise. With no plane out the
 timer waits for the next one.
 
 **The tornado.** StartTornado `$796C` picks random cells in rows and columns 16-79 until one is land (`$02`).
-MoveTornado `$7998` ends the tornado when Random gives 0 (1 in 256 a pass), after that pass's step. Otherwise, 1 in 8,
+MoveTornado `$7998` ends the tornado when Random gives 0 (1 in 256 per move), after that move's step. Otherwise, 1 in 8,
 it steps one cell diagonally toward CityCentre, else one cell in a random direction. A step onto water is refused.
 After each step it hits the cell one down and one right: a building burns to rubble whole (BurnBuilding), any other
 flammable cell becomes rubble `$3A`.
@@ -589,7 +604,7 @@ stateDiagram-v2
     state Train {
         [*] --> Running: rail cell, no train, 1 in 64
         Running --> Running: a rail neighbour, not back
-        Running --> Stuck: no way for 5 passes
+        Running --> Stuck: the 5th stuck move
         Stuck --> Running: TrainBack 5, may reverse
         Running --> [*]: its cell is no longer rail
     }
@@ -692,9 +707,15 @@ flowchart TD
 ```
 
 Nothing else is saved: not the tax rate, the options, the speed, the gene, the side arrays or PopLastYear. The
-simulation rebuilds power, coverage and the counters within a pass. PopLastYear and LastPop, though, keep the values
-of the city played before the load until the next December and the next month end. The first taxes and evaluation
-after a load use the old city's population (known only from the code).
+simulation rebuilds power, coverage and the counters within a pass. LoadCity does not touch PopLastYear, PopYearBefore or LastPop.
+LastPop keeps the old city's value until the next month end; PopLastYear and PopYearBefore until the next December.
+In between, the evaluation's category and migration use the old city's figures, and so does NoGrowthAlone (LastPop).
+The taxes do not: MonthEnd copies Population to PopLastYear in December before TaxIncomeOf runs (known only from the
+code; no recording loads over a running city).
+
+The name has a quirk of its own. SaveCity copies 12 letters to `$A944-$A94F` but saves only the 31 bytes up to
+`$A94E`; LoadCity copies 12 bytes back from `$A944`. So the twelfth letter of the loaded name is whatever SaveSpare
+`$A94F` holds in RAM at the time (the last SaveCity's twelfth letter), not anything from the tape.
 
 Worked example, `work/stage1/rec/menus/town.tap`:
 
@@ -766,9 +787,18 @@ flowchart LR
 ```
 
 The callers use masks on A: AND 7 (1 in 8), AND `$3F` (1 in 64), AND `$7F` (1 in 128). Two callers test the seed
-itself instead: RandomDisaster (seed AND `$07FF` = 0, 1 in 2048) and RadiationCell (seed AND `$0FFF` = 0, 1 in 4096).
-Random runs in both tasks. The UI task calls it for the disasters and the tornado, the simulation for everything
-else, so the sequence each sees depends on where the task switches fall.
+itself instead: RandomDisaster (seed AND `$07FF` = 0, a gate of 1 in 2048 that hides a fixed outcome, below) and
+RadiationCell (seed AND `$0FFF` = 0, 1 in 4096).
+Random runs in both tasks. The UI task calls it for NewLandscape (640 calls for gene 3), RandomDisaster, StartFires
+(9 216 calls, one per map byte), the tornado's and the train's moves, and ParkTool; the simulation for everything
+else. So the sequence each sees depends on where the task switches fall.
+
+RandomDisaster's 1 in 2048 gate is not what it seems. It tests the seed right after a Random call, and the only
+seeds with `seed AND $07FF` = 0 are the 32 multiples of `$0800`. From each of them the next Random is fixed: `$0000`
+gives A AND 7 = 5 (TORNADO); 15 of the others give 7 (nothing); the 16 that give 6 (MELTDOWN) then fail its extra 1
+in 8. So a random disaster is always a tornado, and only after the seed `$0000`: about 1 try in 65 536, one try every
+16 UI passes. A task switch between its Random calls could change the draw. Known only from the code, with the generator's
+formula run over all 32 seeds.
 
 Worked example: gene 3 seeds Random with 3 for NewLandscape. 640 calls later the map is exactly the one in the
 `growth` samples of frames 800 and 1 100: 0 cells differ ([10.11](10-gameplay-logic.md#1011-the-city-generator)).
@@ -787,12 +817,16 @@ comes as much from the task switch timing as from the generator.
 
 ## 7.9 Known only from the code
 
-- No literal `$57` or `$58` exists in the program; both codes have tiles and road-bridge flags but no placer.
+- No code writes `$57` or `$58` to the map; both codes have tiles and road-bridge flags but no placer.
 - The coverage stamps have no edge clipping: a police or fire station on map rows 0-7 writes before FireCover.
-- After a load, PopLastYear and LastPop are the old city's until the next December and month end.
-- The save copies 12 letters of the city name, but the header is 31 bytes: the twelfth letter never reaches the tape.
+- After a load, LastPop is the old city's until the next month end, PopLastYear until the next December; the taxes
+  are not affected, because December refreshes PopLastYear before TaxIncomeOf.
+- The save copies 12 letters of the city name, but the header is 31 bytes: the twelfth letter never reaches the tape,
+  and LoadCity takes it from SaveSpare `$A94F` in RAM.
+- BuildingCount `$8462` is never counted; SimPaused is never set.
+- A random disaster is always a tornado, after the seed `$0000` only (about 1 in 65 536 tries).
 - StartTrain's `CP $08` on TransportCost is dead.
-- After 5 stuck passes the train's TrainBack becomes 5 and it may reverse.
+- On every fifth stuck move (not necessarily in a row) the train's TrainBack becomes 5 and it may reverse.
 - AIR CRASH arms PlaneTimer even when no plane is out; the crash comes 7-22 moves into the next flight.
 - A church or hospital reverts to an empty R zone only when unpowered, on the IndChance mask.
 - The double count of a C or I zone that falls back mid-scan comes from the code and the samples (IndPop above the

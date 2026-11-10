@@ -95,7 +95,7 @@ def sheet(mem, out, cells_used, ns_used):
     scale, cols = 4, 16
     cw, ch = 8 * scale + 18, 8 * scale + 22
     f_title, f_head, f_lab, f_note = K.font(24), K.font(19), K.font(13), K.font(15)
-    n_cells, n_build = 0xF58E - ATTRS, 0xE4      # 94 cells (their attributes end where the buildings' begin)
+    n_cells, n_build = 0xF58E - ATTRS, 0xF4      # 94 cells, 244 building tiles (their attributes end where the buildings' begin)
     rows_c, rows_b = (n_cells + cols - 1) // cols, (n_build + cols - 1) // cols
     w = 40 + cols * cw
     h = 96 + 40 + rows_c * ch + 50 + rows_b * ch + 20
@@ -118,7 +118,7 @@ def sheet(mem, out, cells_used, ns_used):
 
     grid(y0 + 34, n_cells, lambda i: cell_image(mem, i), cells_used)
     y1 = y0 + 34 + rows_c * ch + 10
-    d.text((14, y1), 'building rows: n $00-$E3, tile $ED58 + 8 x n, attribute $F58E + n', fill=TEXT, font=f_head)
+    d.text((14, y1), 'building rows: n $00-$F3, tile $ED58 + 8 x n, attribute $F58E + n', fill=TEXT, font=f_head)
     grid(y1 + 34, n_build, lambda i: building_image(mem, i), ns_used)
     img.save(out)
 

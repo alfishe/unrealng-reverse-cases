@@ -5,13 +5,14 @@
 ; table $FD00 and the jump $FCFC are at the end of the system module (a module is one stretch of addresses).
 ; --------------------------------------------------------------------------------------------------------------------
 
-; The UI task's stack: Entry sets SP = $F6C2 (UiStack+$40); L1's deepest write
-; $F6A4
+; The UI task's stack: Entry sets SP = $F6C2 (UiStack+$40); written down to
+; $F68A (menus frame 3466), 8 bytes above BuildingAttrs
 UiStack:
   DEFS $40
 
 ; The simulation task's stack below SimFrame: it grows down from $F704 into
-; SimFrame and below; L1's deepest write $F6E8; $F6C2-$F6E7 never written
+; SimFrame and below; written down to $F6D0 (menus frame 5498); $F6C2-$F6CF
+; never written
 SimStack:
   DEFS $2C
 
@@ -26,9 +27,10 @@ SimEntry:
 ; 0 the UI task runs, 1 the simulation
 TaskNow:
   DEFB $00
+
+; Nonzero: the interrupt does not switch tasks (the UI's critical parts)
 SwitchOff:
-  DEFB $00                ; nonzero: the interrupt does not switch tasks (the
-                          ; UI's critical parts)
+  DEFB $00
 SwitchSpare:
   DEFB $00
 

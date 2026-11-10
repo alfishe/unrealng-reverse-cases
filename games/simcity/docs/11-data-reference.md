@@ -108,7 +108,7 @@ Written by `kit/refdocs.py`.
 | `$6ED3` | `NetworkShapes` | 16 | the shape offset by the 4-bit neighbour mask (up, left, right, down) | - | - |
 | `$6F10` | `NetworkFlag` | 2 | NetworkBit's result for this FixNetwork | - | - |
 | `$6F5C` | `BridgeEnd` | 3 | The last water cell the bridge line covered | - | - |
-| `$6F9C` | `CellFlags` | 90 | The flags of the cells 0-`$59`: bit 0 not reshaped, 1 rail, 2 road, 3 conducts power, 4 zone, 6 developed, 7 flammable. Read by CellFlagsOf (`$7599`; L1 11 343 551). Buildings (`$80` and up) give `$99` there. The bit meanings follow from the readers: bit 0 FixNetworkCell, bit 1 the train (`$77DC`) and the rail count (`$8898`), bit 2 the road count, bits 1-2 the traffic route (`$856A`), bit 3 the power flood (`$819A`), bits 4 and 6 BuildingValue and the pollution (`$7DEA`), bit 7 the fire (`$89BB`, `$79DE`). | `CellFlagsOf` | - |
+| `$6F9C` | `CellFlags` | 90 | The flags of the cells 0-`$59`: bit 0 not reshaped, 1 rail, 2 road, 3 conducts power, 4 zone, 5 set on the zone centres `$51-$56` only (no reader), 6 developed, 7 flammable. Read by CellFlagsOf (`$7599`; L1 11 343 551). Buildings (`$80` and up) give `$99` there. The bit meanings follow from the readers: bit 0 FixNetworkCell, bit 1 the train (`$77DC`) and the rail count (`$8898`), bit 2 the road count, bits 1-2 the traffic route (`$856A`), bit 3 the power flood (`$819A`), bits 4 and 6 BuildingValue and the pollution (`$7DEA`), bit 7 the fire (`$89BB`, `$79DE`). | `CellFlagsOf` | - |
 | `$6FF6` | `ToolHandlers` | 28 | The 14 tools' click routines (MapClick calls ToolHandlers[CurrentTool]) | `MapClick` | - |
 | `$7062` | `Crossings` | 36 | Three pairs of 6 bytes: the cells a network may cross, then the crossing cell for each. `$7062` power over road or rail; `$706E` road over power or rail; `$707A` rail over road or power. Read by CrossNetwork (CPIR, the result 6 bytes on). | - | - |
 | `$70FA` | `FreeCells` | 9 | The cells a building site takes at no cost: 2 land, 0 water | `CheckSite` | `CheckSite` |
@@ -135,7 +135,7 @@ Written by `kit/refdocs.py`.
 | --- | --- | --- | --- | --- | --- |
 | `$753C` | `GridBase` | 2 | The array Grid48 and Grid24 read | `LayerOf` | `LayerOf` |
 | `$75EF` | `PutBuildingSpare` | 2 | Two bytes no code reads | - | - |
-| `$7657` | `DivLeftover` | 17 | Leftover: an older copy of a divide (LD C,L ... RET), no code runs it | - | - |
+| `$7657` | `DivLeftover` | 17 | Leftover: an older copy of a divide (LD C,H; LD A,L; LD HL,0 ... RET), no code runs it | - | - |
 | `$7682` | `BuildingValues` | 12 | By building routine (BuildingKinds' second byte): the class TripArrived matches against TripTargets (9 R, 10 C, 11 I; police 0, fire 1, church 2, hospital 3) | - | - |
 | `$76DC` | `Directions` | 8 | The four steps (column, row): up, right, down, left | - | - |
 | `$76FD` | `CellStackCount` | 1 | The cells on CellStack (at `$801D`) | - | - |
@@ -216,7 +216,8 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$8F97` | `Funds` | 9 | The money (24 bits): 20 000 in the image | `AnimateFire`, `AnimateFlood`, `BlinkCell`, `DrawViewRowPass`, `FundsChanged` +9 | `NextMonth`, `Spend`, `StartSimulation`, `UiTask` |
+| `$8F97` | `Funds` | 8 | The money (24 bits): 20 000 in the image | `FundsChanged`, `GreyUnaffordable`, `MonthEnd`, `NextMonth`, `PrintDate` +3 | `NextMonth`, `Spend`, `StartSimulation` |
+| `$8F9F` | `PassCount` | 1 | The UI task's pass counter (Periodic: the movers every 16, the advice every 32) | `AnimateFire`, `AnimateFlood`, `BlinkCell`, `DrawViewRowPass`, `Periodic` +1 | `UiTask` |
 | `$9056` | `LastFunds` | 2 | Funds' low 16 bits as last shown | `FundsChanged` | `FundsChanged` |
 
 ## disasters
@@ -301,9 +302,15 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$A884` | `MoverSprites` | 160 | The movers' 16 x 16 sprites, 32 bytes each: the plane, two tornado frames, the train across and down | - | - |
-| `$A924` | `SaveName` | 43 | The name typed for LOAD and SAVE | - | - |
-| `$A94F` | `SaveSpare` | 1 | SaveSpare | - | - |
-| `$A950` | `FireCover` | 16128 | The 24 x 24 fire coverage, 0-15 (zero in the image: built at run time) | `CellStep`, `CheckSite`, `ClearCover`, `CoverStations`, `DecayPollution` +13 | `ClearCover`, `DecayPollution`, `DecayTraffic`, `Disc`, `InitSimulation` +4 |
+| `$A924` | `SaveName` | 12 | The name typed for LOAD and SAVE | - | - |
+| `$A930` | `SaveHeader` | 31 | The tape header (31 bytes): file name 12, Funds 3, a spare, Month, Year 2, a spare, the city name 11 (SaveCityName `$A944-$A94E`) | - | - |
+| `$A94F` | `SaveSpare` | 1 | The city name's twelfth letter: SaveCity copies 12 letters to `$A944`, but the header block ends at `$A94E`, so this byte never reaches the tape; LoadCity copies it back from RAM | - | - |
+| `$A950` | `FireCover` | 576 | The 24 x 24 fire coverage, 0-15 (zero in the image: built at run time) | `ClearCover`, `InitSimulation` | `ClearCover`, `InitSimulation` |
+| `$AB90` | `PoliceCover` | 576 | The 24 x 24 police coverage, 0-15 | `ClearCover`, `InitSimulation` | `ClearCover`, `InitSimulation` |
+| `$ADD0` | `Pollution` | 2304 | The 48 x 48 pollution, 0-255 | `DecayPollution`, `InitSimulation` | `DecayPollution`, `InitSimulation` |
+| `$B6D0` | `Traffic` | 2304 | The 48 x 48 traffic, 0-`$F0` | `DecayTraffic`, `InitSimulation` | `DecayTraffic`, `InitSimulation` |
+| `$BFD0` | `PowerMap` | 1152 | The powered bit of each map cell, 12 bytes a row | `InitSimulation`, `PowerFlood`, `ZonePower` | `InitSimulation`, `PowerFlood` |
+| `$C450` | `CityMap` | 9216 | The 96 x 96 map, all land (2) in the image: NewLandscape makes it | `CellStep`, `CheckSite`, `CoverStations`, `Disc`, `DrawOverview` +8 | `Disc`, `MakeCoast`, `NewLandscape`, `PutBuilding` |
 
 ## graphics
 
@@ -320,11 +327,12 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$F682` | `UiStack` | 64 | The UI task's stack: Entry sets SP = `$F6C2` (UiStack+`$40`); L1's deepest write `$F6A4` | - | `BlinkCell`, `ClearTopWhite`, `ClearViewArea`, `Digit24`, `Disc` +37 |
-| `$F6C2` | `SimStack` | 44 | The simulation task's stack below SimFrame: it grows down from `$F704` into SimFrame and below; L1's deepest write `$F6E8`; `$F6C2-$F6E7` never written | - | - |
+| `$F682` | `UiStack` | 64 | The UI task's stack: Entry sets SP = `$F6C2` (UiStack+`$40`); written down to `$F68A` (menus frame 3466), 8 bytes above BuildingAttrs | - | `BlinkCell`, `ClearTopWhite`, `ClearViewArea`, `Digit24`, `Disc` +37 |
+| `$F6C2` | `SimStack` | 44 | The simulation task's stack below SimFrame: it grows down from `$F704` into SimFrame and below; written down to `$F6D0` (menus frame 5498); `$F6C2-$F6CF` never written | - | - |
 | `$F6EE` | `SimFrame` | 20 | The simulation task's first frame: 20 bytes of registers, then the entry | - | `AddValue`, `CellFlagsOf`, `CellStep`, `ClearCover`, `CoverStations` +7 |
 | `$F702` | `SimEntry` | 2 | SimTask: the first switch returns into it | - | `StartSimulation` |
-| `$F704` | `TaskNow` | 3 | 0 the UI task runs, 1 the simulation | `Interrupt` | `Click`, `Entry`, `Interrupt`, `LayerOf`, `StartSimulation` +1 |
+| `$F704` | `TaskNow` | 1 | 0 the UI task runs, 1 the simulation | `Interrupt` | `Interrupt` |
+| `$F705` | `SwitchOff` | 2 | Nonzero: the interrupt does not switch tasks (the UI's critical parts) | `Interrupt` | `Click`, `Entry`, `LayerOf`, `StartSimulation`, `UiTask` |
 | `$F707` | `UiSP` | 4 | the stacks of the two tasks while the other runs | `Interrupt` | `Interrupt`, `StartSimulation` |
 
 ## system

@@ -431,17 +431,21 @@ ScanInsideCell:
   LD (HL),A
   RET
 
-; A = |CityCentre column - B| + |CityCentre row - C|
+; A = |CityCentre row - B| + |CityCentre column - C|: B the row, C the column
+;
+; CityCentre is (column, row), so H is its row and L its column. Both callers
+; pass BC = (row, column) loaded from a (column, row) word: CentreCloseness
+; from CurCell $8785, LayerCrime from OverviewCellAt $9C31.
 ;
 ; L1 27 944.
 CentreDistance:
   LD HL,(CityCentre)
   LD A,H
   SUB B
-  JP P,CentreDistanceRow
+  JP P,CentreDistanceColumn
   NEG
-CentreDistanceRow:
-  LD E,A
+CentreDistanceColumn:
+  LD E,A                  ; |row - B| in E; now the column term
   LD A,L
   SUB C
   JP P,CentreDistanceSum
@@ -1993,8 +1997,8 @@ TripArrivedYes:
   OR A
   RET
 
-; Every 4th pass: ClearCover, then each powered 3 x 3 top ($B3: police type 0,
-; fire type 1) stamps its coverage
+; Every 4th pass: ClearCover, then each powered top row byte (AND $F0 = $B0,
+; any width: police type 0, fire type 1) stamps its coverage
 ;
 ; L1 1090 (273 stamping).
 CoverStations:
@@ -2105,8 +2109,9 @@ ScanCityNext:
   DJNZ ScanCityRow
   RET
 
-; A building's top-left byte: bit 4 = powered (PowerMap); BuildingType;
-; stations count as powered
+; A building's top-left byte: bit 4 = powered (PowerMap), ZonePowered;
+; BuildingType; the power plants (types 6, 8) skip both: their top byte keeps
+; the prefab's $B4 and ZonePowered stays 0
 ;
 ; Used by the routine at ScanCity.
 BuildingPower:

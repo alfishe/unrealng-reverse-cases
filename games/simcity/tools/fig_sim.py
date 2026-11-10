@@ -109,11 +109,12 @@ def tile_rgb(n, sheet='Cells.png'):
 CELL_NAMES = {0: 'water', 1: 'coast', 2: 'land', 3: 'coast', 4: 'coast', 5: 'coast', 6: 'trees',
               0x12: 'road brdg', 0x13: 'road brdg', 0x1F: 'rail brdg', 0x20: 'rail brdg',
               0x34: 'traffic', 0x35: 'traffic', 0x36: 'traffic', 0x37: 'traffic', 0x38: 'park', 0x39: 'park',
-              0x3A: 'rubble', 0x3B: 'blank', 0x44: 'flood', 0x45: 'fire', 0x46: 'rubble an', 0x47: 'rubble an',
+              0x3A: 'rubble', 0x3B: 'no power', 0x44: 'flood', 0x45: 'fire', 0x46: 'rubble an', 0x47: 'rubble an',
               0x48: 'rubble an', 0x51: 'R centre', 0x52: 'C centre', 0x53: 'I centre', 0x54: 'R unpow',
               0x55: 'C unpow', 0x56: 'I unpow', 0x57: 'not placed', 0x58: 'not placed', 0x59: 'radiation'}
 BITS = [(0, 'not reshaped', '#999999'), (1, 'rail', '#8c564b'), (2, 'road', '#1f77b4'),
-        (3, 'conducts', '#ffbf00'), (4, 'zone', '#2ca02c'), (6, 'developed', '#9467bd'),
+        (3, 'conducts', '#ffbf00'), (4, 'zone', '#2ca02c'), (5, 'centre, unread', '#17becf'),
+        (6, 'developed', '#9467bd'),
         (7, 'flammable', '#d62728')]
 
 
@@ -158,14 +159,14 @@ def fig_cells(a):
         fig.text(x0 + cw / 2, y0 + ch * 0.24, cell_name(code, flags), ha='center', va='center', fontsize=10)
         for k, (bit, _, colour) in enumerate(BITS):
             on = flags >> bit & 1
-            fig.patches.append(plt.Rectangle((x0 + cw * (0.12 + k * 0.11), y0 + ch * 0.04), cw * 0.09, ch * 0.09,
+            fig.patches.append(plt.Rectangle((x0 + cw * (0.08 + k * 0.105), y0 + ch * 0.04), cw * 0.09, ch * 0.09,
                                              transform=fig.transFigure, facecolor=colour if on else 'white',
                                              edgecolor='#666666', linewidth=0.6))
     for k, (bit, name, colour) in enumerate(BITS):
-        x = 0.02 + k * 0.14
+        x = (0.005, 0.145, 0.235, 0.33, 0.455, 0.55, 0.715, 0.85)[k]
         fig.patches.append(plt.Rectangle((x, 0.02), 0.014, 0.016, transform=fig.transFigure, facecolor=colour,
                                          edgecolor='#666666'))
-        fig.text(x + 0.02, 0.028, 'bit %d %s' % (bit, name), va='center', fontsize=10)
+        fig.text(x + 0.02, 0.028, 'bit %d %s' % (bit, name), va='center', fontsize=9.5)
     save(fig, a.out)
 
 
@@ -424,7 +425,7 @@ def fig_save(a):
 
 
 WORKED = [('growth 9000, R zone', 151, 9, 6, 56, -26), ('city 15750, R zone', 150, 7, 6, 56, -34),
-          ('growth 8100, C zone', 191, 0, 4, 56, -22)]
+          ('growth 8100, I zone', 191, 0, 4, 56, -22)]
 
 
 def fig_score(a):

@@ -11,7 +11,7 @@
 # (PointerX 0-62) and in pixel pairs down (PointerY 0-184).
 #
 # The two tasks: the UI task runs UiTask / UiLoop ($8FA0, $8FCC; the pass UiPass $8FDA) on the stack from $F6C2
-# (UiStack $F682-$F6C1), the simulation task SimTask ($835F) on its own ($F6E8-$F703, from SimFrame up); the interrupt
+# (UiStack $F682-$F6C1), the simulation task SimTask ($835F) on its own (from $F704 down over SimFrame and SimStack, reached down to $F6D0 in the recordings); the interrupt
 # (Interrupt $F70B) swaps them every frame unless SwitchOff $F705 is set.
 
 @equ $4000 Screen 6144 ; the display file
@@ -55,7 +55,7 @@ $5B19 EntryJump ; JR $5B1B, two bytes no code of the tape version runs (L1: neve
 
 $5B1B c Entry ; The game's entry: stack, black border, the Kempston test, IM 2 with I = $FD, then UiTask
 > MoveCode2 $5000 jumps here. SP = $F6C2 (the top of the UI task's stack UiStack), the border black, SwitchOff $F705 = 1 (no task switch until the simulation task is set up), then the Kempston test: port $1F is read up to 32 768 times; a value $1F or more (a floating bus gives $FF) means no interface, otherwise KempstonFound = 1. Then I = $FD (the vector table VectorTable $FD00, every vector $FCFC), IM 2, EI and JP UiTask $8FA0.
-> c1: L1 1 at frame 16 280; the loop ran 32 768 times (no Kempston in c1's setup); the ports recording sets KempstonFound (stage 1). No other code changes I or the mode.
+> c1: L1 1 at frame 16 280; the loop ran 32 768 times (every read below $1F: c1's setup has a Kempston interface, KempstonFound = 1). No other code changes I or the mode.
 $5B2E KempstonTest ; IN A,($1F): below $1F an interface answers
 $5B3E SetIm2 ; I = $FD, IM 2, EI, JP UiTask
 
@@ -662,7 +662,7 @@ $6F7D BridgeLineWater
 $6F8E BridgeLineNext
 $6F9A BridgeLineEnd
 
-$6F9C b CellFlags 16 ; The flags of the cells 0-$59: bit 0 not reshaped, 1 rail, 2 road, 3 conducts power, 4 zone, 6 developed, 7 flammable
+$6F9C b CellFlags 16 ; The flags of the cells 0-$59: bit 0 not reshaped, 1 rail, 2 road, 3 conducts power, 4 zone, 5 set on the zone centres $51-$56 only (no reader), 6 developed, 7 flammable
 > Read by CellFlagsOf ($7599; L1 11 343 551). Buildings ($80 and up) give $99 there. The bit meanings follow from the readers: bit 0 FixNetworkCell, bit 1 the train ($77DC) and the rail count ($8898), bit 2 the road count, bits 1-2 the traffic route ($856A), bit 3 the power flood ($819A), bits 4 and 6 BuildingValue and the pollution ($7DEA), bit 7 the fire ($89BB, $79DE).
 @res tables/CellFlags.bin
 
@@ -830,7 +830,7 @@ $7647 c Div8 ; HL = HL / A, remainder in A
 $764B Div8Loop
 $7652 Div8Sub
 $7654 Div8Next
-$7657 b DivLeftover 17 ; Leftover: an older copy of a divide (LD C,L ... RET), no code runs it
+$7657 b DivLeftover 17 ; Leftover: an older copy of a divide (LD C,H; LD A,L; LD HL,0 ... RET), no code runs it
 
 $7668 c Max2x2 ; A = the largest of the 2 x 2 bytes of a 48-wide array at HL
 > L1 27 088.
@@ -884,7 +884,7 @@ $77DA TrainTries
 $77DB TrainSteps
 
 $77DC c MoveTrain ; Move the train one cell along the rails (CellFlags bit 1), never straight back; gone when it finds none
-> Called by the UI task each pass (L1 9884); it moved in c1 (L1 442 at MoveTrainTry).
+> Called through MoveDisasters by Periodic on every 16th UI pass (PassCount AND $0F = 0; L1 9884 against 158 073 UI passes); it moved in c1 (L1 442 at MoveTrainTry). A stuck move adds 1 to TrainSteps, a good one does not clear it: every fifth stuck move sets TrainBack 5 so the train may reverse.
 $77F5 MoveTrainStart
 $7806 MoveTrainTry
 $7822 MoveTrainNext
@@ -906,7 +906,7 @@ $78AF PlaneDone
 $78B4 c CrashCell ; Ignite ($90C4) at BC
 $78BD c CrashNoise ; 255 NoiseBurst calls with a rising gate: the disaster noise
 $78C1 CrashNoiseLoop
-$78CA c StartPlane ; With no plane out, 1 in 4: a plane from the airport's row at the right edge (column $60) or at the airport
+$78CA c StartPlane ; With no plane out, 1 in 2 (Random AND 1): a plane from the airport's row at the right edge (column $60) or at the airport
 $78EA StartPlaneSet
 $78F0 StartPlaneHere
 $78FE c AirCrash ; The AIR CRASH disaster: with an airport ($849E), message $19 (AIR CRASH !!!) and a crash timer of 7-22
@@ -1045,9 +1045,10 @@ $7DD8 c PickRouteStart ; The first transport cell, then each next one with 1 in 
 $7DE5 PickRouteStartSet
 $7DEA c ScanInsideCell ; A developed cell (CellFlags bit 6) inside the zone adds cell - $3B to Density
 
-$7E03 c CentreDistance ; A = |CityCentre column - B| + |CityCentre row - C|
+$7E03 c CentreDistance ; A = |CityCentre row - B| + |CityCentre column - C|: B the row, C the column
+> CityCentre is (column, row), so H is its row and L its column. Both callers pass BC = (row, column) loaded from a (column, row) word: CentreCloseness from CurCell $8785, LayerCrime from OverviewCellAt $9C31.
 > L1 27 944.
-$7E0D CentreDistanceRow
+$7E0D CentreDistanceColumn ; |row - B| in E; now the column term
 $7E15 CentreDistanceSum
 
 $7E17 b RingParks 1 ; ScanRing's counts: parks, water, trees, transport, the amenity
@@ -1269,7 +1270,7 @@ $8662 TripArrivedLoop
 $8677 TripArrivedNext
 $867D TripArrivedYes
 
-$8680 c CoverStations ; Every 4th pass: ClearCover, then each powered 3 x 3 top ($B3: police type 0, fire type 1) stamps its coverage
+$8680 c CoverStations ; Every 4th pass: ClearCover, then each powered top row byte (AND $F0 = $B0, any width: police type 0, fire type 1) stamps its coverage
 > L1 1090 (273 stamping).
 $8690 CoverStationsRow
 $8694 CoverStationsCell
@@ -1289,7 +1290,7 @@ $86D4 ScanCityCell
 $86F3 ScanCityStep
 $8703 ScanCityNext
 
-$870C c BuildingPower ; A building's top-left byte: bit 4 = powered (PowerMap); BuildingType; stations count as powered
+$870C c BuildingPower ; A building's top-left byte: bit 4 = powered (PowerMap), ZonePowered; BuildingType; the power plants (types 6, 8) skip both: their top byte keeps the prefab's $B4 and ZonePowered stays 0
 $8739 BuildingPowerEnd
 $873B b ZoneCentreCell 1 ; ZonePower's new centre cell
 
@@ -1485,7 +1486,7 @@ $8F9A FundsSpare
 $8F9B Month ; 0-11
 $8F9C Year ; 16 bits, 1902 in the image
 $8F9E PassSpare
-$8F9F PassCount ; the UI task's pass counter
+$8F9F b PassCount 1 ; The UI task's pass counter (Periodic: the movers every 16, the advice every 32)
 
 $8FA0 c UiTask ; The UI task's start: the simulation task made, the status panel, the start menu (A51C), the landscape, the view; then the UI loop
 > L1 1 (after the mover).
@@ -1503,7 +1504,7 @@ $9084 AnimateFireCopy
 $908A c AnimateFlood ; Tile $44 (flood, $EC88) from $ED48 or $ED50
 $90A1 AnimateFloodCopy
 @module disasters ; The disasters
-@about Fire, flood, earthquake (both, with a long noise), the air crash, the tornado and the meltdown: RandomDisaster draws one with 1 in 2048 every 16 UI passes unless DISABLE ALL; the DISASTERS menu sets DisasterDue directly.
+@about Fire, flood, earthquake (both, with a long noise), the air crash, the tornado and the meltdown: RandomDisaster tries every 16 UI passes unless DISABLE ALL, but its gate fixes the next draw: the only disaster it can start is the tornado, about 1 in 65 536 a try; the DISASTERS menu sets DisasterDue directly.
 $90A7 c FireDisaster ; message $16 (FIRES HAVE BEEN DETECTED), the noise, Ignite 1 in 128 cells
 $90AF c StartFires ; Every map cell: 1 in 128 Ignite
 $90B5 StartFiresLoop
@@ -1518,7 +1519,7 @@ $9116 c FloodNoise ; 127 NoiseBursts, gate rising
 $9118 FloodNoiseLoop
 $9125 c Earthquake ; message $18 (MAJOR EARTHQUAKE DETECTED), a long noise, fires and the flood
 $912E EarthquakeNoise
-$9144 c RandomDisaster ; Unless disasters are off ($A43D): with 1 in 2048 a disaster 1-6 (the meltdown with 1 in 8 of its draws)
+$9144 c RandomDisaster ; Unless disasters are off ($A43D): a gate of 1 in 2048 (seed AND $07FF = 0), then Random AND 7 picks 1-6 (6 with a further 1 in 8); the gate fixes that draw, so only the seed $0000 (next $00FD, 5) starts a disaster: always the tornado, about 1 in 65 536 a try
 $9169 RandomDisasterSet
 $916D b DisasterDue 1 ; The disaster RunDisaster starts (0 none)
 $916E c RunDisaster ; 1 fire, 2 flood, 3 earthquake, 4 air crash, 5 tornado, 6 meltdown
@@ -1584,7 +1585,7 @@ $9750 b CategoryLimits 3 ; The five population limits (24 bits): 2000, 10 000, 5
 @res tables/CategoryLimits.bin
 $975F b Category 1 ; 0 VILLAGE, 1 TOWN, 2 CITY, 3 CAPITAL, 4 METROPOLIS, 5 MEGALOPOLIS
 
-$9760 c CategoryOf ; Category = how many CategoryLimits PopLastYear reaches (not below)
+$9760 c CategoryOf ; Category = how many CategoryLimits PopLastYear exceeds (a limit equal to it does not count)
 > Only the evaluation window computes it, from the population at the last year's end: the category changes nothing in the game. L1 18.
 $976A CategoryLoop
 $978F b Migration 3 ; PopLastYear - PopYearBefore (24 bits)
@@ -1805,7 +1806,7 @@ $A6DE InputLength
 $A6DF InputText
 $A6EF InputDelay
 
-$A6F9 c InputName ; Edit an 11-letter text at InputAt (InputLength = 11: CityName's twelfth letter cannot be typed) (letters, digits, space; CAPS SHIFT 5 / 8 cursor, 0 delete)
+$A6F9 c InputName ; Edit an 11-letter text at InputAt (InputLength = 11: CityName's twelfth letter cannot be typed) (letters, digits, space; CAPS SHIFT 5 / 8 cursor, 0 blanks the cursor cell and the one before it)
 $A6FF c InputLine ; The line editor; with InputDigits a number (5 digits, carry when too large)
 > L1 5.
 $A70A InputLoop
@@ -1842,16 +1843,16 @@ $A882 InputToNumberOver
 $A884 b MoverSprites 2 ; The movers' 16 x 16 sprites, 32 bytes each: the plane, two tornado frames, the train across and down
 @res graphics/Movers.bin
 $A924 t SaveName 12 ; The name typed for LOAD and SAVE
-$A930 SaveHeader ; the tape header (31 bytes): file name 12, Funds 3, a spare, Month, Year 2, a spare, the city name 11 (SaveCityName $A944-$A94E)
+$A930 b SaveHeader 16 ; The tape header (31 bytes): file name 12, Funds 3, a spare, Month, Year 2, a spare, the city name 11 (SaveCityName $A944-$A94E)
 $A93C SaveFunds
 $A944 SaveCityName
-$A94F b SaveSpare 1
+$A94F b SaveSpare 1 ; The city name's twelfth letter: SaveCity copies 12 letters to $A944, but the header block ends at $A94E, so this byte never reaches the tape; LoadCity copies it back from RAM
 $A950 s FireCover 576 ; The 24 x 24 fire coverage, 0-15 (zero in the image: built at run time)
-$AB90 PoliceCover 576 ; the police coverage
-$ADD0 Pollution 2304 ; the 48 x 48 pollution
-$B6D0 Traffic 2304 ; the 48 x 48 traffic
-$BFD0 PowerMap 1152 ; the powered bit of each map cell, 12 bytes a row
-$C450 CityMap 9216 ; the 96 x 96 map, all land (2) in the image: NewLandscape makes it
+$AB90 s PoliceCover 576 ; The 24 x 24 police coverage, 0-15
+$ADD0 s Pollution 2304 ; The 48 x 48 pollution, 0-255
+$B6D0 s Traffic 2304 ; The 48 x 48 traffic, 0-$F0
+$BFD0 s PowerMap 1152 ; The powered bit of each map cell, 12 bytes a row
+$C450 s CityMap 9216 ; The 96 x 96 map, all land (2) in the image: NewLandscape makes it
 
 @module graphics ; The tiles and their attributes
 @about IconTiles, CellTiles and BuildingTiles (8 bytes a tile) and their attribute tables.
@@ -1869,12 +1870,12 @@ $F58E b BuildingAttrs 8 ; The building tiles' attributes
 @res graphics/BuildingAttrs.bin
 @module tasks ; The task switcher
 @about The two tasks' stacks and frame, the switch state (TaskNow, SwitchOff) and Interrupt, the IM 2 handler. The vector table $FD00 and the jump $FCFC are at the end of the system module (a module is one stretch of addresses).
-$F682 s UiStack 64 ; The UI task's stack: Entry sets SP = $F6C2 (UiStack+$40); L1's deepest write $F6A4
-$F6C2 s SimStack 44 ; The simulation task's stack below SimFrame: it grows down from $F704 into SimFrame and below; L1's deepest write $F6E8; $F6C2-$F6E7 never written
+$F682 s UiStack 64 ; The UI task's stack: Entry sets SP = $F6C2 (UiStack+$40); written down to $F68A (menus frame 3466), 8 bytes above BuildingAttrs
+$F6C2 s SimStack 44 ; The simulation task's stack below SimFrame: it grows down from $F704 into SimFrame and below; written down to $F6D0 (menus frame 5498); $F6C2-$F6CF never written
 $F6EE b SimFrame 20 ; The simulation task's first frame: 20 bytes of registers, then the entry
 $F702 w SimEntry 1 ; SimTask: the first switch returns into it
 $F704 b TaskNow 1 ; 0 the UI task runs, 1 the simulation
-$F705 SwitchOff ; nonzero: the interrupt does not switch tasks (the UI's critical parts)
+$F705 b SwitchOff 1 ; Nonzero: the interrupt does not switch tasks (the UI's critical parts)
 $F706 SwitchSpare
 $F707 w UiSP 1 ; the stacks of the two tasks while the other runs
 $F709 SimSP

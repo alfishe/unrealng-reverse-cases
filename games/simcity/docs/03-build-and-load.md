@@ -373,8 +373,10 @@ Block 7 lands in the screen's pixel area, where the attributes, zeroed just befo
 500C  C3 1B 5B  JP $5B1B         ; Entry
 ```
 
-The LDIR takes 4096 x 21 - 5 = 86 011 T, a little more than a frame: `$5000` ran in frame 16 279 (T 8372) and
-`$6AFF`, the last byte, was written in frame 16 280. Code2's bytes stay on the screen's pixels until the game draws
+The LDIR would take 4096 x 21 - 5 = 86 011 T uncontended. In `c1` it took 113 017 T, 1.6 frames: `$5000` ran in frame
+16 279 at T 8372 and `$6AFF`, the last byte, was written in frame 16 280 at T 51 501 (69 888 - 8372 + 51 501). Both
+ends are in contended memory, the source `$4000-$4FFF` and the destination `$5B00-$6AFF`, so the ULA stretches most
+of its reads and writes while it draws the screen. Code2's bytes stay on the screen's pixels until the game draws
 over them.
 
 At Entry `$5B1B` the game sets its stack to `$F6C2`, the border black and SwitchOff `$F705` = 1 (no task switch
@@ -485,7 +487,7 @@ flowchart LR
 | 3 | the header "loader", CODE, 512 bytes at 65024, parameter 2 32912 | `kit/tap.py` (`code:loader:65024:loader-tape.bin:32912`) |
 | 4 | `src/loader/loader.ann` (8 entries), its tail encrypted | sjasmplus, `tools/tape.py loader` |
 | 5 | `src/screen/screen.ann` with `src/res/screen/LoadingScreen.png` | sjasmplus, `tools/tape.py blocks` |
-| 6 | `src/game/game.ann` (597 entries, 29 modules) with `src/res`: `$6B00-$FE00` of `game.bin` | sjasmplus, `tools/tape.py blocks` |
+| 6 | `src/game/game.ann` (598 entries, 29 modules) with `src/res`: `$6B00-$FE00` of `game.bin` | sjasmplus, `tools/tape.py blocks` |
 | 7 | `$5B00-$6AFF` of `game.bin`, then `src/mover/mover.ann` (2 entries) | sjasmplus, `tools/tape.py blocks` |
 
 ```bash

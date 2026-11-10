@@ -16,8 +16,11 @@ Year:
   DEFB $6E,$07            ; 16 bits, 1902 in the image
 PassSpare:
   DEFB $00
+
+; The UI task's pass counter (Periodic: the movers every 16, the advice every
+; 32)
 PassCount:
-  DEFB $00                ; the UI task's pass counter
+  DEFB $00
 
 ; The UI task's start: the simulation task made, the status panel, the start
 ; menu (A51C), the landscape, the view; then the UI loop

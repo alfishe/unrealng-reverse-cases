@@ -51,7 +51,8 @@ CategoryLimits:
 Category:
   DEFB $00
 
-; Category = how many CategoryLimits PopLastYear reaches (not below)
+; Category = how many CategoryLimits PopLastYear exceeds (a limit equal to it
+; does not count)
 ;
 ; Only the evaluation window computes it, from the population at the last
 ; year's end: the category changes nothing in the game. L1 18.

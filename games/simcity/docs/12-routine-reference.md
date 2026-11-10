@@ -27,16 +27,16 @@ Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py -
 | [`joysticks`](#joysticks) | `$7A01`-`$7A9D` | 3 of 3 |
 | [`maps`](#maps) | `$7A9E`-`$7B85` | 4 of 7 |
 | [`simulation`](#simulation) | `$7B86`-`$8F96` | 102 of 152 |
-| [`uitask`](#uitask) | `$8F97`-`$90A6` | 6 of 8 |
+| [`uitask`](#uitask) | `$8F97`-`$90A6` | 6 of 9 |
 | [`disasters`](#disasters) | `$90A7`-`$9193` | 10 of 11 |
 | [`budget`](#budget) | `$9194`-`$95B7` | 14 of 19 |
 | [`evaluation`](#evaluation) | `$95B8`-`$9B4D` | 15 of 24 |
 | [`overview`](#overview) | `$9B4E`-`$9E08` | 9 of 14 |
 | [`saveload`](#saveload) | `$9E09`-`$9F3F` | 6 of 9 |
 | [`dialogs`](#dialogs) | `$9F40`-`$A883` | 30 of 54 |
-| [`workspace`](11-data-reference.md#workspace) | `$A884`-`$E84F` | 0 of 4 |
+| [`workspace`](11-data-reference.md#workspace) | `$A884`-`$E84F` | 0 of 10 |
 | [`graphics`](11-data-reference.md#graphics) | `$E850`-`$F681` | 0 of 6 |
-| [`tasks`](#tasks) | `$F682`-`$F74D` | 1 of 7 |
+| [`tasks`](#tasks) | `$F682`-`$F74D` | 1 of 8 |
 | [`system`](#system) | `$F74E`-`$FE00` | 6 of 10 |
 
 ## entry
@@ -49,13 +49,13 @@ Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py -
 
 MoveCode2 `$5000` jumps here. SP = `$F6C2` (the top of the UI task's stack UiStack), the border black, SwitchOff `$F705` = 1 (no task switch until the simulation task is set up), then the Kempston test: port `$1F` is read up to 32 768 times; a value `$1F` or more (a floating bus gives `$FF`) means no interface, otherwise KempstonFound = 1. Then I = `$FD` (the vector table VectorTable `$FD00`, every vector `$FCFC`), IM 2, EI and JP UiTask `$8FA0`.
 
-c1: L1 1 at frame 16 280; the loop ran 32 768 times (no Kempston in c1's setup); the ports recording sets KempstonFound (stage 1). No other code changes I or the mode.
+c1: L1 1 at frame 16 280; the loop ran 32 768 times (every read below `$1F`: c1's setup has a Kempston interface, KempstonFound = 1). No other code changes I or the mode.
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1 call, 2,071,767 t-states own (0.14 %) |
 | Calls | `UiTask` (tail) |
-| Writes | `$5B7F` (`KempstonFound`); `$F705` (`TaskNow`) |
+| Writes | `$5B7F` (`KempstonFound`); `$F705` (`SwitchOff`) |
 | Ports in | `$001F`, `$791F`, `$7A1F`, `$7B1F`, `$7C1F`, `$7D1F`, `$7E1F`, `$7F1F`, `$F81F`, `$F91F`, `$FA1F`, `$FB1F`, `$FC1F`, `$FD1F`, `$FE1F`, `$FF1F` |
 | Ports out | `$00FE` |
 
@@ -713,7 +713,7 @@ With SwitchOff set (no task switch while the UI changes the screen and the map):
 | Called from | `UiTask` |
 | Calls | `MenuClick`, `ScrollClick`, `ToolClick`, `MapClick` |
 | Reads | `$5B07` (`KeyRows`); `$5CFC`-`$5CFD` (`PointerX`) |
-| Writes | `$63C9`-`$63CA` (`ClickCell`); `$F705` (`TaskNow`) |
+| Writes | `$63C9`-`$63CA` (`ClickCell`); `$F705` (`SwitchOff`) |
 
 ### `WaitSpaceUp` (`$63F9`)
 
@@ -772,7 +772,7 @@ So the view is redrawn every 16 passes of the UI loop, a row a pass, and the bli
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1,777 calls, 457,423 t-states own (0.03 %) |
 | Called from | `UiTask` |
 | Calls | `ScreenAddr`, `DrawView` (tail), `MapAddr`, `InterruptJump` |
-| Reads | `$6507`-`$6508` (`CellAttrPtr`); `$8F9F` (`Funds`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Reads | `$6507`-`$6508` (`CellAttrPtr`); `$8F9F` (`PassCount`); `$FDFF`-`$FE00` (`InterruptSpare`) |
 | Writes | `$6433` (`Blink`); `$6482`-`$6483` (`DrawCell`); `$F6BE`-`$F6BF` (`UiStack`) |
 
 ### `DrawBlankCell` (`$6464`)
@@ -808,7 +808,7 @@ L1 4 249 059, 11 661 blanked.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 58,912 calls, 1,472,731 t-states own (0.10 %) |
 | Called from | `DrawCell` |
 | Calls | `InterruptJump` |
-| Reads | `$8F9F` (`Funds`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Reads | `$8F9F` (`PassCount`); `$FDFF`-`$FE00` (`InterruptSpare`) |
 | Writes | `$F6BA`-`$F6BB` (`UiStack`) |
 
 ### `RoadTraffic` (`$64A9`)
@@ -846,7 +846,7 @@ L1 627 (after every scroll, window and dialog).
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 4 calls, 16,510,296 t-states own (1.10 %) |
 | Called from | `DrawViewRowPass` (tail), `ShowMenu`, `IndustrialTool` (tail), `MapsWindow` (tail), `UiTask`, `PrintGlyph` |
 | Calls | `DrawCell`, `MapAddr`, `UiTask`, `InterruptJump` |
-| Reads | `$6482`-`$6483` (`DrawCell`); `$6507`-`$6508` (`CellAttrPtr`); `$6558`-`$655A` (`BuildingLeft`); `$D24E`-`$D56D` (`FireCover`); `$D5AE`-`$D5CD` (`FireCover`); `$D60E`-`$D62D` (`FireCover`); 6 more ranges |
+| Reads | `$6482`-`$6483` (`DrawCell`); `$6507`-`$6508` (`CellAttrPtr`); `$6558`-`$655A` (`BuildingLeft`); `$D24E`-`$D56D` (`CityMap`); `$D5AE`-`$D5CD` (`CityMap`); `$D60E`-`$D62D` (`CityMap`); 6 more ranges |
 | Writes | `$6482`-`$6483` (`DrawCell`); `$6505`-`$650A` (`CellAttrPtr`); `$6558`-`$655A` (`BuildingLeft`); `$F6B8`-`$F6BF` (`UiStack`) |
 
 ### `StartBuilding` (`$655B`)
@@ -1296,8 +1296,8 @@ Resets the simulation (StartSimulation `$830C`), clears CityMap `$C450` to 0 (wa
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1 call, 205,955 t-states own (0.01 %) |
 | Called from | `UiTask` |
 | Calls | `ClearViewArea`, `ClearWindowArea`, `DrawMenu`, `Discs`, `MakeCoast`, `StartSimulation`, `InterruptJump` |
-| Reads | `$6A8C`-`$6A8D` (`Gene`); `$C450`-`$E84E` (`FireCover`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$5CC4`-`$5CC5` (`RandomSeed`); `$6C05`-`$6C06` (`DiscVars`); `$C450`-`$E84F` (`FireCover`); `$F6BE`-`$F6BF` (`UiStack`) |
+| Reads | `$6A8C`-`$6A8D` (`Gene`); `$C450`-`$E84E` (`CityMap`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Writes | `$5CC4`-`$5CC5` (`RandomSeed`); `$6C05`-`$6C06` (`DiscVars`); `$C450`-`$E84F` (`CityMap`); `$F6BE`-`$F6BF` (`UiStack`) |
 
 ### `Discs` (`$6ADB`)
 
@@ -1320,8 +1320,8 @@ Resets the simulation (StartSimulation `$830C`), clears CityMap `$C450` to 0 (wa
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1 call, 2,259,445 t-states own (0.15 %) |
 | Called from | `NewLandscape` |
 | Calls | `MapAddrChecked`, `LandNeighbours`, `InterruptJump` |
-| Reads | `$6B21`-`$6BA1` (`CoastPatterns`); `$C4B1`-`$E84F` (`FireCover`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$C882`-`$CC59` (`FireCover`); `$CCE4`-`$D27A` (`FireCover`); `$D39B`-`$D640` (`FireCover`); `$D6C3`-`$D99F` (`FireCover`); `$DA60`-`$DE81` (`FireCover`); `$DEFD`-`$E0BE` (`FireCover`); 3 more ranges |
+| Reads | `$6B21`-`$6BA1` (`CoastPatterns`); `$C4B1`-`$E84F` (`CityMap`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Writes | `$C882`-`$CC59` (`CityMap`); `$CCE4`-`$D27A` (`CityMap`); `$D39B`-`$D640` (`CityMap`); `$D6C3`-`$D99F` (`CityMap`); `$DA60`-`$DE81` (`CityMap`); `$DEFD`-`$E0BE` (`CityMap`); 3 more ranges |
 
 ### `MapAddrChecked` (`$6BDB`)
 
@@ -1362,8 +1362,8 @@ The run's ends come from the circle drawing x -= y >> s1, y += x >> s2 (the two 
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 160 calls, 11,949,707 t-states own (0.79 %) |
 | Called from | `Discs` |
 | Calls | `MapAddrChecked`, `InterruptJump` |
-| Reads | `$6C02`-`$6C08` (`DiscVars`); `$6C1B` (`Disc`); `$C948`-`$CEA0` (`FireCover`); `$CF5E`-`$CF5F` (`FireCover`); `$CFBE`-`$D0DF` (`FireCover`); `$D185`-`$DC39` (`FireCover`); 5 more ranges |
-| Writes | `$6C1A`-`$6C1E` (`Disc`); `$C883`-`$C884` (`FireCover`); `$C8E0`-`$C8E7` (`FireCover`); `$C8FB`-`$C8FC` (`FireCover`); `$C93F`-`$C96E` (`FireCover`); `$C99F`-`$C9D9` (`FireCover`); 3 more ranges |
+| Reads | `$6C02`-`$6C08` (`DiscVars`); `$6C1B` (`Disc`); `$C948`-`$CEA0` (`CityMap`); `$CF5E`-`$CF5F` (`CityMap`); `$CFBE`-`$D0DF` (`CityMap`); `$D185`-`$DC39` (`CityMap`); 5 more ranges |
+| Writes | `$6C1A`-`$6C1E` (`Disc`); `$C883`-`$C884` (`CityMap`); `$C8E0`-`$C8E7` (`CityMap`); `$C8FB`-`$C8FC` (`CityMap`); `$C93F`-`$C96E` (`CityMap`); `$C99F`-`$C9D9` (`CityMap`); 3 more ranges |
 
 ### `IsLand` (`$6C75`)
 
@@ -1374,7 +1374,7 @@ The run's ends come from the circle drawing x -= y >> s1, y += x >> s2 (the two 
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 36,264 calls, 3,298,982 t-states own (0.22 %) |
 | Called from | `LandNeighbours` |
 | Calls | `MapAddrChecked`, `InterruptJump` |
-| Reads | `$C450`-`$CCBA` (`FireCover`); `$CCE3`-`$DFBC` (`FireCover`); `$DFFD`-`$E01B` (`FireCover`); `$E05D`-`$E07A` (`FireCover`); `$E0BD`-`$E0D9` (`FireCover`); `$E11D`-`$E84F` (`FireCover`); 1 more ranges |
+| Reads | `$C450`-`$CCBA` (`CityMap`); `$CCE3`-`$DFBC` (`CityMap`); `$DFFD`-`$E01B` (`CityMap`); `$E05D`-`$E07A` (`CityMap`); `$E0BD`-`$E0D9` (`CityMap`); `$E11D`-`$E84F` (`CityMap`); 1 more ranges |
 | Writes | `$F6B4`-`$F6B5` (`UiStack`) |
 
 ### `LandNeighbours` (`$6C84`)
@@ -1683,7 +1683,7 @@ On water, or with AutoBulldoze (`$A32B`) on: every cell of the box must be in Si
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1 call, 3,120 t-states own (0.00 %) |
 | Called from | `MapClick` |
 | Calls | `ToolSize`, `ClickMapAddr` |
-| Reads | `$6D50` (`CurrentTool`); `$70FA`-`$70FC` (`FreeCells`); `$A32B` (`AutoBulldoze`); `$D2C3`-`$D2C5` (`FireCover`); `$D323`-`$D325` (`FireCover`); `$D383`-`$D385` (`FireCover`) |
+| Reads | `$6D50` (`CurrentTool`); `$70FA`-`$70FC` (`FreeCells`); `$A32B` (`AutoBulldoze`); `$D2C3`-`$D2C5` (`CityMap`); `$D323`-`$D325` (`CityMap`); `$D383`-`$D385` (`CityMap`) |
 | Writes | `$7102` (`FreeCells`); `$7137` (`CheckSite`) |
 
 ### `PutBuilding` (`$7197`)
@@ -1698,7 +1698,7 @@ L1 145.
 | Called from | `IndustrialTool` |
 | Calls | `ToolSize`, `ClickMapAddr` |
 | Reads | `$7425`-`$742D` (`IndustrialZone`) |
-| Writes | `$71A5` (`PutBuilding`); `$D2C3`-`$D2C5` (`FireCover`); `$D323`-`$D325` (`FireCover`); `$D383`-`$D385` (`FireCover`) |
+| Writes | `$71A5` (`PutBuilding`); `$D2C3`-`$D2C5` (`CityMap`); `$D323`-`$D325` (`CityMap`); `$D383`-`$D385` (`CityMap`) |
 
 ### `PlaceNetwork` (`$71BC`)
 
@@ -2130,7 +2130,7 @@ The plane is sprite 0, the train 3 or 4 (by its direction), the tornado 1 or 2 a
 
 **Move the train one cell along the rails (CellFlags bit 1), never straight back; gone when it finds none**
 
-Called by the UI task each pass (L1 9884); it moved in c1 (L1 442 at MoveTrainTry).
+Called through MoveDisasters by Periodic on every 16th UI pass (PassCount AND `$0F` = 0; L1 9884 against 158 073 UI passes); it moved in c1 (L1 442 at MoveTrainTry). A stuck move adds 1 to TrainSteps, a good one does not clear it: every fifth stuck move sets TrainBack 5 so the train may reverse.
 
 | | |
 | --- | --- |
@@ -2178,7 +2178,7 @@ L1 9884; the crash L1 0 in the disaster recording? see NOTES.
 
 ### `StartPlane` (`$78CA`)
 
-**With no plane out, 1 in 4: a plane from the airport's row at the right edge (column `$60`) or at the airport**
+**With no plane out, 1 in 2 (Random AND 1): a plane from the airport's row at the right edge (column `$60`) or at the airport**
 
 | | |
 | --- | --- |
@@ -2482,7 +2482,9 @@ L1 395 063.
 
 ### `CentreDistance` (`$7E03`)
 
-**A = |CityCentre column - B| + |CityCentre row - C|**
+**A = |CityCentre row - B| + |CityCentre column - C|: B the row, C the column**
+
+CityCentre is (column, row), so H is its row and L its column. Both callers pass BC = (row, column) loaded from a (column, row) word: CentreCloseness from CurCell `$8785`, LayerCrime from OverviewCellAt `$9C31`.
 
 L1 27 944.
 
@@ -2587,7 +2589,7 @@ Finds only top row bytes `$B4` (powered, width 4) of type 6 (coal) or 8 (nuclear
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 17 calls, 3,499,233 t-states own (0.23 %) |
 | Called from | `PowerFlood` |
 | Calls | `InterruptJump` |
-| Reads | `$C450`-`$E850` (`FireCover`, `IconTiles`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Reads | `$C450`-`$E850` (`CityMap`, `IconTiles`); `$FDFF`-`$FE00` (`InterruptSpare`) |
 | Writes | `$7F78`-`$7F79` (`PowerPlants`); `$F6FE`-`$F6FF` (`SimFrame`) |
 
 ### `PowerFlood` (`$7FCD`)
@@ -2601,8 +2603,8 @@ L1 1101. Every powered cell costs one of the station's budget; a station that ru
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 17 calls, 441,699 t-states own (0.03 %) |
 | Called from | `SimTask` |
 | Calls | `FindPlants`, `InterruptJump` |
-| Reads | `$7F78`-`$7F79` (`PowerPlants`); `$BFD0`-`$C44E` (`FireCover`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$7FCC` (`Brownout`); `$BFD0`-`$C44F` (`FireCover`); `$F700`-`$F701` (`SimFrame`) |
+| Reads | `$7F78`-`$7F79` (`PowerPlants`); `$BFD0`-`$C44E` (`PowerMap`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Writes | `$7FCC` (`Brownout`); `$BFD0`-`$C44F` (`PowerMap`); `$F700`-`$F701` (`SimFrame`) |
 
 ### `FloodFill` (`$811D`)
 
@@ -2728,7 +2730,7 @@ L1 13.
 | Called from | `NewLandscape`, `UiTask` |
 | Calls | `InitSimulation` |
 | Reads | `$A518` (`Level`) |
-| Writes | `$8F97`-`$8F9D` (`Funds`); `$F702`-`$F70A` (`SimEntry`, `TaskNow`, `UiSP`) |
+| Writes | `$8F97`-`$8F9D` (`Funds`); `$F702`-`$F70A` (`SimEntry`, `TaskNow`, `SwitchOff`, `UiSP`) |
 
 ### `SimTask` (`$835F`)
 
@@ -2757,7 +2759,7 @@ L1 25.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 3 calls, 437,712 t-states own (0.03 %) |
 | Called from | `StartSimulation`, `SimTask` |
 | Calls | `InterruptJump` |
-| Reads | `$A950`-`$C44E` (`FireCover`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Reads | `$A950`-`$C44E` (`FireCover`, `PoliceCover`, `Pollution`, `Traffic` and 1 more); `$FDFF`-`$FE00` (`InterruptSpare`) |
 | Writes | `$77D6` (`TrainCell`); `$7879`-`$787D` (`PlaneOut`); `$7924` (`MeltdownPending`); `$7997` (`TornadoCell`); `$7C08` (`FireStrength`); `$7C31` (`PoliceStrength`); 15 more ranges |
 
 ### `ClearCounters` (`$8480`)
@@ -2796,8 +2798,8 @@ L1 1089 (542 decays).
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 16 calls, 1,126,091 t-states own (0.07 %) |
 | Called from | `SimTask` |
 | Calls | `Div16`, `InterruptJump` |
-| Reads | `$835E` (`SimPaused`); `$847A`-`$847D` (`Population`); `$ADD0`-`$B6CF` (`FireCover`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$84DD` (`AvgPollution`); `$ADD0`-`$B6CF` (`FireCover`); `$F700`-`$F701` (`SimFrame`) |
+| Reads | `$835E` (`SimPaused`); `$847A`-`$847D` (`Population`); `$ADD0`-`$B6CF` (`Pollution`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Writes | `$84DD` (`AvgPollution`); `$ADD0`-`$B6CF` (`Pollution`); `$F700`-`$F701` (`SimFrame`) |
 
 ### `ClearCover` (`$850C`)
 
@@ -2808,8 +2810,8 @@ L1 1089 (542 decays).
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 4 calls, 96,883 t-states own (0.01 %) |
 | Called from | `CoverStations` |
 | Calls | `InterruptJump` |
-| Reads | `$A950`-`$ADCE` (`FireCover`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$A950`-`$ADCF` (`FireCover`); `$F6FE`-`$F6FF` (`SimFrame`) |
+| Reads | `$A950`-`$ADCE` (`FireCover`, `PoliceCover`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Writes | `$A950`-`$ADCF` (`FireCover`, `PoliceCover`); `$F6FE`-`$F6FF` (`SimFrame`) |
 
 ### `DecayTraffic` (`$851B`)
 
@@ -2822,8 +2824,8 @@ L1 1089.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 16 calls, 3,652,357 t-states own (0.24 %) |
 | Called from | `SimTask` |
 | Calls | `Div16`, `InterruptJump` |
-| Reads | `$8476`-`$8479` (`Population`); `$B6D0`-`$BFCF` (`FireCover`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$851A` (`AvgTraffic`); `$B6D0`-`$BFCF` (`FireCover`); `$F700`-`$F701` (`SimFrame`) |
+| Reads | `$8476`-`$8479` (`Population`); `$B6D0`-`$BFCF` (`Traffic`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Writes | `$851A` (`AvgTraffic`); `$B6D0`-`$BFCF` (`Traffic`); `$F700`-`$F701` (`SimFrame`) |
 
 ### `MakeTrip` (`$856A`)
 
@@ -2875,7 +2877,7 @@ L1 67 734.
 
 ### `CoverStations` (`$8680`)
 
-**Every 4th pass: ClearCover, then each powered 3 x 3 top (`$B3`: police type 0, fire type 1) stamps its coverage**
+**Every 4th pass: ClearCover, then each powered top row byte (AND `$F0` = `$B0`, any width: police type 0, fire type 1) stamps its coverage**
 
 L1 1090 (273 stamping).
 
@@ -2884,7 +2886,7 @@ L1 1090 (273 stamping).
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 16 calls, 2,186,224 t-states own (0.15 %) |
 | Called from | `SimTask` |
 | Calls | `ClearCover`, `InterruptJump` |
-| Reads | `$835E` (`SimPaused`); `$C450`-`$E84F` (`FireCover`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Reads | `$835E` (`SimPaused`); `$C450`-`$E84F` (`CityMap`); `$FDFF`-`$FE00` (`InterruptSpare`) |
 | Writes | `$F700`-`$F701` (`SimFrame`) |
 
 ### `CoverPolice` (`$86B7`)
@@ -2914,12 +2916,12 @@ L1 1101; 10 084 466 cells.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 17 calls, 31,752,426 t-states own (2.11 %) |
 | Called from | `SimTask` |
 | Calls | `ZonePower`, `ZoneStep`, `CellStep`, `InterruptJump` |
-| Reads | `$835D` (`SimPaused`); `$86C6` (`ZonePowered`); `$C450`-`$E84F` (`FireCover`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Reads | `$835D` (`SimPaused`); `$86C6` (`ZonePowered`); `$C450`-`$E84F` (`CityMap`); `$FDFF`-`$FE00` (`InterruptSpare`) |
 | Writes | `$86C5`-`$86C8` (`ZonePowered`); `$F700`-`$F701` (`SimFrame`) |
 
 ### `BuildingPower` (`$870C`)
 
-**A building's top-left byte: bit 4 = powered (PowerMap); BuildingType; stations count as powered**
+**A building's top-left byte: bit 4 = powered (PowerMap), ZonePowered; BuildingType; the power plants (types 6, 8) skip both: their top byte keeps the prefab's `$B4` and ZonePowered stays 0**
 
 | | |
 | --- | --- |
@@ -2934,7 +2936,7 @@ L1 1101; 10 084 466 cells.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 14 calls, 4,214 t-states own (0.00 %) |
 | Called from | `ScanCity` |
 | Calls | `PowerBitAt` |
-| Reads | `$873B` (`ZoneCentreCell`); `$C1AA` (`FireCover`); `$D324` (`FireCover`) |
+| Reads | `$873B` (`ZoneCentreCell`); `$C1AA` (`PowerMap`); `$D324` (`CityMap`) |
 | Writes | `$86C6`-`$86C8` (`ZonePowered`); `$873B` (`ZoneCentreCell`) |
 
 ### `ZoneStep` (`$8789`)
@@ -3011,7 +3013,7 @@ L1 10 084 463.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 153,148 calls, 30,948,037 t-states own (2.06 %) |
 | Called from | `ScanCity` |
 | Calls | `CellFlagsOf`, `InterruptJump` |
-| Reads | `$C450`-`$E84F` (`FireCover`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Reads | `$C450`-`$E84F` (`CityMap`); `$FDFF`-`$FE00` (`InterruptSpare`) |
 | Writes | `$8785`-`$8788` (`CurCell`); `$F6FC`-`$F6FF` (`SimFrame`) |
 
 ### `RoadCell` (`$88C6`)
@@ -3373,8 +3375,8 @@ L1 1 (after the mover).
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1 call, 93,074,671 t-states own (6.18 %) |
 | Called from | `Entry` (tail), `DrawPointer`, `ErasePointer`, `TrackBox`, `InvertBox`, `PrintFunds`, `PrintDate`, `MovePointer`, `DrawView`, `ToolKeys`, `ShowTool`, `DrawMovers`, `Periodic`, `FundsChanged`, `AnimateFlood`, `RunDisaster`, `Interrupt` |
 | Calls | `ClearTopBlack`, `DrawPointer`, `ErasePointer`, `TrackBox`, `DrawStatusPanel`, `MovePointer`, `Click`, `DrawViewRowPass`, `DrawView`, `ClearWindowArea`, `DrawMenu`, `RunMenu`, `NewLandscape`, `ToolKeys`, `DrawMovers`, `ShiftScroll`, `MapsWindow`, `StartSimulation`, `Periodic`, `FundsChanged`, `AnimateFire`, `AnimateFlood`, `InterruptJump` |
-| Reads | `$5B06` (`KeyRows`); `$8E93` (`LastPop`); `$8F9F` (`Funds`); `$A511` (`MapsDue`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$8F9F` (`Funds`); `$F6C0`-`$F6C1` (`UiStack`); `$F705` (`TaskNow`); `$F753` (`PrintCharCode`) |
+| Reads | `$5B06` (`KeyRows`); `$8E93` (`LastPop`); `$8F9F` (`PassCount`); `$A511` (`MapsDue`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Writes | `$8F9F` (`PassCount`); `$F6C0`-`$F6C1` (`UiStack`); `$F705` (`SwitchOff`); `$F753` (`PrintCharCode`) |
 
 ### `Periodic` (`$901D`)
 
@@ -3387,7 +3389,7 @@ L1 158 073.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1,777 calls, 287,075 t-states own (0.02 %) |
 | Called from | `PrintPadded`, `UiTask`, `Interrupt` |
 | Calls | `PrintFunds` (tail), `PrintDate` (tail), `UiTask`, `MoveDisasters`, `AnimateFire` (tail), `AnimateFlood` (tail), `RandomDisaster` (tail), `RunDisaster` (tail), `ShowAdvice`, `InterruptJump` |
-| Reads | `$8F9F` (`Funds`); `$FDFF`-`$FE00` (`InterruptSpare`) |
+| Reads | `$8F9F` (`PassCount`); `$FDFF`-`$FE00` (`InterruptSpare`) |
 | Writes | `$F6BE`-`$F6BF` (`UiStack`) |
 
 ### `MoveDisasters` (`$904D`)
@@ -3421,7 +3423,7 @@ L1 158 073.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 112 calls, 30,179 t-states own (0.00 %) |
 | Called from | `UiTask`, `Periodic` (tail) |
 | Calls | `Random` |
-| Reads | `$8F9F` (`Funds`); `$ED38`-`$ED47` (`CellTiles`) |
+| Reads | `$8F9F` (`PassCount`); `$ED38`-`$ED47` (`CellTiles`) |
 | Writes | `$EC90`-`$EC97` (`CellTiles`) |
 
 ### `AnimateFlood` (`$908A`)
@@ -3433,7 +3435,7 @@ L1 158 073.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 113 calls, 30,179 t-states own (0.00 %) |
 | Called from | `UiTask`, `Periodic` (tail), `Interrupt` |
 | Calls | `Random`, `UiTask` |
-| Reads | `$8F9F` (`Funds`); `$ED48`-`$ED57` (`CellTiles`) |
+| Reads | `$8F9F` (`PassCount`); `$ED48`-`$ED57` (`CellTiles`) |
 | Writes | `$EC88`-`$EC8F` (`CellTiles`) |
 
 ## disasters
@@ -3506,7 +3508,7 @@ L1 158 073.
 
 ### `RandomDisaster` (`$9144`)
 
-**Unless disasters are off (`$A43D`): with 1 in 2048 a disaster 1-6 (the meltdown with 1 in 8 of its draws)**
+**Unless disasters are off (`$A43D`): a gate of 1 in 2048 (seed AND `$07FF` = 0), then Random AND 7 picks 1-6 (6 with a further 1 in 8); the gate fixes that draw, so only the seed `$0000` (next `$00FD`, 5) starts a disaster: always the tornado, about 1 in 65 536 a try**
 
 | | |
 | --- | --- |
@@ -3678,7 +3680,7 @@ L1 18.
 
 ### `CategoryOf` (`$9760`)
 
-**Category = how many CategoryLimits PopLastYear reaches (not below)**
+**Category = how many CategoryLimits PopLastYear exceeds (a limit equal to it does not count)**
 
 Only the evaluation window computes it, from the population at the last year's end: the category changes nothing in the game. L1 18.
 
@@ -3871,7 +3873,7 @@ L1 105.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1 call, 242,116 t-states own (0.02 %) |
 | Called from | `MapsWindow`, `ShrinkLine`, `PutLayerAttr`, `LayerOf`, `Interrupt` |
 | Calls | `AnyKey`, `NextPixelLine`, `MapsWindow`, `OverviewCell`, `PutLayerAttr`, `LayerOf`, `InterruptJump` |
-| Reads | `$6558`-`$655A` (`BuildingLeft`); `$9BD7`-`$9BD8` (`OverviewCell`); `$9C2B`-`$9C34` (`MapArea`); `$9C45`-`$9C46` (`MapArea`); `$C450`-`$C83F` (`FireCover`); `$C870`-`$C89F` (`FireCover`); 7 more ranges |
+| Reads | `$6558`-`$655A` (`BuildingLeft`); `$9BD7`-`$9BD8` (`OverviewCell`); `$9C2B`-`$9C34` (`MapArea`); `$9C45`-`$9C46` (`MapArea`); `$C450`-`$C83F` (`CityMap`); `$C870`-`$C89F` (`CityMap`); 7 more ranges |
 | Writes | `$6433` (`Blink`); `$6509`-`$650A` (`CellAttrPtr`); `$6558`-`$655A` (`BuildingLeft`); `$9BD7`-`$9BD8` (`OverviewCell`); `$9C2E`-`$9C32` (`MapArea`); `$F6BA`-`$F6BB` (`UiStack`) |
 
 ### `LayerColour` (`$9D02`)
@@ -3905,8 +3907,8 @@ L1 32 928.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 864 calls, 277,193 t-states own (0.02 %) |
 | Called from | `DrawOverview`, `Interrupt` |
 | Calls | `CellFlagsOf`, `DrawOverview`, `InterruptJump` |
-| Reads | `$6509`-`$650A` (`CellAttrPtr`); `$753C`-`$753D` (`GridBase`); `$9D43` (`MapLayer`); `$C450`-`$C83F` (`FireCover`); `$C870`-`$C89F` (`FireCover`); `$C8D0`-`$C8FF` (`FireCover`); 6 more ranges |
-| Writes | `$753C`-`$753D` (`GridBase`); `$F6B8`-`$F6B9` (`UiStack`); `$F705` (`TaskNow`) |
+| Reads | `$6509`-`$650A` (`CellAttrPtr`); `$753C`-`$753D` (`GridBase`); `$9D43` (`MapLayer`); `$C450`-`$C83F` (`CityMap`); `$C870`-`$C89F` (`CityMap`); `$C8D0`-`$C8FF` (`CityMap`); 6 more ranges |
+| Writes | `$753C`-`$753D` (`GridBase`); `$F6B8`-`$F6B9` (`UiStack`); `$F705` (`SwitchOff`) |
 
 ## saveload
 
@@ -4135,7 +4137,7 @@ L1 12.
 
 ### `InputName` (`$A6F9`)
 
-**Edit an 11-letter text at InputAt (InputLength = 11: CityName's twelfth letter cannot be typed) (letters, digits, space; CAPS SHIFT 5 / 8 cursor, 0 delete)**
+**Edit an 11-letter text at InputAt (InputLength = 11: CityName's twelfth letter cannot be typed) (letters, digits, space; CAPS SHIFT 5 / 8 cursor, 0 blanks the cursor cell and the one before it)**
 
 | | |
 | --- | --- |
@@ -4242,8 +4244,8 @@ Each interrupt, 50 a second, gives the other task the CPU: the UI and the simula
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 5,224 calls, 1,822,178 t-states own (0.12 %) |
 | Called from | `InterruptJump` (tail) |
 | Calls | `ScreenAddr`, `NextPixelLine`, `DrawIcon`, `DrawIconHere`, `ClearTopWhite`, `ClearViewArea`, `DrawPointer`, `ErasePointer`, `TrackBox`, `InvertBox`, `DrawIcon2x2`, `NextColumn`, `PrintDigitOf`, `DrawBoxRow`, `FindText`, `MovePointer`, `DrawCell`, `RoadTraffic`, `PrintNumber24`, `Digit24`, `ToolKeys`, `DrawMovers`, `SimTask`, `UiTask`, `Periodic`, `FundsChanged`, `AnimateFlood`, `ShrinkLine`, `DrawOverview`, `PutLayerAttr`, `LayerOf`, `PrintGlyph`, `ReadInput` |
-| Reads | `$F704`-`$F70A` (`TaskNow`, `UiSP`) |
-| Writes | `$F704`-`$F70A` (`TaskNow`, `UiSP`) |
+| Reads | `$F704`-`$F70A` (`TaskNow`, `SwitchOff`, `UiSP`) |
+| Writes | `$F704`-`$F70A` (`TaskNow`, `SwitchOff`, `UiSP`) |
 
 ## system
 

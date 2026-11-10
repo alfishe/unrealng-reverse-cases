@@ -274,7 +274,8 @@ Div8Next:
   DJNZ Div8Loop
   RET
 
-; Leftover: an older copy of a divide (LD C,L ... RET), no code runs it
+; Leftover: an older copy of a divide (LD C,H; LD A,L; LD HL,0 ... RET), no
+; code runs it
 DivLeftover:
   DEFB $4C,$7D,$21,$00,$00,$06,$10,$29,$17,$CB,$11,$30,$01,$19,$10,$F7,$C9
 

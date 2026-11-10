@@ -57,7 +57,7 @@ def main():
         ys = [p[1] for p in pts if p[2] == kind]
         if xs:
             ax.scatter(xs, ys, s=14, color=colour, label=label, zorder=3)
-    for a, d, text, off in ((0x5B66, 6, 'ToneBeep: +6 from here', (8, 10)),
+    for a, d, text, off in ((0x5B27, 6, 'Entry $5B27: +6 from here (6 bytes inserted)', (8, 10)),
                             (0xA32F, 403, 'OptionsMenu: +403, the disk menus', (8, 10)),
                             (0xE850, 610, 'IconTiles: +610', (-120, 14)),
                             (0xF70B, 610, 'Interrupt: $F96D on disk', (-100, -28))):

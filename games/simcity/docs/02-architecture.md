@@ -28,7 +28,7 @@ they carry no time within the frame.
 | --- | --- |
 | Machine | 48K. Code and data fill `$5B00-$FE00`; nothing pages; no AY |
 | Interrupts | IM 2 with I = `$FD`. The 257-byte table at `$FD00-$FE00` holds `$FC` in every byte, so every interrupt goes to `$FCFC`, `JP Interrupt` (`$F70B`) |
-| Frame | 69 888 T. The handler reads the keyboard and the joysticks and may switch tasks: about 780 T a frame ([doc 4.3](04-game-loop.md#43-the-interrupt-and-the-switch)) |
+| Frame | 69 888 T. The handler reads the keyboard and the joysticks and may switch tasks: about 1000-1100 T a frame, about 1.5 %, of which about 300 T the joystick readers ([doc 4.3](04-game-loop.md#43-the-interrupt-and-the-switch)) |
 | CPU | two tasks share it: the UI task (UiTask `$8FA0`, pass `$8FDA`) and the simulation task (SimTask `$835F`), switched by the interrupt. No `HALT` in play; the menus wait with `HALT` |
 | Sound | the beeper only ([doc 9](09-sound.md)) |
 | Stacks | the UI's from `$F6C2` down, the simulation's from `$F704` down (2.5) |
@@ -38,7 +38,7 @@ code. It runs the simulation as a second task under an interrupt that switches t
 
 ## 2.2 The module map
 
-Stage 2 split the code from `$5B00` to `$FE00` into 29 modules: 597 entries, each a routine or a data block. A module
+Stage 2 split the code from `$5B00` to `$FE00` into 29 modules: 598 entries, each a routine or a data block. A module
 is one stretch of addresses. `python3 work/docs/scA/modmap.py` lists them from `game.ann`:
 
 | Module | Range | Bytes | Entries (code) | What |
@@ -70,7 +70,7 @@ is one stretch of addresses. `python3 work/docs/scA/modmap.py` lists them from `
 | dialogs | `$9F40-$A883` | 2372 | 54 (30) | the menus' descriptions and actions, the line editor |
 | workspace | `$A884-$E84F` | 16 332 | 4 (0) | the movers' sprites, the save header, the work arrays and the map |
 | graphics | `$E850-$F681` | 3634 | 6 (0) | the tiles and their attributes |
-| tasks | `$F682-$F74D` | 204 | 6 (1) | the task switcher, its frame and its state |
+| tasks | `$F682-$F74D` | 204 | 7 (1) | the task switcher, its frame and its state |
 | system | `$F74E-$FE00` | 1715 | 10 (6) | printing glyphs, the input read, the tape, a filled gap, the IM 2 vector |
 
 The code is 19 844 bytes, `$5B00-$A883`. Above it lie 16 K of work space and 3.6 K of tiles, then the interrupt
@@ -104,14 +104,23 @@ flowchart TD
     SP --> CA["cityaccess: CellFlagsOf, MapToRowCol"]
     SP --> RND["random"]
     SP --> EVA2["evaluation: Advise $99AD"]
+    SP --> ARI["arith: Add24, Div16, Mul16"]
+    SP --> BUD2["budget: ApplyFunding, BudgetFigures, TaxIncomeOf"]
+    SP --> LAND["landscape: MapAddr, MapAddrChecked"]
+    SP --> MOV2["movers: StartPlane, StartTrain, Meltdown"]
+    SP --> REN2["renderer: FindBuildingStart"]
+    SP --> TOOLS2["tools: PutBuildingSize"]
     REN --> CA
     TOOLS --> CA
     INT --> SYS["system: ReadInput"]
     SYS --> JOY["joysticks: ReadKempston, ReadSinclair"]
 ```
 
-The simulation module is self-contained apart from the cell access routines, the random generator and Advise. The UI
-task reaches nearly everything else.
+The simulation module calls out to nine others: the cell access routines, the random generator, Advise, the 24-bit
+and 16-bit arithmetic (Add24, Div16, Mul16), the budget's figures (ApplyFunding, BudgetFigures, TaxIncomeOf), the map
+addressing of the landscape module (MapAddr, MapAddrChecked), the movers (StartPlane, StartTrain, Meltdown), the
+renderer's FindBuildingStart and the tools' PutBuildingSize (every CALL and JP from `$7B86-$8F96`, from the listing).
+The UI task reaches nearly everything else.
 
 ## 2.3 The memory map
 
@@ -124,7 +133,7 @@ The 48K's RAM as the game uses it, with the stage-2 names. The counts are L1's, 
 | `$5B00-$5B07` | 8 | KeyRows: the keyboard's eight half rows, written by every interrupt; the joysticks fold into the same bits | 3 264 254 writes |
 | `$5B08-$5B18` | 17 | KeyNone `$5B08` (a ninth row, always `$FF`), PortHighs `$5B09` (a leftover, 2.6), BitMasks `$5B11` (the eight bit masks) | 1 420 517 reads, never written |
 | `$5B19-$5B47` | 47 | EntryJump `$5B19` (a leftover), Entry `$5B1B` | once |
-| `$5B48-$A883` | 19 772 | the code of 26 modules (2.2), with its variables between the routines and in operands, and its texts and tables: the menu descriptions in dialogs `$9F40-$A883`, the speed table `$8F6C`, the funds, the date and the pass counter `$8F97-$8F9F` | 4 356 713 173 executions; 437 bytes written |
+| `$5B48-$A883` | 19 772 | the code of 24 modules (2.2), with its variables between the routines and in operands, and its texts and tables: the menu descriptions in dialogs `$9F40-$A883`, the speed table `$8F6C`, the funds, the date and the pass counter `$8F97-$8F9F` | 4 356 713 173 executions; 437 bytes written |
 | `$A884-$A923` | 160 | MoverSprites: the plane, two tornado frames, the train across and down, 32 bytes each | read by DrawMovers |
 | `$A924-$A94F` | 44 | SaveName `$A924` (12) and SaveHeader `$A930` (31): the tape header of a saved city | written by the save |
 | `$A950-$AB8F` | 576 | FireCover: 24 x 24 fire coverage | the simulation |
@@ -137,11 +146,11 @@ The 48K's RAM as the game uses it, with the stage-2 names. The counts are L1's, 
 | `$EA68-$ED57` | 752 | CellTiles: 94 cell tiles, cells `$00-$5D`; the fire and flood frames are copied in | 34 198 857 reads |
 | `$ED58-$F4F7` | 1952 | BuildingTiles: 244 building tiles | read only |
 | `$F4F8-$F681` | 394 | IconAttrs (56), CellAttrs (94), BuildingAttrs (244) | read only |
-| `$F682-$F6C1` | 64 | the UI task's stack, from `$F6C2` down to `$F6A4` (the annotation still names it SimStack, 2.5) | 517 778 writes |
-| `$F6C2-$F703` | 66 | SimFrame `$F6EE` and SimEntry `$F702`: the simulation's first frame; its stack grows down from `$F704` to `$F6E8` | 167 868 writes |
+| `$F682-$F6C1` | 64 | UiStack: the UI task's stack, from `$F6C2` down to at least `$F68A` (2.5) | 517 778 writes |
+| `$F6C2-$F703` | 66 | SimStack `$F6C2` (44), SimFrame `$F6EE` and SimEntry `$F702`: the simulation's first frame; its stack grows down from `$F704` to at least `$F6D0` | 167 868 writes |
 | `$F704-$F70A` | 7 | TaskNow `$F704`, SwitchOff `$F705`, UiSP `$F707`, SimSP `$F709` | 1 131 383 writes |
 | `$F70B-$F7BA` | 176 | Interrupt `$F70B`, the print state `$F74E`, PrintGlyph `$F754`, ReadInput `$F781`, a leftover `$F798`, TapeLoad `$F79F`, TapeSave `$F7AA`, TapePause `$F7AD` | 183 263 122 executions |
-| `$F7BB-$FCFB` | 1345 | 1345 bytes of `$E5`, untouched (2.6) | none |
+| `$F7BB-$FCFB` | 1345 | E5Fill: 1345 bytes of `$E5`, untouched (2.6) | none |
 | `$FCFC-$FCFE` | 3 | InterruptJump: `JP Interrupt` | 1 207 614 executions |
 | `$FCFF-$FE00` | 258 | InterruptSpare, then the vector table `$FD00-$FE00`, 257 bytes of `$FC` | the vector is read at `$FDFF-$FE00`, 343 447 times each (the bus holds `$FF`) |
 | `$FE01-$FFFF` | 511 | the loader, as it was left (2.6, [doc 3](03-build-and-load.md)) | untouched in play |
@@ -157,14 +166,15 @@ Stage 2 corrected four things in stage 1's map:
 
 | Image | What it is | How it was made |
 | --- | --- | --- |
-| as loaded | `c1`'s memory at the start of frame 16 279: the loader has put the three blocks in place and the mover `$5000` is about to run | `tools/ttdmem.py work/stage1/c1 16279 0x4000 0xC000` (`work/stage1/c1-16279.bin`) |
+| as loaded | `c1`'s memory at the start of frame 16 279: LoadBlock is reading block 7's last byte, the checksum; the mover `$5000` runs later in the same frame | `tools/ttdmem.py work/stage1/c1 16279 0x4000 0xC000` (`work/stage1/c1-16279.bin`) |
 | at the entry | the same at frame 16 281, after the mover and the entry's first frame | `work/stage1/c1-16281.bin`; equal to the build's `game.bin` but for `$F705` ([doc 3.9](03-build-and-load.md#39-what-loads-is-what-runs)) |
 | in play | `city2`'s end (DEC 1935), and `c1` at frame 21 534 | `tools/szx.py work/stage1/rec/city2/end.szx`, `work/stage1/c1-21534.bin` |
 
 What changes between them (`work/stage1/imgdiff.py`, runs of differing bytes):
 
 - **Loaded to entry**: 3862 bytes. Most are `$5B00-$6AFF`, where the mover copies code2 from `$4000`. The others are
-  `$F705` (set to 1 at `$5B24`) and one byte at `$FF83`. Code2 stays on the screen until the game draws over it.
+  `$F705` (set to 1 at `$5B24`) and one byte at `$FF83`, a loader operand that is not yet back to `$F9` because
+  block 7 is still loading (it returns to `$F9` at the end of every block). Code2 stays on the screen until the game draws over it.
   Nothing is unpacked.
 - **Entry to play** (`c1`, 5745 bytes): the map (5522 of 9216 bytes: the landscape of the new city); the keyboard rows;
   about 40 runs of variables in the code area; the fire tile in CellTiles; the stacks and the switch state. No code
@@ -192,39 +202,42 @@ machinery at the top.*
 ## 2.5 The two stacks
 
 Each task has its own stack, and an interrupt pushes 22 bytes on whichever one is running
-([doc 4.3](04-game-loop.md#43-the-interrupt-and-the-switch)). The low marks are L1's deepest writes over all eleven
-recordings.
+([doc 4.3](04-game-loop.md#43-the-interrupt-and-the-switch)). The low marks come from write probes on read-only opens
+of `ports` and `menus` (review round 1, rvA): a write watch over each stack, the lowest address written and its frame.
+L1's per-byte write counts cannot give the depth: they miss bytes (L1 counts `$F6EA` and `$F6A6` with 4 writes and
+their neighbours with more), so the deepest byte L1 shows, `$F6E8` and `$F6A4`, is not the deepest the code reaches.
 
-| Stack | Set by | Top | Deepest write | Depth | Untouched below it |
+| Stack | Set by | Top | Deepest write seen | Depth | Spare below it |
 | --- | --- | --- | --- | ---: | --- |
-| UI task | Entry `$5B1C`: `LD SP,SimStack+$40` = `$F6C2` | `$F6C2` | `$F6A4` (5 writes) | 30 | `$F682-$F6A3`, 34 bytes |
-| simulation task | StartSimulation `$8311`: SimSP = SimFrame `$F6EE`; the first switch pops 20 bytes and `RET` takes SimEntry `$F702` | `$F704` | `$F6E8` | 28 | `$F6C2-$F6E7`, 38 bytes |
+| UI task | Entry `$5B1C`: `LD SP,UiStack+$40` = `$F6C2` | `$F6C2` | `$F68A` (`menus` frame 3466; `ports`: `$F692`) | 56 | `$F682-$F689`, 8 bytes, then BuildingAttrs `$F58E-$F681` |
+| simulation task | StartSimulation `$8311`: SimSP = SimFrame `$F6EE`; the first switch pops 20 bytes and `RET` takes SimEntry `$F702` | `$F704` | `$F6D0` (`menus` frame 5498; `ports`: `$F6D2`, frame 4126) | 52 | `$F6C2-$F6CF`, 14 bytes, then the UI stack's top |
 
 ```mermaid
 flowchart TB
-    A["$F682-$F6A3: 34 bytes never written"] --- B["$F6A4-$F6C1: the UI stack in use, 30 bytes"]
+    Z["$F58E-$F681: BuildingAttrs, read by the renderer"] --- A["$F682-$F689: 8 bytes never written"]
+    A --- B["$F68A-$F6C1: the UI stack, 56 bytes reached"]
     B --- C["$F6C2: the UI stack's top, set by Entry"]
-    C --- D["$F6C2-$F6E7: 38 bytes never written"]
-    D --- E["$F6E8-$F6ED: the simulation stack's deepest 6 bytes"]
-    E --- F["$F6EE-$F701: SimFrame, 20 zero bytes, the first registers"]
+    C --- D["$F6C2-$F6CF: 14 bytes never written"]
+    D --- E["$F6D0-$F6ED: the simulation stack below its frame, 30 bytes reached"]
+    E --- F["$F6EE-$F701: SimFrame, 20 bytes, the first registers"]
     F --- G["$F702-$F703: SimEntry = SimTask, the first return address"]
     G --- H["$F704: TaskNow, the simulation stack's top is just below it"]
 ```
 
-Both stacks are shallow:
+Neither stack has much to spare:
 
-- The simulation is never more than three calls deep when an interrupt comes: SimTaskPass, ScanCity and CellStep.
-  Its 28 bytes are those three return addresses and the interrupt's 22.
-- The UI's 30 bytes are four return addresses and the interrupt's 22.
+- The simulation goes deep. ScanCity -> ZoneStep -> ResidentialStep -> ScanRing -> ScanRingCell -> CellFlagsOf (or
+  MapAddrChecked) is five calls and more below SimTaskPass; CellStep also pushes CellStepEnd, and an interrupt adds
+  its 22 bytes on top. 52 of its 66 bytes were reached; 14 more would write into the UI stack's top.
+- The UI's 56 bytes include the interrupt's 22, so the UI's own calls and pushes reach at least 34 bytes. Eight bytes
+  more and a push would land in BuildingAttrs, and the map would show a wrong colour.
 
-**The names are crossed.** The annotation calls `$F682-$F6C1` "SimStack, the simulation task's stack (zeros)", and
-`$F7BB-$FCFB` "UiStack, the UI task's stack, filled with `$E5`". Neither is right:
+The depths are those of the recordings, a lower bound: a deeper path no recording took is possible.
 
-- Entry's `LD SP,SimStack+$40` gives SP = `$F6C2` to the UI task, which grows down into "SimStack";
-- the simulation's stack starts inside SimFrame, at `$F704`;
-- "UiStack" is never touched by any recording: no stack reaches it.
-
-The fix is sent to the lead (`work/docs/scA-src-changes.md`).
+**A worked example: the simulation's 52 bytes.** The deepest write, `$F6D0` at `menus` frame 5498, is 52 bytes below
+the top `$F704`. If it is the last byte of an interrupt's 22-byte push, the simulation itself was 30 bytes deep at
+that moment (`$F6E6`): 15 words of return addresses and saved registers, which matches the five-call chain above with
+the registers its routines push. The 14 bytes left (`$F6C2-$F6CF`) are less than one interrupt frame.
 
 ## 2.6 Leftovers
 
@@ -235,7 +248,7 @@ Bytes in the image that no code runs or reads, or that are written before any re
 | `$5B09` PortHighs | 8 | the eight port high bytes `$FE`, `$FD` ... `$7F`: a table for a key scan; ReadInput uses `RLC B` instead | L1: 0 reads |
 | `$5B19` EntryJump | 2 | `JR $5B1B`: the +3 disk boot enters here (2.8); the tape's mover jumps past it to `$5B1B` | L1: never executed |
 | `$64D5` BuildingDummy | 1 | a byte IX points at while a building row is drawn; its value is never read | the code |
-| `$7657` DivLeftover | 17 | an older copy of a divide (`LD C,L ... RET`) | no caller, L1: never executed |
+| `$7657` DivLeftover | 17 | an older copy of a divide (`LD C,H; LD A,L; LD HL,0 ... RET`) | no caller, L1: never executed |
 | `$85C4` TripLeftover | 16 | `XOR A; LD ($8568),A; LD HL,($8462); INC HL ...`: code no one calls | L1: never executed |
 | `$8F67-$8F6B` | 5 | 8, 7, 7, 7, 1: a speed row the table does not have; SetSpeed overwrites it in the first pass | [doc 4.7](04-game-loop.md#47-the-speed-masks-and-the-month) |
 | `$8F6A` | 1 | the fourth speed byte, copied every pass, never read | the code |
@@ -245,9 +258,15 @@ Bytes in the image that no code runs or reads, or that are written before any re
 | `$FE14-$FE7F` | 108 | LoaderPadding: the bytes `$14-$7F`, each its own address's low byte | L1: untouched |
 | `$FFA5-$FFFF` | 91 | the ROM font `$3E55-$3EAF` ("J" from its sixth row to "U"), saved with the loader | L1: untouched |
 
-The two `JP $FE0F` and the `$E5` fill hint at how the master was made: an earlier build kept its tape routines near
-`$FE0F`, and the memory the image was saved from had been cleared by a disk format. Neither is proved; both are
-listed in `work/docs/scA-NOTES.md`.
+The two `JP $FE0F` and the `$E5` fill are left from the +3 disk build (2.8), an inference from the static match of the
+two images (review round 1):
+
+- In the disk image, right after ReadInput's `RET` (`$F9FA`), comes a reload routine:
+  `DI; LD SP,$F924; LD HL,$0200; LD ($FAA0),HL; ...; LD HL,$5A00; LD BC,$0100; LD D,$52; CALL $FA89; JP $FE0F`. In the +3 boot sector `$FE0F` is the
+  `DI` just before its code at `$FE10`, so the jump re-runs the disk's boot loader. On tape the routine is gone and
+  only its `JP $FE0F` tails remain.
+- The disk image has a `$E5` run too, 236 bytes at `$FC10-$FCFB`, ending at the same address as the tape's fill: the
+  tape's master was saved from memory that a disk format had filled with `$E5`.
 
 ## 2.7 The frame budget
 
@@ -274,12 +293,13 @@ docs/img/arch/budget-routines.png` (with `--title` and `--note`).*
 | renderer | 21.00 % | 21.25 % | DrawCell 11.29 %, DrawView 5.44 %, DrawBuildingTile 1.67 % |
 | cityaccess | 15.29 % | 11.32 % | CellFlagsOf 6.33 %, MapToRowCol 5.57 %, PowerBit 1.44 % |
 | HALT | 0.96 % | 2.06 % | the menus |
-| the rest | 9.4 % | 9.9 % | print 0.61 %, tasks 0.52 %, joysticks 0.43 % ... |
+| the rest | 9.4 % | 9.9 % | system 2.51 / 2.61 % (PrintGlyph 1.89 %), landscape 2.17 / 2.41 % (MapAddr 1.80 %), cursor 1.31 / 1.56 %, print 0.59 / 0.61 %, tasks 0.51 / 0.52 %, joysticks 0.43 / 0.43 % ... |
 
 **A worked example: UiDelay's share.** In `city2`, UiDelay's loop ran 69 574 000 times (`$8FD5` in
 `work/stage2/counts.json`), exactly 2000 for each of the 34 787 UI passes. At 26 T a loop that is 1 808 924 000 T. The
-recording is 82 012 frames of 69 888 T, 5 731 654 656 T. So UiDelay is 31.6 % of the time; the budget's 31.95 % for
-uitask adds the rest of UiLoop.
+recording is 82 012 frames of 69 888 T, 5 731 654 656 T. So UiDelay's loop is 31.6 % of the time. The budget
+counts it twice over: the routine UiTask, whose range holds UiLoop and UiDelay, is 31.79 %, and the module uitask,
+which adds Periodic and the funds and date printers, 31.95 %.
 
 What the budget says:
 
@@ -304,15 +324,17 @@ flowchart TD
     B --> C["its own FDC routines: 82 sectors from track 1"]
     C --> D["into $5A00-$FDFF"]
     D --> E["JP $5B19: EntryJump, JR $5B1B"]
-    E --> F["Entry: the same start as the tape's"]
+    E --> F["Entry: the tape's start with LD HL,$0200 / LD ($FAA0),HL added; from $5B27 on, +6"]
 ```
 
 What the disk leaves out and what it adds:
 
 - **No protection.** There is no R-keyed loader, no encrypted blocks and no loading screen.
-- **The same program, reassembled.** `$5B00-$5B1C` holds the same bytes, EntryJump included. Entry differs from its
-  `LD SP` on: the disk's SP is `$F924`, the tape's `$F6C2` plus 610. From ToneBeep `$5B66`, every entry sits 6 bytes
-  higher, up to the save code; the code bytes differ only in their address operands.
+- **The same program, reassembled.** `$5B00-$5B1C` holds the same bytes, EntryJump included. In Entry the disk's SP
+  is `$F924`, the tape's `$F6C2` plus 610, and SwitchOff's address moves with the system part (`$F967`). Then the
+  disk's Entry adds six bytes, `LD HL,$0200; LD ($FAA0),HL` (`21 00 02 22 A0 FA`), right after `LD (SwitchOff),A`.
+  From the tape's `$5B27` on, every entry sits 6 bytes higher (NoiseBurst `$5B4E`, ToneBeep `$5B6C` on disk), up to
+  the save code; the code bytes differ only in their address operands (KempstonFound `$5B85`, UiTask `$8FA6`).
 - **Disk menus.** The SYSTEM menu gains CATALOGUE DISK and SIM FORMAT DISK. LOAD and SAVE become a LOADING / SAVING
   MENU of ten slots (DISK FILES, NAME / NUMBER, FILE0-FILE9), with the errors THERE ARE NO FILES ON THIS DISK, IT IS
   NOT FORMATTED, FORMAT DISK, DISK NOT PRESENT and NO CITY DATA FOUND. So the texts after them move by up to 403
@@ -326,9 +348,9 @@ What the disk leaves out and what it adds:
 ![The +3 disk image against the tape](img/arch/plus3-shift.png)
 
 *How far each entry of `game.ann` moved in the +3 disk's image. How to read: one dot an entry whose first 6 to 16
-bytes occur exactly once within `$800` of its tape address in the disk image (155 of 597; most code entries hold
+bytes occur exactly once within `$800` of its tape address in the disk image (155 of 598; most code entries hold
 address operands that differ, so they are not found); x is the tape address, y the shift. The steps are +6 from
-ToneBeep, +67 to +104 in the dialogs, +403 from OptionsMenu, +610 for the tiles and the system part. Four dots off
+Entry's `$5B27`, +67 to +104 in the dialogs, +403 from OptionsMenu, +610 for the tiles and the system part. Four dots off
 the steps (three simulation entries at `$8D0B-$8DB5` and TapePause) are chance matches of a short pattern. Made with
 `python3 tools/fig_plus3.py work/stage2/plus3/disk-5A00.bin work/mkgame/original.bin docs/img/arch/plus3-shift.png`.*
 

@@ -575,7 +575,8 @@ BridgeLineEnd:
   RET
 
 ; The flags of the cells 0-$59: bit 0 not reshaped, 1 rail, 2 road, 3 conducts
-; power, 4 zone, 6 developed, 7 flammable
+; power, 4 zone, 5 set on the zone centres $51-$56 only (no reader), 6
+; developed, 7 flammable
 ;
 ; Read by CellFlagsOf ($7599; L1 11 343 551). Buildings ($80 and up) give $99
 ; there. The bit meanings follow from the readers: bit 0 FixNetworkCell, bit 1

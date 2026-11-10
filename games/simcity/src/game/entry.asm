@@ -59,8 +59,8 @@ EntryJump:
 ; otherwise KempstonFound = 1. Then I = $FD (the vector table VectorTable
 ; $FD00, every vector $FCFC), IM 2, EI and JP UiTask $8FA0.
 ;
-; c1: L1 1 at frame 16 280; the loop ran 32 768 times (no Kempston in c1's
-; setup); the ports recording sets KempstonFound (stage 1). No other code
+; c1: L1 1 at frame 16 280; the loop ran 32 768 times (every read below $1F:
+; c1's setup has a Kempston interface, KempstonFound = 1). No other code
 ; changes I or the mode.
 Entry:
   DI

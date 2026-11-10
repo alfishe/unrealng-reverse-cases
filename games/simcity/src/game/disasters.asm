@@ -1,8 +1,9 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; disasters.asm: The disasters
 ;
-; Fire, flood, earthquake (both, with a long noise), the air crash, the tornado and the meltdown: RandomDisaster draws
-; one with 1 in 2048 every 16 UI passes unless DISABLE ALL; the DISASTERS menu sets DisasterDue directly.
+; Fire, flood, earthquake (both, with a long noise), the air crash, the tornado and the meltdown: RandomDisaster tries
+; every 16 UI passes unless DISABLE ALL, but its gate fixes the next draw: the only disaster it can start is the
+; tornado, about 1 in 65 536 a try; the DISASTERS menu sets DisasterDue directly.
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; message $16 (FIRES HAVE BEEN DETECTED), the noise, Ignite 1 in 128 cells
@@ -137,8 +138,10 @@ EarthquakeNoise:
   CALL StartFires
   JR StartFlood
 
-; Unless disasters are off ($A43D): with 1 in 2048 a disaster 1-6 (the meltdown
-; with 1 in 8 of its draws)
+; Unless disasters are off ($A43D): a gate of 1 in 2048 (seed AND $07FF = 0),
+; then Random AND 7 picks 1-6 (6 with a further 1 in 8); the gate fixes that
+; draw, so only the seed $0000 (next $00FD, 5) starts a disaster: always the
+; tornado, about 1 in 65 536 a try
 ;
 ; Used by the routine at Periodic.
 RandomDisaster:

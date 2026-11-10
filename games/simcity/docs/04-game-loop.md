@@ -72,7 +72,7 @@ map, the money, the date. A few UI actions must not be cut in the middle, or a h
 SwitchOff while they run, so the simulation cannot run inside them (4.3).
 
 **Why this way.** Maxis' SimCity is a city that lives while the player draws in it. On a 3.5 MHz Z80, one simulation
-pass over the 9216 cells takes between 80 and 180 frames of CPU (4.8). A single loop would freeze the pointer for
+pass over the 9216 cells takes between 72 and 180 frames of CPU (4.8, 4.9). A single loop would freeze the pointer for
 seconds at a time. With two tasks, the pointer gets two frames in every three, all the time. The simulation gets the
 rest.
 
@@ -95,10 +95,13 @@ it runs once.
 
 StartSimulation (`$830C`) does not run the simulation. It builds a stack for a task that has never run:
 
-- SimSP points to SimFrame `$F6EE`, 20 bytes of zeros;
+- SimSP points to SimFrame `$F6EE`, 20 bytes, zeros in the image;
 - the word after them, SimEntry `$F702`, holds the address of SimTask.
 
-The first interrupt that switches to the simulation pops the 20 zeros as its ten register pairs. Its `RET` then takes
+The first interrupt that switches to the simulation pops the 20 bytes as its ten register pairs. At the first start
+they are zeros. StartSimulation is called again from NewLandscape `$6A8E` for every new city; by then the simulation
+stack has run over `$F6EE-$F703`, and StartSimulation rewrites SimEntry (`$831A`) but not the 20 bytes, so a later
+start pops whatever the last pass left. That is harmless: SimTask sets every register it uses. Its `RET` then takes
 SimEntry and lands on SimTask. So a task starts as if it had been interrupted just before its first instruction.
 
 StartSimulation also sets:
@@ -167,9 +170,10 @@ on every interrupt:
     enable interrupts; return                               # to the PC the interrupt pushed on that stack
 ```
 
-**What a switch saves.** Everything a task owns is on its own stack: the PC the interrupt pushed, then the ten
-register pairs. That is 22 bytes. The rest of the machine state is shared: I, the interrupt mode and the memory. The
-swap itself touches two words, UiSP `$F707` and SimSP `$F709`. R is not saved, and nothing in the game reads it.
+**What a switch saves.** Everything a task owns is on its own stack: the PC the interrupt pushed, then the ten register
+pairs. That is 22 bytes. The rest of the machine state is shared: I, the interrupt mode and the memory. The swap itself
+touches two words, UiSP `$F707` and SimSP `$F709`. R is not saved; the game reads it only in DrawMovers (`LD A,R` at
+`$77C0`, to pick the tornado's frame), where any value will do.
 
 ```mermaid
 sequenceDiagram
@@ -185,16 +189,17 @@ sequenceDiagram
     INT->>UI: 10 pairs popped, EI, RET into UiDelay
 ```
 
-**The two stacks, measured.** The deepest bytes were found from the writes over all eleven recordings.
+**The two stacks, measured.** The deepest bytes come from write probes over each stack on read-only opens of `ports`
+and `menus` (review round 1); L1's per-byte counts miss bytes and give too shallow a figure.
 
-| Stack | Starts at | Deepest byte | Bytes used | Why that deep |
+| Stack | Starts at | Deepest byte seen | Bytes used | Spare |
 | --- | --- | --- | ---: | --- |
-| UI task | `$F6C2` (Entry's `LD SP,$F6C2`) | `$F6A4` | 30 | an interrupt's 22 and four return addresses |
-| simulation task | `$F704` (the top of SimFrame) | `$F6E8` | 28 | the interrupt's 22 and three return addresses |
+| UI task, UiStack `$F682-$F6C1` | `$F6C2` (Entry's `LD SP,UiStack+$40`) | `$F68A` (`menus` frame 3466) | 56 | 8 bytes above BuildingAttrs |
+| simulation task, SimStack and SimFrame | `$F704` (the top of SimFrame) | `$F6D0` (`menus` frame 5498) | 52 | 14 bytes above the UI stack's top |
 
-The three return addresses on the simulation stack are SimTaskPass, ScanCity and CellStep. So the simulation is
-never more than three calls deep when an interrupt comes. The annotation names the 64 bytes `$F682-$F6C1`
-"SimStack", but they are the UI's stack ([doc 2.5](02-architecture.md#25-the-two-stacks)).
+The simulation goes five calls and more below SimTaskPass (ScanCity -> ZoneStep -> ResidentialStep -> ScanRing ->
+ScanRingCell -> CellFlagsOf), with CellStep's pushed CellStepEnd and the registers its routines save; an interrupt
+adds its 22 bytes on top. Neither stack has a wide margin ([doc 2.5](02-architecture.md#25-the-two-stacks)).
 
 **SwitchOff.** These routines set `$F705` to 1 and clear it when they are done:
 
@@ -228,17 +233,20 @@ The sums, without ReadInput:
 - a switch back to the UI costs 403 T (`JR Z` not taken, 5 T less, then `JR InterruptFlip`, 12 T more);
 - a frame without a switch (the `JR NZ` taken) costs 314 T.
 
-The L1 budget of `city2` measures Interrupt at 0.51 % and ReadInput at 0.61 % of all the time
-([doc 2.7](02-architecture.md#27-the-frame-budget)). Together that is about 780 T a frame, 1.1 % of a 69 888 T frame.
+The L1 budget of `city2` measures Interrupt at 0.51 %, ReadInput at 0.61 % and the joystick readers it calls,
+ReadSinclair and ReadKempston, at 0.24 % and 0.17 % of all the time ([doc 2.7](02-architecture.md#27-the-frame-budget)).
+Together that is 1.53 %, about 1070 T of a 69 888 T frame, of which about 290 T the joystick readers; the `ports`
+witness of doc 5, 5.1 measures 952-1062 T with the IM 2 acknowledge. So the handler costs about 1000-1100 T a frame,
+about 1.5 %. (Interrupt and ReadInput alone are about 780 T.)
 
 ![Interrupt switching from the UI to the simulation](img/routines/Interrupt.gif)
 
-*Interrupt switching from the UI task to the simulation, `c1` frame 20003, T 1700 to 3700. An access trace, 50
-pictures of 40 T. How to read: top left, the memory `$F600-$F7FF` lit by age (yellow written in this picture, red
-earlier, blue read); under it, the 144 bytes `$F680-$F70F` as a bitmap, 16 bytes a line. The UI's stack, in the upper
-lines, takes the ten pairs; the simulation's, in the lower lines, gives them back. Right: the listing with the
-instruction running, the registers and SP. The INT came at T 1812, inside UiDelay. After the `RET`, the simulation
-runs on in ScanCityCell with SP = `$F702`. Made with `python3 ../../kit/routine_anim.py --work work/docs/scA/c1
+*Interrupt switching from the UI task to the simulation, `c1` frame 20003, T 1700 to 3700. An access trace, 50 pictures
+of 40 T. How to read: top left, the memory `$F600-$F7FF` lit by age (yellow written in this picture, red earlier, blue
+read); under it, the 144 bytes `$F680-$F70F` as a bitmap, 16 bytes a line. The UI's stack, in the upper lines, takes the
+ten pairs; the simulation's, in the lower lines, gives them back. Right: the listing with the instruction running, the
+registers and SP. The INT came at T 1812, inside UiDelay. After the `RET` the simulation runs on; the last picture shows
+it in CellStep (`$889C`) with SP = `$F700`. Made with `python3 ../../kit/routine_anim.py --work work/docs/scA/c1
 --window 20003:1700-20003:3700 --listing build/game.lst --view buffer:F680:16x9:rows --range F600-F7FF --pc F70B-F74D
 --pictures 50 --out docs/img/routines/Interrupt.gif`.*
 
@@ -264,12 +272,14 @@ The switches in these frames come from two probes:
 
 | Frame | Task | What runs | Why |
 | ---: | --- | --- | --- |
-| 20000 | UI | the end of a UiPass, then UiDelay (purple) for most of the frame, then a new UiPass: ErasePointer (blue), then DrawTileLoop and PutAttr on one row of cells | the INT switched from the simulation (`$F72D`) |
+| 20000 | UI | before T 1812 the simulation's tail; after the INT the end of a UiPass, then UiDelay (purple) for most of the frame, then a new UiPass: ErasePointer (blue), then DrawTileLoop and PutAttr on one row of cells | the INT switched from the simulation (`$F72D`) |
 | 20001 | UI | the row draw goes on, then DrawPointer (yellow), UiDelay for about 52 000 T, a new pass | the INT came while DrawViewRowPass ran with SwitchOff = 1: no switch |
 | 20002 | UI | the row draw, the pointer, then UiDelay to the end of the frame | the same |
 | 20003 | simulation | after the INT, CellStep, ScanCityCell, CellFlagsOf and the other cell routines, for the whole frame | the INT came inside UiDelay, with SwitchOff = 0: switched (`$F733`) |
 
-The map window is drawn one row of cells a pass, two tiles high. Its writes fall wherever they fall against the beam.
+The map window is drawn one character row of cells a pass (DrawViewRowPass, row 8 + PassCount AND 15, 32 cells of
+8 pixel bytes and one attribute each). The four frames hold two such passes, so the beam figure counts 2 x 32 x 8 =
+512 DrawTileLoop writes and 2 x 32 = 64 PutAttr writes. The writes fall wherever they fall against the beam:
 DrawTileLoop wrote 315 of its 512 bytes before the beam reached them and 197 after. The game does not race the beam:
 a row drawn a frame late shows its old picture for one frame.
 
@@ -307,9 +317,12 @@ what feeds the simulation.
 
 UiDelay is the most-run code in the game:
 
-- 316 million loops in the eleven recordings, exactly 2000 for each of the 158 080 UI passes;
+- 316 156 069 loops in the eleven recordings (`$8FD5` in `work/stage2/counts.json`): 2000 for each of the 158 076
+  completed UI passes (`$8FDA`), plus 4069 from the four recordings (`bankrupt`, `city`, `growth`, `levels`) that end
+  in the middle of a delay; UiLoop started 158 080 times (`$8FCC`);
 - at 26 T a loop, 51 995 T, which is 74 % of a frame, in every pass;
-- in the budget it is the routine UiTask: 31.8 % of all the time in `city2`.
+- in `city2` UiDelay's loop is 31.6 % of all the time (2.7's worked example); the budget's routine UiTask, whose
+  range holds UiLoop and UiDelay, is 31.8 %, and the module uitask, which adds Periodic and the printers, 31.95 %.
 
 It is not wasted time. It sets the pace of the pointer, and it is the window in which the INT can hand the frame to
 the simulation (4.4).
@@ -359,7 +372,7 @@ flowchart TD
 8374  CALL DecayTraffic
 8377  CALL DemandOf         ; R, C and I demand
 837A  CALL Averages2
-837D  CALL AssessCity       ; population, the category
+837D  CALL AssessCity       ; CityValue (the category is set by the evaluation only)
 8380  CALL PopBalanceOf
 8383  CALL ServiceNeeds     ; hospitals, churches
 8386  CALL Advise           ; $99AD: the advice the UI will show
@@ -397,13 +410,14 @@ holds (15.3 % in all, with the renderer's share).
 
 ![One simulation pass in city2](img/routines/SimTask.gif)
 
-*One simulation pass: `city2` pass 176, frames 65 719 to 66 141. 86 pictures, 5 frames apart, each the memory at the
-start of its frame (`memory_at`). How to read: top, the memory `$A900-$F7FF`, one row a 256-byte page, grey by value;
-yellow is a byte changed since the last picture, fading through red. The work arrays at `$A94F-$C44F` and the map at
-`$C450` change a few bytes at a time as ScanCity walks them. Bottom, the screen: the UI goes on moving the pointer and
-redrawing the window all through the pass. Made with `python3 ../../kit/memanim.py --work work/docs/scA/city2 --from
-65719:0 --to 66141:0 --step 349440 --from-address 0xA900 --to-address 0xF7FF --screen --delay 120 --hold 2500 --width
-1050 docs/img/routines/SimTask.gif`.*
+*One simulation pass: `city2` pass 176, frames 65 719 to 66 140 (`--to 66141:0` is the start of the next frame). 86
+pictures, 5 frames apart, each the memory at the start of its frame (`memory_at`). How to read: top, the memory
+`$A900-$F7FF`, one row a 256-byte page, grey by value; yellow is a byte changed since the last picture, fading through
+red. The work arrays at `$A94F-$C44F` and the map at `$C450` change a few bytes at a time as ScanCity walks them.
+Bottom, the screen: the UI goes on moving the pointer and redrawing the window all through the pass. Made with `python3
+../../kit/memanim.py --work work/docs/scA/city2 --from 65719:0 --to 66141:0 --step 349440 --from-address 0xA900
+--to-address 0xF7FF --screen --delay 120 --hold 2500 --layout compact --width 1050 docs/img/routines/SimTask.gif`; the
+compact layout makes it 574 px wide, `--width` is only the limit.*
 
 ```mermaid
 flowchart TD
@@ -439,7 +453,9 @@ What each byte does:
 - **GrowTries**: how many frame cells a residential zone tries to raise or lower by a house in a pass (GrowZone
   `$8A40`, DeclineZone `$8A70`).
 - **IndChance** and **ComChance**: masks on a random byte. An industrial or commercial zone acts when
-  `Random AND mask` is 0. That is 1 in 2, 4 or 8 for industry, and 1 in 16, 32 or 64 for commerce.
+  `Random AND mask` is 0. That is 1 in 2, 4 or 8 for industry, and 1 in 16, 32 or 64 for commerce. IndChance gates
+  more than industry: ResBuildingStep (`$8B7B`, the R blocks), the church step (`$8D9E`) and the hospital step
+  (`$8DC3`) read it too, so the speed sets their pace as well.
 - **`$8F6A`, the fourth byte**, has no reader.
 - **MonthMask**: the month ends when `SimPass AND MonthMask` is 0.
 
@@ -503,8 +519,9 @@ What the table shows:
   frames in three, the UI makes about 21 passes a second (`city2`: 34 787 passes in 82 011 frames).
 - **In the menus and dialogs the simulation nearly stops.** A menu runs inside Click, with SwitchOff set. The
   `levels` and `menus` recordings spend most of their frames in menus, so their sim share falls to 6 % and 17 %.
-- **A simulation pass is 84 to 157 frames of CPU.** It grows with the built-up map: from the default land of `c1` to
-  the dense map of `metro`. In wall time, that is 6 to 9.4 s a pass.
+- **A simulation pass is 72 to 157 frames of CPU** (from `levels` to `metro`). It grows with the built-up map: from
+  the default land of `c1` to the dense map of `metro`. In play the wall time is 242 to 471 frames, 4.8 to 9.4 s a
+  pass (`levels`' 1160 wall frames are menus).
 
 The `c1` row counts from Entry, so its interrupts include the 1310 frames before the simulation started (4.2).
 

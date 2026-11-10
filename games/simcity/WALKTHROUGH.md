@@ -41,8 +41,8 @@ Found:
 - **The tape** ([doc 3, 3.1](docs/03-build-and-load.md#31-the-tape-block-by-block)): a BASIC "Simcity" (LINE 0,
   144 bytes: `CLEAR 32767`, `LOAD "" CODE 65024`, `RANDOMIZE USR 65024`, and three mastering lines never reached), a
   512-byte loader at `$FE00`, and three headerless blocks with flag `$00` and a header's long pilot: the screen
-  (6912), code1 (37 633 bytes to `$6B00-$FE00`) and code2 (4128 bytes to `$4000-$501F`). The signal lasts 315.74 s
-  (16 110 frames).
+  (6912), code1 (37 633 bytes to `$6B00-$FE00`) and code2 (4128 bytes to `$4000-$501F`). The signal lasts 315.74 s,
+  322.2 s (16 110 frames) with the pauses.
 - **Two layers of protection** ([doc 3, 3.3](docs/03-build-and-load.md#33-the-loader-two-layers)): the loader's tail
   `$FE80-$FFFF` is XORed with the R register (key `(2 + 8 k) AND $7F`), and its tape routine `$FEBD`, the ROM's
   LD-BYTES copied and changed, stores every byte as `received XOR key XOR E` (key 0, 3, 6, ... per block, E the low
@@ -117,8 +117,9 @@ Found, interrupts and the frame (first look; stage 2 reads the routines):
   `$7A01` folds the Kempston port (`$5B80`: `IN A,($1F)` inverted, or all released when the entry's test found no
   interface, `$5B7F` = 0) into the Q, A, O, P and SPACE bits; `$7A32` folds the keys 6-0 (the Sinclair joystick: 6
   left, 7 right, 8 down, 9 up, 0 fire) in the same way when neither shift is held.
-- **Cost**: the handler takes about 1100 T an interrupt (`$F70B` 349 T exclusive, `$F781` with the joystick folding
-  760 T, L1 profiles over `c1`'s 5224 entries), 1.6 % of a 69 888 T frame. The L1 "inclusive" figure of the
+- **Cost**: the handler takes about 1000-1100 T an interrupt (`$F70B` 349 T exclusive, `$F781` with the joystick folding
+  760 T, L1 profiles over `c1`'s 5224 entries; 952-1062 T with the IM 2 acknowledge measured in `ports`, doc 5, 5.1),
+  about 1.5 % of a 69 888 T frame. The L1 "inclusive" figure of the
   interrupt (34 748 T an entry) is not the handler's: after a switch the RET lands in the other task, and the
   profiler charges that task's work to the interrupt.
 - **Passes and months** (`tools/ttdmem.py` over `growth`'s `session.ttd`, [6.0](#60-the-recordings)): the speed
@@ -161,8 +162,8 @@ python3 tools/play_bot.py list                                                  
 | `tools` | loaded | 19 867 | bot, easy level, no POKE; AUTO-BUDGET on | every tool once: bulldozer on trees, road, power line, rail, park, R, C, I, police, fire, airport (`$10 000`), stadium, the power station dialog (nuclear `$5000`, coal `$3000`), a nuclear and a coal station; the seaport refused at `$386` (silently, by SelectTool: no beep found); a road on an occupied cell (the beep, frame 13 434); the view scrolled with CS+5..8; the icon shortcuts SS+1..0; JUN 1905, funds `$175` |
 | `ports` | loaded | 8738 | bot, easy | the Kempston joystick steering the cursor and firing (the second control method); a seaport on the lake shore, a coal station, a stadium, power lines |
 | `menus` | loaded | 30 136 | bot, easy, a town first | the about box; each OPTIONS toggle; the four speeds; the DISASTERS menu and DISABLE ALL; WINDOWS: MAPS with its 8 sub-maps (the 9 areas were NOT reached: the script pressed CAPS SHIFT + 1..9, the keys need SYMBOL SHIFT, so MapArea `$9C2B` stayed 0 and every screenshot shows area 1, [doc 5, 5.10](docs/05-controls.md#510-the-maps-window-layers-and-areas)), ENTER for the maps, the budget with the tax rate edited, the evaluation; save (name, "START TAPE AND PRESS SPACE", 2370 frames) and load ("SEARCHING", "FOUND", 720 frames of loading) from a tape rebuilt from memory (`tools/savetap.py`; the funds and map spoiled by a tool write in between and restored: `$0` back to `$14 325`); USE OLD LANDSCAPE with the gene 12345 (another island) and back to 00003; START NEW CITY with YES (a new landscape at EASY); EXIT SIMCITY (asked twice) |
-| `growth` | loaded | 51 985 | bot, easy, a town with a coal station, FAST | 133 months of time at FAST (the speed measure in [1](#1-one-recording-from-power-on)); the evaluation every 10 000 frames; every map; the town stays a VILLAGE (year-end population 656 at DEC 1914) |
-| `city` | loaded | 77 592 | bot, easy; funds written to 999 999 at `$8F97` twice (a tool write, not the POKE file: its `NOP`s break the category's comparison, `$6680`) | the start view filled: nuclear station, three roads, 18 R, 8 C and 8 I zones, police, fire, stadium, a power line; tax 7 %; FAST to SEP 1917; TOWN by the first evaluation (SEP 1908: population 6144) |
+| `growth` | loaded | 51 985 | bot, easy, a town with a coal station; NORMAL until about frame 11 000, FAST from 11 100 (SimPass 37) | 155 months in all (doc 4, 4.8), most of them at FAST (the speed measure in [1](#1-one-recording-from-power-on)); the evaluation every 10 000 frames; every map; the town stays a VILLAGE (year-end population 656 at DEC 1914) |
+| `city` | loaded | 77 592 | bot, easy; funds written to 999 999 at `$8F97` twice (a tool write, not the POKE file: its `NOP`s break the category's comparison, `$6680`) | the start view filled: nuclear station, three roads, 17 R zones (18 laid; the one centred at (45, 35) was refused for water), 8 C and 8 I zones, police, fire, stadium, a power line; tax 7 %; FAST to SEP 1917; TOWN by the first evaluation (SEP 1908: population 6144) |
 | `city2` | city's end | 82 012 | bot, FAST | the same city to DEC 1935: it levels off at 5500-6200; every map at NORMAL speed; the last evaluation |
 | `metro` | city's end | 96 503 | bot; funds written to 999 999 twice | a second block at view (47, 53) with its own nuclear station; to OCT 1934 (Month 9 in the end state; the log's last date is SEP 1934 at frame 95 121); the year-end population rises to 9312 (1931) and falls back: TOWN, never CITY |
 | `disasters` | city2's end | 13 050 | bot, NORMAL | each item of the DISASTERS menu with 2000 frames after it: fire, flood, earthquake, air crash, tornado, nuclear meltdown (the meltdown leaves the radiation tiles and burns the lower blocks) |
@@ -191,16 +192,18 @@ open`, their own port bases) for probes and animations, and ran one clone experi
 | doc 09, SOUND off | `python3 work/docs/scD/exp_soundoff.py`: city2's `end.szx`, FIRE due, SoundOn 1 then 0, 410 frames a run on port base 37080 | none (a clone experiment); `work/docs/scD/exp-soundoff.json` |
 
 The growth-ceiling run reached what no recording did: at tax 0 the year-end population PopLastYear `$8E90` rose to
-8256 (AUG 1935), 9728 (JUN 1936) and **10 624 (APR 1937)**, over the CITY threshold, then 11 376-14 384 up to OCT 1947;
-the densities rose from 22-33 to 40-61 and an R block appeared. Category `$975F` stays 1 in memory, because
+8256 (read in AUG 1935: the 1934 year end), 9728 (read in JUN 1936: 1935's) and **10 624 (read in APR 1937: the 1936
+year end)**, over the CITY threshold, about two years after the run's start (OCT 1934), then 11 376-14 384 up to OCT
+1947. The zones did not fill: the highest densities rose from 36-40 to 51-61, nine or ten R zones stayed at 0, and an
+R block appeared only now and then (0 or 1). Category `$975F` stays 1 in memory, because
 CategoryOf runs only when the evaluation opens ([doc 10,
 10.10](docs/10-gameplay-logic.md#1010-the-category-and-the-growth-ceiling)). So the bot cities were held by the tax.
 
 Not reached, and why:
 
-- **The categories above TOWN** (CITY at 10 000, CAPITAL 50 000, METROPOLIS 100 000, MEGALOPOLIS 500 000; the
-  thresholds at `$9750`): the bot's recorded cities level off at 6000 (one view) and 9300 (two), held by the tax
-  penalty at 7 %; stage 2's ceiling run (above) crossed 10 000 at tax 0 but did not open the evaluation, so the CITY
+- **The categories above TOWN** (CITY above 10 000, CAPITAL above 50 000, METROPOLIS above 100 000, MEGALOPOLIS above
+  500 000; the thresholds at `$9750`, each exclusive): the bot's recorded cities level off at 6000 (one view) and 9300 (two), held by the tax
+  penalty at 7 %; stage 2's ceiling run (above) passed 10 000 at tax 0 but did not open the evaluation, so the CITY
   title itself was not shown. A POKE of the population would not be a witness of the game.
 - **Bankruptcy and game over**: the image has no text for them (the strings scan, [0](#0-the-medium)); `bankrupt`
   shows the funds cannot fall without spending; the tools refuse what the funds do not cover (`tools`, the seaport, silently).
@@ -242,7 +245,7 @@ Every screenshot is the emulator's 512 x 384 picture at the frame its name gives
 | [maps](docs/img/play/city2-081405-maps-sub1.png), [pollution](docs/img/play/city2-081513-maps-sub3.png), [evaluation](docs/img/play/city2-081964-evaluation-end.png) | city2 81405-81964 | 1935 |
 | [second block](docs/img/play/metro-014277-block-built.png), [evaluation](docs/img/play/metro-075053-evaluation-30.png) | metro 14277, 75053 | population 8800, TOWN, approval 0 % |
 | [the whole city](docs/img/play/096503-metro-city-map.png) | metro 96503 | the 96 x 96 map drawn from memory ([doc 2, 2.9](docs/02-architecture.md#29-the-map-tiles-and-a-whole-city)) |
-| [fire](docs/img/play/disasters-000655-fire-1.png), [flood](docs/img/play/disasters-002784-flood-1.png), [earthquake](docs/img/play/disasters-004937-earthquake-1.png), [air crash](docs/img/play/disasters-006614-air-crash-0.png), [tornado](docs/img/play/disasters-009315-tornado-1.png), [meltdown](docs/img/play/disasters-011540-meltdown-1.png) | disasters 655-11540 | each disaster on city2's city |
+| [fire](docs/img/play/disasters-000655-fire-1.png), [flood](docs/img/play/disasters-002784-flood-1.png), [earthquake](docs/img/play/disasters-004937-earthquake-1.png), [air crash (nothing: city2 has no airport)](docs/img/play/disasters-006614-air-crash-0.png), [tornado](docs/img/play/disasters-009315-tornado-1.png), [meltdown](docs/img/play/disasters-011540-meltdown-1.png) | disasters 655-11540 | each disaster on city2's city |
 | [money spent](docs/img/play/bankrupt-002658-spent.png), [the year-end budget](docs/img/play/bankrupt-024891-window-10.png) | bankrupt 2658, 24891 | 24 R zones with no road; the budget at 0 % tax, `$2680` |
 
 ### 6.2 The city map and the state
@@ -263,7 +266,8 @@ Asked: where does the city live, and which variables hold the simulation's state
 - **Population**: `$8443` (24 bits) is summed during the simulation pass (0 at its start, so a sample can read 0
   mid-pass: `metro`'s states); `$8E94` copies it to `$8E8A` each month; the year end keeps `$8E8D` (the previous
   year) and `$8E90`, which the category `$9760` compares with the thresholds at `$9750` (2000, 10 000, 50 000,
-  100 000, 500 000) into `$975F` (0 VILLAGE ... 5 MEGALOPOLIS).
+  100 000, 500 000) into `$975F` (0 VILLAGE ... 5 MEGALOPOLIS); a population must exceed a threshold (Sub24 and
+  `RET P`), so 2000 is still a VILLAGE.
 - **R, C, I**: the developed totals, words at `$8446`, `$8448`, `$844A` (metro at its height: 35, 16, 18). The
   advice `$99AD` picks its message (index `$9996`, text `$5FC6` by `$6317`) from their ratios: "MORE RESIDENTIAL ZONES
   NEEDED" when (R + C + I) / 4 >= R, commercial when the total / 8 >= C, industrial when the total / 8 >= I, then
@@ -288,7 +292,7 @@ copy under `work/docs/sc*/` of the session named) and its frames; the full comma
 | [LoaderStart.gif](docs/img/routines/LoaderStart.gif) | [doc 3, 3.4](docs/03-build-and-load.md#34-layer-1-the-r-keyed-tail) | `c1` | 1258 (T 65 000) to 1259 (T 16 000), 48 pictures |
 | [LoadBlock.gif](docs/img/routines/LoadBlock.gif) | [doc 3, 3.5](docs/03-build-and-load.md#35-layer-2-loadgame-and-loadblock) | `c1` | 3420-3460, 60 pictures |
 | [Interrupt.gif](docs/img/routines/Interrupt.gif) | [doc 4, 4.3](docs/04-game-loop.md#43-the-interrupt-and-the-switch) | `c1` | 20 003, T 1700-3700, 50 pictures |
-| [SimTask.gif](docs/img/routines/SimTask.gif) | [doc 4, 4.6](docs/04-game-loop.md#46-the-simulation-tasks-pass) and [doc 10, 10.1](docs/10-gameplay-logic.md#101-the-simulation-pass) | `city2` | 65 719-66 141 (pass 176), 86 pictures, one every 5 frames |
+| [SimTask.gif](docs/img/routines/SimTask.gif) | [doc 4, 4.6](docs/04-game-loop.md#46-the-simulation-tasks-pass) and [doc 10, 10.1](docs/10-gameplay-logic.md#101-the-simulation-pass) | `city2` | 65 719-66 140 (pass 176), 86 pictures, one every 5 frames |
 | [MovePointer.gif](docs/img/routines/MovePointer.gif) | [doc 5, 5.3](docs/05-controls.md#53-the-pointer-one-step-a-pass-no-acceleration) | `tools` | 800-806, 72 pictures, O held |
 | [ShiftScroll.gif](docs/img/routines/ShiftScroll.gif) | [doc 5, 5.6](docs/05-controls.md#56-scrolling-caps-shift--5-8-and-the-scroll-corner) and doc 6, 6.4 | `tools` | 13 458-13 468, 80 pictures |
 | [RunMenu.gif](docs/img/routines/RunMenu.gif) | [doc 5, 5.8](docs/05-controls.md#58-the-menus-an-input-state-machine) | `menus` | 19 802-19 816, 70 pictures |
@@ -305,6 +309,7 @@ copy under `work/docs/sc*/` of the session named) and its frames; the full comma
 | [ToneBeep.gif](docs/img/routines/ToneBeep.gif) | [doc 9, 9.4](docs/09-sound.md#94-tonebeep-the-refusal) | `tools` | 13 434 (T 32 000) to 13 435 (T 10 000), 60 pictures |
 | [FloodFill.gif](docs/img/routines/FloodFill.gif) | [doc 10, 10.2](docs/10-gameplay-logic.md#102-power) | `growth` | 19 242-19 266 |
 | [city-district-growth.gif](docs/img/play/city-district-growth.gif) | [doc 10, 10.4](docs/10-gameplay-logic.md#104-the-growth-rules-of-r-c-and-i) | `city` | 16 400-46 400, every 600th frame |
+| [SimTask-growth.gif](docs/img/routines/SimTask-growth.gif) | [doc 10, 10.1](docs/10-gameplay-logic.md#101-the-simulation-pass) | `growth` | 19 232-19 532 (pass 65), 61 pictures |
 | [NewLandscape.gif](docs/img/routines/NewLandscape.gif) | [doc 10, 10.11](docs/10-gameplay-logic.md#1011-the-city-generator) | `growth` | 90-710, every 20th frame |
 | [disasters-earthquake-spread.gif](docs/img/play/disasters-earthquake-spread.gif) | [doc 10, 10.12](docs/10-gameplay-logic.md#1012-disasters) and doc 1, 1.10 | `disasters` | 4400-8780, every 80th frame |
 | [disasters-meltdown.gif](docs/img/play/disasters-meltdown.gif) | [doc 10, 10.12](docs/10-gameplay-logic.md#1012-disasters) and doc 1, 1.10 | `disasters` | 11 000-13 040, every 40th frame |

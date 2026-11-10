@@ -119,7 +119,8 @@ A byte below `$80` is a cell code: the number of its tile in CellTiles `$EA68`. 
 - `$51-$53` the zone centres R, C, I powered; `$54-$56` the same unpowered; `$57-$58`; `$59` radiation;
 - `$5A-$5D`: the frames of the fire and flood animation (6.10).
 
-A byte of `$80` or more belongs to a large building (stadium, power stations, ports, airport). Each row of a
+A byte of `$80` or more is part of a building drawn from a tile block: a developed zone, hospital, church, police
+or fire station (width 3), a stadium, power station or seaport (width 4) or the airport (width 6). Each row of a
 building is a start byte and continuation bytes (6.5).
 
 Four tables hold the graphics. Their sheets are in `src/res/graphics`:
@@ -235,7 +236,7 @@ PassCount: row (PassCount AND 15). So the whole view is drawn again every 16 pas
 
 Anything the simulation changes on the map shows when the sweep reaches its row. With about 2.4 frames a pass in play
 (interrupts / UI passes in doc 4.8: `city2` 2.36, `metro` 2.49), a sweep takes about 38 frames, so the view lags the
-map by up to 0.77 s.
+map by up to 0.77 s. The rate depends on the recording: in `tools` a pass takes 2.7 frames and a sweep 43 (6.14).
 
 DrawViewRowPass also sets Blink `$6433` = PassCount AND `$10`, the phase of the traffic tiles (6.7). Then it sets
 the screen address and the map address of the row and jumps into DrawView's row loop with one row to draw.
@@ -461,7 +462,7 @@ flowchart TD
 Worked example: DrawView after CAPS SHIFT + 8 in `tools` (frame 13 458).
 
 1. ShiftScroll has made ViewCol 31. DrawView starts at 13 458:17 917.
-2. HL = MapAddr(31, 37) = `$C450` + 3552 + 31 = `$D22F`.
+2. HL = MapAddr(31, 37) = `$C450` + 3552 + 31 = `$D24F`.
 3. Row 0 goes to `$4800-$481F`, row 7 to `$48E0-$48FF`. After the 256th cell L wraps to 0, and row 8 starts at
    `$5000`.
 4. It returns at 13 466:24 987: 566 174 T, 8.1 frames, with SwitchOff = 1 the whole time. The simulation does not
@@ -487,9 +488,11 @@ player sees the view redrawn from top to bottom.
 
 ## 6.5 Building rows
 
-The large buildings are not made of cell codes. Each map row of a building holds:
+The buildings drawn from tile blocks are not made of cell codes: the developed R / C / I zones, the hospital, the
+church, the police and fire stations (3 x 3, rows `$B3`, `$83`, `$83` written by PutZoneBuilding `$75B0`), the
+stadium, power station and seaport (4 x 4) and the airport (6 x 6). Each map row of a building holds:
 
-- a start byte, `$80-$BF`: bit 7 set, bit 6 clear. Bits 0-2 are the width (4 or 6). Bit 5 marks the top row. Bit 4
+- a start byte, `$80-$BF`: bit 7 set, bit 6 clear. Bits 0-2 are the width (3, 4 or 6). Bit 5 marks the top row. Bit 4
   is the power bit, set when the building is powered; only the top row carries it.
 - continuation bytes, `$C0-$FF`. The first two hold the building's tile number n: n = ((first AND `$3F`) x 8) +
   (second AND 7). The others are fillers (`$C0`).
@@ -625,6 +628,15 @@ Worked example: the top row of the coal power station at (49, 37) in `tools` `en
 5. The four cells take BuildingTiles + 8 x 52 = `$EEF8` and the next three tiles, with BuildingAttrs `$F5C2-$F5C5`.
 6. The rows below start with `$84` (not top, not powered) and n = 56, 60 and 64.
 
+The 3-wide rows have no filler: the start byte and the two bytes of n fill the row. PutZoneBuilding `$75B0` writes
+them for a developed zone, with n stepping by 3 from row to row (WriteBuildingRow adds 3 to DE).
+
+![A 3 x 3 building: three bytes a row, no filler](img/rendering/building-row3.png)
+
+*A 3 x 3 building of `city2`, `end.szx`, map cell (34, 41), address `$D3D2`. How to read: as the figure above; the
+rows are `$B3` (top, powered), `$83`, `$83`, each followed by the two bytes of n: 181, 184, 187. `python3
+tools/fig_render.py building work/stage1/rec/city2/end.szx 34 41 docs/img/rendering/building-row3.png`.*
+
 Witness: the drawn picture in the figure is the emulation of these steps by `tools/fig_render.py`; it matches the
 building on the real screen of `end.szx` (the [layout figure](img/rendering/layout.png), top of the view). The left
 edge case (FindBuildingStart) is known only from the code: no traced DrawView cut a building.
@@ -647,7 +659,7 @@ byte. Only the top row has bit 5, so only one cell of an unpowered building blin
 first cell visible at the view's left edge).
 
 The blink is drawn by the row pass. When the bit flips, the change sweeps down the view over the next 16 passes, row
-by row. A whole blink cycle is 64 passes, about 170 frames (3.4 s).
+by row. A whole blink cycle is 64 passes, 150-170 frames (3-3.4 s) at 2.4-2.7 frames a pass.
 
 ```text
 BlinkCell(code):                              ; $6499
@@ -1232,8 +1244,9 @@ The point: an animation of every burning cell for 8 bytes of LDIR. The cost does
 ## 6.11 The overview maps
 
 The maps window shows a 48 x 48 cell area of the map at a quarter of its size: 4 x 4 pixels a cell, the whole 192 x
-192 pixel square from screen column 1. There are nine areas, 24 cells apart (MapAreaCells `$9C45`): area 1 is
-rows 0-47, columns 0-47; area 5 is rows 24-71, columns 24-71; area 9 is rows 48-95, columns 48-95.
+192 pixel square from screen column 8 (pixel 64, OverviewAt = `$4008`), right of the legend in columns 0-7. There
+are nine areas, 24 cells apart (MapAreaCells `$9C45`): area 1 is rows 0-47, columns 0-47; area 5 is rows 24-71,
+columns 24-71; area 9 is rows 48-95, columns 48-95.
 
 DrawOverview `$9C57` draws the area cell by cell, with the view's own code paths:
 
@@ -1259,7 +1272,7 @@ The eight layers:
 | 4 | TRAFFIC | Traffic `$B6D0` (48 x 48) >> 5 | LayerColours 1-7 |
 | 5 | POWER | the power bit of the cell | PatternMark: a dot pattern over the pixels |
 | 6 | TRANSPT | a road or rail cell (CellFlags AND 6) | PatternMark |
-| 7 | CRIME | a zone cell (CellFlags bit 4): (distance to CityCentre / 2 - 1 - police) / 2 | LayerColours 1-7 |
+| 7 | CRIME | a zone cell (CellFlags bit 4): (floor((d - 1) / 2) - police, at least 0) / 2, d = the distance to CityCentre capped at 31 (d = 0 wraps, 6.14) | LayerColours 1-7 |
 
 LayerColours `$9CFA` = 0, `$49`, `$52`, `$5B`, `$64`, `$6D`, `$76`, `$7F`: bright blue, red, magenta, green, cyan,
 yellow and white paper, with the ink the same colour. A value of 0 leaves `$21`. The window's legend reads "MAX"
@@ -1511,7 +1524,8 @@ WindowsMenu (src/res/text/menus/Windows.txt):
 Worked example: the budget window's hook (`menus`, 19 768-20 115).
 
 1. BudgetWindow `$9194` stores BudgetHook in MenuHook and calls ShowWindow.
-2. RunMenu calls the hook once on entry, and EditNumber calls it after every Q or A (`$69DD`).
+2. RunMenu calls the hook once on entry, and EditNumber calls it on every pass of its loop (`$69DD`), key or not, so
+   the window's figures follow the field as it changes.
 3. BudgetHook sets PrintAttr `$47`, calls BudgetFigures and PrintBudget, and sets PrintAttr back to `$45`. It prints
    numbers; nothing else is drawn.
 
@@ -1529,9 +1543,12 @@ overview's colours.
 - The fire and flood frame change (6.10).
 - The overview's layer colours and dot patterns (6.11): every traced draw stopped in rows without zones.
 - The view's left edge cutting a building (FindBuildingStart, 6.5).
-- The CRIME layer at the centre: for a zone cell on CityCentre itself (distance 0), 15 - (32 - 0) / 2 wraps to
-  `$FF`. After the police and the halving, LayerColour reads a byte far past LayerColours as the attribute. Whether a
-  zone ever sits on the centre cell is not checked.
+- The CRIME layer at the centre: a zone cell on CityCentre itself (distance 0) gives 15 - (32 - 0) / 2 = `$FF`.
+  After the police and the halving the index is (`$FF` - police) / 2, `$7F` or a little less, and LayerColour reads
+  a code byte past LayerColours (`$9D79` at police 0) as the attribute. The centre cell is a zone or building cell
+  in the end state of five recordings (`bankrupt`, `city`, `city2`, `disasters`, `growth`; not `levels`, `metro`,
+  `ports`, `tools`; `work/review/rvB/centre.py` over the `end.szx` files), so the wrong colour shows whenever the
+  CRIME map covers the centre. No traced draw reached that cell.
 
 Measured, for the record:
 
@@ -1543,5 +1560,5 @@ Measured, for the record:
 | DrawPointer / ErasePointer | 1485-2208 T / 685-999 T | `tools` 19 255-19 300 |
 | TrackBox (with InvertBox) | 5644-7983 T | `tools` 19 255-19 300 |
 | DrawMovers (train in view) | 4321-5982 T | `tools` 19 255-19 300 |
-| A pass | 2.67 frames | `tools` 19 256-19 300 |
-| A sweep of 16 rows | about 43 frames | `tools` 19 256-19 300 |
+| A pass | 2.67 frames (2.36-2.49 in `city2` / `metro`, doc 4.8) | `tools` 19 256-19 300 |
+| A sweep of 16 rows | about 43 frames (about 38 in `city2` / `metro`) | `tools` 19 256-19 300 |

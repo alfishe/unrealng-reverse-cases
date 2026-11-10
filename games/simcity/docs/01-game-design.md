@@ -30,14 +30,15 @@ The ABOUT SIM CITY box gives the credits:
 | --- | --- |
 | SIMCITY THE CITY SIMULATOR (C) 1989 MAXIS SOFTWARE | Maxis' game of 1989 |
 | CONCEPT & DESIGN W.Wright | Will Wright |
-| FOR PROBE SOFTWARE LIMITED | the conversion house |
-| SPECTRUM PROGRAMMING A.R.Lill | the Spectrum code |
-| SPECTRUM GRAPHICS A.R.Lill & J.L. | the tiles and icons |
+| FOR  PROBE SOFTARE LIMITED | the conversion house ("SOFTARE" sic, the game's own spelling) |
+| SPECTRUM PROGRAMMING  A.R.Lill | the Spectrum code |
+| SPECTRUM GRAPHICS A.Lill & J.L | the tiles and icons |
 | FOR MORE INFO :- INFOGRAMES 84 Rue du 1er Mars 1943, 69625 Villeurbanne Cedex, France | the publisher, 1990 |
 
 ![The about box](img/play/menus-013854-about.png)
 
-*ABOUT SIM CITY, `menus` frame 13 854 (`kit/screen_shot.py`, scale 2).*
+*ABOUT SIM CITY, `menus` frame 13 854 (`kit/screen_shot.py`, scale 2). The lines above are quoted byte for byte from
+the text at `$A0CC`, double spaces included.*
 
 ## 1.2 The play screen
 
@@ -87,6 +88,13 @@ Every screen the game can show, from the screenshots of the recordings:
 
 The evaluation's "CATAGORY" is spelt so in the game's text.
 
+Two things the menus do not say:
+
+- **EXIT SIMCITY does not exit.** ExitSimCity `$A0B1` asks ARE YOU SURE ? and, on YES PLEASE, falls into START NEW
+  CITY, which asks again (`menus` frames 29 758 and 29 826). There is no way back to BASIC.
+- **START NEW CITY takes a random landscape.** NewCityItem `$A0B7` copies RandomSeed into Gene before the level menu,
+  so the new map is not gene 00003 but whatever the generator holds; USE OLD LANDSCAPE keeps or types the gene.
+
 ```mermaid
 stateDiagram-v2
     [*] --> Level: after the load
@@ -95,8 +103,11 @@ stateDiagram-v2
     Creating --> Play
     Play --> System: SYSTEM
     System --> About
-    System --> Sure: START NEW CITY or EXIT SIMCITY
-    Sure --> Level: YES PLEASE to a new city
+    System --> Sure: START NEW CITY
+    System --> SureExit: EXIT SIMCITY
+    SureExit --> Sure: YES PLEASE (no exit)
+    SureExit --> Play: NO THANKS
+    Sure --> Level: YES PLEASE, Gene = RandomSeed
     Sure --> Play: NO THANKS
     System --> OldLandscape: USE OLD LANDSCAPE
     OldLandscape --> Creating: START CITY WITH THIS GENE
@@ -127,11 +138,11 @@ stateDiagram-v2
 A new city is made of three choices:
 
 - **The level** sets the money: EASY 20 000, MEDIUM 10 000, DIFFICULT 5000 (StartSimulation `$830C`). It also raises
-  the tax's weight on growth on MEDIUM and DIFFICULT (1.7).
+  the tax's weight on growth on MEDIUM and DIFFICULT (1.6).
 - **The name** is typed into the status box (INPUT NEW CITY NAME, 12 letters). It defaults to HERESVILLE.
-- **The landscape gene** is a five-digit number, 00003 by default. The same gene always makes the same map
-  (NewLandscape `$6A8E`): an island of 128 land discs on water, a coast, and 32 groves of trees. USE OLD LANDSCAPE
-  shows the gene and takes a new one.
+- **The landscape gene** is a five-digit number, 00003 for the first city; START NEW CITY draws a random one (1.3). The
+  same gene always makes the same map (NewLandscape `$6A8E`): an island of 128 land discs on water, a coast, and 32
+  groves of trees. USE OLD LANDSCAPE shows the gene and takes a new one.
 
 Every city starts in January 1902 with an empty island.
 
@@ -196,13 +207,18 @@ A zone's growth is set by its **score**, worked out every pass (ZoneScoreOf `$7E
 
 ```text
 score = land value - pollution - crime - tax penalty + demand          (0 to 255)
+        = 0 when pollution is 28 or more, or land value is 0
 land value  = 127 - distance to the centre + parks, water and trees around    (0 when unpowered or unreached)
 crime       = (255 - land value) / 16 - police coverage
-tax penalty = 8 x tax rate; + tax rate on MEDIUM; + 2 x tax rate on DIFFICULT
+tax penalty = 8 x tax rate on EASY, 10 x on MEDIUM, 9 x on DIFFICULT
 R demand    = 8 x (C + I - R) + 4 per stadium - 26
 C demand    = 8 x ((R + I) / 2 - C) + 4 per airport - 30
 I demand    = 8 x ((R + C) / 2 - I) + 4 per seaport - 30
 ```
+
+A zone with pollution 28 or more scores 0, whatever else (`CP $1C` at `$7ED0`). The tax penalty is not monotonic in
+the level: TaxPenaltyOf `$7E9B` adds the rate once for MEDIUM and DIFFICULT and a second time only when Level is not
+2, so MEDIUM (Level 1) gets the two adds and DIFFICULT returns after one (`CP $02 / RET Z` at `$7EB4`).
 
 A residential zone adds houses while its density is below score / 2, and loses them above it. The population is 16
 times the sum of the R zones' densities.
@@ -225,9 +241,11 @@ pass):
 5. The densities settle near score / 2: 22 to 36 in the 17 R zones, 359 in all.
 6. The population is 16 x 359 = 5744. The game's year-end figure was 5696.
 
-At a tax of 0 % the score rises by 56, to about 128. Zones then fill to the cap, and blocks become possible. Stage 2
-ran `metro`'s end state at 0 % tax: it crossed 10 000 people in APR 1937, within three game years
-(`work/stage2/ceiling.py`).
+At a tax of 0 % the score rises by 56, to about 128, but the zones do not fill. Stage 2 ran `metro`'s end state (OCT
+1934) at 0 % tax for 13 game years (`work/stage2/ceiling.py`, `ceiling.log`): the highest densities rose from 36-40 to
+51-61, nine or ten of the 32-35 R zones stayed at density 0, and an R block appeared now and then (0 or 1). The year-end
+population passed 10 000 at the end of 1936 (PopLastYear 10 624, read in APR 1937), about two years after the start, and
+stayed between 11 000 and 14 400 after that.
 
 ## 1.7 Taxes and the budget
 
@@ -259,12 +277,15 @@ The evaluation names the city by last year's population (CategoryOf `$9760`, Cat
 
 | Category | People | Sum of R densities (people / 16) | What that takes |
 | --- | ---: | ---: | --- |
-| VILLAGE | below 2000 | below 125 | a few powered R zones with a road |
-| TOWN | 2000 | 125 | about 5 R zones at density 25, with jobs and power |
-| CITY | 10 000 | 625 | 18-20 balanced R zones near the centre at 7 % tax, or about 10 full zones near 0 % |
-| CAPITAL | 50 000 | 3125 | R blocks: 17 to 33 of them at densities 96-192, each needing a score of 128 or more |
-| METROPOLIS | 100 000 | 6250 | 33 to 65 blocks |
-| MEGALOPOLIS | 500 000 | 31 250 | at least 163 blocks at the top density, with the C, I, transport and power to feed them |
+| VILLAGE | up to 2000 | up to 125 | a few powered R zones with a road |
+| TOWN | above 2000 | 126 | about 5 R zones at density 25, with jobs and power |
+| CITY | above 10 000 | 626 | 18-20 balanced R zones near the centre at 7 % tax, or about 10 full zones near 0 % |
+| CAPITAL | above 50 000 | 3126 | R blocks: 17 to 33 of them at densities 96-192, each needing a score of 128 or more |
+| METROPOLIS | above 100 000 | 6251 | 33 to 65 blocks |
+| MEGALOPOLIS | above 500 000 | 31 251 | at least 163 blocks at the top density, with the C, I, transport and power to feed them |
+
+Every limit is exclusive: CategoryOf computes limit - population (Sub24) and stops on `RET P`, so a population equal
+to a limit stays in the lower category; a TOWN needs 2016 people (126 blocks of 16), not 2000.
 
 The category changes nothing in the simulation. CategoryOf runs only when the evaluation opens, and no other code
 reads Category `$975F`. The bot cities levelled off at 6000 (`city`, `city2`) and 9300 (`metro`), held by the 7 %
@@ -272,23 +293,37 @@ tax.
 
 ## 1.9 Time and speed
 
-The calendar runs a month at the end of one, two or four simulation passes: FAST, NORMAL or SLOW. A pass takes 5 to
-12 s, depending on the city. Measured: a month took 9.5 s at NORMAL in `c1`, and 7.4 s and 9.7 s at FAST in `city2`
-and `metro`. PAUSED stops the growth, but power, traffic and pollution go
-on, and a month still ends every 256 passes. [Doc 4](04-game-loop.md#47-the-speed-masks-and-the-month) gives the
-masks and the measurements.
+The calendar runs a month at the end of one, two or four simulation passes: FAST, NORMAL or SLOW. A pass takes 4.8 to
+9.4 s of wall time, depending on the city. A month takes about 9.5 s at NORMAL in `c1` (computed: 237 frames a pass, two
+passes; the log has 8 months in 17 passes), and 7.4 s and 9.7 s at FAST in `city2` and `metro`. PAUSED stops the growth,
+but power, traffic and pollution go on, and a month still ends every 256 passes.
+[Doc 4](04-game-loop.md#47-the-speed-masks-and-the-month) gives the masks and the measurements.
 
 ## 1.10 The disasters
 
-A disaster comes from the DISASTERS menu, or by chance. The chance is 1 in 2048 each time it is tried, every 16 UI
-passes, unless DISABLE ALL is ON (RandomDisaster `$9144`).
+A disaster comes from the DISASTERS menu, or by chance, and by chance it is always a TORNADO. RandomDisaster `$9144`
+runs every 16 UI passes (about 0.76 s in play, at about 21 UI passes a second) unless DISABLE ALL is ON. Its gate passes
+when the seed AND `$07FF` is 0, 1 in 2048, and the next Random AND 7 should then pick the disaster. But Random (`$5CC6`,
+seed' = (seed + 1) x 254 mod 65 537 - 1) is a fixed sequence, so the 32 seeds that pass the gate fix the next draw: 15
+give 7 (none), 16 give 6 and fail the extra 1-in-8 test of the meltdown, and one, `$0000`, gives `$00FD`, 5: the
+tornado. The real chance is 1 in 65 536 a try: 65 536 x 0.76 s is about 14 hours of play on average. Fire, flood,
+earthquake, air crash and meltdown never come at random (checked over all 65 536 seeds, `work/review/rvA/randdis.py`).
+
+```text
+RandomDisaster:  if DisastersOff: return
+                 s = Random();  if (s AND $07FF) != 0: return     ; 32 seeds of 65 536 pass
+                 a = Random() AND 7                               ; fixed by s: 7, 6 or (s = $0000) 5
+                 if a == 0 or a == 7: return
+                 if a == 6 and (Random() AND 7) != 0: return      ; all 16 such seeds return here
+                 DisasterDue = a                                  ; only ever 5, TORNADO
+```
 
 | Disaster | What it does | Screenshot |
 | --- | --- | --- |
 | FIRE | 1 cell in 128 of what burns catches fire; fire spreads unless the fire coverage puts it out | [fire](img/play/disasters-000655-fire-1.png) |
 | FLOOD | 1 coast cell in 32 floods; the water spreads 50 times, then dries back to land | [flood](img/play/disasters-002784-flood-1.png) |
 | EARTHQUAKE | a long rumble, then fires and a flood | [earthquake](img/play/disasters-004937-earthquake-1.png) |
-| AIR CRASH | needs an airport: the plane flies off its row and crashes, starting a fire | [air crash](img/play/disasters-006614-air-crash-0.png) |
+| AIR CRASH | needs an airport: the plane flies off its row and crashes, starting a fire | [the choice does nothing here](img/play/disasters-006614-air-crash-0.png): city2 has no airport, so AirCrash returns ([doc 10, 10.12](10-gameplay-logic.md#1012-disasters)) |
 | TORNADO | lands on a random land cell, moves toward the centre 1 time in 8, burns what it crosses, and ends at random | [tornado](img/play/disasters-009315-tornado-1.png) |
 | NUCLEAR MELTDOWN | needs a nuclear station: the station burns and 1 cell in 16 of the 45 x 45 around it turns to radiation | [meltdown](img/play/disasters-011540-meltdown-1.png) |
 

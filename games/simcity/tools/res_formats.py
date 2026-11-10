@@ -451,7 +451,7 @@ TABLES = {
     'tables/BulldozeCosts.bin': ('BulldozeCosts $7301: the price of clearing a building of each size',
                                  [('size', None, str), ('cost', 0, 'u8')], 1),
     'tables/CellFlags.bin': ('CellFlags $6F9C: the flags of each cell code (CellFlagsOf): bit 0 not reshaped, 1 rail, '
-                             '2 road, 3 conducts power, 4 zone, 5 -, 6 developed, 7 flammable',
+                             '2 road, 3 conducts power, 4 zone, 5 zone centres only (no reader), 6 developed, 7 flammable',
                              [('cell', None, lambda i: '$%02X' % i), ('flags', 0, 'b8')], 1),
     'tables/BuildingValues.bin': ('BuildingValues $7682: by building routine, the kind a trip looks for (9 R, 10 C, '
                                   '11 I; BuildingValue)',
