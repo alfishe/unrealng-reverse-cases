@@ -528,11 +528,25 @@ two eight-step loops.
 ### 14.6.3 The shot set-up without the ROM calculator
 
 AimShot `$8A02` computes v = 16 P d / r with the ROM's floating point: about 455 000 T (454 950 at `w1` 1079), 85 % of
-it in the ROM's SQR (doc 4, 4.7; doc 10, 10.2). A negative product gets 65 536 added before FP-TO-BC rounds it, so v = floor(16 P d / r + 0.5) as
-a 16-bit word (`Model.shot`). Doc 10's break: dx 212, dy 15, P 76 give vx `$04BD`, vy `$0056`. In integers:
+it in the ROM's SQR (doc 4, 4.7; doc 10, 10.2). In the main, v = floor(16 P d / r + 0.5) as a 16-bit word
+(the exact rounding); doc 10's break, dx 212, dy 15, P 76, gives vx `$04BD`, vy `$0056`. The ROM itself (`tools/uknc_romcheck.py`,
+every input of the game, below) shows two places where its rounding is not that one:
+
+- **A negative product near a half.** ScaleByPowerCalc `$8A7A` adds 65 536 to a negative product before FP-TO-BC.
+  The ROM's addition lines the smaller number up with the larger one's last mantissa bit, 2^-15 for 65 536, and
+  rounds there to the nearest, ties up (SHIFT-FP `$2FDD` shifts the two's complement right, ADD-BACK `$3004` adds the
+  last bit shifted out). So a magnitude |x| = n + 0.5 + e with 0 <= e <= 2^-16 becomes exactly 65 536 - n - 0.5, a
+  half that FP-TO-BC rounds up: v = -n, one nearer zero than the exact rounding's -(n + 1). Example: dx -239, dy 17,
+  P 62: vx = -989.5000026, the ROM gives `$FC23` (-989), the exact rounding `$FC22`. 76 of the game's inputs.
+- **The ROM's own error.** SQR (exp (0.5 ln x) with series), the divisions and the multiplication keep 32-bit
+  mantissas, about 10^-9 relative. It decides 6 inputs of the game whose exact value is that close to a rounding
+  edge: vx = -1123.5000146 at dx -225, dy ±51, P 72 (1.46 x 10^-5 above the half, under 2^-16, yet the ROM gives
+  -1124), and the positive component 342.49999998 at P 94 with |dx|, |dy| = 124, 29 or 29, 124 (the ROM gives 343).
+  No integer rule predicts these; the port keeps them as a table of six inputs.
 
 Rounding to the nearest is a question about squares, which integers answer exactly: q = floor(x + 0.5) for
-x = 16 P |d| / r is the largest q with (2q - 1)² r² <= (32 P d)².
+x = 16 P |d| / r is the largest q with (2q - 1)² r² <= (32 P d)². The 2^-16 edge is one more such question:
+x <= q - 0.5 + 2^-16 holds when 2^14 x rest <= (2q - 1) r2 + floor(r2 / 2^16), with rest = A - (2q - 1)² r2.
 
 ```text
 AimShotInt(dx, dy, P):                     ; dx, dy whole pixels, P = power, at most $7E
@@ -541,26 +555,42 @@ AimShotInt(dx, dy, P):                     ; dx, dy whole pixels, P = power, at 
         A = (32 x P x d)²                  ; up to 40 bits
         k = isqrt(floor(A / r2))           ; A / r2 <= (32 P)² = 16.3 million: 24 bits, k <= 4032
         q = (k + 1) / 2                    ; floor (x + 0.5)
-        if d < 0 and (2q - 1)² x r2 = A: q -= 1   ; a tie: the ROM's +65536 rounds toward zero
+        if d < 0 and q > 0:
+            rest = A - (2q - 1)² x r2      ; >= 0; under 2^16 whenever the test can hold
+            if 2^14 x rest <= (2q - 1) x r2 + (r2 >> 16): q -= 1   ; within 2^-16 above the half: toward zero
         v = sign(d) x q, as a 16-bit word
+    the six ROM_TABLE inputs replace both words
 ```
 
 ```python
-def aim_int(dx, dy, p):                    # checked against Model.shot: 12 329 856 inputs, 0 differences
+ROM_TABLE = {(-225, -51, 72): [0xFF01, 0xFB9C], (-225, 51, 72): [0x00FF, 0xFB9C],    # the ROM's own error
+             (-124, 29, 94): [0x0157, 0xFA48], (29, -124, 94): [0xFA48, 0x0157],
+             (29, 124, 94): [0x05B8, 0x0157], (124, 29, 94): [0x0157, 0x05B8]}
+
+def near_half_negative(a, r2, q):          # x in [q - 0.5, q - 0.5 + 2^-16]
+    rest = a - (2 * q - 1) ** 2 * r2
+    return rest << 14 <= (2 * q - 1) * r2 + (r2 >> 16)
+
+def aim_int(dx, dy, p):                    # equal to the ROM on all 7 761 096 inputs of the game
+    if (dx, dy, p) in ROM_TABLE:
+        return list(ROM_TABLE[(dx, dy, p)])
     r2 = dx * dx + dy * dy
     out = []
     for d in (dy, dx):
         a = (32 * p * d) ** 2
         q = (math.isqrt(a // r2) + 1) // 2
-        if d < 0 and q and (2 * q - 1) ** 2 * r2 == a:
-            q -= 1
+        if d < 0 and q and near_half_negative(a, r2, q):
+            q -= 1                         # the ROM's addition aligned the product to 2^-15
         out.append((q if d >= 0 else -q) & 0xFFFF)
     return out                             # [vy, vx]
 ```
 
 Worked example, doc 10's break (dx 212, dy 15, P 76): for vy, A = (32 x 76 x 15)² = 1 330 790 400, r2 = 45 169,
 A / r2 = 29 462, k = 171, q = 86 = `$0056`; for vx, A = (32 x 76 x 212)² = 2.658 x 10^11, A / r2 = 5 885 161,
-k = 2425, q = 1213 = `$04BD`. Both are the recorded words.
+k = 2425, q = 1213 = `$04BD`. Both are the recorded words (both components positive: no edge test). The edge
+case dx -239, dy 17, P 62: for vx, A = (32 x 62 x 239)² = 224 842 878 976, r2 = 57 410, k = 1979, q = 990,
+rest = A - 1979² x 57 410 = 1 166, 2^14 x 1 166 = 19 103 744 <= 1979 x 57 410 + 0 = 113 614 390: q = 989,
+vx = `$FC23`, the ROM's word.
 
 ```asm
 ; isqrt of R0:R1 (at most 16.3 million) into R2: Newton's method from above with DIV
@@ -579,17 +609,26 @@ ISQRT:  MOV     #4096.,R2       ; above every root (at most 4032)
 ```
 
 The cost: four `MUL` for the squares, the long division (24 steps of about 100 cycles), the root (at most about 12
-Newton steps of about 220 cycles), for each of vx and vy: about 10 000 cycles, 1.3 ms on the CPU (6 % of the
-160 000-cycle frame), against 130 ms on the Spectrum. The shot starts in the same tick as the release; the six lost interrupts of the original are gone
+Newton steps of about 220 cycles), for each of vx and vy, and for a negative one the edge test (two more `MUL`
+chains for (2q - 1)² r2 and (2q - 1) r2, a 40-bit subtraction and a compare, a few hundred cycles), then the
+six-entry table compared on P and r2 first: about 11 000 cycles, 1.4 ms on the CPU (7 % of the 160 000-cycle frame),
+against 130 ms on the Spectrum. The shot starts in the same tick as the release; the six lost interrupts of the original are gone
 (14.7 says why that does not change the game).
 
-The integer method agrees with the Python model on every input the game can give: dx -255..255, dy -191..191 and the
-63 powers 2, 4, ..., 126 (the power is always even, doc 10, 10.2; P 0 does not move the ball):
-`python3 tools/uknc_aimcheck.py --dy-step 1 --powers "$(python3 -c "print(','.join(map(str, range(2, 127, 2))))")"`,
-"12329856 inputs, 0 differences" (30 s; these are the tool's defaults, so `python3 tools/uknc_aimcheck.py` runs the
-same check). The model is the game's on the 475 frames of doc 10, 10.6, but those are one shot: whether the ROM's
-SQR, which is exp (0.5 ln x) with series, ever rounds a near-tie differently is still to be checked against the ROM
-itself (14.7, 14.8 risk 1).
+The check against the ROM: `python3 tools/uknc_romcheck.py` runs the game's own AimShot `$8A02` on the ROM
+calculator of a live 48K for every input the game can give (the method and the input set are in 14.7) and prints
+"game: 7761096 inputs (123192 directions) through the ROM AimShot, 0 differences from aim_int, 80 from the exact rounding"
+(about 80 minutes on four machines of one emulator instance, 2.4 hours on a loaded host). The 80 are the 76
+negative near-halves and the 4 positive inputs of the table; the other 2 table inputs are where the edge rule
+alone would be wrong and the exact rounding happens to be right. `--set sample` (18 948 stratified inputs, 14.7) gives 0 and 0.
+
+The check against the Python model on a superset of the game's inputs, dx -255..255, dy -191..191 and the 63 powers
+2, 4, ..., 126 (the power is always even, doc 10, 10.2; P 0 does not move the ball): `python3 tools/uknc_aimcheck.py`
+prints "12329856 inputs, 124 differences from the exact rounding: 120 the ROM's 2^-15 addition, 4 the ROM table,
+0 unexplained" (20 s): outside the game's range only the edge rule acts (44 more inputs). The ROM's own error is
+known only for the game's inputs; aim_int is the ROM's there and nowhere else is needed. `Model.shot` in
+`tools/physics_model.py` calls aim_int, so the physics model is the ROM's on all of them (the 475 frames of doc 10,
+10.6, have none of the 80).
 
 ### 14.6.4 Ball drawing in plane 0 on the PPU
 
@@ -716,7 +755,7 @@ original's sound adds the gaps on purpose.
 | Must stay | Why it can change | How the port keeps it |
 | --- | --- | --- |
 | the physics, byte for byte | 16-bit arithmetic rewritten; the tables moved | the same 8.8 words, carries and clamps (14.6.1); tables unchanged; the y-minus clamp's missing carry test kept |
-| the shot | AimShot without the ROM | the exact integer rounding (14.6.3), checked against the model (14.6.3); the ROM check is planned in 14.8 (risk 1) |
+| the shot | AimShot without the ROM | the integer rounding of 14.6.3: the exact one, the ROM addition's 2^-16 edge for negative products and a table of six inputs; equal to the game's AimShot on the ROM calculator for all 7 761 096 inputs the game can give (below; 14.8 risk 1 closed) |
 | the random start | the R register does not exist on the PDP-11 | the two reads (`$A026` in RackBalls, `$85D4` in AimCursorReset, doc 7, 7.8) take R from a counter that advances like the Z80's R between the same events, or from a table recorded per rack |
 | the tick | the UKNC has time to spare | the game advances one tick per EVNT, as on the Spectrum; inputs are read once per tick |
 | the frame rate | the Spectrum loses interrupts (six at each shot, about 490 frames in `w1`) | not kept: the port never loses one, so it runs at the speed the game was meant to have. The ticks are the same; only their spacing in real time differs |
@@ -731,8 +770,9 @@ for each recording (w1, f1, v1 ...):
     from the Spectrum: the ball block (98 bytes) after every tick, the inputs read at every tick   ; TTD
     on the port:       the same inputs fed per tick, the ball block dumped after every tick        ; UKNCBTL
     compare tick by tick; the first difference names the tick, the ball, the field
-AimShot: for every (dx, dy, P) the ROM's result (the ROM calculator run on the Spectrum emulator)
-         against aim_int; differences become a table of exceptions in the port
+AimShot: for every (dx, dy, P) the game can give, the ROM's result (the game's AimShot run on the Spectrum
+         emulator, tools/uknc_romcheck.py) against aim_int: 7 761 096 inputs, 80 of them off the exact rounding,
+         0 differences once aim_int has the 2^-16 edge rule (76) and the six-input table (4, and 2 the rule gets wrong)
 ```
 
 ```mermaid
@@ -746,16 +786,34 @@ flowchart LR
     M[tools/physics_model.py] --> C
     C -->|no| F[first differing tick, ball, field]
     R[ROM AimShot, all inputs] --> A{aim_int equal?}
-    A -->|no| X[exceptions table]
+    A -->|80 off the exact rounding| X[2^-16 edge rule and a table of six]
+    X --> K[aim_int equal on 7 761 096 of 7 761 096]
 ```
 
 - **Three references, one answer.** The recording, `tools/physics_model.py` (475 frames equal, doc 10, 10.6) and the
-  port must agree; the model lets the port be checked on shots no recording made.
-- **The ROM check** needs every (dx, dy, P) run through the ROM's calculator once: 511 x 383 x 126 = 24 659 838
-  inputs, at about 0.13 s of Spectrum time each, 37 days in all. The signs give the same magnitudes (the tie rule
-  aside), which cuts it by four, and the power is always even (doc 10, 10.2), so 63 values of P instead of 126 halve
-  it again: about 4.6 days of Spectrum time, which an emulator at a hundred times speed runs in about an hour. It
-  turns risk 1 into a table.
+  port must agree; the model lets the port be checked on shots no recording made. The model's shot is the exact
+  rounding: on the 80 near-half inputs of the ROM check the port follows the ROM, not the model.
+- **The ROM check, done** (`tools/uknc_romcheck.py`). AimShot reads only dx = CursorX - cue x, dy = CursorY - cue y
+  (STACK-A of whole pixels: exact in the calculator) and Power `$86BF`, so an input is (dx, dy, P). A driver in free
+  RAM (`$C600`) takes a table of 408 cases at `$E1A8`; for each it writes CursorX `$86BA`, CursorY `$86BB`, the cue
+  ball's x `$8A89` and y `$8A8B` and Power, calls the unchanged AimShot with interrupts off (SET-MIN, STACK-A, the
+  RST `$28` literals, SQR, the divisions, ScaleByPower `$8A5D`, FP-TO-BC; the RET of FrictionSteps comes back to
+  the driver) and copies the cue ball's vy `$8A8E` and vx `$8A8C`. One skip_until runs a table, about 186 million T
+  in about 1 s; four 48K machines in one emulator instance run four tables at once.
+- **The inputs covered**: all the game can give. The cursor runs on the cushion line (x 3..252 on rows 51 and 180,
+  y 51..180 on columns 3 and 252, doc 10, 10.8; the editor's game uses the same aim tasks), the cue ball stays in
+  MoveBall's clamps (x 7..248, y 55..176; RespotCueBall's (40, 115) and the editor's moves inside them), so
+  |dx| <= 245 and |dy| <= 125, without |dx| <= 3 and |dy| <= 3 together: 123 192 directions, the four quadrants
+  and dx 0, dy 0 among them, the shortest distance 4 and the longest sqrt (245² + 125²) = 275, times the 63 even
+  powers 2..126: 7 761 096 cases, 3.5 x 10^12 T (11.7 days of Spectrum time at about 455 000 T each), about
+  80 minutes on an idle host (this run: 2.4 hours on a loaded one). Result: 80 inputs differ from the exact rounding (the old Model.shot and the first aim_int), all by one in a component
+  whose exact value is within 2^-16 of a half: 76 negative near-halves, the ROM addition's edge (14.6.3), and 4
+  positive 342.49999998 that the ROM rounds up; with the edge rule and the six-input table aim_int gives
+  0 differences. The `w1` break (212, 15, 76) gives `$0056`, `$04BD`.
+  `--set sample` adds 18 948 stratified cases (the rows and columns at the extremes, dx 0, dy 0, P 2 and 126 in all
+  four quadrants, the stored powers `$80`, `$82`, `$84` that ScaleByPower reads as `$7E`, 8000 random): 0 differences
+  (none of its inputs is a near-half). Risk 1 is closed: the port computes the shot with aim_int, its edge test and
+  its table of six inputs, and is the ROM's on every shot the game can play.
 - **The input timing**: the Spectrum samples the keys inside the tick (doc 5); the port must hand the CPU the key
   state the PPU saw before the EVNT, never mid-tick.
 
@@ -763,7 +821,7 @@ flowchart LR
 
 | Rank | Risk | Effect | What settles it |
 | ---: | --- | --- | --- |
-| 1 | The ROM's SQR rounds some shot differently from the exact integer method | one shot in many takes another path: the game is no longer the same | run every (dx, dy, P) through the ROM (14.7); keep the differences as exceptions |
+| 1 | The ROM's SQR rounds some shot differently from the exact integer method | one shot in many takes another path: the game is no longer the same | closed: every (dx, dy, P) the game can give, 7 761 096 inputs, run through the game's AimShot on the ROM calculator (14.7, `tools/uknc_romcheck.py`). It differs from the exact rounding on 80, each by one at a near-half: 76 follow the ROM addition's 2^-16 edge, now in aim_int; 6 inputs are the ROM's own error, kept as a table (14.6.3). aim_int then gives 0 differences |
 | 2 | R at the rack and at the cursor reset | the cue ball's half-pixel fraction differs: every shot of the frame differs | reproduce R from instruction counts of the original (hard: R counts M1 cycles of the whole program), or record the R values per rack as a seed table and accept that new play differs |
 | 3 | CPU memory wait states | the CPU's RAM is in the planes the video reads; UKNCBTL does not model the waits; the CPU factor 0.8 may be optimistic | measure on a real machine; the budget has more than half a frame to spare |
 | 4 | Plane 0's high half as PPU RAM (177054 bits 4-7) replaces the PPU ROM in that window | the firmware's handlers there are gone while the game runs | own every PPU vector; or draw through 177010/177012 at about twice the cost |
@@ -774,7 +832,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    R1[1 ROM SQR rounding] --> S[same game]
+    R1[1 ROM SQR rounding: closed] --> S[same game]
     R2[2 R register] --> S
     R3[3 wait states] --> T[timing budget]
     R4[4 PPU ROM window] --> D[drawing]

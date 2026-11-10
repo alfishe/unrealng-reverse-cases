@@ -107,8 +107,10 @@ class Model:
 
     @staticmethod
     def shot(s, cursor, power):
-        """ShotReset $84BF, then AimShot $8A02: v = 16 P (d / r), rounded as FP-TO-BC does; FrictionSteps"""
+        """ShotReset $84BF, then AimShot $8A02: v = 16 P (d / r) as the ROM calculator rounds it (aim_int, doc 14,
+        14.6.3: checked against the ROM on every input of the game); FrictionSteps"""
         import math
+        from uknc_aimcheck import aim_int
         for b in s.b:
             b.vx = b.vy = b.fx = b.fy = b.pocket = 0
             b.flags &= 0x80
@@ -117,8 +119,7 @@ class Model:
         p = 0x7E if power >= 0x80 else power
         dx, dy = cursor[0] - cue.px, cursor[1] - cue.py
         r = math.sqrt(dx * dx + dy * dy)
-        cue.vy = int(math.floor(16 * p * dy / r + 0.5)) & 0xFFFF
-        cue.vx = int(math.floor(16 * p * dx / r + 0.5)) & 0xFFFF
+        cue.vy, cue.vx = aim_int(dx, dy, p)
         cue.flags |= 0x40
         return dx, dy, r
 

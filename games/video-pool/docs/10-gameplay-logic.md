@@ -131,6 +131,11 @@ to_word(v): if v <= 0: v += 65536                   ; jump-true skips this for v
             return FP-TO-BC(v)                      ; rounds to the nearest integer
 ```
 
+The result is the nearest integer except at 80 of the game's 7 761 096 inputs, all within 2^-16 of a half: the
+addition of 65536 lines a negative product up with 2^-15 and turns it into the half, which FP-TO-BC rounds toward
+zero (76 inputs), and the ROM's own error decides 4 more. Doc 14, 14.6.3, gives the exact integer rule (aim_int),
+checked against the ROM on every input; `tools/physics_model.py` uses it.
+
 The asm of ScaleByPower `$8A5D`, the part that ends in the calculator:
 
 ```text
