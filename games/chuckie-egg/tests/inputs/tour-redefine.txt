@@ -1,0 +1,38 @@
+# From work/stage1/lab/x0/loaded.szx (the title): I (the instructions page), R (redefine: key type 3 is set,
+# `$AA4C`), then Q A O P M for up, down, left, right, jump, S, 4 (four players, pressed three times because the
+# prompt ignores keys while it prints), then player 1 walks right with P, left with O and jumps with M; then no key
+# while the turn passes from player to player at each lost life. No POKE.
+0 -
+50 I
+55 -
+150 R
+155 -
+215 Q
+220 -
+255 A
+260 -
+295 O
+300 -
+335 P
+340 -
+375 M
+380 -
+460 S
+465 -
+660 4
+665 -
+815 4
+820 -
+960 4
+965 -
+1060 P
+1100 -
+1120 O
+1160 -
+1180 M
+1185 -
+1260 O M
+1265 O
+1290 -
+12000 -
+12001 END

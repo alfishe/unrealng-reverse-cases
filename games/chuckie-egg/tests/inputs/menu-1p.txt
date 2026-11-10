@@ -1,0 +1,11 @@
+# From work/stage1/lab/x0/loaded.szx (the title, after the tape): S (start), 1 (one player; the first 1 comes while
+# the prompt is still printing), play starts with key type 1 (2 W 9 0, jump M)
+0 -
+10 S
+15 -
+215 1
+220 -
+370 1
+375 -
+525 -
+526 END

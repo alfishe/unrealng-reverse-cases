@@ -1,0 +1,11 @@
+# From work/stage1/lab/x0/loaded.szx (the title): S, 1 (one player), then no key at all until the game is over:
+# every life is lost on level 1 where Harry stands, the deaths and the game-over screens, no POKE
+0 -
+10 S
+15 -
+215 1
+220 -
+370 1
+375 -
+30000 -
+30001 END

@@ -1,0 +1,11 @@
+{
+  "image_cmd": ["sh", "-c", "mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin"],
+  "image": "work/mkgame/original.bin",
+  "lo": "8214",
+  "hi": "CBE8",
+  "device": "ZXSPECTRUM48",
+  "bases": {"5": "4000", "2": "8000", "0": "C000"},
+  "read_builds": ["game"],
+  "ref_builds": [["game", "the first recording's game window"]],
+  "header": ["; Chuckie Egg, A'n'F Software 1983 (Nigel Alderton): the game image $8214-$CBE7 as the loader at $5EF3 leaves it."]
+}

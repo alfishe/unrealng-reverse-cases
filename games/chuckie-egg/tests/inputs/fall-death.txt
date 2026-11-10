@@ -1,0 +1,73 @@
+# From work/stage1/lab/x0/loaded.szx: levels 1 and 2 as in levels-1-3.txt up to frame 2350 (level 2 in play), 300 frames idle (the hen near the gap walks away),
+# then Harry walks left (9) into the gap in the bottom floor (columns 6-7) and falls out of the screen: a death
+# by falling; then no key until the next life is in play. No POKE.
+0 -
+10 S
+15 -
+215 1
+220 -
+370 1
+375 -
+526 9
+574 0
+598 0 M
+606 2
+622 9 M
+630 9
+678 0
+686 0 M
+694 2
+710 9 M
+718 0
+766 0 M
+774 2
+782 W
+790 0
+814 0 M
+822 0
+838 0 M
+846 0
+862 0 M
+870 0
+886 0 M
+894 0
+966 9
+1014 0
+1046 9
+1062 0
+1126 9
+1134 9 M
+1142 W
+1182 9
+1278 9 M
+1286 2
+1350 9 M
+1358 9
+1382 0
+1398 0 M
+1406 0
+1414 2
+1422 9 M
+1430 0
+1534 0 M
+1542 2
+1566 0
+1598 2
+1638 0 M
+1646 0
+1718 -
+1719 9
+1743 0
+1783 9
+1799 9 M
+1807 2
+1855 0
+1887 0 M
+1895 0
+1967 0 M
+1975 0
+2015 -
+2650 9
+2750 -
+3600 -
+3601 END

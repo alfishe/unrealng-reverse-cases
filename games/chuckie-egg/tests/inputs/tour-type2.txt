@@ -1,0 +1,28 @@
+# From work/stage1/lab/x0/loaded.szx (the title): the title and the high score table alternate (0-250), I (the
+# instructions page), 2 (key type 2: cursor keys 5 6 7 8, jump 4 or 9; the cursor joystick), S, 2 (two players,
+# pressed three times because the prompt ignores keys while it prints), then player 1 walks right with 8, left
+# with 5 and jumps with 4; then no key: player 1 loses a life and player 2 plays. No POKE.
+0 -
+250 I
+255 -
+330 2
+335 -
+400 S
+405 -
+600 2
+605 -
+755 2
+760 -
+900 2
+905 -
+1000 8
+1040 -
+1060 5
+1100 -
+1120 4
+1125 -
+1200 5 4
+1205 5
+1230 -
+8000 -
+8001 END
