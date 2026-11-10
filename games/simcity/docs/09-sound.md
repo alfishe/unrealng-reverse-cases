@@ -188,14 +188,14 @@ flowchart LR
     RD["RunDisaster $916E: DisasterDue"] -->|1| F["FireDisaster $90A7"]
     RD -->|2| FL["FloodDisaster $90D5"]
     RD -->|3| Q["Earthquake $9125"]
-    RD -->|4| A["AirCrash $78FE: PlaneTimer only"]
+    RD -->|4| A["AirCrash $78FE: no airport: return; else advice $19, PlaneTimer 7-22"]
     RD -->|5| T["StartTornado $796C: no sound"]
     RD -->|6| M["NuclearMeltdown $7913"]
     F --> FN["FireNoise $9108: 127 bursts"]
     FL --> FLN["FloodNoise $9116: 127 bursts"]
     Q --> QN["255 bursts, E = C / 16"]
     M --> CN["CrashNoise $78BD: 255 bursts"]
-    A -.->|"plane out, timer at 0"| MP["MovePlane $787E"]
+    A -.->|"airport, plane out, timer at 0"| MP["MovePlane $787E"]
     MP --> CN
     FN --> NB["NoiseBurst $5B48"]
     FLN --> NB
@@ -263,8 +263,8 @@ Witness, the `disasters` recording, each from the menu's DisasterDue:
 | earthquake | 4403 T35078, Earthquake `$9138` | 4403 T35292 | 4522 T62311 | 255 | 16 276 | 119.4 frames, 2.39 s |
 | meltdown | 11020 T20902, CrashNoise `$78C2` | 11020 T21239 | 11091 | 255 | 5824 | 71.5 frames, 1.43 s |
 
-The point: the earthquake is the longest sound, 2.4 s, because its E stays small: most of its bursts send 12 or more
-bits. The meltdown has as many bursts but is shorter, because its E soon passes 31 and its bursts thin out to a few
+The point: the earthquake is the longest sound, 2.4 s, because its E stays small: every one of its bursts sends 12 or
+more bits (E <= 15 keeps at least the 12 multiples of 16 in 1..200). The meltdown has as many bursts but is shorter, because its E soon passes 31 and its bursts thin out to a few
 bits.
 
 ## 9.4 ToneBeep: the refusal
@@ -553,9 +553,11 @@ The point: the five files are every sound the game makes; the plane crash would 
 
 ## 9.9 Not reached and known only from the code
 
-- **The plane crash noise.** AirCrash `$78FE` only sets PlaneTimer; the crash and its CrashNoise come from MovePlane
-  when a plane is out and the timer runs out. In `disasters` AirCrash ran at frame 6586 with no plane out, and no
-  noise came in frames 6560-7500. The sound would be the meltdown's: the same CrashNoise.
+- **The plane crash noise.** In `disasters` AirCrash `$78FE` ran at frame 6586 and returned at once: the city has no
+  airport (LastAirports `$849E` is 0, `$78FE-$7902`), so no advice, no timer and no sound in frames 6560-7500
+  ([10.12](10-gameplay-logic.md#1012-disasters)). With an airport it sets the advice `$19` and PlaneTimer = Random
+  AND 15 + 7 (`$7903-$790F`); the crash and its CrashNoise come later from MovePlane `$787E`, when the timer runs out
+  with a plane in flight. The sound would be the meltdown's: the same CrashNoise.
 - **The tornado** makes no sound: StartTornado `$796C` calls no sound routine, and frames 8800-8900 of `disasters`
   have no speaker write.
 - **The other refusals.** L1 counts 3 ToneBeep calls, all from MapClick after CheckSite (`CALL Refuse` at `$7027`:

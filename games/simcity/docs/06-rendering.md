@@ -109,15 +109,18 @@ shifts a pixel.
 The map is CityMap `$C450`: 96 rows of 96 bytes, 9216 bytes up to `$E84F`. MapAddr `$6BE6` gives the address of a
 cell: `$C450` + 96 x row + column.
 
-A byte below `$80` is a cell code: the number of its tile in CellTiles `$EA68`. There are 94 codes, `$00-$5D`:
+A byte below `$80` is a cell code: the number of its tile in CellTiles `$EA68`. CellTiles has 94 tiles, `$00-$5D`; the map uses the 90 codes
+`$00-$59` ([07](07-objects.md)). `$5A-$5D` are the fire and flood frames, only copied into tiles `$45` and `$44`
+(6.10):
 
 - `$00-$06`: water, coast, land, trees;
 - `$07-$13`: roads; `$14-$20`: rails; `$21-$2D`: power lines (each 11 shapes and two bridges);
 - `$2E-$33`: crossings; `$34-$37`: the traffic tiles (6.7);
 - `$38-$39` parks, `$3A` rubble, `$3B` "no power" (the lightning), `$3C-$43` houses;
 - `$44` flood, `$45` fire, `$46-$48` rubble, `$49-$50` the frame of a zone;
-- `$51-$53` the zone centres R, C, I powered; `$54-$56` the same unpowered; `$57-$58`; `$59` radiation;
-- `$5A-$5D`: the frames of the fire and flood animation (6.10).
+- `$51-$53` the zone centres R, C, I powered; `$54-$56` the same unpowered; `$57-$58` two bridge-like road tiles
+  that no code writes (doc 07); `$59` radiation;
+- `$5A-$5D`: the frames of the fire and flood animation (6.10), never a map byte.
 
 A byte of `$80` or more is part of a building drawn from a tile block: a developed zone, hospital, church, police
 or fire station (width 3), a stadium, power station or seaport (width 4) or the airport (width 6). Each row of a
@@ -325,7 +328,7 @@ Worked example: the rows drawn in `tools`, frames 19 256-19 300, read from the t
 
 1. PassCount 68 AND 15 = 4: screen row 12. The call runs from 19 256:55 945 to 19 257:16 395, 30 338 T of wall time
    (the interrupt included).
-2. Sixteen passes later (84) the same row is drawn again, 42.6 frames later: 2.67 frames a pass.
+2. Sixteen passes later (84) the same row is drawn again, 42.7 frames later (2 984 352 T): 2.67 frames a pass.
 3. The 17 row passes of the window take 30 338-40 946 T each; a row with buildings and roads costs more than a row
    of land (6.5, 6.7).
 
@@ -757,7 +760,7 @@ flowchart TD
     R -- "no" --> K["unchanged"]
     R -- "yes" --> T["TrafficAt 7581: Traffic grid B6D0"]
     T --> H{"traffic DC or more?"}
-    H -- "yes" --> J["34 or 36: jammed"]
+    H -- "yes" --> J["34 or 36: the traffic picture (heavy: always; medium: Blink 0)"]
     H -- "no" --> M{"96 or more?"}
     M -- "no" --> K
     M -- "yes" --> B{"Blink set?"}
@@ -980,6 +983,9 @@ Witness: `work/docs/scB/flicker.py` over `tools` (`work/docs/scB/flicker-tools-7
 19 255-19 300: DrawPointer 1485-2208 T, ErasePointer 685-999 T, TrackBox 5644-7983 T. The InvertBox writes: 2376 in
 16 passes, 64 bytes left with it as the last writer (6.12).
 
+The draw path at work: [MovePointer.gif](img/routines/MovePointer.gif) in doc 05, 5.3 animates ErasePointer,
+MovePointer, DrawPointer and the box over three passes of `tools` (800:0-806:0, O held).
+
 The point: the pointer and the box are drawn only for the length of a busy wait and removed before anything else
 touches the screen. No routine ever has to draw around them, and the price is a visible flicker.
 
@@ -1165,9 +1171,12 @@ tile definitions themselves:
 - AnimateFire `$906D` copies tile `$5A` or `$5B` into tile `$45` (CellTiles + `$228`);
 - AnimateFlood `$908A` copies tile `$5C` or `$5D` into tile `$44` (CellTiles + `$220`).
 
-The frame is chosen by (PassCount + a random 0-3) AND `$10`, so it changes about every 16 passes, with some jitter.
-Periodic `$901D` calls AnimateFire at PassCount AND 15 = 2 and AnimateFlood at 3. UiTask calls both once at the
-start, so the image's tiles `$44` and `$45` are only placeholders.
+The code adds a random 0-3 to PassCount before AND `$10`, but Periodic `$901D` calls AnimateFire only at PassCount
+AND 15 = 2 (AnimateFlood at 3). The sum is then 16k + 2 to 16k + 5 (16k + 3 to 16k + 6 for the flood): it never
+crosses a multiple of 16, and the random term has no effect. The frame flips at every call, exactly every 16 passes
+(34-38 frames in `disasters`, about 43 in `tools`). Only the two start-up calls from UiTask (`$8FAE`, `$8FB1`), where
+PassCount AND 15 can be anything, can land elsewhere; they also make the image's tiles `$44` and `$45` only
+placeholders. The Random call still consumes a number from the seed.
 
 Every fire cell on the map shows the new picture as soon as the sweep redraws it. One copy of 8 bytes animates all of
 them.
@@ -1175,6 +1184,7 @@ them.
 ```text
 AnimateFire:                                  ; $906D, at PassCount AND 15 = 2
     frame = ((PassCount + (Random() AND 3)) AND $10) ? $5B : $5A
+                                              ; = PassCount AND $10 here: 16k+2 + 0..3 stays below 16k+16
     CellTiles[$45] = CellTiles[frame]         ; 8 bytes, LDIR
 
 AnimateFlood:                                 ; $908A, at PassCount AND 15 = 3
@@ -1231,13 +1241,26 @@ docs/img/rendering/cells-sheet.png`.*
 Worked example: AnimateFire at pass 66 (stepped through from the code).
 
 1. 66 AND 15 = 2, so Periodic jumps to AnimateFire.
-2. Random gives, say, 3: 66 + 3 = 69; 69 AND `$10` = 0. HL stays on tile `$5A`.
+2. Random gives, say, 3: 66 + 3 = 69; 69 AND `$10` = 0, as for any r from 0 to 3. HL stays on tile `$5A`.
 3. LDIR copies the 8 bytes `$ED38-$ED3F` to `$EC90-$EC97`.
 4. At pass 82 the sum is 82-85: AND `$10` = `$10`, so tile `$5B`.
 
-Witness: the fire and flood screenshots of `disasters` (`disasters-000655-fire-1.png`, `disasters-002784-flood-1.png`
-in `docs/img/play`) show the tiles on the screen. The frame change is known only from the code: no trace covers a
-pass with a fire in the view.
+Witness: `disasters`, TTD memory_at of tile `$45` (`$EC90-$EC97`) and PassCount `$8F9F`. Its second byte is `$10`
+(tile `$5A`) or `$40` (tile `$5B`), and in the frames read it changes only in the passes 16k + 2: at pass `$42` (66, read new at frame 636) and
+`$52` (82, at 670) after the fire of frame 134, and at passes `$22`, `$32`, `$42` (at 11 586, 11 624, 11 658)
+among the meltdown's fires, each time to the frame PassCount AND `$10` gives. The fire and flood screenshots
+(`disasters-000655-fire-1.png`, `disasters-002784-flood-1.png` in `docs/img/play`) show the tiles on the screen.
+
+![AnimateFire at work: the fire cells change at the sweep after each flip](img/routines/AnimateFire.gif)
+
+*The fire tile `$45` rewritten at PassCount AND 15 = 2, every fire cell changing at the next sweep. `disasters`
+frames 11 580-11 664, one picture each 2 frames (the meltdown's fires at the top right and the bottom left). How to
+read: AnimateFire flips the tile just before frames 11 586 and 11 624; nothing on the screen changes then. Each fire cell
+takes the new flames when DrawViewRowPass reaches its row, so the change runs down the view one row a pass, and the
+top rows have the new picture while the bottom rows still show the old one. Command, from the case folder after `.
+work/env.sh`, with the recording open (`re_session.py open --ttd work/stage1/rec/disasters/session.ttd`): `python3
+../../kit/screen_anim.py --work W --from 11580 --to 11664 --step 2 --scale 2 --delay 150
+docs/img/routines/AnimateFire.gif`.*
 
 The point: an animation of every burning cell for 8 bytes of LDIR. The cost does not grow with the fire.
 
@@ -1270,7 +1293,7 @@ The eight layers:
 | 2 | POLICE | PoliceCover `$AB90` (24 x 24) >> 1 | LayerColours 1-7 |
 | 3 | FIREDEP | FireCover `$A950` (24 x 24) >> 1 | LayerColours 1-7 |
 | 4 | TRAFFIC | Traffic `$B6D0` (48 x 48) >> 5 | LayerColours 1-7 |
-| 5 | POWER | the power bit of the cell | PatternMark: a dot pattern over the pixels |
+| 5 | POWER | the cell's bit in PowerMap `$BFD0` (PowerBit) | PatternMark: a dot pattern over the pixels |
 | 6 | TRANSPT | a road or rail cell (CellFlags AND 6) | PatternMark |
 | 7 | CRIME | a zone cell (CellFlags bit 4): (floor((d - 1) / 2) - police, at least 0) / 2, d = the distance to CityCentre capped at 31 (d = 0 wraps, 6.14) | LayerColours 1-7 |
 
@@ -1540,7 +1563,7 @@ overview's colours.
 - The traffic frames `$34-$37` on real roads (6.7): no trace covers a busy road row.
 - The plane and the tornado drawn over the view (6.9), and the tornado's shape picked by the R register.
 - A train on a bridge not being drawn (6.9).
-- The fire and flood frame change (6.10).
+- The flood frame change (6.10; the fire's is measured there, `disasters` 11 580-11 664).
 - The overview's layer colours and dot patterns (6.11): every traced draw stopped in rows without zones.
 - The view's left edge cutting a building (FindBuildingStart, 6.5).
 - The CRIME layer at the centre: a zone cell on CityCentre itself (distance 0) gives 15 - (32 - 0) / 2 = `$FF`.

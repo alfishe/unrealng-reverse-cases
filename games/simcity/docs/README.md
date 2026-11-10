@@ -37,7 +37,7 @@ Each term once, here; the documents link to it.
 | LoadBlock | `$FEBD`: the ROM's LD-BYTES copied to RAM and changed: flag `$00`, stores `received XOR key XOR E` (key + 3 a byte, E the count's low byte); doc 03, 3.5 |
 | LoadFailed | `$FFA0`: the endless border-stripe loop a bad tape block falls into; doc 03, 3.6 |
 | menu description | the bytes DrawMenu `$67C3` draws and RunMenu `$6944` runs: a header row, then items (0 text, 1 toggle, 2 action, 3 separator, 4 end, 8 number); the edited values live inside it; doc 08, 8.9 |
-| MenuHook | `$6942`: a routine RunMenu calls on entry and EditNumber after each Q / A: BudgetHook `$9346` or Evaluate `$9737`, which recompute and print the window's numbers; doc 08, 8.10 |
+| MenuHook | `$6942`: a routine RunMenu calls once when the menu opens and EditNumber on every pass of its loop (`$69DD`), key or not: BudgetHook `$9346` or Evaluate `$9737`, which recompute and print the window's numbers; doc 08, 8.10 |
 | month | MonthMask + 1 simulation passes: one at FAST, 2 at NORMAL, 4 at SLOW, 256 at PAUSED; it ends in MonthEnd `$8E94` and NextMonth (Month `$8F9B`, 0 = JAN). Measured at FAST: 371 wall frames (7.4 s) in `city2`, 483 (9.7 s) in `metro`; doc 04, 4.7 |
 | MonthMask | `$8F6B`: a month ends when `SimPass AND MonthMask` is 0; `$00` FAST, `$01` NORMAL, `$03` SLOW, `$FF` PAUSED; doc 04, 4.7 |
 | mover | the train, the plane or the tornado: a 16 x 16 sprite ORed over the view (no mask), wiped by the row redraw; doc 06, 6.9 and doc 07, 7.6 |
@@ -51,9 +51,9 @@ Each term once, here; the documents link to it.
 | SOUND | the OPTIONS toggle SoundOn `$A32D`; it gates NoiseBurst only, not ToneBeep, and NoiseBurst tests it after its DI, so with SOUND off the interrupts stay off; doc 09, 9.6 |
 | SpeedTable | `$8F6C`: four rows of five bytes (GrowTries, IndChance, ComChance, a spare, MonthMask) for FAST, NORMAL, SLOW, PAUSED, copied by SetSpeed `$8F80`; doc 04, 4.7 |
 | stamp | adding a source's strength through a kernel of shifts into a side array (pollution on Grid48, police and fire cover on Grid24), with no clipping at the map edge; doc 10, 10.7 |
-| sweep | the 16 UI passes in which DrawViewRowPass `$6434` redraws the 16 view rows once each, row PassCount AND 15; about 38 frames; doc 06, 6.3 |
+| sweep | the 16 UI passes in which DrawViewRowPass `$6434` redraws the 16 view rows once each, row PassCount AND 15; about 38 frames in `city2` and `metro`, 43 in `tools`; doc 06, 6.3 |
 | switch | the interrupt handing the CPU to the other task: when SwitchOff is 0, Interrupt `$F70B` swaps SP between UiSP `$F707` and SimSP `$F709` and flips TaskNow. The switches come in pairs, so the simulation keeps each frame it gets for exactly one frame; the UI holds the rest while SwitchOff is set (its drawing, the menus). A switch costs about 400 T, the handler with the input read and the joystick readers about 1000-1100 T a frame (about 1.5 %); doc 04, 4.3 and 4.8 |
-| SwitchOff | `$F705`: while nonzero the interrupt does not switch tasks; the UI sets it around its drawing and while a menu or window is open, so the simulation is frozen there; doc 04, 4.3 |
+| SwitchOff | `$F705`: while nonzero the interrupt does not switch tasks; the UI sets it around its drawing and while a menu, the budget or the evaluation is open, so the simulation is frozen there; the maps window sets it only per cell (LayerOf), so the simulation goes on while it is open; doc 04, 4.3 |
 | task | one of the two programs that share the CPU, each on its own stack, switched by the interrupt: the UI task and the simulation task; doc 04, 4.1 |
 | TaskNow | `$F704`: 0 while the UI runs, 1 while the simulation runs; doc 04, 4.3 |
 | tool box | the inverted rectangle under the pointer showing a tool's size, shown only during UiDelay; doc 06, 6.8 |

@@ -60,8 +60,33 @@ So a joystick looks exactly like keys to the rest of the program:
 - Kempston right is P, left is O, down is A, up is Q, fire is SPACE.
 - The Sinclair stick (keys 6-0) is folded onto the same five keys.
 
-No other code reads a port during play. Every routine that wants a key reads a KeyRows byte. That is why there is no
-"control method" menu, and no redefinition: the keyboard and both sticks always work at once.
+Only one other routine reads a key port during play: WaitTapeStart `$A2FE`, which SaveCity calls (`$9E1C`) for START
+TAPE AND PRESS SPACE. It reads the half row `$7FFE` itself and returns on bit 0, SPACE; the Entry routine's Kempston
+test (`$5B2E`) runs once at start-up, before the game. Every other routine that wants a key reads a KeyRows byte.
+That is why there is no "control method" menu, and no redefinition: the keyboard and both sticks always work at
+once, except at the tape prompt.
+
+```text
+A2FE  CD 09 A3      CALL TapeWindow      ; WaitTapeStart: START TAPE AND PRESS SPACE
+A301  3E 7F         LD A,$7F             ; WaitTapeLoop: the half row SPACE ... B
+A303  DB FE         IN A,($FE)
+A305  1F            RRA                  ; bit 0 = SPACE into the carry
+A306  D0            RET NC               ; down: start the save
+A307  18 F8         JR WaitTapeLoop      ; no HALT: one IN every 39 T
+```
+
+```mermaid
+flowchart LR
+    W["WaitTapeStart $A2FE: TapeWindow"] --> L["IN A,($FE) with A = $7F"]
+    L --> T{"bit 0 = 0, SPACE down?"}
+    T -->|no| L
+    T -->|yes| R["return: SaveCity writes the header and the map"]
+```
+
+The joysticks are folded into KeyRows only, so at this prompt the Kempston and Sinclair fire buttons do nothing (known
+only from the code: the recordings press the SPACE key). Witness: `menus`, SPACE at 20 866 over
+[the prompt](img/play/menus-020866-save-start-tape.png), SAVING by 20 896; L1 of `menus` lists WaitTapeStart with
+`ports_in` `$7FFE`, its only port.
 
 The game names each byte after a key in it:
 
@@ -840,7 +865,8 @@ TrackBox `$5D55` sets BoxShown `$5D54` when the pointer is in the view and the b
 Then:
 
 1. CrossNetwork `$7086` handles a road, rail or power line crossing another network, or returns with carry to stop.
-2. CheckSite `$7103` tests the cells under the box. On failure Refuse `$71E4` sounds the refusal beep.
+2. CheckSite `$7103` tests the cells under the box. On failure Refuse `$71E4` sounds the refusal beep, unless a
+   direction key is down (a drag).
 3. Otherwise the handler of the tool is fetched from ToolHandlers `$6FF6` and called through the self-modified
    `CALL $0000` at ToolCall `$703F`.
 4. MapClickWait `$7042` then waits while SPACE is held, unless a direction key is down.
@@ -853,7 +879,7 @@ new cell. So holding SPACE and steering paints a road, a rail or a power line al
 MapClick:                                     ; $7012, from Click (SwitchOff = 1)
     if ClickCell row < 8 or not BoxShown: return
     if CrossNetwork() stops: return
-    if CheckSite() fails: Refuse()            ; the beep
+    if CheckSite() fails: Refuse()            ; the beep, silent while A, Q, P or O is down
     else: ToolHandlers[CurrentTool]()         ; through CALL ToolCall
     while SPACE down:                         ; MapClickWait
         if A, Q, P or O down: return          ; the drag: build again next pass
@@ -868,8 +894,12 @@ sequenceDiagram
     U->>C: SPACE down, pointer in the view
     C->>M: SwitchOff = 1
     M->>M: CrossNetwork, CheckSite
-    M->>H: CALL ToolCall 703F
-    H-->>M: cells written to the map
+    alt CheckSite fails
+        M->>M: Refuse 71E4: the beep, or silence with a direction key down
+    else the site passes
+        M->>H: CALL ToolCall 703F
+        H-->>M: cells written to the map
+    end
     M->>M: MapClickWait: SPACE held?
     alt a direction key down
         M-->>U: return now, the next pass moves and builds again
@@ -927,7 +957,8 @@ Worked example: a road drawn by the drag, stepped through from the code.
 2. Click: ClickCell row is 8 or more, BoxShown is 1. CheckSite passes; the road handler writes the road cell.
 3. MapClickWait: KeyRowA bit 0 is 1, KeyRowQ bit 0 is 1, KeyRowP bit 0 is 0 (P), so it returns.
 4. SwitchOff goes back to 0. The next pass: MovePointer moves the pointer one step right (half a cell). Click runs
-   again on the same cell, where the road already is.
+   again on the same cell, where the road already is: CrossNetwork does not take a road on a road, CheckSite fails
+   (a road code is not in SiteCells `$70FC`), and Refuse stays silent because P is held. No beep and no charge.
 5. Two passes later the pointer is on cell (41, 40), and the next road cell is written there.
 
 Witness: `tools`, the road, rail and power line built by the bot (WALKTHROUGH 6.0; screenshots `002499-road.png`,
@@ -1335,7 +1366,8 @@ from a key to its effect is therefore:
 | SYMBOL SHIFT + digit | ToolKeys, once a pass | within a pass | `tools` 13 617 |
 | Q, A, SPACE in a menu | RunMenu, after 8 HALTs | up to 8 frames | `menus` 19 804 to 19 812 |
 | Q, A in a number field | EditNumber, after EditRepeat HALTs | up to 10 frames | `menus` 19 904 |
-| keys in a text line | InputLine, every loop | at once | known only from the code |
+| keys in a text line | InputLine, every loop | at once | `levels` 1249 (M read in the same frame, T12066); the repeat after 1000 loops: known only from the code |
+| SPACE at START TAPE | WaitTapeStart, its own `IN` | within a loop of 39 T | `menus` 20 866 |
 | Q, A in the maps window | MapsKeys, every 4th loop | one or more overview draws | `menus` 19 003-19 267 |
 
 A key held for less than a pass can be missed: MovePointer and Click read KeyRows once, at one moment of the pass.
@@ -1375,6 +1407,8 @@ a menu or the view stops the simulation while it acts, except the maps window (5
 - The number field's shrinking repeat (EditRepeat below 9).
 - The text line's repeat after 1000 loops.
 - The maps window's area keys (SYMBOL SHIFT + 1-9).
+- The fire buttons at START TAPE AND PRESS SPACE: WaitTapeStart `$A2FE` reads the keyboard port itself, so neither
+  stick's fire starts the save.
 - What happens when the Kempston port reads `$1F` or more at start-up (all four directions and fire held, or a
   floating bus): the game decides there is no interface. The four directions alone read `$0F` and pass.
 

@@ -398,18 +398,19 @@ HighlightLoop:
   DJNZ HighlightLoop
   RET
 
-; A routine RunMenu calls on entry and EditNumber after each Q / A (0: none):
-; BudgetHook $9346 or Evaluate $9737, which recompute and print the window's
-; numbers
+; A routine RunMenu calls on entry and EditNumber on every pass of its edit
+; loop, key or not (0: none): BudgetHook $9346 or Evaluate $9737, which
+; recompute and print the window's numbers
 MenuHook:
   DEFW $0000
 
 ; Move the highlight with Q / A every 8 frames (HALT), SPACE selects: run,
 ; toggle or edit the item
 ;
-; L1 132. The menus are opened from Click (or BudgetWindow, EvaluationWindow,
-; MapsWindow), which set SwitchOff $F705 = 1: the simulation is frozen while a
-; menu is open, and each HALT waits one frame.
+; L1 132. The menus are opened from Click (or BudgetWindow, EvaluationWindow),
+; which set SwitchOff $F705 = 1: the simulation is frozen while a menu is open
+; (MapsWindow has no menu and leaves SwitchOff to LayerOf, per cell: the
+; simulation runs on there), and each HALT waits one frame.
 RunMenu:
   LD A,(MenuCount)
   AND A

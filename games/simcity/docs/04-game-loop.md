@@ -121,7 +121,7 @@ stateDiagram-v2
     Play --> Window: a menu, a dialog, BudgetDue, MapsDue or ENTER
     Window --> Play: closed
     Play --> NewCity: SYSTEM, NEW CITY, or a LOAD
-    Window: menus and dialogs, with SwitchOff = 1 in the budget, the evaluation and the maps
+    Window: SwitchOff = 1 in the menus (inside Click), the budget and the evaluation; the maps window sets it only per cell (LayerOf), so the simulation goes on there
 ```
 
 In `c1`, Entry ran in frame 16 280 ([doc 3.8](03-build-and-load.md#38-the-load-in-c1)). The simulation's first
@@ -197,9 +197,9 @@ and `menus` (review round 1); L1's per-byte counts miss bytes and give too shall
 | UI task, UiStack `$F682-$F6C1` | `$F6C2` (Entry's `LD SP,UiStack+$40`) | `$F68A` (`menus` frame 3466) | 56 | 8 bytes above BuildingAttrs |
 | simulation task, SimStack and SimFrame | `$F704` (the top of SimFrame) | `$F6D0` (`menus` frame 5498) | 52 | 14 bytes above the UI stack's top |
 
-The simulation goes five calls and more below SimTaskPass (ScanCity -> ZoneStep -> ResidentialStep -> ScanRing ->
-ScanRingCell -> CellFlagsOf), with CellStep's pushed CellStepEnd and the registers its routines save; an interrupt
-adds its 22 bytes on top. Neither stack has a wide margin ([doc 2.5](02-architecture.md#25-the-two-stacks)).
+The simulation goes five calls below SimTaskPass in the ring scan (ScanCity -> ZoneStep -> ResidentialStep ->
+ScanRing -> ScanRingCell -> MapAddrChecked, 16 bytes with the registers its routines save, `$F6F4`), 22 bytes when
+a ring cell calls PickRouteStart and Random; an interrupt adds its 22 bytes on top. Neither stack has a wide margin ([doc 2.5](02-architecture.md#25-the-two-stacks)).
 
 **SwitchOff.** These routines set `$F705` to 1 and clear it when they are done:
 
@@ -232,6 +232,13 @@ The sums, without ReadInput:
 - a switch to the simulation costs 396 T;
 - a switch back to the UI costs 403 T (`JR Z` not taken, 5 T less, then `JR InterruptFlip`, 12 T more);
 - a frame without a switch (the `JR NZ` taken) costs 314 T.
+
+L1 agrees to the T-state. It charges Interrupt with its own instructions and the `CALL ReadInput`, but not the
+acknowledge, the `JP` or ReadInput itself: 384 T a switch to the simulation, 391 T back, 302 T a frame without a
+switch. In `city2` the branches at `$F720` and `$F727` give 27 680 frames without a switch, 27 166 switches to the
+simulation (`JR Z` taken) and 27 165 back, and 27 166 x 384 + 27 165 x 391 + 27 680 x 302 = 10 431 744 + 10 621 515 +
+8 359 360 = 29 412 619 T, exactly Interrupt's own time in `city2`'s `l1.json`. The stacks are in uncontended memory,
+so no wait state adds to the sums.
 
 The L1 budget of `city2` measures Interrupt at 0.51 %, ReadInput at 0.61 % and the joystick readers it calls,
 ReadSinclair and ReadKempston, at 0.24 % and 0.17 % of all the time ([doc 2.7](02-architecture.md#27-the-frame-budget)).
@@ -283,8 +290,9 @@ The map window is drawn one character row of cells a pass (DrawViewRowPass, row 
 DrawTileLoop wrote 315 of its 512 bytes before the beam reached them and 197 after. The game does not race the beam:
 a row drawn a frame late shows its old picture for one frame.
 
-**The point:** the simulation gets a frame only when the INT finds the UI inside UiDelay. So the UI's busy wait is
-what feeds the simulation.
+**The point:** the simulation gets a frame when the INT finds SwitchOff clear, which in play is almost always inside
+UiDelay, the longest unguarded stretch of the UI pass (0.74 of its 1.58 frames). So the UI's busy wait is what feeds
+the simulation.
 
 ## 4.5 The UI task's pass
 
@@ -400,7 +408,8 @@ times are in wall frames, so both tasks' frames count. Pass 80 of `metro` is the
 | the whole pass | 237 | 370 | 472 | 575 | `$8362` to `$8362` |
 | the simulation's own frames in it | | | | 180 | `exec $F733` in the window |
 
-All the steps from DemandOf to NextMonth ran inside one frame, in every pass probed. They work on small tables, not
+Advise to NextMonth ran inside one frame in every pass probed (`city2`: Advise `$8386` to SimTaskNext `$839B`);
+DemandOf to NextMonth in the step probe of `metro` pass 80 (4.9). They work on small tables, not
 on the map. ScanCity is three quarters of a pass. It walks all 9216 cells and calls CellStep and the zone steps for
 each.
 
@@ -408,12 +417,25 @@ The simulation gets 33 % of the frames in `city2`. In the budget, the simulation
 the time. Most of the rest of the simulation's frames go to the cell access routines, which the module `cityaccess`
 holds (15.3 % in all, with the renderer's share).
 
+![A simulation pass in wall frames: the three parts, and every pass of city2 and metro](img/arch/sim-passes.png)
+
+*Top: the step table above as bars, wall frames of both tasks. The third part of `city2` and `metro` is the median
+pass less the two medians before it, as in the table (the median of that part alone is 18). Bottom: the wall frames of
+every pass of `city2` (218) and `metro` (204) against the pass number; the passes above 600 hold an evaluation or the
+maps window (4.9), and the ring marks `metro` pass 80. Made with `python3 tools/fig_passes.py work/docs/scA
+docs/img/arch/sim-passes.png` from the probe outputs of 4.9.*
+
+A heavy pass has no beam picture of its own: its 575 wall frames are the typical frames of 4.4 repeated, the UI's two
+in three and the simulation's one, and a frame given to ScanCity looks like any other simulation frame in the
+timeline there (the simulation from the switch to the next INT). What makes a pass heavy is the number of its frames,
+which the figure shows.
+
 ![One simulation pass in city2](img/routines/SimTask.gif)
 
 *One simulation pass: `city2` pass 176, frames 65 719 to 66 140 (`--to 66141:0` is the start of the next frame). 86
 pictures, 5 frames apart, each the memory at the start of its frame (`memory_at`). How to read: top, the memory
 `$A900-$F7FF`, one row a 256-byte page, grey by value; yellow is a byte changed since the last picture, fading through
-red. The work arrays at `$A94F-$C44F` and the map at `$C450` change a few bytes at a time as ScanCity walks them.
+red. The work arrays at `$A950-$C44F` and the map at `$C450` change a few bytes at a time as ScanCity walks them.
 Bottom, the screen: the UI goes on moving the pointer and redrawing the window all through the pass. Made with `python3
 ../../kit/memanim.py --work work/docs/scA/city2 --from 65719:0 --to 66141:0 --step 349440 --from-address 0xA900
 --to-address 0xF7FF --screen --delay 120 --hold 2500 --layout compact --width 1050 docs/img/routines/SimTask.gif`; the
@@ -448,6 +470,22 @@ SPEED in the OPTIONS menu sets Speed `$A3AB`: 0 fast, 1 normal, 2 slow, 3 paused
 | 2 slow | 3 | `$07` | `$3F` | `$07` | `$03` | 4 passes |
 | 3 paused | `$FF` | `$FF` | `$FF` | `$FF` | `$FF` | 256 passes |
 
+```asm
+8F80  3A AB A3  LD A,(Speed)        ; SetSpeed: 0 fast, 1 normal, 2 slow, 3 paused
+8F83  47        LD B,A
+8F84  87        ADD A,A
+8F85  87        ADD A,A
+8F86  80        ADD A,B             ; A = Speed x 5, the row's offset
+8F87  4F        LD C,A
+8F88  06 00     LD B,$00
+8F8A  21 6C 8F  LD HL,SpeedTable
+8F8D  09        ADD HL,BC           ; HL = SpeedTable + 5 x Speed
+8F8E  11 67 8F  LD DE,GrowTries
+8F91  01 05 00  LD BC,$0005
+8F94  ED B0     LDIR                ; five bytes to GrowTries-MonthMask $8F67-$8F6B
+8F96  C9        RET
+```
+
 What each byte does:
 
 - **GrowTries**: how many frame cells a residential zone tries to raise or lower by a house in a pass (GrowZone
@@ -460,6 +498,13 @@ What each byte does:
 - **MonthMask**: the month ends when `SimPass AND MonthMask` is 0.
 
 `$FF` is the pause. GrowZone, DeclineZone and the chance tests return at once when they read `$FF` (`CP $FF / RET Z`).
+
+```asm
+8A40  3A 67 8F  LD A,(GrowTries)    ; GrowZone
+8A43  FE FF     CP $FF              ; paused?
+8A45  C8        RET Z               ; yes: no house raised
+```
+
 The pass itself still runs, so power, traffic and pollution go on. The month still turns, once in 256 passes
 (`SimPass AND $FF`): about 32 minutes of play in `city2`'s town. No recording pauses, so this is known from the code
 only.
@@ -528,7 +573,8 @@ The `c1` row counts from Entry, so its interrupts include the 1310 frames before
 ## 4.9 The heaviest simulation pass
 
 The per-pass probes over `city2` and `metro` find the longest passes. The longest of all contain a dialog: while the
-evaluation or the maps window is open, SwitchOff stays 1 and the simulation waits.
+evaluation is open SwitchOff stays 1 and the simulation waits; in the maps window SwitchOff is set only per cell while
+DrawOverview colours it (LayerOf `$9D4A`), so the pass slows but goes on.
 
 | Recording | Pass | Frames | Wall frames | What is in it |
 | --- | ---: | --- | ---: | --- |
@@ -572,4 +618,3 @@ two frames in three, it is 11.5 s of wall time for one month of the most built-u
   chance tests.
 - **SimPaused** `$835D` is never set.
 - **The fourth speed byte** `$8F6A` is never read.
-- **A switch's exact T-states** (4.3) are summed from the instructions; the recordings give only the L1 share.

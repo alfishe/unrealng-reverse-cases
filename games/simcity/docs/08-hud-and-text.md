@@ -425,7 +425,7 @@ PrintNumber24(value):                          ; C:H:L, signed
 65C8  CD 2C 66      CALL PrintSign
 ...
 65D0  06 F0         LD B,$F0             ; B:DE = $F0BDC0 = -1 000 000
-65D2  11 C0 BD      LD DE,Traffic+$06F0  ; $BDC0, mkgame's label for the constant
+65D2  11 C0 BD      LD DE,$BDC0          ; low 16 bits of -1 000 000 (B = $F0)
 65D5  D9            EXX
 65D6  CD 4F 66      CALL Digit24
 ...
@@ -468,8 +468,9 @@ PrintNumber24(value):                          ; C:H:L, signed
 666A  28 0F         JR Z,LeadingZero     ; a leading zero: count it
 ```
 
-The listing writes `LD DE,Traffic+$06F0` for `LD DE,$BDC0`: mkgame took the constant for an address. The same holds for `Irradiate+$0002` (`$7960`, with B = `$FE`: -100 000), `CityMap+$14A0`
-(`$D8F0`: -10 000) and `UiStack+$045D` (`$FC18`: -1000), also in Print5Digits and Print4Digits.
+The constants are the low 16 bits of the negative powers of ten, and B holds the high byte: `LD B,$F0` / `LD DE,$BDC0`
+(-1 000 000), `$FE` / `$7960` (-100 000), `$FF` / `-$2710` (-10 000), `$FF` / `-$03E8` (-1000), `$FF` / `$FF9C`
+(-100). Print5Digits and Print4Digits use the same `-$2710` and `-$03E8`.
 
 ```mermaid
 flowchart TD
@@ -496,6 +497,27 @@ one takes 8: PrintSign's minus comes before the digits, and the padding counts o
 
 Witness: PrintFunds `$5F80` runs at `menus` frame 20116 as the budget window closes (8.7); L1 counts 9918 of its calls
 and 28 400 of PrintNumber24.
+
+In play the figure is reprinted by Periodic's job 0, not by the purchase. In `tools` a road takes Funds `$8F97` from
+19 998 to 19 988 in frame 2417 (pass 7) and a second one to 19 978 in frame 2446 (pass 16), but the screen keeps
+`FUNDS $19998` until Periodic jumps to PrintFunds in pass 16 (PassCount `$10`, AND 15 = 0), in frame 2456. The 19 988
+in between is never shown (TTD memory_at of `$8F97`, `$8F9F` and the screen byte `$43BB`, frames 2410-2480).
+
+![PrintFunds at work in tools frame 2456: FUNDS reprinted digit by digit](img/routines/PrintFunds.gif)
+
+*The routine animation of Periodic, PrintFunds, PrintNumberVar, PrintNumber24, Digit24, NextColumn and PrintGlyph
+(`$901D-$904C`, `$5F80-$5F89`, `$65B3-$669F`, `$5E12-$5E20`, `$F754-$F780`) in `tools` from 2456:0 to 2456:12000. It
+has 60 pictures, 200 T each. The view is the screen. Command, from the case folder after `. work/env.sh`, with
+`tools/session.ttd` open (`re_session.py open`): `python3 ../../kit/routine_anim.py --work W --listing build/game.lst
+--window 2456:0-2456:12000 --view screen --range 5B00-FFFF --pc 901D-904C,5F80-5F89,65B3-669F,5E12-5E20,F754-F780
+--pictures 60 --title 'PrintFunds at 5F80: FUNDS reprinted at row 5, column 24 on pass 16 (PassCount AND 15 = 0)' --out
+docs/img/routines/PrintFunds.gif`.*
+
+How to read the animation: the first pictures are the end of a simulation frame (ScanCity, CellStep: "other" in the
+code panel). At about T 2000 the interrupt switches to the UI task, and Periodic jumps to PrintFunds. From about T 3000
+the glyphs appear at row 5, from column 24 on, one after another, each a few hundred T apart: Digit24 counts a digit,
+PrintGlyph writes its 8 lines (yellow) and PutAttr its attribute. Only the fourth digit changes on the screen, 9 to 7.
+The two padding spaces come last, at about T 9200: they erase whatever a longer figure left.
 
 The point: the trailing spaces erase the old figure in the same pass. No field is ever cleared before it is printed.
 
@@ -682,6 +704,9 @@ in colour. Screenshot of the recording, `work/stage1/rec/tools/screens/013857-sh
 
 Witness: `menus` frames 20111-20117 (the probe of `work/docs/scD/probe.py`): ClearTopBlack at 20111, DrawStatusPanel
 at 20113 T53100, DrawToolIcons at 20115, PrintFunds at 20116. 6912 bytes written in the window.
+
+In play, outside the windows, the fields are reprinted by Periodic one at a time: PrintFunds at pass 16k
+([PrintFunds.gif](img/routines/PrintFunds.gif), 8.5), PrintDate at 16k + 1.
 
 The point: the panel is redrawn whole after a full-screen window, about five frames of printing, and refreshed field by
 field otherwise. The palette knows the prices: it greys what the player cannot buy before the player tries.
@@ -1032,8 +1057,11 @@ Worked example: `menus` frame 19940. PopLastYear is 656, so TaxIncome = 656 / 10
 120 dollars). TransportCost is 35 at 100 %, so TransportFunded is 35; police and fire request 0. FundedTotal is 35,
 CashFlow 120 - 35 = 85, FundsBefore 14 325, FundsAfter 14 325 - 35 + 120 = 14 410 (dollars, decimal).
 
-Witness: `menus` frames 19866-19968. PrintBudget runs at 19940, 19950 and 19961: with no key down the edit loop waits
-10 frames a pass. TaxRate reads 20 throughout: Q at its maximum changes nothing.
+Witness: `menus` frames 19866-19968. PrintBudget runs at 19940, 19950 and 19961. At 19940 Q is down (KeyRowQ `$5B02`
+bit 0 is 0 in the samples 19 938-19 945): EditUp leaves TaxRate at 20, its maximum, and EditRepeat `$6995` drops from
+10 to 9, so the next pass comes after 9 HALTs (19 950). There no key is down, EditRepeat goes back to 10, and the
+pass after it is at 19 961. TaxRate reads 20 throughout (TTD memory_at of `$5B02`, `$6995` and `$91E4`, frames
+19 930-19 965).
 
 Known only from the code: BudgetHook reruns BudgetFigures but not TaxIncomeOf. TAX COLLECTED is computed once, when
 the window opens, so changing the tax rate in the window does not change it; the new rate counts from the next year.

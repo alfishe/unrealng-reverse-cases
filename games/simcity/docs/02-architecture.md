@@ -38,7 +38,7 @@ code. It runs the simulation as a second task under an interrupt that switches t
 
 ## 2.2 The module map
 
-Stage 2 split the code from `$5B00` to `$FE00` into 29 modules: 598 entries, each a routine or a data block. A module
+Stage 2 split the code from `$5B00` to `$FE00` into 29 modules: 606 entries, each a routine or a data block. A module
 is one stretch of addresses. `python3 work/docs/scA/modmap.py` lists them from `game.ann`:
 
 | Module | Range | Bytes | Entries (code) | What |
@@ -61,16 +61,16 @@ is one stretch of addresses. `python3 work/docs/scA/modmap.py` lists them from `
 | joysticks | `$7A01-$7A9D` | 157 | 3 (3) | the Kempston and Sinclair joysticks, the shift scroll |
 | maps | `$7A9E-$7B85` | 232 | 7 (4) | the maps window |
 | simulation | `$7B86-$8F96` | 5137 | 152 (102) | the simulation task: power, coverage, pollution, traffic, land value, crime, demand and the growth of every zone |
-| uitask | `$8F97-$90A6` | 272 | 8 (6) | the UI task, with the funds, the date and the pass counter |
+| uitask | `$8F97-$90A6` | 272 | 9 (6) | the UI task, with the funds, the date and the pass counter |
 | disasters | `$90A7-$9193` | 237 | 11 (10) | the disasters |
 | budget | `$9194-$95B7` | 1060 | 19 (14) | the budget |
 | evaluation | `$95B8-$9B4D` | 1430 | 24 (15) | the evaluation and the advice |
 | overview | `$9B4E-$9E08` | 699 | 14 (9) | the maps window's overview |
 | saveload | `$9E09-$9F3F` | 311 | 9 (6) | save and load |
 | dialogs | `$9F40-$A883` | 2372 | 54 (30) | the menus' descriptions and actions, the line editor |
-| workspace | `$A884-$E84F` | 16 332 | 4 (0) | the movers' sprites, the save header, the work arrays and the map |
+| workspace | `$A884-$E84F` | 16 332 | 10 (0) | the movers' sprites, the save header, the work arrays and the map |
 | graphics | `$E850-$F681` | 3634 | 6 (0) | the tiles and their attributes |
-| tasks | `$F682-$F74D` | 204 | 7 (1) | the task switcher, its frame and its state |
+| tasks | `$F682-$F74D` | 204 | 8 (1) | the task switcher, its frame and its state |
 | system | `$F74E-$FE00` | 1715 | 10 (6) | printing glyphs, the input read, the tape, a filled gap, the IM 2 vector |
 
 The code is 19 844 bytes, `$5B00-$A883`. Above it lie 16 K of work space and 3.6 K of tiles, then the interrupt
@@ -125,7 +125,9 @@ The UI task reaches nearly everything else.
 ## 2.3 The memory map
 
 The 48K's RAM as the game uses it, with the stage-2 names. The counts are L1's, summed over the ten bot recordings
-(`work/stage1/rec/*/l1.json`). `c1` is left out of the counts, because its tape load writes every byte.
+(`work/stage1/rec/*/l1.json`, `byte_counts`). `c1` is left out of the counts, because its tape load writes every byte.
+The code rows count executed bytes: an instruction counts once for each of its bytes (opcode and operands), so the
+3-byte `JP` at `$FCFC` shows 3 x 402 538 for the 402 538 interrupts of the ten recordings.
 
 | Range | Size | What | Use (L1) |
 | --- | ---: | --- | --- |
@@ -133,9 +135,9 @@ The 48K's RAM as the game uses it, with the stage-2 names. The counts are L1's, 
 | `$5B00-$5B07` | 8 | KeyRows: the keyboard's eight half rows, written by every interrupt; the joysticks fold into the same bits | 3 264 254 writes |
 | `$5B08-$5B18` | 17 | KeyNone `$5B08` (a ninth row, always `$FF`), PortHighs `$5B09` (a leftover, 2.6), BitMasks `$5B11` (the eight bit masks) | 1 420 517 reads, never written |
 | `$5B19-$5B47` | 47 | EntryJump `$5B19` (a leftover), Entry `$5B1B` | once |
-| `$5B48-$A883` | 19 772 | the code of 24 modules (2.2), with its variables between the routines and in operands, and its texts and tables: the menu descriptions in dialogs `$9F40-$A883`, the speed table `$8F6C`, the funds, the date and the pass counter `$8F97-$8F9F` | 4 356 713 173 executions; 437 bytes written |
+| `$5B48-$A883` | 19 772 | the code of 24 modules (2.2), with its variables between the routines and in operands, and its texts and tables: the menu descriptions in dialogs `$9F40-$A883`, the speed table `$8F6C`, the funds, the date and the pass counter `$8F97-$8F9F` | 4 356 713 173 executed bytes; 437 bytes written |
 | `$A884-$A923` | 160 | MoverSprites: the plane, two tornado frames, the train across and down, 32 bytes each | read by DrawMovers |
-| `$A924-$A94F` | 44 | SaveName `$A924` (12) and SaveHeader `$A930` (31): the tape header of a saved city | written by the save |
+| `$A924-$A94F` | 44 | SaveName `$A924` (12), SaveHeader `$A930` (31): the tape header of a saved city, and SaveSpare `$A94F` (1, the name's twelfth letter, not saved) | written by the save |
 | `$A950-$AB8F` | 576 | FireCover: 24 x 24 fire coverage | the simulation |
 | `$AB90-$ADCF` | 576 | PoliceCover: 24 x 24 | the simulation |
 | `$ADD0-$B6CF` | 2304 | Pollution: 48 x 48 | the simulation |
@@ -149,10 +151,10 @@ The 48K's RAM as the game uses it, with the stage-2 names. The counts are L1's, 
 | `$F682-$F6C1` | 64 | UiStack: the UI task's stack, from `$F6C2` down to at least `$F68A` (2.5) | 517 778 writes |
 | `$F6C2-$F703` | 66 | SimStack `$F6C2` (44), SimFrame `$F6EE` and SimEntry `$F702`: the simulation's first frame; its stack grows down from `$F704` to at least `$F6D0` | 167 868 writes |
 | `$F704-$F70A` | 7 | TaskNow `$F704`, SwitchOff `$F705`, UiSP `$F707`, SimSP `$F709` | 1 131 383 writes |
-| `$F70B-$F7BA` | 176 | Interrupt `$F70B`, the print state `$F74E`, PrintGlyph `$F754`, ReadInput `$F781`, a leftover `$F798`, TapeLoad `$F79F`, TapeSave `$F7AA`, TapePause `$F7AD` | 183 263 122 executions |
+| `$F70B-$F7BA` | 176 | Interrupt `$F70B`, the print state `$F74E`, PrintGlyph `$F754`, ReadInput `$F781`, a leftover `$F798`, TapeLoad `$F79F`, TapeSave `$F7AA`, TapePause `$F7AD` | 183 263 122 executed bytes |
 | `$F7BB-$FCFB` | 1345 | E5Fill: 1345 bytes of `$E5`, untouched (2.6) | none |
-| `$FCFC-$FCFE` | 3 | InterruptJump: `JP Interrupt` | 1 207 614 executions |
-| `$FCFF-$FE00` | 258 | InterruptSpare, then the vector table `$FD00-$FE00`, 257 bytes of `$FC` | the vector is read at `$FDFF-$FE00`, 343 447 times each (the bus holds `$FF`) |
+| `$FCFC-$FCFE` | 3 | InterruptJump: `JP Interrupt` | 1 207 614 executed bytes: 402 538 interrupts, 3 bytes each |
+| `$FCFF-$FE00` | 258 | InterruptSpare, then the vector table `$FD00-$FE00`, 257 bytes of `$FC` | the vector is read at `$FDFF-$FE00` only, no other byte of the table (so the bus holds `$FF`); L1 counts 343 447 reads of each, fewer than the 402 538 interrupts that each read it once (the byte counts miss accesses, 2.5) |
 | `$FE01-$FFFF` | 511 | the loader, as it was left (2.6, [doc 3](03-build-and-load.md)) | untouched in play |
 
 Stage 2 corrected four things in stage 1's map:
@@ -226,9 +228,13 @@ flowchart TB
 
 Neither stack has much to spare:
 
-- The simulation goes deep. ScanCity -> ZoneStep -> ResidentialStep -> ScanRing -> ScanRingCell -> CellFlagsOf (or
-  MapAddrChecked) is five calls and more below SimTaskPass; CellStep also pushes CellStepEnd, and an interrupt adds
-  its 22 bytes on top. 52 of its 66 bytes were reached; 14 more would write into the UI stack's top.
+- The simulation goes deep. The ring scan, ScanCity -> ZoneStep -> ResidentialStep (a jump from ZoneByKind) ->
+  ScanRing -> ScanRingCell -> MapAddrChecked, is 16 bytes deep (`$F6F4`): five return addresses and three pushes
+  (ZoneStep's HL, ScanRing's and ScanRingCell's BC). With an interrupt's 22 bytes on top it writes `$F6DE`, the low
+  mark `ports` reached most often (341 frames). A ring cell picked as a route start goes further: ScanRingCell ->
+  PickRouteStart -> Random, which pushes HL, DE and BC, is 22 bytes deep (`$F6EE`), `$F6D8` with an interrupt.
+  CellStep is called after ZoneStep has returned, so its CellStepEnd is not on these chains. 52 of the 66 bytes were
+  reached; 14 more would write into the UI stack's top.
 - The UI's 56 bytes include the interrupt's 22, so the UI's own calls and pushes reach at least 34 bytes. Eight bytes
   more and a push would land in BuildingAttrs, and the map would show a wrong colour.
 
@@ -236,8 +242,10 @@ The depths are those of the recordings, a lower bound: a deeper path no recordin
 
 **A worked example: the simulation's 52 bytes.** The deepest write, `$F6D0` at `menus` frame 5498, is 52 bytes below
 the top `$F704`. If it is the last byte of an interrupt's 22-byte push, the simulation itself was 30 bytes deep at
-that moment (`$F6E6`): 15 words of return addresses and saved registers, which matches the five-call chain above with
-the registers its routines push. The 14 bytes left (`$F6C2-$F6CF`) are less than one interrupt frame.
+that moment (`$F6E6`), 30 bytes. The deepest chain read from the code is 22 bytes (the route-start pick, `$F6EE`),
+so the 52 bytes need a path 8 bytes deeper still, not identified from the probes (the trip walk, MakeTrip `$856A` ->
+TripWalk -> TripStep from ResidentialStep, is a candidate; a write probe on `$F6D0` in `menus` near frame 5498 with
+the PC and the stack words would name it). The 14 bytes left (`$F6C2-$F6CF`) are less than one interrupt frame.
 
 ## 2.6 Leftovers
 
@@ -341,17 +349,19 @@ What the disk leaves out and what it adds:
   bytes.
 - **The top moves up.** The tiles sit 610 bytes higher (IconTiles at `$EAB2`), and so does the system part: Interrupt
   is at `$F96D`, and `$FCFC` holds `JP $F96D`. The vector table stays at `$FD00`. The disk routines replace TapeLoad
-  and TapeSave.
+  and TapeSave; TapePause stays, at `$FB64`.
 - **EntryJump is used.** The disk enters at `$5B19`, the `JR $5B1B` the tape never runs (2.6). So the tape's image
   carries the disk version's entry.
 
 ![The +3 disk image against the tape](img/arch/plus3-shift.png)
 
 *How far each entry of `game.ann` moved in the +3 disk's image. How to read: one dot an entry whose first 6 to 16
-bytes occur exactly once within `$800` of its tape address in the disk image (155 of 598; most code entries hold
+bytes occur exactly once within `$800` of its tape address in the disk image (155 of 606; most code entries hold
 address operands that differ, so they are not found); x is the tape address, y the shift. The steps are +6 from
 Entry's `$5B27`, +67 to +104 in the dialogs, +403 from OptionsMenu, +610 for the tiles and the system part. Four dots off
-the steps (three simulation entries at `$8D0B-$8DB5` and TapePause) are chance matches of a short pattern. Made with
+the steps: TapePause, which the disk keeps at `$FB64` (+951, after its disk routines), and three false matches in the
+simulation, where the counter idiom of the church, fire and police steps, moved +6 with its counters, reads like the
+coal, nuclear and hospital steps' own (disk `$8D96` is the tape's `$8D90` + 6, ChurchCount `$8450` + 6 = `$8456`). Made with
 `python3 tools/fig_plus3.py work/stage2/plus3/disk-5A00.bin work/mkgame/original.bin docs/img/arch/plus3-shift.png`.*
 
 **The point:** the disk release is the tape's program with the protection taken out and disk menus put in. Its

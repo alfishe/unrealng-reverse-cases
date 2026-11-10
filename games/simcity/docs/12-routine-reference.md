@@ -571,6 +571,8 @@ CityName lies inside the inline text: typing a name writes these bytes (InputNam
 
 L1 9918: every month and every purchase.
 
+[Animation: `PrintFunds` at work](img/routines/PrintFunds.gif)
+
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 114 calls, 7,649 t-states own (0.00 %) |
@@ -1167,7 +1169,7 @@ Codes: `$21` moves to column 24 (MenuTab), 6 a 16-bit number (5 digits) at an ad
 
 **Move the highlight with Q / A every 8 frames (HALT), SPACE selects: run, toggle or edit the item**
 
-L1 132. The menus are opened from Click (or BudgetWindow, EvaluationWindow, MapsWindow), which set SwitchOff `$F705` = 1: the simulation is frozen while a menu is open, and each HALT waits one frame.
+L1 132. The menus are opened from Click (or BudgetWindow, EvaluationWindow), which set SwitchOff `$F705` = 1: the simulation is frozen while a menu is open (MapsWindow has no menu and leaves SwitchOff to LayerOf, per cell: the simulation runs on there), and each HALT waits one frame.
 
 [Animation: `RunMenu` at work](img/routines/RunMenu.gif)
 
@@ -1676,7 +1678,7 @@ Road 10, rail 20, power 5. L1 470; the crossings themselves L1 47 (`$70E3`, powe
 
 **Carry set when the tool's box at the click may not be built; clears trees at 1 dollar a cell**
 
-On water, or with AutoBulldoze (`$A32B`) on: every cell of the box must be in SiteCells (water only for road, rail and power); each cell not in FreeCells costs 1 and becomes land 2. With AutoBulldoze off on land: StrictSite, every cell must be land 2. The bulldozer passes always. When Spend cannot pay 1 for clearing a cell, the cell is left as it is and the site still passes. L1 464.
+On water, or with AutoBulldoze (`$A32B`) on: every cell of the box must be in SiteCells (water only for road, rail and power); each cell not in FreeCells costs 1 and becomes land 2. With AutoBulldoze off and a clicked cell that is not water: StrictSite, every cell must be land 2. That jump comes before the bulldozer's test at `$7118`, so with AUTO-BULLDOZE off the bulldozer is refused everywhere but on a water click; with AutoBulldoze on, or on water, it always passes. When Spend cannot pay 1 for clearing a cell, the cell is left as it is and the site still passes. L1 464.
 
 | | |
 | --- | --- |
@@ -2186,7 +2188,7 @@ L1 9884; the crash L1 0 in the disaster recording? see NOTES.
 
 ### `AirCrash` (`$78FE`)
 
-**The AIR CRASH disaster: with an airport (`$849E`), message `$19` (AIR CRASH !!!) and a crash timer of 7-22**
+**The AIR CRASH disaster: only when the last pass counted a working airport (LastAirports `$849E`: powered, transport in its ring, no trip lost), message `$19` (AIR CRASH !!!) and a crash timer of 7-22**
 
 | | |
 | --- | --- |
@@ -2230,7 +2232,7 @@ L1 890 (the test).
 
 **Move the tornado: 1 in 8 toward the city centre (`$84A2`), else a random step; off when Random gives 0**
 
-The cell down and right of it is hit: a building burns (BurnBuilding), a flammable cell (CellFlags bit 7) becomes `$3A`. It stops at water. L1 9884; the work L1 27.
+The cell down and right of it is hit: a building burns (BurnBuilding), a flammable cell (CellFlags bit 7) becomes `$3A`. It stops at water. Its step uses MapAddr, not MapAddrChecked: no edge check, so from the top row it can walk into the ROM rows (`$23F0` on) and wrap at the column edges (only the hit cell is checked). L1 9884; the work L1 27.
 
 | | |
 | --- | --- |
@@ -2777,7 +2779,7 @@ L1 25.
 
 **CityCentre = the middle of the extent; the last-pass copies; AvgPollution = PollutionSum / count**
 
-L1 1089.
+CityCentre = (max + min) / 2 of ExtentCols and ExtentRows, the box of every zone and building ZoneStep met this pass (WidenExtent). InitSimulation starts it at 32, 32; a pass with no zones leaves the cleared box 0, `$FF` and gives 127, 127. L1 1089.
 
 | | |
 | --- | --- |
@@ -2977,7 +2979,7 @@ L1 36 698.
 
 ### `MinMax` (`$87DB`)
 
-**(HL) = min, (HL+1) = max with A**
+**(HL) = max, (HL+1) = min with A**
 
 | | |
 | --- | --- |
@@ -3075,6 +3077,8 @@ L1 10 084 463.
 ### `Spread` (`$899B`)
 
 **Each of the four neighbours that burns (flags bit 7, a building) or floods: 1 in 8 catches; a fire with nothing round dies with 1 in 4**
+
+No edge check: the JR NC,SpreadNext after MapAddr is dead, because MapAddr always sets carry. From row 0 the step up lands in the ROM (`$23F0` + column), from row 95 the step down in IconTiles (`$E850` + column); from column 95 the step right is column 0 of the next row, from column 0 the step left is column 63 two rows down. Known only from the code.
 
 | | |
 | --- | --- |
@@ -3270,7 +3274,7 @@ L1 719.
 
 ### `ChurchStep` (`$8D90`)
 
-**Type 2: ChurchCount + 1; unpowered, with the R chance back to an empty R zone (not run in the recordings)**
+**Type 2: ChurchCount + 1; unpowered, with the IndChance mask back to an empty R zone (a church stands in ceiling-end.szx)**
 
 | | |
 | --- | --- |
@@ -3286,7 +3290,7 @@ L1 719.
 
 ### `StadiumStep` (`$8DDA`)
 
-**A powered stadium with transport: 1 in 32 a trip to R; when it arrives StadiumCount + 1**
+**A powered stadium with transport: 1 in 32 a trip to R; StadiumCount + 1 unless a trip was tried and failed**
 
 StadiumCount + 1 only when powered, with transport in the 4 x 4 ring, and unless a trip was tried and lost. The city recording's stadium is never counted (StadiumCount 0 in all 311 samples). L1 648.
 
@@ -3312,7 +3316,7 @@ StadiumCount + 1 only when powered, with transport in the 4 x 4 ring, and unless
 
 ### `MonthEnd` (`$8E94`)
 
-**LastPop; in December: the year's populations, the costs to the budget (`$9311-$9315`), the budget (shown, or auto), Funds, the evaluation**
+**LastPop; in December: the year's populations, the costs to the budget (`$9311-$9315`), the budget (shown, or auto), Funds**
 
 L1 934; the December branch L1 77.
 
@@ -3416,7 +3420,9 @@ L1 158 073.
 
 ### `AnimateFire` (`$906D`)
 
-**Tile `$45` (fire, `$EC90`) from one of two frames (`$ED38`, `$ED40`) by PassCount bit 4 and Random**
+**Tile `$45` (fire, `$EC90`) from one of two frames (`$ED38`, `$ED40`) by PassCount bit 4: the Random 0-3 added first never carries into it at the Periodic call (PassCount AND 15 = 2)**
+
+[Animation: `AnimateFire` at work](img/routines/AnimateFire.gif)
 
 | | |
 | --- | --- |
@@ -3926,7 +3932,9 @@ The header SaveHeader: the 12-letter file name, Funds, its spare byte, Month, Ye
 
 ### `LoadCity` (`$9E5A`)
 
-**LOAD FROM TAPE: the name, START TAPE, SEARCHING; headers until the name matches (any with a blank name), then the map**
+**LOAD FROM TAPE: the name, SEARCHING, a 31-byte header (any name if the typed one is blank), then the map; only the first city on the tape loads**
+
+Both blocks of a save carry flag `$FF`, and LoadHeader asks for 31 bytes with flag `$FF`. After a header whose name does not match, the next load meets that file's map block, takes its first 31 bytes as a header, fails the parity (the block is longer) and shows LoadErrorWindow: the search never reaches a second file, so the tape must stand at the wanted city. Known only from the code.
 
 PopLastYear and LastPop are not restored: the previous city's values remain until the next month end.
 

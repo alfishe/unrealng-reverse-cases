@@ -56,7 +56,7 @@ $FF8E LdColourStep ; INC A (during the pilot a NOP): the next stripe colour
 $FF96 LdStripe ; OUT ($FE),A, black after each edge (during the pilot LD A,$FE)
 
 $FF9A c LoadExit ; LoadBlock's return: black border; on carry return to LoadGame, else cycle the border for ever
-> Reached by the RET of LoadBlock through the address it pushed (LD HL,LoadExit; PUSH HL). With carry set (the parity right) it returns to LoadGame. With carry clear (a parity error, a wrong flag, a break) it falls into LoadFailed, a loop that writes the border colours 1, 2, 3 ... with no exit: a bad load hangs with a striped border.
+> Reached by the RET of LoadBlock through the address it pushed (LD HL,LoadExit; PUSH HL). With carry set (the parity right) it returns to LoadGame. With carry clear (a parity error, a wrong flag, or the signal lost after the sync; SPACE is never tested, LdSample has no RET NC) it falls into LoadFailed, a loop that writes the border colours 1, 2, 3 ... with no exit: a bad load hangs with a striped border.
 > c1: L1 3 at $FF9A and at the RET C; LoadFailed not executed in c1, the only recording that loads the tape (stage 1's docs/03 3.3 said a failed block runs on into what was loaded: the code says it hangs).
 $FFA0 LoadFailed ; INC A; OUT ($FE),A; loop: the endless striped border of a failed load
 

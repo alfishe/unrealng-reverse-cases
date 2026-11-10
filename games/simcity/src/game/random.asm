@@ -5,7 +5,9 @@
 ; of the landscape, the growth, the trips and the disasters comes from it (the tornado sprite alone uses LD A,R).
 ; --------------------------------------------------------------------------------------------------------------------
 
-; The random seed, 16 bits; NewLandscape sets it to the gene (Gene $6A8C)
+; The random seed, 16 bits; NewLandscape sets it to the gene (Gene $6A8C); read
+; directly by RandomDisaster, RadiationCell, Poll and NewCityItem (the new
+; gene)
 RandomSeed:
   DEFW $0000
 

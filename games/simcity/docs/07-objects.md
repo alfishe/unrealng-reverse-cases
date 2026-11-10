@@ -302,7 +302,7 @@ GrowCellUp:
   CP $44
   JP Z,TripWalkLost          ; already $43: carry, try another cell
   LD (HL),A
-  AND A
+  OR A
   RET
 DeclineCell:
   CALL MapAddr
@@ -318,9 +318,12 @@ DeclineCell:
   CP $3B
   JR NZ,DeclineCellStore
   LD A,(IX+$02)              ; below $3C: back to the empty frame code
+  LD (HL),A
+  OR A
+  RET
 DeclineCellStore:
   LD (HL),A
-  AND A
+  OR A
   RET
 ```
 
@@ -419,8 +422,11 @@ flowchart LR
 ```
 
 The stamps have no edge clipping. StampFire and StampPolice write a 5 x 5 kernel from Grid24 - 50 (two rows and two
-columns up-left), so a station on map rows 0-7 writes up to 50 bytes before `FireCover`, into the sprite and save name
-area (known only from the code; no recording builds a station there).
+columns up-left). A station on map rows 0-7 therefore writes before its own array: a fire station up to 50 bytes
+before `FireCover`, into the sprite and save name area; a police station into the end of FireCover, the array just
+before PoliceCover. StampPollution uses Grid48 - `$62` the same way, so a pollution source on map rows 0-3 writes
+into the end of PoliceCover. On the bottom rows each stamp runs into the array after its own, and at a column edge it
+wraps to the next or previous grid row (known only from the code; no recording builds there).
 
 Worked example, `metro` end (frame 96 503), with two police and two fire stations, two nuclear plants and 12
 industrial buildings:
@@ -485,7 +491,7 @@ The variables that outlive a pass:
 | `$91E4` | TaxRate | 1 | percent, 7 at the start |
 | `$975F` | Category | 1 | 0 VILLAGE ... 5, written only by CategoryOf when the evaluation opens |
 | `$9996` | Advice | 1 | the message index Advise `$99AD` or a disaster chose |
-| `$84A2` | CityCentre | 2 | column, row: the centre the land value and the tornado use |
+| `$84A2` | CityCentre | 2 | column, row: the centre the land value and the tornado use. Averages `$84A4` sets it at the end of each pass to the middle of the box of all zones and buildings ZoneStep met (WidenExtent / MinMax into ExtentCols, ExtentRows: byte 0 the greatest, byte 1 the least). It starts at 32, 32 and becomes 127, 127 after a pass with no zones (the cleared box 0, `$FF`) |
 | `$835E` | SimPass | 1 | pass counter |
 | `$835D` | SimPaused | 1 | skip zones and cells; only InitSimulation writes it, with 0, so the skip is dead |
 | `$A518` | Level | 1 | 0 easy, 1 medium, 2 difficult |
@@ -524,9 +530,12 @@ How to read the figure:
   edited the budget field, then 7 again.
 - Command: `python3 tools/fig_sim.py course --samples work/docs/scC/city-vars.jsonl --out docs/img/sim/course.png`.
 
-Counting mid-scan has a side effect. A C or I building that falls back to its empty zone puts the centre one row
-below its top row, where the scan has not been yet, so the zone is counted again in the same pass. The city samples
-show IndPop up to 12 (the sample of frame 29 000) with 8 industrial zones on the map.
+Counting mid-scan has a side effect. A building that falls back to its empty zone (a C or I building, or an R block,
+a church or a hospital through ResRevert / ResRevertAt `$8BA9` / `$8BAD`) puts the centre one row below its top row,
+where the scan has not been yet, so the zone is counted again in the same pass. An R block falls back to
+ResRevertZone, eight houses of Density 56: it counts again in ResPop (+1) and in Population (16 x 56 = 896), on top of
+the block's own 16 x Density. The city samples show IndPop up to 12 (the sample of frame 29 000) with 8 industrial
+zones on the map.
 
 **The point**: almost nothing about the city is stored; it is counted again every pass. What persists is money, the
 date, the two population snapshots and the demand. The year-end snapshot PopLastYear decides taxes and the title.
@@ -589,13 +598,18 @@ MoveTrainNext:
 unless an attempted trip failed. With no plane out, 1 in 2 starts one: either at the airport's row, column `$60` (the
 right edge), flying to the airport's column, or at the airport, flying to column 0. MovePlane `$787E` moves it one
 column left per move until PlaneCell reaches PlaneTarget. The crash is not the plane's own. The AIR CRASH disaster
-(AirCrash `$78FE`, only with an airport) sets PlaneTimer to 7-22. MovePlane counts it down only while a plane is out;
+(AirCrash `$78FE`) sets PlaneTimer to 7-22, but only when the last pass counted a working airport: LastAirports
+`$849E` is Averages' copy of AirportCount, which counts an airport only when it is powered, has transport in its ring
+and lost no trip in that pass. MovePlane counts it down only while a plane is out;
 at 0 it ignites the 2 x 2 cells under the plane (CrashCell, Ignite) and plays CrashNoise. With no plane out the
-timer waits for the next one.
+timer waits for the next one, and PlaneDone does not reset it: a flight that lands first leaves the rest of the count
+to the next flight.
 
 **The tornado.** StartTornado `$796C` picks random cells in rows and columns 16-79 until one is land (`$02`).
 MoveTornado `$7998` ends the tornado when Random gives 0 (1 in 256 per move), after that move's step. Otherwise, 1 in 8,
-it steps one cell diagonally toward CityCentre, else one cell in a random direction. A step onto water is refused.
+it steps one cell diagonally toward CityCentre, else one cell in a random direction. A step onto water is refused
+(the tornado stays put for that move). The step has no edge check (MapAddr, not MapAddrChecked): from the top row it
+can step into row -1, whose "cells" are ROM bytes from `$23F0`, and at a column edge it wraps (7.9).
 After each step it hits the cell one down and one right: a building burns to rubble whole (BurnBuilding), any other
 flammable cell becomes rubble `$3A`.
 
@@ -626,18 +640,39 @@ Worked example, `disasters` frames 8 800-9 800:
 
 - TORNADO shows in the sample of frame 8 800 (Advice 26). TornadoOut is 1 and the tornado stands at column 73,
   row 40.
-- It drifts to column 74, row 40 (frame 8 850), 73, 37 (9 000), 70, 34 (9 500) and 68, 35 (9 750).
-- TornadoOut is 0 in the sample of frame 9 800. Rubble went from 51 to 56 cells in that stretch.
+- It drifts to column 74, row 40 (frame 8 850), 73, 37 (9 000), 70, 34 (9 500), 68, 36 (9 750) and 68, 35 (9 800, the
+  last position).
+- TornadoOut is 0 in the sample of frame 9 800. The whole walk stays on the bare land and coast east of the town
+  (columns 67-75, rows 34-41), so the tornado hits nothing that burns. Rubble on the map goes from 51 to 56 cells in
+  that stretch, but all five come from the fires of the earlier disasters still burning in the town (rows 45-51,
+  columns 34-48), not from the tornado.
 - The AIR CRASH of frame 6 600 does nothing: the city has no airport, LastAirports is 0, and Advice never shows
   message 25.
 
-![The tornado on screen: disasters frames 8780-11000, every 40th frame](img/play/disasters-tornado.gif)
+![The tornado's walk on the map: disasters samples 8750-9850](img/sim/tornado.gif)
 
 How to read the animation:
 
-- `disasters` frames 8 780-11 000, one picture every 40 frames, the screen as unreal-ng shows it.
-- The tornado sprite walks over the blocks; the cells under its lower right corner turn to rubble.
-- Command: `python3 ../../kit/screen_anim.py --work work/docs/scC/dis --from 8780 --to 11000 --step 40 --delay 120 --hold 2500 docs/img/play/disasters-tornado.gif`.
+- One picture per sample of `dis-vars.jsonl` (every 50 frames, 8 750-9 850), the map cut at columns 56-87, rows
+  26-45 and drawn with the game's tiles, 3 x.
+- Magenta: the tornado's 2 x 2 sprite cells from TornadoCell; red: the cell it hits, one down and one right. A cell
+  that became rubble since the first picture would be outlined in white; none does.
+- The header gives the frame, TornadoCell, TornadoOut and the rubble cells on the whole map. The box vanishes at
+  frame 9 800, when TornadoOut is 0.
+- Command: `python3 tools/fig_sim.py tornado --samples work/docs/scC/dis-vars.jsonl --frames 8750,9850 --at 56,26
+  --out docs/img/sim/tornado.gif`.
+
+The screen during the same stretch does not show the tornado: the view stands at column 30, row 37 (ViewCol, ViewRow
+in every frame from 8 780 to 9 880), so it covers columns 30-61 and the tornado at columns 67-75 stays outside it.
+
+![The screen during the tornado: disasters frames 8780-9880, every 40th frame](img/play/disasters-tornado.gif)
+
+How to read the animation:
+
+- `disasters` frames 8 780-9 880, one picture every 40 frames, the screen as unreal-ng shows it.
+- The fires of the earlier disasters burn on in the town and leave rubble; a C building at the bottom right falls back
+  to its empty zone. The tornado itself is off screen to the right.
+- Command: `python3 ../../kit/screen_anim.py --work work/docs/scC/dis --from 8780 --to 9880 --step 40 --delay 120 --hold 2500 docs/img/play/disasters-tornado.gif`.
 
 **The point**: the movers are sprites with a few bytes of state. The train is decoration, the plane is harmless until
 a disaster arms its timer, and the tornado is the one mover that writes the map.
@@ -690,8 +725,17 @@ SaveCity:
   CALL TapeSave
 ```
 
-LoadCity `$9E5A` reads headers until the name matches (a blank typed name takes the first), then the map. Only on a
-good map does it copy Funds, the date and the name back; a bad map shows the error window and starts a new city.
+LoadCity `$9E5A` loads a 31-byte header (LoadHeader `$9E89`) and compares its name with the typed one; a blank typed
+name accepts any. On a match it loads the map. Only on a good map does it copy Funds, the date and the name back; a
+bad map shows the error window and starts a new city.
+
+The search for a name does not work past the first file. Both blocks of a save carry flag `$FF`, and nothing else
+tells a header from a map. After a header whose name does not match, LoadHeader asks the ROM's LD-BYTES for 31 bytes
+with flag `$FF` again, and the next block on the tape is that file's own 9216-byte map. LD-BYTES takes its first 31
+bytes, then checks the parity against the 32nd byte of the map, which fails (except by chance, 1 in 256), so carry
+is clear and `JR NC` goes to LoadHeaderFailed and the error window. In practice only the first city on the tape can
+be loaded: the tape must stand at the wanted file. Known only from the code; the `menus` recording loads the only
+file on its tape.
 
 ```mermaid
 flowchart TD
@@ -700,7 +744,8 @@ flowchart TD
     H -- ok --> B{typed name blank?}
     B -- yes --> M[TapeLoad 9216 bytes]
     B -- no --> C{header name equal?}
-    C -- no --> H
+    C -- no --> H2[TapeLoad 31 bytes: the start of that file's map]
+    H2 -- parity fails --> E1
     C -- yes --> M
     M -- error --> E2[error window, NewCity]
     M -- ok --> R[Funds, date and name from the header]
@@ -786,12 +831,18 @@ flowchart LR
     N --> S
 ```
 
-The callers use masks on A: AND 7 (1 in 8), AND `$3F` (1 in 64), AND `$7F` (1 in 128). Two callers test the seed
-itself instead: RandomDisaster (seed AND `$07FF` = 0, a gate of 1 in 2048 that hides a fixed outcome, below) and
-RadiationCell (seed AND `$0FFF` = 0, 1 in 4096).
+The callers use masks on A: AND 7 (1 in 8), AND `$3F` (1 in 64), AND `$7F` (1 in 128). Three readers test the seed
+itself instead, right after a Random call: RandomDisaster (seed AND `$07FF` = 0, a gate of 1 in 2048 that hides a
+fixed outcome, below), RadiationCell (seed AND `$0FFF` = 0, 1 in 4096) and Poll `$9931` (H AND 3 with L, a 10-bit
+draw compared with CityScore, 100 times for the evaluation's poll). NewCityItem `$A0B7` also reads the seed, to make
+the new gene.
+
 Random runs in both tasks. The UI task calls it for NewLandscape (640 calls for gene 3), RandomDisaster, StartFires
-(9 216 calls, one per map byte), the tornado's and the train's moves, and ParkTool; the simulation for everything
-else. So the sequence each sees depends on where the task switches fall.
+(9 216 calls, one per map byte), StartFlood, StartTornado, AirCrash, the tornado's and the train's moves,
+AnimateFire and AnimateFlood, NoiseBurst (with SOUND on, up to 200 calls a burst and 127-255 bursts a disaster
+sound), Poll and ParkTool. The simulation task calls it for the growth, the trips, the road and rail decay, StartTrain and
+StartPlane, the fires and floods (Spread), MeltdownCell and RadiationCell. So the sequence each task sees depends on
+where the task switches fall, and the sound of a disaster alone moves the sequence the simulation sees.
 
 RandomDisaster's 1 in 2048 gate is not what it seems. It tests the seed right after a Random call, and the only
 seeds with `seed AND $07FF` = 0 are the 32 multiples of `$0800`. From each of them the next Random is fixed: `$0000`
@@ -818,7 +869,11 @@ comes as much from the task switch timing as from the generator.
 ## 7.9 Known only from the code
 
 - No code writes `$57` or `$58` to the map; both codes have tiles and road-bridge flags but no placer.
-- The coverage stamps have no edge clipping: a police or fire station on map rows 0-7 writes before FireCover.
+- No stamp is clipped at the edges (the kernel origin is the grid cell - 50 in the 24 x 24 grids, - `$62` in the
+  48 x 48 one). A stamp on the top rows writes into the end of the array before its own: a police stamp (map rows
+  0-7) into FireCover, a pollution stamp (map rows 0-3) into PoliceCover, a fire stamp into the bytes before
+  FireCover `$A950`. A stamp on the bottom rows writes into the array after its own, and a stamp at a column edge
+  wraps to the other side of the next or previous grid row.
 - After a load, LastPop is the old city's until the next month end, PopLastYear until the next December; the taxes
   are not affected, because December refreshes PopLastYear before TaxIncomeOf.
 - The save copies 12 letters of the city name, but the header is 31 bytes: the twelfth letter never reaches the tape,
@@ -827,7 +882,14 @@ comes as much from the task switch timing as from the generator.
 - A random disaster is always a tornado, after the seed `$0000` only (about 1 in 65 536 tries).
 - StartTrain's `CP $08` on TransportCost is dead.
 - On every fifth stuck move (not necessarily in a row) the train's TrainBack becomes 5 and it may reverse.
-- AIR CRASH arms PlaneTimer even when no plane is out; the crash comes 7-22 moves into the next flight.
+- AIR CRASH arms PlaneTimer even when no plane is out. The crash comes after 7-22 plane moves, counted only while a
+  plane is out; PlaneDone does not reset the timer, so the count can span several flights.
+- LoadCity can load only the first city on the tape: after a header that does not match, the next load reads the
+  start of that file's map block as a header and fails parity (7.7).
+- The tornado's step has no edge check (MapAddr, not MapAddrChecked), nor has Spread for fires and floods
+  ([doc 10.12](10-gameplay-logic.md#1012-disasters)).
+- A building that falls back mid-scan counts again in the same pass: an R block adds 1 to ResPop and 896 to
+  Population (7.5).
 - A church or hospital reverts to an empty R zone only when unpowered, on the IndChance mask.
-- The double count of a C or I zone that falls back mid-scan comes from the code and the samples (IndPop above the
+- The double count of a zone that falls back mid-scan comes from the code and the samples (IndPop above the
   zone count); no trace shows the moment.

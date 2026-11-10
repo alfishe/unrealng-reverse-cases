@@ -156,6 +156,49 @@ returns from FloodFill, however deep the fill was. FloodPush silently drops a sp
 and a plant whose top cell an earlier plant's flood already reached floods nothing (FloodFill's first IsConductive
 fails), so its budget is lost.
 
+The plant list has no bound either. PowerPlants `$7F78` is 16 words: 15 plants and the terminator word 0.
+FindPlants stores every plant it finds and then the 0, without counting:
+
+```asm
+FindPlants:
+  LD IX,PowerPlants          ; $7F98: DD 21 78 7F
+  LD HL,CityMap
+  LD BC,$2400
+FindPlantsLoop:
+  LD A,$B4
+  CPIR                       ; the next top byte $B4
+  ...                        ; type 6 or 8: FindPlantsFound
+  LD (IX+$00),$00            ; the end: the terminator, wherever IX is
+  LD (IX+$01),$00
+  RET
+FindPlantsFound:
+  DEC HL
+  LD (IX+$00),L
+  INC IX
+  LD (IX+$00),H              ; no test of IX against the list's end
+  INC IX
+  INC HL
+  JR FindPlantsLoop
+```
+
+With 16 plants the 16th takes the terminator's slot `$7F96` and the 0 lands on `$7F98-$7F99`, the `DD 21` of
+FindPlants' own `LD IX,PowerPlants`. That pass still floods correctly (the list ends at `$7F98`). From the next
+pass FindPlants starts with `NOP`, `NOP`, `LD A,B`, `LD A,A` instead of the load, so IX keeps whatever the
+last routine that used it left there, and the list is written at that address, over other memory. The money is
+there: 16 coal plants cost 48 000, and the city recording had Funds near 1 000 000. The overflow is read from the
+code; what the stale IX then destroys was not run.
+
+```mermaid
+flowchart TD
+    N[plants on the map] --> Q{how many?}
+    Q -- up to 15 --> OK[list and 0 inside PowerPlants]
+    Q -- 16 --> T[0 written over DD 21 at 7F98]
+    T --> NX[next pass: LD IX lost, IX stale]
+    NX --> C[list written over other memory]
+    Q -- 17 or more --> W[plant words and the 0 over FindPlants' own code from 7F98]
+    W --> NX
+```
+
 ```mermaid
 flowchart TD
     FP[FindPlants] --> CL[PowerMap = 0, Brownout = 0]
@@ -215,7 +258,10 @@ Then ZoneScoreOf `$7EC4` combines four terms:
 
 - **Land value** (LandValueOf `$7E1D`): 0 unless the zone is powered, has transport in its ring, and either made a
   trip this pass (TripMade) or has traffic of 50 or more (ZoneTraffic, the highest Traffic byte of its 2 x 2). Else
-  LV = (127 - the distance to CityCentre, at least 0) + RingAmenity. The distance is |dx| + |dy| in cells.
+  LV = (127 - the distance to CityCentre, at least 0) + RingAmenity. The distance is |dx| + |dy| in cells. CityCentre is the middle of the bounding box of all zones and buildings
+  seen in the last pass (WidenExtent / MinMax in ZoneStep, Averages `$84A4` at the pass end); it starts at 32, 32 and
+  becomes 127, 127 (off the map) after a pass with no zones, so the first zone built after that scores as if the
+  centre were beyond the bottom right corner.
 - **Crime** (CrimeOf `$7E6A`): (255 - LV) >> 4 minus the police cover at the zone, at least 0.
 - **Tax penalty** (TaxPenaltyOf `$7E9B`): 8 x TaxRate on easy, 10 x on medium, 9 x on difficult.
 - **Pollution**: ZonePollutionMax, the highest Pollution byte under the zone (0 for industry).
@@ -555,9 +601,20 @@ flowchart TD
 A lost trip matters: TripMade is one of the two ways to land value (10.3), and the other is traffic 50 or more. A
 zone whose trips fail and whose roads are empty has LV 0 and declines.
 
+The draw scales with Density, which has two consequences. An empty C or I zone has Density 0 (its nine bytes hold
+no houses), so (Random AND 31) or (Random AND 63) < 0 never holds: an empty C or I zone never tries a trip, never
+loses one (TripMade stays RingTransport) and never makes traffic; only the C and I buildings do. At the other end,
+an R block's trip test in ResBuildingStep is (Random AND `$7F`) < Density with the block's 96-192: level 0 tries in
+3 passes of 4, levels 1-3 in every pass.
+
 DecayTraffic `$851B` then lowers every Traffic byte each pass: below 24 to 0, 200 or more by 34, else by 24.
 Before each byte's decay it adds the nonzero ones into TrafficSum and TrafficCount, so AvgTraffic is the mean of the
 nonzero cells only, / 4 (a sum past 65 535 stops adding). A trip path therefore keeps its traffic only while trips keep using it.
+
+A road and rail crossing (`$2E`, `$2F`) counts as road in the network pass: CellStep tests bit 2 (road) first at
+`$88BA` and goes to RoadCell, so a crossing never starts a train (StartTrain is called from RailCell), pays the road
+upkeep of 1 instead of the rail upkeep of 4, and may crumble with the road decay. Trains still run over it, because
+MoveTrain tests only bit 1.
 
 Worked example, `metro` end: the Traffic panel of the [doc 07.4](07-objects.md#74-the-side-arrays) figure shows
 where road trips ran in the last passes; rail cells hold no traffic, because AddTripTraffic runs for road trips
@@ -655,8 +712,9 @@ At the end of December MonthEnd `$8E94` copies the year's figures:
 1. PopYearBefore = PopLastYear, PopLastYear = Population.
 2. TransportCost = TransportUpkeep, PoliceCost = PoliceUpkeep, FireCost = FireUpkeep: the counters of that one pass
    (road 1, rail 4, bridges more; 100 per police or fire station, powered or not).
-3. With AutoBudget, the figures are computed at once; else BudgetDue = 1 and the UI task shows the budget window
-   ([doc 08](08-hud-and-text.md)) and waits.
+3. With AutoBudget, the figures are computed at once; else BudgetDue = 1: the UI task shows the budget window
+   ([doc 08](08-hud-and-text.md)), and the simulation task waits at MonthEndWait `$8EE1` until the window clears
+   BudgetDue. The UI task is not blocked.
 4. TaxIncome = PopLastYear / 100 x TaxRate (TaxIncomeOf `$9329`). Each request is funded at its percentage
    (`$9256`, `$926F`, `$9288`, 100 at the start) and capped by the money (CapTransport, CapPolice, CapFire).
 5. Funds = FundsAfter; ApplyFunding `$952A`.
@@ -760,7 +818,15 @@ The special buildings work through BuildingKinds' routines:
 
 The counts feed demand (10.5): each stadium +4 to ResDemand, each airport +4 to ComDemand, each seaport +4 to
 IndDemand. ServiceNeeds `$8F31` asks for a hospital per 18 R zones (HospitalNeed = ResPop / 18 - HospitalCount) and a
-church per 20; the next R zone to reach Density 63 becomes that building instead of a block.
+church per 20; the next R zone to reach Density 63 becomes that building instead of a block. Witness: the stage 2
+ceiling run (`work/stage2/ceiling-end.szx`) has a hospital (type 3) at row 53, column 48 and a church (type 2) at row
+53, column 51, so ServiceNeeds and ResidentialBuild placed them and HospitalStep and ChurchStep ran there; the end
+state of no bot recording holds one.
+
+The power plants also feed two city averages. CoalStep and NuclearStep call ZoneScoreOf with ZonePowered 0
+(BuildingPower skips the plants, [doc 07.2](07-objects.md#72-buildings-runs-of-bytes-in-the-map)): LandValueOf gives
+0 and still counts the plant in LandValueCount, and CrimeOf gives (255 - 0) >> 4 = 15 minus the police cover into
+CrimeSum and CrimeCount. So each plant lowers AvgLandValue and raises AvgCrime, which Advise rule 20 reads.
 
 ```asm
 AirportStep:
@@ -870,7 +936,7 @@ flowchart LR
 Worked example, the stage 2 ceiling run (work/stage2/ceiling.log): metro's end state with TaxRate written to 0 and
 Funds to 999 999, FAST, 80 000 frames. PopLastYear 8256 (AUG 1935), 9728 (JUN 1936), 10 624 (APR 1937): CITY by the
 numbers within two game years. It went on to between 11 376 and 14 384 until OCT 1947. The median density of the
-occupied zones rose from 24 to 38, the top zone reached 61 (frame 75 000), and the last line counts one R block
+occupied zones rose from 24 to 38, the top zone reached 61 (first at frame 50 000, again at 75 000), and the last line counts one R block
 ([doc 07.2](07-objects.md#72-buildings-runs-of-bytes-in-the-map)). Category stayed 1 in memory, because the
 evaluation was never opened.
 
@@ -988,9 +1054,9 @@ flowchart TD
 | Disaster | Start | Spread | Damage |
 | --- | --- | --- | --- |
 | Fire | StartFires: each map byte 1 in 128 Ignite: flammable cells below `$80`, not trees | FireCell each pass | burnt cells to rubble |
-| Flood | StartFlood: coast cells (1-5) 1 in 32 to `$44`, FloodLeft = 50 | FloodCell while FloodLeft lasts | buildings filled with water, then land |
+| Flood | StartFlood: coast cells (`$01`, `$03-$05`; land `$02` is skipped at `$90EB`) 1 in 32 to `$44`, FloodLeft = 50 | FloodCell while FloodLeft lasts | buildings filled with water, then land |
 | Earthquake | noise, then StartFires and StartFlood | both | both |
-| Air crash | only with an airport: PlaneTimer 7-22 | the plane's 2 x 2 ignite | fire |
+| Air crash | only when the last pass counted a working airport (LastAirports `$849E`: powered, transport in its ring, no trip lost): PlaneTimer 7-22 | the plane's 2 x 2 ignite | fire |
 | Tornado | a random land cell in rows and columns 16-79 | MoveTornado | rubble, buildings burnt whole |
 | Meltdown | only with a nuclear plant: MeltdownPending | at the next NuclearStep | the plant on fire, radiation in a 45 x 45 square |
 
@@ -1001,6 +1067,19 @@ counted neighbour catches with 1 in 8 (SpreadTo). A building catches whole: Fill
 or flood) into every byte of it. The cells in BulldozeKeep never catch. A fire with no flammable neighbour also dies
 with 1 in 4. FloodCell spreads while FloodLeft lasts, taking 1 off FloodLeft per flood cell per pass; at 0 every
 flood cell becomes land.
+
+Spread does not stop at the map edge. It calls MapAddr and then `JR NC,SpreadNext`, but MapAddr always ends with
+`SCF`, so the jump is dead. A neighbour off the map is an address outside the row:
+
+| Fire or flood on | Step | Address the neighbour gets |
+| --- | --- | --- |
+| row 0 | up | `$23F0` + column, in the ROM: the write is lost, and the ROM byte read decides whether it counts |
+| row 95 | down | `$E850` + column, IconTiles: a catch writes `$45` or `$44` into the icon graphics |
+| column 95 | right | column 0 of the next row (wraps) |
+| column 0 | left | column 63 two rows down (C = `$FF` adds 255 = 2 x 96 + 63) |
+
+A ROM or IconTiles byte of `$80` or more counts as a building, and a catch sends FillBuilding to it. Known only from
+the code.
 
 ```asm
 FireCell:
@@ -1049,8 +1128,9 @@ Worked example, the disasters recording (one item about every 2 000 frames, the 
 - EARTHQUAKE (Advice 24, frame 4 450): StartFires and StartFlood together; up to 43 fire cells and 16 flood cells, as
   fires enter buildings (FillBuilding sets a whole building at once).
 - AIR CRASH (frame 6 600): nothing, because AirCrash returns when LastAirports is 0.
-- TORNADO (Advice 26, frame 8 800): from (73, 40) to (68, 35), off at frame 9 800; rubble 51 to 56
-  ([doc 07.6](07-objects.md#76-the-movers-train-plane-tornado)).
+- TORNADO (Advice 26, frame 8 800): from (73, 40) to (68, 35), off at frame 9 800. It walks on bare land east of the
+  town and hits nothing that burns; rubble goes from 51 to 56 through the fires still burning in the town
+  ([doc 07.6](07-objects.md#76-the-movers-train-plane-tornado), with the animation of its walk).
 - MELTDOWN (Advice 18, frame 11 050): 97 radiation cells (`$59`), and rubble reaches 102.
 
 ![The disasters recording: cells of each kind over 13 050 frames](img/sim/disasters.png)
@@ -1067,7 +1147,8 @@ How to read the figure:
 How to read the animation:
 
 - `disasters` frames 4 400-8 780, one picture every 80 frames: the earthquake's fires creep along the lower blocks,
-  whole buildings flip to fire, then to rubble.
+  whole buildings flip to fire, then to rubble. The last two pictures (from about frame 8640) are the DISASTERS menu
+  of the next choice, not the earthquake.
 - Command: `python3 ../../kit/screen_anim.py --work work/docs/scC/dis --from 4400 --to 8780 --step 80 --delay 120 --hold 2500 docs/img/play/disasters-earthquake-spread.gif`.
 
 ![The meltdown: disasters frames 11000-13040, every 40th frame](img/play/disasters-meltdown.gif)
@@ -1092,7 +1173,11 @@ beeps with ToneBeep `$5B66` ([doc 09](09-sound.md)).
 - **The site**: CheckSite takes the box of ToolSizes. With AutoBulldoze on, or when the clicked cell is water, every
   box cell must be one of SiteCells (`$70FC`: land, coast, trees, and water only for road, power line and rail).
   Each cell that is not one of FreeCells costs 1 and is cleared to land; if the 1 cannot be paid, the cell is left as
-  it is and the site still passes. With AutoBulldoze off every cell must be land. The bulldozer always passes.
+  it is and the site still passes. With AutoBulldoze off and a clicked cell that is not water, every cell must be land
+  (StrictSite `$7173`). That jump at `$7110` comes before the bulldozer's test at `$7118`, so with AUTO-BULLDOZE off
+  the bulldozer is refused on everything but a water click (and land has nothing to clear): the player must switch
+  AUTO-BULLDOZE on to bulldoze. With AutoBulldoze on, or on a water click, the bulldozer always passes. Known only
+  from the code.
 - **Payment**: Spend `$6E46` refuses if Funds would go below 0 (24-bit).
 
 ```asm
@@ -1143,8 +1228,14 @@ ParkPut:
 flowchart TD
     CL[click on the map] --> CN{CrossNetwork made a crossing?}
     CN -- yes --> D[done]
-    CN -- no --> CS{CheckSite: every box cell allowed?}
-    CS -- no --> RF[Refuse: beep]
+    CN -- no --> AB{clicked cell not water and AutoBulldoze off?}
+    AB -- yes --> ST{StrictSite: every box cell land?}
+    ST -- no --> RF[Refuse: beep]
+    ST -- yes --> H
+    AB -- no --> BD{bulldozer?}
+    BD -- yes --> H
+    BD -- no --> CS{CheckSite: every box cell allowed?}
+    CS -- no --> RF
     CS -- yes --> H[the tool handler]
     H --> SP{Spend: Funds stay 0 or more?}
     SP -- no --> X[nothing]
@@ -1203,3 +1294,15 @@ and a column test standing in for a cell test show a program assembled under tim
 - When CheckSite cannot pay 1 for clearing a cell, it leaves the cell and passes the site.
 - No recording placed a seaport or an airport with a working ring, so the port and airport counts and StartPlane's
   flights are known from the code.
+- With AUTO-BULLDOZE off the bulldozer is refused except on land and on a water click: StrictSite's jump comes
+  before the bulldozer's test (10.13).
+- PowerPlants holds at most 15 plants plus the 0 terminator, and FindPlants does not check the count. A 16th plant
+  puts the terminator over the opcode bytes `DD 21` of FindPlants' own `LD IX,PowerPlants` (`$7F98`); from the
+  next pass FindPlants runs with a stale IX and writes over memory (the overflow from the code; what follows is
+  not run) (10.2).
+- Spread and MoveTornado do not clip at the map edge: Spread's `JR NC,SpreadNext` after MapAddr is dead, a fire or
+  flood on row 0 reaches into the ROM, on row 95 into IconTiles `$E850`, and at a column edge it wraps (10.12); the
+  tornado's step uses MapAddr too.
+- Road and rail crossings (`$2E`, `$2F`) count as road only: CellStep tests bit 2 (road) first at `$88BA`, so a
+  crossing never starts a train, pays the road upkeep of 1 instead of the rail upkeep of 4, and may crumble to
+  rubble with the road decay (10.6).

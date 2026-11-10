@@ -66,7 +66,8 @@ with the fast LD-BYTES trap and turbo tape off (`tools/rs_capture.py`), so every
 speed through the game's own loader; 16 700 frames of load, then `tests/inputs/c1.txt`: the difficulty menu (A,
 Q, SPACE: EASY), the landscape made, then play with the keyboard (SS+6 residential, the cursor moved with A / O / P,
 SPACE places; SS+2 road; SS+8 industrial; the WINDOWS menu opened from the top bar, MAPS, back) and 3000 frames of
-time. 21 535 frames in all, `session.ttd` 12.4 MB, L1 5392 interrupts, 0 diverged.
+time. 21 535 frames in all, `session.ttd` 12.4 MB, L1 5392 interrupts (5224 through IM 2 after the entry, 168
+IM 1 at `$0038` during the load), 0 diverged.
 
 ```bash
 . work/env.sh
@@ -78,9 +79,9 @@ python3 tools/ttdmem.py work/stage1/c1 16281 0x4000 0xC000 --out work/stage1/c1-
 | Stage | Entered | Frame of `c1` (ROM-speed load) | What runs |
 | --- | --- | --- | --- |
 | 0 | `$FE00` | 1258, T 65 246 | the R decryption of the loader's tail |
-| 1 | `$FE80` | 1259, T 13 443 | the loader: three calls of `$FEBD` (blocks in at 3561, 14 775, 16 2xx; [doc 3, 3.8](docs/03-build-and-load.md#38-the-load-in-c1)) |
+| 1 | `$FE80` | 1259, T 13 443 | the loader: three calls of `$FEBD` (blocks in at 3561, 14 775, 16 279; [doc 3, 3.8](docs/03-build-and-load.md#38-the-load-in-c1)) |
 | 2 | `$5000` | 16 279, T 8372 | the mover |
-| 3 | `$5B1B` | 16 280, T 51 501 | the entry: SP = `$F6C2`, the Kempston test, IM 2 |
+| 3 | `$5B1B` | 16 280, T about 51 515 (the last LDIR write at T 51 501, then the `JP`) | the entry: SP = `$F6C2`, the Kempston test, IM 2 |
 | 4 | `$8FA0` | 16 310 | the main program: the difficulty menu `$6944` (HALT at `$6955`) |
 | 5 | `$835F` | 17 590 | the second task's first instruction: play |
 
@@ -98,7 +99,7 @@ Found, interrupts and the frame (first look; stage 2 reads the routines):
 - **The two tasks**: the user interface, the main loop UiLoop `$8FCC-$901B` (UiDelay `$8FD5`, a 2000-loop busy wait,
   then UiPass `$8FDA`: input, cursor, tools, menus, one step of the
   map display and of the counters each pass, the pass counter `$8F9F` at `$9008`); and the simulation loop
-  `$835F-$839F` (15 calls a pass: the zone scan, the census, the advice `$99AD`, and, when the pass number `$835E`
+  `$835F-$839F` (14 calls a pass, and MonthEnd and NextMonth at a month's end: the zone scan, the census, the advice `$99AD`, and, when the pass number `$835E`
   AND the speed mask `$8F6B` is 0, the month `$8E94` and the year end). The UI sets `$F705` to 1 around its drawing
   (`$8FE9-$8FF5`: `$6434` and `$7A6F`), a critical section in which the handler does not switch.
 - **DI / EI**: the only `DI` and `EI` that run in `c1` after the load are the entry's (`$5B1B`, `$5B44`) and the
@@ -126,11 +127,11 @@ Found, interrupts and the frame (first look; stage 2 reads the routines):
   (`$A3AB`, 0 FAST to 3 PAUSED) copies a 5-byte row of `$8F6C` into `$8F67-$8F6B`; the month mask `$8F6B` is `$00`
   at FAST (a month every simulation pass), `$01` at NORMAL (every second pass), `$03` at SLOW, `$FF` when PAUSED.
   At FAST in the growth town (frames 12 000-51 850, sampled every 50 frames) 133 simulation passes gave 133 months:
-  250-450 frames a month, 298 on average; eight passes timed to the frame from 20 000: 313, 278, 392, 291, 317, 284,
+  250-450 frames a month, 298 on average; seven passes timed to the frame from 20 000: 313, 278, 392, 291, 317, 284,
   289 frames. The UI task meanwhile made about 0.45 passes a frame (428 in frames 30 000-30 950; 1777 `$901D` calls in
   `c1`'s 3945 frames of play), as it runs only on the frames the scheduler gives it.
 - **The heaviest pass**: a simulation pass is 250-450 frames, so a month at NORMAL takes 500-900 frames (the 800
-  frames from JAN to MAR 1902 in the lab); the pass is long because the task runs on half the frames and scans the
+  frames from JAN to MAR 1902 in the lab); the pass is long because the task runs on one frame in three and scans the
   whole 96 x 96 map; its parts are timed in stage 2.
 
 ## 6. The game
@@ -301,7 +302,8 @@ copy under `work/docs/sc*/` of the session named) and its frames; the full comma
 | [DrawMover.gif](docs/img/routines/DrawMover.gif) | [doc 6, 6.9](docs/06-rendering.md#69-the-movers-train-plane-and-tornado) | `tools` | 19 240-19 262, 88 pictures |
 | [DrawOverview.gif](docs/img/routines/DrawOverview.gif) | [doc 6, 6.11](docs/06-rendering.md#611-the-overview-maps) | `menus` | 19 096-19 136, 80 pictures |
 | [ResidentialStep.gif](docs/img/routines/ResidentialStep.gif) | [doc 7, 7.3](docs/07-objects.md#73-zones-the-map-is-the-record) | `growth` | 4528-4531 |
-| [disasters-tornado.gif](docs/img/play/disasters-tornado.gif) | [doc 7, 7.6](docs/07-objects.md#76-the-movers-train-plane-tornado) and doc 1, 1.10 | `disasters` | 8780-11 000, every 40th frame |
+| [disasters-tornado.gif](docs/img/play/disasters-tornado.gif) | [doc 7, 7.6](docs/07-objects.md#76-the-movers-train-plane-tornado) and doc 1, 1.10 | `disasters` | 8780-9880, every 40th frame; the screen view, the tornado walks off it (columns 67-75) |
+| [tornado.gif](docs/img/sim/tornado.gif) | [doc 7, 7.6](docs/07-objects.md#76-the-movers-train-plane-tornado) and doc 1, 1.10 | `disasters` | map samples 8750-9850, 23 pictures (`tools/fig_sim.py tornado`) |
 | [ShowWindow.gif](docs/img/routines/ShowWindow.gif) | [doc 8, 8.9](docs/08-hud-and-text.md#89-menus-and-dialogs) | `menus` | 13 825-13 835, 80 pictures |
 | [BudgetHook.gif](docs/img/routines/BudgetHook.gif) | [doc 8, 8.10](docs/08-hud-and-text.md#810-the-budget-window) | `menus` | 19 940-19 941, 70 pictures |
 | [InputLine.gif](docs/img/routines/InputLine.gif) | [doc 8, 8.12](docs/08-hud-and-text.md#812-the-line-editor-and-the-city-name) | `levels` | 1249, T 8000-32 000, 50 pictures |
@@ -311,5 +313,6 @@ copy under `work/docs/sc*/` of the session named) and its frames; the full comma
 | [city-district-growth.gif](docs/img/play/city-district-growth.gif) | [doc 10, 10.4](docs/10-gameplay-logic.md#104-the-growth-rules-of-r-c-and-i) | `city` | 16 400-46 400, every 600th frame |
 | [SimTask-growth.gif](docs/img/routines/SimTask-growth.gif) | [doc 10, 10.1](docs/10-gameplay-logic.md#101-the-simulation-pass) | `growth` | 19 232-19 532 (pass 65), 61 pictures |
 | [NewLandscape.gif](docs/img/routines/NewLandscape.gif) | [doc 10, 10.11](docs/10-gameplay-logic.md#1011-the-city-generator) | `growth` | 90-710, every 20th frame |
-| [disasters-earthquake-spread.gif](docs/img/play/disasters-earthquake-spread.gif) | [doc 10, 10.12](docs/10-gameplay-logic.md#1012-disasters) and doc 1, 1.10 | `disasters` | 4400-8780, every 80th frame |
+| [disasters-earthquake.gif](docs/img/play/disasters-earthquake.gif) | [doc 1, 1.10](docs/01-game-design.md#110-the-disasters) | `disasters` | 4400-6400, every 80th frame (ends on the map, before the AIR CRASH menu) |
+| [disasters-earthquake-spread.gif](docs/img/play/disasters-earthquake-spread.gif) | [doc 10, 10.12](docs/10-gameplay-logic.md#1012-disasters) | `disasters` | 4400-8720 (`--to 8780`), every 80th frame; the last two pictures are the DISASTERS menu of the next choices |
 | [disasters-meltdown.gif](docs/img/play/disasters-meltdown.gif) | [doc 10, 10.12](docs/10-gameplay-logic.md#1012-disasters) and doc 1, 1.10 | `disasters` | 11 000-13 040, every 40th frame |

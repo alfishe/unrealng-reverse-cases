@@ -133,7 +133,8 @@ FundsChanged:
   JP ShowTool
 
 ; Tile $45 (fire, $EC90) from one of two frames ($ED38, $ED40) by PassCount bit
-; 4 and Random
+; 4: the Random 0-3 added first never carries into it at the Periodic call
+; (PassCount AND 15 = 2)
 ;
 ; Used by the routines at UiTask and Periodic.
 AnimateFire:

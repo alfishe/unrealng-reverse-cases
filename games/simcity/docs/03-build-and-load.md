@@ -233,6 +233,7 @@ these blocks from the signal. The changes against the ROM:
 | the stripes | `CPL` of the colour at each edge | XOR with a counter at `$FF83` (LdBorderXor's operand), counted up at LdColourStep, then black again (LdStripe) | thin stripes of changing colour over the data |
 | the pilot | stripes through the pilot | LdStripe's `OUT` turned into `LD A,$FE` and LdColourStep's `INC A` into `NOP` at the start; LdSync writes `$D3` (`OUT`) and `$3C` (`INC A`) back | no stripes until the data starts |
 | the store | `LD (IX+0),L`, or the VERIFY compare | `key = key + 3` in LdKey's operand `$FF32` (zeroed per call), then `L XOR key XOR E` to `(IX+0)`; no VERIFY | the decryption |
+| the BREAK key | LD-SAMPLE `RRA; RET NC`: SPACE stops the load | `RRA` only (`$FF7B`), no `RET NC` | the load cannot be broken; with no signal LdStart waits for ever |
 
 The parity is the ROM's: H collects the XOR of the bytes as received, so the checksum on tape is over the encrypted
 stream, and a good block returns with carry set.
@@ -326,7 +327,10 @@ edge timing and parity, so the tape is as reliable as any ROM tape, yet no ROM r
 ## 3.6 The error path: the hang at `$FFA0`
 
 LoadBlock returns through LoadExit, the address it pushed first. With carry set it returns to LoadGame. With carry
-clear (a parity error, a wrong flag, BREAK) it falls into LoadFailed and never leaves:
+clear (a parity error, a wrong flag, or the signal lost after the sync) it falls into LoadFailed and never
+leaves. BREAK is not a way in: LdSample has no `RET NC` after its `RRA` (`$FF7B`), so SPACE is never tested. A
+timeout before the sync returns with Z set and carry clear, LdStart's `JR NC,LdBreak` meets `RET NZ` (not taken) and
+loops back to LdStart: with no signal the loader waits for ever.
 
 ```asm
 FF9A  F5        PUSH AF          ; LoadExit
@@ -357,7 +361,8 @@ Witness: known only from the code. LoadFailed never ran in `c1` (probe `exec $FF
 that loads the tape. Stage 1 had read the unchecked carry in LoadGame as "a failed block runs on into what was
 loaded"; the pushed LoadExit settles it.
 
-**The point:** the protection has no retry. One bad byte costs the whole five-minute load.
+**The point:** the protection has no retry and no way out but a reset: SPACE cannot break the load, and one bad
+byte costs the whole five-minute load.
 
 ## 3.7 The mover and the entry
 
@@ -408,7 +413,7 @@ flowchart TD
 | 15 076 / 16 278 | block 7: the first and the last byte | write `$4000`, `$501F` |
 | 3561, 14 775, 16 279 | LoadExit, each time with carry set (LoadFailed: no frame) | exec `$FF9A`, `$FFA0` |
 | 16 279 (T 8372) | the mover | exec `$5000` |
-| 16 280 (T 51 501) | the game's Entry | exec `$5B1B` |
+| 16 280 (T about 51 515) | the game's Entry: the last LDIR write at T 51 501, then the end of LDIR's last iteration and the 10 T `JP $5B1B`, more with the contention | exec `$5B1B`, from the write `$6AFF` |
 | 16 310 | UiTask: the level menu | exec `$8FA0` |
 | 17 590 | SimTask: the simulation task's first pass | exec `$835F` |
 
@@ -421,7 +426,7 @@ the ROM's start-up, the typed `LOAD ""` and the ROM's waits for each pilot.
 its frame (`memory_at`). How to read: top, the memory `$4000-$FFFF`, one row a 256-byte page, grey by value, yellow
 for a byte changed since the last picture, fading through red; bottom, the screen as the Spectrum shows it. The
 loading picture's pixels arrive under black attributes, then its attributes, and the picture appears by frame 3560;
-block 6 then fills `$6B00` upward. Where block 6 stores zeros over zeros (the work arrays, `$A94F-$C44F`) a picture
+block 6 then fills `$6B00` upward. Where block 6 stores zeros over zeros (the work arrays, `$A950-$C44F`) a picture
 shows only a few changed bytes. From frame 15 076 block 7 overwrites the pixels at `$4000` while the attributes stay
 black (3.7). Made with `python3 ../../kit/memanim.py --work work/docs/scA/c1 --from 1200:0 --to 16400:0 --step
 10483200 --from-address 0x4000 --to-address 0xFFFF --screen --delay 120 --hold 2500 docs/img/load/load-c1.gif`.*
@@ -487,7 +492,7 @@ flowchart LR
 | 3 | the header "loader", CODE, 512 bytes at 65024, parameter 2 32912 | `kit/tap.py` (`code:loader:65024:loader-tape.bin:32912`) |
 | 4 | `src/loader/loader.ann` (8 entries), its tail encrypted | sjasmplus, `tools/tape.py loader` |
 | 5 | `src/screen/screen.ann` with `src/res/screen/LoadingScreen.png` | sjasmplus, `tools/tape.py blocks` |
-| 6 | `src/game/game.ann` (598 entries, 29 modules) with `src/res`: `$6B00-$FE00` of `game.bin` | sjasmplus, `tools/tape.py blocks` |
+| 6 | `src/game/game.ann` (606 entries, 29 modules) with `src/res`: `$6B00-$FE00` of `game.bin` | sjasmplus, `tools/tape.py blocks` |
 | 7 | `$5B00-$6AFF` of `game.bin`, then `src/mover/mover.ann` (2 entries) | sjasmplus, `tools/tape.py blocks` |
 
 ```bash

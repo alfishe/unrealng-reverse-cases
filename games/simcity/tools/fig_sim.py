@@ -20,6 +20,8 @@ sample of frame N is the memory at the start of frame N).
     python3 tools/fig_sim.py disasters --samples work/docs/scC/dis-vars.jsonl --out docs/img/sim/disasters.png
     python3 tools/fig_sim.py funding   --out docs/img/sim/funding.png
     python3 tools/fig_sim.py random    --out docs/img/sim/random.png
+    python3 tools/fig_sim.py tornado   --samples work/docs/scC/dis-vars.jsonl --frames 8750,9850 --at 56,26 \\
+                                       --out docs/img/sim/tornado.gif
 """
 import argparse
 import csv
@@ -650,6 +652,56 @@ def landscape_step(x):
     return r.seed
 
 
+def fig_tornado(a):
+    """The tornado's walk on the map, one picture per sample (a GIF): the map cut round it, drawn with the game's
+    tiles, the tornado's 2 x 2 sprite cells in magenta, the cell it hits (one down, one right) in red, and the cells
+    that became rubble since the first picture outlined in white."""
+    from PIL import Image, ImageDraw
+    first, last = (int(x) for x in a.frames.split(','))
+    c0, r0 = (int(x) for x in a.at.split(','))
+    cols, rows, z = 32, 20, 3
+    rows_in = [d for d in samples(a.samples) if first <= d['frame'] <= last]
+    m0 = get(rows_in[0], 0xC450, 9216)
+    pics = []
+    for d in rows_in:
+        m = get(d, 0xC450, 9216)
+        img = fig_city.draw(m).crop((c0 * 8, r0 * 8, (c0 + cols) * 8, (r0 + rows) * 8))
+        img = img.resize((cols * 8 * z, rows * 8 * z), Image.NEAREST)
+        pic = Image.new('RGB', (img.width, img.height + 40), 'white')
+        pic.paste(img, (0, 40))
+        dr = ImageDraw.Draw(pic)
+        s8 = 8 * z
+
+        def box(c, r, w, h, col, width):
+            x, y = (c - c0) * s8, (r - r0) * s8 + 40
+            dr.rectangle((x, y, x + w * s8 - 1, y + h * s8 - 1), outline=col, width=width)
+        for i in range(9216):
+            r, c = divmod(i, 96)
+            if m[i] == 0x3A and m0[i] != 0x3A and c0 <= c < c0 + cols and r0 <= r < r0 + rows:
+                box(c, r, 1, 1, '#ffffff', 2)
+        tc, tr = get(d, 0x7995, 1)[0], get(d, 0x7996, 1)[0]
+        out = get(d, 0x7997, 1)[0]
+        if out:
+            box(tc, tr, 2, 2, '#ff00ff', 3)
+            box(tc + 1, tr + 1, 1, 1, '#ff0000', 3)
+        text = 'disasters frame %d   TornadoCell (%d, %d)   TornadoOut %d   rubble %d' % (
+            d['frame'], tc, tr, out, m.count(0x3A))
+        dr.text((8, 6), text, fill='black', font=fig_city_font(17))
+        pics.append(pic.convert('P', palette=Image.ADAPTIVE, colors=64))
+    dur = [a.delay] * (len(pics) - 1) + [2500]
+    os.makedirs(os.path.dirname(a.out) or '.', exist_ok=True)
+    pics[0].save(a.out, save_all=True, append_images=pics[1:], duration=dur, loop=0, optimize=True)
+    print('fig_sim: %s %s, %d pictures' % (a.out, pics[0].size, len(pics)))
+
+
+def fig_city_font(size):
+    from PIL import ImageFont
+    for f in ('/System/Library/Fonts/Menlo.ttc', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'):
+        if os.path.exists(f):
+            return ImageFont.truetype(f, size)
+    return ImageFont.load_default()
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('figure')
@@ -664,6 +716,7 @@ def main():
     p.add_argument('--frames', default='15500,16250,18000,20000,23000,27000,35000')
     p.add_argument('--frame', type=int, default=24000)
     p.add_argument('--gene', type=int, default=3)
+    p.add_argument('--delay', type=int, default=400)
     a = p.parse_args()
     globals()['fig_' + a.figure](a)
 

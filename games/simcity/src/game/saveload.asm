@@ -46,8 +46,14 @@ SaveCity:
   EI
   RET
 
-; LOAD FROM TAPE: the name, START TAPE, SEARCHING; headers until the name
-; matches (any with a blank name), then the map
+; LOAD FROM TAPE: the name, SEARCHING, a 31-byte header (any name if the typed
+; one is blank), then the map; only the first city on the tape loads
+;
+; Both blocks of a save carry flag $FF, and LoadHeader asks for 31 bytes with
+; flag $FF. After a header whose name does not match, the next load meets that
+; file's map block, takes its first 31 bytes as a header, fails the parity (the
+; block is longer) and shows LoadErrorWindow: the search never reaches a second
+; file, so the tape must stand at the wanted city. Known only from the code.
 ;
 ; PopLastYear and LastPop are not restored: the previous city's values remain
 ; until the next month end.

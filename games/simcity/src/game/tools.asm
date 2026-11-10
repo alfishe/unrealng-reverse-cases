@@ -731,9 +731,12 @@ SiteWater:
 ;
 ; On water, or with AutoBulldoze ($A32B) on: every cell of the box must be in
 ; SiteCells (water only for road, rail and power); each cell not in FreeCells
-; costs 1 and becomes land 2. With AutoBulldoze off on land: StrictSite, every
-; cell must be land 2. The bulldozer passes always. When Spend cannot pay 1 for
-; clearing a cell, the cell is left as it is and the site still passes. L1 464.
+; costs 1 and becomes land 2. With AutoBulldoze off and a clicked cell that is
+; not water: StrictSite, every cell must be land 2. That jump comes before the
+; bulldozer's test at $7118, so with AUTO-BULLDOZE off the bulldozer is refused
+; everywhere but on a water click; with AutoBulldoze on, or on water, it always
+; passes. When Spend cannot pay 1 for clearing a cell, the cell is left as it
+; is and the site still passes. L1 464.
 CheckSite:
   CALL ClickMapAddr
   LD A,(HL)

@@ -24,7 +24,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$5CC4` | `RandomSeed` | 2 | The random seed, 16 bits; NewLandscape sets it to the gene (Gene `$6A8C`) | `Random`, `RandomDisaster` | `NewLandscape`, `Random` |
+| `$5CC4` | `RandomSeed` | 2 | The random seed, 16 bits; NewLandscape sets it to the gene (Gene `$6A8C`); read directly by RandomDisaster, RadiationCell, Poll and NewCityItem (the new gene) | `Random`, `RandomDisaster` | `NewLandscape`, `Random` |
 
 ## cursor
 
@@ -82,7 +82,7 @@ Written by `kit/refdocs.py`.
 | `$684B` | `ToggleValue` | 1 | The toggle's flag value while it is printed | - | - |
 | `$686E` | `OnText` | 3 | "ON" for a toggle | - | - |
 | `$6879` | `OffText` | 4 | "OFF" | - | - |
-| `$6942` | `MenuHook` | 2 | A routine RunMenu calls on entry and EditNumber after each Q / A (0: none): BudgetHook `$9346` or Evaluate `$9737`, which recompute and print the window's numbers | `CallMenuHook` | - |
+| `$6942` | `MenuHook` | 2 | A routine RunMenu calls on entry and EditNumber on every pass of its edit loop, key or not (0: none): BudgetHook `$9346` or Evaluate `$9737`, which recompute and print the window's numbers | `CallMenuHook` | - |
 | `$6990` | `EditMax` | 6 | The number field being edited: the largest value, its address, its position, the key repeat | - | - |
 | `$6A7D` | `MenuSelected` | 1 | The selected item | `MenuDown`, `MenuUp`, `SelectedItem`, `SetLevel` | `MenuDown`, `MenuUp`, `RunMenu` |
 
@@ -175,7 +175,7 @@ Written by `kit/refdocs.py`.
 | `$7F10` | `ResLevel` | 2 | ResidentialScore's results: the level 0-7 and the building tile base | - | - |
 | `$7F43` | `ComLevel` | 2 | CommercialScore's results: ZoneScore / 25 and 4 times it | - | - |
 | `$7F5D` | `IndLevel` | 2 | IndustrialScore's results: ZoneScore / 31 and 8 times it | - | - |
-| `$7F78` | `PowerPlants` | 32 | The map addresses of the power stations found (FindPlants), 0 ended | `PowerFlood` | `FindPlants` |
+| `$7F78` | `PowerPlants` | 32 | The map addresses of the power stations found (FindPlants), 0 ended: room for 15 plants; FindPlants does not check the count, so a 16th plant puts the 0 over the DD 21 of its own LD IX,PowerPlants (`$7F98`) | `PowerFlood` | `FindPlants` |
 | `$7FCC` | `Brownout` | 1 | Counts the power stations that ran out of capacity this pass (BROWNOUTS DETECTED) | - | `PowerFlood` |
 | `$8015` | `FloodAbove` | 264 | The flood's span flags: the row above and below already queued | - | - |
 | `$81DD` | `CityValue` | 6 | The city's assessed value (24 bits) and the last pass's (`$81E0`) | `AddValue`, `AssessCity` | `AddValue`, `AssessCity`, `InitSimulation` |
@@ -193,7 +193,7 @@ Written by `kit/refdocs.py`.
 | `$86C5` | `ZonePowered` | 4 | ScanCity's state of the current cell: powered, kind (1 building, 2 zone), building type, zone centre | `CountPowered`, `IndustrialStep`, `ScanCity`, `ZoneStep` | `ScanCity`, `ZonePower` |
 | `$873B` | `ZoneCentreCell` | 1 | ZonePower's new centre cell | `ZonePower` | `ZonePower` |
 | `$8785` | `CurCell` | 4 | The cell ScanCity is at: column, row; then its map address | `WidenExtent` | `CellStep`, `ZoneStep` |
-| `$87C8` | `ExtentCols` | 4 | The city's extent: least and greatest column, then row | `Averages`, `MinMax` | `ClearCounters`, `MinMax` |
+| `$87C8` | `ExtentCols` | 4 | The city's extent: greatest and least column, then row (ClearCounters sets 0, `$FF`); Averages puts its middle into CityCentre | `Averages`, `MinMax` | `ClearCounters`, `MinMax` |
 | `$87FB` | `BuildingRoutines` | 24 | The routines of the building kinds (BuildingKinds' second byte) | - | - |
 | `$8813` | `BuildingKinds` | 86 | Per building type: type, routine (BuildingRoutines), level, density; `$FF` `$FF` ended | - | - |
 | `$8869` | `Density` | 2 | the current zone's density (ScanInsideCell) or the building's (BuildingKinds) | - | `ZoneStep` |

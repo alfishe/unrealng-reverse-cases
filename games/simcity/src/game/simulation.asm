@@ -739,7 +739,9 @@ IndustrialScore:
   LD (IndTile),A
   RET
 
-; The map addresses of the power stations found (FindPlants), 0 ended
+; The map addresses of the power stations found (FindPlants), 0 ended: room for
+; 15 plants; FindPlants does not check the count, so a 16th plant puts the 0
+; over the DD 21 of its own LD IX,PowerPlants ($7F98)
 PowerPlants:
   DEFW $0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
 
@@ -1672,7 +1674,10 @@ CityCentre:
 ; CityCentre = the middle of the extent; the last-pass copies; AvgPollution =
 ; PollutionSum / count
 ;
-; L1 1089.
+; CityCentre = (max + min) / 2 of ExtentCols and ExtentRows, the box of every
+; zone and building ZoneStep met this pass (WidenExtent). InitSimulation starts
+; it at 32, 32; a pass with no zones leaves the cleared box 0, $FF and gives
+; 127, 127. L1 1089.
 Averages:
   LD A,(ExtentCols)
   LD HL,ExtentCols+$0001
@@ -2245,7 +2250,8 @@ CountUnpowered:
 CountUnpoweredEnd:
   RET
 
-; The city's extent: least and greatest column, then row
+; The city's extent: greatest and least column, then row (ClearCounters sets 0,
+; $FF); Averages puts its middle into CityCentre
 ExtentCols:
   DEFB $00,$FF
 ExtentRows:
@@ -2261,7 +2267,7 @@ WidenExtent:
   LD A,(CurCell+$0001)
   LD HL,ExtentRows
 
-; (HL) = min, (HL+1) = max with A
+; (HL) = max, (HL+1) = min with A
 ;
 ; Used by the routine at WidenExtent.
 MinMax:
@@ -2547,7 +2553,11 @@ SpreadCount:
 ; Each of the four neighbours that burns (flags bit 7, a building) or floods: 1
 ; in 8 catches; a fire with nothing round dies with 1 in 4
 ;
-; Used by the routines at FireCell and FloodCell.
+; No edge check: the JR NC,SpreadNext after MapAddr is dead, because MapAddr
+; always sets carry. From row 0 the step up lands in the ROM ($23F0 + column),
+; from row 95 the step down in IconTiles ($E850 + column); from column 95 the
+; step right is column 0 of the next row, from column 0 the step left is column
+; 63 two rows down. Known only from the code.
 Spread:
   XOR A
   LD (SpreadCount),A
@@ -3168,8 +3178,8 @@ FirePowered:
 FireStepEnd:
   RET
 
-; Type 2: ChurchCount + 1; unpowered, with the R chance back to an empty R zone
-; (not run in the recordings)
+; Type 2: ChurchCount + 1; unpowered, with the IndChance mask back to an empty
+; R zone (a church stands in ceiling-end.szx)
 ChurchStep:
   LD HL,(ChurchCount)
   INC HL
@@ -3217,8 +3227,8 @@ HospitalCounted:
 HospitalEnd:
   RET
 
-; A powered stadium with transport: 1 in 32 a trip to R; when it arrives
-; StadiumCount + 1
+; A powered stadium with transport: 1 in 32 a trip to R; StadiumCount + 1
+; unless a trip was tried and failed
 ;
 ; StadiumCount + 1 only when powered, with transport in the 4 x 4 ring, and
 ; unless a trip was tried and lost. The city recording's stadium is never
@@ -3328,7 +3338,7 @@ BudgetDue:
                           ; end without the auto budget)
 
 ; LastPop; in December: the year's populations, the costs to the budget
-; ($9311-$9315), the budget (shown, or auto), Funds, the evaluation
+; ($9311-$9315), the budget (shown, or auto), Funds
 ;
 ; L1 934; the December branch L1 77.
 MonthEnd:

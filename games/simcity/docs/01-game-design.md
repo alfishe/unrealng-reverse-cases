@@ -139,7 +139,8 @@ A new city is made of three choices:
 
 - **The level** sets the money: EASY 20 000, MEDIUM 10 000, DIFFICULT 5000 (StartSimulation `$830C`). It also raises
   the tax's weight on growth on MEDIUM and DIFFICULT (1.6).
-- **The name** is typed into the status box (INPUT NEW CITY NAME, 12 letters). It defaults to HERESVILLE.
+- **The name** is typed into the status box (INPUT NEW CITY NAME, up to 11 letters typed over the 12-letter field).
+  It defaults to HERESVILLE.
 - **The landscape gene** is a five-digit number, 00003 for the first city; START NEW CITY draws a random one (1.3). The
   same gene always makes the same map (NewLandscape `$6A8E`): an island of 128 land discs on water, a coast, and 32
   groves of trees. USE OLD LANDSCAPE shows the gene and takes a new one.
@@ -181,7 +182,9 @@ How the tools behave:
 - **A zone or a building** needs land under its whole box. With AUTO-BULLDOZE on (the default), trees and rubble in
   the box are cleared at 1 a cell.
 - **The bulldozer** costs the building's size squared for a building. With ZONE DEMOLISH WAIT on, SPACE must be held
-  before a zone goes.
+  before a zone goes. It needs AUTO-BULLDOZE on: CheckSite `$7103` sends a click on anything but water to StrictSite
+  `$7173` (every cell land) when AutoBulldoze is 0, before its bulldozer test at `$7118`, so with the option off the
+  bulldozer is refused on everything but bare land and water.
 - **A refused site** beeps (ToneBeep `$5B66`), unless a direction key is held. See
   [the refusal](img/play/tools-013457-occupied-beep.png).
 
@@ -227,7 +230,9 @@ The services:
 
 - **Power.** Coal stations flood power over 450 cells of lines and zones; nuclear stations over 1350. A zone not
   reached blinks ([the blink](img/play/blink-unpowered.gif)) and does not grow.
-- **Police and fire stations** cover a 24 x 24 grid around them, at a strength set by their funding.
+- **Police and fire stations** cover 20 x 20 map cells around them (a 5 x 5 kernel on the 24 x 24 coverage grid, one
+  grid cell per 4 x 4 map cells), at a strength 0-15 set by their funding, renewed every fourth pass; an unpowered
+  station covers nothing ([doc 10, 10.7](10-gameplay-logic.md#107-pollution-the-stamps-and-the-coverage)).
 - **Churches and hospitals** are never placed by the player. A full R zone becomes one when the city needs it.
 - **Stadium, seaport, airport** raise the demand for R, I and C.
 
@@ -252,7 +257,7 @@ stayed between 11 000 and 14 400 after that.
 The FISCAL BUDGET opens every January (when BudgetDue is set), or from WINDOWS. AUTO-BUDGET skips it.
 
 - **TAX RATE**: 7 % to start, 0 to 20. The window's field is edited in place.
-- **TAX COLLECTED**: last year's population / 100 x the tax rate (TaxIncome `$930E`).
+- **TAX COLLECTED**: last year's population / 100 x the tax rate (TaxIncomeOf `$9329`, into TaxIncome `$930E`).
 - **TRANS, POLICE, FIRE**: what each asks for (AMOUNT REQSTD), what it gets (AMOUNT ALLCTD) and the share (FUND LEVEL,
   0-100 %). The requests grow with the roads and rails, and with the stations: 100 each.
 - **CASH FLOW, PREVIOUS FUND, CURRENT FUNDS**: the year's sum.
@@ -281,11 +286,12 @@ The evaluation names the city by last year's population (CategoryOf `$9760`, Cat
 | TOWN | above 2000 | 126 | about 5 R zones at density 25, with jobs and power |
 | CITY | above 10 000 | 626 | 18-20 balanced R zones near the centre at 7 % tax, or about 10 full zones near 0 % |
 | CAPITAL | above 50 000 | 3126 | R blocks: 17 to 33 of them at densities 96-192, each needing a score of 128 or more |
-| METROPOLIS | above 100 000 | 6251 | 33 to 65 blocks |
+| METROPOLIS | above 100 000 | 6251 | 33 to 66 blocks |
 | MEGALOPOLIS | above 500 000 | 31 251 | at least 163 blocks at the top density, with the C, I, transport and power to feed them |
 
 Every limit is exclusive: CategoryOf computes limit - population (Sub24) and stops on `RET P`, so a population equal
-to a limit stays in the lower category; a TOWN needs 2016 people (126 blocks of 16), not 2000.
+to a limit stays in the lower category; a TOWN needs 2016 people (a density sum of 126, x 16),
+not 2000.
 
 The category changes nothing in the simulation. CategoryOf runs only when the evaluation opens, and no other code
 reads Category `$975F`. The bot cities levelled off at 6000 (`city`, `city2`) and 9300 (`metro`), held by the 7 %
@@ -327,19 +333,27 @@ RandomDisaster:  if DisastersOff: return
 | TORNADO | lands on a random land cell, moves toward the centre 1 time in 8, burns what it crosses, and ends at random | [tornado](img/play/disasters-009315-tornado-1.png) |
 | NUCLEAR MELTDOWN | needs a nuclear station: the station burns and 1 cell in 16 of the 45 x 45 around it turns to radiation | [meltdown](img/play/disasters-011540-meltdown-1.png) |
 
-![An earthquake spreading](img/play/disasters-earthquake-spread.gif)
+![An earthquake spreading: disasters frames 4400-6400, every 80th frame](img/play/disasters-earthquake.gif)
 
-*An earthquake spreading over the city in the `disasters` recording, 2000 frames from the menu choice. The other
-disasters animate in [the tornado](img/play/disasters-tornado.gif) and [the meltdown](img/play/disasters-meltdown.gif).*
+*An earthquake spreading over the city in the `disasters` recording: frames 4400-6400, one picture every 80 frames,
+from just before the menu choice (MAJOR EARTHQUAKE DETECTED at frame 4450) to the last map before the next DISASTERS
+menu (AIR CRASH, about frame 6480). The fires take the fire station and the lower blocks, which turn to rubble. Made
+with `python3 ../../kit/screen_anim.py --work work/docs/scC/dis --from 4400 --to 6400 --step 80 --delay 120 --hold
+2500 docs/img/play/disasters-earthquake.gif` (the first 26 pictures of
+[the longer animation in doc 10, 10.12](10-gameplay-logic.md#1012-disasters), frames 4400-8720, which ends on that
+menu). The tornado's walk is drawn on the map in [the tornado map animation](img/sim/tornado.gif) of doc 7, 7.6 (it crosses columns 67-75, off the
+screen's view, so [the screen animation](img/play/disasters-tornado.gif) shows the city, not the tornado); the meltdown
+animates in [the meltdown](img/play/disasters-meltdown.gif).*
 
 ## 1.11 The evaluation and the advice
 
 The EVALUATION opens from WINDOWS. It shows:
 
-- **IS THE MAYOR DOING A GOOD JOB?**: the share of Yes and No;
+- **IS THE MAYOR DOING A GOOD JOB?**: a poll of 100 random draws against the CITY SCORE, a YES for each draw below it
+  ([doc 8, 8.11](08-hud-and-text.md#811-the-evaluation-window));
 - **WHAT ARE THE WORST PROBLEMS?**: Traffic, Crime, Taxes, Pollution, Fire, House prices and Unemployment, in %;
 - **POPULATION, MIGRATION, ASSESSED VALUE**: the people, the change in a year, and the value of what was built;
-- **CATAGORY, GAME LEVEL, CITY SCORE**.
+- **CATAGORY, GAME LEVEL, CITY SCORE**: the CITY SCORE is 4 x (250 - 3 x the problems' sum), clamped to 0-1000.
 
 The assessed value counts what was built (AssessCity `$81E3`): 5 a rail, 10 a road, 1000 a police or fire station,
 400 a hospital, 3000 a stadium, 5000 a seaport, 10 000 an airport, 3000 a coal and 6000 a nuclear station.
@@ -384,6 +398,9 @@ Compared with Maxis' SimCity of 1989 (the Maxis column is the original's publish
 | a map of 120 x 100 | 96 x 96 |
 | the city running at full speed while drawing | two tasks share the Z80: the pointer gets two frames in three, the city the rest ([doc 4](04-game-loop.md#41-the-shape-of-the-program)) |
 
-What the save keeps is only the map, the funds, the date and the name. The coverage, pollution, traffic and counters
-are rebuilt by the simulation after a load. The options, the tax rate, the speed and the gene are not kept
-([doc 7](07-objects.md)).
+What the save keeps is only the map, the funds, the date and the first 11 letters of the name. The coverage,
+pollution, traffic and counters are rebuilt by the simulation after a load. The options, the tax rate, the speed and
+the gene are not kept ([doc 7](07-objects.md)). LOAD CITY cannot search a tape: both blocks of a save carry flag
+`$FF`, so after a header whose name does not match, the next 31-byte load reads the start of that file's map, fails
+the parity and shows the error window (LoadHeader `$9E89`). Only the city the tape is positioned at can be loaded
+(from the code, not run).

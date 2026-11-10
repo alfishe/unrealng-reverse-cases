@@ -334,8 +334,9 @@ StartPlaneHere:
   LD (PlaneCell),BC
   JR StartPlaneSet
 
-; The AIR CRASH disaster: with an airport ($849E), message $19 (AIR CRASH !!!)
-; and a crash timer of 7-22
+; The AIR CRASH disaster: only when the last pass counted a working airport
+; (LastAirports $849E: powered, transport in its ring, no trip lost), message
+; $19 (AIR CRASH !!!) and a crash timer of 7-22
 ;
 ; Used by the routine at RunDisaster.
 AirCrash:
@@ -460,8 +461,10 @@ TornadoOut:
 ; off when Random gives 0
 ;
 ; The cell down and right of it is hit: a building burns (BurnBuilding), a
-; flammable cell (CellFlags bit 7) becomes $3A. It stops at water. L1 9884; the
-; work L1 27.
+; flammable cell (CellFlags bit 7) becomes $3A. It stops at water. Its step
+; uses MapAddr, not MapAddrChecked: no edge check, so from the top row it can
+; walk into the ROM rows ($23F0 on) and wrap at the column edges (only the hit
+; cell is checked). L1 9884; the work L1 27.
 MoveTornado:
   LD A,(TornadoOut)
   AND A
