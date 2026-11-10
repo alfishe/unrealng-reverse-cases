@@ -45,6 +45,10 @@ Found by the cases and worked around there; the status says whether `kit/` fixes
 | the module name `game` is refused | Chuckie Egg stage 2 | another module name | fixed: `@module game` is written to `game-module.asm` (the top file keeps `game.asm`), in `mkgame.py` and `sig_add.py` |
 | `kit/routine_anim.py` and `kit/memanim.py` set the picture width themselves: up to 2566 px (Chuckie Egg: all 25 `docs/img/routines/*.gif` are 1102-2566 px, `play/tape-block4.gif` 1102 px), wider than the 1050 px figure limit; the case cannot choose it | Chuckie Egg docs (ceA, ceD) | none: the animations stay at the kit's width | fixed: both draw `--width 1050` by default in a compact layout (memory map and view stacked on the left, the listing beside them; memanim puts the screen under the map), titles and labels wrapped; `--layout wide` is the old picture. Chuckie Egg's 25 `docs/img/routines/*.gif` and `play/tape-block4.gif` redrawn from their captions' commands, the `anim_compact.py` step dropped from the captions |
 | `kit/fig_budget.py` draws 900 px wide, not 1050, and its `--note` line is cut at the bottom of the panel | Chuckie Egg doc 2 (ceA) | the note left out, the command in the caption | fixed: `--width` (1050 by default), the notes and summary lines wrapped, the height fitted to them; Chuckie Egg's `budget-modules.png` and `budget-routines.png` redrawn |
+| a large `Label+offset` takes an `@equ` base before the data entries exist (`LD HL,data_96FE+Screen+1109` for `$DB53`) | Tujad stage 2 | the data entries written first | open |
+| port constants inside an `@equ` range (`LD BC,$FEFE` became `Im2Table+254`) | Tujad stage 2 | `at` lists | open: warn when an `@equ` matches an `LD rr,nn` later used by `IN`/`OUT` |
+| `mkgame --install` leaves a resource's stale `.bin` when the case's res_formats writes the editable form | Tujad stage 2 | the case's `install()` removes it | open |
+| a `w` entry inside a shared `@res` loses its DEFW labels | Tujad stage 2 | none needed (relative offsets) | open |
 
 ## For unreal-ng
 
