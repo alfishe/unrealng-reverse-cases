@@ -1,149 +1,357 @@
 # 2. Architecture
 
-What this covers: the machine budget; the memory map with its heatmap and the two stacks' low marks; the three
-images (as loaded, at the entry, in play); the stages from the tape to play; the first sheet of the map tiles and a
-whole city drawn from memory.
+What this covers:
 
-The recordings it rests on are those of [WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings): `c1` (power-on,
-the tape loaded at signal speed through the game's own loader, the level menu, play) and the ten bot recordings from
-the saved state after the load (`tools`, `ports`, `menus`, `growth`, `city`, `city2`, `metro`, `disasters`, `levels`,
-`bankrupt`), merged into `work/stage1/l1-all.json` (`tools/l1merge.py`, 11 L1 builds, 428 833 frames). L1 counts
-are totals over whole recordings, so they carry no time in the frame.
+- the machine budget;
+- the module map: the 29 modules of `src/game/game.ann` and how the two tasks call into them;
+- the memory map, with the names and ranges stage 2 settled;
+- the three images (as loaded, at the entry, in play) and the heatmap;
+- the two stacks;
+- the leftovers;
+- the frame budget;
+- the +3 disk release;
+- the map tiles, in brief (the renderer is [doc 6](06-rendering.md)).
+
+The recordings it rests on are those of [WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings):
+
+- `c1`: power-on, the tape loaded at signal speed through the game's own loader, the level menu, play;
+- the ten bot recordings from the saved state after the load: `tools`, `ports`, `menus`, `growth`, `city`, `city2`,
+  `metro`, `disasters`, `levels`, `bankrupt`.
+
+Their L1 builds are merged into `work/stage1/l1-all.json` (`tools/l1merge.py`: 11 builds, 428 833 frames). The
+per-address counts of all eleven are in `work/stage2/counts.json`. L1 counts are totals over whole recordings, so
+they carry no time within the frame.
 
 ## 2.1 The machine budget
 
 | | |
 | --- | --- |
-| Machine | 48K: code and data fill `$5B00-$F7BA` and the IM 2 table `$FCFC-$FE00`; nothing pages, no AY |
-| Interrupts | IM 2, I = `$FD`, a 257-byte table of `$FC` at `$FD00-$FE00` (loaded from tape), so every interrupt jumps to `$FCFC`, `JP $F70B` |
-| Frame | 69 888 T; the handler reads the keyboard and the joysticks and switches between two tasks, about 1100 T an interrupt ([WALKTHROUGH 1](../WALKTHROUGH.md#1-one-recording-from-power-on)) |
-| CPU | two tasks share it: the user interface (main loop `$8FDA`) and the simulation (`$835F`), switched by the interrupt; no HALT in play |
-| Sound | the beeper only (doc 9) |
-| Stacks | the UI's from `$F6C2` down (`$5B1C LD SP,$F6C2`), the simulation's from its saved frame at `$F6EE` (`$830C`); deepest L1 writes `$F6A4` and `$F6E8` (2.2) |
+| Machine | 48K. Code and data fill `$5B00-$FE00`; nothing pages; no AY |
+| Interrupts | IM 2 with I = `$FD`. The 257-byte table at `$FD00-$FE00` holds `$FC` in every byte, so every interrupt goes to `$FCFC`, `JP Interrupt` (`$F70B`) |
+| Frame | 69 888 T. The handler reads the keyboard and the joysticks and may switch tasks: about 780 T a frame ([doc 4.3](04-game-loop.md#43-the-interrupt-and-the-switch)) |
+| CPU | two tasks share it: the UI task (UiTask `$8FA0`, pass `$8FDA`) and the simulation task (SimTask `$835F`), switched by the interrupt. No `HALT` in play; the menus wait with `HALT` |
+| Sound | the beeper only ([doc 9](09-sound.md)) |
+| Stacks | the UI's from `$F6C2` down, the simulation's from `$F704` down (2.5) |
 
-**The point**: a 48K game that keeps a 96 x 96 map of one byte a cell (9 K) and 7 K of simulation arrays beside
-its code, and runs the simulation as a second task under a preemptive interrupt switcher.
+**The point:** a 48K game that keeps a 96 x 96 map of one byte a cell (9 K) and 7 K of simulation arrays beside its
+code. It runs the simulation as a second task under an interrupt that switches tasks.
 
-## 2.2 The memory map
+## 2.2 The module map
 
-The 48K's RAM as the game uses it. The counts are L1's, summed over the ten bot recordings
-(`work/stage1/rec/*/l1.json`; `c1` is left out of the counts because its tape load writes the whole block); "bytes"
-counts the bytes of the range executed, read or written at least once (`work/stage1/regions.txt`, the sums in
-`work/stage1/regions-out.txt`; the finer runs: `tools/l1map.py work/stage1/rec/*/l1.json --gap 64`).
+Stage 2 split the code from `$5B00` to `$FE00` into 29 modules: 597 entries, each a routine or a data block. A module
+is one stretch of addresses. `python3 work/docs/scA/modmap.py` lists them from `game.ann`:
 
-| Range | Size | What | Use | Witness |
-| --- | ---: | --- | --- | --- |
-| `$4000-$5AFF` | 6912 | the screen: menu bar and icons on rows 0-2, the status box rows 3-6, the map view rows 8-23 (32 x 16 cells) | 58 043 522 writes, 5 180 722 reads | the view `$650B` writes the cells from `$4800` and `$5000` |
-| `$5B00-$5B07` | 8 | the keyboard's eight half rows, read in every interrupt | 3 264 254 writes | `$F781`; the joysticks fold into the same bits (`$7A01`, `$7A32`) |
-| `$5B08-$5B18` | 17 | data read by the input code | 1 420 517 reads, never written | stage 2 |
-| `$5B19-$5FC5` | 1197 | code: the entry `$5B1B`, the Kempston test (its flag `$5B7F`), input and print routines; variables kept in it (the city name `$5F68-$5F73`, the cursor `$5CFC-$5CFD`) | 129 376 486 executions; 40 bytes written | `$5B1B-$5B44` |
-| `$5FC6-$627B` | 694 | the texts: tool names with prices, months, levels, the six categories, the 27 advice and disaster messages (bit 7 ends each) | read only | `$6317` prints by index |
-| `$627C-$6304` | 137 | data read 881 times in all | | stage 2 |
-| `$6305-$A881` | 17 789 | the code (11 775 bytes executed) with its variables and tables between: the view `$6434-$65A2` and its pointers `$6505-$650A`; the 24-bit subtraction `$6680`; the map address `$6BDB`; the census `$8443-$844B`; the simulation loop `$835F`; the month `$8E94`; the speed row `$8F67-$8F6B` and table `$8F6C`; funds, date and pass counter `$8F97-$8F9F`; the main loop `$8FDA`; the category thresholds `$9750` and index `$975F`; the advice `$99AD`; save and load `$9E1F-$9EF8`; the menu and dialog texts `$9F40-$A6F0` (the about box `$A0CC`); the speed `$A3AB` | 4 356 713 173 executions; 437 bytes written, all variables in operands and between routines | `tools/l1map.py` |
-| `$A882-$A8E3` | 98 | untouched | | L1 |
-| `$A8E4-$A903` | 32 | a table | read only (52 320) | stage 2 |
-| `$A924-$A92F` | 12 | variables | 4 writes | |
-| `$A930-$A94E` | 31 | the save block: a 12-byte name, then 7 bytes from `$8F97` and 12 from `$5F68` ([WALKTHROUGH 6.2](../WALKTHROUGH.md#62-the-city-map-and-the-state)) | written by the save `$9E1F` | `tools/savetap.py` |
-| `$A94F-$C44F` | 6913 | the simulation's work arrays: every byte read and written | 12 013 517 reads, 6 866 324 writes | zero in the image; their layout is stage 2's |
-| `$C450-$E84F` | 9216 | the city map, 96 x 96, one byte a cell, `$C450 + 96 y + x` | 52 099 504 reads, 692 268 writes | `$6BDB`; all `$02` (clear land) in the image; saved whole by the save |
-| `$E850-$EA67` | 536 | data | read only | stage 2 |
-| `$EA68-$ED57` | 752 | the tiles of cells `$00-$5D`, 8 bytes each (2.5) | 34 198 857 reads; written only at `$EC88-$EC97` (cells `$44-$45`, an animated tile) | `$647D` |
-| `$ED58-$F477` | 1824 | the tiles of the buildings' rows, n = `$00-$E3` (2.5) | read only | `$64FE` |
-| `$F478-$F52F` | 184 | data | read only | stage 2 |
-| `$F530-$F58D` | 94 | the attributes of cells `$00-$5D` | read only | `$652F` |
-| `$F58E-$F671` | 228 | the attributes of the building tiles | read only | `$64EF` |
-| `$F672-$F678` | 7 | data | read only | |
-| `$F679-$F6A3` | 43 | untouched: the room under the UI's stack | | L1 |
-| `$F6A4-$F6C1` | 30 | the UI task's stack (SP = `$F6C2` at the entry) | 517 778 writes; deepest `$F6A4` (5 writes) | `$5B1C` |
-| `$F6C2-$F6ED` | 44 | the simulation task's stack below its frame | 1270 writes at `$F6E8-$F6EB`; `$F6C2-$F6E7` untouched | |
-| `$F6EE-$F703` | 22 | the simulation task's first frame: ten register words and the return `$835F` at `$F702`, preloaded by `$830C` | 167 868 writes | `$830C-$831A` |
-| `$F704-$F70A` | 7 | the scheduler: the running task `$F704`, the no-switch flag `$F705`, the two saved stack pointers `$F707` and `$F709` | 1 131 383 writes | `$F71C-$F73D` |
-| `$F70B-$F7BA` | 176 | the interrupt handler `$F70B` and the input routine `$F781`, with a few variables (`$F74E-$F753`) and the ROM tape entries `$F79F`, `$F7AA` | 183 263 122 executions | WALKTHROUGH 1 |
-| `$F7BB-$FCFB` | 1345 | untouched | | L1 |
-| `$FCFC-$FCFE` | 3 | `JP $F70B`, the interrupt's landing | 1 207 614 executions | |
-| `$FCFF-$FE00` | 258 | the IM 2 table (`$FD00-$FE00`, `$FC` each), code1's last 257 bytes | the vector is read at `$FDFF-$FE00`, 343 447 times each (the bus holds `$FF`) | doc 3 |
-| `$FE01-$FFFF` | 511 | the loader's leftover: the decrypted loader and the ROM font glyphs in its padding | untouched in play | doc 3 |
+| Module | Range | Bytes | Entries (code) | What |
+| --- | --- | ---: | ---: | --- |
+| entry | `$5B00-$5B47` | 72 | 2 (1) | the keyboard rows and the entry |
+| beeper | `$5B48-$5B7E` | 55 | 2 (2) | the two beeper routines: the disaster noise and the refusal tone |
+| input | `$5B7F-$5BFD` | 127 | 7 (4) | the Kempston flag and the key scans |
+| screen | `$5BFE-$5CC3` | 198 | 9 (9) | screen addresses, icon drawing and clearing |
+| random | `$5CC4-$5CEB` | 40 | 2 (1) | the random generator |
+| cursor | `$5CEC-$5DEA` | 255 | 10 (6) | the pointer and the map box |
+| print | `$5DEB-$635B` | 1393 | 29 (21) | printing: characters, inline codes, numbers, frames, the status panel and the texts |
+| clicks | `$635C-$6432` | 215 | 10 (9) | the pointer's movement and the clicks |
+| renderer | `$6433-$65A2` | 368 | 15 (9) | the map view renderer |
+| arith | `$65A3-$66F1` | 335 | 13 (11) | the number printers and the arithmetic |
+| menus | `$66F2-$6A8B` | 922 | 36 (27) | the menu and dialog engine |
+| landscape | `$6A8C-$6CBE` | 563 | 13 (8) | the landscape generator |
+| tools | `$6CBF-$753B` | 2173 | 77 (49) | the tools: palette, prices, sites, networks, bridges, the bulldozer and the buildings |
+| cityaccess | `$753C-$7734` | 505 | 27 (21) | the city's arrays and cell helpers |
+| movers | `$7735-$7A00` | 716 | 18 (14) | the moving objects: the train, the plane, the tornado; the meltdown |
+| joysticks | `$7A01-$7A9D` | 157 | 3 (3) | the Kempston and Sinclair joysticks, the shift scroll |
+| maps | `$7A9E-$7B85` | 232 | 7 (4) | the maps window |
+| simulation | `$7B86-$8F96` | 5137 | 152 (102) | the simulation task: power, coverage, pollution, traffic, land value, crime, demand and the growth of every zone |
+| uitask | `$8F97-$90A6` | 272 | 8 (6) | the UI task, with the funds, the date and the pass counter |
+| disasters | `$90A7-$9193` | 237 | 11 (10) | the disasters |
+| budget | `$9194-$95B7` | 1060 | 19 (14) | the budget |
+| evaluation | `$95B8-$9B4D` | 1430 | 24 (15) | the evaluation and the advice |
+| overview | `$9B4E-$9E08` | 699 | 14 (9) | the maps window's overview |
+| saveload | `$9E09-$9F3F` | 311 | 9 (6) | save and load |
+| dialogs | `$9F40-$A883` | 2372 | 54 (30) | the menus' descriptions and actions, the line editor |
+| workspace | `$A884-$E84F` | 16 332 | 4 (0) | the movers' sprites, the save header, the work arrays and the map |
+| graphics | `$E850-$F681` | 3634 | 6 (0) | the tiles and their attributes |
+| tasks | `$F682-$F74D` | 204 | 6 (1) | the task switcher, its frame and its state |
+| system | `$F74E-$FE00` | 1715 | 10 (6) | printing glyphs, the input read, the tape, a filled gap, the IM 2 vector |
 
-The stacks' low marks: L1's deepest write in the UI's stack is `$F6A4` (30 bytes under its top), in the simulation's
-`$F6E8` (6 bytes under its preloaded frame). The interrupt's own frame is in those counts: the return and the
-handler's ten pushes (`$F70B-$F718`, 22 bytes) land on whichever task's stack is running, and the simulation's frame
-`$F6EE-$F703` is rewritten at every switch (167 868 writes). The two stacks are 26 untouched bytes apart
-(`$F6C2-$F6E7`), and 43 untouched bytes lie under the UI's (`$F679-$F6A3`).
+The code is 19 844 bytes, `$5B00-$A883`. Above it lie 16 K of work space and 3.6 K of tiles, then the interrupt
+machinery at the top.
 
-![Memory use over the 11 L1 builds](img/heatmap.png)
+Each task calls into the modules like this:
 
-*The heatmap, all 11 L1 builds with `c1` (`tools/fig_heatmap.py work/stage1/l1-all.json docs/img/heatmap.png`).
-How to read: one row a 256-byte page, `$4000` at the top; the colour is log2 of the count; under each grid the
-screen page drawn as the screen. Executed: `$5B19-$A881` and the handler at `$F70B`, the loader at `$FE00` and the
-mover at `$5000` from `c1`'s load. Read: everything above `$A94F` is data, read evenly: the work arrays, the map
-(the broad band from `$C450`), the tiles. Written: the screen, the work arrays and the map, the stacks; the code
-area only in scattered variables. The point: code below `$A882`, the simulation's data above it, and the
-interrupt machinery at the top.*
+```mermaid
+flowchart TD
+    subgraph ui ["UI task: uitask $8FA0"]
+        UL["UiLoop / UiPass"]
+    end
+    subgraph sim ["simulation task: simulation $835F"]
+        SP["SimTaskPass $8362"]
+    end
+    subgraph irq ["interrupt: tasks $F70B"]
+        INT["Interrupt"]
+    end
+    UL --> CUR["cursor: DrawPointer, TrackBox"]
+    UL --> CLK["clicks: MovePointer, Click"]
+    CLK --> TOOLS["tools: ToolClick, the sites, the bulldozer"]
+    CLK --> MENUS["menus: RunMenu, DrawMenu"]
+    MENUS --> DLG["dialogs: the descriptions and actions"]
+    UL --> REN["renderer: DrawViewRowPass, DrawView"]
+    UL --> MOV["movers: DrawMovers, MoveTrain, MovePlane, MoveTornado"]
+    UL --> DIS["disasters: RunDisaster, RandomDisaster"]
+    UL --> BUD["budget: BudgetWindow"]
+    UL --> MAPS["maps, overview: MapsWindow"]
+    UL --> PRN["print, arith: PrintFunds, PrintDate"]
+    UL --> EVA["evaluation: ShowAdvice, EvaluationWindow"]
+    SP --> CA["cityaccess: CellFlagsOf, MapToRowCol"]
+    SP --> RND["random"]
+    SP --> EVA2["evaluation: Advise $99AD"]
+    REN --> CA
+    TOOLS --> CA
+    INT --> SYS["system: ReadInput"]
+    SYS --> JOY["joysticks: ReadKempston, ReadSinclair"]
+```
 
-## 2.3 Three images: as loaded, at the entry, in play
+The simulation module is self-contained apart from the cell access routines, the random generator and Advise. The UI
+task reaches nearly everything else.
+
+## 2.3 The memory map
+
+The 48K's RAM as the game uses it, with the stage-2 names. The counts are L1's, summed over the ten bot recordings
+(`work/stage1/rec/*/l1.json`). `c1` is left out of the counts, because its tape load writes every byte.
+
+| Range | Size | What | Use (L1) |
+| --- | ---: | --- | --- |
+| `$4000-$5AFF` | 6912 | the screen: the menu bar and icons on rows 0-2, the status box on rows 3-6, the map view on rows 8-23 (32 x 16 cells) | 58 043 522 writes, 5 180 722 reads |
+| `$5B00-$5B07` | 8 | KeyRows: the keyboard's eight half rows, written by every interrupt; the joysticks fold into the same bits | 3 264 254 writes |
+| `$5B08-$5B18` | 17 | KeyNone `$5B08` (a ninth row, always `$FF`), PortHighs `$5B09` (a leftover, 2.6), BitMasks `$5B11` (the eight bit masks) | 1 420 517 reads, never written |
+| `$5B19-$5B47` | 47 | EntryJump `$5B19` (a leftover), Entry `$5B1B` | once |
+| `$5B48-$A883` | 19 772 | the code of 26 modules (2.2), with its variables between the routines and in operands, and its texts and tables: the menu descriptions in dialogs `$9F40-$A883`, the speed table `$8F6C`, the funds, the date and the pass counter `$8F97-$8F9F` | 4 356 713 173 executions; 437 bytes written |
+| `$A884-$A923` | 160 | MoverSprites: the plane, two tornado frames, the train across and down, 32 bytes each | read by DrawMovers |
+| `$A924-$A94F` | 44 | SaveName `$A924` (12) and SaveHeader `$A930` (31): the tape header of a saved city | written by the save |
+| `$A950-$AB8F` | 576 | FireCover: 24 x 24 fire coverage | the simulation |
+| `$AB90-$ADCF` | 576 | PoliceCover: 24 x 24 | the simulation |
+| `$ADD0-$B6CF` | 2304 | Pollution: 48 x 48 | the simulation |
+| `$B6D0-$BFCF` | 2304 | Traffic: 48 x 48 | the simulation |
+| `$BFD0-$C44F` | 1152 | PowerMap: the powered bit of each map cell, 12 bytes a row | PowerFlood |
+| `$C450-$E84F` | 9216 | CityMap: 96 x 96, one byte a cell, `$C450 + 96 y + x`; all land (`$02`) in the image | 52 099 504 reads, 692 268 writes |
+| `$E850-$EA67` | 536 | IconTiles: 67 icon and frame tiles | read only |
+| `$EA68-$ED57` | 752 | CellTiles: 94 cell tiles, cells `$00-$5D`; the fire and flood frames are copied in | 34 198 857 reads |
+| `$ED58-$F4F7` | 1952 | BuildingTiles: 244 building tiles | read only |
+| `$F4F8-$F681` | 394 | IconAttrs (56), CellAttrs (94), BuildingAttrs (244) | read only |
+| `$F682-$F6C1` | 64 | the UI task's stack, from `$F6C2` down to `$F6A4` (the annotation still names it SimStack, 2.5) | 517 778 writes |
+| `$F6C2-$F703` | 66 | SimFrame `$F6EE` and SimEntry `$F702`: the simulation's first frame; its stack grows down from `$F704` to `$F6E8` | 167 868 writes |
+| `$F704-$F70A` | 7 | TaskNow `$F704`, SwitchOff `$F705`, UiSP `$F707`, SimSP `$F709` | 1 131 383 writes |
+| `$F70B-$F7BA` | 176 | Interrupt `$F70B`, the print state `$F74E`, PrintGlyph `$F754`, ReadInput `$F781`, a leftover `$F798`, TapeLoad `$F79F`, TapeSave `$F7AA`, TapePause `$F7AD` | 183 263 122 executions |
+| `$F7BB-$FCFB` | 1345 | 1345 bytes of `$E5`, untouched (2.6) | none |
+| `$FCFC-$FCFE` | 3 | InterruptJump: `JP Interrupt` | 1 207 614 executions |
+| `$FCFF-$FE00` | 258 | InterruptSpare, then the vector table `$FD00-$FE00`, 257 bytes of `$FC` | the vector is read at `$FDFF-$FE00`, 343 447 times each (the bus holds `$FF`) |
+| `$FE01-$FFFF` | 511 | the loader, as it was left (2.6, [doc 3](03-build-and-load.md)) | untouched in play |
+
+Stage 2 corrected four things in stage 1's map:
+
+- `$A884-$A923` is the movers' sprites, not an untouched gap and a small table;
+- the work arrays are five named arrays, not one block of 6913 bytes;
+- the building tiles are 244, not 228, and the attribute tables start at `$F4F8`, not `$F530`;
+- `$F682-$F6C1` is the UI's stack and `$F7BB-$FCFB` is not a stack at all (2.5, 2.6).
+
+## 2.4 Three images and the heatmap
 
 | Image | What it is | How it was made |
 | --- | --- | --- |
-| as loaded | `c1`'s memory at the start of frame 16 279, when the loader has put the three blocks in place and the mover `$5000` is about to run | `tools/ttdmem.py work/stage1/c1 16279 0x4000 0xC000` (`work/stage1/c1-16279.bin`) |
-| at the entry | the same at frame 16 281, after the mover and the entry's first frame | `work/stage1/c1-16281.bin`; equal to `tools/image.py`'s image but for `$F705` |
-| in play | city2's end (DEC 1935) and `c1` at frame 21 534 | `tools/szx.py work/stage1/rec/city2/end.szx`, `work/stage1/c1-21534.bin` |
+| as loaded | `c1`'s memory at the start of frame 16 279: the loader has put the three blocks in place and the mover `$5000` is about to run | `tools/ttdmem.py work/stage1/c1 16279 0x4000 0xC000` (`work/stage1/c1-16279.bin`) |
+| at the entry | the same at frame 16 281, after the mover and the entry's first frame | `work/stage1/c1-16281.bin`; equal to the build's `game.bin` but for `$F705` ([doc 3.9](03-build-and-load.md#39-what-loads-is-what-runs)) |
+| in play | `city2`'s end (DEC 1935), and `c1` at frame 21 534 | `tools/szx.py work/stage1/rec/city2/end.szx`, `work/stage1/c1-21534.bin` |
 
-What changes (`work/stage1/imgdiff.py`, runs of differing bytes):
+What changes between them (`work/stage1/imgdiff.py`, runs of differing bytes):
 
-- **Loaded to entry**: 3862 bytes: `$5B00-$6AFF`, where the mover copies code2's first 4 K from `$4000`; `$F705`
-  (set to 1 at `$5B24`) and one byte at `$FF83`. Code2 stays on the screen until the game draws over it; nothing is
-  unpacked.
-- **Entry to play** (`c1`, 5745 bytes): the map (5522 of 9216 bytes, the landscape made for the new city); the
-  keyboard rows; about 40 runs of variables in the code area (`$8443-$845E` the census, `$8F67-$8F9F` speed, funds,
-  date and passes, `$6505-$650A` the view's pointers, and operands such as `$6C02-$6C1E`); the tile of cells
-  `$44-$45` (`$EC88-$EC97`); the stacks and the scheduler (`$F694-$F709`). No code changes.
-- **Entry to city2's end**: 12 962 bytes, the same places plus the work arrays and the screen.
+- **Loaded to entry**: 3862 bytes. Most are `$5B00-$6AFF`, where the mover copies code2 from `$4000`. The others are
+  `$F705` (set to 1 at `$5B24`) and one byte at `$FF83`. Code2 stays on the screen until the game draws over it.
+  Nothing is unpacked.
+- **Entry to play** (`c1`, 5745 bytes): the map (5522 of 9216 bytes: the landscape of the new city); the keyboard rows;
+  about 40 runs of variables in the code area; the fire tile in CellTiles; the stacks and the switch state. No code
+  changes.
+- **Entry to `city2`'s end**: 12 962 bytes, the same places plus the work arrays and the screen.
 
 ![The three images side by side](img/memory-images.png)
 
-*The 48K memory as loaded, at the entry and in play (`python3 tools/fig_images.py docs/img/memory-images.png`).
-How to read: one pixel a byte, one row a 256-byte page from `$4000`; grey by value, orange where the entry differs
-from the load, red where play differs from the entry. The point: the mover's copy is the only change before play
-(the orange band at `$5B00`); in play the screen and the map change wholesale, the work arrays in places, and the
-code not at all.*
+*The 48K memory as loaded, at the entry and in play (`python3 tools/fig_images.py docs/img/memory-images.png`). How to
+read: one pixel a byte, one row a 256-byte page from `$4000`; grey by value, orange where the entry differs from the
+load, red where play differs from the entry. The point: the mover's copy is the only change before play (the orange
+band at `$5B00`). In play the screen and the map change wholesale, the work arrays in places, and the code not at
+all.*
 
-## 2.4 The stages from the tape to play
+![Memory use over the 11 L1 builds](img/heatmap.png)
+
+*The heatmap of all 11 L1 builds with `c1`, made with
+`python3 tools/fig_heatmap.py work/stage1/l1-all.json docs/img/heatmap.png`. How to read: one row a 256-byte page, `$4000` at the top; the colour is log2 of the count;
+under each grid, the screen page drawn as the screen. Executed: `$5B19-$A883` and the interrupt at `$F70B`, plus the
+loader at `$FE00` and the mover at `$5000` from `c1`'s load. Read: everything from `$A884` up is data: the work arrays,
+the map (the broad band from `$C450`), the tiles. Written: the screen, the work arrays and the map, the stacks; in the
+code area only scattered variables. The point: code below `$A884`, the simulation's data above it, the interrupt
+machinery at the top.*
+
+## 2.5 The two stacks
+
+Each task has its own stack, and an interrupt pushes 22 bytes on whichever one is running
+([doc 4.3](04-game-loop.md#43-the-interrupt-and-the-switch)). The low marks are L1's deepest writes over all eleven
+recordings.
+
+| Stack | Set by | Top | Deepest write | Depth | Untouched below it |
+| --- | --- | --- | --- | ---: | --- |
+| UI task | Entry `$5B1C`: `LD SP,SimStack+$40` = `$F6C2` | `$F6C2` | `$F6A4` (5 writes) | 30 | `$F682-$F6A3`, 34 bytes |
+| simulation task | StartSimulation `$8311`: SimSP = SimFrame `$F6EE`; the first switch pops 20 bytes and `RET` takes SimEntry `$F702` | `$F704` | `$F6E8` | 28 | `$F6C2-$F6E7`, 38 bytes |
 
 ```mermaid
-flowchart LR
-  A["BASIC: LOAD CODE 65024"] --> B["$FE00: R decryption of $FE80-$FFFF"]
-  B --> C["$FE80: three encrypted blocks via $FEBD"]
-  C --> D["$5000: copy $4000-$4FFF to $5B00"]
-  D --> E["$5B1B: SP $F6C2, Kempston test, IM 2"]
-  E --> F["$8FA0: level menu, landscape"]
-  F --> G["$830C: second task set up"]
-  G --> H["play: UI $8FDA and simulation $835F"]
+flowchart TB
+    A["$F682-$F6A3: 34 bytes never written"] --- B["$F6A4-$F6C1: the UI stack in use, 30 bytes"]
+    B --- C["$F6C2: the UI stack's top, set by Entry"]
+    C --- D["$F6C2-$F6E7: 38 bytes never written"]
+    D --- E["$F6E8-$F6ED: the simulation stack's deepest 6 bytes"]
+    E --- F["$F6EE-$F701: SimFrame, 20 zero bytes, the first registers"]
+    F --- G["$F702-$F703: SimEntry = SimTask, the first return address"]
+    G --- H["$F704: TaskNow, the simulation stack's top is just below it"]
 ```
 
-*The stages with their entry addresses (`c1` frames in [WALKTHROUGH 1](../WALKTHROUGH.md#1-one-recording-from-power-on)).*
+Both stacks are shallow:
 
-## 2.5 The map tiles and a whole city
+- The simulation is never more than three calls deep when an interrupt comes: SimTaskPass, ScanCity and CellStep.
+  Its 28 bytes are those three return addresses and the interrupt's 22.
+- The UI's 30 bytes are four return addresses and the interrupt's 22.
 
-A map byte below `$80` is a cell drawn from 94 tiles at `$EA68 + 8 x cell` with an attribute at `$F530 + cell`
-(`$6468-$6496`; the attribute table is put in `$6505` at `$652F`). A byte from `$80` starts one row of a building,
-the bytes from `$C0` continue it: the row is `(first AND 7)` cells wide and draws tiles from a second table,
-`$ED58 + 8 x n` with attributes at `$F58E + n`, where n = `(second AND $3F) x 8 + (third AND 7)` for its first cell
-and one more for each next cell (`$650B-$6557`, `$655B-$6591`, `$64D6-$6501`); a building cut by the view's left
-edge is found by stepping back over the `$C0` bytes (`$6593`). Drawn this way the map matches the screen: 0 pixels
-differ over the view in city2's and growth's end states, 168 in metro's and 645 in tools' (the cursor, and the
-blink and swap cases the drawing leaves out; `python3 tools/fig_tiles.py check ...`).
+**The names are crossed.** The annotation calls `$F682-$F6C1` "SimStack, the simulation task's stack (zeros)", and
+`$F7BB-$FCFB` "UiStack, the UI task's stack, filled with `$E5`". Neither is right:
+
+- Entry's `LD SP,SimStack+$40` gives SP = `$F6C2` to the UI task, which grows down into "SimStack";
+- the simulation's stack starts inside SimFrame, at `$F704`;
+- "UiStack" is never touched by any recording: no stack reaches it.
+
+The fix is sent to the lead (`work/docs/scA-src-changes.md`).
+
+## 2.6 Leftovers
+
+Bytes in the image that no code runs or reads, or that are written before any reader sees them:
+
+| Address | Bytes | What | Witness |
+| --- | ---: | --- | --- |
+| `$5B09` PortHighs | 8 | the eight port high bytes `$FE`, `$FD` ... `$7F`: a table for a key scan; ReadInput uses `RLC B` instead | L1: 0 reads |
+| `$5B19` EntryJump | 2 | `JR $5B1B`: the +3 disk boot enters here (2.8); the tape's mover jumps past it to `$5B1B` | L1: never executed |
+| `$64D5` BuildingDummy | 1 | a byte IX points at while a building row is drawn; its value is never read | the code |
+| `$7657` DivLeftover | 17 | an older copy of a divide (`LD C,L ... RET`) | no caller, L1: never executed |
+| `$85C4` TripLeftover | 16 | `XOR A; LD ($8568),A; LD HL,($8462); INC HL ...`: code no one calls | L1: never executed |
+| `$8F67-$8F6B` | 5 | 8, 7, 7, 7, 1: a speed row the table does not have; SetSpeed overwrites it in the first pass | [doc 4.7](04-game-loop.md#47-the-speed-masks-and-the-month) |
+| `$8F6A` | 1 | the fourth speed byte, copied every pass, never read | the code |
+| `$835D` SimPaused | 1 | a pause flag ScanCity tests and only InitSimulation writes (0) | the code |
+| `$F798` ReadInputLeftover | 7 | `RET; JP $FE0F; JP $FE0F`: jumps into the loader's area | L1: never executed |
+| `$F7BB-$FCFB` | 1345 | all `$E5`: the byte a CP/M or +3DOS disk format writes | L1: untouched |
+| `$FE14-$FE7F` | 108 | LoaderPadding: the bytes `$14-$7F`, each its own address's low byte | L1: untouched |
+| `$FFA5-$FFFF` | 91 | the ROM font `$3E55-$3EAF` ("J" from its sixth row to "U"), saved with the loader | L1: untouched |
+
+The two `JP $FE0F` and the `$E5` fill hint at how the master was made: an earlier build kept its tape routines near
+`$FE0F`, and the memory the image was saved from had been cleared by a disk format. Neither is proved; both are
+listed in `work/docs/scA-NOTES.md`.
+
+## 2.7 The frame budget
+
+`kit/fig_budget.py` turns an L1 build into each routine's own T-states as a share of all the frames.
+
+![Where the time goes, by module](img/arch/budget-modules.png)
+
+*The CPU's time by module in `city2` (82 012 frames, a town at fast speed) and `growth` (51 985 frames, a city
+growing). How to read: each bar is a module's share of all the T-states of the recording; HALT is the time the menus
+spend waiting for the interrupt (RunMenu, EditNumber). Made with `python3 ../../kit/fig_budget.py --ann
+src/game/game.ann --by module --label city2 --state growth=work/stage1/rec/growth/l1.json
+work/stage1/rec/city2/l1.json docs/img/arch/budget-modules.png` (with `--title` and `--note`).*
+
+![Where the time goes, by routine](img/arch/budget-routines.png)
+
+*The 24 routines that take the most time in `city2`, 92.1 % of it, coloured by module. Made with `python3
+../../kit/fig_budget.py --ann src/game/game.ann --by routine --top 24 work/stage1/rec/city2/l1.json
+docs/img/arch/budget-routines.png` (with `--title` and `--note`).*
+
+| Module | `city2` | `growth` | Where it goes |
+| --- | ---: | ---: | --- |
+| uitask | 31.95 % | 32.10 % | UiDelay, the 2000-loop busy wait of every UI pass |
+| simulation | 21.43 % | 23.38 % | ScanCity 7.32 %, CellStep 7.01 %, then the zone steps |
+| renderer | 21.00 % | 21.25 % | DrawCell 11.29 %, DrawView 5.44 %, DrawBuildingTile 1.67 % |
+| cityaccess | 15.29 % | 11.32 % | CellFlagsOf 6.33 %, MapToRowCol 5.57 %, PowerBit 1.44 % |
+| HALT | 0.96 % | 2.06 % | the menus |
+| the rest | 9.4 % | 9.9 % | print 0.61 %, tasks 0.52 %, joysticks 0.43 % ... |
+
+**A worked example: UiDelay's share.** In `city2`, UiDelay's loop ran 69 574 000 times (`$8FD5` in
+`work/stage2/counts.json`), exactly 2000 for each of the 34 787 UI passes. At 26 T a loop that is 1 808 924 000 T. The
+recording is 82 012 frames of 69 888 T, 5 731 654 656 T. So UiDelay is 31.6 % of the time; the budget's 31.95 % for
+uitask adds the rest of UiLoop.
+
+What the budget says:
+
+- **A third of the CPU waits.** The wait is not idle: it paces the pointer, and the interrupt gives the simulation
+  its frames from inside it ([doc 4.4](04-game-loop.md#44-a-frame-with-a-switch-against-the-beam)).
+- **The renderer costs as much as the simulation.** It redraws one row of the window every UI pass, about 21 times a
+  second, whether the map changed or not.
+- **The simulation's 33 % of the frames** go to its own module and to the cell access routines it shares with the
+  renderer and the tools.
+
+## 2.8 The +3 disk release
+
+A +3 disk exists: `Sim City (1990)(Infogrames)(+3)(FR)(en).dsk` (sha256 `94828cbf...`), copied to
+`work/stage2/plus3/simcity.dsk`. Stage 2 compared it with the tape statically (`work/stage2/plus3.py`,
+`work/stage2/plus3align.py`); no +3 instance ran it.
+
+The disk has no +3DOS files. It boots from its own sector:
+
+```mermaid
+flowchart TD
+    A["+3 ROM: the boot sector, track 0 sector $41, run at $FE10"] --> B["pages: $7FFD = $13, $1FFD = 4: ROM 3, the 48 BASIC; RAM 3 at $C000"]
+    B --> C["its own FDC routines: 82 sectors from track 1"]
+    C --> D["into $5A00-$FDFF"]
+    D --> E["JP $5B19: EntryJump, JR $5B1B"]
+    E --> F["Entry: the same start as the tape's"]
+```
+
+What the disk leaves out and what it adds:
+
+- **No protection.** There is no R-keyed loader, no encrypted blocks and no loading screen.
+- **The same program, reassembled.** `$5B00-$5B1C` holds the same bytes, EntryJump included. Entry differs from its
+  `LD SP` on: the disk's SP is `$F924`, the tape's `$F6C2` plus 610. From ToneBeep `$5B66`, every entry sits 6 bytes
+  higher, up to the save code; the code bytes differ only in their address operands.
+- **Disk menus.** The SYSTEM menu gains CATALOGUE DISK and SIM FORMAT DISK. LOAD and SAVE become a LOADING / SAVING
+  MENU of ten slots (DISK FILES, NAME / NUMBER, FILE0-FILE9), with the errors THERE ARE NO FILES ON THIS DISK, IT IS
+  NOT FORMATTED, FORMAT DISK, DISK NOT PRESENT and NO CITY DATA FOUND. So the texts after them move by up to 403
+  bytes.
+- **The top moves up.** The tiles sit 610 bytes higher (IconTiles at `$EAB2`), and so does the system part: Interrupt
+  is at `$F96D`, and `$FCFC` holds `JP $F96D`. The vector table stays at `$FD00`. The disk routines replace TapeLoad
+  and TapeSave.
+- **EntryJump is used.** The disk enters at `$5B19`, the `JR $5B1B` the tape never runs (2.6). So the tape's image
+  carries the disk version's entry.
+
+![The +3 disk image against the tape](img/arch/plus3-shift.png)
+
+*How far each entry of `game.ann` moved in the +3 disk's image. How to read: one dot an entry whose first 6 to 16
+bytes occur exactly once within `$800` of its tape address in the disk image (155 of 597; most code entries hold
+address operands that differ, so they are not found); x is the tape address, y the shift. The steps are +6 from
+ToneBeep, +67 to +104 in the dialogs, +403 from OptionsMenu, +610 for the tiles and the system part. Four dots off
+the steps (three simulation entries at `$8D0B-$8DB5` and TapePause) are chance matches of a short pattern. Made with
+`python3 tools/fig_plus3.py work/stage2/plus3/disk-5A00.bin work/mkgame/original.bin docs/img/arch/plus3-shift.png`.*
+
+**The point:** the disk release is the tape's program with the protection taken out and disk menus put in. Its
+entry at `$5B19` is still in the tape's image, two bytes that nothing on tape runs.
+
+## 2.9 The map tiles and a whole city
+
+A map byte below `$80` is a cell. It is drawn from CellTiles `$EA68 + 8 x cell`, with the attribute at CellAttrs
+`$F530 + cell`. A byte from `$80` starts one row of a building, and the bytes from `$C0` continue it; the row draws
+its tiles from BuildingTiles. [Doc 6](06-rendering.md) gives the renderer in full.
 
 ![The map tiles](img/sprites/tiles.png)
 
-*The 94 cell tiles and the 228 building tiles as the image holds them (`python3 tools/fig_tiles.py sheet
+*The cell tiles and the building tiles as the image holds them (`python3 tools/fig_tiles.py sheet
 work/mkgame/original.bin docs/img/sprites/tiles.png --used work/stage1/rec/*/end.szx`). How to read: each tile at 4
 times its size with its attribute, labelled by its cell or n in hex; a yellow frame marks the tiles found on a map
-of the stage 1 recordings. The point: land, water, trees, roads, rails, power lines and the empty zones are single
+in the stage 1 recordings. The point: land, water, trees, roads, rails, power lines and the empty zones are single
 cells; developed zones and buildings are rows of tiles from the second table.*
 
 ![A whole city](img/play/096503-metro-city-map.png)
 
-*metro's city at its end (frame 96 503, SEP 1934), the whole 96 x 96 map drawn from memory
-(`python3 tools/fig_tiles.py map work/stage1/rec/metro/end.szx docs/img/play/096503-metro-city-map.png`). How to
-read: one cell 8 x 8 pixels; the screen shows a 32 x 16 window of it. The point: the landscape (gene 00003) is an
-island; the bot's two blocks (`city` with the view at (30, 37), `metro` at (47, 53)) fill a small part of it.*
+*`metro`'s city at its end (frame 96 503, OCT 1934), the whole 96 x 96 map drawn from memory (`python3
+tools/fig_tiles.py map work/stage1/rec/metro/end.szx docs/img/play/096503-metro-city-map.png`). How to read: one cell
+is 8 x 8 pixels; the screen shows a 32 x 16 window of it. The point: the landscape (gene 00003) is an island, and the
+bot's two blocks fill a small part of it.*
