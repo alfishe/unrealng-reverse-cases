@@ -88,14 +88,14 @@ PrintNumberAt:
 ;
 ; L1 4.
 Print5Digits:
-  LD DE,CityMap+$14A0
+  LD DE,-$2710
   CALL PrintDigitOf
 
 ; HL in 4 digits (the year)
 ;
 ; L1 9921.
 Print4Digits:
-  LD DE,UiStack+$045D
+  LD DE,-$03E8
   CALL PrintDigitOf
 
 ; HL in 3 digits (menus' numbers, the tax rate)
@@ -170,7 +170,8 @@ BoxDims:
 ;
 ; The corners and edges are icon tiles: top $38 $39 $3A, sides $3F $3B, bottom
 ; $3E $3D $3C; the inside is left alone. Sets PrintCol/PrintRow at the corner.
-; L1 193.
+; It also patches $5F0F (BoxRowRight+9) with the box's column, a fourth
+; self-modified operand. L1 193.
 DrawBox:
   LD B,(HL)
   INC HL
@@ -282,10 +283,10 @@ DrawStatusItems:
   RET
 
 ; Print the city name (12 letters, CityName $5F68) at row 5, column 1, and
-; "FUNDS $" at row 5, column 17
+; "FUNDS" with the dollar sign at row 5, column 17
 ;
 ; CityName lies inside the inline text: typing a name writes these bytes
-; (EditCityName), so the text prints the current name. L1 35.
+; (InputName $A6F9), so the text prints the current name. L1 35.
 DrawNameFunds:
   CALL PrintInline
 
@@ -294,8 +295,8 @@ CityNameAt:
   DEFB $FB,$39,$FF,$05,$01
 CityName:
   DEFB $48,$45,$52,$45,$53 ; the city's name, 12 letters, "HERESVILLE  " in the
-  DEFB $56,$49,$4C,$4C,$45 ; image
-  DEFB $20,$20,$FF,$05,$11
+  DEFB $56,$49,$4C,$4C,$45 ; image; InputName edits only 11 and the 12th letter
+  DEFB $20,$20,$FF,$05,$11 ; is not saved (SaveCityName holds 11)
   DEFB $46,$55,$4E,$44,$53
   DEFB $20,$24,$FE
 
@@ -335,16 +336,16 @@ PrintDate:
 ; and disaster messages
 ;
 ; 50 strings, bit 7 on each last letter, found by FindText $6317 by index: 0-13
-; the tools ("BULLDOZE $1" ... "AIRPORT $10000"), 14-16 the levels (EASY,
-; MEDIUM, HARD), 17-22 the classes (VILLAGE ... MEGALOPOLIS), 23 a space, 24-49
-; the advice and disasters ("MORE RESIDENTIAL ZONES NEEDED" ... "TORNADO
-; DETECTED"). Read by PrintToolName, the level name, the class name and the
-; advice (L1 1 602 984 reads, every byte).
+; the tools ("BULLDOZE" with its price, 1 dollar, ... "AIRPORT", 10 000
+; dollars), 14-16 the levels (EASY, MEDIUM, HARD), 17-22 the classes (VILLAGE
+; ... MEGALOPOLIS), 23 a space, 24-49 the advice and disasters ("MORE
+; RESIDENTIAL ZONES NEEDED" ... "TORNADO DETECTED"). Read by PrintToolName, the
+; level name, the class name and the advice (L1 1 602 984 reads, every byte).
 GameTexts:
   INCBIN "res/text/GameTexts.bin",$0000,831
 
 ; Print the current tool's name and price (GameTexts by CurrentTool) at row 4,
-; column 1, padded to 19
+; column 1, padded to 20 columns
 ;
 ; L1 99.
 PrintToolName:
@@ -377,7 +378,8 @@ FindTextNext:
   INC HL
   JR FindTextLoop
 
-; Print the string at HL at row B, column C, then spaces up to A characters
+; Print the string at HL at row B, column C, then spaces to A + 1 columns (C
+; counts down from A for each letter but the last)
 ;
 ; L1 14 996.
 PrintPadded:

@@ -46,7 +46,7 @@ Written by `kit/refdocs.py`.
 | `$5F43` | `StatusBoxText` | 10 | PrintInline codes: the status box | `DrawBox`, `PrintInline` | - |
 | `$5F63` | `CityNameAt` | 28 | PrintInline codes: attribute `$39`, row 5, column 1 (the name follows) | `PrintInline` | - |
 | `$5F8A` | `MonthNames` | 36 | The twelve months, three letters each, bit 7 on the last | `FindText`, `PrintPadded` | - |
-| `$5FC6` | `GameTexts` | 831 | The tool names with prices, the levels, the six city classes, the 27 advice and disaster messages. 50 strings, bit 7 on each last letter, found by FindText `$6317` by index: 0-13 the tools ("BULLDOZE $1" ... "AIRPORT `$1000`0"), 14-16 the levels (EASY, MEDIUM, HARD), 17-22 the classes (VILLAGE ... MEGALOPOLIS), 23 a space, 24-49 the advice and disasters ("MORE RESIDENTIAL ZONES NEEDED" ... "TORNADO DETECTED"). Read by PrintToolName, the level name, the class name and the advice (L1 1 602 984 reads, every byte). | `FindText`, `PrintPadded` | - |
+| `$5FC6` | `GameTexts` | 831 | The tool names with prices, the levels, the six city classes, the 27 advice and disaster messages. 50 strings, bit 7 on each last letter, found by FindText `$6317` by index: 0-13 the tools ("BULLDOZE" with its price, 1 dollar, ... "AIRPORT", 10 000 dollars), 14-16 the levels (EASY, MEDIUM, HARD), 17-22 the classes (VILLAGE ... MEGALOPOLIS), 23 a space, 24-49 the advice and disasters ("MORE RESIDENTIAL ZONES NEEDED" ... "TORNADO DETECTED"). Read by PrintToolName, the level name, the class name and the advice (L1 1 602 984 reads, every byte). | `FindText`, `PrintPadded` | - |
 
 ## clicks
 
@@ -82,7 +82,7 @@ Written by `kit/refdocs.py`.
 | `$684B` | `ToggleValue` | 1 | The toggle's flag value while it is printed | - | - |
 | `$686E` | `OnText` | 3 | "ON" for a toggle | - | - |
 | `$6879` | `OffText` | 4 | "OFF" | - | - |
-| `$6942` | `MenuHook` | 2 | A routine the menu loop calls every pass (0: none): the graph windows' live drawing | `CallMenuHook` | - |
+| `$6942` | `MenuHook` | 2 | A routine RunMenu calls on entry and EditNumber after each Q / A (0: none): BudgetHook `$9346` or Evaluate `$9737`, which recompute and print the window's numbers | `CallMenuHook` | - |
 | `$6990` | `EditMax` | 6 | The number field being edited: the largest value, its address, its position, the key repeat | - | - |
 | `$6A7D` | `MenuSelected` | 1 | The selected item | `MenuDown`, `MenuUp`, `SelectedItem`, `SetLevel` | `MenuDown`, `MenuUp`, `RunMenu` |
 
@@ -181,7 +181,7 @@ Written by `kit/refdocs.py`.
 | `$81DD` | `CityValue` | 6 | The city's assessed value (24 bits) and the last pass's (`$81E0`) | `AddValue`, `AssessCity` | `AddValue`, `AssessCity`, `InitSimulation` |
 | `$8265` | `PopBalance` | 2 | 4 (R - C - I): read by the evaluation | - | `InitSimulation`, `PopBalanceOf` |
 | `$827C` | `ResDemand` | 6 | The three demands (signed), read as ZoneDemand: R, C, I | - | `DemandOf`, `InitSimulation` |
-| `$835D` | `SimPaused` | 2 | Nonzero: the zones are scanned but do not grow (the pause) | `CoverStations`, `DecayPollution`, `ScanCity`, `SimTask` | `InitSimulation`, `SimTask` |
+| `$835D` | `SimPaused` | 2 | Nonzero: the zones are scanned but do not grow (the pause); never set: InitSimulation writes 0, ScanCityStep `$86F3` tests it, a second pause that is never used | `CoverStations`, `DecayPollution`, `ScanCity`, `SimTask` | `InitSimulation`, `SimTask` |
 | `$8443` | `Population` | 61 | The pass's counters, cleared by ClearCounters (`$8443-$847F`) | `Advise`, `AssessCity`, `Averages`, `Averages2`, `ClearCounters` +8 | `ClearCounters`, `CountPowered`, `IndustrialStep` |
 | `$849C` | `LastFireCells` | 8 | Copies of the last pass for the disasters: fires, airports, nuclear plants; the city centre | - | `Averages`, `InitSimulation` |
 | `$84DD` | `AvgPollution` | 1 | Pollution's average | - | `Averages`, `DecayPollution` |
@@ -209,7 +209,7 @@ Written by `kit/refdocs.py`.
 | `$8E8A` | `LastPop` | 10 | The population at the last month's end; at the year's ends (`$8E8D` two years back, `$8E90` last year) | `MapsWindow`, `UiTask` | `InitSimulation`, `MonthEnd` |
 | `$8F01` | `AvgCrime` | 4 | Averages2's results: 2 x the crime average, the land value average / 8, the building count | - | `Averages2`, `InitSimulation` |
 | `$8F2F` | `HospitalNeed` | 2 | ServiceNeeds' results: ResPop / 18 - HospitalCount and ResPop / 20 - ChurchCount (0 when not positive) | - | `InitSimulation`, `ServiceNeeds` |
-| `$8F67` | `GrowTries` | 5 | The speed's five values, copied from SpeedTable by SetSpeed: the growth tries, the I chance mask, the C chance mask, a fourth (no reader), the month mask | `SimTask` | `SetSpeed` |
+| `$8F67` | `GrowTries` | 5 | The speed's five values, copied from SpeedTable by SetSpeed: the growth tries, the I chance mask, the C chance mask, a fourth (no reader), the month mask; the image holds 8, 7, 7, 7, 1, a row SpeedTable does not have; SetSpeed overwrites it before any reader | `SimTask` | `SetSpeed` |
 | `$8F6C` | `SpeedTable` | 20 | four speeds of five: fast (8, 1, 15, 1, 0), normal (4, 3, 31, 3, 1), slow (3, 7, 63, 7, 3), paused (all `$FF`) | `SetSpeed` | - |
 
 ## uitask
@@ -320,7 +320,8 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$F682` | `SimStack` | 108 | The simulation task's stack (zeros) | - | `BlinkCell`, `ClearTopWhite`, `ClearViewArea`, `Digit24`, `Disc` +37 |
+| `$F682` | `UiStack` | 64 | The UI task's stack: Entry sets SP = `$F6C2` (UiStack+`$40`); L1's deepest write `$F6A4` | - | `BlinkCell`, `ClearTopWhite`, `ClearViewArea`, `Digit24`, `Disc` +37 |
+| `$F6C2` | `SimStack` | 44 | The simulation task's stack below SimFrame: it grows down from `$F704` into SimFrame and below; L1's deepest write `$F6E8`; `$F6C2-$F6E7` never written | - | - |
 | `$F6EE` | `SimFrame` | 20 | The simulation task's first frame: 20 bytes of registers, then the entry | - | `AddValue`, `CellFlagsOf`, `CellStep`, `ClearCover`, `CoverStations` +7 |
 | `$F702` | `SimEntry` | 2 | SimTask: the first switch returns into it | - | `StartSimulation` |
 | `$F704` | `TaskNow` | 3 | 0 the UI task runs, 1 the simulation | `Interrupt` | `Click`, `Entry`, `Interrupt`, `LayerOf`, `StartSimulation` +1 |
@@ -330,7 +331,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$F74E` | `PrintCharCode` | 6 | The print state: the character, the screen address, the column and row, the attribute | `DrawBox`, `DrawBoxRow`, `DrawIcon`, `DrawIconHere`, `NextColumn` +3 | `DrawBox`, `DrawBoxRow`, `DrawIcon`, `DrawMenu`, `NextColumn` +8 |
+| `$F74E` | `PrintCharCode` | 6 | The print state: the character, the screen address, the column and row, the attribute. PrintCharCode is written by PrintDigit and read by nobody (PrintGlyph takes the code in A). | `DrawBox`, `DrawBoxRow`, `DrawIcon`, `DrawIconHere`, `NextColumn` +3 | `DrawBox`, `DrawBoxRow`, `DrawIcon`, `DrawMenu`, `NextColumn` +8 |
 | `$F798` | `ReadInputLeftover` | 7 | Leftover: RET, JP `$FE0F`, JP `$FE0F` (no code runs them) | - | - |
-| `$F7BB` | `UiStack` | 1345 | The UI task's stack, filled with `$E5` | - | - |
+| `$F7BB` | `E5Fill` | 1345 | Leftover: 1345 bytes of `$E5` (the byte a CP/M or +3DOS format writes); no stack or code touches them (L1: untouched) | - | - |
 | `$FCFF` | `InterruptSpare` | 258 | InterruptSpare | `AddValue`, `BlinkCell`, `CellFlagsOf`, `CellStep`, `ClearCover` +48 | - |

@@ -51,22 +51,22 @@ PrintNumber24:
   POP BC
   POP HL
   LD B,$F0
-  LD DE,Traffic+$06F0
+  LD DE,$BDC0
   EXX
   CALL Digit24
   EXX
   LD B,$FE
-  LD DE,Irradiate+$0002
+  LD DE,$7960
   EXX
   CALL Digit24
   EXX
   LD B,$FF
-  LD DE,CityMap+$14A0
+  LD DE,-$2710
   EXX
   CALL Digit24
   EXX
   LD B,$FF
-  LD DE,UiStack+$045D
+  LD DE,-$03E8
   EXX
   CALL Digit24
   EXX

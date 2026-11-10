@@ -3,11 +3,11 @@
 ;
 ; SimTask runs a pass over the city for ever: PowerFlood from the stations, ScanCity (zones and buildings, the plain
 ; cells: fire, flood, radiation, road and rail upkeep), the coverage of police and fire stations, pollution and
-; traffic decay, the demands, the city value, the advice; a month every SpeedMask passes, the budget at the year's
+; traffic decay, the demands, the city value, the advice; a month every MonthMask + 1 passes, the budget at the year's
 ; end.
 ; --------------------------------------------------------------------------------------------------------------------
 
-; Fill the whole building at HL with the cell FillCellCode ($8998)
+; Fill the whole building at HL with the cell SpreadCode ($8998)
 ;
 ; L1 8.
 FillBuilding:
@@ -84,7 +84,8 @@ FireStrength:
 ; Add the fire station's coverage (FireStrength through CoverKernel) into
 ; FireCover round the cell
 ;
-; L1 228.
+; No clipping at the map edge: the kernel origin is grid cell - 50 (Grid24) or
+; - $62 (Grid48). L1 228.
 StampFire:
   LD BC,(CurCell)
   LD IX,CoverKernel
@@ -115,7 +116,8 @@ PoliceStrength:
 
 ; Add the police coverage into PoliceCover
 ;
-; L1 233.
+; No clipping at the map edge: the kernel origin is grid cell - 50 (Grid24) or
+; - $62 (Grid48). L1 233.
 StampPolice:
   LD BC,(CurCell)
   LD IX,CoverKernel
@@ -187,7 +189,8 @@ PollutionStrength:
 ; Add PollutionStrength through the kernel at IX into Pollution round the
 ; current cell
 ;
-; L1 8425.
+; No clipping at the map edge: the kernel origin is grid cell - 50 (Grid24) or
+; - $62 (Grid48). L1 8425.
 StampPollution:
   LD BC,(CurCell)
   LD IX,PollutionKernel
@@ -554,10 +557,11 @@ CrimeStore:
 TaxPenalty:
   DEFB $00
 
-; TaxPenalty = 8 x TaxRate ($91E4), plus TaxRate on medium, 2 TaxRate on hard
-; ($A518)
+; TaxPenalty = 8 x TaxRate ($91E4); 10 x on medium (Level 1), 9 x on difficult
+; (Level 2) ($A518)
 ;
-; L1 33 251.
+; The second addition is skipped by CP $02 / RET Z ($7EB4) on Level 2 only, so
+; the difficult level pays less than the medium one. L1 33 251.
 TaxPenaltyOf:
   LD A,(TaxRate)
   LD B,A
@@ -738,7 +742,8 @@ PowerPlants:
 ; Scan the map for 4 x 4 building tops ($B4) of type 6 (coal) or 8 (nuclear)
 ; into PowerPlants
 ;
-; L1 1101 (once a simulation pass).
+; Finds only top row bytes $B4 (powered, width 4) of type 6 (coal) or 8
+; (nuclear) (LD A,$B4 / CPIR at $7FA2). L1 1101 (once a simulation pass).
 FindPlants:
   LD IX,PowerPlants
   LD HL,CityMap
@@ -1087,7 +1092,9 @@ CellStack:
 ; A scan-line flood fill from FloodStart over IsConductive cells, each made
 ; powered (PowerCell)
 ;
-; L1 1162.
+; FloodPush silently drops a span when CellStack is full; a plant whose top
+; cell an earlier plant's flood powered floods nothing (IsConductive fails at
+; once), so its budget is lost. L1 1162.
 FloodFill:
   CALL IsConductive
   RET NZ
@@ -1452,20 +1459,24 @@ StartSimulation:
   LD (Funds+$0002),A
   RET
 
-; Nonzero: the zones are scanned but do not grow (the pause)
+; Nonzero: the zones are scanned but do not grow (the pause); never set:
+; InitSimulation writes 0, ScanCityStep $86F3 tests it, a second pause that is
+; never used
 SimPaused:
   DEFB $00
 SimPass:
   DEFB $00                ; the simulation pass counter
 
 ; The simulation task: init, then for ever one pass over the city; a month
-; every SpeedMask + 1 passes
+; every MonthMask + 1 passes
 ;
 ; A pass: ClearCounters, SetSpeed, PowerFlood, ScanCity (the growth),
 ; CoverStations (every 4th), DecayPollution, DecayTraffic, DemandOf, Averages2,
 ; AssessCity, PopBalanceOf, ServiceNeeds, Advise ($99AD), Averages; when
-; SimPass AND MonthMask is 0, MonthEnd ($8E94) and NextMonth. c1: L1 12
-; entries, 1089 passes.
+; SimPass AND MonthMask is 0, MonthEnd ($8E94) and NextMonth. L1 (c1 and the
+; ten recordings together, not c1 alone): 12 entries, 1101 passes started at
+; SimTaskPass (c1 17, doc 4.8), 1089 of them run to the month test (a recording
+; ends inside a pass).
 SimTask:
   CALL InitSimulation
 SimTaskPass:
@@ -1596,10 +1607,13 @@ BuildingCount:
   DEFB $00,$00
 TransportUpkeep:
   DEFB $00,$00
-Count8466:
-  DEFB $00,$00
-Count8468:
-  DEFB $00,$00
+PoliceUpkeep:
+  DEFB $00,$00            ; 100 per police station each pass (PoliceStep
+                          ; $8D56), powered or not; MonthEnd copies it to
+                          ; PoliceCost
+FireUpkeep:
+  DEFB $00,$00            ; 100 per fire station (FireStep $8D73); MonthEnd
+                          ; copies it to FireCost
 RoadCount:
   DEFB $00,$00
 RailCount:
@@ -1857,7 +1871,8 @@ TripSteps:
 ; Up to 30 steps of TripStep, each checked for arrival (TripArrived); carry
 ; when lost
 ;
-; L1 9735.
+; A dead end drops one pushed cell without counting a step or moving; with no
+; way on, the trip is lost. L1 9735.
 TripWalk:
   LD A,$05
   LD (TripBack),A
@@ -2746,7 +2761,8 @@ ResidentialScoreIt:
   LD (ZoneDemand),HL
   CALL ResidentialScore
   LD A,(Density)
-  CP $10
+  CP $10                  ; CP $10 / JR C,ResidentialGrow jumps to the next
+                          ; instruction: a no-op (leftover of a removed branch)
   JR C,ResidentialGrow
 ResidentialGrow:
   LD A,(Density)
@@ -2790,8 +2806,12 @@ ResidentialBuildChurch:
 ; growth chance a block of level ResLevel / 2, or back to a full zone
 ;
 ; Below score 128 (ResLevel $0F) the block goes back to the houses zone
-; ResRevertZone. Not run in any recording (no block grew there): known only
-; from the code.
+; ResRevertZone. It copies only the low byte of ResDemand into ZoneDemand (LD
+; A,(ResDemand) at $8B6F), so the high byte left by the previous zone decides
+; the sign; it acts on the IndChance mask and does not test power. No bot
+; recording ran it; a block grew in the stage 2 ceiling run
+; (work/stage2/ceiling.log, frame 80 000, R blocks 1), so ResBuildingStep runs
+; there.
 ResBuildingStep:
   LD HL,(ResPop)
   INC HL
@@ -2885,6 +2905,9 @@ CommercialPowered:
   JR CommercialRing
 
 ; a commercial building (types $15-$18): the same from the building's corner
+;
+; A building that reverts mid-scan is counted twice in the pass: the reverted 3
+; x 3 zone is met again by ScanCity.
 ComBuildingStep:
   LD HL,(ComPop)
   INC HL
@@ -2969,6 +2992,10 @@ IndustrialPowered:
   JR IndustrialRing
 
 ; an industrial building (types $1A-$1D)
+;
+; A building that reverts mid-scan is counted twice in the pass: the reverted 3
+; x 3 zone is met again by ScanCity (IndPop 12 with 8 I zones, city frame 29
+; 000).
 IndBuildingStep:
   LD HL,(IndPop)
   INC HL
@@ -3094,13 +3121,14 @@ NuclearPollute:
   LD (PollutionStrength),A
   JP StampPollution
 
-; A police station: PoliceCost ($8466) + 100; powered, PoliceCount + 1
+; A police station: PoliceUpkeep ($8466) + 100 (saturating, before the power
+; test); powered, PoliceCount + 1
 PoliceStep:
-  LD HL,(Count8466)
+  LD HL,(PoliceUpkeep)
   LD DE,$0064
   ADD HL,DE
   JR C,PolicePowered
-  LD (Count8466),HL
+  LD (PoliceUpkeep),HL
 PolicePowered:
   LD A,(ZonePowered)
   AND A
@@ -3114,13 +3142,14 @@ PolicePowered:
 PoliceStepEnd:
   RET
 
-; A fire station: FireCost ($8468) + 100; powered, FireCount + 1
+; A fire station: FireUpkeep ($8468) + 100 (saturating, before the power test);
+; powered, FireCount + 1
 FireStep:
-  LD HL,(Count8468)
+  LD HL,(FireUpkeep)
   LD DE,$0064
   ADD HL,DE
   JR C,FirePowered
-  LD (Count8468),HL
+  LD (FireUpkeep),HL
 FirePowered:
   LD A,(ZonePowered)
   AND A
@@ -3186,7 +3215,9 @@ HospitalEnd:
 ; A powered stadium with transport: 1 in 32 a trip to R; when it arrives
 ; StadiumCount + 1
 ;
-; L1 648.
+; StadiumCount + 1 only when powered, with transport in the 4 x 4 ring, and
+; unless a trip was tried and lost. The city recording's stadium is never
+; counted (StadiumCount 0 in all 311 samples). L1 648.
 StadiumStep:
   LD A,(ZonePowered)
   AND A
@@ -3319,9 +3350,9 @@ MonthEnd:
   LD (PopLastYear+$0002),A
   LD HL,(TransportUpkeep)
   LD (TransportCost),HL
-  LD HL,(Count8466)
+  LD HL,(PoliceUpkeep)
   LD (PoliceCost),HL
-  LD HL,(Count8468)
+  LD HL,(FireUpkeep)
   LD (FireCost),HL
   LD A,(AutoBudget)
   AND A
@@ -3419,7 +3450,8 @@ ServiceNeedsChurch:
 
 ; The speed's five values, copied from SpeedTable by SetSpeed: the growth
 ; tries, the I chance mask, the C chance mask, a fourth (no reader), the month
-; mask
+; mask; the image holds 8, 7, 7, 7, 1, a row SpeedTable does not have; SetSpeed
+; overwrites it before any reader
 GrowTries:
   DEFB $08
 IndChance:

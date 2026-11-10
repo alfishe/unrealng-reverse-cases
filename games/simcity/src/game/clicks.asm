@@ -100,7 +100,7 @@ ClickSpare:
 ; SPACE pressed: take the pointer's cell, then the tool palette, the scroll
 ; arrows, the menu bar, the map
 ;
-; With NoSwitch set (no task switch while the UI changes the screen and the
+; With SwitchOff set (no task switch while the UI changes the screen and the
 ; map): ToolClick $6D51, ScrollClick $6CBF, MenuClick $6401, MapClick $7012. L1
 ; 609 (the presses of the recordings).
 Click:

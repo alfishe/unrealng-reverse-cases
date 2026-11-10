@@ -5,9 +5,15 @@
 ; table $FD00 and the jump $FCFC are at the end of the system module (a module is one stretch of addresses).
 ; --------------------------------------------------------------------------------------------------------------------
 
-; The simulation task's stack (zeros)
+; The UI task's stack: Entry sets SP = $F6C2 (UiStack+$40); L1's deepest write
+; $F6A4
+UiStack:
+  DEFS $40
+
+; The simulation task's stack below SimFrame: it grows down from $F704 into
+; SimFrame and below; L1's deepest write $F6E8; $F6C2-$F6E7 never written
 SimStack:
-  DEFS $6C
+  DEFS $2C
 
 ; The simulation task's first frame: 20 bytes of registers, then the entry
 SimFrame:

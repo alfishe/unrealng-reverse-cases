@@ -313,7 +313,8 @@ BuildingValues:
 ; A = the value of the cell at HL for its neighbours: a building's kind class,
 ; 9 for a developed zone cell; carry for nothing
 ;
-; L1 191 120.
+; A type missing from the table returns with RET Z and BC still pushed:
+; unreachable, every placed type is in the table. L1 191 120.
 BuildingValue:
   PUSH BC
   LD A,(HL)

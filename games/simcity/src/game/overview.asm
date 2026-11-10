@@ -54,7 +54,8 @@ HighlightLayerLoop:
   DJNZ HighlightLayerLoop
   RET
 
-; Every 4th pass: Q / A change the layer; a digit 1-9 the map area
+; Every 4th loop: Q / A change the layer; SYMBOL SHIFT + a digit 1-9 the map
+; area (MapsKeysDigit returns if SYMBOL SHIFT is up)
 ;
 ; Used by the routine at MapsWindow.
 MapsKeys:

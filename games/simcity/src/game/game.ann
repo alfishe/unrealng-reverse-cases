@@ -10,8 +10,9 @@
 # from column ViewCol, row ViewRow on the screen's rows 8-23. The pointer moves in half-character steps across
 # (PointerX 0-62) and in pixel pairs down (PointerY 0-184).
 #
-# The two tasks: the UI task runs MainMenu / UiLoop ($8FA0, $8FDA) on the stack from $F6C2, the simulation task
-# SimLoop ($835F) on its own; the interrupt (Interrupt $F70B) swaps them every frame unless NoSwitch $F705 is set.
+# The two tasks: the UI task runs UiTask / UiLoop ($8FA0, $8FCC; the pass UiPass $8FDA) on the stack from $F6C2
+# (UiStack $F682-$F6C1), the simulation task SimTask ($835F) on its own ($F6E8-$F703, from SimFrame up); the interrupt
+# (Interrupt $F70B) swaps them every frame unless SwitchOff $F705 is set.
 
 @equ $4000 Screen 6144 ; the display file
 @equ $5800 Attributes 768 ; the attributes
@@ -20,6 +21,17 @@
 @const RomFont $3C00 ; the ROM's character set less 256 (character n at RomFont + 8 n)
 
 @isub $F75A LD BC,RomFont
+@isub $5B1C LD SP,UiStack+$40
+@isub $5B2B LD HL,$8000
+@isub $5E41 LD DE,-10000
+@isub $5E47 LD DE,-1000
+@isub $65D2 LD DE,$BDC0
+@isub $65DC LD DE,$7960
+@isub $65E6 LD DE,-10000
+@isub $65F0 LD DE,-1000
+@isub $A801 LD DE,-10000
+@isub $A807 LD DE,-1000
+@isub $72F2 LD DE,40000
 
 @inline $5DEF
 @inline $6704
@@ -38,25 +50,25 @@ $5B06 KeyRowEnter ; $BFFE: ENTER L K J H
 $5B07 KeyRowSpace ; $7FFE: SPACE SYMBOL SHIFT M N B
 $5B08 KeyNone ; a ninth row, always $FF: ScanKey reads nine rows
 $5B09 PortHighs ; leftover: the eight port high bytes $FE-$7F; no code reads them (L1: 0 reads)
-$5B11 BitMasks ; $80, $40, ... $01: the bit of a column, read by the drawing of bars and graphs (L1: 1 415 565 reads)
-$5B19 EntryJump ; JR $5B1B, two bytes no code runs (L1: never executed): the entry is reached by JP $5B1B
+$5B11 BitMasks ; $80, $40, ... $01: the bit of a column, read by PowerBit $75F1 (the power map's bit of a cell) (L1: 1 415 565 reads)
+$5B19 EntryJump ; JR $5B1B, two bytes no code of the tape version runs (L1: never executed): the tape's mover reaches the entry by JP $5B1B; the +3 disk's boot enters here (JP $5B19, work/stage2/NOTES.md 5.3)
 
-$5B1B c Entry ; The game's entry: stack, black border, the Kempston test, IM 2 with I = $FD, then MainMenu
-> MoveCode2 $5000 jumps here. SP = $F6C2 (the UI task's stack), the border black, NoSwitch $F705 = 1 (no task switch until the simulation task is set up), then the Kempston test: port $1F is read up to 32 768 times; a value $1F or more (a floating bus gives $FF) means no interface, otherwise KempstonFound = 1. Then I = $FD (the vector table ImTable $FD00, every vector $FCFC), IM 2, EI and JP MainMenu $8FA0.
+$5B1B c Entry ; The game's entry: stack, black border, the Kempston test, IM 2 with I = $FD, then UiTask
+> MoveCode2 $5000 jumps here. SP = $F6C2 (the top of the UI task's stack UiStack), the border black, SwitchOff $F705 = 1 (no task switch until the simulation task is set up), then the Kempston test: port $1F is read up to 32 768 times; a value $1F or more (a floating bus gives $FF) means no interface, otherwise KempstonFound = 1. Then I = $FD (the vector table VectorTable $FD00, every vector $FCFC), IM 2, EI and JP UiTask $8FA0.
 > c1: L1 1 at frame 16 280; the loop ran 32 768 times (no Kempston in c1's setup); the ports recording sets KempstonFound (stage 1). No other code changes I or the mode.
 $5B2E KempstonTest ; IN A,($1F): below $1F an interface answers
-$5B3E SetIm2 ; I = $FD, IM 2, EI, JP MainMenu
+$5B3E SetIm2 ; I = $FD, IM 2, EI, JP UiTask
 
 @module beeper ; The two beeper routines: the disaster noise and the refusal tone
-@about NoiseBurst (the disasters, through FireNoise, FloodNoise, CrashNoise and the earthquake) and ToneBeep (the two refusals of the tools, Refuse $71E4). Both write the speaker bit of port $FE directly; both run with interrupts on, so the tasks keep switching while they sound.
+@about NoiseBurst (the disasters, through FireNoise, FloodNoise, CrashNoise and the earthquake) and ToneBeep (the two refusals of the tools, Refuse $71E4). Both write the speaker bit of port $FE directly. NoiseBurst runs with interrupts off (DI ... EI), so the frame's interrupt waits; ToneBeep leaves them on.
 $5B48 c NoiseBurst ; The disaster noise: 200 loops of the beeper from Random, gated by the SOUND option
-> Input: E the pitch mask (each loop sends a new random speaker bit when D AND E is 0: E = 0 every loop, 1 every second ...). Interrupts are off while it plays (DI ... EI), so the frame's interrupt is held and the task switch waits. Returns at once when SoundOn ($A32D) is 0. Callers: the disasters (Disaster $78BD, the fire and flood spread $9108, $9116).
+> Input: E the pitch mask (each loop sends a new random speaker bit when D AND E is 0: E = 0 every loop, 1 every second ...). Interrupts are off while it plays (DI ... EI), so the frame's interrupt is held and the task switch waits. Returns at once when SoundOn ($A32D) is 0, but after the DI: with SOUND off it returns with interrupts off, and they stay off until the next EI (a bug of the original). Callers: the disasters (Disaster $78BD, the fire and flood spread $9108, $9116).
 > L1 764 (the disasters recording: 127-255 calls a disaster), 30 406 random bits sent.
 $5B53 NoiseLoop ; INC D; D AND E = 0: a new random bit to the speaker
 $5B5F NoiseNext ; 200 iterations
 
 $5B66 c ToneBeep ; The refusal tone: 500 cycles of the speaker, 48 + 16 DJNZ loops a cycle (the beep of a refused tool)
-> No inputs. The speaker on with L = $30 DJNZ loops, off with H = $10, 500 times (DE = $01F4); about 40 ms. It is not gated by SoundOn. Called by PlaceTool $71E4 when a placement is refused. L1 3 (the tools recording's refusals: no funds, no room).
+> No inputs. The speaker on with L = $30 DJNZ loops, off with H = $10, 500 times (DE = $01F4): 500 cycles of 889 T, 444 500 T uncontended, 127 ms; measured 164 ms (8.2 frames, tools frame 13 434), with contention and the interrupts. It is not gated by SoundOn. Reached by JP ToneBeep from Refuse $71E4 when a placement is refused (a tool too dear is refused silently by SelectTool's RET M). L1 3: 2 in tools (the occupied cell at frame 13 434 traced, the other not located), 1 in bankrupt.
 $5B6C ToneCycle ; speaker on for L loops
 $5B71 ToneHigh ; DJNZ: the high half
 $5B77 ToneLow ; DJNZ: the low half
@@ -83,7 +95,7 @@ $5BDB ScanNextBit ; one column on
 $5BDE b ScanSpare 1 ; One byte no code reads (L1: 0 reads); kept as bytes
 
 $5BDF c KeyToChar ; A = the character of the key down (KeyChars), carry set when none
-> Used by the typed input: the city name (EditCityName), the gene digits and the tool shortcut keys (ToolKeys $6D2D). L1 5451, 1193 with a key.
+> Used by the typed input: the city name (InputName $A6F9), the gene digits and the tool shortcut keys (ToolKeys $6D2D). L1 5451, 1193 with a key.
 
 $5BEF c AnyKey ; Z clear when any key of the nine rows is down
 > Output: A = the first row's bits inverted (NZ) or 0 with Z. L1 2523 (the menus' key repeat, NumberRepeat $6A31).
@@ -105,7 +117,7 @@ $5C0A ScreenAddrCol ; OR C
 $5C0B ScreenAddrL
 
 $5C0D c AttrAddr ; HL = the attribute address of row B, column C (C kept, B = $58)
-> L1 1024 (the menu highlight HighlightLine $6933 and the graph windows).
+> L1 1024 (the menu highlight HighlightLine $6933 and the maps window's HighlightMapKey / HighlightLayer).
 
 $5C19 c NextPixelLine ; HL = the display file address one pixel line down
 > The usual three cases: inside the character (INC H), into the next character row (L + 32, H - 8), into the next third (L + 32 with carry). L1 3 121 944.
@@ -115,7 +127,7 @@ $5C28 c DrawIcon ; Draw icon tile A (8 bytes at IconTiles + 8 A) at row B, colum
 $5C43 DrawIconLoop
 
 $5C57 c DrawIconHere ; Draw icon tile A at PrintAddr with the current PrintAttr (no position, no own attribute)
-> Then JP PrintAttrHere $F76E (PrintAttr $FF leaves the attribute). L1 27 668 (the box frames of DrawBoxRow).
+> Then JP PrintGlyphAttr $F76E (PrintAttr $FF leaves the attribute). L1 27 668 (the box frames of DrawBoxRow).
 $5C67 DrawIconHereLoop
 
 $5C70 c ClearTopBlack ; Clear the top third ($4000-$47FF) and give it attribute $38
@@ -137,9 +149,10 @@ $5CBB MapsAttrMap
 @about Random: a Lehmer generator modulo 65 537 on RandomSeed, which NewLandscape sets from the gene; every random choice of the landscape, the growth, the trips and the disasters comes from it (the tornado sprite alone uses LD A,R).
 $5CC4 w RandomSeed 1 ; The random seed, 16 bits; NewLandscape sets it to the gene (Gene $6A8C)
 
-$5CC6 c Random ; The generator: seed = (254 (seed + 1) - 1) mod 65537; A = the seed's low byte
+$5CC6 c Random ; The generator: seed' = (254 (seed + 1) - 1) mod 65 537, 254 a primitive root: period 65 536; A = the seed's low byte
 > RandomSeed $5CC4 holds the seed. The arithmetic: H = the seed's low byte, L = $FD, so A:HL = 256 seed + 253; two SBC HL,DE take 2 seed off (254 seed + 253 in 24 bits), then the high byte is subtracted from the low 16 bits, which is mod 65537 because 65536 = -1; a borrow adds 1. Registers but A are kept. L1 343 327: the noise, the landscape, the simulation's random choices, the disasters.
 $5CE1 RandomStore
+$5CE4 ; LD A,H: dead, the next LD A,(RandomSeed) overwrites it
 
 @module cursor ; The pointer and the map box
 @about The arrow pointer drawn over the screen with its saved background, the box of the tool's size it shows over the view, and the tool palette's icons.
@@ -218,7 +231,7 @@ $5E66 c PrintDigit ; Print the digit A (0-9) at PrintAddr and step on
 $5E95 b BoxDims 2 ; DrawBox's box: width and height in characters
 
 $5E97 c DrawBox ; Draw a window frame from icon tiles $38-$3F: row, column, width, height at (HL)
-> The corners and edges are icon tiles: top $38 $39 $3A, sides $3F $3B, bottom $3E $3D $3C; the inside is left alone. Sets PrintCol/PrintRow at the corner. L1 193.
+> The corners and edges are icon tiles: top $38 $39 $3A, sides $3F $3B, bottom $3E $3D $3C; the inside is left alone. Sets PrintCol/PrintRow at the corner. It also patches $5F0F (BoxRowRight+9) with the box's column, a fourth self-modified operand. L1 193.
 $5EBB DrawBoxSides
 
 $5ED2 b BoxSpare 1 ; One byte no code reads; kept as bytes
@@ -237,10 +250,10 @@ $5F16 b StatusBarText 8 ; PrintInline codes: the menu bar (SYSTEM OPTIONS DISAST
 $5F40 c DrawStatusBox ; The status box: rows 3-7 of the top third (attribute $38), then the name, the tools, the date, the funds
 $5F43 b StatusBoxText 10 ; PrintInline codes: the status box
 $5F4D c DrawStatusItems ; The name, the funds, the tool palette, the tool name and the date
-$5F60 c DrawNameFunds ; Print the city name (12 letters, CityName $5F68) at row 5, column 1, and "FUNDS $" at row 5, column 17
-> CityName lies inside the inline text: typing a name writes these bytes (EditCityName), so the text prints the current name. L1 35.
+$5F60 c DrawNameFunds ; Print the city name (12 letters, CityName $5F68) at row 5, column 1, and "FUNDS" with the dollar sign at row 5, column 17
+> CityName lies inside the inline text: typing a name writes these bytes (InputName $A6F9), so the text prints the current name. L1 35.
 $5F63 b CityNameAt 5 ; PrintInline codes: attribute $39, row 5, column 1 (the name follows)
-$5F68 CityName ; the city's name, 12 letters, "HERESVILLE  " in the image
+$5F68 CityName ; the city's name, 12 letters, "HERESVILLE  " in the image; InputName edits only 11 and the 12th letter is not saved (SaveCityName holds 11)
 $5F7F c DrawNameFundsEnd ; RET
 
 $5F80 c PrintFunds ; Print Funds ($8F97, 24 bits) at row 5, column 24
@@ -253,10 +266,10 @@ $5FAE c PrintDate ; Print the month (MonthNames by Month $8F9B) at row 4, column
 > L1 9917.
 
 $5FC6 t GameTexts ; The tool names with prices, the levels, the six city classes, the 27 advice and disaster messages
-> 50 strings, bit 7 on each last letter, found by FindText $6317 by index: 0-13 the tools ("BULLDOZE $1" ... "AIRPORT $10000"), 14-16 the levels (EASY, MEDIUM, HARD), 17-22 the classes (VILLAGE ... MEGALOPOLIS), 23 a space, 24-49 the advice and disasters ("MORE RESIDENTIAL ZONES NEEDED" ... "TORNADO DETECTED"). Read by PrintToolName, the level name, the class name and the advice (L1 1 602 984 reads, every byte).
+> 50 strings, bit 7 on each last letter, found by FindText $6317 by index: 0-13 the tools ("BULLDOZE" with its price, 1 dollar, ... "AIRPORT", 10 000 dollars), 14-16 the levels (EASY, MEDIUM, HARD), 17-22 the classes (VILLAGE ... MEGALOPOLIS), 23 a space, 24-49 the advice and disasters ("MORE RESIDENTIAL ZONES NEEDED" ... "TORNADO DETECTED"). Read by PrintToolName, the level name, the class name and the advice (L1 1 602 984 reads, every byte).
 @res text/GameTexts.bin
 
-$6305 c PrintToolName ; Print the current tool's name and price (GameTexts by CurrentTool) at row 4, column 1, padded to 19
+$6305 c PrintToolName ; Print the current tool's name and price (GameTexts by CurrentTool) at row 4, column 1, padded to 20 columns
 > L1 99.
 
 $6317 c FindText ; HL = the A-th (from 0) bit-7-ended string of the table at HL
@@ -264,7 +277,7 @@ $6317 c FindText ; HL = the A-th (from 0) bit-7-ended string of the table at HL
 $631C FindTextLoop
 $6327 FindTextNext
 
-$632A c PrintPadded ; Print the string at HL at row B, column C, then spaces up to A characters
+$632A c PrintPadded ; Print the string at HL at row B, column C, then spaces to A + 1 columns (C counts down from A for each letter but the last)
 > L1 14 996.
 $6335 PrintPaddedLoop
 $634A PrintPaddedPad
@@ -290,7 +303,7 @@ $63C9 b ClickCell 2 ; The pointer's character cell when SPACE was pressed: colum
 $63CB ClickSpare ; two bytes no code reads
 
 $63CD c Click ; SPACE pressed: take the pointer's cell, then the tool palette, the scroll arrows, the menu bar, the map
-> With NoSwitch set (no task switch while the UI changes the screen and the map): ToolClick $6D51, ScrollClick $6CBF, MenuClick $6401, MapClick $7012. L1 609 (the presses of the recordings).
+> With SwitchOff set (no task switch while the UI changes the screen and the map): ToolClick $6D51, ScrollClick $6CBF, MenuClick $6401, MapClick $7012. L1 609 (the presses of the recordings).
 
 $63F9 c WaitSpaceUp ; Wait until SPACE is released
 > L1 709 255 loop runs, 196 calls.
@@ -310,25 +323,25 @@ $6434 c DrawViewRowPass ; Draw one of the view's 16 rows, the one PassCount AND 
 
 $6462 w TileIndex 1 ; The tile number being drawn
 
-$6464 c DrawBlankCell ; Draw cell tile $3B (blank land) instead: a blinking cell in its off phase
+$6464 c DrawBlankCell ; Draw cell tile $3B (the "no power" lightning) instead: the on phase of the blink of an unpowered zone or building
 $6468 c DrawCell ; Draw one view cell: map byte in A (or the building row in progress), tile and attribute
 > A map byte below $80 is a cell tile at CellTiles $EA68 + 8 n with its attribute at CellAttrs $F530 + n; inside a building row (BuildingLeft not 0) the next building tile is drawn instead (DrawBuildingTile). Cells $54-$56 blink (BlinkCell); roads 7 and 8 show their traffic (RoadTraffic). The tile goes to ViewAt ($6482), the attribute through PutAttr. L1 5 379 061.
 $6475 DrawCellTile
 $6481 DrawTileAt ; LD DE,n: the screen address of the cell (operand $6482, ViewAt)
 $6486 DrawTileLoop
 
-$6499 c BlinkCell ; Cells $54-$56 (the unpowered zone centres) blink: with PassCount bit 5 set they show tile $3B
+$6499 c BlinkCell ; Cells $54-$56 (the unpowered zone centres) blink: with PassCount bit 5 set they show tile $3B (the lightning)
 > L1 4 249 059, 11 661 blanked.
 
 $64A9 c RoadTraffic ; Road cells 7 and 8: heavy traffic shows tile $34 / $36, medium blinks to $35 / $37
-> Reads the traffic map at the cell (MapToTraffic $7635, $7581): $DC or more heavy, $96-$DB medium (the second tile when Blink is set). L1 668 762.
+> Reads the traffic map at the cell (MapToRowCol $7635, TrafficAt $7581): $DC or more heavy, $96-$DB medium (the second tile when Blink is set). L1 668 762.
 $64B5 RoadTrafficLook
 $64D3 RoadTrafficTile
 
 $64D5 b BuildingDummy 1 ; A byte IX points at while a building row is drawn (no reader of its value)
 
 $64D6 c DrawBuildingTile ; The next tile of the building row in progress: BuildingTiles $ED58 + 8 n, attribute $F58E + n
-> With PassCount bit 5 a building whose first byte is $A0-$AF (a zone without power) blinks to the blank tile. L1 1 130 002.
+> With PassCount bit 5, the first drawn cell of a building row whose start byte AND $F0 is $A0 (a top row, power bit 4 clear) shows tile $3B, the lightning. IX then points at BuildingDummy, so the row's other cells and the lower rows never blink: only the top-left cell of an unpowered building does. L1 1 130 002.
 $64EF DrawBuildingAttr
 
 $6505 w CellAttrPtr 1 ; The attribute table of the cell being drawn (CellAttrs or BuildingAttrs)
@@ -457,10 +470,10 @@ $6922 c MenuTab ; PrintCol 24 on this line
 $6933 c HighlightLine ; XOR $46 into the attributes of row B, columns 1-30: the menu bar's highlight
 $693A HighlightLoop
 
-$6942 w MenuHook 1 ; A routine the menu loop calls every pass (0: none): the graph windows' live drawing
+$6942 w MenuHook 1 ; A routine RunMenu calls on entry and EditNumber after each Q / A (0: none): BudgetHook $9346 or Evaluate $9737, which recompute and print the window's numbers
 
 $6944 c RunMenu ; Move the highlight with Q / A every 8 frames (HALT), SPACE selects: run, toggle or edit the item
-> L1 132. The UI task halts here, so the simulation runs on through the switch while a menu is open.
+> L1 132. The menus are opened from Click (or BudgetWindow, EvaluationWindow, MapsWindow), which set SwitchOff $F705 = 1: the simulation is frozen while a menu is open, and each HALT waits one frame.
 $6950 RunMenuShow
 $6953 RunMenuWait
 $6955 RunMenuHalt
@@ -555,7 +568,7 @@ $6C84 c LandNeighbours ; D = the land bits of the eight neighbours of (B, C), th
 @module tools ; The tools: palette, prices, sites, networks, bridges, the bulldozer and the buildings
 @about The 14 tools: the palette and its keys, the prices and Spend, CheckSite and the two refusals, roads, rails and power lines with their crossings and bridges, the bulldozer and the rubble, the zones and buildings with their map patterns.
 $6CBF c ScrollClick ; A click on row 2, column 0: scroll the view with the keys until SPACE (not run in any recording)
-> ScrollMode: O, P, Q, A scroll by a cell a frame, the view redrawn each time, until SPACE. No recording clicked there (L1 - from $6CCA; the scroll of the recordings goes through the pointer at the view's edge, ScrollByPointer).
+> ScrollMode: O, P, Q, A scroll by a cell a frame, the view redrawn each time, until SPACE. No recording clicked there (L1 - from $6CCA; the scroll of the recordings goes through CAPS SHIFT + 5-8, ShiftScroll $7A6F; the pointer at the view's edge only redraws the view, it does not scroll).
 $6CCD ScrollModeLoop
 
 $6D05 c ScrollLeft ; ViewCol - 1 down to 0
@@ -677,8 +690,8 @@ $70FA b FreeCells 2 ; The cells a building site takes at no cost: 2 land, 0 wate
 $70FC SiteCells ; the cells a site may hold (cleared at $1 each): 2, 3, 1, 5, 4, 6, then $7102
 $7102 SiteWater ; the seventh: 0 (water) for the networks, 2 for the other tools; written by CheckSite
 
-$7103 c CheckSite ; Carry set when the tool's box at the click may not be built; clears trees at $1 a cell
-> On water, or with AutoBulldoze ($A32B) on: every cell of the box must be in SiteCells (water only for road, rail and power); each cell not in FreeCells costs 1 and becomes land 2. With AutoBulldoze off on land: StrictSite, every cell must be land 2. The bulldozer passes always. L1 464.
+$7103 c CheckSite ; Carry set when the tool's box at the click may not be built; clears trees at 1 dollar a cell
+> On water, or with AutoBulldoze ($A32B) on: every cell of the box must be in SiteCells (water only for road, rail and power); each cell not in FreeCells costs 1 and becomes land 2. With AutoBulldoze off on land: StrictSite, every cell must be land 2. The bulldozer passes always. When Spend cannot pay 1 for clearing a cell, the cell is left as it is and the site still passes. L1 464.
 $7113 CheckSiteLoose
 $7129 CheckSiteBox
 $7135 CheckSiteRow
@@ -704,7 +717,7 @@ $71BC c PlaceNetwork ; Lay one cell of road, rail or power: HL the price, DE the
 > On water the Bridge; on land (2) pay, write the kind, FixNetwork, redraw; on anything else Refuse. L1 312.
 
 $71E4 c Refuse ; The refusal: ToneBeep, but only when no direction key (A, Q, P, O) is held
-> The two refusals that beep are CheckSite's (the site) and PlaceNetwork's (a network on a building or a zone); while the pointer is dragged with a key held the beep is left out. L1 3; ToneBeep L1 3 in the tools recording.
+> Three refusals beep: MapClick's after CheckSite (the site), PlaceNetwork's (a network on a building or a zone) and ParkTool's (map column 2); while the pointer is dragged with a key held the beep is left out. L1 3: 2 in tools, 1 in bankrupt.
 
 $71FF b BridgeDirs 16 ; By the neighbour mask: the bridge direction (1-4; 0 none)
 @res tables/BridgeDirs.bin
@@ -719,7 +732,7 @@ $726B b BulldozeKeep 8 ; The bridge and coast-end cells: the bulldozer turns the
 $7273 BulldozeNothing ; 0, 2, $59: nothing to clear (water, land, rubble ash)
 
 $7276 c Bulldoze ; Tool 0: clear the clicked cell
-> A building goes to BulldozeBuilding, a zone centre ($51-$56) to BulldozeZone, a bridge to water ($72CA), cells $3C-$50 through the flags to rubble or land, the rest to land 2 at $1, then the networks round it are reshaped. L1 2.
+> A building goes to BulldozeBuilding, a zone centre ($51-$56) to BulldozeZone, a bridge to water ($72CA), cells $3C-$50 through the flags to rubble or land, the rest to land 2 at 1 dollar, then the networks round it are reshaped. L1 2.
 $7288 BulldozeCell
 $72A3 BulldozeToLand
 $72AF BulldozeReshape
@@ -773,7 +786,7 @@ $7473 b StadiumBuilding 16 ; The stadium, 4 x 4
 $7483 c StadiumTool ; Tool 10: 3000
 $7494 b CoalPlant 16 ; The coal power station, 4 x 4
 $74A4 NuclearPlant ; the nuclear one
-$74B4 c PowerPlantTool ; Tool 11: with 3000 or more, the menu $9F41 asks coal (3000) or nuclear (5000)
+$74B4 c PowerPlantTool ; Tool 11: when the low 16 bits of Funds are 3000 or more (LD HL,(Funds): the high byte is ignored), the menu $9F41 asks coal (3000) or nuclear (5000); SelectTool already refused it below the palette's 4000
 > L1 8.
 $74DC PowerPlantPay
 $74E6 b SeaportBuilding 16 ; The seaport, 4 x 4
@@ -829,7 +842,7 @@ $7682 b BuildingValues 12 ; By building routine (BuildingKinds' second byte): th
 @res tables/BuildingValues.bin
 
 $768E c BuildingValue ; A = the value of the cell at HL for its neighbours: a building's kind class, 9 for a developed zone cell; carry for nothing
-> L1 191 120.
+> A type missing from the table returns with RET Z and BC still pushed: unreachable, every placed type is in the table. L1 191 120.
 $769D BuildingValueTop
 $76A7 BuildingValueKind
 $76B3 BuildingValueLook
@@ -854,7 +867,7 @@ $772B NextYear
 @module movers ; The moving objects: the train, the plane, the tornado; the meltdown
 @about The sprites over the view, the train on the rails, the plane and its crash, the tornado that walks to the centre, the meltdown of a nuclear station.
 $7735 c DrawMover ; Draw the 16 x 16 sprite A (MoverSprites $A884) at map cell (B, C), if it is in the view and its row is drawn this pass
-> The sprite is ORed in with a one-pixel outline cut from the screen. L1 2297.
+> The sprite is ORed in. The "mask" computed from the screen byte, byte AND (byte OR byte shifted), is the byte itself, so nothing is cut. L1 2297.
 $776C DrawMoverLine
 
 $778F c DrawMovers ; Each pass: the train (not under a rail bridge), the plane and the tornado, if they are out
@@ -880,6 +893,7 @@ $7858 MoveTrainSprite
 
 $785D c StartTrain ; From a rail cell (RailCell $8903): when no train is out, 1 in 64 starts one there
 > The $9312 compare's result is lost (AND A follows): a dead test. L1 134.
+$7860 ; CP $08: dead, the flags are replaced by the AND A that follows
 
 $7879 b PlaneOut 1 ; The plane: out flag, cell (column, row), the column it crashes at, the crash timer
 $787A PlaneCell
@@ -889,7 +903,7 @@ $787D PlaneTimer
 $787E c MovePlane ; Fly the plane a column left; when the timer runs out, crash: burn a 2 x 2 (CrashCell) and the noise (CrashNoise)
 > L1 9884; the crash L1 0 in the disaster recording? see NOTES.
 $78AF PlaneDone
-$78B4 c CrashCell ; BurnCell ($90C4) at BC
+$78B4 c CrashCell ; Ignite ($90C4) at BC
 $78BD c CrashNoise ; 255 NoiseBurst calls with a rising gate: the disaster noise
 $78C1 CrashNoiseLoop
 $78CA c StartPlane ; With no plane out, 1 in 4: a plane from the airport's row at the right edge (column $60) or at the airport
@@ -954,8 +968,8 @@ $7B58 MapsWindowLoop
 $7B7D MapsWindowEnd
 
 @module simulation ; The simulation task: power, coverage, pollution, traffic, land value, crime, demand and the growth of every zone
-@about SimTask runs a pass over the city for ever: PowerFlood from the stations, ScanCity (zones and buildings, the plain cells: fire, flood, radiation, road and rail upkeep), the coverage of police and fire stations, pollution and traffic decay, the demands, the city value, the advice; a month every SpeedMask passes, the budget at the year's end.
-$7B86 c FillBuilding ; Fill the whole building at HL with the cell FillCellCode ($8998)
+@about SimTask runs a pass over the city for ever: PowerFlood from the stations, ScanCity (zones and buildings, the plain cells: fire, flood, radiation, road and rail upkeep), the coverage of police and fire stations, pollution and traffic decay, the demands, the city value, the advice; a month every MonthMask + 1 passes, the budget at the year's end.
+$7B86 c FillBuilding ; Fill the whole building at HL with the cell SpreadCode ($8998)
 > L1 8.
 $7B8F FillBuildingTop
 $7B99 FillBuildingSize
@@ -972,12 +986,12 @@ $7BEF b CoverKernel 25 ; The 5 x 5 coverage kernel: the shift count of each cell
 $7C08 b FireStrength 1 ; the fire station's strength, 0-15 ($0F in the image; set by ApplyFunding)
 
 $7C09 c StampFire ; Add the fire station's coverage (FireStrength through CoverKernel) into FireCover round the cell
-> L1 228.
+> No clipping at the map edge: the kernel origin is grid cell - 50 (Grid24) or - $62 (Grid48). L1 228.
 $7C1C StampFireRow
 $7C1F StampFireCell
 $7C31 b PoliceStrength 1 ; The police station's strength, $0F
 $7C32 c StampPolice ; Add the police coverage into PoliceCover
-> L1 233.
+> No clipping at the map edge: the kernel origin is grid cell - 50 (Grid24) or - $62 (Grid48). L1 233.
 $7C45 StampPoliceRow
 $7C48 StampPoliceCell
 $7C5A c AddPolice ; One cell: A = strength >> (kernel - 1), added and clamped to 15
@@ -994,7 +1008,7 @@ $7C9B b TrafficKernel 6 ; The 6 x 6 kernel of the traffic's pollution
 $7CBF b PollutionStrength 1 ; the source's strength
 
 $7CC0 c StampPollution ; Add PollutionStrength through the kernel at IX into Pollution round the current cell
-> L1 8425.
+> No clipping at the map edge: the kernel origin is grid cell - 50 (Grid24) or - $62 (Grid48). L1 8425.
 $7CC8 c StampPollutionIX
 > L1 30 375.
 $7CD3 StampPollutionRow
@@ -1057,8 +1071,8 @@ $7E6A c CrimeOf ; Crime = (255 - LandValue) / 16 - PoliceCover here, not below 0
 $7E84 CrimeStore
 
 $7E9A b TaxPenalty 1 ; TaxPenaltyOf's result
-$7E9B c TaxPenaltyOf ; TaxPenalty = 8 x TaxRate ($91E4), plus TaxRate on medium, 2 TaxRate on hard ($A518)
-> L1 33 251.
+$7E9B c TaxPenaltyOf ; TaxPenalty = 8 x TaxRate ($91E4); 10 x on medium (Level 1), 9 x on difficult (Level 2) ($A518)
+> The second addition is skipped by CP $02 / RET Z ($7EB4) on Level 2 only, so the difficult level pays less than the medium one. L1 33 251.
 
 $7EBF b ZonePollutionMax 1 ; The 2 x 2 maximum of Pollution at the zone
 $7EC0 ZoneTrafficMax ; ... of Traffic
@@ -1092,7 +1106,7 @@ $7F5F c IndustrialScore
 $7F78 w PowerPlants 16 ; The map addresses of the power stations found (FindPlants), 0 ended
 
 $7F98 c FindPlants ; Scan the map for 4 x 4 building tops ($B4) of type 6 (coal) or 8 (nuclear) into PowerPlants
-> L1 1101 (once a simulation pass).
+> Finds only top row bytes $B4 (powered, width 4) of type 6 (coal) or 8 (nuclear) (LD A,$B4 / CPIR at $7FA2). L1 1101 (once a simulation pass).
 $7FA2 FindPlantsLoop
 $7FBE FindPlantsFound
 
@@ -1110,7 +1124,7 @@ $8019 FloodBudget ; the cells it may still power
 $801B FloodSP ; SP saved, to leave the flood at once
 $801D CellStack ; 128 cell pairs: the flood's spans; also PushCell's stack
 $811D c FloodFill ; A scan-line flood fill from FloodStart over IsConductive cells, each made powered (PowerCell)
-> L1 1162.
+> FloodPush silently drops a span when CellStack is full; a plant whose top cell an earlier plant's flood powered floods nothing (IsConductive fails at once), so its budget is lost. L1 1162.
 $8136 FloodFillPop
 $813D FloodFillLeft
 $8145 FloodFillSpan
@@ -1147,11 +1161,11 @@ $82EE c AddPopulation ; Population ($8443, 24 bits) = Population + 16 DE
 $830C c StartSimulation ; Make the simulation task (entry SimTask, SP $F6EE), the date January 1902, Funds by the level: 20 000, 10 000, 5000
 > L1 13.
 
-$835D b SimPaused 1 ; Nonzero: the zones are scanned but do not grow (the pause)
+$835D b SimPaused 1 ; Nonzero: the zones are scanned but do not grow (the pause); never set: InitSimulation writes 0, ScanCityStep $86F3 tests it, a second pause that is never used
 $835E SimPass ; the simulation pass counter
 
-$835F c SimTask ; The simulation task: init, then for ever one pass over the city; a month every SpeedMask + 1 passes
-> A pass: ClearCounters, SetSpeed, PowerFlood, ScanCity (the growth), CoverStations (every 4th), DecayPollution, DecayTraffic, DemandOf, Averages2, AssessCity, PopBalanceOf, ServiceNeeds, Advise ($99AD), Averages; when SimPass AND MonthMask is 0, MonthEnd ($8E94) and NextMonth. c1: L1 12 entries, 1089 passes.
+$835F c SimTask ; The simulation task: init, then for ever one pass over the city; a month every MonthMask + 1 passes
+> A pass: ClearCounters, SetSpeed, PowerFlood, ScanCity (the growth), CoverStations (every 4th), DecayPollution, DecayTraffic, DemandOf, Averages2, AssessCity, PopBalanceOf, ServiceNeeds, Advise ($99AD), Averages; when SimPass AND MonthMask is 0, MonthEnd ($8E94) and NextMonth. L1 (c1 and the ten recordings together, not c1 alone): 12 entries, 1101 passes started at SimTaskPass (c1 17, doc 4.8), 1089 of them run to the month test (a recording ends inside a pass).
 $8362 SimTaskPass
 $839B SimTaskNext
 
@@ -1175,8 +1189,8 @@ $845E UnpoweredZones
 $8460 PoweredZones
 $8462 BuildingCount
 $8464 TransportUpkeep
-$8466 Count8466
-$8468 Count8468
+$8466 PoliceUpkeep ; 100 per police station each pass (PoliceStep $8D56), powered or not; MonthEnd copies it to PoliceCost
+$8468 FireUpkeep ; 100 per fire station (FireStep $8D73); MonthEnd copies it to FireCost
 $846A RoadCount
 $846C RailCount
 $846E CrimeSum
@@ -1231,7 +1245,7 @@ $85D4 TripBack ; the direction the walk came from
 $85D5 TripSteps
 
 $85D6 c TripWalk ; Up to 30 steps of TripStep, each checked for arrival (TripArrived); carry when lost
-> L1 9735.
+> A dead end drops one pushed cell without counting a step or moving; with no way on, the trip is lost. L1 9735.
 $85DF TripWalkLoop
 $85EA TripWalkBack
 $85F6 TripWalkStep
@@ -1363,13 +1377,14 @@ $8AA3 c ResidentialStep ; The R zone: ResPop + 1, Population + 16 Density, a tri
 > Grows while Density < ResTile (ZoneScore / 2), else declines; a full zone (Density 63+) becomes a 3 x 3 building: a ChurchNeed or HospitalNeed building first ($1B, $12), else the residential block (tile $88). L1 17 802.
 $8AB7 ResidentialPop
 $8ADA ResidentialScoreIt
+$8AE9 ; CP $10 / JR C,ResidentialGrow jumps to the next instruction: a no-op (leftover of a removed branch)
 $8AED ResidentialGrow
 $8AFE ResidentialBuild
 $8B17 ResidentialBuildHospital
 $8B27 ResidentialBuildChurch
 
 $8B37 c ResBuildingStep ; A residential block (types $11-$14): count, the trip, the score; with the growth chance a block of level ResLevel / 2, or back to a full zone
-> Below score 128 (ResLevel $0F) the block goes back to the houses zone ResRevertZone. Not run in any recording (no block grew there): known only from the code.
+> Below score 128 (ResLevel $0F) the block goes back to the houses zone ResRevertZone. It copies only the low byte of ResDemand into ZoneDemand (LD A,(ResDemand) at $8B6F), so the high byte left by the previous zone decides the sign; it acts on the IndChance mask and does not test power. No bot recording ran it; a block grew in the stage 2 ceiling run (work/stage2/ceiling.log, frame 80 000, R blocks 1), so ResBuildingStep runs there.
 $8B42 ResBuildingPop
 $8B6C ResBuildingScore
 $8B89 ResBuildingLevel ; JR NC: ResLevel 8 and up, back to the houses
@@ -1384,6 +1399,7 @@ $8BC4 c CommercialStep ; The C zone: ComPop + 1; powered: ring, a trip to R or I
 > L1 2575.
 $8BCF CommercialPowered
 $8BE0 c ComBuildingStep ; a commercial building (types $15-$18): the same from the building's corner
+> A building that reverts mid-scan is counted twice in the pass: the reverted 3 x 3 zone is met again by ScanCity.
 $8BEB CommercialRing
 $8C0C CommercialScoreIt
 $8C41 b ComEmptyZone 9 ; The empty C zone, centre $52 (powered)
@@ -1394,6 +1410,7 @@ $8C5B c IndustrialStep ; The I zone: IndPop + 1; powered: ring, a trip to R, the
 > L1 1795.
 $8C66 IndustrialPowered
 $8C77 c IndBuildingStep ; an industrial building (types $1A-$1D)
+> A building that reverts mid-scan is counted twice in the pass: the reverted 3 x 3 zone is met again by ScanCity (IndPop 12 with 8 I zones, city frame 29 000).
 $8C82 IndustrialRing
 $8CA3 IndustrialScoreIt
 $8CD5 IndustrialPollute
@@ -1408,10 +1425,10 @@ $8D0B c CoalStep ; A coal station: CoalCount + 1, pollution $FF round it
 $8D16 CoalPollute
 $8D2F c NuclearStep ; A nuclear station: NuclearCount + 1, Meltdown (when pending), pollution $30
 $8D3A NuclearPollute
-$8D56 c PoliceStep ; A police station: PoliceCost ($8466) + 100; powered, PoliceCount + 1
+$8D56 c PoliceStep ; A police station: PoliceUpkeep ($8466) + 100 (saturating, before the power test); powered, PoliceCount + 1
 $8D62 PolicePowered
 $8D72 PoliceStepEnd
-$8D73 c FireStep ; A fire station: FireCost ($8468) + 100; powered, FireCount + 1
+$8D73 c FireStep ; A fire station: FireUpkeep ($8468) + 100 (saturating, before the power test); powered, FireCount + 1
 $8D7F FirePowered
 $8D8F FireStepEnd
 $8D90 c ChurchStep ; Type 2: ChurchCount + 1; unpowered, with the R chance back to an empty R zone (not run in the recordings)
@@ -1422,7 +1439,7 @@ $8DC0 HospitalCounted
 $8DD9 HospitalEnd
 
 $8DDA c StadiumStep ; A powered stadium with transport: 1 in 32 a trip to R; when it arrives StadiumCount + 1
-> L1 648.
+> StadiumCount + 1 only when powered, with transport in the 4 x 4 ring, and unless a trip was tried and lost. The city recording's stadium is never counted (StadiumCount 0 in all 311 samples). L1 648.
 $8E0F StadiumStepEnd
 $8E10 c SeaportStep ; A powered seaport with water and transport round it: 1 in 32 a trip to I; SeaportCount + 1; pollution $60
 $8E4A SeaportPollute
@@ -1450,7 +1467,7 @@ $8F30 ChurchNeed
 $8F31 c ServiceNeeds
 $8F4C ServiceNeedsChurch
 
-$8F67 b GrowTries 1 ; The speed's five values, copied from SpeedTable by SetSpeed: the growth tries, the I chance mask, the C chance mask, a fourth (no reader), the month mask
+$8F67 b GrowTries 1 ; The speed's five values, copied from SpeedTable by SetSpeed: the growth tries, the I chance mask, the C chance mask, a fourth (no reader), the month mask; the image holds 8, 7, 7, 7, 1, a row SpeedTable does not have; SetSpeed overwrites it before any reader
 $8F68 IndChance
 $8F69 ComChance
 $8F6A SpeedSpare
@@ -1550,9 +1567,10 @@ $950A b DecayMasks 16 ; By funded / (cost / 8), 0-15: the roads' and rails' deca
 $951A StrengthLevels ; and the police and fire strength (0-15)
 
 $952A c ApplyFunding ; The year's fundings to the city: RoadDecay and RailDecay, PoliceStrength, FireStrength by the share granted
-> A request below 20 counts as fully paid. The fire branch tests TransportCost against 20, not FireCost (a slip: with transport costs below 20 the fire is always fully strong). L1 74.
+> A request below 20 counts as fully paid. The fire branch tests TransportCost against 20, not FireCost (a slip: with transport costs below 20 the fire is always fully strong, FireStrength = 15 whatever the funding). BUG: with transport at 20 or more and no fire station, FireCost / 8 = 0 and Div16 by zero returns 0, so FireStrength = 0 (city recording, frame 8 500, JAN 1903). L1 74.
 $9555 ApplyPolice
 $9586 ApplyFire
+$958B ; BUG: LD HL,(TransportCost), not FireCost
 $95B4 ApplyFireStore
 @module evaluation ; The evaluation and the advice
 @about The EVALUATION window: the category (from 2000, 10 000, 50 000, 100 000, 500 000 people), the problems, the score and the poll; Advise picks the advice line every pass.
@@ -1570,7 +1588,8 @@ $9760 c CategoryOf ; Category = how many CategoryLimits PopLastYear reaches (not
 > Only the evaluation window computes it, from the population at the last year's end: the category changes nothing in the game. L1 18.
 $976A CategoryLoop
 $978F b Migration 3 ; PopLastYear - PopYearBefore (24 bits)
-$9792 c PrintEvalFigures ; The level, the category, the population, the migration, the assessed value, then 00 after the score
+$9792 c PrintEvalFigures ; The level, the category, the population, the migration, the assessed value (CityValueLast) followed by 000 (x 1000: two CALL PrintZero and a fall-through)
+> POPULATION is LastPop (last month's), not the year's population.
 $97F8 c PrintZero ; Print "0" and step on
 $9801 b ProblemSum 2 ; The problems added up
 
@@ -1597,7 +1616,7 @@ $997B PrintProblemAt
 $998B c PrintPercent ; HL in 3 digits at BC
 $9996 b Advice 1 ; The advice shown (0 none, 1-$15): GameTexts 23 + Advice
 
-$9997 c ShowAdvice ; Print GameTexts[23 + Advice] at row 6, column 1, padded to 29
+$9997 c ShowAdvice ; Print GameTexts[23 + Advice] at row 6, column 1, padded to 30 columns
 > L1 4944.
 $99AA b AdviceSpare 1 ; One byte no code reads
 $99AB AllZones ; ResPop + ComPop + IndPop (16 bits)
@@ -1623,7 +1642,7 @@ $9B4E b MapKeyCells 2 ; The nine map keys' screen cells (row, column): the keys 
 $9B60 c HighlightMapKey ; Flip the bright bit of the current key's attribute
 $9B76 c HighlightLayer ; XOR $46 over the current layer's row of the legend
 $9B83 HighlightLayerLoop
-$9B8B c MapsKeys ; Every 4th pass: Q / A change the layer; a digit 1-9 the map area
+$9B8B c MapsKeys ; Every 4th loop: Q / A change the layer; SYMBOL SHIFT + a digit 1-9 the map area (MapsKeysDigit returns if SYMBOL SHIFT is up)
 $9BA3 MapsKeysDigit
 $9BB7 MapsLayerUp
 $9BBD MapsLayerDown
@@ -1673,6 +1692,7 @@ $9DFA LayerGrid24
 $9E09 c SaveCity ; SAVE TO TAPE: the name, START TAPE, then a 31-byte header (flag $FF) and the 9216-byte map (flag $FF)
 > The header SaveHeader: the 12-letter file name, Funds, its spare byte, Month, Year (7 bytes), a spare byte, the city name (12). Nothing else is saved: not the tax, the fundings, the options or the arrays. Known only from the code (stage 1's save recording ran it: L1 at $9E09 none, as the save was reached through the menu action; see NOTES).
 $9E5A c LoadCity ; LOAD FROM TAPE: the name, START TAPE, SEARCHING; headers until the name matches (any with a blank name), then the map
+> PopLastYear and LastPop are not restored: the previous city's values remain until the next month end.
 $9E77 b SearchingText 18 ; PrintInline codes: a box, SEARCHING
 @res text/inline/Searching.bin
 $9E89 c LoadHeader
@@ -1785,7 +1805,7 @@ $A6DE InputLength
 $A6DF InputText
 $A6EF InputDelay
 
-$A6F9 c InputName ; Edit a 12-letter text at InputAt (letters, digits, space; CAPS SHIFT 5 / 8 cursor, 0 delete)
+$A6F9 c InputName ; Edit an 11-letter text at InputAt (InputLength = 11: CityName's twelfth letter cannot be typed) (letters, digits, space; CAPS SHIFT 5 / 8 cursor, 0 delete)
 $A6FF c InputLine ; The line editor; with InputDigits a number (5 digits, carry when too large)
 > L1 5.
 $A70A InputLoop
@@ -1849,7 +1869,8 @@ $F58E b BuildingAttrs 8 ; The building tiles' attributes
 @res graphics/BuildingAttrs.bin
 @module tasks ; The task switcher
 @about The two tasks' stacks and frame, the switch state (TaskNow, SwitchOff) and Interrupt, the IM 2 handler. The vector table $FD00 and the jump $FCFC are at the end of the system module (a module is one stretch of addresses).
-$F682 s SimStack 108 ; The simulation task's stack (zeros)
+$F682 s UiStack 64 ; The UI task's stack: Entry sets SP = $F6C2 (UiStack+$40); L1's deepest write $F6A4
+$F6C2 s SimStack 44 ; The simulation task's stack below SimFrame: it grows down from $F704 into SimFrame and below; L1's deepest write $F6E8; $F6C2-$F6E7 never written
 $F6EE b SimFrame 20 ; The simulation task's first frame: 20 bytes of registers, then the entry
 $F702 w SimEntry 1 ; SimTask: the first switch returns into it
 $F704 b TaskNow 1 ; 0 the UI task runs, 1 the simulation
@@ -1863,9 +1884,10 @@ $F70B c Interrupt ; IM 2: save all registers, ReadInput, then (unless SwitchOff)
 $F733 InterruptToSim
 $F73B InterruptFlip
 $F73E InterruptReturn
-@module system ; Printing glyphs, the input read, the tape, the UI stack and the IM 2 vector
-@about PrintGlyph with the print state, ReadInput (keys and joysticks every interrupt), TapeLoad, TapeSave, TapePause, the UI task's stack, InterruptJump $FCFC and the vector table $FD00.
+@module system ; Printing glyphs, the input read, the tape, the $E5 leftover and the IM 2 vector
+@about PrintGlyph with the print state, ReadInput (keys and joysticks every interrupt), TapeLoad, TapeSave, TapePause, 1345 leftover $E5 bytes, InterruptJump $FCFC and the vector table $FD00.
 $F74E b PrintCharCode 1 ; The print state: the character, the screen address, the column and row, the attribute
+> PrintCharCode is written by PrintDigit and read by nobody (PrintGlyph takes the code in A).
 $F74F PrintAddr
 $F751 PrintCol
 $F752 PrintRow
@@ -1883,7 +1905,7 @@ $F79F c TapeLoad ; LD-BYTES through the ROM (border $0F): IX, DE, A flag, carry 
 $F7AA c TapeSave ; SA-BYTES through the ROM
 $F7AD c TapePause ; B x 5000 loops
 $F7B1 TapePauseLoop
-$F7BB s UiStack 1345 ; The UI task's stack, filled with $E5
+$F7BB s E5Fill 1345 ; Leftover: 1345 bytes of $E5 (the byte a CP/M or +3DOS format writes); no stack or code touches them (L1: untouched)
 $FCFC c InterruptJump ; JP Interrupt: the IM 2 vector $FCFC
 $FCFF b InterruptSpare 1
 $FD00 VectorTable ; 257 bytes $FC: with I = $FD any vector reads $FCFC

@@ -91,18 +91,21 @@ A month ends when SimPass AND MonthMask is 0: every pass at FAST, every 2nd at N
 
 Worked example, `growth` pass 65 (FAST, so one month). The pass starts in frame 19 232, and doc 04 measures a
 `growth` pass at about 299 wall frames. PowerFlood's FloodFill runs in frames 19 242-19 266 (the trace of 10.2), and
-ScanCity takes most of the rest. In the animation's window the memory already holds Month 11 (December 1905), while
-the screen still shows NOV 1905 until the UI task's next date print.
+ScanCity takes most of the rest. At the pass's start the memory already holds Month 11 (December 1905), while the
+screen still shows NOV 1905 until the UI task's next date print.
 
-![SimTask at work: one month of growth at FAST, frames 19232-19532](img/routines/SimTask.gif)
+![SimTask at work: one simulation pass of city2, frames 65719-66141](img/routines/SimTask.gif)
 
-How to read the animation:
+How to read the animation (the file doc 04 shows, [4.6](04-game-loop.md#46-the-simulation-tasks-pass)):
 
-- `growth` frames 19 232-19 532, one picture every 6 frames (419 328 T-states), 51 pictures; the screen beside the
-  memory `$A900-$E8FF`: the side arrays (`$A950-$C44F`) on top, the map (`$C450-$E84F`) below.
-- Each picture colours the bytes written since the previous one: the PowerMap rows refilled first, then the scan
-  walking down the map, then the coverage stamps.
-- Command: `python3 ../../kit/memanim.py --work work/docs/scC/growth --from 19232 --to 19532 --step $((6*69888)) --from-address A900 --to-address E8FF --screen --cell 3 docs/img/routines/SimTask.gif`.
+- `city2` pass 176, frames 65 719-66 141, one picture every 5 frames, 86 pictures; the memory `$A900-$F7FF` on top,
+  one row a 256-byte page: the side arrays (`$A950-$C44F`), then the map (`$C450-$E84F`); the screen below.
+- Each picture colours the bytes written since the previous one, yellow fading through red: the side arrays and the
+  map change a few bytes at a time as ScanCity walks them, while the UI goes on redrawing the window.
+- Command: `python3 ../../kit/memanim.py --work work/docs/scA/city2 --from 65719:0 --to 66141:0 --step 349440
+  --from-address 0xA900 --to-address 0xF7FF --screen --delay 120 --hold 2500 --width 1050
+  docs/img/routines/SimTask.gif`. (A `growth` version of frames 19 232-19 532 was made under the same name and
+  overwritten by this one.)
 
 **The point**: the simulation is a sweep, not an event system. Every rule is applied once per pass to every byte, in
 map order, and a month is a whole number of passes, so a bigger city has longer months in wall time.

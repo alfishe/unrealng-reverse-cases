@@ -39,7 +39,8 @@ DrawViewRowPass:
 TileIndex:
   DEFW $0000
 
-; Draw cell tile $3B (blank land) instead: a blinking cell in its off phase
+; Draw cell tile $3B (the "no power" lightning) instead: the on phase of the
+; blink of an unpowered zone or building
 ;
 ; Used by the routine at DrawBuildingTile.
 DrawBlankCell:
@@ -89,7 +90,7 @@ DrawTileLoop:
   JP PutAttr
 
 ; Cells $54-$56 (the unpowered zone centres) blink: with PassCount bit 5 set
-; they show tile $3B
+; they show tile $3B (the lightning)
 ;
 ; L1 4 249 059, 11 661 blanked.
 BlinkCell:
@@ -107,8 +108,9 @@ BlinkCell:
 ; Road cells 7 and 8: heavy traffic shows tile $34 / $36, medium blinks to $35
 ; / $37
 ;
-; Reads the traffic map at the cell (MapToTraffic $7635, $7581): $DC or more
-; heavy, $96-$DB medium (the second tile when Blink is set). L1 668 762.
+; Reads the traffic map at the cell (MapToRowCol $7635, TrafficAt $7581): $DC
+; or more heavy, $96-$DB medium (the second tile when Blink is set). L1 668
+; 762.
 RoadTraffic:
   LD A,L
   LD B,$34
@@ -147,8 +149,11 @@ BuildingDummy:
 ; The next tile of the building row in progress: BuildingTiles $ED58 + 8 n,
 ; attribute $F58E + n
 ;
-; With PassCount bit 5 a building whose first byte is $A0-$AF (a zone without
-; power) blinks to the blank tile. L1 1 130 002.
+; With PassCount bit 5, the first drawn cell of a building row whose start byte
+; AND $F0 is $A0 (a top row, power bit 4 clear) shows tile $3B, the lightning.
+; IX then points at BuildingDummy, so the row's other cells and the lower rows
+; never blink: only the top-left cell of an unpowered building does. L1 1 130
+; 002.
 DrawBuildingTile:
   LD HL,BuildingLeft
   DEC (HL)

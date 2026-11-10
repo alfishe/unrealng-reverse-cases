@@ -55,6 +55,9 @@ Found by the cases and worked around there; the status says whether `kit/` fixes
 | an `@isub` that writes a number equal to an image label's address (`LD BC,$7EFE`, a port, = ShiftGraphic4) is still renamed to the label by skool2asm | Tujad integration (`$797F`) | `@const KeysSpaceToB $7EFE` and `@isub $797F LD BC,KeysSpaceToB` | fixed: an `@isub` where skool2asm put a label is written back as the `.ann` has it (`restore_isubs`). Tujad's `@const` and `@isub` dropped: the port rule above keeps `LD BC,$7EFE` (a plain `@isub $797F LD BC,$7EFE` stays a number too, checked with the port rule off), doc 05 says so. It had struck twice more: Exolon's `@isub $75A5 LD HL,$7010` (X, Y, not an address) was written `DefineKeyNotEnter`, now `$7010`; the three Zynaps cases' `@isub $A376 LD BC,$B54F-$0400` was written `Glyphs-$0400`, which the `.ann`s now say themselves |
 | addresses inside an INCBIN'd menu table stay numbers | SimCity stage 2 | none | open |
 | an IM 2 handler and its vector table far apart (`$F70B`, `$FD00`) cannot share one `@module` | SimCity stage 2 | two modules | open |
+| `kit/memanim.py`'s `buffer:` view draws a stack or record as bits, so pushed words cannot be read as hex | SimCity doc 04 (scA, Interrupt.gif) | the caption says so | open |
+| `kit/refdocs.py` links `docs/img/routines/NAME.gif` by routine name, so two documents' animations of one routine share one file: the second writer's overwrites the first's | SimCity docs 04 and 10 (`SimTask.gif`) | doc 10 shows doc 04's animation; its own was lost | open |
+| an `@isub` written in decimal (`LD DE,-10000`) comes out as `-$2710` in the `.asm` | SimCity integration (Print5Digits, PrintNumber24) | none (the bytes are right) | open |
 
 ## For unreal-ng
 

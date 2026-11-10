@@ -338,8 +338,9 @@ InputDelay:
   DEFB $DD,$A6
   DEFB $18,$06
 
-; Edit a 12-letter text at InputAt (letters, digits, space; CAPS SHIFT 5 / 8
-; cursor, 0 delete)
+; Edit an 11-letter text at InputAt (InputLength = 11: CityName's twelfth
+; letter cannot be typed) (letters, digits, space; CAPS SHIFT 5 / 8 cursor, 0
+; delete)
 ;
 ; Used by the routines at SaveCity, LoadCity and SetLevel.
 InputName:
@@ -521,9 +522,9 @@ NumberDigits:
   LD A,(InputLength)
   LD C,A
   LD B,$05
-  LD DE,CityMap+$14A0
+  LD DE,-$2710
   CALL NumberDigit
-  LD DE,UiStack+$045D
+  LD DE,-$03E8
   CALL NumberDigit
   LD DE,$FF9C
   CALL NumberDigit

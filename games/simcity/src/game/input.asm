@@ -82,7 +82,7 @@ ScanSpare:
 
 ; A = the character of the key down (KeyChars), carry set when none
 ;
-; Used by the typed input: the city name (EditCityName), the gene digits and
+; Used by the typed input: the city name (InputName $A6F9), the gene digits and
 ; the tool shortcut keys (ToolKeys $6D2D). L1 5451, 1193 with a key.
 KeyToChar:
   CALL ScanKey

@@ -552,7 +552,7 @@ The point: the five files are every sound the game makes; the plane crash would 
   noise came in frames 6560-7500. The sound would be the meltdown's: the same CrashNoise.
 - **The tornado** makes no sound: StartTornado `$796C` calls no sound routine, and frames 8800-8900 of `disasters`
   have no speaker write.
-- **The other refusals.** L1 counts 3 ToneBeep calls in `tools`. One (13434) was traced. The seaport refusal the
+- **The other refusals.** L1 counts 3 ToneBeep calls: 2 in `tools`, 1 in `bankrupt`. One (`tools` 13434) was traced. The seaport refusal the
   WALKTHROUGH names was not found in frames 12496-12530 and 12628-12668. ParkTool's refusal on map column 2 (it tests
   the column left in A by ClickMapAddr, not the cell) is known only from the code.
 - **SOUND off** (9.6): the hang was shown on a clone; no stage-1 recording turns SOUND off before a disaster. The

@@ -233,8 +233,9 @@ and the graphics.
 The view is not drawn every frame. DrawViewRowPass `$6434` draws one of its 16 rows on each UI pass, chosen by
 PassCount: row (PassCount AND 15). So the whole view is drawn again every 16 passes, a sweep from top to bottom.
 
-Anything the simulation changes on the map shows when the sweep reaches its row. With about 2.7 frames a pass, a
-sweep takes about 43 frames, so the view lags the map by up to 0.85 s.
+Anything the simulation changes on the map shows when the sweep reaches its row. With about 2.4 frames a pass in play
+(interrupts / UI passes in doc 4.8: `city2` 2.36, `metro` 2.49), a sweep takes about 38 frames, so the view lags the
+map by up to 0.77 s.
 
 DrawViewRowPass also sets Blink `$6433` = PassCount AND `$10`, the phase of the traffic tiles (6.7). Then it sets
 the screen address and the map address of the row and jumps into DrawView's row loop with one row to draw.

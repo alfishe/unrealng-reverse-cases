@@ -11,7 +11,8 @@
 ;
 ; ScrollMode: O, P, Q, A scroll by a cell a frame, the view redrawn each time,
 ; until SPACE. No recording clicked there (L1 - from $6CCA; the scroll of the
-; recordings goes through the pointer at the view's edge, ScrollByPointer).
+; recordings goes through CAPS SHIFT + 5-8, ShiftScroll $7A6F; the pointer at
+; the view's edge only redraws the view, it does not scroll).
 ScrollClick:
   LD BC,(ClickCell)
   LD A,C
@@ -725,12 +726,13 @@ SiteWater:
                           ; other tools; written by CheckSite
 
 ; Carry set when the tool's box at the click may not be built; clears trees at
-; $1 a cell
+; 1 dollar a cell
 ;
 ; On water, or with AutoBulldoze ($A32B) on: every cell of the box must be in
 ; SiteCells (water only for road, rail and power); each cell not in FreeCells
 ; costs 1 and becomes land 2. With AutoBulldoze off on land: StrictSite, every
-; cell must be land 2. The bulldozer passes always. L1 464.
+; cell must be land 2. The bulldozer passes always. When Spend cannot pay 1 for
+; clearing a cell, the cell is left as it is and the site still passes. L1 464.
 CheckSite:
   CALL ClickMapAddr
   LD A,(HL)
@@ -885,9 +887,10 @@ PlaceNetwork:
 
 ; The refusal: ToneBeep, but only when no direction key (A, Q, P, O) is held
 ;
-; The two refusals that beep are CheckSite's (the site) and PlaceNetwork's (a
-; network on a building or a zone); while the pointer is dragged with a key
-; held the beep is left out. L1 3; ToneBeep L1 3 in the tools recording.
+; Three refusals beep: MapClick's after CheckSite (the site), PlaceNetwork's (a
+; network on a building or a zone) and ParkTool's (map column 2); while the
+; pointer is dragged with a key held the beep is left out. L1 3: 2 in tools, 1
+; in bankrupt.
 Refuse:
   LD A,(KeyRowA)
   AND $01
@@ -971,7 +974,8 @@ BulldozeNothing:
 ;
 ; A building goes to BulldozeBuilding, a zone centre ($51-$56) to BulldozeZone,
 ; a bridge to water ($72CA), cells $3C-$50 through the flags to rubble or land,
-; the rest to land 2 at $1, then the networks round it are reshaped. L1 2.
+; the rest to land 2 at 1 dollar, then the networks round it are reshaped. L1
+; 2.
 Bulldoze:
   CALL ClickMapAddr
   LD A,(HL)
@@ -1040,7 +1044,7 @@ ConfirmHold:
   LD A,(DemolishWait)
   AND A
   RET Z
-  LD DE,MapAreaAddrs+$000D
+  LD DE,$9C40
 ConfirmHoldLoop:
   LD A,(KeyRowSpace)
   AND $01
@@ -1301,7 +1305,9 @@ NuclearPlant:
                                                                        ; nuclear
                                                                        ; one
 
-; Tool 11: with 3000 or more, the menu $9F41 asks coal (3000) or nuclear (5000)
+; Tool 11: when the low 16 bits of Funds are 3000 or more (LD HL,(Funds): the
+; high byte is ignored), the menu $9F41 asks coal (3000) or nuclear (5000);
+; SelectTool already refused it below the palette's 4000
 ;
 ; L1 8.
 PowerPlantTool:

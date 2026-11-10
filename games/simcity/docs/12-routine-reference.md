@@ -36,7 +36,7 @@ Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py -
 | [`dialogs`](#dialogs) | `$9F40`-`$A883` | 30 of 54 |
 | [`workspace`](11-data-reference.md#workspace) | `$A884`-`$E84F` | 0 of 4 |
 | [`graphics`](11-data-reference.md#graphics) | `$E850`-`$F681` | 0 of 6 |
-| [`tasks`](#tasks) | `$F682`-`$F74D` | 1 of 6 |
+| [`tasks`](#tasks) | `$F682`-`$F74D` | 1 of 7 |
 | [`system`](#system) | `$F74E`-`$FE00` | 6 of 10 |
 
 ## entry
@@ -45,9 +45,9 @@ Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py -
 
 ### `Entry` (`$5B1B`)
 
-**The game's entry: stack, black border, the Kempston test, IM 2 with I = `$FD`, then MainMenu**
+**The game's entry: stack, black border, the Kempston test, IM 2 with I = `$FD`, then UiTask**
 
-MoveCode2 `$5000` jumps here. SP = `$F6C2` (the UI task's stack), the border black, NoSwitch `$F705` = 1 (no task switch until the simulation task is set up), then the Kempston test: port `$1F` is read up to 32 768 times; a value `$1F` or more (a floating bus gives `$FF`) means no interface, otherwise KempstonFound = 1. Then I = `$FD` (the vector table ImTable `$FD00`, every vector `$FCFC`), IM 2, EI and JP MainMenu `$8FA0`.
+MoveCode2 `$5000` jumps here. SP = `$F6C2` (the top of the UI task's stack UiStack), the border black, SwitchOff `$F705` = 1 (no task switch until the simulation task is set up), then the Kempston test: port `$1F` is read up to 32 768 times; a value `$1F` or more (a floating bus gives `$FF`) means no interface, otherwise KempstonFound = 1. Then I = `$FD` (the vector table VectorTable `$FD00`, every vector `$FCFC`), IM 2, EI and JP UiTask `$8FA0`.
 
 c1: L1 1 at frame 16 280; the loop ran 32 768 times (no Kempston in c1's setup); the ports recording sets KempstonFound (stage 1). No other code changes I or the mode.
 
@@ -67,9 +67,11 @@ c1: L1 1 at frame 16 280; the loop ran 32 768 times (no Kempston in c1's setup);
 
 **The disaster noise: 200 loops of the beeper from Random, gated by the SOUND option**
 
-Input: E the pitch mask (each loop sends a new random speaker bit when D AND E is 0: E = 0 every loop, 1 every second ...). Interrupts are off while it plays (DI ... EI), so the frame's interrupt is held and the task switch waits. Returns at once when SoundOn (`$A32D`) is 0. Callers: the disasters (Disaster `$78BD`, the fire and flood spread `$9108`, `$9116`).
+Input: E the pitch mask (each loop sends a new random speaker bit when D AND E is 0: E = 0 every loop, 1 every second ...). Interrupts are off while it plays (DI ... EI), so the frame's interrupt is held and the task switch waits. Returns at once when SoundOn (`$A32D`) is 0, but after the DI: with SOUND off it returns with interrupts off, and they stay off until the next EI (a bug of the original). Callers: the disasters (Disaster `$78BD`, the fire and flood spread `$9108`, `$9116`).
 
 L1 764 (the disasters recording: 127-255 calls a disaster), 30 406 random bits sent.
+
+[Animation: `NoiseBurst` at work](img/routines/NoiseBurst.gif)
 
 | | |
 | --- | --- |
@@ -79,7 +81,9 @@ L1 764 (the disasters recording: 127-255 calls a disaster), 30 406 random bits s
 
 **The refusal tone: 500 cycles of the speaker, 48 + 16 DJNZ loops a cycle (the beep of a refused tool)**
 
-No inputs. The speaker on with L = `$30` DJNZ loops, off with H = `$10`, 500 times (DE = `$01F4`); about 40 ms. It is not gated by SoundOn. Called by PlaceTool `$71E4` when a placement is refused. L1 3 (the tools recording's refusals: no funds, no room).
+No inputs. The speaker on with L = `$30` DJNZ loops, off with H = `$10`, 500 times (DE = `$01F4`): 500 cycles of 889 T, 444 500 T uncontended, 127 ms; measured 164 ms (8.2 frames, tools frame 13 434), with contention and the interrupts. It is not gated by SoundOn. Reached by JP ToneBeep from Refuse `$71E4` when a placement is refused (a tool too dear is refused silently by SelectTool's RET M). L1 3: 2 in tools (the occupied cell at frame 13 434 traced, the other not located), 1 in bankrupt.
+
+[Animation: `ToneBeep` at work](img/routines/ToneBeep.gif)
 
 | | |
 | --- | --- |
@@ -119,7 +123,7 @@ Reads KeyRows `$5B00-$5B08`; CAPS SHIFT is ignored in the first row (D = `$FE` m
 
 **A = the character of the key down (KeyChars), carry set when none**
 
-Used by the typed input: the city name (EditCityName), the gene digits and the tool shortcut keys (ToolKeys `$6D2D`). L1 5451, 1193 with a key.
+Used by the typed input: the city name (InputName `$A6F9`), the gene digits and the tool shortcut keys (ToolKeys `$6D2D`). L1 5451, 1193 with a key.
 
 | | |
 | --- | --- |
@@ -156,13 +160,13 @@ No other register changes but A. L1 451 620: every print and drawing routine cal
 | Called from | `DrawIcon`, `DrawPointer`, `InvertBox`, `PrintInline`, `DrawBoxRow`, `PrintPadded`, `DrawViewRowPass`, `PrintNumberVar`, `PrintMenuText`, `Interrupt` |
 | Calls | `DrawPointer`, `InterruptJump` |
 | Reads | `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$F6BC`-`$F6BD` (`SimStack`) |
+| Writes | `$F6BC`-`$F6BD` (`UiStack`) |
 
 ### `AttrAddr` (`$5C0D`)
 
 **HL = the attribute address of row B, column C (C kept, B = `$58`)**
 
-L1 1024 (the menu highlight HighlightLine `$6933` and the graph windows).
+L1 1024 (the menu highlight HighlightLine `$6933` and the maps window's HighlightMapKey / HighlightLayer).
 
 | | |
 | --- | --- |
@@ -181,7 +185,7 @@ The usual three cases: inside the character (INC H), into the next character row
 | Called from | `DrawPointer`, `ErasePointer`, `InvertBox`, `DrawOverview`, `Interrupt` |
 | Calls | `DrawPointer`, `ErasePointer`, `InvertBox`, `InterruptJump` |
 | Reads | `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$F6BC`-`$F6BD` (`SimStack`) |
+| Writes | `$F6BC`-`$F6BD` (`UiStack`) |
 
 ### `DrawIcon` (`$5C28`)
 
@@ -201,7 +205,7 @@ Sets PrintAddr to the cell, copies the eight bytes down the cell and the attribu
 
 **Draw icon tile A at PrintAddr with the current PrintAttr (no position, no own attribute)**
 
-Then JP PrintAttrHere `$F76E` (PrintAttr `$FF` leaves the attribute). L1 27 668 (the box frames of DrawBoxRow).
+Then JP PrintGlyphAttr `$F76E` (PrintAttr `$FF` leaves the attribute). L1 27 668 (the box frames of DrawBoxRow).
 
 | | |
 | --- | --- |
@@ -209,7 +213,7 @@ Then JP PrintAttrHere `$F76E` (PrintAttr `$FF` leaves the attribute). L1 27 668 
 | Called from | `DrawBoxRow`, `Interrupt` |
 | Calls | `PrintGlyph` (tail), `InterruptJump` |
 | Reads | `$EA10`-`$EA67` (`IconTiles`); `$F74F`-`$F750` (`PrintCharCode`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$4000`-`$4007` (screen); `$4020`-`$4027` (screen); `$4040`-`$4047` (screen); `$4060`-`$57FF` (screen); `$F6AE`-`$F6B9` (`SimStack`) |
+| Writes | `$4000`-`$4007` (screen); `$4020`-`$4027` (screen); `$4040`-`$4047` (screen); `$4060`-`$57FF` (screen); `$F6AE`-`$F6B9` (`UiStack`) |
 
 ### `ClearTopBlack` (`$5C70`)
 
@@ -236,7 +240,7 @@ L1 28.
 | Called from | `ClearTopBlack`, `Interrupt` |
 | Calls | `ClearViewArea`, `InterruptJump` |
 | Reads | `$4000`-`$47FE` (screen); `$5800`-`$58FE` (screen); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$4001`-`$47FF` (screen); `$5800`-`$58FF` (screen); `$F6B8`-`$F6BF` (`SimStack`) |
+| Writes | `$4001`-`$47FF` (screen); `$5800`-`$58FF` (screen); `$F6B8`-`$F6BF` (`UiStack`) |
 
 ### `ClearViewArea` (`$5C8F`)
 
@@ -250,7 +254,7 @@ The map view's area, cleared before a window or a dialog is drawn over it. L1 22
 | Called from | `ClearTopWhite`, `ClearWindowArea`, `NewLandscape`, `Interrupt` |
 | Calls | `ClearForMaps`, `MapsWindow`, `InterruptJump` |
 | Reads | `$4800`-`$57FE` (screen); `$5900`-`$5AFE` (screen); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$4800`-`$57FF` (screen); `$5900`-`$5AFF` (screen); `$F6B6`-`$F6BF` (`SimStack`) |
+| Writes | `$4800`-`$57FF` (screen); `$5900`-`$5AFF` (screen); `$F6B6`-`$F6BF` (`UiStack`) |
 
 ### `ClearForMaps` (`$5CAA`)
 
@@ -271,7 +275,7 @@ Called by the maps window (`$7A9E`) before it draws a map: the left 8 columns ke
 
 ### `Random` (`$5CC6`)
 
-**The generator: seed = (254 (seed + 1) - 1) mod 65537; A = the seed's low byte**
+**The generator: seed' = (254 (seed + 1) - 1) mod 65 537, 254 a primitive root: period 65 536; A = the seed's low byte**
 
 RandomSeed `$5CC4` holds the seed. The arithmetic: H = the seed's low byte, L = `$FD`, so A:HL = 256 seed + 253; two SBC HL,DE take 2 seed off (254 seed + 253 in 24 bits), then the high byte is subtracted from the low 16 bits, which is mod 65537 because 65536 = -1; a borrow adds 1. Registers but A are kept. L1 343 327: the noise, the landscape, the simulation's random choices, the disasters.
 
@@ -326,7 +330,7 @@ Output: PointerInView, BoxCell, BoxShown; the box is the BoxSize cells from the 
 | Called from | `UiTask`, `Interrupt` |
 | Calls | `InvertBox`, `UiTask`, `InterruptJump` |
 | Reads | `$5CFC`-`$5CFD` (`PointerX`); `$5D4F`-`$5D50` (`BoxSize`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$5D51`-`$5D54` (`BoxSize`); `$F6BE`-`$F6BF` (`SimStack`) |
+| Writes | `$5D51`-`$5D54` (`BoxSize`); `$F6BE`-`$F6BF` (`UiStack`) |
 
 ### `InvertBox` (`$5D8F`)
 
@@ -408,7 +412,7 @@ L1 450 406.
 | Called from | `PrintInline`, `PrintPadded`, `PrintNumber24`, `PrintDigitB` (tail), `PrintMenuText` (tail), `Interrupt` |
 | Calls | `PrintNumber24`, `InterruptJump` |
 | Reads | `$F74F`-`$F751` (`PrintCharCode`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$F6B6`-`$F6BB` (`SimStack`); `$F74F`-`$F751` (`PrintCharCode`) |
+| Writes | `$F6B6`-`$F6BB` (`UiStack`); `$F74F`-`$F751` (`PrintCharCode`) |
 
 ### `PrintNumberAt` (`$5E35`)
 
@@ -464,7 +468,7 @@ L1 11 961.
 | Called from | `Print4Digits`, `Print3Digits`, `Interrupt` |
 | Calls | `PrintDigit`, `InterruptJump` |
 | Reads | `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$F6BA`-`$F6BB` (`SimStack`) |
+| Writes | `$F6BA`-`$F6BB` (`UiStack`) |
 
 ### `PrintDigit` (`$5E66`)
 
@@ -484,7 +488,7 @@ L1 45 808.
 
 **Draw a window frame from icon tiles `$38-$3F`: row, column, width, height at (HL)**
 
-The corners and edges are icon tiles: top `$38` `$39` `$3A`, sides `$3F` `$3B`, bottom `$3E` `$3D` `$3C`; the inside is left alone. Sets PrintCol/PrintRow at the corner. L1 193.
+The corners and edges are icon tiles: top `$38` `$39` `$3A`, sides `$3F` `$3B`, bottom `$3E` `$3D` `$3C`; the inside is left alone. Sets PrintCol/PrintRow at the corner. It also patches `$5F0F` (BoxRowRight+9) with the box's column, a fourth self-modified operand. L1 193.
 
 | | |
 | --- | --- |
@@ -506,7 +510,7 @@ The three tiles are written into the operands of the three LD A,n below (self-mo
 | Called from | `DrawBox`, `DrawMenu`, `Interrupt`, `PrintGlyph` |
 | Calls | `ScreenAddr`, `DrawIconHere`, `DrawBox`, `InterruptJump` |
 | Reads | `$5E95` (`BoxDims`); `$F74F`-`$F752` (`PrintCharCode`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$5EE9`-`$5F07` (`DrawBoxRow`); `$F6B2`-`$F6B7` (`SimStack`); `$F74F`-`$F752` (`PrintCharCode`) |
+| Writes | `$5EE9`-`$5F07` (`DrawBoxRow`); `$F6B2`-`$F6B7` (`UiStack`); `$F74F`-`$F752` (`PrintCharCode`) |
 
 ### `DrawStatusPanel` (`$5F13`)
 
@@ -542,9 +546,9 @@ The menu bar "SYSTEM OPTIONS DISASTERS WINDOWS" at row 0 (attribute 7), the box 
 
 ### `DrawNameFunds` (`$5F60`)
 
-**Print the city name (12 letters, CityName `$5F68`) at row 5, column 1, and "FUNDS $" at row 5, column 17**
+**Print the city name (12 letters, CityName `$5F68`) at row 5, column 1, and "FUNDS" with the dollar sign at row 5, column 17**
 
-CityName lies inside the inline text: typing a name writes these bytes (EditCityName), so the text prints the current name. L1 35.
+CityName lies inside the inline text: typing a name writes these bytes (InputName `$A6F9`), so the text prints the current name. L1 35.
 
 | | |
 | --- | --- |
@@ -588,7 +592,7 @@ L1 9917.
 
 ### `PrintToolName` (`$6305`)
 
-**Print the current tool's name and price (GameTexts by CurrentTool) at row 4, column 1, padded to 19**
+**Print the current tool's name and price (GameTexts by CurrentTool) at row 4, column 1, padded to 20 columns**
 
 L1 99.
 
@@ -611,11 +615,11 @@ L1 14 996.
 | Called from | `PrintDate`, `PrintToolName`, `ShowAdvice`, `Interrupt` |
 | Calls | `PrintToolName`, `ShowAdvice`, `InterruptJump` |
 | Reads | `$5F8A`-`$5FA1` (`MonthNames`); `$5FC6`-`$60C1` (`GameTexts`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$F6BA`-`$F6BB` (`SimStack`) |
+| Writes | `$F6BA`-`$F6BB` (`UiStack`) |
 
 ### `PrintPadded` (`$632A`)
 
-**Print the string at HL at row B, column C, then spaces up to A characters**
+**Print the string at HL at row B, column C, then spaces to A + 1 columns (C counts down from A for each letter but the last)**
 
 L1 14 996.
 
@@ -637,13 +641,15 @@ L1 14 996.
 
 One step a pass for each key held. L1 158 076.
 
+[Animation: `MovePointer` at work](img/routines/MovePointer.gif)
+
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1,777 calls, 284,912 t-states own (0.02 %) |
 | Called from | `UiTask`, `Interrupt` |
 | Calls | `PointerRight`, `PointerLeft`, `PointerUp`, `PointerDown`, `UiTask`, `InterruptJump` |
 | Reads | `$5B01`-`$5B05` (`KeyRows`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$F6BE`-`$F6BF` (`SimStack`) |
+| Writes | `$F6BE`-`$F6BF` (`UiStack`) |
 
 ### `PointerRight` (`$637D`)
 
@@ -699,7 +705,7 @@ The test of key 6 on the view (KeyRow0 bit 4) leads to a branch no recording ran
 
 **SPACE pressed: take the pointer's cell, then the tool palette, the scroll arrows, the menu bar, the map**
 
-With NoSwitch set (no task switch while the UI changes the screen and the map): ToolClick `$6D51`, ScrollClick `$6CBF`, MenuClick `$6401`, MapClick `$7012`. L1 609 (the presses of the recordings).
+With SwitchOff set (no task switch while the UI changes the screen and the map): ToolClick `$6D51`, ScrollClick `$6CBF`, MenuClick `$6401`, MapClick `$7012`. L1 609 (the presses of the recordings).
 
 | | |
 | --- | --- |
@@ -721,7 +727,7 @@ L1 709 255 loop runs, 196 calls.
 | Called from | `MenuClick` (tail) |
 | Calls | `InterruptJump` |
 | Reads | `$5B07` (`KeyRows`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$F6BA`-`$F6BB` (`SimStack`) |
+| Writes | `$F6BA`-`$F6BB` (`UiStack`) |
 
 ### `MenuClick` (`$6401`)
 
@@ -759,17 +765,19 @@ IX = SystemMenu `$A02B`, OptionsMenu `$A32F`, DisastersMenu `$A43E` or WindowsMe
 
 So the view is redrawn every 16 passes of the UI loop, a row a pass, and the blinking cells change with PassCount bits 4 and 5. L1 158 073.
 
+[Animation: `DrawViewRowPass` at work](img/routines/DrawViewRowPass.gif)
+
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1,777 calls, 457,423 t-states own (0.03 %) |
 | Called from | `UiTask` |
 | Calls | `ScreenAddr`, `DrawView` (tail), `MapAddr`, `InterruptJump` |
 | Reads | `$6507`-`$6508` (`CellAttrPtr`); `$8F9F` (`Funds`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$6433` (`Blink`); `$6482`-`$6483` (`DrawCell`); `$F6BE`-`$F6BF` (`SimStack`) |
+| Writes | `$6433` (`Blink`); `$6482`-`$6483` (`DrawCell`); `$F6BE`-`$F6BF` (`UiStack`) |
 
 ### `DrawBlankCell` (`$6464`)
 
-**Draw cell tile `$3B` (blank land) instead: a blinking cell in its off phase**
+**Draw cell tile `$3B` (the "no power" lightning) instead: the on phase of the blink of an unpowered zone or building**
 
 | | |
 | --- | --- |
@@ -787,11 +795,11 @@ A map byte below `$80` is a cell tile at CellTiles `$EA68` + 8 n with its attrib
 | Called from | `DrawView`, `Interrupt` |
 | Calls | `BlinkCell`, `RoadTraffic`, `PrintGlyph` (tail), `InterruptJump` |
 | Reads | `$6462`-`$6463` (`TileIndex`); `$6505`-`$6506` (`CellAttrPtr`); `$6558` (`BuildingLeft`); `$EA68`-`$EA9F` (`CellTiles`); `$EC40`-`$EC47` (`CellTiles`); `$ECB0`-`$ECEF` (`CellTiles`); 4 more ranges |
-| Writes | `$4800`-`$57FF` (screen); `$6462`-`$6463` (`TileIndex`); `$F6B6`-`$F6BD` (`SimStack`) |
+| Writes | `$4800`-`$57FF` (screen); `$6462`-`$6463` (`TileIndex`); `$F6B6`-`$F6BD` (`UiStack`) |
 
 ### `BlinkCell` (`$6499`)
 
-**Cells `$54-$56` (the unpowered zone centres) blink: with PassCount bit 5 set they show tile `$3B`**
+**Cells `$54-$56` (the unpowered zone centres) blink: with PassCount bit 5 set they show tile `$3B` (the lightning)**
 
 L1 4 249 059, 11 661 blanked.
 
@@ -801,13 +809,13 @@ L1 4 249 059, 11 661 blanked.
 | Called from | `DrawCell` |
 | Calls | `InterruptJump` |
 | Reads | `$8F9F` (`Funds`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$F6BA`-`$F6BB` (`SimStack`) |
+| Writes | `$F6BA`-`$F6BB` (`UiStack`) |
 
 ### `RoadTraffic` (`$64A9`)
 
 **Road cells 7 and 8: heavy traffic shows tile `$34` / `$36`, medium blinks to `$35` / `$37`**
 
-Reads the traffic map at the cell (MapToTraffic `$7635`, `$7581`): `$DC` or more heavy, `$96-$DB` medium (the second tile when Blink is set). L1 668 762.
+Reads the traffic map at the cell (MapToRowCol `$7635`, TrafficAt `$7581`): `$DC` or more heavy, `$96-$DB` medium (the second tile when Blink is set). L1 668 762.
 
 | | |
 | --- | --- |
@@ -815,13 +823,13 @@ Reads the traffic map at the cell (MapToTraffic `$7635`, `$7581`): `$DC` or more
 | Called from | `DrawCell`, `OverviewCell`, `Interrupt` |
 | Calls | `OverviewCell`, `InterruptJump` |
 | Reads | `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$F6B6`-`$F6BB` (`SimStack`) |
+| Writes | `$F6B6`-`$F6BB` (`UiStack`) |
 
 ### `DrawBuildingTile` (`$64D6`)
 
 **The next tile of the building row in progress: BuildingTiles `$ED58` + 8 n, attribute `$F58E` + n**
 
-With PassCount bit 5 a building whose first byte is `$A0-$AF` (a zone without power) blinks to the blank tile. L1 1 130 002.
+With PassCount bit 5, the first drawn cell of a building row whose start byte AND `$F0` is `$A0` (a top row, power bit 4 clear) shows tile `$3B`, the lightning. IX then points at BuildingDummy, so the row's other cells and the lower rows never blink: only the top-left cell of an unpowered building does. L1 1 130 002.
 
 | | |
 | --- | --- |
@@ -839,7 +847,7 @@ L1 627 (after every scroll, window and dialog).
 | Called from | `DrawViewRowPass` (tail), `ShowMenu`, `IndustrialTool` (tail), `MapsWindow` (tail), `UiTask`, `PrintGlyph` |
 | Calls | `DrawCell`, `MapAddr`, `UiTask`, `InterruptJump` |
 | Reads | `$6482`-`$6483` (`DrawCell`); `$6507`-`$6508` (`CellAttrPtr`); `$6558`-`$655A` (`BuildingLeft`); `$D24E`-`$D56D` (`FireCover`); `$D5AE`-`$D5CD` (`FireCover`); `$D60E`-`$D62D` (`FireCover`); 6 more ranges |
-| Writes | `$6482`-`$6483` (`DrawCell`); `$6505`-`$650A` (`CellAttrPtr`); `$6558`-`$655A` (`BuildingLeft`); `$F6B8`-`$F6BF` (`SimStack`) |
+| Writes | `$6482`-`$6483` (`DrawCell`); `$6505`-`$650A` (`CellAttrPtr`); `$6558`-`$655A` (`BuildingLeft`); `$F6B8`-`$F6BF` (`UiStack`) |
 
 ### `StartBuilding` (`$655B`)
 
@@ -897,7 +905,7 @@ Powers of ten from 1 000 000 down, each a 24-bit subtraction loop (Digit24). Use
 | Called from | `NextColumn`, `Interrupt`, `PrintGlyph` |
 | Calls | `NextColumn`, `PrintFunds`, `Digit24`, `PrintDigitB`, `PrintGlyph`, `InterruptJump` |
 | Reads | `$664E` (`NumberFlags`); `$F74F`-`$F750` (`PrintCharCode`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$65A3`-`$65A4` (`NumberEnd`); `$F6BC`-`$F6BD` (`SimStack`) |
+| Writes | `$65A3`-`$65A4` (`NumberEnd`); `$F6BC`-`$F6BD` (`UiStack`) |
 
 ### `PrintSign` (`$662C`)
 
@@ -920,7 +928,7 @@ L1 7 (the budget's negative balances).
 | Called from | `PrintNumberVar`, `PrintNumber24`, `Interrupt` |
 | Calls | `PrintDigitB`, `InterruptJump` |
 | Reads | `$664D`-`$664E` (`NumberFlags`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$664D`-`$664E` (`NumberFlags`); `$F6BA`-`$F6BB` (`SimStack`) |
+| Writes | `$664D`-`$664E` (`NumberFlags`); `$F6BA`-`$F6BB` (`UiStack`) |
 
 ### `PrintDigitB` (`$666F`)
 
@@ -1021,6 +1029,8 @@ L1 76.
 
 L1 54.
 
+[Animation: `ShowWindow` at work](img/routines/ShowWindow.gif)
+
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
@@ -1115,7 +1125,7 @@ Codes: `$21` moves to column 24 (MenuTab), 6 a 16-bit number (5 digits) at an ad
 | Called from | `DrawMenu` |
 | Calls | `ScreenAddr`, `PrintChar`, `NextColumn` (tail), `InterruptJump` |
 | Reads | `$6749` (`MenuState`); `$A4C4`-`$A5A7` (`WindowsMenu`, `MapsDue`, `MapsItem`, `Level` and 2 more); `$A6A6`-`$A6D6` (`CreatingText`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$F6B6`-`$F6B7` (`SimStack`); `$F74F`-`$F750` (`PrintCharCode`) |
+| Writes | `$F6B6`-`$F6B7` (`UiStack`); `$F74F`-`$F750` (`PrintCharCode`) |
 
 ### `MenuValueSlot` (`$6905`)
 
@@ -1157,7 +1167,9 @@ Codes: `$21` moves to column 24 (MenuTab), 6 a 16-bit number (5 digits) at an ad
 
 **Move the highlight with Q / A every 8 frames (HALT), SPACE selects: run, toggle or edit the item**
 
-L1 132. The UI task halts here, so the simulation runs on through the switch while a menu is open.
+L1 132. The menus are opened from Click (or BudgetWindow, EvaluationWindow, MapsWindow), which set SwitchOff `$F705` = 1: the simulation is frozen while a menu is open, and each HALT waits one frame.
+
+[Animation: `RunMenu` at work](img/routines/RunMenu.gif)
 
 | | |
 | --- | --- |
@@ -1165,7 +1177,7 @@ L1 132. The UI task halts here, so the simulation runs on through the switch whi
 | Called from | `ShowMenu`, `UiTask` |
 | Calls | `CallMenuHook`, `NumberRepeat` (tail), `MenuUp`, `ToggleMenuLine`, `MenuDown`, `SelectedItem`, `InterruptJump` |
 | Reads | `$5B01`-`$5B07` (`KeyRows`); `$674B`-`$674C` (`MenuState`); `$67C2` (`MenuState`); `$6956` (`RunMenu`); `$A4D8` (`WindowsMenu`); `$A53C` (`LevelMenuText`); 1 more ranges |
-| Writes | `$6A7D` (`MenuSelected`); `$F6B8`-`$F6BF` (`SimStack`) |
+| Writes | `$6A7D` (`MenuSelected`); `$F6B8`-`$F6BF` (`UiStack`) |
 
 ### `EditNumber` (`$6996`)
 
@@ -1277,13 +1289,15 @@ L1 5 (the tax rate and the budget windows).
 
 Resets the simulation (StartSimulation `$830C`), clears CityMap `$C450` to 0 (water), shows "CREATING LANDSCAPE" (`$A6A4`), seeds Random with Gene, draws 128 discs of land (`$02`) with radius 2-7 at x, y 16-79 (Disc), cuts the coast (MakeCoast), then 32 discs of trees (`$06`) of radius 2-3 drawn only over land. L1 12 (the menus recording's genes 12345 and 00003, the level starts).
 
+[Animation: `NewLandscape` at work](img/routines/NewLandscape.gif)
+
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1 call, 205,955 t-states own (0.01 %) |
 | Called from | `UiTask` |
 | Calls | `ClearViewArea`, `ClearWindowArea`, `DrawMenu`, `Discs`, `MakeCoast`, `StartSimulation`, `InterruptJump` |
 | Reads | `$6A8C`-`$6A8D` (`Gene`); `$C450`-`$E84E` (`FireCover`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$5CC4`-`$5CC5` (`RandomSeed`); `$6C05`-`$6C06` (`DiscVars`); `$C450`-`$E84F` (`FireCover`); `$F6BE`-`$F6BF` (`SimStack`) |
+| Writes | `$5CC4`-`$5CC5` (`RandomSeed`); `$6C05`-`$6C06` (`DiscVars`); `$C450`-`$E84F` (`FireCover`); `$F6BE`-`$F6BF` (`UiStack`) |
 
 ### `Discs` (`$6ADB`)
 
@@ -1321,7 +1335,7 @@ L1 2 928 251.
 | Called from | `MakeCoast`, `Disc`, `IsLand` |
 | Calls | `MapAddr`, `InterruptJump` |
 | Reads | `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$6BDA` (`MapEdge`); `$F6B0`-`$F6B7` (`SimStack`) |
+| Writes | `$6BDA` (`MapEdge`); `$F6B0`-`$F6B7` (`UiStack`) |
 
 ### `MapAddr` (`$6BE6`)
 
@@ -1335,7 +1349,7 @@ L1 3 488 641.
 | Called from | `DrawViewRowPass`, `DrawView`, `MapAddrChecked`, `ClickMapAddr` (tail) |
 | Calls | `InterruptJump` |
 | Reads | `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$F6B0`-`$F6BD` (`SimStack`) |
+| Writes | `$F6B0`-`$F6BD` (`UiStack`) |
 
 ### `Disc` (`$6C09`)
 
@@ -1361,7 +1375,7 @@ The run's ends come from the circle drawing x -= y >> s1, y += x >> s2 (the two 
 | Called from | `LandNeighbours` |
 | Calls | `MapAddrChecked`, `InterruptJump` |
 | Reads | `$C450`-`$CCBA` (`FireCover`); `$CCE3`-`$DFBC` (`FireCover`); `$DFFD`-`$E01B` (`FireCover`); `$E05D`-`$E07A` (`FireCover`); `$E0BD`-`$E0D9` (`FireCover`); `$E11D`-`$E84F` (`FireCover`); 1 more ranges |
-| Writes | `$F6B4`-`$F6B5` (`SimStack`) |
+| Writes | `$F6B4`-`$F6B5` (`UiStack`) |
 
 ### `LandNeighbours` (`$6C84`)
 
@@ -1375,7 +1389,7 @@ L1 54 876.
 | Called from | `MakeCoast` |
 | Calls | `IsLand`, `InterruptJump` |
 | Reads | `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$F6B6`-`$F6B7` (`SimStack`) |
+| Writes | `$F6B6`-`$F6B7` (`UiStack`) |
 
 ## tools
 
@@ -1385,7 +1399,7 @@ L1 54 876.
 
 **A click on row 2, column 0: scroll the view with the keys until SPACE (not run in any recording)**
 
-ScrollMode: O, P, Q, A scroll by a cell a frame, the view redrawn each time, until SPACE. No recording clicked there (L1 - from `$6CCA`; the scroll of the recordings goes through the pointer at the view's edge, ScrollByPointer).
+ScrollMode: O, P, Q, A scroll by a cell a frame, the view redrawn each time, until SPACE. No recording clicked there (L1 - from `$6CCA`; the scroll of the recordings goes through CAPS SHIFT + 5-8, ShiftScroll `$7A6F`; the pointer at the view's edge only redraws the view, it does not scroll).
 
 | | |
 | --- | --- |
@@ -1437,7 +1451,7 @@ L1 158 072; 30 with SYMBOL SHIFT (the tools recording's shortcuts).
 | Called from | `UiTask`, `Interrupt` |
 | Calls | `KeyToChar`, `DrawToolIcons`, `Sub24`, `ToolPrice`, `UiTask`, `InterruptJump` |
 | Reads | `$5B00`-`$5B07` (`KeyRows`); `$6D50` (`CurrentTool`); `$8F97`-`$8F99` (`Funds`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$6D50` (`CurrentTool`); `$F6BE`-`$F6BF` (`SimStack`) |
+| Writes | `$6D50` (`CurrentTool`); `$F6BE`-`$F6BF` (`UiStack`) |
 
 ### `ToolClick` (`$6D51`)
 
@@ -1660,9 +1674,9 @@ Road 10, rail 20, power 5. L1 470; the crossings themselves L1 47 (`$70E3`, powe
 
 ### `CheckSite` (`$7103`)
 
-**Carry set when the tool's box at the click may not be built; clears trees at $1 a cell**
+**Carry set when the tool's box at the click may not be built; clears trees at 1 dollar a cell**
 
-On water, or with AutoBulldoze (`$A32B`) on: every cell of the box must be in SiteCells (water only for road, rail and power); each cell not in FreeCells costs 1 and becomes land 2. With AutoBulldoze off on land: StrictSite, every cell must be land 2. The bulldozer passes always. L1 464.
+On water, or with AutoBulldoze (`$A32B`) on: every cell of the box must be in SiteCells (water only for road, rail and power); each cell not in FreeCells costs 1 and becomes land 2. With AutoBulldoze off on land: StrictSite, every cell must be land 2. The bulldozer passes always. When Spend cannot pay 1 for clearing a cell, the cell is left as it is and the site still passes. L1 464.
 
 | | |
 | --- | --- |
@@ -1700,7 +1714,7 @@ On water the Bridge; on land (2) pay, write the kind, FixNetwork, redraw; on any
 
 **The refusal: ToneBeep, but only when no direction key (A, Q, P, O) is held**
 
-The two refusals that beep are CheckSite's (the site) and PlaceNetwork's (a network on a building or a zone); while the pointer is dragged with a key held the beep is left out. L1 3; ToneBeep L1 3 in the tools recording.
+Three refusals beep: MapClick's after CheckSite (the site), PlaceNetwork's (a network on a building or a zone) and ParkTool's (map column 2); while the pointer is dragged with a key held the beep is left out. L1 3: 2 in tools, 1 in bankrupt.
 
 | | |
 | --- | --- |
@@ -1720,7 +1734,7 @@ The cost is BridgePrice a cell (road 50, rail 100, power 25). Two BridgeLine pas
 
 **Tool 0: clear the clicked cell**
 
-A building goes to BulldozeBuilding, a zone centre (`$51-$56`) to BulldozeZone, a bridge to water (`$72CA`), cells `$3C-$50` through the flags to rubble or land, the rest to land 2 at $1, then the networks round it are reshaped. L1 2.
+A building goes to BulldozeBuilding, a zone centre (`$51-$56`) to BulldozeZone, a bridge to water (`$72CA`), cells `$3C-$50` through the flags to rubble or land, the rest to land 2 at 1 dollar, then the networks round it are reshaped. L1 2.
 
 | | |
 | --- | --- |
@@ -1852,7 +1866,7 @@ L1 77.
 
 ### `PowerPlantTool` (`$74B4`)
 
-**Tool 11: with 3000 or more, the menu `$9F41` asks coal (3000) or nuclear (5000)**
+**Tool 11: when the low 16 bits of Funds are 3000 or more (LD HL,(Funds): the high byte is ignored), the menu `$9F41` asks coal (3000) or nuclear (5000); SelectTool already refused it below the palette's 4000**
 
 L1 8.
 
@@ -2021,7 +2035,7 @@ L1 27 088.
 
 **A = the value of the cell at HL for its neighbours: a building's kind class, 9 for a developed zone cell; carry for nothing**
 
-L1 191 120.
+A type missing from the table returns with RET Z and BC still pushed: unreachable, every placed type is in the table. L1 191 120.
 
 | | |
 | --- | --- |
@@ -2090,7 +2104,9 @@ L1 934 in c1's simulation. Month `$8F9B`, Year `$8F9C`.
 
 **Draw the 16 x 16 sprite A (MoverSprites `$A884`) at map cell (B, C), if it is in the view and its row is drawn this pass**
 
-The sprite is ORed in with a one-pixel outline cut from the screen. L1 2297.
+The sprite is ORed in. The "mask" computed from the screen byte, byte AND (byte OR byte shifted), is the byte itself, so nothing is cut. L1 2297.
+
+[Animation: `DrawMover` at work](img/routines/DrawMover.gif)
 
 | | |
 | --- | --- |
@@ -2108,7 +2124,7 @@ The plane is sprite 0, the train 3 or 4 (by its direction), the tornado 1 or 2 a
 | Called from | `UiTask`, `Interrupt` |
 | Calls | `UiTask`, `InterruptJump` |
 | Reads | `$77D6` (`TrainCell`); `$7879`-`$787B` (`PlaneOut`); `$7995`-`$7997` (`TornadoCell`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$F6BE`-`$F6BF` (`SimStack`) |
+| Writes | `$F6BE`-`$F6BF` (`UiStack`) |
 
 ### `MoveTrain` (`$77DC`)
 
@@ -2146,7 +2162,7 @@ L1 9884; the crash L1 0 in the disaster recording? see NOTES.
 
 ### `CrashCell` (`$78B4`)
 
-**BurnCell (`$90C4`) at BC**
+**Ignite (`$90C4`) at BC**
 
 | | |
 | --- | --- |
@@ -2256,6 +2272,8 @@ The Sinclair (Interface 2, port 2) joystick on keys 6-0: 6 left, 7 right, 8 down
 
 L1 158 073.
 
+[Animation: `ShiftScroll` at work](img/routines/ShiftScroll.gif)
+
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1,777 calls, 72,462 t-states own (0.00 %) |
@@ -2318,7 +2336,7 @@ L1 5. The overview draws through `$9B60`, `$9B76` and `$9C57`.
 
 ### `FillBuilding` (`$7B86`)
 
-**Fill the whole building at HL with the cell FillCellCode (`$8998`)**
+**Fill the whole building at HL with the cell SpreadCode (`$8998`)**
 
 L1 8.
 
@@ -2338,7 +2356,7 @@ L1 8.
 
 **Add the fire station's coverage (FireStrength through CoverKernel) into FireCover round the cell**
 
-L1 228.
+No clipping at the map edge: the kernel origin is grid cell - 50 (Grid24) or - `$62` (Grid48). L1 228.
 
 | | |
 | --- | --- |
@@ -2348,7 +2366,7 @@ L1 228.
 
 **Add the police coverage into PoliceCover**
 
-L1 233.
+No clipping at the map edge: the kernel origin is grid cell - 50 (Grid24) or - `$62` (Grid48). L1 233.
 
 | | |
 | --- | --- |
@@ -2374,7 +2392,7 @@ L1 233.
 
 **Add PollutionStrength through the kernel at IX into Pollution round the current cell**
 
-L1 8425.
+No clipping at the map edge: the kernel origin is grid cell - 50 (Grid24) or - `$62` (Grid48). L1 8425.
 
 | | |
 | --- | --- |
@@ -2502,9 +2520,9 @@ L1 33 251.
 
 ### `TaxPenaltyOf` (`$7E9B`)
 
-**TaxPenalty = 8 x TaxRate (`$91E4`), plus TaxRate on medium, 2 TaxRate on hard (`$A518`)**
+**TaxPenalty = 8 x TaxRate (`$91E4`); 10 x on medium (Level 1), 9 x on difficult (Level 2) (`$A518`)**
 
-L1 33 251.
+The second addition is skipped by CP `$02` / RET Z (`$7EB4`) on Level 2 only, so the difficult level pays less than the medium one. L1 33 251.
 
 | | |
 | --- | --- |
@@ -2562,7 +2580,7 @@ L1 7446.
 
 **Scan the map for 4 x 4 building tops (`$B4`) of type 6 (coal) or 8 (nuclear) into PowerPlants**
 
-L1 1101 (once a simulation pass).
+Finds only top row bytes `$B4` (powered, width 4) of type 6 (coal) or 8 (nuclear) (LD A,`$B4` / CPIR at `$7FA2`). L1 1101 (once a simulation pass).
 
 | | |
 | --- | --- |
@@ -2590,7 +2608,9 @@ L1 1101. Every powered cell costs one of the station's budget; a station that ru
 
 **A scan-line flood fill from FloodStart over IsConductive cells, each made powered (PowerCell)**
 
-L1 1162.
+FloodPush silently drops a span when CellStack is full; a plant whose top cell an earlier plant's flood powered floods nothing (IsConductive fails at once), so its budget is lost. L1 1162.
+
+[Animation: `FloodFill` at work](img/routines/FloodFill.gif)
 
 | | |
 | --- | --- |
@@ -2712,9 +2732,11 @@ L1 13.
 
 ### `SimTask` (`$835F`)
 
-**The simulation task: init, then for ever one pass over the city; a month every SpeedMask + 1 passes**
+**The simulation task: init, then for ever one pass over the city; a month every MonthMask + 1 passes**
 
-A pass: ClearCounters, SetSpeed, PowerFlood, ScanCity (the growth), CoverStations (every 4th), DecayPollution, DecayTraffic, DemandOf, Averages2, AssessCity, PopBalanceOf, ServiceNeeds, Advise (`$99AD`), Averages; when SimPass AND MonthMask is 0, MonthEnd (`$8E94`) and NextMonth. c1: L1 12 entries, 1089 passes.
+A pass: ClearCounters, SetSpeed, PowerFlood, ScanCity (the growth), CoverStations (every 4th), DecayPollution, DecayTraffic, DemandOf, Averages2, AssessCity, PopBalanceOf, ServiceNeeds, Advise (`$99AD`), Averages; when SimPass AND MonthMask is 0, MonthEnd (`$8E94`) and NextMonth. L1 (c1 and the ten recordings together, not c1 alone): 12 entries, 1101 passes started at SimTaskPass (c1 17, doc 4.8), 1089 of them run to the month test (a recording ends inside a pass).
+
+[Animation: `SimTask` at work](img/routines/SimTask.gif)
 
 | | |
 | --- | --- |
@@ -2827,7 +2849,7 @@ L1 7281.
 
 **Up to 30 steps of TripStep, each checked for arrival (TripArrived); carry when lost**
 
-L1 9735.
+A dead end drops one pushed cell without counting a step or moving; with no way on, the trip is lost. L1 9735.
 
 | | |
 | --- | --- |
@@ -3116,6 +3138,8 @@ L1 44 309.
 
 Grows while Density < ResTile (ZoneScore / 2), else declines; a full zone (Density 63+) becomes a 3 x 3 building: a ChurchNeed or HospitalNeed building first (`$1B`, `$12`), else the residential block (tile `$88`). L1 17 802.
 
+[Animation: `ResidentialStep` at work](img/routines/ResidentialStep.gif)
+
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
@@ -3124,7 +3148,7 @@ Grows while Density < ResTile (ZoneScore / 2), else declines; a full zone (Densi
 
 **A residential block (types `$11-$14`): count, the trip, the score; with the growth chance a block of level ResLevel / 2, or back to a full zone**
 
-Below score 128 (ResLevel `$0F`) the block goes back to the houses zone ResRevertZone. Not run in any recording (no block grew there): known only from the code.
+Below score 128 (ResLevel `$0F`) the block goes back to the houses zone ResRevertZone. It copies only the low byte of ResDemand into ZoneDemand (LD A,(ResDemand) at `$8B6F`), so the high byte left by the previous zone decides the sign; it acts on the IndChance mask and does not test power. No bot recording ran it; a block grew in the stage 2 ceiling run (work/stage2/ceiling.log, frame 80 000, R blocks 1), so ResBuildingStep runs there.
 
 | | |
 | --- | --- |
@@ -3151,6 +3175,8 @@ L1 2575.
 ### `ComBuildingStep` (`$8BE0`)
 
 **a commercial building (types `$15-$18`): the same from the building's corner**
+
+A building that reverts mid-scan is counted twice in the pass: the reverted 3 x 3 zone is met again by ScanCity.
 
 | | |
 | --- | --- |
@@ -3183,6 +3209,8 @@ L1 1795.
 ### `IndBuildingStep` (`$8C77`)
 
 **an industrial building (types `$1A-$1D`)**
+
+A building that reverts mid-scan is counted twice in the pass: the reverted 3 x 3 zone is met again by ScanCity (IndPop 12 with 8 I zones, city frame 29 000).
 
 | | |
 | --- | --- |
@@ -3224,7 +3252,7 @@ L1 719.
 
 ### `PoliceStep` (`$8D56`)
 
-**A police station: PoliceCost (`$8466`) + 100; powered, PoliceCount + 1**
+**A police station: PoliceUpkeep (`$8466`) + 100 (saturating, before the power test); powered, PoliceCount + 1**
 
 | | |
 | --- | --- |
@@ -3232,7 +3260,7 @@ L1 719.
 
 ### `FireStep` (`$8D73`)
 
-**A fire station: FireCost (`$8468`) + 100; powered, FireCount + 1**
+**A fire station: FireUpkeep (`$8468`) + 100 (saturating, before the power test); powered, FireCount + 1**
 
 | | |
 | --- | --- |
@@ -3258,7 +3286,7 @@ L1 719.
 
 **A powered stadium with transport: 1 in 32 a trip to R; when it arrives StadiumCount + 1**
 
-L1 648.
+StadiumCount + 1 only when powered, with transport in the 4 x 4 ring, and unless a trip was tried and lost. The city recording's stadium is never counted (StadiumCount 0 in all 311 samples). L1 648.
 
 | | |
 | --- | --- |
@@ -3346,7 +3374,7 @@ L1 1 (after the mover).
 | Called from | `Entry` (tail), `DrawPointer`, `ErasePointer`, `TrackBox`, `InvertBox`, `PrintFunds`, `PrintDate`, `MovePointer`, `DrawView`, `ToolKeys`, `ShowTool`, `DrawMovers`, `Periodic`, `FundsChanged`, `AnimateFlood`, `RunDisaster`, `Interrupt` |
 | Calls | `ClearTopBlack`, `DrawPointer`, `ErasePointer`, `TrackBox`, `DrawStatusPanel`, `MovePointer`, `Click`, `DrawViewRowPass`, `DrawView`, `ClearWindowArea`, `DrawMenu`, `RunMenu`, `NewLandscape`, `ToolKeys`, `DrawMovers`, `ShiftScroll`, `MapsWindow`, `StartSimulation`, `Periodic`, `FundsChanged`, `AnimateFire`, `AnimateFlood`, `InterruptJump` |
 | Reads | `$5B06` (`KeyRows`); `$8E93` (`LastPop`); `$8F9F` (`Funds`); `$A511` (`MapsDue`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$8F9F` (`Funds`); `$F6C0`-`$F6C1` (`SimStack`); `$F705` (`TaskNow`); `$F753` (`PrintCharCode`) |
+| Writes | `$8F9F` (`Funds`); `$F6C0`-`$F6C1` (`UiStack`); `$F705` (`TaskNow`); `$F753` (`PrintCharCode`) |
 
 ### `Periodic` (`$901D`)
 
@@ -3360,7 +3388,7 @@ L1 158 073.
 | Called from | `PrintPadded`, `UiTask`, `Interrupt` |
 | Calls | `PrintFunds` (tail), `PrintDate` (tail), `UiTask`, `MoveDisasters`, `AnimateFire` (tail), `AnimateFlood` (tail), `RandomDisaster` (tail), `RunDisaster` (tail), `ShowAdvice`, `InterruptJump` |
 | Reads | `$8F9F` (`Funds`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$F6BE`-`$F6BF` (`SimStack`) |
+| Writes | `$F6BE`-`$F6BF` (`UiStack`) |
 
 ### `MoveDisasters` (`$904D`)
 
@@ -3382,7 +3410,7 @@ L1 158 073.
 | Called from | `DrawToolIcons`, `UiTask`, `Interrupt` |
 | Calls | `DrawToolIcons`, `ShowTool` (tail), `UiTask`, `InterruptJump` |
 | Reads | `$8F97`-`$8F98` (`Funds`); `$9056`-`$9057` (`LastFunds`); `$FDFF`-`$FE00` (`InterruptSpare`) |
-| Writes | `$9056`-`$9057` (`LastFunds`); `$F6BE`-`$F6BF` (`SimStack`) |
+| Writes | `$9056`-`$9057` (`LastFunds`); `$F6BE`-`$F6BF` (`UiStack`) |
 
 ### `AnimateFire` (`$906D`)
 
@@ -3526,6 +3554,8 @@ L1 77.
 
 **The budget window's menu hook: recompute and print the figures while the player edits them**
 
+[Animation: `BudgetHook` at work](img/routines/BudgetHook.gif)
+
 | | |
 | --- | --- |
 | Runs | not reached in the recordings |
@@ -3618,7 +3648,7 @@ L1 1841.
 
 **The year's fundings to the city: RoadDecay and RailDecay, PoliceStrength, FireStrength by the share granted**
 
-A request below 20 counts as fully paid. The fire branch tests TransportCost against 20, not FireCost (a slip: with transport costs below 20 the fire is always fully strong). L1 74.
+A request below 20 counts as fully paid. The fire branch tests TransportCost against 20, not FireCost (a slip: with transport costs below 20 the fire is always fully strong, FireStrength = 15 whatever the funding). BUG: with transport at 20 or more and no fire station, FireCost / 8 = 0 and Div16 by zero returns 0, so FireStrength = 0 (city recording, frame 8 500, JAN 1903). L1 74.
 
 | | |
 | --- | --- |
@@ -3658,7 +3688,9 @@ Only the evaluation window computes it, from the population at the last year's e
 
 ### `PrintEvalFigures` (`$9792`)
 
-**The level, the category, the population, the migration, the assessed value, then 00 after the score**
+**The level, the category, the population, the migration, the assessed value (CityValueLast) followed by 000 (x 1000: two CALL PrintZero and a fall-through)**
+
+POPULATION is LastPop (last month's), not the year's population.
 
 | | |
 | --- | --- |
@@ -3732,7 +3764,7 @@ L1 18.
 
 ### `ShowAdvice` (`$9997`)
 
-**Print GameTexts[23 + Advice] at row 6, column 1, padded to 29**
+**Print GameTexts[23 + Advice] at row 6, column 1, padded to 30 columns**
 
 L1 4944.
 
@@ -3797,7 +3829,7 @@ In order: R at most a quarter of all zones (1), C at most an eighth (2), I (3); 
 
 ### `MapsKeys` (`$9B8B`)
 
-**Every 4th pass: Q / A change the layer; a digit 1-9 the map area**
+**Every 4th loop: Q / A change the layer; SYMBOL SHIFT + a digit 1-9 the map area (MapsKeysDigit returns if SYMBOL SHIFT is up)**
 
 | | |
 | --- | --- |
@@ -3832,13 +3864,15 @@ In order: R at most a quarter of all zones (1), C at most an eighth (2), I (3); 
 
 L1 105.
 
+[Animation: `DrawOverview` at work](img/routines/DrawOverview.gif)
+
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1 call, 242,116 t-states own (0.02 %) |
 | Called from | `MapsWindow`, `ShrinkLine`, `PutLayerAttr`, `LayerOf`, `Interrupt` |
 | Calls | `AnyKey`, `NextPixelLine`, `MapsWindow`, `OverviewCell`, `PutLayerAttr`, `LayerOf`, `InterruptJump` |
 | Reads | `$6558`-`$655A` (`BuildingLeft`); `$9BD7`-`$9BD8` (`OverviewCell`); `$9C2B`-`$9C34` (`MapArea`); `$9C45`-`$9C46` (`MapArea`); `$C450`-`$C83F` (`FireCover`); `$C870`-`$C89F` (`FireCover`); 7 more ranges |
-| Writes | `$6433` (`Blink`); `$6509`-`$650A` (`CellAttrPtr`); `$6558`-`$655A` (`BuildingLeft`); `$9BD7`-`$9BD8` (`OverviewCell`); `$9C2E`-`$9C32` (`MapArea`); `$F6BA`-`$F6BB` (`SimStack`) |
+| Writes | `$6433` (`Blink`); `$6509`-`$650A` (`CellAttrPtr`); `$6558`-`$655A` (`BuildingLeft`); `$9BD7`-`$9BD8` (`OverviewCell`); `$9C2E`-`$9C32` (`MapArea`); `$F6BA`-`$F6BB` (`UiStack`) |
 
 ### `LayerColour` (`$9D02`)
 
@@ -3872,7 +3906,7 @@ L1 32 928.
 | Called from | `DrawOverview`, `Interrupt` |
 | Calls | `CellFlagsOf`, `DrawOverview`, `InterruptJump` |
 | Reads | `$6509`-`$650A` (`CellAttrPtr`); `$753C`-`$753D` (`GridBase`); `$9D43` (`MapLayer`); `$C450`-`$C83F` (`FireCover`); `$C870`-`$C89F` (`FireCover`); `$C8D0`-`$C8FF` (`FireCover`); 6 more ranges |
-| Writes | `$753C`-`$753D` (`GridBase`); `$F6B8`-`$F6B9` (`SimStack`); `$F705` (`TaskNow`) |
+| Writes | `$753C`-`$753D` (`GridBase`); `$F6B8`-`$F6B9` (`UiStack`); `$F705` (`TaskNow`) |
 
 ## saveload
 
@@ -3891,6 +3925,8 @@ The header SaveHeader: the 12-letter file name, Funds, its spare byte, Month, Ye
 ### `LoadCity` (`$9E5A`)
 
 **LOAD FROM TAPE: the name, START TAPE, SEARCHING; headers until the name matches (any with a blank name), then the map**
+
+PopLastYear and LastPop are not restored: the previous city's values remain until the next month end.
 
 | | |
 | --- | --- |
@@ -4099,7 +4135,7 @@ L1 12.
 
 ### `InputName` (`$A6F9`)
 
-**Edit a 12-letter text at InputAt (letters, digits, space; CAPS SHIFT 5 / 8 cursor, 0 delete)**
+**Edit an 11-letter text at InputAt (InputLength = 11: CityName's twelfth letter cannot be typed) (letters, digits, space; CAPS SHIFT 5 / 8 cursor, 0 delete)**
 
 | | |
 | --- | --- |
@@ -4110,6 +4146,8 @@ L1 12.
 **The line editor; with InputDigits a number (5 digits, carry when too large)**
 
 L1 5.
+
+[Animation: `InputLine` at work](img/routines/InputLine.gif)
 
 | | |
 | --- | --- |
@@ -4196,6 +4234,8 @@ L1 5.
 **IM 2: save all registers, ReadInput, then (unless SwitchOff) swap the stack with the other task's**
 
 Each interrupt, 50 a second, gives the other task the CPU: the UI and the simulation run turn by turn, one frame each. c1: L1 407 762, 128 197 / 256 388 switches.
+
+[Animation: `Interrupt` at work](img/routines/Interrupt.gif)
 
 | | |
 | --- | --- |

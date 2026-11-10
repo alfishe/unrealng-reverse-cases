@@ -8,7 +8,8 @@
 ; Draw the 16 x 16 sprite A (MoverSprites $A884) at map cell (B, C), if it is
 ; in the view and its row is drawn this pass
 ;
-; The sprite is ORed in with a one-pixel outline cut from the screen. L1 2297.
+; The sprite is ORed in. The "mask" computed from the screen byte, byte AND
+; (byte OR byte shifted), is the byte itself, so nothing is cut. L1 2297.
 DrawMover:
   LD HL,(ViewCol)
   LD E,A
@@ -216,7 +217,8 @@ MoveTrainSprite:
 ; The $9312 compare's result is lost (AND A follows): a dead test. L1 134.
 StartTrain:
   LD A,(TransportCost+$0001)
-  CP $08
+  CP $08                  ; CP $08: dead, the flags are replaced by the AND A
+                          ; that follows
   LD A,(TrainOut)
   AND A
   RET NZ
@@ -276,7 +278,7 @@ PlaneDone:
   LD (PlaneOut),A
   RET
 
-; BurnCell ($90C4) at BC
+; Ignite ($90C4) at BC
 ;
 ; Used by the routine at MovePlane.
 CrashCell:

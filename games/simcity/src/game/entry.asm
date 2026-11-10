@@ -40,35 +40,38 @@ PortHighs:
                                        ; reads)
 BitMasks:
   DEFB $80,$40,$20,$10,$08,$04,$02,$01 ; $80, $40, ... $01: the bit of a
-                                       ; column, read by the drawing of bars
-                                       ; and graphs (L1: 1 415 565 reads)
+                                       ; column, read by PowerBit $75F1 (the
+                                       ; power map's bit of a cell) (L1: 1 415
+                                       ; 565 reads)
 EntryJump:
-  DEFB $18,$00            ; JR $5B1B, two bytes no code runs (L1: never
-                          ; executed): the entry is reached by JP $5B1B
+  DEFB $18,$00            ; JR $5B1B, two bytes no code of the tape version
+                          ; runs (L1: never executed): the tape's mover reaches
+                          ; the entry by JP $5B1B; the +3 disk's boot enters
+                          ; here (JP $5B19, work/stage2/NOTES.md 5.3)
 
 ; The game's entry: stack, black border, the Kempston test, IM 2 with I = $FD,
-; then MainMenu
+; then UiTask
 ;
-; MoveCode2 $5000 jumps here. SP = $F6C2 (the UI task's stack), the border
-; black, NoSwitch $F705 = 1 (no task switch until the simulation task is set
-; up), then the Kempston test: port $1F is read up to 32 768 times; a value $1F
-; or more (a floating bus gives $FF) means no interface, otherwise
-; KempstonFound = 1. Then I = $FD (the vector table ImTable $FD00, every vector
-; $FCFC), IM 2, EI and JP MainMenu $8FA0.
+; MoveCode2 $5000 jumps here. SP = $F6C2 (the top of the UI task's stack
+; UiStack), the border black, SwitchOff $F705 = 1 (no task switch until the
+; simulation task is set up), then the Kempston test: port $1F is read up to 32
+; 768 times; a value $1F or more (a floating bus gives $FF) means no interface,
+; otherwise KempstonFound = 1. Then I = $FD (the vector table VectorTable
+; $FD00, every vector $FCFC), IM 2, EI and JP UiTask $8FA0.
 ;
 ; c1: L1 1 at frame 16 280; the loop ran 32 768 times (no Kempston in c1's
 ; setup); the ports recording sets KempstonFound (stage 1). No other code
 ; changes I or the mode.
 Entry:
   DI
-  LD SP,SimStack+$0040
+  LD SP,UiStack+$40
   XOR A
   OUT ($FE),A
   LD A,$01
   LD (SwitchOff),A
   XOR A
   LD (KempstonFound),A
-  LD HL,PowerFloodBudget+$0003
+  LD HL,$8000
 KempstonTest:
   IN A,($1F)              ; IN A,($1F): below $1F an interface answers
   CP $1F
@@ -80,7 +83,7 @@ KempstonTest:
   LD A,$01
   LD (KempstonFound),A
 SetIm2:
-  LD A,$FD                ; I = $FD, IM 2, EI, JP MainMenu
+  LD A,$FD                ; I = $FD, IM 2, EI, JP UiTask
   LD I,A
   IM 2
   EI

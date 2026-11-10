@@ -42,6 +42,6 @@ Attributes     EQU $5800  ; the attributes
   INCLUDE "workspace.asm"  ; The movers' sprites and the work space
   INCLUDE "graphics.asm"  ; The tiles and their attributes
   INCLUDE "tasks.asm"  ; The task switcher
-  INCLUDE "system.asm"  ; Printing glyphs, the input read, the tape, the UI stack and the IM 2 vector
+  INCLUDE "system.asm"  ; Printing glyphs, the input read, the tape, the $E5 leftover and the IM 2 vector
 
   SAVEBIN "game.bin",$5B00,$A301

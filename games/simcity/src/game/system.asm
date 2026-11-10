@@ -1,12 +1,15 @@
 ; --------------------------------------------------------------------------------------------------------------------
-; system.asm: Printing glyphs, the input read, the tape, the UI stack and the IM 2 vector
+; system.asm: Printing glyphs, the input read, the tape, the $E5 leftover and the IM 2 vector
 ;
-; PrintGlyph with the print state, ReadInput (keys and joysticks every interrupt), TapeLoad, TapeSave, TapePause, the
-; UI task's stack, InterruptJump $FCFC and the vector table $FD00.
+; PrintGlyph with the print state, ReadInput (keys and joysticks every interrupt), TapeLoad, TapeSave, TapePause, 1345
+; leftover $E5 bytes, InterruptJump $FCFC and the vector table $FD00.
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; The print state: the character, the screen address, the column and row, the
 ; attribute
+;
+; PrintCharCode is written by PrintDigit and read by nobody (PrintGlyph takes
+; the code in A).
 PrintCharCode:
   DEFB $41
 PrintAddr:
@@ -117,8 +120,9 @@ TapePauseLoop:
   DJNZ TapePause
   RET
 
-; The UI task's stack, filled with $E5
-UiStack:
+; Leftover: 1345 bytes of $E5 (the byte a CP/M or +3DOS format writes); no
+; stack or code touches them (L1: untouched)
+E5Fill:
   DEFS $0541,$E5
 
 ; JP Interrupt: the IM 2 vector $FCFC

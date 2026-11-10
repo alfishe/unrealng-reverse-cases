@@ -1295,8 +1295,8 @@ Worked example: the layer and area keys in `menus`, frames 19 003-19 652.
    `019653-maps-region9.png` all show area 1, the sea in the north-west corner.
 
 Witness: `menus`, MapArea `$9C2B` and MapLayer `$9D43` sampled before each key (`work/docs/scB/ovcheck.py`). The area
-keys with SYMBOL SHIFT are known only from the code: no recording pressed them. WALKTHROUGH 6.0 lists "the 9 regions
-(CS+1..9)" as reached; the memory shows they were not (noted in `work/docs/scB-NOTES.md`).
+keys with SYMBOL SHIFT are known only from the code: no recording pressed them. WALKTHROUGH 6.0 listed "the 9 regions
+(CS+1..9)" as reached; the memory shows they were not, and it now says so.
 
 ![The overview of one area on all eight layers](img/rendering/overview-metro.png)
 

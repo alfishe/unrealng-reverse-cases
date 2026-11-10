@@ -9,7 +9,8 @@
 RandomSeed:
   DEFW $0000
 
-; The generator: seed = (254 (seed + 1) - 1) mod 65537; A = the seed's low byte
+; The generator: seed' = (254 (seed + 1) - 1) mod 65 537, 254 a primitive root:
+; period 65 536; A = the seed's low byte
 ;
 ; RandomSeed $5CC4 holds the seed. The arithmetic: H = the seed's low byte, L =
 ; $FD, so A:HL = 256 seed + 253; two SBC HL,DE take 2 seed off (254 seed + 253
@@ -38,7 +39,8 @@ Random:
   INC HL
 RandomStore:
   LD (RandomSeed),HL
-  LD A,H
+  LD A,H                  ; LD A,H: dead, the next LD A,(RandomSeed) overwrites
+                          ; it
   LD A,(RandomSeed)
   POP BC
   POP DE

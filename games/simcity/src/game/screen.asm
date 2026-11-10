@@ -35,7 +35,8 @@ ScreenAddrL:
 
 ; HL = the attribute address of row B, column C (C kept, B = $58)
 ;
-; L1 1024 (the menu highlight HighlightLine $6933 and the graph windows).
+; L1 1024 (the menu highlight HighlightLine $6933 and the maps window's
+; HighlightMapKey / HighlightLayer).
 AttrAddr:
   LD L,B
   LD H,$00
@@ -105,7 +106,7 @@ DrawIconLoop:
 ; Draw icon tile A at PrintAddr with the current PrintAttr (no position, no own
 ; attribute)
 ;
-; Then JP PrintAttrHere $F76E (PrintAttr $FF leaves the attribute). L1 27 668
+; Then JP PrintGlyphAttr $F76E (PrintAttr $FF leaves the attribute). L1 27 668
 ; (the box frames of DrawBoxRow).
 DrawIconHere:
   LD L,A

@@ -335,7 +335,10 @@ StrengthLevels:
 ;
 ; A request below 20 counts as fully paid. The fire branch tests TransportCost
 ; against 20, not FireCost (a slip: with transport costs below 20 the fire is
-; always fully strong). L1 74.
+; always fully strong, FireStrength = 15 whatever the funding). BUG: with
+; transport at 20 or more and no fire station, FireCost / 8 = 0 and Div16 by
+; zero returns 0, so FireStrength = 0 (city recording, frame 8 500, JAN 1903).
+; L1 74.
 ApplyFunding:
   LD A,$FF
   LD HL,(TransportCost)
@@ -385,7 +388,7 @@ ApplyPolice:
 ApplyFire:
   LD (PoliceStrength),A
   LD A,$0F
-  LD HL,(TransportCost)
+  LD HL,(TransportCost)   ; BUG: LD HL,(TransportCost), not FireCost
   LD DE,$0014
   AND A
   SBC HL,DE

@@ -48,6 +48,9 @@ SaveCity:
 
 ; LOAD FROM TAPE: the name, START TAPE, SEARCHING; headers until the name
 ; matches (any with a blank name), then the map
+;
+; PopLastYear and LastPop are not restored: the previous city's values remain
+; until the next month end.
 LoadCity:
   CALL FileNameWindow
   LD BC,$100C

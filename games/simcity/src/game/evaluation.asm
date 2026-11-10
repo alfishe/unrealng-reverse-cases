@@ -84,10 +84,11 @@ CategoryLoop:
 Migration:
   DEFB $00,$00,$00
 
-; The level, the category, the population, the migration, the assessed value,
-; then 00 after the score
+; The level, the category, the population, the migration, the assessed value
+; (CityValueLast) followed by 000 (x 1000: two CALL PrintZero and a
+; fall-through)
 ;
-; Used by the routine at Evaluate.
+; POPULATION is LastPop (last month's), not the year's population.
 PrintEvalFigures:
   LD HL,GameTexts
   LD A,(Level)
@@ -394,7 +395,7 @@ PrintPercent:
 Advice:
   DEFB $00
 
-; Print GameTexts[23 + Advice] at row 6, column 1, padded to 29
+; Print GameTexts[23 + Advice] at row 6, column 1, padded to 30 columns
 ;
 ; L1 4944.
 ShowAdvice:

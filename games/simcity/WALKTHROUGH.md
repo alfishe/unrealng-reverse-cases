@@ -43,7 +43,7 @@ Found:
   512-byte loader at `$FE00`, and three headerless blocks with flag `$00` and a header's long pilot: the screen
   (6912), code1 (37 633 bytes to `$6B00-$FE00`) and code2 (4128 bytes to `$4000-$501F`). The signal lasts 315.74 s
   (16 110 frames).
-- **Two layers of protection** ([doc 3, 3.3](docs/03-build-and-load.md#33-the-loader)): the loader's tail
+- **Two layers of protection** ([doc 3, 3.3](docs/03-build-and-load.md#33-the-loader-two-layers)): the loader's tail
   `$FE80-$FFFF` is XORed with the R register (key `(2 + 8 k) AND $7F`), and its tape routine `$FEBD`, the ROM's
   LD-BYTES copied and changed, stores every byte as `received XOR key XOR E` (key 0, 3, 6, ... per block, E the low
   byte of the count left). `tools/decrypt_tape.py` does both; the three blocks re-encrypt to the tape's bytes.
@@ -78,7 +78,7 @@ python3 tools/ttdmem.py work/stage1/c1 16281 0x4000 0xC000 --out work/stage1/c1-
 | Stage | Entered | Frame of `c1` (ROM-speed load) | What runs |
 | --- | --- | --- | --- |
 | 0 | `$FE00` | 1258, T 65 246 | the R decryption of the loader's tail |
-| 1 | `$FE80` | 1259, T 13 443 | the loader: three calls of `$FEBD` (blocks in at 3561, 14 775, 16 2xx; [doc 3, 3.5](docs/03-build-and-load.md#35-the-load-in-c1)) |
+| 1 | `$FE80` | 1259, T 13 443 | the loader: three calls of `$FEBD` (blocks in at 3561, 14 775, 16 2xx; [doc 3, 3.8](docs/03-build-and-load.md#38-the-load-in-c1)) |
 | 2 | `$5000` | 16 279, T 8372 | the mover |
 | 3 | `$5B1B` | 16 280, T 51 501 | the entry: SP = `$F6C2`, the Kempston test, IM 2 |
 | 4 | `$8FA0` | 16 310 | the main program: the difficulty menu `$6944` (HALT at `$6955`) |
@@ -95,7 +95,8 @@ Found, interrupts and the frame (first look; stage 2 reads the routines):
   return address `$835F` at `$F702`, so the first switch pops them and "returns" into the simulation loop. Over
   `c1`'s play the switch was skipped on 2364 of 5224 interrupts (the branch at `$F720`, `$F705` not 0) and made on
   the other 2860.
-- **The two tasks**: the user interface, the main loop `$8FDA-$901B` (input, cursor, tools, menus, one step of the
+- **The two tasks**: the user interface, the main loop UiLoop `$8FCC-$901B` (UiDelay `$8FD5`, a 2000-loop busy wait,
+  then UiPass `$8FDA`: input, cursor, tools, menus, one step of the
   map display and of the counters each pass, the pass counter `$8F9F` at `$9008`); and the simulation loop
   `$835F-$839F` (15 calls a pass: the zone scan, the census, the advice `$99AD`, and, when the pass number `$835E`
   AND the speed mask `$8F6B` is 0, the month `$8E94` and the year end). The UI sets `$F705` to 1 around its drawing
@@ -107,8 +108,10 @@ Found, interrupts and the frame (first look; stage 2 reads the routines):
   `$910F`, `$911E`, `$9138`; 30 406 of its `OUT` in `disasters`, L1).
 - **Sound**: two beeper routines. `$5B48` is noise (the random routine `$5CC6` AND `$10` to port `$FE`), skipped when
   the SOUND option `$A32D` is 0; `$5B66` is a tone of 500 square cycles (`$10` and 0 to port `$FE`, delays 48 and 16
-  `DJNZ` loops), reached by `JP $5B66` at `$71FC`, the refusal beep (1000 `OUT` pairs in `tools`: the occupied cell and
-  the seaport refused; 500 in `bankrupt`). No other `OUT ($FE)` runs in play but the save and load's border
+  `DJNZ` loops), reached by `JP $5B66` at `$71FC`, the refusal beep (1000 `OUT` pairs in `tools`, two beeps: the occupied cell
+  at frame 13 434, traced, and one not located; 500 in `bankrupt`). The seaport refused for money is not one of them:
+  SelectTool refuses a tool the funds do not cover with a silent `RET M`, and no beep was found near it (frames
+  12 496-12 530 and 12 628-12 668, [doc 9, 9.9](docs/09-sound.md#99-not-reached-and-known-only-from-the-code)). No other `OUT ($FE)` runs in play but the save and load's border
   (`$9E56`, `$9EF3`, `$F7A4`).
 - **Input in the interrupt**: `$F781` reads the eight keyboard half rows into `$5B00-$5B07` (bit 0 the outer key);
   `$7A01` folds the Kempston port (`$5B80`: `IN A,($1F)` inverted, or all released when the entry's test found no
@@ -155,24 +158,52 @@ python3 tools/play_bot.py list                                                  
 | Name | Start | Frames | How | What it reached |
 | --- | --- | ---: | --- | --- |
 | `c1` | power-on | 21 535 | `tools/rs_capture.py`, `tests/inputs/c1.txt` ([1](#1-one-recording-from-power-on)) | the tape at signal speed through the game's loader, the level menu (EASY), the landscape, R, road and I placed with the keyboard, the WINDOWS menu, 3000 frames of time |
-| `tools` | loaded | 19 867 | bot, easy level, no POKE; AUTO-BUDGET on | every tool once: bulldozer on trees, road, power line, rail, park, R, C, I, police, fire, airport (`$10 000`), stadium, the power station dialog (nuclear `$5000`, coal `$3000`), a nuclear and a coal station; the seaport refused at `$386` (the beep); a road on an occupied cell (the beep); the view scrolled with CS+5..8; the icon shortcuts SS+1..0; JUN 1905, funds `$175` |
+| `tools` | loaded | 19 867 | bot, easy level, no POKE; AUTO-BUDGET on | every tool once: bulldozer on trees, road, power line, rail, park, R, C, I, police, fire, airport (`$10 000`), stadium, the power station dialog (nuclear `$5000`, coal `$3000`), a nuclear and a coal station; the seaport refused at `$386` (silently, by SelectTool: no beep found); a road on an occupied cell (the beep, frame 13 434); the view scrolled with CS+5..8; the icon shortcuts SS+1..0; JUN 1905, funds `$175` |
 | `ports` | loaded | 8738 | bot, easy | the Kempston joystick steering the cursor and firing (the second control method); a seaport on the lake shore, a coal station, a stadium, power lines |
-| `menus` | loaded | 30 136 | bot, easy, a town first | the about box; each OPTIONS toggle; the four speeds; the DISASTERS menu and DISABLE ALL; WINDOWS: MAPS with its 8 sub-maps and the 9 regions (CS+1..9), ENTER for the maps, the budget with the tax rate edited, the evaluation; save (name, "START TAPE AND PRESS SPACE", 2370 frames) and load ("SEARCHING", "FOUND", 720 frames of loading) from a tape rebuilt from memory (`tools/savetap.py`; the funds and map spoiled by a tool write in between and restored: `$0` back to `$14 325`); USE OLD LANDSCAPE with the gene 12345 (another island) and back to 00003; START NEW CITY with YES (a new landscape at EASY); EXIT SIMCITY (asked twice) |
+| `menus` | loaded | 30 136 | bot, easy, a town first | the about box; each OPTIONS toggle; the four speeds; the DISASTERS menu and DISABLE ALL; WINDOWS: MAPS with its 8 sub-maps (the 9 areas were NOT reached: the script pressed CAPS SHIFT + 1..9, the keys need SYMBOL SHIFT, so MapArea `$9C2B` stayed 0 and every screenshot shows area 1, [doc 5, 5.10](docs/05-controls.md#510-the-maps-window-layers-and-areas)), ENTER for the maps, the budget with the tax rate edited, the evaluation; save (name, "START TAPE AND PRESS SPACE", 2370 frames) and load ("SEARCHING", "FOUND", 720 frames of loading) from a tape rebuilt from memory (`tools/savetap.py`; the funds and map spoiled by a tool write in between and restored: `$0` back to `$14 325`); USE OLD LANDSCAPE with the gene 12345 (another island) and back to 00003; START NEW CITY with YES (a new landscape at EASY); EXIT SIMCITY (asked twice) |
 | `growth` | loaded | 51 985 | bot, easy, a town with a coal station, FAST | 133 months of time at FAST (the speed measure in [1](#1-one-recording-from-power-on)); the evaluation every 10 000 frames; every map; the town stays a VILLAGE (year-end population 656 at DEC 1914) |
 | `city` | loaded | 77 592 | bot, easy; funds written to 999 999 at `$8F97` twice (a tool write, not the POKE file: its `NOP`s break the category's comparison, `$6680`) | the start view filled: nuclear station, three roads, 18 R, 8 C and 8 I zones, police, fire, stadium, a power line; tax 7 %; FAST to SEP 1917; TOWN by the first evaluation (SEP 1908: population 6144) |
 | `city2` | city's end | 82 012 | bot, FAST | the same city to DEC 1935: it levels off at 5500-6200; every map at NORMAL speed; the last evaluation |
-| `metro` | city's end | 96 503 | bot; funds written to 999 999 twice | a second block at view (47, 53) with its own nuclear station; to SEP 1934; the year-end population rises to 9312 (1931) and falls back: TOWN, never CITY |
+| `metro` | city's end | 96 503 | bot; funds written to 999 999 twice | a second block at view (47, 53) with its own nuclear station; to OCT 1934 (Month 9 in the end state; the log's last date is SEP 1934 at frame 95 121); the year-end population rises to 9312 (1931) and falls back: TOWN, never CITY |
 | `disasters` | city2's end | 13 050 | bot, NORMAL | each item of the DISASTERS menu with 2000 frames after it: fire, flood, earthquake, air crash, tornado, nuclear meltdown (the meltdown leaves the radiation tiles and burns the lower blocks) |
 | `levels` | loaded | 2319 | bot | MEDIUM (`$10 000`); START NEW CITY with YES, the level menu's INPUT NEW CITY NAME (METRO: the name becomes "METROVILLE", the typed letters over "HERES"), DIFFICULT (`$5000`) |
 | `bankrupt` | loaded | 25 095 | bot, difficult | the money spent on 24 R zones with no road, the tax at 0 %, ten spans of 2000 frames at FAST: the funds stay at `$2680` (no roads, no upkeep, no income), the budget window opens at each year end; no bankruptcy and no game over exist |
 
+Each run with its command (from the case folder after `. work/env.sh`) and its `session.ttd`. The writers of docs
+01-10 made no new TTD recording: they opened these sessions read-only into `work/docs/sc*/<name>/` (`kit/rs.py
+open`, their own port bases) for probes and animations, and ran one clone experiment (the last row).
+
+| Run | Command | `session.ttd` |
+| --- | --- | --- |
+| `c1` | the `tools/rs_capture.py` command of [1](#1-one-recording-from-power-on) | `work/stage1/c1/session.ttd`, 12 964 652 bytes |
+| `tools` | `python3 tools/play_bot.py record tools --work work/stage1/rec/tools --port-base 37020` (through `run_recs.sh`) | `work/stage1/rec/tools/session.ttd`, 20 715 933 bytes |
+| `ports` | `python3 tools/play_bot.py record ports --work work/stage1/rec/ports --port-base 37020` | `work/stage1/rec/ports/session.ttd`, 8 707 947 bytes |
+| `menus` | `python3 tools/play_bot.py record menus --work work/stage1/rec/menus --port-base 37020` | `work/stage1/rec/menus/session.ttd`, 21 341 709 bytes |
+| `growth` | `python3 tools/play_bot.py record growth --work work/stage1/rec/growth --port-base 37020` | `work/stage1/rec/growth/session.ttd`, 54 910 775 bytes |
+| `city` | `python3 tools/play_bot.py record city --work work/stage1/rec/city --port-base 37020` | `work/stage1/rec/city/session.ttd`, 84 653 032 bytes |
+| `city2` | `python3 tools/play_bot.py record city2 --start work/stage1/rec/city/end.szx --work work/stage1/rec/city2 --port-base 37020` | `work/stage1/rec/city2/session.ttd`, 91 918 689 bytes |
+| `metro` | `python3 tools/play_bot.py record metro --start work/stage1/rec/city/end.szx --work work/stage1/rec/metro --port-base 37020` | `work/stage1/rec/metro/session.ttd`, 117 491 148 bytes |
+| `disasters` | `python3 tools/play_bot.py record disasters --start work/stage1/rec/city2/end.szx --work work/stage1/rec/disasters --port-base 37020` | `work/stage1/rec/disasters/session.ttd`, 14 649 774 bytes |
+| `levels` | `python3 tools/play_bot.py record levels --work work/stage1/rec/levels --port-base 37020` | `work/stage1/rec/levels/session.ttd`, 1 990 834 bytes |
+| `bankrupt` | `python3 tools/play_bot.py record bankrupt --work work/stage1/rec/bankrupt --port-base 37020` | `work/stage1/rec/bankrupt/session.ttd`, 19 078 869 bytes |
+| stage 2, the growth ceiling | `python3 work/stage2/ceiling.py`: metro's `end.szx`, TaxRate `$91E4` = 0, Funds 999 999, FAST, 80 000 frames on port base 37040 | none (no TTD by design); `work/stage2/ceiling.log` every 5000 frames, `work/stage2/ceiling-end.szx` |
+| stage 2, the TTD failure | `python3 work/stage2/ttd139k.py`: city's `end.szx`, 145 000 frames recorded on port base 37040 | `work/stage2/ttd139k/session.ttd`, 57 788 179 bytes, partial: the dump failed (HTTP 409), not usable |
+| doc 09, SOUND off | `python3 work/docs/scD/exp_soundoff.py`: city2's `end.szx`, FIRE due, SoundOn 1 then 0, 410 frames a run on port base 37080 | none (a clone experiment); `work/docs/scD/exp-soundoff.json` |
+
+The growth-ceiling run reached what no recording did: at tax 0 the year-end population PopLastYear `$8E90` rose to
+8256 (AUG 1935), 9728 (JUN 1936) and **10 624 (APR 1937)**, over the CITY threshold, then 11 376-14 384 up to OCT 1947;
+the densities rose from 22-33 to 40-61 and an R block appeared. Category `$975F` stays 1 in memory, because
+CategoryOf runs only when the evaluation opens ([doc 10,
+10.10](docs/10-gameplay-logic.md#1010-the-category-and-the-growth-ceiling)). So the bot cities were held by the tax.
+
 Not reached, and why:
 
 - **The categories above TOWN** (CITY at 10 000, CAPITAL 50 000, METROPOLIS 100 000, MEGALOPOLIS 500 000; the
-  thresholds at `$9750`): the bot's cities level off at 6000 (one view) and 9300 (two). Which ratios hold growth back
-  is the simulation's model, read in stage 2; a POKE of the population would not be a witness of the game.
+  thresholds at `$9750`): the bot's recorded cities level off at 6000 (one view) and 9300 (two), held by the tax
+  penalty at 7 %; stage 2's ceiling run (above) crossed 10 000 at tax 0 but did not open the evaluation, so the CITY
+  title itself was not shown. A POKE of the population would not be a witness of the game.
 - **Bankruptcy and game over**: the image has no text for them (the strings scan, [0](#0-the-medium)); `bankrupt`
-  shows the funds cannot fall without spending; the tools refuse what the funds do not cover (`tools`, the seaport).
+  shows the funds cannot fall without spending; the tools refuse what the funds do not cover (`tools`, the seaport, silently).
 - **Scenarios**: none exist; every city is made from a 5-digit gene (default 00003).
 - **The Sinclair joystick** (keys 6-0, `$7A32`) and **the +3 disk release**: not played; the folding routine is read
   ([1](#1-one-recording-from-power-on)).
@@ -193,13 +224,13 @@ Every screenshot is the emulator's 512 x 384 picture at the frame its name gives
 | [residential](docs/img/play/tools-005526-residential.png), [commercial](docs/img/play/tools-006332-commercial.png), [industrial](docs/img/play/tools-007137-industrial.png) | tools 5526-7137 | the three zones; an unpowered zone blinks its letter with a lightning cell; the advice changes ("MORE COMMERCIAL ZONES NEEDED") |
 | [police](docs/img/play/tools-007944-police.png), [fire](docs/img/play/tools-008748-fire.png), [airport](docs/img/play/tools-009535-airport.png), [stadium](docs/img/play/tools-010346-stadium.png) | tools 7944-10346 | the buildings; icons the funds no longer cover are dimmed |
 | [power station dialog](docs/img/play/tools-011069-select-power-type.png), [nuclear](docs/img/play/tools-011107-nuclear.png), [coal](docs/img/play/tools-011898-coal.png) | tools 11069-11898 | SELECT TYPE (nuclear `$5000`, coal `$3000`, NONE) and both stations |
-| [seaport refused](docs/img/play/tools-012666-seaport-no-funds.png), [occupied cell](docs/img/play/tools-013457-occupied-beep.png) | tools 12666, 13457 | the two refusals, each with the `$5B66` beep |
+| [seaport refused](docs/img/play/tools-012666-seaport-no-funds.png), [occupied cell](docs/img/play/tools-013457-occupied-beep.png) | tools 12666, 13457 | the two refusals: the seaport for money (silent, SelectTool), the occupied cell with the `$5B66` beep (frame 13 434) |
 | [scroll](docs/img/play/tools-013497-scroll-cs8.png), [shortcut SS+6](docs/img/play/tools-013761-shortcut-ss6.png) | tools 13497, 13761 | the view moved by CS+8; the residential tool picked by SS+6 |
 | [Kempston](docs/img/play/ports-001000-kempston-moved.png), [seaport](docs/img/play/ports-001989-seaport.png), [coal](docs/img/play/ports-002771-coal.png) | ports 1000-2771 | the cursor moved by the joystick; a seaport on the shore |
 | [about](docs/img/play/menus-013854-about.png) | menus 13854 | the credits box ("FOR PROBE SOFTARE LIMITED") |
 | [OPTIONS](docs/img/play/menus-014409-option-auto-budget-toggled.png), [speed](docs/img/play/menus-015767-speed-menu.png) | menus 14409, 15767 | AUTO-BULLDOZE, AUTO-BUDGET, SOUND, ZONE DEMOLISH WAIT, SIMULATION SPEED; FAST, NORMAL, SLOW, PAUSED |
 | [DISASTERS](docs/img/play/menus-018484-disasters-menu.png), [DISABLE ALL](docs/img/play/menus-018666-disable-all.png) | menus 18484, 18666 | the six disasters and their switch |
-| [WINDOWS](docs/img/play/menus-018965-windows-menu.png), [MAPS](docs/img/play/menus-019003-maps.png), [sub-map](docs/img/play/menus-019135-maps-sub3.png), [region 5](docs/img/play/menus-019501-maps-region5.png), [ENTER](docs/img/play/menus-019729-enter-maps.png) | menus 18965-19729 | MAPS, BUDGET, EVALUATION; the map window with CITY, POLLUTN, POLICE, FIREDEP, TRAFFIC, POWER, TRANSPT, CRIME and the 3 x 3 region keys |
+| [WINDOWS](docs/img/play/menus-018965-windows-menu.png), [MAPS](docs/img/play/menus-019003-maps.png), [sub-map](docs/img/play/menus-019135-maps-sub3.png), ["region 5", in fact area 1](docs/img/play/menus-019501-maps-region5.png), [ENTER](docs/img/play/menus-019729-enter-maps.png) | menus 18965-19729 | MAPS, BUDGET, EVALUATION; the map window with CITY, POLLUTN, POLICE, FIREDEP, TRAFFIC, POWER, TRANSPT, CRIME and the 3 x 3 area keys (the "region 5" shot shows area 1: CAPS SHIFT was pressed, the keys need SYMBOL SHIFT) |
 | [budget](docs/img/play/menus-020006-budget-tax.png), [evaluation](docs/img/play/menus-020323-evaluation.png) | menus 20006, 20323 | FISCAL BUDGET with the tax rate being edited; EVALUATION (approval, problems, population, category, score) |
 | [save](docs/img/play/menus-020866-save-start-tape.png), [saving](docs/img/play/menus-020896-saving.png), [load](docs/img/play/menus-023647-load-searching.png), [loaded](docs/img/play/menus-026017-loaded.png) | menus 20866-26017 | the tape dialogs and the city back after the load |
 | [USE OLD LANDSCAPE](docs/img/play/menus-026140-old-landscape.png), [gene 12345](docs/img/play/menus-026326-gene-12345.png), [its city](docs/img/play/menus-027132-gene-12345-city.png), [gene 00003 again](docs/img/play/menus-028247-gene-00003-city.png) | menus 26140-28247 | the gene dialog and two landscapes |
@@ -210,7 +241,7 @@ Every screenshot is the emulator's 512 x 384 picture at the frame its name gives
 | [city built](docs/img/play/city-016450-city-built.png), [TOWN](docs/img/play/city-077514-evaluation-15.png) | city 16450, 77514 | the full view and its evaluation |
 | [maps](docs/img/play/city2-081405-maps-sub1.png), [pollution](docs/img/play/city2-081513-maps-sub3.png), [evaluation](docs/img/play/city2-081964-evaluation-end.png) | city2 81405-81964 | 1935 |
 | [second block](docs/img/play/metro-014277-block-built.png), [evaluation](docs/img/play/metro-075053-evaluation-30.png) | metro 14277, 75053 | population 8800, TOWN, approval 0 % |
-| [the whole city](docs/img/play/096503-metro-city-map.png) | metro 96503 | the 96 x 96 map drawn from memory ([doc 2, 2.5](docs/02-architecture.md#25-the-map-tiles-and-a-whole-city)) |
+| [the whole city](docs/img/play/096503-metro-city-map.png) | metro 96503 | the 96 x 96 map drawn from memory ([doc 2, 2.9](docs/02-architecture.md#29-the-map-tiles-and-a-whole-city)) |
 | [fire](docs/img/play/disasters-000655-fire-1.png), [flood](docs/img/play/disasters-002784-flood-1.png), [earthquake](docs/img/play/disasters-004937-earthquake-1.png), [air crash](docs/img/play/disasters-006614-air-crash-0.png), [tornado](docs/img/play/disasters-009315-tornado-1.png), [meltdown](docs/img/play/disasters-011540-meltdown-1.png) | disasters 655-11540 | each disaster on city2's city |
 | [money spent](docs/img/play/bankrupt-002658-spent.png), [the year-end budget](docs/img/play/bankrupt-024891-window-10.png) | bankrupt 2658, 24891 | 24 R zones with no road; the budget at 0 % tax, `$2680` |
 
@@ -218,10 +249,10 @@ Every screenshot is the emulator's 512 x 384 picture at the frame its name gives
 
 Asked: where does the city live, and which variables hold the simulation's state?
 
-- **The map**: 96 x 96 bytes at `$C450-$E84F`, row-major, `$C450 + 96 y + x` (`$6BDB`); all `$02` (clear land)
+- **The map**: 96 x 96 bytes at `$C450-$E84F`, row-major, `$C450 + 96 y + x` (MapAddr `$6BE6`; stage 1 had `$6BDB`); all `$02` (clear land)
   in the image, the landscape written over it when a city is made. A byte below `$80` is a cell (0-1 water, 2 land,
   6 trees, roads, rails, power lines, empty zones); `$80-$BF` starts a row of a building and `$C0-$FF` continues it
-  ([doc 2, 2.5](docs/02-architecture.md#25-the-map-tiles-and-a-whole-city), where the map drawn this way matches the
+  ([doc 2, 2.9](docs/02-architecture.md#29-the-map-tiles-and-a-whole-city), where the map drawn this way matches the
   screen to the pixel). The view's origin is `$6507/$6508` (map cells), the cursor `$5CFC/$5CFD`.
 - **Funds**: 24 bits at `$8F97` (`tools/play_bot.py` state). Every price is taken through the shared 24-bit
   subtraction `$6680` (`AND A; SBC HL,DE; LD A,C; SBC A,B`); the POKE file's "infinite money" (26241,0 and 26242,0)
@@ -239,9 +270,41 @@ Asked: where does the city live, and which variables hold the simulation's state
   roads, rail, power, stadium, port, airport, police, fire, taxes, funding, pollution, crime, traffic. This is the
   game's RCI demand; there is no demand bar.
 - **The save** (`$9E1F-$9E58`): 7 bytes from `$8F97` (funds, date) to `$A93C`, 12 from `$5F68` (the name) to
-  `$A944`, then the ROM's SA-BYTES (through `$F7AA`) writes two headerless blocks with flag `$FF`: `$1F` bytes from
+  `$A944`, of which the header saves 11 (the 12th lands at `$A94F`, past its 31 bytes), then the ROM's SA-BYTES (through `$F7AA`) writes two headerless blocks with flag `$FF`: `$1F` bytes from
   `$A930` and the `$2400`-byte map from `$C450`. The load (`$9E5A-$9EF8`, LD-BYTES through `$F79F`) prints
   SEARCHING, "FOUND :-" and the name, compares it and copies the state back; an error prints "TAPE LOADING ERROR"
   (`$9EFC`). `tools/savetap.py` builds that tape from a running instance's memory (the emulator records no tape).
 - **The images**: as loaded, at the entry and in play, and what changes between them: [doc 2,
-  2.3](docs/02-architecture.md#23-three-images-as-loaded-at-the-entry-in-play).
+  2.4](docs/02-architecture.md#24-three-images-and-the-heatmap).
+
+### 6.3 The animations
+
+Every animation in `docs/` with the document that shows it, the recording it was made from (the writers' read-only
+copy under `work/docs/sc*/` of the session named) and its frames; the full command is in each caption.
+
+| Animation | Document | Recording | Frames |
+| --- | --- | --- | --- |
+| [load-c1.gif](docs/img/load/load-c1.gif) | [doc 3, 3.8](docs/03-build-and-load.md#38-the-load-in-c1) | `c1` | 1200-16 400, 103 pictures, one every 150 frames |
+| [LoaderStart.gif](docs/img/routines/LoaderStart.gif) | [doc 3, 3.4](docs/03-build-and-load.md#34-layer-1-the-r-keyed-tail) | `c1` | 1258 (T 65 000) to 1259 (T 16 000), 48 pictures |
+| [LoadBlock.gif](docs/img/routines/LoadBlock.gif) | [doc 3, 3.5](docs/03-build-and-load.md#35-layer-2-loadgame-and-loadblock) | `c1` | 3420-3460, 60 pictures |
+| [Interrupt.gif](docs/img/routines/Interrupt.gif) | [doc 4, 4.3](docs/04-game-loop.md#43-the-interrupt-and-the-switch) | `c1` | 20 003, T 1700-3700, 50 pictures |
+| [SimTask.gif](docs/img/routines/SimTask.gif) | [doc 4, 4.6](docs/04-game-loop.md#46-the-simulation-tasks-pass) and [doc 10, 10.1](docs/10-gameplay-logic.md#101-the-simulation-pass) | `city2` | 65 719-66 141 (pass 176), 86 pictures, one every 5 frames |
+| [MovePointer.gif](docs/img/routines/MovePointer.gif) | [doc 5, 5.3](docs/05-controls.md#53-the-pointer-one-step-a-pass-no-acceleration) | `tools` | 800-806, 72 pictures, O held |
+| [ShiftScroll.gif](docs/img/routines/ShiftScroll.gif) | [doc 5, 5.6](docs/05-controls.md#56-scrolling-caps-shift--5-8-and-the-scroll-corner) and doc 6, 6.4 | `tools` | 13 458-13 468, 80 pictures |
+| [RunMenu.gif](docs/img/routines/RunMenu.gif) | [doc 5, 5.8](docs/05-controls.md#58-the-menus-an-input-state-machine) | `menus` | 19 802-19 816, 70 pictures |
+| [DrawViewRowPass.gif](docs/img/routines/DrawViewRowPass.gif) | [doc 6, 6.3](docs/06-rendering.md#63-drawviewrowpass-one-view-row-a-pass) | `tools` | 19 255-19 300, 90 pictures |
+| [blink-unpowered.gif](docs/img/play/blink-unpowered.gif) | [doc 6, 6.6](docs/06-rendering.md#66-the-blink-of-unpowered-zones) and doc 1, 1.6 | `tools` | 19 240-19 560, every 4th frame |
+| [DrawMover.gif](docs/img/routines/DrawMover.gif) | [doc 6, 6.9](docs/06-rendering.md#69-the-movers-train-plane-and-tornado) | `tools` | 19 240-19 262, 88 pictures |
+| [DrawOverview.gif](docs/img/routines/DrawOverview.gif) | [doc 6, 6.11](docs/06-rendering.md#611-the-overview-maps) | `menus` | 19 096-19 136, 80 pictures |
+| [ResidentialStep.gif](docs/img/routines/ResidentialStep.gif) | [doc 7, 7.3](docs/07-objects.md#73-zones-the-map-is-the-record) | `growth` | 4528-4531 |
+| [disasters-tornado.gif](docs/img/play/disasters-tornado.gif) | [doc 7, 7.6](docs/07-objects.md#76-the-movers-train-plane-tornado) and doc 1, 1.10 | `disasters` | 8780-11 000, every 40th frame |
+| [ShowWindow.gif](docs/img/routines/ShowWindow.gif) | [doc 8, 8.9](docs/08-hud-and-text.md#89-menus-and-dialogs) | `menus` | 13 825-13 835, 80 pictures |
+| [BudgetHook.gif](docs/img/routines/BudgetHook.gif) | [doc 8, 8.10](docs/08-hud-and-text.md#810-the-budget-window) | `menus` | 19 940-19 941, 70 pictures |
+| [InputLine.gif](docs/img/routines/InputLine.gif) | [doc 8, 8.12](docs/08-hud-and-text.md#812-the-line-editor-and-the-city-name) | `levels` | 1249, T 8000-32 000, 50 pictures |
+| [NoiseBurst.gif](docs/img/routines/NoiseBurst.gif) | [doc 9, 9.2](docs/09-sound.md#92-noiseburst-the-disaster-noise) | `disasters` | 2236 (T 40 400) to 2237 (T 40 000), 60 pictures |
+| [ToneBeep.gif](docs/img/routines/ToneBeep.gif) | [doc 9, 9.4](docs/09-sound.md#94-tonebeep-the-refusal) | `tools` | 13 434 (T 32 000) to 13 435 (T 10 000), 60 pictures |
+| [FloodFill.gif](docs/img/routines/FloodFill.gif) | [doc 10, 10.2](docs/10-gameplay-logic.md#102-power) | `growth` | 19 242-19 266 |
+| [city-district-growth.gif](docs/img/play/city-district-growth.gif) | [doc 10, 10.4](docs/10-gameplay-logic.md#104-the-growth-rules-of-r-c-and-i) | `city` | 16 400-46 400, every 600th frame |
+| [NewLandscape.gif](docs/img/routines/NewLandscape.gif) | [doc 10, 10.11](docs/10-gameplay-logic.md#1011-the-city-generator) | `growth` | 90-710, every 20th frame |
+| [disasters-earthquake-spread.gif](docs/img/play/disasters-earthquake-spread.gif) | [doc 10, 10.12](docs/10-gameplay-logic.md#1012-disasters) and doc 1, 1.10 | `disasters` | 4400-8780, every 80th frame |
+| [disasters-meltdown.gif](docs/img/play/disasters-meltdown.gif) | [doc 10, 10.12](docs/10-gameplay-logic.md#1012-disasters) and doc 1, 1.10 | `disasters` | 11 000-13 040, every 40th frame |
