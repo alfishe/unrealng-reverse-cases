@@ -18,7 +18,8 @@
 ; left (right), + 1 after up (down). The next frame (97 bytes on, back to the
 ; first after the last) is shifted to x AND 7 (ShiftGraphic4) and queued, the
 ; mark 4 XORed in, the attributes set. A dying object steps through
-; ObjectDeathFrames, 4 passes a frame, then it is gone (BlankGraphic).
+; ObjectDeathFrames, one death frame an act (the state steps by 4), then it is
+; gone (BlankGraphic).
 ;
 ; Witness: L1 37 158 calls (2 for each of 18 579 passes), 1 777 moves, 13 hits,
 ; 11 kills.

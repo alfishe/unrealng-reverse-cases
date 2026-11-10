@@ -47,7 +47,8 @@ Found:
   ORPHEUS", "EDS COMPLETED", "GEN 19 COLLECTED", "UCF REACTOR NO 14C DESTROYED"), the menu at `$8D38` ("1 KEYBOARD",
   "2 CURSOR JOYSTICK", "3 KEMPSTON JOYSTICK", "0 START GAME"), "1986 ORPHEUS LTD" at `$8D85`, "YOU HAVE COMPLETED %
   OF TUJAD" at `$9072`. And leftover assembler source text from the authors' editor in the variables area
-  (`$6353-$686E`: "hl,(pos)", "lookup", "hl,alnmap", "scra1"), NOTES.md.
+  (three runs, `$6359-$637F`, `$639C-$63D1`, `$65E5-$6887`: "hl,(pos)", "lookup", "hl,alnmap", "scra1"; [doc
+  2.9](docs/02-architecture.md#29-the-authors-leftover-source)), NOTES.md.
 
 ## 1. One recording from power-on
 
@@ -92,8 +93,9 @@ Found, interrupts and the frame (first look; stage 2 reads the routines):
   interrupts off: the main wait `$795D` is `EI; NOP; HALT` (`$796B-$796D`), `DI` (`$796E`). Nine other `EI`s run in
   the recordings (L1 counts over the 70 builds): `$6B2D` (279, the room setup `$6B22`, followed by `DI` at `$6E0B`),
   `$7F5B` (210) and `$7F6B` (649) after the two sweeps, `$7816` and `$7825` (13 each), `$777E` (8, with a HALT at
-  `$777F`), `$8F5E` (36), `$6AA2` (1, with a HALT at `$6AA3`), `$6910` (4). `$6A22`, `$6F15`, `$6F17`, `$8D25`,
-  `$8D2A` and `$95C7` never run. Other HALTs: `$6A26` (990, a wait loop entered with interrupts on) and `$6AA3`
+  `$777F`), `$8F5E` (36), `$6AA2` (1, with a HALT at `$6AA3`), `$6910` (4). `$6A22` (WinTest) never runs in an L1 build (the
+  RZX playback runs it); `$95C7` is in the dead ExitToBasic; the other `$FB` bytes of the first-look scan (`$6F15`,
+  `$6F17` in TileGraphics, `$8D25`, `$8D2A` in IconEnergySource) are data. Other HALTs: `$6A26` (990, a wait loop entered with interrupts on) and `$6AA3`
   (512). The menu (`$8854`) runs with interrupts off, polling the keys while it calls the random-number step `$7DC9`
   (`$893B`), so the seed `$63A4-$63A7` depends on how long the player waits.
 - **The main loop syncs twice a pass**: `CALL $795D` at `$6911` and at `$6929`. So a pass holds at least two
@@ -182,13 +184,13 @@ playback's, saved after N of its frames (`/rzx/play`, tolerant; [WALKTHROUGH 5](
 | `c1-trap` | power-on | `tools/rs_capture.py` before it set `fast_tape` and `turbo_tape` off: the tape by the LD-BYTES trap (`work/stage1/c1-trap/capture.json`) | 700 of load, 2111 in all | the evidence of the trap gap only ([WALKTHROUGH 5](#5-tool-gaps-found-and-fixed-in-unreal-ng)); no document rests on it | `work/stage1/c1-trap/session.ttd` |
 | `menu-cursor` | `menu.szx` | `menu-cursor.txt`: 2, 0, play with the cursor keys | 1201 | the cursor-joystick method (`$63C2` = `$41` with right held: bit 6 the method) | `work/stage1/rec/menu-cursor/session.ttd` |
 | `menu-kempston` | `menu.szx` | `menu-kempston.txt`: 3, 0, play with the Kempston stick | 1201 | the Kempston method (`$63C2` bits 6 and 7 clear) | `work/stage1/rec/menu-kempston/session.ttd` |
-| `energy-out` | `rzx/at047000.szx` (room 76, energy 18, lives 5) | no key | 5001 | the energy run down by the enemies to 0 and a life lost between frames 1550 and 1600 (lives 5 to 4, the energy back to 99) | `work/stage1/rec/energy-out/session.ttd` |
+| `energy-out` | `rzx/at047000.szx` (room 76, energy 18, lives 5) | no key | 5001 | the energy run down by the enemies to 0 and a life lost in frame 1570 (lives 5 to 4, the energy back to 99; the HUD shows it at 1634, after the death effect) | `work/stage1/rec/energy-out/session.ttd` |
 | `game-over` | `menu.szx` | `game-over.txt`: 1, 0, no key; **POKE** `$636D` = 0 and `$636E` = 1 at frame 200 | 3121 | the last life lost (lives `$99` by frame 400), "YOU HAVE COMPLETED 0% OF TUJAD" from about 450 to 950 with the game-over message scrolling in the panel (shot at 700), the menu from about 975 | `work/stage1/rec/game-over/session.ttd` |
 | `win` | `rzx/at080000.szx` (every ED complete, room 84) | no key | 1501 | "CONGRATULATIONS TUJAD HAS NOW RESUMED NORMAL FUNCTIONS WELL DONE" over the circuit-board picture (25-475), then the menu (from frame 497) | `work/stage1/rec/win/session.ttd` |
 | `room-tour` | `rec/menu-cursor/end.szx` | 8 (right) held; **POKEs** (`room-tour.pokes`): every 60 frames the room `$6363` = r - 1, x `$6359` = `$1C`, lives `$636D` = 9, energy `$636E` = `$99`, so the game's own room change (`$7403`) draws room r | 7681 | the game moved into 65 rooms: 53 of the 102 rooms (11 of them shot nowhere else: the world map's starred cells) and 12 of the 26 empty slots, drawn empty | `work/stage1/rec/room-tour/session.ttd` |
 | `room-23` | `rzx/at005000.szx` (the RZX in room 23) | no key | 100 | room 23 | `work/stage1/rec/room-23/session.ttd` |
 | `rzx-free-29000`, `-31000`, `-32000` | `rzx/at029000.szx`, `at031000`, `at032000` | the RZX's keys for 1000 frames, unchecked (they part from the RZX) | 1001 each | rooms 43, 106 and 91, which the checked chunks end before | `work/stage1/rec/rzx-free-<N>/session.ttd` |
-| `rzx-001000` ... `rzx-080000` (59) | `rzx/at<N>.szx` | the RZX's keys, checked frame by frame (`tests/inputs/rzx/`) | 42 952 in all (2-3706) | 90 rooms; the hazard death in `rzx-035000` (room 109 to 117, lives 5 to 4 between frames 200 and 250) | `work/stage1/rec/rzx-<N>/session.ttd` |
+| `rzx-001000` ... `rzx-080000` (59) | `rzx/at<N>.szx` | the RZX's keys, checked frame by frame (`tests/inputs/rzx/`) | 42 952 in all (2-3706) | 90 rooms; the hazard death in `rzx-035000` (room 109 to 117, lives 5 to 4 in frame 250) | `work/stage1/rec/rzx-<N>/session.ttd` |
 | `room-102` (tjA, doc 4) | `rzx/at050000.szx` (room 102) | no key (`work/docs/tjA/inputs/room-102.txt`) | 401 | the heaviest room's passes, traced: the light pass 41-43, the heaviest pass 239-242 ([doc 4.8](docs/04-game-loop.md#48-the-beam-a-light-pass-and-the-heaviest-pass)) | `work/docs/tjA/rec/room-102/session.ttd` |
 | `probe-shield` (tjB, doc 5) | `rzx/at065000.szx` (room 12, weapon 3, ammunition 5, Kempston) | `work/docs/tjB/probe-shield.txt`: turn left, fire held with the directions (the probe steered), fire released, then down alone | 317 | the probe steered and its frames 2 and 4, the shield ([doc 5.8](docs/05-controls.md#58-the-probe-under-fire-held), [5.9](docs/05-controls.md#59-the-shield-down-alone)) | `work/docs/tjB/rec/probe-shield/session.ttd` |
 
@@ -205,7 +207,7 @@ Coverage:
   rooms are all shot by the recordings: 91 in recordings without a POKE, 11 in `room-tour` only
   ([the world map](#61-the-screens)).
 - **Objects, enemies and pickups**: the sprite lists of all saved states hold 28 graphics (the player's five, the
-  enemies' pre-shifted buffers, the objects at `$B16D-$BAE2`; [doc 2.6](docs/02-architecture.md#26-the-sprites-first-look)).
+  enemies' pre-shifted buffers, the objects' 11 frames at `$B16D-$B65A` and the patroller's 4 at `$B962-$BAE2`; [doc 2.6](docs/02-architecture.md#26-the-sprites-first-look)).
   What each one is (enemy, ED, weapon, generator) is stage 2's work; the RZX chunks cover the whole game, so every
   kind the game uses appears in them.
 - **Every way to lose a life**: the energy running out (`$6A30`; `energy-out`) and a hazard, which takes the life at
@@ -246,9 +248,9 @@ load included).
 | a room being drawn | [room-drawing.png](docs/img/play/room-drawing.png) | `c1` 15450 |
 | a room with the domes | [room-domes.png](docs/img/play/room-domes.png) | `c1` 15700 |
 | the energy at 1 | [energy-low.png](docs/img/play/energy-low.png) | `energy-out` 1550 |
-| the life lost to the energy | [energy-out-after.png](docs/img/play/energy-out-after.png) | `energy-out` 1600 |
+| the life lost to the energy | [energy-out-after.png](docs/img/play/energy-out-after.png) | `energy-out` 1650 |
 | before the hazard (room 109) | [hazard-before.png](docs/img/play/hazard-before.png) | `rzx-035000` 200 |
-| after the hazard (room 117, a life lost) | [hazard-after.png](docs/img/play/hazard-after.png) | `rzx-035000` 250 |
+| after the hazard (room 117, a life lost) | [hazard-after.png](docs/img/play/hazard-after.png) | `rzx-035000` 350 |
 | the game-over message over the 0% screen | [game-over-message.png](docs/img/play/game-over-message.png) | `game-over` 700 |
 | "YOU HAVE COMPLETED 0% OF TUJAD" | [game-over-progress.png](docs/img/play/game-over-progress.png) | `game-over` 900 |
 | the win: "CONGRATULATIONS" | [win-congratulations.png](docs/img/play/win-congratulations.png) | `win` 100 |

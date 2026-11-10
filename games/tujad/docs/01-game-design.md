@@ -24,8 +24,8 @@ Every screenshot is the screen at the start of the named frame of the named reco
 The player is a droid, GEN 19, inside TUJAD, a computer that has broken down. The droid walks and hovers through
 102 rooms of a maze of circuit-board walls, collecting the 50 pieces of an ED circuit. Enemies materialise and fly
 about the rooms, objects drift through them and patrollers crawl along their floors; the droid shoots them with four
-weapons. Energy runs down with time and runs down fast while an enemy touches the droid; an object, a patroller or a
-stray shot kills it at once. When all 50 pieces are taken, the game says EDS COMPLETED RETURN TO TUJAD CONTROL ROOM;
+weapons. Energy runs down with time and runs down fast after an enemy touches the droid; an object, a patroller or a
+stray shot kills it at once (none of them can touch the droid while it holds its shield, which burns energy instead). When all 50 pieces are taken, the game says EDS COMPLETED RETURN TO TUJAD CONTROL ROOM;
 back in the control room, where the game began, TUJAD HAS NOW RESUMED NORMAL FUNCTIONS. There is no score and no
 hi-score table: the only measure is the percentage of the circuit completed.
 
@@ -43,7 +43,7 @@ stateDiagram-v2
     Loading --> Menu: the game block loaded, c1 frame 13580
     Menu --> Play: 0, START GAME
     Play --> Progress: an ED piece taken
-    Progress --> Play: the new piece toggled 9 times, 3.7 s
+    Progress --> Play: the new piece blinks out 4 times, 3.7 s
     Play --> Play: a room left, a teleporter, a life lost
     Play --> GameOver: the last life lost
     GameOver --> Menu: about 10 s
@@ -101,7 +101,7 @@ ReadControls `$7161` reads it every interrupt ([doc 5](05-controls.md) has the d
 | --- | --- | --- | --- |
 | left | Z C M B | 5 | left |
 | right | X V N SYMBOL SHIFT | 8 | right |
-| down | A-G, H-L | 6 | down |
+| down (alone, on a floor: the shield) | A-G, H-L | 6 | down |
 | up | Q-T, Y-P | 7 | up |
 | fire | 1-5, 6-0 | 0 | fire |
 | next weapon | SPACE or CAPS SHIFT | SPACE or CAPS SHIFT | SPACE or CAPS SHIFT |
@@ -131,15 +131,16 @@ object kinds and one patroller, and every one is a one-colour block.*
 | Who | How many in a room | What it does | Witness |
 | --- | --- | --- | --- |
 | the droid, GEN 19 | 1 | walks left and right a column at a time, turns round, rises and sinks 2 pixel rows at a time on up and down; with no wall under it, it hovers (no gravity: MoveDroidFall `$7272` only sets the air flag) and moves on every pass | every play recording |
-| enemies | up to 4 | materialise on a free spot, fly diagonally and bounce off walls; a touch drains energy fast; shot, they explode and come back later; their kind cycles 1-9 | `c1` 14950 |
+| enemies | up to 4 | materialise on a free spot, fly diagonally and bounce off walls; a touch costs 5 energy steps after it; shot, they explode and come back later; their kind cycles 1-9 | `c1` 14950 |
 | objects | up to 2 | drift through the room; a touch kills; each kind dies only to one weapon | `rzx-028000` |
-| patrollers | 3 in the world | crawl along a row from one turn point to the next, crossing rooms; a touch kills | `rzx-019000` from frame 216 |
+| patrollers | 3 in the world | crawl along a row from one turn point to the next, crossing rooms; a touch kills; no weapon kills them (their sprite has flag pointer 0 and no shot mark is read for them, [doc 10.5](10-gameplay-logic.md#105-weapons-and-ammunition)) | `rzx-019000` from frame 216 |
 
 Each room's record says which enemies and objects it holds ([doc 7](07-objects.md)). The objects' weapons, from the
 kill marks: the robot head dies to weapon 1; the brain and the spotted ball to weapon 2; the insect face and the
 rotating box to weapon 3.
 
-**The point**: enemies cost energy, everything else costs a life, and the weapons decide which objects can be cleared.
+**The point**: enemies cost energy, everything else costs a life; only enemies and objects can be shot, and the weapons
+decide which objects can be cleared. Patrollers can only be avoided (or met under the shield).
 
 ## 1.6 The world: 102 rooms
 
@@ -195,9 +196,11 @@ meets.*
 
 - The energy starts at 99 (BCD) and steps down by 1 every 250 interrupts: 5 s when no interrupt is lost (EnergyTick
   `$7AB6`).
-- While an enemy touches the droid it steps every 10 interrupts (0.2 s), and stays fast for 50 interrupts after the
-  touch (TouchTimer, counted down by DrainTimer `$7906`). Nothing flashes: the attribute flash and the clicks of
-  HazardFlash `$699B` belong to the shield (down held alone, DroidFlags bit 4), which drains at the same rate.
+- An enemy's touch costs energy after it: each touching pass sets the step timer back to 10 interrupts and the
+  drain timer TouchTimer to 50 (`$75D0-$75DA`), so while the touch lasts no step comes; the energy then steps 10, 20,
+  30, 40 and 50 interrupts after the last touch, and DrainTimer `$7906` puts the 250 back. Any touch, long or short,
+  costs 5 steps (`energy-out` 603-643). Nothing flashes: the attribute flash and the clicks of HazardFlash `$699B`
+  belong to the shield (below).
 - WARNING ENERGY LOW is queued when the energy steps from 11 to 10.
 - At 0, unless the droid is turning round, a life is lost (EnergyOut `$6A30`).
 - An energy source restores 99.
@@ -205,48 +208,96 @@ meets.*
 **A worked example: `energy-out`.** The recording starts in room 76 with energy 18 and lives 5, and no key is held.
 
 1. At 250 interrupts a step, 18 steps would take 4500 interrupts, about 90 s or 4700 frames.
-2. The enemies keep touching the droid, so many steps come at 10 interrupts each.
-3. The energy reaches 0 and the life is lost between frames 1550 and 1600: lives 5 to 4, energy back to 99.
+2. Each time an enemy brushes the droid, five steps follow, 10 interrupts apart.
+3. The energy reaches 0 and the life is lost at frame 1570 (in memory: lives 4, energy 99); the HUD shows it at 1634,
+   after the 64-frame death effect.
 
 | | |
 | --- | --- |
 | ![Energy 1](img/play/energy-low.png) | ![After the life lost](img/play/energy-out-after.png) |
 
-*`energy-out` (from `rzx/at047000.szx`, no key). Left: frame 1550, energy 1. Right: frame 1600, the life lost: lives
-4, energy 99. How to read: the numbers in the HUD's left panel, under the GEN 19 figure and the bolt. The point: the
-enemies turned a 90 s budget into 31 s.*
+*`energy-out` (from `rzx/at047000.szx`, no key). Left: frame 1550, energy 1. Right: frame 1650, after the death effect
+(1570-1634): lives 4, energy 99, the droid at the room's start position; LoseLife changed both in memory at 1570 and
+prints them only after the shake. How to read: the numbers in the HUD's left panel, under the GEN 19 figure and the
+bolt. The point: the enemies turned a 90 s budget into 31 s.*
 
 ### Lives
 
-- A game starts with 3 lives. A GEN 19 item (a small cyan figure) adds one: GEN 19 COLLECTED.
+- A game starts with 3 lives on the HUD, and the droid plays on at 0: the game ends when a life is lost at 0 (0 - 1 =
+  `$99` in BCD), so a game has four droids before any GEN 19 (LoseLife `$6A4C-$6A6D`). A GEN 19 item (a small cyan
+  figure) adds one: GEN 19 COLLECTED.
 - A life is lost when the energy runs out, or at once on a hazard. The game shows GEN 19 DESTROYED, the droid is shaken
   apart with a falling sweep (DeathEffect `$7ADF`), and it starts again at the room's start position with energy 99.
-- After the last life the count goes to `$99` (0 - 1 in BCD) and the game is over (1.10).
+- Losing a life at 0 makes the count `$99` and ends the game (1.10).
+
+### The shield
+
+Down held alone, with the droid standing on a floor, raises the shield (MoveDroid `$7368`); the droid stops moving.
+
+- **What it does**: FlagPointer goes to `$0000` (`$736D`), so the interrupt's collision write for the droid lands in ROM
+  and the touch test never runs: enemies, objects and patrollers pass through the droid harmlessly.
+- **What it costs**: EnergyReload and EnergyTimer go to 10 (`$7370-$7375`): one energy step every 10 interrupts
+  instead of 250, 25 times faster.
+- **How it ends**: any other key (`$737F`) or no key (`$7317`) puts FlagPointer back to DroidFlags and the timers to
+  250. A life lost also drops it (`$6A63`).
+- **What shows**: HazardFlash `$699B` flashes the droid's attributes and clicks while DroidFlags bit 4 is set.
+
+```text
+shield up   (down alone, on a floor):  DroidFlags bit 4 = 1; FlagPointer = 0;          EnergyReload = EnergyTimer = 10
+shield down (any other key, no key):   DroidFlags bit 4 = 0; FlagPointer = DroidFlags; EnergyReload = EnergyTimer = 250
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Open
+    Open --> Shield: down alone, on a floor, 7368
+    Shield --> Open: another key 737F, no key 7317, a life lost 6A63
+    Open: touches tested, a step every 250 interrupts
+    Shield: no touch at all, a step every 10 interrupts, HazardFlash
+```
+
+**A worked example: `probe-shield` frames 196-280** ([doc 5.9](05-controls.md#59-the-shield-down-alone)). Down alone
+from 196; the sample of 200 has FlagPointer `$0000` and EnergyReload 10; the energy drops from `$90` to `$83` by 272,
+one step about every 10 interrupts; down is released at 276 and the sample of 280 has FlagPointer `$635B` and
+EnergyReload 250 again. The original player used it too: `$7368` ran in `menu-cursor` (530-568) and three times in
+`rzx-007000`.
+
+![The shield](img/controls/shield.png)
+
+*The shield in `probe-shield`, frames 180-300, every fourth frame (memory at each frame start; `python3
+tools/fig_controls.py shield --work work/docs/tjB/probe-shield --from 180 --to 300 --out docs/img/controls/shield.png`,
+doc 5.9). How to read: one column a frame, one row a variable, a box coloured where the value changed; the shield is
+up from 200 to 276 (flag bit 4, FlagPointer `00`, reload 10) and the energy steps every 10 interrupts. The point: the
+shield is the only defence against objects and patrollers, and it is paid for in energy.*
 
 ### Hazards
 
 When the interrupt finds the droid's ink on other ink, the cells under it are tested:
 
-- an enemy's mark: the fast drain;
-- an object's, a patroller's or a shot's mark: HazardDeath `$6992`, a life lost at once, unless the droid is turning
-  round at that moment.
+- an enemy's mark anywhere under the droid: only the drain (above), even if an object or a patroller is there too;
+  the enemy test comes first and skips the rest (`$75CC BIT 1,A; JR Z`);
+- any other mark: HazardDeath `$6992`, a life lost at once, unless the droid is turning round at that moment. The test
+  is `AND $FD` (`$75DF`), so bit 0, a wall, counts too; the touch footprint is 6 cell rows when the droid is half a
+  cell off the grid, the side steps test 5 (`$76B1`), so a wall in the sixth row could kill. Whether that happens in
+  play is known only from the code.
 
 | | |
 | --- | --- |
 | ![Before the hazard](img/play/hazard-before.png) | ![After the hazard](img/play/hazard-after.png) |
 
-*`rzx-035000` (the RZX's keys). Left: frame 200, room 109. Right: frame 250, room 117, lives 5 to 4: the droid went
-south and met a hazard. How to read: the lives under the GEN 19 figure. The point: a hazard takes the life however
+*`rzx-035000` (the RZX's keys). Left: frame 200, room 109. Right: frame 350, room 117: lives 4, energy 99, the droid
+back at the room's start position; it went south and met object 1 in frame 250 ([doc 7.10](07-objects.md#710-the-droids-record-and-the-start-positions)), and the
+HUD changed after the death effect. How to read: the lives under the GEN 19 figure. The point: a hazard takes the life however
 much energy is left.*
 
 ### Weapons
 
 | Weapon | Icon | Shot | Ammunition | Kills |
 | --- | --- | --- | --- | --- |
-| 0 | a gun | a dash, 8 pixels a pass | none needed | enemies, by collision |
-| 1 | a disc | a bolt, 4 pixels a pass | 3 at the start, + 1 a pickup | enemies; the robot head |
-| 2 | a grenade | a bolt, 4 pixels a pass | 3, + 1 | enemies; the brain, the spotted ball |
-| 3 | the probe dome | the probe, steered while fire is held, then it explodes | 3, + 1 | enemies; the insect face, the rotating box |
+| 0 | a gun | a dash, 16 pixels a pass (8 a call; MainLoop calls MoveShot twice) | none needed | enemies, by collision |
+| 1 | a disc | a bolt, 8 pixels a pass | 3 at the start, + 1 a pickup | enemies; the robot head |
+| 2 | a grenade | a bolt, 8 pixels a pass | 3, + 1 | enemies; the brain, the spotted ball |
+| 3 | the probe dome | the probe, 2 pixels a call, steered while fire is held, then it explodes | 3, + 1 | enemies; the insect face, the rotating box |
 
 - Only one shot is in flight at a time, and the weapon can be changed only between shots.
 - A weapon pickup adds one shot to that weapon: WEAPON LOCATED AND STORED.
@@ -284,8 +335,9 @@ bytes of five bits). It is the tile at column (n - 1) / 5, row (n - 1) mod 5 of 
 1. n = `$9B` - `$81` = 26.
 2. Byte (26 - 1) / 5 = 5, bit (26 - 1) mod 5 = 0: EdFlags + 5 (`$6686`) gets bit 0.
 3. The picture's column 5, row 0: the top tile of the sixth column.
-4. The progress screen draws every found tile and toggles this one's colour 9 times (`XOR $03`, B = 9), about 20.4
-   frames apart (`menu-cursor`, [doc 8.10](08-hud-and-text.md#810-the-progress-screen)): about 184 frames, 3.7 s, the
+4. The progress screen draws every found tile, then writes this one's colour 9 times, `$67` and `$64` in turn
+   (`XOR $03`, B = 9); the first write repeats the `$67` it was drawn in, and `$64` is ink 4 on paper 4, so the piece
+   blinks out 4 times. The writes come about 20.4 frames apart (`menu-cursor`, [doc 8.10](08-hud-and-text.md#810-the-progress-screen)): about 184 frames, 3.7 s, the
    delay loop's 167 frames plus the interrupts the handler takes meanwhile.
 5. With 26 pieces found the game-over screen would say 52 %: 2 % a piece, in BCD.
 
@@ -304,8 +356,8 @@ The whole picture is shown when the game is won ([cast](#15-the-cast): `EdPieces
 
 ![Key moments](img/play/key-moments.png)
 
-*Six moments from the RZX playthrough's chunks, each shot at the start of the named frame. How to read: each pair
-reads left to right, before and after; the caption under each shot names the recording, the frame and what changed.
+*Six moments from the RZX playthrough's chunks, each shot at the start of the named frame. How to read: the top two
+pairs read left to right, before and after; the bottom row is two single moments; the caption under each shot names the recording, the frame and what changed.
 Top: GEN 19 taken (`rzx-036000` frames 110 and 135, taken at frame 123; lives 4 to 5). Middle: the energy source
 (`rzx-028000` frames 300 and 325, taken at 317; energy 85 to 99). Bottom: on the teleporter pad with TRANSPORTING in
 the panel (`rzx-002000` frame 880, Teleport ran at 807), and a patroller walking its row (`rzx-019000` frame 400).

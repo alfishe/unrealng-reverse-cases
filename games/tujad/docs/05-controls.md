@@ -129,7 +129,7 @@ The inputs use the Kempston bit order (right, left, down, up, fire). So the Kemp
 
 | Bit | Meaning | Written by | Read by |
 | --- | --- | --- | --- |
-| 7 | the keyboard method (`$80`) | MenuPoll `$894A`, Setup `$68F3` | ReadControls `$7168` |
+| 7 | the keyboard method (`$80`) | MenuPoll `$894A` (and `$895A`, which clears it), Setup `$68FA` | ReadControls `$7168` |
 | 6 | the cursor method (`$40`) | MenuPoll `$8952` | ReadControls `$716C` |
 | 5 | paused | Pause `$7951` (XOR `$20`) | Pause `$7958` |
 | 4 | fire held | ReadControls | MoveDroid `$72F0`, MoveShot3 `$830A` |
@@ -152,7 +152,7 @@ docs/img/controls/bits.png`. How to read: one box per bit, coloured by what it c
 The point: one byte holds both which device to read and what was read. ReadControls keeps the top three bits and
 rebuilds the bottom five. So the menu choice and the pause flag survive every interrupt without a second variable.
 
-## 5.3 ReadControls: three methods in 157 bytes
+## 5.3 ReadControls: three methods in 167 bytes
 
 ReadControls `$7161` is the first call of the interrupt handler: `CALL ReadControls` at `$95D8`, after the seven
 pushes. It clears bits 4-0 of Controls, then branches on the method bits.
@@ -198,7 +198,7 @@ flowchart TD
     J --> R
 ```
 
-The code, from `build/game.lst`. The Kempston path is 7 instructions. The keyboard path sets one bit per key with
+The code, from `build/game.lst`. The Kempston path is 5 instructions after the method test (`$7171-$7177`), 13 in all. The keyboard path sets one bit per key with
 `SET n,(HL)`; HL holds the address of Controls all the way through.
 
 ```text
@@ -446,7 +446,8 @@ Worked example: 2 pressed.
 1. `IN A,(C)` at `$8944` reads `$FD` on port `$F7FE`: bit 1 is clear.
 2. Bit 0 is set, so the test moves on to MenuPoll2.
 3. Bit 1 is clear, so Controls = `$40`.
-4. MenuLightCursor fills 11 attributes of row 12 with `$43`, 18 of row 14 with `$C5` and 20 of row 16 with `$46`.
+4. MenuLightCursor fills 12 attributes of row 12 with `$43`, 19 of row 14 with `$C5` and 21 of row 16 with `$46`
+   (BC + 1: `LD (HL)` writes the first cell, `LDIR` copies it BC times), each the length of its line.
 5. Back at MenuPoll, Random runs again. As long as 2 is held, every loop writes the same attributes again.
 
 Witness:
@@ -458,8 +459,8 @@ Witness:
   `win` (168 468), where the game returns to it.
 
 The point: the menu is the only place where the method changes. It stirs Random on every loop, so how long the
-player waits before pressing 0 decides the game's first random numbers. The Restart comment in `game.ann` speaks of
-keys 1-4 and ENTER; the code reads 1, 2, 3 and 0.
+player waits before pressing 0 decides the game's first random numbers. An earlier `game.ann` text spoke of keys 1-4
+and ENTER; the code reads 1, 2, 3 and 0 (corrected).
 
 ## 5.6 From the key to the droid
 
@@ -583,8 +584,9 @@ How the walk frames step x is in [doc 10](10-gameplay-logic.md).
 14600:0-14606:0. `python3 tools/fig_controls.py path --work work/docs/tjB/c1 --trace
 work/docs/tjB/c1/traces/14600_0-14606_0.uatr --from 14596 --to 14608 --out docs/img/controls/path.png`.*
 
-The point: the keys are read 50 times a second but used only 12.5 to 25 times a second. MoveDroid acts on every
-second pass, and a pass takes two or more frames. From key to the first moved pixel takes about three frames
+The point: the keys are read 50 times a second but used only 12.5 times a second when walking (MoveDroid acts on
+every second pass, and a pass takes two or more frames) and up to 25 in the air, where MoveDelay is skipped
+(`$720B`). From key to the first moved pixel takes about three frames
 (60 ms). MoveDelay sets the droid's walking speed, not the rate at which the keys are read.
 
 ## 5.7 Fire, the key latches and the weapon select
@@ -710,11 +712,11 @@ stateDiagram-v2
 | 0 | WeaponSelectReleased `$79BF` | `$798B` | SPACE or CAPS SHIFT released: the next press changes the weapon |
 | 1 | PauseReleased `$7956` | `$794D` | ENTER released: the next press toggles the pause |
 | 6 | MoveShotStraightEnd `$8572`, `$8489` | MoveDroidFireUp `$72FE` | fire must be released before the next shot |
-| 7 | Fire `$86B8` (the probe), the death effect | `$7B3C`, `$8487` | no moves and no fire |
+| 7 | Fire `$86B8` (the probe), the death effect (`$7AE2`) | `$7B3C`, `$8487` | no moves and no fire |
 
 Witness: over the L1 builds, bit 6 was set at `$8572` 11 times and at `$8489` 3 times. The clear at `$72FE` ran
-12 902 times, once in every acting pass with fire up. `game.ann` calls bit 6 "fire released". But the code sets it
-when a shot ends and clears it when fire is up, so it means "fire must be released first".
+12 902 times, once in every acting pass with fire up. The code sets it when a shot ends and clears it when fire is
+up, so it means "fire must be released first" (as `game.ann` now says).
 
 ### The weapon select
 
@@ -843,7 +845,8 @@ Worked example: `probe-shield` from frame 40. The droid faces left at column 19,
 5. Up takes y from 96 to 64 (frames 74-94, 16 steps), short of the `$30` limit: again the player's input ends the run.
 6. Right takes x back to 136 (98-123, 19 steps).
 7. Down takes y to 84 (124-137).
-8. Everything is released at 136. The sample of 138 shows Shot `$50`, the explosion (ProbeExplosion at `$B870`),
+8. Everything is released at 136. The sample of 138 shows Shot `$50`, the explosion (ProbeExplosion `$B83E`; the sample
+   of 138 already shows its second frame, read from `$B870`),
    then `$51` and `$53`. Shot is 0 again and KeyLatches back to `$03` at 144.
 
 During the whole flight the droid stays at column 19.
@@ -933,8 +936,11 @@ stateDiagram-v2
 
 The collision flag is how the droid feels a touch. When the droid's pixels meet other pixels, the interrupt's XOR
 draw sets bit 7 of the byte that the entry's flag pointer names ([doc 06](06-rendering.md)). With the pointer at 0,
-that write goes to ROM and is lost, so nothing can touch the droid. The cost is energy: one unit per 10 interrupts
-instead of one per 250. While bit 4 is set, HazardFlash `$699B` flashes the droid's attributes and clicks.
+that write goes to ROM and is lost, so nothing can touch the droid: no enemy, and no hazard either, since the hazard
+test `$75DF` sits behind the same flag (`$75B4`). The cost is energy: one unit per 10 interrupts instead of one per
+250. Raised within 50 interrupts of an enemy touch, the shield falls back to one unit per 250 once TouchTimer ends
+(DrainTimer `$7906` reloads `$FA`; the already-up branch `$7363` does not set `$0A` again); this is read from the
+code, no recording shows it. While bit 4 is set, HazardFlash `$699B` flashes the droid's attributes and clicks.
 
 Worked example: `probe-shield` frames 196-280.
 
@@ -1063,5 +1069,7 @@ pass freezes the whole game, the clock included, and only the pause key is read.
 - The results of KEYBOARD are unused on every path in the listing. That they were never meant to be read is an
   inference from the absence of any `$5Cxx` reference.
 - `$735B` (flags bit 2) refuses the shield while the droid is in the air. No recording tries it.
+- The shield raised within 50 interrupts of an enemy touch drains at the slow rate once TouchTimer ends (`$7906`
+  reloads `$FA`, `$7363` does not set `$0A` again). No recording shows it.
 - That no path reaches Pause with interrupts on is read from the code (every `EI` in the listing and the `DI` that
   follows it, 5.10); the recordings agree with it but cannot cover every path.

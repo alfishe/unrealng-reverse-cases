@@ -445,8 +445,8 @@ The point: the panel is drawn once and then only patched.
 Weapons `$6368` holds one bit for the weapon in hand: bit 7 weapon 0 (the basic gun), bit 6 weapon 1, bit 5 weapon 2,
 bit 4 weapon 3. Ammo `$636A-$636C` holds the ammunition of weapons 1-3 (BCD); weapon 0 has none.
 
-- **WeaponSelect `$7976`** runs in every interrupt while no shot is in flight. When SPACE is pressed after a release,
-  it shifts Weapons right to the next weapon with ammunition; past weapon 3, or when none has any, it goes back to
+- **WeaponSelect `$7976`** runs in every interrupt while no shot is in flight. When SPACE or CAPS SHIFT (port `$7EFE`, bit 0) is
+  pressed after a release, it shifts Weapons right to the next weapon with ammunition; past weapon 3, or when none has any, it goes back to
   weapon 0 (`$80`). Then it calls ShowWeapon.
 - **ShowWeapon `$79C2`** colours the 2 x 4 cells at `$5822` with the weapon's colour (`$47`, `$43`, `$44`, `$46`),
   blits its icon (HudIcons + 32 x weapon) at `$4422`, and prints its ammunition at `$4082` with PrintBcd. For weapon 0
@@ -730,7 +730,7 @@ How to read the figure:
 - **Orange** is the wait from QueueMessage to the step that took it; **purple** is the scroll until its `.` row has
   come in; hatched means still running at the end of the window.
 - **Red** is a message queued and then replaced while it waited.
-- **The point**: a message waits 8 to 56 frames, a row takes 50 frames, and the game over's GEN 19 DESTROYED never
+- **The point**: a message waits 8 to 56 interrupts (94 frames when the death stops them), a row takes 50 frames, and the game over's GEN 19 DESTROYED never
   appears: COMPUTER MALFUNCTION (priority 20) replaced it.
 
 ```bash
@@ -850,8 +850,9 @@ python3 tools/fig_text.py menu        # docs/img/text/menu.png
 ```
 
 Worked example: pressing 2 in `menu-cursor`. MenuPoll reads `$F7FE` with bit 1 low, sets Controls = `$40` and jumps to
-MenuLightCursor. It writes 11 cells of `$43` from `$5986` (line 1 back to plain), 18 cells of `$C5` from `$59C6` (line
-2 flashing) and 20 cells of `$46` from `$5A06`. The pixels are not touched.
+MenuLightCursor. It writes 12 cells of `$43` from `$5986` (line 1 back to plain), 19 cells of `$C5` from `$59C6` (line
+2 flashing) and 21 cells of `$46` from `$5A06`: BC + 1 each (`LD (HL)` writes the first cell, `LDIR` copies it BC =
+`$0B` / `$12` / `$14` times), the length of each line. The pixels are not touched.
 
 The point: MenuTexts ends with a sixth line, `© 1986 ORPHEUS LTD` at `$8D85`, which no code prints. Its `©` is the
 ROM font's `$7F`, a code the game's font does not have.
@@ -875,7 +876,8 @@ The steps:
    piece missing gets only the colour `$28` (black on cyan), no pixels. The picture starts at `$4886` (row 12, column
    6), 2 cells a tile.
 5. For a new piece: its 2 x 2 cells alternate `$67` and `$64` (green on green: invisible) 9 times, each with a delay of
-   50 000 x 26 T.
+   50 000 x 26 T. The writes are `$67`, `$64`, ... `$67`; the cells already hold `$67` from ProgressCell, so the
+   first write is a repeat: the screen shows 8 changes, the tile plain green 4 times, ending with its picture.
 6. EnergyTimer is reloaded from EnergyReload (the energy runs again), Shot cleared. For the game over, the percentage is
    printed.
 
@@ -997,8 +999,8 @@ Command: `python3 ../../kit/screen_anim.py --work work/docs/tjD/menu-cursor --fr
 --delay 120 docs/img/play/progress-flash.gif`.*
 
 How to read the animation: the droid takes piece 37 at frame 225 (the pickup tone), and the picture appears with its
-one taken tile at column 7, row 1. That tile blinks between its picture and plain green 9 times; then the room comes
-back at frame 424. The message window keeps scrolling: the interrupt runs throughout.
+one taken tile at column 7, row 1. That tile goes plain green and back 4 times (9 colour writes, the first a repeat: 8
+changes, about 20 frames apart); then the room comes back at frame 424. The message window keeps scrolling: the interrupt runs throughout.
 
 Worked example: piece 37 (item kind `$A6`). EdPickup clears bit 7 and subtracts 1: A = `$25` = 37. ProgressByte steps
 HL while A is 6 or more, taking 5 each time: 7 times, so HL = EdFlags + 7 and A = 2. ProgressBit turns C = `$80` left
@@ -1146,8 +1148,11 @@ EDS COMPLETED latch).
   - the copyright line `$8D85` is never printed;
   - the ammunition field changes when a weapon fires (FireWeapon1Ammo `$86EC`, FireWeapon2Ammo `$873A`, FireWeapon3Cell
     `$8693`): no traced window fired a weapon with ammunition;
-  - a message of priority 10 or 8 queued while another of 20 waits is dropped; no recording shows it.
-- **Sent to the lead** (`work/docs/tjD-src-changes.md`): the `.ann` of PrintBcd ("a click each"), the comment of
-  WinTestRoom and LoseLifeGameOver in main.asm (the 5 attributes cleared hide the lives and energy digits, not "the
-  scroller's row"), HazardFlash (`OR $40` is BRIGHT, not FLASH), and Restart (the menu waits for 1-3 and 0, not "1-4 /
-  ENTER").
+  - a message of priority 10 or 8 queued while another of 20 waits is dropped; no recording shows it;
+  - with all 50 pieces taken, ProgressPercentBcd (2 a piece, `ADD A,$02` / `DAA` at `$8FC0`) wraps to `$00`, so a
+    game over after the last piece and before room 84 prints YOU HAVE COMPLETED 0%; no recording shows it;
+  - the win's WinDelay (24 frames) and its ProgressScreen with A = 0 come from the code and the RZX log only: the
+    `win` recording starts inside WinWait (`$6A26`).
+- **Corrected in the sources at the integration** (once listed in `work/docs/tjD-src-changes.md`): the `.ann` of
+  PrintBcd (one click per number), the comment of WinTestRoom and LoseLifeGameOver (the 5 attributes cleared hide the
+  lives and energy digits), HazardFlash (`OR $40` is BRIGHT, not FLASH), and Restart (1-3 and 0).

@@ -34,18 +34,21 @@ EnemyKindSet:
 ;
 ; In: HL the record, EnemyBufferPtrs. A record with timer 0 is empty. The timer
 ; counts down; at 0 it is 2 again and the enemy acts (L1 11 212 of 74 324
-; calls). Spawn (state $40): random x $20-$D0 (8-pixel steps) and y $50-$78
-; until the 2 x 2 cells are 0 (720 tries, 581 spawns), the attribute random
-; $42-$47. Each act: the old frame (the draw buffer) is queued to erase and the
-; mark 2 XORed out. Hit (state bit 7): ExplosionFrames, 4 acts a frame, then
-; state $40 and the timer random OR $29 (202 explosions end). Materialising
-; (bit 6): MaterialiseFrames, then a random direction and the next kind
-; (EnemyKind: 403). Flying: state 0 right and down, 1 left and down, 2 left and
-; up, 3 right and up; a blocked step flips that half of the direction
-; (StepRight / StepLeft and StepDown / StepUp, 2 x 2 cells, x up to $F0, y up
-; to $B0). The next frame (49 bytes on) is shifted to x AND 7 in place
-; (ShiftGraphic3), copied to the erase buffer and queued with the state as its
-; flag byte, the mark 2 XORed in and the attributes set.
+; calls). Spawn (state $40): x and y from the 13 x 4 lattice (x Random OR $20
+; AND $F8, $E0-$F8 clamped to $D0; y Random OR $50 AND $78) until the 2 x 2
+; cells are 0 (720 tries, 581 spawns), the attribute Random AND 7 OR $42 ($42,
+; $43, $46 or $47). Each act: the old frame (the draw buffer) is queued to
+; erase and the mark 2 XORed out. Hit (state bit 7): ExplosionFrames, one
+; explosion frame an act (the state steps by 4); the mark is not XORed back, so
+; the cells hold 2 only after the 2nd and 4th act; then state $40 and the timer
+; random OR $29 (202 explosions end). Materialising (bit 6): MaterialiseFrames,
+; the mark XORed again (2 x 2), so the cells stay clean; then a random
+; direction and the next kind (EnemyKind: 403). Flying: state 0 right and down,
+; 1 left and down, 2 left and up, 3 right and up; a blocked step flips that
+; half of the direction (StepRight / StepLeft and StepDown / StepUp, 2 x 2
+; cells, x up to $F0, y up to $B0). The next frame (49 bytes on) is shifted to
+; x AND 7 in place (ShiftGraphic3), copied to the erase buffer and queued with
+; the state as its flag byte, the mark 2 XORed in and the attributes set.
 ;
 ; Witness: L1 74 324 calls, 7 790 flights, 1 071 explosion steps, 2 352
 ; materialise steps.

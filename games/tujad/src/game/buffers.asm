@@ -29,12 +29,12 @@ ExhaustPatterns:
   DEFB $00,$F6,$F6,$F6
   DEFB $00,$BD,$BD,$BD
 
-; The masks of the exhaust rows: $FF $00 (frames 11 and the walk), $0F $F0
-; (frame 12)
+; The masks of the exhaust rows: $FF $00 (every frame but 12), $0F $F0 (frame
+; 12)
 ;
 ; ExhaustMask $8F1B ANDs the three bytes of each row with (mask 1, $FF, mask
-; 2): $65D6 for frame 11 and the walk, $65D8 for frame 12 (the droid seen from
-; the front).
+; 2): $65D6 for every frame but 12, $65D8 for frame 12 (DroidFly2 $A168, a side
+; frame; the front frame is 10, DroidFront $A0A0).
 ExhaustMasks:
   DEFB $FF,$00
   DEFB $0F,$F0

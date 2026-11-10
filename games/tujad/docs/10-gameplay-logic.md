@@ -2,7 +2,8 @@
 
 What this covers: the rules of Tujad as the code enforces them. The droid flies and walks through 102 rooms, leaves a
 room at its edges or through a teleporter, and fights with four weapons. Its energy is a BCD counter that an interrupt
-clock counts down, faster while an enemy touches it or while its shield is up. It dies on an object or a patroller, or
+clock counts down, faster in five steps after an enemy's touch, and 25 times faster while its shield is up.
+It dies on an object or a patroller, or
 when the energy runs out. It collects 50 ED pieces dealt round the world at each new game, and wins by bringing them
 back to room 84. The records behind all this are in [doc 07](07-objects.md); the controls are in
 [doc 05](05-controls.md); the HUD, the messages and the progress screen are in [doc 08](08-hud-and-text.md).
@@ -49,7 +50,9 @@ MoveDroidCell:
 One act:
 
 1. The teleporter test: the droid's cell and the next hold `$FF $FF` and `TeleportLatch $6376` is 0 (10.2).
-2. The floor test: the cells five rows below its top (`$A0` on, `$C0` when y AND 7 = 7). With no wall under it the
+2. The floor test: the cells five rows below its top (`$A0` on; the branch to `$C0` for y AND 7 = 7, `$7246-$724A`,
+   never runs, because the droid's y is always even: no StartPositions entry is odd, and the RZX log has odd y only in
+   two samples after RZX frame 300, both caught in the middle of a step). With no wall under it the
    droid is in the air: bit 2 set, frame 11. With a wall under it, it stands: bit 2 clear, frame 2.
 3. The old image goes to the sprite list with flag pointer 0.
 4. Unless the droid is turning round (bit 1: TurnRound), fire calls `Fire $861C` (10.5).
@@ -140,7 +143,10 @@ MoveDroidEastExit:
 The other coordinate is kept. Nothing checks that the new room has a floor or a space there. The rooms are designed so
 that the openings line up.
 
-A teleporter is a 2 x 2 item drawn at its position, with `$FF $FF` in its top cells. `Teleport $7719`:
+A teleporter draws nothing of its own. DrawRoom (`DrawRoomTeleportCells $6DD4-$6E04`) writes `$FF` into two cells,
+columns +1 and +2 of its position, two rows below it (`CellTable + $40`, an `INC L` before each write), and keeps the
+position's column and row in TeleportColumn and TeleportRow; the droid beams in at column +1. The pad on screen is part
+of the room's picture: BeamDown colours its columns +0 and +3. `Teleport $7719`:
 
 - replaces the droid's image with the beam frame and queues TRANSPORTING;
 - plays BeamDown and TeleportFlash, with interrupts off for long stretches;
@@ -169,15 +175,20 @@ flowchart TD
 Worked example, `rzx-007000` frames 720-1 136: the droid steps onto room 105's teleporter, whose target is room 62.
 
 - The beam starts at about frame 725.
-- Interrupts keep running until about frame 865, while TRANSPORTING scrolls in.
-- Frames 865-1 106 run with interrupts off: no interrupt is serviced, the energy clock stands still.
+- Interrupts keep running through BeamDown, while TRANSPORTING scrolls in: EnergyTimer steps every frame to the
+  sample of frame 860 (`$2B`).
+- TeleportFlash starts in frame 859 (the room's attributes turn `$41` in frames 859-860; then a colour step about
+  every 14 frames, one per sweep pair) and runs with interrupts off to about frame 1 106.
+  One interrupt is served inside it, in frame 887: EnergyTimer is `$2B` in the samples of 860-887, `$2A` from 888 to
+  1 108, and the flash's next colour step shows in 888. It fell into the short `EI` gap between two sweeps.
 - Room becomes 62 at about frame 1 106; the droid stands at (5, 128) from about frame 1 120.
 - The arrival beam still shows at frame 1 200, and the enemies are back at frame 1 250.
 
 The whole teleport takes about 500 frames, 10 seconds; the room change comes after about 400 of them. A trace of
-`rzx-030000` (doc 09) times its parts: BeamDown 131 frames with interrupts on, TeleportFlash 249 frames in which 2
-interrupts are taken, DrawRoom, then BeamUp 104 frames. The RZX log holds 18 teleports, each a still run of 383-385 RZX
-frames in the work space, from the beam to the room change.
+`rzx-030000` (doc 09) times its parts: BeamDown 131 frames with interrupts on, TeleportFlash 249 frames with one
+interrupt taken inside (frame 486, in the `EI` gap between two sweeps), DrawRoom, then BeamUp 104 frames. Whether an
+interrupt lands in one of the short gaps depends on the phase; both recordings timed have exactly one. The RZX log holds
+18 teleports, each a still run of 383-385 RZX frames in the work space, from the beam to the room change.
 
 ![A teleport on screen: rzx-007000 frames 720-1136, every eighth frame, room 105 to room 62](img/play/teleport.gif)
 
@@ -376,15 +387,26 @@ in [doc 05](05-controls.md#57-fire-the-key-latches-and-the-weapon-select).
 
 MainLoop calls `MoveShot $8298` twice a pass (`$6926` and `$6983`), so a shot moves twice a pass:
 
-| Weapon | Shot | Speed | Mark while it flies | Mark on a hit | Ends at | Kills |
+| Weapon | Shot, attribute | Speed | Mark while it flies | Mark on a hit | Ends at | Kills |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0 | the dash, `$47` | 8 px a call, 16 px a pass | none | none | ink (Shot bit 7), a wall, an item, the edge | enemies, by the ink test |
 | 1 | a bolt, `$43` | 4 px a call, 8 px a pass | XOR `$40` | `$41` | ink, a wall, an item, the edge | enemies; objects of kind bit 4 |
 | 2 | a bolt, `$44` | 4 px a call, 8 px a pass | XOR `$20` | `$21` | the same | enemies; objects of kind bits 5 and 7 |
 | 3 | the probe, `$46` | steered, 2 px a call | XOR `$10` | `$11` | ink, or fire released; explodes over 4 calls | enemies; objects of kind bit 6 and of no kind bit |
 
-`Fire $861C` refuses a new shot while one is new, while fire has not been released, on a wall cell, and for weapons 1-3
-when their ammunition is 0. A shot fired costs one unit (BCD), printed on the HUD.
+The second column gives the shot's attribute (ShotScratch). `Shot $635E` itself is `$60` when it is fired, plus bit 0
+when the droid faces left (`$862B`, `$8649`); the interrupt sets its bit 7 when the sprite meets ink.
+
+`Fire $861C` refuses a new shot:
+
+- while a shot is in flight (Shot bit 6, `$861F`; the sample of frame 1452 below has Shot `$41`);
+- for weapons 1-3, until fire has been released since the last bolt or probe ended: the ends set KeyLatches bit 6
+  (`$856F-$8572` for a bolt, `$8484-$848B` for the probe), and Fire returns while it is set (`$8625`). The dash never
+  sets it, so weapon 0 repeats while fire is held;
+- at the edge: x `$1B` or more facing right, x below 2 facing left (`$8638-$8646`, FireRefused);
+- on a wall cell, and for weapons 1-3 when their ammunition is 0.
+
+A shot fired costs one unit (BCD), printed on the HUD.
 
 A bolt ends when its sprite meets ink (Shot bit 7, set by the interrupt). `MoveShotStraightHit $8575` then looks
 through the cells under it for one with bit 2 (an object) and ORs 1 and `ShotMark` (`$40` or `$20`) into that cell;
@@ -399,7 +421,9 @@ the right weapon's mark kills an object; another weapon's mark stops it in place
 
 ```mermaid
 flowchart TD
-    F[fire pressed and released before] --> W{weapon}
+    F[fire pressed; weapons 1-3: released since the last shot ended] --> E{x below 1B facing right, 2 or more facing left?}
+    E -- no --> NO
+    E -- yes --> W{weapon}
     W -- 0 --> D0[the dash: 16 px a pass]
     W -- 1 or 2 --> AM{ammunition 0?}
     W -- 3 --> AM
@@ -449,7 +473,8 @@ shot of the wrong weapon is worse than none, because it also freezes the object 
 A life ends in one of two ways:
 
 - **HazardDeath** (`$6992`): the touch test found a mark other than an enemy's under the droid. That is an object (4), a
-  patroller (8) or a shot mark left in an object's cells (`$10-$40`).
+  patroller (8) or a shot mark left in an object's cells (`$10-$40`). The test reads the cells through OrCells
+  `$7DAE`, which skips every cell with bit 7: an item or a teleporter cell (`$FF`) never counts.
 - **EnergyOut** (`$6A30`): MainLoop finds Energy 0 at the end of a pass.
 
 Both return at once when DroidFlags bit 1 is set, while the droid turns round. EnergyOut falls through into LoseLife.
@@ -516,7 +541,7 @@ Worked example, `rzx-035000` frames 214-320, the only life lost in the RZX game:
 
 | Frame | What the samples show |
 | --- | --- |
-| 214 | the droid walks south out of room 109 into room 117 at x 4, y 50; the scroll wipe starts |
+| 214 | the droid flies down out of room 109 into room 117 and arrives at x 4, y 50, in the air (DroidFlags `$4C`); the scroll wipe starts |
 | 247 | the wipe ends; object 1 (kind none, x 32, y 72) still has state `$40`, just entered |
 | 248 | the object's draw-only act: state `$00`, its image over the droid |
 | 250 | DroidFlags `$C4`: bit 7, the sprite met ink; Energy 36, Lives 5 |
@@ -624,8 +649,8 @@ sequenceDiagram
 
 Worked example, `rzx-010000` frames 1690-1890, room 58: the droid flies onto the item at position `$38`, kind `$AA`
 (ED piece 41). EnergyTimer counts `$CD`, `$C8`, `$C4` in frames 1690-1700 and is 0 from frame 1702: ProgressScreen has
-started. It stays 0 to frame 1886, 185 frames. In the sample of frame 1888 the room is drawn again, the room's item 1
-reads `$2A` (taken) and EnergyTimer `$F9`.
+started. It stays 0 to frame 1886, 185 frames. In the sample of frame 1887 the room is drawn again, the room's item 1
+reads `$2A` (taken) and EnergyTimer `$FA`, the reload; `$F9` in 1888.
 
 ![An ED piece taken: rzx-010000 frames 1680-1712](img/play/ed-pickup.gif)
 
@@ -645,7 +670,8 @@ the game remembers the player's progress in the world: one bit in a room record,
 1. ClearScreen; `InitRooms $7BCC`: every item present again (bit 7), every object reset (state AND 3 OR `$40`, the
    graphic, frames and kill mark from ObjectKind, frame 0).
 2. B = Random OR 1 AND `$1F`. Bit 0 is set before the mask, so B is odd: 1, 3, ..., 31, 16 values.
-   `ScrambleRooms $7BA0` is called B times.
+   `ScrambleRooms $7BA0` is called B times. The menu stirs Random once a loop while it waits for a key
+   (`MenuPoll $893B`), so the seed, and so the deal, depends on how long the menu waits.
 3. The exhaust rows, BlankGraphic and EdFlags zeroed.
 4. Room = `$54` (84); PlaceDroid; the 28 start values `InitialVars $6380` copied to `$6364-$637F`: energy timer `$FA`,
    weapon 0, ammunition 3 3 3, lives 3, energy 99.
@@ -718,6 +744,32 @@ How to read the figure:
 
 The list holds 51 ED items for 50 pieces: the kind `$84`, piece 3, is in two slots, rooms 41 and 42. Whatever the deal,
 two slots hold the same piece. The second one taken sets a bit that is already set: one ED item is a spare.
+
+Same piece twice in one room. The two `$84` slots are next to each other in the slot list, so a rotation can bring
+both into the two item slots of one room: rotations 6, 19, 23, 31 and 39 put them in rooms 52, 73, 77, 93 and 109
+(`work/review/rv2C/dup.py`). Rotation 31 is one of the 16 first-game deals. The pickup then finds the wrong record
+entry. `MoveDroidPickup` reads the kind from the cell (DrawMode) and tests item 1 first:
+
+```asm
+  LD B,(HL)                  ; B = item 1's position
+  INC HL
+  LD A,(DrawMode)            ; the kind under the droid
+  CP (HL)                    ; item 1's kind?
+  JR Z,MoveDroidPickupFound
+  INC HL
+  LD B,(HL)                  ; no: item 2's position
+  INC HL
+MoveDroidPickupFound:
+  RES 7,(HL)                 ; that item taken
+  LD A,B
+  LD HL,CellTable
+  CALL ItemCell              ; its cells zeroed and its picture erased
+```
+
+With two equal kinds the test always matches item 1. By the code, a droid that touches item 2 takes item 1: item 1's
+bit 7 is cleared and item 1's cells and picture vanish, while item 2 stays drawn. The redraw after the progress screen
+draws item 2 again, and the next touch takes it (item 1's kind no longer matches), a second progress screen that adds
+nothing. No recording has such a deal; the RZX game's rotation is 27.
 
 Worked example: the image has piece 48 (`$B1`) in room 58. With the shift 27 the slot of room 58 takes the kind of the
 slot 27 places back, piece 41 (`$AA`), which is what the RZX game's room 58 holds (doc 07.2).
@@ -833,7 +885,8 @@ patrollers on their rails kill.
 ## 10.12 Random, the energy timer and the RZX drift
 
 `Random $7DC9` is a 4-byte additive chain at `RandomSeed $63A4` (doc 07.12). Its callers: the menu's poll loop, NewGame
-(the deal), the exhaust flicker, the enemy spawn and the wait after an explosion. The game reads no `R` register and no
+(the deal), the exhaust flicker, the enemy spawn (x, y and the attribute), the materialised enemy's direction and the
+wait after an explosion. The game reads no `R` register and no
 floating bus; its only inputs are the controls. From a state and its inputs it is deterministic.
 
 `EnergyTimer $6366` counts interrupts, not frames. Interrupts are lost whenever the game runs with them off: the sound

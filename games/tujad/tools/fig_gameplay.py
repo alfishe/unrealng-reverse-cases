@@ -258,7 +258,7 @@ def cmd_energy(args):
     for p, (rows, label) in enumerate(panels):
         lo, hi = rows[0][0], rows[-1][0]
         y0 = 50 + p * 320
-        at = axis(d, (70, y0, WIDTH - 20, y0 + 250), lo, hi, 0, 255, [0, 10, 50, 100, 150, 200, 250], label,
+        at = axis(d, (70, y0, WIDTH - 20, y0 + 250), lo, hi, 0, 285, [0, 10, 50, 100, 150, 200, 250], label,
                   list(range(lo - lo % 10 + 10, hi + 1, 20)))
         series = [(lambda b: b[0x66], CYAN, 'EnergyTimer'), (lambda b: b[0x74], YELLOW, 'EnergyReload'),
                   (lambda b: b[0x77] * 4, RED, 'TouchTimer x 4'), (lambda b: bcd(b[ENERGY]) * 4 - 100, GREEN,

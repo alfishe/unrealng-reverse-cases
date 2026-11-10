@@ -19,7 +19,7 @@ L1 counts are totals over whole recordings, so they carry no time in the frame.
 | Frame | 69 888 T; a main-loop pass holds 2 interrupts, 3 when its work overruns ([doc 4.7](04-game-loop.md#47-passes-and-interrupts-a-frame)) |
 | CPU | the interrupt handler draws every sprite and takes a quarter to a third of the time in play; the main loop waits in HALT for 38-52 % (2.7) |
 | Sound | the beeper only (port `$FE` bit 4), from the main loop with the CPU busy (doc 9) |
-| Stack | from `$60C0` down (`$68F4 LD HL,$60C0; $68F7 LD SP,HL`), deepest write seen `$60AC` (2.2) |
+| Stack | from `$60C0` down (`$68F4 LD HL,$60C0; $68F7 LD SP,HL`); at least to `$60A8` in every interrupt (the handler's pushes, which L1 does not count), about `$60A2` in an interrupt taken inside a nested call (computed, 2.2) |
 
 **The point**: a 48K game that uses all of the 40 K above the BASIC area, and spends about half of play waiting for
 the frame.
@@ -38,8 +38,8 @@ byte four times); "bytes" counts the bytes of the range that were executed, read
 | `$5B00-$5B1F` | 32 | the loader stub ([doc 3.2](03-build-and-load.md#32-the-basic-line-and-the-stub-at-5b00)) | dead after the load | no access in the recordings |
 | `$5B5B-$5B5D` | 3 | `JP $95D0`, the interrupt's landing | 160 320 executions | written at `$95B2-$95B7` |
 | `$5C00-$5CBF` | 192 | the system variables | the ROM's KEYBOARD, called from the handler, keeps `$5C04-$5C08` (KSTATE) and `$5C3B` (FLAGS) | the only bytes written here |
-| `$5CC0-$60AB` | 1004 | the BASIC program and workspace | dead after the load; never written | 83 bytes read at `$6000-$60A7`, all in `room-tour` (the per-recording L1s): they are CellTable's addresses for the six HUD rows above the play area (rows -6 to -1, columns 0-11 and 28-30), a cell lookup with a row above the play area in the rooms that recording POKEs; the routine that reads them is not traced |
-| `$60AC-$60BF` | 20 | the machine stack (grows down from `$60C0`) | the deepest write `$60AC`, in 8 recordings | L1 writes per recording (below) |
+| `$5CC0-$609F` | 992 | the BASIC program and workspace | dead after the load; never written | 83 bytes read at `$6000-$60A7`, all in `room-tour`: CellTable's addresses for the six HUD rows above the play area (rows -6 to -1, columns 0-11 and 28-30). The L1 routine profiles name the readers: MoveDroid `$7208`, its touch test OrCells `$7DAE` and the wall test CellBlockedColumn `$7CBB` (and DroidExhaust `$8DD2` at `$60A0-$60AB`). `room-tour` POKEs the room but not the droid's y; after a death in one of the 26 empty rooms PlaceDroid takes that room's start position, (0, 0) (StartPositions `$9484`), so the droid walks the HUD rows and its cell tests read there until the next death (lives 9 to 8 in room 29 at frame 1860, for example) |
+| `$60A0-$60BF` | 32 | the machine stack (grows down from `$60C0`) | down to `$60A8` in every interrupt, to about `$60A2` in interrupts taken inside nested calls; L1 counts no write of the handler's own pushes | the code (below); L1 writes of the main code reach `$60AC` (Blit16's pushes, 8 recordings) |
 | `$60C0-$62FF` | 576 | CellTable: 32 x 18 cells, one for each attribute cell of the play area (screen rows 6-23): bit 0 a wall, bit 1 an enemy, bit 2 an object, bit 3 a patroller, the shot marks, `$FF` a teleporter, an item's kind ([doc 7](07-objects.md)) | 1 322 096 reads, 352 047 writes | zero in the image (but `$60E3`, `$60E8`); changes with the room |
 | `$6300-$6302` | 3 | the entry, `JP $68F3` | run once | `c1` probe, frame 13580 |
 | `$6303-$63D1` | 207 | the game's variables: x `$6359`, y `$635A`, room `$6363`, lives `$636D`, energy `$636E` (BCD), the energy timer `$6366` (counts interrupts), the random number `$63A4-$63A7`, the controls `$63C2`, SpriteListEnd `$63D0`; the authors' leftover source under DroidVars `$6359-$637F` and RoomVars `$639C-$63D1` (2.9) | 10 328 593 reads, 4 207 839 writes | the code's operands (doc 10) |
@@ -59,10 +59,16 @@ byte four times); "bytes" counts the bytes of the range that were executed, read
 | `$FF01-$FF4D` | 77 | the sprite list: 8-byte entries, terminated at `(63D0)` by `$795D` | 664 666 reads, 613 854 writes | `$95DB-$963F` |
 | `$FF4E-$FFFF` | 178 | not used | untouched | L1 |
 
-The stack's low mark: the deepest byte written in the recordings is `$60AC` (8 RZX chunks, for example `rzx-065000`),
-20 bytes below `$60C0`; the RZX playback's saved state after 40 000 frames (`work/stage1/rzx/at040000.szx`) holds
-SP = `$60A8` inside the handler (PC `$9611`), so the stack reaches at least `$60A8`, 24 bytes deep. Below it lie
-1000 bytes of the dead BASIC area (`$5CC0-$60A7`) before the system variables.
+The stack's low mark, from the code: MainLoop runs at SP `$60C0`, its `CALL WaitFrame` leaves SP `$60BE` at the HALT,
+the INT pushes the return to `$60BC`, the handler's seven pushes (`$95D0-$95D7`) reach `$60AE`, and
+InterruptSpriteRow's `PUSH AF; PUSH HL; PUSH AF` (`$9609-$960E`) put SP at `$60A8` at `$9611` for every sprite byte of
+every interrupt: the RZX playback's saved state after 40 000 frames (`work/stage1/rzx/at040000.szx`, SP `$60A8` at PC
+`$9611`) is that ordinary depth. An interrupt taken inside a nested call (the delay loop of ProgressScreen, the beams)
+starts 4 to 6 bytes lower (the delay loop `$9029` pushes nothing, yet L1 has writes at `$60B8-$60B9` attributed to it:
+the INT's return; the beams' writes go down to `$60B6`), so the stack reaches about `$60A2`; that floor is computed, not traced. L1 does not see the
+handler's pushes (`$60BA-$60BB`, where its first `PUSH AF` lands at every interrupt, has 248 writes against 38 660 at
+`$60BC-$60BD`); the deepest write it counts is Blit16's push at `$60AC` (8 RZX chunks, for example `rzx-065000`).
+Below the stack lie 992 bytes of the dead BASIC area (`$5CC0-$609F`) before the system variables.
 
 ![Memory use over the 70 L1 builds](img/heatmap.png)
 
@@ -87,8 +93,9 @@ per-room state (`$DC53-$DFF9`) and the sprite list are written.*
 What changes (`work/stage1/imgdiff.py`, runs of differing bytes over `$5B00-$FFFF`):
 
 - **Loaded to entry**: nothing in the game block or the screen. The 341 bytes that differ (7 runs) are the ROM's: the system
-  variables (`$5C00-$5D4E`), the BASIC stack under RAMTOP (`$609E-$60BF`) and the ROM's own stack and UDGs from
-  power-on (`$FF18-$FFFE`, above the block). Nothing is unpacked or decrypted.
+  variables, channel data and BASIC line (`$5C00-$5D4E`: 128 bytes in 5 runs), the BASIC stack under RAMTOP
+  (`$609E-$60BF`: 29 of its 34 bytes) and the ROM's own stack and UDGs from power-on (`$FF18-$FFFE`: 184 of 231, above
+  the block). Nothing is unpacked or decrypted.
 - **Entry to the next frame**: the setup `$68F3` writes `JP $95D0` at `$5B5B`, the vector table `$FE00-$FF00`, the
   controls and SpriteListEnd (`$63C2-$63D1`), and moves the stack to `$60C0`.
 - **Loaded to play** (`$60C0-$FDFF`): 3076 bytes in the RZX state, 673 in menu-cursor's end; no code changes;
@@ -129,7 +136,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | 0 | `$5B00` | 2908, T 8352 | the stub: `CALL $0556` for the headerless block ([doc 3.2](03-build-and-load.md#32-the-basic-line-and-the-stub-at-5b00)) |
 | 1 | `$6300` | 13580 | the setup `$68F3-$6910` and the menu |
-| 2 | `$95D0` (the first interrupt) | 14297 | play: the main loop and the IM 2 handler |
+| 2 | `$95D0` (the first interrupt) | 14297 | play: the main loop and the IM 2 handler; the first interrupt is taken inside NewGame's DrawRoom (its `EI` `$6B2D` in 14296, `DI` `$6E0B` in 14306), and Restart's `EI` `$6910` runs in 14306 |
 
 The frames are `probe_frames` exec frames over `work/stage1/c1/session.ttd`: the first frame each address runs in.
 
@@ -158,7 +165,7 @@ The source is 25 modules (`src/game/*.asm`, written by `kit/mkgame.py` from `src
 | steps | `$7DDA-$7F4C` | 371 | 6 (6) | the droid's steps (StepRight, StepDown, StepLeft, StepUp), ShiftGraphic3 and ShiftGraphic4 |
 | sound | `$7F4D-$809C` | 336 | 6 (6) | the sweeps, PassTick, BeamDown, BeamUp, TeleportFlash |
 | objects | `$809D-$8297` | 507 | 1 (1) | MoveObject |
-| weapons | `$8298-$8853` | 1468 | 5 (4) | MoveShot (weapon 3's steering included) and the shot graphics |
+| weapons | `$8298-$8853` | 1468 | 5 (4) | MoveShot (weapon 3's steering included), Fire `$861C` and the shot graphics |
 | menu | `$8854-$8DD1` | 1406 | 15 (7) | Menu, MenuPoll, the logo, the blits, PrintText, DrawHud, the HUD and menu graphics and texts |
 | exhaust | `$8DD2-$8F52` | 385 | 6 (6) | DroidExhaust, ExhaustStep |
 | progress | `$8F53-$90C7` | 373 | 4 (3) | ProgressScreen, ProgressText |
@@ -190,7 +197,8 @@ rebuilt by the main loop every half pass. The sheet shows every graphic found in
 *Drawn by `tools/fig_sprites.py` from the image, `work/stage1/sprites-found.json` and
 `work/stage1/rzx/at043000.szx`. How to read: each graphic with its address and size (bytes x character rows). From
 the image: the droid (`$9CB8` 3 x 5, `$A000` and `$A050` 2 x 5, `$A0F0` and `$A168` 3 x 5, each flagged at `$635B`)
-and the objects at `$B16D-$BAE2` (4 x 3, 97 bytes apart). From RAM, drawn from the RZX state after 43 000 frames:
+the objects' 11 frames at `$B16D-$B65A` (4 x 3, 97 bytes apart: a shift byte and 96) and the patroller's 4 frames at
+`$B962-$BAE2` (4 x 3, 96 bytes apart, no shift byte, flag pointer 0; the sheet's last row, the tank). From RAM, drawn from the RZX state after 43 000 frames:
 the shot `$65DD` (1 x 1, flagged at `$635E`), DroidSave `$668C` (2 and 3 x 5) and the enemies' pre-shifted buffers
 `$6708-$6858` (3 x 2, 48 bytes apart, flagged at `$6304`, `$630D`, `$6316`, `$631F`). The point: every mover is a
 plain XOR block of whole bytes; the enemies are pre-shifted into RAM buffers, the droid is drawn from its frames.*
@@ -265,6 +273,8 @@ flowchart TD
   MD --> DR["DrawRoom $6B22"]
   MD --> HD["HazardDeath $6992"]
   MD --> EP["EdPickup $7703"]
+  MD --> FI["Fire $861C"]
+  MD --> TR["TurnRound $7866"]
   EP --> PS["ProgressScreen $8F53"]
   HD --> LL["LoseLife $6A3C"]
   EO --> LL
@@ -278,7 +288,8 @@ flowchart TD
 ```
 
 - **The handler** `$95D0` (IM 2, every interrupt through `$5B5B`): reads the controls, XORs every sprite of the list
-  at `$FF01` (setting bit 7 of a record's flag on a collision), steps the message scroller every 5 interrupts, then
+  at `$FF01` (setting bit 7 of a record's flag on a collision), steps the message scroller every 5 interrupts (15 at
+  the end of a text row, so 50 a row: `$9647`, `$9656`), then
   WeaponSelect, EnergyTick, DrainTimer and the ROM's KEYBOARD, and `EI; RETI` (`$96FB`).
 - **The main loop** `$6911-$698F` waits twice a pass in WaitFrame and runs with interrupts off between the waits. The
   first half moves the droid, the second the objects, the enemies and the patrollers; then it tests the pause, the
@@ -325,7 +336,7 @@ word:
 | Leftover (`Source3.txt`) | The game |
 | --- | --- |
 | `lookup ld hl,alnmap` / `ld d,0` / `ld e,c` / `sla e` / `add hl,de` / `ld e,(hl)` / `inc hl` / `ld d,(hl)` / `ld hl,alnmap` / `add hl,de` / `ret` | RoomRecord `$7B8F` (`src/game/world.asm`): the same eleven instructions, `alnmap` = AlienMap `$DB53` |
-| `scram ld c,123` / `call lookup` / … / `ld a,124` / `cp c` | ScrambleRooms `$7BA0`: rooms 0-123, the items whose kind has bit 6 clear passed one room on |
+| `scram ld c,123` / `call lookup` / … / `ld a,124` / `cp c` | ScrambleRooms `$7BA0`: rooms 0-123: each item whose kind has bit 6 clear moves to the next room that holds such an item (one slot along the 64) |
 
 ```bash
 python3 tools/res_formats.py check     # the leftover's round trip, with every other resource

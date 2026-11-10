@@ -519,7 +519,7 @@ L1 8.
 
 **Count the energy down one every EnergyTimer interrupts**
 
-Every interrupt (L1 54 825). When EnergyTimer reaches 0 it reloads from EnergyReload (`$FA`: 5 s a step; `$0A` under the shield or after an enemy's touch: 0.2 s), Energy - 1 (BCD) printed at `$4088`; at 11 the message WARNING ENERGY LOW. EnergyTimer 0 stops it (the win and the game over set it to 0). L1 378 steps.
+Every interrupt (L1 54 825). When EnergyTimer reaches 0 it reloads from EnergyReload (`$FA`: 5 s a step; `$0A` under the shield, 0.2 s; after an enemy's touch each touching pass sets EnergyTimer back to 10, so the 5 fast steps come 10-50 interrupts after the last touch), Energy - 1 (BCD) printed at `$4088`; at 11 the message WARNING ENERGY LOW. EnergyTimer 0 stops it (the win and the game over set it to 0). L1 378 steps.
 
 | | |
 | --- | --- |
@@ -956,7 +956,7 @@ The play area's 18 attribute rows become `$41` (blue ink on black, bright); then
 
 **Move and draw one object; a shot of the right weapon kills it**
 
-In: HL the record (Objects or Object2). Every other call (the timer in bits 0-1 of +0) the object moves: on its first pass in the room (state bit 6) it is only drawn; otherwise the old image goes to the sprite list (graphic + 1, 4 bytes x 3 character rows), its mark 4 is XORed out of its cells and the cells under it are ORed into ObjectBits. A shot's mark there (bit 0): the cells zeroed; the weapon from AND `$70`, JP PO: one bit or all three kept as they are (three never match a kill mark: stopped), two bits ANDed with `$60`, 0 becomes `$10`; the object's mark (+8) equal: it dies (state bit 7); else it stops (bit 5). A live object steps in its direction (StepRight, StepDown, StepLeft, StepUp: 3 x 3 cells, x up to `$E8`, y up to `$A8`) and reverses at a wall: state AND `$FC` + 2 after right (left), + 3 after down (up), + 0 after left (right), + 1 after up (down). The next frame (97 bytes on, back to the first after the last) is shifted to x AND 7 (ShiftGraphic4) and queued, the mark 4 XORed in, the attributes set. A dying object steps through ObjectDeathFrames, 4 passes a frame, then it is gone (BlankGraphic).
+In: HL the record (Objects or Object2). Every other call (the timer in bits 0-1 of +0) the object moves: on its first pass in the room (state bit 6) it is only drawn; otherwise the old image goes to the sprite list (graphic + 1, 4 bytes x 3 character rows), its mark 4 is XORed out of its cells and the cells under it are ORed into ObjectBits. A shot's mark there (bit 0): the cells zeroed; the weapon from AND `$70`, JP PO: one bit or all three kept as they are (three never match a kill mark: stopped), two bits ANDed with `$60`, 0 becomes `$10`; the object's mark (+8) equal: it dies (state bit 7); else it stops (bit 5). A live object steps in its direction (StepRight, StepDown, StepLeft, StepUp: 3 x 3 cells, x up to `$E8`, y up to `$A8`) and reverses at a wall: state AND `$FC` + 2 after right (left), + 3 after down (up), + 0 after left (right), + 1 after up (down). The next frame (97 bytes on, back to the first after the last) is shifted to x AND 7 (ShiftGraphic4) and queued, the mark 4 XORed in, the attributes set. A dying object steps through ObjectDeathFrames, one death frame an act (the state steps by 4), then it is gone (BlankGraphic).
 
 Witness: L1 37 158 calls (2 for each of 18 579 passes), 1 777 moves, 13 hits, 11 kills.
 
@@ -991,7 +991,7 @@ By Weapons: bit 7 MoveShot0 `$877E`; bits 6 and 5 MoveShotStraight `$84CC`; bit 
 
 ### `MoveShotStraight` (`$84CC`)
 
-**Weapons 1 and 2: a 2 x 1 bolt 4 pixels a pass to a wall or the edge**
+**Weapons 1 and 2: a 2 x 1 bolt 4 pixels a call (8 a pass: MoveShot runs twice) to a wall or the edge**
 
 The old image erased and its ShotMark XORed out; x - 4 or + 4 (to 0 or `$F8`); a wall or item cell under the new place ends it (KeyLatches bit 6 set: fire must be released); an object under it (cell bit 2) gets the mark ORed in with bit 0 and the shot ends; else the next frame (graphic +/- 16) is drawn with ShotScratch's attribute and the mark XORed in. L1 4 647 calls, 55 with a shot.
 
@@ -1019,7 +1019,7 @@ Not while a shot is new (Shot bit 6) or fire has not been released (KeyLatches b
 
 ### `MoveShot0` (`$877E`)
 
-**Weapon 0: the dash 8 pixels a pass until it hits ink, a wall or the edge**
+**Weapon 0: the dash 8 pixels a call (16 a pass) until it hits ink, a wall or the edge**
 
 The old image erased; when the interrupt found ink under it (Shot bit 7) it ends; else x - 8 or + 8 (to 0 or `$F8`), and a wall or item cell ends it. A new dash (bit 5) is only drawn. Attribute `$47`. L1 32 027 calls, 5 855 moves.
 
@@ -1219,7 +1219,7 @@ L1 37 142.
 
 **ExhaustRaw's four rows into ExhaustRows, masked by the droid's frame**
 
-Frame 12 (the front) takes ExhaustMasks + 2 (`$0F`, `$F0`), the others `$65D6`. L1 18 572.
+Frame 12 (DroidFly2, in the air) takes ExhaustMasks + 2 (`$0F`, `$F0`), every other frame `$65D6`. L1 18 572.
 
 | | |
 | --- | --- |
@@ -1296,7 +1296,7 @@ EnemyKindTurn cycles 1-9; DrawMode (`$63B1`) = EnemyFrameCounts[kind], HL = the 
 
 **One step of an enemy: spawn, materialise, fly, explode**
 
-In: HL the record, EnemyBufferPtrs. A record with timer 0 is empty. The timer counts down; at 0 it is 2 again and the enemy acts (L1 11 212 of 74 324 calls). Spawn (state `$40`): random x `$20-$D0` (8-pixel steps) and y `$50-$78` until the 2 x 2 cells are 0 (720 tries, 581 spawns), the attribute random `$42-$47`. Each act: the old frame (the draw buffer) is queued to erase and the mark 2 XORed out. Hit (state bit 7): ExplosionFrames, 4 acts a frame, then state `$40` and the timer random OR `$29` (202 explosions end). Materialising (bit 6): MaterialiseFrames, then a random direction and the next kind (EnemyKind: 403). Flying: state 0 right and down, 1 left and down, 2 left and up, 3 right and up; a blocked step flips that half of the direction (StepRight / StepLeft and StepDown / StepUp, 2 x 2 cells, x up to `$F0`, y up to `$B0`). The next frame (49 bytes on) is shifted to x AND 7 in place (ShiftGraphic3), copied to the erase buffer and queued with the state as its flag byte, the mark 2 XORed in and the attributes set.
+In: HL the record, EnemyBufferPtrs. A record with timer 0 is empty. The timer counts down; at 0 it is 2 again and the enemy acts (L1 11 212 of 74 324 calls). Spawn (state `$40`): x and y from the 13 x 4 lattice (x Random OR `$20` AND `$F8`, `$E0-$F8` clamped to `$D0`; y Random OR `$50` AND `$78`) until the 2 x 2 cells are 0 (720 tries, 581 spawns), the attribute Random AND 7 OR `$42` (`$42`, `$43`, `$46` or `$47`). Each act: the old frame (the draw buffer) is queued to erase and the mark 2 XORed out. Hit (state bit 7): ExplosionFrames, one explosion frame an act (the state steps by 4); the mark is not XORed back, so the cells hold 2 only after the 2nd and 4th act; then state `$40` and the timer random OR `$29` (202 explosions end). Materialising (bit 6): MaterialiseFrames, the mark XORed again (2 x 2), so the cells stay clean; then a random direction and the next kind (EnemyKind: 403). Flying: state 0 right and down, 1 left and down, 2 left and up, 3 right and up; a blocked step flips that half of the direction (StepRight / StepLeft and StepDown / StepUp, 2 x 2 cells, x up to `$F0`, y up to `$B0`). The next frame (49 bytes on) is shifted to x AND 7 in place (ShiftGraphic3), copied to the erase buffer and queued with the state as its flag byte, the mark 2 XORed in and the attributes set.
 
 Witness: L1 74 324 calls, 7 790 flights, 1 071 explosion steps, 2 352 materialise steps.
 
@@ -1334,7 +1334,7 @@ Erase it (DrawPatroller) when it was drawn and is in the room; clear bit 7; Patr
 
 **Advance the frame; every fourth a column, round the ends**
 
-+0 the frame 0-3; at 4: a column right (y bit 0 clear) or left; past column `$1D` (or 0) into the next room (+3 + 1 or - 1); at the right end (room +4, column +5) or the left end (+6, +7) it turns (bit 0 of y flips) and steps back. L1 18 583, 4 630 steps, 102 + 72 room changes, 28 + 28 turns.
++0 the frame 0-3; at 4: a column right (y bit 0 clear) or left; past column `$1C` (or below 0) into the next room (+3 + 1 or - 1) at column 0 (or `$1C`); at the right end (room +4, column +5) or the left end (+6, +7) it turns (bit 0 of y flips) and steps back. L1 18 583, 4 630 steps, 102 + 72 room changes, 28 + 28 turns.
 
 | | |
 | --- | --- |

@@ -309,10 +309,11 @@ ClearScreen:
 ; Count the energy down one every EnergyTimer interrupts
 ;
 ; Every interrupt (L1 54 825). When EnergyTimer reaches 0 it reloads from
-; EnergyReload ($FA: 5 s a step; $0A under the shield or after an enemy's
-; touch: 0.2 s), Energy - 1 (BCD) printed at $4088; at 11 the message WARNING
-; ENERGY LOW. EnergyTimer 0 stops it (the win and the game over set it to 0).
-; L1 378 steps.
+; EnergyReload ($FA: 5 s a step; $0A under the shield, 0.2 s; after an enemy's
+; touch each touching pass sets EnergyTimer back to 10, so the 5 fast steps
+; come 10-50 interrupts after the last touch), Energy - 1 (BCD) printed at
+; $4088; at 11 the message WARNING ENERGY LOW. EnergyTimer 0 stops it (the win
+; and the game over set it to 0). L1 378 steps.
 EnergyTick:
   XOR A
   LD HL,EnergyTimer

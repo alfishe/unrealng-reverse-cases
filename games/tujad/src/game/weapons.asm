@@ -415,7 +415,8 @@ MoveShot3ExplodeDraw:
   LD (SpriteListEnd),DE
   RET
 
-; Weapons 1 and 2: a 2 x 1 bolt 4 pixels a pass to a wall or the edge
+; Weapons 1 and 2: a 2 x 1 bolt 4 pixels a call (8 a pass: MoveShot runs twice)
+; to a wall or the edge
 ;
 ; The old image erased and its ShotMark XORed out; x - 4 or + 4 (to 0 or $F8);
 ; a wall or item cell under the new place ends it (KeyLatches bit 6 set: fire
@@ -877,7 +878,8 @@ FireRefusedPop:
   POP BC
   JR FireRefused
 
-; Weapon 0: the dash 8 pixels a pass until it hits ink, a wall or the edge
+; Weapon 0: the dash 8 pixels a call (16 a pass) until it hits ink, a wall or
+; the edge
 ;
 ; The old image erased; when the interrupt found ink under it (Shot bit 7) it
 ; ends; else x - 8 or + 8 (to 0 or $F8), and a wall or item cell ends it. A new

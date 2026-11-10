@@ -237,8 +237,8 @@ ExhaustRowLeftDone:
 
 ; ExhaustRaw's four rows into ExhaustRows, masked by the droid's frame
 ;
-; Frame 12 (the front) takes ExhaustMasks + 2 ($0F, $F0), the others $65D6. L1
-; 18 572.
+; Frame 12 (DroidFly2, in the air) takes ExhaustMasks + 2 ($0F, $F0), every
+; other frame $65D6. L1 18 572.
 ExhaustMask:
   LD A,(DroidFrame)
   LD HL,ExhaustMasks

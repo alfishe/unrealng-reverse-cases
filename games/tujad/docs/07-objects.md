@@ -37,7 +37,7 @@ RZX frame: `rzx-010000` frame 1450 is RZX frame 11 450.
 Two clocks drive the movers. A pass is one turn of `MainLoop $6911` and takes about two frames ([Terms](README.md#terms),
 [doc 04](04-game-loop.md)). An enemy and an object act on every second call, so about every fourth frame.
 A patroller turns once in three passes and moves a column every four turns. The droid acts every second pass, and every
-pass while it falls.
+pass while it is in the air.
 
 ## 7.1 The records and their flow
 
@@ -348,8 +348,8 @@ are never play cells.
 | `$00` | empty | DrawRoom |
 | `$01` | a wall (the room's attribute there is not 0) | DrawRoom `$6D8C` |
 | `$80-$C3` | an item, its kind on its 2 x 2 cells | DrawItem `$6E0D` |
-| `$FF $FF` | the two top cells of a teleporter | DrawRoom `$6DE3` |
-| XOR 2 | an enemy covers the cell | MoveEnemy through XorCells `$7D87` |
+| `$FF $FF` | a teleporter: two cells at columns +1 and +2 of its position, two rows below it (CellTable + `$40`); nothing is drawn | DrawRoom `$6DE3` |
+| XOR 2 | an enemy covers the cell (flying; while it explodes, only after every second act, 7.6) | MoveEnemy through XorCells `$7D87` |
 | XOR 4 | an object covers the cell | MoveObject |
 | XOR 8 | a patroller covers the cell | DrawPatroller `$942D` |
 | XOR `$40`, `$20` | a bolt of weapon 1 or 2 flies over the cell | MoveShotStraight through XorCells |
@@ -357,18 +357,18 @@ are never play cells.
 | OR `$41`, `$21`, `$11` | a shot of weapon 1, 2 or 3 hit an object there: one cell with bit 2 | MoveShotStraightHit `$8575`, MoveShot3Hit `$843E` |
 
 A mover XORs its mark in when it draws and XORs it out when it erases. Two movers on the same cell leave both bits. A
-flying shot's mark (`$40`, `$20`, `$10`) has no bit 0, so MoveObject takes it for no hit. The droid's touch test takes
-any bit but bit 1 for a hazard, so by the code a probe steered onto the droid would call HazardDeath; no recording does
-it (7.13). A
-mover covers 2 x 2 cells (an enemy) or 3 x 3 (an object), one more column when x is not a multiple of 8 and one more row
-when y is not. The droid has no mark. It reads the cells instead: the touch test ORs the cells under it into
-`TouchBits $63C3` (7.11).
+flying shot's mark (`$40`, `$20`, `$10`) has no bit 0, so MoveObject takes it for no hit. OrCells `$7DAE` skips every
+cell with bit 7 set (`$7DB2 BIT 7,A`), so the item cells and the teleporter's `$FF` cells never count in TouchBits or
+ObjectBits; a wall cell (1) does. The droid's touch test takes any bit but bit 1 for a hazard, so by the code a probe
+steered onto the droid would call HazardDeath; no recording does it (7.13). A mover covers 2 x 2 cells (an enemy) or 3 x
+3 (an object), one more column when x is not a multiple of 8 and one more row when y is not. The droid has no mark. It
+reads the cells instead: the touch test ORs the cells under it into `TouchBits $63C3` (7.11).
 
 ```mermaid
 flowchart TD
     C[a cell byte] --> W{bit 7?}
     W -- yes --> I{FF?}
-    I -- yes --> TP[teleporter top]
+    I -- yes --> TP[teleporter: columns +1 and +2]
     I -- no --> IT[an item: its kind]
     W -- no --> X{value 1?}
     X -- yes --> WL[a wall: the only blocking value]
@@ -545,9 +545,9 @@ flowchart TD
     W -- no --> ER
     SP --> ER[erase: the old frame queued with flag pointer 0; mark 2 XORed out]
     ER --> H{state bit 7?}
-    H -- yes --> EX[explode: state + 4; ExplosionFrames]
+    H -- yes --> EX[explode: state + 4; ExplosionFrames; mark 2 not put back: it toggles per act]
     H -- no --> M{bit 6?}
-    M -- yes --> MA[materialise: state + 4; MaterialiseFrames]
+    M -- yes --> MA[materialise: state + 4; MaterialiseFrames; mark 2 XORed again, 2 x 2: cells clean]
     M -- no --> FL[fly: FoundItem = 0; the horizontal step, then the vertical]
     FL --> DR[next frame shifted to x AND 7; queued with the state as its flag byte]
     DR --> MK[mark 2 XORed in; the attributes set]
@@ -582,6 +582,35 @@ pointer 0. The explosion and materialise frames copy the erase entry's pointer, 
 appears or explodes. The explosion frame comes from `state AND $FC`, so the direction bits left in the state after the
 hit do not matter.
 
+The mark follows the act, not the state. The erase at `$9199-$91AE` XORs mark 2 out on every act, before the state
+branch, but only flight (`$928D`) and the materialise frame (`$935D-$9360`, a fixed 2 x 2 block) XOR it again; the
+explosion frame `$92C2` and its end at `$92AC` never do, and the last materialise act (`$54`, MoveEnemyQueue) does
+not either. So:
+
+- while it flies, the mark is out and in again within the act: the cells hold 2;
+- while it explodes, each act toggles the mark: the cells are clean after the first, third and fifth explosion act
+  (`$84-$87`, `$8C-$8F`, the end) and hold 2 after the second and fourth (`$88-$8B`, `$90-$93`);
+- while it materialises, erase and materialise cancel: the cells stay clean, and the act that reaches `$54` leaves
+  the mark in for the flight.
+
+By the code, an exploding enemy can therefore still restart the droid's touch drain and block a spawn test on every
+second act, and a materialising enemy is invisible to both (the spawn test reads only the cells, 7.7). No recording
+shows an explosion on the droid.
+
+Witness, `rzx-010000` enemy 1 (record `$630C`), the cell table under it at the start of each frame (sampled for this
+review with `work/docs/tjC/sample.py`, range `$6000-$63FF`):
+
+| Frames | State | x, y | Its four cells |
+| --- | --- | --- | --- |
+| 1147-1163 | `$44`, `$48`, `$4C`, `$50` | 168, 120 | `00 00 00 00` |
+| 1164 | `$03` | 168, 120 | `02 02 02 02` |
+| 1240-1243 | `$83` | 200, 88 | `02 02 02 02` |
+| 1244-1247 | `$87` | 200, 88 | `00 00 00 00` |
+| 1248-1252 | `$8B` | 200, 88 | `02 02 02 02` |
+| 1253-1256 | `$8F` | 200, 88 | `00 00 00 00` |
+| 1257-1261 | `$93` | 200, 88 | `02 02 02 02` |
+| 1262 | `$40` | 200, 88 | `00 00 00 00` |
+
 Worked example, `rzx-010000` room 58, enemy 1 (the sample frames where its state changed):
 
 | Frame | Timer | State | x, y | What happened |
@@ -594,7 +623,7 @@ Worked example, `rzx-010000` room 58, enemy 1 (the sample frames where its state
 | 1244-1257 | 2 | `$87`, `$8B`, `$8F`, `$93` | 200, 88 | exploding |
 | 1262 | `$7F` | `$40` | 200, 88 | waiting 127 calls |
 
-Enemy 3 spawned in the same act at (96, 120) and took direction 3 too (frame 1165). In frame 1169 its state is 2: the
+Enemy 3 spawned in the same pass at (96, 120) and took direction 3 too (frame 1165). In frame 1169 its state is 2: the
 step right was blocked at x 96. It flipped down at a wall above it (state 1 in frame 1297, at y 64) and right at the left edge
 (state 0 in frame 1380, at x 0). Enemy 1 spawned again in frame 1532 (state `$44` in the sample of frame 1533) at
 (208, 112): x `$D0`, the clamp column of 7.7.
@@ -695,8 +724,10 @@ How to read the figure:
 - Command: `python3 tools/fig_objects.py spawns --log work/stage1/rzx/frames.bin --out docs/img/objects/spawns.png`.
 
 **The point**: the enemies only ever appear with their tops at y 80, 88, 112 or 120. Their 16-pixel sprites then cover
-y 80-103 and y 112-135; the rows 104-111 between them, and three bands of columns, never see an enemy appear. The droid puts no mark in the cell table, so an
-enemy can materialise on it (7.6). A player who stands outside the band never has an enemy materialise on top of him. The lattice comes from cheap bit masks,
+y 80-103 and y 112-135, and x `$20-$47`, `$60-$87`, `$A0-$C7` and `$D0-$DF`. The rows 104-111 between them, and five
+bands of columns, x `$00-$1F`, `$48-$5F`, `$88-$9F`, `$C8-$CF` and `$E0-$FF`, never see an enemy appear. The droid puts
+no mark in the cell table, so an enemy can materialise on it (7.6). A player who stands outside the covered rows and
+columns never has an enemy materialise on top of him. The lattice comes from cheap bit masks,
 not from a design.
 
 ## 7.8 The objects: record and state machine
@@ -832,9 +863,9 @@ Worked example, `rzx-010000` room 58, object 1 (kind bit 5, kill mark `$20`). Th
 | 1452 | `$22` | `$03` | 124, 90 | the droid fired in frame 1451: Shot `$41`, weapon 2's ammunition 5 to 4 |
 | 1458 | `$21` | `$03` | 124, 88 | the bolt met the object's ink in frame 1457: Shot 0, the mark `$21` in a cell |
 | 1460 | `$22` | `$87` | 124, 88 | the mark `$21` found: its weapon; SET 7 and the first death frame |
-| 1466, 1472 | | `$8B`, `$8F` | 124, 88 | the second and third death frames |
-| 1475 | `$22` | `$13` | 124, 88 | dead: bit 4, direction 3 kept, BlankGraphic |
-| 1890 | `$22` | `$53` | 124, 88 | the ED pickup saved it: bit 6 added |
+| 1465, 1470 | `$22` | `$8B`, `$8F` | 124, 88 | the second and third death frames |
+| 1474 | `$22` | `$13` | 124, 88 | dead: bit 4, direction 3 kept, BlankGraphic |
+| 1887 | `$00` | `$53` | 124, 88 | the ED pickup saved it: bit 6 added (+0 reads `$22` again from 1888) |
 
 At RZX frame 12 000 the record in the alien map still reads state `$53` (7.2).
 
@@ -886,9 +917,12 @@ Three patrollers walk fixed rows of the world through several rooms, whether the
 
 "End to end" counts the column steps from one end column to the other (29 columns a room). An end column itself is
 never stood on: the step that reaches it turns the patroller and steps it back in the same call. So it walks the
-columns strictly between the ends, and moves one fewer than that between two turns. The last column is the RZX log's
-count: every turn of each patroller is 82, 123 or 59 column changes after the one before (P2's first, from its
-start column `$1B`, is 124).
+columns strictly between the ends, and moves one fewer than that between two turns. The one exception is the start:
+the image puts each patroller on its left end column, facing right (byte +2 = byte +7, +3 = +6: P1 `00 98 13 78 7B 10
+78 13`, P2 `00 90 1B 00 05 07 00 1B`, P3 `00 98 16 6B 6D 19 6B 16`), so its first leg is one move longer. The last
+column is the RZX log's count: the first legs are 83, 124 and 60 column changes, every later leg 82, 123 or 59. The log
+shows a second 124 for P2 only because one sample caught the room change in the middle: RZX frame 8 486 holds room 3,
+column `$FF`, frame 8 487 room 2, column 28.
 
 `MovePatrollers $6AAD` moves one patroller per pass, in turn (`PatrollerTurn $6373` 0-2). `MovePatroller $93A6`:
 
@@ -984,8 +1018,8 @@ elsewhere, so the player cannot know where one is until he enters its room.
 | --- | --- | --- |
 | `$6359` | x | the column 0-`$1D` |
 | `$635A` DroidY | y | the pixel row `$30-$98`, in steps of 2 |
-| `$635B` DroidFlags | flags | bit 0 facing left; 1 turning; 2 falling; 3 moving; 4 the shield (doc 10.3); 6 the step frame; 7 the sprite met ink |
-| `$635C` DroidFrame | frame | 0-13 (DroidFrames `$6888`): walk, front 8, turn, fall, beam |
+| `$635B` DroidFlags | flags | bit 0 facing left; 1 turning; 2 in the air (no wall under the feet); 3 moving; 4 the shield (doc 10.3); 6 the step frame; 7 the sprite met ink |
+| `$635C` DroidFrame | frame | 0-13 (DroidFrames `$6888`): 0-7 the walk; 8 and 9 the turn (8 is also the standing side view); 10 the front, also the beam; 11-13 in the air (13 is in the table, but the code never leaves it on screen) |
 | `$635D` DroidWidth | width | the frame's width in bytes, 2 or 3 |
 
 The droid's current graphic is kept apart, in `DroidGraphic $6378`; MoveDroid's erase copies the old image from it.
@@ -1048,7 +1082,8 @@ room 84 and for a room the droid dies in.
 
 Worked example, `rzx-035000`:
 
-- the droid walks south from room 109 into room 117 in frame 214 and stands at x 4, y 50 (the exit's y `$32`);
+- the droid flies down from room 109 into room 117 in frame 214 and arrives at x 4, y 50 (the exit's y `$32`),
+  in the air (DroidFlags `$4C` in the samples of frames 225-248);
 - the 33-frame wipe ends, and object 1 of room 117 (kind none, at x 32, y 72) takes its draw-only act; its state is
   `$00` in the sample of frame 248;
 - in frame 250 DroidFlags reads `$C4`: bit 7, the sprite met ink;
@@ -1197,13 +1232,15 @@ flowchart LR
 
 The first ADC adds the carry flag as the caller left it, so the same seed can give two results.
 
-Its callers among the movers:
+Its nine call sites:
 
-- the spawn: x, y and the attribute, again for every retry;
-- the materialised enemy's direction;
-- the wait after an explosion (`OR $29`).
-
-NewGame takes one value for the count of ScrambleRooms calls (doc 10.9). The exhaust flicker uses it too (doc 06).
+- the spawn: x (`$911B`), y (`$9129`) and the attribute (`$9150`), x and y again for every retry;
+- the materialised enemy's direction (`$931B`, AND 3);
+- the wait after an explosion (`$92AF`, `OR $29`);
+- the menu: `MenuPoll $893B` calls it once a loop while it waits for a key, so the seed, and with it the deal, depends
+  on how long the menu waits;
+- NewGame: one value for the count of ScrambleRooms calls (`$7A35`, doc 10.9);
+- the exhaust flicker (`$8EAC`, `$8EBD`, doc 06).
 
 Worked example: enemy 1's explosion in `rzx-010000` ended in frame 1261; the sample of frame 1262 has the timer `$7F`.
 `$7F` is a Random value ORed with `$29`. `$29` sets bits 0, 3 and 5, and `$7F` has them. MoveEnemy runs once a pass and
@@ -1231,8 +1268,8 @@ What no recording shows, and why it is still stated:
 - **An object's FoundItem.** MoveObject never clears FoundItem. An object meeting an item square on would stall the
   same way an enemy does (7.5), and an object could inherit a stale FoundItem from the enemies' last act. No recording
   was searched for an object stalled this way.
-- **A teleporter as an item to the movers.** `$FF` has bit 7, so an enemy flying into a teleporter's top cells stalls as
-  at an item. The droid's pickup ignores `$FF`.
+- **A teleporter as an item to the movers.** `$FF` has bit 7, so an enemy flying into a teleporter's two `$FF` cells
+  stalls as at an item. The droid's pickup ignores `$FF`.
 - **The corner flip.** The vertical half wins when both steps are blocked (7.6); the samples of `rzx-010000` show only
   single flips.
 - **A flying shot's mark under the droid.** A bolt XORs `$40` or `$20`, the probe `$10`, into the cells it flies over

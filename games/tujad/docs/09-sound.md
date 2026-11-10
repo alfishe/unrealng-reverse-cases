@@ -209,8 +209,8 @@ apart (the PassTick panel above).
 
 Witness: PassTick ran once a pass in `menu-cursor`. Of the 434 intervals between its calls, 432 were 2 frames and one
 was 3 (frames 606-609). The last one was 199 frames (225-424): the progress screen after the ED piece of frame 227,
-which holds the main loop. The `.ann` calls the delay "a pitch from a running sum"; the listing shows a constant (sent
-to the lead, 9.13).
+which holds the main loop. The listing shows a constant delay, as the `.ann` now says (an earlier text spoke of "a pitch
+from a running sum"; corrected, 9.13).
 
 The point: the tick is the sound of the main loop itself. A slow pass (3 frames) is heard as a late tick.
 
@@ -221,7 +221,7 @@ PrintBcd `$7B3F` prints a BCD byte as two digits. Before the first digit it runs
 write the same one. So the speaker moves once a pass, 42 T apart: 18 T from the first `OUT` to the second, 24 T back.
 That is 50 edges of a 41.7 kHz square wave, 2100 T, 0.6 ms: a click, too high to be a tone.
 
-The second digit has no click. The `.ann` says "with a click each"; the listing shows one click per number.
+The second digit has no click: one click per number, as the `.ann` now says ("after one click").
 
 ```text
 PrintBcd(A byte, HL screen):
@@ -485,9 +485,7 @@ more than the model; the RiseSweeps 407 239 to 411 434 T, 5.9 frames. The first 
 Witness: all 18 RiseSweeps and 26 FallSweeps traced (18 in `r30`, 8 in `energy-out`) wrote 220 and 256 times. No
 interrupt was entered inside any of them.
 
-The point: RiseSweep is only heard in the teleport. FallSweep is the sound of both the death and the teleport. The
-WALKTHROUGH's sound table names `$7F61` "a rising sweep" and `$7F51` "a falling sweep": the other way round (sent to the
-lead).
+The point: RiseSweep is only heard in the teleport. FallSweep `$7F5D` is the sound of both the death and the teleport.
 
 ## 9.8 DeathEffect
 
@@ -774,6 +772,5 @@ python3 tools/fig_sound.py waves      # docs/img/sound/waves.png
     earlier version kept H from pass to pass (a hum that changes pitch) cannot be known from this build.
   - The ammunition clicks when a weapon fires (FireWeapon1Ammo `$86EC`, FireWeapon2Ammo `$873A`, FireWeapon3Cell
     `$8693`) were not in the traced windows. The loop is the same.
-- **Sent to the lead** (`work/docs/tjD-src-changes.md`): the `.ann` of PrintBcd ("a click each": one click per number)
-  and of PassTick ("a pitch from a running sum": a constant), and the WALKTHROUGH's sound table (the rising and the
-  falling sweep swapped).
+- **Corrected at the integration** (once listed in `work/docs/tjD-src-changes.md`): the `.ann` of PrintBcd (one click
+  per number) and of PassTick (a constant), and the WALKTHROUGH's sound table (the rising and the falling sweep).

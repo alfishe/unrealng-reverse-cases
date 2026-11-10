@@ -74,8 +74,8 @@ stateDiagram-v2
 | --- | --- | --- | --- | --- |
 | Setup | Setup `$68F3` | the stub's `JP $6300` | at once | `c1` frame 13580 (`$6300` executed) |
 | Menu | Restart `$6900`, Menu `$8854` | Setup, a game over, a win | 0 is pressed | `c1` 13586-14230; MenuPoll `$893B` runs with interrupts off and calls Random `$7DC9` |
-| Play | MainLoop `$6911` | Restart's `EI` (`$6910`) | the energy test, a hazard or the win test | `c1`: the first interrupt at 14297 |
-| Life lost | EnergyOut `$6A30` → LoseLife `$6A3C`; HazardDeath `$6992` → LoseLife | MainLoop, MoveDroid | at once | `energy-out` frames 1550-1600 (lives 5 to 4, energy back to 99); `rzx-035000` 200-250 (a hazard) |
+| Play | MainLoop `$6911` | Restart's `EI` (`$6910`); the first interrupts come earlier, inside NewGame's DrawRoom (`EI` `$6B2D` to `DI` `$6E0B`) | the energy test, a hazard or the win test | `c1` (`probe_frames`): `$6B2D` in 14296, the first interrupt in 14297, `$6E0B` and `$6910` in 14306 |
+| Life lost | EnergyOut `$6A30` → LoseLife `$6A3C`; HazardDeath `$6992` → LoseLife | MainLoop, MoveDroid | at once | `energy-out` frame 1570 (lives 5 to 4, energy back to 99, printed at 1634 after DeathEffect); `rzx-035000` frame 250 (a hazard) |
 | Game over | LoseLifeGameOver `$6A83`, GameOverWait `$6AA3` | LoseLife with Lives = `$99` | 512 HALTs | `game-over`: lives `$99` by frame 400, the 0 % screen 450-950, the menu from about 975 |
 | EDs done | WinTest `$69E3` | MainLoop | at once, once | the RZX log: EDS COMPLETED queued at RZX frame 71 845, room 28 |
 | Win | WinTestRoom `$69F9`, WinWait `$6A26` | WinTest in room `$54` | 512 HALTs | `win`: 495 HALTs at `$6A26`, then `JP Restart`, the menu at its frame 497 |
@@ -223,7 +223,8 @@ screen on the left; the memory grid `$6000-$FFFF` on the right, a dot for each b
 the strip shows whether the PC is inside MainLoop and WaitFrame (`$6911-$698F`, `$795D-$7975`) or elsewhere (the
 routines it calls and the interrupt). The long still stretches are the two HALTs. Made with
 `python3 ../../kit/routine_anim.py --work work/docs/tjA/r102 --window 41:37800-43:57600 --listing build/game.lst
---out docs/img/routines/MainLoop.gif --view screen --pc 6911-698F,795D-7975 --range 6000-FFFF --pictures 80`.*
+--out docs/img/routines/MainLoop.gif --view screen --pc 6911-698F,795D-7975 --range 6000-FFFF --pictures 80`, plus
+`--title 'MainLoop $6911: one light pass'`.*
 
 **The point**: the droid half is long and steady (about 30 000 T); the movers half is short unless an enemy is being
 shifted. Each half's drawing waits for the next interrupt, so the player always sees the last half finished.
@@ -305,7 +306,7 @@ InterruptScroll:                ; $9640: every 5 interrupts (15 after a text row
   JP NZ,InterruptTimers
   ...                           ; 31 lines x 19 bytes moved up, a new pixel row of 19 characters
 InterruptTimers:                ; $96E7
-  CALL WeaponSelect             ; $7976: SPACE
+  CALL WeaponSelect             ; $7976: SPACE or CAPS SHIFT
   CALL EnergyTick               ; $7AB6: the energy clock
   CALL DrainTimer               ; $7906: the fast drain's timer
   CALL KEYBOARD                 ; $02BF, the ROM's
@@ -354,7 +355,8 @@ the CPU. The profile agrees: the interrupt takes 33.73 % of `room-102` and 24.44
 the PC inside the handler and ReadControls (`$95D0-$96FD`, `$7161-$7207`). In frame 240 the handler XORs the
 enemies, then scrolls the panel at the top for about 27 000 T; in frame 242 it XORs the droid. Made with
 `python3 ../../kit/routine_anim.py --work work/docs/tjA/r102 --window 239:50000-242:38000 --listing build/game.lst
---out docs/img/routines/Interrupt.gif --view screen --pc 95D0-96FD,7161-7207 --range 6000-FFFF --pictures 90`.*
+--out docs/img/routines/Interrupt.gif --view screen --pc 95D0-96FD,7161-7207 --range 6000-FFFF --pictures 90`, plus
+`--title 'Interrupt $95D0: the heaviest pass'`.*
 
 **The point**: the handler is the game's renderer. Its cost swings from 1324 T to over 60 000 T. That swing, not the
 main loop, decides whether a pass takes two interrupts or three.
@@ -567,10 +569,19 @@ three. The renderer's timing is safe for the droid, which is drawn ahead of the 
 | Delay | Code | How it counts | Length | Witness |
 | --- | --- | --- | --- | --- |
 | WinDelay | `$6A19`, BC = `$FDE8` | `DEC BC; LD A,B; OR C; JR NZ`: 26 T a count, interrupts off | 65 000 x 26 = 1 690 000 T, 0.48 s | known only from the code (the RZX playback ran it; no L1 holds it) |
-| the win's wait | WinWait `$6A26` | 512 HALTs (B = 0, so DJNZ runs 256 times; C = 2) | 512 interrupts, 10.24 s | `win`: 495 HALTs, then the menu at its frame 497 |
+| the win's wait | WinWait `$6A26` | 512 HALTs (B = 0, so DJNZ runs 256 times; C = 2) | 512 interrupts, 10.24 s | `win`: 495 HALTs, then the menu at its frame 497 ([animation](img/play/win-congratulations.gif), doc 8.11) |
 | the game over's wait | GameOverWait `$6AA3` | the same | 10.24 s | `game-over` frames 450-975; L1 512 |
-| the ED flash | ProgressScreen `$8F53` | the new piece's colour toggled 9 times (`XOR $03`, B = 9), a `$C350` delay each (1.3 million T, 167 frames for the nine), interrupts on, so each handler adds its time | about 184 frames, 3.7 s: the toggles 20.4 frames apart | `menu-cursor` ([doc 8.10](08-hud-and-text.md#810-the-progress-screen)); `c1` 14700 |
+| the ED flash | ProgressScreen `$8F53` | the new piece's colour written 9 times, `$67` and `$64` in turn (`XOR $03`, B = 9; the first repeats the drawn `$67`, `$64` hides the tile: it blinks out 4 times), a `$C350` delay after each (1.3 million T, 167 frames for the nine), interrupts on, so each handler adds its time | about 184 frames, 3.7 s: the writes 20.4 frames apart | `menu-cursor` ([doc 8.10](08-hud-and-text.md#810-the-progress-screen)); `c1` 14700 |
 | the teleport | Teleport `$7719`, TeleportArrive `$780D` | a HALT, BeamDown, TeleportFlash, DrawRoom, BeamDown, a HALT, BeamUp | about 500 frames, 10 s: the first beam 131 frames, the flash 249, the arrival beam 104 | `rzx-030000` frames 117-615 ([doc 9.9](09-sound.md#99-the-teleport)); `rzx-007000` agrees (about 725-1210) |
+
+![A new piece on the progress screen: menu-cursor frames 224-420](img/play/progress-flash.gif)
+
+*The ED flash, the screen of `menu-cursor` from frame 224 to 420, one picture each 4 frames, each the screen at its
+frame's start (doc 8.10). Command: `python3 ../../kit/screen_anim.py --work work/docs/tjD/menu-cursor --from 224 --to
+420 --step 4 --scale 4 --delay 120 docs/img/play/progress-flash.gif`. How to read: the droid takes piece 37 at frame
+225; the picture appears with its one tile at column 7, row 1, which goes plain green and back 4 times, about 20 frames
+apart, while the panel keeps scrolling (the handler runs between the delay's counts); the room is back at frame 424.
+The point: ProgressScreen holds the main loop for about 184 frames at every ED piece, and only the interrupt moves.*
 
 ```text
 win_test():

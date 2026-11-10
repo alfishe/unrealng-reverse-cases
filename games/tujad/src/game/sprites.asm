@@ -8,18 +8,18 @@
 ; shift byte in the image is 0 (the frames as drawn).
 ; --------------------------------------------------------------------------------------------------------------------
 
-; The droid's 14 frames, 40 rows each: frames 0-9 and 11-13 3 bytes wide, frame
-; 10 2 bytes wide
+; The droid's 14 frames, 40 rows each: frames 0-7 and 11-13 3 bytes wide,
+; frames 8-10 (the turn and the front) 2 bytes
 ;
 ; DroidFrames $6888 points at each frame, DroidWidths $68A4 gives its width:
 ; 0-7 the walk (3 bytes, 120 each), 8 and 9 the turn-round (2 bytes), 10 the
-; front, also the teleport beam (2 bytes, DroidFront), 11-13 the side move
-; while falling (3 bytes). TurnRound $7866 mirrors $9C40-$A4AF in place (480 +
-; 480 + 160 + 480 + 480 = 2 080 bytes), all but DroidFront, so the image holds
-; the right-facing set and play turns it; PlaceDroid $7A6D reads DroidGraphics
-; + 4 ($70 in the right-facing set) to know which way the frames face. L1: all
-; 1 560 bytes read (3 586 417 reads), 1 480 written (127 784 writes: the
-; mirroring; DroidFront's 80 bytes never).
+; front, also the teleport beam (2 bytes, DroidFront), 11-13 the droid in the
+; air (3 bytes; 13 never stays on screen). TurnRound $7866 mirrors $9C40-$A4AF
+; in place (480 + 480 + 160 + 480 + 480 = 2 080 bytes), all but DroidFront, so
+; the image holds the right-facing set and play turns it; PlaceDroid $7A6D
+; reads DroidGraphics + 4 ($70 in the right-facing set) to know which way the
+; frames face. L1: all 1 560 bytes read (3 586 417 reads), 1 480 written (127
+; 784 writes: the mirroring; DroidFront's 80 bytes never).
 DroidGraphics:
   INCBIN "res/sprites/Droid.bin",$0000,120
 DroidWalk1:

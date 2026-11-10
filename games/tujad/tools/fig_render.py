@@ -99,9 +99,9 @@ def bitmap(data, width, rows, scale, ink=(235, 235, 235), paper=(0, 0, 0), grid=
 
 SHEETS = [
     ('Droid.png', 'Droid $9C40-$A257: 14 frames of 40 rows', 'MoveDroid $7208, TurnRound $7866 (mirrored in place)', 3),
-    ('Probe.png', 'Probe $AF85-$B048: 4 frames, shift byte + 16 x 3', 'MoveShot3 $82AA, ShiftGraphic3', 3),
+    ('Probe.png', 'Probe $AF85-$B048: 4 frames, shift byte + 16 x 3', 'MoveShot3 $82AA, ShiftGraphic3 ($83E5)', 3),
     ('Enemies.png', 'Enemies $A74E-$AEC4: 9 kinds + explosion', 'MoveEnemy $90E7, ShiftGraphic3 (in place)', 3),
-    ('Objects.png', 'Objects $B049-$B901: 5 kinds, death, probe blast', 'MoveObject $809D, ShiftGraphic4 (in place)', 3),
+    ('Objects.png', 'Objects $B049-$B901: 5 kinds, death, probe blast', 'MoveObject, ShiftGraphic4; blast: ShiftGraphic3', 3),
     ('Patrollers.png', 'Patrollers $B902-$BC01: right, left', 'MovePatrollers $6AAD, never shifted', 2),
     ('Materialise.png', 'Materialise $AEC5-$AF84', 'MoveEnemy, never shifted', 2),
     ('ShotGraphics.png', 'Shots $8814-$8853: weapons 1, 2', 'MoveShot $8298', 3),

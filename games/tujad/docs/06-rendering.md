@@ -91,7 +91,7 @@ Who calls it, with which mode:
 | Caller | A | Why |
 | --- | --- | --- |
 | the four exits of MoveDroid (`$7418`, `$748C`, `$74D6`, `$7527`) | 0 | walking out of a room: the wipe |
-| Teleport `$77A8` | the target room | the beam: a clear (a wipe only for room 0) |
+| Teleport `$77A8` | the target room | the beam: a clear (DrawMode = the target room; a wipe would need room 0, and no teleporter leads there) |
 | the ED pickup `$7715` | `$FF` | after the progress screen: a clear |
 | LoseLife `$6A7F` | `$FF` | a new life: a clear |
 | NewGame `$7A69` | `$FF` | the first room: a clear |
@@ -235,8 +235,8 @@ while the room changes.
 
 ## 6.3 The layout triples, the tiles and the clip
 
-A room is a list of tiles. RoomLayouts `$BD06` starts with 102 words, one per room: the offset of its list from
-`$BD06`. The list holds (column, row, tile) triples. A column byte with bit 7 ends it.
+A room is a list of tiles. RoomLayouts `$BD06` starts with 128 words, one per room number 0-127 (`$BD06-$BE05`): the
+offset of its list from `$BD06`. 102 are real rooms; the other 26 share the empty list at `$DB52`. The list holds (column, row, tile) triples. A column byte with bit 7 ends it.
 
 A tile has two parts:
 
@@ -433,7 +433,7 @@ the teleporter are written over it (doc 07, 7.4).
 DrawRoomCells:                                 ; $6D8C
     for n in 0..575: CellTable[n] = 1 if attribute[$58C0 + n] != 0 else 0
     item 1, item 2: ItemCell, DrawItem when the kind has bit 7
-    teleporter: $FF $FF in its top cells, TeleportColumn, TeleportRow
+    teleporter: CellTable[pos + $40 + 1], [pos + $40 + 2] = $FF (columns +1 and +2, two rows below); TeleportColumn, TeleportRow
 ```
 
 ```mermaid
@@ -672,8 +672,10 @@ game shifts each frame in place to the wanted offset, and records the offset in 
   - if (HL) = A it returns at once;
   - otherwise it stores A and shifts the 48 bytes by A - old: right with SRL, RR, RR per row, or left with SLA, RL,
     RL, repeated for each pixel.
-- **ShiftGraphic4 `$7EFE`** does the same for the 4-byte, 24-row object frames (`$B049-$B901`: 21 frames of
-  97 bytes, then the probe's explosion, 4 frames of 49 bytes).
+  - it also shifts the probe's frames (`$AF85-$B048`, for MoveShot3 at `$83E5`) and the probe's explosion
+    (`$B83E-$B901`, 4 frames of 49 bytes, for MoveShot3's explode step at `$84A3`).
+- **ShiftGraphic4 `$7EFE`** does the same for the 4-byte, 24-row object frames (`$B049-$B83D`: 21 frames of
+  97 bytes), for MoveObject (`$81E5`, `$8271`).
 
 Because the frame itself moves, the list cannot point at it: the next MoveEnemy may shift it again before the
 interrupt draws (two enemies of a kind share the frames). So MoveEnemy copies each image into a buffer of its own.
@@ -948,10 +950,10 @@ Under the droid a flickering exhaust is drawn straight onto the screen, from the
   right, rows 2 and 4 one pixel left. A row whose counter runs out takes a new random pattern (ExhaustPick `$8EAC`:
   Random AND `$1C`, a life of 8-39 steps).
 - **ExhaustMask `$8F1B`** copies the four rows into the odd rows of ExhaustRows `$65E5` (8 rows of 3 bytes), the
-  edge bytes masked by the droid's frame (ExhaustMasks `$65D6`; the front frame has its own mask). The even rows stay
+  edge bytes masked by the droid's frame (ExhaustMasks `$65D6`; frame 12, DroidFly2 `$A168`, has its own mask, `$65D8`). The even rows stay
   0.
 - **DroidExhaust `$8DD2`** XORs the 8 rows under the droid: from five character rows below its top, one column on
-  when it faces left and walks. It skips a cell holding a wall (1) or an item (bit 7), and sets each cell it draws
+  when it faces left, is not turning and is not in frame 12 (`$8DD9-$8DEB`). It skips a cell holding a wall (1) or an item (bit 7), and sets each cell it draws
   in to `$45` (bright cyan). It steps from the cell to the attribute with `H XOR $38` (6.1). It clips at the bottom
   of the screen.
 - MainLoop calls DroidExhaust before MoveDroid (the erase) and after ExhaustStep (the draw). So the same bytes are
@@ -1152,8 +1154,9 @@ gives each one's address and readers.
 | Droid | `$9C40-$A257` | 14 frames of 40 rows, 2 or 3 bytes | MoveDroid | mirrored by the turn (6.6) |
 | Enemies | `$A74E-$AEC4` | 9 kinds of 3 or 4 frames, the explosion; 49 bytes each | MoveEnemy | ShiftGraphic3 (6.5) |
 | Materialise | `$AEC5-$AF84` | 4 frames of 3 x 16 | MoveEnemy | never |
-| Probe | `$AF85-$B048` | 4 frames, 49 bytes each | Fire, MoveShot | ShiftGraphic3 (`$83E5`, `$84A3`) |
-| Objects | `$B049-$B901` | 5 kinds and the deaths, 21 frames of 97 bytes; the probe's explosion, 4 frames of 49 bytes | MoveObject | ShiftGraphic4 |
+| Probe | `$AF85-$B048` | 4 frames, 49 bytes each | Fire, MoveShot | ShiftGraphic3 (`$83E5`) |
+| Objects | `$B049-$B83D` | 5 kinds and the deaths, 21 frames of 97 bytes | MoveObject | ShiftGraphic4 |
+| Probe explosion | `$B83E-$B901` | 4 frames of 49 bytes (in the Objects sheet) | MoveShot (explode) | ShiftGraphic3 (`$84A3`) |
 | Patrollers | `$B902-$BC01` | 2 x 4 frames of 4 x 24 | MovePatrollers | never |
 | ShotGraphics | `$8814-$8853` | the bolts of weapons 1 and 2, 2 x 8 | Fire, MoveShot | never |
 | HudIcons | `$8C55-$8D34` | 7 icons of 16 x 16 | Blit16 (doc 08) | never |
@@ -1330,8 +1333,8 @@ buffer. The scroller, copied wherever the interrupt reaches it, is the one pictu
 
 ## 6.12 What is known only from the code
 
-- **DrawMode for a teleport.** Teleport `$77A8` passes the target room in A, so the room is cleared, and it would be
-  wiped only for room 0. Which rooms the teleporters lead to is in doc 07.
+- **DrawMode for a teleport.** Teleport `$77A8` passes the target room in A, so the room is cleared; a wipe would need
+  room 0, and none of the 18 teleporter pads leads there (the 9 pairs, doc 07).
 - **Why the enemies need buffers.** The code shifts the shared frame in place and copies it before queuing it; the
   case of two enemies of one kind at different offsets in one pass is the reason by the code, not caught in a trace.
 - **ShiftGraphic3 left shifts.** The traces of 15009 show right shifts. The left branch (`$7EE3`) runs when an enemy

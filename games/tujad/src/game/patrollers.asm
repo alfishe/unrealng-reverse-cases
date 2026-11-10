@@ -45,9 +45,10 @@ MovePatrollerStep:
 ; Advance the frame; every fourth a column, round the ends
 ;
 ; +0 the frame 0-3; at 4: a column right (y bit 0 clear) or left; past column
-; $1D (or 0) into the next room (+3 + 1 or - 1); at the right end (room +4,
-; column +5) or the left end (+6, +7) it turns (bit 0 of y flips) and steps
-; back. L1 18 583, 4 630 steps, 102 + 72 room changes, 28 + 28 turns.
+; $1C (or below 0) into the next room (+3 + 1 or - 1) at column 0 (or $1C); at
+; the right end (room +4, column +5) or the left end (+6, +7) it turns (bit 0
+; of y flips) and steps back. L1 18 583, 4 630 steps, 102 + 72 room changes, 28
+; + 28 turns.
 PatrollerStep:
   INC (HL)
   LD A,$04

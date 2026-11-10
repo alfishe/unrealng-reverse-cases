@@ -171,7 +171,8 @@ python3 ../../kit/memanim.py --work work/docs/tjA/c1 --from 100:0 --to 13600:0 -
 frame 2907 until the setup clears it at the menu (`c1` 13580). It is `src/res/screen/LoadingScreen.png` in the
 source.*
 
-**The point**: the load is the ROM's own, three LD-BYTES calls from BASIC and one from the stub. The picture is the
+**The point**: the load is the ROM's own: four LD-BYTES calls from the ROM's LOAD (two for the typed `LOAD ""`, two
+for the line's `LOAD "" CODE`) and one from the stub. The picture is the
 only show, and it is hidden until its attributes land.
 
 ## 3.4 What loads is what runs
@@ -181,9 +182,9 @@ Three images, compared byte by byte (`work/stage1/imgdiff.py`, runs of differing
 
 | Compared | Differ | Where |
 | --- | ---: | --- |
-| as loaded (`tools/image.py`, the tape alone) vs `c1` at the start of frame 13580 (the entry) | 341 bytes in 7 runs | all the ROM's: the system variables (`$5C00-$5D4E`, 176 bytes in 5 runs), the BASIC stack under RAMTOP (`$609E-$60BF`, 34), the ROM's stack and UDGs from power-on (`$FF18-$FFFE`, 231) |
+| as loaded (`tools/image.py`, the tape alone) vs `c1` at the start of frame 13580 (the entry) | 341 bytes in 7 runs | all the ROM's: the system variables, channel data and BASIC line (`$5C00-$5D4E`: 128 bytes in 5 runs), the BASIC stack under RAMTOP (`$609E-$60BF`: 29 of 34), the ROM's stack and UDGs from power-on (`$FF18-$FFFE`: 184 of 231) |
 | the same, inside the game block `$60C0-$FDFF` and the screen | 0 bytes | |
-| the entry vs frame 13581 | 272 bytes in 5 runs: the setup's writes | `JP $95D0` at `$5B5B`, the table `$FE00-$FF00`, `$63C2-$63D1`, the stack moved to `$60C0` (`$60A4-$60A5`, `$60BE-$60BF`) |
+| the entry vs frame 13581 | 272 bytes in 5 runs: the setup's writes | `JP $95D0` at `$5B5B`, the table `$FE00-$FF00`, `$63C2-$63D1`, the stack moved to `$60C0` (the setup's `CALL SetupIM2` writes `$60BE-$60BF`); and `$60A4-$60A5`, on the old stack, written before the setup's `DI`: SA/LD-RET's `PUSH AF` (`$053F`) as the stub's LD-BYTES returns turns the word there from `$053F` (LD-BYTES's pushed return) into `$0093` (AF, the carry of a good load) |
 
 ```bash
 . work/env.sh
