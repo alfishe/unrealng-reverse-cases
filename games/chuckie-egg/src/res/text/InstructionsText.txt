@@ -1,0 +1,17 @@
+# InstructionsText $8390: the instructions page, 11 rows of 32 printed on every
+# other screen row (InstructionsPage $A4C8); stored bottom row first, here top
+# row first. RedefineKeys $AA49 writes the new keys into the "3" row.
+# UTF-8, one quoted string a line: printable ASCII as itself, · (U+00B7) the empty cell code 0,
+# ０-９ (fullwidth digits) the HUD digits $9E-$A7, \xNN any other byte (the game's own glyphs:
+# graphics/CharacterSet.png and HudCharacters.png by code), \" and \\ escaped.
+"··········INSTRUCTIONS··········"
+"objective-·to·collect·eggs·from·"
+"···········the·hen-house.·······"
+"··············KEYS··············"
+"\xC8\xC9\xCA\xCB \xB8\xB9\xBA  \xBB\xBC\xBD  \xBE\xBF\xC0  \xC1\xC2\xC3    \xC4\xC5\xC6\xC7 "
+"1     2    w    9    0    z or m"
+"2     --cursor--keys--    4 or 9"
+"3     q    a    o    p    m or 1"
+"key·types·1·&·2·are·preset·and··"
+"cannot·be·changed·but·the·type·3"
+"keys are user defineable.      ·"

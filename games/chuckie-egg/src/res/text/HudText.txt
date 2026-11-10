@@ -1,0 +1,9 @@
+# HudText $9764: the HUD rows SetupLevel $AE9C prints: 3 codes at the top row (the
+# SCORE label, \x0B-\x0D), then 32 at the third row: the PLAYER (\x0E-\x11), LEVEL
+# (\x9B-\x9D), BONUS (\x1B-\x1D) and TIME (\x12-\x14) labels and their digits. SetupLevel writes the digits at $976B (the player), $9772-$9773 (the level),
+# $977A (the bonus) and $9784 (the time); the image holds those of level 1.
+# UTF-8, one quoted string a line: printable ASCII as itself, · (U+00B7) the empty cell code 0,
+# ０-９ (fullwidth digits) the HUD digits $9E-$A7, \xNN any other byte (the game's own glyphs:
+# graphics/CharacterSet.png and HudCharacters.png by code), \" and \\ escaped.
+"\x0B\x0C\x0D"
+"\x0E\x0F\x10\x11１··\x9B\x9C\x9D·０１··\x1B\x1C\x1D·１０００··\x12\x13\x14·９００"

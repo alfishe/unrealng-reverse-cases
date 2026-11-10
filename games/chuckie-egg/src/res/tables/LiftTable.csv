@@ -1,0 +1,15 @@
+# LiftTable $9787: a lift record of 4 bytes a level at $9787 + 4 x ((level AND 7) + 1); row
+# "current" ($9787) is the working copy SetupLevel $AE9C writes for the level in play (the
+# image holds level 1's). address = the screen address of the lower platform's left byte at
+# its start, x = the lift's column in pixels ($FF: no lift on the level), row = the start
+# value of its count (MoveLifts $A014 counts it up to 166, then starts the platform again).
+level,address,x,row
+current,$0505,255,0
+1,$0505,255,0
+2,$0505,255,0
+3,$54E8,64,3
+4,$54F2,144,3
+5,$54F9,200,3
+6,$54EF,120,3
+7,$54FE,240,3
+8,$0505,255,0

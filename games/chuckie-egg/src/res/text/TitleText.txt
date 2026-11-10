@@ -1,0 +1,27 @@
+# TitleText $9630: the title page's left half, 22 rows of 14 (TitlePage $A420);
+# stored bottom row first, here top row first; \x80-\x8A draw the big CHUCKIE EGG.
+# UTF-8, one quoted string a line: printable ASCII as itself, · (U+00B7) the empty cell code 0,
+# ０-９ (fullwidth digits) the HUD digits $9E-$A7, \xNN any other byte (the game's own glyphs:
+# graphics/CharacterSet.png and HudCharacters.png by code), \" and \\ escaped.
+"A·&·F·SOFTWARE"
+"··············"
+"···presents···"
+"··············"
+"··············"
+"\x86\x80\x84\x84\x84\x84\x86\x80\x84\x85\x81\x86\x89\x82"
+"\x84·\x86\x84\x84\x84\x84·\x86\x83·\x84\x89\x82"
+"\x82\x80\x80\x80\x82\x80\x82\x80\x80\x81\x81\x82\x81\x82"
+"····\x86\x80\x85\x82\x87\x82\x80\x7F··"
+"····\x86·\x84\x8A\x89\x81\x84···"
+"····\x82\x80\x81\x82·\x82\x80···"
+"··············"
+"··············"
+"····a·game····"
+"··············"
+"·of·skill·for·"
+"··············"
+"1·to·4·players"
+"··············"
+"by··n.alderton"
+"··············"
+"··············"

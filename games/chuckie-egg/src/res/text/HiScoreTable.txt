@@ -1,0 +1,26 @@
+# HiScoreTable $97AF: ten entries of 16 bytes, the best first: a space, eight name
+# characters (\x8F-\x96 the "A+F" logo), a space, then six score digits;
+# EnterHiScore $A80C shifts the entries down and writes the new one.
+# UTF-8, one quoted string a line: printable ASCII as itself, · (U+00B7) the empty cell code 0,
+# ０-９ (fullwidth digits) the HUD digits $9E-$A7, \xNN any other byte (the game's own glyphs:
+# graphics/CharacterSet.png and HudCharacters.png by code), \" and \\ escaped.
+" \x8F\x90\x91\x92\x93\x94\x95\x96 "
+"001000"
+" \x8F\x90\x91\x92\x93\x94\x95\x96 "
+"001000"
+" \x8F\x90\x91\x92\x93\x94\x95\x96 "
+"001000"
+" \x8F\x90\x91\x92\x93\x94\x95\x96 "
+"001000"
+" \x8F\x90\x91\x92\x93\x94\x95\x96 "
+"001000"
+" \x8F\x90\x91\x92\x93\x94\x95\x96 "
+"001000"
+" \x8F\x90\x91\x92\x93\x94\x95\x96 "
+"001000"
+" \x8F\x90\x91\x92\x93\x94\x95\x96 "
+"001000"
+" \x8F\x90\x91\x92\x93\x94\x95\x96 "
+"001000"
+" \x8F\x90\x91\x92\x93\x94\x95\x96 "
+"001000"

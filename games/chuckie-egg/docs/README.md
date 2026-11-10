@@ -15,6 +15,13 @@
 | [11. Data reference](11-data-reference.md) | every data entry (generated: `kit/refdocs.py --case .`) |
 | [12. Routine reference](12-routine-reference.md) | every routine with its figures (generated) |
 
+## Figures drawn from the resources
+
+Outputs of `tools/fig_maps.py` and `tools/fig_loading.py` (stage 2), for the documents to place: the eight level maps
+[1](img/maps/Level1.png), [2](img/maps/Level2.png), [3](img/maps/Level3.png), [4](img/maps/Level4.png),
+[5](img/maps/Level5.png), [6](img/maps/Level6.png), [7](img/maps/Level7.png), [8](img/maps/Level8.png)
+(`src/res/maps/`), and [the loading picture](img/loading.png) (`src/res/loader/`).
+
 ## Terms
 
 Each term once, here; the documents link to it.

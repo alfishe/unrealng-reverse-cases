@@ -1,0 +1,21 @@
+{
+  "about": "Tape block 2, the BASIC program CHUCKIE $5CCB-$6322 (line 10 and the array a$ that holds the loader): python3 ../../kit/mkgame.py --part src/loader/loader.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/mkgame/original.bin || (mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin)"],
+  "image": "work/mkgame/original.bin",
+  "lo": "5CCB",
+  "hi": "6323",
+  "ann": "src/loader/loader.ann",
+  "top": "loader",
+  "bin": "loader.bin",
+  "dest": "src/loader",
+  "res_install": "tools/res_formats.py:install",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; Chuckie Egg, A'n'F Software 1983 (Nigel Alderton): tape block 2, the BASIC program \"CHUCKIE\" (1624 bytes at PROG",
+    "; $5CCB, LINE 10): line 10 RANDOMIZE USR 24307 and the character array a$(1600) that carries the loading picture's",
+    "; graphics, the loader $5EF3 and the picture's text."
+  ],
+  "l1": [{"path": "work/stage1/c1/l1.json", "lo": "5CCB", "hi": "6323"}],
+  "data_entries": "stop",
+  "work": "work/stage2/mkloader"
+}

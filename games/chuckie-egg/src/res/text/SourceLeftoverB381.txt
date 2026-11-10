@@ -1,0 +1,9 @@
+# The author's assembler source left in the image at $B381-$B3AF, cut by LevelMaps $B3B0.
+# One editor line a file line: NNNN "text" (the two line-number bytes as BCD digits, else $hhhh),
+# - "text" a piece with no line number (its start is under the bytes before), "cut" at the end
+# of a line whose $0D is under the bytes after. No code reads these bytes.
+- " AND 15"
+2790 "  CP 15"
+2800 "  JR Z,L41"
+2810 "  LD B,0"
+2820 " L4" cut

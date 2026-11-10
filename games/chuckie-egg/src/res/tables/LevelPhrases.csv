@@ -1,0 +1,11 @@
+# LevelPhrases $B15F: LevelPhrase $B14F speaks one of these eight phrases (picked by R AND 7) when a
+# level starts; phrase = the number in sound/Phrases.txt.
+n,phrase
+0,2
+1,8
+2,10
+3,11
+4,12
+5,17
+6,17
+7,2

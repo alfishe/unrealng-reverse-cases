@@ -1,0 +1,35 @@
+# MenuTexts $ABF2: the high score title (DrawHiScores $ABAD), the redefine prompt and
+# its five key labels (RedefineKeys $AA49), KeyNames (RedefineOne $AB19: 8 port rows of
+# 5 keys, bit 0 first; \x97 SPACE, \x98 CAPS SHIFT, \x99 SYMBOL SHIFT, \x9A
+# ENTER), the two scroller texts (TitleLoop $A47D, InstructionsPage $A4C8), the
+# players prompt (StartGame $A59D) and the messages (Message $A9CE). The code writes
+# $AD50 (the player's digit) and $AD58-$AD59 (the level's digits).
+# UTF-8, one quoted string a line: printable ASCII as itself, · (U+00B7) the empty cell code 0,
+# ０-９ (fullwidth digits) the HUD digits $9E-$A7, \xNN any other byte (the game's own glyphs:
+# graphics/CharacterSet.png and HudCharacters.png by code), \" and \\ escaped.
+"high score table"
+"press the key you wish to use to"
+"move up   "
+"move down "
+"move left "
+"move right"
+"jump      "
+"\x97\x99mnb"
+"\x9Alkjh"
+"poiuy"
+"09876"
+"12345"
+"qwert"
+"asdfg"
+"\x98zxcv"
+"{·press S to start game {·press R to redefine keys {·press I for instructions "
+"{·press S to start game {·press R to redefine keys {·press 1,2 or 3 to select key type "
+"1,2,3 or 4 players ?         "
+" "
+"game over"
+" "
+"player 1"
+" "
+"level "
+"０１"
+"OUT OF TIME !"

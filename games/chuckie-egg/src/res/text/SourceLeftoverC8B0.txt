@@ -1,0 +1,6 @@
+# The author's assembler source left in the image at $C8B0-$C8C7, cut by PhraseTable $C8C8.
+# One editor line a file line: NNNN "text" (the two line-number bytes as BCD digits, else $hhhh),
+# - "text" a piece with no line number (its start is under the bytes before), "cut" at the end
+# of a line whose $0D is under the bytes after. No code reads these bytes.
+- "ALL CONV1"
+5660 "  LD A,(2948" cut

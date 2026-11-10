@@ -1,0 +1,17 @@
+# The author's assembler source left in the image at $B167-$B1FF, cut by the IM 2 vector table $B200.
+# One editor line a file line: NNNN "text" (the two line-number bytes as BCD digits, else $hhhh),
+# - "text" a piece with no line number (its start is under the bytes before), "cut" at the end
+# of a line whose $0D is under the bytes after. No code reads these bytes.
+- " JR C,C10"
+2290 "  LD DE,22849"
+2300 " C10 LD B,3"
+2310 "  LD A,151"
+2320 "  LD (HL),23"
+2330 "  LD (DE),A"
+2340 "  INC HL"
+2350 "  INC DE"
+2360 "  DJNZ -7"
+2370 " ;  "
+2380 " C8 JP SCRL2"
+2390 " ;  "
+2500 " INITG" cut

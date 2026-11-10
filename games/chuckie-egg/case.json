@@ -1,11 +1,37 @@
 {
-  "image_cmd": ["sh", "-c", "mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin"],
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/mkgame/original.bin || (mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin)"
+  ],
   "image": "work/mkgame/original.bin",
   "lo": "8214",
   "hi": "CBE8",
   "device": "ZXSPECTRUM48",
-  "bases": {"5": "4000", "2": "8000", "0": "C000"},
-  "read_builds": ["game"],
-  "ref_builds": [["game", "the first recording's game window"]],
-  "header": ["; Chuckie Egg, A'n'F Software 1983 (Nigel Alderton): the game image $8214-$CBE7 as the loader at $5EF3 leaves it."]
+  "bases": {
+    "5": "4000",
+    "2": "8000",
+    "0": "C000"
+  },
+  "read_builds": [
+    "game",
+    "stage1/rec/idle-1p",
+    "stage1/rec/tour-type2",
+    "stage1/rec/tour-redefine",
+    "stage1/rec/levels-1-3",
+    "stage1/rec/fall-death",
+    "stage1/rec/gameover-name",
+    "stage1/rec/levels-1-9"
+  ],
+  "ref_builds": [
+    [
+      "game",
+      "the first recording's game window"
+    ]
+  ],
+  "header": [
+    "; Chuckie Egg, A'n'F Software 1983 (Nigel Alderton): the game image $8214-$CBE7 as the loader at $5EF3 leaves it."
+  ],
+  "no_entries": true,
+  "res_install": "tools/res_formats.py:install"
 }

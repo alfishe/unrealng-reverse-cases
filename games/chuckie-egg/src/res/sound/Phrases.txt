@@ -1,0 +1,75 @@
+# PhraseTable $C8C8 and the phrases (sound/Phrases.bin, $C8C8-$CBC3). StartPhrase $9CEB takes phrase N
+# (1-32) from the word at $C8C6 + 2N; the interrupt (PhraseInterrupt $9CC2) sends one pair at a time:
+# OUT ($9F) the allophone, then it waits COUNT interrupts before the next pair; a count of $FF ends.
+# "table N" is the number of words, "pad N" the zero bytes after them, then each phrase in address
+# order: "phrase N [M ...]: COUNT ALLOPHONE, ..." (the table entries that point at it), "end $xx" the
+# closing pair ($FF and the byte after it, never read). An allophone is its SP0256-AL2 name or a
+# number.
+table 33
+pad 34
+phrase 1: 6 OW, 5 PA1, 4 NN2, 5 OW, 2 PA1
+end $FF
+phrase 2: 5 GG2, 7 OW, 5 PA1, 5 FF, 6 AR, 9 PA1, 5 IH, 5 TT2, 2 PA1
+end $FF
+phrase 3: 6 MM, 5 IH, 5 SS, 3 TT1, 2 PA1
+end $FF
+phrase 4: 3 NN2, 6 AY, 14 SS, 5 LL, 7 IY, 2 PA1
+end $FF
+phrase 5: 5 NN1, 6 EH, 5 KK2, 7 SS, 5 TT1, 8 PA1, 7 LL, 5 EH, 5 VV, 3 UH, 5 EL, 2 PA1
+end $FF
+phrase 6: 5 AW, 8 ZZ, 9 AE, 5 TT1, 2 PA1
+end $FF
+phrase 7: 4 HH2, 5 AY, 16 PA1, 5 SS, 6 KK3, 5 OR, 2 PA1
+end $FF
+phrase 8: 3 BB2, 7 IY, 7 PA1, 6 EL, 7 ER1, 2 TT2, 2 PA1
+end $FF
+phrase 9: 9 WW, 6 EH, 7 EL, 9 PA1, 6 DD2, 2 UH, 5 UH, 5 NN1, 2 PA1
+end $FF
+phrase 10: 5 HH2, 5 AE, 5 VV, 7 PA1, 4 NN2, 7 OW, 10 PA1, 6 TH, 6 XR, 2 PA1
+end $FF
+phrase 11: 5 GG2, 7 OW, 6 PA1, 3 NN2, 6 AW, 2 PA1
+end $FF
+phrase 12: 4 DD2, 3 OW, 4 NN1, 7 TT1, 9 PA1, 5 SS, 5 TT1, 4 AA, 5 PP, 2 PA1
+end $FF
+phrase 13: 5 GG3, 5 OW, 5 NG, 13 PA1, 6 AX, 3 PP, 2 PA1
+end $FF
+phrase 14: 5 GG3, 5 EY, 5 MM, 15 PA1, 7 OW, 4 VV, 3 ER2, 2 PA1
+end $FF
+phrase 15: 5 OW, 5 NN2, 6 SS, 11 PA1, 5 MM, 6 AE, 4 NN1, 2 PA1
+end $FF
+phrase 16: 6 RR2, 5 AO, 5 NG, 11 PA1, 5 MM, 6 AX, 4 NN1, 5 UW2, 7 VV, 9 ER1, 2 PA1
+end $FF
+phrase 17: 5 LL, 7 KK2, 4 PA1, 2 AE, 4 OW, 4 TT1, 2 PA1
+end $FF
+phrase 18: 5 GG2, 2 AA, 5 TT1, 8 PA1, 5 IH, 4 TT1, 2 PA1
+end $FF
+phrase 19: 5 TT2, 5 UH, 5 FF, 9 PA1, 5 WW, 5 AO, 5 NN1, 2 PA1
+end $FF
+phrase 20: 6 EY, 11 PA1, 5 AE, 5 NG, 5 DD1, 9 PA1, 5 EH, 5 FF, 10 PA1, 4 SS, 4 SS, 5 AO, 4 FF, 4 TT1, 5 WW, 5 XR, 9 PA1, 5 PP, 4 RR1, 5 EH, 5 ZZ, 5 EH, 5 NN1, 4 TT1, 7 SS, 9 PA1, 5 CH, 5 AX, 4 KK3, 6 IY, 11 PA1, 6 EH, 3 GG3, 2 PA1
+end $FF
+phrase 21: 5 LL, 7 OW, 8 PA1, 5 AO, 5 NN1, 8 PA1, 5 TT2, 5 AY, 7 MM, 2 PA1
+end $FF
+phrase 22: 5 SS, 5 SS, 7 UW1, 5 PP, 5 ER1, 2 PA1
+end $FF
+phrase 23: 5 HH2, 6 OW, 5 PP, 5 LL, 5 AX, 5 SS, 9 PA1, 5 KK1, 5 EY, 8 SS, 2 PA1
+end $FF
+phrase 24: 6 IH, 6 NN1, 5 SS, 3 TT1, 4 RR2, 3 AX, 4 KK2, 4 SH, 10 AX, 5 NN1, 6 SS, 2 PA1
+end $FF
+phrase 25: 5 NN2, 5 OW, 9 TT1, 5 EY, 5 PA1, 5 NN2, 5 OW, 9 TT1, 5 EY, 2 PA1
+end $FF
+phrase 26: 5 PP, 5 LL, 4 EY, 7 ER1, 9 PA1, 5 WW, 5 AO, 5 NN1, 2 PA1
+end $FF
+phrase 27: 5 PP, 5 LL, 4 EY, 7 ER1, 9 PA1, 5 TT2, 5 UW2, 2 PA1
+end $FF
+phrase 28: 5 PP, 5 LL, 4 EY, 7 ER1, 9 PA1, 5 TH, 4 RR2, 5 IY, 2 PA1
+end $FF
+phrase 29: 5 PP, 5 LL, 4 EY, 7 ER1, 9 PA1, 5 FF, 5 OR, 2 PA1
+end $FF
+phrase 30: 6 OW, 9 PA1, 5 OY, 2 PA1
+end $FF
+phrase 31: 5 AR, 9 PA1, 5 YY2, 7 UH, 8 PA1, 6 RR2, 9 EH, 2 DD2, 9 YY1, 2 PA1
+end $FF
+phrase 32: 5 NN1, 7 AO, 6 TT1, 9 PA1, 6 GG3, 4 UH, 4 DD2, 9 PA1, 5 EH, 7 NN2, 8 FF, 2 PA1
+end $FF
+phrase 33: 6 HH2, 8 AR, 4 DD1, 6 PA1, 6 LL, 5 UH, 3 KK2, 6 PA1, 11 PA1
+end $FF

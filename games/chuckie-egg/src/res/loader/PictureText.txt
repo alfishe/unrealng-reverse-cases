@@ -1,0 +1,28 @@
+# PictureText $601C: the loading picture as 24 rows of 32 character codes, the top row
+# first (PrintPictureChar $5FC9: codes below $5F from the ROM font, $60 and up from
+# loader/PictureGraphics.png, frame = code - $60).
+# One quoted string a line: printable ASCII as itself, \xNN any other byte, \" and \\ escaped.
+"   \x9A\x9B   abikm{oqmsuiwyef   \x9E\x9F   "
+"   \x9C\x9D   cdjln|prntvjxzgh   \xA0\xA1   "
+"                                "
+" ~\x7F \x82\x83 \x86\x87 ~\x7F \x8A\x8B \x8E\x8F \x92\x93  \x92\x93 \x96\x97 \x96\x97 "
+" \x80\x81 \x84\x85 \x88\x89 \x80\x81 \x8C\x8D \x90\x91 \x94\x95  \x94\x95 \x98\x99 \x98\x99 "
+"                                "
+"           IS LOADING           "
+" `````````````````````````````` "
+"  USE FOUR DIRECTION KEYS WITH  "
+"                                "
+"  A JUMP KEY TO GUIDE YOUR MAN  "
+"                                "
+"    AND COLLECT A DOZEN EGGS    "
+" `````````````````````````````` "
+"  YOU MAY CHANGE THE DIRECTION  "
+"                                "
+" AND JUMP KEYS.  THERE ARE ALSO "
+"                                "
+"    THE FOLLOWING FIXED KEYS    "
+" `````````````````````````````` "
+"   CAPS SHIFT & H........HOLD   "
+"                                "
+"   CAPS SHIFT & A.......ABORT   "
+" `````````````````````````````` "

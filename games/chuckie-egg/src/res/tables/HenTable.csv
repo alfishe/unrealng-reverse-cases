@@ -1,0 +1,15 @@
+# HenTable $945B: 21 bytes a level, read by SetupLevel $AE9C at $945B + 21 x ((level AND 7) + 1),
+# so row 0 is never read (its bytes are a leftover). bytes = how many of the next 20 bytes are
+# copied to the hen records $7357 (4 a hen); from level 25 on all 20 are. A hen: x, y (pixels,
+# y up from the bottom), state (1 walk left, 2 walk right, 3 climb down, 4 climb up, 7-8
+# peck left / right; MoveHen $911E), pad (never read).
+level,bytes,h1x,h1y,h1state,h1pad,h2x,h2y,h2state,h2pad,h3x,h3y,h3state,h3pad,h4x,h4y,h4state,h4pad,h5x,h5y,h5state,h5pad
+0,203,39,6,0,79,9,122,230,7,238,7,87,203,59,203,59,203,59,25,193,209
+1,8,104,136,2,0,72,104,1,0,64,72,1,0,152,8,2,0,72,40,1,0
+2,12,16,8,2,0,72,136,2,0,224,72,2,0,144,72,1,0,168,136,1,0
+3,12,16,104,1,0,232,32,1,0,112,128,2,0,100,80,3,0,12,40,4,0
+4,16,40,8,1,0,216,8,2,0,216,136,2,0,120,136,2,0,88,8,1,0
+5,16,16,40,1,0,40,72,2,0,40,104,1,0,168,72,2,0,224,8,2,0
+6,16,24,8,1,0,24,104,1,0,192,40,2,0,232,104,2,0,160,72,2,0
+7,12,200,136,1,0,12,88,4,0,188,64,3,0,40,104,2,0,12,24,4,0
+8,12,124,112,4,0,124,48,4,0,160,8,1,0,56,72,1,0,192,72,2,0

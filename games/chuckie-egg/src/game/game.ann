@@ -1,14 +1,943 @@
-# The annotations of the game image: the single source of truth for src/game/*.asm (kit/mkgame.py).
-# The format is in kit/mkgame.py, class Annotations. One line an entry:
+# The annotations of the game image $8214-$CBE7 (tape block 4): the single source of truth for src/game/*.asm
+# (kit/mkgame.py --case .). Format: ../../../../docs/ann-format.md.
 #
-#   @module NAME ; title            the entries from here on go to NAME.asm, the title heads the file
-#   @about a paragraph              the module file's header text, one paragraph a line
-#   $ADDR c Name ; title            a routine
-#   > a description line
-#   $ADDR b Name ; title            data (w words, t text, s space; "b Name 8" rows of 8)
-#   @res graphics/NAME.bin          the entry is a resource: src/res/..., INCBIN
-#   $ADDR Name ; comment            a label and comment inside an entry: on an instruction, or on the data line
-#                                   that starts at ADDR (a data entry's rows are cut there)
-#   @isub $ADDR LD HL,-6            the instruction written so
-#   @equ $ADDR Name [N] ; comment    a variable past the image: an EQU, its operands by name
-#   @inline $ADDR                   a routine that reads its data after the CALL
+# Witness: the eight builds of case.json read_builds, counted with tools/l1count.py (the runs of an entry's or a
+# label's instruction, in total and per build): c1 (power-on, the title), idle-1p (one player who never moves),
+# tour-type2 (the instructions page, key type 2), tour-redefine (the keys redefined, the timer run out),
+# levels-1-3, fall-death, gameover-name (a game over and the name entry), levels-1-9. "Known only from the code"
+# marks what no build ran. Coordinates: x 0-255 left to right, y 0-191 from the bottom of the screen up; a
+# character row H counts from the bottom too (PrintChar $9C40: H = 0 is screen row 23).
+
+@equ $03F8 BEEP ; the ROM's BEEP: the duration and the pitch on the calculator stack
+@equ $2D28 STACK_A ; the ROM's STACK-A: A onto the calculator stack
+@equ $4000 Screen 6144 ; the display file
+@equ $5800 Attributes 768 ; the screen attributes
+@equ $5C04 KSTATE4 ; the ROM's KSTATE+4: $FF while no key is held
+@equ $5C08 LAST_K ; the ROM's last key pressed
+@equ $5C3D ERR_SP 2 ; the ROM's error stack pointer: tape block 3 sets it to 1, MainLoop checks it
+@equ $61A8 LiveMap 3360 ; five level maps of 672 bytes: the one in play, then one a player (1-4)
+@equ $6EC8 Score 6 ; the score in play: six digits 0-9, the most significant first
+@equ $6ECE PlayerScores 24 ; the four players' scores, six digits each
+@equ $6EE6 EggsLeft ; the eggs left on the level in play (12 at its start)
+@equ $6EE7 PlayerEggs 4 ; each player's eggs left
+@equ $6EEB Level ; the level in play, from 0 (level 1)
+@equ $6EEC PlayerLevels 4 ; each player's level
+@equ $6EF0 PlayerLives 4 ; each player's lives (5 at the start), the one in play included
+@equ $72A0 SpriteBuffer 48 ; DrawSprite's 16 rows of 3 bytes
+@equ $72D8 HarryX ; Harry's x (the left of the sprite)
+@equ $72D9 HarryY ; Harry's y (the top of the sprite, up from the bottom)
+@equ $72DA HarryFrame ; the walk frame 0-3
+@equ $72DB HarryDir ; the frame base: 0 facing right, 4 facing left, $0D climbing
+@equ $72DC PassCounter ; MainLoop's pass counter: the slow tick runs when it reaches 0 (every 130 passes)
+@equ $72DD CellBuffer 72 ; DrawSprite's background: 3 x 3 map cells as 24 lines of 3 bytes
+@equ $7325 JumpState ; 0 on foot, 1 drifting off an edge, 2 in the air
+@equ $7326 JumpDx ; the jump's x step: 1, $FF or 0
+@equ $7327 JumpCount ; the delay of the next vertical step, or the drift count
+@equ $7328 JumpDelay ; the passes to the next vertical step
+@equ $732A JumpDy ; the vertical direction: 1 up, 0 the top, $FF down
+@equ $732B ScrollDelay ; the scroller's shifts to the next character (8)
+@equ $732C TextIndex ; the scroller's character index; the box colour of DrawBox
+@equ $732D KeyType ; the key type: 6 type 1, 5 type 2, 3 type 3 (the bits of keys 1-3)
+@equ $732E KeyTable 12 ; the key set in play: (mask, port row) for up, down, left, right, jump, jump
+@equ $733A Players ; the number of players 1-4
+@equ $733B Player ; the player in play 1-4
+@equ $733C LiftDelay ; the slow ticks to the next lift step (2)
+@equ $733D ScoreScreenAddr 2 ; where AddScore prints the score: $3FFE + 7 x player
+@equ $733F BonusDigits 3 ; the bonus: three digits (then a printed 0)
+@equ $7342 TimeDigits 3 ; the time: three digits
+@equ $7345 BonusDelay ; the slow ticks to the next bonus step (50)
+@equ $7346 TimeDelay ; the slow ticks to the next time step (10)
+@equ $7347 BonusRunning ; 1 while the bonus counts down
+@equ $7348 DuckX ; the duck's x
+@equ $7349 DuckY ; the duck's y
+@equ $734A DuckDx ; the duck's x speed -5..5
+@equ $734B DuckDy ; the duck's y speed -5..5
+@equ $734C DuckDelay ; the slow ticks to the next duck step (12)
+@equ $734D DuckFrame ; the duck's wing frame 0-1
+@equ $734E Lift1 2 ; the screen address of lift platform 1
+@equ $7350 LiftX ; the lift's x ($FF: no lift)
+@equ $7351 Lift1Row ; platform 1's height count 3-165
+@equ $7352 Lift2 2 ; the screen address of platform 2
+@equ $7354 Lift2Row ; platform 2's height count
+@equ $7355 OnLift ; 1 while Harry rides a lift
+@equ $7356 HenTurn ; the hen MoveHen moves next 0-4
+@equ $7357 Hens 20 ; five hen records: x ($FF: none), y, state, a spare byte
+@equ $736B HenDelay ; the slow ticks to the next hen move (3, 2 from level 33)
+@equ $736C RandomPtr 2 ; MoveHen's pointer into the ROM's first 256 bytes
+@equ $736E LastTenThousands ; the score's 10 000s digit at the last extra life check
+@equ $736F TitleTuneDone ; 1 once the title tune has played
+@equ $7370 SoundSweep ; the pickup sound's count ($FF after an egg or grain)
+@equ $7373 PhraseTimer ; the interrupts to the next phrase byte ($FF: no phrase)
+@equ $7374 PhrasePtr 2 ; the phrase pair to send next
+
+@isub $9BCB LD BC,Start
+@isub $A425 LD BC,TitleText
+@isub $A4CD LD BC,InstructionsText
+@isub $AA9A LD BC,InstructionsText+102
+@isub $A175 LD HL,$9808
+@isub $A623 LD HL,$9F9E
+@isub $9CF2 LD HL,PhraseTable-2
+@isub $A38F LD HL,LiftPhrases-1
+@isub $AAE6 LD HL,DeathPhrases-1
+@isub $B14F LD HL,LevelPhrases-1
+@isub $AABA LD HL,KeySet3-1
+@isub $AB33 LD HL,KeyNames-6
+@isub $A6E7 LD HL,LevelMaps-672
+@isub $92F6 LD HL,HenSprites-2
+@isub $AF35 LD HL,Screen-2
+@isub $B0C3 LD HL,Screen-2
+@isub $AA26 LD HL,Attributes+768
+@isub $A751 LD HL,PlayerLives-1
+@isub $A776 LD HL,PlayerLives-1
+@isub $B115 LD DE,PlayerLives-1
+
+@module tables ; The key sets, a leftover map row and the instructions page
+@about The first bytes of the game block. Only KeySets and InstructionsText are read; the rest is what the author's assembler left (no build reads it).
+
+$8214 b LeftoverMapRow 16 ; Leftover: a piece of a map row (a ladder 01 02, the cage's codes $A8 $A9)
+> Never read or written (L1 of the eight builds: no access). The bytes look like a row of a level map (LevelMaps $B3B0 codes: 1 and 2 a ladder, $A8-$A9 the cage's top), left from an earlier layout of the image.
+
+$8250 b KeySets 12 ; The three key sets: (mask, port row) for up, down, left, right, jump, jump
+> SetupLevel $AE9C copies one set into KeyTable at every level start: type 1 ($8250, KeyType 6, the default) 2 W 9 0 and jump Z or M; type 2 ($825C, KeyType 5) 7 6 5 8 (the cursor joystick) and jump 4 or 9; type 3 ($8268, KeyType 3) the set RedefineKeys $AA49 writes (Q A O P, jump M or 1 in the image). A key is down when (IN (row x 256 + $FE) AND $1F) OR mask is not $1F. The editable form is src/res/text/KeySets.txt.
+> Witness: SetupLevel's copy runs 35 times in the eight builds (tools/l1count.py $B0B8); tour-type2 reads $825C, tour-redefine writes $8268-$8271 (RedefineKeys clears ten bytes, RedefineOne writes five keys).
+@res text/KeySets.bin
+$825C KeySet2 ; type 2: the cursor keys
+$8268 KeySet3 ; type 3: the set R redefines (its last pair, the second jump key, is never redefined)
+
+$8274 s Zeros8274 ; 194 zeros
+> Never read (L1: no access).
+
+$8336 b MenuLeftover 30 ; Leftover: three menu lines with zeros for spaces
+> Never read (L1: no access). Text of an earlier menu (src/res/text/MenuLeftover.txt); the game's menu texts are MenuTexts $ABF2.
+@res text/MenuLeftover.bin
+
+$8390 b InstructionsText 32 ; The instructions page: 11 rows of 32, the bottom row first
+> InstructionsPage $A4C8 prints row k at character row 3 + 2k (from the bottom), so the page fills every other row of the screen; the editable form is src/res/text/InstructionsText.txt (top row first). RedefineKeys $AA49 and RedefineOne $AB19 write the new key names into row 3 of the page ($83F6, $83FB, $8400, $8405, $840A: up, down, left, right, jump), so the page shows the redefined set.
+> Witness: InstructionsPage runs in c1, idle-1p, tour-type2 and tour-redefine; tour-redefine writes the five bytes.
+@res text/InstructionsText.bin
+
+@module graphics ; The character set, the HUD characters and the sprites
+@about Every graphic is stored top row first. PrintChar $9C40 draws codes 0-$CB from CharacterSet (HudCharacters is its tail from code $9E), DrawSprite $9A4C the 17 frames of Sprites, DrawHen $929C the eight of HenSprites. The editable sheets are src/res/graphics/*.png and src/res/sprites/*.png.
+
+$84F0 b CharacterSet 8 ; The character set, codes 0-$9D: the map cells, the font, the title logo
+> Glyph = CharacterSet + 8 x code, top row first. Codes 0-5 are the map cells (empty, the ladder's two halves, the egg, the grain, the brick), $20-$5F the font, $80-$8A the big CHUCKIE EGG of the title, $8F-$96 the A+F logo, $97-$9A the key names SPACE, CAPS SHIFT, SYMBOL SHIFT and ENTER. Readers: PrintChar $9C40 (33 112 calls), DrawSprite $9A4C (the background cells), DrawHen $929C (the cells it erases, from $84F7, the last row), AddScore $A3A7 (the digits $30-$39 at $8670).
+@res graphics/CharacterSet.bin
+
+$89E0 b HudCharacters 8 ; Codes $9E-$CB: the HUD digits, the cage, the life icon, the cursor
+> The tail of the character set: $9E-$A7 the digits 0-9 of the HUD (CountDown $A1B8 reads them as HudCharacters + 8 x digit), $A8-$B5 the duck's cage, $B6 the life icon, $B7 the name entry's cursor.
+@res graphics/HudCharacters.bin
+
+$8B50 s FillFF ; 672 bytes of $FF
+> Never read (L1: no access): the size of one level map, filled with $FF.
+
+$8DF0 b Sprites 2 ; The 17 sprite frames of 16 x 16: Harry right 0-3, left 4-7, the duck 8-11, blank 12, climbing 13-16
+> DrawSprite $9A4C copies frame A (Sprites + 32 x A, two bytes a row, top row first). Harry's frame is HarryFrame + HarryDir (0 right, 4 left, $0D climbing), the duck's 8 or 10 + DuckFrame (10-11 when Harry is left of it); frame 12 (blank) erases Harry when he lands on a lift and the duck before it moves. Witness: DrawSprite runs 134 270 times in the eight builds.
+@res sprites/Sprites.bin
+
+$9010 b HenSprites 2 ; The hens' eight frames of 16 x 16: walking 0, 1, 4, 5, climbing 2-3, pecking 6-7
+> DrawHen $929C reads frame A - 1 from its last row up (HL = HenSprites - 2 + 32 x A). For a walk A is the state (1 left, 2 right) plus 4 when x AND 4 is set; for a climb 3, or 4 when y AND 4 is set; the pecks 7 and 8 are frames 6 (left) and 7 (right).
+@res sprites/HenSprites.bin
+
+$9110 b LeftoverSprite 14 ; Leftover: the first rows of a sprite frame
+> Never read (L1: no access).
+
+@module hens ; The hens: moving, eating grain, drawing, and the cell and screen addresses they use
+@about MainLoop $9858 calls MoveHen once every HenDelay slow ticks; each call moves one of the five hen records at Hens. A hen walks along its platform, turns at an edge or a wall, takes a ladder at random, and eats the grain in front of it. DrawHen draws a hen and is where a hen kills Harry.
+
+$911E c MoveHen ; Move the next hen one step
+> Returns at once on levels 9-16 (Level 8-15). Otherwise it takes one random bit (RandomPtr steps through the ROM's first 256 bytes: C = 1 when bit 0 of the byte is 0), advances HenTurn (0-4) and takes that hen's record (x, y, state; x = $FF: no hen, return). It erases the hen (DrawHen with A = 0, which also tests Harry), then by the state:
+> 7 or 8 (pecking): back to 1 or 2, the peck is erased and the hen drawn standing. 1 or 2 (walking left / right): when x AND 4 is 0 it first tries HenEatGrain, then turns (state 3 - state) when the next step x - 8 / x + 8 leaves the screen or the cell under it (y - 1) is neither a ladder nor a brick; then x moves 4 pixels and the hen is drawn; at a column where x AND 4 is set, and when the random bit allows, it goes onto a ladder: state 3 (down) when the cell 8 below is a ladder's left half, 4 (up) when the cell 16 above is (bit 1 of the random byte picks which it tests first).
+> 3 or 4 (climbing down / up): when y AND 4 is 0 and the next cell is no ladder it turns (7 - state); y moves 4 pixels; at y AND 4 set and the random bit it steps off onto a brick 8 left (state 1) or 16 right (state 2).
+> Inputs: the hen records. Outputs: the record moved; the screen. Side effects: RandomPtr, HenTurn; DrawHen may end the life (it unwinds the stack to the caller of MainLoop). Witness: 38 158 calls in the eight builds (c1 801); turns $91A1 979, onto a ladder $91DB 324 and $91EF 228, off a ladder $924C 213 and $9261 307, meals $9281 82.
+$9128 MoveHenRandom
+$9138 MoveHenNext
+$9142 MoveHenTurnSet
+$916D MoveHenPeckErase
+$9178 MoveHenWalk ; state 1-2: walking (3-8 go on at MoveHenClimb)
+$918F MoveHenFloor
+$91A1 MoveHenTurn ; state = 3 - state
+$91A5 MoveHenStep ; x - 4 (state 1) or x + 4 (state 2), then draw
+$91B0 MoveHenStepSet
+$91CB MoveHenDown ; a ladder below: state 3
+$91DB MoveHenSetDown
+$91DF MoveHenUp ; a ladder above: state 4
+$91EF MoveHenSetUp
+$91F3 MoveHenClimb
+$9201 MoveHenClimbTest
+$920E MoveHenClimbStep ; y - 4 (state 3) or y + 4 (state 4), then draw
+$921B MoveHenClimbSet
+$923B MoveHenOffLeft ; a brick to the left: state 1
+$924C MoveHenSetLeft
+$9250 MoveHenOffRight ; a brick to the right: state 2
+$9261 MoveHenSetRight
+
+$9265 c HenEatGrain ; Eat the grain in front of a walking hen
+> Input: HL the hen's state byte, E its x, D its y. The cell at (x + 8, y) for state 2 or (x - 8, y) for state 1 (MapCellAt $9E34): when it is grain (4) the cell becomes empty, the state becomes 7 or 8 (pecking) and the peck is drawn (8 pixels left for state 7); then it drops its own frame and MoveHen's (three POPs) and returns to MainLoop: the hen does not move this turn. Otherwise it returns with the registers kept.
+> Witness: 6 746 calls, 82 meals ($9281); the grain is gone from LiveMap, so Harry can no longer take it.
+> Known only from the code: when the peck's DrawHen finds Harry touching the hen, its six POPs are counted for MoveHen's stack, not this one's, so its RET takes the BC pushed at $9265 (B the state, C the random bit: $0100-$0201, in the ROM) as the return address. No build reached it.
+$9279 HenEatGrainTest
+$9290 HenEatGrainPeck
+$9298 HenEatGrainNone
+
+$929C c DrawHen ; Test a hen against Harry, then draw or erase it
+> Inputs: L the hen's x, H its y, A the frame (0: erase). First the box test against Harry: Harry's x within x - 8 .. x + 5 and his y within y .. y + $1B. A touch drops six words from the stack (DrawHen's four, its return and MoveHen's) and returns to the caller of MainLoop: the life ends ($92BC: c1 1, idle-1p 5, gameover-name 5, 11 in all).
+> A > 0: the frame from HenSprites (see there) is ORed onto the screen, 16 lines from (x, y) up (ScreenAddr $9404; one byte at x >= $F9), and a block of attribute 5 (cyan) of 1-2 columns by 2-3 rows is set (AttrAddrHen $93DD). A = 0: the 2 x 3 map cells under the hen (1 x 3 at x >= $F8) are drawn again from LiveMap with their glyphs and CellAttributes. IX is HarryX at the end.
+> Witness: 44 867 calls.
+$92AF DrawHenTestX
+$92BE HenKill ; drop six words: back to the caller of MainLoop
+$92C2 DrawHenFrame
+$92D1 DrawHenWalkFrame
+$92E1 DrawHenStepFrame
+$92E7 DrawHenSprite
+$9303 DrawHenScreen
+$9308 DrawHenLine
+$9317 DrawHenUp ; one screen line up
+$932E DrawHenNext
+$933F DrawHenAttrs
+$9346 DrawHenAttrAt
+$9349 DrawHenAttrRow
+$934B DrawHenAttrCell
+$935F EraseHen
+$9369 EraseHenAt
+$9380 EraseHenRow
+$9385 EraseHenCell
+$93A2 EraseHenGlyph
+$93BF EraseHenNextRow
+
+$93DD c AttrAddrHen ; HL = the attribute address of pixel (L, H)
+> Input: L = x, H = y. Output: HL = $5800 + x / 8 + 32 x ((191 - y) / 8). AF and DE kept. Witness: 44 856 calls (DrawHen). The same code is CellAttrAddr $9584 (into DE) and SpriteAttrAddr $9BDE.
+
+$93FE c MapCellAddrKeepA ; HL = the map cell address of (L, H), A kept
+> MapCellAt $9E34 with AF saved: HL = the cell's address in LiveMap. Witness: 22 474 calls (EraseHen).
+
+$9404 c ScreenAddr ; HL = the screen address of pixel (L, H)
+> Input: L = x, H = y (0 at the bottom). Output: HL = the display file byte of that pixel row (the third from y / 64, the character row from y AND $38, the line from (y AND 7) XOR 7). AF, BC and DE kept. Witness: 44 856 calls (DrawHen).
+$9418 ScreenAddrMiddle
+$9419 ScreenAddrRow
+
+$9438 c MapCellPeek ; A = the map cell at (L, H), HL kept
+> MapCellAt $9E34 with HL saved. Witness: 19 822 calls (MoveHen's floor and ladder tests).
+
+$943E b LeftoverCode943E 16 ; Leftover: copies of code bytes from an earlier assembly
+> Never read (L1: no access). F1 C9 E5 CD 34 9E E1 C9 is the end of ScreenAddr and MapCellPeek ($9436-$943D), the rest the middle of ScreenAddr ($940C-$9421), shifted by an earlier layout.
+
+$945B b HenTable 21 ; The hens of levels 1-8: a count, then up to five hen records
+> SetupLevel $AE9C reads the row at $945B + 21 x ((Level AND 7) + 1), so row 0 here ($945B) is never read: level 1's row is $9470. The first byte is the number of bytes to copy into Hens (8 on level 1, 12 on 2-3, 16 on 4-6, 12 on 7-8: two to four hens), then the records (x, y, state, spare). Levels 9-16 copy none, 17-24 the table again, 25 and up all 20 bytes (five hens). The editable form is src/res/tables/HenTable.csv.
+> Witness: SetupLevel's copy at $AFA4: 35 levels in the eight builds.
+@res tables/HenTable.bin
+
+$9518 s Zeros9518 ; 32 zeros
+> Never read (L1: no access).
+
+@module render ; The attributes under a sprite and the map cell address
+@about PaintCells restores the map's colours where a sprite was; MapCellAddr turns a pixel position into a LiveMap address.
+
+$9538 c PaintCells ; Paint the attributes of the 3 x 3 map cells at (L, H)
+> Input: L = x, H = y of a sprite. From the cell under (x, y) down, three rows of three cells (two columns at x >= $F1, two rows at y < $11) get their attribute from CellAttributes (code 9 and up: 6). Only the attributes are painted: DrawSprite $9A4C redraws the pixels with the background. Registers kept.
+> Callers: MainLoop before Harry moves, JumpStep before each step, MoveDuck before the duck moves. Witness: 147 583 calls.
+$9544 PaintCellsRows
+$954C PaintCellsStart
+$9552 PaintCellsRow
+$9555 PaintCellsCell
+$955E PaintCellsAttr
+$9566 PaintCellsSet
+
+$9584 c CellAttrAddr ; DE = the attribute address of pixel (L, H)
+> As AttrAddrHen $93DD, the result in DE. Witness: 147 583 calls (PaintCells).
+
+$95A6 c MapCellAddr ; HL = the LiveMap address of the cell at pixel (L, H)
+> Output: HL = LiveMap + x / 8 + 4 x (y AND $F8): row y / 8 from the bottom, 32 cells a row. Witness: 147 583 calls (PaintCells).
+
+$95C5 s Zeros95C5 ; 107 zeros
+> Never read (L1: no access).
+
+@module screens ; The title page, the HUD text, the lifts, the high score table and the cell colours
+@about Data the menu and the level set-up print or copy; the editable forms are under src/res/text and src/res/tables.
+
+$9630 b TitleText 14 ; The title page's left half: 22 rows of 14 codes, the bottom row first
+> TitlePage $A420 prints row k at character row 2 + k from the bottom, columns 0-13; codes $80-$8A are the big CHUCKIE EGG, $8F-$96 the A+F logo. The editable form is src/res/text/TitleText.txt (top row first). Witness: TitlePage runs 4 times in the eight builds.
+@res text/TitleText.bin
+
+$9764 b HudText 35 ; The HUD: the SCORE label for the top row, 32 codes for the third
+> SetupLevel $AE9C prints the first three (SCORE, codes $0B-$0D) at character row 23 (the top), the 32 at row 21: PLAYER ($0E-$11), LEVEL ($9B-$9D), BONUS ($1B-$1D) and TIME ($12-$14), each with its digits. It writes the digits first: $976B the player, $9772-$9773 the level, $977A the bonus's thousands, $9784 the time's hundreds (codes $9E + digit, HudCharacters); the image holds level 1's.
+@res text/HudText.bin
+$976B HudPlayer ; the player's digit
+$9772 HudLevel ; the level's two digits
+$977A HudBonus ; the bonus's thousands digit
+$9784 HudTime ; the time's hundreds digit
+
+$9787 b LiftTable 4 ; The lifts: the record in play, then one a level (1-8)
+> A record is the screen address of the platform's start (two bytes), the lift's x ($FF: no lift) and its height count at the start (3). SetupLevel $AE9C copies level (Level AND 7) + 1's record over the first one and into Lift1; MoveLifts $A014 restarts a platform from the first one when it reaches the top. Lifts on levels 3-7 (x $40, $90, $C8, $78, $F0), none on 1, 2 and 8. The editable form is src/res/tables/LiftTable.csv. Witness: the restarts $A02E (164) and $A05C (167) in levels-1-3, gameover-name and levels-1-9.
+@res tables/LiftTable.bin
+
+$97AB b Leftover97AB 4 ; Leftover bytes
+> Never read (L1: no access).
+
+$97AF b HiScoreTable 16 ; The ten best scores: ten name bytes and six digits each, the best first
+> DrawHiScores $ABAD prints the table; EnterHiScore $A80C compares a score with each entry's digits ($97B9 + 16 k), shifts the lower entries down and writes the new one. The digits are ASCII ($30-$39), as GameOver $A7BC makes the scores. The editable form is src/res/text/HiScoreTable.txt. Witness: gameover-name writes one entry.
+@res text/HiScoreTable.bin
+
+$984F b CellAttributes 9 ; The attribute of map cell codes 0-8
+> PaintCells $9538, EraseHen and SetupLevel $AE9C read CellAttributes + code (codes 9 and up take 6, yellow): empty 6, the ladder 3 and 3 (magenta), the egg 7, the grain 3, the brick 4 (green), then 6, 7, 7. The editable form is src/res/tables/CellAttributes.csv.
+@res tables/CellAttributes.bin
+
+@module mainloop ; The main loop and the pickup of eggs and grain
+@about MainLoop is entered by SetupLevel's JP at $B12D and left only by a RET (or by a routine that unwinds the stack to it): the RET returns to $A656 in PlayLevel, after CALL SetupLevel. Each pass checks ERR_SP, plays the pickup sound and runs the jump; every 130th pass (PassCounter) the slow tick runs everything else.
+
+$9858 c MainLoop ; One pass of the game: the jump every pass, the rest every 130th pass
+> 1. ERR_SP must be 1 (tape block 3): otherwise the game hangs at $985E. 2. The pickup sound: every 16 passes, while SoundSweep is not 0, it counts down and every fourth count beeps (H = (SoundSweep AND $1F) + 6, two cycles). 3. While JumpState is not 0: a click whose pitch follows HarryY on the pass before the slow tick, JumpStep $A21C, and after a vertical step the hens are tested against Harry (HenTouches $9E66): a touch returns (the life ends).
+> 4. PassCounter counts 130 passes; then the slow tick: CAPS SHIFT + H holds the game until S, CAPS SHIFT + A aborts to Start $A410; the bonus every 50 ticks (CountDown B = 0), the duck every 12 (MoveDuck $A0C8), the lifts every 2 (MoveLifts $A014; Harry on a lift rises one pixel and dies at y $A5), the pickup (TakeEggOrGrain $99DF), the time every 10 with a tick (CountDown B = 1), one hen every 3 ticks (2 from level 33; MoveHen $911E), PaintCells at Harry.
+> 5. Then Harry: on foot, a jump key starts a jump (JumpState 2, JumpCount $8C, JumpDy 1, OnLift 0; the direction from left / right, else straight up); otherwise LeaveLadder $9F60, WalkHarry $9D08 unless climbing, FallOffEdge $B34C unless on a lift, and ClimbLadder $9E98 (also in the air: a jump catches a ladder).
+> Witness: 14 873 212 passes in the eight builds, 113 934 slow ticks ($99D9); 477 jumps started ($9975); 920 lift steps with Harry on board ($991E). Known only from the code: the hold and abort keys ($98C8-$98E5) and the faster hens ($9944).
+$985E MainLoopHang ; ERR_SP is not 1: hang
+$987E MainLoopJump
+$9895 MainLoopJumpStep
+$98A5 MainLoopHenTest
+$98B7 MainLoopTick ; the pass counter: the slow tick every 130 passes
+$98D0 MainLoopHold ; CAPS SHIFT + H: wait for S
+$98DA MainLoopAbort ; CAPS SHIFT + A: back to the title
+$98E6 MainLoopBonus
+$98F9 MainLoopDuck
+$9904 MainLoopLifts
+$991F MainLoopPickup
+$9935 MainLoopHens
+$9945 MainLoopHenDelay
+$9949 MainLoopHarry
+$9975 MainLoopJumpStart
+$99B9 MainLoopJumpDir
+$99C1 MainLoopFoot
+$99D9 MainLoopLadder
+$99DC MainLoopNext
+
+$99DF c TakeEggOrGrain ; Take the egg or the grain at Harry's feet
+> The cell at (HarryX + 8, HarryY - 8): an egg (3) is emptied and scores 100 x (1 + min(Level / 4, 9)) (AddScore $A3A7 with B = 10 x that), SoundSweep = $FF, EggsLeft - 1; the twelfth egg returns from MainLoop too (two returns: the level is complete). Grain (4) is emptied and scores 50, BonusDelay and TimeDelay become $FF (the bonus and the time stop for 255 slow ticks), SoundSweep = $FF.
+> Witness: 114 442 calls; 16 levels completed ($9A15), 65 grains ($9A1A). The cell is emptied in LiveMap only: the next DrawSprite draws the background without it.
+$9A00 TakeEggPoints
+$9A03 TakeEggTimesTen
+$9A17 TakeGrain
+
+$9A2C b LeftoverCode9A2C 16 ; Leftover: two copies of the end of TakeGrain, then zeros
+> Never read (L1: no access). A3 21 FF FF 22 45 73 7D 32 70 73 C9 is TakeGrain's tail ($9A1F-$9A2B), twice.
+
+@module sprite ; The sprite renderer and the duck's kill test
+@about DrawSprite draws Harry and the duck: the frame shifted to the pixel, ORed over the background of the map cells under it, written to the screen; then the attributes, then the duck test.
+
+$9A4C c DrawSprite ; Draw sprite frame A at (L, H) over the map's background
+> Inputs: A the frame (Sprites), L = x, H = y. The frame's 16 rows of 2 bytes go to SpriteBuffer as rows of 3, shifted right by x AND 7. CellBuffer gets the glyphs of the 3 x 3 map cells under (x, y) (LiveMap, CharacterSet), 24 lines of 3 bytes; the buffer is ORed with the 16 background lines that match y AND 7, and the 16 rows of 3 bytes are written from (x, y) down the screen. So a sprite erases its old self with the background as it moves one pixel. Then the attribute 6 (yellow) on 3 x 3 cells (2 columns at x >= $F1, 2 rows when y is on a cell or below $11).
+> Then the duck test: DuckX within HarryX - 8 .. HarryX + 8 and DuckY within HarryY - 9 .. HarryY + 9 kills: it drops the five saved words and every word on the stack until one is $A410 or more (the return into PlayLevel, $A656) and returns there. Known only from the code: no build was killed by the duck ($9BC6 never ran).
+> Witness: 134 270 calls (WalkHarry, ClimbLadder, JumpStep, MoveDuck, CatchLift).
+$9A6F DrawSpriteCopy
+$9A80 DrawSpriteShift
+$9A85 DrawSpriteShiftRow
+$9A93 DrawSpriteBack
+$9ABA DrawSpriteCell
+$9AD1 DrawSpriteGlyph
+$9AE0 DrawSpriteGlyphBack
+$9B11 DrawSpriteOr
+$9B2A DrawSpriteMiddle
+$9B2B DrawSpriteScreen
+$9B4E DrawSpriteRow
+$9B6F DrawSpriteNextRow
+$9B7B DrawSpriteAttrs
+$9B89 DrawSpriteAttrsTwo
+$9B8A DrawSpriteAttrAt
+$9B90 DrawSpriteAttrRow
+$9B93 DrawSpriteAttrCell
+$9BAA DrawSpriteDuckTest
+$9BB2 DrawSpriteDuckX
+$9BC3 DrawSpriteDuckY
+$9BC8 DuckKill ; drop five words, then unwind to the game flow
+$9BCE DuckKillUnwind
+$9BD7 DrawSpriteDone
+
+$9BDE c SpriteAttrAddr ; HL = the attribute address of pixel (L, H)
+> As AttrAddrHen $93DD. Witness: 134 267 calls (DrawSprite).
+
+$9BFF s Zeros9BFF ; 65 zeros
+> Never read (L1: no access).
+
+@module sound ; Printing a character, the beeper and the speech phrases
+@about PrintChar is the one text routine of the game. Beep drives the speaker directly; the IM 2 handler sends the phrases to port $9F, one pair every few interrupts.
+
+$9C40 c PrintChar ; Print character A at row H (from the bottom), column L
+> Four NOPs (room for a patch), then: the screen address of character row H (0 = row 23 at the bottom, 23 = the top) and column L, the glyph CharacterSet + 8 x A, eight bytes down the cell. Registers kept. Witness: 33 112 calls (the map, the HUD, the pages, the scrollers).
+$9C59 PrintCharThird
+$9C5A PrintCharRow
+$9C83 PrintCharLine
+
+$9C8E b LeftoverCode9C8E 14 ; Leftover: POP BC, POP HL, RET, then zeros
+> Never read (L1: no access): the end of an older PrintChar.
+
+$9C9C c PhraseVector ; The IM 2 entry: jump to PhraseInterrupt
+> VectorTable $B200 holds $9C9C at every place (I = $B2, Start $A410), so every interrupt comes here. Witness: 127 166 interrupts in the eight builds.
+
+$9C9F s Zeros9C9F ; 5 zeros
+> Never read (L1: no access).
+
+$9CA4 c Beep ; Sound the speaker: L cycles of half period H
+> OUT ($FE) $10 (the speaker bit, black border), wait H, OUT 0, wait H, L times. B and L used, A = 0 at the end. Calls: the walk ($2805 and $2806 every 4 pixels), the climb ($1E14, $1E15), the jump click, the time tick ($0402), the pickup sweep, the bonus count ($1E04). Witness: 127 975 calls.
+$9CA9 BeepHigh
+$9CAF BeepLow
+
+$9CB5 s Zeros9CB5 ; 13 zeros
+> Never read (L1: no access).
+
+$9CC2 c PhraseInterrupt ; The interrupt: send the phrase's next allophone to port $9F
+> PhraseTimer $FF: nothing to do. Otherwise it counts down; at 0 it takes the next pair at PhrasePtr: the first byte is the new timer (in interrupts; $FF ends the phrase), the second goes to port $9F (an SP0256-AL2 allophone, sound/Phrases.txt). EI and RETI; no keyboard scan (the ROM's KSTATE stands still under IM 2, which is why EnterHiScore switches to IM 1). Witness: 127 166 calls, one an interrupt.
+$9CD3 PhraseNext
+$9CE6 PhraseDone
+
+$9CEB c StartPhrase ; Start phrase A unless one is playing
+> Input: A the phrase number 1-32. When PhraseTimer is $FF: PhrasePtr = the phrase's address from PhraseTable (PhraseTable - 2 + 2A), PhraseTimer = 1 (the first pair goes at the next interrupt). Otherwise the call is lost. Callers: the title (20), the instructions (24), a player's turn (25 + player), the name entry (7), LevelPhrase, DeathPhrase, LiftPhrase. Witness: 106 calls.
+$9CF5 StartPhraseFind
+
+$9D06 s Zeros9D06 ; 2 zeros
+> Never read (L1: no access).
+
+@module harry ; Harry on foot and on ladders, the map cell reader, the hen touch test
+@about Harry is a 16 x 16 sprite at (HarryX, HarryY). The slow tick calls LeaveLadder, WalkHarry, FallOffEdge and ClimbLadder; each tests the map cells around him with the keys of KeyTable.
+
+$9D08 c WalkHarry ; Walk Harry left or right one pixel, or stand
+> Left key: unless x = 1 or the cells to the left (at his feet and above, LiveMap) are bricks: x - 1, HarryDir 4, a step sound ($2805) every 4 pixels. Right key: unless x >= $EE or the cells to the right are bricks: x + 1, HarryDir 0, a sound ($2806). No key: HarryFrame 3 (the next is 0, standing). Then the frame steps (0-3) and DrawSprite draws him. On a lift: when x leaves LiftX - 9 .. LiftX + 9 he walks off (JumpState 1, JumpDx his direction, JumpCount 4: the drift of FallOffEdge).
+> Witness: 95 138 calls; left steps $9D59 5 749, right $9D95 6 073, standing $9DAB 83 316. Known only from the code: walking off a lift ($9DDB never ran).
+$9D16 WalkHarryCell
+$9D6D WalkHarryLeftDone
+$9D6F WalkHarryRight
+$9DA9 WalkHarryRightDone
+$9DAB WalkHarryStand
+$9DAF WalkHarryDraw
+$9DDB WalkOffLift
+$9DE9 WalkOffLiftDir
+
+$9DF1 s Zeros9DF1 ; 67 zeros
+> Never read (L1: no access).
+
+$9E34 c MapCellAt ; A = the map cell at pixel (L, H), HL its address
+> Output: HL = LiveMap + x / 8 + 4 x (y AND $F8), A = the code there (0 empty, 1 and 2 a ladder, 3 an egg, 4 grain, 5 a brick, $A8-$B5 the cage). BC and DE kept. Witness: 264 678 calls.
+
+$9E57 b LeftoverCode9E57 15 ; Leftover: POP HL, RET, then zeros
+> Never read (L1: no access).
+
+$9E66 c HenTouches ; A = 1 when the hen at (E, D) touches Harry
+> The box test of DrawHen $929C (Harry's x within x - 8 .. x + 5, y within y .. y + $1B), without the kill: A = 1 touch, 0 none; HL kept. MainLoop calls it for the five hens after each vertical jump step. Witness: 29 382 calls (none in idle-1p, where Harry never jumps).
+$9E79 HenTouchesX
+$9E8A HenTouchesNo
+
+$9E8D s Zeros9E8D ; 11 zeros
+> Never read (L1: no access).
+
+$9E98 c ClimbLadder ; Climb up or down a ladder one pixel
+> Only at x AND 7 = 0 (Harry over a column). Up key with a ladder's left half (1) in the cell above his head (y + 1): HarryDir $0D, y + 1, a sound ($1E14) every 4. Else down key with a ladder below his feet (two rows down, three when y is on a cell): HarryDir $0D, y - 1, a sound ($1E15). Either way the frame steps and JumpState becomes 0: a jump that meets a ladder with up or down held is caught. Then DrawSprite. Witness: 113 934 calls; up $9ED7 3 570, down $9F11 1 810.
+$9EEB ClimbLadderUpDone
+$9EED ClimbLadderDown
+$9EFD ClimbLadderDownTest
+$9F25 ClimbLadderStep
+$9F32 ClimbLadderDraw
+
+$9F3F s Zeros9F3F ; 33 zeros
+> Never read (L1: no access).
+
+$9F60 c LeaveLadder ; Step off a ladder onto a floor, left or right
+> Only when y + 1 is on a cell boundary. Left key: the cell to the left and the one above it must not be bricks, and the one under them must be a floor (1-8): HarryDir 4. Right key: the same to the right: HarryDir 0. The changed HarryDir lets WalkHarry run on the same tick. Witness: 100 660 calls; left $9FAF 4 663, right $9FDA 5 530.
+$9FB5 LeaveLadderRight
+
+$9FDF s Zeros9FDF ; 53 zeros
+> Never read (L1: no access).
+
+@module lifts ; The two lift platforms
+@about A level with a lift (3-7) has two platforms in one shaft at LiftX; they rise one pixel every two slow ticks and start again at the bottom.
+
+$A014 c MoveLifts ; Move both lift platforms up one pixel
+> Nothing when LiftX is $FF. For each platform: DrawLift with 0 (erase) at its address, its row count + 1; at 166 the platform restarts from LiftTable's record (platform 1 takes the address, x and row; platform 2 the address and x, row 3); the address one line up (LineUp $A0A9), DrawLift with $FF. Witness: 57 158 calls; restarts $A02E 164 and $A05C 167.
+$A03B MoveLifts2
+$A069 MoveLifts2Up
+
+$A07B c DrawLift ; Draw (C = $FF) or erase (C = 0) a platform at screen address HL
+> Clears the byte left of HL and the byte right of the platform (unless that is column 0), then four lines of two bytes of C going down the screen (LineDown). HL kept. Witness: 109 600 calls (only in the builds with lifts: levels-1-3, gameover-name, levels-1-9).
+$A089 DrawLiftLines
+$A08C DrawLiftLine
+
+$A096 c LineDown ; HL one screen line down
+> The display file's line order: H + 1, and across a character row or a third. Witness: 438 400 calls.
+
+$A0A9 c LineUp ; HL one screen line up
+> Witness: 54 800 calls (MoveLifts).
+$A0BF LineUpDone
+
+$A0C0 b LeftoverCodeA0C0 8 ; Leftover: LD A,H, SUB 8, LD H,A, RET and three bytes
+> Never read (L1: no access).
+
+@module duck ; The duck
+@about The duck sits in its cage on levels 1-8 and flies after Harry from level 9.
+
+$A0C8 c MoveDuck ; Steer the duck toward Harry and move it
+> Every 12 slow ticks. DuckDx and DuckDy move one step toward Harry's x and y (each held within -5 .. 5). DrawSprite with frame 12 erases it, PaintCells repaints the cells; DuckX + DuckDx bounces at 0 and $EE, DuckY + DuckDy at $14 and $A6 (the speed becomes 5 or -5). On levels 1-8 (Level < 8) the position is set back to (8, $98), the cage. Then DrawSprite draws frame 8 + DuckFrame (Harry right of it or level with it) or 10 + DuckFrame (left), and DuckFrame flips. DrawSprite's duck test applies.
+> Witness: 9 553 calls; held in the cage $A175 9 418, free 135 (levels-1-9, level 9). Known only from the code: the bounces ($A12F, $A140, $A157, $A161).
+$A0DF MoveDuckLeftDone
+$A0E1 MoveDuckRight
+$A0EA MoveDuckSetDx
+$A0ED MoveDuckY
+$A100 MoveDuckDownDone
+$A102 MoveDuckUp
+$A10B MoveDuckSetDy
+$A10E MoveDuckMove
+$A135 MoveDuckLeft
+$A144 MoveDuckMoveY
+$A15D MoveDuckLow
+$A16B MoveDuckCage
+$A17B MoveDuckDraw
+$A18A MoveDuckFrame
+
+$A19A s ZerosA19A ; 30 zeros
+> Never read (L1: no access).
+
+@module timers ; The bonus and the time
+@about Both count down in the HUD; the bonus stops at 0, the time ends the life.
+
+$A1B8 c CountDown ; Take one from the bonus (B = 0) or the time (B = 1) and print it
+> The last of the three digits (BonusDigits + 2 or TimeDigits + 2) goes down by one, borrowing from the digits before. Under 000: the bonus sets BonusRunning to 0 and stops; the time drops MainLoop's return address and returns to its caller (the life ends; LifeLost prints OUT OF TIME, the digits are $FF 9 9). Otherwise the three digits are printed with HudCharacters at $4053 (the bonus) or $405D (the time).
+> Witness: 17 679 calls; 20 under-runs ($A1CE): 19 of the bonus ($A1D2), one of the time (tour-redefine).
+$A1C3 CountDownDigit
+$A1C7 CountDownLoop
+$A1D9 CountDownBorrow
+$A1DE CountDownPrint
+$A1E9 CountDownPrintAt
+$A1F4 CountDownPrintDigits
+$A1F9 CountDownPrintDigit
+$A20B CountDownPrintLine
+
+$A21A b LeftoverA21A 2 ; Leftover: RET, 0
+> Never read (L1: no access).
+
+@module jump ; The jump, the fall, catching a lift
+@about JumpState 2: in the air, one vertical pixel every JumpDelay passes (MainLoop calls JumpStep every pass); the x step and the lift test run once a slow tick. JumpState 1: drifting off an edge for JumpCount slow ticks, then falling straight.
+
+$A21C c JumpStep ; One step of the jump or the fall
+> On the pass before the slow tick (PassCounter 1): PaintCells, x + JumpDx (bouncing at 0 and $EE), CatchLift for both platforms, then JumpDrift. On the other passes: in the air, the vertical step (JumpFall). Witness: 1 760 022 calls (0 in idle-1p).
+$A22A JumpStepX
+$A240 JumpStepRightWall
+$A248 JumpStepLifts
+
+$A256 c CatchLift ; Land Harry on the lift platform whose row count is at HL
+> Nothing without a lift. When HarryX is within LiftX - 9 .. LiftX + 9 and HarryY is within six pixels under the row + 16: OnLift 1, JumpState 0, Harry erased (frame 12), HarryY = row + $11, and the rest of JumpStep is dropped (POP); LiftPhrase speaks. Witness: 26 662 calls, 50 landings ($A278).
+$A26F CatchLiftRow
+$A278 CatchLiftLand
+
+$A294 c JumpDrift ; JumpState 1: count the drift; at its end the fall starts
+> JumpCount - 1; not 0: JumpLand. At 0: JumpState 2, JumpDx 0, JumpCount $FA, JumpDy $FF, and Harry is drawn. JumpState 2 goes on to JumpFall. Witness: the fall starts $A2A2 63 times.
+
+$A2B5 c JumpFall ; The vertical step of a jump or a fall
+> JumpDelay counts passes. Rising (JumpDy 1): JumpCount + 10 each step, from $8C; after 12 steps (it wraps to 4) the top: JumpDy 0; at y $A7 and over the jump turns down. At the top the next step starts the fall: JumpDy $FF, delay 250, then 10 less a step, down to 40 (the fall speeds up). y + JumpDy; under y $10 the life ends (two POPs: back from MainLoop; fall-death, $A309 1). Then JumpLand.
+> Witness: the top $A2F6 243, the fall starts $A2CC 279.
+$A2CC JumpFallStart
+$A2D4 JumpFallFaster
+$A2DF JumpFallSet
+$A2E1 JumpRise
+$A2ED JumpRiseStep
+$A2FB JumpSetDelay
+$A30C JumpSetY
+
+$A30F c JumpLand ; Draw Harry in the air; bounce off walls; land on a floor
+> Draws frame 1 of his direction (DrawHarryFrame). The cell under his feet (MapCellAt - $3F): not rising and moving sideways, a brick beside him reverses JumpDx (101 bounces, $A34E). A brick, or a ladder with a brick beside it, under his feet, with y + 1 on a cell boundary: JumpState 0 (landed; a climbing frame becomes 0). Witness: 813 landings ($A36A).
+$A33E JumpLandRight
+$A34E JumpBounce
+$A356 JumpLandTest
+$A366 JumpLandLadder
+$A36A JumpLanded
+
+$A37F c DrawHarryFrame ; DrawSprite frame A + HarryDir at Harry
+> Witness: 10 532 calls.
+
+$A389 c LiftPhrase ; Speak one of the eight LiftPhrases (R AND 7)
+> Witness: 50 calls (the lift landings).
+$A392 LiftPhraseFind
+
+$A399 b LiftPhrases 8 ; The phrases LiftPhrase picks from
+> Read at LiftPhrases + (R AND 7) (LiftPhrase steps (R AND 7) + 1 bytes from LiftPhrases - 1). The editable form is src/res/tables/LiftPhrases.csv.
+@res tables/LiftPhrases.bin
+
+$A3A1 b LeftoverA3A1 6 ; Leftover: RET, LD C,A, INC B, RET, 0, 0
+> Never read (L1: no access).
+
+@module score ; The score and the extra life
+@about AddScore is the only writer of the score.
+
+$A3A7 c AddScore ; Add B x 10 points; an extra life every 10 000; print the score
+> Input: B the tens to add (0: only print). The tens digit (Score + 4) goes up B times with the carry through the digits before. When the 10 000s digit (Score + 1) differs from LastTenThousands: the player's lives + 1, and with fewer than six an icon $B6 at row 22, column 4 + lives + 7 x (player - 1). Then the six digits are printed at ScoreScreenAddr with CharacterSet's digits (from $8670).
+> Witness: 5 659 calls; the 10 000s digit changed 6 times ($A3C4), one icon drawn ($A3D7; levels-1-9, level 4: lives 5 to 6, as the stage 1 notes saw).
+$A3AD AddScoreTen
+$A3B0 AddScoreDigit
+$A3B9 AddScoreNext
+$A3D9 AddScoreIconColumn
+$A3E6 AddScorePrint
+$A3F0 AddScorePrintDigit
+$A400 AddScorePrintLine
+
+$A40F b LeftoverA40F ; A zero
+> Never read (L1: no access).
+
+@module flow ; The menu, the turns, the level end, a life lost, the game over
+@about Start is the entry from the loader. The title loop runs the scroller and waits for S, R or I; StartGame takes the players; PlayLevel calls SetupLevel, which runs MainLoop, and acts on its return: the level complete, or a life lost.
+
+$A410 c Start ; The entry: key type 1, IM 2, the title page
+> Entered by the loader's JP $A410 (c1 frame 5292) and by the abort key. KeyType 6, TitleTuneDone 0, I = $B2 (VectorTable), IM 2. Witness: c1 1.
+
+$A420 c TitlePage ; Draw the title page and the high scores
+> ClearScreen, TitleText at rows 2-23 columns 0-13, DrawHiScores, the colours of the left half (magenta, yellow, green bands), the title tune and phrase 20 the first time only (TitleTuneDone), row 23 cyan, TextIndex at the end of the text. Then TitleLoop. Witness: 4 calls.
+$A428 TitlePageRow
+$A42A TitlePageChar
+$A46E TitleScrollerStart
+$A473 TitleScrollerColour
+
+$A47D c TitleLoop ; Scroll the title text; S starts, R redefines, I shows the instructions
+> ScrollLine at the bottom row, Delay 500; every 8 shifts the next of TitleScroller's 78 characters enters at column 30. Keys: S StartGame, R RedefineKeys, I InstructionsPage. Witness: every build starts here.
+$A49D TitleLoopChar
+$A4AB TitleLoopKeys
+
+$A4C8 c InstructionsPage ; Draw the instructions page, scroll its text, take the key type
+> ClearScreen; InstructionsText's 11 rows at rows 3, 5 .. 23; the colour bands; TextIndex at the end, KeyType 10 (no type shown, so the first key 1-3 marks one); WaitPhrase and phrase 24. The loop scrolls InstructionsScroller (87 characters); S (once the phrase ends) StartGame, R RedefineKeys; keys 1, 2, 3 set KeyType and move the flashing bar to the type's row ($5940, $5980, $59C0). A KeyType of 10 left as it is plays as type 1 (SetupLevel takes $8250 for anything but 5 and 3).
+> Witness: c1, idle-1p, tour-type2 (key 2, $A56D), tour-redefine.
+$A4D0 InstructionsRow
+$A4D2 InstructionsChar
+$A515 InstructionsLoop
+$A535 InstructionsNextChar
+$A543 InstructionsKeys
+$A553 InstructionsRedefine
+$A57C InstructionsBar
+$A58F InstructionsBarPaint
+$A593 InstructionsBarCell
+$A59A InstructionsLoopNext
+
+$A59D c StartGame ; Take the number of players and set up the game
+> BoxWipe in colours, the screen cleared, BoxWipe in black; the players prompt scrolls in and keys 1-4 set Players (Player 1). Five copies of level 1's map into LiveMap; the scores 0, levels 0, eggs 12, lives 5; LevelDigits "01" ($9F9E: the HUD codes of 0 and 1); WaitPhrase. Then PlayerTurn. Witness: 7 games in the eight builds.
+$A5A9 StartGameClear
+$A5BE StartGamePrompt
+$A5CA StartGameScroll
+$A5D3 StartGameKey
+$A5DF StartGameCount
+$A5EC StartGameScrollOut
+$A5F9 StartGameMaps
+$A609 StartGameZero
+$A610 StartGameEggs
+$A617 StartGameLevels
+$A61E StartGameLives
+
+$A62C c PlayerTurn ; Announce the player (two players or more) and play
+> With more than one player: phrase 25 + player, "PLAYER n" scrolled in (Message), Delay 65536. Then PlayLevel. The LD BC,$AD49 at $A63A is overwritten at once (C = 8): a leftover. Witness: 14 calls.
+
+$A653 c PlayLevel ; Play a level: SetupLevel and MainLoop; then the level end or the life lost
+> CALL SetupLevel (which jumps to MainLoop); MainLoop returns here at $A656. WaitPhrase, the score into the player's slot, IM 2 (again after a name entry). Eggs left: LifeLost. Else the bonus is counted into the score (CountDown and AddScore 10 a step, a beep), a pause, BoxZoom; the level + 1, "LEVEL nn" (the number is level + 1 mod 100), the next map (LevelMaps + 672 x (Level AND 7)) into the map in play, 12 eggs, and the next level.
+> Witness: 5 375 bonus steps ($A675); 16 levels completed.
+$A662 PlayLevelSave
+$A675 PlayLevelBonus
+$A68D PlayLevelPause
+$A68F PlayLevelPauseLoop
+$A6A4 PlayLevelSave2
+$A6BC PlayLevelNumber
+$A6C2 PlayLevelTens
+$A6C4 PlayLevelTensLoop
+$A6CB PlayLevelUnits
+$A6D6 PlayLevelMessage
+$A6F0 PlayLevelMap
+
+$A6FE c LifeLost ; A life lost: the tune, the next player with lives, or the game over
+> DeathTune, DeathPhrase, WaitPhrase, a pause, ClearScreen; OUT OF TIME when the time digits are $FF 9 9; the map in play into the player's slot, the eggs and the level into his; lives - 1; at 0 "GAME OVER" (with "PLAYER n" when more play). Then the next player with lives (in turn) is loaded (level, eggs, score, map) and PlayerTurn; none left: GameOver.
+> Witness: 14 lives lost ($A6FE), out of time 1 ($A725, tour-redefine), game over 2 ($A7BC: idle-1p, gameover-name).
+$A72D LifeLostSave
+$A738 LifeLostSlot
+$A762 LifeLostGameOver
+$A768 LifeLostNext
+$A76A LifeLostNextLoop
+$A772 LifeLostNextPlayer
+$A785 LifeLostLoad
+$A79E LifeLostLoadScore
+$A7B0 LifeLostLoadMap
+
+$A7BC c GameOver ; The end of the game: each player's score against the table
+> BoxWipe, the pixels cleared, BoxWipe; the 24 score digits become ASCII; for each player his digit at $AD72 (Congratulations) and EnterHiScore; BoxZoom after an entry. Then TitlePage. Witness: 2 calls.
+$A7C8 GameOverClear
+$A7DB GameOverAscii
+$A7E7 GameOverPlayer
+$A7FB GameOverNext
+
+@module hiscore ; The name entry
+@about The only place that uses the ROM's interrupt: under IM 1 the ROM scans the keyboard into LAST_K.
+
+$A80C c EnterHiScore ; Put the score at HL in the table and take a name
+> Compares the score with the ten entries (CompareScore); not greater than any: D = 1, return. Else the entries below shift down, the name is cleared, the six digits copied; the Congratulations page (11 rows of 15, rows 23, 21 .. 3), DrawHiScores, colours, phrase 7. Then IM 1: the cursor $B7 at the entry's row (2 x rank + 1), column 16; HALT until KSTATE4 shows a new key; LAST_K ENTER ends, DELETE (12) erases back, codes $20 and up are stored and printed, nine at most. IM 2, D = 2.
+> Witness: gameover-name (one entry, three characters $A8D5, ENTER $A8E4); 2 calls. Known only from the code: DELETE ($A8C3 never ran).
+$A814 EnterHiScoreCompare
+$A81C EnterHiScoreSkip
+$A828 EnterHiScoreInsert
+$A836 EnterHiScoreShift
+$A844 EnterHiScoreClear
+$A846 EnterHiScoreClearByte
+$A85C EnterHiScorePageRow
+$A860 EnterHiScorePageChar
+$A8A4 EnterHiScoreCursor
+$A8A9 EnterHiScoreRelease
+$A8B0 EnterHiScoreWait
+$A8D1 EnterHiScoreChar
+$A8E4 EnterHiScoreDone
+
+@module effects ; Boxes, delays and messages
+@about The screen effects between the scenes: nested attribute boxes, the scrolled messages.
+
+$A8EC c DrawBox ; An attribute rectangle of colour TextIndex
+> Inputs: H, L a corner (row from the bottom, column), D the height, E the width. The four sides between (H, L) and (H - D, L + E) (AttrAddr $AA23). Registers kept. Witness: 1 056 calls.
+$A904 DrawBoxEdge
+$A910 DrawBoxSide
+
+$A921 c Delay ; Count BC down
+> Witness: 39 283 calls.
+$A922 DelayLoop
+
+$A929 c BoxWipe ; Twelve nested boxes from the edge in; IXh 2 in colours, 1 in black
+> Colours from $12 stepping by 9 (IXh 2), or 3 throughout (IXh 1); Delay 5000 between boxes. Witness: 20 calls.
+$A937 BoxWipeStart
+$A93B BoxWipeBox
+$A95B BoxWipeNext
+
+$A960 c WaitPhrase ; Wait until no phrase plays
+> Witness: 1 662 374 loops.
+
+$A968 c BoxZoom ; Boxes growing from the middle in four quadrants, twice
+> The first round in colours (from 9, + 9 a box), the pixels cleared, the second in green (4). Delay 10000 a step. Witness: 17 calls (the level ends, a name entered).
+$A970 BoxZoomRound
+$A975 BoxZoomStep
+$A9B8 BoxZoomClear
+
+$A9CE c Message ; Scroll C characters from DE across row 11, then out
+> Rows 11-14 green; ScrollLine at row 11 with the next character printed at column 30 every 8 shifts, then 256 shifts more. Witness: 22 calls.
+$A9D3 MessageColour
+$A9DA MessageScroll
+$A9F1 MessageOut
+
+$A9FA c BoxZoomBox ; DrawBox, the colour + 9 first in the colour round
+> Witness: 204 calls.
+$AA08 BoxZoomDraw
+
+$AA0C c CompareScore ; A = 1 when the score at HL is greater than the one at DE
+> Six digits, the most significant first. Witness: 11 calls.
+$AA13 CompareScoreDigit
+$AA1D CompareScoreNo
+$AA1E CompareScoreDone
+
+$AA23 c AttrAddr ; HL = the attribute address of row H (from the bottom), column L
+> HL = $5B00 - 32 x (H + 1) + L. Witness: 2 112 calls.
+$AA2D AttrAddrRow
+
+$AA37 c FillAttrBlock ; C rows of B attributes A from HL
+> Witness: 24 calls.
+$AA3B FillAttrBlockRow
+$AA3D FillAttrBlockCell
+
+@module keys ; Redefining the keys and the speech picks
+@about R on the title or the instructions page redefines key set 3.
+
+$AA49 c RedefineKeys ; Take five new keys into key set 3
+> ClearScreen, KeyType 3, ten bytes of KeySet3 cleared (the second jump key stays), the prompt and the five labels (MenuTexts), row 6 green; waits for no key; RedefineOne for up, down, left, right and jump (the attribute bar at $592A + 64 k, the name into InstructionsText's row 3, printed at row 14 - 2k column 22). Then the title scroller (JP TitleScrollerStart) over this page. Witness: tour-redefine 1.
+$AA56 RedefineKeysClear
+$AA63 RedefineKeysPrompt
+$AA6F RedefineKeysLabels
+$AA73 RedefineKeysLabel
+$AA85 RedefineKeysColour
+$AA8A RedefineKeysRelease
+$AAA0 RedefineKeysNext
+
+$AABA c KeyUsed ; B = 1 when the key just stored is already in key set 3
+> Finds the set's last stored pair (the first zero after it) and compares it with the pairs before. Witness: 5 calls.
+$AABF KeyUsedEnd
+$AACB KeyUsedLast
+$AAD2 KeyUsedCompare
+$AADF KeyUsedNext
+
+$AAE4 c DeathPhrase ; Speak one of the eight DeathPhrases (R AND 7)
+> Witness: 13 calls.
+$AAED DeathPhraseFind
+
+$AAF4 c ReadAnyKey ; The one key held: L its row bits, H its port row, E the row number; HL = 0 for none or two rows
+> Scans the eight rows $FEFE .. $7FFE. Witness: 24 310 calls.
+$AAFD ReadAnyKeyRow
+$AB0D ReadAnyKeyFound
+$AB12 ReadAnyKeyNext
+
+$AB19 c RedefineOne ; Take one key into (IX), name it into (BC), print it at DE
+> The bar (13 bytes of attribute 3 at HL), a key (ReadAnyKey) stored as (mask, port row); the name from KeyNames (row E, the bit of the key); a key already used is taken again; the name printed; waits for the release. Witness: 5 calls.
+$AB1F RedefineOneBar
+$AB24 RedefineOneKey
+$AB39 RedefineOneRow
+$AB3C RedefineOneBit
+$AB54 RedefineOneRelease
+
+@module menudata ; The tunes, the screen scroller, the high score page, the menu texts
+@about PlayTune plays (duration, pitch) pairs with the ROM's BEEP; the texts are in src/res/text.
+
+$AB60 c PlayTune ; Play the tune at HL through the ROM's BEEP
+> Each note: C the duration in tenths of a second (0 ends), B the pitch in semitones; STACK-A C, the calculator divides it by 10 (TuneCalc), STACK-A B, BEEP. Interrupts are off while BEEP runs. Witness: 393 notes (TitleTune in c1 and after a game, DeathTune at a life lost).
+
+$AB6D b TuneCalc 3 ; The calculator's program: stk-ten, division, end-calc
+> Run by RST $28 at $AB6C (read by the ROM's calculator).
+
+$AB70 c PlayTuneNote ; The pitch, BEEP, the next note
+> Witness: 379 calls.
+
+$AB7B c ScrollLine ; Shift a character row of 30 bytes from HL one pixel left
+> Eight lines, each byte takes bit 7 of the next. Registers kept. Witness: 49 502 calls (the scrollers and the messages).
+$AB80 ScrollLineLine
+$AB85 ScrollLineByte
+$AB8E ScrollLineNext
+
+$AB9E c ClearScreen ; Clear the 6912 bytes of the screen
+> Witness: 20 calls.
+$ABA4 ClearScreenByte
+
+$ABAD c DrawHiScores ; Print the high score table on the right half
+> MenuTexts' title at row 23 column 16, the ten entries at rows 21, 19 .. 3, attribute $17 on columns 16-31 of rows 0-20. Witness: 4 calls.
+$ABB6 DrawHiScoresTitle
+$ABC3 DrawHiScoresRow
+$ABC7 DrawHiScoresChar
+$ABDE DrawHiScoresAttrRow
+$ABE0 DrawHiScoresAttr
+
+$ABEA b DeathPhrases 8 ; The phrases DeathPhrase picks from
+> Read at DeathPhrases + (R AND 7). The editable form is src/res/tables/DeathPhrases.csv.
+@res tables/DeathPhrases.bin
+
+$ABF2 b MenuTexts 16 ; The menu's texts: the high score title, the redefine page, the scrollers, the messages
+> The editable form is src/res/text/MenuTexts.txt. The code writes PlayerMessage + 7 (the player's digit, PlayerTurn) and LevelDigits (PlayLevel).
+@res text/MenuTexts.bin
+$AC02 RedefinePrompt ; the redefine prompt (32)
+$AC22 KeyLabels ; the five key labels (10 each)
+$AC54 KeyNames ; the key names: 8 port rows of 5, $7FFE first
+$AC7C TitleScroller ; the title scroller (78)
+$ACCA InstructionsScroller ; the instructions scroller (87)
+$AD21 PlayersPrompt ; the players prompt (29)
+$AD3F GameOverMessage ; GAME OVER (9), then PLAYER n
+$AD49 PlayerMessage ; PLAYER n (8)
+$AD52 LevelMessage ; LEVEL (6)
+$AD58 LevelDigits ; the level's two digits
+$AD5A OutOfTimeMessage ; OUT OF TIME ! (13)
+
+$AD67 b Congratulations 15 ; The name entry page: 11 rows of 15
+> EnterHiScore prints row k at row 23 - 2k; GameOver writes the player's digit at $AD72. The editable form is src/res/text/Congratulations.txt.
+@res text/Congratulations.bin
+
+$AE0C b TitleTune 2 ; The title tune: 46 (duration, pitch) notes, 0 0
+> The editable form is src/res/sound/TitleTune.txt.
+@res sound/TitleTune.bin
+
+$AE6A b DeathTune 2 ; The tune of a life lost: 24 notes, 0 0
+> The editable form is src/res/sound/DeathTune.txt.
+@res sound/DeathTune.bin
+
+@module level ; Setting up a level
+@about SetupLevel draws the level from the map in play, sets every variable of the level and jumps into MainLoop.
+
+$AE9C c SetupLevel ; Draw the level, set it up and enter MainLoop
+> ClearScreen; the 21 rows of the map in play (LiveMap) at rows 0-20; the HUD digits into HudText: the level (Level + 1 in BCD), the bonus's thousands min(Level + 1, 9), the time's hundreds 9 - min(Level / 16, 5), the player; HudText printed; every player's score printed (AddScore B = 0 with ScoreScreenAddr per player), then the score in play reloaded; LastTenThousands. The hens: Hens set to $FF, then the HenTable row (none on Level 8-15, all 20 bytes from 24). HenDelay 1, RandomPtr 0. The life icons (six at most) per player.
+> The colours: the HUD rows, the player's column white on red ($17, others $0F); the map's cells (CellAttributes). Harry at ($64, $17), the duck at (8, $98), the jump, the duck's speeds, the counters; BonusRunning, BonusDelay, TimeDelay, DuckDelay and PassCounter 1. KeyTable from the key set of KeyType; ScoreScreenAddr; LiftTable's record for the level into the first and into Lift1, Lift2 one third higher, Lift2Row $43. LevelPhrase, a pause, the icon of the life in play erased, JP MainLoop.
+> Witness: 35 calls.
+$AEA2 SetupLevelClear
+$AEAF SetupLevelRow
+$AEB1 SetupLevelCell
+$AEC8 SetupLevelBcd
+$AED8 SetupLevelTens
+$AEEB SetupLevelBonus
+$AF04 SetupLevelTime
+$AF20 SetupLevelHudTop
+$AF2D SetupLevelHud
+$AF41 SetupLevelScores
+$AF68 SetupLevelScore
+$AF7C SetupLevelNoHens
+$AF8C SetupLevelHens
+$AF95 SetupLevelHenRow
+$AFA4 SetupLevelHenCopy
+$AFA7 SetupLevelHenByte
+$AFAD SetupLevelIcons
+$AFBE SetupLevelIconsPlayer
+$AFC6 SetupLevelIconsCount
+$AFCD SetupLevelIcon
+$AFD4 SetupLevelIconsNext
+$B00E SetupLevelPlayerColour
+$B018 SetupLevelPlayerFill
+$B02F SetupLevelAttrRow
+$B032 SetupLevelAttrCell
+$B03C SetupLevelAttrTable
+$B042 SetupLevelAttrSet
+$B0B8 SetupLevelKeys
+$B0C9 SetupLevelScoreAddr
+$B0DE SetupLevelLift
+$B104 SetupLevelPause
+$B107 SetupLevelPauseLoop
+$B121 SetupLevelIconColumn
+$B12D SetupLevelPlay
+
+$B130 c FillAttrRow ; B attributes A on row H (0-2 from the top), from column L
+> Witness: 252 calls.
+$B144 FillAttrRowAt
+$B148 FillAttrRowCell
+
+$B14F c LevelPhrase ; Speak one of the eight LevelPhrases (R AND 7)
+> Witness: 35 calls.
+$B158 LevelPhraseFind
+
+@module leveldata ; The level phrases, the vector table, the edge fall, the maps, and the author's leftover text
+@about The bytes between the code and the maps hold the IM 2 vector table, a routine the image keeps in the middle of the leftover text (FallOffEdge), and the text of the author's editor.
+
+$B15F b LevelPhrases 8 ; The phrases LevelPhrase picks from
+> Read at LevelPhrases + (R AND 7). The editable form is src/res/tables/LevelPhrases.csv.
+@res tables/LevelPhrases.bin
+
+$B167 b SourceLeftoverB167 16 ; Leftover: the author's assembler source
+> Never read (L1: no access). Lines of an earlier program (a scroller: SCRL2, SCROL), with BCD line numbers; src/res/text/SourceLeftoverB167.txt.
+@res text/SourceLeftoverB167.bin
+
+$B200 s VectorTable ; The IM 2 vector table: 263 bytes of $9C
+> I = $B2 (Start): an interrupt with $FF on the bus reads $B2FF-$B300, $9C9C, PhraseVector. Witness: only $B2FF-$B300 are read (243 240 reads).
+
+$B307 b SourceLeftoverB307 16 ; Leftover: the author's assembler source
+> Never read (L1: no access); src/res/text/SourceLeftoverB307.txt.
+@res text/SourceLeftoverB307.bin
+
+$B34C c FallOffEdge ; Start a fall when Harry walks off a platform's edge
+> Only when x AND 7 is not 0. The cell under his feet (MapCellAt - $3F): a brick or more, or a ladder, keeps him. Else (empty, an egg, grain) JumpState 1, JumpDx his direction, JumpCount 4: he drifts four slow ticks, then falls (JumpStep $A21C). MainLoop calls it on foot when not on a lift ($99D6).
+> Witness: 98 837 calls, 63 falls ($B368). This routine lies inside the leftover text: the code runs at $911E-$B15E and $B34C-$B380.
+$B368 FallOffEdgeStart
+$B377 FallOffEdgeDir
+
+$B381 b SourceLeftoverB381 16 ; Leftover: the author's assembler source
+> Never read (L1: no access); src/res/text/SourceLeftoverB381.txt.
+@res text/SourceLeftoverB381.bin
+
+$B3B0 b LevelMaps 32 ; The eight level maps of 21 rows of 32 cells, the bottom row first: level 1
+> StartGame copies level 1 into every LiveMap slot, PlayLevel the next level's (LevelMaps + 672 x (Level AND 7)) into the map in play: levels 9-16 repeat 1-8, and so on. Codes: 0 empty, 1 and 2 a ladder, 3 an egg, 4 grain, 5 a brick, $A8-$B5 the cage. The editable forms are src/res/maps/Level1.txt .. Level8.txt (top row first), the figures docs/img/maps.
+@res maps/Level1.bin
+$B650 b LevelMap2 32 ; Level 2
+@res maps/Level2.bin
+$B8F0 b LevelMap3 32 ; Level 3
+@res maps/Level3.bin
+$BB90 b LevelMap4 32 ; Level 4
+@res maps/Level4.bin
+$BE30 b LevelMap5 32 ; Level 5
+@res maps/Level5.bin
+$C0D0 b LevelMap6 32 ; Level 6
+@res maps/Level6.bin
+$C370 b LevelMap7 32 ; Level 7
+@res maps/Level7.bin
+$C610 b LevelMap8 32 ; Level 8
+@res maps/Level8.bin
+
+@module speech ; The speech phrases
+@about The 32 phrases of the port $9F speech unit (SP0256-AL2 allophones), sent by PhraseInterrupt $9CC2.
+
+$C8B0 b SourceLeftoverC8B0 16 ; Leftover: the author's assembler source
+> Never read (L1: no access); src/res/text/SourceLeftoverC8B0.txt.
+@res text/SourceLeftoverC8B0.bin
+
+$C8C8 w PhraseTable 8 ; The addresses of the 32 phrases, then their (timer, allophone) pairs
+> StartPhrase reads PhraseTable + 2 (N - 1). A phrase is pairs of (interrupts to wait, allophone), ended by $FF. Phrase 20 (the title) says "A and F software presents Chuckie Egg". The editable form is src/res/sound/Phrases.txt.
+@res sound/Phrases.bin
+
+$CBC4 s ZerosCBC4 ; 36 zeros
+> Never read (L1: no access).

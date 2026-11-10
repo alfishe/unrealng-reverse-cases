@@ -1,0 +1,28 @@
+# A tune of PlayTune $AB60: one note a line, "duration pitch": the duration in tenths of a second (the
+# ROM calculator divides it by ten for BEEP), the pitch in semitones above middle C (BEEP's second
+# number); the name after "#" is a comment. "end" is the closing pair (0 0).
+2 8  # G#4
+2 8  # G#4
+2 8  # G#4
+2 8  # G#4
+2 6  # F#4
+2 4  # E4
+2 4  # E4
+2 3  # D#4
+2 1  # C#4
+2 1  # C#4
+2 4  # E4
+2 8  # G#4
+2 13  # C#5
+2 13  # C#5
+2 13  # C#5
+2 13  # C#5
+2 11  # B4
+2 9  # A4
+2 9  # A4
+2 8  # G#4
+2 6  # F#4
+2 6  # F#4
+2 8  # G#4
+2 9  # A4
+end

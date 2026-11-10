@@ -1,0 +1,22 @@
+# KeySets $8250: three key sets of 12 bytes, six (mask, port row) pairs: up, down, left, right and
+# two jump keys. A key is down when (IN (row x 256 + $FE) AND $1F) OR mask is not $1F; the mask is
+# $1F with the key's bit clear. One key a line: type N direction KEY (a key name, or $mask/$row).
+# SetupLevel $AE9C copies set N (KeyType $732D) to KeyTable $732E; RedefineKeys $AA49 rewrites set 3.
+type 1 up 2
+type 1 down W
+type 1 left 9
+type 1 right 0
+type 1 jump Z
+type 1 jump M
+type 2 up 7
+type 2 down 6
+type 2 left 5
+type 2 right 8
+type 2 jump 4
+type 2 jump 9
+type 3 up Q
+type 3 down A
+type 3 left O
+type 3 right P
+type 3 jump M
+type 3 jump 1

@@ -1,0 +1,19 @@
+{
+  "about": "Tape block 3, two bytes into ERR_SP $5C3D-$5C3E: python3 ../../kit/mkgame.py --part src/loader/errsp.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/mkgame/original.bin || (mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin)"],
+  "image": "work/mkgame/original.bin",
+  "lo": "5C3D",
+  "hi": "5C3F",
+  "ann": "src/loader/errsp.ann",
+  "top": "errsp",
+  "bin": "errsp.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; Chuckie Egg, A'n'F Software 1983 (Nigel Alderton): tape block 3, the headerless two bytes `01 00` that the",
+    "; loader $5EF3 loads into the ROM's ERR_SP $5C3D."
+  ],
+  "l1": [{"path": "work/stage1/c1/l1.json", "lo": "5C3D", "hi": "5C3F"}],
+  "data_entries": "stop",
+  "work": "work/stage2/mkerrsp"
+}

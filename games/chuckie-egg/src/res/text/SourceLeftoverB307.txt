@@ -1,0 +1,10 @@
+# The author's assembler source left in the image at $B307-$B34B, cut by FallOffEdge $B34C.
+# One editor line a file line: NNNN "text" (the two line-number bytes as BCD digits, else $hhhh),
+# - "text" a piece with no line number (its start is under the bytes before), "cut" at the end
+# of a line whose $0D is under the bytes after. No code reads these bytes.
+- " CALL 40000"
+2700 "  LD B,8"
+2710 " C15 LD HL,18529"
+2720 "  CALL SCROL"
+2730 "  DEC C"
+2740 "" cut

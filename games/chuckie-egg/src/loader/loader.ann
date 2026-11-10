@@ -1,0 +1,84 @@
+# The annotations of tape block 2, the BASIC program "CHUCKIE" at PROG $5CCB-$6322: the source of
+# src/loader/loader.asm and src/loader/loader/*.asm (kit/mkgame.py --part src/loader/loader.json). Format:
+# ../../../../docs/ann-format.md. Witness: c1 (work/stage1/c1, power-on, the BASIC header and block through the fast
+# LD-BYTES trap, blocks 3 and 4 at signal speed); counts from the c1 L1 (work/stage1/c1/l1.json).
+@equ $0556 LD_BYTES ; the ROM's LD-BYTES: IX = start, DE = length, A = flag byte; carry set = load; carry out = success
+@equ $3C00 RomFont ; the ROM's character set less 32 characters: code x 8 + $3C00 is the glyph of codes $20-$7F
+@equ $4000 Screen 6144 ; the display file
+@equ $5800 Attributes 767 ; the screen attributes
+@equ $5AFF AttributesEnd ; the last attribute byte
+@equ $5C3D ERR_SP 2 ; the ROM's error stack pointer: tape block 3 loads its two bytes here
+@equ $5C48 BORDCR ; the ROM's border colour (bits 3-5) and the lower screen's attribute
+@equ $5C63 STKBOT 2 ; the ROM's calculator stack bottom
+@equ $5C65 STKEND 2 ; the ROM's calculator stack end
+@equ $8214 GameBlock ; the game image's first byte: tape block 4 loads here ($8214-$CBE7)
+@equ $A410 GameStart ; the game's entry, Start in src/game/menu.asm
+@const GameLength $49D4 ; tape block 4's length, 18 900 bytes
+@isub $5FAF LD DE,GameLength
+
+@module basic ; The BASIC: line 10 and the header of the array a$ that carries the rest of the block
+@about Tape block 2 holds the program "CHUCKIE" (header: LINE 10, program length 18) and its variables area. Line 10 is RANDOMIZE USR 24307, a call of the loader at $5EF3. The variables area is one character array, a$(1600): its six header bytes, then 1600 bytes that BASIC never reads as text: the loading picture's graphics $5CE3, the loader's code $5EF3 and the picture's codes $601C, padded with seven spaces to $6322, the block's last byte.
+@about c1: the ROM loads the block through the fast LD-BYTES trap and runs line 10; the loader is entered at frame 246, T 30 897 (WALKTHROUGH 1).
+
+$5CCB b BasicLine10 ; BASIC line 10: RANDOMIZE USR 24307
+> The program the header's "program length 18" covers: the line number (big-endian), the line's length (14), RANDOMIZE ($F9), USR ($C0), the digits "24307", the number marker $0E and the five-byte small-integer form of 24307 ($5EF3), ENTER. The ROM runs it at once (LINE 10 in the header) and its USR enters Loader $5EF3 (c1 frame 246).
+$5CCD ; the line's length, 14
+$5CCF ; RANDOMIZE, USR
+$5CD1 ; "24307"
+$5CD6 ; $0E, then 24307 = $5EF3 as a small integer (0, 0, low, high, 0)
+$5CDC ; ENTER
+
+$5CDD b ArrayHeader ; The variables area: the header of the character array a$(1600)
+> $C1 is the name byte of a character array called a ($C0 + 1), then the array's length after this word ($0643 = 1603: the dimension count, the dimension and 1600 characters), one dimension, 1600 ($0640). BASIC keeps the array and never reads its contents: the 1600 bytes from $5CE3 are the loader and its picture.
+$5CDE ; the length, 1603
+$5CE0 ; one dimension of 1600
+
+@module picturegraphics ; The loading picture's character graphics
+@about 66 graphics of 8 x 8, codes $60-$A1 of PictureText; the editable sheet is src/res/loader/PictureGraphics.png.
+
+$5CE3 b PictureGraphics 8 ; The loading picture's 66 character graphics, codes $60-$A1, 8 bytes each, top row first
+> Read by PrintPictureChar $5FC9 for the picture codes $60 and up (glyph = PictureGraphics + 8 x (code - $60)); c1: 200 of the 768 characters of PictureText, drawn between frames 246 and 361. The ROM's calculator stack later starts inside it ($5DC0, set by Loader), when the picture is no longer needed.
+@res loader/PictureGraphics.bin
+
+@module tapeloader ; The loader: the loading picture, tape blocks 3 and 4, the jump to the game
+@about Entered by line 10's USR 24307 (c1 frame 246). It draws the picture from PictureText, paints its colours, loads the two headerless blocks with the ROM's LD-BYTES and jumps to the game at $A410 (c1 frame 5292).
+
+$5EF3 c Loader ; Draw the loading picture, load blocks 3 and 4, enter the game
+> Entered once by BASIC line 10 (USR 24307, c1 frame 246). Sets BORDCR to 7 (white ink for the lower screen), clears the 6912 bytes of the screen from AttributesEnd down (c1: 6912 passes of LoaderClear) and makes the border black. Then PrintPictureChar draws PictureText: 24 rows of 32 codes from the top row (H = 23) down, so the picture fills the screen (c1: 768 characters).
+> FillAttributes then paints the colours row by row: rows 0-1 white with a cyan middle (columns 8-23), rows 2-4 yellow, row 5 white, row 6 white with "IS LOADING" flashing cyan (columns 11-20), then three panels: rows 7-13 (the keys text, white on red, framed by a red-paper top row and a red-ink bottom row), rows 14-18 cyan, rows 19-23 (the fixed keys, framed the same way). Columns 0 and 31 of the panels stay black on black (attribute 0 from the clear).
+> Then two calls of the ROM's LD-BYTES with flag $FF: 2 bytes at ERR_SP (tape block 3, `01 00`), and 18 900 ($49D4) bytes at GameBlock $8214 (tape block 4, the game). The load results are not checked: a failed load runs on. STKBOT and STKEND both become $5DC0 (an empty calculator stack inside PictureGraphics) and the loader jumps to the game at GameStart $A410 (c1 frame 5292, T 39 044).
+> Outputs: the loading screen; ERR_SP = 1, which the game's main loop requires (MainLoop $9858); the game image. It never returns.
+$5EFE LoaderClear ; 6912 bytes of zeros, from the last attribute down to $4000
+$5F10 LoaderRow ; one row of 32 picture codes (H = the row from the bottom, 23 first)
+$5F14 LoaderColumn
+$5F20 ; the attribute bands, from $5800 on
+$5F25 LoaderBand ; rows 0 and 1: white, cyan in columns 8-23, white
+$5F3D ; rows 2-4 yellow, row 5 and row 6 to column 10 white, "IS LOADING" flashing cyan, white
+$5F59 ; row 7 columns 1-30: red paper, black ink (the panel's top)
+$5F65 LoaderPanel ; rows 8-12 columns 1-30: red paper, white ink
+$5F6F ; row 13 red ink, rows 14-18 cyan, row 19 red paper
+$5F89 LoaderPanel2 ; rows 20-22 columns 1-30: red paper, white ink; then row 23 red ink
+$5F9E ; tape block 3: two bytes into ERR_SP
+$5FAB ; tape block 4: the game, 18 900 bytes at $8214 (c1 frame 361 onwards)
+$5FB8 ; an empty calculator stack at $5DC0, inside PictureGraphics
+$5FC1 ; enter the game
+
+$5FC4 c FillAttributes ; Fill B bytes from HL with A
+> Inputs: HL the first byte, B the count, A the value. Output: HL past the last byte. Called 16 times by Loader for the attribute bands (c1: 745 bytes).
+
+$5FC9 c PrintPictureChar ; Draw character A at row H (from the bottom), column L
+> Inputs: A the code, H the character row counted from the bottom of the screen (0-23), L the column. The screen address is the third (H 16-23 the top one) and the row in it ((H AND 7) XOR 7); the glyph is the ROM font's (RomFont + 8 x A) for codes below $5F, PictureGraphics + 8 x (A - $60) for $5F and up. Eight bytes are copied down the character cell, top row first. Registers kept. c1: 768 calls (one picture), 200 of them for codes $60 and up.
+$5FDF ; the row inside the third
+$5FFC ; a picture graphic
+$6001 PrintPictureGlyph ; HL = the glyph, DE = the cell
+$6011 PrintPictureLine
+
+@module picturetext ; The loading picture's character codes and the array's padding
+@about 24 rows of 32 codes (src/res/loader/PictureText.txt), then the seven spaces left of a$.
+
+$601C b PictureText 32 ; The loading picture: 24 rows of 32 character codes, the top row first
+> Read by Loader through PrintPictureChar (c1: 768 reads, frames 246-361). Codes below $5F are the ROM's characters: "IS LOADING" (row 6) and the instructions in rows 8-22 ("USE FOUR DIRECTION KEYS WITH A JUMP KEY TO GUIDE YOUR MAN AND COLLECT A DOZEN EGGS. YOU MAY CHANGE THE DIRECTION AND JUMP KEYS. THERE ARE ALSO THE FOLLOWING FIXED KEYS: CAPS SHIFT & H ... HOLD, CAPS SHIFT & A ... ABORT"); codes $60 and up are PictureGraphics: the title logo of rows 0-4 and the frames of the panels.
+@res loader/PictureText.bin
+
+$631C b ArrayPadding ; The array's last seven characters: spaces
+> a$ is 1600 characters and the picture ends at $631B, so seven of its spaces are left ($631C-$6322, the last bytes of tape block 2). Never read by the loader or the game (c1 L1: no read).

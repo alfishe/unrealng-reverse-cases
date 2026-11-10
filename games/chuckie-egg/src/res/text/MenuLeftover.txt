@@ -1,0 +1,6 @@
+# MenuLeftover $8336: three menu lines with zeros for spaces that no code reads (L1
+# of the eight builds: no read); the menu scrolls the lines in MenuTexts.txt.
+# UTF-8, one quoted string a line: printable ASCII as itself, · (U+00B7) the empty cell code 0,
+# ０-９ (fullwidth digits) the HUD digits $9E-$A7, \xNN any other byte (the game's own glyphs:
+# graphics/CharacterSet.png and HudCharacters.png by code), \" and \\ escaped.
+"press·R·to·redefine·keys··press·S·to·start·game··press·1,2·or·3·to·select·key·type········"

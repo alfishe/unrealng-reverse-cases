@@ -1,0 +1,11 @@
+# LiftPhrases $A399: LiftPhrase $A389 speaks one of these eight phrases (R AND 7) when Harry lands on a
+# lift.
+n,phrase
+0,4
+1,6
+2,9
+3,13
+4,18
+5,22
+6,4
+7,13
