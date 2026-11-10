@@ -10,7 +10,7 @@ done is in [AGENTS.md](AGENTS.md); this file says only what is next.
 | 1 | OCP Video Pool | complete 2026-11-09 ([case](games/video-pool/README.md), doc 14 the UKNC port) |
 | 2 | Chuckie Egg | complete 2026-11-10 ([case](games/chuckie-egg/README.md)) |
 | 3 | Tujad | complete 2026-11-10 ([case](games/tujad/README.md)); ZXDB 33911 (the POKE file's 5448 is another id) |
-| 4 | SimCity | |
+| 4 | SimCity | stage 1 ([case](games/simcity/README.md)); ZXDB 4509 |
 | 5 | Earth Shaker | our own reverse; Bedazzle's disassembly (github.com/Bedazzle/Earth-shaker) is not a source of names, compare with it at the end at most |
 | 6 | Battle Command | ZXDB 451 |
 
@@ -58,3 +58,4 @@ Found by the cases and worked around there; the status says whether `kit/` fixes
 
 - Chuckie Egg: the game's state after K frames depends on how they are split into `control_execution run_frames` calls (two faults, reproduced with probes): [docs/unreal-ng-run-frames-faults.md](docs/unreal-ng-run-frames-faults.md) (the probe scripts stay in the case's untracked `work/stage2/`).
 - Tujad: a TTD session cannot record an RZX playback, and an RZX's inputs replayed from its saved state drift from the game within frames: the game is deterministic but timing-sensitive (EnergyTimer `$6366` counts interrupts, Random calls depend on passes) and the RZX frames are not one interrupt each (0.87 taken per frame), so whether unreal-ng's interrupt timing differs from the recording machine's is not shown (games/tujad/work/stage2/NOTES.md 3.6). The stage-1 walkthrough was cut into 59 checked pieces (games/tujad/WALKTHROUGH.md section 5).
+- SimCity: a TTD capture of one long recording failed at 139 382 frames with "a write failed (disk full or device gone)" (HTTP 409) while 900 GB were free; captures up to 96 503 frames worked, so the city recording was split into `city` and `city2` (games/simcity/work/stage1/NOTES.md).

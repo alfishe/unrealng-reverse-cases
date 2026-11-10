@@ -1,0 +1,55 @@
+# c1: after the tape (record-load from power-on, the game's own loader at signal speed): the difficulty menu,
+# A (down to MEDIUM), Q (back to EASY), SPACE (easy, $20000); the landscape is made (about 600 frames); then play
+# with the keyboard: SS+6 residential, the cursor moved with A / P, SPACE places; SS+2 road; SS+8 industrial;
+# the WINDOWS menu opened from the top bar (Q up), MAPS, back; then time passes
+0 -
++100 A
++12 -
++30 Q
++12 -
++30 SPACE
++12 -
++800 ss 6
++6 -
++20 A
++50 -
++10 O
++30 -
++10 SPACE
++4 -
++30 P
++12 -
++10 SPACE
++4 -
++30 ss 2
++6 -
++20 A
++16 -
++10 SPACE
++4 -
++20 O
++4 -
++10 SPACE
++4 -
++20 O
++4 -
++10 SPACE
++4 -
++30 ss 8
++6 -
++20 A
++20 -
++10 SPACE
++4 -
++30 P
++40 -
++10 Q
++120 -
++10 SPACE
++6 -
++40 SPACE
++12 -
++60 SPACE
++12 -
++3000 -
++1 END

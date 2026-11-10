@@ -1,0 +1,38 @@
+{
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/mkgame/original.bin || (mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin)"
+  ],
+  "image": "work/mkgame/original.bin",
+  "lo": "5B00",
+  "hi": "FE01",
+  "device": "ZXSPECTRUM48",
+  "bases": {
+    "5": "4000",
+    "2": "8000",
+    "0": "C000"
+  },
+  "read_builds": [
+    "stage1/rec/tools",
+    "stage1/rec/ports",
+    "stage1/rec/menus",
+    "stage1/rec/growth",
+    "stage1/rec/city",
+    "stage1/rec/city2",
+    "stage1/rec/metro",
+    "stage1/rec/disasters",
+    "stage1/rec/levels",
+    "stage1/rec/bankrupt"
+  ],
+  "ref_builds": [
+    [
+      "stage1/c1",
+      "c1: power-on, the original tape at signal speed, the first play"
+    ]
+  ],
+  "header": [
+    "; SimCity, Infogrames 1990 (Probe Software: A. R. Lill, S. Butler; a licence of Maxis' SimCity):",
+    "; the game image at the entry `$5B1B`, as the tape's loader leaves it (tools/image.py)."
+  ]
+}
