@@ -75,10 +75,12 @@ One table of 8 x 8 glyphs serves the map, the HUD, the menus and the title. Char
 The groups:
 
 - 0-5: the map cells: empty, ladder left, ladder right, egg, grain, brick.
-- `$0B-$1D`: the HUD labels (SCORE, PLAYER, LEVEL, BONUS, TIME in two-letter pieces).
+- `$0B-$1D`: the HUD labels SCORE (`$0B-$0D`), PLAYER (`$0E-$11`), TIME (`$12-$14`) and BONUS (`$1B-$1D`), two
+  letters a cell; LEVEL is `$9B-$9D`.
 - `$20-$7F`: the font. There is no lower case: `$41-$5A` are thin capitals and `$61-$7A` a second set of bold
   capitals; `$7E` and `$7F` are the (R) and (C) signs.
-- `$80-$8E`: blocks of the big title lettering; `$8F-$96`: the small "A+F CHUCKIE EGG".
+- `$80-$8E`: the 15 quadrant blocks of the big title lettering (TitleText uses `$80-$8A`); `$8F-$96`: the small "A+F
+  CHUCKIE EGG".
 - `$97-$9A`: the key names SP, CS, SS, EN; `$9B-$9D`: LEVEL.
 - `$9E-$A7`: the HUD digits; `$A8-$B5`: the duck's cage; `$B6`: the life icon; `$B7`: the name entry's cursor;
   `$B8-$CB`: the small "A&F SOFTWARE".
@@ -232,7 +234,7 @@ How to read:
 
 - Top: the 32 bytes of LiveMap row 5 (`$6248`).
 - Then each byte's glyph, the attribute SetupLevel gives it, and the real screen row 18 at 3x.
-- The caption works column 3 through: byte 3 (an egg) at `$624B`, glyph `$8508`, screen `$4243`, attribute
+- The caption works column 3 through: byte 3 (an egg) at `$624B`, glyph `$8508`, screen `$5043`, attribute
   `$5A43` = 7.
 
 The point: the play area is a character screen. Taking an egg is writing 0 into LiveMap; the next DrawSprite
@@ -242,14 +244,14 @@ rebuilds the background from the map, and the egg is gone from the screen with n
 
 *Animation 6.1: level 1 being printed. `levels-1-3`, frames 283:0-293:0, 80 pictures:
 `python3 ../../kit/routine_anim.py --work work/docs/ceB/levels-1-3 --window 283:0-293:0 --listing build/game.lst
---view buffer:4000:32x192:screen --pc AE9C-B15E,9C40-9C8D --range 6100-64FF --pictures 80 --title "SetupLevel: level
+--view buffer:4000:32x192:screen --pc AE9C-B15E,9C40-9C8D --range 4000-FFFF --pictures 80 --title "SetupLevel: level
 1 printed from LiveMap" --out docs/img/routines/SetupLevel.gif`.*
 
 How to read:
 
 - The view is the bitmap `$4000` as ink on black, without the attributes. On the real screen these pixels are black
   on black until frame 291.
-- The memory pane shows `$6100-$64FF`; LiveMap is read row by row.
+- The memory pane is `$4000-$FFFF`, 256 bytes a row; LiveMap (`$61A8`) is read row by row, just under the screen.
 - The rows appear from the bottom up, one PrintChar per cell.
 
 The point: the build is a plain loop of 672 PrintChar calls over the map, hidden behind black attributes until the
@@ -295,7 +297,8 @@ The steps:
 5. Write the 48 bytes to the screen from line 191 - y, column x >> 3, downwards.
 6. Paint attribute 6 on 3 x 3 cells: two columns when x is `$F1` or more, two rows when the sprite's top is on a
    cell's top line (y AND 7 = 7) or y is below `$11`.
-7. The duck test: a duck within 8 pixels across and 9 up or down of Harry ends the life (doc 10).
+7. The duck test: a duck in the duck box (DuckX within HarryX - 7 .. HarryX + 8, DuckY within HarryY - 8 .. HarryY + 9)
+   ends the life (doc 10).
 
 ```text
 DrawSprite(frame, x, y):                      ; y = the top line, counted from the bottom
@@ -417,14 +420,17 @@ same write that draws the new one.
 
 *Animation 6.2: the same call as figure 6.5, seen in its buffers. `levels-1-3`, frame 606:31000-606:57500, 60
 pictures: `python3 ../../kit/routine_anim.py --work work/docs/ceB/levels-1-3 --window 606:31000-606:57500 --listing
-build/game.lst --view buffer:72A0:3x45 --pc 9A4C-9BFE --range 7200-73FF --pictures 60 --title "DrawSprite: shift,
+build/game.lst --view buffer:72A0:3x45 --pc 9A4C-9BFE --range 4000-FFFF --pictures 60 --title "DrawSprite: shift,
 cells, OR, screen, attributes" --out docs/img/routines/DrawSprite.gif`.*
 
 How to read:
 
-- The view is 45 rows of 3 bytes from `$72A0`. The top 16 rows are SpriteBuffer, rows 17-20 are other variables
-  (HarryX `$72D8` among them), and the 24 rows from `$72DD` are CellBuffer.
+- The view is 45 rows of 3 bytes from `$72A0`. The top 16 rows are SpriteBuffer; rows 17-20 and the first byte of
+  row 21 are other variables (`$72D0-$72DC`, HarryX `$72D8` among them); CellBuffer begins at `$72DD`, byte 2 of
+  row 21, so its 24 lines straddle the view's rows by one byte.
 - The frame is copied, shifted, then the ladder glyphs fill CellBuffer column by column, then the OR.
+- The memory pane on the left is `$4000-$FFFF`, 256 bytes a row: the screen writes at the top, SpriteBuffer and
+  CellBuffer in the row of `$72xx`, the glyph reads at `$84F0` on.
 - The listing pane follows DrawSprite; the trailing colours show the bytes written.
 
 The point: DrawSprite spends most of its time on the background: 9 glyphs of 8 bytes copied with an IX stepping 3
@@ -432,7 +438,7 @@ bytes and stepped back 23 times per glyph.
 
 The cost, measured in the trace of frames 600-612: 18 652-18 859 T for an unshifted draw and 20 228 T at a shift of
 1. Draws at shifts 5 and 6 took 26 212 and 26 154 T: the shift adds 1244 T a pixel, and the screen writes are slowed
-when they meet the beam in contended memory. One DrawSprite is a quarter to a third of a frame. DrawSprite runs
+when they meet the beam in contended memory. One DrawSprite is a quarter to three-eighths of a frame. DrawSprite runs
 134 270 times in the eight builds.
 
 ## 6.5 The erase strategy
@@ -485,7 +491,8 @@ A hen moves 4 pixels at a time, so its x is always a multiple of 4. DrawHen `$92
 
 DrawHen first tests the hen against Harry (a touch ends the life, doc 10). Then, with A > 0, it ORs the frame onto
 the screen from line 191 - y upwards. It reads the frame from its last row back, so a hen's y is its bottom line.
-It writes 2 bytes a line, or 1 at x of `$F9` or more. Last it sets attribute 5 (cyan) on 1-2 columns by 2-3 rows.
+It writes 2 bytes a line. At x of `$F9` or more (never reached: a hen turns at `$F8`) the `DEC C` at `$9309` skips
+both, and only the attributes are painted. Last it sets attribute 5 (cyan) on 1-2 columns by 2-3 rows.
 
 With A = 0, DrawHen jumps to EraseHen `$935F`. EraseHen redraws the 2 x 3 map cells under the hen (1 x 3 at x of
 `$F8` or more) from LiveMap. It writes each glyph from its last byte up the screen, and the cell's colour from
@@ -501,8 +508,9 @@ DrawHen(frame > 0):
     src = HenSprites + 32 * (frame - 1) + 30      ; the last row
     line = 191 - y
     repeat 16 times:
-        screen[line][x>>3]     |= src[0]
-        screen[line][x>>3 + 1] |= src[1]          ; unless x >= $F9
+        if x < $F9:                               ; never false: a hen turns at $F8
+            screen[line][x>>3]     |= src[0]
+            screen[line][x>>3 + 1] |= src[1]
         src -= 2; line -= 1                       ; up the screen
     paint 5 on the hen's cells
 
@@ -516,7 +524,7 @@ EraseHen:
 ```text
 9308  1A           LD A,(DE)               ; DrawHenLine: the frame byte
 9309  0D           DEC C
-930A  28 0B        JR Z,DrawHenUp          ; one byte only at x >= $F9
+930A  28 0B        JR Z,DrawHenUp          ; no byte at x >= $F9 (C was 1)
 930C  13           INC DE
 930D  B6           OR (HL)                 ; OR onto the screen
 930E  77           LD (HL),A
@@ -561,24 +569,26 @@ Worked example: `levels-1-3` frame 604. A hen at x 80, y 136 walks left:
 - DrawHen with A = 0 (EraseHen) is called at T 20 541 and takes 5092 T; its first screen write is at T 21 678.
 - DrawHen with A = 1 at x 76, y 136 is called at T 26 533 and takes 3625 T; x AND 4 = 4, so it draws HenSprites
   frame 4. Its last screen write is at T 30 044.
-- The hen is off the screen for its cells from the erase's writes to the draw's: 8366 T, the longest window of the
-  44 steps (6.10).
+- The step spans 8366 T from the erase's first screen write to the draw's last, the longest span of the 44 steps
+  (6.10). One line is blank for less: each line's own gap runs from its erase write to its redraw.
 
 ![DrawHen at work: levels-1-3 frame 604](img/routines/DrawHen.gif)
 
 *Animation 6.3: one hen step, the erase then the draw. `levels-1-3`, frame 604:20400-604:30200, 50 pictures:
 `python3 ../../kit/routine_anim.py --work work/docs/ceB/levels-1-3 --window 604:20400-604:30200 --listing
-build/game.lst --view screen --pc 929C-9420 --range 4000-5AFF --pictures 50 --title "DrawHen: the erase, then the
+build/game.lst --view screen --pc 929C-9420 --range 4000-FFFF --pictures 50 --title "DrawHen: the erase, then the
 draw" --out docs/img/routines/DrawHen.gif`.*
 
 How to read:
 
 - The screen pane shows the hen's cells go back to the map (the bricks and the ladder), then the hen appear 4 pixels
   to the left, then the cyan.
-- The memory pane is `$4000-$5AFF`: bitmap writes and the attribute writes at the end.
+- The memory pane is `$4000-$FFFF`, 256 bytes a row: the bitmap writes in the top 24 rows, the attribute writes
+  below them at the end.
 
-The point: a hen is invisible for the 2000-odd T between the end of its erase and its redraw. That gap is where hens
-flicker (6.10).
+The point: a hen step spans 7332-8366 T (mean 7860, 6.10) from its first erase write to its last draw write (the
+cyan). One line stays blank for less: 3185-6480 T (mean about 5300) from the erase's write of that line to the draw's,
+in the 44 steps of `levels-1-3` frames 600-900. That gap is where hens flicker (6.10).
 
 Witness: DrawHen is called 44 867 times in the eight builds; in `levels-1-3` frames 600-900, 44 hen steps, each an
 EraseHen followed by a DrawHen.
@@ -586,14 +596,16 @@ EraseHen followed by a DrawHen.
 ## 6.7 PaintCells: the colours back
 
 PaintCells `$9538` paints the attributes, and only the attributes, of the 3 x 3 cells at a sprite's (x, y), from
-CellAttributes (codes 9 and up take 6). It uses the same 3 x 3 rule as DrawSprite (two columns at x of `$F1` or
-more, two rows at y below `$11`).
+CellAttributes (codes 9 and up take 6). Its column rule is DrawSprite's (two columns at x of `$F1` or more). Its
+row rule differs: two rows only when y is below `$11`, the bottom of the screen; DrawSprite also takes two rows when
+y AND 7 = 7.
 
 It is called before each move:
 
-- MainLoopHarry `$9949` in MainLoop, with Harry's position, every slow tick before the keys are read;
-- JumpStep, before each step of a jump;
-- MoveDuck, between the erase and the redraw.
+- `$994C` (MainLoopHarry) in MainLoop, with Harry's position, every slow tick before the keys are read;
+- JumpStep `$A22D`, before each step of a jump;
+- JumpFall `$A2BE`, before each fall step;
+- MoveDuck `$A116`, between the erase and the redraw.
 
 DrawSprite paints yellow on its 3 x 3 cells afterwards. So the cells Harry leaves get their colours back, and the
 cells he moves into turn yellow.
@@ -628,14 +640,22 @@ PaintCells(x, y):
 ```mermaid
 flowchart LR
     A["slow tick: PaintCells at Harry"] --> B["the 3 x 3 cells: map colours"]
-    B --> C["the keys, the step"]
-    C --> D{"Harry moved ?"}
-    D -->|"yes"| E["DrawSprite: pixels, then 6 on the new 3 x 3"]
-    D -->|"no"| F["the cells keep the map colours"]
+    B --> C{"where is Harry ?"}
+    C -->|"on foot"| D["WalkHarry: a step, or frame 0 standing"]
+    C -->|"on a ladder"| E["ClimbLadder: x AND 7 = 0, a step or none"]
+    C -->|"in a jump"| F["ClimbLadder only: a draw at x AND 7 = 0"]
+    D --> G["DrawSprite: pixels, then 6 on the 3 x 3"]
+    E --> G
+    F --> G
 ```
 
-When Harry does not move in a tick, no DrawSprite follows, and his cells keep the map colours. On an empty cell
-that is yellow anyway; on a ladder Harry stays magenta until he moves.
+Harry is drawn in every slow tick in which he walks, stands or climbs. When no key moves him, WalkHarryStand `$9DAB`
+stores HarryFrame 3; the draw step then advances it (`$9DB5 INC A`, `$9DB6 AND 3`) to frame 0, so standing Harry is
+drawn with frame 0 plus his direction (`$9DBE CALL DrawSprite`). ClimbLadder draws whenever x AND 7 = 0 (`$9F3B`),
+which is always the case on a ladder. The yellow fill is repainted every such tick, so a ladder under Harry shows magenta only
+between PaintCells and the DrawSprite after it. In a jump the slow tick calls only ClimbLadder; when x AND 7 is not 0
+the jump's own steps (JumpStep and JumpFall, through DrawHarryFrame `$A37F`) draw him, and until the next one his cells
+keep the map colours.
 
 Worked example: `levels-1-3` frame 609. Harry is on a ladder at x 80, y 29:
 
@@ -646,12 +666,13 @@ Worked example: `levels-1-3` frame 609. Harry is on a ladder at x 80, y 29:
 
 *Animation 6.4: PaintCells and the DrawSprite after it, Harry on a ladder. `levels-1-3`, frame 609:46000-609:68000,
 50 pictures: `python3 ../../kit/routine_anim.py --work work/docs/ceB/levels-1-3 --window 609:46000-609:68000
---listing build/game.lst --view screen --pc 9538-95C0,9A4C-9BFE --range 5800-5AFF --pictures 50 --title "PaintCells,
+--listing build/game.lst --view screen --pc 9538-95C0,9A4C-9BFE --range 4000-FFFF --pictures 50 --title "PaintCells,
 then DrawSprite: Harry on a ladder" --out docs/img/routines/PaintCells.gif`.*
 
 How to read:
 
-- The memory pane is the attributes `$5800-$5AFF`: the nine writes of PaintCells, then the nine of DrawSprite.
+- The memory pane is `$4000-$FFFF`, 256 bytes a row: in the attribute rows `$58xx-$5Axx` the nine writes of
+  PaintCells, then the nine of DrawSprite after its bitmap writes.
 - In the screen pane Harry turns magenta with the ladder, then yellow again one pixel higher.
 
 The point: PaintCells is the colour half of the erase. Between it and DrawSprite, Harry wears the colours of the
@@ -685,7 +706,7 @@ A080  23           INC HL
 A081  23           INC HL
 A082  7D           LD A,L
 A083  E6 1F        AND $1F
-A085  28 02        JR Z,DrawLiftLines      ; not past the right edge
+A085  28 02        JR Z,DrawLiftLines      ; past the right edge: no clear
 A087  36 00        LD (HL),$00             ; the byte to the right
 A089  E1           POP HL                  ; DrawLiftLines
 A08A  06 04        LD B,$04
@@ -704,13 +725,13 @@ at `$4B48` (T 35 343), one line up; platform 2 is erased at `$56C8` and drawn at
 
 *Animation 6.5: both platforms one line up. `levels-1-3`, frame 4101:34500-4101:37200, 40 pictures:
 `python3 ../../kit/routine_anim.py --work work/docs/ceB/levels-1-3 --window 4101:34500-4101:37200 --listing
-build/game.lst --view screen --pc A014-A0C7 --range 4800-57FF --pictures 40 --title "MoveLifts and DrawLift: two
+build/game.lst --view screen --pc A014-A0C7 --range 4000-FFFF --pictures 40 --title "MoveLifts and DrawLift: two
 platforms one line up" --out docs/img/routines/DrawLift.gif`.*
 
 How to read:
 
-- The screen pane shows the shaft on the right of level 3; each platform vanishes and reappears one line higher.
-- The memory pane shows the bytes of the two lower thirds being written.
+- The screen pane shows the shaft on the left of level 3 (x 64); each platform vanishes and reappears one line higher.
+- The memory pane is `$4000-$FFFF`, 256 bytes a row: the bytes of the screen's two lower thirds being written.
 
 The point: a lift is drawn by plain stores of `$FF`, erased by stores of 0, a few hundred T apart.
 
@@ -723,11 +744,11 @@ The HUD uses two digit sets:
 - the font digits `$30-$39`, 8 rows each, for the scores (AddScore, doc 08);
 - the HUD digits `$9E-$A7` in HudCharacters, 7 rows under a blank top line, for the bonus, the time and the level.
 
-The HUD digits are not larger than the font. They are a second 8 x 8 set, 7 rows high under a blank top line and
-one pixel narrower than the font's 8-row digits, which fill the cell from its top row (figure 6.2, codes
-`$9E-$A7` against `$30-$39`). CountDown `$A1B8` prints the three bonus digits at `$4053` and the three time digits at `$405D`,
-each glyph straight from HudCharacters + 8 x digit, 8 lines down the cell. The digits are stored as 0-9, not as
-codes, so CountDown indexes HudCharacters directly instead of calling PrintChar.
+The HUD digits are not larger than the font. They are a second 8 x 8 set, 7 rows high under a blank top line and one
+pixel narrower than the font's 8-row digits, which fill the cell from its top row (figure 6.2, codes `$9E-$A7` against
+`$30-$39`). CountDown `$A1B8` prints the three bonus digits at `$4053` and the three time digits at `$405D`, each glyph
+straight from HudCharacters + 8 x digit, 8 lines down the cell. The digits are stored as 0-9, not as codes, so CountDown
+indexes HudCharacters directly instead of calling PrintChar.
 
 ```text
 A1F9  D5           PUSH DE                 ; CountDownPrintDigit
@@ -770,7 +791,7 @@ is. So a sprite can be seen half drawn or not at all in one TV frame. Whether it
 
 - DrawSprite writes each line once, with the background and the sprite combined. Harry is never missing; at most the
   beam shows the top of the box at the new place and the bottom at the old, one pixel apart.
-- A hen is erased by EraseHen and redrawn by DrawHen about 7900 T later.
+- A hen is erased by EraseHen and redrawn by DrawHen: the step spans about 7900 T, one line is blank for about 5300 T.
 - The caged duck is blanked with frame 12 and redrawn by the next DrawSprite about 23 300 T later.
 - Harry's colour: PaintCells puts the map colours back about 20 000 T before DrawSprite paints yellow.
 
@@ -788,7 +809,8 @@ the TV showed: each line from memory at the moment the beam read it.
 | the lifts | none on level 1 | |
 
 The windows explain the rates. The duck's window is a third of a frame (23 175-23 577 T), and 10 of 28 redraws were
-caught. A hen's is a ninth (7332-8366 T), and 7 of 44 were caught.
+caught. A hen's step span is a ninth (7332-8366 T from its first erase write to its last draw write; one line is
+blank for 3185-6480 T), and 7 of 44 were caught.
 
 ![Flicker, measured: levels-1-3 frames 600-900](img/render/flicker.png)
 
@@ -854,10 +876,12 @@ orders the drawing against the beam.
 
 ## 6.12 What is known only from the code
 
-- DrawSprite at x `$F1` or more: its third byte column passes the right edge into the next character row's column 0
-  (INC E without a carry), and its third map column reads the next LiveMap row. Harry's x range keeps him short of
-  this in every recording; it was not checked further.
+- DrawSprite at x `$F0` or more: its third byte column passes the right edge into the next character row's column 0
+  (INC E without a carry), and its third map column reads the next LiveMap row; the attribute pass paints 3 columns
+  at `$F0` too (its test is `CP $F1`) and spills into the next row. Unreachable: Harry stops at `$EE` (WalkHarry
+  `$9D82`) and the duck bounces at `$EE`.
 - The duck's kill test in DrawSprite (`$9BC6`) never ran in any recording (stage 2).
-- EraseHen's one-column case (x of `$F8` or more) and DrawHen's one-byte case (x of `$F9` or more) were not
-  isolated in a trace.
+- EraseHen's one-column case (x of `$F8` or more) and DrawHen's no-pixel case (x of `$F9` or more, 6.6): a hen turns
+  when x + 8 would leave the screen (MoveHen), so its x stops at `$F8`. EraseHen's case is reached only at `$F8`
+  exactly; DrawHen's never.
 - The lifts' flicker was not measured: frames 600-900 are on level 1, which has no lift.

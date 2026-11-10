@@ -18,6 +18,8 @@ from the bot's base at the title. None of them loads anything but the tape.
 | `fall-death` | A walk into the gap in level 2's bottom floor |
 | `gameover-name` | Levels 1-3, then no key on level 4: five lives lost to the hens, then the name entry under IM 1 |
 | `levels-1-9` | Levels 1-9 played by the bot (recorded with `--exact`), ending on level 10 |
+| `hold-abort` | From the title (key type 1): S, one player, a walk right, HOLD at frame 1100, S at 1300, ABORT at 1400, then the title tune and phrase 20 again (`work/docs/ceB/rec/`, 1801 frames, WALKTHROUGH 6.0) |
+| `name-delete` | From `gameover-name` at frame 39 520 (the name prompt): C, E, DELETE at frame 63, 1, ENTER (`work/docs/ceB/rec/`, 401 frames) |
 
 Every value quoted from memory was read with `time_travel memory_at`, which gives the memory at the start of the named
 frame (`work/docs/ceA/mem.py` over the session in `work/docs/ceA/l19`). Every screenshot shows the screen at the end
@@ -30,7 +32,7 @@ hen house. He must pick up the twelve eggs of each level. Hens walk the same pla
 lies about the floors. It scores 50 points and stops both of the level's clocks for a while.
 
 The two clocks in the HUD are the bonus and the time. The bonus is added to the score at the level end. When the time
-reaches zero, Harry loses a life.
+runs out (one step past 000), Harry loses a life.
 
 There are eight maps. After level 8 they come round again with other rules. On levels 9-16 the hens are gone and the
 duck leaves its cage to hunt Harry; from level 17 the hens come back. Up to four players take turns, one life a turn.
@@ -59,10 +61,10 @@ flowchart TD
     G -->|"a hen, the duck, a fall, the time, the top of a lift"| D["Life lost: the death tune,<br/>OUT OF TIME ! when the time ran out<br/>LifeLost $A6FE"]
     D -->|the next player with lives| PT
     D -->|no lives left anywhere| O["GAME OVER<br/>GameOver $A7BC"]
-    O -->|a score for the table| N["The name entry, IM 1<br/>EnterHiScore $A8A0"]
+    O -->|a score for the table| N["The name entry<br/>EnterHiScore $A80C (IM 1 at $A8A0)"]
     O -->|no score for the table| T
     N --> T
-    G -->|CAPS SHIFT + A| T
+    G -->|"CAPS SHIFT + A: Start, the tune again"| T
 ```
 
 ![The screens of the game: 16 screenshots from six recordings](img/design/screens.png)
@@ -88,17 +90,20 @@ The table gives one line a mode and the screenshot that shows it at full size.
 | Level end, the boxes | Nested attribute boxes close in (BoxZoom) | `levels-1-9` 2080 | [level-end-boxes.png](img/play/level-end-boxes.png) |
 | Level end, the message | "LEVEL 2" scrolled in | `levels-1-9` 2170 | [level-message.png](img/play/level-message.png) |
 | Life lost to the time | "OUT OF TIME !" | `tour-redefine` 8750 | [out-of-time.png](img/play/out-of-time.png) |
-| The next player | "PLAYER 2" after player 1's life | `tour-redefine` 9050 | [player2-turn.png](img/play/player2-turn.png) |
+| The next player | Player 2 in play after player 1's life: PLAYER2 in the HUD, TIME 895 (the "PLAYER 2" message scrolls through at frames 8800-8850) | `tour-redefine` 9050 | [player2-turn.png](img/play/player2-turn.png) |
 | Game over | "GAME OVER" | `idle-1p` 14 600 | [game-over.png](img/play/game-over.png) |
 | Name entry | "WELL DONE! ..." and a cursor in the table | `gameover-name` 39 450 | [name-prompt.png](img/play/name-prompt.png) |
 | Title again | The new entry first in the table | `gameover-name` 39 700 | [title-new-entry.png](img/play/title-new-entry.png) |
 
-- **The title tune and phrase 20 play only once.** They play the first time the title is shown (TitleTuneDone
-  `$736F`). Later visits show the page in silence.
-- **On the instructions page, S waits for the spoken phrase.** S does nothing until phrase 24 has ended (WaitPhrase
-  `$A960`). The interrupt handler times the phrase even without a speech unit on port `$9F` (doc 4.5).
-- **The abort key works only in play.** CAPS SHIFT + A drops one return address and jumps to Start `$A410`. The game
-  in play is lost, and no high score is entered.
+- **The title tune and phrase 20 play when Start has cleared TitleTuneDone `$736F`**: at the first title, and again
+  after an abort (Start `$A410` sets TitleTuneDone to 0; witness: `hold-abort`, abort at frame 1400, then L1: Start
+  `$A410` 1, `CALL PlayTune` `$A461` 1, StartPhrase 20 `$A466` 1). The title after a game over (`JP TitlePage` at `$A806`)
+  is silent.
+- **On the instructions page, S waits for the spoken phrase.** S does nothing until phrase 24 has ended (PhraseTimer = `$FF`,
+  tested at `$A543`). The interrupt handler times the phrase even without a speech unit on port `$9F` (doc 4.5).
+- **The abort key works only in play.** CAPS SHIFT + A drops one return address and jumps to Start `$A410`
+  (`$98E2`). The game in play is lost, and no high score is entered. Start also sets KeyType to 6, so the key type goes
+  back to type 1; a redefined set stays in KeySet3 `$8268`, but type 3 must be chosen again.
 
 **The point**: every page leads on with one key. There is no options page beyond the key type and the number of
 players.
@@ -110,8 +115,8 @@ and map row 0 is screen row 23: the code counts rows and y from the bottom.
 
 ![The play screen with its parts numbered](img/design/playscreen.png)
 
-*Level 1 at the end of frame 420 of `levels-1-9`, one player, scaled by 2. The places of Harry, the duck and the
-hens are read from memory at the start of frame 420 (`$72D8-$7377`). Made with
+*Level 1 at the start of frame 420 of `levels-1-9`, one player, scaled by 3. The screen and the places of Harry,
+the duck and the hens (`$72D8-$7377`) are both read from memory with `memory_at` at the start of frame 420. Made with
 `python3 tools/fig_design.py playscreen --work work/docs/ceA/l19 --frame 420`.*
 
 | No. | Part | What it holds | Where in memory |
@@ -190,10 +195,12 @@ with `python3 tools/fig_design.py cast`.*
 | Who | Frames | Moves | Kills Harry |
 | --- | --- | --- | --- |
 | Harry | Walking right 0-3, walking left 4-7, climbing 13-16 (the indices in Sprites `$8DF0`) | One pixel a slow tick on foot and on a ladder; jumps (doc 10) | |
-| A hen | Walking left 0 and 4, walking right 1 and 5, climbing 2-3, pecking left 6, pecking right 7 | One step each time MoveHen `$911E` picks it: one hen every 3 slow ticks, every 2 from level 33 | At a touch: the box test in DrawHen `$929C`, and in HenTouches `$9E66` during a jump |
-| The duck | Four frames, two a direction | Every 12 slow ticks, a step toward Harry of up to 5 pixels on each axis; it bounces at the edges | At a touch: the box test in DrawSprite `$9A4C` |
+| A hen | Walking left 0 and 4, walking right 1 and 5, climbing 2-3, pecking left 6, pecking right 7 | One step each time MoveHen `$911E` picks it: a hen step every 3 slow ticks, one of the five hen slots in turn (empty or not), so each hen steps every 15 slow ticks; every 2 (each hen every 10) from level 33 | At a touch: the box test in DrawHen `$929C`, and in HenTouches `$9E66` during a jump |
+| The duck | Four frames, two a direction | Every 12 slow ticks its speed on each axis changes by 1 toward Harry, held within -5 .. 5, and it moves by that speed: it overshoots and turns slowly; at an edge it bounces with speed 5 | At a touch: the box test in DrawSprite `$9A4C` |
 
 - **The hens eat grain.** A hen that meets grain in front of it stops and pecks it up. That grain is lost to Harry.
+  A left peck that touches Harry does not kill him the normal way: it resets the Spectrum (the HenEatGrain bug, 1.7
+  rule 5, doc 10.8).
 - **The duck stays in its cage on levels 1-8.** MoveDuck `$A0C8` steers it, then puts it back at (8, `$98`) while
   Level is under 8. From level 9 it flies free (doc 7).
 
@@ -260,29 +267,43 @@ drawn from the source. Made with `python3 tools/fig_maps.py`.*
 - **The maps are copied, not shared.** StartGame copies map 1 into five slots of LiveMap `$61A8`: the one in play and
   one a player. A player's eggs and grain stay taken while the other players have their turns.
 
+**Against published sources.** [Wikipedia](https://en.wikipedia.org/wiki/Chuckie_Egg) gives eight levels of twelve
+eggs each, as the eight map files hold. [GamesDatabase](https://gamesdatabase.org/game/sinclair-zx-spectrum/chuckie-egg)
+also notes only eight distinct levels in the Spectrum version. Full-map images of the Spectrum original are listed on
+[ZXArt](https://zxart.ee/eng/software/games/arcade/platform/classic-platformers/chuckie-egg) (by Pavel Plíva, for
+Speccy Screenshot Maps), but the map page could not be fetched on 2026-11-10, so the maps above were not compared
+cell by cell with a published image; the recordings stand in for one: the level screenshots of 1.12 show maps 1-8 as
+drawn in play, and the live map of frame 420 holds the 12 eggs of `Level1.txt` (`fig_design.py playscreen`).
+
 **The point**: eight hand-made maps carry the whole game. Lifts appear only on maps 3-7.
 
 ## 1.7 The rules
 
 The rules below are as the code applies them. Doc 10 gives each routine with its witnesses.
 
-1. **Eggs.** Harry takes an egg when the map cell at (HarryX + 8, HarryY - 8) holds code 3. That is the cell at his
-   feet, half a sprite in from his left edge. The twelfth egg ends the level.
+1. **Eggs.** Harry takes an egg when the map cell at (HarryX + 8, HarryY - 8) holds code 3. That is the cell of his lower
+   half, just above the platform he stands on (the egg test point; doc 10.7), half a sprite in from his left edge. The twelfth egg ends the level.
 2. **Grain.** Code 4 in that cell is grain. It scores 50 points and sets BonusDelay and TimeDelay to `$FF`. Both
    clocks then wait 255 slow ticks before their next step, about 4 seconds.
 3. **The bonus.** It starts at 1000 x min(level, 9) and loses 10 every 50 slow ticks. At 0 it stops. At the level end
    what is left of it is added to the score.
-4. **The time.** It starts at 900, or less from level 17 (1.10). It loses 1 every 10 slow ticks, with a click. At 000
-   the life ends, and LifeLost prints "OUT OF TIME !".
-5. **Harry dies** in one of five ways:
-   - **a hen touches him**: his x within the hen's x - 8 .. x + 5, and his y within its y .. y + `$1B` (`$92BC`; 11
-     deaths in the builds);
-   - **the duck touches him**: within 8 pixels across and 9 up or down (`$9BC8`). Known only from the code: no
-     recording was killed by the duck;
+4. **The time.** It starts at 900, or less from level 17 (1.10). It loses 1 every 10 slow ticks, with a click. 000 is
+   printed and stays for one more step (10 slow ticks); the step after it under-runs the digits to `$FF 9 9`
+   (CountDown `$A1CE`), the life ends, and LifeLost prints "OUT OF TIME !".
+5. **Harry dies** in one of five ways, and a sixth path resets the machine:
+   - **a hen touches him**: his x within the hen's x - 7 .. x + 5 and his y within y + 1 .. y + `$1C`, the hen box
+     (`$92BC`; 11 deaths in the builds);
+   - **the duck touches him**: the duck box, DuckX within HarryX - 7 .. HarryX + 8 and DuckY within HarryY - 8 ..
+     HarryY + 9 (`$9BC6`). Known only from the code: no recording was killed by the duck;
    - **he falls below y `$10`**, through a gap in the bottom floor (`$A309`; `fall-death`, frame 2710);
    - **a lift carries him up to y `$A5`** (`$991E`). Known only from the code: no recording rode a lift to the top;
-   - **the time reaches 000** (CountDown `$A1B8` with B = 1; `tour-redefine` frame 8750, the only time in the
-     builds: OUT OF TIME `$A725` ran once).
+   - **the time runs out**, one step past 000 (CountDown `$A1B8` with B = 1, the under-run at `$A1CE`;
+     `tour-redefine`: TIME 003 at frame 8350, 000 from 8400, the life ends at about frame 8410, OUT OF TIME is shown
+     at 8750; the only time in the builds: OUT OF TIME `$A725` ran once);
+   - **a pecking hen touches him: the Spectrum resets.** A left peck (HenEatGrain `$9265`) draws the hen 8 pixels to
+     the left; when that DrawHen finds Harry in the box, its six POPs unwind the wrong frame and the `RET` goes to ROM
+     `$0100` or `$0101`. The machine runs into the ROM and restarts at the copyright screen. Known only from the code
+     and a clone (`work/docs/ceC/heg.py`, doc 10.8): no recording reached it.
 6. **A fall from a height does not kill.** A jump, or a drift off an edge, falls until it lands on a platform or a
    ladder. Only a fall under the bottom of the map ends the life.
 
@@ -292,7 +313,7 @@ One routine handles both pickups. It runs on every slow tick:
 TakeEggOrGrain:                 ; $99DF
         LD HL,(HarryX)
         LD A,H
-        SUB $08                 ; y - 8: the cell row of his feet
+        SUB $08                 ; y - 8: the row of his lower half (the egg test point)
         LD H,A
         LD A,L
         ADD A,$08               ; x + 8: the middle of the sprite
@@ -409,6 +430,27 @@ PlayLevelBonus:                 ; $A675
         JR PlayLevelBonus
 ```
 
+In pseudocode:
+
+```text
+level end (PlayLevel $A675):
+    while BonusRunning:
+        CountDown(bonus)          # bonus - 10; past 000 it sets BonusRunning = 0 and returns
+        score += 10               # added even on the step that went past 000
+        beep $1E04
+# the score gains (bonus shown / 10 + 1) x 10 = bonus + 10 when the bonus was still running
+```
+
+![The bonus count-down of level 1 in levels-1-3 frames 2007-2016](img/routines/CountDown.gif)
+
+*The bonus counted into the score: PlayLevelBonus, CountDown, AddScore and Beep at work in `levels-1-3`, frames
+2007-2016 (the same level 1 as the tally above: 880 left, 1 600 points, 2 490 at the end). The top 8 character rows
+of the screen. Made with doc 8's command: `python3 ../../kit/routine_anim.py --work work/docs/ceD/l13 --listing
+build/game.lst --window 2007:10000-2016:60000 --out docs/img/routines/CountDown.gif --pc
+A675-A68C,A1B8-A219,A3A7-A40E,9CA4-9CB4 --view buffer:4000:32x64:screen --range 9C00-A6FF --step 12000 --delay 150`. Then laid out
+narrow (1026 px: the memory grid and the screen at half size on the left, the code on the right) with `tools/anim_compact.py` (`--grid 12,34,1036,78`, `--view 1048,34,2072,290`, `--code 2076`, the two
+labels as in the picture).*
+
 - A bonus that ran out in play gives nothing. CountDown has already cleared BonusRunning, so the loop adds nothing.
 - The 88 steps of 880 and the extra one ran in frames 2007-2016, about 9 a frame.
 - The bonus and the time stopped together. The bonus fell by 12 steps of 50 ticks (600 ticks), and the time by 59
@@ -419,8 +461,11 @@ early scores about twice a slow one.
 
 ## 1.9 The extra life
 
-AddScore keeps the 10 000s digit it last saw in LastTenThousands `$736E`. When the digit changes, the player in play
-gets a life, and a life icon is drawn while fewer than six are shown.
+AddScore keeps the 10 000s digit it last saw in LastTenThousands `$736E`. SetupLevel reloads it from the current
+player's score at each level start and turn (`$AF71 LD A,(Score+1)`, `$AF74 LD (LastTenThousands),A`), so with two
+players or more each one is compared with his own digit. When the digit changes, the player in play gets a life. A life icon is drawn only when he had fewer than six lives before it (`$A3D3`). The HUD shows one icon
+for each life after the one in play, at most six: SetupLevel draws min(lives - 1, 6) of them at the next level start
+or turn.
 
 ```asm
         LD HL,LastTenThousands  ; $A3BB, after the tens are added
@@ -442,6 +487,33 @@ gets a life, and a life icon is drawn while fewer than six are shown.
         ...                     ; icon $B6 at row 22, column 4 + lives + 7 x (player - 1)
 ```
 
+In pseudocode:
+
+```text
+AddScore, after the tens are added:
+    if Score's 10 000s digit != LastTenThousands:
+        LastTenThousands = that digit
+        old = PlayerLives[Player]
+        PlayerLives[Player] = old + 1
+        if old < 6: draw icon $B6 at row 22, column 4 + old + 7 x (Player - 1)
+SetupLevel, at every level start or turn:
+    LastTenThousands = the current player's 10 000s digit      # $AF71
+    draw min(PlayerLives[Player] - 1, 6) icons
+```
+
+```mermaid
+flowchart TD
+    S["SetupLevel $AF71: each level start and turn"] -->|"LastTenThousands =<br/>the player's digit"| L[("LastTenThousands $736E")]
+    L -.-> B
+    A["AddScore $A3A7: the tens added"] --> B{"10 000s digit =<br/>LastTenThousands $736E?"}
+    B -->|yes| P["print the score"]
+    B -->|no| C["LastTenThousands = digit;<br/>lives + 1 ($A3CE)"]
+    C --> D{"lives before < 6?"}
+    D -->|yes| I["icon $B6 in the HUD ($A3D7)"]
+    D -->|no| P
+    I --> P
+```
+
 **Witness**: `levels-1-9`, level 4. At the start of frame 7984 the score is 9 900 and the lives are 5. At the start of
 frame 7985 the score is 10 000 and the lives are 6. The egg was taken during frame 7984. In all the builds the
 10 000s digit changed six times (`$A3C4`), and one icon was drawn (`$A3D7`).
@@ -455,15 +527,17 @@ session in `work/docs/ceA/l19`, scale 2.*
 
 - The test compares digits, not thresholds. The score never falls, so each change of the digit is a new 10 000. From
   99 990 to 100 000 the digit goes from 9 to 0, which is a change too.
-- By level 10, `levels-1-9` has 61 800 points and 10 lives. The HUD still shows six icons at most.
+- By level 10, `levels-1-9` has 61 800 points and 10 lives. The HUD still shows six icons at most. Going from 6 to 7
+  lives draws no icon: five are shown until the next level start shows six.
 
 **The point**: a life every 10 000 points keeps a good player going. A level on maps 1-8 is worth about 2 000 to
 10 000 points with its bonus.
 
 ## 1.10 The difficulty and the cycle of repeats
 
-The level number grows without end. The map is (Level AND 7) + 1, so the eight maps repeat. Every other rule reads the
-level number too. This gives cycles of eight levels with steps at levels 9, 17, 25 and 33 (Level counts from 0 for
+The level number is one byte, Level `$6EEB` (`INC (HL)` at `$A6B1`). It goes up to 256 and then wraps to 0, so level
+257 plays with level 1's rules (doc 10). Up to there the map is (Level AND 7) + 1, and the eight maps repeat. Every
+other rule reads the level number too. This gives cycles of eight levels with steps at levels 9, 17, 25 and 33 (Level counts from 0 for
 level 1).
 
 | Levels | Map | Hens | The duck | Hen period | Time at the start | Bonus at the start | An egg |
@@ -473,7 +547,8 @@ level 1).
 | 17-24 | 1-8 | HenTable again | free | 3 ticks | 800 | 9 000 | 500, 600 |
 | 25-32 | 1-8 | five on every map: all 20 bytes of the row | free | 3 ticks | 800 | 9 000 | 700, 800 |
 | 33-48 | 1-8 | five | free | 2 ticks | 700 | 9 000 | 900, then 1 000 from 37 |
-| 49 and up | 1-8 | five | free | 2 ticks | 600; 500 from 65; 400 from 81 | 9 000 | 1 000 |
+| 49-256 | 1-8 | five | free | 2 ticks | 600; 500 from 65; 400 from 81 | 9 000 | 1 000 |
+| 257 and up | as 1-256 | | | | | | |
 
 ![What each level 1-96 gets](img/design/cycle.png)
 
@@ -558,12 +633,12 @@ flowchart TD
     H -->|no| H1{"Level >= 24?"}
     H1 -->|yes| H5["five hens: all 20 bytes of the row"]
     H1 -->|no| HT["the row's count of hens"]
-    S --> D{"Level >= 8?"}
+    MD["MoveDuck $A16E: Level"] --> D{"Level >= 8?"}
     D -->|yes| DF["the duck flies free"]
     D -->|no| DC["the duck put back in the cage"]
-    S --> P{"Level >= 32?"}
-    P -->|yes| P2["a hen every 2 slow ticks"]
-    P -->|no| P3["a hen every 3 slow ticks"]
+    MH["MainLoop $9935: Level"] --> P{"Level >= 32?"}
+    P -->|yes| P2["a hen step every 2 slow ticks"]
+    P -->|no| P3["a hen step every 3 slow ticks<br/>(one hen at a time)"]
 ```
 
 | Level 9 starts: map 1, no hens | The duck out of its cage | The duck closes in | Level 10: map 2 |
@@ -592,6 +667,12 @@ is at (68, 92), heading for Harry. On level 8 the duck would have been put back 
 - **Level 33 makes the hens faster**: one hen moves every 2 slow ticks instead of every 3, so each hen moves 1.5 times
   as often.
 - Known only from the code: everything about levels 11 and up. No recording went past level 10.
+- **Against the published description.** [Wikipedia](https://en.wikipedia.org/wiki/Chuckie_Egg) gives the same five
+  passes (hens and the caged duck; no hens and the free duck; both; more hens; faster), but says that "level 41" is
+  the same as level 33. That does not hold for this Spectrum code: level 41 has 1 000-point eggs where level 33 has
+  900, and the time keeps falling at levels 49, 65 and 81 (SetupLevel `$AEF3`). The rules stop changing only at level 81;
+  from there each map repeats every eight levels, up to the wrap after 256. The article does not name its version, and its "levels are largely the same between
+  versions" leaves room for the BBC Micro original.
 
 **The point**: one byte, the level number, drives every rule through shifts and compares. The maps never change, but
 after level 8 the game has three new phases.
@@ -603,11 +684,93 @@ after level 8 the game has three new phases.
 3. A turn lasts one life. A level completed does not end the turn: the player plays on until he loses a life.
 4. When a life is lost, the map in play is saved into the player's slot. The next player who still has lives is
    loaded: his level, eggs, score and map.
-5. When a player's lives reach 0, "GAME OVER" is shown, with "PLAYER n" when others still play.
+5. When a player's lives reach 0, "GAME OVER" is shown, with "PLAYER n" in a game of two or more players, even for
+   the last player out (`$A758-$A765`: the long message of `$12` characters whenever Players > 1).
 6. When no player has lives left, GameOver `$A7BC` runs the name entry for each player in turn.
 
-**Witness**: `tour-redefine`, frames 8600-9050. Player 1's time reaches 000 ([time-zero.png](img/play/time-zero.png)),
-"OUT OF TIME !" is shown, and player 2's turn starts ([player2-turn.png](img/play/player2-turn.png)).
+Each player n (1-4) has a slot: a copy of the map at LiveMap `$61A8` + `$2A0` x n, one byte each at EggsLeft `$6EE6`
++ n and Level `$6EEB` + n, and six digits at Score `$6EC8` + 6 x n (PlayLevel saves the score there). The bytes at the
+bare addresses, n = 0, are the ones in play. His lives are PlayerLives `$6EF0` + n - 1. LifeLost saves the map, the eggs and the level into the player's slot, takes a
+life, and looks for the next player with lives:
+
+```asm
+LifeLostSave:                   ; $A72D
+        LD HL,LiveMap
+        LD BC,$02A0
+        PUSH HL
+        POP DE                  ; DE = the map in play
+        LD A,(Player)
+LifeLostSlot:
+        ADD HL,BC
+        DEC A
+        JR NZ,LifeLostSlot      ; HL = the player's slot
+        EX DE,HL
+        LDIR                    ; the map in play into the slot
+        ...                     ; EggsLeft and Level into the slot; lives - 1; GAME OVER at 0
+LifeLostNext:                   ; $A768
+        LD B,$05
+LifeLostNextLoop:
+        LD HL,(Players)         ; L = Players, H = Player
+        LD A,H
+        CP L
+        JR NZ,LifeLostNextPlayer
+        XOR A                   ; past the last player: back to player 1
+LifeLostNextPlayer:
+        INC A
+        LD (Player),A
+        ...                     ; A = his lives
+        JR NZ,LifeLostLoad      ; he has lives: load him
+        DJNZ LifeLostNextLoop   ; five tries
+        JR GameOver             ; nobody has lives left
+LifeLostLoad:                   ; $A785: his level, eggs, score and map into slot 0
+        ...
+        JP PlayerTurn           ; $A7B9
+```
+
+In pseudocode:
+
+```text
+LifeLost:
+    play DeathTune; speak DeathPhrase; Delay 0; clear the screen
+    if TimeDigits == $FF 9 9: print "OUT OF TIME !"
+    slot[Player].map = LiveMap; slot[Player].eggs = EggsLeft; slot[Player].level = Level
+    lives[Player] -= 1
+    if lives[Player] == 0: print "GAME OVER" (+ " PLAYER n" if Players > 1)
+    repeat 5 times:
+        Player = Player + 1, or 1 after the last
+        if lives[Player] != 0:
+            Level, EggsLeft, Score, LiveMap = slot[Player]
+            goto PlayerTurn
+    goto GameOver
+```
+
+```mermaid
+flowchart TD
+    L["LifeLost $A6FE: tune, phrase, pause"] --> T{"time digits $FF 9 9?"}
+    T -->|yes| O["OUT OF TIME ! ($A725)"]
+    T -->|no| S
+    O --> S["save the map, eggs, level<br/>into the player's slot ($A72D)"]
+    S --> D["lives - 1"]
+    D --> Z{"lives 0?"}
+    Z -->|yes| G["GAME OVER (+ PLAYER n with 2+ players)"]
+    Z -->|no| N
+    G --> N["next player, round the ring ($A768)"]
+    N --> H{"he has lives?"}
+    H -->|yes| LD["load his level, eggs, score, map ($A785)"]
+    LD --> PT["PlayerTurn $A62C"]
+    H -->|"no, under 5 tries"| N
+    H -->|"no one after 5 tries"| GO["GameOver $A7BC"]
+```
+
+A worked example: in `tour-redefine` four players play. Player 1's time runs out at about frame 8410 ("OUT OF TIME !"
+is shown at 8750, after the death tune), his map and his level go into slot 1, his lives go from 5 to 4, and the loop
+finds player 2 at the first try: his slot (still map 1 untouched, level 1, 12 eggs, 0 points) is loaded, "PLAYER 2"
+scrolls through at frames 8800-8850, and player 2 is in play at 9050.
+
+**Witness**: `tour-redefine`, frames 8200-9050 (screens every 50 frames). TIME reads 021 at 8200, 015 at 8250, 009 at
+8300, 003 at 8350 and 000 from 8400; 000 stays on the HUD through the death tune and Delay
+([time-zero.png](img/play/time-zero.png), frame 8600). "OUT OF TIME !" is shown at 8750, and player 2 is in play at
+9050 ([player2-turn.png](img/play/player2-turn.png)).
 
 **The point**: the players share one machine and one main loop. Each player's state lives in a slot and is swapped in
 at his turn.
@@ -631,7 +794,7 @@ tile is the screen at the end of its frame. Made with `python3 tools/fig_design.
 | Level 8: three hens | `levels-1-9` 17 253 | [level8.png](img/play/level8.png) |
 | A hen kills: Harry is gone while the tune plays | `idle-1p` 7250 | [hen-death.png](img/play/hen-death.png) |
 | A fall into the floor gap of map 2 | `fall-death` 2710 | [fall-death.png](img/play/fall-death.png) |
-| TIME 000 | `tour-redefine` 8600 | [time-zero.png](img/play/time-zero.png) |
+| TIME 000, held during the death tune (the step to 000 is between 8350 and 8400) | `tour-redefine` 8600 | [time-zero.png](img/play/time-zero.png) |
 | Level 9 and the free duck | `levels-1-9` 23 546-25 490 | 1.10 |
 | The name typed: CE1 | `gameover-name` 39 600 | [name-typed.png](img/play/name-typed.png) |
 
@@ -648,7 +811,7 @@ breaks in play.
 1. **The level end.** MainLoop returns to PlayLevel with no eggs left. The bonus is counted into the score (1.8), one
    beep (`$1E04`) a step. Then come two pauses of Delay 0 (about 24 frames each), BoxZoom, and "LEVEL nn" scrolled
    in. The level goes up by one, the next map is copied into the map in play, and the eggs are set to 12.
-2. **A life lost.** MainLoop returns with eggs left. The death tune plays (24 notes, 4.8 s, under DI), then the death
+2. **A life lost.** MainLoop returns with eggs left. The death tune plays (24 notes, about 5.3 s, under DI), then the death
    phrase. After a pause the screen is cleared. "OUT OF TIME !" is printed when the time digits read `$FF 9 9`. The
    lives go down by one.
 3. **The game over.** BoxWipe runs twice, and the scores are turned into ASCII. Then each player's score is tested
@@ -661,6 +824,51 @@ breaks in play.
    - DELETE (`$A8C3`) is witnessed in `name-delete`, frame 63 (doc 5.8).
    - **Witness**: `gameover-name`, frames 39 483-39 700. "CE1" is typed, and it becomes the first entry.
 
+MainLoop's RET lands at `$A656` in PlayLevel, which saves the score and tells the two endings apart by EggsLeft:
+
+```asm
+PlayLevel:                      ; $A653
+        CALL SetupLevel         ; draws the level, JP MainLoop; every exit RETs to $A656
+        CALL WaitPhrase
+        ...                     ; the score into the player's slot (Score + 6 x Player)
+        IM 2
+        LD A,(EggsLeft)
+        AND A
+        JP NZ,LifeLost          ; eggs left: a life lost (1.11)
+PlayLevelBonus:                 ; $A675: the bonus counted in (1.8)
+        ...
+PlayLevelPause:                 ; $A68D: two Delay 0, BoxZoom, the score saved again
+        ...
+        LD HL,Level
+        INC (HL)                ; $A6B1: the next level
+        ...                     ; LEVEL nn, the next map into LiveMap, EggsLeft = 12
+        JP PlayLevel            ; $A6FB
+```
+
+```text
+PlayLevel:
+    SetupLevel()                 # returns only when the play ends
+    save the score into the player's slot
+    if EggsLeft != 0: goto LifeLost
+    count the bonus in; Delay 0 twice; BoxZoom; save the score
+    Level += 1; show "LEVEL nn"; LiveMap = map (Level AND 7) + 1; EggsLeft = 12
+    goto PlayLevel
+```
+
+```mermaid
+flowchart TD
+    P["PlayLevel $A653: CALL SetupLevel"] --> R["MainLoop's RET to $A656: save the score"]
+    R --> E{"EggsLeft = 0?"}
+    E -->|yes| B["the bonus counted in, Delay 0 x 2, BoxZoom"]
+    B --> L["Level + 1, LEVEL nn, the next map, 12 eggs"]
+    L --> P
+    E -->|no| LL["LifeLost $A6FE (1.11)"]
+    LL -->|a player with lives| PT["PlayerTurn $A62C"]
+    PT --> P
+    LL -->|nobody| GO["GameOver $A7BC: the name entry per player"]
+    GO --> T["TitlePage, silent"]
+```
+
 **The point**: between levels the game spends a few seconds on effects. The name entry is the only place where the
 ROM's keyboard routine runs.
 
@@ -668,7 +876,9 @@ ROM's keyboard routine runs.
 
 | What | Known from |
 | --- | --- |
-| A death by the duck | `$9BC8` |
+| A death by the duck | `$9BC6` |
+| The HenEatGrain reset: a left peck touching Harry | `$9265`; shown only on a clone, `work/docs/ceC/heg.py` (doc 10.8) |
+| Level 257 and the Level wrap | `$A6B1` (doc 10) |
 | A lift carrying Harry to the top | `$991E` |
 | Levels 11 and up: the hens back from 17, five hens from 25, faster hens from 33, less time from 17 | SetupLevel `$AE9C`, `$9944` |
 | An egg worth more than 300 | `$99F3` |

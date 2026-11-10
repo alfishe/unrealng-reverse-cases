@@ -18,11 +18,16 @@
 ;
 ; Then the duck test: DuckX within HarryX - 7 .. HarryX + 8 and DuckY within
 ; HarryY - 8 .. HarryY + 9 kills: it drops the five saved words and every word
-; on the stack until one is $A410 or more (the return into PlayLevel, $A656)
-; and returns there. Known only from the code: no build was killed by the duck
-; ($9BC6 never ran). The test runs for every draw, also while the duck is caged
-; on levels 1-8: a Harry at x 0-15 and y 143-160 would touch the caged duck at
-; (8, 152).
+; on the stack until one is $A410 or more and returns there. From MainLoop's
+; own draws that word is the return into PlayLevel ($A656). From a draw inside
+; JumpStep (JumpLand on a drift tick, the fall start $A2B1, CatchLift $A286)
+; MainLoop's PUSH AF at $9898 lies on the stack first. Those draws all come on
+; the x-step pass, after the jump click's Beep, which leaves F = $42 (Z and N),
+; so the word is JumpDelay x 256 + $42: with JumpDelay $A4 or more it passes
+; the test and the RET goes to an address in $A442-$FF42. Known only from the
+; code: no build was killed by the duck ($9BC6 never ran). The test runs for
+; every draw, also while the duck is caged on levels 1-8: a Harry at x 0-15 and
+; y 143-160 would touch the caged duck at (8, 152).
 ;
 ; Witness: 134 270 calls (WalkHarry, ClimbLadder, JumpStep, MoveDuck,
 ; CatchLift); 18 652-18 859 T unshifted, + about 1244 T a pixel of shift

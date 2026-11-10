@@ -11,7 +11,9 @@
 ; address, its row count + 1; at 166 the platform restarts from LiftTable's
 ; record (platform 1 takes the address, x and row, then row 3; platform 2
 ; copies 3 bytes, so Lift2Row holds LiftX until LD A,$03 sets row 3); the
-; address one line up (LineUp $A0A9), DrawLift with $FF. Witness: 57 158 calls;
+; address one line up (LineUp $A0A9), DrawLift with $FF. A restart also passes
+; LineUp, so after its first restart a platform is drawn one line above its row
+; count (SetupLevel's start address has no LineUp). Witness: 57 158 calls;
 ; restarts $A02E 164 and $A05C 167.
 MoveLifts:
   LD A,(LiftX)

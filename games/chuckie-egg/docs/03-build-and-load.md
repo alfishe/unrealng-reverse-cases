@@ -88,7 +88,7 @@ flowchart TD
     D1 -->|no| D
     D1 -->|yes| D2{"H - 1; 24 rows done?"}
     D2 -->|no| D
-    D2 -->|yes| E["the attribute bands $5F20-$5F9D:<br/>16 calls of FillAttributes $5FC4, 745 bytes"]
+    D2 -->|yes| E["the attribute bands $5F20-$5F9D:<br/>23 calls (14 call sites) of<br/>FillAttributes $5FC4, 745 bytes"]
     E --> F["block 3: LD-BYTES IX = $5C3D, DE = 2, A = $FF<br/>frames 262-361"]
     F --> G["block 4: LD-BYTES IX = $8214, DE = $49D4, A = $FF<br/>frames 361-5292"]
     G --> H["STKBOT = STKEND = $5DC0<br/>JP $A410, frame 5292"]
@@ -105,7 +105,7 @@ Loader:                                     # $5EF3
     for H = 23 down to 0:                   # character rows, counted from the bottom
         for L = 0 to 31:
             PrintPictureChar(code = (DE), H, L); DE += 1
-    paint the attribute bands               # 16 runs of FillAttributes
+    paint the attribute bands               # 23 calls (14 call sites) of FillAttributes
     LD_BYTES(IX = ERR_SP, DE = 2, flag $FF)        # block 3; the result is not checked
     LD_BYTES(IX = $8214, DE = 18 900, flag $FF)    # block 4; the result is not checked
     STKBOT = STKEND = $5DC0
@@ -234,8 +234,11 @@ The non-zero bytes of the screen, read at frame starts (`memory_at`, `$4000-$5AF
 | 260 | 1887 | 0 | the picture is almost drawn, all black on black |
 | 262 | 2117 | 745 | the bands are painted: the picture appears |
 
-- **The clear takes 4.15 frames.** 6912 passes of 42 T are 290 304 T. It started at frame 246, T 30 897, so it ends in
-  frame 250 or 251.
+- **The clear takes at least 4.15 frames.** 6912 passes of at least 42 T are 290 304 T. That is the uncontended count:
+  LoaderClear `$5EFE` runs in contended RAM and writes the screen, so while the beam draws the paper both its fetches
+  and its writes wait. It started at frame 246, T 30 897, so without contention it would end in frame 250 at about
+  T 41 600; the waits push the end later, into frame 250 or 251 (not traced pass by pass). The frame 260 count above
+  shows it done.
 - **The picture takes about ten frames**, frames 251 to 261: 768 calls of PrintPictureChar, about 900 T each.
 - **The bands take less than a frame** (745 bytes of FillAttributes, at 261-262). Columns 0 and 31 of the panels keep
   attribute 0 from the clear.
@@ -323,7 +326,7 @@ gets a game that freezes. The main loop does not need ERR_SP for anything else.
 | 246, T 30 897 | line 10 runs | USR 24307 enters Loader `$5EF3` | |
 | 246-251 | the clear | LoaderClear `$5EFE` | the screen to 0, the attributes first |
 | 251-261 | the picture | PrintPictureChar `$5FC9`, 768 calls | the bitmap, invisible |
-| 261-262 | the bands | FillAttributes `$5FC4`, 16 calls | the picture appears |
+| 261-262 | the bands | FillAttributes `$5FC4`, 23 calls | the picture appears |
 | 262-361 | block 3, at signal speed | LD-BYTES `$0556` | `$5C3D-$5C3E` = `01 00` |
 | 361-5292 | block 4, at signal speed | LD-BYTES `$0556` | `$8214-$CBE7`, 18 900 bytes |
 | 5292, T 39 044 | the game | Start `$A410`: IM 2, the title | |
@@ -356,6 +359,19 @@ python3 ../../kit/memanim.py --work work/docs/ceA/c1 --from 361:0 --to 5300:0 --
 - **The images agree.** The memory at frame 5292 is the image `tools/image.py` builds from the tape's blocks, apart
   from the ROM's system variables and stack ([doc 2.3](02-architecture.md#23-three-images-as-loaded-at-the-entry-at-play)):
   nothing is unpacked, moved or decrypted between the load and the game's first instruction.
+
+The static decode (the TZX and the listings) against the recording (`c1`):
+
+| What the static decode says | Where it comes from | What `c1` shows | Agrees |
+| --- | --- | --- | --- |
+| Block 2 is the BASIC program at PROG `$5CCB-$6322`, line 10 `RANDOMIZE USR 24307` | `tools/tzxblocks.py`, `build/loader.lst` | Loader `$5EF3` entered at frame 246, T 30 897 | yes |
+| The loader clears 6912 bytes from `$5AFF` down | LoaderClear `$5EFE` | 6912 passes of `$5EFE`; the attributes 0 at frame 248 | yes |
+| The picture is 24 rows of 32 codes | PictureText `$601C` | 768 calls of PrintPictureChar `$5FC9`, frames 251-261 | yes |
+| The bands are painted last | FillAttributes `$5FC4` | 23 calls (14 call sites); 745 attributes not 0 at frame 262 | yes |
+| Block 3 sets ERR_SP to `$0001` | block 3 = `01 00` | `$5C3D-$5C3E` = `01 00` after frame 361 | yes |
+| Block 4 is 18 900 bytes at `$8214` | the block's length and the loader's LD-BYTES call | `tape-block4.gif`: only `$8214-$CBE7` fills, at 194 bytes a second | yes |
+| Nothing is unpacked between the load and the game | no code runs between LD-BYTES and `JP $A410` | the memory at frame 5292 equals the image `tools/image.py` builds (doc 2.3) | yes |
+| The game starts at `$A410` | the loader's `JP $A410` | Start at frame 5292, T 39 044 | yes |
 
 **The point**: 5292 frames from power-on to the title, 4931 of them for the game block. The loader's own work takes 16
 frames.

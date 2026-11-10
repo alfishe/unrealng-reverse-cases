@@ -11,7 +11,7 @@
 The screenshots are recording frames taken with kit/screen_shot.py (WALKTHROUGH 6.1 and doc 01's tables); the maps
 and sprites come from src/res (res_formats.py), the hens' starts from src/res/tables/HenTable.csv, the lifts from
 LiftTable.csv. The rules of `cycle` are those of SetupLevel $AE9C, MoveHen $911E, MainLoop $9935, MoveDuck $A0C8 and
-TakeEggOrGrain $99DF (doc 01, 1.9).
+TakeEggOrGrain $99DF (doc 01, 1.7 and 1.10).
 """
 import argparse
 import os
@@ -152,8 +152,8 @@ def playscreen(a):
     im = Image.new('RGB', (WIDTH, 64 + 192 * S + 150), BG)
     d = ImageDraw.Draw(im)
     title_block(d, 'The play screen: three HUD rows over the 32 x 21 map',
-                f'levels-1-9 frame {frame} (level 1), the screen and the records read with memory_at at the end of '
-                'the frame')
+                f'levels-1-9 frame {frame} (level 1), scaled by 3: the screen and the records read with memory_at at '
+                'the start of the frame')
     ox, oy = 12, 64
     im.paste(big, (ox, oy))
     f = font(14)
@@ -380,7 +380,7 @@ def world(_a):
              'start (x, y of its bottom line, HenTable). A white frame is the lift shaft (LiftTable): two platforms',
              'rise in it. Dotted lines: the other records of the row, used from level 25 on (five hens).',
              'The point: eight maps serve every level (map = ((level - 1) AND 7) + 1); what changes from round to',
-             'round is the hens, the duck and the clocks (1.9).',
+             'round is the hens, the duck and the clocks (1.10).',
              'python3 tools/fig_design.py world']
     yy = top + 2 * (h + cap + gap) + 8
     for i, t in enumerate(notes):

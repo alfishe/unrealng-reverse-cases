@@ -13,7 +13,9 @@
 ; HarryDir 0, a sound ($2806). No key: HarryFrame 3 (the next is 0, standing).
 ; Then the frame steps (0-3) and DrawSprite draws him. On a lift: when x leaves
 ; LiftX - 9 .. LiftX + 9 he walks off (JumpState 1, JumpDx his direction,
-; JumpCount 4: the drift of FallOffEdge).
+; JumpCount 4: the drift of FallOffEdge). OnLift stays 1 (only the jump start
+; and SetupLevel clear it), so until the next jump the lift steps still raise
+; him and the top-row death test still applies.
 ;
 ; Witness: 95 138 calls; left steps $9D59 5 749, right $9D95 6 073, standing
 ; $9DAB 83 316. Known only from the code: walking off a lift ($9DDB never ran).

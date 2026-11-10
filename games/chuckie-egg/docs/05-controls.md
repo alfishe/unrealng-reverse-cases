@@ -277,7 +277,7 @@ stateDiagram-v2
     Instructions --> Instructions: 1, 2, 3 set KeyType
     Instructions --> Redefine: R
     Instructions --> Players: S, once PhraseTimer = $FF
-    Redefine --> Title: five keys given, JP TitleScrollerStart
+    Redefine --> Title: five keys given, JP TitleScrollerStart (the key loop over the redefine page)
     Players --> Play: 1-4
     Play --> Play: CAPS SHIFT + H, hold until S
     Play --> Title: CAPS SHIFT + A, JP Start
@@ -303,12 +303,13 @@ The steps:
 2. The first ten bytes of KeySet3 `$8268` are set to 0. The sixth pair `1E F7` (key 1) stays.
 3. The prompt "press the key you wish to use to" is printed at row `$11`, and the five labels "move up", "move down",
    "move left", "move right", "jump" at rows `$0E`, `$0C`, `$0A`, `$08`, `$06` from column `$0A`.
-4. Row 6 of the attributes (`$58C0`) is painted with ink 4. The labels' rows keep the black ink of ClearScreen, so
-   the labels are invisible.
+4. Row 6 of the attributes (`$58C0`), the prompt's row (H `$11`), is painted with ink 4. The labels' rows keep the
+   black ink of ClearScreen, so the labels are invisible.
 5. It waits until no key is down.
 6. RedefineOne runs five times. Each call paints a 13-cell bar in ink 3 (magenta) under its label, which makes the
    label visible, then waits for a key.
-7. JP TitleScrollerStart: back to the title.
+7. JP TitleScrollerStart `$AAB7`: the title's scroller and its key loop run over the redefine page; the title page
+   is not redrawn (TitlePage is skipped).
 
 RedefineOne `$AB19`:
 
@@ -409,9 +410,10 @@ AB4A  05           DEC B
 AB4B  28 D7        JR Z,RedefineOneKey     ; B = 1: already used
 ```
 
-KeyUsed `$AABA` compares the new pair with the pairs before it. It walks back from the new pair, and the count it
-uses is the new pair's number plus 2. The two extra pairs lie just before KeySet3: they are the last two pairs of
-KeySet2, its jump keys 4 (`17 F7`) and 9 (`1D EF`). So 4 and 9 can never be chosen, for any of the five keys. The
+KeyUsed `$AABA` compares the new pair with the pairs before it. It walks back from the new pair, and the count it uses
+is the new pair's number plus 2. The two extra pairs lie just before KeySet3: they are the last two pairs of KeySet2,
+its jump keys 4 (`17 F7`) and 9 (`1D EF`). So 4 or 9 pressed alone can never be chosen, for any of the five keys; held
+with another key of its half row it gives a different mask (4 + 5: `07 F7`) and is accepted, as that combination. The
 sixth pair of set 3, key 1, is never compared: key 1 can be given as a direction and then also jumps.
 
 ```text
@@ -500,13 +502,15 @@ Witnesses:
 
 *Animation 5.1: RedefineOne and KeyUsed storing one key. `tour-redefine`, frames 215:0-216:0, 50 pictures:
 `python3 ../../kit/routine_anim.py --work work/docs/ceB/tour-redefine --window 215:0-216:0 --listing build/game.lst
---view screen --pc AABA-AB5F,9C40-9C8D --range 8200-84FF --pictures 50 --title "RedefineOne: a key stored, checked,
+--view screen --pc AABA-AB5F,9C40-9C8D --range 4000-FFFF --pictures 50 --title "RedefineOne: a key stored, checked,
 named" --out docs/img/routines/RedefineOne.gif`.*
 
 How to read:
 
-- The left pane is the listing with the current instruction; the right is the screen at that moment.
-- The memory pane shows `$8200-$84FF`: KeySet3 at `$8268` and the names in InstructionsText.
+- Three panes, left to right: the memory map, the screen at that moment, and the listing with the current
+  instruction.
+- The memory map is `$4000-$FFFF`, 256 bytes a row: the write to KeySet3 `$8268` and the read of KeyNames `$AC54` show
+  as dots in the rows of `$82xx` and `$ACxx`, the code of `$AAxx-$ABxx` in green.
 - The frame and T of each picture are in its header.
 
 The point: the pair is written before the check, the check also refuses KeySet2's two jump keys, and only the release
@@ -594,8 +598,10 @@ doc 09), but Harry, the hens, the duck, the clock and the bonus all stop. The ho
 printed, and the play area stays as it was.
 
 ABORT has a side effect. Start `$A410` sets KeyType to 6, so the next game plays with key type 1 unless the player
-chooses again. The score of the aborted game is not entered in the table (known only from the code: Start leads
-to the title, not to GameOver).
+chooses again. Start also sets TitleTuneDone 0, so the title after an abort plays the title tune and phrase 20
+again (witnessed: `hold-abort` aborts at frame 1400; at frame 1410 TitlePage's `$A45F` falls through, PlayTune
+plays all 46 notes, 46 BEEPER calls, then StartPhrase 20 at `$A466`). The score of the aborted game is not entered
+in the table (known only from the code: Start leads to the title, not to GameOver).
 
 Worked example, `hold-abort`:
 
@@ -626,7 +632,9 @@ The point: both keys are read once per slow tick from inside MainLoop, and HOLD 
 
 ## 5.7 From the key to Harry
 
-The keys of the key set are read only in the slow tick, by four routines, every tick:
+The keys of the key set are read only in the slow tick, by four routines. Left, right and jump are read every tick
+(in a jump only ClimbLadder runs); up and down only when Harry is aligned on a ladder column (x AND 7 = 0) and the
+cell above his head, or below his feet, is a ladder:
 
 1. MainLoopHarry `$9949` (after PaintCells): when Harry is on foot (JumpState 0), the two jump keys. A jump key down
    starts a jump: JumpState 2, the jump's counters set, and the direction taken from right (tested first), then left.
@@ -634,7 +642,10 @@ The keys of the key set are read only in the slow tick, by four routines, every 
 2. Otherwise, on foot: LeaveLadder (left, then right) and, unless Harry is on a ladder (HarryDir `$0D`), WalkHarry
    (left first, then right).
 3. FallOffEdge, unless Harry is on a lift.
-4. ClimbLadder, also during a jump: up, then down. A jump can catch a ladder.
+4. ClimbLadder, also during a jump: at x AND 7 = 0 only, up when the cell above his head is a ladder, else down when
+   one lies below his feet. A jump can catch a ladder.
+
+WalkHarry and ClimbLadder each end with the DrawSprite of Harry (6.7 of doc 06).
 
 ```text
 SlowTickHarry:
@@ -647,9 +658,15 @@ SlowTickHarry:
             else: dx = 0, dir unchanged         ; straight up
             return                              ; the tick ends
         LeaveLadder()                           ; left, right
-        if HarryDir != $0D: WalkHarry()         ; left, right
+        if HarryDir != $0D: WalkHarry()         ; left, right; DrawSprite
         if not OnLift: FallOffEdge()
-    ClimbLadder()                               ; up, down; also in a jump
+    ClimbLadder()                               ; also in a jump
+
+ClimbLadder:
+    if HarryX AND 7 != 0: return                ; no key read, no draw
+    if the cell above his head is a ladder and KeyDown(up): climb up
+    elif a ladder lies below his feet and KeyDown(down): climb down
+    DrawSprite(Harry)
 ```
 
 ```text
@@ -688,19 +705,20 @@ flowchart TD
     JS --> N["MainLoopNext"]
     JK -->|"no"| LL["LeaveLadder: left, right"]
     LL --> D{"HarryDir = $0D ?"}
-    D -->|"no"| WH["WalkHarry: left, right; HarryX +- 1"]
+    D -->|"no"| WH["WalkHarry: left, right; HarryX +- 1; calls DrawSprite"]
     D -->|"yes"| FO
     WH --> FO{"OnLift ?"}
     FO -->|"no"| FE["FallOffEdge"]
     FO -->|"yes"| CL
-    FE --> CL["ClimbLadder: up, down"]
+    FE --> CL{"ClimbLadder: x AND 7 = 0 ?"}
     J -->|"no: in a jump"| CL
-    CL --> DS["DrawSprite: Harry at the new place"]
-    DS --> N
+    CL -->|"yes"| UD["up or down, by the ladder cells; calls DrawSprite"]
+    CL -->|"no"| N
+    UD --> N
 ```
 
 Nothing buffers a key. A key acts in the first slow tick after it goes down and stops acting in the first tick after
-it goes up. A slow tick comes about 1.2 times a frame on level 1 (doc 04), so the delay is under one frame.
+it goes up. A slow tick comes about 1.25 times a frame on level 1 (doc 04), so the delay is under one frame.
 
 Worked example, `tour-type2` with key type 2 (8 right, 5 left, 4 jump), samples at the frames' starts:
 
@@ -742,11 +760,13 @@ and stops at the tick it is released in.
 
 *Animation 5.2: one key, from the port to the screen. `tour-type2`, frames 1000:0-1002:0, 60 pictures:
 `python3 ../../kit/routine_anim.py --work work/docs/ceB/tour-type2 --window 1000:0-1002:0 --listing build/game.lst
---view screen --pc 9858-99DC,9D08-9DF0,9A4C-9BFE --range 6100-A1FF --pictures 60 --title "From key 8 to Harry's
+--view screen --pc 9858-99DC,9D08-9DF0,9A4C-9BFE --range 4000-FFFF --pictures 60 --title "From key 8 to Harry's
 step" --out docs/img/routines/WalkHarry.gif`.*
 
 How to read:
 
+- Three panes, left to right: the memory map `$4000-$FFFF` (256 bytes a row: the screen at the top, LiveMap at
+  `$61A8`, the code from `$8214`), the screen, and the listing.
 - The listing pane follows MainLoop, WalkHarry and DrawSprite; the current instruction is highlighted.
 - The screen pane shows Harry on level 1. Each step right is one WalkHarry pass followed by one DrawSprite.
 - The frame and T of each picture are in its header.
@@ -759,7 +779,8 @@ Code oddities seen on this path:
 - WalkHarry tests left first, the jump start tests right first. With left and right both held, Harry walks left but
   jumps right.
 - A jump key ends the tick at once, so the frame a jump starts has no walk step.
-- LeaveLadder and WalkHarry run only on foot, FallOffEdge only off a lift; ClimbLadder runs in every tick.
+- LeaveLadder and WalkHarry run only on foot (JumpState 0); FallOffEdge only on foot and not on a lift (OnLift 0,
+  `$99D2-$99D6`); ClimbLadder runs in every tick.
 
 ## 5.8 The name entry
 
@@ -874,13 +895,14 @@ from frame about 114).
 
 *Animation 5.3: EnterHiScore taking DELETE. `name-delete`, frames 63:0-64:0, 40 pictures:
 `python3 ../../kit/routine_anim.py --work work/docs/ceB/name-delete --window 63:0-64:0 --listing build/game.lst
---view screen --pc A80C-A8EB,9C40-9C8D --range 5B00-5CFF --pictures 40 --title "EnterHiScore: DELETE" --out
+--view screen --pc A80C-A8EB,9C40-9C8D --range 4000-FFFF --pictures 40 --title "EnterHiScore: DELETE" --out
 docs/img/routines/EnterHiScore.gif`.*
 
 How to read:
 
 - The listing pane follows EnterHiScore and PrintChar.
-- The memory pane shows `$5B00-$5CFF`, the ROM's system variables: KSTATE at `$5C00`, LAST_K at `$5C08`.
+- The memory pane is `$4000-$FFFF`, 256 bytes a row; the ROM's system variables KSTATE `$5C00` and LAST_K `$5C08`
+  are read in the rows of `$5Cxx`, just under the attributes.
 - The screen pane shows the cursor erased at column `$12` and drawn again at `$11`.
 
 The point: the game takes its keys from the ROM's decoded LAST_K here, not from the port, so every key with a code of

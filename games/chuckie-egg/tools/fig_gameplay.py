@@ -7,6 +7,7 @@
     python3 tools/fig_gameplay.py difficulty --out docs/img/gameplay/difficulty.png
     python3 tools/fig_gameplay.py score      --game G.jsonl --out docs/img/gameplay/score-lives.png
     python3 tools/fig_gameplay.py bug        --bug DIR --control DIR --out docs/img/gameplay/heneatgrain-bug.png
+    python3 tools/fig_gameplay.py lifthud    --out docs/img/gameplay/lift-top-hud.png
 
 V.jsonl holds memory_at samples of $72D8-$7375 (the object block), G.jsonl of $6EC8-$6EF3 (score, eggs, level,
 lives), one line {"frame": F, "hex": ...} a frame, written by work/docs/ceC/sample.py. A sample of frame F is the
@@ -408,6 +409,69 @@ def cmd_bug(args):
     print(args.out, img.size)
 
 
+# The HUD damage at the top of the lift shaft (lift-top.gif: its first and last pictures, levels-1-9 5905 and 5995)
+
+LIVEMAP = 0x61A8
+
+
+def cmd_lifthud(args):
+    gif = Image.open(args.gif)
+    gif.seek(0)
+    first = gif.convert('RGB')
+    gif.seek(gif.n_frames - 1)
+    last = gif.convert('RGB')
+    cell = first.width // 32                                  # the GIF is the screen at scale 2: 16 px a cell
+    rows = 4                                                  # character rows 0-3 from the top
+    scale = 1.75
+    sw, sh = int(first.width * scale), int(rows * cell * scale)
+    gap = 44
+    W = sw + 2 * gap
+    H = 60 + 2 * (30 + sh + 16) + 170
+    img = Image.new('RGB', (W, H), FO.BG)
+    d = ImageDraw.Draw(img)
+    d.text((gap, 14), 'Lift-top trick, level 3: map row 21 painted from y 168, row 22 from y 176',
+           fill=FO.TEXT, font=FO.font(18))
+    changed = []
+    for cr in range(rows):
+        for c in range(14):                                   # the HUD's left half; the right half is the counters
+            box = (c * cell, cr * cell, (c + 1) * cell, (cr + 1) * cell)
+            if list(first.crop(box).getdata()) != list(last.crop(box).getdata()):
+                changed.append((cr, c))
+    y = 56
+    for picture, title in ((first, 'frame %d: the HUD intact (PLAYER 1, LEVEL 03, four life icons)' % args.first),
+                           (last, 'frame %d: LEVEL 03 and one life icon overwritten by bricks and a ladder top'
+                            % args.last)):
+        d.text((gap, y), title, fill=FO.TEXT, font=FO.font(15))
+        crop = picture.crop((0, 0, picture.width, rows * cell)).resize((sw, sh), Image.NEAREST)
+        img.paste(crop, (gap, y + 26))
+        if picture is last:
+            for cr, c in changed:
+                x0, y0 = gap + c * cell * scale, y + 26 + cr * cell * scale
+                d.rectangle((x0, y0, x0 + cell * scale - 1, y0 + cell * scale - 1), outline=(80, 200, 230), width=2)
+        for cr in range(rows):
+            d.text((6, y + 26 + cr * cell * scale + 8), 'r%d' % (23 - cr), fill=FO.DIM, font=FO.font(13))
+        y += 30 + sh + 16
+    by_row = {}
+    for cr, c in changed:
+        by_row.setdefault(23 - cr, []).append(c)
+    lines = ['Cyan: the cells that changed (columns 0-13). r: the map row. The map has rows 0-20; 21-22 lie past '
+             'slot 0:']
+    for r in sorted(by_row):
+        cs = by_row[r]
+        lines.append('  map row %d, columns %s: LiveMap + 32 x %d + column = $%04X-$%04X, slot 1 row %d'
+                     % (r, ', '.join(str(c) for c in cs), r, LIVEMAP + 32 * r + cs[0], LIVEMAP + 32 * r + cs[-1],
+                        r - 21))
+    lines.append('Slot 1 (player 1\'s map, $6448) holds level 1 as StartGame wrote it:')
+    lines.append('  row 0 all bricks; row 1 empty at column 8, a ladder at columns 10-11.')
+    lines.append('DrawSprite redraws the pixels from those cells, PaintCells their attributes.')
+    for k, t in enumerate(lines):
+        d.text((gap, y + 4 + 22 * k), t, fill=FO.TEXT, font=FO.font(13))
+    d.text((gap, H - 24), 'tools/fig_gameplay.py lifthud; pictures from docs/img/play/lift-top.gif (levels-1-9)',
+           fill=FO.DIM, font=FO.font(12))
+    img.save(args.out)
+    print(args.out, img.size, sorted(by_row.items()))
+
+
 def main():
     p = argparse.ArgumentParser()
     sub = p.add_subparsers(dest='cmd', required=True)
@@ -435,6 +499,11 @@ def main():
     s = sub.add_parser('bug')
     s.add_argument('--bug', required=True)
     s.add_argument('--control', required=True)
+    s.add_argument('--out', required=True)
+    s = sub.add_parser('lifthud')
+    s.add_argument('--gif', default='docs/img/play/lift-top.gif')
+    s.add_argument('--first', type=int, default=5905)
+    s.add_argument('--last', type=int, default=5995)
     s.add_argument('--out', required=True)
     args = p.parse_args()
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)

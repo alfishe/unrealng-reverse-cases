@@ -29,10 +29,11 @@
 ; or 16 right (state 2), the row 8 below.
 ;
 ; Inputs: the hen records. Outputs: the record moved; the screen. Side effects:
-; RandomPtr, HenTurn; DrawHen may end the life (it unwinds the stack to the
-; caller of MainLoop). Witness: 38 158 calls in the eight builds (c1 801);
-; turns $91A1 979, onto a ladder $91DB 324 and $91EF 228, off a ladder $924C
-; 213 and $9261 307, meals $9281 82.
+; RandomPtr, HenTurn; DrawHen may end the life (it unwinds the stack to $A656,
+; the return of PlayLevel's CALL SetupLevel; SetupLevel enters MainLoop by JP
+; $B12D). Witness: 38 158 calls in the eight builds (c1 801); turns $91A1 979,
+; onto a ladder $91DB 324 and $91EF 228, off a ladder $924C 213 and $9261 307,
+; meals $9281 82.
 MoveHen:
   LD A,(Level)
   CP $08
@@ -340,16 +341,17 @@ HenEatGrainNone:
 ; Inputs: L the hen's x, H its y, A the frame (0: erase). First the box test
 ; against Harry: Harry's x within x - 7 .. x + 5 and his y within y + 1 .. y +
 ; $1C. A touch drops six words from the stack (DrawHen's four, its return and
-; MoveHen's) and returns to the caller of MainLoop: the life ends ($92BC: c1 1,
+; MoveHen's) and returns to $A656 in PlayLevel: the life ends ($92BC: c1 1,
 ; idle-1p 5, gameover-name 5, 11 in all).
 ;
 ; A > 0: the frame from HenSprites (see there) is ORed onto the screen, 16
-; lines from (x, y) up (ScreenAddr $9404; one byte at x >= $F9), and a block of
-; attribute 5 (cyan) of 1-2 columns by 2-3 rows is set (AttrAddrHen $93DD). A =
-; 0: the 2 x 3 map cells under the hen (1 x 3 at x >= $F8) are drawn again from
-; LiveMap with their glyphs and CellAttributes. IX is HarryX at the end.
-; Measured in levels-1-3 frames 600-900: a hen read blank by the beam in 7 of
-; 44 steps.
+; lines from (x, y) up (ScreenAddr $9404; at x >= $F9 the DEC C at $9309 skips
+; both bytes and only the attributes are set, never reached: a hen turns at
+; $F8), and a block of attribute 5 (cyan) of 1-2 columns by 2-3 rows is set
+; (AttrAddrHen $93DD). A = 0: the 2 x 3 map cells under the hen (1 x 3 at x >=
+; $F8) are drawn again from LiveMap with their glyphs and CellAttributes. IX is
+; HarryX at the end. Measured in levels-1-3 frames 600-900: a hen read blank by
+; the beam in 7 of 44 steps.
 ;
 ; Witness: 44 867 calls.
 DrawHen:
@@ -378,7 +380,7 @@ DrawHenTestX:
   JR C,DrawHenFrame
   LD B,$06
 HenKill:
-  POP HL                  ; drop six words: back to the caller of MainLoop
+  POP HL                  ; drop six words: back to $A656 in PlayLevel
   DJNZ HenKill
   RET
 DrawHenFrame:

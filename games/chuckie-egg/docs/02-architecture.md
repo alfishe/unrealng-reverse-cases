@@ -11,6 +11,13 @@ levels (WALKTHROUGH 6.0). The counts marked "eight builds" are summed over the e
 Chuckie Egg is a 48K game. It uses no extra RAM, no AY, and no port but the ULA's `$FE` and the speech port `$9F`
 (doc 9).
 
+**48K and 128K.** Every recording of this case is a 48K machine; no 128K model was tested. From the code: the game
+touches no 128K port (`$7FFD`, AY), so it runs in the 128K's page 0 as on a 48K. The IM 2 vector table at `$B200`
+is 263 bytes of `$9C`, so any bus value gives `$9C9C` (PhraseVector), on either model. The ROM calls (BEEP `$03F8`,
+LD-BYTES `$0556`) are in the 48 BASIC ROM the 128K also holds. What would differ is the timing: the 128K frame is
+70 908 T with another contention pattern, so the T counts of this case (the pass and tick lengths, the beam
+positions) would shift by a few per cent; the game's speed is set by its own work, not by the frame (2.7).
+
 | Resource | What the machine has | What the game uses |
 | --- | --- | --- |
 | CPU | Z80 at 3.5 MHz, 69 888 T a frame, 50.08 frames a second | all of it: the main loop never halts (HALT is 0.00 % of `levels-1-9`) |
@@ -19,11 +26,12 @@ Chuckie Egg is a 48K game. It uses no extra RAM, no AY, and no port but the ULA'
 | Interrupt | IM 1 or IM 2, 50 times a second | IM 2 for the speech; IM 1 only in the name entry (doc 4.5) |
 | Screen | 6912 bytes at `$4000`, no second buffer | drawn in place, with OR and copies, during the frame (doc 6) |
 | Sound | the beeper on port `$FE`, bit 4 | Beep `$9CA4`, and the ROM's BEEP `$03F8` for the tunes (doc 9) |
-| Speech | the Currah µSpeech on port `$9F` | 32 phrases of allophones, fed by the interrupt (doc 9) |
+| Speech | the Fuller Orator (SP0256-AL2) on port `$9F` | 33 phrases of allophones, fed by the interrupt (doc 9) |
 
 The main loop is not tied to the frame. It runs as fast as its work allows: a light pass of 149-168 T, and on every
-130th pass a slow tick: about 28 000 T with nothing due, up to 84 000 T with the duck, about 3 000 T during a jump
-(doc 4.1, 4.6). On level 1 that gives 161.8 passes and 1.25 slow ticks a
+130th pass a slow tick: about 28 000 T with nothing due, up to about 100 000 T with the duck (the longest seen: 99 289 T, D L T H,
+`levels-1-9` frame 592), about 3 000 T during a jump
+unless Harry's x is a multiple of 8, where ClimbLadder still redraws him (doc 4.1, 4.6). On level 1 that gives 161.8 passes and 1.25 slow ticks a
 frame (doc 4.6).
 
 **A worked example: one tick period on level 1.** The trace of `levels-1-9`, frames 400-600, holds 32 366 pass
@@ -32,13 +40,16 @@ lengths (`work/docs/ceA/l19-400-passes.tsv`) and 249 slow ticks (`l19-400-ticks.
 
 | Part | Count | T each (measured) | T | Share |
 | --- | ---: | ---: | ---: | ---: |
-| the tick passes | 249 | mean 33 943, median 28 657 | 8 451 807 | 61.7 % |
-| the other passes | 32 117 | mean 163; most 149-168 | 5 236 111 | 38.3 % |
+| the tick passes | 249 | mean 34 124, median 28 803 | 8 496 813 | 62.1 % |
+| the other passes | 32 117 | mean 162; most 149-168 | 5 191 105 | 37.9 % |
 | all | 32 366 | | 13 687 918 | 100 % |
 
 One tick period is 13 687 918 / 249 = 54 971 T, so 1.27 ticks a frame in this stretch. Over the whole 200 frames it
-is 1.25 (doc 4.6), because frames 400-403 still hold the end of SetupLevel's pause. The other passes average 163 T,
-not 149, because 55 of them carry a jump step that draws Harry in the air (over 1000 T each).
+is 1.25 (doc 4.6), because frames 400-403 still hold the end of SetupLevel's pause. A tick pass is the tick's own
+work (8 451 807 T from `$98BE`, the lengths of `l19-400-ticks.tsv`) plus about 181 T of pass head each. The other
+passes average 162 T, not 149: 55 of them play a step of the pickup sound (Beep from `$987B`, 1011-2300 T, 90 398 T
+in all; none of them runs JumpStep); the rest average 159 T. A light pass in a jump runs JumpStep and takes 323-371 T;
+one holding the IM 2 interrupt takes 270-288 T (`work/review/fix2A/longpass.py` over the same trace).
 
 **The point**: the CPU is the budget. There is no spare time and no wait. Every T-state saved in a tick makes the
 whole game faster.
@@ -61,7 +72,7 @@ recordings add reads to the level maps and no new region (WALKTHROUGH 6.0). The 
 | `$72A0-$7375` | 214 | SpriteBuffer (48 bytes), Harry (HarryX `$72D8`), PassCounter `$72DC`, CellBuffer, the jump, KeyTable `$732E`, the clocks, the duck, the lifts, Hens `$7357`, the phrase player (`$7373`) | 2 235 417 reads, 1 489 448 writes | the `@equ` lines of `game.ann` |
 | `$7376-$8213` | 3742 | not used | untouched | L1 |
 | `$8214-$824F` | 60 | LeftoverMapRow: zeros and a few map codes (`01 02`, `A8 A9`) | untouched | the bytes |
-| `$8250-$8273` | 36 | KeySets: three sets of 12 bytes, six (mask, port row) pairs each: type 1 `$8250`, type 2 `$825C` (the cursor keys), type 3 `$8268` (the one R redefines) | 467 reads, eight builds; the chosen set is copied to KeyTable when a game starts | `$B0A6-$B0BE` |
+| `$8250-$8273` | 36 | KeySets: three sets of 12 bytes, six (mask, port row) pairs each: type 1 `$8250`, type 2 `$825C` (the cursor keys), type 3 `$8268` (the one R redefines) | 467 reads, eight builds; the chosen set is copied to KeyTable at every level start and after every life (SetupLevel) | `$B0A6-$B0BE` |
 | `$8274-$838F` | 284 | Zeros8274 (194 zeros) and MenuLeftover (three old menu lines) | untouched | L1 |
 | `$8390-$84EF` | 352 | InstructionsText: 11 rows of 32, the bottom row first | 1053 reads, eight builds | `$A4CD LD BC,$8390` |
 | `$84F0-$89DF` | 1264 | CharacterSet, codes 0-`$9D`, 8 bytes each, top row first: 0-5 the map cells, `$20-$5F` the font, `$80-$8A` the big CHUCKIE EGG, `$8F-$96` the A+F logo, `$97-$9A` the key names | 9 910 509 reads, eight builds; 9 578 424 of them at `$84F0-$851F`, the map cells | PrintChar `$9C40`; DrawSprite `$9A4C` (the cells behind a sprite) |
@@ -92,8 +103,9 @@ recordings add reads to the level maps and no new region (WALKTHROUGH 6.0). The 
 
 ![Memory use over every stage 1 recording: executed, read, written, and the three as colours](img/heatmap.png)
 
-*The L1 builds of every stage 1 recording summed (`tools/l1merge.py`, then `kit/heatmap.py`): one row a page of 256
-bytes, time across. The commands are below.*
+*The L1 builds of every stage 1 recording summed (`tools/l1merge.py`), drawn by `tools/fig_heatmap.py` with the
+counts and colours of `kit/heatmap.py`: four panels (executed, read, written, the three as colours), one row a page
+of 256 bytes with `$4000` at the top, and the screen page as the screen below each. The commands are below.*
 
 The code runs in `$911E-$B15E` and in `$B34C-$B380`. The second range is FallOffEdge, a routine assembled into the
 middle of the leftover source text. MainLoop calls it on every slow tick when Harry is on foot and not on a lift.
@@ -103,8 +115,7 @@ the variables and the stack page `$FF00`. Nothing above `$CBE7` but the stack is
 
 ```bash
 python3 tools/l1merge.py work/stage1/l1-all.json work/game/l1.json work/stage1/rec/*/l1.json
-python3 ../../kit/heatmap.py work/stage1/l1-all.json docs/img/heatmap.png --from 4000 --to FFFF \
-    --title "Memory use over every stage 1 recording (L1)"
+python3 tools/fig_heatmap.py work/stage1/l1-all.json docs/img/heatmap.png
 python3 tools/l1count.py --ran 8214-911D    # nothing
 python3 tools/l1count.py --ran B15F-CBE7    # $B34C-$B380, 53 bytes: FallOffEdge
 ```
@@ -126,8 +137,8 @@ What changes (`cmp`-style runs over `$5B00-$FFFF`, `work/stage1/images/`):
   variables (`$5C00-$5CCA`), the BASIC workspace just past the program (`$6323-$634B`) and the machine stack with
   the UDGs (`$FF18-$FFFE`). Nothing is unpacked or decrypted.
 - **Entry to play**: in the game block `$8214-$CBE7`, only data changes. The level setup writes the HUD's text at
-  `$9764-$978A` (`$AED2-$AF15`: the level's digits and the like) and the pointer at `$AD58` (`$A626 LD ($AD58),HL`,
-  `$9F9E`), with the values they already hold at level 1. L1 of `c1` shows no other write above `$7400` except the
+  `$9764-$978A` (`$AED2-$AF15`: the level's digits and the like), and StartGame writes LevelDigits `$AD58` ("01")
+  (`$A623 LD HL,$9F9E`, `$A626 LD ($AD58),HL`: the HUD codes of 0 and 1), with the values they already hold at level 1. L1 of `c1` shows no other write above `$7400` except the
   stack. No code is modified, and every table (the level maps, the hens, the vector table) is read in place. What
   changes is the RAM below the game:
   - `$61A8-$6EC7`: five live maps of 672 bytes, each a copy of level 1 (`$A5F4-$A5FC`). They lie over the end of the
@@ -245,7 +256,8 @@ flowchart TD
 *Made with `python3 work/docs/ceA/callgraph.py`, a scan of the labels and of their `CALL` and `JP` lines.*
 
 - **Three layers.** `flow` is the top: the pages and the turns. `level` and `mainloop` are play. Everything else is a
-  service. `sprite`, `render` and `sound` (which holds PrintChar) are called from both sides.
+  service. `sound` (which holds PrintChar) is called from both sides; `sprite` and `render` only from
+  play (`jump`, `duck`, `harry`, `mainloop`, `level`).
 - **The hens draw themselves.** `hens` holds its own drawer, DrawHen, and its own address helpers (ScreenAddr,
   AttrAddrHen, MapCellPeek). Harry and the duck go through `sprite` (DrawSprite). The two drawers do the same job in
   two ways (doc 6).
@@ -288,7 +300,7 @@ frames)"`.*
 | harry | 1.35 % | 2.00 % | 1.99 % |
 | ROM | 1.04 % | 3.21 % | 0.00 % |
 | HALT | 0.00 % | 0.27 % | 0.00 % |
-| the rest | 1.67 % | 1.51 % | 1.77 % |
+| the rest | 2.46 % | 2.51 % | 1.77 % |
 
 The top routines in `levels-1-9` are MainLoop (32.41 %), DrawSprite (32.09 %), SetupLevel (5.08 %), Beep (4.59 %),
 Delay (3.59 %), PaintCells (3.51 %), JumpStep (3.46 %), ScrollLine (3.39 %), JumpFall (2.29 %) and DrawHen (1.88 %).
@@ -297,8 +309,9 @@ The only HALT is the name entry's wait for a key, under IM 1 (doc 4.5).
 **A worked example: what one DrawSprite costs.** In `levels-1-9` DrawSprite `$9A4C` ran 26 350 times (column `l1-9`
 of `tools/l1count.py 9A4C`). Its module took 32.35 % of 25 491 x 69 888 T = 1 781 515 008 T, which is 576.3 million
 T. So one call costs 576.3 M / 26 350 = 21 870 T on average, almost a third of a frame. In `gameover-name` the same
-sum gives 1 177.4 M T / 51 046 calls = 23 070 T. MainLoop's own code, worked out the same way, is 579.7 M T over
-2 894 339 passes: 200 T a pass, the light passes and the tick's own lines together.
+sum gives 1 177.4 M T / 51 046 calls = 23 070 T. The mainloop module (MainLoop and TakeEggOrGrain), worked out the same way,
+is 579.7 M T over 2 894 339 passes: 200 T a pass, the light passes and the tick's own lines together. MainLoop alone
+(32.41 %) is 577.4 M T, 199.5 T a pass.
 
 - **Two routines take two thirds.** MainLoop spins, and DrawSprite draws Harry and the duck. Everything that makes
   the game (the hens, the lifts, the clocks, the score) is under 5 % together.
@@ -345,7 +358,7 @@ The program around the loop, in pseudocode:
 
 ```text
 Start:                      # $A410
-    KeyType = 6; I = $B2; IM 2
+    KeyType = 6; TitleTuneDone = 0; I = $B2; IM 2
     TitlePage -> TitleLoop  # S: StartGame, R: RedefineKeys, I: InstructionsPage (all by JP)
 StartGame:                  # $A59D
     five copies of level 1 into LiveMap; 5 lives for each player
@@ -365,7 +378,7 @@ PlayLevel:                  ; $A653
         CALL SetupLevel     ; SetupLevel ends in JP MainLoop; MainLoop's RET lands at $A656
         CALL WaitPhrase
         ...                 ; the score into the player's slot
-        IM 2                ; again: the name entry may have left IM 1
+        IM 2                ; defensive: no path reaches here in IM 1 (EnterHiScore ends in IM 2, $A8E9)
         LD A,(EggsLeft)
         AND A
         JP NZ,LifeLost      ; eggs left: the life was lost
@@ -387,7 +400,10 @@ the speech.
 ![Sprites and map cells at their addresses](img/sprites/sheet.png)
 
 *Every 16 x 16 sprite of the game and the six map cells, drawn from the image at the addresses under them
-(`tools/sprites.py`). Like every graphic of the game, they are stored top row first.*
+(`tools/sprites.py`). Like every graphic of the game, they are stored top row first, and drawn so. Hens are
+numbered by frame f = A - 1. Made with `python3 tools/sprites.py work/mkgame/original.bin docs/img/sprites/sheet.png
+--at '8DF0;8F90;8EF0;9010;84F0' --count '8;4;4;8;6' --width '2;2;2;2;1' --rows '16;16;16;16;8' --names ...
+--title 'Sprites and map cells at their addresses'` (the names as on the sheet).*
 
 | Sprite | Address | Size | Drawn by | Witness |
 | --- | --- | --- | --- | --- |
@@ -396,16 +412,16 @@ the speech.
 | the duck, four frames | `$8EF0-$8F6F` | 16 x 16 | DrawSprite, frames 8-11 | MoveDuck: 8 or 10 + DuckFrame |
 | blank (32 zero bytes) | `$8F70-$8F8F` | 16 x 16 | DrawSprite, frame 12 | read 6432 times in `c1` (L1) |
 | Harry climbing, four frames | `$8F90-$900F` | 16 x 16 | DrawSprite, direction `$0D` (13) | `$9F11 LD (IX+3),$0D` |
-| the hens, eight frames | `$9010-$910F` | 16 x 16, 32 bytes each | DrawHen `$929C`: HenSprites - 2 + 32 x A (A 1-8), the rows read from the last pair up while the screen line goes up | `$92F6 LD HL,$900E`, `$9308-$9318`; L1 of `c1` reads `$9010-$910F` and nothing at `$900E` |
+| the hens, eight frames | `$9010-$910F` | 16 x 16, 32 bytes each | DrawHen `$929C`: HenSprites - 2 + 32 x A (A 1-8, frame f = A - 1, 0-7), the rows read from the last pair up while the screen line goes up | `$92F6 LD HL,$900E`, `$9308-$9318`; L1 of `c1` reads `$9010-$910F` and nothing at `$900E` |
 | the map cells 0-5: empty, the ladder's two halves, the egg, the grain, the brick | `$84F0-$851F` | 8 x 8 | PrintChar `$9C40` and DrawSprite's background; DrawHen erases from the last row, `$84F7` + 8 x code, upwards | `$9398 LD HL,$84F7`, `$93A2-$93A5` (`DEC D; DEC HL`) |
 
 - DrawSprite copies the sprite into SpriteBuffer `$72A0`, three bytes wide (16 rows of two bytes and a zero,
   `$9A6F`). It shifts it right by x AND 7 (`$9A80-$9A91`) and then composes the 3 x 3 map cells under it (`$9A95`
   onwards). Doc 6 has the rest.
 - The duck's frames and the blank sprite are named by their place in the table. Their callers (`$A113`, `$A18E`) run
-  once the duck is free, from level 9.
-- The hens' eight frames, by their shapes: two pairs in profile (1-2 and 5-6), two climbing (3-4, from the back), two
-  pecking (7-8, with grain on the ground). Which state picks which frame: doc 7.3.
+  on every MoveDuck, every 12 slow ticks on every level: in the cage on levels 1-8 as well (doc 4.7).
+- The hens' eight frames (f 0-7), by their shapes: two pairs in profile (0-1 and 4-5), two climbing (2-3, from the
+  back), two pecking (6-7, with grain on the ground). Which state picks which frame: doc 7.3.
 
 **The point**: 25 frames of 16 x 16 and six cells are the whole cast. Harry, the duck and the blank share one table
 and one drawer; the hens have their own.

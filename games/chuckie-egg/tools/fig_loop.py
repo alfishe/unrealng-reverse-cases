@@ -257,8 +257,8 @@ def rate(a):
         f'{len(passes) / (len(frames) + 1):.1f} passes and {len(ticks) / (len(frames) + 1):.2f} ticks a frame.',
         f'Passes a frame: {min(pf)} to {max(pf)}, median {sorted(pf)[len(pf) // 2]}; {zero} frames hold no pass start '
         f'(a tick longer than a frame covers them).',
-        f'A pass without a tick: {light[0]} to {light[-1]} T (the long ones run a jump step), median '
-        f'{light[len(light) // 2]} T.' if light else '',
+        f'A pass without a tick: {light[0]} to {light[-1]} T, median {light[len(light) // 2]} T; long: '
+        f'the IM 2 interrupt (270-288 T){", the pickup Beep (1000 T+)" if light[-1] > 1000 else ""}.' if light else '',
         'Dots: red the duck\'s ticks, green a hen\'s, purple the time or the bonus, blue the lifts alone, grey none.',
         f'python3 tools/fig_loop.py rate --work {a.work} --window {a.window} --name {a.name}',
     ]

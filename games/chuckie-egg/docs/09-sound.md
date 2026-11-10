@@ -46,8 +46,8 @@ python3 tools/fig_sound.py table      # every Beep site, tune note and phrase me
 - **The beeper, two ways.**
   - Beep `$9CA4` is the game's own loop: L cycles of a square wave of half period H. It runs with interrupts on,
     inside MainLoop and PlayLevelBonus. Eight call sites (9.2, 9.3).
-  - PlayTune `$AB60` plays the title tune and the death tune through the ROM's BEEP `$03F8`. BEEP calls BEEPER
-    `$03B5`, which runs with interrupts off (9.4).
+  - PlayTune `$AB60` plays the title tune and the death tune through the ROM's BEEP `$03F8`. BEEP ends with a `JP`
+    to BEEPER `$03B5`, which runs with interrupts off (9.4).
 - **The speech.** The game writes allophones to port `$9F`, the Fuller Orator's SP0256-AL2. The IM 2 interrupt
   sends them, one each time a count of interrupts runs out (9.5). The status port `$BF` is never read.
 - **No AY.** No `OUT` goes to `$FFFD`, `$BFFD` or the Fuller Box's `$3F`/`$5F`. Nothing reads the EAR bit.
@@ -102,8 +102,8 @@ Counted from the opcodes:
   `OUT` 11, so 13 H + 33 T;
 - **one cycle** is 26 H + 47 T, so the tone is 3 500 000 / (26 H + 47) Hz. The low half is 19 T longer, a duty of
   slightly under 50 %;
-- **a call** costs about L (26 H + 47) + 20 T: the `CALL` and `RET` add 27 T, the last `JR` not taken saves 5. The
-  figures use + 20.
+- **a call** costs L (26 H + 47) + 22 T: the `CALL` and `RET` add 27 T, the last `JR` not taken saves 5. The
+  figures use + 22.
 
 The interrupt may land in the loop. It then stretches the half it lands in by its own length (about 120 T with no
 phrase byte to send, 9.5). The `OUT ($FE)` is an I/O cycle to the ULA's port, so it also waits for the ULA while the
@@ -176,22 +176,22 @@ python3 tools/fig_sound.py effects    # docs/img/sound/effects.png
 Worked example: the walk step of the animation. WalkHarry calls Beep at frame 578 T 56 965 with H 40, L 6. The model
 gives a high half of 13 x 40 + 14 = 534 T and a low half of 13 x 40 + 33 = 553 T, a cycle of 1087 T, 3220 Hz. The
 traced edges are 534, 554, 534, 554, 534, 554, 534, 553, 534, 553 and 535 T apart. The odd T is the ULA's wait on
-the `OUT`. The eleven spans add up to 5980 T against the model's 5 x 1087 + 534 = 5969. The call costs 6 x 1087 + 20
-= 6542 T, a tenth of a frame, and sounds for 1.9 ms.
+the `OUT`. The eleven spans add up to 5980 T against the model's 5 x 1087 + 534 = 5969. The call costs 6 x 1087 + 22
+= 6544 T, a tenth of a frame, and sounds for 1.9 ms.
 
 Witness: every site measured in `l13`, from `tools/fig_sound.py table` (the edge span is first edge to last edge of
 one call):
 
 | Site | Sound | Calls | H | L | Hz | T a call, mean | Edge span, measured (model) |
 | --- | --- | ---: | --- | ---: | ---: | ---: | --- |
-| `$987B` | pickup sweep | 2764 | 9-37 | 2 | 3469-12 455 | 998 | 734 (724) |
-| `$9892` | jump click | 1872 | 73-232 | 1 | 576-1800 | 5579 | 2770 (2770) |
-| `$9932` | time tick | 408 | 4 | 2 | 23 179 | 322 | 225 (217) |
-| `$9D6A` | walk left | 289 | 40 | 5 | 3220 | 5455 | 4882 (4882) |
-| `$9DA6` | walk right | 317 | 40 | 6 | 3220 | 6542 | 5980 (5969) |
-| `$9EE8` | climb up | 170 | 30 | 20 | 4232 | 16 560 | 16 169 (16 117) |
-| `$9F22` | climb down | 120 | 30 | 21 | 4232 | 17 387 | 16 984 (16 944) |
-| `$A688` | bonus step | 520 | 30 | 4 | 4232 | 3328 | 2885 (2885) |
+| `$987B` | pickup sweep | 2764 | 9-37 | 2 | 3469-12 455 | 1000 | 734 (724) |
+| `$9892` | jump click | 1872 | 73-232 | 1 | 576-1800 | 5581 | 2770 (2770) |
+| `$9932` | time tick | 408 | 4 | 2 | 23 179 | 324 | 225 (217) |
+| `$9D6A` | walk left | 289 | 40 | 5 | 3220 | 5457 | 4882 (4882) |
+| `$9DA6` | walk right | 317 | 40 | 6 | 3220 | 6544 | 5980 (5969) |
+| `$9EE8` | climb up | 170 | 30 | 20 | 4232 | 16 562 | 16 169 (16 117) |
+| `$9F22` | climb down | 120 | 30 | 21 | 4232 | 17 389 | 16 984 (16 944) |
+| `$A688` | bonus step | 520 | 30 | 4 | 4232 | 3330 | 2885 (2885) |
 
 The time tick shows the ULA's wait most: its halves are 68 and 91 T against 66 and 85. A long climb tone gains about
 50 T in 41 edges. In the eight builds Beep was called 127 975 times.
@@ -208,8 +208,8 @@ WalkHarry `$9D08` moves Harry one pixel. When the new HarryX is a multiple of 4 
 3220 Hz blip, 1.6 or 1.9 ms long, and a climb rung a 4232 Hz blip of 4.7 or 5.0 ms. Left and right differ by one cycle,
 up and down by one cycle. No player would hear the difference, but the code keeps two values.
 
-On level 1 Harry moves one pixel per slow tick, about 0.75 frames. A step sound comes every 4 pixels, about every 3
-frames, 17 a second.
+On level 1 Harry moves one pixel per slow tick, about 0.8 frames (1.25 ticks a frame, glossary). A step sound comes
+every 4 pixels, about every 3.2 frames, 16 a second.
 
 ```mermaid
 flowchart TD
@@ -297,13 +297,14 @@ flowchart TD
     B --> J
 ```
 
-![The pickup sweep after the first egg of levels-1-3, and the longest jump's clicks](img/sound/sweep.png)
+![The pickup sweep after the first egg of levels-1-3, and the clicks of the lift-top jumps](img/sound/sweep.png)
 
 How to read the figure:
 
 - **Top**: each beep of the sweep after the egg of frame 568, its pitch against milliseconds after AddScore. The
   first eight are labelled with H.
-- **Bottom**: the longest jump of `l13` (frame 5914). Green is HarryY at each click, purple the click's pitch.
+- **Bottom**: the longest run of jump clicks in `l13` (frame 5914), the lift-top sequence of 10.10. Green is HarryY at
+  each click, purple the click's pitch.
 - **The point**: the sweep is a fixed saw that tells "you took something". The jump click is a pitch that follows
   Harry's height, so a jump sounds like its arc.
 
@@ -311,15 +312,18 @@ How to read the figure:
 python3 tools/fig_sound.py sweep      # docs/img/sound/sweep.png
 ```
 
-Worked example: the egg of frame 568 (AddScore at T 64 067) starts the sweep. Its first beeps come in frame 569 with
-H 33 and H 29, 2.6 and 3.4 kHz. The traced sweep has 62 beeps and ends at frame 595, 539 ms after the egg. The 63rd
-of the code, an H 17 at frame 588, was entered right after an interrupt (9.1). The longest jump of `l13` starts at
-frame 5914 T 7054 with H 93 and makes 71 clicks in 1.70 s, H between 73 and 109.
+Worked example: the egg of frame 568 (AddScore at T 64 067) starts the sweep. Its first beeps come in frame 569 with H
+33 and H 29, 3.9 and 4.4 kHz (3 500 000 / 905 and / 801). The traced sweep has 62 beeps and ends at frame 595, 539 ms
+after the egg. The 63rd of the code, an H 17 at frame 588, was entered right after an interrupt (9.1). The longest run
+of clicks in `l13` starts at frame 5914 T 7054 with H 93 and makes 71 clicks in 1.70 s, H between 73 and 109. It is not
+one jump but the lift-top sequence of doc 10 (10.10): the lift catches Harry eight times (frames 5926/27 to 5958)
+and he jumps on each time, so HarryY climbs in steps from 162 to 182 before the last fall.
 
 ### The time tick and the bonus step
 
 Each time step of CountDown (doc 8, 8.5) is followed by Beep H 4, L 2: two cycles of 151 T, 23 kHz. That is above
-most hearing. On a real speaker it is a click of 86 µs, every 7.5 frames on level 1.
+most hearing. On a real speaker it is a click of 86 µs, about every 8 frames on level 1 (doc 8, 8.5: TIME 899 at
+frame 404, 887 by frame 500).
 
 The bonus step of the level end (doc 8, 8.6) is Beep H 30, L 4: four cycles at 4232 Hz, 0.95 ms. About ten steps a
 frame make a buzz at 500 Hz, the step rate, with the 4.2 kHz tone inside each step.
@@ -333,15 +337,16 @@ PlayTune `$AB60` reads (duration, pitch) byte pairs until a duration of 0. The d
 the pitch in semitones above middle C. For each note it puts the duration on the ROM calculator's stack, runs the
 three-byte program TuneCalc `$AB6D` (stk-ten, division, end-calc) to divide it by ten, stacks the pitch and calls the
 ROM's BEEP `$03F8`. BEEP is the BASIC command: it turns seconds and semitones into a half-period count HL and a cycle
-count DE, and calls BEEPER `$03B5` from `$0469`.
+count DE, and ends with a `JP` to BEEPER `$03B5` at `$0469`, so BEEPER's `RET` returns straight to PlayTune.
 
 BEEPER disables interrupts, toggles the speaker at `$03E1` (`OUT ($FE)` with `$18` and `$08`: bit 4 toggled, bit 3,
 MIC, held) DE + 1 times, and enables them again. One cycle costs 8 HL + 241 T. So the pitch is 437 500 / (HL + 30.125) Hz and a
 note lasts (DE + 1)(8 HL + 241) T.
 
 The title tune plays once per run, from TitlePage, when TitleTuneDone `$736F` is 0. Start `$A410` clears it, so the
-loader and the abort key (CAPS SHIFT + A) bring it back. The title after a game over is silent. LifeLost plays the
-death tune at every life lost, before DeathPhrase.
+loader and the abort key (CAPS SHIFT + A) bring it back (witnessed: `hold-abort` aborts at frame 1400; from frame 1410
+TitlePage plays all 46 notes, 46 BEEPER calls, then phrase 20). The title after a game over is silent. LifeLost plays
+the death tune at every life lost, before DeathPhrase.
 
 ```text
 PlayTune(HL tune):
@@ -461,8 +466,8 @@ StartPhrase `$9CEB` takes the phrase number in A. When a phrase is playing it re
 Otherwise it takes the phrase's address from the word at `$C8C6` + 2 A and sets PhraseTimer to 1, so the first
 allophone goes out at the next interrupt.
 
-Each allophone is held for its count of interrupts, count x 20 ms. The phrases end with a short PA1 (10 ms of silence)
-held 2 interrupts.
+Each allophone is held for its count of interrupts, count x 20 ms. Most phrases end with a short PA1 (10 ms of silence)
+held 2 interrupts; phrase 33 ends with PA1 held 6, then PA1 held 11.
 
 ```text
 PhraseInterrupt (IM 2, every 20 ms):
@@ -660,8 +665,8 @@ Beep runs in the game's own time. Each effect delays the next MainLoop pass by i
 model of 9.2:
 
 - in play, Beep takes 4.2 % of the CPU on average over `l13`, and under 10 % in 90 % of the frames;
-- the highest frame in play is 33.5 % (23 424 T);
-- the level end is the peak: 33 280 T in frame 2009, 48 %, ten bonus steps of 3328 T. The rest of those frames is
+- the highest frame in play is 33.5 % (23 430 T);
+- the level end is the peak: 33 300 T in frame 2009, 48 %, ten bonus steps of 3330 T. The rest of those frames is
   CountDown, AddScore and the interrupt.
 
 BEEPER runs with interrupts off. A note of 0.2 s holds the CPU for 10 frames and the interrupt for 10 frames, so 10
@@ -760,7 +765,7 @@ what the 48K played in the recording, interrupt gaps included. They are in `docs
 | [`walk-right.wav`](img/sound/walk-right.wav) | the walk-right steps of the busiest 30 frames | `l13` | 0.6 s |
 | [`climb-up.wav`](img/sound/climb-up.wav) | the rungs up of the busiest 30 frames | `l13` | 0.6 s |
 | [`climb-down.wav`](img/sound/climb-down.wav) | the rungs down of the busiest 30 frames | `l13` | 0.6 s |
-| [`jump.wav`](img/sound/jump.wav) | the longest jump, 71 clicks | `l13` frame 5914 | 1.72 s |
+| [`jump.wav`](img/sound/jump.wav) | the lift-top jumps (10.10), 71 clicks | `l13` frame 5914 | 1.72 s |
 | [`pickup-sweep.wav`](img/sound/pickup-sweep.wav) | the sweep after the first egg | `l13` frames 569-595 | 1.46 s |
 | [`time-tick.wav`](img/sound/time-tick.wav) | the time ticks of the busiest 30 frames | `l13` | 0.6 s |
 | [`bonus-step.wav`](img/sound/bonus-step.wav) | one bonus step, 4 cycles | `l13` frame 2007 | 21 ms |
@@ -823,5 +828,3 @@ The point: the files let a reader hear the game as the 48K played it, without th
   name them. They are in the table, perhaps for a version of the game that used them.
 - **PlayerTurn with players 3 and 4** (phrases 28, 29): the four-player recording `tour-redefine` speaks 27; 28 and
   29 follow from the code (25 + player).
-- **The title tune after an abort** (CAPS SHIFT + A to Start): known only from the code. Start ran once in the eight
-  builds, at the load of `c1`.

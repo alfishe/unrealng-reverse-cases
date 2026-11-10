@@ -5,7 +5,8 @@ with its address under it.
     python3 tools/sprites.py work/mkgame/original.bin out.png --at 8DF0 --count 16 --width 2 --rows 16
             [--flip] [--scale 4] [--per-line 8] [--title T] [--names a,b,c]
 
---flip draws the last row at the top (the game's map tiles are stored bottom row first and drawn upwards).
+--flip draws the last row at the top. Chuckie Egg needs none: its sprites and map cells are all stored top row first
+(DrawHen and the cell eraser read them from the last byte up while the screen line goes up).
 Several runs on one sheet: give --at, --count, --width, --rows, --names as ';'-separated lists.
 """
 import argparse

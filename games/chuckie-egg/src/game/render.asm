@@ -7,13 +7,14 @@
 ; Paint the attributes of the 3 x 3 map cells at (L, H)
 ;
 ; Input: L = x, H = y of a sprite. From the cell under (x, y) down, three rows
-; of three cells (two columns at x >= $F1, two rows at y < $11) get their
-; attribute from CellAttributes (code 9 and up: 6). Only the attributes are
-; painted: DrawSprite $9A4C redraws the pixels with the background. Registers
-; kept.
+; of three cells (two columns at x >= $F1, as DrawSprite; two rows only at y <
+; $11, with no y AND 7 test) get their attribute from CellAttributes (code 9
+; and up: 6). Only the attributes are painted: DrawSprite $9A4C redraws the
+; pixels with the background. Registers kept.
 ;
-; Callers: MainLoop before Harry moves, JumpStep before each step, MoveDuck
-; before the duck moves. Witness: 147 583 calls.
+; Callers: MainLoop before Harry moves, JumpStep before each step, JumpFall
+; $A2BE before each fall step, MoveDuck before the duck moves. Witness: 147 583
+; calls.
 PaintCells:
   PUSH AF
   PUSH BC

@@ -86,16 +86,36 @@ stateDiagram-v2
     OnLadder --> Air: jump key - straight up, or sideways with a direction key
     OnFoot --> Drift: FallOffEdge - no floor under the middle - JumpState 1
     Drift --> Air: after 4 slow ticks - JumpState 2, falling
+    Drift --> OnFoot: only after a walk-off from a lift - JumpLand on a drift tick, a floor under the feet
     Air --> OnFoot: JumpLand - a floor under the feet, y + 1 on a cell
     Air --> OnLadder: ClimbLadder - up or down key over a ladder
     Air --> OnLift: CatchLift - the platform under the feet
-    OnLift --> Air: jump key
-    OnLift --> Drift: walks off the platform
+    OnLift --> Air: jump key - OnLift 0
+    state "off the platform, OnLift still 1" as OffLift
+    OnLift --> OffLift: walks off the platform - a drift, OnLift kept
+    OffLift --> Air: jump key - OnLift 0
+    OffLift --> OnLadder: ClimbLadder - OnLift still 1, the lift steps keep raising him (code only)
     OnFoot --> Dead: a hen box, the duck box, the time
-    Air --> Dead: below y 16, a hen box
-    OnLift --> Dead: HarryY + 1 reaches 165
+    OnLadder --> Dead: a hen box, the duck box, the time
+    Drift --> Dead: a hen box, the duck box, the time
+    Air --> Dead: below y 16, a hen box, the duck box, the time
+    OnLift --> Dead: HarryY + 1 reaches 165, a hen box, the duck box, the time
+    OffLift --> Dead: HarryY + 1 reaches 165, and the rest as in the air
     Dead --> [*]
 ```
+
+A drift from FallOffEdge cannot land. No walk runs during it (MainLoop runs only ClimbLadder, `$99C1-$99C5`), so x
+changes only by its own x steps. FallOffEdge starts it at x AND 7 = 1 walking right or 7 walking left, and the three
+x steps before the fall stay over the same column (8k + 2 .. 8k + 4 or 8k + 6 .. 8k + 4; a bounce stays inside that
+range). y does not change either. So JumpLand reads the very cell that FallOffEdge found empty, an egg or grain, and
+never lands on it (`$A356-$A35F`). All 63 drifts of the recordings became falls, as they must (10.5). Only the drift
+of a walk-off from a lift can land, because WalkOffLift tests no floor: Harry would have to step off over a brick with
+y + 1 on a cell boundary. That is known only from the code.
+
+The other ways out of a drift are the deaths of any state on foot: during it the hen boxes (MoveHen), the duck box
+(MoveDuck's draws and JumpLand's) and the time all still run. Walking off
+a platform is the odd one out: it starts a drift but leaves `OnLift` at 1, so the lift still moves Harry and can still
+kill him until his next jump (10.10).
 
 **The point**: the jump, the fall and the drift are one state machine with one counter. A fall is a jump that starts at
 its top, and a drift is a fall that starts with a short sideways push.
@@ -155,7 +175,7 @@ Worked example: `levels-1-9` level 1, Harry walks right along row 12 (y 119). In
 ![WalkHarry at work: tour-type2 frames 1000-1002](img/routines/WalkHarry.gif)
 
 The animation is writer ceB's (doc 05, animation 5.2): a trace of `tour-type2` frames 1000-1002, 60 pictures, from the
-key read to Harry's step. It shows the key test and the two wall tests above. Command:
+key read to Harry's step. It shows the key test and the two wall tests above. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceB/tour-type2 --window 1000:0-1002:0 --listing build/game.lst --view screen --pc 9858-99DC,9D08-9DF0,9A4C-9BFE --range 6100-A1FF --pictures 60 --out docs/img/routines/WalkHarry.gif`.
 
 Witness: WalkHarry ran 95 138 times; left steps `$9D59` 5749, right steps `$9D95` 6073, standing `$9DAB` 83 316. Walking
@@ -192,9 +212,11 @@ $9F2E  LD (IX+$4D),$00        ; JumpState 0: a jump is caught here
 Because ClimbLadder also runs in the air and clears JumpState, Harry catches a ladder in the middle of a jump or a fall.
 He must pass a column boundary at x AND 7 = 0 over the ladder with up or down held.
 
-Worked example: `levels-1-9` level 1, the long ladder at x 80. HarryDir is `$0D` from the sample of frame 1291 (y 31)
-to frame 1350; at frame 1351 he is at y 112 and faces left (HarryDir 4). 81 pixels in 60 frames is 1.35 pixels a frame,
-the speed of walking.
+Worked example: `levels-1-9` level 1, the long ladder at x 80. Harry catches it in the middle of a jump: the samples of
+frames 1288-1290 show JumpState 2 at x 83 to 81, and the sample of frame 1291 shows x 80, y 31, HarryDir `$0D` and
+JumpState 0. He climbs to y 112 (sample 1350): 81 pixels in 59 frames, 1.37 pixels a frame, about the speed of walking.
+At frame 1351 he jumps left off the ladder (JumpState 2, JumpCount 140, HarryDir 4, y 112, which is no floor level);
+10.5 follows that jump.
 
 ![Harry climbs the ladder at x 80: levels-1-9 frames 1288-1354](img/play/climb.gif)
 
@@ -204,7 +226,7 @@ The animation is the screen of `levels-1-9` frames 1288-1354, one picture a fram
 ![ClimbLadder at work: levels-1-9 frames 1300-1302](img/routines/ClimbLadder.gif)
 
 The animation traces `levels-1-9` frames 1300-1302 (60 pictures): the cell test at `$9EA2-$9EC5`, the key read and the
-step. Command:
+step. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 1300:0-1303:0 --listing build/game.lst --view screen --range 6100-73FF --pc 9E98-9F3E --pictures 60 --out docs/img/routines/ClimbLadder.gif`.
 
 Witness: ClimbLadder ran 113 934 times; up steps `$9ED7` 3570, down steps `$9F11` 1810.
@@ -245,7 +267,8 @@ and off it only level with a floor. Those two grids are all the precision the co
 
 A jump key on foot starts a jump (MainLoop `$9975`). JumpState becomes 2, JumpCount `$8C` (140), JumpDelay 0, JumpDy 1
 (rising) and OnLift 0. The direction comes from the keys at that moment: right gives JumpDx 1 and HarryDir 0; left gives
-JumpDx -1 and HarryDir 4; neither gives JumpDx 0 and keeps HarryDir.
+JumpDx -1 and HarryDir 4; neither gives JumpDx 0 and keeps HarryDir. With both held the jump goes right (`$9991-$999F` tests the right key
+first), although the walk goes left (10.3).
 
 ```text
 MainLoopJumpStart:
@@ -277,7 +300,7 @@ JumpFall():                                   ; every pass while JumpState is 2
     JumpDelay -= 1                            ; 0 - 1 wraps to 255: 256 passes
     if JumpDelay != 0: return
     if JumpDy == 1:                           ; rising
-        if HarryY >= $A7: HarryY += 1; start falling (below)
+        if HarryY >= $A7: HarryY += 1; start falling (below)   ; the step of -1 cancels the + 1: no move
         JumpCount += 10                       ; 150, 160, ..., 250, then 260 wraps to 4
         if JumpCount == 4: JumpDy = 0; JumpCount = 0     ; the top: no move, a 256-pass wait
     elif JumpDy == 0:                         ; past the top: start falling
@@ -324,6 +347,40 @@ A flat jump therefore has 23 vertical steps:
 x moves one pixel every 130 passes: 4762 / 130 = 36.6, so a running jump carries Harry 36 or 37 pixels. A fall that
 goes on past the start height speeds up by 10 passes a step down to 40 passes a pixel, about three pixels a frame.
 
+At y 167 (`$A7`) and above, a rising step is turned into the start of the fall (`$A2E8`). JumpRise adds 1 to HarryY and
+jumps to JumpFallStart, which sets JumpDy -1 and a delay of 250; the step of -1 then cancels the + 1, so Harry does not
+move. A jump that starts at y 167 or higher therefore hangs at its start height for 256 + 250 = 506 passes, about four
+x steps, before the first fall pixel. The lift-top trick lives on that hang (10.10).
+
+The x step bounces at the screen's edges. JumpStepX adds JumpDx to HarryX; a result of 0 sets JumpDx to 1 (`$A23A`), a
+result of `$EE` (238) or more sets it to -1 (`$A244`). The new x is kept, so Harry touches the edge pixel and comes back:
+
+```text
+JumpStepX:
+$A22A  LD HL,(HarryX)
+$A22D  CALL PaintCells
+$A230  LD A,L
+$A231  ADD A,(IX+$4E)         ; x + JumpDx
+$A234  LD (HarryX),A
+$A237  AND A
+$A238  JR NZ,JumpStepRightWall
+$A23A  LD (IX+$4E),$01        ; x 0: turn right
+$A23E  JR JumpStepLifts
+JumpStepRightWall:
+$A240  CP $EE
+$A242  JR C,JumpStepLifts
+$A244  LD (IX+$4E),$FF        ; x 238 or more: turn left
+```
+
+The left test looks for exactly 0. In `levels-1-9` on level 7 Harry reaches x 0 in a jump (sample 14326, JumpDx now 1),
+lands there at y 39 and jumps again at once with the left key held: JumpDx -1 (sample 14327, JumpCount 140). The next x
+step gives 0 - 1 = 255, which is not 0, and the right test sets JumpDx -1 once more. Harry goes on leftwards from x 255
+(sample 14328) and is back at 238 in the sample of frame 14348: he has wrapped from the left edge to the right one.
+WalkHarry stops at x 1, so only a jump brings Harry to x 0, and only a landing there followed by a jump to the left
+wraps him.
+
+Witness: the left bounce `$A23A` ran 5 times and the right `$A244` 33 times in the eight builds.
+
 ![The jump arc model against levels-1-9: the flat jump, the step delays and a fall off an edge](img/gameplay/jump-arc.png)
 
 How to read the figure:
@@ -351,7 +408,7 @@ before are merged). Command:
 ![JumpFall at the top of the jump: levels-1-9 frames 1905-1910](img/routines/JumpFall.gif)
 
 The animation traces `levels-1-9` frames 1905-1910 (80 pictures): the top step (JumpDy 0) and the first fall steps.
-Command:
+At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 1905:0-1911:0 --listing build/game.lst --view screen --range 6100-73FF --pc A21C-A388 --pictures 80 --out docs/img/routines/JumpFall.gif`.
 
 Worked example: the jump of the figure. In the sample of frame 1888 Harry stands at (120, 151) on row 16. The jump
@@ -434,7 +491,7 @@ The animation is the screen of `levels-1-9` frames 910-964, one picture a frame.
 ![FallOffEdge and JumpDrift at work: levels-1-9 frames 916-921](img/routines/FallOffEdge.gif)
 
 The animation traces `levels-1-9` frames 916-921 (80 pictures): FallOffEdge finds the empty cell, then JumpDrift
-counts four slow ticks and starts the fall. Command:
+counts four slow ticks and starts the fall. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 916:0-922:0 --listing build/game.lst --view screen --range 6100-73FF --pc B34C-B380,A294-A2B4 --pictures 80 --out docs/img/routines/FallOffEdge.gif`.
 
 Witness: FallOffEdge ran 98 837 times and started 63 drifts (`$B368`), 36 in `levels-1-9`; each turned into a fall
@@ -444,15 +501,48 @@ Witness: FallOffEdge ran 98 837 times and started 63 drifts (`$B368`), 36 in `le
 
 On a ladder HarryDir is `$0D`. The jump key works there as on foot. Without a direction key JumpDx is 0 and HarryDir
 stays `$0D`, so Harry jumps straight up in his climbing frame. With a direction key the jump goes sideways and HarryDir
-becomes 0 or 4. On landing, JumpLanded `$A371` turns a HarryDir of `$0D` into 0. A jump that passes a ladder column with
+becomes 0 or 4. On landing, JumpLanded `$A37C` turns a HarryDir of `$0D` into 0. A jump that passes a ladder column with
 up or down held is caught by ClimbLadder (10.3), which sets JumpState 0 in mid-air.
+
+Worked example: `levels-1-9` level 1, the ladder at x 80 of 10.3. Harry jumps left off it from y 112, half way between
+the floors of rows 11 and 12 (y 111 and 119):
+
+| Sample | x | y | JumpState | JumpCount | HarryDir | What happened |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1350 | 80 | 112 | 0 | | `$0D` | on the ladder |
+| 1351 | 80 | 112 | 2 | 140 | 4 | the jump, to the left: HarryDir 4 |
+| 1357 | 75 | 115 | 2 | 170 | 4 | rising, one pixel every 150-170 passes |
+| 1361 | 71 | 118 | 2 | 200 | 4 | |
+| 1363 | 69 | 119 | 0 | | 4 | landed on row 12 while still rising: y + 1 = 120 is on a cell |
+
+The landing test of 10.6 does not ask whether Harry is rising or falling. A jump off a ladder that meets a floor's
+height on the way up stands on that floor at once, seven pixels above its start. The animation `climb.gif` of 10.3 ends
+with this jump (frames 1351-1354).
+
+```mermaid
+flowchart TD
+    A[on a ladder: HarryDir 0D] --> K{jump key}
+    K -- with left or right --> S[JumpDx -1 or 1, HarryDir 4 or 0]
+    K -- alone --> U[JumpDx 0, HarryDir stays 0D]
+    S --> J[the jump of 10.4 from any y]
+    U --> J
+    J --> L{a floor under the feet with y + 1 on a cell?}
+    L -- yes, rising or falling --> F[landed: a HarryDir of 0D becomes 0]
+    L -- no --> C{a ladder column with up or down?}
+    C -- yes --> LD[caught by ClimbLadder]
+    C -- no --> J
+```
+
+Witness: the jump start `$9975` ran 477 times; the landing `$A371` 338 times; a landing turned HarryDir `$0D` into 0
+(`$A37C`, a straight jump off a ladder) 3 times, once in `levels-1-9`.
 
 **The point**: there is one fall. Walking off an edge, jumping off a ladder and dropping through a hole all end in the
 same JumpFall steps. Only the start differs: a 4-tick sideways push and a stale first delay.
 
 ## 10.6 Landing and bouncing
 
-JumpLand `$A30F` runs after every vertical step, and on every drift tick. It reads the cell under the middle of Harry's
+JumpLand `$A30F` runs after every vertical step, and on the first three of the four drift ticks (the fourth starts the
+fall at `$A2B1` without a landing test). It reads the cell under the middle of Harry's
 feet (MapCellAt - `$3F`: column x / 8 + 1, row y / 8 - 2).
 
 - Bounce: when Harry is not rising and moves sideways, a brick beside the feet cell turns him round (JumpDx XOR `$FE`
@@ -595,7 +685,7 @@ The animation is the screen of `levels-1-9` frames 556-580, one picture a frame.
 ![TakeEggOrGrain takes the first egg: levels-1-9 frames 567-569](img/routines/TakeEggOrGrain.gif)
 
 The animation traces `levels-1-9` frames 567-569 (60 pictures). The take runs in frame 568; the egg disappears from
-the map cell `$61A8 + 32 + 6 = $61CE`. Command:
+the map cell `$61A8 + 32 + 6 = $61CE`. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 567:0-570:0 --listing build/game.lst --view screen --range 6100-73FF --pc 99DF-9A4B --pictures 60 --out docs/img/routines/TakeEggOrGrain.gif`.
 
 ![Two eggs in holes on level 4: levels-1-9 frames 8452-8522](img/play/egg-in-hole.gif)
@@ -631,9 +721,15 @@ level 4 to make Harry drop for his eggs.
 
 The hens do not chase Harry. MoveHen (doc 07.3) moves one of the five records every third slow tick, 4 pixels at a time,
 so each hen makes a step every 15 slow ticks: 0.27 pixels a slow tick, about a quarter of Harry's speed. A hen walks to
-the end of its floor and turns. It climbs a ladder or steps off one only by chance: at half-cell points it reads a ROM
-byte through `RandomPtr $736C` and tries only when bit 0 is 0. A hen never falls and never jumps. An egg or grain cell
-counts as no floor for it too, so it turns at an egg in a hole. Grain in front of a walking hen is eaten (doc 07.4).
+the end of its floor and turns. It climbs a ladder or steps off one only by chance. Every turn reads a ROM byte through
+`RandomPtr $736C`, and the hen tries only when bit 0 is 0: a walker at the half-cell points (x AND 4 set after its step),
+a climber at the cell boundaries (y AND 4 = 0). A hen never falls and never jumps. An egg or grain cell counts as no
+floor for it too, so it turns at an egg in a hole.
+
+The floor and grain tests are asymmetric (doc 07.3, 07.4). Walking right from x = 8k, the hen tests column k + 1, the
+column under its own right half. It therefore stands with that half over a hole or an egg before it turns, and it pecks
+grain it already half covers. Walking left, it tests column k - 1, the cell beside it, and turns before it overhangs.
+In `levels-1-9` hen 1 stands at x 120 over cell (16, 16), which is empty, before it turns (samples 471-483).
 
 The ROM pointer is set back to 0 at every SetupLevel. With the same map, the hens make the same choices in the same
 order in every life. A player can learn them.
@@ -644,7 +740,7 @@ order in every life. A player can learn them.
 | step | MoveHen `$91AA`, `$9213` | 4 pixels |
 | a hen's speed | | 4 pixels in 15 slow ticks (5 records x 3) |
 | choice | MoveHenRandom `$9128` | ROM `$0001-$00FF`, bit 0 = 0: try; bit 1: which way first |
-| grain | HenEatGrain `$9265` | the cell beside, at each multiple of 8; the hen pauses one turn |
+| grain | HenEatGrain `$9265` | at each multiple of 8: the cell under its right half (walking right) or beside it (walking left); the hen pauses one turn |
 | kill | DrawHen `$929C` | HarryX in x - 7 .. x + 5, HarryY in y + 1 .. y + 28 |
 
 Witness: MoveHen ran 38 158 times; HenEatGrain found grain 82 times; the hens chose a ladder 552 times (`$91DB`,
@@ -806,14 +902,15 @@ The animation is the screen of `levels-1-9` frames 23340-24340, one picture ever
 
 ![MoveDuck at work: levels-1-9 frames 23600-23611](img/routines/MoveDuck.gif)
 
-The animation traces `levels-1-9` frames 23600-23611 (80 pictures), one duck step on level 9. Command:
+The animation traces `levels-1-9` frames 23600-23611 (80 pictures), one duck step on level 9. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 23600:0-23612:0 --listing build/game.lst --view screen --range 6100-73FF --pc A0C8-A1B7 --pictures 80 --out docs/img/routines/MoveDuck.gif`.
 
 Worked example: the duck is steered while caged too. On level 1 its DuckDy is -5 (251) until the sample of frame 1901.
 Harry jumps above the duck's y 152 (frames 1888-1926), so the duck steps in frames 1901 and 1913 add one each: 252 and
 253 in the samples of 1902 and 1914. Harry lands at y 151, below the duck, and the step of frame 1926 takes one off: 252
-in the sample of 1927. On level 9 the duck leaves (8, 152) with the speed the cage left it, in the first duck step after
-SetupLevel.
+in the sample of 1927. None of that carries over: SetupLevel zeroes DuckDx and DuckDy at every level and life (`$B07B`,
+`$B07E`). On level 9 the duck starts at (8, 152) with speed 0 (sample 23429: `08 98 00 00`), and its first step steers
+it to (1, -1) and moves it to (9, 151) (sample 23541: `09 97 01 FF`).
 
 Witness: MoveDuck ran 9553 times; the put-back `$A175` 9418 times. The 135 free steps are levels 9 and 10 of
 `levels-1-9`. The duck's kill (`$9BC6`) ran in no recording.
@@ -821,8 +918,8 @@ Witness: MoveDuck ran 9553 times; the put-back `$A175` 9418 times. The 135 free 
 ## 10.10 The lifts, CatchLift and the lift-top trick
 
 The two platforms of a lift (doc 07.6) rise one pixel every second slow tick, from row 3 to row 165, and restart at
-the bottom. Harry gets on one only from the air: CatchLift `$A256` runs on the x step of every jump or fall (the pass
-before a slow tick), for platform 1, then for platform 2.
+the bottom. Harry gets on one only from the air: CatchLift `$A256` runs on the x step of every drift, jump or fall
+(the pass before a slow tick; `$A21C-$A220` branches on PassCounter before JumpState), for platform 1, then for platform 2.
 
 ```text
 CatchLift(row):
@@ -863,8 +960,60 @@ $A28C  LD (HarryY),A
 ```
 
 On a lift, MainLoop adds 1 to HarryY after each lift step (`$9915`). If the new y is 165 or more, MainLoop returns: a
-life lost (`$991E`). A platform carries Harry up to y 164, at row 147, and kills him on the next step. WalkHarry lets
-him walk off a platform (a drift, as off an edge), and a jump takes him off at once (OnLift 0).
+life lost (`$991E`). A platform carries Harry up to y 164, at row 147, and kills him on the next step. A jump takes him
+off at once: the jump start clears OnLift (`$9989`).
+
+```text
+MainLoopLifts:
+$9904  LD HL,LiftDelay
+$9907  DEC (HL)
+$9908  JR NZ,MainLoopPickup
+$990A  LD (HL),$02            ; a lift step every 2 slow ticks
+$990C  CALL MoveLifts
+$990F  LD A,(OnLift)
+$9912  AND A
+$9913  JR Z,MainLoopPickup    ; OnLift 0: no ride, no test
+$9915  LD A,(HarryY)
+$9918  INC A                  ; the rider rises with the platform
+$9919  LD (HarryY),A
+$991C  CP $A5
+$991E  RET NC                 ; y 165 or more: a life lost
+```
+
+### Walking off a platform
+
+WalkHarry calls WalkOffLift `$9DDB` when Harry's x leaves LiftX - 9 .. LiftX + 9. WalkOffLift starts the drift of
+10.5 (JumpState 1, JumpDx his direction, JumpCount 4) but does not clear OnLift. Only the jump start (`$9989`) and
+SetupLevel (`$B084`) write OnLift 0.
+
+```text
+$9DC1  LD A,(OnLift)          ; WalkHarry, after the draw
+$9DC4  AND A
+$9DC5  RET Z
+...                           ; x outside LiftX - 9 .. LiftX + 9:
+WalkOffLift:
+$9DDB  LD (IX+$4D),$01        ; JumpState 1: the drift
+$9DDF  LD D,$FF
+$9DE1  LD A,(HarryDir)
+$9DE4  AND A
+$9DE5  JR NZ,WalkOffLiftDir
+$9DE7  LD D,$01
+WalkOffLiftDir:
+$9DE9  LD (IX+$4E),D          ; JumpDx his direction
+$9DEC  LD (IX+$4F),$04        ; JumpCount 4; OnLift stays 1
+$9DF0  RET
+```
+
+So after a walk-off, until Harry's next jump:
+
+- every lift step still adds 1 to HarryY, on top of the drift and the fall;
+- the 165 death test still applies to him, wherever he is;
+- FallOffEdge is skipped (MainLoop `$99D2` calls it only with OnLift 0);
+- once he stands again, WalkHarry finds him outside the platform's x range on every slow tick and calls WalkOffLift
+  again: a new drift each time.
+
+Known only from the code: no recording walked off a platform (`$9DDB` ran 0 times), so what the player sees is not
+recorded.
 
 ```mermaid
 stateDiagram-v2
@@ -872,57 +1021,121 @@ stateDiagram-v2
     Air --> Riding: CatchLift - x within 9 of LiftX, y 10 to 15 over the row
     Riding --> Riding: every 2 slow ticks - HarryY + 1
     Riding --> Dead: HarryY + 1 reaches 165
-    Riding --> Air: jump key
-    Riding --> Drift: walks past LiftX + 9 or LiftX - 9
-    Drift --> Air
+    Riding --> Air: jump key - OnLift 0
+    state "off the platform, OnLift still 1" as Off
+    Riding --> Off: walks past LiftX - 9 or LiftX + 9 - a drift
+    Off --> Off: every 2 slow ticks HarryY + 1; on foot, WalkOffLift again
+    Off --> Dead: HarryY + 1 reaches 165
+    Off --> Air: jump key - OnLift 0
+    Off --> OnLadder: ClimbLadder - OnLift still 1, the lift steps keep raising him (code only)
 ```
+
+### Getting on: CatchLift
 
 ![CatchLift lands Harry on platform 1: levels-1-9 frames 4250-4252](img/routines/CatchLift.gif)
 
-The animation traces `levels-1-9` frames 4250-4252 (60 pictures) on level 3. Command:
-`python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 4250:0-4253:0 --listing build/game.lst --view screen --range 6100-73FF --pc A256-A293 --pictures 60 --out docs/img/routines/CatchLift.gif`.
+The animation traces `levels-1-9` frames 4250-4252 (60 pictures) on level 3. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
+`python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 4250:0-4253:0 --listing build/game.lst --view screen --range 6100-73FF --pc A256-A293 --pictures 60 --title 'CatchLift $A256: levels-1-9 frames 4250-4252, level 3, a rising Harry at (73, 32) lands on lift platform 1 (row 19): y 36' --out docs/img/routines/CatchLift.gif`.
 
-Worked example: level 3, LiftX 64. In the sample of frame 4250 Harry falls at (75, 32) and platform 1 is at row 19.
-After two x steps x is 73, LiftX + 9, the edge of the range. y 32 is in 29 .. 34, so CatchLift lands him in frame
-4250. The sample of 4251 already shows OnLift 1, taken while CatchLift was still drawing; HarryY becomes 19 + 17 = 36.
-After the next lift step it is 37 (sample 4252), and it climbs with the platform: 40 at frame 4256.
+Worked example: level 3, LiftX 64. In the sample of frame 4250 Harry rises at (75, 32) (JumpDy 1, JumpCount 230) and
+platform 1 is at row 19. Frame 4250 holds two x steps, 75 to 73: x 73 is LiftX + 9, the edge of the range. y 32 is in
+29 .. 34, so CatchLift lands him in frame 4250, on the way up. The sample of 4251 already shows OnLift 1 with y still 32:
+it was taken inside CatchLift, between `$A278` (OnLift set) and `$A28C` (HarryY set), while the erase was drawing.
+HarryY becomes 19 + 17 = 36. After the next lift step it is 37 (sample 4252), and it climbs with the platform: 40 at
+frame 4256.
 
 ### The lift-top trick
 
 A rider who jumps from a high platform can be caught again by the same platform higher up. At y 167 and above, the
-rise of a jump is cut at once (`$A2E8`): Harry goes up one pixel and starts to fall. If the platform catches him in
-that fall, he stands on it at row + 17, higher than before, and a jump key held down starts the next jump on the next
-slow tick. The death test runs only after a lift step while OnLift is 1. A catch followed by a slow tick without a lift
-step lets Harry jump on before the test.
+first vertical step of a rise is turned into a fall (`$A2E8`, 10.4). The INC and the step of -1 cancel, so Harry does
+not move: he hangs at the same y for about 500 passes (256 before the step, 250 after it), and the rising platform can
+catch him in that time. Each catch puts him at row + 17, higher than before.
+
+The death test runs only after a lift step while OnLift is 1. A catch runs on the pass before a slow tick, and that
+slow tick runs the lifts before Harry's keys (10.1). In all eight catches below LiftDelay was 2: a lift step had just
+run, because with Harry hanging still it is the platform's step that brings his y into the catch window. The slow tick
+after the catch therefore has no lift step, and a held jump key starts the next jump in that same slow tick, which
+clears OnLift. Harry is on the platform for less than one pass. A catch with LiftDelay 1 would meet a lift step first,
+and above y 164 that step kills; it did not happen in the recording.
 
 Worked example: `levels-1-9` level 3, frames 5913-6001.
 
 | Sample | x | y | State | Platform 2 row | What happened |
 | --- | --- | --- | --- | --- | --- |
-| 5913 | 59 | 162 | on the lift | 145 | riding, two pixels from death |
+| 5913 | 59 | 162 | on the lift | 145 | riding, two safe lift steps left (164 is the last safe y) |
 | 5914 | 59 | 162 | in the air | 145 | a jump |
-| 5931 | 67 | 167 | on the lift | 153 | caught again |
-| 5932 | 67 | 170 | in the air | 154 | jumped on before a lift step |
-| 5940 | 67 | 171 | on the lift | 157 | caught again |
-| 5958 | 67 | 179 | on the lift | 165 | caught a third time, at the top row |
-| 5959 | 68 | 182 | in the air | 3 | jumped; the platform restarts at the bottom |
+| 5921-5924 | 66-68 | 167 | in the air | 149-150 | the rise cut at y 167: JumpDy -1, JumpCount 250 from sample 5923, no move |
+| 5927 | 71 | 168 | in the air | 151 | caught (row 151 + 17), and jumped again |
+| 5959 | 68 | 182 | in the air | 3 | jumped after the eighth catch; the platform restarts at the bottom |
 | 6001 | 98 | 143 | on foot | 18 | the fall ends on the floor of row 15 |
+
+The eight catches, each on platform 2, from the samples around them:
+
+| Catch | Frames | Row | y before | y after (row + 17) |
+| --- | --- | --- | --- | --- |
+| 1 | 5926/27 | 151 | 166 | 168 |
+| 2 | 5931 | 153 | 167 | 170 |
+| 3 | 5935/36 | 155 | 169 | 172 |
+| 4 | 5940 | 157 | 171 | 174 |
+| 5 | 5944/45 | 159 | 173 | 176 |
+| 6 | 5948/49 | 161 | 175 | 178 |
+| 7 | 5953/54 | 163 | 177 | 180 |
+| 8 | 5958 | 165 | 179 | 182 |
+
+The samples of frames 5931, 5940 and 5958 fall inside CatchLift, as 4251 above: PassCounter 1, JumpState 0, OnLift
+already 1 and HarryY not yet set. The next sample shows the new y and JumpState 2 again.
 
 ![The lift-top trick on level 3: levels-1-9 frames 5905-5995](img/play/lift-top.gif)
 
 The animation is the screen of `levels-1-9` frames 5905-5995, one picture a frame. Command:
 `python3 ../../kit/screen_anim.py --work work/docs/ceC/l19 --from 5905 --to 5995 --step 1 --scale 2 --delay 80 --hold 1500 docs/img/play/lift-top.gif`.
 
+### The HUD damage at the top of the shaft
+
+The last pictures of the animation show "LEVEL 03" overwritten by bricks, a ladder top in the row above it and one of
+the four life icons gone. The level map has 21 rows (0-20). HarryY is the sprite's top line and the sprite covers lines
+y - 15 .. y, so from y 168 it reaches map row 21, and from y 176 (catch 5, frame 5945) also row 22. DrawSprite builds his background from the 3 x 3 map cells under him and PaintCells paints their attributes, both
+with `LiveMap + x / 8 + 32 x row`. Rows 21 and 22 lie past slot 0 (672 bytes), in the first two rows of slot 1, player
+1's map at `$6448`. In a one-player game on level 3 that slot still holds level 1 as StartGame wrote it (doc 07.7):
+row 0 all bricks, row 1 empty at column 8 and a ladder at columns 10-11. Those cells are drawn into the HUD's
+character rows 2 and 1.
+
+![The HUD before and after the lift-top trick: levels-1-9 frames 5905 and 5995](img/gameplay/lift-top-hud.png)
+
+How to read the figure:
+
+- Top: the top four character rows of the screen in frame 5905, the first picture of `lift-top.gif`. At the left of
+  each row is its map row, 23 at the top.
+- Middle: the same rows in frame 5995, the last picture. Cyan boxes mark the cells that changed in columns 0-13 (the
+  counters at the right change anyway).
+- Bottom: the changed cells with their addresses. Map row 21, columns 7-12: `$644F-$6454`, slot 1 row 0, all bricks.
+  Map row 22, columns 8, 10 and 11: `$6470`, `$6472-$6473`, slot 1 row 1: empty, then the ladder halves.
+
+**The point**: the map has no rows for the HUD, and nothing keeps Harry out of them. The damage is only drawn: the
+cells are read, never written, so slot 1 and the lives count (5 in both samples) are unchanged. The damage is still on
+the screen in frame 5995, eleven frames after Harry left row 21
+(y 167 in the sample of frame 5984).
+
+```bash
+python3 tools/fig_gameplay.py lifthud --out docs/img/gameplay/lift-top-hud.png
+```
+
+Witness: the first sample with y 168 (row 21) is frame 5927; the screen of frame 5995 is the last picture of
+`lift-top.gif`. The slot contents are the samples of `l19-maps.jsonl` (frame 21 500: slot 1 equals slots 2-4, level 1
+as StartGame wrote it, until the life lost at frame 21 623).
+
 Witness: CatchLift ran 26 662 times and landed Harry 50 times (`$A278`), 30 in `levels-1-9`. Harry rode 920 lift steps
 (`$991E`). The lift-top death never happened in a recording.
 
-**The point**: the lift kills only a rider. Harry is safe in the air, and the catch and the death test run on
-different slow ticks. A player who keeps jumping at the top of the shaft survives it.
+**The point**: the lift kills only a rider after a lift step. The catch comes right after a lift step and the jump
+leaves before the next, so a player who keeps jumping at the top of the shaft survives it.
 
 ## 10.11 Collisions and every way to die
 
-Every death is a return from MainLoop to PlayLevel `$A656`. PlayLevel looks at EggsLeft: not 0 means a life lost
-(LifeLost `$A6FE`), 0 means the level is done. The order of the tests inside a pass is in doc 07.10.
+Every death the code means is a return from MainLoop to `$A656` in PlayLevel `$A653`: the return address of
+PlayLevel's `CALL SetupLevel`, since SetupLevel enters MainLoop by `JP` (`$B12D`) and MainLoop has no caller of its own. PlayLevel looks at EggsLeft: not 0 means a
+life lost (LifeLost `$A6FE`), 0 means the level is done. Two paths miss PlayLevel: the HenEatGrain peck (10.8) and the
+duck's kill from inside JumpStep (below). The order of the tests inside a pass is in doc 07.10.
 
 | Way to die | Where | Test | Count (eight builds) |
 | --- | --- | --- | --- |
@@ -937,6 +1150,66 @@ Every death is a return from MainLoop to PlayLevel `$A656`. PlayLevel looks at E
 There are no deadly bricks and no fall height limit: Harry survives any fall that ends on a floor. Only a fall through
 a gap in the bottom floor kills.
 
+### The duck's kill and its depth
+
+The duck test sits at the end of DrawSprite, which pushes five words (AF, BC, DE, IX, HL). DuckKill drops those five
+and then every word below `Start $A410`, and returns through the first word of `$A410` or more:
+
+```text
+$9BC6  LD B,$05
+DuckKill:
+$9BC8  POP HL                 ; DrawSprite's five saved words
+$9BC9  DJNZ DuckKill
+$9BCB  LD BC,Start            ; $A410
+DuckKillUnwind:
+$9BCE  POP HL
+$9BCF  PUSH HL
+$9BD0  AND A
+$9BD1  SBC HL,BC
+$9BD3  RET NC                 ; the first word of $A410 or more: return there
+$9BD4  POP HL                 ; a lower word: drop it
+$9BD5  JR DuckKillUnwind
+```
+
+From MainLoop's own draws (WalkHarry, ClimbLadder, MoveDuck) the words between are return addresses below `$A410`, and
+the search ends at the return into PlayLevel. JumpStep is different. MainLoop calls it as
+
+```text
+$9895  LD A,(JumpDelay)
+$9898  PUSH AF                ; JumpDelay x 256 + F on the stack
+$9899  CALL JumpStep
+```
+
+and three draws inside JumpStep can meet the duck: JumpLand on a drift tick (from JumpDrift `$A29D`), the draw at the
+start of the fall (`$A2B1`) and CatchLift's erase (`$A286`). At those draws the word JumpDelay x 256 + F lies on the
+stack above MainLoop's return. All three come on the x-step pass (PassCounter 1), and on that pass MainLoop plays the
+jump click first (`$988A-$9892`, Beep with L = 1). Beep ends with `XOR A` (carry 0) and `DEC L` from 1 to 0 (`$9CB1`),
+so F is `$42` (Z and N) every time, and the word is JumpDelay x 256 + `$42`. With JumpDelay `$A4` (164) or more it
+passes the test (`$A442` is above `$A410`), and the RET goes to an address in `$A442-$FF42` instead of PlayLevel. The draws after a vertical step are safe: there JumpDelay was 1 when MainLoop pushed
+it. A stale JumpDelay of 220 (`$DC`) is what a drift carries in `levels-1-9` frames 917-921 (10.5).
+
+Worked example, the stack at the recorded catches. In the lift-top trick (10.10) the samples of frames 5931, 5940 and
+5958 were taken inside CatchLift's erase draw (`$A286`: PassCounter 1, JumpState 0, OnLift 1, y not yet set), and
+each shows JumpDelay 227 (`$E3`). JumpFall had not run on that pass, so 227 is the value MainLoop pushed: the word
+was `$E342`. A duck touching Harry at any of those draws would have returned to `$E342`, not to PlayLevel. At the
+level-3 catch of frame 4250 (sample 4251, JumpDelay 17) the word was `$1142`: the unwind would have dropped it and
+reached `$A656`. Where a RET to `$E342` goes is not known.
+
+| Sample | Where | JumpDelay | Word on the stack | The unwind |
+| --- | --- | --- | --- | --- |
+| 5931, 5940, 5958 | CatchLift `$A286`, lift-top catches 2, 4, 8 | 227 | `$E342` | stops there |
+| 4251 | CatchLift `$A286`, level 3 | 17 | `$1142` | drops it, ends at `$A656` |
+| 917-920 | a FallOffEdge drift | 220 | `$DC42` | would stop there |
+
+```text
+DuckKill():
+    drop 5 words
+    while top of stack < $A410: drop it
+    return to it                  ; $A656 in PlayLevel, or JumpDelay x 256 + $42 from inside JumpStep
+```
+
+Known only from the code: no recording ran DuckKill (`$9BC6` 0 times), so where such a RET ends is not known.
+
 ```mermaid
 flowchart TD
     A[MainLoop] --> H{hen box at a hen draw?}
@@ -950,8 +1223,9 @@ flowchart TD
     A --> L{on a lift at y 165?}
     L -- yes --> X
     A --> D{duck box?}
-    D -- yes --> U[unwind the stack to PlayLevel]
-    U --> X
+    D -- yes --> U[unwind the stack to the first word of A410h or more]
+    U -- from MainLoop's draws --> X
+    U -- inside JumpStep, JumpDelay A4h or more --> W[RET to JumpDelay x 256 + 42h: A442h-FF42h]
     A --> E{twelfth egg?}
     E -- yes --> X
     X --> P{EggsLeft 0?}
@@ -1026,6 +1300,23 @@ $A1D3  LD HL,BonusRunning
 $A1D6  LD (HL),$00            ; the bonus: stop
 $A1D8  RET
 ```
+
+Worked example, the countdown and grain: `levels-1-9`, level 1 (TimeDigits `$7342-$7344`, BonusDigits
+`$733F-$7341`, the delays `$7345` and `$7346`).
+
+| Sample | TIME | BONUS | BonusDelay | TimeDelay | What happened |
+| --- | --- | --- | --- | --- | --- |
+| 620 | 872 | 940 | 29 | 9 | counting down |
+| 630 | 871 | 940 | 19 | 9 | ten slow ticks later: the time lost 1, the bonus delay 10 |
+| 639 | 870 | 940 | 10 | 10 | |
+| 641 | 870 | 940 | 255 | 254 | grain eaten in frame 640: `$9A24` wrote `$FFFF` |
+| 659 | 870 | 940 | 234 | 233 | both stand still, the delays count down one a slow tick |
+| 757 | 870 | 940 | 254 | 253 | a second grain starts the wait again |
+| 899 | 870 | 940 | 100 | 100 | still standing |
+
+Between samples 620 and 630 TimeDelay ran through its whole cycle of 10 and TIME lost one step. From sample 639 to
+past 899 TIME 870 and BONUS 940 do not change. The rises of a delay to 250 or more in the samples are the grains that
+hit a running bonus.
 
 Scoring is in tens: AddScore `$A3A7` adds B tens to the six score digits. Every point value is a multiple of 10:
 
@@ -1151,15 +1442,27 @@ bonus 1000-9000 in the HUD, no hens and the free duck on levels 9-10.
   the shaft survives (10.10).
 - **The HenEatGrain reset.** A hen pecking grain to its left with Harry 8-15 pixels away resets the Spectrum: HenKill
   pops one level too few and returns into the ROM (10.8). Shown on a clone; no recording reached it.
-- **The duck's kill unwinds.** DuckKill `$9BC8` drops five words, then every word below `Start $A410`, until it finds
-  the return into PlayLevel. It does not need to know how deep it was called. No recording ran it.
+- **The duck's kill unwinds, and can miss.** DuckKill `$9BC8` drops five words, then every word below `$A410`. From
+  MainLoop's own draws this ends at the return into PlayLevel. From a draw inside JumpStep (JumpLand on a drift tick,
+  the fall start `$A2B1`, CatchLift `$A286`), MainLoop's `PUSH AF` at `$9898` lies on the stack. The word is
+  JumpDelay x 256 + `$42` (F after the jump click's Beep). If JumpDelay is `$A4` or more, it passes the test and the
+  RET goes to an address in `$A442-$FF42` (10.11); the lift-top catches had `$E342` there. Known only from the code; no
+  recording ran DuckKill (`$9BC6` 0 times).
+- **Walking off a lift keeps OnLift.** WalkOffLift `$9DDB` starts a drift but leaves OnLift 1, so the lift steps still
+  raise Harry and the top-row death test still applies until his next jump (10.10). Known only from the code.
+- **The HUD is in reach.** At the top of the lift shaft Harry's sprite reaches map row 21 from y 168 and row 22 from
+  y 176, past the 21-row map,
+  and draws cells of player 1's map slot over "LEVEL" and the life icons (10.10).
+- **A jump can wrap Harry.** The jump's left edge test looks for x exactly 0. A landing at x 0 followed by a jump to
+  the left gives x 255, and Harry comes back from the right edge (10.4, `levels-1-9` frame 14328).
 - **Chance from the ROM.** The hens' choices come from the first 256 bytes of the Spectrum ROM, read one by one. The
   pointer is reset at every life, so the hens repeat themselves (doc 07.11).
 - **The duck is steered in its cage.** On levels 1-8 MoveDuck changes the speeds every duck step and then puts the duck
-  back. On level 9 it leaves the cage with whatever speed it has.
+  back. The speeds do not carry over: SetupLevel zeroes them, and on level 9 the duck leaves the cage from speed 0
+  (10.9).
 - **Code inside text.** FallOffEdge `$B34C-$B380` lies inside the author's leftover assembler source, which starts at
   `$B167` (doc 02).
-- **Leftover bytes.** A second copy of the end of TakeGrain at `$9A2C` and runs of zeros between routines are not
+- **Leftover bytes.** Two copies of the end of TakeGrain, at `$9A2C` and `$9A3C`, and runs of zeros between routines are not
   executed in any recording (doc 02).
 
 ## 10.15 What no recording reached
@@ -1171,7 +1474,11 @@ bonus 1000-9000 in the HUD, no hens and the free duck on levels 9-10.
 | the time 400 and the egg value 1000 | SetupLevel, TakeEggOrGrain | the code |
 | the Level byte wrapping at 256 | SetupLevel, PlayLevel | the code |
 | the duck's kill | DrawSprite `$9BC6` | the code |
-| walking off a lift | WalkHarry `$9DDB` | the code |
+| walking off a lift, and OnLift kept after it | WalkHarry `$9DDB` | the code |
+| the duck's kill from inside JumpStep with JumpDelay `$A4` or more | DrawSprite `$9BC6`, MainLoop `$9898` | the code |
+| a catch with LiftDelay 1 above y 164 (the lift step kills) | CatchLift `$A278`, MainLoop `$991E` | the code |
+| a walk-off drift that lands before it falls (a FallOffEdge drift cannot) | WalkOffLift `$9DDB`, JumpDrift `$A29D`, JumpLand | the code |
+| a walk-off Harry on a ladder, still raised by the lift | ClimbLadder `$9F2E`, MainLoop `$9915` | the code |
 | the lift-top death | MainLoop `$991E` taken | the code |
 | the HenEatGrain reset | HenEatGrain `$9291` | the code and the clone experiment (10.8) |
 

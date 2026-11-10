@@ -46,7 +46,7 @@ Returns at once on levels 9-16 (Level 8-15). Otherwise it takes one random bit (
 
 3 or 4 (climbing down / up): when y AND 4 is 0 and the next cell is no ladder it turns (7 - state); y moves 4 pixels; at y AND 4 clear (the new y a multiple of 8) and the random bit it steps off onto a brick 8 left (state 1) or 16 right (state 2), the row 8 below.
 
-Inputs: the hen records. Outputs: the record moved; the screen. Side effects: RandomPtr, HenTurn; DrawHen may end the life (it unwinds the stack to the caller of MainLoop). Witness: 38 158 calls in the eight builds (c1 801); turns `$91A1` 979, onto a ladder `$91DB` 324 and `$91EF` 228, off a ladder `$924C` 213 and `$9261` 307, meals `$9281` 82.
+Inputs: the hen records. Outputs: the record moved; the screen. Side effects: RandomPtr, HenTurn; DrawHen may end the life (it unwinds the stack to `$A656`, the return of PlayLevel's CALL SetupLevel; SetupLevel enters MainLoop by JP `$B12D`). Witness: 38 158 calls in the eight builds (c1 801); turns `$91A1` 979, onto a ladder `$91DB` 324 and `$91EF` 228, off a ladder `$924C` 213 and `$9261` 307, meals `$9281` 82.
 
 [Animation: `MoveHen` at work](img/routines/MoveHen.gif)
 
@@ -80,9 +80,9 @@ Known only from the code: when the peck's DrawHen finds Harry touching the hen, 
 
 **Test a hen against Harry, then draw or erase it**
 
-Inputs: L the hen's x, H its y, A the frame (0: erase). First the box test against Harry: Harry's x within x - 7 .. x + 5 and his y within y + 1 .. y + `$1C`. A touch drops six words from the stack (DrawHen's four, its return and MoveHen's) and returns to the caller of MainLoop: the life ends (`$92BC`: c1 1, idle-1p 5, gameover-name 5, 11 in all).
+Inputs: L the hen's x, H its y, A the frame (0: erase). First the box test against Harry: Harry's x within x - 7 .. x + 5 and his y within y + 1 .. y + `$1C`. A touch drops six words from the stack (DrawHen's four, its return and MoveHen's) and returns to `$A656` in PlayLevel: the life ends (`$92BC`: c1 1, idle-1p 5, gameover-name 5, 11 in all).
 
-A > 0: the frame from HenSprites (see there) is ORed onto the screen, 16 lines from (x, y) up (ScreenAddr `$9404`; one byte at x >= `$F9`), and a block of attribute 5 (cyan) of 1-2 columns by 2-3 rows is set (AttrAddrHen `$93DD`). A = 0: the 2 x 3 map cells under the hen (1 x 3 at x >= `$F8`) are drawn again from LiveMap with their glyphs and CellAttributes. IX is HarryX at the end. Measured in levels-1-3 frames 600-900: a hen read blank by the beam in 7 of 44 steps.
+A > 0: the frame from HenSprites (see there) is ORed onto the screen, 16 lines from (x, y) up (ScreenAddr `$9404`; at x >= `$F9` the DEC C at `$9309` skips both bytes and only the attributes are set, never reached: a hen turns at `$F8`), and a block of attribute 5 (cyan) of 1-2 columns by 2-3 rows is set (AttrAddrHen `$93DD`). A = 0: the 2 x 3 map cells under the hen (1 x 3 at x >= `$F8`) are drawn again from LiveMap with their glyphs and CellAttributes. IX is HarryX at the end. Measured in levels-1-3 frames 600-900: a hen read blank by the beam in 7 of 44 steps.
 
 Witness: 44 867 calls.
 
@@ -156,9 +156,9 @@ MapCellAt `$9E34` with HL saved. Witness: 19 822 calls (MoveHen's floor and ladd
 
 **Paint the attributes of the 3 x 3 map cells at (L, H)**
 
-Input: L = x, H = y of a sprite. From the cell under (x, y) down, three rows of three cells (two columns at x >= `$F1`, two rows at y < `$11`) get their attribute from CellAttributes (code 9 and up: 6). Only the attributes are painted: DrawSprite `$9A4C` redraws the pixels with the background. Registers kept.
+Input: L = x, H = y of a sprite. From the cell under (x, y) down, three rows of three cells (two columns at x >= `$F1`, as DrawSprite; two rows only at y < `$11`, with no y AND 7 test) get their attribute from CellAttributes (code 9 and up: 6). Only the attributes are painted: DrawSprite `$9A4C` redraws the pixels with the background. Registers kept.
 
-Callers: MainLoop before Harry moves, JumpStep before each step, MoveDuck before the duck moves. Witness: 147 583 calls.
+Callers: MainLoop before Harry moves, JumpStep before each step, JumpFall `$A2BE` before each fall step, MoveDuck before the duck moves. Witness: 147 583 calls.
 
 [Animation: `PaintCells` at work](img/routines/PaintCells.gif)
 
@@ -253,7 +253,7 @@ Witness: 114 442 calls; 16 levels completed (`$9A15`), 65 grains (`$9A1A`). The 
 
 Inputs: A the frame (Sprites), L = x, H = y. The frame's 16 rows of 2 bytes go to SpriteBuffer as rows of 3, shifted right by x AND 7. CellBuffer gets the glyphs of the 3 x 3 map cells under (x, y) (LiveMap, CharacterSet), 24 lines of 3 bytes; the buffer is ORed with the 16 background lines that match y AND 7, and the 16 rows of 3 bytes are written from (x, y) down the screen. So a sprite erases its old self with the background as it moves one pixel. Then the attribute 6 (yellow) on 3 x 3 cells (2 columns at x >= `$F1`, 2 rows when y is on a cell or below `$11`).
 
-Then the duck test: DuckX within HarryX - 7 .. HarryX + 8 and DuckY within HarryY - 8 .. HarryY + 9 kills: it drops the five saved words and every word on the stack until one is `$A410` or more (the return into PlayLevel, `$A656`) and returns there. Known only from the code: no build was killed by the duck (`$9BC6` never ran). The test runs for every draw, also while the duck is caged on levels 1-8: a Harry at x 0-15 and y 143-160 would touch the caged duck at (8, 152).
+Then the duck test: DuckX within HarryX - 7 .. HarryX + 8 and DuckY within HarryY - 8 .. HarryY + 9 kills: it drops the five saved words and every word on the stack until one is `$A410` or more and returns there. From MainLoop's own draws that word is the return into PlayLevel (`$A656`). From a draw inside JumpStep (JumpLand on a drift tick, the fall start `$A2B1`, CatchLift `$A286`) MainLoop's PUSH AF at `$9898` lies on the stack first. Those draws all come on the x-step pass, after the jump click's Beep, which leaves F = `$42` (Z and N), so the word is JumpDelay x 256 + `$42`: with JumpDelay `$A4` or more it passes the test and the RET goes to an address in `$A442-$FF42`. Known only from the code: no build was killed by the duck (`$9BC6` never ran). The test runs for every draw, also while the duck is caged on levels 1-8: a Harry at x 0-15 and y 143-160 would touch the caged duck at (8, 152).
 
 Witness: 134 270 calls (WalkHarry, ClimbLadder, JumpStep, MoveDuck, CatchLift); 18 652-18 859 T unshifted, + about 1244 T a pixel of shift (levels-1-3 frames 600-612). Measured in levels-1-3 frames 600-900: Harry never read blank by the beam.
 
@@ -365,7 +365,7 @@ Input: A the phrase number 1-33. When PhraseTimer is `$FF`: PhrasePtr = the phra
 
 **Walk Harry left or right one pixel, or stand**
 
-Left key: unless x = 1 or the cells to the left (at his feet and above, LiveMap) are bricks: x - 1, HarryDir 4, a step sound (`$2805`) every 4 pixels. Right key: unless x >= `$EE` or the cells to the right are bricks: x + 1, HarryDir 0, a sound (`$2806`). No key: HarryFrame 3 (the next is 0, standing). Then the frame steps (0-3) and DrawSprite draws him. On a lift: when x leaves LiftX - 9 .. LiftX + 9 he walks off (JumpState 1, JumpDx his direction, JumpCount 4: the drift of FallOffEdge).
+Left key: unless x = 1 or the cells to the left (at his feet and above, LiveMap) are bricks: x - 1, HarryDir 4, a step sound (`$2805`) every 4 pixels. Right key: unless x >= `$EE` or the cells to the right are bricks: x + 1, HarryDir 0, a sound (`$2806`). No key: HarryFrame 3 (the next is 0, standing). Then the frame steps (0-3) and DrawSprite draws him. On a lift: when x leaves LiftX - 9 .. LiftX + 9 he walks off (JumpState 1, JumpDx his direction, JumpCount 4: the drift of FallOffEdge). OnLift stays 1 (only the jump start and SetupLevel clear it), so until the next jump the lift steps still raise him and the top-row death test still applies.
 
 Witness: 95 138 calls; left steps `$9D59` 5 749, right `$9D95` 6 073, standing `$9DAB` 83 316. Known only from the code: walking off a lift (`$9DDB` never ran).
 
@@ -446,7 +446,7 @@ Only when y + 1 is on a cell boundary. Left key: the cell to the left and the on
 
 **Move both lift platforms up one pixel**
 
-Nothing when LiftX is `$FF`. For each platform: DrawLift with 0 (erase) at its address, its row count + 1; at 166 the platform restarts from LiftTable's record (platform 1 takes the address, x and row, then row 3; platform 2 copies 3 bytes, so Lift2Row holds LiftX until LD A,`$03` sets row 3); the address one line up (LineUp `$A0A9`), DrawLift with `$FF`. Witness: 57 158 calls; restarts `$A02E` 164 and `$A05C` 167.
+Nothing when LiftX is `$FF`. For each platform: DrawLift with 0 (erase) at its address, its row count + 1; at 166 the platform restarts from LiftTable's record (platform 1 takes the address, x and row, then row 3; platform 2 copies 3 bytes, so Lift2Row holds LiftX until LD A,`$03` sets row 3); the address one line up (LineUp `$A0A9`), DrawLift with `$FF`. A restart also passes LineUp, so after its first restart a platform is drawn one line above its row count (SetupLevel's start address has no LineUp). Witness: 57 158 calls; restarts `$A02E` 164 and `$A05C` 167.
 
 [Animation: `MoveLifts` at work](img/routines/MoveLifts.gif)
 
@@ -667,7 +667,7 @@ Entered by the loader's JP `$A410` (c1 frame 5292) and by the abort key. KeyType
 
 **Draw the title page and the high scores**
 
-ClearScreen, TitleText at rows 2-23 columns 0-13, DrawHiScores, the colours of the left half (magenta, yellow, green bands), the title tune and phrase 20 the first time only (TitleTuneDone), row 23 cyan, TextIndex at the end of the text. Then TitleLoop. Witness: 4 calls.
+ClearScreen, TitleText at rows 2-23 columns 0-13, DrawHiScores, the colours of the left half (magenta, yellow, green bands), the title tune and phrase 20 while TitleTuneDone is 0 (set by Start: the first title and after an abort; silent after a game over), row 23 cyan, TextIndex at the end of the text. Then TitleLoop. Witness: 4 calls.
 
 | | |
 | --- | --- |
@@ -735,7 +735,7 @@ Witness: 5 375 bonus steps (`$A675`); 16 levels completed.
 
 **A life lost: the tune, the next player with lives, or the game over**
 
-DeathTune, DeathPhrase, WaitPhrase, a pause, ClearScreen; OUT OF TIME when the time digits are `$FF` 9 9; the map in play into the player's slot, the eggs and the level into his; lives - 1; at 0 "GAME OVER" (with "PLAYER n" when more play). Then the next player with lives (in turn) is loaded (level, eggs, score, map) and PlayerTurn; none left: GameOver.
+DeathTune, DeathPhrase, WaitPhrase, a pause, ClearScreen; OUT OF TIME when the time digits are `$FF` 9 9; the map in play into the player's slot, the eggs and the level into his; lives - 1; at 0 "GAME OVER" (with "PLAYER n" whenever Players > 1, the last player out included). Then the next player with lives (in turn) is loaded (level, eggs, score, map) and PlayerTurn; none left: GameOver.
 
 Witness: 14 lives lost (`$A6FE`), out of time 1 (`$A725`, tour-redefine), game over 2 (`$A7BC`: idle-1p, gameover-name).
 

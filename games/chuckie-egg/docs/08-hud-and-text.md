@@ -100,8 +100,8 @@ as the text.
 | `$0B-$1D` | the HUD labels SCORE, PLAYER, BONUS, TIME, two letters a cell | SetupLevel (HudText) |
 | `$20-$5F` | the font: digits, signs, thin capitals `A-Z` | the pages, the messages |
 | `$60-$7F` | bold capitals `A-Z` at the lowercase codes, the bullet `$7B`, the copyright `$7F` | the pages, the scrollers |
-| `$80-$8A` | the big CHUCKIE EGG of the title | TitlePage `$A420` |
-| `$8F-$96` | the A+F logo | DrawHiScores `$ABAD` (the default names) |
+| `$80-$8E` | the 15 quadrant blocks of the big CHUCKIE EGG; the title uses `$80-$8A` | TitlePage `$A420` |
+| `$8F-$96` | the small A+F CHUCKIE EGG | DrawHiScores `$ABAD` (the default names) |
 | `$97-$9A` | SPACE, CAPS SHIFT, SYMBOL SHIFT, ENTER | RedefineOne `$AB19`, the instructions |
 | `$9B-$9D` | the HUD label LEVEL | SetupLevel |
 | `$9E-$A7` | the HUD digits 0-9 | SetupLevel, PlayLevelBonus, CountDown (direct copy) |
@@ -171,7 +171,7 @@ and the place. The build keeps them in `src/res/text/` as UTF-8, one quoted stri
 | TitleText | `$9630-$9763` | 308 | 22 rows of 14, bottom row first | TitlePage `$A420`, row k at H 2 + k |
 | HudText | `$9764-$9786` | 35 | 3 codes, then 32 | SetupLevel `$AE9C` |
 | HiScoreTable | `$97AF-$984E` | 160 | ten entries of 16 | DrawHiScores `$ABAD`, EnterHiScore `$A80C` |
-| MenuTexts | `$ABF2-$AD66` | 373 | 12 strings | DrawHiScores, RedefineKeys, RedefineOne, the scrollers, StartGame, Message |
+| MenuTexts | `$ABF2-$AD66` | 373 | 11 strings (the label marks the first) | DrawHiScores, RedefineKeys, RedefineOne, the scrollers, StartGame, Message |
 | Congratulations | `$AD67-$AE0B` | 165 | 11 rows of 15, top row first | EnterHiScore, row k at H 23 - 2k |
 | MenuLeftover | `$8336-$838F` | 90 | three old menu lines | none (no access in any build) |
 
@@ -453,11 +453,11 @@ Otherwise CountDown copies the three digits from HudCharacters `$89E0` + 8 x dig
 bonus, row 2 column 19) or `$405D` (the time, column 29).
 
 MainLoop's slow tick (every 130 passes, doc 4) calls it. BonusDelay `$7345` counts 50 ticks for a bonus step of 10
-points. TimeDelay `$7346` counts 10 ticks for a time step, followed by Beep H 4, L 2 (doc 9). A slow tick is about 0.75
-frames on level 1, so the time steps about every 7.5 frames and the bonus about every 38.
+points. TimeDelay `$7346` counts 10 ticks for a time step, followed by Beep H 4, L 2 (doc 9). A slow tick is about 0.8
+frames on level 1 (1.25 ticks a frame, glossary), so the time steps about every 8 frames and the bonus about every 40.
 
 Grain stops both clocks. TakeEggOrGrain writes `$FFFF` to BonusDelay and TimeDelay, so the next steps come after 255
-slow ticks, about 190 frames on level 1.
+slow ticks, about 200 frames on level 1.
 
 ```text
 CountDown(B):
@@ -632,12 +632,12 @@ How to read the animation: the BONUS field on row 2 runs down from 0880 to 0000 
 Worked example: level 1 of `levels-1-3` ends with 0880 left on the bonus and 1 600 points (11 eggs, 8 grains and the
 twelfth egg). The loop runs 89 times: 88 steps take the bonus to 000, the 89th goes under and still pays. The score
 ends at 1 600 + 890 = 2 490. A step costs CountDown (about 600 T), AddScore (about 900 T with its print) and Beep
-(4 x 827 + 20 = 3328 T), about 4900 T. 89 steps are about 436 000 T, 6.2 frames of CPU. They were measured in frames
+(4 x 827 + 22 = 3330 T), about 4900 T. 89 steps are about 436 000 T, 6.2 frames of CPU. They were measured in frames
 2007-2016, 8-10 steps a frame, because the interrupts and the speech take their share.
 
 Witness: `levels-1-3` has 89 steps in frames 2007-2016 (level 1), 173 in frames 3583-3601 (level 2) and 258 in frames
 6649-6677 (level 3), all CountDown calls from `$A67D`. The score before the first egg-less step and after the last
-one, from the AddScore calls: 1 500 at frame 2007 and 2 490 at frame 2017. The screens are in doc 1: the count-down
+one, from the AddScore calls: 1 600 at frame 2007 and 2 490 at frame 2017. The screens are in doc 1: the count-down
 ([level-end-bonus](img/play/level-end-bonus.png)), the boxes ([level-end-boxes](img/play/level-end-boxes.png)) and
 the message ([level-message](img/play/level-message.png)).
 
@@ -651,7 +651,8 @@ title and instructions pages. Both use ScrollLine `$AB7B`.
 
 ScrollLine shifts one character row of 30 bytes, columns 1-30, one pixel left. For each of the eight pixel lines,
 each byte is shifted left and takes bit 7 of the byte to its right. It keeps every register. Counted from the listing,
-a shift costs about 17 000 T.
+a byte costs 70 T (bit 7 of its right neighbour clear) or 80 T (set), and a line 71 T more, so a shift costs 17 368 to
+19 768 T before contention, about 18 000 T. The worked example below measures about 18 300 T a shift.
 
 Message `$A9CE` scrolls C characters from DE:
 
@@ -661,7 +662,9 @@ Message `$A9CE` scrolls C characters from DE:
 4. After the last character it shifts 256 times more, so the text leaves on the left.
 
 The messages are "PLAYER n" (PlayerTurn), "LEVEL n" (PlayLevelBonus), "GAME OVER" and "OUT OF TIME !" (LifeLost),
-each from MenuTexts.
+each from MenuTexts. With one player LifeLost prints GameOverMessage's 9 characters. With more than one it passes
+C = 18 (`$A758-$A765`), and the text runs on from GameOverMessage into PlayerMessage, so the screen reads
+"GAME OVER PLAYER n" with the digit PlayerTurn last stored.
 
 The title scroller (TitleLoop `$A47D`, 78 characters) and the instructions scroller (InstructionsPage, 87 characters)
 shift the bottom row at `Screen+4321`. They wait Delay 500 (13 000 T) after each shift and print the next character
@@ -733,15 +736,17 @@ flowchart TD
 
 *Doc 1's screen of `levels-1-9` at frame 2170: the message on the green rows 11-14.*
 
-Worked example: "level  2" after level 1 has 8 codes: `$6C $65 $76 $65 $6C $20 $00 $A0`. In `levels-1-3` Message
-prints them from `$A9E7` at frames 2119, 2122, 2124, 2126, 2128, 2130, 2132 and 2134, one every 2.1 frames: eight
-shifts of about 17 000 T plus the interrupts. Code 0 (the empty tens) prints a blank cell. The 64 + 256 shifts take
-about 80 frames, 1.6 s. The text enters at column 30 and leaves by column 1, so columns 0 and 31 stay blank.
+Worked example: "level  2" after level 1 has 8 codes: `$6C $65 $76 $65 $6C $20 $00 $A0`. In `levels-1-3` Message prints
+them from `$A9E7` at frames 2119, 2122, 2124, 2126, 2128, 2130, 2132 and 2134, one every 2.1 frames: eight shifts of
+about 18 000 T plus the interrupts (about 18 300 T a shift). Code 0 (the empty tens) prints a blank cell. The 57 + 256 shifts (1 before the first
+character, 8 after each of the next 7, then 256) take about 80 frames, 1.6 s. The text enters at column 30 and leaves by
+column 1, so columns 0 and 31 stay blank.
 
 Witness: `levels-1-3` has 24 message characters printed from `$A9E7`: "level  2", "level  3" and "level  4" (codes
-`$A0`, `$A1`, `$A2` last). The messages of the other recordings are in WALKTHROUGH 6.1: [PLAYER 1](img/play/player-turn.png)
-(`tour-type2` frame 700), [OUT OF TIME !](img/play/out-of-time.png) (`tour-redefine` frame 8750) and
-[GAME OVER](img/play/game-over.png) (`idle-1p` frame 14 600). ScrollLine ran 49 502 times in the builds.
+`$A0`, `$A1`, `$A2` last). The messages of the other recordings are in WALKTHROUGH 6.1:
+[PLAYER 1](img/play/player-turn.png) (`tour-type2` frame 700), [OUT OF TIME !](img/play/out-of-time.png)
+(`tour-redefine` frame 8750) and [GAME OVER](img/play/game-over.png) (`idle-1p` frame 14 600). ScrollLine ran 49 502
+times in the builds.
 
 The point: one 30-byte pixel shifter serves every moving text. The messages hold the game for one or two seconds,
 since nothing else runs while they scroll.
@@ -753,12 +758,15 @@ The front end is four screens, each drawn by one routine and left by a key.
 | Screen | Routine | Drawn | Keys |
 | --- | --- | --- | --- |
 | the title | TitlePage `$A420` | TitleText at H 2-23, columns 0-13; DrawHiScores on the right; colour bands magenta, yellow, green; row 23 cyan; the title scroller | S StartGame, R RedefineKeys, I InstructionsPage |
-| the instructions | InstructionsPage `$A4C8` | InstructionsText, 11 rows at H 3, 5 .. 23; WaitPhrase, then phrase 24; the instructions scroller | 1, 2, 3 the key type (a `$17` bar and the `$97` marks); S only once the phrase has ended |
+| the instructions | InstructionsPage `$A4C8` | InstructionsText, 11 rows at H 3, 5 .. 23; WaitPhrase, then phrase 24; the instructions scroller | 1, 2, 3 the key type (the new type's row gets attribute `$97`, flashing, the old one `$17` again, `$A56D-$A598`); S only once the phrase has ended |
 | the redefine page | RedefineKeys `$AA49` | RedefinePrompt and the five KeyLabels; RedefineOne `$AB19` prints each key's name | one key for each of the five moves |
 | the players prompt | StartGame `$A59D` | BoxWipe `$A929` (twelve nested boxes), PlayersPrompt scrolled in | 1-4 the number of players |
 
 The title tune and phrase 20 play only on the first title after Start `$A410`. TitleTuneDone `$736F` is cleared only by
-Start, which the loader and the abort key (CAPS SHIFT + A) enter. The title after a game over is silent (doc 9).
+Start, which the loader and the abort key (CAPS SHIFT + A) enter (witnessed after an abort: `hold-abort` aborts at
+frame 1400, and from frame 1410 the 46 notes and phrase 20 play). The title after a game over is silent (doc 9).
+RedefineKeys ends with `JP TitleScrollerStart` (`$AAB7`): the scroller and the key loop run over the redefine page,
+and TitlePage is not run again.
 
 ```text
 TitlePage:
@@ -807,7 +815,7 @@ flowchart TD
     L -->|S| SG["StartGame: BoxWipe, players prompt, 1-4"]
     L -->|R| RK["RedefineKeys: five keys"]
     L -->|I| IP["InstructionsPage: phrase 24, key type 1-3"]
-    RK --> T
+    RK -->|"JP TitleScrollerStart"| L
     IP -->|S| SG
     SG --> G["PlayerTurn, the game"]
     G -->|game over| T
@@ -819,9 +827,9 @@ flowchart TD
 
 *`tour-type2` at frames 200, 300 and 500, from WALKTHROUGH 6.1.*
 
-Worked example: the title scroller moves one pixel per ScrollLine (about 17 000 T) and Delay 500 (13 000 T), about
-30 000 T a pixel. A character enters every eight pixels, about 240 000 T or 3.4 frames. The 78 characters take
-about 270 frames, 5.4 s, before the text repeats.
+Worked example: the title scroller moves one pixel per ScrollLine (about 18 000 T) and Delay 500 (13 000 T), about
+31 000 T a pixel. A character enters every eight pixels, about 250 000 T or 3.5 frames. The 78 characters take
+about 280 frames, 5.5 s, before the text repeats.
 
 Witness: TitlePage ran 4 times in the builds. InstructionsPage and StartGame are in `tour-type2`: phrase 24 starts at
 frame 258 from `$A512`, and the players prompt is printed at about frame 500.
@@ -832,9 +840,9 @@ instructions page waits for its phrase.
 ## 8.9 The high score table and the name entry
 
 HiScoreTable `$97AF` holds ten entries of 16 bytes, the best first. Bytes 0-9 are the name field and bytes 10-15 the
-score as six ASCII digits. The defaults are a space, the eight A+F logo codes `$8F-$96`, a space and "001000".
-DrawHiScores `$ABAD` prints the title "high score table" at H 23, column 16, and entry k at H 21 - 2k, columns 16-31.
-It colours columns 16-31 of rows 0-20 `$17`.
+score as six ASCII digits. The defaults are a space, the eight codes `$8F-$96` of the small A+F CHUCKIE EGG, a space and
+"001000". DrawHiScores `$ABAD` prints the title "high score table" at H 23, column 16, and entry k at H 21 - 2k, columns
+16-31. It colours columns 16-31 of rows 0-20 `$17`.
 
 At the end of the game, GameOver `$A7BC` wipes the screen and turns the 24 score digits of PlayerScores into ASCII
 (`+ $30`). Then, for each player, it writes the player's digit into the Congratulations page at `$AD72` and calls
@@ -992,7 +1000,7 @@ Every text of the image, with the resource file that holds it. All files are in 
 | TitleText | `$9630-$9763` | 308 | `TitleText.txt` | the title's left half, 22 rows of 14 | TitlePage `$A420` |
 | HudText | `$9764-$9786` | 35 | `HudText.txt` | SCORE; the 32 codes of HUD row 2 | SetupLevel `$AE9C` |
 | HiScoreTable | `$97AF-$984E` | 160 | `HiScoreTable.txt` | ten entries of 16: name field, six ASCII digits | DrawHiScores, EnterHiScore |
-| MenuTexts | `$ABF2-$AC01` | 16 | `MenuTexts.txt` | "high score table" | DrawHiScores `$ABAD` |
+| MenuTexts (the first string) | `$ABF2-$AC01` | 16 | `MenuTexts.txt` | "high score table" | DrawHiScores `$ABAD` |
 | RedefinePrompt | `$AC02-$AC21` | 32 | `MenuTexts.txt` | "press the key you wish to use to" | RedefineKeys `$AA49` |
 | KeyLabels | `$AC22-$AC53` | 50 | `MenuTexts.txt` | five labels of 10: move up .. jump | RedefineKeys |
 | KeyNames | `$AC54-$AC7B` | 40 | `MenuTexts.txt` | the 40 keys, 8 half rows of 5 | RedefineOne `$AB19` |
@@ -1000,7 +1008,7 @@ Every text of the image, with the resource file that holds it. All files are in 
 | InstructionsScroller | `$ACCA-$AD20` | 87 | `MenuTexts.txt` | the instructions' scroller | InstructionsPage |
 | PlayersPrompt | `$AD21-$AD3E` | 30 | `MenuTexts.txt` | "1,2,3 or 4 players ?" and spaces | StartGame `$A59D` |
 | GameOverMessage | `$AD3F-$AD48` | 10 | `MenuTexts.txt` | "game over" and a space | LifeLost |
-| PlayerMessage | `$AD49-$AD51` | 9 | `MenuTexts.txt` | "player 1" and a space; `$AD50` rewritten | PlayerTurn, GameOver |
+| PlayerMessage | `$AD49-$AD51` | 9 | `MenuTexts.txt` | "player 1" and a space; `$AD50` rewritten | PlayerTurn; LifeLost (run-on from GameOverMessage) |
 | LevelMessage | `$AD52-$AD59` | 8 | `MenuTexts.txt` | "level " and two HUD digits at `$AD58` | PlayLevelBonus `$A675` |
 | OutOfTimeMessage | `$AD5A-$AD66` | 13 | `MenuTexts.txt` | "OUT OF TIME !" | LifeLost |
 | Congratulations | `$AD67-$AE0B` | 165 | `Congratulations.txt` | the name entry page, 11 rows of 15; `$AD72` rewritten | EnterHiScore `$A80C` |
@@ -1021,9 +1029,11 @@ The routines that rewrite text bytes at run time:
 | `$AD72` | GameOver | the player's digit of the Congratulations page |
 
 Worked example: changing "OUT OF TIME !" means editing its line in `MenuTexts.txt`. The string is 13 bytes and
-LifeLost passes C = 13 to Message, so a new text of another length also needs the count in LifeLost.
+LifeLost passes C = 13 to Message, so a new text of another length also needs the count in LifeLost. Likewise,
+changing GameOverMessage's length breaks the run-on: LifeLost's C = 18 reaches PlayerMessage only while
+GameOverMessage stays 10 bytes and PlayerMessage follows it.
 
 Witness: the build (`sh tools/build.sh`) turns the files back into the image byte for byte; doc 3 checks it.
 
-The point: about 1 300 bytes of text and nine run-time patches cover every word the game shows. A text's length lives
+The point: about 1 400 bytes of text (1 393; 1 483 with MenuLeftover) and nine run-time patches cover every word the game shows. A text's length lives
 in its caller, not in the text.

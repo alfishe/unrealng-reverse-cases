@@ -130,7 +130,7 @@ def edges_of_call(d, x, outs=None):
 
 
 def longest_jump(cs):
-    """The longest run of jump clicks with no gap over 3 frames: one whole jump"""
+    """The longest run of jump clicks with no gap over 3 frames (in l13 the lift-top jumps of frame 5914, eight catches)"""
     runs, cur = [], []
     for x in (c for c in cs if c[4] == 0x9892):
         if cur and at(x[0], x[1]) - at(cur[-1][0], cur[-1][1]) > 3 * FT:
@@ -178,9 +178,9 @@ def cmd_table(_a):
         x = xs[len(xs) // 2]
         e = edges_of_call(d, x, outs)
         span = e[-1][0] - e[0][0] if len(e) > 1 else 0
-        model = x[3] * (26 * x[2] + 47) + 20
+        model = x[3] * (26 * x[2] + 47) + 22
         print(f'| ${site:04X} | {SITES.get(site, ("?",))[0]} | {len(xs)} | {hs[0]}-{hs[-1]} | {x[3]} | '
-              f'{beep_hz(x[2]):.0f} | {model} | {span} (model {model - 20 - (13 * x[2] + 33)}) |')
+              f'{beep_hz(x[2]):.0f} | {model} | {span} (model {model - 22 - (13 * x[2] + 33)}) |')
     # the measured half periods
     x = [c for c in calls(d) if c[4] == 0x9DA6][0]
     e = edges_of_call(d, x, outs)
@@ -278,8 +278,8 @@ def cmd_sweep(_a):
     b2 = a2.twinx()
     b2.plot(ms, [beep_hz(x[2]) for x in run], 's', ms=3, color='#9467bd', label='click pitch, Hz')
     b2.set_ylabel('Hz of the click (one cycle)')
-    a2.set_title(f'The jump of frame {first[0]}: one click (H = HarryY XOR $FF, L 1) on the pass before each '
-                 f'slow tick, {len(run)} clicks', fontsize=12)
+    a2.set_title(f'The lift-top jumps from frame {first[0]} (caught eight times): a click (H = HarryY XOR $FF, '
+                 f'L 1) a slow tick in the air, {len(run)} clicks', fontsize=12)
     a2.set_xlabel('ms after the first click')
     a2.grid(alpha=0.3)
     h1, l1 = a2.get_legend_handles_labels()
@@ -386,7 +386,7 @@ def cmd_cost(_a):
     per = defaultdict(int)
     kinds = defaultdict(lambda: defaultdict(int))
     for x in calls(d):
-        cost = (x[3] or 256) * (26 * (x[2] or 256) + 47) + 20
+        cost = (x[3] or 256) * (26 * (x[2] or 256) + 47) + 22
         per[x[0]] += cost
         kinds[SITES.get(x[4], ('other',))[0]][x[0]] += cost
     fig, (a1, a2) = plt.subplots(2, 1, figsize=(WIDTH, 8.5))

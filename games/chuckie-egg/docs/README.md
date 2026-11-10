@@ -44,7 +44,7 @@ Each term once, here; the documents link to it.
 | lift-top trick | repeated catches by a rising platform while jumping, which survive because the lift death test runs only after a lift step with OnLift 1 ([10.10](10-gameplay-logic.md#1010-the-lifts-catchlift-and-the-lift-top-trick)) |
 | light pass | a pass that is not a slow tick and makes no jump step: the ERR_SP check, the pickup sound check, PassCounter (149 T in the border) |
 | LiveMap | `$61A8`: the 32 x 21 map of the level in play, one cell code a byte, row 0 the bottom row |
-| pass | one run of MainLoop `$9858` to its `JP MainLoop` at `$99DC`; a light pass takes 149-168 T. Measured: 161.8 passes a frame on level 1 with Harry standing ([4.6](04-game-loop.md#46-passes-and-ticks-a-frame)), 122 in a jump ([10.1](10-gameplay-logic.md#101-two-clocks-the-pass-and-the-slow-tick)). The jump is timed in passes |
+| pass | one run of MainLoop `$9858` to its `JP MainLoop` at `$99DC`; a light pass takes 149-168 T. Measured: 161.8 passes a frame on level 1 with the bot playing and 162.9 on level 4 with Harry standing ([4.6](04-game-loop.md#46-passes-and-ticks-a-frame)), 122 in a jump ([10.1](10-gameplay-logic.md#101-two-clocks-the-pass-and-the-slow-tick)). The jump is timed in passes |
 | phrase | a list of (count, allophone) pairs in PhraseTable `$C8C8`, ended by `$FF`; 33 of them |
 | PhraseTimer | `$7373`, the interrupts to the next pair; `$FF` when no phrase plays, and StartPhrase drops a request while one does |
 | pickup sweep | the 63 two-cycle beeps after an egg or grain, a saw of H 33 down to 9, eight times |

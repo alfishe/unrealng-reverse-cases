@@ -23,8 +23,9 @@ Start:
 ;
 ; ClearScreen, TitleText at rows 2-23 columns 0-13, DrawHiScores, the colours
 ; of the left half (magenta, yellow, green bands), the title tune and phrase 20
-; the first time only (TitleTuneDone), row 23 cyan, TextIndex at the end of the
-; text. Then TitleLoop. Witness: 4 calls.
+; while TitleTuneDone is 0 (set by Start: the first title and after an abort;
+; silent after a game over), row 23 cyan, TextIndex at the end of the text.
+; Then TitleLoop. Witness: 4 calls.
 TitlePage:
   CALL ClearScreen
   LD H,$02
@@ -459,9 +460,10 @@ PlayLevelMap:
 ;
 ; DeathTune, DeathPhrase, WaitPhrase, a pause, ClearScreen; OUT OF TIME when
 ; the time digits are $FF 9 9; the map in play into the player's slot, the eggs
-; and the level into his; lives - 1; at 0 "GAME OVER" (with "PLAYER n" when
-; more play). Then the next player with lives (in turn) is loaded (level, eggs,
-; score, map) and PlayerTurn; none left: GameOver.
+; and the level into his; lives - 1; at 0 "GAME OVER" (with "PLAYER n" whenever
+; Players > 1, the last player out included). Then the next player with lives
+; (in turn) is loaded (level, eggs, score, map) and PlayerTurn; none left:
+; GameOver.
 ;
 ; Witness: 14 lives lost ($A6FE), out of time 1 ($A725, tour-redefine), game
 ; over 2 ($A7BC: idle-1p, gameover-name).

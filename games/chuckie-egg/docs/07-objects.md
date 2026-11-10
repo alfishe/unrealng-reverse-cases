@@ -8,7 +8,7 @@ and the random numbers. How Harry moves, jumps, falls and dies, and the rules of
 
 The recordings it rests on (WALKTHROUGH 6.0):
 
-- `levels-1-9`, the full run (level 10 at frame 25 490). Opened on an own instance after `source work/env.sh`:
+- `levels-1-9`, the full run (level 10 from frame 25 248; the recording ends at frame 25 491). Opened on an own instance after `source work/env.sh`:
   `python3 $RS open --work work/docs/ceC/l19 --ttd work/stage1/rec/levels-1-9/session.ttd --model 48K --port-base 36250 --binary $BIN`.
   Sampled with `work/docs/ceC/sample.py` (TTD `memory_at`):
   - the object block `$72D8-$7375` at every frame 0-25 491 (`work/docs/ceC/l19-vars.jsonl`);
@@ -41,39 +41,40 @@ and the jump fields, so the IX offsets of everything after it are above `$4C`.
 
 | Address | IX offset | Field | Owner | Written by | Read by |
 | --- | --- | --- | --- | --- | --- |
-| `$72D8` | `+$00` | HarryX, the left edge of the sprite, 0-238 | Harry | WalkHarry `$9D08`, JumpStep `$A21C` | everything |
-| `$72D9` | `+$01` | HarryY, the top line of the sprite, counted up from the screen bottom | Harry | ClimbLadder `$9E98`, JumpFall `$A2B5`, CatchLift `$A256`, MainLoop on a lift | everything |
-| `$72DA` | `+$02` | HarryFrame, the walk or climb phase 0-3 | Harry | WalkHarry, ClimbLadder | the DrawSprite calls |
-| `$72DB` | `+$03` | HarryDir: 0 right, 4 left, `$0D` on a ladder (added to the frame) | Harry | WalkHarry, LeaveLadder `$9F60`, ClimbLadder, the jump start | WalkHarry, FallOffEdge `$B34C` |
-| `$72DC` | `+$04` | PassCounter, passes to the next slow tick (130 down to 1) | clock | MainLoop | MainLoop, JumpStep |
-| `$7325` | `+$4D` | JumpState: 0 on foot or a ladder, 1 drifting off an edge, 2 in the air | jump | the jump start `$9975`, FallOffEdge, JumpDrift `$A294`, JumpLanded, ClimbLadder, CatchLift | MainLoop |
-| `$7326` | `+$4E` | JumpDx: -1, 0 or +1 pixel a slow tick | jump | the jump start, FallOffEdge, JumpBounce | JumpStep |
-| `$7327` | `+$4F` | JumpCount: the next delay of a jump or fall, or the drift count | jump | JumpFall, JumpDrift | JumpFall, JumpDrift |
-| `$7328` | `+$50` | JumpDelay: passes to the next vertical step | jump | JumpFall | JumpFall, MainLoop |
-| `$732A` | `+$52` | JumpDy: +1 rising, 0 at the top, -1 falling | jump | JumpFall | JumpFall, JumpLand |
-| `$733C` | `+$64` | LiftDelay: slow ticks to the next lift step (2) | clock | MainLoop | MainLoop |
+| `$72D8` | `+$00` | HarryX, the left edge of the sprite, 0-238; 239-255 only after the jump wrap of doc 10.4 | Harry | WalkHarry `$9D08`, JumpStep `$A21C`, SetupLevel | everything |
+| `$72D9` | `+$01` | HarryY, the top line of the sprite, counted up from the screen bottom | Harry | ClimbLadder `$9E98`, JumpFall `$A2B5`, CatchLift `$A256`, MainLoop on a lift, SetupLevel | everything |
+| `$72DA` | `+$02` | HarryFrame, the walk or climb phase 0-3 | Harry | WalkHarry, ClimbLadder, SetupLevel | the DrawSprite calls |
+| `$72DB` | `+$03` | HarryDir: 0 right, 4 left, `$0D` on a ladder (added to the frame) | Harry | WalkHarry, LeaveLadder `$9F60`, ClimbLadder, the jump start, JumpLanded `$A37C`, SetupLevel | WalkHarry, FallOffEdge `$B34C`, MainLoop `$99CA`, the jump start `$99B6`, JumpLanded `$A378`, DrawHarryFrame `$A382`, WalkOffLift `$9DE1` |
+| `$72DC` | `+$04` | PassCounter, passes to the next slow tick (130 down to 1) | clock | MainLoop, SetupLevel `$B0A3` | MainLoop, JumpStep |
+| `$7325` | `+$4D` | JumpState: 0 on foot or a ladder, 1 drifting off an edge, 2 in the air | jump | the jump start `$9975`, FallOffEdge, JumpDrift `$A294`, JumpLanded, ClimbLadder, CatchLift, WalkOffLift `$9DDB`, SetupLevel | MainLoop, JumpStep `$A222`, JumpDrift `$A294` |
+| `$7326` | `+$4E` | JumpDx: -1, 0 or +1 pixel a slow tick | jump | the jump start, FallOffEdge, JumpBounce, JumpDrift `$A2A5`, JumpStepX (`$A23A`, `$A244`), WalkOffLift | JumpStep |
+| `$7327` | `+$4F` | JumpCount: the next delay of a jump or fall, or the drift count | jump | the jump start, FallOffEdge, WalkOffLift, JumpFall, JumpDrift | JumpFall, JumpDrift |
+| `$7328` | `+$50` | JumpDelay: passes to the next vertical step | jump | the jump start, JumpFall | JumpFall, MainLoop |
+| `$7329` | `+$51` | unused: no instruction reads or writes it, 0 in every sample | | | |
+| `$732A` | `+$52` | JumpDy: +1 rising, 0 at the top, -1 falling | jump | the jump start, JumpDrift `$A2AA`, JumpFall | JumpFall, JumpLand |
+| `$733C` | `+$64` | LiftDelay: slow ticks to the next lift step (2) | clock | MainLoop, SetupLevel (5, `$B06A`) | MainLoop |
 | `$733F-$7341` | `+$67` | BonusDigits: three digits 0-9; a fourth 0 is printed after them | HUD | SetupLevel, CountDown `$A1B8` | CountDown |
 | `$7342-$7344` | `+$6A` | TimeDigits: three digits 0-9 | HUD | SetupLevel, CountDown | CountDown, LifeLost |
-| `$7345` | `+$6D` | BonusDelay: slow ticks to the next bonus step (50) | clock | MainLoop, TakeGrain | MainLoop |
-| `$7346` | `+$6E` | TimeDelay: slow ticks to the next time step (10) | clock | MainLoop, TakeGrain | MainLoop |
+| `$7345` | `+$6D` | BonusDelay: slow ticks to the next bonus step (50) | clock | MainLoop, TakeGrain, SetupLevel `$B09A` | MainLoop |
+| `$7346` | `+$6E` | TimeDelay: slow ticks to the next time step (10) | clock | MainLoop, TakeGrain, SetupLevel `$B09D` | MainLoop |
 | `$7347` | `+$6F` | BonusRunning: 1 while the bonus counts down | HUD | SetupLevel, CountDown | MainLoop, PlayLevel |
-| `$7348` | `+$70` | DuckX | duck | MoveDuck `$A0C8` | MoveDuck, DrawSprite |
-| `$7349` | `+$71` | DuckY | duck | MoveDuck | MoveDuck, DrawSprite |
-| `$734A` | `+$72` | DuckDx: -5 to +5 pixels a duck step | duck | MoveDuck | MoveDuck |
-| `$734B` | `+$73` | DuckDy: -5 to +5 | duck | MoveDuck | MoveDuck |
-| `$734C` | `+$74` | DuckDelay: slow ticks to the next duck step (12) | clock | MainLoop | MainLoop |
-| `$734D` | `+$75` | DuckFrame: the wing phase 0-1 | duck | MoveDuck | MoveDuck |
+| `$7348` | `+$70` | DuckX | duck | MoveDuck `$A0C8`, SetupLevel `$B062` | MoveDuck, DrawSprite |
+| `$7349` | `+$71` | DuckY | duck | MoveDuck, SetupLevel `$B066` | MoveDuck, DrawSprite |
+| `$734A` | `+$72` | DuckDx: -5 to +5 pixels a duck step | duck | MoveDuck, SetupLevel `$B07B` | MoveDuck |
+| `$734B` | `+$73` | DuckDy: -5 to +5 | duck | MoveDuck, SetupLevel `$B07E` | MoveDuck |
+| `$734C` | `+$74` | DuckDelay: slow ticks to the next duck step (12) | clock | MainLoop, SetupLevel `$B0A0` | MainLoop |
+| `$734D` | `+$75` | DuckFrame: the wing phase 0-1 | duck | MoveDuck, SetupLevel `$B081` | MoveDuck |
 | `$734E-$734F` | `+$76` | Lift1: the screen address of platform 1 | lift | SetupLevel, MoveLifts `$A014` | MoveLifts |
 | `$7350` | `+$78` | LiftX: the shaft's x, `$FF` = no lift | lift | SetupLevel, MoveLifts | MoveLifts, CatchLift, WalkHarry |
 | `$7351` | `+$79` | Lift1Row: platform 1's y, 3-165 | lift | SetupLevel, MoveLifts | MoveLifts, CatchLift |
 | `$7352-$7353` | `+$7A` | Lift2: the screen address of platform 2 | lift | SetupLevel, MoveLifts | MoveLifts |
 | `$7354` | `+$7C` | Lift2Row: platform 2's y | lift | SetupLevel, MoveLifts | MoveLifts, CatchLift |
-| `$7355` | `+$7D` | OnLift: 1 while Harry rides a platform | lift | CatchLift, the jump start, SetupLevel | MainLoop, WalkHarry |
-| `$7356` | `+$7E` | HenTurn: the hen record 0-4 that MoveHen moves next | hens | MoveHen `$911E` | MoveHen |
+| `$7355` | `+$7D` | OnLift: 1 from a catch on a platform to the next jump (a walk-off keeps it, doc 10.10) | lift | CatchLift, the jump start, SetupLevel | MainLoop, WalkHarry |
+| `$7356` | `+$7E` | HenTurn: the hen record 0-4 that MoveHen moved last (it adds one, wrapping, before the move) | hens | MoveHen `$911E`, SetupLevel | MoveHen |
 | `$7357-$736A` | `+$7F` | Hens: five records of 4 bytes (7.3) | hens | SetupLevel, MoveHen, HenEatGrain `$9265` | MoveHen, MainLoop |
 | `$736B` | `+$93` | HenDelay: slow ticks to the next hen turn (3, or 2 from level 33) | clock | MainLoop, SetupLevel | MainLoop |
-| `$736C` | `+$94` | RandomPtr: a pointer into the ROM, `$0000-$00FF` (7.11) | hens | MoveHen, SetupLevel | MoveHen |
-| `$732B-$733B`, `$733D`, `$736E-$7375` | | the scroller, the key table, the players, the score address, the extra-life digit, the sound and phrase fields | docs 05, 08, 09 | | |
+| `$736C-$736D` | `+$94` | RandomPtr: a pointer into the ROM, `$0000-$00FF` (7.11); the high byte `$736D` is always 0 | hens | MoveHen, SetupLevel | MoveHen |
+| `$732B-$733B`, `$733D-$733E`, `$736E-$7375` | | the scroller, the key table, the players, the score address (a word), the extra-life digit, the sound and phrase fields | docs 05, 08, 09 | | |
 
 ![The object block in levels-1-9 frame 5705, every byte coloured by its owner](img/objects/block.png)
 
@@ -177,8 +178,10 @@ looks for a brick to step off onto at y AND 4 = 0.
 
 MoveHen `$911E` moves one record a call, and MainLoop calls it every third slow tick (every second from level 33,
 `$993D`). `HenTurn` steps 0, 1, 2, 3, 4, 0, ... through all five slots, empty or not, so each hen moves once in five
-calls: 4 pixels every 15 slow ticks, about every 11 frames on level 1. On levels 9-16 MoveHen returns at once
-(`$9121`): those levels have no hens.
+calls: 4 pixels every 15 slow ticks, about every 11 frames on level 1. MoveHen adds one to HenTurn before it moves
+(`$913B-$9142`), so HenTurn names the record moved last, and after SetupLevel (HenTurn 0) the first move is record 1,
+hen 2. On levels 9-16 MoveHen returns at once
+(`$9127`): those levels have no hens.
 
 ```mermaid
 stateDiagram-v2
@@ -216,7 +219,7 @@ flowchart TD
     D -- yes --> R0
     D -- no --> E[DrawHen with A 0: erase, and the kill test]
     E --> F{state 7 or 8?}
-    F -- yes --> P[state - 6, draw the walking frame in place]
+    F -- yes --> P[state - 6, erase the peck at x - 8 or x: a normal box test, then the walking frame in place]
     F -- no --> W{state 1 or 2?}
     W -- yes --> X{x AND 4?}
     X -- no --> G[HenEatGrain: grain beside? peck and return]
@@ -249,12 +252,15 @@ MoveHen():
     if hen.x == $FF: return
     DrawHen(hen.x, hen.y, 0)                  ; erase; may kill Harry (7.10)
     if hen.state >= 7:                        ; a peck lasts one turn
-        hen.state -= 6; redraw in place; return
+        hen.state -= 6
+        DrawHen(hen.x - 8 if left else hen.x, hen.y, 0)   ; erase the peck: a box test at MoveHen depth
+        redraw the walking frame in place; return          ;   (a left peck's erase kills in x - 15 .. x - 3)
     if hen.state <= 2:                        ; walking
         if hen.x AND 4 == 0:
             HenEatGrain(hen)                  ; grain beside: peck, return (7.4)
+            if hen.x + 8 > 255: turn            ; the carry test is shared by both directions ($9184-$9187)
             ahead = hen.x + 8 (right) or hen.x - 8 (left)
-            if ahead is off the screen or cell(ahead, hen.y - 1) in (0, egg, grain, cage):
+            if cell(ahead, hen.y - 1) in (0, egg, grain, cage):
                 hen.state = 3 - hen.state     ; turn, and step at once
         hen.x += 4 (right) or -4 (left); draw
         if hen.x AND 4 and c:                 ; half way across a cell
@@ -307,9 +313,13 @@ $91AC  DJNZ MoveHenStepSet
 $91AE  SUB $08
 ```
 
-The right-hand floor test reads column (x + 8) / 8 at row y - 1: the column under the hen's right half, which it covers
-fully after the next step. The left-hand test reads column (x - 8) / 8, the column it steps onto next. An egg or a
-grain under the hen's feet counts as no floor, so a hen never walks over a hole that holds an egg.
+The tests are asymmetric. At x = 8k the hen covers columns k and k + 1. Walking right, the floor test reads column
+(x + 8) / 8 = k + 1 at row y - 1: the column under its own right half. Walking left, it reads (x - 8) / 8 = k - 1, the
+column beside it, which it steps onto next. A right walker therefore stands with its right half over a hole, an egg or
+grain before it turns, and only then steps back; a left walker turns before it overhangs. An egg or grain under the
+feet counts as no floor, so a hen never crosses a hole that holds an egg, but walking right it stands half over it.
+The worked example below shows it: at x 120 hen 1 covers columns 15 and 16, and cell (16, 16) under its right half is
+empty (`src/res/maps/Level1.txt` row 16: `=` at column 15, `.` at 16) when it turns.
 
 ![Hen 1 on level 1, levels-1-9 frames 420-494: one picture per change of its record](img/objects/hen-walk.png)
 
@@ -333,7 +343,7 @@ python3 tools/fig_objects.py henwalk --samples work/docs/ceC/l19-vars.jsonl --sc
 
 The animation is a trace of `levels-1-9` frames 425-489 (65 frames, 110 pictures). The left panel is the memory
 `$8D00-$94FF` (the hen sprites and HenTable), the middle the screen, the right the listing at the current instruction.
-Green is executed, blue read, yellow written. Command:
+Green is executed, blue read, yellow written. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 425:0-490:0 --listing build/game.lst --view screen --range 8D00-94FF --pc 911E-943D --pictures 110 --out docs/img/routines/MoveHen.gif`.
 
 **The point**: MoveHen runs on one slow tick in three and touches one hen. Most of its turns erase a hen and redraw it 4
@@ -362,14 +372,15 @@ Witness: MoveHen ran 38 158 times in the eight builds (`$911E`). The walking bra
 
 ## 7.4 HenEatGrain: the peck
 
-HenEatGrain `$9265` runs at each multiple of 8 of a walking hen. It looks at the map cell beside the hen: column
-(x + 8) / 8 for a hen walking right, (x - 8) / 8 walking left, at row y / 8, the row the hen stands in. If the cell holds
-grain (code 4), the hen eats it:
+HenEatGrain `$9265` runs at each multiple of 8 of a walking hen. It looks at column (x + 8) / 8 for a hen walking
+right, (x - 8) / 8 walking left, at row y / 8, the row of the hen's body just above its floor. As with the floor test
+(7.3) the two sides differ: walking right, that is the cell under the hen's own right half, so it pecks grain it
+already half covers; walking left, it is the cell beside it. If the cell holds grain (code 4), the hen eats it:
 
 ```text
 HenEatGrain(hen):
+    if hen.x + 8 > 255: return                ; tested for either direction ($9268-$926B)
     cx = hen.x + 8 if hen.state == 2 else hen.x - 8
-    if cx is off the screen: return
     cell = LiveMap[cx / 8 + 32 * (hen.y / 8)]
     if cell != grain: return
     cell = empty
@@ -420,7 +431,8 @@ flowchart TD
 ```
 
 A grain the hen eats is gone for Harry too: there is one map, and the cell is emptied in it. The peck frame is drawn 8
-pixels to the left for a left peck, so the beak reaches into the grain's cell. That shift is where the bug of doc 10.8
+pixels to the left for a left peck, so the beak reaches into the grain's cell beside the hen; a right peck at x already
+covers its grain cell. That shift is where the bug of doc 10.8
 comes from: DrawHen's kill test uses the shifted position.
 
 Worked example: the peck of 7.3. Hen 1 at (112, 136) walking right; cell (15, 17) is `$61A8 + 15 + 32 x 17 = $63D7`,
@@ -505,7 +517,7 @@ MoveLifts():
         p.row += 1
         if p.row >= 166:                      ; the top: restart at the bottom
             p.address = LiftTable[0].address; p.row = 3
-        p.address = LineUp(p.address)
+        p.address = LineUp(p.address)         ; also after a restart: one line above SetupLevel's start
         DrawLift(p.address, $FF)
 ```
 
@@ -550,10 +562,26 @@ while platform 1 is at 102. Round the 163-row cycle the two stay 64 rows apart, 
 lower one. The restart of platform 2 copies only 3 bytes of `LiftTable`, so `Lift2Row` holds LiftX for a moment, until
 `LD A,$03` sets it to 3.
 
+The restart also shifts the drawing by one line. SetupLevel puts each platform at its table address with no LineUp:
+line 188 from the top with row 3, so line + row = 191. A restart copies the same table address and then passes LineUp
+like every step, so the platform starts again at line 187 with row 3: line + row = 190. After its first restart each
+platform is drawn one line above where its row says. CatchLift and the death test use the rows, not the drawn lines, so
+the platform on the screen is one line higher than the one the rules use. The next SetupLevel (a new level or a new
+life) puts both back to 191.
+
+| Sample (level 3) | Platform 1 line, row | Platform 2 line, row | What happened |
+| --- | --- | --- | --- |
+| 3801 | 188, 3 (sum 191) | 124, 67 (sum 191) | SetupLevel |
+| 4091 | 89, 102 (191) | 187, 3 (190) | platform 2 restarted |
+| 4219 | 187, 3 (190) | 123, 67 (190) | platform 1 restarted: both one line up |
+
+The lines are decoded from `Lift1 $734E` and `Lift2 $7352` in the samples of `l19-vars.jsonl`; levels 4-7 repeat the
+pattern at every first restart (samples 7164 and 7285 on level 4, for example).
+
 ![MoveLifts at work: levels-1-9 frames 4217-4221, platform 1 restarts at the bottom](img/routines/MoveLifts.gif)
 
 The animation is a trace of `levels-1-9` frames 4217-4221 on level 3 (60 pictures). Platform 1 reaches row 165, and
-the next step copies `LiftTable` row 0 back into `Lift1` and sets row 3. Command:
+the next step copies `LiftTable` row 0 back into `Lift1` and sets row 3. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 4217:0-4222:0 --listing build/game.lst --view screen --range 9700-A1FF --pc A014-A0BF --pictures 60 --title "MoveLifts \$A014: levels-1-9 frames 4217-4221, level 3, platform 1 reaches row 165 and restarts at the bottom" --out docs/img/routines/MoveLifts.gif`.
 
 **The point**: a lift is two screen addresses that climb one line every second slow tick. Nothing of it is in the
@@ -632,7 +660,7 @@ flowchart LR
 | 3 | egg | 7 white | TakeEggOrGrain, FallOffEdge |
 | 4 | grain | 3 magenta | TakeEggOrGrain, HenEatGrain, FallOffEdge |
 | 5 | brick | 4 green | every floor and wall test |
-| `$A8-$B5` | the cage, 14 codes (4 x 4 cells less two) | 6 (any code of 9 and up) | MoveHen (no floor), the drawing |
+| `$A8-$B5` | the cage, 14 codes over 18 cells (4 x 5 less two; `ghij` repeats) | 6 (any code of 9 and up) | MoveHen (no floor), the drawing |
 
 A cell's code is also its character: SetupLevel prints the map with PrintChar, code by code, and the attribute comes
 from `CellAttributes` for codes 0-8 (doc 06).
@@ -816,7 +844,7 @@ python3 tools/fig_objects.py tables --out docs/img/objects/hen-lift-tables.png
 
 The animation is a trace of `levels-1-9` frame 2213 (50 pictures), the frame in which SetupLevel sets up level 2. The
 left panel is the memory `$7200-$73FF`, where the block `$72D8-$7375` lies; the second row holds Hens. The screen shows
-the level being drawn and coloured; the listing follows the copy loop `$AF7C-$AFAB`. Command:
+the level being drawn and coloured; the listing follows the copy loop `$AF7C-$AFAB`. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 2213:0-2214:0 --listing build/game.lst --view screen --range 7200-73FF --pc AF77-AFB0 --pictures 50 --title "SetupLevel \$AE9C: levels-1-9 frame 2213, the spawner fills Hens for level 2" --out docs/img/routines/SetupLevel-spawn.gif`.
 
 **The point**: the whole cast of a level is written in one frame, before the level is shown. After that frame no
@@ -844,10 +872,10 @@ Every collision is one of three kinds:
 
 | Test | Where | Box or cell | Outcome |
 | --- | --- | --- | --- |
-| a hen | DrawHen `$929C`, at every erase and draw of a hen | HarryX in x - 7 .. x + 5 and HarryY in y + 1 .. y + 28 | HenKill `$92BC`: 6 words dropped, MainLoop returns, a life is lost |
+| a hen | DrawHen `$929C`, at every erase and draw of a hen | HarryX in x - 7 .. x + 5 and HarryY in y + 1 .. y + 28 | the hit `$92BC` (then HenKill `$92BE`): 6 words dropped, MainLoop returns to `$A656`, a life is lost |
 | a hen, in a jump | HenTouches `$9E66`, from MainLoop on each pass with a vertical step | the same box | MainLoop returns (`$98B4`) |
-| the duck | DrawSprite `$9B9E`, at every sprite draw | DuckX in HarryX - 7 .. HarryX + 8 and DuckY in HarryY - 8 .. HarryY + 9 | DuckKill `$9BC8` (entered at `$9BC6`): unwinds the stack to PlayLevel |
-| a lift platform | CatchLift `$A256`, on each jump x step | HarryX in LiftX - 9 .. LiftX + 9 and HarryY in row + 10 .. row + 15 | Harry stands on it: HarryY = row + 17, OnLift 1 |
+| the duck | DrawSprite `$9B9E`, at every sprite draw | DuckX in HarryX - 7 .. HarryX + 8 and DuckY in HarryY - 8 .. HarryY + 9 | DuckKill `$9BC8` (entered at `$9BC6`): unwinds the stack to the first word of `$A410` or more, PlayLevel except from inside JumpStep (doc 10.11) |
+| a lift platform | CatchLift `$A256`, on each x step of a drift, jump or fall | HarryX in LiftX - 9 .. LiftX + 9 and HarryY in row + 10 .. row + 15 | Harry stands on it: HarryY = row + 17, OnLift 1 |
 | an egg or grain | TakeEggOrGrain `$99DF`, every slow tick | the cell at (HarryX + 8, HarryY - 8) | the cell emptied, points (doc 10.7) |
 | the floor | FallOffEdge `$B34C`, JumpLand `$A30F` | the cell under the middle of the feet | a fall begins, or a landing |
 | the walls | WalkHarry `$9D08`, LeaveLadder | the two cells ahead at the body's rows | no step |
@@ -876,7 +904,7 @@ $92B9  CP (HL)
 $92BA  JR C,DrawHenFrame      ; HarryY > y + 28: no
 $92BC  LD B,$06               ; a hit
 HenKill:
-$92BE  POP HL                 ; drop six words: back to the caller of MainLoop
+$92BE  POP HL                 ; drop six words: back to $A656, the return of PlayLevel's CALL SetupLevel
 $92BF  DJNZ HenKill
 $92C1  RET
 ```
@@ -903,8 +931,11 @@ flowchart TD
 ```
 
 The duck's box test is inside DrawSprite, which also draws Harry. It therefore runs on every draw of Harry as well as
-of the duck. Every way out of play is a return from MainLoop to PlayLevel `$A656`. PlayLevel then looks at EggsLeft:
-not zero means a life lost (LifeLost `$A6FE`), zero means the level is done.
+of the duck. Every way out of play but ABORT (`$98E2`: `POP HL`, `JP Start`) is meant as a return from MainLoop to
+`$A656` in PlayLevel: the return address of PlayLevel's `CALL SetupLevel`, since SetupLevel enters MainLoop by `JP`
+(`$B12D`). PlayLevel then looks at EggsLeft: not zero means a life lost (LifeLost `$A6FE`), zero means the level
+is done. Two paths miss: the HenEatGrain peck returns into the ROM (doc 10.8), and the duck's unwind from a draw inside
+JumpStep can stop at MainLoop's saved JumpDelay (doc 10.11).
 
 Worked example: `idle-1p`, Harry standing at (100, 23) on level 1. Hen 1 walks left along the bottom. In the sample of
 frame 4763 its record is `6C 08 01` (108, 8); in frame 4764 it is `68 08 01` (104, 8). The step in frame 4763 drew the
@@ -913,14 +944,17 @@ death tune plays, and the next life starts at frame 5141 with the hens back at t
 
 ![DrawHen at work: idle-1p frame 4763, hen 1 steps to x 104 and kills Harry](img/routines/DrawHen-kill.gif)
 
-The animation is a trace of `idle-1p` frame 4763 (60 pictures). The last pictures show the box test at `$92A4-$92BA`
-fall through to HenKill `$92BC`. Command:
+The animation is a trace of `idle-1p` frame 4763 (60 pictures of 1165 T). Picture 5 holds MoveHen's erase of hen 1
+(DrawHen at t 5814, no hit). Picture 10 holds the kill: the draw at x 104 enters DrawHen at t 10 966, the box test
+`$92A4-$92BA` falls through to `$92BC` at t 11 127, HenKill pops six words and the RET reaches PlayLevel `$A656` at
+t 11 277. The fifty pictures after it run no DrawHen code ("0 instructions in this slice"): LifeLost and the ROM's death
+tune. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/idle --window 4763:0-4764:0 --listing build/game.lst --view screen --range 6100-73FF --pc 929C-93DC --pictures 60 --title "DrawHen \$929C: idle-1p frame 4763, hen 1 steps to x 104 and kills Harry" --out docs/img/routines/DrawHen-kill.gif`.
 
 **The point**: a hen kills when it is drawn, not when Harry moves. A Harry who never moves is killed by the first hen
 whose box reaches him.
 
-Witness: HenKill `$92BC` ran 11 times in the eight builds (c1 1, `idle-1p` 5, `gameover-name` 5). HenTouches found a
+Witness: the hit `$92BC` ran 11 times in the eight builds (c1 1, `idle-1p` 5, `gameover-name` 5). HenTouches found a
 hit once (`$9E86`, `levels-1-9`, in a jump on level 8 before frame 21 623). The duck's kill (`$9BC6`) and the lift top (`$991E`
 taken) killed in no recording (doc 10.11).
 
@@ -948,7 +982,7 @@ $9135  JR Z,MoveHenNext       ; bit 0 clear: C = 1
 $9137  DEC C
 ```
 
-SetupLevel sets RandomPtr to 0 at every level and every life: `$AFAD` stores the word `$0001` at HenDelay, so the byte
+SetupLevel sets RandomPtr to 0 at every level and every life: `$AFB0` stores the word `$0001` at HenDelay, so the byte
 after it, RandomPtr, becomes 0. The hens therefore make the same choices in the same order each life, as long as the
 map (the grain) is the same.
 
@@ -979,6 +1013,9 @@ ran 37 621 times (L1).
   from the code and `src/res/tables/HenTable.csv`.
 - Level 33 and up: the shorter hen period (`$9944`) never ran.
 - The duck's kill `$9BC6`: the free duck never touched Harry in a recording (it flew on levels 9 and 10 only).
-- Walking off a lift (`$9DDB` in WalkHarry): no recording walked off a moving platform; Harry always jumped.
+- Walking off a lift (`$9DDB` in WalkHarry): no recording walked off a moving platform; Harry always jumped. The code
+  leaves OnLift 1 after it (doc 10.10).
+- The duck's unwind from a draw inside JumpStep with JumpDelay `$A4` or more (doc 10.11): the word on the stack is
+  JumpDelay x 256 + `$42`, and the RET goes to an address in `$A442-$FF42`. Known only from the code.
 - The map slots of players 2-4 written by LifeLost: every life lost in the recordings was a one-player game's, so
   slots 2-4 hold what StartGame wrote.

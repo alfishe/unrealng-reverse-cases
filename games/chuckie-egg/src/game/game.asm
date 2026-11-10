@@ -56,7 +56,7 @@ Lift1Row       EQU $7351  ; platform 1's height count 3-165
 Lift2          EQU $7352  ; the screen address of platform 2
 Lift2Row       EQU $7354  ; platform 2's height count
 OnLift         EQU $7355  ; 1 while Harry rides a lift
-HenTurn        EQU $7356  ; the hen MoveHen moves next 0-4
+HenTurn        EQU $7356  ; the hen MoveHen moved last 0-4 (it adds one, wrapping, before the move)
 Hens           EQU $7357  ; five hen records: x ($FF: none), y, state, a spare byte
 HenDelay       EQU $736B  ; the slow ticks to the next hen move (3, 2 from level 33)
 RandomPtr      EQU $736C  ; MoveHen's pointer into the ROM's first 256 bytes; its low byte is zeroed on every level by SetupLevel's LD (HenDelay),HL at $AFB0 (HL = 1), so the hens' random sequence restarts at the same point each level

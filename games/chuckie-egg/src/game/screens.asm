@@ -7,9 +7,10 @@
 ; The title page's left half: 22 rows of 14 codes, the bottom row first
 ;
 ; TitlePage $A420 prints row k at character row 2 + k from the bottom, columns
-; 0-13; codes $80-$8A are the big CHUCKIE EGG, $8F-$96 the A+F logo. The
-; editable form is src/res/text/TitleText.txt (top row first). Witness:
-; TitlePage runs 4 times in the eight builds.
+; 0-13; codes $80-$8A are the big CHUCKIE EGG (its only codes from $80 up; the
+; small A+F CHUCKIE EGG $8F-$96 is in HiScoreTable). The editable form is
+; src/res/text/TitleText.txt (top row first). Witness: TitlePage runs 4 times
+; in the eight builds.
 TitleText:
   INCBIN "res/text/TitleText.bin",$0000,308
 

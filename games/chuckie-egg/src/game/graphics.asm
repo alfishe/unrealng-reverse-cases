@@ -11,8 +11,9 @@
 ; Glyph = CharacterSet + 8 x code, top row first. Codes 0-5 are the map cells
 ; (empty, the ladder's two halves, the egg, the grain, the brick), $20-$7F the
 ; font ($41-$5A thin capitals, $61-$7A bold capitals, no lower case; $7E (R),
-; $7F (C)), $80-$8E the blocks of the big CHUCKIE EGG of the title, $8F-$96 the
-; A+F logo, $97-$9A the key names SPACE, CAPS SHIFT, SYMBOL SHIFT and ENTER,
+; $7F (C)), $80-$8E the quadrant blocks of the big CHUCKIE EGG of the title
+; (TitleText uses $80-$8A), $8F-$96 the small A+F CHUCKIE EGG of the default
+; names, $97-$9A the key names SPACE, CAPS SHIFT, SYMBOL SHIFT and ENTER,
 ; $9B-$9D LEVEL. Readers: PrintChar $9C40 (33 112 calls), DrawSprite $9A4C (the
 ; background cells), DrawHen $929C (the cells it erases, from $84F7, the last
 ; row), AddScore $A3A7 (the digits $30-$39 at $8670).
