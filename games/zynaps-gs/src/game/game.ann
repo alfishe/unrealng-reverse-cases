@@ -1255,7 +1255,7 @@ $A393 ; the routine returns to PrintCodeDone
 $A399 c PrintCodeDone ; End a print code: nothing pending
 > The return of every print code routine (pushed by PrintChar): $80AD = $20, the registers PrintChar saved restored.
 
-@isub $A376 LD BC,$B54F-$0400
+@isub $A376 LD BC,Glyphs-$0400
 @isub $A842 LD HL,-14
 @isub $A84F LD HL,-10
 @isub $AA58 LD HL,$C9F3

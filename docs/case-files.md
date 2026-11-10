@@ -2,7 +2,8 @@
 
 Every file a case has: what makes it, what reads it, and whether git keeps it. Paths are relative to the case,
 `games/<game>/` (`$C`). `$K` is `kit/`, `$U` the unreal-ng checkout, and `$RS` is
-`$U/tools/verification/analysis/re_session.py`. The `.ann` format is in [ann-format.md](ann-format.md). The steps
+`$U/tools/verification/analysis/re_session.py`, run as `python3 $K/rs.py` (from a case `../../kit/rs.py`), which finds
+`$U` itself (section 10). The `.ann` format is in [ann-format.md](ann-format.md). The steps
 that make these files are in [recipes/](../recipes/README.md).
 
 The repository's `.gitignore` ignores `**/work/`, `**/build/`, `*.lst`, `*.sym`, `*.sld`, `*.exp`, `*.labels`,
@@ -209,7 +210,7 @@ case). The format is in [signature-format.md](signature-format.md).
 
 No path of one machine is written in the kit or the cases. Set the three variables once
 (`export UNREAL_NG=... SJASMPLUS=... SKOOLKIT_VENV=...`, and `UNREAL_BINARY` for a binary outside `$UNREAL_NG`), or let `kit/toolpaths.py` find them;
-`python3 kit/toolpaths.py sjasmplus|venv|unreal|binary` prints what it finds. Shell scripts take the same through
+`python3 kit/toolpaths.py sjasmplus|venv|unreal|binary|re_session` prints what it finds. Shell scripts take the same through
 `SJASMPLUS=$(python3 ../../kit/toolpaths.py sjasmplus "$1")`.
 
 | What | Where |
@@ -218,7 +219,7 @@ No path of one machine is written in the kit or the cases. Set the three variabl
 | sjasmplus | `--sjasmplus`, `$SJASMPLUS`, `sjasmplus` on `PATH`, or a `sjasmplus/build/release/sjasmplus` checkout near this repository |
 | SkoolKit | `--venv`, `$SKOOLKIT_VENV` (a virtualenv with `bin/sna2skool.py`), `$VIRTUAL_ENV`, `.venv` in this repository, `sna2skool.py` on `PATH`, or `$UNREAL_NG/scratch/venv-skoolkit` |
 | The binary | `$U/cmake-build-agent-release/bin/unreal-qt.app/Contents/MacOS/unreal-qt` (`corpus.DEFAULT_BINARY`; give another with `--binary`, or `$UNREAL_BINARY` for the case tools through `kit/toolpaths.py`). It is built in the unreal-ng worktree with `tools/build/build.sh unreal-qt` |
-| `re_session.py` | `$U/tools/verification/analysis/re_session.py`: `capture`, `open`, `build`, `stages`, `interrupts`, `call`, `export`, `check`, `stop` (its docstring is the reference). Beside it: `mm_session.py` (input scripts), `corpus.py` (the launcher and MCP client), `access_trace.py` (the trace reader the kit uses), `score_draft.py` |
+| `re_session.py` | `$U/tools/verification/analysis/re_session.py`: `capture`, `open`, `build`, `stages`, `interrupts`, `call`, `export`, `check`, `stop` (its docstring is the reference). The kit keeps no copy (it imports the modules beside it and drives the same checkout's binary): `python3 kit/rs.py ARGS` runs it from the checkout `kit/toolpaths.py` finds, `python3 kit/toolpaths.py re_session` prints its path. Beside it: `mm_session.py` (input scripts), `corpus.py` (the launcher and MCP client), `access_trace.py` (the trace reader the kit uses), `score_draft.py` |
 | The analysis layers | `$U/docs/emulator/analysis/analysis-layers.md`: L0 access facts, L1 routines and value flow, L2 region kinds, L3 findings, the access trace |
 | Recipes | `$U/.recipe/articles/game-reverse-case.md` (MCP for a case, without waste), `$U/.recipe/articles/game-reverse-pipeline.md`, `$U/.recipe/analysis/reverse-engineering.md`, `ttd-recording.md`, `ttd-write-journal.md`, `ttd-gameplay-automation.md`, `game-start-input.md`, `nonstandard-loader.md`, `port-trace.md` |
 | WebAPI | `$U/.recipe/testing/webapi-verification.md`; models: `GET /api/v1/emulator/models` |

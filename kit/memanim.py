@@ -13,9 +13,10 @@ written attribute as a frame round its 8 x 8 cell, so a byte flashes at the same
            [--screen-geometry] [--label "text"] [--delay 80] [--cell 2] [--layout compact|wide] [--width 1050]
            [--unreal UNREAL_NG_CHECKOUT]
 
---layout compact (the default) keeps the picture within --width pixels (1050, the figure limit, readable at 900):
-the screen goes beside the grid when both fit, else under it. --layout wide always puts it beside (1102 px with
---screen at --cell 2).
+Both layouts keep the picture within --width pixels (1050, the figure limit, readable at 900). --layout compact (the
+default): the screen at 2 x goes beside the grid when both fit, else under it. --layout wide always puts it beside:
+at 2 x when that fits, else at 1 x (with --screen at --cell 2 the screen is 256 x 192 beside a 512-pixel grid).
+--width 0 takes the limit away (wide: the older 1102-pixel picture).
 """
 import argparse
 import os
@@ -111,7 +112,7 @@ def main():
     p.add_argument('--layout', choices=('compact', 'wide'), default='compact',
                    help='compact: the screen under the grid when beside it the picture is wider than --width; '
                         'wide: always beside (the older picture)')
-    p.add_argument('--width', type=int, default=1050, help='the compact picture\'s width limit in pixels')
+    p.add_argument('--width', type=int, default=1050, help='the picture\'s width limit in pixels (0: none)')
     p.add_argument('--unreal', default=os.environ.get('UNREAL_NG', ''),
                    help='an unreal-ng checkout (tools/verification/analysis/re_session.py)')
     p.add_argument('out')
@@ -126,11 +127,16 @@ def main():
     rows, cell = (hi - lo + 1) // 256, args.cell
     font = ImageFont.load_default()
     grid_w, grid_h = (256 * SCALE, 192 * SCALE) if args.screen_geometry else (256 * cell, rows * cell)
-    screen_w = 256 * 2 if args.screen else 0
+    screen_scale = 2
+    screen_w = 256 * screen_scale if args.screen else 0
     width = 52 + grid_w + (16 + screen_w if args.screen else 0) + 10
-    below = args.screen and args.layout == 'compact' and width > args.width  # the screen under the grid
+    too_wide = bool(args.width) and width > args.width
+    below = args.screen and args.layout == 'compact' and too_wide  # the screen under the grid
     if below:
         width = 52 + max(grid_w, screen_w) + 10
+    elif args.screen and too_wide:  # wide: beside the grid at 1 x
+        screen_scale, screen_w = 1, 256
+        width = 52 + grid_w + 16 + screen_w + 10
     # the label and the legend, cut at spaces to the picture's width; the moment goes on the label's last line
     probe = ImageDraw.Draw(Image.new('RGB', (1, 1)))
     room = width - 52 - 6
@@ -143,10 +149,10 @@ def main():
     top = 30 + 12 * (len(label) + len(legend) - 2)  # the grid's top: 30 for one line of each
     if below:
         screen_at = (52, top + grid_h + 16)
-        height = screen_at[1] + 384 + 22
+        height = screen_at[1] + 192 * screen_scale + 22
     else:
         screen_at = (52 + grid_w + 16, top)
-        height = top + 4 + max(grid_h, 384 if args.screen else 0) + 22
+        height = top + 4 + max(grid_h, 192 * screen_scale if args.screen else 0) + 22
     age = {}
     previous = None
     pictures = []
@@ -188,7 +194,7 @@ def main():
                 y = top + ((a - lo) >> 8) * cell
                 d.text((4, y - 4), f'${a:04X}', fill=(170, 170, 180), font=font)
         if args.screen:
-            image.paste(zxscreen.render(mem[0x4000:0x5B00], SCALE), screen_at)
+            image.paste(zxscreen.render(mem[0x4000:0x5B00], screen_scale), screen_at)
         pictures.append(image)
         for a in list(age):
             age[a] += 1

@@ -115,6 +115,7 @@ CellPatterns:
 ; (it names groups 59 and 60, which point at ShapeTable).
 SceneryScriptTable:
   INCBIN "res/levels/levels.bin",$0AE1,78
+  ASSERT {SceneryScriptTable} == SceneryScripts && {SceneryScriptTable+2} == SceneryScripts
 
 ; The scenery script bodies
 ;
@@ -132,6 +133,8 @@ SceneryScripts:
 ; level runs it.
 GroupTable:
   INCBIN "res/levels/levels.bin",$0C9A,122
+  ASSERT {GroupTable} == ObjectGroups
+  ASSERT {GroupTable+118} == ShapeTable && {GroupTable+120} == ShapeTable
 
 ; The group bodies: 3-byte objects, $FF the end
 ;
@@ -149,6 +152,7 @@ ObjectGroups:
 ; bytes before shape 32 (no group uses them).
 ShapeTable:
   INCBIN "res/levels/levels.bin",$0F83,158
+  ASSERT {ShapeTable} == Shapes
 
 ; The shape bodies: the row count, then per row an attribute, a cell mask and
 ; the tiles

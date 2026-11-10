@@ -16,7 +16,12 @@ byte grid, for one sprite or one character.
     python3 writers_map.py (--trace pass.uatr | --work W --window F:T-F:T)
            --listing build/game.lst --out docs/img/writers-pass.png
            [--view screen | screen:C000 | buffer:8000:32x256[:columns|:columns-up|:screen]] [--by routine | pc] [--sources]
-           [--zoom 96,64,48,32] [--title T] [--unreal U]
+           [--zoom 96,64,48,32] [--title T] [--scale 2] [--width 1050] [--unreal U]
+
+The picture is at most --width pixels wide (1050, the figure limit, readable shown at 900): the two views side by
+side at --scale (2) when they fit, else at the largest whole scale that does, else one above the other; the zoom
+insets on a row of their own under them, enlarged as far as that row allows; a long --title on several lines.
+--width 0 is the older picture: every panel on one row at --scale, the zoom as high as the views (up to 2620 px).
 
 --sources is a heuristic: it takes the data reads of the writing routine since its previous write, outside the
 stack and outside the written byte itself. It names a sprite's graphic and mask, not computed values.
@@ -30,7 +35,7 @@ from PIL import Image, ImageDraw
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kitlib as K  # noqa: E402
-from routine_anim import parse_view  # noqa: E402
+from routine_anim import parse_view, wrap  # noqa: E402
 
 UNWRITTEN_ON, UNWRITTEN_OFF = (90, 90, 96), (26, 26, 32)
 
@@ -70,7 +75,8 @@ def main():
     p.add_argument('--sources', action='store_true')
     p.add_argument('--zoom', help='X,Y,W,H in view pixels')
     p.add_argument('--title')
-    p.add_argument('--scale', type=int, default=2)
+    p.add_argument('--scale', type=int, default=2, help='the views\' pixels at this size, or smaller to fit --width')
+    p.add_argument('--width', type=int, default=1050, help='the picture\'s width limit in pixels (0: none)')
     args = p.parse_args()
 
     trace = K.load_trace(args)
@@ -124,15 +130,30 @@ def main():
         if kind == 'attr' and address in writer:
             draw_w.rectangle([x0, y, x0 + 7, y + 7], outline=colour[writer[address][0]])
 
+    gap, limit = 12, args.width
     s = args.scale
-    panels = [shown.resize((vw * s, vh * s), Image.NEAREST), writers.resize((vw * s, vh * s), Image.NEAREST)]
+    # the largest whole scale at which the two views fit side by side, the gaps narrowed to 4 px if need be (two
+    # screens at 2 x: 1024 px and three gaps of 8)
+    while limit and s > 1 and 2 * vw * s + 3 * 4 > limit:
+        s -= 1
+    stacked = bool(limit) and 2 * vw * s + 3 * 4 > limit  # still too wide at 1: one above the other
+    if limit and not stacked:
+        gap = max(4, min(12, (limit - 2 * vw * s) // 3))
+    views = [shown.resize((vw * s, vh * s), Image.NEAREST), writers.resize((vw * s, vh * s), Image.NEAREST)]
     captions = ['the view at the window\'s end', f'who wrote each byte (by {args.by})']
+    # (panel, caption, x, row): row 0 the views (row 1 the second view when stacked), the next row the zoom
+    placed = [(views[0], captions[0], gap, 0), (views[1], captions[1], gap if stacked else 2 * gap + vw * s,
+                                                1 if stacked else 0)]
     zoom = None
     if args.zoom:
         zx, zy, zw, zh = (int(v) for v in args.zoom.split(','))
         factor = max(2, min(12, (vh * s) // max(1, zh)))
+        if limit:
+            factor = max(1, min(factor, (limit - 3 * gap) // max(1, 2 * zw)))
         zoom = (zx, zy, zw, zh, factor)
-        for source in (shown, writers):
+        zrow = (2 if stacked else 1) if limit else 0
+        x = gap if limit else 3 * gap + 2 * vw * s
+        for source, caption in ((shown, f'zoom {zx},{zy} {zw}x{zh} (x{factor})'), (writers, 'zoom, writers')):
             inset = source.crop((zx, zy, zx + zw, zy + zh)).resize((zw * factor, zh * factor), Image.NEAREST)
             d = ImageDraw.Draw(inset)
             for gx in range(0, zw + 1, 8):
@@ -140,31 +161,37 @@ def main():
             for gy in range(0, zh + 1):
                 if factor >= 6 or gy % 8 == 0:
                     d.line([(0, gy * factor), (zw * factor, gy * factor)], fill=(50, 50, 60))
-            panels.append(inset)
-        captions += [f'zoom {zx},{zy} {zw}x{zh}', 'zoom, writers']
+            placed.append((inset, caption, x, zrow))
+            x += inset.width + gap
 
     small, normal = K.font(11), K.font(12)
-    gap, top = 12, 34
     legend_rows = len(order[:16]) * (3 if args.sources else 2) + 2
     legend_h = 18 * legend_rows
-    width = sum(i.width for i in panels) + gap * (len(panels) + 1)
-    height = top + max(i.height for i in panels) + 24 + legend_h
-    image = Image.new('RGB', (max(width, 900), height), K.BACKGROUND)
-    draw = ImageDraw.Draw(image)
+    width = max(x + panel.width + gap for panel, _, x, _ in placed)
+    width = min(max(width, 900), limit) if limit else max(width, 900)
     t0 = f'{trace.from_frame}:{trace.from_t // max(1, trace.units_per_t)}'
     t1 = f'{trace.to_frame}:{trace.to_t // max(1, trace.units_per_t)}'
-    draw.text((gap, 8), args.title or f'Writers of ${view[1]:04X}, frames {t0} .. {t1}', fill=K.TEXT,
-              font=K.font(15))
-    x = gap
-    for i, (panel, caption) in enumerate(zip(panels, captions)):
-        image.paste(panel, (x, top))
-        draw.text((x, top + panel.height + 4), caption, fill=K.DIM, font=small)
+    title = wrap(args.title or f'Writers of ${view[1]:04X}, frames {t0} .. {t1}', K.font(15), width - 2 * gap)
+    top = 16 + 18 * len(title)
+    rows = sorted({row for _, _, _, row in placed})
+    row_y, y = {}, top
+    for row in rows:
+        row_y[row] = y
+        y += max(panel.height for panel, _, _, r in placed if r == row) + 24
+    height = y + legend_h
+    image = Image.new('RGB', (width, height), K.BACKGROUND)
+    draw = ImageDraw.Draw(image)
+    for i, line in enumerate(title):
+        draw.text((gap, 8 + 18 * i), line, fill=K.TEXT, font=K.font(15))
+    for i, (panel, caption, x, row) in enumerate(placed):
+        py = row_y[row]
+        image.paste(panel, (x, py))
+        draw.text((x, py + panel.height + 4), caption, fill=K.DIM, font=small)
         if zoom and i < 2:
             zx, zy, zw, zh, _ = zoom
-            draw.rectangle([x + zx * s, top + zy * s, x + (zx + zw) * s, top + (zy + zh) * s], outline=(255, 255, 255))
-        x += panel.width + gap
+            draw.rectangle([x + zx * s, py + zy * s, x + (zx + zw) * s, py + (zy + zh) * s], outline=(255, 255, 255))
 
-    y = top + max(i.height for i in panels) + 24
+    y = row_y[rows[-1]] + max(p.height for p, _, _, r in placed if r == rows[-1]) + 24
     total = len(cells)
     draw.text((gap, y), f'{len(writer)} of {total} bytes written in the window; {sum(writes.values())} writes',
               fill=K.TEXT, font=normal)

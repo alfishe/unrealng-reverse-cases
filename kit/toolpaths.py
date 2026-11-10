@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Find the outside tools the kit and the cases run: sjasmplus, a SkoolKit virtualenv, an unreal-ng checkout.
 
-    python3 kit/toolpaths.py sjasmplus|venv|unreal|binary [HINT]     # prints the path, or fails with what it tried
+    python3 kit/toolpaths.py sjasmplus|venv|unreal|binary|re_session [HINT]   # prints the path, or fails with what
+                                                                              # it tried
 
 From Python: toolpaths.sjasmplus(hint), toolpaths.skoolkit_venv(hint), toolpaths.unreal_ng(hint),
-toolpaths.unreal_binary(hint). Each takes the first that exists of:
+toolpaths.unreal_binary(hint), toolpaths.re_session(hint) (the checkout's tools/verification/analysis/re_session.py,
+which kit/rs.py runs). Each takes the first that exists of:
 
 | Tool | Order |
 | --- | --- |
@@ -102,6 +104,12 @@ def unreal_ng(hint=None, required=True):
     return None
 
 
+def re_session(hint=None, required=True):
+    """unreal-ng's tools/verification/analysis/re_session.py in the checkout found as unreal_ng finds it"""
+    unreal = unreal_ng(hint, required)
+    return os.path.join(unreal, 'tools', 'verification', 'analysis', 're_session.py') if unreal else None
+
+
 def unreal_binary(hint=None, required=True):
     if hint or os.environ.get('UNREAL_BINARY'):
         c = hint or os.environ['UNREAL_BINARY']
@@ -133,11 +141,11 @@ def skoolkit_python(venv):
 
 
 def main():
-    if len(sys.argv) not in (2, 3) or sys.argv[1] not in ('sjasmplus', 'venv', 'unreal', 'binary'):
+    if len(sys.argv) not in (2, 3) or sys.argv[1] not in ('sjasmplus', 'venv', 'unreal', 'binary', 're_session'):
         sys.exit(__doc__)
     hint = sys.argv[2] if len(sys.argv) == 3 and sys.argv[2] else None
     print({'sjasmplus': sjasmplus, 'venv': skoolkit_venv, 'unreal': unreal_ng,
-           'binary': unreal_binary}[sys.argv[1]](hint))
+           'binary': unreal_binary, 're_session': re_session}[sys.argv[1]](hint))
 
 
 if __name__ == '__main__':

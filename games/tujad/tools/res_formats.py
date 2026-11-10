@@ -737,8 +737,6 @@ def install(files):
             if from_ed(name, out) != data:
                 raise SystemExit('res: %s does not convert back to its bytes' % name)
             path = os.path.join(RES, os.path.splitext(name)[0] + suffix)
-            if os.path.exists(os.path.join(RES, name)):
-                os.remove(os.path.join(RES, name))
         else:
             path, out = os.path.join(RES, name), data
         os.makedirs(os.path.dirname(path), exist_ok=True)

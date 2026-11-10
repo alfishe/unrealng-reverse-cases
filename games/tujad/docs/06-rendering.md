@@ -1232,8 +1232,8 @@ flowchart LR
 *Which routine wrote each screen byte, `c1` 15006:0-15011:0 in room 92: the screen at the end (left) and the
 writers (right), with the sources each writer read. Made with `python3 ../../kit/writers_map.py --work
 work/docs/tjB/c1 --window 15006:0-15011:0 --listing build/game.lst --sources --title "Writers of the screen, c1
-frames 15006:0 .. 15011:0, room 92" --out docs/img/render/writers-room92.png`, then cropped from 1060 to 1050 px (the
-right margin).*
+frames 15006:0 .. 15011:0, room 92" --out docs/img/render/writers-room92.png` (1048 px wide: the
+two views at 2 x, the gaps narrowed to fit the 1050 px limit).*
 
 Worked example: the two enemies at columns 8 and 13, lines 78-93. Their bytes are red, InterruptSpriteByte, and
 the sources are enemy 2's buffers `$6768-$67C7` and enemy 4's `$6828-$6887`: both buffer A (the erase) and buffer
@@ -1277,8 +1277,8 @@ flowchart LR
 
 *Screen writes against the beam, `c1` frames 15009-15010 (frame T across, screen line down; the diagonal is the
 beam). Made with `python3 ../../kit/beam_timeline.py --work work/docs/tjB/c1 --window 15009:0-15011:0 --listing
-build/game.lst --frames 2 --out docs/img/render/beam-enemies.png`, then cropped from 1064 to 1050 px (the right
-margin).*
+build/game.lst --frames 2 --out docs/img/render/beam-enemies.png` (the tool's default
+width, 1050 px).*
 
 ![The heaviest pass against the beam (tjA, doc 04)](img/loop/beam-heaviest.png)
 

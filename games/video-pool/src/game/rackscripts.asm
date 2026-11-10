@@ -35,6 +35,8 @@
 ; reads). No other recording reached frame 3.
 RackSet1:
   INCBIN "res/racks/RackScripts.bin",$009E,12
+  ASSERT {RackSet1} == Rack1Ball1 && {RackSet1+2} == Rack1Ball2 && {RackSet1+4} == Rack1Ball3
+  ASSERT {RackSet1+6} == Rack1Ball4 && {RackSet1+8} == Rack1Ball5 && {RackSet1+10} == Rack1Ball6
 
 ; The scripts of rack-in set 1, ball 1 first
 ;
@@ -64,6 +66,8 @@ Rack1Ball6:
 ; (work/stage2/ann/04-scratch/racks.py).
 RackSet2:
   INCBIN "res/racks/RackScripts.bin",$0120,12
+  ASSERT {RackSet2} == Rack2Ball1 && {RackSet2+2} == Rack2Ball2 && {RackSet2+4} == Rack2Ball3
+  ASSERT {RackSet2+6} == Rack2Ball4 && {RackSet2+8} == Rack2Ball5 && {RackSet2+10} == Rack2Ball6
 
 ; The scripts of rack-in set 2, ball 1 first
 ;
@@ -93,6 +97,8 @@ Rack2Ball6:
 ; (work/stage2/ann/04-scratch/racks.py).
 RackSet3:
   INCBIN "res/racks/RackScripts.bin",$01D8,12
+  ASSERT {RackSet3} == Rack3Ball1 && {RackSet3+2} == Rack3Ball2 && {RackSet3+4} == Rack3Ball3
+  ASSERT {RackSet3+6} == Rack3Ball4 && {RackSet3+8} == Rack3Ball5 && {RackSet3+10} == Rack3Ball6
 
 ; The scripts of rack-in set 3, ball 6 first
 ;
@@ -122,6 +128,8 @@ Rack3Ball1:
 ; (work/stage2/ann/04-scratch/racks.py).
 RackSet4:
   INCBIN "res/racks/RackScripts.bin",$02CA,12
+  ASSERT {RackSet4} == Rack4Ball1 && {RackSet4+2} == Rack4Ball2 && {RackSet4+4} == Rack4Ball3
+  ASSERT {RackSet4+6} == Rack4Ball4 && {RackSet4+8} == Rack4Ball5 && {RackSet4+10} == Rack4Ball6
 
 ; The scripts of rack-in set 4, ball 5 first
 ;
@@ -151,6 +159,8 @@ Rack4Ball4:
 ; (work/stage2/ann/04-scratch/racks.py).
 RackSet5:
   INCBIN "res/racks/RackScripts.bin",$0434,12
+  ASSERT {RackSet5} == Rack5Ball1 && {RackSet5+2} == Rack5Ball2 && {RackSet5+4} == Rack5Ball3
+  ASSERT {RackSet5+6} == Rack5Ball4 && {RackSet5+8} == Rack5Ball5 && {RackSet5+10} == Rack5Ball6
 
 ; The scripts of rack-in set 5, ball 1 first
 ;

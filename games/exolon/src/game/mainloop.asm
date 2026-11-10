@@ -40,7 +40,7 @@ StartGame:
   LD (JumpStep),A
   INC A
   LD (Facing),A
-  LD HL,DefineKeyNotEnter ; X = $10, Y = $70: the player's start and restart
+  LD HL,$7010             ; X = $10, Y = $70: the player's start and restart
                           ; place
   LD (PlayerX),HL
   LD (RestartX),HL

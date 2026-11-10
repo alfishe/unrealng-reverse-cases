@@ -733,7 +733,7 @@ that has ammo. After the last weapon it goes back to the basic gun. ShowWeapon `
 7979  FE 00        CP $00
 797B  C0           RET NZ
 797C  21 69 63     LD HL,KeyLatches
-797F  01 FE 7E     LD BC,KeysSpaceToB     ; the port $7EFE
+797F  01 FE 7E     LD BC,$7EFE            ; the port: SPACE to B and CAPS SHIFT to V
 7982  ED 78        IN A,(C)
 7984  CB 47        BIT 0,A
 7986  20 37        JR NZ,WeaponSelectReleased
@@ -746,8 +746,9 @@ that has ammo. After the last weapon it goes back to the basic gun. ShowWeapon `
 79C1  C9           RET
 ```
 
-The port has its own name, KeysSpaceToB (an `EQU` of `$7EFE`). An earlier labelling pass had written it as
-ShiftGraphic4, the routine that happens to sit at `$7EFE`; that is fixed in the source.
+The port stays the number `$7EFE` in the source. ShiftGraphic4, a routine, happens to sit at that address, and an
+earlier labelling pass had written the port as its name; `kit/mkgame.py` now keeps every `LD BC,nn` that feeds
+`IN` or `OUT (C)` a number.
 
 Witness: the weapon changed (`$798B`) 47 times in 13 recordings, most often in `rzx-070000` (13 times).
 

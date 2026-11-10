@@ -31,9 +31,9 @@ interrupt. A trace puts an instruction in the frame in which it ran.
 
 ```bash
 . work/env.sh
-python3 $RS open --work work/docs/tjD/r30 --ttd work/stage1/rec/rzx-030000/session.ttd --model 48K --port-base 36960
+python3 ../../kit/rs.py open --work work/docs/tjD/r30 --ttd work/stage1/rec/rzx-030000/session.ttd --model 48K --port-base 36960
 python3 tools/sound_events.py --work work/docs/tjD/r30 --frames 0-672 --chunk 100 --out work/docs/tjD/r30-events.json
-python3 $RS stop --work work/docs/tjD/r30
+python3 ../../kit/rs.py stop --work work/docs/tjD/r30
 sh work/docs/tjD/run_traces.sh energy-out=540-1700 menu-cursor=0-1201 rzx-036000=0-869 rzx-059000=0-43
 python3 tools/fig_sound.py table      # every site measured (the numbers below)
 ```

@@ -1,6 +1,6 @@
 # Tujad (Ariolasoft UK, 1986)
 
-State: docs written, in review. The tape rebuilt byte for byte from the annotated source and `src/res`; docs 01-12
+State: complete 2026-11-10 (two review rounds). The tape rebuilt byte for byte from the annotated source and `src/res`; docs 01-12
 (12 documents, 68 figures, 31 animations, 8 WAVs, 73 mermaid diagrams), counted with
 `ls docs/[0-9][0-9]-*.md | wc -l; for e in png gif wav; do find docs -name "*.$e" | wc -l; done; grep -h '^```mermaid' docs/*.md | wc -l`.
 

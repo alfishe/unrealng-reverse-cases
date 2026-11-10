@@ -710,3 +710,4 @@ TileAttrs:
   INCBIN "res/tiles/TileTables.bin",$008E,140
 TileAttrData:
   INCBIN "res/tiles/TileTables.bin",$011A,415
+  ASSERT {TileGraphics} == TileData

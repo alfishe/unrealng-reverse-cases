@@ -312,10 +312,15 @@ RackStepWait:
 ; are past this fragment.
 RackSets:
   INCBIN "res/racks/RackScripts.bin",$0000,12
+  ASSERT {RackSets} == RackScripts0 && {RackSets+2} == RackSet1 && {RackSets+4} == RackSet2
+  ASSERT {RackSets+6} == RackSet3 && {RackSets+8} == RackSet4 && {RackSets+10} == RackSet5
 
 ; Set 0 (frames 1-2): the scripts of balls 1-6
 RackScripts0:
   INCBIN "res/racks/RackScripts.bin",$000C,12
+  ASSERT {RackScripts0} == RackScript0Ball1 && {RackScripts0+2} == RackScript0Ball2
+  ASSERT {RackScripts0+4} == RackScript0Ball3 && {RackScripts0+6} == RackScript0Ball4
+  ASSERT {RackScripts0+8} == RackScript0Ball5 && {RackScripts0+10} == RackScript0Ball6
 
 ; Ball 1: wait 75; at (7, 175); 30 x (+2, -2); 61 x (+2, 0); at (190, 115); end
 ;

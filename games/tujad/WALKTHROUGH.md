@@ -65,8 +65,8 @@ shown, fire, left, down, SPACE weapon select, ENTER pause and resume). 15 871 fr
 python3 tools/rs_capture.py --work work/stage1/c1 --media orig/Tujad.tzx.zip --model 48K --record-load \
     --load-frames 13700 --inputs tests/inputs/c1.txt --ranges 4000-FFFF --port-base 36910 --binary $BIN
 python3 work/stage1/tt.py 37110 '{"action":"probe_frames","probes":[{"probe":"exec","address":"0x6300"}]}'  # 13580
-python3 $RS open --work work/stage1/entry --ttd work/stage1/c1/session.ttd --port-base 36900
-python3 $RS build --work work/stage1/entry --from-frame 13580 --to-frame 13581 --into work/stage1/entry/f13580
+python3 ../../kit/rs.py open --work work/stage1/entry --ttd work/stage1/c1/session.ttd --port-base 36900
+python3 ../../kit/rs.py build --work work/stage1/entry --from-frame 13580 --to-frame 13581 --into work/stage1/entry/f13580
 python3 tools/passes.py --port-base 36900 --passes 400 --out work/stage1/passes.json \
     work/stage1/rec/menu-cursor/end.szx work/stage1/rzx/at0{1,3,5,7}0000.szx
 ```

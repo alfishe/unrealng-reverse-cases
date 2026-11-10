@@ -34,7 +34,7 @@ frame in which it ran. A screen picture of frame F (from `screen_anim.py`) is th
 . work/env.sh
 sh work/docs/tjD/run_traces.sh menu-cursor=0-1201 energy-out=540-1700 game-over=150-1100 win=0-600 \
     rzx-028000=0-474 rzx-036000=0-869 rzx-059000=0-43
-python3 $RS open --work work/docs/tjD/r30 --ttd work/stage1/rec/rzx-030000/session.ttd --model 48K --port-base 36960
+python3 ../../kit/rs.py open --work work/docs/tjD/r30 --ttd work/stage1/rec/rzx-030000/session.ttd --model 48K --port-base 36960
 python3 tools/sound_events.py --work work/docs/tjD/r30 --frames 0-672 --chunk 100 --out work/docs/tjD/r30-events.json
 python3 tools/fig_text.py all         # every figure of this document
 ```

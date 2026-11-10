@@ -12,9 +12,8 @@
 @equ $4000 Screen 6144 ; the display file
 @equ $5800 Attributes 768 ; the screen attributes
 @equ $5B5B ImJump 3 ; the JP Interrupt the IM 2 table's vector $5B5B jumps through (SetupIM2 writes it)
-@equ $FE00 Im2Table 257 at $9584 ; the IM 2 vector table: 257 bytes of $5B (SetupIM2), so every vector is $5B5B
-@equ $FF01 SpriteList 255 at $6B22,$7778,$7780,$77D9,$781A,$7965,$796F,$8F53,$958F ; the sprite list: 8-byte records (graphic, flag pointer, width, rows, screen address), a zero word ends it
-@const KeysSpaceToB $7EFE ; two keyboard half rows at once, SPACE to B (A15) and CAPS SHIFT to V (A8): IN A,(C) bit 0 is SPACE or CAPS SHIFT; a port, equal to ShiftGraphic4's address by chance
+@equ $FE00 Im2Table 257 ; the IM 2 vector table: 257 bytes of $5B (SetupIM2), so every vector is $5B5B
+@equ $FF01 SpriteList 255 ; the sprite list: 8-byte records (graphic, flag pointer, width, rows, screen address), a zero word ends it
 
 @isub $6CC9 LD HL,TileGraphics-2
 @isub $6E65 LD HL,WeaponColours-1
@@ -26,7 +25,6 @@
 @isub $9699 LD DE,Font-257
 @isub $6E34 LD HL,EdPieces-352
 @isub $6CBD LD HL,TileAttrs-2
-@isub $797F LD BC,KeysSpaceToB
 
 @module cells ; The cell table: one byte for each character cell of the play area
 @about The cell table mirrors the attribute file: the cell of screen character (row, column) is $6000 + 32 x row + column, so its attribute address is the cell address with H XOR $38. Rows 0-5 ($6000-$60BF) lie under the BASIC program and are never play cells; the image holds rows 6-23 ($60C0-$62FF). DrawRoom $6B22 rebuilds it for every room (1 where the attribute is not 0: a wall), then puts the room's items and teleporter in; the movers mark the cells they stand on (bit 1 an enemy, bit 2 an object, bit 3 a patroller) and the shots the cells they pass (bits 4-6).

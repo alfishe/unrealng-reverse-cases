@@ -12,7 +12,7 @@ strip shows which routine the CPU is in at each T-state.
     python3 beam_timeline.py (--trace pass.uatr | --work W --window F:T-F:T)
            --listing build/game.lst --out docs/img/beam-pass.png
            [--screen 4000] [--machine 48k|128k|pentagon] [--int-t T] [--int-to-paper T] [--paper-t T]
-           [--line-t 224] [--frames 3] [--pc 8000-FFFF] [--unreal U]
+           [--line-t 224] [--frames 3] [--pc 8000-FFFF] [--title T] [--width 1050] [--unreal U]
 
 The beam comes from unreal-ng's timing (core/src/emulator/config.cpp, ApplyModelTimingDefaults): the INT rises at
 frame T intstart + 1 and the first paper pixel follows it by a fixed distance, so the paper starts at frame T
@@ -27,6 +27,9 @@ int-t + int-to-paper:
 --machine picks the row (by default from the trace's frame length); --int-t and --int-to-paper override a column
 (an emulator with another intstart), --paper-t gives the paper's frame T outright. The counts below the panel give
 each routine's writes before and after the beam.
+
+The picture is --width pixels wide (1050, the figure limit, readable shown at 900; the frame's time axis gets what the
+labels leave of it), a long --title goes on several lines.
 """
 import argparse
 import os
@@ -37,8 +40,8 @@ from PIL import Image, ImageDraw
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kitlib as K  # noqa: E402
+from routine_anim import wrap  # noqa: E402
 
-WIDTH = 1000
 LINES = 192
 STRIP = 14
 # machine: (frame T, the INT's frame T, INT to the first paper pixel, T a line), see the docstring
@@ -70,6 +73,7 @@ def main():
     p.add_argument('--frames', type=int, default=3, help='at most this many frames, the first of the trace')
     p.add_argument('--pc', help='only these instructions\' writes and time (hex range)')
     p.add_argument('--title')
+    p.add_argument('--width', type=int, default=1050, help='the picture\'s width in pixels')
     args = p.parse_args()
 
     trace = K.load_trace(args)
@@ -120,17 +124,21 @@ def main():
     colour['other'] = (90, 90, 100)
 
     small, normal = K.font(11), K.font(12)
-    left, gap, top = 44, 26, 34
+    left, gap = 44, 26
+    plot = max(200, args.width - left - 20)  # the frame's T across
+    title = wrap(args.title or f'Screen writes vs the beam, frames {frames[0]}..{frames[-1]} '
+                 f'(frame T; INT {int_t} green; paper {paper_t})', K.font(15), plot)
+    top = 16 + 18 * len(title)
     panel_h = STRIP + 6 + LINES * 2
     legend_h = 18 * (min(len(names), 12) + 1)
     height = top + len(frames) * (panel_h + gap) + legend_h + 10
-    image = Image.new('RGB', (left + WIDTH + 20, height), K.BACKGROUND)
+    image = Image.new('RGB', (left + plot + 20, height), K.BACKGROUND)
     draw = ImageDraw.Draw(image)
-    draw.text((left, 8), args.title or f'Screen writes vs the beam, frames {frames[0]}..{frames[-1]} '
-              f'(frame T; INT {int_t} green; paper {paper_t})', fill=K.TEXT, font=K.font(15))
+    for i, line in enumerate(title):
+        draw.text((left, 8 + 18 * i), line, fill=K.TEXT, font=K.font(15))
 
     def tx(t):
-        return left + int(WIDTH * t / frame_t)
+        return left + int(plot * t / frame_t)
 
     y = top
     for frame in frames:
@@ -139,11 +147,11 @@ def main():
             t_end = strip[i + 1][0] if i + 1 < len(strip) else min(frame_t, t + 4)
             draw.rectangle([tx(t), y, max(tx(t), tx(t_end) - 1), y + STRIP], fill=colour.get(routine, (90, 90, 100)))
         py = y + STRIP + 6
-        draw.rectangle([left, py, left + WIDTH, py + LINES * 2], fill=K.PANEL)
+        draw.rectangle([left, py, left + plot, py + LINES * 2], fill=K.PANEL)
         # the border time before the paper and after it
         draw.rectangle([left, py, tx(paper_t), py + LINES * 2], fill=(30, 26, 36))
         end = paper_t + LINES * line_t
-        draw.rectangle([tx(end), py, left + WIDTH, py + LINES * 2], fill=(30, 26, 36))
+        draw.rectangle([tx(end), py, left + plot, py + LINES * 2], fill=(30, 26, 36))
         draw.line([(tx(paper_t), py), (tx(end), py + LINES * 2)], fill=(255, 255, 255), width=1)
         int_x = tx(int_t % frame_t)  # a negative INT (Pentagon) rises in the frame before: its mark is at the end
         draw.line([(int_x, y - 3), (int_x, py + LINES * 2)], fill=(90, 220, 110), width=1)

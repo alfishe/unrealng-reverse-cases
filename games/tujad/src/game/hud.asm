@@ -112,7 +112,7 @@ WeaponSelect:
   CP $00
   RET NZ
   LD HL,KeyLatches
-  LD BC,KeysSpaceToB
+  LD BC,$7EFE
   IN A,(C)
   BIT 0,A
   JR NZ,WeaponSelectReleased

@@ -57,10 +57,10 @@ lines, but `kit/ann_names.py` only matches upper case, so write upper case.
 | --- | --- | --- |
 | `@module` | `@module NAME [; title]` | The entries from the next entry line on go to `NAME.asm`. The title heads that file and the `INCLUDE` line in `game.asm`. The module starts at its first entry, which must have a name, or `split_modules` fails. A module named like the top file that includes the modules (`@module game` beside `game.asm`) goes to `NAME-module.asm` (`game-module.asm`); its name stays `game` in the headers, docs 11 / 12 and the signatures. A module with no entry fails |
 | `@about` | `@about text` | One paragraph of the current module's file header (wrapped at 116 columns between two rule lines). It is an error before any `@module` |
-| `@res` | `@res KIND/NAME.bin` | The last entry, which must be a data entry, is a resource. Its bytes go to `src/res/KIND/NAME.bin` and its data lines become `INCBIN "res/KIND/NAME.bin",offset,length` (their comments go with them, the lines a long comment wraps onto too). Several entries naming one file share it: the file holds the bytes from the first entry to the end of the last. The case's `tools/res_formats.py install(files)` turns the bytes into the editable source (PNG, text) at `--install` |
-| `@isub` | `@isub $ADDR INSTRUCTION` | The instruction at `ADDR` is written exactly so: no `Label+offset`, `@equ` or `@var` name rewrites it. Use it for a constant the bytes cannot tell from an address (`LD HL,-6`, `LD SP,$FFFF`) and for an operand that needs a name the kit cannot work out (`LD HL,LevelTable-8`). An `@isub` on an address that is no instruction fails: `@isub on no instruction: $XXXX` |
+| `@res` | `@res KIND/NAME.bin` | The last entry, which must be a data entry, is a resource. Its bytes go to `src/res/KIND/NAME.bin` and its data lines become `INCBIN "res/KIND/NAME.bin",offset,length` (their comments go with them, the lines a long comment wraps onto too). Several entries naming one file share it: the file holds the bytes from the first entry to the end of the last. In a `w` entry, a word skool2asm wrote as a data label (`DEFW TileData`) is kept as a check after the `INCBIN`s, `ASSERT {TileGraphics} == TileData`, one line per `DEFW` line: the build fails when the label moves and the bytes do not (a word equal to a code label's address, `$0000` or `$FFFF` is taken for a number: data that matches an instruction's address, an end mark). The case's `tools/res_formats.py install(files)` turns the bytes into the editable source (PNG, text) at `--install`; a `NAME.bin` an earlier install left beside the editable form it now writes is deleted |
+| `@isub` | `@isub $ADDR INSTRUCTION` | The instruction at `ADDR` is written exactly so: no `Label+offset`, `@equ` or `@var` name rewrites it. Use it for a constant the bytes cannot tell from an address (`LD HL,-6`, `LD SP,$FFFF`) and for an operand that needs a name the kit cannot work out (`LD HL,LevelTable-8`). A number equal to a label's address stays a number (skool2asm would write the label; the kit puts the instruction back as written). An `@isub` on an address that is no instruction fails: `@isub on no instruction: $XXXX` |
 | `@inline` | `@inline $ADDR [N]` | The routine at `ADDR` reads data placed after its `CALL` (a print routine with an inline string). The static walk stops at every call to it, so a string no recording printed is not taken for code. With `N`, the routine reads exactly `N` bytes (a one-byte code, a column): the walk goes on after them, and only those bytes are data |
-| `@equ` | `@equ $ADDR NAME [N] [at $I[,$J ...]] [; comment]` | A variable outside the image (the work space past the loaded bytes). The top file gets `NAME EQU $ADDR`, and every instruction operand in `ADDR..ADDR+N-1` is written `NAME` / `NAME+k` (not in an `@isub`'s instruction: `@isub $94C5 LD HL,$4010` stays a number inside `@equ $4000 Screen 6144`). N defaults to 1. With `at`, only the operands of the instructions at `$I`, `$J`, ... are named: an address that is also a plain number elsewhere (`@equ $0000 RomStart at $XXXX` names the `JP $0000` at `$XXXX` and leaves every `LD HL,$0000` alone). An `at` address that is no instruction fails: `@equ ... at no instruction: $XXXX`. An address inside the image is refused: name it as a label instead |
+| `@equ` | `@equ $ADDR NAME [N] [at $I[,$J ...]] [; comment]` | A variable outside the image (the work space past the loaded bytes). The top file gets `NAME EQU $ADDR`, and every instruction operand in `ADDR..ADDR+N-1` is written `NAME` / `NAME+k` (not in an `@isub`'s instruction: `@isub $94C5 LD HL,$4010` stays a number inside `@equ $4000 Screen 6144`). N defaults to 1. With `at`, only the operands of the instructions at `$I`, `$J`, ... are named: an address that is also a plain number elsewhere (`@equ $0000 RomStart at $XXXX` names the `JP $0000` at `$XXXX` and leaves every `LD HL,$0000` alone). An `at` address that is no instruction fails: `@equ ... at no instruction: $XXXX`. An address inside the image is refused: name it as a label instead. Two operands are never named: the offset of a `Label+offset` (`LD HL,data_96FE+$4455` stays so inside `@equ $4000 Screen 6144`), and a port, the `LD BC,nn` whose `BC` feeds `IN` or `OUT (C)` (section 3.4; mkgame prints `port: $7178 LD BC,$FEFE feeds IN / OUT (C): kept a number, not Im2Table+254`); an `at` list that names the instruction still names it |
 
 Real lines (Zynaps, `src/game/game.ann`):
 
@@ -155,8 +155,11 @@ or `DEC BC`), an offset (before `ADD HL,BC`, `$D8F0` = -10000), two bytes used a
 C = 1). None of these reads through `(BC)`, so they stay numbers. A pointer handed to a routine (`LD BC,nn` then
 `CALL`) is not seen: it needs `@isub` (Chuckie Egg's `@isub $AA9A LD BC,InstructionsText+102`).
 `"operands": "wide"` (`--wide`) takes every `LD BC,nn` into an entry, for a part where all of them are pointers;
-`"operands": "narrow"` (`--narrow`) takes none. SkoolKit names an `LD BC,nn` whose nn has a label of its own in any
-case. A constant that only looks like an address needs `@isub`. An operand outside the image needs `@equ` (or
+`"operands": "narrow"` (`--narrow`) takes none. SkoolKit names an `LD BC,nn` whose nn has a label of its own, but
+not a port: an `LD BC,nn` whose `BC` an `IN r,(C)`, `OUT (C),r` or a block `IN` / `OUT` uses among the next 12
+instructions of the entry, before `BC` changes or the flow leaves (`port_loads`), keeps its number against a label,
+`Label+offset` (with `"wide"` too) and `@equ` (Tujad's `$797F LD BC,$7EFE`, the SPACE half row, at ShiftGraphic4's
+address). A constant that only looks like an address needs `@isub`. An operand outside the image needs `@equ` (or
 `@const` / `@bank`, section 5.1).
 
 ## 4. What the generator does
@@ -184,18 +187,23 @@ python3 kit/mkgame.py [--case C] --image BIN --org ADDR --ann FILE --top NAME --
    boundary or a CALL target makes), the titles, the `D` descriptions, the data sub-blocks cut at the inner lines.
    `refdocs.py` reads this file later.
 4. **SkoolKit.** `sna2skool.py -H -c game.ctl`, then the `Label+offset` (and first field, section 3.3) and
-   `@isub` rewrites, then `skool2asm.py -H`. After that: `IXl`/`IXh` are upper-cased, the first fields get their
-   labels, `@equ` and `@var` names are applied (to every instruction but the `@isub` ones; an `@equ ... at` only to
-   its own instructions), and the bare `;` SkoolKit leaves on continued data lines is removed.
-5. **Resources and modules.** Writes the `@res` files with their `INCBIN`s, then splits the listing into one file per
-   `@module`, each with its header. `game.asm` = the `case.json` `header` lines, `DEVICE`, the `EQU`s (`@const`,
+   `@isub` rewrites (the ports of section 3.4 are `@isub`s of their own number), then `skool2asm.py -H`. After that:
+   `IXl`/`IXh` are upper-cased, the first fields get their labels, `@equ` and `@var` names are applied (to every
+   instruction but the `@isub` ones; an `@equ ... at` only to its own instructions; never to a `Label+offset`'s
+   offset), an `@isub` where skool2asm put a label for a number is written as the `.ann` has it, and the bare `;`
+   SkoolKit leaves on continued data lines is removed.
+5. **Resources and modules.** Writes the `@res` files with their `INCBIN`s (and a `w` entry's `ASSERT`s, section
+   2; not in a segment assembled under `DISP`, where `{address}` reads other bytes), then splits the listing into one
+   file per `@module`, each with its header. `game.asm` = the `case.json` `header` lines, `DEVICE`, the `EQU`s (`@const`,
    `@equ`, `@bank`, `@alias`), the head, one `INCLUDE` per module, and `SAVEBIN "game.bin",lo,hi-lo`.
 6. **Check.** Runs `sjasmplus --nologo --msg=war game.asm` in the work folder and compares `game.bin` with the image.
    It prints `assembled: identical to the original image` or the first differing address.
 7. **Install** (`--install`, only when identical). Writes the modules and `game.asm` into `src/game` (`case.json`
    `dest`), and the resources through `tools/res_formats.py install`, or `case.json` `res_install`, or as bytes
    when the case has neither. It never deletes a file it does not write: only the modules the old `game.asm`
-   included and the `.ann` no longer has.
+   included and the `.ann` no longer has, and a resource's `src/res/NAME.bin` that the case's hook did not write
+   while it wrote `NAME.png` / `NAME.txt` beside it (an install from before the editable form: the build would read
+   both).
 
 `kit/refdocs.py --case C` then reads `work/mkgame/game.ctl` and the `.ann`, together with the `ref_builds` L1 files,
 and writes doc 11 (data: readers and writers) and doc 12 (routines: runs, own T-states, callers, callees, memory,
@@ -377,7 +385,7 @@ commands, so a part file could not be checked to give the same sources.
 | The same name on two addresses, or two names on one | `named twice` / `already a name` | one name an address, unique over the file |
 | `@module` before an unnamed entry | `module NAME starts at $XXXX, an entry with no name` | name the module's first entry |
 | `@isub` on an address that is not an instruction start | `@isub on no instruction` | the address of the instruction's first byte |
-| An `@equ` name on a number that is no address (`LD HL,$0000` named `RomStart`) | a count or a constant written as a name | `@equ ... at $I` with only the instructions that use the address |
+| An `@equ` name on a number that is no address (`LD HL,$0000` named `RomStart`) | a count or a constant written as a name | `@equ ... at $I` with only the instructions that use the address (a port before `IN` / `OUT (C)` is kept a number by itself) |
 | An inner name that is one letter `b`, `c`, `w`, `t` or `s` | read as a kind | longer names |
 | A string after a `CALL` taken for code | odd instructions (`LD BC,$1704`) after the call | `@inline $ROUTINE` |
 | An L1 build of the loader in `read_builds` | the game's code taken for data (the depacker read its packed input there) | only builds after the unpack in `read_builds` |

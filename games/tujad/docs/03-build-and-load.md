@@ -188,8 +188,8 @@ Three images, compared byte by byte (`work/stage1/imgdiff.py`, runs of differing
 
 ```bash
 . work/env.sh
-python3 $RS open --work work/stage1/entry --ttd work/stage1/c1/session.ttd --port-base 36900
-python3 $RS build --work work/stage1/entry --from-frame 13580 --to-frame 13581 \
+python3 ../../kit/rs.py open --work work/stage1/entry --ttd work/stage1/c1/session.ttd --port-base 36900
+python3 ../../kit/rs.py build --work work/stage1/entry --from-frame 13580 --to-frame 13581 \
     --into work/stage1/entry/f13580
 python3 work/stage1/imgdiff.py     # original.bin vs f13580/start.bin vs f13581/start.bin
 ```

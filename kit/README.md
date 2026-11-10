@@ -4,7 +4,8 @@ The case standard is [GUIDE.md](../GUIDE.md), the steps are [recipes/](../recipe
 work that is the same in every game; what is particular to one game (its packer, its resource formats, its bot)
 stays in the case's own `tools/`.
 
-They need Python 3 with Pillow, and an unreal-ng checkout for the access trace reader and `re_session.py`.
+They need Python 3 with Pillow, and an unreal-ng checkout for the access trace reader and `re_session.py`
+(`tools/verification/analysis/` of the checkout: the kit uses them from there, it keeps no copy).
 `mkgame.py` also needs SkoolKit (a virtualenv) and sjasmplus. `toolpaths.py` finds the three, and no script holds
 a path of one machine:
 
@@ -15,7 +16,14 @@ a path of one machine:
 | unreal-qt | `--binary`, `$UNREAL_BINARY`, `cmake-build-agent-release/bin/unreal-qt` of that checkout |
 | SkoolKit | `--venv`, `$SKOOLKIT_VENV`, `$VIRTUAL_ENV`, `.venv` here, `sna2skool.py` on `PATH`, `$UNREAL_NG/scratch/venv-skoolkit` |
 
-`python3 kit/toolpaths.py sjasmplus|venv|unreal|binary [HINT]` prints the path (the cases' shell scripts use it).
+`python3 kit/toolpaths.py sjasmplus|venv|unreal|binary|re_session [HINT]` prints the path (the cases' shell scripts
+use it).
+
+`re_session.py` (open a recording in an instance, build L1, export a draft, stop) is unreal-ng's, not the kit's: it
+imports `corpus.py`, `mm_session.py` and the MCP client beside it and drives the unreal-qt of the same checkout, so a
+copy here would drift from the binary. `python3 kit/rs.py ARGS` runs it from the checkout `toolpaths.py` finds
+(`--unreal U` first to give one), so a case's commands name `../../kit/rs.py`, not a path set on one machine; the
+`$RS` of the docs is that script.
 
 The annotation file these scripts read is described in [docs/ann-format.md](../docs/ann-format.md) (every directive,
 what the generator does with it, the part files); every file of a case and the command that makes it in
@@ -32,7 +40,8 @@ what the generator does with it, the part files); every file of a case and the c
 | `mkgame.py --case C` | `src/game/*.asm` from `game.ann` ([format](../docs/ann-format.md)), the recordings' `l1.json` and the image `case.json` names; refuses to install unless sjasmplus gives the image's bytes |
 | `mkgame.py --part F.json` / `--image BIN --org A ...` | any other code image the same way: a loader, a menu, a bank, an image of several segments or pieces ([part files](../docs/ann-format.md#5-parts-banks-and-pieces)) |
 | `ctl2ann.py DRAFT.ctl --out F.ann` | a first `.ann` from `re_session.py`'s `draft.ctl` (or an L2 export JSON) |
-| `toolpaths.py` | finds sjasmplus, the SkoolKit venv and unreal-ng (above) |
+| `toolpaths.py` | finds sjasmplus, the SkoolKit venv, unreal-ng and its `re_session.py` (above) |
+| `rs.py ARGS` | runs unreal-ng's `re_session.py` with ARGS (`open`, `build`, `stop`, ...; above) |
 | `ann_names.py --case C ADDR=Name ...` | names labels inside entries of `game.ann` |
 | `input_vars.py --work W --inputs S --start F` | the bytes that follow the held directions and fire over a scripted recording: a first guess at the player's coordinates (a 16-bit coordinate, or one that moves only now and then, scores low: confirm in the code that reads the controls) |
 | `refdocs.py --case C` | docs 11 and 12 from `game.ann` and the recordings; doc 12 links `docs/img/routines/<Label>.gif` |
@@ -56,7 +65,16 @@ what the generator does with it, the part files); every file of a case and the c
 | `header`, `data_note` | the first comment lines of `game.asm`; a sentence for doc 11, optional |
 
 `--install` writes the modules, `game.asm` and the resources, and deletes only the modules the old `game.asm`
-included that the `.ann` no longer has: a hand-written `.asm` beside them stays.
+included that the `.ann` no longer has (a hand-written `.asm` beside them stays) and a resource's `src/res/NAME.bin`
+left by an earlier install when the case's `res_formats.py` now writes its editable form (`NAME.png`, `NAME.txt`)
+and not the bytes.
+
+What `mkgame.py` writes as a name and what it keeps a number:
+[ann-format.md 3.4](../docs/ann-format.md#34-what-becomes-labeloffset). A port (`LD BC,nn` before `IN` / `OUT (C)`)
+stays a number against a label, an `@equ` range and `Label+offset`, and mkgame prints the name it did not use:
+`port: $7178 LD BC,$FEFE feeds IN / OUT (C): kept a number, not Im2Table+254`. An `@isub` stays as written even where
+its number is a label's address; a `w` entry's labelled words inside an `@res` become `ASSERT` lines after its
+`INCBIN`s.
 
 ## The signature base
 
@@ -118,5 +136,10 @@ The animations and the budget are 1050 px wide by default, so that they stay rea
 figure check). `routine_anim.py` draws `--width` pixels (1050):
 the memory map above the view on the left, each at the largest whole scale that fits, the listing on the right, a long
 `--title` on two lines; `--layout wide` is the older picture with the three panels side by side (up to 2566 px).
-`memanim.py --screen` puts the screen under the grid when beside it the picture would pass `--width` (1050), and beside
-it with `--layout wide`. `fig_budget.py` draws `--width` pixels (1050) and wraps a long `--note`.
+`memanim.py --screen` puts the screen under the grid when beside it the picture would pass `--width` (1050); with
+`--layout wide` it stays beside the grid, at 1 x when 2 x would pass `--width`. `fig_budget.py` draws `--width` pixels
+(1050) and wraps a long `--note`. `writers_map.py` keeps within `--width` (1050): the two views side by side at
+`--scale` (2; two screens fit with narrower gaps) or the largest whole scale that fits, else stacked, the `--zoom`
+insets on a row of their own enlarged as far as it allows. `beam_timeline.py` draws `--width` pixels (1050), the time
+axis taking what the labels leave. Both wrap a long `--title`. `writers_map.py --width 0` is its older one-row
+picture (the zoom up to 2620 px), `memanim.py --layout wide --width 0` its older 1102 px one.

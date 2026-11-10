@@ -19,7 +19,7 @@ named):
 python3 tools/record.py --start work/stage1/rzx/at050000.szx --inputs work/docs/tjA/inputs/room-102.txt \
     --work work/docs/tjA/rec/room-102 --shot 100 --port-base 36930
 . work/env.sh                                        # RS = unreal-ng's re_session.py
-python3 $RS open --work work/docs/tjA/r102 --ttd work/docs/tjA/rec/room-102/session.ttd \
+python3 ../../kit/rs.py open --work work/docs/tjA/r102 --ttd work/docs/tjA/rec/room-102/session.ttd \
     --port-base 36930
 ```
 

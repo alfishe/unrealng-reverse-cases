@@ -12,6 +12,9 @@ TunePeriods:
 ; the patterns in play order: A A B A C C D
 TuneOrder:
   INCBIN "res/music/titletune.bin",$001B,14
+  ASSERT {TuneOrder} == TunePatternA && {TuneOrder+2} == TunePatternA && {TuneOrder+4} == TunePatternB
+  ASSERT {TuneOrder+6} == TunePatternA && {TuneOrder+8} == TunePatternC && {TuneOrder+10} == TunePatternC
+  ASSERT {TuneOrder+12} == TunePatternD
 
 ; pattern A (played 3 times): the opening phrase
 TunePatternA:

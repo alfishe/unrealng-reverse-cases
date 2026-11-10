@@ -22,7 +22,8 @@ from the .ann's code entries; everything else is data. Entries, names, comments,
 from the .ann. SkoolKit (sna2skool.py with a control file, skool2asm.py) writes the listing, the kit cuts it into
 the .ann's modules and writes the top file, sjasmplus assembles it, and --install writes the sources only when the
 bytes are the image's. Install never deletes a file it did not write: only the modules an earlier top file
-INCLUDEd that are gone now.
+INCLUDEd that are gone now, and a resource's NAME.bin an earlier install left where the case's hook now writes the
+editable form.
 """
 import argparse
 import glob
@@ -268,11 +269,13 @@ class Annotations:
         $ADDR c|b|w|t|s NAME [N]  an entry: code, bytes (N a line), words (N a line), text, space; ; its title
         > text                    the entry's description, one paragraph a line
         @res FILE                 the entry's bytes are a resource: src/res/FILE, assembled with INCBIN (entries
-                                  naming one file share it: it holds the bytes from the first to the end of the last)
+                                  naming one file share it: it holds the bytes from the first to the end of the last);
+                                  a w entry's words that name data labels become ASSERT lines after the INCBINs
         $ADDR [NAME] ; comment    an instruction inside an entry: its label, its comment; inside a data entry the
                                   data line that starts at ADDR (the entry's rows are cut there)
         @isub $ADDR INSTRUCTION   the instruction at ADDR written so (a constant the image's bytes cannot tell from an
-                                  address: LD HL,-6, not a label + offset)
+                                  address: LD HL,-6, not a label + offset; a number stays one even when it is a
+                                  label's address)
         @inline $ADDR [N]         a routine that reads data placed after its CALL (a print routine with the string
                                   inline): no walk goes past a call to it, the bytes after it are data unless a
                                   recording ran them; with N (a fixed count of data bytes) the walk goes on after them
@@ -280,7 +283,9 @@ class Annotations:
                                   a variable outside the image (the work space the game keeps past its loaded bytes):
                                   NAME EQU $ADDR in the top file, and every instruction operand $ADDR..$ADDR+N-1
                                   written as NAME / NAME+k (N defaults to 1); with 'at', only the operands of the
-                                  instructions at $I, $J, ... (a ROM entry $0000 named in its CALL, not in LD HL,$0000)
+                                  instructions at $I, $J, ... (a ROM entry $0000 named in its CALL, not in LD HL,$0000);
+                                  never a Label+offset's offset, nor a port (LD BC,nn before IN / OUT (C)) unless 'at'
+                                  names its instruction
         @const NAME VALUE ; c     NAME EQU VALUE in the top file: a port, a ROM entry, a page value, an address in
                                   another program; the instructions use it through @isub
         @bank $ADDR NAME BANK ; c an address in another RAM bank (BANK a number or a name): NAME EQU $ADDR; the walk
@@ -581,10 +586,51 @@ LABEL_LINE = re.compile(r'^([A-Za-z_]\w*):$')
 COMMENT_LINE = re.compile(r'^ +;')
 
 
-def write_resources(text, mem, extents, ann, out):
+def word_checks(lines, a, label, inner, is_data):
+    """The ASSERT lines that keep the labels of a w entry's DEFW lines once they are INCBIN bytes: for each DEFW line
+    with a data label among its words, its checks on lines of up to 116 columns ('  ASSERT {TileGraphics} ==
+    TileData'). A word equal to a code label is taken for a number (a resource holds data: attributes that match an
+    instruction's address), and so is $0000 or $FFFF (an end mark). lines: the entry's data, label and wrapped comment lines; a, label: the entry; inner:
+    {label: address}; is_data(label): the label is on a data entry"""
+    out, base, at = [], (label, a), a
+    for line in lines:
+        m = LABEL_LINE.match(line)
+        if m:
+            base = (m.group(1), inner.get(m.group(1), at))
+            at = base[1]
+            continue
+        code = line.partition(';')[0].strip()
+        if not code:
+            continue
+        kind, _, operands = code.partition(' ')
+        items = [x.strip() for x in operands.split(',')]
+        if kind == 'DEFB' and all(re.match(r'^(\$[0-9A-F]+|\d+)$', x) for x in items):
+            at += len(items)
+            continue
+        if kind != 'DEFW':
+            break  # a text or space line: the addresses after it are not followed
+        checks = []
+        for x in items:
+            if re.match(r'^[A-Za-z_]\w*$', x) and is_data(x):
+                where = base[0] + ('+%d' % (at - base[1]) if at > base[1] else '')
+                checks.append('{%s} == %s' % (where, x))
+            at += 2
+        line = ''
+        for check in checks:  # as many checks a line as 116 columns hold
+            if line and len(line) + 4 + len(check) > 116:
+                out.append(line)
+                line = ''
+            line = line + ' && ' + check if line else '  ASSERT ' + check
+        if line:
+            out.append(line)
+    return out
+
+
+def write_resources(text, mem, extents, ann, out, word_asserts=True):
     """The resource entries of game.ann as files under out/res and INCBIN lines in the listing: (text, {file: (lo,
     hi)}). An entry's data lines (and the labels inside it) become INCBIN slices of its file, its label and comments
-    stay"""
+    stay. A w entry's DEFW words that skool2asm wrote as labels become ASSERT lines after its INCBINs (word_checks;
+    word_asserts False: not, in code assembled under DISP, where {address} reads other bytes)"""
     files = {}
     for a, name in ann.resources.items():
         if a not in extents:
@@ -596,6 +642,15 @@ def write_resources(text, mem, extents, ann, out):
         os.makedirs(os.path.dirname(path), exist_ok=True)
         open(path, 'wb').write(mem[lo:hi])
     inner = {n: a for a, (n, _) in ann.inline.items() if n}
+    where = dict(inner, **{e[1]: a for a, e in ann.entries.items() if e[1]})
+
+    def is_data(name):
+        m = re.match(r'^data_([0-9A-F]{4})$', name)
+        at = int(m.group(1), 16) if m else where.get(name)
+        # $0000 and $FFFF are a table's end marks far more often than pointers (Moon Patrol's TuneEnd $FFFF is not
+        # Im2Vector's address)
+        return at not in (None, 0x0000, 0xFFFF) and any(d <= at < d + n for d, n in extents.items())
+
     lines = text.splitlines()
     for a, name in sorted(ann.resources.items()):
         label = ann.name(a)
@@ -617,6 +672,8 @@ def write_resources(text, mem, extents, ann, out):
             if cut_label:
                 body.append(cut_label + ':')
             start = cut
+        if word_asserts and ann.entries.get(a, ('',))[0] == 'w':
+            body += word_checks(lines[at + 1:end], a, label, inner, is_data)
         lines[at + 1:end] = body
     return '\n'.join(lines) + '\n', files
 
@@ -700,6 +757,39 @@ def bc_is_pointer(lines, k, reach=12):
         if seen >= reach:
             return False
     return False
+
+
+# an instruction that takes the port from BC: IN r,(C), OUT (C),r and the block forms (C the port, B the count)
+PORT_USE = re.compile(r'^(?:IN [A-Z]+,\(C\)|IN \(C\)|OUT \(C\),|IN[ID]R?$|OT[ID]R$|OUT[ID]$)')
+
+
+def port_loads(skool, reach=12):
+    """{address: instruction} of the LD BC,nn whose BC is a port: within the next reach instructions of its entry,
+    before BC changes or the flow leaves, an IN or OUT through (C) uses it ($797F LD BC,$7EFE, then IN A,(C)). Their
+    nn stays a number whatever label or @equ name has that address"""
+    lines = skool.splitlines()
+    out = {}
+    for k, line in enumerate(lines):
+        m = SKOOL_LINE.match(line)
+        if not m or m.group(1) not in ' c*' or not re.match(r'^LD BC,\$[0-9A-F]{4}$', m.group(2)):
+            continue
+        seen = 0
+        for after in lines[k + 1:]:
+            n = SKOOL_LINE.match(after)
+            if not n:
+                continue
+            if n.group(1) not in ' *' or n.group(2).startswith('DEF'):
+                break  # the next entry, or data
+            text = n.group(2).upper()
+            if PORT_USE.match(text):
+                out[int(line[2:6], 16)] = m.group(2)
+                break
+            if BC_CHANGED.match(text) or '(BC)' in text:
+                break
+            seen += 1
+            if seen >= reach:
+                break
+    return out
 
 
 def label_inner_addresses(skool, written=None, operands='pointer', fields=None):
@@ -812,11 +902,47 @@ def name_variables(text, equ, inner=None, order=None, isubs=(), equ_at=None):
                     else:
                         def sub(m):
                             return table.get(int(m.group(1), 16), m.group(0))
-                    code = re.sub(r'\$([0-9A-F]{4})\b', sub, code)
+                    # not the offset of a Label+offset (LD HL,data_96FE+$4455 is no Screen address)
+                    code = re.sub(r'(?<![\w)][+-])\$([0-9A-F]{4})\b', sub, code)
                 n += not code.startswith('  ORG ')
             out.append(code + semi + comment)
         lines = out
     return ''.join(lines)
+
+
+def restore_isubs(text, order, isubs):
+    """The @isub instructions as the .ann writes them where skool2asm put a label for a number (@isub $797F
+    LD BC,$7EFE written LD BC,ShiftGraphic4: the number is that label's address). order: instruction_order; isubs:
+    {address: instruction}. A name the .ann wrote stays, so does skool2asm's hex for a decimal number. Returns
+    (text, {address: the label skool2asm had put there})"""
+    if not isubs:
+        return text, {}
+    lines = text.splitlines(True)
+    found = sum(1 for line in lines if ASM_INSTRUCTION.match(line.partition(';')[0]))
+    if found != len(order):
+        print(f'warning: {len(order)} instructions in the skool file, {found} in the listing: an @isub number '
+              'skool2asm wrote as a label stays so')
+        return text, {}
+
+    def names(s):
+        return set(re.findall(r'[A-Za-z_]\w*', re.sub(r'\$[0-9A-Fa-f]+', ' ', s)))
+
+    out, n, restored = [], 0, {}
+    for line in lines:
+        code, semi, comment = line.partition(';')
+        if ASM_INSTRUCTION.match(code):
+            at = order[n] if n < len(order) else None
+            n += 1
+            want = isubs.get(at)
+            if want and names(code) - names(want):
+                restored[at] = ', '.join(sorted(names(code) - names(want)))
+                body = '  ' + want
+                if not semi:
+                    code = body + '\n'
+                else:  # the comment keeps its column when the instruction fits before it
+                    code = body.ljust(len(code)) if len(body) < len(code) else body + ' '
+        out.append(code + semi + comment)
+    return ''.join(out), restored
 
 
 def equates(equ, title='; The variables past the loaded image (game.ann @equ)'):
@@ -988,6 +1114,12 @@ def generate(seg, mem, args, out, top):
         marks = '|'.join('%04X' % a for a, _, _, _ in ann.banks)
         sk = re.sub(r'^\*\$(%s) ' % marks, r' $\1 ', sk, flags=re.M)
     written = dict(ann.isub)
+    # an LD BC,nn that feeds IN / OUT (C) is a port: kept as the number unless an @isub or an '@equ ... at' says
+    # otherwise
+    listed = set().union(*ann.equ_at.values()) if ann.equ_at else set()
+    ports = {a: t for a, t in port_loads(sk).items() if a not in written and a not in listed}
+    written.update(ports)
+    isubs = dict(written)
     fields = ann.fields()
     sk, inner = label_inner_addresses(sk, written, seg.operands, fields)
     if written:
@@ -1006,12 +1138,20 @@ def generate(seg, mem, args, out, top):
     if stray:
         sys.exit('%s: @equ ... at no instruction: %s' % (os.path.relpath(seg.ann, ROOT),
                                                          ', '.join('$%04X' % a for a in stray)))
-    text = name_variables(text, ann.equ, var_names, order, ann.isub, ann.equ_at)
+    text = name_variables(text, ann.equ, var_names, order, isubs, ann.equ_at)
+    text, restored = restore_isubs(text, order, isubs)
+    for a, instruction in sorted(ports.items()):
+        value = int(instruction[-4:], 16)
+        names = [n if value == e else '%s+%d' % (n, value - e) for e, (n, size, _) in sorted(ann.equ.items())
+                 if e <= value < e + size and e not in ann.equ_at] + \
+            [n for n in (var_names.get(value),) if n] + ([restored[a]] if a in restored else [])
+        if names:
+            print(f'port: ${a:04X} {instruction} feeds IN / OUT (C): kept a number, not {", ".join(names)}')
     if seg.isub_as_written:
         text = decimal_isubs(text, ann.isub.values())
     # a commented data sub-block of several lines: SkoolKit leaves a bare ';' on the lines after the first
     text = re.sub(r'^(  DEF[BWMS] .*?)\s+;$', r'\1', text, flags=re.M)
-    text, files = write_resources(text, mem, extents, ann, out)
+    text, files = write_resources(text, mem, extents, ann, out, seg.run == (seg.lo if seg.lo is not None else LO))
     modules, head = split_modules(text, ann)
     resources = {name: mem[a:b] for name, (a, b) in files.items()}
     labels = set(re.findall(r'^([A-Za-z_]\w*):$', text, flags=re.M))
@@ -1056,27 +1196,58 @@ def call_hook(spec, *args):
     return getattr(mod, func or 'install')(*args)
 
 
+def stamps(res, files):
+    """{path: (mtime, size)} of every file under res named like a resource (NAME.bin and NAME.* beside it)"""
+    out = {}
+    for name in files:
+        stem = os.path.splitext(os.path.join(res, name))[0]
+        for path in glob.glob(glob.escape(stem) + '.*'):
+            st = os.stat(path)
+            out[path] = (st.st_mtime_ns, st.st_size)
+    return out
+
+
+def drop_stale_bins(res, files, before):
+    """After the case's hook: a resource's NAME.bin the hook did not write, while it wrote the editable form beside
+    it (NAME.png, NAME.txt), is an older install's: the case's build would read both. It is deleted"""
+    for name in files:
+        path = os.path.join(res, name)
+        if not path.endswith('.bin') or path not in before or not os.path.exists(path):
+            continue
+        st = os.stat(path)
+        if (st.st_mtime_ns, st.st_size) != before[path]:
+            continue  # the hook wrote the bytes themselves
+        stem = os.path.splitext(path)[0]
+        written = [p for p in glob.glob(glob.escape(stem) + '.*') if p != path and
+                   (os.stat(p).st_mtime_ns, os.stat(p).st_size) != before.get(p)]
+        if written:
+            os.remove(path)
+            print(f'removed {os.path.relpath(path, ROOT)} (stale: the case writes '
+                  f'{", ".join(os.path.basename(p) for p in written)})')
+
+
 def install_resources(part, resources, built=()):
     """the part's resources into the case: through its res_install hook, as bytes into its res folder, or (the
     case's game) through tools/res_formats.py when the case has one, else as bytes into src/res"""
     files = {k: v for k, v in resources.items() if k not in built}
     if not files:
         return 0
-    if part.get('res_install'):
-        call_hook(part['res_install'], files)
+    if part.get('res_install') or (part.get('game') and not part.get('res') and
+                                   os.path.isfile(os.path.join(ROOT, 'tools', 'res_formats.py'))):
+        res = os.path.join(ROOT, part.get('res') or os.path.join('src', 'res'))
+        before = stamps(res, files)
+        call_hook(part.get('res_install') or 'tools/res_formats.py', files)
+        drop_stale_bins(res, files, before)
     elif part.get('res'):
         for name, data in files.items():
             path = os.path.join(ROOT, part['res'], name)
             os.makedirs(os.path.dirname(path), exist_ok=True)
             open(path, 'wb').write(data)
     elif part.get('game'):
-        if os.path.isfile(os.path.join(ROOT, 'tools', 'res_formats.py')):
-            call_hook('tools/res_formats.py', files)
-        else:
-            for name, data in files.items():
-                path = os.path.join(ROOT, 'src', 'res', name)
-                os.makedirs(os.path.dirname(path), exist_ok=True)
-                open(path, 'wb').write(data)
+        for name, data in files.items():
+            path = os.path.join(ROOT, 'src', 'res', name)
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            open(path, 'wb').write(data)
     else:
         return 0
     return len(files)

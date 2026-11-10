@@ -60,6 +60,10 @@ BaseListEast:
 ; shapes (a scenery record $82-$8A).
 ShapeTable:
   INCBIN "res/game/map/shape-table.bin",$0000,22
+  ASSERT {ShapeTable} == ShapeWarbase && {ShapeTable+2} == ShapeFactory && {ShapeTable+4} == ShapeLowTiles
+  ASSERT {ShapeTable+6} == ShapeMidTiles && {ShapeTable+8} == ShapeTallWallV && {ShapeTable+10} == ShapeTallWallH
+  ASSERT {ShapeTable+12} == ShapeEdgeFence && {ShapeTable+14} == ShapeFlatLineV && {ShapeTable+16} == ShapeFlatLineH
+  ASSERT {ShapeTable+18} == ShapeLowWallH && {ShapeTable+20} == ShapeMixedWallH
 
 ; Shape 0: the warbase, 15 blocks of tiles $0F (height 7) and $10 (height 15)
 ; around the door
