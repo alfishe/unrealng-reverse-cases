@@ -216,13 +216,13 @@ would fall between the two cases (`$5CE3` + 8 x `$FF`); PictureText has none.
 ![Loader at work: c1 frames 246-262, the screen's bytes and the screen as shown](img/routines/Loader.gif)
 
 *Loader `$5EF3` in `c1` from frame 246, T 30 000 to frame 262, T 40 000, one picture every quarter frame (17 472 T):
-left the screen's bytes as bits, right the screen as shown. The picture is drawn while every attribute is 0, black on
+above the screen's bytes as bits, below the screen as shown. The picture is drawn while every attribute is 0, black on
 black, and appears at once when the bands are painted. Made with the command below.*
 
 ```bash
 python3 ../../kit/memanim.py --work work/docs/ceA/c1 --from 246:30000 --to 262:40000 --step 17472 \
     --screen-geometry --screen --hold 2500 docs/img/routines/Loader.gif \
-    --label "Loader \$5EF3 (c1 frames 246-262): left the screen's bytes as bits, right as shown"
+    --label "Loader \$5EF3 (c1 frames 246-262): above the screen's bytes as bits, below as shown"
 ```
 
 The non-zero bytes of the screen, read at frame starts (`memory_at`, `$4000-$5AFF`):
@@ -396,7 +396,7 @@ flowchart TD
     S1 --> G["build/game.bin<br/>18 900 bytes"]
     S2 --> L["build/loader.bin<br/>1624 bytes"]
     S3 --> E["build/errsp.bin<br/>2 bytes"]
-    L --> T["tools/tape.py"]
+    L --> T["kit/tap.py"]
     E --> T
     G --> T
     T --> TAP["build/ChuckieEgg.tap<br/>20 559 bytes"]
@@ -413,7 +413,7 @@ flowchart TD
 | `sjasmplus ... src/game/game.asm` | the 22 modules, `build/res` | `build/game.bin`, `game.lst` | no warnings (`--msg=war`) |
 | `sjasmplus ... src/loader/loader.asm` | basic, picturegraphics, tapeloader, picturetext, `build/res` | `build/loader.bin`, `loader.lst` | |
 | `sjasmplus ... src/loader/errsp.asm` | errsptext | `build/errsp.bin`, `errsp.lst` | |
-| `tools/tape.py ChuckieEgg.tap loader.bin errsp.bin game.bin` | the three parts | the header "CHUCKIE" (LINE 10, program length 18) and three flag-`$FF` data blocks, each with its XOR checksum | |
+| `kit/tap.py ChuckieEgg.tap basic:CHUCKIE:10:loader.bin data:-:-:errsp.bin data:-:-:game.bin` | the three parts | the header "CHUCKIE" (LINE 10, program length 18) and three flag-`$FF` data blocks, each with its XOR checksum | |
 | `tools/tape.py --orig orig.tap` | the original's TZX blocks 1-4 | `build/orig.tap` | |
 | `cmp ChuckieEgg.tap orig.tap` | the two tapes | | every data byte, flag and checksum of the four blocks |
 
@@ -426,8 +426,10 @@ The header block is 2 + 1 + 17 + 1 = 21 bytes, block 2 is 2 + 1 + 1624 + 1 = 162
 block 4 is 2 + 1 + 18 900 + 1 = 18 904. The sum is 20 559 bytes, the size of both `build/ChuckieEgg.tap` and
 `build/orig.tap`.
 
-- **One header field is written by hand.** `kit/tap.py`'s `basic` sets the header's program length to the whole
-  block. Chuckie Egg's header says 18 (line 10 alone), so `tools/tape.py` writes the header itself.
+- **The header's program length is 18, not 1624.** Parameter 2 of a program header is the length of the program
+  without its variables. Line 10 is 18 bytes; the array `a$` that carries the loader follows it in the variables area.
+  `kit/tap.py`'s `basic` finds the 18 the way the ROM's SAVE does: it walks the lines and stops at the first byte that
+  is no line number (`$C1`, the string array `a$`).
 - **The TZX's timings are not data.** The pilot, the sync and bit lengths and the pauses are not rebuilt. The build
   proves the bytes, not the sound.
 - **The `.asm` files are generated.** The `.ann` files are the sources. `kit/mkgame.py` refuses to install modules

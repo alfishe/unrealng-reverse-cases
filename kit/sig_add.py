@@ -133,7 +133,9 @@ def add_ann(args):
         lo = mk.hexa(seg.get('lo') or part.get('lo') or '%X' % at)
         hi = mk.hexa(seg.get('hi') or part.get('hi') or '%X' % (at + len(data)))
         mk.LO, mk.HI = lo, hi
-        ann = mk.Annotations(os.path.join(case, ann_path), piece=seg.get('piece'))
+        nested = part.get('segments') and part.get('subdir', True)  # the modules in a folder of their own
+        top = None if nested else (part.get('top') or part.get('name') or 'game')
+        ann = mk.Annotations(os.path.join(case, ann_path), piece=seg.get('piece'), top=top)
         args.ann = ann_path
         module_dir = part.get('dest') or os.path.dirname(ann_path)
         if part.get('segments') and part.get('subdir', True):
@@ -146,7 +148,7 @@ def add_ann(args):
         if not os.path.exists(image_path):
             subprocess.run(config['image_cmd'], cwd=case, check=True)  # the command runs in the case, as mkgame's
         mem = open(image_path, 'rb').read()
-        ann = mk.Annotations(os.path.join(case, args.ann))
+        ann = mk.Annotations(os.path.join(case, args.ann), top='game')
     lo, hi = mk.LO, mk.HI
     rows = S.read_listing(os.path.join(case, args.lst)) if args.lst else None
     listed_starts = {r['address'] for r in rows if r['instruction'] and lo <= r['address'] < hi} if rows else None
@@ -207,7 +209,8 @@ def add_ann(args):
                'origin': S.hexaddr(start), 'relocatable': False, 'mask': mask, 'entries': entries, 'labels': labels,
                'found_in': [{'program': args.program, 'case': rel(case), 'address': S.hexaddr(start),
                              'bank': args.bank, 'delta': '+$0000', 'match': 'exact', 'commit': commit()}],
-               'source': {'case': rel(case), 'file': f'{module_dir or os.path.dirname(args.ann)}/{module}.asm',
+               'source': {'case': rel(case),
+                          'file': f'{module_dir or os.path.dirname(args.ann)}/{mk.module_file(module, ann.top)}.asm',
                           'label': first},
                'docs': [f'{rel(case)}/docs/README.md']}
         store(finish(sig, data), data, sig['found_in'][0])

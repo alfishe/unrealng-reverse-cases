@@ -351,7 +351,7 @@ JumpArriveLoop2:
   LD (ShipSlots+$0012),A
   JR NZ,JumpArriveZ
 JumpArriveX:
-  LD BC,$6062
+  LD BC,ShipSlots+$001A
   LD DE,ShipSlots+$000A
   LD (BC),A
   LD (DE),A

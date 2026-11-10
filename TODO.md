@@ -8,8 +8,8 @@ done is in [AGENTS.md](AGENTS.md); this file says only what is next.
 | # | Game | Notes |
 | --- | --- | --- |
 | 1 | OCP Video Pool | complete 2026-11-09 ([case](games/video-pool/README.md), doc 14 the UKNC port) |
-| 2 | Chuckie Egg | next |
-| 3 | Tujad | |
+| 2 | Chuckie Egg | complete 2026-11-10 ([case](games/chuckie-egg/README.md)) |
+| 3 | Tujad | stage 1 |
 | 4 | SimCity | |
 | 5 | Earth Shaker | our own reverse; Bedazzle's disassembly (github.com/Bedazzle/Earth-shaker) is not a source of names, compare with it at the end at most |
 | 6 | Battle Command | ZXDB 451 |
@@ -39,12 +39,12 @@ Found by the cases and worked around there; the status says whether `kit/` fixes
 | `@equ` with a size is applied after `@isub` and rewrites its operands | Video Pool stage 2 | none needed yet; watch for it | fixed: `@equ` and `@var` names skip the `@isub` instructions. It had struck: Video Pool `@isub $94C5 LD HL,$4010` was written `Screen+16`, now `$4010` |
 | a field label on a data entry's first address (`PocketTurn` on `PlayerVars $9F43`) never reaches an operand: the entry's label wins | Video Pool sources | `@alias PocketTurn PlayerVars` and one `@isub` per instruction (ten) | fixed: a second label after the entry's, and the `LD`s through memory at that address name the field (docs/ann-format.md 3.3); the workaround removed (it had missed an eleventh, `$9DB0`). New first-field labels in Exolon, Nether Earth GS, NE ZS Edition (`menu99`) and eight more in Video Pool |
 | `kit/routine_anim.py --pc` takes one range: an animation cannot follow a routine and its callees elsewhere | Video Pool DrawBall | the callees left out (BallRedraw) | fixed: several ranges (`--pc A-B,C-D` or repeated); Video Pool's DrawBall animation redrawn with BallRedraw and RedrawBall |
-| `tap.py basic` sets p2 to the whole block length (a BASIC block with a variables area gets the wrong header) | Chuckie Egg stage 2 | the case's `tools/tape.py` writes the header | open |
-| `LD BC,nn` operands are not turned into labels | Chuckie Egg stage 2 | none (the operand stays a number) | open |
-| `@equ` applies to every operand in its range, not one instruction | Chuckie Egg stage 2 | narrow ranges | open |
-| the module name `game` is refused | Chuckie Egg stage 2 | another module name | open |
-| `kit/routine_anim.py` and `kit/memanim.py` set the picture width themselves: up to 2566 px (Chuckie Egg: all 25 `docs/img/routines/*.gif` are 1102-2566 px, `play/tape-block4.gif` 1102 px), wider than the 1050 px figure limit; the case cannot choose it | Chuckie Egg docs (ceA, ceD) | none: the animations stay at the kit's width | open |
-| `kit/fig_budget.py` draws 900 px wide, not 1050, and its `--note` line is cut at the bottom of the panel | Chuckie Egg doc 2 (ceA) | the note left out, the command in the caption | open |
+| `tap.py basic` sets p2 to the whole block length (a BASIC block with a variables area gets the wrong header) | Chuckie Egg stage 2 | the case's `tools/tape.py` writes the header | fixed: `basic:NAME:LINE:FILE[:PROGRAM]` takes parameter 2 from the block itself, the lines up to the first byte that is no line number ($40 or more: the variables), with an optional override; Chuckie Egg's `tools/build.sh` writes the tape with `kit/tap.py` (program length 18, the string array `a$` after it), its `tools/tape.py` keeps only `--orig` |
+| `LD BC,nn` operands are not turned into labels | Chuckie Egg stage 2 | none (the operand stays a number) | fixed: `LD BC,nn` into an entry is `Label+offset` when the next instructions read or write through `(BC)` (`bc_is_pointer`); ports, counts, offsets and byte pairs stay numbers, `"operands": "wide"` takes every one, `"narrow"` none (docs/ann-format.md 3.4). A pointer handed to a routine still needs `@isub` (Chuckie Egg keeps `$AA9A`; its three `@isub`s on labels' own addresses dropped, SkoolKit names those; Elite's `LD BC,ShipSlots+$001A` (hyperspace.asm, then `LD (BC),A`) is the one new name across the cases) |
+| `@equ` applies to every operand in its range, not one instruction | Chuckie Egg stage 2 | narrow ranges | fixed: `@equ $ADDR NAME [N] at $I,$J` names the operands of those instructions only; an `at` address that is no instruction fails (docs/ann-format.md 2, 8) |
+| the module name `game` is refused | Chuckie Egg stage 2 | another module name | fixed: `@module game` is written to `game-module.asm` (the top file keeps `game.asm`), in `mkgame.py` and `sig_add.py` |
+| `kit/routine_anim.py` and `kit/memanim.py` set the picture width themselves: up to 2566 px (Chuckie Egg: all 25 `docs/img/routines/*.gif` are 1102-2566 px, `play/tape-block4.gif` 1102 px), wider than the 1050 px figure limit; the case cannot choose it | Chuckie Egg docs (ceA, ceD) | none: the animations stay at the kit's width | fixed: both draw `--width 1050` by default in a compact layout (memory map and view stacked on the left, the listing beside them; memanim puts the screen under the map), titles and labels wrapped; `--layout wide` is the old picture. Chuckie Egg's 25 `docs/img/routines/*.gif` and `play/tape-block4.gif` redrawn from their captions' commands, the `anim_compact.py` step dropped from the captions |
+| `kit/fig_budget.py` draws 900 px wide, not 1050, and its `--note` line is cut at the bottom of the panel | Chuckie Egg doc 2 (ceA) | the note left out, the command in the caption | fixed: `--width` (1050 by default), the notes and summary lines wrapped, the height fitted to them; Chuckie Egg's `budget-modules.png` and `budget-routines.png` redrawn |
 
 ## For unreal-ng
 

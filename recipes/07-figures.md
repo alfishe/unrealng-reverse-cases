@@ -30,6 +30,8 @@ Do not make a figure that says nothing.
    - `--range` limits the memory map.
    - `--view buffer:ADDR:WxH[:rows|:columns|:columns-up]` or `--view screen` sets what is drawn.
    - `--pictures` or `--step` sets how many pictures.
+   - The picture is 1050 px wide (`--width`): the memory map above the view, the listing beside them. `--layout wide`
+     draws the three panels side by side, up to 2566 px, too wide for a document.
    - Name the file after the routine's label, so that doc 12 links it.
 
 3. **Code vs screen.**
@@ -59,6 +61,9 @@ Do not make a figure that says nothing.
    python3 ../../kit/screen_shot.py --work W --out-dir docs/img/play title=1200 menu=1450:0 play=3300
    python3 ../../kit/fig_budget.py ...          # where the CPU time goes, per routine / module (kit README)
    ```
+
+   `memanim.py --screen` puts the screen under the grid when the two side by side would pass 1050 px (`--width`;
+   `--layout wide` keeps them side by side). `fig_budget.py` is 1050 px wide and wraps a long `--note`.
 
    `screen_shot.py` reads the CPU's view at `$4000`. On a 128K game that shows screen 7, read the page through
    `memory_at` instead (ANE).

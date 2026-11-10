@@ -262,7 +262,8 @@ OLD_FORM = re.compile(r'^#\s*(@(?:bank|var|alias|over|piece)\s.*)$')
 class Annotations:
     """An annotation file (docs/ann-format.md): what the reverse knows, one line an address
 
-        @module NAME [; title]    the entries from the next address on go to NAME.asm; the title heads the file
+        @module NAME [; title]    the entries from the next address on go to NAME.asm (NAME-module.asm when NAME is
+                                  the top file's own name: @module game beside game.asm); the title heads the file
         @about text               a paragraph of the current module's header (what it holds, how its parts work)
         $ADDR c|b|w|t|s NAME [N]  an entry: code, bytes (N a line), words (N a line), text, space; ; its title
         > text                    the entry's description, one paragraph a line
@@ -275,9 +276,11 @@ class Annotations:
         @inline $ADDR [N]         a routine that reads data placed after its CALL (a print routine with the string
                                   inline): no walk goes past a call to it, the bytes after it are data unless a
                                   recording ran them; with N (a fixed count of data bytes) the walk goes on after them
-        @equ $ADDR NAME [N] ; c   a variable outside the image (the work space the game keeps past its loaded bytes):
+        @equ $ADDR NAME [N] [at $I,$J ...] ; c
+                                  a variable outside the image (the work space the game keeps past its loaded bytes):
                                   NAME EQU $ADDR in the top file, and every instruction operand $ADDR..$ADDR+N-1
-                                  written as NAME / NAME+k (N defaults to 1)
+                                  written as NAME / NAME+k (N defaults to 1); with 'at', only the operands of the
+                                  instructions at $I, $J, ... (a ROM entry $0000 named in its CALL, not in LD HL,$0000)
         @const NAME VALUE ; c     NAME EQU VALUE in the top file: a port, a ROM entry, a page value, an address in
                                   another program; the instructions use it through @isub
         @bank $ADDR NAME BANK ; c an address in another RAM bank (BANK a number or a name): NAME EQU $ADDR; the walk
@@ -296,11 +299,13 @@ class Annotations:
     """
 
     def __init__(self, path, piece=None, top=None):
+        self.top = top  # the top file beside the modules: a module of its name goes to NAME-module.asm
         self.entries, self.inline, self.modules, self.descriptions = {}, {}, [], {}
         self.module_info = {}  # module name: [title, [paragraphs]]
         self.resources = {}  # entry address: the resource file under src/res
         self.isub = {}  # instruction address: the instruction as the source writes it
         self.equ = {}  # address outside the image: (name, size, comment)
+        self.equ_at = {}  # of those, the ones named only in some instructions: address -> {instruction address}
         self.inline_data = set()  # routines whose callers place data after the CALL
         self.inline_len = {}  # of those, the ones that read a fixed count of bytes: the walk goes on after them
         self.consts = []  # (name, value, comment)
@@ -371,10 +376,6 @@ class Annotations:
                 body, _, title = text.partition(';')
                 name = body.split()[1]
                 self.module_info[name] = [title.strip(), []]
-                if name == (top or 'game'):
-                    # the top file includes the modules: a module of its name would include itself
-                    raise SystemExit(f"{where}: '@module {name}' is taken by {name}.asm, the file that includes "
-                                     "the modules")
                 self.modules.append([None, name])
                 continue
             if text.startswith('@equ'):
@@ -385,7 +386,16 @@ class Annotations:
                     if piece is not None and current is None:
                         continue  # a common line: another piece's address, a label in this one
                     raise SystemExit(f'{where}:{number}: @equ ${address:04X} is inside the image: name it as a label')
-                self.equ[address] = (parts[2], int(parts[3]) if len(parts) > 3 else 1, comment.strip())
+                rest, size = parts[3:], 1
+                if rest and rest[0].isdigit():
+                    size, rest = int(rest[0]), rest[1:]
+                if rest:
+                    # '@equ $ADDR NAME [N] at $I,$J ...': only the operands of these instructions
+                    at = [x for x in ' '.join(rest[1:]).replace(',', ' ').split()]
+                    if rest[0] != 'at' or not at or not all(re.match(r'^\$[0-9A-Fa-f]{4}$', x) for x in at):
+                        sys.exit(f'{path}:{number}: cannot read: {line}')
+                    self.equ_at[address] = {int(x[1:], 16) for x in at}
+                self.equ[address] = (parts[2], size, comment.strip())
                 continue
             if text.startswith('@inline'):
                 parts = text.split(';')[0].split()
@@ -611,12 +621,18 @@ def write_resources(text, mem, extents, ann, out):
     return '\n'.join(lines) + '\n', files
 
 
+def module_file(name, top=None):
+    """The file stem of module NAME: NAME, or NAME-module when the top file beside it is NAME.asm (a module 'game'
+    next to game.asm, the file that includes the modules)"""
+    return name + '-module' if top and name == top else name
+
+
 def module_header(name, ann):
     """The comment block that opens a module's file: its title and @about paragraphs"""
     title, paragraphs = ann.module_info.get(name, ['', []])
     if not title and not paragraphs:
         return ''
-    out = ['; ' + name + '.asm' + (': ' + title if title else ''), ';']
+    out = ['; ' + module_file(name, ann.top) + '.asm' + (': ' + title if title else ''), ';']
     for k, para in enumerate(paragraphs):
         out += ['; ' + line for line in textwrap.wrap(para, 116)]
         out.append(';')
@@ -648,20 +664,49 @@ def split_modules(text, ann):
 
 # The operands that are always addresses: an LD through memory ((nn) on either side, any register), the LD of an
 # address register (HL, DE, IX, IY, SP), and a JP / CALL / JR / DJNZ target that has no label of its own (a jump into
-# an instruction's operand, into a data entry)
+# an instruction's operand, into a data entry). "operands": "narrow" keeps to these
 ADDRESS_OPERAND = re.compile(r'^(LD (?:\((?=\$)|(?:A|BC|HL|DE|IX|IY|SP),\((?=\$)|(?:HL|DE|IX|IY|SP),)'
                              r'|(?:JP|CALL|JR|DJNZ) (?:(?:NZ|Z|NC|C|PO|PE|P|M),)?)\$([0-9A-F]{4})(\)?.*)$')
-# "operands": "wide" adds LD BC,nn: an address in the cases that use it, but a count in others (a part where one is
-# a count keeps the default, or puts an @isub on it)
+# LD BC,nn whose nn lies inside an entry of the image: by default only when BC is a pointer (bc_is_pointer), with
+# "operands": "wide" always (a part where every such LD BC is a pointer), with "narrow" never
 ADDRESS_OPERAND_WIDE = re.compile(r'^(LD (?:\((?=\$)|(?:A|BC|HL|DE|IX|IY|SP),\((?=\$)|(?:HL|DE|BC|IX|IY|SP),)'
                                   r'|(?:JP|CALL|JR|DJNZ) (?:(?:NZ|Z|NC|C|PO|PE|P|M),)?)\$([0-9A-F]{4})(\)?.*)$')
 
 
-def label_inner_addresses(skool, written=None, wide=False, fields=None):
+SKOOL_LINE = re.compile(r'^([ bcstuwi*])\$[0-9A-F]{4} (\S.*?)(\s*;.*)?$')
+# BC changed, used as a number (a port, a count, an offset), or the flow leaving: the look for a use of LD BC,nn ends
+BC_CHANGED = re.compile(r'^(?:LD (?:B|C|BC),|POP BC|EXX|EX |INC (?:B|C)$|DEC (?:B|C|BC)$|(?:ADD|ADC|SBC) HL,BC|'
+                        r'(?:JP|JR|CALL|RET|RST|DJNZ)\b|(?:LD|CP|IN|OT)[ID]R?$|IN |OUT )')
+
+
+def bc_is_pointer(lines, k, reach=12):
+    """True when the LD BC,nn on skool line k loads a pointer: within the next reach instructions of its entry, before
+    BC changes or the flow leaves, an instruction reads or writes through (BC). A port (OUT (C),A), a count (LDIR,
+    DEC BC), an offset (ADD HL,BC) or a pair of bytes (B and C apart) never does, so they stay numbers; a pointer
+    handed to a routine (CALL) needs an @isub"""
+    seen = 0
+    for line in lines[k + 1:]:
+        m = SKOOL_LINE.match(line)
+        if not m:
+            continue
+        if m.group(1) not in ' *' or m.group(2).startswith('DEF'):
+            return False  # the next entry, or data
+        text = m.group(2).upper()
+        if '(BC)' in text:
+            return True
+        if BC_CHANGED.match(text):
+            return False
+        seen += 1
+        if seen >= reach:
+            return False
+    return False
+
+
+def label_inner_addresses(skool, written=None, operands='pointer', fields=None):
     """An address operand inside an entry (a field of a record, a byte of a table) as Label+offset: @isub lines for
     skool2asm, which only replaces the addresses that have a label of their own. fields: {address: name} of the
     field names on data entries' first addresses: an LD through memory there names the field, not the entry"""
-    pattern = ADDRESS_OPERAND_WIDE if wide else ADDRESS_OPERAND
+    pattern = ADDRESS_OPERAND if operands == 'narrow' else ADDRESS_OPERAND_WIDE
     lines = skool.splitlines()
     labels, entry_of, entry = {}, {}, None
     pending = None
@@ -693,7 +738,7 @@ def label_inner_addresses(skool, written=None, wide=False, fields=None):
         return '%s+%d' % (labels[best], target - best)
 
     out, count = [], 0
-    for line in lines:
+    for k, line in enumerate(lines):
         m = re.match(r'^([ c*])\$([0-9A-F]{4}) (\S.*?)(\s*;.*)?$', line)
         if m and written and int(m.group(2), 16) in written:
             out.append('@isub=' + written.pop(int(m.group(2), 16)))
@@ -701,6 +746,8 @@ def label_inner_addresses(skool, written=None, wide=False, fields=None):
             op = pattern.match(m.group(3))
             if op and not op.group(1).startswith('LD') and int(op.group(2), 16) in line_starts:
                 op = None  # a branch to a line start: skool2asm gives it a label of its own
+            if op and op.group(1) == 'LD BC,' and operands == 'pointer' and not bc_is_pointer(lines, k):
+                op = None  # a port, a count, an offset or two bytes, not an address
             if op:
                 target = int(op.group(2), 16)
                 if fields and target in fields and '(' in op.group(1):
@@ -718,48 +765,54 @@ SKOOL_INSTRUCTION = re.compile(r'^[ c*]\$([0-9A-F]{4}) (?!DEF[BWMS] )\S')
 ASM_INSTRUCTION = re.compile(r'^  (?!DEF[BWMS]|ORG )[A-Z]')
 
 
-def isub_lines(skool, isubs):
-    """The ordinals (among the instruction lines, in the order skool2asm writes them) of the instructions an @isub
-    writes: name_variables leaves them as the .ann wrote them"""
-    if not isubs:
-        return None
-    keep, n = set(), 0
-    for line in skool.splitlines():
-        m = SKOOL_INSTRUCTION.match(line)
-        if m:
-            if int(m.group(1), 16) in isubs:
-                keep.add(n)
-            n += 1
-    return (keep, n)
+def instruction_order(skool):
+    """The addresses of the instruction lines, in the order skool2asm writes them: name_variables leaves the @isub
+    ones as the .ann wrote them, and names an '@equ ... at' variable only in its instructions"""
+    return [int(m.group(1), 16) for m in map(SKOOL_INSTRUCTION.match, skool.splitlines()) if m]
 
 
-def name_variables(text, equ, inner=None, keep=None):
+def name_variables(text, equ, inner=None, order=None, isubs=(), equ_at=None):
     """Every instruction operand that is a variable's address (@equ; inner: {address: NAME+k} of the @var lines),
-    written as the variable's name; keep (isub_lines): the instructions an @isub writes, left as written"""
-    names = {}
+    written as the variable's name. order (instruction_order): the instructions' addresses; the @isub ones (isubs)
+    are left as written, an @equ in equ_at ({address: {instruction address}}) names only those instructions"""
+    equ_at = equ_at or {}
+    names, only = {}, {}  # only: operand address -> (name, the instructions it is named in)
     for address, (name, size, _) in equ.items():
         for k in range(size):
-            names[address + k] = name if k == 0 else '%s+%d' % (name, k)
-    passes = [p for p in (names, inner or {}) if p]
+            label = name if k == 0 else '%s+%d' % (name, k)
+            if address in equ_at:
+                only[address + k] = (label, equ_at[address])
+            else:
+                names[address + k] = label
+    passes = [p for p in (names, inner or {}, only) if p]
     if not passes:
         return text
     lines = text.splitlines(True)
-    if keep:
-        keep, count = keep
+    if (isubs or only) and order is not None:
         found = sum(1 for line in lines if ASM_INSTRUCTION.match(line.partition(';')[0]))
-        if found != count:  # the skool's instructions are not the listing's one for one: name every one
-            print(f'warning: {count} instructions in the skool file, {found} in the listing: '
-                  '@isub operands may be renamed by @equ / @var')
-            keep = set()
-    else:
-        keep = set()
+        if found != len(order):  # the skool's instructions are not the listing's one for one
+            print(f'warning: {len(order)} instructions in the skool file, {found} in the listing: @isub operands '
+                  'may be renamed by @equ / @var, and no "@equ ... at" name is applied')
+            order = None
+    if order is None:
+        order, isubs = [], ()
+        only = {}
+        passes = [p for p in (names, inner or {}) if p]
     for table in passes:
         out, n = [], 0
         for line in lines:
             code, semi, comment = line.partition(';')
             if re.match(r'^  [A-Z]', code) and not re.match(r'^  DEF[BWMS]', code):
-                if n not in keep:
-                    code = re.sub(r'\$([0-9A-F]{4})\b', lambda m: table.get(int(m.group(1), 16), m.group(0)), code)
+                at = order[n] if n < len(order) else None
+                if at not in isubs:
+                    if table is only:
+                        def sub(m):
+                            label, where = only.get(int(m.group(1), 16), (None, ()))
+                            return label if at in where else m.group(0)
+                    else:
+                        def sub(m):
+                            return table.get(int(m.group(1), 16), m.group(0))
+                    code = re.sub(r'\$([0-9A-F]{4})\b', sub, code)
                 n += not code.startswith('  ORG ')
             out.append(code + semi + comment)
         lines = out
@@ -876,7 +929,7 @@ class Segment:
         self.same_bytes = bool(get('same_bytes'))
         self.data_entries = get('data_entries')
         self.overwritten = [(hexa(a), hexa(b)) for a, b in get('overwritten', [])]
-        self.wide = get('operands') == 'wide'
+        self.operands = get('operands', 'pointer')
         self.isub_as_written = bool(get('isub_as_written'))
         self.drop_data_refs = bool(get('drop_data_refs'))
         self.no_entries = bool(get('no_entries', self.mode == 'blocks'))
@@ -936,7 +989,7 @@ def generate(seg, mem, args, out, top):
         sk = re.sub(r'^\*\$(%s) ' % marks, r' $\1 ', sk, flags=re.M)
     written = dict(ann.isub)
     fields = ann.fields()
-    sk, inner = label_inner_addresses(sk, written, seg.wide, fields)
+    sk, inner = label_inner_addresses(sk, written, seg.operands, fields)
     if written:
         sys.exit('%s: @isub on no instruction: %s' % (os.path.relpath(seg.ann, ROOT),
                                                       ', '.join('$%04X' % a for a in sorted(written))))
@@ -948,7 +1001,12 @@ def generate(seg, mem, args, out, top):
     for a, field in sorted(fields.items()):  # a field on an entry's first address: a second label there
         text = re.sub(r'^(%s:\n)' % re.escape(ann.name(a)), r'\g<1>%s:\n' % field, text, count=1, flags=re.M)
     var_names = {a + k: '%s+%d' % (name, k) for a, name, size, _ in ann.vars for k in range(1, size)}
-    text = name_variables(text, ann.equ, var_names, isub_lines(sk, ann.isub))
+    order = instruction_order(sk)
+    stray = sorted(set().union(*ann.equ_at.values()) - set(order)) if ann.equ_at else []
+    if stray:
+        sys.exit('%s: @equ ... at no instruction: %s' % (os.path.relpath(seg.ann, ROOT),
+                                                         ', '.join('$%04X' % a for a in stray)))
+    text = name_variables(text, ann.equ, var_names, order, ann.isub, ann.equ_at)
     if seg.isub_as_written:
         text = decimal_isubs(text, ann.isub.values())
     # a commented data sub-block of several lines: SkoolKit leaves a bare ';' on the lines after the first
@@ -1098,6 +1156,7 @@ def make_part(part, args):
                 equ[address] = (var, size, comment)
                 seen.add(var)
     names = [m for r in results if r for m, _ in r[0]]
+    stems = [module_file(m, r[3].top) for r in results if r for m, _ in r[0]]
     if len(set(names)) != len(names):
         sys.exit('module names repeat across segments: ' + ', '.join(sorted({n for n in names if names.count(n) > 1})))
     subdir = part.get('subdir', True)
@@ -1140,7 +1199,8 @@ def make_part(part, args):
             text += head + '\n'
         for module, _ in modules:
             mtitle = ann.module_info.get(module, [''])[0]
-            text += '  INCLUDE "%s%s.asm"%s\n' % (inc, module, ('  ; ' + mtitle) if mtitle else '')
+            text += '  INCLUDE "%s%s.asm"%s\n' % (inc, module_file(module, ann.top),
+                                                ('  ; ' + mtitle) if mtitle else '')
         if run_at != lo:
             text += '  ENT\n'
     binary = os.path.basename(part.get('out') or top + '.bin')
@@ -1149,7 +1209,7 @@ def make_part(part, args):
     resources = {}
     for r in filter(None, results):
         for module, body in r[0]:
-            open(os.path.join(out, inc + module + '.asm'), 'w').write(body)
+            open(os.path.join(out, inc + module_file(module, r[3].top) + '.asm'), 'w').write(body)
         resources.update(r[2])
     for res, data in resources.items():
         path = os.path.join(out, 'res', res)
@@ -1166,7 +1226,7 @@ def make_part(part, args):
               at + diff, got[diff] if diff < len(got) else 0, original[diff]))
     if diff is None and args.install:
         dest = os.path.join(ROOT, part['dest'])
-        files = {os.path.join(dest, inc + m + '.asm'): open(os.path.join(out, inc + m + '.asm')).read() for m in names}
+        files = {os.path.join(dest, inc + m + '.asm'): open(os.path.join(out, inc + m + '.asm')).read() for m in stems}
         files[os.path.join(dest, top + '.asm')] = text
         install_files(files, os.path.join(dest, top + '.asm'))
         n = install_resources(part, resources, built)
@@ -1195,13 +1255,13 @@ def single_part(part, args, mem, original, at, top, out, device, built):
         print(f'resources {len(resources)} files, {sum(len(v) for v in resources.values())} bytes')
     print(f'{top}: {stats}')
     for name, body in modules:
-        open(os.path.join(out, name + '.asm'), 'w').write(body)
+        open(os.path.join(out, module_file(name, top) + '.asm'), 'w').write(body)
     text = '\n'.join(part.get('header') or ['; ' + top]) + '\n' + written_line(part, [seg.ann]) + \
         '\n\n  DEVICE %s\n' % device
     if seg.bank is not None and part.get('slot', True):
         text += '  SLOT 3\n  PAGE %s\n' % seg.bank
     text += constants(ann.consts) + equates(ann.equ) + bank_equates(ann.banks) + alias_equates(ann.aliases) + head
-    text += ''.join('  INCLUDE "%s.asm"%s\n' % (name, ('  ; ' + ann.module_info[name][0])
+    text += ''.join('  INCLUDE "%s.asm"%s\n' % (module_file(name, top), ('  ; ' + ann.module_info[name][0])
                                                 if ann.module_info.get(name, [''])[0] else '') for name, _ in modules)
     binary = part.get('bin') or top + '.bin'
     text += '\n  SAVEBIN "%s",$%04X,$%04X\n' % (binary, LO, HI - LO)
@@ -1218,7 +1278,7 @@ def single_part(part, args, mem, original, at, top, out, device, built):
         dest = os.path.join(ROOT, part.get('dest') or os.path.join('src', 'game'))
         prefix = os.path.relpath(os.path.join(ROOT, part['res']), dest) + '/' if part.get('res') else None
         files = {}
-        for name in [n for n, _ in modules] + [top]:
+        for name in [module_file(n, top) for n, _ in modules] + [top]:
             body = open(os.path.join(out, name + '.asm')).read()
             for res, path in built.items():
                 body = body.replace('INCBIN "res/%s"' % res, 'INCBIN "%s"' % path)
@@ -1308,6 +1368,8 @@ def cli_part(args):
         part['work'] = os.path.relpath(os.path.abspath(args.out), ROOT)
     if args.wide:
         part['operands'] = 'wide'
+    if args.narrow:
+        part['operands'] = 'narrow'
     return part
 
 
@@ -1333,7 +1395,9 @@ def main():
     p.add_argument('--save', help='the SAVEBIN path of the installed top file')
     p.add_argument('--title', default='', help='the top file\'s first comment line')
     p.add_argument('--device', default='ZXSPECTRUM128')
-    p.add_argument('--wide', action='store_true', help='Label+offset also for LD BC,nn')
+    p.add_argument('--wide', action='store_true', help='Label+offset for every LD BC,nn into an entry, not only '
+                   'the pointers read through (BC)')
+    p.add_argument('--narrow', action='store_true', help='no Label+offset for LD BC,nn at all')
     p.add_argument('--venv', help='a virtualenv with SkoolKit (else $SKOOLKIT_VENV, kit/toolpaths.py)')
     p.add_argument('--sjasmplus', help='sjasmplus (else $SJASMPLUS, kit/toolpaths.py)')
     p.add_argument('--out', help='the work folder')

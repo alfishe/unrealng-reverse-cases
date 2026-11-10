@@ -29,6 +29,9 @@ its whole window, so a state is its own build: re_session.py build --from-frame 
 --label names the first panel. The panels share the scale and the colours. The colours go to the modules by their
 share in the first panel, the biggest first; --colour-order names modules that take the first colours, so the
 figures of one case agree. --by module draws one bar a module instead of a routine.
+
+The picture is --width pixels wide (1050, the figure limit) and as tall as its rows; a --note longer than the width
+wraps onto more lines.
 """
 import argparse
 import json
@@ -158,8 +161,21 @@ def pct(t, total):
     return f'{v:.2f}%' if v < 1 else f'{v:.1f}%'
 
 
+def wrap(text, font, width, probe):
+    """text cut into lines no wider than width pixels, at spaces"""
+    lines, line = [], ''
+    for word in text.split(' '):
+        candidate = (line + ' ' + word) if line else word
+        if line and probe.textlength(candidate, font=font) > width:
+            lines.append(line)
+            line = word
+        else:
+            line = candidate
+    return lines + [line]
+
+
 def draw(panels, args):
-    W, bar_h, gap = 900, 20, 4
+    W, bar_h, gap = args.width, 20, 4
     f, fb = K.font(12), K.font(15)
     probe = ImageDraw.Draw(Image.new('RGB', (1, 1)))
     rows_of = [sorted(b['per'].items(), key=lambda kv: -kv[1])[:args.top] for b in panels]
@@ -187,8 +203,10 @@ def draw(panels, args):
     peak = max(t / b['total'] for b, rows in zip(panels, rows_of) for _, t in rows[:1])
     scale = (W - left - 90) / peak
     per_panel = [(40 if len(panels) > 1 else 0) + len(rows) * (bar_h + gap) + 8 for rows in rows_of]
-    footer = 70 + 16 * len(args.note) + (18 if len(panels) > 1 else 0) * len(panels)
-    H = 54 + sum(per_panel) + footer + 18 * (1 + len(colours_used) // 5)
+    notes = [line for note in args.note for line in wrap(note, f, W - 20, probe)]
+    # an upper bound: the legend may wrap after every module, each panel has two summary lines; cropped below
+    footer = 70 + 16 * len(notes) + 16 * 6 * len(panels)
+    H = 54 + sum(per_panel) + footer + 18 * (1 + len(colours_used))
     im = Image.new('RGB', (W, H), K.BACKGROUND)
     d = ImageDraw.Draw(im)
     d.text((10, 8), args.title, fill=K.TEXT, font=fb)
@@ -233,14 +251,16 @@ def draw(panels, args):
         text = f'{head}all instructions together: {run:,} T = {pct(run, b["total"])} of the frames'
         if b['halt']:
             text += f'; HALT {pct(b["halt"], b["total"])}, the rest {pct(b["busy"], b["total"])}'
-        d.text((10, y), text, fill=K.DIM, font=f)
-        y += 16
+        for line in wrap(text, f, W - 20, probe):
+            d.text((10, y), line, fill=K.DIM, font=f)
+            y += 16
         parts = sorted(b['part_t'].items(), key=lambda kv: -kv[1])
         if len(parts) > 1:
-            d.text((10, y), head + 'by part: ' + ', '.join(f'{k} {pct(v, b["total"])}' for k, v in parts),
-                   fill=K.DIM, font=f)
-            y += 16
-    for note in args.note:
+            for line in wrap(head + 'by part: ' + ', '.join(f'{k} {pct(v, b["total"])}' for k, v in parts), f,
+                             W - 20, probe):
+                d.text((10, y), line, fill=K.DIM, font=f)
+                y += 16
+    for note in notes:
         d.text((10, y), note, fill=K.DIM, font=f)
         y += 16
     im = im.crop((0, 0, W, y + 8))
@@ -264,7 +284,9 @@ def main():
     p.add_argument('--page-name', action='append', default=[], help='N=TEXT: the bar of page N\'s code in no .ann')
     p.add_argument('--colour-order', type=lambda v: v.split(','), default=[],
                    help='MODULE,MODULE,...: these modules take the first colours (the same colours in every figure)')
-    p.add_argument('--note', action='append', default=[], help='a line under the figure (repeatable)')
+    p.add_argument('--note', action='append', default=[],
+                   help='a line under the figure (repeatable; a long one wraps at the picture\'s width)')
+    p.add_argument('--width', type=int, default=1050, help='the picture\'s width in pixels (1050, the figure limit)')
     args = p.parse_args()
     specs = args.ann or ['src/game/game.ann']
     parts = [Part(s, i == 0) for i, s in enumerate(specs)]

@@ -18,7 +18,11 @@ Each picture has three panels:
            --listing build/game.lst --out docs/img/routines/DrawSprites.gif
            [--view screen | screen:C000 | buffer:8000:32x256[:columns|:columns-up|:screen] | none] [--range 4000-FFFF] [--pictures 90]
            [--step TSTATES] [--pc EAE3-EBFF[,EC40-EC9F] ...] [--title "DrawSprites $EAE3"] [--delay 80]
-           [--unreal U]
+           [--layout compact|wide] [--width 1050] [--unreal U]
+
+--layout compact (the default) draws the picture --width pixels wide (1050, the figure limit, readable at 900): the
+memory map and the view one above the other on the left, each at the largest whole scale that fits, the code on the
+right. --layout wide is the older picture, the three panels side by side at up to 4 x (up to 2566 px).
 
 --pc names the routine's code: instructions outside it (an interrupt, a callee you do not want to watch) still
 change memory but are counted as "other" in the code panel. Several ranges (comma-separated, or --pc repeated)
@@ -127,6 +131,12 @@ def view_picture(view, mem, ages, now):
     return image
 
 
+def fit_width(image, width, height):
+    """image at the largest whole scale no wider than width and no taller than height (at least 1 x)"""
+    scale = max(1, min(width // image.width, height // image.height))
+    return image.resize((image.width * scale, image.height * scale), Image.NEAREST)
+
+
 def fit(image, height):
     scale = max(1, height // image.height)
     while image.width * scale > 2 * height and scale > 1:
@@ -149,6 +159,10 @@ def main():
     p.add_argument('--title')
     p.add_argument('--delay', type=int, default=80, help='ms a picture')
     p.add_argument('--hold', type=int, default=1500, help='ms on the last picture')
+    p.add_argument('--layout', choices=('compact', 'wide'), default='compact',
+                   help='compact: the memory map above the view, the code beside them, --width wide; wide: the '
+                        'three panels side by side (the older, wider picture)')
+    p.add_argument('--width', type=int, default=1050, help='the compact picture\'s width in pixels')
     args = p.parse_args()
 
     trace = K.load_trace(args)
@@ -192,8 +206,9 @@ def main():
                     mem[c.address] = c.value
                     ages.write[c.address] = slice_no
             index += 1
-        pictures.append(draw_picture(trace, lst, mem, ages, slice_no, view, lo, hi, last, run_here, other,
-                                     min(end, total), total, title, small, normal))
+        draw = draw_picture if args.layout == 'wide' else draw_compact
+        pictures.append(draw(trace, lst, mem, ages, slice_no, view, lo, hi, last, run_here, other,
+                             min(end, total), total, title, small, normal, args.width))
         slice_no += 1
 
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
@@ -203,7 +218,70 @@ def main():
           f'{os.path.getsize(args.out) // 1024} KB')
 
 
-def draw_picture(trace, lst, mem, ages, now, view, lo, hi, last, run_here, other, t, total, title, small, normal):
+def panel_labels(view, lo, hi):
+    labels = [f'memory ${lo:04X}-${hi:04X}, 256 bytes a row']
+    if view:
+        kind, base, w, h, _ = view
+        labels.append(f'screen ${base:04X}' if kind == 'screen' else f'buffer ${base:04X}, {w} x {h} bytes')
+    return labels
+
+
+def draw_legend(draw, gap, height, small):
+    ly = height - 18
+    lx = gap
+    for colour, text in ((K.EXEC, 'executed'), (K.READ, 'read'), (K.WRITE_FADE[0], 'written'),
+                         (K.WRITE_FADE[4], 'written before'), (K.WRITE_TRAIL, 'trail')):
+        draw.rectangle([lx, ly + 2, lx + 10, ly + 12], fill=colour)
+        draw.text((lx + 14, ly), text, fill=K.DIM, font=small)
+        lx += 26 + int(draw.textlength(text, font=small))
+
+
+def wrap(text, font, width):
+    """text cut into lines no wider than width pixels, at spaces"""
+    probe = ImageDraw.Draw(Image.new('RGB', (1, 1)))
+    lines, line = [], ''
+    for word in text.split(' '):
+        candidate = (line + ' ' + word) if line else word
+        if line and probe.textlength(candidate, font=font) > width:
+            lines.append(line)
+            line = word
+        else:
+            line = candidate
+    return lines + [line]
+
+
+def draw_compact(trace, lst, mem, ages, now, view, lo, hi, last, run_here, other, t, total, title, small, normal,
+                 width):
+    """the memory map and the view one above the other on the left, the code on the right: width pixels wide"""
+    gap, label_h = 12, 22
+    big = K.font(15)
+    lines = wrap(title, big, width - 2 * gap)
+    top = 34 + 19 * (len(lines) - 1)
+    left = max(256, width - 3 * gap - CODE_WIDTH)
+    panels = [fit_width(grid_picture(mem, ages, now, lo, hi), left, GRID_HEIGHT)]
+    if view:
+        panels.append(fit_width(view_picture(view, mem, ages, now), left, VIEW_HEIGHT))
+    column = max(p.width for p in panels)
+    code_w = max(CODE_WIDTH, width - 3 * gap - column)
+    body = max(GRID_HEIGHT, sum(p.height + label_h for p in panels))
+    image = Image.new('RGB', (gap + column + gap + code_w + gap, top + body + 40), K.BACKGROUND)
+    draw = ImageDraw.Draw(image)
+    for i, line in enumerate(lines):
+        draw.text((gap, 8 + 19 * i), line, fill=K.TEXT, font=big)
+    y = top
+    for panel, label in zip(panels, panel_labels(view, lo, hi)):
+        image.paste(panel, (gap, y))
+        draw.text((gap, y + panel.height + 4), label, fill=K.DIM, font=small)
+        y += panel.height + label_h
+    draw_code(draw, gap + column + gap, top, lst, last, run_here, other, trace, t, total, small, normal, code_w,
+              body)
+    draw_legend(draw, gap, image.height, small)
+    return image
+
+
+def draw_picture(trace, lst, mem, ages, now, view, lo, hi, last, run_here, other, t, total, title, small, normal,
+                 width=None):
+    """--layout wide: the memory map, the view and the code side by side"""
     grid = fit(grid_picture(mem, ages, now, lo, hi), GRID_HEIGHT)
     panels = [grid]
     if view:
@@ -215,32 +293,22 @@ def draw_picture(trace, lst, mem, ages, now, view, lo, hi, last, run_here, other
     draw = ImageDraw.Draw(image)
     draw.text((gap, 8), title, fill=K.TEXT, font=K.font(15))
     x = gap
-    labels = [f'memory ${lo:04X}-${hi:04X}, 256 bytes a row']
-    if view:
-        kind, base, w, h, _ = view
-        labels.append(f'screen ${base:04X}' if kind == 'screen' else f'buffer ${base:04X}, {w} x {h} bytes')
-    for panel, label in zip(panels, labels):
+    for panel, label in zip(panels, panel_labels(view, lo, hi)):
         image.paste(panel, (x, top))
         draw.text((x, top + panel.height + 4), label, fill=K.DIM, font=small)
         x += panel.width + gap
     code_x = x
     draw_code(draw, code_x, top, lst, last, run_here, other, trace, t, total, small, normal)
-    # the legend
-    ly = height - 18
-    lx = gap
-    for colour, text in ((K.EXEC, 'executed'), (K.READ, 'read'), (K.WRITE_FADE[0], 'written'),
-                         (K.WRITE_FADE[4], 'written before'), (K.WRITE_TRAIL, 'trail')):
-        draw.rectangle([lx, ly + 2, lx + 10, ly + 12], fill=colour)
-        draw.text((lx + 14, ly), text, fill=K.DIM, font=small)
-        lx += 26 + int(draw.textlength(text, font=small))
+    draw_legend(draw, gap, height, small)
     return image
 
 
-def draw_code(draw, x, y, lst, last, run_here, other, trace, t, total, small, normal):
+def draw_code(draw, x, y, lst, last, run_here, other, trace, t, total, small, normal, width=CODE_WIDTH,
+              height=GRID_HEIGHT):
     frame_t = trace.frame_t or 69888
     absolute = trace.from_frame * frame_t + trace.from_t // max(1, trace.units_per_t) + t
     draw.text((x, y), f'frame {absolute // frame_t}  t {absolute % frame_t:5}', fill=K.TEXT, font=normal)
-    bar_w = CODE_WIDTH - 10
+    bar_w = width - 10
     draw.rectangle([x, y + 18, x + bar_w, y + 24], outline=K.DIM)
     draw.rectangle([x, y + 18, x + int(bar_w * min(1.0, t / total)), y + 24], fill=K.DIM)
     draw.text((x, y + 30), lst.name(last.pc), fill=K.EXEC, font=normal)
@@ -251,7 +319,7 @@ def draw_code(draw, x, y, lst, last, run_here, other, trace, t, total, small, no
     draw.text((x, y + 82), f'{runs} instructions in this slice' + (f', {other} other' if other else ''),
               fill=K.DIM, font=small)
     top = y + 102
-    rows = (GRID_HEIGHT - (top - y)) // ROW
+    rows = (height - (top - y)) // ROW
     window = lst.window(last.pc, rows)
     if not window:
         draw.text((x, top), f'${last.pc:04X} (no listing line)', fill=K.DIM, font=small)
@@ -260,7 +328,7 @@ def draw_code(draw, x, y, lst, last, run_here, other, trace, t, total, small, no
     for i, (address, kind, text, current) in enumerate(window):
         ry = top + i * ROW
         if current:
-            draw.rectangle([x - 2, ry - 1, x + CODE_WIDTH - 8, ry + ROW - 2], fill=(44, 44, 60))
+            draw.rectangle([x - 2, ry - 1, x + width - 8, ry + ROW - 2], fill=(44, 44, 60))
         if kind == 'label':
             draw.text((x + 40, ry), text + ':', fill=(240, 200, 90), font=small)
             continue
@@ -269,7 +337,8 @@ def draw_code(draw, x, y, lst, last, run_here, other, trace, t, total, small, no
             level = 0.35 + 0.65 * count / peak
             draw.rectangle([x, ry + 2, x + 6, ry + ROW - 4], fill=tuple(int(c * level) for c in K.EXEC))
         draw.text((x + 10, ry), f'{address:04X}', fill=K.DIM, font=small)
-        draw.text((x + 50, ry), text[:56], fill=K.TEXT if count else (150, 150, 160), font=small)
+        draw.text((x + 50, ry), text[:56 + (width - CODE_WIDTH) // 7], fill=K.TEXT if count else (150, 150, 160),
+                  font=small)
 
 
 if __name__ == '__main__':

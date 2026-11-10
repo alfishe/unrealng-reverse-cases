@@ -10,7 +10,12 @@ the screen's own geometry at the screen's size: each bitmap byte as its 8 pixels
 written attribute as a frame round its 8 x 8 cell, so a byte flashes at the same place as on the screen beside it.
 
     python3 memanim.py --work W --from F[:T] --to F[:T] --step TSTATES out.gif [--from-address 5B00] [--screen]
-           [--screen-geometry] [--label "text"] [--delay 80] [--cell 2] [--unreal UNREAL_NG_CHECKOUT]
+           [--screen-geometry] [--label "text"] [--delay 80] [--cell 2] [--layout compact|wide] [--width 1050]
+           [--unreal UNREAL_NG_CHECKOUT]
+
+--layout compact (the default) keeps the picture within --width pixels (1050, the figure limit, readable at 900):
+the screen goes beside the grid when both fit, else under it. --layout wide always puts it beside (1102 px with
+--screen at --cell 2).
 """
 import argparse
 import os
@@ -74,6 +79,20 @@ def screen_heat(mem, age):
     return image
 
 
+def wrap(text, font, width):
+    """text cut into lines no wider than width pixels, at spaces"""
+    probe = ImageDraw.Draw(Image.new('RGB', (1, 1)))
+    lines, line = [], ''
+    for word in text.split(' '):
+        candidate = (line + ' ' + word) if line else word
+        if line and probe.textlength(candidate, font=font) > width:
+            lines.append(line)
+            line = word
+        else:
+            line = candidate
+    return lines + [line]
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--work', required=True, help='the work folder of re_session.py open (session.json)')
@@ -89,6 +108,10 @@ def main():
     p.add_argument('--delay', type=int, default=80, help='ms per picture')
     p.add_argument('--hold', type=int, default=1500, help='ms on the last picture')
     p.add_argument('--cell', type=int, default=2)
+    p.add_argument('--layout', choices=('compact', 'wide'), default='compact',
+                   help='compact: the screen under the grid when beside it the picture is wider than --width; '
+                        'wide: always beside (the older picture)')
+    p.add_argument('--width', type=int, default=1050, help='the compact picture\'s width limit in pixels')
     p.add_argument('--unreal', default=os.environ.get('UNREAL_NG', ''),
                    help='an unreal-ng checkout (tools/verification/analysis/re_session.py)')
     p.add_argument('out')
@@ -105,7 +128,25 @@ def main():
     grid_w, grid_h = (256 * SCALE, 192 * SCALE) if args.screen_geometry else (256 * cell, rows * cell)
     screen_w = 256 * 2 if args.screen else 0
     width = 52 + grid_w + (16 + screen_w if args.screen else 0) + 10
-    height = 34 + max(grid_h, 384 if args.screen else 0) + 22
+    below = args.screen and args.layout == 'compact' and width > args.width  # the screen under the grid
+    if below:
+        width = 52 + max(grid_w, screen_w) + 10
+    # the label and the legend, cut at spaces to the picture's width; the moment goes on the label's last line
+    probe = ImageDraw.Draw(Image.new('RGB', (1, 1)))
+    room = width - 52 - 6
+    legend = wrap('yellow: written since the last picture, fading red: earlier'
+                  + (' (attributes: a frame round the cell)' if args.screen_geometry else ''), font, room)
+    label = wrap(args.label, font, room) if args.label else ['']
+    status = '  frame 99999 t 99999   99999 bytes changed'
+    if probe.textlength(label[-1] + status, font=font) > room:
+        label.append('')
+    top = 30 + 12 * (len(label) + len(legend) - 2)  # the grid's top: 30 for one line of each
+    if below:
+        screen_at = (52, top + grid_h + 16)
+        height = screen_at[1] + 384 + 22
+    else:
+        screen_at = (52 + grid_w + 16, top)
+        height = top + 4 + max(grid_h, 384 if args.screen else 0) + 22
     age = {}
     previous = None
     pictures = []
@@ -132,22 +173,22 @@ def main():
             for dy in range(cell):
                 for dx in range(cell):
                     px[x + dx, y + dy] = colour
-        image.paste(grid, (52, 30))
+        image.paste(grid, (52, top))
         d = ImageDraw.Draw(image)
-        d.text((52, 6), f'{args.label}  frame {frame} t {t}   {written} bytes changed', fill=(235, 235, 235),
-               font=font)
-        d.text((52, 18), 'yellow: written since the last picture, fading red: earlier'
-               + (' (attributes: a frame round the cell)' if args.screen_geometry else ''), fill=(160, 160, 170),
-               font=font)
+        lines = label[:-1] + [f'{label[-1]}  frame {frame} t {t}   {written} bytes changed']
+        for i, line in enumerate(lines):
+            d.text((52, 6 + 12 * i), line, fill=(235, 235, 235), font=font)
+        for i, line in enumerate(legend):
+            d.text((52, 6 + 12 * (len(lines) + i)), line, fill=(160, 160, 170), font=font)
         if args.screen_geometry:  # the thirds of the bitmap
             for a in (0x4000, 0x4800, 0x5000):
-                d.text((4, 30 + screen_line(a) * SCALE), f'${a:04X}', fill=(170, 170, 180), font=font)
+                d.text((4, top + screen_line(a) * SCALE), f'${a:04X}', fill=(170, 170, 180), font=font)
         else:
             for a in range(lo, hi + 1, 0x1000):
-                y = 30 + ((a - lo) >> 8) * cell
+                y = top + ((a - lo) >> 8) * cell
                 d.text((4, y - 4), f'${a:04X}', fill=(170, 170, 180), font=font)
         if args.screen:
-            image.paste(zxscreen.render(mem[0x4000:0x5B00], SCALE), (52 + grid_w + 16, 30))
+            image.paste(zxscreen.render(mem[0x4000:0x5B00], SCALE), screen_at)
         pictures.append(image)
         for a in list(age):
             age[a] += 1

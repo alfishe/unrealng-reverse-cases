@@ -447,9 +447,7 @@ level end (PlayLevel $A675):
 2007-2016 (the same level 1 as the tally above: 880 left, 1 600 points, 2 490 at the end). The top 8 character rows
 of the screen. Made with doc 8's command: `python3 ../../kit/routine_anim.py --work work/docs/ceD/l13 --listing
 build/game.lst --window 2007:10000-2016:60000 --out docs/img/routines/CountDown.gif --pc
-A675-A68C,A1B8-A219,A3A7-A40E,9CA4-9CB4 --view buffer:4000:32x64:screen --range 9C00-A6FF --step 12000 --delay 150`. Then laid out
-narrow (1026 px: the memory grid and the screen at half size on the left, the code on the right) with `tools/anim_compact.py` (`--grid 12,34,1036,78`, `--view 1048,34,2072,290`, `--code 2076`, the two
-labels as in the picture).*
+A675-A68C,A1B8-A219,A3A7-A40E,9CA4-9CB4 --view buffer:4000:32x64:screen --range 9C00-A6FF --step 12000 --delay 150`.*
 
 - A bonus that ran out in play gives nothing. CountDown has already cleared BonusRunning, so the loop adds nothing.
 - The 88 steps of 880 and the extra one ran in frames 2007-2016, about 9 a frame.

@@ -4,7 +4,7 @@
 #   tools/build.sh [SJASMPLUS]
 #
 # build/ChuckieEgg.tap: the four data blocks of orig/ChuckieEgg.tzx.zip ("Chuckie Egg.tzx" blocks 1-4) as TAP:
-#   block 1, the header "CHUCKIE" (tools/tape.py);
+#   block 1, the header "CHUCKIE" (kit/tap.py: LINE 10, the program length 18 found by walking the lines);
 #   block 2, the BASIC program $5CCB-$6322 from src/loader/loader.asm (written by kit/mkgame.py from
 #     src/loader/loader.ann: line 10, the picture's graphics $5CE3, the loader $5EF3, the picture's codes $601C);
 #   block 3, the two bytes `01 00` into ERR_SP from src/loader/errsp.asm (src/loader/errsp.ann);
@@ -34,6 +34,6 @@ python3 "$here/tools/res_formats.py" build --out "$here/build/res"
 "$asm" --nologo --msg=war -I"$here/build" -I"$here/src/game" --lst=game.lst "$here/src/game/game.asm"
 "$asm" --nologo --msg=war -I"$here/build" -I"$here/src/loader" --lst=loader.lst "$here/src/loader/loader.asm"
 "$asm" --nologo --msg=war -I"$here/src/loader" --lst=errsp.lst "$here/src/loader/errsp.asm"
-python3 "$here/tools/tape.py" ChuckieEgg.tap loader.bin errsp.bin game.bin
+python3 "$here/../../kit/tap.py" ChuckieEgg.tap basic:CHUCKIE:10:loader.bin data:-:-:errsp.bin data:-:-:game.bin
 python3 "$here/tools/tape.py" --orig orig.tap
 cmp ChuckieEgg.tap orig.tap && echo "build: identical to the original's blocks 1-4 (build/orig.tap)"

@@ -698,9 +698,7 @@ CountDown, AddScore and Beep run instead of MainLoop (the same level end as the 
 other recording). The bonus runs down from 0880 while the score runs up to 002490, one Beep `$1E04` a step. Made
 with doc 8's command: `python3 ../../kit/routine_anim.py --work work/docs/ceD/l13 --listing build/game.lst --window
 2007:10000-2016:60000 --out docs/img/routines/CountDown.gif --pc A675-A68C,A1B8-A219,A3A7-A40E,9CA4-9CB4 --view
-buffer:4000:32x64:screen --range 9C00-A6FF --step 12000 --delay 150`. Then laid out
-narrow (1026 px: the memory grid and the screen at half size on the left, the code on the right) with `tools/anim_compact.py` (`--grid 12,34,1036,78`, `--view 1048,34,2072,290`, `--code 2076`, the two
-labels as in the picture).*
+buffer:4000:32x64:screen --range 9C00-A6FF --step 12000 --delay 150`.*
 
 **The point**: between levels the game waits about 4 to 6 seconds in fixed loops. These waits are in T-states, so
 they too run faster on a faster machine.

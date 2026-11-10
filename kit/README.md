@@ -28,7 +28,7 @@ what the generator does with it, the part files); every file of a case and the c
 | `case-template/` | the skeleton of a new case: README, WALKTHROUGH sections, the twelve documents with their figure lists, `case.json`, `src/game/game.ann`, `src/res/README.md`, `tools/build.sh`, a bytes-only `tools/res_formats.py` |
 | `tapblocks.py list FILE.tap` | the blocks of a tape: lengths, header fields, the play time at ROM speed, checksums |
 | `tapblocks.py FILE.tap N OUT` | one block's data |
-| `tap.py` | writes a tape of standard ROM blocks (the build's last step) |
+| `tap.py` | writes a tape of standard ROM blocks (the build's last step); a `basic` header's program length is the program without its variables, found as SAVE writes it (or given: `basic:NAME:LINE:FILE:LENGTH`) |
 | `mkgame.py --case C` | `src/game/*.asm` from `game.ann` ([format](../docs/ann-format.md)), the recordings' `l1.json` and the image `case.json` names; refuses to install unless sjasmplus gives the image's bytes |
 | `mkgame.py --part F.json` / `--image BIN --org A ...` | any other code image the same way: a loader, a menu, a bank, an image of several segments or pieces ([part files](../docs/ann-format.md#5-parts-banks-and-pieces)) |
 | `ctl2ann.py DRAFT.ctl --out F.ann` | a first `.ann` from `re_session.py`'s `draft.ctl` (or an L2 export JSON) |
@@ -113,3 +113,10 @@ animation of 90 pictures stays near 1 MB.
 
 `--window F:T-F:T` is in TTD units, as `time_travel` gives them; the trace is kept in `W/traces/` and read from
 there the next time.
+
+The animations and the budget are 1050 px wide by default, so that they stay readable shown at 900 px (AGENTS.md, the
+figure check). `routine_anim.py` draws `--width` pixels (1050):
+the memory map above the view on the left, each at the largest whole scale that fits, the listing on the right, a long
+`--title` on two lines; `--layout wide` is the older picture with the three panels side by side (up to 2566 px).
+`memanim.py --screen` puts the screen under the grid when beside it the picture would pass `--width` (1050), and beside
+it with `--layout wide`. `fig_budget.py` draws `--width` pixels (1050) and wraps a long `--note`.

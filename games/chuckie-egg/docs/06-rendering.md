@@ -429,7 +429,7 @@ How to read:
   row 21 are other variables (`$72D0-$72DC`, HarryX `$72D8` among them); CellBuffer begins at `$72DD`, byte 2 of
   row 21, so its 24 lines straddle the view's rows by one byte.
 - The frame is copied, shifted, then the ladder glyphs fill CellBuffer column by column, then the OR.
-- The memory pane on the left is `$4000-$FFFF`, 256 bytes a row: the screen writes at the top, SpriteBuffer and
+- The memory pane at the top left is `$4000-$FFFF`, 256 bytes a row: the screen writes at the top, SpriteBuffer and
   CellBuffer in the row of `$72xx`, the glyph reads at `$84F0` on.
 - The listing pane follows DrawSprite; the trailing colours show the bytes written.
 

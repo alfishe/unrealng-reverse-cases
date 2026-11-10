@@ -341,9 +341,9 @@ python3 tools/fig_objects.py henwalk --samples work/docs/ceC/l19-vars.jsonl --sc
 
 ![MoveHen at work: levels-1-9 frames 425-489, hen 1 walks right, pecks, turns](img/routines/MoveHen.gif)
 
-The animation is a trace of `levels-1-9` frames 425-489 (65 frames, 110 pictures). The left panel is the memory
-`$8D00-$94FF` (the hen sprites and HenTable), the middle the screen, the right the listing at the current instruction.
-Green is executed, blue read, yellow written. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
+The animation is a trace of `levels-1-9` frames 425-489 (65 frames, 110 pictures). The top left panel is the memory
+`$8D00-$94FF` (the hen sprites and HenTable), under it the screen, on the right the listing at the current instruction.
+Green is executed, blue read, yellow written. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 425:0-490:0 --listing build/game.lst --view screen --range 8D00-94FF --pc 911E-943D --pictures 110 --out docs/img/routines/MoveHen.gif`.
 
 **The point**: MoveHen runs on one slow tick in three and touches one hen. Most of its turns erase a hen and redraw it 4
@@ -581,7 +581,7 @@ pattern at every first restart (samples 7164 and 7285 on level 4, for example).
 ![MoveLifts at work: levels-1-9 frames 4217-4221, platform 1 restarts at the bottom](img/routines/MoveLifts.gif)
 
 The animation is a trace of `levels-1-9` frames 4217-4221 on level 3 (60 pictures). Platform 1 reaches row 165, and
-the next step copies `LiftTable` row 0 back into `Lift1` and sets row 3. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
+the next step copies `LiftTable` row 0 back into `Lift1` and sets row 3. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 4217:0-4222:0 --listing build/game.lst --view screen --range 9700-A1FF --pc A014-A0BF --pictures 60 --title "MoveLifts \$A014: levels-1-9 frames 4217-4221, level 3, platform 1 reaches row 165 and restarts at the bottom" --out docs/img/routines/MoveLifts.gif`.
 
 **The point**: a lift is two screen addresses that climb one line every second slow tick. Nothing of it is in the
@@ -843,8 +843,8 @@ python3 tools/fig_objects.py tables --out docs/img/objects/hen-lift-tables.png
 ![The spawner at work: levels-1-9 frame 2213, SetupLevel fills Hens for level 2](img/routines/SetupLevel-spawn.gif)
 
 The animation is a trace of `levels-1-9` frame 2213 (50 pictures), the frame in which SetupLevel sets up level 2. The
-left panel is the memory `$7200-$73FF`, where the block `$72D8-$7375` lies; the second row holds Hens. The screen shows
-the level being drawn and coloured; the listing follows the copy loop `$AF7C-$AFAB`. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
+top left panel is the memory `$7200-$73FF`, where the block `$72D8-$7375` lies; the second row holds Hens. The screen shows
+the level being drawn and coloured; the listing follows the copy loop `$AF7C-$AFAB`. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 2213:0-2214:0 --listing build/game.lst --view screen --range 7200-73FF --pc AF77-AFB0 --pictures 50 --title "SetupLevel \$AE9C: levels-1-9 frame 2213, the spawner fills Hens for level 2" --out docs/img/routines/SetupLevel-spawn.gif`.
 
 **The point**: the whole cast of a level is written in one frame, before the level is shown. After that frame no
@@ -948,7 +948,7 @@ The animation is a trace of `idle-1p` frame 4763 (60 pictures of 1165 T). Pictur
 (DrawHen at t 5814, no hit). Picture 10 holds the kill: the draw at x 104 enters DrawHen at t 10 966, the box test
 `$92A4-$92BA` falls through to `$92BC` at t 11 127, HenKill pops six words and the RET reaches PlayLevel `$A656` at
 t 11 277. The fifty pictures after it run no DrawHen code ("0 instructions in this slice"): LifeLost and the ROM's death
-tune. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
+tune. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/idle --window 4763:0-4764:0 --listing build/game.lst --view screen --range 6100-73FF --pc 929C-93DC --pictures 60 --title "DrawHen \$929C: idle-1p frame 4763, hen 1 steps to x 104 and kills Harry" --out docs/img/routines/DrawHen-kill.gif`.
 
 **The point**: a hen kills when it is drawn, not when Harry moves. A Harry who never moves is killed by the first hen

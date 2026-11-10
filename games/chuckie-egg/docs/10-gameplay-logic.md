@@ -175,8 +175,8 @@ Worked example: `levels-1-9` level 1, Harry walks right along row 12 (y 119). In
 ![WalkHarry at work: tour-type2 frames 1000-1002](img/routines/WalkHarry.gif)
 
 The animation is writer ceB's (doc 05, animation 5.2): a trace of `tour-type2` frames 1000-1002, 60 pictures, from the
-key read to Harry's step. It shows the key test and the two wall tests above. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
-`python3 ../../kit/routine_anim.py --work work/docs/ceB/tour-type2 --window 1000:0-1002:0 --listing build/game.lst --view screen --pc 9858-99DC,9D08-9DF0,9A4C-9BFE --range 6100-A1FF --pictures 60 --out docs/img/routines/WalkHarry.gif`.
+key read to Harry's step. It shows the key test and the two wall tests above. Command:
+`python3 ../../kit/routine_anim.py --work work/docs/ceB/tour-type2 --window 1000:0-1002:0 --listing build/game.lst --view screen --pc 9858-99DC,9D08-9DF0,9A4C-9BFE --range 4000-FFFF --pictures 60 --title "From key 8 to Harry's step" --out docs/img/routines/WalkHarry.gif`.
 
 Witness: WalkHarry ran 95 138 times; left steps `$9D59` 5749, right steps `$9D95` 6073, standing `$9DAB` 83 316. Walking
 off a lift (`$9DDB`) ran in no recording.
@@ -226,7 +226,7 @@ The animation is the screen of `levels-1-9` frames 1288-1354, one picture a fram
 ![ClimbLadder at work: levels-1-9 frames 1300-1302](img/routines/ClimbLadder.gif)
 
 The animation traces `levels-1-9` frames 1300-1302 (60 pictures): the cell test at `$9EA2-$9EC5`, the key read and the
-step. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
+step. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 1300:0-1303:0 --listing build/game.lst --view screen --range 6100-73FF --pc 9E98-9F3E --pictures 60 --out docs/img/routines/ClimbLadder.gif`.
 
 Witness: ClimbLadder ran 113 934 times; up steps `$9ED7` 3570, down steps `$9F11` 1810.
@@ -408,7 +408,7 @@ before are merged). Command:
 ![JumpFall at the top of the jump: levels-1-9 frames 1905-1910](img/routines/JumpFall.gif)
 
 The animation traces `levels-1-9` frames 1905-1910 (80 pictures): the top step (JumpDy 0) and the first fall steps.
-At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
+Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 1905:0-1911:0 --listing build/game.lst --view screen --range 6100-73FF --pc A21C-A388 --pictures 80 --out docs/img/routines/JumpFall.gif`.
 
 Worked example: the jump of the figure. In the sample of frame 1888 Harry stands at (120, 151) on row 16. The jump
@@ -491,7 +491,7 @@ The animation is the screen of `levels-1-9` frames 910-964, one picture a frame.
 ![FallOffEdge and JumpDrift at work: levels-1-9 frames 916-921](img/routines/FallOffEdge.gif)
 
 The animation traces `levels-1-9` frames 916-921 (80 pictures): FallOffEdge finds the empty cell, then JumpDrift
-counts four slow ticks and starts the fall. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
+counts four slow ticks and starts the fall. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 916:0-922:0 --listing build/game.lst --view screen --range 6100-73FF --pc B34C-B380,A294-A2B4 --pictures 80 --out docs/img/routines/FallOffEdge.gif`.
 
 Witness: FallOffEdge ran 98 837 times and started 63 drifts (`$B368`), 36 in `levels-1-9`; each turned into a fall
@@ -685,7 +685,7 @@ The animation is the screen of `levels-1-9` frames 556-580, one picture a frame.
 ![TakeEggOrGrain takes the first egg: levels-1-9 frames 567-569](img/routines/TakeEggOrGrain.gif)
 
 The animation traces `levels-1-9` frames 567-569 (60 pictures). The take runs in frame 568; the egg disappears from
-the map cell `$61A8 + 32 + 6 = $61CE`. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
+the map cell `$61A8 + 32 + 6 = $61CE`. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 567:0-570:0 --listing build/game.lst --view screen --range 6100-73FF --pc 99DF-9A4B --pictures 60 --out docs/img/routines/TakeEggOrGrain.gif`.
 
 ![Two eggs in holes on level 4: levels-1-9 frames 8452-8522](img/play/egg-in-hole.gif)
@@ -902,7 +902,7 @@ The animation is the screen of `levels-1-9` frames 23340-24340, one picture ever
 
 ![MoveDuck at work: levels-1-9 frames 23600-23611](img/routines/MoveDuck.gif)
 
-The animation traces `levels-1-9` frames 23600-23611 (80 pictures), one duck step on level 9. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
+The animation traces `levels-1-9` frames 23600-23611 (80 pictures), one duck step on level 9. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 23600:0-23612:0 --listing build/game.lst --view screen --range 6100-73FF --pc A0C8-A1B7 --pictures 80 --out docs/img/routines/MoveDuck.gif`.
 
 Worked example: the duck is steered while caged too. On level 1 its DuckDy is -5 (251) until the sample of frame 1901.
@@ -1034,7 +1034,7 @@ stateDiagram-v2
 
 ![CatchLift lands Harry on platform 1: levels-1-9 frames 4250-4252](img/routines/CatchLift.gif)
 
-The animation traces `levels-1-9` frames 4250-4252 (60 pictures) on level 3. At page width only the screen panel is legible; the memory and listing panels need the GIF at full size. Command:
+The animation traces `levels-1-9` frames 4250-4252 (60 pictures) on level 3. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/ceC/l19 --window 4250:0-4253:0 --listing build/game.lst --view screen --range 6100-73FF --pc A256-A293 --pictures 60 --title 'CatchLift $A256: levels-1-9 frames 4250-4252, level 3, a rising Harry at (73, 32) lands on lift platform 1 (row 19): y 36' --out docs/img/routines/CatchLift.gif`.
 
 Worked example: level 3, LiftX 64. In the sample of frame 4250 Harry rises at (75, 32) (JumpDy 1, JumpCount 230) and

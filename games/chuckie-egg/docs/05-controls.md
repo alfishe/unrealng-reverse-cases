@@ -507,8 +507,8 @@ named" --out docs/img/routines/RedefineOne.gif`.*
 
 How to read:
 
-- Three panes, left to right: the memory map, the screen at that moment, and the listing with the current
-  instruction.
+- Three panes: the memory map at the top left, the screen at that moment under it, and on the right the listing
+  with the current instruction.
 - The memory map is `$4000-$FFFF`, 256 bytes a row: the write to KeySet3 `$8268` and the read of KeyNames `$AC54` show
   as dots in the rows of `$82xx` and `$ACxx`, the code of `$AAxx-$ABxx` in green.
 - The frame and T of each picture are in its header.
@@ -765,8 +765,8 @@ step" --out docs/img/routines/WalkHarry.gif`.*
 
 How to read:
 
-- Three panes, left to right: the memory map `$4000-$FFFF` (256 bytes a row: the screen at the top, LiveMap at
-  `$61A8`, the code from `$8214`), the screen, and the listing.
+- Three panes: the memory map `$4000-$FFFF` at the top left (256 bytes a row: the screen at the top, LiveMap at
+  `$61A8`, the code from `$8214`), the screen under it, and the listing on the right.
 - The listing pane follows MainLoop, WalkHarry and DrawSprite; the current instruction is highlighted.
 - The screen pane shows Harry on level 1. Each step right is one WalkHarry pass followed by one DrawSprite.
 - The frame and T of each picture are in its header.

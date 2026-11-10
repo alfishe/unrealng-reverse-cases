@@ -70,9 +70,6 @@
 @equ $7373 PhraseTimer ; the interrupts to the next phrase byte ($FF: no phrase)
 @equ $7374 PhrasePtr 2 ; the phrase pair to send next
 
-@isub $9BCB LD BC,Start
-@isub $A425 LD BC,TitleText
-@isub $A4CD LD BC,InstructionsText
 @isub $AA9A LD BC,InstructionsText+102
 @isub $A175 LD HL,$9808
 @isub $A623 LD HL,$9F9E

@@ -1,6 +1,6 @@
 # Chuckie Egg (A'n'F Software, 1983)
 
-State: docs written, in review. The tape rebuilt byte for byte from the annotated source and `src/res`; docs 01-12
+State: complete 2026-11-10 (two review rounds). The tape rebuilt byte for byte from the annotated source and `src/res`; docs 01-12
 (12 documents, 102 figures, 37 animations, 12 WAVs, 61 mermaid diagrams), counted with
 `ls docs/[0-9][0-9]-*.md | wc -l; for e in png gif wav; do find docs/img -name "*.$e" | wc -l; done; grep -h '^```mermaid' docs/*.md | wc -l`.
 
