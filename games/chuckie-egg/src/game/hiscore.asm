@@ -15,7 +15,7 @@
 ; nine at most. IM 2, D = 2.
 ;
 ; Witness: gameover-name (one entry, three characters $A8D5, ENTER $A8E4); 2
-; calls. Known only from the code: DELETE ($A8C3 never ran).
+; calls. DELETE ($A8C3): name-delete, CAPS SHIFT + 0 at frame 63 T 3322.
 EnterHiScore:
   PUSH BC
   PUSH AF

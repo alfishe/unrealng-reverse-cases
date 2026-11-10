@@ -356,9 +356,11 @@ PlayerTurn:
 ; CALL SetupLevel (which jumps to MainLoop); MainLoop returns here at $A656.
 ; WaitPhrase, the score into the player's slot, IM 2 (again after a name
 ; entry). Eggs left: LifeLost. Else the bonus is counted into the score
-; (CountDown and AddScore 10 a step, a beep), a pause, BoxZoom; the level + 1,
-; "LEVEL nn" (the number is level + 1 mod 100), the next map (LevelMaps + 672 x
-; (Level AND 7)) into the map in play, 12 eggs, and the next level.
+; (CountDown, then AddScore 10, a beep, on every step: the step that takes the
+; bonus past 000 still adds 10, so a bonus of N is paid as N + 10), a pause,
+; BoxZoom; the level + 1, "LEVEL nn" (the number is level + 1 mod 100), the
+; next map (LevelMaps + 672 x (Level AND 7)) into the map in play, 12 eggs, and
+; the next level.
 ;
 ; Witness: 5 375 bonus steps ($A675); 16 levels completed.
 PlayLevel:

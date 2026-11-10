@@ -21,7 +21,7 @@ the sources INCBIN (`src/game/*.asm` and `src/loader/*.asm`), `tools/res_formats
 | `text/MenuLeftover.txt` | leftover: three earlier menu lines, never read | UTF-8 quoted string | MenuLeftover `$8336` |
 | `text/SourceLeftover*.txt` (4) | leftover: the author's assembler source, never read | text, one source line a line | SourceLeftoverB167 `$B167`, `B307` `$B307`, `B381` `$B381`, `C8B0` `$C8B0` |
 | `sound/TitleTune.txt`, `DeathTune.txt` | the two beeper tunes | text, one note a line | TitleTune `$AE0C`, DeathTune `$AE6A` |
-| `sound/Phrases.txt` | the phrase table and the 32 speech phrases | text, allophone names | PhraseTable `$C8C8` |
+| `sound/Phrases.txt` | the phrase table and the 33 speech phrases | text, allophone names | PhraseTable `$C8C8` |
 | `loader/PictureGraphics.png` | the loading picture's 66 graphics | PNG sheet, 8 x 8 | PictureGraphics `$5CE3` (tape block 2) |
 | `loader/PictureText.txt` | the loading picture's 768 character codes | quoted rows | PictureText `$601C` (tape block 2) |
 
@@ -38,7 +38,7 @@ writes the original codes back; the loader's PictureText uses `\xNN` only.
 | Reason | Entries |
 | --- | --- |
 | Leftovers never read (L1 of the eight builds: no access) | LeftoverMapRow `$8214`, LeftoverSprite `$9110`, LeftoverCode943E `$943E`, Leftover97AB `$97AB`, LeftoverCode9A2C `$9A2C`, LeftoverCode9C8E `$9C8E`, LeftoverCode9E57 `$9E57`, LeftoverCodeA0C0 `$A0C0`, LeftoverA21A `$A21A`, LeftoverA3A1 `$A3A1`, LeftoverA40F `$A40F`; the readable leftovers are resources above (MenuLeftover, SourceLeftover*) |
-| Fill never read | FillFF `$8B50` (672 bytes of `$FF`, the size of one map) |
+| Fill never read | FillFF `$8B50` (672 bytes, the size of one map: 416 of `$FF`, then 256 of 0) |
 | Space and padding | Zeros8274 `$8274`, Zeros9518 `$9518`, Zeros95C5 `$95C5`, Zeros9BFF `$9BFF`, Zeros9C9F `$9C9F`, Zeros9CB5 `$9CB5`, Zeros9D06 `$9D06`, Zeros9DF1 `$9DF1`, Zeros9E8D `$9E8D`, Zeros9F3F `$9F3F`, Zeros9FDF `$9FDF`, ZerosA19A `$A19A`, ZerosCBC4 `$CBC4` |
 | Code-like data | TuneCalc `$AB6D` (an RST `$28` calculator program), VectorTable `$B200` (the IM 2 table, 263 bytes of `$9C`; only `$B2FF-$B300` are read) |
 | Loader padding | ArrayPadding `$631C` (seven spaces of a$, tape block 2) |

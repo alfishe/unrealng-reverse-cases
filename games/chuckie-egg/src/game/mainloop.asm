@@ -30,9 +30,10 @@
 ; catches a ladder).
 ;
 ; Witness: 14 873 212 passes in the eight builds, 113 934 slow ticks ($99D9);
-; 477 jumps started ($9975); 920 lift steps with Harry on board ($991E). Known
-; only from the code: the hold and abort keys ($98C8-$98E5) and the faster hens
-; ($9944).
+; 477 jumps started ($9975); 920 lift steps with Harry on board ($991E). The
+; hold and abort keys ($98C8-$98E5): hold-abort, HOLD entered at frame 1100 T
+; 54 699 and left at 1300 T 305, ABORT to Start $A410 at 1400 T 29 350. Known
+; only from the code: the faster hens ($9944).
 MainLoop:
   LD HL,(ERR_SP)
   DEC HL

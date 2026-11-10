@@ -183,10 +183,10 @@ LeftoverCode9E57:
 
 ; A = 1 when the hen at (E, D) touches Harry
 ;
-; The box test of DrawHen $929C (Harry's x within x - 8 .. x + 5, y within y ..
-; y + $1B), without the kill: A = 1 touch, 0 none; HL kept. MainLoop calls it
-; for the five hens after each vertical jump step. Witness: 29 382 calls (none
-; in idle-1p, where Harry never jumps).
+; The box test of DrawHen $929C (Harry's x within x - 7 .. x + 5, y within y +
+; 1 .. y + $1C), without the kill: A = 1 touch, 0 none; HL kept. MainLoop calls
+; it for the five hens after each vertical jump step. Witness: 29 382 calls
+; (none in idle-1p, where Harry never jumps).
 HenTouches:
   PUSH HL
   LD HL,HarryX

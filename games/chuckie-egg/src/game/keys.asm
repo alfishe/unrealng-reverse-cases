@@ -84,7 +84,11 @@ RedefineKeysNext:
 ; B = 1 when the key just stored is already in key set 3
 ;
 ; Finds the set's last stored pair (the first zero after it) and compares it
-; with the pairs before. Witness: 5 calls.
+; with the pairs before. B ends as the new pair's number (1-5) plus 1, so the
+; walk back also compares the two pairs just before KeySet3: KeySet2's jump
+; keys 4 (17 F7) and 9 (1D EF), which can never be chosen. KeySet3's sixth pair
+; (the second jump key, 1) is never compared. Witness: 5 calls; redefine-odd, 9
+; refused at frame 112.
 KeyUsed:
   LD HL,KeySet3-$0001
   LD B,$00

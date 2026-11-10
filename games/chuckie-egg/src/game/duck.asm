@@ -8,11 +8,12 @@
 ;
 ; Every 12 slow ticks. DuckDx and DuckDy move one step toward Harry's x and y
 ; (each held within -5 .. 5). DrawSprite with frame 12 erases it, PaintCells
-; repaints the cells; DuckX + DuckDx bounces at 0 and $EE, DuckY + DuckDy at
-; $14 and $A6 (the speed becomes 5 or -5). On levels 1-8 (Level < 8) the
-; position is set back to (8, $98), the cage. Then DrawSprite draws frame 8 +
-; DuckFrame (Harry right of it or level with it) or 10 + DuckFrame (left), and
-; DuckFrame flips. DrawSprite's duck test applies.
+; repaints the cells (measured in levels-1-3 frames 600-900: the caged duck
+; read blank by the beam in 10 of 28 redraws); DuckX + DuckDx bounces at 0 and
+; $EE, DuckY + DuckDy at $14 and $A6 (the speed becomes 5 or -5). On levels 1-8
+; (Level < 8) the position is set back to (8, $98), the cage. Then DrawSprite
+; draws frame 8 + DuckFrame (Harry right of it or level with it) or 10 +
+; DuckFrame (left), and DuckFrame flips. DrawSprite's duck test applies.
 ;
 ; Witness: 9 553 calls; held in the cage $A175 9 418, free 135 (levels-1-9,
 ; level 9). Known only from the code: the bounces ($A12F, $A140, $A157, $A161).

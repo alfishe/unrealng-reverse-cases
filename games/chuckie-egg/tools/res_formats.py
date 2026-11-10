@@ -462,7 +462,7 @@ ALLOPHONES = ['PA1', 'PA2', 'PA3', 'PA4', 'PA5', 'OY', 'AY', 'EH', 'KK3', 'PP', 
               'WH', 'YY1', 'CH', 'ER1', 'ER2', 'OW', 'DH2', 'SS', 'NN2', 'HH2', 'OR', 'AR', 'YR', 'GG2', 'EL', 'BB2']
 PHRASE_ORG = 0xC8C8
 PHRASE_HEAD = ['# PhraseTable $C8C8 and the phrases (sound/Phrases.bin, $C8C8-$CBC3). StartPhrase $9CEB takes phrase N',
-               '# (1-32) from the word at $C8C6 + 2N; the interrupt (PhraseInterrupt $9CC2) sends one pair at a time:',
+               '# (1-33) from the word at $C8C6 + 2N; the interrupt (PhraseInterrupt $9CC2) sends one pair at a time:',
                '# OUT ($9F) the allophone, then it waits COUNT interrupts before the next pair; a count of $FF ends.',
                '# "table N" is the number of words, "pad N" the zero bytes after them, then each phrase in address',
                '# order: "phrase N [M ...]: COUNT ALLOPHONE, ..." (the table entries that point at it), "end $xx" the',

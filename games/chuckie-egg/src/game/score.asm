@@ -15,6 +15,8 @@
 ;
 ; Witness: 5 659 calls; the 10 000s digit changed 6 times ($A3C4), one icon
 ; drawn ($A3D7; levels-1-9, level 4: lives 5 to 6, as the stage 1 notes saw).
+; Known only from the code: no limit; past 999 990 the carry leaves Score and
+; increments $6EC7, the last byte of LiveMap slot 4.
 AddScore:
   LD A,B
   AND A

@@ -16,14 +16,18 @@
 ; Then the attribute 6 (yellow) on 3 x 3 cells (2 columns at x >= $F1, 2 rows
 ; when y is on a cell or below $11).
 ;
-; Then the duck test: DuckX within HarryX - 8 .. HarryX + 8 and DuckY within
-; HarryY - 9 .. HarryY + 9 kills: it drops the five saved words and every word
+; Then the duck test: DuckX within HarryX - 7 .. HarryX + 8 and DuckY within
+; HarryY - 8 .. HarryY + 9 kills: it drops the five saved words and every word
 ; on the stack until one is $A410 or more (the return into PlayLevel, $A656)
 ; and returns there. Known only from the code: no build was killed by the duck
-; ($9BC6 never ran).
+; ($9BC6 never ran). The test runs for every draw, also while the duck is caged
+; on levels 1-8: a Harry at x 0-15 and y 143-160 would touch the caged duck at
+; (8, 152).
 ;
 ; Witness: 134 270 calls (WalkHarry, ClimbLadder, JumpStep, MoveDuck,
-; CatchLift).
+; CatchLift); 18 652-18 859 T unshifted, + about 1244 T a pixel of shift
+; (levels-1-3 frames 600-612). Measured in levels-1-3 frames 600-900: Harry
+; never read blank by the beam.
 DrawSprite:
   PUSH AF
   PUSH BC

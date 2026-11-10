@@ -11,7 +11,10 @@
 ; 1, hangs in a JR to itself at $985E, so a copy of the game block without this
 ; block (ERR_SP left at the ROM's value) freezes on its first game pass. The
 ; ROM never uses ERR_SP after the loader (the game never returns to BASIC and
-; never makes an error). Witness: c1 L1, 14 873 212 reads of $5C3D over the
-; eight builds (tools/l1count.py --reads 5C3D-5C3E), all by $9858.
+; never makes an error). With ERR_SP = 1 a ROM error would load SP = 1 at
+; ERROR-3 $0058, and SET-STK's RET at $16D3 would pop $11AF from the ROM's
+; bytes $0001-$0002: a crash (known only from the code). Witness: c1 L1, 14 873
+; 212 reads of $5C3D over the eight builds (tools/l1count.py --reads
+; 5C3D-5C3E), all by $9858.
 ErrSpValue:
   DEFW $0001

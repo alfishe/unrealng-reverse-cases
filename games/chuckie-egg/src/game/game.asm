@@ -59,7 +59,7 @@ OnLift         EQU $7355  ; 1 while Harry rides a lift
 HenTurn        EQU $7356  ; the hen MoveHen moves next 0-4
 Hens           EQU $7357  ; five hen records: x ($FF: none), y, state, a spare byte
 HenDelay       EQU $736B  ; the slow ticks to the next hen move (3, 2 from level 33)
-RandomPtr      EQU $736C  ; MoveHen's pointer into the ROM's first 256 bytes
+RandomPtr      EQU $736C  ; MoveHen's pointer into the ROM's first 256 bytes; its low byte is zeroed on every level by SetupLevel's LD (HenDelay),HL at $AFB0 (HL = 1), so the hens' random sequence restarts at the same point each level
 LastTenThousands EQU $736E  ; the score's 10 000s digit at the last extra life check
 TitleTuneDone  EQU $736F  ; 1 once the title tune has played
 SoundSweep     EQU $7370  ; the pickup sound's count ($FF after an egg or grain)

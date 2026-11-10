@@ -1,11 +1,13 @@
 # Chuckie Egg (A'n'F Software, 1983)
 
-State: in progress (phase 0 and stage 1: the release check, the medium, the first recordings).
+State: docs written, in review. The tape rebuilt byte for byte from the annotated source and `src/res`; docs 01-12
+(12 documents, 102 figures, 37 animations, 12 WAVs, 61 mermaid diagrams), counted with
+`ls docs/[0-9][0-9]-*.md | wc -l; for e in png gif wav; do find docs/img -name "*.$e" | wc -l; done; grep -h '^```mermaid' docs/*.md | wc -l`.
 
 | | |
 | --- | --- |
 | Machine | 48K |
-| Profile (AGENTS.md 4.0) | arcade, platform: one screen per level, eight level maps of 32 x 21 cells in the image (`$B3B0`, 672 bytes each), copied to a live map per player, the levels repeating with changes; sprites over a character background (Harry, the hens, the duck; the erase strategy is for stage 2); a free-running main loop paced by its own counters, not by the frame (WALKTHROUGH 1.1), with an IM 2 interrupt (`$9C9C`) that only feeds a phrase table to port `$9F`; the beeper by the game's own toggle loop (`$9CA4`) and tunes through the ROM's calculator and BEEP (`$AB60`: the title tune, the end of a life); a two-byte tape block loaded into ERR_SP that the main loop needs to be exactly 1 (a protection); no packer, no cipher, no turbo loader (doc 3) |
+| Profile (AGENTS.md 4.0) | arcade, platform: one screen per level, eight level maps of 32 x 21 cells in the image (`$B3B0`, 672 bytes each), copied to a live map per player, the levels repeating with changes; sprites over a character background: DrawSprite rewrites Harry's whole 24 x 16 box with the background ORed with the frame, so a one-pixel move needs no erase (his frames have a blank border), the duck is erased with the blank frame 12 first, the hens are ORed without a background and erased by redrawing their map cells, the lifts erased and drawn a line up (doc 6.5); the hens and the duck flicker where the beam reads between erase and redraw (doc 6.10); a free-running main loop paced by its own counters, not by the frame (WALKTHROUGH 1.1), with an IM 2 interrupt (`$9C9C`) that only feeds a table of 33 phrases to an SP0256-type phrase chip on port `$9F` (the Fuller Orator's SP0256-AL2, which unreal-ng does not model; doc 9); the beeper by the game's own toggle loop (`$9CA4`) and tunes through the ROM's calculator and BEEP (`$AB60`: the title tune, the end of a life); a two-byte tape block loaded into ERR_SP that the main loop needs to be exactly 1 (a protection); no packer, no cipher, no turbo loader (doc 3); a crash bug in HenEatGrain `$9265`: a left peck that touches Harry makes the kill return into ROM `$0100` / `$0101` and the Spectrum resets (shown on a clone, doc 10.8); a difficulty cycle on the Level byte: the eight maps repeat, no hens on levels 9-16 and the duck free from 9, five hens from 25, faster hens from 33, 1000-point eggs from 37, less time every 16 levels to 400 from 81 (doc 10.13) |
 | Authors | Nigel Alderton (the title page: "BY N.ALDERTON"; ZXDB 958) |
 | Release | ZXDB 958, release 0: A'n'F Software 1983, £6.90. `orig/ChuckieEgg.tzx.zip` is ZXDB download 6194, which ZXDB marks "Original release": a BASIC program whose variables area holds a machine-code loader and the loading picture, then two headerless ROM-speed blocks (two bytes to ERR_SP `$5C3D`, the game's 18 900 bytes to `$8214`) |
 | Original | `orig/ChuckieEgg.tzx.zip` (md5 `55706f7dc4ddb4f171705f21794732df`, SHA-1 `fc11317d8c0ebbc79105169d618f01d47ae3ebf7`): `Chuckie Egg.tzx` (md5 `08804f90e4a45aaa8180cc1338248033`, SHA-1 `03be8e55eb56ca49856b236f38bf81b76f4e57bf`), "Created with Ramsoft MakeTZX" |
@@ -33,8 +35,8 @@ The documents: [docs/README.md](docs/README.md). How the reverse was done: [WALK
 ## Build
 
 ```bash
-tools/build.sh [SJASMPLUS]     # builds build/Chuckie Egg.tzx and compares it with the TZX in orig/ChuckieEgg.tzx.zip byte for byte
+tools/build.sh [SJASMPLUS]     # builds build/ChuckieEgg.tap and compares it with the original's blocks 1-4 (build/orig.tap) byte for byte
 ```
 
 The game source is `src/game/*.asm`, written by `kit/mkgame.py` from `src/game/game.ann`; the resources are
-`src/res/` (`src/res/README.md`). Until stage 4 the image comes from `orig/` (`tools/image.py`).
+`src/res/` (`src/res/README.md`); the loader blocks are `src/loader/*.asm`, from `src/loader/loader.ann` and `errsp.ann`.

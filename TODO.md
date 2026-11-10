@@ -43,3 +43,9 @@ Found by the cases and worked around there; the status says whether `kit/` fixes
 | `LD BC,nn` operands are not turned into labels | Chuckie Egg stage 2 | none (the operand stays a number) | open |
 | `@equ` applies to every operand in its range, not one instruction | Chuckie Egg stage 2 | narrow ranges | open |
 | the module name `game` is refused | Chuckie Egg stage 2 | another module name | open |
+| `kit/routine_anim.py` and `kit/memanim.py` set the picture width themselves: up to 2566 px (Chuckie Egg: all 25 `docs/img/routines/*.gif` are 1102-2566 px, `play/tape-block4.gif` 1102 px), wider than the 1050 px figure limit; the case cannot choose it | Chuckie Egg docs (ceA, ceD) | none: the animations stay at the kit's width | open |
+| `kit/fig_budget.py` draws 900 px wide, not 1050, and its `--note` line is cut at the bottom of the panel | Chuckie Egg doc 2 (ceA) | the note left out, the command in the caption | open |
+
+## For unreal-ng
+
+- Chuckie Egg: the game's state after K frames depends on how they are split into `control_execution run_frames` calls (two faults, reproduced with probes): [docs/unreal-ng-run-frames-faults.md](docs/unreal-ng-run-frames-faults.md) (the probe scripts stay in the case's untracked `work/stage2/`).

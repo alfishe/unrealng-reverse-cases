@@ -24,8 +24,9 @@
 ; is (bit 1 of the random byte picks which it tests first).
 ;
 ; 3 or 4 (climbing down / up): when y AND 4 is 0 and the next cell is no ladder
-; it turns (7 - state); y moves 4 pixels; at y AND 4 set and the random bit it
-; steps off onto a brick 8 left (state 1) or 16 right (state 2).
+; it turns (7 - state); y moves 4 pixels; at y AND 4 clear (the new y a
+; multiple of 8) and the random bit it steps off onto a brick 8 left (state 1)
+; or 16 right (state 2), the row 8 below.
 ;
 ; Inputs: the hen records. Outputs: the record moved; the screen. Side effects:
 ; RandomPtr, HenTurn; DrawHen may end the life (it unwinds the stack to the
@@ -283,8 +284,14 @@ MoveHenSetRight:
 ;
 ; Known only from the code: when the peck's DrawHen finds Harry touching the
 ; hen, its six POPs are counted for MoveHen's stack, not this one's, so its RET
-; takes the BC pushed at $9265 (B the state, C the random bit: $0100-$0201, in
-; the ROM) as the return address. No build reached it.
+; takes the BC pushed at $9265 (B the state, C the random bit) as the return
+; address. Only a left peck can get here (a right peck is drawn where MoveHen's
+; erase has just tested the same box), so B = 1 and the RET goes to ROM $0100
+; or $0101. No build reached it. Tried on a clone (work/docs/ceC/heg.py, level
+; 8, a hen at (160, 8) walking left, grain at (19, 1), Harry at (152, 23)): the
+; PC goes to $0051, the ROM calculator, the RAM fill $11DE-$11ED, and the
+; Spectrum resets to the copyright screen at frame 121; with Harry at 153 the
+; normal kill and the death tune follow.
 HenEatGrain:
   PUSH BC
   PUSH HL
@@ -331,8 +338,8 @@ HenEatGrainNone:
 ; Test a hen against Harry, then draw or erase it
 ;
 ; Inputs: L the hen's x, H its y, A the frame (0: erase). First the box test
-; against Harry: Harry's x within x - 8 .. x + 5 and his y within y .. y + $1B.
-; A touch drops six words from the stack (DrawHen's four, its return and
+; against Harry: Harry's x within x - 7 .. x + 5 and his y within y + 1 .. y +
+; $1C. A touch drops six words from the stack (DrawHen's four, its return and
 ; MoveHen's) and returns to the caller of MainLoop: the life ends ($92BC: c1 1,
 ; idle-1p 5, gameover-name 5, 11 in all).
 ;
@@ -341,6 +348,8 @@ HenEatGrainNone:
 ; attribute 5 (cyan) of 1-2 columns by 2-3 rows is set (AttrAddrHen $93DD). A =
 ; 0: the 2 x 3 map cells under the hen (1 x 3 at x >= $F8) are drawn again from
 ; LiveMap with their glyphs and CellAttributes. IX is HarryX at the end.
+; Measured in levels-1-3 frames 600-900: a hen read blank by the beam in 7 of
+; 44 steps.
 ;
 ; Witness: 44 867 calls.
 DrawHen:

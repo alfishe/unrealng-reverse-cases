@@ -9,9 +9,10 @@
 ;
 ; Nothing when LiftX is $FF. For each platform: DrawLift with 0 (erase) at its
 ; address, its row count + 1; at 166 the platform restarts from LiftTable's
-; record (platform 1 takes the address, x and row; platform 2 the address and
-; x, row 3); the address one line up (LineUp $A0A9), DrawLift with $FF.
-; Witness: 57 158 calls; restarts $A02E 164 and $A05C 167.
+; record (platform 1 takes the address, x and row, then row 3; platform 2
+; copies 3 bytes, so Lift2Row holds LiftX until LD A,$03 sets row 3); the
+; address one line up (LineUp $A0A9), DrawLift with $FF. Witness: 57 158 calls;
+; restarts $A02E 164 and $A05C 167.
 MoveLifts:
   LD A,(LiftX)
   XOR $FF

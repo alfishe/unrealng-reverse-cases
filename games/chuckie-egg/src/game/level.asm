@@ -12,8 +12,8 @@
 ; HudText printed; every player's score printed (AddScore B = 0 with
 ; ScoreScreenAddr per player), then the score in play reloaded;
 ; LastTenThousands. The hens: Hens set to $FF, then the HenTable row (none on
-; Level 8-15, all 20 bytes from 24). HenDelay 1, RandomPtr 0. The life icons
-; (six at most) per player.
+; Level 8-15, all 20 bytes from 24). HenDelay 1 and the low byte of RandomPtr 0
+; (one word store at $AFB0). The life icons (six at most) per player.
 ;
 ; The colours: the HUD rows, the player's column white on red ($17, others
 ; $0F); the map's cells (CellAttributes). Harry at ($64, $17), the duck at (8,

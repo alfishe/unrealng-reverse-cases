@@ -95,7 +95,9 @@ Zeros9C9F:
 ; OUT ($FE) $10 (the speaker bit, black border), wait H, OUT 0, wait H, L
 ; times. B and L used, A = 0 at the end. Calls: the walk ($2805 and $2806 every
 ; 4 pixels), the climb ($1E14, $1E15), the jump click, the time tick ($0402),
-; the pickup sweep, the bonus count ($1E04). Witness: 127 975 calls.
+; the pickup sweep, the bonus count ($1E04). One cycle 26 H + 47 T (high 13 H +
+; 14, low 13 H + 33): 3 500 000 / (26 H + 47) Hz; levels-1-3 edges match to the
+; T-state but for the ULA's wait on OUT ($FE). Witness: 127 975 calls.
 Beep:
   LD A,$10
   OUT ($FE),A
@@ -154,7 +156,7 @@ PhraseDone:
 
 ; Start phrase A unless one is playing
 ;
-; Input: A the phrase number 1-32. When PhraseTimer is $FF: PhrasePtr = the
+; Input: A the phrase number 1-33. When PhraseTimer is $FF: PhrasePtr = the
 ; phrase's address from PhraseTable (PhraseTable - 2 + 2A), PhraseTimer = 1
 ; (the first pair goes at the next interrupt). Otherwise the call is lost.
 ; Callers: the title (20), the instructions (24), a player's turn (25 +
