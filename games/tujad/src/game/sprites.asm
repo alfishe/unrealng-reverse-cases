@@ -14,11 +14,12 @@
 ; DroidFrames $6888 points at each frame, DroidWidths $68A4 gives its width:
 ; 0-7 the walk (3 bytes, 120 each), 8 and 9 the turn-round (2 bytes), 10 the
 ; front, also the teleport beam (2 bytes, DroidFront), 11-13 the side move
-; while falling (3 bytes). TurnRound $7866 mirrors $9C40-$A45F in place, all
-; but DroidFront, so the image holds the right-facing set and play turns it;
-; PlaceDroid $7A6D reads DroidGraphics + 4 ($70 in the right-facing set) to
-; know which way the frames face. L1: all 1 560 bytes read (3 586 417 reads), 1
-; 480 written (127 784 writes: the mirroring; DroidFront's 80 bytes never).
+; while falling (3 bytes). TurnRound $7866 mirrors $9C40-$A4AF in place (480 +
+; 480 + 160 + 480 + 480 = 2 080 bytes), all but DroidFront, so the image holds
+; the right-facing set and play turns it; PlaceDroid $7A6D reads DroidGraphics
+; + 4 ($70 in the right-facing set) to know which way the frames face. L1: all
+; 1 560 bytes read (3 586 417 reads), 1 480 written (127 784 writes: the
+; mirroring; DroidFront's 80 bytes never).
 DroidGraphics:
   INCBIN "res/sprites/Droid.bin",$0000,120
 DroidWalk1:
@@ -50,8 +51,9 @@ DroidFly3:
 
 ; 600 zero bytes inside the mirrored range
 ;
-; TurnRound's 3-byte pass runs to $A45F, so it mirrors these zeros too (L1: 600
-; bytes, 52 680 reads and as many writes, all zeros); no frame points here.
+; TurnRound's last 3-byte pass runs to $A4AF (from $A2D0, 160 rows of 3 bytes),
+; so it mirrors these zeros too (L1: 600 bytes, 52 680 reads and as many
+; writes, all zeros); no frame points here.
 DroidMirrorSpare:
   DEFS $0258
 
@@ -161,10 +163,10 @@ ProbeExplosion4:
 
 ; A patroller going right: 4 frames of 96 bytes (24 rows of 4)
 ;
-; MovePatrollers $6AAD takes this set for a patroller moving right (direction
-; bit 0 of +1 clear) and PatrolLeft for one moving left. Not shifted: a
-; patroller moves a byte column at a time. L1: 768 bytes, 96 192 reads, no
-; write.
+; DrawPatroller $942D (at $9430) takes this set for a patroller moving right
+; (direction bit 0 of +1 clear) and PatrolLeft for one moving left. Not
+; shifted: a patroller moves a byte column at a time. L1: 768 bytes, 96 192
+; reads, no write.
 PatrolRight:
   INCBIN "res/sprites/Patrollers.bin",$0000,96
 PatrolRight2:

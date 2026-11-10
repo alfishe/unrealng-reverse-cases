@@ -373,6 +373,8 @@ at `$6910` comes only after Menu, NewGame and QueueMessage. So ReadControls does
 reads the ports itself.
 
 ```text
+Menu, after the texts:                      ; $892D
+    light the line of the current Controls  ; bit 7: line 1, bit 6: line 2, else line 3
 MenuPoll:                                   ; $893B, interrupts off
     loop:
         Random()                            ; stirred once per loop: the delay before 0 seeds the game
@@ -385,7 +387,8 @@ MenuPoll:                                   ; $893B, interrupts off
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Poll: Restart 6900, DI
+    [*] --> Lit: Restart 6900, DI, Menu draws the texts
+    Lit --> Poll: 892D lights the current Controls line
     Poll --> Keyboard: 1, Controls 80
     Poll --> Cursor: 2, Controls 40
     Poll --> Kempston: 3, Controls 00
@@ -401,7 +404,9 @@ The highlight is three LDIR fills, on attribute rows 12, 14 and 16 (`Attributes+
 - the chosen line gets FLASH and BRIGHT: `$C3` (magenta), `$C5` (cyan) or `$C6` (yellow);
 - the other two lines get their plain colours `$43`, `$45`, `$46`.
 
-Nothing else shows the choice. The menu does not show the current method until a key is pressed.
+The menu lights the current method's line when it is drawn (`$892D-$8938` read Controls and jump to
+MenuLightKeyboard, MenuLightCursor or MenuLightKempston before MenuPoll), and each key press moves the light. Nothing
+else shows the choice.
 
 ```text
 893B  CD C9 7D     CALL Random            ; MenuPoll
@@ -482,7 +487,7 @@ sequenceDiagram
 
 ```text
 MoveDroid:                                  ; $7208, in the first half of a pass, interrupts off
-    if not DroidFlags bit 2 (falling):
+    if not DroidFlags bit 2 (in the air):
         MoveDelay -= 1; if MoveDelay != 0: return
         MoveDelay = 2
     (floor and teleporter tests: doc 10)
@@ -495,13 +500,13 @@ MoveDroid:                                  ; $7208, in the first half of a pass
     keys = Controls AND $0F
     if keys == 0: goto NoKeys
     ControlsLatch $6364 = keys
-    if keys == $04 and not falling: shield (5.9)
-    else: walk, turn, climb, fall (doc 10)
+    if keys == $04 and not in the air: shield (5.9)
+    else: walk, turn, climb, hover (doc 10)
 ```
 
 ```mermaid
 flowchart TD
-    A["MoveDroid 7208"] --> B{"falling, flags bit 2?"}
+    A["MoveDroid 7208"] --> B{"in the air, flags bit 2?"}
     B -- "no" --> D{"MoveDelay - 1 = 0?"}
     D -- "no" --> X["return, no step this pass"]
     D -- "yes, reload 2" --> E["queue old image, flag pointer 0"]
@@ -518,7 +523,7 @@ flowchart TD
     LR -- "yes" --> N
     LR -- "no" --> K{"Controls AND 0F"}
     K -- "0" --> N
-    K -- "04, not falling" --> SH["shield 7368"]
+    K -- "04, not in the air" --> SH["shield 7368"]
     K -- "other" --> W["walk and climb: 73B0, 741E, 7492"]
 ```
 
@@ -594,12 +599,13 @@ MoveDroid calls Fire `$861C` while Controls bit 4 is set. Fire refuses in two ca
 Otherwise it starts a shot:
 
 1. Shot = `$60`.
-2. The start cell is three columns right of the droid's column. When the droid faces left (flags bit 0) it stays at
-   the droid's column, and weapon 3 then moves it two columns left.
+2. The start cell is three columns right of the droid's column. When the droid faces left (flags bit 0) the start
+   column is one left of the droid's (two for weapon 3): each weapon's own code does `DEC C`, weapon 3 twice.
 3. The start line is 16 lines below the droid's top.
 4. It branches on the weapon. Weapons `$6368` bit 7 is the basic gun; bits 6, 5 and 4 are weapons 1, 2 and 3.
-5. Each weapon refuses on a wall cell (value 1 in the cell table) and when its ammo is zero.
-6. Otherwise it takes one from the BCD ammo and prints it at `$4082`.
+5. Each weapon refuses on a wall cell (value 1 in the cell table). Weapons 1-3 also refuse when their ammo is zero;
+   the basic gun has no ammo.
+6. Otherwise weapons 1-3 take one from the BCD ammo and print it at `$4082`.
 
 ```text
 Fire:                                       ; $861C, from MoveDroid while fire is held
@@ -615,6 +621,11 @@ Fire:                                       ; $861C, from MoveDroid while fire i
         if Ammo+2 == 0: refuse
         Ammo+2 -= 1 (BCD); print it at $4082
         KeyLatches bit 7 = 1                ; the droid freezes while the probe flies
+    weapons 0-2: if facing left: x -= 1
+        ShotPos = (x * 8, y); ShotGraphic = the weapon's bolt
+        if the cell (or the cell below, weapons 1-2, y not on a cell row) is a wall: refuse
+        weapons 1-2: if their Ammo == 0: refuse; Ammo -= 1 (BCD); print it at $4082
+        the basic gun: no ammo, no latch
 ```
 
 ```mermaid
@@ -687,8 +698,9 @@ KeyLatches `$6369` holds four latches:
 ```mermaid
 stateDiagram-v2
     [*] --> Free
-    Free --> Flying: Fire starts a shot, Shot bit 6
-    Flying --> Locked: shot ends, KeyLatches bit 6 at 8572 or 8489
+    Free --> Flying: Fire starts a shot, Shot bit 6 (the basic gun again while fire is held)
+    Flying --> Locked: a shot of weapons 1-3 ends, KeyLatches bit 6 at 8572 or 8489
+    Flying --> Free: a basic-gun shot ends, MoveShot0 sets no latch
     Locked --> Free: a MoveDroid pass sees fire up, 72FE
     Locked --> Locked: fire still held, Fire returns
 ```
@@ -719,7 +731,7 @@ that has ammo. After the last weapon it goes back to the basic gun. ShowWeapon `
 7979  FE 00        CP $00
 797B  C0           RET NZ
 797C  21 69 63     LD HL,KeyLatches
-797F  01 FE 7E     LD BC,ShiftGraphic4    ; the value is the port $7EFE
+797F  01 FE 7E     LD BC,KeysSpaceToB     ; the port $7EFE
 7982  ED 78        IN A,(C)
 7984  CB 47        BIT 0,A
 7986  20 37        JR NZ,WeaponSelectReleased
@@ -732,14 +744,15 @@ that has ammo. After the last weapon it goes back to the basic gun. ShowWeapon `
 79C1  C9           RET
 ```
 
-The source writes the port as `LD BC,ShiftGraphic4`. The routine ShiftGraphic4 happens to sit at `$7EFE`, and the
-labelling pass took the number for an address. The bytes are right; the name is wrong. The fix is sent as a source
-change.
+The port has its own name, KeysSpaceToB (an `EQU` of `$7EFE`). An earlier labelling pass had written it as
+ShiftGraphic4, the routine that happens to sit at `$7EFE`; that is fixed in the source.
 
 Witness: the weapon changed (`$798B`) 47 times in 13 recordings, most often in `rzx-070000` (13 times).
 
-The point: holding fire gives one shot, holding SPACE one weapon change, holding ENTER one pause toggle. Each latch
-costs one bit. The fire lock lives in the shot code, so a fire key still held after a hit cannot shoot again.
+The point: holding fire gives one shot of weapons 1-3, holding SPACE one weapon change, holding ENTER one pause
+toggle. Each latch costs one bit. The fire lock lives in the shot code of weapons 1-3, so a fire key still held after
+their shot ends cannot shoot again. The basic gun repeats while fire is held: MoveShot0 `$877E` ends its shot with
+Shot = 0 and sets no latch, so the next acting pass fires again.
 
 ## 5.8 The probe under fire held
 
@@ -747,14 +760,16 @@ Weapon 3 fires a probe that the player steers.
 
 1. Fire sets KeyLatches bit 7. MoveDroid then ignores the keys, so the droid stands still.
 2. MoveShot3 `$82AA` runs twice per pass, in each half of the main loop, and reads Controls itself.
-3. While fire is held, each held direction moves the probe two pixels per call, if the cells ahead are free.
+3. While fire is held, each held direction moves the probe two pixels per call. The cells ahead are tested only when
+   the coordinate is on a cell boundary (x or y AND 7 = 0); between boundaries it steps without a test.
 4. Releasing fire explodes the probe (MoveShot3Explode `$8472`).
 5. Touching ink also explodes it (Shot bit 7, MoveShot3Hit `$843E`).
 
 ```text
 MoveShot3:                                  ; $82AA, twice a pass
     if Shot == 0: return
-    queue the probe's old image in the sprite list (flag pointer 0, 3 bytes wide, 2 rows)
+    if Shot bit 5: goto draw                        ; the first pass ($82B0): only drawn, nothing to erase
+    queue the probe's old image in the sprite list (flag pointer 0, 3 bytes wide, 2 character rows: 16 lines)
     XOR mark $10 into the cells under it            ; erase its cell mark
     if Shot bit 4: exploding; if Shot bit 7: hit
     keys = Controls AND $1F
@@ -763,6 +778,7 @@ MoveShot3:                                  ; $82AA, twice a pass
     if left  and (x AND 7 != 0 or the column behind is free and x != 0):  x -= 2
     if down  ... CellSolidRow below:  y += 2
     if up    ... CellSolidRow above:  y -= 2
+draw:                                               ; MoveShot3Draw $83B4, Shot bit 5 = 0
     frame = next of 0 1 2 3 2 1; shift it to x AND 7 (ShiftGraphic3); draw; mark $10 into the cells
 ```
 
@@ -770,7 +786,9 @@ MoveShot3:                                  ; $82AA, twice a pass
 flowchart TD
     A["MoveShot3 82AA"] --> B{"Shot 0?"}
     B -- "yes" --> X["return"]
-    B -- "no" --> E["queue old image, unmark cells"]
+    B -- "no" --> N{"Shot bit 5, first pass?"}
+    N -- "yes" --> D
+    N -- "no" --> E["queue old image, unmark cells"]
     E --> H{"Shot bit 7, ink touched?"}
     H -- "yes" --> HIT["MoveShot3Hit 843E"]
     H -- "no" --> F{"Controls bit 4?"}
@@ -819,10 +837,11 @@ Worked example: `probe-shield` from frame 40. The droid faces left at column 19,
 1. Fire is pressed at 40. The sample of 42 shows Controls `$10` and Shot `$61`.
 2. The probe starts at x = (19 - 2) x 8 = 136 and y = 80 + 16 = 96. The sample of 44 shows ShotPos `$88`, `$60`.
 3. Ammo goes from `$05` to `$04`, and KeyLatches reads `$83`: bit 7 is the lock, bits 1 and 0 are armed.
-4. Left is held with fire from 46. Each call takes 2 from ShotPos `$635F`: x falls from 136 to 98 by frame 72, where
-   the cells to the left are wall.
-5. Up takes y from 96 to 64 (frames 74-94).
-6. Right takes x back to 136 (98-123).
+4. Left is held with fire from 46. Each call takes 2 from ShotPos `$635F`: x falls from 136 to 98 by frame 72 (19
+   steps), when the player turns to up. No wall stopped it: 98 AND 7 = 2, and MoveShot3 tests the wall only when x AND
+   7 = 0.
+5. Up takes y from 96 to 64 (frames 74-94, 16 steps), short of the `$30` limit: again the player's input ends the run.
+6. Right takes x back to 136 (98-123, 19 steps).
 7. Down takes y to 84 (124-137).
 8. Everything is released at 136. The sample of 138 shows Shot `$50`, the explosion (ProbeExplosion at `$B870`),
    then `$51` and `$53`. Shot is 0 again and KeyLatches back to `$03` at 144.
@@ -848,7 +867,8 @@ Witness:
 - In the RZX game the probe never steered. In `rzx-040000`, `rzx-052000` and `rzx-070000` the player tapped fire
   for weapon 3, and each probe exploded on its first call (`$8472`: fire already released).
 - Stage 2 knew the steering only from the code. This recording shows it. It also shows frames 1 and 3 of
-  ProbeGraphics (`$AFB7`, `$B019`) on the screen.
+  ProbeGraphics on the screen: the sprite-list pointers `$AFB7` and `$B019`, each frame's start (`$AFB6`, `$B018`)
+  plus 1, past its shift byte.
 
 The point: the probe is a second "droid" driven by the same Controls byte. The lock bit makes the droid ignore the
 keys while MoveShot3 reads them instead. So one input path steers two objects without a mode variable.
@@ -858,7 +878,7 @@ keys while MoveShot3 reads them instead. So one input path steers two objects wi
 The shield goes up when two conditions hold:
 
 - the four direction bits are exactly `$04` (down, and nothing else);
-- the droid is not falling.
+- the droid is not in the air (DroidFlags bit 2: no wall under its feet; it hovers).
 
 Then MoveDroid does not move the droid. Instead (at `$7368`) it:
 
@@ -867,7 +887,7 @@ Then MoveDroid does not move the droid. Instead (at `$7368`) it:
 - sets EnergyReload and EnergyTimer to `$0A`.
 
 ```text
-shield:                                     ; MoveDroidKeys $7358, with keys == $04 and not falling
+shield:                                     ; MoveDroidKeys $7358, with keys == $04 and not in the air
     if DroidFlags bit 4: draw the frame, done          ; already up
     DroidFlags bit 4 = 1
     FlagPointer = 0                                    ; the droid's collision flag goes to ROM address 0
@@ -879,7 +899,7 @@ release:                                    ; any other key ($737F) or no key ($
 ```mermaid
 stateDiagram-v2
     [*] --> Normal
-    Normal --> Shield: down alone, not falling, 7368
+    Normal --> Shield: down alone, not in the air, 7368
     Shield --> Normal: other keys, 737F
     Shield --> Normal: no key, 7317
     Normal: FlagPointer 635B, reload 250
@@ -937,9 +957,9 @@ Witness:
 
 - `$7368` ran 14 times in 11 recordings, among them `menu-cursor`, `menu-kempston`, `rzx-007000` (3 times) and
   `rzx-052000` (twice). The original player used the shield.
-- `game.ann` and stage 2 describe DroidFlags bit 4 as "an enemy touched". An enemy touch in fact sets TouchTimer
-  `$32` and EnergyReload `$0A` at `$75D0-$75DA` and leaves bit 4 alone. This is sent as a source change; the touch
-  itself is in [doc 10](10-gameplay-logic.md).
+- Stage 2 and an earlier `game.ann` described DroidFlags bit 4 as "an enemy touched" (corrected). An enemy touch in
+  fact sets TouchTimer `$32` and EnergyReload `$0A` at `$75D0-$75DA` and leaves bit 4 alone; the touch itself is in
+  [doc 10](10-gameplay-logic.md).
 
 The point: the shield trades energy for immunity, and its whole state is one pointer. Pointing the collision flag
 at ROM turns off every touch test without any change to the drawing code.
@@ -998,9 +1018,12 @@ flowchart TD
 ```
 
 The main loop's work runs with interrupts off. WaitFrame ends its HALT with DI at `$796E`, and nothing in the second
-half turns them back on. The exceptions are RiseSweep and FallSweep (`$7F4D`, `$7F5D`): sound effects that end with
-EI and run only on some passes. So, in the normal case, PauseLoop spins with interrupts off, and no interrupt comes
-while the game is paused:
+half before Pause turns them back on. Some routines end with EI: RiseSweep and FallSweep (`$7F4D`, `$7F5D`),
+DrawRoom (`$6B2D`) and Teleport (`$7825`). But each is followed by a DI before the next Pause. The sweeps run from
+TeleportFlash, inside Teleport, which ends with DI at `$7835`. They also run from DeathEffect, reached through
+HazardDeath in the first half (the second WaitFrame's DI at `$796E` follows) or through EnergyOut after Pause (the next
+pass's WaitFrame follows). DrawRoom's EI is followed by DI at `$6E0B`, and ProgressScreen ends with DI at `$9044`. So
+PauseLoop always spins with interrupts off, and no interrupt comes while the game is paused:
 
 - no ReadControls;
 - no sprite drawing;
@@ -1023,8 +1046,8 @@ Witness:
   frozen at 3. The interrupt counts both of them down, so it did not run for 100 frames.
 - tjA's execution probe of `c1` (doc 04) finds no call of the handler `$95D0` in frames 15 241-15 359. Energy `$97`
   and EnergyTimer `$64` are the same at 15 241, 15 300 and 15 359 (values at the frame start).
-- This contradicts stage 2 ("energy drains even on pause") and the `game.ann` text for Pause ("interrupts going on,
-  the scroller runs"). Both corrections are sent.
+- This contradicts stage 2 ("energy drains even on pause") and an earlier `game.ann` text for Pause ("interrupts
+  going on, the scroller runs", corrected).
 
 The point: the pause costs almost nothing, because the game already works with interrupts off. A loop inside the
 pass freezes the whole game, the clock included, and only the pause key is read.
@@ -1039,6 +1062,6 @@ pass freezes the whole game, the clock included, and only the pause key is read.
 - Left and right together count as no key (`$7306`). No recording holds both.
 - The results of KEYBOARD are unused on every path in the listing. That they were never meant to be read is an
   inference from the absence of any `$5Cxx` reference.
-- `$735B` (flags bit 2) refuses the shield while the droid falls. No recording tries it.
-- A pause pressed on a pass where RiseSweep or FallSweep ran would spin with interrupts on, so the interrupt would
-  keep running. No recording shows that case.
+- `$735B` (flags bit 2) refuses the shield while the droid is in the air. No recording tries it.
+- That no path reaches Pause with interrupts on is read from the code (every `EI` in the listing and the `DI` that
+  follows it, 5.10); the recordings agree with it but cannot cover every path.

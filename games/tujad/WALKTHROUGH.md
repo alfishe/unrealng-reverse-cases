@@ -46,7 +46,7 @@ Found:
 - **The image's text** (a strings scan of `$60C0-$FDFF`): the scrolling messages at `$63D3` on ("TUJAD FROM
   ORPHEUS", "EDS COMPLETED", "GEN 19 COLLECTED", "UCF REACTOR NO 14C DESTROYED"), the menu at `$8D38` ("1 KEYBOARD",
   "2 CURSOR JOYSTICK", "3 KEMPSTON JOYSTICK", "0 START GAME"), "1986 ORPHEUS LTD" at `$8D85`, "YOU HAVE COMPLETED %
-  OF TUJAD" at `$9071`. And leftover assembler source text from the authors' editor in the variables area
+  OF TUJAD" at `$9072`. And leftover assembler source text from the authors' editor in the variables area
   (`$6353-$686E`: "hl,(pos)", "lookup", "hl,alnmap", "scra1"), NOTES.md.
 
 ## 1. One recording from power-on
@@ -86,10 +86,10 @@ Found, interrupts and the frame (first look; stage 2 reads the routines):
   a white border) would go back to BASIC; it never runs in any recording.
 - **The handler `$95D0`** does the frame's drawing and input: the controls (`$7161` into `$63C2`), every sprite of
   the list at `$FF01` drawn with XOR (`$95DB-$963F`), the message scroller (`$9640`), `$96CB`, the weapon select
-  (`$7976`, CAPS SHIFT or SPACE on port `$7EFE` bit 0), `$7AB6`, `$7906` and the ROM's KEYBOARD (`$02BF`, which
+  (`$7976`, CAPS SHIFT or SPACE on port `$7EFE` bit 0: A8 and A15 low read both half rows), `$7AB6`, `$7906` and the ROM's KEYBOARD (`$02BF`, which
   keeps `$5C04-$5C08`), then `EI; RETI` at `$96FB`. It runs 54 825 times over the 70 builds (`$96FB`).
-- **DI / EI**: the setup starts with `DI` (`$68F3`) and `LD SP,$60C0`, and enables at `$6910`. The game runs with
-  interrupts off: the main wait `$795D` is `EI; NOP; HALT` (`$796B-$796D`), `DI` (`$796E`). Ten other `EI`s run in
+- **DI / EI**: the setup starts with `DI` (`$68F3`) and `LD HL,$60C0; LD SP,HL` (`$68F4-$68F7`), and enables at `$6910`. The game runs with
+  interrupts off: the main wait `$795D` is `EI; NOP; HALT` (`$796B-$796D`), `DI` (`$796E`). Nine other `EI`s run in
   the recordings (L1 counts over the 70 builds): `$6B2D` (279, the room setup `$6B22`, followed by `DI` at `$6E0B`),
   `$7F5B` (210) and `$7F6B` (649) after the two sweeps, `$7816` and `$7825` (13 each), `$777E` (8, with a HALT at
   `$777F`), `$8F5E` (36), `$6AA2` (1, with a HALT at `$6AA3`), `$6910` (4). `$6A22`, `$6F15`, `$6F17`, `$8D25`,
@@ -117,8 +117,9 @@ Found, interrupts and the frame (first look; stage 2 reads the routines):
   13 483-26 612 T and at most 35 278 T (room 51); the handler runs about 36 000 T in the median and 63 013 T at most
   (room 73). The big handlers are not sprites alone: the scroller step (about 26 200 T, every 5 interrupts) added to
   the droid's list (34 156 T) gives 60 939 T (corrected by docs, see doc 4.8).
-- **The heaviest pass**: 210 142 T (3 frames), from the RZX state after 50 000 frames (room 102), no key held. Its
-  cause: the scroller step and three enemy pairs in handler 1, after which the droid half crosses the next INT, which
+- **The heaviest pass**: stage 1's `passes.py` measured 210 142 T (3 frames) from the RZX state after 50 000 frames
+  (room 102), no key held; stage 2's `passes2.py` and the trace of `room-102` give 197 394 T for the heaviest pass from
+  the same state (doc 4.8). The two tools' runs differ; doc 4 uses the trace. Its cause: the scroller step and three enemy pairs in handler 1, after which the droid half crosses the next INT, which
   is lost (doc 4.8, the recording `room-102`).
   The heaviest half pass with its handler: 97 122 T (room 51), more than a frame.
 
@@ -183,7 +184,7 @@ playback's, saved after N of its frames (`/rzx/play`, tolerant; [WALKTHROUGH 5](
 | `menu-kempston` | `menu.szx` | `menu-kempston.txt`: 3, 0, play with the Kempston stick | 1201 | the Kempston method (`$63C2` bits 6 and 7 clear) | `work/stage1/rec/menu-kempston/session.ttd` |
 | `energy-out` | `rzx/at047000.szx` (room 76, energy 18, lives 5) | no key | 5001 | the energy run down by the enemies to 0 and a life lost between frames 1550 and 1600 (lives 5 to 4, the energy back to 99) | `work/stage1/rec/energy-out/session.ttd` |
 | `game-over` | `menu.szx` | `game-over.txt`: 1, 0, no key; **POKE** `$636D` = 0 and `$636E` = 1 at frame 200 | 3121 | the last life lost (lives `$99` by frame 400), "YOU HAVE COMPLETED 0% OF TUJAD" from about 450 to 950 with the game-over message scrolling in the panel (shot at 700), the menu from about 975 | `work/stage1/rec/game-over/session.ttd` |
-| `win` | `rzx/at080000.szx` (every ED complete, room 84) | no key | 1501 | "CONGRATULATIONS TUJAD HAS NOW RESUMED NORMAL FUNCTIONS WELL DONE" over the circuit-board picture (25-475), then the menu (550) | `work/stage1/rec/win/session.ttd` |
+| `win` | `rzx/at080000.szx` (every ED complete, room 84) | no key | 1501 | "CONGRATULATIONS TUJAD HAS NOW RESUMED NORMAL FUNCTIONS WELL DONE" over the circuit-board picture (25-475), then the menu (from frame 497) | `work/stage1/rec/win/session.ttd` |
 | `room-tour` | `rec/menu-cursor/end.szx` | 8 (right) held; **POKEs** (`room-tour.pokes`): every 60 frames the room `$6363` = r - 1, x `$6359` = `$1C`, lives `$636D` = 9, energy `$636E` = `$99`, so the game's own room change (`$7403`) draws room r | 7681 | the game moved into 65 rooms: 53 of the 102 rooms (11 of them shot nowhere else: the world map's starred cells) and 12 of the 26 empty slots, drawn empty | `work/stage1/rec/room-tour/session.ttd` |
 | `room-23` | `rzx/at005000.szx` (the RZX in room 23) | no key | 100 | room 23 | `work/stage1/rec/room-23/session.ttd` |
 | `rzx-free-29000`, `-31000`, `-32000` | `rzx/at029000.szx`, `at031000`, `at032000` | the RZX's keys for 1000 frames, unchecked (they part from the RZX) | 1001 each | rooms 43, 106 and 91, which the checked chunks end before | `work/stage1/rec/rzx-free-<N>/session.ttd` |
@@ -237,7 +238,7 @@ load included).
 
 | Screen | Figure | Recording, frame |
 | --- | --- | --- |
-| the loading screen | [loading.png](docs/img/play/loading.png) | the CODE block's first 6912 bytes (`work/stage1/blocks/b4.bin`), on the screen from `c1` frame 2908 |
+| the loading screen | [loading.png](docs/img/play/loading.png) | the CODE block's first 6912 bytes (`work/stage1/blocks/b4.bin`), on the screen whole from `c1` frame 2907 |
 | the menu | [menu.png](docs/img/play/menu.png) | `c1` 13950 |
 | the start room (84), the TUJAD terminal, "TUJAD FROM ORPHEUS" | [start-room.png](docs/img/play/start-room.png) | `c1` 14450 |
 | the progress screen (an ED piece taken next to the terminal) | [progress.png](docs/img/play/progress.png) | `c1` 14700 |

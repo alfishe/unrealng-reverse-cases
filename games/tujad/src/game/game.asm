@@ -4,7 +4,7 @@
   DEVICE ZXSPECTRUM48
 
 ; Constants: addresses outside this image, ROM entries, ports (@const)
-KeysSpaceToB       EQU $7EFE  ; the keyboard half row SPACE, SYMBOL SHIFT, M, N, B (IN A,(C) bit 0 SPACE): a port, equal to ShiftGraphic4's address by chance
+KeysSpaceToB       EQU $7EFE  ; two keyboard half rows at once, SPACE to B (A15) and CAPS SHIFT to V (A8): IN A,(C) bit 0 is SPACE or CAPS SHIFT; a port, equal to ShiftGraphic4's address by chance
 
 ; The variables past the loaded image (game.ann @equ)
 KEYBOARD       EQU $02BF  ; the ROM's keyboard scan (LAST_K, FRAMES), called by the interrupt handler

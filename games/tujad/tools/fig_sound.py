@@ -364,10 +364,10 @@ def render(es, path, pad_ms=30):
 
 
 WAVS = [  # name, recording, frames, what
-    ('play-hum', 'menu-cursor', (540, 790), 'five seconds of play: PassTick each pass; first an enemy touched (HazardFlash, a digit click each 10 frames)'),
+    ('play-hum', 'menu-cursor', (540, 790), 'play: PassTick each pass; first the shield (HazardFlash, a digit click each 10 frames)'),
     ('digit-click', 'energy-out', (603, 604), 'PrintBcd: the click before the energy is printed'),
     ('pickup-tone', 'rzx-036000', (120, 124), 'PickupTone: GEN 19 picked up'),
-    ('hazard-click', 'rzx-036000', None, 'HazardFlash: an enemy touched, two passes'),
+    ('hazard-click', 'rzx-036000', None, 'HazardFlash: the shield, two passes'),
     ('rise-sweep', 'r30', None, 'RiseSweep: one call'),
     ('fall-sweep', 'r30', None, 'FallSweep: one call'),
     ('death', 'energy-out', (1570, 1640), 'DeathEffect: eight FallSweeps'),

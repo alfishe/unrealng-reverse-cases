@@ -28,7 +28,8 @@ RoomLayoutRecords:
 EmptyLayout:
   INCBIN "res/rooms/Rooms.bin",$1E4C,1
 
-; The alien map offsets: room n's record at AlienMap + AlienMap[n]
+; The alien map offsets: room n's record at AlienMap + the word at AlienMap +
+; 2n
 ;
 ; RoomRecord $7B8F (L1 4 746 calls), DrawRoom (279), SaveRoomObjects $6ADC
 ; (276), the item pickup (50). L1: all 256 bytes read, 9 184 reads.

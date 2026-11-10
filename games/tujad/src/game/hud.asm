@@ -222,10 +222,13 @@ ShowWeaponAmmo:
 ; A new game: the rooms dealt, the work space reset, room $54
 ;
 ; ClearScreen; InitRooms $7BCC (every item present, the objects reset);
-; ScrambleRooms 1-31 times (Random OR 1 AND $1F: the non-weapon items move
-; between rooms, so each game deals them differently); ExhaustRows to
-; EdFlagsEnd zeroed; Room = $54 (the control room); PlaceDroid; InitialVars
-; copied; DrawHud $8AE8; DrawRoom with A = $FF. L1 4 new games, 34 scrambles.
+; ScrambleRooms an odd number of times, 1 to 31 (Random OR 1 AND $1F: 16
+; possible counts; each call rotates the 64 non-weapon item kinds one slot
+; along the rooms: 16 possible deals for the first game after loading;
+; InitRooms does not undo the rotation, so a later game rotates on);
+; ExhaustRows to EdFlagsEnd zeroed; Room = $54 (the control room); PlaceDroid;
+; InitialVars copied; DrawHud $8AE8; DrawRoom with A = $FF. L1 4 new games, 34
+; scrambles.
 NewGame:
   CALL ClearScreen
   CALL InitRooms

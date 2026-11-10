@@ -137,7 +137,7 @@ def fig_bits(out):
             ('3', 'up', '', 'up'), ('2', 'down', 'alone: shield', 'down'), ('1', 'left', '', 'left'),
             ('0', 'right', '', 'right')]),
         ('KeyLatches $6369', 'edge latches: a key must be released before it acts again', [
-            ('7', 'lock', 'no moves, no fire', 'up'), ('6', 'fire lock', 'release fire first', 'fire'),
+            ('7', 'lock', 'no moves,\nno fire', 'up'), ('6', 'fire lock', 'release fire\nfirst (1-3)', 'fire'),
             ('5', '-', '', None), ('4', '-', '', None), ('3', '-', '', None), ('2', '-', '', None),
             ('1', 'ENTER', 'released (armed)', 'pause'), ('0', 'SPACE', 'released (armed)', 'weapon')]),
     ]
@@ -152,19 +152,19 @@ def fig_bits(out):
             fill = (255, 255, 255) if kind else DIM
             d.text((x + 6, y + 4), f'bit {b}', font=f, fill=fill)
             d.text((x + 6, y + 26), short, font=K.font(16), fill=fill)
-            d.text((x + 6, y + 54), long_, font=fs, fill=fill)
+            d.multiline_text((x + 6, y + 50), long_, font=fs, fill=fill, spacing=2)
         y += 104
     notes = [
         'Controls: ReadControls first keeps bits 7-5 (AND $E0), then sets bits 4-0 from the keys of the method in bits',
         '7-6, so the method and the pause flag survive each interrupt and the directions are fresh. Down alone (the low',
         'four bits = $04) is the shield in MoveDroid $7368; left and right together count as no key ($7306).',
         'KeyLatches: bit 6 is set when a straight shot ends ($8572) or the probe explodes ($8489) and cleared at $72FE',
-        'when a MoveDroid pass sees fire up, so holding fire gives one shot. Bit 7 is set while the probe flies ($86B8)',
-        'and during the death effect; MoveDroid then reads no keys. Bits 0 and 1 are the SPACE and ENTER release',
-        'latches of WeaponSelect $7976 and Pause $793A.',
+        'when a MoveDroid pass sees fire up, so holding fire gives one shot of weapons 1-3 (the basic gun sets no latch',
+        'and repeats). Bit 7 is set while the probe flies ($86B8) and during the death effect; MoveDroid then reads no',
+        'keys. Bits 0 and 1 are the SPACE and ENTER release latches of WeaponSelect $7976 and Pause $793A.',
         'Drawn from build/game.lst: python3 tools/fig_controls.py bits --out docs/img/controls/bits.png']
     for i, line in enumerate(notes):
-        d.text((14, y + i * 18), line, font=f, fill=FG if i < 7 else DIM)
+        d.text((14, y + i * 18), line, font=f, fill=FG if i < 8 else DIM)
     im.save(out)
 
 

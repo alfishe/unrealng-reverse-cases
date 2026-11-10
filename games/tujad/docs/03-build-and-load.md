@@ -52,7 +52,11 @@ ones and 214 082 zeros.
 | total | 742 367 526 |
 
 That is 212.11 s at 3.5 MHz, or 10 622 frames. In `c1` LD-BYTES is called for it at frame 2908 and the last byte,
-`$FDFF`, is written in frame 13579: 10 671 frames. The 49 frames more are spent in the pause before the pilot.
+`$FDFF`, is written in frame 13579: 10 671 frames, 49 more than the block's own 10 622. They are what is left of the
+pause after block 4 when the stub calls LD-BYTES: the TZX gives that pause 1914 ms, about 96 frames, so if all of it
+played after frame 2908 the gap would be about 96 frames, not 49. LD-BYTES is called one frame after block 4's last
+byte (frame 2907), so unreal-ng's tape plays only about half of the pause there; the frame of block 5's first pilot
+edge was not traced, so how the emulator shortens the pause is not settled here.
 
 ```bash
 python3 tools/tzxblocks.py list work/media/zxdb-Tujad.tzx/Tujad.tzx     # the blocks and their timings

@@ -237,11 +237,12 @@ EnergyOut:
 ; A life ends: the death effect, the droid placed again, or the game over
 ;
 ; Energy back to 99 and the timers to $FA; Lives - 1 (BCD); GEN 19 DESTROYED;
-; DeathEffect $7ADF; SaveRoomObjects; PlaceDroid $7A6D; the touch test off;
-; then, with lives left, the HUD's lives and energy printed (PrintBcd) and
-; DrawRoom with A = $FF (a clear, no scroll). With Lives = $99 (0 - 1 in BCD):
-; the game over at LoseLifeGameOver. L1 55 lives lost (energy-out 2,
-; game-over).
+; DeathEffect $7ADF; SaveRoomObjects; PlaceDroid $7A6D; the shield down
+; (DroidFlags bit 4 cleared) and the touch test back on (FlagPointer =
+; DroidFlags); then, with lives left, the HUD's lives and energy printed
+; (PrintBcd) and DrawRoom with A = $FF (a clear, no scroll). With Lives = $99
+; (0 - 1 in BCD): the game over at LoseLifeGameOver. L1 55 lives lost
+; (energy-out 2, game-over).
 LoseLife:
   LD A,$FA
   LD (EnergyReload),A

@@ -288,8 +288,8 @@ def main():
     e = sub.add_parser('energy')
     for a in ('--touch', '--shield', '--out'):
         e.add_argument(a, required=True)
-    e.add_argument('--touch-title', default='rzx-010000 frames 90-200: an enemy touches the droid at frame 110')
-    e.add_argument('--shield-title', default='rzx-007000 frames 240-290: DOWN held alone, the shield 258-276')
+    e.add_argument('--touch-title', default='rzx-010000 frames 90-200: an enemy touches the droid in frame 109 (TouchTimer 50 in the sample of 110)')
+    e.add_argument('--shield-title', default='rzx-007000 frames 240-290: DOWN held alone: the shield raised in frame 258, lowered in 275')
     args = p.parse_args()
     {'course': cmd_course, 'route': cmd_route, 'deal': cmd_deal, 'energy': cmd_energy}[args.cmd](args)
 

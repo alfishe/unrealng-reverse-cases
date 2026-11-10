@@ -10,8 +10,9 @@ docs/img/play/world-map.png (tools/fig_worldmap.py); this one shows every room, 
 The tiles go through the same address arithmetic as DrawRoomLayout $6C93-$6D8B (screen row = row + 5, the bytes
 over the HUD rows 0-5 and under the screen skipped, the attribute fill that stops a row at the first skipped
 cell), on a 6912-byte screen, then the items as DrawItem $6E0D puts them (Blit16 at the item's cell, its colour
-on 2 x 2 cells; only kinds with bit 7, as DrawRoom draws them). A teleporter is marked by a red frame round its
-2 x 2 cells and the target room's number.
+on 2 x 2 cells; only kinds with bit 7, as DrawRoom draws them). A teleporter is marked by a thick red frame round its
+2 x 2 cells and a red tag with the target room's number. The items are drawn where the image stores them, before
+NewGame's deal (an odd number of ScrambleRooms rotations), so no game starts with exactly these items.
 """
 import argparse
 import os
@@ -211,11 +212,17 @@ def main():
         if r['teleport']:
             to, c, row = r['teleport']
             d = ImageDraw.Draw(img)
-            d.rectangle([c * 8, row * 8, c * 8 + 15, row * 8 + 15], outline=(255, 40, 40), width=2)
+            # a thick frame a cell wider than the 2 x 2 pad all round, so it shows after the scale-down
+            d.rectangle([c * 8 - 8, row * 8 - 8, c * 8 + 23, row * 8 + 23], outline=(255, 40, 40), width=6)
         img = img.resize((tw, th), Image.LANCZOS)
         out.paste(img, (x0, y0 + lab))
-        label = '%d' % n + ('  T>%d' % r['teleport'][0] if r['teleport'] else '')
-        draw.text((x0 + 2, y0), label, fill=(235, 235, 235), font=font)
+        draw.text((x0 + 2, y0), '%d' % n, fill=(235, 235, 235), font=font)
+        if r['teleport']:
+            # the target on a red tag, so a teleporter room shows at a glance
+            tag = 'T>%d' % r['teleport'][0]
+            tx = x0 + tw - 8 * len(tag) - 6
+            draw.rectangle([tx - 3, y0, x0 + tw - 2, y0 + lab - 1], fill=(200, 30, 30))
+            draw.text((tx, y0), tag, fill=(255, 255, 255), font=font)
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     out.save(args.out, optimize=True)
     print('%s: %d x %d' % (args.out, out.width, out.height))

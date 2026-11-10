@@ -81,9 +81,9 @@ PassTickDelay:
 
 ; The teleport beam fills the droid's place top down, with a tone
 ;
-; The 5 x 4 attributes at the teleporter turn $42; 40 lines get $A0 / $05 bytes
-; (the beam's edges), each after BeamScreen counts and, while it is not 1, a
-; tone of 30 toggles. L1 21.
+; The attributes of columns +0 and +3 of the teleporter's 5 rows (10 cells)
+; turn $42; 40 lines get $A0 / $05 bytes (the beam's edges), each after
+; BeamScreen counts and, while it is not 1, a tone of 30 toggles. L1 21.
 BeamDown:
   LD BC,(TeleportColumn)
   CALL ScreenAddr

@@ -29,7 +29,7 @@ Each term once, here; the documents link to it.
 | cell table | CellTable `$60C0`, 576 cells; DrawRoom sets 1 where the attribute is not 0, the movers XOR their marks in ([doc 6.3](06-rendering.md#the-cell-table-from-the-colours), [doc 7.4](07-objects.md#74-the-cell-table-60c0)) |
 | contended | a fetch from `$4000-$7FFF` while the ULA reads the screen waits; the sound loops there run about a third slower in the display (doc 9.2) |
 | Controls | the byte `$63C2` ReadControls builds each interrupt: method bits 7-6, pause bit 5, fire and directions bits 4-0 ([doc 5.2](05-controls.md#52-the-controls-byte)) |
-| deal | NewGame's 1-31 calls of ScrambleRooms `$7BA0`, each rotating the non-weapon item kinds by one slot along the room order: 31 possible deals (doc 10.9) |
+| deal | NewGame's 1-31 calls of ScrambleRooms `$7BA0`, always an odd number (`OR $01` before `AND $1F`), each rotating the 64 non-weapon item kinds by one slot along the room order: 16 possible deals for the first game after loading (doc 10.9) |
 | EnemyBuffers | `$6708-$6887`: two 48-byte buffers per enemy, A for the old image (erase) and B for the new one (draw) |
 | exhaust | the XOR flicker under the droid, drawn from the main loop ([doc 6.7](06-rendering.md#67-the-exhaust)) |
 | flag pointer | word +2 of a sprite-list entry: the byte whose bit 7 the interrupt sets when the image met ink; `$0000` for erases and objects (the write goes to ROM, never flagged). FlagPointer `$637E` is the droid's: DroidFlags normally, `$0000` under the shield |
@@ -51,4 +51,4 @@ Each term once, here; the documents link to it.
 | shield | down held alone while standing: DroidFlags bit 4, FlagPointer `$0000` (no touch), EnergyReload `$0A` (one energy step every 10 interrupts instead of 250), HazardFlash ([doc 5.9](05-controls.md#59-the-shield-down-alone), doc 10.3) |
 | shift in place | ShiftGraphic3 / ShiftGraphic4 shift a stored frame to x AND 7 and keep the offset in its first byte ([doc 6.5](06-rendering.md#65-the-enemy-buffers-and-the-graphics-shifted-in-place)) |
 | sprite list | the 8-byte entries from `$FF01` that the interrupt XORs onto the screen at each interrupt ([doc 6.4](06-rendering.md#64-the-sprite-list-ff01-and-interruptsprite-95db)) |
-| tick | an energy tick: EnergyTick `$7AB6` counts EnergyTimer `$6366` down one each interrupt taken; at 0 the energy drops by one (every 250 interrupts, 5 s; every 10 under the shield). It counts interrupts, not frames, so lost INTs slow it ([doc 10.4](10-gameplay-logic.md#104-energy-and-its-clock)); the sound's tick is the pass tick |
+| tick | an energy tick: EnergyTick `$7AB6` counts EnergyTimer `$6366` down one each interrupt taken; at 0 the energy drops by one (every 250 interrupts, 5 s; every 10 under the shield or while an enemy touches the droid, and 50 interrupts after). It counts interrupts, not frames, so lost INTs slow it ([doc 10.4](10-gameplay-logic.md#104-energy-and-its-clock)); the sound's tick is the pass tick |

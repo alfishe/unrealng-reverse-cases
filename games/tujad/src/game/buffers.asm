@@ -73,8 +73,9 @@ BlankGraphic:
 
 ; The ED pieces taken: ten bytes, bits 0-4 of each, 50 pieces
 ;
-; EdPickup $7703 sets the bit of a piece; WinTest $69E3 waits for all ten bytes
-; to be $1F; ProgressScreen $8F53 shows them. NewGame zeroes them.
+; ProgressScreen $8F53, called by EdPickup $7703 with the piece number, sets
+; the bit of a piece; WinTest $69E3 waits for all ten bytes to be $1F;
+; ProgressScreen $8F53 shows them. NewGame zeroes them.
 EdFlags:
   INCBIN "res/leftover/Source3.bin",$009C,10
 EdFlagsEnd:

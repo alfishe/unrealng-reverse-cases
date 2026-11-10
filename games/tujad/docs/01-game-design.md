@@ -21,7 +21,7 @@ Every screenshot is the screen at the start of the named frame of the named reco
 
 ## 1.1 The game in one paragraph
 
-The player is a droid, GEN 19, inside TUJAD, a computer that has broken down. The droid walks, climbs and falls through
+The player is a droid, GEN 19, inside TUJAD, a computer that has broken down. The droid walks and hovers through
 102 rooms of a maze of circuit-board walls, collecting the 50 pieces of an ED circuit. Enemies materialise and fly
 about the rooms, objects drift through them and patrollers crawl along their floors; the droid shoots them with four
 weapons. Energy runs down with time and runs down fast while an enemy touches the droid; an object, a patroller or a
@@ -43,7 +43,7 @@ stateDiagram-v2
     Loading --> Menu: the game block loaded, c1 frame 13580
     Menu --> Play: 0, START GAME
     Play --> Progress: an ED piece taken
-    Progress --> Play: the new piece flashed 9 times
+    Progress --> Play: the new piece toggled 9 times, 3.7 s
     Play --> Play: a room left, a teleporter, a life lost
     Play --> GameOver: the last life lost
     GameOver --> Menu: about 10 s
@@ -104,13 +104,18 @@ ReadControls `$7161` reads it every interrupt ([doc 5](05-controls.md) has the d
 | down | A-G, H-L | 6 | down |
 | up | Q-T, Y-P | 7 | up |
 | fire | 1-5, 6-0 | 0 | fire |
-| next weapon | SPACE | SPACE | SPACE |
+| next weapon | SPACE or CAPS SHIFT | SPACE or CAPS SHIFT | SPACE or CAPS SHIFT |
 | pause | ENTER | ENTER | ENTER |
 
 - Whole half rows of the keyboard act as one key, so the keyboard needs no redefinition.
-- SPACE picks the next weapon that has ammunition, and only while no shot is in flight.
+- SPACE (or CAPS SHIFT: WeaponSelect's port `$7EFE` has A8 and A15 low, so bit 0 is either key) picks the next
+  weapon that has ammunition, and only while no shot is in flight.
 - `c1` presses every menu key and plays with the keyboard; `menu-cursor` and `menu-kempston` play with the other two
   methods.
+- No hidden key and no cheat: the code has 13 port reads, and every one is accounted for: ReadControls `$7171-$71EE`
+  (the Kempston port `$1F` and eight half rows), Pause `$7940` (ENTER, `$BFFE`), WeaponSelect `$7982` (SPACE or CAPS
+  SHIFT: port `$7EFE` reads both half rows) and the menu's two (`$8944` keys 1-3 on `$F7FE`, `$8961` key 0 on `$EFFE`).
+  No read tests a key combination, and no POKE-able cheat flag is tested anywhere.
 
 **The point**: one key per action, on whole rows of the keyboard, read 50 times a second.
 
@@ -125,7 +130,7 @@ object kinds and one patroller, and every one is a one-colour block.*
 
 | Who | How many in a room | What it does | Witness |
 | --- | --- | --- | --- |
-| the droid, GEN 19 | 1 | walks left and right a column at a time, turns round, climbs and steps down 2 pixel rows at a time, falls when nothing is under it | every play recording |
+| the droid, GEN 19 | 1 | walks left and right a column at a time, turns round, rises and sinks 2 pixel rows at a time on up and down; with no wall under it, it hovers (no gravity: MoveDroidFall `$7272` only sets the air flag) and moves on every pass | every play recording |
 | enemies | up to 4 | materialise on a free spot, fly diagonally and bounce off walls; a touch drains energy fast; shot, they explode and come back later; their kind cycles 1-9 | `c1` 14950 |
 | objects | up to 2 | drift through the room; a touch kills; each kind dies only to one weapon | `rzx-028000` |
 | patrollers | 3 in the world | crawl along a row from one turn point to the next, crossing rooms; a touch kills | `rzx-019000` from frame 216 |
@@ -142,8 +147,9 @@ rotating box to weapon 3.
 
 *Every room as DrawRoom draws it, from `src/res/rooms/Rooms.txt` and the tile resources (`python3
 tools/fig_roommap.py docs/img/play/world-map-rooms.png`). How to read: 8 rooms across and 16 down, room 0 at the top
-left; the room east is + 1, the room south is + 8; each cell shows the tiles and the items lying there at the start;
-a red frame and "T>n" mark a teleporter to room n; grey cells are the 26 empty slots. The point: the maze is one
+left; the room index east is + 1, the room south is + 8; each cell shows the tiles and the items as the image stores
+them, before the deal (so no game starts with exactly these items); a thick red frame round the pad and a red tag
+"T>n" mark a teleporter to room n; grey cells are the 26 empty slots. The point: the maze is one
 8 x 16 grid with holes, and the teleporters are its short cuts.*
 
 - **102 rooms**: the room table at `$DB53` has 128 entries, and 26 point at one empty record. The RZX's complete game
@@ -153,9 +159,24 @@ a red frame and "T>n" mark a teleporter to room n; grey cells are the 26 empty s
 - **Teleporters**: a pad in some rooms; standing on it shows TRANSPORTING, a beam carries the droid down and up, and the
   target room is drawn.
 - **Items change rooms each game**: NewGame `$7A2F` deals the items, then ScrambleRooms `$7BA0` passes every GEN 19,
-  energy source and ED piece one room on, 1-31 times (a random count). Weapons stay where they are.
+  energy source and ED piece one slot on, an odd number of times from 1 to 31 (`$7A38 OR $01`, then `AND $1F`): 16
+  possible deals for the first game after loading. Weapons stay where they are. Nothing undoes the rotation, so a later
+  game in the same session turns on from the last deal.
 
 The world map of the shots (every room as a recording saw it) is [WALKTHROUGH 6.1](../WALKTHROUGH.md#61-the-screens).
+
+**The published map.** Spectrum Computing keeps one map of the game,
+<https://spectrumcomputing.co.uk/pub/sinclair/games-maps/t/Tujad.png> ("Map created by Ignacio Burgueño, 1999, map
+modified by Pavero, 2002", 4800 x 2013 pixels; a copy is in `work/review/fixA-map/`). Against the resources:
+
+- It lays the rooms out as one connected plan, not as the 8 x 16 table above: the room index + 1 is the room east, so an
+  east exit in the table's last column leads to the first room of the next row. The table is the index, the published
+  plan the geography.
+- It draws 9 red lines for the teleporters. `Rooms.txt` holds 18 pads in 9 two-way pairs (16-79, 22-26, 24-103,
+  39-80, 51-90, 52-117, 55-73, 56-60, 62-105): every pad leads to a pad that leads back.
+- It marks START in the control room with the TUJAD terminal, room 84 here.
+- Its items are one game's deal; the resources' items are the image's, before the deal, so the two differ room by
+  room. A room-by-room match of the layouts was not made.
 
 | | |
 | --- | --- |
@@ -175,7 +196,8 @@ meets.*
 - The energy starts at 99 (BCD) and steps down by 1 every 250 interrupts: 5 s when no interrupt is lost (EnergyTick
   `$7AB6`).
 - While an enemy touches the droid it steps every 10 interrupts (0.2 s), and stays fast for 50 interrupts after the
-  touch (DrainTimer `$7906`). The droid's attributes flash and the beeper clicks (HazardFlash `$699B`).
+  touch (TouchTimer, counted down by DrainTimer `$7906`). Nothing flashes: the attribute flash and the clicks of
+  HazardFlash `$699B` belong to the shield (down held alone, DroidFlags bit 4), which drains at the same rate.
 - WARNING ENERGY LOW is queued when the energy steps from 11 to 10.
 - At 0, unless the droid is turning round, a life is lost (EnergyOut `$6A30`).
 - An energy source restores 99.
@@ -245,6 +267,15 @@ Each room holds up to two items, drawn where they lie. Walking into one takes it
 | ED piece 1-50 | `$82-$B3` | the piece's flag set; the progress screen | | `c1` 14700 |
 | weapon 1-3 | `$C1-$C3` | that weapon's ammunition + 1 | WEAPON LOCATED AND STORED | `rzx-002000` frames 1388, 1643 |
 
+![A weapon pickup](img/play/weapon-pickup.png)
+
+*`rzx-002000` (the RZX's keys), room 39. Left: frame 1350, the grenade, weapon 2's pickup, left of the droid. Right:
+frame 1400, taken at frame 1388: the item is erased and weapon 2 gains a shot (the HUD shows weapon 0, the gun, so no
+ammunition digit is printed). Made with `python3 tools/fig_moments.py docs/img/play/weapon-pickup.png --title "..."
+work/stage1/rec/rzx-002000/screens/001350.png="..." work/stage1/rec/rzx-002000/screens/001400.png="..."` from the
+recording's own screens. How to read: before and after, left to right. The point: a weapon pickup changes nothing on
+screen but the item, unless that weapon is in use.*
+
 **The ED pieces.** Piece n (kind - `$81`) sets bit (n - 1) mod 5 of EdFlags byte (n - 1) / 5 (`$6681-$668A`, ten
 bytes of five bits). It is the tile at column (n - 1) / 5, row (n - 1) mod 5 of the 10 x 5 circuit picture.
 
@@ -253,7 +284,9 @@ bytes of five bits). It is the tile at column (n - 1) / 5, row (n - 1) mod 5 of 
 1. n = `$9B` - `$81` = 26.
 2. Byte (26 - 1) / 5 = 5, bit (26 - 1) mod 5 = 0: EdFlags + 5 (`$6686`) gets bit 0.
 3. The picture's column 5, row 0: the top tile of the sixth column.
-4. The progress screen draws every found tile and flashes this one 9 times, about 3.3 s.
+4. The progress screen draws every found tile and toggles this one's colour 9 times (`XOR $03`, B = 9), about 20.4
+   frames apart (`menu-cursor`, [doc 8.10](08-hud-and-text.md#810-the-progress-screen)): about 184 frames, 3.7 s, the
+   delay loop's 167 frames plus the interrupts the handler takes meanwhile.
 5. With 26 pieces found the game-over screen would say 52 %: 2 % a piece, in BCD.
 
 ![The progress screen](img/play/progress.png)
@@ -306,7 +339,9 @@ message over the progress picture. The point: the win shows the completed pictur
   NORMAL FUNCTIONS WELL DONE, the whole picture, 512 interrupts (10.24 s), the menu.
 - **The game over** comes when the last life is lost: COMPUTER MALFUNCTION GEN 19 TERMINATED UCF REACTOR NO 14 C
   DESTROYED, the picture with the pieces found and YOU HAVE COMPLETED nn% OF TUJAD, 10.24 s, the menu.
-- The energy stops in both (EnergyTimer = 0). Nothing is saved: no score, no hi-score, no name.
+- The energy keeps counting in both: the ending zeroes EnergyTimer, but ProgressScreen reloads it (`$9035`), so the
+  hidden counter steps two or three times during the wait (`game-over`: 99 to 97; `win`: 19 to 17). The five HUD
+  attributes are cleared first, so nothing shows. Nothing is saved: no score, no hi-score, no name.
 
 | | |
 | --- | --- |
@@ -326,7 +361,5 @@ over.
 
 - **The 26 empty slots** in normal play: the RZX's complete game never enters them; `room-tour` draws 12 of them, empty,
   by POKEing the room.
-- **Weapon 3's steering** while fire is held (CellSolidColumn `$7D24`, CellSolidRow `$7D50`): no RZX chunk steers it;
-  the recording `probe-shield` does ([doc 5.8](05-controls.md#58-the-probe-under-fire-held)).
 - **A difficulty setting or levels**: the game has none; the enemies' kinds cycle and their spawn points and timers are
   random, seeded by how long the player waits in the menu.

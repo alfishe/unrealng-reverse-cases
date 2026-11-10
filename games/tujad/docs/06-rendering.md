@@ -96,7 +96,9 @@ Who calls it, with which mode:
 | LoseLife `$6A7F` | `$FF` | a new life: a clear |
 | NewGame `$7A69` | `$FF` | the first room: a clear |
 
-L1 counts 279 rooms drawn: 171 wipes and 110 clears.
+L1 counts 279 entries of DrawRoom (the callers above add up to 279) and 281 passes of its wipe test `$6C4D`: 171 wipes
+and 110 clears. The 2 extra are recordings that start inside DrawRoom's dim loop (`rzx-032000`, `rzx-063000`,
+`rzx-free-32000`, one each) less one that ends there (`rzx-free-31000`).
 
 ### The dim and the wipe
 
@@ -224,7 +226,8 @@ python3 ../../kit/routine_anim.py --work work/docs/tjB/c1 --window 15433:35000-1
 Witness:
 
 - The eight steps start three frames apart in the trace (the table above).
-- L1 counts 171 wipes and 110 clears: the exits against the other room draws.
+- L1 counts 171 wipes (`$6C59`) and 110 clears (`$6C54`), 281 in all against 279 entries (the 2 are recordings
+  that start inside the dim loop, above): the exits against the other room draws.
 
 The point: the wipe is a cheap transition from one instruction (SRL or SLA) per byte, with no table and no second
 screen. The dim before it makes the old room fade to its inks first. The interrupt stays on, so the scroller goes on
@@ -615,8 +618,9 @@ flowchart TD
 963E  18 9B        JR InterruptSprite
 ```
 
-The cost, from the code: a byte takes 92 T without a hit (PUSH AF to JR NZ), 87 T with one. A 3 x 16 enemy image is
-48 bytes, about 4 900 T with the line steps.
+The cost, from the code: a byte takes 92 T without a hit (PUSH AF to JR NZ), 94 T with one (`JR Z` not taken, 7, and
+`LD C,$80`, 7, against 12). A 3 x 16 enemy image is 48 bytes: 48 x 92 plus 16 line steps of about 93 T and the entry,
+about 6 000 T. The 15010 handler (28 511 T for 192 bytes, about 148 T a byte) shows the contended screen on top.
 
 ![The sprite list of c1 frame 15010](img/render/sprite-list.png)
 
@@ -668,7 +672,8 @@ game shifts each frame in place to the wanted offset, and records the offset in 
   - if (HL) = A it returns at once;
   - otherwise it stores A and shifts the 48 bytes by A - old: right with SRL, RR, RR per row, or left with SLA, RL,
     RL, repeated for each pixel.
-- **ShiftGraphic4 `$7EFE`** does the same for the 4-byte, 24-row object frames (97 bytes each, `$B049-$B901`).
+- **ShiftGraphic4 `$7EFE`** does the same for the 4-byte, 24-row object frames (`$B049-$B901`: 21 frames of
+  97 bytes, then the probe's explosion, 4 frames of 49 bytes).
 
 Because the frame itself moves, the list cannot point at it: the next MoveEnemy may shift it again before the
 interrupt draws (two enemies of a kind share the frames). So MoveEnemy copies each image into a buffer of its own.
@@ -808,9 +813,10 @@ flowchart TD
 9277  22 D0 63     LD (SpriteListEnd),HL
 ```
 
-The cost, from the code: a row with d shifts takes 45 + 82 d T, so a call costs about 720 + 1312 d T. The worst
-case, d = 7, is about 9 900 T. The early return costs 16 T. L1 counts 20 289 calls of ShiftGraphic3 and only 2 330
-shifts: 89 % of the calls find the frame already at the offset. ShiftGraphic4: 1 765 calls, 299 shifts.
+The cost, from the code: a row with d shifts takes 45 + 82 d T, so a call costs about 720 + 1312 d T. The worst case,
+d = 7, is about 9 900 T. The early return costs 18 T (`CP (HL)` 7, `RET Z` taken 11). L1 counts 20 289 calls of
+ShiftGraphic3 and only 2 330 shifts: 89 % of the calls find the frame already at the offset. ShiftGraphic4: 1 765 calls,
+299 shifts.
 
 ![ShiftGraphic3 at the eight offsets](img/render/shift.png)
 
@@ -1114,8 +1120,10 @@ flowchart TD
 968A  10 D4        DJNZ InterruptScrollLine
 ```
 
-The cost, from the code: a byte is 33 T (LD, LD, INC, INC, DJNZ), so the copy of 589 bytes takes about 21 000 T
-with the line steps. It runs on one interrupt in five (one in fifteen at a row boundary).
+The cost, from the code: a byte is 35 T (`LD` 7, `LD` 7, `INC` 4, `INC` 4, `DJNZ` 13), a line 19 x 35 - 5 + 137 T of
+pushes, pops and line steps = 797 T, so the copy of 589 bytes (31 lines) takes about 24 700 T before contention. The
+traces give about 25 900 T from InterruptScrollStep `$9658` to InterruptScrollEnd `$96CB` (6.11). It runs on one
+interrupt in five (one in fifteen at a row boundary).
 
 ![The scroller window, c1 frames 14290-14610](img/render/scroll.png)
 
@@ -1128,7 +1136,8 @@ Worked example: from 14400 on ScrollText is 0 in the samples, yet the text keeps
 up and leaves line 39 as it was, so the blank line under the last row climbs with it and wipes the window from below.
 
 Witness: in the `c1` trace of frame 15007 InterruptScrollByte writes 589 bytes (31 x 19), all after the beam has
-passed line 39 (6.11).
+passed line 39: the copy started late, behind a long list. A copy that starts early can leave a one-line seam
+(6.11).
 
 The point: the scroller is a plain copy of a small window, cheap enough for the interrupt. It ends a message without
 any code to clear the window: the blank bottom line does it.
@@ -1144,7 +1153,7 @@ gives each one's address and readers.
 | Enemies | `$A74E-$AEC4` | 9 kinds of 3 or 4 frames, the explosion; 49 bytes each | MoveEnemy | ShiftGraphic3 (6.5) |
 | Materialise | `$AEC5-$AF84` | 4 frames of 3 x 16 | MoveEnemy | never |
 | Probe | `$AF85-$B048` | 4 frames, 49 bytes each | Fire, MoveShot | ShiftGraphic3 (`$83E5`, `$84A3`) |
-| Objects | `$B049-$B901` | 5 kinds, the deaths, the probe's explosion; 97 bytes each | MoveObject | ShiftGraphic4 |
+| Objects | `$B049-$B901` | 5 kinds and the deaths, 21 frames of 97 bytes; the probe's explosion, 4 frames of 49 bytes | MoveObject | ShiftGraphic4 |
 | Patrollers | `$B902-$BC01` | 2 x 4 frames of 4 x 24 | MovePatrollers | never |
 | ShotGraphics | `$8814-$8853` | the bolts of weapons 1 and 2, 2 x 8 | Fire, MoveShot | never |
 | HudIcons | `$8C55-$8D34` | 7 icons of 16 x 16 | Blit16 (doc 08) | never |
@@ -1186,7 +1195,8 @@ by pixels carry a shift byte; the droid and the patrollers move by whole columns
 ## 6.10 Code against the screen
 
 Which routine wrote each byte of the screen over five frames of room 92 (`c1` 15006:0-15011:0), from the access
-trace. Five routines write the screen in play:
+trace. Five routines write the play window in an ordinary pass; the HUD digits (Print8, doc 08), PickupErase,
+DeathEffect, the beams, TeleportFlash and HazardFlash write it in their own events (doc 09):
 
 | Routine | Bytes last written | Writes | Reads from |
 | --- | ---: | ---: | --- |
@@ -1291,11 +1301,20 @@ Worked example: the counts per routine, before and after the beam.
 
 What follows:
 
-- **The sprites never tear and never flicker.** Every XOR write, even in the heaviest pass, lands before the beam
-  reaches the play area (line 48 is read at T 26 904). The erase and the draw of a mover are both done before the
-  frame shows, so no frame shows a mover missing.
-- **The scroller never tears.** Its 589 writes all come after the beam passed the window, so the whole step shows in
-  the next frame at once.
+- **The sprites did not tear in the traced passes.** Every XOR write landed before the beam reached the line it writes.
+  The play area starts at line 48, read at T 26 904, but a long list runs past that: from the handler's start at
+  T 1 842, at 92 T a byte or more, an interrupt with more than about 270 bytes in its list is still drawing when the beam
+  enters the play area (the heaviest pass draws 624 bytes in its interrupts). So a mover high in the play area, drawn
+  late in a heavy list, could tear; none was seen. The erase and the draw of a mover come one after the other in the
+  list, so no frame shows a mover missing.
+- **The scroller can show a one-line seam.** Where the copy starts decides it (ScrollStep times of every tjD
+  recording, 845 steps). After about T 25 000, behind a long list (242 steps, 29 %, as in `c1` 15007 above), all 589
+  writes come after the beam has passed the window, and the whole step shows in the next frame. From about T 2 200,
+  with a short or empty list (540 steps, 64 %), the copy runs ahead of the beam for the first 25 lines and falls behind
+  it for the last 6: the beam reads window line 39 at T 24 888, and the copy, about 835 T a line, ends near T 28 000.
+  From about T 14 700 (63 steps, 7 %) the beam overtakes it after 4 lines. In those frames the window's upper lines
+  show the step and the lower ones do not, a seam of one pixel line in text that itself moves one line a step. This is
+  read from the code and the call times; no write trace of such a frame was taken.
 - **The exhaust can flicker.** Its erase and draw run from the main loop. In the heaviest pass 48 writes are before
   the beam and 48 after: for that frame the beam shows the erased half. With the exhaust this is the intended look.
 - **Lost interrupts lower the rate, not the picture.** The list is drawn only in a HALT's interrupt. When a pass runs
@@ -1305,8 +1324,9 @@ What follows:
 Witness: the counts above are the legends of the beam timelines (`work/docs/tjB/beam-14604.png` and
 `beam-15007.png` for the two extra `c1` frames, made with the same command).
 
-The point: the game draws all its sprites in the interrupt, ahead of the beam, and keeps the main loop's drawing to
-the exhaust and the colours. That is why Tujad's sprites are steady without a back buffer.
+The point: the game draws all its sprites in the interrupt, line by line ahead of the beam in every traced pass, and
+keeps the main loop's drawing to the exhaust and the colours. That is why Tujad's sprites are steady without a back
+buffer. The scroller, copied wherever the interrupt reaches it, is the one picture that can show a seam.
 
 ## 6.12 What is known only from the code
 
@@ -1318,3 +1338,5 @@ the exhaust and the colours. That is why Tujad's sprites are steady without a ba
   moves left; its count is in the L1 total, not split out.
 - **TurnMirror2.** The front frame skip of `$50` bytes is from the code; the mirror figure shows TurnMirror3 only.
 - **The cost estimates** in 6.2, 6.4, 6.5 and 6.8 are counted from the instruction timings, not measured per call.
+- **The scroller's seam** (6.11) is predicted from the code and the ScrollStep / ScrollEnd times, not seen in a write
+  trace.

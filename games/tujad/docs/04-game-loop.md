@@ -44,13 +44,15 @@ Tujad is frame-locked. The main loop waits for the interrupt twice in every pass
 So the main loop computes and the interrupt draws. One half pass moves the droid; the other moves the objects, the
 enemies and the patrollers. Each half's sprites go to the screen at the next INT.
 
-**The point**: the game's speed is counted in passes, and a pass is two interrupts when its work fits. The droid
-moves once a pass, so play runs at 25 moves a second at best.
+**The point**: the game's speed is counted in passes, and a pass is two interrupts when its work fits. MoveDroid
+is called once a pass but acts on every second pass while the droid stands (MoveDelay reloads 2, `$720F-$7214`) and
+on every pass in the air: at best about 12 steps a second on a floor, 25 in the air.
 
 ## 4.2 The state machine
 
 The program has no dispatcher. The states are joined by fall-throughs and jumps. Two of them leave through a
-`POP BC; JP Restart` that drops the return address of `CALL WinTest` or `CALL EnergyOut`.
+`POP BC; JP Restart` that drops the return address of `CALL WinTest`, `CALL EnergyOut` or, for a hazard on the
+last life, `CALL MoveDroid` (`$691A`; the hazard comes through `$75E1 JP NZ,HazardDeath` and `$6998 JP LoseLife`).
 
 ```mermaid
 stateDiagram-v2
@@ -85,14 +87,15 @@ Restart:                        ; $6900: entered at power-on and after a win or 
   DI
   CALL ClearScreen              ; $7A9F
   CALL Menu                     ; $8854: returns when 0 is pressed
-  CALL NewGame                  ; $7A2F: lives, energy, rooms scrambled 1-31 times
+  CALL NewGame                  ; $7A2F: lives, energy, rooms scrambled an odd 1-31 times
   LD HL,Messages
   CALL QueueMessage             ; TUJAD FROM ORPHEUS into the scroller
   EI                            ; $6910
 MainLoop:                       ; $6911: falls through
 ```
 
-The exit to Restart, the same in WinTest and in LoseLife (both reached by a `CALL` from MainLoop):
+The exit to Restart, the same in WinTest and in LoseLife (WinTest reached by a `CALL` from MainLoop; LoseLife by
+`CALL EnergyOut` from MainLoop or by a jump out of `CALL MoveDroid`):
 
 ```asm
   LD BC,$0002                   ; B = 0: DJNZ runs 256 times; C = 2: twice
@@ -112,8 +115,11 @@ GameOverWait:                   ; $6AA3 (WinWait $6A26 is the same)
 2. LoseLife reloads the energy (99, the timers `$FA`) and takes Lives from 0 to `$99` (`DEC A; DAA`).
 3. It queues GEN 19 DESTROYED, runs DeathEffect `$7ADF`, saves the room's objects and places the droid.
 4. Lives is `$99`, so it jumps to LoseLifeGameOver. That clears the five attributes at `Attributes+133`, zeroes
-   EnergyTimer (the energy stops) and ScrollPriority, and queues COMPUTER MALFUNCTION.
-5. ProgressScreen with A = `$FF` prints YOU HAVE COMPLETED 0% OF TUJAD (the recording's frames 450-950).
+   EnergyTimer and ScrollPriority, and queues COMPUTER MALFUNCTION.
+5. ProgressScreen with A = `$FF` prints YOU HAVE COMPLETED 0% OF TUJAD (the recording's frames 450-950). At its end it
+   reloads EnergyTimer from EnergyReload (`$9035-$903B`), so the energy ticks on unseen during the wait: the
+   recording's Energy is 99 at frame 650, 98 at 700 and 97 at 950 (`states.json`), with the five HUD attributes
+   cleared.
 6. 512 HALTs, about 10.24 s, while the handler scrolls the message. Then `POP BC; JP Restart`: the menu, at about
    frame 975.
 
@@ -141,7 +147,7 @@ MainLoop:                       ; $6911
   CALL MoveDroid                ; $7208: keys, walls, exits, pickups, hazards
   CALL ExhaustStep              ; $8E7E
   CALL DroidExhaust             ; draw the exhaust
-  CALL HazardFlash              ; $699B: only while an enemy is touched
+  CALL HazardFlash              ; $699B: only under the shield (DroidFlags bit 4)
   CALL MoveShot                 ; $8298
 MainLoopSecondHalf:             ; $6929
   CALL WaitFrame                ; the droid's list goes to the screen
@@ -170,7 +176,7 @@ The same pass as pseudocode:
 loop:
     wait_frame()                 # the interrupt draws the list built in the second half
     pass_tick(); exhaust(erase); move_droid(); exhaust_step(); exhaust(draw)
-    if touching_enemy: hazard_flash()
+    if shield_up: hazard_flash()   # DroidFlags bit 4, down held alone
     move_shot()
     wait_frame()                 # the interrupt draws the droid's list
     for o in objects[0..1]: move_object(o)
@@ -329,7 +335,7 @@ handlers):
 | --- | ---: | ---: | --- |
 | entry, ReadControls | 408 | 408 | every interrupt |
 | sprites | 32 744 | 52 294 | the droid's list is about 34 000 T alone; each enemy pair adds about 12 600 |
-| scroller | 72 | 27 321 | the test only, or a whole step (589 screen writes) |
+| scroller | 72 | 27 321 | the test only, or a whole step (589 moved bytes, plus 19 glyph bytes when a message is showing) |
 | WeaponSelect, EnergyTick, DrainTimer, exit | 833 | 965 | |
 | ROM KEYBOARD | 1 459 | 1 516 | |
 
@@ -364,12 +370,18 @@ Every `EI` and `HALT` in the code, from the listing (`build/game.lst`), with the
 | `$796B`, `$796D`, `$796E` | WaitFrame | `EI; NOP; HALT; DI`, twice a pass | 37 159 calls |
 | `$6B2D` … `$6E0B` | DrawRoom | the room is drawn with interrupts on (`DI` at `$6E0B`); DrawRoom empties the sprite list first | 279 |
 | `$7F50` … `$7F5B`, `$7F60` … `$7F6B` | RiseSweep, FallSweep | `DI` during the sweep, `EI` after it | 210, 649 |
-| `$777E`, `$777F` … `$77A7` | Teleport | `EI; HALT` (the beam frame drawn), the beam and the flash with interrupts on, `DI` before DrawRoom | 8 |
+| `$777E`, `$777F` … `$77A7` | Teleport | `EI; HALT` (the droid's two images drawn), the beam with interrupts on; the flash's 18 sweeps with interrupts off (each sweep `DI` … `EI`), so its 249 frames take only the INTs that fall just before, between two sweeps or just after (`rzx-030000`: 3 of the 250 INTs of frames 251-500, [doc 9.9](09-sound.md#99-the-teleport)); `DI` before DrawRoom | 8 |
 | `$7816` … `$7819`, `$7825` … `$7835` | TeleportArrive | `EI; NOP; HALT; DI`, then the beam up with interrupts on | 13 |
 | `$8F5E` … `$9044` | ProgressScreen | interrupts on for the whole screen and its flash | 36 |
-| `$6A22`, `$6A26` | WinTest | `EI`, then 512 HALTs | 1, 990 |
+| `$6A22`, `$6A26` | WinTest | `EI`, then 512 HALTs | 0, 990 (`win` and `rzx-080000`, 495 each: both start inside WinWait, so no build holds a whole win wait) |
 | `$6AA2`, `$6AA3` | LoseLifeGameOver | the same | 1, 512 |
 | `$96FB` | Interrupt | `EI; RETI` | 54 825 |
+
+- The sweeps (DeathEffect's 8 FallSweeps inside LoseLife, TeleportFlash's 18 sweeps) are the long stretches with
+  interrupts off: 64 and 249 frames that lose almost every INT, which slows the energy clock and the scroller ([doc
+  9.9](09-sound.md#99-the-teleport), [doc 10.12](10-gameplay-logic.md#1012-random-the-energy-timer-and-the-rzx-drift)).
+  Each sweep ends with `EI`, so the INTs that fall between two sweeps, or after the last one until the next `DI`, are
+  taken.
 
 The menu (MenuPoll `$893B`) runs with interrupts off: no handler, no scroller, no energy. It calls Random `$7DC9`
 on every poll, so the seed depends on how long the player waits.
@@ -407,15 +419,16 @@ PauseReleased:
   `$7949`, the held-key branch. The handler `$95D0` and EnergyTick `$7AB6` do not run in frames 15241-15359.
   `memory_at` at the start of frames 15241, 15300 and 15359 gives EnergyTimer `$6366` = `$64` and Energy `$636E` =
   `$97` each time.
-- So the energy does not drain during the pause. Pause's note in `src/game/game.ann` and stage 2's NOTES say it does,
-  "known only from the code"; the recording says it does not.
+- So the energy does not drain during the pause. Stage 2 first read it the other way; Pause's note in
+  `src/game/game.ann` and stage 2's NOTES are corrected.
 
 ```bash
 python3 work/docs/tjA/probe_rec.py c1 7949 95D0 7AB6     # base 36930: the frames each address runs in
 ```
 
-**The point**: the game runs with interrupts off except where it waits. An INT that falls in the work is lost, the
-pause stops the whole game clock, and the menu has no interrupt at all.
+**The point**: the main loop's work runs with interrupts off. Interrupts are on in the waits, and also in DrawRoom,
+ProgressScreen and the beams (each empties the sprite list first), and after any sweep's `EI` until the next `DI`. An
+INT that falls in the work is lost, the pause stops the whole game clock, and the menu has no interrupt at all.
 
 ## 4.7 Passes and interrupts a frame
 
@@ -460,8 +473,10 @@ python3 work/docs/tjA/passtrace.py --work work/docs/tjA/r102 --window 20:0-120:0
 The trace of `room-102` frames 20-120 agrees: 48 passes, every one with 2 INTs taken; by frame numbers 43 of 2, 4 of
 3 and 1 of 1; 3 INTs lost; a median of 150 546 T and a mean of 144 692 T.
 
-**The point**: a pass is 2 interrupts, or 3 when the work overruns; never 1. The game takes 2 / 2.085 = 0.96
-interrupts a frame in room 102, so its energy clock runs about 4 % slow there.
+**The point**: a pass is 2 interrupts, or 3 when the work overruns; never 1. The game takes 2 / 2.085 = 0.96 interrupts
+a frame in room 102, so its energy clock runs about 4 % slow there. The scroller counts interrupts too (ScrollDelay is
+decremented in the handler, `$9643`), so a message slows down by the same factor: ENERGY SOURCE ABSORBED takes 115
+frames for 2 rows in `rzx-028000`, 15 INTs lost ([doc 8.8](08-hud-and-text.md#88-the-scroller-and-the-queue)).
 
 ## 4.8 The beam: a light pass and the heaviest pass
 
@@ -488,6 +503,11 @@ shifting a graphic (ShiftGraphic3LeftBit, lilac) and an attribute fill (FillAttr
 | MoveDroid | 7 503 | 4.7 % |
 | PassTick | 4 549 | 2.9 % |
 | the rest (ExhaustStep, KEYBOARD, the timers, MovePatrollers, …) | 7 838 | 4.9 % |
+
+The HALT rows of this table and of the heaviest pass's count each HALT from the `HALT` at `$796D` to the next
+instruction, `JP $95D0` at `$5B5B`, so they include the INT acknowledge (19 T) and the HALT's last cycles: 40 T more
+for the two INTs than the event table's waits, which stop at the INT instant (heaviest pass: 21 383 + 64 630 = 86 013
+against 86 053; light pass: 75 574 against 75 614).
 
 ![The heaviest pass against the beam](img/loop/beam-heaviest.png)
 
@@ -535,8 +555,9 @@ python3 work/docs/tjA/passparts.py --work work/docs/tjA/r102 --window 239:50000-
 - The droid's 2 x 40 lines are always written before the beam reaches them (624 sprite writes before the beam and 0
   after, over the four frames). The handler starts at T 1841 and the droid stands below line 90, so the XOR wins the
   race and the droid never tears.
-- The scroller's 589 writes all land after the beam has passed the panel (lines 8-39). So the panel's new line shows,
-  whole, one frame later.
+- The scroller's step (589 moved bytes; most likely no glyph bytes, since the panel is blank in the GIF of 4.5 by then,
+  but the trace was not counted for them) lands wholly after the beam has passed the panel (lines 8-39). So the panel's
+  new line shows, whole, one frame later.
 
 **The point**: the heaviest pass is 2.8 frames long by T but holds only 1.6 frames of work; the lost INT makes it
 three. The renderer's timing is safe for the droid, which is drawn ahead of the beam every time.
@@ -548,8 +569,8 @@ three. The renderer's timing is safe for the droid, which is drawn ahead of the 
 | WinDelay | `$6A19`, BC = `$FDE8` | `DEC BC; LD A,B; OR C; JR NZ`: 26 T a count, interrupts off | 65 000 x 26 = 1 690 000 T, 0.48 s | known only from the code (the RZX playback ran it; no L1 holds it) |
 | the win's wait | WinWait `$6A26` | 512 HALTs (B = 0, so DJNZ runs 256 times; C = 2) | 512 interrupts, 10.24 s | `win`: 495 HALTs, then the menu at its frame 497 |
 | the game over's wait | GameOverWait `$6AA3` | the same | 10.24 s | `game-over` frames 450-975; L1 512 |
-| the ED flash | ProgressScreen `$8F53` | the new piece flashed 9 times, a `$C350` delay each, interrupts on | about 11.7 million T, 3.3 s | `c1` 14700 (an ED piece taken next to the terminal) |
-| the teleport | Teleport `$7719`, TeleportArrive `$780D` | a HALT, BeamDown, TeleportFlash, DrawRoom, BeamDown, a HALT, BeamUp | not timed here | `rzx-002000` frame 807 |
+| the ED flash | ProgressScreen `$8F53` | the new piece's colour toggled 9 times (`XOR $03`, B = 9), a `$C350` delay each (1.3 million T, 167 frames for the nine), interrupts on, so each handler adds its time | about 184 frames, 3.7 s: the toggles 20.4 frames apart | `menu-cursor` ([doc 8.10](08-hud-and-text.md#810-the-progress-screen)); `c1` 14700 |
+| the teleport | Teleport `$7719`, TeleportArrive `$780D` | a HALT, BeamDown, TeleportFlash, DrawRoom, BeamDown, a HALT, BeamUp | about 500 frames, 10 s: the first beam 131 frames, the flash 249, the arrival beam 104 | `rzx-030000` frames 117-615 ([doc 9.9](09-sound.md#99-the-teleport)); `rzx-007000` agrees (about 725-1210) |
 
 ```text
 win_test():
@@ -559,7 +580,7 @@ win_test():
             clear 5 attributes; energy_timer = 0; scroll_priority = 0
             queue("CONGRATULATIONS ... WELL DONE")
             busy-wait 65000 counts         # WinDelay, interrupts off
-            progress_screen(0)            # the whole picture
+            progress_screen(0)            # the whole picture; ends with energy_timer = energy_reload ($9035)
             enable interrupts; halt 512 times
             drop the return; restart()
 ```
@@ -580,7 +601,9 @@ handler still scrolling the panel. 512 HALTs is 10.24 s on any 48K, because it c
 
 - **WinDelay** (`$6A19-$6A25`) ran only in the RZX playback, which no L1 build holds. Its length (0.48 s) comes from
   the instruction timings.
-- **The ED flash's length**: `c1` runs ProgressScreen once. The 3.3 s comes from the `$C350` delay and the 9 flashes;
-  it was not timed in a trace.
-- **An interrupt inside DrawRoom, Teleport or ProgressScreen** draws whatever the sprite list holds. DrawRoom and
-  Teleport empty the list before they enable interrupts. No recording catches a handler walking a list being built.
+- **An interrupt inside DrawRoom, Teleport or ProgressScreen** draws whatever the sprite list holds. DrawRoom,
+  ProgressScreen and TeleportArrive empty the list before they enable interrupts; Teleport enables at `$777E` with the
+  droid's erase and draw entries in the list (built at `$7720-$7776`) and empties it only after its HALT
+  (`$7780-$778A`). A sweep's `EI` (DeathEffect inside LoseLife, TeleportFlash) enables with the list unterminated
+  (WaitFrame writes the zero word only at `$7960`): a handler in those gaps would walk the entries the last half pass
+  built and then stale bytes up to an old zero word. No recording was checked for such a glitch.

@@ -31,7 +31,7 @@ import res_formats as rf  # noqa: E402
 BG, PANEL, TEXT, DIM = K.BACKGROUND, K.PANEL, K.TEXT, K.DIM
 WIDTH = 1050
 
-# The work space $6303-$6352 (start.asm), (first, last, name, owner)
+# The work space $6303-$635D (start.asm), (first, last, name, owner)
 FIELDS = [(0x6303 + 9 * k + o, 0x6303 + 9 * k + o + n - 1, f, 'enemy')
           for k in range(4) for o, n, f in ((0, 1, 'timer'), (1, 1, 'state'), (2, 1, 'x'), (3, 1, 'y'),
                                              (4, 2, 'graphic'), (6, 1, 'frame'), (7, 1, 'frames'), (8, 1, 'attr'))]
@@ -42,7 +42,11 @@ FIELDS += [(0x6327 + 10 * k + o, 0x6327 + 10 * k + o + n - 1, f, 'object')
 FIELDS += [(0x633B + 8 * k + o, 0x633B + 8 * k + o + n - 1, f, 'patrol')
            for k in range(3) for o, n, f in ((0, 1, 'frame'), (1, 1, 'y+dir'), (2, 1, 'col'), (3, 1, 'room'),
                                               (4, 2, 'right end'), (6, 2, 'left end'))]
-OWNER = {'enemy': (235, 110, 90), 'object': (110, 200, 240), 'patrol': (230, 200, 80)}
+FIELDS += [(0x6353 + 2 * k, 0x6354 + 2 * k, f'P{k + 1} ptr', 'ptr') for k in range(3)]
+FIELDS += [(0x6359 + o, 0x6359 + o, f, 'droid')
+           for o, f in ((0, 'x'), (1, 'y'), (2, 'flags'), (3, 'frame'), (4, 'width'))]
+OWNER = {'enemy': (235, 110, 90), 'object': (110, 200, 240), 'patrol': (230, 200, 80), 'ptr': (170, 170, 120),
+         'droid': (120, 220, 120)}
 
 CELL_COLOURS = {'empty': (20, 20, 26), 'wall': (90, 90, 105), 'enemy': (235, 90, 80), 'object': (90, 170, 250),
                 'patrol': (235, 200, 60), 'item': (200, 110, 230), 'teleport': (70, 220, 200),
@@ -88,11 +92,12 @@ def cmd_block(args):
     fnt, small = K.font(14), K.font(11)
     rows = [(0x6303, 9, 'enemy 0'), (0x630C, 9, 'enemy 1'), (0x6315, 9, 'enemy 2'), (0x631E, 9, 'enemy 3'),
             (0x6327, 10, 'object 1'), (0x6331, 10, 'object 2'),
-            (0x633B, 8, 'patroller 1'), (0x6343, 8, 'patroller 2'), (0x634B, 8, 'patroller 3')]
+            (0x633B, 8, 'patroller 1'), (0x6343, 8, 'patroller 2'), (0x634B, 8, 'patroller 3'),
+            (0x6353, 6, 'PatrollerPtrs'), (0x6359, 5, 'droid')]
     bw, bh, x0, y0 = 82, 46, 190, 64
-    img = Image.new('RGB', (WIDTH, y0 + len(rows) * (bh + 10) + 70), BG)
+    img = Image.new('RGB', (WIDTH, y0 + len(rows) * (bh + 10) + 90), BG)
     d = ImageDraw.Draw(img)
-    title(d, f'The movers\' records $6303-$6352 in {args.recording} frame {args.frame} (room {v[0x63]}), field by field')
+    title(d, f'The work space $6303-$635D in {args.recording} frame {args.frame} (room {v[0x63]}), field by field')
     d.text((14, 34), 'each box: the byte (hex) and its field; the colour names the owner', fill=DIM, font=small)
     names = {a: (n, o) for lo, hi, n, o in FIELDS for a in range(lo, hi + 1)}
     for r, (base, n, label) in enumerate(rows):
@@ -110,9 +115,11 @@ def cmd_block(args):
             d.text((x + 6, y + 25), name, fill=col, font=small)
     yl = y0 + len(rows) * (bh + 10) + 12
     for i, (k, lab) in enumerate((('enemy', 'enemy records (9 bytes)'), ('object', 'object records (10 bytes)'),
-                                  ('patrol', 'patroller records (8 bytes)'))):
-        d.rectangle([14 + i * 300, yl, 34 + i * 300, yl + 16], fill=OWNER[k])
-        d.text((42 + i * 300, yl), lab, fill=TEXT, font=small)
+                                  ('patrol', 'patroller records (8 bytes)'), ('ptr', 'PatrollerPtrs (3 words)'),
+                                  ('droid', 'DroidVars (5 bytes)'))):
+        xl, yy = 14 + (i % 3) * 330, yl + (i // 3) * 24
+        d.rectangle([xl, yy, xl + 20, yy + 16], fill=OWNER[k])
+        d.text((xl + 28, yy), lab, fill=TEXT, font=small)
     img.save(args.out)
     print(args.out, img.size)
 
@@ -280,6 +287,7 @@ def parse_alien(text):
             rooms[cur]['items'].append(t[1])
         elif t[0] == 'teleport' and t[1] != 'none':
             rooms[cur]['teleport'] = int(t[2])
+            rooms[cur]['teleport_at'] = tuple(int(v) for v in t[4].split(','))
         elif t[0] == 'enemies' and t[1] != 'none':
             rooms[cur]['enemies'] = [int(x) for x in t[1].split(',')]
         elif t[0] in ('object1', 'object2') and t[1] != 'none':
@@ -315,8 +323,8 @@ def cmd_world(args):
     title(d, 'The alien map $DB53 on the world: items, teleporters, enemies, objects and patrollers, room by room')
     d.text((14, 34), 'each room: its play area drawn from its layout (dimmed); below it the room number, the enemy '
                      'slots of its mask (E), the objects (O)', fill=DIM, font=K.font(11))
-    d.text((14, 50), 'and the items as the image deals them (NewGame moves every non-weapon item, doc 10.7); a '
-                     'teleporter is a cyan line to the target room', fill=DIM, font=K.font(11))
+    d.text((14, 50), 'and the items as the image deals them (NewGame moves every non-weapon item, doc 10.9); a '
+                     'teleporter is an orange square, joined to its target', fill=DIM, font=K.font(11))
     small, tiny = K.font(11), K.font(10)
     centres = {}
     for n in range(128):
@@ -339,10 +347,10 @@ def cmd_world(args):
         d.text((x0 + 2, y0 + chh + 1), f'{n}', fill=TEXT, font=small)
         d.text((x0 + 30, y0 + chh + 1), f'E{ens}', fill=(235, 110, 90), font=small)
         if a['objects']:
-            d.text((x0 + 76, y0 + chh + 1), 'O' + ','.join(object_kind_name(o['kind']) for o in a['objects']),
+            d.text((x0 + 62, y0 + chh + 1), 'O ' + ' '.join(object_kind_name(o['kind']) for o in a['objects']),
                    fill=(110, 200, 240), font=tiny)
         items = ' '.join(a['items'])
-        d.text((x0 + 2, y0 + chh + 17), items.replace('weapon', 'w').replace('energy', 'en'),
+        d.text((x0 + 2, y0 + chh + 16), items.replace('weapon', 'w').replace('energy', 'en'),
                fill=(200, 140, 240), font=tiny)
         for o in a['objects']:
             ox, oy = int(o['x']), int(o['y'])
@@ -368,19 +376,31 @@ def cmd_world(args):
         x0 = gx + (lroom % 8) * (cw + 2)
         y0 = gy + (lroom // 8) * (chh + lab + 4)
         d.text((x0 + 2, y0 + 2), f'P{k + 1}', fill=(240, 210, 60), font=small)
+    tel = (255, 140, 30)
+
+    def tele_place(n):
+        # The teleporter's top cells: column C, screen row R + 8 (ItemCell with the base CellTable + 64)
+        c, r = alien[n]['teleport_at']
+        return (gx + (n % 8) * (cw + 2) + c * cw // 32, gy + (n // 8) * (chh + lab + 4) + (r + 8 - 6) * chh // 18)
+
     for n in range(128):
         a = alien.get(n)
         if a and a['teleport'] is not None:
-            (x1, y1), (x2, y2) = centres[n], centres[a['teleport']]
-            d.line([x1, y1, x2, y2], fill=(70, 220, 200), width=2)
-            d.ellipse([x2 - 5, y2 - 5, x2 + 5, y2 + 5], fill=(70, 220, 200))
-            d.rectangle([x1 - 3, y1 - 3, x1 + 3, y1 + 3], fill=(70, 220, 200))
+            (x1, y1) = tele_place(n)
+            t = a['teleport']
+            (x2, y2) = tele_place(t) if alien.get(t) and alien[t].get('teleport_at') else centres[t]
+            d.line([x1 + 4, y1 + 4, x2 + 4, y2 + 4], fill=tel, width=2)
+    for n in range(128):
+        a = alien.get(n)
+        if a and a['teleport'] is not None:
+            (x1, y1) = tele_place(n)
+            d.rectangle([x1 - 1, y1 - 1, x1 + 2 * cw // 32 + 1, y1 + 2 * chh // 18 + 1], fill=tel, outline=(255, 230, 180))
     yl = gy + 16 * (chh + lab + 4) + 6
     for i, (col, lab_) in enumerate((((235, 110, 90), 'E: the enemy slots (mask bits 0-3)'),
                                      ((110, 200, 240), 'O and circle: an object, its kind and start place'),
                                      ((200, 140, 240), 'the items (ed n, gen19, en, w n)'),
                                      ((240, 210, 60), 'P1-P3: a patroller\'s row, end to end'),
-                                     ((70, 220, 200), 'teleporter: square at the source, dot at the target'),
+                                     ((255, 140, 30), 'teleporter: orange square at its cells, line to its target'),
                                      ((250, 250, 250), 'white frame: the droid at StartPositions $9484'))):
         x = 14 + (i % 2) * 520
         y = yl + (i // 2) * 22

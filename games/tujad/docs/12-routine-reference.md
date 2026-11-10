@@ -148,7 +148,7 @@ L1 18 582 tests, 2 with energy 0 (energy-out).
 
 **A life ends: the death effect, the droid placed again, or the game over**
 
-Energy back to 99 and the timers to `$FA`; Lives - 1 (BCD); GEN 19 DESTROYED; DeathEffect `$7ADF`; SaveRoomObjects; PlaceDroid `$7A6D`; the touch test off; then, with lives left, the HUD's lives and energy printed (PrintBcd) and DrawRoom with A = `$FF` (a clear, no scroll). With Lives = `$99` (0 - 1 in BCD): the game over at LoseLifeGameOver. L1 55 lives lost (energy-out 2, game-over).
+Energy back to 99 and the timers to `$FA`; Lives - 1 (BCD); GEN 19 DESTROYED; DeathEffect `$7ADF`; SaveRoomObjects; PlaceDroid `$7A6D`; the shield down (DroidFlags bit 4 cleared) and the touch test back on (FlagPointer = DroidFlags); then, with lives left, the HUD's lives and energy printed (PrintBcd) and DrawRoom with A = `$FF` (a clear, no scroll). With Lives = `$99` (0 - 1 in BCD): the game over at LoseLifeGameOver. L1 55 lives lost (energy-out 2, game-over).
 
 [Animation: `LoseLife` at work](img/routines/LoseLife.gif)
 
@@ -209,7 +209,7 @@ Walks the room's record past the item and teleporter bytes (each 1 or 2 bytes, 0
 
 **Enter the room: reset the movers, read the alien record, wipe and draw the room, build the cells**
 
-In: A = 0 a scroll wipe (an exit), A not 0 a clear (a life lost, a teleport, a new game); Room. The sprite list is emptied; the patrollers marked not drawn; the four enemy records and the two objects zeroed. From the room's alien record (AlienMap + AlienMap[2 x Room]): Item1Pos / Item1Kind, Item2Pos / Item2Kind, TeleportPos / TeleportRoom; the enemy mask (bit k: enemy k waits to spawn, timer 1 or 2, state `$40`, BlankGraphic); the two object records copied into Objects. The play area's attributes keep BRIGHT and INK (AND `$47`: paper and FLASH cleared); then the wipe: DrawRoomScroll shifts every line of the play area one pixel out, odd lines left and even lines right, eight times with a delay (L1 171 scrolls), or ClearPlayArea `$7917` (110). The attributes are zeroed, then the layout (RoomLayouts + RoomLayouts[2 x Room]) is drawn tile by tile: (column, row, tile) triples until a column byte with bit 7. Each tile's pixels come from TileGraphics[tile] (width, height, rows) and its colours from TileAttrs[tile] (a fill byte with bit 7, or one attribute a cell), all clipped to the play area. Then the cell table (1 where the attribute is not 0), the items (ItemCell `$6E88`, DrawItem `$6E0D` for a kind with bit 7) and the teleporter (`$FF` `$FF`, TeleportColumn / TeleportRow). Shot = 0; DI.
+In: A = 0 a scroll wipe (an exit), A not 0 a clear (a life lost, a teleport, a new game); Room. The sprite list is emptied; the patrollers marked not drawn; the four enemy records and the two objects zeroed. From the room's alien record (AlienMap + the word at AlienMap + 2 x Room): Item1Pos / Item1Kind, Item2Pos / Item2Kind, TeleportPos / TeleportRoom; the enemy mask (bit k: enemy k waits to spawn, timer 1 or 2, state `$40`, BlankGraphic); the two object records copied into Objects. The play area's attributes keep BRIGHT and INK (AND `$47`: paper and FLASH cleared); then the wipe: DrawRoomScroll shifts every line of the play area one pixel out, odd lines left and even lines right, eight times with a delay (L1 171 scrolls), or ClearPlayArea `$7917` (110). The attributes are zeroed, then the layout (RoomLayouts + RoomLayouts[2 x Room]) is drawn tile by tile: (column, row, tile) triples until a column byte with bit 7. Each tile's pixels come from TileGraphics[tile] (width, height, rows) and its colours from TileAttrs[tile] (a fill byte with bit 7, or one attribute a cell), all clipped to the play area. Then the cell table (1 where the attribute is not 0), the items (ItemCell `$6E88`, DrawItem `$6E0D` for a kind with bit 7) and the teleporter (`$FF` `$FF`, TeleportColumn / TeleportRow). Shot = 0; DI.
 
 Witness: L1 279 rooms drawn; 6 458 tiles; the attributes' loop 161 103 cells.
 
@@ -478,7 +478,7 @@ The 16 x 16 icon (HudIcons + 32 x weapon, Blit16 at `$4422`) with its colour (`$
 
 **A new game: the rooms dealt, the work space reset, room `$54`**
 
-ClearScreen; InitRooms `$7BCC` (every item present, the objects reset); ScrambleRooms 1-31 times (Random OR 1 AND `$1F`: the non-weapon items move between rooms, so each game deals them differently); ExhaustRows to EdFlagsEnd zeroed; Room = `$54` (the control room); PlaceDroid; InitialVars copied; DrawHud `$8AE8`; DrawRoom with A = `$FF`. L1 4 new games, 34 scrambles.
+ClearScreen; InitRooms `$7BCC` (every item present, the objects reset); ScrambleRooms an odd number of times, 1 to 31 (Random OR 1 AND `$1F`: 16 possible counts; each call rotates the 64 non-weapon item kinds one slot along the rooms: 16 possible deals for the first game after loading; InitRooms does not undo the rotation, so a later game rotates on); ExhaustRows to EdFlagsEnd zeroed; Room = `$54` (the control room); PlaceDroid; InitialVars copied; DrawHud `$8AE8`; DrawRoom with A = `$FF`. L1 4 new games, 34 scrambles.
 
 | | |
 | --- | --- |
@@ -568,7 +568,7 @@ In: A the byte, HL the screen address. A leading 0 is a space (ROM font `$3D00`)
 
 **HL = the alien record of room C**
 
-AlienMap + AlienMap[2 x C] (the authors' lookup). L1 4 746.
+AlienMap + the word at AlienMap + 2 x C (the authors' lookup). L1 4 746.
 
 | | |
 | --- | --- |
@@ -580,7 +580,7 @@ AlienMap + AlienMap[2 x C] (the authors' lookup). L1 4 746.
 
 **Move the non-weapon items one step round the rooms**
 
-B = the item of room `$7B`; then for rooms 0-`$7B` in turn, each present item whose kind has bit 6 clear (GEN 19, energy, an ED piece; not a weapon) swaps with B. Each call moves every such item to the next room that holds one: NewGame calls it 1-31 times (Random), so the pieces' rooms change from game to game. Room 123 has only item 1, the last non-weapon slot, so each call rotates the 64 non-weapon kinds by exactly one slot; NewGame's 1-31 calls give 31 possible deals. The RZX game: 27 (at001000.szx against the image). The authors' scram. L1 34 calls.
+B = the item of room `$7B`; then for rooms 0-`$7B` in turn, each present item whose kind has bit 6 clear (GEN 19, energy, an ED piece; not a weapon) swaps with B. Each call moves every such item to the next room that holds one: NewGame calls it an odd number of times, 1-31 (Random OR 1 AND `$1F`), so the pieces' rooms change from game to game. Room 123 has only item 1, the last non-weapon slot, so each call rotates the 64 non-weapon kinds by exactly one slot; the 16 odd counts give 16 possible deals for the first game after loading. InitRooms does not undo the rotation, so a later game turns on from the last deal. The RZX game: 27 (at001000.szx against the image). The authors' scram. L1 34 calls.
 
 | | |
 | --- | --- |
@@ -920,7 +920,7 @@ Called by MainLoop once a pass (L1 18 554). BorderSound = 0, then two writes: 0,
 
 **The teleport beam fills the droid's place top down, with a tone**
 
-The 5 x 4 attributes at the teleporter turn `$42`; 40 lines get `$A0` / `$05` bytes (the beam's edges), each after BeamScreen counts and, while it is not 1, a tone of 30 toggles. L1 21.
+The attributes of columns +0 and +3 of the teleporter's 5 rows (10 cells) turn `$42`; 40 lines get `$A0` / `$05` bytes (the beam's edges), each after BeamScreen counts and, while it is not 1, a tone of 30 toggles. L1 21.
 
 [Animation: `BeamDown` at work](img/routines/BeamDown.gif)
 
@@ -979,7 +979,7 @@ Witness: L1 37 158 calls (2 for each of 18 579 passes), 1 777 moves, 13 hits, 11
 
 **Move the shot of the weapon in use**
 
-By Weapons: bit 7 MoveShot0 `$877E`; bits 6 and 5 MoveShotStraight `$84CC`; bit 4 (weapon 3) the probe here. MainLoop calls it twice a pass (L1 37 157). Weapon 3's shot (graphic Weapon3Graphics `$AF85`, 3 bytes x 2 rows, attribute `$46`, mark `$10`): erased and its mark XORed out, then while fire is held it is steered by the directions (MoveShot3Steer, CellSolidColumn / CellSolidRow: no build steered one, L1 -), else it explodes over four passes (Weapon3Frames) and marks the cells of an object under it with `$11`.
+By Weapons: bit 7 MoveShot0 `$877E`; bits 6 and 5 MoveShotStraight `$84CC`; bit 4 (weapon 3) the probe here. MainLoop calls it twice a pass (L1 37 157). Weapon 3's shot (graphic Weapon3Graphics `$AF85`, 3 bytes x 2 rows, attribute `$46`, mark `$10`): erased and its mark XORed out, then while fire is held it is steered by the directions (MoveShot3Steer, CellSolidColumn / CellSolidRow: no RZX build steered one; the probe-shield recording steered it 71 times, doc 5.8), else it explodes over four passes (Weapon3Frames) and marks the cells of an object under it with `$11`.
 
 | | |
 | --- | --- |

@@ -71,21 +71,21 @@ SaveObjectsObject2:
 ; In: A = 0 a scroll wipe (an exit), A not 0 a clear (a life lost, a teleport,
 ; a new game); Room. The sprite list is emptied; the patrollers marked not
 ; drawn; the four enemy records and the two objects zeroed. From the room's
-; alien record (AlienMap + AlienMap[2 x Room]): Item1Pos / Item1Kind, Item2Pos
-; / Item2Kind, TeleportPos / TeleportRoom; the enemy mask (bit k: enemy k waits
-; to spawn, timer 1 or 2, state $40, BlankGraphic); the two object records
-; copied into Objects. The play area's attributes keep BRIGHT and INK (AND $47:
-; paper and FLASH cleared); then the wipe: DrawRoomScroll shifts every line of
-; the play area one pixel out, odd lines left and even lines right, eight times
-; with a delay (L1 171 scrolls), or ClearPlayArea $7917 (110). The attributes
-; are zeroed, then the layout (RoomLayouts + RoomLayouts[2 x Room]) is drawn
-; tile by tile: (column, row, tile) triples until a column byte with bit 7.
-; Each tile's pixels come from TileGraphics[tile] (width, height, rows) and its
-; colours from TileAttrs[tile] (a fill byte with bit 7, or one attribute a
-; cell), all clipped to the play area. Then the cell table (1 where the
-; attribute is not 0), the items (ItemCell $6E88, DrawItem $6E0D for a kind
-; with bit 7) and the teleporter ($FF $FF, TeleportColumn / TeleportRow). Shot
-; = 0; DI.
+; alien record (AlienMap + the word at AlienMap + 2 x Room): Item1Pos /
+; Item1Kind, Item2Pos / Item2Kind, TeleportPos / TeleportRoom; the enemy mask
+; (bit k: enemy k waits to spawn, timer 1 or 2, state $40, BlankGraphic); the
+; two object records copied into Objects. The play area's attributes keep
+; BRIGHT and INK (AND $47: paper and FLASH cleared); then the wipe:
+; DrawRoomScroll shifts every line of the play area one pixel out, odd lines
+; left and even lines right, eight times with a delay (L1 171 scrolls), or
+; ClearPlayArea $7917 (110). The attributes are zeroed, then the layout
+; (RoomLayouts + RoomLayouts[2 x Room]) is drawn tile by tile: (column, row,
+; tile) triples until a column byte with bit 7. Each tile's pixels come from
+; TileGraphics[tile] (width, height, rows) and its colours from TileAttrs[tile]
+; (a fill byte with bit 7, or one attribute a cell), all clipped to the play
+; area. Then the cell table (1 where the attribute is not 0), the items
+; (ItemCell $6E88, DrawItem $6E0D for a kind with bit 7) and the teleporter
+; ($FF $FF, TeleportColumn / TeleportRow). Shot = 0; DI.
 ;
 ; Witness: L1 279 rooms drawn; 6 458 tiles; the attributes' loop 161 103 cells.
 DrawRoom:

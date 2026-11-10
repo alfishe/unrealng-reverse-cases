@@ -14,7 +14,7 @@ each opened from its stage-1 TTD session (`work/stage1/rec/NAME/session.ttd`) on
 36960, muted):
 
 - `menu-cursor`: frames 0-1201 from `menu.szx`. A game started at frame 110 (DrawHud at 122), TUJAD FROM ORPHEUS
-  (132-209), the ED piece 37 at frame 227 and its progress screen (227-424), an enemy touched (540-610).
+  (132-209), the ED piece 37 at frame 227 and its progress screen (227-424), the shield (530-568).
 - `rzx-030000` (`r30`): frames 0-672. An energy step at frame 64, a teleport with TRANSPORTING (118-208).
 - `energy-out`: frames 540-1700. The energy run down to 0, WARNING ENERGY LOW (643), a life lost (1570).
 - `game-over`: frames 150-1100. Lives poked to 0 at frame 200 (the HUD still shows 3), the last life lost at 369,
@@ -221,8 +221,8 @@ CURSOR JOYSTICK, 3 KEMPSTON JOYSTICK and 0 START GAME, a character at a time. Th
 text (`$8D38-$8D84`) and of the font. Each character is 8 written screen bytes, then one attribute.
 
 Worked example: TUJAD at `$40CD` in `$47`. T (`$54`) comes from `$E1A2`; its 8 bytes go to `$40CD`, `$41CD`, ...,
-`$47CD` (the 8 lines of a cell). Its attribute is `$58CD`: Print8 gives HL back as `$40CD`, and H = `$40` rotated right three times, AND 3,
-OR `$58` is `$58`. The `.` after D stops the loop: 5 characters, 45 writes.
+`$47CD` (the 8 lines of a cell). Its attribute is `$58CD`: Print8 gives HL back as `$40CD`, and H = `$40` rotated right
+three times, AND 3, OR `$58` is `$58`. The `.` after D stops the loop: 5 characters, 45 writes.
 
 Witness: L1 counts 21 PrintText texts and 302 characters, and 1758 Print8 calls (PrintBcd, PrintText, DrawHud,
 ShowWeapon).
@@ -293,7 +293,7 @@ Who calls it, and when a field changes:
 
 | Caller | Field | When |
 | --- | --- | --- |
-| EnergyTickStep `$7AD2` | energy at `$4088` | every EnergyTimer step: 250 interrupts (5 s), or 10 while an enemy is touched |
+| EnergyTickStep `$7AD2` | energy at `$4088` | every EnergyTimer step: 250 interrupts (5 s), or 10 under the shield and for 50 interrupts after an enemy touch |
 | MoveDroidPickupEnergy `$7687` | energy | an energy source: Energy = 99 |
 | LoseLife `$6A3C` (`$6A72`, `$6A7A`) | lives, energy | a life lost: Lives - 1, Energy 99 |
 | MoveDroidPickupGen `$7671` | lives | GEN 19 taken: Lives + 1 |
@@ -302,8 +302,9 @@ Who calls it, and when a field changes:
 | DrawHud (`$8BE8`, `$8BF1`) | lives, energy | a new game |
 
 EnergyTick `$7AB6` runs in every interrupt. It counts EnergyTimer `$6366` down; at 0 it reloads it from EnergyReload
-`$6374` (`$FA`, or `$0A` while an enemy is touched), takes 1 from Energy (BCD) and prints it. When the energy before the
-step is 11 it first queues WARNING ENERGY LOW. EnergyTimer = 0 stops it.
+`$6374` (`$FA`, or `$0A` under the shield and for TouchTimer, 50 interrupts, after an enemy touch; each touching pass
+sets EnergyTimer back to 10, so the first step comes 10 interrupts after the last touch), takes 1 from Energy (BCD)
+and prints it. When the energy before the step is 11 it first queues WARNING ENERGY LOW. EnergyTimer = 0 stops it.
 
 ```text
 7AB6  AF            XOR A                ; EnergyTick
@@ -347,8 +348,8 @@ step, `$10` - 1 = `$0F`, which DAA turns into `$09`: the high digit 0 prints as 
 " 9".
 
 Witness: in the eight recordings PrintBcd was called by EnergyTickStep 38 times, DrawHud twice, LoseLife twice, and once
-each by ShowWeaponAmmo, MoveDroidPickupGen and MoveDroidPickupEnergy. A step of `energy-out` frames 540-610 (an enemy
-touched) came every 10 frames.
+each by ShowWeaponAmmo, MoveDroidPickupGen and MoveDroidPickupEnergy. The steps came every 10 frames
+under the shield (`menu-cursor` 540, 550, 560, 570) and after an enemy touch (`energy-out` 603, 613, 623, 633, 643).
 
 The point: the HUD is not redrawn each frame. Each field is printed only when its value changes, by the routine that
 changed it.
@@ -759,7 +760,9 @@ Witness, from the traced events (queued, taken, ended):
 
 ENERGY SOURCE ABSORBED took 115 frames for two rows, not 100: 15 interrupts were lost in that stretch, and the
 scroller counts interrupts, not frames. GEN 19 DESTROYED in `energy-out` waited 94 frames, 64 of them
-the death with no interrupt.
+the death with no interrupt. Which passes lose an interrupt, and why, is in
+[4.6](04-game-loop.md#46-interrupts-on-and-off) and [4.7](04-game-loop.md#47-passes-and-interrupts-a-frame); the
+seam the copy can leave on screen is in [6.11](06-rendering.md#611-flicker-measured).
 
 The point: the queue holds one message. A higher priority can replace a waiting message, but nothing interrupts one
 already scrolling.

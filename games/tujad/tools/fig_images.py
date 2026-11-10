@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+"""Doc 02 2.3: the three memory images side by side, `$4000-$FFFF`, one pixel a byte, one row a 256-byte page.
+
+The images: as loaded (tools/image.py, the tape's blocks where the loader puts them), at the entry (`c1` at frame
+13 580, work/stage1/entry/f13580/start.bin) and in play (the RZX state after 40 000 frames, tools/szx.py on
+work/stage1/rzx/at040000.szx). Each byte is grey by its value (zero black); a byte that differs from the image to its
+left is drawn in colour (orange from loaded to entry, red from entry to play). The left axis names the regions of
+doc 2.2.
+
+    python3 tools/fig_images.py docs/img/memory-images.png
+"""
+import argparse
+import os
+import sys
+
+from PIL import Image, ImageDraw
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+CASE = os.path.dirname(HERE)
+sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(HERE, '..', '..', '..', 'kit'))
+import image as tapeimage  # noqa: E402
+import kitlib as K  # noqa: E402
+import szx  # noqa: E402
+
+BG, TEXT, DIM = (24, 24, 30), (235, 235, 235), (170, 170, 180)
+ROW_H, AXIS, GAP, TOP = 3, 235, 14, 70
+CHANGE = [None, (255, 150, 30), (255, 50, 50)]
+REGIONS = [
+    (0x4000, 0x5B00, 'the screen'),
+    (0x5B00, 0x60C0, 'stub, sysvars, BASIC'),
+    (0x60C0, 0x6300, 'CellTable'),
+    (0x6300, 0x68F3, 'variables, buffers'),
+    (0x68F3, 0x96FE, 'the code'),
+    (0x96FE, 0x9C40, 'BitReverse, zeros'),
+    (0x9C40, 0xBD06, 'sprite graphics'),
+    (0xBD06, 0xE000, 'room layouts, records'),
+    (0xE000, 0xFE00, 'font, ED pieces, tiles'),
+    (0xFE00, 0x10000, 'IM 2 table, sprite list'),
+]
+
+
+def images():
+    loaded = tapeimage.image()
+    entry = open(os.path.join(CASE, 'work/stage1/entry/f13580/start.bin'), 'rb').read()
+    play = bytes(szx.read(os.path.join(CASE, 'work/stage1/rzx/at040000.szx'))[0])
+    return [('as loaded', 'tools/image.py', loaded),
+            ('at the entry', 'c1, frame 13 580', entry),
+            ('in play', 'RZX, 40 000 frames', play)]
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('out')
+    a = ap.parse_args()
+    imgs = images()
+    pages = (0x10000 - 0x4000) // 256
+    w = AXIS + len(imgs) * (256 + GAP) + 30
+    h = TOP + pages * ROW_H + 40
+    out = Image.new('RGB', (w, h), BG)
+    d = ImageDraw.Draw(out)
+    f, fs = K.font(15), K.font(12)
+    d.text((10, 8), 'The 48K memory in three images: what the setup and play change', font=K.font(17), fill=TEXT)
+    for k, (name, src, mem) in enumerate(imgs):
+        x0 = AXIS + k * (256 + GAP)
+        prev = imgs[k - 1][2] if k else None
+        changed = 0
+        for page in range(pages):
+            y = TOP + page * ROW_H
+            for col in range(256):
+                addr = 0x4000 + page * 256 + col
+                v = mem[addr]
+                if prev is not None and prev[addr] != v:
+                    colour = CHANGE[k]
+                    changed += 1
+                else:
+                    g = 0 if v == 0 else 60 + v * 150 // 255
+                    colour = (g, g, g)
+                d.line([(x0 + col, y), (x0 + col, y + ROW_H - 1)], fill=colour)
+        d.text((x0, 32), name, font=f, fill=TEXT)
+        label = src if prev is None else '%s; %d bytes differ' % (src, changed)
+        d.text((x0, 50), label, font=fs, fill=DIM)
+    ty = 0
+    for lo, hi, name in REGIONS:
+        y0 = TOP + (lo - 0x4000) // 256 * ROW_H
+        d.line([(AXIS - 20, y0), (w - GAP, y0)], fill=(90, 90, 120))
+        ty = max(y0 - 6, ty + 15)          # small regions: the labels stacked, a leader to the boundary
+        d.line([(AXIS - 40, ty + 7), (AXIS - 20, y0)], fill=(90, 90, 120))
+        d.text((8, ty), '$%04X %s' % (lo, name), font=fs, fill=DIM)
+    d.text((8, h - 30), 'grey: the byte value (black = 0); orange: changed from loaded to entry; red: changed from '
+           'entry to play', font=fs, fill=DIM)
+    os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
+    out.save(a.out, optimize=True)
+    print('%s: %d x %d' % (a.out, out.width, out.height))
+
+
+if __name__ == '__main__':
+    main()

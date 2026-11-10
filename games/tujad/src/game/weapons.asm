@@ -14,8 +14,9 @@
 ; 3's shot (graphic Weapon3Graphics $AF85, 3 bytes x 2 rows, attribute $46,
 ; mark $10): erased and its mark XORed out, then while fire is held it is
 ; steered by the directions (MoveShot3Steer, CellSolidColumn / CellSolidRow: no
-; build steered one, L1 -), else it explodes over four passes (Weapon3Frames)
-; and marks the cells of an object under it with $11.
+; RZX build steered one; the probe-shield recording steered it 71 times, doc
+; 5.8), else it explodes over four passes (Weapon3Frames) and marks the cells
+; of an object under it with $11.
 MoveShot:
   LD HL,Weapons
   BIT 7,(HL)

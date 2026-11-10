@@ -19,7 +19,7 @@ L1 counts are totals over whole recordings, so they carry no time in the frame.
 | Frame | 69 888 T; a main-loop pass holds 2 interrupts, 3 when its work overruns ([doc 4.7](04-game-loop.md#47-passes-and-interrupts-a-frame)) |
 | CPU | the interrupt handler draws every sprite and takes a quarter to a third of the time in play; the main loop waits in HALT for 38-52 % (2.7) |
 | Sound | the beeper only (port `$FE` bit 4), from the main loop with the CPU busy (doc 9) |
-| Stack | from `$60C0` down (`$68F3 LD SP,$60C0`), deepest write seen `$60AC` (2.2) |
+| Stack | from `$60C0` down (`$68F4 LD HL,$60C0; $68F7 LD SP,HL`), deepest write seen `$60AC` (2.2) |
 
 **The point**: a 48K game that uses all of the 40 K above the BASIC area, and spends about half of play waiting for
 the frame.
@@ -38,7 +38,7 @@ byte four times); "bytes" counts the bytes of the range that were executed, read
 | `$5B00-$5B1F` | 32 | the loader stub ([doc 3.2](03-build-and-load.md#32-the-basic-line-and-the-stub-at-5b00)) | dead after the load | no access in the recordings |
 | `$5B5B-$5B5D` | 3 | `JP $95D0`, the interrupt's landing | 160 320 executions | written at `$95B2-$95B7` |
 | `$5C00-$5CBF` | 192 | the system variables | the ROM's KEYBOARD, called from the handler, keeps `$5C04-$5C08` (KSTATE) and `$5C3B` (FLAGS) | the only bytes written here |
-| `$5CC0-$60AB` | 1004 | the BASIC program and workspace | dead after the load; never written | 78 bytes read at `$6000-$60AB`, just below CellTable `$60C0`; which reads they are is not traced |
+| `$5CC0-$60AB` | 1004 | the BASIC program and workspace | dead after the load; never written | 83 bytes read at `$6000-$60A7`, all in `room-tour` (the per-recording L1s): they are CellTable's addresses for the six HUD rows above the play area (rows -6 to -1, columns 0-11 and 28-30), a cell lookup with a row above the play area in the rooms that recording POKEs; the routine that reads them is not traced |
 | `$60AC-$60BF` | 20 | the machine stack (grows down from `$60C0`) | the deepest write `$60AC`, in 8 recordings | L1 writes per recording (below) |
 | `$60C0-$62FF` | 576 | CellTable: 32 x 18 cells, one for each attribute cell of the play area (screen rows 6-23): bit 0 a wall, bit 1 an enemy, bit 2 an object, bit 3 a patroller, the shot marks, `$FF` a teleporter, an item's kind ([doc 7](07-objects.md)) | 1 322 096 reads, 352 047 writes | zero in the image (but `$60E3`, `$60E8`); changes with the room |
 | `$6300-$6302` | 3 | the entry, `JP $68F3` | run once | `c1` probe, frame 13580 |
@@ -46,7 +46,7 @@ byte four times); "bytes" counts the bytes of the range that were executed, read
 | `$63D2-$65AD` | 476 | the scrolling messages, a priority byte each, from "TUJAD FROM ORPHEUS" at `$63D3` (the game-over message at `$654D`) | read only (17 028 reads) | the Dro Soft copy translates `$63D9-$65A2` (README) |
 | `$65AE-$6887` | 730 | buffers: the ED flags `$6681-$668A` (the win test), the graphics built at run time (`$65DD`, DroidSave `$668C`, the pre-shifted enemies `$6708-$6858`); the leftover source under them, `$65E5-$6887` (2.9) | 4 573 637 reads, 4 032 452 writes | the sprite lists (2.6); `$69E3` |
 | `$6888-$68F2` | 107 | data | read only (51 981 reads) | |
-| `$68F3-$96FD` | 11 787 | the code (9744 bytes executed; its 19 modules in 2.5), with tables between: `$8BF5-$8DD1` the menu's texts and graphics, `$9072-$9092` the progress text, `$9484-$9583` | 512 737 248 executions; written only at `$8D35-$8D37` (`$88E7 LD ($8D35),HL`: a screen address for the menu's printing) and `$9085-$9086`, `$9092`, next to the progress text (stage 2) | L1 |
+| `$68F3-$96FD` | 11 787 | the code (9744 bytes executed; its 17 modules in 2.5), with tables between: `$8BF5-$8DD1` the menu's texts and graphics, `$9072-$9092` the progress text, `$9484-$9583` | 512 737 248 executions; written only in variables kept there: MenuLogoAt `$8D35-$8D36` (`$88E7 LD ($8D35),HL`, the screen address MenuLogo draws at), PrintAttr `$8D37` (PrintText's colour, `$8AB4`), the percentage's digits `$9085-$9086` and ProgressPercentBcd `$9092` (stage 2) | L1 |
 | `$96FE-$9C3F` | 1346 | BitReverse `$9A4C-$9B4B` (each byte with its bits reversed, for TurnRound `$7866`) between two zero fills no code touches (`$96FE-$9A4B`, `$9B4C-$9C3F`; stage 2) | 137 bytes read (180 464 reads) | src/game/game.ann |
 | `$9C40-$A74D` | 2830 | the droid's 14 frames `$9C40-$A257` (src/res/sprites/Droid.png), 600 zeros TurnRound mirrors with them (`$A258-$A4AF`), 670 zeros never touched (`$A4B0-$A74D`) | 3 639 097 reads, 180 464 writes (the mirroring) | stage 2 |
 | `$A74E-$BD05` | 5560 | the enemy kinds and their explosion (`$A74E-$AEC4`), the materialise frames, weapon 3's probe, the five object kinds, their death, the probe's explosion, the patrollers (`$B902-$BC01`), the menu frame (`$BC02-$BD01`), 4 zeros | 1 890 994 reads; written in `$A74E-$AEC4`, `$B049-$B2EF`, `$B413-$B6B9`, `$B71B-$B83D` (shifted in place by ShiftGraphic3 `$7EBB` / ShiftGraphic4 `$7EFE`) | src/res/sprites/, stage 2 |
@@ -62,7 +62,7 @@ byte four times); "bytes" counts the bytes of the range that were executed, read
 The stack's low mark: the deepest byte written in the recordings is `$60AC` (8 RZX chunks, for example `rzx-065000`),
 20 bytes below `$60C0`; the RZX playback's saved state after 40 000 frames (`work/stage1/rzx/at040000.szx`) holds
 SP = `$60A8` inside the handler (PC `$9611`), so the stack reaches at least `$60A8`, 24 bytes deep. Below it lie
-1448 bytes of the dead BASIC area before the system variables.
+1000 bytes of the dead BASIC area (`$5CC0-$60A7`) before the system variables.
 
 ![Memory use over the 70 L1 builds](img/heatmap.png)
 
@@ -82,7 +82,7 @@ per-room state (`$DC53-$DFF9`) and the sprite list are written.*
 | as loaded | the tape's two data blocks where the loader puts them: `$4000-$5B1F` (the picture and the stub) and `$60C0-$FDFF` | `tools/image.py work/mkgame/original.bin` |
 | at the entry | the memory of `c1` at the start of frame 13580, the frame in which `$6300` first runs | `re_session.py open` on `c1`'s `session.ttd`, then `build --from-frame 13580 --to-frame 13581 --into work/stage1/entry/f13580`: `start.bin` |
 | after the setup | the same at frame 13581 | `.../f13581/start.bin` |
-| in play | the RZX playthrough after 40 000 frames (room 102) and the menu-cursor recording's end (room 84) | `tools/szx.py work/stage1/rzx/at040000.szx`, `work/stage1/rec/menu-cursor/end.szx` |
+| in play | the RZX playthrough after 40 000 frames (room 54) and the menu-cursor recording's end (room 84) | `tools/szx.py work/stage1/rzx/at040000.szx`, `work/stage1/rec/menu-cursor/end.szx` |
 
 What changes (`work/stage1/imgdiff.py`, runs of differing bytes over `$5B00-$FFFF`):
 
@@ -91,11 +91,23 @@ What changes (`work/stage1/imgdiff.py`, runs of differing bytes over `$5B00-$FFF
   power-on (`$FF18-$FFFE`, above the block). Nothing is unpacked or decrypted.
 - **Entry to the next frame**: the setup `$68F3` writes `JP $95D0` at `$5B5B`, the vector table `$FE00-$FF00`, the
   controls and SpriteListEnd (`$63C2-$63D1`), and moves the stack to `$60C0`.
-- **Loaded to play** (`$60C0-$FDFF`): 3076 bytes in the RZX state, 673 in menu-cursor's end; no code changes
-  except the three text bytes of the menu and the progress screen (`$8D35-$8D37`, `$9092`). What changes is data:
+- **Loaded to play** (`$60C0-$FDFF`): 3076 bytes in the RZX state, 673 in menu-cursor's end; no code changes;
+  the only bytes written in the code range are variables kept there: MenuLogoAt `$8D35-$8D36`, PrintAttr `$8D37`, the
+  percentage's digits `$9085-$9086` and ProgressPercentBcd `$9092`. What changes is data:
   the cell table `$60C0-$62FF`; the variables and buffers `$6303-$6886` (over the leftover assembler text of the image,
   [WALKTHROUGH 0](../WALKTHROUGH.md#0-the-medium)); the sprite graphics shifted in place (`$A77F-$AEC3`,
   `$B413-$B6B9`); the room records `$DC5B-$DFF4`; and, above the block, the sprite list at `$FF01`.
+
+![The three images side by side](img/memory-images.png)
+
+*The 48K memory as loaded, at the entry and in play, made with `python3 tools/fig_images.py
+docs/img/memory-images.png` from `tools/image.py`, `work/stage1/entry/f13580/start.bin` and
+`work/stage1/rzx/at040000.szx`. How to read: one pixel a byte, one row a 256-byte page, `$4000` at the top; grey is
+the byte's value, black zero; a byte that differs from the image on its left is orange (loaded to entry: the ROM's
+system variables, the BASIC stack, the ROM's stack above the block) or red (entry to play: the screen, the cell table
+and variables, the sprite graphics shifted in place, the room records just below `$E000`, the IM 2 table and the
+sprite list). The point: the code column (`$68F3-$96FD`) is the same grey in all three: nothing is unpacked and no code
+is rewritten.*
 
 **The point**: what the tape loads is what runs; the image needs no unpacking, and the source build has to give
 the two blocks' bytes and nothing else.
@@ -157,7 +169,7 @@ The source is 25 modules (`src/game/*.asm`, written by `kit/mkgame.py` from `src
 | sprites | `$9C40-$BD05` | 8390 | 10 (0) | the droid, enemies, materialise, probe, objects, patrollers, menu frame |
 | roomdata | `$BD06-$FDFF` | 16 634 | 8 (0) | RoomLayouts, AlienMap, the room records, the font, the ED pieces, the tiles |
 
-155 entries in all. The code is 19 modules in `$68F3-$96FD`; the data is the six around it.
+155 entries in all. The code is 17 modules in `$68F3-$96FD`; the data is the eight around it (five below, three above).
 
 ```bash
 python3 work/docs/tjA/modmap.py      # the table above, from build/game.lst and src/game/game.ann
@@ -209,7 +221,7 @@ frames)=work/stage1/rec/win/l1.json"`.*
 - In play, half the time is HALT and a quarter to a third is the interrupt. The droid's exhaust costs more than the
   droid itself.
 - In `game-over` and `win` the menu dominates: cellmath 44.68 % and 40.93 % is Random `$7DC9`, which MenuPoll calls on
-  every poll; menu 28.42 % and 25.91 %. The win's HALT (30.14 %) is WinWait's 512 HALTs.
+  every poll; menu 28.42 % and 25.91 %. The win's HALT (30.14 %) is 495 of WinWait's 512 HALTs (the recording starts inside the wait).
 
 ![Where the time goes, by routine](img/arch/budget-routines.png)
 

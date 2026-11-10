@@ -15,10 +15,12 @@ The recordings it rests on (WALKTHROUGH 6.0):
 - `rzx-010000`, opened on an own instance into `work/docs/tjC/z10` (port base 36950) after `source work/env.sh`:
   an enemy touches the droid in frame 110, a fight in frames 1440-1480, an ED piece in frame 1697. `$6300-$63FF` was
   sampled at every frame (`work/docs/tjC/z10-vars.jsonl`, `z10-touch.jsonl`) with `work/docs/tjC/sample.py`.
-- `rzx-007000`, opened into `work/docs/tjC/r7`: the shield in frames 259-275 and the teleport from room 105 to room 62
+- `rzx-007000`, opened into `work/docs/tjC/r7`: the shield in frames 258-275 and the teleport from room 105 to room 62
   in frames 725-1 120 (`r7-vars.jsonl`, `r7-tel*.jsonl`).
 - `rzx-035000`, opened into `work/docs/tjC/r35`: the only life lost of the RZX game, in frame 250 (`r35-vars.jsonl`).
 - `c1`, the load and the first minutes of play on unreal-ng's own frames: the pause in frames 15 241-15 359.
+- `probe-shield`, made for doc 05 from `at065000.szx`: weapon 3's probe steered by the directions
+  ([doc 05.8](05-controls.md#58-the-probe-under-fire-held)).
 - The L1 counts of the stage 1 builds, quoted from the `.ann` descriptions ("L1 n").
 
 A sample of frame N is the memory at the start of frame N. A trace, and so a routine animation, shows an instruction in
@@ -28,7 +30,7 @@ off and one was lost ([doc 04](04-game-loop.md)). The RZX frame of `rzx-NNNNNN` 
 ## 10.1 The droid's movement
 
 `MoveDroid $7208` runs once a pass. It acts only every second pass, through `MoveDelay $636F`, unless the droid is in
-the air (DroidFlags bit 2): then it acts every pass. The `.ann` description has it the other way round.
+the air (DroidFlags bit 2): then it acts every pass.
 
 ```asm
 MoveDroid:
@@ -142,7 +144,8 @@ A teleporter is a 2 x 2 item drawn at its position, with `$FF $FF` in its top ce
 
 - replaces the droid's image with the beam frame and queues TRANSPORTING;
 - plays BeamDown and TeleportFlash, with interrupts off for long stretches;
-- SaveRoomObjects; Room = TeleportRoom; DrawRoom with A = `$FF`;
+- SaveRoomObjects; Room = TeleportRoom; DrawRoom with A = the target room (`$77A1`: `LD A,(TeleportRoom)`). No
+  teleporter targets room 0, so A is never 0 and the room is cleared, not scrolled in;
 - puts the droid at TeleportColumn + 1, TeleportRow of the target's teleporter, plays BeamUp;
 - sets TeleportLatch to `$FF`. The latch stays set while the droid stands on the `$FF` cells, so it does not teleport
   straight back. Stepping off clears it.
@@ -158,7 +161,7 @@ flowchart TD
     L -- no --> N[stay: the latch holds]
     L -- yes --> T[beam, TRANSPORTING, BeamDown, TeleportFlash]
     T --> S2[SaveRoomObjects; Room = TeleportRoom]
-    S2 --> D2[DrawRoom A = FF; droid on the target teleporter; BeamUp]
+    S2 --> D2[DrawRoom A = target room, never 0: a clear; droid on the target teleporter; BeamUp]
     D2 --> TL[TeleportLatch = FF]
     C -- no --> Z[TeleportLatch = 0]
 ```
@@ -169,9 +172,12 @@ Worked example, `rzx-007000` frames 720-1 136: the droid steps onto room 105's t
 - Interrupts keep running until about frame 865, while TRANSPORTING scrolls in.
 - Frames 865-1 106 run with interrupts off: no interrupt is serviced, the energy clock stands still.
 - Room becomes 62 at about frame 1 106; the droid stands at (5, 128) from about frame 1 120.
+- The arrival beam still shows at frame 1 200, and the enemies are back at frame 1 250.
 
-The whole teleport takes about 400 frames, 8 seconds. The RZX log holds 18 teleports, each a still run of 383-385
-frames in the work space.
+The whole teleport takes about 500 frames, 10 seconds; the room change comes after about 400 of them. A trace of
+`rzx-030000` (doc 09) times its parts: BeamDown 131 frames with interrupts on, TeleportFlash 249 frames in which 2
+interrupts are taken, DrawRoom, then BeamUp 104 frames. The RZX log holds 18 teleports, each a still run of 383-385 RZX
+frames in the work space, from the beam to the room change.
 
 ![A teleport on screen: rzx-007000 frames 720-1136, every eighth frame, room 105 to room 62](img/play/teleport.gif)
 
@@ -185,14 +191,15 @@ The whole game's route:
 
 How to read the figure:
 
-- The room map `docs/img/play/world-map-rooms.png`, dimmed, 8 rooms across and 16 down.
+- The room map `docs/img/play/world-map-rooms.png`, dimmed, 8 rooms across and 16 down. Its framed squares and red
+  `T>n` labels are the teleporters and their targets.
 - A line joins two rooms the droid walked between; its width grows with the count. An arc is a teleport, with a dot at
   the target. A room the droid entered at least once is framed.
 - 224 room changes: south 52, north 52, west 51, east 51, teleports 18; 102 rooms entered, every room in use.
 - Command: `python3 tools/fig_gameplay.py route --log work/stage1/rzx/frames.bin --out docs/img/gameplay/route.png`.
 
 **The point**: a room change is a few bytes of arithmetic on Room and one coordinate. The map's shape lives only in the
-room layouts. A teleport is the slow way round: 8 seconds with the clock stopped.
+room layouts. A teleport is the slow way round: 10 seconds, with the clock stopped for 5 of them.
 
 ## 10.3 The shield
 
@@ -246,8 +253,8 @@ Worked example, `rzx-007000` frames 250-278, room 105:
 | 270 | 104 | `$18` | 0 | `$0A` | `$0A` | 63 |
 | 276 | 104 | `$08` | `$635B` | `$FA` | `$FA` | 63 |
 
-DOWN alone brought the droid down to the floor at y 104; the next act raised the shield. RIGHT and DOWN in frame 276
-took it down.
+DOWN alone brought the droid down to the floor at y 104; the next act, in frame 258, raised the shield (bit 4 is set
+in the samples of frames 259-275). RIGHT and DOWN took it down in frame 275.
 
 ![The shield on screen: rzx-007000 frames 252-282](img/play/shield.gif)
 
@@ -255,8 +262,8 @@ The screen at every frame of `rzx-007000` frames 252-282: the droid lands, flash
 shield is up, and walks on. Command:
 `python3 ../../kit/screen_anim.py --work work/docs/tjC/r7 --from 252 --to 282 --step 1 --scale 2 --delay 100 --hold 1500 docs/img/play/shield.gif`.
 
-The `.ann` names bit 4 "touching an enemy" and HazardFlash "while touching an enemy". The code above sets bit 4 only
-for DOWN alone; the enemy touch sets TouchTimer and the reload, never bit 4 (10.4). The fix is sent to the lead.
+The code above sets bit 4 only for DOWN alone. The enemy touch sets TouchTimer and the reload, never bit 4 (10.4), so
+HazardFlash, which tests bit 4 (`$699E`), flashes the droid only under the shield, never while an enemy touches it.
 
 **The point**: the shield trades energy for safety. It is the only defence against an object or a patroller, and it
 costs in 2 seconds about as much energy as a minute without it.
@@ -293,20 +300,29 @@ EnergyTickStep:
 
 `EnergyTimer $6366` counts interrupts to the next step; it is not a frame counter. `EnergyReload $6374` refills it:
 
-| Reload | Set by | One step every | 99 to 0 |
+| EnergyReload | Set by | One step every | 99 to 0 |
 | --- | --- | --- | --- |
 | `$FA` (250) | NewGame, LoseLife, DrainTimer, the shield down | 250 interrupts, 5 s | 8 minutes |
 | `$0A` (10) | an enemy touch, the shield up | 10 interrupts, 0.2 s | 20 s |
-| 0 (stopped) | ProgressScreen, the win, the game over | never | |
+
+What stops the clock is EnergyTimer 0, not a reload value: EnergyTick returns at once while EnergyTimer is 0.
+ProgressScreen, the win and the game over write EnergyTimer = 0. ProgressScreen restarts it at its end
+(EnergyTimer = EnergyReload at `$9035`), so the clock also runs again during the 512 closing HALTs after the win and
+after the game over (the `win` recording counts 19 to 17, `game-over` 99 to 97), unseen, because the HUD's energy
+digits were blanked first.
 
 An enemy touch sets the reload and the timer to `$0A` and `TouchTimer $6377` to 50. `DrainTimer $7906`, also in the
-interrupt, counts TouchTimer down and puts the reload back to `$FA` at 0. A touch therefore costs 5 energy points (50
-interrupts at 10 a step), and one more touch restarts the 50.
+interrupt, counts TouchTimer down and puts the reload and the timer back to `$FA` at 0. A touch therefore costs 5 energy
+points (50 interrupts at 10 a step), and one more touch restarts the 50. The interrupt calls WeaponSelect, EnergyTick
+and DrainTimer in that order (`$96E7-$96ED`), and DrainTimer runs on every interrupt, whatever EnergyTimer holds. A
+touch shortly before a progress screen or the win therefore restarts a stopped clock with `$FA` when TouchTimer reaches
+0 (known only from the code).
 
 ```mermaid
 flowchart TD
-    I[each interrupt] --> E{EnergyTimer = 0?}
-    E -- yes --> S[stopped: nothing]
+    I[each interrupt: WeaponSelect, then] --> E{EnergyTimer = 0?}
+    E -- yes --> S[stopped: no step]
+    S --> DT
     E -- no --> D{EnergyTimer - 1 = 0?}
     D -- no --> DT
     D -- yes --> RL[EnergyTimer = EnergyReload]
@@ -323,14 +339,12 @@ flowchart TD
 
 Three things stop the clock:
 
-- **The progress screen.** ProgressScreen sets EnergyTimer to 0 for its whole length and restarts it at the end. In
-  `rzx-010000` the timer is 0 from frame 1702 to frame 1886 (the ED piece of 10.8).
+- **The progress screen.** ProgressScreen sets EnergyTimer to 0 for its whole length and restarts it at the end
+  (`$9035`). In `rzx-010000` the timer is 0 from frame 1702 to frame 1886 (the ED piece of 10.8). The win and the game
+  over zero it before their ProgressScreen too, which restarts it for the closing HALTs.
 - **Interrupts off.** The teleport (10.2), the sound sweeps and the death effect run with interrupts off for long
   stretches; no interrupt means no EnergyTick.
 - **Pause.** `Pause $793A` is called after WaitFrame's DI and its loop never enables interrupts (10.13).
-
-The `.ann` (line 492), stage 2 (3.2 and 4) and the brief say the energy drains on pause. It does not; the fix is sent to
-the lead.
 
 Worked example, `rzx-010000` frames 106-171 (room 73): enemy 0 starts flying over the droid in frame 109. In the sample
 of frame 110 TouchTimer is 50 (`$32`), EnergyReload and EnergyTimer 10. The droid's touch test runs again while the
@@ -344,9 +358,11 @@ How to read the figure:
 
 - Two panels, each over the frames of a recording: EnergyTimer, EnergyReload, TouchTimer x 4, Energy x 4 - 100 and
   DroidFlags bit 4 (200 = on).
-- Top, `rzx-010000` frames 90-200: the touch in frame 110. The reload drops to 10, the timer saws between 10 and 0,
-  TouchTimer falls from 50 to 0 and the energy steps down five times; then the reload is 250 again.
-- Bottom, `rzx-007000` frames 240-290: the shield, bit 4 on in frames 259-275. The reload is 10 while it is up.
+- Top, `rzx-010000` frames 90-200: the touch in frame 109 (TouchTimer 50 in the sample of frame 110). The reload drops
+  to 10, the timer saws between 10 and 0, TouchTimer falls from 50 to 0 and the energy steps down five times; then the
+  reload is 250 again.
+- Bottom, `rzx-007000` frames 240-290: the shield, raised in frame 258 and lowered in frame 275 (bit 4 set in the
+  samples of frames 259-275). The reload is 10 while it is up.
 - Command: `python3 tools/fig_gameplay.py energy --touch work/docs/tjC/z10-touch.jsonl --shield work/docs/tjC/r7-vars.jsonl --out docs/img/gameplay/energy.png`.
 
 **The point**: the energy is a clock, not a hit counter. Every danger short of death costs time, at 25 times the normal
@@ -358,16 +374,24 @@ rate.
 three BCD counters for weapons 1-3, 3 each at the start. Weapon 0 is unlimited. The weapon select and the fire key are
 in [doc 05](05-controls.md#57-fire-the-key-latches-and-the-weapon-select).
 
-| Weapon | Shot | Speed | Mark in the cells | Ends at | Kills |
-| --- | --- | --- | --- | --- | --- |
-| 0 | the dash, `$47` | 8 px a pass | none | ink (Shot bit 7), a wall, an item, the edge | enemies, by the ink test |
-| 1 | a bolt, `$43` | 4 px a pass | `$40` with bit 0 | a wall, an item, an object, the edge | enemies; objects of kind bit 4 |
-| 2 | a bolt, `$44` | 4 px a pass | `$20` with bit 0 | the same | enemies; objects of kind bits 5 and 7 |
-| 3 | the probe, `$46` | steered | `$10` with bit 0 | released fire: explodes over 4 passes | enemies; objects of kind bit 6 and of no kind bit |
+MainLoop calls `MoveShot $8298` twice a pass (`$6926` and `$6983`), so a shot moves twice a pass:
+
+| Weapon | Shot | Speed | Mark while it flies | Mark on a hit | Ends at | Kills |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 | the dash, `$47` | 8 px a call, 16 px a pass | none | none | ink (Shot bit 7), a wall, an item, the edge | enemies, by the ink test |
+| 1 | a bolt, `$43` | 4 px a call, 8 px a pass | XOR `$40` | `$41` | ink, a wall, an item, the edge | enemies; objects of kind bit 4 |
+| 2 | a bolt, `$44` | 4 px a call, 8 px a pass | XOR `$20` | `$21` | the same | enemies; objects of kind bits 5 and 7 |
+| 3 | the probe, `$46` | steered, 2 px a call | XOR `$10` | `$11` | ink, or fire released; explodes over 4 calls | enemies; objects of kind bit 6 and of no kind bit |
 
 `Fire $861C` refuses a new shot while one is new, while fire has not been released, on a wall cell, and for weapons 1-3
-when their ammunition is 0. A shot fired costs one unit (BCD), printed on the HUD. Weapon 3's probe flies while fire is
-held and is steered by the directions; released, it explodes and marks an object under it with `$11` (doc 05.8).
+when their ammunition is 0. A shot fired costs one unit (BCD), printed on the HUD.
+
+A bolt ends when its sprite meets ink (Shot bit 7, set by the interrupt). `MoveShotStraightHit $8575` then looks
+through the cells under it for one with bit 2 (an object) and ORs 1 and `ShotMark` (`$40` or `$20`) into that cell;
+with no object cell there it just ends. Weapon 3's probe flies while fire is held and is steered by the directions
+(doc 05.8; the recording `probe-shield` steers it). When its sprite meets ink, `MoveShot3Hit $843E` ORs `$11` into the
+first object cell under it and the probe explodes. Released, it explodes at `MoveShot3Explode $8472` and marks
+nothing.
 
 Any shot kills an enemy: its sprite meets the enemy's ink, and the enemy's own state byte takes bit 7 (doc 07.6). Only
 the right weapon's mark kills an object; another weapon's mark stops it in place until the right one comes
@@ -376,35 +400,49 @@ the right weapon's mark kills an object; another weapon's mark stops it in place
 ```mermaid
 flowchart TD
     F[fire pressed and released before] --> W{weapon}
-    W -- 0 --> D0[the dash: 8 px a pass]
+    W -- 0 --> D0[the dash: 16 px a pass]
     W -- 1 or 2 --> AM{ammunition 0?}
     W -- 3 --> AM
     AM -- yes --> NO[no shot]
     AM -- no --> P[ammo - 1, printed]
     P --> B12{weapon 1 or 2?}
-    B12 -- yes --> BO[a bolt: 4 px a pass, its mark into object cells]
-    B12 -- no --> PR[the probe: steered while fire is held, then explodes, mark 11]
+    B12 -- yes --> BO[a bolt: 8 px a pass]
+    B12 -- no --> PR[the probe: steered while fire is held]
     D0 --> EN[an enemy hit: its state bit 7]
     BO --> EN
-    BO --> OB[an object's cells: mark OR 1, the shot ends]
-    PR --> OB
+    BO -- ink --> OB[an object cell under it: mark OR 1, the shot ends]
+    PR -- ink --> OB
+    PR -- released --> PX[explodes, no mark]
     OB --> MO[MoveObject: its weapon dies, another stops]
 ```
 
-Worked example: the fight of `rzx-010000` (doc 07.8). The droid holds weapon 2 with ammunition 4, 5, 3. In frame 1453
-it fires: Shot `$41`, weapon 2's counter 5 to 4. The bolt flies right and stops in object 1's cells with the mark `$21`.
-In the sample of frame 1460 the object's state is `$87`: kind bit 5, kill mark `$20`, dying.
+Worked example: the fight of `rzx-010000` (doc 07.8). The droid hovers at the right of room 58 (x 21, pixel 168),
+facing left (DroidFlags `$45`), and holds weapon 2 with ammunition 4, 5, 3. It fires in frame 1451: the sample of frame
+1452 has Shot `$41` (bit 0: left) and weapon 2's counter 4. The bolt's x then reads `$A0`, `$9C`, `$98`, `$94`, `$90`
+in the samples of frames 1452-1457, about 4 px a frame. It meets object 1's ink, marks a cell under it `$21` and ends
+(Shot 0 in the sample of frame 1458). The object finds the mark in frame 1459: in the sample of frame 1460 its state is
+`$87`, kind bit 5, kill mark `$20`, dying.
 
 ![The fight: rzx-010000 frames 1440-1480, weapon 2 kills the object of room 58](img/play/fight.gif)
 
 The screen at every frame of `rzx-010000` frames 1440-1480. Command:
 `python3 ../../kit/screen_anim.py --work work/docs/tjC/z10 --from 1440 --to 1480 --step 1 --scale 2 --delay 80 --hold 1500 docs/img/play/fight.gif`.
 
-The map holds 16 weapon items, one unit each: 16 more shots for 25 objects. Of the 25 objects, 4 need weapon 1, 13
-weapon 2 and 8 weapon 3. Weapon 2 is the one to save.
+The ammunition budget. Each counted weapon starts with 3 units, and the map's 16 weapon items add one unit each
+(counted over the alien map, doc 07.2; the deal never moves a weapon):
 
-**The point**: the free dash clears enemies; the counted weapons are keys to the objects. A wasted shot of the wrong
-weapon is worse than none, because it freezes the object where it stands.
+| Weapon | At the start | Items in the map | Shots in a game | Objects it must kill | Spare |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 3 | 1 | 4 | 4 (kind bit 4) | 0 |
+| 2 | 3 | 10 | 13 | 13 (kind bits 5 and 7) | 0 |
+| 3 | 3 | 5 | 8 | 8 (kind bit 6 and no kind bit) | 0 |
+
+Every weapon has exactly as many shots as the objects it kills. A bolt that misses, a shot of the wrong weapon or a
+shot at an enemy leaves some object that can no longer be killed. Killing every object is not needed for the win
+(10.10): an object left alive stays a danger in its room, nothing more.
+
+**The point**: the free dash clears enemies; the counted weapons are keys to the objects, with no key to spare. A wasted
+shot of the wrong weapon is worse than none, because it also freezes the object where it stands.
 
 ## 10.6 Every way to die
 
@@ -519,11 +557,12 @@ stateDiagram-v2
     Playing --> Dying: HazardDeath or EnergyOut, not turning
     Dying --> Playing: Lives - 1 is not 99, start position, Energy 99
     Dying --> GameOver: Lives - 1 = 99
-    GameOver --> Menu: COMPUTER MALFUNCTION, the percentage, 512 HALTs, Restart
+    GameOver --> Menu: COMPUTER MALFUNCTION, the percentage, 512 HALTs with the energy counting, Restart
 ```
 
-LoseLifeGameOver clears the HUD row, stops the energy clock, queues COMPUTER MALFUNCTION and calls ProgressScreen with
-A = `$FF`: the picture of the pieces taken and YOU HAVE COMPLETED nn % OF TUJAD. Then 512 HALTs and Restart.
+LoseLifeGameOver clears the HUD row, zeroes EnergyTimer, queues COMPUTER MALFUNCTION and calls ProgressScreen with
+A = `$FF`: the picture of the pieces taken and YOU HAVE COMPLETED nn % OF TUJAD. ProgressScreen restarts the clock, so
+the energy keeps counting, unseen, through the 512 HALTs before Restart (10.4).
 
 Worked example: in the RZX game Lives went 3, 4 (GEN 19 at RZX frame 13 399), 5 (26 982), 4 (the death at 35 249),
 5 (36 123). The game ended with 5 lives.
@@ -543,13 +582,29 @@ MoveDroid clears it at the start of each act. After the touch test MoveDroidPick
 | Kind | Effect | Message |
 | --- | --- | --- |
 | `$80` GEN 19 | Lives + 1 (BCD) | GEN 19 COLLECTED |
-| `$81` energy | Energy 99; EnergyTimer = EnergyReload | ENERGY ABSORBED |
-| `$C1-$C3` weapon | that weapon's Ammo + 1 (BCD); ShowWeapon | WEAPON STORED |
+| `$81` energy | Energy 99; EnergyTimer = EnergyReload | ENERGY SOURCE ABSORBED |
+| `$C1-$C3` weapon | that weapon's Ammo + 1 (BCD); ShowWeapon | WEAPON LOCATED AND STORED |
 | `$82-$B3` ED piece | EdPickup | the progress screen |
 
 `EdPickup $7703` turns the kind into the piece number (`RES 7`, `DEC A`: `$82` is piece 1) and calls ProgressScreen.
 ProgressScreen sets the piece's bit in `EdFlags $6681`: byte (n - 1) / 5, bit (n - 1) mod 5. It shows the 10 x 5
-picture with the new piece flashing; each piece is 2 % of it. Then SaveRoomObjects and DrawRoom with A = `$FF`.
+picture with the new piece flashing; each piece is 2 % of it. Back in EdPickup, `DroidGraphic $6378` = BlankGraphic,
+then SaveRoomObjects and DrawRoom with A = `$FF`. MoveDroid's next act queues the old image from DroidGraphic to erase
+the droid; the room has just been drawn without it, so the blank graphic keeps that erase from leaving a droid's
+picture behind.
+
+```asm
+EdPickup:
+  RES 7,A
+  DEC A                      ; the piece number, 1-50
+  CALL ProgressScreen        ; the EdFlags bit, the picture
+  LD DE,BlankGraphic
+  LD (DroidGraphic),DE       ; the next erase draws nothing
+  CALL SaveRoomObjects
+  LD A,$FF
+  CALL DrawRoom              ; a clear
+  RET
+```
 
 ```mermaid
 sequenceDiagram
@@ -563,6 +618,7 @@ sequenceDiagram
     MD->>PS: an ED piece, A = the piece number
     PS->>PS: EnergyTimer 0, EdFlags bit set, the picture, the flash
     PS->>PS: EnergyTimer restarted
+    MD->>MD: DroidGraphic = BlankGraphic
     MD->>DR: SaveRoomObjects, then DrawRoom A = FF
 ```
 
@@ -588,7 +644,8 @@ the game remembers the player's progress in the world: one bit in a room record,
 
 1. ClearScreen; `InitRooms $7BCC`: every item present again (bit 7), every object reset (state AND 3 OR `$40`, the
    graphic, frames and kill mark from ObjectKind, frame 0).
-2. B = Random OR 1 AND `$1F`: 1-31. `ScrambleRooms $7BA0` is called B times.
+2. B = Random OR 1 AND `$1F`. Bit 0 is set before the mask, so B is odd: 1, 3, ..., 31, 16 values.
+   `ScrambleRooms $7BA0` is called B times.
 3. The exhaust rows, BlankGraphic and EdFlags zeroed.
 4. Room = `$54` (84); PlaceDroid; the 28 start values `InitialVars $6380` copied to `$6364-$637F`: energy timer `$FA`,
    weapon 0, ammunition 3 3 3, lives 3, energy 99.
@@ -642,7 +699,12 @@ Room 123 has only item 1, and it is the last non-weapon slot of the list. So eac
 non-weapon kinds by one slot: each slot takes the kind of the slot before it, and the first takes the last. B calls
 rotate them by B slots. The places stay; the kinds move. The 16 weapons never move.
 
-The deal of the RZX game was 27 slots: the image's list rotated by 27 matches every slot at RZX frame 1 000.
+The first game after loading starts from the image's list, so its deal is one of 16 rotations: 1, 3, ..., 31 slots.
+InitRooms sets bit 7 of every item again but does not restore the kinds, so a later game in the same session rotates
+on from the last deal; over several games any of the 64 rotations can come.
+
+The deal of the RZX game was 27 slots, an odd count as a first game must have: the image's list rotated by 27 matches
+every slot at RZX frame 1 000.
 
 ![The deal: NewGame turns ScrambleRooms 27 times, the non-weapon items move along the list](img/gameplay/deal.png)
 
@@ -660,8 +722,8 @@ two slots hold the same piece. The second one taken sets a bit that is already s
 Worked example: the image has piece 48 (`$B1`) in room 58. With the shift 27 the slot of room 58 takes the kind of the
 slot 27 places back, piece 41 (`$AA`), which is what the RZX game's room 58 holds (doc 07.2).
 
-**The point**: the deal is cheap and weak. It does not shuffle; it rotates one fixed list by 1-31 places. Only 31 worlds
-exist, and the pieces always come in the same order round the rooms.
+**The point**: the deal is cheap and weak. It does not shuffle; it rotates one fixed list by an odd 1-31 places. The
+first game after loading has only 16 possible worlds, and the pieces always come in the same order round the rooms.
 
 ## 10.10 The goal and the win
 
@@ -674,8 +736,8 @@ WinTest:
   LD B,$0A
 WinTestLoop:
   CP (HL)                    ; all five bits of each byte
-  RET NZ
   INC HL
+  RET NZ
   DJNZ WinTestLoop
   CP (HL)                    ; EdFlagsEnd: already said?
   JR Z,WinTestRoom
@@ -688,8 +750,9 @@ WinTestRoom:
   RET NZ
 ```
 
-In room 84 it clears the HUD row, stops the energy clock, queues CONGRATULATIONS, waits (`WinDelay`), calls
-ProgressScreen with A = 0 (the whole picture), waits 512 HALTs (about 10 seconds) and jumps to Restart.
+In room 84 it clears the HUD row, zeroes EnergyTimer, queues CONGRATULATIONS, waits (`WinDelay`), calls ProgressScreen
+with A = 0 (the whole picture), waits 512 HALTs (about 10 seconds) and jumps to Restart. ProgressScreen has restarted
+the clock, so the energy keeps counting through the HALTs (10.4); it no longer matters.
 
 ```mermaid
 flowchart TD
@@ -701,13 +764,13 @@ flowchart TD
     M --> C{Room = 54?}
     C -- no --> R
     C -- yes --> V[CONGRATULATIONS, EnergyTimer 0, WinDelay]
-    V --> P[ProgressScreen A = 0: the whole picture]
-    P --> H[512 HALTs]
+    V --> P[ProgressScreen A = 0: the whole picture; EnergyTimer restarted]
+    P --> H[512 HALTs, the energy counting unseen]
     H --> RS[Restart: the menu]
 ```
 
-So the goal is all 50 pieces, then room 84. The README's Profile says "the win when ten ED flags are set": the ten
-flags are ten bytes of five bits, 50 pieces, and the win needs room 84 as well. The fix is sent to the lead.
+So the goal is all 50 pieces, then room 84: the ten flags are ten bytes of five bits, 50 pieces, and the win needs room
+84 as well.
 
 Worked example, the RZX game:
 
@@ -755,13 +818,13 @@ flowchart LR
 ```
 
 Worked example: room 58 in `rzx-010000` has the mask `$0A` and one object. Enemies 1 and 3 materialise in frame 1146,
-enemy 1 is destroyed in frame 1240 and back in frame 1534, 294 frames later. The object walks between y 64 and y 104
+enemy 1 is hit in frame 1239 and back in frame 1532, 293 frames later. The object walks between y 64 and y 104
 until weapon 2 kills it in frame 1459.
 
 ![An enemy touches the droid: rzx-010000 frames 104-124, room 73](img/play/enemy-touch.gif)
 
-The screen at every frame of `rzx-010000` frames 104-124: enemy 0 materialises next to the droid, flies into it and
-explodes; the droid loses 5 energy over the next second. Command:
+The screen at every frame of `rzx-010000` frames 104-124: enemy 0 materialises on top of the droid (the droid puts no
+mark in the cell table, so the spawn test cannot see it), flies over it and explodes; the droid loses 5 energy over the next second. Command:
 `python3 ../../kit/screen_anim.py --work work/docs/tjC/z10 --from 104 --to 124 --step 1 --scale 2 --delay 100 --hold 1500 docs/img/play/enemy-touch.gif`.
 
 **The point**: the danger is ordered by how little it moves. The restless enemies only drain; the slow objects and the
@@ -781,7 +844,11 @@ timer stepped on average:
 | --- | --- | --- |
 | `c1`, unreal-ng's own frames | play with the timer running | about 0.87 |
 | `rzx-010000` | frames 0-2 027, timer running | about 0.92 |
-| the RZX log, RZX frames 1 000-81 000 | 69 699 | 0.87 (0 in 16 515, 1 in 45 484, 2 in 7 561) |
+| the RZX log, RZX frames 1 000-81 000 | 70 730 | 0.87 (0 in 16 713, 1 in 46 303, 2 in 7 714) |
+
+In the RZX log the frames counted are those with the timer running at both ends; a step across a reload counts as one.
+Left out: 8 929 frames with the timer stopped (progress screens, the finales) and 340 with a jump that is no count (a
+touch, the shield, a pickup, a life lost). Command: `python3 work/docs/tjC/timer_bins.py`.
 
 The RZX frames hold 0, 1 or 2 interrupts each: an RZX frame is a count of instructions in the recording emulator, not
 one 50 Hz frame. A replay of the RZX keys on unreal-ng's own frames therefore has to guess each key's frame
@@ -847,7 +914,7 @@ The energy is frozen.
 Witness, `c1` frames 15 241-15 359 (measured by tjA, doc 04.6 and [doc 05.10](05-controls.md#510-pause-the-interrupt-stops)):
 no execution of `$95D0` or `EnergyTick $7AB6`; EnergyTimer `$64` and Energy `$97` at frames 15 241, 15 300 and 15 359.
 
-**The point**: pause really stops the game, the energy clock included, contrary to the `.ann`, stage 2 and the brief.
+**The point**: pause really stops the game, the energy clock included.
 
 ## 10.14 Notable features
 
@@ -870,9 +937,9 @@ no execution of `$95D0` or `EnergyTick $7AB6`; EnergyTimer `$64` and Energy `$97
 - **The shield costs 25 times the energy** and turns the touch test off (10.3).
 - **A wipe with interrupts on.** DrawRoom's 33-frame scroll wipe runs with interrupts on, so the energy keeps counting
   while the room changes; the objects of the new room appear on top of the droid with no warning (10.6).
-- **The 400-frame teleport** with interrupts off for 240 frames (10.2).
+- **The 500-frame teleport**, 10 seconds, with interrupts off for about 250 frames (10.2).
 - **The duplicate ED piece 3** in rooms 41 and 42: 51 ED items for 50 pieces (10.9).
-- **The deal is a rotation** by 1-31 slots: 31 possible worlds (10.9).
+- **The deal is a rotation** by an odd 1-31 slots: 16 possible worlds for the first game after loading (10.9).
 - **A hidden life at 0**: the game over comes at Lives `$99` (10.7).
 - **Leftover source text** fills the work space at `$6359` in the image; every byte is written before it is read
   (doc 02).
@@ -883,7 +950,11 @@ no execution of `$95D0` or `EnergyTick $7AB6`; EnergyTimer `$64` and Energy `$97
   a turn of five frames takes about 12 passes, long enough for EnergyTick to step 0 to `$99` (SUB 1, DAA). The droid would then keep the
   life with energy 99. No recording turns at energy 0.
 - **99 lives plus GEN 19** gives `$00` (ADD 1, DAA). Only three GEN 19 exist, so the counter never gets near.
-- **The probe's steering.** No RZX chunk steers weapon 3; the recording `probe-shield`, made for doc 05, does (doc 05.8).
 - **The patroller touch.** The droid shared a room with a patroller in 5 378 RZX frames and never touched one.
 - **The game over's percentage.** The `game-over` recording shows the screen; the RZX game never lost its last life.
 - **The spare ED piece.** No recording took both copies of piece 3 in one game; the code sets the same bit twice.
+- **A touch before a progress screen.** DrainTimer runs on every interrupt and reloads EnergyTimer with `$FA` when
+  TouchTimer reaches 0, even while ProgressScreen holds it at 0 (10.4). No recording was searched for it.
+- **The droid on a flying shot's mark.** A flying bolt XORs `$40` or `$20`, the probe `$10`, into its cells (doc
+  07.4). Under the droid any such bit is "another mark" to the touch test, so steering the probe onto the droid would
+  call HazardDeath. No recording does it.

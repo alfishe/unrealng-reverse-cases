@@ -15,15 +15,15 @@ Start:
 
 ; The four enemy records of 9 bytes
 ;
-; Record k (k = 0-3) at $6303 + 9k: +0 the timer (passes to the next step), +1
-; the state (bits 0-1 the direction 0 right, 1 down, 2 left, 3 up; bit 6
-; materialising; bit 7 hit, the explosion; $40 with +0 = 1 or 2 a spawn
-; waiting), +2 x in pixels (up to $F0; a spawn writes Random OR $20 AND $F8,
-; $20-$D0), +3 y in pixels (up to $B0), +4/+5 the graphic pointer, +6 the
-; frame, +7 the frames, +8 the attribute. DrawRoom $6B40 zeroes byte 0 of each
-; and, by the bits of the room's enemy mask, sets +0 to 1 or 2, +1 to $40 and
-; the graphic to BlankGraphic $6609. MainLoop calls MoveEnemy $90E7 with each
-; record (L1 18 579 passes).
+; Record k (k = 0-3) at $6303 + 9k: +0 the timer (MoveEnemy calls to the next
+; act), +1 the state (bits 0-1 the diagonal direction: 0 right and down, 1 left
+; and down, 2 left and up, 3 right and up; bit 6 materialising; bit 7 hit, the
+; explosion; $40 with +0 = 1 or 2 a spawn waiting), +2 x in pixels (up to $F0;
+; a spawn writes Random OR $20 AND $F8, $20-$D0), +3 y in pixels (up to $B0),
+; +4/+5 the graphic pointer, +6 the frame, +7 the frames, +8 the attribute.
+; DrawRoom $6B40 zeroes byte 0 of each and, by the bits of the room's enemy
+; mask, sets +0 to 1 or 2, +1 to $40 and the graphic to BlankGraphic $6609.
+; MainLoop calls MoveEnemy $90E7 with each record (L1 18 579 passes).
 Enemies:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00
 Enemy2:
@@ -58,8 +58,9 @@ Object2Flags:
 ;
 ; A patroller moves along a fixed row through several rooms: +0 bit 7 not drawn
 ; (DrawRoom sets it on every room change), the frame; +1 y and the direction;
-; +2 the column; +3 the room it is in; +4/+5 the room and column where it turns
-; right; +6/+7 where it turns left. MovePatrollers $6AAD takes one a pass
+; +2 the column; +3 the room it is in; +4/+5 the right end, the room and column
+; where it turns left; +6/+7 the left end, where it turns right (the end column
+; itself is stepped back at once). MovePatrollers $6AAD takes one a pass
 ; through PatrollerPtrs. The bytes in the image are the start state (no NewGame
 ; resets them).
 Patrollers:

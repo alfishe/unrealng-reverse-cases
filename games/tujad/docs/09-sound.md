@@ -2,9 +2,9 @@
 
 What this covers:
 
-- the engine: the 48K beeper, ten `OUT ($FE)` sites, no AY, no tune (9.1);
+- the engine: the 48K beeper, eleven `OUT ($FE)` sites, ten of them live, no AY, no tune (9.1);
 - how a toggle loop is timed, and why the same loop is slower in the display (9.2);
-- each loop decoded: the pass tick (9.3), the digit click (9.4), the hazard buzz (9.5), the pickup tone (9.6), the two
+- each loop decoded: the pass tick (9.3), the digit click (9.4), the shield's buzz (9.5), the pickup tone (9.6), the two
   sweeps (9.7), the death (9.8) and the teleport (9.9);
 - what the sounds cost and which interrupts the game loses while they play (9.10);
 - the data sheet (9.11), the rendered sounds (9.12) and what no recording reached (9.13).
@@ -17,8 +17,8 @@ each opened from its stage-1 TTD session (`work/stage1/rec/NAME/session.ttd`) on
   frame 616.
 - `energy-out`: frames 540-1700. An enemy drains the energy to 0; the death of frame 1570.
 - `menu-cursor`: frames 0-1201. The menu, a game start at frame 110, an ED piece at frame 227 (the progress screen),
-  play, an enemy touched at frames 540-610.
-- `rzx-036000`: frames 0-869. GEN 19 taken at frame 120; an enemy touched at frame 271.
+  play, the shield held at frames 530-568.
+- `rzx-036000`: frames 0-869. GEN 19 taken at frame 120; the shield at frames 271-273.
 - `rzx-059000`: frames 0-43. A weapon taken at frame 25.
 
 Every sound event of a window was taken from access traces, 100 frames at a time (`tools/sound_events.py`): each `OUT`
@@ -54,7 +54,7 @@ python3 tools/fig_sound.py table      # every site measured (the numbers below)
 | --- | --- | ---: | --- | --- |
 | `$7F79` | PassTick `$7F6D` | 2 | MainLoop `$6914` | every main-loop pass |
 | `$7B68`, `$7B6C` | PrintBcd `$7B3F` | 50 | the HUD printers | each two-digit number printed |
-| `$69D5` | HazardFlash `$699B` | 5 | MainLoop `$6923` | each pass while an enemy is touched |
+| `$69D5` | HazardFlash `$699B` | 5 | MainLoop `$6923` | each pass while the shield is on (DroidFlags bit 4) |
 | `$785A` | PickupTone `$7856` | 256 | PickupErase `$7837` | an item taken |
 | `$7F51` | RiseSweep `$7F4D` | 220 | TeleportFlash `$8051` | the teleport, 18 calls |
 | `$7F61` | FallSweep `$7F5D` | 256 | TeleportFlash, DeathEffect `$7ADF` | the teleport (18), a death (8) |
@@ -62,8 +62,8 @@ python3 tools/fig_sound.py table      # every site measured (the numbers below)
 | `$801A` | BeamUp `$8005` | 30 a line | Teleport | the beam out of it, in the new room |
 | `$88E2` | Menu `$8854` | 0 | the menu | the border set to black |
 
-ExitToBasic `$95C1` holds a tenth `OUT ($FE)` (`LD A,7; OUT ($FE),A`: a white border), but no code reaches it
-([02](02-architecture.md)).
+ExitToBasic `$95C1` holds an eleventh `OUT ($FE)` (at `$95CD`) (`LD A,7; OUT ($FE),A`: a white border), but no code
+reaches it ([02](02-architecture.md)).
 
 ```mermaid
 flowchart TD
@@ -216,10 +216,10 @@ The point: the tick is the sound of the main loop itself. A slow pass (3 frames)
 
 ## 9.4 The digit click
 
-PrintBcd `$7B3F` prints a BCD byte as two digits. Before the first digit it runs a click: 50 passes of `OUT`,
-`XOR $10`, `OUT`, `DJNZ`. The two `OUT`s of a pass write different values. The second `OUT` of a pass and the first of the
-next write the same one. So the speaker moves once a pass, 42 T apart: 18 T from the first `OUT` to the second, 24 T
-back. That is 50 edges of a 41.7 kHz square wave, 2100 T, 0.6 ms: a click, too high to be a tone.
+PrintBcd `$7B3F` prints a BCD byte as two digits. Before the first digit it runs a click: 50 passes of `OUT`, `XOR $10`,
+`OUT`, `DJNZ`. The two `OUT`s of a pass write different values. The second `OUT` of a pass and the first of the next
+write the same one. So the speaker moves once a pass, 42 T apart: 18 T from the first `OUT` to the second, 24 T back.
+That is 50 edges of a 41.7 kHz square wave, 2100 T, 0.6 ms: a click, too high to be a tone.
 
 The second digit has no click. The `.ann` says "with a click each"; the listing shows one click per number.
 
@@ -255,9 +255,11 @@ flowchart TD
 ```
 
 The click is heard every time a HUD number changes: an energy step, a life lost, an item's count, an ammunition count.
-The energy steps make it regular. EnergyTick prints the energy every 250 interrupts (5 s) in play, and every 10 while an
-enemy is touched ([10](10-gameplay-logic.md)). So a touched enemy is heard as a click every 10 frames on top of the hazard
-buzz (9.5).
+The energy steps make it regular. EnergyTick prints the energy every 250 interrupts (5 s) in play
+([10](10-gameplay-logic.md)). EnergyReload is `$0A` under the shield (`$7368`) and for TouchTimer (50 interrupts) after
+an enemy touch (`$75D0-$75DA`). Each touching pass sets EnergyTimer back to 10, so the click comes 10 interrupts after
+the last touch, then every 10: in `energy-out` at frames 603, 613, 623, 633 and 643. The buzz of 9.5 is the shield's
+(HazardFlash); a touch has none.
 
 Worked example: `energy-out` frame 603 T 2416, EnergyTick prints the energy. The 100 writes go 18, 24, 18, 24, ... T
 apart. The first edge to the 50th is 2076 T (49 x 42 + 18). The PrintBcd animation in
@@ -266,17 +268,19 @@ apart. The first edge to the 50th is 2076 T (49 x 42 + 18). The PrintBcd animati
 
 Witness: the 17 PrintBcd calls of `energy-out` frames 540-1700 all wrote 100 times. Those that ran in the border
 (EnergyTick at about T 2500 of its frame) spanned exactly 2076 T. The 4 that started in the display spanned 2595 to 3092
-T, with gaps of up to 56 T: the code at `$7B68` is in contended memory. Callers traced in the eight recordings: EnergyTickStep `$7AD2` (38 calls),
-DrawHud (2), ShowWeaponAmmo `$7A27`, LoseLife (2), MoveDroidPickupGen `$7671` and MoveDroidPickupEnergy `$7687`.
+T, with gaps of up to 56 T: the code at `$7B68` is in contended memory. Callers traced in the eight recordings, by
+routine: EnergyTickStep `$7AD2` (its call at `$7ADB`, 38 calls), DrawHud (2), ShowWeaponAmmo `$7A27`, LoseLife (2),
+MoveDroidPickupGen `$7671` and MoveDroidPickupEnergy `$7687`.
 
 The point: every HUD number announces itself with a click, but the click is one per number, before the first digit.
 
-## 9.5 HazardFlash: the hazard buzz
+## 9.5 HazardFlash: the shield's buzz
 
-While DroidFlags bit 4 is set (the shield: down held alone, the energy draining fast; [doc 5.9](05-controls.md#59-the-shield-down-alone)), MainLoop's HazardFlash `$699B` repaints the
-droid's 5 attribute rows with DeathColour (2 to 7, cycling) plus BRIGHT. After each row it toggles the speaker. So each
-pass gives 5 edges, about 178 T apart: a 9.8 kHz burst of 0.2 ms, once a pass. With PassTick's pulse, a shielded droid
-sounds as a rough buzz at 25 Hz.
+While DroidFlags bit 4 is set (the shield: down held alone, the energy draining fast; [doc
+5.9](05-controls.md#59-the-shield-down-alone)), MainLoop's HazardFlash `$699B` repaints the droid's 5 attribute rows
+with DeathColour (2 to 7, cycling) plus BRIGHT. After each row it toggles the speaker. So each pass gives 5 edges, about
+178 T apart: a 9.8 kHz burst of 0.2 ms, once a pass. With PassTick's pulse, a shielded droid sounds as a rough buzz at
+25 Hz.
 
 ```text
 HazardFlash:
@@ -324,10 +328,11 @@ flowchart TD
 Worked example: `rzx-036000` frame 271 T 67 844, a two-cell droid, in the border. From one `OUT` to the next: the
 speaker part's tail (`XOR`, `LD (BorderSound),A`, 20 T), the row's end (`POP AF` to `DJNZ`, 54 T), the next row's
 start (`PUSH`, `PUSH`, `LD B,C`, 26 T), two cells (2 x 24 - 5 = 43 T) and `PUSH AF`, `LD A,(BorderSound)`, `OUT` (35
-T): 178 T, the measured gap. In `menu-cursor` frames 540-610 the same calls fell in the display, with gaps of 247 to
+T): 178 T, the measured gap. In `menu-cursor` frames 530-568 the same calls fell in the display, with gaps of 247 to
 288 T.
 
-The point: the hazard has its own sound, made by the loop that flashes the droid's colours. Sound and colour change on
+The point: the shield has its own sound, made by the loop that flashes the droid's colours (HazardFlash runs only under
+the shield). Sound and colour change on
 the same row.
 
 ## 9.6 PickupTone
@@ -469,11 +474,13 @@ The highlight sits on the five lines of the loop, mostly on the `DJNZ`. E in the
 more slowly at the end, as each pass takes longer. Nothing is drawn. The screen does not change for 7.8 frames, and no
 interrupt comes, so the sprites and the scroller are frozen.
 
-Worked example: the model of a whole FallSweep is the sum of 33 + 13 E for E = 256, 1, 2, ..., 255. That is 256 x 33
-+ 13 x (256 + 32 640) = 436 096 T, less the 5 T of the last `JR` not taken: 436 091 T, 6.2 frames. The traced calls
-take 545 722 to 550 331 T, 7.8 frames, 25 % more. RiseSweep's model is 220 x 33 + 13 x 24 310 = 323 290 T; traced, 407
-239 to 411 434 T, 5.9 frames. The first FallSweep of `r30` starts at frame 251 T 68 351. Its first gap is 3361 T and
-its second 46 T, as the model says.
+Worked example: the model of a whole FallSweep is the sum of 33 + 13 E for E = 256, 1, 2, ..., 255. That is 256 x 33 +
+13 x (256 + 32 640) = 436 096 T, less the 5 T of the last `JR` not taken: 436 091 T, 6.2 frames. RiseSweep's model,
+counted the same way, is 220 x 33 + 13 x 24 310 - 5 = 323 285 T. Both models run to the `EI`, all half periods included.
+The traced lengths run from the entry to the last edge, so they leave out the last half period (3 348 T for FallSweep,
+46 T for RiseSweep): little against the contention. The traced FallSweeps take 545 722 to 550 331 T, 7.8 frames, 25 %
+more than the model; the RiseSweeps 407 239 to 411 434 T, 5.9 frames. The first FallSweep of `r30` starts at frame 251 T
+68 351. Its first gap is 3361 T and its second 46 T, as the model says.
 
 Witness: all 18 RiseSweeps and 26 FallSweeps traced (18 in `r30`, 8 in `energy-out`) wrote 220 and 256 times. No
 interrupt was entered inside any of them.
@@ -485,14 +492,16 @@ lead).
 ## 9.8 DeathEffect
 
 LoseLife `$6A3C` queues GEN 19 DESTROYED and calls DeathEffect `$7ADF`. It shakes the droid apart in 8 steps. Each step
-shifts the droid's 20 pixel lines by one pixel, right and left in turn, then calls FallSweep. So a death is 8 falling
-sweeps, one every 7.9 frames, about 1.3 s with no interrupt.
+shifts the droid's 40 pixel lines by one pixel, the even lines right and the odd lines left (20 pairs), then calls
+FallSweep. So a death is 8 falling sweeps, one every 8.05 frames, about 1.3 s with no interrupt.
 
 ```text
 DeathEffect:
     KeyLatches bit 7 = 1                     ; no fire
     repeat 8 times:
-        for 20 lines of the droid: SRL each byte (every other line: SLA)
+        for 20 pairs of the droid's lines:
+            SRL each of DroidWidth + 1 bytes of the even line
+            SLA each of DroidWidth + 1 bytes of the odd line
         FallSweep()
     DroidGraphic = BlankGraphic; KeyLatches bit 7 = 0
 ```
@@ -501,7 +510,7 @@ DeathEffect:
 7AF1  06 08         LD B,$08             ; eight steps
 7AF3  C5            PUSH BC              ; DeathEffectStep
 7AF4  E5            PUSH HL
-7AF5  06 14         LD B,$14             ; the droid's lines, a right and a left shift a pass
+7AF5  06 14         LD B,$14             ; 20 pairs of lines, a right and a left shift a pass
 ...
 7B29  10 CC         DJNZ DeathEffectLine
 7B2B  CD 5D 7F      CALL FallSweep
@@ -514,7 +523,7 @@ DeathEffect:
 flowchart TD
     LL["LoseLife: Lives - 1, Energy $99"] --> Q["QueueMessage GEN 19 DESTROYED"]
     Q --> DE["DeathEffect: no fire"]
-    DE --> SH["shift the droid's lines: right, left, ..."]
+    DE --> SH["shift the droid's 40 lines: 20 pairs, right then left"]
     SH --> FS["FallSweep: 7.8 frames, DI"]
     FS --> N{"8 steps?"}
     N -->|no| SH
@@ -522,9 +531,11 @@ flowchart TD
 ```
 
 Worked example: `energy-out` frame 1570 T 7624, DeathEffect enters. Its FallSweeps start at frames 1570, 1578, 1586,
-1594, 1602, 1610, 1618 and 1626, each about 3450 T later in its frame than the one before. The shifted lines (about
-3400 T) and a sweep of 548 000 T make 551 500 T, 7.9 frames. The death ends at frame 1634. The message GEN 19
-DESTROYED, queued at 1570, waits for the scroller, which only runs in the interrupt: it is taken at frame 1664.
+1594, 1602, 1610, 1618 and 1626, each about 3450 T later in its frame than the one before: 562 464 to 562 632 T apart,
+8.05 frames (562 500 T: the sweep, about 548 000 T, plus about 14 000 T of line shifts in contended screen memory; the
+code alone gives about 8 000 T for a droid three cells wide). 8 x 8.05 = 64 frames. The death ends at frame 1634. The
+message GEN 19 DESTROYED, queued at 1570, waits for the scroller, which only runs in the interrupt: it is taken at frame
+1664.
 
 Witness: from frame 1570 to 1634 no interrupt was entered (0 of 64). The energy timer, the scroller and the sprites
 stood still.
@@ -542,11 +553,13 @@ The teleport is the longest sound of the game, about 10 s. Teleport `$7719` runs
    three times. Each of the 18 steps plays FallSweep and RiseSweep.
 3. **BeamDown** with BeamScreen = 1 in the new room, after DrawRoom: the beam drawn at once. `BeamScreen - 1 = 0` skips
    the tone, so it is silent.
-4. **BeamUp** `$8005` with BeamScreen = 5000: the beam erased bottom up, with the same tone a line.
+4. **BeamUp** `$8005` with BeamScreen = 5000: the beam erased bottom up, with the same tone a line. BeamUp has no
+   BeamScreen test: it always sounds.
 
 ```text
-BeamDown (BeamUp is the same, bottom up, writing 0 instead of the beam's bytes):
-    the 5 x 4 attributes at the teleporter = $42
+BeamDown (BeamUp is the same, bottom up, writing 0 instead of the beam's bytes, with no attributes and no BeamScreen
+test: it always sounds):
+    the attributes of columns +0 and +3 of the teleporter's 5 rows (10 cells) = $42
     repeat 40 lines:
         if BeamScreen != 1:
             repeat 30: OUT ($FE), A; A ^= $10; wait $64 DJNZ passes    ; 1354 T a half period
@@ -658,7 +671,9 @@ periods of 2043 T in the display). In `r30` Teleport enters at frame 117 T 11 59
 TeleportFlash at 251 T 49 723, the second BeamDown at 509 T 63 655 and BeamUp at 511 T 14 805. BeamUp's last edge is in
 frame 615.
 
-Witness: interrupts entered in `r30`: frames 118-249, 131 of 131; 251-500, 2 of 249; 509-616, 106 of 107.
+Witness: interrupts entered in `r30` (counted inclusively): frames 118-249, 132 of 132; 251-500, 3 of 250 (251 comes
+before TeleportFlash starts at T 49 723 and 500 after its last edge in frame 499; the one inside, 486, falls in the
+`EI` (`$7F6B`) to `DI` (`$7F50`) gap between two sweeps); 509-616, 107 of 108.
 
 The point: BeamScreen sets both the beam's speed and its sound. The same routine, called with 1, draws the beam in one
 go without a note.
@@ -672,7 +687,7 @@ How to read the figure:
 - **Left**: the time one call takes, entry to its last edge, in frames on a log scale (under a frame the label gives
   T-states). Each bar is the mean over the calls of the recording named.
 - **Right**: in five stretches, the share of frames whose interrupt never came.
-- **The point**: the game does nothing else while a sound plays. The small ones (PassTick, the click, the hazard)
+- **The point**: the game does nothing else while a sound plays. The small ones (PassTick, the click, the shield's buzz)
   cost under a tenth of a frame each. The pickup costs 2.2 frames, a sweep 6-8 frames with the interrupt off, a beam
   100-130 frames with the interrupt still on.
 
@@ -684,7 +699,7 @@ python3 tools/fig_sound.py cost       # docs/img/sound/cost.png
 | --- | --- | --- | --- |
 | PassTick | 4206-6406 T, 3-5 % of a 2-frame pass | off (the main loop) | nothing |
 | the click | 2100-3100 T a number | off (the main loop, or inside the interrupt) | nothing |
-| HazardFlash | 1000-1600 T a pass | off (the main loop) | nothing |
+| HazardFlash | 1100-1630 T a pass | off (the main loop) | nothing |
 | PickupTone | 2.2 frames | off (the main loop) | everything for 2 frames: about 2 interrupts lost |
 | a sweep | 5.9 or 7.8 frames | off (DI) | everything: sprites, scroller, timers |
 | DeathEffect | 64 frames | off | everything |
@@ -693,9 +708,9 @@ python3 tools/fig_sound.py cost       # docs/img/sound/cost.png
 
 Witness: in `menu-cursor` frames 540-820, a stretch of play, 1 interrupt of 280 was lost (the 3-frame pass of 606-609).
 
-The point: a sound played with interrupts off costs the game its interrupts: the pickup about 2, the death 64, the teleport
-flash 247. That is why the energy does not drop during a death or a teleport flash: EnergyTick runs in the interrupt
-([10](10-gameplay-logic.md)). The beams, the longest sounds, are the ones that keep it.
+The point: a sound played with interrupts off costs the game its interrupts: the pickup about 2, the death 64, the
+teleport flash 247. That is why the energy does not drop during a death or a teleport flash: EnergyTick runs in the
+interrupt ([10](10-gameplay-logic.md)). The beams, the longest sounds, are the ones that keep it.
 
 ## 9.11 The data sheet
 
@@ -706,9 +721,9 @@ measured.
 | --- | --- | ---: | --- | --- | --- | --- | --- |
 | PassTick | `$7F6D` | 2 | 4206 (6348-6406) | a 1.2 ms pulse, 25 a second | 4206 T + 123 | no | MainLoop `$6914` |
 | PrintBcd click | `$7B65` | 50 | 42 a step (up to 56) | 41.7 kHz, 0.6 ms | 2100 T (3092) | no | DrawHud, EnergyTickStep, LoseLife, ShowWeaponAmmo, the pickups, the three weapons' fire |
-| HazardFlash | `$699B` | 5 | 178 (247-288) | a 9.8 kHz burst | about 900 T | no | MainLoop `$6923` |
+| HazardFlash | `$699B` | 5 | 178 (247-288) | a 9.8 kHz burst | 1096 T (1633) | no | MainLoop `$6923` |
 | PickupTone | `$7856` | 256 | 483 (711-760) | 3623 Hz (2.3 kHz) | 123 165 T (152 341) | no | PickupErase `$7837` |
-| RiseSweep | `$7F4D` | 220 | 33 + 13 E, E = 220 .. 1 | 605 Hz to 38 kHz | 323 290 T (407 239) | yes | TeleportFlash `$8091` |
+| RiseSweep | `$7F4D` | 220 | 33 + 13 E, E = 220 .. 1 | 605 Hz to 38 kHz | 323 285 T (407 239) | yes | TeleportFlash `$8091` |
 | FallSweep | `$7F5D` | 256 | 33 + 13 E, E = 256, 1 .. 255 | a click, then 38 kHz to 523 Hz | 436 091 T (545 722) | yes | TeleportFlash `$808E`, DeathEffect `$7B2B` |
 | BeamDown | `$7F9C` | 30 a line, 40 lines | 1354 (2043), then BeamScreen x 26 | 1292 Hz (856 Hz) in 11.6 ms bursts | 97.8 frames (130.8) | no | Teleport `$7798`, `$77B2` |
 | BeamUp | `$8005` | 30 a line, 40 lines | 1354 | 1292 Hz in 11.6 ms bursts | 97.8 frames (104.0) | no | Teleport `$782D` |
@@ -731,8 +746,8 @@ How to read the figure:
 - **Each panel** is one WAV file as written (after the high-pass); its title gives the name, the length and what it
   holds.
 - **The x axis** is milliseconds from the first edge.
-- **The point**: the hum of play is a row of single ticks. The click and the hazard are near-silent bursts. The pickup
-  is the one steady tone. The death and the teleport are long trains of sweeps.
+- **The point**: the hum of play is a row of single ticks. The click and the shield's buzz are near-silent bursts. The
+  pickup is the one steady tone. The death and the teleport are long trains of sweeps.
 
 ```bash
 python3 tools/fig_sound.py wav        # docs/audio/*.wav
@@ -741,7 +756,7 @@ python3 tools/fig_sound.py waves      # docs/img/sound/waves.png
 
 | File | Recording, frames | What |
 | --- | --- | --- |
-| [play-hum.wav](audio/play-hum.wav) | `menu-cursor` 540-790 | 5 s of play: PassTick each pass; first an enemy touched (HazardFlash, a click every 10 frames) |
+| [play-hum.wav](audio/play-hum.wav) | `menu-cursor` 540-790 | 5 s of play: PassTick each pass; first the shield (HazardFlash, and a click every 10 frames: EnergyReload 10) |
 | [digit-click.wav](audio/digit-click.wav) | `energy-out` 603 | one PrintBcd click, the energy printed |
 | [pickup-tone.wav](audio/pickup-tone.wav) | `rzx-036000` 120-124 | GEN 19 taken: PickupTone |
 | [hazard-click.wav](audio/hazard-click.wav) | `rzx-036000` 271 | HazardFlash, two passes |
