@@ -123,6 +123,12 @@ class Graph:
                 out.append(((c, r + 1), 1))
         if self.ladder(c, r - 1) and r > 0:
             out.append(((c, r - 1), 1))
+        # a jump straight up with up held grabs a ladder that starts one or two cells above (level 5's broken
+        # ladder at columns 11-12, row 6 empty)
+        for up in (1, 2):
+            if r + up <= 20 and self.ladder(c, r + up) and not self.solid(c, r + 1):
+                out.append(((c, r + up), 3))
+                break
         if self.solid(c, r - 1):
             for d in (-1, 1):
                 for k in range(2, 5):
@@ -151,6 +157,20 @@ class Graph:
                     dist[m] = d + w
                     heapq.heappush(heap, (d + w, m))
         return dist
+
+    def air_distances(self, dist):
+        """DIST with the cells in the air (nothing holds Harry there) lowered to the nearest cell below or beside
+        plus one: a node in a jump is valued by where it may land, not by the straight fall from its cell"""
+        out = dict(dist)
+        for r in range(21):
+            for c in range(32):
+                if self.solid(c, r) or self.holds(c, r):
+                    continue
+                near = [dist[(c + dc, r + dr)] for dc in (-3, -2, -1, 0, 1, 2, 3) for dr in (-2, -1, 0)
+                        if (c + dc, r + dr) in dist]
+                if near:
+                    out[(c, r)] = min(out.get((c, r), 1e9), min(near) + 1)
+        return out
 
 
 def heuristic(st, eggs, dist=None):
@@ -242,6 +262,9 @@ def respawn(lab, game, lives):
     return None
 
 
+NOSKIP = False  # --noskip: never take a skipped egg while others are left
+SKIP = set()  # --skip C,R: eggs the heuristic ignores while others are left (taken by hand later)
+AIR = False  # --air: Graph.air_distances for the heuristic
 TARGET = None  # --target C,R: search for Harry standing in that cell instead of an egg (to set up a jump by hand)
 
 
@@ -255,8 +278,12 @@ def search_egg(lab, game, base_snap, base_segs, tmp, step, limit, log, wait_buck
     ALLOW_DEATH a death is a move too (it costs DEATH_COST frames): the last resort when no egg is reachable alive"""
     lab.load(base_snap)
     st0 = game.state()
-    eggs = [TARGET] if TARGET else game.eggs()
-    dist = Graph(lab.read(MAP, 672), game.lift_cols()).distances(eggs)
+    eggs0 = set(game.eggs())
+    eggs = [TARGET] if TARGET else [e for e in eggs0 if e not in SKIP] or sorted(eggs0)
+    graph = Graph(lab.read(MAP, 672), game.lift_cols())
+    dist = graph.distances(eggs)
+    if AIR:
+        dist = graph.air_distances(dist)
     tick = itertools.count()
     start = dict(segs=[], snap=base_snap, st=st0, g=0, lives=st0['lives'])
     heap = [(heuristic(st0, eggs, dist), next(tick), start)]
@@ -268,7 +295,8 @@ def search_egg(lab, game, base_snap, base_segs, tmp, step, limit, log, wait_buck
         key = (node['st']['x'] // KX, node['st']['y'] // KY, node['st']['d'], node['lives'], node['g'] // wait_bucket)
         if key in seen:
             continue
-        seen.add(key)
+        if node is not start:  # mid-air the start's children share its key: keep them open (level 8)
+            seen.add(key)
         expanded += 1
         hn = heuristic(node['st'], eggs, dist)
         best = min(best, (hn, node['st']['x'], node['st']['y'], node['g']))
@@ -300,12 +328,18 @@ def search_egg(lab, game, base_snap, base_segs, tmp, step, limit, log, wait_buck
                 g += waited + DEATH_COST
             child = dict(segs=segs, snap=None, parent_snap=node['snap'], st=st, g=g, lives=st['lives'],
                          nseg=len(node['segs']))
-            if TARGET and at_target(st) and st['lives'] >= node['lives']:
+            if TARGET and at_target(st) and st['lives'] >= node['lives'] and st['pc'] >= 0x4000:
+                if not survives(lab, game, tmp, st['lives']):
+                    log(f"  target after {expanded} expansions rejected: no way out alive")
+                    continue
                 log(f"  target {TARGET} after {expanded} expansions, {child['g']} frames: {st}")
                 return child['segs']
             if not TARGET and (st['eggs'] < st0['eggs'] or st['level'] != st0['level']):
                 if (st['x'] // KX, st['y'] // KY, st['eggs']) in banned:
                     continue
+                if NOSKIP and st['eggs'] > 0 and any(lab.read(MAP + r * 32 + c, 1)[0] != 3 for c, r in SKIP
+                                                     if (c, r) in eggs0):
+                    continue  # --noskip: a skipped egg taken on the way (a fall that loses the height)
                 if st['eggs'] > 0 and st['level'] == st0['level'] and not survives(lab, game, tmp, st['lives']):
                     log(f"  egg after {expanded} expansions rejected: no way out alive")
                     continue
@@ -321,8 +355,11 @@ def search_egg(lab, game, base_snap, base_segs, tmp, step, limit, log, wait_buck
 
 
 def search(args):
-    global KX, KY, TARGET
+    global KX, KY, TARGET, AIR, NOSKIP
+    NOSKIP = args.noskip
+    SKIP.update(tuple(int(v) for v in e.split(',')) for e in args.skip)
     KX, KY = args.kx, args.ky
+    AIR = args.air
     if args.target:
         TARGET = tuple(int(v) for v in args.target.split(','))
     if args.short:
@@ -390,8 +427,9 @@ def search(args):
                     s2 = game.state()
                     if s2['eggs'] > 0 and 0x9858 <= s2['pc'] < 0xA000:
                         break
-                lab.run(30)
-                segs.append(([], 30))
+                # the new level is drawn for about 80 frames after the eggs are back (level 6): wait it out
+                lab.run(150)
+                segs.append(([], 150))
                 snap = os.path.join(args.out, f'at{sum(f for _, f in segs)}.szx')
                 lab.save(snap)
                 levels_done += 1
@@ -435,14 +473,17 @@ def record(args):
         for keys, frames in segs:
             lab.keys(keys)
             while frames > 0:
-                n = min(frames, args.shot - frame % args.shot)
+                # --exact: one run call a segment, as the search's replays do (the game is not invariant to how
+                # the frames are split into calls); a screenshot after each segment that crosses a multiple of --shot
+                n = frames if args.exact else min(frames, args.shot - frame % args.shot)
+                before = frame
                 lab.run(n)
                 frame += n
                 frames -= n
                 if frame in pokes:
                     for a, v in pokes[frame]:
                         lab.write(a, bytes([v]))
-                if frame % args.shot == 0:
+                if frame % args.shot == 0 or (args.exact and frame // args.shot > before // args.shot):
                     lab.shot(os.path.join(shots, f'{frame:06d}.png'), 1)
                     st = Game(lab).state()
                     log.append(dict(frame=frame, **st))
@@ -490,6 +531,9 @@ def main():
     s.add_argument('--ky', type=int, default=3, help='closed-set cell height in pixels')
     s.add_argument('--poke', action='append', default=[], help='ADDR,VALUE poked after the menu (a clone)')
     s.add_argument('--target', help='C,R: stop when Harry stands in this map cell (one search, no egg)')
+    s.add_argument('--skip', action='append', default=[], help='C,R: an egg the heuristic ignores')
+    s.add_argument('--noskip', action='store_true', help='never take a skipped egg while others are left')
+    s.add_argument('--air', action='store_true', help='value cells in the air by where a jump may land')
     s.add_argument('--short', action='store_true', help='also try 2-frame steps left and right')
     s.add_argument('--port-base', type=int, default=36200)
     r = sub.add_parser('record')
@@ -499,6 +543,7 @@ def main():
     r.add_argument('--shot', type=int, default=50)
     r.add_argument('--poke', action='append', default=[], help='FRAME,ADDR,VALUE poked at that frame')
     r.add_argument('--keep', action='store_true')
+    r.add_argument('--exact', action='store_true', help='one run call a script segment (screenshots after the segments)')
     r.add_argument('--port-base', type=int, default=36200)
     args = p.parse_args()
     search(args) if args.cmd == 'search' else record(args)

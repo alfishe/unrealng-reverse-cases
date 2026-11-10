@@ -168,6 +168,40 @@ egg's height) found the way to the left ladder, and the take-off was swept by ha
 time): up 4 frames, right and jump, left 9 frames, right and jump. `work/stage1/bot/t19.txt` is levels 1-3 with that
 ending and the wait for level 4 (frame 7022).
 
+Levels 4-9 (`tests/inputs/levels-1-9.txt`, built as `work/stage1/bot/t19.txt` -> `t64.txt`, each step a search
+or a hand segment appended with `work/stage1/lab/append.py`) needed these changes to the bot and these findings:
+
+- **The bot**: `--air` values a cell in the air by the cells a jump from it may land on, not by its straight fall
+  (the level 4 stall); a vertical jump grabs a ladder that starts 1-2 cells above (a graph edge, level 5's broken
+  ladder at columns 11-12); `--skip C,R` hides an egg from the heuristic and `--noskip` forbids taking it while others
+  are left (eggs over long drops are kept for last); a `--target` state must survive the next 48 frames; the wait
+  after a level is 150 frames, because the next level is drawn for about 80 frames after its eggs come back and a
+  search started earlier sees every child "die"; the start node's key is not put in the closed set (a start in mid
+  air gave every child the same key and an empty heap).
+- **The egg pickup** (`$99DF`, every other pass, `$733C` = 2): the point (x + 8, y - 8) goes through `$9E34`; an egg
+  is taken when that point is in its cell, walking, falling or landing. Eggs hanging in the air (level 6 (26,1),
+  level 7 (28,1)) and eggs in platform gaps (level 8 (8,4), (23,4), (12,16)) are taken by a fall through the cell;
+  a jump from the egg's own height lifts the point over it.
+- Harry stands on platform row p at y = 8p + 23 and takes a ladder at x = 8 x its left column; he steps off a ladder
+  only where there is floor, and jumps off it sideways anywhere.
+- **Level 8** (three hens on two ladders) was played by hand: sweeps of a wait before each climb
+  (`work/stage1/lab/sweep.py`, `hens.py` for the hens' cycle) and `--target` searches for the legs between the
+  platforms. One life is lost there on purpose: the jump that takes (20,12) falls onto row 4 under hen 2 (frame
+  about 21 500), and the last egg (12,16) is taken from the next life by climbing the upper middle ladder while its
+  hen walks row 12 (`work/stage1/bot/t60.txt`, `p23.txt`) and walking left off column 13.
+- **Level 9 is level 1's map without hens** (`$AF81`: levels 9-16 have none) **and with the duck free**: it is in
+  the cage on the first frame, then flies after Harry (6.1); standing still at the start Harry lost a life about 250
+  frames into the level (`work/stage1/bot/t63.txt`, a probe, not in the recording). The bot took the twelve eggs in
+  1504 frames, no life lost.
+- **An extra life every 10 000 points**: lives 6 at 10 000, then one more at each 10 000 to 10 at 60 000 (level 10's
+  start, 61 800 points). The bonus shown at a level's start is about 1000 x the level number and counts down while
+  the level is played (5990 on level 6, 7980 on level 8); levels 9 and 10 both show 8990, so it stops at 9000.
+- **The recording must replay the script in the search's run calls**: the game's speed is the CPU's, and splitting a
+  segment into 50-frame `run_frames` calls changed the outcome (Harry fell into a gap on level 6 at frame 13 250, then
+  lost all his lives); `bot.py record --exact` runs one call a segment and takes a screenshot after each segment that
+  crosses a multiple of 50 frames. The 50-frame replay without recording (`work/stage1/lab/chunkcmp.py`) matched the
+  bad recording, so the split, not the recording, is the cause.
+
 Each recording is made with one command (the instance is started, muted, and stopped by it):
 
 ```bash
@@ -185,6 +219,7 @@ python3 tools/bot.py record --start work/stage1/lab/x0/loaded.szx --inputs tests
 | `levels-1-3` | `tests/inputs/levels-1-3.txt` (`work/stage1/bot/t19.txt`) | 7023 | levels 1, 2 and 3 by the bot with the last egg of level 3 by hand (6.0 above), the bonus counted after each level, level 4 starting at frame 7022; no life lost | none |
 | `fall-death` | `tests/inputs/fall-death.txt` | 3601 | levels 1 and 2 as `levels-1-3` to frame 2350, then Harry walks left into the gap of level 2's bottom floor (columns 6-7, no hen near): he sinks 7 pixels (y 23 to 16) and dies at frame 2710; the next life | none |
 | `gameover-name` | `tests/inputs/gameover-name.txt` | 41 201 | levels 1-3 as `levels-1-3`, then no key on level 4: the five lives run out by the timer (one every 6450 frames: Harry stands where no hen comes), GAME OVER, "WELL DONE! YOU HAVE BEATEN ONE OF TODAYS HIGHEST SCORES" and the name prompt under IM 1 (frame 39 483), C E 1 typed, ENTER, the title with "CE1" first in the table | none |
+| `levels-1-9` | `tests/inputs/levels-1-9.txt` (`work/stage1/bot/t64.txt`), recorded with `--exact` | 25 491 | levels 1-9: level 4 at frame 7022, 5 at 9894, 6 at 11 988, 7 at 14 204, 8 at 17 253, 9 (level 1's map, no hens, the duck free) at 23 546, level 10 at 25 490 with 10 lives and 61 800 points; one life lost on level 8 (above) | none |
 
 ### 6.1 The screens
 
@@ -213,5 +248,11 @@ doubled), in `docs/img/play/`.
 | Level 2 (gaps in the bottom floor) | `levels-1-3`, 2400 | ![Level 2](docs/img/play/level2.png) |
 | Level 3 (a lift at columns 8-9) | `levels-1-3`, 4000 | ![Level 3](docs/img/play/level3.png) |
 | Level 4 (a lift at columns 18-19) | `levels-1-3`, 7000 | ![Level 4](docs/img/play/level4.png) |
+| Level 5 (a lift at the right) | `levels-1-9`, 9894 | ![Level 5](docs/img/play/level5.png) |
+| Level 6 (a lift in the middle, eggs hanging in the air) | `levels-1-9`, 11 988 | ![Level 6](docs/img/play/level6.png) |
+| Level 7 (a lift at the right edge) | `levels-1-9`, 14 204 | ![Level 7](docs/img/play/level7.png) |
+| Level 8 (three hens, eggs in the platform gaps) | `levels-1-9`, 17 253 | ![Level 8](docs/img/play/level8.png) |
+| Level 9: level 1's map, no hens, the duck still in the cage | `levels-1-9`, 23 546 | ![Level 9](docs/img/play/level9.png) |
+| Level 10: level 2's map, the duck out of the cage | `levels-1-9`, 25 490 | ![Level 10](docs/img/play/level10.png) |
 
 ## 7. Review
