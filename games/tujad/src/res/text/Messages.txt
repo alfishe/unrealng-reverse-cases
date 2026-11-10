@@ -1,0 +1,40 @@
+# Messages $63D2: the ten messages of the scroller. A message is "message PRIORITY" and its text,
+# one quoted line a row of 19 characters as the scroller shows them (Interrupt $95D0: the window at
+# $402C is 19 characters wide); the last row ends with "." (the end mark, not shown). QueueMessage
+# $6ACD takes a message only when its priority is above the one shown.
+# UTF-8, one quoted string a line: printable ASCII as itself, © the ROM font's $7F, \xNN any
+# other byte, \" and \\ escaped. The build joins the strings.
+message 1
+  "TUJAD FROM ORPHEUS ."
+message 10
+  "EDS COMPLETED      "
+  "RETURN TO TUJAD    "
+  "CONTROL ROOM       ."
+message 5
+  "WARNING ENERGY LOW ."
+message 2
+  "ENERGY SOURCE      "
+  "ABSORBED           ."
+message 10
+  "   TRANSPORTING    ."
+message 8
+  "WEAPON LOCATED AND "
+  "STORED             ."
+message 8
+  "GEN 19 COLLECTED   ."
+message 8
+  "GEN 19 DESTROYED   ."
+message 20
+  "  CONGRATULATIONS  "
+  "                   "
+  "TUJAD HAS NOW      "
+  "RESUMED NORMAL     "
+  "FUNCTIONS          "
+  "                   "
+  "WELL DONE          ."
+message 20
+  "COMPUTER           "
+  "MALFUNCTION        "
+  "GEN 19 TERMINATED  "
+  "UCF REACTOR NO 14 C"
+  "DESTROYED          ."

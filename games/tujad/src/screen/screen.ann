@@ -1,0 +1,28 @@
+# The annotations of tape block 4, the CODE block "TUJAD" that LOAD "" CODE 16384 puts at $4000-$5B1F (6944 bytes):
+# the loading screen and the 32-byte stub in the printer buffer. The source of src/screen/screen.asm and
+# src/screen/screen/*.asm (../../kit/mkgame.py --part src/screen/screen.json). Format: ../../../../docs/ann-format.md.
+# Witness: c1 (work/stage1/c1: power-on, the tape at ROM speed); counts from its L1 (work/stage1/c1/l1.json).
+@equ $04C2 SA_BYTES ; the ROM's SA-BYTES: IX = start, DE = length, A = flag byte
+@equ $0556 LD_BYTES ; the ROM's LD-BYTES: IX = start, DE = length, A = flag byte, carry set = LOAD; carry out = success
+@equ $60C0 GameBlock ; the game block's first byte (tape block 5, $60C0-$FDFF; CellTable in src/game)
+@equ $6300 GameEntry ; the game's entry, Entry in src/game/start.asm (JP Setup)
+@const GameLength $9D40 ; tape block 5's length, 40 256 bytes
+@isub $5B07 LD DE,GameLength
+@isub $5B16 LD DE,GameLength
+
+@module loadingscreen ; The loading screen: 6144 bytes of pixels and 768 attributes
+@about The first 6912 bytes of the CODE block land on the screen while it loads (c1, before frame 2908, when StubLoad is entered); the editable form is src/res/screen/LoadingScreen.png (the picture, ink and paper) with src/res/screen/LoadingScreenAttributes.txt (the attributes), tools/res_formats.py. The game never reads it: Setup clears the screen at the menu (ClearScreen $7A9F).
+
+$4000 b LoadingScreen 32 ; The loading screen: the display file (6144 bytes) and the attributes (768)
+> Shown from the moment the CODE block loads (c1, before frame 2908) until the game clears the screen for its menu (ClearScreen $7A9F, called by Setup in c1 frame 13580). No code of the game reads it. Its picture: docs/img/play/loading.png.
+@res screen/LoadingScreen.bin
+$5800 LoadingAttributes ; the 768 attributes, 24 rows of 32
+
+@module stub ; The stub at $5B00: it loads the game block and jumps in; a save routine for the same block follows
+@about The CODE block's last 32 bytes land in the printer buffer, $5B00-$5B1F. BASIC line 10 calls $5B00 (RANDOMIZE USR 23296).
+
+$5B00 c StubLoad ; Load tape block 5 (40 256 bytes) to $60C0 with the ROM's LD-BYTES and enter the game
+> Entered once by BASIC line 10's USR 23296 (c1 frame 2908, T 8352). Carry set (LOAD, not VERIFY), A = $FF (a data block's flag), IX = GameBlock $60C0, DE = GameLength 40 256, then LD-BYTES. The carry LD-BYTES returns is not tested: a tape error runs into the game anyway. JP GameEntry $6300 (c1 frame 13580) never returns.
+$5B10 c StubSave ; Save the same block with the ROM's SA-BYTES (not executed in any recording)
+> A = $FF, IX = GameBlock $60C0, DE = GameLength, CALL SA_BYTES, RET: it writes the game block back to tape as a headerless data block. Nothing jumps here (StubLoad ends in JP GameEntry), and no recording runs it (c1 L1: no instruction executed in $5B10-$5B1F): the authors' mastering tool left in the block. Known only from the code.
+$5B1D b StubPadding ; Three zero bytes to the block's end, $5B1F (no code reads them)

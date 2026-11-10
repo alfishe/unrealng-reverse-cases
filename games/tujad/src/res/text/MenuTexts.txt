@@ -1,0 +1,10 @@
+# MenuTexts $8D38: the menu's texts, each ending in "." (Menu $8854 prints them: TUJAD, the
+# three controls, START GAME); the last line ($8D85, the copyright line) is never printed.
+# UTF-8, one quoted string a line: printable ASCII as itself, © the ROM font's $7F, \xNN any
+# other byte, \" and \\ escaped. The build joins the strings.
+"TUJAD."
+"1   KEYBOARD."
+"2   CURSOR JOYSTICK."
+"3   KEMPSTON JOYSTICK."
+"0   START GAME."
+"© 1986 ORPHEUS LTD"

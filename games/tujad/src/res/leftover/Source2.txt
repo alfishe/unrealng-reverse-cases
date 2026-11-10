@@ -1,0 +1,11 @@
+# The authors' assembler source as their editor stored it, left in the image where the game later
+# keeps variables (no code reads these bytes before writing them). A stored line is [length][label]
+# [length][mnemonic][length][operands] and 3 bytes (always 0 here). One line here a stored line:
+# label TAB mnemonic TAB operands; a line of ";" alone is an empty source line. "cut" lines are the
+# bytes of a line cut off by the variables before or after (quoted, \xNN for any byte).
+cut "),d\x00\x00\x00"
+	ld	bc,7
+	scf	
+	ccf	
+	sbc	hl,bc
+cut "\x00\x02ld"

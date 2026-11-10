@@ -1,0 +1,20 @@
+{
+  "about": "Tape block 4, the CODE block TUJAD $4000-$5B1F (the loading screen and the stub at $5B00): python3 ../../kit/mkgame.py --part src/screen/screen.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/mkgame/original.bin || (mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin)"],
+  "image": "work/mkgame/original.bin",
+  "lo": "4000",
+  "hi": "5B20",
+  "ann": "src/screen/screen.ann",
+  "top": "screen",
+  "bin": "screen.bin",
+  "dest": "src/screen",
+  "res_install": "tools/res_formats.py:install",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; Tujad, Orpheus Ltd / Ariolasoft UK 1986: tape block 4, the CODE block \"TUJAD\" (6944 bytes) as LOAD \"\" CODE 16384",
+    "; puts it at $4000: the loading screen and the stub at $5B00 that loads the game block."
+  ],
+  "l1": [{"path": "work/stage1/c1/l1.json", "lo": "4000", "hi": "5B20"}],
+  "data_entries": "stop",
+  "work": "work/stage2/mkscreen"
+}

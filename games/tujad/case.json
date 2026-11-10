@@ -14,15 +14,93 @@
     "0": "C000"
   },
   "read_builds": [
-    "game"
+    "stage1/rec/energy-out",
+    "stage1/rec/game-over",
+    "stage1/rec/menu-cursor",
+    "stage1/rec/menu-kempston",
+    "stage1/rec/room-23",
+    "stage1/rec/room-tour",
+    "stage1/rec/rzx-001000",
+    "stage1/rec/rzx-002000",
+    "stage1/rec/rzx-005000",
+    "stage1/rec/rzx-006000",
+    "stage1/rec/rzx-007000",
+    "stage1/rec/rzx-009000",
+    "stage1/rec/rzx-010000",
+    "stage1/rec/rzx-013000",
+    "stage1/rec/rzx-014000",
+    "stage1/rec/rzx-015000",
+    "stage1/rec/rzx-016000",
+    "stage1/rec/rzx-017000",
+    "stage1/rec/rzx-018000",
+    "stage1/rec/rzx-019000",
+    "stage1/rec/rzx-022000",
+    "stage1/rec/rzx-023000",
+    "stage1/rec/rzx-024000",
+    "stage1/rec/rzx-025000",
+    "stage1/rec/rzx-026000",
+    "stage1/rec/rzx-027000",
+    "stage1/rec/rzx-028000",
+    "stage1/rec/rzx-029000",
+    "stage1/rec/rzx-030000",
+    "stage1/rec/rzx-031000",
+    "stage1/rec/rzx-032000",
+    "stage1/rec/rzx-033000",
+    "stage1/rec/rzx-034000",
+    "stage1/rec/rzx-035000",
+    "stage1/rec/rzx-036000",
+    "stage1/rec/rzx-037000",
+    "stage1/rec/rzx-039000",
+    "stage1/rec/rzx-040000",
+    "stage1/rec/rzx-041000",
+    "stage1/rec/rzx-043000",
+    "stage1/rec/rzx-044000",
+    "stage1/rec/rzx-045000",
+    "stage1/rec/rzx-046000",
+    "stage1/rec/rzx-047000",
+    "stage1/rec/rzx-048000",
+    "stage1/rec/rzx-051000",
+    "stage1/rec/rzx-052000",
+    "stage1/rec/rzx-055000",
+    "stage1/rec/rzx-056000",
+    "stage1/rec/rzx-057000",
+    "stage1/rec/rzx-058000",
+    "stage1/rec/rzx-059000",
+    "stage1/rec/rzx-060000",
+    "stage1/rec/rzx-061000",
+    "stage1/rec/rzx-062000",
+    "stage1/rec/rzx-063000",
+    "stage1/rec/rzx-065000",
+    "stage1/rec/rzx-069000",
+    "stage1/rec/rzx-070000",
+    "stage1/rec/rzx-073000",
+    "stage1/rec/rzx-074000",
+    "stage1/rec/rzx-077000",
+    "stage1/rec/rzx-078000",
+    "stage1/rec/rzx-079000",
+    "stage1/rec/rzx-080000",
+    "stage1/rec/rzx-free-29000",
+    "stage1/rec/rzx-free-31000",
+    "stage1/rec/rzx-free-32000",
+    "stage1/rec/win"
   ],
   "ref_builds": [
     [
-      "game",
-      "the first recording's game window"
+      "stage1/c1",
+      "c1: power-on, the tape at ROM speed, the menu and keyboard play"
+    ],
+    [
+      "stage1/rec/energy-out",
+      "energy-out: 5001 frames of play from the RZX state after 47 000 frames"
     ]
   ],
   "header": [
     "; Tujad, Orpheus Ltd / Ariolasoft UK 1986 (Andy Green, Jeff Philips, Stuart J. Ruecroft): the game image $60C0-$FDFF as the stub at $5B00 leaves it."
-  ]
+  ],
+  "code_builds": [
+    "stage1/c1"
+  ],
+  "res_install": "tools/res_formats.py:install",
+  "work": "work/mkgame",
+  "no_entries": true
 }

@@ -1,0 +1,111 @@
+# The tile tables: TileGraphics $6EA8 (71 words: tiles 1-70 and a 71st no code reads) and TileAttrs $6F36 (70
+# words), then the colour blocks $6FC2-$7160 the TileAttrs words point at (tiles share blocks).
+#   tile N graphic $XXXX colours $YYYY   the tile's block in TileData (src/res/tiles/TileData.png) and colours
+#   colours $YYYY B B B ...              a colour block from its address: a first byte with bit 7 is one
+#                                        colour (bits 0-6) for every cell of the tile, else one attribute a
+#                                        cell, row by row (width x height / 8 cells). The blocks follow each
+#                                        other from $6FC2; the build checks the addresses.
+tile 1 graphic $E822 colours $6FC4
+tile 2 graphic $E8E4 colours $6FDC
+tile 3 graphic $E966 colours $6FEC
+tile 4 graphic $E9E8 colours $6FFC
+tile 5 graphic $EA7A colours $700E
+tile 6 graphic $EB0C colours $7020
+tile 7 graphic $EB2E colours $7021
+tile 8 graphic $EBB0 colours $7021
+tile 9 graphic $EC32 colours $7022
+tile 10 graphic $ECB4 colours $7020
+tile 11 graphic $ECF6 colours $7032
+tile 12 graphic $ED58 colours $7020
+tile 13 graphic $ED9A colours $7020
+tile 14 graphic $EE64 colours $703E
+tile 15 graphic $EE86 colours $7020
+tile 16 graphic $EEB8 colours $7020
+tile 17 graphic $EEDA colours $703F
+tile 18 graphic $EF3C colours $704B
+tile 19 graphic $EF86 colours $7021
+tile 20 graphic $EFA8 colours $7021
+tile 21 graphic $EFDA colours $7054
+tile 22 graphic $F024 colours $705D
+tile 23 graphic $F06E colours $7066
+tile 24 graphic $F0D0 colours $7021
+tile 25 graphic $F0F2 colours $70F1
+tile 26 graphic $F114 colours $7072
+tile 27 graphic $F196 colours $7082
+tile 28 graphic $F218 colours $7092
+tile 29 graphic $F29A colours $7020
+tile 30 graphic $F32C colours $7021
+tile 31 graphic $F35E colours $7021
+tile 32 graphic $F390 colours $70A2
+tile 33 graphic $F3C2 colours $70A3
+tile 34 graphic $F424 colours $70AF
+tile 35 graphic $F4EE colours $70A2
+tile 36 graphic $F530 colours $7020
+tile 37 graphic $FBD6 colours $70A2
+tile 38 graphic $F5C2 colours $7021
+tile 39 graphic $F624 colours $70C8
+tile 40 graphic $F66E colours $70D1
+tile 41 graphic $F770 colours $70F1
+tile 42 graphic $F792 colours $70F1
+tile 43 graphic $F7B4 colours $70F1
+tile 44 graphic $F7D6 colours $70F1
+tile 45 graphic $F7F8 colours $7021
+tile 46 graphic $F812 colours $70F2
+tile 47 graphic $F85C colours $70A2
+tile 48 graphic $F8DE colours $710B
+tile 49 graphic $0000 colours $0000
+tile 50 graphic $F960 colours $7020
+tile 51 graphic $F992 colours $711B
+tile 52 graphic $F9F4 colours $7127
+tile 53 graphic $FA86 colours $70F1
+tile 54 graphic $FAB8 colours $7139
+tile 55 graphic $FB02 colours $7142
+tile 56 graphic $FB34 colours $7021
+tile 57 graphic $FC68 colours $7148
+tile 58 graphic $FD0A colours $715C
+tile 59 graphic $FD14 colours $715C
+tile 60 graphic $FD1E colours $715C
+tile 61 graphic $FD28 colours $715C
+tile 62 graphic $FD32 colours $715C
+tile 63 graphic $FD3C colours $715C
+tile 64 graphic $FD46 colours $715C
+tile 65 graphic $FD50 colours $715C
+tile 66 graphic $FD5A colours $715C
+tile 67 graphic $FD64 colours $715C
+tile 68 graphic $FD6E colours $715C
+tile 69 graphic $FD78 colours $7020
+tile 70 graphic $FDBA colours $7021
+tile 71 graphic $FDDC
+colours $6FC2 5D 71
+colours $6FC4 0F 0F 04 04 17 0F 04 04 17 0F 04 04 04 04 04 04 04 04 04 04 02 02 02 02
+colours $6FDC 47 47 47 47 04 04 04 04 04 04 04 04 02 02 02 02
+colours $6FEC 03 03 03 03 03 03 03 03 06 06 06 06 02 02 02 02
+colours $6FFC 05 05 05 05 05 05 05 05 05 06 06 06 06 06 06 02 02 02
+colours $700E 04 04 04 04 04 04 04 04 04 06 06 06 06 06 06 02 02 02
+colours $7020 85
+colours $7021 86
+colours $7022 05 05 05 05 05 30 30 05 05 30 30 05 05 05 05 05
+colours $7032 05 05 05 05 30 05 05 30 05 05 05 05
+colours $703E 83
+colours $703F 05 05 05 05 05 30 30 05 05 05 05 05
+colours $704B 0D 0D 0D 0D 0D 0D 06 06 06
+colours $7054 05 05 05 05 05 05 06 06 06
+colours $705D 03 03 03 03 03 03 47 47 47
+colours $7066 04 04 04 04 04 04 04 04 06 06 06 06
+colours $7072 47 47 47 47 47 04 04 47 47 04 04 47 47 47 47 47
+colours $7082 06 02 02 06 06 16 16 06 04 04 04 04 47 47 47 47
+colours $7092 47 47 47 47 04 04 04 04 06 16 16 06 06 02 02 06
+colours $70A2 84
+colours $70A3 00 47 00 47 05 05 47 05 05 47 47 47
+colours $70AF 00 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06
+colours $70C8 00 03 03 47 03 03 47 03 03
+colours $70D1 00 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 06 47 47 03 03 03 03 03 03 47 47
+colours $70F1 C7
+colours $70F2 05 05 05 05 05 05 04 05 05 04 04 04 04 04 04 04 04 04 04 04 04 06 04 04 04
+colours $710B 04 04 04 04 05 05 05 05 04 04 04 04 05 05 05 05
+colours $711B 05 05 05 05 05 05 05 05 05 06 06 06
+colours $7127 06 06 06 06 05 05 06 06 06 06 05 05 03 03 00 05 05 05
+colours $7139 05 05 05 05 05 05 05 05 04
+colours $7142 05 05 05 05 0B 03
+colours $7148 0D 0D 0D 0D 29 29 29 29 0D 0D 0D 0D 01 01 01 01 03 03 03 03
+colours $715C C6 0F 20 0F 20

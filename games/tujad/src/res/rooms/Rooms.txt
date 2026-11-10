@@ -1,0 +1,3347 @@
+# The 128 rooms of RoomLayouts $BD06 and AlienMap $DB53, room n at column n % 8, row n / 8 of the world (8 across,
+# 16 down: +1 east, +8 south). "room N empty": one of the 26 rooms that share the empty layout $DB52 and the empty
+# alien record $DFFA. A room's lines:
+#   tile T at C,R      a tile of TileGraphics $6EA8 (1-70) with its top-left character at column C (0-31), row R
+#                      of the play area (screen row R + 5; rows above screen row 6 are not drawn), in order
+#   item1 / item2 KIND at C,R   or "none": the room's items (KIND gen19 $80, energy $81, ed1-ed50 $82-$B3,
+#                      weapon1-weapon3 $C1-$C3, or $XX); C,R the top-left cell (C even, R 0-15: ItemCell $6E88)
+#   teleport to ROOM at C,R   or "teleport none"
+#   enemies B,B,...    the enemies that may spawn here (bits of the mask, 0-3), or "enemies none"
+#   object1 / object2 kind=$XX state=$XX x=N y=N graphic=$XXXX frame=N frames=N mark=$XX attr=$XX, or "none":
+#                      the 10-byte object record as Objects $6327 holds it (DrawRoom copies it, SaveRoomObjects
+#                      writes it back)
+# The build lays the records out in room order and rebuilds both offset tables.
+
+room 0
+  tile 9 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 9 at 0,4
+  tile 9 at 0,8
+  tile 9 at 0,12
+  tile 9 at 0,16
+  tile 9 at 28,16
+  tile 11 at 10,9
+  tile 10 at 13,9
+  tile 10 at 17,9
+  tile 11 at 21,9
+  tile 16 at 13,11
+  tile 16 at 15,11
+  tile 16 at 17,11
+  tile 16 at 19,11
+  item1 weapon3 at 14,6
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 1
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 9 at 0,16
+  tile 8 at 4,16
+  tile 7 at 8,16
+  tile 7 at 12,16
+  tile 8 at 16,16
+  tile 9 at 20,16
+  tile 8 at 24,16
+  tile 7 at 28,16
+  tile 10 at 8,9
+  tile 10 at 12,9
+  tile 10 at 16,9
+  tile 10 at 20,9
+  tile 10 at 24,9
+  item1 energy at 8,6
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 2
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 41 at 12,3
+  tile 42 at 14,3
+  tile 42 at 16,3
+  tile 42 at 18,3
+  tile 42 at 20,3
+  tile 42 at 22,3
+  tile 43 at 24,3
+  tile 42 at 26,3
+  tile 42 at 28,3
+  tile 42 at 30,3
+  tile 9 at 0,16
+  tile 9 at 4,16
+  tile 9 at 8,16
+  tile 8 at 12,16
+  tile 8 at 16,16
+  tile 9 at 20,16
+  tile 9 at 24,16
+  tile 8 at 28,16
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 3
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 42 at 0,3
+  tile 43 at 2,3
+  tile 42 at 4,3
+  tile 42 at 6,3
+  tile 42 at 8,3
+  tile 42 at 10,3
+  tile 43 at 12,3
+  tile 42 at 14,3
+  tile 42 at 16,3
+  tile 42 at 18,3
+  tile 42 at 20,3
+  tile 43 at 22,3
+  tile 42 at 24,3
+  tile 42 at 26,3
+  tile 42 at 28,3
+  tile 42 at 30,3
+  tile 7 at 0,16
+  tile 8 at 4,16
+  tile 7 at 8,16
+  tile 8 at 12,16
+  tile 9 at 16,16
+  tile 9 at 20,16
+  tile 7 at 24,16
+  tile 8 at 28,16
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 4
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 9 at 0,16
+  tile 8 at 4,16
+  tile 7 at 8,16
+  tile 7 at 12,16
+  tile 8 at 16,16
+  tile 9 at 20,16
+  tile 8 at 24,16
+  tile 7 at 28,16
+  tile 43 at 0,3
+  tile 42 at 2,3
+  tile 42 at 4,3
+  tile 42 at 6,3
+  tile 42 at 8,3
+  tile 43 at 10,3
+  tile 42 at 12,3
+  tile 42 at 14,3
+  tile 42 at 16,3
+  tile 42 at 18,3
+  tile 43 at 20,3
+  tile 42 at 22,3
+  tile 42 at 24,3
+  tile 42 at 26,3
+  tile 42 at 28,3
+  tile 43 at 30,3
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 5
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 9 at 0,16
+  tile 8 at 4,16
+  tile 7 at 8,16
+  tile 7 at 12,16
+  tile 8 at 16,16
+  tile 9 at 20,16
+  tile 8 at 24,16
+  tile 7 at 28,16
+  tile 42 at 0,3
+  tile 42 at 2,3
+  tile 42 at 4,3
+  tile 42 at 6,3
+  tile 43 at 8,3
+  tile 42 at 10,3
+  tile 42 at 12,3
+  tile 42 at 14,3
+  tile 42 at 16,3
+  tile 43 at 18,3
+  tile 42 at 20,3
+  tile 42 at 22,3
+  tile 42 at 24,3
+  tile 42 at 26,3
+  tile 43 at 28,3
+  tile 42 at 30,3
+  tile 40 at 12,12
+  tile 40 at 20,12
+  item1 ed1 at 10,13
+  item2 none
+  teleport none
+  enemies 1,3
+  object1 kind=$11 state=$41 x=108 y=80 graphic=$0000 frame=0 frames=0 mark=$00 attr=$06
+  object2 none
+
+room 6
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 9 at 28,0
+  tile 9 at 28,4
+  tile 9 at 28,8
+  tile 9 at 28,12
+  tile 9 at 28,16
+  tile 9 at 0,16
+  tile 10 at 12,8
+  tile 10 at 16,8
+  tile 10 at 20,8
+  tile 10 at 24,8
+  tile 44 at 0,3
+  item1 weapon2 at 26,5
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 7 empty
+
+room 8
+  tile 7 at 0,0
+  tile 8 at 0,4
+  tile 7 at 0,8
+  tile 8 at 0,12
+  tile 7 at 0,16
+  tile 8 at 28,0
+  tile 8 at 28,4
+  tile 9 at 28,8
+  tile 7 at 28,12
+  tile 7 at 28,16
+  tile 16 at 8,15
+  tile 16 at 10,15
+  tile 16 at 12,15
+  tile 16 at 14,15
+  tile 16 at 16,15
+  tile 16 at 18,15
+  tile 16 at 20,15
+  tile 16 at 22,15
+  tile 16 at 8,17
+  tile 14 at 10,17
+  tile 14 at 12,17
+  tile 14 at 14,17
+  tile 14 at 16,17
+  tile 14 at 18,17
+  tile 14 at 20,17
+  tile 16 at 22,17
+  tile 52 at 14,12
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 9
+  tile 9 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 11 at 0,4
+  tile 11 at 0,8
+  tile 11 at 0,12
+  tile 11 at 0,16
+  tile 12 at 28,3
+  tile 12 at 28,7
+  tile 12 at 28,11
+  tile 16 at 28,15
+  tile 17 at 28,17
+  tile 16 at 30,3
+  tile 16 at 30,5
+  tile 16 at 30,7
+  tile 16 at 30,9
+  tile 16 at 30,11
+  tile 16 at 30,13
+  tile 16 at 30,15
+  tile 45 at 7,8
+  tile 45 at 10,8
+  tile 45 at 15,8
+  tile 45 at 18,8
+  tile 11 at 7,9
+  tile 10 at 10,9
+  tile 10 at 14,9
+  tile 11 at 18,9
+  tile 6 at 10,11
+  tile 6 at 12,11
+  tile 6 at 14,11
+  tile 6 at 16,11
+  item1 gen19 at 8,5
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 10
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 35 at 8,3
+  tile 35 at 12,3
+  tile 35 at 16,3
+  tile 16 at 0,3
+  tile 16 at 0,5
+  tile 16 at 0,7
+  tile 16 at 0,9
+  tile 16 at 0,11
+  tile 16 at 0,13
+  tile 16 at 0,15
+  tile 17 at 0,17
+  tile 12 at 2,3
+  tile 12 at 2,7
+  tile 12 at 2,11
+  tile 16 at 2,15
+  tile 16 at 28,17
+  tile 16 at 30,17
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 11
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 16 at 0,17
+  tile 16 at 2,17
+  tile 16 at 4,17
+  tile 16 at 6,17
+  tile 16 at 8,17
+  tile 16 at 10,17
+  tile 16 at 12,17
+  tile 16 at 14,17
+  tile 16 at 16,17
+  tile 16 at 18,17
+  tile 16 at 20,17
+  tile 16 at 22,17
+  tile 16 at 24,17
+  tile 16 at 26,17
+  tile 16 at 28,17
+  tile 16 at 30,17
+  tile 28 at 8,3
+  tile 27 at 8,13
+  tile 28 at 20,3
+  tile 27 at 20,13
+  item1 ed12 at 14,14
+  item2 none
+  teleport none
+  enemies none
+  object1 kind=$81 state=$41 x=68 y=96 graphic=$0000 frame=0 frames=0 mark=$00 attr=$02
+  object2 kind=$82 state=$41 x=164 y=96 graphic=$0000 frame=0 frames=0 mark=$00 attr=$02
+
+room 12
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 9 at 28,0
+  tile 9 at 28,4
+  tile 9 at 28,8
+  tile 9 at 28,12
+  tile 9 at 28,16
+  tile 16 at 0,17
+  tile 16 at 2,17
+  tile 36 at 4,3
+  tile 10 at 16,10
+  tile 10 at 20,10
+  tile 10 at 24,10
+  item1 energy at 26,7
+  item2 none
+  teleport none
+  enemies 1,3
+  object1 kind=$21 state=$41 x=172 y=64 graphic=$0000 frame=0 frames=0 mark=$00 attr=$03
+  object2 none
+
+room 13 empty
+
+room 14
+  tile 8 at 0,0
+  tile 8 at 0,4
+  tile 9 at 0,8
+  tile 7 at 0,12
+  tile 7 at 0,16
+  tile 7 at 28,0
+  tile 8 at 28,4
+  tile 7 at 28,8
+  tile 8 at 28,12
+  tile 7 at 28,16
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 15 empty
+
+room 16
+  tile 9 at 0,0
+  tile 8 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 8 at 0,16
+  tile 7 at 28,0
+  tile 9 at 28,4
+  tile 8 at 28,8
+  tile 9 at 28,12
+  tile 7 at 28,16
+  tile 16 at 8,1
+  tile 14 at 10,1
+  tile 14 at 12,1
+  tile 14 at 14,1
+  tile 14 at 16,1
+  tile 14 at 18,1
+  tile 14 at 20,1
+  tile 16 at 22,1
+  tile 16 at 8,3
+  tile 16 at 10,3
+  tile 16 at 12,3
+  tile 16 at 14,3
+  tile 16 at 16,3
+  tile 16 at 18,3
+  tile 16 at 20,3
+  tile 16 at 22,3
+  tile 6 at 8,18
+  tile 6 at 10,18
+  tile 6 at 12,18
+  tile 6 at 14,18
+  tile 6 at 16,18
+  tile 6 at 18,18
+  tile 6 at 20,18
+  tile 52 at 15,15
+  tile 69 at 4,11
+  tile 70 at 4,18
+  item1 none
+  item2 none
+  teleport to 79 at 4,10
+  enemies none
+  object1 none
+  object2 none
+
+room 17
+  tile 11 at 0,0
+  tile 11 at 0,4
+  tile 11 at 0,8
+  tile 11 at 0,12
+  tile 11 at 0,16
+  tile 17 at 28,0
+  tile 17 at 28,17
+  tile 11 at 7,14
+  tile 10 at 10,14
+  tile 10 at 14,14
+  tile 11 at 18,14
+  tile 34 at 9,9
+  tile 16 at 10,16
+  tile 16 at 12,16
+  tile 16 at 14,16
+  tile 16 at 16,16
+  tile 10 at 7,18
+  tile 16 at 11,18
+  tile 16 at 13,18
+  tile 16 at 15,18
+  tile 10 at 17,18
+  item1 ed23 at 14,11
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 18
+  tile 17 at 28,0
+  tile 12 at 28,3
+  tile 12 at 28,7
+  tile 12 at 28,11
+  tile 16 at 28,15
+  tile 17 at 28,17
+  tile 16 at 30,3
+  tile 16 at 30,5
+  tile 16 at 30,7
+  tile 16 at 30,9
+  tile 16 at 30,11
+  tile 16 at 30,13
+  tile 16 at 30,15
+  tile 17 at 0,0
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 40 at 12,13
+  tile 40 at 20,13
+  item1 ed34 at 10,14
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 19
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 16 at 0,3
+  tile 16 at 0,5
+  tile 16 at 0,7
+  tile 16 at 0,9
+  tile 16 at 0,11
+  tile 16 at 0,13
+  tile 16 at 0,15
+  tile 17 at 0,17
+  tile 12 at 2,3
+  tile 12 at 2,7
+  tile 12 at 2,11
+  tile 16 at 2,15
+  tile 9 at 28,16
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 20
+  tile 17 at 0,0
+  tile 7 at 28,0
+  tile 9 at 28,4
+  tile 8 at 28,8
+  tile 9 at 28,12
+  tile 8 at 28,16
+  tile 9 at 0,16
+  tile 9 at 4,16
+  tile 9 at 8,16
+  tile 9 at 12,16
+  tile 9 at 16,16
+  tile 9 at 20,16
+  tile 9 at 24,16
+  tile 33 at 3,12
+  tile 54 at 6,13
+  tile 29 at 10,10
+  tile 37 at 16,13
+  tile 37 at 22,13
+  item1 ed45 at 14,13
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 21 empty
+
+room 22
+  tile 9 at 0,0
+  tile 9 at 0,4
+  tile 9 at 0,8
+  tile 9 at 0,12
+  tile 9 at 0,16
+  tile 9 at 28,0
+  tile 8 at 28,4
+  tile 8 at 28,8
+  tile 9 at 28,12
+  tile 8 at 28,16
+  tile 9 at 4,16
+  tile 9 at 8,16
+  tile 8 at 12,16
+  tile 8 at 16,16
+  tile 9 at 20,16
+  tile 9 at 24,16
+  tile 34 at 13,11
+  tile 34 at 18,11
+  tile 34 at 23,11
+  tile 70 at 4,16
+  tile 69 at 4,9
+  item1 ed2 at 10,13
+  item2 none
+  teleport to 26 at 4,8
+  enemies none
+  object1 none
+  object2 none
+
+room 23
+  tile 7 at 0,0
+  tile 8 at 0,4
+  tile 7 at 0,8
+  tile 8 at 0,12
+  tile 7 at 0,16
+  tile 9 at 28,0
+  tile 8 at 28,4
+  tile 8 at 28,8
+  tile 9 at 28,12
+  tile 8 at 28,16
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 36 at 4,3
+  tile 36 at 10,3
+  tile 36 at 16,3
+  tile 36 at 22,3
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 24
+  tile 7 at 0,0
+  tile 9 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 7 at 0,16
+  tile 9 at 28,0
+  tile 8 at 28,4
+  tile 8 at 28,8
+  tile 9 at 28,12
+  tile 8 at 28,16
+  tile 10 at 4,0
+  tile 6 at 8,0
+  tile 6 at 10,0
+  tile 6 at 12,0
+  tile 6 at 14,0
+  tile 6 at 16,0
+  tile 6 at 18,0
+  tile 6 at 20,0
+  tile 16 at 4,17
+  tile 16 at 6,17
+  tile 16 at 8,17
+  tile 16 at 10,17
+  tile 16 at 12,17
+  tile 16 at 14,17
+  tile 16 at 16,17
+  tile 16 at 18,17
+  tile 16 at 20,17
+  tile 16 at 22,17
+  tile 16 at 24,17
+  tile 16 at 26,17
+  tile 70 at 4,17
+  tile 69 at 4,10
+  item1 weapon3 at 26,14
+  item2 none
+  teleport to 103 at 4,9
+  enemies none
+  object1 none
+  object2 none
+
+room 25
+  tile 11 at 0,0
+  tile 11 at 0,4
+  tile 11 at 0,8
+  tile 11 at 0,12
+  tile 11 at 0,16
+  tile 17 at 28,0
+  tile 12 at 28,3
+  tile 12 at 28,7
+  tile 12 at 28,11
+  tile 16 at 28,15
+  tile 17 at 28,17
+  tile 16 at 30,3
+  tile 16 at 30,5
+  tile 16 at 30,7
+  tile 16 at 30,9
+  tile 16 at 30,11
+  tile 16 at 30,13
+  tile 16 at 30,15
+  tile 16 at 7,0
+  tile 16 at 9,0
+  tile 16 at 11,0
+  tile 16 at 13,0
+  tile 16 at 15,0
+  tile 16 at 17,0
+  tile 16 at 19,0
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 26
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 36 at 4,3
+  tile 36 at 10,3
+  tile 36 at 16,3
+  tile 34 at 19,12
+  tile 48 at 24,13
+  tile 16 at 0,3
+  tile 16 at 0,5
+  tile 16 at 0,7
+  tile 16 at 0,9
+  tile 16 at 0,11
+  tile 16 at 0,13
+  tile 16 at 0,15
+  tile 17 at 0,17
+  tile 12 at 2,3
+  tile 12 at 2,7
+  tile 12 at 2,11
+  tile 16 at 2,15
+  tile 70 at 4,17
+  tile 69 at 4,10
+  item1 none
+  item2 none
+  teleport to 22 at 4,9
+  enemies none
+  object1 kind=$21 state=$41 x=96 y=88 graphic=$0000 frame=0 frames=0 mark=$00 attr=$04
+  object2 none
+
+room 27
+  tile 17 at 0,0
+  tile 9 at 28,0
+  tile 9 at 28,4
+  tile 9 at 28,8
+  tile 9 at 28,12
+  tile 9 at 28,16
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 33 at 4,13
+  tile 33 at 7,13
+  tile 33 at 10,13
+  tile 34 at 14,12
+  tile 34 at 19,12
+  item1 energy at 26,14
+  item2 none
+  teleport none
+  enemies none
+  object1 none
+  object2 none
+
+room 28
+  tile 9 at 0,0
+  tile 9 at 0,4
+  tile 9 at 0,8
+  tile 9 at 0,12
+  tile 9 at 0,16
+  tile 9 at 28,0
+  tile 9 at 28,4
+  tile 9 at 28,8
+  tile 9 at 28,12
+  tile 9 at 28,16
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 10 at 4,8
+  tile 10 at 8,8
+  tile 10 at 12,8
+  item1 ed13 at 4,5
+  item2 none
+  teleport none
+  enemies 1,3
+  object1 kind=$21 state=$41 x=96 y=64 graphic=$0000 frame=0 frames=0 mark=$00 attr=$01
+  object2 none
+
+room 29 empty
+
+room 30
+  tile 8 at 0,0
+  tile 8 at 0,4
+  tile 9 at 0,8
+  tile 7 at 0,12
+  tile 7 at 0,16
+  tile 17 at 28,17
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 35 at 4,3
+  tile 35 at 8,3
+  tile 36 at 12,3
+  tile 36 at 18,3
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 31
+  tile 17 at 0,0
+  tile 7 at 28,0
+  tile 9 at 28,4
+  tile 8 at 28,8
+  tile 9 at 28,12
+  tile 7 at 28,16
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 55 at 8,14
+  tile 55 at 10,14
+  tile 55 at 12,14
+  tile 55 at 14,14
+  tile 33 at 16,13
+  tile 33 at 19,13
+  tile 33 at 22,13
+  tile 33 at 25,13
+  item1 weapon2 at 6,14
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 32 empty
+
+room 33
+  tile 11 at 0,0
+  tile 11 at 0,4
+  tile 11 at 0,8
+  tile 11 at 0,12
+  tile 9 at 0,16
+  tile 16 at 4,17
+  tile 16 at 6,17
+  tile 16 at 8,17
+  tile 16 at 10,17
+  tile 16 at 12,17
+  tile 16 at 14,17
+  tile 16 at 16,17
+  tile 16 at 18,17
+  tile 16 at 20,17
+  tile 16 at 22,17
+  tile 16 at 24,17
+  tile 16 at 26,17
+  tile 16 at 28,17
+  tile 16 at 30,17
+  tile 11 at 7,8
+  tile 10 at 10,8
+  tile 10 at 14,8
+  tile 11 at 18,8
+  tile 16 at 10,10
+  tile 16 at 12,10
+  tile 16 at 14,10
+  tile 16 at 16,10
+  tile 17 at 28,0
+  item1 ed24 at 10,14
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 34
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 16 at 0,17
+  tile 16 at 2,17
+  tile 16 at 4,17
+  tile 16 at 6,17
+  tile 16 at 8,17
+  tile 16 at 10,17
+  tile 16 at 12,17
+  tile 16 at 14,17
+  tile 16 at 16,17
+  tile 16 at 18,17
+  tile 16 at 20,17
+  tile 16 at 22,17
+  tile 16 at 24,17
+  tile 16 at 26,17
+  tile 16 at 28,17
+  tile 16 at 30,17
+  tile 36 at 6,3
+  tile 35 at 12,3
+  tile 28 at 18,3
+  tile 27 at 18,13
+  tile 35 at 22,3
+  item1 ed35 at 8,14
+  item2 none
+  teleport none
+  enemies 1,3
+  object1 kind=$81 state=$41 x=148 y=96 graphic=$0000 frame=0 frames=0 mark=$00 attr=$02
+  object2 none
+
+room 35
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 28 at 6,3
+  tile 36 at 10,3
+  tile 27 at 6,13
+  tile 16 at 0,17
+  tile 16 at 2,17
+  tile 16 at 4,17
+  tile 16 at 6,17
+  tile 16 at 8,17
+  tile 16 at 10,17
+  tile 16 at 12,17
+  tile 16 at 14,17
+  tile 16 at 16,17
+  tile 16 at 18,17
+  tile 16 at 20,17
+  tile 16 at 22,17
+  tile 16 at 24,17
+  tile 16 at 26,17
+  tile 16 at 28,17
+  tile 16 at 30,17
+  tile 29 at 19,11
+  item1 none
+  item2 none
+  teleport none
+  enemies 1,3
+  object1 kind=$81 state=$41 x=52 y=96 graphic=$0000 frame=0 frames=0 mark=$00 attr=$02
+  object2 none
+
+room 36
+  tile 17 at 0,0
+  tile 26 at 28,0
+  tile 9 at 28,4
+  tile 26 at 28,8
+  tile 9 at 28,12
+  tile 26 at 28,16
+  tile 34 at 8,12
+  tile 34 at 13,12
+  tile 34 at 18,12
+  tile 34 at 23,12
+  tile 16 at 0,17
+  tile 16 at 2,17
+  tile 16 at 4,17
+  tile 16 at 6,17
+  tile 16 at 8,17
+  tile 16 at 10,17
+  tile 16 at 12,17
+  tile 16 at 14,17
+  tile 16 at 16,17
+  tile 16 at 18,17
+  tile 16 at 20,17
+  tile 16 at 22,17
+  tile 16 at 24,17
+  tile 16 at 26,17
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 37 empty
+
+room 38
+  tile 7 at 0,0
+  tile 9 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 7 at 0,16
+  tile 17 at 28,0
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 10 at 4,10
+  tile 10 at 8,10
+  tile 10 at 12,10
+  tile 10 at 16,10
+  tile 10 at 20,10
+  tile 10 at 24,10
+  item1 ed46 at 4,14
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 39
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 26 at 28,0
+  tile 9 at 28,4
+  tile 26 at 28,8
+  tile 9 at 28,12
+  tile 26 at 28,16
+  tile 10 at 12,10
+  tile 10 at 16,10
+  tile 10 at 20,10
+  tile 10 at 24,10
+  tile 17 at 0,17
+  tile 70 at 24,10
+  tile 69 at 24,3
+  item1 weapon2 at 12,7
+  item2 none
+  teleport to 80 at 24,2
+  enemies none
+  object1 none
+  object2 none
+
+room 40
+  tile 7 at 0,0
+  tile 8 at 0,4
+  tile 7 at 0,8
+  tile 8 at 0,12
+  tile 8 at 0,16
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 36 at 4,3
+  tile 36 at 10,3
+  tile 36 at 16,3
+  tile 36 at 22,3
+  tile 33 at 4,14
+  tile 33 at 13,14
+  tile 10 at 4,18
+  tile 10 at 8,18
+  tile 10 at 12,18
+  tile 17 at 28,17
+  item1 energy at 8,15
+  item2 none
+  teleport none
+  enemies none
+  object1 none
+  object2 none
+
+room 41
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 29 at 10,11
+  tile 33 at 18,13
+  tile 33 at 21,13
+  tile 40 at 24,13
+  item1 ed3 at 6,14
+  item2 none
+  teleport none
+  enemies 1,3
+  object1 kind=$21 state=$41 x=112 y=64 graphic=$0000 frame=0 frames=0 mark=$00 attr=$07
+  object2 none
+
+room 42
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 40 at 0,13
+  tile 56 at 16,13
+  tile 35 at 20,3
+  tile 35 at 24,3
+  item1 ed3 at 10,14
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 43
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 9 at 28,0
+  tile 17 at 0,17
+  tile 9 at 28,4
+  tile 9 at 28,8
+  tile 9 at 28,12
+  tile 9 at 28,16
+  tile 10 at 12,10
+  tile 10 at 16,10
+  tile 10 at 20,10
+  tile 10 at 24,10
+  item1 ed14 at 26,7
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 44 empty
+
+room 45
+  tile 26 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 26 at 28,0
+  tile 9 at 28,4
+  tile 26 at 28,8
+  tile 9 at 28,12
+  tile 26 at 28,16
+  tile 9 at 0,4
+  tile 26 at 0,8
+  tile 9 at 0,12
+  tile 26 at 0,16
+  tile 36 at 4,3
+  tile 36 at 22,3
+  tile 10 at 4,11
+  item1 ed25 at 4,8
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 46 empty
+
+room 47
+  tile 26 at 0,0
+  tile 9 at 0,4
+  tile 26 at 0,8
+  tile 9 at 0,12
+  tile 26 at 0,16
+  tile 9 at 28,0
+  tile 9 at 28,4
+  tile 9 at 28,8
+  tile 9 at 28,12
+  tile 9 at 28,16
+  tile 9 at 4,16
+  tile 8 at 8,16
+  tile 7 at 12,16
+  tile 9 at 16,16
+  tile 26 at 20,16
+  tile 26 at 24,16
+  tile 37 at 4,13
+  tile 37 at 10,13
+  tile 37 at 16,13
+  item1 weapon2 at 24,13
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 48
+  tile 8 at 0,0
+  tile 8 at 0,4
+  tile 9 at 0,8
+  tile 7 at 0,12
+  tile 7 at 0,16
+  tile 26 at 28,0
+  tile 9 at 28,4
+  tile 26 at 28,8
+  tile 9 at 28,12
+  tile 26 at 28,16
+  tile 10 at 4,0
+  tile 10 at 8,0
+  tile 10 at 12,0
+  tile 10 at 4,18
+  tile 10 at 8,18
+  tile 10 at 12,18
+  tile 10 at 12,10
+  tile 10 at 16,10
+  tile 10 at 20,10
+  tile 10 at 24,10
+  tile 55 at 24,7
+  tile 55 at 26,7
+  tile 51 at 4,14
+  item1 ed36 at 8,15
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 49 empty
+
+room 50 empty
+
+room 51
+  tile 9 at 0,0
+  tile 8 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 8 at 0,16
+  tile 26 at 28,0
+  tile 9 at 28,4
+  tile 26 at 28,8
+  tile 9 at 28,12
+  tile 26 at 28,16
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 34 at 4,12
+  tile 34 at 9,12
+  tile 70 at 24,17
+  tile 69 at 24,10
+  item1 ed47 at 14,14
+  item2 none
+  teleport to 90 at 24,9
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 52
+  tile 8 at 0,0
+  tile 8 at 0,4
+  tile 9 at 0,8
+  tile 7 at 0,12
+  tile 7 at 0,16
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 70 at 12,17
+  tile 69 at 12,10
+  item1 ed4 at 4,14
+  item2 energy at 18,14
+  teleport to 117 at 12,9
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 53
+  tile 17 at 0,0
+  tile 17 at 28,0
+  tile 17 at 28,17
+  tile 17 at 0,17
+  tile 11 at 10,8
+  tile 10 at 13,8
+  tile 10 at 17,8
+  tile 11 at 21,8
+  tile 16 at 13,10
+  tile 16 at 15,10
+  tile 16 at 17,10
+  tile 16 at 19,10
+  tile 10 at 24,8
+  tile 10 at 28,8
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 54
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 9 at 28,0
+  tile 8 at 28,4
+  tile 8 at 28,8
+  tile 9 at 28,12
+  tile 8 at 28,16
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 10 at 0,8
+  tile 10 at 4,8
+  tile 10 at 8,8
+  tile 10 at 12,8
+  tile 10 at 16,8
+  tile 10 at 20,8
+  tile 10 at 24,8
+  tile 19 at 20,6
+  tile 19 at 22,6
+  tile 20 at 24,5
+  tile 20 at 26,5
+  tile 20 at 26,11
+  tile 20 at 26,14
+  tile 20 at 24,14
+  tile 19 at 22,15
+  tile 19 at 20,15
+  item1 ed15 at 16,5
+  item2 none
+  teleport none
+  enemies none
+  object1 kind=$41 state=$41 x=64 y=64 graphic=$0000 frame=0 frames=0 mark=$00 attr=$06
+  object2 none
+
+room 55
+  tile 8 at 0,0
+  tile 8 at 0,4
+  tile 9 at 0,8
+  tile 7 at 0,12
+  tile 7 at 0,16
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 8 at 28,0
+  tile 8 at 28,4
+  tile 9 at 28,8
+  tile 7 at 28,12
+  tile 7 at 28,16
+  tile 36 at 22,3
+  tile 10 at 4,10
+  tile 10 at 8,10
+  tile 10 at 12,10
+  tile 70 at 4,10
+  tile 69 at 4,3
+  item1 weapon2 at 14,7
+  item2 none
+  teleport to 73 at 4,2
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 56
+  tile 26 at 0,0
+  tile 9 at 0,4
+  tile 26 at 0,8
+  tile 9 at 0,12
+  tile 26 at 0,16
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 10 at 4,0
+  tile 10 at 8,0
+  tile 10 at 12,0
+  tile 34 at 23,12
+  tile 17 at 28,0
+  tile 12 at 28,3
+  tile 12 at 28,7
+  tile 12 at 28,11
+  tile 16 at 28,15
+  tile 16 at 30,3
+  tile 16 at 30,5
+  tile 16 at 30,7
+  tile 16 at 30,9
+  tile 16 at 30,11
+  tile 16 at 30,13
+  tile 16 at 30,15
+  tile 70 at 4,17
+  tile 69 at 4,10
+  item1 ed26 at 12,14
+  item2 none
+  teleport to 60 at 4,9
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 57
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 16 at 0,3
+  tile 16 at 0,5
+  tile 16 at 0,7
+  tile 16 at 0,9
+  tile 16 at 0,11
+  tile 16 at 0,13
+  tile 16 at 0,15
+  tile 12 at 2,3
+  tile 12 at 2,7
+  tile 12 at 2,11
+  tile 16 at 2,15
+  tile 2 at 12,13
+  tile 3 at 16,13
+  tile 2 at 20,13
+  item1 ed37 at 20,10
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 58
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 18 at 6,11
+  tile 23 at 6,14
+  tile 23 at 10,14
+  tile 5 at 14,11
+  tile 5 at 17,11
+  tile 1 at 28,11
+  item1 ed48 at 6,8
+  item2 none
+  teleport none
+  enemies 1,3
+  object1 kind=$21 state=$41 x=124 y=64 graphic=$0000 frame=0 frames=0 mark=$00 attr=$06
+  object2 none
+
+room 59
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 9 at 28,0
+  tile 26 at 28,4
+  tile 9 at 28,8
+  tile 26 at 28,12
+  tile 9 at 28,16
+  tile 17 at 0,17
+  tile 1 at 0,11
+  tile 10 at 16,10
+  tile 10 at 20,10
+  tile 10 at 24,10
+  tile 19 at 22,8
+  tile 20 at 24,7
+  tile 20 at 26,7
+  tile 20 at 26,4
+  item1 gen19 at 16,7
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 60
+  tile 17 at 0,0
+  tile 9 at 0,3
+  tile 9 at 0,7
+  tile 9 at 0,11
+  tile 9 at 0,15
+  tile 10 at 4,10
+  tile 10 at 8,10
+  tile 10 at 12,10
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 11 at 29,3
+  tile 11 at 29,7
+  tile 11 at 29,11
+  tile 11 at 29,15
+  tile 36 at 23,3
+  tile 69 at 4,3
+  tile 70 at 4,10
+  item1 ed5 at 10,7
+  item2 none
+  teleport to 56 at 4,2
+  enemies 1,3
+  object1 kind=$11 state=$41 x=96 y=64 graphic=$0000 frame=0 frames=0 mark=$00 attr=$04
+  object2 none
+
+room 61
+  tile 7 at 0,0
+  tile 8 at 0,4
+  tile 7 at 0,8
+  tile 8 at 0,12
+  tile 7 at 0,16
+  tile 26 at 28,0
+  tile 9 at 28,4
+  tile 26 at 28,8
+  tile 9 at 28,12
+  tile 26 at 28,16
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 39 at 4,14
+  tile 46 at 7,14
+  tile 54 at 10,14
+  tile 34 at 13,12
+  tile 34 at 18,12
+  tile 55 at 23,14
+  tile 39 at 25,14
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 62
+  tile 9 at 0,0
+  tile 9 at 0,4
+  tile 9 at 0,8
+  tile 9 at 0,12
+  tile 9 at 0,16
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 9 at 4,16
+  tile 9 at 8,16
+  tile 8 at 12,16
+  tile 8 at 16,16
+  tile 9 at 20,16
+  tile 9 at 24,16
+  tile 8 at 28,16
+  tile 36 at 12,3
+  tile 36 at 18,3
+  tile 19 at 15,14
+  tile 20 at 17,13
+  tile 20 at 19,13
+  tile 19 at 21,14
+  tile 19 at 23,14
+  tile 70 at 4,16
+  tile 69 at 4,9
+  item1 none
+  item2 none
+  teleport to 105 at 4,8
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 63
+  tile 17 at 0,0
+  tile 26 at 0,16
+  tile 9 at 4,16
+  tile 8 at 8,16
+  tile 7 at 12,16
+  tile 9 at 16,16
+  tile 26 at 20,16
+  tile 26 at 24,16
+  tile 9 at 28,16
+  tile 9 at 28,0
+  tile 9 at 28,4
+  tile 9 at 28,8
+  tile 9 at 28,12
+  tile 33 at 7,12
+  tile 33 at 10,12
+  tile 34 at 13,11
+  tile 34 at 18,11
+  tile 34 at 23,11
+  item1 none
+  item2 none
+  teleport none
+  enemies 0
+  object1 none
+  object2 none
+
+room 64
+  tile 26 at 0,0
+  tile 9 at 0,4
+  tile 26 at 0,8
+  tile 9 at 0,12
+  tile 26 at 0,16
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 28,17
+  tile 41 at 12,3
+  tile 42 at 14,3
+  tile 42 at 16,3
+  tile 42 at 18,3
+  tile 42 at 20,3
+  tile 43 at 22,3
+  tile 42 at 24,3
+  tile 42 at 26,3
+  tile 42 at 28,3
+  tile 42 at 30,3
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 65
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 29 at 17,11
+  tile 43 at 0,3
+  tile 42 at 2,3
+  tile 42 at 4,3
+  tile 42 at 6,3
+  tile 42 at 8,3
+  tile 43 at 10,3
+  tile 42 at 12,3
+  tile 42 at 14,3
+  tile 42 at 16,3
+  tile 42 at 18,3
+  tile 43 at 20,3
+  tile 42 at 22,3
+  tile 42 at 24,3
+  tile 42 at 26,3
+  tile 42 at 28,3
+  tile 42 at 30,3
+  tile 1 at 28,11
+  item1 energy at 4,14
+  item2 none
+  teleport none
+  enemies 1,3
+  object1 kind=$11 state=$41 x=64 y=80 graphic=$0000 frame=0 frames=0 mark=$00 attr=$04
+  object2 none
+
+room 66
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 1 at 0,11
+  tile 17 at 0,17
+  tile 17 at 28,17
+  tile 42 at 0,3
+  tile 42 at 2,3
+  tile 42 at 4,3
+  tile 42 at 6,3
+  tile 43 at 8,3
+  tile 42 at 10,3
+  tile 42 at 12,3
+  tile 42 at 14,3
+  tile 42 at 16,3
+  tile 43 at 18,3
+  tile 42 at 20,3
+  tile 42 at 22,3
+  tile 42 at 24,3
+  tile 42 at 26,3
+  tile 43 at 28,3
+  tile 42 at 30,3
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 67
+  tile 17 at 0,0
+  tile 9 at 28,0
+  tile 9 at 28,4
+  tile 9 at 28,8
+  tile 9 at 28,12
+  tile 9 at 28,16
+  tile 44 at 0,3
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 1 at 16,11
+  tile 1 at 20,11
+  tile 1 at 24,11
+  item1 ed16 at 26,8
+  item2 none
+  teleport none
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 68
+  tile 9 at 0,0
+  tile 11 at 0,4
+  tile 11 at 0,8
+  tile 11 at 0,12
+  tile 11 at 0,16
+  tile 11 at 29,0
+  tile 11 at 29,4
+  tile 11 at 29,8
+  tile 11 at 29,12
+  tile 11 at 29,16
+  tile 16 at 8,12
+  tile 16 at 10,12
+  tile 16 at 12,12
+  tile 16 at 14,12
+  tile 16 at 16,12
+  tile 16 at 18,12
+  tile 16 at 20,12
+  tile 16 at 22,12
+  tile 16 at 8,14
+  tile 14 at 10,14
+  tile 14 at 12,14
+  tile 14 at 14,14
+  tile 14 at 16,14
+  tile 14 at 18,14
+  tile 14 at 20,14
+  tile 16 at 22,14
+  tile 16 at 8,16
+  tile 14 at 10,16
+  tile 14 at 12,16
+  tile 14 at 14,16
+  tile 14 at 16,16
+  tile 14 at 18,16
+  tile 14 at 20,16
+  tile 16 at 22,16
+  tile 16 at 8,18
+  tile 16 at 10,18
+  tile 16 at 12,18
+  tile 16 at 14,18
+  tile 16 at 16,18
+  tile 16 at 18,18
+  tile 16 at 20,18
+  tile 16 at 22,18
+  item1 ed27 at 14,9
+  item2 none
+  teleport none
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 69 empty
+
+room 70
+  tile 9 at 0,0
+  tile 8 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 8 at 0,16
+  tile 9 at 4,0
+  tile 9 at 8,0
+  tile 8 at 12,0
+  tile 8 at 16,0
+  tile 9 at 20,0
+  tile 9 at 24,0
+  tile 8 at 28,0
+  tile 8 at 28,4
+  tile 9 at 28,8
+  tile 7 at 28,12
+  tile 7 at 28,16
+  tile 10 at 4,18
+  tile 36 at 4,4
+  tile 36 at 10,4
+  tile 36 at 16,4
+  tile 36 at 22,4
+  item1 ed7 at 4,15
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 71 empty
+
+room 72
+  tile 7 at 0,0
+  tile 8 at 0,4
+  tile 7 at 0,8
+  tile 8 at 0,12
+  tile 7 at 0,16
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 3 at 4,13
+  tile 3 at 8,13
+  tile 3 at 12,13
+  tile 3 at 16,13
+  tile 17 at 28,0
+  tile 12 at 28,3
+  tile 12 at 28,7
+  tile 12 at 28,11
+  tile 16 at 28,15
+  tile 16 at 30,3
+  tile 16 at 30,5
+  tile 16 at 30,7
+  tile 16 at 30,9
+  tile 16 at 30,11
+  tile 16 at 30,13
+  tile 16 at 30,15
+  item1 weapon3 at 10,10
+  item2 ed38 at 26,14
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 73
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 16 at 0,3
+  tile 16 at 0,5
+  tile 16 at 0,7
+  tile 16 at 0,9
+  tile 16 at 0,11
+  tile 16 at 0,13
+  tile 16 at 0,15
+  tile 12 at 2,3
+  tile 12 at 2,7
+  tile 12 at 2,11
+  tile 16 at 2,15
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 4 at 16,11
+  tile 5 at 19,11
+  tile 4 at 22,11
+  tile 5 at 25,11
+  tile 3 at 28,13
+  tile 70 at 4,17
+  tile 69 at 4,10
+  item1 ed49 at 14,14
+  item2 ed6 at 20,8
+  teleport to 55 at 4,9
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 74
+  tile 17 at 0,0
+  tile 26 at 28,0
+  tile 9 at 28,4
+  tile 26 at 28,8
+  tile 9 at 28,12
+  tile 26 at 28,16
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 3 at 0,13
+  tile 19 at 16,15
+  tile 19 at 18,15
+  tile 20 at 20,14
+  tile 20 at 22,14
+  tile 20 at 24,14
+  tile 20 at 26,14
+  tile 20 at 22,11
+  tile 20 at 24,11
+  tile 20 at 26,11
+  tile 19 at 24,9
+  tile 20 at 26,8
+  item1 ed17 at 14,14
+  item2 none
+  teleport none
+  enemies 0
+  object1 none
+  object2 none
+
+room 75 empty
+
+room 76
+  tile 11 at 0,0
+  tile 11 at 0,4
+  tile 11 at 0,8
+  tile 11 at 0,12
+  tile 11 at 0,16
+  tile 11 at 29,0
+  tile 11 at 29,4
+  tile 11 at 29,8
+  tile 11 at 29,12
+  tile 11 at 29,16
+  tile 16 at 8,0
+  tile 16 at 10,0
+  tile 16 at 12,0
+  tile 16 at 14,0
+  tile 16 at 16,0
+  tile 16 at 18,0
+  tile 16 at 20,0
+  tile 16 at 22,0
+  tile 16 at 8,12
+  tile 16 at 10,12
+  tile 16 at 12,12
+  tile 16 at 14,12
+  tile 16 at 16,12
+  tile 16 at 18,12
+  tile 16 at 20,12
+  tile 16 at 22,12
+  tile 16 at 8,14
+  tile 14 at 10,14
+  tile 14 at 12,14
+  tile 14 at 14,14
+  tile 14 at 16,14
+  tile 14 at 18,14
+  tile 14 at 20,14
+  tile 16 at 22,14
+  tile 16 at 8,16
+  tile 14 at 10,16
+  tile 14 at 12,16
+  tile 14 at 14,16
+  tile 14 at 16,16
+  tile 14 at 18,16
+  tile 14 at 20,16
+  tile 16 at 22,16
+  tile 16 at 8,18
+  tile 16 at 10,18
+  tile 16 at 12,18
+  tile 16 at 14,18
+  tile 16 at 16,18
+  tile 16 at 18,18
+  tile 16 at 20,18
+  tile 16 at 22,18
+  item1 ed28 at 14,9
+  item2 none
+  teleport none
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 77
+  tile 9 at 0,0
+  tile 9 at 0,4
+  tile 9 at 0,8
+  tile 9 at 0,12
+  tile 9 at 0,16
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 10 at 4,8
+  tile 10 at 8,8
+  tile 10 at 12,8
+  tile 10 at 16,8
+  tile 10 at 20,8
+  tile 10 at 24,8
+  tile 10 at 28,8
+  item1 ed39 at 4,14
+  item2 ed50 at 4,5
+  teleport none
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 78
+  tile 17 at 0,0
+  tile 17 at 28,0
+  tile 17 at 0,17
+  tile 17 at 28,17
+  tile 10 at 0,8
+  tile 17 at 4,0
+  tile 10 at 4,8
+  tile 10 at 8,8
+  tile 10 at 20,8
+  tile 10 at 24,8
+  tile 10 at 28,8
+  item1 energy at 4,5
+  item2 none
+  teleport none
+  enemies 0
+  object1 none
+  object2 none
+
+room 79
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 26 at 28,0
+  tile 9 at 28,4
+  tile 26 at 28,8
+  tile 9 at 28,12
+  tile 26 at 28,16
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 10 at 0,8
+  tile 10 at 4,8
+  tile 10 at 8,8
+  tile 10 at 12,8
+  tile 10 at 16,8
+  tile 10 at 20,8
+  tile 10 at 24,8
+  tile 70 at 24,17
+  tile 69 at 24,10
+  item1 ed18 at 10,5
+  item2 weapon3 at 20,14
+  teleport to 16 at 24,9
+  enemies none
+  object1 kind=$41 state=$41 x=64 y=120 graphic=$0000 frame=0 frames=0 mark=$00 attr=$04
+  object2 none
+
+room 80
+  tile 9 at 0,0
+  tile 8 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 8 at 0,16
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 28,17
+  tile 10 at 4,10
+  tile 69 at 4,3
+  tile 70 at 4,10
+  item1 none
+  item2 none
+  teleport to 39 at 4,2
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 81
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 28 at 6,3
+  tile 27 at 6,13
+  tile 28 at 20,3
+  tile 27 at 20,13
+  tile 55 at 18,14
+  tile 55 at 24,14
+  item1 ed29 at 12,14
+  item2 none
+  teleport none
+  enemies none
+  object1 kind=$81 state=$41 x=52 y=96 graphic=$0000 frame=0 frames=0 mark=$00 attr=$02
+  object2 kind=$82 state=$41 x=164 y=96 graphic=$0000 frame=0 frames=0 mark=$00 attr=$02
+
+room 82
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 28 at 6,3
+  tile 27 at 6,13
+  tile 33 at 16,13
+  tile 33 at 19,13
+  tile 56 at 24,13
+  item1 ed40 at 12,14
+  item2 none
+  teleport none
+  enemies 1,3
+  object1 kind=$81 state=$41 x=52 y=96 graphic=$0000 frame=0 frames=0 mark=$00 attr=$02
+  object2 none
+
+room 83
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 40 at 4,13
+  tile 34 at 12,12
+  tile 34 at 17,12
+  tile 34 at 22,12
+  item1 none
+  item2 none
+  teleport none
+  enemies none
+  object1 kind=$11 state=$41 x=56 y=96 graphic=$0000 frame=0 frames=0 mark=$00 attr=$04
+  object2 kind=$22 state=$41 x=168 y=96 graphic=$0000 frame=0 frames=0 mark=$00 attr=$03
+
+room 84
+  tile 15 at 0,1
+  tile 17 at 0,17
+  tile 11 at 29,0
+  tile 11 at 29,4
+  tile 11 at 29,8
+  tile 11 at 29,12
+  tile 17 at 28,16
+  tile 17 at 24,16
+  tile 17 at 20,16
+  tile 17 at 16,16
+  tile 17 at 12,16
+  tile 17 at 8,16
+  tile 57 at 16,11
+  tile 16 at 8,0
+  tile 16 at 10,0
+  tile 16 at 12,0
+  tile 16 at 14,0
+  tile 16 at 16,0
+  tile 16 at 18,0
+  tile 16 at 20,0
+  tile 16 at 22,0
+  item1 ed8 at 12,13
+  item2 none
+  teleport none
+  enemies none
+  object1 none
+  object2 none
+
+room 85 empty
+
+room 86
+  tile 7 at 0,0
+  tile 9 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 7 at 0,16
+  tile 8 at 4,16
+  tile 7 at 8,16
+  tile 9 at 12,16
+  tile 9 at 16,16
+  tile 7 at 20,16
+  tile 9 at 24,16
+  tile 26 at 28,16
+  tile 9 at 28,12
+  tile 26 at 28,8
+  tile 9 at 28,4
+  tile 26 at 28,0
+  tile 34 at 4,11
+  tile 34 at 9,11
+  tile 34 at 18,11
+  tile 34 at 23,11
+  item1 weapon2 at 14,13
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 87 empty
+
+room 88
+  tile 17 at 0,1
+  tile 9 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 7 at 0,16
+  tile 26 at 28,0
+  tile 9 at 28,4
+  tile 26 at 28,8
+  tile 9 at 28,12
+  tile 26 at 28,16
+  tile 11 at 10,9
+  tile 10 at 13,9
+  tile 10 at 17,9
+  tile 11 at 21,9
+  tile 16 at 13,11
+  tile 16 at 15,11
+  tile 16 at 17,11
+  tile 16 at 19,11
+  item1 ed19 at 10,6
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 89 empty
+
+room 90
+  tile 26 at 0,0
+  tile 9 at 0,4
+  tile 26 at 0,8
+  tile 9 at 0,12
+  tile 26 at 0,16
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 10 at 4,10
+  tile 10 at 8,10
+  tile 10 at 12,10
+  tile 36 at 20,3
+  tile 35 at 28,3
+  tile 17 at 28,17
+  tile 70 at 4,10
+  tile 69 at 4,3
+  item1 none
+  item2 none
+  teleport to 51 at 4,2
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 91
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 9 at 28,0
+  tile 9 at 28,4
+  tile 9 at 28,8
+  tile 9 at 28,12
+  tile 9 at 28,16
+  tile 35 at 0,3
+  tile 36 at 4,3
+  tile 36 at 10,3
+  tile 36 at 16,3
+  tile 36 at 22,3
+  tile 17 at 0,17
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 92
+  tile 26 at 0,0
+  tile 9 at 0,4
+  tile 26 at 0,8
+  tile 9 at 0,12
+  tile 26 at 0,16
+  tile 17 at 28,0
+  tile 17 at 28,17
+  tile 10 at 20,8
+  tile 10 at 24,8
+  tile 10 at 28,8
+  tile 17 at 24,0
+  tile 17 at 20,0
+  tile 17 at 16,0
+  tile 17 at 12,0
+  tile 17 at 8,0
+  item1 none
+  item2 none
+  teleport none
+  enemies 1,3
+  object1 kind=$01 state=$40 x=40 y=104 graphic=$0000 frame=0 frames=0 mark=$00 attr=$02
+  object2 none
+
+room 93
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 10 at 0,8
+  tile 10 at 4,8
+  tile 10 at 8,8
+  tile 10 at 12,8
+  tile 10 at 16,8
+  tile 10 at 20,8
+  tile 10 at 24,8
+  tile 10 at 28,8
+  tile 34 at 11,3
+  tile 34 at 16,3
+  item1 energy at 12,14
+  item2 ed30 at 22,5
+  teleport none
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 94
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 9 at 28,0
+  tile 9 at 28,4
+  tile 9 at 28,8
+  tile 9 at 28,12
+  tile 9 at 28,16
+  tile 17 at 0,17
+  tile 10 at 0,8
+  tile 10 at 4,8
+  tile 10 at 8,8
+  tile 36 at 16,3
+  tile 36 at 22,3
+  item1 none
+  item2 none
+  teleport none
+  enemies 0
+  object1 none
+  object2 none
+
+room 95 empty
+
+room 96
+  tile 9 at 0,0
+  tile 9 at 0,4
+  tile 9 at 0,8
+  tile 9 at 0,12
+  tile 9 at 0,16
+  tile 8 at 28,0
+  tile 8 at 28,4
+  tile 9 at 28,8
+  tile 7 at 28,12
+  tile 7 at 28,16
+  tile 46 at 9,9
+  tile 45 at 12,11
+  tile 54 at 15,9
+  tile 16 at 8,12
+  tile 16 at 10,12
+  tile 16 at 12,12
+  tile 16 at 14,12
+  tile 16 at 16,12
+  tile 16 at 18,12
+  tile 16 at 20,12
+  tile 16 at 22,12
+  tile 16 at 8,14
+  tile 14 at 10,14
+  tile 14 at 12,14
+  tile 14 at 14,14
+  tile 14 at 16,14
+  tile 14 at 18,14
+  tile 14 at 20,14
+  tile 16 at 22,14
+  tile 16 at 8,16
+  tile 14 at 10,16
+  tile 14 at 12,16
+  tile 14 at 14,16
+  tile 14 at 16,16
+  tile 14 at 18,16
+  tile 14 at 20,16
+  tile 16 at 22,16
+  tile 16 at 8,18
+  tile 16 at 10,18
+  tile 16 at 12,18
+  tile 16 at 14,18
+  tile 16 at 16,18
+  tile 16 at 18,18
+  tile 16 at 20,18
+  tile 16 at 22,18
+  item1 weapon1 at 20,9
+  item2 none
+  teleport none
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 97 empty
+
+room 98
+  tile 9 at 0,0
+  tile 9 at 0,4
+  tile 9 at 0,8
+  tile 9 at 0,12
+  tile 9 at 0,16
+  tile 8 at 28,0
+  tile 8 at 28,4
+  tile 9 at 28,8
+  tile 7 at 28,12
+  tile 7 at 28,16
+  tile 55 at 4,15
+  tile 55 at 6,15
+  tile 33 at 13,14
+  tile 10 at 4,18
+  tile 10 at 8,18
+  tile 10 at 12,18
+  item1 ed9 at 8,15
+  item2 none
+  teleport none
+  enemies 0
+  object1 none
+  object2 none
+
+room 99
+  tile 7 at 0,0
+  tile 8 at 0,4
+  tile 7 at 0,8
+  tile 8 at 0,12
+  tile 7 at 0,16
+  tile 7 at 28,0
+  tile 9 at 28,4
+  tile 8 at 28,8
+  tile 9 at 28,12
+  tile 7 at 28,16
+  tile 10 at 4,10
+  tile 10 at 8,10
+  tile 10 at 12,10
+  tile 37 at 4,7
+  item1 none
+  item2 none
+  teleport none
+  enemies 1,3
+  object1 kind=$01 state=$40 x=128 y=120 graphic=$0000 frame=0 frames=0 mark=$00 attr=$06
+  object2 none
+
+room 100
+  tile 26 at 0,0
+  tile 9 at 0,4
+  tile 26 at 0,8
+  tile 9 at 0,12
+  tile 26 at 0,16
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 26 at 28,0
+  tile 9 at 28,4
+  tile 26 at 28,8
+  tile 9 at 28,12
+  tile 26 at 28,16
+  tile 33 at 4,13
+  tile 33 at 7,13
+  tile 34 at 18,12
+  tile 34 at 23,12
+  item1 ed20 at 12,14
+  item2 none
+  teleport none
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 101 empty
+
+room 102
+  tile 26 at 0,0
+  tile 9 at 0,4
+  tile 26 at 0,8
+  tile 9 at 0,12
+  tile 26 at 0,16
+  tile 7 at 28,0
+  tile 8 at 28,4
+  tile 7 at 28,8
+  tile 9 at 28,12
+  tile 7 at 28,16
+  tile 12 at 10,7
+  tile 12 at 10,11
+  tile 12 at 10,15
+  tile 10 at 12,7
+  tile 12 at 16,7
+  tile 12 at 16,11
+  tile 12 at 16,15
+  tile 12 at 22,7
+  tile 12 at 22,11
+  tile 12 at 22,15
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 103
+  tile 26 at 0,0
+  tile 9 at 0,4
+  tile 26 at 0,8
+  tile 9 at 0,12
+  tile 26 at 0,16
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 9 at 28,0
+  tile 9 at 28,4
+  tile 9 at 28,8
+  tile 9 at 28,12
+  tile 9 at 28,16
+  tile 12 at 8,12
+  tile 12 at 8,16
+  tile 12 at 14,8
+  tile 12 at 14,12
+  tile 12 at 14,16
+  tile 12 at 20,8
+  tile 12 at 20,12
+  tile 12 at 20,16
+  tile 69 at 4,5
+  tile 70 at 4,12
+  item1 ed10 at 14,5
+  item2 none
+  teleport to 24 at 4,4
+  enemies 0
+  object1 none
+  object2 none
+
+room 104
+  tile 7 at 0,0
+  tile 8 at 0,4
+  tile 7 at 0,8
+  tile 8 at 0,12
+  tile 7 at 0,16
+  tile 17 at 28,0
+  tile 17 at 28,17
+  tile 1 at 28,11
+  tile 16 at 8,0
+  tile 16 at 10,0
+  tile 16 at 12,0
+  tile 16 at 14,0
+  tile 16 at 16,0
+  tile 16 at 18,0
+  tile 16 at 20,0
+  tile 16 at 22,0
+  tile 16 at 8,12
+  tile 16 at 10,12
+  tile 16 at 12,12
+  tile 16 at 14,12
+  tile 16 at 16,12
+  tile 16 at 18,12
+  tile 16 at 20,12
+  tile 16 at 22,12
+  tile 16 at 8,14
+  tile 14 at 10,14
+  tile 14 at 12,14
+  tile 14 at 14,14
+  tile 14 at 16,14
+  tile 14 at 18,14
+  tile 14 at 20,14
+  tile 16 at 22,14
+  tile 16 at 8,16
+  tile 14 at 10,16
+  tile 14 at 12,16
+  tile 14 at 14,16
+  tile 14 at 16,16
+  tile 14 at 18,16
+  tile 14 at 20,16
+  tile 16 at 22,16
+  tile 16 at 8,18
+  tile 16 at 10,18
+  tile 16 at 12,18
+  tile 16 at 14,18
+  tile 16 at 16,18
+  tile 16 at 18,18
+  tile 16 at 20,18
+  tile 16 at 22,18
+  tile 52 at 8,9
+  item1 weapon2 at 16,9
+  item2 none
+  teleport none
+  enemies 0
+  object1 none
+  object2 none
+
+room 105
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 9 at 28,0
+  tile 8 at 28,4
+  tile 8 at 28,8
+  tile 9 at 28,12
+  tile 8 at 28,16
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 4 at 0,11
+  tile 5 at 3,11
+  tile 2 at 6,13
+  tile 3 at 10,13
+  tile 70 at 24,17
+  tile 69 at 24,10
+  item1 ed11 at 14,14
+  item2 none
+  teleport to 62 at 24,9
+  enemies 1,3
+  object1 kind=$41 state=$41 x=160 y=64 graphic=$0000 frame=0 frames=0 mark=$00 attr=$06
+  object2 none
+
+room 106
+  tile 7 at 0,0
+  tile 8 at 0,4
+  tile 7 at 0,8
+  tile 8 at 0,12
+  tile 7 at 0,16
+  tile 26 at 28,0
+  tile 9 at 28,4
+  tile 26 at 28,8
+  tile 9 at 28,12
+  tile 26 at 28,16
+  tile 10 at 4,0
+  tile 10 at 8,0
+  tile 10 at 12,0
+  item1 none
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 107
+  tile 9 at 0,0
+  tile 8 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 8 at 0,16
+  tile 17 at 28,0
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 34 at 4,12
+  tile 34 at 9,12
+  tile 47 at 14,14
+  tile 29 at 20,11
+  item1 energy at 18,14
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 108
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 0,17
+  tile 17 at 28,17
+  tile 10 at 16,9
+  tile 10 at 20,9
+  tile 10 at 24,9
+  tile 10 at 28,9
+  tile 48 at 28,5
+  item1 ed22 at 20,6
+  item2 none
+  teleport none
+  enemies 0
+  object1 none
+  object2 none
+
+room 109
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 9 at 28,0
+  tile 9 at 28,4
+  tile 9 at 28,8
+  tile 9 at 28,12
+  tile 9 at 28,16
+  tile 17 at 0,17
+  tile 48 at 0,5
+  tile 10 at 0,9
+  tile 10 at 4,9
+  tile 10 at 8,9
+  tile 10 at 20,9
+  tile 10 at 24,9
+  item1 ed33 at 4,6
+  item2 ed44 at 26,6
+  teleport none
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 110
+  tile 9 at 0,0
+  tile 8 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 8 at 0,16
+  tile 9 at 28,0
+  tile 9 at 28,4
+  tile 9 at 28,8
+  tile 9 at 28,12
+  tile 9 at 28,16
+  tile 16 at 10,0
+  tile 12 at 10,2
+  tile 12 at 10,6
+  tile 12 at 10,10
+  tile 12 at 10,14
+  tile 16 at 10,18
+  tile 16 at 16,0
+  tile 12 at 16,2
+  tile 12 at 16,6
+  tile 12 at 16,10
+  tile 12 at 16,14
+  tile 16 at 16,18
+  tile 16 at 22,0
+  tile 12 at 22,2
+  tile 12 at 22,6
+  tile 10 at 18,10
+  tile 16 at 22,10
+  item1 weapon2 at 18,7
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 111
+  tile 9 at 0,0
+  tile 8 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 8 at 0,16
+  tile 8 at 28,0
+  tile 8 at 28,4
+  tile 9 at 28,8
+  tile 7 at 28,12
+  tile 7 at 28,16
+  tile 12 at 8,0
+  tile 12 at 8,4
+  tile 12 at 8,8
+  tile 12 at 8,12
+  tile 12 at 8,16
+  tile 12 at 14,0
+  tile 12 at 14,4
+  tile 12 at 14,8
+  tile 12 at 14,12
+  tile 12 at 14,16
+  tile 12 at 20,0
+  tile 12 at 20,4
+  tile 12 at 20,8
+  tile 12 at 20,12
+  tile 12 at 20,16
+  tile 10 at 16,11
+  tile 10 at 10,7
+  item1 ed21 at 16,8
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 112
+  tile 9 at 0,0
+  tile 8 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 8 at 0,16
+  tile 26 at 28,0
+  tile 9 at 28,4
+  tile 26 at 28,8
+  tile 9 at 28,12
+  tile 26 at 28,16
+  tile 16 at 8,0
+  tile 16 at 10,0
+  tile 16 at 12,0
+  tile 16 at 14,0
+  tile 16 at 16,0
+  tile 16 at 18,0
+  tile 16 at 20,0
+  tile 16 at 22,0
+  tile 33 at 8,8
+  tile 16 at 8,12
+  tile 16 at 10,12
+  tile 16 at 12,12
+  tile 16 at 14,12
+  tile 16 at 16,12
+  tile 16 at 18,12
+  tile 16 at 20,12
+  tile 16 at 22,12
+  tile 16 at 8,14
+  tile 14 at 10,14
+  tile 14 at 12,14
+  tile 14 at 14,14
+  tile 14 at 16,14
+  tile 14 at 18,14
+  tile 14 at 20,14
+  tile 16 at 22,14
+  tile 16 at 8,16
+  tile 14 at 10,16
+  tile 14 at 12,16
+  tile 14 at 14,16
+  tile 14 at 16,16
+  tile 14 at 18,16
+  tile 14 at 20,16
+  tile 16 at 22,16
+  tile 16 at 8,18
+  tile 16 at 10,18
+  tile 16 at 12,18
+  tile 16 at 14,18
+  tile 16 at 16,18
+  tile 16 at 18,18
+  tile 16 at 20,18
+  tile 16 at 22,18
+  tile 33 at 21,8
+  item1 ed32 at 14,9
+  item2 none
+  teleport none
+  enemies none
+  object1 kind=$01 state=$40 x=32 y=72 graphic=$0000 frame=0 frames=0 mark=$00 attr=$06
+  object2 none
+
+room 113 empty
+
+room 114
+  tile 7 at 0,0
+  tile 9 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 7 at 0,16
+  tile 8 at 4,16
+  tile 7 at 8,16
+  tile 8 at 12,16
+  tile 9 at 16,16
+  tile 9 at 20,16
+  tile 7 at 24,16
+  tile 9 at 28,16
+  tile 9 at 28,0
+  tile 9 at 28,4
+  tile 9 at 28,8
+  tile 9 at 28,12
+  tile 10 at 12,8
+  tile 10 at 16,8
+  tile 10 at 20,8
+  tile 10 at 24,8
+  tile 47 at 21,13
+  tile 48 at 24,12
+  item1 ed43 at 18,13
+  item2 none
+  teleport none
+  enemies 0,1
+  object1 none
+  object2 none
+
+room 115 empty
+
+room 116
+  tile 9 at 0,0
+  tile 9 at 0,4
+  tile 9 at 0,8
+  tile 9 at 0,12
+  tile 9 at 0,16
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 8 at 28,16
+  tile 9 at 28,12
+  tile 8 at 28,8
+  tile 8 at 28,4
+  tile 9 at 28,0
+  tile 34 at 16,12
+  tile 48 at 21,13
+  tile 33 at 25,13
+  tile 37 at 10,14
+  item1 ed31 at 4,14
+  item2 none
+  teleport none
+  enemies none
+  object1 kind=$01 state=$40 x=32 y=72 graphic=$0000 frame=0 frames=0 mark=$00 attr=$06
+  object2 none
+
+room 117
+  tile 7 at 0,0
+  tile 9 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 7 at 0,16
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 26 at 28,16
+  tile 9 at 28,12
+  tile 26 at 28,8
+  tile 9 at 28,4
+  tile 26 at 28,0
+  tile 34 at 4,12
+  tile 34 at 9,12
+  tile 38 at 14,13
+  tile 70 at 24,17
+  tile 69 at 24,10
+  item1 ed42 at 18,14
+  item2 none
+  teleport to 52 at 24,9
+  enemies 1,3
+  object1 kind=$01 state=$40 x=32 y=72 graphic=$0000 frame=0 frames=0 mark=$00 attr=$06
+  object2 none
+
+room 118
+  tile 8 at 0,0
+  tile 8 at 0,4
+  tile 9 at 0,8
+  tile 7 at 0,12
+  tile 7 at 0,16
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 40 at 24,13
+  tile 38 at 4,13
+  tile 16 at 10,0
+  tile 12 at 10,2
+  tile 16 at 16,0
+  tile 12 at 16,2
+  tile 17 at 28,0
+  item1 gen19 at 8,14
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 119
+  tile 17 at 0,0
+  tile 40 at 0,13
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 26 at 28,16
+  tile 9 at 28,12
+  tile 26 at 28,8
+  tile 9 at 28,4
+  tile 26 at 28,0
+  tile 34 at 23,12
+  tile 12 at 8,0
+  tile 12 at 8,4
+  tile 12 at 14,0
+  tile 12 at 14,4
+  tile 12 at 20,0
+  tile 16 at 20,4
+  item1 weapon2 at 8,14
+  item2 none
+  teleport none
+  enemies 0,1,2
+  object1 none
+  object2 none
+
+room 120
+  tile 7 at 0,0
+  tile 9 at 0,4
+  tile 8 at 0,8
+  tile 9 at 0,12
+  tile 7 at 0,16
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 17 at 28,0
+  tile 41 at 30,3
+  tile 34 at 4,12
+  tile 34 at 9,12
+  tile 33 at 14,13
+  tile 33 at 17,13
+  tile 16 at 8,0
+  tile 16 at 10,0
+  tile 16 at 12,0
+  tile 16 at 14,0
+  tile 16 at 16,0
+  tile 16 at 18,0
+  tile 16 at 20,0
+  tile 16 at 22,0
+  item1 none
+  item2 none
+  teleport none
+  enemies 0
+  object1 none
+  object2 none
+
+room 121
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 10 at 20,10
+  tile 10 at 24,10
+  tile 10 at 28,10
+  tile 34 at 27,5
+  tile 43 at 0,3
+  tile 42 at 2,3
+  tile 42 at 4,3
+  tile 42 at 6,3
+  tile 42 at 8,3
+  tile 43 at 10,3
+  tile 42 at 12,3
+  tile 42 at 14,3
+  tile 42 at 16,3
+  tile 42 at 18,3
+  tile 43 at 20,3
+  tile 42 at 22,3
+  tile 42 at 24,3
+  tile 42 at 26,3
+  tile 42 at 28,3
+  tile 43 at 30,3
+  item1 weapon3 at 24,7
+  item2 none
+  teleport none
+  enemies 0
+  object1 none
+  object2 none
+
+room 122
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 17 at 28,0
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 17 at 28,17
+  tile 10 at 0,10
+  tile 10 at 4,10
+  tile 10 at 8,10
+  tile 34 at 0,5
+  tile 42 at 0,3
+  tile 42 at 2,3
+  tile 42 at 4,3
+  tile 42 at 6,3
+  tile 43 at 8,3
+  tile 42 at 10,3
+  tile 42 at 12,3
+  tile 42 at 14,3
+  tile 42 at 16,3
+  tile 43 at 18,3
+  tile 42 at 20,3
+  tile 42 at 22,3
+  tile 42 at 24,3
+  tile 42 at 26,3
+  tile 43 at 28,3
+  tile 42 at 30,3
+  tile 10 at 24,10
+  tile 10 at 28,10
+  item1 weapon2 at 6,7
+  item2 energy at 24,7
+  teleport none
+  enemies 0
+  object1 none
+  object2 none
+
+room 123
+  tile 17 at 0,0
+  tile 17 at 4,0
+  tile 17 at 8,0
+  tile 17 at 12,0
+  tile 17 at 16,0
+  tile 17 at 20,0
+  tile 17 at 24,0
+  tile 8 at 28,0
+  tile 8 at 28,4
+  tile 9 at 28,8
+  tile 7 at 28,12
+  tile 7 at 28,16
+  tile 17 at 0,17
+  tile 17 at 4,17
+  tile 17 at 8,17
+  tile 17 at 12,17
+  tile 17 at 16,17
+  tile 17 at 20,17
+  tile 17 at 24,17
+  tile 10 at 0,10
+  tile 10 at 4,10
+  tile 34 at 19,12
+  tile 48 at 24,13
+  tile 42 at 0,3
+  tile 42 at 2,3
+  tile 42 at 4,3
+  tile 43 at 6,3
+  tile 42 at 8,3
+  tile 44 at 10,3
+  item1 ed41 at 6,7
+  item2 none
+  teleport none
+  enemies 0,1,2,3
+  object1 none
+  object2 none
+
+room 124 empty
+
+room 125 empty
+
+room 126 empty
+
+room 127 empty

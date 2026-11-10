@@ -1,0 +1,7 @@
+# ProgressText $9072: the progress screen's line (ProgressPercent $9046 writes the two
+# digits at +19 and +20); the last byte ($9092) is ProgressPercentBcd, the percentage in
+# BCD (2 a piece).
+# UTF-8, one quoted string a line: printable ASCII as itself, © the ROM font's $7F, \xNN any
+# other byte, \" and \\ escaped. The build joins the strings.
+"YOU HAVE COMPLETED   % OF TUJAD."
+"\x00"
