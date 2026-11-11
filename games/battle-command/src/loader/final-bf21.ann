@@ -1,0 +1,15 @@
+# The annotations of the loader's last two pieces, tape blocks 37 ($BE5D-$BECF) and 39 ($BF21-$BF2F): the source of
+# src/loader/final-bf21.asm (../../kit/mkgame.py --part src/loader/final-*.json). Format:
+# ../../../../docs/ann-format.md. Witness: c1 (work/stage1/rec/c1), the bootstrap entered at frame 23974; the
+# blocks decoded by tools/mktape.py --decode.
+
+@equ $5B00 Bank5Code 9472 ; the game's $5B00-$7FFF, loaded XORed with $AD
+@equ $8000 Bootstrap ; the bootstrap (src/game), the last block of the tape
+@equ $BED0 TimeFailed ; non-zero when the timing check failed
+
+@module timeend ; The stage's new end at $BF21
+@about Tape block 39 lands here, over the stage's own end; the stage runs into it when the table is done.
+
+$BF21 c TimeEnd ; The stage's end: if TimeFailed, wipe the memory below $C3EE; else Unxor5B00
+> c1: L1 1, TimeFailed zero, so JP Unxor5B00.
+$BF2B TimeWipe ; DEC HL / LD (HL),0 for ever

@@ -1,0 +1,182 @@
+# The annotations of RAM bank 4 at $C000: the source of src/bank4/*.asm (../../kit/mkgame.py --part src/bank4/bank4.json).
+# Format: ../../../../docs/ann-format.md. Witnesses: the recordings of work/stage1/rec (WALKTHROUGH 6.0), page 4.
+@module music ; The AY music player: one tune (the title music), three channels, commands, instruments, ornaments
+@about The interrupt calls MusicTick $C0D2 every frame through Bank4Tick ($72D2, bank 5), with bank 4 paged; StartTune $C000 (from Bank4Start $72C6, A = 0) starts the tune and StopMusic $C1A2 (Bank4Call $72E9) silences it. Each channel has a 39-byte record (ChannelRecords $C05A): it reads its order list (NextPattern $C554), then the pattern's notes and commands (ChannelStep $C295, Command $C320) and, every frame, makes its frequency and volume from the note, the instrument's volume envelope, the ornament, the vibrato and the slide (ChannelSound $C36A). The 12 AY registers are kept in AYShadow $C47B and written out at the end of each tick (ports `$FFFD` / `$BFFD`).
+@about The tune's data (ornaments, instruments, the tune record, the patterns) is one resource, src/res/music/tune.bin. A sound effect engine (StartEffect $C5E1, one effect) is built in but never started in any recording.
+
+$C000 c StartTune ; Start tune A: the tune's speed and three order lists from TuneTable, the channel records reset, the music on
+> Input: A = the tune (7-byte records at TuneTable `$C869`; only tune 0 exists). Clears MusicOn and EffectOn, the speed into the operand `$C0FE`, then for each channel: transpose (+`$20`), repeat (+`$21`), duration count 1 (+`$10`), flags, vibrato and drum off, the order list into +`$03` and +`$05` (the restart point), +`$25` = 1 (take a pattern first); the global transpose `$C39D` = 0, SpeedCount and MusicOn = 1.
+> Witness frames (first-last frame of the recording, runs): c1 24005-24633 (2), controls 125-294 (2), m2erbe 7553-7554 (1), menu 125-1904 (4), missions 8062-34099 (8), play 10724 (1), play2 9718-23564 (3).
+> Witness: L1 19 (c1, m2erbe, menu, missions, play, play2).
+
+$C05A b ChannelRecords 13 ; The three channels' records, 39 bytes each: A at $C05A, B at $C081, C at $C0A8
+> Fields: +0 flags (bit 0 the vibrato's half phase, bit 1 set by command `$8D`, bit 2 slide, bit 3 bend, bit 5 the volume envelope runs, bit 7 bend up), +1 the pattern pointer, +3 the order list pointer, +5 the order list's start, +7 the slide's sum, +9 the ornament (start), +`$0B` the ornament (now), +`$0D` the slide step, +`$0E` the slide delay, +`$0F` the instrument's speed, +`$10` the frames left of the note, +`$11` the fixed duration, +`$12` the note, +`$13` the volume, +`$14` the instrument, +`$16` its envelope pointer, +`$18` its volume now, +`$19` its speed count, +`$1A` the vibrato depth, +`$1B` its step, +`$1C` its position, +`$1D` the vibrato mode (`$40` on, `$C0` every other frame, bit 5 the direction), +`$1E` noise follows the note, +`$1F` the drum (bit 7 a hit pending), +`$20` the pattern's transpose, +`$21` the repeat count, +`$22` the repeat's start, +`$24` durations inline, +`$25` take the next pattern, +`$26` the channel's mixer bits (`$09`, `$12`, `$24`). Zero at the entry but the mixer bits.
+$C081 ChannelB
+$C0A8 ChannelC
+$C0CF SpeedCount ; frames to the next step of the patterns
+$C0D0 MusicOn
+$C0D1 EffectOn
+
+$C0D2 c MusicTick ; One frame of music: the effect, the patterns every SpeedCount frames, each channel's sound, the AY registers out
+> Calls EffectTick; when MusicOn, counts SpeedCount down and at 0 steps the three channels (ChannelStep) and reloads it from the speed (`$C0FE`); then ChannelSound per channel into the tone words `$C47B`, `$C47D`, `$C47F` and the volumes `$C483`-`$C485`, and the noise period from `$C12A` into `$C481`. When EffectOn, the effect's tone A, tone C, noise, mixer and volumes replace the music's. If either is on, registers 11 down to 0 go out from `$C486` down (`OUT` on `$FFFD`, `OUTD` on `$BFFD`).
+> Witness frames (first-last frame of the recording, runs): c1 24005-33298 (4415), controls 0-330 (259), death 0-20038 (15291), m10 0-9028 (6442), m2erbe 0-7808 (3258), m2ocean 0-4799 (2252), menu 0-10996 (7704), missions 0-35997 (14024), play 0-10930 (6216), play2 0-23665 (14418), search 0-5043 (2273).
+> Witness: L1 76293 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C0DC NoiseOp ; LD A,n: n ($C0DD) the noise period the last noise note set
+$C0FD SpeedOp ; LD A,n: n ($C0FE) the tune's speed
+$C129 NoiseOutOp ; LD A,n: n ($C12A) the noise period for register 6 this frame
+$C12E EffectMix
+$C15E WriteRegisters
+
+$C17A c WriteAY ; Write E to AY register D
+> Known only from the code as a routine of its own: called by StartEffect, which no recording runs.
+
+$C184 c MusicSilence ; Registers 13 down to 0 to zero, then the mixer (register 7) to $3F: all quiet
+> Witness frames (first-last frame of the recording, runs): c1 24571-24716 (2), controls 61-224 (2), death 98 (1), m10 98 (1), m2erbe 98-7732 (2), m2ocean 98 (1), menu 61-2095 (5), missions 98-34256 (9), play 98-10891 (2), play2 98-17546 (3), search 98 (1).
+> Witness: L1 27 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$C1A2 c StopMusic ; StopMusicCore with every register saved
+> Witness frames (first-last frame of the recording, runs): c1 24571-24716 (2), controls 61-224 (2), death 98 (1), m10 98 (1), m2erbe 98-7732 (2), m2ocean 98 (1), menu 61-2095 (5), missions 98-34256 (9), play 98-10891 (2), play2 98-17547 (3), search 98 (1).
+> Witness: L1 27 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$C1B2 c StopMusicCore ; MusicOn and EffectOn off, MusicSilence, the three volumes to zero
+> Witness: L1 27 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$C1C7 b CommandOffsets 20 ; The commands $80-$93: each byte the distance from itself to the command's routine
+> Read by Command (`$C362`: HL = `$C147` + the command byte, so `$80` reads `$C1C7`).
+
+$C1DB c CmdStop ; Command $8E: drop the return into the channel step and stop the music
+> Witness: known only from the code (the tune never uses `$8E`).
+
+$C1DF c CmdNextPattern ; Command $87: the pattern is done, take the next one from the order list
+> Witness: L1 19 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$C1E2 c CmdNoise ; Command $8B: the channel plays noise only (its tone bit off in the mixer template), the noise follows the note
+> The mixer template is the operand at `$C446`. Witness: L1 2 (menu).
+
+$C1F7 c CmdTone ; Command $8A: the channel plays tone only, the noise no longer follows the note
+> Witness: L1 66 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$C20B c CmdToneNoise ; Command $8C: tone and noise both on for the channel, the noise follows the note
+> Witness: L1 41 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$C21C c CmdSlide ; Command $84 step, delay: slide the frequency by step every delay frames
+> Witness: known only from the code.
+
+$C232 c CmdTranspose ; Command $89 n: transpose every channel by n semitones (the operand $C39D)
+> Witness: known only from the code.
+
+$C239 c CmdVibrato ; Command $88 step, depth: the vibrato's step and depth (its position starts at the depth)
+> Witness: L1 38 (c1, m2erbe, menu, missions, play, play2).
+
+$C248 c CmdBendUp ; Command $86: the note rises one step a frame while it lasts
+> Witness: known only from the code.
+$C24C CmdBendDown ; command $85: the same with bit 7 clear, the note falls
+
+$C252 c CmdVibratoOff ; Command $81: no vibrato
+> Witness: L1 28 (c1, m2erbe, menu, missions, play, play2).
+
+$C257 c CmdVibratoOn ; Command $82: vibrato every frame
+> Witness: L1 38 (c1, m2erbe, menu, missions, play, play2).
+
+$C25D c CmdVibratoHalf ; Command $83: vibrato every other frame
+> Witness: known only from the code.
+
+$C263 c CmdFlag1 ; Command $8D: set bit 1 of the channel's flags, which no routine reads
+> Witness: known only from the code.
+
+$C269 c CmdRest ; Command $80: silence (volume 0, the envelope stopped) for a note's duration
+> Witness: L1 1 (menu).
+
+$C272 c CmdHold ; Command $8F: the envelope stops, the volume stays, for a note's duration
+> Witness: L1 12 (c1, menu, play2).
+
+$C278 c CmdDrum ; Command $90: a drum hit (noise period 1 on the channel for a frame) on every note
+> Witness: known only from the code.
+
+$C27E c CmdDrumOff ; Command $91: no drum
+> Witness: L1 64 (c1, m2erbe, menu, missions, play, play2).
+
+$C283 c CmdInlineDurations ; Command $92: each note is followed by its duration
+> Witness: L1 66 (c1, m2erbe, menu, missions, play, play2).
+
+$C28A c CmdDuration ; Command $93 n: every note lasts n steps
+> Witness: L1 2 (menu).
+
+$C295 c ChannelStep ; Count the note down; at its end read the channel's next note and the commands before it
+> Input: IX the channel record, B = 0. When +`$25` is set, the next pattern first (NextPattern). A note byte (below `$80`) plus the pattern's transpose is the note (+`$12`); a noise-following channel also sets the noise period (`$C0DD`); the ornament and the instrument's envelope restart; the duration from +`$11` or the next byte. Between notes a bend changes the note a step a frame (`$C30F`).
+> Witness: L1 15111 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C2AA ReadStream
+$C2E8 SetDuration
+$C30F BendStep
+
+$C320 c Command ; A pattern byte of $80 and above: $E0-$FF an instrument, $B0-$DF an ornament, $80-$AF a command through CommandOffsets
+> `$E0`+n: the instrument n from Instruments `$C75A`, its speed the byte before its data. `$B0`+n: the ornament n from OrnamentOffsets `$C721`. The branch at `$C342` (the tune's speed from a byte, `$C0FE`) is never taken: the sum `A + $50` always carries for a byte from `$B0` (known only from the code).
+> Witness: L1 595 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C342 CmdSpeedDead
+$C34A SetInstrument
+$C362 CommandJump
+
+$C36A c ChannelSound ; The channel's frequency (HL) and volume (A) this frame, and its mixer bits in AYShadow
+> Input: IX the channel. The volume envelope steps every +`$0F` frames (the instrument's bytes until one with bit 7); the note plus the global transpose (`$C39D`) plus the ornament's byte (a byte with bit 7 ends the ornament and loops it) indexes NoteTable; the vibrato moves the frequency by its position (the depth in both directions); the slide adds its sum. The noise and tone bits go into the mixer `$C482` through the template `$C446`; a pending drum hit sets the noise period `$41`.
+> Witness: L1 15111 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C39C TransposeOp ; LD A,n: n ($C39D) the global transpose
+$C445 MixerTemplateOp ; LD A,n: n ($C446) the mixer template the noise commands change
+
+$C47B b AYShadow 12 ; The AY registers 0-11 as MusicTick writes them, then the effect's values
+> `$C47B`-`$C480` the three tone periods, `$C481` noise, `$C482` mixer, `$C483`-`$C485` the volumes, `$C486` register 11. `$C488`-`$C492` the effect's tone A, tone C, noise, mixer mask and volumes (StartEffect, EffectTick).
+$C481 AYNoise
+$C482 AYMixer
+$C483 AYVolumes
+$C488 EffectRegs
+
+$C494 w NoteTable 12 ; The AY tone periods of 96 notes, 8 octaves from $0EF8 down to $000F
+> Read by ChannelSound (`$C3BD`).
+
+$C554 c NextPattern ; Take the channel's next pattern from its order list
+> The order list: a byte below `$80` is a pattern (PatternTable `$C870`); `$FF` n the pattern's transpose; `$FE` n repeat the following n times; `$FD` back to the list's start; `$FC` a word, jump there. Any other byte runs the trap at `$C5B1`: random border colours forever (a debugging aid of the music editor, known only from the code).
+> Witness: L1 76 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C5B1 OrderTrap
+
+$C5E1 c StartEffect ; Start sound effect A: its 17 bytes from EffectTable to EffectState, the envelope registers set
+> Witness: known only from the code (no routine of the game calls it; the effects of play are bank 0's, `$D692`).
+
+$C63E c EffectTick ; Step the random number; while an effect runs, its time, its repeats and its tone slides
+> Witness: L1 76293 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$C6DC b EffectTable 2 ; The effects' addresses: one effect, at $C6DE
+$C6DE Effect0 ; 17 bytes: time, speed, tone A, tone C, envelope, mixer mask, slides, repeats
+
+$C6EF b EffectState 17 ; The running effect: a copy of its 17 bytes and the speed count $C700
+
+$C702 c NextRandom ; Shift the 32-bit generator at RandomSeed one step; A = its first byte
+> Witness: L1 76293 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$C71D b RandomSeed 4 ; The generator's 32 bits
+
+$C721 b OrnamentOffsets 7 ; The ornaments: each byte the distance from itself to the ornament
+> Read by Command (`$C32D`).
+@res music/tune.bin
+
+$C728 b Ornaments 16 ; Seven ornaments: semitone offsets, a byte with bit 7 ends one (its low bits the last offset)
+@res music/tune.bin
+
+$C75A w Instruments 13 ; Thirteen instruments' envelope addresses (each with its speed in the byte before)
+@res music/tune.bin
+
+$C774 b InstrumentData 16 ; The instruments' volume envelopes
+@res music/tune.bin
+
+$C869 b TuneTable 7 ; The only tune: its speed and the order lists of channels A, B, C
+@res music/tune.bin
+
+$C870 w PatternTable 17 ; The 17 patterns' addresses
+@res music/tune.bin
+
+$C892 b OrderLists 16 ; The three channels' order lists
+@res music/tune.bin
+
+$C90C b Patterns 16 ; The 17 patterns: notes, durations, commands
+@res music/tune.bin
+
+$CB64 b CatalogueSpace 16 ; Where the mission catalogue loads ($CB64, 7124 bytes): $E5 bytes and zeros on the tape
+> LoadDirectory (`$715D`, bank 5) reads the DIRECTORY block here with LdBytes (`$8617`; writes `$CB64-$E737` in menu); the tape's bank 4 block carries only `$E5` filler, three zeros and 16 zeros at the end.

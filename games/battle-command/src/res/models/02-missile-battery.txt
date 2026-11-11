@@ -1,0 +1,82 @@
+# 02-missile-battery: the 21 models its templates use, in the block (tools/models3d.py mission)
+model $E80B
+  $E80B box_rect16 48 1 56
+  $E811 verts P=V41 P=(P+V38)/2 V33=P P=V38 P=(P+V34)/2 V32=P P=V37 P=(P+V34)/2 V31=P P=V41 P=(P+V37)/2 V30=P P=(P+V32)/2 V29=P P=(P+V38)/2 V0=P P=(P+V38)/2 P=(P+V0)/2 P=(P+V38)/2 P=(P+V0)/2 V28=P P=V38 P=(P+V32)/2 V1=P P=(P+V32)/2 P=(P+V1)/2 V1=P P=(P+V29)/2 P=(P+V1)/2 P=(P+V1)/2 V27=P P=V33 P=(P+V38)/2 V26=P P=(P+V33)/2 P=(P+V26)/2 V26=P P=(P+V29)/2 P=(P+V26)/2 P=(P+V26)/2 V26=P P=V41 P=(P+V33)/2 V25=P P=(P+V33)/2 P=(P+V25)/2 V25=P P=(P+V29)/2 P=(P+V25)/2 P=(P+V25)/2 V25=P P=V41 P=(P+V29)/2 V24=P P=(P+V41)/2 P=(P+V24)/2 P=(P+V41)/2 P=(P+V24)/2 V24=P P=V41 P=(P+V30)/2 V23=P P=(P+V30)/2 P=(P+V23)/2 V23=P P=(P+V29)/2 P=(P+V23)/2 P=(P+V23)/2 V23=P P=V32 P=(P+V34)/2 V22=P P=(P+V32)/2 P=(P+V22)/2 V22=P P=(P+V29)/2 P=(P+V22)/2 P=(P+V22)/2 V22=P P=V29 P=(P+V34)/2 V21=P P=(P+V34)/2 P=(P+V21)/2 P=(P+V34)/2 P=(P+V21)/2 V21=P P=V31 P=(P+V34)/2 V20=P P=(P+V31)/2 P=(P+V20)/2 V20=P P=(P+V29)/2 P=(P+V20)/2 P=(P+V20)/2 V20=P P=V31 P=(P+V37)/2 V19=P P=(P+V31)/2 P=(P+V19)/2 V19=P P=(P+V29)/2 P=(P+V19)/2 P=(P+V19)/2 V19=P P=V29 P=(P+V37)/2 V18=P P=(P+V37)/2 P=(P+V18)/2 P=(P+V37)/2 P=(P+V18)/2 V18=P P=V30 P=(P+V37)/2 V17=P P=(P+V30)/2 P=(P+V17)/2 V17=P P=(P+V29)/2 P=(P+V17)/2 P=(P+V17)/2 V17=P P=V33 P=(P+V29)/2 P=(P+V33)/2 P=(P+V33)/2 P=(P+V33)/2 V33=P P=V29 P=(P+V32)/2 P=(P+V32)/2 P=(P+V32)/2 P=(P+V32)/2 V32=P P=V29 P=(P+V30)/2 P=(P+V30)/2 P=(P+V30)/2 P=(P+V30)/2 V30=P P=V29 P=(P+V31)/2 P=(P+V31)/2 P=(P+V31)/2 P=(P+V31)/2 V31=P P=V41 P=(P+V35)/2 V29=P P=(P+V30)/2 V16=P P=V23 P=(P+V29)/2 V15=P P=V24 P=(P+V29)/2 V14=P P=V25 P=(P+V29)/2 V13=P P=V33 P=(P+V29)/2 V12=P P=V26 P=(P+V29)/2 V11=P P=V28 P=(P+V29)/2 V10=P P=V27 P=(P+V29)/2 V9=P P=V32 P=(P+V29)/2 V8=P P=V22 P=(P+V29)/2 V7=P P=V21 P=(P+V29)/2 V6=P P=V20 P=(P+V29)/2 V5=P P=V31 P=(P+V29)/2 V4=P P=V19 P=(P+V29)/2 V3=P P=V18 P=(P+V29)/2 V2=P P=V17 P=(P+V29)/2 V1=P P=V30 P=(P+V29)/2 V0=P
+  $E8DD project 38 from V0
+  $E8E0 faces_test from 0: (33 26 28) (34 29 35) (36 29 37)
+  $E8EC order_by_face f0 $E913 $E957
+  $E8F2 fill_back_faces (f2 c4 37 29 36) (f1 c4 35 29 34)
+  $E902 fill_faces_clip (f1 c5 34 29 35) (f2 c5 36 29 37)
+  $E912 return
+  $E913 lines_clip M29 L33 L26 L28 L27 L32 M29 L26 M29 L28 M29 L27 M29 L32 L22 L29 M22 L21 L29 M21 L20 L29 M20 L31 L29 M29 L25 L33 M29 L24 L25 M29 L23 L24 M29 L30 L23 M31 L19 L29 M19 L18 L29 M18 L17 L29 M17 L30 M16 L15 L14 L13 L12 L11 L10 L9 L8 L7 L6 L5 L4 L3 L2 L1 L0
+  $E956 return
+  $E957 end
+
+model $E958  # broken: the bytes are not a model script
+  $E958 box_rect16 32 12 127
+  $E95E verts P=V40 P=(P+V38)/2 V38=P P+=V38 P=(P+V0)/2 P=V0 P-=V97 P=V51 P=V17 P=(P+V17)/2 P=V0 P=V32 P-=V96 P=(P+V19)/2 P=V18 P=V17 P=(P+V0)/2 V0=P P-=V97 P=V51 P=V18 P=(P+V18)/2 P=V0 V32=P P-=V96 P=(P+V19)/2 P=V17 P=V18 P=(P+V31)/2 P-=V31 V12=P
+  $E985 verts P=(P+V12)/2 P+=V36
+  $E98A branch_visible f36 $E8D4 $1815
+  $E990 native $C02C
+  $E993 polar_points 56 (frames to $2C00)
+  $2C00 runs past the block (not a model script)
+
+model $E997
+  $E997 end
+
+model $E9E1  # broken: the bytes are not a model script
+  $E9E1 byte $91 (no opcode)
+
+model $EA20  # broken: the bytes are not a model script
+  $EA20 byte $93 (no opcode)
+
+model $EA61  # broken: the bytes are not a model script
+  $EA61 lines_if_faces M84 M116 L216[f84|f203] L228[f0|f11] L84[f84|f116] L0[f76|f24] L224[f12|f63] L0[f65|f199] M32 L19[f0|f211] M17 M19 M20 L20[f18|f20] M18 M20 M19 L142[f17|f14] L14[f19|f142] M20 M1 M0 M96 L192[f1|f64] L145[f51|f19] M16 M16 L1[f17|f0] L111[f0|f128] L144[f15|f144] L32[f0|f33] M32 L18[f110|f20] L128[f17|f147] L128[f65|f0] L146[f52|f20] M18 L32[f0|f97] M32 L17[f110|f147] L128[f18|f148] M1 L142[f0|f128] M14 L0[f19|f147] M33 L174[f0|f128] L148[f14|f148] L30[f31|f224] M108 M99 L0[f15|f228] L72[f36|f148] L32[f52|f108] L20[f52|f76] M43 M100 L68[f116|f72] L75[f52|f16] M68 M20 L180[f112|f43] M43 M3 M19 M43 L139[f116|f148] L140[f67|f243] M31 M96 L130[f65|f134] L192[f96|f32] L143[f46|f144] L142[f16|f15] L100[f2|f20] L83[f52|f4] L164[f67|f116] M24 L31[f31|f224] L128[f76|f225] M102 L212[f0|f36] M104 L204[f52|f212] M95 L52[f13|f0] M116 M108 M127 L62[f13|f32] L12[f12|f63] L65[f31|f224] L96[f72|f2] L18[f32|f129] L18[f17|f145] M2 L228[f20|f196] L84[f4|f196] M100 L36[f117|f5] L149[f37|f4] L31[f36|f184] M127 M96 L64[f24|f28] L232[f30|f236] L128[f3|f197] L108[f36|f180] L180[f37|f52] M44 M36 M84 L84[f84|f76] M44 M5 L127[f52|f204] M96 L66[f64|f168] L96[f96|f32] M81 M17 L116[f18|f128] M4 L224[f56|f31] L64[f24|f28] L232[f30|f236] L0[f3|f136] L76[f36|f180] L180[f37|f52] M44 M36 M84 L84[f84|f76] M44 M5 L127[f52|f204] M96 L65[f64|f168]
+  $EB8B byte $20 (no opcode)
+
+model $EB1F  # broken: the bytes are not a model script
+  $EB1F byte $3E (no opcode)
+
+model $EB57  # broken: the bytes are not a model script
+  $EB57 byte $AC (no opcode)
+
+model $EB81  # broken: the bytes are not a model script
+  $EB81 byte $AC (no opcode)
+
+model $EBAB  # broken: the bytes are not a model script
+  $EBAB byte $B8 (no opcode)
+
+model $EC8B  # broken: the bytes are not a model script
+  $EC8B byte $CB (no opcode)
+
+model $ED04  # broken: the bytes are not a model script
+  $ED04 byte $E8 (no opcode)
+
+model $EE8F  # broken: the bytes are not a model script
+  $EE8F lines_if_faces_clip M18 M18 L1[f17|f145] L125[f68|f24] M93 M125 M65 M0 L224[f36|f32] L17[f96|f50] M19 M2 M0 L224[f36|f32] L145[f96|f51] M18 L68[f1|f33] L219[f27|f157] L128[f125|f193] L224[f36|f0] L17[f96|f115] M18 M2 M0 L224[f36|f0] L145[f96|f114] M19 L128[f1|f33] L224[f36|f32] L145[f96|f51] M17 L36[f2|f128] L96[f32|f224] L147[f49|f17] M1 L30[f63|f224] M108 M98 L0[f8|f2] L116[f36|f84] L191[f84|f72] L244[f9|f132] L127[f116|f104] L212[f9|f196] M104 L200[f41|f52] L68[f16|f104] M84 L223[f84|f72] L84[f9|f100] L104[f116|f116] M31 L63[f9|f161] L41[f9|f53] L65[f17|f105] L224[f17|f169] M48 L49[f8|f224] L82[f74|f17] L16[f10|f34] L66[f82|f10] L10[f16|f50] L50[f98|f17] L244[f10|f4] L20[f106|f133] M10 M52 M106 M82 M50 M74 M34 M82 M18 M74 M2 M84 M114 M74 M98 M85 L223[f18|f202] M96 L0[f67|f0] M32 L0[f1|f0] M1 L6[f7|f135] M1 M5 M6 L5[f1|f5] M0 M4 M5 L3[f4|f0] M7 M3 M3 L134[f3|f2] M1 M33 L0[f96|f129] M0
+  $EF5F byte $84 (no opcode)
+
+model $EEF0  # broken: the bytes are not a model script
+  $EEF0 byte $E8 (no opcode)
+
+model $EFD1  # broken: the bytes are not a model script
+  $EFD1 byte $58 (no opcode)
+
+model $F06E  # broken: the bytes are not a model script
+  $F06E byte $D5 (no opcode)
+
+model $F125  # broken: the bytes are not a model script
+  $F125 byte $EB (no opcode)
+
+model $F228  # broken: the bytes are not a model script
+  $F228 byte $64 (no opcode)
+
+model $F313  # broken: the bytes are not a model script
+  $F313 runs past the block (not a model script)
+
+model $F3CE  # broken: the bytes are not a model script
+  $F3CE byte $94 (no opcode)
+
+model $F409  # broken: the bytes are not a model script
+  $F409 byte $34 (no opcode)
+

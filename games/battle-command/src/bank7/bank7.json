@@ -1,0 +1,39 @@
+{
+  "about": "RAM bank 7 as tape block loads it, at $C000: python3 ../../kit/mkgame.py --part src/bank7/bank7.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/bank7-c000.bin || $SKOOLKIT_VENV/bin/python tools/parts.py"
+  ],
+  "image": "work/parts/bank7-c000.bin",
+  "org": "C000",
+  "ann": "src/bank7/bank7.ann",
+  "top": "bank7",
+  "bin": "bank7.bin",
+  "dest": "src/bank7",
+  "device": "ZXSPECTRUM128",
+  "bank": 7,
+  "pages": [
+    5,
+    2,
+    7
+  ],
+  "header": [
+    "; Battle Command, Ocean 1990: RAM bank 7, paged at $C000, as its tape block loads it."
+  ],
+  "l1": [
+    "work/stage1/c1/l1.json",
+    "work/stage1/menu/l1.json",
+    "work/stage1/missions/l1.json",
+    "work/stage1/play/l1.json",
+    "work/stage1/play2/l1.json",
+    "work/stage1/death/l1.json",
+    "work/stage1/m2ocean/l1.json",
+    "work/stage1/m2erbe/l1.json",
+    "work/stage1/search/l1.json",
+    "work/stage1/m10/l1.json"
+  ],
+  "data_entries": "stop",
+  "work": "work/stage2/mkbank7",
+  "res_install": "tools/res_formats.py"
+}

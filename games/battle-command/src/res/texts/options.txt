@@ -1,0 +1,6 @@
+{02}{28}{06}{0D}{46}SELECT CONTROL SYSTEM.
+{09}{07}{02}{38}{07}{0D}{44}1 Sinclair Joystick.
+{0B}{0B}{0D}{44}2 Cursor Keys.
+{0B}{0B}{0D}{44}3 Kempston Mouse.
+{0B}{0B}{0D}{44}4 Kempston Joystick.
+{0B}{0B}{0D}{42}5 Keyboard.

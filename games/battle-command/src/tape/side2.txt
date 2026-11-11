@@ -1,0 +1,49 @@
+# Side 2 of the Ocean release (orig/BattleCommand.tzx.zip, "Battle Command - Side 2.tzx"), the mission tape,
+# block by block: tools/mktape.py writes it, tools/build.sh compares it with the original byte for byte. All blocks
+# are at ROM speed; the game reads them with its own loader (docs/03-build-and-load.md 3.1, side 2). Each mission
+# is a 17-byte block with flag $FF (the game's mission header: $03, "MISSHDR:n:", the length of the next block,
+# four zeros) and its data block. src/res/missions holds the catalogue and the ten missions.
+version 1 10
+text Created with Ramsoft MakeTZX
+header 4964 bytes DIRECTORY: res/missions/catalogue.bin $8904 0
+rom 12706 res/missions/catalogue.bin
+stop
+text Blast Em Mission
+rom 4791 hex:034D4953534844523A313A7A1F00000000   # MISSHDR:1:, length 8058
+rom 7816 res/missions/01-blast-em-mission.bin
+stop
+text Missile Battery
+rom 4798 hex:034D4953534844523A323A061900000000   # MISSHDR:2:, length 6406
+rom 7863 res/missions/02-missile-battery.bin
+stop
+text Hostage Rescue
+rom 4804 hex:034D4953534844523A333A711A00000000   # MISSHDR:3:, length 6769
+rom 7884 res/missions/03-hostage-rescue.bin
+stop
+text Railway Ambush
+rom 4807 hex:034D4953534844523A343A121900000000   # MISSHDR:4:, length 6418
+rom 7887 res/missions/04-railway-ambush.bin
+stop
+text Night Moves
+rom 4808 hex:034D4953534844523A353A6E1D00000000   # MISSHDR:5:, length 7534
+rom 8091 res/missions/05-night-moves.bin
+stop
+text Escort Duty
+rom 4814 hex:034D4953534844523A363A241E00000000   # MISSHDR:6:, length 7716
+rom 8168 res/missions/06-escort-duty.bin
+stop
+text Satellite Search
+rom 4819 hex:034D4953534844523A373A441E00000000   # MISSHDR:7:, length 7748
+rom 8101 res/missions/07-satellite-search.bin
+stop
+text River Raid
+rom 4821 hex:034D4953534844523A383A3C1800000000   # MISSHDR:8:, length 6204
+rom 8052 res/missions/08-river-raid.bin
+stop
+text Hideout
+rom 4820 hex:034D4953534844523A393A351A00000000   # MISSHDR:9:, length 6709
+rom 8086 res/missions/09-hideout.bin
+stop
+text Grand Finale
+rom 4827 hex:034D4953534844523A3A3A661B00000000   # MISSHDR:::, length 7014
+rom 24063 res/missions/10-grand-finale.bin

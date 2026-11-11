@@ -1,0 +1,99 @@
+# The annotations of RAM bank 7 at $C000: the source of src/bank7/*.asm (../../kit/mkgame.py --part src/bank7/bank7.json).
+# Format: ../../../../docs/ann-format.md. Witnesses: the recordings of work/stage1/rec (WALKTHROUGH 6.0), page 7.
+@module pictures ; Ten packed screens: the panels, frames and menu pictures
+@about Bank 7 holds ten whole screens (6912 bytes each, pixels and attributes) packed with an LZ-and-run scheme, one block after the other from $C000, and the routine that unpacks one straight onto the screen at $FE95. DrawBank7Picture ($74AA, bank 2) pages bank 7 and calls UnpackPicture with DE = the block. Each block is a resource, src/res/pictures/NAME.png with the packer's parse NAME.parse.txt beside it (tools/bank7pic.py has the format, tools/res_formats.py builds the block back).
+@about Which recording unpacks which block: the page-7 reads of UnpackPicture in each L1 (byte_counts), every byte of the block but the two padding bytes at its end.
+
+$C000 b PicDamageBoard 16 ; Packed screen: the damage board with the tank drawings and twelve boxes (the Dragonfly view's panel)
+> Unpacked by DragonflyLoop (`$6C9E`, `LD DE,$C000`). Block of 1811 bytes: size word `$070F`, 1327 tokens.
+> Witness: play (1808 bytes read), c1.
+@res pictures/damage-board.bin
+
+$C713 b PicStores 16 ; Packed screen: the stores and weapons modules folder with the payload status
+> Unpacked by bank 6 `$CAAC` (the stores screen of the mission menu). Block of 1462 bytes, 1052 tokens.
+> Witness: death, m2erbe, missions, play, play2 (1459 bytes read).
+@res pictures/stores.bin
+
+$CCC9 b PicMissionSelect 16 ; Packed screen: the clipboard with the mission list, the tank photo and the red folder
+> Unpacked by bank 6 `$C7AB` (the mission catalogue screen). Block of 1628 bytes, 1180 tokens.
+> Witness: every read build (1625 bytes read).
+@res pictures/mission-select.bin
+
+$D325 b PicGridPanel 16 ; Packed screen: the panel with TIME, GRID Y and GRID X and the blank screen (the status view)
+> Unpacked by StatusLoop (`$6BD0`, `LD DE,$D325`). Block of 1067 bytes, 701 tokens.
+> Witness: m2erbe, missions, play (1064 bytes read).
+@res pictures/grid-panel.bin
+
+$D750 b Bank7Free 16 ; 1573 zero bytes between the fourth and fifth pictures: never read
+> No recording reads `$D750-$DD74` (byte_counts of page 7); the tape block carries them as zeros.
+
+$DD75 b PicCockpit 16 ; Packed screen: the tank's cockpit, the 3D view's frame and the dashboard
+> Unpacked by StartMission (`$696D`, `LD DE,$DD75`) at the start of every mission and on the way back to the 3D view. Block of 1961 bytes, 1533 tokens.
+> Witness: death, m2erbe, missions, play, play2 (1958 bytes read).
+@res pictures/cockpit.bin
+
+$E51E b PicCompletion 16 ; Packed screen: the completion report folder, CLASSIFIED
+> Unpacked by bank 6 `$CD21` and `$CD87` (the end of a mission). Block of 1067 bytes, 712 tokens.
+> Witness: c1 (Blast Em Mission completed); no read build completes a mission.
+@res pictures/completion.bin
+
+$E949 b PicBriefing 16 ; Packed screen: the briefing notes folder with the red star
+> Unpacked by bank 6 `$C9A5` (the briefing). Block of 825 bytes, 553 tokens.
+> Witness: menu (822 bytes read), c1.
+@res pictures/briefing.bin
+
+$EC82 b PicMissionStatus 16 ; Packed screen: the mission status card with the commander's photo over the tank drawings
+> Unpacked by bank 6 `$CDC2`. Block of 2143 bytes, 1577 tokens.
+> Witness: m10, menu, missions (2140 bytes read).
+@res pictures/mission-status.bin
+
+$F4E1 b PicTitle 16 ; Packed screen: the BATTLE COMMAND title lettering over black
+> Unpacked by the title menu, bank 6 `$C431`. Block of 1260 bytes, 1066 tokens.
+> Witness: m2erbe, menu, missions, play, play2 (1257 bytes read).
+@res pictures/title.bin
+
+$F9CD b PicMapFrame 16 ; Packed screen: the map view's monitor frame with its grey screen
+> Unpacked by MapLoop (`$6AC3`, `LD DE,$F9CD`). Block of 1218 bytes, 885 tokens.
+> Witness: play (1215 bytes read).
+@res pictures/map-frame.bin
+
+@module unpack ; UnpackPicture: a packed screen from bank 7 onto the screen
+@about The format: tools/bank7pic.py. A block is the size word, the unpacked length ($1B00), 16 common bytes, the number of extra offset bits, then a bit stream read least significant bit first. Each token opens with 2 bits: 01 a literal byte, 11 one of the 16 common bytes, 10 a copy of earlier output (count, offset up to 511), 00 a run of one byte (literal or common). The routine keeps its state in its own operands (self-modifying code).
+
+$FE8F b UnpackVars 2 ; UnpackPicture's pointers: $FE8F and $FE93 the common-byte table, $FE91 the bit stream
+> Written by UnpackPicture `$FEA7`-`$FEB6`; `$FE93` is read for every common byte (`$FEF0`, `$FF70`), `$FE91` by StartBits; `$FE8F` is written and never read (known only from the code). Zero in the image.
+$FE91 StreamPtr
+$FE93 TablePtr
+
+$FE95 c UnpackPicture ; Unpack the block at DE onto the screen from $4000, then set BRIGHT in every attribute
+> Input: DE = a block of bank 7 (paged at `$C000`). Output: `$4000-$5AFF` the screen; BC, DE, HL, AF and the alternate set changed.
+> Clears the output count (`$FF9F`), takes the unpacked length into the compare at `$FEC5`, the table and stream addresses into UnpackVars, the extra offset bits into `$FF43`, the output pointer `$FF97` = `$4000`, the first byte through StartBits; then a token at a time (`$FECF`): 2 bits by GetBits, the type kept in `$FF36`. 01: 8 bits to PutByte. 11: 4 bits, the table's byte `NOT n AND $0F`. 0x: a count of 6 bits (0: 7 more bits, 1: 8 bits, 2: 8 + 6 bits); type 10 then an offset of 8 bits plus the extra bits, and the count bytes from output - offset; type 00 a bit: the run byte from the table (4 bits) or 8 bits, stored into `$FF8A`, count times. When the count reaches the length, `JP BrightenAttributes`.
+> Witness: L1 120 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$FEC2 NextToken
+$FEC5 LengthOp ; LD BC,n: n ($FEC6) the unpacked length
+$FEEB TableByte
+$FF00 CountedToken
+$FF35 TokenTypeOp ; LD A,n: n ($FF36) the token's 2 type bits
+$FF42 LongBitsOp ; LD A,n: n ($FF43) the extra offset bits
+$FF4A OffsetMaskOp ; AND n: n ($FF4B) the mask of the extra bits (StartBits)
+$FF52 CopyLoop
+$FF61 RunToken
+$FF89 RunByteOp ; LD A,n: n ($FF8A) the run's byte
+
+$FF96 c PutByte ; Store A at the output pointer, advance it and count the byte
+> Input: A. The pointer is the operand at `$FF97`, the count the operand at `$FF9F`. Output: HL = the new count.
+> Witness: L1 829440 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$FF9E WrittenCountOp ; LD HL,n: n ($FF9F) the bytes written so far
+
+$FFA6 c BrightenAttributes ; OR $40 (BRIGHT) into the 768 attributes $5800-$5AFF
+> Every picture is shown bright; the blocks themselves keep BRIGHT off. Witness: L1 120 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$FFB7 c GetBits ; Return the next A bits of the stream in A (low bits first), using the alternate set
+> Input: A = 1-8. The alternate DE holds the bits not yet taken, HL' the next stream byte; the number of bits left in E' is the operand at `$FFBD`. When fewer are left than asked, the next byte goes into D' and DE' shifts right as far as the bits taken. Output: A = E' before the shift (the caller masks it). Witness: L1 359432 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$FFBC BitsLeftOp ; LD A,n: n ($FFBD) the bits left in E'
+
+$FFE0 c StartBits ; Set the offset mask from A (the extra bits) and load the stream's first byte into E'
+> Input: A = the extra offset bits. `$FF4B` = BitMasks + A, HL' = the stream (`$FE91`) and E' its first byte, `$FFBD` = 0. Witness: L1 120 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$FFF7 b BitMasks 8 ; The masks of 0-7 low bits: $00, $01, $03 ... $7F
+> Read by StartBits.

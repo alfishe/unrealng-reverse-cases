@@ -1,0 +1,937 @@
+# The annotations of RAM bank 6 at $C000: the source of src/bank6/*.asm (../../kit/mkgame.py --part src/bank6/bank6.json).
+# Format: ../../../../docs/ann-format.md. Witnesses: the recordings of work/stage1/rec (WALKTHROUGH 6.0), page 6.
+
+@module pointer ; The mouse pointer: its shapes, the saved background, the save, restore, shift and draw
+@about The menus show a pointer of 8 lines by 16 pixels. The interrupt (InterruptHandler $8383) moves it: RestorePointerBackground $D251 puts back the screen bytes saved in PointerBackground $C020, SavePointerBackground $D0CA saves the bytes at the new place, DrawPointer $D27C shifts the shape (ShiftPointer $D282, the shape's address in its operand $D283) to the pixel and puts it on with its mask (PutPointer $D2F1). Over a 3D window (the title's and the stores' model) the pointer goes into the back buffer instead (CopyViewUnderPointer $D142, DrawPointerInView $D1BE), so the blit of the view carries it.
+@about The position comes from PointerPos $7DC0 through CopyPointer $897E ($7C51 X, $7C53 Y); the limits of the pointer are set from PointerLimits $D32B.
+
+$C000 b PointerShapes 2 ; The two pointer shapes: 8 lines of a mask byte and a pixel byte each
+> Line n is two bytes: the mask (`AND` with the screen, shifted in with ones) and the pixels (`OR`). ShiftPointer `$D282` reads the shape its operand `$D283` points at. The arrow at `$C000` is set by the catalogue, the briefing and the stores; the boxed shape at `$C010` by ShowWaitPointer `$CBF4` when a screen is left, so it shows while the next one is drawn.
+$C000 ArrowPointer ; the arrow
+$C010 WaitPointer ; the boxed shape shown between screens
+
+$C020 b PointerBackground 2 ; The 8 x 2 screen bytes under the pointer
+> Written by SavePointerBackground `$D0CA` (from the screen) and CopyViewUnderPointer `$D142` (from the back buffer), put back by RestorePointerBackground `$D251`.
+
+@module catalogue ; The mission catalogue screen: the list of the ten missions from the catalogue, the selection, the description
+@about MissionCatalogueScreen $C790 is screen node $7504 of the screen list (ScreenList $74E6). On the first visit the catalogue is not yet in memory (IsCatalogueLoaded $C870 compares its head with "MISSION"): the screen asks for the mission tape and loads it (LoadDirectory $715D). Then BuildMissionNames $C030 makes ten printable lines from the catalogue's names, PrintMissionList $CFA9 prints them, a tick (TickGraphic $C978) marks every completed mission (MissionsDone $6799), and the pointer's zones (CatalogueZones $C851) load a mission, pick a line, go to the briefing or the stores.
+
+$C030 c BuildMissionNames ; Copy the catalogue's head, then build the ten mission name lines at $93D9 with their pointers at $93B9
+$C042 NameLoop
+$C04E NameCopy
+$C057 NamePad
+$C059 NamePadLoop
+> CopyCatalogueHead `$70C6` puts the catalogue's first 1 K into the back buffer at `$8AF1`. For each of the ten 27-byte names there: code 13 with the attribute `$46`, the name up to its 0 byte, spaces to 27 characters, code 11 and the end `$FF`; the line's address goes to the next word of `$93B9`.
+> Output: the strings in `$93D9-$950E` and the table `$93B9-$93CC` (in the back buffer, bank 2). Witness: L1 32 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$C06F c WaitForClick ; Wait until the interrupt's fire test sets ClickFlag $6D43, then clear it
+$C072 WaitClickLoop
+> Known only from the code: nothing calls it.
+
+@module statusview ; The Dragonfly title box and the grid position of the status view
+@about The Dragonfly view (DragonflyLoop $6C93) and the status view (StatusLoop $6BC7) are drawn by the resident code in bank 2; bank 6 holds the parts they borrow: the boxes behind the Dragonfly's title, the GRID Y / GRID X numbers (PrintStatusGrid $C0F7), the map of the status view (module map) and the message of the status views (module panel).
+
+$C079 c DragonflyTitleBox ; The attribute box $C0B1 and 8 cleared pixel lines behind the Dragonfly's title
+> Called once by DragonflyTitle `$70B6`. AttrBox `$6CFB` with `$C0B1`, then ScreenRowFill `$6D22` of 8 lines of 18 bytes from line `$88`, column 7 (through DragonflyTitleFill). Witness: L1 1 (play).
+
+$C089 b DragonflyTitleBoxes 5 ; An attribute box record (width, height, column, attribute, row) for the unused variant $C08E
+> Read only by DragonflyTitleBoxSmall.
+
+$C08E c DragonflyTitleBoxSmall ; Variant: the box $C089, then the fill of DragonflyTitleBoxLarge
+> Known only from the code: nothing calls it.
+
+$C096 c DragonflyTitleBoxLarge ; Variant: the box $C0AC and 40 cleared lines at column 10
+> Known only from the code: nothing calls it; its tail DragonflyTitleFill is the one DragonflyTitleBox jumps to.
+$C09C DragonflyTitleLarge
+$C0A4 DragonflyTitleFill ; A' = $FF, A lines, BC the column: ScreenRowFill of 18 bytes from line $88
+
+$C0AC b DragonflyBoxes 5 ; Four attribute box records of the Dragonfly title
+> `$C0AC` read by DragonflyTitleBoxLarge, `$C0B1` by DragonflyTitleBox, `$C0B6` by DragonflyTitle (`$70A9`); `$C0BB` is not read in bank 6.
+$C0B1 DragonflyBoxB
+$C0B6 DragonflyBoxC
+$C0BB DragonflyBoxD
+
+$C0C0 c FormatGridPosition ; Format the map position: the two numbers in the operands $C0C7 and $C0E2 into GridText
+> The operands are written by DrawStatusMap `$DB1C` from the view's position (`$9A6C` and `$9A8E`). Each goes through NumberToDigits `$C126` (leading zeros kept, C = `0`) into PaddedDigits `$D9AB`; digits 2-3 and 4-5 are copied around the colon of GridText. Witness: L1 40 (m2erbe, missions, play).
+$C0C6 GridYOp ; LD HL,n: n ($C0C7) the Y position
+$C0E1 GridXOp ; LD HL,n: n ($C0E2) the X position
+
+$C0F7 c PrintStatusGrid ; Print the grid position of the status view
+> Called every frame by StatusLoop `$6BC7`: FormatGridPosition, then PrintString `$6FB3` with GridText. Witness: L1 40 (m2erbe, missions, play).
+
+$C101 b GridText 16 ; Text: the two positions "00:00" at line $50 and line $70, column 1
+> Control code 2 (a pixel line and a column), code 13 (attribute `$47`); the digits at `$C106` and `$C10E` are written by FormatGridPosition.
+
+@module stores ; The stores screen: the weapons catalogue, the four launcher slots, the payload, the turning model
+@about StoresScreen $CA8B is screen node $7514 (zones StoresZones $CBC4). It unpacks the bank 7 picture PicStores ($C713 of bank 7), shows one of the 13 weapons of WeaponRecords $C373 at a time (its icon, its description and its 3D model, which turns in a 3D window drawn into the back buffer and blitted by BlitStoresView $D0A0), and lets the player fit it into one of four slots ($8368, four 6-byte records) or take one out. The total weight (the operand $C11B) may not pass 1000 kg, and a weapon may be fitted only as many times as its record allows.
+@about When the player leaves the screen, StoresToGauges $CC1B turns the slots into the panel's gauges and the screen list goes on to StartMission $694B (link 0 of the node).
+
+$C114 c PrintPayloadWeight ; Print the payload's weight in kg on the payload line
+> NumberToDigits `$C126` with C = `:` (the space of SmallFont `$7C59`) for the leading zeros into `$D9AB`, then PrintString `$6FB3` of PayloadText `$D9A8`. Witness: L1 24 (c1, death, m2erbe, missions, play, play2).
+$C11A PayloadWeightOp ; LD HL,n: n ($C11B) the payload's total weight in kg
+
+@module numbers ; Numbers to decimal digits
+@about Two converters: NumberToDigits $C126 for 16-bit numbers (five digits: the stores' weight and the grid position) and LongToDigits $D353 for the 32-bit score (ten digits).
+
+$C126 c NumberToDigits ; Write HL as five ASCII digits at HL', then replace the leading zeros at $D9AB with C'
+$C148 BlankZeroLoop
+$C154 BlankZeroDone
+> Input: HL the number, HL' the destination, C' the character for a leading zero. DigitOf `$C155` for 10000, 1000, 100 and 10, then the units. Then the five digits of PaddedDigits `$D9AB` from the left: each `0` becomes C' until the first other digit; a number 0 keeps its last `0`. Witness: L1 104 (c1, death, m2erbe, missions, play, play2).
+
+$C155 c DigitOf ; One decimal digit: A = how many times DE goes into HL, stored at HL' as ASCII
+$C157 DigitCount
+> Input: HL, DE. Output: HL the remainder, HL' advanced. Witness: L1 416 (c1, death, m2erbe, missions, play, play2).
+
+@module stores
+
+$C165 c SlotZoneB ; Zone of the slot at the top right: C = $24 (slot record $836E)
+> Called through PointerZones `$6D42` (StoresZones). Witness: L1 3 (play, play2).
+
+$C169 c SlotZoneA ; Zone of the slot at the top left: C = $1E (slot record $8368)
+> Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+$C16D c SlotZoneC ; Zone of the slot at the bottom left: C = $2A (slot record $8374)
+> Witness: L1 3 (play, play2).
+
+$C171 c SlotZoneD ; Zone of the slot at the bottom right: C = $30 (slot record $837A)
+> Falls into FitOrRemoveWeapon. Witness: L1 3 (play, play2).
+
+$C173 c FitOrRemoveWeapon ; Fit the shown weapon into slot $834A+C, or take out the weapon that is in it
+> Three POKEs of the release's .pok patch it (bank 6, the stores screen): Ammo Number Is Not Exceeded 1 at `$C1AE` (`JP Z,$C235` becomes `LD BC,nn`), Infinite Payload Weight 0 at `$C1B9` (the `ADD HL,BC` of the weight becomes NOP), No Weight Limit 58 at `$C1C6` (`JP NC,$C23A` becomes `LD A,(nn)`).
+$C19A CountSameType
+> Input: C the slot's offset from `$834A`. A slot record is the weapon's type, its weight (word), the icon's column and line, its ammunition. An empty slot: the weapon's count in the slots is compared with its maximum (record +2; equal: MaxNumberText `$D990`), the new total with 1001 kg (PayloadExceededText `$D963`); when both pass, the slot gets the type, weight and ammunition, DrawSlotIcon `$C263` draws the icon, and PrintPayloadWeight the new total. A full slot: RemoveWeapon clears it, subtracts its weight and blanks the icon (ClearSlotIcon `$C25C`).
+> Around every change the interrupt's pointer job is off (`$83BF` = 0) and the pointer is put back (RestorePointerBackground `$D251`, SavePointerBackground `$D0CA`). An error message stays for 60 frames (StoresMessageTimer `$C2C0`). Witness: L1 24 (c1, death, m2erbe, missions, play, play2).
+$C19B SlotTypeOp ; CP n: n ($C19C) the shown weapon's type
+$C1A0 CountNextSlot
+$C1D4 SlotWeightOp ; LD BC,n: n ($C1D5) the shown weapon's weight
+$C1E6 SlotAmmoOp ; LD A,n: n ($C1E7) the shown weapon's ammunition
+$C1FF RemoveWeapon
+$C235 MaxNumberExceeded
+$C23A PayloadExceeded
+$C23D ShowStoresMessage
+
+$C257 b StoresMessageBox 5 ; The attribute box of the error message line
+> Read by FitOrRemoveWeapon at `$C23E`.
+
+$C25C c ClearSlotIcon ; Draw a blank icon (the back buffer's $92C1) into the slot at column C', line A
+> Falls into DrawSlotIcon with HL' = `$92C1`.
+
+$C263 c DrawSlotIcon ; Draw the 3 x 24 icon at HL' into a slot: column C', pixel line A
+$C273 SlotIconTop
+$C28D SlotIconBottom
+> The line address table `$6500`. The first 8 lines are copied two bytes wide one column to the right, the next 16 three bytes wide. Witness: L1 24 (c1, death, m2erbe, missions, play, play2).
+
+$C2A1 c ResetStores ; A RET: the slot clearing that follows is switched off
+> Called by StoresScreen `$CACE`. The first byte is `RET`, so ResetStoresBody never runs; ClearSlots `$CC01` does the work instead. Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+$C2A2 c ResetStoresBody ; Clear the 9 records at $834A, the payload weight and the hook $A9B9
+$C2AB ResetStoresLoop
+> Known only from the code: behind the `RET` of ResetStores. Clears the first three bytes of nine 6-byte records from `$834A`, the weight `$C11B` = 0, `$A9B9` = `$6BB0` (NoAction).
+
+$C2C0 c StoresMessageTimer ; Count down the error message; at 0 clear the message line and print the payload again
+> Called every frame by StoresScreen. The counter is the operand `$C2C1` of the first instruction (60 after a message). At 0: ScreenRowFill `$6D22`, the box PayloadLineBox, PayloadLineText `$D936`, PrintPayloadWeight, the pointer put back. Witness: L1 2525 (c1, death, m2erbe, missions, play, play2).
+$C2CB ClearStoresMessage
+
+$C2F9 b PayloadLineBox 5 ; The attribute box of the payload lines
+> Read by StoresMessageTimer `$C2DE`.
+
+$C2FE c ShowWeapon ; Show the weapon CurrentWeapon points at: its icon, its description, its model
+> ClearWeaponPanel `$C363`, CopyGraphic `$6D7F` of the 3 x 24 icon (record +5) at line `$30`, column 2, PrintString of the description (record +7), and the model (record +9) into StoresModelOp, the operand `$CB3B` of the stores' 3D loop. Witness: L1 54 (c1, death, m2erbe, missions, play, play2).
+
+$C32E c NextWeapon ; Zone: the next record of WeaponRecords (the first again after the end mark), then ShowWeapon
+$C342 NextWeaponSet
+> Witness: L1 39 (play, play2).
+
+$C347 c PreviousWeapon ; Zone: the record before (the last one before the start mark), then ShowWeapon
+$C358 PreviousWeaponStep
+> Known only from the code: in StoresZones (`$CBD0`), but no recording clicks it.
+
+$C363 c ClearWeaponPanel ; Clear 48 pixel lines of 11 bytes at column 3 from line $30 (the weapon's icon and text)
+> ScreenRowFill `$6D22` with 0. Witness: L1 54 (c1, death, m2erbe, missions, play, play2).
+
+$C371 w CurrentWeapon 1 ; The record of the shown weapon (WeaponRecords + 1 + 11n)
+> Set by StoresScreen `$CAE3`, moved by NextWeapon and PreviousWeapon, read by ShowWeapon and FitOrRemoveWeapon.
+
+$C373 b WeaponRecords 11 ; $FF, the 13 weapon records of 11 bytes, $FF
+> A record: +0 the type (1-13; IconTable `$75CA` entry type - 1), +1 the ammunition, +2 the most the four slots may hold, +3 the weight in kg (word), +5 the 3 x 24 icon, +7 the description text, +9 the model script (bank 3 `$CExx`, or bank 2). The `$FF` before and after stop NextWeapon and PreviousWeapon.
+> The Sleeper mine's record says 300 kg, its text 290 KG.
+$C373 ; the start mark
+$C374 WeaponTurret ; type 4 Turret: ammo 80, max 1, 400 kg, icon $F444
+$C37F WeaponBansheeRRSS ; type 2: ammo 8, max 2, 300 kg
+$C38A WeaponBansheeIRSS ; type 6: ammo 6, max 2, 300 kg
+$C395 WeaponPhoenixRRSA ; type 1: ammo 8, max 2, 250 kg
+$C3A0 WeaponPhoenixIRSA ; type 5: ammo 6, max 2, 250 kg
+$C3AB WeaponK40Mortar ; type 3: ammo 20, max 2, 250 kg
+$C3B6 WeaponSleeperMine ; type 9: ammo 5, max 2, 300 kg
+$C3C1 WeaponDragonfly ; type 7: ammo 3, max 2, 500 kg
+$C3CC WeaponK90Cluster ; type 8: ammo 20, max 4, 250 kg
+$C3D7 WeaponSpectre ; type 13: ammo 12, max 2, 100 kg
+$C3E2 WeaponPhantasm ; type 12: ammo 8, max 2, 100 kg
+$C3ED WeaponSkeetBomb ; type 11: ammo 12, max 2, 200 kg
+$C3F8 WeaponSlamLaser ; type 10: ammo 40, max 1, 250 kg
+$C403 ; the end mark
+
+$C404 b TitleBox 5 ; The attribute box of the title menu's 3D window
+> Read by TitleMenu `$C4A7`.
+
+@module title ; The title menu: the title picture, the turning tank, the three choices
+@about TitleMenu $C409 is the first screen (ScreenList node $74E8, zones TitleZones $C4E9); Entry $68F4 jumps here. It unpacks PicTitle ($F4E1 of bank 7), adds three graphics, and runs a 3D window in which the tank turns (Bank4Start $72C6, the model run by Bank3Render $72BE) until a zone is clicked: the catalogue, the options or the password.
+
+$C409 c TitleMenu ; The title menu: picture, graphics, pointer, then the turning model until a zone is clicked
+$C46C TitleAttrLoop
+> Sound off (Bank0SoundOff `$72DE`), the shadow screen, the view parameters (`$9A6C`, `$9A8E`, `$9AB3`, `$9ABB`), DrawBank7Picture `$74AA` with `$F4E1`, CopyGraphic of TitleGraphicA, TitleGraphicB and TitleGraphicC, the attributes `$5920-$5A1F` to `$47`, the title's pointer limits, the pointer centred, the wide blit (`$83E6` = `$8A41`), SetTitleWindow `$D10E`, Bank4Start `$72C6`, TitleBox.
+> TitleLoop: StartViewPass `$9882`, the model through Bank3Render `$72BE` (IX = `$CA8B` of bank 3), RequestViewBlit `$988D`, the turn (`$68E7` += 6), PointerZones `$6D42`, until the view flag `$6A6D` is set; then ShowWaitPointer, WaitFrameDone, Bank4Call and NextView `$6A91`. Witness: L1 19 (c1, m2erbe, menu, missions, play, play2).
+$C4AD TitleLoop
+
+$C4DC b StatusScreenZones 6 ; Zone table of the mission status screen: x1, x2, y1, y2, routine
+> Read by PointerZones `$6D42` on MissionStatusScreen (node `$756A`): ScreenZero `$705A` (ShowPassword) and ScreenTwo `$705E` (back to the catalogue). A 0 ends it.
+
+$C4E9 b TitleZones 6 ; Zone table of the title menu
+> ScreenZero (the catalogue), `$67EE` (ApiVector16, ScreenFour: the options) and ScreenTwo (the password entry).
+
+@module password ; The level entry: the password screen, the line editor, the coding of the progress
+@about The progress (the completion flags MissionsDone $6799 and the 32-bit Score $CC79) is packed into ten characters: EncodePassword $CE2E takes 4 bits of the score for each of eight values with a mission's completion flag in bit 4, the last two hold the flags of missions 9-10 and a checksum of the score's bytes; PasswordToChars $CF1C maps the 5-bit values through PasswordAlphabet $CF5F. Entering a password (PasswordScreen $C578) runs the way back: CharsToPassword $CF3E, DecodePassword $CE8B (Z when the checksum agrees), then the flags and the score are taken over.
+
+$C4FC c ShowPassword ; Show the password of the progress so far: "THIS IS YOUR ENTRY STRING." and the ten characters
+$C517 ShowPasswordKey
+> Screen node `$74FE` (from the mission status screen). ClearMenuScreen, EncodePassword, PasswordToChars, PrintString of EntryStringText and PasswordText `$CEF6`, a delay (Delay `$CD63`), a key, ScreenZero and NextView. Witness: L1 1 (menu).
+
+$C527 c ClearMenuScreen ; Clear the shadow screen's pixels and fill its attributes from the box $C74A
+> PageShadowScreen `$7268`, ScreenRowFill of 192 lines of 32 bytes with 0, AttrBox `$C74A`. Witness: L1 6 (c1, menu).
+
+$C53E b PasswordMessages 16 ; Texts: "INVALID PASSWORD", then two blank lines that clear it and the entry
+> Printed by PasswordScreen at `$C5A5`, `$C5AE` and `$C5B4`.
+$C554 InvalidBlank
+$C56A EntryBlank
+
+$C578 c PasswordScreen ; The level entry screen: read ten characters, check them, take over the flags and the score
+> Node `$74F8` (from the title). ClearMenuScreen, PasswordPrompt, the buffer filled with spaces, ReadPassword `$C620`; when the view flag is set (a click elsewhere), back. Otherwise CharsToPassword, DecodePassword: a bad checksum prints "INVALID PASSWORD" and asks again; a good one copies the score to Score `$CC79`, the ten flags to MissionsDone `$6799`, counts them into MissionsCompleted `$CC93`, ScreenZero and NextView. Witness: L1 1 (menu).
+$C584 PasswordAgain
+$C589 PasswordClearLoop
+$C59D PasswordCheck
+$C5BC PasswordAccepted
+$C5DC CountFlagsLoop
+$C5E2 CountFlagsNext
+
+$C5EE b PasswordPrompt 16 ; Text: "Type in your level entry:-"
+> Printed by PasswordScreen `$C57B`.
+
+$C60E b PasswordBuffer 10 ; The ten characters typed (EditLine's line)
+> Filled with spaces by PasswordScreen, written by EditLine, read by CharsToPassword. The image holds leftover code bytes here.
+
+$C618 b PasswordLeftover 8 ; The buffer's end marks, then leftover bytes "...DAMAG": never read
+> EditLine writes its end marks to `$C618-$C619`; no routine reads `$C61A-$C61F`.
+
+$C620 c ReadPassword ; A short delay, the key state cleared, then EditLine at the screen place of the entry
+$C623 ReadPasswordDelay
+> EditLine `$C644` with HL = PasswordBuffer, DE = `$488A` (the pixel address), BC = `$598A` (the attribute address). Witness: L1 1 (menu).
+
+$C644 c EditLine ; Edit a line of up to 10 characters: keys add, DELETE takes back, ENTER ends when it is full
+> Input: HL the buffer (set to `$C60E` here), DE the screen address, BC the cursor's attribute address. The state is in operands: the cursor's attribute address CursorAttrPtr, the end of the line (EditEndOp), the length (EditLengthOp), the maximum (EditMaxOp). Each key from WaitKey `$C6EC`: codes 0-1 ignored, 2 leaves through ScreenZero `$705A`, 3 (ENTER) ends when the length is the maximum, 4 (DELETE) takes one back, the others are added up to 14. PrintRawString `$C6FC` redraws the line after every key. Witness: L1 1 (menu).
+$C65C EditLineStart
+$C673 EditRedraw
+$C67C EditNextKey
+$C69F EditEndOp ; LD HL,n: n ($C6A0) the end of the typed line
+$C6AE EditAddChar
+$C6B3 EditMaxOp ; CP n: n ($C6B4) the length that ends the line
+$C6D2 EditEnter
+$C6E3 EditLengthOp ; LD A,n: n ($C6E4) the length
+
+$C655 c EditLineAt ; Variant entry: A = the maximum, HL = the buffer, then EditLineStart
+> Known only from the code: nothing calls it.
+
+$C6AC c EditAddSpace ; Unused: A = space, then the add path EditAddChar
+> Known only from the code: no jump reaches it.
+
+$C6EC c WaitKey ; Wait for a new key (bit 0 of KeyState $8978), clear the bit, A = the key code ($8979)
+> Witness: L1 286697 (menu).
+
+$C6FA w CursorAttrPtr 1 ; EditLine's cursor attribute address
+> Written and read by EditLine.
+
+$C6FC c PrintRawString ; Draw the 0-terminated string at HL straight onto the screen at DE with the 8x8 font
+$C706 RawSpaceGlyph
+$C70B RawGlyph
+$C719 RawGlyphCopy
+$C71C RawGlyphLine
+> Characters `$20-$7F` take the glyph Font8x8 + 8 (c - `$20`), the others the space; 8 lines down the screen third, one column a character. No attributes, no control codes. Witness: L1 77 (menu).
+
+$C727 w EditLineBuffer 1 ; EditLine's buffer address
+> Written by EditLine `$C64E`, read at `$C673`.
+
+$C729 b PasswordZones 1 ; Zone table of the password screen: empty
+> PointerZones finds the end at once.
+
+$C72A b EntryStringText 16 ; Text: "THIS IS YOUR ENTRY STRING."
+> Printed by ShowPassword.
+
+$C74A b MenuBoxes 5 ; Attribute box records: the whole menu screen and the catalogue's titles
+> `$C74A` read by ClearMenuScreen, `$C74F` and `$C754` by DrawCatalogueTitles, `$C759` by MissionCatalogueScreen. `$C75E` is a 0 byte.
+$C74F CatalogueTitleBoxA
+$C754 CatalogueTitleBoxB
+$C759 CatalogueListBox
+$C75E ; a zero byte
+
+@module catalogue
+
+$C75F c DrawCatalogueTitlesIf ; Unused: return when no mission is chosen ($757D = $FF), else DrawCatalogueTitles
+> Known only from the code: nothing calls it.
+
+$C765 c DrawCatalogueTitles ; The catalogue's two title graphics and their attribute boxes
+> CopyGraphic of CatalogueGraphicA (9 x 32 at line `$A0`) and CatalogueGraphicC (9 x 16 at line `$90`), AttrBox `$C74F` and `$C754`. Witness: L1 33 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$C790 c MissionCatalogueScreen ; The mission catalogue: picture, the tape load if needed, the list, the ticks, then the zones
+> The shadow screen, the pointer centred, DrawBank7Picture `$74AA` with `$CCC9` (PicMissionSelect), CatalogueGraphicB, DrawCatalogueTitles, the box `$C759`. When IsCatalogueLoaded says no: PrintRewind `$719B`, RewindText, LoadDirectory `$715D`. Then BuildMissionNames, PrintMissionList, a tick for every completed mission of MissionsDone, CataloguePointerLimits, the highlight of the selected line, the arrow pointer, the texts `$C93E`, `$C8D5` and the catalogue's title `$CF85`, RemarkMission `$8548`, PrintSelectedMission; then PointerZones until the view flag is set, ShowWaitPointer, NextView. Witness: L1 33 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C7E3 CatalogueLoaded
+$C7F0 TickLoop
+$C806 TickNext
+$C810 SelectedLineOp ; LD A,n: n ($C811) the selected line's pixel row ($FF none), written by SelectMissionLine
+$C819 CatalogueNoHighlight
+$C842 CatalogueLoop
+
+$C851 b CatalogueZones 6 ; Zone table of the catalogue
+> LoadMissionHeader `$84FE`, LoadMissionIfAllowed `$759A`, ScreenOfMission `$757C`, `$67EE` (ScreenFour: the mission status), SelectMissionLine `$D013` (the list).
+
+$C870 c IsCatalogueLoaded ; Z when the catalogue head at $CF85 starts with "MISSION"
+$C878 MagicLoop
+> Compares 7 bytes with CatalogueMagic. Witness: L1 33 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$C881 b CatalogueMagic 13 ; "MISSION:TAPE:": the first 7 bytes are compared with the catalogue's head
+> Read by IsCatalogueLoaded.
+
+$C88E c ShowWrongDisk ; Leftover of a disk version: "INCORRECT DISK" and a red attribute bar
+$C89B WrongDiskBar
+> Known only from the code: nothing calls it; the texts `$C8A0` and `$C8B2` speak of a disk.
+
+$C8A0 b DiskTexts 16 ; Texts: "INCORRECT DISK", "INSERT DISK AND PRESS SPACE", the tape messages
+> Small-font texts (code 7 at a line and column), `:` is the blank, `[` a full stop. `$C8A0` read by ShowWrongDisk; `$C8B2` and `$C90D` by nothing in bank 6.
+$C8B2 InsertDiskText
+$C8D3 ; two zero bytes
+$C8D5 CataloguePos ; code 7 to line $20, column 5 (MissionCatalogueScreen `$C825`)
+$C8D9 RewindText ; "REWIND MISSION TAPE TO START AND PRESS PLAY"
+$C90D FoundCatalogueText ; "FOUND MISSION CATALOGUE AND NOW LOADING"
+$C93E BlankTapeText ; three blank lines: PrintRewind $719B
+
+$C978 b TickGraphic 1 ; The tick of a completed mission, 1 x 8
+> CopyGraphic source of MissionCatalogueScreen `$C7F7`.
+
+$C980 b BriefingBoxes 5 ; Two attribute box records of the briefing
+> Read by BriefingScreen `$C9AB` and `$C9B1`.
+$C985 BriefingBoxB
+
+@module briefing ; The briefing screen: the notes folder, the mission's text, the map
+@about BriefingScreen $C98A is node $750E (zones BriefingZones $CA10). It copies the chosen mission's texts from the catalogue (CopyMissionText $70F6) to MissionData $DBF3, unpacks PicBriefing ($E949 of bank 7), adds three graphics and prints the briefing text at ($70A3). Its zones show the mission's map (ShowPauseOnce $7084: BriefingMapFrame $DACB and BriefingMap $DB64), print the title again ($709E) or go back.
+
+$C98A c BriefingScreen ; The briefing: picture, three graphics, the mission text, then the zones with the map blit
+$C9FB BriefingLoop
+> The shadow screen, ShowPauseOnce armed (`$7084` = 0), the Dragonfly's title hook `$6C56` = `RET`, the arrow pointer, SetBriefingBlit `$DBAA`, CopyMissionText, DrawBank7Picture `$E949`, BriefingBoxes, BriefingGraphicA-C, PrintString (`$70A3`), the map blit (`$83E6` = BlitMapView `$DBBD`), PointerZones until the view flag; then the 3D blit back (`$8999`) and NextView. Witness: L1 10 (menu).
+
+$CA10 b BriefingZones 6 ; Zone table of the briefing
+> `$709E` (PrintTitleOnce), ShowPauseOnce `$7084` (the map), ScreenZero (back).
+
+$CA23 c CopyMissionTextB6 ; CopyMissionText $70F6 called from bank 6
+> Called by LoadMissionIfAllowed `$759A`. Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+$CA27 c CopyMissionTextOld ; Unused: an older copy of the mission's texts from the back buffer to $F9C4
+> Known only from the code: nothing calls it. Once per mission (the operand `$CA2E`), from the catalogue's copy at `$8AF1`; sets `$70A3`, `$7D3C`, `$7D39`, `$7C55` and calls `$7D35`.
+
+$CA86 b StoresTitleBox 5 ; The attribute box of the stores screen
+> Read by StoresScreen `$CB1C`.
+
+@module stores
+
+$CA8B c StoresScreen ; The stores: picture, slots, the weapon and its turning model, until the mission starts
+> Pointer job off, the hooks `$7256`, `$9A93`, `$83F1` cleared, the arrow pointer, the clip mark `$A17C` = `$5F`, Bank3Fill5F `$74CD`, ClearSlots `$CC01`, DrawBank7Picture `$C713` (PicStores), the view parameters, ResetStores, the four play hooks `$6A46-$6A55` = NoAction `$6BB0`, the first weapon (ShowWeapon), PayloadLineText, StoresGraphicA-C, StoresTitleBox, StoresPointerLimits `$D337`, the stores blit (`$83E6` = BlitStoresView `$D0A0`), SetStoresWindow `$D102`.
+> StoresLoop: StartViewPass, the weapon's model by Bank3Render (IX = StoresModelOp's operand), RequestViewBlit, the turn `$68E7`, PointerZones, StoresMessageTimer, until the view flag. Then: ShowWaitPointer, the 3D blit back, ResetCollisionTables `$6928` (bank 0), StoresToGauges, the object table `$762C` cleared (23 records of 60 bytes, the first byte `$FF`), `$7BFD-$7C05` = `$FF`, NumberObjectRecords, the mission's header patched (`$7E2C`), the score `$68E2-$68E5` cleared, the clock stopped, Bank3FillFF, `$83F1` = `RET`, NextView (StartMission). Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+$CB36 StoresLoop
+$CB39 StoresModelOp ; LD IX,n: n ($CB3B) the shown weapon's model, written by ShowWeapon
+$CB80 ObjectMarkLoop
+$CB8A ClearFlagsLoop
+
+$CBC4 b StoresZones 6 ; Zone table of the stores
+> ScreenFromClick `$7055` (start), NextWeapon, PreviousWeapon, SlotZoneA, SlotZoneB, SlotZoneC, SlotZoneD.
+
+$CBEF b StoresSpareBox 5 ; An attribute box record no routine reads
+> Known only from the code.
+
+$CBF4 c ShowWaitPointer ; Pointer job off, the boxed shape WaitPointer, DrawPointer
+> Called when a screen is left. Witness: L1 97 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$CC01 c ClearSlots ; Empty the four slot records, the payload weight = 0, the hook $A9B9 = NoAction
+$CC09 ClearSlotsLoop
+> Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+$CC1B c StoresToGauges ; The four damage values $8301-$8304 = $7F, each weapon record of $834A to a gauge of $68AB
+$CC35 GaugeLoop
+$CC3F GaugeEmpty
+$CC40 GaugeNext
+> Nine 6-byte records: a fitted one (non-zero) gives the gauge `$5F`, an empty one 0. `$7C57` = `$3F00`, `$7578` and `$68E8` cleared. Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+@module results ; The end of a mission, the mission status card and the score
+@about When a mission ends, the screen list runs MissionCompleteScreen $CD1E (node $755E) or MissionFailedScreen $CD84 (node $7564); both unpack PicCompletion ($E51E of bank 7). The completed one adds the mission's score ($68E2-$68E5) to Score $CC79, sets the mission's completion flag and prints the mission's own completion text (at $7C55); the failed one prints "MISSION FAILED." and the reason (at $7BF9). MissionStatusScreen $CDBF (node $756A) shows the commander's card with the missions completed and the score.
+
+$CC54 c PrintFinalScore ; Unused: the mission's score as ten digits into $D461, then FinalScoreText
+> Known only from the code: nothing calls it.
+
+$CC6A c DotLeadingZeros ; Replace the leading "0" of the nine digits at $D49A with "[" (a full stop in SmallFont $7C59)
+$CC6F BlankScoreLoop
+> Witness: L1 4 (m10, menu, missions).
+
+$CC79 b Score 4 ; The 32-bit score of the missions completed
+> Added to by MissionCompleteScreen, set from a password by PasswordScreen, printed by PrintScore, coded by EncodePassword.
+
+$CC7D c PrintScore ; Print the missions completed and the score (StatusText $D46C)
+> LongToDigits `$D353` of Score into `$D49A`, DotLeadingZeros, PrintString `$D46C`. Witness: L1 4 (m10, menu, missions).
+
+$CC93 b MissionsCompleted 1 ; The number of missions completed
+> Counted by PasswordScreen and MissionCompleteScreen, printed through code 8 of StatusText.
+
+$CC94 b FailedTexts 16 ; Texts: "MISSION FAILED." and the five reasons
+> `$CC94` printed by MissionFailedScreen; the reason (the pointer `$7BF9`, set by the play code) is one of the five.
+$CCAB UnitDestroyedText
+$CCBE NoPickupText
+$CCD8 DesertionText
+$CCED OutOfFuelText
+$CD01 BridgeText
+
+$CD1E c MissionCompleteScreen ; Mission completed: PicCompletion, the score added, the flag set, the mission's text
+> Sound off, DrawBank7Picture `$E51E`, Score += the mission's score, MissionsDone[mission] = `$FF`, PrintString (`$7C55`), SaveLoadedMission `$CD77`, the main screen, Delay, MissionsCompleted + 1, then the key wait of MissionFailedScreen (EndScreenKey). Known only from the code: no recording runs it on page 6 (bank 7 has c1 unpacking PicCompletion).
+
+$CD63 c Delay ; A delay of five times 65535 loops
+$CD65 DelayOuter
+$CD68 DelayInner
+> Witness: L1 36 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$CD70 b EndZones 6 ; Zone table of the two mission end screens
+> ScreenZero.
+
+$CD77 c SaveLoadedMission ; Put LoadedMission's two bytes ($7E2C) into the mission's header ($70A3 +1 and +3)
+> Witness: L1 13 (m2erbe, missions, play, play2).
+
+$CD84 c MissionFailedScreen ; Mission failed: PicCompletion, "MISSION FAILED." and the reason, then a key
+> Known only from the code: no recording runs it on page 6.
+> Seen in work/stage2/rec/fuel (a POKE recording, never the image: Fuel `$7C57` = 32 at frame 7704): the failure reason `$7BF9` = `$ED` by frame 7904, MissionFailedScreen at frame 7862 shows PicCompletion with "MISSION FAILED." / "RAN OUT OF FUEL.", SaveLoadedMission `$CD77` at 7892, then the title (SetTitleWindow `$D10E`, the music from Bank4Start) at 8051: a failure ends at the title, there are no lives.
+$CDA5 EndScreenKey
+$CDA8 EndKeyLoop
+
+$CDB5 b StatusBoxes 5 ; Two attribute box records of the mission status card
+> Read by MissionStatusScreen `$CDE6` and `$CDEC`.
+$CDBA StatusBoxB
+
+$CDBF c MissionStatusScreen ; The mission status card: PicMissionStatus, two graphics, the score, then the zones
+$CE00 StatusCardLoop
+> DrawBank7Picture `$EC82`, StatusGraphicB (11 x 16), StatusGraphicA (10 x 32), the boxes, PrintScore, the pointer, PointerZones (StatusScreenZones) until the view flag, ShowWaitPointer, NextView. Witness: L1 4 (m10, menu, missions).
+
+$CE12 b SpareZones 6 ; A zone table no routine reads: ScreenZero and ScreenTwo
+> Known only from the code.
+
+$CE1F c NumberObjectRecords ; Write 0-23 into the byte before each 60-byte record from $762B
+$CE28 NumberObjectsLoop
+> Called by StoresScreen after the object table is cleared. Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+@module password
+
+$CE2E c EncodePassword ; Pack MissionsDone and Score into the ten 5-bit values at $CEFB
+$CE3E EncodeLoop
+$CE5E ChecksumLoop
+> Eight values: 4 bits of the score (ScoreBits `$CF06`) and in bit 4 the flag of missions 1-8; the ninth and tenth: the flags of missions 9-10 and a 5-bit checksum (XOR of the score's four bytes). Witness: L1 1 (menu).
+
+$CE7D b DecodedFlags 10 ; The ten completion flags DecodePassword makes
+> Copied to MissionsDone by PasswordScreen.
+
+$CE87 b DecodedScore 4 ; The score DecodePassword makes
+> Copied to Score by PasswordScreen.
+
+$CE8B c DecodePassword ; Unpack the ten values at $CEFB into DecodedFlags and DecodedScore; Z when the checksum agrees
+$CE97 DecodeLoop
+$CEA0 DecodeFlagA
+$CEAD DecodeFlagB
+$CECB DecodeFlag9
+$CED6 DecodeFlag10
+$CEF0 DecodeChecksum
+> Witness: L1 1 (menu).
+
+$CEF6 b PasswordText 16 ; Text: the password line; its ten characters at $CEFB
+> Written by EncodePassword, PasswordToChars and CharsToPassword (the values), printed by ShowPassword.
+$CEFB PasswordValues
+
+$CF06 c ScoreBits ; A = the next A bits of the score at HL' (E' bits left in the byte)
+$CF0B ScoreBitsLoop
+$CF16 ScoreBitsNext
+> Witness: L1 8 (menu).
+
+$CF1C c PasswordToChars ; Map the ten values at $CEFB to characters through PasswordAlphabet
+$CF25 ToCharsLoop
+> Twelve `NOP`s at `$CF26` are room left for a patch. Witness: L1 1 (menu).
+
+$CF3E c CharsToPassword ; Map the ten typed characters to their places in PasswordAlphabet
+$CF46 ToValuesLoop
+$CF4E AlphabetSearch
+$CF54 AlphabetFound
+> An unknown character gives 0. Witness: L1 1 (menu).
+
+$CF5F b PasswordAlphabet 12 ; The 36 password characters: "9876543210ZYXWVUTSRQPONMLKJIHABCDEFG"
+> Read by PasswordToChars and CharsToPassword.
+
+$CF83 b CatalogueHead 2 ; Two zero bytes, then the catalogue's first 32 bytes copied by CopyCatalogueHead
+> `$CF85-$CFA4` is written by CopyCatalogueHead `$70C6`, compared by IsCatalogueLoaded and printed (the title) by MissionCatalogueScreen. The image holds leftover code bytes here; `$CFA5-$CFA8` are never read.
+$CF85 CatalogueTitle
+$CFA5 ; leftover
+
+@module catalogue
+
+$CFA9 c PrintMissionList ; Print the ten mission lines of $93B9 (blanks as ":") 8 pixel lines apart from line $41
+$CFB9 ListLineLoop
+> Each line is copied over itself with spaces turned into `:` (the blank glyph of the small font) and printed after ListLinePos. Witness: L1 32 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$CFBF ListPtrOp ; LD HL,n: n ($CFC0) the next pointer of $93B9
+$CFCD ListCharLoop
+$CFD4 ListCharStore
+$CFE6 ListCountOp ; LD A,n: n ($CFE7) the lines left
+
+$CFEF b ListLinePos 4 ; Text: code 7 to line $41 (moved for every line), column 5
+> Written and printed by PrintMissionList.
+
+$CFF3 c PrintSelectedMission ; Print the name of mission ($757B) at SelectedPos (none when negative)
+> Witness: L1 32 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$D00E b SelectedPos 5 ; Text: code 7 to line $2A, column 5; a zero byte
+> Printed by PrintSelectedMission.
+
+$D013 c SelectMissionLine ; Zone: the list line under the pointer becomes the mission ($757D), highlighted, its description printed
+> The line from the pointer's Y (`$9716`): (Y - `$40`) / 8; the pixel row into SelectedLineOp. HighlightLine, the pointer saved again. Witness: L1 29 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$D040 c HighlightLine ; Unhighlight the old line (attribute $4D), highlight row A ($4E), print the description
+$D04D HighlightNew
+> The old row is the operand `$D026` (`$FF` none). Witness: L1 49 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$D059 c FillAttrRow ; Fill 12 attributes of row A/8 from column 3 with E
+> Witness: L1 88 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$D06C c PrintMissionDescription ; Clear the description area and print mission ($757D)'s description from the catalogue
+> ScreenRowFill, DescriptionPos, then the text at `$8BFF` + the word `$8BFF`[mission]. Witness: L1 49 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$D09A b DescriptionPos 6 ; Text: code 9, code 7 to line $88, column $12
+> Printed by PrintMissionDescription.
+
+@module stores
+
+$D0A0 c BlitStoresView ; The stores' blit: 48 lines of 9 bytes of the back buffer to the screen (line table $65C0)
+$D0AC StoresBlitLoop
+> Run by the interrupt through ViewBlit `$83E6`; the stack walks the line address table. Witness: L1 2525 (c1, death, m2erbe, missions, play, play2).
+$D0C0 StoresBlitDestOp
+$D0C6 StoresBlitSpOp ; LD SP,n: n ($D0C7) the saved stack
+
+@module pointer
+
+$D0CA c SavePointerBackground ; Save the 8 x 2 screen bytes under the pointer into PointerBackground
+$D0E7 SaveBackgroundLoop
+> The address from `$7C53` (Y) through the line table `$6500` and `$7C51` / 8 (X), which goes to the operand `$D2FC` for PutPointer. `$9719` = 4. Witness: L1 49363 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$D102 c SetStoresWindow ; The 3D window of the stores for CopyViewUnderPointer and DrawPointerInView
+> Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+$D10E c SetTitleWindow ; The 3D window of the title menu for the same two
+> Witness: L1 19 (c1, m2erbe, menu, missions, play, play2).
+
+$D118 c SetViewWindow ; Patch the window's limits into CopyViewUnderPointer and DrawPointerInView
+> Input: A the bottom line, A' the top line. Witness: L1 34 (c1, death, m2erbe, menu, missions, play, play2).
+
+$D142 c CopyViewUnderPointer ; Over the 3D window: take the pointer's background from the back buffer, not the screen
+$D16D ViewUnderMiddle
+$D183 ViewUnderBottom
+$D1A1 ViewUnderCopy
+$D1B1 ViewUnderLoop
+> Run by the interrupt. Clipped at the window's top and bottom (the operands set by SetViewWindow). Witness: L1 2944 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$D1BE c DrawPointerInView ; Over the 3D window: put the shifted pointer (ShiftedPointer) into the back buffer
+$D1EA PointerInViewBottom
+$D20E PointerInViewMiddle
+$D222 PointerInViewDraw
+$D234 PointerInViewLoop
+> Run by the interrupt; clipped like CopyViewUnderPointer. Witness: L1 2944 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$D251 c RestorePointerBackground ; Put PointerBackground back on the screen at the pointer's old place
+$D265 RestoreBackgroundLoop
+> Witness: L1 49282 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$D27C c DrawPointer ; ShiftPointer, then PutPointer
+> Witness: L1 49399 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$D282 c ShiftPointer ; Shift the shape at its operand $D283 by X AND 7 into ShiftedPointer (mask with ones, pixels with zeros)
+$D29E ShiftLoop
+$D2A9 ShiftMask
+$D2B1 ShiftMaskDone
+$D2C1 ShiftPixels
+$D2C7 ShiftPixelsDone
+> Witness: L1 49399 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$D2D1 b ShiftedPointer 4 ; The pointer shifted to the pixel: 8 lines of mask (2 bytes) and pixels (2 bytes)
+> Written by ShiftPointer, read by PutPointer and DrawPointerInView.
+
+$D2F1 c PutPointer ; AND the mask and OR the pixels of ShiftedPointer into the screen
+$D306 PutPointerLoop
+> Witness: L1 49399 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$D32B b PointerLimits 4 ; Three records of the pointer's limits: X min, X max, Y min, Y max
+> Copied to `$7D99`, `$7D9B`, `$7DA4`, `$7DA6` by SetPointerLimits: `$D32B` the catalogue, `$D32F` the stores, `$D333` the title.
+$D32F StoresLimits
+$D333 TitleLimits
+
+$D337 c StoresPointerLimits ; SetPointerLimits with $D32F
+> Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+$D33C c CataloguePointerLimits ; SetPointerLimits with $D32B
+> Witness: L1 51 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+$D33F c SetPointerLimits ; Copy the 4 limits at HL to the pointer routine's operands
+> Witness: L1 85 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+@module numbers
+
+$D353 c LongToDigits ; Write the 32-bit number HL'HL as ten ASCII digits at DE
+> LongDigitOf `$D3B4` for each power of ten. Witness: L1 4 (m10, menu, missions).
+
+$D3B4 c LongDigitOf ; One digit of HL'HL by BC'BC, stored at DE
+$D3B5 LongDigitLoop
+$D3C0 LongDigitDone
+> Witness: L1 36 (m10, menu, missions).
+
+@module panel ; The panel jobs of the play views: messages, the damage colours, the attributes, the bars
+@about The play views keep part of their panel work in bank 6: StatusViewMessage $D3C9 (the status and Dragonfly views' message), ShowDamageColours $D4A5 (the Dragonfly's damage board), PanelAttributes $D521 (PanelSetup $6B32) and the bars of the cockpit, UpdatePanelBars $D58C (UpdateSlotBars $7327).
+
+$D3C9 c StatusViewMessage ; Once per message: "TANK HAS BEEN HIT" or "COLLISION OCCURED", then MessageOnce off
+$D3E1 StatusMessagePrint
+> Returns when MessageOnce `$7D5D` is already a `RET`; else the timer `$87D7` = 100, the text by bit 4 of `$7D64`, and `$7D5D` = `RET`. Witness: L1 43 (m2erbe, missions, play).
+
+$D3EA b StatusMessages 16 ; Texts: "TANK HAS BEEN HIT", "COLLISION OCCURED"
+> Read by StatusViewMessage.
+$D401 CollisionText
+
+$D418 b FinalScoreText 16 ; Text: "MISSION COMPLETED:-", a blank line, "FINAL SCORE:-" and ten digits at $D461
+> Printed only by PrintFinalScore (unused).
+$D461 FinalScoreDigits
+
+$D46C b StatusText 16 ; Text: "MISSIONS COMPLETED" (code 8: MissionsCompleted), "SCORE TO DATE" and nine digits at $D49A
+> Printed by PrintScore; the digits by LongToDigits and DotLeadingZeros.
+$D49A ScoreDigits
+
+$D4A5 c ShowDamageColours ; Colour the Dragonfly's damage boxes by the four damage values $8301-$8304
+> DamageColour for each, AttrBoxAt `$6CFD` with the records of DamageBoxes. Witness: L1 3 (play).
+
+$D4EE c DamageColour ; B = DamageColourTable[A / 32]
+> Witness: L1 12 (play).
+
+$D501 b DamageBoxes 4 ; AttrBoxAt records of the damage board (height, column, attribute, row)
+> Read by ShowDamageColours.
+
+$D51D b DamageColourTable 4 ; The values of the four damage steps
+> Read by DamageColour.
+
+$D521 c PanelAttributes ; The cockpit panel's attributes: a cleared box, two boxes and the gauge colours
+> Called by PanelSetup `$6B32`. ScreenRowFill, AttrBox PanelBoxB and PanelBoxA, single attributes at `$5A48-$5AAA` and `$580A-$5859`, then FillPanelRows `$6AAB`. Witness: L1 27 (c1, death, m2erbe, missions, play, play2).
+
+$D58C c UpdatePanelBars ; The four bars of the cockpit panel
+> Called by UpdateSlotBars `$7327`. Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
+
+$D598 c DrawSpeedBar ; Redraw the bar of the player object's byte +$22 ($75F0 + $22) when it changed
+> Shapes from BarShapesB, shifted to the pixel, five lines 12 bytes apart. Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
+$D5A1 SpeedLastOp ; LD E,n: n ($D5A2) the value last drawn
+$D5CA SpeedBarLine
+$D5DE SpeedBarShift
+$D5DF SpeedBarShiftLoop
+$D5EB SpeedBarStore
+
+$D612 c DrawBarC ; The bar of $7E8E (AbsA through ApiVector08) at line $90, column 8, when it changed
+> Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
+
+$D629 c DrawBarD ; The bar of $7C58 / 2 at line $90, column 10
+> Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
+
+$D637 c DrawBarB ; The bar of ApiVector01's value less the player's byte +$22 (shapes BarShapesA)
+$D66B BarBLine
+$D67A BarBShiftLoop
+$D684 BarBStore
+> Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
+
+$D6A3 b BarShapesA 11 ; Bar shapes of DrawBarB
+> Read by DrawBarB (`$D6A3-$D6D9`).
+
+@module stores
+
+$D6DA b WeaponTexts 16 ; The weapon descriptions (Phoenix RRSA, Phoenix IRSA, Banshee IRSS, Dragonfly): name, weight, ammo, max
+> Printed by ShowWeapon through the records' +7. Code 13 (attribute), code 2 (at a line and column), code 9, code 11 (new line).
+$D6DA TextPhoenixRRSA
+$D704 TextPhoenixIRSA
+$D72E TextBansheeIRSS
+$D758 TextDragonfly
+
+@module panel
+
+$D77F b BarShapesB 12 ; Bar shapes of DrawSpeedBar
+> Read by DrawSpeedBar (`$D77F-$D7BA`).
+
+@module stores
+
+$D7BB b WeaponTextsB 16 ; The Banshee RRSS description
+> Printed by ShowWeapon.
+
+$D7E5 b PanelBoxes 5 ; Attribute box records of the panel
+> `$D7EA` and `$D7EF` read by PanelAttributes; `$D7E5` by nothing.
+$D7EA PanelBoxA
+$D7EF PanelBoxB
+
+$D7F4 b WeaponTextsC 16 ; The descriptions of SLAM Laser, Sleeper mine, Skeet bomb, Spectre, K-40 Mortar, Turret, Phantasm, K-90 Cluster
+> Printed by ShowWeapon.
+$D7F4 TextSlamLaser
+$D81D TextSleeperMine
+$D847 TextSkeetBomb
+$D870 TextSpectre
+$D896 TextK40Mortar
+$D8C0 TextTurret
+$D8E5 TextPhantasm
+$D90B TextK90Cluster
+
+$D936 b PayloadLineText 16 ; Texts of the payload: "MAX PAYLOAD 1000KG", "PAYLOAD WGT 0KG", the two errors, the weight
+> `$D936` printed by StoresScreen and StoresMessageTimer, the errors by FitOrRemoveWeapon, PayloadText by PrintPayloadWeight.
+$D963 PayloadExceededText
+$D990 MaxNumberText
+$D9A8 PayloadText
+$D9AB PaddedDigits ; five digits, written by NumberToDigits
+
+@module map ; The quit prompt and the maps of the status view and the briefing
+@about The status view (StatusLoop $6BC7) and the briefing show the mission's area from above in the 3D window: DrawStatusMap $DB1C sets a high view, draws every object of the mission's list (DrawMapObjects $E3F3, models MapModels $E512) and three markers (DrawMarker $DB6B, models MarkerModels $E5D5), and BlitMapView $DBBD copies the window to the screen. The legend frames and texts are here too, and the quit prompt of the play keys (SoundOffKey $843F).
+
+$D9B2 c ClearQuitArea ; Clear the screen lines of the quit prompt
+$D9B7 ClearQuitLines
+$D9CD ClearQuitSides
+$D9EF ClearQuitEdges
+> Witness: L1 13 (m2erbe, missions, play, play2).
+
+$DA09 c QuitPrompt ; "Are you sure you want to quit? Yes/No.": Y ends the mission, N goes back
+$DA33 QuitKeyLoop
+> ClearQuitArea, the attributes `$5880-$59CA` to `$47`, QuitText, a key: `Y` StartViewPass, the shadow screen, the clock stopped, SaveLoadedMission, ScreenEight `$704E`; `N` `$8822`, RequestViewBlit, `JP $8872`. Witness: L1 13 (m2erbe, missions, play, play2).
+$DA4E QuitYes
+
+$DA5E b QuitText 16 ; Text: "Are you sure you want to quit?" and "Yes/No."
+> Printed by QuitPrompt.
+
+$DA8C c StatusMapFrame ; The status view's legend frame: the box $DAC6 and 7 cleared lines
+> Called by StatusLoop `$6BFC`. Witness: L1 10 (m2erbe, missions, play).
+
+$DAA1 b StatusLegendText 16 ; Text: the map's legend "Roads." and "Rivers." with their glyphs $80 and $81
+> Printed by StatusMapLegend `$7241`.
+
+$DAC1 b StatusLegendBoxes 5 ; Attribute box records of the status legend
+> `$DAC1` read by StatusMapLegend, `$DAC6` by StatusMapFrame.
+$DAC6 StatusLegendBoxB
+
+$DACB c BriefingMapFrame ; The briefing map's legend frame: the box $DB06 and 10 cleared lines
+> Called by ShowPauseOnce `$7084`. Witness: L1 10 (menu).
+
+$DAE1 b BriefingLegendText 16 ; Text: "Roads." and "Rivers." for the briefing map
+> Printed by BriefingMapLegend `$722C`.
+
+$DB01 b BriefingLegendBoxes 5 ; Attribute box records of the briefing map and the status map
+> `$DB01` and `$DB0B` read by BriefingMapLegend, `$DB06` by BriefingMapFrame, `$DB10` by StatusMapLegend.
+$DB06 BriefingLegendBoxB
+$DB0B BriefingLegendBoxC
+$DB10 StatusLegendBoxC
+
+$DB15 c StatusMap ; DrawStatusMap, then the legend (StatusMapLegend)
+> Called by StatusLoop `$6C1D`. Witness: L1 40 (m2erbe, missions, play).
+
+$DB1C c DrawStatusMap ; The mission's map in the 3D window: a view from above, the objects and three markers
+> The view (`$9A8E` = the operand `$DB1D`, `$9AB3` = `$DB23`, `$9A6C` = `$1B58`), MapDepth = 0, StartViewPass, DrawMapObjects, DrawMarker 0 at MarkerPosA, 1 at MarkerPosB and 2 at `$67A7` (the player), the view's position to GridXOp and GridYOp, RequestViewBlit. Witness: L1 50 (m2erbe, menu, missions, play).
+
+$DB64 c BriefingMap ; DrawStatusMap, then the briefing legend (BriefingMapLegend)
+> Called by ShowPauseOnce `$7084`. Witness: L1 10 (menu).
+
+$DB6B c DrawMarker ; Marker A at the 24-bit position HL: the view moved there, DrawMarkerModel A
+> Witness: L1 150 (m2erbe, menu, missions, play).
+
+$DB8D c ReadMapCoord ; DE = the 24-bit coordinate at HL / 16
+> Witness: L1 300 (m2erbe, menu, missions, play).
+
+$DBA8 w MapDepth 1 ; The depth word of every vertex DrawMapObjects and DrawMarkerModel make
+> Written by DrawStatusMap.
+
+$DBAA c SetBriefingBlit ; BlitMapView from line table $6550, column 10
+$DBAF SetMapBlit
+> Witness: L1 10 (menu).
+
+$DBB6 c SetStatusBlit ; BlitMapView from line table $6510, column 7
+> Called by StatusLoop `$6BCA`. Witness: L1 10 (m2erbe, missions, play).
+
+$DBBD c BlitMapView ; The map's blit: 96 lines of 18 bytes from the back buffer to the screen
+> Run by the interrupt through ViewBlit `$83E6`; the stack walks the line address table (MapLinesOp), the column is MapColumnOp. Witness: L1 50 (m2erbe, menu, missions, play).
+$DBC1 MapLinesOp ; LD SP,n: n ($DBC2) the line table
+$DBCB MapColumnOp ; LD C,n: n ($DBCC) the column
+$DBDB MapBlitSpOp ; LD SP,n: n ($DBDC) the saved stack
+
+$DBDF b Bank6FillA 16 ; 20 fill bytes ($E5, one $00) of the tape block: never read
+
+$DBF3 b MissionData 16 ; The mission's catalogue entry: the number of map objects, the marker positions, the coordinate tables, the object list
+> Written by CopyMissionText `$70F6` (2048 bytes, zero in the image). `$DBF3` the number of objects, MarkerPosA and MarkerPosB two marker positions (3-byte X and Y), MapCoordX and MapCoordY the coordinates by index, MapObjects 6-byte object records (two indices, the angle, the model kind).
+$DBF4 MarkerPosA
+$DBFA MarkerPosB
+$DC00 MapCoordX
+$DC40 MapCoordY
+$DC80 MapObjects
+
+$E3F3 c DrawMapObjects ; Draw each object of MapObjects with its model (kind 0, 6, negative, other; 2 skipped)
+$E3FC MapObjectLoop
+$E4A9 MapModelOtherSel
+$E4AF MapModelNegativeSel
+$E4B5 MapModelKind0Sel
+$E4B9 MapObjectDraw
+$E4BC MapObjectNext
+$E4CD MapObjectsDone
+> For each 6-byte record: X and Y from the coordinate tables, four corner vertices by ProjectMapPoint into the vertex buffers `$FD00`, and RunScript `$990F` with IX = MapModels (`$E512` kind 0, `$E534` kind 6, `$E51E` negative, `$E52A` other). Witness: L1 50 (m2erbe, menu, missions, play).
+
+$E4CE c ProjectMapPoint ; One vertex: X and Y turned by the object's angle (through ApiVector14, SinCos8) into the vertex buffers
+$E4DA ProjectXPositive
+$E4FE ProjectYPositive
+> Witness: L1 2448 (m2erbe, menu, missions, play).
+
+@module models ; The model scripts of the maps (RunScript $990F format) and the markers' points
+@about RunScript scripts: an opcode byte and its operands, $FF the end (the opcodes in the description of OpcodeTable $98E1).
+
+$E512 b MapModels 12 ; The scripts of the map objects
+> Run by DrawMapObjects. `$E54F` is read by nothing.
+$E51E MapModelNegative
+$E52A MapModelOther
+$E534 MapModelKind6
+$E54F MapModelSpare
+
+@module map
+
+$E561 c DrawMarkerModel ; Marker A: its points (MarkerPointLists) into the vertex buffers, then its script (MarkerScripts)
+$E57C MarkerPointLoop
+$E588 MarkerXPositive
+$E598 MarkerYPositive
+> Witness: L1 150 (m2erbe, menu, missions, play).
+$E5AA MarkerScriptOp ; LD IX,n: n ($E5AC) the script
+
+$E5B2 w MarkerPointLists 1 ; The point lists of the three markers
+> Read by DrawMarkerModel.
+
+$E5B8 w MarkerScripts 1 ; The scripts of the three markers; the third blinks (BlinkMarker)
+> Read by DrawMarkerModel; `$E5BC` toggled by BlinkMarker.
+
+$E5BE c BlinkMarker ; Toggle the third marker's script between $E5ED and $E5F7
+$E5CE BlinkMarkerReset
+> Called by StatusLoop `$6C23`. Witness: L1 40 (m2erbe, missions, play).
+
+@module models
+
+$E5D5 b MarkerModels 10 ; The scripts of the markers
+> Run by DrawMarkerModel.
+$E5DF MarkerModelB
+$E5ED MarkerModelC
+$E5F7 MarkerModelD
+
+$E603 b MarkerPoints 9 ; The markers' points: a count, then X, Y byte pairs
+> Read by DrawMarkerModel.
+$E60C MarkerPointsB
+$E61B MarkerPointsC
+
+@module graphics ; The menu graphics and the panel icons drawn by CopyGraphic $6D7F and DrawIcon $73E8
+@about Linear graphics: a row of N bytes per DEFB line, the rows from the top. The icons at $EF34-$F48B and $F59C are 3 x 24 (IconTable $75CA in bank 2, the stores' WeaponRecords).
+
+$E624 b StatusGraphicA 10 ; 10 x 32 graphic of the mission status card
+> CopyGraphic source of MissionStatusScreen `$CDD7`.
+
+$E764 b CatalogueGraphicA 9 ; 9 x 32 graphic of the catalogue's titles
+> DrawCatalogueTitles `$C765`.
+
+$E884 b StoresGraphicA 4 ; 4 x 24 graphic of the stores
+> StoresScreen `$CAEF`.
+
+$E8E4 b StoresGraphicB 4 ; 4 x 24 graphic of the stores
+> StoresScreen `$CAFE`.
+
+$E944 b TitleGraphicB 11 ; 11 x 16 graphic of the title menu
+> TitleMenu `$C446`.
+
+$E9F4 b TitleGraphicA 11 ; 11 x 16 graphic of the title menu
+> TitleMenu `$C437`.
+
+$EAA4 b SpareGraphic 11 ; 176 bytes no routine reads (an 11 x 16 graphic by its size)
+> Known only from the code.
+
+$EB54 b CatalogueGraphicB 11 ; 11 x 16 graphic of the catalogue
+> MissionCatalogueScreen `$C7B1`.
+
+$EC04 b StatusGraphicB 11 ; 11 x 16 graphic of the mission status card
+> MissionStatusScreen `$CDC8`.
+
+$ECB4 b StoresGraphicC 12 ; 12 x 16 graphic of the stores
+> StoresScreen `$CB0D`.
+
+$ED74 b BriefingGraphicC 7 ; 7 x 16 graphic of the briefing
+> BriefingScreen `$C9D5`.
+
+$EDE4 b BriefingGraphicB 7 ; 7 x 16 graphic of the briefing
+> BriefingScreen `$C9C6`.
+
+$EE54 b BriefingGraphicA 7 ; 7 x 16 graphic of the briefing
+> BriefingScreen `$C9B7`.
+
+$EEC4 b SpareGraphicB 7 ; 112 bytes no routine reads (a fourth 7 x 16 graphic by its size)
+> Known only from the code.
+
+$EF34 b PanelIcons 3 ; The 3 x 24 icons: 18 of IconTable's 19 and one unused, 72 bytes each
+> IconTable `$75CA` entry t - 1 is the icon of type t; the weapon types 1-13 are the stores' too (WeaponRecords +5). Entry 19 lies apart, Icon19 `$F59C`.
+$EF34 Icon16
+$EF7C IconSpare
+$EFC4 Icon17
+$F00C Icon18
+$F054 Icon14
+$F09C IconK40Mortar
+$F0E4 Icon15
+$F12C IconSlamLaser
+$F174 IconBansheeIRSS
+$F1BC IconBansheeRRSS
+$F204 IconPhoenixIRSA
+$F24C IconPhoenixRRSA
+$F294 IconSleeperMine
+$F2DC IconDragonfly
+$F324 IconSpectre
+$F36C IconK90Cluster
+$F3B4 IconPhantasm
+$F3FC IconSkeetBomb
+$F444 IconTurret
+
+$F48C b TitleGraphicC 8 ; 8 x 16 graphic of the title menu
+> TitleMenu `$C455`.
+
+$F50C b CatalogueGraphicC 9 ; 9 x 16 graphic of the catalogue's titles
+> DrawCatalogueTitles `$C774`.
+
+$F59C b Icon19 3 ; The 3 x 24 icon of IconTable entry 19
+> Read by DrawIcon through IconTable.
+
+@module font ; The 8x8 font of PrintString and PrintRawString
+@about 98 glyphs for the characters $20-$81, 8 bytes each, the top row first. PrintChar ($6FF0, through GlyphAddress $6ED7) and PrintRawString $C6FC address glyph c at $F5E4 + 8 (c - $20). $80 and $81 are the map legend's road and river patterns. The small-font texts (code 7) use SmallFont $7C59 instead, where ":" is the space and "[" the full stop.
+
+$F5E4 b Font8x8 8 ; The 8x8 font: characters $20-$81
+> Read by PrintString's PrintChar (`$6EE1`) and by PrintRawString (`$C707`, `$C716`).
+@res fonts/font8x8.bin
+
+@module options ; The options screen: the choice of the control device
+@about OptionsScreen $F8F4 is node $74F2 (from the title): it prints the five devices and waits for a key 1-5; the device goes to ControlDevice $67B6 (ReadControls $971A) and its line is shown in another colour.
+
+$F8F4 c OptionsScreen ; The options: print the devices, a key 1-5, the device to ControlDevice, its line highlighted
+> ClearMenuScreen, OptionsText, the main screen; the key from KeyState `$8978` / `$8979`; the old line's attribute back to `$44` (HighlightedOp), the new line's to `$42`, ClickFlag cleared, ScreenZero, NextView. Witness: L1 4 (c1, menu).
+$F900 OptionsKey
+$F903 OptionsKeyLoop
+$F912 HighlightedOp ; LD HL,n: n ($F913) the attribute byte of the highlighted line
+
+$F935 w OptionLines 1 ; The attribute bytes of the five device lines inside OptionsText
+> Read by OptionsScreen.
+
+$F93F b OptionsText 16 ; Text: "SELECT CONTROL SYSTEM." and the five devices
+> 1 Sinclair Joystick, 2 Cursor Keys, 3 Kempston Mouse, 4 Kempston Joystick, 5 Keyboard. Printed by OptionsScreen; the attribute after code 13 of each line is written by it.
+@res texts/options.bin
+
+$F9C3 b Bank6FillB 16 ; 61 fill bytes ($E5, one $00) of the tape block: never read

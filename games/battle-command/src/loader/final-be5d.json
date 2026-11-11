@@ -1,0 +1,17 @@
+{
+  "about": "The loader's last piece at $BE5D (the timing check, tape block 37): python3 ../../kit/mkgame.py --part src/loader/final-be5d.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/parts/final-be5d.bin || $SKOOLKIT_VENV/bin/python tools/parts.py"],
+  "image": "work/parts/final-be5d.bin",
+  "org": "BE5D",
+  "ann": "src/loader/final-be5d.ann",
+  "top": "final-be5d",
+  "bin": "final-be5d.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM128",
+  "mode": "blocks",
+  "pages": [5, 2],
+  "header": ["; Battle Command, Ocean 1990: the SpeedLock loader's last piece at $BE5D, the timing check, tape block 37."],
+  "l1": [{"path": "work/stage1/rec/c1/l1.json", "lo": "BE5D", "hi": "BF30", "reads": false}],
+  "data_entries": "stop",
+  "work": "work/stage2/mkfinal-be5d"
+}

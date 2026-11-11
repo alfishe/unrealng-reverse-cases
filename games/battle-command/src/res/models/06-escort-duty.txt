@@ -1,0 +1,218 @@
+# 06-escort-duty: the 23 models its templates use, in the block (tools/models3d.py mission)
+model $EC77
+  $EC77 box_rect 32 8 4
+  $EC7D verts P=V35 P=(P+V40)/2 V35=P P.xz=-P.xz V39=P P=V41 V36=P
+  $EC86 project 6 from V34
+  $EC89 faces_test from 32: (38 35 37) (36 35 34)
+  $EC92 order_by_face f32 $ECAB $ECD7
+  $EC98 fill_faces (f33 c1 36 35 39)
+  $ECA1 fill_back_faces_clip (f33 c1 39 35 36)
+  $ECAA return
+  $ECAB order_by_face f32 $ECC4 $ECC3
+  $ECB1 fill_faces (f32 c3 38 35 37)
+  $ECBA fill_back_faces_clip (f32 c3 37 35 38)
+  $ECC3 return
+  $ECC4 fill_faces (f33 c1 39 35 34)
+  $ECCD fill_back_faces_clip (f33 c1 34 35 39)
+  $ECD6 return
+  $ECD7 end
+
+model $ECD8
+  $ECD8 box_rect16 32 12 127
+  $ECDE verts P=V40 P=(P+V38)/2 V38=P P+=V38 V38=P
+  $ECE6 project 5 from V34
+  $ECE9 faces_test from 0: (38 35 34) (38 36 35) (38 37 36) (38 34 37)
+  $ECF8 fill_faces_clip (f0 c9 38 35 34) (f1 c4 38 36 35) (f2 c9 38 37 36) (f3 c4 38 34 37)
+  $ED16 end
+
+model $ED17
+  $ED17 box_rect16 16 12 102
+  $ED1D verts P=V38 P=(P+V40)/2 V1=P P=V38 P=(P+V39)/2 V0=P P=(P+V40)/2 P+=V1 V38=P P=V0 P=(P+V41)/2 P+=V1 V39=P
+  $ED2E project 6 from V34
+  $ED31 faces_test from 0: (39 38 35) (38 36 35) (38 37 36) (39 34 37)
+  $ED40 fill_faces_clip (f0 c4 39 38 35 34) (f1 c9 38 36 35) (f2 c4 38 39 37 36) (f3 c9 39 34 37)
+  $ED60 end
+
+model $ED61
+  $ED61 box_rect16 56 28 127
+  $ED67 verts P=V40 P=(P+V38)/2 V38=P P+=V38 V38=P
+  $ED6F project 5 from V34
+  $ED72 faces_test from 0: (38 35 34) (38 37 36) (38 34 37) (38 36 35)
+  $ED81 fill_faces_clip (f0 c9 38 35 34) (f1 c9 38 37 36) (f2 c4 38 34 37) (f3 c4 38 36 35)
+  $ED9F end
+
+model $EDA0
+  $EDA0 box_rect16 52 18 127
+  $EDA6 verts P=V40 P=(P+V38)/2 V38=P P+=V38 P+=V38 V38=P
+  $EDB0 project 5 from V34
+  $EDB3 faces_test from 0: (38 35 34) (38 37 36) (38 34 37) (38 36 35)
+  $EDC2 fill_faces_clip (f0 c9 38 35 34) (f1 c9 38 37 36) (f2 c4 38 34 37) (f3 c4 38 36 35)
+  $EDE0 end
+
+model $EDE1
+  $EDE1 box_rect 12 100 22
+  $EDE7 verts P=V38 P=(P+V40)/2 V22=P P+=V41 V30=P P=V38 P+=V22 V31=P P=V38 P=(P+V39)/2 P=(P+V39)/2 P=(P+V39)/2 V26=P P=-P P.xz=-P.xz V24=P P=(P+V26)/2 P=(P+V24)/2 V28=P P=V41 P=(P+V40)/2 P=(P+V40)/2 P=(P+V40)/2 V27=P P=-P P.xz=-P.xz V25=P P=(P+V27)/2 P=(P+V25)/2 V29=P P=V39 P=(P+V35)/2 V39=P P=(P+V35)/2 V35=P P.xz=-P.xz V41=P P=V40 P=(P+V36)/2 V40=P P=(P+V36)/2 V36=P P.xz=-P.xz V38=P P=V26 P+=V22 V32=P P=V27 P+=V22 V33=P
+  $EE1F project 18 from V24
+  $EE22 faces_test from 0: (31 32 24) (32 33 25) (33 30 37) (30 31 34) (26 27 40) (39 40 36) (35 36 25)
+  $EE3A fill_faces (f0 c1 31 32 28 38) (f1 c3 32 33 27 26) (f2 c1 33 30 41 29) (f3 c3 30 31 38 41) (f0 c6 26 39 35 24) (f0 c6 38 28 24 34) (f2 c6 27 25 36 40) (f2 c6 29 41 37 25) (f3 c7 41 38 34 37) (f4 c7 26 27 40 39) (f5 c4 39 40 36 35) (f6 c5 35 36 25 24)
+  $EE9C end
+
+model $EE9D
+  $EE9D box_rect 32 64 36
+  $EEA3 verts P=V41 P=(P+V38)/2 V0=P P=(P+V41)/2 V32=P P=-P V28=P P=V0 P=(P+V38)/2 V31=P P=-P V27=P P=V37 P=(P+V34)/2 V1=P P=(P+V37)/2 V30=P P=-P V26=P P=V1 P=(P+V34)/2 V29=P P=-P V25=P P=V38 P=(P+V39)/2 V2=P P=(P+V38)/2 V24=P P=-P V22=P P=V2 P=(P+V39)/2 V23=P P=-P V21=P P=V34 P=(P+V35)/2 V3=P P=(P+V34)/2 V20=P P=-P V18=P P=V3 P=(P+V35)/2 V19=P P=-P V17=P P=V28 P=(P+V26)/2 V4=P P=(P+V26)/2 V8=P P=(P+V26)/2 V5=P P=V25 P=(P+V27)/2 V6=P P=(P+V25)/2 V9=P P=(P+V25)/2 V7=P P=(P+V5)/2 V0=P P=(P+V5)/2 P=(P+V5)/2 V16=P P=V7 P=(P+V0)/2 P=(P+V7)/2 V15=P P=V8 P=(P+V9)/2 V10=P P=(P+V8)/2 P=(P+V8)/2 V13=P P=V9 P=(P+V10)/2 P=(P+V9)/2 V14=P
+  $EEF6 project 20 from V13
+  $EEF9 faces_test from 0: (32 31 29) (26 25 27) (24 23 19) (18 17 21) (17 32 30) (31 24 20) (23 26 28) (25 18 22)
+  $EF14 fill_faces_clip (f0 c4 32 31 29 30) (f1 c4 26 25 27 28) (f2 c4 24 23 19 20) (f3 c4 18 17 21 22) (f4 c6 17 32 30 21) (f5 c6 31 24 20 29) (f6 c6 23 26 28 19) (f7 c6 25 18 22 27) (f1 c1 16 15 14 13)
+  $EF5E end
+
+model $F079
+  $F079 native $F659
+  $F07C box_rect 64 30 44
+  $F082 verts P=V37 P=(P+V35)/2 V33=P P=V41 P=(P+V37)/2 P=(P+V37)/2 V37=P P=V38 P=(P+V34)/2 P=(P+V34)/2 V34=P P=(P+V37)/2 V36=P P=V41 P=(P+V38)/2 V35=P
+  $F094 project 5 from V33
+  $F097 fill_polys (c6 35 34 37)
+  $F09E lines M36 L33
+  $F0A2 end
+
+model $F0E3
+  $F0E3 box_square 32 4 4
+  $F0E9 project 8 from V34
+  $F0EC faces_test from 0: (38 39 35) (40 41 37) (41 38 34) (39 40 36)
+  $F0FB fill_faces (f0 c1 38 39 35 34) (f1 c1 40 41 37 36) (f2 c1 41 38 34 37) (f3 c1 39 40 36 35)
+  $F11D end
+
+model $F11E
+  $F11E box_rect 16 64 16
+  $F124 verts P=V34 P=(P+V35)/2 P=(P+V34)/2 P=(P+V34)/2 V5=P P.xz=-P.xz V12=P P=V39 P=(P+V35)/2 P=(P+V35)/2 V3=P P.xz=-P.xz V14=P P=V38 P=(P+V39)/2 V1=P V9=P P=(P+V38)/2 V0=P P=(P+V3)/2 V2=P P=V38 P=(P+V34)/2 P=(P+V34)/2 V6=P P.xz=-P.xz V11=P P=V34 P=(P+V35)/2 P=(P+V35)/2 P=(P+V35)/2 V4=P P.xz=-P.xz V13=P P=V9 P.xz=-P.xz V9=P P=(P+V41)/2 V8=P P=(P+V11)/2 V10=P P=V8 P=(P+V13)/2 V15=P P=V5 P=(P+V0)/2 V7=P P=V1 P=(P+V10)/2 V16=P P=(P+V10)/2 P=(P+V16)/2 V17=P P=V16 P=(P+V2)/2 P=(P+V16)/2 V18=P P=V16 P=(P+V1)/2 P=(P+V16)/2 V19=P P=V16 P=(P+V9)/2 P=(P+V16)/2 V16=P P=V39 P=(P+V35)/2 V20=P P=V40 P=(P+V36)/2 V21=P P=(P+V39)/2 V22=P P=(P+V21)/2 P=(P+V22)/2 V21=P P=V22 P=(P+V20)/2 P=(P+V22)/2 V20=P P=V22 P=(P+V39)/2 P=(P+V22)/2 V23=P P=V22 P=(P+V40)/2 P=(P+V22)/2 V22=P
+  $F17E project 24 from V0
+  $F181 faces_test from 0: (0 1 2) (15 14 13) (3 11 12) (2 10 11) (1 9 10) (8 0 7) (15 7 6) (6 5 13)
+  $F19C fill_faces_clip (f4 c6 1 9 10 2) (f0 c4 19 23 20 18) (f0 c4 0 1 2 3 4 5 6 7) (f1 c4 17 21 22 16) (f1 c4 15 14 13 12 11 10 9 8) (f2 c6 3 11 12 4) (f3 c5 2 10 11 3) (f5 c7 8 0 7 15) (f6 c5 15 7 6 14) (f7 c6 14 6 5 13) (f4 c1 22 21 20 23)
+  $F1FE end
+
+model $F1FF
+  $F1FF box_rect16 20 6 64
+  $F205 verts P=V34 P=(P+V38)/2 P=(P+V38)/2 V26=P P.xz=-P.xz V28=P P=V37 P=(P+V41)/2 P=(P+V41)/2 V27=P P.xz=-P.xz V29=P P=V38 P=(P+V41)/2 V0=P P=(P+V38)/2 V38=P P.xz=-P.xz V40=P P=V0 P=(P+V41)/2 V41=P P.xz=-P.xz V39=P P=V34 P=(P+V38)/2 V30=P P=V37 P=(P+V41)/2 V31=P P=V37 P=(P+V34)/2 V0=P P=(P+V34)/2 P=(P+V34)/2 V32=P P=V0 P=(P+V37)/2 P=(P+V37)/2 V33=P
+  $F22F project 16 from V26
+  $F232 faces_test from 0: (26 29 35) (29 28 36) (28 27 37) (27 26 34) (38 39 29) (40 41 27)
+  $F247 fill_faces_clip (f0 c1 26 29 35 34) (f1 c3 39 40 28 36 35 29) (f2 c1 28 27 37 36) (f3 c3 41 38 26 34 32 33 37 27) (f3 c6 31 30 32 33) (f4 c4 38 39 29 26) (f5 c4 40 41 27 28)
+  $F287 end
+
+model $F288
+  $F288 box_rect16 20 6 64
+  $F28E verts P=V38 P=(P+V40)/2 P=(P+V33)/2 V0=P P+=V39 V39=P P=V40 P=(P+V41)/2 V27=P P=-P V30=P P=-P P.xz=-P.xz V26=P P+=V0 V28=P P.xz=-P.xz V29=P P=V40 P+=V0 V40=P P=V30 P=(P+V26)/2 P=(P+V26)/2 V31=P P-=V30 V0=P P=V30 P=(P+V34)/2 P=(P+V34)/2 V32=P P+=V0 V33=P
+  $F2B6 project 16 from V26
+  $F2B9 faces_test from 0: (38 39 35) (39 40 36) (40 41 37) (41 38 34) (29 28 38) (28 29 27) (40 39 26)
+  $F2D1 fill_faces (f4 c4 29 28 38 41) (f5 c5 28 29 27 26) (f6 c4 40 39 26 27) (f0 c1 28 30 32 34 38) (f0 c1 39 35 30 26) (f0 c6 33 31 30 32) (f1 c3 39 40 36 35) (f2 c1 40 27 37 36) (f2 c1 29 41 37 27) (f3 c3 41 38 34 37)
+  $F324 end
+
+model $F325
+  $F325 box_rect 16 64 32
+  $F32B verts P=V40 P=(P+V41)/2 V0=P P=(P+V41)/2 P=(P+V0)/2 V32=P P=V41 P=(P+V37)/2 V1=P P=(P+V41)/2 V31=P P=V40 P=(P+V36)/2 P=(P+V36)/2 V30=P P=(P+V40)/2 V2=P P=(P+V31)/2 V3=P P=(P+V2)/2 V29=P P=V3 P=(P+V31)/2 P=(P+V3)/2 V28=P P=V36 P=(P+V37)/2 P=(P+V36)/2 P=(P+V36)/2 V27=P P=V39 P-=V40 V4=P P+=V27 V26=P P=V30 P+=V4 V25=P P=V29 P+=V4 V24=P P=V28 P+=V4 V23=P P=V32 P+=V4 V36=P P=V31 P+=V4 V33=P
+  $F366 project 27 from V14
+  $F369 faces_test from 0: (27 30 29) (26 34 33) (29 30 25) (30 27 26) (31 33 34) (31 32 36) (32 28 23)
+  $F381 fill_faces_clip (f6 c1 32 28 23 36) (f1 c4 33 24 25 26 36) (f1 c4 33 34 23) (f0 c4 29 31 37 27 30) (f0 c4 28 32 31) (f1 c4 33 24 25 26 34) (f1 c4 33 36 23) (f2 c3 29 30 25 24) (f3 c6 30 27 26 25) (f4 c3 31 33 34 37) (f5 c5 31 32 36 33)
+  $F3DB end
+
+model $F3DC
+  $F3DC box_rect 16 64 24
+  $F3E2 verts P=V40 P=(P+V41)/2 V32=P P=(P+V41)/2 P=(P+V41)/2 V31=P P=V41 P=(P+V37)/2 V29=P P=V36 P=(P+V37)/2 V0=P P=(P+V37)/2 P=(P+V37)/2 P=(P+V31)/2 V30=P P=V0 P=(P+V36)/2 P=(P+V36)/2 V28=P P=V36 P=(P+V40)/2 V1=P P=(P+V36)/2 V27=P P=V1 P=(P+V29)/2 V25=P P=(P+V1)/2 P=(P+V1)/2 V26=P P=V39 P-=V40 V2=P P+=V27 V24=P P=V26 P+=V2 V23=P P=V25 P+=V2 V22=P P=V32 P+=V2 V21=P P=V31 P+=V2 V36=P P=V30 P+=V2 V19=P P=V29 P+=V2 V33=P P=V28 P+=V2 V17=P P=V40 P-=V32 V4=P P=V21 P=(P+V25)/2 V3=P P=(P+V21)/2 P=(P+V3)/2 V16=P P=V3 P=(P+V32)/2 P=(P+V3)/2 V15=P P=V25 P=(P+V3)/2 P=(P+V3)/2 V14=P P=V3 P=(P+V22)/2 P=(P+V3)/2 V13=P P=V16 P+=V4 V12=P P=V15 P+=V4 V11=P P=V14 P+=V4 V10=P P=V13 P+=V4 V35=P
+  $F44C project 28 from V10
+  $F44F faces_test from 0: (32 31 30) (36 21 22) (21 32 25) (23 26 27) (24 27 28) (31 36 19) (29 33 34) (11 15 14) (16 12 35) (12 11 10)
+  $F470 order_by_face f2 $F4C3 $F4DE
+  $F476 fill_faces_clip (f2 c6 21 32 25 22) (f3 c7 23 26 27 24) (f4 c8 24 27 28 17) (f5 c6 31 36 19 30) (f0 c4 32 31 30 25) (f0 c4 26 29 37 28 27) (f1 c4 36 21 22 19) (f1 c4 33 23 24 17 34) (f6 c5 29 33 34 37)
+  $F4C2 return
+  $F4C3 fill_faces_clip (f7 c4 11 15 14 10) (f8 c4 16 12 35 13) (f9 c1 12 11 10 35)
+  $F4DD return
+  $F4DE end
+
+model $F4DF
+  $F4DF box_rect 24 64 16
+  $F4E5 verts P=V40 P=(P+V35)/2 V19=P P=V38 P=(P+V34)/2 P=(P+V34)/2 V24=P P.xz=-P.xz V26=P P=V39 P=(P+V35)/2 P=(P+V35)/2 V25=P P.xz=-P.xz V27=P P=V34 P=(P+V35)/2 V28=P P=(P+V34)/2 V34=P P.xz=-P.xz V36=P P=V28 P=(P+V35)/2 V35=P P.xz=-P.xz V37=P P=V39 P=(P+V41)/2 V28=P P=(P+V38)/2 V38=P P=V28 P=(P+V41)/2 V41=P P=V25 P=(P+V26)/2 P=(P+V25)/2 P=(P+V41)/2 V20=P P=(P+V25)/2 P=(P+V20)/2 V28=P P+=V19 V31=P P=V20 P=(P+V38)/2 P=(P+V20)/2 V40=P P+=V19 V30=P P=V20 P=(P+V26)/2 P=(P+V20)/2 V29=P P+=V19 V32=P P=V20 P=(P+V41)/2 P=(P+V20)/2 V39=P P+=V19 V33=P
+  $F52A project 18 from V24
+  $F52D faces_test from 0: (24 25 34) (25 26 35) (26 27 36) (27 24 37) (38 25 24) (38 26 25) (41 27 26) (41 24 27) (40 30 31) (31 33 32) (33 39 29) (39 33 30) (28 31 29)
+  $F557 order_by_face f5 $F59E $F5C9
+  $F55D fill_faces (f0 c1 24 25 35 34) (f1 c3 25 26 36 35) (f2 c1 26 27 37 36) (f3 c3 27 24 34 37) (f4 c7 38 25 24) (f5 c6 38 41 26 25) (f6 c7 41 27 26) (f7 c6 41 38 24 27)
+  $F59D return
+  $F59E fill_faces (f8 c5 40 30 31 28) (f9 c1 30 33 32 31) (f10 c4 33 39 29 32) (f11 c5 39 33 30 40) (f12 c3 28 31 32 29)
+  $F5C8 return
+  $F5C9 end
+
+model $F5CA
+  $F5CA box_rect16 24 4 120
+  $F5D0 verts P=V38 P=(P+V34)/2 V31=P P=(P+V38)/2 V0=P P.xz=-P.xz V1=P P=V41 P=(P+V37)/2 V30=P P=(P+V41)/2 V2=P P.xz=-P.xz V3=P P=V41 P=(P+V38)/2 V32=P P=(P+V38)/2 V4=P P.xz=-P.xz V5=P P=V32 P=(P+V41)/2 V6=P P.xz=-P.xz V7=P P=V41 P=(P+V34)/2 V29=P P=(P+V31)/2 V8=P P=V30 P=(P+V29)/2 V9=P P=V37 P=(P+V34)/2 V28=P P=(P+V34)/2 V10=P P=V28 P=(P+V37)/2 V11=P
+  $F5FC project 8 from V34
+  $F5FF project 12 from V0
+  $F602 faces_test from 0: (37 2 6) (35 3 7) (0 3 35) (0 4 7) (1 2 37) (1 5 6) (9 8 10)
+  $F61A fill_faces (f0 c6 37 2 6 4 0 34) (f1 c6 35 3 7 5 1 36) (f2 c4 0 3 35 34) (f3 c5 0 4 7 3) (f4 c4 1 2 37 36) (f5 c5 1 5 6 2) (f6 c3 9 8 10 11)
+  $F658 end
+
+model $F660
+  $F660 box_rect 24 127 32
+  $F666 verts P=V40 P=(P+V38)/2 V20=P P=V41 P=(P+V38)/2 P+=V20 V29=P P.xz=-P.xz V28=P P=V40 P=(P+V35)/2 P=(P+V33)/2 P=(P+V33)/2 V0=P P=V38 P=(P+V39)/2 P=(P+V34)/2 P=(P+V38)/2 V30=P P+=V0 V31=P P=V34 P=(P+V35)/2 P=(P+V34)/2 P=(P+V34)/2 V32=P P+=V0 V33=P
+  $F687 project 14 from V28
+  $F68A faces_test from 0: (38 39 35) (39 40 36) (40 41 37) (41 38 34) (29 28 39) (28 29 41)
+  $F69F fill_faces (f0 c1 38 39 35 33 32 34) (f0 c3 30 31 33 32) (f1 c3 28 40 36 35 39) (f2 c1 40 41 37 36) (f3 c3 29 38 34 37 41) (f4 c4 29 28 39 38) (f5 c5 28 29 41 40)
+  $F6DD end
+
+model $F6DE
+  $F6DE box_square 32 24 28
+  $F6E4 polar_points 2 (frames to $F73E)
+  $F73E verts P=V41 P=(P+V39)/2 V0=P P=(P+V39)/2 V1=P P=V0 P=(P+V38)/2 V2=P P=V0 P=(P+V41)/2 V3=P P=V0 P=(P+V40)/2 V0=P P=V37 P=(P+V35)/2 V4=P P=(P+V34)/2 V6=P P=V4 P=(P+V35)/2 V5=P P=V4 P=(P+V37)/2 V7=P P=V4 P=(P+V36)/2 V4=P P=V3 P=(P+V2)/2 V8=P P=V3 P=(P+V6)/2 P=(P+V8)/2 V8=P P+=V32 P+=V32 V9=P P-=V31 P-=V31 V10=P P=V32 P=(P+V33)/2 P=(P+V33)/2 P=(P+V33)/2 V14=P P=V8 P-=V14 V8=P P-=V31 V11=P P=V8 P+=V31 V8=P P=V9 P+=V31 V9=P
+  $F781 project 12 from V0
+  $F784 faces_test from 0: (3 2 6) (2 1 5) (8 9 10)
+  $F790 order_by_face f2 $F7BB $F7D0
+  $F796 fill_faces (f0 c3 3 2 6 7) (f1 c4 2 1 5 6)
+  $F7A8 fill_back_faces (f0 c3 1 0 4 5) (f1 c4 0 3 7 4)
+  $F7BA return
+  $F7BB fill_faces_clip (f2 c1 8 9 10 11)
+  $F7C5 fill_back_faces (f2 c6 11 10 9 8)
+  $F7CF return
+  $F7D0 end
+
+model $F7D1
+  $F7D1 box_square 32 32 56
+  $F7D7 verts P=V38 P=(P+V39)/2 V0=P P.xz=-P.xz V5=P P=V38 P=(P+V34)/2 P=(P+V38)/2 V2=P P.xz=-P.xz V3=P P=V39 P=(P+V35)/2 P=(P+V39)/2 V1=P P.xz=-P.xz V4=P P=V2 P=(P+V1)/2 V6=P P=(P+V2)/2 V7=P P=V6 P=(P+V1)/2 V6=P P=V34 P=(P+V35)/2 V8=P P=(P+V34)/2 V9=P P=V8 P=(P+V35)/2 V8=P
+  $F7FA project 10 from V0
+  $F7FD project 8 from V34
+  $F800 faces_test from 0: (0 1 35) (4 2 34) (5 0 2)
+  $F80C fill_faces (f0 c4 0 1 35 34 2) (f1 c3 4 2 34 37) (f2 c5 5 0 2 4) (f0 c1 7 6 8 9)
+  $F82F fill_back_faces (f0 c4 36 3 5 4 37) (f1 c3 1 3 36 35) (f2 c5 0 5 3 1)
+  $F84A end
+
+model $F84B
+  $F84B box_rect16 16 5 32
+  $F851 verts P=V39 P=(P+V41)/2 V30=P P=V39 P=(P+V40)/2 P+=V30 V29=P P.xz=-P.xz V28=P P=V35 P-=V39 V16=P P=(P+V33)/2 P=(P+V16)/2 V16=P P=V35 P=(P+V36)/2 V15=P P=(P+V36)/2 P=(P+V15)/2 V31=P P-=V16 V32=P P=V15 P=(P+V35)/2 P=(P+V15)/2 V30=P P-=V16 V33=P
+  $F874 project 14 from V28
+  $F877 faces_test from 0: (41 38 37) (38 39 34) (39 40 35) (40 41 36) (28 29 38) (29 28 40)
+  $F88C fill_faces_clip (f0 c6 28 38 34 37 41) (f1 c7 38 39 35 34) (f2 c6 29 40 36 35 39) (f3 c7 40 41 37 36) (f4 c1 28 29 39 38) (f5 c1 29 28 41 40) (f2 c1 33 32 31 30)
+  $F8C8 end
+
+model $F8C9
+  $F8C9 box_square 32 48 64
+  $F8CF verts P=V40 P=(P+V38)/2 V33=P P=-P V34=P P=(P+V33)/2 P=(P+V33)/2 P=(P+V33)/2 V37=P P=V40 P=(P+V39)/2 V35=P P=V36 P=(P+V39)/2 P=(P+V35)/2 P=(P+V35)/2 V36=P
+  $F8E2 project 5 from V33
+  $F8E5 faces_test from 0: (33 35 36)
+  $F8EB fill_faces (f0 c6 33 35 36 37)
+  $F8F5 fill_back_faces (f0 c6 37 36 35 33)
+  $F8FF lines M33 L34
+  $F903 end
+
+model $F904
+  $F904 box_rect 20 48 24
+  $F90A verts P=V40 P=(P+V41)/2 V1=P P=V40 P=(P+V36)/2 V32=P P=(P+V36)/2 P=(P+V32)/2 V2=P P=V36 P=(P+V37)/2 P=(P+V36)/2 P=(P+V1)/2 V3=P P=(P+V32)/2 P=(P+V32)/2 V18=P P=V39 P=(P+V38)/2 V5=P P=V39 P=(P+V35)/2 V31=P P=(P+V35)/2 P=(P+V31)/2 V4=P P=V35 P=(P+V34)/2 P=(P+V35)/2 P=(P+V5)/2 V6=P P=(P+V31)/2 P=(P+V31)/2 V19=P P=V6 P=(P+V3)/2 V12=P P=V5 P=(P+V1)/2 V13=P P=V38 P=(P+V34)/2 V7=P P=V41 P=(P+V37)/2 V9=P P=(P+V38)/2 V8=P P=(P+V38)/2 V10=P P=-P V14=P P=V8 P=(P+V7)/2 V11=P P=-P V15=P P=V8 P=(P+V9)/2 V9=P P=-P V16=P P=V8 P=(P+V41)/2 V8=P P=-P V17=P
+  $F94F project 8 from V34
+  $F952 project 21 from V1
+  $F955 faces_test from 0: (1 41 37) (38 5 6) (4 2 34) (41 38 34) (6 5 1) (10 11 9) (14 17 16) (19 18 2)
+  $F970 fill_faces (f0 c4 1 41 37 36 2 18 3) (f1 c4 38 5 6 19 4 35 34) (f2 c6 4 2 36 35) (f3 c6 41 38 34 37) (f4 c5 6 5 1 3) (f5 c5 10 11 9 8) (f6 c1 14 17 16 15) (f7 c6 4 19 18 2)
+  $F9B8 lines_if_faces M12 L13[f4|f4]
+  $F9BE end
+
+model $F9BF
+  $F9BF native $F659
+  $F9C2 box_rect 64 28 64
+  $F9C8 verts P=V37 P=(P+V34)/2 V33=P P=V41 P=(P+V37)/2 P=(P+V37)/2 V37=P P=V38 P=(P+V34)/2 P=(P+V34)/2 V34=P P=(P+V37)/2 V36=P P=V41 P=(P+V38)/2 V35=P
+  $F9DA project 5 from V33
+  $F9DD fill_polys (c4 35 34 37)
+  $F9E4 lines M36 L33
+  $F9E8 end
+

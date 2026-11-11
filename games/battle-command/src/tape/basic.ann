@@ -1,0 +1,26 @@
+# The annotations of tape block 2, the BASIC program "BATTLE" at PROG $5CCB-$6FFF (4917 bytes): the source of
+# src/tape/basic.asm and src/tape/basic/*.asm (../../kit/mkgame.py --part src/tape/basic.json). Format:
+# ../../../../docs/ann-format.md. Witness: c1 (work/stage1/rec/c1: power-on, side 1 at signal speed), whose ROM
+# loads this block and runs line 0 (the header's LINE 0); Stage1 is entered at frame 2028 (docs/03 3.1).
+
+@module basic ; The BASIC: one line whose USR enters the machine code after it, and the enciphered chain
+@about The program is one line, 55 bytes long, then machine code the line never shows. The line's USR adds 59 to PROG ($5CCB): the number printed is 10, the five-byte form after it says 59, so LIST shows a sum that is not the one the ROM computes. Stage1 at PROG+59 = $5D06 copies the 4821 bytes from PROG+95 = $5D2A to $AC38-$BF0C and returns into them, the decryption chain (src/loader/chain.asm).
+@about c1: the ROM loads the block at frames 208-1999 and runs line 0; Stage1 is entered at frame 2028, the chain at $AC38 at frame 2033 (docs/03 3.1, the stages).
+
+$5CCB b BasicLine0 ; Line 0: RANDOMIZE USR ((PEEK 23635+256*PEEK 23636)+10), the 10 standing for 59
+> USR (PROG+59): PEEK 23635 + 256*PEEK 23636 is PROG, the system variable at $5C53. The number's digits say 10, its hidden five-byte form says 59 ($3B), the offset of Stage1. Known from the bytes and c1 (Stage1 entered at frame 2028).
+$5CCD ; the line's length, 55
+$5CCF ; RANDOMIZE ($F9) USR ($C0) "((" PEEK ($BE) "23635" and $0E, 23635 = $5C53
+$5CE1 ; "+256*" and $0E, 256, "*" PEEK ($BE) "23636" and $0E, 23636 = $5C54
+$5CF7 ; ")+" "10" and $0E with the value 59 ($3B), ")"
+$5D05 ; ENTER
+
+$5D06 c Stage1 ; Clear the screen, copy the chain to $AC38-$BF0C and return into it
+> Interrupts off; the screen and attributes ($4000-$5AFF) zeroed by LDIR, the border black. Then the 4821 bytes from PROG+95 (the address read from $5C53, so the copy works wherever PROG is) to $AC38, with SP = $8000 and $AC38 pushed as the return address: the RET enters the chain. c1: L1 1, frame 2028.
+
+$5D2A b ChainTape ; The decryption chain as the tape holds it (4821 bytes, copied to $AC38)
+> tools/speedlock.py master writes these bytes from the plain view src/loader/chain.asm: every layer's rewrite undone, in reverse order. The build INCBINs build/chain-tape.bin.
+@res tape/chain-tape.bin
+
+$6FFF b BasicEnd ; The program's last byte, $55, past the copy: no code reads it
+> Stage1 copies 4821 bytes and the program is 4917: this byte after them is never copied or read (c1: no L1 read). Kept as it is.

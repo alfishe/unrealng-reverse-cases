@@ -1,0 +1,69 @@
+# Side 1 of the Ocean release (orig/BattleCommand.tzx.zip, "Battle Command - Side 1.tzx"), block by block:
+# tools/mktape.py writes it from this list and the files tools/build.sh makes; the build compares the result with
+# the original byte for byte. The format is in tools/mktape.py; docs/03-build-and-load.md 3.1 has the blocks.
+#
+# The SpeedLock loader (src/loader/chain.asm, $B8F9-$BF0C) reads the `sl` blocks. Each is preceded by a mark
+# `07 FF 00` (5 bits of the last byte) at zero 875 T / one 1750 T, and read at zero 714 T / one 1428 T. Where each
+# block goes is the loader's table at $BF30 (5 bytes a row: the address, the length less one, the $7FFD value),
+# first the one in the stage at $BF0D, then the one block 21 loads over it.
+version 1 10
+text Created with Ramsoft MakeTZX
+header 988 program BATTLE basic.bin 0
+rom 7713 basic.bin
+group Speedlock 7 Block 1
+tone 2165 1579
+pulses 714,714,714,714,1428,1428,2147,2147,2147,2147,2147,2147,1428,1428,714,714
+pure 714 1428 6 0 hex:E8
+# the loader's second stage at $BF0D-$BFCF (src/loader/stage2.asm), 195 bytes and the check byte
+sl 714 1428 8 2407 $BF0D stage2.bin check
+group-end
+group Speedlock 7 Block 2
+tone 2165 1578
+pulses 714,714,714,714,1428,1428,2147,2147,2147,2147,2147,2147,1428,1428,714,714
+pure 714 1428 6 0 hex:E8
+# the loading screen: the bitmap straight to $4000, the attributes to $8000 (the countdown copies them to $5800)
+sl 714 1428 8 0 $4000 res/screens/loading.scr:0:1800
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 0 $8000 res/screens/loading.scr:1800:1B00
+pure 875 1750 5 0 hex:07FF00
+# the key of the body store: LD A,$86 at $BD9C (was LD A,$C1)
+sl 714 1428 8 0 $BD9C hex:3E86
+pure 875 1750 5 0 hex:07FF00
+# the key of the last-byte store: LD A,$86 / XOR L / ADD A, at $BDD0 (was LD A,$C1)
+sl 714 1428 8 0 $BDD0 hex:3E86ADC6
+pure 875 1750 5 0 hex:07FF00
+# the loader's table again, 75 bytes over $BF30: rows 0-3 as they were read (row 3 is this block), then the banks
+#   $5B00 9472 bytes  page $10 (bank 5)      $C000 16384 page $10 (bank 0)     $C301 15615 page $11 (bank 1)
+#   $C000 5120        page $13 (bank 3)      $C000 3584  page $14 (bank 4)     $C000 14848 page $16 (bank 6)
+#   $C000 16384       page $17 (bank 7)      $BE5D 115   page $10              $BF21 15    page $10
+#   $8000 54          page $10               end
+sl 714 1428 8 0 $BF30 hex:0080ff0210000000000000000000000000270010005bff241000c0ff3f1001c3fe3c1100c0ff131300c0ff0d1400c0ff391600c0ff3f175dbe72001021bf0e001000803500100000000000
+pure 875 1750 5 0 hex:07FF00
+# bank 5's $5B00-$7FFF, XORed with $AD on top of the cipher: Unxor5B00 (src/loader/final-be5d.asm) takes it off
+sl 714 1428 8 0 $5B00 game.bin@5B00:5B00:8000^AD
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 0 $C000 game.bin@5B00:C000:10000
+pure 875 1750 5 0 hex:07FF00
+# bank 1: the staging copy of the game's $8301-$BFFF, which the bootstrap at $8000 copies over the loader
+sl 714 1428 8 0 $C301 game.bin@5B00:8301:C000
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 0 $C000 bank3.bin:0:1400
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 0 $C000 bank4.bin:0:E00
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 0 $C000 bank6.bin:0:3A00
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 0 $C000 bank7.bin
+pure 875 1750 5 0 hex:07FF00
+# the loader's last pieces (src/loader/final-be5d.asm, final-bf21.asm): the timing check at $BE5D and the end of the stage at $BF21
+sl 714 1428 8 0 $BE5D final-be5d.bin
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 0 $BF21 final-bf21.bin
+pure 875 1750 5 0 hex:07FF00
+# the bootstrap $8000-$8043 (src/game, the game image's first bytes in bank 2), in two blocks; the second ends in
+# the check byte of the blocks since the screen's (the XOR of blocks 13-43 is 0). $8044 keeps the attribute byte
+# block 15 put there
+sl 714 1428 8 0 $8000 game.bin@5B00:8000:8036
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 1 $8036 game.bin@5B00:8036:8044 check
+group-end

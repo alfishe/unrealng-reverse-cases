@@ -1,0 +1,94 @@
+# The annotations of RAM bank 3 at $C000: the source of src/bank3/*.asm (../../kit/mkgame.py --part src/bank3/bank3.json).
+# Format: ../../../../docs/ann-format.md. Witnesses: the recordings of work/stage1/rec (WALKTHROUGH 6.0), page 3.
+
+
+@module raster3 ; Bank 3: the polygon clip and span filler, the line drawer, the shared 3D models
+
+@about Paged by $726C. $7290 calls FillPolygon $C4C4 for the face renderers of bank 2, $72B1 calls DrawLine $C9A7. Both write the back buffer $8AF1-$96F0. $CA8B-$CFCC holds the models the bank 6 views and the shared objects use.
+$C000 c ClipPolyY ; Clip the polygon PolyVerts `$6700` (count `$68A9`) to rows 0..95 into PolyYClipped `$66A8`
+> Sutherland-Hodgman by states: the last vertex inside (`$C17B`), below row 95 (`$C02F`) or above row 0 (`$C0DE`); the crossings by IntersectRow95 `$C40A` and IntersectRow0 `$C420`. Then the X clip `$C218`. Returns Z when nothing is left.
+> Witness: L1 38525 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C02F c ClipYBelow ; Y clip state: the previous vertex below the window
+> Witness: L1 3183 (c1, death, m2erbe, menu, missions, play, play2).
+$C0DE c ClipYAbove ; Y clip state: the previous vertex above the window
+> Witness: L1 1682 (c1, death, menu, missions, play, play2).
+$C162 c ClipYAboveSkip ; Y clip: still above, skip the vertex
+> Witness: L1 1530 (c1, death, menu, missions, play, play2).
+$C17B c ClipYInside ; Y clip state: the previous vertex inside, output it
+> Witness: L1 143574 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C218 c ClipPolyX ; Clip the Y-clipped list to columns 0..255 (the limit patched by SetClipWidth `$CFCD`) into PolyXClipped `$6680`
+> States `$C245` (previous right of the window), `$C2E6` (left), `$C378` (inside); crossings by IntersectColRight `$C478`, IntersectCol0 `$C48E`; the count to `$68A9`.
+> Witness: L1 38524 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C245 c ClipXRight ; X clip state: the previous vertex right of the window
+> Witness: L1 11998 (c1, death, m2erbe, missions, play, play2).
+$C2E6 c ClipXLeft ; X clip state: the previous vertex left of the window
+> Witness: L1 13550 (c1, death, m2erbe, menu, missions, play, play2).
+$C378 c ClipXInside ; X clip state: the previous vertex inside
+> Witness: L1 121481 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C40A c IntersectRow95 ; The x where the edge crosses row 95 (exact when an end is on it)
+> Witness: L1 3152 (c1, death, m2erbe, menu, missions, play, play2).
+$C420 c IntersectRow0 ; The x where the edge crosses row 0, by bisection
+> Witness: L1 15203 (c1, death, m2erbe, menu, missions, play, play2).
+$C478 c IntersectColRight ; The y where the edge crosses the right column (255)
+> Witness: L1 5322 (c1, death, m2erbe, missions, play, play2).
+$C48E c IntersectCol0 ; The y where the edge crosses column 0, by bisection
+> Witness: L1 67550 (c1, death, m2erbe, menu, missions, play, play2).
+$C4C4 c FillPolygon ; Fill the polygon PolyVerts `$6700` in the colour `$7579`: clip, find the top and bottom, walk the edges, fill
+> After the clips, fewer than 3 vertices return. Finds the lowest and highest row in `$6681`..., marks the top vertex, doubles the list, sets the top row `$67BD` and the row count `$68A8`, and calls EdgeWalk `$C542`. Entered from bank 5 `$7290` (38 827 calls over the recordings).
+> Witness: L1 38525 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C53E c FillSpansThenReturn ; CALL FillSpans `$C86A` then RET (the edge walker jumps here when the spans are on the stack)
+> Witness: L1 33753 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C541 c FillSpansReturn ; The RET after FillSpans
+> Witness: L1 33753 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C542 c EdgeWalk ; Walk the left and right edges from the top vertex down, pushing one (left, right) span per row on the stack
+> `SP` saved at `$C7EA`; each edge's step from EdgeSlope `$C959`; the next edge on either side by `$C82D` (left, IX forward) and `$C7ED` (right, IY back); at the bottom it jumps to FillSpansThenReturn `$C53E`. The biggest block of bank 3: 385 instructions.
+> Witness: L1 31451 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C7ED c NextRightEdge ; Take the next edge on the right side (IY backwards): its rows and step
+> Witness: L1 10893 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C82D c NextLeftEdge ; Take the next edge on the left side (IX forwards): its rows and step
+> Witness: L1 9734 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C86A c FillSpans ; Pop the spans and fill them row by row in the back buffer with the colour's 2-row dither pattern
+> The pattern from FillPatterns `$66D6` + 2 `$7579` (solid `$FF` when `$757A` = 0); the edges masked with RightEdgeMasks / LeftEdgeMasks `$66F0`; the middle bytes by a patched jump into 31 `LD (HL),B`. Writes `$8AF8-$96F0`; 85 permille of the recordings' time (the heaviest routine of the 3D view after the blit).
+> Witness: L1 33753 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C959 c EdgeSlope ; HL = 256 H / L by logarithms (LogFraction, LogInteger, ExpFraction): the x step per row; 0 or `$FFFF` at the limits
+> Witness: L1 83529 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+$C9A7 c DrawLine ; Draw a line from (H, L) to (D, E) (x, y bytes) into the back buffer by OR, Bresenham
+> Special cases: vertical (`$CA60`), horizontal (`$CA4E`), 45 degrees (`$CA74`); the pixel bit of the start in `$CA89`. Entered from bank 5 `$72B1`.
+> Witness: L1 4996 (c1, death, m2erbe, menu, missions, play, play2).
+$CA60 c DrawVerticalLine ; A vertical line: `SET n,(HL)` patched to the column's bit, down D + 1 rows
+> Witness: L1 1262 (c1, death, m2erbe, menu, missions, play, play2).
+$CA89 b LinePixelBit 2 ; DrawLine's start pixel bit number, and a spare byte
+$CA8B b SharedModels 16 ; Shared 3D model scripts (RunScript format), 1346 bytes: six models and their parts
+> `$CA8B` (a building with two halves ordered by face 0: parts `$CAA7`, `$CCDA`), `$CAA7` (32 vertices, 24 faces, nested parts with OpCall to `$CDF8`), `$CCDA`, `$CDF8` (a sub-model called twice), `$CE47`, `$CED1` (`$CB39` of bank 6 draws it), `$CF26`. Each starts with a box generator (`00 F7 67` = BoxRect). Read by RunScript `$990F` in all 11 recordings.
+$CFCD c SetClipWidth ; Patch the X clip's limit (10 operands) with A: `$FF` full width, `$5F` the 96-pixel console view
+> Called through `$74CF` (`$74C9` A = `$FF`, `$74CD` A = `$5F`) by bank 6 `$CA8B`.
+> Witness: L1 30 (c1, death, m2erbe, missions, play, play2).
+
+@module debris ; Eight flying fragments: an exploded object's pieces, moved and drawn every frame
+@about When an object is destroyed, bank 2 $B6D1 (the mission code's ApiVector11, $67DF) fills the eight records at $CFEC with random velocities ($B74B, $B75C). Every frame of every view loop, Bank3Step ($72A3, bank 5) calls DrawDebris $D08C and MoveAllDebris $D1EC: each live fragment is moved by its velocity, falls (its y speed drops by 5 a frame) and dies when it reaches the ground; the ones in front of the tank are drawn through the object renderer $BEDE.
+
+$CFEC b DebrisRecords 20 ; The eight fragment records, 20 bytes each (zero at the entry)
+> +0 flags (bit 7 live, bit 5 drawn this frame; 0 = free), +1 x (fraction, then a word), +4 z (fraction, word), +7 y (word), +`$0A` the turn, +`$0B` the distance word from `$BBBC`, +`$0D` y relative to the camera, +`$0F` x speed, +`$10` z speed, +`$11` y speed, +`$12` and +`$13` the two turn steps. Written by `$B74B` / `$B75C` (death, play2), MoveDebris and DrawDebris.
+> Witness: death, play2 (MoveDebris runs 661 times); the other recordings only read the flags.
+
+$D08C c DrawDebris ; Draw every live fragment that lies in front of the tank and inside the view
+> For each of the 8 records (IX from `$CFEC`, the count in the operand `$D140`): clear bit 5; a live record's x and z minus the camera's (`$67A7`, `$67AA`) into the projection operands `$9A8E` and `$9A6C`; skip it when x is outside -`$20`..`$1F` (high byte; the bounds are the operands `$D0C6` / `$D0CE`) or z likewise; y minus `$67AD` to +`$0D`; `$BBBC` (bank 2) gives the distance (HL, kept in `$66D0`) and HL' to +`$0B`; DebrisInView; if in view, bit 5 set and the renderer `$BEDE` draws it.
+> Witness: L1 3602 (c1, death, m2erbe, missions, play, play2).
+$D095 DrawDebrisNext
+$D0C5 XBoundOp ; LD A,n: n ($D0C6) the x limit $1F, read again for z
+$D0CD XBoundNegOp ; LD A,n: n ($D0CE) the lower limit $DF
+$D139 DrawDebrisSkip
+$D13F DebrisCountOp ; LD A,n: n ($D140) the records left
+
+$D148 c DebrisInView ; Carry set when the fragment is outside the view's cone: |x'| > z / 2 + 100
+> Input: HL = the distance from `$BBBC`, IX the record (+`$0B` the side offset). Output: carry = not visible. Witness: L1 4263 (c1, death, m2erbe, missions, play, play2).
+
+$D16B c MoveDebris ; Move one fragment: add the speeds to x, z, y; gravity on the y speed; free the record below the ground
+> x += the signed +`$0F` (with carry into the word), z += +`$10`, y += +`$11`; y below 0: the record is freed (+0 = 0). Else the y speed drops by 5 (it stays while the subtraction would overflow, `JP PO`) and the turn +`$0A` grows by +`$12` and +`$13`.
+> Witness: L1 661 (death, play2).
+
+$D1EC c MoveAllDebris ; MoveDebris for each of the 8 records whose flags are non-zero
+> Witness: L1 3602 (c1, death, m2erbe, missions, play, play2).
+
+$D203 b PushLeftover 16 ; 509 bytes $E5 (PUSH HL) to the end of the block: never run, never read
+> No recording reads or runs `$D203-$D3FF`; it looks like the tail of an unrolled PUSH clear (as ClearBackBuffer `$96F1`) left from development (known only from the code).

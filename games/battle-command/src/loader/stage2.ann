@@ -1,0 +1,32 @@
+# The annotations of the loader's second stage $BF0D-$BFCF (tape block 7, 195 bytes and a check byte): the source
+# of src/loader/stage2.asm (../../kit/mkgame.py --part src/loader/stage2.json). Format: ../../../../docs/ann-format.md.
+# Witness: c1 (work/stage1/rec/c1), the stage entered at frame 2484; the tape's blocks it reads, decoded by
+# tools/mktape.py --decode with the loader's own keys, equal the game image (docs/03 3.1).
+
+@equ $4000 Screen 6144 ; the bitmap, block 13 loads straight into it
+@equ $82FF AttrFlag ; zeroed here: the reveal task tests it
+@equ $BD13 LoadBlocks ; the block reader (src/loader/chain.asm)
+@equ $BDCE LastStoreJump ; the operand of LoadBlocks' JP after the bytes: where the last byte goes
+@equ $BDD0 StoreLast ; the last-byte store
+@equ $BED0 TimeFailed ; non-zero when the timing check failed
+@equ $BBF4 WaitTask ; the edge loop's task
+
+@module stage2 ; The second stage: the screen, the keys, the table, the banks
+@about LoaderMain loads this block over $BF0D and runs it. It points the last-byte path of LoadBlocks at StoreLast (the first block's last byte was a check byte), then reads the screen and every block the table at BlockTable names, each after its mark: the attributes to $8000, the key patches to $BD9C and $BDD0, a new table over this one, the banks, the last pieces of the loader and the bootstrap. The stream ends at LoadEnd, which wants the XOR of every byte read to be 0.
+@about c1: entered at frame 2484; the screen's bitmap from frame 2099 of the tape, the last block at frame 23856.
+
+$BF0D c Stage2Start ; Load the screen and the table's blocks; then the end of the stage
+> AttrFlag := 0; IX = Screen, DE = $17FF (6144 bytes); LastStoreJump := StoreLast; CALL LoadBlocks reads the bitmap, then walks BlockTable to the end. If TimeFailed is set, WaitTask. Then the loop at $BF2B clears memory from $4000 upwards for ever: block 39 replaces this end with TimeEnd ($BF21, src/loader/final.asm) before it is reached. c1: L1 1.
+$BF2B Stage2Wipe ; LD (HL),0 / INC HL for ever: the end before block 39 rewrites it
+
+$BF30 b BlockTable ; The first block table: five bytes a row, the address, the length less one, the $7FFD value
+> Rows: $8000 768 bytes (the attributes), $BD9C 2 (the body key), $BDD0 4 (the last-byte key), $BF30 75 (the table again, src/tape/side1.txt has the new rows), $6000 8192 and $4000 6912 with pages $13 / $12 and $FB00 512, never read (the new table replaces them first), and the end row of zeros. Read by the table walk in LoadBlocks (c1).
+$BF35 ; row 1, $BD9C
+$BF3A ; row 2, $BDD0
+$BF3F ; row 3, $BF30: this table
+$BF44 ; rows 4-6: never read
+$BF53 ; the end
+$BF58 BlockTablePad ; zeros up to the font
+
+$BF80 b CountdownFont 8 ; The countdown's digits 0-9, 8 bytes each
+> Read by WaitTask's countdown (c1: the digits at the top right of the screen during the load).

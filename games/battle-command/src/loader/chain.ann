@@ -1,0 +1,470 @@
+# The annotations of $AC38-$BF0C in its plain view: the decryption chain and the SpeedLock 7 loader, the source of
+# src/loader/chain.asm and src/loader/chain/*.asm (../../kit/mkgame.py --part src/loader/chain.json). Format:
+# ../../../../docs/ann-format.md. The plain view is each byte after the last layer that rewrites it
+# (tools/speedlock.py plain); tools/speedlock.py master turns it back into the tape's bytes, identical.
+# Witnesses: the chain run of tools/speedlock.py (SkoolKit's simulator, from the tape's BASIC: 103 layers and the
+# loader, 2.87 M instructions); c1 (work/stage1/rec/c1) for the loader: L1 of $B8F9-$BF0C, frames 2288-23974.
+
+@equ $5800 Attributes 768 ; the attributes
+@equ $8000 AttrBuffer 768 ; the loading screen's attributes as block 15 loads them, copied to the screen in steps
+@equ $9000 TimeBuffer 255 ; the edge counts TimeCheck measures
+@equ $BF0D Stage2 ; the loader's second stage (src/loader/stage2.asm)
+@equ $BF30 BlockTable ; the block table, five bytes a row (src/loader/stage2.asm)
+
+@module chain ; The decryption chain: 103 layers, each rewriting the rest and running into it
+@about Stage1 (src/tape/basic.asm) returns into $AC38. Each layer first shifts the 30 bytes behind its own LDDR down by one, which garbles the code already run, then rewrites every byte from its own end up to $BF0C and falls into the bytes it has just rewritten: the next layer. Three kinds of rewrite take turns: p = key + c with a CPL or a subtraction after (68 layers), p = key - c with an XOR after (12), and p = c - 1 (22), where c is the byte before and p after. The keys come from the R register, which Layer000 sets to 12, and from constants and the loop counters, never from the bytes, so each byte's transform is fixed by its address.
+@about tools/speedlock.py runs the chain in SkoolKit's simulator both ways: from the tape it gives this plain view, from this plain view it gives the tape's bytes back (identical, tools/build.sh). The last layer falls into LoaderStart $B8F9.
+
+$AC38 c Layer000 ; Layer 0: rewrite the 4785 bytes $AC5C-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AC5C-$BF0C into p = NOT ((R XOR D) + c), D = $F3 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AC50 Layer000Loop ; one byte a pass
+
+$AC5D c Layer001 ; Layer 1: rewrite the 4768 bytes $AC6D-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AC6D-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AC66 Layer001Loop ; one byte a pass
+
+$AC6E c Layer002 ; Layer 2: rewrite the 4733 bytes $AC90-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AC90-$BF0C into p = NOT ((R XOR D) + c), D = $90 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AC84 Layer002Loop ; one byte a pass
+
+$AC91 c Layer003 ; Layer 3: rewrite the 4702 bytes $ACAF-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $ACAF-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$ACA5 Layer003Loop ; one byte a pass
+
+$ACB0 c Layer004 ; Layer 4: rewrite the 4667 bytes $ACD2-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $ACD2-$BF0C into p = NOT ((R XOR D) + c), D = $F1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$ACC6 Layer004Loop ; one byte a pass
+
+$ACD3 c Layer005 ; Layer 5: rewrite the 4650 bytes $ACE3-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $ACE3-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$ACDC Layer005Loop ; one byte a pass
+
+$ACE4 c Layer006 ; Layer 6: rewrite the 4598 bytes $AD17-$BF0C (SUB (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AD17-$BF0C into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus $1C (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AD14 Layer006Loop ; one byte a pass
+
+$AD11 c Layer007 ; Layer 7: rewrite the 4568 bytes $AD35-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AD35-$BF0C into p = R + c - D, D = $B2 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AD2A Layer007Loop ; one byte a pass
+
+$AD36 c Layer008 ; Layer 8: rewrite the 4537 bytes $AD54-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AD54-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AD4A Layer008Loop ; one byte a pass
+
+$AD55 c Layer009 ; Layer 9: rewrite the 4502 bytes $AD77-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AD77-$BF0C into p = NOT ((R XOR D) + c), D = $93 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AD6B Layer009Loop ; one byte a pass
+
+$AD78 c Layer010 ; Layer 10: rewrite the 4485 bytes $AD88-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AD88-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AD81 Layer010Loop ; one byte a pass
+
+$AD89 c Layer011 ; Layer 11: rewrite the 4450 bytes $ADAB-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $ADAB-$BF0C into p = NOT ((R XOR D) + c), D = $B0 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AD9F Layer011Loop ; one byte a pass
+
+$ADAC c Layer012 ; Layer 12: rewrite the 4419 bytes $ADCA-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $ADCA-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$ADC0 Layer012Loop ; one byte a pass
+
+$ADCB c Layer013 ; Layer 13: rewrite the 4384 bytes $ADED-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $ADED-$BF0C into p = NOT ((R XOR D) + c), D = $91 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$ADE1 Layer013Loop ; one byte a pass
+
+$ADEE c Layer014 ; Layer 14: rewrite the 4367 bytes $ADFE-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $ADFE-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$ADF7 Layer014Loop ; one byte a pass
+
+$ADFF c Layer015 ; Layer 15: rewrite the 4315 bytes $AE32-$BF0C (SUB (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AE32-$BF0C into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus $1C (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AE2F Layer015Loop ; one byte a pass
+
+$AE2C c Layer016 ; Layer 16: rewrite the 4285 bytes $AE50-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AE50-$BF0C into p = R + c - D, D = $D2 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AE45 Layer016Loop ; one byte a pass
+
+$AE51 c Layer017 ; Layer 17: rewrite the 4254 bytes $AE6F-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AE6F-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AE65 Layer017Loop ; one byte a pass
+
+$AE70 c Layer018 ; Layer 18: rewrite the 4219 bytes $AE92-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AE92-$BF0C into p = NOT ((R XOR D) + c), D = $B3 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AE86 Layer018Loop ; one byte a pass
+
+$AE93 c Layer019 ; Layer 19: rewrite the 4202 bytes $AEA3-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AEA3-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AE9C Layer019Loop ; one byte a pass
+
+$AEA4 c Layer020 ; Layer 20: rewrite the 4167 bytes $AEC6-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AEC6-$BF0C into p = NOT ((R XOR D) + c), D = $D0 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AEBA Layer020Loop ; one byte a pass
+
+$AEC7 c Layer021 ; Layer 21: rewrite the 4136 bytes $AEE5-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AEE5-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AEDB Layer021Loop ; one byte a pass
+
+$AEE6 c Layer022 ; Layer 22: rewrite the 4101 bytes $AF08-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AF08-$BF0C into p = NOT ((R XOR D) + c), D = $B1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AEFC Layer022Loop ; one byte a pass
+
+$AF09 c Layer023 ; Layer 23: rewrite the 4084 bytes $AF19-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AF19-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AF12 Layer023Loop ; one byte a pass
+
+$AF1A c Layer024 ; Layer 24: rewrite the 4032 bytes $AF4D-$BF0C (SUB (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AF4D-$BF0C into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus $1C (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AF4A Layer024Loop ; one byte a pass
+
+$AF47 c Layer025 ; Layer 25: rewrite the 4002 bytes $AF6B-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AF6B-$BF0C into p = R + c - D, D = $F2 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AF60 Layer025Loop ; one byte a pass
+
+$AF6C c Layer026 ; Layer 26: rewrite the 3971 bytes $AF8A-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AF8A-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AF80 Layer026Loop ; one byte a pass
+
+$AF8B c Layer027 ; Layer 27: rewrite the 3936 bytes $AFAD-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AFAD-$BF0C into p = NOT ((R XOR D) + c), D = $D3 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AFA1 Layer027Loop ; one byte a pass
+
+$AFAE c Layer028 ; Layer 28: rewrite the 3919 bytes $AFBE-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AFBE-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AFB7 Layer028Loop ; one byte a pass
+
+$AFBF c Layer029 ; Layer 29: rewrite the 3884 bytes $AFE1-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $AFE1-$BF0C into p = NOT ((R XOR D) + c), D = $F0 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AFD5 Layer029Loop ; one byte a pass
+
+$AFE2 c Layer030 ; Layer 30: rewrite the 3853 bytes $B000-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B000-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$AFF6 Layer030Loop ; one byte a pass
+
+$B001 c Layer031 ; Layer 31: rewrite the 3818 bytes $B023-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B023-$BF0C into p = NOT ((R XOR D) + c), D = $D1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B017 Layer031Loop ; one byte a pass
+
+$B024 c Layer032 ; Layer 32: rewrite the 3801 bytes $B034-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B034-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B02D Layer032Loop ; one byte a pass
+
+$B035 c Layer033 ; Layer 33: rewrite the 3749 bytes $B068-$BF0C (SUB (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B068-$BF0C into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus $1C (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B065 Layer033Loop ; one byte a pass
+
+$B062 c Layer034 ; Layer 34: rewrite the 3719 bytes $B086-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B086-$BF0C into p = R + c - D, D = $92 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B07B Layer034Loop ; one byte a pass
+
+$B087 c Layer035 ; Layer 35: rewrite the 3688 bytes $B0A5-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B0A5-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B09B Layer035Loop ; one byte a pass
+
+$B0A6 c Layer036 ; Layer 36: rewrite the 3653 bytes $B0C8-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B0C8-$BF0C into p = NOT ((R XOR D) + c), D = $F3 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B0BC Layer036Loop ; one byte a pass
+
+$B0C9 c Layer037 ; Layer 37: rewrite the 3636 bytes $B0D9-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B0D9-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B0D2 Layer037Loop ; one byte a pass
+
+$B0DA c Layer038 ; Layer 38: rewrite the 3601 bytes $B0FC-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B0FC-$BF0C into p = NOT ((R XOR D) + c), D = $90 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B0F0 Layer038Loop ; one byte a pass
+
+$B0FD c Layer039 ; Layer 39: rewrite the 3570 bytes $B11B-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B11B-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B111 Layer039Loop ; one byte a pass
+
+$B11C c Layer040 ; Layer 40: rewrite the 3535 bytes $B13E-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B13E-$BF0C into p = NOT ((R XOR D) + c), D = $F1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B132 Layer040Loop ; one byte a pass
+
+$B13F c Layer041 ; Layer 41: rewrite the 3518 bytes $B14F-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B14F-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B148 Layer041Loop ; one byte a pass
+
+$B150 c Layer042 ; Layer 42: rewrite the 3466 bytes $B183-$BF0C (SUB (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B183-$BF0C into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus $1C (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B180 Layer042Loop ; one byte a pass
+
+$B17D c Layer043 ; Layer 43: rewrite the 3436 bytes $B1A1-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B1A1-$BF0C into p = R + c - D, D = $B2 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B196 Layer043Loop ; one byte a pass
+
+$B1A2 c Layer044 ; Layer 44: rewrite the 3405 bytes $B1C0-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B1C0-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B1B6 Layer044Loop ; one byte a pass
+
+$B1C1 c Layer045 ; Layer 45: rewrite the 3370 bytes $B1E3-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B1E3-$BF0C into p = NOT ((R XOR D) + c), D = $93 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B1D7 Layer045Loop ; one byte a pass
+
+$B1E4 c Layer046 ; Layer 46: rewrite the 3353 bytes $B1F4-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B1F4-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B1ED Layer046Loop ; one byte a pass
+
+$B1F5 c Layer047 ; Layer 47: rewrite the 3318 bytes $B217-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B217-$BF0C into p = NOT ((R XOR D) + c), D = $B0 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B20B Layer047Loop ; one byte a pass
+
+$B218 c Layer048 ; Layer 48: rewrite the 3287 bytes $B236-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B236-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B22C Layer048Loop ; one byte a pass
+
+$B237 c Layer049 ; Layer 49: rewrite the 3252 bytes $B259-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B259-$BF0C into p = NOT ((R XOR D) + c), D = $91 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B24D Layer049Loop ; one byte a pass
+
+$B25A c Layer050 ; Layer 50: rewrite the 3235 bytes $B26A-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B26A-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B263 Layer050Loop ; one byte a pass
+
+$B26B c Layer051 ; Layer 51: rewrite the 3183 bytes $B29E-$BF0C (SUB (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B29E-$BF0C into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus $1C (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B29B Layer051Loop ; one byte a pass
+
+$B298 c Layer052 ; Layer 52: rewrite the 3153 bytes $B2BC-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B2BC-$BF0C into p = R + c - D, D = $D2 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B2B1 Layer052Loop ; one byte a pass
+
+$B2BD c Layer053 ; Layer 53: rewrite the 3122 bytes $B2DB-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B2DB-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B2D1 Layer053Loop ; one byte a pass
+
+$B2DC c Layer054 ; Layer 54: rewrite the 3087 bytes $B2FE-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B2FE-$BF0C into p = NOT ((R XOR D) + c), D = $B3 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B2F2 Layer054Loop ; one byte a pass
+
+$B2FF c Layer055 ; Layer 55: rewrite the 3070 bytes $B30F-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B30F-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B308 Layer055Loop ; one byte a pass
+
+$B310 c Layer056 ; Layer 56: rewrite the 3035 bytes $B332-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B332-$BF0C into p = NOT ((R XOR D) + c), D = $D0 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B326 Layer056Loop ; one byte a pass
+
+$B333 c Layer057 ; Layer 57: rewrite the 3004 bytes $B351-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B351-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B347 Layer057Loop ; one byte a pass
+
+$B352 c Layer058 ; Layer 58: rewrite the 2969 bytes $B374-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B374-$BF0C into p = NOT ((R XOR D) + c), D = $B1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B368 Layer058Loop ; one byte a pass
+
+$B375 c Layer059 ; Layer 59: rewrite the 2952 bytes $B385-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B385-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B37E Layer059Loop ; one byte a pass
+
+$B386 c Layer060 ; Layer 60: rewrite the 2900 bytes $B3B9-$BF0C (SUB (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B3B9-$BF0C into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus $1C (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B3B6 Layer060Loop ; one byte a pass
+
+$B3B3 c Layer061 ; Layer 61: rewrite the 2870 bytes $B3D7-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B3D7-$BF0C into p = R + c - D, D = $F2 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B3CC Layer061Loop ; one byte a pass
+
+$B3D8 c Layer062 ; Layer 62: rewrite the 2839 bytes $B3F6-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B3F6-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B3EC Layer062Loop ; one byte a pass
+
+$B3F7 c Layer063 ; Layer 63: rewrite the 2804 bytes $B419-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B419-$BF0C into p = NOT ((R XOR D) + c), D = $D3 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B40D Layer063Loop ; one byte a pass
+
+$B41A c Layer064 ; Layer 64: rewrite the 2787 bytes $B42A-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B42A-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B423 Layer064Loop ; one byte a pass
+
+$B42B c Layer065 ; Layer 65: rewrite the 2752 bytes $B44D-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B44D-$BF0C into p = NOT ((R XOR D) + c), D = $F0 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B441 Layer065Loop ; one byte a pass
+
+$B44E c Layer066 ; Layer 66: rewrite the 2721 bytes $B46C-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B46C-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B462 Layer066Loop ; one byte a pass
+
+$B46D c Layer067 ; Layer 67: rewrite the 2686 bytes $B48F-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B48F-$BF0C into p = NOT ((R XOR D) + c), D = $D1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B483 Layer067Loop ; one byte a pass
+
+$B490 c Layer068 ; Layer 68: rewrite the 2669 bytes $B4A0-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B4A0-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B499 Layer068Loop ; one byte a pass
+
+$B4A1 c Layer069 ; Layer 69: rewrite the 2617 bytes $B4D4-$BF0C (SUB (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B4D4-$BF0C into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus $1C (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B4D1 Layer069Loop ; one byte a pass
+
+$B4CE c Layer070 ; Layer 70: rewrite the 2587 bytes $B4F2-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B4F2-$BF0C into p = R + c - D, D = $92 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B4E7 Layer070Loop ; one byte a pass
+
+$B4F3 c Layer071 ; Layer 71: rewrite the 2556 bytes $B511-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B511-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B507 Layer071Loop ; one byte a pass
+
+$B512 c Layer072 ; Layer 72: rewrite the 2521 bytes $B534-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B534-$BF0C into p = NOT ((R XOR D) + c), D = $F3 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B528 Layer072Loop ; one byte a pass
+
+$B535 c Layer073 ; Layer 73: rewrite the 2504 bytes $B545-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B545-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B53E Layer073Loop ; one byte a pass
+
+$B546 c Layer074 ; Layer 74: rewrite the 2469 bytes $B568-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B568-$BF0C into p = NOT ((R XOR D) + c), D = $90 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B55C Layer074Loop ; one byte a pass
+
+$B569 c Layer075 ; Layer 75: rewrite the 2438 bytes $B587-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B587-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B57D Layer075Loop ; one byte a pass
+
+$B588 c Layer076 ; Layer 76: rewrite the 2403 bytes $B5AA-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B5AA-$BF0C into p = NOT ((R XOR D) + c), D = $F1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B59E Layer076Loop ; one byte a pass
+
+$B5AB c Layer077 ; Layer 77: rewrite the 2386 bytes $B5BB-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B5BB-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B5B4 Layer077Loop ; one byte a pass
+
+$B5BC c Layer078 ; Layer 78: rewrite the 2334 bytes $B5EF-$BF0C (SUB (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B5EF-$BF0C into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus $1C (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B5EC Layer078Loop ; one byte a pass
+
+$B5E9 c Layer079 ; Layer 79: rewrite the 2304 bytes $B60D-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B60D-$BF0C into p = R + c - D, D = $B2 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B602 Layer079Loop ; one byte a pass
+
+$B60E c Layer080 ; Layer 80: rewrite the 2273 bytes $B62C-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B62C-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B622 Layer080Loop ; one byte a pass
+
+$B62D c Layer081 ; Layer 81: rewrite the 2238 bytes $B64F-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B64F-$BF0C into p = NOT ((R XOR D) + c), D = $93 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B643 Layer081Loop ; one byte a pass
+
+$B650 c Layer082 ; Layer 82: rewrite the 2221 bytes $B660-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B660-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B659 Layer082Loop ; one byte a pass
+
+$B661 c Layer083 ; Layer 83: rewrite the 2186 bytes $B683-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B683-$BF0C into p = NOT ((R XOR D) + c), D = $B0 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B677 Layer083Loop ; one byte a pass
+
+$B684 c Layer084 ; Layer 84: rewrite the 2155 bytes $B6A2-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B6A2-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B698 Layer084Loop ; one byte a pass
+
+$B6A3 c Layer085 ; Layer 85: rewrite the 2120 bytes $B6C5-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B6C5-$BF0C into p = NOT ((R XOR D) + c), D = $91 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B6B9 Layer085Loop ; one byte a pass
+
+$B6C6 c Layer086 ; Layer 86: rewrite the 2103 bytes $B6D6-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B6D6-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B6CF Layer086Loop ; one byte a pass
+
+$B6D7 c Layer087 ; Layer 87: rewrite the 2051 bytes $B70A-$BF0C (SUB (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B70A-$BF0C into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus $1C (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B707 Layer087Loop ; one byte a pass
+
+$B704 c Layer088 ; Layer 88: rewrite the 2021 bytes $B728-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B728-$BF0C into p = R + c - D, D = $D2 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B71D Layer088Loop ; one byte a pass
+
+$B729 c Layer089 ; Layer 89: rewrite the 1990 bytes $B747-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B747-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B73D Layer089Loop ; one byte a pass
+
+$B748 c Layer090 ; Layer 90: rewrite the 1955 bytes $B76A-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B76A-$BF0C into p = NOT ((R XOR D) + c), D = $B3 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B75E Layer090Loop ; one byte a pass
+
+$B76B c Layer091 ; Layer 91: rewrite the 1938 bytes $B77B-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B77B-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B774 Layer091Loop ; one byte a pass
+
+$B77C c Layer092 ; Layer 92: rewrite the 1903 bytes $B79E-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B79E-$BF0C into p = NOT ((R XOR D) + c), D = $D0 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B792 Layer092Loop ; one byte a pass
+
+$B79F c Layer093 ; Layer 93: rewrite the 1872 bytes $B7BD-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B7BD-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B7B3 Layer093Loop ; one byte a pass
+
+$B7BE c Layer094 ; Layer 94: rewrite the 1837 bytes $B7E0-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B7E0-$BF0C into p = NOT ((R XOR D) + c), D = $B1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B7D4 Layer094Loop ; one byte a pass
+
+$B7E1 c Layer095 ; Layer 95: rewrite the 1820 bytes $B7F1-$BF0C (DEC (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B7F1-$BF0C into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B7EA Layer095Loop ; one byte a pass
+
+$B7F2 c Layer096 ; Layer 96: rewrite the 1768 bytes $B825-$BF0C (SUB (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B825-$BF0C into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus $1C (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B822 Layer096Loop ; one byte a pass
+
+$B81F c Layer097 ; Layer 97: rewrite the 1738 bytes $B843-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B843-$BF0C into p = R + c - D, D = $F2 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B838 Layer097Loop ; one byte a pass
+
+$B844 c Layer098 ; Layer 98: rewrite the 1707 bytes $B862-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B862-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B858 Layer098Loop ; one byte a pass
+
+$B863 c Layer099 ; Layer 99: rewrite the 1672 bytes $B885-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B885-$BF0C into p = NOT ((R XOR D) + c), D = $D3 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B879 Layer099Loop ; one byte a pass
+
+$B886 c Layer100 ; Layer 100: rewrite the 1641 bytes $B8A4-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B8A4-$BF0C into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B89A Layer100Loop ; one byte a pass
+
+$B8A5 c Layer101 ; Layer 101: rewrite the 1598 bytes $B8CF-$BF0C (ADD A,(HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B8CF-$BF0C into p = (R XOR D) + c - $07, D = $CD (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B8C2 Layer101Loop ; one byte a pass
+
+$B8D0 c Layer102 ; Layer 102: rewrite the 1557 bytes $B8F8-$BF0C (SUB (HL)), run into them
+> Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of $B8F8-$BF0C into p = (R XOR E, E the count) - c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 104 layers, the tape masters back identical).
+$B8E9 Layer102Loop ; one byte a pass
+
+@module loader ; The SpeedLock 7 loader: the notice, the block reader, the stage at $BF0D
+@about LoaderStart checks for a Multiface, prints the copyright notice and clears the memory the chain used, then loads the second stage (tape block 7) at $BF0D and runs it. The block reader LoadBlocks reads a pilot of its own timing, the sync pulses and the bytes, each stored as (byte XOR k) + a by StoreByte (the operands are the keys, rewritten by the tape's blocks 17 and 19); BlockTable walks the blocks to their banks. While it waits for edges it runs a task through the pointer at $BDB7: the attribute reveal and the countdown.
+@about c1: LoaderStart at frame 2288; the stage entered at frame 2484; the last block read by frame 23856; the bootstrap entered at frame 23974 (docs/03 3.1).
+
+$B8F9 c LoaderStart ; Check for a Multiface, clear the RAM, print the notice and load the stage
+> Interrupts off, SP = $BFFF. IN A,($3F) and IN A,($9F) are the Multiface's page-in ports: if either pages a ROM in, the byte at $0000 is no longer the 128K ROM's DI ($F3) and JP $0000 restarts the machine. The OUTs to $1F, $7B and $BB page such interfaces out again. Then PrintNotice and LoaderMain. Known from the code; c1: L1 1.
+
+$B935 c PrintNotice ; Print the copyright notice: the bars and the strings of NoticeText
+
+$B96C c DrawBar ; Draw a bar of A cells at the screen position BC, bright red attributes
+
+$B995 c PrintChar ; Print the character A (from $20) with the ROM font at $3D00
+
+$B9B1 c DrawGlyph ; Copy the 8 bytes at HL to the screen cell DE, white attribute
+
+$B9CD c CellAddress ; DE = the screen address of row B, column C
+
+$B9E2 c PrintString ; Print the string at HL up to a zero, from row B column C, wrapping at column 32
+
+$B9FB t NoticeText ; The copyright notice and the FAST warning, zero-ended strings
+> Read by PrintString (c1: L1 reads). Shown during the whole load.
+
+$BBF4 c WaitTask ; The task the edge loop runs while it waits: the attribute reveal, then the countdown
+> LoadBlocks calls it between two edges (CALL $BBF4 at $BDB6); the task's own code is reached through the pointer at $BDB7, which each step rewrites. Known from the code; the screen shows the attributes coming in and a countdown at the top right in c1.
+
+$BCF2 c LdEdge2 ; Two edges: sample the EAR bit until it changes, twice
+
+$BD13 c LoadBlocks ; Read the pilot, the sync and the bytes of a block to IX, DE bytes
+
+$BD9C c StoreByte ; Store a byte: (L XOR k) + a, k and a the operands of this code
+> The tape's block 17 rewrites k ($BD9D: $C1, then $86); a ($BDA0) stays $11. src/tape/side1.txt and tools/mktape.py use the same operands in the other direction.
+
+$BDD0 c StoreLast ; Store the last byte of a block the same way, with its own operands (block 19 rewrites them)
+
+$BE47 c ReadMark ; Read the bits of a mark between two blocks
+
+$BE5D c TimeCheck ; Measure the tape's edges into TimeBuffer and compare them (replaced by tape block 37)
+
+$BEDF c LoadEnd ; The end of a stream of blocks: the XOR in H must be 0
+
+$BEEA c LoaderMain ; Clear $5D00-$BBF3 (the chain), load the stage at $BF0D, clear the screen and run it

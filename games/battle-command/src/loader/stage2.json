@@ -1,0 +1,17 @@
+{
+  "about": "The loader's second stage $BF0D-$BFCF (195 bytes, tape block 7): python3 ../../kit/mkgame.py --part src/loader/stage2.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/parts/stage2-bf0d.bin || $SKOOLKIT_VENV/bin/python tools/parts.py"],
+  "image": "work/parts/stage2-bf0d.bin",
+  "org": "BF0D",
+  "ann": "src/loader/stage2.ann",
+  "top": "stage2",
+  "bin": "stage2.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM128",
+  "mode": "blocks",
+  "pages": [5, 2],
+  "header": ["; Battle Command, Ocean 1990: the SpeedLock loader's second stage, tape block 7, run at $BF0D."],
+  "l1": [{"path": "work/stage1/rec/c1/l1.json", "lo": "BF0D", "hi": "BFD0", "reads": false}],
+  "data_entries": "stop",
+  "work": "work/stage2/mkstage2"
+}

@@ -441,6 +441,28 @@ def plan_death(r):
     r.shot('end')
 
 
+def plan_fuel(r):
+    """fuel: from the title (explore/loaded.szx): Blast Em Mission with the Turret as in death; at the start a POKE
+    sets the fuel word Fuel `$7C57` (bank 2) to 32: the tank is driven ahead until the fuel failure, then the screens
+    that follow, a screen every 100 frames. The POKE is on the recording's machine only"""
+    r.shot('title')
+    mission_tape(r)
+    load_mission(r, 1)
+    fit(r, {1: 'Turret'})
+    r.b.click(*STORES['start'], after=150)
+    r.shot('start')
+    fuel = r.lab.read(0x7C57, 2)
+    r.moments.append({'frame': r.lab.frame, 'name': 'fuel-before', 'value': fuel[0] | fuel[1] << 8})
+    r.poke(0x7C57, [32, 0], 'fuel 32 (the fuel failure, open point 3)')
+    for i in range(40):
+        r.b.hold(['Q'], 100)
+        f = r.lab.read(0x7C57, 2)
+        r.shot(f'drive-{i:02d}')
+        r.moments.append({'frame': r.lab.frame, 'name': f'fuel-{i:02d}', 'value': f[0] | f[1] << 8,
+                          'fail': r.lab.read(0x7BF9, 1)[0]})
+    r.shot('end')
+
+
 def plan_search(r):
     """search: from the title (explore/loaded.szx): the catalogue, Hostage Rescue (mission 3) marked, SEARCH three
     times from where the catalogue left the tape: each stops at the next mission header and lights that mission"""
@@ -469,7 +491,7 @@ def plan_m10(r):
 
 
 PLANS = {'c1': plan_c1, 'm10': plan_m10, 'search': plan_search, 'death': plan_death, 'play2': plan_play2, 'menu': plan_menu, 'controls': plan_controls, 'missions': plan_missions,
-         'play': plan_play, 'm2ocean': plan_m2ocean, 'm2erbe': plan_m2erbe}
+         'play': plan_play, 'm2ocean': plan_m2ocean, 'm2erbe': plan_m2erbe, 'fuel': plan_fuel}
 
 
 def main():
