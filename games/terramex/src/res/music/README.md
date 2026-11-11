@@ -14,6 +14,7 @@ tunes).
 | `vibratos.csv` | VibratoTable `$C906` | 8 | StartNote `$C4C9`, VibratoStep `$C626` | the one vibrato record (offset 8): a delay, 7 signed period deltas |
 | `arpeggios.csv` | ArpeggioTable `$C927` | 64 | ArpeggioApply `$C6C2`, StartNote | 8 arpeggio records of 8 bytes |
 | `envelope-rates.txt` | AttackRates `$CD36`, DecayRates `$CD46` | 16 + 16 | SetInstrumentEnvelope `$C42D`, SetInstrumentRelease `$C48E`, the sustain set-up | the ADSR rate by nibble: below `$80` steps a frame, `$80 + n` one step every n frames |
+| `periods.csv` | PeriodLo `$C82E`, PeriodHi `$C89A` | 108 + 108 | StartNote `$C4C9`, ArpeggioEffect and the slide (module effects) | the AY tone period of each note index 0-107 (MIDI i + 12, C0 to B8), one row a note: index, the note name (not read back), the period |
 
 ## tunes.txt
 
@@ -27,5 +28,6 @@ written back from the block layout, so a block may grow or shrink.
   note 0 = G#1 at the 128K's AY clock of 1.7734 MHz), `rest D`, `instr N`, `arp $XX`, `slideoff`,
   `slide $CMD STEP COUNT`, `end`; `byte $XX` keeps a byte that starts no event.
 
-Tune 0 lasts 9696 frames (3 min 14 s) and loops; tune 1 (4728 frames on A and B) is never started. Patterns 4 and
+Tune 0 has 9696 frames of notes and loops every 9698 frames (3 min 14 s: the notes, the EndTune
+frame and the StartTune frame); tune 1 (4728 frames on A and B) is never started. Patterns 4 and
 21-25 are played by no tune.

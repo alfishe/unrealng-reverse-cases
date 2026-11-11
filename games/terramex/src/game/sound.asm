@@ -5,10 +5,15 @@
 ; Play beeper sound A (0-6), HL, DE, BC kept
 ;
 ; Calls SoundDispatch $C4BC. The callers and their sounds: PickUpItem $BBF2
-; (2), DropFall $C051 (5), $A3E1 ($A484, 6), $A888, $A89E (3), $A8AB, $B0B6,
-; $AA3C. The players are busy loops with the interrupts on: the L1 builds
-; record 58 interrupts inside SoundChirp's loop ($C4D5-$C4D9, 16 builds), so
-; the AY music of the IM 2 handler goes on and stretches the beeps a little.
+; (2), DropFall $C051 (5), $A3E1 ($A484, 6), CreatureDeath $A89E ($A8A3, 3
+; every pass), DeathFrames $A8AB ($A8B7, the sound in C at the end of a death's
+; frames: 0 for FallDeath $A888, 4 for Room1ADeath $A88F), $B0B6, $AA3C. The
+; players are busy loops with the interrupts on: the L1 builds record 58
+; interrupts inside SoundChirp's loop ($C4D5-$C4D9, 16 builds), so the AY music
+; of the IM 2 handler goes on and stretches the beeps: the half-wave the
+; interrupt falls in grows by about 3700 T (the chirp's 7914 T to 11 679 T in
+; c1 frame 23 509), and in the paper area the ULA's contention adds about 23 %
+; (`EX (SP),HL` on the stack in RAM 5, `OUT ($FE)`); doc 9, 9.11.
 ;
 ; Witness: L1 339 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
 ; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
@@ -144,8 +149,8 @@ SoundRiseDelay:
 
 ; Sound 3: 100 bits from the ROM bytes $0000-$003F picked by R
 ;
-; Witness: rzx06000, rzx22000, rzx32000 play it 11 times each (the status $17
-; handler $A89E).
+; Witness: rzx06000, rzx22000, rzx32000 play it 11 times each (the status $18
+; handler CreatureDeath $A89E).
 ;
 ; Witness: L1 33 (rzx, rzx, rzx).
 SoundHiss:

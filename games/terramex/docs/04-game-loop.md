@@ -440,7 +440,8 @@ items. Its draw paths are [doc 6](06-rendering.md)'s subject. Here is its shape 
 
 1. For each slot, BufferAddress `$9CEE` gives the back-buffer address of (X, Y) and the row plotter for X mod 8.
 2. The slot's sprite (frame F at `$6000 + 72 x F`) is drawn into the back buffer `$E000` in three columns of 24 rows,
-   mirrored through BitReverse `$FE00` when it faces left.
+   mirrored through BitReverse `$FE00` when flags bit 7 is set (the stored graphics face left; the right key sets
+   the bit, `$A48B`, so a mirrored sprite faces right).
 3. DrawItems `$9DE3` draws the floor items.
 4. CopyRects `$9BEB` copies the 4-byte by 24-row rectangles from the buffer to the screen. Last pass's places
    (PrevActorRects `$5B24`) get their background back; this pass's places (ActorRects `$5B44`) get the sprites.
@@ -865,9 +866,9 @@ it:
 
 | Step | Without the deflector (lost) | With the deflector (GameWon `$5BFE` set) |
 | --- | --- | --- |
-| 0 | the asteroid at X `$A2`, Y 4; the building at the bottom | the same, and the deflector (object 4) at `$89`, `$5C` |
+| 0 | the asteroid at X `$A2`, Y 4; the Earth at the bottom | the same, and the deflector (object 4) at `$89`, `$5C` |
 | 1 | the asteroid moves 1 left, 4 down a pass, to Y `$54` | the same |
-| 2 | the asteroid hidden; the building's frame `$76`, then `$77`: the strike, sound 1 | the deflector fires (frame + 1), sound 2 |
+| 2 | the asteroid hidden; the Earth's frame `$76`, then `$77`: the strike, sound 1 | the deflector fires (frame + 1), sound 2 |
 | 3 | | the asteroid is pushed back up and vanishes |
 | then | the step counts to `$80`, then GameOver = 1 | the same |
 
@@ -897,9 +898,9 @@ docs/img/play/space-scene-won.gif`.*
 
 How to read them:
 
-- Both open on the same picture: the building at the bottom, the asteroid high on the right.
-- In the lost game the asteroid reaches the building and the building flashes.
-- In the ending the deflector stands left of the building and sends the asteroid back.
+- Both open on the same picture: the Earth at the bottom, the asteroid high on the right.
+- In the lost game the asteroid reaches the Earth and the Earth flashes.
+- In the ending the deflector stands left of the Earth and sends the asteroid back.
 - Both end on the device menu.
 
 The scene lasts 453 frames in the lost game (1509-1961) and 536 in the ending (194-729). Both are the step count to `$80`, about 160 passes.

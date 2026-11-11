@@ -306,8 +306,9 @@ Room1ADeath:
 
 ; Status 24: the death by a creature's touch, sound 3 every pass
 ;
-; Set by $9262 (GB) when a creature comes within 12 pixels while the status is
-; below 4. CreatureDeathFrames $A8E0 with sound 3 each pass, then status 18.
+; Set by HitExplorer $C0F9 (a creature's touch, not standing) and by the beam
+; hit $9262 (RoomEffects: within the beam's X span and 12 rows, status below
+; 4). CreatureDeathFrames $A8E0 with sound 3 each pass, then status 18.
 ; Evidence: rzx06000, rzx22000, rzx32000 (33 passes).
 ;
 ; Witness: L1 33 (rzx, rzx, rzx).

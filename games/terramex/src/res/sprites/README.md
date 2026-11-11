@@ -5,7 +5,8 @@ a sheet of frames with a grey line between them, white = ink; the PNG text chunk
 (width, height, byte order, frames a row). The game draws them through the sprite space: frame F at
 `$6000 + 72 x F`, `$00-$3F` the chosen explorer's set (copied to `$6000` by the selector), `$40-$7E` the creatures,
 `$7F` the blank BlankSprite `$83B8` (72 zeros, kept in the code), `$80 + n` item n. RenderPass `$9B22` plots them with
-a one-pixel outline (OutlineMasks `$FF00`), mirrored through BitReverse `$FE00` when facing left.
+a one-pixel outline (OutlineMasks `$FF00`), mirrored through BitReverse `$FE00` when flags bit 7 is set
+(the stored graphics face left, so bit 7 set faces right; the right key sets it, `$A48B`).
 
 | File | Address | Bytes | Readers | What |
 | --- | --- | ---: | --- | --- |

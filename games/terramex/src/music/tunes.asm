@@ -14,7 +14,7 @@
 ; The instruments (Instruments $C028, music/instruments), the instrument slots (SlotTable $C11B, the state module),
 ; the vibratos (VibratoTable $C906), the arpeggios (ArpeggioTable $C927) and the envelope rates (AttackRates $CD36,
 ; DecayRates $CD46) belong to the tune too: a converter needs them to give each note its volume curve. The periods
-; (PeriodLo $C82E, PeriodHi $C89A) are the player's equal-tempered table.
+; (PeriodLo $C82E, PeriodHi $C89A, music/periods.csv) are the player's equal-tempered table.
 ;
 ; Tune 0 (3 min 14 s): channel A plays the bass (patterns 0, 3, then pattern 5 transposed through -7, -12, -9, -7, -4,
 ; -6, then pattern 10, 15), channel B the same intro detuned by 10, then the melody (pattern 6), then the chords (13,
@@ -41,31 +41,14 @@ EmptyPattern:
 ; semitone flat, and index 8 (G#0, 4526) is G0's period again. Tune 0 plays C#
 ; at indices 25 and 61 (7 notes). The recordings read indices 14-96.
 PeriodLo:
-  DEFB $7A,$8C,$97,$44,$04,$D6,$B9,$AC,$AE,$BE,$DC,$07 ; octave 0 (indices
-                                                       ; 0-11)
-  DEFB $3D,$C6,$CB,$22,$82,$EB,$5D,$D6,$57,$DF,$6E,$03 ; octave 1
-  DEFB $9F,$63,$E6,$91,$41,$F6,$AE,$6B,$2C,$F0,$B7,$82 ; octave 2
-  DEFB $4F,$31,$F3,$C8,$A0,$7B,$57,$35,$16,$F8,$DC,$C1 ; octave 3
-  DEFB $A8,$99,$79,$64,$50,$3D,$2C,$1B,$0B,$FC,$EE,$E0 ; octave 4
-  DEFB $D4,$CC,$BD,$B2,$A8,$9F,$96,$8D,$85,$7E,$77,$70 ; octave 5
-  DEFB $6A,$66,$5E,$59,$54,$4F,$4B,$47,$43,$3F,$3B,$38 ; octave 6
-  DEFB $35,$33,$2F,$2D,$2A,$28,$25,$23,$21,$1F,$1E,$1C ; octave 7
-  DEFB $1A,$19,$18,$16,$15,$14,$13,$12,$11,$10,$0F,$0E ; octave 8
+  INCBIN "res/music/period-lo.bin",$0000,108
 
 ; The tone periods' high bytes: 108 notes
 ;
 ; As PeriodLo. Its last 8 bytes ($C8FE-$C905, all 0) are also VibratoTable-8's
 ; record 0, which no instrument names (offset 0 is no vibrato).
 PeriodHi:
-  DEFB $1A,$19,$17,$16,$15,$13,$12,$11,$11,$0F,$0E,$0E
-  DEFB $0D,$0C,$0B,$0B,$0A,$09,$09,$08,$08,$07,$07,$07 ; octave 1
-  DEFB $06,$06,$05,$05,$05,$04,$04,$04,$04,$03,$03,$03 ; octave 2
-  DEFB $03,$03,$02,$02,$02,$02,$02,$02,$02,$01,$01,$01 ; octave 3
-  DEFB $01,$01,$01,$01,$01,$01,$01,$01,$01,$00,$00,$00 ; octave 4
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; octave 5
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; octave 6
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; octave 7
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; octave 8
+  INCBIN "res/music/period-hi.bin",$0000,108
 
 ; The vibrato record at offset 8: a delay of 40 frames, the deltas +1, 0, -1,
 ; 0, +1, 0, -1

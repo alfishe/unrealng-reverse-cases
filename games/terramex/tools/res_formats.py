@@ -260,8 +260,9 @@ def rooms_out(bins):
     out += head(['',
                  'Each room: its header; 4 lines of 8 back-tile indices (RoomGrids, hex; back-tiles in backtiles.txt);',
                  'its three creatures (RoomCreatures, one line each, "-" an empty record): the type (CreatureHandlers),',
-                 'the first sprite frame of its animation, the start X and Y, dir 1 = moving right or down, hit 1 =',
-                 'only frame hitframe and later hit (AnimateCreature), else every frame (types 1-4, 6, 7).'])
+                 'the first sprite frame of its animation, the start X and Y, dir 1 = moving right or down; hit 0 =',
+                 'never hits (types 1-4, 6, 7), hit 1 with hitframe 4 or more = every frame, else at the frame',
+                 'index = hitframe (AnimateCreature); the drop (type 5) always tests (JP HitExplorer at $C037).'])
     for r in range(ROOMS):
         lv, col = divmod(r, 12)
         out.append('')
@@ -631,7 +632,33 @@ def tiles_group(pix, att, cols=16):
 
 
 # editable file -> (the .bin names it builds, to_editable({name: bytes}), from_editable(raw) -> {name: bytes})
+def periods_out(b):
+    """PeriodLo $C82E and PeriodHi $C89A (RAM 6) as one CSV: index, the note (not read back), the period"""
+    lo, hi = b['music/period-lo.bin'], b['music/period-hi.bin']
+    if len(lo) != len(hi):
+        raise ValueError('periods: %d low bytes, %d high bytes' % (len(lo), len(hi)))
+    lines = head(['The AY tone periods (PeriodLo $C82E, PeriodHi $C89A in RAM 6): period = PeriodLo[i] + 256 x',
+                  'PeriodHi[i] at the AY clock of 1.7734 MHz; index i is MIDI note i + 12 (57: A4). The note column',
+                  'is not read back. Every C# is 0.38 semitone flat and index 8 repeats G0 (src/music/music.ann).',
+                  'The last 8 high bytes are also VibratoTable-8\'s record 0.'])
+    lines.append('index,note,period')
+    for i in range(len(lo)):
+        midi = i + 12
+        lines.append('%d,%s%d,%d' % (i, NOTE_NAMES[midi % 12], midi // 12 - 1, lo[i] + 256 * hi[i]))
+    return text_file(lines)
+
+
+def periods_in(raw):
+    lo, hi = bytearray(), bytearray()
+    for ln in lines_of(raw)[1:]:
+        v = num(ln.split(',')[2])
+        lo.append(v & 255)
+        hi.append(v >> 8)
+    return {'music/period-lo.bin': bytes(lo), 'music/period-hi.bin': bytes(hi)}
+
+
 GROUPS = {
+    'music/periods.csv': (('music/period-lo.bin', 'music/period-hi.bin'), periods_out, periods_in),
     'tiles/base.png': tiles_group('tiles/base-pixels.bin', 'tiles/base-attrs.bin'),
     'tiles/alt.png': tiles_group('tiles/alt-pixels.bin', 'tiles/alt-attrs.bin'),
     'rooms/rooms.txt': (('rooms/grids.bin', 'rooms/table.bin', 'rooms/alt-rooms.bin'), rooms_out, rooms_in),

@@ -14,6 +14,6 @@ patches (the destination room, `$80 + room`), kept as on the tape.
 | `teleport.txt` | TeleportFrames `$A955` | 10 | TeleportFrame `$A919`, TeleportJump `$A929` | the teleport |
 | `sink.txt` | SinkFrames `$AA22` | 26 | SinkInMud `$AA04` (status 17) | sinking in the mud |
 | `think.txt` | ThinkFrames `$ABEB` | 47 | Think `$AB6E` (statuses 10, 11, 12) | the T key: three lists |
-| `refuse.txt` | RefuseFrames `$AECD` | 32 | RefuseShake `$A567` | the hero shakes his head when he refuses to drop an item |
+| `refuse.txt` | RefuseFrames `$AECD` | 32 | RefuseShake `$A567` | the refusal of a drop of 5 rows or more (RefuseDrop `$A545`): the hero shakes his head |
 | `room-2e.txt` | Room2EFrames `$B2D7` | 20 | Room2EStep1 `$B29C` | object 4's frames in room `$2E` after item 4 |
 | `professor.txt` | ProfFrames `$B6C1` | 44 | ProfMode `$B62C` | the professor's 43 frames, `$FF` ends |

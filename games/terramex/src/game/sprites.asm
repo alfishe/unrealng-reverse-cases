@@ -11,7 +11,8 @@
 ; columns of 24 bytes, left column first, top byte first, ink 1. The plotter
 ; $9C7E reads them through the frame number ($9FAA computes the address);
 ; RenderPass $9B22 draws them with a one-pixel outline from OutlineMasks $FF00,
-; mirrored through BitReverse $FE00 when facing left.
+; mirrored through BitReverse $FE00 when flags bit 7 is set (the stored
+; graphics face left, so bit 7 set faces right).
 ;
 ; The frames: the professor and his poses, the snake, the crocodile, the bird,
 ; the frog, the stone faces, the treasure chest, the drops, the comet, the

@@ -8,7 +8,7 @@ a `\x0D` or an end mark; a long line is split only where a byte was. The header 
 | File | Address | Bytes | Readers | What |
 | --- | --- | ---: | --- | --- |
 | `menu.txt` | MenuText `$9540` (game) | 57 | PrintMenuText `$94EF` | the device menu: 1 KEYBOARD, 2 KEMPSTON, 3 SINCLAIR, 0 START GAME; `$00` ends |
-| `credits.txt` | CreditsText `$9579` (game) | 132 | the menu's credits print (MenuLogoByte `$9413`) | the five credit lines under the menu, rows 17-21 (Teque, Argus Press, 1987) |
+| `credits.txt` | CreditsText `$9579` (game) | 132 | PrintString `$94F9`, called by DeviceMenu at `$943D` (row 17, column 2, attribute `$47`) | the five credit lines under the menu, rows 17-21 (Teque, Argus Press, 1987) |
 | `collision.txt` | CollisionText `$B07C` (game) | 58 | TelescopeView `$A7B9` | the telescope view: TIME REMAINING TO COLLISION, DAYS HOURS MINUTES; the countdown is printed into the gaps |
 | `stop-tape.txt` | StopTapeText `$C2B8` (selector) | 48 | ShowStopTape `$C295` | the 48K's STOP THE TAPE / THEN PRESS SPACE KEY, ROM print codes, RST `$10` up to `$0D` |
 | `start-tape.txt` | StartTapeText `$C2E8` (selector) | 44 | CopySet48K `$C175` (CopySetLdir) | the 48K's EXPLORER SELECTED / START TAPE |

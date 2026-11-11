@@ -3,7 +3,7 @@
 24 x 24 pixels as three columns of 24 bytes (column-major; DrawItem's address `$8400 + index * 72`, `$9DE3`). The names
 are the SkoolKit disassembly's (docs/Items-Format.md), to be checked in play.
 
-    python3 tools/fig_items.py work/mkgame/original.bin docs/img/sprites/items.png
+    python3 tools/fig_items.py work/mkgame/original.bin work/items.png   (the docs use tools/fig_design.py items)
 """
 import os
 import sys
@@ -16,7 +16,7 @@ import kitlib as K  # noqa: E402
 NAMES = ['Unicycle', 'Flashgun', 'Cricket Ball', 'Spurs', 'Beer Barrel', 'Umbrella', 'Bellows', 'Party Manifesto',
          'Cannon', 'Barrel Medium', 'Vacuum Cleaner', 'ACME Bridge', 'Flute', 'Silver Lining', 'Spring', 'Formula',
          'Switch', 'Button', 'Battery', 'Coat Hanger', 'Trampoline', 'Atomic Pile', 'Anti Rad. Pills', 'Cup of tea',
-         'Energy Crystal', 'Busket', 'Balloon', 'Barrel Big', 'Barrel Small', 'Silver Cross', 'Busket', 'Lift']
+         'Energy Crystal', 'Basket', 'Balloon', 'Barrel Big', 'Barrel Small', 'Silver Cross', 'Basket', 'Lift']
 
 
 def item(m, i, scale):

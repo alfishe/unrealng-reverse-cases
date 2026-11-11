@@ -8,7 +8,7 @@
 ;
 ; The explorer's frame 9 ($6288, the front view) at screen $5092 (character row
 ; 20, columns 18-20) and the held item ($5B98, the item sprite at $8400;
-; BlankSprite $5C46 when $FF) at $5032 (row 17, columns 18-20), through the
+; BlankIcon $5C46 when $FF) at $5032 (row 17, columns 18-20), through the
 ; column list PanelColumns $5BD6 and BlitColumns $9F86. The screenshot
 ; start-room-14.png shows the explorer at row 20, column 18 and no held item.
 ;
@@ -44,9 +44,9 @@ DrawPortraitItem:
 ; Draw the spare lives in the panel: up to three explorer figures
 ;
 ; Lives $5B97 = 0 returns. Otherwise three icons, frames 2, 3 and 4 of the
-; explorer's set, the k-th (k = 1-3) shown when Lives - 1 >= k, else
-; BlankSprite $5C46; drawn at $5081 (row 20, columns 1-9) by SpareLivesShow
-; $9F1E. With the 4 lives of the start three figures show (start-room-14.png).
+; explorer's set, the k-th (k = 1-3) shown when Lives - 1 >= k, else BlankIcon
+; $5C46; drawn at $5081 (row 20, columns 1-9) by SpareLivesShow $9F1E. With the
+; 4 lives of the start three figures show (start-room-14.png).
 ;
 ; Callers: GameInit at $8FF0, $A9EE at $AA01 (tail, the life lost): 11 runs in
 ; 7 builds; the blank icon ran in r06000, r10000, r24000, r32000.
@@ -79,10 +79,10 @@ DrawSpareLivesStore:
 ; under them
 ;
 ; DrawBearerItems $9EE3 draws the items first. Then four bearer figures from
-; BearerFigures $9FDE, figure (log index AND 3) for the log entries BearerFirst
+; BearerFigures $9FDE, figure (log index AND 3) for the bearers BearerIndex
 ; $5C23 to +3 (wrapping at 27), at $5096 (row 20, columns 22-30) through
-; BearerRowShow $9F6B. Only 9 of the 12 columns show, from column BearerScroll
-; $5C22 (0-2), so the keys 1 and 2 (bearers left, right) scroll the row a
+; BearerRowShow $9F6B. Only 9 of the 12 columns show, from column BearerPhase
+; $5C22 (0-3), so the keys 1 and 2 (bearers left, right) scroll the row a
 ; character at a time.
 ;
 ; Callers: GameInit at $8FE8, $B9FA at $BA6E, $BB6C at $BC1C (tail), $BC1F at
@@ -115,10 +115,10 @@ DrawBearersNext:
 
 ; Draw the four carried items from the inventory log, row 17 of the panel
 ;
-; The entries InventoryLog $5B7C + BearerFirst $5C23 on (4, wrapping at 27):
-; the item sprite ($8400 + 72 * item), or BlankSprite $5C46 for a free entry
-; ($FF); drawn at $5036 (row 17, columns 22-30) by BearerItemsShow $9F70. The
-; wrap ran in c1, explorers, r16000 and r34000.
+; The entries BearerLoads $5B7C + BearerIndex $5C23 on (4, wrapping at 27): the
+; item sprite ($8400 + 72 * item), or BlankIcon $5C46 for a free entry ($FF);
+; drawn at $5036 (row 17, columns 22-30) by BearerItemsShow $9F70. The wrap ran
+; in c1, explorers, r16000 and r34000.
 ;
 ; Witness: L1 1139 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
 ; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
@@ -166,7 +166,7 @@ SpareLivesShow:
 
   ORG $9F6B
 
-; DrawBearers: the bearer figures at $5096, scrolled by BearerScroll
+; DrawBearers: the bearer figures at $5096, scrolled by BearerPhase
 ;
 ; Witness: L1 1139 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
 ; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
@@ -178,7 +178,7 @@ BearerRowShow:
 BearerItemsShow:
   LD HL,Screen+4150             ; DrawBearerItems: the items at $5036
 
-; Skip BearerScroll $5C22 columns of the column list, then blit 9
+; Skip BearerPhase $5C22 columns of the column list, then blit 9
 ;
 ; Witness: L1 2278 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
 ; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,

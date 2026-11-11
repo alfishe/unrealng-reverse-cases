@@ -42,10 +42,11 @@ CountDown:
 ; The hero's frame `$5B06` = `$7F` (the blank sprite), Room `$5C01` = `$28` and
 ; the room set-up `$9855`; the respawn state too: room `$28` (`$5C2D`),
 ; EventTimer 0 (`$5C2C`), RoomEvent `$1D` (`$5C2B`); `JP $AE85` with A = `$1D`:
-; RoomEvent = `$1D`, EventTimer = 0. The handler of event `$1D` (`$A822` in the
-; table at `$A72E`) plays the asteroid striking (gameover frames 1509-1961) and
-; sets GameOver; EndGame `$906D` follows (frame 1962). After the last life the
-; respawn (`$9090`, LifeLost still set) restores the same room and event.
+; RoomEvent = `$1D`, EventTimer = 0. Status `$1D` is Frozen `$A90E`, which only
+; holds; SpaceScene `$B0B6`, room `$28`'s script, plays the asteroid striking
+; (gameover frames 1509-1961) and sets GameOver; EndGame `$906D` follows (frame
+; 1962). After the last life the respawn (`$9090`, LifeLost still set) restores
+; the same room and event.
 ;
 ; The time running out, on a clone (work/stage2/probe_points.py A: the RZX
 ; state at 44000 in room `$3B`, the countdown poked to 0 days 0 hours 2

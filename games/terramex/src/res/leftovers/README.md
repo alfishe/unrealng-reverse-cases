@@ -11,4 +11,4 @@ are the evidence.
 | `back-buffer-tape.bin` | BackBufferLeftover `$E900-$EFFF` | 1792 | the rest of the back buffer: play writes it before reading it. It holds twelve 24 x 24 sprites in the sprite layout at `$E930-$EC8F` that no frame number reaches (the sprite space ends at `$A7B8`): explorer poses and the snake coiled round a captive (SK: "captured by the snake"), drawn in docs/img/sprites/leftover-sprites.png |
 | `tile-map-tape.txt` | TileMap `$F800-$F9FF` | 512 | the tile map of a room as it was when the tape was saved, 16 rows of 32 hex tile indices; BuildTileMap `$9914` rewrites it on every room entry before anything reads it |
 
-![The twelve unused sprites of the back buffer](../../../docs/img/sprites/leftover-sprites.png)
+![The twelve unused sprites of the back buffer](../../../docs/img/arch/leftover-sprites.png)

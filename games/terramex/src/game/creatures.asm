@@ -525,9 +525,9 @@ AnimateCreature:
 ;
 ; IX = the creature's object. The explorer ($5B04 as IY) near it ($9140: within
 ; $10 pixels both ways, 8 for the drop's frames $5C-$5F): when the status is
-; below $0F, status $18 (handler $A88F); if the status is 0 and the flag $A101
-; is 0, status $1A (handler $A851) instead. During the statuses $0F and above
-; (the scripted events) creatures do not hit.
+; below $0F, status $18 (CreatureDeath $A89E); if the status is 0 and the flag
+; $A101 is 0, status $1A (FallDeath $A888) instead. During the statuses $0F and
+; above (the scripted events) creatures do not hit.
 ;
 ; Witness: L1 10981 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
 ; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,

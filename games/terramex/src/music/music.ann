@@ -335,7 +335,7 @@ $C825 c FetchPatternByte ; A = the byte at the channel's pattern position: DE + 
 
 @module tunes ; The tune data and the player's tables: periods, vibratos, arpeggios, tunes, order lists, patterns, envelope rates
 @about The tune format, for a converter (all of it in tunes, music/tunes, $C967-$CD35): TuneTable $C967 holds 4 entries of 3 little-endian words, each the address of a channel's order list (A, B, C). An order list is bytes read one after another: $00-$7F pattern n; $80 t transpose (t signed); $A0+n the next pattern n times (0: 256); $C0 d detune d; $E0+n m instrument slot n = record offset m (9 x record); $FF the tune's end (the first channel to meet it ends the tune; the next frame tune 0 starts again). A pattern, found through PatternLo $CA37 / PatternHi $CA52, is events ended by $FF: n d (n $00-$7F) a note of d frames; $A0 d a rest of d frames; $80+n instrument slot n; $90+n arpeggio n (0 off); $BF slide off; $C0+s lo hi c a slide (bit 5 of the command: period up). Note n sounds at period-table index n + 20 + the channel's transpose (MIDI n + 32 + transpose). A step of the text format is one event; the time of a note or rest is its d frames (0 = 256), every other event takes none.
-@about The instruments (Instruments $C028, music/instruments), the instrument slots (SlotTable $C11B, the state module), the vibratos (VibratoTable $C906), the arpeggios (ArpeggioTable $C927) and the envelope rates (AttackRates $CD36, DecayRates $CD46) belong to the tune too: a converter needs them to give each note its volume curve. The periods (PeriodLo $C82E, PeriodHi $C89A) are the player's equal-tempered table.
+@about The instruments (Instruments $C028, music/instruments), the instrument slots (SlotTable $C11B, the state module), the vibratos (VibratoTable $C906), the arpeggios (ArpeggioTable $C927) and the envelope rates (AttackRates $CD36, DecayRates $CD46) belong to the tune too: a converter needs them to give each note its volume curve. The periods (PeriodLo $C82E, PeriodHi $C89A, music/periods.csv) are the player's equal-tempered table.
 @about Tune 0 (3 min 14 s): channel A plays the bass (patterns 0, 3, then pattern 5 transposed through -7, -12, -9, -7, -4, -6, then pattern 10, 15), channel B the same intro detuned by 10, then the melody (pattern 6), then the chords (13, 16, 18, 19 with arpeggios 2-6 and the noise beats of instrument 8), channel C the noise rhythm (pattern 2), the arpeggiated line (7-9, transposed +12 / +14), then 11, 14, 17, 20. Tune 1 is tune 0 from pattern 10 on.
 
 $C82D b EmptyPattern 1 ; A pattern of no events: every channel's pattern at a tune's start
@@ -343,6 +343,7 @@ $C82D b EmptyPattern 1 ; A pattern of no events: every channel's pattern at a tu
 
 $C82E b PeriodLo 12 ; The tone periods' low bytes: 108 notes, C0 to B8
 > Index i (StartNote $C4C9: the note + 20 + the transpose; ArpeggioEffect adds the step's semitones) is MIDI note i + 12 at the AY clock of 1.7734 MHz: index 57 = 252 = A4 (439.8 Hz). The period is PeriodLo[i] + 256 x PeriodHi[i]. Two flaws: every C# (indices 1, 13, 25, ..., 85) is 0.38 semitone flat, and index 8 (G#0, 4526) is G0's period again. Tune 0 plays C# at indices 25 and 61 (7 notes). The recordings read indices 14-96.
+@res music/period-lo.bin
 $C82E ; octave 0 (indices 0-11)
 $C83A ; octave 1
 $C846 ; octave 2
@@ -355,6 +356,7 @@ $C88E ; octave 8
 
 $C89A b PeriodHi 12 ; The tone periods' high bytes: 108 notes
 > As PeriodLo. Its last 8 bytes ($C8FE-$C905, all 0) are also VibratoTable-8's record 0, which no instrument names (offset 0 is no vibrato).
+@res music/period-hi.bin
 $C8A6 ; octave 1
 $C8B2 ; octave 2
 $C8BE ; octave 3

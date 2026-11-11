@@ -6,7 +6,7 @@ and the label sizes are this case's: executed and read on the first row, written
 each with its own address axis and the screen page as an inset below it (the bitmap where it shows, the
 attributes as their cells).
 
-    python3 tools/fig_heatmap.py work/stage1/l1-all.json docs/img/heatmap.png
+    python3 tools/fig_heatmap.py work/stage1/l1-all.json work/heatmap.png   (doc 02 uses tools/fig_arch.py heatmap)
 """
 import argparse
 import os

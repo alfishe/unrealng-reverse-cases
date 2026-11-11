@@ -284,8 +284,8 @@ PickUpItems:
 ; PillsTaken $5C3F. The Cannon (8) is never picked up. The Spring ($0E) and the
 ; Trampoline ($14) are not picked up either: when the explorer touches one in
 ; status 2 with $5C07 at least 10 and X within 5 pixels of it he is set on top
-; of it (X = its X, Y = its Y - $17, frame $0F, status 5: the bounce, handler
-; $A5F0).
+; of it (X = its X, Y = its Y - $17, frame $0F, status 5: the bounce, BounceUp
+; $AD17).
 ;
 ; Any other item is taken: the held item, if any, goes to the free bearer (and
 ; BearerIndex $5C23 is moved to show it: C - 2, not below 0), +50 score, sound
@@ -412,14 +412,15 @@ PickUpShowBearer:
 ; scroll
 ;
 ; Z set on entry when no scroll runs (BearerPhase $5C22 = 0). Then key 1 (port
-; $F7FE bit 0) sets BearerScroll $5C21 = 1, BearerPhase = 4 and BearerIndex
+; $F7FE bit 0) sets BearerScrollDir $5C21 = 1, BearerPhase = 4 and BearerIndex
 ; $5C23 - 1 (from 0 to $1A: the 27 bearers wrap); key 2 (bit 1) clears
-; BearerScroll and BearerPhase. No key: nothing (both at once count as key 1).
-; While a scroll runs (and after key 2): with BearerScroll 0 the phase counts
-; up 1 a call and at 4 BearerIndex + 1 (from $1A to 0) and the phase is 0; with
-; BearerScroll 1 it counts down from 4. Every step redraws the bearer row
-; ($9EBD: four bearers from BearerIndex, shifted by BearerPhase). The Help
-; page: "1=Move bearers and objects right 2=Move bearers and objects left".
+; BearerScrollDir and BearerPhase. No key: nothing (both at once count as key
+; 1). While a scroll runs (and after key 2): with BearerScrollDir 0 the phase
+; counts up 1 a call and at 4 BearerIndex + 1 (from $1A to 0) and the phase is
+; 0; with BearerScrollDir 1 it counts down from 4. Every step redraws the
+; bearer row ($9EBD: four bearers from BearerIndex, shifted by BearerPhase).
+; The Help page: "1=Move bearers and objects right 2=Move bearers and objects
+; left".
 ;
 ; Witness: c1 presses 1 and 2 (tests/inputs/c1.txt); key 1 runs 128 times in 21
 ; builds ($BC2F), key 2 113 times in 21 ($BC43).
@@ -469,6 +470,6 @@ BearerScrollStep:
   LD (HL),$00
   JP DrawBearers
 BearerScrollBack:
-  LD HL,BearerPhase             ; BearerScroll 1: the phase down
+  LD HL,BearerPhase             ; BearerScrollDir 1: the phase down
   DEC (HL)
   JP DrawBearers

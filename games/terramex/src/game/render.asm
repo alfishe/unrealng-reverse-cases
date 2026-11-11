@@ -17,11 +17,12 @@
 ;
 ; 2. Each slot's sprite, frame F at $6000 + 72 * F, is drawn into the back
 ; buffer in three columns of 24 rows (DrawSpriteColumn $9C6A). Flags bit 7 set
-; (facing left) patches the two MirrorPatch points $9C82/$9C87 to LD L,A / LD
-; A,(HL), so each byte is bit-reversed through the table at $FE00, and draws
-; the columns right to left; bit 7 clear patches them to two NOPs. The L1
-; arrivals record these writes in 21 builds ($9B82/$9B85 or $9B9C/$9B9F). After
-; slot 0 WellFront $9A09 may paint the well over the hero.
+; (facing right: the stored graphics face left) patches the two MirrorPatch
+; points $9C82/$9C87 to LD L,A / LD A,(HL), so each byte is bit-reversed
+; through the table at $FE00, and draws the columns right to left; bit 7 clear
+; patches them to two NOPs. The L1 arrivals record these writes in 21 builds
+; ($9B82/$9B85 or $9B9C/$9B9F). After slot 0 WellFront $9A09 may paint the well
+; over the hero.
 ;
 ; 3. DrawItems $9DE3 draws the floor items into the buffer and the screen at
 ; once. 4. CopyRects $9BEB copies the 4-byte by 24-row rectangles of last
@@ -82,10 +83,10 @@ RenderPassSprites:
   LD H,(IX+$43)
   PUSH HL
   POP IY
-  BIT 7,(IX+$03)          ; facing left?
+  BIT 7,(IX+$03)          ; flags bit 7: mirrored (facing right)?
   JR NZ,RenderPassMirror
-  LD HL,$0000             ; right-facing: no byte reversal, columns left to
-                          ; right
+  LD HL,$0000             ; bit 7 clear (facing left, as stored): no byte
+                          ; reversal, columns left to right
   LD (MirrorPatch1),HL
   LD (MirrorPatch2),HL
   PUSH BC
@@ -99,8 +100,8 @@ RenderPassSprites:
   CALL DrawSpriteColumn
   JR RenderPassNext
 RenderPassMirror:
-  LD HL,$7E6F             ; left-facing: LD L,A / LD A,(HL) (bytes $6F, $7E),
-                          ; columns right to left
+  LD HL,$7E6F             ; bit 7 set (facing right): LD L,A / LD A,(HL) (bytes
+                          ; $6F, $7E), columns right to left
   LD (MirrorPatch1),HL
   LD (MirrorPatch2),HL
   INC C
@@ -888,7 +889,8 @@ BackBufferLeftover:
 
   ORG $FE00
 
-; Byte n reversed bit for bit: mirrors a sprite byte for the left-facing frames
+; Byte n reversed bit for bit: mirrors a sprite byte for the mirrored
+; (right-facing) frames
 ;
 ; Checked: all 256 bytes equal n reversed. Read by the mirror patch of the
 ; plotter ($9C82/$9C87).

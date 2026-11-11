@@ -1,11 +1,11 @@
 # Terramex (Grandslam Entertainments, 1987)
 
-State: in progress (stage 1).
+State: docs written, in review (12 documents, 66 PNG figures, 98 mermaid diagrams, 37 animations, 9 WAVs and tune 0 as MP3; counted on 2026-11-11 with `ls docs/[0-9][0-9]-*.md`, `find docs/img -name '*.png'`, `` grep -h '^```mermaid' docs/*.md | wc -l ``, `find docs/img -name '*.gif'`, `find docs -name '*.wav'`).
 
 | | |
 | --- | --- |
-| Machine | 48K and 128K from one tape. On a 128K the game uses RAM 1 (the AY music player, called by the IM 2 handler `$9491`), RAM 3 and 4 (the five explorers' data sets) and RAM 6 (the explorer selector); on a 48K the tape stops after the selector and the last block loads over the sets ([doc 3, 3.1](docs/03-build-and-load.md#31-the-tape-block-by-block)). This case runs the 128K |
-| Profile (AGENTS.md 4.0) | arcade adventure, a flick-screen platform game for one player (to be confirmed by stage 2): one of five explorers (Fortisque-Smithe, Herr Krusche, Henri Beaucoup, Big John Caine, Wu Pong; the selector also offers Help) walks, jumps and climbs through 70 rooms numbered level * 12 + column on six levels, each room 32 x 16 cells built from back-tiles (`$D600` rows of 32 back-tile indices, `$C600` back-tiles, `$F000` tiles; [doc 2, 2.5](docs/02-architecture.md#25-the-rooms-in-the-data)); 32 objects (72-byte sprites at `$8400`) picked up, carried by the invisible bearers (keys 1 and 2), swapped (5) and used, logged at `$5B7C`; creatures and hazards per room (`$C152`, 12 bytes a room); four lives (`$5B97`), a score, a high score, a countdown of 30 days 23:59 (`$5BFB`); a game ends with the last life (a space scene, then the menu) or with the ending sequence `$B0B6` in room `$28`; the main loop `$9018` never waits for the frame (2.4 to 3.3 frames a pass, [WALKTHROUGH 1](WALKTHROUGH.md#1-one-recording-from-power-on)); IM 2 (table `$8E00-$8F00`, vector `$5F5F`); sound: Ben Daglish's AY music on the 128K, effects through `$C4BC`; controls: keyboard (Z X 0 K SPACE), Kempston, Sinclair; no packer, a ROM-speed tape, a BASIC loader hidden in the variables area |
+| Machine | 48K and 128K from one tape. On a 128K the game uses RAM 1 (the explorer selector, run at `$C000` by RunSelector `$8F4A`), RAM 3 and 4 (the five explorers' data sets) and RAM 6 (the AY music player, called by the IM 2 handler `$9491`; [doc 2, 2.1](docs/02-architecture.md#21-the-machine-budget)); on a 48K the tape stops after the selector and the last block loads over the sets ([doc 3, 3.1](docs/03-build-and-load.md#31-the-tape-block-by-block)). This case runs the 128K |
+| Profile (AGENTS.md 4.0) | a flip-screen arcade adventure for one player against a countdown ([doc 1](docs/01-game-design.md)): one of five explorers (Fortisque-Smithe, Herr Krusche, Henri Beaucoup, Big John Caine, Wu Pong; the selector also offers Help) walks, jumps, climbs and rides through 72 rooms numbered level x 12 + column (`$00-$47`: six levels of 12, `$46` and `$47` reached only as explorers' own rooms), each 32 x 16 cells of tiles built from back-tiles (RoomGrids `$D600`, BackTiles `$C600`, tiles `$F000`, a second tile set for 15 rooms; [doc 1, 1.8](docs/01-game-design.md#every-room), [doc 6](docs/06-rendering.md)); 32 items (sprites at `$8400`, 31 placed by ItemPlaces `$B99D`), one in the hand and the rest carried by 27 invisible bearers (BearerLoads `$5B7C`; keys 1 and 2 scroll their row, S swaps); the professor in room `$3B` wants six of them in order (WantedItems `$B6BB`); three creatures a room of eight types (RoomCreatures `$C152`), 21 room scripts with the puzzles ([doc 7](docs/07-objects.md)); the hero's 34 statuses (`$5C06`, StatusHandlers `$A72E`; [doc 10](docs/10-gameplay-logic.md)); four lives (`$5B97`), respawn at the last of 44 checkpoint rooms, a score and a high score; a countdown of 30 days 23:59 (`$5BFB`), one minute a pass, about 42 minutes; every game ends in the space scene of room `$28` (SpaceScene `$B0B6`): the asteroid strikes the Earth (the last life or the time) or the sixth gift's deflector sends it back; the main loop `$9018` never waits for the frame (2.4 to 3.3 frames a pass, [doc 4, 4.4](docs/04-game-loop.md#44-frames-per-pass-and-the-pass-against-the-beam)); IM 2 (table `$8E00-$8F00`, vector `$5F5F`); sound: Ben Daglish's AY music on the 128K (tune 0 only, a 9698-frame loop), seven beeper effects through PlaySound `$C4B2` ([doc 9](docs/09-sound.md)); controls: keyboard (Z X O K SPACE), Kempston, Sinclair, T thinks, CAPS SHIFT + Q aborts, Q + A freezes ([doc 5](docs/05-controls.md)); no packer, a ROM-speed tape, a BASIC loader hidden in the variables area |
 | Authors | Teque Software Development: Shaun Hollingworth (program), Pete Harrap, Ben Daglish (128K music), from the menu ("BY TEQUE SOFTWARE DEV. LTD, (C) ARGUS PRESS SOFTWARE LTD, PROGRAM SHAUN HOLLINGWORTH, PETE HARRAP, +2 MUSIC BEN DAGLISH", [menu](docs/img/play/menu.png)); ZXDB 5195 adds Steinar Lund (art) |
 | Release | ZXDB 5195: Terramex, Grandslam Entertainments Ltd, 1987, £8.95; re-releases Bug-Byte Premier (1987), EDOS, Zafiro Software Division (Spain, 1988). ZXDB labels the Quicksilva TZX "Original Big Box Release" |
 | Original | `orig/Terramex.tzx.zip` (md5 `df641423f9205d7154dbff10dba78a54`, SHA-1 `ae3ae51b0de756fa895bcf0136908135fe849b53`; ZXDB `pub/sinclair/games/t/Terramex.tzx.zip`, downloaded from World of Spectrum and checked against ZXDB's SHA-256 `1f08f5a0...`): `Terramex.tzx` (82 306 bytes, md5 `520af78bf4878c76d3ebdc7b8d63d535`, SHA-1 `e3e8e33b07eeda3594f124932b1345b1f06aff3f`), five standard-speed blocks: a BASIC "TERRAMEX", the loading screen, `$6000-$F6F7` and `$7200-$FFFF` |
@@ -46,8 +46,11 @@ original's blocks it holds in 256-byte pieces (`work/stage1/copy-compare.tsv`; [
 
 - The SkoolKit disassembly by nzeemin, <https://github.com/nzeemin/skoolkit-game-revs> folder `terramex-zx`
   (a shallow clone at commit `6a328b3b9ebbf895eeb3f696bff6a3759ea75199` in `work/candidates/skoolkit-game-revs`):
-  the starting point for names and structure. Every name taken from it is said so in the documents and checked
-  against the code and our recordings; where we differ is in `work/stage1/NOTES.md`.
+  the starting point for the structure: its entry kinds, titles and comments over `$7200-$FFFF` (270 entries, 225
+  kept at the same address). It has no labels, so every name is ours; 14 titles are taken from it and marked "(SK)" in
+  the `.ann` and the documents, each checked against the code and our recordings. It does not cover the selector, the
+  loader, the music player or the explorer sets. Where we differ: [doc 2, 2.10](docs/02-architecture.md#210-what-the-skoolkit-disassembly-covers-and-where-this-case-differs),
+  `work/stage1/NOTES.md` and `work/stage2/NOTES.md`.
 - ZXDB 5195 (spectrumcomputing.co.uk): the releases, the authors, the instructions (Bug-Byte, typed by Blughes), the
   maps.
 
@@ -56,7 +59,7 @@ The documents: [docs/README.md](docs/README.md). How the reverse was done: [WALK
 ## Build
 
 ```bash
-tools/build.sh [SJASMPLUS]     # stage 3: builds the tape and compares it with orig/Terramex.tzx byte for byte
+tools/build.sh [SJASMPLUS]     # builds the tape and compares it with orig/Terramex.tzx byte for byte
 ```
 
 The game source is `src/game/*.asm`, written by `kit/mkgame.py` from `src/game/game.ann`; the resources are

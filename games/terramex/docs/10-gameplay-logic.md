@@ -165,9 +165,7 @@ StatusDispatch:
 | 32 | DrinkPose `$A783` | room `$2E`, the Beer Barrel | ExplorerRoom2E `$B263` |
 | 33 | FlashPose `$A770` | room `$47`, the Flashgun | ExplorerRoom47 `$B18A` |
 
-Several `.ann` comments name the handler of status N + 1 for status N (the snakes "`$19` (`$A888`)", the basket "`$15`
-(`$A8EA`)", and others). The table holds word N - 1 for status N, so those names are one status off. The list is in
-`work/docs/tmC-src-changes.md` for the lead.
+The table holds word N - 1 for status N: status `$19` is Room1ADeath `$A88F`, `$15` RideObject4 `$A95F`, and so on.
 
 ```mermaid
 stateDiagram-v2
@@ -1144,4 +1142,5 @@ Known only from the code, or from a clone probe where said:
 - the countdown running out (only the clock probe);
 - the flier's change of type, a third item in a room, the full bearers (doc 07.13);
 - the WantedItem = 0 gift of the Unicycle;
-- the 13 rooms the RZX run does not visit: `$01 $02 $05 $06 $11 $12 $15 $1E $21 $24 $25 $2E $2F` (WALKTHROUGH 6.0).
+- the 15 rooms the RZX run does not visit: `$01 $02 $05 $06 $11 $12 $15 $1E $21 $24 $25 $2E $2F $46 $47` (13 of them
+  on screen in stage 2's probe B; WALKTHROUGH 6.0).

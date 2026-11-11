@@ -20,7 +20,9 @@ draws all of them from these files and the tiles, sprites and item places (docs/
   bytes: byte 0 = hit (bit 7), hitframe (bits 4-6), type (bits 0-3); byte 1 = the first sprite frame of the
   animation (`$40-$7E`, frame F at `$6000 + 72 x F`); byte 2 = X in pixels; byte 3 = dir (bit 7: moving right or down)
   and Y (bits 0-6). The types are the handlers of CreatureHandlers: none, walker, climber, leftflier, rightflier, drop,
-  still, riser, scenery. hit 1: only frames from hitframe on kill the hero (AnimateCreature); hit 0: every frame.
+  still, riser, scenery. hit 0: never hits (types 1-4, 6, 7:
+  `RET Z` at `$C0C8` and in RiserFrame); hit 1 with hitframe 4 or more: every frame; else at the frame index = hitframe
+  (AnimateCreature). The drop (type 5) always tests (`JP HitExplorer` at `$C037`).
 
 Rooms `$46` and `$47` have empty creature records.
 

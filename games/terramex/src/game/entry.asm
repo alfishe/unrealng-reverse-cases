@@ -102,7 +102,7 @@ SetLifeLossOp:
 ; every game.
 ;
 ; 3. The set-up (InitGame `$8F69`): clears `$5B04-$5B66` (the hero and party
-; records and other state, 99 bytes); fills InventoryLog `$5B7C-$5B96` (27
+; records and other state, 99 bytes); fills BearerLoads `$5B7C-$5B96` (27
 ; bytes) with `$FF` (free); `$B932` clears the creature table's active bits and
 ; bit 7 of `$B9D9` is set again; copies the saved panel back to the screen
 ; (`$E000` -> `$5000`, 2048 bytes; `$E800` -> `$5A00`, 256 attributes: EndGame
@@ -153,7 +153,7 @@ InitGame:
   LD DE,Hero+1
   LD (HL),$00
   LDIR
-  LD HL,BearerLoads             ; InventoryLog: 27 bytes of $FF (free)
+  LD HL,BearerLoads             ; BearerLoads: 27 bytes of $FF (free)
   LD DE,BearerLoads+1
   LD BC,$001A
   LD (HL),$FF

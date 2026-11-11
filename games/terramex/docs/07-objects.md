@@ -1025,10 +1025,8 @@ flowchart TD
     Z -- no --> S24["Status $18: 24 CreatureDeath"]
 ```
 
-The hit flag reads the opposite way to the resource notes. `src/res/rooms/README.md` says "hit 0: every frame". In the
-code, a clear hit flag returns at `$C0C8` (`RET Z`) before any test. So hit 0 never hits, for types 1-4, 6 and 7. The
-drop is the exception, because DropFall jumps to HitExplorer directly. The fix is sent to the lead
-(`work/docs/tmC-src-changes.md`).
+The hit flag: a clear flag returns at `$C0C8` (`RET Z`) before any test. So hit 0 never hits, for types 1-4, 6 and
+7. The drop is the exception, because DropFall jumps to HitExplorer directly (`src/res/rooms/README.md` says the same).
 
 The status choice is a quirk:
 
@@ -1037,9 +1035,8 @@ The status choice is a quirk:
 - A hero in status 0 but above a floor, or in any action status 1-14 (jumping, hovering, riding the barrel), gets
   status 24, the creature death.
 
-The `.ann` of HitExplorer names the handlers of the next status: `$A88F` for `$18` and `$A851` for `$1A`. But the table
-at `$A72E` holds the word N - 1 for status N. So the handlers are really CreatureDeath `$A89E` and FallDeath `$A888`
-(doc 10.2; sent as a source change).
+The table at `$A72E` holds the word N - 1 for status N, so the handlers of these two statuses are CreatureDeath
+`$A89E` (`$18`) and FallDeath `$A888` (`$1A`) (doc 10.2).
 
 A hazard can also kill by contact through the electric beams of the alternate-set rooms (RoomEffects `$91C0`, the hit
 at `$9262`). The hero dies when he is inside the beam's X span, within 12 rows of it, and in a status below 4: he gets
@@ -1674,8 +1671,7 @@ Formula, given in `rzx44000` frame 459 (RZX 44 459, 7.11).
 - WantedItem starts at 0, not `$FF`. InitGame writes `$FF` at `$8FA6`, and then clears `$5BFA-$5C8D` from `$8FBE`.
   That range includes `$5C3C`. Item 0 is the Unicycle. So a hero who brings the Unicycle to the professor before he
   first asks would give it as a gift. This is known only from the code: the RZX player arrives with other items. The
-  samples show `$5C3C` = 0 in `rzx24750` frame 613 and in `rzx44000` frames 0-415. The professor's `.ann` says `$FF`;
-  the fix is sent to the lead.
+  samples show `$5C3C` = 0 in `rzx24750` frame 613 and in `rzx44000` frames 0-415.
 - WantedItem is not cleared after a gift. Until the professor asks again (his frame `$4D`), the same item would count a
   second time. `rzx44000` frames 460-723 show WantedItem `$0F` kept after the gift. Only the Formula has several
   copies (records 27-30, in the explorer rooms), and each explorer reaches only his own room. So no second copy can be

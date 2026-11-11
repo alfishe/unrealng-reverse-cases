@@ -104,7 +104,7 @@ SwapTileAttrs:
 ; every pass (rzx26000-rzx42000, 9538 runs of `$9266`). The hero is hit when
 ; his X is from the left end's X to below the right end's X minus 12 and |Y + 6
 ; - the row's Y| < 12, while RoomEvent `$5C06` is below 4: RoomEvent = `$18`
-; through `$AE85` (its handler `$A88F` in the table at `$A72E`). The hit
+; through `$AE85` (CreatureDeath `$A89E` in the table at `$A72E`). The hit
 ; (`$9260`) is not executed in any recording. A list that ends after an odd
 ; entry returns without the capsules. Rooms with tile `$DD`: `$20`, `$38` (two
 ; beams), `$39`, `$3A`, `$3C`, `$43`. rzx42000 frame 500 shows the beam of room
@@ -419,12 +419,12 @@ FlameFrames:
 ;
 ; First CALL $BE42 (the room's creature decode, A kept). Room $2C sets the word
 ; $5C34 to $FF02: $5C34 is the pair C = dx, B = dy that $A34B moves the hero by
-; (each kept in -3..3 there), so the room starts the hero with dx = +2, dy = -7
-; (an upward throw); r18000 is the only build that entered room $2C. Then the
-; room is looked up in CheckpointRooms $9AF5: when it is listed and FallCount
-; $5C05 is 0 (the hero is not falling), SaveRespawnPoint $9AA1 records this
-; room as the place a lost life restarts. Last the per-room set-up
-; SetUpRoomTiles $9880, with IX preserved around it.
+; (each kept in -3..3 there), so the room starts the hero with dx = +2, dy =
+; -1; r18000 is the only build that entered room $2C. Then the room is looked
+; up in CheckpointRooms $9AF5: when it is listed and FallCount $5C05 is 0 (the
+; hero is not falling), SaveRespawnPoint $9AA1 records this room as the place a
+; lost life restarts. Last the per-room set-up SetUpRoomTiles $9880, with IX
+; preserved around it.
 ;
 ; Evidence: 105 entries over all 31 play builds, SaveRespawnPoint called from
 ; $9874 71 times (27 builds), so 34 room entries were in rooms not listed or

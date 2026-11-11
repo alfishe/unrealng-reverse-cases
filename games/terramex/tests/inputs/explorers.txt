@@ -1,6 +1,7 @@
 # explorers: from work/stage1/probe/load-128K/end.szx (the device menu after the real 128K load of the original,
 # ROM speed), five rounds, each a device on the menu, 0 (start), the explorer selector (the arrow moved onto one
-# face, then fire), play (walk right, jump, the bearer keys 1 and 2, T think, 5 swap, walk left, up, down),
+# face, then fire), play (walk right, jump, the bearer keys 1 and 2, T think, 5 (no effect: the swap key is S),
+# walk left, 0 (no effect on the keyboard: up is O), down),
 # CAPS SHIFT + Q (abort) back to the menu; then the sixth face, Help: its pages (SPACE), ENTER back.
 0 -
 # round: Kempston (2), Fortisque-Smithe (0): up, fire

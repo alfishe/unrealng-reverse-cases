@@ -187,7 +187,7 @@ The ways to die ([doc 10](10-gameplay-logic.md)):
 | --- | ---: | --- |
 | a landing after 20 fall passes or more (FallPasses `$5C05`, not counted with the umbrella in use) | 26 | `gameover` frame 1363; the RZX run, RZX frames 11 375-11 500 |
 | a creature within 12 pixels | 24 | `rzx06000`, `rzx22000`, `rzx32000` |
-| the snakes of room `$1A` | 25 | `rzx10000` frames 1943-1958 |
+| the snakes of room `$1A` | 25 | `rzx10000` frames 1943-1958 (a drift of our replay: the RZX player was not bitten there, WALKTHROUGH 6.0) |
 | silent: the pad of room `$20`, the radiation of room `$3C` without the pills, the creature of room `$39` without the Silver Cross | 23 | a clone probe only (stage 2) |
 | the balloon landing while it falls (status 9), then the fall death | 26 | known only from the code |
 | the barrel rides Small and Big | 15, 16 | known only from the code |
@@ -311,10 +311,10 @@ items for the six wishes lie in levels 3-5.
 
 ## 1.9 The end of a game
 
-Every game ends in room `$28`, the space scene: the asteroid falls towards a building.
+Every game ends in room `$28`, the space scene: the asteroid falls towards the Earth.
 
-- **Lost** (the last life or the countdown): the asteroid strikes the building.
-- **Won** (the sixth gift given): the professor's deflector stands beside the building and sends the asteroid back.
+- **Lost** (the last life or the countdown): the asteroid strikes the Earth.
+- **Won** (the sixth gift given): the professor's deflector stands beside the Earth and sends the asteroid back.
 
 Either way the game returns to the menu, and the high score is kept if beaten.
 
@@ -332,9 +332,9 @@ docs/img/play/space-scene-won.gif`.*
 
 How to read them:
 
-- Both open on the same picture: the building at the bottom, the asteroid high on the right.
-- In the lost game the asteroid reaches the building and the building flashes.
-- In the ending the deflector stands left of the building and sends the asteroid back.
+- Both open on the same picture: the Earth at the bottom, the asteroid high on the right.
+- In the lost game the asteroid reaches the Earth and the Earth flashes.
+- In the ending the deflector stands left of the Earth and sends the asteroid back.
 - Both end on the device menu.
 
 ![Key moments of a game](img/design/moments.png)

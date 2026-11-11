@@ -537,8 +537,8 @@ Room46Dead:
 ; object in slot $5B10 (X $64, Y $48, frame $4F; the target) every pass and
 ; waits for the explorer to stand at X $DC, Y $48 holding the Cricket Ball
 ; (HeldItem $5B98 = 2); then clears the explorer's facing bit (IX+3 bit 7),
-; goes to stage 1 and sets status $1C (handler $A90E through the status table
-; $A72E; stage 1 then waits for the throw frame).
+; goes to stage 1 and sets status $1C (Room2DAnim $A828 through the status
+; table $A72E; stage 1 then waits for the throw frame).
 ;
 ; Stage 1 waits for the explorer's frame $3E (the throw pose), then puts the
 ; ball in slot $5B14 (X $C8, Y $39, frame $39). Stage 2 flies the ball 4 pixels
@@ -635,7 +635,7 @@ CricketFormulaFalls:
 ; (BasketSide 0) while LeverState is 0 (BasketToRight $B47E); a blocked move
 ; leaves E as the caller had it (known only from the code). At the end of its
 ; way (E = 0) it waits for the explorer to come near ($9140); then stage 2,
-; BasketSide flipped, status $15 (handler $A8EA). Stage 2 carries it to the
+; BasketSide flipped, status $15 (RideObject4 $A95F). Stage 2 carries it to the
 ; other end whatever the lever (BasketRight $B483 / BasketLeft $B4B5); at the
 ; end the explorer is set 8 pixels higher (IX+1 - 8), stage 3 (the script then
 ; does nothing until the room is entered again) and the status is cleared
@@ -837,7 +837,7 @@ BasketLeftTail:
 ; Waiting, it does nothing until the explorer's Y is below $48 and his X $62 or
 ; more; then if he holds the Silver Cross (HeldItem $5B98 = $1D) it starts to
 ; flee, else it turns to him (IX+3 bit 7 set, frame $44) and, if the status is
-; below 4, sets status $17 (handler $A89E).
+; below 4, sets status $17 (SilentDeath $A8A8).
 ;
 ; Fleeing: X + 2 a pass, frames $41-$44 by PassCount ($5C02 / 2 & 3); at X $E6
 ; it is gone: +150 score (AddScore $BCF2) and frame $7F every pass after.
@@ -924,7 +924,7 @@ SnakesRoom17:
 ; slots $5B0C, $5B10, $5B14 (X $44, $70, $94, Y $60, frames $51-$53). Then
 ; every pass, for each of the 3 (2 in room $17, from SnakesRoom17 $B55A): frame
 ; $7F (gone) is skipped; frame $55 (struck the pass before) becomes $7F and
-; sets status $19 (handler $A888); else the frame steps through $51-$54 (+
+; sets status $19 (Room1ADeath $A88F); else the frame steps through $51-$54 (+
 ; PassCount bit 0, back to $51 after $54), and the snake strikes (frame $55)
 ; when its X equals the explorer's X rounded down to 4 pixels. The Flute
 ; (HeldItem $5B98 = $0C) stops the strike: in room $17 always, in room $1A only
@@ -1021,8 +1021,10 @@ SnakeTemplate:
 ; clear (he walks right) the first frame $4D ends the sequence instead, so he
 ; asks only on his way left. Each new frame $4D (his asking pose) shows the
 ; bubble: WantedItem = WantedItems[GiftCount] ($B6BB), the bubble frame $80 +
-; that item. GameInit sets WantedItem to $FF ($8FA6): nothing is given before
-; he first asks.
+; that item. InitGame writes $FF at $8FA6, but its clear of $5BFA-$5C8D ($8FBE)
+; runs after and zeroes $5C3C: WantedItem is 0 (the Unicycle) until he first
+; asks (rzx44000 frames 0-415 and rzx24750 frame 613: $5C3C = 0). WantedItem is
+; not reset after a gift (rzx44000 frames 460-723: $0F kept).
 ;
 ; Witness: rzx42000-rzx50000 run it 2293 times; the bubble ($B65E) 11 times,
 ; the gifts ($B5EF) 6 times (rzx44000 2, rzx46000 2, rzx48000 1, rzx50000 1),
@@ -1175,10 +1177,10 @@ LabStep:
 
 ; The sixth gift: on to room $28 and the ending
 ;
-; Room = $28, the room set up ($9855), GameWon $5BFE = $1D, status $1D (handler
-; $A822; $B0B6, room $28's script, plays the ending and sets GameOver $5BFF),
-; $5B06 = $7F. Called by ProfessorScript $B5DD. Witness: rzx50000 runs it once,
-; before the ending at frame 729.
+; Room = $28, the room set up ($9855), GameWon $5BFE = $1D, status $1D (Frozen
+; $A90E); SpaceScene $B0B6, room $28's script, plays the ending (and sets
+; GameOver $5BFF), $5B06 = $7F. Called by ProfessorScript $B5DD. Witness:
+; rzx50000 runs it once, before the ending at frame 729.
 ;
 ; Witness: L1 1 (rzx).
 ProfessorEnding:
@@ -1196,7 +1198,7 @@ ProfessorEnding:
 ;
 ; The room script of room $43. When the explorer stands at Y $20 with X from
 ; $76 to $83, holds the Silver Lining (HeldItem $5B98 = $0D) and the status is
-; 0, sets status $1B (handler $A828). Witness: rzx36000-rzx40000 run it 737
+; 0, sets status $1B (Room43Anim $A851). Witness: rzx36000-rzx40000 run it 737
 ; times; the explorer stands there with another item 100 times (rzx38000); the
 ; trigger ($B71E) is not executed in any recording (c1, explorers, gameover,
 ; the 31 rzx builds).
@@ -1311,10 +1313,10 @@ LeverMirror:
 ;
 ; The room script of room $3C. RoomStage $5C41 counts the passes in the room to
 ; $14; at $14, if PillsTaken $5C3F is 0 (the pills, item $16, never picked up:
-; PickUpItem $BB96 sets it), stage $15 and status $17 (handler $A89E); with the
-; pills it stays at $14. Witness: rzx26000 runs it 214 times, PillsTaken set
-; (rzx14500 picks the pills up, $BB96 once); the death branch ($B796) is not
-; executed in any recording (c1, explorers, gameover, the 31 rzx builds).
+; PickUpItem $BB96 sets it), stage $15 and status $17 (SilentDeath $A8A8); with
+; the pills it stays at $14. Witness: rzx26000 runs it 214 times, PillsTaken
+; set (rzx14500 picks the pills up, $BB96 once); the death branch ($B796) is
+; not executed in any recording (c1, explorers, gameover, the 31 rzx builds).
 ;
 ; Witness: L1 214 (rzx).
 RadiationScript:
@@ -1364,8 +1366,8 @@ FloorRoom35:
 ; the tile $BC + (B & 1) XOR (PassCount / 2 & 1) written through $9A4D. So the
 ; floor alternates $BC / $BD tile by tile and swaps every second pass; $BC and
 ; $BD are the tiles $A102 counts when stood on (SK: 50 of them set status $11,
-; a life lost at $A9EE; GC's range). What slot $5B14 shows here is known only
-; from the code (a run request).
+; SinkInMud $AA04; GC's range). What slot $5B14 shows here is known only from
+; the code (a run request).
 ;
 ; Witness: L1 5312 (rzx).
 FlickerFloor:
@@ -1638,10 +1640,10 @@ BridgeTiles3A:
 ; RopeCount $5C24 is $0D (the rope is whole) or the Flute is not in hand
 ; (HeldItem $5B98 = $0C). With the explorer at Y $48 or $46 and X $28-$33: his
 ; facing bit set, Y rocks between $46 and $48 by PassCount bit 0, and every
-; fourth pass status 6 (handler $AC35) and RopeCount + 1; from count 6 on the
-; rope tiles $98, $99 (columns 8 and 9) are written into the tile map at $F928
-; + 32 x (12 - count) through $9A52: rows 15 up to 10, the rope growing up; at
-; count $0C the status is cleared ($AE84). The room set-up ($98ED) reads
+; fourth pass status 6 (Status6Entry $A5F0) and RopeCount + 1; from count 6 on
+; the rope tiles $98, $99 (columns 8 and 9) are written into the tile map at
+; $F928 + 32 x (12 - count) through $9A52: rows 15 up to 10, the rope growing
+; up; at count $0C the status is cleared ($AE84). The room set-up ($98ED) reads
 ; RopeCount when room $1C is entered and writes the rope tiles $98, $99 into
 ; columns 8 and 9 of rows 0-11 of room $1C's tile map ($F808 on); every room
 ; entry then clears RopeCount ($9907), so room $1C must be the next room

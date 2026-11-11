@@ -1049,9 +1049,8 @@ names.
 | SK at `$B894` | device 0 reads "redefined keys, table at `$B8D4`" | the keyboard keys are fixed in ReadKeyboard `$B8FE` (Z X O K SPACE); `$B8D4` is code, ReadCursorKeys, never called (5.5) |
 | SK at `$B02E` | "Check ENTER key (port `$FBFE`)" | port `$FBFE` bit 4 is T; ENTER is `$BFFE` bit 0 |
 | SK at `$A34B` | "apply joystick" | room `$2C`'s float, which also reads ReadControls ([doc 10](10-gameplay-logic.md)) |
-| the brief, the `explorers` script's header | the bearer keys "1, 2, 5"; "5 swap" | 1 and 2 scroll; the swap key is S (`$FDFE` bit 1); 5 is read by no code of play. `explorers` presses 5 at frame 6750 and nothing happens |
-| the `explorers` script, round 3 | "up" as the key 0 at frame 7322 | 0 is not up on the keyboard; O is. The hero's X and Y stay the same |
-| WALKTHROUGH 6.0 | "keyboard Z X 0 K" | Z X O K: the letter O (`$DFFE` bit 1) |
+| the stage-1 brief, the `explorers` script as recorded | the bearer keys "1, 2, 5"; "5 swap" | 1 and 2 scroll; the swap key is S (`$FDFE` bit 1); 5 is read by no code of play. `explorers` presses 5 at frame 6750 and nothing happens (the script's header now says so) |
+| the `explorers` script, round 3 | "up" as the key 0 at frame 7322 | 0 is not up on the keyboard; O is (`$DFFE` bit 1). The hero's X and Y stay the same |
 
 ## 5.11 Known only from the code
 

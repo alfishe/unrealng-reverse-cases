@@ -773,7 +773,7 @@ pass, and two of the five are the blank frame.
 *Figure 6.6: RenderPass `$9B22` over one pass of `rzx02000` (the RZX run, replayed), frames 1-3. This animation is
 doc 4's ([4.3](04-game-loop.md)); it is shown here for the whole pass. Made with `python3 ../../kit/routine_anim.py
 --work work/docs/tmA/r02000 --window 1:9746-3:24326 --listing build/game.lst --view buffer:E000:32x128:screen --pc
-9B22-9E5C --range 4000-FFFF --pictures 40 --out docs/img/routines/RenderPass.gif`.*
+9B22-9E5C --range 4000-FFFF --pictures 90 --out docs/img/routines/RenderPass.gif`.*
 
 How to read:
 

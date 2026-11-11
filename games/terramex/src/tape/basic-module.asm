@@ -6,18 +6,18 @@
 ; 23627, 256 and 23628. The line's length field says $FF36, far past the program's 58 bytes, so the ROM's line walk
 ; (LIST, editing, deleting) treats everything after the line as part of it.
 ;
-; VARS $5D05 holds one string variable, l$ ($4C: a string named l), 241 bytes long: the loader $5D08-$5DF8. USR leaves
-; its own address in BC, which the loader uses to find its parts, so it runs wherever PROG lies.
+; VARS $5D05 holds one string variable, `l$` ($4C: a string named l), 241 bytes long: the loader $5D08-$5DF8. USR
+; leaves its own address in BC, which the loader uses to find its parts, so it runs wherever PROG lies.
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; Line 0: RANDOMIZE USR (0+(PEEK (00000)+000*PEEK (00000))), the hidden numbers
 ; 3, 23627, 256, 23628
 ;
 ; USR (3 + PEEK VARS + 256 x PEEK (VARS + 1)): VARS is the system variable at
-; $5C4B; the call goes to VARS + 3 = $5D08, LoaderEntry, the first byte of l$'s
-; text. The digits printed are zeros and the hidden five-byte forms are the
-; real numbers, so LIST shows nothing useful. c1: the ROM runs the line after
-; the load (USR at $34BB enters $5D08 at frame 696).
+; $5C4B; the call goes to VARS + 3 = $5D08, LoaderEntry, the first byte of
+; `l$`'s text. The digits printed are zeros and the hidden five-byte forms are
+; the real numbers, so LIST shows nothing useful. c1: the ROM runs the line
+; after the load (USR at $34BB enters $5D08 at frame 696).
 BasicLine0:
   DEFB $00,$00            ; the line number, 0 (high byte first)
   DEFB $36,$FF            ; the line's length, $FF36: runs past the program
@@ -32,10 +32,10 @@ BasicLine0:
   DEFB $0E,$00,$00,$4C,$5C,$00 ; $0E and 23628 = $5C4C
   DEFB $29,$29,$29,$0D    ; ")))" and ENTER
 
-; The variables area: string variable l$, 241 bytes (the loader is its text)
+; The variables area: string variable `l$`, 241 bytes (the loader is its text)
 ;
 ; $4C = a string variable named l (bits 7-5 = 010), then its length $00F1 =
-; 241: $5D08-$5DF8, the rest of the block. The ROM never evaluates l$; it is
+; 241: $5D08-$5DF8, the rest of the block. The ROM never evaluates `l$`; it is
 ; only a place the BASIC keeps intact.
 LoaderString:
   DEFB $4C,$F1,$00
@@ -179,7 +179,7 @@ BreakPrintLoop:
 BreakMessage:
   INCBIN "res/texts/break-message.bin",$0000,34
 
-; 32 "*": the rest of l$'s 241 bytes, never read
+; 32 "*": the rest of `l$`'s 241 bytes, never read
 ;
 ; Filler to the end of the block; no code reads it.
 StringPad:
