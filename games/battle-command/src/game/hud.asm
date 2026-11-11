@@ -57,7 +57,8 @@ l_7321:
   ADD HL,BC
   JR l_72FF
 
-; Bank 6 $D58C, then UpdateAmmoBars
+; Bank 6 UpdatePanelBars $D58C (heading strip, bearing, speed, fuel), then
+; UpdateAmmoBars
 ;
 ; Witness: L1 3601 (death, m2erbe, missions, play, play2).
 UpdateSlotBars:
@@ -386,7 +387,7 @@ DrawBank7Picture:
   EXX
   CALL UnpackPicture
   XOR A
-  LD (PlayFlag+$0001),A
+  LD (PointerShown+$0001),A
   CALL PageBank6
   LD HL,l_BFEB+$0015
   LD (FireDecoy+$0037),HL
@@ -504,8 +505,10 @@ ScreenList:
   DEFB $B9,$6A
   DEFB $00,$00
   DEFB $1A,$75
-  DEFB $00,$00
-  DEFB $FF,$FF
+AwolState:
+  DEFB $00,$00            ; the AWOL state: 0 inside, 1 beyond the extent
+  DEFB $FF,$FF            ; (GOING AWOL), 2 more than 4 beyond (desertion);
+                          ; SetAwolState $D4E9
 
 ; Screen 1 unless the current mission ($757D) is $FF or not completed
 ;

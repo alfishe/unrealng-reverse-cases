@@ -96,13 +96,13 @@ AddKillScore:
   CALL SoundKill
   LD L,(IX+$1E)
   LD H,(IX+$1F)
-  LD BC,(GaugeEnd)
+  LD BC,(MissionScore)
   ADD HL,BC
-  LD (GaugeEnd),HL
-  LD BC,(GaugeEnd+$0002)
+  LD (MissionScore),HL
+  LD BC,(MissionScore+$0002)
   LD HL,$0000
   ADC HL,BC
-  LD (GaugeEnd+$0002),HL
+  LD (MissionScore+$0002),HL
   SCF
   RET
 
@@ -126,7 +126,7 @@ HitPoints:
 ;
 ; Witness: L1 4 (death).
 MarkDestroyed:
-  LD DE,(PickupText+$0043)
+  LD DE,(MissionHeader+$0015)
   LD H,$00
   LD L,(IX+$00)
   ADD HL,HL

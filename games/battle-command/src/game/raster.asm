@@ -14,9 +14,10 @@
 ; screen from row 40, 71 rows full width, then the cockpit rows
 ;
 ; Saves `SP` at `$8A3E`, HL = `$8BF1`, the row count `$47`, `SP` =
-; ScreenRowTable `$6550`, then `JR` into ViewBlitFront's loop at `$89A5`. No
-; routine stores `$898B` in the blit pointer `$83E6` and no recording runs it:
-; known only from the code.
+; ScreenRowTable `$6550`, then `JR` into ViewBlitFront's loop at `$89A5`.
+; PickupMessage `$DB77` (bank 0) stores it in the blit pointer `$83E6` once the
+; goal flag `$68E8` is set (`$DB7C`); m1complete runs it 530 times after its
+; goal (frame 16138 on).
 ViewBlitLow:
   LD (l_8A27+$0017),SP
   LD HL,BackBuffer+$0100
@@ -242,7 +243,7 @@ l_8AA7:
 ; play, play2, search).
 ClearBlitRequest:
   XOR A
-  LD (PlayMode+$0001),A
+  LD (BlitRequest+$0001),A
   RET
 
 ; The 3D view's back buffer: 96 rows of 32 bytes (256 x 96 pixels, row 0 at the

@@ -35,35 +35,27 @@ StatusMessagePrint:
 ;
 ; Read by StatusViewMessage.
 StatusMessages:
-  DEFB $02,$B0,$08,$0D,$48,$54,$41,$4E,$4B,$20,$48,$41,$53,$20,$42,$45
-  DEFB $45,$4E,$20,$48,$49,$54,$FF
+  INCBIN "res/texts/status-messages.bin",$0000,23
 CollisionText:
-  DEFB $02,$B0,$08,$0D,$48,$43,$4F,$4C,$4C,$49,$53,$49,$4F,$4E,$20,$4F
-  DEFB $43,$43,$55,$52,$45,$44,$FF
+  INCBIN "res/texts/status-messages.bin",$0017,23
 
 ; Text: "MISSION COMPLETED:-", a blank line, "FINAL SCORE:-" and ten digits at
 ; $D461
 ;
 ; Printed only by PrintFinalScore (unused).
 FinalScoreText:
-  DEFB $02,$20,$07,$0D,$68,$4D,$49,$53,$53,$49,$4F,$4E,$20,$43,$4F,$4D
-  DEFB $50,$4C,$45,$54,$45,$44,$3A,$2D,$02,$30,$07,$0D,$69,$20,$20,$20
-  DEFB $20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-  DEFB $20,$02,$40,$07,$0D,$68,$46,$49,$4E,$41,$4C,$20,$53,$43,$4F,$52
-  DEFB $45,$3A,$2D,$20,$02,$50,$08,$0D,$69
+  INCBIN "res/texts/final-score-text.bin",$0000,73
 FinalScoreDigits:
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$FF
+  INCBIN "res/texts/final-score-text.bin",$0049,11
 
 ; Text: "MISSIONS COMPLETED" (code 8: MissionsCompleted), "SCORE TO DATE" and
 ; nine digits at $D49A
 ;
 ; Printed by PrintScore; the digits by LongToDigits and DotLeadingZeros.
 StatusText:
-  DEFB $07,$90,$08,$4D,$49,$53,$53,$49,$4F,$4E,$53,$3A,$43,$4F,$4D,$50
-  DEFB $4C,$45,$54,$45,$44,$07,$98,$0E,$08,$93,$CC,$07,$A0,$0A,$53,$43
-  DEFB $4F,$52,$45,$3A,$54,$4F,$3A,$44,$41,$54,$45,$07,$A8,$0B
+  INCBIN "res/texts/status-text.bin",$0000,46
 ScoreDigits:
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$FF
+  INCBIN "res/texts/status-text.bin",$002E,11
 
 ; Colour the Dragonfly's damage boxes by the four damage values $8301-$8304
 ;
@@ -213,16 +205,16 @@ PanelAttributes:
 ; Called by UpdateSlotBars `$7327`. Witness: L1 3601 (c1, death, m2erbe,
 ; missions, play, play2).
 UpdatePanelBars:
+  CALL DrawHeadingStrip
+  CALL DrawBearing
   CALL DrawSpeedBar
-  CALL DrawBarB
-  CALL DrawBarC
-  JP DrawBarD
+  JP DrawFuelBar
 
-; Redraw the bar of the player object's byte +$22 ($75F0 + $22) when it changed
+; Redraw the compass strip from the heading $7612 ($75F0 + $22) when it changed
 ;
 ; Shapes from BarShapesB, shifted to the pixel, five lines 12 bytes apart.
 ; Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
-DrawSpeedBar:
+DrawHeadingStrip:
   LD HL,$75F0
   LD B,$00
   LD C,$22
@@ -314,15 +306,14 @@ SpeedBarStore:
   LD L,A
   JR SpeedBarLine
 
-; The bar of $7E8E (AbsA through ApiVector08) at line $90, column 8, when it
-; changed
+; The speed bar: $7E8E = abs(speed), line $90 column 8, when it changed
 ;
 ; Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
-DrawBarC:
+DrawSpeedBar:
   LD A,($7E8E)
   CP $01
   RET Z
-  LD (DrawBarC+$0004),A
+  LD (DrawSpeedBar+$0004),A
   LD E,$90
   LD C,$08
   CALL $67D6
@@ -330,10 +321,11 @@ DrawBarC:
   AND $1F
   JP $7438
 
-; The bar of $7C58 / 2 at line $90, column 10
+; The fuel bar: Fuel high byte $7C58 / 2, line $90 column 10, redrawn every
+; pass (no change test)
 ;
 ; Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
-DrawBarD:
+DrawFuelBar:
   LD A,($7C58)
   SRL A
   AND $1F
@@ -341,11 +333,11 @@ DrawBarD:
   LD C,$0A
   JP $7438
 
-; The bar of ApiVector01's value less the player's byte +$22 (shapes
-; BarShapesA)
+; The bearing arrow: ApiVector01's bearing less the heading $7612, when it
+; changed (shapes BarShapesA), x 32-55 y 138-142
 ;
 ; Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
-DrawBarB:
+DrawBearing:
   LD IX,$75F0
   LD IY,$7E5F
   CALL $67C1
@@ -353,7 +345,7 @@ DrawBarB:
   LD C,$00
   CP C
   RET Z
-  LD (DrawBarB+$000F),A
+  LD (DrawBearing+$000F),A
   LD HL,$6614
   EXX
   SRL A

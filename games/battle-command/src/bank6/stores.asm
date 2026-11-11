@@ -813,21 +813,13 @@ StoresBlitSpOp:
 ; (at a line and column), code 9, code 11 (new line).
 WeaponTexts:
 TextPhoenixRRSA:
-  DEFB $0D,$47,$02,$50,$02,$50,$68,$6F,$65,$6E,$69,$78,$20,$52,$52,$53
-  DEFB $41,$09,$06,$02,$30,$06,$32,$35,$30,$20,$4B,$47,$0B,$41,$4D,$4D
-  DEFB $4F,$20,$38,$0B,$4D,$41,$58,$20,$32,$FF
+  INCBIN "res/texts/weapon-texts.bin",$0000,42
 TextPhoenixIRSA:
-  DEFB $0D,$47,$02,$50,$02,$50,$68,$6F,$65,$6E,$69,$78,$20,$49,$52,$53
-  DEFB $41,$09,$06,$02,$30,$06,$32,$35,$30,$20,$4B,$47,$0B,$41,$4D,$4D
-  DEFB $4F,$20,$36,$0B,$4D,$41,$58,$20,$32,$FF
+  INCBIN "res/texts/weapon-texts.bin",$002A,42
 TextBansheeIRSS:
-  DEFB $0D,$47,$02,$50,$02,$42,$61,$6E,$73,$68,$65,$65,$20,$49,$52,$53
-  DEFB $53,$09,$06,$02,$30,$06,$33,$30,$30,$20,$4B,$47,$0B,$41,$4D,$4D
-  DEFB $4F,$20,$36,$0B,$4D,$41,$58,$20,$32,$FF
+  INCBIN "res/texts/weapon-texts.bin",$0054,42
 TextDragonfly:
-  DEFB $0D,$47,$02,$50,$02,$44,$72,$61,$67,$6F,$6E,$66,$6C,$79,$09,$06
-  DEFB $02,$30,$06,$35,$30,$30,$20,$4B,$47,$0B,$41,$4D,$4D,$4F,$20,$33
-  DEFB $0B,$4D,$41,$58,$20,$32,$FF
+  INCBIN "res/texts/weapon-texts.bin",$007E,39
 
   ORG $D7BB
 
@@ -835,9 +827,7 @@ TextDragonfly:
 ;
 ; Printed by ShowWeapon.
 WeaponTextsB:
-  DEFB $0D,$47,$02,$50,$02,$42,$61,$6E,$73,$68,$65,$65,$20,$52,$52,$53
-  DEFB $53,$09,$06,$02,$30,$06,$33,$30,$30,$20,$4B,$47,$0B,$41,$4D,$4D
-  DEFB $4F,$20,$38,$0B,$4D,$41,$58,$20,$32,$FF
+  INCBIN "res/texts/weapon-texts-b.bin",$0000,42
 
 ; Attribute box records of the panel
 ;
@@ -855,37 +845,21 @@ PanelBoxB:
 ; Printed by ShowWeapon.
 WeaponTextsC:
 TextSlamLaser:
-  DEFB $0D,$47,$02,$50,$02,$53,$4C,$41,$4D,$20,$4C,$61,$73,$65,$72,$09
-  DEFB $06,$02,$30,$06,$32,$35,$30,$20,$4B,$47,$0B,$41,$4D,$4D,$4F,$20
-  DEFB $34,$30,$0B,$4D,$41,$58,$20,$31,$FF
+  INCBIN "res/texts/weapon-texts-c.bin",$0000,41
 TextSleeperMine:
-  DEFB $0D,$47,$02,$50,$02,$53,$6C,$65,$65,$70,$65,$72,$20,$6D,$69,$6E
-  DEFB $65,$09,$06,$02,$30,$06,$32,$39,$30,$20,$4B,$47,$0B,$41,$4D,$4D
-  DEFB $4F,$20,$35,$0B,$4D,$41,$58,$20,$32,$FF
+  INCBIN "res/texts/weapon-texts-c.bin",$0029,42
 TextSkeetBomb:
-  DEFB $0D,$47,$02,$50,$02,$53,$6B,$65,$65,$74,$20,$62,$6F,$6D,$62,$09
-  DEFB $06,$02,$30,$06,$32,$30,$30,$20,$4B,$47,$0B,$41,$4D,$4D,$4F,$20
-  DEFB $31,$32,$0B,$4D,$41,$58,$20,$32,$FF
+  INCBIN "res/texts/weapon-texts-c.bin",$0053,41
 TextSpectre:
-  DEFB $0D,$47,$02,$50,$02,$53,$70,$65,$63,$74,$72,$65,$09,$06,$02,$30
-  DEFB $06,$31,$30,$30,$20,$4B,$47,$0B,$41,$4D,$4D,$4F,$20,$31,$32,$0B
-  DEFB $4D,$41,$58,$20,$32,$FF
+  INCBIN "res/texts/weapon-texts-c.bin",$007C,38
 TextK40Mortar:
-  DEFB $0D,$47,$02,$50,$02,$4B,$2D,$34,$30,$20,$4D,$6F,$72,$74,$61,$72
-  DEFB $09,$06,$02,$30,$06,$32,$35,$30,$20,$4B,$47,$0B,$41,$4D,$4D,$4F
-  DEFB $20,$32,$30,$0B,$4D,$41,$58,$20,$32,$FF
+  INCBIN "res/texts/weapon-texts-c.bin",$00A2,42
 TextTurret:
-  DEFB $0D,$47,$02,$50,$02,$54,$75,$72,$72,$65,$74,$09,$06,$02,$30,$06
-  DEFB $34,$30,$30,$20,$4B,$47,$0B,$41,$4D,$4D,$4F,$20,$38,$30,$0B,$4D
-  DEFB $41,$58,$20,$31,$FF
+  INCBIN "res/texts/weapon-texts-c.bin",$00CC,37
 TextPhantasm:
-  DEFB $0D,$47,$02,$50,$02,$50,$68,$61,$6E,$74,$61,$73,$6D,$09,$06,$02
-  DEFB $30,$06,$31,$30,$30,$20,$4B,$47,$0B,$41,$4D,$4D,$4F,$20,$38,$0B
-  DEFB $4D,$41,$58,$20,$32,$FF
+  INCBIN "res/texts/weapon-texts-c.bin",$00F1,38
 TextK90Cluster:
-  DEFB $0D,$47,$02,$50,$02,$4B,$2D,$39,$30,$20,$43,$6C,$75,$73,$74,$65
-  DEFB $72,$09,$06,$02,$30,$06,$32,$35,$30,$20,$4B,$47,$0B,$41,$4D,$4D
-  DEFB $4F,$20,$32,$30,$0B,$4D,$41,$58,$20,$34,$FF
+  INCBIN "res/texts/weapon-texts-c.bin",$0117,43
 
 ; Texts of the payload: "MAX PAYLOAD 1000KG", "PAYLOAD WGT 0KG", the two
 ; errors, the weight
@@ -893,17 +867,12 @@ TextK90Cluster:
 ; `$D936` printed by StoresScreen and StoresMessageTimer, the errors by
 ; FitOrRemoveWeapon, PayloadText by PrintPayloadWeight.
 PayloadLineText:
-  DEFB $0D,$79,$07,$92,$17,$4D,$41,$58,$3A,$50,$41,$59,$4C,$4F,$41,$44
-  DEFB $3A,$31,$30,$30,$30,$4B,$47,$07,$A2,$17,$50,$41,$59,$4C,$4F,$41
-  DEFB $44,$3A,$57,$47,$54,$3A,$3A,$3A,$3A,$30,$4B,$47,$FF
+  INCBIN "res/texts/payload-line-text.bin",$0000,45
 PayloadExceededText:
-  DEFB $07,$92,$17,$0D,$46,$3A,$50,$41,$59,$4C,$4F,$41,$44,$3A,$45,$58
-  DEFB $43,$45,$45,$44,$45,$44,$3A,$07,$9A,$17,$3A,$3A,$3A,$3A,$3A,$3A
-  DEFB $3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$FF
+  INCBIN "res/texts/payload-line-text.bin",$002D,45
 MaxNumberText:
-  DEFB $07,$9A,$17,$0D,$46,$3A,$4D,$41,$58,$3A,$4E,$55,$4D,$3A,$45,$58
-  DEFB $43,$45,$45,$44,$45,$44,$3A,$FF
+  INCBIN "res/texts/payload-line-text.bin",$005A,24
 PayloadText:
-  DEFB $07,$A2,$22
+  INCBIN "res/texts/payload-line-text.bin",$0072,3
 PaddedDigits:
-  DEFB $30,$30,$30,$30,$30,$FF,$FF ; five digits, written by NumberToDigits
+  INCBIN "res/texts/payload-line-text.bin",$0075,7

@@ -34,6 +34,8 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
   7704 that sets the four armour bytes `$8301-$8304` to 1. Recorded with `python3 tools/rec_armour.py --work
   work/docs/bcC/rec/armour --port-base 37370 --start work/stage1/explore/loaded.szx`. The first hit, in frame 18423,
   ends the mission ([doc 10.5](10-gameplay-logic.md#105-damage-playerhit-the-armour-and-the-subsystems)).
+- `m1complete`, `m4complete` (stage 2, `work/stage2/rec/`, `work/stage2/complete-NOTES.md`): missions 1 and 4
+  completed; the Helicarrier record from its call to its landing, the goal records destroyed.
 - The L1 counts of the stage 1 builds ("L1 n" in the `.ann` descriptions).
 
 A sample of frame N is the memory at the start of frame N. A trace, and so a routine animation, puts an instruction
@@ -420,7 +422,7 @@ The slots:
 | 0 | the player's tank (type 0, step PlayerStep `$A8C7`, hit PlayerHit `$CAA5`) | fixed |
 | 1-20 | list objects, spawned units, projectiles | FindFreeObject `$BCDA` (D = `$15`) |
 | 21-22 | also projectiles | FindProjectileSlot `$BCD6` (D = `$17`) |
-| 21 (`$7ADC`) | the Helicarrier at the start and the end | PlaceHelicarrier `$D52E` |
+| 21 (`$7ADC`) | the Helicarrier, called by the key H (m1complete frame 16239) | PlaceHelicarrier `$D52E` |
 
 ## 7.8 The spawn and the free: ActivateMissionObjects
 
@@ -842,6 +844,11 @@ Y = -9662, height 64, radius 1408, half sizes 128, 128, 128.
    the tank. The shell is freed; the top armour loses 4
    ([doc 10.5](10-gameplay-logic.md#105-damage-playerhit-the-armour-and-the-subsystems)).
 
+The Immunity POKE at `$C875` makes the pass skip every overlap, the player's own shells included: in the lab of the
+completion recordings, 12 Turret rounds at a fuel dump with the POKE in place did nothing (hp stayed 1, score 0); with
+the original `$FA` the first hit killed it (`work/stage2/complete-NOTES.md`). While the cheat is on, no kill is
+possible.
+
 ![CollisionPass at work](img/routines/CollisionPass.gif)
 
 *Animation 7.3. CollisionPass in the death recording, frame 8121, T 42 000 to 68 000, 80 pictures. Drawn by
@@ -888,6 +895,12 @@ The player is record 0, so most of its state is fields of that record. The rest 
 | `$6799`-`$67A1` | 9 | MissionsDone | `$FF` a mission | |
 
 StoresToGauges `$CC1B` (bank 6) sets the fuel to 16 128 and the four armour bytes to `$7F` when the mission starts.
+
+The success path in m1complete (samples at the start of a frame, so frame F+1 shows what frame F did): `$68E2` = 250
+at 15787 and 500 at 16137 (the two fuel dumps), `$68E8` = `$FF` at 16139, MissionsDone `$6799` = `$FF` and Score
+`$CC79` = `F4 01 00 00` at 21591, 0 before; m4complete adds `C4 09 00 00` (2500) and MissionsDone +3 at 21332. The
+speed holds without a key at its top of 47 (about 6.7 world units a frame); A brakes it to 0 and then reverses it
+(233 = -23). Heading 0 is +Y, 64 is +X.
 
 ![The tank in the fuel recording: speed, Y and fuel](img/objects/fuel-chart.png)
 

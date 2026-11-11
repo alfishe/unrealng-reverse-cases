@@ -61,6 +61,7 @@ $C0F7 c PrintStatusGrid ; Print the grid position of the status view
 
 $C101 b GridText 16 ; Text: the two positions "00:00" at line $50 and line $70, column 1
 > Control code 2 (a pixel line and a column), code 13 (attribute `$47`); the digits at `$C106` and `$C10E` are written by FormatGridPosition.
+@res texts/grid-text.bin
 
 @module stores ; The stores screen: the weapons catalogue, the four launcher slots, the payload, the turning model
 @about StoresScreen $CA8B is screen node $7514 (zones StoresZones $CBC4). It unpacks the bank 7 picture PicStores ($C713 of bank 7), shows one of the 13 weapons of WeaponRecords $C373 at a time (its icon, its description and its 3D model, which turns in a 3D window drawn into the back buffer and blitted by BlitStoresView $D0A0), and lets the player fit it into one of four slots ($8368, four 6-byte records) or take one out. The total weight (the operand $C11B) may not pass 1000 kg, and a weapon may be fitted only as many times as its record allows.
@@ -203,6 +204,7 @@ $C53E b PasswordMessages 16 ; Texts: "INVALID PASSWORD", then two blank lines th
 > Printed by PasswordScreen at `$C5A5`, `$C5AE` and `$C5B4`.
 $C554 InvalidBlank
 $C56A EntryBlank
+@res texts/password-messages.bin
 
 $C578 c PasswordScreen ; The level entry screen: read ten characters, check them, take over the flags and the score
 > Node `$74F8` (from the title). ClearMenuScreen, PasswordPrompt, the buffer filled with spaces, ReadPassword `$C620`; when the view flag is set (a click elsewhere), back. Otherwise CharsToPassword, DecodePassword: a bad checksum prints "INVALID PASSWORD" and asks again; a good one copies the score to Score `$CC79`, the ten flags to MissionsDone `$6799`, counts them into MissionsCompleted `$CC93`, ScreenZero and NextView. Witness: L1 1 (menu).
@@ -215,6 +217,7 @@ $C5E2 CountFlagsNext
 
 $C5EE b PasswordPrompt 16 ; Text: "Type in your level entry:-"
 > Printed by PasswordScreen `$C57B`.
+@res texts/password-prompt.bin
 
 $C60E b PasswordBuffer 10 ; The ten characters typed (EditLine's line)
 > Filled with spaces by PasswordScreen, written by EditLine, read by CharsToPassword. The image holds leftover code bytes here.
@@ -264,6 +267,7 @@ $C729 b PasswordZones 1 ; Zone table of the password screen: empty
 
 $C72A b EntryStringText 16 ; Text: "THIS IS YOUR ENTRY STRING."
 > Printed by ShowPassword.
+@res texts/entry-string-text.bin
 
 $C74A b MenuBoxes 5 ; Attribute box records: the whole menu screen and the catalogue's titles
 > `$C74A` read by ClearMenuScreen, `$C74F` and `$C754` by DrawCatalogueTitles, `$C759` by MissionCatalogueScreen. `$C75E` is a 0 byte.
@@ -298,6 +302,7 @@ $C878 MagicLoop
 
 $C881 b CatalogueMagic 13 ; "MISSION:TAPE:": the first 7 bytes are compared with the catalogue's head
 > Read by IsCatalogueLoaded.
+@res texts/catalogue-magic.bin
 
 $C88E c ShowWrongDisk ; Leftover of a disk version: "INCORRECT DISK" and a red attribute bar
 $C89B WrongDiskBar
@@ -311,6 +316,7 @@ $C8D5 CataloguePos ; code 7 to line $20, column 5 (MissionCatalogueScreen `$C825
 $C8D9 RewindText ; "REWIND MISSION TAPE TO START AND PRESS PLAY"
 $C90D FoundCatalogueText ; "FOUND MISSION CATALOGUE AND NOW LOADING"
 $C93E BlankTapeText ; three blank lines: PrintRewind $719B
+@res texts/disk-texts.bin
 
 $C978 b TickGraphic 1 ; The tick of a completed mission, 1 x 8
 > CopyGraphic source of MissionCatalogueScreen `$C7F7`.
@@ -324,10 +330,10 @@ $C985 BriefingBoxB
 
 $C98A c BriefingScreen ; The briefing: picture, three graphics, the mission text, then the zones with the map blit
 $C9FB BriefingLoop
-> The shadow screen, ShowPauseOnce armed (`$7084` = 0), the Dragonfly's title hook `$6C56` = `RET`, the arrow pointer, SetBriefingBlit `$DBAA`, CopyMissionText, DrawBank7Picture `$E949`, BriefingBoxes, BriefingGraphicA-C, PrintString (`$70A3`), the map blit (`$83E6` = BlitMapView `$DBBD`), PointerZones until the view flag; then the 3D blit back (`$8999`) and NextView. Witness: L1 10 (menu).
+> The shadow screen, ShowBriefingMapOnce armed (`$7084` = 0), the Dragonfly's title hook `$6C56` = `RET`, the arrow pointer, SetBriefingBlit `$DBAA`, CopyMissionText, DrawBank7Picture `$E949`, BriefingBoxes, BriefingGraphicA-C, PrintString (`$70A3`), the map blit (`$83E6` = BlitMapView `$DBBD`), PointerZones until the view flag; then the 3D blit back (`$8999`) and NextView. Witness: L1 10 (menu).
 
 $CA10 b BriefingZones 6 ; Zone table of the briefing
-> `$709E` (PrintTitleOnce), ShowPauseOnce `$7084` (the map), ScreenZero (back).
+> `$709E` (BriefingTextOnce), ShowBriefingMapOnce `$7084` (the map), ScreenZero (back).
 
 $CA23 c CopyMissionTextB6 ; CopyMissionText $70F6 called from bank 6
 > Called by LoadMissionIfAllowed `$759A`. Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
@@ -393,9 +399,11 @@ $CCBE NoPickupText
 $CCD8 DesertionText
 $CCED OutOfFuelText
 $CD01 BridgeText
+@res texts/failed-texts.bin
 
 $CD1E c MissionCompleteScreen ; Mission completed: PicCompletion, the score added, the flag set, the mission's text
-> Sound off, DrawBank7Picture `$E51E`, Score += the mission's score, MissionsDone[mission] = `$FF`, PrintString (`$7C55`), SaveLoadedMission `$CD77`, the main screen, Delay, MissionsCompleted + 1, then the key wait of MissionFailedScreen (EndScreenKey). Known only from the code: no recording runs it on page 6 (bank 7 has c1 unpacking PicCompletion).
+> Sound off, DrawBank7Picture `$E51E`, Score += the mission's score, MissionsDone[mission] = `$FF`, PrintString (`$7C55`), SaveLoadedMission `$CD77`, the main screen, Delay, MissionsCompleted + 1, then the key wait of MissionFailedScreen (EndScreenKey). The completion recordings run it on page 6:
+> Witness (not an L1 build of the json): m1complete frames 21560-21721, MissionsDone and Score written at 21590, 32 frames after HelicarrierHit; m4complete 21301-21462 (work/stage2/complete-NOTES.md).
 
 $CD63 c Delay ; A delay of five times 65535 loops
 $CD65 DelayOuter
@@ -435,6 +443,7 @@ $CE2E c EncodePassword ; Pack MissionsDone and Score into the ten 5-bit values a
 $CE3E EncodeLoop
 $CE5E ChecksumLoop
 > Eight values: 4 bits of the score (ScoreBits `$CF06`) and in bit 4 the flag of missions 1-8; the ninth and tenth: the flags of missions 9-10 and a 5-bit checksum (XOR of the score's four bytes). Witness: L1 1 (menu).
+> A non-zero score: m1complete frame 22160 ("C5989999PB", score 500, mission 1), m4complete 21956 ("H59K9999PK", score 2500, missions 1 and 4).
 
 $CE7D b DecodedFlags 10 ; The ten completion flags DecodePassword makes
 > Copied to MissionsDone by PasswordScreen.
@@ -454,6 +463,7 @@ $CEF0 DecodeChecksum
 $CEF6 b PasswordText 16 ; Text: the password line; its ten characters at $CEFB
 > Written by EncodePassword, PasswordToChars and CharsToPassword (the values), printed by ShowPassword.
 $CEFB PasswordValues
+@res texts/password-text.bin
 
 $CF06 c ScoreBits ; A = the next A bits of the score at HL' (E' bits left in the byte)
 $CF0B ScoreBitsLoop
@@ -468,10 +478,11 @@ $CF3E c CharsToPassword ; Map the ten typed characters to their places in Passwo
 $CF46 ToValuesLoop
 $CF4E AlphabetSearch
 $CF54 AlphabetFound
-> An unknown character gives 0. Witness: L1 1 (menu).
+> An unknown character gives 4 (B = 0 after the search: 36 AND 31); D, E, F and G give 0-3 like 9876. Witness: L1 1 (menu).
 
 $CF5F b PasswordAlphabet 12 ; The 36 password characters: "9876543210ZYXWVUTSRQPONMLKJIHABCDEFG"
 > Read by PasswordToChars and CharsToPassword.
+@res texts/password-alphabet.bin
 
 $CF83 b CatalogueHead 2 ; Two zero bytes, then the catalogue's first 32 bytes copied by CopyCatalogueHead
 > `$CF85-$CFA4` is written by CopyCatalogueHead `$70C6`, compared by IsCatalogueLoaded and printed (the title) by MissionCatalogueScreen. The image holds leftover code bytes here; `$CFA5-$CFA8` are never read.
@@ -606,14 +617,17 @@ $D3E1 StatusMessagePrint
 $D3EA b StatusMessages 16 ; Texts: "TANK HAS BEEN HIT", "COLLISION OCCURED"
 > Read by StatusViewMessage.
 $D401 CollisionText
+@res texts/status-messages.bin
 
 $D418 b FinalScoreText 16 ; Text: "MISSION COMPLETED:-", a blank line, "FINAL SCORE:-" and ten digits at $D461
 > Printed only by PrintFinalScore (unused).
 $D461 FinalScoreDigits
+@res texts/final-score-text.bin
 
 $D46C b StatusText 16 ; Text: "MISSIONS COMPLETED" (code 8: MissionsCompleted), "SCORE TO DATE" and nine digits at $D49A
 > Printed by PrintScore; the digits by LongToDigits and DotLeadingZeros.
 $D49A ScoreDigits
+@res texts/status-text.bin
 
 $D4A5 c ShowDamageColours ; Colour the Dragonfly's damage boxes by the four damage values $8301-$8304
 > DamageColour for each, AttrBoxAt `$6CFD` with the records of DamageBoxes. Witness: L1 3 (play).
@@ -633,7 +647,7 @@ $D521 c PanelAttributes ; The cockpit panel's attributes: a cleared box, two box
 $D58C c UpdatePanelBars ; The four bars of the cockpit panel
 > Called by UpdateSlotBars `$7327`. Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
 
-$D598 c DrawSpeedBar ; Redraw the bar of the player object's byte +$22 ($75F0 + $22) when it changed
+$D598 c DrawHeadingStrip ; Redraw the compass strip from the heading $7612 ($75F0 + $22) when it changed
 > Shapes from BarShapesB, shifted to the pixel, five lines 12 bytes apart. Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
 $D5A1 SpeedLastOp ; LD E,n: n ($D5A2) the value last drawn
 $D5CA SpeedBarLine
@@ -641,13 +655,13 @@ $D5DE SpeedBarShift
 $D5DF SpeedBarShiftLoop
 $D5EB SpeedBarStore
 
-$D612 c DrawBarC ; The bar of $7E8E (AbsA through ApiVector08) at line $90, column 8, when it changed
+$D612 c DrawSpeedBar ; The speed bar: $7E8E = abs(speed), line $90 column 8, when it changed
 > Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
 
-$D629 c DrawBarD ; The bar of $7C58 / 2 at line $90, column 10
+$D629 c DrawFuelBar ; The fuel bar: Fuel high byte $7C58 / 2, line $90 column 10, redrawn every pass (no change test)
 > Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
 
-$D637 c DrawBarB ; The bar of ApiVector01's value less the player's byte +$22 (shapes BarShapesA)
+$D637 c DrawBearing ; The bearing arrow: ApiVector01's bearing less the heading $7612, when it changed (shapes BarShapesA), x 32-55 y 138-142
 $D66B BarBLine
 $D67A BarBShiftLoop
 $D684 BarBStore
@@ -664,6 +678,7 @@ $D6DA TextPhoenixRRSA
 $D704 TextPhoenixIRSA
 $D72E TextBansheeIRSS
 $D758 TextDragonfly
+@res texts/weapon-texts.bin
 
 @module panel
 
@@ -674,6 +689,7 @@ $D77F b BarShapesB 12 ; Bar shapes of DrawSpeedBar
 
 $D7BB b WeaponTextsB 16 ; The Banshee RRSS description
 > Printed by ShowWeapon.
+@res texts/weapon-texts-b.bin
 
 $D7E5 b PanelBoxes 5 ; Attribute box records of the panel
 > `$D7EA` and `$D7EF` read by PanelAttributes; `$D7E5` by nothing.
@@ -690,6 +706,7 @@ $D896 TextK40Mortar
 $D8C0 TextTurret
 $D8E5 TextPhantasm
 $D90B TextK90Cluster
+@res texts/weapon-texts-c.bin
 
 $D936 b PayloadLineText 16 ; Texts of the payload: "MAX PAYLOAD 1000KG", "PAYLOAD WGT 0KG", the two errors, the weight
 > `$D936` printed by StoresScreen and StoresMessageTimer, the errors by FitOrRemoveWeapon, PayloadText by PrintPayloadWeight.
@@ -697,6 +714,7 @@ $D963 PayloadExceededText
 $D990 MaxNumberText
 $D9A8 PayloadText
 $D9AB PaddedDigits ; five digits, written by NumberToDigits
+@res texts/payload-line-text.bin
 
 @module map ; The quit prompt and the maps of the status view and the briefing
 @about The status view (StatusLoop $6BC7) and the briefing show the mission's area from above in the 3D window: DrawStatusMap $DB1C sets a high view, draws every object of the mission's list (DrawMapObjects $E3F3, models MapModels $E512) and three markers (DrawMarker $DB6B, models MarkerModels $E5D5), and BlitMapView $DBBD copies the window to the screen. The legend frames and texts are here too, and the quit prompt of the play keys (SoundOffKey $843F).
@@ -714,12 +732,14 @@ $DA4E QuitYes
 
 $DA5E b QuitText 16 ; Text: "Are you sure you want to quit?" and "Yes/No."
 > Printed by QuitPrompt.
+@res texts/quit-text.bin
 
 $DA8C c StatusMapFrame ; The status view's legend frame: the box $DAC6 and 7 cleared lines
 > Called by StatusLoop `$6BFC`. Witness: L1 10 (m2erbe, missions, play).
 
 $DAA1 b StatusLegendText 16 ; Text: the map's legend "Roads." and "Rivers." with their glyphs $80 and $81
 > Printed by StatusMapLegend `$7241`.
+@res texts/status-legend-text.bin
 
 $DAC1 b StatusLegendBoxes 5 ; Attribute box records of the status legend
 > `$DAC1` read by StatusMapLegend, `$DAC6` by StatusMapFrame.
@@ -730,6 +750,7 @@ $DACB c BriefingMapFrame ; The briefing map's legend frame: the box $DB06 and 10
 
 $DAE1 b BriefingLegendText 16 ; Text: "Roads." and "Rivers." for the briefing map
 > Printed by BriefingMapLegend `$722C`.
+@res texts/briefing-legend-text.bin
 
 $DB01 b BriefingLegendBoxes 5 ; Attribute box records of the briefing map and the status map
 > `$DB01` and `$DB0B` read by BriefingMapLegend, `$DB06` by BriefingMapFrame, `$DB10` by StatusMapLegend.
@@ -802,6 +823,7 @@ $E51E MapModelNegative
 $E52A MapModelOther
 $E534 MapModelKind6
 $E54F MapModelSpare
+@res models/bank6-map.bin
 
 @module map
 

@@ -4,7 +4,7 @@ Side 2 of the tape holds the catalogue and the ten mission blocks (src/tape/side
 block loads at bank 0 `$DBC5` (LoadMission `$84C1`, LdBytes `$8617`, the reload part through `$855B`); the
 catalogue loads at bank 4 `$CB64` (LoadDirectory `$715D`). `NN-NAME.txt` is the block as text (tools/res_missions.py:
 every header field by name, the 64 vertices, the segments, the objects, the object templates, then the mission's
-own code, data and 3D models as hex lines at their addresses; it builds back byte for byte). `NN-NAME.preview.png` is
+own code and data as hex lines at their addresses, the 3D models as `model` lines, one instruction a line, ../models/README.md; it builds back byte for byte). `NN-NAME.preview.png` is
 the world from above (segments by style, objects as dots, yellow the active ones, the start in cyan, the
 Helicarrier's pickup pad in magenta, the desertion line in red; the build ignores it). The models of each block are
 listed and drawn in ../models.

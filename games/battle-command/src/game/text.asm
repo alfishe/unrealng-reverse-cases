@@ -225,7 +225,8 @@ CodeSmallFont:
   CALL CodeSmallAt
   JR l_6DA7
 
-; Control code 5: the small font from the next byte
+; Control code 5: the small font's column (6-pixel cells) from the next byte;
+; the font is not switched
 ;
 ; Witness: known only from the code (no string of the recordings uses code 5).
 CodeSmallChars:
@@ -531,7 +532,8 @@ CodeNumber:
   EX DE,HL
   JR l_6EFE
 
-; Control code 3: print A as three decimal digits
+; Control code 3: three decimal digits of a constant: LD A,$5E overwrites A, so
+; it prints "094"; no string uses it
 ;
 ; Witness: known only from the code.
 CodeNumberA:
@@ -554,7 +556,8 @@ l_6EFE:
   POP HL
   RET
 
-; Control code 4: print A as two hexadecimal digits
+; Control code 4: two hexadecimal digits of the constant $5E (LD A,$5E): "5E";
+; no string uses it
 ;
 ; Witness: known only from the code.
 CodeHex:
@@ -630,7 +633,8 @@ CodeNewLine:
   EXX
   RET
 
-; Control code 10: the small font's next line (6 pixel lines down)
+; Control code 10: the small font's next line (9 pixel lines down:
+; ScreenRowTable + $12), column = the margin
 ;
 ; Witness: L1 301 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
 ; play2, search).
@@ -742,6 +746,9 @@ l_6FDB:
 
 ; Print the 8x8 character A at the current cell and its attribute ($7025), then
 ; the next column
+;
+; In column 31 it writes no attribute and starts a new line (CodeNewLine)
+; instead (`$700F`).
 ;
 ; Witness: L1 6525 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
 ; play2, search).

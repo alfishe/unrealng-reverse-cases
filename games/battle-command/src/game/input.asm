@@ -38,8 +38,8 @@ DeviceReaders:
 
 ; Sinclair (Interface 2): port $EFFE
 ;
-; Witness: known only from the code (entered by `JP (HL)`: menu runs it, L1 0
-; entries).
+; Witness: menu, 11 runs in frames 115-140 after OPTIONS 1 (Sinclair selected;
+; entered by `JP (HL)`, docs/05-controls.md 5.2).
 ReadSinclair:
   LD BC,$EFFE
   IN A,(C)
@@ -98,7 +98,7 @@ l_9767:
   XOR A
   LD (StepY),A
   LD A,(StepFrames)
-  LD (RepeatX),A
+  LD (RepeatY),A
   JR l_97B2
 l_9773:
   LD B,A
@@ -115,10 +115,10 @@ l_9773:
 l_9785:
   LD (StepY),A
   LD A,(StepFrames)
-  LD (RepeatX),A
+  LD (RepeatY),A
   JR l_97B2
 l_9790:
-  LD HL,RepeatX
+  LD HL,RepeatY
   DEC (HL)
   JR NZ,l_97B2
   EX AF,AF'
@@ -152,7 +152,7 @@ l_97BF:
   XOR A
   LD (StepX),A
   LD A,(StepFrames)
-  LD (RepeatY),A
+  LD (RepeatX),A
   JR l_980E
 l_97CB:
   LD B,A
@@ -171,10 +171,10 @@ l_97CB:
 l_97DF:
   LD (StepX),A
   LD A,(StepFrames)
-  LD (RepeatY),A
+  LD (RepeatX),A
   JR l_980E
 l_97EA:
-  LD HL,RepeatY
+  LD HL,RepeatX
   DEC (HL)
   JR NZ,l_980E
   EX AF,AF'
@@ -271,6 +271,10 @@ l_984B:
   JP DecodeDirections
 
 ; The mouse's last position, the X and Y steps, the token table base
+;
+; `$9860`: PrintString's token table base (PrintString `$6FDB` uses StepY+1);
+; its words are this table's bytes, not string pointers, and the token path is
+; never taken (play2: the branch at `$6FBA` taken 0 of 3797).
 InputState:
   DEFB $00,$00
 StepX:

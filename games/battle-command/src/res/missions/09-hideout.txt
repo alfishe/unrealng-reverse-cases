@@ -2,7 +2,7 @@
 # Header fields as the game reads them; vertices; segments (a b orientation size3 size4 style);
 # objects (flags type heading spare x y: the X and Y words); templates (record bytes +2..+$1F:
 # state flags colour height(2) speed wreck(2) ? box(6) ? max hp damage ? radius(2) step(2) hit(2)
-# model(2) score(2)); the rest (code, data, models) as hex lines at their addresses.
+# model(2) score(2)); the rest (code, data) as hex lines, then the models as model lines.
 mission 9
 name "MISSION:::"
 extent 28 17
@@ -315,216 +315,287 @@ bytes $E879 DD 5E 28 9B F2 83 E8 CD 89 E8 A7 ED 42 DE 00 C9
 bytes $E889 4F EB 3E 00 21 00 00 A7 ED 52 99 C9 DD 7E 07 DD
 bytes $E899 BE 12 C8 3C DD 77 07 C9 DD 7E 31 3D 28 06 DD 77
 bytes $E8A9 31 C3 BE 67 CD CD 67 DD 36 02 00 C9 CD 2E EC 3A
-bytes $E8B9 FA DD E6 02 C8 3E FF 32 E8 68 C9 00 FA 67 20 0C
-bytes $E8C9 7F 01 28 A6 66 C0 26 66 FF 02 05 44 05 00 04 98
-bytes $E8D9 8C 88 98 90 8C 98 94 90 98 88 94 0D 04 00 07 03
-bytes $E8E9 09 98 8C 88 01 07 03 04 98 90 8C 02 07 03 09 98
-bytes $E8F9 94 90 03 07 03 04 98 88 94 FF 00 FA 67 10 0C 66
-bytes $E909 01 26 A8 41 26 A7 40 A8 C0 01 66 00 A9 C0 01 67
-bytes $E919 FF 02 06 44 05 00 04 9C 98 8C 98 90 8C 98 94 90
-bytes $E929 9C 88 94 0D 04 00 08 04 04 9C 98 8C 88 01 07 03
-bytes $E939 09 98 90 8C 02 08 04 04 98 9C 94 90 03 07 03 09
-bytes $E949 9C 88 94 FF 00 FA 67 38 1C 7F 01 28 A6 66 C0 26
-bytes $E959 66 FF 02 05 44 05 00 04 98 8C 88 98 94 90 98 88
-bytes $E969 94 98 90 8C 0D 04 00 07 03 09 98 8C 88 01 07 03
-bytes $E979 09 98 94 90 02 07 03 04 98 88 94 03 07 03 04 98
-bytes $E989 90 8C FF 00 FA 67 34 12 7F 01 28 A6 66 C0 26 C0
-bytes $E999 26 66 FF 02 05 44 05 00 04 98 8C 88 98 94 90 98
-bytes $E9A9 88 94 98 90 8C 0D 04 00 07 03 09 98 8C 88 01 07
-bytes $E9B9 03 09 98 94 90 02 07 03 04 98 88 94 03 07 03 04
-bytes $E9C9 98 90 8C FF 00 F7 E9 00 F7 67 40 1E 2C 01 25 A3
-bytes $E9D9 61 29 A5 A5 65 26 A2 A2 62 A5 64 29 A6 63 FF 02
-bytes $E9E9 05 42 0E 01 03 06 8C 88 94 03 A4 21 C0 FF 21 00
-bytes $E9F9 00 22 E6 68 C9 00 F7 67 18 7F 20 01 24 A2 41 A3
-bytes $EA09 61 01 A2 60 A5 5F 23 A2 42 21 A0 82 5E 24 A3 81
-bytes $EA19 5D A5 5C 1C 9D 5B A4 A4 5A 1F 9C 64 FF 02 0C 34
-bytes $EA29 13 01 06 01 74 84 78 80 7C 70 10 A3 21 A0 22 9A
-bytes $EA39 1B A5 24 C0 FF 00 F7 E9 00 F7 67 40 1C 40 01 25
-bytes $EA49 A2 61 29 A5 A5 65 26 A2 A2 62 A5 64 29 A6 63 FF
-bytes $EA59 02 05 42 0E 01 03 04 8C 88 94 03 A4 21 C0 FF 00
-bytes $EA69 F7 67 20 10 20 01 22 A6 A6 5A F8 5C A8 60 F8 5E
-bytes $EA79 23 A7 A7 5B F8 5D A9 43 F8 5F 1A 9C A1 40 26 A8
-bytes $EA89 C0 00 59 22 E0 26 A1 41 26 E0 19 C0 22 C0 01 62
-bytes $EA99 F8 64 27 E0 19 C0 23 C0 01 63 F8 65 03 61 FF 02
-bytes $EAA9 11 32 05 00 08 84 78 68 78 7C 6C 7C 80 70 80 84
-bytes $EAB9 74 64 98 A4 64 9C 98 64 A0 9C 64 A4 A0 0E 02 04
-bytes $EAC9 01 68 6C 70 74 04 01 98 9C A0 A4 03 A2 1A A3 1B
-bytes $EAD9 A4 1C A5 1D 9E 26 9F 27 A0 28 A1 29 C0 0C 08 00
-bytes $EAE9 08 04 04 84 78 68 74 01 08 04 05 78 7C 6C 68 02
-bytes $EAF9 08 04 04 7C 80 70 6C 03 08 04 05 80 84 74 70 04
-bytes $EB09 07 03 06 64 98 A4 05 07 03 07 64 9C 98 06 07 03
-bytes $EB19 06 64 A0 9C 07 07 03 07 64 A4 A0 FF 00 F7 67 20
-bytes $EB29 7F 0A 01 27 A9 56 27 A6 40 A7 55 00 A6 54 26 A9
-bytes $EB39 41 A6 53 01 A9 52 28 A9 42 A8 51 02 A9 50 27 A8
-bytes $EB49 42 A7 4F 02 A8 4E 22 A4 40 22 A5 80 40 FF 02 09
-bytes $EB59 1C 0C 08 38 07 03 02 58 50 54 39 07 03 02 48 4C
-bytes $EB69 58 3A 07 03 02 40 58 44 3B 07 03 02 58 3C 38 3C
-bytes $EB79 07 03 04 4C 50 58 3D 07 03 04 40 48 58 3E 07 03
-bytes $EB89 04 44 58 38 3F 07 03 04 54 3C 58 00 2E EC 12 00
-bytes $EB99 00 F7 67 08 40 10 01 27 A6 40 A7 61 28 A9 41 A8
-bytes $EBA9 60 27 A3 42 A7 82 5F 28 A4 44 A8 84 5E 21 A7 5D
-bytes $EBB9 20 A8 5C 24 A5 A4 5B 23 A2 A3 5A 29 A6 59 20 99
-bytes $EBC9 58 1B 99 99 57 21 99 56 1A 99 99 62 FF 02 0F 2C
-bytes $EBD9 05 00 05 80 84 68 78 70 80 7C 78 90 84 74 7C 74
-bytes $EBE9 70 78 0A 00 1E EC 2D EC 0C 05 01 09 05 04 78 70
-bytes $EBF9 80 6C 90 03 09 05 04 84 74 7C 8C 68 04 08 04 01
-bytes $EC09 74 70 78 7C 02 08 04 08 7C 78 90 8C 00 08 04 05
-bytes $EC19 80 84 68 6C 09 03 A1 19 20 9B 19 1A 9B 18 17 9A
-bytes $EC29 16 22 C0 09 FF 21 58 67 06 08 7E EE FF 77 23 10
-bytes $EC39 F9 C9 00 F7 67 20 08 04 01 23 A8 63 F8 67 29 64
-bytes $EC49 FF 02 06 44 05 20 02 98 8C 94 90 8C 88 0A 20 6F
-bytes $EC59 EC 9B EC 0C 01 21 07 03 01 90 8C 9C 14 01 21 07
-bytes $EC69 03 01 9C 8C 90 09 0A 20 88 EC 87 EC 0C 01 20 07
-bytes $EC79 03 03 98 8C 94 14 01 20 07 03 03 94 8C 98 09 0C
-bytes $EC89 01 21 07 03 01 9C 8C 88 14 01 21 07 03 01 88 8C
-bytes $EC99 9C 09 FF 00 FD 67 20 7F 58 01 26 A7 60 22 A3 5F
-bytes $ECA9 A0 5E A0 41 A6 81 40 1E 9F 42 A2 82 43 01 F8 44
-bytes $ECB9 A9 84 46 02 F8 45 A5 85 47 02 85 48 23 A5 49 C0
-bytes $ECC9 09 C0 09 4A FF 02 0A 00 05 00 03 18 00 04 10 04
-bytes $ECD9 08 14 08 0C 0C 03 00 08 04 01 18 00 04 10 01 08
-bytes $ECE9 04 05 10 04 08 14 02 08 04 01 14 08 0C 1C 0F 03
-bytes $ECF9 00 08 04 04 10 04 00 18 01 08 04 06 14 08 04 10
-bytes $ED09 02 08 04 04 1C 0C 08 14 03 89 08 C0 12 14 00 FA
-bytes $ED19 67 18 04 78 01 26 A7 60 A6 A0 5E 20 A7 A0 5F 22
-bytes $ED29 A3 5D A3 9D 5C 9F 5A 1D A2 9D 5B 9E 59 9F 58 9E
-bytes $ED39 40 F8 50 18 9F 41 F8 51 18 9A 42 F8 52 18 99 43
-bytes $ED49 F8 53 27 A3 57 9F 56 9F 44 F8 54 16 A7 45 F8 55
-bytes $ED59 16 97 46 F8 57 16 9A 47 F8 56 26 A2 5F 9E 5A A6
-bytes $ED69 48 F8 4C 1A 9E 49 F8 4D 1A 99 4A F8 4E 1A 9F 4B
-bytes $ED79 F8 4F 26 A8 59 C0 19 60 A9 58 F8 5A 26 A0 59 F8
-bytes $ED89 5B FF 02 08 44 02 1D 00 05 00 08 A4 98 88 9C A0
-bytes $ED99 90 98 9C 8C A0 A4 94 A4 60 64 98 64 68 68 6C A0
-bytes $EDA9 A0 6C 60 0C 0E 00 08 04 03 A4 98 88 94 01 08 04
-bytes $EDB9 03 9C A0 90 8C 02 08 04 04 98 9C 8C 88 03 08 04
-bytes $EDC9 04 A0 A4 94 90 02 08 04 01 00 04 08 0C 02 08 04
-bytes $EDD9 01 10 14 18 1C 02 08 04 01 20 24 28 2C 03 08 04
-bytes $EDE9 01 30 34 38 3C 03 08 04 01 40 44 48 4C 03 08 04
-bytes $EDF9 01 50 54 5C 58 04 08 04 06 A4 60 64 98 05 08 04
-bytes $EE09 05 98 64 68 9C 06 08 04 06 9C 68 6C A0 07 08 04
-bytes $EE19 05 A0 6C 60 A4 00 22 EE FF 21 E9 68 35 C9 FF 00
-bytes $EE29 FA 67 0C 07 30 01 26 A7 41 A6 A6 66 F8 68 01 A7
-bytes $EE39 A7 67 F8 69 01 F0 61 F8 60 FF 02 0A 40 13 01 04
-bytes $EE49 08 90 8C 88 94 10 A6 27 20 26 22 A7 23 A8 29 21
-bytes $EE59 28 24 A9 25 C0 FF 00 F7 67 18 30 28 01 24 A5 44
-bytes $EE69 29 A5 59 28 A4 58 99 43 84 E0 03 47 03 A5 45 84
-bytes $EE79 60 C0 07 5C F8 55 05 A5 61 C0 07 5D F8 54 20 F8
-bytes $EE89 56 21 F8 57 94 4F 03 A4 46 A4 5F C0 07 5B F8 53
-bytes $EE99 06 84 5E C0 07 5A F8 52 1E F8 51 1F F8 50 19 A5
-bytes $EEA9 59 F8 63 18 A4 58 F8 64 1B 9F 4E 28 A9 84 4D F8
-bytes $EEB9 4C FF 02 1A 18 05 00 06 60 34 64 30 8C 3C 30 34
-bytes $EEC9 60 8C 60 38 34 30 90 64 90 88 0D 0A 00 09 05 04
-bytes $EED9 60 34 64 94 38 01 09 05 04 30 8C 3C 88 90 00 08
-bytes $EEE9 04 01 7C 78 68 6C 00 08 04 01 80 84 74 70 01 08
-bytes $EEF9 04 01 58 5C 50 54 01 08 04 01 40 44 48 4C 02 08
-bytes $EF09 04 05 30 34 60 8C 03 08 04 06 8C 60 38 3C 04 08
-bytes $EF19 04 07 34 30 90 64 05 08 04 05 64 90 88 94 FF 00
-bytes $EF29 F7 67 10 40 10 01 22 A3 A2 A2 45 F8 4C 27 A3 A3
-bytes $EF39 43 F8 4E 26 A7 41 49 A6 40 83 42 26 A2 A2 46 F8
-bytes $EF49 4B 22 A3 A3 A3 44 F8 4D 09 F8 49 A9 48 8B 4A 08
-bytes $EF59 8D 4F 05 80 47 01 8A 50 8A 90 51 10 82 90 52 10
-bytes $EF69 81 90 53 10 89 90 50 27 A3 54 28 A4 55 A7 56 95
-bytes $EF79 96 55 16 94 96 54 16 A7 96 57 16 A8 96 56 FF 02
-bytes $EF89 18 00 05 00 08 00 04 08 3C 38 34 0C 2C 30 08 28
-bytes $EF99 2C 04 24 28 20 00 1C 3C 1C 18 18 14 34 0D 0B 04
-bytes $EFA9 08 04 06 04 24 28 08 00 08 04 04 4C 5C 50 48 00
-bytes $EFB9 0C 08 04 00 04 08 0C 10 14 18 1C 01 08 04 04 44
-bytes $EFC9 54 58 40 01 0C 08 04 3C 38 34 30 2C 28 24 20 02
-bytes $EFD9 08 04 06 0C 2C 30 10 03 08 04 05 08 28 2C 0C 05
-bytes $EFE9 08 04 07 20 00 1C 3C 06 08 04 05 3C 1C 18 38 07
-bytes $EFF9 08 04 06 38 18 14 34 04 08 04 01 58 54 50 5C FF
-bytes $F009 00 F7 67 10 40 10 01 24 A5 40 A5 A5 61 F8 5D 00
-bytes $F019 A4 A4 60 F8 5E 28 A4 A4 5F 27 A3 A3 5C 29 9F 41
-bytes $F029 26 9C 42 81 65 28 A3 62 A8 A2 68 22 A7 A2 67 29
-bytes $F039 A5 A5 64 26 A5 A5 63 FF 02 10 38 05 00 09 A4 84
-bytes $F049 80 70 74 78 98 A4 7C 70 7C 80 A4 98 88 A0 90 94
-bytes $F059 9C 88 94 A0 88 9C 8C 90 94 0A 08 93 F0 AD F0 0C
-bytes $F069 05 00 08 04 04 A4 84 80 7C 01 08 04 04 70 74 78
-bytes $F079 98 02 08 04 05 98 A4 7C 70 03 08 04 07 70 7C 80
-bytes $F089 74 04 08 04 07 A4 98 78 84 09 0C 03 05 08 04 02
-bytes $F099 A0 90 94 88 06 08 04 02 9C 88 94 8C 07 07 03 01
-bytes $F0A9 A0 88 9C 09 FF 00 F4 67 20 60 14 01 28 A6 40 A8
-bytes $F0B9 A8 68 F8 66 00 A7 A7 67 F8 69 28 E0 29 A1 61 27
-bytes $F0C9 A8 41 A3 5A C0 21 5B 01 A4 5C C0 21 5D 1C A8 9C
-bytes $F0D9 5E 1C A4 9C 5F 1A A3 9A 60 1A A7 9A 61 FF 02 10
-bytes $F0E9 34 05 00 04 9C A0 90 A0 A4 94 A4 98 88 98 9C 8C
-bytes $F0F9 0A 00 2A F1 31 F1 0C 05 00 08 04 05 9C A0 90 8C
-bytes $F109 00 08 04 04 84 78 7C 80 01 08 04 06 A0 A4 94 90
-bytes $F119 02 08 04 05 A4 98 88 94 03 08 04 06 98 9C 8C 88
-bytes $F129 09 03 9A 1B 9C 1D C0 09 FF 00 F4 67 20 28 00 02
-bytes $F139 04 4C 03 A6 27 A9 28 C0 FF 00 51 F1 02 04 00 0E
-bytes $F149 01 04 01 00 04 08 0C FF 21 0A 00 22 00 FD 22 02
-bytes $F159 FD 22 00 FE 22 06 FE 21 F6 FF 22 02 FE 22 04 FD
-bytes $F169 22 04 FE 22 06 FD 21 00 00 22 00 FF 22 02 FF 22
-bytes $F179 04 FF 22 06 FF C9 00 8D F1 02 03 00 0E 01 03 01
-bytes $F189 00 04 08 FF 21 0A 00 22 00 FD 22 00 FE 22 04 FE
-bytes $F199 6C 22 00 FF 22 02 FF 22 04 FF 22 02 FD 21 F6 FF
-bytes $F1A9 22 04 FD 22 02 FE C9 00 F4 67 20 18 1C 15 02 10
-bytes $F1B9 F2 DA F1 E0 F1 E6 F1 EC F1 F2 F1 F8 F1 FE F1 04
-bytes $F1C9 F2 0A F2 04 F2 FE F1 F8 F1 F2 F1 EC F1 E6 F1 E0
-bytes $F1D9 F1 40 64 00 40 00 03 40 60 11 40 FF 03 40 5D 22
-bytes $F1E9 40 FF 03 40 56 32 40 FE 03 40 4C 40 40 FD 03 40
-bytes $F1F9 40 4C 40 FD 03 40 32 56 40 FC 03 40 22 5D 40 FC
-bytes $F209 02 40 11 62 40 FB 01 01 29 A7 40 A7 41 00 A6 42
-bytes $F219 00 A9 43 00 A8 40 25 A3 44 A2 46 04 A3 45 04 A5
-bytes $F229 47 04 A4 44 03 82 48 03 86 88 48 C0 20 C0 20 49
-bytes $F239 E0 1F E0 1F 4A 20 A1 A1 A1 4E 08 E0 0E 48 E0 1F
-bytes $F249 4B 08 C0 1F 48 09 C0 1F 49 FF 02 0C 00 05 00 03
-bytes $F259 0C 08 18 08 04 14 20 24 28 0A 02 8D F2 A2 F2 0C
-bytes $F269 02 00 08 04 03 0C 08 18 1C 01 08 04 04 08 04 14
-bytes $F279 18 0F 02 00 08 04 03 04 00 10 14 01 08 04 04 00
-bytes $F289 0C 1C 10 09 0D 01 02 08 04 01 20 24 28 2C 0F 01
-bytes $F299 02 08 04 06 2C 28 24 20 09 FF 00 F4 67 20 20 38
-bytes $F2A9 01 26 A7 40 F8 45 26 A2 A6 42 F8 43 27 A3 A7 41
-bytes $F2B9 F8 44 02 81 46 82 47 06 81 46 22 A3 48 A2 49 08
-bytes $F2C9 A3 48 FF 02 0A 00 02 08 44 05 00 03 00 04 8C 10
-bytes $F2D9 08 88 14 00 08 0C 04 00 09 05 04 00 04 8C 88 08
-bytes $F2E9 01 08 04 03 10 08 88 94 02 08 04 05 14 00 08 10
-bytes $F2F9 00 08 04 01 1C 18 20 24 0F 03 00 09 05 04 90 0C
-bytes $F309 14 10 94 01 08 04 03 04 0C 90 8C 02 08 04 05 00
-bytes $F319 14 0C 04 FF 00 F7 67 18 50 30 01 26 A9 61 F8 60
-bytes $F329 28 A4 A8 68 F8 66 29 A5 A9 69 F8 67 26 A7 40 A2
-bytes $F339 41 A6 5E 01 80 5F 01 A2 9E 5D 23 A2 43 81 9F 5C
-bytes $F349 00 A3 44 80 5B 04 A7 5A 04 83 9B 59 04 A3 9A 58
-bytes $F359 FF 02 12 30 05 00 06 A4 84 98 9C 80 A0 A0 A4 94
-bytes $F369 98 9C 8C A0 80 84 84 80 9C 0C 08 00 09 05 04 A4
-bytes $F379 84 98 88 94 01 09 05 04 9C 80 A0 90 8C 02 08 04
-bytes $F389 07 A0 A4 94 90 03 08 04 07 98 9C 8C 88 04 08 04
-bytes $F399 06 A0 80 84 A4 05 08 04 06 84 80 9C 98 03 08 04
-bytes $F3A9 01 78 7C 70 74 03 08 04 01 6C 68 60 64 FF 00 F7
-bytes $F3B9 67 28 50 30 01 26 A9 61 F8 60 28 A4 A8 68 F8 66
-bytes $F3C9 29 A5 A9 69 F8 67 29 A6 40 A5 41 A5 42 01 80 5F
-bytes $F3D9 01 A9 5E 82 5D 25 A2 43 81 9F 5C 00 A2 44 80 5B
-bytes $F3E9 04 A6 5A 04 83 9B 59 04 A2 9A 58 FF 02 12 30 05
-bytes $F3F9 00 06 A4 84 98 9C 80 A0 A0 A4 94 98 9C 8C A0 80
-bytes $F409 84 84 80 9C 0C 08 00 09 05 04 A4 84 98 88 94 01
-bytes $F419 09 05 04 9C 80 A0 90 8C 02 08 04 07 A0 A4 94 90
-bytes $F429 03 08 04 07 98 9C 8C 88 04 08 04 06 A0 80 84 A4
-bytes $F439 05 08 04 06 84 80 9C 98 00 08 04 01 78 7C 70 74
-bytes $F449 00 08 04 01 6C 68 60 64 FF 00 FA 67 10 05 20 01
-bytes $F459 27 A9 5E 27 A8 C0 1E 5D F8 5C 23 E0 27 50 A1 90
-bytes $F469 50 23 A4 4F A4 8F 5F E0 10 60 0F A3 8F 5E E0 10
-bytes $F479 61 FF 02 0E 38 05 00 06 A4 98 94 98 9C 88 9C A0
-bytes $F489 8C A0 A4 90 70 74 98 74 70 A0 0D 07 00 09 05 06
-bytes $F499 70 98 88 94 A4 01 08 04 07 98 9C 8C 88 02 09 05
-bytes $F4A9 06 74 A0 90 8C 9C 03 08 04 07 A0 A4 94 90 04 08
-bytes $F4B9 04 01 70 74 9C 98 05 08 04 01 74 70 A4 A0 02 08
-bytes $F4C9 04 01 84 80 7C 78 FF 00 F4 67 20 30 40 01 28 A6
-bytes $F4D9 61 F0 62 A1 A1 A1 65 28 A7 63 24 A7 A3 A3 64 FF
-bytes $F4E9 02 05 42 05 00 01 84 8C 90 0C 01 00 08 04 06 84
-bytes $F4F9 8C 90 94 0F 01 00 08 04 06 94 90 8C 84 03 A1 22
-bytes $F509 C0 FF 00 F7 67 10 40 0C 01 27 A8 40 F8 58 F8 A8
-bytes $F519 43 00 A7 44 00 A3 49 F8 5A 00 A4 4A F8 9A 57 99
-bytes $F529 4B 1A 97 4C 83 4D 83 4F F0 F8 51 0B 84 4E 84 50
-bytes $F539 F0 F8 52 27 E0 28 45 C0 05 45 C0 10 53 05 C0 0E
-bytes $F549 54 0F E0 05 56 0D E0 05 55 0E 8B 8B 5B 0D 8C 8C
-bytes $F559 5C 00 97 97 97 5D 26 A2 59 29 A5 5A FF 02 15 12
-bytes $F569 05 00 07 48 2C 40 24 28 44 40 3C 28 3C 30 44 58
-bytes $F579 4C 2C 48 44 30 60 74 5C 0A 04 E6 F5 F9 F5 0F 03
-bytes $F589 04 08 04 07 54 50 4C 58 04 07 03 06 2C 64 6C 04
-bytes $F599 07 03 06 68 30 70 0C 08 01 08 04 04 24 28 44 48
-bytes $F5A9 02 08 04 05 40 3C 28 24 04 08 04 01 34 38 6C 70
-bytes $F5B9 05 08 04 01 2C 48 44 30 00 09 05 07 40 24 48 2C
-bytes $F5C9 6C 03 09 05 07 3C 70 30 44 28 04 08 04 06 58 4C
-bytes $F5D9 50 54 04 0A 06 04 6C 64 2C 30 68 70 09 0F 01 06
-bytes $F5E9 07 03 02 60 5C 74 0C 01 06 07 03 02 60 74 5C 09
-bytes $F5F9 FF
+bytes $E8B9 FA DD E6 02 C8 3E FF 32 E8 68 C9
+
+# the 3D models from $E8C4 to the end (tools/models3d.py, text_lines: one instruction a line)
+model $E8C4 native $67FA 20 0C 7F ; box_rect16 32 12 127, model
+model $E8CA verts 28 A6 66 C0 26 66 FF ; verts P=V40 P=(P+V38)/2 V38=P P+=V38 V38=P
+model $E8D2 project 05 44 ; project 5 from V34
+model $E8D5 faces_test 00 04 98 8C 88 98 90 8C 98 94 90 98 88 94 ; faces_test from 0: (38 35 34) (38 36 35) (38 37 36) (38 34 37)
+model $E8E4 fill_faces_clip 04 00 07 03 09 98 8C 88 01 07 03 04 98 90 8C 02 07 03 09 98 94 90 03 07 03 04 98 88 94 ; fill_faces_clip (f0 c9 38 35 34) (f1 c4 38 36 35) (f2 c9 38 37 36) (f3 c4 38 34 37)
+model $E902 end ; end
+model $E903 native $67FA 10 0C 66 ; box_rect16 16 12 102, model
+model $E909 verts 26 A8 41 26 A7 40 A8 C0 01 66 00 A9 C0 01 67 FF ; verts P=V38 P=(P+V40)/2 V1=P P=V38 P=(P+V39)/2 V0=P P=(P+V40)/2 P+=V1 V38=P P=V0 P=(P+V41)/2 P+=V1 V39=P
+model $E91A project 06 44 ; project 6 from V34
+model $E91D faces_test 00 04 9C 98 8C 98 90 8C 98 94 90 9C 88 94 ; faces_test from 0: (39 38 35) (38 36 35) (38 37 36) (39 34 37)
+model $E92C fill_faces_clip 04 00 08 04 04 9C 98 8C 88 01 07 03 09 98 90 8C 02 08 04 04 98 9C 94 90 03 07 03 09 9C 88 94 ; fill_faces_clip (f0 c4 39 38 35 34) (f1 c9 38 36 35) (f2 c4 38 39 37 36) (f3 c9 39 34 37)
+model $E94C end ; end
+model $E94D native $67FA 38 1C 7F ; box_rect16 56 28 127, model
+model $E953 verts 28 A6 66 C0 26 66 FF ; verts P=V40 P=(P+V38)/2 V38=P P+=V38 V38=P
+model $E95B project 05 44 ; project 5 from V34
+model $E95E faces_test 00 04 98 8C 88 98 94 90 98 88 94 98 90 8C ; faces_test from 0: (38 35 34) (38 37 36) (38 34 37) (38 36 35)
+model $E96D fill_faces_clip 04 00 07 03 09 98 8C 88 01 07 03 09 98 94 90 02 07 03 04 98 88 94 03 07 03 04 98 90 8C ; fill_faces_clip (f0 c9 38 35 34) (f1 c9 38 37 36) (f2 c4 38 34 37) (f3 c4 38 36 35)
+model $E98B end ; end
+model $E98C native $67FA 34 12 7F ; box_rect16 52 18 127, model
+model $E992 verts 28 A6 66 C0 26 C0 26 66 FF ; verts P=V40 P=(P+V38)/2 V38=P P+=V38 P+=V38 V38=P
+model $E99C project 05 44 ; project 5 from V34
+model $E99F faces_test 00 04 98 8C 88 98 94 90 98 88 94 98 90 8C ; faces_test from 0: (38 35 34) (38 37 36) (38 34 37) (38 36 35)
+model $E9AE fill_faces_clip 04 00 07 03 09 98 8C 88 01 07 03 09 98 94 90 02 07 03 04 98 88 94 03 07 03 04 98 90 8C ; fill_faces_clip (f0 c9 38 35 34) (f1 c9 38 37 36) (f2 c4 38 34 37) (f3 c4 38 36 35)
+model $E9CC end ; end
+model $E9CD native $E9F7 ; native $E9F7, model
+model $E9D0 native $67F7 40 1E 2C ; box_rect 64 30 44
+model $E9D6 verts 25 A3 61 29 A5 A5 65 26 A2 A2 62 A5 64 29 A6 63 FF ; verts P=V37 P=(P+V35)/2 V33=P P=V41 P=(P+V37)/2 P=(P+V37)/2 V37=P P=V38 P=(P+V34)/2 P=(P+V34)/2 V34=P P=(P+V37)/2 V36=P P=V41 P=(P+V38)/2 V35=P
+model $E9E8 project 05 42 ; project 5 from V33
+model $E9EB fill_polys 01 03 06 8C 88 94 ; fill_polys (c6 35 34 37)
+model $E9F2 lines A4 21 C0 ; lines M36 L33
+model $E9F6 end ; end
+model $E9F7 db 21
+model $E9F8 native $2200 ; native $2200
+model $E9FB db E6
+model $E9FC db 68
+model $E9FD db C9
+model $E9FE native $67F7 18 7F 20 ; box_rect 24 127 32
+model $EA04 verts 24 A2 41 A3 61 01 A2 60 A5 5F 23 A2 42 21 A0 82 5E 24 A3 81 5D A5 5C 1C 9D 5B A4 A4 5A 1F 9C 64 FF ; verts P=V36 P=(P+V34)/2 V1=P P=(P+V35)/2 V33=P P=V1 P=(P+V34)/2 V32=P P=(P+V37)/2 V31=P P=V35 P=(P+V34)/2 V2=P P=V33 P=(P+V32)/2 P=(P+V2)/2 V30=P P=V36 P=(P+V35)/2 P=(P+V1)/2 V29=P P=(P+V37)/2 V28=P P=V28 P=(P+V29)/2 V27=P P=(P+V36)/2 P=(P+V36)/2 V26=P P=V31 P=(P+V28)/2 V36=P
+model $EA26 project 0C 34 ; project 12 from V26
+model $EA29 fill_polys_clip 01 06 01 74 84 78 80 7C 70 ; fill_polys_clip (c1 29 33 30 32 31 28)
+model $EA33 lines_clip A3 21 A0 22 9A 1B A5 24 C0 ; lines_clip M35 L33 M32 L34 M26 L27 M37 L36
+model $EA3D end ; end
+model $EA3E native $E9F7 ; native $E9F7, model
+model $EA41 native $67F7 40 1C 40 ; box_rect 64 28 64
+model $EA47 verts 25 A2 61 29 A5 A5 65 26 A2 A2 62 A5 64 29 A6 63 FF ; verts P=V37 P=(P+V34)/2 V33=P P=V41 P=(P+V37)/2 P=(P+V37)/2 V37=P P=V38 P=(P+V34)/2 P=(P+V34)/2 V34=P P=(P+V37)/2 V36=P P=V41 P=(P+V38)/2 V35=P
+model $EA59 project 05 42 ; project 5 from V33
+model $EA5C fill_polys 01 03 04 8C 88 94 ; fill_polys (c4 35 34 37)
+model $EA63 lines A4 21 C0 ; lines M36 L33
+model $EA67 end ; end
+model $EA68 native $67F7 20 10 20 ; box_rect 32 16 32, model
+model $EA6E verts 22 A6 A6 5A F8 5C A8 60 F8 5E 23 A7 A7 5B F8 5D A9 43 F8 5F 1A 9C A1 40 26 A8 C0 00 59 22 E0 26 A1 41 26 E0 19 C0 22 C0 01 62 F8 64 27 E0 19 C0 23 C0 01 63 F8 65 03 61 FF ; verts P=V34 P=(P+V38)/2 P=(P+V38)/2 V26=P P.xz=-P.xz V28=P P=(P+V40)/2 V32=P P.xz=-P.xz V30=P P=V35 P=(P+V39)/2 P=(P+V39)/2 V27=P P.xz=-P.xz V29=P P=(P+V41)/2 V3=P P.xz=-P.xz V31=P P=V26 P=(P+V28)/2 P=(P+V33)/2 V0=P P=V38 P=(P+V40)/2 P+=V0 V25=P P=V34 P-=V38 P=(P+V33)/2 V1=P P=V38 P-=V25 P+=V34 P+=V1 V34=P P.xz=-P.xz V36=P P=V39 P-=V25 P+=V35 P+=V1 V35=P P.xz=-P.xz V37=P P=V3 V33=P
+model $EAA8 project 11 32 ; project 17 from V25
+model $EAAB faces_test 00 08 84 78 68 78 7C 6C 7C 80 70 80 84 74 64 98 A4 64 9C 98 64 A0 9C 64 A4 A0 ; faces_test from 0: (33 30 26) (30 31 27) (31 32 28) (32 33 29) (25 38 41) (25 39 38) (25 40 39) (25 41 40)
+model $EAC6 fill_polys 02 04 01 68 6C 70 74 04 01 98 9C A0 A4 ; fill_polys (c1 26 27 28 29) (c1 38 39 40 41)
+model $EAD4 lines A2 1A A3 1B A4 1C A5 1D 9E 26 9F 27 A0 28 A1 29 C0 ; lines M34 L26 M35 L27 M36 L28 M37 L29 M30 L38 M31 L39 M32 L40 M33 L41
+model $EAE6 fill_faces 08 00 08 04 04 84 78 68 74 01 08 04 05 78 7C 6C 68 02 08 04 04 7C 80 70 6C 03 08 04 05 80 84 74 70 04 07 03 06 64 98 A4 05 07 03 07 64 9C 98 06 07 03 06 64 A0 9C 07 07 03 07 64 A4 A0 ; fill_faces (f0 c4 33 30 26 29) (f1 c5 30 31 27 26) (f2 c4 31 32 28 27) (f3 c5 32 33 29 28) (f4 c6 25 38 41) (f5 c7 25 39 38) (f6 c6 25 40 39) (f7 c7 25 41 40)
+model $EB24 end ; end
+model $EB25 native $67F7 20 7F 0A ; box_rect 32 127 10, model
+model $EB2B verts 27 A9 56 27 A6 40 A7 55 00 A6 54 26 A9 41 A6 53 01 A9 52 28 A9 42 A8 51 02 A9 50 27 A8 42 A7 4F 02 A8 4E 22 A4 40 22 A5 80 40 FF ; verts P=V39 P=(P+V41)/2 V22=P P=V39 P=(P+V38)/2 V0=P P=(P+V39)/2 V21=P P=V0 P=(P+V38)/2 V20=P P=V38 P=(P+V41)/2 V1=P P=(P+V38)/2 V19=P P=V1 P=(P+V41)/2 V18=P P=V40 P=(P+V41)/2 V2=P P=(P+V40)/2 V17=P P=V2 P=(P+V41)/2 V16=P P=V39 P=(P+V40)/2 V2=P P=(P+V39)/2 V15=P P=V2 P=(P+V40)/2 V14=P P=V34 P=(P+V36)/2 V0=P P=V34 P=(P+V37)/2 P=(P+V0)/2 V0=P
+model $EB57 project 09 1C ; project 9 from V14
+model $EB5A fill_faces 08 38 07 03 02 58 50 54 39 07 03 02 48 4C 58 3A 07 03 02 40 58 44 3B 07 03 02 58 3C 38 3C 07 03 04 4C 50 58 3D 07 03 04 40 48 58 3E 07 03 04 44 58 38 3F 07 03 04 54 3C 58 ; fill_faces (f56 c2 22 20 21) (f57 c2 18 19 22) (f58 c2 16 22 17) (f59 c2 22 15 14) (f60 c4 19 20 22) (f61 c4 16 18 22) (f62 c4 17 22 14) (f63 c4 21 15 22)
+model $EB94 native $EC2E ; native $EC2E
+model $EB97 translate 00 ; translate V0
+model $EB99 native $67F7 08 40 10 ; box_rect 8 64 16
+model $EB9F verts 27 A6 40 A7 61 28 A9 41 A8 60 27 A3 42 A7 82 5F 28 A4 44 A8 84 5E 21 A7 5D 20 A8 5C 24 A5 A4 5B 23 A2 A3 5A 29 A6 59 20 99 58 1B 99 99 57 21 99 56 1A 99 99 62 FF ; verts P=V39 P=(P+V38)/2 V0=P P=(P+V39)/2 V33=P P=V40 P=(P+V41)/2 V1=P P=(P+V40)/2 V32=P P=V39 P=(P+V35)/2 V2=P P=(P+V39)/2 P=(P+V2)/2 V31=P P=V40 P=(P+V36)/2 V4=P P=(P+V40)/2 P=(P+V4)/2 V30=P P=V33 P=(P+V39)/2 V29=P P=V32 P=(P+V40)/2 V28=P P=V36 P=(P+V37)/2 P=(P+V36)/2 V27=P P=V35 P=(P+V34)/2 P=(P+V35)/2 V26=P P=V41 P=(P+V38)/2 V25=P P=V32 P=(P+V25)/2 V24=P P=V27 P=(P+V25)/2 P=(P+V25)/2 V23=P P=V33 P=(P+V25)/2 V22=P P=V26 P=(P+V25)/2 P=(P+V25)/2 V34=P
+model $EBD6 project 0F 2C ; project 15 from V22
+model $EBD9 faces_test 00 05 80 84 68 78 70 80 7C 78 90 84 74 7C 74 70 78 ; faces_test from 0: (32 33 26) (30 28 32) (31 30 36) (33 29 31) (29 28 30)
+model $EBEB order_by_face 00 $EC1E $EC2D ; order_by_face f0 $EC1E $EC2D
+model $EBF1 fill_faces 05 01 09 05 04 78 70 80 6C 90 03 09 05 04 84 74 7C 8C 68 04 08 04 01 74 70 78 7C 02 08 04 08 7C 78 90 8C 00 08 04 05 80 84 68 6C ; fill_faces (f1 c4 30 28 32 27 36) (f3 c4 33 29 31 35 26) (f4 c1 29 28 30 31) (f2 c8 31 30 36 35) (f0 c5 32 33 26 27)
+model $EC1D return ; return
+model $EC1E lines A1 19 20 9B 19 1A 9B 18 17 9A 16 22 C0 ; lines M33 L25 L32 M27 L25 L26 M27 L24 L23 M26 L22 L34
+model $EC2C return ; return
+model $EC2D end ; end
+model $EC2E db 21
+model $EC2F db 58
+model $EC30 db 67
+model $EC31 jump_if_visible 08 $EE7E ; jump_if_visible f8 $EE7E
+model $EC35 end ; end
+model $EC36 db 77
+model $EC37 db 23
+model $EC38 db 10
+model $EC39 db F9
+model $EC3A db C9
+model $EC3B native $67F7 20 08 04 ; box_rect 32 8 4, model
+model $EC41 verts 23 A8 63 F8 67 29 64 FF ; verts P=V35 P=(P+V40)/2 V35=P P.xz=-P.xz V39=P P=V41 V36=P
+model $EC4A project 06 44 ; project 6 from V34
+model $EC4D faces_test 20 02 98 8C 94 90 8C 88 ; faces_test from 32: (38 35 37) (36 35 34)
+model $EC56 order_by_face 20 $EC6F $EC9B ; order_by_face f32 $EC6F $EC9B
+model $EC5C fill_faces 01 21 07 03 01 90 8C 9C ; fill_faces (f33 c1 36 35 39)
+model $EC65 fill_back_faces_clip 01 21 07 03 01 9C 8C 90 ; fill_back_faces_clip (f33 c1 39 35 36)
+model $EC6E return ; return
+model $EC6F order_by_face 20 $EC88 $EC87 ; order_by_face f32 $EC88 $EC87
+model $EC75 fill_faces 01 20 07 03 03 98 8C 94 ; fill_faces (f32 c3 38 35 37)
+model $EC7E fill_back_faces_clip 01 20 07 03 03 94 8C 98 ; fill_back_faces_clip (f32 c3 37 35 38)
+model $EC87 return ; return
+model $EC88 fill_faces 01 21 07 03 01 9C 8C 88 ; fill_faces (f33 c1 39 35 34)
+model $EC91 fill_back_faces_clip 01 21 07 03 01 88 8C 9C ; fill_back_faces_clip (f33 c1 34 35 39)
+model $EC9A return ; return
+model $EC9B end ; end
+model $EC9C native $67FD 20 7F 58 ; box_square_turret 32 127 88, model
+model $ECA2 verts 26 A7 60 22 A3 5F A0 5E A0 41 A6 81 40 1E 9F 42 A2 82 43 01 F8 44 A9 84 46 02 F8 45 A5 85 47 02 85 48 23 A5 49 C0 09 C0 09 4A FF ; verts P=V38 P=(P+V39)/2 V32=P P=V34 P=(P+V35)/2 V31=P P=(P+V32)/2 V30=P P=(P+V32)/2 V1=P P=(P+V38)/2 P=(P+V1)/2 V0=P P=V30 P=(P+V31)/2 V2=P P=(P+V34)/2 P=(P+V2)/2 V3=P P=V1 P.xz=-P.xz V4=P P=(P+V41)/2 P=(P+V4)/2 V6=P P=V2 P.xz=-P.xz V5=P P=(P+V37)/2 P=(P+V5)/2 V7=P P=V2 P=(P+V5)/2 V8=P P=V35 P=(P+V37)/2 V9=P P+=V9 P+=V9 V10=P
+model $ECCE project 0A 00 ; project 10 from V0
+model $ECD1 faces_test 00 03 18 00 04 10 04 08 14 08 0C ; faces_test from 0: (6 0 1) (4 1 2) (5 2 3)
+model $ECDD fill_faces 03 00 08 04 01 18 00 04 10 01 08 04 05 10 04 08 14 02 08 04 01 14 08 0C 1C ; fill_faces (f0 c1 6 0 1 4) (f1 c5 4 1 2 5) (f2 c1 5 2 3 7)
+model $ECF7 fill_back_faces 03 00 08 04 04 10 04 00 18 01 08 04 06 14 08 04 10 02 08 04 04 1C 0C 08 14 ; fill_back_faces (f0 c4 4 1 0 6) (f1 c6 5 2 1 4) (f2 c4 7 3 2 5)
+model $ED11 lines 89 08 C0 ; lines M9 L8
+model $ED15 translate 14 ; translate V10
+model $ED17 native $67FA 18 04 78 ; box_rect16 24 4 120
+model $ED1D verts 26 A7 60 A6 A0 5E 20 A7 A0 5F 22 A3 5D A3 9D 5C 9F 5A 1D A2 9D 5B 9E 59 9F 58 9E 40 F8 50 18 9F 41 F8 51 18 9A 42 F8 52 18 99 43 F8 53 27 A3 57 9F 56 9F 44 F8 54 16 A7 45 F8 55 16 97 46 F8 57 16 9A 47 F8 56 26 A2 5F 9E 5A A6 48 F8 4C 1A 9E 49 F8 4D 1A 99 4A F8 4E 1A 9F 4B F8 4F 26 A8 59 C0 19 60 A9 58 F8 5A 26 A0 59 F8 5B FF ; verts P=V38 P=(P+V39)/2 V32=P P=(P+V38)/2 P=(P+V32)/2 V30=P P=V32 P=(P+V39)/2 P=(P+V32)/2 V31=P P=V34 P=(P+V35)/2 V29=P P=(P+V35)/2 P=(P+V29)/2 V28=P P=(P+V31)/2 V26=P P=V29 P=(P+V34)/2 P=(P+V29)/2 V27=P P=(P+V30)/2 V25=P P=(P+V31)/2 V24=P P=(P+V30)/2 V0=P P.xz=-P.xz V16=P P=V24 P=(P+V31)/2 V1=P P.xz=-P.xz V17=P P=V24 P=(P+V26)/2 V2=P P.xz=-P.xz V18=P P=V24 P=(P+V25)/2 V3=P P.xz=-P.xz V19=P P=V39 P=(P+V35)/2 V23=P P=(P+V31)/2 V22=P P=(P+V31)/2 V4=P P.xz=-P.xz V20=P P=V22 P=(P+V39)/2 V5=P P.xz=-P.xz V21=P P=V22 P=(P+V23)/2 V6=P P.xz=-P.xz V23=P P=V22 P=(P+V26)/2 V7=P P.xz=-P.xz V22=P P=V38 P=(P+V34)/2 V31=P P=(P+V30)/2 V26=P P=(P+V38)/2 V8=P P.xz=-P.xz V12=P P=V26 P=(P+V30)/2 V9=P P.xz=-P.xz V13=P P=V26 P=(P+V25)/2 V10=P P.xz=-P.xz V14=P P=V26 P=(P+V31)/2 V11=P P.xz=-P.xz V15=P P=V38 P=(P+V40)/2 V25=P P+=V25 V32=P P=(P+V41)/2 V24=P P.xz=-P.xz V26=P P=V38 P=(P+V32)/2 V25=P P.xz=-P.xz V27=P
+model $ED8B project 08 44 ; project 8 from V34
+model $ED8E project 1D 00 ; project 29 from V0
+model $ED91 faces_test 00 08 A4 98 88 9C A0 90 98 9C 8C A0 A4 94 A4 60 64 98 64 68 68 6C A0 A0 6C 60 ; faces_test from 0: (41 38 34) (39 40 36) (38 39 35) (40 41 37) (41 24 25) (38 25 26) (26 27 40) (40 27 24)
+model $EDAC fill_faces 0E 00 08 04 03 A4 98 88 94 01 08 04 03 9C A0 90 8C 02 08 04 04 98 9C 8C 88 03 08 04 04 A0 A4 94 90 02 08 04 01 00 04 08 0C 02 08 04 01 10 14 18 1C 02 08 04 01 20 24 28 2C 03 08 04 01 30 34 38 3C 03 08 04 01 40 44 48 4C 03 08 04 01 50 54 5C 58 04 08 04 06 A4 60 64 98 05 08 04 05 98 64 68 9C 06 08 04 06 9C 68 6C A0 07 08 04 05 A0 6C 60 A4 ; fill_faces (f0 c3 41 38 34 37) (f1 c3 39 40 36 35) (f2 c4 38 39 35 34) (f3 c4 40 41 37 36) (f2 c1 0 1 2 3) (f2 c1 4 5 6 7) (f2 c1 8 9 10 11) (f3 c1 12 13 14 15) (f3 c1 16 17 18 19) (f3 c1 20 21 23 22) (f4 c6 41 24 25 38) (f5 c5 38 25 26 39) (f6 c6 39 26 27 40) (f7 c5 40 27 24 41)
+model $EE1E native $EE22 ; native $EE22
+model $EE21 end ; end
+model $EE22 db 21
+model $EE23 db E9
+model $EE24 db 68
+model $EE25 db 35
+model $EE26 db C9
+model $EE27 end ; end
+model $EE28 native $67FA 0C 07 30 ; box_rect16 12 7 48, model
+model $EE2E verts 26 A7 41 A6 A6 66 F8 68 01 A7 A7 67 F8 69 01 F0 61 F8 60 FF ; verts P=V38 P=(P+V39)/2 V1=P P=(P+V38)/2 P=(P+V38)/2 V38=P P.xz=-P.xz V40=P P=V1 P=(P+V39)/2 P=(P+V39)/2 V39=P P.xz=-P.xz V41=P P=V1 P=-P V33=P P.xz=-P.xz V32=P
+model $EE43 project 0A 40 ; project 10 from V32
+model $EE46 fill_polys_clip 01 04 08 90 8C 88 94 ; fill_polys_clip (c8 36 35 34 37)
+model $EE4E lines_clip A6 27 20 26 22 A7 23 A8 29 21 28 24 A9 25 C0 ; lines_clip M38 L39 L32 L38 L34 M39 L35 M40 L41 L33 L40 L36 M41 L37
+model $EE5E end ; end
+model $EE5F native $67F7 18 30 28 ; box_rect 24 48 40, model
+model $EE65 verts 24 A5 44 29 A5 59 28 A4 58 99 43 84 E0 03 47 03 A5 45 84 60 C0 07 5C F8 55 05 A5 61 C0 07 5D F8 54 20 F8 56 21 F8 57 94 4F 03 A4 46 A4 5F C0 07 5B F8 53 06 84 5E C0 07 5A F8 52 1E F8 51 1F F8 50 19 A5 59 F8 63 18 A4 58 F8 64 1B 9F 4E 28 A9 84 4D F8 4C FF ; verts P=V36 P=(P+V37)/2 V4=P P=V41 P=(P+V37)/2 V25=P P=V40 P=(P+V36)/2 V24=P P=(P+V25)/2 V3=P P=(P+V4)/2 P-=V3 V7=P P=V3 P=(P+V37)/2 V5=P P=(P+V4)/2 V32=P P+=V7 V28=P P.xz=-P.xz V21=P P=V5 P=(P+V37)/2 V33=P P+=V7 V29=P P.xz=-P.xz V20=P P=V32 P.xz=-P.xz V22=P P=V33 P.xz=-P.xz V23=P P=(P+V20)/2 V15=P P=V3 P=(P+V36)/2 V6=P P=(P+V36)/2 V31=P P+=V7 V27=P P.xz=-P.xz V19=P P=V6 P=(P+V4)/2 V30=P P+=V7 V26=P P.xz=-P.xz V18=P P=V30 P.xz=-P.xz V17=P P=V31 P.xz=-P.xz V16=P P=V25 P=(P+V37)/2 V25=P P.xz=-P.xz V35=P P=V24 P=(P+V36)/2 V24=P P.xz=-P.xz V36=P P=V27 P=(P+V31)/2 V14=P P=V40 P=(P+V41)/2 P=(P+V4)/2 V13=P P.xz=-P.xz V12=P
+model $EEBB project 1A 18 ; project 26 from V12
+model $EEBE faces_test 00 06 60 34 64 30 8C 3C 30 34 60 8C 60 38 34 30 90 64 90 88 ; faces_test from 0: (24 13 25) (12 35 15) (12 13 24) (35 24 14) (13 12 36) (25 36 34)
+model $EED3 fill_faces_clip 0A 00 09 05 04 60 34 64 94 38 01 09 05 04 30 8C 3C 88 90 00 08 04 01 7C 78 68 6C 00 08 04 01 80 84 74 70 01 08 04 01 58 5C 50 54 01 08 04 01 40 44 48 4C 02 08 04 05 30 34 60 8C 03 08 04 06 8C 60 38 3C 04 08 04 07 34 30 90 64 05 08 04 05 64 90 88 94 ; fill_faces_clip (f0 c4 24 13 25 37 14) (f1 c4 12 35 15 34 36) (f0 c1 31 30 26 27) (f0 c1 32 33 29 28) (f1 c1 22 23 20 21) (f1 c1 16 17 18 19) (f2 c5 12 13 24 35) (f3 c6 35 24 14 15) (f4 c7 13 12 36 25) (f5 c5 25 36 34 37)
+model $EF27 end ; end
+model $EF28 native $67F7 10 40 10 ; box_rect 16 64 16, model
+model $EF2E verts 22 A3 A2 A2 45 F8 4C 27 A3 A3 43 F8 4E 26 A7 41 49 A6 40 83 42 26 A2 A2 46 F8 4B 22 A3 A3 A3 44 F8 4D 09 F8 49 A9 48 8B 4A 08 8D 4F 05 80 47 01 8A 50 8A 90 51 10 82 90 52 10 81 90 53 10 89 90 50 27 A3 54 28 A4 55 A7 56 95 96 55 16 94 96 54 16 A7 96 57 16 A8 96 56 FF ; verts P=V34 P=(P+V35)/2 P=(P+V34)/2 P=(P+V34)/2 V5=P P.xz=-P.xz V12=P P=V39 P=(P+V35)/2 P=(P+V35)/2 V3=P P.xz=-P.xz V14=P P=V38 P=(P+V39)/2 V1=P V9=P P=(P+V38)/2 V0=P P=(P+V3)/2 V2=P P=V38 P=(P+V34)/2 P=(P+V34)/2 V6=P P.xz=-P.xz V11=P P=V34 P=(P+V35)/2 P=(P+V35)/2 P=(P+V35)/2 V4=P P.xz=-P.xz V13=P P=V9 P.xz=-P.xz V9=P P=(P+V41)/2 V8=P P=(P+V11)/2 V10=P P=V8 P=(P+V13)/2 V15=P P=V5 P=(P+V0)/2 V7=P P=V1 P=(P+V10)/2 V16=P P=(P+V10)/2 P=(P+V16)/2 V17=P P=V16 P=(P+V2)/2 P=(P+V16)/2 V18=P P=V16 P=(P+V1)/2 P=(P+V16)/2 V19=P P=V16 P=(P+V9)/2 P=(P+V16)/2 V16=P P=V39 P=(P+V35)/2 V20=P P=V40 P=(P+V36)/2 V21=P P=(P+V39)/2 V22=P P=(P+V21)/2 P=(P+V22)/2 V21=P P=V22 P=(P+V20)/2 P=(P+V22)/2 V20=P P=V22 P=(P+V39)/2 P=(P+V22)/2 V23=P P=V22 P=(P+V40)/2 P=(P+V22)/2 V22=P
+model $EF88 project 18 00 ; project 24 from V0
+model $EF8B faces_test 00 08 00 04 08 3C 38 34 0C 2C 30 08 28 2C 04 24 28 20 00 1C 3C 1C 18 18 14 34 ; faces_test from 0: (0 1 2) (15 14 13) (3 11 12) (2 10 11) (1 9 10) (8 0 7) (15 7 6) (6 5 13)
+model $EFA6 fill_faces_clip 0B 04 08 04 06 04 24 28 08 00 08 04 04 4C 5C 50 48 00 0C 08 04 00 04 08 0C 10 14 18 1C 01 08 04 04 44 54 58 40 01 0C 08 04 3C 38 34 30 2C 28 24 20 02 08 04 06 0C 2C 30 10 03 08 04 05 08 28 2C 0C 05 08 04 07 20 00 1C 3C 06 08 04 05 3C 1C 18 38 07 08 04 06 38 18 14 34 04 08 04 01 58 54 50 5C ; fill_faces_clip (f4 c6 1 9 10 2) (f0 c4 19 23 20 18) (f0 c4 0 1 2 3 4 5 6 7) (f1 c4 17 21 22 16) (f1 c4 15 14 13 12 11 10 9 8) (f2 c6 3 11 12 4) (f3 c5 2 10 11 3) (f5 c7 8 0 7 15) (f6 c5 15 7 6 14) (f7 c6 14 6 5 13) (f4 c1 22 21 20 23)
+model $F008 end ; end
+model $F009 native $67F7 10 40 10 ; box_rect 16 64 16, model
+model $F00F verts 24 A5 40 A5 A5 61 F8 5D 00 A4 A4 60 F8 5E 28 A4 A4 5F 27 A3 A3 5C 29 9F 41 26 9C 42 81 65 28 A3 62 A8 A2 68 22 A7 A2 67 29 A5 A5 64 26 A5 A5 63 FF ; verts P=V36 P=(P+V37)/2 V0=P P=(P+V37)/2 P=(P+V37)/2 V33=P P.xz=-P.xz V29=P P=V0 P=(P+V36)/2 P=(P+V36)/2 V32=P P.xz=-P.xz V30=P P=V40 P=(P+V36)/2 P=(P+V36)/2 V31=P P=V39 P=(P+V35)/2 P=(P+V35)/2 V28=P P=V41 P=(P+V31)/2 V1=P P=V38 P=(P+V28)/2 V2=P P=(P+V1)/2 V37=P P=V40 P=(P+V35)/2 V34=P P=(P+V40)/2 P=(P+V34)/2 V40=P P=V34 P=(P+V39)/2 P=(P+V34)/2 V39=P P=V41 P=(P+V37)/2 P=(P+V37)/2 V36=P P=V38 P=(P+V37)/2 P=(P+V37)/2 V35=P
+model $F041 project 10 38 ; project 16 from V28
+model $F044 faces_test 00 09 A4 84 80 70 74 78 98 A4 7C 70 7C 80 A4 98 88 A0 90 94 9C 88 94 A0 88 9C 8C 90 94 ; faces_test from 0: (41 33 32) (28 29 30) (38 41 31) (28 31 32) (41 38 34) (40 36 37) (39 34 37) (40 34 39) (35 36 37)
+model $F062 order_by_face 08 $F093 $F0AD ; order_by_face f8 $F093 $F0AD
+model $F068 fill_faces 05 00 08 04 04 A4 84 80 7C 01 08 04 04 70 74 78 98 02 08 04 05 98 A4 7C 70 03 08 04 07 70 7C 80 74 04 08 04 07 A4 98 78 84 ; fill_faces (f0 c4 41 33 32 31) (f1 c4 28 29 30 38) (f2 c5 38 41 31 28) (f3 c7 28 31 32 29) (f4 c7 41 38 30 33)
+model $F092 return ; return
+model $F093 fill_faces 03 05 08 04 02 A0 90 94 88 06 08 04 02 9C 88 94 8C 07 07 03 01 A0 88 9C ; fill_faces (f5 c2 40 36 37 34) (f6 c2 39 34 37 35) (f7 c1 40 34 39)
+model $F0AC return ; return
+model $F0AD end ; end
+model $F0AE native $67F4 20 60 14 ; box_square 32 96 20, model
+model $F0B4 verts 28 A6 40 A8 A8 68 F8 66 00 A7 A7 67 F8 69 28 E0 29 A1 61 27 A8 41 A3 5A C0 21 5B 01 A4 5C C0 21 5D 1C A8 9C 5E 1C A4 9C 5F 1A A3 9A 60 1A A7 9A 61 FF ; verts P=V40 P=(P+V38)/2 V0=P P=(P+V40)/2 P=(P+V40)/2 V40=P P.xz=-P.xz V38=P P=V0 P=(P+V39)/2 P=(P+V39)/2 V39=P P.xz=-P.xz V41=P P=V40 P-=V41 P=(P+V33)/2 V33=P P=V39 P=(P+V40)/2 V1=P P=(P+V35)/2 V26=P P+=V33 V27=P P=V1 P=(P+V36)/2 V28=P P+=V33 V29=P P=V28 P=(P+V40)/2 P=(P+V28)/2 V30=P P=V28 P=(P+V36)/2 P=(P+V28)/2 V31=P P=V26 P=(P+V35)/2 P=(P+V26)/2 V32=P P=V26 P=(P+V39)/2 P=(P+V26)/2 V33=P
+model $F0E7 project 10 34 ; project 16 from V26
+model $F0EA faces_test 00 04 9C A0 90 A0 A4 94 A4 98 88 98 9C 8C ; faces_test from 0: (39 40 36) (40 41 37) (41 38 34) (38 39 35)
+model $F0F9 order_by_face 00 $F12A $F131 ; order_by_face f0 $F12A $F131
+model $F0FF fill_faces 05 00 08 04 05 9C A0 90 8C 00 08 04 04 84 78 7C 80 01 08 04 06 A0 A4 94 90 02 08 04 05 A4 98 88 94 03 08 04 06 98 9C 8C 88 ; fill_faces (f0 c5 39 40 36 35) (f0 c4 33 30 31 32) (f1 c6 40 41 37 36) (f2 c5 41 38 34 37) (f3 c6 38 39 35 34)
+model $F129 return ; return
+model $F12A lines 9A 1B 9C 1D C0 ; lines M26 L27 M28 L29
+model $F130 return ; return
+model $F131 end ; end
+model $F132 native $67F4 20 28 00 ; box_square 32 40 0, model
+model $F138 project 04 4C ; project 4 from V38
+model $F13B lines A6 27 A9 28 C0 ; lines M38 L39 M41 L40
+model $F141 end ; end
+model $F142 native $F151 ; native $F151, model
+model $F145 project 04 00 ; project 4 from V0
+model $F148 fill_polys 01 04 01 00 04 08 0C ; fill_polys (c1 0 1 2 3)
+model $F150 end ; end
+model $F151 db 21
+model $F152 order_by_face 00 $0022 $22FD ; order_by_face f0 $0022 $22FD
+model $F158 project FD 22 ; project 253 from V17
+model $F15B native $22FE ; native $22FE
+model $F15E jump_if_visible FE $F621 ; jump_if_visible f254 $F621
+model $F162 end ; end
+model $F163 db 22
+model $F164 project FE 22 ; project 254 from V17
+model $F167 db 04
+model $F168 db FD
+model $F169 db 22
+model $F16A db 04
+model $F16B db FE
+model $F16C db 22
+model $F16D jump_if_visible FD $0021 ; jump_if_visible f253 $0021
+model $F171 native $0022 ; native $0022
+model $F174 end ; end
+model $F175 db 22
+model $F176 project FF 22 ; project 255 from V17
+model $F179 db 04
+model $F17A end ; end
+model $F17B db 22
+model $F17C db 06
+model $F17D end ; end
+model $F17E db C9
+model $F17F native $F18D ; native $F18D, model
+model $F182 project 03 00 ; project 3 from V0
+model $F185 fill_polys 01 03 01 00 04 08 ; fill_polys (c1 0 1 2)
+model $F18C end ; end
+model $F18D db 21
+model $F18E order_by_face 00 $0022 $22FD ; order_by_face f0 $0022 $22FD
+model $F194 native $22FE ; native $22FE
+model $F197 db 04
+model $F198 db FE
+model $F199 db 6C
+model $F19A db 22
+model $F19B native $22FF ; native $22FF
+model $F19E project FF 22 ; project 255 from V17
+model $F1A1 db 04
+model $F1A2 end ; end
+model $F1A3 db 22
+model $F1A4 project FD 21 ; project 253 from V16
+model $F1A7 db F6
+model $F1A8 end ; end
+model $F1A9 db 22
+model $F1AA db 04
+model $F1AB db FD
+model $F1AC db 22
+model $F1AD project FE C9 ; project 254 from V100
+model $F1B0 native $67F4 20 18 1C ; box_square 32 24 28, model
+model $F1B6 polar_points 02 $F210 ; polar_points 2 (frames to $F210)
+model $F1BA db DA F1 E0 F1 E6 F1 EC F1 F2 F1 F8 F1 FE F1 04 F2
+model $F1CA db 0A F2 04 F2 FE F1 F8 F1 F2 F1 EC F1 E6 F1 E0 F1
+model $F1DA db 40 64 00 40 00 03 40 60 11 40 FF 03 40 5D 22 40
+model $F1EA db FF 03 40 56 32 40 FE 03 40 4C 40 40 FD 03 40 40
+model $F1FA db 4C 40 FD 03 40 32 56 40 FC 03 40 22 5D 40 FC 02
+model $F20A db 40 11 62 40 FB 01
+model $F210 verts 29 A7 40 A7 41 00 A6 42 00 A9 43 00 A8 40 25 A3 44 A2 46 04 A3 45 04 A5 47 04 A4 44 03 82 48 03 86 88 48 C0 20 C0 20 49 E0 1F E0 1F 4A 20 A1 A1 A1 4E 08 E0 0E 48 E0 1F 4B 08 C0 1F 48 09 C0 1F 49 FF ; verts P=V41 P=(P+V39)/2 V0=P P=(P+V39)/2 V1=P P=V0 P=(P+V38)/2 V2=P P=V0 P=(P+V41)/2 V3=P P=V0 P=(P+V40)/2 V0=P P=V37 P=(P+V35)/2 V4=P P=(P+V34)/2 V6=P P=V4 P=(P+V35)/2 V5=P P=V4 P=(P+V37)/2 V7=P P=V4 P=(P+V36)/2 V4=P P=V3 P=(P+V2)/2 V8=P P=V3 P=(P+V6)/2 P=(P+V8)/2 V8=P P+=V32 P+=V32 V9=P P-=V31 P-=V31 V10=P P=V32 P=(P+V33)/2 P=(P+V33)/2 P=(P+V33)/2 V14=P P=V8 P-=V14 V8=P P-=V31 V11=P P=V8 P+=V31 V8=P P=V9 P+=V31 V9=P
+model $F253 project 0C 00 ; project 12 from V0
+model $F256 faces_test 00 03 0C 08 18 08 04 14 20 24 28 ; faces_test from 0: (3 2 6) (2 1 5) (8 9 10)
+model $F262 order_by_face 02 $F28D $F2A2 ; order_by_face f2 $F28D $F2A2
+model $F268 fill_faces 02 00 08 04 03 0C 08 18 1C 01 08 04 04 08 04 14 18 ; fill_faces (f0 c3 3 2 6 7) (f1 c4 2 1 5 6)
+model $F27A fill_back_faces 02 00 08 04 03 04 00 10 14 01 08 04 04 00 0C 1C 10 ; fill_back_faces (f0 c3 1 0 4 5) (f1 c4 0 3 7 4)
+model $F28C return ; return
+model $F28D fill_faces_clip 01 02 08 04 01 20 24 28 2C ; fill_faces_clip (f2 c1 8 9 10 11)
+model $F297 fill_back_faces 01 02 08 04 06 2C 28 24 20 ; fill_back_faces (f2 c6 11 10 9 8)
+model $F2A1 return ; return
+model $F2A2 end ; end
+model $F2A3 native $67F4 20 20 38 ; box_square 32 32 56, model
+model $F2A9 verts 26 A7 40 F8 45 26 A2 A6 42 F8 43 27 A3 A7 41 F8 44 02 81 46 82 47 06 81 46 22 A3 48 A2 49 08 A3 48 FF ; verts P=V38 P=(P+V39)/2 V0=P P.xz=-P.xz V5=P P=V38 P=(P+V34)/2 P=(P+V38)/2 V2=P P.xz=-P.xz V3=P P=V39 P=(P+V35)/2 P=(P+V39)/2 V1=P P.xz=-P.xz V4=P P=V2 P=(P+V1)/2 V6=P P=(P+V2)/2 V7=P P=V6 P=(P+V1)/2 V6=P P=V34 P=(P+V35)/2 V8=P P=(P+V34)/2 V9=P P=V8 P=(P+V35)/2 V8=P
+model $F2CC project 0A 00 ; project 10 from V0
+model $F2CF project 08 44 ; project 8 from V34
+model $F2D2 faces_test 00 03 00 04 8C 10 08 88 14 00 08 ; faces_test from 0: (0 1 35) (4 2 34) (5 0 2)
+model $F2DE fill_faces 04 00 09 05 04 00 04 8C 88 08 01 08 04 03 10 08 88 94 02 08 04 05 14 00 08 10 00 08 04 01 1C 18 20 24 ; fill_faces (f0 c4 0 1 35 34 2) (f1 c3 4 2 34 37) (f2 c5 5 0 2 4) (f0 c1 7 6 8 9)
+model $F301 fill_back_faces 03 00 09 05 04 90 0C 14 10 94 01 08 04 03 04 0C 90 8C 02 08 04 05 00 14 0C 04 ; fill_back_faces (f0 c4 36 3 5 4 37) (f1 c3 1 3 36 35) (f2 c5 0 5 3 1)
+model $F31C end ; end
+model $F31D native $67F7 18 50 30 ; box_rect 24 80 48, model
+model $F323 verts 26 A9 61 F8 60 28 A4 A8 68 F8 66 29 A5 A9 69 F8 67 26 A7 40 A2 41 A6 5E 01 80 5F 01 A2 9E 5D 23 A2 43 81 9F 5C 00 A3 44 80 5B 04 A7 5A 04 83 9B 59 04 A3 9A 58 FF ; verts P=V38 P=(P+V41)/2 V33=P P.xz=-P.xz V32=P P=V40 P=(P+V36)/2 P=(P+V40)/2 V40=P P.xz=-P.xz V38=P P=V41 P=(P+V37)/2 P=(P+V41)/2 V41=P P.xz=-P.xz V39=P P=V38 P=(P+V39)/2 V0=P P=(P+V34)/2 V1=P P=(P+V38)/2 V30=P P=V1 P=(P+V0)/2 V31=P P=V1 P=(P+V34)/2 P=(P+V30)/2 V29=P P=V35 P=(P+V34)/2 V3=P P=(P+V1)/2 P=(P+V31)/2 V28=P P=V0 P=(P+V35)/2 V4=P P=(P+V0)/2 V27=P P=V4 P=(P+V39)/2 V26=P P=V4 P=(P+V3)/2 P=(P+V27)/2 V25=P P=V4 P=(P+V35)/2 P=(P+V26)/2 V24=P
+model $F35A project 12 30 ; project 18 from V24
+model $F35D faces_test 00 06 A4 84 98 9C 80 A0 A0 A4 94 98 9C 8C A0 80 84 84 80 9C ; faces_test from 0: (41 33 38) (39 32 40) (40 41 37) (38 39 35) (40 32 33) (33 32 39)
+model $F372 fill_faces 08 00 09 05 04 A4 84 98 88 94 01 09 05 04 9C 80 A0 90 8C 02 08 04 07 A0 A4 94 90 03 08 04 07 98 9C 8C 88 04 08 04 06 A0 80 84 A4 05 08 04 06 84 80 9C 98 03 08 04 01 78 7C 70 74 03 08 04 01 6C 68 60 64 ; fill_faces (f0 c4 41 33 38 34 37) (f1 c4 39 32 40 36 35) (f2 c7 40 41 37 36) (f3 c7 38 39 35 34) (f4 c6 40 32 33 41) (f5 c6 33 32 39 38) (f3 c1 30 31 28 29) (f3 c1 27 26 24 25)
+model $F3B6 end ; end
+model $F3B7 native $67F7 28 50 30 ; box_rect 40 80 48, model
+model $F3BD verts 26 A9 61 F8 60 28 A4 A8 68 F8 66 29 A5 A9 69 F8 67 29 A6 40 A5 41 A5 42 01 80 5F 01 A9 5E 82 5D 25 A2 43 81 9F 5C 00 A2 44 80 5B 04 A6 5A 04 83 9B 59 04 A2 9A 58 FF ; verts P=V38 P=(P+V41)/2 V33=P P.xz=-P.xz V32=P P=V40 P=(P+V36)/2 P=(P+V40)/2 V40=P P.xz=-P.xz V38=P P=V41 P=(P+V37)/2 P=(P+V41)/2 V41=P P.xz=-P.xz V39=P P=V41 P=(P+V38)/2 V0=P P=(P+V37)/2 V1=P P=(P+V37)/2 V2=P P=V1 P=(P+V0)/2 V31=P P=V1 P=(P+V41)/2 V30=P P=(P+V2)/2 V29=P P=V37 P=(P+V34)/2 V3=P P=(P+V1)/2 P=(P+V31)/2 V28=P P=V0 P=(P+V34)/2 V4=P P=(P+V0)/2 V27=P P=V4 P=(P+V38)/2 V26=P P=V4 P=(P+V3)/2 P=(P+V27)/2 V25=P P=V4 P=(P+V34)/2 P=(P+V26)/2 V24=P
+model $F3F5 project 12 30 ; project 18 from V24
+model $F3F8 faces_test 00 06 A4 84 98 9C 80 A0 A0 A4 94 98 9C 8C A0 80 84 84 80 9C ; faces_test from 0: (41 33 38) (39 32 40) (40 41 37) (38 39 35) (40 32 33) (33 32 39)
+model $F40D fill_faces 08 00 09 05 04 A4 84 98 88 94 01 09 05 04 9C 80 A0 90 8C 02 08 04 07 A0 A4 94 90 03 08 04 07 98 9C 8C 88 04 08 04 06 A0 80 84 A4 05 08 04 06 84 80 9C 98 00 08 04 01 78 7C 70 74 00 08 04 01 6C 68 60 64 ; fill_faces (f0 c4 41 33 38 34 37) (f1 c4 39 32 40 36 35) (f2 c7 40 41 37 36) (f3 c7 38 39 35 34) (f4 c6 40 32 33 41) (f5 c6 33 32 39 38) (f0 c1 30 31 28 29) (f0 c1 27 26 24 25)
+model $F451 end ; end
+model $F452 native $67FA 10 05 20 ; box_rect16 16 5 32, model
+model $F458 verts 27 A9 5E 27 A8 C0 1E 5D F8 5C 23 E0 27 50 A1 90 50 23 A4 4F A4 8F 5F E0 10 60 0F A3 8F 5E E0 10 61 FF ; verts P=V39 P=(P+V41)/2 V30=P P=V39 P=(P+V40)/2 P+=V30 V29=P P.xz=-P.xz V28=P P=V35 P-=V39 V16=P P=(P+V33)/2 P=(P+V16)/2 V16=P P=V35 P=(P+V36)/2 V15=P P=(P+V36)/2 P=(P+V15)/2 V31=P P-=V16 V32=P P=V15 P=(P+V35)/2 P=(P+V15)/2 V30=P P-=V16 V33=P
+model $F47B project 0E 38 ; project 14 from V28
+model $F47E faces_test 00 06 A4 98 94 98 9C 88 9C A0 8C A0 A4 90 70 74 98 74 70 A0 ; faces_test from 0: (41 38 37) (38 39 34) (39 40 35) (40 41 36) (28 29 38) (29 28 40)
+model $F493 fill_faces_clip 07 00 09 05 06 70 98 88 94 A4 01 08 04 07 98 9C 8C 88 02 09 05 06 74 A0 90 8C 9C 03 08 04 07 A0 A4 94 90 04 08 04 01 70 74 9C 98 05 08 04 01 74 70 A4 A0 02 08 04 01 84 80 7C 78 ; fill_faces_clip (f0 c6 28 38 34 37 41) (f1 c7 38 39 35 34) (f2 c6 29 40 36 35 39) (f3 c7 40 41 37 36) (f4 c1 28 29 39 38) (f5 c1 29 28 41 40) (f2 c1 33 32 31 30)
+model $F4CF end ; end
+model $F4D0 native $67F4 20 30 40 ; box_square 32 48 64, model
+model $F4D6 verts 28 A6 61 F0 62 A1 A1 A1 65 28 A7 63 24 A7 A3 A3 64 FF ; verts P=V40 P=(P+V38)/2 V33=P P=-P V34=P P=(P+V33)/2 P=(P+V33)/2 P=(P+V33)/2 V37=P P=V40 P=(P+V39)/2 V35=P P=V36 P=(P+V39)/2 P=(P+V35)/2 P=(P+V35)/2 V36=P
+model $F4E9 project 05 42 ; project 5 from V33
+model $F4EC faces_test 00 01 84 8C 90 ; faces_test from 0: (33 35 36)
+model $F4F2 fill_faces 01 00 08 04 06 84 8C 90 94 ; fill_faces (f0 c6 33 35 36 37)
+model $F4FC fill_back_faces 01 00 08 04 06 94 90 8C 84 ; fill_back_faces (f0 c6 37 36 35 33)
+model $F506 lines A1 22 C0 ; lines M33 L34
+model $F50A end ; end
+model $F50B native $67F7 10 40 0C ; box_rect 16 64 12, model
+model $F511 verts 27 A8 40 F8 58 F8 A8 43 00 A7 44 00 A3 49 F8 5A 00 A4 4A F8 9A 57 99 4B 1A 97 4C 83 4D 83 4F F0 F8 51 0B 84 4E 84 50 F0 F8 52 27 E0 28 45 C0 05 45 C0 10 53 05 C0 0E 54 0F E0 05 56 0D E0 05 55 0E 8B 8B 5B 0D 8C 8C 5C 00 97 97 97 5D 26 A2 59 29 A5 5A FF ; verts P=V39 P=(P+V40)/2 V0=P P.xz=-P.xz V24=P P.xz=-P.xz P=(P+V40)/2 V3=P P=V0 P=(P+V39)/2 V4=P P=V0 P=(P+V35)/2 V9=P P.xz=-P.xz V26=P P=V0 P=(P+V36)/2 V10=P P.xz=-P.xz P=(P+V26)/2 V23=P P=(P+V25)/2 V11=P P=V26 P=(P+V23)/2 V12=P P=(P+V3)/2 V13=P P=(P+V3)/2 V15=P P=-P P.xz=-P.xz V17=P P=V11 P=(P+V4)/2 V14=P P=(P+V4)/2 V16=P P=-P P.xz=-P.xz V18=P P=V39 P-=V40 V5=P P+=V5 V5=P P+=V16 V19=P P=V5 P+=V14 V20=P P=V15 P-=V5 V22=P P=V13 P-=V5 V21=P P=V14 P=(P+V11)/2 P=(P+V11)/2 V27=P P=V13 P=(P+V12)/2 P=(P+V12)/2 V28=P P=V0 P=(P+V23)/2 P=(P+V23)/2 P=(P+V23)/2 V29=P P=V38 P=(P+V34)/2 V25=P P=V41 P=(P+V37)/2 V26=P
+model $F566 project 15 12 ; project 21 from V9
+model $F569 faces_test 00 07 48 2C 40 24 28 44 40 3C 28 3C 30 44 58 4C 2C 48 44 30 60 74 5C ; faces_test from 0: (18 11 16) (9 10 17) (16 15 10) (15 12 17) (22 19 11) (18 17 12) (24 29 23)
+model $F581 order_by_face 04 $F5E6 $F5F9 ; order_by_face f4 $F5E6 $F5F9
+model $F587 fill_back_faces 03 04 08 04 07 54 50 4C 58 04 07 03 06 2C 64 6C 04 07 03 06 68 30 70 ; fill_back_faces (f4 c7 21 20 19 22) (f4 c6 11 25 27) (f4 c6 26 12 28)
+model $F59F fill_faces 08 01 08 04 04 24 28 44 48 02 08 04 05 40 3C 28 24 04 08 04 01 34 38 6C 70 05 08 04 01 2C 48 44 30 00 09 05 07 40 24 48 2C 6C 03 09 05 07 3C 70 30 44 28 04 08 04 06 58 4C 50 54 04 0A 06 04 6C 64 2C 30 68 70 ; fill_faces (f1 c4 9 10 17 18) (f2 c5 16 15 10 9) (f4 c1 13 14 27 28) (f5 c1 11 18 17 12) (f0 c7 16 9 18 11 27) (f3 c7 15 28 12 17 10) (f4 c6 22 19 20 21) (f4 c4 27 25 11 12 26 28)
+model $F5E5 return ; return
+model $F5E6 fill_back_faces 01 06 07 03 02 60 5C 74 ; fill_back_faces (f6 c2 24 23 29)
+model $F5EF fill_faces 01 06 07 03 02 60 74 5C ; fill_faces (f6 c2 24 29 23)
+model $F5F8 return ; return
+model $F5F9 end ; end

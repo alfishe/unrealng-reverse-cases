@@ -1,4 +1,4 @@
-; Battle Command, Ocean 1990: the BASIC's enciphered tail in its plain view, $AC38-$BF0C. The 104 layers of
+; Battle Command, Ocean 1990: the BASIC's enciphered tail in its plain view, $AC38-$BF0C. The 103 layers of
 ; the decryption chain as each one runs, then the SpeedLock 7 loader as the last layer leaves it.
 ; tools/speedlock.py masters these bytes back into the tape's (src/tape/basic.asm INCBINs the result).
 ; Written by kit/mkgame.py from src/loader/chain.ann and the recordings; edit chain.ann, not the .asm.

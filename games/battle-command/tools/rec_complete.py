@@ -3,7 +3,11 @@
 Helicarrier called and met, MissionCompleteScreen, the status screen and the save code of a non-zero score.
 
     python3 tools/rec_complete.py m1 --work work/stage2/rec/m1complete --port-base 37390 \
-        --start work/stage1/explore/loaded.szx
+        --start work/stage1/explore/loaded.szx --inputs tests/inputs/m1complete.txt
+    python3 tools/rec_complete.py m4 --work work/stage2/rec/m4complete --port-base 37390 \
+        --start work/stage2/rec/m1complete/end.szx --inputs tests/inputs/m4complete.txt
+
+Plan m4: see plan_m4's docstring (the campaign continued from m1complete's end state).
 
 Plan m1 (Blast Em Mission, the Turret): the tank steered from the start to the two fuel dumps (list records 55, 56 at
 world X `$5800` / `$5C00`, Y `$5000`), stopped, aimed, the cannon fired at each until its destroyed bit (b1 of
@@ -31,7 +35,7 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from lab import Lab  # noqa: E402
-from record import Run, mission_tape, load_mission, fit, STORES, CLIP  # noqa: E402
+from record import Run, mission_tape, load_mission, fit, header_block, STORES, SIDE2  # noqa: E402
 
 STATUS = {'save': (195, 30), 'selection': (195, 62)}
 IMMUNITY = (0xC875, 0x3A, 0xFA)   # bank 0 CollisionPass: the POKE byte, the original byte
@@ -103,10 +107,17 @@ def aim(r, tx, ty):
         r.b.hold(['P'] if d > 0 else ['O'], max(2, int(abs(d) * 2.7)))
 
 
-def fire_until(r, addr, name, n=16):
+def destroyed(lab, addr, typ=None):
+    """b1 of list record byte @p addr; with @p typ the record's type byte must match (another bank paged at $C000
+    between frames reads as garbage)"""
+    b = lab.read(addr, 2)
+    return bool(b[0] & 2) and (typ is None or b[1] == typ)
+
+
+def fire_until(r, addr, name, n=16, typ=None):
     """The cannon fired (SPACE 25 frames, 25 after) until b1 of list record byte @p addr is set"""
     for i in range(n):
-        if r.lab.read(addr, 1)[0] & 2:
+        if destroyed(r.lab, addr, typ):
             r.moments.append({'name': name + '-destroyed', 'shots': i, **state(r)})
             r.shot(name + '-destroyed')
             return i
@@ -196,7 +207,92 @@ def plan_m1(r):
     r.shot('save-after')
 
 
-PLANS = {'m1': plan_m1}
+def plan_m4(r):
+    """m4: Railway Ambush after m1complete (its end.szx: the save code screen, Score 500, mission 1 done): SPACE,
+    MISSION SELECTION (the catalogue is still in memory), side 2 inserted and wound to mission 4's header, SEARCH,
+    SELECT, the Turret; the points (list record 10, type 11, hit handler $E638 writes $60 to $E7C0-$E7C2) shot at
+    the start, the tank driven off the main line to the siding (Immunity on for the drive, off at the spot), the engine
+    (record 2, type 8) shot on the siding (the train stops with record 3's Y high byte +7 = $FB), the station (record
+    11, type 13, world (28672, 0)) shot, the goal, H, the pad (world (-20480, 4096)), the pickup, the save code"""
+    lab = r.lab
+    r.b.wait(100)
+    r.shot('entry-string')
+    r.b.key('SPACE', 3, 100)
+    r.shot('status-before')
+    r.b.click(*STATUS['selection'], after=100)
+    r.shot('catalogue')
+    r.tape_do('insert', path=SIDE2)
+    load_mission(r, 4, seek_block=header_block(SIDE2, 4))
+    fit(r, {1: 'Turret'})
+    r.b.click(*STORES['start'], after=150)
+    r.shot('start')
+    r.moments.append({'name': 'start', **state(r)})
+    r.b.hold(['1'], 25)
+    r.b.wait(5)
+    aim(r, -14336, 256)
+    for _ in range(14):
+        if lab.read(0xE7C0, 1)[0] == 0x60:
+            break
+        r.b.hold(['SPACE'], 25)
+        r.b.wait(25)
+    r.moments.append({'name': 'points', 'e7c0': lab.read(0xE7C0, 3).hex(), **state(r)})
+    r.shot('points-shot')
+    immunity(r, True)
+    drive_to(r, -2000, -3300, near=300, limit=4000, name='to-siding')
+    stop(r)
+    immunity(r, False)
+    r.shot('siding')
+    for k in range(160):
+        b = lab.read(0xDCC0, 16)
+        if b[1] != 8 or b[9] != 9:
+            r.b.wait(5)
+            continue
+        x = int.from_bytes(b[4:6], 'little', signed=True) * 4
+        y = int.from_bytes(b[6:8], 'little', signed=True) * 4
+        if k % 5 == 0:
+            r.moments.append({'name': 'train', 'engine': b[:8].hex(), 'car3': b[8:].hex(), **state(r)})
+        if b[0] & 2:
+            break
+        if y < -3000 and -9000 < x < 1000:
+            aim(r, x + 300, y)
+            r.b.hold(['SPACE'], 25)
+            r.b.wait(15)
+        else:
+            r.b.wait(50)
+    r.moments.append({'name': 'engine-destroyed', 'list2-3': lab.read(0xDCC0, 16).hex(), **state(r)})
+    r.shot('engine-destroyed')
+    immunity(r, True)
+    drive_to(r, 28672 - 2400, 0, near=600, limit=9000, name='to-station')
+    stop(r)
+    immunity(r, False)
+    aim(r, 28672, 0)
+    fire_until(r, 0xDD08, 'station', n=20, typ=13)
+    for _ in range(10):
+        if lab.read(0x68E8, 1)[0]:
+            break
+        r.b.wait(5)
+    r.moments.append({'name': 'goal', 'list2-3': lab.read(0xDCC0, 16).hex(), **state(r)})
+    r.b.wait(30)
+    r.shot('pickup-text')
+    r.b.hold(['H'], 25)
+    r.b.wait(25)
+    r.moments.append({'name': 'helicarrier-called', 'heli': heli(lab), **state(r)})
+    immunity(r, True)
+    drive_to(r, -20480, 4096, near=1200, name='to-pad')
+    r.moments.append({'name': 'pad', 'heli': heli(lab), **state(r)})
+    r.shot('pad')
+    immunity(r, False)
+    pickup(r)
+    r.b.key('SPACE', 3, 150)
+    r.shot('status')
+    r.b.click(*STATUS['save'], after=80)
+    r.shot('save-code')
+    r.moments.append({'name': 'save-code', **state(r)})
+    r.b.key('SPACE', 3, 60)
+    r.shot('save-after')
+
+
+PLANS = {'m1': plan_m1, 'm4': plan_m4}
 
 
 def main():
@@ -218,10 +314,11 @@ def main():
         lab.start_recording()
         lab.frame = 0
         r.b.t0 = 0
+        r.lab.keys([])
         PLANS[a.plan](r)
         lab.keys([])
         lab.save(os.path.join(work, 'end.szx'))
-        rec = {'plan': a.plan, 'note': __doc__.split('\n\n')[0], 'start': a.start, 'frames': lab.frame,
+        rec = {'plan': a.plan, 'note': PLANS[a.plan].__doc__ or __doc__.split('\n\n')[0], 'start': a.start, 'frames': lab.frame,
                'moments': r.moments, 'mouse': r.b.mouse_log, 'tape': r.tape_log, 'pokes': r.pokes,
                'seconds': round(time.time() - began)}
         r.b.script(os.path.join(work, 'inputs.txt'), start=0)

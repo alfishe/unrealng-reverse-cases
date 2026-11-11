@@ -12,8 +12,8 @@
 ; The briefing: picture, three graphics, the mission text, then the zones with
 ; the map blit
 ;
-; The shadow screen, ShowPauseOnce armed (`$7084` = 0), the Dragonfly's title
-; hook `$6C56` = `RET`, the arrow pointer, SetBriefingBlit `$DBAA`,
+; The shadow screen, ShowBriefingMapOnce armed (`$7084` = 0), the Dragonfly's
+; title hook `$6C56` = `RET`, the arrow pointer, SetBriefingBlit `$DBAA`,
 ; CopyMissionText, DrawBank7Picture `$E949`, BriefingBoxes, BriefingGraphicA-C,
 ; PrintString (`$70A3`), the map blit (`$83E6` = BlitMapView `$DBBD`),
 ; PointerZones until the view flag; then the 3D blit back (`$8999`) and
@@ -76,7 +76,8 @@ BriefingLoop:
 
 ; Zone table of the briefing
 ;
-; `$709E` (PrintTitleOnce), ShowPauseOnce `$7084` (the map), ScreenZero (back).
+; `$709E` (BriefingTextOnce), ShowBriefingMapOnce `$7084` (the map), ScreenZero
+; (back).
 BriefingZones:
   DEFB $03,$34,$52,$5B,$9E,$70
   DEFB $03,$34,$1A,$24,$84,$70

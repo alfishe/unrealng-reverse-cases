@@ -21,8 +21,9 @@ SetMessage:
   LD (MessageOnce+$0007),A
   RET
 
-; Once: the timer $87D7 = 100, then the message of bank 0 ($D86B or $D84E)
-; printed
+; Once after SetMessage: the timer $87D7 = 100; bit 4 of $7D64 set:
+; SoundExplosion $D86B and "TANK:HIT" $FFCF, clear: SoundEffectA $D84E and
+; "COLLIDED" $FFDB; then RET again
 ;
 ; Patched to `RET` after one run. Witness: L1 3601 (death, m2erbe, missions,
 ; play, play2).
@@ -58,7 +59,7 @@ PointerTick:
   LD A,$FF
   AND A
   RET Z
-  LD A,(PlayFlag+$0001)
+  LD A,(PointerShown+$0001)
   AND A
   RET Z
   LD A,(StepX)
@@ -140,12 +141,14 @@ l_7DEB:
   LD (ClickY),A
   RET
 
-; The mission clock: every 50 interrupts one second on in $68EA (seconds,
-; minutes, hours)
+; The mission clock: the first second after 50 interrupts, then one second for
+; every interrupt taken (the reload at $7E03 is 1): 50 game seconds a real
+; second
 ;
-; A `NOP` while it runs; the mission header's loader puts `RET` here (`$8612`)
-; until play. Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean,
-; menu, missions, play, play2, search).
+; The seconds, minutes and hours are in `$68EA`. A `NOP` while it runs; the
+; mission header's loader puts `RET` here (`$8612`) until play. Witness: L1
+; 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play,
+; play2, search).
 ClockTick:
   NOP
   LD A,$32
@@ -317,12 +320,16 @@ InterruptHandler:
   CALL KeyRepeat
   CALL PointerTick
   CALL MessageTimer
-PlayMode:
-  LD A,$00                ; LD A,n: $FF in the menus' quiet path ($83BA)
+BlitRequest:
+  LD A,$00                ; LD A,n: the blit request ($83BA): $FF set by
+                          ; RequestViewBlit $988D, 0 after the blit
+                          ; (ClearBlitRequest $8AEC); $FF takes the long path
+                          ; (MenuJobs: the view blit)
   INC A
   JR NZ,PlayJobs
-PlayFlag:
-  LD A,$00                ; LD A,n: non-zero in play ($83BF)
+PointerShown:
+  LD A,$00                ; LD A,n: non-zero while the menus show the pointer
+                          ; ($83BF); 0 in the play views
   AND A
   JP Z,MenuJobs
   CALL PageBank6Kept
@@ -363,7 +370,7 @@ l_83FB:
   RET
 ; This entry point is used by the routine at InterruptHandler.
 PlayJobs:
-  LD A,(PlayFlag+$0001)
+  LD A,(PointerShown+$0001)
   AND A
   JR Z,HandlerExit
   CALL PageBank6Kept
@@ -422,7 +429,7 @@ SoundOffKey:
   CALL PageBank6
   CALL QuitPrompt
   CALL RestoreBank
-  LD HL,HelicarrierData+$00B9
+  LD HL,SoundGate
   LD (HL),$00
   LD HL,PickupAnnounce
   LD (HL),$00
@@ -567,7 +574,7 @@ l_8818:
   INC HL
   INC HL
   LD A,(HL)
-  LD (ScreenList+$0094),A
+  LD (AwolState+$0002),A
   XOR A
   LD (SkyColours),A
   LD HL,IrSightBlank
@@ -620,7 +627,7 @@ SkyColours:
   INC HL
   INC HL
   LD A,(HL)
-  LD (ScreenList+$0094),A
+  LD (AwolState+$0002),A
 l_8872:
   LD A,$C9
   LD (SkyColours),A
@@ -694,7 +701,7 @@ l_88E2:
   LD HL,NightBox
   XOR A
 l_88E6:
-  LD (ScreenList+$0094),A
+  LD (AwolState+$0002),A
   CALL AttrBox
   JR CopySkyRows
 
@@ -719,7 +726,7 @@ SkyBoxes:
   DEFB $04,$00,$20,$0A
 
 ; Scan the eight half rows: the key's code from $8950 to $897B, bit 1 of $8978
-; set; SYMBOL SHIFT with SPACE = "0"
+; set; CAPS SHIFT with 0 gives $04 (the code entry's delete)
 ;
 ; Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
 ; play, play2, search).

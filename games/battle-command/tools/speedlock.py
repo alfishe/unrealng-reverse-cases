@@ -9,7 +9,7 @@
                                                                # the tape's BASIC from the plain view and the head
 
 The BASIC's machine code ($5D06, line 0's USR) copies the 4821 bytes from PROG+$5F to $AC38-$BF0C and returns
-into them. There, 104 layers follow one another: each one is a short routine that first shifts the 30 bytes
+into them. There, 103 layers follow one another: each one is a short routine that first shifts the 30 bytes
 behind its own `LDDR` down by one (the code already run is garbled), then rewrites every byte from the end of its
 own code up to $BF0C, and runs into the bytes it has just rewritten, the next layer. The last one rewrites the
 SpeedLock loader at $B8F9. Each layer rewrites a byte in one of these ways (A the key, from `LD A,R` and a
@@ -154,7 +154,7 @@ def main():
     if a and a[0] == 'layers':
         basic = open(a[1], 'rb').read()
         _, layers = plain(basic[TAIL - PROG:TAIL - PROG + HI - LO])
-        for i, (pc, kind, n) in enumerate(layers):
+        for i, (pc, kind, n, *_) in enumerate(layers):
             print('%3d $%04X %-3s %5d bytes' % (i, pc, kind, n))
     elif a and a[0] == 'plain':
         basic = open(a[1], 'rb').read()

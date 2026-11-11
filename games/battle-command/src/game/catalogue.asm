@@ -78,16 +78,16 @@ CopyMissionText:
   LDIR
   CALL PageBank6
   LD HL,BackBuffer
-  LD DE,PickupText+$005C
+  LD DE,MissionHeader+$002E
   POP BC
   LDIR
   LD HL,$0000
   POP BC
   AND A
   SBC HL,BC
-  LD DE,PickupText+$005C
+  LD DE,MissionHeader+$002E
   ADD HL,DE
-  LD (PrintTitleOnce+$0005),HL
+  LD (BriefingTextOnce+$0005),HL
   LD HL,$0000
   AND A
   SBC HL,BC
@@ -151,7 +151,7 @@ IsMissionHeader:
 ; Witness: known only from the code.
 IsMissionBlock:
   LD DE,MissionBlockName
-  LD HL,PickupText+$002F
+  LD HL,MissionHeader+$0001
   JR CompareNine
 
 ; Z if the header at $8AF2 is "DIRECTORY"

@@ -15,13 +15,15 @@ WorldVars:
   DEFB $00,$00
 ControlDevice:
   DEFB $04                ; the chosen device 0-4 (ReadControls)
-RepeatX:
-  DEFB $00                ; frames to the next X step
+RepeatY:
+  DEFB $00                ; frames to the next Y step (DecodeDirections,
+                          ; docs/05-controls.md 5.3)
 LastDirections:
   DEFB $00,$00            ; the last direction bits
-RepeatY:
-  DEFB $00
+RepeatX:
+  DEFB $00                ; frames to the next X step
 MousePos:
   DEFB $00,$00            ; the mouse's X and Y (ReadMouse)
 MouseDelta:
-  DEFB $00
+  DEFB $00                ; shared: the mouse delta (ReadMouse) and the polygon
+                          ; fill's bottom row (FillPolygon, bank 3)

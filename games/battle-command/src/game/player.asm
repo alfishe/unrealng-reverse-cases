@@ -13,12 +13,14 @@
 ; Record 0's step handler (+$18 = `$A8C7`, run by RunObjectHandlers `$C026`
 ; with IX = `$75F0`). Calls TerrainCollision through `$67F1`; on a hit the
 ; terrain type `$CE69` decides: 2 or `$80` (a wall) negates the speed and sets
-; the handler to BounceDecay `$CC09`; 0 or 6 (rough ground) slows the speed by
-; a quarter. Then BoundaryCheck `$D4B8`, then the fuel: `$7C57` -= (|speed| >>
-; 4) OR 1; on an underflow `$A94E` sets the failure reason `$7BF9` = `$CCED`
-; ("RAN OUT OF FUEL") and calls `$7047`. The Infinite Fuel POKE writes 42 at
-; `$A958` (`LD ($7C57),HL` becomes `LD HL,($7C57)`). Then the turret and speed
-; against the control state `$985F`.
+; the handler to BounceDecay `$CC09`; 0 or 6 (rough ground) stores 1.25 x the
+; speed (signed) in `$7E8E`; IX+7 is restored at once, so the tank's speed does
+; not change and nothing resident reads `$7E8E` (`$A8F0`-`$A934`,
+; docs/10-gameplay-logic.md 10.2). Then BoundaryCheck `$D4B8`, then the fuel:
+; `$7C57` -= (|speed| >> 4) OR 1; on an underflow `$A94E` sets the failure
+; reason `$7BF9` = `$CCED` ("RAN OUT OF FUEL") and calls `$7047`. The Infinite
+; Fuel POKE writes 42 at `$A958` (`LD ($7C57),HL` becomes `LD HL,($7C57)`).
+; Then the turret and speed against the control state `$985F`.
 ;
 ; Witness: L1 3503 (death, m2erbe, missions, play, play2).
 PlayerStep:
@@ -26,7 +28,7 @@ PlayerStep:
 l_A8C9:
   CALL ApiVector17
   JR NC,l_A8ED
-  LD A,(DevMissionLoader+$0001)
+  LD A,(TerrainType)
   CP $02
   JR Z,l_A8D9
   CP $80
@@ -41,7 +43,7 @@ l_A8D9:
   RET
 l_A8ED:
   LD A,$03
-  LD (DevMissionLoader+$0001),A
+  LD (TerrainType),A
 l_A8F2:
   LD A,(KeyState)
   AND $02
@@ -50,7 +52,7 @@ l_A8F2:
   CP $53
   JP Z,l_A9C0
 l_A901:
-  LD A,(DevMissionLoader+$0001)
+  LD A,(TerrainType)
   CP $00
   JR Z,l_A90C
   CP $06
@@ -94,7 +96,8 @@ l_A935:
   JR NC,l_A958
 OutOfFuel:
   LD HL,l_CCEB+$0002      ; fuel underflow: $7BF9 = $CCED "RAN OUT OF FUEL",
-                          ; CALL $7047 (static, no recording ran out of fuel)
+                          ; CALL $7047 (witness: the fuel recording, POKE Fuel
+                          ; = 32, frame 7860, T 60 751-60 872)
   LD (FailReason),HL
   CALL ScreenSix
   RET
@@ -173,18 +176,40 @@ l_A9C0:
   LD (IX+$19),$A9
   RET
 
-; The rest of PlayerSteering that no recording runs (the speed clamp)
+; The brake (the S key): the player's step handler while S is down: |speed| - 8
+; each pass, then 0 and PlayerStep again
 ;
-; Code bytes after the branch the recordings take in PlayerSteering: `LD
-; A,(IX+7)` / `ABS` through `$67D6`, stores `$7E8E`, the clamp against 8. Kept
-; as bytes because the walk does not reach it from a run.
-PlayerSteeringTail:
-  DEFB $DD,$7E,$07,$A7,$F5,$CD,$D6,$67
-  DEFB $32,$8E,$7E,$D6,$08,$38,$11,$4F
-  DEFB $F1,$79,$F2,$E0,$A9,$ED,$44,$DD
-  DEFB $77,$07,$CD,$BE,$67,$C3,$86,$A9
-  DEFB $F1,$AF,$DD,$77,$07,$DD,$36,$18
-  DEFB $C7,$DD,$36,$19,$A8,$C9
+; The S key (code `$53`) sets record 0's handler (+`$18`) to `$A9C9`. `LD
+; A,(IX+7)` / `ABS` through `$67D6`, stores `$7E8E`; above 8 the speed loses 8
+; with its sign kept, then PlayerSteering; below 8 the speed is 0 and the
+; handler is PlayerStep `$A8C7` again (docs/05-controls.md 5.9).
+;
+; Known only from the code: no recording presses S in play (no L1 block of
+; `$A9C9-$A9F6` in any recording).
+BrakeKey:
+  LD A,(IX+$07)
+  AND A
+  PUSH AF
+  CALL ApiVector08
+  LD (MissionParams+$000C),A
+  SUB $08
+  JR C,l_A9E9
+  LD C,A
+  POP AF
+  LD A,C
+  JP P,l_A9E0
+  NEG
+l_A9E0:
+  LD (IX+$07),A
+  CALL ApiVector00
+  JP PlayerSteering
+l_A9E9:
+  POP AF
+  XOR A
+  LD (IX+$07),A
+  LD (IX+$18),$C7
+  LD (IX+$19),$A8
+  RET
 
 ; Set the fire cooldown to 8 passes
 ;
@@ -403,8 +428,8 @@ ShowMortarRange:
   LD DE,$00B6
   CALL Divide
   LD A,H
-  LD (PickupText+$2261),A
-  LD HL,PickupText+$2254
+  LD (MissionHeader+$2233),A
+  LD HL,MissionHeader+$2226
   JP PrintString
 
 ; The height used by the IR view, and its setter
@@ -482,13 +507,14 @@ WeightText:
   DEFB $21,$19,$C1,$C3,$FB,$6C,$47,$05
   DEFB $16,$05,$11
 
-; Select the Banshee IRSS: the IR view on ($BA13)
+; Select a Phoenix (store types 1 and 5): the IR view on ($BA13)
 ;
-; Prints the name (`$FDC0`), sets the sight overlay `$C4DC` and the IR view
-; flag `$BA13` (play2: 2 runs).
+; The select of store types 1 and 5 in the store-type table `$7B89`. Prints the
+; name (`$FDC0`), sets the sight overlay `$C4DC` and the IR view flag `$BA13`
+; (play2: 2 runs).
 ;
 ; Witness: L1 2 (play2).
-SelectBansheeIr:
+SelectPhoenix:
   LD A,$FF
   LD (l_C4DB+$0001),A
   LD (SetCamera+$001D),A
@@ -499,16 +525,18 @@ SelectBansheeIr:
 ;
 ; Witness: L1 8 (play, play2).
 WeaponSelectText:
-  LD HL,PickupText+$2229
+  LD HL,MissionHeader+$21FB
   JP PrintString
 
-; Select the Banshee RRSS
+; Select a store with no aim (types 2, 6, 7)
 ;
-; Prints the name, sets `$C4DC`, clears `$BA13` (play, play2).
+; The select of the Banshee RRSS, the Banshee IRSS and the Dragonfly in the
+; store-type table `$7B89`. Prints the name, sets `$C4DC`, clears `$BA13`
+; (play, play2).
 ;
 ; Witness: L1 3 (play, play2).
-SelectBansheeRr:
-  LD HL,PickupText+$2229
+SelectPlain:
+  LD HL,MissionHeader+$21FB
   CALL PrintString
   LD A,$FF
   LD (l_C4DB+$0001),A
@@ -516,12 +544,14 @@ SelectBansheeRr:
   LD (SetCamera+$001D),A
   JP WeaponSelectText
 
-; Fire the Banshee IRSS: projectile $83
+; Fire the Phoenix RRSA: projectile $83
 ;
-; SelectAmmoPointer, A = `$83`, LaunchProjectile `$B5A7` (play2: 2 runs).
+; Store type 1 in the store-type table `$7B89`; `$83` is the Phoenix RR
+; resident type (step `$C4A5`, guided). SelectAmmoPointer, A = `$83`,
+; LaunchProjectile `$B5A7` (play2: 2 runs).
 ;
 ; Witness: L1 2 (play2).
-FireBansheeIr:
+FirePhoenixRr:
   LD A,(CurrentSlot)
   CALL SelectAmmoPointer
   LD A,$83
@@ -540,7 +570,7 @@ FireBansheeRr:
   LD A,$82
   LD (l_C408+$0015),A
   LD A,$39
-; This entry point is used by the routine at FireBansheeIr.
+; This entry point is used by the routine at FirePhoenixRr.
 l_C15A:
   EX AF,AF'
   LD HL,TargetInCone
@@ -688,12 +718,13 @@ FirePhoenixIr:
   LD HL,TurnTowardTail
   JR MissileLock
 
-; Fire the Phoenix (RR): projectile $84
+; Fire the Banshee IRSS: projectile $84
 ;
-; A = `$84` (play2).
+; Store type 6 in the store-type table `$7B89`; `$84` is the Banshee IR
+; resident type (step `$C4A5`). A = `$84` (play2).
 ;
 ; Witness: L1 2 (play2).
-FirePhoenixRr:
+FireBansheeIr:
   LD A,(CurrentSlot)
   CALL SelectAmmoPointer
   LD A,$84
@@ -973,7 +1004,7 @@ LaunchMissile:
   DEC A                   ; the Infinite Missiles POKE writes 0 here
   LD (HL),A
   LD (WeaponVars),A
-  LD HL,PickupText+$2229
+  LD HL,MissionHeader+$21FB
   CALL PrintString
   LD HL,(PlayerHeight)
   LD (IrViewHeight+$0003),HL
@@ -1052,7 +1083,7 @@ PrintAmmo:
 ;
 ; Witness: L1 87 (death, play, play2).
 PrintAmmoAt:
-  LD HL,PickupText+$2229
+  LD HL,MissionHeader+$21FB
   JP PrintString
 
 ; Print the slot's status
@@ -1333,8 +1364,9 @@ l_CB28:
   CALL ApiVector00
   JP SetBounce
 ArmourDestroyed:
-  LD A,(GaugeEnd+$0006)   ; armour underflow: the failure reason ($CCBE or
-                          ; $CCAB), JP $7047 (static)
+  LD A,(GoalFlag)         ; armour underflow: the failure reason ($CCBE or
+                          ; $CCAB), JP $7047 (witness: the armour recording,
+                          ; POKE armour = 1 at frame 7704, frame 18423)
   AND A
   JR Z,l_CB43
   LD HL,l_CC98+$0026
@@ -1527,7 +1559,7 @@ SetBounce:
 ;
 ; Witness: L1 1 (play2).
 PrintElevation:
-  LD HL,PickupText+$2262
+  LD HL,MissionHeader+$2234
   CALL PrintString
   LD A,$1E
   JR SetElevation
@@ -1677,7 +1709,7 @@ MineTimerCode:
 ; Witness: L1 4 (play2).
 StoreMineTimer:
   LD (MineTimerCode+$0001),A
-  LD HL,PickupText+$2262
+  LD HL,MissionHeader+$2234
   JP PrintString
 
 ; Drop a Sleeper mine behind: projectile $88
@@ -1838,7 +1870,7 @@ data_D0EA:
 ;
 ; Witness: L1 3 (play2).
 PrintAimType10:
-  LD HL,PickupText+$224A
+  LD HL,MissionHeader+$221C
   CALL PrintString
   LD HL,(CurrentSlot+$0001)
   LD DE,NoAction
@@ -2013,7 +2045,7 @@ PrintSlotName:
   LD (HL),$B0
   INC HL
   LD (HL),$6B
-  LD HL,PickupText+$2236
+  LD HL,MissionHeader+$2208
   JP PrintString
 
 ; Fire the Phantasm: projectile $8A
@@ -2069,10 +2101,10 @@ PrintSlotAmmo:
   AND A
   SBC HL,BC
   JR Z,l_D363
-  LD HL,PickupText+$2236
+  LD HL,MissionHeader+$2208
   JP PrintString
 l_D363:
-  LD HL,PickupText+$2240
+  LD HL,MissionHeader+$2212
   JP PrintString
 
 ; The type 13 cluster's flight
@@ -2224,8 +2256,8 @@ PhantasmSpin:
 ;
 ; Witness: L1 1 (play2).
 SelectType10:
-  LD DE,PickupText+$224A
-  LD HL,PickupText+$2240
+  LD DE,MissionHeader+$221C
+  LD HL,MissionHeader+$2212
   EXX
   LD BC,$D115
   JR l_D474
@@ -2236,8 +2268,8 @@ SelectType10:
 ;
 ; Witness: L1 1 (play).
 PrintType10:
-  LD DE,PickupText+$2236
-  LD HL,PickupText+$2240
+  LD DE,MissionHeader+$2208
+  LD HL,MissionHeader+$2212
   EXX
   LD BC,PhantasmCode
 ; This entry point is used by the routine at SelectType10.
@@ -2270,7 +2302,7 @@ HudCopyCode:
 ; Witness: L1 47 (play).
 CopyHudGlyphs:
   LD HL,ControlCodes
-  LD DE,PickupText+$2169
+  LD DE,MissionHeader+$213B
   XOR A
   CALL CopyHudGlyphsB
 
@@ -2302,7 +2334,7 @@ BoundaryCheck:
   LD A,(l_BBFB+$0017)
   CALL ApiVector08
   LD C,A
-  LD A,(PickupText+$0039)
+  LD A,(MissionHeader+$000B)
   CALL ApiVector08
   CP C
   JR NC,l_D4F0
@@ -2325,13 +2357,13 @@ l_D4DD:
   LD HL,AwolWarningText+$0001
   JP PrintString
 
-; Set the AWOL state $7578
+; Set the AWOL state AwolState $7578 (0 inside, 1 GOING AWOL, 2 desertion)
 ;
 ; `$7578` = A unless already equal.
 ;
 ; Witness: L1 3053 (death, m2erbe, missions, play, play2).
 SetAwolState:
-  LD HL,ScreenList+$0092
+  LD HL,AwolState
   CP (HL)
   RET Z
   LD (HL),A
@@ -2341,7 +2373,7 @@ l_D4F0:
   LD A,(l_BBFB+$0022)
   CALL ApiVector08
   LD C,A
-  LD A,(PickupText+$003A)
+  LD A,(MissionHeader+$000C)
   CALL ApiVector08
   CP C
   JR NC,l_D507

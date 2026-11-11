@@ -169,7 +169,9 @@ PicCockpit:
 ; Unpacked by bank 6 `$CD21` and `$CD87` (the end of a mission). Block of 1067
 ; bytes, 712 tokens.
 ;
-; Witness: c1 (Blast Em Mission completed); no read build completes a mission.
+; Witness: the fuel recording (MissionFailedScreen, frame 7862), m1complete
+; (MissionCompleteScreen, frame 21560) and m4complete (21301); c1 completes no
+; mission and does not run either screen (corrected by docs, see doc 03 3.8).
 PicCompletion:
   INCBIN "res/pictures/completion.bin",$0000,1067
 

@@ -324,6 +324,92 @@ def figure(data, org, start, end, out_png, title='', models=None):
     img.save(out_png)
 
 
+# ------------------------------------------------------------------------------------------------ the editable form
+# A library as text, one instruction a line, and back byte for byte (the resources models/*.mdl and the `model` lines
+# of the mission texts):
+#
+#     $CA8B native $67F7 0C 40 10 ; box_rect 12 64 16
+#
+# the address (for the reader: the assembler ignores it), the opcode's name, its operand bytes in hex and its words
+# as `$XXXX`, then after `;` the decoded instruction (ignored too). `db` holds bytes that are no instruction: the
+# frames of polar_points, a gap, the broken part of mission 2. A vertex operand is 4 x the vertex number, as the
+# game stores it. A model referenced from outside (a template, a call) starts a line marked `; model`.
+WORD_AT = {0: [0], 6: [1], 7: [1], 8: [1, 3], 10: [1, 3], 11: [0], 21: [1]}  # operand offsets of the words
+NAMES = dict(OPS); NAMES[255] = 'end'
+CODES = {v: k for k, v in NAMES.items()}
+
+
+def _encode(ops, words):
+    out, i = [], 0
+    while i < len(ops):
+        if i in words:
+            out.append('$%04X' % (ops[i] | ops[i + 1] << 8))
+            i += 2
+        else:
+            out.append('%02X' % ops[i])
+            i += 1
+    return ' '.join(out)
+
+
+def text_lines(data, org, start, end, starts=()):
+    """the lines of start-end (end exclusive); starts: addresses that must begin a line"""
+    s, a, out = Script(data, org), start, []
+    starts = set(starts)
+    marks = set(starts)
+
+    def db(a, b):
+        for x in range(a, b, 16):
+            y = min(b, x + 16)
+            out.append('$%04X db %s%s' % (x, ' '.join('%02X' % v for v in data[x - org:y - org]),
+                                         ' ; model' if x in marks else ''))
+    while a < end:
+        try:
+            t, nxt, ev = s.op(a)
+        except IndexError:
+            t, nxt = None, None
+        op = data[a - org]
+        n = None
+        if t is not None and nxt is not None and op in NAMES:
+            n = 4 if op == 21 else nxt - a
+        cut = [x for x in starts if a < x < a + (n or 1)]
+        if n is None or n <= 0 or a + n > end or cut or (op == 21 and not a + 4 <= nxt <= end):
+            b = min([x for x in starts if x > a] + [a + 1, end])
+            b = a + 1 if b <= a else b
+            db(a, b)
+            a = b
+            continue
+        body = data[a - org + 1:a - org + n]
+        words = set(WORD_AT.get(op, []))
+        out.append('$%04X %s %s; %s%s' % (a, NAMES[op], (_encode(body, words) + ' ') if body else '', t,
+                                         ', model' if a in marks else ''))
+        a += n
+        if op == 21:
+            db(a, nxt)  # the frames
+            a = nxt
+    return out
+
+
+def assemble(lines):
+    """the bytes of text_lines' lines"""
+    out = bytearray()
+    for line in lines:
+        line = line.split(';')[0].split()
+        if not line:
+            continue
+        if line[0].startswith('$'):
+            line = line[1:]
+        name, ops = line[0], line[1:]
+        if name != 'db':
+            out.append(CODES[name])
+        for t in ops:
+            if t.startswith('$'):
+                v = int(t[1:], 16)
+                out += bytes([v & 255, v >> 8])
+            else:
+                out.append(int(t, 16))
+    return bytes(out)
+
+
 def main():
     a = sys.argv[1:]
     if a[:1] == ['mission'] and len(a) >= 2:

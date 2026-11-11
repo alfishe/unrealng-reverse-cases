@@ -72,23 +72,17 @@ MissionsCompleted:
 ; `$CC94` printed by MissionFailedScreen; the reason (the pointer `$7BF9`, set
 ; by the play code) is one of the five.
 FailedTexts:
-  DEFB $09,$07,$02,$20,$09,$0D,$68,$4D,$49,$53,$53,$49,$4F,$4E,$20,$46
-  DEFB $41,$49,$4C,$45,$44,$2E,$FF
+  INCBIN "res/texts/failed-texts.bin",$0000,23
 UnitDestroyedText:
-  DEFB $07,$30,$0E,$55,$4E,$49,$54,$3A,$44,$45,$53,$54,$52,$4F,$59,$45
-  DEFB $44,$5B,$FF
+  INCBIN "res/texts/failed-texts.bin",$0017,19
 NoPickupText:
-  DEFB $07,$30,$0B,$46,$41,$49,$4C,$45,$44,$3A,$54,$4F,$3A,$4D,$41,$4B
-  DEFB $45,$3A,$50,$49,$43,$4B,$55,$50,$5B,$FF
+  INCBIN "res/texts/failed-texts.bin",$002A,26
 DesertionText:
-  DEFB $07,$30,$0E,$50,$4C,$41,$59,$45,$52,$3A,$44,$45,$53,$45,$52,$54
-  DEFB $49,$4F,$4E,$5B,$FF
+  INCBIN "res/texts/failed-texts.bin",$0044,21
 OutOfFuelText:
-  DEFB $07,$30,$0E,$52,$41,$4E,$3A,$4F,$55,$54,$3A,$4F,$46,$3A,$46,$55
-  DEFB $45,$4C,$5B,$FF
+  INCBIN "res/texts/failed-texts.bin",$0059,20
 BridgeText:
-  DEFB $07,$30,$09,$54,$41,$4E,$4B,$3A,$44,$45,$53,$54,$52,$4F,$59,$45
-  DEFB $44,$3A,$4F,$4E,$3A,$42,$52,$49,$44,$47,$45,$5B,$FF
+  INCBIN "res/texts/failed-texts.bin",$006D,29
 
 ; Mission completed: PicCompletion, the score added, the flag set, the
 ; mission's text
@@ -96,8 +90,12 @@ BridgeText:
 ; Sound off, DrawBank7Picture `$E51E`, Score += the mission's score,
 ; MissionsDone[mission] = `$FF`, PrintString (`$7C55`), SaveLoadedMission
 ; `$CD77`, the main screen, Delay, MissionsCompleted + 1, then the key wait of
-; MissionFailedScreen (EndScreenKey). Known only from the code: no recording
-; runs it on page 6 (bank 7 has c1 unpacking PicCompletion).
+; MissionFailedScreen (EndScreenKey). The completion recordings run it on page
+; 6:
+;
+; Witness (not an L1 build of the json): m1complete frames 21560-21721,
+; MissionsDone and Score written at 21590, 32 frames after HelicarrierHit;
+; m4complete 21301-21462 (work/stage2/complete-NOTES.md).
 MissionCompleteScreen:
   CALL $7268
   LD DE,MapModelNegative

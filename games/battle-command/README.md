@@ -1,6 +1,6 @@
 # Battle Command (Ocean Software, 1990)
 
-State: in progress (stage 1, the capture).
+State: docs written, in review (12 documents, 55 PNG figures, 75 mermaid diagrams, 24 animations, 15 WAVs).
 
 | | |
 | --- | --- |
@@ -12,16 +12,18 @@ State: in progress (stage 1, the capture).
 
 ## Profile
 
-Picked in phase 0 from the first recordings (AGENTS.md 4.0). Each item is a lead until a stage proves it.
+Picked in phase 0 from the first recordings (AGENTS.md 4.0), then settled by stage 2 and the documents.
 
 | Row | What applies here |
 | --- | --- |
-| Genre: 3D (vector, filled) | a 3D vehicle combat game: one Mauler tank driven in first person through a filled-polygon landscape (sky, ground, hills, buildings, enemy vehicles and aircraft), the view in the upper half of the screen above a cockpit panel ([WALKTHROUGH 6.1](WALKTHROUGH.md#61-screens)). The writers need the projection worked through on one object, the clipping, the polygon fill (dithered patterns), every model drawn from its data (the title's tank, the 13 stores spinning on the stores screen, the targets), the camera (normal, night sight, binoculars with zoom, rear view, the Dragonfly missile's view) and the frame rate against the scene load |
-| Genre: strategy, mission game | ten missions on side 2 (Blast Em Mission, Missile Battery, Hostage Rescue, Railway Ambush, Night Moves, Escort Duty, Satellite Search, River Raid, Hideout, Grand Finale), each with briefing notes, a goal, a map (roads, rivers, the pickup point P, the target T) and a mission clock; a stores screen fits four weapon modules out of 13 stores under a 1000 kg payload; a save code (STATUS, then LOAD GAME). The writers need each mission's world drawn from its data as a map, the goals and the rules as code, the enemies' AI |
-| Engine: multi-load, 128K paging | side 1 fills the 128K banks (the loader writes `$7FFD`); side 2 is read by the game: the catalogue once, then one mission block per SEARCH and SELECT ([WALKTHROUGH 6.0](WALKTHROUGH.md#60-the-recordings)). Each load is a stage, with what stays resident and the memory map per stage ([doc 2](docs/02-architecture.md)) |
-| Engine: copy protection (SpeedLock 7) | the BASIC's machine-code stage, the two pulse blocks and the 15 data blocks with their marks (data pulses 714 / 1428 T, marks 875 / 1750 T); every decryption with the full transform set is stage 2's |
-| Rendering: filled 3D view over a fixed panel | the view rows above the fixed cockpit (weapon slots, message screen, radar, compass, damage lights); the writers need the draw order against the beam (a back buffer or direct), the dither patterns, the attributes (cyan sky, green ground) |
-| Sound: AY tracker | Jonathan Dunn's title tune (the rip says "Title"), AY effects in play; the format, the player, the register chart and every tune exported |
+| Genre: 3D (vector, filled) | one Mauler tank driven in first person through a filled-polygon landscape, the view above a cockpit panel. A pass (one picture) clears the back buffer, sorts the visible objects into a depth tree, runs each model's script (RunScript `$990F`: box generators, a vertex program, projection by logarithms, face tests, clipped fills in dithered patterns), and a blit in the interrupt copies it to the screen against the beam ([doc 6](docs/06-rendering.md)). The cost per view, in frames a pass: 7.5 in the front view of mission 1, 6.8 with the binoculars and the zoom, 8.0 in the Dragonfly's view, 12 in the rear view, 11.1 on the console after the map ([doc 4, 4.6](docs/04-game-loop.md#46-frames-per-pass-in-every-view)); each face on the screen costs about 0.4 of a frame |
+| Genre: strategy, mission game | ten missions on side 2, each a block loaded to bank 0 `$DBC5` with its world, objects, templates, models and its own code; each has a goal hook (header word `$DBE1`) that the pass calls from `$6A66` and that sets the goal flag `$68E8` (the ten hooks in [doc 10, 10.9](docs/10-gameplay-logic.md#109-goals-the-helicarrier-and-completion)). With the goal met, the key H calls the Helicarrier: it arrives and lands on the pad, and the tank's pickup ends the mission (recorded: m1complete, m4complete). Failure causes: the armour (UNIT DESTROYED, or FAILED TO MAKE PICKUP after the goal), desertion beyond the extent + 4, fuel, the bridge, the Helicarrier hit before the goal; one pointer `$7BF9` holds the text ([doc 10, 10.10](docs/10-gameplay-logic.md#1010-failure-and-its-causes)). The Grand Finale loads only when the nine flags `$6799-$67A1` are all set (LoadMissionIfAllowed `$759A`); missions 1-9 in any order, each once. The save code holds the score and the ten flags |
+| Engine: multi-load, 128K paging | eight 16 KB banks: 5 and 2 fixed at `$4000` / `$8000`, the game's bank 0 at `$C000`, and banks 3 (raster), 4 (music), 6 (menus, stores, password, map) and 7 (pictures) paged in through one block in bank 5 `$7225-$72F3` ([doc 2](docs/02-architecture.md)). Side 2 is read by the game: the catalogue once, then one mission block per SELECT |
+| Engine: copy protection (SpeedLock 7) | the BASIC's tail is a 103-layer decryption chain keyed by R (69 add, 22 dec, 12 sub layers), then the SpeedLock 7 loader with its timing marks between the blocks and its store cipher `(L XOR k) + a`, the keys rewritten by blocks 17 and 19 ([doc 3](docs/03-build-and-load.md)); the build re-protects the tape byte for byte |
+| Timing: interrupts lost | the game never halts; the interrupt does the blit, the sound, the music, the clock and the input. The back-buffer clear and the radar's clear run with interrupts off (`SP` used as a pointer), so 4 % of the interrupts are lost in the front view and 13 % in the rear view, and the mission clock, counted in interrupts taken, runs slow ([doc 4, 4.3](docs/04-game-loop.md#43-where-interrupts-are-off-and-the-interrupts-lost)) |
+| Controls: the mouse reset | five readers (Sinclair, cursor keys, keyboard, Kempston joystick, Kempston mouse); the Kempston mouse never moves the pointer (ReadMouse writes its X delta over the new Y), and its reader's stores damage the 3D code until the game jumps into the middle of an instruction at `$7E79` and an `RST 0` restarts the machine: the game's own bug, not the emulator's ([doc 5, 5.5](docs/05-controls.md#55-the-kempston-mouse-no-movement-then-a-restart)) |
+| Rendering: filled 3D view over a fixed panel | the back buffer `$8AF1-$96F0`, three blits (front, wide, narrow), the HUD fields written by their own routines, bank 7's packed pictures unpacked behind a black shadow screen ([doc 6](docs/06-rendering.md), [doc 8](docs/08-hud-and-text.md)) |
+| Sound: AY, two drivers | the effect driver of the game (a register shadow, effect counters, the engine as an envelope) and the bank 4 tracker player of Jonathan Dunn's title tune, on one chip ([doc 9](docs/09-sound.md)) |
 
 ## Other releases and copies
 
@@ -44,11 +46,12 @@ by SHA-256 (`software/zxdb/manifest.tsv`, `index/tape-images.tsv`, `index/member
 | `docs/Battle Command (1990)(Ocean Software).pok` | the POKE file | nine cheats, checked against the code in [WALKTHROUGH 6.3](WALKTHROUGH.md#63-the-state-variables-and-the-pokes) |
 
 **Side 2, mission 2.** The Ocean side 2 stores Missile Battery as a 6386-byte block (6384 data bytes, XOR check 0),
-while its own `MISSHDR:2:` block says `$1906` = 6406 bytes; Erbe and the crack carry 6406. The first 3488 bytes agree,
+while its own `MISSHDR:2:` block says `$1906` = 6406 bytes; Erbe and the crack carry 6406. The first 3487 bytes agree,
 the rest differs. The game does not take the Ocean block: SELECT reads it and the catalogue screen stays for 6000
 frames with no stores screen, while the Erbe block loads and plays (recordings m2ocean and m2erbe,
 [WALKTHROUGH 0.2](WALKTHROUGH.md#02-the-release-check)). Grand Finale (mission 10) is found by SEARCH but SELECT
-returns to the status screen with no missions completed: likely locked until the other nine are done.
+returns to the status screen with no missions completed: it is locked until the other nine are done
+([doc 10, 10.11](docs/10-gameplay-logic.md#1011-the-grand-finale)).
 
 The original is the Ocean tape: ZXDB marks it the original release with SpeedLock 7, its side 1 carries the protected
 loader that every other copy removes, and every other tape is the same program re-saved without protection (Erbe),
@@ -58,4 +61,13 @@ The documents: [docs/README.md](docs/README.md). How the reverse was done: [WALK
 
 ## Build
 
-Not yet: the source and the tape rebuild are stage 2 and later.
+```sh
+source work/env.sh                                  # SJASMPLUS, SKOOLKIT_VENV
+sh tools/mkasm_all.sh                               # the .ann files to the sources (kit/mkgame.py, every part)
+rm -rf build && sh tools/build.sh $SJASMPLUS        # both sides, compared with the original
+python3 tools/res_formats.py check                  # every resource builds to its original bytes
+```
+
+`tools/build.sh` prints `BattleCommand-Side1.tzx identical` and `BattleCommand-Side2.tzx identical`: both tape
+sides are rebuilt byte for byte from `src/` (the game, the bank parts, the loader and its chain, the mission blocks
+from `src/res/missions`). The editable resources are in [src/res](src/res/README.md).

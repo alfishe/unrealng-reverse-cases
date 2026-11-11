@@ -69,9 +69,9 @@ ApiVector07:
 
 ; ApiVector08
 ;
-; Used by the routines at PlayerStep, TestVertexNearX, LaunchProjectile,
-; ShowMortarRange, InRange, TargetInConeBody, TurnToward, HitSide,
-; TerrainDiagonal, BoundaryCheck, SetAwolState and EngineTone.
+; Used by the routines at PlayerStep, BrakeKey, TestVertexNearX,
+; LaunchProjectile, ShowMortarRange, InRange, TargetInConeBody, TurnToward,
+; HitSide, TerrainDiagonal, BoundaryCheck, SetAwolState and EngineTone.
 ApiVector08:
   JP AbsA
 
@@ -82,6 +82,8 @@ ApiVector09:
   JP MulWordByte
 
 ; ApiVector10
+;
+; Used by the routine at HelicarrierHit.
 ApiVector10:
   JP HitTest
 
@@ -117,6 +119,8 @@ ApiVector15:
   DEFB $C3,$11,$B6
 
 ; ApiVector16
+;
+; Used by the routine at HelicarrierHit.
 ApiVector16:
   JP ScreenFour
 
@@ -177,9 +181,12 @@ SlotGauges:
   DEFB $10,$0F,$16,$60,$14,$00
   DEFB $0E,$0D,$1D,$60,$19,$00
   DEFB $FF
-GaugeEnd:
-  DEFB $00,$00,$00,$00,$00,$00
-  DEFB $00,$00
+MissionScore:
+  DEFB $00,$00,$00,$00,$00,$00 ; the mission's score, 4 bytes (AddKillScore
+                               ; $B692 adds $1E)
+GoalFlag:
+  DEFB $00,$00            ; set by the mission's goal hook ($6A66):
+                          ; PickupMessage, the pickup
 MissionClock:
   DEFB $00,$00,$11,$00,$00,$00 ; seconds, minutes, hours (ClockTick $7DFB);
   DEFB $00,$00,$00,$00         ; minutes and hours printed by PrintClock

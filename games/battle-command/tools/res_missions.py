@@ -26,12 +26,17 @@ The block (LoadMission `$84C1` copies the header's fields into the game, frag of
     then       the object list, 8 bytes a record (flags, type, heading, spare, X word, Y word; x 4 world units),
                `$FF` after the last
     then       the templates (object record bytes +2 to +`$1F`; as many as the list's highest type + 1), then the mission's code, data and 3D models,
-               kept here as hex lines
+               kept here as hex lines up to the models; the models (from the header's models word or the lowest
+               template model) as `model` lines, one instruction a line (tools/models3d.py, the editable form)
 
 The text keeps every byte: a field the format does not name is a hex line.
 """
+import os
 import struct
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import models3d  # noqa: E402
 
 ORG = 0xDBC5
 HEAD_FIELDS = [  # name, address, length, kind (b byte, w word, h hex, t text)
@@ -84,7 +89,7 @@ def to_text(d, title=''):
            '# Header fields as the game reads them; vertices; segments (a b orientation size3 size4 style);',
            '# objects (flags type heading spare x y: the X and Y words); templates (record bytes +2..+$1F:',
            '# state flags colour height(2) speed wreck(2) ? box(6) ? max hp damage ? radius(2) step(2) hit(2)',
-           '# model(2) score(2)); the rest (code, data, models) as hex lines at their addresses.']
+           '# model(2) score(2)); the rest (code, data) as hex lines, then the models as model lines.']
     for name, a, n, k in HEAD_FIELDS:
         v = hdr[a - ORG:a - ORG + n]
         if k == 'b':
@@ -110,9 +115,23 @@ def to_text(d, title=''):
         out.append('template %d %s' % (i, ' '.join('%02X' % x for x in t)))
     out.append('')
     r, a = m['rest'], m['rest_at']
-    for i in range(0, len(r), 16):
-        out.append('bytes $%04X %s' % (a + i, ' '.join('%02X' % x for x in r[i:i + 16])))
+    st, starts = model_region(d, m)
+    for i in range(0, st - a, 16):
+        out.append('bytes $%04X %s' % (a + i, ' '.join('%02X' % x for x in r[i:min(i + 16, st - a)])))
+    out.append('')
+    out.append('# the 3D models from $%04X to the end (tools/models3d.py, text_lines: one instruction a line)' % st)
+    out += ['model ' + x for x in models3d.text_lines(d, ORG, st, ORG + len(d), starts)]
     return '\n'.join(out) + '\n'
+
+
+def model_region(d, m=None):
+    """(the first address of the models, the models the templates use): from the header's models word or the
+    lowest template model inside the block, whichever is lower, to the end of the block"""
+    m = m or parse(d)
+    ms = sorted(set(t[26] | t[27] << 8 for t in m['templates']))
+    ms = [x for x in ms if ORG <= x < ORG + len(d)]
+    h = m['head']['models']
+    return max(m['rest_at'], min(ms + [h[0] | h[1] << 8])), ms
 
 
 def from_text(text):
@@ -152,6 +171,8 @@ def from_text(text):
             tms += bytes(int(t, 16) for t in val.split()[1:])
         elif key == 'bytes':
             rest += bytes(int(t, 16) for t in val.split()[1:])
+        elif key == 'model':
+            rest += models3d.assemble([val])
         else:
             raise ValueError('res_missions: cannot read %r' % line)
     return bytes(head + vx + vy + segs + objs + b'\xff' + tms + rest)

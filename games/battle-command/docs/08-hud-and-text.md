@@ -454,17 +454,16 @@ How to read the figure:
 | 4 | slot icons | 128-231, 0-23 | the four slots `$8368` | icons with frames | DrawSlotIcons `$73BA` |
 | 5 | 3D view | 0-255, 32-126 | the back buffer | bytes | ViewBlitFront's copy l_89A8 ([doc 6](06-rendering.md)) |
 | 6 | message | 96-159, 118-126 | the last hit | `TANK:HIT` (`$FFCF`), `COLLIDED` (`$FFDB`), blank (`$87F0`), small font line `$78` column `$11` | MessageOnce `$7D5D`, MessageTimer `$87D6` (8.6) |
-| 7 | bearing | 32-55, 138-142 | the bearing to the target less the heading | an arrow shape, 5 lines | DrawBarB `$D637` (bank 6) |
-| 8 | speed bar | 64-71, 144-175 | `$7E8E` = abs(speed) | a bar of 0-31 lines | DrawBarC `$D612` (bank 6) |
-| 9 | fuel bar | 80-87, 144-175 | `$7C58` / 2, the fuel's high byte | a bar of 0-31 lines | DrawBarD `$D629` (bank 6) |
+| 7 | bearing | 32-55, 138-142 | the bearing to the target less the heading | an arrow shape, 5 lines | DrawBearing `$D637` (bank 6) |
+| 8 | speed bar | 64-71, 144-175 | `$7E8E` = abs(speed) | a bar of 0-31 lines | DrawSpeedBar `$D612` (bank 6) |
+| 9 | fuel bar | 80-87, 144-175 | `$7C58` / 2, the fuel's high byte | a bar of 0-31 lines | DrawFuelBar `$D629` (bank 6) |
 | 10 | radar | 176-215, 132-163 | the blip list `$6768` | pixels | DrawRadar `$C05E`, PlotRadarPixel `$A9FE` |
-| 11 | heading strip | 176-207, 177-183 | heading `$7612` | a shifted compass strip | DrawSpeedBar `$D598` (bank 6) |
+| 11 | heading strip | 176-207, 177-183 | heading `$7612` | a shifted compass strip | DrawHeadingStrip `$D598` (bank 6) |
 | 12 | lamp | 224-231, 145-150 | none | `$3C` flipped on 4 lines at `$525C` every 8 frames | BlinkLamp `$8475` (interrupt) |
 | 13 | warning marks | 192-199, 150-153 | none | bits `$30` flipped at `$5758`, `$5078` every 12 frames | BlinkWarning `$8459` (interrupt) |
 
-The names DrawSpeedBar and DrawBarB-D are those of the listing. What the routines draw is in the table: DrawSpeedBar
-reads the player object's byte +`$22`, which is the heading `$7612`, and draws the compass strip. The renaming is
-proposed to the lead.
+DrawHeadingStrip reads the player object's byte +`$22`, which is the heading `$7612`, and draws the compass strip;
+DrawBearing, DrawSpeedBar and DrawFuelBar draw the other three fields of the table.
 
 The order of a play loop's panel work, from PlayLoopTail `$6A57`:
 
@@ -474,21 +473,21 @@ flowchart TD
     R --> M["MessageOnce: a hit message, once"]
     M --> U["UpdateSlotBars 7327"]
     U --> B6["bank 6 UpdatePanelBars D58C"]
-    B6 --> H["DrawSpeedBar: heading strip, when changed"]
-    H --> BB["DrawBarB: bearing, when changed"]
-    BB --> BC["DrawBarC: speed, when changed"]
-    BC --> BD["DrawBarD: fuel, every time"]
+    B6 --> H["DrawHeadingStrip: heading strip, when changed"]
+    H --> BB["DrawBearing: bearing, when changed"]
+    BB --> BC["DrawSpeedBar: speed, when changed"]
+    BC --> BD["DrawFuelBar: fuel, every time"]
     BD --> A["UpdateAmmoBars 7336: a bar for each count that changed"]
 ```
 
 ```asm
 UpdatePanelBars:                ; $D58C (bank 6)
+  CALL DrawHeadingStrip
+  CALL DrawBearing
   CALL DrawSpeedBar
-  CALL DrawBarB
-  CALL DrawBarC
-  JP DrawBarD
+  JP DrawFuelBar
 
-DrawBarD:                       ; $D629 (bank 6)
+DrawFuelBar:                       ; $D629 (bank 6)
   LD A,($7C58)                  ; the fuel's high byte
   SRL A
   AND $1F                       ; 0-31 lines
@@ -500,10 +499,10 @@ DrawBarD:                       ; $D629 (bank 6)
 ```text
 UpdateSlotBars():
     bank6.UpdatePanelBars():
-        if heading != last: draw the strip            # DrawSpeedBar
-        if bearing - heading != last: draw the arrow  # DrawBarB
-        if abs(speed) != last: draw the speed bar     # DrawBarC
-        draw the fuel bar (fuel_hi / 2)               # DrawBarD, always
+        if heading != last: draw the strip            # DrawHeadingStrip
+        if bearing - heading != last: draw the arrow  # DrawBearing
+        if abs(speed) != last: draw the speed bar     # DrawSpeedBar
+        draw the fuel bar (fuel_hi / 2)               # DrawFuelBar, always
     for slot in 0..3: if rounds[slot] changed: DrawBar(slot)
 ```
 
@@ -542,7 +541,7 @@ How to read the animation:
 - **The point**: the bars are drawn first, the text after; each touches only its own bytes.
 
 Witness: `death` frame 8093. UpdateSlotBars runs at T 28 981 for 9946 T. Its parts: UpdatePanelBars 5667 T
-(DrawSpeedBar 65 T unchanged, DrawBarB 1619 T, DrawBarC 31 T unchanged, DrawBarD 3891 T) and UpdateAmmoBars 3846 T
+(DrawHeadingStrip 65 T unchanged, DrawBearing 1619 T, DrawSpeedBar 31 T unchanged, DrawFuelBar 3891 T) and UpdateAmmoBars 3846 T
 (DrawBar `$744F` at T 35 428, 2943 T). The shot then lowers `$836D` at T 46 075. PrintAmmoAt runs at T 52 776 for
 12 256 T.
 
@@ -693,7 +692,18 @@ on MissionsCompleted `$CC93`, `SCORE:TO:DATE` and the ten digits.
 **The end screens.** MissionFailedScreen `$CD84` prints `MISSION FAILED.` (`$CC94`, 8 x 8 font) and the reason the
 play code left in `$7BF9`: one of five small-font strings, `UNIT:DESTROYED[` to `TANK:DESTROYED:ON:BRIDGE[`.
 MissionCompleteScreen `$CD1E` adds the mission's score to Score and prints the mission's own completion text (at
-`$7C55`, from the catalogue: `WELL:DONE[:YOU:HAVE ...` for mission 1).
+`$7C55`, from the catalogue: `WELL:DONE[:YOU:HAVE ...` for mission 1). m1complete runs it at frames 21560-21721
+(page 6) and shows the report at 21593; m4complete at 21301-21462.
+
+![m1complete frame 21593: the COMPLETION REPORT of Blast Em Mission](img/play/m1complete-021593-complete.png)
+
+*m1complete frame 21593: MissionCompleteScreen's text, `WELL DONE. YOU HAVE CUT THE ENEMYS VITAL FUEL SUPPLY ...` in
+the small font on PicCompletion. Screenshot of the recording (`work/stage2/rec/m1complete`).*
+
+![m4complete frame 21832: the status card after two missions, 002 and 2500](img/play/m4complete-021832-status.png)
+
+*m4complete frame 21832: the status card after Blast Em Mission and Railway Ambush: MISSIONS COMPLETED `002`, SCORE TO
+DATE `......2500`, PrintScore's dotted leading zeros. Screenshot of the recording.*
 
 **The options.** OptionsScreen `$F8F4` prints OptionsText `$F93F` (the resource `src/res/texts/options.txt`). It waits
 for a key 1-5 and stores it in ControlDevice `$67B6`. Then it writes colour bytes inside the string itself: `$44`
@@ -801,6 +811,13 @@ The alphabet has 36 characters for 32 values. The values 0-3 come out as `9`, `8
 alphabet leaves B = 0, so its value is 36 AND 31 = 4, the same as `5`. The `.ann` says 0; the code gives 4.
 
 Worked example: a fresh game's save code is `9999999999` (the save code panel of the screens figure, menu 10 817).
+With progress: m1complete shows `C5989999PB` (mission 1, 500 points) at frame 22240 and m4complete `H59K9999PK`
+(missions 1 and 4, 2500 points) at 22035; doc 10.12 works both out bit by bit.
+
+![m4complete frame 22035: the save code H59K9999PK](img/play/m4complete-022035-save-code.png)
+
+*m4complete frame 22035: THIS IS YOUR ENTRY STRING with `H59K9999PK`, printed by PrintRawString. Screenshot of the
+recording.*
 Each value is 0, and place 0 of the alphabet is `9`. Typed back on the load screen (menu 1874), each `9` is found at
 place 0: B = 36, A = 36 - 36 = 0.
 
@@ -899,7 +916,6 @@ The point: the game's own text fits in about 1.5 K. Most of it sits in bank 6 wi
 - EditLineAt `$C655` and EditAddSpace `$C6AC`: no caller and no jump reaches them.
 - PrintFinalScore `$CC54` and its text `$D418`: nothing calls them.
 - The disk texts `$C8A0` and `$C8B2` (ShowWrongDisk `$C88E`): a leftover of the disk version, never shown on tape.
-- MissionCompleteScreen in bank 6: no recording runs it.
 - A character not in the alphabet, which gives 4 (8.8): no recording types one.
 
 ## 8.11 The point

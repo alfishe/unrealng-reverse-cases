@@ -32,6 +32,9 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
   `$8301-$8304` to 1; the death plan's keys; the first hit (frame 18423) destroys the tank. Recorded with
   `python3 tools/rec_armour.py --work work/docs/bcC/rec/armour --port-base 37370 --start
   work/stage1/explore/loaded.szx`; the POKE is on the recording's machine only, never in the image.
+- `m1complete`, `m4complete` (stage 2, `work/stage2/rec/`, `work/stage2/complete-NOTES.md`): Blast Em Mission and
+  then Railway Ambush completed (the goal, H, the Helicarrier, the report, the save code); the Immunity POKE only
+  for the long drives, the original byte back before any shot.
 - `play`, `play2` (stage 1): every store fitted and fired, the Dragonfly flown (L1 counts only).
 - `menu` (stage 1): the load code typed, STATUS and the save code (frame 10 817).
 - `m10` (stage 1): the Grand Finale refused.
@@ -468,8 +471,9 @@ UNIT DESTROYED.". Drawn by `python3 ../../kit/screen_anim.py --work work/docs/bc
 --scale 2 --delay 80 --hold 2500 docs/img/play/armour-death.gif`.*
 
 Witness: death frame 8121 (top armour `$7F` to `$7B`, the only hit in 12 000 frames); armour frame 18423 (a POKE
-recording). The side path and the subsystems ran in no recording that we traced; they are known from the code
-(PlayerHit has L1 41 in death and play2).
+recording). The side path and the subsystems: m1complete, PlayerHit 44 runs (frames 15765-21558): the top branch
+(`$CAC4`) 4, the side branch (`$CAD1`, HitSide) 40, the subsystem damage (`$CAFA-$CB1D`) 40; the armour went from
+`7F 7F 7F 7F` to `54 7F 57 70` (`work/stage2/complete-NOTES.md`).
 
 The point: the top is the weak side. Every enemy shell flies at height 48 or more (types 10, 12, 28, 31), so in
 mission 1 only type 8 and 24 shells (heights 16 and 20) reach the side armour and the subsystems. The quirk at E = 3
@@ -555,7 +559,9 @@ Witness: death frame 8531 (trace `work/docs/bcC/pc-kill.txt`: HitTest at T 14 11
 at 16 799, AddKillScore at 17 030). The score reaches 500 by frame 13 660 (a second 250 kill).
 
 The point: the score of a mission is the sum of what was destroyed. Hills and trees score 0, buildings 250-500, the
-depots 3000-4000, every enemy vehicle 2000. The score counts only when the mission is completed (section 10.12).
+fuel dumps of mission 1 (its goal, template 33) 250 each, every enemy vehicle 2000. m1complete: `$68E2` = 250 at
+frame 15787, 500 at 16137, the two dumps; m4complete: 2000 at 8247 from an enemy vehicle, while the train, the points
+and the station score 0. The score counts only when the mission is completed (section 10.12).
 
 ## 10.7 The weapons
 
@@ -712,12 +718,19 @@ When the flag is set:
 
 1. PickupAnnounce `$DB71` (a `NOP` gate) prints "MISSION COMPLETE PROCEED TO PICKUP" once and writes `RET` over its
    gate.
-2. The Helicarrier (record 21, type `$8C`, step HelicarrierWait `$DB24`) waits at the pad (`$DBF0`, copied to
-   `$7E82`); within 3 coarse units of it on X and Y the lift-off begins (`$DB61`).
-3. HelicarrierHit `$DAAB`, the Helicarrier's collision handler: with the goal flag set, JP `$67EE`: mission complete;
+2. The key H calls the Helicarrier (PlaceHelicarrier `$D52E`): record 21, type `$8C`, height 104, spawned some
+   8 000-10 000 world units from the pad. HelicarrierWait `$DB24` flies it to the pad (`$DBF0`, copied to `$7E82`):
+   TurnToward and MoveObject toward the pseudo-record `$7E65`, whose X / Y at `$7E88` / `$7E8B` are the pad's. The
+   test is the Helicarrier's own position, not the tank's: within 3 units of X >> 8 and Y >> 8 (768 world units) on
+   both axes, HelicarrierArrival `$DB61` switches it to HelicarrierTurn `$DAC4`, which turns it 8 a step to the
+   pad's heading; then HelicarrierDescent `$DADE` lowers it 8 a step from 104 to 24 and the handler `$6BB0` parks it.
+   Pads: mission 1 world (0, 8192), mission 4 world (-20480, 4096).
+3. HelicarrierHit `$DAAB`, the Helicarrier's collision handler, runs when the tank drives into the parked
+   Helicarrier: with the goal flag set, JP `$67EE`: mission complete;
    without it, `$7BF9` = `$CC94` (only "MISSION FAILED.") and ScreenSix.
 4. MissionCompleteScreen `$CD1E` (bank 6): Score `$CC79` += the mission score `$68E2`, MissionsDone `$6799` + n =
-   `$FF`, the mission's completion text, MissionsCompleted + 1.
+   `$FF`, the mission's completion text, MissionsCompleted + 1. Score and MissionsDone are written 32 frames after
+   HelicarrierHit, before the report is drawn.
 
 ```mermaid
 sequenceDiagram
@@ -729,15 +742,36 @@ sequenceDiagram
   G->>G: target list records destroyed
   G->>P: $68E8 = $FF
   P->>T: MISSION COMPLETE PROCEED TO PICKUP
-  T->>H: drives within 3 coarse units of the pad
-  H->>H: lift-off
+  T->>H: key H: the Helicarrier is called
+  H->>H: flies to the pad, arrival within 768 units ($DB61), turn, descent
+  T->>H: drives into the parked Helicarrier
   H->>C: collision with the goal flag: $67EE
   C->>C: Score += $68E2, MissionsDone[n] = $FF
 ```
 
-Witness: PickupAnnounce runs every pass (L1 3483), always with the flag clear. No recording destroyed the goal of a
-mission: the goal hooks, the pickup message, the lift-off and MissionCompleteScreen are known only from the code.
-HelicarrierWait ran in play (27 runs, at the mission start).
+Witness: the completion recordings m1complete and m4complete (WALKTHROUGH 6.0, `work/stage2/complete-NOTES.md`). No earlier recording completes a mission: c1 ends in play, and MissionCompleteScreen (bank 6 `$CD1E`) has no run in its L1 (page 6), against one in m1complete.
+
+| Event | m1complete | m4complete |
+| --- | ---: | ---: |
+| goal hook first run (one a pass) | 7595 (GoalHook1 `$EB60`, 1504 runs) | 3217 (GoalHook4 `$E927`, 2237 runs) |
+| goal records destroyed | 15786, 16136 (records 55, 56) | 8836 (engine), 14213 (station) |
+| goal flag `$68E8` = `$FF`, PickupMessage `$DB77` | 16138 | 14214-14215 |
+| H: HelicarrierWait first run | 16239 | 14336 |
+| HelicarrierArrival `$DB61` | 17099 | 15435 |
+| turn `$DAC4`, descent `$DADE` | 17109-17205, 17213-17311 | 15442-15504, 15510-15575 |
+| HelicarrierHit `$DAAB`, then `$67EE` | 21558 | 21299 |
+| MissionCompleteScreen `$CD1E`; Score, MissionsDone written | 21560-21721; 21590 | 21301-21462; 21331 |
+
+![m1complete frame 21533: the landed Helicarrier on the pad and the pickup text](img/play/m1complete-021533-pickup.png)
+
+*m1complete frame 21533: the Helicarrier parked on the pad, the tank about to drive into it; the pickup message is
+still in the message line. Screenshot of the recording (bank 5).*
+
+The hooks of missions 1 and 4 are witnessed; the other eight are read from their blocks. Mission 4's `$FB` test is
+the siding: shooting the points (record 10, type 11, hit handler `$E638`, frames 3819 and 4010) writes `$60` to
+`$E7C0-$E7C2`, the next train runs onto the siding, where the records' Y word is `$FBFF` (byte +7 = `$FB`; on the
+main line Y is 0); the engine destroyed there (8836) stops the train with record 3 at `$FB`, and the station (14213)
+completes the goal.
 
 The point: the goal is data plus a few lines of code per mission. Most goals are "these list records destroyed",
 read from the same bit that keeps a wreck from respawning; the Escort Duty and Satellite Search goals live in their
@@ -895,6 +929,16 @@ Worked examples:
 2. Mission 1 done with 4000 points (Score = `A0 0F 00 00`), worked from the code: the nibbles are A, 0, 0, F, 0, 0, 0,
    0; value 0 = `$0A` | `$10` = 26; the checksum is `$A0` XOR `$0F` = `$AF`; value 8 = (`$AF` AND 7) << 2 = 28;
    value 9 = `$AF` >> 3 = 21. The values 26, 0, 0, 15, 0, 0, 0, 0, 28, 21 give "J99U9999HO".
+3. Recorded, m1complete frame 22240: mission 1 done, Score 500 (`F4 01 00 00`): value 0 = 15 | 16 = 31 "C", then
+   4 "5", 0 "9", 1 "8", four 0 "9999"; the checksum `$F4` XOR `$01` = `$F5`: value 8 = 5 << 2 = 20 "P", value 9 =
+   `$F5` >> 3 = 30 "B". The screen shows "C5989999PB".
+4. Recorded, m4complete frame 22035: missions 1 and 4 done, Score 2500 (`C4 09 00 00`): value 0 = 12 | 16 = 28 "H",
+   4 "5", 0 "9", value 3 = 9 | 16 = 25 "K", "9999"; the checksum `$CD`: 20 "P", 25 "K". The screen shows
+   "H59K9999PK".
+
+![m1complete frame 22240: the save code C5989999PB](img/play/m1complete-022240-save-code.png)
+
+*m1complete frame 22240: SAVE GAME after mission 1, the code "C5989999PB" of example 3. Screenshot of the recording.*
 
 ![The save code of the second example, bit by bit](img/gameplay/save-code.png)
 
@@ -972,9 +1016,8 @@ password code.
 
 ## 10.14 What no recording reached
 
-- **A completed mission**: the goal hooks setting `$68E8`, PickupAnnounce's message, the Helicarrier's lift-off
-  (`$DB61`), HelicarrierHit, MissionCompleteScreen, Score and MissionsDone being set. Known only from the code.
-- **The side armour and the subsystems**: the only hits in our recordings came from height 64 shells (the top).
+- **A completed mission** other than 1 and 4: the goal hooks of missions 2, 3 and 5-10 are read from their blocks
+  (missions 1 and 4: m1complete, m4complete, section 10.9).
 - **FAILED TO MAKE PICKUP, PLAYER DESERTION, TANK DESTROYED ON BRIDGE**: known only from the code.
 - **A guided missile hitting**: MissileLock ran in play2, the launch after a lock (`$C171`, `$C25C`) did not.
 - **Missions 2-10 in play**: their goal hooks are read from `src/res/missions`, not traced. Mission 2's Ocean block is

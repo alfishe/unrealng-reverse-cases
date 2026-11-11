@@ -1,0 +1,2 @@
+{02}{28}{01}{0D}{47}Are you sure you want to quit?
+{02}{38}{0C}Yes/No.{FF}

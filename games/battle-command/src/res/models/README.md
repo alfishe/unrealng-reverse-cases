@@ -1,9 +1,19 @@
 # 3D models
 
-The models are scripts of RunScript `$990F` (src/game/render.asm), kept as bytes where the game keeps them: in each
-mission block (../missions, the `bytes` lines from the header's `models` word on) and in the bank parts (bank 3
-SharedModels `$CA8B-$CFCC`; smaller ones in bank 0 `$D5D0`, `$D934`, `$FE80`, bank 2 `$8739-$87D5`, bank 5
-`$7E8F-$7FAF`, bank 6 `$E512-$E560`). The files here are views of them, written by `python3 tools/fig_models.py`:
+The models are scripts of RunScript `$990F` (src/game/render.asm). Their editable form, which the build reads, is one
+instruction a line (tools/models3d.py `text_lines` and `assemble`, byte for byte): the address, the opcode's name,
+the operand bytes in hex and the words as `$XXXX`, then after `;` the decoded instruction, ignored by the build.
+`db` lines hold the bytes that are no instruction (the frames of polar_points, mission 2's broken part). A vertex
+operand is 4 x the vertex number, as the game stores it. Words are addresses: a model that grows moves the ones after
+it, so their callers' words change too.
+
+- the mission libraries: the `model` lines of ../missions/NN-NAME.txt, from the header's `models` word (or the
+  lowest template model) to the end of the block;
+- `bank3-shared.mdl`: bank 3 SharedModels `$CA8B-$CFCC` (`@res models/bank3-shared.bin` in src/bank3/bank3.ann);
+- `bank6-map.mdl`: bank 6 MapModels `$E512-$E560`, the map objects (`@res models/bank6-map.bin` in
+  src/bank6/bank6.ann).
+
+The other files here are views for the reader, written by `python3 tools/fig_models.py`:
 
 - `NN-NAME.txt`: every model inside the block that a template of mission NN uses (the template's word at +26; the words `$67DC`, `$B612` and 0 point at resident code or no model), its script decoded
   instruction by instruction (tools/models3d.py; the opcodes are in its docstring);

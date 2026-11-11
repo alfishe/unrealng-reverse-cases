@@ -2,7 +2,7 @@
 # Header fields as the game reads them; vertices; segments (a b orientation size3 size4 style);
 # objects (flags type heading spare x y: the X and Y words); templates (record bytes +2..+$1F:
 # state flags colour height(2) speed wreck(2) ? box(6) ? max hp damage ? radius(2) step(2) hit(2)
-# model(2) score(2)); the rest (code, data, models) as hex lines at their addresses.
+# model(2) score(2)); the rest (code, data) as hex lines, then the models as model lines.
 mission 2
 name "MISSION:::"
 extent 18 17
@@ -293,206 +293,1318 @@ bytes $E7C7 C9 CD 0E E3 CD BE 67 DD 7E 36 3D DD 77 36 C0 DD
 bytes $E7D7 6E 33 DD 66 34 DD 75 18 DD 74 19 AF DD 77 37 DD
 bytes $E7E7 77 38 C9 CD 30 E3 D0 3E 19 21 0A 00 CD 7D E5 C9
 bytes $E7F7 DD 7E 31 3D 28 06 DD 77 31 C3 BE 67 CD CD 67 DD
-bytes $E807 36 02 00 C9 00 FA 67 30 01 38 01 29 A6 61 26 A2
-bytes $E817 60 25 A2 5F 29 A5 5E A0 5D A6 40 A6 80 A6 80 5C
-bytes $E827 26 A0 41 A0 81 41 9D 81 81 5B 21 A6 5A A1 9A 5A
-bytes $E837 9D 9A 9A 5A 29 A1 59 A1 99 59 9D 99 99 59 29 9D
-bytes $E847 58 A9 98 A9 98 58 29 9E 57 9E 97 57 9D 97 97 57
-bytes $E857 20 A2 56 A0 96 56 9D 96 96 56 1D A2 55 A2 95 A2
-bytes $E867 95 55 1F A2 54 9F 94 54 9D 94 94 54 1F A5 53 9F
-bytes $E877 93 53 9D 93 93 53 1D A5 52 A5 92 A5 92 52 1E A5
-bytes $E887 51 9E 91 51 9D 91 91 51 21 9D A1 A1 A1 61 1D A0
-bytes $E897 A0 A0 A0 60 1D 9E 9E 9E 9E 5E 1D 9F 9F 9F 9F 5F
-bytes $E8A7 29 A3 5D 9E 50 17 9D 4F 18 9D 4E 19 9D 4D 21 9D
-bytes $E8B7 4C 1A 9D 4B 1C 9D 4A 1B 9D 49 20 9D 48 16 9D 47
-bytes $E8C7 15 9D 46 14 9D 45 1F 9D 44 13 9D 43 12 9D 42 11
-bytes $E8D7 9D 41 1E 9D 40 FF 02 26 00 05 00 03 84 68 70 88
-bytes $E8E7 74 8C 90 74 94 0A 00 13 E9 57 E9 0F 02 02 07 03
-bytes $E8F7 04 94 74 90 01 07 03 04 8C 74 88 0D 02 01 07 03
-bytes $E907 05 88 74 8C 02 07 03 05 90 74 94 09 10 9D 21 1A
-bytes $E917 1C 1B 20 9D 1A 9D 1C 9D 1B 9D 20 16 1D 96 15 1D
-bytes $E927 95 14 1D 94 1F 1D 9D 19 21 9D 18 19 9D 17 18 9D
-bytes $E937 1E 17 9F 13 1D 93 12 1D 92 11 1D 91 1E 90 0F 0E
-bytes $E947 0D 0C 0B 0A 09 08 07 06 05 04 03 02 01 00 C0 09
-bytes $E957 FF 00 FA 67 20 0C 7F 01 28 A6 66 C0 26 80 00 E0
-bytes $E967 61 33 11 91 00 20 E0 60 93 12 11 80 40 E0 61 33
-bytes $E977 12 92 00 60 E0 60 93 11 12 9F E0 1F 4C E2 01 8C
-bytes $E987 C0 24 D5 08 24 D4 E8 15 18 00 2C C0 15 38 00 2C
-bytes $E997 FF E0 40 C8 80 A0 00 93 93 11 93 12 11 93 12 92
-bytes $E9A7 13 91 12 81 A0 80 01 00 80 93 93 11 91 00 20 E0
-bytes $E9B7 61 33 12 11 80 41 00 80 93 13 92 92 00 60 E0 61
-bytes $E9C7 33 91 12 9F E0 1F 4C E7 03 8F E0 25 14 CC D8 04
-bytes $E9D7 CC DF E0 40 A8 80 A0 00 93 11 91 13 12 92 13 11
-bytes $E9E7 12 93 12 11 81 A0 80 00 E0 61 33 11 91 00 20 E0
-bytes $E9F7 61 33 12 92 00 40 E0 60 93 11 12 80 60 E0 60 93
-bytes $EA07 12 11 9F E0 1F 4C E6 82 4F E0 25 14 CC D8 04 D8
-bytes $EA17 04 CC DF E0 40 A8 80 A0 00 93 11 91 13 12 92 13
-bytes $EA27 11 12 93 12 11 81 A0 80 00 E0 61 33 11 91 00 20
-bytes $EA37 E0 61 33 12 92 00 40 E0 60 93 11 12 80 60 E0 60
-bytes $EA47 93 12 11 9F E0 1E EC E3 0F E4 00 25 14 CA 85 34
-bytes $EA57 D8 02 8B BF 0B 85 14 74 34 28 04 D4 F4 54 CB D8
-bytes $EA67 00 0B E4 54 74 54 4C 18 00 0C 3F E0 41 C7 00 A0
-bytes $EA77 00 D3 13 91 93 94 12 14 14 92 94 93 11 0E 8E 13
-bytes $EA87 8E 0E 94 81 80 E0 01 40 C0 33 13 91 90 90 11 00
-bytes $EA97 01 00 80 6F 0F 90 90 00 21 20 A0 6E 14 12 11 93
-bytes $EAA7 80 41 00 80 34 14 92 92 00 61 20 A0 6E 93 11 12
-bytes $EAB7 94 80 81 00 80 8E 8E 13 93 00 A1 00 80 AE 0E 94
-bytes $EAC7 94 1F E0 1E EC E3 0F E4 00 24 94 48 34 6C 20 34
-bytes $EAD7 4C 14 AB E4 74 48 44 34 10 4B C4 94 70 2B B4 AB
-bytes $EAE7 83 93 AB 74 94 8B 43 F3 8C 9F E0 41 86 82 60 20
-bytes $EAF7 C0 2E 90 8F 10 0F 8E 02 14 64 34 04 53 43 74 A4
-bytes $EB07 98 1F E0 1F 4C E1 80 E6 00 24 D4 E8 34 D4 CC DF
-bytes $EB17 0D 00 34 F4 EC FF 0D 20 3E 0C 3F 0C 1F E0 41 48
-bytes $EB27 02 60 20 81 12 11 91 12 82 14 C4 E4 04 C4 54 E4
-bytes $EB37 75 05 24 25 04 95 24 B8 1F FF E0 18 1C 40 1E EC
-bytes $EB47 E8 03 C5 80 24 B4 6C 25 34 B4 AC A4 D4 54 4C 54
-bytes $EB57 AC 85 34 CC 7F E0 40 A8 42 60 20 60 D1 91 12 80
-bytes $EB67 74 84 38 1F E0 18 1C 40 1E EC E8 03 88 00 24 B4
-bytes $EB77 4C 25 34 B4 AC A4 D4 54 4C 54 AC 85 34 CC 7F E0
-bytes $EB87 40 A8 41 C0 20 60 91 91 12 80 74 84 38 1F E0 1F
-bytes $EB97 F5 66 06 02 00 24 FC 05 18 04 EC E4 7C 04 98 04
-bytes $EBA7 6C 64 5C 04 B8 04 4C 44 DC 05 38 04 CC C4 F4 4B
-bytes $EBB7 E4 F5 1C 05 18 03 EB E4 F4 7C 04 E8 05 35 0B DC
-bytes $EBC7 00 0B B3 EB 84 B4 8B 78 00 0B 53 EB 3F E0 43 24
-bytes $EBD7 40 A0 01 6F 93 91 8F 91 91 0F 91 13 0F 93 13 94
-bytes $EBE7 93 11 13 94 12 14 94 13 92 91 11 8E 8E 0F 0D 8C
-bytes $EBF7 8D 14 14 92 81 40 CE FD 91 5D 81 40 C6 1D 8E DD
-bytes $EC07 81 80 21 20 E0 60 AD 8C 8D 02 80 21 20 E0 60 AD
-bytes $EC17 0C 8D 81 21 81 20 00 E0 60 8F 93 91 80 20 E0 60
-bytes $EC27 2F 91 91 00 40 E0 60 8F 91 13 00 60 E0 60 2F 93
-bytes $EC37 13 80 81 00 80 D4 93 11 12 80 A1 00 80 D3 94 12
-bytes $EC47 11 80 C1 00 80 34 94 13 93 00 E1 00 80 32 91 11
-bytes $EC57 92 01 41 00 80 34 14 92 92 01 21 80 21 00 E0 60
-bytes $EC67 AE 8E 0F 02 80 21 00 E0 60 AF 0E 0E 81 3F E0 1E
-bytes $EC77 EC E6 8C 0C 00 25 34 C8 15 2C 00 14 CB E4 D4 48
-bytes $EC87 34 CB C0 34 CB A0 34 4B 85 34 B5 2B 73 AB 53 AB
-bytes $EC97 24 54 B4 4B 13 EA E5 14 E8 55 0A C0 54 EA A4 F4
-bytes $ECA7 68 74 EA 60 74 EA 40 74 6A 25 14 95 0A 12 49 F2
-bytes $ECB7 49 C4 74 94 69 B2 A9 9F E0 43 C3 00 75 24 C4 43
-bytes $ECC7 03 23 65 33 64 03 43 E3 A2 E3 83 13 24 D5 04 E4
-bytes $ECD7 61 A1 C2 05 12 02 C1 E2 A2 41 82 21 B1 C4 E4 54
-bytes $ECE7 C4 75 22 13 65 18 1F E0 1F AC E4 0F EB 00 24 D4
-bytes $ECF7 EC 04 54 6B F4 0B D4 08 34 D0 28 03 D3 E8 54 50
-bytes $ED07 48 60 3F 08 95 30 88 C0 5F 08 B4 B0 A8 E0 50 A9
-bytes $ED17 04 74 A9 38 01 38 01 29 5F E0 41 40 00 A0 00 63
-bytes $ED27 00 00 82 00 81 02 81 01 81 80 60 01 00 80 23 00
-bytes $ED37 00 82 00 21 00 80 A2 00 81 02 80 41 00 80 22 81
-bytes $ED47 01 83 81 E0 60 01 00 80 82 00 80 03 00 21 00 80
-bytes $ED57 C2 81 00 82 00 41 00 80 83 81 81 02 80 71 21 18
-bytes $ED67 02 42 80 1F 4C E3 00 8F 00 24 D4 EC 14 D4 0B C4
-bytes $ED77 14 F4 0B E4 54 6B B4 73 AB 93 EB 43 B4 53 AB 73
-bytes $ED87 CB 33 EB 13 C8 1F 0A 03 13 E8 3F 0A 23 13 48 5F
-bytes $ED97 0A 43 13 28 7F 0A 64 F4 6A F3 EA D3 E8 9F 0A 82
-bytes $EDA7 D4 E8 BF 0A A2 D2 E8 DF 0A E2 D3 48 FF 0A C4 D4
-bytes $EDB7 4B F3 CB 54 C9 1F 09 83 53 C9 3F 09 A3 53 29 5F
-bytes $EDC7 09 C3 53 E9 7F 09 E4 D5 0B 38 03 2C 15 2B 1F 0B
-bytes $EDD7 44 D4 0B 3F 0B 7F E0 41 08 80 43 A0 00 A0 01 14
-bytes $EDE7 93 11 13 94 12 13 13 91 94 14 92 94 8C 0C 93 0C
-bytes $EDF7 8D 0D 0D 94 14 0D 8C 01 81 C0 01 00 80 74 93 11
-bytes $EE07 12 80 21 00 80 73 94 12 11 80 41 00 80 93 13 91
-bytes $EE17 91 00 61 00 80 94 14 92 92 00 41 00 80 20 00 81
-bytes $EE27 01 80 41 00 80 22 02 83 03 80 41 00 80 24 04 85
-bytes $EE37 05 80 61 00 80 26 06 87 07 80 61 00 80 28 08 89
-bytes $EE47 09 80 61 00 80 2A 0A 8B 8B 00 81 00 80 D4 8C 0C
-bytes $EE57 93 00 A1 00 80 B3 0C 8D 13 80 C1 00 80 D3 8D 0D
-bytes $EE67 94 00 E1 00 80 B4 0D 8C 14 80 11 5D DF E4 3D 2D
-bytes $EE77 06 B9 20 1E EC E4 01 00 80 24 75 0C 7F 0C E5 2C
-bytes $EE87 9F E0 40 C8 80 A4 00 53 11 92 92 11 91 01 44 18
-bytes $EE97 7D DD FD C1 80 24 20 E0 60 32 11 93 82 80 24 20
-bytes $EEA7 E0 60 33 91 92 01 21 44 1B 9D DB 7D C1 80 24 00
-bytes $EEB7 E0 60 73 11 92 82 80 24 00 E0 60 72 91 93 01 21
-bytes $EEC7 80 24 20 E0 60 33 91 91 02 80 24 20 E0 60 31 11
-bytes $EED7 93 81 3F E0 1E EC E2 08 02 00 24 54 74 54 48 BF
-bytes $EEE7 09 84 F4 74 68 7F 09 C4 D4 E8 29 34 C8 10 68 44
-bytes $EEF7 D4 54 48 DF 09 64 54 74 74 68 9F 09 A1 3F 09 35
-bytes $EF07 29 11 69 41 11 A9 E0 B0 08 E0 31 4A 11 52 0A 22
-bytes $EF17 10 52 0A 42 10 32 0A 62 11 32 0A 04 F4 6A 85 14
-bytes $EF27 8A B4 EA D2 B2 CA A2 D2 92 CA 82 D4 F2 CA E2 D5
-bytes $EF37 12 CA DF E0 43 00 00 A0 01 00 00 81 07 87 06 81
-bytes $EF47 85 86 01 05 05 80 84 85 04 00 03 87 83 83 03 02
-bytes $EF57 86 81 A1 60 81 00 80 C0 84 85 01 00 01 00 80 89
-bytes $EF67 8B 8A 09 00 01 81 00 80 00 81 01 82 02 83 03 80
-bytes $EF77 21 00 80 88 8A 8B 08 00 21 81 00 87 87 06 86 05
-bytes $EF87 85 04 84 00 41 00 80 C1 85 86 02 00 61 00 80 A1
-bytes $EF97 05 05 81 80 A1 00 80 E4 00 03 87 80 C1 00 80 A7
-bytes $EFA7 83 83 07 00 E1 00 80 C7 03 02 86 80 81 00 80 2B
-bytes $EFB7 0A 8A 0B 9F E0 1F 4C E2 80 C8 00 24 D5 14 28 18
-bytes $EFC7 04 EC E5 15 2B 7E 0B DE 1F 0B 58 00 0B 9F 0B A5
-bytes $EFD7 18 00 0D 03 D3 53 4B FC 03 C8 03 D4 54 4C 18 00
-bytes $EFE7 0C 3F E0 42 06 80 A0 00 F3 13 91 93 94 12 14 14
-bytes $EFF7 92 94 93 11 0E 8E 13 0E 0E 8D 94 13 8D 01 81 40
-bytes $F007 81 00 80 8E 8E 13 14 80 A1 00 80 AE 0E 8D 8D 00
-bytes $F017 C1 00 80 94 13 8D 0D 80 01 20 A0 2E 0F 10 11 13
-bytes $F027 00 01 00 80 33 91 8F 0D 00 01 00 80 D0 8F 8F 10
-bytes $F037 00 21 00 80 73 94 12 11 80 41 00 80 34 0D 92 92
-bytes $F047 00 41 00 80 2E 94 92 8D 80 61 00 80 74 93 11 12
-bytes $F057 9F E0 1E EC E2 08 04 00 25 15 28 15 30 0C 05 34
-bytes $F067 A8 35 2B E5 14 94 8B D5 08 53 E8 70 4B A0 73 F0
-bytes $F077 6B 84 94 B4 94 8B 64 FC 05 08 98 03 6B 43 D8 00
-bytes $F087 8B 23 B8 00 8B 03 98 00 8A E4 18 00 8C 83 F8 00
-bytes $F097 8C 3F E0 43 63 80 A0 00 ED 8F 0E 8D 11 10 8E 8F
-bytes $F0A7 0C 8F 0D 8D 0F 90 91 0F 90 12 10 0E 0B 81 A1 60
-bytes $F0B7 C1 00 80 30 0E 0B 92 00 21 20 A0 90 8C 0C 8D 12
-bytes $F0C7 00 20 E0 60 90 91 0B 80 01 20 A0 8E 8F 92 8D 8F
-bytes $F0D7 00 00 E0 60 8E 10 0F 80 21 20 A0 90 8C 0C 8D 11
-bytes $F0E7 00 20 E0 60 90 92 0B 80 41 00 80 6E 8F 0C 8C 00
-bytes $F0F7 61 00 80 CF 0D 8D 0C 80 81 00 80 6F 90 91 12 80
-bytes $F107 A1 00 80 AF 90 12 10 9F E0 1E EC E2 08 03 00 25
-bytes $F117 15 2C 15 35 2B E5 34 AB A4 94 A8 14 B4 B3 EB C0
-bytes $F127 14 94 8B 84 95 08 34 8B 60 33 AB 30 30 2B 44 FC
-bytes $F137 05 08 58 03 6B 03 58 00 4A E3 38 00 4A C4 18 00
-bytes $F147 4A A3 F8 00 4C 83 D8 00 4A 63 B8 00 4C 23 98 00
-bytes $F157 4A 25 1C 04 08 82 B3 28 72 B0 6A 00 74 10 69 E3
-bytes $F167 30 70 69 C0 72 D0 69 A2 18 00 89 81 F8 00 89 61
-bytes $F177 D8 00 89 41 B8 00 8C 7F E0 43 82 80 A0 01 50 0F
-bytes $F187 8F 12 0A 8B 0A 90 0C 8B 8D 0D 8C 0D 8E 0F 92 09
-bytes $F197 8E 90 91 05 87 87 08 06 11 86 05 85 01 40 41 9E
-bytes $F1A7 44 FE 41 A1 20 41 00 80 CA 90 0C 8B 00 61 00 80
-bytes $F1B7 EB 8D 0D 8C 00 81 00 81 0C 0D 8E 08 80 A1 00 80
-bytes $F1C7 CF 92 09 8F 00 01 00 80 90 0F 8F 0C 80 01 20 A0
-bytes $F1D7 8D 0E 92 8E 0D 80 21 00 80 92 0A 8B 09 80 21 20
-bytes $F1E7 A0 90 8B 8C 08 91 00 C1 00 80 AE 90 91 12 81 21
-bytes $F1F7 A0 60 E1 00 80 85 87 87 05 01 01 00 80 88 06 11
-bytes $F207 86 81 21 00 80 26 05 85 11 81 3F E0 1E EC E3 08
-bytes $F217 02 00 25 14 6A 64 D4 54 4B 1F 0B 44 F4 74 6B 3F
-bytes $F227 0B 64 54 6B 94 4C 5F 0C 83 94 6C 7F 0C A4 F5 2B
-bytes $F237 94 CC C3 95 2D 23 33 53 35 2A 93 32 8B 98 02 6B
-bytes $F247 E2 94 D2 8D 18 02 6B C2 93 52 8B B8 02 6C 02 95
-bytes $F257 32 8C F8 02 6C 3F E0 42 46 00 A0 01 AC 0C 91 0C
-bytes $F267 8D 11 8D 0D 92 0D 8C 12 93 0C 8C 13 0D 0C 94 8D
-bytes $F277 8D 14 8C 0D 94 0F 0F 8F 90 90 10 93 8E 93 90 8F
-bytes $F287 0E 0F 8E 81 40 BC FE 42 5E 61 81 00 01 00 80 2C
-bytes $F297 0C 91 91 00 21 00 80 6C 8D 12 11 80 41 00 80 2D
-bytes $F2A7 0D 92 92 00 61 00 80 6D 8C 11 12 80 80 E0 60 F3
-bytes $F2B7 0C 8C 00 A1 00 80 D3 14 8D 0C 80 C0 E0 60 F4 8D
-bytes $F2C7 8D 00 E1 00 80 D4 93 0C 0D 81 21 80 A1 01 00 80
-bytes $F2D7 B4 0F 0F 8E 01 21 00 80 2F 10 90 0F 81 41 00 80
-bytes $F2E7 90 93 8E 90 01 61 00 80 B3 90 8F 14 01 81 00 80
-bytes $F2F7 6E 0F 90 0E 81 3F E0 1E EC E2 86 03 00 25 15 28
-bytes $F307 25 14 8C 14 94 08 44 94 B4 90 28 74 14 0A 44 F4
-bytes $F317 C8 A4 F4 6B F4 73 E8 84 74 54 70 A8 D3 F3 EA 60
-bytes $F327 D0 69 80 B0 29 A4 D4 48 E5 34 A9 34 C9 14 C9 5E
-bytes $F337 09 C1 10 E9 7E 09 E1 11 29 3E 0A 01 15 29 1E 0A
-bytes $F347 3F E0 41 08 80 42 A0 40 A0 01 00 94 92 93 02 83
-bytes $F357 02 01 11 14 93 11 03 02 80 85 05 84 87 08 88 09
-bytes $F367 89 01 01 81 00 01 60 E0 80 94 92 92 01 09 01 80
-bytes $F377 21 60 E0 93 02 83 09 82 11 91 00 41 00 80 C2 01
-bytes $F387 12 11 80 61 00 80 D4 93 11 12 80 81 00 80 A3 02
-bytes $F397 80 81 80 A1 00 80 A5 05 84 84 00 C1 00 80 27 08
-bytes $F3A7 88 07 80 E1 00 80 C2 09 89 01 00 91 80 80 81 B8
-bytes $F3B7 1F E0 1E 8C E4 00 80 80 41 08 80 A0 00 93 13 91
-bytes $F3C7 94 14 92 94 93 11 13 94 12 01 80 80 01 00 80 33
-bytes $F3D7 13 91 91 00 21 00 80 34 14 92 92 00 41 00 80 34
-bytes $F3E7 93 11 12 80 61 00 80 33 94 12 11 9F E0 1E EC E4
-bytes $F3F7 08 04 80 25 34 C8 15 2C 1E 0B 80 14 CB FE 0B 64
-bytes $F407 B4 48 34 AB DE 0B 40 34 4B BE 0B 24 D4 E8 54 CB
-bytes $F417 1E 0A C0 54 EA FE 0A A4 54 68 74 4A 9E 0A 40 74
-bytes $F427 6A 7E 0A 23 93 48 93 49 13 48 A3 33 68 D3 29 33
-bytes $F437 28 F0 A8 10 B0 AA 00 F0 10 E9 E1 11 29 51 11 09
-bytes $F447 A1 31 51 29 DF E0 42 83 40 A0 01 10 0F 8E 8D 0C
-bytes $F457 8D 8C 0B 89 89 08 8A 88 90 0F 0F 8C 0A 0B 8D 0E
-bytes $F467 0C 89 0B 01 A1 20 01 00 80 90 0F 8E 8F 00 21 00
-bytes $F477 80 8D 0C 8D 8E 00 41 00 80 8C 0B 89 8A 00 61 00
-bytes $F487 80 89 08 8A 8B 00 81 00 80 C8 90 0F 0A 80 A1 00
-bytes $F497 80 CF 8C 0A 0E 80 C1 00 80 CB 8D 0E 09 80 E1 00
-bytes $F4A7 80 CC 89 0B 0D 80 21 00 80 28 07 87 06 9F
+bytes $E807 36 02 00 C9
+
+# the 3D models from $E80B to the end (tools/models3d.py, text_lines: one instruction a line)
+model $E80B native $67FA 30 01 38 ; box_rect16 48 1 56, model
+model $E811 verts 29 A6 61 26 A2 60 25 A2 5F 29 A5 5E A0 5D A6 40 A6 80 A6 80 5C 26 A0 41 A0 81 41 9D 81 81 5B 21 A6 5A A1 9A 5A 9D 9A 9A 5A 29 A1 59 A1 99 59 9D 99 99 59 29 9D 58 A9 98 A9 98 58 29 9E 57 9E 97 57 9D 97 97 57 20 A2 56 A0 96 56 9D 96 96 56 1D A2 55 A2 95 A2 95 55 1F A2 54 9F 94 54 9D 94 94 54 1F A5 53 9F 93 53 9D 93 93 53 1D A5 52 A5 92 A5 92 52 1E A5 51 9E 91 51 9D 91 91 51 21 9D A1 A1 A1 61 1D A0 A0 A0 A0 60 1D 9E 9E 9E 9E 5E 1D 9F 9F 9F 9F 5F 29 A3 5D 9E 50 17 9D 4F 18 9D 4E 19 9D 4D 21 9D 4C 1A 9D 4B 1C 9D 4A 1B 9D 49 20 9D 48 16 9D 47 15 9D 46 14 9D 45 1F 9D 44 13 9D 43 12 9D 42 11 9D 41 1E 9D 40 FF ; verts P=V41 P=(P+V38)/2 V33=P P=V38 P=(P+V34)/2 V32=P P=V37 P=(P+V34)/2 V31=P P=V41 P=(P+V37)/2 V30=P P=(P+V32)/2 V29=P P=(P+V38)/2 V0=P P=(P+V38)/2 P=(P+V0)/2 P=(P+V38)/2 P=(P+V0)/2 V28=P P=V38 P=(P+V32)/2 V1=P P=(P+V32)/2 P=(P+V1)/2 V1=P P=(P+V29)/2 P=(P+V1)/2 P=(P+V1)/2 V27=P P=V33 P=(P+V38)/2 V26=P P=(P+V33)/2 P=(P+V26)/2 V26=P P=(P+V29)/2 P=(P+V26)/2 P=(P+V26)/2 V26=P P=V41 P=(P+V33)/2 V25=P P=(P+V33)/2 P=(P+V25)/2 V25=P P=(P+V29)/2 P=(P+V25)/2 P=(P+V25)/2 V25=P P=V41 P=(P+V29)/2 V24=P P=(P+V41)/2 P=(P+V24)/2 P=(P+V41)/2 P=(P+V24)/2 V24=P P=V41 P=(P+V30)/2 V23=P P=(P+V30)/2 P=(P+V23)/2 V23=P P=(P+V29)/2 P=(P+V23)/2 P=(P+V23)/2 V23=P P=V32 P=(P+V34)/2 V22=P P=(P+V32)/2 P=(P+V22)/2 V22=P P=(P+V29)/2 P=(P+V22)/2 P=(P+V22)/2 V22=P P=V29 P=(P+V34)/2 V21=P P=(P+V34)/2 P=(P+V21)/2 P=(P+V34)/2 P=(P+V21)/2 V21=P P=V31 P=(P+V34)/2 V20=P P=(P+V31)/2 P=(P+V20)/2 V20=P P=(P+V29)/2 P=(P+V20)/2 P=(P+V20)/2 V20=P P=V31 P=(P+V37)/2 V19=P P=(P+V31)/2 P=(P+V19)/2 V19=P P=(P+V29)/2 P=(P+V19)/2 P=(P+V19)/2 V19=P P=V29 P=(P+V37)/2 V18=P P=(P+V37)/2 P=(P+V18)/2 P=(P+V37)/2 P=(P+V18)/2 V18=P P=V30 P=(P+V37)/2 V17=P P=(P+V30)/2 P=(P+V17)/2 V17=P P=(P+V29)/2 P=(P+V17)/2 P=(P+V17)/2 V17=P P=V33 P=(P+V29)/2 P=(P+V33)/2 P=(P+V33)/2 P=(P+V33)/2 V33=P P=V29 P=(P+V32)/2 P=(P+V32)/2 P=(P+V32)/2 P=(P+V32)/2 V32=P P=V29 P=(P+V30)/2 P=(P+V30)/2 P=(P+V30)/2 P=(P+V30)/2 V30=P P=V29 P=(P+V31)/2 P=(P+V31)/2 P=(P+V31)/2 P=(P+V31)/2 V31=P P=V41 P=(P+V35)/2 V29=P P=(P+V30)/2 V16=P P=V23 P=(P+V29)/2 V15=P P=V24 P=(P+V29)/2 V14=P P=V25 P=(P+V29)/2 V13=P P=V33 P=(P+V29)/2 V12=P P=V26 P=(P+V29)/2 V11=P P=V28 P=(P+V29)/2 V10=P P=V27 P=(P+V29)/2 V9=P P=V32 P=(P+V29)/2 V8=P P=V22 P=(P+V29)/2 V7=P P=V21 P=(P+V29)/2 V6=P P=V20 P=(P+V29)/2 V5=P P=V31 P=(P+V29)/2 V4=P P=V19 P=(P+V29)/2 V3=P P=V18 P=(P+V29)/2 V2=P P=V17 P=(P+V29)/2 V1=P P=V30 P=(P+V29)/2 V0=P
+model $E8DD project 26 00 ; project 38 from V0
+model $E8E0 faces_test 00 03 84 68 70 88 74 8C 90 74 94 ; faces_test from 0: (33 26 28) (34 29 35) (36 29 37)
+model $E8EC order_by_face 00 $E913 $E957 ; order_by_face f0 $E913 $E957
+model $E8F2 fill_back_faces 02 02 07 03 04 94 74 90 01 07 03 04 8C 74 88 ; fill_back_faces (f2 c4 37 29 36) (f1 c4 35 29 34)
+model $E902 fill_faces_clip 02 01 07 03 05 88 74 8C 02 07 03 05 90 74 94 ; fill_faces_clip (f1 c5 34 29 35) (f2 c5 36 29 37)
+model $E912 return ; return
+model $E913 lines_clip 9D 21 1A 1C 1B 20 9D 1A 9D 1C 9D 1B 9D 20 16 1D 96 15 1D 95 14 1D 94 1F 1D 9D 19 21 9D 18 19 9D 17 18 9D 1E 17 9F 13 1D 93 12 1D 92 11 1D 91 1E 90 0F 0E 0D 0C 0B 0A 09 08 07 06 05 04 03 02 01 00 C0 ; lines_clip M29 L33 L26 L28 L27 L32 M29 L26 M29 L28 M29 L27 M29 L32 L22 L29 M22 L21 L29 M21 L20 L29 M20 L31 L29 M29 L25 L33 M29 L24 L25 M29 L23 L24 M29 L30 L23 M31 L19 L29 M19 L18 L29 M18 L17 L29 M17 L30 M16 L15 L14 L13 L12 L11 L10 L9 L8 L7 L6 L5 L4 L3 L2 L1 L0
+model $E956 return ; return
+model $E957 end ; end
+model $E958 native $67FA 20 0C 7F ; box_rect16 32 12 127, model
+model $E95E verts 28 A6 66 C0 26 80 00 E0 61 33 11 91 00 20 E0 60 93 12 11 80 40 E0 61 33 12 92 00 60 E0 60 93 11 12 9F E0 1F 4C E2 ; verts P=V40 P=(P+V38)/2 V38=P P+=V38 P=(P+V0)/2 P=V0 P-=V97 P=V51 P=V17 P=(P+V17)/2 P=V0 P=V32 P-=V96 P=(P+V19)/2 P=V18 P=V17 P=(P+V0)/2 V0=P P-=V97 P=V51 P=V18 P=(P+V18)/2 P=V0 V32=P P-=V96 P=(P+V19)/2 P=V17 P=V18 P=(P+V31)/2 P-=V31 V12=P
+model $E985 verts 8C C0 24 D5 ; verts P=(P+V12)/2 P+=V36
+model $E98A branch_visible 24 $E8D4 $1815 ; branch_visible f36 $E8D4 $1815
+model $E990 native $C02C ; native $C02C
+model $E993 db 15
+model $E994 db 38
+model $E995 db 00
+model $E996 db 2C
+model $E997 end ; end, model
+model $E998 db E0
+model $E999 db 40
+model $E99A db C8
+model $E99B db 80
+model $E99C db A0
+model $E99D native $9393 ; native $9393
+model $E9A0 db 11
+model $E9A1 db 93
+model $E9A2 translate 11 ; translate V8
+model $E9A4 db 93
+model $E9A5 translate 92 ; translate V73
+model $E9A7 db 13
+model $E9A8 db 91
+model $E9A9 translate 81 ; translate V64
+model $E9AB db A0
+model $E9AC db 80
+model $E9AD verts 00 80 93 93 11 91 00 20 E0 61 33 12 11 80 41 00 80 93 13 92 92 00 60 E0 61 33 91 12 9F E0 1F 4C E7 ; verts P=V0 P=(P+V0)/2 P=(P+V19)/2 P=(P+V19)/2 P=V17 P=(P+V17)/2 P=V0 P=V32 P-=V97 P=V51 P=V18 P=V17 P=(P+V0)/2 V1=P P=V0 P=(P+V0)/2 P=(P+V19)/2 P=V19 P=(P+V18)/2 P=(P+V18)/2 P=V0 V32=P P-=V97 P=V51 P=(P+V17)/2 P=V18 P=(P+V31)/2 P-=V31 V12=P
+model $E9CF db 03
+model $E9D0 db 8F
+model $E9D1 db E0
+model $E9D2 db 25
+model $E9D3 db 14
+model $E9D4 db CC
+model $E9D5 db D8
+model $E9D6 db 04
+model $E9D7 db CC
+model $E9D8 db DF
+model $E9D9 db E0
+model $E9DA db 40
+model $E9DB db A8
+model $E9DC db 80
+model $E9DD db A0
+model $E9DE native $1193 ; native $1193
+model $E9E1 db 91 ; model
+model $E9E2 db 13
+model $E9E3 translate 92 ; translate V73
+model $E9E5 db 13
+model $E9E6 db 11
+model $E9E7 translate 93 ; translate V73
+model $E9E9 translate 11 ; translate V8
+model $E9EB db 81
+model $E9EC db A0
+model $E9ED db 80
+model $E9EE native $61E0 ; native $61E0
+model $E9F1 db 33
+model $E9F2 db 11
+model $E9F3 db 91
+model $E9F4 native $E020 ; native $E020
+model $E9F7 db 61
+model $E9F8 db 33
+model $E9F9 translate 92 ; translate V73
+model $E9FB native $E040 ; native $E040
+model $E9FE db 60
+model $E9FF db 93
+model $EA00 db 11
+model $EA01 translate 80 ; translate V64
+model $EA03 db 60
+model $EA04 db E0
+model $EA05 db 60
+model $EA06 db 93
+model $EA07 translate 11 ; translate V8
+model $EA09 db 9F
+model $EA0A db E0
+model $EA0B db 1F
+model $EA0C db 4C
+model $EA0D db E6
+model $EA0E db 82
+model $EA0F db 4F
+model $EA10 db E0
+model $EA11 db 25
+model $EA12 db 14
+model $EA13 db CC
+model $EA14 db D8
+model $EA15 db 04
+model $EA16 db D8
+model $EA17 db 04
+model $EA18 db CC
+model $EA19 db DF
+model $EA1A db E0
+model $EA1B db 40
+model $EA1C db A8
+model $EA1D db 80
+model $EA1E db A0
+model $EA1F db 00
+model $EA20 db 93 ; model
+model $EA21 db 11
+model $EA22 db 91
+model $EA23 db 13
+model $EA24 translate 92 ; translate V73
+model $EA26 db 13
+model $EA27 db 11
+model $EA28 translate 93 ; translate V73
+model $EA2A translate 11 ; translate V8
+model $EA2C db 81
+model $EA2D db A0
+model $EA2E db 80
+model $EA2F native $61E0 ; native $61E0
+model $EA32 db 33
+model $EA33 db 11
+model $EA34 db 91
+model $EA35 native $E020 ; native $E020
+model $EA38 db 61
+model $EA39 db 33
+model $EA3A translate 92 ; translate V73
+model $EA3C native $E040 ; native $E040
+model $EA3F db 60
+model $EA40 db 93
+model $EA41 db 11
+model $EA42 translate 80 ; translate V64
+model $EA44 db 60
+model $EA45 db E0
+model $EA46 db 60
+model $EA47 db 93
+model $EA48 translate 11 ; translate V8
+model $EA4A db 9F
+model $EA4B db E0
+model $EA4C db 1E
+model $EA4D db EC
+model $EA4E db E3
+model $EA4F db 0F
+model $EA50 db E4
+model $EA51 native $1425 ; native $1425
+model $EA54 db CA
+model $EA55 db 85
+model $EA56 db 34
+model $EA57 db D8
+model $EA58 project 8B BF ; project 139 from V95
+model $EA5B call $1485 ; call $1485
+model $EA5E db 74
+model $EA5F db 34
+model $EA60 db 28
+model $EA61 db 04 ; model
+model $EA62 db D4
+model $EA63 db F4
+model $EA64 db 54
+model $EA65 db CB
+model $EA66 db D8
+model $EA67 native $E40B ; native $E40B
+model $EA6A db 54
+model $EA6B db 74
+model $EA6C db 54
+model $EA6D db 4C
+model $EA6E db 18
+model $EA6F native $3F0C ; native $3F0C
+model $EA72 db E0
+model $EA73 db 41
+model $EA74 db C7
+model $EA75 native $00A0 ; native $00A0
+model $EA78 db D3
+model $EA79 db 13
+model $EA7A db 91
+model $EA7B db 93
+model $EA7C db 94
+model $EA7D translate 14 ; translate V10
+model $EA7F db 14
+model $EA80 db 92
+model $EA81 db 94
+model $EA82 db 93
+model $EA83 db 11
+model $EA84 db 0E
+model $EA85 db 8E
+model $EA86 db 13
+model $EA87 db 8E
+model $EA88 db 0E
+model $EA89 db 94
+model $EA8A db 81
+model $EA8B db 80
+model $EA8C db E0
+model $EA8D verts 40 C0 33 13 91 90 90 11 00 01 00 80 6F 0F 90 90 00 21 20 A0 6E 14 12 11 93 80 41 00 80 34 14 92 92 00 61 20 A0 6E 93 11 12 94 80 81 00 80 8E 8E 13 93 00 A1 00 80 AE 0E 94 94 1F E0 1E EC ; verts V0=P P+=V51 P=V19 P=(P+V17)/2 P=(P+V16)/2 P=(P+V16)/2 P=V17 P=V0 P=V1 P=V0 P=(P+V0)/2 V47=P P=V15 P=(P+V16)/2 P=(P+V16)/2 P=V0 P=V33 P=V32 P=(P+V32)/2 V46=P P=V20 P=V18 P=V17 P=(P+V19)/2 P=(P+V0)/2 V1=P P=V0 P=(P+V0)/2 P=V52 P=V20 P=(P+V18)/2 P=(P+V18)/2 P=V0 V33=P P=V32 P=(P+V32)/2 V46=P P=(P+V19)/2 P=V17 P=V18 P=(P+V20)/2 P=(P+V0)/2 P=(P+V1)/2 P=V0 P=(P+V0)/2 P=(P+V14)/2 P=(P+V14)/2 P=V19 P=(P+V19)/2 P=V0 P=(P+V33)/2 P=V0 P=(P+V0)/2 P=(P+V46)/2 P=V14 P=(P+V20)/2 P=(P+V20)/2 P=V31 P-=V30
+model $EACC db E3
+model $EACD db 0F
+model $EACE db E4
+model $EACF native $9424 ; native $9424
+model $EAD2 db 48
+model $EAD3 db 34
+model $EAD4 db 6C
+model $EAD5 db 20
+model $EAD6 db 34
+model $EAD7 db 4C
+model $EAD8 db 14
+model $EAD9 db AB
+model $EADA db E4
+model $EADB db 74
+model $EADC db 48
+model $EADD db 44
+model $EADE db 34
+model $EADF lines_clip 4B C4 94 70 2B B4 AB 83 93 AB 74 94 8B 43 F3 8C 9F E0 41 86 82 60 20 C0 ; lines_clip L75 M68 M20 L112 L43 M52 M43 M3 M19 M43 L116 M20 M11 L67 M115 M12 M31 M96 L65 M6 M2 L96 L32
+model $EAF8 db 2E
+model $EAF9 db 90
+model $EAFA db 8F
+model $EAFB db 10
+model $EAFC db 0F
+model $EAFD db 8E
+model $EAFE project 14 64 ; project 20 from V50
+model $EB01 db 34
+model $EB02 db 04
+model $EB03 db 53
+model $EB04 db 43
+model $EB05 db 74
+model $EB06 db A4
+model $EB07 db 98
+model $EB08 db 1F
+model $EB09 db E0
+model $EB0A db 1F
+model $EB0B db 4C
+model $EB0C db E1
+model $EB0D db 80
+model $EB0E db E6
+model $EB0F native $D424 ; native $D424
+model $EB12 db E8
+model $EB13 db 34
+model $EB14 db D4
+model $EB15 db CC
+model $EB16 db DF
+model $EB17 fill_faces_clip 00 ; fill_faces_clip 
+model $EB19 db 34
+model $EB1A db F4
+model $EB1B db EC
+model $EB1C end ; end
+model $EB1D db 0D
+model $EB1E db 20
+model $EB1F db 3E ; model
+model $EB20 db 0C
+model $EB21 db 3F
+model $EB22 db 0C
+model $EB23 db 1F
+model $EB24 db E0
+model $EB25 db 41
+model $EB26 db 48
+model $EB27 project 60 20 ; project 96 from V16
+model $EB2A db 81
+model $EB2B translate 11 ; translate V8
+model $EB2D db 91
+model $EB2E translate 82 ; translate V65
+model $EB30 db 14
+model $EB31 db C4
+model $EB32 db E4
+model $EB33 db 04
+model $EB34 db C4
+model $EB35 db 54
+model $EB36 db E4
+model $EB37 db 75
+model $EB38 db 05
+model $EB39 db 24
+model $EB3A db 25
+model $EB3B db 04
+model $EB3C db 95
+model $EB3D db 24
+model $EB3E db B8
+model $EB3F db 1F
+model $EB40 end ; end
+model $EB41 db E0
+model $EB42 db 18
+model $EB43 db 1C
+model $EB44 db 40
+model $EB45 db 1E
+model $EB46 db EC
+model $EB47 db E8
+model $EB48 db 03
+model $EB49 db C5
+model $EB4A db 80
+model $EB4B db 24
+model $EB4C db B4
+model $EB4D db 6C
+model $EB4E db 25
+model $EB4F db 34
+model $EB50 db B4
+model $EB51 db AC
+model $EB52 db A4
+model $EB53 db D4
+model $EB54 db 54
+model $EB55 db 4C
+model $EB56 db 54
+model $EB57 db AC ; model
+model $EB58 db 85
+model $EB59 db 34
+model $EB5A db CC
+model $EB5B db 7F
+model $EB5C db E0
+model $EB5D db 40
+model $EB5E db A8
+model $EB5F db 42
+model $EB60 db 60
+model $EB61 db 20
+model $EB62 db 60
+model $EB63 db D1
+model $EB64 db 91
+model $EB65 translate 80 ; translate V64
+model $EB67 db 74
+model $EB68 db 84
+model $EB69 db 38
+model $EB6A db 1F
+model $EB6B db E0
+model $EB6C db 18
+model $EB6D db 1C
+model $EB6E db 40
+model $EB6F db 1E
+model $EB70 db EC
+model $EB71 db E8
+model $EB72 db 03
+model $EB73 db 88
+model $EB74 native $B424 ; native $B424
+model $EB77 db 4C
+model $EB78 db 25
+model $EB79 db 34
+model $EB7A db B4
+model $EB7B db AC
+model $EB7C db A4
+model $EB7D db D4
+model $EB7E db 54
+model $EB7F db 4C
+model $EB80 db 54
+model $EB81 db AC ; model
+model $EB82 db 85
+model $EB83 db 34
+model $EB84 db CC
+model $EB85 db 7F
+model $EB86 db E0
+model $EB87 db 40
+model $EB88 db A8
+model $EB89 db 41
+model $EB8A db C0
+model $EB8B db 20
+model $EB8C db 60
+model $EB8D db 91
+model $EB8E db 91
+model $EB8F translate 80 ; translate V64
+model $EB91 db 74
+model $EB92 db 84
+model $EB93 db 38
+model $EB94 db 1F
+model $EB95 db E0
+model $EB96 db 1F
+model $EB97 db F5
+model $EB98 db 66
+model $EB99 jump_if_visible 02 $2400 ; jump_if_visible f2 $2400
+model $EB9D db FC
+model $EB9E db 05
+model $EB9F db 18
+model $EBA0 db 04
+model $EBA1 db EC
+model $EBA2 db E4
+model $EBA3 db 7C
+model $EBA4 db 04
+model $EBA5 db 98
+model $EBA6 db 04
+model $EBA7 db 6C
+model $EBA8 db 64
+model $EBA9 db 5C
+model $EBAA db 04
+model $EBAB db B8 ; model
+model $EBAC lines_if_faces 4C 44 DC 05 38 04 CC C4 F4 4B E4 F5 1C 05 18 03 EB E4 F4 7C 04 E8 05 35 0B DC 00 0B B3 EB 84 B4 8B 78 00 0B 53 EB 3F E0 43 24 40 A0 01 6F 93 91 8F 91 91 0F 91 13 0F 93 13 94 93 11 13 94 12 14 94 13 92 91 11 8E 8E 0F 0D 8C 8D 14 14 92 81 40 CE FD 91 5D 81 40 C6 1D 8E DD 81 80 21 20 E0 60 AD 8C 8D 02 80 21 20 E0 60 AD 0C 8D 81 21 81 20 00 E0 60 8F 93 91 80 20 E0 60 2F 91 91 00 40 E0 60 8F 91 13 00 60 E0 60 2F 93 13 80 81 00 80 D4 93 11 12 80 A1 00 80 D3 94 12 11 80 C1 00 80 34 94 13 93 00 E1 00 80 32 91 11 92 01 41 00 80 34 14 92 92 01 21 80 21 00 E0 60 AE 8E 0F 02 80 21 00 E0 60 AF 0E 0E 81 3F E0 1E EC E6 8C 0C 00 25 34 C8 15 2C 00 14 CB E4 D4 48 34 CB C0 ; lines_if_faces L220[f76|f68] L4[f5|f56] M76 M68 M116 L245[f75|f228] L24[f28|f5] L228[f3|f235] M116 L232[f124|f4] L11[f5|f53] M92 L179[f0|f11] M107 M4 M52 M11 L11[f120|f0] L63[f83|f235] M96 L64[f67|f36] M32 L147[f1|f111] M17 M15 M17 M17 L19[f15|f145] L19[f15|f147] M20 M19 L148[f17|f19] L148[f18|f20] L145[f19|f146] L142[f17|f142] L140[f15|f13] M13 L146[f20|f20] M1 L253[f64|f206] M17 L64[f93|f129] M70 L221[f29|f142] M1 M0 L224[f33|f32] L140[f96|f173] M13 L33[f2|f128] L96[f32|f224] M45 L129[f12|f141] L32[f33|f129] L96[f0|f224] M15 M19 M17 M0 L96[f32|f224] L145[f47|f145] L224[f0|f64] L145[f96|f143] L96[f19|f0] M96 L147[f96|f47] L129[f19|f128] L212[f0|f128] M19 L128[f17|f18] M33 L211[f0|f128] M20 L128[f18|f17] M65 L52[f0|f128] M20 L0[f19|f147] M97 L50[f0|f128] M17 L1[f17|f146] L128[f65|f0] L146[f52|f20] M18 L128[f1|f33] L224[f33|f0] L142[f96|f174] L128[f15|f2] L224[f33|f0] L14[f96|f175] L63[f14|f129] M96 L230[f30|f236] M12 L37[f12|f0] L21[f52|f200] L20[f44|f0] M75 M100 M84 L203[f72|f52]
+model $EC8A db 34
+model $EC8B db CB ; model
+model $EC8C db A0
+model $EC8D db 34
+model $EC8E db 4B
+model $EC8F db 85
+model $EC90 db 34
+model $EC91 db B5
+model $EC92 db 2B
+model $EC93 db 73
+model $EC94 db AB
+model $EC95 db 53
+model $EC96 db AB
+model $EC97 db 24
+model $EC98 db 54
+model $EC99 db B4
+model $EC9A db 4B
+model $EC9B db 13
+model $EC9C db EA
+model $EC9D db E5
+model $EC9E db 14
+model $EC9F db E8
+model $ECA0 db 55
+model $ECA1 order_by_face C0 $EA54 $F4A4 ; order_by_face f192 $EA54 $F4A4
+model $ECA7 db 68
+model $ECA8 db 74
+model $ECA9 db EA
+model $ECAA db 60
+model $ECAB db 74
+model $ECAC db EA
+model $ECAD db 40
+model $ECAE db 74
+model $ECAF db 6A
+model $ECB0 db 25
+model $ECB1 db 14
+model $ECB2 db 95
+model $ECB3 order_by_face 12 $F249 $C449 ; order_by_face f18 $F249 $C449
+model $ECB9 db 74
+model $ECBA db 94
+model $ECBB db 69
+model $ECBC db B2
+model $ECBD db A9
+model $ECBE db 9F
+model $ECBF db E0
+model $ECC0 db 43
+model $ECC1 db C3
+model $ECC2 native $2475 ; native $2475
+model $ECC5 db C4
+model $ECC6 db 43
+model $ECC7 db 03
+model $ECC8 db 23
+model $ECC9 db 65
+model $ECCA db 33
+model $ECCB db 64
+model $ECCC db 03
+model $ECCD db 43
+model $ECCE db E3
+model $ECCF db A2
+model $ECD0 db E3
+model $ECD1 db 83
+model $ECD2 db 13
+model $ECD3 db 24
+model $ECD4 db D5
+model $ECD5 db 04
+model $ECD6 db E4
+model $ECD7 db 61
+model $ECD8 db A1
+model $ECD9 db C2
+model $ECDA faces_test 12 02 C1 E2 A2 41 82 21 ; faces_test from 18: (48 56 40) (16 32 8)
+model $ECE3 db B1
+model $ECE4 db C4
+model $ECE5 db E4
+model $ECE6 db 54
+model $ECE7 db C4
+model $ECE8 db 75
+model $ECE9 db 22
+model $ECEA db 13
+model $ECEB db 65
+model $ECEC db 18
+model $ECED db 1F
+model $ECEE db E0
+model $ECEF db 1F
+model $ECF0 db AC
+model $ECF1 db E4
+model $ECF2 db 0F
+model $ECF3 db EB
+model $ECF4 native $D424 ; native $D424
+model $ECF7 db EC
+model $ECF8 db 04
+model $ECF9 db 54
+model $ECFA db 6B
+model $ECFB db F4
+model $ECFC call $08D4 ; call $08D4
+model $ECFF db 34
+model $ED00 db D0
+model $ED01 db 28
+model $ED02 db 03
+model $ED03 db D3
+model $ED04 db E8 ; model
+model $ED05 db 54
+model $ED06 db 50
+model $ED07 db 48
+model $ED08 db 60
+model $ED09 db 3F
+model $ED0A branch_visible 95 $8830 $5FC0 ; branch_visible f149 $8830 $5FC0
+model $ED10 branch_visible B4 $A8B0 $50E0 ; branch_visible f180 $A8B0 $50E0
+model $ED16 db A9
+model $ED17 db 04
+model $ED18 db 74
+model $ED19 db A9
+model $ED1A db 38
+model $ED1B verts 38 01 29 5F E0 41 40 00 A0 00 63 00 00 82 00 81 02 81 01 81 80 60 01 00 80 23 00 00 82 00 21 00 80 A2 00 81 02 80 41 00 80 22 81 01 83 81 E0 60 01 00 80 82 00 80 03 00 21 00 80 C2 ; verts P=V56 P=V1 P=V41 V31=P P-=V65 V0=P P=V0 P=(P+V32)/2 P=V0 V35=P P=V0 P=V0 P=(P+V2)/2 P=V0 P=(P+V1)/2 P=V2 P=(P+V1)/2 P=V1 P=(P+V1)/2 P=(P+V0)/2 V32=P P=V1 P=V0 P=(P+V0)/2 P=V35 P=V0 P=V0 P=(P+V2)/2 P=V0 P=V33 P=V0 P=(P+V0)/2 P=(P+V34)/2 P=V0 P=(P+V1)/2 P=V2 P=(P+V0)/2 V1=P P=V0 P=(P+V0)/2 P=V34 P=(P+V1)/2 P=V1 P=(P+V3)/2 P=(P+V1)/2 P-=V96 P=V1 P=V0 P=(P+V0)/2 P=(P+V2)/2 P=V0 P=(P+V0)/2 P=V3 P=V0 P=V33 P=V0 P=(P+V0)/2
+model $ED58 db 81
+model $ED59 native $0082 ; native $0082
+model $ED5C db 41
+model $ED5D native $8380 ; native $8380
+model $ED60 db 81
+model $ED61 db 81
+model $ED62 project 80 71 ; project 128 from V56
+model $ED65 db 21
+model $ED66 db 18
+model $ED67 project 42 80 ; project 66 from V64
+model $ED6A db 1F
+model $ED6B db 4C
+model $ED6C db E3
+model $ED6D native $008F ; native $008F
+model $ED70 db 24
+model $ED71 db D4
+model $ED72 db EC
+model $ED73 db 14
+model $ED74 db D4
+model $ED75 call $14C4 ; call $14C4
+model $ED78 db F4
+model $ED79 call $54E4 ; call $54E4
+model $ED7C db 6B
+model $ED7D db B4
+model $ED7E db 73
+model $ED7F db AB
+model $ED80 db 93
+model $ED81 db EB
+model $ED82 db 43
+model $ED83 db B4
+model $ED84 db 53
+model $ED85 db AB
+model $ED86 db 73
+model $ED87 db CB
+model $ED88 db 33
+model $ED89 db EB
+model $ED8A db 13
+model $ED8B db C8
+model $ED8C db 1F
+model $ED8D order_by_face 03 $E813 $0A3F ; order_by_face f3 $E813 $0A3F
+model $ED93 db 23
+model $ED94 db 13
+model $ED95 db 48
+model $ED96 db 5F
+model $ED97 order_by_face 43 $2813 $0A7F ; order_by_face f67 $2813 $0A7F
+model $ED9D db 64
+model $ED9E db F4
+model $ED9F db 6A
+model $EDA0 db F3
+model $EDA1 db EA
+model $EDA2 db D3
+model $EDA3 db E8
+model $EDA4 db 9F
+model $EDA5 order_by_face 82 $E8D4 $0ABF ; order_by_face f130 $E8D4 $0ABF
+model $EDAB db A2
+model $EDAC db D2
+model $EDAD db E8
+model $EDAE db DF
+model $EDAF order_by_face E2 $48D3 $0AFF ; order_by_face f226 $48D3 $0AFF
+model $EDB5 db C4
+model $EDB6 db D4
+model $EDB7 db 4B
+model $EDB8 db F3
+model $EDB9 db CB
+model $EDBA db 54
+model $EDBB db C9
+model $EDBC db 1F
+model $EDBD return ; return
+model $EDBE db 83
+model $EDBF db 53
+model $EDC0 db C9
+model $EDC1 db 3F
+model $EDC2 return ; return
+model $EDC3 db A3
+model $EDC4 db 53
+model $EDC5 db 29
+model $EDC6 db 5F
+model $EDC7 return ; return
+model $EDC8 db C3
+model $EDC9 db 53
+model $EDCA db E9
+model $EDCB db 7F
+model $EDCC return ; return
+model $EDCD db E4
+model $EDCE db D5
+model $EDCF call $0338 ; call $0338
+model $EDD2 db 2C
+model $EDD3 db 15
+model $EDD4 db 2B
+model $EDD5 db 1F
+model $EDD6 call $D444 ; call $D444
+model $EDD9 call $0B3F ; call $0B3F
+model $EDDC db 7F
+model $EDDD db E0
+model $EDDE db 41
+model $EDDF branch_visible 80 $A043 $A000 ; branch_visible f128 $A043 $A000
+model $EDE5 verts 14 93 11 13 94 12 13 13 91 94 14 92 94 8C 0C 93 0C 8D 0D 0D 94 14 0D 8C 01 81 C0 01 00 80 74 93 11 12 80 21 00 80 73 94 12 11 80 41 00 80 93 13 91 91 00 61 00 80 94 14 92 92 00 41 00 80 20 00 81 01 80 41 00 80 22 02 83 03 80 41 00 80 24 04 85 05 80 61 00 80 26 06 87 07 80 61 00 80 28 08 89 09 80 61 00 80 2A 0A 8B 8B 00 81 00 80 D4 ; verts P=V20 P=(P+V19)/2 P=V17 P=V19 P=(P+V20)/2 P=V18 P=V19 P=V19 P=(P+V17)/2 P=(P+V20)/2 P=V20 P=(P+V18)/2 P=(P+V20)/2 P=(P+V12)/2 P=V12 P=(P+V19)/2 P=V12 P=(P+V13)/2 P=V13 P=V13 P=(P+V20)/2 P=V20 P=V13 P=(P+V12)/2 P=V1 P=(P+V1)/2 P+=V1 P=V0 P=(P+V0)/2 V52=P P=(P+V19)/2 P=V17 P=V18 P=(P+V0)/2 P=V33 P=V0 P=(P+V0)/2 V51=P P=(P+V20)/2 P=V18 P=V17 P=(P+V0)/2 V1=P P=V0 P=(P+V0)/2 P=(P+V19)/2 P=V19 P=(P+V17)/2 P=(P+V17)/2 P=V0 V33=P P=V0 P=(P+V0)/2 P=(P+V20)/2 P=V20 P=(P+V18)/2 P=(P+V18)/2 P=V0 V1=P P=V0 P=(P+V0)/2 P=V32 P=V0 P=(P+V1)/2 P=V1 P=(P+V0)/2 V1=P P=V0 P=(P+V0)/2 P=V34 P=V2 P=(P+V3)/2 P=V3 P=(P+V0)/2 V1=P P=V0 P=(P+V0)/2 P=V36 P=V4 P=(P+V5)/2 P=V5 P=(P+V0)/2 V33=P P=V0 P=(P+V0)/2 P=V38 P=V6 P=(P+V7)/2 P=V7 P=(P+V0)/2 V33=P P=V0 P=(P+V0)/2 P=V40 P=V8 P=(P+V9)/2 P=V9 P=(P+V0)/2 V33=P P=V0 P=(P+V0)/2 P=V42 P=V10 P=(P+V11)/2 P=(P+V11)/2 P=V0 P=(P+V1)/2 P=V0 P=(P+V0)/2
+model $EE55 db 8C
+model $EE56 db 0C
+model $EE57 db 93
+model $EE58 native $00A1 ; native $00A1
+model $EE5B db 80
+model $EE5C db B3
+model $EE5D db 0C
+model $EE5E db 8D
+model $EE5F db 13
+model $EE60 db 80
+model $EE61 db C1
+model $EE62 native $D380 ; native $D380
+model $EE65 db 8D
+model $EE66 db 0D
+model $EE67 db 94
+model $EE68 native $00E1 ; native $00E1
+model $EE6B db 80
+model $EE6C db B4
+model $EE6D db 0D
+model $EE6E db 8C
+model $EE6F db 14
+model $EE70 db 80
+model $EE71 db 11
+model $EE72 db 5D
+model $EE73 db DF
+model $EE74 db E4
+model $EE75 db 3D
+model $EE76 db 2D
+model $EE77 jump_if_visible B9 $1E20 ; jump_if_visible f185 $1E20
+model $EE7B db EC
+model $EE7C db E4
+model $EE7D verts 00 80 24 75 0C 7F 0C E5 ; verts P=V0 P=(P+V0)/2 P=V36 V53=P P=V12 V63=P P=V12
+model $EE86 db 2C
+model $EE87 db 9F
+model $EE88 db E0
+model $EE89 db 40
+model $EE8A db C8
+model $EE8B db 80
+model $EE8C db A4
+model $EE8D db 00
+model $EE8E db 53
+model $EE8F db 11 ; model
+model $EE90 db 92
+model $EE91 db 92
+model $EE92 db 11
+model $EE93 db 91
+model $EE94 verts 44 18 7D DD ; verts V4=P P=V24 V61=P
+model $EE99 db FD
+model $EE9A db C1
+model $EE9B db 80
+model $EE9C db 24
+model $EE9D db 20
+model $EE9E db E0
+model $EE9F db 60
+model $EEA0 db 32
+model $EEA1 db 11
+model $EEA2 db 93
+model $EEA3 db 82
+model $EEA4 db 80
+model $EEA5 db 24
+model $EEA6 db 20
+model $EEA7 db E0
+model $EEA8 db 60
+model $EEA9 db 33
+model $EEAA db 91
+model $EEAB db 92
+model $EEAC verts 21 44 1B 9D DB ; verts P=V33 V4=P P=V27 P=(P+V29)/2
+model $EEB2 db 7D
+model $EEB3 db C1
+model $EEB4 db 80
+model $EEB5 db 24
+model $EEB6 native $60E0 ; native $60E0
+model $EEB9 db 73
+model $EEBA db 11
+model $EEBB db 92
+model $EEBC db 82
+model $EEBD db 80
+model $EEBE db 24
+model $EEBF native $60E0 ; native $60E0
+model $EEC2 db 72
+model $EEC3 db 91
+model $EEC4 db 93
+model $EEC5 verts 21 80 24 20 E0 60 33 91 91 02 80 24 20 E0 60 31 11 93 81 3F E0 1E EC ; verts P=V33 P=(P+V0)/2 P=V36 P=V32 P-=V96 P=V51 P=(P+V17)/2 P=(P+V17)/2 P=V2 P=(P+V0)/2 P=V36 P=V32 P-=V96 P=V49 P=V17 P=(P+V19)/2 P=(P+V1)/2 P=V63 P-=V30
+model $EEDD db E2
+model $EEDE branch_visible 02 $2400 $7454 ; branch_visible f2 $2400 $7454
+model $EEE4 db 54
+model $EEE5 db 48
+model $EEE6 db BF
+model $EEE7 return ; return
+model $EEE8 db 84
+model $EEE9 db F4
+model $EEEA db 74
+model $EEEB db 68
+model $EEEC db 7F
+model $EEED return ; return
+model $EEEE db C4
+model $EEEF db D4
+model $EEF0 db E8 ; model
+model $EEF1 db 29
+model $EEF2 db 34
+model $EEF3 db C8
+model $EEF4 lines_clip 68 44 D4 54 48 DF 09 64 54 74 74 68 9F 09 A1 3F 09 35 29 11 69 41 11 A9 E0 B0 08 E0 31 4A 11 52 0A 22 10 52 0A 42 10 32 0A 62 11 32 0A 04 F4 6A 85 14 8A B4 EA D2 B2 CA A2 D2 92 CA 82 D4 F2 CA E2 D5 12 CA DF E0 43 00 00 A0 01 00 00 81 07 87 06 81 85 86 01 05 05 80 84 85 04 00 03 87 83 83 03 02 86 81 A1 60 81 00 80 C0 ; lines_clip L104 L68 M84 L84 L72 M95 L9 L100 L84 L116 L116 L104 M31 L9 M33 L63 L9 L53 L41 L17 L105 L65 L17 M41 M96 M48 L8 M96 L49 L74 L17 L82 L10 L34 L16 L82 L10 L66 L16 L50 L10 L98 L17 L50 L10 L4 M116 L106 M5 L20 M10 M52 M106 M82 M50 M74 M34 M82 M18 M74 M2 M84 M114 M74 M98 M85 L18 M74 M95 M96 L67 L0 L0 M32 L1 L0 L0 M1 L7 M7 L6 M1 M5 M6 L1 L5 L5 M0 M4 M5 L4 L0 L3 M7 M3 M3 L3 L2 M6 M1 M33 L96 M1 L0 M0
+model $EF5F db 84
+model $EF60 db 85
+model $EF61 verts 00 01 00 80 89 8B 8A 09 00 01 81 00 80 00 81 01 82 02 83 03 80 21 00 80 88 8A 8B 08 00 21 81 00 87 87 06 86 05 85 04 84 00 41 00 80 C1 ; verts P=V0 P=V1 P=V0 P=(P+V0)/2 P=(P+V9)/2 P=(P+V11)/2 P=(P+V10)/2 P=V9 P=V0 P=V1 P=(P+V1)/2 P=V0 P=(P+V0)/2 P=V0 P=(P+V1)/2 P=V1 P=(P+V2)/2 P=V2 P=(P+V3)/2 P=V3 P=(P+V0)/2 P=V33 P=V0 P=(P+V0)/2 P=(P+V8)/2 P=(P+V10)/2 P=(P+V11)/2 P=V8 P=V0 P=V33 P=(P+V1)/2 P=V0 P=(P+V7)/2 P=(P+V7)/2 P=V6 P=(P+V6)/2 P=V5 P=(P+V5)/2 P=V4 P=(P+V4)/2 P=V0 V1=P P=V0 P=(P+V0)/2
+model $EF8F db 85
+model $EF90 db 86
+model $EF91 project 00 61 ; project 0 from V48
+model $EF94 native $A180 ; native $A180
+model $EF97 db 05
+model $EF98 db 05
+model $EF99 db 81
+model $EF9A db 80
+model $EF9B db A1
+model $EF9C native $E480 ; native $E480
+model $EF9F native $8703 ; native $8703
+model $EFA2 db 80
+model $EFA3 db C1
+model $EFA4 native $A780 ; native $A780
+model $EFA7 db 83
+model $EFA8 db 83
+model $EFA9 jump_if_visible2 00 $00E1 ; jump_if_visible2 f0 $00E1
+model $EFAD db 80
+model $EFAE db C7
+model $EFAF db 03
+model $EFB0 project 86 80 ; project 134 from V64
+model $EFB3 db 81
+model $EFB4 native $2B80 ; native $2B80
+model $EFB7 order_by_face 8A $9F0B $1FE0 ; order_by_face f138 $9F0B $1FE0
+model $EFBD db 4C
+model $EFBE db E2
+model $EFBF db 80
+model $EFC0 db C8
+model $EFC1 native $D524 ; native $D524
+model $EFC4 db 14
+model $EFC5 db 28
+model $EFC6 db 18
+model $EFC7 db 04
+model $EFC8 db EC
+model $EFC9 db E5
+model $EFCA db 15
+model $EFCB db 2B
+model $EFCC db 7E
+model $EFCD call $1FDE ; call $1FDE
+model $EFD0 db 0B
+model $EFD1 db 58 ; model
+model $EFD2 native $9F0B ; native $9F0B
+model $EFD5 call $18A5 ; call $18A5
+model $EFD8 native $030D ; native $030D
+model $EFDB db D3
+model $EFDC db 53
+model $EFDD db 4B
+model $EFDE db FC
+model $EFDF db 03
+model $EFE0 db C8
+model $EFE1 db 03
+model $EFE2 db D4
+model $EFE3 db 54
+model $EFE4 db 4C
+model $EFE5 db 18
+model $EFE6 native $3F0C ; native $3F0C
+model $EFE9 db E0
+model $EFEA db 42
+model $EFEB jump_if_visible 80 $00A0 ; jump_if_visible f128 $00A0
+model $EFEF db F3
+model $EFF0 db 13
+model $EFF1 db 91
+model $EFF2 db 93
+model $EFF3 db 94
+model $EFF4 translate 14 ; translate V10
+model $EFF6 db 14
+model $EFF7 db 92
+model $EFF8 db 94
+model $EFF9 db 93
+model $EFFA db 11
+model $EFFB db 0E
+model $EFFC db 8E
+model $EFFD db 13
+model $EFFE db 0E
+model $EFFF db 0E
+model $F000 db 8D
+model $F001 db 94
+model $F002 db 13
+model $F003 db 8D
+model $F004 verts 81 40 81 00 80 8E 8E 13 14 80 A1 00 80 AE 0E 8D 8D 00 C1 ; verts P=(P+V1)/2 V0=P P=(P+V1)/2 P=V0 P=(P+V0)/2 P=(P+V14)/2 P=(P+V14)/2 P=V19 P=V20 P=(P+V0)/2 P=(P+V33)/2 P=V0 P=(P+V0)/2 P=(P+V46)/2 P=V14 P=(P+V13)/2 P=(P+V13)/2 P=V0
+model $F018 native $9480 ; native $9480
+model $F01B db 13
+model $F01C db 8D
+model $F01D db 0D
+model $F01E db 80
+model $F01F verts 20 A0 2E 0F 10 11 13 00 01 00 80 33 91 8F 0D 00 01 00 80 D0 ; verts P=V32 P=(P+V32)/2 P=V46 P=V15 P=V16 P=V17 P=V19 P=V0 P=V1 P=V0 P=(P+V0)/2 P=V51 P=(P+V17)/2 P=(P+V15)/2 P=V13 P=V0 P=V1 P=V0 P=(P+V0)/2
+model $F034 db 8F
+model $F035 db 8F
+model $F036 db 10
+model $F037 native $0021 ; native $0021
+model $F03A db 80
+model $F03B db 73
+model $F03C db 94
+model $F03D translate 11 ; translate V8
+model $F03F db 80
+model $F040 db 41
+model $F041 native $3480 ; native $3480
+model $F044 db 0D
+model $F045 db 92
+model $F046 db 92
+model $F047 native $0041 ; native $0041
+model $F04A db 80
+model $F04B db 2E
+model $F04C db 94
+model $F04D db 92
+model $F04E db 8D
+model $F04F db 80
+model $F050 db 61
+model $F051 native $7480 ; native $7480
+model $F054 db 93
+model $F055 db 11
+model $F056 translate 9F ; translate V79
+model $F058 db E0
+model $F059 db 1E
+model $F05A db EC
+model $F05B db E2
+model $F05C branch_visible 04 $2500 $2815 ; branch_visible f4 $2500 $2815
+model $F062 db 15
+model $F063 db 30
+model $F064 db 0C
+model $F065 db 05
+model $F066 db 34
+model $F067 db A8
+model $F068 db 35
+model $F069 db 2B
+model $F06A db E5
+model $F06B db 14
+model $F06C db 94
+model $F06D db 8B
+model $F06E db D5 ; model
+model $F06F branch_visible 53 $70E8 $A04B ; branch_visible f83 $70E8 $A04B
+model $F075 db 73
+model $F076 db F0
+model $F077 db 6B
+model $F078 db 84
+model $F079 db 94
+model $F07A db B4
+model $F07B db 94
+model $F07C db 8B
+model $F07D db 64
+model $F07E db FC
+model $F07F db 05
+model $F080 branch_visible 98 $6B03 $D843 ; branch_visible f152 $6B03 $D843
+model $F086 native $238B ; native $238B
+model $F089 db B8
+model $F08A native $038B ; native $038B
+model $F08D db 98
+model $F08E native $E48A ; native $E48A
+model $F091 db 18
+model $F092 native $838C ; native $838C
+model $F095 db F8
+model $F096 native $3F8C ; native $3F8C
+model $F099 db E0
+model $F09A db 43
+model $F09B db 63
+model $F09C db 80
+model $F09D db A0
+model $F09E native $8FED ; native $8FED
+model $F0A1 db 0E
+model $F0A2 db 8D
+model $F0A3 db 11
+model $F0A4 db 10
+model $F0A5 db 8E
+model $F0A6 db 8F
+model $F0A7 db 0C
+model $F0A8 db 8F
+model $F0A9 db 0D
+model $F0AA db 8D
+model $F0AB db 0F
+model $F0AC db 90
+model $F0AD db 91
+model $F0AE db 0F
+model $F0AF db 90
+model $F0B0 translate 10 ; translate V8
+model $F0B2 db 0E
+model $F0B3 call $A181 ; call $A181
+model $F0B6 db 60
+model $F0B7 db C1
+model $F0B8 native $3080 ; native $3080
+model $F0BB db 0E
+model $F0BC call $0092 ; call $0092
+model $F0BF db 21
+model $F0C0 db 20
+model $F0C1 db A0
+model $F0C2 db 90
+model $F0C3 db 8C
+model $F0C4 db 0C
+model $F0C5 db 8D
+model $F0C6 translate 00 ; translate V0
+model $F0C8 db 20
+model $F0C9 db E0
+model $F0CA db 60
+model $F0CB db 90
+model $F0CC db 91
+model $F0CD call $0180 ; call $0180
+model $F0D0 db 20
+model $F0D1 db A0
+model $F0D2 db 8E
+model $F0D3 db 8F
+model $F0D4 db 92
+model $F0D5 db 8D
+model $F0D6 db 8F
+model $F0D7 native $E000 ; native $E000
+model $F0DA db 60
+model $F0DB db 8E
+model $F0DC db 10
+model $F0DD db 0F
+model $F0DE db 80
+model $F0DF db 21
+model $F0E0 db 20
+model $F0E1 db A0
+model $F0E2 db 90
+model $F0E3 db 8C
+model $F0E4 db 0C
+model $F0E5 db 8D
+model $F0E6 db 11
+model $F0E7 native $E020 ; native $E020
+model $F0EA db 60
+model $F0EB db 90
+model $F0EC db 92
+model $F0ED call $4180 ; call $4180
+model $F0F0 native $6E80 ; native $6E80
+model $F0F3 db 8F
+model $F0F4 db 0C
+model $F0F5 db 8C
+model $F0F6 native $0061 ; native $0061
+model $F0F9 db 80
+model $F0FA db CF
+model $F0FB db 0D
+model $F0FC db 8D
+model $F0FD db 0C
+model $F0FE db 80
+model $F0FF db 81
+model $F100 native $6F80 ; native $6F80
+model $F103 db 90
+model $F104 db 91
+model $F105 translate 80 ; translate V64
+model $F107 db A1
+model $F108 native $AF80 ; native $AF80
+model $F10B db 90
+model $F10C translate 10 ; translate V8
+model $F10E db 9F
+model $F10F db E0
+model $F110 db 1E
+model $F111 db EC
+model $F112 db E2
+model $F113 branch_visible 03 $2500 $2C15 ; branch_visible f3 $2500 $2C15
+model $F119 db 15
+model $F11A db 35
+model $F11B db 2B
+model $F11C db E5
+model $F11D db 34
+model $F11E db AB
+model $F11F db A4
+model $F120 db 94
+model $F121 db A8
+model $F122 db 14
+model $F123 db B4
+model $F124 db B3
+model $F125 db EB ; model
+model $F126 db C0
+model $F127 db 14
+model $F128 db 94
+model $F129 db 8B
+model $F12A db 84
+model $F12B db 95
+model $F12C branch_visible 34 $608B $AB33 ; branch_visible f52 $608B $AB33
+model $F132 db 30
+model $F133 db 30
+model $F134 db 2B
+model $F135 db 44
+model $F136 db FC
+model $F137 db 05
+model $F138 branch_visible 58 $6B03 $5803 ; branch_visible f88 $6B03 $5803
+model $F13E native $E34A ; native $E34A
+model $F141 db 38
+model $F142 native $C44A ; native $C44A
+model $F145 db 18
+model $F146 native $A34A ; native $A34A
+model $F149 db F8
+model $F14A native $834C ; native $834C
+model $F14D db D8
+model $F14E native $634A ; native $634A
+model $F151 db B8
+model $F152 native $234C ; native $234C
+model $F155 db 98
+model $F156 native $254A ; native $254A
+model $F159 db 1C
+model $F15A lines_if_faces 08 82 B3 28 72 B0 6A 00 74 10 69 E3 30 70 69 C0 ; lines_if_faces L179[f8|f130] L176[f40|f114] L116[f106|f0] L227[f16|f105] L105[f48|f112]
+model $F16B db 72
+model $F16C db D0
+model $F16D db 69
+model $F16E db A2
+model $F16F db 18
+model $F170 native $8189 ; native $8189
+model $F173 db F8
+model $F174 native $6189 ; native $6189
+model $F177 db D8
+model $F178 native $4189 ; native $4189
+model $F17B db B8
+model $F17C native $7F8C ; native $7F8C
+model $F17F db E0
+model $F180 db 43
+model $F181 db 82
+model $F182 db 80
+model $F183 db A0
+model $F184 verts 50 0F 8F 12 0A 8B 0A 90 0C 8B 8D 0D 8C 0D 8E 0F 92 09 8E 90 91 05 87 87 08 06 11 86 05 85 01 40 41 9E 44 FE ; verts V16=P P=V15 P=(P+V15)/2 P=V18 P=V10 P=(P+V11)/2 P=V10 P=(P+V16)/2 P=V12 P=(P+V11)/2 P=(P+V13)/2 P=V13 P=(P+V12)/2 P=V13 P=(P+V14)/2 P=V15 P=(P+V18)/2 P=V9 P=(P+V14)/2 P=(P+V16)/2 P=(P+V17)/2 P=V5 P=(P+V7)/2 P=(P+V7)/2 P=V8 P=V6 P=V17 P=(P+V6)/2 P=V5 P=(P+V5)/2 P=V1 V0=P V1=P P=(P+V30)/2 V4=P
+model $F1A9 db 41
+model $F1AA db A1
+model $F1AB db 20
+model $F1AC db 41
+model $F1AD native $CA80 ; native $CA80
+model $F1B0 db 90
+model $F1B1 db 0C
+model $F1B2 db 8B
+model $F1B3 native $0061 ; native $0061
+model $F1B6 db 80
+model $F1B7 db EB
+model $F1B8 db 8D
+model $F1B9 db 0D
+model $F1BA db 8C
+model $F1BB native $0081 ; native $0081
+model $F1BE db 81
+model $F1BF db 0C
+model $F1C0 db 0D
+model $F1C1 db 8E
+model $F1C2 branch_visible 80 $00A1 $CF80 ; branch_visible f128 $00A1 $CF80
+model $F1C8 db 92
+model $F1C9 return ; return
+model $F1CA db 8F
+model $F1CB native $0001 ; native $0001
+model $F1CE db 80
+model $F1CF db 90
+model $F1D0 db 0F
+model $F1D1 db 8F
+model $F1D2 db 0C
+model $F1D3 db 80
+model $F1D4 verts 20 A0 8D 0E 92 8E 0D 80 21 00 80 92 0A 8B 09 80 21 20 A0 90 8B 8C 08 91 00 C1 ; verts P=V32 P=(P+V32)/2 P=(P+V13)/2 P=V14 P=(P+V18)/2 P=(P+V14)/2 P=V13 P=(P+V0)/2 P=V33 P=V0 P=(P+V0)/2 P=(P+V18)/2 P=V10 P=(P+V11)/2 P=V9 P=(P+V0)/2 P=V33 P=V32 P=(P+V32)/2 P=(P+V16)/2 P=(P+V11)/2 P=(P+V12)/2 P=V8 P=(P+V17)/2 P=V0
+model $F1EF native $AE80 ; native $AE80
+model $F1F2 db 90
+model $F1F3 db 91
+model $F1F4 translate 81 ; translate V64
+model $F1F6 db 21
+model $F1F7 db A0
+model $F1F8 db 60
+model $F1F9 db E1
+model $F1FA native $8580 ; native $8580
+model $F1FD db 87
+model $F1FE db 87
+model $F1FF faces_test 01 01 00 80 88 ; faces_test from 1: (0 32 34)
+model $F205 jump_if_visible 11 $8186 ; jump_if_visible f17 $8186
+model $F209 db 21
+model $F20A native $2680 ; native $2680
+model $F20D db 05
+model $F20E db 85
+model $F20F db 11
+model $F210 db 81
+model $F211 db 3F
+model $F212 db E0
+model $F213 db 1E
+model $F214 db EC
+model $F215 db E3
+model $F216 branch_visible 02 $2500 $6A14 ; branch_visible f2 $2500 $6A14
+model $F21C db 64
+model $F21D db D4
+model $F21E db 54
+model $F21F db 4B
+model $F220 db 1F
+model $F221 call $F444 ; call $F444
+model $F224 db 74
+model $F225 db 6B
+model $F226 db 3F
+model $F227 db 0B
+model $F228 db 64 ; model
+model $F229 db 54
+model $F22A db 6B
+model $F22B db 94
+model $F22C db 4C
+model $F22D db 5F
+model $F22E db 0C
+model $F22F db 83
+model $F230 db 94
+model $F231 db 6C
+model $F232 db 7F
+model $F233 db 0C
+model $F234 db A4
+model $F235 db F5
+model $F236 db 2B
+model $F237 db 94
+model $F238 db CC
+model $F239 db C3
+model $F23A db 95
+model $F23B db 2D
+model $F23C db 23
+model $F23D db 33
+model $F23E db 53
+model $F23F db 35
+model $F240 db 2A
+model $F241 db 93
+model $F242 db 32
+model $F243 db 8B
+model $F244 db 98
+model $F245 project 6B E2 ; project 107 from V113
+model $F248 db 94
+model $F249 db D2
+model $F24A db 8D
+model $F24B db 18
+model $F24C project 6B C2 ; project 107 from V97
+model $F24F db 93
+model $F250 db 52
+model $F251 db 8B
+model $F252 db B8
+model $F253 project 6C 02 ; project 108 from V1
+model $F256 db 95
+model $F257 db 32
+model $F258 db 8C
+model $F259 db F8
+model $F25A project 6C 3F ; project 108 from V31
+model $F25D db E0
+model $F25E db 42
+model $F25F db 46
+model $F260 native $01A0 ; native $01A0
+model $F263 db AC
+model $F264 db 0C
+model $F265 db 91
+model $F266 db 0C
+model $F267 db 8D
+model $F268 lines_if_faces_clip 8D 0D 92 0D 8C 12 93 0C 8C 13 0D 0C 94 8D 8D 14 8C 0D 94 0F 0F 8F 90 90 10 93 8E 93 90 8F 0E 0F 8E 81 40 BC FE 42 5E 61 81 00 01 00 80 2C 0C 91 91 00 21 00 80 6C 8D 12 11 80 41 00 80 2D 0D 92 92 00 61 00 80 6D 8C 11 12 80 80 E0 60 F3 0C 8C 00 A1 00 80 D3 14 8D 0C 80 C0 ; lines_if_faces_clip M13 L13[f13|f146] M12 L12[f18|f147] M12 L12[f19|f13] M20 M13 M13 L13[f20|f140] M20 L143[f15|f15] M16 M16 L142[f16|f147] M19 M16 M15 L142[f14|f15] M1 L254[f64|f188] L97[f66|f94] M1 L0[f0|f1] M0 L145[f44|f12] M17 L0[f0|f33] M0 L18[f108|f141] L65[f17|f128] L45[f0|f128] L146[f13|f146] L0[f0|f97] M0 L17[f109|f140] L128[f18|f128] M96 L12[f96|f243] M12 L0[f0|f161] M0 M83 L12[f20|f141] M0
+model $F2C3 db E0
+model $F2C4 db 60
+model $F2C5 db F4
+model $F2C6 db 8D
+model $F2C7 db 8D
+model $F2C8 native $00E1 ; native $00E1
+model $F2CB db 80
+model $F2CC db D4
+model $F2CD db 93
+model $F2CE db 0C
+model $F2CF db 0D
+model $F2D0 db 81
+model $F2D1 db 21
+model $F2D2 db 80
+model $F2D3 db A1
+model $F2D4 verts 00 80 B4 0F 0F 8E 01 21 00 80 2F 10 90 0F 81 41 00 80 90 93 8E 90 01 61 00 80 B3 90 8F 14 01 81 00 80 6E 0F 90 0E 81 3F E0 1E EC ; verts P=V0 P=(P+V0)/2 P=(P+V52)/2 P=V15 P=V15 P=(P+V14)/2 P=V1 P=V33 P=V0 P=(P+V0)/2 P=V47 P=V16 P=(P+V16)/2 P=V15 P=(P+V1)/2 V1=P P=V0 P=(P+V0)/2 P=(P+V16)/2 P=(P+V19)/2 P=(P+V14)/2 P=(P+V16)/2 P=V1 V33=P P=V0 P=(P+V0)/2 P=(P+V51)/2 P=(P+V16)/2 P=(P+V15)/2 P=V20 P=V1 P=(P+V1)/2 P=V0 P=(P+V0)/2 V46=P P=V15 P=(P+V16)/2 P=V14 P=(P+V1)/2 P=V63 P-=V30
+model $F300 db E2
+model $F301 db 86
+model $F302 db 03
+model $F303 native $1525 ; native $1525
+model $F306 db 28
+model $F307 db 25
+model $F308 db 14
+model $F309 db 8C
+model $F30A db 14
+model $F30B db 94
+model $F30C branch_visible 44 $B494 $2890 ; branch_visible f68 $B494 $2890
+model $F312 db 74
+model $F313 db 14 ; model
+model $F314 order_by_face 44 $C8F4 $F4A4 ; order_by_face f68 $C8F4 $F4A4
+model $F31A db 6B
+model $F31B db F4
+model $F31C db 73
+model $F31D db E8
+model $F31E db 84
+model $F31F db 74
+model $F320 db 54
+model $F321 db 70
+model $F322 db A8
+model $F323 db D3
+model $F324 db F3
+model $F325 db EA
+model $F326 db 60
+model $F327 db D0
+model $F328 db 69
+model $F329 db 80
+model $F32A db B0
+model $F32B db 29
+model $F32C db A4
+model $F32D db D4
+model $F32E db 48
+model $F32F db E5
+model $F330 db 34
+model $F331 db A9
+model $F332 db 34
+model $F333 db C9
+model $F334 db 14
+model $F335 db C9
+model $F336 db 5E
+model $F337 return ; return
+model $F338 db C1
+model $F339 db 10
+model $F33A db E9
+model $F33B db 7E
+model $F33C return ; return
+model $F33D db E1
+model $F33E db 11
+model $F33F db 29
+model $F340 db 3E
+model $F341 order_by_face 01 $2915 $0A1E ; order_by_face f1 $2915 $0A1E
+model $F347 db 3F
+model $F348 db E0
+model $F349 db 41
+model $F34A branch_visible 80 $A042 $A040 ; branch_visible f128 $A042 $A040
+model $F350 verts 00 94 92 93 02 83 02 01 11 14 93 11 03 02 80 85 05 84 87 08 88 09 89 01 01 81 00 01 60 E0 80 94 92 92 01 09 01 80 21 60 E0 93 02 83 09 82 11 91 00 41 00 80 C2 ; verts P=V0 P=(P+V20)/2 P=(P+V18)/2 P=(P+V19)/2 P=V2 P=(P+V3)/2 P=V2 P=V1 P=V17 P=V20 P=(P+V19)/2 P=V17 P=V3 P=V2 P=(P+V0)/2 P=(P+V5)/2 P=V5 P=(P+V4)/2 P=(P+V7)/2 P=V8 P=(P+V8)/2 P=V9 P=(P+V9)/2 P=V1 P=V1 P=(P+V1)/2 P=V0 P=V1 V32=P P-=V128 P=(P+V20)/2 P=(P+V18)/2 P=(P+V18)/2 P=V1 P=V9 P=V1 P=(P+V0)/2 P=V33 V32=P P-=V147 P=V2 P=(P+V3)/2 P=V9 P=(P+V2)/2 P=V17 P=(P+V17)/2 P=V0 V1=P P=V0 P=(P+V0)/2
+model $F386 verts 12 11 80 61 00 80 D4 ; verts P=V18 P=V17 P=(P+V0)/2 V33=P P=V0 P=(P+V0)/2
+model $F38E db 93
+model $F38F db 11
+model $F390 translate 80 ; translate V64
+model $F392 db 81
+model $F393 native $A380 ; native $A380
+model $F396 project 80 81 ; project 128 from V64
+model $F399 db 80
+model $F39A db A1
+model $F39B native $A580 ; native $A580
+model $F39E db 05
+model $F39F db 84
+model $F3A0 db 84
+model $F3A1 native $00C1 ; native $00C1
+model $F3A4 db 80
+model $F3A5 db 27
+model $F3A6 branch_visible 88 $8007 $00E1 ; branch_visible f136 $8007 $00E1
+model $F3AC db 80
+model $F3AD db C2
+model $F3AE return ; return
+model $F3AF db 89
+model $F3B0 verts 00 91 80 80 81 B8 1F E0 1E 8C E4 ; verts P=V0 P=(P+V17)/2 P=(P+V0)/2 P=(P+V0)/2 P=(P+V1)/2 P=(P+V56)/2 P=V31 P-=V30 P=(P+V12)/2
+model $F3BC native $8080 ; native $8080
+model $F3BF db 41
+model $F3C0 branch_visible 80 $00A0 $1393 ; branch_visible f128 $00A0 $1393
+model $F3C6 db 91
+model $F3C7 db 94
+model $F3C8 db 14
+model $F3C9 db 92
+model $F3CA db 94
+model $F3CB db 93
+model $F3CC db 11
+model $F3CD db 13
+model $F3CE db 94 ; model
+model $F3CF translate 01 ; translate V0
+model $F3D1 db 80
+model $F3D2 db 80
+model $F3D3 verts 00 80 33 13 91 91 00 21 00 80 34 14 92 92 00 41 00 80 34 93 11 12 80 61 00 80 33 94 12 11 9F E0 1E EC ; verts P=V0 P=(P+V0)/2 P=V51 P=V19 P=(P+V17)/2 P=(P+V17)/2 P=V0 P=V33 P=V0 P=(P+V0)/2 P=V52 P=V20 P=(P+V18)/2 P=(P+V18)/2 P=V0 V1=P P=V0 P=(P+V0)/2 P=V52 P=(P+V19)/2 P=V17 P=V18 P=(P+V0)/2 V33=P P=V0 P=(P+V0)/2 P=V51 P=(P+V20)/2 P=V18 P=V17 P=(P+V31)/2 P-=V30
+model $F3F6 db E4
+model $F3F7 branch_visible 04 $2580 $C834 ; branch_visible f4 $2580 $C834
+model $F3FD db 15
+model $F3FE db 2C
+model $F3FF db 1E
+model $F400 call $1480 ; call $1480
+model $F403 db CB
+model $F404 db FE
+model $F405 call $B464 ; call $B464
+model $F408 db 48
+model $F409 db 34 ; model
+model $F40A db AB
+model $F40B db DE
+model $F40C call $3440 ; call $3440
+model $F40F db 4B
+model $F410 db BE
+model $F411 call $D424 ; call $D424
+model $F414 db E8
+model $F415 db 54
+model $F416 db CB
+model $F417 db 1E
+model $F418 order_by_face C0 $EA54 $0AFE ; order_by_face f192 $EA54 $0AFE
+model $F41E db A4
+model $F41F db 54
+model $F420 db 68
+model $F421 db 74
+model $F422 db 4A
+model $F423 db 9E
+model $F424 order_by_face 40 $6A74 $0A7E ; order_by_face f64 $6A74 $0A7E
+model $F42A db 23
+model $F42B db 93
+model $F42C db 48
+model $F42D db 93
+model $F42E db 49
+model $F42F db 13
+model $F430 db 48
+model $F431 db A3
+model $F432 db 33
+model $F433 db 68
+model $F434 db D3
+model $F435 db 29
+model $F436 db 33
+model $F437 db 28
+model $F438 db F0
+model $F439 db A8
+model $F43A db 10
+model $F43B db B0
+model $F43C db AA
+model $F43D native $10F0 ; native $10F0
+model $F440 db E9
+model $F441 db E1
+model $F442 db 11
+model $F443 db 29
+model $F444 db 51
+model $F445 db 11
+model $F446 return ; return
+model $F447 db A1
+model $F448 db 31
+model $F449 db 51
+model $F44A db 29
+model $F44B db DF
+model $F44C db E0
+model $F44D db 42
+model $F44E db 83
+model $F44F db 40
+model $F450 db A0
+model $F451 verts 10 0F 8E 8D 0C 8D 8C 0B 89 89 08 8A 88 90 0F 0F 8C 0A 0B 8D 0E 0C 89 0B 01 A1 20 01 00 80 90 0F 8E 8F 00 21 00 80 8D 0C 8D 8E 00 41 00 80 8C 0B 89 8A 00 61 00 80 89 08 8A 8B 00 81 00 80 C8 ; verts P=V16 P=V15 P=(P+V14)/2 P=(P+V13)/2 P=V12 P=(P+V13)/2 P=(P+V12)/2 P=V11 P=(P+V9)/2 P=(P+V9)/2 P=V8 P=(P+V10)/2 P=(P+V8)/2 P=(P+V16)/2 P=V15 P=V15 P=(P+V12)/2 P=V10 P=V11 P=(P+V13)/2 P=V14 P=V12 P=(P+V9)/2 P=V11 P=V1 P=(P+V33)/2 P=V32 P=V1 P=V0 P=(P+V0)/2 P=(P+V16)/2 P=V15 P=(P+V14)/2 P=(P+V15)/2 P=V0 P=V33 P=V0 P=(P+V0)/2 P=(P+V13)/2 P=V12 P=(P+V13)/2 P=(P+V14)/2 P=V0 V1=P P=V0 P=(P+V0)/2 P=(P+V12)/2 P=V11 P=(P+V9)/2 P=(P+V10)/2 P=V0 V33=P P=V0 P=(P+V0)/2 P=(P+V9)/2 P=V8 P=(P+V10)/2 P=(P+V11)/2 P=V0 P=(P+V1)/2 P=V0 P=(P+V0)/2
+model $F491 db 90
+model $F492 db 0F
+model $F493 order_by_face 80 $00A1 $CF80 ; order_by_face f128 $00A1 $CF80
+model $F499 db 8C
+model $F49A order_by_face 0E $C180 $8000 ; order_by_face f14 $C180 $8000
+model $F4A0 db CB
+model $F4A1 db 8D
+model $F4A2 db 0E
+model $F4A3 return ; return
+model $F4A4 db 80
+model $F4A5 db E1
+model $F4A6 native $CC80 ; native $CC80
+model $F4A9 db 89
+model $F4AA call $800D ; call $800D
+model $F4AD db 21
+model $F4AE native $2880 ; native $2880
+model $F4B1 jump_if_visible2 87 $9F06 ; jump_if_visible2 f135 $9F06

@@ -11,18 +11,15 @@
 ;
 ; Run by DrawMapObjects. `$E54F` is read by nothing.
 MapModels:
-  DEFB $02,$04,$00,$0E,$01,$04,$04,$00,$04,$08,$0C,$FF
+  INCBIN "res/models/bank6-map.bin",$0000,12
 MapModelNegative:
-  DEFB $02,$04,$00,$0E,$01,$04,$01,$00,$04,$08,$0C,$FF
+  INCBIN "res/models/bank6-map.bin",$000C,12
 MapModelOther:
-  DEFB $02,$04,$00,$03,$80,$01,$82,$03,$C0,$FF
+  INCBIN "res/models/bank6-map.bin",$0018,10
 MapModelKind6:
-  DEFB $01,$03,$82,$4B,$00,$81,$4A,$8B,$4C,$8A,$8C,$44
-  DEFB $0C,$8B,$8C,$47,$02,$81,$4E,$81,$8E,$45,$0E,$82
-  DEFB $8E,$46,$FF
+  INCBIN "res/models/bank6-map.bin",$0022,27
 MapModelSpare:
-  DEFB $02,$08,$00,$13,$02,$04,$01,$00,$04,$08,$0C,$04
-  DEFB $00,$10,$14,$18,$1C,$FF
+  INCBIN "res/models/bank6-map.bin",$003D,18
 
   ORG $E5D5
 

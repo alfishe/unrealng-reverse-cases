@@ -208,7 +208,7 @@ Each axis works the same way:
 
 The code of the call is kept in LastDirections `$67B8` for the next call.
 The repeat counts are swapped against their names.
-RepeatX `$67B7` serves the Y axis, and RepeatY `$67BA` the X axis (a source change is requested).
+RepeatY `$67B7` serves the Y axis, and RepeatX `$67BA` the X axis (the names were swapped in stage 2's source).
 
 ```
 DecodeDirections:
@@ -225,7 +225,7 @@ l_9767:
   XOR A
   LD (StepY),A          ; step 0
   LD A,(StepFrames)
-  LD (RepeatX),A        ; count = 4 (RepeatX serves Y)
+  LD (RepeatY),A        ; count = 4 (RepeatY serves Y)
   JR l_97B2
 l_9773:
   LD B,A
@@ -243,7 +243,7 @@ l_9785:
   LD (StepY),A
   ...                   ; count = 4
 l_9790:
-  LD HL,RepeatX
+  LD HL,RepeatY
   DEC (HL)
   JR NZ,l_97B2          ; not yet
   ...                   ; count = 4 again
@@ -261,14 +261,14 @@ l_97B2:                 ; the same for left and right into StepX, then
 ```mermaid
 flowchart TD
   A["code AND 1F"] --> B{"up and down bits"}
-  B -->|"neither or both"| Z["StepY = 0, RepeatX = 4"]
+  B -->|"neither or both"| Z["StepY = 0, RepeatY = 4"]
   B -->|one| C{"same as LastDirections"}
-  C -->|no| N["StepY = +1 down or -1 up, RepeatX = 4"]
-  C -->|yes| R["RepeatX - 1"]
+  C -->|no| N["StepY = +1 down or -1 up, RepeatY = 4"]
+  C -->|yes| R["RepeatY - 1"]
   R --> R0{"zero"}
   R0 -->|no| X["keep StepY"]
-  R0 -->|yes| G["RepeatX = 4, StepY grows by 1, limit 8 or -8"]
-  Z --> H["the same for left and right: StepX with RepeatY"]
+  R0 -->|yes| G["RepeatY = 4, StepY grows by 1, limit 8 or -8"]
+  Z --> H["the same for left and right: StepX with RepeatX"]
   N --> H
   X --> H
   G --> H
@@ -278,7 +278,7 @@ flowchart TD
 Worked example, menu frames 0-9 with A held.
 The values are taken at each frame's start, so each row shows the call of the frame before.
 
-| Frame | Call | RepeatX `$67B7` | StepY `$985F` | Pointer Y `$7DC1` |
+| Frame | Call | RepeatY `$67B7` | StepY `$985F` | Pointer Y `$7DC1` |
 | --- | --- | --- | --- | --- |
 | 0 | none yet | 4 | 0 | 128 |
 | 1 | A new: step +1 | 4 | 1 | 129 |
@@ -311,7 +311,7 @@ It calls PointerFire.
 Then it stops unless two flags allow the move:
 
 - the operand of `LD A,$FF` at `$7D88`;
-- the operand of PlayFlag at `$83BF` (doc 04).
+- the operand of PointerShown at `$83BF` (doc 04).
 
 The 3D view clears the second flag, so the pointer stays where it is while the steps steer the vehicle.
 Otherwise ClampStep moves PointerPos X `$7DC0` by StepX inside 8-247, and PointerPos Y `$7DC1` by StepY inside
@@ -326,7 +326,7 @@ PointerTick:
   LD A,$FF                   ; operand $7D88: 0 freezes the pointer
   AND A
   RET Z
-  LD A,(PlayFlag+$0001)      ; $83BF: 0 in the 3D view
+  LD A,(PointerShown+$0001)      ; $83BF: 0 in the 3D view
   AND A
   RET Z
   LD A,(StepX)
@@ -547,7 +547,6 @@ KeyCodes `$8950` gives the code of each of the 40 keys in that order:
 
 ScanKeyboard sets bit 1 of KeyState `$8978` while a key is down, and keeps the raw code at `$897B`.
 CAPS SHIFT with 0 gives `$04`, a delete key for the code entry.
-The `.ann` says SYMBOL SHIFT with SPACE, and a fix is requested.
 
 KeyRepeat then makes a typing repeat:
 
@@ -786,8 +785,8 @@ The zones of each screen:
 | Catalogue | BRIEFING 34-99, 161-173 | ScreenOfMission | the briefing |
 | Catalogue | SELECT 34-99, 177-184 | LoadMissionIfAllowed | the stores |
 | Catalogue | STATUS 154-235, 179-184 | ApiVector16 | the mission status |
-| Briefing | MAP 3-52, 26-36 | ShowPauseOnce | the briefing map |
-| Briefing | TEXT 3-52, 82-91 | PrintTitleOnce | the briefing text |
+| Briefing | MAP 3-52, 26-36 | ShowBriefingMapOnce | the briefing map |
+| Briefing | TEXT 3-52, 82-91 | BriefingTextOnce | the briefing text |
 | Briefing | CLOSE 3-52, 99-109 | ScreenZero | the catalogue |
 | Stores | PREVIOUS 18-43, 147-164 and NEXT 82-107, 147-164 | PreviousWeapon, NextWeapon | the weapon shown |
 | Stores | four slots 136-167 or 216-247, 40-71 or 88-119 | SlotZoneA-D | fit or remove |
@@ -876,7 +875,7 @@ The speed is record +7 (`$75F7`), and the heading is record +`$22` (`$7612`).
 - The brake: the key S (code `$53`) sets the record's handler to `$A9C9`.
   That handler takes 8 from |speed| each pass.
   Below 8, it sets the speed to 0 and the handler back to `$A8C7`.
-  It sits in the source as the data block PlayerSteeringTail (a source change is requested).
+  It sits in the source as the routine BrakeKey `$A9C9` (stage 2 had kept it as data); known only from the code: no recording presses S in play (no L1 run of `$A9C9`).
 
 ```
 l_A961:

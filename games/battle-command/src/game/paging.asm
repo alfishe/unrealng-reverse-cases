@@ -8,7 +8,7 @@
 ;
 ; Witness: L1 3742 (c1, death, m2erbe, menu, missions, play, play2, search).
 WaitFrameDone:
-  LD A,(PlayMode+$0001)
+  LD A,(BlitRequest+$0001)
   AND A
   JR NZ,WaitFrameDone
   RET
@@ -24,7 +24,7 @@ BriefingMapLegend:
   CALL AttrBox
   LD HL,l_DB05+$0006
   CALL AttrBox
-  LD HL,HelicarrierLift+$0003
+  LD HL,HelicarrierDescent+$0003
   JP PrintString
 
 ; The status view map's legend: wait for the frame, the boxes $DB10 and $DAC1,

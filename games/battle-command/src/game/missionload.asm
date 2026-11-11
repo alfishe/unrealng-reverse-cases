@@ -27,7 +27,7 @@ LoadMission:
   LD A,(ScreenOfMission+$0001)
   CP C
   JR NZ,LoadMissionTape
-  LD HL,(PickupText+$0043)
+  LD HL,(MissionHeader+$0015)
   LD DE,$0000
 RestoreFromBank3:
   CALL PageBank3
@@ -112,7 +112,7 @@ LoadMissionTape:
   CALL PageBank0
 LoadMissionBlock:
   LD DE,$0000             ; LD DE,n: n ($855C) the header's length
-  LD IX,PickupText+$002E
+  LD IX,MissionHeader
   LD A,$FF
   SCF
   CALL LoadBlock
@@ -121,11 +121,11 @@ LoadMissionBlock:
   JR C,LoadMissionBlock
   RET
 MissionBlockLoaded:
-  LD A,(PickupText+$002E)
-  LD (ScreenList+$0095),A
+  LD A,(MissionHeader)
+  LD (AwolState+$0003),A
   CALL MissionTimeSetup
-  LD DE,(PickupText+$0043)
-  LD HL,(PickupText+$0056)
+  LD DE,(MissionHeader+$0015)
+  LD HL,(MissionHeader+$0028)
   AND A
   SBC HL,DE
   EX DE,HL
@@ -150,7 +150,7 @@ l_8588:
 MissionSetup:
   XOR A
   LD (WeaponVars+$0002),A
-  LD HL,PickupText+$005A
+  LD HL,MissionHeader+$002C
   LD DE,MissionParams
   LD BC,$000C
   LDIR
@@ -158,12 +158,12 @@ MissionSetup:
   LD (PlaceHelicarrier),A
   LD A,$C9
   LD (StartMission+$0007),A
-  LD A,(PickupText+$0066)
+  LD A,(MissionHeader+$0038)
   LD (PlayerHit+$000A),A
-  LD A,(PickupText+$0045)
+  LD A,(MissionHeader+$0017)
   LD E,A
   CALL PageBank6
-  LD HL,PickupText+$005C
+  LD HL,MissionHeader+$002E
   LD (HL),E
   CALL PageBank0
   LD L,E
@@ -176,7 +176,7 @@ MissionSetup:
   LD BC,$0080
   ADD HL,BC
   EX DE,HL
-  LD HL,PickupText+$0069
+  LD HL,MissionHeader+$003B
 l_85D4:
   LD A,(HL)
   EX AF,AF'
@@ -209,13 +209,13 @@ SpacePressed:
 ;
 ; Witness: L1 15 (m10, m2erbe, m2ocean, missions).
 MissionTimeSetup:
-  LD HL,(PickupText+$004A)
+  LD HL,(MissionHeader+$001C)
   LD (PlayLoopTail+$0010),HL
-  LD HL,PickupText+$004C
+  LD HL,MissionHeader+$001E
   LD DE,PlayerHandler+$0009
   LD BC,$0008
   LDIR
-  LD HL,(PickupText+$0067)
+  LD HL,(MissionHeader+$0039)
   LD (MissionClock+$0001),HL
   XOR A
   LD (MissionClock),A

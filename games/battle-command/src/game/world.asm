@@ -24,8 +24,8 @@ SegmentVisibility:
   LD H,$DC
   LD DE,WorldWork
   EXX
-  LD HL,PickupText+$00E9
-  LD A,(PickupText+$0047)
+  LD HL,MissionHeader+$00BB
+  LD A,(MissionHeader+$0019)
   LD (l_ADEA+$0008),A
   LD BC,(WorldVars+$0009)
   SRA B
@@ -41,7 +41,7 @@ SegmentVisibility:
   RR C
   LD A,C
   LD (l_BBFB+$0017),A
-  LD A,(PickupText+$0045)
+  LD A,(MissionHeader+$0017)
   LD (l_AE0F+$000B),A
 l_AD7A:
   LD C,(HL)
@@ -119,7 +119,7 @@ l_ADFA:
   LD B,$00
   LD C,A
   ADD HL,BC
-  LD A,(PickupText+$0047)
+  LD A,(MissionHeader+$0019)
   LD C,A
   AND A
   SBC HL,BC
@@ -146,7 +146,7 @@ l_AE0F:
   LD (SegmentVisibility+$0007),HL
   JP l_AD7A
 l_AE33:
-  LD A,(PickupText+$0045)
+  LD A,(MissionHeader+$0017)
   LD (SegmentWalkCount),A
   LD (SegmentVisibility+$0007),HL
   EXX
@@ -160,9 +160,9 @@ l_AE33:
 ;
 ; Witness: L1 3576 (death, m2erbe, missions, play, play2).
 ResetSegmentWalk:
-  LD HL,PickupText+$00E9
+  LD HL,MissionHeader+$00BB
   LD (SegmentVisibility+$0007),HL
-  LD A,(PickupText+$0045)
+  LD A,(MissionHeader+$0017)
   LD (SegmentWalkCount),A
   LD DE,WorldWork
   LD (SegmentVisibility+$0003),DE
@@ -251,7 +251,7 @@ SegmentScratch:
 ;
 ; Witness: L1 3507 (death, m2erbe, missions, play, play2).
 SetupClipWindow:
-  LD A,(PickupText+$0045)
+  LD A,(MissionHeader+$0017)
   LD C,$05
   ADD A,C
   LD (DrawSegmentLoop+$0002),A
@@ -326,7 +326,7 @@ l_AEEF:
   LD H,B
   LD L,A
   ADD HL,BC
-  LD DE,PickupText+$00E9
+  LD DE,MissionHeader+$00BB
   ADD HL,DE
   LD C,(HL)
   INC HL
@@ -419,18 +419,18 @@ l_AF83:
   LD C,B
   CALL ClipSegmentAxisY
   JR C,l_AFD6
-  LD DE,PickupText+$2169
+  LD DE,MissionHeader+$213B
   LD (StoreVertex+$000D),DE
-  LD DE,PickupText+$216F
+  LD DE,MissionHeader+$2141
   LD (StoreVertex+$0013),DE
   LD HL,(SegmentScratch+$0016)
   EXX
   LD HL,(SegmentScratch+$0019)
   EXX
   CALL ClipSegmentAxisX
-  LD DE,PickupText+$216B
+  LD DE,MissionHeader+$213D
   LD (StoreVertex+$000D),DE
-  LD DE,PickupText+$216D
+  LD DE,MissionHeader+$213F
   LD (StoreVertex+$0013),DE
   LD A,$00
   LD (StoreVertex+$0001),A
@@ -698,16 +698,16 @@ DrawSegmentTail:
 ; Witness: L1 6277 (death, m2erbe, missions, play, play2).
 TransformSegmentEnds:
   PUSH BC
-  LD HL,PickupText+$2169
+  LD HL,MissionHeader+$213B
   LD (StoreVertex+$000D),HL
-  LD HL,PickupText+$216F
+  LD HL,MissionHeader+$2141
   LD (StoreVertex+$0013),HL
   CALL TransformVertex
   LD A,(l_AF83+$0041)
   LD (StoreVertex+$0001),A
-  LD HL,PickupText+$216B
+  LD HL,MissionHeader+$213D
   LD (StoreVertex+$000D),HL
-  LD HL,PickupText+$216D
+  LD HL,MissionHeader+$213F
   LD (StoreVertex+$0013),HL
   POP DE
   CALL TransformVertex
@@ -737,11 +737,11 @@ DrawSegmentStyle:
   JR Z,l_B21E
   CP $06
   JR Z,l_B206
-  LD (PickupText+$226F),DE
-  LD (PickupText+$2269),DE
+  LD (MissionHeader+$2241),DE
+  LD (MissionHeader+$223B),DE
 l_B1E0:
-  LD (PickupText+$226B),DE
-  LD (PickupText+$226D),DE
+  LD (MissionHeader+$223D),DE
+  LD (MissionHeader+$223F),DE
 l_B1E8:
   LD IX,data_FEBB+$00DD
   CALL RunScript
@@ -760,18 +760,18 @@ l_B206:
   JP DrawSegmentTail
 l_B210:
   LD BC,$0070
-  LD (PickupText+$226F),BC
-  LD (PickupText+$2269),BC
+  LD (MissionHeader+$2241),BC
+  LD (MissionHeader+$223B),BC
   JP l_B1E0
 l_B21E:
-  LD (PickupText+$226F),DE
-  LD (PickupText+$2269),DE
+  LD (MissionHeader+$2241),DE
+  LD (MissionHeader+$223B),DE
   LD DE,$0070
   JP l_B1E0
 l_B22C:
   LD DE,(WorldVars+$000B)
-  LD (PickupText+$2269),DE
-  LD (PickupText+$226B),DE
+  LD (MissionHeader+$223B),DE
+  LD (MissionHeader+$223D),DE
   LD IX,data_FEBB+$00C5
   CALL RunScript
   JP DrawSegmentTail
@@ -1390,7 +1390,8 @@ GridStep:
 
 ; Rotate dx, dy by the camera (sin `$BBBD`, cos `$BBC8`)
 ;
-; Outputs the view x in `$9A6C` and the depth in `$9A8E`.
+; Outputs the depth offset in `$9A6C` and the x offset in `$9A8E` (OpProject
+; adds `$9A6C` to z and compares with 96).
 ;
 ; Witness: L1 50296 (death, m2erbe, missions, play, play2).
 RotateToView:
@@ -1434,7 +1435,7 @@ TerrainCollision:
   AND A
   RET Z
   LD HL,WorldWork
-  LD A,(PickupText+$0045)
+  LD A,(MissionHeader+$0017)
   LD D,$00
   LD E,A
   ADD HL,DE
@@ -1508,7 +1509,7 @@ l_CC56:
   CP $02
   JP Z,TerrainNext
 l_CC98:
-  LD (DevMissionLoader+$0001),A
+  LD (TerrainType),A
   EX AF,AF'
   LD (DevMissionLoader),A
   AND A

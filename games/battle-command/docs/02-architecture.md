@@ -387,5 +387,5 @@ world. The menus spend their time waiting on the tape and drawing text.
 - SaBytes, ShowWrongDisk, PrintFinalScore and the other leftovers of 2.7: never run.
 - That the music never reads `$CB64-$CDFF` comes from the L1 builds; that the bytes are a build leftover is inferred.
 
-The commands are in [bcA-NOTES](../work/docs/bcA-NOTES.md); the source changes asked for in
-[bcA-src-changes](../work/docs/bcA-src-changes.md).
+The commands are in [bcA-NOTES](../work/docs/bcA-NOTES.md); the source changes it asked for
+([bcA-src-changes](../work/docs/bcA-src-changes.md)) are applied.

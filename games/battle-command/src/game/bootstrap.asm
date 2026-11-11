@@ -53,15 +53,18 @@ LoadAttrLeftover:
   DEFB $41,$41,$41,$41,$41,$41,$41,$44,$41,$41,$47,$41,$41,$41,$41,$41,$41,$41,$41,$41,$41,$41,$47,$47,$41,$41,$41,$47,$47,$41,$41,$41
   DEFB $41,$41,$41,$41,$41,$41,$44,$44,$44,$44,$44,$44,$44,$44,$44,$44,$41,$41,$41,$41,$41,$41,$41,$41,$41,$41,$41,$41,$41
 
-; JP $8383, written by the entry (the vector of an interrupt with $FF on the
-; bus)
+; Unused: JP $8383 at the IM 2 vector table's target; every vector byte is $83,
+; so no interrupt jumps here
+;
+; The menus' stack overwrites it (lowest `$8149`).
 ImJump:
   DEFB $41,$41,$41
 
-; The main stack, $8184-$81FF (SP = $81FF at the entry)
+; The main stack, top $8200 (SP = $81FF at the entry)
 ;
-; The lowest byte written: `$81B9` in menu, `$81C5` in play, `$8199` in c1 at
-; the mission load.
+; Measured down to `$8149` (menu), `$816B` (play), `$8199` (c1 at the mission
+; load): below `$8184` it runs over ImJump and the end of LoadAttrLeftover (L1
+; byte_use bit 3, docs/02-architecture.md 2.6).
 Stack:
   DEFB $47,$47,$41,$41,$47,$47,$44,$44,$44,$44,$44,$44,$44,$44,$44,$44,$44,$44,$44,$47,$47,$41,$47,$41,$41,$41,$41,$47,$41,$41,$41,$41
   DEFB $41,$41,$41,$41,$41,$41,$41,$41,$47,$44,$44,$44,$44,$44,$44,$44,$44,$44,$44,$41,$41,$41,$41,$41,$41,$41,$41,$41,$41,$41,$41,$41

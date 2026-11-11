@@ -20,6 +20,7 @@ The formats (each folder's README.md lists its files):
   missions/catalogue.bin: catalogue.txt, as a text below.
 - texts/NAME.bin: NAME.txt, UTF-8 with {XX} for the bytes that are not printable ASCII (PrintString `$6FB3`).
 - music/tune.bin: tune.txt, the player's data in named hex parts.
+- models/NAME.bin: NAME.mdl, a library of 3D model scripts, one instruction a line (tools/models3d.py).
 - Any other file is its bytes.
 
 check compares each built file with the original bytes: the pictures with work/parts/bank7-c000.bin (tools/parts.py),
@@ -291,12 +292,37 @@ def tune_build(name, files):
 
 
 # (folder, suffix of the built file, suffixes of the editable files, export, build)
+# ------------------------------------------------------------------------------------------------ the 3D models
+# models/NAME.bin (a library of RunScript `$990F` scripts inside a bank part) -> NAME.mdl: one instruction a line
+# (tools/models3d.py text_lines; the opcodes in its docstring). The first line gives the address the bytes load at;
+# the models referenced from outside (MODEL_STARTS) begin a line marked `model`.
+MODEL_STARTS = {'bank3-shared': [0xCA8B, 0xCAA7, 0xCCDA, 0xCDF8, 0xCE47, 0xCED1, 0xCF26],
+                'bank6-map': [0xE512, 0xE51E, 0xE52A, 0xE534, 0xE54F]}
+
+
+def model_export(name, data):
+    import models3d
+    org = MODEL_STARTS[name][0]
+    out = ['org $%04X' % org,
+           '# %s: 3D model scripts (tools/models3d.py text_lines): address, opcode, operand bytes, words as $XXXX;'
+           % name, '# after ";" the decoded instruction (ignored when built)']
+    out += models3d.text_lines(data, org, org, org + len(data), MODEL_STARTS[name])
+    return {name + '.mdl': ('\n'.join(out) + '\n').encode()}
+
+
+def model_build(name, files):
+    import models3d
+    lines = [x for x in files[name + '.mdl'].decode().splitlines() if not x.startswith(('org ', '#'))]
+    return models3d.assemble(lines)
+
+
 FORMATS = [('pictures', '.bin', ['.png', '.parse.txt'], picture_export, picture_build),
            ('screens', '.scr', ['.png'], screen_export, screen_build),
            ('fonts', '.bin', ['.png'], font_export, font_build),
            ('missions', '.bin', ['.txt'], mission_export, mission_build),
            ('texts', '.bin', ['.txt'], text_export, text_build),
-           ('music', '.bin', ['.txt'], tune_export, tune_build)]
+           ('music', '.bin', ['.txt'], tune_export, tune_build),
+           ('models', '.bin', ['.mdl'], model_export, model_build)]
 
 
 # missions/catalogue.bin (side 2's DIRECTORY block, loaded at bank 4 `$CB64`): the names, goals and briefings among

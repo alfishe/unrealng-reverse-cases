@@ -257,7 +257,7 @@ MagicLoop:
 ;
 ; Read by IsCatalogueLoaded.
 CatalogueMagic:
-  DEFB $4D,$49,$53,$53,$49,$4F,$4E,$3A,$54,$41,$50,$45,$3A
+  INCBIN "res/texts/catalogue-magic.bin",$0000,13
 
 ; Leftover of a disk version: "INCORRECT DISK" and a red attribute bar
 ;
@@ -281,35 +281,17 @@ WrongDiskBar:
 ; stop. `$C8A0` read by ShowWrongDisk; `$C8B2` and `$C90D` by nothing in bank
 ; 6.
 DiskTexts:
-  DEFB $07,$2A,$06,$49,$4E,$43,$4F,$52,$52,$45,$43,$54,$3A,$44,$49,$53
-  DEFB $4B,$FF
+  INCBIN "res/texts/disk-texts.bin",$0000,18
 InsertDiskText:
-  DEFB $07,$2A,$05,$49,$4E,$53,$45,$52,$54,$3A,$44,$49,$53,$4B,$3A,$41
-  DEFB $4E,$44,$07,$33,$07,$50,$52,$45,$53,$53,$3A,$53,$50,$41,$43,$45
-  DEFB $FF
-  DEFB $00,$00            ; two zero bytes
+  INCBIN "res/texts/disk-texts.bin",$0012,35
 CataloguePos:
-  DEFB $07,$20,$05,$FF    ; code 7 to line $20, column 5
-                          ; (MissionCatalogueScreen `$C825`)
+  INCBIN "res/texts/disk-texts.bin",$0035,4
 RewindText:
-  DEFB $07,$20,$05,$52,$45,$57,$49,$4E,$44,$3A,$4D,$49,$53,$53,$49,$4F ; "REWIND
-  DEFB $4E,$07,$2A,$05,$54,$41,$50,$45,$3A,$54,$4F,$3A,$53,$54,$41,$52 ; MISSION
-  DEFB $54,$07,$34,$05,$41,$4E,$44,$3A,$50,$52,$45,$53,$53,$3A,$50,$4C ; TAPE TO
-  DEFB $41,$59,$5B,$FF                                                 ; START AND
-                                                                       ; PRESS
-                                                                       ; PLAY"
+  INCBIN "res/texts/disk-texts.bin",$0039,52
 FoundCatalogueText:
-  DEFB $07,$20,$05,$46,$4F,$55,$4E,$44,$3A,$4D,$49,$53,$53,$49,$4F,$4E ; "FOUND
-  DEFB $3A,$07,$2A,$05,$43,$41,$54,$41,$4C,$4F,$47,$55,$45,$3A,$41,$4E ; MISSION
-  DEFB $44,$07,$34,$05,$4E,$4F,$57,$3A,$4C,$4F,$41,$44,$49,$4E,$47,$5B ; CATALOGUE
-  DEFB $FF                                                             ; AND NOW
-                                                                       ; LOADING"
+  INCBIN "res/texts/disk-texts.bin",$006D,49
 BlankTapeText:
-  DEFB $07,$20,$05,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A ; three
-  DEFB $3A,$3A,$3A,$07,$2A,$05,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A ; blank
-  DEFB $3A,$3A,$3A,$3A,$3A,$3A,$07,$34,$05,$3A,$3A,$3A,$3A,$3A,$3A,$3A ; lines:
-  DEFB $3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A,$FF                         ; PrintRewind
-                                                                       ; $719B
+  INCBIN "res/texts/disk-texts.bin",$009E,58
 
 ; The tick of a completed mission, 1 x 8
 ;

@@ -14,6 +14,8 @@ c1's load of side 1, and the missions come from side 2 wound to their header:
   No Weight Limit POKE (bank 6 `$C1C6` = `$3A`) and its Immunity POKE ([WALKTHROUGH 6.3](../WALKTHROUGH.md#63-the-state-variables-and-the-pokes)).
 - `search`: SEARCH on the mission tape.
 - `stage2/rec/fuel`: the fuel failure (a POKE: Fuel `$7C57` = 32 at frame 7704).
+- `stage2/rec/m1complete`, `stage2/rec/m4complete`: Blast Em Mission completed, then Railway Ambush in the same
+  campaign: the goal, the pickup, the COMPLETION REPORT, the status screen and the save code.
 
 The figures are sheets of the screens `tools/record.py` saved at the named frames of each recording, drawn by
 `python3 tools/fig_screens.py OUT COLS ITEM...`; each tile is labelled with its recording and frame.
@@ -62,8 +64,8 @@ the map decide a mission before the first shot.
 ![The end of a mission: quit, failed, the completion report picture, Grand Finale refused](img/design/screens-end.png)
 
 *`python3 tools/fig_screens.py docs/img/design/screens-end.png 4 ...` from missions frame 8164 (after quit: the
-title), fuel frame 7904 (MISSION FAILED, RAN OUT OF FUEL), the picture `src/res/pictures/completion.png` (the
-COMPLETION REPORT background, no recording completes a mission) and m10 frame 4972 (Grand Finale found but not
+title), fuel frame 7904 (MISSION FAILED, RAN OUT OF FUEL), m1complete frame 21593 (the COMPLETION REPORT of Blast Em
+Mission, `work/stage2/rec/m1complete/screens/021593-complete-00.png`) and m10 frame 4972 (Grand Finale found but not
 loaded).*
 
 Every screen is a node of one graph, ScreenList `$74E6`; a screen leaves through SetScreen `$7060` with the number of
@@ -299,7 +301,11 @@ A mission ends in one of three ways:
   `$EB60`), sets the goal flag `$68E8`. PickupMessage `$DB77` prints "MISSION COMPLETE PROCEED TO PICKUP". The tank must
   then reach the pickup pad; the COMPLETION REPORT shows the catalogue's success text ("YOU HAVE CUT THE ENEMY'S VITAL
   FUEL SUPPLY ... RECEIVE YOUR SCORE AND PREPARE FOR FURTHER ORDERS") and the mission's flag in MissionsDone is set.
-  No recording meets a goal; this path is known from the code (doc 10).
+  The pickup is a call: the key H brings the Helicarrier, which flies to the pad and lands; the tank then drives into
+  it. Witnessed by m1complete (goal 16138, H 16216, landing 17099-17311, the report 21593, the save code
+  "C5989999PB" at 22240) and m4complete (Railway Ambush: "THE RESISTANCE HAVE MET WITH THE DIVERTED TRAIN. IT WAS A
+  JOB WELL DONE AND COMMENDATIONS ARE IN ORDER." at 21339; MISSIONS COMPLETED 002, SCORE TO DATE 2500 at 21832; the
+  save code "H59K9999PK" at 22035). Doc 10.9 has the frames.
 - **Failure.** The COMPLETION REPORT says "MISSION FAILED." and one of five reasons (bank 6 FailedTexts `$CC94`,
   chosen by FailReason `$7BF9`, doc 10):
 
@@ -332,6 +338,16 @@ stateDiagram-v2
     Quit --> Title
 ```
 
+![m4complete frame 21339: Railway Ambush's COMPLETION REPORT](img/play/m4complete-021339-complete.png)
+
+*m4complete frame 21339: the COMPLETION REPORT of Railway Ambush, the mission's own success text from the catalogue.
+Screenshot of the recording (`work/stage2/rec/m4complete`).*
+
+![m1complete frame 22100: the status card after mission 1, MISSIONS COMPLETED 001, SCORE TO DATE 500](img/play/m1complete-022100-status.png)
+
+*m1complete frame 22100: the MISSION STATUS card after Blast Em Mission: one mission completed, 500 points (the two
+fuel dumps, 250 each). Drawn from the TTD screen of the recording.*
+
 The point: success is two steps, the objective and the pickup. A mission can still be lost after its goal, on the way
 to the pad.
 
@@ -363,10 +379,9 @@ The point: ten characters carry the whole campaign, because the campaign is only
 
 ## 1.8 Known only from the code
 
-- The success path: the goal flag, PickupMessage, the success text, the score and the MissionsDone flag. No recording
-  completes a mission.
+- The success path of missions 2, 3 and 5-10 (missions 1 and 4: m1complete, m4complete).
 - The failures other than fuel: destroyed, no pickup, desertion, bridge (doc 10 records a death).
-- An entry string with progress, and the Grand Finale played.
+- An entry string with progress typed in, and the Grand Finale played.
 - The refusal of a mission already done (the first test of LoadMissionIfAllowed).
 
 The gaps are in [bcA-NOTES](../work/docs/bcA-NOTES.md).

@@ -132,7 +132,7 @@ while the title runs, and a tick fast in each frame a menu blits a view.
 ## 9.3 The effect driver: SoundFrame
 
 SoundFrame keeps the 14 AY registers in a shadow and rebuilds most of it every frame. The shadow and the counters sit
-at `$D674-$D691`, which game.ann labels HelicarrierData+`$A4`... (a source change is asked, 9.13).
+at `$D674-$D691`: AYRegs `$D674`, then the counters SelectCount `$D682` to SirenCount `$D68E` and SoundMaster `$D691`.
 
 | Address | Register or role | Written by |
 | --- | --- | --- |
@@ -351,7 +351,7 @@ frame with the engine at speed 0. "Frames heard" counts the frames whose effect 
 | random-tone | `$D856` | `$D68A` = 1 | no caller | 1 | B tone | Random AND `$F0` | - | 8 | 2188 |
 | message | `$D84E` | `$D68B` = 30 | MessageOnce (interrupt) | 28 | B tone | `$FFF` | - | 14 to 1 | 1974 |
 | noise-11 | `$D841` | `$D68C` = 17 | no caller | 17 | B noise | - | 31 | 10 | 2002 |
-| noise-23 | `$D845` | `$D68C` = 35 | no caller | 35 | B noise | - | 31 | 10 | 2002 |
+| noise-23 | `$D846` | `$D68C` = 35 | no caller | 35 | B noise | - | 31 | 10 | 2002 |
 | sweep | `$D839` | `$D68D` = 31 | no caller | 31 | B tone | `$083` to `$0FB` | - | 12 to 5 | 2019 |
 | siren-60 | `$D88B` | `$D68E` = 64 (meant 96) | no caller | 64 | B tone | `$080` / `$180` | - | 8 | 1991 |
 | siren-40 | `$D890` | `$D68E` = 64 | no caller | 64 | B tone | `$080` / `$180` | - | 8 | 1991 |
@@ -391,7 +391,7 @@ The effects one by one, n being the counter after the frame's decrement:
 - **tone-c8** `$D87B`: tone B `$0C8` (554 Hz) at volume 8 for 7 frames. [effect-tone-c8.wav](audio/effect-tone-c8.wav).
 - **random-tone** `$D856`: one frame of tone B at Random AND `$F0` (ApiVector06), volume 8.
   [effect-random-tone.wav](audio/effect-random-tone.wav).
-- **noise-11** `$D841` and **noise-23** `$D845`: noise B at period 31 and volume 10 for 17 or 35 frames, unless the
+- **noise-11** `$D841` and **noise-23** `$D846`: noise B at period 31 and volume 10 for 17 or 35 frames, unless the
   priority byte `$D688` is already 10 or more. [effect-noise-11.wav](audio/effect-noise-11.wav),
   [effect-noise-23.wav](audio/effect-noise-23.wav).
 - **sweep** `$D839`: tone B period `$7F` + 4 × (n XOR 31), from `$083` to `$0FB`, so the pitch falls. Volume
@@ -414,16 +414,17 @@ both SetNoise calls, sets it. So it never stops a voice.
 second entry's `PUSH AF` and `LD A,n`. The steady noise jumps 3 bytes; the siren jumps 1:
 
 ```asm
-EffectTriggers:                 ; $D841, correct
+SoundNoise11:                    ; $D841, correct
   PUSH AF
   LD A,$11
   JR $D849                      ; 18 03: over PUSH AF / LD A,$23 to the store
-  PUSH AF                       ; $D845
+SoundNoise23:                    ; $D846
+  PUSH AF
   LD A,$23
   LD ($D68C),A                  ; $D849
   POP AF
   RET
-EffectTriggersD:                ; $D88B, the bug
+SoundSiren60:                ; $D88B, the bug
   PUSH AF
   LD A,$60
   JR $D891                      ; 18 01: lands on LD A,$40
@@ -839,9 +840,9 @@ The point: the tune and the effects of this document are the recorded ones, not 
 - **The master gate `$D691`**: 1 in the image and never written, so SoundFrame's first test always passes.
 - **The missile sound**: LaunchMissile jumps to SoundEffect687, but no recording fires a missile.
 
-Asked of the lead in work/docs/bcD-src-changes.md: name the shadow and the counters `$D674-$D691` in game.ann (they
-are labelled HelicarrierData+`$A4`...), describe SetNoise as "A >> 1 the volume of C, A the noise period", mark the
-EffectTriggers blocks as code with the siren's jump, and say that `$D691` is never written.
+The source names the shadow and the counters `$D674-$D691` (AYRegs, SelectCount ... SirenCount, SoundMaster), the
+eight triggers as code entries (SoundNoise11 ... SoundSiren40, the siren's jump marked), and describes SetNoise as
+C the noise period, A >> 1 the volume of C.
 
 The point: Battle Command's sound is two small, separate machines. A counter mixer with an envelope engine plays the
 game. A tracker player, with an effect engine nobody starts, plays the one tune in the menus.

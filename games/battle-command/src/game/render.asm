@@ -23,7 +23,7 @@
 ; Witness: L1 6643 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
 ; play, play2, search).
 StartViewPass:
-  LD HL,PlayMode+$0001
+  LD HL,BlitRequest+$0001
   XOR A
 l_9886:
   CP (HL)
@@ -37,7 +37,7 @@ l_9886:
 ; play, play2, search).
 RequestViewBlit:
   LD A,$FF
-  LD (PlayMode+$0001),A
+  LD (BlitRequest+$0001),A
   RET
 
 ; Unused: clear 1792 bytes below `$98EF` and fill 1792 bytes below with
@@ -1071,7 +1071,7 @@ l_9DA6:
   AND A
   JP Z,l_9E14
   LD A,(IX+$03)
-  LD (ScreenList+$0093),A
+  LD (AwolState+$0001),A
   LD H,$FC
   LD DE,PolyVerts
   EXX
@@ -1170,7 +1170,7 @@ l_9E3C:
   XOR A
   LD (PolyOutCount),A
   LD A,(IX+$03)
-  LD (ScreenList+$0093),A
+  LD (AwolState+$0001),A
   LD H,$FC
   LD DE,PolyVerts
   EXX
@@ -1265,7 +1265,7 @@ l_9EDA:
   INC IX
   EXX
   LD A,(IX+$00)
-  LD (ScreenList+$0093),A
+  LD (AwolState+$0001),A
   LD H,$FC
   LD DE,PolyVerts
   EXX
@@ -1572,7 +1572,7 @@ l_A08B:
   XOR A
   LD (PolyOutCount),A
   LD A,(IX+$01)
-  LD (ScreenList+$0093),A
+  LD (AwolState+$0001),A
   LD H,$FC
   LD DE,PolyVerts
   EXX
@@ -1699,7 +1699,7 @@ OpPolarPoints:
   LD E,$41
 l_A138:
   LD D,$FF
-  LD A,(GaugeEnd+$0005)
+  LD A,(MissionScore+$0005)
   ADD A,(HL)
   INC HL
   EXX
@@ -1771,16 +1771,16 @@ ClipWindow:
 BoxSquareTurret:
   POP DE
   LD (l_AA5B+$0006),DE
-  LD A,(GaugeEnd+$0005)
+  LD A,(MissionScore+$0005)
   LD (l_AA5B+$0001),A
-  LD A,(GaugeEnd+$0007)
-  LD (GaugeEnd+$0005),A
+  LD A,(GoalFlag+$0001)
+  LD (MissionScore+$0005),A
   CALL ApiVector18
 
 ; l_AA5B
 l_AA5B:
   LD A,$00
-  LD (GaugeEnd+$0005),A
+  LD (MissionScore+$0005),A
   JP $0000
 
 ; Native (turn, size, height): the 8 corners V34-V41 of a square box turned by
@@ -1796,7 +1796,7 @@ BoxSquare:
   LD (l_AAF2+$0001),DE
   LD B,(IX+$00)
   INC IX
-  LD A,(GaugeEnd+$0005)
+  LD A,(MissionScore+$0005)
   ADD A,B
   LD H,$63
   LD L,A
@@ -1807,9 +1807,9 @@ BoxSquare:
   PUSH AF
   LD A,(IX+$00)
   CALL MulFrac
-  LD (PickupText+$21AF),HL
+  LD (MissionHeader+$2181),HL
   LD (data_FEBB+$008D),HL
-  LD (PickupText+$21B7),HL
+  LD (MissionHeader+$2189),HL
   LD (data_FEBB+$0095),HL
   LD A,H
   CPL
@@ -1818,21 +1818,21 @@ BoxSquare:
   CPL
   LD L,A
   LD (data_FEBB+$0089),HL
-  LD (PickupText+$21B3),HL
+  LD (MissionHeader+$2185),HL
   LD (data_FEBB+$0091),HL
-  LD (PickupText+$21BB),HL
+  LD (MissionHeader+$218D),HL
   POP AF
   LD E,(IX+$00)
   CALL MulFrac
   INC IX
   LD (data_FEBB+$008B),HL
-  LD (PickupText+$21AD),HL
+  LD (MissionHeader+$217F),HL
   LD (data_FEBB+$0093),HL
-  LD (PickupText+$21B5),HL
+  LD (MissionHeader+$2187),HL
   CALL NegHL
-  LD (PickupText+$21B1),HL
+  LD (MissionHeader+$2183),HL
   LD (data_FEBB+$008F),HL
-  LD (PickupText+$21B9),HL
+  LD (MissionHeader+$218B),HL
   LD (data_FEBB+$0097),HL
 
 ; Last operand h: y = -h for V34-V37, +h for V38-V41; V33 = (0, 0, 0); return
@@ -1841,23 +1841,23 @@ BoxSquare:
 ; play, play2, search).
 BoxHeights:
   LD HL,$0000
-  LD (PickupText+$21AB),HL
-  LD (PickupText+$22AB),HL
+  LD (MissionHeader+$217D),HL
+  LD (MissionHeader+$227D),HL
   LD (data_FEBB+$0087),HL
   LD A,(IX+$00)
   LD L,A
   RLA
   SBC A,A
   LD H,A
-  LD (PickupText+$22B5),HL
-  LD (PickupText+$22B7),HL
-  LD (PickupText+$22B9),HL
-  LD (PickupText+$22BB),HL
+  LD (MissionHeader+$2287),HL
+  LD (MissionHeader+$2289),HL
+  LD (MissionHeader+$228B),HL
+  LD (MissionHeader+$228D),HL
   CALL NegHL
-  LD (PickupText+$22AD),HL
-  LD (PickupText+$22AF),HL
-  LD (PickupText+$22B1),HL
-  LD (PickupText+$22B3),HL
+  LD (MissionHeader+$227F),HL
+  LD (MissionHeader+$2281),HL
+  LD (MissionHeader+$2283),HL
+  LD (MissionHeader+$2285),HL
   INC IX
 l_AAF2:
   JP l_AAF2
@@ -1873,7 +1873,7 @@ l_AAF2:
 BoxRect16:
   POP DE
   LD (l_AAF2+$0001),DE
-  LD A,(GaugeEnd+$0005)
+  LD A,(MissionScore+$0005)
   LD B,(IX+$00)
   LD C,A
   ADD A,B
@@ -1884,11 +1884,11 @@ BoxRect16:
   EX DE,HL
   LD A,(IX+$00)
   CALL ApiVector09
-  LD (PickupText+$21AF),HL
-  LD (PickupText+$21B7),HL
+  LD (MissionHeader+$2181),HL
+  LD (MissionHeader+$2189),HL
   CALL NegHL
-  LD (PickupText+$21B3),HL
-  LD (PickupText+$21BB),HL
+  LD (MissionHeader+$2185),HL
+  LD (MissionHeader+$218D),HL
   POP HL
   LD A,(IX+$00)
   CALL ApiVector09
@@ -1906,11 +1906,11 @@ BoxRect16:
   EX DE,HL
   LD A,(IX+$00)
   CALL ApiVector09
-  LD (PickupText+$21B1),HL
-  LD (PickupText+$21B9),HL
+  LD (MissionHeader+$2183),HL
+  LD (MissionHeader+$218B),HL
   CALL NegHL
-  LD (PickupText+$21AD),HL
-  LD (PickupText+$21B5),HL
+  LD (MissionHeader+$217F),HL
+  LD (MissionHeader+$2187),HL
   POP HL
   LD A,(IX+$00)
   CALL ApiVector09
@@ -1920,8 +1920,8 @@ BoxRect16:
   LD (data_FEBB+$0089),HL
   LD (data_FEBB+$0091),HL
   LD HL,$0000
-  LD (PickupText+$21AB),HL
-  LD (PickupText+$22AB),HL
+  LD (MissionHeader+$217D),HL
+  LD (MissionHeader+$227D),HL
   LD (data_FEBB+$0087),HL
   INC IX
   JP BoxHeights
@@ -1937,7 +1937,7 @@ BoxRect16:
 BoxRect:
   POP DE
   LD (l_AAF2+$0001),DE
-  LD A,(GaugeEnd+$0005)
+  LD A,(MissionScore+$0005)
   LD B,(IX+$00)
   LD C,A
   ADD A,B
@@ -1946,11 +1946,11 @@ BoxRect:
   CALL ApiVector14
   LD E,(IX+$00)
   CALL MulFrac
-  LD (PickupText+$21AF),HL
-  LD (PickupText+$21B7),HL
+  LD (MissionHeader+$2181),HL
+  LD (MissionHeader+$2189),HL
   CALL NegHL
-  LD (PickupText+$21B3),HL
-  LD (PickupText+$21BB),HL
+  LD (MissionHeader+$2185),HL
+  LD (MissionHeader+$218D),HL
   EX AF,AF'
   LD E,(IX+$00)
   CALL MulFrac
@@ -1966,11 +1966,11 @@ BoxRect:
   CALL ApiVector14
   LD E,(IX+$00)
   CALL MulFrac
-  LD (PickupText+$21B1),HL
-  LD (PickupText+$21B9),HL
+  LD (MissionHeader+$2183),HL
+  LD (MissionHeader+$218B),HL
   CALL NegHL
-  LD (PickupText+$21AD),HL
-  LD (PickupText+$21B5),HL
+  LD (MissionHeader+$217F),HL
+  LD (MissionHeader+$2187),HL
   EX AF,AF'
   LD E,(IX+$00)
   CALL MulFrac
@@ -1981,8 +1981,8 @@ BoxRect:
   LD (data_FEBB+$0091),HL
   INC IX
   LD HL,$0000
-  LD (PickupText+$21AB),HL
-  LD (PickupText+$22AB),HL
+  LD (MissionHeader+$217D),HL
+  LD (MissionHeader+$227D),HL
   LD (data_FEBB+$0087),HL
   JP BoxHeights
 
@@ -2009,16 +2009,16 @@ BoxTilted:
   CALL ApiVector14
   LD E,(IX+$00)
   CALL MulFrac
-  LD (PickupText+$21B5),HL
-  LD (PickupText+$21B7),HL
+  LD (MissionHeader+$2187),HL
+  LD (MissionHeader+$2189),HL
   EX AF,AF'
   LD E,(IX+$00)
   CALL MulFrac
-  LD (PickupText+$22B5),HL
-  LD (PickupText+$22B7),HL
+  LD (MissionHeader+$2287),HL
+  LD (MissionHeader+$2289),HL
   CALL NegHL
-  LD (PickupText+$22B1),HL
-  LD (PickupText+$22B3),HL
+  LD (MissionHeader+$2283),HL
+  LD (MissionHeader+$2285),HL
   LD A,(BoxTiltPitch+$0001)
   LD E,(IX+$00)
   AND A
@@ -2026,38 +2026,38 @@ BoxTilted:
   CALL ApiVector14
   LD E,(IX+$00)
   CALL MulFrac
-  LD (PickupText+$21B9),HL
+  LD (MissionHeader+$218B),HL
   EX AF,AF'
   LD E,(IX+$00)
   INC IX
   CALL MulFrac
-  LD (PickupText+$22BB),HL
-  LD (PickupText+$22B9),HL
+  LD (MissionHeader+$228D),HL
+  LD (MissionHeader+$228B),HL
   CALL NegHL
-  LD (PickupText+$22AD),HL
-  LD (PickupText+$22AF),HL
-  LD HL,(GaugeEnd+$0004)
+  LD (MissionHeader+$227F),HL
+  LD (MissionHeader+$2281),HL
+  LD HL,(MissionScore+$0004)
   CALL SinCosHalf
   LD D,A
   LD (RollSinCos),DE
   LD B,(IX+$00)
-  LD A,(PickupText+$21B7)
+  LD A,(MissionHeader+$2189)
   LD C,A
   CALL RotatePair
-  LD (PickupText+$21B7),HL
+  LD (MissionHeader+$2189),HL
   CALL NegHL
-  LD (PickupText+$21B3),HL
+  LD (MissionHeader+$2185),HL
   EX DE,HL
   LD (data_FEBB+$0093),HL
   CALL NegHL
   LD (data_FEBB+$008F),HL
   LD B,(IX+$00)
-  LD A,(PickupText+$21B9)
+  LD A,(MissionHeader+$218B)
   LD C,A
   CALL RotatePair
-  LD (PickupText+$21B9),HL
+  LD (MissionHeader+$218B),HL
   CALL NegHL
-  LD (PickupText+$21AD),HL
+  LD (MissionHeader+$217F),HL
   EX DE,HL
   LD (data_FEBB+$0095),HL
   CALL NegHL
@@ -2066,25 +2066,25 @@ BoxTilted:
   INC IX
   NEG
   LD B,A
-  LD A,(PickupText+$21B5)
+  LD A,(MissionHeader+$2187)
   LD C,A
   CALL RotatePair
-  LD (PickupText+$21B5),HL
+  LD (MissionHeader+$2187),HL
   CALL NegHL
-  LD (PickupText+$21B1),HL
+  LD (MissionHeader+$2183),HL
   EX DE,HL
   LD (data_FEBB+$0091),HL
   CALL NegHL
   LD (data_FEBB+$008D),HL
-  LD HL,(PickupText+$21B9)
-  LD DE,(PickupText+$21B7)
+  LD HL,(MissionHeader+$218B)
+  LD DE,(MissionHeader+$2189)
   AND A
   SBC HL,DE
-  LD DE,(PickupText+$21B5)
+  LD DE,(MissionHeader+$2187)
   ADD HL,DE
-  LD (PickupText+$21BB),HL
+  LD (MissionHeader+$218D),HL
   CALL NegHL
-  LD (PickupText+$21AF),HL
+  LD (MissionHeader+$2181),HL
   LD HL,(data_FEBB+$0095)
   LD DE,(data_FEBB+$0093)
   AND A
@@ -2095,8 +2095,8 @@ BoxTilted:
   CALL NegHL
   LD (data_FEBB+$008B),HL
   LD HL,$0000
-  LD (PickupText+$2169),HL
-  LD (PickupText+$2269),HL
+  LD (MissionHeader+$213B),HL
+  LD (MissionHeader+$223B),HL
   LD (data_FEBB+$0045),HL
   JP $0000
 

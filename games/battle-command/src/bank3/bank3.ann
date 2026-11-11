@@ -34,7 +34,7 @@ $C478 c IntersectColRight ; The y where the edge crosses the right column (255)
 $C48E c IntersectCol0 ; The y where the edge crosses column 0, by bisection
 > Witness: L1 67550 (c1, death, m2erbe, menu, missions, play, play2).
 $C4C4 c FillPolygon ; Fill the polygon PolyVerts `$6700` in the colour `$7579`: clip, find the top and bottom, walk the edges, fill
-> After the clips, fewer than 3 vertices return. Finds the lowest and highest row in `$6681`..., marks the top vertex, doubles the list, sets the top row `$67BD` and the row count `$68A8`, and calls EdgeWalk `$C542`. Entered from bank 5 `$7290` (38 827 calls over the recordings).
+> After the clips, fewer than 3 vertices return. Finds the lowest and highest row in `$6681`..., marks the top vertex, doubles the list, sets the bottom row `$67BD` (FillSpans starts there and walks up, DE = `$FFE0`; the byte is shared with MouseDelta) and the row count `$68A8`, and calls EdgeWalk `$C542`. Entered from bank 5 `$7290` (38 827 calls over the recordings).
 > Witness: L1 38525 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
 $C53E c FillSpansThenReturn ; CALL FillSpans `$C86A` then RET (the edge walker jumps here when the spans are on the stack)
 > Witness: L1 33753 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
@@ -60,6 +60,7 @@ $CA60 c DrawVerticalLine ; A vertical line: `SET n,(HL)` patched to the column's
 $CA89 b LinePixelBit 2 ; DrawLine's start pixel bit number, and a spare byte
 $CA8B b SharedModels 16 ; Shared 3D model scripts (RunScript format), 1346 bytes: six models and their parts
 > `$CA8B` (a building with two halves ordered by face 0: parts `$CAA7`, `$CCDA`), `$CAA7` (32 vertices, 24 faces, nested parts with OpCall to `$CDF8`), `$CCDA`, `$CDF8` (a sub-model called twice), `$CE47`, `$CED1` (`$CB39` of bank 6 draws it), `$CF26`. Each starts with a box generator (`00 F7 67` = BoxRect). Read by RunScript `$990F` in all 11 recordings.
+@res models/bank3-shared.bin
 $CFCD c SetClipWidth ; Patch the X clip's limit (10 operands) with A: `$FF` full width, `$5F` the 96-pixel console view
 > Called through `$74CF` (`$74C9` A = `$FF`, `$74CD` A = `$5F`) by bank 6 `$CA8B`.
 > Witness: L1 30 (c1, death, m2erbe, missions, play, play2).

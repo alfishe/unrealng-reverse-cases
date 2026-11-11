@@ -123,5 +123,4 @@ PrintStatusGrid:
 ; Control code 2 (a pixel line and a column), code 13 (attribute `$47`); the
 ; digits at `$C106` and `$C10E` are written by FormatGridPosition.
 GridText:
-  DEFB $02,$50,$01,$0D,$47,$30,$30,$3A,$30,$30,$02,$70,$01,$30,$30,$3A
-  DEFB $30,$30,$FF
+  INCBIN "res/texts/grid-text.bin",$0000,19

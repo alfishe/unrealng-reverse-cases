@@ -40,7 +40,7 @@ LoadBlock:
 ; stripes; NC on an error
 ;
 ; The timings are the ROM's; the border colours of the stripes come from C. A
-; block shorter than DE ends in a time-out of the edge reader (`LdEdge1`
+; block shorter than DE ends in a time-out of the edge reader (`LdEdge2`
 ; `$869F`), `RET NC`: Ocean's mission 2 header asks for 6406 bytes, its block
 ; holds 6384 (src/tape/side2.txt), so `LoadMissionBlock` retries for ever
 ; (m2ocean). Witness: L1 68 (c1, death, m10, m2erbe, m2ocean, menu, missions,

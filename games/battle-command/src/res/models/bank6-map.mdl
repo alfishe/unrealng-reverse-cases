@@ -1,0 +1,16 @@
+org $E512
+# bank6-map: 3D model scripts (tools/models3d.py text_lines): address, opcode, operand bytes, words as $XXXX;
+# after ";" the decoded instruction (ignored when built)
+$E512 project 04 00 ; project 4 from V0, model
+$E515 fill_polys 01 04 04 00 04 08 0C ; fill_polys (c4 0 1 2 3)
+$E51D end ; end
+$E51E project 04 00 ; project 4 from V0, model
+$E521 fill_polys 01 04 01 00 04 08 0C ; fill_polys (c1 0 1 2 3)
+$E529 end ; end
+$E52A project 04 00 ; project 4 from V0, model
+$E52D lines 80 01 82 03 C0 ; lines M0 L1 M2 L3
+$E533 end ; end
+$E534 verts 03 82 4B 00 81 4A 8B 4C 8A 8C 44 0C 8B 8C 47 02 81 4E 81 8E 45 0E 82 8E 46 FF ; verts P=V3 P=(P+V2)/2 V11=P P=V0 P=(P+V1)/2 V10=P P=(P+V11)/2 V12=P P=(P+V10)/2 P=(P+V12)/2 V4=P P=V12 P=(P+V11)/2 P=(P+V12)/2 V7=P P=V2 P=(P+V1)/2 V14=P P=(P+V1)/2 P=(P+V14)/2 V5=P P=V14 P=(P+V2)/2 P=(P+V14)/2 V6=P, model
+$E54F project 08 00 ; project 8 from V0, model
+$E552 fill_polys_clip 02 04 01 00 04 08 0C 04 00 10 14 18 1C ; fill_polys_clip (c1 0 1 2 3) (c0 4 5 6 7)
+$E560 end ; end

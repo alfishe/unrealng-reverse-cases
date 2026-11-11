@@ -131,9 +131,7 @@ QuitYes:
 ;
 ; Printed by QuitPrompt.
 QuitText:
-  DEFB $02,$28,$01,$0D,$47,$41,$72,$65,$20,$79,$6F,$75,$20,$73,$75,$72
-  DEFB $65,$20,$79,$6F,$75,$20,$77,$61,$6E,$74,$20,$74,$6F,$20,$71,$75
-  DEFB $69,$74,$3F,$02,$38,$0C,$59,$65,$73,$2F,$4E,$6F,$2E,$FF
+  INCBIN "res/texts/quit-text.bin",$0000,46
 
 ; The status view's legend frame: the box $DAC6 and 7 cleared lines
 ;
@@ -154,8 +152,7 @@ StatusMapFrame:
 ;
 ; Printed by StatusMapLegend `$7241`.
 StatusLegendText:
-  DEFB $02,$70,$08,$0D,$21,$80,$0D,$46,$20,$52,$6F,$61,$64,$73,$2E,$02
-  DEFB $80,$08,$0D,$21,$81,$0D,$46,$20,$52,$69,$76,$65,$72,$73,$2E,$FF
+  INCBIN "res/texts/status-legend-text.bin",$0000,32
 
 ; Attribute box records of the status legend
 ;
@@ -185,8 +182,7 @@ BriefingMapFrame:
 ;
 ; Printed by BriefingMapLegend `$722C`.
 BriefingLegendText:
-  DEFB $02,$90,$0B,$0D,$21,$80,$0D,$46,$20,$52,$6F,$61,$64,$73,$2E,$02
-  DEFB $A0,$0B,$0D,$21,$81,$0D,$46,$20,$52,$69,$76,$65,$72,$73,$2E,$FF
+  INCBIN "res/texts/briefing-legend-text.bin",$0000,32
 
 ; Attribute box records of the briefing map and the status map
 ;

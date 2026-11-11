@@ -15,6 +15,8 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 - `stage2/rec/fuel`: the fuel failure (a POKE, Fuel `$7C57` = 32 at frame 7704): a mission that ends in the
   failed screen and goes back to the title.
 - `menu`, `missions`, `m10`: the menus, the catalogue, the status card, Grand Finale refused.
+- `stage2/rec/m1complete`, `stage2/rec/m4complete`: missions 1 and 4 completed: the pickup, the completion node, the
+  status card and the save code.
 
 A frame is 70 908 T (the 128K). A [pass](README.md#terms) is one run of PlayLoop `$6A0C`, one picture of the 3D view.
 A position is written `frame:T`. A value read with `memory_at` (or from a trace's start memory) is the state at the
@@ -119,9 +121,13 @@ There is no game over beyond that: a failed mission goes back to the title, and 
 Grand Finale (mission 10) is refused by LoadMissionIfAllowed `$759A` until the nine flags MissionsDone `$6799-$67A1`
 are all set: `m10` shows the status screen again at frame 8349 after SELECT.
 
-Witness: every node's routine is run by a recording except MissionCompleteScreen `$CD1E` (no recording completes a
-mission) and the Dragonfly's re-entry `$7544`. The completion is the Helicarrier's collision handler (`JP $67EE`,
-ScreenFour, link 2) once the goal flag `$68E8` is set, known only from the code ([doc 10](10-gameplay-logic.md)).
+Witness: every node's routine is run by a recording except the Dragonfly's re-entry `$7544`. The completion is the
+Helicarrier's collision handler (`JP $67EE`, ScreenFour, link 2) once the goal flag `$68E8` is set: m1complete runs
+HelicarrierHit `$DAAB` and `$67EE` at frame 21558 and MissionCompleteScreen `$CD1E` (page 6) at 21560-21721, then the
+status card (22100) and the save code (22240); m4complete the same at 21299 and 21301-21462
+([doc 10.9](10-gameplay-logic.md)). Between the goal and the report, PickupMessage (bank 0 `$DB77`) puts ViewBlitLow
+`$898B` in the blit pointer `$83E6`: the view is copied from back-buffer row 8 and the message line stays above it
+(m1complete: 530 runs from frame 16138).
 
 The point: the whole program is one loop of screens. Every screen, even the 3D view, is a routine that loops until
 the view flag is set and then returns into NextView, which runs the routine SetScreen chose.
@@ -183,10 +189,10 @@ short tail and the long one.
 83B0  CD 8F 84               CALL KeyRepeat        ; ScanKeyboard, the repeat counter
 83B3  CD 80 7D               CALL PointerTick      ; ReadControls, the pointer, the fire
 83B6  CD D6 87               CALL MessageTimer     ; the message line's timer
-83B9  3E 00          PlayMode: LD A,n              ; n = $83BA, the blit request: $FF when set
+83B9  3E 00          BlitRequest: LD A,n              ; n = $83BA, the blit request: $FF when set
 83BB  3C                     INC A
 83BC  20 46                  JR NZ,PlayJobs        ; no request: the short tail
-83BE  3E 00          PlayFlag: LD A,n              ; n = $83BF: non-zero while the pointer is shown
+83BE  3E 00          PointerShown: LD A,n              ; n = $83BF: non-zero while the pointer is shown
 83C0  A7                     AND A
 83C1  CA DF 83               JP Z,MenuJobs
 83C4  CD 31 84               CALL PageBank6Kept    ; the pointer jobs (bank 6): restore, copy, save,
@@ -197,7 +203,7 @@ short tail and the long one.
 83E8  CD D2 72               CALL Bank4Tick        ; the tune a second time in a blit frame
 83EB  CD EC 8A               CALL ClearBlitRequest ; $83BA = 0: the main loop may clear the buffer
 83EE  C3 1C 84               JP HandlerExit
-8404  3A BF 83       PlayJobs: LD A,(PlayFlag+1)
+8404  3A BF 83       PlayJobs: LD A,(PointerShown+1)
 8407  A7                     AND A
 8408  28 12                  JR Z,HandlerExit      ; no pointer: nothing more
 840A  CD 31 84               CALL PageBank6Kept    ; the pointer's restore, copy, save and draw
@@ -228,7 +234,7 @@ The two operands at `$83BA` and `$83BF` are flags written by other code and read
 - `$83BA`, the blit request: RequestViewBlit `$988D` writes `$FF` when a pass has finished drawing the back buffer,
   ClearBlitRequest `$8AEC` writes 0 after the blit. StartViewPass `$9882` waits for 0 before it clears the buffer.
 - `$83BF`, the pointer flag: non-zero while the menus show the pointer, 0 in the play views (DrawBank7Picture `$74AA`
-  clears it). PointerTick `$7D80` moves the pointer only when it is set (`$7D8D`). The `.ann` calls it PlayFlag
+  clears it). PointerTick `$7D80` moves the pointer only when it is set (`$7D8D`). The `.ann` calls it PointerShown
   ("non-zero in play"); the play traces read it 0 throughout ([bcA-src-changes](../work/docs/bcA-src-changes.md)).
 
 ### What an interrupt costs
@@ -583,9 +589,6 @@ runs.
 
 ## 4.8 Known only from the code
 
-- MissionCompleteScreen `$CD1E` and the Helicarrier's completion path: no recording completes a mission.
-- ViewBlitLow `$898B`: PickupAnnounce (bank 0 `$DB77`) writes it into the blit pointer `$83E6` once the goal flag is
-  set, so the view is copied from back-buffer row 8 and the message line stays above it. No recording meets a goal.
 - The `JP $8383` at `$8181` as a vector: the 257-byte table answers every bus byte first.
 - The second Bank4Tick in a blit interrupt (`$83E8`): the tune's tick runs twice in that frame. The music stops at
   the mission start, so in play it changes nothing; the title loop requests a blit every pass, so there the tune runs

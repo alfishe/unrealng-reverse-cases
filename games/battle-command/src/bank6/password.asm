@@ -55,13 +55,11 @@ ClearMenuScreen:
 ;
 ; Printed by PasswordScreen at `$C5A5`, `$C5AE` and `$C5B4`.
 PasswordMessages:
-  DEFB $02,$78,$08,$0D,$C7,$49,$4E,$56,$41,$4C,$49,$44,$20,$50,$41,$53
-  DEFB $53,$57,$4F,$52,$44,$FF
+  INCBIN "res/texts/password-messages.bin",$0000,22
 InvalidBlank:
-  DEFB $02,$78,$08,$0D,$46,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-  DEFB $20,$20,$20,$20,$20,$FF
+  INCBIN "res/texts/password-messages.bin",$0016,22
 EntryBlank:
-  DEFB $02,$60,$0A,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$FF
+  INCBIN "res/texts/password-messages.bin",$002C,14
 
 ; The level entry screen: read ten characters, check them, take over the flags
 ; and the score
@@ -133,8 +131,7 @@ CountFlagsNext:
 ;
 ; Printed by PasswordScreen `$C57B`.
 PasswordPrompt:
-  DEFB $02,$40,$04,$0D,$47,$54,$79,$70,$65,$20,$69,$6E,$20,$79,$6F,$75
-  DEFB $72,$20,$6C,$65,$76,$65,$6C,$20,$65,$6E,$74,$72,$79,$3A,$2D,$FF
+  INCBIN "res/texts/password-prompt.bin",$0000,32
 
 ; The ten characters typed (EditLine's line)
 ;
@@ -372,8 +369,7 @@ PasswordZones:
 ;
 ; Printed by ShowPassword.
 EntryStringText:
-  DEFB $02,$40,$04,$0D,$47,$54,$48,$49,$53,$20,$49,$53,$20,$59,$4F,$55
-  DEFB $52,$20,$45,$4E,$54,$52,$59,$20,$53,$54,$52,$49,$4E,$47,$2E,$FF
+  INCBIN "res/texts/entry-string-text.bin",$0000,32
 
 ; Attribute box records: the whole menu screen and the catalogue's titles
 ;
@@ -396,6 +392,9 @@ CatalogueListBox:
 ; Eight values: 4 bits of the score (ScoreBits `$CF06`) and in bit 4 the flag
 ; of missions 1-8; the ninth and tenth: the flags of missions 9-10 and a 5-bit
 ; checksum (XOR of the score's four bytes). Witness: L1 1 (menu).
+;
+; A non-zero score: m1complete frame 22160 ("C5989999PB", score 500, mission
+; 1), m4complete 21956 ("H59K9999PK", score 2500, missions 1 and 4).
 EncodePassword:
   LD E,$08
   LD HL,Score
@@ -554,9 +553,9 @@ DecodeChecksum:
 ; Written by EncodePassword, PasswordToChars and CharsToPassword (the values),
 ; printed by ShowPassword.
 PasswordText:
-  DEFB $02,$50,$0C,$0D,$44
+  INCBIN "res/texts/password-text.bin",$0000,5
 PasswordValues:
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$FF
+  INCBIN "res/texts/password-text.bin",$0005,11
 
 ; A = the next A bits of the score at HL' (E' bits left in the byte)
 ;
@@ -616,7 +615,8 @@ ToCharsLoop:
 
 ; Map the ten typed characters to their places in PasswordAlphabet
 ;
-; An unknown character gives 0. Witness: L1 1 (menu).
+; An unknown character gives 4 (B = 0 after the search: 36 AND 31); D, E, F and
+; G give 0-3 like 9876. Witness: L1 1 (menu).
 CharsToPassword:
   LD DE,PasswordValues
   LD HL,PasswordBuffer
@@ -646,9 +646,7 @@ AlphabetFound:
 ;
 ; Read by PasswordToChars and CharsToPassword.
 PasswordAlphabet:
-  DEFB $39,$38,$37,$36,$35,$34,$33,$32,$31,$30,$5A,$59
-  DEFB $58,$57,$56,$55,$54,$53,$52,$51,$50,$4F,$4E,$4D
-  DEFB $4C,$4B,$4A,$49,$48,$41,$42,$43,$44,$45,$46,$47
+  INCBIN "res/texts/password-alphabet.bin",$0000,36
 
 ; Two zero bytes, then the catalogue's first 32 bytes copied by
 ; CopyCatalogueHead

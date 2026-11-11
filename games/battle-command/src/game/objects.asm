@@ -217,7 +217,7 @@ ScriptDrawCarried:
   PUSH HL
   PUSH DE
   PUSH BC
-  LD HL,(GaugeEnd+$0004)
+  LD HL,(MissionScore+$0004)
   PUSH HL
   PUSH IX
   CALL PageBank3
@@ -226,7 +226,7 @@ ScriptDrawCarried:
   CALL PageBank0
   POP IX
   POP HL
-  LD (GaugeEnd+$0004),HL
+  LD (MissionScore+$0004),HL
   POP BC
   POP DE
   POP HL
@@ -253,7 +253,7 @@ DrawObject:
 ;
 ; Witness: L1 9194 (death, m2erbe, missions, play, play2).
 DrawModel:
-  LD A,(ScreenList+$0094)
+  LD A,(AwolState+$0002)
   PUSH AF
   LD C,(IX+$2B)
   LD B,(IX+$2C)
@@ -265,7 +265,7 @@ DrawModel:
   LD C,A
   LD A,(IX+$22)
   SUB C
-  LD (GaugeEnd+$0005),A
+  LD (MissionScore+$0005),A
   LD A,(IX+$2A)
   LD (BoxTiltPitch+$0001),A
   LD C,(IX+$2F)
@@ -278,7 +278,7 @@ DrawModel:
   SBC HL,BC
   JR NC,l_B86F
   XOR A
-  LD (ScreenList+$0094),A
+  LD (AwolState+$0002),A
 l_B86F:
   LD A,(IX+$04)
   LD (OpPolarPoints+$0013),A
@@ -304,7 +304,7 @@ l_B895:
   POP IY
   POP IX
   POP AF
-  LD (ScreenList+$0094),A
+  LD (AwolState+$0002),A
   RET
 
 ; A CALL $C506 no recording runs
@@ -580,8 +580,8 @@ l_BC60:
   EXX
   DEC C
   JR NZ,l_BC77
-  LD HL,(PickupText+$0043)
-  LD A,(PickupText+$0042)
+  LD HL,(MissionHeader+$0015)
+  LD A,(MissionHeader+$0014)
   LD C,A
   XOR A
   LD (l_BBFB+$0038),A
@@ -796,7 +796,7 @@ ObjectSetType:
   LD HL,ShellTemplate80
   JR l_BD51
 l_BD4E:
-  LD HL,(PickupText+$0040)
+  LD HL,(MissionHeader+$0012)
 l_BD51:
   LD BC,$001E
   AND A
@@ -1193,7 +1193,7 @@ DrawEntry:
   LD C,A
   LD A,(IX+$09)
   SUB C
-  LD (GaugeEnd+$0005),A
+  LD (MissionScore+$0005),A
   LD A,(IX+$0A)
   LD (BoxTiltPitch+$0001),A
   CALL RestoreBank
@@ -1522,7 +1522,7 @@ l_C4DB:
   LD A,(DrawSightOverlay+$0001)
   AND $01
   RET NZ
-  LD HL,PickupText+$21E9
+  LD HL,MissionHeader+$21BB
   LD DE,BackBuffer+$050F
   LD BC,$001F
   EXX
@@ -1728,7 +1728,8 @@ l_C85E:
   AND A
   SBC HL,BC
   JP M,l_C8AF             ; the Immunity POKE writes 58 here: JP M,$C8AF
-                          ; becomes LD A,(nn)
+                          ; becomes LD A,(nn): no overlap is handled, the
+                          ; player's own shells included (complete-NOTES)
   LD A,(IX+$12)
   LD C,(IY+$12)
   ADD A,C

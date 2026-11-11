@@ -31,16 +31,16 @@ StartMission:
   CALL PageShadowScreen
   LD A,$C9
   LD (BlinkLamp),A
-  LD HL,(PickupText+$0043)
+  LD HL,(MissionHeader+$0015)
   LD (ActivateMissionObjects+$0001),HL
-  LD A,(PickupText+$0042)
+  LD A,(MissionHeader+$0014)
   LD B,A
   LD (ActivateMissionObjects+$0009),A
   XOR A
   LD (l_BBFB+$0038),A
   LD HL,ViewBlitFront
   LD (MenuJobs+$0007),HL
-  LD DE,PickupText+$01DE
+  LD DE,MissionHeader+$01B0
   CALL DrawBank7Picture
   LD A,(NightKey+$0001)
   AND A
@@ -80,9 +80,9 @@ StartMission:
   LD (BlinkWarning),A
   LD (ViewChangeFlag+$0001),A
   LD (MessageTimer+$000A),A
-  LD (HelicarrierData+$00B9),A
+  LD (SoundGate),A
   LD (BoundaryCheck),A
-  LD A,(ScreenList+$0092)
+  LD A,(AwolState)
   AND A
   JR Z,l_69EA
   LD HL,AwolWarningText+$0001
@@ -111,11 +111,15 @@ l_6A04:
 ;
 ; Calls in order: `$DB71`, the 3D frame (`$9882`), the play keys (`PlayKeys`
 ; `$6B3B`), `$B9F6`, the clipping marks (`ClearClipRow` `$6A9D`), `$BAAC`, the
-; world (`$AD45`, `$AEA0`), `$BBF1`, `$BD98`, bank 3 `$D08C` / `$D1EC`
-; (`$72A3`), `$BA40`, `$C05E`, `$BF53`, bank 6 `$C7BC` / `$C4CD`, `$988D`, the
-; message timer (`$7D5D`), the weapon bars (`$7327`), the object table
-; (`$C026`), `$6B1D`, the patched hook `$6A9C` and `$7256`, until the view flag
-; `$6A6D` is non-zero; then the next view's loop through `$6A99`.
+; world (`$AD45`, `$AEA0`), `$BBF1`, `$BD98`, Bank3Step `$72A3` (bank 3
+; DrawDebris / MoveAllDebris), CameraSinCosAgain `$BA40`, DrawRadar `$C05E`,
+; DrawObjectsInOrder `$BF53`, CollisionPass `$C7BC` and DrawSightOverlay
+; `$C4CD` (bank 0), `$988D`, the message timer (`$7D5D`), the weapon bars
+; (`$7327`), the object table (`$C026`), `$6B1D`, the mission's goal hook
+; (`CALL LoopHook` at `$6A66`, its operand patched by the mission load: Blast
+; Em Mission `$EB60`; LoopHook `$6A9C` is a `RET` in the image) and `$7256`,
+; until the view flag `$6A6D` is non-zero; then the next view's loop through
+; `$6A99`.
 ;
 ; Witness: L1 410 (death, m2erbe, missions, play, play2).
 PlayLoop:
@@ -237,7 +241,7 @@ MapLoop:
   CALL PageShadowScreen
   XOR A
   LD (FirstFrameHook),A
-  LD DE,PickupText+$1E36
+  LD DE,MissionHeader+$1E08
   CALL DrawBank7Picture
   LD HL,ViewBlitNarrow
   LD (MenuJobs+$0007),HL
@@ -422,9 +426,9 @@ StatusLoop:
   LD (MenuJobs+$0007),HL
   LD A,$FF
   LD (MessageTimer+$000A),A
-  LD (ScreenList+$0094),A
+  LD (AwolState+$0002),A
   XOR A
-  LD (PlayFlag+$0001),A
+  LD (PointerShown+$0001),A
   LD (PointerTick+$000A),A
   LD (FirstFrameHook),A
   LD (DragonflyOnce),A
@@ -451,7 +455,7 @@ l_6BFF:
   JR Z,l_6BFF
   XOR A
   LD (MessageTimer+$000A),A
-  LD (PlayFlag+$0001),A
+  LD (PointerShown+$0001),A
   LD A,$3A
   LD (CopyPointer),A
   LD (PointerTick+$000A),A
@@ -560,18 +564,21 @@ l_6CB0:
 ; `$FF`, and the 10-byte name "MISSHDR:0:". No routine calls it; a leftover of
 ; the development.
 DevMissionLoader:
-  DEFB $00,$00,$DD,$21,$93,$CE,$11,$11
-  DEFB $00,$3E,$FF,$37,$F3,$CD,$C1,$86
-  DEFB $06,$0A,$21,$FF,$FF,$2B,$7C,$B5
-  DEFB $20,$FB,$10,$F6,$DD,$21,$C5,$DB
-  DEFB $11,$00,$00,$3E,$FF,$37,$CD,$C1
-  DEFB $86,$FB,$C9,$03,$4D,$49,$53,$53
-  DEFB $48,$44,$52,$3A,$30,$3A,$00,$00
-  DEFB $00,$00,$00,$00
+  DEFB $00
+TerrainType:
+  DEFB $00,$DD,$21,$93,$CE,$11,$11,$00 ; TerrainCollision stores the terrain
+  DEFB $3E,$FF,$37,$F3,$CD,$C1,$86,$06 ; type here, PlayerStep reads it (a byte
+  DEFB $0A,$21,$FF,$FF,$2B,$7C,$B5,$20 ; of the dead loader reused)
+  DEFB $FB,$10,$F6,$DD,$21,$C5,$DB,$11
+  DEFB $00,$00,$3E,$FF,$37,$CD,$C1,$86
+  DEFB $FB,$C9,$03,$4D,$49,$53,$53,$48
+  DEFB $44,$52,$3A,$30,$3A,$00,$00,$00
+  DEFB $00,$00,$00
 
   ORG $D52E
 
-; Once (the RET / NOP gate $D52E): put the Helicarrier at the pad
+; Once (the RET / NOP gate $D52E), on the key H: call the Helicarrier, which
+; then flies to the pad
 ;
 ; `$D52E` is `NOP` until it has run, then `RET` (`$D531` writes it; the mission
 ; load `$8598` clears it). Record 21 (`$7ADC`) gets type `$8C` at the pad
@@ -701,11 +708,7 @@ HelicarrierData:
   DEFB $60,$58,$8C,$05,$08,$04,$01,$64
   DEFB $A0,$90,$5C,$06,$08,$04,$01,$A0
   DEFB $54,$4C,$90,$07,$08,$04,$01,$50
-  DEFB $A4,$94,$48,$FF,$00,$00,$00,$00
-  DEFB $00,$00,$00,$3F,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$01
+  DEFB $A4,$94,$48,$FF
 
   ORG $DA8C
 
@@ -720,31 +723,55 @@ HelicarrierTemplate:
   DEFB $9F,$DA,$FF,$21,$60,$67,$06,$08
   DEFB $7E,$2F,$77,$23,$10,$FA,$C9
 
-; The Helicarrier's collision handler (not run)
+; The Helicarrier's collision handler: the tank drives into the parked
+; Helicarrier
 ;
-; The Helicarrier's collision handler, code no recording runs: when the hitter
-; is not present (+3 bit 7 clear) HitTest; when `$68E8` is set JP `$67EE`
-; (mission complete), else `$7047` with `$7BF9` = `$CC94` (failure). Then
-; `$DAC4` turns it (+$22 + 8).
+; When the hitter is not present (+3 bit 7 clear) HitTest; when `$68E8` is set
+; JP `$67EE` (mission complete), else `$7047` with `$7BF9` = `$CC94` (failure).
+; Then `$DAC4` turns it over the pad, 8 a step, until its heading is near the
+; pad's (+`$31`, the CPL of the pad's heading).
+;
+; Witness: m1complete frame 21558, m4complete 21299, one run each, then `$67EE`
+; (work/stage2/complete-NOTES.md).
 HelicarrierHit:
-  DEFB $FD,$7E,$03,$E6,$80,$CA,$DC,$67
-  DEFB $3A,$E8,$68,$A7,$C2,$EE,$67,$CD
-  DEFB $47,$70,$21,$94,$CC,$22,$F9,$7B
-  DEFB $C9,$DD,$7E,$22,$C6,$08,$DD,$77
-  DEFB $22,$DD,$96,$31,$CD,$D6,$67,$FE
-  DEFB $08,$D0,$DD,$36,$18,$DE,$DD,$36
-  DEFB $19,$DA,$C9
+  LD A,(IY+$03)
+  AND $80
+  JP Z,ApiVector10
+  LD A,(GoalFlag)
+  AND A
+  JP NZ,ApiVector16
+  CALL ScreenSix
+  LD HL,l_CC56+$003E
+  LD (FailReason),HL
+  RET
 
-; The Helicarrier's lift-off step (not run)
+; HelicarrierTurn
+HelicarrierTurn:
+  DEFB $DD,$7E,$22,$C6,$08,$DD,$77,$22 ; the arrival's turn over the pad
+  DEFB $DD,$96,$31,$CD,$D6,$67,$FE,$08 ; (m1complete 17109-17205, 11 runs)
+  DEFB $D0,$DD,$36,$18,$DE,$DD,$36,$19
+  DEFB $DA,$C9
+
+; The Helicarrier's landing: down 8 a step to the pad, then parked
 ;
-; The lift-off step, code no recording runs: height += 8 up to `$20`, then the
-; next state.
-HelicarrierLift:
-  DEFB $DD,$6E,$05,$DD,$66,$06,$01,$08
-  DEFB $00,$A7,$ED,$42,$DD,$75,$05,$DD
-  DEFB $74,$06,$A7,$11,$20,$00,$ED,$52
-  DEFB $D0,$DD,$36,$18,$B0,$DD,$36,$19
-  DEFB $6B,$C9
+; The height goes 104, 96, ... 24 (one step a pass), then the handler `$6BB0`
+; parks it. Witness: m1complete frames 17213-17311 (10 runs), m4complete
+; 15510-15575 (10).
+HelicarrierDescent:
+  LD L,(IX+$05)
+  LD H,(IX+$06)
+  LD BC,$0008
+  AND A
+  SBC HL,BC
+  LD (IX+$05),L
+  LD (IX+$06),H
+  AND A
+  LD DE,$0020
+  SBC HL,DE
+  RET NC
+  LD (IX+$18),$B0
+  LD (IX+$19),$6B
+  RET
 
 ; The Helicarrier's set-up
 ;
@@ -785,8 +812,11 @@ HelicarrierCode:
 
 ; The Helicarrier waits for the player
 ;
-; IY = `$7E65`, TurnToward, MoveObject; when the player is within 3 coarse
-; units of the pad on X and Y, the lift-off at `$DB61` (play: 27 runs).
+; Flies the Helicarrier to the pad: IY = the pseudo-record `$7E65` (its X / Y
+; at `$7E88` / `$7E8B` are the pad), TurnToward, MoveObject; when the
+; Helicarrier itself (not the tank) is within 3 units of X >> 8 and Y >> 8 (768
+; world units) of the pad on both axes, the arrival at `$DB61` (play: 27 runs;
+; m1complete 16239-17099, 85 runs).
 ;
 ; Witness: L1 27 (play).
 HelicarrierWait:
@@ -824,9 +854,10 @@ HelicarrierWait:
   AND A
   SBC HL,BC
   RET NC
-HelicarrierLiftOff:
-  LD (IX+$18),$C4         ; the lift-off: the record's handler becomes $DAC4
-                          ; (known only from the code)
+HelicarrierArrival:
+  LD (IX+$18),$C4         ; the arrival over the pad: the record's handler
+                          ; becomes HelicarrierTurn $DAC4 (m1complete 17099,
+                          ; m4complete 15435)
   LD (IX+$19),$DA
   LD A,(IY+$22)
   CPL
@@ -842,11 +873,12 @@ HelicarrierLiftOff:
 ; Witness: L1 3483 (death, m2erbe, missions, play, play2).
 PickupAnnounce:
   NOP
-  LD A,(GaugeEnd+$0006)
+  LD A,(GoalFlag)
   AND A
   RET Z
 PickupMessage:
-  LD A,$C9                ; writes RET at $DB71 and prints $DB97
+  LD A,$C9                ; writes RET at $DB71, the blit ViewBlitLow, prints
+                          ; $DB97 (m1complete 16138, m4complete 14215)
   LD (PickupAnnounce),A
   LD HL,ViewBlitLow
   LD (MenuJobs+$0007),HL
@@ -872,6 +904,17 @@ PickupText:
   DEFB $45,$54,$45,$3A,$50,$52,$4F,$43
   DEFB $45,$45,$44,$3A,$54,$4F,$3A,$50
   DEFB $49,$43,$4B,$55,$50,$FF,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00
+
+; The mission block: the header $DBC5-$DBFF, the vertices, segments, objects,
+; templates, code and models (zeros in the image: side 2 loads it)
+;
+; LoadMissionBlock `$855B` loads the block here; every reader indexes from
+; `$DBC5` (header fields `$DBC5-$DBE9`, docs/07-objects.md 7.2,
+; src/res/missions/README.md). The part a reload restores ends at the header's
+; word (`$FB3F` for Blast Em Mission); the rows `$FC00-$FF7F` above are the 3D
+; engine's work rows.
+MissionHeader:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -1951,24 +1994,24 @@ PickupText:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$FC,$FC,$3F,$3F,$00
+  DEFB $80,$00,$01,$3F,$80,$FC,$01,$3F
+  DEFB $80,$FC,$01,$3F,$80,$FC,$01,$3F
+  DEFB $80,$FC,$01,$3F,$80,$FC,$01,$3F
+  DEFB $00,$FC,$00,$3F,$00,$FC,$00,$3F
+  DEFB $80,$FC,$01,$3F,$80,$FC,$01,$3F
+  DEFB $80,$FC,$01,$3F,$80,$FC,$01,$3F
+  DEFB $80,$FC,$01,$00,$80,$00,$01,$FC
+  DEFB $FC,$3F,$3F,$07,$05,$03,$0D,$40
+  DEFB $41,$4D,$4D,$3A,$08,$27,$C5,$FF
+  DEFB $07,$10,$03,$4D,$41,$4E,$55,$41
+  DEFB $4C,$FF,$07,$10,$03,$3A,$41,$55
+  DEFB $54,$4F,$3A,$FF,$07,$10,$03,$3A
+  DEFB $4F,$46,$46,$3A,$3A,$FF,$07,$10
+  DEFB $03,$0D,$40,$08,$F8,$FD,$3A,$08
+  DEFB $FC,$B8,$FF,$00,$07,$10,$03,$08
+  DEFB $F5,$CF,$FF,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$FC,$FC,$3F,$3F,$00,$80,$00
-  DEFB $01,$3F,$80,$FC,$01,$3F,$80,$FC
-  DEFB $01,$3F,$80,$FC,$01,$3F,$80,$FC
-  DEFB $01,$3F,$80,$FC,$01,$3F,$00,$FC
-  DEFB $00,$3F,$00,$FC,$00,$3F,$80,$FC
-  DEFB $01,$3F,$80,$FC,$01,$3F,$80,$FC
-  DEFB $01,$3F,$80,$FC,$01,$3F,$80,$FC
-  DEFB $01,$00,$80,$00,$01,$FC,$FC,$3F
-  DEFB $3F,$07,$05,$03,$0D,$40,$41,$4D
-  DEFB $4D,$3A,$08,$27,$C5,$FF,$07,$10
-  DEFB $03,$4D,$41,$4E,$55,$41,$4C,$FF
-  DEFB $07,$10,$03,$3A,$41,$55,$54,$4F
-  DEFB $3A,$FF,$07,$10,$03,$3A,$4F,$46
-  DEFB $46,$3A,$3A,$FF,$07,$10,$03,$0D
-  DEFB $40,$08,$F8,$FD,$3A,$08,$FC,$B8
-  DEFB $FF,$00,$07,$10,$03,$08,$F5,$CF
-  DEFB $FF,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -1983,28 +2026,28 @@ PickupText:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$8F,$FE,$02,$04,$00,$0E
-  DEFB $01,$04,$01,$00,$04,$08,$0C,$FF
+  DEFB $00,$00,$00,$00,$8F,$FE,$02,$04
+  DEFB $00,$0E,$01,$04,$01,$00,$04,$08
+  DEFB $0C,$FF
 
 ; l_FE8F
 l_FE8F:
   LD HL,$000A
-  LD (PickupText+$2169),HL
+  LD (MissionHeader+$213B),HL
 ; This entry point is used by the routine at DrawBank7Picture.
-  LD (PickupText+$216B),HL
-  LD (PickupText+$2269),HL
-  LD (PickupText+$226F),HL
+  LD (MissionHeader+$213D),HL
+  LD (MissionHeader+$223B),HL
+  LD (MissionHeader+$2241),HL
   LD L,H
   LD (data_FEBB+$0045),HL
   LD (data_FEBB+$0047),HL
   LD (data_FEBB+$0049),HL
   LD (data_FEBB+$004B),HL
   LD HL,data_FEBB+$013B
-  LD (PickupText+$226B),HL
-  LD (PickupText+$216D),HL
-  LD (PickupText+$226D),HL
-  LD (PickupText+$216F),HL
+  LD (MissionHeader+$223D),HL
+  LD (MissionHeader+$213F),HL
+  LD (MissionHeader+$223F),HL
+  LD (MissionHeader+$2141),HL
   RET
 
 ; data_FEBB

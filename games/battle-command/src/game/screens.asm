@@ -85,10 +85,11 @@ SetViewFlag:
   LD (ViewChangeFlag+$0001),A
   RET
 
-; Once: bank 6's $DACB and $DB64, then patched to RET
+; Once: the briefing map (bank 6's BriefingMapFrame $DACB and BriefingMap
+; $DB64), then patched to RET
 ;
 ; Witness: L1 10 (menu, play, play2).
-ShowPauseOnce:
+ShowBriefingMapOnce:
   NOP
   CALL SaveBank
   CALL PageBank6
@@ -96,15 +97,15 @@ ShowPauseOnce:
   CALL BriefingMap
   CALL RestoreBank
   LD A,$C9
-  LD (ShowPauseOnce),A
+  LD (ShowBriefingMapOnce),A
   XOR A
-  LD (PrintTitleOnce),A
+  LD (BriefingTextOnce),A
   RET
 
-; PrintTitleOnce
-PrintTitleOnce:
-  DEFB $00,$CD,$96,$C0,$21,$00,$00,$CD
-  DEFB $B3,$6F,$21,$B6,$C0,$CD,$FB,$6C
+; BriefingTextOnce
+BriefingTextOnce:
+  DEFB $00,$CD,$96,$C0,$21,$00,$00,$CD ; the briefing's TEXT button: the text
+  DEFB $B3,$6F,$21,$B6,$C0,$CD,$FB,$6C ; at ($70A3), once
   DEFB $AF,$32,$84,$70,$3E,$C9,$18,$E4
 
 ; Once: bank 6's $C079, the title string at ($70A3), the attribute box $C0BB
@@ -113,7 +114,7 @@ PrintTitleOnce:
 DragonflyTitle:
   NOP
   CALL DragonflyTitleBox
-  LD HL,(PrintTitleOnce+$0005)
+  LD HL,(BriefingTextOnce+$0005)
   CALL PrintString
   LD HL,RadarAddBlip+$0009
   JP AttrBox

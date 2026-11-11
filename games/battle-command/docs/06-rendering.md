@@ -48,7 +48,7 @@ Each blit points SP at the screen row table `$6500` (one address word a screen l
 | ViewBlitFront | `$8999` | 0-94 | 32-126, with the cockpit cut out | 2736 | the 3D view |
 | ViewBlitWide | `$8A41` | 0-85 | 64-149, full width | 2752 | the title model, the console and map views |
 | ViewBlitNarrow | `$8A98` | 0-94, bytes 5-26 | 40-134 at column 6 | 2090 | the binoculars and the rear view |
-| ViewBlitLow | `$898B` | 8-94, with the cockpit cut out | 40-126 | 2480 | not executed in any recording |
+| ViewBlitLow | `$898B` | 8-94, with the cockpit cut out | 40-126 | 2480 | m1complete: 530 runs from frame 16138 (after the goal) |
 
 ![Where each blit puts the back buffer](img/render/layout.png)
 
@@ -913,7 +913,7 @@ DrawRadar runs every pass but the first (3483 runs over the recordings).
 The texts of the view (the night sight, the binoculars, the messages) are printed by PrintString (doc 08).
 DrawSightOverlay runs every pass (3507 runs).
 It copies the sight mask `$FD80` into the back buffer at `$9000` while `$C4DC` is set.
-Only SelectBansheeIr sets it, the Banshee IR sight of `play2` (2 runs); `play` and `death` never show it.
+Only SelectPhoenix sets it, the Phoenix sight of `play2` (2 runs); `play` and `death` never show it.
 
 Doc 08 covers the panel, the bars and the texts in full.
 
@@ -953,7 +953,6 @@ Each face on the screen costs about 0.4 of a frame, and the mission's busiest vi
 
 ## 6.14 What is known only from the code
 
-- ViewBlitLow `$898B`: no recording runs it.
 - The special cases of DrawLine (horizontal `$CA4E`, 45 degrees `$CA74`): the three lines of `play` are vertical.
 - FillSpans with the light value 0 (the silhouettes): read from the code; no trace of mine covers a pass with
   `$757A` = 0.
